@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: util.c,v 1.15 89/04/13 15:48:54 jim Exp $
+ * $XConsortium: util.c,v 1.16 89/06/12 15:32:20 jim Exp $
  *
  * utility routines for twm
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: util.c,v 1.15 89/04/13 15:48:54 jim Exp $";
+"$XConsortium: util.c,v 1.16 89/06/12 15:32:20 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -77,71 +77,84 @@ MoveOutline(root, x, y, width, height, bw, th)
     int		xl, xr, yt, yb;
     int		xthird, ythird, yinner;
     XSegment	outline[18];
-    XSegment	*r = outline;
+    register XSegment	*r;
 
-    if (x == lastx && y == lasty && width == lastWidth && height == lastHeight)
+    if (x == lastx && y == lasty && width == lastWidth && height == lastHeight
+	&& bw == lastBW && th == lastTH)
 	return;
     
-    yinner = (lastBW + lastTH);
-    xthird = lastWidth/3;
-    ythird = (lastHeight - yinner)/3;
-    xl = lastx;
-    xr = lastx + lastWidth - 1;
-    yt = lasty;
-    yb = lasty + lastHeight - 1;
+    r = outline;
 
-    if (lastWidth || lastHeight)
-    {
-	r->x1 = xl;
-	r->y1 = yt;
-	r->x2 = xr;
-	r++->y2 = yt;
-
-	r->x1 = xl;
-	r->y1 = yb;
-	r->x2 = xr;
-	r++->y2 = yb;
-
-	r->x1 = xl;
-	r->y1 = yt;
-	r->x2 = xl;
-	r++->y2 = yb;
-
-	r->x1 = xr;
-	r->y1 = yt;
-	r->x2 = xr;
-	r++->y2 = yb;
-
-	r->x1 = xl + xthird;
-	r->y1 = yt + yinner;
-	r->x2 = r->x1;
-	r++->y2 = yb;
-
-	r->x1 = xl + (2 * xthird);
-	r->y1 = yt + yinner;
-	r->x2 = r->x1;
-	r++->y2 = yb;
-
-	r->x1 = xl;
-	r->y1 = yt + yinner + ythird;
-	r->x2 = xr;
-	r->y2 = r->y1;
-	r++;
-
-	r->x1 = xl;
-	r->y1 = yt + yinner + (2 * ythird);
-	r->x2 = xr;
-	r->y2 = r->y1;
-	r++;
-
-	if (lastTH != 0) {
-	    r->x1 = xl;
-	    r->y1 = yt + yinner;
-	    r->x2 = xr;
-	    r->y2 = r->y1;
-	    r++;
-	}
+#define DRAWIT() \
+    if (lastWidth || lastHeight)			\
+    {							\
+	yinner = (lastBW + lastTH);			\
+	xthird = lastWidth/3;				\
+	ythird = (lastHeight - yinner)/3;		\
+	xl = lastx;					\
+	xr = lastx + lastWidth - 1;			\
+	yt = lasty;					\
+	yb = lasty + lastHeight - 1;			\
+							\
+	r->x1 = xl;					\
+	r->y1 = yt;					\
+	r->x2 = xr;					\
+	r->y2 = yt;					\
+	r++;						\
+							\
+	r->x1 = xl;					\
+	r->y1 = yb;					\
+	r->x2 = xr;					\
+	r->y2 = yb;					\
+	r++;						\
+							\
+	r->x1 = xl;					\
+	r->y1 = yt;					\
+	r->x2 = xl;					\
+	r->y2 = yb;					\
+	r++;						\
+							\
+	r->x1 = xr;					\
+	r->y1 = yt;					\
+	r->x2 = xr;					\
+	r->y2 = yb;					\
+	r++;						\
+							\
+	r->x1 = xl + xthird;				\
+	r->y1 = yt + yinner;				\
+	r->x2 = r->x1;					\
+	r->y2 = yb;					\
+	r++;						\
+							\
+	r->x1 = xl + (2 * xthird);			\
+	r->y1 = yt + yinner;				\
+	r->x2 = r->x1;					\
+	r->y2 = yb;					\
+	r++;						\
+							\
+	r->x1 = xl;					\
+	r->y1 = yt + yinner + ythird;			\
+	r->x2 = xr;					\
+	r->y2 = r->y1;					\
+	r++;						\
+							\
+	r->x1 = xl;					\
+	r->y1 = yt + yinner + (2 * ythird);		\
+	r->x2 = xr;					\
+	r->y2 = r->y1;					\
+	r++;						\
+							\
+	if (lastTH != 0) {				\
+	    r->x1 = xl;					\
+	    r->y1 = yt + yinner;			\
+	    r->x2 = xr;					\
+	    r->y2 = r->y1;				\
+	    r++;					\
+	}						\
     }
+
+    /* undraw the old one, if any */
+    DRAWIT ();
 
     lastx = x;
     lasty = y;
@@ -150,66 +163,11 @@ MoveOutline(root, x, y, width, height, bw, th)
     lastBW = bw;
     lastTH = th;
 
-    yinner = (lastBW + lastTH);
-    xthird = lastWidth/3;
-    ythird = (lastHeight - yinner)/3;
-    xl = lastx;
-    xr = lastx + lastWidth - 1;
-    yt = lasty;
-    yb = lasty + lastHeight - 1;
+    /* draw the new one, if any */
+    DRAWIT ();
 
-    if (lastWidth || lastHeight)
-    {
-	r->x1 = xl;
-	r->y1 = yt;
-	r->x2 = xr;
-	r++->y2 = yt;
+#undef DRAWIT
 
-	r->x1 = xl;
-	r->y1 = yb;
-	r->x2 = xr;
-	r++->y2 = yb;
-
-	r->x1 = xl;
-	r->y1 = yt;
-	r->x2 = xl;
-	r++->y2 = yb;
-
-	r->x1 = xr;
-	r->y1 = yt;
-	r->x2 = xr;
-	r++->y2 = yb;
-
-	r->x1 = xl + xthird;
-	r->y1 = yt + yinner;
-	r->x2 = r->x1;
-	r++->y2 = yb;
-
-	r->x1 = xl + (2 * xthird);
-	r->y1 = yt + yinner;
-	r->x2 = r->x1;
-	r++->y2 = yb;
-
-	r->x1 = xl;
-	r->y1 = yt + yinner + ythird;
-	r->x2 = xr;
-	r->y2 = r->y1;
-	r++;
-
-	r->x1 = xl;
-	r->y1 = yt + yinner + (2 * ythird);
-	r->x2 = xr;
-	r->y2 = r->y1;
-	r++;
-
-	if (lastTH != 0) {
-	    r->x1 = xl;
-	    r->y1 = yt + yinner;
-	    r->x2 = xr;
-	    r->y2 = r->y1;
-	    r++;
-	}
-    }
 
     if (r != outline)
     {
