@@ -1,4 +1,4 @@
-/* $XConsortium: ICElibint.h,v 1.24 93/12/06 18:37:19 mor Exp $ */
+/* $XConsortium: ICElibint.h,v 1.25 93/12/07 11:04:02 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -531,6 +531,14 @@ typedef struct _IceWatchProc {
     _IceWatchedConnection	*watched_connections;
     struct _IceWatchProc	*next;
 } _IceWatchProc;
+
+
+/*
+ * Locking
+ */
+
+#define LockIceConn(_iceConn)
+#define UnlockIceConn(_iceConn)
 
 
 /*
