@@ -1,4 +1,4 @@
-/* $XConsortium: ddContext.c,v 5.2 91/05/01 14:47:06 hersh Exp $ */
+/* $XConsortium: ddContext.c,v 5.3 91/07/01 08:26:24 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -270,11 +270,10 @@ CreateDDContext(pRend)
     MINS_EMPTY_NAMESET(pddc->Static.search.invert_inclusion);
     MINS_EMPTY_NAMESET(pddc->Static.search.invert_exclusion);
 
-    /*
-     * Indicate all xforms in static are invalid *. pddc->Static.misc.flags
-     * |= ( INVTRCCTODCXFRMFLAG | INVTRWCTOCCXFRMFLAG | INVTRMCTOCCXFRMFLAG |
-     * INVTRMCTOWCXFRMFLAG | INVVIEWXFRMFLAG );
-     * 
+    /* Indicate all xforms in static are invalid  */
+     pddc->Static.misc.flags |= ( INVTRCCTODCXFRMFLAG | INVTRWCTOCCXFRMFLAG 
+     | INVTRMCTOCCXFRMFLAG | INVTRMCTOWCXFRMFLAG | INVVIEWXFRMFLAG );
+      
     /* Mark as invalid any transform dependant fields in ddContext
      */
     pddc->Static.misc.flags |= (MCVOLUMEFLAG | CC_DCUEVERSION);
@@ -943,16 +942,16 @@ ValidateDDContextAttrs(pRend, pddc, tables, namesets, attrs)
     /*
      * View table
      */
-    if ((tables & PEXDynViewTable) || (tables & PEXDynViewTableContents)) {
-	extern ddpex3rtn miBldCC_xform();
-
-	miBldCC_xform(pRend, pddc);
-    }
     if ((attrs & PEXDynNpcSubvolume) || (attrs & PEXDynViewport)) {
 	extern ddpex3rtn miBldViewport_xform();
 
 	miBldViewport_xform(pRend, pRend->pDrawable, 
 			    pddc->Static.misc.viewport_xform, pddc );
+    }
+    if ((tables & PEXDynViewTable) || (tables & PEXDynViewTableContents)) {
+	extern ddpex3rtn miBldCC_xform();
+
+	miBldCC_xform(pRend, pddc);
     }
     return (Success);
 }
