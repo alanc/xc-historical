@@ -1,4 +1,4 @@
-/* $XConsortium: difsutils.c,v 1.9 93/09/20 18:10:30 hersh Exp $ */
+/* $XConsortium: difsutils.c,v 1.10 93/09/22 16:59:45 rws Exp $ */
 /*
  * misc utility routines
  */
@@ -42,7 +42,7 @@
 extern ClientPtr currentClient;
 static FontResolutionPtr default_resolutions;
 static int  num_resolutions;
-static int  default_point_size;
+static int  default_point_size = 120;
 
 AuthContextPtr
 GetClientAuthorization()
@@ -152,7 +152,7 @@ GetDefaultPointSize()
     if (res)
 	return res->point_size;
     else
-	return 120;
+	return default_point_size;
 }
 
 void
