@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: miarc.c,v 1.46 87/08/31 16:39:34 rws Locked $ */
+/* $Header: miarc.c,v 1.47 87/12/09 18:15:44 rws Locked $ */
 /* Author: Todd Newman */
 #include "X.h"
 #include "Xprotostr.h"
@@ -57,7 +57,7 @@ typedef struct
 #define GCValsMask		(GCFunction | GCForeground | GCBackground | \
 				 GCLineWidth | GCCapStyle | GCJoinStyle | \
 				 GCArcMode)
-static CARD32 gcvals[]= {GXcopy, 1, 0, 0, 0, ArcChord};
+static CARD32 gcvals[]= {GXcopy, 1, 0, 0, 0, 0, ArcChord};
 
 /* MIPOLYARC -- Public entry for the polyarc call.
  * Strategy: Similar in many ways to that for wide lines.
@@ -192,6 +192,7 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 	if (polyarcs[0].cpt)
 	{
 	    for (i = narcs - 1;
+		 (i >= 0) &&
 		 (cpt = polyarcs[i].cpt) &&
 		 PtEqual(polyarcs[ifirst].pPts[0], polyarcs[i].pPts[cpt - 1]);
 		 ifirst = i, i--) ;
