@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 2.25 91/07/21 21:00:00 rws Exp $
+XCOMM $XConsortium: Imakefile,v 2.26 91/07/31 01:10:43 keith Exp $
 #ifndef X11perfcompLib
 #define X11perfcompLib $(LIBDIR)/x11perfcomp
 #endif
@@ -21,8 +21,8 @@ XCOMM $XConsortium: Imakefile,v 2.25 91/07/21 21:00:00 rws Exp $
 		  do_dots.o do_windows.o do_movewin.o do_text.o \
 		  do_copyarea.o do_arcs.o \
 		  do_triangles.o do_complex.o do_traps.o
-LOCAL_LIBRARIES = $(XLIB)
-        DEPLIBS = $(DEPXLIB)
+LOCAL_LIBRARIES = $(XMULIB) $(XLIB)
+        DEPLIBS = $(DEPXMULIB) $(DEPXLIB)
   SYS_LIBRARIES = -lm
 
 ComplexProgramTarget(x11perf)
