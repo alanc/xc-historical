@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: xfontsel.c,v 1.8 89/11/10 17:34:46 swick Exp $";
+static char Xrcsid[] = "$XConsortium: xfontsel.c,v 1.9 89/11/14 09:28:42 jim Exp $";
 #endif
 
 /*
@@ -190,7 +190,7 @@ void main(argc, argv)
 	XtWarning( "app-defaults file not properly installed." );
 	XrmPutLineResource( &rdb,
 "*sampleText*Label:XFontSel app-defaults file not properly installed;\\n\
-see 'fntchoosr' manual page."
+see 'xfontsel' manual page."
 			  );
     }
 
