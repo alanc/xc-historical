@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Selection.c,v 1.40 89/12/09 23:15:27 rws Exp $";
+    "$XConsortium: Selection.c,v 1.41 89/12/15 11:20:56 swick Exp $";
 #endif
 
 /***********************************************************
@@ -155,11 +155,10 @@ Atom prop;
       }
 }
 
-static CallBackInfo MakeInfo(ctx, callback, cancel, closures, count, widget,
+static CallBackInfo MakeInfo(ctx, callback, closures, count, widget,
 			     time, incremental)
 Select ctx;
 XtSelectionCallbackProc callback;
-XtCancelSelectionCallbackProc cancel;
 XtPointer *closures;
 int count;
 Widget widget;
@@ -171,7 +170,6 @@ Boolean incremental;
 
 	info->ctx = ctx;
 	info->callback = callback;
-	info->req_cancel = cancel;
 	info->req_closure =
 	    (XtPointer*)XtMalloc((unsigned) (count * sizeof(XtPointer)));
 	bcopy((char*)closures, (char*)info->req_closure, count * sizeof(XtPointer));
@@ -836,10 +834,6 @@ XtIntervalId   *id;
     IndirectPair *pairs;
     XtPointer *c;
     static void HandleSelectionReplies();
-    /* call requestor with XT_CONVERT_FAIL */
-    if ((info->incremental) && (info->req_cancel != NULL))
-	(*info->req_cancel)(info->widget, &info->ctx->selection, 
-		*info->req_closure);
     if (*info->target == info->ctx->prop_list->indirect_atom) {
         (void) XGetWindowProperty(XtDisplay(info->widget), 
 			   XtWindow(info->widget), info->property, 0L,
@@ -1125,7 +1119,6 @@ XEvent *ev;
 		*newinfo->target = *t;
 		newinfo->ctx = info->ctx;
 		newinfo->incremental = info->incremental;
-		newinfo->req_cancel = info->req_cancel;
 		HandleIncremental(dpy, widget, p->property, newinfo,
 				  GetSizeOfIncr(widget, ctx, p->property)
 				  );
@@ -1263,13 +1256,12 @@ Boolean incremental;
       }
 }
 
-static void GetSelectionValue(widget, selection, target, callback, cancel,
+static void GetSelectionValue(widget, selection, target, callback,
 			      closure, time, incremental)
 Widget widget;
 Atom selection;
 Atom target;
 XtSelectionCallbackProc callback;
-XtCancelSelectionCallbackProc cancel;
 XtPointer closure;
 Time time;
 Boolean incremental;
@@ -1290,7 +1282,7 @@ Boolean incremental;
 	ctx->req = NULL;
     }
     else {
-	info = MakeInfo(ctx, callback, cancel, &closure, 1, widget,
+	info = MakeInfo(ctx, callback, &closure, 1, widget,
 			time, incremental);
 	info->target = (Atom *)XtMalloc((unsigned) sizeof(Atom));
 	 *(info->target) = target;
@@ -1308,34 +1300,31 @@ XtPointer closure;
 Time time;
 {
     GetSelectionValue(widget, selection, target, callback,
-		      (XtCancelSelectionCallbackProc)NULL,
 		      closure, time, FALSE);
 }
 
 
 void XtGetSelectionValueIncremental(widget, selection, target, callback, 
-				    cancel, closure, time)
+				    closure, time)
 Widget widget;
 Atom selection;
 Atom target;
 XtSelectionCallbackProc callback;
-XtCancelSelectionCallbackProc cancel;
 XtPointer closure;
 Time time;
 {
     GetSelectionValue(widget, selection, target, callback, 
-		      cancel, closure, time, TRUE);
+		      closure, time, TRUE);
 }
 
 
 static void GetSelectionValues(widget, selection, targets, count, callback, 
-			       cancel, closures, time, incremental)
+			       closures, time, incremental)
 Widget widget;
 Atom selection;
 Atom *targets;
 int count;
 XtSelectionCallbackProc callback;
-XtCancelSelectionCallbackProc cancel;
 XtPointer *closures;
 Time time;
 Boolean incremental;
@@ -1359,7 +1348,7 @@ Boolean incremental;
 			    callback, *closures, incremental);
 	ctx->req = NULL;
     } else {
-	info = MakeInfo(ctx, callback, cancel, closures, count, widget,
+	info = MakeInfo(ctx, callback, closures, count, widget,
 			time, incremental);
 	info->target = (Atom *)XtMalloc((unsigned) ((count+1) * sizeof(Atom)));
         (*info->target) = ctx->prop_list->indirect_atom;
@@ -1392,24 +1381,22 @@ XtPointer *closures;
 Time time;
 {
     GetSelectionValues(widget, selection, targets, count, callback,
-		       (XtCancelSelectionCallbackProc)NULL,
 		       closures, time, FALSE);
 }
 
 
 void XtGetSelectionValuesIncremental(widget, selection, targets, count, 
-	callback, cancel, closures, time)
+	callback, closures, time)
 Widget widget;
 Atom selection;
 Atom *targets;
 int count;
-XtSelectionIncrCallbackProc callback;
-XtCancelSelectionCallbackProc cancel;
+XtSelectionCallbackProc callback;
 XtPointer *closures;
 Time time;
 {
     GetSelectionValues(widget, selection, targets, count, 
-		       callback, cancel, closures, time, TRUE);
+		       callback, closures, time, TRUE);
 }
 
 
