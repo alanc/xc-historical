@@ -23,3 +23,6 @@ extern int XextRemoveDisplay();
 extern XExtDisplayInfo *XextFindDisplay();
 
 #define XextHasExtension(i) ((i) && ((i)->codes))
+#define XextCheckExtension(dpy,i,name,val) \
+  if (!XextHasExtension(i)) { XMissingExtension (dpy, name); return val; }
+
