@@ -1,4 +1,4 @@
-/* $XConsortium: lcGenConv.c,v 1.5 94/04/02 22:36:59 rws Exp kaleb $ */
+/* $XConsortium: lcGenConv.c,v 1.6 94/11/21 18:23:20 kaleb Exp kaleb $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -47,9 +47,11 @@ init_state(conv)
     register XLCdGenericPart *gen = XLC_GENERIC_PART(state->lcd);
     register CodeSet codeset;
 
-    if (codeset = gen->initial_state_GL)
+    codeset = gen->initial_state_GL;
+    if (codeset && codeset->charset_list)
 	state->GL_charset = *codeset->charset_list;
-    if (codeset = gen->initial_state_GR)
+    codeset = gen->initial_state_GR;
+    if (codeset && codeset->charset_list)
 	state->GR_charset = *codeset->charset_list;
 
     if (state->GL_charset == NULL)

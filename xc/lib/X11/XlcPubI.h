@@ -1,4 +1,4 @@
-/* $XConsortium: XlcPubI.h,v 1.2 93/09/23 12:31:38 rws Exp $ */
+/* $XConsortium: XlcPubI.h,v 1.3 94/01/20 18:03:11 rws Exp kaleb $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -135,6 +135,13 @@ extern Bool _XlcParseCharSet(
 );
 
 extern XlcCharSet _XlcCreateDefaultCharSet(
+#if NeedFunctionPrototypes
+    char*		/* name */,
+    char*		/* control_sequence */
+#endif
+);
+
+extern XlcCharSet _XlcAddCT(
 #if NeedFunctionPrototypes
     char*		/* name */,
     char*		/* control_sequence */
