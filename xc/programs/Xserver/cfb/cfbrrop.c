@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbrrop.c,v 1.1 90/01/31 12:31:54 keith Exp $
+ * $XConsortium: cfbrrop.c,v 1.2 90/02/22 18:44:06 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -54,11 +54,29 @@
  *  and	    0	1   1	0
  *  xor	    0	0   1	1
  *
+ * or, (if 'and' is expensive) (dst = (dst | or) ^ xor)
+ *
+ *  or	    1	0   0	1
+ *  xor	    1	0   1	0
+ *
+ * The trouble with using this later equation is that trivial
+ * rasterop reduction is more difficult; some common rasterops
+ * use complicated expressions of xor/and instead of the simple
+ * ones while other common rasterops are not made any simpler:
+ *
+ * GXcopy:	*dst = ~xor		instead of  *dst = xor
+ * GXand:	*dst = *dst & ~or	instead of  *dst = *dst & and
+ * GXor:	*dst = *dst | or	instead of  *dst = *dst | xor
+ * GXxor:	*dst = *dst ^ xor	instead of  *dst = *dst ^ xor
+ *
+ * If you're really set on using this second mechanism, the changes
+ * are pretty simple.
+ *
  * All that remains is to provide a mechanism for computing and/xor values
  * based on the raster op and foreground value.
  *
  * The 16 rops fall as follows, with the associated reduced
- * rop and/xor values.  The values in parenthesis following the
+ * rop and/xor and or/xor values.  The values in parenthesis following the
  * reduced values gives an equation using the source value for
  * the reduced value, and is one of {0, src, ~src, 1} as appropriate.
  *
@@ -70,6 +88,9 @@
  *  and	    0	0 (0)	    0   1 (src)	    0	1 (src)	    0	0 (0)
  *  xor	    0	0 (0)	    0   0 (0)	    0	1 (src)	    0	1 (src)
  *
+ *  or	    1	1 (1)	    1	0 (~src)    1	0 (~src)    1	1 (1)
+ *  xor	    1	1 (1)	    1	0 (~src)    1	1 (1)	    1	0 (~src)
+ *
  *	andInverted	noop		xor		or
  *     src  0	1	    0   1	    0	1	    0	1
  *  dst	0   0	0	0   0   0	0   0	1	0   0	1
@@ -77,6 +98,9 @@
  *
  *  and	    1	0 (~src)    1   1 (1)	    1	1 (1)	    1	0 (~src)
  *  xor	    0	0 (0)	    0   0 (0)	    0	1 (src)	    0	1 (src)
+ *
+ *  or	    0	1 (src)	    0	0 (0)	    0	0 (0)	    0	1 (src)
+ *  xor	    0	1 (src)	    0	0 (0)	    0	1 (src)	    0	0 (0)
  *
  *	nor		equiv		invert		orReverse
  *     src  0	1	    0   1	    0	1	    0	1
@@ -86,6 +110,9 @@
  *  and	    1	0 (~src)    1   1 (1)	    1	1 (1)	    1	0 (~src)
  *  xor	    1	0 (~src)    1   0 (~src)    1	1 (1)	    1	1 (1)
  *
+ *  or	    0	1 (src)	    0	0 (0)	    0	0 (0)	    0	1 (src)
+ *  xor	    1	1 (1)	    1	0 (~src)    1	1 (1)	    1	0 (~src)
+ *
  *	copyInverted	orInverted	nand		set
  *     src  0	1	    0   1	    0	1	    0	1
  *  dst	0   1	0	0   1   0	0   1	1	0   1	1
@@ -94,6 +121,8 @@
  *  and	    0	0 (0)	    0   1 (src)	    0	1 (src)	    0	0 (0)
  *  xor	    1	0 (~src)    1   0 (~src)    1	1 (1)	    1	1 (1)
  *
+ *  or	    1	1 (1)	    1	0 (~src)    1	0 (~src)    1	1 (1)
+ *  xor	    0	1 (src)	    0	0 (0)	    0	1 (src)	    0	0 (0)
  */
 
 int
