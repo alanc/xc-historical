@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shape.c,v 5.18 93/09/29 17:04:16 dpw Exp $ */
+/* $XConsortium: shape.c,v 5.19 94/01/07 09:46:20 dpw Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -636,7 +636,7 @@ ProcShapeSelectInput (client)
 	    for (pShapeEvent = *pHead; pShapeEvent; pShapeEvent = pShapeEvent->next) {
 		if (pShapeEvent->client == client)
 		    break;
-		pNewShapeEvent = 0;
+		pNewShapeEvent = pShapeEvent;
 	    }
 	    if (pShapeEvent) {
 		FreeResource (pShapeEvent->clientResource, ClientType);
