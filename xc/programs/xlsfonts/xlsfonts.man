@@ -44,6 +44,15 @@ figuring out how many columns to print.  The default is 79.
 This option specifies the number of columns to use in displaying the output.
 By default, it will attempt to fit as many columns of font names into the 
 number of character specified by \fB-w \fIwidth\fR.
+.TP 8
+.B \-u
+This option indicates that the output should be left unsorted.
+.TP 8
+.B \-o
+This option indicates that \fIxlsfonts\fP should do an \fBOpenFont\fP (and
+\fBQueryFont\fP, if appropriate) rather than a \fBListFonts\fP.  This is
+useful if \fBListFonts\fP or \fBListFontsWithInfo\fP fail to list a known
+font (as is the case with some scaled font systems).
 .PP
 .SH "SEE ALSO"
 X(1), Xserver(1), xset(1), xfd(1)

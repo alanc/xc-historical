@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xlsfonts.c,v 1.28 89/12/05 18:22:09 jim Exp $
+ * $XConsortium: xlsfonts.c,v 1.29 89/12/10 17:13:05 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -38,6 +38,7 @@ int columns = 0;
 #define L_VERYLONG 3
 
 Bool	sort_output = True;
+Bool	open_instead_of_list = False;
 int	long_list = L_SHORT;
 int	nnames = N_START;
 int	font_cnt;
@@ -63,6 +64,8 @@ usage()
 	"    -1                       force single column\n");
 	fprintf (stderr,
 	"    -u                       keep output unsorted\n");
+	fprintf (stderr,
+	"    -o                       use OpenFont/QueryFont instead of ListFonts\n");
 	fprintf (stderr,
 	"    -w width                 maximum width for multiple columns\n");
 	fprintf (stderr,
@@ -117,6 +120,9 @@ char **argv;
 					argv++;
 					columns = atoi(argv[0]);
 					goto next;
+				case 'o':
+					open_instead_of_list = True;
+					break;
 				case 'u':
 					sort_output = False;
 					break;
@@ -148,6 +154,19 @@ get_list(pattern)
 
 	/* Get list of fonts matching pattern */
 	for (;;) {
+		if (open_instead_of_list) {
+		    info = XLoadQueryFont (dpy, pattern);
+
+		    if (info) {
+			fonts = &pattern;
+			available = 1;
+			XUnloadFont (dpy, info->fid);
+		    } else {
+			fonts = NULL;
+		    }
+		    break;
+		}
+		    
 		if (long_list == L_MEDIUM)
 			fonts = XListFontsWithInfo(dpy,
 				pattern, nnames, &available, &info);
