@@ -24,7 +24,7 @@ INCLUDES = -I. -I../../include -I../../../include
 LINTDEFS = -DMFBPOLYGLYPHBLT=mfbPolyGlyphBltWhite \
 	   -DMFBIMAGEGLYPHBLT=mfbImageGlyphBltWhite \
 	   -DEQWHOLEWORD=\=~0 -DOPEQ=\|=
-LINTLIBS = -lc ../../dix/llib-ldix.ln ../os/4.2bsd/llib-los.ln ../mi/llib-lmi.ln
+LINTLIBS = -lc ../../dix/llib-ldix.ln ../../os/4.2bsd/llib-los.ln ../mi/llib-lmi.ln
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(mfb,$(OBJS))

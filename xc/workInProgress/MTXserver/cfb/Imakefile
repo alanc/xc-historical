@@ -12,7 +12,7 @@ OBJS =   cfbgc.o cfbwindow.o cfbmisc.o \
 
 CDEBUGFLAGS = ServerCDebugFlags
    INCLUDES = -I. -I../../include -I../../../include -I../mfb
-   LINTLIBS = -lc ../../dix/llib-ldix.ln ../os/4.2bsd/llib-los.ln \
+   LINTLIBS = -lc ../../dix/llib-ldix.ln ../../os/4.2bsd/llib-los.ln \
 	     ../mfb/llib-lmfb.ln ../mi/llib-lmi.ln
 
 NormalLibraryObjectRule()
