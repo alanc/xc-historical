@@ -5,11 +5,6 @@
      CHECKFNSRC = $(UTILSRC)/checkfn
         CHECKFN = $(CHECKFNSRC)/checkfn
 
-XCOMM
-XCOMM The order given here is necessary for some things to build; note that in
-XCOMM R4beta, the "fonts" and "rgb" directories will become subdirectories of
-XCOMM server so that BuildServer is no longer necessary.
-XCOMM
 #if BuildServer
 SERVERDIRSTOMAKE = fonts server rgb
 #endif
