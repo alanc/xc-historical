@@ -1,4 +1,4 @@
-.\" $XConsortium: CH09,v 1.7 91/07/31 20:24:20 swick Exp $
+.\" $XConsortium: CH09,v 1.8 91/08/26 13:36:17 swick Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -96,7 +96,7 @@ When the resource list is specified as the
 or
 .PN ConstraintClassPart
 \fIresources\fP field the strings pointed to by \fIresource_name\fP,
-\fIresource_Iclass\fP, \fIresource_type\fP, and \fIdefault_type\fP must
+\fIresource_class\fP, \fIresource_type\fP, and \fIdefault_type\fP must
 be permanently allocated prior to or during the execution of the class
 initialization procedure and must not be subsequently deallocated.
 
@@ -2580,7 +2580,7 @@ determines if a geometry request is needed by comparing the old object to
 the new object.
 If any geometry changes are required,
 .PN XtSetValues
-restores the original geometry and makes the request on behalf of the widget.a
+restores the original geometry and makes the request on behalf of the widget.
 If the geometry manager returns
 .PN XtGeometryYes ,
 .PN XtSetValues

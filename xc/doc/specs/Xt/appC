@@ -1,4 +1,4 @@
-.\" $XConsortium: appC,v 1.6 91/07/31 20:24:56 swick Exp $
+.\" $XConsortium: appC,v 1.7 91/08/26 14:37:45 swick Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -476,7 +476,7 @@ is equivalent in function to
 with \fIcache_type\fP equal to
 .PN XtCacheAll
 for old-format type converters.  It has been superseded by
-.PN XtSetTypeConverter.
+.PN XtSetTypeConverter .
 
 .sp
 .FD 0
@@ -541,7 +541,7 @@ void XtConvert(\fIw\fP, \fIfrom_type\fP, \fIfrom\fP, \fIto_type\fP, \
 .FN
 .IP \fIw\fP 1i
 Specifies the widget to use for additional arguments, if any are
-needed.  \(*oI
+needed.
 .IP \fIfrom_type\fP 1i
 Specifies the source type.
 .IP \fIfrom\fP 1i
@@ -582,7 +582,8 @@ The
 .PN XtConvert
 function looks up the type converter registered to convert \fIfrom_type\fP 
 to \fIto_type\fP, computes any additional arguments needed, and then calls
-.PN XtDirectConvert or
+.PN XtDirectConvert
+or
 .PN XtCallConverter .
 The
 .PN XtDirectConvert
