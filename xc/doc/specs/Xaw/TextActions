@@ -162,7 +162,8 @@ This action ends a text selection that began with the
 \fIselect-start\fP action, and asserts ownership of
 the selection or selections specified.  A \fIname\fP can be
 a selection (e.g. \fBPRIMARY\fP) or a cut buffer (e.g
-\fBCUT_BUFFER0\fP).  Note that case is important.  
+\fBCUT_BUFFER0\fP).  Note that case is important.  If no
+names are given, no selection is asserted.
 .IP extend-start(\|) 2.0i
 This action finds the nearest end of the current selection, and moves
 it to the location in which the event occurred.  If this event is bound
