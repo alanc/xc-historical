@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.134 91/01/30 15:55:32 gildea Exp $
+ * $XConsortium: charproc.c,v 1.135 91/02/05 19:44:45 gildea Exp $
  */
 
 
@@ -2815,7 +2815,6 @@ int LoadNewFont (screen, nfontname, bfontname, doresize, fontnum)
     screen->reverseboldGC = new_reverseboldGC;
     screen->fnt_norm = nfs;
     screen->fnt_bold = bfs;
-    screen->fnt_bold = screen->fnt_norm;
     screen->enbolden = (nfs == bfs);
     set_menu_font (False);
     screen->menu_font_number = fontnum;
