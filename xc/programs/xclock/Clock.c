@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Clock.c,v 1.40 88/09/06 09:55:11 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Clock.c,v 1.41 88/09/06 16:40:58 jim Exp $";
 #endif lint
 
 
@@ -263,7 +263,7 @@ static void Destroy (gw)
      Widget gw;
 {
      ClockWidget w = (ClockWidget) gw;
-     XtRemoveTimeOut (w->clock.interval_id);
+     if (w->clock.interval_id) XtRemoveTimeOut (w->clock.interval_id);
      XtDestroyGC (w->clock.myGC);
      XtDestroyGC (w->clock.HighGC);
      XtDestroyGC (w->clock.HandGC);
@@ -305,7 +305,7 @@ static void Redisplay (gw, event, region)
     } else {
 	w->clock.prev_time_string[0] = '\0';
     }
-    clock_tic((caddr_t)w, (XtIntervalId)NULL);
+    clock_tic((caddr_t)w, (XtIntervalId)0);
 }
 
 /* ARGSUSED */
@@ -748,10 +748,12 @@ static Boolean SetValues (gcurrent, grequest, gnew)
          the changes, but may need to do some computations first. */
 
       if (new->clock.update != current->clock.update) {
-	    XtRemoveTimeOut (current->clock.interval_id);
-	    new->clock.interval_id =
-		XtAddTimeOut(new->clock.update*1000, clock_tic, (caddr_t)gnew);
-	    new->clock.show_second_hand = (new->clock.update <= SECOND_HAND_TIME);
+	  if (current->clock.interval_id)
+	      XtRemoveTimeOut (current->clock.interval_id);
+	  if (XtIsRealized(new))
+	      new->clock.interval_id = XtAddTimeOut(new->clock.update*1000,
+						    clock_tic, (caddr_t)gnew);
+	  new->clock.show_second_hand = (new->clock.update <= SECOND_HAND_TIME);
       }
 
       if (new->clock.padding != current->clock.padding)
