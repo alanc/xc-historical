@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.172 93/08/23 13:45:12 kaleb Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.173 93/08/23 19:44:54 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -655,7 +655,7 @@ UnsharedLibReferences(XBSD,Xbsd,$(LIBSRC)/Berk)
 #ifndef ProfileLibICE
 #define ProfileLibICE		NO	/* profiled ICE library */
 #endif
-           ICESRC = $(LIBSRC)/lib/ICE
+           ICESRC = $(LIBSRC)/ICE
 #if SharedLibICE
 SharedDSLibReferences(ICE,ICE,$(ICESRC),SOICEREV,SharedICERev)
 #else
@@ -674,7 +674,7 @@ UnsharedLibReferences(ICE,ICE,$(ICESRC))
 #ifndef ProfileLibSM
 #define ProfileLibSM		NO	/* profiled SM library */
 #endif
-            SMSRC = $(LIBSRC)/lib/SM
+            SMSRC = $(LIBSRC)/SM
 #if SharedLibSM
 SharedDSLibReferences(SM,SM,$(SMSRC),SOSMREV,SharedSMRev)
 #else
