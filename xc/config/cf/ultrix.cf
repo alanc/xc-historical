@@ -9,6 +9,7 @@
 #define HasVoidSignalReturn YES
 #define HasPutenv YES
 #define HasBsearch YES
+#define HasSaberC YES
 
 #undef ExtensionDefines
 #define ExtensionDefines -DSHAPE -DMITSHM -DMULTIBUFFER -DMITMISC
@@ -17,7 +18,6 @@
 #define XqvssServer Xqvss
 #define XqdssServer Xqdss
 #define UnalignedReferencesAllowed YES	       /* if arbitrary deref is okay */
-#define HasSaberC YES
 #define ServerDefines StandardDefines ExtensionDefines -DXDMCP -DNOSTDHDRS -DX11R4
 /* gcc is *VERY USEFUL*, especially for the server; GET it */
 #define HasGcc YES
@@ -42,5 +42,5 @@
 #define ServerCCOptions /* */
 #endif
 
-/**/# platform:  $XConsortium: ultrix.cf,v 1.20 89/12/22 15:56:14 rws Exp $
+/**/# platform:  $XConsortium: ultrix.cf,v 1.21 89/12/26 10:16:17 rws Exp $
 /**/# operating system:  OSName
