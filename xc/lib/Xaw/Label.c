@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Label.c,v 1.60 88/10/11 18:11:24 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Label.c,v 1.61 88/10/18 12:30:53 swick Exp $";
 #endif lint
 
 
@@ -412,7 +412,8 @@ static Boolean SetValues(current, request, new)
 	_Reposition(newlw, curlw->core.width, curlw->core.height, &dx, &dy);
     }
 
-    return was_resized || redisplay;
+    return was_resized || redisplay ||
+	   XtIsSensitive(current) != XtIsSensitive(new);
 }
 
 
