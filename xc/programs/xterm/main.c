@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.193 91/07/14 12:57:45 gildea Exp $";
+static char *rid="$XConsortium: main.c,v 1.194 91/07/17 17:52:45 rws Exp $";
 #endif /* lint */
 
 /*
@@ -71,6 +71,7 @@ SOFTWARE.
 #define USE_SYSV_UTMP
 #define ATT
 #define USE_HANDSHAKE
+static Bool IsPts = False;
 #endif
 
 #ifdef ATT
@@ -1143,12 +1144,42 @@ char *name;
 get_pty (pty)
     int *pty;
 {
+#if defined(SYSV) && defined(SYSV386)
+        /*
+	  The order of this code is *important*.  On SYSV/386 we want to open
+	  a /dev/ttyp? first if at all possible.  If none are available, then
+	  we'll try to open a /dev/pts??? device.
+	  
+	  The reason for this is because /dev/ttyp? works correctly, where
+	  as /dev/pts??? devices have a number of bugs, (won't update
+	  screen correcly, will hang -- it more or less works, but you
+	  really don't want to use it).
+	  
+	  Most importantly, for boxes of this nature, one of the major
+	  "features" is that you can emulate a 8086 by spawning off a UNIX
+	  program on 80386/80486 in v86 mode.  In other words, you can spawn
+	  off multiple MS-DOS environments.  On ISC the program that does
+	  this is named "vpix."  The catcher is that "vpix" will *not* work
+	  with a /dev/pts??? device, will only work with a /dev/ttyp? device.
+	  
+	  Since we can open either a /dev/ttyp? or a /dev/pts??? device,
+	  the flag "IsPts" is set here so that we know which type of
+	  device we're dealing with in routine spawn().  That's the reason
+	  for the "if (IsPts)" statement in spawn(); we have two different
+	  device types which need to be handled differently.
+	  */
+        if (pty_search(pty) == 0)
+	    return 0;
+#endif /* SYSV && SYSV386 */
 #ifdef ATT
 	if ((*pty = open ("/dev/ptmx", O_RDWR)) < 0) {
 	    return 1;
 	}
-#ifdef SVR4			/* from Sony */
+#if defined(SVR4) || defined(SYSV386)
 	strcpy(ttydev, ptsname(*pty));
+#if defined (SYSV) && defined(SYSV386)
+	IsPts = True;
+#endif
 #endif
 	return 0;
 #else /* ATT else */
@@ -1170,8 +1201,6 @@ get_pty (pty)
 #ifdef USE_GET_PSEUDOTTY
 	return ((*pty = getpseudotty (&ttydev, &ptydev)) >= 0 ? 0 : 1);
 #else
-	static int devindex, letter = 0;
-
 #if defined(sgi) || (defined(umips) && defined (SYSTYPE_SYSV))
 	struct stat fstat_buf;
 
@@ -1190,47 +1219,64 @@ get_pty (pty)
 	/* got one! */
 	return(0);
 #else /* sgi or umips */
-#ifdef CRAY
-	for (; devindex < 256; devindex++) {
-	    sprintf (ttydev, "/dev/ttyp%03d", devindex);
-	    sprintf (ptydev, "/dev/pty/%03d", devindex);
 
+	return pty_search(pty);
+
+#endif /* sgi or umips else */
+#endif /* USE_GET_PSEUDOTTY else */
+#endif /* ATT else */
+}
+
+/*
+ * Called from get_pty to iterate over likely pseudo terminals
+ * we might allocate.  Used on those systems that do not have
+ * a functional interface for allocating a pty.
+ * Returns 0 if found a pty, 1 if fails.
+ */
+int pty_search(pty)
+    int *pty;
+{
+    static int devindex, letter = 0;
+
+#ifdef CRAY
+    for (; devindex < 256; devindex++) {
+	sprintf (ttydev, "/dev/ttyp%03d", devindex);
+	sprintf (ptydev, "/dev/pty/%03d", devindex);
+
+	if ((*pty = open (ptydev, O_RDWR)) >= 0) {
+	    /* We need to set things up for our next entry
+	     * into this function!
+	     */
+	    (void) devindex++;
+	    return 0;
+	}
+    }
+#else /* CRAY */
+    while (PTYCHAR1[letter]) {
+	ttydev [strlen(ttydev) - 2]  = ptydev [strlen(ptydev) - 2] =
+	    PTYCHAR1 [letter];
+
+	while (PTYCHAR2[devindex]) {
+	    ttydev [strlen(ttydev) - 1] = ptydev [strlen(ptydev) - 1] =
+		PTYCHAR2 [devindex];
 	    if ((*pty = open (ptydev, O_RDWR)) >= 0) {
 		/* We need to set things up for our next entry
 		 * into this function!
 		 */
 		(void) devindex++;
-		return(0);
+		return 0;
 	    }
+	    devindex++;
 	}
-#else /* CRAY */
-	while (PTYCHAR1[letter]) {
-	    ttydev [strlen(ttydev) - 2]  = ptydev [strlen(ptydev) - 2] =
-		    PTYCHAR1 [letter];
-
-	    while (PTYCHAR2[devindex]) {
-		ttydev [strlen(ttydev) - 1] = ptydev [strlen(ptydev) - 1] =
-			PTYCHAR2 [devindex];
-		if ((*pty = open (ptydev, O_RDWR)) >= 0) {
-			/* We need to set things up for our next entry
-			 * into this function!
-			 */
-			(void) devindex++;
-			return(0);
-		}
-		devindex++;
-	    }
-	    devindex = 0;
-	    (void) letter++;
-	}
+	devindex = 0;
+	(void) letter++;
+    }
 #endif /* CRAY else */
-	/* We were unable to allocate a pty master!  Return an error
-	 * condition and let our caller terminate cleanly.
-	 */
-	return(1);
-#endif /* sgi or umips else */
-#endif /* USE_GET_PSEUDOTTY else */
-#endif /* ATT else */
+    /*
+     * We were unable to allocate a pty master!  Return an error
+     * condition and let our caller terminate cleanly.
+     */
+    return 1;
 }
 
 get_terminal ()
@@ -1699,6 +1745,9 @@ spawn ()
 #endif	/* USE_SYSV_TERMIO */
 
 #ifdef USE_USG_PTYS
+#if defined(SYSV) && defined(SYSV386)
+                if (IsPts) {	/* SYSV386 supports both, which did we open? */
+#endif /* SYSV && SYSV386 */
 		int ptyfd;
 
 		setpgrp();
@@ -1739,9 +1788,11 @@ spawn ()
                         ws.ws_ypixel = FullHeight(screen);
                 }
 #endif
-
-
+#if defined(SYSV) && defined(SYSV386)
+                } else {	/* else pty, not pts */
+#endif /* SYSV && SYSV386 */
 #endif /* USE_USG_PTYS */
+
 #ifdef USE_HANDSHAKE		/* warning, goes for a long ways */
 		/* close parent's sides of the pipes */
 		close (cp_pipe[0]);
@@ -1845,6 +1896,9 @@ spawn ()
 			ttydev = realloc (ttydev, (unsigned) (strlen(ptr) + 1));
 			(void) strcpy(ttydev, ptr);
 		}
+#if defined(SYSV) && defined(SYSV386)
+                } /* end of IsPts else clause */
+#endif /* SYSV && SYSV386 */
 
 #endif /* USE_HANDSHAKE -- from near fork */
 
