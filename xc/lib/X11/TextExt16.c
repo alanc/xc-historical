@@ -1,4 +1,4 @@
-/* $XConsortium: XTextExt16.c,v 11.11 87/09/08 00:22:20 toddb Exp $ */
+/* $XConsortium: XTextExt16.c,v 11.12 88/09/06 16:11:06 jim Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -40,7 +40,7 @@ static XCharStruct *GetCS16(min_bounds, pCS, firstCol, numCols,
     XCharStruct *cs;
     unsigned int c;
 
-    c = (chars[ind].byte1 << 8 + chars[ind].byte2) - firstCol;
+    c = ((chars[ind].byte1 << 8) + chars[ind].byte2) - firstCol;
     if (c < numCols) {
 	if ( pCS == NULL ) return min_bounds;
 	cs = &pCS[c];
