@@ -1,4 +1,4 @@
-/* $XConsortium: pexSc.c,v 5.2 91/07/12 17:57:07 hersh Exp $ */
+/* $XConsortium: pexSc.c,v 5.3 91/10/01 02:33:43 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -307,6 +307,8 @@ pexCopySearchContextReq *strmPtr;
 
     if (strmPtr->itemMask & PEXSCCeiling) dst->ceiling = src->ceiling;
 
+    if (strmPtr->itemMask & PEXSCModelClipFlag)
+	dst->modelClipFlag = src->modelClipFlag;
 
     if (strmPtr->itemMask & PEXSCStartPath) {
 	puDeleteList (dst->startPath);
@@ -394,7 +396,7 @@ pexGetSearchContextReq  *strmPtr;
     ErrorCode err = Success;
     ddSCStr *psc;
     extern ddBuffer *pPEXBuffer;
-    unsigned char *ptr = pPEXBuffer->pHead;
+    unsigned char *ptr = 0;
     pexGetSearchContextReply *reply
 			    = (pexGetSearchContextReply *)(pPEXBuffer->pHead);
     int size = 0;
@@ -404,6 +406,7 @@ pexGetSearchContextReq  *strmPtr;
     CHK_PEX_BUF(size, sizeof(pexGetSearchContextReply), reply,
 		pexGetSearchContextReply, ptr);
     SETUP_INQ(pexGetSearchContextReply);
+    ptr = pPEXBuffer->pBuf;
 
     if (strmPtr->itemMask & PEXSCPosition) {
 	CHK_PEX_BUF(size, sizeof(pexCoord3D), reply, pexGetSearchContextReply,
@@ -427,20 +430,26 @@ pexGetSearchContextReq  *strmPtr;
     }
 
     if (strmPtr->itemMask & PEXSCStartPath) {
+	pexStructure sid = 0;
+	unsigned long i;
+	ddElementRef *per = (ddElementRef *)(psc->startPath->pList);
+
 	CHK_PEX_BUF(size,
 		    psc->startPath->numObj*sizeof(pexElementRef) +sizeof(CARD32),
 		    reply, pexGetSearchContextReply,ptr);
 	PACK_CARD32(psc->startPath->numObj,ptr);
-	bcopy(((char *)(psc->startPath->pList)), ((char *)(ptr)),
-	      (int)((psc->startPath->numObj) * sizeof(pexElementRef))); 
-	ptr += psc->startPath->numObj * sizeof(pexElementRef);
+	for (i=0; i<psc->startPath->numObj; i++, per++) {
+	    sid = GetId(per->structure);
+	    PACK_CARD32(sid, ptr);
+	    PACK_CARD32(per->offset, ptr);
+	}
     };
 
     if (strmPtr->itemMask & PEXSCNormalList) {
 	int i;
 	ddNSPair *src;
 	pexNameSet *dst;
-	CHK_PEX_BUF(size, psc->normal.numPairs * sizeof(pexNameSet) + 4,
+	CHK_PEX_BUF(size, psc->normal.numPairs * 2 * sizeof(pexNameSet) + 4,
 		    reply, pexGetSearchContextReply, ptr);
 	PACK_CARD32(psc->normal.numPairs, ptr);
 	for (i=0, src = psc->normal.pPairs, dst = (pexNameSet *)ptr;
@@ -454,7 +463,7 @@ pexGetSearchContextReq  *strmPtr;
 	int i;
 	ddNSPair *src;
 	pexNameSet *dst;
-	CHK_PEX_BUF(size, psc->inverted.numPairs * sizeof(pexNameSet) + 4,
+	CHK_PEX_BUF(size, psc->inverted.numPairs * 2 * sizeof(pexNameSet) + 4,
 		    reply, pexGetSearchContextReply, ptr);
 	PACK_CARD32(psc->inverted.numPairs, ptr);
 	for (i=0, src = psc->inverted.pPairs, dst = (pexNameSet *)ptr;
@@ -466,7 +475,9 @@ pexGetSearchContextReq  *strmPtr;
 
     reply->length = size - sizeof(pexGetSearchContextReply);
     reply->length = LWORDS(reply->length);
-    WritePEXReplyToClient(  cntxtPtr, strmPtr, size, reply);
+    WritePEXReplyToClient(  cntxtPtr, strmPtr,
+        sizeof (pexGetSearchContextReply) + sizeof(CARD32) * reply->length,
+	reply);
 
     return( err );
 
