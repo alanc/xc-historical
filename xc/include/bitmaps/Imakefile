@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.28 91/07/17 16:11:36 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.29 92/08/01 13:07:16 rws Exp $
 INSTALLFLAGS = $(INSTINCFLAGS)
 HEADERS = \
 	1x1 \
@@ -77,6 +77,3 @@ all::
 BuildIncludes($(HEADERS),bitmaps,..)
 
 InstallMultiple($(HEADERS),$(INCDIR)/bitmaps)
-
-depend::
-
