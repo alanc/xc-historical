@@ -112,6 +112,7 @@ sunFbDataRec sunFbData[] = {
     sunBW2Probe,  	"/dev/bwtwo0",	    sunBW2Create,	0, 0,
     sunCG2CProbe,  	"/dev/cgtwo0",	    sunCG2CCreate,	0, 0,
     sunCG3CProbe,  	"/dev/cgthree0",    sunCG3CCreate,	0, 0,
+    sunCG6CProbe,	"/dev/cgsix0",	    sunCG6CCreate,	0, 0,
     sunCG4CProbe,  	"/dev/cgfour0",	    sunCG4CCreate,	0, 0
 };
 #else  ZOIDS
@@ -119,6 +120,7 @@ sunFbDataRec sunFbData[] = {
     sunBW2Probe,  	"/dev/bwtwo0",	    sunBW2Create,
     sunCG2CProbe,  	"/dev/cgtwo0",	    sunCG2CCreate,
     sunCG3CProbe,  	"/dev/cgthree0",    sunCG3CCreate,
+    sunCG6CProbe,	"/dev/cgsix0",	    sunCG6CCreate,
     sunCG4CProbe,  	"/dev/cgfour0",	    sunCG4CCreate,
 };
 #endif ZOIDS
@@ -409,6 +411,7 @@ sunOpenFrameBuffer(expect, pfbType, index, fbNum, argc, argv)
     static Bool	  inited = FALSE;
     static char	  *xdevice; 	/* string of devices to use from environ */
     static char	  *devsw;   	/* string of devices from args */
+    struct fbgattr  fbattr;
 
     sunFbs[index].parent = FALSE;
 
@@ -645,10 +648,17 @@ badfb:
         if (fd < 0) {
 	    return (-1);
 	} 
-	if (ioctl(fd, FBIOGTYPE, pfbType) < 0) {
-	    perror("sunOpenFrameBuffer");
-	    (void) close(fd);
-	    return (-1);
+	if (ioctl(fd, FBIOGATTR, &fbattr) < 0)
+	{
+	    if (ioctl(fd, FBIOGTYPE, pfbType) < 0) {
+	    	perror("sunOpenFrameBuffer");
+	    	(void) close(fd);
+	    	return (-1);
+	    }
+	}
+	else
+	{
+	    *pfbType = fbattr.fbtype;
 	}
 	/* XXX - this is temporary 'cos the CG4 pretends its a BW2 */
 	if (strcmp(name, sunFbData[fbNum].devName) != 0 && pfbType->fb_type != expect) {
