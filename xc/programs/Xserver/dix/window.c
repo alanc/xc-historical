@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 1.214 88/10/04 11:47:53 keith Exp $ */
+/* $XConsortium: window.c,v 1.215 88/10/08 16:49:47 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -1696,7 +1696,7 @@ MoveWindow(pWin, x, y, pNextSib)
 	}
 #endif /* DO_SAVE_UNDERS */
     } 
-    
+    WindowsRestructured();
 }
 
 static void
