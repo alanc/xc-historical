@@ -1,4 +1,4 @@
-/* $XConsortium: xopendev.c,v 1.8 89/12/02 15:21:23 rws Exp $ */
+/* $XConsortium: xopendev.c,v 1.9 89/12/12 17:36:25 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -132,7 +132,8 @@ ProcXOpenDevice(client)
 	evbase[j].class = ValuatorClass;
 	evbase[j++].event_type_base = event_base[ValuatorClass];
 	}
-    if (dev->kbdfeed != NULL || dev->ptrfeed != NULL)
+    if (dev->kbdfeed != NULL || dev->ptrfeed != NULL || dev->leds != NULL ||
+	dev->intfeed != NULL || dev->bell != NULL || dev->stringfeed != NULL)
 	{
 	evbase[j].class = FeedbackClass;
 	evbase[j++].event_type_base = event_base[FeedbackClass];
