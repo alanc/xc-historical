@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: TextSink.c,v 1.1 89/09/06 17:30:23 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextSink.c,v 1.2 89/09/08 17:20:39 kit Exp $";
 #endif 
 
 /*
@@ -56,8 +56,10 @@ static void FindDistance(), Resolve(), SetTabs(), GetCursorBounds();
 static XtResource resources[] = {
   {XtNfont, XtCFont, XtRFontStruct, sizeof (XFontStruct *),
      offset(font), XtRString, "Fixed"},
-  {XtNforeground, XtCForeground, XtRPixel, sizeof (int),
+  {XtNforeground, XtCForeground, XtRPixel, sizeof (Pixel),
      offset(foreground), XtRString, "XtDefaultForeground"}, 
+  {XtNbackground, XtCBackground, XtRPixel, sizeof (Pixel),
+     offset(background), XtRString, "XtDefaultBackground"}, 
 };
 #undef offset
 
@@ -304,7 +306,8 @@ Dimension width, height;
  */
 
     if ( (height == 0) || (width == 0) ) return;
-    XClearArea(XtDisplay(w), XtWindow(w), x, y, width, height, False);
+    XClearArea(XtDisplayOfObject(w), XtWindowOfObject(w),
+	       x, y, width, height, False);
 }
 
 /*	Function Name: FindPosition
@@ -447,7 +450,7 @@ int tab_count, *tabs;
  * Find the figure width of the current font.
  */
 
-  XA_FIGURE_WIDTH = XInternAtom(XtDisplay(w), "FIGURE_WIDTH", FALSE);
+  XA_FIGURE_WIDTH = XInternAtom(XtDisplayOfObject(w), "FIGURE_WIDTH", FALSE);
   if ( (XA_FIGURE_WIDTH != NULL) && 
        ( (!XGetFontProperty(font, XA_FIGURE_WIDTH, &figure_width)) ||
 	 (figure_width == 0)) ) 
