@@ -1,5 +1,5 @@
 /*
- * $XConsortium: CvtCache.c,v 1.3 89/08/17 18:15:13 jim Exp $
+ * $XConsortium: CvtCache.c,v 1.4 89/08/18 13:03:20 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -76,7 +76,7 @@ static void _InitializeCvtCache (c)
  * XmuCCLookupDisplay - return the cache entry for the indicated display;
  * initialize the cache if necessary
  */
-XmuCvtCache *XmuCCLookupDisplay (dpy)
+XmuCvtCache *_XmuCCLookupDisplay (dpy)
     Display *dpy;
 {
     XmuDisplayQueueEntry *e;

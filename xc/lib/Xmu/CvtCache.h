@@ -1,5 +1,5 @@
 /*
- * $XConsortium: CvtCache.h,v 1.1 89/08/17 14:06:56 jim Exp $
+ * $XConsortium: CvtCache.h,v 1.2 89/08/17 18:15:15 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -36,4 +36,4 @@ typedef struct _XmuCvtCache {
     /* add other per-display data that needs to be cached */
 } XmuCvtCache;
 
-extern XmuCvtCache *XmuCCLookupDisplay();
+extern XmuCvtCache *_XmuCCLookupDisplay();

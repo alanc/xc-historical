@@ -1,5 +1,5 @@
 /*
- * $XConsortium: LocBitmap.c,v 1.1 89/08/18 13:02:47 jim Exp $
+ * $XConsortium: LocBitmap.c,v 1.2 89/11/02 09:51:34 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -50,7 +50,7 @@ Pixmap XmuLocateBitmapFile (screen, name, srcname, srcnamelen,
     Display *dpy = DisplayOfScreen (screen);
     Window root = RootWindowOfScreen (screen);
     Bool try_plain_name = True;
-    XmuCvtCache *cache = XmuCCLookupDisplay (dpy);
+    XmuCvtCache *cache = _XmuCCLookupDisplay (dpy);
     char **file_paths;
     char filename[MAXPATHLEN];
     int width, height, xhot, yhot;
