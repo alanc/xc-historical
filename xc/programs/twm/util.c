@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: util.c,v 1.18 89/06/13 09:25:30 jim Exp $
+ * $XConsortium: util.c,v 1.19 89/07/05 16:02:21 jim Exp $
  *
  * utility routines for twm
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: util.c,v 1.18 89/06/13 09:25:30 jim Exp $";
+"$XConsortium: util.c,v 1.19 89/07/05 16:02:21 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -293,122 +293,6 @@ Zoom(wf, wt)
     }
 }
 
-#ifdef NOT_USED_ANYMORE
-/***********************************************************************
- *
- *  Procedure:
- *	MakeCenteredPixmap - make a pixmap centered in a space
- *
- *  Returned Value:
- *	pid	- the pixmap id
- *
- *  Inputs:
- *	w	- the window to associate the pixmap with
- *	gc	- the graphics context to use
- *	cleargc - graphics context for clearing pixmap background;  can pass
- *		     NULL if width <= pwidth && height <= pheight
- *	width	- the width of the pixmap to create
- *	height  - the height of the pixmap to create
- *	data	- pointer to the pixmap data
- *	pwidth	- the width of the pixmap
- *	pheight	- the height of the pixmap
- *
- ***********************************************************************
- */
-
-Pixmap
-MakeCenteredPixmap(w, gc, cleargc, width, height, data, pwidth, pheight, pdepth)
-    Drawable w;
-    GC gc, cleargc;
-    int width, height;
-    short *data;
-    int pwidth, pheight, pdepth;
-{
-    XImage ximage;
-    Pixmap pid;
-    int dx, dy;
-
-    pid = XCreatePixmap(dpy, w, width, height, pdepth);
-    if (cleargc)
-	XFillRectangle(dpy, pid, cleargc, 0, 0, width, height);
-
-    ximage.height = pheight;
-    ximage.width = pwidth;
-    ximage.xoffset = 0;
-    ximage.format = XYBitmap;
-    ximage.data = (char *) data;
-    ximage.byte_order = LSBFirst;
-    ximage.bitmap_unit = 16;
-    ximage.bitmap_bit_order = LSBFirst;
-    ximage.bitmap_pad = 16;
-    ximage.bytes_per_line = (pwidth + 7) / 8;
-    ximage.depth = 1;
-
-    dx = (width - pwidth) / 2;
-    dy = (height - pheight) / 2;
-
-    XPutImage(dpy, pid, gc, &ximage, 0, 0, dx, dy, pwidth, pheight);
-    return (pid);
-}
-
-/***********************************************************************
- *
- *  Procedure:
- *	MakePixmap - make a pixmap
- *
- *  Returned Value:
- *	pid	- the pixmap id
- *
- *  Inputs:
- *	w	- the window to associate the pixmap with
- *	gc	- the graphics context to use
- *	data	- pointer to the pixmap data
- *	width	- the width of the pixmap
- *	height	- the height of the pixmap
- *
- ***********************************************************************
- */
-
-Pixmap
-MakePixmap(w, gc, data, width, height)
-    Drawable w;
-    GC gc;
-    short *data;
-    int width, height;
-{
-    return (MakeCenteredPixmap(w, gc, NULL, width, height, data,
-	width, height, Scr->d_depth));
-}
-
-/***********************************************************************
- *
- *  Procedure:
- *	Make1Pixmap - make a pixmap of depth 1
- *
- *  Returned Value:
- *	pid	- the pixmap id
- *
- *  Inputs:
- *	w	- the window to associate the pixmap with
- *	gc	- the graphics context to use
- *	data	- pointer to the pixmap data
- *	width	- the width of the pixmap
- *	height	- the height of the pixmap
- *
- ***********************************************************************
- */
-
-Pixmap
-Make1Pixmap(w, gc, data, width, height)
-    Drawable w;
-    GC gc;
-    short *data;
-    int width, height;
-{
-    return (MakeCenteredPixmap(w, gc, NULL, width, height, data,
-	width, height, 1));
-}
-#endif /* NOT_USED_ANYMORE */
 
 /***********************************************************************
  *
