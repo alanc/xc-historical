@@ -1,4 +1,4 @@
-/* $XConsortium: Xresource.h,v 1.25 89/12/12 11:50:08 jim Exp $ */
+/* $XConsortium: Xresource.h,v 1.26 89/12/12 12:12:12 jim Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -96,6 +96,12 @@ typedef char *XrmString;
 
 /* find quark for string, create new quark if none already exists */
 extern XrmQuark XrmStringToQuark(
+#if NeedFunctionPrototypes
+    const char* 	/* string */
+#endif
+);
+
+extern XrmQuark XrmPermStringToQuark(
 #if NeedFunctionPrototypes
     const char* 	/* string */
 #endif
