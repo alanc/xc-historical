@@ -1,4 +1,4 @@
-/* $Header: Xlib.h,v 11.129 87/09/08 13:07:39 newman Locked $ */
+/* $Header: Xlib.h,v 11.130 87/09/08 14:33:27 toddb Locked $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -54,7 +54,7 @@
 #define ServerVendor(dpy) 	((dpy)->vendor)
 #define ProtocolVersion(dpy) 	((dpy)->proto_major_version)
 #define ProtocolRevision(dpy) 	((dpy)->proto_minor_version)
-#define VendorRelease(dpy) 	((dpy)->vnumber)
+#define VendorRelease(dpy) 	((dpy)->release)
 #define DisplayString(dpy) 	((dpy)->display_name)
 #define DefaultDepth(dpy, scr) 	(((dpy)->screens[(scr)]).root_depth)
 #define DefaultColormap(dpy, scr)(((dpy)->screens[(scr)]).cmap)
@@ -423,7 +423,7 @@ typedef struct _XDisplay {
 	int bitmap_bit_order;	/* LeastSignificant or MostSignificant */
 	int nformats;		/* number of pixmap formats in list */
 	ScreenFormat *pixmap_format;	/* pixmap format list */
-	int vnumber;		/* X protocol version number. */
+	int vnumber;		/* Xlib's X protocol version number. */
 	int release;		/* release of the server */
 	struct _XSQEvent *head, *tail;	/* Input event queue. */
 	int qlen;		/* Length of input event queue */
