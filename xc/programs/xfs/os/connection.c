@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.13 91/07/19 18:46:57 rws Exp $ */
+/* $XConsortium: connection.c,v 1.14 91/07/25 12:15:49 keith Exp $ */
 /*
  * handles connections
  */
@@ -209,12 +209,15 @@ CreateSockets(oldsock)
 #ifdef TCPCONN
     if (oldsock >= 0) {		/* must be forked, and have a different socket
 				 * to listen to */
+#ifdef NOTDEf
 	if (listen(oldsock, 5)) {
 	    Error("TCP listening");
 	    close(oldsock);
 	    FatalError("Cannot re-establish the listening socket");
 	    return;
 	}
+#endif
+	NoticeF("Reusing existing file descriptor %d\n", oldsock);
 	WellKnownConnections |= (1L << oldsock);
     } else {
 	if ((request = open_tcp_socket()) != -1) {
