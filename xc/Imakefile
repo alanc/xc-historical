@@ -42,6 +42,8 @@ $(DEPEND):
 	@echo "making $(DEPENDSRC)"; \
 	cd $(DEPENDSRC); $(MAKE)
 
+DependSubdirs($(SUBDIRS))
+
 install::
 	-mkdir $(USRLIBDIR)
 	-mkdir $(BINDIR)
@@ -55,6 +57,7 @@ install::
 # before making the makefiles, be sure that imake exists.
 #
 Makefiles:: $(IMAKE)
+
 Makefile:: $(IMAKE)
 
 $(IMAKE):
