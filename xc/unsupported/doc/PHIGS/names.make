@@ -1,5 +1,5 @@
 ##
-# $XConsortium$
+# $XConsortium: names.make,v 5.3 91/02/16 09:45:17 rws Exp $
 ##
 ## 
 ## Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -23,6 +23,7 @@
 ## OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 ## PERFORMANCE OF THIS SOFTWARE.
 NAMES = \
+	man3/p232 \
 	man3/p001 \
 	man3/p002 \
 	man3/p003 \
@@ -254,7 +255,6 @@ NAMES = \
 	man3/p229 \
 	man3/p230 \
 	man3/p231 \
-	man3/p232 \
 	man3/p233 \
 	man3/p234 \
 	man3/p235 \
