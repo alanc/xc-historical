@@ -1,6 +1,5 @@
-/* $NCDId: @(#)bitsource.c,v 1.4 1991/07/02 17:00:59 lemke Exp $ */
 /*
- * $XConsortium: bitsource.c,v 1.6 93/09/17 18:26:46 gildea Exp $
+ * $XConsortium: bitsource.c,v 1.7 94/03/08 17:45:03 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -75,6 +74,24 @@ FontFileUnregisterBitmapSource (fpe)
 	    }
 	    break;
 	}
+}
+
+/*
+ * Our set_path_hook: unregister all bitmap sources.
+ * This is necessary because already open fonts will keep their FPEs
+ * allocated, but they may not be on the new font path.
+ * The bitmap sources in the new path will be registered by the init_func.
+ */
+void
+FontFileEmptyBitmapSource()
+{
+    if (FontFileBitmapSources.count == 0)
+	return;
+
+    FontFileBitmapSources.count = 0;
+    FontFileBitmapSources.size = 0;
+    xfree (FontFileBitmapSources.fpe);
+    FontFileBitmapSources.fpe = 0;
 }
 
 FontFileMatchBitmapSource (fpe, pFont, flags, entry, zeroPat, vals, format, fmask, noSpecificSize)
