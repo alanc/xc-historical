@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Viewport.c,v 1.13 88/01/28 14:48:37 swick Locked $";
+static char rcsid[] = "$Header: Viewport.c,v 1.14 88/02/05 23:18:47 swick Locked $";
 #endif lint
 
 /*
@@ -333,8 +333,9 @@ static void ChangeManaged(widget)
 		}
 	    }
 	    /* %%% DoLayout should be FormClass method */
-	    if (DoLayout( widget, child->core.width, child->core.height ))
-		(*widget->core.widget_class->core_class.resize)( widget );
+	    DoLayout( widget, child->core.width, child->core.height );
+	    /* always want to resize, as we may no longer need bars */
+	    (*widget->core.widget_class->core_class.resize)( widget );
 	    /* %%% do we need to hide this child from Form?  */
 	}
     }
