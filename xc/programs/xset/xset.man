@@ -9,7 +9,7 @@ xset - user preference utility for X
 [-c] [c on/off] [c [\fIvolume\fP]]
 [[-+]fp[-+=] \fIpath\fP[,\fIpath\fP[,...]]] [fp default] [fp rehash]
 [[-]led [\fIinteger\fP]] [led on/off]
-[m[ouse] [\fIacceleration\fP [\fIthreshold\fP]]] [m[ouse] default]
+[m[ouse] [\fIaccel_mult\fP[/\fIaccel_div\fP] [\fIthreshold\fP]]] [m[ouse] default]
 [p \fIpixel\fP \fIcolor\fP]
 [[-]r] [r on/off]
 [s [\fIlength\fP [\fIperiod\fP]]] [s blank/noblank]
@@ -112,6 +112,8 @@ hardware.
 .B m
 The \fBm\fP option controls the mouse parameters.
 The parameters for the mouse are `acceleration' and `threshold'.
+The acceleration can be specified as an integer, or as a simple
+fraction.
 The mouse, or whatever pointer the machine is connected to,
 will go `acceleration' times as fast when it travels more than `threshold'
 pixels in a short time.  This way, the mouse can be used for precise
