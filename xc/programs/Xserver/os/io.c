@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.70 92/09/07 12:05:30 rws Exp $ */
+/* $XConsortium: io.c,v 1.71 92/09/10 10:32:25 rws Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -70,8 +70,16 @@ static ConnectionInputPtr FreeInputs = (ConnectionInputPtr)NULL;
 static ConnectionOutputPtr FreeOutputs = (ConnectionOutputPtr)NULL;
 static OsCommPtr AvailableInput = (OsCommPtr)NULL;
 
-static ConnectionInputPtr AllocateInputBuffer();
-static ConnectionOutputPtr AllocateOutputBuffer();
+static ConnectionInputPtr AllocateInputBuffer(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+static ConnectionOutputPtr AllocateOutputBuffer(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
 
 extern int errno;
 
