@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.142 91/04/15 16:54:20 gildea Exp $
+ * $XConsortium: charproc.c,v 1.143 91/04/16 17:00:38 converse Exp $
  */
 
 /*
@@ -57,8 +57,14 @@ extern Widget toplevel;
 extern void exit();
 extern char *malloc();
 extern char *realloc();
-static void VTallocbuf();
 
+static void VTallocbuf();
+static int finput();
+static void dotext();
+static void WriteText();
+
+static void bitset(), bitclr();
+    
 #define	DEFAULT		-1
 #define	TEXT_BUF_SIZE	256
 #define TRACKTIMESEC	4L
@@ -429,7 +435,7 @@ static XtResource resources[] = {
 static void VTInitialize(), VTRealize(), VTExpose(), VTResize();
 static void VTDestroy();
 
-WidgetClassRec xtermClassRec = {
+static WidgetClassRec xtermClassRec = {
   {
 /* core_class fields */	
     /* superclass	  */	(WidgetClass) &widgetClassRec,
@@ -469,14 +475,14 @@ WidgetClassRec xtermClassRec = {
 
 WidgetClass xtermWidgetClass = (WidgetClass)&xtermClassRec;
 
-VTparse()
+static void VTparse()
 {
 	register TScreen *screen = &term->screen;
 	register int *parsestate = groundtable;
 	register unsigned int c;
 	register unsigned char *cp;
 	register int row, col, top, bot, scstype;
-	extern int bitset(), bitclr(), finput(), TrackMouse();
+	extern int TrackMouse();
 
 	if(setjmp(vtjmpbuf))
 		parsestate = groundtable;
@@ -767,13 +773,13 @@ VTparse()
 
 		 case CASE_SET:
 			/* SET */
-			modes(term, bitset);
+			ansi_modes(term, bitset);
 			parsestate = groundtable;
 			break;
 
 		 case CASE_RST:
 			/* RST */
-			modes(term, bitclr);
+			ansi_modes(term, bitclr);
 			parsestate = groundtable;
 			break;
 
@@ -1028,7 +1034,7 @@ VTparse()
 	}
 }
 
-finput()
+static finput()
 {
 	return(doinput());
 }
@@ -1278,12 +1284,13 @@ in_put()
  * process a string of characters according to the character set indicated
  * by charset.  worry about end of line conditions (wraparound if selected).
  */
+static void
 dotext(screen, flags, charset, buf, ptr)
-register TScreen	*screen;
-unsigned	flags;
-char		charset;
-char	*buf;
-char	*ptr;
+    register TScreen	*screen;
+    unsigned	flags;
+    char	charset;
+    char	*buf;		/* start of characters to process */
+    char	*ptr;		/* end */
 {
 	register char	*s;
 	register int	len;
@@ -1313,15 +1320,18 @@ char	*ptr;
 	len = ptr - buf; 
 	ptr = buf;
 	while (len > 0) {
-		n = screen->max_col-screen->cur_col+1;
+		n = screen->max_col - screen->cur_col +1;
 		if (n <= 1) {
 			if (screen->do_wrap && (flags&WRAPAROUND)) {
-				Index(screen, 1);
-				screen->cur_col = 0;
-				screen->do_wrap = 0;
-				n = screen->max_col+1;
+			    /* mark that we had to wrap this line */
+			    ScrnSetAttributes(screen, screen->cur_row, 0,
+					      LINEWRAPPED, LINEWRAPPED, 1);
+			    Index(screen, 1);
+			    screen->cur_col = 0;
+			    screen->do_wrap = 0;
+			    n = screen->max_col+1;
 			} else
-				n = 1;
+			    n = 1;
 		}
 		if (len < n)
 			n = len;
@@ -1342,11 +1352,12 @@ char	*ptr;
  * write a string str of length len onto the screen at
  * the current cursor position.  update cursor position.
  */
+static void
 WriteText(screen, str, len, flags)
-register TScreen	*screen;
-register char	*str;
-register int	len;
-unsigned	flags;
+    register TScreen	*screen;
+    register char	*str;
+    register int	len;
+    unsigned		flags;
 {
 	register int cx, cy;
 	register unsigned fgs = flags;
@@ -1409,7 +1420,7 @@ unsigned	flags;
 /*
  * process ANSI modes set, reset
  */
-modes(term, func)
+ansi_modes(term, func)
 XtermWidget	term;
 int		(*func)();
 {
@@ -1433,12 +1444,11 @@ int		(*func)();
  * process DEC private modes set, reset
  */
 dpmodes(term, func)
-XtermWidget	term;
-int		(*func)();
+    XtermWidget	term;
+    void (*func)();
 {
 	register TScreen	*screen	= &term->screen;
 	register int	i, j;
-	extern int bitset();
 
 	for (i=0; i<nparam; ++i) {
 		switch (param[i]) {
@@ -1603,8 +1613,7 @@ XtermWidget term;
 			break;
 		case 3:			/* DECCOLM			*/
 			if(screen->c132)
-				screen->save_modes[1] = term->flags &
-				 IN132COLUMNS;
+			    screen->save_modes[1] = term->flags & IN132COLUMNS;
 			break;
 		case 4:			/* DECSCLM (slow scroll)	*/
 			screen->save_modes[2] = term->flags & SMOOTHSCROLL;
@@ -1712,11 +1721,9 @@ XtermWidget term;
 			update_jumpscroll();
 			break;
 		case 5:			/* DECSCNM			*/
-			if((screen->save_modes[3] ^ term->flags) &
-			 REVERSE_VIDEO) {
+			if((screen->save_modes[3] ^ term->flags) & REVERSE_VIDEO) {
 				term->flags &= ~REVERSE_VIDEO;
-				term->flags |= screen->save_modes[3] &
-				 REVERSE_VIDEO;
+				term->flags |= screen->save_modes[3] & REVERSE_VIDEO;
 				ReverseVideo(term);
 				/* update_reversevideo done in RevVid */
 			}
@@ -1783,8 +1790,9 @@ XtermWidget term;
 /*
  * set a bit in a word given a pointer to the word and a mask.
  */
-bitset(p, mask)
-int	*p;
+static void bitset(p, mask)
+    unsigned *p;
+    int mask;
 {
 	*p |= mask;
 }
@@ -1792,8 +1800,9 @@ int	*p;
 /*
  * clear a bit in a word given a pointer to the word and a mask.
  */
-bitclr(p, mask)
-int	*p;
+static void bitclr(p, mask)
+    unsigned *p;
+    int mask;
 {
 	*p &= ~mask;
 }
@@ -2668,7 +2677,8 @@ static void HandleIgnore(w, event, params, param_count)
 
 
 /* ARGSUSED */
-void DoSetSelectedFont(w, client_data, selection, type, value, length, format)
+static void
+DoSetSelectedFont(w, client_data, selection, type, value, length, format)
     Widget w;
     XtPointer client_data;
     Atom *selection, *type;
