@@ -1,4 +1,4 @@
-/* $XConsortium: cb_stru.c,v 5.1 91/02/16 09:48:14 rws Exp $ */
+/* $XConsortium: cb_stru.c,v 5.2 91/07/12 20:20:57 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -648,6 +648,10 @@ pinq_elem_content( struct_id, element, store, error_ind, data)
 
     if ( !CB_ENTRY_CHECK( phg_cur_cph, 0, Pfn_INQUIRY)) {
 	*error_ind = ERR2;
+
+    } else if ( element == 0) {
+	*error_ind = 0;
+	*data = (Pelem_data *) 0;
 
     } else if ( element < 0) {
 	*error_ind = ERR202;
