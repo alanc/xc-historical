@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Convert.c,v 1.16 88/09/26 08:43:32 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Convert.c,v 1.17 88/10/21 15:59:02 swick Exp $";
 /* $oHeader: Convert.c,v 1.4 88/09/01 11:10:44 asente Exp $ */
 #endif lint
 /*LINTLIBRARY*/
@@ -53,9 +53,21 @@ typedef struct _ConverterRec {
 void _XtSetDefaultConverterTable(table)
 	ConverterTable *table;
 {
-	*table = (ConverterTable) XtCalloc(CONVERTHASHSIZE, 
-		sizeof(ConverterPtr));
-	_XtAddDefaultConverters(*table);
+    register ConverterTable globalConverterTable =
+	_XtGetProcessContext()->globalConverterTable;
+
+    *table = (ConverterTable) XtCalloc(CONVERTHASHSIZE, sizeof(ConverterPtr));
+    _XtAddDefaultConverters(*table);
+
+    if (globalConverterTable != (ConverterTable)NULL) {
+	ConverterPtr rec;
+	int i;
+	for (i = CONVERTHASHSIZE; i; i--, globalConverterTable++) {
+	    for (rec = *globalConverterTable; rec; rec = rec->next)
+	       _XtTableAddConverter(*table, rec->from, rec->to, rec->converter,
+				    rec->convert_args, rec->num_args);
+  	}
+    }
 }
 
 void _XtFreeConverterTable(table)
@@ -122,8 +134,22 @@ void XtAddConverter(from_type, to_type, converter, convert_args, num_args)
     XtConvertArgList    convert_args;
     Cardinal		num_args;
 {
-    XtAppAddConverter(_XtDefaultAppContext(),
-	    from_type, to_type, converter, convert_args, num_args);
+    ProcessContext process = _XtGetProcessContext();
+    XtAppContext app = process->appContextList;
+    XrmRepresentation from = XrmStringToRepresentation(from_type);
+    XrmRepresentation to = XrmStringToRepresentation(to_type);
+
+    if (process->globalConverterTable == (ConverterTable)NULL) {
+	process->globalConverterTable =
+	    (ConverterTable) XtCalloc(CONVERTHASHSIZE, sizeof(ConverterPtr));
+    }
+    _XtTableAddConverter(process->globalConverterTable, from, to,
+			 converter, convert_args, num_args);
+    while (app != (XtAppContext)NULL) {
+	_XtTableAddConverter(app->converterTable, from, to, converter,
+			     convert_args, num_args);
+	app = app->next;
+    }
 }
 
 void XtAppAddConverter(app, from_type, to_type, converter, convert_args, num_args)
