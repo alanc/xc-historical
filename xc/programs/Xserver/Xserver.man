@@ -288,7 +288,7 @@ Unix domain socket
 Error log file
 .SH "SEE ALSO"
 X(1), xdm(1), mkfontdir(1),
-xinit(1), xterm(1), uwm(1), xhost(1), xset(1), xsetroot(1), 
+xinit(1), xterm(1), twm(1), xhost(1), xset(1), xsetroot(1), 
 ttys(5), init(8), Xqdss(1), Xqvss(1), Xsun(1), Xapollo(1), XmacII(1)
 .I "X Window System Protocol,"
 .I "Definition of the Porting Layer for the X v11 Sample Server,"
