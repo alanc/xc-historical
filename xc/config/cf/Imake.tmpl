@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.198 93/09/26 15:40:44 gildea Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.199 93/09/29 14:24:48 kaleb Exp $
 XCOMM
 
 /*
@@ -125,11 +125,7 @@ _NULLCMD_ = @ echo -n
 #define HasBSD44Sockets		NO
 #endif
 #ifndef HasSockets
-#if (SystemV || SystemV4) && (!HasBSD44Sockets)
-#define HasSockets		NO	/* do not assume it has them */
-#else
-#define HasSockets		YES	/* bsd does have them */
-#endif
+#define HasSockets		YES
 #endif
 #ifndef HasStreams
 #define HasStreams		!HasSockets
