@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: spfile.c,v 1.3 91/05/11 09:57:37 rws Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -21,6 +21,8 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
+ * $NCDId: @(#)spfile.c,v 4.6 1991/06/12 13:17:24 lemke Exp $
+ *
  * Author: Dave Lemke, Network Computing Devices Inc
  *
  */
@@ -32,13 +34,13 @@
 
 SpeedoFontPtr cur_spf = (SpeedoFontPtr) 0;
 
-#ifdef NCD
+#ifdef EXTRAFONTS
 #include	"ncdkeys.h"
 #endif
 
 #include	"keys.h"
 
-#ifdef NCD
+#ifdef EXTRAFONTS
 static ufix8 skey[] =
 {
     SKEY0,
@@ -65,7 +67,7 @@ static ufix8 rkey[] =
     RKEY8
 };				/* Retail Font decryption key */
 
-#endif				/* NCD */
+#endif				/* EXTRAFONTS */
 
 static ufix8 mkey[] =
 {
@@ -154,11 +156,13 @@ open_master(filename, master)
     bzero(spmf, sizeof(SpeedoMasterFontRec));
 
     /* open font */
+    spmf->fname = (char *) xalloc(strlen(filename) + 1);
     fp = fopen(filename, "r");
     if (!fp) {
 	ret = BadFontName;
 	goto cleanup;
     }
+    strcpy(spmf->fname, filename);
     spmf->fp = fp;
     spmf->state |= MasterFileOpen;
 
@@ -198,7 +202,7 @@ open_master(filename, master)
 
     /* XXX add custom encryption stuff here */
 
-#ifdef NCD
+#ifdef EXTRAFONTS
     if (cust_no == SCUS0) {
 	key = skey;
     } else if (cust_no == RCUS0) {
@@ -223,7 +227,7 @@ open_master(filename, master)
     spmf->enc = bics_map;
     spmf->enc_size = bics_map_size;
 
-#ifdef NCD
+#ifdef EXTRAFONTS
     {				/* choose the proper encoding */
 	char       *f;
 
@@ -261,16 +265,32 @@ close_master_font(spmf)
 	return;
     if (spmf->state & MasterFileOpen)
 	fclose(spmf->fp);
+    xfree(spmf->fname);
     xfree(spmf->f_buffer);
     xfree(spmf->c_buffer);
     xfree(spmf);
 }
 
+void
+close_master_file(spmf)
+    SpeedoMasterFontPtr spmf;
+{
+    (void) fclose(spmf->fp);
+    spmf->state &= ~MasterFileOpen;
+}
+
+
 /*
  * reset the encryption key, and make sure the file is opened
  */
+void
 sp_reset_master(spmf)
     SpeedoMasterFontPtr spmf;
 {
     sp_set_key(spmf->key);
+    if (!(spmf->state & MasterFileOpen)) {
+	spmf->fp = fopen(spmf->fname, "r");
+	/* XXX -- what to do if we can't open the file? */
+	spmf->state |= MasterFileOpen;
+    }
 }
