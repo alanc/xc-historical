@@ -1,4 +1,4 @@
-/* $XConsortium: connect.c,v 1.6 93/09/08 20:02:20 mor Exp $ */
+/* $XConsortium: connect.c,v 1.7 93/09/08 20:44:30 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -68,7 +68,7 @@ char *errorStringRet;
 	    char ch = *(strptr + strlen (_IceConnectionStrings[i]));
 	    if (ch == ',' || ch == '\0')
 	    {
-		_IceConnectionObjs[i]->ref_count++;
+		_IceConnectionObjs[i]->open_ref_count++;
 		return (_IceConnectionObjs[i]);
 	    }
 	}
@@ -88,20 +88,19 @@ char *errorStringRet;
     if ((iceConn->fd = ConnectToPeer (networkIdsList,
 	&iceConn->connection_string)) < 0)
     {
-	_IceFreeConnection (iceConn);
+	_IceFreeConnection (iceConn, True);
 	strncpy (errorStringRet, "Could not open network socket", errorLength);
 	return (NULL);
     }
 
     iceConn->connection_status = IceConnectPending;
     iceConn->my_ice_version_index = 0;
-    iceConn->ref_count = 1;
     iceConn->sequence = 0;
 
     if ((iceConn->inbuf = iceConn->inbufptr =
 	(char *) malloc (ICE_INBUFSIZE)) == NULL)
     {
-	_IceFreeConnection (iceConn);
+	_IceFreeConnection (iceConn, True);
 	strncpy (errorStringRet, "Can't malloc", errorLength);
 	return (NULL);
     }
@@ -111,7 +110,7 @@ char *errorStringRet;
     if ((iceConn->outbuf = iceConn->outbufptr =
 	(char *) malloc (ICE_OUTBUFSIZE)) == NULL)
     {
-	_IceFreeConnection (iceConn);
+	_IceFreeConnection (iceConn, True);
 	strncpy (errorStringRet, "Can't malloc", errorLength);
 	return (NULL);
     }
@@ -122,6 +121,13 @@ char *errorStringRet;
     iceConn->scratch_size = 0;
 
     iceConn->process_msg_info = NULL;
+
+    iceConn->iceConn_type = 1;
+
+    iceConn->open_ref_count = 1;
+    iceConn->proto_ref_count = 0;
+
+    iceConn->want_to_close = 0;
 
     iceConn->saved_reply_waits = NULL;
     iceConn->ping_waits = NULL;
@@ -167,7 +173,7 @@ char *errorStringRet;
 	 * We failed to get the required ByteOrder message.
 	 */
 
-	_IceFreeConnection (iceConn);
+	_IceFreeConnection (iceConn, True);
 	strncpy (errorStringRet,
 	    "Internal error - did not receive the expected ByteOrder message",
 	     errorLength);
@@ -235,7 +241,7 @@ char *errorStringRet;
 
 		    free (reply.connection_reply.vendor);
 		    free (reply.connection_reply.release);
-		    _IceFreeConnection (iceConn);
+		    _IceFreeConnection (iceConn, True);
 		    iceConn = NULL;
 		}
 		else
@@ -265,61 +271,24 @@ char *errorStringRet;
 
 		free (reply.connection_error.error_message);
 
-		_IceFreeConnection (iceConn);
+		_IceFreeConnection (iceConn, True);
 		iceConn = NULL;
 	    }
 	}
 
-    if (iceConn)
+    if (iceConn && _IceWatchProcs)
     {
 	_IceWatchProc *watchProc = _IceWatchProcs;
 
 	while (watchProc)
 	{
-	    (*watchProc->watch_proc) (iceConn, watchProc->client_data, 1);
+	    (*watchProc->watch_proc) (iceConn,
+		watchProc->client_data, True, &iceConn->watch_data);
 	    watchProc = watchProc->next;
 	}
     }
 
     return (iceConn);
-}
-
-
-
-void
-IceCloseConnection (iceConn)
-
-IceConn     iceConn;
-
-{
-    int i;
-
-    for (i = 0; i < _IceConnectionCount; i++)
-	if (_IceConnectionObjs[i] == iceConn)
-	    break;
-
-    if (i < _IceConnectionCount && (--iceConn->ref_count == 0))
-    {
-	_IceWatchProc *watchProc = _IceWatchProcs;
-
-	while (watchProc)
-	{
-	    (*watchProc->watch_proc) (iceConn, watchProc->client_data, 0);
-	    watchProc = watchProc->next;
-	}
-
-	_IceFreeConnection (iceConn);
-
-	if (i < _IceConnectionCount - 1)
-	{
-	    _IceConnectionObjs[i] =
-		_IceConnectionObjs[_IceConnectionCount - 1];
-	    _IceConnectionStrings[i] =
-	        _IceConnectionStrings[_IceConnectionCount - 1];
-	}
-
-	_IceConnectionCount--;
-    }
 }
 
 
