@@ -1,14 +1,7 @@
-XCOMM $XConsortium: Imakefile,v 1.15 92/05/28 16:33:48 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.16 92/11/06 15:25:25 gildea Exp $
 #undef ServerDefines
 #include <Server.tmpl>
 #define	IHaveSubdirs
-
-#define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)' 'CC=$(CC)' 'CCOPTIONS=$(CCOPTIONS)'
-
-CC = ServerCcCmd
-CCOPTIONS = ServerCCOptions
-STD_DEFINES = ServerDefines
-CDEBUGFLAGS = ServerCDebugFlags
 
 OSDIR = os
 OSLIB = $(OSDIR)/libos.a
