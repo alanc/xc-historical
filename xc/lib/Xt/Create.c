@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcsid[] =
-    "$XConsortium: Create.c,v 1.39 88/09/03 17:00:28 swick Exp $";
+    "$XConsortium: Create.c,v 1.40 88/09/04 14:23:20 swick Exp $";
 /* $oHeader: Create.c,v 1.5 88/09/01 11:26:22 asente Exp $ */
 #endif lint
 
@@ -63,6 +63,10 @@ static void ClassInit(wc)
 	XtWarningMsg("versionMismatch","widget","XtToolkitError",
           "Widget class %s version mismatch:\n  widget %d vs. intrinsics %d.",
           param,&num_params);
+	if (wc->core_class.version == (2 * 1000 + 2)) /* MIT R2 */
+	    XtErrorMsg("versionMismatch","widget","XtToolkitError",
+		       "Widget class %s must be re-compiled.",
+		       param, (Cardinal)1);
     }
 
     if ((wc->core_class.superclass != NULL) 
