@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontfile.c,v 1.8 91/07/17 14:29:56 keith Exp $
+ * $XConsortium: fontfile.c,v 1.9 91/07/18 22:37:29 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -123,7 +123,7 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
     lowerName[namelen] = '\0';
     tmpName.name = lowerName;
     tmpName.length = namelen;
-    tmpName.ndashes = CountDashes (lowerName, namelen);
+    tmpName.ndashes = FontFileCountDashes (lowerName, namelen);
     /* Match XLFD patterns */
     if (tmpName.ndashes == 14 &&
 	FontParseXLFDName (lowerName, &vals, FONT_XLFD_REPLACE_ZERO))
@@ -330,7 +330,7 @@ FontFileListFonts (client, fpe, pat, len, max, names)
     lowerChars[len] = '\0';
     lowerName.name = lowerChars;
     lowerName.length = len;
-    lowerName.ndashes = CountDashes (lowerChars, len);
+    lowerName.ndashes = FontFileCountDashes (lowerChars, len);
     /* Match XLFD patterns */
     strcpy (zeroChars, lowerChars);
     if (lowerName.ndashes == 14 &&
@@ -445,7 +445,7 @@ FontFileListOneFontWithInfo (client, fpe, namep, namelenp, pFontInfo)
     lowerName[namelen] = '\0';
     tmpName.name = lowerName;
     tmpName.length = namelen;
-    tmpName.ndashes = CountDashes (lowerName, namelen);
+    tmpName.ndashes = FontFileCountDashes (lowerName, namelen);
     /* Match XLFD patterns */
     if (tmpName.ndashes == 14 &&
 	FontParseXLFDName (lowerName, &vals, FONT_XLFD_REPLACE_ZERO))

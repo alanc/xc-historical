@@ -1,5 +1,5 @@
 #endif /* lint */
- * $XConsortium: dirfile.c,v 1.4 91/07/25 18:05:10 rws Exp $
+ * $XConsortium: dirfile.c,v 1.5 91/12/11 19:49:06 eswu Exp $
  *
 /*
  * Copyright 1991 Massachusetts Institute of Technology
@@ -166,7 +166,7 @@ AddFileNameAliases(dir)
 	CopyISOLatin1Lowered (copy, fileName, len);
 	copy[len] = '\0';
 	name.name = copy;
-	name.ndashes = CountDashes (copy, len);
+	name.length = len;
 	name.ndashes = FontFileCountDashes (copy, len);
 
 	if (!FontFileFindNameInDir(table, &name)) {
