@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: xfontsel.c,v 1.12 89/11/15 08:20:23 swick Exp $";
+static char Xrcsid[] = "$XConsortium: xfontsel.c,v 1.13 89/11/15 08:58:58 swick Exp $";
 #endif
 
 /*
@@ -1018,6 +1018,8 @@ Boolean ConvertSelection(w, selection, target, type, value, length, format)
     }
 }
 
+static AtomPtr _XA_PRIMARY_FONT = NULL;
+#define XA_PRIMARY_FONT XmuInternAtom(XtDisplay(w),_XA_PRIMARY_FONT)
 
 /* ARGSUSED */
 void LoseSelection(w, selection)
@@ -1027,6 +1029,9 @@ void LoseSelection(w, selection)
     Arg args[1];
     XtSetArg( args[0], XtNstate, False );
     XtSetValues( w, args, ONE );
+    if (*selection == XA_PRIMARY_FONT) {
+	XtSetSensitive(currentFontName, False);
+    }
 }
 
 
@@ -1044,7 +1049,6 @@ void OwnSelection(w, closure, callData)
     Widget w;
     XtPointer closure, callData;
 {
-    static AtomPtr _XA_PRIMARY_FONT = NULL;
     Time time = XtLastTimestampProcessed(XtDisplay(w));
     Boolean primary = (Boolean)closure;
     Boolean own = (Boolean)callData;
@@ -1052,18 +1056,20 @@ void OwnSelection(w, closure, callData)
     if (_XA_PRIMARY_FONT == NULL)
 	_XA_PRIMARY_FONT = XmuMakeAtom("PRIMARY_FONT");
 
-#define XA_PRIMARY_FONT XmuInternAtom(XtDisplay(w),_XA_PRIMARY_FONT)
-
     if (own) {
 	XtOwnSelection( w, XA_PRIMARY_FONT, time,
 			ConvertSelection, LoseSelection, DoneSelection );
 	if (primary)
 	    XtOwnSelection( w, XA_PRIMARY, time,
 			   ConvertSelection, LoseSelection, DoneSelection );
+	if (!XtIsSensitive(currentFontName)) {
+	    XtSetSensitive(currentFontName, True);
+	}
     }
     else {
 	XtDisownSelection(w, XA_PRIMARY_FONT, time);
 	if (primary)
 	    XtDisownSelection(w, XA_PRIMARY, time);
+	XtSetSensitive(currentFontName, False);
     }
 }
