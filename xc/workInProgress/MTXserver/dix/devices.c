@@ -43,7 +43,7 @@ OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: devices.c,v 5.36 93/12/01 20:27:08 rob Exp $ */
+/* $XConsortium: devices.c,v 1.1 93/12/15 16:06:04 rob Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -757,8 +757,10 @@ SendMappingNotify(request, firstKeyCode, count)
 #endif
     /* 0 is the server client */
     for (i=1; i<currentMaxClients; i++)
-        if (clients[i] && ! clients[i]->clientGone &&
-	    (clients[i]->requestVector != InitialVector)
+        if (clients[i] && ! clients[i]->clientGone
+#ifndef MTX
+	    && (clients[i]->requestVector != InitialVector)
+#endif
 #ifdef XKB
 	    && (clients[i]->xkbClientFlags == 0)
 #endif
