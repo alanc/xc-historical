@@ -1,5 +1,5 @@
 /*
- * $XConsortium: stipplesparc.s,v 1.2 90/12/01 19:37:18 keith Exp $
+ * $XConsortium: stipplesparc.s,v 1.3 90/12/02 09:39:44 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -73,6 +73,7 @@
 #define stemp	%l4
 
 #define CASE_SIZE	5	/* case blocks are 2^5 bytes each */
+#define CASE_MASK	0x1e0	/* first case mask */
 
 #define ForEachLine	LY1
 #define NextLine	LY2
@@ -92,7 +93,9 @@ _stipplestack:
 
 	mov	4,lshift			/* compute offset within */
 	sub	lshift, shift, lshift		/*  stipple of remaining bits */
-#ifndef LITTLE_ENDIAN
+#ifdef LITTLE_ENDIAN
+	inc	CASE_SIZE, shift		/* first shift for LSB */
+#endif
 	inc	28-CASE_SIZE, shift		/* first shift for MSB */
 #else
 	mov	CASE_SIZE,stemp
@@ -109,7 +112,7 @@ ForEachLine:
 #endif
 	add	addr, stride, addr		/* step for the loop */
 	BitsR	bits, shift, stemp		/* get first bits */
-	and	stemp, 0x1e0, stemp		/* compute first jump */
+	and	stemp, CASE_MASK, stemp		/* compute first jump */
 	BitsL	bits, lshift, bits		/* set remaining bits */
 	jmp	sbase+stemp			/*  ... */
 	tst	bits
