@@ -40,7 +40,6 @@
 #include	<sys/file.h>
 #include	"FSlibos.h"
 #include	"fsio.h"
-#include	"assert.h"
 
 extern int  errno;
 extern char *sys_errlist[];
