@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mibitblt.c,v 5.10 89/11/10 17:00:39 rws Exp $ */
+/* $XConsortium: mibitblt.c,v 5.11 89/11/12 17:21:20 rws Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -584,7 +584,7 @@ miCopyPlane(pSrcDrawable, pDstDrawable,
 	/* minimize the size of the data extracted */
 	/* note that we convert the plane mask bitPlane into a plane number */
 	ptile = miGetPlane(pSrcDrawable, ffs(bitPlane) - 1,
-			   box.x1, box.y1,
+			   box.x1 - pSrcDrawable->x, box.y1 - pSrcDrawable->y,
 			   box.x2 - box.x1, box.y2 - box.y1,
 			   (unsigned long *) NULL);
 	if (ptile)
