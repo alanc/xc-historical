@@ -10,6 +10,7 @@
 			<Btn1Motion>:update-pixel()\n\
 			<Btn1Up>:popdown-pixel()\n\
 			<Leave>:popdown-pixel()\n\
+			<Key>n:new()\n\
 			<Key>q:close()\n\
 			Ctrl<Key>c:close()\n\
 			<Key>space:replace()

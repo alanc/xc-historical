@@ -1,4 +1,4 @@
-/* $XConsortium: xmag.c,v 1.23 91/10/21 14:32:25 eswu Exp $ */
+/* $XConsortium: xmag.c,v 1.24 92/02/03 12:23:26 gildea Exp $ */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -630,6 +630,10 @@ ResizeEH(w, closure, event, continue_to_dispatch)	/* ARGSUSED */
     else 
       SWSetImage(data->scaleInstance, data->image);
     XtUngrabPointer(w, CurrentTime);
+/*****
+    XtRemoveRawEventHandler(w, PointerMotionMask|ButtonReleaseMask,
+			 True, ResizeEH, (XtPointer)data);
+*****/
     XtRemoveEventHandler(w, PointerMotionMask|ButtonReleaseMask,
 			 True, ResizeEH, (XtPointer)data);
     data->selectMode = done;
@@ -683,7 +687,7 @@ DragEH(w, closure, event, continue_to_dispatch) /* ARGSUSED */
       data->x = event->xbutton.x_root + srcWidth;
       data->y = event->xbutton.y_root + srcHeight;      
       data->selectMode = resize;
-      XtRemoveEventHandler(w, PointerMotionMask|ButtonPressMask|
+      XtRemoveRawEventHandler(w, PointerMotionMask|ButtonPressMask|
 			   ButtonReleaseMask, True, DragEH, (XtPointer)data);
       XChangeActivePointerGrab
 	(dpy, PointerMotionMask|ButtonPressMask|ButtonReleaseMask,
