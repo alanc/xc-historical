@@ -1,4 +1,4 @@
-/* $XConsortium: Convert.c,v 1.66 92/04/03 16:36:12 converse Exp $ */
+/* $XConsortium: Convert.c,v 1.67 92/08/31 17:02:24 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -994,6 +994,8 @@ static void _XtFreeCacheRec(app, p, prev)
 	    CEXT(p->next)->prev = CEXT(p)->prev;
     } else {
 	*prev = p->next;
+	if (p->next && p->next->has_ext)
+	    CEXT(p->next)->prev = prev;
     }
     if (p->must_be_freed) {
 	register int i;
