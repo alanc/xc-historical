@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.13 89/07/18 18:02:55 rws Exp $ */
+/* $XConsortium: misprite.c,v 5.14 89/07/26 12:16:02 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -1176,18 +1176,28 @@ miSpritePolySegment(pDrawable, pGC, nseg, pSegs)
     {
 	cursor = &pScreenPriv->saved;
 
-	lw = (pGC->lineWidth + 1) / 2;
+	lw = pGC->lineWidth >> 1;
 	for (i = 0; i < nseg; i++)
 	{
 	    if (pSegs[i].x1 <= pSegs[i].x2)
 	    {
 		x = pSegs[i].x1 - lw;
-		w = pSegs[i].x2 - pSegs[i].x1 + lw;
+		w = (pSegs[i].x2 - pSegs[i].x1) + pGC->lineWidth;
+	    }
+	    else
+	    {
+		x = pSegs[i].x2 - lw;
+		w = (pSegs[i].x1 - pSegs[i].x2) + pGC->lineWidth;
 	    }
 	    if (pSegs[i].y1 <= pSegs[i].y2)
 	    {
 		y = pSegs[i].y1 - lw;
-		h = pSegs[i].y2 - pSegs[i].y1 + lw;
+		h = (pSegs[i].y2 - pSegs[i].y1) + pGC->lineWidth;
+	    }
+	    else
+	    {
+		y = pSegs[i].y2 - lw;
+		h = (pSegs[i].y1 - pSegs[i].y2) + pGC->lineWidth;
 	    }
 	    if (ORG_OVERLAP (cursor, pDrawable->x, pDrawable->y,
 			     x, y, w, h))
@@ -1220,14 +1230,14 @@ miSpritePolyRectangle(pDrawable, pGC, nrects, pRects)
 
     if (GC_CHECK((WindowPtr) pDrawable))
     {
-	lw = (pGC->lineWidth + 1) / 2;
+	lw = pGC->lineWidth >> 1;
 	cursor = &pScreenPriv->saved;
 	for (i = 0; i < nrects; i++)
 	{
 	    if (ORG_OVERLAP (cursor, pDrawable->x, pDrawable->y,
 			     pRects[i].x - lw, pRects[i].y - lw,
-			     (int) pRects[i].width + lw,
- 			     (int) pRects[i].height + lw))
+			     (int) pRects[i].width + pGC->lineWidth,
+ 			     (int) pRects[i].height + pGC->lineWidth))
 	    {
 		miSpriteRemoveCursor (pDrawable->pScreen);
 		break;
@@ -1257,14 +1267,14 @@ miSpritePolyArc(pDrawable, pGC, narcs, parcs)
 
     if (GC_CHECK((WindowPtr) pDrawable))
     {
-	lw = (pGC->lineWidth + 1) / 2;
+	lw = pGC->lineWidth >> 1;
 	cursor = &pScreenPriv->saved;
 	for (i = 0; i < narcs; i++)
 	{
 	    if (ORG_OVERLAP (cursor, pDrawable->x, pDrawable->y,
 			     parcs[i].x - lw, parcs[i].y - lw,
-			     (int) parcs[i].width + lw,
- 			     (int) parcs[i].height + lw))
+			     (int) parcs[i].width + pGC->lineWidth,
+ 			     (int) parcs[i].height + pGC->lineWidth))
 	    {
 		miSpriteRemoveCursor (pDrawable->pScreen);
 		break;
