@@ -1,5 +1,5 @@
 /*
- * $XConsortium: editresP.h,v 1.10 91/07/08 12:35:21 rws Exp $
+ * $XConsortium: editresP.h,v 1.11 91/07/09 12:08:37 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,7 +23,7 @@
  * Author:  Chris D. Peterson, MIT X Consortium
  */
 
-#include <X11/Xmu/Editres.h>
+#include <X11/Xmu/EditresP.h>
 #include <X11/Xresource.h>
 
 #define DEBUG
