@@ -8,7 +8,7 @@
   CPPSRC = CppSources
 #else
 #
-# But if you don't have cpp source...
+# But if you do not have cpp source...
 #
     SRCS = include.c main.c parse.c pr.c cppsetup.c
     OBJS = include.o main.o parse.o pr.o cppsetup.o
