@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_util.c,v 1.1 92/05/08 15:13:30 mor Exp $ */
+/* $XConsortium: pl_oc_util.c,v 1.2 92/05/20 21:06:55 mor Exp $ */
 
 /************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology,
@@ -37,7 +37,7 @@ INPUT int		numWords;
 
 
     /*
-     * If the oc is larger than the protocol max request size?
+     * Is the oc larger than the protocol max request size?
      * If so, return an error.
      */
 
