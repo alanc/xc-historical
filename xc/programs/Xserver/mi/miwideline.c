@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.33 91/05/28 18:37:13 keith Exp $
+ * $XConsortium: miwideline.c,v 1.35 91/05/29 14:57:26 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -1844,7 +1844,7 @@ miWideDash (pDrawable, pGC, mode, npt, pPts)
 	    if (pGC->lineStyle == LineDoubleDash || startIsFg)
 	    {
 	    	pixel = startIsFg ? pGC->fgPixel : pGC->bgPixel;
-	    	if (first || !prevIsFg)
+	    	if (first || (pGC->lineStyle == LineOnOffDash && !prevIsFg))
 	    	{
 	    	    if (first && selfJoin)
 		    {
