@@ -1,7 +1,7 @@
 /*
  * O/S-dependent (mis)feature macro definitions
  *
- * $XConsortium: Xosdefs.h,v 1.1 91/03/27 17:48:27 gildea Exp $
+ * $XConsortium: Xosdefs.h,v 1.2 91/04/01 17:00:15 rws Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -34,6 +34,11 @@
  * symbol does NOT mean that the POSIX environment is the default.
  * You may still have to define _POSIX_SOURCE to get it.
  */
+
+#ifdef NOSTDHDRS	/* this is to aid backwards compatibility only */
+#define X_NOT_POSIX
+#define X_NOT_STDC_ENV
+#endif
 
 #ifdef bsd43
 #define X_NOT_POSIX
