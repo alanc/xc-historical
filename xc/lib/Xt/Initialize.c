@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.199 91/07/23 12:16:38 rws Exp $ */
+/* $XConsortium: Initialize.c,v 1.200 91/12/19 19:30:59 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -580,23 +580,25 @@ XrmDatabase _XtPreparseCommandLine(urlist, num_urs, argc, argv, applName,
     name_list[0] = class_list[0] = XrmPermStringToQuark(".");
     name_list[2] = class_list[2] = NULLQUARK;
     XrmParseCommand(&db, options, num_options, ".", &targc, targv);
-    if (applName && ! *applName) {
+    if (applName) {
 	name_list[1] = XrmPermStringToQuark("name");
 	if (XrmQGetResource(db, name_list, name_list, &type, &val) &&
 	    type == _XtQString)
 	    *applName = val.addr;
     }
-    if (displayName && ! *displayName) {
+    if (displayName) {
 	name_list[1] = XrmPermStringToQuark("display");
 	if (XrmQGetResource(db, name_list, name_list, &type, &val) &&
 	    type == _XtQString)
 	    *displayName = val.addr;
     }
-    name_list[1] = XrmPermStringToQuark("xnlLanguage");
-    class_list[1] = XrmPermStringToQuark("XnlLanguage");
-    if (XrmQGetResource(db, name_list, class_list, &type, &val) &&
-	type == _XtQString)
-	*language = val.addr;
+    if (language) {
+	name_list[1] = XrmPermStringToQuark("xnlLanguage");
+	class_list[1] = XrmPermStringToQuark("XnlLanguage");
+	if (XrmQGetResource(db, name_list, class_list, &type, &val) &&
+	    type == _XtQString)
+	    *language = val.addr;
+    }
 
     XtFree((char *)targv);
     XtFree((char *)options);
