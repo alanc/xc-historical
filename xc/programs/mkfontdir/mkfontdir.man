@@ -49,7 +49,8 @@ in the directory (stripped of it's suffix) will be used as an alias for
 that font.
 .SH "USAGE"
 .PP
-\fBXserver(1)\fP looks for both "fonts.dir" and "fonts.alias" in each
-directory in the font path each time it is set (see xset(1)).
+Both the \fBX server\fP and the \fBFont Server\fP look for "fonts.dir" and
+"fonts.alias" files in each directory in the font path each time it is set
+(see xset(1)).
 .SH "SEE ALSO"
-X(1), Xserver(1), xset(1)
+X(1), Xserver(1), fs(1), xset(1)
