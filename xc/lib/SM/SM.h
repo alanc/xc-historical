@@ -1,4 +1,4 @@
-/* $XConsortium: SM.h,v 1.4 93/12/15 17:31:33 mor Exp $ */
+/* $XConsortium: SM.h,v 1.5 93/12/28 11:46:08 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -71,7 +71,6 @@ Author: Ralph Mor, X Consortium
 #define SmCurrentDirectory	"CurrentDirectory"
 #define SmDiscardCommand	"DiscardCommand"
 #define SmEnvironment		"Environment"
-#define SmOperatingSystemName	"OperatingSystemName"
 #define SmProcessID		"ProcessID"
 #define SmProgram		"Program"
 #define SmRestartCommand	"RestartCommand"
