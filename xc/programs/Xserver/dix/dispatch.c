@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.84 89/03/14 08:39:25 rws Exp $ */
+/* $XConsortium: dispatch.c,v 1.85 89/03/14 09:08:19 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1218,6 +1218,8 @@ ProcListFonts(client)
 
     fpr = ExpandFontNamePattern( stuff->nbytes, 
 				 (char *) &stuff[1], stuff->maxNames);
+    if (!fpr)
+	return(BadAlloc);
     stringLens = 0;
     for (i=0; i<fpr->npaths; i++)
         stringLens += fpr->length[i];
@@ -1229,7 +1231,10 @@ ProcListFonts(client)
 
     bufptr = bufferStart = (char *)ALLOCATE_LOCAL(reply.length << 2);
     if(!bufptr)
+    {
+	FreeFontRecord(fpr);
         return(BadAlloc);
+    }
 
             /* since WriteToClient long word aligns things, 
 	       copy to temp buffer and write all at once */
@@ -1265,6 +1270,8 @@ ProcListFontsWithInfo(client)
 
     fpaths = ExpandFontNamePattern( stuff->nbytes,
 				    (char *) &stuff[1], stuff->maxNames);
+    if (!fpaths)
+	return(BadAlloc);
     font.pFI = &finfo;
     font.pInkMin = &finfo.minbounds;
     font.pInkMax = &finfo.maxbounds;
@@ -3109,7 +3116,7 @@ ProcSetFontPath(client)
     unsigned char *ptr;
     unsigned long nbytes, total;
     long nfonts;
-    int n;
+    int n, result;
     REQUEST(xSetFontPathReq);
     
     REQUEST_AT_LEAST_SIZE(xSetFontPathReq);
@@ -3127,8 +3134,10 @@ ProcSetFontPath(client)
     }
     if (total >= 4)
 	return(BadLength);
-    SetFontPath(stuff->nFonts, nbytes, (char *)&stuff[1]);
-    return (client->noClientException);
+    result = SetFontPath(stuff->nFonts, (char *)&stuff[1]);
+    if (!result)
+	result = client->noClientException;
+    return (result);
 }
 
 int
@@ -3144,6 +3153,8 @@ ProcGetFontPath(client)
 
     REQUEST_SIZE_MATCH(xReq);
     pFP = GetFontPath();
+    if (!pFP)
+	return(BadAlloc);
     stringLens = 0;
     for (i=0; i<pFP->npaths; i++)
         stringLens += pFP->length[i];
