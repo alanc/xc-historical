@@ -58,9 +58,9 @@ static int  fixedReps = 0;
 static Bool *doit;
 
 static XRectangle ws[] = {  /* Clip rectangles */
-    {240, 240, 120, 120},
-    { 40, 190, 120, 120},
-    {440, 290, 120, 120}
+    {195, 195, 120, 120},
+    { 45, 145, 120, 120},
+    {345, 245, 120, 120}
 
 };
 #define MAXCLIP     (sizeof(ws) / sizeof(ws[0]))
