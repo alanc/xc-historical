@@ -1,4 +1,4 @@
-/* $XConsortium: XGMotion.c,v 1.3 89/09/25 16:20:18 gms Exp $ */
+/* $XConsortium: XGMotion.c,v 1.4 89/12/06 20:38:16 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -49,8 +49,9 @@ XDeviceTimeCoord
     char **tmp;
     xGetDeviceMotionEventsReq 	*req;
     xGetDeviceMotionEventsReply 	rep;
-    char *tc, *tc2;
-    char *bufp, *buf2p, *tmpp;
+    XDeviceTimeCoord *tc;
+    int *data;
+    char *bufp, *readp, *savp;
     long size, size2;
     int	 i, j;
     XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
@@ -77,8 +78,9 @@ XDeviceTimeCoord
     *axis_count = rep.axes;
     *nEvents = rep.nEvents;
     size = rep.length << 2;
-    size2 = (rep.nEvents * sizeof (short *)) + size;
-    buf2p = (char *) Xmalloc (size);
+    size2 = rep.nEvents * 
+	(sizeof (XDeviceTimeCoord) + (rep.axes * sizeof (int)));
+    savp = readp = (char *) Xmalloc (size);
     bufp = (char *) Xmalloc (size2);
     if (!bufp) {
 	/* XXX this is wrong!!  we need to read and throw away the data
@@ -89,29 +91,26 @@ XDeviceTimeCoord
         SyncHandle();
 	return (NULL);
 	}
-    _XRead (dpy, (char *) buf2p, size);
+    _XRead (dpy, (char *) readp, size);
 
-    tc = bufp;
-    tc2 = bufp + (rep.nEvents * sizeof (XDeviceTimeCoord));
-    tmpp = buf2p;
+    tc = (XDeviceTimeCoord *) bufp;
+    data = (int *) ((char *) bufp + (rep.nEvents * sizeof (XDeviceTimeCoord)));
     for (i=0; i<*nEvents; i++)
 	{
-	*((Time *) tc) = *((Time *) tmpp);
-	tc += sizeof (Time);
-	tmpp += sizeof (Time);
+	tc->time = *((CARD16 *) readp) << 16;
+	readp += sizeof (CARD16);
+	tc->time |= *((CARD16 *) readp);
+	readp += sizeof (CARD16);
 
-	tmp = (char **) tc;
-	*tmp = tc2;
-	tc += sizeof (unsigned short *);
+	(tc++)->data = data;
 
 	for (j=0; j<*axis_count; j++)
 	    {
-	    *((short *) tc2) = *((short *) tmpp);
-	    tc2 += sizeof (short);
-	    tmpp += sizeof (short);
+	    *data++ = *((INT16 *) readp);
+	    readp += sizeof (INT16);
 	    }
 	}
-    XFree (buf2p);
+    XFree (savp);
     UnlockDisplay(dpy);
     SyncHandle();
     return ((XDeviceTimeCoord *) bufp);
