@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shapestr.h,v 1.3 89/03/28 16:41:49 keith Exp $ */
+/* $XConsortium: shapestr.h,v 1.4 89/03/31 13:16:49 keith Exp $ */
 
 /*
  * Protocol requests constants and alignment values
@@ -68,7 +68,8 @@ typedef struct _ShapeRectangles {
 	CARD16	length B16;
 	CARD8	op;		/* Set, ... */
 	CARD8	destKind;	/* ShapeBounding or ShapeClip */
-	CARD16	junk B16;	/* not used */
+	CARD8	ordering;	/* UnSorted, YSorted, YXSorted, YXBanded */
+	CARD8	pad0;		/* not used */
 	CARD32	dest B32;	/* Window */
 	INT16	xOff B16;
 	INT16	yOff B16;
