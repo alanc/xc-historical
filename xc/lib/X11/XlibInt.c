@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.100 89/05/08 15:57:33 jim Exp $
+ * $XConsortium: XlibInt.c,v 11.101 89/05/21 15:20:19 rws Exp $
  */
 
 #include "copyright.h"
@@ -275,6 +275,7 @@ _XRead (dpy, data, size)
 
 /*
  * XXX This is a *really* stupid way of doing this....
+ * PACKBUFFERSIZE must be a multiple of 4.
  */
 
 #define PACKBUFFERSIZE 4096
@@ -318,12 +319,12 @@ _XRead32 (dpy, data, len)
     long len;
 {
     char packbuffer[PACKBUFFERSIZE];
-    unsigned nwords = (PACKBUFFERSIZE >> 2);	/* bytes to CARD32 */
+    unsigned nunits = PACKBUFFERSIZE >> 2;
 
-    for (; len > nwords; len -= nwords, data += nwords) {
-	_doXRead32 (dpy, data, nwords, packbuffer);
+    for (; len > PACKBUFFERSIZE; len -= PACKBUFFERSIZE, data += nunits) {
+	_doXRead32 (dpy, data, PACKBUFFERSIZE, packbuffer);
     }
-    _doXRead32 (dpy, data, len, packbuffer);
+    if (len) _doXRead32 (dpy, data, len, packbuffer);
 }
 
 
@@ -366,12 +367,12 @@ _XRead16 (dpy, data, len)
     long len;
 {
     char packbuffer[PACKBUFFERSIZE];
-    unsigned nwords = (PACKBUFFERSIZE >> 1);	/* bytes to CARD16 */
+    unsigned nunits = PACKBUFFERSIZE >> 1;
 
-    for (; len > nwords; len -= nwords, data += nwords) {
-	_doXRead16 (dpy, data, nwords, packbuffer);
+    for (; len > PACKBUFFERSIZE; len -= PACKBUFFERSIZE, data += nunits) {
+	_doXRead16 (dpy, data, PACKBUFFERSIZE, packbuffer);
     }
-    _doXRead16 (dpy, data, len, packbuffer);
+    if (len) _doXRead16 (dpy, data, len, packbuffer);
 }
 
 _XRead16Pad (dpy, data, size)
@@ -1450,12 +1451,12 @@ Data16 (dpy, data, len)
     unsigned len;
 {
     char packbuffer[PACKBUFFERSIZE];
-    unsigned nwords = (PACKBUFFERSIZE >> 1);	/* bytes to CARD16 */
+    unsigned nunits = PACKBUFFERSIZE >> 1;
 
-    for (; len > nwords; len -= nwords, data += nwords) {
-	doData16 (dpy, data, nwords, packbuffer);
+    for (; len > PACKBUFFERSIZE; len -= PACKBUFFERSIZE, data += nunits) {
+	doData16 (dpy, data, PACKBUFFERSIZE, packbuffer);
     }
-    doData16 (dpy, data, len, packbuffer);
+    if (len) doData16 (dpy, data, len, packbuffer);
 }
 
 /*
@@ -1502,16 +1503,16 @@ static doData32 (dpy, data, len, packbuffer)
 
 Data32 (dpy, data, len)
     Display *dpy;
-    short *data;
+    long *data;
     unsigned len;
 {
     char packbuffer[PACKBUFFERSIZE];
-    unsigned nwords = (PACKBUFFERSIZE >> 2);	/* bytes to CARD32 */
+    unsigned nunits = PACKBUFFERSIZE >> 2;
 
-    for (; len > nwords; len -= nwords, data += nwords) {
-	doData32 (dpy, data, nwords, packbuffer);
+    for (; len > PACKBUFFERSIZE; len -= PACKBUFFERSIZE, data += nunits) {
+	doData32 (dpy, data, PACKBUFFERSIZE, packbuffer);
     }
-    doData32 (dpy, data, len, packbuffer);
+    if (len) doData32 (dpy, data, len, packbuffer);
 }
 
 #endif /* WORD64 */
