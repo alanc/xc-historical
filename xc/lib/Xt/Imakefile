@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.104 93/09/09 10:14:26 kaleb Exp $
+XCOMM $XConsortium: Imakefile,v 1.105 94/01/07 20:01:35 kaleb Exp $
 #define DoNormalLib NormalLibXt
 #define DoSharedLib SharedLibXt
 #define DoDebugLib DebugLibXt
@@ -67,6 +67,8 @@ HEADERS = \
 	ObjectP.h \
 	RectObj.h \
 	RectObjP.h \
+	Session.h \
+	SessionP.h \
 	Shell.h \
 	ShellP.h \
 	StringDefs.h \
@@ -111,6 +113,7 @@ SRCS = \
 	RectObj.c \
 	Resources.c \
 	Selection.c \
+	Session.c \
 	SetSens.c \
 	SetValues.c \
 	SetWMCW.c \
@@ -167,6 +170,7 @@ OBJS = \
 	RectObj.o \
 	Resources.o \
 	Selection.o \
+	Session.o \
 	SetSens.o \
 	SetValues.o \
 	SetWMCW.o \
