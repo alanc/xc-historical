@@ -10,7 +10,7 @@
 ** which are commented.
 */
 
-#include <X11/Intrinsic.h>
+#include <X11/IntrinsicP.h>
 #include <X11/Form.h>
 #include <X11/Label.h>
 #include <X11/Command.h>
@@ -124,4 +124,34 @@ void choose_plane(w,closure,call_data)
   interpret(buf,FALSE);
 }
 
+void update_planemask(w, mask)
+     Widget w;
+     int mask;
+{
+  int i;
+  Widget maskwidget;
+  CompositeWidget cw;
+  static Arg maskargs[] = {
+    {XtNforeground, (XtArgVal) NULL},
+    {XtNbackground, (XtArgVal) NULL}
+  };
 
+  planemask = mask;
+
+  for (i = 0; i < PlanesOfScreen(X.scr); ++i) {
+    cw = (CompositeWidget) w;
+    maskwidget = cw->composite.children[i+1]; /* the zeroth child
+                                                 is the label */
+
+    if (planemask & 1<<i) {        /* if it's set, make it look that way */
+      maskargs[0].value = (XtArgVal) X.background;
+      maskargs[1].value = (XtArgVal) X.foreground;
+    }
+    else {
+      maskargs[0].value = (XtArgVal) X.foreground;
+      maskargs[1].value = (XtArgVal) X.background;
+    }
+
+    XtSetValues(maskwidget,maskargs,XtNumber(maskargs));
+  }
+}
