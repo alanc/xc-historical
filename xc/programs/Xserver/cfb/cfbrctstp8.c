@@ -18,7 +18,7 @@ Author: Keith Packard, MIT X Consortium
 
 */
 
-/* $XConsortium: $ */
+/* $XConsortium: cfbrctstip8.c,v 1.1 89/08/18 16:46:23 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -96,7 +96,7 @@ cfb8FillBoxOpaqueStippled32 (pDrawable, nBox, pBox, stipple, fg, bg)
 	mask32bits (pBox->x1, w, startmask, endmask)
 	nlwMiddle = ((((pBox->x2 - 1) | 31) + 1) -  (pBox->x1 & ~31)) >> 5;
 	firstStart = (pBox->x1 & 31) >> PWSH;
-	lastStop = (pBox->x2 & 31) >> PWSH;
+	lastStop = ((pBox->x2 - 1) & 31) >> PWSH;
 	srcy = y % stippleHeight;
 	while (h--)
 	{
@@ -205,7 +205,7 @@ cfb8FillBoxTransparentStippled32 (pDrawable, nBox, pBox, stipple, fg)
 	mask32bits (pBox->x1, w, startmask, endmask)
     	nlwMiddle = ((((pBox->x2 - 1) | 31) + 1) -  (pBox->x1 & ~31)) >> 5;
     	firstStart = (pBox->x1 & 31) >> PWSH;
-    	lastStop = (pBox->x2 & 31) >> PWSH;
+    	lastStop = ((pBox->x2 - 1) & 31) >> PWSH;
     	srcy = y % stippleHeight;
 	maxi = 8;
 	if (maxi > nlwDst)
