@@ -6,4 +6,4 @@
 .ds xC Inter-Client Communication Conventions Manual
 .ds Rn 3
 .ds Vn 2.2
-.hw XtMake-Geometry-Request XtQuery-Geometry wid-get sub-class
+.hw XtMake-Geometry-Request XtQuery-Geometry wid-get sub-class sub-classes
