@@ -1,4 +1,4 @@
-/* $XConsortium: sunKeyMap.c,v 4.20 94/05/04 15:36:29 kaleb Exp $ */
+/* $XConsortium: sunKeyMap.c,v 4.21 94/05/16 18:28:26 kaleb Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -5293,18 +5293,7 @@ static KeySym US5Keymap[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunModmapRec US5Modmap[] = {
-	99,	ShiftMask,
-	110,	ShiftMask,
-	76,	LockMask,
-	119,	ControlMask,
-	120,	Mod1Mask,
-	122,	Mod1Mask,
-	13,	Mod2Mask,
-	19,	Mod3Mask,
-	98,	Mod4Mask,
-	0,	0
-};
+#define US5Modmap Generic5Modmap
 
 #else
 
