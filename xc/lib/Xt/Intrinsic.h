@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.178 93/08/09 17:09:12 kaleb Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.179 93/08/11 14:06:48 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -2689,6 +2689,17 @@ extern Boolean XtCvtStringToFontStruct(
 #if NeedFunctionPrototypes
     Display*	/* dpy */,
     XrmValuePtr /* args */,	/* Display */
+    Cardinal*   /* num_args */,	
+    XrmValuePtr	/* fromVal */,
+    XrmValuePtr	/* toVal */,
+    XtPointer*	/* closure_ret */
+#endif
+);
+
+extern Boolean XtCvtStringToGravity(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */,
+    XrmValuePtr /* args */,
     Cardinal*   /* num_args */,	
     XrmValuePtr	/* fromVal */,
     XrmValuePtr	/* toVal */,

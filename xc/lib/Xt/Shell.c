@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.134 93/05/25 10:38:24 kaleb Exp $ */
+/* $XConsortium: Shell.c,v 1.135 93/07/10 12:54:32 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -276,9 +276,9 @@ static XtResource wmResources[]=
 	{ XtNbaseHeight, XtCBaseHeight, XtRInt, sizeof(int),
 	    Offset(wm.base_height),
 	    XtRInt, (XtPointer) &default_unspecified_shell_int},
-	{ XtNwinGravity, XtCWinGravity, XtRInt, sizeof(int),
-	    Offset(wm.win_gravity),
-	    XtRInt, (XtPointer) &default_unspecified_shell_int},
+	{ XtNwinGravity, XtCWinGravity, XtRGravity, sizeof(int),
+	    Offset(wm.win_gravity), 
+	    XtRGravity, (XtPointer) &default_unspecified_shell_int},
 	{ XtNminWidth, XtCMinWidth, XtRInt, sizeof(int),
 	    Offset(wm.size_hints.min_width),
 	    XtRInt, (XtPointer) &default_unspecified_shell_int},

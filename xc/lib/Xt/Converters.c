@@ -1,4 +1,4 @@
-/* $XConsortium: Converters.c,v 1.84 91/07/20 17:56:29 rws Exp $ */
+/* $XConsortium: Converters.c,v 1.85 91/07/23 15:38:18 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -67,6 +67,7 @@ static XrmQuark  XtQDimension;
 static XrmQuark  XtQFont;
 static XrmQuark  XtQFontSet;
 static XrmQuark  XtQFontStruct;
+static XrmQuark  XtQGravity;
 static XrmQuark  XtQInt;
 static XrmQuark  XtQPixel;
 static XrmQuark  XtQPosition;
@@ -81,6 +82,7 @@ void _XtConvertInitialize()
     XtQFont		= XrmPermStringToQuark(XtRFont);
     XtQFontSet		= XrmPermStringToQuark(XtRFontSet);
     XtQFontStruct	= XrmPermStringToQuark(XtRFontStruct);
+    XtQGravity		= XrmPermStringToQuark(XtRGravity);
     XtQInt		= XrmPermStringToQuark(XtRInt);
     XtQPixel		= XrmPermStringToQuark(XtRPixel);
     XtQPosition		= XrmPermStringToQuark(XtRPosition);
@@ -1345,6 +1347,25 @@ static int CompareISOLatin1 (first, second)
     return (((int) *bp) - ((int) *ap));
 }
 
+static void CopyISOLatin1Lowered(dst, src)
+    char *dst, *src;
+{
+    unsigned char *dest, *source;
+
+    dest = (unsigned char *) dst; source = (unsigned char *) src;
+
+    for ( ; *source; source++, dest++) {
+	if (*source >= XK_A  && *source <= XK_Z)
+	    *dest = *source + (XK_a - XK_A);
+	else if (*source >= XK_Agrave && *source <= XK_Odiaeresis)
+	    *dest = *source + (XK_agrave - XK_Agrave);
+	else if (*source >= XK_Ooblique && *source <= XK_Thorn)
+	    *dest = *source + (XK_oslash - XK_Ooblique);
+	else
+	    *dest = *source;
+    }
+    *dest = '\0';
+}
 
 /*ARGSUSED*/
 Boolean 
@@ -1455,6 +1476,73 @@ Boolean XtCvtStringToAtom(dpy, args, num_args, fromVal, toVal, closure_ret)
     done(Atom, atom);
 }
 
+Boolean XtCvtStringToGravity (dpy, args, num_args, fromVal, toVal, closure_ret)
+    Display* dpy;
+    XrmValuePtr args;
+    Cardinal    *num_args;
+    XrmValuePtr fromVal;
+    XrmValuePtr toVal;
+    XtPointer	*closure_ret;
+{
+    static struct _namepair {
+	XrmQuark quark;
+	char *name;
+	int gravity;
+    } names[] = {
+	{ NULLQUARK, "forget",		ForgetGravity },
+	{ NULLQUARK, "northwest",	NorthWestGravity },
+	{ NULLQUARK, "north",		NorthGravity },
+	{ NULLQUARK, "northeast",	NorthEastGravity },
+	{ NULLQUARK, "west",		WestGravity },
+	{ NULLQUARK, "center",		CenterGravity },
+	{ NULLQUARK, "east",		EastGravity },
+	{ NULLQUARK, "southwest",	SouthWestGravity },
+	{ NULLQUARK, "south",		SouthGravity },
+	{ NULLQUARK, "southeast",	SouthEastGravity },
+	{ NULLQUARK, "static",		StaticGravity },
+	{ NULLQUARK, "unmap",		UnmapGravity },
+	{ NULLQUARK, "0",		ForgetGravity },
+	{ NULLQUARK, "1",		NorthWestGravity },
+	{ NULLQUARK, "2",		NorthGravity },
+	{ NULLQUARK, "3",		NorthEastGravity },
+	{ NULLQUARK, "4",		WestGravity },
+	{ NULLQUARK, "5",		CenterGravity },
+	{ NULLQUARK, "6",		EastGravity },
+	{ NULLQUARK, "7",		SouthWestGravity },
+	{ NULLQUARK, "8",		SouthGravity },
+	{ NULLQUARK, "9",		SouthEastGravity },
+	{ NULLQUARK, "10",		StaticGravity },
+	{ NULLQUARK, NULL,		ForgetGravity } 
+    };
+    static Boolean haveQuarks = FALSE;
+    char lowerName[40];
+    XrmQuark q;
+    char *s;
+    struct _namepair *np;
+
+    if (*num_args != 0) {
+        XtAppWarningMsg(XtDisplayToApplicationContext (dpy),
+			"wrongParameters","cvtStringToGravity","XtToolkitError",
+			"String to Gravity conversion needs no extra arguments",
+			(String *) NULL, (Cardinal *)NULL);
+	return False;
+    }
+    if (!haveQuarks) {
+	for (np = names; np->name; np++) {
+	    np->quark = XrmPermStringToQuark (np->name);
+	}
+	haveQuarks = TRUE;
+    }
+    s = (char *) fromVal->addr;
+    if (strlen(s) < sizeof lowerName) {
+	CopyISOLatin1Lowered (lowerName, s);
+	q = XrmStringToQuark (lowerName);
+	for (np = names; np->name; np++)
+	    if (np->quark == q) done(int, np->gravity);
+    }
+    XtDisplayStringConversionWarning(dpy, (char *)fromVal->addr, XtRGravity);
+    return False;
+}
 
 _XtAddDefaultConverters(table)
     ConverterTable table;
@@ -1514,6 +1602,7 @@ _XtAddDefaultConverters(table)
     Add(_XtQString, XtQGeometry,  CvtStringToGeometry, NULL, 0, XtCacheNone);
 #endif
 
+    Add(_XtQString, XtQGravity,   XtCvtStringToGravity, NULL, 0, XtCacheNone);
     Add(_XtQString, XtQInitialState, XtCvtStringToInitialState, NULL, 0,
 	XtCacheNone);
     Add(_XtQString, XtQInt,	     XtCvtStringToInt,    NULL, 0, XtCacheAll);
