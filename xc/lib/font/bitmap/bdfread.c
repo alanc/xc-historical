@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: bdfread.c,v 1.16 93/08/24 18:48:59 gildea Exp $ */
+/* $XConsortium: bdfread.c,v 1.17 93/09/17 18:26:50 gildea Exp $ */
 
 #include <ctype.h>
 #include "fntfilst.h"
@@ -38,6 +38,7 @@ extern int  bitmapGetGlyphs(), bitmapGetMetrics();
 extern int  bitmapGetBitmaps(), bitmapGetExtents();
 void        bdfUnloadFont();
 static Bool bdfPadToTerminal();
+extern int  bdfFileLineNum;
 
 /***====================================================================***/
 
@@ -477,7 +478,7 @@ BAILOUT:
 
 /***====================================================================***/
 
-Bool
+static Bool
 bdfReadHeader(file, pState)
     FontFilePtr file;
     bdfFileState *pState;
@@ -733,6 +734,7 @@ bdfReadFont(pFont, file, bit, byte, glyph, scan)
     pFont->fontPrivate = 0;
 
     bzero(&state, sizeof(bdfFileState));
+    bdfFileLineNum = 0;
 
     if (!bdfReadHeader(file, &state))
 	goto BAILOUT;
