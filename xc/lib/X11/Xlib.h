@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.149 88/09/30 14:03:09 jim Exp $ */
+/* $XConsortium: Xlib.h,v 11.150 88/10/04 17:57:37 jim Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -134,6 +134,7 @@ typedef struct _XExten {	/* private to extension mechanism */
 	int (*close_display)();	/* routine to call when connection closed */
 	int (*error)();		/* who to call when an error occurs */
 	int (*error_string)();  /* routine to supply error string */
+	char *name;		/* name of this extension */
 } _XExtension;
 
 /*
