@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbfillrct.c,v 5.5 89/11/24 18:04:31 rws Exp $ */
+/* $XConsortium: mfbfillrct.c,v 5.6 90/05/15 18:38:23 keith Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 #include "pixmapstr.h"
@@ -73,12 +73,6 @@ mfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     pfn = priv->FillArea;
     ppix = priv->pRotatedPixmap;
     prgnClip = priv->pCompositeClip;
-
-    numRects = REGION_NUM_RECTS(prgnClip);
-    pboxClippedBase = (BoxPtr)ALLOCATE_LOCAL(numRects * sizeof(BoxRec));
-
-    if (!pboxClippedBase)
-	return;
 
     prect = prectInit;
     xorg = pDrawable->x;
