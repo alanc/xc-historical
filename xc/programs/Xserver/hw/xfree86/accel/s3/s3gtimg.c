@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: s3gtimg.c,v 1.1 94/10/05 13:32:36 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gtimg.c,v 3.4 1994/08/20 07:34:09 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -28,6 +29,8 @@
 #include "scrnintstr.h"
 #include "pixmapstr.h"
 #include "cfb.h"
+#include "cfb16.h"
+#include "cfb32.h"
 #include "cfbmskbits.h"
 #include "s3.h"
 
@@ -36,7 +39,7 @@ s3GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
      DrawablePtr pDrawable;
      int         sx, sy, w, h;
      unsigned int format;
-     unsigned long planeMask;
+     Pixel planeMask;
      char *pdstLine;
 {
    int width;
@@ -50,9 +53,19 @@ s3GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
       return;
    }
 
-   if (pDrawable->type != DRAWABLE_WINDOW)
+   if (!xf86VTSema || pDrawable->type != DRAWABLE_WINDOW)
    {
-      cfbGetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
+      switch (pDrawable->bitsPerPixel) {
+      case 8:
+         cfbGetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
+	 break;
+      case 16:
+         cfb16GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
+	 break;
+      case 32:
+         cfb32GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
+	 break;
+      }
       return;
    }
 

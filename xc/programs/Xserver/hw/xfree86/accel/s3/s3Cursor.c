@@ -1,5 +1,6 @@
 /*
- * $XConsortium: mipsCursor.c,v 1.2 91/07/18 22:58:13 keith Exp $
+ * $XConsortium: s3Cursor.c,v 1.1 94/10/05 13:32:36 kaleb Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.8 1994/08/31 04:29:46 dawes Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -27,7 +28,6 @@
  * 
  * Id: s3Cursor.c,v 2.5 1993/08/09 06:17:57 jon Exp jon
  */
-
 
 /*
  * Device independent (?) part of HW cursor support
@@ -70,8 +70,6 @@ extern void s3TiCursorOn();
 extern void s3TiCursorOff();
 extern void s3TiLoadCursor();
 extern void s3TiMoveCursor();
-
-extern short s3ChipId;
 
 static miPointerSpriteFuncRec s3PointerSpriteFuncs =
 {
@@ -132,6 +130,9 @@ s3CursorInit(pm, pScr)
          if (!(miPointerInitialize(pScr, &s3TiPointerSpriteFuncs,
 				   &xf86PointerScreenFuncs, FALSE)))
             return FALSE;
+      } else if (s3InfoRec.bitsPerPixel == 32 
+		 && S3_928_SERIES(s3ChipId) && !S3_x64_SERIES(s3ChipId)) {
+	 miDCInitialize (pScr, &xf86PointerScreenFuncs);
       } else {
          if (!(miPointerInitialize(pScr, &s3PointerSpriteFuncs,
 				   &xf86PointerScreenFuncs, FALSE)))
@@ -258,7 +259,7 @@ s3LoadCursor(pScr, pCurs, x, y)
       return;
 
    /* Load storage location.  */
-   cpos = (s3DisplayWidth * s3CursorStartY + s3CursorStartX) / 1024;
+   cpos = (s3BppDisplayWidth * s3CursorStartY + s3CursorStartX) / 1024;
    outb(vgaCRIndex, 0x4d);
    outb(vgaCRReg, (0xff & cpos));
    outb(vgaCRIndex, 0x4c);
@@ -277,18 +278,24 @@ s3LoadCursor(pScr, pCurs, x, y)
    /* s3 stuff */
    WaitIdle();
 
-   WaitQueue(7);
+#ifdef DONT_USE_IMAGE_WRITE
+   WaitQueue16_32(7,8);
+#else
+   WaitQueue(4);
+#endif
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_L | 0);
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_T | 0);
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_R | (s3DisplayWidth-1));
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | s3ScissB);
-   S3_OUTW(WRT_MASK, 0x0ff);
+#ifdef DONT_USE_IMAGE_WRITE
+   S3_OUTW32(WRT_MASK, ~0);
    S3_OUTW(FRGD_MIX, FSS_PCDATA | MIX_SRC);
    S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | 0);
+#endif
 
    WaitIdle();
+   VerticalRetraceWait();
 
-#ifndef OLD_CURS
    /*
     * This form is general enough for any valid DisplayWidth.  The only
     * assumption is that it is even.
@@ -298,11 +305,15 @@ s3LoadCursor(pScr, pCurs, x, y)
    bytes_remaining = 1024;
    ram_loc = 0;
    while (bytes_remaining > 0) {
-      if (s3DisplayWidth - xpos < bytes_remaining)
-         n = s3DisplayWidth - xpos;
+      if (s3BppDisplayWidth - xpos < bytes_remaining)
+         n = s3BppDisplayWidth - xpos;
       else
          n = bytes_remaining;
 
+#ifndef DONT_USE_IMAGE_WRITE
+      (*s3ImageWriteFunc)(xpos/s3Bpp, ypos, n/s3Bpp, 1, (char *)(ram + ram_loc), n, 0, 0,
+			  MIX_SRC, ~0);
+#else
       WaitQueue(5);
 
       S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | 0);
@@ -318,42 +329,13 @@ s3LoadCursor(pScr, pCurs, x, y)
       for (i = ram_loc; i < n/2 + ram_loc; i++) {
          S3_OUTW(PIX_TRANS, ram[i]);
       }
+#endif
 
-      ram_loc = i;
+      ram_loc += n/2;
       ypos++;
       xpos = 0;
       bytes_remaining -= n;
    }
-
-#else
-
-   /*
-    * The old version -- which requires the cursor storage to start at the
-    * beginning of a scanline.  This also assumes the cursor only occupies
-    * one scanline (ie s3DisplayWidth >= 1024)
-    */
-
-#if 0
-   S3_OUTW(WRT_MASK, 0x0ff);
-   S3_OUTW(FRGD_MIX, 0x40 | 0x7);
-   S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL + 0x7);
-#endif
-
-   WaitQueue(5);
-
-   S3_OUTW(MULTIFUNC_CNTL, 0);
-   S3_OUTW(MAJ_AXIS_PCNT, 1023);
-   S3_OUTW(CUR_X, 0);
-   S3_OUTW(CUR_Y, s3CursorStartY);
-
-   S3_OUTW(CMD, CMD_RECT | _16BIT | BYTSEQ | INC_X | INC_Y
-	 | PCDATA | DRAW | WRTDATA);
-
-   WaitQueue(8);
-   for (i = 0; i < 512; i++) {
-      S3_OUTW(PIX_TRANS, ram[i]);
-   }
-#endif
 
    UNBLOCK_CURSOR;
 
@@ -445,12 +427,22 @@ s3MoveCursor(pScr, x, y)
 
    if (s3BlockCursor)
       return;
-   
-   x -= s3hotX;
-   y -= s3hotY;
 
    x -= s3InfoRec.frameX0;
    y -= s3InfoRec.frameY0;
+
+   if (!S3_x64_SERIES(s3ChipId) && !S3_805_I_SERIES(s3ChipId)) 
+      x *= s3Bpp;
+   else if (s3Bpp > 2)
+      x *= 2;
+
+   x -= s3hotX;
+   y -= s3hotY;
+
+   if (!S3_x64_SERIES(s3ChipId) && !S3_805_I_SERIES(s3ChipId))
+      x -= x % s3Bpp;
+   else if (s3Bpp > 2)
+      x &= ~1;
 
    UNLOCK_SYS_REGS;
 
@@ -516,24 +508,71 @@ s3RecolorCursor(pScr, pCurs, displayed)
      Bool displayed;
 {
    ColormapPtr pmap;
+   unsigned short packedcolfg, packedcolbg;
    xColorItem sourceColor, maskColor;
 
-   s3GetInstalledColormaps(pScr, &pmap);
-   sourceColor.red = pCurs->foreRed;
-   sourceColor.green = pCurs->foreGreen;
-   sourceColor.blue = pCurs->foreBlue;
-   FakeAllocColor(pmap, &sourceColor);
-   maskColor.red = pCurs->backRed;
-   maskColor.green = pCurs->backGreen;
-   maskColor.blue = pCurs->backBlue;
-   FakeAllocColor(pmap, &maskColor);
-   FakeFreeColor(pmap, sourceColor.pixel);
-   FakeFreeColor(pmap, maskColor.pixel);
+   switch (s3InfoRec.bitsPerPixel) {
+     case 8:
+	s3GetInstalledColormaps(pScr, &pmap);
+	sourceColor.red = pCurs->foreRed;
+	sourceColor.green = pCurs->foreGreen;
+	sourceColor.blue = pCurs->foreBlue;
+	FakeAllocColor(pmap, &sourceColor);
+	maskColor.red = pCurs->backRed;
+	maskColor.green = pCurs->backGreen;
+	maskColor.blue = pCurs->backBlue;
+	FakeAllocColor(pmap, &maskColor);
+	FakeFreeColor(pmap, sourceColor.pixel);
+	FakeFreeColor(pmap, maskColor.pixel);
+	
+	outb(vgaCRIndex, 0x0E);
+	outb(vgaCRReg, sourceColor.pixel);
+	outb(vgaCRIndex, 0x0F);
+	outb(vgaCRReg, maskColor.pixel);
+	break;
+     case 16:
+        if (s3InfoRec.depth == 15) {
+	   packedcolfg = ((pCurs->foreRed   & 0xf800) >>  1) 
+	               | ((pCurs->foreGreen & 0xf800) >>  6)
+		       | ((pCurs->foreBlue  & 0xf800) >> 11);
+	   packedcolbg = ((pCurs->backRed   & 0xf800) >>  1) 
+	               | ((pCurs->backGreen & 0xf800) >>  6)
+		       | ((pCurs->backBlue  & 0xf800) >> 11);
+	} else {
+	   packedcolfg = ((pCurs->foreRed   & 0xf800) >>  0) 
+	               | ((pCurs->foreGreen & 0xfc00) >>  5)
+		       | ((pCurs->foreBlue  & 0xf800) >> 11);
+	   packedcolbg = ((pCurs->backRed   & 0xf800) >>  0) 
+	               | ((pCurs->backGreen & 0xfc00) >>  5)
+		       | ((pCurs->backBlue  & 0xf800) >> 11);
+	}
+	outb(vgaCRIndex, 0x45);
+	inb(vgaCRReg);  /* reset stack pointer */
+	outb(vgaCRIndex, 0x4A);
+	outb(vgaCRReg, packedcolfg);
+	outb(vgaCRReg, packedcolfg>>8);
+	outb(vgaCRIndex, 0x45);
+	inb(vgaCRReg);  /* reset stack pointer */
+	outb(vgaCRIndex, 0x4B);
+	outb(vgaCRReg, packedcolbg);
+	outb(vgaCRReg, packedcolbg>>8);
+     break;
+     case 32:
+	outb(vgaCRIndex, 0x45);
+	inb(vgaCRReg);  /* reset stack pointer */
+	outb(vgaCRIndex, 0x4A);
+	outb(vgaCRReg, pCurs->foreBlue >>8);
+	outb(vgaCRReg, pCurs->foreGreen>>8);
+	outb(vgaCRReg, pCurs->foreRed  >>8);
 
-   outb(vgaCRIndex, 0x0E);
-   outb(vgaCRReg, sourceColor.pixel);
-   outb(vgaCRIndex, 0x0F);
-   outb(vgaCRReg, maskColor.pixel);
+	outb(vgaCRIndex, 0x45);
+	inb(vgaCRReg);  /* reset stack pointer */
+	outb(vgaCRIndex, 0x4B);
+	outb(vgaCRReg, pCurs->backBlue >>8);
+	outb(vgaCRReg, pCurs->backGreen>>8);
+	outb(vgaCRReg, pCurs->backRed  >>8);
+     break;
+   }
 }
 
 void

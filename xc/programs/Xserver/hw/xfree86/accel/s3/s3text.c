@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: s3text.c,v 1.1 94/10/05 13:32:36 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3text.c,v 3.7 1994/09/08 14:26:54 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -42,100 +43,42 @@
 #include	"mi.h"
 #include	"s3.h"
 #include	"regs3.h"
-#include	"s3bcach.h"
 
-int s3NoCPolyText();
-int s3NoCImageText();
-extern CacheFont8Ptr s3CacheFont8();
 extern unsigned char s3SwapBits[256];
 
-int
-s3PolyText8(pDraw, pGC, x, y, count, chars)
-     DrawablePtr pDraw;
-     GCPtr pGC;
-     int   x, y;
-     int   count;
-     char *chars;
+
+__inline__ s3SimpleStipple(x, y, width, height, pb, pwidth)
+int x, y;
+int  width, height, pwidth;
+unsigned char *pb;
 {
-   CacheFont8Ptr ret;
+	    WaitQueue(5);
+	    S3_OUTW (CUR_X, (short) x);
+	    S3_OUTW (CUR_Y, (short) y);
+	    S3_OUTW (MAJ_AXIS_PCNT, (short) (width - 1));
+	    S3_OUTW (MULTIFUNC_CNTL, MIN_AXIS_PCNT | (height-1));   
+	    S3_OUTW (CMD, CMD_RECT | PCDATA | _16BIT | INC_Y | INC_X |
+	     DRAW | PLANAR | WRTDATA);
 
-   if (!xf86VTSema)
-   {
-      return(miPolyText8(pDraw, pGC, x, y, count, chars));
-   }
+	    
+	    { /* The stipple code */
+#define SWPBIT(s) (s3SwapBits[pb[(s)]])
 
-   /*
-    * The S3 graphics engine apparently can't handle these ROPs for the
-    * BLT operations used to render text.  The 8514 and ATI don't have a
-    * problem using the same code that S3 uses.  The common feature of these
-    * ROPs is that they don't reference the source pixel.
-    */
-   if ((pGC->fillStyle != FillSolid) || 
-       (pGC->alu == GXclear || pGC->alu == GXinvert || pGC->alu == GXset)) {
-      return miPolyText8(pDraw, pGC, x, y, count, chars);       
-   } else {
-      if ((ret = s3CacheFont8(pGC->font)) == NULL)
-	 return s3NoCPolyText(pDraw, pGC, x, y, count, chars, TRUE);
-      else
-	 return s3CPolyText8(pDraw, pGC, x, y, count, (unsigned char *)chars,
-			     ret);
-   }
+	       int i, h, pix;
+	       unsigned short getbuf;
+
+	       for (h = 0; h < height; h++) {
+		  pix = 0;
+	       
+		  for (i = 0; i < width; i += 16) {
+		     getbuf = (getbuf << 8) | SWPBIT (pix++);
+		     getbuf = (getbuf << 8) | SWPBIT (pix++);
+		     S3_OUTW (PIX_TRANS, getbuf);		  
+		  }
+		  pb += pwidth;
+	       }
+	    }
 }
-
-int
-s3PolyText16(pDraw, pGC, x, y, count, chars)
-     DrawablePtr pDraw;
-     GCPtr pGC;
-     int   x, y;
-     int   count;
-     unsigned short *chars;
-{
-
-   if (!xf86VTSema || 
-       (pGC->fillStyle != FillSolid) || 
-       (pGC->alu == GXclear || pGC->alu == GXinvert ||	pGC->alu == GXset)) {
-      return miPolyText16(pDraw, pGC, x, y, count, chars);
-  }
-   return s3NoCPolyText(pDraw, pGC, x, y, count, (char *)chars, FALSE);
-}
-
-void
-s3ImageText8(pDraw, pGC, x, y, count, chars)
-     DrawablePtr pDraw;
-     GCPtr pGC;
-     int   x, y;
-     int   count;
-     char *chars;
-{
-   CacheFont8Ptr ret;
-
-   if (!xf86VTSema)
-   {
-      miImageText8(pDraw, pGC, x, y, count, chars);
-      return;
-   } 
-
-   /* Don't need to check fill style here - it isn't used in image text */
-   if ((ret = s3CacheFont8(pGC->font)) == NULL)
-     s3NoCImageText(pDraw, pGC, x, y, count, chars, TRUE);
-   else
-      s3CImageText8(pDraw, pGC, x, y, count, chars, ret);
-}
-
-void
-s3ImageText16(pDraw, pGC, x, y, count, chars)
-     DrawablePtr pDraw;
-     GCPtr pGC;
-     int   x, y;
-     int   count;
-     unsigned short *chars;
-{
-   if (!xf86VTSema) 
-	miImageText16(pDraw, pGC, x, y, count, chars);
-   else
-        s3NoCImageText(pDraw, pGC, x, y, count, (char *)chars, FALSE);
-}
-
 
 /*
  * The guts of this should possibly be tidied up and put in s3im.c.
@@ -206,39 +149,40 @@ s3PolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 		pb = pbits;
 	    }
 
-	    BLOCK_CURSOR;
-	    WaitQueue(5)
-	    S3_OUTW (CUR_X, (short) x + pci->metrics.leftSideBearing);
-	    S3_OUTW (CUR_Y, (short) y - pci->metrics.ascent);
-	    S3_OUTW (MAJ_AXIS_PCNT, (short) (gWidth - 1));
-	    S3_OUTW (MULTIFUNC_CNTL, MIN_AXIS_PCNT | (gHeight-1));   
-	    S3_OUTW (CMD, CMD_RECT | PCDATA | _16BIT | INC_Y | INC_X |
-	     DRAW | PLANAR | WRTDATA);
-
-	    
-	    { /* The stipple code */
-#define SWPBIT(s) (s3SwapBits[pb[(s)]])
-
-	       int h, pix;
-	       unsigned short getbuf;
-
-	       for (h = 0; h < gHeight; h++) {
-		  pix = 0;
-	       
-		  for (i = 0; i < gWidth; i += 16) {
-		     getbuf = (getbuf << 8) | SWPBIT (pix++);
-		     getbuf = (getbuf << 8) | SWPBIT (pix++);
-		     S3_OUTW (PIX_TRANS, getbuf);		  
-		  }
-		  pb += nbyPadGlyph;
-	       }
-	    }
-	    UNBLOCK_CURSOR;
+	    s3SimpleStipple(x + pci->metrics.leftSideBearing,
+			    y - pci->metrics.ascent,
+			    gWidth, gHeight, pb, nbyPadGlyph);
 	}
 
 	x += pci->metrics.characterWidth;
     }
     DEALLOCATE_LOCAL(pbits);
+}
+
+void s3FontStipple(x, y, width, height, pb, pwidth, id)
+int x, y;
+int width, height, pwidth;
+Pixel id;
+unsigned char *pb;
+{
+   BLOCK_CURSOR;
+
+   WaitQueue16_32(1, 2);
+   S3_OUTW32 (WRT_MASK, id);
+   WaitQueue16_32(5, 7);
+   S3_OUTW (FRGD_MIX, FSS_FRGDCOL | s3alu[GXcopy]);
+   S3_OUTW (BKGD_MIX, BSS_BKGDCOL | s3alu[GXcopy]);
+   S3_OUTW32 (FRGD_COLOR, ~0);
+   S3_OUTW32 (BKGD_COLOR, 0);
+   S3_OUTW (MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPPC | COLCMPOP_F);
+
+   s3SimpleStipple(x, y, width, height, pb, pwidth);
+   WaitQueue(3);
+   S3_OUTW (FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
+   S3_OUTW (BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
+   S3_OUTW (MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
+
+   UNBLOCK_CURSOR;
 }
 
 int
@@ -317,12 +261,12 @@ s3NoCPolyText(pDraw, pGC, x, y, count, chars, is8bit)
    }
 
    BLOCK_CURSOR;
-   WaitQueue (5);
-   S3_OUTW (WRT_MASK, pGC->planemask);   
+   WaitQueue16_32(5,7);
+   S3_OUTW32 (WRT_MASK, pGC->planemask);   
    S3_OUTW (FRGD_MIX, FSS_FRGDCOL | s3alu[pGC->alu]);
    S3_OUTW (BKGD_MIX, BSS_BKGDCOL | MIX_DST);
    S3_OUTW (MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPPC | COLCMPOP_F);
-   S3_OUTW (FRGD_COLOR, (short) pGC->fgPixel);
+   S3_OUTW32 (FRGD_COLOR,  pGC->fgPixel);
 
    for (; --numRects >= 0; ++pBox) {
       WaitQueue(4);
@@ -345,6 +289,7 @@ s3NoCPolyText(pDraw, pGC, x, y, count, chars, is8bit)
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_R | (s3DisplayWidth-1));
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | s3ScissB);
    UNBLOCK_CURSOR;
+   DEALLOCATE_LOCAL(charinfo);
 
    return ret_x;
 }
@@ -453,12 +398,12 @@ s3NoCImageText(pDraw, pGC, x, y, count, chars, is8bit)
    }
 
    BLOCK_CURSOR;
-   WaitQueue (5);
-   S3_OUTW (WRT_MASK, pGC->planemask);   
+   WaitQueue16_32(5,7);
+   S3_OUTW32 (WRT_MASK, pGC->planemask);
    S3_OUTW (FRGD_MIX, FSS_FRGDCOL | s3alu[pGC->alu]);
    S3_OUTW (BKGD_MIX, BSS_BKGDCOL | MIX_DST);
    S3_OUTW (MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPPC | COLCMPOP_F);
-   S3_OUTW (FRGD_COLOR, (short) pGC->fgPixel);
+   S3_OUTW32 (FRGD_COLOR,  pGC->fgPixel);
 
    for (; --numRects >= 0; ++pBox) {
       WaitQueue(4);
@@ -488,5 +433,6 @@ s3NoCImageText(pDraw, pGC, x, y, count, chars, is8bit)
    gcvals[1] = oldFG;
    gcvals[2] = oldFS;
    DoChangeGC(pGC, GCFunction | GCForeground | GCFillStyle, gcvals, 0);
+   DEALLOCATE_LOCAL(charinfo);
    return 0;
 }

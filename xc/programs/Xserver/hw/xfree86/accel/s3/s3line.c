@@ -1,4 +1,5 @@
-/* $XConsortium: s3line.c,v 1.1 94/03/28 21:15:58 dpw Exp $ */
+/* $XConsortium: s3line.c,v 1.1 94/10/05 13:32:36 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3line.c,v 3.3 1994/09/26 15:31:50 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -69,6 +70,8 @@ Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 #include "miline.h"
 
 #include "cfb.h"
+#include "cfb16.h"
+#include "cfb32.h"
 #include "cfbmskbits.h"
 #include "misc.h"
 #include "xf86.h"
@@ -114,7 +117,17 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
 
    if (!xf86VTSema)
    {
-      cfbLineSS(pDrawable, pGC, mode, npt, pptInit);
+      switch (s3InfoRec.bitsPerPixel) {
+      case 8:
+	 cfbLineSS(pDrawable, pGC, mode, npt, pptInit);
+         break;
+      case 16:
+	 cfb16LineSS(pDrawable, pGC, mode, npt, pptInit);
+         break;
+      case 32:
+	 cfb32LineSS(pDrawable, pGC, mode, npt, pptInit);
+	 break;
+      }
       return;
    }
 
@@ -124,11 +137,13 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
    nboxInit = REGION_NUM_RECTS(cclip);
 
    BLOCK_CURSOR;
-   WaitQueue(3);
+   WaitQueue16_32(3,5);
    S3_OUTW(FRGD_MIX, FSS_FRGDCOL | s3alu[pGC->alu]);
-   S3_OUTW(WRT_MASK, (short)pGC->planemask);
-   S3_OUTW(FRGD_COLOR, (short)pGC->fgPixel);
-
+   S3_OUTW32(WRT_MASK, pGC->planemask);
+   S3_OUTW32(FRGD_COLOR, pGC->fgPixel);
+   /* Fix problem writing to the cursor storage area */
+   WaitQueue(1);
+   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | (pDrawable->pScreen->height-1));
    xorg = pDrawable->x;
    yorg = pDrawable->y;
    ppt = pptInit;
@@ -431,8 +446,9 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
 	    pbox++;
       }
    }
-   WaitQueue(2);
+   WaitQueue(3);
    S3_OUTW(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
    S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
+   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | s3ScissB);
    UNBLOCK_CURSOR;
 }

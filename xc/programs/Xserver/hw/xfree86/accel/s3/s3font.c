@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: s3font.c,v 1.1 94/10/05 13:32:36 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3font.c,v 3.1 1994/08/01 13:19:36 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -44,7 +45,7 @@ s3RealizeFont(pScreen, font)
      FontPtr font;
 {
  /* We _should_ probably be caching things here */
- /* (void)s3CacheFont8(font); */
+ /* (void)xf86CacheFont8(font); */
    return mfbRealizeFont(pScreen, font);
 }
 
@@ -53,6 +54,6 @@ s3UnrealizeFont(pScreen, font)
      ScreenPtr pScreen;
      FontPtr font;
 {
-   s3UnCacheFont8(font);
+   xf86UnCacheFont8(font);
    return mfbUnrealizeFont(pScreen, font);
 }

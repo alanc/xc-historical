@@ -1,4 +1,5 @@
-/* $XConsortium: s3gs.c,v 1.1 94/03/28 21:15:27 dpw Exp $ */
+/* $XConsortium: s3gs.c,v 1.1 94/10/05 13:32:36 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gs.c,v 3.3 1994/08/20 07:34:07 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -70,6 +71,8 @@ Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 #include "scrnintstr.h"
 
 #include "cfb.h"
+#include "cfb16.h"
+#include "cfb32.h"
 #include "cfbmskbits.h"
 #include "s3.h"
 
@@ -93,17 +96,33 @@ s3GetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
 
    if (!xf86VTSema)
    {
-      cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
+      switch (s3InfoRec.bitsPerPixel) {
+      case 8:
+	 cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
+         break;
+      case 16:
+	 cfb16GetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
+         break;
+      case 32:
+	 cfb32GetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
+         break;
+      }
       return;
    }
 
    if (pDrawable->type != DRAWABLE_WINDOW) {
-      switch (pDrawable->depth) {
+      switch (pDrawable->bitsPerPixel) {
 	case 1:
 	   mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
 	   break;
 	case 8:
 	   cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
+	   break;
+	case 16:
+	   cfb16GetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
+	   break;
+        case 32:
+	   cfb32GetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
 	   break;
 	default:
 	   ErrorF("Unsupported pixmap depth\n");
@@ -116,7 +135,8 @@ s3GetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
 
    for (; nspans--; ppt++, pwidth++) {
       (s3ImageReadFunc) (ppt->x, ppt->y, j = *pwidth, 1, pdst, 
-			 pixmapStride, 0, 0, 0xFF);
+			 pixmapStride, 0, 0, ~0);
+      j *= s3Bpp;
       pdst += j;		/* width is in 32 bit words */
       j = (-j) & 3;
       while (j--)		/* Pad out to 32-bit boundary */

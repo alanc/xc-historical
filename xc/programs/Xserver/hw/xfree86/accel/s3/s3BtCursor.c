@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: s3BtCursor.c,v 1.1 94/10/05 13:32:36 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3BtCursor.c,v 3.3 1994/09/04 10:46:59 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -36,6 +37,7 @@
 #include "xf86.h"
 #include "inputstr.h"
 #include "xf86Priv.h"
+#include "xf86_Option.h"
 #include "xf86_OSlib.h"
 #include "s3.h"
 #include "regs3.h"
@@ -273,9 +275,11 @@ s3BtCursorOn()
    outb(vgaCRReg, tmp | 0x20);
 
    /* Enable Bt485 */
-   outb(vgaCRIndex, 0x45);
-   tmp = inb(vgaCRReg) & 0xDF;
-   outb(vgaCRReg, tmp | 0x20);
+   if(!S3_x64_SERIES(s3ChipId)) {
+     outb(vgaCRIndex, 0x45);
+     tmp = inb(vgaCRReg) & 0xDF;
+     outb(vgaCRReg, tmp | 0x20);
+   }
    
    /* Enable cursor mode 3 - X11 mode */
    s3OutBtReg(BT_COMMAND_REG_2, 0xFC, 0x03);
@@ -341,20 +345,34 @@ s3BtRecolorCursor(pScr, pCurs)
      ScreenPtr pScr;
      CursorPtr pCurs;
 {
+   extern Bool s3DAC8Bit;
+
    UNLOCK_SYS_REGS;
 
    /* Start writing at address 1 (0 is overscan color) */
    s3StartBtData(BT_CURS_WR_ADDR, 0x01, BT_CURS_DATA);
 
    /* Background color */
-   s3OutBtData(BT_CURS_DATA, (pCurs->backRed >> 10) & 0xFF);
-   s3OutBtData(BT_CURS_DATA, (pCurs->backGreen >> 10) & 0xFF);
-   s3OutBtData(BT_CURS_DATA, (pCurs->backBlue >> 10) & 0xFF);
+   if (s3DAC8Bit) {
+      s3OutBtData(BT_CURS_DATA, (pCurs->backRed >> 8) & 0xFF);
+      s3OutBtData(BT_CURS_DATA, (pCurs->backGreen >> 8) & 0xFF);
+      s3OutBtData(BT_CURS_DATA, (pCurs->backBlue >> 8) & 0xFF);
+   } else {
+      s3OutBtData(BT_CURS_DATA, (pCurs->backRed >> 10) & 0xFF);
+      s3OutBtData(BT_CURS_DATA, (pCurs->backGreen >> 10) & 0xFF);
+      s3OutBtData(BT_CURS_DATA, (pCurs->backBlue >> 10) & 0xFF);
+   }
 
    /* Foreground color */
-   s3OutBtData(BT_CURS_DATA, (pCurs->foreRed >> 10) & 0xFF);
-   s3OutBtData(BT_CURS_DATA, (pCurs->foreGreen >> 10) & 0xFF);
-   s3OutBtData(BT_CURS_DATA, (pCurs->foreBlue >> 10) & 0xFF);
+   if (s3DAC8Bit) {
+      s3OutBtData(BT_CURS_DATA, (pCurs->foreRed >> 8) & 0xFF);
+      s3OutBtData(BT_CURS_DATA, (pCurs->foreGreen >> 8) & 0xFF);
+      s3OutBtData(BT_CURS_DATA, (pCurs->foreBlue >> 8) & 0xFF);
+   } else {
+      s3OutBtData(BT_CURS_DATA, (pCurs->foreRed >> 10) & 0xFF);
+      s3OutBtData(BT_CURS_DATA, (pCurs->foreGreen >> 10) & 0xFF);
+      s3OutBtData(BT_CURS_DATA, (pCurs->foreBlue >> 10) & 0xFF);
+   }
 
    /* Now clean up */
    s3EndBtData();
@@ -371,7 +389,8 @@ s3BtLoadCursor(pScr, pCurs, x, y)
 {
    int   index = pScr->myNum;
    register int   i, j;
-   unsigned char *ram, *p;
+   unsigned char *ram, *p, tmpcurs;
+   extern int s3InitCursorFlag;
 
    if (!xf86VTSema)
       return;
@@ -380,7 +399,8 @@ s3BtLoadCursor(pScr, pCurs, x, y)
       return;
 
    /* turn the cursor off */
-   s3BtCursorOff();
+   if ((tmpcurs = s3InBtReg(BT_COMMAND_REG_2)) & 0x03)
+      s3BtCursorOff();
 
    /* load colormap */
    s3BtRecolorCursor(pScr, pCurs);
@@ -443,7 +463,11 @@ s3BtLoadCursor(pScr, pCurs, x, y)
    s3BtMoveCursor(0, x, y);
 
    /* turn the cursor on */
-   s3BtCursorOn();
+   if ((tmpcurs & 0x03) || s3InitCursorFlag)
+      s3BtCursorOn();
+
+   if (s3InitCursorFlag)
+      s3InitCursorFlag = FALSE;
 
    return;
 }

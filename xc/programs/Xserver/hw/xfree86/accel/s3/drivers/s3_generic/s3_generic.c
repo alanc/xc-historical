@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: s3_generic.c,v 1.1 94/10/05 13:33:36 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/s3_generic/s3_generic.c,v 3.0 1994/09/23 10:10:20 dawes Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -61,7 +62,7 @@ S3_GENERICProbe()
    /*
     * We don't even get called unless the card is identified as S3, so just
     * return TRUE, unless the chipset is specified as something other than
-    * "s3_generic" in Xconfig.
+    * "s3_generic" in XF86Config.
     */
 
    if (s3InfoRec.chipset) {

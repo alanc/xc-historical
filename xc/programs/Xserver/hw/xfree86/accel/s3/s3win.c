@@ -1,4 +1,5 @@
-/* $XConsortium: s3win.c,v 1.1 94/03/28 21:17:06 dpw Exp $ */
+/* $XConsortium: s3win.c,v 1.1 94/10/05 13:32:36 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3win.c,v 3.4 1994/08/20 07:34:31 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -63,6 +64,8 @@ Rewritten for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 #include "windowstr.h"
 #include "gcstruct.h"
 #include "cfb.h"
+#include "cfb16.h"
+#include "cfb32.h"
 #include "mistruct.h"
 #include "regionstr.h"
 #include "cfbmskbits.h"
@@ -87,7 +90,17 @@ s3CopyWindow(pWin, ptOldOrg, prgnSrc)
 
    if (!xf86VTSema)
    {
-      cfbCopyWindow(pWin, ptOldOrg, prgnSrc);
+      switch (pWin->drawable.bitsPerPixel) {
+	case 8:
+	  cfbCopyWindow(pWin, ptOldOrg, prgnSrc);
+          break;
+        case 16:
+	  cfb16CopyWindow(pWin, ptOldOrg, prgnSrc);
+          break;
+       case 32:
+	  cfb32CopyWindow(pWin, ptOldOrg, prgnSrc);
+	  break;
+      }
       return;
    }
 
@@ -118,10 +131,10 @@ s3CopyWindow(pWin, ptOldOrg, prgnSrc)
 			pWin->drawable.x, pWin->drawable.y, ordering);
 
    BLOCK_CURSOR;
-   WaitQueue(3);
+   WaitQueue16_32(3,4);
    S3_OUTW(FRGD_MIX, FSS_BITBLT | MIX_SRC);
    S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
-   S3_OUTW(WRT_MASK, 0xffff);
+   S3_OUTW32(WRT_MASK, ~0);
 
    if (direction == (INC_X | INC_Y)) {
       for (i = 0; i < nbox; i++) {

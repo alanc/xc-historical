@@ -1,4 +1,5 @@
-/* $XConsortium: s3fs.c,v 1.2 94/04/04 13:24:40 dpw Exp $ */
+/* $XConsortium: s3fs.c,v 1.1 94/10/05 13:32:36 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fs.c,v 3.3 1994/08/20 07:34:00 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -78,6 +79,8 @@ PERFORMANCE OF THIS SOFTWARE.
 #include "windowstr.h"
 
 #include "cfb.h"
+#include "cfb16.h"
+#include "cfb32.h"
 #include "misc.h"
 #include  "xf86.h"
 #include "s3.h"
@@ -102,17 +105,31 @@ s3SolidFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
    if (!xf86VTSema)
    {
-      cfbSolidSpansGeneral(pDrawable, pGC,
-			   nInit, pptInit, pwidthInit, fSorted);
+      switch (s3InfoRec.bitsPerPixel) {
+      case 8:
+	 cfbSolidSpansGeneral(pDrawable, pGC,
+			      nInit, pptInit, pwidthInit, fSorted);
+         break;
+      case 16:
+	 cfb16SolidSpansGeneral(pDrawable, pGC,
+				nInit, pptInit, pwidthInit, fSorted);
+         break;
+      case 32:
+	 cfb32SolidSpansGeneral(pDrawable, pGC,
+				nInit, pptInit, pwidthInit, fSorted);
+         break;
+      }
       return;
    }
 
    if (pDrawable->type != DRAWABLE_WINDOW) {
-      switch (pDrawable->depth) {
+      switch (pDrawable->bitsPerPixel) {
 	case 1:
 	   ErrorF("should call mfbSolidFillSpans\n");
 	   break;
 	case 8:
+        case 16:
+        case 32:
 	   ErrorF("should call cfbSolidFillSpans\n");
 	   break;
 	default:
@@ -140,10 +157,10 @@ s3SolidFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		   ppt, pwidth, fSorted);
 
    BLOCK_CURSOR;
-   WaitQueue(3);
-   S3_OUTW(FRGD_COLOR, (pGC->fgPixel));
+   WaitQueue16_32(3,5);
+   S3_OUTW32(FRGD_COLOR, (pGC->fgPixel));
    S3_OUTW(FRGD_MIX, FSS_FRGDCOL | s3alu[pGC->alu]);
-   S3_OUTW(WRT_MASK, pGC->planemask);
+   S3_OUTW32(WRT_MASK, pGC->planemask);
 
    while (n--) {
       WaitQueue(5);
@@ -185,16 +202,28 @@ s3TiledFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
    if (!xf86VTSema)
    {
-      cfbUnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
+      switch (s3InfoRec.bitsPerPixel) {
+      case 8:
+	 cfbUnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
+         break;
+      case 16:
+	 cfb16UnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
+         break;
+      case 32:
+	 cfb32UnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
+         break;
+      }
       return;
    }
 
    if (pDrawable->type != DRAWABLE_WINDOW) {
-      switch (pDrawable->depth) {
+      switch (pDrawable->bitsPerPixel) {
 	case 1:
 	   ErrorF("should call mfbTiledFillSpans\n");
 	   break;
 	case 8:
+	case 16:
+	case 32:
 	   ErrorF("should call cfbTiledFillSpans\n");
 	   break;
 	default:
@@ -232,32 +261,13 @@ s3TiledFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
    height = pPix->drawable.height;
    pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
-#ifdef PIXPRIV
-   if (s3MAX_SLOTS && s3CacheTile(pPix, pwidth - width)) {
-      while (n--) {
-	 if (*pwidth > 50)
-	    s3CImageFill(pPix->slot,
-		      ppt->x, ppt->y, *pwidth, 1, xrot, yrot,
-		      s3alu[pGC->alu], pGC->planemask);
-	 else
-	    (s3ImageFillFunc) (ppt->x, ppt->y, *pwidth, 1,
-		      pPix->devPrivate.ptr, pixWidth,
-		      width, height, xrot, yrot,
-		      s3alu[pGC->alu], pGC->planemask);
-	 ppt++;
-	 pwidth++;
-      }
-   } else
-#endif
-   {
-      while (n--) {
-	 (s3ImageFillFunc) (ppt->x, ppt->y, *pwidth, 1,
-			    pPix->devPrivate.ptr, pixWidth,
-			    width, height, xrot, yrot,
-			    s3alu[pGC->alu], pGC->planemask);
-	 ppt++;
-	 pwidth++;
-      }
+   while (n--) {
+      (s3ImageFillFunc) (ppt->x, ppt->y, *pwidth, 1,
+			 pPix->devPrivate.ptr, pixWidth,
+			 width, height, xrot, yrot,
+			 s3alu[pGC->alu], pGC->planemask);
+       ppt++;
+       pwidth++;
    }
 
    DEALLOCATE_LOCAL(initPpt);
@@ -283,17 +293,31 @@ s3StipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
    if (!xf86VTSema)
    {
-      cfbUnnaturalStippleFS(pDrawable, pGC,
-			    nInit, pptInit, pwidthInit, fSorted);
+      switch (s3InfoRec.bitsPerPixel) {
+      case 8:
+	 cfbUnnaturalStippleFS(pDrawable, pGC,
+			       nInit, pptInit, pwidthInit, fSorted);
+         break;
+      case 16:
+	 cfb16UnnaturalStippleFS(pDrawable, pGC,
+				 nInit, pptInit, pwidthInit, fSorted);
+         break;
+      case 32:
+	 cfb32UnnaturalStippleFS(pDrawable, pGC,
+				 nInit, pptInit, pwidthInit, fSorted);
+         break;
+      }
       return;
    }
 
    if (pDrawable->type != DRAWABLE_WINDOW) {
-      switch (pDrawable->depth) {
+      switch (pDrawable->bitsPerPixel) {
 	case 1:
 	   ErrorF("should call mfbStippleFillSpans\n");
 	   break;
 	case 8:
+	case 16:
+	case 32:
 	   ErrorF("should call cfbStippleFillSpans\n");
 	   break;
 	default:
@@ -331,34 +355,13 @@ s3StipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
    height = pPix->drawable.height;
    pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
-#ifdef PRIXPRIV
-   if (s3MAX_SLOTS && s3CacheStipple(pPix, pwidth - width)) {
-      while (n--) {
-	 if (*pwidth > 50)
-	   s3CImageStipple(pPix->slot,
-			 ppt->x, ppt->y, *pwidth, 1, xrot, yrot,
-			 pGC->fgPixel,
-			 s3alu[pGC->alu], pGC->planemask);
-	  else
-	    s3ImageStipple(ppt->x, ppt->y, *pwidth, 1,
-			pPix->devPrivate.ptr, pixWidth, width, height,
-			xrot, yrot, pGC->fgPixel,
-			s3alu[pGC->alu], pGC->planemask);
-	    
-	 ppt++;
-	 pwidth++;
-      }
-   } else
-#endif
-   {
-      while (n--) {
-	 s3ImageStipple(ppt->x, ppt->y, *pwidth, 1,
-			pPix->devPrivate.ptr, pixWidth, width, height,
-			xrot, yrot, pGC->fgPixel,
-			s3alu[pGC->alu], pGC->planemask);
-	 ppt++;
-	 pwidth++;
-      }
+   while (n--) {
+      s3ImageStipple(ppt->x, ppt->y, *pwidth, 1,
+		     pPix->devPrivate.ptr, pixWidth, width, height,
+		     xrot, yrot, pGC->fgPixel,
+		     s3alu[pGC->alu], pGC->planemask);
+      ppt++;
+      pwidth++;
    }
 
    DEALLOCATE_LOCAL(initPpt);
@@ -384,17 +387,31 @@ s3OStipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
    if (!xf86VTSema)
    {
-      cfbUnnaturalStippleFS(pDrawable, pGC,
-			    nInit, pptInit, pwidthInit, fSorted);
+      switch (s3InfoRec.bitsPerPixel) {
+      case 8:
+	 cfbUnnaturalStippleFS(pDrawable, pGC,
+			       nInit, pptInit, pwidthInit, fSorted);
+         break;
+      case 16:
+	 cfb16UnnaturalStippleFS(pDrawable, pGC,
+				 nInit, pptInit, pwidthInit, fSorted);
+         break;
+      case 32:
+	 cfb32UnnaturalStippleFS(pDrawable, pGC,
+				 nInit, pptInit, pwidthInit, fSorted);
+         break;
+      }
       return;
    }
 
    if (pDrawable->type != DRAWABLE_WINDOW) {
-      switch (pDrawable->depth) {
+      switch (pDrawable->bitsPerPixel) {
 	case 1:
 	   ErrorF("should call mfbOpStippleFillSpans\n");
 	   break;
 	case 8:
+	case 16:
+	case 32:
 	   ErrorF("should call cfbOpStippleFillSpans\n");
 	   break;
 	default:
@@ -432,36 +449,14 @@ s3OStipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
    height = pPix->drawable.height;
    pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
-#ifdef PIXPRIV
-   if (s3MAX_SLOTS && s3CacheOpStipple(pPix, pwidth - width)) {
-      while (n--) {
-	 if (*pwidth > 50)
-	    s3CImageOpStipple(pPix->slot,
-			   ppt->x, ppt->y, *pwidth, 1, xrot, yrot,
-			   pGC->fgPixel, pGC->bgPixel,
-			   s3alu[pGC->alu], pGC->planemask);
-	 else
-	    s3ImageOpStipple(ppt->x, ppt->y, *pwidth, 1,
-			  pPix->devPrivate.ptr, pixWidth,
-			  width, height,
-			  xrot, yrot, pGC->fgPixel, pGC->bgPixel,
-			  s3alu[pGC->alu], pGC->planemask);
-	 
-	 ppt++;
-	 pwidth++;
-      }
-   } else
-#endif
-   {
-      while (n--) {
-	 s3ImageOpStipple(ppt->x, ppt->y, *pwidth, 1,
-			  pPix->devPrivate.ptr, pixWidth,
-			  width, height,
-			  xrot, yrot, pGC->fgPixel, pGC->bgPixel,
-			  s3alu[pGC->alu], pGC->planemask);
-	 ppt++;
-	 pwidth++;
-      }
+   while (n--) {
+      s3ImageOpStipple(ppt->x, ppt->y, *pwidth, 1,
+		       pPix->devPrivate.ptr, pixWidth,
+		       width, height,
+		       xrot, yrot, pGC->fgPixel, pGC->bgPixel,
+		       s3alu[pGC->alu], pGC->planemask);
+      ppt++;
+      pwidth++;
    }
 
    DEALLOCATE_LOCAL(initPpt);

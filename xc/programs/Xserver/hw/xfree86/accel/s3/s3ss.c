@@ -1,4 +1,5 @@
-/* $XConsortium: s3ss.c,v 1.1 94/03/28 21:16:53 dpw Exp $ */
+/* $XConsortium: s3ss.c,v 1.1 94/10/05 13:32:36 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ss.c,v 3.3 1994/08/20 07:34:27 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -70,6 +71,8 @@ Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 #include "scrnintstr.h"
 
 #include "cfb.h"
+#include "cfb16.h"
+#include "cfb32.h"
 #include "cfbmskbits.h"
 
 #include "s3.h"
@@ -104,17 +107,33 @@ s3SetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
 
    if (!xf86VTSema)
    {
-      cfbSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted);
+      switch (s3InfoRec.bitsPerPixel) {
+      case 8:
+	 cfbSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted);
+	 break;
+      case 16:
+	 cfb16SetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted);
+	 break;
+      case 32:
+	 cfb32SetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted);
+	 break;
+      }
       return;
    }
 
    if (pDrawable->type != DRAWABLE_WINDOW) {
-      switch (pDrawable->depth) {
+      switch (pDrawable->bitsPerPixel) {
 	case 1:
 	   mfbSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted);
 	   break;
 	case 8:
 	   cfbSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted);
+	   break;
+	case 16:
+	   cfb16SetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted);
+	   break;
+        case 32:
+	   cfb32SetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted);
 	   break;
 	default:
 	   ErrorF("Unsupported pixmap depth\n");
@@ -168,9 +187,12 @@ s3SetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
 		cfbSetScanline(ppt->y, ppt->x, xStart, xEnd, psrc, alu,
 		    pdstBase, widthDst, pGC->planemask);
 ***************/
+
 	    (s3ImageWriteFunc) (xStart, ppt->y, xEnd - xStart, 1,
-			      psrc + (xStart - ppt->x), xEnd - xStart, 0, 0,
-				s3alu[alu], pGC->planemask);
+			      psrc + (xStart - ppt->x) * s3Bpp,
+			      PixmapBytePad(xEnd-xStart, pDrawable->depth),
+			      0, 0, s3alu[alu], pGC->planemask);
+
 	    if (ppt->x + *pwidth <= pbox->x2) {
 	     /* End of the line, as it were */
 	       break;
@@ -212,13 +234,15 @@ s3SetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
 			cfbSetScanline(ppt->y, ppt->x, xStart, xEnd, psrc, alu,
 			    pdstBase, widthDst, pGC->planemask);
 **************/
-		  (s3ImageWriteFunc) (xStart, ppt->y, xEnd - xStart, 1,
-			      psrc + (xStart - ppt->x), xEnd - xStart, 0, 0,
-				      s3alu[alu], pGC->planemask);
+		(s3ImageWriteFunc) (xStart, ppt->y, xEnd - xStart, 1,
+			      psrc + (xStart - ppt->x) * s3Bpp,
+			      PixmapBytePad(xEnd-xStart, pDrawable->depth),
+			      0, 0, s3alu[alu], pGC->planemask);
+
 	       }
 	    }
 	 }
-	 psrc += PixmapBytePad(*pwidth, PSZ);
+	 psrc += PixmapBytePad(*pwidth, pDrawable->depth);
 	 ppt++;
 	 pwidth++;
       }

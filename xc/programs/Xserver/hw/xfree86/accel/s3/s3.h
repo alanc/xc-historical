@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: s3.h,v 1.1 94/10/05 13:32:36 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.13 1994/09/26 15:31:41 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -34,12 +35,6 @@
 
 #define S3_PATCHLEVEL "0"
 
-/*
- * This is included, but it hasn't been tested properly yet.  It enables
- * the undocumented "number_nine" Option (which will turn on the pixmux code).
- */
-#define NUMNINETEST
-
 #ifndef LINKKIT
 #include "s3name.h"
 
@@ -62,10 +57,11 @@
 #include "xf86.h"
 #include "regionstr.h"
 #include "xf86_OSlib.h"
+#include "xf86bcache.h"
+#include "xf86fcache.h"
 #include "xf86Procs.h"
 
 #include "s3Cursor.h"
-#include "s3bcach.h"
 #include "regs3.h"
 
 #include "vga.h"
@@ -75,9 +71,37 @@
 #if defined(S3_MMIO) && (defined(__STDC__) || defined(__GNUC__))
 # define S3_OUTW(p,n) *(volatile unsigned short *)((char *)vgaBase+(p)) = \
 			(unsigned short)(n)
+# define S3_OUTL(p,n) *(volatile unsigned long *)((char *)vgaBase+(p)) = \
+			(unsigned long)(n)
 #else
 # define S3_OUTW(p,n) outw(p, n)
+# define S3_OUTL(p,n) outl(p, n)
 #endif
+
+#define outw32(p,n) \
+  if (s3InfoRec.bitsPerPixel == 32) { \
+    outw(MULTIFUNC_CNTL,MULT_MISC); \
+    outw(p,n); \
+    outw(p,(n)>>16); \
+  } \
+  else \
+    outw(p,n)
+
+#define S3_OUTW32(p,n) \
+  if (s3InfoRec.bitsPerPixel == 32) { \
+    S3_OUTW(MULTIFUNC_CNTL,MULT_MISC); \
+    S3_OUTW(p,n); \
+    S3_OUTW(p,(n)>>16); \
+  } \
+  else \
+    S3_OUTW(p,n)
+
+#define WaitQueue16_32(n16,n32) \
+  	 if (s3InfoRec.bitsPerPixel == 32) { \
+	    WaitQueue(n32); \
+	 } \
+	 else \
+	    WaitQueue(n16)
 
 #else /* !LINKKIT */
 #include "X.h"
@@ -101,6 +125,7 @@ typedef struct {
 } s3VideoChipRec, *s3VideoChipPtr;
 
 extern ScrnInfoRec s3InfoRec;
+extern short s3ChipId;
 
 #ifndef LINKKIT
 _XFUNCPROTOBEGIN
@@ -111,11 +136,15 @@ extern void (*s3ImageFillFunc)();
 
 extern int s3DisplayWidth;
 extern int s3ScissB;
+extern int s3Bpp;    /* Bytes per pixel */
+extern int s3BppDisplayWidth;
+extern int s3Weight;
 extern short s3alu[];
 extern pointer s3VideoMem;
 extern pointer vgaBase;
 extern ScreenPtr s3savepScreen;
 extern int s3CursorStartX, s3CursorStartY, s3CursorLines;
+extern unsigned char s3LinApOpt, s3SAM256;
 
 extern int vgaCRIndex;
 extern int vgaCRReg;
@@ -126,16 +155,34 @@ extern int s3RamdacType;
 extern Bool s3DAC8Bit;
 extern Bool s3UsingPixMux;
 extern Bool s3Bt485PixMux;
+extern Bool s3ATT498PixMux;
 
 #define UNKNOWN_DAC       -1
 #define NORMAL_DAC         0
 #define BT485_DAC          1
 #define ATT20C505_DAC      2
 #define TI3020_DAC         3
+#define ATT498_DAC         4
+#define ATT20C498_DAC      ATT498_DAC
+#define TI3025_DAC         5
+#define ATT20C490_DAC      6
+#define SC15025_DAC        7
+#define STG1700_DAC        8
+#define S3_SDAC_DAC        9
+#define S3_GENDAC_DAC     10
 
-#define DAC_IS_BT485_SERIES    (s3RamdacType == BT485_DAC || \
-			        s3RamdacType == ATT20C505_DAC)
-#define DAC_IS_TI3020	       (s3RamdacType == TI3020_DAC)
+#define DAC_IS_BT485_SERIES	(s3RamdacType == BT485_DAC || \
+				 s3RamdacType == ATT20C505_DAC)
+#define DAC_IS_TI3020_SERIES	(s3RamdacType == TI3020_DAC || \
+				 s3RamdacType == TI3025_DAC)
+#define DAC_IS_TI3020		(s3RamdacType == TI3020_DAC)
+#define DAC_IS_TI3025		(s3RamdacType == TI3025_DAC)
+#define DAC_IS_ATT498		(s3RamdacType == ATT20C498_DAC)
+#define DAC_IS_ATT490		(s3RamdacType == ATT20C490_DAC)
+#define DAC_IS_SC15025		(s3RamdacType == SC15025_DAC)
+#define DAC_IS_STG1700          (s3RamdacType == STG1700_DAC)
+#define DAC_IS_SDAC             (s3RamdacType == S3_SDAC_DAC)
+#define DAC_IS_GENDAC           (s3RamdacType == S3_GENDAC_DAC)
 
 /* Function Prototypes */
 
@@ -231,6 +278,18 @@ void s3RestoreColor0(
 );
 /* s3gc.c */
 Bool s3CreateGC(
+#if NeedFunctionPrototypes
+    GCPtr 
+#endif
+);
+/* s3gc16.c */
+Bool s3CreateGC16(
+#if NeedFunctionPrototypes
+    GCPtr 
+#endif
+);
+/* s3gc32.c */
+Bool s3CreateGC32(
 #if NeedFunctionPrototypes
     GCPtr 
 #endif
@@ -345,7 +404,7 @@ void s3ImageWriteNoMem(
     int,
     int,
     int,
-    int 
+    Pixel
 #endif
 );
 void s3ImageStipple(
@@ -360,9 +419,9 @@ void s3ImageStipple(
     int,
     int,
     int,
+    Pixel,
     int,
-    int,
-    int 
+    Pixel
 #endif
 );
 void s3ImageOpStipple(
@@ -371,16 +430,16 @@ void s3ImageOpStipple(
     int,
     int,
     int,
-    char *,
+    unsigned char *,
     int,
     int,
     int,
     int,
     int,
-    int,
-    int,
-    int,
-    int 
+    Pixel,
+    Pixel,
+    short,
+    Pixel 
 #endif
 );
 /* s3bstor.c */
@@ -425,7 +484,7 @@ RegionPtr s3CopyArea(
     int,
     int,
     int,
-    int 
+    int
 #endif
 );
 void s3FindOrdering(
@@ -456,7 +515,6 @@ RegionPtr s3CopyPlane(
     unsigned long 
 #endif
 );
-/* s3pcach.c */
 /* s3plypt.c */
 void s3PolyPoint(
 #if NeedFunctionPrototypes
@@ -495,47 +553,14 @@ void s3PolyFillRect(
     xRectangle *
 #endif
 );
+void s3InitFrect(
+#if NeedFunctionPrototypes
+    int,
+    int,
+    int
+#endif
+);
 /* s3text.c */
-int s3PolyText8(
-#if NeedFunctionPrototypes
-    DrawablePtr,
-    GCPtr,
-    int,
-    int,
-    int,
-    char *
-#endif
-);
-int s3PolyText16(
-#if NeedFunctionPrototypes
-    DrawablePtr,
-    GCPtr,
-    int,
-    int,
-    int,
-    unsigned short *
-#endif
-);
-void s3ImageText8(
-#if NeedFunctionPrototypes
-    DrawablePtr,
-    GCPtr,
-    int,
-    int,
-    int,
-    char *
-#endif
-);
-void s3ImageText16(
-#if NeedFunctionPrototypes
-    DrawablePtr,
-    GCPtr,
-    int,
-    int,
-    int,
-    unsigned short *
-#endif
-);
 int s3NoCPolyText(
 #if NeedFunctionPrototypes
     DrawablePtr,
@@ -547,6 +572,20 @@ int s3NoCPolyText(
     Bool 
 #endif
 );
+
+void s3FontStipple(
+#if NeedFunctionPrototypes
+    int,
+    int,
+    int,
+    int,
+    unsigned char *,
+    int,
+    Pixel
+#endif
+);
+
+
 int s3NoCImageText(
 #if NeedFunctionPrototypes
     DrawablePtr,
@@ -572,36 +611,33 @@ Bool s3UnrealizeFont(
 #endif
 );
 /* s3fcach.c */
-void s3UnCacheFont8(
+void s3FontCache8Init(
 #if NeedFunctionPrototypes
-    FontPtr 
+    void
 #endif
 );
-CacheFont8Ptr s3CacheFont8(
+void s3GlyphWrite(
 #if NeedFunctionPrototypes
-    FontPtr 
-#endif
-);
-int s3CPolyText8(
-#if NeedFunctionPrototypes
-    DrawablePtr ,
-    GCPtr ,
-    int ,
-    int ,
-    int ,
+    int,
+    int,
+    int,
     unsigned char *,
-    CacheFont8Ptr 
+    CacheFont8Ptr,
+    GCPtr,
+    BoxPtr,
+    int
 #endif
 );
-int s3CImageText8(
+/* s3bcach.c */
+void s3CacheMoveBlock(
 #if NeedFunctionPrototypes
-    DrawablePtr ,
-    GCPtr ,
-    int ,
-    int ,
-    int ,
-    char *,
-    CacheFont8Ptr 
+    int,
+    int,
+    int,
+    int,
+    int,
+    int,
+    unsigned int
 #endif
 );
 /* s3Cursor.c */
@@ -734,24 +770,6 @@ void s3Dsegment(
     GCPtr,
     int,
     xSegment *
-#endif
-);
-/* s3bcach.c */
-void s3BitCache8Init(
-#if NeedFunctionPrototypes
-    int,
-    int 
-#endif
-);
-bitMapBlockPtr s3CGetBlock(
-#if NeedFunctionPrototypes
-    int,
-    int 
-#endif
-);
-void s3CReturnBlock(
-#if NeedFunctionPrototypes
-    bitMapBlockPtr 
 #endif
 );
 /* s3gtimg.c */

@@ -1,4 +1,5 @@
-/* $XConsortium: s3gc.c,v 1.1 94/03/28 21:15:21 dpw Exp $ */
+/* $XConsortium: s3gc.c,v 1.1 94/10/05 13:32:36 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gc.c,v 3.2 1994/08/03 13:27:58 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -72,25 +73,29 @@ Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 
 #include "mistruct.h"
 #include "mibstore.h"
+#include "migc.h"
 
 #include "cfbmskbits.h"
 #include "cfb8bit.h"
+
+#include "xf86bcache.h"
+#include "xf86fcache.h"
+#include "xf86text.h"
 
 #include "s3.h"
 
 static void s3ValidateGC(), cfbChangeGC(), cfbCopyGC(), cfbDestroyGC();
 static void cfbChangeClip(), cfbDestroyClip(), cfbCopyClip();
-static void cfbDestroyOps();
 
 static GCFuncs cfbFuncs =
 {
    s3ValidateGC,
-   cfbChangeGC,
-   cfbCopyGC,
-   cfbDestroyGC,
-   cfbChangeClip,
-   cfbDestroyClip,
-   cfbCopyClip,
+   miChangeGC,
+   miCopyGC,
+   miDestroyGC,
+   miChangeClip,
+   miDestroyClip,
+   miCopyClip,
 };
 
 static GCOps s3Ops =
@@ -108,10 +113,10 @@ static GCOps s3Ops =
    miFillPolygon,
    s3PolyFillRect,
    miPolyFillArc,
-   s3PolyText8,
-   s3PolyText16,
-   s3ImageText8,
-   s3ImageText16,
+   xf86PolyText8,
+   xf86PolyText16,
+   xf86ImageText8,
+   xf86ImageText16,
    miImageGlyphBlt,
    miPolyGlyphBlt,
    miPushPixels,
@@ -126,8 +131,8 @@ static GCOps cfbTEOps1Rect =
    s3CopyArea,
    s3CopyPlane,
    cfbPolyPoint,
-   cfbLineSS,
-   cfbSegmentSS,
+   cfb8LineSS1Rect,
+   cfb8SegmentSS1Rect,
    miPolyRectangle,
 #if PPW == 4
    cfbZeroPolyArcSS8Copy,
@@ -308,29 +313,6 @@ s3CreateGC(pGC)
    return TRUE;
 }
 
-/* ARGSUSED */
-static void
-cfbChangeGC(pGC, mask)
-     GC   *pGC;
-     BITS32 mask;
-{
-   return;
-}
-
-static void
-cfbDestroyGC(pGC)
-     GC   *pGC;
-{
-   cfbPrivGC *pPriv;
-
-   pPriv = (cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr);
-   if (pPriv->pRotatedPixmap)
-      cfbDestroyPixmap(pPriv->pRotatedPixmap);
-   if (pPriv->freeCompClip)
-      (*pGC->pScreen->RegionDestroy) (pPriv->pCompositeClip);
-   cfbDestroyOps(pGC->ops);
-}
-
 /*
  * create a private op array for a gc
  */
@@ -352,13 +334,6 @@ cfbCreateOps(prototype)
    return ret;
 }
 
-static void
-cfbDestroyOps(ops)
-     GCOps *ops;
-{
-   if (ops->devPrivate.val)
-      xfree(ops);
-}
 
 /*
  * Clipping conventions if the drawable is a window CT_REGION ==>
@@ -385,11 +360,6 @@ s3ValidateGC(pGC, changes, pDrawable)
  /* flags for changing the proc vector */
    cfbPrivGCPtr devPriv;
    int   oneRect;
-
-#ifdef PIXPRIV
-   if (pDrawable->type == DRAWABLE_PIXMAP)
-      s3CacheFreeSlot(pDrawable);
-#endif
 
    new_rotate = pGC->lastWinOrg.x != pDrawable->x ||
       pGC->lastWinOrg.y != pDrawable->y;
@@ -673,7 +643,7 @@ s3ValidateGC(pGC, changes, pDrawable)
    }
    if (pWin && pGC->ops->devPrivate.val != 2) {
       if (pGC->ops->devPrivate.val == 1)
-	 cfbDestroyOps(pGC->ops);
+	 miDestroyGCOps(pGC->ops);
 
       pGC->ops = cfbCreateOps(&s3Ops);
       pGC->ops->devPrivate.val = 2;
@@ -688,7 +658,7 @@ s3ValidateGC(pGC, changes, pDrawable)
 
       if ((newops = matchCommon(pGC, devPriv))) {
 	 if (pGC->ops->devPrivate.val)
-	    cfbDestroyOps(pGC->ops);
+	    miDestroyGCOps(pGC->ops);
 	 pGC->ops = newops;
 	 new_rrop = new_line = new_fillspans = new_text = new_fillarea = 0;
       } else {
@@ -696,7 +666,7 @@ s3ValidateGC(pGC, changes, pDrawable)
 	    pGC->ops = cfbCreateOps(pGC->ops);
 	    pGC->ops->devPrivate.val = 1;
 	 } else if (pGC->ops->devPrivate.val != 1) {
-	    cfbDestroyOps(pGC->ops);
+	    miDestroyGCOps(pGC->ops);
 	    pGC->ops = cfbCreateOps(&cfbNonTEOps);
 	    pGC->ops->devPrivate.val = 1;
 	    new_rrop = new_line = new_text = new_fillspans = new_fillarea = TRUE;
@@ -932,80 +902,4 @@ s3ValidateGC(pGC, changes, pDrawable)
    }
 }
 
-static void
-cfbDestroyClip(pGC)
-     GCPtr pGC;
-{
-   if (pGC->clientClipType == CT_NONE)
-      return;
-   else if (pGC->clientClipType == CT_PIXMAP) {
-      cfbDestroyPixmap((PixmapPtr) (pGC->clientClip));
-   } else {
 
-    /*
-     * we know we'll never have a list of rectangles, since ChangeClip
-     * immediately turns them into a region
-     */
-      (*pGC->pScreen->RegionDestroy) (pGC->clientClip);
-   }
-   pGC->clientClip = NULL;
-   pGC->clientClipType = CT_NONE;
-}
-
-static void
-cfbChangeClip(pGC, type, pvalue, nrects)
-     GCPtr pGC;
-     int   type;
-     pointer pvalue;
-     int   nrects;
-{
-   cfbDestroyClip(pGC);
-   if (type == CT_PIXMAP) {
-      pGC->clientClip = (pointer) (*pGC->pScreen->BitmapToRegion) ((PixmapPtr) pvalue);
-      (*pGC->pScreen->DestroyPixmap) (pvalue);
-   } else if (type == CT_REGION) {
-    /* stuff the region in the GC */
-      pGC->clientClip = pvalue;
-   } else if (type != CT_NONE) {
-      pGC->clientClip = (pointer) (*pGC->pScreen->RectsToRegion) (nrects,
-						      (xRectangle *) pvalue,
-								  type);
-      xfree(pvalue);
-   }
-   pGC->clientClipType = (type != CT_NONE && pGC->clientClip) ? CT_REGION :
-      CT_NONE;
-   pGC->stateChanges |= GCClipMask;
-}
-
-static void
-cfbCopyClip(pgcDst, pgcSrc)
-     GCPtr pgcDst, pgcSrc;
-{
-   RegionPtr prgnNew;
-
-   switch (pgcSrc->clientClipType) {
-     case CT_PIXMAP:
-	((PixmapPtr) pgcSrc->clientClip)->refcnt++;
-      /* Fall through !! */
-     case CT_NONE:
-	cfbChangeClip(pgcDst, (int)pgcSrc->clientClipType, pgcSrc->clientClip,
-		      0);
-	break;
-     case CT_REGION:
-	prgnNew = (*pgcSrc->pScreen->RegionCreate) (NULL, 1);
-	(*pgcSrc->pScreen->RegionCopy) (prgnNew,
-					(RegionPtr) (pgcSrc->clientClip));
-	cfbChangeClip(pgcDst, CT_REGION, (pointer) prgnNew, 0);
-	break;
-   }
-}
-
-/* ARGSUSED */
-static void
-cfbCopyGC(pGCSrc, changes, pGCDst)
-     GCPtr pGCSrc;
-     Mask  changes;
-     GCPtr pGCDst;
-{
-   return;
-}

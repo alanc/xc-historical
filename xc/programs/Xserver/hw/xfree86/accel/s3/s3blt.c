@@ -1,4 +1,5 @@
-/* $XConsortium: s3blt.c,v 1.1 94/03/28 21:14:31 dpw Exp $ */
+/* $XConsortium: s3blt.c,v 1.1 94/10/05 13:32:36 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3blt.c,v 3.7 1994/08/20 07:33:47 dawes Exp $ */
 /*
 
 Copyright (c) 1998  X Consortium
@@ -57,6 +58,8 @@ PERFORMANCE OF THIS SOFTWARE.
 #include	"regionstr.h"
 #include	"mi.h"
 #include	"cfb.h"
+#include	"cfb16.h"
+#include	"cfb32.h"
 #include	"cfbmskbits.h"
 #include	"cfb8bit.h"
 #include	"fastblt.h"
@@ -69,7 +72,10 @@ PERFORMANCE OF THIS SOFTWARE.
 
 extern int s3MAX_SLOTS;
 void  s3FindOrdering();
+extern Bool s3PCIHack;
 extern RegionPtr cfbBitBlt();
+
+#define PCI_HACK()   if (s3PCIHack) WaitIdle()
 
 RegionPtr
 s3CopyArea(pSrcDrawable, pDstDrawable,
@@ -100,8 +106,17 @@ s3CopyArea(pSrcDrawable, pDstDrawable,
    if (!xf86VTSema || 
        (pSrcDrawable->type != DRAWABLE_WINDOW &&
                       pDstDrawable->type != DRAWABLE_WINDOW))
-      return cfbCopyArea(pSrcDrawable, pDstDrawable, pGC,
-                          srcx, srcy, width, height, dstx, dsty);
+	switch (max(pSrcDrawable->bitsPerPixel, pDstDrawable->bitsPerPixel)) {
+ 	case 8:
+	    return cfbCopyArea(pSrcDrawable, pDstDrawable, pGC,
+			       srcx, srcy, width, height, dstx, dsty);
+	case 16:
+	    return cfb16CopyArea(pSrcDrawable, pDstDrawable, pGC,
+				 srcx, srcy, width, height, dstx, dsty);
+	case 32:
+	    return cfb32CopyArea(pSrcDrawable, pDstDrawable, pGC,
+				 srcx, srcy, width, height, dstx, dsty);
+	} 
 
    origSource.x = srcx;
    origSource.y = srcy;
@@ -281,16 +296,16 @@ s3CopyArea(pSrcDrawable, pDstDrawable,
 	    direction |= INC_Y;
 
 	 BLOCK_CURSOR;
-	 WaitQueue(3);
+	 WaitQueue16_32(3,4);
+	 PCI_HACK();
 	 S3_OUTW(FRGD_MIX, FSS_BITBLT | s3alu[pGC->alu]);
 	 S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
-	 S3_OUTW(WRT_MASK, pGC->planemask);
-
+	 S3_OUTW32(WRT_MASK, pGC->planemask);
 	 if (direction == (INC_X | INC_Y)) {
 	    for (i = 0; i < numRects; i++) {
 	       prect = &pbox[ordering[i]];
 
-	       WaitQueue(7);
+	       WaitQueue(7); PCI_HACK();
 	       S3_OUTW(CUR_X, (short)(prect->x1 + dx));
 	       S3_OUTW(CUR_Y, (short)(prect->y1 + dy));
 	       S3_OUTW(DESTX_DIASTP, (short)(prect->x1));
@@ -303,7 +318,7 @@ s3CopyArea(pSrcDrawable, pDstDrawable,
 	    for (i = 0; i < numRects; i++) {
 	       prect = &pbox[ordering[i]];
 
-	       WaitQueue(7);
+	       WaitQueue(7); PCI_HACK();
 	       S3_OUTW(CUR_X, (short)(prect->x1 + dx));
 	       S3_OUTW(CUR_Y, (short)(prect->y2 + dy - 1));
 	       S3_OUTW(DESTX_DIASTP, (short)(prect->x1));
@@ -316,7 +331,7 @@ s3CopyArea(pSrcDrawable, pDstDrawable,
 	    for (i = 0; i < numRects; i++) {
 	       prect = &pbox[ordering[i]];
 
-	       WaitQueue(7);
+	       WaitQueue(7); PCI_HACK();
 	       S3_OUTW(CUR_X, (short)(prect->x2 + dx - 1));
 	       S3_OUTW(CUR_Y, (short)(prect->y1 + dy));
 	       S3_OUTW(DESTX_DIASTP, (short)(prect->x2 - 1));
@@ -329,7 +344,7 @@ s3CopyArea(pSrcDrawable, pDstDrawable,
 	    for (i = 0; i < numRects; i++) {
 	       prect = &pbox[ordering[i]];
 
-	       WaitQueue(7);
+	       WaitQueue(7); PCI_HACK();
 	       S3_OUTW(CUR_X, (short)(prect->x2 + dx - 1));
 	       S3_OUTW(CUR_Y, (short)(prect->y2 + dy - 1));
 	       S3_OUTW(DESTX_DIASTP, (short)(prect->x2 - 1));
@@ -340,10 +355,10 @@ s3CopyArea(pSrcDrawable, pDstDrawable,
 	    }
 	 }
 
-	 WaitQueue(3);
+	 WaitQueue16_32(3,4); PCI_HACK();
 	 S3_OUTW(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
 	 S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
-	 S3_OUTW(WRT_MASK, 0xffff);
+	 S3_OUTW32(WRT_MASK, ~0);
 	 UNBLOCK_CURSOR;
 	 DEALLOCATE_LOCAL(ordering);
       } else if (pSrcDrawable->type == DRAWABLE_WINDOW &&
@@ -502,10 +517,20 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
        (pSrcDrawable->type != DRAWABLE_WINDOW &&
 	pDstDrawable->type != DRAWABLE_WINDOW))
    {
-      return cfbCopyPlane(pSrcDrawable, pDstDrawable, pGC,
-                      srcx, srcy, width, height, dstx, dsty, bitPlane);
-   }
-
+	switch (max(pSrcDrawable->bitsPerPixel, pDstDrawable->bitsPerPixel)) {
+ 	case 8:
+	    return cfbCopyPlane(pSrcDrawable, pDstDrawable, pGC,
+			    srcx, srcy, width, height, dstx, dsty, bitPlane);
+	case 16:
+	    return cfb16CopyPlane(pSrcDrawable, pDstDrawable, pGC,
+			      srcx, srcy, width, height, dstx, dsty, bitPlane);
+	case 32:
+	    return cfb32CopyPlane(pSrcDrawable, pDstDrawable, pGC,
+			      srcx, srcy, width, height, dstx, dsty, bitPlane);
+	}
+   } 
+#if 0
+   /* This can cause server lockups */
    /*
     * If we are using a linear mapped framebuffer, using direct memory
     * access is faster than using the graphics engine to do stipple
@@ -529,7 +554,9 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
 	 UNBLOCK_CURSOR;
          return retVal;
       }
-   } else {
+   } else
+#endif
+   {
       if ((pSrcDrawable->type != DRAWABLE_WINDOW) &&
 	  (pDstDrawable->type == DRAWABLE_WINDOW) &&
 	  (pSrcDrawable->bitsPerPixel == 8)) {
@@ -541,7 +568,8 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
 	 GCPtr pGC1;
 
 	 pBitmap=(*pSrcDrawable->pScreen->CreatePixmap)(pSrcDrawable->pScreen, 
-						        width, height, 1);
+                                                        pSrcDrawable->width,
+                                                        pSrcDrawable->height, 1);
 	 if (!pBitmap)
 	    return(NULL);
 	 pGC1 = GetScratchGC(1, pSrcDrawable->pScreen);
@@ -551,11 +579,13 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
 	 }
 	 ValidateGC((DrawablePtr)pBitmap, pGC1);
 	 (void) cfbBitBlt(pSrcDrawable, (DrawablePtr)pBitmap, pGC1, srcx, srcy,
-			  width, height, 0, 0, cfbCopyPlane8to1, bitPlane);
+			  width, height, srcx, srcy, cfbCopyPlane8to1, bitPlane);
+         FreeScratchGC(pGC1);
 	 pSrcDrawable = (DrawablePtr)pBitmap;
       }
       else if ((pSrcDrawable->type == DRAWABLE_WINDOW) &&
-	       (pDstDrawable->type != DRAWABLE_WINDOW)) {
+	       (pDstDrawable->type != DRAWABLE_WINDOW) &&
+	       (pSrcDrawable->bitsPerPixel == 8)) {
 	 /*
 	  * Shortcut - we can do Window->Pixmap by copying the window to
 	  * a pixmap, then we have a Pixmap->Pixmap operation
@@ -578,6 +608,7 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
 			width, height, 0, 0);
 	 retval = cfbCopyPlane((DrawablePtr)pPixmap, pDstDrawable, pGC,
                              0, 0, width, height, dstx, dsty, bitPlane);
+         FreeScratchGC(pGC1);
 	 (*pSrcDrawable->pScreen->DestroyPixmap)(pPixmap);
 	 return(retval);
       }
@@ -685,6 +716,8 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
 	    (*pGC->pScreen->RegionUninit) (&rgnDst);
 	 if (freeSrcClip)
 	    (*pGC->pScreen->RegionDestroy) (prgnSrcClip);
+         if (pBitmap)
+            (*pSrcDrawable->pScreen->DestroyPixmap)(pBitmap);
 	 return NULL;
       }
    }
@@ -770,12 +803,14 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
 	    direction |= INC_Y;
 
 	 BLOCK_CURSOR;
-	 WaitQueue(6);
+	 WaitQueue16_32(3,5);
 	 S3_OUTW(FRGD_MIX, FSS_FRGDCOL | s3alu[pGC->alu]);
-	 S3_OUTW(RD_MASK, (unsigned short)bitPlane);
-	 S3_OUTW(WRT_MASK, pGC->planemask);
-	 S3_OUTW(FRGD_COLOR, (short)pGC->fgPixel);
-	 S3_OUTW(BKGD_COLOR, (short)pGC->bgPixel);
+	 S3_OUTW32(RD_MASK, bitPlane);
+	 S3_OUTW32(WRT_MASK, pGC->planemask);
+
+	 WaitQueue16_32(3,5);
+	 S3_OUTW32(FRGD_COLOR, pGC->fgPixel);
+	 S3_OUTW32(BKGD_COLOR, pGC->bgPixel);
 	 S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL|MIXSEL_EXPBLT);
 
 	 if (direction == (INC_X | INC_Y)) {
@@ -836,10 +871,10 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
 	    }
 	 }
 
-	 WaitQueue(4);
+	 WaitQueue16_32(4,6);
 	 S3_OUTW(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
-	 S3_OUTW(RD_MASK, 0xffff);
-	 S3_OUTW(WRT_MASK, 0xffff);
+	 S3_OUTW32(RD_MASK, ~0);
+	 S3_OUTW32(WRT_MASK, ~0);
 	 S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
 	 UNBLOCK_CURSOR;
 	 DEALLOCATE_LOCAL(ordering);
@@ -852,31 +887,18 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
          /* Pixmap --> Window */
          PixmapPtr pix = (PixmapPtr) pSrcDrawable;
 	 int   pixWidth;
-	 char *psrc;
+	 unsigned char *psrc;
 
 	 pixWidth = PixmapBytePad(pSrcDrawable->width, pSrcDrawable->depth);
 	 psrc = pix->devPrivate.ptr;
 	 
-#ifdef PIXPRIV
-	 if (s3MAX_SLOTS && s3CacheOpStipple(pix, (pbox->x2 - pbox->x1) -
-						  pix->drawable.width)) {
-	    for (i = numRects; --i >= 0; pbox++) {
-	       s3CImageOpStipple(pix->slot, pbox->x1, pbox->y1,
-				 pbox->x2 - pbox->x1, pbox->y2 - pbox->y1,
-				 -dx, -dy, pGC->fgPixel, pGC->bgPixel, 
-				 s3alu[pGC->alu], (short)pGC->planemask);
-	    }
-	 } else
-#endif
-	 {
-	    for (i = numRects; --i >= 0; pbox++) {
-	       s3ImageOpStipple(pbox->x1, pbox->y1,
-				pbox->x2 - pbox->x1, pbox->y2 - pbox->y1,
-				psrc, pixWidth,
-				pix->drawable.width, pix->drawable.height,
-				-dx, -dy, pGC->fgPixel, pGC->bgPixel, 
-				s3alu[pGC->alu], (short)pGC->planemask);
-	    }
+	 for (i = numRects; --i >= 0; pbox++) {
+	    s3ImageOpStipple(pbox->x1, pbox->y1,
+			     pbox->x2 - pbox->x1, pbox->y2 - pbox->y1,
+			     psrc, pixWidth,
+			     pix->drawable.width, pix->drawable.height,
+			     -dx, -dy, pGC->fgPixel, pGC->bgPixel, 
+			     s3alu[pGC->alu], (short)pGC->planemask);
 	 }
       } else {
          /* Pixmap --> Pixmap */

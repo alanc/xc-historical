@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: mmio_928.c,v 1.1 94/10/05 13:33:29 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/mmio_928/mmio_928.c,v 3.2 1994/08/02 04:19:40 dawes Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -33,7 +34,6 @@ extern void mmio928_s3EnterLeaveVT();
 extern Bool mmio928_s3Initialize();
 extern void mmio928_s3AdjustFrame();
 extern Bool mmio928_s3SwitchMode();
-extern int s3ChipId;
 extern Bool s3Mmio928;
 
 /*

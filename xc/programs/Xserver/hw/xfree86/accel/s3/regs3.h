@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: regs3.h,v 1.1 94/10/05 13:32:36 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/regs3.h,v 3.8 1994/08/31 04:29:39 dawes Exp $ */
 /*
  * regs3.h
  * 
@@ -53,9 +54,9 @@
  * By locking them hopefully this won't happen.
  */
 
-#define UNLOCK_SYS_REGS	          { \
+#define UNLOCK_SYS_REGS	          do { \
 				   outb(vgaCRIndex, 0x39); \
-				   outb(vgaCRReg, 0xa5); }
+				   outb(vgaCRReg, 0xa5); } while (0)
 
 /*
  * I haven't had time to put the lock and unlocks in all the right places, for
@@ -63,28 +64,34 @@
  */
 #define LOCK_SYS_REGS	        /**/
 #ifdef notyet
-				 { \
+				 do { \
 				   outb(vgaCRIndex, 0x39); \
-				   outb(vgaCRReg, 0x50); }
+				   outb(vgaCRReg, 0x50); } while (0)
 #endif				   
 
-#define S3_911_ONLY(chip)     (chip==0x81)
-#define S3_924_ONLY(chip)     (chip==0x82)
+#define S3_911_ONLY(chip)       (chip==0x81)
+#define S3_924_ONLY(chip)       (chip==0x82)
 #define S3_911_SERIES(chip)     ((chip&0xf0)==0x80)
 #define S3_801_SERIES(chip)     ((chip&0xf0)==0xa0)
-#define S3_801_I_SERIES(chip)	(S3_801_SERIES(chip) && ((chip) & 0x08))
+#define S3_805_I_SERIES(chip)   (S3_801_SERIES(chip) && ((chip) & 0x08))
 #define S3_801_REV_C(chip)      (S3_801_SERIES(chip) && ((chip) & 0x07) >= 2)
-#define S3_928_SERIES(chip)     (((chip&0xf0)==0x90)||((chip&0xf0)==0xb0))
-#define S3_928_REV_E(chip)      (S3_928_SERIES(chip) && ((chip) & 0x0F) >= 4)
-#define S3_801_928_SERIES(chip) (S3_801_SERIES(chip)||S3_928_SERIES(chip))
+#define S3_928_P(chip)          ((chip&0xf0)==0xb0)
+#define S3_928_ONLY(chip)       (((chip&0xf0)==0x90)||S3_928_P(chip))
+#define S3_928_REV_E(chip)      (S3_928_ONLY(chip) && ((chip) & 0x0F) >= 4)
+#define S3_801_928_SERIES(chip) (S3_801_SERIES(chip)||S3_928_ONLY(chip)||S3_x64_SERIES(chip))
 #define S3_8XX_9XX_SERIES(chip) (S3_911_SERIES(chip)||S3_801_928_SERIES(chip))
-#define S3_ANY_SERIES(chip)     (S3_8XX_9XX_SERIES(chip))
+#define S3_864_SERIES(chip)     ((chip&0xf0)==0xc0)
+#define S3_964_SERIES(chip)     ((chip&0xf0)==0xd0)
+#define S3_x64_SERIES(chip)	(S3_864_SERIES(chip) || S3_964_SERIES(chip))
+#define S3_928_SERIES(chip)     (((chip&0xf0)==0x90)||S3_928_P(chip)||S3_x64_SERIES(chip)) /* hack for 864/964 looking like 928 */
+#define S3_ANY_SERIES(chip)     (S3_8XX_9XX_SERIES(chip) || S3_x64_SERIES(chip))
 
 /* VESA Approved Register Definitions */
 #define	DAC_MASK	0x03c6
 #define	DAC_R_INDEX	0x03c7
 #define	DAC_W_INDEX	0x03c8
 #define	DAC_DATA	0x03c9
+
 #define	DISP_STAT	0x02e8
 #define	H_TOTAL		0x02e8
 #define	H_DISP		0x06e8
@@ -116,6 +123,8 @@
 #define	BKGD_MIX	0xb6e8
 #define	FRGD_MIX	0xbae8
 #define	MULTIFUNC_CNTL	0xbee8
+#define	PIX_TRANS	0xe2e8
+#define	PIX_TRANS_EXT	0xe2ea
 #define	MIN_AXIS_PCNT	0x0000
 #define	SCISSORS_T	0x1000
 #define	SCISSORS_L	0x2000
@@ -125,7 +134,10 @@
 #define	PATTERN_L	0x8000
 #define	PATTERN_H	0x9000
 #define	PIX_CNTL	0xa000
-#define	PIX_TRANS	0xe2e8
+#define	MULT_MISC2	0xd000
+#define	MULT_MISC	0xe000
+#define	READ_SEL	0xf000
+
 
 /* Display Status Bit Fields */
 #define	HORTOG		0x0004
@@ -310,14 +322,19 @@
 LUTENTRY;
 
 /* Wait until "v" queue entries are free */
-#define	WaitQueue(v)	{ while (inb(GP_STAT) & (0x0100 >> (v))); }
+#define	WaitQueue(v)	do { while (inb(GP_STAT) & (0x0100 >> (v))); } while(0)
+
+/* x64: Wait until "v" queue entries are free, v>8 for 864/964 */
+#define	WaitQueue16(v)	do { while (inw(GP_STAT) & (0x8000 >> (v-9))); } while(0)
 
 /* Wait until GP is idle and queue is empty */
+/* x64: bits 15-11 are reserved in 928 and should be zero,
+        for 864/964 these are FIFO-STATUS bits 9-13 */
 #define	WaitIdleEmpty() \
-   { while (inw(GP_STAT) & (GPBUSY | 1)); }
+   do { int fx86=(S3_x64_SERIES(s3ChipId)?0xF800:0); while (inw(GP_STAT) & (GPBUSY | 1 | fx86)); } while (0)
 
 /* Wait until GP is idle */
-#define WaitIdle() { while (inw(GP_STAT) & GPBUSY) ; }
+#define WaitIdle() do { while (inw(GP_STAT) & GPBUSY) ; } while (0)
 
 #define	MODE_800	1
 #define	MODE_1024	2
@@ -328,5 +345,10 @@ LUTENTRY;
 #ifndef NULL
 #define NULL	0
 #endif
+
+#define RGB8_PSEUDO      (-1)
+#define RGB16_565         0
+#define RGB16_555         1
+#define RGB32_888         2
 
 #endif /* _REGS3_H */

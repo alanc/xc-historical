@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: s3name.h,v 1.1 94/10/05 13:32:36 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3name.h,v 3.4 1994/09/22 15:50:07 dawes Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -53,6 +54,8 @@
 #define s3UninstallColormap CUSTOMNAME(_s3UninstallColormap)
 #define s3RestoreColor0 CUSTOMNAME(_s3RestoreColor0)
 #define s3CreateGC CUSTOMNAME(_s3CreateGC)
+#define s3CreateGC16 CUSTOMNAME(_s3CreateGC16)
+#define s3CreateGC32 CUSTOMNAME(_s3CreateGC32)
 #define s3SolidFSpans CUSTOMNAME(_s3SolidFSpans)
 #define s3TiledFSpans CUSTOMNAME(_s3TiledFSpans)
 #define s3StipFSpans CUSTOMNAME(_s3StipFSpans)
@@ -71,12 +74,7 @@
 #define s3CopyArea CUSTOMNAME(_s3CopyArea)
 #define s3FindOrdering CUSTOMNAME(_s3FindOrdering)
 #define s3CopyPlane CUSTOMNAME(_s3CopyPlane)
-#define s3CacheInit CUSTOMNAME(_s3CacheInit)
-#define s3CacheFreeSlot CUSTOMNAME(_s3CacheFreeSlot)
-#define s3CacheTile CUSTOMNAME(_s3CacheTile)
-#define s3CacheStipple CUSTOMNAME(_s3CacheStipple)
-#define s3CacheOpStipple CUSTOMNAME(_s3CacheOpStipple)
-#define s3PcachOverflow CUSTOMNAME(_s3PcachOverflow)
+#define s3InitFrect CUSTOMNAME(_s3InitFrect)
 #define s3CImageFill CUSTOMNAME(_s3CImageFill)
 #define s3CImageStipple CUSTOMNAME(_s3CImageStipple)
 #define s3CImageOpStipple CUSTOMNAME(_s3CImageOpStipple)
@@ -84,18 +82,12 @@
 #define s3Line CUSTOMNAME(_s3Line)
 #define s3Segment CUSTOMNAME(_s3Segment)
 #define s3PolyFillRect CUSTOMNAME(_s3PolyFillRect)
-#define s3PolyText8 CUSTOMNAME(_s3PolyText8)
-#define s3PolyText16 CUSTOMNAME(_s3PolyText16)
-#define s3ImageText8 CUSTOMNAME(_s3ImageText8)
-#define s3ImageText16 CUSTOMNAME(_s3ImageText16)
 #define s3RealizeFont CUSTOMNAME(_s3RealizeFont)
 #define s3UnrealizeFont CUSTOMNAME(_s3UnrealizeFont)
-#define s3UnCacheFont8 CUSTOMNAME(_s3UnCacheFont8)
-#define s3CacheFont8 CUSTOMNAME(_s3CacheFont8)
-#define s3CPolyText8 CUSTOMNAME(_s3CPolyText8)
 #define s3NoCPolyText CUSTOMNAME(_s3NoCPolyText)
+#define s3SimpleStipple CUSTOMNAME(_s3SimpleStipple)
+#define s3FontStipple CUSTOMNAME(_s3FontStipple)
 #define s3NoCImageText CUSTOMNAME(_s3NoCImageText)
-#define s3CImageText8 CUSTOMNAME(_s3CImageText8)
 #define s3CursorInit CUSTOMNAME(_s3CursorInit)
 #define s3ShowCursor CUSTOMNAME(_s3ShowCursor)
 #define s3HideCursor CUSTOMNAME(_s3HideCursor)
@@ -105,9 +97,9 @@
 #define s3QueryBestSize CUSTOMNAME(_s3QueryBestSize)
 #define s3Dline CUSTOMNAME(_s3Dline)
 #define s3Dsegment CUSTOMNAME(_s3Dsegment)
-#define s3BitCache8Init CUSTOMNAME(_s3BitCache8Init)
-#define s3CReturnBlock CUSTOMNAME(_s3CReturnBlock)
-#define s3CGetBlock CUSTOMNAME(_s3CGetBlock)
+#define s3FontCache8Init CUSTOMNAME(_s3FontCache8Init)
+#define s3GlyphWrite CUSTOMNAME(_s3GlyphWrite)
+#define s3CacheMoveBlock CUSTOMNAME(_s3CacheMoveBlock)
 #endif /* CUSTOMNAME */
 
 #endif /* S3_NAME_H */

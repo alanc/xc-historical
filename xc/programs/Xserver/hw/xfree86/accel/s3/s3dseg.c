@@ -1,4 +1,5 @@
-/* $XConsortium: s3dseg.c,v 1.1 94/03/28 21:14:55 dpw Exp $ */
+/* $XConsortium: s3dseg.c,v 1.1 94/10/05 13:32:36 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3dseg.c,v 3.3 1994/09/26 15:31:44 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -64,6 +65,8 @@ Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 #include "miline.h"
 
 #include "cfb.h"
+#include "cfb16.h"
+#include "cfb32.h"
 #include "cfbmskbits.h"
 #include "misc.h"
 #include "xf86.h"
@@ -145,7 +148,17 @@ s3Dsegment (pDrawable, pGC, nseg, pSeg)
 
    if (!xf86VTSema)
    {
-      cfbSegmentSD(pDrawable, pGC, nseg, pSeg);
+      switch (s3InfoRec.bitsPerPixel) {
+      case 8:
+	 cfbSegmentSD(pDrawable, pGC, nseg, pSeg);
+         break;
+      case 16:
+	 cfb16SegmentSD(pDrawable, pGC, nseg, pSeg);
+         break;
+      case 32:
+	 cfb32SegmentSD(pDrawable, pGC, nseg, pSeg);
+         break;
+      }
       return;
    }
 
@@ -155,16 +168,21 @@ s3Dsegment (pDrawable, pGC, nseg, pSeg)
    nboxInit = REGION_NUM_RECTS(cclip);
 
    BLOCK_CURSOR;
-   WaitQueue(6);
+   WaitQueue16_32(4,5);
    S3_OUTW(FRGD_MIX, FSS_FRGDCOL | s3alu[pGC->alu]);
    if (pGC->lineStyle == LineDoubleDash) {
-      S3_OUTW(BKGD_COLOR, (short)pGC->bgPixel);
+      S3_OUTW32(BKGD_COLOR, pGC->bgPixel);
       S3_OUTW(BKGD_MIX, BSS_BKGDCOL | s3alu[pGC->alu]);      
    } else
       S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_DST);
-   S3_OUTW(WRT_MASK, (short)pGC->planemask);
-   S3_OUTW(FRGD_COLOR, (short)pGC->fgPixel);
+
+   WaitQueue16_32(3,5);
+   S3_OUTW32(WRT_MASK, pGC->planemask);
+   S3_OUTW32(FRGD_COLOR, pGC->fgPixel);
    S3_OUTW (MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPPC | COLCMPOP_F);
+   /* Fix problem writing to the cursor storage area */
+   WaitQueue(1);
+   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | (pDrawable->pScreen->height-1));
    
    xorg = pDrawable->x;
    yorg = pDrawable->y;
@@ -513,9 +531,10 @@ s3Dsegment (pDrawable, pGC, nseg, pSeg)
       }/* sloped line */
    } /* while (nline--) */
 
-   WaitQueue(3);
+   WaitQueue(4);
    S3_OUTW(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
    S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
    S3_OUTW (MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);  
+   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | s3ScissB);
    UNBLOCK_CURSOR;
 }

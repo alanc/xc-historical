@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: s3bstor.c,v 1.1 94/10/05 13:32:36 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3bstor.c,v 3.4 1994/08/20 07:33:48 dawes Exp $ */
 /*-
  * s3bstore.c --
  *	Functions required by the backing-store implementation in MI.
@@ -32,6 +33,8 @@
 
 
 #include    "cfb.h"
+#include    "cfb16.h"
+#include    "cfb32.h"
 #include    "X.h"
 #include    "mibstore.h"
 #include    "regionstr.h"
@@ -54,8 +57,17 @@ s3SaveAreas(pPixmap, prgnSave, xorg, yorg, pWin)
 
    if (!xf86VTSema)
    {
-      cfbSaveAreas(pPixmap, prgnSave, xorg, yorg, pWin);
-      return;
+	switch (pPixmap->drawable.bitsPerPixel) {
+	case 8:
+	    cfbSaveAreas(pPixmap, prgnSave, xorg, yorg, pWin);
+	    return;
+	case 16:
+	    cfb16SaveAreas(pPixmap, prgnSave, xorg, yorg, pWin);
+	    return;
+	 case 32:
+	    cfb32SaveAreas(pPixmap, prgnSave, xorg, yorg, pWin);
+	    break;
+	}
    }
 
    i = REGION_NUM_RECTS(prgnSave);
@@ -67,7 +79,7 @@ s3SaveAreas(pPixmap, prgnSave, xorg, yorg, pWin)
       (s3ImageReadFunc) (pBox->x1 + xorg, pBox->y1 + yorg,
 			 pBox->x2 - pBox->x1, pBox->y2 - pBox->y1,
 			 pPixmap->devPrivate.ptr, pixWidth,
-			 pBox->x1, pBox->y1, 0xFF);
+			 pBox->x1, pBox->y1, ~0);
       pBox++;
    }
 }
@@ -86,8 +98,17 @@ s3RestoreAreas(pPixmap, prgnRestore, xorg, yorg, pWin)
 
    if (!xf86VTSema)
    {
-      cfbRestoreAreas(pPixmap, prgnRestore, xorg, yorg, pWin);
-      return;
+	switch (pPixmap->drawable.bitsPerPixel) {
+	case 8:
+	    cfbRestoreAreas(pPixmap, prgnRestore, xorg, yorg, pWin);
+	    return;
+	case 16:
+	    cfb16RestoreAreas(pPixmap, prgnRestore, xorg, yorg, pWin);
+	    return;
+	 case 32:
+	    cfb32RestoreAreas(pPixmap, prgnRestore, xorg, yorg, pWin);
+	    break;
+	}
    }
 
    i = REGION_NUM_RECTS(prgnRestore);
@@ -100,7 +121,7 @@ s3RestoreAreas(pPixmap, prgnRestore, xorg, yorg, pWin)
 			  pBox->x2 - pBox->x1, pBox->y2 - pBox->y1,
 			  pPixmap->devPrivate.ptr, pixWidth,
 			  pBox->x1 - xorg, pBox->y1 - yorg,
-			  s3alu[GXcopy], 0xffffffff);
+			  s3alu[GXcopy], ~0);
       pBox++;
    }
 }

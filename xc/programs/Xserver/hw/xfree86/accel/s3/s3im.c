@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: s3im.c,v 1.1 94/10/05 13:32:36 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.8 1994/09/23 13:38:12 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -75,8 +76,9 @@ static void s3ImageFillBanked ();
 static char old_bank = -1;
 extern char s3Mbanks;
 extern ScrnInfoRec s3InfoRec;
-
-
+int s3Bpp;
+int s3BppDisplayWidth;
+Pixel s3BppPMask;
 
 void
 s3ImageInit ()
@@ -92,6 +94,11 @@ s3ImageInit ()
    }
    
    reEntry = TRUE;
+   s3Bpp = s3InfoRec.bitsPerPixel / 8;
+
+   s3BppDisplayWidth = s3Bpp * s3DisplayWidth;
+   s3BppPMask = (1UL << s3InfoRec.bitsPerPixel) - 1;
+
    for (i = 0; i < 256; i++) {
       reorder (i, s3SwapBits[i]);
    }
@@ -113,7 +120,7 @@ s3ImageInit ()
 	 s3ImageWriteFunc = s3ImageWrite; 
 	 s3ImageFillFunc = s3ImageFill;            
    } else {
-      if (!(s3BankSize % s3DisplayWidth)) {
+      if (!(s3BankSize % s3BppDisplayWidth)) {
 	 s3ImageReadFunc = s3ImageRead;
 	 s3ImageWriteFunc = s3ImageWrite; 
 	 s3ImageFillFunc = s3ImageFill;
@@ -139,7 +146,7 @@ s3ImageInit ()
 /* Phil Richards <pgr@prg.ox.ac.uk> */
 /* 26th November 1992 */
 /* Bug fixed by Jon Tombs */
-
+/* 30/7/94 began 16,32 bit support */
 
 static void
 s3ImageWriteBanked (x, y, w, h, psrc, pwidth, px, py, alu, planemask)
@@ -152,7 +159,7 @@ s3ImageWriteBanked (x, y, w, h, psrc, pwidth, px, py, alu, planemask)
      int   px;
      int   py;
      short alu;
-     short planemask;
+     Pixel planemask;
 {
    int   j, offset;
    char  bank;
@@ -161,7 +168,7 @@ s3ImageWriteBanked (x, y, w, h, psrc, pwidth, px, py, alu, planemask)
    if (alu == MIX_DST)
       return;
 
-   if ((alu != MIX_SRC) || ((planemask & PMSK) != PMSK)) {
+   if ((alu != MIX_SRC) || ((planemask & s3BppPMask) != s3BppPMask)) {
       s3ImageWriteNoMem(x, y, w, h, psrc, pwidth, px, py, alu, planemask);
       return;
    }
@@ -172,17 +179,21 @@ s3ImageWriteBanked (x, y, w, h, psrc, pwidth, px, py, alu, planemask)
       return;
 
    BLOCK_CURSOR;
-   WaitQueue (2);
+   /* hmm this historic junk? */
+#if 0
+   WaitQueue16_32(2,3);
    outw (FRGD_MIX, FSS_PCDATA | alu);
-   outw (WRT_MASK, planemask);
+   outw32(WRT_MASK, planemask);
 
-   WaitQueue (8);
+#endif
 
-   psrc += pwidth * py + px;
-   offset = (y * s3DisplayWidth) + x;
+   psrc += pwidth * py + px * s3Bpp;
+   offset = (y * s3BppDisplayWidth) + x*s3Bpp;
    bank = offset / s3BankSize;
    offset %= s3BankSize;
+   w *= s3Bpp;
 
+   WaitIdleEmpty();
    s3EnableLinear();
  /*
   * if we do a bank switch here, is _not_ possible to do one in the loop
@@ -195,7 +206,7 @@ s3ImageWriteBanked (x, y, w, h, psrc, pwidth, px, py, alu, planemask)
       s3BankSelect(bank);
    }
 
-   for (j = 0; j < h; j++, psrc += pwidth, offset += s3DisplayWidth) {
+   for (j = 0; j < h; j++, psrc += pwidth, offset += s3BppDisplayWidth) {
       if (offset + w > s3BankSize) {
 	 int   partwidth;
 
@@ -223,9 +234,10 @@ s3ImageWriteBanked (x, y, w, h, psrc, pwidth, px, py, alu, planemask)
    old_bank = bank;
 
    s3DisableLinear();
-   
+#if 0
    WaitQueue(1);
    outw (FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
+#endif
    UNBLOCK_CURSOR;
 }
 
@@ -239,7 +251,7 @@ s3ImageReadBanked (x, y, w, h, psrc, pwidth, px, py, planemask)
      int   pwidth;
      int   px;
      int   py;
-     short planemask;
+     Pixel planemask;
 {
    int   j;
    int   offset;
@@ -249,29 +261,33 @@ s3ImageReadBanked (x, y, w, h, psrc, pwidth, px, py, planemask)
    if (w == 0 || h == 0)
       return;
 
-   if ((planemask & PMSK) != PMSK) {
+   if ((planemask & s3BppPMask) != s3BppPMask) {
       s3ImageReadNoMem(x, y, w, h, psrc, pwidth, px, py, planemask);
       return;
    }
 
    videobuffer = (char *) s3VideoMem;
 
-   BLOCK_CURSOR;
-   WaitIdleEmpty ();
+ 
+#if 0
    outw (FRGD_MIX, FSS_PCDATA | MIX_SRC);
-
-   s3EnableLinear();
-   psrc += pwidth * py + px;
-   offset = (y * s3DisplayWidth) + x;
+#endif
+ 
+   psrc += pwidth * py + px * s3Bpp;
+   offset = (y * s3BppDisplayWidth) + x *s3Bpp;
    bank = offset / s3BankSize;
    offset %= s3BankSize;
 
+   w *= s3Bpp;
+   BLOCK_CURSOR;
+   WaitIdleEmpty ();
+   s3EnableLinear();
    outb (vgaCRIndex, 0x35);
    if (old_bank != bank) {
       s3BankSelect(bank);
    }
 
-   for (j = 0; j < h; j++, psrc += pwidth, offset += s3DisplayWidth) {
+   for (j = 0; j < h; j++, psrc += pwidth, offset += s3BppDisplayWidth) {
       if (offset + w > s3BankSize) {
 	 int   partwidth;
 
@@ -297,8 +313,10 @@ s3ImageReadBanked (x, y, w, h, psrc, pwidth, px, py, planemask)
    }
    old_bank = bank;
    s3DisableLinear();
+#if 0
    WaitQueue(1);
    outw (FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
+#endif
    UNBLOCK_CURSOR;
 }
 
@@ -312,7 +330,7 @@ s3ImageFillBanked (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
      unsigned char *psrc;
      int   pwidth;
      short alu;
-     short planemask;
+     Pixel planemask;
 {
    int   j;
    unsigned char *pline;
@@ -324,7 +342,7 @@ s3ImageFillBanked (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
    if (alu == MIX_DST)
       return;
 
-   if ((alu != MIX_SRC) || ((planemask & PMSK) != PMSK)) {
+   if ((alu != MIX_SRC) || ((planemask & s3BppPMask) != s3BppPMask)) {
       s3ImageFillNoMem(x, y, w, h, psrc, pwidth,
                      pw, ph, pox, poy, alu, planemask);
       return;
@@ -335,29 +353,34 @@ s3ImageFillBanked (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
       return;
       
    BLOCK_CURSOR;
-   WaitQueue (2);
+#if 0
+   WaitQueue16_32(2,3);
    outw (FRGD_MIX, FSS_PCDATA | alu);
-   outw (WRT_MASK, planemask);
+   outw32(WRT_MASK, planemask);
 
-   WaitQueue (8);
-
-   modulus (x - pox, pw, xpix0);
+   WaitQueue(8);
+#endif
+   pw *= s3Bpp;
+   modulus ((x - pox) * s3Bpp, pw, xpix0);
    cxpix = pw - xpix0;
 
    modulus (y - poy, ph, ypix);
    pline = psrc + pwidth * ypix;
 
-   offset0 = (y * s3DisplayWidth) + x;
+   offset0 = (y * s3BppDisplayWidth) + x * s3Bpp;
    bank = offset0 / s3BankSize;
    offset0 %= s3BankSize;
 
+   w *= s3Bpp;
+
+   WaitIdleEmpty();
    s3EnableLinear();
    outb (vgaCRIndex, 0x35);
    if (bank != old_bank) {
       s3BankSelect(bank);
    }
 
-   for (j = 0; j < h; j++, offset0 += s3DisplayWidth) {
+   for (j = 0; j < h; j++, offset0 += s3BppDisplayWidth) {
       int   offset, width, xpix;
 
       width = (w <= cxpix) ? w : cxpix;
@@ -454,7 +477,7 @@ s3ImageWrite (x, y, w, h, psrc, pwidth, px, py, alu, planemask)
      int   px;
      int   py;
      short alu;
-     short planemask;
+     Pixel planemask;
 {
    int   j, offset;
    char  bank;
@@ -463,7 +486,7 @@ s3ImageWrite (x, y, w, h, psrc, pwidth, px, py, alu, planemask)
    if (alu == MIX_DST)
       return;
 
-   if ((alu != MIX_SRC) || ((planemask & PMSK) != PMSK)) {
+   if ((alu != MIX_SRC) || ((planemask & s3BppPMask) != s3BppPMask)) {
       s3ImageWriteNoMem(x, y, w, h, psrc, pwidth, px, py, alu, planemask);
       return;
    }
@@ -474,17 +497,20 @@ s3ImageWrite (x, y, w, h, psrc, pwidth, px, py, alu, planemask)
       return;
       
    BLOCK_CURSOR;
-   WaitQueue (2);
+#if 0
+   WaitQueue16_32(2,3);
    outw (FRGD_MIX, FSS_PCDATA | alu);
-   outw (WRT_MASK, planemask);
+   outw32(WRT_MASK, planemask);
+#endif
 
-   s3EnableLinear();
-   psrc += pwidth * py + px;
-   offset = (y * s3DisplayWidth) + x;
+   psrc += pwidth * py + px * s3Bpp;
+   offset = (y * s3BppDisplayWidth) + x *s3Bpp;
    bank = offset / s3BankSize;
    offset %= s3BankSize;
 
-   
+   w *= s3Bpp;
+   WaitIdleEmpty();
+   s3EnableLinear();   
  /*
   * if we do a bank switch here, is _not_ possible to do one in the loop
   * before some data has been copied; for that situation to occur it would be
@@ -496,7 +522,7 @@ s3ImageWrite (x, y, w, h, psrc, pwidth, px, py, alu, planemask)
       s3BankSelect(bank);
    }
    
-   for (j = 0; j < h; j++, psrc += pwidth, offset += s3DisplayWidth) {
+   for (j = 0; j < h; j++, psrc += pwidth, offset += s3BppDisplayWidth) {
       if (offset >= s3BankSize) {
        /* bank switch to the next bank */
 	 bank++;
@@ -509,8 +535,10 @@ s3ImageWrite (x, y, w, h, psrc, pwidth, px, py, alu, planemask)
    }
    old_bank = bank;
    s3DisableLinear();
+#if 0
    WaitQueue(1);
    outw (FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
+#endif
    UNBLOCK_CURSOR;
 }
 
@@ -524,7 +552,7 @@ s3ImageRead (x, y, w, h, psrc, pwidth, px, py, planemask)
      int   pwidth;
      int   px;
      int   py;
-     short planemask;
+     Pixel planemask;
 {
    int   j;
    int   offset;
@@ -535,28 +563,33 @@ s3ImageRead (x, y, w, h, psrc, pwidth, px, py, planemask)
    if (w == 0 || h == 0)
       return;
 
-   if ((planemask & PMSK) != PMSK) {
+   if ((planemask & s3BppPMask) != s3BppPMask) {
       s3ImageReadNoMem(x, y, w, h, psrc, pwidth, px, py, planemask);
       return;
    }
 
    videobuffer = (char *) s3VideoMem;
       
-   BLOCK_CURSOR;
-   WaitIdleEmpty ();
+
+#if 0
    outw (FRGD_MIX, FSS_PCDATA | MIX_SRC);
-   s3EnableLinear();
-   psrc += pwidth * py + px;
-   offset = (y * s3DisplayWidth) + x;
+#endif
+ 
+   psrc += pwidth * py + px * s3Bpp;
+   offset = (y * s3BppDisplayWidth) + x * s3Bpp;
    bank = offset / s3BankSize;
    offset %= s3BankSize;
+   w *= s3Bpp;
 
+   BLOCK_CURSOR;
+   WaitIdleEmpty ();
+   s3EnableLinear();
    outb (vgaCRIndex, 0x35);
    if (old_bank != bank) {
       s3BankSelect(bank);
    }
 
-   for (j = 0; j < h; j++, psrc += pwidth, offset += s3DisplayWidth) {
+   for (j = 0; j < h; j++, psrc += pwidth, offset += s3BppDisplayWidth) {
       if (offset >= s3BankSize) {
        /* bank switch to the next bank */
 	 bank++;
@@ -570,8 +603,10 @@ s3ImageRead (x, y, w, h, psrc, pwidth, px, py, planemask)
    old_bank = bank;
 
    s3DisableLinear();
+#if 0
    WaitQueue(1);
    outw (FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
+#endif
    UNBLOCK_CURSOR;
 }
 
@@ -585,7 +620,7 @@ s3ImageFill (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
      unsigned char *psrc;
      int   pwidth;
      short alu;
-     short planemask;
+     Pixel planemask;
 {
    int   j;
    unsigned char *pline;
@@ -597,7 +632,7 @@ s3ImageFill (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
    if (alu == MIX_DST)
       return;
 
-   if ((alu != MIX_SRC) || ((planemask & PMSK) != PMSK)) {
+   if ((alu != MIX_SRC) || ((planemask & s3BppPMask) != s3BppPMask)) {
      s3ImageFillNoMem(x, y, w, h, psrc, pwidth,
                     pw, ph, pox, poy, alu, planemask);
      return;
@@ -608,28 +643,35 @@ s3ImageFill (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
    if (w == 0 || h == 0)
       return;
       
-   BLOCK_CURSOR;
-   WaitQueue (2);
+ 
+#if 0
+   WaitQueue16_32(2,3);
    outw (FRGD_MIX, FSS_PCDATA | alu);
-   outw (WRT_MASK, planemask);
+   outw32(WRT_MASK, planemask);
+#endif
 
-   s3EnableLinear();
-   modulus (x - pox, pw, xpix);
-   cxpix = pw - xpix;
+   w  *= s3Bpp;
+   pw *= s3Bpp;
+
+   modulus ((x - pox) * s3Bpp, pw, xpix);
+   cxpix = pw - xpix ;
 
    modulus (y - poy, ph, ypix);
    pline = psrc + pwidth * ypix;
 
-   offset0 = (y * s3DisplayWidth) + x;
+   offset0 = (y * s3BppDisplayWidth) + x * s3Bpp;
    bank = offset0 / s3BankSize;
    offset0 %= s3BankSize;
+
+   BLOCK_CURSOR;
+   s3EnableLinear();
 
    outb (vgaCRIndex, 0x35);
    if (bank != old_bank) {
       s3BankSelect(bank);
    }
 
-   for (j = 0; j < h; j++, offset0 += s3DisplayWidth) {
+   for (j = 0; j < h; j++, offset0 += s3BppDisplayWidth) {
       if (offset0 >= s3BankSize) {
 	 bank++;
 	 s3BankSelect(bank);
@@ -659,8 +701,10 @@ s3ImageFill (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
    }
    old_bank = bank;
    s3DisableLinear();
+#if 0
    WaitQueue(1);
    outw (FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
+#endif
    UNBLOCK_CURSOR;
 }
 
@@ -675,7 +719,7 @@ s3ImageWriteNoMem (x, y, w, h, psrc, pwidth, px, py, alu, planemask)
      int   px;
      int   py;
      short alu;
-     short planemask;
+     Pixel planemask;
 {
    int   i, j;
 
@@ -686,12 +730,12 @@ s3ImageWriteNoMem (x, y, w, h, psrc, pwidth, px, py, alu, planemask)
       return;
       
    BLOCK_CURSOR;
-   WaitQueue (3);
+   WaitQueue16_32(3,4);
    outw (FRGD_MIX, FSS_PCDATA | alu);
-   outw (WRT_MASK, planemask);
-   outw (MULTIFUNC_CNTL, 0xa000);
+   outw32 (WRT_MASK, planemask);
+   outw (MULTIFUNC_CNTL, PIX_CNTL | 0);
 
-   WaitQueue (5);
+   WaitQueue(5);
    outw (CUR_X, (short) x);
    outw (CUR_Y, (short) y);
    outw (MAJ_AXIS_PCNT, (short) w - 1);
@@ -699,22 +743,35 @@ s3ImageWriteNoMem (x, y, w, h, psrc, pwidth, px, py, alu, planemask)
    outw (CMD, CMD_RECT | BYTSEQ | _16BIT | INC_Y | INC_X | DRAW | PCDATA
 	  | WRTDATA);
 
-   WaitQueue (8);
+   WaitQueue(8);
 
-   w += px;
+   w *= s3Bpp;
    psrc += pwidth * py;
 
    for (j = 0; j < h; j++) {
-      for (i = px; i < w; i += 2)
-	 outw (PIX_TRANS, (short) ((psrc[i + 1] << 8) | psrc[i]));
+      /* This assumes we can cast odd addresses to short! */
+      short *psrcs = (short *)&psrc[px*s3Bpp];
+      for (i = 0; i < w; ) {
+	 if (s3InfoRec.bitsPerPixel == 32) {
+	    outl (PIX_TRANS, *((long*)(psrcs)));
+	    psrcs+=2;
+	    i += 4;
+	 }
+	 else {
+	    outw (PIX_TRANS, *psrcs++);
+	    i += 2;
+	 }
+      }
       psrc += pwidth;
    }
-
-   WaitQueue (2);
+#if 0
+   WaitQueue16_32(2,3);
    outw (FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
-   outw (WRT_MASK, 0xffff);
+   outw32(WRT_MASK, ~0);
+#endif
    UNBLOCK_CURSOR;
 }
+
 
 static void
 s3ImageReadNoMem (x, y, w, h, psrc, pwidth, px, py, planemask)
@@ -726,43 +783,58 @@ s3ImageReadNoMem (x, y, w, h, psrc, pwidth, px, py, planemask)
      int   pwidth;
      int   px;
      int   py;
-     short planemask;
+     Pixel planemask;
 {
    int   i, j;
-   short pix;
 
    if (w == 0 || h == 0)
       return;
       
    BLOCK_CURSOR;
    WaitIdleEmpty ();
-   WaitQueue (7);
-   outw (MULTIFUNC_CNTL, 0xa000);
+   WaitQueue(7);
+   outw (MULTIFUNC_CNTL, PIX_CNTL);
    outw (FRGD_MIX, FSS_PCDATA | MIX_SRC);
    outw (CUR_X, (short) x);
    outw (CUR_Y, (short) y);
    outw (MAJ_AXIS_PCNT, (short) w - 1);
    outw (MULTIFUNC_CNTL, MIN_AXIS_PCNT | (h - 1));
-   outw (CMD, CMD_RECT | BYTSEQ | _16BIT | INC_Y | INC_X | DRAW |
+   outw (CMD, CMD_RECT  | BYTSEQ | _16BIT | INC_Y | INC_X | DRAW |
 	  PCDATA);
 
-   WaitQueue (8);
- /* wait for data to be ready */
-   while ((inw (GP_STAT) & 0x100) == 0) ;
+   WaitQueue16_32(1,2);
 
-   w += px;
+   S3_OUTW32(RD_MASK, planemask);
+
+   WaitQueue(8);
+
+ /* wait for data to be ready */
+   if (!S3_x64_SERIES(s3ChipId)) {
+     while ((inw (GP_STAT) & 0x100) == 0) ;
+   }
+   else {
+     /* x64: GP_STAT bit 8 is reserved for 864/964 */
+   }
+
+   w *= s3Bpp;
    psrc += pwidth * py;
 
    for (j = 0; j < h; j++) {
-      for (i = px; i < w; i++) {
-	 pix = inw (PIX_TRANS);
-	 psrc[i++] = (char) (pix & planemask);
-	 if (i < w)
-	    psrc[i] = (char) ((pix >> 8) & planemask);
+      short *psrcs = (short *)&psrc[px*s3Bpp]; 
+      for (i = 0; i < w; ) {
+	 if (s3InfoRec.bitsPerPixel == 32) {
+	    *((long*)(psrcs)) = inl(PIX_TRANS);
+	    psrcs += 2;
+	    i += 4;
+	 } else {
+	    *psrcs++ = inw(PIX_TRANS);
+	    i += 2;
+	 }
       }
       psrc += pwidth;
    }
-   WaitQueue (1);
+   WaitQueue16_32(2,3);
+   S3_OUTW32(RD_MASK, ~0);
    outw (FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
    UNBLOCK_CURSOR;
 }
@@ -778,7 +850,7 @@ s3ImageFillNoMem (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu,
      int   pwidth;
      int   pw, ph, pox, poy;
      short alu;
-     short planemask;
+     Pixel planemask;
 {
    int   i, j;
    unsigned char *pline;
@@ -789,27 +861,56 @@ s3ImageFillNoMem (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu,
 
    if (w == 0 || h == 0)
       return;
-      
-   BLOCK_CURSOR;
-   WaitQueue (7);
+
+   BLOCK_CURSOR;  
+   WaitQueue16_32(7,8);
    outw (FRGD_MIX, FSS_PCDATA | alu);
-   outw (WRT_MASK, planemask);
+   outw32 (WRT_MASK, planemask);
    outw (CUR_X, (short) x);
    outw (CUR_Y, (short) y);
    outw (MAJ_AXIS_PCNT, (short) w - 1);
    outw (MULTIFUNC_CNTL, MIN_AXIS_PCNT | (h - 1));
-   outw (CMD, CMD_RECT | INC_Y | INC_X | DRAW | PCDATA | WRTDATA);
+   outw (CMD, CMD_RECT | BYTSEQ|_16BIT | INC_Y | INC_X | DRAW |
+	 PCDATA | WRTDATA);
 
    for (j = 0; j < h; j++) {
+      unsigned short wrapped;
+      unsigned short *pend;
+      unsigned short *plines;
+
       modulus (y + j - poy, ph, mod);
       pline = psrc + pwidth * mod;
-      for (i = 0; i < w; i++) {
-	 modulus (x + i - pox, pw, mod);
-	 outw (PIX_TRANS, (short) pline[mod]);
+      pend = (unsigned short *)&pline[pw*s3Bpp];
+      wrapped = (pline[0] << 8) + (pline[pw-1] << 0); /* only for 8bpp */
+
+      modulus (x - pox, pw, mod);
+
+      plines = (unsigned short *) &pline[mod*s3Bpp];
+
+      for (i = 0; i < w * s3Bpp;)  {
+
+         /* arrg in 8BPP we need to check for wrap round */
+         if (plines + 1 > pend) {
+	    outw (PIX_TRANS, wrapped);
+            plines = (unsigned short *)&pline[1]; i += 2;
+	 } else {
+	    if (s3InfoRec.bitsPerPixel == 32) {
+	       outl (PIX_TRANS, *((long*)(plines)));
+	       plines += 2;
+	       i += 4;
+	    }
+	    else {
+	       outw (PIX_TRANS, *plines++);
+	       i += 2;
+	    }
+	 }
+	 if (plines == pend)
+	    plines = (unsigned short *)pline;
+	 
       }
    }
 
-   WaitQueue (1);
+   WaitQueue(1);
    outw (FRGD_MIX, FSS_FRGDCOL | MIX_SRC);   
    UNBLOCK_CURSOR;
 }
@@ -823,6 +924,7 @@ static int _internal_s3_mskbits[9] =
 #define MSKBIT(n) (_internal_s3_mskbits[(n)])
 #define SWPBIT(s) (s3SwapBits[pline[(s)]])
 
+
 void
 s3ImageStipple (x, y, w, h, psrc, pwidth, pw,
 		ph, pox, poy, fgPixel, alu, planemask)
@@ -833,9 +935,9 @@ s3ImageStipple (x, y, w, h, psrc, pwidth, pw,
      char *psrc;
      int   pw, ph, pox, poy;
      int   pwidth;
-     int   fgPixel;
+     Pixel fgPixel;
      short alu;
-     short planemask;
+     Pixel planemask;
 {
    int   x1, x2, y1, y2, width;
    unsigned char *newsrc = NULL;
@@ -880,18 +982,18 @@ s3ImageStipple (x, y, w, h, psrc, pwidth, pw,
    }
    BLOCK_CURSOR;
 
-   WaitQueue (6);
-   S3_OUTW (WRT_MASK, planemask);   
+   WaitQueue16_32(6,8);
+   S3_OUTW32 (WRT_MASK, planemask);
    S3_OUTW (FRGD_MIX, FSS_FRGDCOL | alu);
    S3_OUTW (BKGD_MIX, BSS_BKGDCOL | MIX_DST);
-   S3_OUTW (FRGD_COLOR, (short) fgPixel);
+   S3_OUTW32 (FRGD_COLOR,  fgPixel);
    S3_OUTW (MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPPC | COLCMPOP_F);
    S3_OUTW (MAJ_AXIS_PCNT, (short) (width - 1));
 
-   WaitQueue (4);
+   WaitQueue(4);
    S3_OUTW (CUR_X, (short) x1);
    S3_OUTW (CUR_Y, (short) y1);
-   S3_OUTW (MULTIFUNC_CNTL, MIN_AXIS_PCNT | h-1);   
+   S3_OUTW (MULTIFUNC_CNTL, MIN_AXIS_PCNT | (h-1));   
    S3_OUTW (CMD, CMD_RECT | PCDATA | _16BIT | INC_Y | INC_X |
 	     DRAW | PLANAR | WRTDATA);
 
@@ -940,7 +1042,7 @@ s3ImageStipple (x, y, w, h, psrc, pwidth, pw,
 	       bitlft += 8;
 	    }
 	    bitlft -= 16;
-	    S3_OUTW (PIX_TRANS, (getbuf >> bitlft) & 0xffff);
+	    S3_OUTW (PIX_TRANS, getbuf >> bitlft);
 	 }
 
 	 if ((++ypix) == ph) {
@@ -951,7 +1053,7 @@ s3ImageStipple (x, y, w, h, psrc, pwidth, pw,
       }
    }
 
-   WaitQueue (3);
+   WaitQueue(3);
    S3_OUTW (FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
    S3_OUTW (BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
    S3_OUTW (MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
@@ -961,6 +1063,13 @@ s3ImageStipple (x, y, w, h, psrc, pwidth, pw,
       DEALLOCATE_LOCAL (newsrc);
 }
 
+/* Needs rewritng for non 8 bpp */
+#if NeedFunctionPrototypes
+void
+s3ImageOpStipple (int x, int y, int w, int h, unsigned char *psrc, int pwidth,
+		  int pw, int ph, int pox, int poy, Pixel fgPixel,
+		  Pixel bgPixel, short alu, Pixel planemask)
+#else
 void
 s3ImageOpStipple (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, fgPixel,
 		  bgPixel, alu, planemask)
@@ -968,13 +1077,14 @@ s3ImageOpStipple (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, fgPixel,
      int   y;
      int   w;
      int   h;
-     char  *psrc;
+     unsigned char  *psrc;
      int   pwidth;
      int   pw, ph, pox, poy;
-     int   fgPixel;
-     int   bgPixel;
+     Pixel fgPixel;
+     Pixel bgPixel;
      short alu;
-     short planemask;
+     Pixel planemask;
+#endif
 {
    int   x1, x2, y1, y2, width;
    unsigned char *newsrc = NULL;
@@ -1002,7 +1112,7 @@ s3ImageOpStipple (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, fgPixel,
 	 unsigned char *newline, *pline;
 	 int   i;
 
-	 pline = (unsigned char *)psrc;
+	 pline = psrc;
 	 newline = newsrc;
 	 for (i = 0; i < ph; i++) {
 	    newline[0] = (pline[0] & (0xff >> (8 - pw))) | pline[0] << pw;
@@ -1014,24 +1124,24 @@ s3ImageOpStipple (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, fgPixel,
 	 }
 	 pw *= 2;
 	 pwidth = 2;
-	 psrc = (char *)newsrc;
+	 psrc = newsrc;
       }
    }
    BLOCK_CURSOR;
 
-   WaitQueue (7);
-   S3_OUTW (WRT_MASK, planemask);   
+   WaitQueue16_32(5,8);
+   S3_OUTW32 (WRT_MASK, planemask);
    S3_OUTW (FRGD_MIX, FSS_FRGDCOL | alu);
    S3_OUTW (BKGD_MIX, BSS_BKGDCOL | alu);
-   S3_OUTW (FRGD_COLOR, (short) fgPixel);
-   S3_OUTW (BKGD_COLOR, (short) bgPixel);
+   S3_OUTW32 (FRGD_COLOR,  fgPixel);
+   S3_OUTW32 (BKGD_COLOR,  bgPixel);
+
+   WaitQueue(6);
    S3_OUTW (MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPPC | COLCMPOP_F);
    S3_OUTW (MAJ_AXIS_PCNT, (short) (width - 1));
-
-   WaitQueue (4);
    S3_OUTW (CUR_X, (short) x1);
    S3_OUTW (CUR_Y, (short) y1);
-   S3_OUTW (MULTIFUNC_CNTL, MIN_AXIS_PCNT | h-1);   
+   S3_OUTW (MULTIFUNC_CNTL, MIN_AXIS_PCNT | (h-1));   
    S3_OUTW (CMD, CMD_RECT | PCDATA | _16BIT | INC_Y | INC_X |
 	     DRAW | PLANAR | WRTDATA);
 
@@ -1057,7 +1167,7 @@ s3ImageOpStipple (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, fgPixel,
 	 unsigned long getbuf;
 	 int   i, bitlft, pix;
 
-	 WaitQueue (3);
+	 WaitQueue(3);
          if (pw8 == xpix) {
             bitlft = hibits - clobits;
             getbuf = (SWPBIT (xpix) & ~MSKBIT (chibits)) >> chibits;
@@ -1082,7 +1192,7 @@ s3ImageOpStipple (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, fgPixel,
 	       bitlft += 8;
 	    }
 	    bitlft -= 16;
-	    S3_OUTW (PIX_TRANS, (getbuf >> bitlft) & 0xffff);
+	    S3_OUTW (PIX_TRANS, (getbuf >> bitlft));
 	 }
 
 	 if ((++ypix) == ph) {
@@ -1093,7 +1203,7 @@ s3ImageOpStipple (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, fgPixel,
       }
    }
 
-   WaitQueue (3);
+   WaitQueue(3);
    S3_OUTW (FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
    S3_OUTW (BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
    S3_OUTW (MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
