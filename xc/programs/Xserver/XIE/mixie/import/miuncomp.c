@@ -1,4 +1,4 @@
-/* $XConsortium: miuncomp.c,v 1.1 93/10/26 09:45:49 rws Exp $ */
+/* $XConsortium: miuncomp.c,v 1.2 94/01/12 20:13:03 rws Exp $ */
 /**** module miuncomp.c ****/
 /******************************************************************************
 				NOTICE
@@ -820,7 +820,7 @@ CARD32 p, bits, wval1 = 56 - depth, wval2 = 32 - depth;
 
 #define getMMPair(src,bits,depth)					\
 	(PairPixel)((bits + depth > 16) ? 				\
-	    ((CARD16)((CARD16)*src << 8 + bits) >> 24 - depth - bits  | \
+	    ((CARD16)((CARD16)*src << 8 + bits) >> 16 - depth         | \
 		     (CARD16)*(src + 1) << depth + bits - 16 	      | \
 		     (CARD16)*(src + 2) >> 24 - depth - bits) :		\
 	    ((CARD16)((CARD16)*src << 8 + bits) >> 16 - depth 	      | \
