@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Core.c,v 1.22 88/09/26 11:43:56 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Core.c,v 1.23 89/06/16 19:34:15 jim Exp $";
 /* $oHeader: Core.c,v 1.2 88/08/18 15:37:59 asente Exp $ */
 #endif /* lint */
 
@@ -71,4 +71,6 @@ externaldef(widgetclassrec) WidgetClassRec widgetClassRec = {
 externaldef (WidgetClass) WidgetClass widgetClass =
                                           &widgetClassRec;
 
+externaldef (WidgetClass) WidgetClass coreWidgetClass =
+                                          &widgetClassRec;
 
