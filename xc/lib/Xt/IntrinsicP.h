@@ -27,8 +27,8 @@
 #ifndef _XtintrinsicP_h
 #define _XtintrinsicP_h
 
-#include <X/Xutil.h>
 #include <X/Intrinsic.h>
+#include <X/Xutil.h>
 
 typedef unsigned long XtVersionType;
 
