@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.44 90/10/30 09:33:56 rws Exp $
+ * $XConsortium: Xrm.c,v 1.45 90/10/30 10:09:14 rws Exp $
  */
 
 /***********************************************************
@@ -146,9 +146,9 @@ typedef struct _LTable {
 
 /* An XrmDatabase just holds a pointer to the first top-level table.
  * The type name is no longer descriptive, but better to not change
- * the Xresource.h header file.  This type also gets used in Xlib.h
- * for XrmSearchList, which is a complete crock, but we'll just leave
- * it and caste types as required.
+ * the Xresource.h header file.  This type also gets used to define
+ * XrmSearchList, which is a complete crock, but we'll just leave it
+ * and caste types as required.
  */
 typedef struct _XrmHashBucketRec {
     NTable table;
