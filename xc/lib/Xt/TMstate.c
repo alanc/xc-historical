@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.83 89/09/28 17:16:06 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.84 89/09/29 12:10:31 swick Exp $";
 /* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
 #endif /* lint */
 /*LINTLIBRARY*/
@@ -391,7 +391,7 @@ Boolean _XtMatchUsingDontCareMods(event,eventSeq)
 	    TMContext tm_context = _XtGetPerDisplay(dpy)->tm_context;
 	    if (tm_context == NULL) tm_context = AllocTMContext(dpy);
 	    tm_context->event = eventSeq->xev;
-	    tm_context->serial = eventSeq->xev.xany.serial;
+	    tm_context->serial = eventSeq->xev->xany.serial;
 	    tm_context->keysym = keysym_return;
 	    tm_context->modifiers = 0;
 	    return TRUE;
@@ -409,7 +409,7 @@ Boolean _XtMatchUsingDontCareMods(event,eventSeq)
 		     TMContext tm_context = _XtGetPerDisplay(dpy)->tm_context;
 		     if (tm_context == NULL) tm_context = AllocTMContext(dpy);
 		     tm_context->event = eventSeq->xev;
-		     tm_context->serial = eventSeq->xev.xany.serial;
+		     tm_context->serial = eventSeq->xev->xany.serial;
 		     tm_context->keysym = keysym_return;
 		     tm_context->modifiers = (Modifiers)i;
 		     return TRUE;
@@ -460,7 +460,7 @@ Boolean _XtMatchUsingStandardMods (event,eventSeq)
 	    TMContext tm_context = _XtGetPerDisplay(dpy)->tm_context;
 	    if (tm_context == NULL) tm_context = AllocTMContext(dpy);
 	    tm_context->event = eventSeq->xev;
-	    tm_context->serial = eventSeq->xev.xany.serial;
+	    tm_context->serial = eventSeq->xev->xany.serial;
 	    tm_context->keysym = keysym_return;
 	    tm_context->modifiers = (Modifiers)
 		(eventSeq->event.modifiers & StandardMask);
