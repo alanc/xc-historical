@@ -50,22 +50,39 @@ SUBIMPORTS = \
 	$(EXTENSIONSRC)/include/zoid.h \
 	$(EXTENSIONSRC)/include/bezier.h
    
+SUBDIRS = \
+	bitmaps \
+	extensions
 
 INSTALLFLAGS = -m 0444
 
 all: $(IMPORTS) $(SUBIMPORTS) extensions
-	@-(list=`echo $(IMPORTS) | sed -e 's/[^ ]*\///g'`; set -x; rm $$list)
-	ln -s $(IMPORTS) .
+	@-(list=`echo $(IMPORTS) | sed -e 's/[^ ]*\///g'`; set -x; $(RM) $$list)
+	$(LN) $(IMPORTS) .
 	@-(list=`echo $(SUBIMPORTS) | sed -e 's/[^ ]*\///g'`; \
-		set -x; cd extensions; rm $$list)
+		set -x; cd extensions; $(RM) $$list)
 	@for i in $(SUBIMPORTS); do \
-		(set -x; ln -s ../$$i extensions); \
+		(set -x; $(LN) ../$$i extensions); \
 	done
 
 extensions:
-	mkdir $@
+	-mkdir $@
 	
 InstallMultiple($(EXPORTS),$(INCDIR))
+
+InstallMultiple($(IMPORTS),$(INCDIR))
+
+install::
+	@for i in $(SUBDIRS); do \
+		-mkdir $(INCDIR)/$$i; \
+		( \
+			set -x; \
+			cd $$i ; \
+			for f in * ; do \
+			$(INSTALL) $(INSTALLFLAGS) $$f $(INCDIR)/$$i; \
+			done; \
+		); \
+	done
 
 depend:
 	@echo "depend: skipping include"
