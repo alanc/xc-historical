@@ -1,5 +1,5 @@
 /*
-* $Header: Clock.h,v 1.14 88/08/30 16:59:39 swick Exp $
+* $Header: Clock.h,v 1.15 88/08/30 17:00:55 swick Exp $
 */
 
 
@@ -72,9 +72,9 @@ SOFTWARE.
 #define XtNhighlight			"highlight"
 		/* color of hand outline */
 #define XtNanalog		"analog"
-#define XtNbackingStore		"backingStore"
-#		/* when server should use backing store */
 		/* Boolean: digital if FALSE */
+#define XtNbackingStore		"backingStore"
+		/* when server should use backing store */
 #define XtNchime		"chime"
 		/* Boolean:  */
 #define XtNpadding		"padding"
