@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.80 89/09/26 13:13:37 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.81 89/09/26 18:04:26 swick Exp $";
 /* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
 #endif /* lint */
 /*LINTLIBRARY*/
@@ -290,7 +290,7 @@ static Boolean ComputeLateBindings(event,eventSeq,computed,computedMask)
     Display *dpy;
     Boolean found;
     KeySym tempKeysym = NoSymbol;
-    dpy = eventSeq->dpy;
+    dpy = eventSeq->xev->xany.display;
     perDisplay = _XtGetPerDisplay(dpy);
     if (perDisplay == NULL) {
         XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
@@ -351,6 +351,18 @@ Boolean _XtRegularMatch(event,eventSeq)
 }
 
 
+static TMContext AllocTMContext(dpy)
+    Display *dpy;
+{
+    extern char* _XtHeapAlloc();
+    XtPerDisplay pd = _XtGetPerDisplay(dpy);
+    TMContext ctx =
+	(TMContext)_XtHeapAlloc( &pd->heap, (unsigned)sizeof(TMContextRec) );
+    pd->tm_context = ctx;
+    return ctx;
+}
+
+
 Boolean _XtMatchUsingDontCareMods(event,eventSeq)
     Event *event;
     TMEventPtr eventSeq;
@@ -362,6 +374,7 @@ Boolean _XtMatchUsingDontCareMods(event,eventSeq)
     Modifiers computed = 0;
     Modifiers computedMask = 0;
     Boolean resolved = TRUE;
+    Display *dpy = eventSeq->xev->xany.display;
 
     if (event->lateModifiers != NULL)
         resolved = ComputeLateBindings(event,eventSeq,&computed,&computedMask);
@@ -372,20 +385,33 @@ Boolean _XtMatchUsingDontCareMods(event,eventSeq)
     if ( (computed & computedMask) ==
         (eventSeq->event.modifiers & computedMask) ) {
 	Modifiers least_mod;
-        XtTranslateKeycode(eventSeq->dpy,(KeyCode) eventSeq->event.eventCode,
-            0,&modifiers_return,&keysym_return);
-        if ((keysym_return & event->eventCodeMask)  == event->eventCode ) 
-             return TRUE;
+        XtTranslateKeycode(dpy, (KeyCode)eventSeq->event.eventCode,
+			   0, &modifiers_return, &keysym_return);
+        if ((keysym_return & event->eventCodeMask)  == event->eventCode ) {
+	    TMContext tm_context = _XtGetPerDisplay(dpy)->tm_context;
+	    if (tm_context == NULL) tm_context = AllocTMContext(dpy);
+	    tm_context->event = eventSeq->xev;
+	    tm_context->keysym = keysym_return;
+	    tm_context->modifiers = 0;
+	    return TRUE;
+	}
         useful_mods = ~computedMask & modifiers_return;
         if (useful_mods == 0) return FALSE;
 	for (least_mod = 1; (least_mod & useful_mods)==0; least_mod <<= 1);
         for (i = modifiers_return; i >= least_mod; i--)
 	    /* all useful combinations of 8 modifier bits */
             if (useful_mods & i != 0) {
-		 XtTranslateKeycode(eventSeq->dpy,(KeyCode)eventSeq->event.eventCode,
-                    (Modifiers) i,&modifiers_return,&keysym_return);
+		 XtTranslateKeycode(dpy, (KeyCode)eventSeq->event.eventCode,
+			      (Modifiers)i, &modifiers_return,&keysym_return);
                  if (keysym_return  ==
-                     (event->eventCode &  event->eventCodeMask)) return TRUE;
+                     (event->eventCode &  event->eventCodeMask)) {
+		     TMContext tm_context = _XtGetPerDisplay(dpy)->tm_context;
+		     if (tm_context == NULL) tm_context = AllocTMContext(dpy);
+		     tm_context->event = eventSeq->xev;
+		     tm_context->keysym = keysym_return;
+		     tm_context->modifiers = (Modifiers)i;
+		     return TRUE;
+		 }
             }
      }
     return FALSE;
@@ -412,10 +438,11 @@ Boolean _XtMatchUsingStandardMods (event,eventSeq)
     Modifiers computed= 0;
     Modifiers computedMask = 0;
     Boolean resolved = TRUE;
+    Display *dpy = eventSeq->xev->xany.display;
 
-    XtTranslateKeycode (eventSeq->dpy,(KeyCode) eventSeq->event.eventCode,
-        (Modifiers)(eventSeq->event.modifiers&StandardMask),
-        &modifiers_return,&keysym_return);
+    XtTranslateKeycode( dpy, (KeyCode)eventSeq->event.eventCode,
+		        (Modifiers)(eventSeq->event.modifiers & StandardMask),
+		        &modifiers_return, &keysym_return);
 
     if ((event->eventCode & event->eventCodeMask) ==
              (keysym_return & event->eventCodeMask)) {
@@ -426,12 +453,33 @@ Boolean _XtMatchUsingStandardMods (event,eventSeq)
         computed |= event->modifiers;
         computedMask |= event->modifierMask;
 
-        return (
-            ((computed & computedMask) ==
-             (eventSeq->event.modifiers & ~modifiers_return &
-              computedMask))) ;
+        if ((computed & computedMask) ==
+	    (eventSeq->event.modifiers & ~modifiers_return & computedMask)) {
+	    TMContext tm_context = _XtGetPerDisplay(dpy)->tm_context;
+	    if (tm_context == NULL) tm_context = AllocTMContext(dpy);
+	    tm_context->event = eventSeq->xev;
+	    tm_context->keysym = keysym_return;
+	    tm_context->modifiers = (Modifiers)
+		(eventSeq->event.modifiers & StandardMask);
+	    return TRUE;
+	}
     }
     return FALSE;
+}
+
+
+Boolean _XtMatchAtom(event, eventSeq)
+    Event *event;
+    TMEventPtr eventSeq;
+{
+    if (event->eventCodeMask) {	/* first time? */
+	event->eventCode = XInternAtom( eventSeq->xev->xany.display,
+				        XrmQuarkToString(event->eventCode),
+				        False
+				      );
+	event->eventCodeMask = 0L;
+    }
+    return (event->eventCode == eventSeq->event.eventCode);
 }
 
 static int MatchEvent(translations, eventSeq) 
@@ -469,7 +517,7 @@ static int MatchEvent(translations, eventSeq)
 static Boolean IsModifier(event)
     TMEventPtr event;
 {
-    Display *dpy = event->dpy;
+    Display *dpy = event->xev->xany.display;
     XtPerDisplay pd = _XtGetPerDisplay(dpy);
     int i,j,index;
     int k =0;
@@ -522,11 +570,9 @@ static void XEventToTMEvent(event, tmEvent)
     register XEvent *event;
     register TMEventPtr tmEvent;
 {
-    tmEvent->dpy = event->xany.display;
+    tmEvent->xev = event;
     tmEvent->event.eventCodeMask = 0;
-    tmEvent->event.eventCode = 0;
     tmEvent->event.modifierMask = 0;
-    tmEvent->event.modifiers = 0;
     tmEvent->event.eventType = event->type;
     tmEvent->event.lateModifiers = NULL;
     tmEvent->event.matchEvent = NULL;
@@ -536,8 +582,8 @@ static void XEventToTMEvent(event, tmEvent)
 
 	case KeyPress:
 	case KeyRelease:
-	    tmEvent->event.modifiers = event->xkey.state;
             tmEvent->event.eventCode = event->xkey.keycode;
+	    tmEvent->event.modifiers = event->xkey.state;
 	    break;
 
 	case ButtonPress:
@@ -547,15 +593,55 @@ static void XEventToTMEvent(event, tmEvent)
 	    break;
 
 	case MotionNotify:
+	    tmEvent->event.eventCode = event->xmotion.is_hint;
 	    tmEvent->event.modifiers = event->xmotion.state;
 	    break;
 
 	case EnterNotify:
 	case LeaveNotify:
+	    tmEvent->event.eventCode = 0;
 	    tmEvent->event.modifiers = event->xcrossing.state;
 	    break;
 
+	case PropertyNotify:
+	    tmEvent->event.eventCode = event->xproperty.atom;
+	    tmEvent->event.modifiers = 0;
+	    break;
+
+	case SelectionClear:
+	    tmEvent->event.eventCode = event->xselectionclear.selection;
+	    tmEvent->event.modifiers = 0;
+	    break;
+
+	case SelectionRequest:
+	    tmEvent->event.eventCode = event->xselectionrequest.selection;
+	    tmEvent->event.modifiers = 0;
+	    break;
+
+	case SelectionNotify:
+	    tmEvent->event.eventCode = event->xselection.selection;
+	    tmEvent->event.modifiers = 0;
+	    break;
+
+	case ClientMessage:
+	    tmEvent->event.eventCode = event->xclient.message_type;
+	    tmEvent->event.modifiers = 0;
+	    break;
+
+	case MappingNotify:
+	    tmEvent->event.eventCode = event->xmapping.request;
+	    tmEvent->event.modifiers = 0;
+	    break;
+
+	case FocusIn:
+	case FocusOut:
+	    tmEvent->event.eventCode = event->xfocus.mode;
+	    tmEvent->event.modifiers = 0;
+	    break;
+
 	default:
+	    tmEvent->event.eventCode = 0;
+	    tmEvent->event.modifiers = 0;
 	    break;
     }
 }
@@ -909,9 +995,8 @@ static EventMask masks[] = {
         0 ,			    /* MappingNotify		*/
     };
 
-    /* Events sent with XSendEvent will have high bit set. */
-    /* !!! This isn't true anymore... fix this ||| */
-    unsigned long eventType = event->event.eventType & 0x7f;
+    /* Events sent with XSendEvent in R1 will have high bit set. */
+    unsigned long eventType = event->event.eventType /* & 0x7f */;
     if (eventType == MotionNotify) {
         Modifiers modifierMask = event->event.modifierMask;
         EventMask returnMask = 0;
