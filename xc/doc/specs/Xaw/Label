@@ -12,7 +12,7 @@ Application header file	<X11/Xaw/Label.h>
 .IN "Label.h" ""
 Class header file	<X11/Xaw/LabelP.h>
 .IN "LabelP.h" ""
-Class	
+Class	labelWidgetClass
 .IN "labelWidgetClass" ""
 Class Name	Label
 .IN "Label widget" "class name"
