@@ -1,4 +1,4 @@
-/* $XConsortium: Text.c,v 1.169 91/03/10 18:41:08 converse Exp $ */
+/* $XConsortium: Text.c,v 1.170 91/03/10 18:52:07 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -43,7 +43,7 @@ SOFTWARE.
 
 #include <X11/Xfuncs.h>
 
-Atom FMT8BIT = NULL;
+unsigned long FMT8BIT = 0L;
 
 #define SinkClearToBG          XawTextSinkClearToBackground
 
@@ -53,9 +53,6 @@ Atom FMT8BIT = NULL;
 #define SrcSearch              XawTextSourceSearch
 #define SrcCvtSel              XawTextSourceConvertSelection
 #define SrcSetSelection        XawTextSourceSetSelection
-
-extern int errno, sys_nerr;
-extern char* sys_errlist[];
 
 #define BIGNUM ((Dimension)32023)
 #define MULTI_CLICK_TIME 500L
@@ -267,6 +264,9 @@ ClassInitialize()
   char *buf = XtMalloc (len1 + len2 + len3 + 1);
   char *cp = buf;
 
+  if (!FMT8BIT)
+    FMT8BIT = XrmPermStringToQuark("FMT8BIT");
+
   XawInitializeWidgetSet();
 
 /* 
@@ -432,9 +432,6 @@ Cardinal *num_args;		/* unused */
 {
   TextWidget ctx = (TextWidget) new;
   char error_buf[BUFSIZ];
-
-  if (!FMT8BIT)
-    FMT8BIT = XInternAtom(XtDisplay(new), "FMT8BIT", False);
 
   ctx->text.lt.lines = 0;
   ctx->text.lt.info = NULL;
