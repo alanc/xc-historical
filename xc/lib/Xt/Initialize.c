@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Initialize.c,v 1.85 87/11/04 14:46:07 haynes BL5 $";
+static char rcsid[] = "$Header: Initialize.c,v 1.85 87/11/04 14:46:07 swick Locked $";
 #endif lint
 
 /*
@@ -170,7 +170,7 @@ static XtResource resources[]=
 };
 static void Initialize();
 static void Realize();
-static void SetValues();
+static Boolean SetValues();
 static void Destroy();
 static void InsertChild();
 static void ChangeManaged(); /* XXX */
@@ -332,8 +332,10 @@ char *name;
 }
 
 static void
-Initialize(new)
-Widget new;
+Initialize(request, new, args, num_args)
+Widget request, new;
+ArgList args;
+Cardinal *num_args;
 {
 	ShellWidget w = (ShellWidget) new;
 	int flag;
@@ -613,10 +615,11 @@ Widget wid;
 		    
 		}
 	    }
-	    if(childwid->core.x !=  childwid->core.border_width || 
-	       childwid->core.y !=  childwid->core.border_width) {
-		      XtMoveWidget (childwid, (int)(-childwid->core.border_width),
-			    (int)(-childwid->core.border_width));
+	    if(childwid->core.x != -childwid->core.border_width || 
+	       childwid->core.y != -childwid->core.border_width) {
+		      XtMoveWidget (childwid,
+				    (int)(-childwid->core.border_width),
+				    (int)(-childwid->core.border_width));
 	    }
 	}
     }
@@ -724,12 +727,14 @@ Boolean flag;
 	}
 }
 
-static void SetValues(old,new)
-Widget old, new;
+static Boolean SetValues(current, request, newvals, last)
+Widget current, request, newvals;
+Boolean last;
 {
 	XWMHints  *oldhints;
-	ShellWidget nw = (ShellWidget) new;
-	ShellWidget ow = (ShellWidget) old;
+	ShellWidget cur = (ShellWidget) current;
+	ShellWidget req = (ShellWidget) request;
+	ShellWidget new = (ShellWidget) newvals;
 	Boolean name = FALSE;
 	Boolean wmhints = FALSE;
 	Boolean title = FALSE;
@@ -737,212 +742,191 @@ Widget old, new;
 	XWindowChanges values;
 	int mask;
 	
-	ow->core.sensitive = nw->core.sensitive;
-	ow-> shell.resizeable =  nw->shell.resizeable;
-	ow-> shell.transient =  nw->shell.transient;
-	ow->shell.create_popup_child = nw->shell.create_popup_child;
+	/* I don't let people play with most of my values */
+	new = cur;
 
-#define	EQ(x) (ow->shell.x == nw->shell.x)
-#define EQC(x)	(ow->core.x == nw->core.x)
+	/* except these few... */
+	new->core.sensitive = req->core.sensitive;
+	new->shell.resizeable = req->shell.resizeable;
+	new->shell.transient = req->shell.transient;
+	new->shell.create_popup_child = req->shell.create_popup_child;
+
+#define	EQ(x) (cur->shell.x == req->shell.x)
+#define EQC(x)	(cur->core.x == req->core.x)
 	if(! EQ(save_under) ) {
-		ow->shell.save_under = nw->shell.save_under;
-		_do_setsave_under(ow, nw->shell.save_under) ;
+		new->shell.save_under = req->shell.save_under;
+		_do_setsave_under(cur, new->shell.save_under) ;
 	}
 	if(! EQ(override_redirect) ) {
-		ow->shell.override_redirect = nw->shell.override_redirect;
-		_do_setoverride_redirect(ow, nw->shell.override_redirect) ;
+		new->shell.override_redirect = req->shell.override_redirect;
+		_do_setoverride_redirect(cur, new->shell.override_redirect) ;
 	}
 #define EQS(x) (EQ(sizehints.x))
 
 	if(! EQS(min_width)||! EQS(min_height)) {
-	  if(nw->shell.sizehints.min_width != -1 ||
-	     (nw->shell.sizehints.min_height != -1)) {
-	    ow->shell.sizehints.min_width = nw->shell.sizehints.min_width;
-	    ow->shell.sizehints.min_height = nw->shell.sizehints.min_height;
-	    ow->shell.sizehints.flags |= PMinSize;
+	  if(req->shell.sizehints.min_width != -1 ||
+	     (req->shell.sizehints.min_height != -1)) {
+	    new->shell.sizehints.min_width = req->shell.sizehints.min_width;
+	    new->shell.sizehints.min_height = req->shell.sizehints.min_height;
+	    new->shell.sizehints.flags |= PMinSize;
 	  } else
-	     ow->shell.sizehints.flags &= ~PMinSize;
+	     new->shell.sizehints.flags &= ~PMinSize;
 	  size = TRUE;
 	}
 	if( ! EQS(max_width) || ! EQS(max_height) ) {
-	  if(nw->shell.sizehints.max_width != -1 ||
-	     (nw->shell.sizehints.max_height != -1)) {
-	    ow->shell.sizehints.max_width = nw->shell.sizehints.max_width;
-	    ow->shell.sizehints.max_height = nw->shell.sizehints.max_height;
-	    ow->shell.sizehints.flags |=PMaxSize;
+	  if(req->shell.sizehints.max_width != -1 ||
+	     (req->shell.sizehints.max_height != -1)) {
+	    new->shell.sizehints.max_width = req->shell.sizehints.max_width;
+	    new->shell.sizehints.max_height = req->shell.sizehints.max_height;
+	    new->shell.sizehints.flags |=PMaxSize;
 	  } else
-	     ow->shell.sizehints.flags &= ~PMaxSize;
+	     new->shell.sizehints.flags &= ~PMaxSize;
 	  size = TRUE;
 	}
 	if( ! EQS(width_inc) || ! EQS(height_inc) ) {
-	  if(nw->shell.sizehints.width_inc != -1 ||
-	     (nw->shell.sizehints.height_inc != -1)) {
-	    ow->shell.sizehints.width_inc = nw->shell.sizehints.width_inc;
-	    ow->shell.sizehints.height_inc = nw->shell.sizehints.height_inc;
-	    ow->shell.sizehints.flags |=PResizeInc;
+	  if(req->shell.sizehints.width_inc != -1 ||
+	     (req->shell.sizehints.height_inc != -1)) {
+	    new->shell.sizehints.width_inc = req->shell.sizehints.width_inc;
+	    new->shell.sizehints.height_inc = req->shell.sizehints.height_inc;
+	    new->shell.sizehints.flags |=PResizeInc;
 	  } else
-	     ow->shell.sizehints.flags &= ~PResizeInc;
+	     new->shell.sizehints.flags &= ~PResizeInc;
 	  size = TRUE;
 	}
 	if( ! EQS(min_aspect.x) ||! EQS(min_aspect.y) ||
 	   ! EQS(max_aspect.x) ||! EQS(max_aspect.y)) {
 		
-	  if((nw->shell.sizehints.min_aspect.x != -1) ||
-	     (nw->shell.sizehints.min_aspect.y != -1) ||
-	     (nw->shell.sizehints.max_aspect.x != -1) ||
-	     (nw->shell.sizehints.max_aspect.y != -1)) {
-	    ow->shell.sizehints.min_aspect.x = nw->shell.sizehints.min_aspect.x;
-	    ow->shell.sizehints.min_aspect.y = nw->shell.sizehints.min_aspect.y;
-	    ow->shell.sizehints.max_aspect.x = nw->shell.sizehints.max_aspect.x;
-	    ow->shell.sizehints.max_aspect.y = nw->shell.sizehints.max_aspect.y;
-	    ow->shell.sizehints.flags |=PAspect;
+	  if((req->shell.sizehints.min_aspect.x != -1) ||
+	     (req->shell.sizehints.min_aspect.y != -1) ||
+	     (req->shell.sizehints.max_aspect.x != -1) ||
+	     (req->shell.sizehints.max_aspect.y != -1)) {
+	    new->shell.sizehints.min_aspect.x = req->shell.sizehints.min_aspect.x;
+	    new->shell.sizehints.min_aspect.y = req->shell.sizehints.min_aspect.y;
+	    new->shell.sizehints.max_aspect.x = req->shell.sizehints.max_aspect.x;
+	    new->shell.sizehints.max_aspect.y = req->shell.sizehints.max_aspect.y;
+	    new->shell.sizehints.flags |=PAspect;
 	  } else
-	     ow->shell.sizehints.flags &= ~PAspect;
+	     new->shell.sizehints.flags &= ~PAspect;
 	  size = TRUE;
 	}
-	if(size) {
-	  ow->shell.sizehints.x = ow->core.x;
-	  ow->shell.sizehints.y = ow->core.y;
-	  ow->shell.sizehints.width = ow->core.width;
-	  ow->shell.sizehints.height = ow->core.height;
-	  ow->shell.sizehints.flags |= PPosition | PSize;
-	  if(XtIsRealized(ow))
-	    XSetNormalHints(XtDisplay(ow), XtWindow(ow), &ow->shell.sizehints);
+	if(size && XtIsRealized(cur)) {
+	    XSetNormalHints(XtDisplay(cur), XtWindow(cur), &new->shell.sizehints);
 	}
 	if(! EQ(title) ) {
-	  	XtFree(ow->shell.title);
-		strcpy(ow->shell.title = 
-		       (String) XtMalloc(strlen(nw->shell.title) + 1),
-		       nw->shell.title);
+	  	XtFree(cur->shell.title);
+		strcpy(new->shell.title = 
+		       (String) XtMalloc(strlen(req->shell.title) + 1),
+		       req->shell.title);
 		title = TRUE;
         }
 	
 	if(! EQ(icon_name)) {
-	  	XtFree(ow->shell.icon_name);
-		strcpy(ow ->shell.icon_name = 
-		       (String)XtMalloc(strlen(nw->shell.icon_name) + 1),
-		       nw->shell.icon_name);
+	  	XtFree(cur->shell.icon_name);
+		strcpy(new ->shell.icon_name = 
+		       (String)XtMalloc(strlen(req->shell.icon_name) + 1),
+		       req->shell.icon_name);
 		name = TRUE;
 	}
 #define EQW(x)	(EQ(wmhints.x))
-	if(! EQW(initial_state)) {
-	  	if(XtIsRealized((Widget)ow)) {
-			oldhints = XGetWMHints(XtDisplay(ow), ow->core.window);
-			ow->shell.wmhints = *oldhints;
-			XtFree((char *)oldhints);
-	        }
-		ow->shell.wmhints.initial_state = nw->shell.wmhints.initial_state;
-		ow->shell.wmhints.flags |= StateHint;
+#define GETWMHINTS \
+	  	if(XtIsRealized((Widget)cur) && !wmhints) { \
+		    oldhints = XGetWMHints(XtDisplay(cur), cur->core.window); \
+		    new->shell.wmhints = *oldhints; \
+		    XtFree((char *)oldhints); \
+	        } \
 		wmhints = TRUE;
+
+	if(! EQW(initial_state)) {
+		GETWMHINTS;
+		new->shell.wmhints.initial_state = req->shell.wmhints.initial_state;
+		new->shell.wmhints.flags |= StateHint;
 	}
 	if(! EQW(icon_x)|| !EQW(icon_y)) {
-	  	if(XtIsRealized((Widget)ow) && !wmhints) {
-			oldhints = XGetWMHints(XtDisplay(ow), ow->core.window);
-			ow->shell.wmhints = *oldhints;
-			XtFree((char *)oldhints);
-	        }
-		ow->shell.wmhints.icon_x = nw->shell.wmhints.icon_x;
-		ow->shell.wmhints.icon_y = nw->shell.wmhints.icon_y;
-		ow->shell.wmhints.flags |= IconPositionHint;
-		wmhints = TRUE;
+		GETWMHINTS;
+		new->shell.wmhints.icon_x = req->shell.wmhints.icon_x;
+		new->shell.wmhints.icon_y = req->shell.wmhints.icon_y;
+		new->shell.wmhints.flags |= IconPositionHint;
 	}
-	if(!XtIsRealized((Widget)ow)) { 
+	if(!XtIsRealized((Widget)cur)) { 
 	  /*The rest doesn't work until we are realized */
-	        if(!ow->shell.clientspecified) {
-		  	ow->core.x = nw->core.x;
-			ow->core.y = nw->core.y;
-			ow->core.width = nw->core.width;
-			ow->core.height = nw->core.height;
-			ow->core.border_width = nw->core.border_width;
+	        if(!cur->shell.clientspecified) {
+		  	new->core.x = req->core.x;
+			new->core.y = req->core.y;
+			new->core.width = req->core.width;
+			new->core.height = req->core.height;
+			new->core.border_width = req->core.border_width;
 		}
 	} else {
-		if(ow->shell.resizeable) {
+		if(cur->shell.resizeable) {
 		  mask = 0;
 		  if(!EQC(x)) {
 		  	mask |= CWX;
-			values.x = nw->core.x;
+			values.x = req->core.x;
 		  }
 		  if(!EQC(y)) {
 		  	mask |= CWY;
-			values.y = nw->core.y;
+			values.y = req->core.y;
 		  }
 		  if(!EQC(width)) {
 		  	mask |= CWWidth;
-			values.width = nw->core.width;
+			values.width = req->core.width;
 		  }
 		  if(!EQC(height)) {
 		  	mask |= CWHeight;
-			values.height = nw->core.height;
+			values.height = req->core.height;
 		  }
 		  if(!EQC(border_width)) {
 		  	mask |= CWBorderWidth;
-			values.border_width = nw->core.border_width;
+			values.border_width = req->core.border_width;
 		  }
 		  if(mask)
-		    _ask_wm_for_size(ow, &values, mask);
+		    _ask_wm_for_size(cur, &values, mask);
 	    }
 	}
 /*XXX Leak alleret  These should be copied and freed but I am lazy */
 	if(!EQW(icon_pixmap)) {
-	  	if(!wmhints && XtIsRealized((Widget)ow)) {
-			oldhints = XGetWMHints(XtDisplay(ow), ow->core.window);
-			ow->shell.wmhints = *oldhints;
-			XtFree((char *)oldhints);
-	        }
-		ow ->shell.wmhints.icon_pixmap = nw->shell.wmhints.icon_pixmap;
-		ow->shell.wmhints.flags |= IconPixmapHint;
-		wmhints = TRUE;
+		GETWMHINTS;
+		new ->shell.wmhints.icon_pixmap = req->shell.wmhints.icon_pixmap;
+		new->shell.wmhints.flags |= IconPixmapHint;
 	}
 	if(!EQW(icon_mask)) {
-	  	if(!wmhints && XtIsRealized((Widget)ow)) {
-			oldhints = XGetWMHints(XtDisplay(ow), ow->core.window);
-			ow->shell.wmhints = *oldhints;
-			XtFree((char *)oldhints);
-	        }
-		ow ->shell.wmhints.icon_mask = nw->shell.wmhints.icon_mask;
-		ow->shell.wmhints.flags |= IconMaskHint;
-		wmhints = TRUE;
+		GETWMHINTS;
+		new ->shell.wmhints.icon_mask = req->shell.wmhints.icon_mask;
+		new->shell.wmhints.flags |= IconMaskHint;
 	}
 	if(!EQW(icon_window)) {
-	  	if(!wmhints && XtIsRealized((Widget)ow)) {
-			oldhints = XGetWMHints(XtDisplay(ow), ow->core.window);
-			ow->shell.wmhints = *oldhints;
-			XtFree((char *)oldhints);
-	        }
-		ow ->shell.wmhints.icon_window = nw->shell.wmhints.icon_window;
-		ow->shell.wmhints.flags |= IconWindowHint;
-		wmhints = TRUE;
+		GETWMHINTS;
+		new ->shell.wmhints.icon_window = req->shell.wmhints.icon_window;
+		new->shell.wmhints.flags |= IconWindowHint;
 	}
 #ifndef VMS    /* Beta Xlib's Xutil.h doesn't have window_group */
 	if(!EQW(window_group)) {
-	  	if(!wmhints && XtIsRealized((Widget)ow)) {
-			oldhints = XGetWMHints(XtDisplay(ow), ow->core.window);
-			ow->shell.wmhints = *oldhints;
-			XtFree((char *)oldhints);
-	        }
-		ow ->shell.wmhints.window_group = nw->shell.wmhints.window_group;
-		ow->shell.wmhints.flags |= WindowGroupHint;
-		wmhints = TRUE;
+	  	GETWMHINTS;
+		new ->shell.wmhints.window_group = req->shell.wmhints.window_group;
+		new->shell.wmhints.flags |= WindowGroupHint;
 	}
 #endif
-	if(!XtIsRealized((Widget)ow))
-	  return;
+
+#undef GETWMHINTS
+
+	if(!XtIsRealized((Widget)cur))
+		return( FALSE );
 
 	if(name) {
-		XSetIconName(XtDisplay(ow), ow->core.window, ow->shell.icon_name);
+		XSetIconName(XtDisplay(cur), cur->core.window, new->shell.icon_name);
 	}
 	if( title ) {
-		XStoreName(XtDisplay(ow), ow->core.window, ow->shell.title);
+		XStoreName(XtDisplay(cur), cur->core.window, new->shell.title);
 	}
 	if(wmhints) {
-		XSetWMHints( XtDisplay(ow), ow->core.window, &wmhints);
+		XSetWMHints( XtDisplay(cur), cur->core.window, &(new->shell.wmhints));
 	}
 #ifdef DECHINTS
 	FOO not written yet 
 #endif
 
-/* I don't let people play with my values */
-	
+	return( FALSE );
+
 }
 
 /*
