@@ -50,7 +50,6 @@ static char sccsid[] = "%W %G Copyright 1987 Sun Micro";
 #include    "sun.h"
 #include    "opaque.h"
 
-Bool	    	screenSaved = FALSE;
 int	    	lastEventTime = 0;
 extern int	sunSigIO;
 extern int      screenIsSaved;
@@ -166,7 +165,7 @@ ProcessInputEvents ()
 	}
 
 	for (seL = sunevents + (n/(sizeof sunevents[0]));  se < seL; se++) {
-	    if (screenIsSaved)
+	    if (screenIsSaved == SCREEN_SAVER_ON)
 		SaveScreens(SCREEN_SAVER_OFF, ScreenSaverReset);
 	    lastEventTime = TVTOMILLI(event_time(se));
 
@@ -277,7 +276,7 @@ ProcessInputEvents ()
 
 	if (lastEvent) {
 	    lastEventTime = TVTOMILLI(lastEvent->time);
-	    if (screenIsSaved) {
+	    if (screenIsSaved == SCREEN_SAVER_ON) {
 		SaveScreens(SCREEN_SAVER_OFF, ScreenSaverReset);
 	    }
 	}
