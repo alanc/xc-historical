@@ -1,16 +1,20 @@
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
-#if BuildPexExt
-PEXDIRS = PEX
+#if BuildFonts | BuildServer | BuildFontServer
+LIBDIRS = lib
 #endif
 
 #if BuildFonts
 FONTDIRS = bdf scaled
 #endif
 
+#if BuildPexExt
+PEXDIRS = PEX
+#endif
+
 /* tools must be built before font dirs */
-        SUBDIRS = lib tools $(FONTDIRS) $(PEXDIRS)
+        SUBDIRS = $(LIBDIRS) tools $(FONTDIRS) $(PEXDIRS)
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
