@@ -1,4 +1,4 @@
-/* $XConsortium: utils.c,v 1.3 91/05/13 16:51:20 gildea Exp $ */
+/* $XConsortium: utils.c,v 1.4 91/06/21 18:18:51 keith Exp $ */
 /*
  * misc os utilities
  */
@@ -30,16 +30,33 @@
 
 #include	<stdio.h>
 #include	<X11/Xos.h>
-#include	<sys/param.h>
 #include	"misc.h"
 #include	"globals.h"
+
+#ifndef X_NOT_POSIX
+#ifdef _POSIX_SOURCE
+#include <limits.h>
+#else
+#define _POSIX_SOURCE
+#include <limits.h>
+#undef _POSIX_SOURCE
+#endif
+#endif /* X_NOT_POSIX */
+#ifndef PATH_MAX
+#include <sys/param.h>
+#ifdef MAXPATHLEN
+#define PATH_MAX MAXPATHLEN
+#else
+#define PATH_MAX 1024
+#endif
+#endif /* PATH_MAX */
 
 extern int  serverNum;
 extern char *configfilename;
 char       *progname;
 Bool        UseSyslog;
 Bool        CloneSelf;
-char        ErrorFile[MAXPATHLEN];
+char        ErrorFile[PATH_MAX];
 
 AutoResetServer()
 {

@@ -1,4 +1,4 @@
-/* $XConsortium: pexFont.c,v 5.1 91/02/16 09:56:52 rws Exp $ */
+/* $XConsortium: pexFont.c,v 5.2 91/07/01 08:21:03 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -40,10 +40,23 @@ SOFTWARE.
 #include "dipex.h"
 #include "pexLookup.h"
 
-#include <sys/param.h>	    /* MAXPATHLEN */
-#ifndef MAXPATHLEN
-#define MAXPATHLEN 256
+#ifndef X_NOT_POSIX
+#ifdef _POSIX_SOURCE
+#include <limits.h>
+#else
+#define _POSIX_SOURCE
+#include <limits.h>
+#undef _POSIX_SOURCE
 #endif
+#endif /* X_NOT_POSIX */
+#ifndef PATH_MAX
+#include <sys/param.h>
+#ifdef MAXPATHLEN
+#define PATH_MAX MAXPATHLEN
+#else
+#define PATH_MAX 1024
+#endif
+#endif /* PATH_MAX */
 
 #ifdef min
 #undef min
@@ -72,7 +85,7 @@ pexOpenFontReq  *strmPtr;
 {
     ErrorCode err = Success;
     ErrorCode FreePEXFont ();
-    unsigned char fName[MAXPATHLEN];
+    unsigned char fName[PATH_MAX];
     dipexFont *dif;
     extern void CopyISOLatin1Lowered();
 
