@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: miglblt.c,v 1.15 87/09/07 19:01:22 toddb Locked $ */
+/* $Header: miglblt.c,v 1.16 87/09/08 10:10:10 toddb Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -94,7 +94,7 @@ miPolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	pfont->pFI->maxbounds.metrics.descent;
 
     pPixmap = (PixmapPtr)(*pDrawable->pScreen->CreatePixmap)
-      (pDrawable->pScreen, width, height, 1, XYBitmap);
+      (pDrawable->pScreen, width, height, 1);
 
     pGCtmp = GetScratchGC(1, pDrawable->pScreen);
 
