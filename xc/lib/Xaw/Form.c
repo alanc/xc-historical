@@ -201,18 +201,18 @@ static void RefigureLocations(w)
 
 
 static Position TransformCoord(loc, old, new, type)
-Position loc;
-Dimension old, new;
-XtEdgeType type;
+    register Position loc;
+    Dimension old, new;
+    XtEdgeType type;
 {
-    if (type == XtRubber)
+    if (type == XtRubber) {
         if (old > 0)
-	    return loc * new / old;
-        else
-	    return loc;
-    if (type == XtChainTop || type == XtChainLeft)
-	return loc;
-    return (loc + new - old > 0 ? loc + new - old : 0);
+	    loc = (loc * new) / old;
+    }
+    else if (type == XtChainBottom || type == XtChainRight)
+	loc += (Position)new - (Position)old;
+
+    return (loc > 0) ? loc : 0;
 }
 
 
@@ -224,7 +224,7 @@ static void Resize(w)
     int num_children = fw->composite.num_children;
     Widget *childP;
     Position x, y;
-    Dimension width, height;
+    int width, height;
 
     for (childP = children; childP - children < num_children; childP++) {
 	FormConstraints form = (FormConstraints)(*childP)->core.constraints;
@@ -248,7 +248,8 @@ static void Resize(w)
 	if (width < 1) width = 1;
 	if (height < 1) height = 1;
 	XtMoveWidget( (*childP), x, y );
-	XtResizeWidget((*childP), width, height, (*childP)->core.border_width);
+	XtResizeWidget( (*childP), (Dimension)width, (Dimension)height,
+		        (*childP)->core.border_width );
     }
 
     fw->form.old_width = fw->core.width;
