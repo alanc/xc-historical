@@ -1,4 +1,4 @@
-/* $XConsortium: TMkey.c,v 1.17 92/11/23 15:44:37 converse Exp $ */
+/* $XConsortium: TMkey.c,v 1.18 92/12/22 17:00:05 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -121,18 +121,17 @@ FM(0x1f), FM(0x9f), FM(0x5f), FM(0xdf), FM(0x3f), FM(0xbf), FM(0x7f), FM(0xff)
 
 static void _XtConvertCase();
 
-Boolean _XtComputeLateBindings(lateModifiers,eventSeq,computed,computedMask)
+Boolean _XtComputeLateBindings(dpy, lateModifiers, computed, computedMask)
+    Display *dpy;
     LateBindingsPtr lateModifiers;
-    TMEventPtr eventSeq;
     Modifiers *computed,*computedMask;
 {
     int i,j,ref;
     ModToKeysymTable* temp;
     XtPerDisplay perDisplay;
-    Display *dpy;
     Boolean found;
     KeySym tempKeysym = NoSymbol;
-    dpy = eventSeq->xev->xany.display;
+
     perDisplay = _XtGetPerDisplay(dpy);
     if (perDisplay == NULL) {
         XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
@@ -203,8 +202,8 @@ Boolean _XtMatchUsingDontCareMods(typeMatch, modMatch, eventSeq)
     TMKeyContext tm_context;
     
     if (modMatch->lateModifiers != NULL)
-      resolved = _XtComputeLateBindings(modMatch->lateModifiers,
-					eventSeq,&computed,&computedMask);
+	resolved = _XtComputeLateBindings(dpy, modMatch->lateModifiers,
+					  &computed, &computedMask);
     if (!resolved) return FALSE;
     computed |= modMatch->modifiers;
     computedMask |= modMatch->modifierMask; /* gives do-care mask */
@@ -302,8 +301,8 @@ Boolean _XtMatchUsingStandardMods (typeMatch, modMatch, eventSeq)
     if ((typeMatch->eventCode & typeMatch->eventCodeMask) ==
              (keysym_return & typeMatch->eventCodeMask)) {
         if (modMatch->lateModifiers != NULL) 
-            resolved = _XtComputeLateBindings(modMatch->lateModifiers,
-					   eventSeq,&computed,&computedMask);
+            resolved = _XtComputeLateBindings(dpy, modMatch->lateModifiers,
+					      &computed, &computedMask);
         if (!resolved) return FALSE;
         computed |= modMatch->modifiers;
         computedMask |= modMatch->modifierMask;

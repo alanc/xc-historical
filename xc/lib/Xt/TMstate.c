@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.161 92/02/27 17:04:04 converse Exp $ */
+/* $XConsortium: TMstate.c,v 1.162 92/03/25 16:47:39 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -378,11 +378,9 @@ Boolean _XtRegularMatch(typeMatch, modMatch, eventSeq)
     if (typeMatch->eventCode != (eventSeq->event.eventCode &
 				  typeMatch->eventCodeMask)) return FALSE;
     if (modMatch->lateModifiers != NULL)
-      resolved = 
-	_XtComputeLateBindings(modMatch->lateModifiers,
-			       eventSeq,
-			       &computed,
-			       &computedMask);
+	resolved = _XtComputeLateBindings(eventSeq->xev->xany.display,
+					  modMatch->lateModifiers,
+					  &computed, &computedMask);
     if (!resolved) return FALSE;
     computed |= modMatch->modifiers;
     computedMask |= modMatch->modifierMask;
