@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbhrzvert.c,v 1.1 89/08/18 16:45:42 keith Exp $ */
+/* $XConsortium: cfbhrzvert.c,v 1.2 89/09/19 15:35:07 keith Exp $ */
 #include "X.h"
 
 #include "gc.h"
@@ -82,7 +82,7 @@ int len;		/* length of line */
 	    *addrl++ = (scrbits & ~startmask) |
 		       (DoRop (rop, pixel, scrbits) & startmask);
 	}
-	if ((planemask & PIM == PIM))
+	if ((planemask & PMSK) == PMSK)
 	{
 	    while (nlmiddle--)
 	    {
@@ -124,7 +124,7 @@ int x1, y1;		/* initial point */
 register int len;	/* length of line */
 {
 #if (PPW == 4)
-    if ((planemask & PIM) == PIM)
+    if ((planemask & PMSK) == PMSK)
     {
     	register unsigned char    *bits = (unsigned char *) addrl;
     
