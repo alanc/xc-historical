@@ -127,8 +127,9 @@ typedef cfbPrivGC	*cfbPrivGCPtr;
 
 /* private field of window */
 typedef struct {
-    unsigned	fastBorder:1;	/* non-zero if border is 32 bits wide */
-    unsigned	fastBackground:1;
+    unsigned	char fastBorder; /* non-zero if border is 32 bits wide */
+    unsigned	char fastBackground;
+    unsigned short unused; /* pad for alignment with Sun compiler */
     DDXPointRec	oldRotate;
     PixmapPtr	pRotatedBackground;
     PixmapPtr	pRotatedBorder;
