@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.132 93/10/12 09:09:24 rws Exp $ */
+/* $XConsortium: utils.c,v 1.133 93/12/06 15:21:07 kaleb Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -659,6 +659,32 @@ Xalloc (amount)
 }
 
 /*****************
+ * XNFalloc 
+ * "no failure" realloc, alternate interface to Xalloc w/o Must_have_memory
+ *****************/
+
+unsigned long *
+XNFalloc (amount)
+    unsigned long amount;
+{
+    char             *malloc();
+    register pointer ptr;
+
+    if ((long)amount <= 0)
+    {
+        return (unsigned long *)NULL;
+    }
+    /* aligned extra on long word boundary */
+    amount = (amount + 3) & ~3;
+    ptr = (pointer)malloc(amount);
+    if (!ptr)
+    {
+        FatalError("Out of memory");
+    }
+    return ((unsigned long *)ptr);
+}
+
+/*****************
  * Xcalloc
  *****************/
 
@@ -709,6 +735,23 @@ Xrealloc (ptr, amount)
     return (unsigned long *)NULL;
 }
                     
+/*****************
+ * XNFrealloc 
+ * "no failure" realloc, alternate interface to Xrealloc w/o Must_have_memory
+ *****************/
+
+unsigned long *
+XNFrealloc (ptr, amount)
+    register pointer ptr;
+    unsigned long amount;
+{
+    if (( ptr = (pointer)Xrealloc( ptr, amount ) ) == NULL)
+    {
+        FatalError( "Out of memory" );
+    }
+    return ((unsigned long *)ptr);
+}
+
 /*****************
  *  Xfree
  *    calls free 
