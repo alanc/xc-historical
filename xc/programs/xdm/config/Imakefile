@@ -3,10 +3,9 @@
      XDMSERVERS = Xservers
      XDMSESSION = Xsession
 
-all:: Xservers.ws Xsetup_0 xdm-config
+all:: Xservers.ws xdm-config
 
 CppScriptTarget(Xservers.ws,Xserv.ws.cpp,-DBINDIR=$(BINDIR),NullParameter)
-CppScriptTarget(Xsetup_0,Xsetup_0.cpp,-DBINDIR=$(BINDIR),NullParameter)
 CppScriptTarget(xdm-config,xdm-conf.cpp,-DXDMDIR=$(XDMDIR),NullParameter)
 
 InstallNonExecFile($(XDMCONFIG),$(XDMDIR))
@@ -25,4 +24,4 @@ Xservers:
 depend::
 
 clean::
-	$(RM) Xservers.ws Xsetup_0 xdm-config
+	$(RM) Xservers.ws xdm-config
