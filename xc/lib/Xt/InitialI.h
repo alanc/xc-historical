@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.1 89/06/01 14:34:03 swick Exp $ */
+/* $XConsortium: InitialI.h,v 1.11 89/06/09 08:15:20 swick Exp $ */
 /* $oHeader: InitializeI.h,v 1.8 88/09/01 11:25:04 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -31,6 +31,9 @@ SOFTWARE.
  ****************************************************************/
 
 #include <sys/param.h>				/* to get MAXPATHLEN */
+#ifndef MAXPATHLEN
+#define MAXPATHLEN 256
+#endif
 
 #ifndef MAX
 #define MAX(a,b) (((a) > (b)) ? (a) : (b))
