@@ -1,4 +1,4 @@
-/* $XConsortium: xtest.c,v 1.7 92/02/24 19:02:14 keith Exp $ */
+/* $XConsortium: xtest.c,v 1.8 92/02/25 14:21:31 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -189,12 +189,29 @@ ProcXTestFakeInput(client)
 	break;
     case MotionNotify:
 	dev = (DeviceIntPtr)LookupPointerDevice();
-	root = LookupWindow(ev->u.keyButtonPointer.root, client);
-	if (!root)
-	    return BadWindow;
-	if (root->parent)
+	if (ev->u.keyButtonPointer.root == None)
+	    root = GetCurrentRootWindow();
+	else
 	{
-	    client->errorValue = ev->u.keyButtonPointer.root;
+	    root = LookupWindow(ev->u.keyButtonPointer.root, client);
+	    if (!root)
+		return BadWindow;
+	    if (root->parent)
+	    {
+		client->errorValue = ev->u.keyButtonPointer.root;
+		return BadValue;
+	    }
+	}
+	if (ev->u.u.detail == xTrue)
+	{
+	    int x, y;
+	    GetSpritePosition(&x, &y);
+	    ev->u.keyButtonPointer.rootX += x;
+	    ev->u.keyButtonPointer.rootY += y;
+	}
+	else if (ev->u.u.detail != xFalse)
+	{
+	    client->errorValue = ev->u.u.detail;
 	    return BadValue;
 	}
 	if (ev->u.keyButtonPointer.rootX < 0 ||
