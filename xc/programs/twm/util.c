@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: util.c,v 1.21 89/07/18 17:15:35 jim Exp $
+ * $XConsortium: util.c,v 1.22 89/07/26 12:47:26 jim Exp $
  *
  * utility routines for twm
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: util.c,v 1.21 89/07/18 17:15:35 jim Exp $";
+"$XConsortium: util.c,v 1.22 89/07/26 12:47:26 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -46,6 +46,7 @@ static char RCSinfo[]=
 #include "util.h"
 #include "gram.h"
 #include "screen.h"
+#include <X11/Xmu/Drawing.h>
 
 int HotX, HotY;
 
@@ -368,63 +369,45 @@ GetBitmap(name)
 char *name;
 {
     char *bigname;
-    int status;
     Pixmap pm;
 
-    if  (name == NULL)
-	return (NULL);
+    if (name == NULL) return None;
 
-    name = ExpandFilename(name);
-    bigname = name;
-
-    status = XReadBitmapFile(dpy, Scr->Root, bigname, &JunkWidth,
-	&JunkHeight, &pm, &HotX, &HotY);
-
-    if (status != BitmapSuccess && Scr->IconDirectory && name[0] != '/')
-    {
-	bigname = (char *)malloc(strlen(name) + strlen(Scr->IconDirectory) + 2);
-	sprintf(bigname, "%s/%s", Scr->IconDirectory, name);
-	status = XReadBitmapFile(dpy, Scr->Root, bigname, &JunkWidth,
-	    &JunkHeight, &pm, &HotX, &HotY);
+    bigname = ExpandFilename (name);
+    if (!bigname) {
+	fprintf (stderr, "twm:  unable to expand bitmap filename \"%s\"\n",
+		 name);
+	return None;
     }
 
-    if (status != BitmapSuccess && name[0] != '/')
-    {
-	bigname = (char *)malloc(strlen(name) + strlen(BITMAPS) + 2);
-	sprintf(bigname, "%s/%s", BITMAPS, name);
-	status = XReadBitmapFile(dpy, Scr->Root, bigname, &JunkWidth,
-	    &JunkHeight, &pm, &HotX, &HotY);
+    pm = XmuLocateBitmapFile (ScreenOfDisplay(dpy, Scr->screen), bigname,
+			      NULL, 0, &JunkWidth, &JunkHeight,
+			      &HotX, &HotY);
+    if (pm == None && Scr->IconDirectory && bigname[0] != '/') {
+	if (bigname != name) free (bigname);
+	bigname = (char *) malloc (strlen(name) + strlen(Scr->IconDirectory) +
+				   2);
+	if (!bigname) {
+	    fprintf (stderr,
+		     "twm:  unable to allocate memory for \"%s/%s\"\n",
+		     Scr->IconDirectory, name);
+	    return None;
+	}
+	sprintf (bigname, "%s/%s", Scr->IconDirectory, name);
+	if (XReadBitmapFile (dpy, Scr->Root, bigname, &JunkWidth,
+			     &JunkHeight, &pm, &HotX, &HotY) !=
+	    BitmapSuccess) {
+	    pm = None;
+	}
+    }
+    if (bigname != name) free (bigname);
+    if (pm == None) {
+	fprintf (stderr, "twm:  unable to find bitmap \"%s\"\n", name);
     }
 
-    switch(status)
-    {
-	case BitmapSuccess:
-	    break;
-
-	case BitmapFileInvalid:
-	    fprintf(stderr, ".twmrc: invalid bitmap file \"%s\"\n", bigname);
-	    break;
-
-	case BitmapNoMemory:
-	    fprintf(stderr, ".twmrc: out of memory \"%s\"\n", bigname);
-	    break;
-
-	case BitmapOpenFailed:
-	    fprintf(stderr, ".twmrc: failed to open bitmap file \"%s\"\n",
-		bigname);
-	    break;
-
-	default:
-	    fprintf(stderr,".twmrc: bitmap error = 0x%x on file \"%s\"\n",
-		status, bigname);
-	    break;
-    }
-
-    if (status != BitmapSuccess)
-	return (NULL);
-
-    return (pm);
+    return pm;
 }
+
 
 int
 GetColor(kind, what, name)
