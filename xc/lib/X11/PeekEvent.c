@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XPeekEvent.c,v 11.11 87/05/29 03:17:43 jg Exp $ */
+/* $Header: XPeekEvent.c,v 11.11 87/09/11 08:05:29 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_EVENTS
@@ -9,35 +9,19 @@
 extern _XQEvent *_qfree;
 
 /* 
- * Flush output and (wait for and) return the next event in the queue,
+ * Return the next event in the queue,
  * BUT do not remove it from the queue.
+ * If none found, flush and wait until there is an event to peek.
  */
 
 XPeekEvent (dpy, event)
 	register Display *dpy;
 	register XEvent *event;
 {
-	register _XQEvent *qelt;
-	xEvent ev;
-
 	LockDisplay(dpy);
-	_XFlush (dpy);
-	if (qelt = (_XQEvent *)dpy->head) {
-	    *event = qelt->event;
-	    UnlockDisplay(dpy);
-	    return;
-	    }
-
-	while (1) {
-	    _XRead (dpy, (char *)&ev, (long) sizeof(xEvent));
-	    if (ev.u.u.type == X_Error)
-	    	_XError (dpy, (xError *) event);
-	    else {  /* it's an event packet */
-	    	_XEnq (dpy, &ev);
-		*event = dpy->head->event;
-		UnlockDisplay(dpy);
-		return;
-		}
-	}
+	if (dpy->head == NULL)
+	    _XReadEvents(dpy);
+	*event = (dpy->head)->event;
+	UnlockDisplay(dpy);
 }
 

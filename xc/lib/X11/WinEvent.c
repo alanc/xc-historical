@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XWinEvent.c,v 11.12 87/05/29 03:48:21 jg Exp $ */
+/* $Header: XWinEvent.c,v 11.12 87/09/11 08:08:27 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #define NEED_EVENTS
@@ -10,9 +10,11 @@ extern _XQEvent *_qfree;
 extern long _event_to_mask[];
 
 /* 
- * Flush output and (wait for and) return the next event in the queue
+ * Return the next event in the queue
  * for the given window matching one of the events in the mask.
  * Events earlier in the queue are not discarded.
+ * If none found, flush, and then wait until an event arrives which
+ * matches.
  */
 
 XWindowEvent (dpy, w, mask, event)
@@ -24,39 +26,28 @@ XWindowEvent (dpy, w, mask, event)
 	register _XQEvent *prev, *qelt;
 
         LockDisplay(dpy);
-	_XFlush (dpy);
-	for (prev = NULL, qelt = dpy->head;
-	     qelt && (qelt->event.type != KeymapNotify)
-		  && (qelt->event.xany.window != w ||
-		      !(_event_to_mask [qelt->event.type] & mask));
-	     qelt = (prev = qelt)->next) ;
-	if (qelt) {
-	    *event = qelt->event;
-	    if (prev) {
-		if ((prev->next = qelt->next) == NULL)
-		    dpy->tail = prev;
-	    } else {
-		if ((dpy->head = qelt->next) == NULL)
-		    dpy->tail = NULL;
-	    }
-	    qelt->next = _qfree;
-	    _qfree = qelt;
-	    dpy->qlen--;
-	    UnlockDisplay(dpy);
-	    return;
-	}
+	prev = NULL;
 	while (1) {
-	    xEvent pe;		/* wire protocol event */
-	    _XRead (dpy, (char *)&pe, (long) sizeof(xEvent));
-	    /* go call through display to find proper event reformatter */
-	    (*dpy->event_vec[pe.u.u.type & 0177])(dpy, event, &pe);
-	    if (event->type == X_Error)
-		_XError(dpy, (xError *) &pe);
-	    else if ((event->xany.window == w) 
-		&& (_event_to_mask[event->type] & mask)) {
-		UnlockDisplay(dpy);
-		return;
-	    } else
-		_XEnq(dpy, &pe);
+	    for (qelt = prev ? prev->next : dpy->head;
+		 qelt;
+		 prev = qelt, qelt = qelt->next) {
+		if ((qelt->event.xany.window == w) &&
+		    (_event_to_mask [qelt->event.type] & mask)) {
+		    *event = qelt->event;
+		    if (prev) {
+			if ((prev->next = qelt->next) == NULL)
+			    dpy->tail = prev;
+		    } else {
+			if ((dpy->head = qelt->next) == NULL)
+			dpy->tail = NULL;
+		    }
+		    qelt->next = _qfree;
+		    _qfree = qelt;
+		    dpy->qlen--;
+		    UnlockDisplay(dpy);
+		    return;
+		}
+	    }
+	    _XReadEvents(dpy);
 	}
 }

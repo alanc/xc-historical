@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XPeekIfEv.c,v 11.9 87/07/23 15:33:00 weissman Exp $ */
+/* $Header: XPeekIfEv.c,v 11.9 87/09/11 08:09:07 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_EVENTS
@@ -9,9 +9,9 @@
 extern _XQEvent *_qfree;
 
 /*
- * Flush output and (wait for and) return the next event in the queue
- * that satisfies the predicate.
+ * return the next event in the queue that satisfies the predicate.
  * BUT do not remove it from the queue.
+ * If none found, flush, and then wait until one satisfies the predicate.
  */
 
 XPeekIfEvent (dpy, event, predicate, arg)
@@ -20,38 +20,21 @@ XPeekIfEvent (dpy, event, predicate, arg)
 	Bool (*predicate)();
 	char *arg;
 {
-	register _XQEvent *qelt;
-	xEvent ev;
+	register _XQEvent *prev, *qelt;
 
 	LockDisplay(dpy);
-	_XFlush (dpy);
-
-	qelt = dpy->head;
-	while (qelt) {
-	    if ((*predicate)(dpy, &qelt->event, arg)) {
-		*event = qelt->event;
-		UnlockDisplay(dpy);
-		return;
-		}
-		qelt = qelt->next;
-	}
-
-	/* 
-	 * if no match in queue, then block waiting for event, enqueing
-	 * other events all the while.
-	 */
+	prev = NULL;
 	while (1) {
-	    _XRead (dpy, (char *)&ev, (long)sizeof(xEvent));
-	    if (ev.u.u.type == X_Error)
-	    	_XError (dpy, (xError *) &ev);
-	    else {  /* it's an event packet */
-	    	_XEnq (dpy, &ev);
-		if ((*predicate)(dpy, &dpy->tail->event, arg)) {
-			*event = dpy->tail->event;
-			UnlockDisplay(dpy);
-			return;
-			}
+	    for (qelt = prev ? prev->next : dpy->head;
+		 qelt;
+		 prev = qelt, qelt = qelt->next) {
+		if ((*predicate)(dpy, &qelt->event, arg)) {
+		    *event = qelt->event;
+		    UnlockDisplay(dpy);
+		    return;
 		}
+	    }
+	    _XReadEvents(dpy);
 	}
 }
 
