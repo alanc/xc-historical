@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.162 91/05/05 20:39:33 converse Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.163 91/05/17 16:52:30 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1819,13 +1819,6 @@ extern void XtCopyScreen(
     Widget		/* widget */,
     int			/* offset */,
     XrmValue*		/* value */
-#endif
-);
-
-extern void XrmCompileResourceList(
-#if NeedFunctionPrototypes
-    XtResourceList 	/* resources */,
-    Cardinal 		/* num_resources */
 #endif
 );
 
