@@ -6,7 +6,7 @@ SRCS =	 cfbgc.c cfbrrop.c cfbwindow.c \
 	 cfbgetsp.c cfbfillrct.c cfbtileoddC.c cfbtileoddG.c \
 	 cfbcmap.c cfbzerarcC.c cfbzerarcX.c cfbzerarcG.c \
 	 cfbfillarcC.c cfbfillarcG.c \
-	 cfbtegblt.c cfbbstore.c \
+	 cfbtegblt.c cfbbstore.c cfb8cppl.c \
 	 cfbbltC.c cfbbltX.c cfbbltO.c cfbbltG.c \
 	 cfb8bit.c cfbteblt8.c cfbglblt8.c cfbglrop8.c \
  	 cfbpush8.c cfbrctstp8.c cfbpolypnt.c \
@@ -18,7 +18,7 @@ OBJS =   cfbgc.o cfbrrop.o cfbwindow.o \
 	 cfbpntwin.o cfbmskbits.o cfbpixmap.o cfbbitblt.o \
 	 cfbcmap.o cfbzerarcC.o cfbzerarcX.o cfbzerarcG.o \
 	 cfbfillarcC.o cfbfillarcG.o \
-	 cfbtegblt.o cfbbstore.o \
+	 cfbtegblt.o cfbbstore.o cfb8cppl.o \
 	 cfbbltC.o cfbbltX.o cfbbltO.o cfbbltG.o \
 	 cfb8bit.o cfbteblt8.o cfbglblt8.o cfbglrop8.o \
  	 cfbpush8.o cfbrctstp8.o cfbpolypnt.o \
