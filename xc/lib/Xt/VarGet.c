@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: VarGet.c,v 1.2 89/11/09 11:11:20 swick Exp $";
+    "$XConsortium: VarGet.c,v 1.3 89/11/10 17:42:00 swick Exp $";
 #endif
 /*
 
@@ -30,8 +30,8 @@ without express or implied warranty.
 void
 XtVaGetSubresources(Widget widget, XtPointer base, String name, String class, XtResourceList resources, Cardinal num_resources, ...)
 #else
-void
-XtVaGetSubresources(widget, base, name, class, resources, num_resources, va_alist)
+/*VARARGS6*/
+void XtVaGetSubresources(widget, base, name, class, resources, num_resources, va_alist)
     Widget widget;
     XtPointer base;
     String name;
@@ -65,8 +65,8 @@ XtVaGetSubresources(widget, base, name, class, resources, num_resources, va_alis
 void
 XtVaGetApplicationResources(Widget widget, XtPointer base, XtResourceList resources, Cardinal num_resources, ...)
 #else
-void
-XtVaGetApplicationResources(widget, base, resources, num_resources, va_alist)
+/*VARARGS4*/
+void XtVaGetApplicationResources(widget, base, resources, num_resources, va_alist)
     Widget widget;
     XtPointer base;
     XtResourceList resources;
@@ -185,8 +185,8 @@ _XtGetNestedArg(widget, avlist, args, resources, num_resources)
 void
 XtVaGetValues(Widget widget, ...)
 #else
-void
-XtVaGetValues(widget, va_alist)
+/*VARARGS1*/
+void XtVaGetValues(widget, va_alist)
     Widget widget;
     va_dcl
 #endif
@@ -248,8 +248,8 @@ XtVaGetValues(widget, va_alist)
 void
 XtVaGetSubvalues(XtPointer base,XtResourceList  resources, Cardinal num_resources, ...)
 #else
-void
-XtVaGetSubvalues(base, resources, num_resources, va_alist)
+/*VARARGS3*/
+void XtVaGetSubvalues(base, resources, num_resources, va_alist)
     XtPointer base;
     XtResourceList  resources;
     Cardinal num_resources;
