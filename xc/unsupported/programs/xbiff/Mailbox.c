@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.42 90/09/11 15:55:17 converse Exp $
+ * $XConsortium: Mailbox.c,v 1.43 90/09/11 16:41:02 converse Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -454,7 +454,11 @@ static void check_mailbox (w, force_redraw, reset)
     if (w->mailbox.check_command != NULL) {
 	waitType wait_status;
 	int	check_status;
+#ifdef SYSV
+	wait_status = system(w->mailbox.check_command);
+#else
 	wait_status.w_status = system(w->mailbox.check_command);
+#endif
 	check_status = waitCode(wait_status);
 
 	/* error in sh checkCommand execution */
