@@ -15,7 +15,7 @@
 #include <X11/Label.h>
 #include <X11/Command.h>
 #include <X11/StringDefs.h>
-#include "xbench.h"
+#include "xgc.h"
 
 extern XStuff X;
 
@@ -67,8 +67,8 @@ void create_planemask_choice(w)
 				labelargs,XtNumber(labelargs));
 
   pmargs[0].value = (XtArgVal) callbacklist;
-  pmargs[6].value = (XtArgVal) White;
-  pmargs[7].value = (XtArgVal) Black;
+  pmargs[6].value = (XtArgVal) X.background;
+  pmargs[7].value = (XtArgVal) X.foreground;
   
   for (i=0;i<num_planes;++i) {
     if (i==0) {
@@ -109,13 +109,13 @@ void choose_plane(w,closure,call_data)
 
   if (on) {
     planemask |= 1<<num;
-    args[0].value = (XtArgVal) White;
-    args[1].value = (XtArgVal) Black;
+    args[0].value = (XtArgVal) X.background;
+    args[1].value = (XtArgVal) X.foreground;
   }
   else {
     planemask &= ~(1<<num);
-    args[0].value = (XtArgVal) Black;
-    args[1].value = (XtArgVal) White;
+    args[0].value = (XtArgVal) X.foreground;
+    args[1].value = (XtArgVal) X.background;
   }
 
   XtSetValues(w,args,XtNumber(args));
