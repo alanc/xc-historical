@@ -1,4 +1,4 @@
-/* $XConsortium: flostr.h,v 1.4 94/01/12 20:05:04 rws Exp $ */
+/* $XConsortium: flostr.h,v 1.5 94/04/17 20:34:04 rws Exp dpw $ */
 /**** module flostr.h ****/
 /****************************************************************************
 
@@ -168,7 +168,9 @@ typedef struct _pedef {
   diElemVecPtr	  diVec;	/* DIXIE entry point vector		   */
   ddElemVecRec	  ddVec;	/* DDXIE entry point vector (in-line)	   */
   outFloRec	  outFlo;	/* output attribute/connection info	   */
-/*inFloRec	  inFlo[inCnt];	/* array of in-line input connection info  */
+#if 0
+  inFloRec	  inFlo[inCnt];	/* array of in-line input connection info  */
+#endif
 } peDefRec, *peDefPtr;
 
 /* link-pair for managing a circular doubly linked list of peDefs
@@ -208,7 +210,9 @@ typedef struct _flodef {
   } flags;
   xieFloEvn	 event;		/* generic event packet                    */
   xieFloErr	 error;		/* generic error packet                    */
-/*peDefPtr	 peArray[peCnt];/* array of peDef pointers                 */
+#if 0
+  peDefPtr	 peArray[peCnt];/* array of peDef pointers                 */
+#endif
 } floDefRec, *floDefPtr;
 
 /* link-pair for managing a circular doubly linked list of floDefs

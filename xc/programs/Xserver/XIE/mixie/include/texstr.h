@@ -1,4 +1,4 @@
-/* $XConsortium: texstr.h,v 1.4 94/01/12 20:17:45 rws Exp $ */
+/* $XConsortium: texstr.h,v 1.5 94/04/17 20:35:06 rws Exp dpw $ */
 /**** module texstr.h ****/
 /****************************************************************************
 
@@ -142,8 +142,10 @@ typedef struct _petex {
   INT32		 (*roiget)();	  /* process domain run length function   */
   INT32		 domXoff;	  /* processing domain x offset		  */
   INT32		 domYoff;	  /* processing domain y offset		  */
-/*receptorRec    receptor[inCnt]; /* array of in-line input receptors	  */
-/*void		 private_info;	  /* in-line element-private data	  */
+#if 0
+  receptorRec    receptor[inCnt]; /* array of in-line input receptors	  */
+  void		 private_info;	  /* in-line element-private data	  */
+#endif
 } peTexRec, *peTexPtr;
 
 #endif /* end _XIEH_TEXSTR */
