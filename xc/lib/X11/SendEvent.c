@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XSendEvent.c,v 11.7 88/02/20 20:22:57 rws Exp $ */
+/* $Header: XSendEvent.c,v 11.8 88/05/16 11:30:37 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_EVENTS
@@ -37,7 +37,12 @@ XSendEvent(dpy, w, propagate, event_mask, event)
 	req->destination = w;
 	req->propagate = propagate;
 	req->eventMask = event_mask;
+#ifdef WORD64
+	/* avoid quad-alignment problems */
+	bcopy ((char *) &ev, (char *) req->eventdata, SIZEOF(xEvent));
+#else
 	req->event = ev;
+#endif /* WORD64 */
     }
 
     UnlockDisplay(dpy);
