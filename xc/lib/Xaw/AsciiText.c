@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.34 89/10/04 13:55:41 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.35 89/10/09 16:19:54 jim Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -92,6 +92,9 @@ AsciiTextClassRec asciiTextClassRec = {
     /* callback_private */      NULL,
     /* tm_table         */      XtInheritTranslations,
     /* query_geometry	*/	XtInheritQueryGeometry
+  },
+  { /* Simple fields */
+    /* change_sensitive	*/	XtInheritChangeSensitive
   },
   { /* text fields */
     /* empty            */      0
@@ -198,6 +201,9 @@ AsciiStringClassRec asciiStringClassRec = {
     /* tm_table         */      XtInheritTranslations,
     /* query_geometry	*/	XtInheritQueryGeometry
   },
+  { /* Simple fields */
+    /* change_sensitive	*/	XtInheritChangeSensitive
+  },
   { /* text fields */
     /* empty            */      0
   },
@@ -251,6 +257,9 @@ AsciiDiskClassRec asciiDiskClassRec = {
     /* tm_table         */      XtInheritTranslations,
     /* query_geometry	*/	XtInheritQueryGeometry
   },
+  { /* Simple fields */
+    /* change_sensitive	*/	XtInheritChangeSensitive
+  },
   { /* text fields */
     /* empty            */      0
   },
@@ -262,3 +271,15 @@ AsciiDiskClassRec asciiDiskClassRec = {
 WidgetClass asciiDiskWidgetClass = (WidgetClass)&asciiDiskClassRec;
 
 #endif /* ASCII_DISK */
+
+
+
+
+
+
+
+
+
+
+
+
