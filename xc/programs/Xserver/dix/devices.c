@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.25 93/02/06 13:29:08 rws Exp $ */
+/* $XConsortium: devices.c,v 5.26 93/02/25 15:30:35 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -397,6 +397,7 @@ InitKeyClassDeviceStruct(dev, pKeySyms, pModifiers)
     keyc->curKeySyms.maxKeyCode = pKeySyms->maxKeyCode;
     keyc->modifierKeyMap = (KeyCode *)NULL;
     keyc->state = 0;
+    keyc->prev_state = 0;
     if (pModifiers)
 	bcopy((char *)pModifiers, (char *)keyc->modifierMap, MAP_LENGTH);
     else
