@@ -8,17 +8,18 @@ Grip Widget
 .TA 2.0i
 .ta 2.0i
 .sp
-Header file	Grip.h
-Class		gripWidgetClass
+Application header file	<X11/Xaw/Grip.h>
+Class header file	<X11/Xaw/GripP.h>
+Class	gripWidgetClass
 Class Name	Grip
 Superclass	Simple
 .sp
 .De
 .LP
-The Grip widget provides a small region in which user input
-events (such as ButtonPress or ButtonRelease ) may be handled.
-The most common use for the grip is as an attachment point for
-visually repositioning an object, such as the pane border in a Paned widget.
+The Grip widget provides a small rectangular region in which user input
+events (such as ButtonPress or ButtonRelease) may be handled.  The most
+common use for the grip is as an attachment point for visually
+repositioning an object, such as the pane border in a Paned widget.
 .LP
 When creating a Grip widget instance, the following resources are
 retrieved from the argument list or from the resource database: 
@@ -27,38 +28,38 @@ retrieved from the argument list or from the resource database:
 .vs 11
 .nr VS 11
 .TS H
-lw(1.5i) lw(1i) lw(1i) lw(2i).
+lw(1.5i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
 .sp 3p
 .TB
-Name	Class	Type	Default Value
+Name	Class	Type	Notes	Default Value
 .sp 3p
 _
 .TH
 .R
 .sp 3p
-accelerators	Accelerators	AcceleratorTable	NULL
-ancestorSensitive	AncestorSensitive	Boolean	True
-background	Background	Pixel	XtDefaultBackground
-backgroundPixmap	Pixmap	Pixmap	XtUnspecifiedPixmap
-borderColor	BorderColor	Pixel	XtDefaultForeground
-borderPixmap	Pixmap	Pixmap	XtUnspecifiedPixmap
-borderWidth	BorderWidth	Dimension	1
-callback	Callback	Callback	NULL
-colormap	Colormap	Pointer	Parent's Colormap
-cursor	Cursor	Cursor	None
-depth	Depth	int	Parent's Depth
-destroyCallback	Callback	XtCallbackList	NULL
-foreground	Foreground	Pixel	XtDefaultForeground
-height	Height	Dimension	8
-insensitiveBorder	Insensitive	Pixmap	GreyPixmap
-mappedWhenManaged	MappedWhenManaged	Boolean	True
-screen	Screen	Pointer	Parent's Screen
-sensitive	Sensitive	Boolean	True
-translations	Translations	TranslationTable	NULL
-width	Width	Dimension	8
-x	X	Position	0
-y	Y	Position	0
+accelerators	Accelerators	AcceleratorTable	""	NULL
+ancestorSensitive	AncestorSensitive	Boolean	D	True
+background	Background	Pixel	""	XtDefaultBackground
+backgroundPixmap	Pixmap	Pixmap	""	XtUnspecifiedPixmap
+borderColor	BorderColor	Pixel	""	XtDefaultForeground
+borderPixmap	Pixmap	Pixmap	""	XtUnspecifiedPixmap
+borderWidth	BorderWidth	Dimension	""	0
+callback	Callback	Callback	""	NULL
+colormap	Colormap	Pointer	""	Parent's Colormap
+cursor	Cursor	Cursor	""	None
+depth	Depth	int	C	Parent's Depth
+destroyCallback	Callback	XtCallbackList	""	NULL
+foreground	Foreground	Pixel	""	XtDefaultForeground
+height	Height	Dimension	""	8
+insensitiveBorder	Insensitive	Pixmap	""	GreyPixmap
+mappedWhenManaged	MappedWhenManaged	Boolean	""	True
+screen	Screen	Pointer	R	Parent's Screen
+sensitive	Sensitive	Boolean	""	True
+translations	Translations	TranslationTable	""	NULL
+width	Width	Dimension	""	8
+x	X	Position	""	0
+y	Y	Position	""	0
 .sp 3p
 _
 .TE
@@ -67,60 +68,63 @@ _
 .vs 13
 .nr VS 13
 .IP accelerators 1.5i
-A list of actions to be executed by this widget, even though the
-event occurred in another widget.  See section 10.4 in the \fI\*(xT\fP.
+A list of event to action bindings to be executed by this widget, even
+though the event occurred in another widget.  See Section 10.4 in the
+\fI\*(xT\fP.
 .IP ancestorSensitive 1.5i
 The sensitivity state of the ancestors of this widget.  A widget is
 insensitive if either it or any of its ancestors is insensitive.
 This resource should not be changed with \fBXtSetValues\fP.  It may,
 however, be queried.
 .IP background 1.5i
-An index into this widget's colormap specifing the background color of the
+An index into this widget's colormap specifying the background color of the
 widget's window.
 .IP backgroundPixmap 1.5i
-The background pixmap of this widget.  If this resource is set to
-anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
+The background pixmap of this widget's window.  If this resource is set to
+anything other than \fBXtUnspecifiedPixmap\fP, the pixmap specified will be
 used instead of the background color.
 .IP borderColor 1.5i
-An index into this widget's colormap specifing the border color of the
+An index into this widget's colormap specifying the border color of the
 widget's window.
 .IP borderPixmap 1.5i
-The border pixmap of this widget.  If this resource is set to
-anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
+The border pixmap of this widget's window.  If this resource is set to
+anything other than \fBXtUnspecifiedPixmap\fP, the pixmap specified will be
 used instead of the border color.
 .IP borderWidth 1.5i
-This is the width of this widget's border.
+The width of this widget's window border.
 .IP \fBcallback\fP 1.5i
 All routines on this list are called whenever the \fBGripAction\fP
 action routine is invoked.  The \fIcall_data\fP contains all
-information passed to the action routines.  A more thorough description
+information passed to the action routine.  A more thorough description
 is given below in the \fBGrip Actions\fP section.
 .IP colormap 1.5i
-The colormap that this widget wants for its window.
+The colormap that this widget will use.
 .IP cursor 1.5i
-The cursor that will be displayed as the mouse pointer, whenever the mouse
-pointer is in this widget.
+The cursor that will be displayed as the pointer, whenever the pointer
+is in this widget.
 .IP depth 1.5i
 The depth of this widget's window.
 .IP destroyCallback 1.5i
-All callback functions on this list are called when this widget is destroyed.
+All functions on this list are called when this widget is destroyed.
 .IP \fBforeground\fP 1.5i
-The entire Grip widget is flood filled with this color.
+An index to the color used to flood fill the entire Grip widget.
 .IP height 1.5i
 .br
 .ns
 .IP width 1.5i
 The height and width of this widget in pixels.
 .IP insensitiveBorder 1.5i
-This pixmap will be tiled into the widget's border if it becomes insensitive.
+This pixmap will be tiled into the widget's border if the widget becomes
+insensitive.
 .IP mappedWhenManaged 1.5i
-If this resource is \fBTrue\fP then the widget's window will automatically be
-mapped by the Toolkit when it is realized and managed.
+If this resource is \fBTrue\fP, then the widget's window will
+automatically be mapped by the toolkit when it is realized and managed.
 .IP screen 1.5i
-The screen that this widget is displayed on.  This is not a settable resource.
+The screen on which this widget is displayed.  This is not a settable
+resource.
 .IP sensitive 1.5i
-Whether or not the toolkit will pass events to this widget.  The
-widget will not get events if either \fBancestorSensitive\fP or 
+Whether or not the toolkit will pass user events to this widget.  The
+widget will not get input events if either \fBancestorSensitive\fP or 
 \fBsensitive\fP is \fBFalse\fP.
 .IP translations 1.5i
 The event bindings associated with this widget.
@@ -128,15 +132,15 @@ The event bindings associated with this widget.
 .br
 .ns
 .IP y 1.5i
-The location of the upper lefthand corner of this widget in its parent.
+The location of the upper left outside corner of this widget in its parent.
 .NH 3
 Grip Actions
 .IN "Grip widget" "Grip Actions"
 .LP
 The Grip widget does not declare any default event translation bindings,
-but it does declare a single action routine named \fBGripAction\fP.
-The client specifies an arbitrary event translation 
-table giving parameters to the \fBGripAction\fP routine. 
+but it does declare a single action routine named \fBGripAction\fP.  The
+client specifies an arbitrary event translation table, optionally giving
+parameters to the \fBGripAction\fP routine.
 .LP
 The \fBGripAction\fP action executes the callbacks on the \fBcallback\fP
 list, passing as \fIcall_data\fP a pointer to a \fBGripCallData\fP structure, 
@@ -173,5 +177,5 @@ The following is an example of a GripAction translation table:
 	<Btn1Up>:	GripAction(release)
 .sp
 .De
-For a complete description of the format of action routines,
-see the \fI\*(xT\fP.
+For a complete description of the format of translation tables, see the
+\fI\*(xT\fP.

@@ -9,17 +9,18 @@ List Widget
 .TA 2.0i
 .ta 2.0i
 .sp
-Header file	List.h
-Class		listWidgetClass
+Application header file	<X11/Xaw/List.h>
+Class header file	<X11/Xaw/ListP.h>
+Class	listWidgetClass
 Class Name	List
 Superclass	Simple
 .sp
 .De
 .LP
-The List widget is a rectangle that contains a list of strings formatted
-into rows and columns. When one of the strings is selected,
-it is highlighted, and an application callback routine is invoked.
-Only one string may be selected at a time.
+The List widget is a window containing a list of strings formatted
+into rows and columns. When one of the strings is selected, it is
+highlighted, and the callback routines in the \fBcallback\fP resource
+are invoked.  Only one string may be selected at a time.
 .LP
 When creating a List widget instance, the following resources are
 retrieved from the argument list or from the resource database:
@@ -28,50 +29,50 @@ retrieved from the argument list or from the resource database:
 .vs 11
 .nr VS 11
 .TS H
-lw(1.5i) lw(1i) lw(1i) lw(2i).
+lw(1.5i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
 .sp 3p
 .TB
-Name	Class	Type	Default Value
+Name	Class	Type	Notes Default Value
 .sp 3p
 _
 .TH
 .R
 .sp 3p
-accelerators	Accelerators	AcceleratorTable	NULL
-ancestorSensitive	AncestorSensitive	Boolean	True
-background	Background	Pixel	XtDefaultBackground
-backgroundPixmap	Pixmap	Pixmap	XtUnspecifiedPixmap
-borderColor	BorderColor	Pixel	XtDefaultForeground
-borderPixmap	Pixmap	Pixmap	XtUnspecifiedPixmap
-borderWidth	BorderWidth	Dimension	1
-callback	Callback	Callback	NULL
-colormap	Colormap	Pointer	Parent's Colormap
-columnSpacing	Spacing	Dimension	6
-cursor	Cursor	Cursor	None
-defaultColumns	Columns	Int	2
-depth	Depth	int	Parent's Depth
-destroyCallback	Callback	XtCallbackList	NULL
-font	Font	FontStruct	XtDefaultFont
-forceColumns	Columns	Boolean	False
-foreground	Foreground	Pixel	XtDefaultForeground
-height	Height	Dimension	Enough space to contain the list.
-insensitiveBorder	Insensitive	Pixmap	GreyPixmap
-internalHeight	Height	Dimension	2
-internalWidth	Width	Dimension	4
-list	List	Pointer	NULL (name of widget)
-longest	Longest	Int	0 (computed at runtime)
+accelerators	Accelerators	AcceleratorTable	""	NULL
+ancestorSensitive	AncestorSensitive	Boolean	D	True
+background	Background	Pixel	""	XtDefaultBackground
+backgroundPixmap	Pixmap	Pixmap	""	XtUnspecifiedPixmap
+borderColor	BorderColor	Pixel	""	XtDefaultForeground
+borderPixmap	Pixmap	Pixmap	""	XtUnspecifiedPixmap
+borderWidth	BorderWidth	Dimension	""	1
+callback	Callback	Callback	""	NULL
+colormap	Colormap	Pointer	""	Parent's Colormap
+columnSpacing	Spacing	Dimension	""	6
+cursor	Cursor	Cursor	""	None
+defaultColumns	Columns	Int	""	2
+depth	Depth	int	C	Parent's Depth
+destroyCallback	Callback	XtCallbackList	""	NULL
+font	Font	FontStruct	""	XtDefaultFont
+forceColumns	Columns	Boolean	""	False
+foreground	Foreground	Pixel	""	XtDefaultForeground
+height	Height	Dimension	A	Enough space to contain the list
+insensitiveBorder	Insensitive	Pixmap	""	GreyPixmap
+internalHeight	Height	Dimension	""	2
+internalWidth	Width	Dimension	""	4
+list	List	Pointer	""	name of widget
+longest	Longest	Int	A	computed at runtime
 mappedWhenManaged	MappedWhenManaged	Boolean	True
-numberStrings	NumberStrings	Int	0 (compted for NULL terminated list)
-pasteBuffer	Boolean	Boolean	False
-rowSpacing	Spacing	Dimension	2
-verticalList	Boolean	Boolean	False
-screen	Screen	Pointer	Parent's Screen
-sensitive	Sensitive	Boolean	True
-translations	Translations	TranslationTable	See below
-width	Width	Dimension	Enough space to contain the list.
-x	X	Position	0
-y	Y	Position	0
+numberStrings	NumberStrings	Int	A	computed for NULL terminated list
+pasteBuffer	Boolean	Boolean	""	False
+rowSpacing	Spacing	Dimension	""	2
+verticalList	Boolean	Boolean	""	False
+screen	Screen	Pointer	R	Parent's Screen
+sensitive	Sensitive	Boolean	""	True
+translations	Translations	TranslationTable	""	See below
+width	Width	Dimension	""	Enough space to contain the list
+x	X	Position	""	0
+y	Y	Position	""	0
 .sp 3p
 _
 .TE
@@ -80,36 +81,37 @@ _
 .vs 13
 .nr VS 13
 .IP accelerators 1.5i
-A list of actions to be executed by this widget, even though the
-event occurred in another widget.  See section 10.4 in the \fI\*(xT\fP.
+A list of event to action bindings to be executed by this widget, even
+though the event occurred in another widget.  See Section 10.4 in the
+\fI\*(xT\fP.
 .IP ancestorSensitive 1.5i
 The sensitivity state of the ancestors of this widget.  A widget is
 insensitive if either it or any of its ancestors is insensitive.
 This resource should not be changed with \fBXtSetValues\fP.  It may,
 however, be queried.
 .IP background 1.5i
-An index into this widget's colormap specifing the background color of the
+An index into this widget's colormap specifying the background color of the
 widget's window.
 .IP backgroundPixmap 1.5i
-The background pixmap of this widget.  If this resource is set to
-anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
+The background pixmap of this widget's window.  If this resource is set to
+anything other than \fBXtUnspecifiedPixmap\fP, the pixmap specified will be
 used instead of the background color.
 .IP borderColor 1.5i
-An index into this widget's colormap specifing the border color of the
+An index into this widget's colormap specifying the border color of the
 widget's window.
 .IP borderPixmap 1.5i
-The border pixmap of this widget.  If this resource is set to
-anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
+The border pixmap of this widget's window.  If this resource is set to
+anything other than \fBXtUnspecifiedPixmap\fP, the pixmap specified will be
 used instead of the border color.
 .IP borderWidth 1.5i
-This is the width of this widget's border.
+The width of this widget's window border.
 .IP \fBcallback\fP 1.5i
 All functions on this list are called whenever the \fBNotify\fP action is
 invoked.
 The call data argument contains information about the element selected
 and is described in detail in the \fBList Callbacks\fP section.
 .IP colormap 1.5i
-The colormap that this widget wants for its window.
+The colormap that this widget will use.
 .IP \fBcolumnSpacing\fP 1.5i
 .br
 .ns
@@ -117,8 +119,8 @@ The colormap that this widget wants for its window.
 The amount of space, in pixels, between each of the rows and columns
 in the list. 
 .IP cursor 1.5i
-The cursor that will be displayed as the mouse pointer, whenever the mouse
-pointer is in this widget.
+The cursor that will be displayed as the pointer, whenever the pointer
+is in this widget.
 .IP \fBdefaultColumns\fP 1.5i
 The default number of columns.  This value is used when neither the
 width nor the height of the List widget is specified or when
@@ -126,9 +128,9 @@ width nor the height of the List widget is specified or when
 .IP depth 1.5i
 The depth of this widget's window.
 .IP destroyCallback 1.5i
-All callback functions on this list are called when this widget is destroyed.
+All functions on this list are called when this widget is destroyed.
 .IP \fBforceColumns\fP
-Forces the default number of columns is to be used reguardless of the
+Forces the default number of columns to be used regardless of the
 List widget's current size. 
 .IP \fBforeground\fP 1.5i
 The color used to paint the text of the list elements.
@@ -138,27 +140,29 @@ The color used to paint the text of the list elements.
 .IP width 1.5i
 The height and width of this widget in pixels.
 .IP insensitiveBorder 1.5i
-This pixmap will be tiled into the widget's border if it becomes insensitive.
+This pixmap will be tiled into the widget's border if the widget becomes
+insensitive.
 .IP \fPinternalHeight\fP 1.5i
 .br
 .ns
 .IP \fPinternalWidth\fP 1.5i
 The margin, in pixels, between the edges of the list and the
-corrosponding edge of the List widget's window.
+corresponding edge of the List widget's window.
 .IP \fBlist\fP 1.5i
-An array of text strings that is displayed in the List widget.  
-If \fBnumberStrings\fP is zero (the default) then this
-list must be NULL terminated.  If a value is not specified for the list,
-the \fBnumberStrings\fP is set to 1, and the name of the widget is used
-as the list.  The \fBlist\fP is used in place, and must be avalible
-to the List widget for the lifetime of this widget, or until the list
-is changed with \fBXtSetValues\fP or \fBXawListChange\fP.  
+An array of text strings displayed in the List widget.  If
+\fBnumberStrings\fP is zero (the default) then this list must be NULL
+terminated.  If a value is not specified for the list, then
+\fBnumberStrings\fP is set to 1, and the name of the widget is used as
+the list.  The \fBlist\fP is used in place, and must be available to the
+List widget for the lifetime of this widget, or until the list is
+changed with \fBXtSetValues\fP or \fBXawListChange\fP.
 .IP \fBlongest\fP
-Specifes the width, in pixels, of the longest string in the current list.
-The List widget will compute this value if a zero (the default) is specified.
+Specifies the width, in pixels, of the longest string in the current
+list.  The List widget will compute this value if a zero (the default)
+is specified.
 .IP mappedWhenManaged 1.5i
-If this resource is \fBTrue\fP then the widget's window will automatically be
-mapped by the Toolkit when it is realized and managed.
+If this resource is \fBTrue\fP then the widget's window will
+automatically be mapped by the Toolkit when it is realized and managed.
 .IP \fBnumberStrings\fP 1.5i
 The number of strings in the current list.  If a value of zero (the
 default) is specified, the List widget will compute it.  When computing
@@ -168,29 +172,30 @@ terminated.
 If this resource is set to \fBTrue\fP then the name of the currently
 selected list element will be put into X cut buffer 0.
 .IP screen 1.5i
-The screen that this widget is displayed on.  This is not a settable resource.
+The screen on which this widget is displayed.  This is not a settable
+resource.
 .IP sensitive 1.5i
-Whether or not the toolkit will pass events to this widget.  The
-widget will not get events if either \fBancestorSensitive\fP or 
+Whether or not the toolkit will pass user events to this widget.  The
+widget will not get input events if either \fBancestorSensitive\fP or 
 \fBsensitive\fP is \fBFalse\fP.  When the List widget is insensitive
 all its elements will be drawn through a gray stipple.
 .IP translations 1.5i
 The event bindings associated with this widget.
 .IP \fBverticalList\fP 1.5i
-If this resource is \fBTrue\fP then the list will be displayed vertically (
-element 2 under element 1).  Otherwise the list will be displayed
-horizontally (element 2 to the right of element 1).
+If this resource is \fBTrue\fP then the list will be sorted
+vertically (element 2 under element 1).  Otherwise the list will be
+displayed horizontally (element 2 to the right of element 1).
 .IP x 1.5i
 .br
 .ns
 .IP y 1.5i
-The location of the upper lefthand corner of this widget in its parent.
+The location of the upper left outside corner of this widget in its parent.
 .NH 3
 List Actions
 .LP
 The List widget supports the following actions:
 .IP \(bu 5
-\fISetting\fP and \fIunsetting\fP the list element under the mouse
+\fIHighlighting\fP and \fIunhighlighting\fP the list element under the
 pointer with \fBSet\fP and \fBUnset\fP
 .IP \(bu 5
 Processing application callbacks with \fBNotify\fP
@@ -206,14 +211,14 @@ The following is the default translation table used by the List Widget:
 .LP
 The full list of actions supported by List widget is:
 .IP \fBSet\fP(\|) 1.5i
-\fISets\fP the list element that is currently under the mouse pointer.  To
-inform the user that this element is currently set it is drawn with is
+\fISets\fP the list element that is currently under the pointer.  To
+inform the user that this element is currently set, it is drawn with is
 foreground and background colors reversed.  If this action is called when
-there is no list element under the mouse cursor the currently
-\fIset\fP element will be \fIunset\fP.
+there is no list element under the cursor, the currently \fIset\fP
+element will be \fIunset\fP.
 .IP \fBUnset\fP(\|) 1.5i
-Cancels the \fIset\fP state of the element under the mouse pointer.
-And redraws it with normal foreground and background colors.
+Cancels the \fIset\fP state of the element under the pointer,
+and redraws it with normal foreground and background colors.
 .IP \fBNotify\fP(\|) 1.5i
 Calls all callbacks on the List widget's callback list.  Information
 about the currently selected list element is passed in the call_data
@@ -221,9 +226,9 @@ argument (see \fBList Callbacks\fP below).
 .NH 3
 List Callbacks
 .LP
-All List widget callback functions will have a \fBXawListReturnStruct\fP
-passed to them as \fIcall_data\fP.  The structure is defined in the List
-widget's public header file.
+All procedures on the List widget's callback list will have a
+\fBXawListReturnStruct\fP passed to them as \fIcall_data\fP.  The
+structure is defined in the List widget's public header file.
 .LP
 .Ds 0
 .TA .5i 2.25i
@@ -235,7 +240,7 @@ typedef struct _XawListReturnStruct {
 } XawListReturnStruct;
 .NT
 The \fIlist_index\fP item used to be called simply \fIindex\fP.
-Unfortunatly this name collided with a global name defined on some
+Unfortunately, this name collided with a global name defined on some
 operating systems, and had to be changed.
 .NE
 .De
@@ -261,32 +266,31 @@ Specifies the widget ID.
 .IP \fIlist\fP 1i
 Specifies the new list for the List widget to display.
 .IP \fInitems\fP 1i
-Specifies the number of items in the list.
-If a value less than 1 is specified,
-\fIlist\fP must be NULL terminated.
+Specifies the number of items in the list.  If a value less than 1 is
+specified, \fIlist\fP must be NULL terminated.
 .IP \fIlongest\fP 1i
 Specifies the length of the longest item in the list in pixels.
 If a value less than 1 is specified,
 the List widget calculates the value.
 .IP \fIresize\fP 1i
-Specifies a Boolean value that if \fBTrue\fP indicates whether the
+Specifies a Boolean value that if \fBTrue\fP indicates that the
 List widget should try to resize itself after making the change.
 Remember that the constraints of the parent of the List widget are
 always enforced, regardless of the value specified here.
 .LP
 .PN XawListChange
 will \fIunset\fP all list elements that are currently \fBset\fP before
-the list is actually changed.  The \fIlist\fP is
-used in place, and must remain usable for the lifetime of List widget,
-or until \fIlist\fP has been changed with this function or \fBXtSetValues\fP.
+the list is actually changed.  The \fIlist\fP is used in place, and must
+remain usable for the lifetime of the List widget, or until \fIlist\fP
+has been changed again with this function or with \fBXtSetValues\fP.
 .NH 3
 Highlighting an Item
 .LP
-To highlight an item in the list use,
+To highlight an item in the list, use
 .PN XawListHighlight .
 .IN "XawListHighlight" "" "@DEF@"
 .FD 0
-void XawListHighlight(\fIw\fP, \fIitem\fP);
+void XawListHighlight(\fIw\fP, \fIitem\fP)
 .br
      Widget \fIw\fP;
 .br
@@ -308,10 +312,10 @@ the new item is highlighted.
 Unhighlighting an Item
 .LP
 To unhighlight the currently highlighted item in the list, use
-.PN XawListUnhighlight
+.PN XawListUnhighlight .
 .IN "XawListUnhighlight" "" "@DEF@"
 .FD 0
-void XawListUnhightlight(\fIw\fP);
+void XawListUnhighlight(\fIw\fP)
 .br
      Widget \fIw\fP;
 .FN
@@ -320,11 +324,11 @@ Specifies the widget ID.
 .NH 3
 Retrieving the Currently Selected Item
 .LP
-To retrieve the list element that is currently \fIset\fP use,
+To retrieve the list element that is currently \fIset\fP, use
 .PN XawListShowCurrent .
 .IN "XawListShowCurrent" "" "@DEF@"
 .FD 0
-XawListReturnStruct *XawListShowCurrent(\fIw\fP);
+XawListReturnStruct *XawListShowCurrent(\fIw\fP)
 .br
      Widget \fIw\fP;
 .FN

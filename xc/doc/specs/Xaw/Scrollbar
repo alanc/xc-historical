@@ -9,51 +9,51 @@ Scrollbar Widget
 .TA 2.0i
 .ta 2.0i
 .sp
-Header file	Scroll.h
+Application header file	<X11/Xaw/Scroll.h>
+Class header file	<X11/Xaw/ScrollP.h>
 Class		scrollbarWidgetClass
 Class Name	Scrollbar
 Superclass	Core
 .sp
 .De
 .LP
-The Scrollbar widget is a rectangular area that contains a slide region and 
-a thumb (slide bar).
-A Scrollbar can be used alone, as a valuator, or it can
-be used within a composite widget (for example, a Viewport).
-A Scrollbar can be aligned either vertically or horizontally.
+The Scrollbar widget is a rectangular area that contains a slide region
+and a thumb (also known as a slide bar).  A Scrollbar can be used alone,
+as a value generator, or it can be used within a composite widget (for
+example, a Viewport).  A Scrollbar can be oriented either vertically or
+horizontally.
 .LP
-When a Scrollbar is created, it is drawn with the thumb in a
-contrasting color. The thumb is normally used to scroll client data
-and to give visual feedback on the percentage of the client data that
-is visible. 
+When a Scrollbar is created, it is drawn with the thumb in a contrasting
+color.  The thumb is normally used to scroll client data and to give
+visual feedback on the percentage of the client data that is visible.
 .LP
-Each pointer button invokes a specific scroll bar action.  That is,
-given either a vertical or horizontal alignment, the pointer button
-actions will scroll or return data as appropriate for that alignment.
-Pointer buttons 1 and 3 do not perform scrolling operations by
-default.  Instead, they return the pixel position of the cursor on the
-scroll region.  When pointer button 2 is clicked, the thumb moves to
-the current pointer position.  When pointer button 2 is held down and
-the pointer pointer is moved, the thumb follows the pointer.
+Each pointer button invokes a specific action.  That is, given either a
+vertical or horizontal orientation, the pointer button actions will
+scroll or return data as appropriate for that orientation.  Pointer
+buttons 1 and 3 do not move the thumb automatically.  Instead, they
+return the pixel position of the cursor on the scroll region.  When
+pointer button 2 is clicked, the thumb moves to the current pointer
+position.  When pointer button 2 is held down and the pointer is moved,
+the thumb follows the pointer.
 .LP
-The cursor in the scroll region changes depending on the current
-action.  When no pointer button is pressed, the cursor appears as an
+The cursor in the scroll region changes depending on the current action.
+When no pointer button is pressed, the cursor appears as a double-headed
 arrow that points in the direction that scrolling can occur.  When
-pointer button 1 or 3 is pressed, the cursor appears as a
-single-headed arrow that points in the logical direction that the
-client will move the data.  When pointer button 2 is pressed, the
-cursor appears as an arrow that points to the thumb.
+pointer button 1 or 3 is pressed, the cursor appears as a single-headed
+arrow that points in the logical direction that the client will move the
+data.  When pointer button 2 is pressed, the cursor appears as an arrow
+that points to the thumb.
 .LP
 While scrolling is in progress, the application receives notification
-from callback procedures.  For both scrolling actions, the callback
-returns the Scrollbar widget ID, the client_data, and the pixel
-position of the pointer when the button was released.  For smooth
+through callback procedures.  For both discrete scrolling actions, the
+callback returns the Scrollbar widget ID, the client_data, and the pixel
+position of the pointer when the button was released.  For continuous
 scrolling, the callback routine returns the scroll bar widget, the
 client data, and the current relative position of the thumb.  When the
-thumb is moved using pointer button 2, the callback procedure is
-invoked continuously.  When either button 1 or 3 is pressed, the
-callback procedure is invoked only when the button is released and the
-client callback procedure is responsible for moving the thumb.
+thumb is moved using pointer button 2, the callback procedure is invoked
+continuously.  When either button 1 or 3 is pressed, the callback
+procedure is invoked only when the button is released and the client
+callback procedure is responsible for moving the thumb.
 .LP
 When creating a Scrollbar widget instance, the following resources are
 retrieved from the argument list or from the resource database:
@@ -63,50 +63,50 @@ retrieved from the argument list or from the resource database:
 .vs 11
 .nr VS 11
 .TS H
-lw(1.5i) lw(1i) lw(1i) lw(2i).
+lw(1.5i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
 .sp 3p
 .TB
-Name	Class	Type	Default Value
+Name	Class	Type	Notes Default Value
 .sp 3p
 _
 .TH
 .R
 .sp 3p
-accelerators	Accelerators	AcceleratorTable	NULL
-ancestorSensitive	AncestorSensitive	Boolean	True
-background	Background	Pixel	XtDefaultBackground
-backgroundPixmap	Pixmap	Pixmap	XtUnspecifiedPixmap
-borderColor	BorderColor	Pixel	XtDefaultForeground
-borderPixmap	Pixmap	Pixmap	XtUnspecifiedPixmap
-borderWidth	BorderWidth	Dimension	1
-colormap	Colormap	Pointer	Parent's Colormap
-depth	Depth	int	Parent's Depth
-destroyCallback	Callback	XtCallbackList	NULL
-foreground	Foreground	Pixel	XtDefaultForeground
-height	Height	Dimension	depends on orientation
-jumpProc	Callback	Callback	NULL
-length	Length	Dimension	1
-mappedWhenManaged	MappedWhenManaged	Boolean	True
-mimimumThumb	MinimumThumb	Dimension	7
-orientation	Orientation	Orientation	XtOrientVertical (vertical)
-screen	Screen	Pointer	Parent's Screen
-scrollDCursor	Cursor	Cursor	XC_sb_down_arrow
-scrollHCursor	Cursor	Cursor	XC_sb_h_double_arrow
-scrollLCursor	Cursor	Cursor	XC_sb_left_arrow
-scrollProc	Callback	Callback	NULL
-scrollRCursor	Cursor	Cursor	XC_sb_right_arrow
-scrollUCursor	Cursor	Cursor	XC_sb_up_arrow
-scrollVCursor	Cursor	Cursor	XC_sb_v_arrow
-sensitive	Sensitive	Boolean	True
-shown	Shown	Float	0.0
-thickness	Thickness	Dimension	14
-thumb	Thumb	Pixmap	GreyPixmap
-topOfThumb	TopOfThumb	Float	0.0
-translations	Translations	TranslationTable	See above
-width	Width	Dimension	depends on orientation
-x	X	Position	0
-y	Y	Position	0
+accelerators	Accelerators	AcceleratorTable	""	NULL
+ancestorSensitive	AncestorSensitive	Boolean	D	True
+background	Background	Pixel	""	XtDefaultBackground
+backgroundPixmap	Pixmap	Pixmap	""	XtUnspecifiedPixmap
+borderColor	BorderColor	Pixel	""	XtDefaultForeground
+borderPixmap	Pixmap	Pixmap	""	XtUnspecifiedPixmap
+borderWidth	BorderWidth	Dimension	""	1
+colormap	Colormap	Pointer	""	Parent's Colormap
+depth	Depth	int	C	Parent's Depth
+destroyCallback	Callback	XtCallbackList	""	NULL
+foreground	Foreground	Pixel	""	XtDefaultForeground
+height	Height	Dimension	A	depends on orientation
+jumpProc	Callback	Callback	""	NULL
+length	Length	Dimension	""	1
+mappedWhenManaged	MappedWhenManaged	""	Boolean	True
+minimumThumb	MinimumThumb	Dimension	""	7
+orientation	Orientation	Orientation	""	XtOrientVertical (vertical)
+screen	Screen	Pointer	R	Parent's Screen
+scrollDCursor	Cursor	Cursor	""	XC_sb_down_arrow
+scrollHCursor	Cursor	Cursor	""	XC_sb_h_double_arrow
+scrollLCursor	Cursor	Cursor	""	XC_sb_left_arrow
+scrollProc	Callback	Callback	""	NULL
+scrollRCursor	Cursor	Cursor	""	XC_sb_right_arrow
+scrollUCursor	Cursor	Cursor	""	XC_sb_up_arrow
+scrollVCursor	Cursor	Cursor	""	XC_sb_v_arrow
+sensitive	Sensitive	Boolean	""	True
+shown	Shown	Float	""	0.0
+thickness	Thickness	Dimension	""	14
+thumb	Thumb	Pixmap	""	GreyPixmap
+topOfThumb	TopOfThumb	Float	""	0.0
+translations	Translations	TranslationTable	""	See above
+width	Width	Dimension	A	depends on orientation
+x	X	Position	""	0
+y	Y	Position	""	0
 .sp 3p
 _
 .TE
@@ -115,37 +115,38 @@ _
 .vs 13
 .nr VS 13
 .IP accelerators 1.5i
-A list of actions to be executed by this widget, even though the
-event occurred in another widget.  See section 10.4 in the \fI\*(xT\fP.
+A list of event to action bindings to be executed by this widget, even
+though the event occurred in another widget.  See Section 10.4 in the
+\fI\*(xT\fP.
 .IP ancestorSensitive 1.5i
 The sensitivity state of the ancestors of this widget.  A widget is
 insensitive if either it or any of its ancestors is insensitive.
 This resource should not be changed with \fBXtSetValues\fP.  It may,
 however, be queried.
 .IP background 1.5i
-An index into this widget's colormap specifing the background color of the
+An index into this widget's colormap specifying the background color of the
 widget's window.
 .IP backgroundPixmap 1.5i
-The background pixmap of this widget.  If this resource is set to
-anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
+The background pixmap of this widget's window.  If this resource is set to
+anything other than \fBXtUnspecifiedPixmap\fP, the pixmap specified will be
 used instead of the background color.
 .IP borderColor 1.5i
-An index into this widget's colormap specifing the border color of the
+An index into this widget's colormap specifying the border color of the
 widget's window.
 .IP borderPixmap 1.5i
-The border pixmap of this widget.  If this resource is set to
-anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
+The border pixmap of this widget's window.  If this resource is set to
+anything other than \fBXtUnspecifiedPixmap\fP, the pixmap specified will be
 used instead of the border color.
 .IP borderWidth 1.5i
-This is the width of this widget's border.
+The width of this widget's window border.
 .IP colormap 1.5i
-The colormap that this widget wants for its window.
+The colormap that this widget will use.
 .IP depth 1.5i
 The depth of this widget's window.
 .IP destroyCallback 1.5i
-All callback functions on this list are called when this widget is destroyed.
+All functions on this list are called when this widget is destroyed.
 .IP \fBforeground\fP 1.5i
-An index into this widget's colormap specifing the color that will be
+An index into this widget's colormap specifying the color that will be
 used to draw the thumb.
 .IP height 1.5i
 .br
@@ -159,10 +160,10 @@ Actions\fP section for details.
 .IP \fBlength\fP 1.5i
 The height of a vertical scrollbar or the width of a horizontal scrollbar.
 .IP \fBminimumThumb\fP 1.5i
-The smallest size, in pixels, to which thumb can shrink.
+The smallest size, in pixels, to which the thumb can shrink.
 .IP mappedWhenManaged 1.5i
 If this resource is \fBTrue\fP then the widget's window will automatically be
-mapped by the Toolkit when it is realized and managed.
+mapped by the toolkit when it is realized and managed.
 .IP \fBorientation\fP 1.5i
 The orientation is the direction that the thumb will be allowed to move.
 This value can be either \fBXtOrientVertical\fP or
@@ -173,13 +174,13 @@ This cursor is used when scrolling backward in a vertical scrollbar.
 .IP \fBscrollHCursor\fP 1.5i
 This cursor is used when a horizontal scrollbar is inactive.
 .IP \fBscrollLCursor\fP 1.5i
-This cursor is used when scrolling forward in a horizonal scrollbar.
+This cursor is used when scrolling forward in a horizontal scrollbar.
 .IP \fBscrollProc\fP 1.5i
 All functions on this callback list may be called when the
 \fBNotifyScroll\fP action is invoked.  See the \fBScrollbar
 Actions\fP section for details.
 .IP \fBscrollRCursor\fP 1.5i
-This cursor is used when scrolling backward in a horizonal scrollbar,
+This cursor is used when scrolling backward in a horizontal scrollbar,
 or when thumbing a vertical scrollbar.
 .IP \fBscrollUCursor\fP 1.5i
 This cursor is used when scrolling forward in a vertical scrollbar, or when
@@ -187,10 +188,11 @@ thumbing a horizontal scrollbar.
 .IP \fBscrollVCursor\fP 1.5i
 This cursor is used when a vertical scrollbar is inactive.
 .IP screen 1.5i
-The screen that this widget is displayed on.  This is not a settable resource.
+The screen on which this widget is displayed.  This is not a settable
+resource.
 .IP sensitive 1.5i
-Whether or not the toolkit will pass events to this widget.  The
-widget will not get events if either \fBancestorSensitive\fP or 
+Whether or not the toolkit will pass user events to this widget.  The
+widget will not get input events if either \fBancestorSensitive\fP or 
 \fBsensitive\fP is \fBFalse\fP.
 .IP \fBshown\fP 1.5i
 This is the size of the thumb, expressed as a percentage (0.0 - 1.0)
@@ -198,14 +200,14 @@ of the length of the scrollbar.
 .IP \fBthickness\fP 1.5i
 The width of a vertical scrollbar or the height of a horizontal scrollbar.
 .IP \fBthumb\fP 1.5i
-This pixmap is used to tile (or stipple) the thumb of the scrollbar.
-If no tiling is desired then set this resource to \fBNone\fP.  This
-resource will accept either a bitmap or a pixmap that is the same
-depth as the window.  The resource converter for this resource
-converts a filename into a bitmap.  See \fBConverting Bitmaps\fP for
-details on the string to bitmap conversion.
+This pixmap is used to tile (or stipple) the thumb of the scrollbar.  If
+no tiling is desired, then set this resource to \fBNone\fP.  This
+resource will accept either a bitmap or a pixmap that is the same depth
+as the window.  The resource converter for this resource constructs
+bitmaps from the contents of files, given a file name.  See
+\fBConverting Bitmaps\fP for details on the string to bitmap conversion.
 .IP \fBtopOfThumb\fP 1.5i
-This the location of the top of the thumb, as a percentage (0.0 - 1.0)
+The location of the top of the thumb, as a percentage (0.0 - 1.0)
 of the length of the scrollbar.  This resource was called \fBtop\fP in 
 previous versions of the Athena widget set.  The name collided with the
 a Form widget constraint resource, and had to be changed.
@@ -215,7 +217,7 @@ The event bindings associated with this widget.
 .br
 .ns
 .IP y 1.5i
-The location of the upper left corner of this widget in its parent.
+The location of the upper left outside corner of this widget in its parent.
 .NH 3 
 Scrollbar Actions
 .LP
@@ -229,8 +231,8 @@ If the argument to StartScroll was Forward or Backward,
 NotifyScroll executes the
 .PN scrollProc
 callbacks 
-and passes either the position of the pointer if its argument is Proportional
-or the full length of the scroll bar if its argument is FullLength.
+and passes either the position of the pointer, if its argument is Proportional
+or the full length of the scroll bar, if its argument is FullLength.
 If the argument to StartScroll was Continuous,
 NotifyScroll returns without executing any callbacks.
 .IP \fBEndScroll\fP(\^) 1.5i
@@ -264,8 +266,8 @@ resource file are:
 .TA .5i 2.25i
 .ta .5i 2.25i
 *Scrollbar.Translations: \\
-	~Meta<KeyPress>space:	StartScroll(Forward) NotifyScroll(FullLength) \\n\\
-	 Meta<KeyPress>space:	StartScroll(Backward) NotifyScroll(FullLength) \\n\\
+	~Meta<Key>space:	StartScroll(Forward) NotifyScroll(FullLength) \\n\\
+	 Meta<Key>space:	StartScroll(Backward) NotifyScroll(FullLength) \\n\\
 		EndScroll(\|)
 .De
 .NH 3
@@ -281,9 +283,9 @@ void \fIScrollProc\fP(\fIscrollbar\fP, \fIclient_data\fP, \fIposition\fP)
 .br
      Widget \fIscrollbar\fP;
 .br
-     caddr_t \fIclient_data\fP;
+     XtPointer \fIclient_data\fP;
 .br
-     caddr_t \fIposition\fP;    /* int */
+     XtPointer \fIposition\fP;    /* int */
 .FN
 .IP \fIscrollbar\fP 1i
 Specifies the widget ID of the Scrollbar.
@@ -297,7 +299,7 @@ and is called by the \fBNotifyScroll\fP action.
 The position argument is a signed quantity and should be cast to an int
 when used. Using the default button bindings, button 1 returns a
 positive value, and button 3 returns a negative value. In both cases,
-the magnitude of the value is the distance of the mouse pointer in
+the magnitude of the value is the distance of the pointer in
 pixels from the top (or left) of the Scrollbar. The value will never
 be greater than the length of the Scrollbar. 
 .LP
@@ -309,9 +311,9 @@ void \fIJumpProc\fP(\fIscrollbar\fP, \fIclient_data\fP, \fIpercent\fP)
 .br
      Widget \fIscrollbar\fP;
 .br
-     caddr_t \fIclient_data\fP;
+     XtPointer \fIclient_data\fP;
 .br
-     caddr_t \fIpercent_ptr\fP;    /* float* */
+     XtPointer \fIpercent_ptr\fP;    /* float* */
 .FN
 .IP \fIscrollbar\fP 1i
 Specifies the ID of the scroll bar widget.

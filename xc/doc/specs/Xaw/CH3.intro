@@ -17,32 +17,32 @@
 Chapter 3 - Athena Widget Set
 .XE
 .LP
-These widgets each perform a specific user interface function.  They
-are \fIsimple\fP because they can only be used as leaves of the widget
-tree (they have no widget children).  They are used to display
-information or get simple user input.
+Each of these widgets performs a specific user interface function.  They
+are \fIsimple\fP because they cannot have widget children--they may only
+be used as leaves of the widget tree.  They display information or
+handle small amounts of user input.
 .sp
 .IP \fBCommand\fP 1i
 A push button that, when selected, will cause a specific action
-to take place.  This widget can display a string or bitmap.
+to take place.  This widget can display a string or bitmap image.
 .IP \fBGrip\fP 1i
-A rectangle that may be selected, and bound to an action.
+A rectangle that, when selected, will cause a specific action to take place.
 .IP \fBLabel\fP 1i
-A rectangle that may contain a single line of text or
-a bitmap image.
+A rectangle that may contain one or more lines of text or a bitmap image.
 .IP \fBList\fP 1i
-A list of strings in row column form that may be selected.  A callback 
-routine can be called that will be passed the name of the item selected.
+A list of text strings presented in row column format that may be
+individually selected.  A callback routine may be defined which will be
+passed the contents of the selected item.
 .IP \fBScrollbar\fP
 A rectangular area containing a \fIthumb\fP that may be slid up and down
-the region. 
+the region.
 .IP \fBSimple\fP 1i
 The base class for most of the simple widgets.  Provides a rectangular
-area with settable mouse cursor.
+area with settable mouse cursor and special border.
 .IP \fBStripChart\fP 1i
-A real time graph that will automatically update and scroll.
+A real time data graph that will automatically update and scroll.
 .IP \fBToggle\fP 1i
-A push button that contains state information.  This widget can
-display a string or bitmap image.  Toggles may also be used as radio
-buttons to implement a \fIOne of Many\fP group of buttons.
+A push button (see Command) that contains state information.  This
+widget can display a string or bitmap image.  Toggles may also be used
+as radio buttons to implement a "one of many" group of buttons.
 
