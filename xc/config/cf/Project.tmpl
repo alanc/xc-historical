@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.59 89/12/12 19:06:48 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.60 89/12/13 17:57:29 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -336,7 +336,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.59 89/12/12 19:06:48 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.60 89/12/13 17:57:29 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -476,7 +476,7 @@ Berklib.c: sysV/Berklib.c					@@\
            XAWLIB = LoaderLibPrefix _Use(-lXaw,$(DEPATHENALIB)) $(EXTENSIONLIB) 
 #endif
 
- LINTEXTENSIONLIB = _Use($(USRLIBDIR),$(EXTENSIONSRC))/llib-lXext.ln
+ LINTEXTENSIONLIB = _Use($(USRLIBDIR),$(EXTENSIONSRC)/lib)/llib-lXext.ln
          LINTXLIB = _Use($(USRLIBDIR),$(XLIBSRC))/llib-lX11.ln
           LINTXMU = _Use($(USRLIBDIR),$(XMUSRC))/llib-lXmu.ln
         LINTXTOOL = _Use($(USRLIBDIR),$(TOOLKITSRC))/llib-lXt.ln
