@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: linux.cf,v 1.6 95/01/05 19:39:53 kaleb Exp kaleb $
+XCOMM platform:  $XConsortium: linux.cf,v 1.7 95/01/11 18:31:24 kaleb Exp kaleb $
 
 #define OSName			Linux
 #define OSVendor		/**/
@@ -34,7 +34,7 @@ XCOMM platform:  $XConsortium: linux.cf,v 1.6 95/01/05 19:39:53 kaleb Exp kaleb 
 #define NeedWidePrototypes	NO
 
 #if UseElfFormat
-#define CcCmd			gcc -b i386-linuxelf
+#define CcCmd			gcc -b i486-linuxelf
 #define AsCmd			/usr/i486-linuxelf/bin/as
 #define LdCmd			ld -m elf_i386
 #define AsmDefines		-D__ELF__
