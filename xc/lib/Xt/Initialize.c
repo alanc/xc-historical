@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Initialize.c,v 1.88 87/12/03 15:08:49 swick Locked $";
+static char rcsid[] = "$Header: Initialize.c,v 1.89 87/12/04 13:57:09 swick Locked $";
 #endif lint
 
 /*
@@ -548,7 +548,6 @@ static void InsertChild(w, args, num_argsP)
 
     (*(((CompositeWidgetClass)(shellWidgetClass->core_class.superclass))->
 		composite_class.insert_child)) (w, args, &num_args);
-    XtManageChild(w);	/* Add to managed set now */
 }
 
 /*
