@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xthreads.h,v 1.9 93/09/14 17:01:47 gildea Exp $
+ * $XConsortium: Xthreads.h,v 1.10 93/09/15 13:23:52 rws Exp $
  *
  * Copyright 1993 Massachusetts Institute of Technology
  *
@@ -183,7 +183,7 @@ static xthread_t _X_no_thread_id;
 #define xthread_clear_id(id) id = 0
 #endif
 #ifndef xthread_equal
-#define xthread_equal(id1,id2) id1 == id2
+#define xthread_equal(id1,id2) ((id1) == (id2))
 #endif
 
 #endif /* _XTHREADS_H_ */
