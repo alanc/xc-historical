@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Converters.h,v 1.2 89/10/03 11:40:16 swick Exp $
+ * $XConsortium: Converters.h,v 1.4 90/02/26 14:16:05 kit Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -22,6 +22,10 @@
 #ifndef _XMU_STRCONVERT_H_
 #define _XMU_STRCONVERT_H_
 
+#ifdef __cplusplus			/* do not leave open across includes */
+extern "C" {					/* for C++ V2.0 */
+#endif
+
 /*
  * Converters - insert in alphabetical order
  */
@@ -29,7 +33,14 @@
 /******************************************************************************
  * XmuCvtFunctionToCallback
  */
-extern void XmuCvtFunctionToCallback();
+extern void XmuCvtFunctionToCallback(
+#if NeedFunctionPrototypes
+    XrmValue*		/* args */,
+    Cardinal*		/* num_args */,
+    XrmValuePtr		/* fromVal */,
+    XrmValuePtr		/* toVal */
+#endif
+);
 
 
 /******************************************************************************
@@ -42,14 +53,37 @@ extern void XmuCvtFunctionToCallback();
 #define XtEwhenMapped "whenMapped"
 #define XtEalways "always"
 #define XtEdefault "default"
-extern void XmuCvtStringToBackingStore();
+extern void XmuCvtStringToBackingStore(
+#if NeedFunctionPrototypes
+    XrmValue*		/* args */,
+    Cardinal*		/* num_args */,
+    XrmValuePtr		/* fromVal */,
+    XrmValuePtr		/* toVal */
+#endif
+);
 
 
 /******************************************************************************
  * XmuCvtStringToCursor
  */
-extern void XmuCvtStringToCursor();
-extern Boolean XmuCvtStringToColorCursor();
+extern void XmuCvtStringToCursor(
+#if NeedFunctionPrototypes
+    XrmValue*		/* args */,
+    Cardinal*		/* num_args */,
+    XrmValuePtr		/* fromVal */,
+    XrmValuePtr		/* toVal */
+#endif
+);
+extern Boolean XmuCvtStringToColorCursor(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    XrmValue*		/* args */,
+    Cardinal*		/* num_args */,
+    XrmValuePtr		/* fromVal */,
+    XrmValuePtr		/* toVal */,
+    XtPointer*		/* converter_data */
+#endif
+);
 
 #define XtRColorCursor "ColorCursor"
 #define XtNpointerColor "pointerColor"
@@ -66,27 +100,55 @@ typedef enum {
 #define XtEleft "left"
 #define XtEcenter "center"
 #define XtEright "right"
-extern void XmuCvtStringToJustify();
+extern void XmuCvtStringToJustify(
+#if NeedFunctionPrototypes
+    XrmValue*		/* args */,
+    Cardinal*		/* num_args */,
+    XrmValuePtr		/* fromVal */,
+    XrmValuePtr		/* toVal */
+#endif
+);
 
 
 /******************************************************************************
  * XmuCvtStringToLong
  */
 #define XtRLong "Long"
-extern void XmuCvtStringToLong();
+extern void XmuCvtStringToLong(
+#if NeedFunctionPrototypes
+    XrmValue*		/* args */,
+    Cardinal*		/* num_args */,
+    XrmValuePtr		/* fromVal */,
+    XrmValuePtr		/* toVal */
+#endif
+);
 
 
 /******************************************************************************
  * XmuCvtStringToOrientation
  */
 typedef enum {XtorientHorizontal, XtorientVertical} XtOrientation;
-extern void XmuCvtStringToOrientation();
+extern void XmuCvtStringToOrientation(
+#if NeedFunctionPrototypes
+    XrmValue*		/* args */,
+    Cardinal*		/* num_args */,
+    XrmValuePtr		/* fromVal */,
+    XrmValuePtr		/* toVal */
+#endif
+);
 
 
 /******************************************************************************
  * XmuCvtStringToBitmap
  */
-extern void XmuCvtStringToBitmap();
+extern void XmuCvtStringToBitmap(
+#if NeedFunctionPrototypes
+    XrmValue*		/* args */,
+    Cardinal*		/* num_args */,
+    XrmValuePtr		/* fromVal */,
+    XrmValuePtr		/* toVal */
+#endif
+);
 
 
 /******************************************************************************
@@ -105,18 +167,40 @@ extern void XmuCvtStringToBitmap();
 #define XmuShapeEllipse 3
 #define XmuShapeRoundedRectangle 4
 
-extern Boolean XmuCvtStringToShapeStyle();
-extern Boolean XmuReshapeWidget( /*
-    Widget w,
-    int shape_style,
-    int corner_width,
-    int corner_height
-    */ );
+extern Boolean XmuCvtStringToShapeStyle(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    XrmValue*		/* args */,
+    Cardinal*		/* num_args */,
+    XrmValuePtr		/* fromVal */,
+    XrmValuePtr		/* toVal */,
+    XtPointer*		/* converter_data */
+#endif
+);
+
+extern Boolean XmuReshapeWidget(
+#if NeedFunctionPrototypes
+    Widget	/* w */,
+    int		/* shape_style */,
+    int		/* corner_width */,
+    int		/* corner_height */
+#endif
+);
 
 /******************************************************************************
  * XmuCvtStringToWidget
  */
-extern void XmuCvtStringToWidget();
+extern void XmuCvtStringToWidget(
+#if NeedFunctionPrototypes
+    XrmValue*		/* args */,
+    Cardinal*		/* num_args */,
+    XrmValuePtr		/* fromVal */,
+    XrmValuePtr		/* toVal */
+#endif
+);
 
+#ifdef __cplusplus
+}						/* for C++ V2.0 */
+#endif
 
 #endif /* _XMU_STRCONVERT_H_ */
