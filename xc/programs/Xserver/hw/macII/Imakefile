@@ -23,17 +23,19 @@ OBJS = \
 	macIIGC.o \
 	macIIKMap.o
 
+STD_DEFINES = ServerDefines
 CDEBUGFLAGS = ServerCDebugFlags
-   INCLUDES = -I.  -I../../include -I../mfb -I../../dix -I../../../include
-     LFLAGS = -buxz
+   INCLUDES = -I.  -I../../include -I../mfb -I../../dix -I$(INCLUDESRC)
+   LINTLIBS = ../../dix/llib-ldix.ln ../../os/4.2bsd/llib-los.ln \
+	      ../mfb/llib-lmfb.ln ../mi/llib-lmi.ln ../cfb/llib-lcfb.ln
 
 NormalLibraryObjectRule()
 
 all:: $(OFILES) 
 
+lintlib:
+
 NormalLibraryTarget(macII,$(OBJS))
+NormalLintTarget($(SRCS))
 DependTarget()
 InstallManPage(XmacII,$(MANDIR))
-
-lint: ${CFILES} ${LIBCFILES}
-	$(LINT) $(LFLAGS) -ClibmacII $(INCLUDES) $(SRCS) >lint.out 2>&1
