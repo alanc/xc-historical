@@ -1,7 +1,4 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: Display.c,v 1.45 90/06/22 17:09:28 swick Exp $";
-/* $oHeader: Display.c,v 1.9 88/09/01 11:28:47 asente Exp $ */
-#endif /*lint*/
+/* $XConsortium: Display.c,v 1.46 90/07/15 21:39:36 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -255,6 +252,15 @@ XtDisplayInitialize(app, dpy, name, classname, urlist, num_urs, argc, argv)
 	pd->tm_context = NULL;
 	pd->mapping_callbacks = NULL;
 
+	pd->pdi.grabList = NULL;
+	pd->pdi.trace = NULL;
+	pd->pdi.traceDepth = 0;
+	pd->pdi.traceMax = 0;
+	pd->pdi.focusWidget = NULL;
+	pd->pdi.activatingKey = 0;
+	pd->pdi.keyboard.grabType = XtNoServerGrab;
+	pd->pdi.pointer.grabType  = XtNoServerGrab;
+
 	_XtDisplayInitialize(dpy, pd, name, classname, urlist, 
 			     num_urs, argc, argv);
 }
@@ -308,6 +314,7 @@ static void DestroyAppContext(app)
 	_XtFreeConverterTable(app->converterTable);
 	_XtCacheFlushTag(app, (XtPointer)&app->heap);
 	_XtHeapFree(&app->heap);
+	_XtFreeActions(app->action_table);
 	if (app->destroy_callbacks != NULL) {
 	    _XtCallCallbacks(&app->destroy_callbacks, (XtPointer)app);
 	    _XtRemoveAllCallbacks(&app->destroy_callbacks);
@@ -523,7 +530,6 @@ static void CloseDisplay(dpy)
             xtpd->modsToKeysyms = NULL;
 	    XDestroyRegion(xtpd->region);
 	    _XtCacheFlushTag(xtpd->appContext, (XtPointer)&xtpd->heap);
-	    _XtHeapFree(&xtpd->heap);
 	    _XtGClistFree(xtpd->GClist);
 	    {
 		int i;
@@ -531,6 +537,8 @@ static void CloseDisplay(dpy)
 		for (i=0, d=xtpd->drawable_tab; i<ScreenCount(dpy); i++, d++)
 		    XtFree((char*)d->drawables);
 	    }
+	    XtFree((char*)xtpd->pdi.trace);
+	    _XtHeapFree(&xtpd->heap);
         }
 	XtFree((char*)pd);
 	XrmDestroyDatabase(dpy->db);
