@@ -1,9 +1,9 @@
 SRCS = 5x8.bdf 6x10.bdf 6x12.bdf 6x13.bdf 8x13.bdf 8x13B.bdf 9x15.bdf \
 	10x20.bdf cursor.bdf deccurs.bdf decsess.bdf \
-	olcursor.bdf olglyph10.bdf olglyph12.bdf olglyph14.bdf olglyph19.bdf
+	olcursor.bdf olgl10.bdf olgl12.bdf olgl14.bdf olgl19.bdf
 OBJS = 5x8.snf 6x10.snf 6x12.snf 6x13.snf 8x13.snf 8x13B.snf 9x15.snf \
 	10x20.snf cursor.snf deccurs.snf decsess.snf \
-	olcursor.snf olglyph10.snf olglyph12.snf olglyph14.snf olglyph19.snf
+	olcursor.snf olgl10.snf olgl12.snf olgl14.snf olgl19.snf
 FONTINSTDIR = $(FONTDIR)/misc
 
 MakeFonts()
@@ -20,10 +20,10 @@ FontTarget(cursor)
 FontTarget(deccurs)
 FontTarget(decsess)
 FontTarget(olcursor)
-FontTarget(olglyph10)
-FontTarget(olglyph12)
-FontTarget(olglyph14)
-FontTarget(olglyph19)
+FontTarget(olgl10)
+FontTarget(olgl12)
+FontTarget(olgl14)
+FontTarget(olgl19)
 
 InstallFonts($(FONTINSTDIR))
 InstallFontAliases($(FONTINSTDIR))
