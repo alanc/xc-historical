@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.37 94/01/30 23:41:53 rws Exp $ */
+/* $XConsortium: devices.c,v 5.38 94/02/01 19:22:18 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -37,6 +37,9 @@ SOFTWARE.
 #include "cursorstr.h"
 #include "dixstruct.h"
 #include "site.h"
+#ifdef XKB
+#include "extensions/XKB.h"
+#endif
 
 extern InputInfo inputInfo;
 #ifdef XRECORD
@@ -518,6 +521,7 @@ InitKbdFeedbackClassDeviceStruct(dev, bellProc, controlProc)
 	feedc->ctrl.id = dev->kbdfeed->ctrl.id + 1;
     dev->kbdfeed = feedc;
 #ifdef XKB
+    XkbUpdateAutorepeat(dev);
     if (feedc->ctrl.autoRepeat)
     {
         feedc->ctrl.autoRepeat = FALSE;
@@ -738,6 +742,11 @@ SendMappingNotify(request, firstKeyCode, count)
 #endif
 	    )
 	{
+#ifdef XKB
+	    if ((request==MappingKeyboard)&&
+			(clients[i]->mapNotifyMask&XkbKeySymsMask))
+		continue;
+#endif
 	    event.u.u.sequenceNumber = clients[i]->sequence;
             WriteEventsToClient(clients[i], 1, &event);
 	}
