@@ -1,4 +1,4 @@
-/* $XConsortium: xtwatch.c,v 1.4 94/03/21 13:28:21 mor Exp $ */
+/* $XConsortium: xtwatch.c,v 1.5 94/03/30 22:37:08 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -68,5 +68,5 @@ XtInputId	*id;
 {
     IceConn	ice_conn = (IceConn) client_data;
 
-    IceProcessMessages (ice_conn, NULL);
+    IceProcessMessages (ice_conn, NULL, NULL);
 }
