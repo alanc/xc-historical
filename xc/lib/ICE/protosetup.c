@@ -1,4 +1,4 @@
-/* $XConsortium: protosetup.c,v 1.7 93/09/27 11:45:32 mor Exp $ */
+/* $XConsortium: protosetup.c,v 1.8 93/11/08 16:34:15 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -110,12 +110,14 @@ char 	*errorStringRet;
     extra = XPCS_BYTES (myProtocol->protocol_name) +
             XPCS_BYTES (myProtocol->orig_client->vendor) +
             XPCS_BYTES (myProtocol->orig_client->release);
+
     for (i = 0; i < authCount; i++)
     {
 	extra += XPCS_BYTES (myProtocol->orig_client->auth_recs[
 	    doFavor ? i : authIndices[i]].auth_name);
     }
-    extra += (myProtocol->orig_client->version_count * 2);
+
+    extra += (myProtocol->orig_client->version_count * 4);
 
     IceGetHeaderExtra (iceConn, 0, ICE_ProtocolSetup,
 	SIZEOF (iceProtocolSetupMsg), WORD64COUNT (extra),
@@ -139,9 +141,9 @@ char 	*errorStringRet;
 
     for (i = 0; i < myProtocol->orig_client->version_count; i++)
     {
-	STORE_CARD8 (pData,
+	STORE_CARD16 (pData,
 	    myProtocol->orig_client->version_recs[i].major_version);
-	STORE_CARD8 (pData,
+	STORE_CARD16 (pData,
 	    myProtocol->orig_client->version_recs[i].minor_version);
     }
 

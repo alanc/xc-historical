@@ -1,4 +1,4 @@
-/* $XConsortium: connect.c,v 1.13 93/11/08 16:34:11 mor Exp $ */
+/* $XConsortium: connect.c,v 1.14 93/11/18 11:41:59 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -225,7 +225,7 @@ char *errorStringRet;
 	    authUsableCount++;
 	}
 
-    extra += (_IceVersionCount * 2);
+    extra += (_IceVersionCount * 4);
 
     IceGetHeaderExtra (iceConn, 0, ICE_ConnectionSetup,
 	SIZEOF (iceConnectionSetupMsg), WORD64COUNT (extra),
@@ -247,8 +247,8 @@ char *errorStringRet;
 
     for (i = 0; i < _IceVersionCount; i++)
     {
-	STORE_CARD8 (pData, _IceVersions[i].major_version);
-	STORE_CARD8 (pData, _IceVersions[i].minor_version);
+	STORE_CARD16 (pData, _IceVersions[i].major_version);
+	STORE_CARD16 (pData, _IceVersions[i].minor_version);
     }
 
     IceFlush (iceConn);

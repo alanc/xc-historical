@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.17 93/11/08 16:34:14 mor Exp $ */
+/* $XConsortium: process.c,v 1.18 93/11/18 11:56:13 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -648,8 +648,8 @@ Bool			swap;
 
     for (i = 0; i < hisVersionCount && !found; i++)
     {
-	EXTRACT_CARD8 (pData, hisMajorVersion);
-	EXTRACT_CARD8 (pData, hisMinorVersion);
+	EXTRACT_CARD16 (pData, swap, hisMajorVersion);
+	EXTRACT_CARD16 (pData, swap, hisMinorVersion);
 
 	for (j = 0; j < myVersionCount && !found; j++)
 	{
@@ -1434,8 +1434,8 @@ Bool			swap;
 
     for (i = 0; i < hisVersionCount && !found; i++)
     {
-	EXTRACT_CARD8 (pData, hisMajorVersion);
-	EXTRACT_CARD8 (pData, hisMinorVersion);
+	EXTRACT_CARD16 (pData, swap, hisMajorVersion);
+	EXTRACT_CARD16 (pData, swap, hisMinorVersion);
 
 	for (j = 0; j < myVersionCount && !found; j++)
 	{
