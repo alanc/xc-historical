@@ -79,6 +79,21 @@ LBXFreeDeltaCache(pcache)
 	xfree(pcache->deltas);
 }
 
+static int 
+BytesDiff(ptr1, ptr2, n, maxn)
+    register char *ptr1, *ptr2;
+    register int  n;
+    register int  maxn;
+{
+    register int  result = 0;
+
+    while (n--)
+	if (*(ptr1++) != *(ptr2++))
+	    if (++result >= maxn)
+		break;
+    return (result);
+}
+
 /*
  * Find the message in the outgoing delta cache with the least number of 
  * differing bytes and return the number of differences.  If all
@@ -199,19 +214,4 @@ LBXAddDeltaIn(pcache, inmsg, inmsglen)
     bcopy(inmsg, pcache->deltas[pcache->nextDelta].buf, inmsglen);
     pcache->deltas[pcache->nextDelta].length = inmsglen;
     pcache->nextDelta = (pcache->nextDelta + 1) % pcache->nDeltas;
-}
-
-static int 
-BytesDiff(ptr1, ptr2, n, maxn)
-    register char *ptr1, *ptr2;
-    register int  n;
-    register int  maxn;
-{
-    register int  result = 0;
-
-    while (n--)
-	if (*(ptr1++) != *(ptr2++))
-	    if (++result >= maxn)
-		break;
-    return (result);
 }
