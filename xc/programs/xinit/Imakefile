@@ -11,11 +11,11 @@ MakeScriptFromCpp(startx, -DXINITDIR=$(XINITDIR))
 MakeScriptFromCpp(xinitrc, -DXINITDIR=$(XINITDIR))
 /* MakeScriptFromCpp(xserverrc, -DXINITDIR=$(XINITDIR)) */
 
-install::
-	-mkdir $(XINITDIR)
 
 InstallProgram(startx,$(BINDIR))
 
 #if InstallxinitConfig
+MakeDirectories(install $(XINITDIR))
+
 InstallMultiple($(SAMPLECONFIGS),$(XINITDIR))
 #endif
