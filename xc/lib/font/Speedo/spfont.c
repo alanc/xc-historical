@@ -1,4 +1,4 @@
-/* $XConsortium: spfont.c,v 1.5 91/05/29 15:28:16 keith Exp $ */
+/* $XConsortium: spfont.c,v 1.6 91/05/30 19:08:46 keith Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -201,7 +201,8 @@ pack_sp_glyphs(pfont, format, flags, num_ranges, range, tsize, num_glyphs,
                 scanlineunit,
                 mappad;
     int         bpr,
-                skiprows = 0;
+                skiprows = 0,
+		width;
     fsRange    *rp;
     FontInfoPtr pinfo = &pfont->info;
     SpeedoFontPtr spf = (SpeedoFontPtr) pfont->fontPrivate;
@@ -263,6 +264,9 @@ pack_sp_glyphs(pfont, format, flags, num_ranges, range, tsize, num_glyphs,
 	return AllocError;
     }
     /* finally do the work */
+    width = pinfo->maxbounds.rightSideBearing - min_left;
+    bpr = GLWIDTHBYTESPADDED (width, scanlinepad);
+
     for (i = 0, rp = range; i < num_ranges; i++, rp++) {
 	/*
 	 * compute start & end.  if all_glyphs is set, we still have them
@@ -279,7 +283,14 @@ pack_sp_glyphs(pfont, format, flags, num_ranges, range, tsize, num_glyphs,
 	    int         srcbpr;
 	    pointer     gstart;
 	    int         r,
-	                shift = 0;
+	                xoff = 0;
+	    int		h;
+	    typedef unsigned char   access_type;
+	    access_type	*psrcLine, *pdstLine, *psrc, *pdst;
+	    access_type	endmask, bits, bits1;
+	    int		n, nmiddle;
+	    int		leftShift, rightShift;
+	    int		c;
 
 	    /* save the offset */
 	    (*l).position = (gd - gdata);
@@ -303,6 +314,7 @@ pack_sp_glyphs(pfont, format, flags, num_ranges, range, tsize, num_glyphs,
 	    switch (mappad) {
 	    case BitmapFormatImageRectMin:
 		bpr = GLYPH_SIZE(ci, scanlinepad);
+		width = cim->rightSideBearing - cim->leftSideBearing;
 		break;
 	    case BitmapFormatImageRectMax:
 		/* leave the first padded rows blank */
@@ -312,46 +324,85 @@ pack_sp_glyphs(pfont, format, flags, num_ranges, range, tsize, num_glyphs,
 		    (pinfo->maxbounds.descent - cim->descent);
 		/* fall thru */
 	    case BitmapFormatImageRectMaxWidth:
-		shift = cim->leftSideBearing - min_left;
+		xoff = cim->leftSideBearing - min_left;
 		break;
 	    default:
 		assert(0);
 	    }
 
-#define	access_type	unsigned char *
-/* XXX
- * this would best be a larger size (long), but that causes unaligned
- * refs on (at least) SPARC
- *
- * this whole mess should be rewritten by someone who understands bitblt...
- */
-
-	    for (r = 0; r < (cim->ascent + cim->descent); r++) {
-		access_type row = (access_type) (src_bitoffset + (r * srcbpr));
-		access_type r2 = (access_type) (gd + (r * bpr));
-		int         db;
-
-		for (db = 0;
-			db <= ((cim->rightSideBearing - min_left) /
-			       (sizeof(*row) * 8));
-			db++) {
-
 #if (DEFAULT_BIT_ORDER == MSBFirst)
-		    r2[db] = row[db] >> shift;
-		    if (db > 0 && shift)	/* get the leftovers from
-						 * above */
-			r2[db] |= (row[db - 1] << ((sizeof(*row) * 8) - shift));
+#define SCRRIGHT(b,x)	((b) >> (x))
+#define SCRLEFT(b,x)	((b) << (x))
 #else
-		    r2[db] = row[db] << shift;
-		    if (db > 0 && shift)	/* get the leftovers from
-						 * above */
-			r2[db] |= (row[db - 1] >> ((sizeof(*row) * 8) - shift));
+#define SCRRIGHT(b,x)	((b) << (x))
+#define SCRLEFT(b,x)	((b) >> (x))
 #endif
+
+#define PIM	0x7
+#define PPW	8
+#define PWSH	3
+
+	    h = cim->ascent + cim->descent;
+	    c = xoff & PIM;
+	    psrcLine = (access_type *) ci->bits;
+	    pdstLine = gd + (xoff - c);
+	    if (c + width < PPW)
+	    {
+		nmiddle = 1;
+		endmask = 0;
+	    }
+	    else
+	    {
+		nmiddle = (width + c) >> PWSH;
+		endmask = ~SCRRIGHT((unsigned char) ~0,(c+width) & PIM);
+	    }
+
+	    if (xoff == 0)
+	    {
+		if (endmask)
+		    nmiddle++;
+		while (h--)
+		{
+		    psrc = psrcLine;
+		    psrcLine += srcbpr;
+		    pdst = pdstLine;
+		    pdstLine += bpr;
+		    n = nmiddle;
+		    while (n--)
+			*pdst++ = *psrc++;
 		}
 	    }
-	    /* skip the amount we just filled in */
-	    gd += (cim->descent + cim->ascent) * bpr
-		+ skiprows;	/* leave the last rows blank */
+	    else
+	    {
+		rightShift = c;
+		leftShift = PPW - rightShift;
+	    	while (h--)
+	    	{
+		    psrc = psrcLine;
+		    psrcLine += srcbpr;
+		    pdst = pdstLine;
+		    pdstLine += bpr;
+		    bits = 0;
+		    n = nmiddle;
+		    while (n--)
+		    {
+			bits1 = SCRLEFT(bits,leftShift);
+			bits = *psrc++;
+			*pdst++ = bits1 | SCRRIGHT(bits,rightShift);
+		    }
+		    if (endmask)
+		    {
+			bits1 = SCRLEFT(bits,leftShift);
+			if (SCRLEFT(endmask,rightShift))
+			{
+			    bits = *psrc;
+			    bits1 |= SCRRIGHT (bits,rightShift);
+			}
+			*pdst = bits1;
+		    }
+	    	}
+	    }
+	    gd = pdstLine + skiprows;	/* leave the last rows blank */
 
 	    (*l).length = gd - gstart;
 	    l++;
