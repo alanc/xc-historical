@@ -13,7 +13,7 @@
 #define XsunServer Xsun
 /* #define Xplx Xplx */
 
-/**/# platform:  $XConsortium: sun.cf,v 1.7 89/03/02 13:28:18 jim Exp $
+/**/# platform:  $XConsortium: sun.cf,v 1.8 89/03/16 15:13:50 rws Exp $
 /**/# operating system:  OSName
 
 
@@ -42,7 +42,7 @@
 #if SunOSPlatform && (OSMajorVersion >= 4 || defined(sparc))
 #define ServerDefines SunWindowsDefines ExtensionDefines -DINCLUDE_ALLOCA_H
 #else
-#define ServerDefines SunWindowsDefines ExtensionDefines FloatPointOptions -DPURDUE
+#define ServerDefines SunWindowsDefines ExtensionDefines FloatingPointOptions -DPURDUE
 #endif
 
 #if OSMajorVersion >= 4 && OSMinorVersion >= 0
