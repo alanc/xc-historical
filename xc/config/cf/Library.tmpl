@@ -6,7 +6,7 @@
  * DoNormalLib, DoSharedLib, DoDebugLib, DoProfileLib
  */
 
-XCOMM $XConsortium: Library.tmpl,v 1.10 91/07/23 23:15:54 keith Exp $
+XCOMM $XConsortium: Library.tmpl,v 1.11 91/07/27 13:10:13 rws Exp $
 
 #ifndef LibraryCcCmd
 #if DoSharedLib && defined(SharedLibraryCcCmd)
@@ -79,6 +79,11 @@ CDEBUGFLAGS = LibraryCDebugFlags
 #ifndef LibraryObjectRule
 #define LibraryObjectRule()						@@\
 all::									@@\
+	_DebuggedLibMkdir()						@@\
+	_ProfiledLibMkdir()						@@\
+	_SharedLibMkdir()						@@\
+									@@\
+includes::								@@\
 	_DebuggedLibMkdir()						@@\
 	_ProfiledLibMkdir()						@@\
 	_SharedLibMkdir()						@@\
