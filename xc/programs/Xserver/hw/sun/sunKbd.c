@@ -191,7 +191,7 @@ sunKbdProc (pKeyboard, what)
 #ifdef	autorepeat
 	    signal(SIGALRM, sunAutoRepeater);
 	    if (autoRepeatDebug)
-	    	printf("signal(SIGALRM, sunAutoRepeater)\n");
+	    	ErrorF("signal(SIGALRM, sunAutoRepeater)\n");
 #endif	autorepeat
 	    break;
 
@@ -339,7 +339,7 @@ sunKbdGetEvents (pKeyboard, pNumEvents)
 	*pNumEvents = 1;
 	evBuf[0].value = AUTOREPEAT_EVENT;	/* Flags autoRepeat event */
 	if (autoRepeatDebug)
-	    printf("sunKbdGetEvents: autoRepeat = %d event\n", autoRepeat);
+	    ErrorF("sunKbdGetEvents: autoRepeat = %d event\n", autoRepeat);
     }
 #endif	autorepeat
 
@@ -388,7 +388,7 @@ sunKbdProcessEvent (pKeyboard, fe)
 	 * Update time & pointer location of saved KeyPress event.
 	 */
 	if (autoRepeatDebug)
-	    printf("sunKbdProcessEvent: autoRepeat = %d\n", autoRepeat);
+	    ErrorF("sunKbdProcessEvent: autoRepeat = %d\n", autoRepeat);
 	if (autoRepeatFirst == TRUE) {
 		autoRepeatFirst = FALSE;
 		delta = AUTOREPEAT_INITIATE / 2;
@@ -423,7 +423,7 @@ sunKbdProcessEvent (pKeyboard, fe)
     setitimer(ITIMER_REAL, &autoRepeatIt, (struct itimerval *) 0);
     autoRepeat = 0;
     if (autoRepeatDebug)
-	printf("sunKbdProcessEvent: kill AutoRepeater\n");
+	ErrorF("sunKbdProcessEvent: kill AutoRepeater\n");
 #endif	autorepeat
 
     xE.u.keyButtonPointer.time = TVTOMILLI(fe->time);
@@ -435,7 +435,7 @@ sunKbdProcessEvent (pKeyboard, fe)
 #ifdef  autorepeat
     if (fe->value == VKEY_DOWN) {	/* turn on AutoRepeater */
 	if (autoRepeatDebug)
-            printf("sunKbdProcessEvent: VKEY_DOWN\n");
+            ErrorF("sunKbdProcessEvent: VKEY_DOWN\n");
 	autoRepeatEvent = xE;
 	autoRepeatFirst = TRUE;
 
@@ -676,7 +676,7 @@ static void
 sunAutoRepeater()
 {
     if (autoRepeatDebug)
-	printf("sunAutoRepeater()\n");
+	ErrorF("sunAutoRepeater()\n");
     autoRepeat++;
     isItTimeToYield++;
 }
