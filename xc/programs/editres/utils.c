@@ -533,8 +533,10 @@ Event * event;
 	    node->resources = ParseResources(get_event->info + i, &errors);
 	    CreateResourceBox(node);
 	}
-	else 
+	else {
 	    AddString(&errors, get_event->info[i].message);
+	    AddString(&errors, "\n");
+	}
     }
 
     return(errors);
@@ -626,7 +628,7 @@ char **error;
 	default:
 	    {
 		char buf[BUFSIZ];
-		sprintf(buf, "Unknown resource type %d", 
+		sprintf(buf, "Unknown resource type %d\n", 
 			info->res_info[i].res_type);
 		AddString(error, buf);
 	    }
