@@ -8,6 +8,7 @@
 # include <stdio.h>
 # include <X11/IntrinsicP.h>
 # include <X11/StringDefs.h>
+# include <X11/Xmu.h>
 # include "EyesP.h"
 # include <math.h>
 
@@ -15,9 +16,9 @@
 #define goffset(field) XtOffset(Widget,core.field)
 
 static XtResource resources[] = {
-    {XtNwidth, XtCWidth, XtRInt, sizeof(int),
+    {XtNwidth, XtCWidth, XtRDimension, sizeof(Dimension),
 	goffset(width), XtRString, "150"},
-    {XtNheight, XtCHeight, XtRInt, sizeof(int),
+    {XtNheight, XtCHeight, XtRDimension, sizeof(Dimension),
 	goffset(height), XtRString, "100"},
     {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
         offset(puppixel), XtRString, "Black"},
@@ -60,12 +61,14 @@ static int draw_it ();
 
 static int delays[] = { 50, 100, 200, 400, 0 };
 
+static void ClassInitialize();
+
 EyesClassRec eyesClassRec = {
     { /* core fields */
     /* superclass		*/	&widgetClassRec,
     /* class_name		*/	"Eyes",
     /* size			*/	sizeof(EyesRec),
-    /* class_initialize		*/	NULL,
+    /* class_initialize		*/	ClassInitialize,
     /* class_part_initialize	*/	NULL,
     /* class_inited		*/	FALSE,
     /* initialize		*/	Initialize,
@@ -94,6 +97,12 @@ EyesClassRec eyesClassRec = {
     /* query_geometry		*/	XtInheritQueryGeometry,
     }
 };
+
+static void ClassInitialize()
+{
+    XtAddConverter( XtRString, XtRBackingStore, XmuCvtStringToBackingStore,
+		    NULL, 0 );
+}
 
 WidgetClass eyesWidgetClass = (WidgetClass) &eyesClassRec;
 
