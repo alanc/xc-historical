@@ -33,10 +33,10 @@
 
 *quit.Label: Quit
 
-*buttonbox.quit.Translations:  #override \
+*buttonbox.quit.baseTranslations:  #override \
 		<Btn1Down>,<Btn1Up>: Quit() unset()
 
-*Toggle.Translations: #augment \n\
+*Toggle.baseTranslations: #augment \n\
 <Btn2Down>,<Btn2Up>: set() notify() Resources(toggle) \n\
 <Key>q: Quit() \n\
 <Key>space: Select(nothing) \n\
@@ -47,7 +47,7 @@
 Ctrl<Key>r: Resources(on) \n\
 Ctrl<Key>n: Resources(off) \n\
 
-*List.Translations: #augment \n\
+*List.baseTranslations: #augment \n\
 <Key>q: Quit() \n\
 <Key>space: Select(nothing) \n\
 <Key>p: Select(parent) \n\
@@ -57,7 +57,7 @@ Ctrl<Key>n: Resources(off) \n\
 Ctrl<Key>r: Resources(on) \n\
 Ctrl<Key>n: Resources(off) \n\
 
-*Porthole.Translations: #override \n\
+*Porthole.baseTranslations: #override \n\
 <Btn1Down>,<Btn1Up>:	Select(nothing) \n\
 <Key>q: Quit() \n\
 Ctrl<Key>h: SetOrientation(west) \n\

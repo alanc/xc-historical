@@ -16,7 +16,7 @@
 *form*width:              		120
 *form*height:             		15
 
-*translations:#override\
+*baseTranslations:#override\
 			Ctrl<Key>c:	do-quit()\n\
 			<Key>q:		do-quit()\n\
 			Ctrl<Key>n:	do-new()\n\
@@ -48,10 +48,10 @@
 			<LeaveWindow>:  	reset()\n\
 			<BtnDown>:  		reset() fix-menu() PopupMenu()
 
-*Dialog*translations:#override\
+*Dialog*baseTranslations:#override\
 			<Key>Return:	set-dialog-button(okay, yes, retry)\n\
 			Ctrl<Key>g:	set-dialog-button(cancel, abort)
-*image*translations:#override\
+*image*baseTranslations:#override\
 			<Btn1Down>,<Btn1Up>:	switch-image()
 *image*width: 0
 *image*height: 0
