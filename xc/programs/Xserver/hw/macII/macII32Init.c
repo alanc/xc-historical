@@ -57,7 +57,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "mibstore.h"
 
 extern Bool cfbCloseScreen();
-extern Bool cfbBSFuncRec();
+extern miBSFuncRec cfbBSFuncRec;
 extern Bool cfbCreateScreenResources();
 
 Bool
