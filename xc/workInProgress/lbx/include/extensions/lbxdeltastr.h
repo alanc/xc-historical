@@ -51,4 +51,4 @@ typedef struct _LBXDeltas {
     unsigned short	activeDeltas;	/* only needed for outgoing */
 } LBXDeltasRec, *LBXDeltasPtr;
 
-#endif LBX_DELTA_STRUCT_H
+#endif /* LBX_DELTA_STRUCT_H */

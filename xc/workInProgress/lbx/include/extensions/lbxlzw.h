@@ -45,4 +45,4 @@
 
 #define LZW_COMPRESSED(p) ((p)[0] & LZW_COMPRESS_FLAG)
 
-#endif _LZW_H_
+#endif /* _LZW_H_ */
