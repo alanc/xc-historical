@@ -72,7 +72,8 @@ SRCS = \
 	StrToWidg.c \
 	UpdMapHint.c \
 	VisCmap.c \
-	Xct.c
+	Xct.c \
+	sharedlib.c 
 
 OBJS = \
 	AllCmap.o \
@@ -114,6 +115,8 @@ OBJS = \
 	VisCmap.o \
 	Xct.o
 
+UNSHAREDOBJS = sharedlib.o
+
 all::
 
 #if SharedLibXmu
@@ -146,7 +149,9 @@ SpecialObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(OS_NAME_DEFINES))
 
 #if SharedLibXmu
 NormalSharedLibraryTarget(Xmu,$(SOXMUREV),$(OBJS))
+NormalSharedLibraryDataTarget(Xmu,$(SOXMUREV),$(UNSHAREDOBJS))
 InstallSharedLibrary(Xmu,$(SOXMUREV),$(USRLIBDIR))
+InstallSharedLibraryData(Xmu,$(SOXMUREV),$(USRLIBDIR))
 #endif
 
 

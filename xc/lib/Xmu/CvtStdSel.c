@@ -1,4 +1,4 @@
-/* $XConsortium: CvtStdSel.c,v 1.9 89/06/16 18:34:45 jim Exp $
+/* $XConsortium: CvtStdSel.c,v 1.10 89/10/08 14:57:27 rws Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -28,6 +28,17 @@
 #endif
 #include "Xmu.h"
 
+
+#ifdef SUNSHLIB
+/*
+ * hack to avoid undefined symbol errors at runtime
+ */
+extern WidgetClass get_applicationShellWidgetClass();
+extern WidgetClass get_wmShellWidgetClass();
+#else
+#define get_applicationShellWidgetClass() applicationShellWidgetClass
+#define get_wmShellWidgetClass() wmShellWidgetClass
+#endif
 
 static char *get_os_name ()
 {
@@ -167,11 +178,11 @@ Boolean XmuConvertStandardSelection(w, time, selection, target,
 	char *class;
 	int len;
 	while (parent != NULL &&
-	       !XtIsSubclass(w, applicationShellWidgetClass)) {
+	       !XtIsSubclass(w, get_applicationShellWidgetClass())) {
 	    w = parent;
 	    parent = XtParent(w);
 	}
-	if (XtIsSubclass(w, applicationShellWidgetClass))
+	if (XtIsSubclass(w, get_applicationShellWidgetClass()))
 	    class = ((ApplicationShellWidget) w)->application.class;
 	else {
 	    class = XrmQuarkToString( XtClass(w)->core_class.xrm_class );
@@ -186,12 +197,13 @@ Boolean XmuConvertStandardSelection(w, time, selection, target,
     }
     if (*target == XA_NAME(d)) {
 	Widget parent = XtParent(w);
+
 	while (parent != NULL &&
-	       !XtIsSubclass(w, wmShellWidgetClass)) {
+	       !XtIsSubclass(w, get_wmShellWidgetClass())) {
 	    w = parent;
 	    parent = XtParent(w);
 	}
-	if (!XtIsSubclass(w, wmShellWidgetClass)) return False;
+	if (!XtIsSubclass(w, get_wmShellWidgetClass())) return False;
 	*value = XtNewString( ((WMShellWidget) w)->wm.title );
 	*length = strlen(*value);
 	*type = XA_STRING;
