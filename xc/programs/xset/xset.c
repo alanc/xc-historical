@@ -1,5 +1,5 @@
 /* 
- * $XConsortium: xset.c,v 1.62 92/07/29 18:15:58 rws Exp $ 
+ * $XConsortium: xset.c,v 1.63 92/10/20 18:34:56 rws Exp $ 
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985	*/
@@ -16,7 +16,7 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
 
-/* $XConsortium: xset.c,v 1.62 92/07/29 18:15:58 rws Exp $ */
+/* $XConsortium: xset.c,v 1.63 92/10/20 18:34:56 rws Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -154,12 +154,12 @@ for (i = 1; i < argc; ) {
       i++;
       arg = nextarg(i, argv);
 
-      if (isnumber(arg, 20000)) {               /* If pitch is given:     */
+      if (isnumber(arg, 32767)) {               /* If pitch is given:     */
 	set_bell_pitch(dpy, atoi(arg));    /* set the bell.           */
 	i++;
 
 	arg = nextarg(i, argv);
-	if (isnumber(arg, 1000)) {              /* If duration is given:  */
+	if (isnumber(arg, 32767)) {              /* If duration is given:  */
 	  set_bell_dur(dpy, atoi(arg));  /*  set the bell.      */
 	  i++;
 	}
