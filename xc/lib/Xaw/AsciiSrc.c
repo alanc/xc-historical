@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.24 89/10/11 15:53:58 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.25 89/12/06 15:31:01 kit Exp $";
 #endif 
 
 /*
@@ -738,7 +738,6 @@ XawAsciiSave(w)
 Widget w;
 {
   AsciiSrcObject src = (AsciiSrcObject) w;
-  char * string;
 
 /*
  * If using the string in place then there is no need to play games
@@ -748,12 +747,14 @@ Widget w;
   if (src->ascii_src.use_string_in_place) 
     return(TRUE);
 
-  if (!src->ascii_src.changes)		/* No changes to save. */
-    return(TRUE);
-
-  string = StorePiecesInString(src);
-
   if (src->ascii_src.type == XawAsciiFile) {
+    char * string;
+
+    if (!src->ascii_src.changes) 		/* No changes to save. */
+      return(TRUE);
+
+    string = StorePiecesInString(src);
+
     if (WriteToFile(src, string, src->ascii_src.string) == FALSE) {
       XtFree(string);
       return(FALSE);
@@ -766,7 +767,7 @@ Widget w;
     else
       src->ascii_src.allocated_string = TRUE;
     
-    src->ascii_src.string = string;
+    src->ascii_src.string = StorePiecesInString(src);
   }
   src->ascii_src.changes = FALSE;
   return(TRUE);
