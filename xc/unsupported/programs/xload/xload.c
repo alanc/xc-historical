@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: xload.c,v 1.8 88/02/13 21:31:45 rws Exp $";
+static char rcsid[] = "$Header: xload.c,v 1.9 88/02/14 15:06:34 rws Exp $";
 #endif  lint
 
 #include <X11/Intrinsic.h>
@@ -46,7 +46,7 @@ void main(argc, argv)
     Arg arg;
     
     (void) gethostname(host,255);
-    toplevel = XtInitialize(NULL, "XLoad", options, XtNumber(options), &argc, argv);
+    toplevel = XtInitialize("main", "XLoad", options, XtNumber(options), &argc, argv);
       
     if (argc != 1) usage();
     
