@@ -63,7 +63,7 @@ SpecialObjectRule(main.o, ,$(MAIN_DEFINES))
 NormalProgramTarget(xterm,$(OBJS1),$(DEPLIBS1),XawClientLibs,$(TERMCAPLIB) $(PTYLIB))
 InstallProgramWithFlags(xterm, $(BINDIR), $(INSTUIDFLAGS))
 
-NormalProgramTarget(resize,$(OBJS2),$(DEPLIBS2), ,-ltermcap)
+NormalProgramTarget(resize,$(OBJS2),$(DEPLIBS2), ,$(TERMCAPLIB))
 InstallProgramWithFlags(resize, $(BINDIR), )
 
 InstallAppDefaults(XTerm)
