@@ -45,8 +45,10 @@ install::
 	-mkdir $(FONTDIR)
 	-mkdir $(MANDIR)
 
+World:: $(IMAKE)
+
 # don't name your log file make.log when you run this ...
-World: $(IMAKE)
+World::
 	-$(MV) Makefile Makefile.bak
 	$(MAKE) -f Makefile.bak Makefile
 	$(MAKE) Makefiles
