@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XShm.c,v 1.7 89/10/08 16:23:04 jim Exp $
+ * $XConsortium: XShm.c,v 1.8 89/10/08 17:11:26 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -24,8 +24,6 @@
  */
 
 /* EXPERIMENTAL! THIS HAS NO OFFICIAL X CONSORTIUM BLESSING */
-
-#ifdef MITSHM
 
 #define NEED_EVENTS
 #define NEED_REPLIES
@@ -407,5 +405,3 @@ Pixmap XShmCreatePixmap (dpy, d, data, shminfo, width, height, depth)
     SyncHandle();
     return pid;
 }
-
-#endif

@@ -17,9 +17,7 @@ without any express or implied warranty.
 
 /* EXPERIMENTAL! THIS HAS NO OFFICIAL X CONSORTIUM BLESSING */
 
-/* $XConsortium: shm.c,v 1.4 89/08/21 08:59:28 rws Exp $ */
-
-#ifdef MITSHM
+/* $XConsortium: shm.c,v 1.5 89/08/31 12:57:54 rws Exp $ */
 
 #include <sys/types.h>
 #include <sys/ipc.h>
@@ -772,5 +770,3 @@ SProcShmDispatch (client)
 	return BadRequest;
     }
 }
-
-#endif
