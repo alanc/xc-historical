@@ -1,4 +1,4 @@
-/* $XConsortium: info.c,v 1.15 94/08/17 18:24:53 mor Exp mor $ */
+/* $XConsortium: info.c,v 1.16 94/08/25 17:27:57 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -58,6 +58,46 @@ ClientRec *client;
 
 
 
+typedef struct {
+    char *bufStart;
+    char *bufPtr;
+    int bufSize;
+    int bytesLeft;
+} Buffer;
+
+#define BUF_START_SIZE 1024
+#define BUF_GROW_SIZE 256
+
+
+static void
+AppendStr (buffer, str)
+
+Buffer *buffer;
+char *str;
+
+{
+    int len = strlen (str);
+
+    if ((buffer->bytesLeft - 1) < len)
+    {
+	int newBufSize = buffer->bufSize + len + BUF_GROW_SIZE;
+	char *newbuf = (char *) malloc (newBufSize);
+	int bytesUsed = buffer->bufPtr - buffer->bufStart;
+	memcpy (newbuf, buffer->bufStart, bytesUsed);
+	newbuf[bytesUsed] = '\0';
+	free (buffer->bufStart);
+	buffer->bufStart = newbuf;
+	buffer->bufPtr = newbuf + bytesUsed;
+	buffer->bufSize = newBufSize;
+	buffer->bytesLeft = newBufSize - bytesUsed;
+    }
+
+    strcat (buffer->bufPtr, str);
+    buffer->bufPtr += len;
+    buffer->bytesLeft -= len;
+}
+
+
 void
 DisplayProps (client)
 
@@ -68,6 +108,7 @@ ClientRec *client;
     int index;
     List *pl, *pj, *vl;
     PropValue *pval;
+    Buffer buffer;
 
     for (index = 0; index < numClientListNames; index++)
 	if (clientListRecs[index] == client)
@@ -76,32 +117,33 @@ ClientRec *client;
     if (index >= numClientListNames)
 	return;
 
+    buffer.bufStart = buffer.bufPtr = (char *) malloc (BUF_START_SIZE);
+    buffer.bufSize = buffer.bytesLeft = BUF_START_SIZE;
+    buffer.bufStart[0] = '\0';
+
     if (ListCount (client->props) > 0)
     {
-	char buffer[1024];		/* ugh, gotta fix this */
 	char number[10];
 	char *ptr;
 
-	buffer[0] = '\0';
-
-	strcat (buffer, "*** ID = ");
-	strcat (buffer, client->clientId);
-	strcat (buffer, " ***\n\n");
+	AppendStr (&buffer, "*** ID = ");
+	AppendStr (&buffer, client->clientId);
+	AppendStr (&buffer, " ***\n\n");
 
 	for (pl = ListFirst (client->props); pl; pl = ListNext (pl))
 	{
 	    Prop *pprop = (Prop *) pl->thing;
 
-	    strcat (buffer, "Name:		");
-	    strcat (buffer, pprop->name);
-	    strcat (buffer, "\n");
-	    strcat (buffer, "Type:		");
-	    strcat (buffer, pprop->type);
-	    strcat (buffer, "\n");
-	    strcat (buffer, "Num values:	");
+	    AppendStr (&buffer, "Name:		");
+	    AppendStr (&buffer, pprop->name);
+	    AppendStr (&buffer, "\n");
+	    AppendStr (&buffer, "Type:		");
+	    AppendStr (&buffer, pprop->type);
+	    AppendStr (&buffer, "\n");
+	    AppendStr (&buffer, "Num values:	");
 	    sprintf (number, "%d", ListCount (pprop->values));
-	    strcat (buffer, number);
-	    strcat (buffer, "\n");
+	    AppendStr (&buffer, number);
+	    AppendStr (&buffer, "\n");
 
 	    if (strcmp (pprop->type, SmCARD8) == 0)
 	    {
@@ -114,23 +156,23 @@ ClientRec *client;
 		card8 = pval->value;
 		value = *card8;
 
-		strcat (buffer, "Value 1:	");
+		AppendStr (&buffer, "Value 1:	");
 		sprintf (number, "%d", value);
-		strcat (buffer, number);
+		AppendStr (&buffer, number);
 
 		if (strcmp (pprop->name, SmRestartStyleHint) == 0)
 		{
 		    if (value == SmRestartAnyway)
-			strcat (buffer, " (Restart Anyway)");
+			AppendStr (&buffer, " (Restart Anyway)");
 		    else if (value == SmRestartImmediately)
-			strcat (buffer, " (Restart Immediately)");
+			AppendStr (&buffer, " (Restart Immediately)");
 		    else if (value == SmRestartNever)
-			strcat (buffer, " (Restart Never)");
+			AppendStr (&buffer, " (Restart Never)");
 		    else
-			strcat (buffer, " (Restart If Running)");
+			AppendStr (&buffer, " (Restart If Running)");
 		}
 
-		strcat (buffer, "\n");
+		AppendStr (&buffer, "\n");
 	    }
 	    else
 	    {
@@ -141,29 +183,30 @@ ClientRec *client;
 		    propnum++;
 
 		    pval = (PropValue *) pj->thing;
-		    strcat (buffer, "Value ");
+		    AppendStr (&buffer, "Value ");
 		    sprintf (number, "%d", propnum);
-		    strcat (buffer, number);
-		    strcat (buffer, ":	");
-		    strcat (buffer, (char *) pval->value);
-		    strcat (buffer, "\n");
+		    AppendStr (&buffer, number);
+		    AppendStr (&buffer, ":	");
+		    AppendStr (&buffer, (char *) pval->value);
+		    AppendStr (&buffer, "\n");
 		}
 	    }
 
-	    strcat (buffer, "\n");
+	    AppendStr (&buffer, "\n");
 	}
 
 	XtVaSetValues (clientPropTextWidget,
-	    XtNstring, buffer,
+	    XtNstring, buffer.bufStart,
 	    NULL);
 
-	sprintf (buffer, "SM Properties : %s", clientListNames[index]);
-	ptr = Strstr (buffer, ")   Restart");
+	sprintf (buffer.bufStart,
+	    "SM Properties : %s", clientListNames[index]);
+	ptr = Strstr (buffer.bufStart, ")   Restart");
 	if (ptr) *(ptr + 1) = '\0';
 
 	XtVaSetValues (clientPropPopup,
-	    XtNtitle, buffer,
-	    XtNiconName, buffer,
+	    XtNtitle, buffer.bufStart,
+	    XtNiconName, buffer.bufStart,
 	    NULL);
 
 	if (!client_prop_visible)
@@ -180,6 +223,8 @@ ClientRec *client;
 	    client_prop_visible = 1;
 	}
     }
+
+    free (buffer.bufStart);
 }
 
 
