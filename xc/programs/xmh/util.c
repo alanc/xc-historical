@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: util.c,v 1.10 88/01/08 11:24:50 swick Exp $";
+static char rcs_id[] = "$Header: util.c,v 1.11 88/01/08 11:28:53 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -312,8 +312,7 @@ int options;
 
     arglist[0].value = (XtArgVal) (scrollVertical | options);
 
-    return XtCreateManagedWidget( name, asciiDiskWidgetClass,
-				  (Widget)scrn->widget,
+    return XtCreateManagedWidget( name, asciiDiskWidgetClass, scrn->widget,
 				  arglist, XtNumber(arglist) );
 }
 
@@ -329,8 +328,7 @@ int position;
 	{XtNlabel, NULL},
     };
     arglist[0].value = (XtArgVal) Version();
-    result = XtCreateManagedWidget( "titlebar", labelWidgetClass,
-				    (Widget)scrn->widget,
+    result = XtCreateManagedWidget( "titlebar", labelWidgetClass, scrn->widget,
 				    arglist, XtNumber(arglist) );
     height = GetHeight(result);
     XtPanedSetMinMax(result, height, height);
