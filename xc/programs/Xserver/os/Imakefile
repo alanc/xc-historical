@@ -25,7 +25,8 @@ BOOTSTRAPCFLAGS =
                   osfonts.c osinit.c utils.c OtherSources
            OBJS = WaitFor.o access.o connection.o fonttype.o io.o oscolor.o \
                   osfonts.o osinit.o utils.o OtherObjects
-    STD_DEFINES = ServerDefines -DFONT_SNF
+   FONT_DEFINES = FontDefines FontFilters
+    STD_DEFINES = ServerDefines
     CDEBUGFLAGS = ServerCDebugFlags
 #if SpecialMalloc
      OS_DEFINES = -DSPECIAL_MALLOC
@@ -84,5 +85,6 @@ alloca.o:  $(PWLIB)
 
 SpecialObjectRule(osinit.o, $(IRULESRC)/$(MACROFILE), -DADMPATH=\"$(ADMDIR)/X\%smsgs\")
 SpecialObjectRule(WaitFor.o, $(IRULESRC)/$(MACROFILE), $(EXT_DEFINES))
+SpecialObjectRule(fonttype.o, $(IRULESRC)/$(MACROFILE), $(FONT_DEFINES))
 
 DependTarget()
