@@ -4,7 +4,7 @@
  * xwininfo.c	- MIT Project Athena, X Window system window
  *		  information utility.
  *
- * $XConsortium: xwininfo.c,v 1.48 90/12/18 16:31:17 gildea Exp $
+ * $XConsortium: xwininfo.c,v 1.49 90/12/26 11:47:20 gildea Exp $
  *
  *	This program will report all relevant information
  *	about a specific window.
@@ -902,7 +902,9 @@ Display_Size_Hints(window)
 Display_Window_Shape (window)
     Window  window;
 {
-    int	    ws, bs, xws, yws, wws, hws, xbs, ybs, wbs, hbs;
+    Bool    ws, bs;
+    int	    xws, yws, xbs, ybs;
+    unsigned int wws, hws, wbs, hbs;
 
     if (!XShapeQueryExtension (dpy, &bs, &ws))
 	return;
