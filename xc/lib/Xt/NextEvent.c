@@ -1,5 +1,6 @@
 #ifndef lint
-static char rcsid[] = "$Header: NextEvent.c,v 1.44 88/05/24 15:55:55 swick Exp $";
+static char rcsid[] = "$xHeader: NextEvent.c,v 1.3 88/08/19 13:59:40 asente Exp $";
+/* $oHeader: NextEvent.c,v 1.3 88/08/19 13:59:40 asente Exp $ */
 #endif lint
 
 /***********************************************************
@@ -28,58 +29,11 @@ SOFTWARE.
 
 #include <stdio.h>
 #include <errno.h>
-#include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include "IntrinsicI.h"
-#include <sys/param.h>
-#include "fd.h"
+#include <nlist.h>
 
 extern int errno;
-
-/*
- * Private definitions
- */
-
-
-typedef struct _TimerEventRec {
-
-        struct timeval   te_timer_value;
-	struct _TimerEventRec *te_next;
-	Display *te_dpy;
-	XtTimerCallbackProc	te_proc;
-	caddr_t	te_closure;
-}TimerEventRec;
-
-struct InputEvent {
-	XtInputCallbackProc  ie_proc;
-	caddr_t ie_closure;
-	struct	InputEvent	*ie_next;
-	struct  InputEvent	*ie_oq;
-	int	ie_source;
-};
-
-
-/*
- * Private data
- */
-
-static TimerEventRec *TimerQueue = NULL;
-
-static struct InputEvent *Select_rqueue[NOFILE], *Select_wqueue[NOFILE],
-  *Select_equeue[NOFILE];
-static struct  InputEvent *outstanding_queue = NULL;
-
-
-static struct 
-{
-  	xfd_set rmask;
-	xfd_set wmask;
-	xfd_set emask;
-	int	nfds;
-} composite;
-
-
-  
 
 /*
  * Private routines
@@ -102,11 +56,12 @@ static struct
 #define IS_AFTER(t1, t2) (((t2).tv_sec > (t1).tv_sec) \
 	|| (((t2).tv_sec == (t1).tv_sec)&& ((t2).tv_usec > (t1).tv_usec)))
 
-static void QueueTimerEvent(ptr)
+static void QueueTimerEvent(app, ptr)
+    XtAppContext app;
     TimerEventRec *ptr;
 {
         TimerEventRec *t,**tt;
-        tt = &TimerQueue;
+        tt = &app->timerQueue;
         t  = *tt;
         while (t != NULL &&
                 IS_AFTER(t->te_timer_value, ptr->te_timer_value)) {
@@ -124,24 +79,25 @@ static void QueueTimerEvent(ptr)
  * This routine returns when there is something to be done
  *
  *
- * _XtWaitForSomething( ignoreTimers, ignoreInputs, block, howlong)
+ * _XtWaitForSomething( ignoreTimers, ignoreInputs, block, howlong, displaySet)
  * Boolean ignoreTimers;     (Don't return if a timer would fire
  *				Also implies forget timers exist)
  *
  * Boolean ignoreInputs;     (Ditto for input callbacks )
  *
  * Boolean block;	     (Okay to block)
- * TimeVal;		     (howlong to wait for if blocking and not
+ * TimeVal howlong;	     (howlong to wait for if blocking and not
  *				doing Timers... Null mean forever.
  *				Maybe should mean shortest of both)
- * Returns a Boolean indicating if X input is available.
+ * XtAppContext app;	     (Displays to check wait on)
+ * Returns display for which input is available, if any
  */
-Boolean
-_XtwaitForSomething(ignoreTimers, ignoreInputs, block, howlong)
-Boolean ignoreTimers;
-Boolean ignoreInputs;
-Boolean block;
-unsigned long *howlong;
+int _XtwaitForSomething(ignoreTimers, ignoreInputs, block, howlong, app)
+	Boolean ignoreTimers;
+	Boolean ignoreInputs;
+	Boolean block;
+	unsigned long *howlong;
+	XtAppContext app;
 {
 	struct timezone cur_timezone;
 	struct timeval  cur_time;
@@ -152,15 +108,12 @@ unsigned long *howlong;
 	struct timeval	max_wait_time;
 	static struct timeval  zero_time = { 0 , 0};
 	register struct timeval *wait_time_ptr;
-	xfd_set rmaskfd, wmaskfd, emaskfd;
-	static xfd_set zero = { 0 };
-	register int     nfound, i;
-	Boolean ret;
+	Fd_set rmaskfd, wmaskfd, emaskfd;
+	static Fd_set zero = { 0 };
+	int nfound, i, d;
+	int ret;
 	
-	/* should be done only once */
-	if (ConnectionNumber (toplevelDisplay) + 1 > composite.nfds)
-	    composite.nfds = ConnectionNumber (toplevelDisplay) + 1;
- 	if(block) {
+ 	if (block) {
 		(void) gettimeofday (&cur_time, &cur_timezone);
 		start_time = cur_time;
 		if(howlong == NULL) { /* special case for ever */
@@ -175,9 +128,9 @@ unsigned long *howlong;
 		wait_time_ptr = &max_wait_time;
 	}
 	while (1) {
-		if (TimerQueue != NULL && !ignoreTimers && block) {
-		    if(IS_AFTER(cur_time, TimerQueue->te_timer_value)) {
-			TIMEDELTA (wait_time, TimerQueue->te_timer_value, 
+		if (app->timerQueue != NULL && !ignoreTimers && block) {
+		    if(IS_AFTER(cur_time, app->timerQueue->te_timer_value)) {
+			TIMEDELTA (wait_time, app->timerQueue->te_timer_value, 
 				   cur_time);
 			if(howlong==NULL || IS_AFTER(wait_time,max_wait_time)){
 				wait_time_ptr = &wait_time;
@@ -187,18 +140,23 @@ unsigned long *howlong;
 		    } else wait_time_ptr = &zero_time;
 		} 
 		if( !ignoreInputs ) {
-			XFD_SET (ConnectionNumber (toplevelDisplay), 
-				 &composite.rmask);
-			rmaskfd = composite.rmask;
-			wmaskfd = composite.wmask;
-			emaskfd = composite.emask;
+			rmaskfd = app->fds.rmask;
+			for (d = 0; d < app->count; d++) {
+			    FD_SET (ConnectionNumber(app->list[d]), &rmaskfd);
+			}
+			wmaskfd = app->fds.wmask;
+			emaskfd = app->fds.emask;
 		} else {
-			rmaskfd = wmaskfd = emaskfd = zero;
-			XFD_SET (ConnectionNumber (toplevelDisplay), &rmaskfd);
+			rmaskfd = zero;
+			wmaskfd = zero;
+			emaskfd = zero;
+			for (d = 0; d < app->count; d++) {
+			    FD_SET (ConnectionNumber(app->list[d]), &rmaskfd);
+			}
 		}
-		if ((nfound = select (composite.nfds,
-			      (int *) & rmaskfd, (int *) & wmaskfd,
-			      (int *) & emaskfd, wait_time_ptr)) == -1) {
+		nfound = select (app->fds.nfds, (int *) &rmaskfd,
+			(int *) &wmaskfd, (int *) &emaskfd, wait_time_ptr);
+		if (nfound == -1) {
 			/*
 			 *  interrupt occured recalculate time value and select
 			 *  again.
@@ -220,16 +178,17 @@ unsigned long *howlong;
 				}
 			    }
 			} else {
-				XtError("Select failed.");
+				XtErrorMsg("communicationError","select",
+                                        "XtToolkitError","Select failed",
+                                         (String *)NULL, (Cardinal *)NULL);
 			}
 		} /* timed out or input available */
 		break;
 	}
 	
 	if (nfound == 0) {
-		if(howlong)
-			*howlong = (unsigned long)0;  /* Timed out */
-		return ( FALSE ) ;
+		if(howlong) *howlong = (unsigned long)0;  /* Timed out */
+		return -1;
 	}
 	if(block && wait_time_ptr != NULL) { /* adjust howlong */
 		(void) gettimeofday (&new_time, &cur_timezone);
@@ -243,44 +202,49 @@ unsigned long *howlong;
 	        }
 	}
 	if(ignoreInputs) {
-	  if(XFD_ISSET( ConnectionNumber (toplevelDisplay), &rmaskfd))
-	    return TRUE;
-        }
-	ret = FALSE;
-	for (i = 0; i < composite.nfds && nfound > 0; i++) {
-	    if (XFD_ISSET (i, &rmaskfd)) {
-		if (i == ConnectionNumber (toplevelDisplay)) {
-			ret = TRUE;
-		} else {
-		    Select_rqueue[i]->ie_oq = outstanding_queue;
-		    outstanding_queue = Select_rqueue[i];
-		    nfound--;
+	    for (d = 0; d < app->count; d++) {
+		if (FD_ISSET(ConnectionNumber(app->list[d]), &rmaskfd)) {
+		    return d;
 		}
 	    }
-	    if (XFD_ISSET (i, &wmaskfd)) {
-		Select_wqueue[i]->ie_oq = outstanding_queue;
-		outstanding_queue = Select_wqueue[i];
+        }
+	ret = -1;
+	for (i = 0; i < app->fds.nfds && nfound > 0; i++) {
+	    if (FD_ISSET (i, &rmaskfd)) {
+		for (d = 0; d < app->count; d++) {
+		    if (i == ConnectionNumber(app->list[d])) {
+			if (ret == -1) ret = d;
+			goto ENDILOOP;
+		    }
+		}
+
+		app->selectRqueue[i]->ie_oq = app->outstandingQueue;
+		app->outstandingQueue = app->selectRqueue[i];
 		nfound--;
 	    }
-	    if (XFD_ISSET (i, &emaskfd)) {
-		Select_equeue[i]->ie_oq = outstanding_queue;
-		outstanding_queue = Select_equeue[i];
+	    if (FD_ISSET (i, &wmaskfd)) {
+		app->selectWqueue[i]->ie_oq = app->outstandingQueue;
+		app->outstandingQueue = app->selectWqueue[i];
 		nfound--;
 	    }
-    }
-    return ret;
+	    if (FD_ISSET (i, &emaskfd)) {
+		app->selectEqueue[i]->ie_oq = app->outstandingQueue;
+		app->outstandingQueue = app->selectEqueue[i];
+		nfound--;
+	    }
+ENDILOOP:   ;
+	}
+	return ret;
 }
 
-static void
-IeCallProc(ptr)
-struct InputEvent *ptr;
+static void IeCallProc(ptr)
+	InputEvent *ptr;
 {
 	(* (ptr->ie_proc))( ptr->ie_closure, &ptr->ie_source, &ptr);
 }
 
-static void
-TeCallProc(ptr)
-TimerEventRec *ptr;
+static void TeCallProc(ptr)
+	TimerEventRec *ptr;
 {
 	(* (ptr->te_proc))( ptr->te_closure, &ptr);
 }
@@ -289,95 +253,174 @@ TimerEventRec *ptr;
  * Public Routines
  */
 
-XtIntervalId
-XtAddTimeOut( interval, proc, closure)
-unsigned long interval;
-XtTimerCallbackProc proc;
-caddr_t closure;
+XtIntervalId XtAddTimeOut(interval, proc, closure)
+	unsigned long interval;
+	XtTimerCallbackProc proc;
+	Opaque closure;
+{
+	return XtAppAddTimeOut(_XtDefaultAppContext(), 
+		interval, proc, closure); 
+}
+
+
+XtIntervalId XtAppAddTimeOut(app, interval, proc, closure)
+	XtAppContext app;
+	unsigned long interval;
+	XtTimerCallbackProc proc;
+	Opaque closure;
 {
 	TimerEventRec *tptr;
         struct timeval current_time;
 	struct timezone timezone;
+
 	tptr = (TimerEventRec *)XtMalloc((unsigned) sizeof(TimerEventRec));
 	tptr->te_next = NULL;
 	tptr->te_closure = closure;
 	tptr->te_proc = proc;
+	tptr->app = app;
 	tptr->te_timer_value.tv_sec = interval/1000;
 	tptr->te_timer_value.tv_usec = (interval%1000)*1000;
         (void) gettimeofday(&current_time,&timezone);
         ADD_TIME(tptr->te_timer_value,tptr->te_timer_value,current_time);
-	QueueTimerEvent(tptr);
+	QueueTimerEvent(app, tptr);
 	return( (XtIntervalId) tptr);
 }
 
 void  XtRemoveTimeOut(id)
     XtIntervalId id;
 {
-   TimerEventRec *t, *last;
+   TimerEventRec *t, *last, *tid = (TimerEventRec *) id;
 
    /* find it */
 
-   for(t = TimerQueue, last = NULL; t != NULL && t != (TimerEventRec *)id ;
-       t = t->te_next) {
-	   last = t;
-   }
+   for(t = tid->app->timerQueue, last = NULL;
+	   t != NULL && t != (TimerEventRec *)id;
+	   t = t->te_next) last = t;
+
    if (t == NULL) return; /* couldn't find it */
    if(last == NULL) { /* first one on the list */
-	   TimerQueue = t->te_next;
+    tid->app->timerQueue = t->te_next;
    } else last->te_next = t->te_next;
 
    XtFree((char*)t);
    return;
 }
 
-XtInputId
-XtAddInput( source, Condition, proc, closure)
-int source;
-caddr_t Condition;
-XtInputCallbackProc proc;
-caddr_t closure;
+XtWorkProcId XtAddWorkProc(proc, closure)
+	XtWorkProc proc;
+	Opaque closure;
 {
-	struct InputEvent *sptr;
+	return XtAppAddWorkProc(_XtDefaultAppContext(), proc, closure);
+}
+
+XtWorkProcId XtAppAddWorkProc(app, proc, closure)
+	XtAppContext app;
+	XtWorkProc proc;
+	Opaque closure;
+{
+	WorkProcRec *wptr;
+
+	wptr = XtNew(WorkProcRec);
+	wptr->next = app->workQueue;
+	wptr->closure = closure;
+	wptr->proc = proc;
+	wptr->app = app;
+	app->workQueue = wptr;
+
+	return (XtWorkProcId) wptr;
+}
+
+void  XtRemoveWorkProc(id)
+	XtWorkProcId id;
+{
+	WorkProcRec *wid= (WorkProcRec *) id, *w, *last;
+
+	/* find it */
+	for(w = wid->app->workQueue, last = NULL; w != NULL && w != wid; w = w->next) last = w;
+
+	if (w == NULL) return; /* couldn't find it */
+
+	if(last == NULL) wid->app->workQueue = w->next;
+	else last->next = w->next;
+
+	XtFree((char *) w);
+}
+
+XtInputId XtAddInput( source, Condition, proc, closure)
+	int source;
+	Opaque Condition;
+	XtInputCallbackProc proc;
+	Opaque closure;
+{
+	return XtAppAddInput(_XtDefaultAppContext(),
+		source, Condition, proc, closure);
+}
+
+XtInputId XtAppAddInput(app, source, Condition, proc, closure)
+	XtAppContext app;
+	int source;
+	Opaque Condition;
+	XtInputCallbackProc proc;
+	Opaque closure;
+{
+	InputEvent *sptr;
 	XtInputMask condition = (XtInputMask) Condition;
 	
-	sptr = (struct InputEvent *)XtMalloc((unsigned) sizeof (*sptr));
+	sptr = (InputEvent *)XtMalloc((unsigned) sizeof (*sptr));
 	if(condition == XtInputReadMask){
-	    sptr->ie_next = Select_rqueue[source];
-	    Select_rqueue[source] = sptr;
-	    XFD_SET(source, &composite.rmask);
+	    sptr->ie_next = app->selectRqueue[source];
+	    app->selectRqueue[source] = sptr;
+	    FD_SET(source, &app->fds.rmask);
 	} else if(condition == XtInputWriteMask) {
-	    sptr->ie_next = Select_wqueue[source];
-	    Select_wqueue[source] = sptr;
-	    XFD_SET(source, &composite.wmask);
+	    sptr->ie_next = app->selectWqueue[source];
+	    app->selectWqueue[source] = sptr;
+	    FD_SET(source, &app->fds.wmask);
 	} else if(condition == XtInputExceptMask) {
-	    sptr->ie_next = Select_equeue[source];
-	    Select_equeue[source] = sptr;
-	    XFD_SET(source, &composite.emask);
+	    sptr->ie_next = app->selectEqueue[source];
+	    app->selectEqueue[source] = sptr;
+	    FD_SET(source, &app->fds.emask);
 	} else
-	  XtError("invalid condition passed to XtAddInput");
-	sptr->ie_source = source;
+	  XtErrorMsg("invalidParameter","xtAddInput","XtToolkitError",
+                  "invalid condition passed to XtAddInput",
+                   (String *)NULL, (Cardinal *)NULL);
 	sptr->ie_proc = proc;
 	sptr->ie_closure =closure;
-
-	if (composite.nfds < (source+1))
-	    composite.nfds = source+1;
+	sptr->app = app;
+	sptr->ie_oq = NULL;
+	sptr->ie_source = source;
+	
+	if (app->fds.nfds < (source+1)) app->fds.nfds = source+1;
+	app->fds.count++;
 	return((XtInputId)sptr);
+
 }
 
 void XtRemoveInput( id )
-XtInputId  id;
+	XtInputId  id;
 {
-  	register struct InputEvent *sptr, *lptr;
+  	register InputEvent *sptr, *lptr, *iid = (InputEvent *) id;
+	XtAppContext app = iid->app;
 	register source;
+	
+	source = iid->ie_source;
+	app->fds.count--;
 
-	source = ( (struct InputEvent *) id)->ie_source;
+	sptr = app->outstandingQueue;
+	lptr = NULL;
+	for (; sptr != NULL; sptr = sptr->ie_oq) {
+	    if (sptr == iid) {
+		if (lptr == NULL) app->outstandingQueue = sptr->ie_oq;
+		else lptr->ie_oq = sptr->ie_oq;
+	    }
+	    lptr = sptr;
+	}
 
-	if((sptr = Select_rqueue[source]) != NULL) {
+	if((sptr = app->selectRqueue[source]) != NULL) {
 		for( lptr = NULL ; sptr; sptr = sptr->ie_next ){
-			if(sptr == (struct InputEvent *) id) {
+			if(sptr == (InputEvent *) id) {
 				if(lptr == NULL) {
-					Select_rqueue[source] = sptr->ie_next;
-					XFD_CLR(source, &composite.rmask);
+					app->selectRqueue[source] = sptr->ie_next;
+					FD_CLR(source, &app->fds.rmask);
 				} else {
 					lptr->ie_next = sptr->ie_next;
 				}
@@ -387,12 +430,12 @@ XtInputId  id;
 			lptr = sptr;	      
 		}
 	}
-	if((sptr = Select_wqueue[source]) != NULL) {
+	if((sptr = app->selectWqueue[source]) != NULL) {
 		for(lptr = NULL;sptr; sptr = sptr->ie_next){
-			if ( sptr ==  (struct InputEvent *) id) {
+			if ( sptr ==  (InputEvent *) id) {
 				if(lptr == NULL){
-					Select_wqueue[source] = sptr->ie_next;
-					XFD_CLR(source, &composite.wmask);
+					app->selectWqueue[source] = sptr->ie_next;
+					FD_CLR(source, &app->fds.wmask);
 				}else {
 					lptr->ie_next = sptr->ie_next;
 				}
@@ -403,12 +446,12 @@ XtInputId  id;
 		}
 	    
 	}
-	if((sptr = Select_equeue[source]) != NULL) {
+	if((sptr = app->selectEqueue[source]) != NULL) {
 		for(lptr = NULL;sptr; sptr = sptr->ie_next){
-			if ( sptr ==  (struct InputEvent *) id) {
+			if ( sptr ==  (InputEvent *) id) {
 				if(lptr == NULL){
-					Select_equeue[source] = sptr->ie_next;
-					XFD_CLR(source, &composite.emask);
+					app->selectEqueue[source] = sptr->ie_next;
+					FD_CLR(source, &app->fds.emask);
 				}else {
 					lptr->ie_next = sptr->ie_next;
 				}
@@ -419,183 +462,326 @@ XtInputId  id;
 		}
 	    
 	}
-	XtWarning("XtRemoveInput: Input handler not found");
+	XtWarningMsg("invalidProcedure","inputHandler","XtToolkitError",
+                   "XtRemoveInput: Input handler not found",
+		   (String *)NULL, (Cardinal *)NULL);
+	app->fds.count++;	/* Didn't remove it after all */
 }
 
-     
+/* Do alternate input and timer callbacks if there are any */
+
+static void DoOtherSources(app)
+	XtAppContext app;
+{
+	register TimerEventRec *te_ptr;
+	register InputEvent *ie_ptr;
+	struct timeval  cur_time;
+	struct timezone cur_timezone;
+
+	if (app->fds.count > 0) {
+	    /* Call _XtwaitForSomething to get input queued up */
+	    (void) _XtwaitForSomething(TRUE, FALSE, FALSE,
+		(unsigned long *)NULL, app);
+	}
+
+	for (ie_ptr = app->outstandingQueue ; ie_ptr != NULL;
+		app->outstandingQueue = ie_ptr = ie_ptr->ie_oq ) {
+	    ie_ptr ->ie_oq = NULL;
+	    IeCallProc(ie_ptr);
+	}
+	if (app->timerQueue != NULL) {	/* check timeout queue */
+	    (void) gettimeofday (&cur_time, &cur_timezone);
+	    while(IS_AFTER (app->timerQueue->te_timer_value, cur_time)) {
+		te_ptr = app->timerQueue;
+		app->timerQueue = app->timerQueue->te_next;
+		te_ptr->te_next = NULL;
+               if (te_ptr->te_proc != 0)
+		  TeCallProc(te_ptr);
+		XtFree((char*)te_ptr);
+              if (app->timerQueue == NULL) break;
+	    }
+	}
+}
+
+/* If there are any work procs, call them.  Return whether we did so */
+
+static Boolean CallWorkProc(app)
+	XtAppContext app;
+{
+	register WorkProcRec *w = app->workQueue;
+	Boolean delete;
+
+	if (w == NULL) return FALSE;
+
+	app->workQueue = w->next;
+
+	delete = (*(w->proc)) (w->closure);
+
+	if (delete) XtFree((char *) w);
+	else {
+	    w->next = app->workQueue;
+	    app->workQueue = w;
+	}
+	return TRUE;
+}
+
 /*
  * XtNextEvent()
  * return next event;
  */
 
 void XtNextEvent(event)
-XEvent *event;
+	XEvent *event;
 {
-    register struct InputEvent *ie_ptr;
-    register TimerEventRec *te_ptr;
-    struct timeval  cur_time;
-    struct timezone cur_timezone;
-    register Boolean     Claims_X_is_pending = FALSE;
-
-    if (DestroyList != NULL) {
-	_XtCallCallbacks (&DestroyList, (caddr_t) NULL);
-	_XtRemoveAllCallbacks (&DestroyList);
-    }
-
-    for (;;) {
-	if (Claims_X_is_pending ||
-	    XEventsQueued (toplevelDisplay, QueuedAfterFlush) ) {
-		XNextEvent (toplevelDisplay, event);
-		return;
-	}
-	for (ie_ptr = outstanding_queue ; ie_ptr != NULL;
-	     outstanding_queue = ie_ptr = ie_ptr->ie_oq ) {
-		ie_ptr ->ie_oq = NULL;
-		IeCallProc(ie_ptr);
-	}
-	(void) gettimeofday (&cur_time, &cur_timezone);
-	while(TimerQueue != NULL &&
-	      IS_AFTER (TimerQueue->te_timer_value, cur_time)) {
-		    te_ptr = TimerQueue;
-		    TimerQueue = TimerQueue->te_next;
-		    te_ptr->te_next = NULL;
-		    TeCallProc(te_ptr);
-		    XtFree((char*)te_ptr);
-	}
-	if (! (Claims_X_is_pending =
-	       (XEventsQueued(toplevelDisplay, QueuedAfterFlush) > 0)))
-	    Claims_X_is_pending = _XtwaitForSomething(
-		    FALSE, FALSE, TRUE, (unsigned long *)NULL);
-    }
+	XtAppNextEvent(_XtDefaultAppContext(), event);
 }
 
-Boolean XtPending()
+void XtAppNextEvent(app, event)
+	XtAppContext app;
+	XEvent *event;
+{
+    int i, d;
+    XtPerDisplay pd;
+
+    for (;;) {
+	for (i = 1; i <= app->count; i++) {
+	    d = (i + app->last) % app->count;
+	    if (d == 0) DoOtherSources(app);
+	    if (XPending(app->list[d]) ) {
+		XNextEvent(app->list[d], event);
+		app->last = d;
+		if (event->xany.type == MappingNotify) {
+                    pd = _XtGetPerDisplay(event->xmapping.display);
+                    if (pd != NULL) {
+                        XtFree((char *) pd->keysyms);
+                        pd->keysyms = NULL;
+                        XtFree((char *) pd->modKeysyms);
+                        pd->modKeysyms = NULL;
+                        XtFree((char *) pd->modsToKeysyms);
+                        pd->modsToKeysyms = NULL;
+                        _XtBuildKeysymTable(event->xmapping.display,pd);
+                        pd ->modsToKeysyms =_XtBuildModsToKeysymTable(
+                            event->xmapping.display,pd);
+                    }
+		    XRefreshKeyboardMapping(event);
+                }
+		return;
+	    }
+	}
+
+	/* We're ready to wait...if there is a work proc, call it */
+	if (CallWorkProc(app)) continue;
+
+	d = _XtwaitForSomething(FALSE, FALSE, TRUE,
+		(unsigned long *) NULL, app);
+
+	if (d != -1) {
+	    XNextEvent (app->list[d], event);
+	    app->last = d;;
+	    if (event->xany.type == MappingNotify) {
+		XRefreshKeyboardMapping(event);
+	    }
+	    return;
+	} 
+
+    } /* for */
+}
+    
+void XtProcessEvent(mask)
+	XtInputMask mask;
+{
+	void XtAppProcessEvent();
+	XtAppProcessEvent(_XtDefaultAppContext(), mask);
+}
+
+void XtAppProcessEvent(app, mask)
+	XtAppContext app;
+	XtInputMask mask;
+{
+	InputEvent *ie_ptr;
+	TimerEventRec *te_ptr;
+	int i, d;
+	XEvent event;
+	struct timeval cur_time;
+	struct timezone curzone;
+
+	if (mask == 0) return;
+
+	for (;;) {
+	    if (mask & XtIMTimer && app->timerQueue != NULL) {
+		(void) gettimeofday (&cur_time, &curzone);
+		if (IS_AFTER(app->timerQueue->te_timer_value, cur_time)) {
+		    te_ptr = app->timerQueue;
+		    app->timerQueue = app->timerQueue->te_next;
+		    te_ptr->te_next = NULL;
+                    if (te_ptr->te_proc != 0)
+		        TeCallProc(te_ptr);
+		    XtFree((char*)te_ptr);
+		    return;
+		}
+	    }
+    
+	    if (mask & XtIMAlternateInput) {
+		if (app->fds.count > 0) {
+		    /* Call _XtwaitForSomething to get input queued up */
+		    (void) _XtwaitForSomething(TRUE, FALSE, FALSE,
+			    (unsigned long *)NULL, app);
+		}
+		if (app->outstandingQueue != NULL) {
+		    ie_ptr = app->outstandingQueue;
+		    app->outstandingQueue = ie_ptr->ie_oq;
+		    ie_ptr->ie_oq = NULL;
+		    IeCallProc(ie_ptr);
+		    return;
+		}
+	    }
+    
+	    if (mask & XtIMXEvent) {
+		for (i = 1; i <= app->count; i++) {
+		    d = (i + app->last) % app->count;
+		    if (XPending(app->list[d]) ) {
+			XNextEvent(app->list[d], &event);
+			app->last = d;
+			if (event.xany.type == MappingNotify)
+			    XRefreshKeyboardMapping(&event);
+			XtDispatchEvent(&event);
+			return;
+		    }
+		}
+	    }
+
+	    /* Nothing to do...wait for something */
+
+	    if (CallWorkProc(app)) continue;
+
+	    d = _XtwaitForSomething(FALSE, FALSE, TRUE,
+		    (unsigned long *) NULL, app);
+	
+	    if (d != -1) {
+		XNextEvent(app->list[d], &event);
+		app->last = d;
+		if (event.xany.type == MappingNotify) {
+		    XRefreshKeyboardMapping(&event);
+		}
+		XtDispatchEvent(&event);
+		return;
+	    } 
+	
+	}    
+}
+
+XtInputMask XtPending()
+{
+	return XtAppPending(_XtDefaultAppContext());
+}
+
+XtInputMask XtAppPending(app)
+	XtAppContext app;
 {
 	struct timeval cur_time;
 	struct timezone curzone;
-	struct InputEvent *ie_ptr;
-	TimerEventRec *te_ptr;
+	int d;
+	XtInputMask ret = 0;
 
-	for(;;) {
-		if(XPending(toplevelDisplay) != 0) {
-			return TRUE;
-		}
-		for (ie_ptr = outstanding_queue ; ie_ptr != NULL;
-		     outstanding_queue = ie_ptr->ie_oq ) {
-			ie_ptr ->ie_oq = NULL;
-			IeCallProc(ie_ptr);
-		}
-		(void) gettimeofday (&cur_time, &curzone);
-
-		if (TimerQueue!= NULL) {	/* check timeout queue */
-			while(IS_AFTER(TimerQueue->te_timer_value, cur_time)) {
-				te_ptr = TimerQueue;
-				TimerQueue = TimerQueue->te_next;
-				te_ptr->te_next = NULL;
-				TeCallProc(te_ptr);
-				XtFree((char*)te_ptr);
-			}
-		}
-		if(_XtwaitForSomething(
-			TRUE, FALSE, FALSE, (unsigned long *)NULL))
-		  continue;
-		for (ie_ptr = outstanding_queue ; ie_ptr != NULL;
-		     outstanding_queue = ie_ptr->ie_oq ) {
-			ie_ptr ->ie_oq = NULL;
-			IeCallProc(ie_ptr);
-		}
-		return FALSE;
+/*
+ * Check for pending X events
+ */
+	for (d = 0; d < app->count; d++) {
+	    if (XPending(app->list[d])) {
+		ret |= XtIMXEvent;
+		break;
+	    }
 	}
+
+/*
+ * Check for pending alternate input
+ */
+	if (app->timerQueue != NULL) {	/* check timeout queue */ 
+	    (void) gettimeofday (&cur_time, &curzone);
+	    if ((IS_AFTER(app->timerQueue->te_timer_value, cur_time))  &&
+                (app->timerQueue->te_proc != 0)) {
+		ret |= XtIMTimer;
+	    }
+	}
+
+	if (app->outstandingQueue != NULL) ret |= XtIMAlternateInput;
+	else {
+	    /* This won't cause a wait, but will enqueue any input */
+
+	    if(_XtwaitForSomething(TRUE, FALSE, FALSE, (unsigned long *) NULL,
+		    app) != -1) ret |= XtIMXEvent;
+	    if (app->outstandingQueue != NULL) ret |= XtIMAlternateInput;
+	}
+	return ret;
 }
 
-XtPeekEvent(event)
-XEvent *event;
+/* Peek at alternate input and timer callbacks if there are any */
+
+Boolean PeekOtherSources(app)
+	XtAppContext app;
 {
-    xfd_set rmaskfd, wmaskfd, emaskfd;
-    register int nfound, i;
-    struct timeval cur_time, wait_time, *wait_time_ptr;
-    struct timezone curzone;
-    int Claims_X_is_pending = 0;
-    register struct InputEvent *ie_ptr;
-    register TimerEventRec *te_ptr;
+	struct timeval  cur_time;
+	struct timezone cur_timezone;
 
+	if (app->fds.count > 0) {
+	    /* Call _XtwaitForSomething to get input queued up */
+	    (void) _XtwaitForSomething(TRUE, FALSE, FALSE,
+		    (unsigned long *)NULL, app);
+	}
 
-    for(;;) {
-	    if(XPending(toplevelDisplay)){
-		    XPeekEvent(toplevelDisplay, event); /* Xevents */
-		    return 1;
-	    }
-	    for (ie_ptr = outstanding_queue ; ie_ptr != NULL;
-		 outstanding_queue = ie_ptr->ie_oq ) {
-		    ie_ptr ->ie_oq = NULL;
-		    IeCallProc(ie_ptr);
-	    }
-	    (void) gettimeofday (&cur_time, &curzone);
-	    if (TimerQueue!= NULL) {	/* check timeout queue */
-		    while(IS_AFTER (TimerQueue->te_timer_value, cur_time)) {
-			    te_ptr = TimerQueue;
-			    TimerQueue = TimerQueue->te_next;
-			    te_ptr->te_next = NULL;
-			    TeCallProc(te_ptr);
-			    XtFree((char*)te_ptr);
-		    }
+	if (app->outstandingQueue != NULL) return TRUE;
+	if (app->timerQueue != NULL) {	/* check timeout queue */
+	    (void) gettimeofday (&cur_time, &cur_timezone);
+	    if (IS_AFTER (app->timerQueue->te_timer_value, cur_time)) return TRUE;
+	}
+
+	return FALSE;
+}
+
+Boolean XtPeekEvent(event)
+	XEvent *event;
+{
+	return XtAppPeekEvent(_XtDefaultAppContext(), event);
+}
+
+Boolean XtAppPeekEvent(app, event)
+	XtAppContext app;
+	XEvent *event;
+{
+	int i, d;
+	Boolean foundCall = FALSE;
+
+	for (;;) {
+	    for (i = 1; i <= app->count; i++) {
+		d = (i + app->last) % app->count;
+		if (d == 0) foundCall = PeekOtherSources(app);
+		if (XPending(app->list[d]) ) {
+		    XPeekEvent(app->list[d], event);
+		    app->last = (d == 0 ? app->count : d) - 1;
+		    return TRUE;
+		}
 	    }
 
-	    /* No timers ready time to wait */
-	    /* should be done only once */
-	    if (ConnectionNumber (toplevelDisplay) + 1 > composite.nfds)
-	      composite.nfds = ConnectionNumber (toplevelDisplay) + 1;
-	    while (1) {
-		    XFD_SET(ConnectionNumber (toplevelDisplay), 
-			   &composite.rmask);
-		    if (TimerQueue != NULL) {
-			    TIMEDELTA (wait_time, TimerQueue->te_timer_value, 
-				       cur_time);
-			    wait_time_ptr = &wait_time;
-		    } else wait_time_ptr = (struct timeval *) 0;
-		    rmaskfd = composite.rmask;
-		    wmaskfd = composite.wmask;
-		    emaskfd = composite.emask;
-		    if ((nfound = select (composite.nfds,
-				   (int *) & rmaskfd, (int *) & wmaskfd,
-				   (int *) & emaskfd, wait_time_ptr)) == -1) {
-			    if (errno == EINTR) continue;
-		    }
-		    if (nfound == -1) XtError("Select failed.");
-		    break;
+	    if (foundCall) {
+		event->xany.type = 0;
+		event->xany.display = NULL;
+		event->xany.window = NULL;
+		return FALSE;
 	    }
-	    if (nfound == 0)
-	      continue;
-	    
-	    for(i = 0; i < composite.nfds && nfound > 0;i++) {
-		    if(XFD_ISSET(i,&rmaskfd)) {
-			    if(i == ConnectionNumber(toplevelDisplay)) {
-				    Claims_X_is_pending= 1;
-			    } 
-			    if( Select_rqueue[i] != NULL) {
-				    Select_rqueue[i] -> ie_oq = 
-				      outstanding_queue;
-				    outstanding_queue = Select_rqueue[i];
-				    nfound--;
-			    }
-			    if(XFD_ISSET(i,&wmaskfd)) {
-				    Select_wqueue[i] -> ie_oq = 
-				      outstanding_queue;
-				    outstanding_queue = Select_wqueue[i];
-				    nfound--;
-			    }
-			    if(XFD_ISSET(i,&emaskfd)) {
-				    Select_equeue[i] -> ie_oq = 
-				      outstanding_queue;
-				    outstanding_queue = Select_equeue[i];
-				    nfound--;
-			    }
-		    }
+
+	    d = _XtwaitForSomething(FALSE, FALSE, TRUE,
+		    (unsigned long *) NULL, app);
+
+	    if (d != -1) {
+		XPeekEvent(app->list[d], event);
+		app->last = (d == 0 ? app->count : d) - 1;
+		return TRUE;
 	    }
-	    if(Claims_X_is_pending && XPending(toplevelDisplay)) {
-		    XPeekEvent(toplevelDisplay, event);
-		    return(1);
-	    }
-	    return(0);
-    }
+	    event->xany.type = 0;	/* Something else must be ready */
+	    event->xany.display = NULL;
+	    event->xany.window = NULL;
+	    return FALSE;
+
+	    /* Greater than 0 is number of dpys with input -- loop around */
+	}
 }	
