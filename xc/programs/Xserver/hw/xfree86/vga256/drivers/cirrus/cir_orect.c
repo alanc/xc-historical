@@ -1,5 +1,5 @@
-/* $XConsortium: cir_orect.c,v 1.1 95/01/06 20:37:49 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_orect.c,v 3.2 1995/01/07 04:12:06 dawes Exp $ */
+/* $XConsortium: cir_orect.c,v 1.2 95/01/16 13:18:09 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_orect.c,v 3.3 1995/01/26 02:21:02 dawes Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -34,7 +34,7 @@ Modified for Cirrus by Harm Hanemaayer (hhanemaa@cs.ruu.nl)
 #include "vga.h"
 #include "linearline.h"
 #include "cir_driver.h"
-#include "cir_blitmm.h"		/* MMIO BitBLT commands */
+#include "cirBlitMM.h"		/* MMIO BitBLT commands */
 
 
 /*

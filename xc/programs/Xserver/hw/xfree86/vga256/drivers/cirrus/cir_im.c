@@ -1,5 +1,5 @@
-/* $XConsortium: cir_im.c,v 1.2 94/10/13 13:21:46 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_im.c,v 3.6 1995/01/04 04:42:27 dawes Exp $ */
+/* $XConsortium: cir_im.c,v 1.3 95/01/06 20:58:42 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_im.c,v 3.7 1995/01/26 02:20:59 dawes Exp $ */
 /*
  *
  * Copyright 1993 by Bill Reynolds, Santa Fe, New Mexico
@@ -65,9 +65,9 @@
 
 #include "cir_driver.h"
 #ifdef CIRRUS_MMIO
-#include "cir_blitmm.h"
+#include "cirBlitMM.h"
 #else
-#include "cir_blitter.h"
+#include "cirBlitter.h"
 #endif
 
 

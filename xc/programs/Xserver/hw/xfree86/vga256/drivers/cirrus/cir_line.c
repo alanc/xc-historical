@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cir_line.c,v 1.1 95/01/06 20:37:49 kaleb Exp kaleb $ */
+/* $XConsortium: cir_line.c,v 1.2 95/01/10 17:00:19 kaleb Exp kaleb $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_line.c,v 3.0 1994/12/25 12:35:06 dawes Exp $ */
 
 /*
@@ -62,7 +62,7 @@ SOFTWARE.
 #include "compiler.h"
 #include "linearline.h"
 #include "cir_driver.h"
-#include "cir_blitmm.h"		/* MMIO BitBLT commands */
+#include "cirBlitMM.h"		/* MMIO BitBLT commands */
 
 /*
  * The following define enables calls to the optimized linear framebuffer

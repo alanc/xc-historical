@@ -1,5 +1,5 @@
-/* $XConsortium: cir_teblt8.c,v 1.5 95/01/06 20:58:44 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_teblt8.c,v 3.12 1995/01/18 06:14:42 dawes Exp $ */
+/* $XConsortium: cir_teblt8.c,v 1.6 95/01/23 15:35:16 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_teblt8.c,v 3.13 1995/01/26 02:21:05 dawes Exp $ */
 /*
  * TEGblt - ImageText expanded glyph fonts only.  For
  * 8 bit displays, in Copy mode with no clipping.
@@ -49,9 +49,9 @@ in this Software without prior written authorization from the X Consortium.
 
 #include "cir_driver.h"
 #ifdef CIRRUS_MMIO
-#include "cir_blitmm.h"
+#include "cirBlitMM.h"
 #else
-#include "cir_blitter.h"
+#include "cirBlitter.h"
 #endif
 #include "cir_inline.h"
 

@@ -1,5 +1,5 @@
-/* $XConsortium: cir_blitter.c,v 1.2 94/10/13 13:21:46 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitter.c,v 3.6 1995/01/04 04:42:17 dawes Exp $ */
+/* $XConsortium: cir_blitter.c,v 1.3 95/01/06 20:58:35 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitter.c,v 3.7 1995/01/26 02:20:56 dawes Exp $ */
 /*
  *
  * Copyright 1994 by H. Hanemaayer, Utrecht, The Netherlands
@@ -44,9 +44,9 @@
 
 #include "cir_driver.h"
 #ifdef CIRRUS_MMIO
-#include "cir_blitmm.h"
+#include "cirBlitMM.h"
 #else
-#include "cir_blitter.h"
+#include "cirBlitter.h"
 #endif
 #include "cir_inline.h"
 

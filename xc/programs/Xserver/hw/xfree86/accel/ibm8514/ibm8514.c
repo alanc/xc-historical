@@ -1,5 +1,5 @@
-/* $XConsortium: ibm8514.c,v 1.4 95/01/06 20:56:57 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.11 1995/01/15 10:30:27 dawes Exp $ */
+/* $XConsortium: ibm8514.c,v 1.5 95/01/16 13:16:28 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.12 1995/01/26 02:17:19 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -49,7 +49,7 @@
 #include "xf86bcache.h"
 #include "xf86fcache.h"
 #include "xf86text.h"
-#include "ibm8514cach.h"
+#include "8514cach.h"
 #include "mi.h"
 #include "cfb.h"
 
