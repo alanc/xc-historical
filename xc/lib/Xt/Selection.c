@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Selection.c,v 1.26 89/11/29 10:27:30 swick Exp $";
+    "$XConsortium: Selection.c,v 1.27 89/11/29 11:10:46 swick Exp $";
 #endif
 
 /***********************************************************
@@ -496,12 +496,12 @@ int format;
 
 static Boolean GetConversion(ctx, selection, target, property, widget, window,
 			     incremental)
-Select ctx;
+Select ctx;			/* logical owner */
 Atom selection;
 Atom target;
-Atom property;
-Widget widget;
-Window window;
+Atom property;			/* requestor's property */
+Widget widget;			/* physical owner (receives events) */
+Window window;			/* requestor */
 Boolean *incremental;
 {
     XtPointer value;
@@ -517,6 +517,7 @@ Boolean *incremental;
 	XtFree((XtPointer)old);
     }
 */
+    if (property == None) property = target; /* obsolete client */
     if (ctx->incremental == TRUE) {
 	 unsigned long size = MAX_SELECTION_INCR(ctx->dpy);
          if ((*ctx->convert)(ctx->widget, &selection, &target,
