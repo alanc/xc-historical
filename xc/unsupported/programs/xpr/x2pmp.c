@@ -1,9 +1,9 @@
 /*
- *	$XConsortium: x2pmp.c,v 1.6 89/01/20 16:04:07 rws Exp $
+ *	$XConsortium: x2pmp.c,v 1.7 89/07/21 14:19:22 jim Exp $
  */
 
 #ifndef lint
-static char *rcsid_x2pmp_c = "$XConsortium: x2pmp.c,v 1.6 89/01/20 16:04:07 rws Exp $";
+static char *rcsid_x2pmp_c = "$XConsortium: x2pmp.c,v 1.7 89/07/21 14:19:22 jim Exp $";
 #endif /* lint */
 
 /* x2pmp.c: Translate xwd window dump format into PMP format for the
@@ -40,7 +40,7 @@ static bits_set();
 static unsigned char *magnification_table();
 
 /* global variables set by main() and used by x2pmp() */
-extern char *whoami;
+extern char *progname;
 extern int debug;
 
 static plane = 0;
@@ -76,7 +76,7 @@ int invert;
 #endif
 
     if (header.file_version != XWD_FILE_VERSION) {
-	fprintf(stderr,"%s: file format version %d, not %d\n", whoami,
+	fprintf(stderr,"%s: file format version %d, not %d\n", progname,
 		header.file_version, XWD_FILE_VERSION);
     }
 
@@ -332,7 +332,7 @@ char *s;
 {
     extern int errno;
 
-    fprintf(stderr, "\n%s: ", whoami);
+    fprintf(stderr, "\n%s: ", progname);
     if (errno != 0)
       perror(s);
     else
