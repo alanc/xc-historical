@@ -62,42 +62,42 @@ screen #0:
     visual id:    0x80065
     class:    PseudoColor
     depth:    8 planes
-    size of colormap:    256 entries
+    available colormap entries:    256
     red, green, blue masks:    0x0, 0x0, 0x0
     significant bits in color specification:    8 bits
   visual:
     visual id:    0x80066
     class:    DirectColor
     depth:    8 planes
-    size of colormap:    8 entries
+    available colormap entries:    8 per subfield
     red, green, blue masks:    0x7, 0x38, 0xc0
     significant bits in color specification:    8 bits
   visual:
     visual id:    0x80067
     class:    GrayScale
     depth:    8 planes
-    size of colormap:    256 entries
+    available colormap entries:    256
     red, green, blue masks:    0x0, 0x0, 0x0
     significant bits in color specification:    8 bits
   visual:
     visual id:    0x80068
     class:    StaticGray
     depth:    8 planes
-    size of colormap:    256 entries
+    available colormap entries:    256
     red, green, blue masks:    0x0, 0x0, 0x0
     significant bits in color specification:    8 bits
   visual:
     visual id:    0x80069
     class:    StaticColor
     depth:    8 planes
-    size of colormap:    256 entries
+    available colormap entries:    256
     red, green, blue masks:    0x7, 0x38, 0xc0
     significant bits in color specification:    8 bits
   visual:
     visual id:    0x8006a
     class:    TrueColor
     depth:    8 planes
-    size of colormap:    8 entries
+    available colormap entries:    8 per subfield
     red, green, blue masks:    0x7, 0x38, 0xc0
     significant bits in color specification:    8 bits
   number of mono multibuffer types:    6
@@ -130,7 +130,7 @@ screen #1:
     visual id:    0x80064
     class:    StaticGray
     depth:    1 plane
-    size of colormap:    2 entries
+    available colormap entries:    2
     red, green, blue masks:    0x0, 0x0, 0x0
     significant bits in color specification:    1 bits
   number of mono multibuffer types:    1

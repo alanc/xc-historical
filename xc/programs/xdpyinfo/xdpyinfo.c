@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xdpyinfo.c,v 1.20 91/02/06 18:34:30 rws Exp $
+ * $XConsortium: xdpyinfo.c,v 1.21 91/03/20 12:00:38 gildea Exp $
  * 
  * xdpyinfo - print information about X display connecton
  *
@@ -335,7 +335,12 @@ print_visual_info (vip)
     printf ("    class:    %s\n", class);
     printf ("    depth:    %d plane%s\n", vip->depth, 
 	    vip->depth == 1 ? "" : "s");
-    printf ("    size of colormap:    %d entries\n", vip->colormap_size);
+    if (vip->class == TrueColor || vip->class == DirectColor)
+	printf ("    available colormap entries:    %d per subfield\n",
+		vip->colormap_size);
+    else
+	printf ("    available colormap entries:    %d\n",
+		vip->colormap_size);
     printf ("    red, green, blue masks:    0x%lx, 0x%lx, 0x%lx\n",
 	    vip->red_mask, vip->green_mask, vip->blue_mask);
     printf ("    significant bits in color specification:    %d bits\n",
