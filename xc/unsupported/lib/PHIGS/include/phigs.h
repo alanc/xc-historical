@@ -1,4 +1,4 @@
-/* $XConsortium: phigs.h,v 5.7 91/07/12 20:24:23 hersh Exp $ */
+/* $XConsortium: phigs.h,v 5.8 91/07/19 14:20:34 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1920,7 +1920,7 @@ extern char			*phg_x_server_name;
 #define PHIGS_MAX_NAME_LEN	 (255)
 
 /* Character set numbers */
-#define PCS_ASCII		(1)
+#define PCS_ASCII		(0)
 
 /* Font numbers */
 #define PFONT_MONO		(1)
