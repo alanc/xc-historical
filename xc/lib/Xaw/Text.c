@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Text.c,v 1.2 87/09/11 21:24:39 swick Locked $";
+static char rcsid[] = "$Header: Text.c,v 1.3 87/09/13 13:26:23 newman Locked $";
 #endif lint
 
 /*
@@ -83,10 +83,10 @@ static XtResource resources[] = {
 };
 
   
-static void Initialize(w)
- Widget w;
+static void Initialize(request, new)
+ Widget request, new;
 {
-    TextWidget ctx = (TextWidget) w;
+    TextWidget ctx = (TextWidget) new;
 
     if (ctx->core.width == 0)
 	ctx->core.width = 200;
@@ -1182,52 +1182,39 @@ static void Resize(w)
 
 
 /*
- * This routine allow the application program to Get attributes.
- */
-
-/*
  * This routine allow the application program to Set attributes.
  */
 
-void XtTextSetValues(old, new)
-Widget old, new;
+Boolean XtTextSetValues(current, request, new, last)
+Widget current, request, new;
+Boolean last;
 {
-    TextWidget oldtw = (TextWidget) old;
+    TextWidget oldtw = (TextWidget) current;
     TextWidget newtw = (TextWidget) new;
     Boolean    redisplay = FALSE;
 
     _XtTextPrepareToUpdate(oldtw);
     
-    if (oldtw->text.sink != newtw->text.sink) {
-	oldtw->text.sink = newtw->text.sink;
+    if (oldtw->text.sink != newtw->text.sink)
 	redisplay = TRUE;
-    }
+
     if (oldtw->text.source != newtw->text.source) {
-        oldtw->text.source = newtw->text.source;
 	ForceBuildLineTable(oldtw);
 	redisplay = TRUE;
     }
-    if (oldtw->text.insertPos != newtw->text.insertPos) {
-        oldtw->text.insertPos = newtw->text.insertPos;
+    if (oldtw->text.insertPos != newtw->text.insertPos)
 	oldtw->text.showposition = TRUE;
-    }
-    if (oldtw->text.lt.top != newtw->text.lt.top) {
-	oldtw->text.lt.top = newtw->text.lt.top;
+
+    if (oldtw->text.lt.top != newtw->text.lt.top)
 	redisplay = TRUE;
-    }
-    oldtw->text.s = newtw->text.s;
-    oldtw->text.options = newtw->text.options;
-    if (oldtw->text.leftmargin != newtw->text.leftmargin) {
-	oldtw->text.leftmargin = newtw->text.leftmargin;
+
+    if (oldtw->text.leftmargin != newtw->text.leftmargin)
 	redisplay = TRUE;
-    }
-    bcopy(newtw->text.sarray, oldtw->text.sarray, sizeof(SelectionArray));
-    oldtw->core.background_pixel = newtw->core.background_pixel;
-    oldtw->core.background_pixmap = newtw->core.background_pixmap;
 
     if (redisplay) 
 	DisplayTextWindow(oldtw);
     _XtTextExecuteUpdate(oldtw);
+    return (FALSE);  /*  this needs looking at! */
 }
 
 
