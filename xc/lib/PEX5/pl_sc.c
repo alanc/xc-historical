@@ -1,4 +1,4 @@
-/* $XConsortium: pl_sc.c,v 1.13 92/05/07 23:29:17 mor Exp $ */
+/* $XConsortium: pl_sc.c,v 1.1 92/05/08 15:13:47 mor Exp $ */
 
 /************************************************************************
 Copyright 1987,1991,1992 by Digital Equipment Corporation, Maynard,
@@ -212,7 +212,7 @@ INPUT unsigned long	valueMask;
     scattr->normal.pair = NULL;
     scattr->inverted.pair = NULL;
 
-    for (i = 0; i < PEXSCMaxShift; i++)
+    for (i = 0; i < (PEXSCMaxShift + 1); i++)
     {
 	f = (1L << i);
 	if (valueMask & f)
@@ -229,6 +229,10 @@ INPUT unsigned long	valueMask;
 		break;
 	    case PEXSCCeiling:
 		scattr->ceiling = *pv;
+		pv++;
+		break;
+	    case PEXSCModelClipFlag:
+		scattr->model_clip_flag = *pv;
 		pv++;
 		break;
 	    case PEXSCStartPath:
@@ -431,6 +435,10 @@ INPUT PEXSCAttributes	*values;
 		break;
 	    case PEXSCCeiling:
 		*pv = values->ceiling;
+		pv++;
+		break;
+            case PEXSCModelClipFlag:
+		*pv = values->model_clip_flag;
 		pv++;
 		break;
 	    case PEXSCStartPath:
