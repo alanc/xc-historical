@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.h,v 1.29 94/08/30 17:21:46 mor Exp mor $ */
+/* $XConsortium: xsm.h,v 1.30 94/11/14 15:30:55 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -129,12 +129,11 @@ extern Bool		checkpoint_after_name;
 
 extern Bool		remote_allowed;
 
-extern XtAppContext	appContext;
-
 extern Bool		verbose;
 
 extern char		*sm_id;
 
+extern char		*networkIds;
 extern char		*session_name;
 
 extern List		*RunningList;
@@ -143,6 +142,7 @@ extern List		*RestartAnywayList;
 extern List		*RestartImmedList;
 
 extern List		*WaitForSaveDoneList;
+extern List		*FailedSaveList;
 extern List		*WaitForInteractList;
 extern List		*WaitForPhase2List;
 
@@ -162,100 +162,16 @@ extern Bool		wantShutdown;
 
 extern int		sessionNameCount;
 extern String		*sessionNames;
+extern Bool		*sessionLocked;
 
 extern int		num_clients_in_last_session;
 
 extern char		**non_session_aware_clients;
 extern int		non_session_aware_count;
 
+extern XtAppContext	appContext;
 extern Widget		topLevel;
-
-extern Widget		    chooseSessionPopup;
-
-extern Widget		    	chooseSessionForm;
-
-extern Widget			    chooseSessionLabel;
-
-extern Widget			    chooseSessionListWidget;
-
-extern Widget			    chooseSessionMessageLabel;
-
-extern Widget			    chooseSessionLoadButton;
-
-extern Widget			    chooseSessionDeleteButton;
-
-extern Widget			    chooseSessionFailSafeButton;
-
-extern Widget			    chooseSessionCancelButton;
-
-extern Widget		    mainWindow;
-
-extern Widget		        clientInfoButton;
-extern Widget			nameSessionButton;
-extern Widget			checkPointButton;
-extern Widget			shutdownButton;
-extern Widget				shutdownMenu;
-extern Widget					shutdownSave;
-extern Widget					shutdownDontSave;
-
-extern Widget		    clientInfoPopup;
-
-extern Widget		    	clientInfoForm;
-
-extern Widget			    viewPropButton;
-extern Widget			    cloneButton;
-extern Widget			    killClientButton;
-extern Widget			    clientInfoDoneButton;
-extern Widget			    restartHintButton;
-extern Widget			    	restartHintMenu;
-extern Widget			    		restartIfRunning;
-extern Widget			    		restartAnyway;
-extern Widget			    		restartImmediately;
-extern Widget			    		restartNever;
-extern Widget			    clientListWidget;
-extern Widget			    manualRestartLabel;
-extern Widget			    manualRestartCommands;
-
-extern Widget		    clientPropPopup;
-
-extern Widget		    	clientPropForm;
-
-extern Widget			    clientPropDoneButton;
-extern Widget			    clientPropTextWidget;
-
-extern Widget		    savePopup;
-
-extern Widget			saveForm;
-
-extern Widget			    saveMessageLabel;
-
-extern Widget			    saveTypeLabel;
-extern Widget			    saveTypeGlobal;
-extern Widget			    saveTypeLocal;
-extern Widget			    saveTypeBoth;
-
-extern Widget			    interactStyleLabel;
-extern Widget			    interactStyleNone;
-extern Widget			    interactStyleErrors;
-extern Widget			    interactStyleAny;
-
-extern Widget			    saveOkButton;
-extern Widget			    saveCancelButton;
-
-extern Widget		    shutdownPopup;
-
-extern Widget			shutdownDialog;
-
-extern Widget			    shutdownOkButton;
-extern Widget			    shutdownCancelButton;
-
-extern Widget		    nameSessionPopup;
-
-extern Widget			nameSessionDialog;
-
-extern Widget			    nameSessionCheckpointButton;
-extern Widget			    nameSessionOkButton;
-extern Widget			    nameSessionCancelButton;
+extern Widget		mainWindow;
 
 extern void fprintfhex ();
 
