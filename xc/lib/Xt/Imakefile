@@ -19,6 +19,9 @@ XTWARNINGPREFIX = XtWarningPrefix
 		  -DXTERROR_PREFIX=\"$(XTERRORPREFIX)\" \
 		  -DXTWARNING_PREFIX=\"$(XTWARNINGPREFIX)\"
    SRCH_DEFINES = -DXFILESEARCHPATHDEFAULT=\"$(XFILESEARCHPATHDEFAULT)\"
+#if Malloc0ReturnsNull
+  ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
+#endif
 
    INSTALLFLAGS = $(INSTINCFLAGS)
        LINTLIBS = $(LINTXLIB)
@@ -154,6 +157,7 @@ LibraryObjectRule()
 
 SpecialLibObjectRule(Intrinsic.o,$(ICONFIGFILES),$(SRCH_DEFINES))
 SpecialLibObjectRule(Error.o,$(ICONFIGFILES),$(DB_DEFINES))
+SpecialLibObjectRule(Alloc.o,,$(ALLOC_DEFINES))
 
 #if DoSharedLib
 #if DoNormalLib
