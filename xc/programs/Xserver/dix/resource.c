@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $Header: resource.c,v 1.62 87/09/04 11:45:57 rws Locked $ */
+/* $Header: resource.c,v 1.63 87/10/21 09:25:11 rws Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -55,6 +55,9 @@ SOFTWARE.
 #include "dixstruct.h" 
 #include "opaque.h"
 
+extern void HandleSaveSet();
+extern void FlushClientCaches();
+
 #define CACHEDTYPES (RT_WINDOW | RT_PIXMAP | RT_GC)
 #define INITBUCKETS 64
 #define INITHASHSIZE 6
@@ -75,7 +78,7 @@ typedef struct _ClientResource {
     int		elements;
     int		buckets;
     int		hashsize;	/* log(2)(buckets) */
-    int		fakeID;
+    XID		fakeID;
 } ClientResourceRec;
 
 static unsigned short lastResourceType;
@@ -115,7 +118,7 @@ InitClientResources(client)
 	lastResourceClass = RC_LASTPREDEF;
     }
     clientTable[i = client->index].resources =
-	(ResourcePtr *)Xalloc(INITBUCKETS*sizeof(ResourcePtr));
+	(ResourcePtr *)xalloc(INITBUCKETS*sizeof(ResourcePtr));
     clientTable[i].buckets = INITBUCKETS;
     clientTable[i].elements = 0;
     clientTable[i].hashsize = INITHASHSIZE;
@@ -129,28 +132,28 @@ InitClientResources(client)
 static int
 Hash(client, id)
     int client;
-    register int id;
+    register XID id;
 {
     id &= RESOURCE_ID_MASK;
     switch (clientTable[client].hashsize)
     {
 	case 6:
-	    return 0x03F & (id ^ (id>>6) ^ (id>>12));
+	    return ((int)(0x03F & (id ^ (id>>6) ^ (id>>12))));
 	case 7:
-	    return 0x07F & (id ^ (id>>7) ^ (id>>13));
+	    return ((int)(0x07F & (id ^ (id>>7) ^ (id>>13))));
 	case 8:
-	    return 0x0FF & (id ^ (id>>8) ^ (id>>16));
+	    return ((int)(0x0FF & (id ^ (id>>8) ^ (id>>16))));
 	case 9:
-	    return 0x1FF & (id ^ (id>>9));
+	    return ((int)(0x1FF & (id ^ (id>>9))));
 	case 10:
-	    return 0x3FF & (id ^ (id>>10));
+	    return ((int)(0x3FF & (id ^ (id>>10))));
 	case 11:
-	    return 0x7FF & (id ^ (id>>11));
+	    return ((int)(0x7FF & (id ^ (id>>11))));
     }
     return -1;
 }
 
-int
+XID
 FakeClientID(client)
     int client;
 {
@@ -161,7 +164,7 @@ FakeClientID(client)
 
 void
 AddResource(id, type, value, func, class)
-    int id;
+    XID id;
     unsigned short type, class;
     pointer value;
     int (* func)();
@@ -186,7 +189,7 @@ AddResource(id, type, value, func, class)
 	(clientTable[client].hashsize <= MAXHASHSIZE))
     {
 	register ResourcePtr *resources = (ResourcePtr *)
-	    Xalloc(2*clientTable[client].buckets*sizeof(ResourcePtr));
+	    xalloc(2*clientTable[client].buckets*sizeof(ResourcePtr));
 	for (j = 0; j < clientTable[client].buckets*2; j++)
 	    resources[j] = NullResource;
 	clientTable[client].hashsize++;
@@ -201,11 +204,11 @@ AddResource(id, type, value, func, class)
 	    }
 	}
 	clientTable[client].buckets *= 2;
-	Xfree(clientTable[client].resources);
+	xfree(clientTable[client].resources);
 	clientTable[client].resources = resources;
     }
     head = &clientTable[client].resources[Hash(client, id)];
-    res = (ResourcePtr)Xalloc(sizeof(ResourceRec));
+    res = (ResourcePtr)xalloc(sizeof(ResourceRec));
     res->next = *head;
     res->id = id;
     res->DeleteFunc = func;
@@ -218,10 +221,11 @@ AddResource(id, type, value, func, class)
 
 void
 FreeResource(id, skipDeleteFuncClass)
-int id, skipDeleteFuncClass;
+XID id;
+int skipDeleteFuncClass;
 
 {
-    unsigned    cid;
+    int		cid;
     register    ResourcePtr res;
     register	ResourcePtr *prev, *head;
     register	int *eltptr;
@@ -244,7 +248,7 @@ int id, skipDeleteFuncClass;
 		    FlushClientCaches(res->id);
 		if (skipDeleteFuncClass != res->class)
 		    (*res->DeleteFunc) (res->value, res->id);
-		Xfree(res);
+		xfree(res);
 		if (*eltptr != elements)
 		    prev = head; /* prev may no longer be valid */
 		gotOne = TRUE;
@@ -253,7 +257,10 @@ int id, skipDeleteFuncClass;
 		prev = &res->next;
         }
 	if(clients[cid] && (id == clients[cid]->lastDrawableID))
+	{
+	    clients[cid]->lastDrawable = (DrawablePtr) NULL;
 	    clients[cid]->lastDrawableID = INVALID;
+	}
     }
     if (!gotOne)
 	FatalError("Freeing resource id=%X which isn't there", id);
@@ -297,10 +304,10 @@ FreeClientResources(client)
 	    if (this->type & CACHEDTYPES)
 		FlushClientCaches(this->id);
 	    (*this->DeleteFunc)(this->value, this->id);
-	    Xfree(this);	    
+	    xfree(this);	    
 	}
     }
-    Xfree(clientTable[client->index].resources);
+    xfree(clientTable[client->index].resources);
     clientTable[client->index].buckets = 0;
 }
 
@@ -322,10 +329,10 @@ FreeAllResources()
  */ 
 pointer
 LookupID(id, rType, class)
-    unsigned int id;
+    XID id;
     unsigned short rType, class;
 {
-    unsigned    cid;
+    int    cid;
     register    ResourcePtr res;
 
     if (((cid = CLIENT_ID(id)) < MaxClients) && clientTable[cid].buckets)
