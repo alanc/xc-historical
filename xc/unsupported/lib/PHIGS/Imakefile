@@ -1,5 +1,5 @@
 ##
-# $XConsortium: Imakefile,v 5.5 91/02/18 10:55:30 rws Exp $
+# $XConsortium: Imakefile,v 5.6 91/02/18 11:39:18 rws Exp $
 ##
 ## 
 ## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -72,7 +72,7 @@ CHILD = phigsmon
 
 all:: errortext subdirs swapcode
 	$(AR) rul $(PEXLIBNAME) $(ALL_OBJ)
-	$(RANLIB) $(PEXLIBNAME)
+	RanLibrary($(PEXLIBNAME))
 	$(MAKE) $(CHILD)
 
 LIB_SHARED_DIR = lib
