@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbimage.c,v 1.4 89/11/21 18:02:32 keith Exp $ */
+/* $XConsortium: cfbimage.c,v 1.5 89/11/25 12:26:41 rws Exp $ */
 
 #include "X.h"
 #include "windowstr.h"
@@ -32,14 +32,14 @@ SOFTWARE.
 #include "cfbmskbits.h"
 #include "servermd.h"
 
-extern void miPutImage(), miGetImage(), mfbGetImage();
+extern void mfbGetImage();
 
 void
-cfbPutImage(dst, pGC, depth, x, y, w, h, leftPad, format, pImage)
-    DrawablePtr dst;
+cfbPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
+    DrawablePtr pDraw;
     GCPtr	pGC;
     int		depth, x, y, w, h;
-    int leftPad;
+    int		leftPad;
     unsigned int format;
     char 	*pImage;
 {
@@ -52,7 +52,7 @@ cfbPutImage(dst, pGC, depth, x, y, w, h, leftPad, format, pImage)
     {
     	FakePixmap.drawable.type = DRAWABLE_PIXMAP;
     	FakePixmap.drawable.class = 0;
-    	FakePixmap.drawable.pScreen = dst->pScreen;
+    	FakePixmap.drawable.pScreen = pDraw->pScreen;
     	FakePixmap.drawable.depth = depth;
     	FakePixmap.drawable.bitsPerPixel = depth;
     	FakePixmap.drawable.id = 0;
@@ -66,17 +66,44 @@ cfbPutImage(dst, pGC, depth, x, y, w, h, leftPad, format, pImage)
     	FakePixmap.devPrivate.ptr = (pointer)pImage;
     	((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->fExpose = FALSE;
 	if (format == ZPixmap)
-	    (void)(*pGC->ops->CopyArea)(&FakePixmap, dst, pGC, leftPad, 0,
+	    (void)(*pGC->ops->CopyArea)(&FakePixmap, pDraw, pGC, leftPad, 0,
 					w, h, x, y);
 	else
-	    (void)(*pGC->ops->CopyPlane)(&FakePixmap, dst, pGC, leftPad, 0,
+	    (void)(*pGC->ops->CopyPlane)(&FakePixmap, pDraw, pGC, leftPad, 0,
 					 w, h, x, y, 1);
 	((cfbPrivGC*)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->fExpose = TRUE;
     }
     else
     {
-	miPutImage(dst, pGC, depth, x, y, w, h, leftPad, format,
-		   (unsigned char *)pImage);
+	unsigned long	oldFg, oldBg, gcv[3];
+	unsigned long	oldPlanemask;
+	unsigned long	i;
+	long		bytesPer;
+
+	depth = pGC->depth;
+	oldPlanemask = pGC->planemask;
+	oldFg = pGC->fgPixel;
+	oldBg = pGC->bgPixel;
+	gcv[0] = ~0L;
+	gcv[1] = 0;
+	DoChangeGC(pGC, GCForeground | GCBackground, gcv, 0);
+	bytesPer = (long)h * PixmapBytePad(w + leftPad, 1);
+
+	for (i = 1 << (depth-1); i != 0; i >>= 1, pImage += bytesPer)
+	{
+	    if (i & oldPlanemask)
+	    {
+	        gcv[0] = i;
+	        DoChangeGC(pGC, GCPlaneMask, gcv, 0);
+	        ValidateGC(pDraw, pGC);
+	        (*pGC->ops->PutImage)(pDraw, pGC, 1, x, y, w, h, leftPad,
+			         XYBitmap, pImage);
+	    }
+	}
+	gcv[0] = oldPlanemask;
+	gcv[1] = oldFg;
+	gcv[2] = oldBg;
+	DoChangeGC(pGC, GCPlaneMask | GCForeground | GCBackground, gcv, 0);
     }
 }
 
