@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xlcint.h,v 11.3 91/04/06 18:44:14 rws Exp $
+ * $XConsortium: Xlcint.h,v 11.4 91/04/07 16:08:14 rws Exp $
  */
 
 /*
@@ -187,7 +187,7 @@ typedef struct {
 
     void (*free)(
 #if NeedFunctionPrototypes
-	XFontSet
+	Display*, XFontSet
 #endif
 	);
     

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XFSWrap.c,v 11.2 91/04/07 16:12:05 rws Exp $
+ * $XConsortium: XFSWrap.c,v 11.3 91/04/07 16:57:40 rws Exp $
  */
 
 /*
@@ -190,7 +190,7 @@ XFreeFontSet(dpy, font_set)
 {
     int i;
 
-    (*font_set->methods->free) (font_set);
+    (*font_set->methods->free) (dpy, font_set);
     for (i = 0; i < font_set->core.num_of_fonts; i++) {
 	if (font_set->core.font_struct_list[i]) {
 	    if (font_set->core.font_struct_list[i]->fid)
