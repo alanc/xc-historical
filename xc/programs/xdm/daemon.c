@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: daemon.c,v 1.5 89/01/20 10:43:49 jim Exp $
+ * $XConsortium: daemon.c,v 1.6 90/12/10 15:45:56 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -19,7 +19,13 @@
  */
 
 #include <X11/Xos.h>
+
+#ifdef SVR4
+#include <termios.h>
+#else
 #include <sys/ioctl.h>
+#endif
+
 #ifdef hpux
 #include <sys/ptyio.h>
 #endif
@@ -46,7 +52,7 @@ BecomeDaemon ()
      * Close standard file descriptors and get rid of controlling tty
      */
 
-#ifdef SYSV
+#if defined(SYSV) || defined(SVR4)
     setpgrp ();
 #else
     setpgrp (0, getpid());
@@ -57,7 +63,7 @@ BecomeDaemon ()
     close (2);
 
     if ((i = open ("/dev/tty", O_RDWR)) >= 0) {	/* did open succeed? */
-#if defined(SYSV) && defined(TIOCTTY)
+#if (defined(SYSV) || defined(SVR4)) && defined(TIOCTTY)
 	int zero = 0;
 	(void) ioctl (i, TIOCTTY, &zero);
 #else

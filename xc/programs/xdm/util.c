@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: util.c,v 1.5 90/05/15 18:42:54 keith Exp $
+ * $XConsortium: util.c,v 1.6 90/08/23 13:15:46 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -24,7 +24,7 @@
  * various utility routines
  */
 
-# include   <sys/signal.h>
+# include   <signal.h>
 
 extern void	free ();
 

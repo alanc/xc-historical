@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.39 90/12/10 15:45:38 keith Exp $
+ * $XConsortium: session.c,v 1.40 90/12/11 13:26:32 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -27,7 +27,7 @@
 # include <signal.h>
 # include <X11/Xatom.h>
 # include <setjmp.h>
-# include <sys/errno.h>
+# include <errno.h>
 # include <stdio.h>
 # include <ctype.h>
 
@@ -39,16 +39,20 @@ static struct verify_info	verify;
 
 static jmp_buf	abortSession;
 
+/* ARGSUSED */
 static SIGVAL
-catchTerm ()
+catchTerm (n)
+    int n;
 {
     longjmp (abortSession, 1);
 }
 
 static jmp_buf	pingTime;
 
+/* ARGSUSED */
 static SIGVAL
-catchAlrm ()
+catchAlrm (n)
+    int n;
 {
     longjmp (pingTime, 1);
 }
@@ -256,8 +260,10 @@ Display		*dpy;
 
 static jmp_buf syncJump;
 
+/* ARGSUSED */
 static SIGVAL
-syncTimeout ()
+syncTimeout (n)
+    int n;
 {
     longjmp (syncJump, 1);
 }
@@ -393,8 +399,10 @@ int			*pidp;
 
 static jmp_buf	tenaciousClient;
 
+/* ARGSUSED */
 static SIGVAL
-waitAbort ()
+waitAbort (n)
+    int n;
 {
 	longjmp (tenaciousClient, 1);
 }

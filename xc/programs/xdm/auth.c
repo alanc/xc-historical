@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.26 91/01/10 10:42:00 rws Exp $
+ * $XConsortium: auth.c,v 1.27 91/01/10 11:03:20 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -25,7 +25,7 @@
  */
 
 # include   "dm.h"
-# include   <sys/signal.h>
+# include   <signal.h>
 # include   <setjmp.h>
 # include   <sys/types.h>
 # include   <sys/ioctl.h>
@@ -129,7 +129,7 @@ char		*name;
 	    Debug ("Got 0x%x (%d %*.*s) ", auth,
 		auth->name_length, auth->name_length,
  		auth->name_length, auth->name);
-	    for (i = 0; i < auth->data_length; i++)
+	    for (i = 0; i < (int)auth->data_length; i++)
 		Debug (" %02x", auth->data[i]);
 	    Debug ("\n");
 	}
@@ -604,50 +604,7 @@ ConvertAddr (saddr, len, addr)
     return (-1);
 }
 
-#ifdef hpux
-/* Define this host for access control.  Find all the hosts the OS knows about 
- * for this fd and add them to the selfhosts list.
- * HPUX version - hpux does not have SIOCGIFCONF ioctl;
- */
-static
-DefineSelf (fd, file, auth)
-    int fd;
-{
-    register int n;
-    int	len;
-    caddr_t	addr;
-    int		family;
-
-    struct utsname name;
-    register struct hostent  *hp;
-
-    union {
-	struct  sockaddr   sa;
-	struct  sockaddr_in  in;
-    } saddr;
-	
-    struct	sockaddr_in	*inetaddr;
-
-    /* Why not use gethostname()?  Well, at least on my system, I've had to
-     * make an ugly kernel patch to get a name longer than 8 characters, and
-     * uname() lets me access to the whole string (it smashes release, you
-     * see), whereas gethostname() kindly truncates it for me.
-     */
-    uname(&name);
-    hp = gethostbyname (name.nodename);
-    if (hp != NULL) {
-	saddr.sa.sa_family = hp->h_addrtype;
-	inetaddr = (struct sockaddr_in *) (&(saddr.sa));
-	bcopy ( (char *) hp->h_addr, (char *) &(inetaddr->sin_addr), (int) hp->h_length);
-	family = ConvertAddr ( &(saddr.sa), &len, &addr);
-	if ( family > 0) {
-	    writeAddr (FamilyInternet, sizeof (inetaddr->sin_addr),
-			(char *) (&inetaddr->sin_addr), file, auth);
-	}
-    }
-}
-
-#else
+#ifdef SIOCGIFCONF
 
 /* Define this host for access control.  Find all the hosts the OS knows about 
  * for this fd and add them to the selfhosts list.
@@ -707,7 +664,52 @@ DefineSelf (fd, file, auth)
 	writeAddr (family, len, addr, file, auth);
     }
 }
-#endif /* hpux */
+
+#else /* SIOCGIFCONF */
+
+/* Define this host for access control.  Find all the hosts the OS knows about 
+ * for this fd and add them to the selfhosts list.
+ * HPUX version - hpux does not have SIOCGIFCONF ioctl;
+ */
+static
+DefineSelf (fd, file, auth)
+    int fd;
+{
+    register int n;
+    int	len;
+    caddr_t	addr;
+    int		family;
+
+    struct utsname name;
+    register struct hostent  *hp;
+
+    union {
+	struct  sockaddr   sa;
+	struct  sockaddr_in  in;
+    } saddr;
+	
+    struct	sockaddr_in	*inetaddr;
+
+    /* Why not use gethostname()?  Well, at least on my system, I've had to
+     * make an ugly kernel patch to get a name longer than 8 characters, and
+     * uname() lets me access to the whole string (it smashes release, you
+     * see), whereas gethostname() kindly truncates it for me.
+     */
+    uname(&name);
+    hp = gethostbyname (name.nodename);
+    if (hp != NULL) {
+	saddr.sa.sa_family = hp->h_addrtype;
+	inetaddr = (struct sockaddr_in *) (&(saddr.sa));
+	bcopy ( (char *) hp->h_addr, (char *) &(inetaddr->sin_addr), (int) hp->h_length);
+	family = ConvertAddr ( &(saddr.sa), &len, &addr);
+	if ( family > 0) {
+	    writeAddr (FamilyInternet, sizeof (inetaddr->sin_addr),
+			(char *) (&inetaddr->sin_addr), file, auth);
+	}
+    }
+}
+
+#endif /* SIOCGIFCONF else */
 
 static
 setAuthNumber (auth, name)

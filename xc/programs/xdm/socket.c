@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: socket.c,v 1.22 91/01/09 17:26:55 keith Exp $
+ * $XConsortium: socket.c,v 1.23 91/01/10 10:41:04 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -240,7 +240,7 @@ direct_query_respond (from, fromlen, length, type)
     if (!XdmcpReadARRAYofARRAY8 (&buffer, &queryAuthenticationNames))
 	return;
     expectedLen = 1;
-    for (i = 0; i < queryAuthenticationNames.length; i++)
+    for (i = 0; i < (int)queryAuthenticationNames.length; i++)
 	expectedLen += 2 + queryAuthenticationNames.data[i].length;
     if (length == expectedLen)
 	all_query_respond (from, fromlen, &queryAuthenticationNames, type);
@@ -361,7 +361,7 @@ indirect_respond (from, fromlen, length)
     if (!XdmcpReadARRAYofARRAY8 (&buffer, &queryAuthenticationNames))
 	return;
     expectedLen = 1;
-    for (i = 0; i < queryAuthenticationNames.length; i++)
+    for (i = 0; i < (int)queryAuthenticationNames.length; i++)
 	expectedLen += 2 + queryAuthenticationNames.data[i].length;
     if (length == expectedLen)
     {
@@ -375,7 +375,7 @@ indirect_respond (from, fromlen, length)
     	header.length += 2 + clientAddress.length;
     	header.length += 2 + clientPort.length;
     	header.length += 1;
-    	for (i = 0; i < queryAuthenticationNames.length; i++)
+    	for (i = 0; i < (int)queryAuthenticationNames.length; i++)
 	    header.length += 2 + queryAuthenticationNames.data[i].length;
     	XdmcpWriteHeader (&buffer, &header);
     	XdmcpWriteARRAY8 (&buffer, &clientAddress);
@@ -426,17 +426,17 @@ forward_respond (from, fromlen, length)
 	expectedLen += 2 + clientAddress.length;
 	expectedLen += 2 + clientPort.length;
 	expectedLen += 1;	    /* authenticationNames */
-	for (i = 0; i < authenticationNames.length; i++)
+	for (i = 0; i < (int)authenticationNames.length; i++)
 	    expectedLen += 2 + authenticationNames.data[i].length;
 	if (length == expectedLen)
 	{
 	    int	j;
 
 	    j = 0;
-	    for (i = 0; i < clientPort.length; i++)
+	    for (i = 0; i < (int)clientPort.length; i++)
 		j = j * 256 + clientPort.data[i];
 	    Debug ("Forward client address (port %d)", j);
-	    for (i = 0; i < clientAddress.length; i++)
+	    for (i = 0; i < (int)clientAddress.length; i++)
 		Debug (" %d", clientAddress.data[i]);
 	    Debug ("\n");
     	    switch (from->sa_family)
@@ -635,12 +635,12 @@ request_respond (from, fromlen, length)
 	expectlen += 2;				    /* displayNumber */
 	expectlen += 1 + 2*connectionTypes.length;  /* connectionTypes */
 	expectlen += 1;				    /* connectionAddresses */
-	for (i = 0; i < connectionAddresses.length; i++)
+	for (i = 0; i < (int)connectionAddresses.length; i++)
 	    expectlen += 2 + connectionAddresses.data[i].length;
 	expectlen += 2 + authenticationName.length; /* authenticationName */
 	expectlen += 2 + authenticationData.length; /* authenticationData */
 	expectlen += 1;				    /* authoriationNames */
-	for (i = 0; i < authorizationNames.length; i++)
+	for (i = 0; i < (int)authorizationNames.length; i++)
 	    expectlen += 2 + authorizationNames.data[i].length;
 	expectlen += 2 + manufacturerDisplayID.length;	/* displayID */
 	if (expectlen != length)
@@ -697,7 +697,7 @@ request_respond (from, fromlen, length)
 	    reason = &noAuthentic;
 	    goto decline;
 	}
-	if (j < authorizationNames.length)
+	if (j < (int)authorizationNames.length)
 	{
 	    Xauth   *auth;
 	    SetProtoDisplayAuthorization (pdpy,
@@ -1055,7 +1055,7 @@ NetworkAddressToHostname (connectionType, connectionAddress)
 #ifdef DNET
     case FamilyDECnet:
 	break;
-#endif DNET
+#endif /* DNET */
     default:
 	break;
     }
@@ -1131,7 +1131,7 @@ NetworkAddressToName(connectionType, connectionAddress, displayNumber)
 #ifdef DNET
     case FamilyDECnet:
 	return NULL;
-#endif DNET
+#endif /* DNET */
     default:
 	return NULL;
     }

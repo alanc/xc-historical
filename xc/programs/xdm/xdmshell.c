@@ -85,11 +85,6 @@ static int exec_args (filename, args)
 
     if (access (filename, X_OK) != 0) return -1;
 
-#ifdef SYSV
-    status = 0;
-#else
-    waitCode (status) = 0;
-#endif
     switch (pid = vfork ()) {
       case -1:						/* error */
 	return -1;

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: policy.c,v 1.5 90/09/14 17:51:48 keith Exp $
+ * $XConsortium: policy.c,v 1.6 91/01/09 17:27:48 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -55,7 +55,7 @@ ChooseAuthentication (authenticationNames)
 {
     int	i, j;
 
-    for (i = 0; i < authenticationNames->length; i++)
+    for (i = 0; i < (int)authenticationNames->length; i++)
 	for (j = 0; j < NumAuth; j++)
 	    if (XdmcpARRAY8Equal (&authenticationNames->data[i],
 				  &auth[j].authentication))
@@ -68,7 +68,7 @@ CheckAuthentication (pdpy, displayID, name, data)
     ARRAY8Ptr		displayID, name, data;
 {
 #ifdef HASDES
-    if (name->length && !strncmp (name->data, "XDM-AUTHENTICATION-1", 20))
+    if (name->length && !strncmp ((char *)name->data, "XDM-AUTHENTICATION-1", 20))
 	return XdmCheckAuthentication (pdpy, displayID, name, data);
 #endif
     return TRUE;
@@ -87,12 +87,12 @@ SelectAuthorizationTypeIndex (authenticationName, authorizationNames)
 	    break;
     if (j < NumAuth)
     {
-    	for (i = 0; i < authorizationNames->length; i++)
+    	for (i = 0; i < (int)authorizationNames->length; i++)
 	    if (XdmcpARRAY8Equal (&authorizationNames->data[i],
 				  &auth[j].authorization))
 	    	return i;
     }
-    for (i = 0; i < authorizationNames->length; i++)
+    for (i = 0; i < (int)authorizationNames->length; i++)
 	if (ValidAuthorization (authorizationNames->data[i].length,
 				(char *) authorizationNames->data[i].data))
 	    return i;

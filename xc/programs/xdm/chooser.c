@@ -1,5 +1,5 @@
 /*
- * $XConsortium: chooser.c,v 1.1 91/01/09 17:36:32 keith Exp $
+ * $XConsortium: chooser.c,v 1.2 91/01/10 17:01:28 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -84,6 +84,8 @@
 
 Widget	    toplevel, label, viewport, paned, list, box, cancel, acceptit, ping;
 
+static void	CvtStringToARRAY8();
+
 static struct _app_resources {
     ARRAY8Ptr   xdmAddress;
     ARRAY8Ptr	clientAddress;
@@ -140,8 +142,11 @@ static int  pingTry;
 static XdmcpBuffer	directBuffer, broadcastBuffer;
 static XdmcpBuffer	buffer;
 
+/* ARGSUSED */
 static void
-PingHosts ()
+PingHosts (closure, id)
+    XtPointer closure;
+    XtIntervalId *id;
 {
     HostAddr	*hosts;
 
@@ -161,9 +166,13 @@ int	NameTableSize;
 
 static int
 HostnameCompare (a, b)
-    char    **a, **b;
+#if __STDC__
+    const void *a, *b;
+#else
+    char *a, *b;
+#endif
 {
-    return strcmp (*a, *b);
+    return strcmp (*(char **)a, *(char **)b);
 }
 
 static void
@@ -342,8 +351,12 @@ EmptyHostnames ()
     RebuildTable (NameTableSize);
 }
 
+/* ARGSUSED */
 static void
-ReceivePacket ()
+ReceivePacket (closure, source, id)
+    XtPointer	closure;
+    int		*source;
+    XtInputId	*id;
 {
     XdmcpHeader	    header;
     ARRAY8	    authenticationName;
@@ -538,7 +551,7 @@ InitXDMCP (argv)
     header.version = XDM_PROTOCOL_VERSION;
     header.opcode = (CARD16) BROADCAST_QUERY;
     header.length = 1;
-    for (i = 0; i < AuthenticationNames.length; i++)
+    for (i = 0; i < (int)AuthenticationNames.length; i++)
 	header.length += 2 + AuthenticationNames.data[i].length;
     XdmcpWriteHeader (&broadcastBuffer, &header);
     XdmcpWriteARRAYofARRAY8 (&broadcastBuffer, &AuthenticationNames);
@@ -546,7 +559,7 @@ InitXDMCP (argv)
     header.version = XDM_PROTOCOL_VERSION;
     header.opcode = (CARD16) QUERY;
     header.length = 1;
-    for (i = 0; i < AuthenticationNames.length; i++)
+    for (i = 0; i < (int)AuthenticationNames.length; i++)
 	header.length += 2 + AuthenticationNames.data[i].length;
     XdmcpWriteHeader (&directBuffer, &header);
     XdmcpWriteARRAYofARRAY8 (&directBuffer, &AuthenticationNames);
@@ -627,14 +640,19 @@ Choose (h)
 	int i;
 
     	printf ("%u\n", h->connectionType);
-    	for (i = 0; i < h->hostaddr.length; i++)
+    	for (i = 0; i < (int)h->hostaddr.length; i++)
 	    printf ("%u%s", h->hostaddr.data[i],
 		    i == h->hostaddr.length - 1 ? "\n" : " ");
     }
 }
 
+/* ARGSUSED */
 static void
-DoAccept ()
+DoAccept (w, event, params, num_params)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
 {
     XawListReturnStruct	*r;
     HostName		*h;
@@ -654,8 +672,13 @@ DoAccept ()
     }
 }
 
+/* ARGSUSED */
 static void
-DoCheckWilling ()
+DoCheckWilling (w, event, params, num_params)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
 {
     XawListReturnStruct	*r;
     HostName		*h;
@@ -669,14 +692,24 @@ DoCheckWilling ()
 		XawListUnhighlight (list);
 }
 
+/* ARGSUSED */
 static void
-DoCancel ()
+DoCancel (w, event, params, num_params)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
 {
     exit (OBEYSESS_DISPLAY);
 }
 
+/* ARGSUSED */
 static void
-DoPing ()
+DoPing (w, event, params, num_params)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
 {
     EmptyHostnames ();
     pingTry = 0;
@@ -693,8 +726,6 @@ static XtActionsRec app_actions[] = {
 main (argc, argv)
     char    **argv;
 {
-    static void	CvtStringToARRAY8();
-
     toplevel = XtInitialize (argv[0], "Chooser", options, XtNumber(options), &argc, argv);
 
     XtAddConverter(XtRString, XtRARRAY8, CvtStringToARRAY8, NULL, 0);

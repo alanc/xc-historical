@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.38 91/01/09 17:26:15 keith Exp $
+ * $XConsortium: dm.h,v 1.39 91/01/10 10:40:12 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -36,18 +36,33 @@
 #undef dirty		/* Some bozo put a macro called dirty in sys/param.h */
 #endif /* pegasus */
 
+#ifdef SVR4
+#define USE_POSIX_STYLE_WAIT
+#endif
+#ifdef _POSIX_SOURCE
+#define USE_POSIX_STYLE_WAIT
+#endif
+
+#ifdef USE_POSIX_STYLE_WAIT
+#include <sys/wait.h>
+# define waitCode(w)	WEXITSTATUS(w)
+# define waitSig(w)	WTERMSIG(w)
+# define waitCore(w)    0	/* not in POSIX.  so what? */
+typedef int		waitType;
+#else /* USE_POSIX_STYLE_WAIT */
 #ifdef SYSV
 # define waitCode(w)	(((w) >> 8) & 0x7f)
 # define waitSig(w)	((w) & 0xff)
 # define waitCore(w)	(((w) >> 15) & 0x01)
 typedef int		waitType;
-#else
+#else /* SYSV */
 # include	<sys/wait.h>
 # define waitCode(w)	((w).w_T.w_Retcode)
 # define waitSig(w)	((w).w_T.w_Termsig)
 # define waitCore(w)	((w).w_T.w_Coredump)
 typedef union wait	waitType;
 #endif
+#endif /* USE_POSIX_STYLE_WAIT else */
 
 #ifdef UDP_SOCKET
 #include	<sys/types.h>

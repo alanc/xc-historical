@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.46 91/01/09 17:25:41 keith Exp $
+ * $XConsortium: dm.c,v 1.47 91/01/10 11:02:13 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -24,7 +24,7 @@
 
 # include	<stdio.h>
 # include	<X11/Xos.h>
-# include	<sys/signal.h>
+# include	<signal.h>
 #ifndef sigmask
 #define sigmask(m)  (1 << ((m - 1)))
 #endif
@@ -32,16 +32,24 @@
 # include	<sys/stat.h>
 # include	<errno.h>
 # include	<varargs.h>
-#ifdef SYSV
+
 #ifndef F_TLOCK
+#ifdef SYSV
+# include	<unistd.h>
+#endif
+#ifdef SVR4
 # include	<unistd.h>
 #endif
 #endif
+
 # include	"dm.h"
 
 extern int	errno;
 
 extern void	exit (), abort ();
+#ifdef SVR4
+extern FILE    *fdopen();
+#endif
 
 static void	RescanServers ();
 int		Rescan;
@@ -289,8 +297,10 @@ StopAll ()
 int	ChildReady;
 
 #ifndef SYSV
+/* ARGSUSED */
 static SIGVAL
-ChildNotify ()
+ChildNotify (n)
+    int n;
 {
     ChildReady = 1;
 }
@@ -615,7 +625,7 @@ StorePid ()
 	fseek (pidFilePtr, 0l, 0);
 	if (lockPidFile)
 	{
-#ifdef SYSV
+#ifdef F_TLOCK
 	    if (lockf (pidFd, F_TLOCK, 0) == -1)
 	    {
 		if (errno == EACCES)
@@ -643,7 +653,7 @@ StorePid ()
 UnlockPidFile ()
 {
     if (lockPidFile)
-#ifdef SYSV
+#ifdef F_ULOCK
 	lockf (pidFd, F_ULOCK, 0);
 #else
 	flock (pidFd, LOCK_UN);

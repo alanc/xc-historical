@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: server.c,v 1.8 90/03/05 11:50:06 keith Exp $
+ * $XConsortium: server.c,v 1.9 91/01/09 17:28:07 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -21,7 +21,7 @@
 # include	<stdio.h>
 # include	<X11/Xlib.h>
 # include	<X11/Xos.h>
-# include	<sys/signal.h>
+# include	<signal.h>
 # include	<setjmp.h>
 # include	<errno.h>
 # include	"dm.h"
@@ -33,10 +33,12 @@ static serverPause ();
 
 static Display	*dpy;
 
+/* ARGSUSED */
 static SIGVAL
-CatchUsr1 ()
+CatchUsr1 (n)
+    int n;
 {
-#ifdef SYSV
+#ifdef SYSV			/* resets signals when caught */
     (void) signal (SIGUSR1, CatchUsr1);
 #endif
     Debug ("display manager caught SIGUSR1\n");
@@ -130,14 +132,18 @@ struct display *d;
 static jmp_buf	pauseAbort;
 static int	serverPauseRet;
 
+/* ARGSUSED */
 static SIGVAL
-serverPauseAbort ()
+serverPauseAbort (n)
+    int n;
 {
     longjmp (pauseAbort, 1);
 }
 
+/* ARGSUSED */
 static SIGVAL
-serverPauseUsr1 ()
+serverPauseUsr1 (n)
+    int n;
 {
     Debug ("display manager paused til SIGUSR1\n");
     ++receivedUsr1;
@@ -212,8 +218,10 @@ int	    serverPid;
 
 static jmp_buf	openAbort;
 
+/* ARGSUSED */
 static SIGVAL
-abortOpen ()
+abortOpen (n)
+    int n;
 {
 	longjmp (openAbort, 1);
 }
@@ -291,10 +299,26 @@ ResetServer (d)
 
 static jmp_buf	pingTime;
 
-static int
+static void
 PingLost ()
 {
     longjmp (pingTime, 1);
+}
+
+/* ARGSUSED */
+static int
+PingLostIOErr (dpy)
+    Display *dpy;
+{
+    PingLost();
+}
+
+/* ARGSUSED */
+static SIGVAL
+PingLostSig (n)
+    int n;
+{
+    PingLost();
 }
 
 PingServer (d, alternateDpy)
@@ -307,9 +331,9 @@ PingServer (d, alternateDpy)
 
     if (!alternateDpy)
 	alternateDpy = dpy;
-    oldError = XSetIOErrorHandler (PingLost);
+    oldError = XSetIOErrorHandler (PingLostIOErr);
     oldAlarm = alarm (0);
-    oldSig = signal (SIGALRM, PingLost);
+    oldSig = signal (SIGALRM, PingLostSig);
     alarm (d->pingTimeout * 60);
     if (!setjmp (pingTime))
     {

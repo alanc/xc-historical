@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: choose.c,v 1.1 91/01/31 20:53:25 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -352,7 +352,7 @@ AddChooserHost (connectionType, addr, closure)
 
     argp = (char ***) closure;
     if (addr->length == strlen ("BROADCAST") &&
-	!strncmp (addr->data, "BROADCAST", addr->length))
+	!strncmp ((char *)addr->data, "BROADCAST", addr->length))
     {
 	*argp = parseArgs (*argp, "BROADCAST");
     }

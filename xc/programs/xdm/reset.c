@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: reset.c,v 1.5 89/11/18 12:43:35 rws Exp $
+ * $XConsortium: reset.c,v 1.6 89/12/10 16:17:45 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -26,7 +26,7 @@
 
 # include	<X11/Xlib.h>
 # include	<setjmp.h>
-# include	<sys/signal.h>
+# include	<signal.h>
 # include	"dm.h"
 
 /*ARGSUSED*/
@@ -66,8 +66,10 @@ Window	window;
 
 static jmp_buf	resetJmp;
 
+/* ARGSUSED */
 static SIGVAL
-abortReset ()
+abortReset (n)
+    int n;
 {
 	longjmp (resetJmp, 1);
 }
