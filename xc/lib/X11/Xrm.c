@@ -1,5 +1,5 @@
-/* $Header$ */
-/* $Header$ */
+/* $Header: Xrm.c,v 1.1 87/09/12 12:27:21 swick Locked $ */
+/* $Header: Xrm.c,v 1.1 87/09/12 12:27:21 swick Locked $ */
 #ifndef lint
 static char *sccsid = "@(#)Xrm.c	1.11	3/20/87";
 #endif lint
@@ -387,7 +387,7 @@ XrmResourceDataBase XrmLoadDataBase(data)
     register int	i;
     XrmValue		val;
     char	 	*dp = data;
-    XrmResourceDataBase	db;
+    XrmResourceDataBase	db = NULL;
 
     if (data == NULL || data[0] == '\0')
     	return NULL;
@@ -428,7 +428,7 @@ XrmResourceDataBase XrmGetDataBase(magicCookie)
     register int	i;
     XrmValue		val;
     FILE		*magicCookieFile;
-    XrmResourceDataBase	db;
+    XrmResourceDataBase	db = NULL;
 
     if (magicCookie == NULL)
     	return NULL;
