@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: extension.c,v 1.33 87/09/03 09:48:08 toddb Locked $ */
+/* $Header: extension.c,v 1.34 87/09/03 13:15:32 rws Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -290,11 +290,13 @@ RegisterScreenProc(name, pScreen, proc)
      rep.minorCode = minorCode;
      rep.resourceID = resId;
 
+#ifdef notdef
      ErrorF("SendErrorToClient %x\n", client->index);
      ErrorF("    sequenceNumber = %d\n", rep.sequenceNumber);
      ErrorF("    rep.errorCode= %d\n", rep.errorCode);
      ErrorF("    rep.majorCode = %d\n", rep.majorCode);
      ErrorF("    rep.resourceID = %x\n", rep.resourceID);
+#endif notdef
 
      WriteEventsToClient (client, 1, (pointer) &rep);
 }
