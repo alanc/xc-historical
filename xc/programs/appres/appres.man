@@ -1,0 +1,26 @@
+.TH APPRES 1 "20 July 1989" "X Version 11"
+.SH NAME
+appres - list application resource database
+.SH SYNOPSIS
+.B "appres"
+[applicationclass] [-xrm resource ...] 
+.SH DESCRIPTION
+.PP
+The \fIappres\fP program prints the contents of the resource database for the
+specified application \fIclass\fP.  It is used to determine which resources a
+particular program would load.  For example,
+.EX 0
+%  appres XTerm
+.EE
+would list the resources that \fIxterm\fP would load.  If no application
+class is specified, the class \fIAppres\fP (which normally has no defaults
+resource files or user defaults) is used.
+.SH "SEE ALSO"
+.PP
+X(1), xrdb(1), listres(1)
+.SH COPYRIGHT
+Copyright 1989, Massachusetts Institute of Technology.
+.br
+See \fIX(1)\fP for a full statement of rights and permissions.
+.SH AUTHOR
+Jim Fulton, MIT X Consortium
