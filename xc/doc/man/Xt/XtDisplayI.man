@@ -288,7 +288,7 @@ the results are not defined.
 .LP
 The
 .ZN XtScreenDatabase
-function returns the fully merged resoruce database associated with the
+function returns the fully merged resource database associated with the
 specified screen. If the \fIscreen\fP does not belong to a 
 .ZN Display
 initilized by
