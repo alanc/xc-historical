@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: x2pmp.c,v 1.11 91/05/04 22:41:11 rws Exp $
+ *	$XConsortium: x2pmp.c,v 1.12 91/07/18 12:00:06 rws Exp $
  */
 
 /* x2pmp.c: Translate xwd window dump format into PMP format for the
@@ -10,6 +10,7 @@
 #include <X11/Xlib.h>
 #include <X11/XWDFile.h>
 #include <X11/Xfuncs.h>
+#include <errno.h>
 
 #include "pmp.h"
 #include "xpr.h"
