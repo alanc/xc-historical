@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Initialize.c,v 1.104 88/02/03 10:29:45 swick Locked $";
+static char rcsid[] = "$Header: Initialize.c,v 1.105 88/02/05 23:05:02 newman Locked $";
 #endif lint
 
 /*
@@ -234,8 +234,8 @@ XtMergeOptionTables(src1, num_src1, src2, num_src2, dst, num_dst)
     Cardinal *num_dst;
 {
     XrmOptionDescRec *table, *endP;
-    register XrmOptionDescRec *opt1, *opt2, *dstP, *startP; 
-    int i1, i2, len1, len2, dst_len, order;
+    register XrmOptionDescRec *opt1, *opt2, *dstP; 
+    int i1, i2, dst_len, order;
     Boolean found;
 
     *dst = table = (XrmOptionDescRec*)
@@ -252,37 +252,29 @@ XtMergeOptionTables(src1, num_src1, src2, num_src2, dst, num_dst)
 	for (opt1 = table, i1 = 0; i1 < dst_len; opt1++, i1++) {
 	    /* have to walk the entire new table so new list is ordered */
 	    if ((order = strcmp(opt1->option, opt2->option)) == 0) {
+		/* same option names; just overwrite opt1 with opt2 */
 		*opt1 = *opt2;
 		found = True;
 		break;
-	    }
-	    len1 = strlen(opt1->option);
-	    len2 = strlen(opt2->option);
-	    if (len1 != len2 &&
-		strncmp(opt1->option, opt2->option, min(len1, len2)) == 0) {
-		/* one is abbrev of the other; make sure shorter one
-		   is found first in the table.  We'll shift the
-		   remainder of the table to try to preserve sort if
-		   src1 was sorted. */
-		startP = opt1;
-		if (len1 < len2) startP++;
-		for (dstP = endP; dstP > startP;)
-		    *dstP-- = *(dstP-1);
-		*startP = *opt2;
+		}
+	    else if (order > 0) {
+		/* insert after opt1 to preserve order */
+		/* shift rest of table forward to make room for new entry */
+		for (dstP = endP; dstP > opt1; dstP--)
+		    *dstP = *(dstP-1);
+		*opt1 = *opt2;
 		dst_len++;
 		endP++;
 		found = True;
 		break;
 	    }
-	    if (order < 0) startP = opt1+1;
 	}
-	if (!found) {		/* insert after startP to preserve order */
-	    for (dstP = endP; dstP > startP;)
-		*dstP-- = *(dstP-1);
-	    *startP = *opt2;
+	if (!found) {
+	   /* if we get here, then "opt2" sorts after everything already in the table.
+	      So put it at the end. */
+	    *endP++ = *opt2;
 	    dst_len++;
-	    endP++;
-	}
+	    }
     }
     *num_dst = dst_len;
 }
