@@ -245,6 +245,7 @@ OBJS2 =\
 	GetTxtProp.o \
 	GetWMCMapW.o \
 	GetWMProto.o \
+	GetWMState.o \
 	Iconify.o \
 	PixFormats.o \
 	PropAlloc.o \
@@ -255,6 +256,7 @@ OBJS2 =\
 	SetWMCMapW.o \
 	SetWMProps.o \
 	SetWMProto.o \
+	SetWMState.o \
 	StrToText.o \
 	TextToStr.o \
 	WMGeom.o \

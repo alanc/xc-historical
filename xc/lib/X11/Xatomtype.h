@@ -1,7 +1,7 @@
 #ifndef _XATOMTYPE_H_
 #define _XATOMTYPE_H_
 
-/* $XConsortium: Xatomtype.h,v 1.5 89/03/21 13:43:29 jim Exp $ */
+/* $XConsortium: Xatomtype.h,v 11.13 89/03/28 18:14:20 jim Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -95,6 +95,13 @@ typedef struct {
     SIGNEDINT widthInc, heightInc;	/* need to cvt */
   } xPropIconSize;
 #define NumPropIconSizeElements 6 /* number of elements in this structure */
+
+/* this structure defines the window manager state information */
+typedef struct {
+    SIGNEDINT state;			/* need to cvt */
+    RESOURCEID iconWindow;
+} xPropWMState;
+#define NumPropWMStateElements 2	/* number of elements in struct */
 
 #undef BOOL
 #undef SIGNEDINT
