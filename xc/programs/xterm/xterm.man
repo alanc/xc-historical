@@ -465,8 +465,10 @@ is ``black.''
 Specifies the color to use for the text cursor.  The default is ``black.''
 .TP 8
 .B "eightBitInput (\fPclass\fB EightBitInput\fP)"
-Specifies whether or not eight-bit characters input from the keyboard should
-be accepted as is or converted into a sequence of escape-7bit characters.
+If true, Meta characters input from the keyboard are presented as a
+single character with the eighth bit turned on.
+If false, Meta characters are converted into a two-character
+sequence with the character itself preceded by ESC.
 The default is ``true.''
 .TP 8
 .B "eightBitOutput (\fPclass\fB EightBitOutput\fP)"
@@ -1155,15 +1157,16 @@ This action ignores the event but checks for special pointer position
 escape sequences.
 .TP 8
 .B "insert()"
-This action is a synonym for \fBinsert-seven-bit()\fP
+This action inserts the character or string associated with
+the key that was pressed.
 .TP 8
 .B "insert-seven-bit()"
-This action inserts the 7-bit USASCII character or string associated with
-the keysym that was pressed.
+This action is a synonym for \fBinsert()\fP
 .TP 8
 .B "insert-eight-bit()"
-This action inserts the 8-bit ISO Latin-1 character or string associated with
-the keysym that was pressed.
+This action inserts an eight-bit (Meta) version of the character or string
+associated with the key that was pressed.
+The exact action depends on the value of the \fBeightBitInput\fP resource.
 .TP 8
 .B "insert-selection(\fIsourcename\fP [, ...])"
 This action inserts the string found in the selection or cutbuffer indicated
