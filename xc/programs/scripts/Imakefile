@@ -1,9 +1,7 @@
-XCOMM $XConsortium: Imakefile,v 1.23 92/04/14 18:46:59 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.25 93/09/04 17:49:12 rws Exp $
 
 all::
 
-InstallNamedProg(lndir.sh,lndir,$(BINDIR))
-InstallManPage(lndir,$(MANDIR))
 InstallNamedProg(xon.sh,xon,$(BINDIR))
 InstallManPage(xon,$(MANDIR))
 
