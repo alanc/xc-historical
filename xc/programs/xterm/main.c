@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.71 88/08/29 21:36:14 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.72 88/08/29 22:28:29 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -397,19 +397,6 @@ char **argv;
 	int fd3 = -1;
 
 	ProgramName = argv[0];
-
-#ifdef debug
-	{
-	    FILE *fp = fopen ("/tmp/xterm.args", "a");
-	    if (fp) {
-		for (i = 0; i < argc; i++) {
-		    fprintf (stderr, "%s ", argv[i]);
-		}
-		fprintf (stderr, "\n");
-		fclose (fp);
-	    }
-	}
-#endif
 
 #ifdef	hpux
 	/* This is a temporary kludge to get around the bug in 6.2 hp-ux unix
