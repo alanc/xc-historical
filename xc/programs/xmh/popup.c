@@ -1,4 +1,4 @@
-/* $Header: popup.c,v 2.2 88/01/19 14:39:40 swick Locked $ */
+/* $Header: popup.c,v 2.3 88/02/06 10:04:42 swick Exp $ */
 /* popup.c -- Handle pop-up widgets. */
 
 #include "xmh.h"
@@ -76,8 +76,8 @@ char *str;
 				    scrn->widget, args, XtNumber(args) );
     XtDialogAddButton(confirmwidget, "yes", RedoLastButton, (caddr_t)NULL);
     XtDialogAddButton(confirmwidget, "no", DestroyConfirmWidget,(caddr_t)NULL);
-    CenterWidget(scrn->widget, confirmwidget);
     XtRealizeWidget( confirmwidget );
+    CenterWidget(scrn->widget, confirmwidget);
     XtMapWidget( confirmwidget );
     buttoncount = 0;
     return FALSE;
@@ -120,6 +120,7 @@ void (*func)();
 				   NULL, (Cardinal)0 );
     XtDialogAddButton(promptwidget, "goAhead", TellPrompt, (caddr_t)NULL);
     XtDialogAddButton(promptwidget, "cancel", DestroyPromptWidget, (caddr_t)NULL);
+    XtRealizeWidget(promptwidget);
     CenterWidget(scrn->widget, promptwidget);
     XtMapWidget( promptwidget );
     promptfunction = func;
