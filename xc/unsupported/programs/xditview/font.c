@@ -218,7 +218,10 @@ MapDviNameToXName (dw, dvi_name)
 	for (fm = dw->dvi.font_map; fm; fm=fm->next)
 		if (!strcmp (fm->dvi_name, dvi_name))
 			return fm->x_name;
-	return 0;
+	for (fm = dw->dvi.font_map; fm; fm=fm->next)
+		if (!strcmp (fm->dvi_name, "R"))
+			return fm->x_name;
+	return dw->dvi.font_map->x_name;
 }
 
 static char *
