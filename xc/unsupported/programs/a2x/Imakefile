@@ -1,10 +1,19 @@
-#ifndef BuildWithXTrap
+#define BuildWithXTest
+
+#ifdef BuildWithXTest
+DEFINES = -DXTEST
 GENLIB = $(XTESTLIB)
 GENDEPLIB = $(DEPXTESTLIB)
-#else
+#endif
+#ifdef BuildWithXTrap
 DEFINES = -DXTRAP
 GENLIB = -lXTrap $(XTOOLLIB)
 GENDEPLIB = $(DEPXTOOLLIB)
+#endif
+#ifdef BuildWithXTestExt1
+DEFINES = -DXTESTEXT1
+GENLIB =
+GENDEPLIB =
 #endif
 
         DEPLIBS = $(DEPXMULIB) $(DEPGENLIB) $(DEPXLIB)
