@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: xgetselev.c,v 1.6 89/12/02 15:21:06 rws Exp $ */
+/* $XConsortium: xgetselev.c,v 1.7 90/05/18 11:18:21 rws Exp $ */
 
 /***********************************************************************
  *
@@ -101,13 +101,6 @@ ProcXGetSelectedExtensionEvents(client)
 		BadWindow);
 	return Success;
         }
-
-    if (wClient (pWin) == 0)
-	{
-	WriteReplyToClient (client, sizeof(xGetSelectedExtensionEventsReply), 
-		&rep);
-	return Success;
-	}
 
     if (pOthers=wOtherInputMasks(pWin))
 	{
