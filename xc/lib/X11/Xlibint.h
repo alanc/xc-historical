@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $Header: Xlibint.h,v 11.57 88/08/15 12:08:04 jim Exp $ */
+/* $Header: Xlibint.h,v 11.58 88/08/15 17:09:33 jim Exp $ */
 /* Copyright 1984, 1985, 1987  Massachusetts Institute of Technology */
 
 /*
@@ -96,12 +96,12 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
 #if defined(__STDC__) && !defined(UNIXCPP)
 #define GetReq(name, req) \
         WORD64ALIGN\
-	if ((dpy->bufptr + SIZEOF(x/**/name/**/Req)) > dpy->bufmax)\
+	if ((dpy->bufptr + SIZEOF(x##name##Req)) > dpy->bufmax)\
 		_XFlush(dpy);\
 	req = (x##name##Req *)(dpy->last_req = dpy->bufptr);\
 	req->reqType = X_##name;\
-	req->length = (SIZEOF(x/**/name/**/Req))>>2;\
-	dpy->bufptr += SIZEOF(x/**/name/**/Req);\
+	req->length = (SIZEOF(x##name##Req))>>2;\
+	dpy->bufptr += SIZEOF(x##name##Req);\
 	dpy->request++
 
 #else  /* non-ANSI C uses empty comment instead of "##" for token concatenation */
