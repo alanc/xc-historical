@@ -1,13 +1,12 @@
-# $Header: Imakefile,v 1.1 87/09/02 02:21:20 toddb Locked $
        SRCS = zoid.c bezier.c
        OBJS = zoid.o bezier.o
 CDEBUGFLAGS = ServerCDebugFlags
    INCLUDES = -I../include -I$(INCLUDESRC) -I$(SERVERSRC)/include
+   LINTLIBS = ../../server/dix/llib-ldix.ln ../../server/os/4.2bsd/llib-los.ln
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(ext,$(OBJS))
+LintLibraryTarget(ext,$(SRCS))
+NormalLintTarget($(SRCS))
 
 DependTarget()
-
-lint:
-	lint -Cext $(INCLUDES) $(SRCS) > lint.out
