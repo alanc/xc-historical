@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 5.26 94/03/18 14:30:51 dpw Exp $ */
+/* $XConsortium: gc.c,v 5.27 94/04/17 20:26:36 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -672,7 +672,6 @@ CopyGC(pgcSrc, pgcDst, mask)
 {
     register BITS32	index;
     BITS32		maskQ;
-    int i;
     int 		error = 0;
 
     if (pgcSrc == pgcDst)
@@ -789,6 +788,7 @@ CopyGC(pgcSrc, pgcDst, mask)
 		else
 		{
 		    unsigned char *dash;
+		    unsigned int i;
 
 		    dash = (unsigned char *)xalloc(pgcSrc->numInDashList *
 						   sizeof(unsigned char));
