@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XGetHints.c,v 11.23 88/09/06 16:07:52 jim Exp $ */
+/* $XConsortium: XGetHints.c,v 1.6 89/03/17 17:21:04 jim Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -43,18 +43,18 @@ Status XGetSizeHints (dpy, w, hints, property)
         int actual_format;
         unsigned long leftover;
         unsigned long nitems;
-	if (XGetWindowProperty(dpy, w, property, 0L, (long)NumPropSizeElements,
+	if (XGetWindowProperty(dpy, w, property, 0L,
+			       (long) OldNumPropSizeElements,
 	    False, XA_WM_SIZE_HINTS, &actual_type, &actual_format,
             &nitems, &leftover, (unsigned char **)&prop)
             != Success) return (0);
 
         if ((actual_type != XA_WM_SIZE_HINTS) ||
-	    (nitems < NumPropSizeElements) || (actual_format != 32)) {
+	    (nitems < OldNumPropSizeElements) || (actual_format != 32)) {
 		if (prop != NULL) Xfree ((char *)prop);
                 return(0);
 		}
-	hints->flags	  = prop->flags;
-	/* XSizeHints misdeclares these as int instead of long */
+	hints->flags	  = (prop->flags & (USPosition|USSize|PAllHints));
 	hints->x 	  = cvtINT32toInt (prop->x);
 	hints->y 	  = cvtINT32toInt (prop->y);
 	hints->width      = cvtINT32toInt (prop->width);
@@ -198,6 +198,44 @@ Status XGetIconSizes (dpy, w, size_list, count)
 	return(1);
 	
 }
+
+Status XGetCommand (dpy, w, argvp, argcp)
+    Display *dpy;
+    Window w;
+    char ***argvp;
+    int *argcp;
+{
+    XTextProperty tp;
+    int argc;
+    char **argv;
+
+    if (!XGetWMCommand (dpy, w, &tp)) return 0;
+
+    if (tp.encoding != XA_STRING || tp.format != 8) {
+	if (tp.value) Xfree ((char *) tp.value);
+	return 0;
+    }
+
+
+    /*
+     * ignore final <NUL> if present since UNIX WM_COMMAND is nul-terminated
+     */
+    if (tp.value[tp.nitems - 1] == '\0') tp.nitems--;
+
+
+    /*
+     * create a string list and return if successful
+     */
+    if (!XTextPropertyToStringList (&tp, &argv, &argc)) {
+	if (tp.value) Xfree ((char *) tp.value);
+	return (0);
+    }
+
+    *argvp = argv;
+    *argcp = argc;
+    return 1;
+}
+
 
 Status
 XGetTransientForHint(dpy, w, propWindow)

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.81 89/03/24 18:20:07 jim Exp $
+ * $XConsortium: XOpenDis.c,v 1.11 89/03/24 18:25:20 jim Exp $
  */
 
 #include "copyright.h"
@@ -12,6 +12,8 @@
 #include <X11/Xos.h>
 #include <X11/Xauth.h>
 #include "Xatom.h"
+
+extern void bzero();
 
 #ifndef lint
 static int lock;	/* get rid of ifdefs when locking implemented */
@@ -248,7 +250,7 @@ Display *XOpenDisplay (display)
 	if (prefix.success != xTrue) {
 		/* XXX - printing messages marks a bad programming interface */
 		fprintf (stderr, 
-			"%s:  connection to \"%s\" refused by server.\r\n%s:  ",
+			 "%s:  connection to \"%s\" refused by server\r\n%s:  ",
 			 "Xlib", displaybuf, "Xlib");
 		(void) fwrite (u.failure, sizeof(char),
 			(int)prefix.lengthReason, stderr);
@@ -371,6 +373,7 @@ Display *XOpenDisplay (display)
 	    register Screen *sp = &dpy->screens[i];
 	    VisualID root_visualID = u.rp->rootVisualID;
 	    sp->display	    = dpy;
+	    sp->screen_number = i;
 	    sp->root 	    = u.rp->windowId;
 	    sp->cmap 	    = u.rp->defaultColormap;
 	    sp->white_pixel = u.rp->whitePixel;
@@ -508,35 +511,9 @@ Display *XOpenDisplay (display)
 	_XHeadOfDisplayList = dpy;
 
 /*
- *				 W A R N I N G
- *
- * This is experimental code for implementing pseudo-root windows as specified
- * by the Inter-Client Communications Conventions Manual.  The structures that
- * it provides should be considered private to the MIT implementation of Xlib
- * and are SUBJECT TO CHANGE WITHOUT NOTICE.  They should not be incorporated
- * into any toolkits or applications.  When they change, no effort will be
- * made to provide backwards compatibility.
- *
+ * set all the cached ICCCM atoms to None
  */
-	if (prop_name[0] != '\0') {
-	    extern Status _XGetPseudoRoot();
-
-	    /*
-	     * If a bad property name is specified we want to fail so that
-	     * the application doesn't get started up in the original root
-	     * or, worse yet, in a messed up one.  Again, the interfaces to
-	     * the pseudo root code are to be considered private to this 
-	     * implementation of Xlib and should not be used in any toolkits
-	     * or applications.
-	     */
-	    if (!_XGetPseudoRoot (dpy, prop_name)) {
-		_XDisconnectDisplay (dpy);
-		_XFreeDisplayStructure (dpy);
-		errno = EINVAL;
-		UnlockMutex(&lock);
-		return (NULL);
-	    }
-	}
+	bzero ((char *) &dpy->atoms, sizeof (dpy->atoms));
 
 /*
  * and done mucking with the display
@@ -554,10 +531,10 @@ Display *XOpenDisplay (display)
 	    unsigned long leftover;
 	    char *xdef = NULL;
 
-	    if (XGetWindowProperty (dpy, RootWindow(dpy, 0), 
-	    			    XA_RESOURCE_MANAGER, 0L, 100000000L, False,
-				    XA_STRING, &actual_type, &actual_format, 
-				    &nitems, &leftover, 
+	    if (XGetWindowProperty (dpy, RootWindow(dpy, 0),
+				    XA_RESOURCE_MANAGER, 0L, 100000000L, False,
+				    XA_STRING, &actual_type, &actual_format,
+				    &nitems, &leftover,
 				    (unsigned char **) &xdef) == Success) {
 		if ((actual_type == XA_STRING) && (actual_format == 8)) {
 		    LockDisplay (dpy);
@@ -568,6 +545,10 @@ Display *XOpenDisplay (display)
 		}
 	    }
 	}
+
+/*
+ * and return successfully
+ */
  	return(dpy);
 }
 

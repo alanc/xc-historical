@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.150 88/10/04 17:57:37 jim Exp $ */
+/* $XConsortium: Xlib.h,v 1.14 89/03/22 09:46:27 jim Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -98,6 +98,7 @@
 #define DoesSaveUnders(s)	((s)->save_unders)
 #define DoesBackingStore(s)	((s)->backing_store)
 #define EventMaskOfScreen(s)	((s)->root_input_mask)
+#define ScreenNumberOfScreen(s)	((s)->screen_number)
 
 /*
  * Extensions need a way to hang private data on some structures.
@@ -136,6 +137,17 @@ typedef struct _XExten {	/* private to extension mechanism */
 	int (*error_string)();  /* routine to supply error string */
 	char *name;		/* name of this extension */
 } _XExtension;
+
+/*
+ * Data structure for retreiving info about pixmap formats.
+ */
+
+typedef struct {
+    int depth;
+    int bits_per_pixel;
+    int scanline_pad;
+} XPixmapFormatValues;
+
 
 /*
  * Data structure for setting graphics context.
@@ -227,6 +239,7 @@ typedef struct {
 	int backing_store;	/* Never, WhenMapped, Always */
 	Bool save_unders;	
 	long root_input_mask;	/* initial root input mask */
+	int screen_number;	/* index of this screen in display */
 } Screen;
 
 /*
@@ -415,6 +428,7 @@ XModifierKeymap *XNewModifiermap(),
 		*XInsertModifiermapEntry();
 #endif /* _XSTRUCT_ */
 
+
 /*
  * Display datatype maintaining display specific data.
  */
@@ -479,6 +493,22 @@ typedef struct _XDisplay {
 	KeySym lock_meaning;	   /* for XLookupString */
 	struct XKeytrans *key_bindings; /* for XLookupString */
 	Font cursor_font;	   /* for XCreateFontCursor */
+	/*
+	 * ICCCM information, version 1
+	 */
+	struct {		/* internal atoms used for ICCCM things */
+	    Atom text;
+	    Atom wm_state;
+	    Atom wm_protocols;
+	    Atom wm_save_yourself;
+	    Atom wm_change_state;
+	    Atom wm_colormap_windows;
+	} atoms;
+	struct {			/* for XReconfigureWMWindow */
+	    long sequence_number;
+	    int (*old_handler)();
+	    Bool succeeded;
+	} reconfigure_wm_window;
 } Display;
 
 #ifndef _XEVENT_
@@ -1037,6 +1067,7 @@ long XMaxRequestSize();
 char *XResourceManagerString();
 unsigned long XDisplayMotionBufferSize();
 VisualID XVisualIDFromVisual();
+Status XGetSizeHints();
 
 /* routines for dealing with extensions */
 XExtCodes *XInitExtension();
@@ -1062,4 +1093,29 @@ Colormap XDefaultColormap(), XDefaultColormapOfScreen();
 Display *XDisplayOfScreen();
 Screen *XScreenOfDisplay(), *XDefaultScreenOfDisplay();
 long XEventMaskOfScreen();
+
+int XScreenNumberOfScreen();
+int (*XSetErrorHandler())(), (*XSetIOErrorHandler())();
+XPixmapFormatValues *XListPixmapFormats();
+
+/*
+ * ICCCM stuff
+ */
+Status XReconfigureWMWindow();
+int XWMGeometry();
+Status XGetWMSizeHints(), XGetWMNormalHints();
+Status XGetRGBColormaps();
+Status XGetTextProperty(), XGetWMName(), XGetWMIconName();
+Status XGetWMClientMachine(), XGetWMCommand();
+Status XGetWMColormapWindows(), XSetWMColormapWindows();
+Status XGetWMProtocols(), XSetWMProtocols();
+Status XIconifyWindow(), XWithdrawWindow();
+Status XGetCommand();
+void XSetWMProperties(), XSetWMSizeHints(), XSetWMNormalHints();
+void XSetRGBColormaps();
+void XSetTextProperty(), XSetWMName(), XSetWMIconName();
+void XSetWMClientMachine(), XSetWMCommand();
+Status XStringListToTextProperty(), XTextPropertyToStringList();
+void XFreeStringList();
+
 #endif /* _XLIB_H_ */

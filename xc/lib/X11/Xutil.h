@@ -1,4 +1,4 @@
-/* $XConsortium: Xutil.h,v 11.42 88/08/11 15:07:27 jim Exp $ */
+/* $XConsortium: Xutil.h,v 1.12 89/03/27 16:20:48 jim Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -40,6 +40,10 @@ SOFTWARE.
 #define XNegative 	0x0010
 #define YNegative 	0x0020
 
+/*
+ * new version containing base_width, base_height, and win_gravity fields;
+ * used with WM_NORMAL_HINTS.
+ */
 typedef struct {
     	long flags;	/* marks which fields in this structure are defined */
 	int x, y;
@@ -51,6 +55,8 @@ typedef struct {
 		int x;	/* numerator */
 		int y;	/* denominator */
 	} min_aspect, max_aspect;
+	int base_width, base_height;		/* added by ICCCM version 1 */
+	int win_gravity;			/* added by ICCCM version 1 */
 } XSizeHints;
 
 /*
@@ -68,6 +74,10 @@ typedef struct {
 #define PMaxSize	(1L << 5) /* program specified maximum size */
 #define PResizeInc	(1L << 6) /* program specified resize increments */
 #define PAspect		(1L << 7) /* program specified min and max aspect ratios */
+#define PBaseSize	(1L << 8) /* program specified base for incrementing */
+#define PWinGravity	(1L << 9) /* program specified window gravity */
+
+/* obsolete */
 #define PAllHints (PPosition|PSize|PMinSize|PMaxSize|PResizeInc|PAspect)
 
 typedef struct {
@@ -96,13 +106,29 @@ typedef struct {
 IconPositionHint|IconMaskHint|WindowGroupHint)
 
 /* definitions for initial window state */
-
-#define DontCareState 0	/* don't know or care */
+#define WithdrawnState 0	/* for windows that are not mapped */
 #define NormalState 1	/* most applications want to start this way */
-#define ZoomState 2	/* application wants to start zoomed */
 #define IconicState 3	/* application wants to start as an icon */
+
+/*
+ * Obsolete states no longer defined by ICCCM
+ */
+#define DontCareState 0	/* don't know or care */
+#define ZoomState 2	/* application wants to start zoomed */
 #define InactiveState 4	/* application believes it is seldom used; some
     			   wm's may put it on inactive menu */
+
+
+/*
+ * new structure for manipulating TEXT properties; used with WM_NAME, 
+ * WM_ICON_NAME, WM_CLIENT_MACHINE, and WM_COMMAND.
+ */
+typedef struct {
+    unsigned char *value;		/* same as Property routines */
+    Atom encoding;			/* prop type */
+    int format;				/* prop data format: 8, 16, or 32 */
+    unsigned long nitems;		/* number of data items in value */
+} XTextProperty;
 
 
 typedef struct {
@@ -204,9 +230,8 @@ typedef struct {
 
 /*
  * This defines a window manager property that clients may use to
- * share standard color maps:
+ * share standard color maps of type RGB_COLOR_MAP:
  */
-
 typedef struct {
 	Colormap colormap;
 	unsigned long red_max;
@@ -216,7 +241,12 @@ typedef struct {
 	unsigned long blue_max;
 	unsigned long blue_mult;
 	unsigned long base_pixel;
+	VisualID visualid;		/* added by ICCCM version 1 */
+	XID killid;			/* added by ICCCM version 1 */
 } XStandardColormap;
+
+#define ReleaseByFreeingColormap ((XID) 1L)  /* for killid field above */
+
 
 /*
  * return codes for XReadBitmapFile and XWriteBitmapFile
@@ -268,4 +298,14 @@ Region XCreateRegion(), XPolygonRegion();
 XImage *XCreateImage();
 
 XVisualInfo *XGetVisualInfo();
+
+/*
+ * Allocation routines for properties that may get longer
+ */
+XSizeHints *XAllocSizeHints ();
+XStandardColormap *XAllocStandardColormap ();
+XWMHints *XAllocWMHints ();
+XClassHint *XAllocClassHint ();
+XIconSize *XAllocIconSize ();
+
 #endif /* _XUTIL_H_ */

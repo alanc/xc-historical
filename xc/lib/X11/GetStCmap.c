@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XGetStCmap.c,v 1.5 88/06/19 16:42:00 rws Exp $ */
+/* $XConsortium: XGetStCmap.c,v 1.2 89/02/22 18:30:51 jim Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -44,12 +44,12 @@ Status XGetStandardColormap (dpy, w, cmap, property)
         unsigned long nitems;
 
 	if (XGetWindowProperty (dpy, w, property, 0L,
-	    (long)NumPropStandardColormapElements, False,
+	    (long)OldNumPropStandardColormapElements, False,
 	    XA_RGB_COLOR_MAP, &actual_type, &actual_format,
             &nitems, &leftover, (unsigned char **)&prop)
             != Success) return (0);
 
-        if ((nitems < NumPropStandardColormapElements)
+        if ((nitems < OldNumPropStandardColormapElements)
 	 || (actual_format != 32)) {
 		if (prop) Xfree ((char *)prop);
                 return(0);

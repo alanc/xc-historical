@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XMacros.c,v 11.20 88/09/04 21:20:39 rws Exp $ */
+/* $XConsortium: XMacros.c,v 1.2 89/03/22 09:33:02 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1987	*/
 
 #include "Xlibint.h"
@@ -151,6 +151,8 @@ int XDoesBackingStore(s) Screen *s; { return (DoesBackingStore(s)); }
 
 long XEventMaskOfScreen(s) Screen *s; { return (EventMaskOfScreen(s)); }
 
+int XScreenNumberOfScreen(s) Screen *s; { return (ScreenNumberOfScreen(s)); }
+
 /*
  * These macros are used to give some sugar to the image routines so that
  * naive people are more comfortable with them.
@@ -204,4 +206,5 @@ XNoOp (dpy)
 
     UnlockDisplay(dpy);
 }
+
 

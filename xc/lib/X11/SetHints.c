@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XSetHints.c,v 11.28 88/10/22 10:15:25 jim Exp $ */
+/* $XConsortium: XSetHints.c,v 1.4 89/03/17 17:21:09 jim Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -57,7 +57,7 @@ XSetSizeHints(dpy, w, hints, property)
 	prop.maxAspectX = hints->max_aspect.x;
 	prop.maxAspectY = hints->max_aspect.y;
 	XChangeProperty (dpy, w, property, XA_WM_SIZE_HINTS, 32,
-	     PropModeReplace, (unsigned char *) &prop, NumPropSizeElements);
+	     PropModeReplace, (unsigned char *) &prop, OldNumPropSizeElements);
 }
 
 /* 

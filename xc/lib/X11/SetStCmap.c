@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XSetStCmap.c,v 1.2 87/09/11 08:15:53 toddb Exp $ */
+/* $XConsortium: XSetStCmap.c,v 1.2 89/02/22 18:30:56 jim Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -49,5 +49,5 @@ void XSetStandardColormap(dpy, w, cmap, property)
 	prop.base_pixel  = cmap->base_pixel;
 	XChangeProperty (dpy, w, property, XA_RGB_COLOR_MAP, 32,
 	     PropModeReplace, (unsigned char *) &prop,
-	     NumPropStandardColormapElements);
+	     OldNumPropStandardColormapElements);
 }

@@ -1,7 +1,7 @@
 #ifndef _XATOMTYPE_H_
 #define _XATOMTYPE_H_
 
-/* $XConsortium: Xatomtype.h,v 11.11 88/09/06 16:09:48 jim Exp $ */
+/* $XConsortium: Xatomtype.h,v 1.5 89/03/21 13:43:29 jim Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -34,23 +34,45 @@ SOFTWARE.
  * compiler doesn't treat &structoflongs the same as &arrayoflongs[0], you
  * will have some work to do.
  */
+
 #define BOOL long
 #define SIGNEDINT long
 #define UNSIGNEDINT unsigned long
 #define RESOURCEID unsigned long
 
+
 /* this structure may be extended, but do not change the order */
 typedef struct {
     UNSIGNEDINT flags;
-    SIGNEDINT x, y;			/* need to cvt */
-    SIGNEDINT width, height;		/* need to cvt */
+    SIGNEDINT x, y, width, height;	/* need to cvt; only for pre-ICCCM */
     SIGNEDINT minWidth, minHeight;	/* need to cvt */
     SIGNEDINT maxWidth, maxHeight;	/* need to cvt */
     SIGNEDINT widthInc, heightInc;	/* need to cvt */
     SIGNEDINT minAspectX, minAspectY;	/* need to cvt */
     SIGNEDINT maxAspectX, maxAspectY;	/* need to cvt */
-    } xPropSizeHints;
-#define NumPropSizeElements 15	/* number of elements in this structure */
+    SIGNEDINT baseWidth,baseHeight;	/* need to cvt; ICCCM version 1 */
+    SIGNEDINT winGravity;		/* need to cvt; ICCCM version 1 */
+} xPropSizeHints;
+#define OldNumPropSizeElements 15	/* pre-ICCCM */
+#define NumPropSizeElements 18		/* ICCCM version 1 */
+
+/* this structure may be extended, but do not change the order */
+/* RGB properties */
+typedef struct {
+	RESOURCEID colormap;
+	UNSIGNEDINT red_max;
+	UNSIGNEDINT red_mult;
+	UNSIGNEDINT green_max;
+	UNSIGNEDINT green_mult;
+	UNSIGNEDINT blue_max;
+	UNSIGNEDINT blue_mult;
+	UNSIGNEDINT base_pixel;
+	RESOURCEID visualid;		/* ICCCM version 1 */
+	RESOURCEID killid;		/* ICCCM version 1 */
+} xPropStandardColormap;
+#define OldNumPropStandardColormapElements 8  /* pre-ICCCM */
+#define NumPropStandardColormapElements 10  /* ICCCM version 1 */
+
 
 /* this structure may be extended, but do not change the order */
 typedef struct {
@@ -74,22 +96,9 @@ typedef struct {
   } xPropIconSize;
 #define NumPropIconSizeElements 6 /* number of elements in this structure */
 
-/* this structure may be extended, but do not change the order */
-/* RGB properties */
-typedef struct {
-	RESOURCEID colormap;
-	UNSIGNEDINT red_max;
-	UNSIGNEDINT red_mult;
-	UNSIGNEDINT green_max;
-	UNSIGNEDINT green_mult;
-	UNSIGNEDINT blue_max;
-	UNSIGNEDINT blue_mult;
-	UNSIGNEDINT base_pixel;
-} xPropStandardColormap;
-#define NumPropStandardColormapElements 8
-    
+#undef BOOL
 #undef SIGNEDINT
 #undef UNSIGNEDINT
 #undef RESOURCEID
 
-#endif _XATOMTYPE_H_
+#endif /* _XATOMTYPE_H_ */
