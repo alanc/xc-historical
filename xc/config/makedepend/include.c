@@ -1,5 +1,5 @@
 /*
- * $XConsortium: include.c,v 1.12 92/08/24 16:31:40 gildea Exp $
+ * $XConsortium: include.c,v 1.13 94/02/04 19:10:40 matt Exp $
  */
 #include "def.h"
 
@@ -33,10 +33,10 @@ struct inclist *inc_path(file, include, dot)
 	    }
 
 	/*
-	 * If the path was surrounded by "", then check the absolute
-	 * path provided.
+	 * If the path was surrounded by "" or is an absolute path,
+	 * then check the exact path provided.
 	 */
-	if (!found && dot) {
+	if (!found && (dot || *include == '/')) {
 		if (stat(include, &st) == 0) {
 			ip = newinclude(include, include);
 			found = TRUE;
