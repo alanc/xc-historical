@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlcWrap.c,v 11.8 91/05/02 16:26:52 rws Exp $
+ * $XConsortium: XlcWrap.c,v 11.9 92/04/24 16:07:40 rws Exp $
  */
 
 /*
@@ -131,10 +131,6 @@ _XlcDefaultMapModifiers (lcd, user_mods, prog_mods)
     return mods;
 }
 
-#ifndef	lint
-static lock;
-#endif /* lint */
-
 static XLCd *lcd_list;
 static XLCdLoadProc *loaders;
 
@@ -166,7 +162,7 @@ _XlcCurrentLC ()
 
     name = setlocale (LC_CTYPE, (char *)NULL);
 
-    LockMutex(&lock);
+    LockMutex();
 
     /*
      * if first-time, build a list and load the one needed
@@ -213,6 +209,6 @@ bad:
     lcd = (XLCd) NULL;
 
 found:
-    UnlockMutex(&lock);
+    UnlockMutex();
     return lcd;
 }
