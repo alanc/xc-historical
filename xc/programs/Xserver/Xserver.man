@@ -1,4 +1,17 @@
-.\" $XConsortium: Xserver.man,v 1.51 94/04/07 18:50:13 dpw Exp $
+.\" $XConsortium: Xserver.man,v 1.52 94/04/11 16:03:16 matt Exp $
+.\" Copyright 1984, 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1993 
+.\" Massachusetts Institute of Technology
+.\" Copyright 1994 X Consortium, Inc.
+.\" 
+.\" Permission to use, copy, modify, distribute, and sell this software and
+.\" its documentation for any purpose is hereby granted without fee, provided
+.\" that the above copyright notice appear in all copies and that both that
+.\" copyright notice and this permission notice appear in supporting
+.\" documentation, and that the name of M.I.T. not be used in advertising or
+.\" publicity pertaining to distribution of the software without specific,
+.\" written prior permission.  M.I.T. makes no representations about the
+.\" suitability of this software for any purpose.  It is provided "as is"
+.\" without express or implied warranty.
 .TH XSERVER 1 "Release 6"  "X Version 11"
 .SH NAME
 Xserver \- X Window System display server
@@ -181,7 +194,7 @@ the client that it is doing so.
 .B \-x \fIextension\fP
 loads the specified extension at init.
 This is a no-op for most implementations.
-.PP
+.SH SERVER DEPENDENT OPTIONS
 Some X servers accept the following options:
 .TP 8
 .B \-ld \fIkilobytes\fP
@@ -206,7 +219,7 @@ There is currently no way to change this from a client.
 .B nologo
 turns off the X Window System logo display in the screen-saver.
 There is currently no way to change this from a client.
-.PP
+.SH XDMCP OPTIONS
 X servers that support XDMCP have the following options.
 See the \fIX Display Manager Control Protocol\fP specification for more
 information.
@@ -238,7 +251,7 @@ data (not that it is very private, being on the command line!).
 .B \-displayID \fIdisplay-id\fP
 Yet another XDMCP specific value, this one allows the display manager to
 identify each display so that it can locate the shared key.
-.PP
+.SH XKEYBOARD OPTIONS
 X servers that support the XKEYBOARD extension accept the following options:
 .TP 8
 .B \-xkbdir \fIdirectory\fP
@@ -279,8 +292,8 @@ automatically allowed access to the server, and only clients which
 send one of the authorization records contained in the file in the
 connection setup information will be allowed access.  See the
 \fIXau\fP manual page for a description of the binary format of this
-file.  Maintenance of this file, and distribution of its contents to
-remote sites for use there is left as an exercise for the reader.
+file.  See \fIxauth(1)\fP for maintenance of this file, and distribution
+of its contents to remote hosts.
 .PP
 The X server also uses a host-based access control list for deciding
 whether or not to accept connections from clients on a particular machine.
@@ -372,6 +385,9 @@ Kerberos 5 replay cache for display number \fBn\fP
 .TP 30
 /usr/adm/X\fBn\fPmsgs
 Error log file for display number \fBn\fP if run from \fIinit(8)\fP
+.TP 30
+<XRoot>/lib/X11/xdm/xdm-errors
+Default error log file if the server is run from \fIxdm(1)\fP
 .LP
 Note: <XRoot> refers to the root of the X11 install tree.
 .SH "SEE ALSO"
@@ -399,13 +415,6 @@ Server internal documentation:
 .I "Definition of the Porting Layer for the X v11 Sample Server,"
 .I "Strategies for Porting the X v11 Sample Server,"
 .I "Godzilla's Guide to Porting the X V11 Sample Server"
-.SH COPYRIGHT
-Copyright 1984, 1985, 1986, 1987, 1988, 1989, 1990, 1991
-Massachusetts Institute of Technology.
-.br
-Copyright 1994 X Consortium, Inc.
-.br
-See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHORS
 The sample server was originally written by Susan Angebranndt, Raymond
 Drewry, Philip Karlton, and Todd Newman, from Digital Equipment
