@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XMultibuf.c,v 1.7 89/10/03 17:25:03 jim Exp $
+ * $XConsortium: XMultibuf.c,v 1.8 89/10/04 16:12:06 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -31,7 +31,7 @@
 #include "../include/multibufst.h"
 
 static XExtensionInfo *multibuf_info;	/* starts out NULL */
-static /* const */ char *multibuf_extension_name = MULTIBUF_PROTOCOL_NAME;
+static /* const */ char *multibuf_extension_name = MULTIBUFFER_PROTOCOL_NAME;
 
 #define MbufCheckExtension(dpy,i,val) \
   XextCheckExtension (dpy, i, multibuf_extension_name, val)
