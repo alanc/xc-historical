@@ -1,9 +1,8 @@
 /*
- *  $XConsortium: globals.h,v 2.25 89/09/17 19:40:25 converse Exp $
- */
-
-/*
- *			  COPYRIGHT 1987
+ *  $XConsortium: globals.h,v 2.26 89/09/27 19:11:43 converse Exp $
+ *
+ *
+ *		       COPYRIGHT 1987, 1989
  *		   DIGITAL EQUIPMENT CORPORATION
  *		       MAYNARD, MASSACHUSETTS
  *			ALL RIGHTS RESERVED.
@@ -16,7 +15,6 @@
  * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT
  * RIGHTS, APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN
  * ADDITION TO THAT SET FORTH ABOVE.
- *
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted, provided
@@ -40,40 +38,40 @@ ext char	*homeDir;	/* User's home directory. */
 
 ext struct _resources {
     Boolean	debug;
-    char	*mailDir;		/* mh's mail directory. */
-    char	*tempDir;		/* Directory for temporary files. */
-    char	*defMhPath;		/* Path for mh commands. */
-    char	*initialFolderName;	/* Initial folder to use. */
-    char	*initialIncFile;	/* -file for inc on initial folder */
-    char	*defInsertFilter;	/* Insert message filter command */
-    char	*draftsFolderName;	/* Folder for drafts. */
-    int		defSendLineWidth;	/* How long to break lines on send. */
-    int		defBreakSendLineWidth;	/* Minimum length of a line before
+    char	*mail_path;		/* mh's mail directory. */
+    char	*temp_dir;		/* Directory for temporary files. */
+    char	*mh_path;		/* Path for mh commands. */
+    char	*initial_folder_name;	/* Initial folder to use. */
+    char	*initial_inc_file;	/* -file for inc on initial folder */
+    char	*insert_filter;		/* Insert message filter command */
+    char	*drafts_folder_name;	/* Folder for drafts. */
+    int		send_line_width;	/* How long to break lines on send. */
+    int		break_send_line_width;	/* Minimum length of a line before
 					   we'll break it. */
-    char	*defPrintCommand;	/* Printing command. */
-    int		defTocWidth;	/* How many characters wide to use in tocs */
-    Boolean	SkipDeleted;		/* If true, skip over deleted msgs. */
-    Boolean	SkipMoved;		/* If true, skip over moved msgs. */
-    Boolean	SkipCopied;		/* If true, skip over copied msgs. */
-    Boolean	defHideBoringHeaders;
-    char	*defGeometry;	/* Default geometry to use for things. */
-    char	*defTocGeometry;
-    char	*defViewGeometry;
-    char	*defCompGeometry;
-    char	*defPickGeometry;
-    int		defTocPercentage;
-    Boolean	defNewMailCheck;	/* Whether to check for new mail. */
-    Boolean	defMakeCheckpoints; /* Whether to create checkpoint files. */
+    char	*print_command;	/* Printing command. */
+    int		toc_width;	/* How many characters wide to use in tocs */
+    Boolean	skip_deleted;		/* If true, skip over deleted msgs. */
+    Boolean	skip_moved;		/* If true, skip over moved msgs. */
+    Boolean	skip_copied;		/* If true, skip over copied msgs. */
+    Boolean	hide_boring_headers;
+    char	*geometry;	/* Default geometry to use for things. */
+    char	*toc_geometry;
+    char	*view_geometry;
+    char	*comp_geometry;
+    char	*pick_geometry;
+    int		toc_percentage;
+    Boolean	new_mail_check;		/* Whether to check for new mail. */
+    Boolean	make_checkpoints;     /* Whether to create checkpoint files. */
     int		check_frequency;	/* in minutes, of new mail check */
-    int		mailWaitingFlag;	/* If true, change icon on new mail */
+    int		mail_waiting_flag;	/* If true, change icon on new mail */
     Cursor	cursor;			/* application cursor */
-    Pixel	cursor_color;		/* application cursor color */
+    Pixel	pointer_color;		/* application cursor color */
     Boolean	sticky_menu;		/* command menu entries are sticky? */
     Boolean	prefix_wm_and_icon_name;/* prefix wm names with progName ? */
     Boolean	reverse_read_order;	/* decrement counter to next msg ? */
     Boolean	block_events_on_busy;	/* disallow user input while busy ? */
     Cursor	busy_cursor;		/* the cursor while input blocked */
-    Pixel	busy_cursor_color;	/* busy cursor color */
+    Pixel	busy_pointer_color;	/* busy cursor color */
     int		command_button_count;	/* number of buttons in command box */
 } app_resources;
 
@@ -103,3 +101,38 @@ ext Boolean	subProcessRunning; /* interlock for DoCommand/CheckMail */
 
 #define PNullSource (NullSource != NULL ? NullSource : \
 (NullSource = (Widget)  CreateFileSource(scrn->viewlabel, "/dev/null", False)))
+
+
+typedef struct _XmhMenuEntry {
+    char	*name;			/* menu entry name */
+    void   	(*function)();		/* menu entry callback function */
+} XmhMenuEntryRec, *XmhMenuEntry;	
+
+
+typedef struct _XmhMenuButtonDesc {
+    char	*button_name;		/* menu button name */
+    char	*menu_name;		/* menu name */
+    int		id;			/* an internal key */
+    XmhMenuEntry entry;			/* list of menu entries */
+    Cardinal	num_entries;		/* count of menu entries in list */
+} XmhMenuButtonDescRec, *XmhMenuButtonDesc;
+
+
+extern XmhMenuEntryRec	folderMenu[];
+extern XmhMenuEntryRec	tocMenu[];
+extern XmhMenuEntryRec	messageMenu[];
+extern XmhMenuEntryRec	sequenceMenu[];
+extern XmhMenuEntryRec	viewMenu[];
+extern XmhMenuEntryRec	optionMenu[];
+
+extern XmhMenuButtonDescRec	MenuBoxButtons[];
+
+/* Used as indices into MenuBoxButtons; these must correspond. */
+
+#define XMH_FOLDER	0
+#define XMH_TOC		1
+#define XMH_MESSAGE	2
+#define	XMH_SEQUENCE	3
+#define XMH_VIEW	4
+#define XMH_OPTION	5
+

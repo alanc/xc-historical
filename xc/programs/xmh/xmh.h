@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xmh.h,v 2.23 89/09/15 16:10:33 converse Exp $
+ * $XConsortium: xmh.h,v 2.24 89/09/27 19:11:51 converse Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -34,14 +34,16 @@
 #include <X11/Xutil.h>
 #include <X11/cursorfont.h>
 #include <X11/Intrinsic.h>
-#include <X11/Shell.h>
 #include <X11/StringDefs.h>
+#include <X11/Shell.h>
 #include <X11/Xaw/AsciiText.h>
+#include <X11/Xaw/BSBMenuEnt.h>
 #include <X11/Xaw/Box.h>
 #include <X11/Xaw/Command.h>
 #include <X11/Xaw/Dialog.h>
 #include <X11/Xaw/Form.h>
 #include <X11/Xaw/Label.h>
+#include <X11/Xaw/LineMenuEn.h>
 #include <X11/Xaw/MenuButton.h>
 #include <X11/Xaw/Scroll.h>
 #include <X11/Xaw/SimpleMenu.h>
@@ -89,14 +91,20 @@ typedef enum {
     STpick
 } ScrnKind;
 
+typedef struct _StackRec {
+    char		*data;
+    struct _StackRec	*next;
+} StackRec, *Stack;
+
+
 typedef struct _ScrnRec {
    Widget	parent;		/* The parent widget of the scrn */
    Widget	widget;		/* The pane widget for the scrn */
    int		mapped;		/* TRUE only if we've mapped this screen. */
    ScrnKind	kind;		/* What kind of scrn we have. */
+   ButtonBox	mainbuttons;	/* Main xmh control buttons. */
    Widget	folderlabel;	/* Folder titlebar */
    ButtonBox	folderbuttons;	/* Folder buttons. */
-   ButtonBox	mainbuttons;	/* Main xmh control buttons. */
    Widget	toclabel;	/* Toc titlebar. */
    Widget	tocwidget;	/* Toc text. */
    ButtonBox 	seqbuttons;	/* Sequence buttons. */
@@ -112,6 +120,7 @@ typedef struct _ScrnRec {
    XtTranslations read_translations;	/* overridden by accelerators */
    Msg		assocmsg;	/* Associated message for reply, etc. */
    Window	wait_window;	/* InputOnly window with busy cursor */
+   Stack	stack;		/* a stack of folder names */
 } ScrnRec, *Scrn;
 
 

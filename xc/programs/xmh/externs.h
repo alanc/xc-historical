@@ -1,8 +1,7 @@
 /*
- * $XConsortium: externs.h,v 2.22 89/09/17 19:39:50 converse Exp $
- */
-
-/*
+ * $XConsortium: externs.h,v 2.23 89/09/27 19:11:39 converse Exp $
+ *
+ *
  *		       COPYRIGHT 1987, 1989
  *		   DIGITAL EQUIPMENT CORPORATION
  *		       MAYNARD, MASSACHUSETTS
@@ -60,7 +59,9 @@ extern void	IconInit		(/* void */);
 extern void	CreateMenu		(/* Button, Boolean */);
 extern void	AttachMenuToButton	(/* Button, Widget, char * */);
 extern void 	AddMenuEntry		(/* Widget, char *, ... */);
+extern void	DoRememberMenuSelection (/* Widget, XtPointer, XtPointer */);
 extern void	SendMenuEntryEnableMsg	(/* Button, char *, int */);
+extern void	SetSequenceMenuItem	(/* Widget */);
 extern void	ToggleMenuItem		(/* Widget, char *, Boolean */);
 
 	/* from msg.c */
@@ -107,6 +108,7 @@ extern void	DoForward		(/* Widget, XtPointer, XtPointer */);
 extern void	DoTocUseAsComp		(/* Widget, XtPointer, XtPointer */);
 extern void	DoPrint			(/* Widget, XtPointer, XtPointer */);
 extern void	DoPickMessages		(/* Widget, XtPointer, XtPointer */);
+extern void	DoSelectSequence	(/* Widget, XtPointer, XtPointer */);
 extern void	DoOpenSeq		(/* Widget, XtPointer, XtPointer */);
 extern void 	DoAddToSeq		(/* Widget, XtPointer, XtPointer */);
 extern void 	DoRemoveFromSeq		(/* Widget, XtPointer, XtPointer */);
@@ -114,6 +116,7 @@ extern void	DoDeleteSeq		(/* Widget, XtPointer, XtPointer */);
 
 	/* from util.c */
 
+extern char *	Version			(/* void */);
 extern void	Punt			(/* char * */);
 extern int	myopen			(/* char *, int, int */);
 extern FILE *	myfopen			(/* char *, char * */);
@@ -150,10 +153,6 @@ extern void	InitBusyCursor		(/* Scrn */);
 extern void	ShowBusyCursor		(/* void */);
 extern void 	UnshowBusyCursor	(/* void */);
 extern void 	SetCursorColor		(/* Widget, Cursor, unsigned long */);
-
-	/* from version.c */
-
-extern char *	Version			(/* void */);
 
 	/* from viewfuncs.c */
 

@@ -1,4 +1,4 @@
-/* $XConsortium: tocintrnl.h,v 2.10 89/07/20 21:15:43 converse Exp $ */
+/* $XConsortium: tocintrnl.h,v 2.11 89/09/01 17:36:47 kit Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -68,6 +68,7 @@ typedef struct _TocRec {
    int		numsequences;	/* #/sequences defined for this folder. */
    Sequence	*seqlist;	/* Array of pointers to sequences. */
    Sequence 	viewedseq;	/* Seq currently shown (NULL == all msgs) */
+   char		*prevseqname;	/* Name of most recently selected sequence */
    Widget       source;		/* Source for the file containing info. */
    Boolean	hasselection;	/* Whether we own the selection. */
    XawTextPosition left, right;	/* Left and right extents of selection. */
