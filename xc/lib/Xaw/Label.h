@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Label.h,v 1.27 91/05/04 18:58:53 rws Exp $
+ * $XConsortium: Label.h,v 1.28 91/06/22 19:34:33 rws Exp $
  */
 
 /***********************************************************
@@ -48,7 +48,7 @@ SOFTWARE.
  borderWidth	     BorderWidth	Dimension	1
  cursor		     Cursor		Cursor		None
  destroyCallback     Callback		XtCallbackList	NULL
- encoding	     Encoding		unsigned char	0
+ encoding	     Encoding		unsigned char	XawTextEncoding8bit
  font		     Font		XFontStruct*	XtDefaultFont
  foreground	     Foreground		Pixel		XtDefaultForeground
  height		     Height		Dimension	text height
@@ -66,6 +66,9 @@ SOFTWARE.
  y		     Position		Position	0
 
 */
+
+#define XawTextEncoding8bit 0
+#define XawTextEncodingChar2b 1
 
 #define XtNleftBitmap "leftBitmap"
 #define XtCLeftBitmap "LeftBitmap"
