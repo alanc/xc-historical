@@ -326,7 +326,7 @@ value of this resource.  The default for this resource is specified
 with the DefaultSystemPath entry in the system configuration file, but
 it is frequently "/etc:/bin:/usr/bin:/usr/bin/X11:/usr/ucb".  Note the
 conspicuous absence of "." from this entry.  This is a good practise to
-follow for root; it avoids many common trojan horse system penetration
+follow for root; it avoids many common Trojan Horse system penetration
 schemes.
 .IP "\fBDisplayManager.DISPLAY.systemShell\fP"
 .I Xdm
