@@ -1,4 +1,4 @@
-/* $XConsortium: constrain.c,v 1.1 93/07/19 13:02:11 rws Exp $ */
+/* $XConsortium: constrain.c,v 1.2 93/07/26 14:13:49 rws Exp $ */
 
 /**** module do_constrain.c ****/
 /******************************************************************************
@@ -158,6 +158,9 @@ void DoConstrainFloMapImmediate(xp, p, reps)
                 	flograph,       /* photoflo specification */
                 	3               /* number of elements */
         	);
+
+		if ( tech_parms )
+		    free( tech_parms );	
     	}
 	XieDestroyPhotospace( xp->d, photospace );
 	XieFreePhotofloGraph(flograph,3);	
@@ -234,6 +237,9 @@ void DoConstrainFloMapStored(xp, p, reps)
        	);
 
 	flo = XieCreatePhotoflo( xp->d, flograph, 3 );
+
+	if ( tech_parms )
+		free( tech_parms );	
 
 	/* crank it */
 
