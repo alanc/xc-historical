@@ -28,13 +28,14 @@
 #+allegro
 (import '(excl::without-interrupts))
 
-#+(or (and excl (not allegro)) allegro-v3.0)
+#-(or little-endian big-endian)
 (eval-when (eval compile load)
   (let ((x '#(1)))
     (if (not (eq 0 (sys::memref x
 				#.(comp::mdparam 'comp::md-svector-data0-adj)
 				0 :unsigned-byte)))
-	(pushnew :little-endian *features*))))
+	(pushnew :little-endian *features*)
+      (pushnew :big-endian *features*))))
 
 
 (defmacro define-condition (name (parent-type) &optional slots &rest args)
@@ -189,17 +190,18 @@
 	  else (decf rest numread)
 	       (incf start-index numread))))))
 
+
 (when (plusp (ff:get-entry-points
-      (make-array 1 :initial-contents
+	      (make-array 1 :initial-contents
 			  (list (ff:convert-to-lang "fd_wait_for_input")))
-      (make-array 1 :element-type '(unsigned-byte 32))))
+	      (make-array 1 :element-type '(unsigned-byte 32))))
   (ff:remove-entry-point (ff:convert-to-lang "fd_wait_for_input"))
   (load "excldep.o"))
 
 (when (plusp (ff:get-entry-points
-	    (make-array 1 :initial-contents
+	      (make-array 1 :initial-contents
 			  (list (ff:convert-to-lang "connect_to_server")))
-	    (make-array 1 :element-type '(unsigned-byte 32))))
+	      (make-array 1 :element-type '(unsigned-byte 32))))
   (ff:remove-entry-point (ff:convert-to-lang "connect_to_server" :language :c))
   (load "socket.o"))
 
@@ -286,7 +288,7 @@
       ;(msg " resulting decriptor " res 'N)
       res))
 
-#+(not allegro)
+#-allegro
 (defun make-sequence (type length &rest rest &key initial-element)
   "Returns a sequence of the given Type and Length, with elements initialized
   to :Initial-Element."
@@ -314,51 +316,63 @@
 				   (funcall temp (list type)) length)))))))
      (error "~s is a bad type specifier for sequences." type ))))
 
-
-;; Allegro Common Lisp
-;; 				-[Wed Oct 11 08:50:30 1989 by layer]-
-;; special patch for CLX (process-lock and with-timeout)
-
-;;
-;; copyright (c) 1989 Franz Inc, Berkeley, Ca.
-;;
-;; The software, data and information contained herein are proprietary
-;; to, and comprise valuable trade secrets of, Franz, Inc.  They are
-;; given in confidence by Franz, Inc. pursuant to a written license
-;; agreement, and stored only in accordance with the terms of such license.
-;;
-;; Restricted Rights Legend
-;; ------------------------
-;; Use, duplication, and disclosure by the Government are subject to
-;; restrictions of Restricted Rights for Commercial Software developed
-;; at private expense as specified in DOD FAR 52.227-7013 (c) (1) (ii).
-
-;; $Header: excldep.l,v 1.9 89/11/15 20:32:55 cjl Exp $
+;; special patch for CLX (various process fixes)
+;; patch1000.2
 
 (in-package 'patch :use '(lisp excl))
 
 (defvar *patches* nil)
 
-(push (cons 1000 "special patch for CLX (process-lock and with-timeout")
+#+allegro
+(eval-when (compile eval load)
+  (when (and (= excl::cl-major-version-number 3)
+	     (or (= excl::cl-minor-version-number 0)
+		 (and (= excl::cl-minor-version-number 1)
+		      (< excl::cl-generation-number 9))))
+    (push :clx-r4-process-patches *features*)))
+
+#+clx-r4-process-patches
+(push (cons 1000.2 "special patch for CLX (various process fixes)")
       *patches*)
 
-#+(or allegro-v3.0 allegro-v3.1)
+
 (in-package :mp)
 
-#+(or allegro-v3.0 allegro-v3.1)
-(defun process-lock (lock &optional (lock-value *current-process*)
-				    (whostate "Lock") timeout)
-  (declare (optimize (speed 3)))
-  (let ((.got-process-lock. nil))
-    (declare (special .got-process-lock.))
-    (if* timeout
-       then (with-timeout (timeout (when .got-process-lock. lock-value))
-	      (process-lock-1 lock lock-value whostate))
-       else (process-lock-1 lock lock-value whostate))))
+#+clx-r4-process-patches
+(export 'wait-for-input-available)
 
-#+(or allegro-v3.0 allegro-v3.1)
-(defmacro with-timeout ((interval . timeout-forms) &body body)
-  `(let* ((clock-event (with-timeout-event ,interval mp:*current-process*))
+
+#+clx-r4-process-patches
+(defun with-timeout-event (seconds fnc args)
+  (unless *scheduler-stack-group* (start-scheduler)) ;[spr670]
+  (let ((clock-event (make-clock-event)))
+    (when (<= seconds 0) (setq seconds 0))
+    (multiple-value-bind (secs msecs) (truncate seconds)
+      ;; secs is now a nonegative integer, and msecs is either fixnum zero
+      ;; or else something interesting.
+      (unless (eq 0 msecs)
+	(setq msecs (truncate (* 1000.0 msecs))))
+      ;; Now msecs is also a nonnegative fixnum.
+      (multiple-value-bind (now mnow) (excl::cl-internal-real-time)
+	(incf secs now)
+	(incf msecs mnow)
+	(when (>= msecs 1000)
+	  (decf msecs 1000)
+	  (incf secs))
+	(unless (fixnump secs) (setq secs most-positive-fixnum))
+	(setf (clock-event-secs clock-event) secs
+	      (clock-event-msecs clock-event) msecs
+	      (clock-event-function clock-event) fnc
+	      (clock-event-args clock-event) args)))
+    clock-event))
+
+
+#+clx-r4-process-patches
+(defmacro with-timeout ((seconds &body timeout-body) &body body)
+  `(let* ((clock-event (with-timeout-event ,seconds
+					   #'process-interrupt
+					   (cons *current-process*
+						 '(with-timeout-internal))))
 	  (excl::*without-interrupts* t)
 	  ret)
      (unwind-protect
@@ -369,13 +383,129 @@
 		       (multiple-value-list (progn ,@body)))))
        (if* (eq ret 'with-timeout-internal)
 	  then (let ((excl::*without-interrupts* nil))
-		 (setq ret (multiple-value-list (progn ,@timeout-forms))))
+		 (setq ret (multiple-value-list (progn ,@timeout-body))))
 	  else (remove-from-clock-queue clock-event)))
      (values-list ret)))
 
-#+(or allegro-v3.0 allegro-v3.1)
-(defun process-wait-with-timeout (whostate interval function &rest args)
+
+#+clx-r4-process-patches
+(defun process-lock (lock &optional (lock-value *current-process*)
+				    (whostate "Lock") timeout)
+  (declare (optimize (speed 3)))
+  (unless (process-lock-p lock)
+    (error "First argument to PROCESS-LOCK must be a process-lock: ~s" lock))
+  (without-interrupts
+   (if* (null (process-lock-locker lock))
+      then (setf (process-lock-locker lock) lock-value)
+      else (if* timeout
+	      then (if* (or (eq 0 timeout) ;for speed
+			    (zerop timeout))
+		      then nil
+		      else (with-timeout (timeout)
+			     (process-lock-1 lock lock-value whostate)))
+	      else (process-lock-1 lock lock-value whostate)))))
+
+
+#+clx-r4-process-patches
+(defun process-lock-1 (lock lock-value whostate)
+  (declare (type process-lock lock)
+	   (optimize (speed 3)))
+  (let ((process *current-process*))
+    (declare (type process process))
+    (unless process
+      (error
+       "PROCESS-LOCK may not be called on the scheduler's stack group."))
+    (loop (unless (process-lock-locker lock)
+	    (return (setf (process-lock-locker lock) lock-value)))
+      (push process (process-lock-waiting lock))
+      (let ((saved-whostate (process-whostate process)))
+	(unwind-protect
+	    (progn (setf (process-whostate process) whostate)
+		   (process-add-arrest-reason process lock))
+	  (setf (process-whostate process) saved-whostate))))))
+
+
+#+clx-r4-process-patches
+(defun process-wait (whostate function &rest args)
+  (declare (optimize (speed 3)))
+  ;; Run the wait function once here both for efficiency and as a
+  ;; first line check for errors in the function.
+  (unless (apply function args)
+    (process-wait-1 whostate function args)))
+
+
+#+clx-r4-process-patches
+(defun process-wait-1 (whostate function args)
+  (declare (optimize (speed 3)))
+  (let ((process *current-process*))
+    (declare (type process process))
+    (unless process
+      (error
+       "Process-wait may not be called within the scheduler's stack group."))
+    (let ((saved-whostate (process-whostate process)))
+      (unwind-protect
+	  (without-scheduling-internal
+	   (without-interrupts
+	    (setf (process-whostate process) whostate
+		  (process-wait-function process) function
+		  (process-wait-args process) args)
+	    (chain-rem-q process)
+	    (chain-ins-q process *waiting-processes*))
+	   (process-resume-scheduler nil))
+	(setf (process-whostate process) saved-whostate
+	      (process-wait-function process) nil
+	      (process-wait-args process) nil)))))
+
+
+#+clx-r4-process-patches
+(defun process-wait-with-timeout (whostate seconds function &rest args)
   ;; Now returns T upon completion, NIL upon timeout. -- 6Jun89 smh
-  (with-timeout (interval 'nil)
-    (apply #'process-wait whostate function args)
-    't))
+  ;; [spr1135] [rfe939] Timeout won't throw out of interrupt level code.
+  ;;  -- 28Feb90 smh
+  ;; Run the wait function once here both for efficiency and as a
+  ;; first line check for errors in the function.
+  (if* (apply function args)
+     then t
+     else (let ((ret (list nil)))
+            (without-interrupts
+             (let ((clock-event
+                    (with-timeout-event seconds #'identity '(nil))))
+               (add-to-clock-queue clock-event)
+               (process-wait-1 whostate
+                               #'(lambda (clock-event function args ret)
+                                   (or (null (chain-next clock-event))
+                                       (and (apply function args)
+                                            (setf (car ret) 't))))
+                               (list clock-event function args ret))))
+            (car ret))))
+
+
+;;
+;; Returns nil on timeout, otherwise t.
+;;
+#+clx-r4-process-patches
+(defun wait-for-input-available
+    (stream-or-fd &key (wait-function #'listen)
+		       (whostate "waiting for input")
+		       timeout)
+  (let ((fd (if* (fixnump stream-or-fd) then stream-or-fd
+	     elseif (streamp stream-or-fd)
+	       then (excl::stream-input-fn stream-or-fd)
+	       else (error "wait-for-input-available expects a stream or file descriptor: ~s" stream-or-fd))))
+    ;; At this point fd could be nil, since stream-input-fn returns nil for
+    ;; streams that are output only, or for certain special purpose streams.
+    (if fd
+	(unwind-protect
+	    (progn
+	      (mp::mpwatchfor fd)
+	      (if* timeout
+		 then (mp::process-wait-with-timeout
+		       whostate timeout wait-function stream-or-fd)
+		 else (mp::process-wait whostate wait-function stream-or-fd)
+		      t))
+	  (mp::mpunwatchfor fd))
+      (if* timeout
+	 then (mp::process-wait-with-timeout
+	       whostate timeout wait-function stream-or-fd)
+	 else (mp::process-wait whostate wait-function stream-or-fd)
+	      t))))
