@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbfillarc.c,v 5.3 89/10/29 11:29:21 rws Exp $ */
+/* $XConsortium: cfbfillarc.c,v 5.4 89/11/05 12:57:11 rws Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -168,7 +168,7 @@ cfbFillArcSliceSolidCopy(pDraw, pGC, arc)
     register int x, y, e, ex;
     miFillArcRec info;
     miArcSliceRec slice;
-    int ya, xl, xr, xc;
+    int xl, xr, xc;
     int iscircle;
     int *addrlt, *addrlb;
     register int *addrl;

@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mfbfillarc.c,v 5.3 89/10/28 12:02:40 rws Exp $ */
+/* $XConsortium: mfbfillarc.c,v 5.4 89/11/05 12:58:08 rws Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -30,9 +30,8 @@ without any express or implied warranty.
 extern void miPolyFillArc();
 
 static void
-mfbFillEllipseSolid(pDraw, pGC, arc, rop)
+mfbFillEllipseSolid(pDraw, arc, rop)
     DrawablePtr pDraw;
-    GCPtr pGC;
     xArc *arc;
     int rop;
 {
@@ -241,7 +240,7 @@ mfbFillArcSliceSolidCopy(pDraw, pGC, arc, rop)
     register int x, y, e, ex;
     miFillArcRec info;
     miArcSliceRec slice;
-    int ya, xl, xr, xc;
+    int xl, xr, xc;
     int iscircle;
     int *addrlt, *addrlb;
     register int *addrl;
@@ -333,7 +332,7 @@ mfbPolyFillArcSolid(pDraw, pGC, narcs, parcs)
 	    {
 		if ((arc->angle2 >= FULLCIRCLE) ||
 		    (arc->angle2 <= -FULLCIRCLE))
-		    mfbFillEllipseSolid(pDraw, pGC, arc, rop);
+		    mfbFillEllipseSolid(pDraw, arc, rop);
 		else
 		    mfbFillArcSliceSolidCopy(pDraw, pGC, arc, rop);
 		continue;

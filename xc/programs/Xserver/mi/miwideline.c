@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.15 89/11/02 18:31:35 keith Exp $
+ * $XConsortium: miwideline.c,v 1.16 89/11/04 13:05:42 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -32,6 +32,8 @@
 #ifdef ICEILTEMPDECL
 ICEILTEMPDECL
 #endif
+
+static void miLineArc();
 
 /*
  * spans-based polygon filler
@@ -164,7 +166,7 @@ miFillPolyHelper (pDrawable, pGC, pixel, spanData, y, overall_height,
     }
 }
 
-int
+static int
 miPolyBuildEdge (x0, y0, k, dx, dy, xi, yi, left, edge)
     double	x0, y0;
     double	k;  /* x0 * dy - y0 * dx */
@@ -230,7 +232,7 @@ miPolyBuildEdge (x0, y0, k, dx, dy, xi, yi, left, edge)
 
 #define StepAround(v, incr, max) (((v) + (incr) < 0) ? (max - 1) : ((v) + (incr) == max) ? 0 : ((v) + (incr)))
 
-int
+static int
 miPolyBuildPoly (vertices, slopes, count, xi, yi, left, right, pnleft, pnright, h)
     PolyVertexPtr   vertices;
     PolySlopePtr    slopes;
@@ -341,6 +343,7 @@ miPolyBuildPoly (vertices, slopes, count, xi, yi, left, right, pnleft, pnright, 
     return topy;
 }
 
+static void
 miLineJoin (pDrawable, pGC, pixel, spanData, pLeft, pRight)
     DrawablePtr	    pDrawable;
     GCPtr	    pGC;
@@ -467,7 +470,7 @@ miLineJoin (pDrawable, pGC, pixel, spanData, pLeft, pRight)
     miFillPolyHelper (pDrawable, pGC, pixel, spanData, y, height, left, right, nleft, nright);
 }
 
-int
+static int
 miLineArcI (pDraw, pGC, xorg, yorg, points, widths)
     DrawablePtr	    pDraw;
     GCPtr	    pGC;
@@ -553,7 +556,7 @@ miLineArcI (pDraw, pGC, xorg, yorg, points, widths)
 	} \
     }
 
-int
+static int
 miLineArcD (pDraw, pGC, xorg, yorg, points, widths,
 	    edge1, edgey1, edgeleft1, edge2, edgey2, edgeleft2)
     DrawablePtr	    pDraw;
@@ -688,6 +691,7 @@ miLineArcD (pDraw, pGC, xorg, yorg, points, widths,
     return (pts - points);
 }
 
+static void
 miLineArc (pDraw, pGC, pixel, spanData, leftFace, rightFace, xorg, yorg, isInt)
     DrawablePtr	    pDraw;
     register GCPtr  pGC;
@@ -802,7 +806,7 @@ miLineArc (pDraw, pGC, pixel, spanData, leftFace, rightFace, xorg, yorg, isInt)
     }
 }
 
-void
+static void
 miWideSegment (pDrawable, pGC, pixel, spanData,
 	       x1, y1, x2, y2, projectLeft, projectRight, leftFace, rightFace)
     DrawablePtr	    pDrawable;
@@ -1073,6 +1077,7 @@ miCleanupSpanData (pDrawable, pGC, spanData)
     miFreeSpanGroup (&spanData->fgGroup);
 }
 
+void
 miWideLine (pDrawable, pGC, mode, npt, pPts)
     DrawablePtr	pDrawable;
     GCPtr	pGC;
@@ -1168,6 +1173,7 @@ miWideLine (pDrawable, pGC, mode, npt, pPts)
 #define V_BOTTOM    2
 #define V_LEFT	    3
 
+static void
 miWideDashSegment (pDrawable, pGC, spanData, pDashOffset, pDashIndex,
 	   x1, y1, x2, y2, projectLeft, projectRight, leftFace, rightFace)
     DrawablePtr	    pDrawable;
@@ -1422,6 +1428,7 @@ miWideDashSegment (pDrawable, pGC, spanData, pDashOffset, pDashIndex,
     *pDashOffset = pDash[dashIndex] - dashRemain;
 }
 
+void
 miWideDash (pDrawable, pGC, mode, npt, pPts)
     DrawablePtr	pDrawable;
     GCPtr	pGC;
@@ -1449,8 +1456,8 @@ miWideDash (pDrawable, pGC, mode, npt, pPts)
     projectRight = FALSE;
     dashIndex = 0;
     dashOffset = 0;
-    miStepDash (pGC->dashOffset, &dashIndex,
-	        pGC->dash, pGC->numInDashList, &dashOffset);
+    miStepDash ((int)pGC->dashOffset, &dashIndex,
+	        pGC->dash, (int)pGC->numInDashList, &dashOffset);
     while (--npt)
     {
 	x1 = x2;

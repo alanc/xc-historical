@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbteblt8.c,v 5.4 89/10/29 12:23:11 keith Exp $ */
+/* $XConsortium: cfbteblt8.c,v 5.5 89/11/02 13:50:23 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -122,7 +122,6 @@ cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 {
     register unsigned long  c;
     register unsigned long  *dst;
-    register int	    ewTmp;
     register int	    xoff1, xoff2, xoff3, xoff4;
     register unsigned long  *char1, *char2, *char3, *char4;
     register unsigned long  leftMask, rightMask;
@@ -141,7 +140,6 @@ cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     int			x, y;
     BoxRec		bbox;		/* for clipping */
     int			lshift;
-    int			widthDiff;
     int			widthGlyph4;
 
     pci = &pfi->maxbounds;
