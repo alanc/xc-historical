@@ -33,7 +33,7 @@
 
 #ifndef lint
 static char rcsid[] =
-"$XConsortium: mivaltree.c,v 1.45 88/09/06 14:49:34 jim Exp $ SPRITE (Berkeley)";
+"$XConsortium: mivaltree.c,v 1.46 88/10/04 11:49:49 keith Exp $ SPRITE (Berkeley)";
 #endif lint
 
 #include    "X.h"
@@ -519,6 +519,7 @@ miValidateTree (pParent, pChild, top, anyMarked)
 	(* pScreen->Union) (pParent->backStorage->obscured,
 			    pParent->backStorage->obscured,
 			    exposed);
+	pParent->backStorage->oldAbsCorner = pParent->absCorner;
     }
     
     (* pScreen->RegionCopy) (pParent->clipList, totalClip);
