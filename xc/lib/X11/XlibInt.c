@@ -2,7 +2,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
 
 #ifndef lint
-static char rcsid[] = "$Header: XlibInt.c,v 11.71 88/08/11 11:20:49 jim Exp $";
+static char rcsid[] = "$Header: XlibInt.c,v 11.72 88/08/11 11:41:39 jim Exp $";
 #endif
 
 /*
@@ -242,20 +242,28 @@ _XRead (dpy, data, size)
 }
 
 #ifdef WORD64
+
+/*
+ * XXX This is a *really* stupid way of doing this....
+ */
+
+#define PACKBUFFERSIZE 4096
+
+
 /*
  * _XRead32 - Read bytes from the socket unpacking each 32 bits
  *            into a long (64 bits on a CRAY computer).
  * 
  */
-_XRead32 (dpy, data, size)
+static _doXRead32 (dpy, data, size, packbuffer)
         register Display *dpy;
         register long *data;
         register long size;
+	char *packbuffer;
 {
  long *lpack,*lp;
  long mask32 = 0x00000000ffffffff;
  long maskw, nwords, i, bits;
- extern char packbuffer[];
 
         _XReadPad (dpy, packbuffer, size);
 
@@ -274,12 +282,28 @@ _XRead32 (dpy, data, size)
         }
 }
 
+_XRead32 (dpy, data, size)
+    Display *dpy;
+    long *data;
+    long size;
+{
+    char packbuffer[PACKBUFFERSIZE];
+    unsigned nwords = (PACKBUFFERSIZE >> 2);	/* bytes to CARD32 */
+
+    for (; len > nwords; len -= nwords, data += nwords) {
+	_doXRead32 (dpy, data, nwords, packbuffer);
+    }
+    _doXRead32 (dpy, data, len, packbuffer);
+}
+
+
+
 /*
  * _XRead16 - Read bytes from the socket unpacking each 16 bits
  *            into a long (64 bits on a CRAY computer).
  *
  */
-_XRead16 (dpy, data, size)
+static _doXRead16 (dpy, data, size)
         register Display *dpy;
         register long *data;
         register long size;
@@ -305,6 +329,21 @@ _XRead16 (dpy, data, size)
             }
         }
 }
+
+_XRead16 (dpy, data, size)
+    Display *dpy;
+    long *data;
+    long size;
+{
+    char packbuffer[PACKBUFFERSIZE];
+    unsigned nwords = (PACKBUFFERSIZE >> 1);	/* bytes to CARD16 */
+
+    for (; len > nwords; len -= nwords, data += nwords) {
+	_doXRead16 (dpy, data, nwords, packbuffer);
+    }
+    _doXRead16 (dpy, data, len, packbuffer);
+}
+
 #endif /* WORD64 */
 
 
@@ -1200,6 +1239,12 @@ XFree (data)
 }
 
 #ifdef WORD64
+
+/*
+ * XXX This is a *really* stupid way of doing this.  It should just use 
+ * dpy->bufptr directly, taking into account where in the word it is.
+ */
+
 /*
  * Data16 - Place 16 bit data in the buffer.
  *
@@ -1208,11 +1253,11 @@ XFree (data)
  * "len" is the length in bytes of the data.
  */
 
-char packbuffer[1024];
-Data16(dpy, data, len)
+static doData16(dpy, data, len, packbuffer)
     register Display *dpy;
     short *data;
     unsigned len;
+    char *packbuffer;
 {
     long *lp,*lpack;
     long i, nwords,bits;
@@ -1242,6 +1287,19 @@ Data16(dpy, data, len)
         Data(dpy, packbuffer, len);
 }
 
+Data16 (dpy, data, len)
+    Display *dpy;
+    short *data;
+    unsigned len;
+{
+    char packbuffer[PACKBUFFERSIZE];
+    unsigned nwords = (PACKBUFFERSIZE >> 1);	/* bytes to CARD16 */
+
+    for (; len > nwords; len -= nwords, data += nwords) {
+	doData16 (dpy, data, nwords, packbuffer);
+    }
+    doData16 (dpy, data, len, packbuffer);
+}
 
 /*
  * Data32 - Place 32 bit data in the buffer.
@@ -1251,10 +1309,11 @@ Data16(dpy, data, len)
  * "len" is the length in bytes of the data.
  */
 
-Data32(dpy, data, len)
+static doData32 (dpy, data, len, packbuffer)
     register Display *dpy;
     long *data;
     unsigned len;
+    char *packbuffer;
 {
     long *lp,*lpack;
     long i,bits,nwords;
@@ -1283,61 +1342,20 @@ Data32(dpy, data, len)
         }
         Data(dpy, packbuffer, len);
 }
-#endif /* WORD64 */
 
-
-
-
-/*
- * The following isn't used anymore, but is left in just in case.
- */
-#ifdef BIGSHORTS
-UnpackShorts(from, to, bytes)
-	ushort_p *from;
-	short *to;
-	unsigned bytes;
-{
-	unsigned i;
-	for (i = 0; i < (bytes/psizeof(short)); i++)
-		if (i&1)
-			to[i] = from[i>>1].right;
-		else
-			to[i] = from[i>>1].left;
-}
-
-char packbuffer[1000];
-PackData(dpy, data, len)
-    register Display *dpy;
+Data32 (dpy, data, len)
+    Display *dpy;
     short *data;
     unsigned len;
 {
-	if (dpy->bufptr + len < dpy->bufmax) {
-		PackShorts(data, dpy->bufptr, len);
-		dpy->bufptr += (len + 3) & ~3;
-	} else {
-		PackShorts(data, packbuffer, len);
-		_XSend(dpy, packbuffer, len);
-	}
+    char packbuffer[PACKBUFFERSIZE];
+    unsigned nwords = (PACKBUFFERSIZE >> 2);	/* bytes to CARD32 */
+
+    for (; len > nwords; len -= nwords, data += nwords) {
+	doData32 (dpy, data, nwords, packbuffer);
+    }
+    doData32 (dpy, data, len, packbuffer);
 }
 
-PackShorts(from, to, bytes)
-	short *from;
-	char *to;
-	unsigned bytes;
-{
-	unsigned i, n, offset;
-	ushort_p *uto;
-
-	uto = (ushort_p *)to;
-	offset = ((int)to & 2) >> 1; /* lost 2 bits of pointer */
-	n = (bytes / 2) + offset;
-	for (i = offset; i < n; i++) {
-		if (i&1)
-			uto[i>>1].right = from[i-offset];
-		else
-			uto[i>>1].left = from[i-offset];
-	}
-}
-#endif /* BIGSHORTS */
-
+#endif /* WORD64 */
 
