@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.24 90/08/20 19:10:14 rws Exp $ */
+/* $XConsortium: miarc.c,v 5.25 90/10/06 13:56:20 rws Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -719,8 +719,8 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 	    }
 	    if (pGC->miTranslate)
 	    {
-		xOrg += (double) pDraw->x;
-		yOrg += (double) pDraw->y;
+		xOrg += pDraw->x;
+		yOrg += pDraw->y;
 	    }
 
 	    /* allocate a 1 bit deep pixmap of the appropriate size, and
