@@ -1,4 +1,4 @@
-/* $XConsortium: errors.c,v 1.2 93/10/27 21:52:08 rws Exp $ */
+/* $XConsortium: errors.c,v 1.3 93/10/29 17:20:28 rws Exp $ */
 /**** module errors.c ****/
 /******************************************************************************
 				NOTICE
@@ -49,8 +49,6 @@ terms and conditions:
 *****************************************************************************/
 #include <stdio.h>
 #include <ctype.h>
-#include <sys/types.h>
-#include <sys/time.h>
 #include <math.h>
 #include "xieperf.h"
 
