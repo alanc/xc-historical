@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: StripChart.c,v 1.1 89/08/23 17:53:57 kit Exp $";
+static char Xrcsid[] = "$XConsortium: StripChart.c,v 1.2 89/08/24 11:51:57 kit Exp $";
 #endif
 
 /***********************************************************
@@ -43,7 +43,7 @@ static XtResource resources[] = {
     {XtNheight, XtCHeight, XtRDimension, sizeof(Dimension),
 	offset(core.height), XtRImmediate, (caddr_t) 120},
     {XtNupdate, XtCInterval, XtRInt, sizeof(int),
-        offset(strip_chart.update), XtRImmediate, (caddr_t) 5},
+        offset(strip_chart.update), XtRImmediate, (caddr_t) 10},
     {XtNminScale, XtCScale, XtRInt, sizeof(int),
         offset(strip_chart.min_scale), XtRImmediate, (caddr_t) 1},
     {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
