@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.71 89/12/05 10:46:11 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.72 89/12/06 09:11:07 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -574,6 +574,9 @@
 #if HasSharedLibraries
     SHAREDCODEDEF = SharedCodeDef
          SHLIBDEF = SharedLibraryDef
+#endif
+#if !HasVoidSignalReturn
+   SIGNAL_DEFINES = -DSIGNALRETURNSINT
 #endif
 
 #if StripInstalledPrograms
