@@ -1,4 +1,4 @@
-.\" $Header: ddx.doc.tbl.ms,v 1.9 88/02/24 21:25:22 rws Exp $
+.\" $Header: ddx.doc.tbl.ms,v 1.10 88/05/21 17:52:18 rws Exp $
 .EF 'Porting Layer Definition'- % -'March 1, 1988'
 .OF 'Porting Layer Definition'- % -'March 1, 1988'
 .EH '''
@@ -686,9 +686,30 @@ Sending Events, Errors And Replies To Clients
 		char *buf;
 .fi
 WriteToClient should write n bytes starting at buf to the 
-ClientPtr "who."
+ClientPtr "who".
+It returns the number of bytes written, but for simplicity,
+the number returned must be either the same value as the number
+requested, or -1, signaling an error.
 The sample server implementation is in server/os/4.2bsd/io.c.
+.LP
+.nf
 
+	void FlushAllOutput()
+
+	void FlushIfCriticalOutputPending()
+
+	void SetCriticalOutputPending()
+.fi
+These three routines may be implemented to support buffered or delayed
+writes to clients, but at the very least, the stubs must exist.
+FlushAllOutput() unconditionally flushes all output to clients;
+FlushIfCriticalOutputPending() flushes output only if
+SetCriticalOutputPending() has be called since the last time output
+was flushed.
+The sample server implementation is in server/os/4.2bsd/io.c and
+actually ignores requests to flush output on a per-client basis
+if it knows that there
+are requests in that client's input queue.
 .NH 2
 Font Support
 .XS
@@ -892,6 +913,52 @@ to a user.  An X server could be running
 for days or weeks without being reset, just like a regular terminal.
 If you leak a few dozen k per day, that will add up and will cause problems
 for users that leave their workstations on.
+
+.NH 2
+Other OS Functions
+.XS
+Other OS Functions
+.XE
+.LP
+.nf
+	void
+	ErrorF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9)
+	    char *f;
+	    char *s0, *s1, *s2, *s3, *s4, *s5, *s6, *s7, *s8, *s9;
+
+	void
+	FatalError(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9)
+	    char *f;
+	    char *s0, *s1, *s2, *s3, *s4, *s5, *s6, *s7, *s8, *s9;
+
+	void
+	Error(str)
+	    char *str;
+.fi
+.LP
+You should write
+these three routines to provide for diagnostic output from the dix and
+ddx layers, although implementing them to produce no output will not
+affect the correctness of your server.
+ErrorF() and FatalError() take
+a printf() type of format specification in the first argument and
+up to ten format arguments following that.
+Normally, the formats passed to ErrorF() and FatalError() should be
+terminated with a newline.
+Error() provides an os interface for printing out the string passed
+as an argument followed by a meaningful explanation of the last
+system error.
+Normally the string does not contain a newline, and it is only called
+by the ddx layer.
+In the sample implementation, Error() uses the Unix routine perror().
+.LP
+After printing the message arguments, FatalError() must be implemented
+such that the server will call AbortDDX() to give the ddx layer
+a chance to reset the hardware, and then
+terminate the server; it must not return.
+.LP
+The sample server implementation for these routines
+is in server/os/4.2bsd/util.c.
 
 .NH 1
 DDX LAYER
@@ -4127,18 +4194,18 @@ The PushPixels routine writes the current fill style onto the drawable
 in a certain shape defined by a bitmap.  PushPixels is equivalent to
 using a second stipple.  You can thing of it as pushing the fillStyle
 through the stencil which is built by milines and miarcs. 
-
+.LP
 .nf
-
-Suppose the stencil is:			00111100
-and the stipple is:			10101010
-PushPixels result:			00101000
+.ta 1i 3i
+	Suppose the stencil is:	00111100
+	and the stipple is:	10101010
+	PushPixels result:	00101000
 .fi
-
+.LP
 You have a choice in implementing this routine.
 You can use the mi version which depends ultimately upon FillSpan().
 Although it will work, it will be slow.
-
+.LP
 If you use mfb, you can use the mfb version of the PushPixels routine.
 Otherwise, you will have to write your own.
 .nf
@@ -4172,6 +4239,24 @@ This routine must clip to the overall clipping region.
 Example implementations are mfbPushPixels() in server/ddx/mfb/mfbpushpxl.c and 
 miPushPixels() in server/ddx/mi/mipushpxl.c.
 
+.NH 2
+Shutdown Procedures
+.XS
+Shutdown Procedures
+.XE
+.LP
+.nf
+	void AbortDDX()
+.fi
+.LP
+Some hardware may require special work to be done before the server
+exits so that it is not left in an intermediate state.
+As explained in the OS layer, FatalError() will call AbortDDX() just
+before terminating the server.
+What AbortDDX() does is left unspecified,
+only that a stub must exist in the ddx layer.
+It is up to local implementors as to what it should accomplish before
+termination.
 .bp
 .NH 1
 Summary of Routines
@@ -4203,6 +4288,7 @@ l c l.
 Procedure	Port	Struct
 _
 ALLOCATE_LOCAL	4.2
+AbortDDX	hd
 AddEnabledDevice	4.2
 AddInputDevice	dix
 AddScreen	dix
@@ -4231,16 +4317,15 @@ DestroyGC	mfb	GCInterest
 DestroyPixmap	mfb	Screen
 DestroyWindow	mfb	Screen
 DisplayCursor	hd	Screen
+Error	4.2
+ErrorF	4.2
 ExpandFontName	4.2
 ExpandFontNamePattern	4.2
+FatalError	4.2
 FiClose	4.2
 FillPolygon	mi	GC
 FillSpans	mfb	GC
 FiOpenForRead	4.2
-FiRead	4.2
-FreeFontRecord	4.2
-GetFontPath	4.2
-GetGlyphs	snf
 .TE
 .bp
 .TS
@@ -4249,6 +4334,12 @@ c c c
 l c l.
 Procedure	Port	Struct
 _
+FiRead	4.2
+FlushAllOutput	4.2
+FlushIfCriticalOutputPending	4.2
+FreeFontRecord	4.2
+GetFontPath	4.2
+GetGlyphs	snf
 GetImage	mi,mfb	GC
 GetMotionEvents	hd	Device
 GetSpans	mfb	GC
@@ -4296,14 +4387,7 @@ ReadRequestFromClient	4.2
 RealizeCursor	hd	Screen
 RealizeFont	mfb	Screen
 RealizeWindow	mfb	Screen
-RecolorCursor	hd	Screen
-RectIn	mi	Screen
-RegionCopy	mi	Screen
-RegionCreate	mi	Screen
-RegionDestroy	mi	Screen
-RegionEmpty	mi	Screen
 .TE
-
 .bp
 .TS
 expand;
@@ -4311,6 +4395,12 @@ c c c
 l c l.
 Procedure	Port	Struct
 _
+RecolorCursor	hd	Screen
+RectIn	mi	Screen
+RegionCopy	mi	Screen
+RegionCreate	mi	Screen
+RegionDestroy	mi	Screen
+RegionEmpty	mi	Screen
 RegionExtents	mi	Screen
 RegionNotEmpty	mi	Screen
 RegionReset	mi	Screen
@@ -4321,6 +4411,7 @@ RemoveEnabledDevice	4.2
 RestoreAreas	none	BackingStore
 SaveDoomedAreas	none	BackingStore
 SaveScreen	mfb	Screen
+SetCriticalOutputPending	4.2
 SetCursorPosition	hd	Screen
 SetDefaultFont	snf
 SetDefaultFontPath	4.2
