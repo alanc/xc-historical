@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $XConsortium: servermd.h,v 1.55 90/11/30 15:28:15 keith Exp $ */
+/* $XConsortium: servermd.h,v 1.56 91/02/05 16:23:04 rws Exp $ */
 
 /*
  * Machine dependent values:
@@ -165,7 +165,7 @@ SOFTWARE.
 
 #endif /* hpux */
 
-#if defined(M4315) || defined(M4317) || defined(M4319) || defined(M4330)
+#if defined (M4310) || defined(M4315) || defined(M4317) || defined(M4319) || defined(M4330)
 
 #define IMAGE_BYTE_ORDER	MSBFirst        /* Values for Pegasus only */
 #define BITMAP_BIT_ORDER	MSBFirst
