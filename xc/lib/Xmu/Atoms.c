@@ -1,4 +1,4 @@
-/* $XConsortium: Atoms.c,v 1.3 88/10/07 09:48:30 swick Exp $
+/* $XConsortium: Atoms.c,v 1.4 88/10/07 16:35:09 swick Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -16,7 +16,7 @@
 
 #include <X11/copyright.h>
 
-#define _Atoms_c_
+#define _Xmu_Atoms_c_
 #include "Xmu.h"
 
 typedef struct _DisplayRec {
