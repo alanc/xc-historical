@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 1.55 88/10/14 18:41:28 keith Exp $ */
+/* $XConsortium: miarc.c,v 1.56 88/10/15 08:45:17 rws Exp $ */
 /* Author: Keith Packard */
 
 #include "X.h"
@@ -65,11 +65,11 @@ typedef struct _miArcCap {
 	int		end;		
 } miArcCapRec, *miArcCapPtr;
 
-typedef struct _miArcBounds {
-	SppPointRec	inner;
-	SppPointRec	elipse;
-	SppPointRec	outer;
-} miArcBoundsRec, *miArcBoundsPtr;
+typedef struct _miArcFace {
+	SppPointRec	clock;
+	SppPointRec	center;
+	SppPointRec	counterClock;
+} miArcFaceRec, *miArcFacePtr;
 
 /*
  * This is an entire sequence of arcs, computed and categorized according
@@ -81,7 +81,7 @@ typedef struct _miArcData {
 	int		render;		/* non-zero means render after drawing */
 	int		join;		/* related join */
 	int		cap;		/* related cap */
-	miArcBoundsRec	bounds[2];
+	miArcFaceRec	bounds[2];
 	double		x0, y0, x1, y1;
 } miArcDataRec, *miArcDataPtr;
 
@@ -115,12 +115,13 @@ miArcSegment(pDraw, pGC, tarc, right, left)
     DrawablePtr   pDraw;
     GCPtr         pGC;
     xArc          tarc;
-    miArcBoundsPtr	right, left;
+    miArcFacePtr	right, left;
 {
     int l = pGC->lineWidth;
     int	w, h;
     int a0, a1, startAngle, endAngle;
     int st, ct;
+    miArcFacePtr	temp;
 
     /* random (necessary) paranoia checks.  specialized routines could be *
      * written for each of these cases, but who has the time?             */
@@ -152,20 +153,20 @@ miArcSegment(pDraw, pGC, tarc, right, left)
 	    	ct = 1;
 	}
 	if (right) {
-	    right->outer.y = tarc.y + tarc.height/2 + rect.height * (- ct - st);
-	    right->outer.x = tarc.x + tarc.width/2 + rect.width * (ct - st);
-	    right->elipse.y = tarc.y + tarc.height / 2 + rect.height * ( -st);
-	    right->elipse.x = tarc.x + tarc.width/2 + rect.width * (ct);
-	    right->inner.y = tarc.y + tarc.height/2 + rect.height * (ct - st);
-	    right->inner.x = tarc.x + tarc.width/2 + rect.width * (ct + st);
+	    right->clock.y = tarc.y + tarc.height/2 + rect.height * (- ct - st);
+	    right->clock.x = tarc.x + tarc.width/2 + rect.width * (ct - st);
+	    right->center.y = tarc.y + tarc.height / 2 + rect.height * ( -st);
+	    right->center.x = tarc.x + tarc.width/2 + rect.width * (ct);
+	    right->counterClock.y = tarc.y + tarc.height/2 + rect.height * (ct - st);
+	    right->counterClock.x = tarc.x + tarc.width/2 + rect.width * (ct + st);
 	}
 	if (left) {
-	    left->outer.y = tarc.y + tarc.height/2 + rect.height * (- ct + st);
-	    left->outer.x = tarc.x + tarc.width/2 + rect.width * (-ct - st);
-	    left->elipse.y = tarc.y + tarc.height / 2 + rect.height * ( st);
-	    left->elipse.x = tarc.x + tarc.width/2 + rect.width * (-ct);
-	    left->inner.y = tarc.y + tarc.height/2 + rect.height * (ct + st);
-	    left->inner.x = tarc.x + tarc.width/2 + rect.width * (-ct + st);
+	    left->counterClock.y = tarc.y + tarc.height/2 + rect.height * (- ct + st);
+	    left->counterClock.x = tarc.x + tarc.width/2 + rect.width * (-ct - st);
+	    left->center.y = tarc.y + tarc.height / 2 + rect.height * ( st);
+	    left->center.x = tarc.x + tarc.width/2 + rect.width * (-ct);
+	    left->clock.y = tarc.y + tarc.height/2 + rect.height * (ct + st);
+	    left->clock.x = tarc.x + tarc.width/2 + rect.width * (-ct + st);
 	}
 	(*pGC->PolyFillRect) (pDraw, pGC, 1, &rect);
 	return;
@@ -188,6 +189,16 @@ miArcSegment(pDraw, pGC, tarc, right, left)
 	a1 = FULLCIRCLE;
     else if (a1 < -FULLCIRCLE)
 	a1 = -FULLCIRCLE;
+    if (a1 < 0) {
+    	startAngle = a0 + a1;
+	endAngle = a0;
+	temp = right;
+	right = left;
+	left = temp;
+    } else {
+	startAngle = a0;
+	endAngle = a0 + a1;
+    }
     /*
      * bounds check the two angles
      */
@@ -199,17 +210,11 @@ miArcSegment(pDraw, pGC, tarc, right, left)
 	endAngle = FULLCIRCLE - (-endAngle) % FULLCIRCLE;
     if (endAngle > FULLCIRCLE)
 	endAngle = (endAngle-1) % FULLCIRCLE + 1;
-    if (a1 < 0) {
-    	startAngle = a0 + a1;
-	endAngle = a0;
-    } else {
-	startAngle = a0;
-	endAngle = a0 + a1;
-    }
     if (startAngle == endAngle) {
 	startAngle = 0;
 	endAngle = FULLCIRCLE;
     }
+
     drawArc ((int) tarc.x, (int) tarc.y,
              (int) tarc.width, (int) tarc.height, l, startAngle, endAngle,
 	     right, left);
@@ -250,7 +255,7 @@ miPolyArc(pDraw, pGC, narcs, parcs)
     {
 	for(i = 0; i < narcs; i++)
 	    miArcSegment( pDraw, pGC, parcs[i],
- 	    (miArcBoundsPtr) 0, (miArcBoundsPtr) 0 );
+ 	    (miArcFacePtr) 0, (miArcFacePtr) 0 );
 	fillSpans (pDraw, pGC);
     }
     else 
@@ -360,29 +365,37 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 		    fillSpans (pDrawTo, pGCTo);
 		    while (cap < polyArcs[iphase].arcs[i].cap) {
 			int	arcIndex, end;
+			miArcDataPtr	arcData0;
 
 			arcIndex = polyArcs[iphase].caps[cap].arcIndex;
 			end = polyArcs[iphase].caps[cap].end;
+			arcData0 = &polyArcs[iphase].arcs[arcIndex];
 			miArcCap (pDrawTo, pGCTo,
- 				  &polyArcs[iphase].arcs[arcIndex].bounds[end], end,
-				  - arcData->arc.x, - arcData->arc.y,
-				  (double) arcData->arc.width / 2.0,
- 				  (double) arcData->arc.height / 2.0);
+ 				  &arcData0->bounds[end], end,
+				  - arcData0->arc.x, - arcData0->arc.y,
+				  (double) arcData0->arc.width / 2.0,
+ 				  (double) arcData0->arc.height / 2.0);
 			++cap;
 		    }
 		    while (join < polyArcs[iphase].arcs[i].join) {
 			int	arcIndex0, arcIndex1, end0, end1;
+			miArcDataPtr	arcData0, arcData1;
 
 			arcIndex0 = polyArcs[iphase].joins[join].arcIndex0;
 			end0 = polyArcs[iphase].joins[join].end0;
 			arcIndex1 = polyArcs[iphase].joins[join].arcIndex1;
 			end1 = polyArcs[iphase].joins[join].end1;
+			arcData0 = &polyArcs[iphase].arcs[arcIndex0];
+			arcData1 = &polyArcs[iphase].arcs[arcIndex1];
 			miArcJoin (pDrawTo, pGCTo,
- 				  &polyArcs[iphase].arcs[arcIndex0].bounds[end0], end0,
- 				  &polyArcs[iphase].arcs[arcIndex1].bounds[end1], end1,
-				  - arcData->arc.x, - arcData->arc.y,
-				  (double) arcData->arc.width / 2.0,
- 				  (double) arcData->arc.height / 2.0);
+				  &arcData0->bounds[end0],
+ 				  &arcData1->bounds[end1],
+				  - arcData0->arc.x, - arcData0->arc.y,
+				  (double) arcData0->arc.width / 2.0,
+ 				  (double) arcData0->arc.height / 2.0,
+				  - arcData1->arc.x, - arcData1->arc.y,
+				  (double) arcData1->arc.width / 2.0,
+ 				  (double) arcData1->arc.height / 2.0);
 			++join;
 		    }
 		    if (fTricky) {
@@ -416,40 +429,148 @@ miPolyArc(pDraw, pGC, narcs, parcs)
     }
 }
 
-miArcJoin (pDraw, pGC, join, xOrg, yOrg)
-	DrawablePtr	*pDraw;
-	GCPtr		pGC;
-	miArcJoinPtr	join;
-	int		xOrg, yOrg;
+static double
+angleBetween (center, point1, point2)
+	SppPointRec	center, point1, point2;
 {
-#ifdef NOTDEF
-	SppPointRec	points[3];
-
-	points[0] = join->prev[0];
-	points[1] = join->juncture;
-	points[2] = join->prev[1];
-	(*pGC->LineHelper) (pDraw, pGC, FALSE, 3, points, xOrg, yOrg);
-#endif
+	double	atan2 (), a1, a2;
+	
+	a1 = atan2 (point1.x - center.x, point1.y - center.y);
+	a2 = atan2 (point2.x - center.x, point2.y - center.y);
+	return a2 - a1;
 }
 
-miArcCap (pDraw, pGC, pBounds, end, xOrg, yOrg, xFtrans, yFtrans)
+translateBounds (b, x, y, fx, fy)
+miArcFacePtr	b;
+int		x, y;
+double		fx, fy;
+{
+	b->clock.x += x + fx;
+	b->clock.y += y + fy;
+	b->center.x += x + fx;
+	b->center.y += y + fy;
+	b->counterClock.x += x + fx;
+	b->counterClock.y += y + fy;
+}
+
+miArcJoin (pDraw, pGC, pRight, pLeft,
+	   xOrgRight, yOrgRight, xFtransRight, yFtransRight,
+	   xOrgLeft, yOrgLeft, xFtransLeft, yFtransLeft)
 	DrawablePtr	*pDraw;
 	GCPtr		pGC;
-	miArcBoundsPtr	pBounds;
+	miArcFacePtr	pRight, pLeft;
+	int		xOrgRight, yOrgRight;
+	double		xFtransRight, yFtransRight;
+	int		xOrgLeft, yOrgLeft;
+	double		xFtransLeft, yFtransLeft;
+{
+	SppPointRec	center, corner, otherCorner, end;
+	SppPointRec	poly[5], e;
+	SppPointPtr	pArcPts;
+	int		cpt;
+	SppArcRec	arc;
+	miArcFaceRec	Right, Left;
+	int		polyLen;
+	int		xOrg, yOrg;
+	double		xFtrans, yFtrans;
+	double		angle[4];
+	double		a;
+	double		ae, ac2, ec2, bc2, de;
+	double		width;
+	
+	xOrg = (xOrgRight + xOrgLeft) / 2;
+	yOrg = (yOrgRight + yOrgLeft) / 2;
+	xFtrans = (xFtransLeft + xFtransRight) / 2;
+	yFtrans = (yFtransLeft + yFtransRight) / 2;
+	Right = *pRight;
+	translateBounds (&Right, xOrg - xOrgRight, yOrg - yOrgRight,
+				 xFtrans - xFtransRight, yFtrans - yFtransRight);
+	Left = *pLeft;
+	translateBounds (&Left, xOrg - xOrgLeft, yOrg - yOrgLeft,
+				 xFtrans - xFtransLeft, yFtrans - yFtransLeft);
+	pRight = &Right;
+	pLeft = &Left;
+
+	center = pRight->center;
+	if (0 <= (a = angleBetween (center, pRight->clock, pLeft->counterClock))
+ 	    && a < M_PI)
+ 	{
+		corner = pRight->clock;
+		otherCorner = pLeft->counterClock;
+	} else {
+		a = angleBetween (center, pLeft->clock, pRight->counterClock);
+		corner = pLeft->clock;
+		otherCorner = pRight->counterClock;
+	}
+	switch (pGC->joinStyle) {
+	case JoinRound:
+		width = (pGC->lineWidth ? pGC->lineWidth : 1);
+
+		arc.x = center.x - width/2;
+		arc.y = center.y - width/2;
+		arc.width = width;
+		arc.height = width;
+		arc.angle1 = -atan2 (corner.y - center.y, corner.x - center.x);
+		arc.angle2 = a;
+		pArcPts = (SppPointPtr) Xalloc (sizeof (SppPointRec));
+		pArcPts->x = center.x;
+		pArcPts->y = center.y;
+		if( cpt = miGetArcPts(&arc, 1, &pArcPts))
+		{
+			/* by drawing with miFillSppPoly and setting the endpoints of the arc
+			 * to be the corners, we assure that the cap will meet up with the
+			 * rest of the line */
+			miFillSppPoly(pDraw, pGC, cpt, pArcPts, -xOrg, -yOrg, xFtrans, yFtrans);
+			Xfree((pointer)pArcPts);
+		}
+		return;
+	case JoinMiter:
+		/*
+		 * don't miter arcs with less than 11 degrees between them
+		 */
+		if (a < 169 * M_PI / 180.0) {
+			poly[0] = corner;
+			poly[1] = center;
+			poly[2] = otherCorner;
+			bc2 = (corner.x - otherCorner.x) * (corner.x - otherCorner.x) +
+			      (corner.y - otherCorner.y) * (corner.y - otherCorner.y);
+			ec2 = bc2 / 4;
+			ac2 = (corner.x - center.x) * (corner.x - center.x) +
+			      (corner.y - center.y) * (corner.y - center.y);
+			ae = sqrt (ac2 - ec2);
+			de = ec2 / ae;
+			e.x = (corner.x + otherCorner.x) / 2;
+			e.y = (corner.y + otherCorner.y) / 2;
+			poly[3].x = e.x + de * (e.x - center.x) / ae;
+			poly[3].y = e.y + de * (e.y - center.y) / ae;
+			poly[4] = corner;
+			polyLen = 5;
+			break;
+		}
+	case JoinBevel:
+		poly[0] = corner;
+		poly[1] = center;
+		poly[2] = otherCorner;
+		poly[3] = corner;
+		polyLen = 4;
+		break;
+	}
+	miFillSppPoly (pDraw, pGC, polyLen, poly, -xOrg, -yOrg, xFtrans, yFtrans);
+}
+
+miArcCap (pDraw, pGC, pFace, end, xOrg, yOrg, xFtrans, yFtrans)
+	DrawablePtr	*pDraw;
+	GCPtr		pGC;
+	miArcFacePtr	pFace;
 	int		end;
 	int		xOrg, yOrg;
 	double		xFtrans, yFtrans;
 {
 	SppPointRec	corner, otherCorner, center, endPoint, poly[5];
 
-	if (end == LEFT_END) {
-		corner = pBounds->outer;
-		otherCorner = pBounds->inner;
-	} else {
-		corner = pBounds->inner;
-		otherCorner = pBounds->outer;
-	}
-	center = pBounds->elipse;
+	corner = pFace->clock;
+	otherCorner = pFace->counterClock;
+	center = pFace->center;
 	switch (pGC->capStyle) {
 	case CapProjecting:
 		poly[0].x = otherCorner.x;
@@ -754,25 +875,21 @@ addCap (capsp, ncapsp, sizep, end, arcIndex)
 	++*ncapsp;
 }
 
-addJoin (joinsp, njoinsp, sizep, x, y, x0, y0, x1, y1)
+addJoin (joinsp, njoinsp, sizep, end0, index0, end1, index1)
 	miArcJoinPtr	*joinsp;
 	int		*njoinsp, *sizep;
-	double		x, y, x0, y0, x1, y1;
+	int		end0, index0, end1, index1;
 {
-#ifdef NOTDEF
 	miArcJoinPtr	join;
 
 	if (*njoinsp == *sizep)
 		*joinsp = (miArcJoinPtr) Xrealloc (*joinsp, (*sizep += ADD_REALLOC_STEP) * sizeof (**joinsp));
 	join = &(*joinsp)[*njoinsp];
-	join->juncture.x = x;
-	join->juncture.y = y;
-	join->prev[0].x = x0;
-	join->prev[0].y = y0;
-	join->prev[1].x = x1;
-	join->prev[1].y = y1;
+	join->end0 = end0;
+	join->arcIndex0 = index0;
+	join->end1 = end1;
+	join->arcIndex1 = index1;
 	++*njoinsp;
-#endif
 }
 
 static miPolyArcPtr
@@ -849,7 +966,8 @@ miSolidArcs (parcs, narcs)
 		    ISEQUAL (data[i].y1, data[j].y0))
  		{
 			addJoin (&arcs->joins, &arcs->njoins, &joinSize,
- 				 LEFT_END, k, RIGHT_END, k == narcs-1 ? 0 : k+1);
+ 				 RIGHT_END, k == narcs-1 ? 0 : k+1,
+ 				 LEFT_END, k);
 			arcs->arcs[k].render = 0;
 			arcs->arcs[k].join = arcs->njoins;
 			arcs->arcs[k].cap = arcs->ncaps;
@@ -905,9 +1023,8 @@ computeAngleFromPath (a0, a1, w, h, lenp, backwards)
 
 	len = *lenp;
 	if (backwards) {
-		a = a0;
-		a0 = -a1;
-		a1 = -a;
+		a0 = FULLCIRCLE - a0;
+		a1 = FULLCIRCLE - a1;
 	}
 	if (a1 < a0)
 		a1 += FULLCIRCLE;
@@ -995,7 +1112,7 @@ computeAngleFromPath (a0, a1, w, h, lenp, backwards)
 	if (a1 > FULLCIRCLE)
 		a1 -= FULLCIRCLE;
 	if (backwards)
-		a1 = -a1;
+		a1 = FULLCIRCLE -a1;
 	return a1;
 }
 
@@ -1101,7 +1218,7 @@ miDashArcs (pArcs, nArcs, pDash, nDashes, dashOffset, isDoubleDash)
 		y0 = pArcs[nextArc].y + (double) pArcs[nextArc].height / 2 *
  					(1 - sin (torad (pArcs[nextArc].angle1)));
 		x1 = pArcs[iArc].x + (double) pArcs[iArc].width / 2 *
- 					(1 + cos (torad (startAngle)));
+ 					(1 + cos (torad (endAngle)));
 		y1 = pArcs[iArc].y + (double) pArcs[iArc].height / 2 *
  					(1 - sin (torad (endAngle)));
 		if (UNEQUAL (x0, x1) || UNEQUAL (y0, y1)) {
@@ -1546,7 +1663,7 @@ computeBound (def, bound, acc, right, left)
 	struct arc_def		*def;
 	struct arc_bound	*bound;
 	struct accelerators	*acc;
-	miArcBoundsPtr		right, left;
+	miArcFacePtr		right, left;
 {
 	double		t, elipseX ();
 	double		innerTaily;
@@ -1580,21 +1697,21 @@ computeBound (def, bound, acc, right, left)
 	 */
 
 	if (right) {
-		right->outer.y = bound->outer.min;
-		right->outer.x = outerx.min;
-		right->elipse.y = bound->elipse.min;
-		right->elipse.x = elipsex.min;
-		right->inner.y = bound->inner.min;
-		right->inner.x = innerx.min;
+		right->counterClock.y = bound->outer.min;
+		right->counterClock.x = outerx.min;
+		right->center.y = bound->elipse.min;
+		right->center.x = elipsex.min;
+		right->clock.y = bound->inner.min;
+		right->clock.x = innerx.min;
 	}
 
 	if (left) {
-		left->outer.y = bound->outer.max;
-		left->outer.x = outerx.max;
-		left->elipse.y = bound->elipse.max;
-		left->elipse.x = elipsex.max;
-		left->inner.y = bound->inner.max;
-		left->inner.x = innerx.max;
+		left->clock.y = bound->outer.max;
+		left->clock.x = outerx.max;
+		left->center.y = bound->elipse.max;
+		left->center.x = elipsex.max;
+		left->counterClock.y = bound->inner.max;
+		left->counterClock.x = innerx.max;
 	}
 
 	bound->left.min = bound->inner.max;
@@ -2199,14 +2316,14 @@ static double	spanY;
 
 drawArc (x0, y0, w, h, l, a0, a1, right, left)
 	int	x0, y0, w, h, l, a0, a1;
-	miArcBoundsPtr	right, left;	/* save end line points */
+	miArcFacePtr	right, left;	/* save end line points */
 {
 	struct arc_def		def;
 	struct accelerators	acc;
 	struct span		*result;
 	int			startq, endq, curq;
 	int			rightq, leftq, righta, lefta;
-	miArcBoundsPtr		passRight, passLeft;
+	miArcFacePtr		passRight, passLeft;
 	int			q0, q1, mask;
 	struct band {
 		int	a0, a1;
@@ -2363,50 +2480,58 @@ drawArc (x0, y0, w, h, l, a0, a1, right, left)
 	}
 	computeAcc (&def, &acc);
 	for (j = 0; j < sweepno; j++) {
-		quadrantMask = sweep[j].mask;
+		mask = sweep[j].mask;
 		passRight = passLeft = 0;
- 		if (quadrantMask & (1 << rightq)) {
+ 		if (mask & (1 << rightq)) {
 			if (sweep[j].a0 == righta)
 				passRight = right;
 			if (sweep[j].a1 == righta)
 				passLeft = right;
 		}
-		if (quadrantMask & (1 << leftq)) {
+		if (mask & (1 << leftq)) {
 			if (sweep[j].a0 == lefta)
 				passRight = left;
 			if (sweep[j].a1 == lefta)
 				passLeft = left;
 		}
-		drawQuadrant (&def, &acc, sweep[j].a0, sweep[j].a1,
+		drawQuadrant (&def, &acc, sweep[j].a0, sweep[j].a1, mask, 
  			      passRight, passLeft);
 	}
 	if (right) {
-		mirrorSppPoint (rightq, &right->outer);
-		mirrorSppPoint (rightq, &right->elipse);
-		mirrorSppPoint (rightq, &right->inner);
+		mirrorSppPoint (rightq, &right->clock);
+		mirrorSppPoint (rightq, &right->center);
+		mirrorSppPoint (rightq, &right->counterClock);
 	}
 	if (left) {
-		mirrorSppPoint (leftq,  &left->outer);
-		mirrorSppPoint (leftq,  &left->elipse);
-		mirrorSppPoint (leftq,  &left->inner);
+		mirrorSppPoint (leftq,  &left->counterClock);
+		mirrorSppPoint (leftq,  &left->center);
+		mirrorSppPoint (leftq,  &left->clock);
 	}
 }
 
-drawQuadrant (def, acc, a0, a1, right, left)
+drawQuadrant (def, acc, a0, a1, mask, right, left)
 	struct arc_def		*def;
 	struct accelerators	*acc;
 	int			a0, a1;
-	miArcBoundsPtr		right, left;
+	int			mask;
+	miArcFacePtr		right, left;
 {
 	struct arc_bound	bound;
 	double			miny, maxy, y;
+	int			minIsInteger;
 
 	def->a0 = ((double) a0) / 64.0;
 	def->a1 = ((double) a1) / 64.0;
 	computeBound (def, &bound, acc, right, left);
-	miny = fmin (ceil (bound.inner.min), ceil (bound.outer.min));
+	miny = fmin (bound.inner.min, bound.outer.min);
+	minIsInteger = miny == ceil (miny);
+	miny = ceil (miny);
 	maxy = fmax (floor (bound.inner.max), floor (bound.outer.max));
 	for (y = miny; y <= maxy; y = y + 1.0) {
+		if (y == miny && minIsInteger)
+			quadrantMask = mask & 0xc;
+		else
+			quadrantMask = mask;
 		spanY = y;
 		arcSpan (y, def, &bound, acc);
 	}
