@@ -1,4 +1,4 @@
-/* $Header: fontstruct.h,v 1.3 91/02/14 19:01:36 keith Exp $ */
+/* $Header: fontstruct.h,v 1.1 91/02/20 19:42:28 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -72,14 +72,14 @@ typedef struct _FontInfo {
     unsigned short	firstRow;
     unsigned short	lastRow;
     unsigned short	defaultCh;
-    int			noOverlap : 1;
-    int			terminalFont : 1;
-    int			constantMetrics : 1;
-    int			constantWidth : 1;
-    int			inkInside : 1;
-    int			inkMetrics : 1;
-    int			allExist : 1;
-    int			drawDirection : 2;
+    unsigned int	noOverlap : 1;
+    unsigned int	terminalFont : 1;
+    unsigned int	constantMetrics : 1;
+    unsigned int	constantWidth : 1;
+    unsigned int	inkInside : 1;
+    unsigned int	inkMetrics : 1;
+    unsigned int	allExist : 1;
+    unsigned int	drawDirection : 2;
     short		maxOverlap;
     xCharInfo		maxbounds;
     xCharInfo		minbounds;
@@ -136,8 +136,31 @@ typedef struct _FPEFunctions {
     int         (*free_fpe) ( /* fpe */ );
 } FPEFunctionsRec, FPEFunctions;
 
-
 extern int	FontRegisterFPEFunctions();
 
-#endif /* FONTSTR_H */
+/*
+ * Various macros for computing values based on contents of
+ * the above structures
+ */
 
+#define	GLYPHWIDTHPIXELS(pci) \
+	((pci)->metrics.rightSideBearing - (pci)->metrics.leftSideBearing)
+
+#define	GLYPHHEIGHTPIXELS(pci) \
+ 	((pci)->metrics.ascent + (pci)->metrics.descent)
+
+#define	GLYPHWIDTHBYTES(pci)	(((GLYPHWIDTHPIXELS(pci))+7) >> 3)
+
+#define GLYPHWIDTHPADDED(bc)	(((bc)+7) & ~0x7)
+
+#define BYTES_PER_ROW(bits, nbytes) \
+	((nbytes) == 1 ? (((bits)+7)>>3)	/* pad to 1 byte */ \
+	:(nbytes) == 2 ? ((((bits)+15)>>3)&~1)	/* pad to 2 bytes */ \
+	:(nbytes) == 4 ? ((((bits)+31)>>3)&~3)	/* pad to 4 bytes */ \
+	:(nbytes) == 8 ? ((((bits)+63)>>3)&~7)	/* pad to 8 bytes */ \
+	: 0)
+
+#define BYTES_FOR_GLYPH(ci,pad)	(GLYPHHEIGHTPIXELS(ci) * \
+				 BYTES_PER_ROW(GLYPHWIDTHPIXELS(ci),pad))
+
+#endif /* FONTSTR_H */
