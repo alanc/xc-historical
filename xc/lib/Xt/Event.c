@@ -1,6 +1,6 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Event.c,v 1.79 88/09/05 10:25:44 swick Exp $";
-static char rcsid[] = "$Header: Event.c,v 1.79 88/09/05 10:25:44 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Event.c,v 1.80 88/09/06 09:50:13 swick Exp $";
+static char rcsid[] = "$Header: Event.c,v 1.80 88/09/06 09:50:13 swick Exp $";
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 #endif lint
 
@@ -37,6 +37,8 @@ static Opaque asyncClosure = NULL;
 
 static GrabList grabList;	/* %%% should this be in the AppContext? */
 static GrabList focusList;	/* %%% should this be in the AppContext? */
+static Boolean focusTraceGood;	/* %%% ditto */
+
 extern void bzero();
 
 CallbackList *_XtDestroyList;
@@ -543,6 +545,7 @@ static Widget FindFocusWidget(widget)
     register int i;
     int src;
     Widget dst;
+    static Widget lastQueryWidget, focusWidget;
 
     if (focusList == NULL) return widget;
 
@@ -552,50 +555,55 @@ static Widget FindFocusWidget(widget)
 	ancSize = CACHESIZE;
     }
 
-    /* First fill in the ancestor list */
+    if (!focusTraceGood || widget != lastQueryWidget) {
+	lastQueryWidget = widget;
+	focusTraceGood = True;
+	/* First fill in the ancestor list */
 
-    for (i = 0, w = widget; w != NULL; w = XtParent(w), i++) {
-	if (i == ancSize) {
-	    /* This should rarely happen, but if it does it'll probably
-	       happen again, so grow the ancestor list */
-	    ancSize += CACHESIZE;
-	    anc = (Widget *) XtRealloc(anc, sizeof(Widget) * ancSize);
-	}
-	anc[i] = w;
-    }
-    src = i-1;
-    dst = widget;
-
-    /* For each ancestor, starting at the top, see if it's forwarded */
-
-    while (src >= 0) {
-	for (gl = start; gl != NULL && gl->widget != anc[src]; gl = gl->next) ;
-	if (gl == NULL)	src--;		/* not in list, try next anc. */
-	else {
-	    dst = gl->keyboard_focus;
-	    start = gl->next;		/* Continue from the one we found */
-	    /* See if dst is an ancestor */
-	    for (i = src-1; i > 0 && anc[i] != dst; i--) {}
-	    /* If out of forwarding, send to dst if it's not an ancestor, and
-	       the widget if it is (don't forward events to an ancestor) */
-
-	    if (start == NULL) {
-		if (i <= 0) return dst;
-		else return widget;
+	for (i = 0, w = widget; w != NULL; w = XtParent(w), i++) {
+	    if (i == ancSize) {
+		/* This should rarely happen, but if it does it'll probably
+		   happen again, so grow the ancestor list */
+		ancSize += CACHESIZE;
+		anc = (Widget *) XtRealloc(anc, sizeof(Widget) * ancSize);
 	    }
-	    if (i <= 0) break;		/* We've moved to an uncle */
-	    else src = i;		/* Continue looking from dst */
+	    anc[i] = w;
 	}
+	src = i-1;
+	dst = widget;
+
+	/* For each ancestor, starting at the top, see if it's forwarded */
+
+	while (src >= 0) {
+	    for (gl = start; gl != NULL && gl->widget != anc[src]; gl = gl->next) ;
+	    if (gl == NULL)	src--;	/* not in list, try next anc. */
+	    else {
+		dst = gl->keyboard_focus;
+		start = gl->next;	/* Continue from the one we found */
+		/* See if dst is an ancestor */
+		for (i = src-1; i > 0 && anc[i] != dst; i--) {}
+		/* If out of forwarding, send to dst if it's not an ancestor, and
+		   the widget if it is (don't forward events to an ancestor) */
+
+		if (start == NULL) {
+		    if (i <= 0) return (focusWidget = dst);
+		    else return (focusWidget = widget);
+		}
+		if (i <= 0) break;		/* We've moved to an uncle */
+		else src = i;		/* Continue looking from dst */
+	    }
+	}
+
+	/* If we haven't moved into some other branch, forwarding is either
+	   to the widget or a descendent */
+
+	for (gl = start; gl != NULL; gl = gl->next) {
+	    if (gl->widget == dst) dst = gl->keyboard_focus;
+	}
+	focusWidget = dst;
     }
 
-    /* If we haven't moved into some other branch, forwarding is either
-       to the widget or a descendent */
-
-    for (gl = start; gl != NULL; gl = gl->next) {
-	if (gl->widget == dst) dst = gl->keyboard_focus;
-    }
-
-    return dst;
+    return focusWidget;
 #undef CACHESIZE
 }
 
@@ -791,10 +799,12 @@ static Boolean InsertFocusEntry(widget, keyboard_focus)
     for (gl = focusList; gl != NULL; gl = gl->next) {
 	if (gl->widget == widget) {
 	    if (gl->keyboard_focus == keyboard_focus) return False;
-	    else gl->keyboard_focus = keyboard_focus;
+	    gl->keyboard_focus = keyboard_focus;
+	    focusTraceGood = False; /* invalidate the cache */
 	    return True;
 	}
     }
+    focusTraceGood = False;	/* invalidate the cache */
 
     /* Create a new record and insert it before the first entry with a widget
        that is a child of widget.  This enforces the invariant that if A is an
@@ -850,6 +860,7 @@ static void RemoveGrab(widget, keyboard_focus)
 	XtRemoveCallback(gl->keyboard_focus, XtNdestroyCallback,
 		FocusDestroyCallback, widget);
 	XtFree((char *)gl);
+	focusTraceGood = False;	/* invalidate the cache */
 	return;
     }
 
@@ -889,6 +900,7 @@ void XtAppMainLoop(app)
 void _XtEventInitialize()
 {
     grabList = focusList = NULL;
+    focusTraceGood = False;
     _XtDestroyList = NULL;
     nullRegion = XCreateRegion();
     InitializeHash();
