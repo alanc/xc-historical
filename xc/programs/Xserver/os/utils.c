@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: utils.c,v 1.42 88/02/23 19:41:44 rws Exp $ */
+/* $Header: utils.c,v 1.43 88/03/15 15:13:04 rws Exp $ */
 #include <stdio.h>
 #include <sys/time.h>
 #include "misc.h"
@@ -267,7 +267,7 @@ char	*argv[];
 
 UseMsg()
 {
-    ErrorF("use: X <display> [option] <tty>\n");
+    ErrorF("use: X [:<display>] [option] <tty>\n");
     ErrorF("-a #                   mouse acceleration (pixels)\n");
     ErrorF("-bp<:screen> color     BlackPixel for screen\n");
     ErrorF("-c                     turns off key-click\n");
