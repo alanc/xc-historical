@@ -821,8 +821,24 @@ bdfReadFont(pFont, file, bit, byte, glyph, scan)
     return Successful;
 BAILOUT:
     if (pFont->fontPrivate)
-	bdfUnloadFont(pFont);
+	bdfFreeFontBits (pFont);
     return AllocError;
+}
+
+bdfFreeFontBits(pFont)
+    FontPtr pFont;
+{
+    BitmapFontPtr  bitmapFont;
+    int         i;
+
+    bitmapFont = (BitmapFontPtr) pFont->fontPrivate;
+    xfree(bitmapFont->ink_metrics);
+    xfree(bitmapFont->encoding);
+    for (i = 0; i < bitmapFont->num_chars; i++)
+	xfree(bitmapFont->metrics[i].bits);
+    xfree(bitmapFont->metrics);
+    xfree(pFont->info.props);
+    xfree(bitmapFont);
 }
 
 int
@@ -839,7 +855,7 @@ bdfReadFontInfo(pFontInfo, file)
 	font.info.props = 0;
 	font.info.isStringProp = 0;
 	font.info.nprops = 0;
-	bdfUnloadFont(&font);
+	bdfFreeFontBits (&font);
     }
     return ret;
 }
@@ -848,17 +864,8 @@ void
 bdfUnloadFont(pFont)
     FontPtr     pFont;
 {
-    BitmapFontPtr  bitmapFont;
-    int         i;
-
-    bitmapFont = (BitmapFontPtr) pFont->fontPrivate;
-    xfree(bitmapFont->ink_metrics);
-    xfree(bitmapFont->encoding);
-    for (i = 0; i < bitmapFont->num_chars; i++)
-	xfree(bitmapFont->metrics[i].bits);
-    xfree(bitmapFont->metrics);
-    xfree(pFont->info.props);
-    xfree(bitmapFont);
+    bdfFreeFontBits (pFont);
+    xfree(pFont);
 }
 
 static Bool

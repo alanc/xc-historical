@@ -657,4 +657,5 @@ pcfUnloadFont(pFont)
     xfree(pFont->info.isStringProp);
     xfree(pFont->info.props);
     xfree(bitmapFont);
+    xfree(pFont);
 }
