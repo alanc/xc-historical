@@ -1,4 +1,4 @@
-.\" $XConsortium: appD,v 1.4 91/07/31 20:25:00 swick Exp $
+.\" $XConsortium: appD,v 1.5 91/08/27 10:13:45 swick Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -312,7 +312,7 @@ translationError	mergingNullTable	T{
 Old translation table was null, cannot modify.
 T}
 translationError	nullTable	T{
-Can't translate event thorugh NULL table
+Can't translate event through NULL table
 T}
 translationError	unboundActions	T{
 Actions not found: %s
