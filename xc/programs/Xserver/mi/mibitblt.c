@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mibitblt.c,v 5.9 89/08/30 19:18:38 keith Exp $ */
+/* $XConsortium: mibitblt.c,v 5.10 89/11/10 17:00:39 rws Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -725,6 +725,7 @@ miPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
     unsigned long	oldFg, oldBg, gcv[3];
     unsigned long	oldPlanemask;
     unsigned long	i;
+    long		bytesPer;
 
     if (!w || !h)
 	return;
@@ -748,11 +749,12 @@ miPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
 	oldPlanemask = pGC->planemask;
 	oldFg = pGC->fgPixel;
 	oldBg = pGC->bgPixel;
-	gcv[0] = ~0;
+	gcv[0] = ~0L;
 	gcv[1] = 0;
 	DoChangeGC(pGC, GCForeground | GCBackground, gcv, 0);
+	bytesPer = (long)h * PixmapBytePad(w + leftPad, 1);
 
-	for (i = 1 << (depth-1); i != 0; i >>= 1)
+	for (i = 1 << (depth-1); i != 0; i >>= 1, pImage += bytesPer)
 	{
 	    if (i & oldPlanemask)
 	    {
@@ -761,7 +763,6 @@ miPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
 	        ValidateGC(pDraw, pGC);
 	        (*pGC->ops->PutImage)(pDraw, pGC, 1, x, y, w, h, leftPad,
 			         XYBitmap, pImage);
-	        pImage += h * PixmapBytePad(w + leftPad, 1);
 	    }
 	}
 	gcv[0] = oldPlanemask;
