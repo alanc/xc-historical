@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: ConvertI.h,v 1.2 88/09/04 12:17:37 swick Exp $ */
+/* $oHeader: ConvertI.h,v 1.3 88/08/31 16:11:04 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -28,7 +29,10 @@ SOFTWARE.
  *
  **************************************************************/
 
-extern void _XtAddConverter();
+typedef struct _ConverterRec **ConverterTable;
+
+extern void _XtTableAddConverter();
+    /* ConverterTable	    table;	    */
     /* XrmRepresentation    from_type;      */
     /* XrmRepresentation    to_type;        */
     /* XtConverter      converter;      */
