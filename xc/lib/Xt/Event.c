@@ -111,6 +111,33 @@ void RegisterWindow(window, widget)
     hp->next = NULL;
     table->count++;
 }
+void UnregisterWindow(window, widget)
+    Window window;
+    Widget widget;
+{
+    HashPtr hp, *hpp;
+    unsigned int hashValue;
+
+    hpp = &table->entries[(unsigned int)window % table->size];
+    hp = *hpp;
+
+    while (hp != NULL) {
+        if (hp->window == window) {
+	    if (hp->widget != hp->widget) {
+		XtWarning("Unregister-window does not match widget.\n");
+                return;
+                }
+             else /* found entry to delete */
+                  (*hpp) = hp ->next;
+                  XtFree((char*)hp);
+                  table->count--;
+                  return;
+	}
+        hpp = &hp->next;
+	hp = *hpp;
+    }
+    
+}
 
 static void ExpandTable()
 {
@@ -187,7 +214,7 @@ void XtDispatchEvent (event)
     ConvertTypeToMask(event->xany.type, &mask, &grabType, &sensitivity);
     if ((grabType == pass || grabList == NULL) && IsSensitive)
            DispatchEvent(event,widget, mask);
-    else if (onGrabList()) {
+    else if (onGrabList(widget)) {
            if (IsSensitive) DispatchEvent(event,widget,mask);
            else DispatchEvent(event, grabList->widget, mask);
            }  
