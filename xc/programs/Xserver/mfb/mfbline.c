@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbline.c,v 1.34 87/06/15 02:37:41 sue Exp $ */
+/* $Header: mfbline.c,v 1.34 87/09/11 07:21:06 toddb Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"
@@ -437,7 +437,8 @@ mfbLineSS(pDrawable, pGC, mode, npt, pptInit)
 
     if ((pGC->capStyle != CapNotLast) &&
 	((ppt->x != pptInit->x) ||
-	 (ppt->y != pptInit->y)))
+	 (ppt->y != pptInit->y) ||
+	 (ppt == pptInit + 1)))
     {
 	pt1 = *ppt;
 
