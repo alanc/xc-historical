@@ -1,5 +1,5 @@
 .\" $Header: Xsun.man,v 1.1 87/09/14 14:50:44 toddb Exp $
-.TH XSUN 8 "9 Sep 1987" "X Version 11"
+.TH XSUN 8 "225 Feb 1988" "X Version 11"
 .SH NAME
 Xsun \- Sun server for X Version 11
 .SH SYNOPSIS
@@ -41,10 +41,10 @@ the following display types:
 in both 1152*900 and 1600*1280 versions.
 .TP
 \fBcgtwo\fP
-used both as a color and a monochrome display (for X/160C).
+used both as a color and a monochrome display (for 3/160C, 3/260C. 4/260C).
 .TP
 \fBcgfour\fP
-used both as a color and a monochrome display (for 3/110 & 3/60).
+used both as a color and a monochrome display (for 3/110, 4/110,  3/60).
 .PP
 It does not support the GP,  GP+,  or GP2.  If you have one of these
 installed,  use the
@@ -58,12 +58,6 @@ On a
 will use both the monochrome and color screens as if they were
 two separate screens side-by-side.  Sliding the mouse off the left and right 
 edges will swap screens.
-.PP
-For auto-configuration to work, you need /dev entries for each
-screen you want configured, and no /dev entries for any screens
-you do not want configured.  For example, on a 3/110, you would
-normally want both a /dev/bwtwo0 and a /dev/cgfour0 entry, to
-get dual screens.
 .SH "USE WITH SUNWINDOWS OR NeWS"
 .PP
 The server can be run from outside 
@@ -167,9 +161,9 @@ cursor is on the monochrome frame buffer.  The solution is to remove the
 entries for any device you don't have a monitor for.
 .TP
 4
-There is a bug which causes the server to crash driving a
-.B cgtwo
-from a Sun/4.
+There is a bug in pre-FCS operating systems for the Sun/4
+which causes the server to crash driving a
+.B cgtwo .
 .TP
 5
 There is a race condition that sometimes happens when running
@@ -181,13 +175,10 @@ simple work-around.
 Autorepeat for the keyboard cannot be turned off.
 .TP
 7
-The bell is not implemented yet.
-.TP
-8
 Use of the pattern (as opposed to the blanking) screensaver
 may cause the server to loop forever.
 .TP
-9
+8
 The cursor colors are correct.  If you are sceptical,  try running
 .IR hacks/cursorcolor/cursorcolor .
 .SH AUTHORS
