@@ -1,4 +1,4 @@
-/* $XConsortium: mdepthinit.c,v 1.2 92/04/16 09:57:12 rws Exp $ */
+/* $XConsortium: mdepthinit.c,v 1.3 92/07/30 10:42:32 rws Exp $ */
 
 /*
 
@@ -60,7 +60,7 @@ mcfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
     register DDXPointPtr ppt;		/* points to start copying from */
     int			*pwidth;	/* list of number of bits to copy */
     int			nspans;		/* number of scanlines to copy */
-    unsigned long	*pdstStart;	/* where to put the bits */
+    unsigned int	*pdstStart;	/* where to put the bits */
 {
     switch (BitsPerPixel(pDrawable->depth)) {
     case 1:

@@ -1,4 +1,4 @@
-/* $XConsortium: cfbinit.c,v 1.2 91/07/08 11:16:22 keith Exp $ */
+/* $XConsortium: cfbinit.c,v 1.3 92/04/06 18:18:23 keith Exp $ */
 /***********************************************************
 Copyright 1991 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -83,7 +83,6 @@ extern	ws_event_queue	*queue;
 
 extern int wsScreenInit();
 extern void miRecolorCursor();
-extern void NoopDDA();
 extern void NewCurrentScreen();
 extern int wsFd;
 extern ws_screen_descriptor screenDesc[];
@@ -115,10 +114,11 @@ cfbpmaxSetPlaneMask(planemask, pScreen)
 
 
 void
-wsQueryBestSize16(class, pwidth, pheight)
+wsQueryBestSize16(class, pwidth, pheight, pScr)
     int class;
-    short *pwidth;
-    short *pheight;
+    unsigned short *pwidth;
+    unsigned short *pheight;
+    ScreenPtr pScr;
 {
     unsigned width, test;
 
@@ -131,7 +131,7 @@ wsQueryBestSize16(class, pwidth, pheight)
 	  *pheight = 16;
 	  break;
 	default: 
-	  mfbQueryBestSize(class, pwidth, pheight);
+	  mfbQueryBestSize(class, pwidth, pheight, pScr);
 	  break;
        }
     }
@@ -139,10 +139,11 @@ wsQueryBestSize16(class, pwidth, pheight)
 
 
 void
-wsQueryBestSize64(class, pwidth, pheight)
+wsQueryBestSize64(class, pwidth, pheight, pScr)
     int class;
-    short *pwidth;
-    short *pheight;
+    unsigned short *pwidth;
+    unsigned short *pheight;
+    ScreenPtr pScr;
 {
     unsigned width, test;
 
@@ -155,7 +156,7 @@ wsQueryBestSize64(class, pwidth, pheight)
 	  *pheight = 64;
 	  break;
 	default: 
-	  mfbQueryBestSize(class, pwidth, pheight);
+	  mfbQueryBestSize(class, pwidth, pheight, pScr);
 	  break;
        }
     }

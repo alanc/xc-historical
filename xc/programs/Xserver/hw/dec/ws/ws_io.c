@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: ws_io.c,v 1.6 92/04/06 18:20:28 keith Exp $ */
+/* $XConsortium: ws_io.c,v 1.7 92/05/18 20:12:44 rws Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -155,7 +155,7 @@ wsClick(click)
 
 static void
 wsChangeKeyboardControl(device, ctrl)
-    DevicePtr device;
+    DeviceIntPtr device;
     KeybdCtrl *ctrl;
 {
     int i;
@@ -194,9 +194,11 @@ wsChangeKeyboardControl(device, ctrl)
 }
 
 static void
-wsBell(loud, pDevice)
+wsBell(loud, pDevice, ctrl, fbclass)
     int loud;
-    DevicePtr pDevice;
+    DeviceIntPtr pDevice;
+    pointer ctrl;
+    int fbclass;
 {
     ws_keyboard_control control;
     control.device_number = wsinfo.console_keyboard;
@@ -213,7 +215,7 @@ wsBell(loud, pDevice)
  */
 void
 wsChangePointerControl(device, ctrl)
-    DevicePtr device;
+    DeviceIntPtr device;
     PtrCtrl   *ctrl;
 {
     ws_pointer_control pc;
@@ -227,10 +229,11 @@ wsChangePointerControl(device, ctrl)
 }
 
 int
-wsGetMotionEvents(pDevice, buff, start, stop)
-    CARD32 start, stop;
-    DevicePtr pDevice;
+wsGetMotionEvents(pDevice, buff, start, stop, pScr)
+    DeviceIntPtr pDevice;
     xTimecoord *buff;
+    unsigned long start, stop;
+    ScreenPtr pScr;
 {
     register int    i;		/* Number of events left to process in ring */
     ws_motion_buffer *mb = queue->mb;
@@ -726,16 +729,14 @@ ProcessInputEvents()
 				    shiftLock = TRUE;
 				}
 			    }
-			    (*wsKeyboard->processInputProc) 
-				(&x, wsKeyboard, 1);
+			    (*wsKeyboard->processInputProc) (&x, dev, 1);
 			    break;
 			case BUTTON_UP_TYPE: 
 			    /* if key is a lock modifier then ignore */
 			    if (dev->key->modifierMap[e->e.key.key] & LockMask)
 				break;
 			    x.u.u.type = KeyRelease;
-			    (*wsKeyboard->processInputProc)
-				(&x, wsKeyboard, 1);
+			    (*wsKeyboard->processInputProc) (&x, dev, 1);
 			    break;
 			default: 	       /* hopefully BUTTON_RAW_TYPE */
 			    break;
@@ -761,7 +762,8 @@ ProcessInputEvents()
 #endif
 			    goto out;
 		    }
-		    (*wsPointer->processInputProc) (&x, wsPointer, 1);
+		    (*wsPointer->processInputProc)
+			(&x, (DeviceIntPtr) wsPointer, 1);
 		    break;
 	    /* new input devices go here (or are ignored) */
 	    default:
@@ -865,7 +867,7 @@ wsSetCursorPosition( pScr, newx, newy, generateEvent)
 	motion.u.keyButtonPointer.rootY = newy;
 	motion.u.keyButtonPointer.time = currentTime.milliseconds;
 	motion.u.u.type = MotionNotify;
-	(wsPointer->processInputProc)(&motion, wsPointer, 1);
+	(wsPointer->processInputProc)(&motion, (DeviceIntPtr) wsPointer, 1);
     }
     return TRUE;
 }
