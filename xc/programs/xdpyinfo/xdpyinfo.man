@@ -20,11 +20,10 @@ when connected to display that supports an 8 plane Pseudocolor screen as well
 as a 1 plane (monochrome) screen.
 .PP
 .nf
-name of display:    expire:0.0
-
+name of display:    empire:0.0
 version number:    11.0
 vendor string:    MIT X Consortium
-vendor release number:    2
+vendor release number:    3
 maximum request size:  16384 longwords (65536 bytes)
 motion buffer size:  0
 bitmap unit, bit order, padding:    32, MSBFirst, 32
@@ -35,16 +34,18 @@ number of screens:    2
 
 screen #0:
   dimensions:    1152x900 pixels (325x254 millimeters)
+  resolution:    90x90 dots per inch
   root window id:    0x8006d
   depth of root window:    1 plane
   number of colormaps:    minimum 1, maximum 1
   default colormap:    0x80065
   default number of colormap cells:    2
   preallocated pixels:    black 1, white 0
-  options:    backing-store NO, save-unders NO
-  current input event mask:    0x138000c
-    ButtonPressMask          ButtonReleaseMask      SubstructureNotifyMask   
-    SubstructureRedirectMask FocusChangeMask        OwnerGrabButtonMask      
+  options:    backing-store YES, save-unders YES
+  current input event mask:    0x1b8003c
+    ButtonPressMask          ButtonReleaseMask        EnterWindowMask          
+    LeaveWindowMask          SubstructureNotifyMask   SubstructureRedirectMask 
+    FocusChangeMask          ColormapChangeMask       OwnerGrabButtonMask      
   number of visuals:    1
   default visual id:  0x80064
   visual:
@@ -57,13 +58,14 @@ screen #0:
 
 screen #1:
   dimensions:    1152x900 pixels (325x254 millimeters)
+  resolution:    90x90 dots per inch
   root window id:    0x80070
   depth of root window:    8 planes
   number of colormaps:    minimum 1, maximum 1
   default colormap:    0x80067
   default number of colormap cells:    256
   preallocated pixels:    black 1, white 0
-  options:    backing-store NO, save-unders NO
+  options:    backing-store YES, save-unders YES
   current input event mask:    0x0
   number of visuals:    1
   default visual id:  0x80066
