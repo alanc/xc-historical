@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.26 94/02/06 17:04:53 rws Exp $ */
+/* $XConsortium: process.c,v 1.27 94/02/08 13:44:00 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -195,15 +195,16 @@ IceReplyWaitInfo *replyWait;
 		IcePaProcessMsgProc processProc =
 		    processMsgInfo->process_msg_proc.accept_client;
 
-		(*processProc) (iceConn, header->minorOpcode,
-		    header->length, iceConn->swap);
+		(*processProc) (iceConn, processMsgInfo->client_data,
+		    header->minorOpcode, header->length, iceConn->swap);
 	    }
 	    else
 	    {
 		IcePoProcessMsgProc processProc =
 		    processMsgInfo->process_msg_proc.orig_client;
 
-		replyReady = (*processProc) (iceConn, header->minorOpcode,
+		replyReady = (*processProc) (iceConn,
+		    processMsgInfo->client_data, header->minorOpcode,
 		    header->length, iceConn->swap, useThisReplyWait);
 	    }
 	}
@@ -1163,6 +1164,7 @@ Bool		swap;
 	{
 	    IcePaProcessMsgProc	processMsgProc;
 	    IceProtocolSetupNotifyProc	protocolSetupNotifyProc;
+	    _IceProcessMsgInfo *process_msg_info;
 
 	    processMsgProc = myProtocol->version_recs[
 	        iceConn->protosetup_to_me->my_version_index].process_msg_proc;
@@ -1173,12 +1175,12 @@ Bool		swap;
 	        iceConn->protosetup_to_me->his_version_index,
 		myProtocol->vendor, myProtocol->release);
 
-	    iceConn->process_msg_info[iceConn->protosetup_to_me->his_opcode -
-	        iceConn->his_min_opcode].accept_flag = 1;
+	    process_msg_info = &iceConn->process_msg_info[
+	       iceConn->protosetup_to_me->his_opcode -iceConn->his_min_opcode];
 
-	    iceConn->process_msg_info[iceConn->protosetup_to_me->his_opcode -
-	        iceConn->his_min_opcode].process_msg_proc.
-                accept_client = processMsgProc;
+	    process_msg_info->client_data = NULL;
+	    process_msg_info->accept_flag = 1;
+	    process_msg_info->process_msg_proc.accept_client = processMsgProc;
 
 	    protocolSetupNotifyProc = myProtocol->protocol_setup_notify_proc;
 
@@ -1202,7 +1204,8 @@ Bool		swap;
 		    myProtocol->version_recs[iceConn->protosetup_to_me->
 		        my_version_index].minor_version,
 		    iceConn->protosetup_to_me->his_vendor,
-		    iceConn->protosetup_to_me->his_release);
+		    iceConn->protosetup_to_me->his_release,
+		    &process_msg_info->client_data);
 
 		/*
 		 * Set vendor and release pointers to NULL, so it won't
@@ -1688,6 +1691,7 @@ Bool			swap;
     {
 	IcePaProcessMsgProc		processMsgProc;
 	IceProtocolSetupNotifyProc	protocolSetupNotifyProc;
+	_IceProcessMsgInfo		*process_msg_info;
 
 	processMsgProc = myProtocol->version_recs[
 	    myVersionIndex].process_msg_proc;
@@ -1695,12 +1699,12 @@ Bool			swap;
 	AcceptProtocol (iceConn, hisOpcode, myOpcode, hisVersionIndex,
 	    myProtocol->vendor, myProtocol->release);
 
-	iceConn->process_msg_info[hisOpcode -
-	    iceConn->his_min_opcode].accept_flag = 1;
+	process_msg_info = &iceConn->process_msg_info[hisOpcode -
+	    iceConn->his_min_opcode];
 
-	iceConn->process_msg_info[hisOpcode -
-	    iceConn->his_min_opcode].process_msg_proc.
-	    accept_client = processMsgProc;
+	process_msg_info->client_data = NULL;
+	process_msg_info->accept_flag = 1;
+	process_msg_info->process_msg_proc.accept_client = processMsgProc;
 
 	protocolSetupNotifyProc = myProtocol->protocol_setup_notify_proc;
 
@@ -1720,7 +1724,7 @@ Bool			swap;
 	    (*protocolSetupNotifyProc) (iceConn,
 		myProtocol->version_recs[myVersionIndex].major_version,
 		myProtocol->version_recs[myVersionIndex].minor_version,
-	        vendor, release);
+	        vendor, release, &process_msg_info->client_data);
 
 	    vendor = release = NULL;   /* so we don't free it */
 	}

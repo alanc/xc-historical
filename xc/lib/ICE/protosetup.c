@@ -1,4 +1,4 @@
-/* $XConsortium: protosetup.c,v 1.13 93/12/07 11:04:14 mor Exp $ */
+/* $XConsortium: protosetup.c,v 1.14 93/12/28 11:42:11 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -22,19 +22,20 @@ Author: Ralph Mor, X Consortium
 
 
 IceProtocolSetupStatus
-IceProtocolSetup (iceConn, myOpcode, mustAuthenticate,
+IceProtocolSetup (iceConn, myOpcode, clientData, mustAuthenticate,
     majorVersionRet, minorVersionRet, vendorRet, releaseRet,
     errorLength, errorStringRet)
 
-IceConn	iceConn;
-int 	myOpcode;
-Bool    mustAuthenticate;
-int	*majorVersionRet;
-int	*minorVersionRet;
-char	**vendorRet;
-char	**releaseRet;
-int  	errorLength;
-char 	*errorStringRet;
+IceConn	   iceConn;
+int 	   myOpcode;
+IcePointer clientData;
+Bool       mustAuthenticate;
+int	   *majorVersionRet;
+int	   *minorVersionRet;
+char	   **vendorRet;
+char	   **releaseRet;
+int  	   errorLength;
+char 	   *errorStringRet;
 
 {
     iceProtocolSetupMsg	*pMsg;
@@ -222,6 +223,8 @@ char 	*errorStringRet;
 
     if (accepted)
     {
+	_IceProcessMsgInfo *process_msg_info;
+
 	*majorVersionRet = versionRec->major_version;
 	*minorVersionRet = versionRec->minor_version;
 	*vendorRet = reply.protocol_reply.vendor;
@@ -245,11 +248,13 @@ char 	*errorStringRet;
 
 	_IceAddOpcodeMapping (iceConn, hisOpcode, myOpcode);
 
-	iceConn->process_msg_info[hisOpcode -
-	    iceConn->his_min_opcode].accept_flag = 0;
+	process_msg_info = &iceConn->process_msg_info[hisOpcode -
+	    iceConn->his_min_opcode];
 
-	iceConn->process_msg_info[hisOpcode -
-	    iceConn->his_min_opcode].process_msg_proc.orig_client =
+	process_msg_info->client_data = clientData;
+	process_msg_info->accept_flag = 0;
+
+	process_msg_info->process_msg_proc.orig_client =
 		versionRec->process_msg_proc;
 
 	return (IceProtocolSetupSuccess);

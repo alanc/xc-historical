@@ -1,4 +1,4 @@
-/* $XConsortium: ICElib.h,v 1.25 94/01/31 10:53:35 mor Exp $ */
+/* $XConsortium: ICElib.h,v 1.26 94/02/06 15:22:00 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -82,6 +82,7 @@ typedef void (*IceWatchProc) (
 typedef Bool (*IcePoProcessMsgProc) (
 #if NeedFunctionPrototypes
     IceConn 		/* iceConn */,
+    IcePointer		/* clientData */,
     int			/* opcode */,
     unsigned long	/* length */,
     Bool		/* swap */,
@@ -92,6 +93,7 @@ typedef Bool (*IcePoProcessMsgProc) (
 typedef void (*IcePaProcessMsgProc) (
 #if NeedFunctionPrototypes
     IceConn 		/* iceConn */,
+    IcePointer		/* clientData */,
     int			/* opcode */,
     unsigned long	/* length */,
     Bool		/* swap */
@@ -149,7 +151,8 @@ typedef void (*IceProtocolSetupNotifyProc) (
     int			/* majorVersion */,
     int			/* minorVersion */,
     char *		/* vendor */,
-    char *		/* release */
+    char *		/* release */,
+    IcePointer *	/* clientDataRet */
 #endif
 );
 
@@ -365,6 +368,7 @@ extern IceProtocolSetupStatus IceProtocolSetup (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
     int 		/* myOpcode */,
+    IcePointer		/* clientData */,
     Bool		/* mustAuthenticate */,
     int	*		/* majorVersionRet */,
     int	*		/* minorVersionRet */,

@@ -1,4 +1,4 @@
-/* $XConsortium: ICElibint.h,v 1.29 94/02/06 14:27:09 rws Exp $ */
+/* $XConsortium: ICElibint.h,v 1.30 94/02/07 18:06:48 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -144,6 +144,7 @@ typedef struct {
     Bool			in_use;
     int				my_opcode;
     _IceProtocol		*protocol;
+    IcePointer			client_data;
     Bool			accept_flag;
     union {
 	IcePaProcessMsgProc	accept_client;
