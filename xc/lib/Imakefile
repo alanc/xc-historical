@@ -4,6 +4,7 @@
 SUBDIRS = X \
 	oldX \
 	Xt \
+	Xmu \
 	Xaw
 
 MakeSubdirs($(SUBDIRS))
