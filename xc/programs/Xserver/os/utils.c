@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: utils.c,v 1.55 88/08/16 21:45:29 jim Exp $ */
+/* $Header: utils.c,v 1.56 88/08/16 22:45:12 keith Exp $ */
 #include <stdio.h>
 #include "Xos.h"
 #include "misc.h"
@@ -371,8 +371,9 @@ char	*argv[];
  * it would be difficult in many places to "back out" on failure.
  */
 /* DEBUG replaced by MEMBUG so that turning it on effects only this file */
-#define MEMBUG 1
-#undef  MEMBUG					/* XXX what the heck? */
+#ifdef DEBUG
+#define MEMBUG
+#endif
 
 #ifdef MEMBUG
 #define FIRSTMAGIC 0x11aaaa11
