@@ -1,4 +1,4 @@
-/* $XConsortium: logical.c,v 1.2 93/10/26 10:06:30 rws Exp $ */
+/* $XConsortium: logical.c,v 1.3 93/10/27 21:52:28 rws Exp $ */
 
 /**** module logical.c ****/
 /******************************************************************************
@@ -74,9 +74,8 @@ int InitLogical(xp, p, reps)
     Parms   p;
     int     reps;
 {
-        int rectsSize, i, idx;
+        int i, idx;
 	XieProcessDomain domain;
-	int decode_notify;
         unsigned int bandMask;
         Bool useROI;
 	unsigned long logicalOp;
