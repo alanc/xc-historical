@@ -273,7 +273,7 @@ cfbSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
 		    {
 			xStart = max(pbox->x1, ppt->x);
 			xEnd = min(pbox->x2, ppt->x + *pwidth);
-			cfbSetScanline(ppt->y, pbox->x1, xStart, xEnd, psrc, alu,
+			cfbSetScanline(ppt->y, ppt->x, xStart, xEnd, psrc, alu,
 			    pdstBase, widthDst, pGC->planemask);
 		    }
 

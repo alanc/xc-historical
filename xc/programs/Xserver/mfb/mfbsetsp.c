@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbsetsp.c,v 1.19 87/08/29 16:26:51 drewry Exp $ */
+/* $Header: mfbsetsp.c,v 1.19 87/08/29 16:26:51 toddb Locked $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -252,7 +252,7 @@ mfbSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
 		    {
 			xStart = max(pbox->x1, ppt->x);
 			xEnd = min(pbox->x2, ppt->x + *pwidth);
-			mfbSetScanline(ppt->y, pbox->x1, xStart, xEnd, 
+			mfbSetScanline(ppt->y, ppt->x, xStart, xEnd, 
 				       psrc, alu, pdstBase, widthDst);
 		    }
 
