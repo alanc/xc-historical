@@ -1,4 +1,4 @@
-/* $XConsortium: pcnst.c,v 1.1 93/10/26 10:00:08 rws Exp $ */
+/* $XConsortium: pcnst.c,v 1.2 93/10/31 09:40:29 dpw Exp $ */
 /**** module pcnst.c ****/
 /******************************************************************************
 				NOTICE
@@ -163,7 +163,7 @@ peDefPtr MakeConstrain(flo,tag,pe)
 Bool CopyPConstrainStandard(flo, ped, sparms, rparms, tsize) 
      floDefPtr  flo;
      peDefPtr   ped;
-     void *sparms, *rparms;
+     pointer sparms, rparms;
      CARD16	tsize;
 {
   return(tsize == 0);
@@ -183,7 +183,7 @@ Bool CopyPConstrainClipScale(flo, ped, sparms, rparms, tsize)
 
      VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
 
-     if (!(ped->techPvt = (void *)XieMalloc(sizeof(pCnstDefRec))))
+     if (!(ped->techPvt = (pointer )XieMalloc(sizeof(pCnstDefRec))))
 	     FloAllocError(flo, ped->phototag,xieElemConstrain, return(TRUE));
 
      pvt = (pCnstDefPtr)ped->techPvt;
@@ -224,7 +224,7 @@ Bool CopyPConstrainClipScale(flo, ped, sparms, rparms, tsize)
 Bool PrepPConstrainStandard(flo, ped, raw, tec) 
      floDefPtr  flo;
      peDefPtr   ped;
-     void *raw, *tec;
+     pointer raw, tec;
 {
   return(TRUE);
 }
@@ -236,7 +236,7 @@ Bool PrepPConstrainClipScale(flo, ped, raw, tec)
      peDefPtr   ped;
      xieTecClipScale *raw, *tec;
 {
-  pCnstDefPtr pvt = ped->techPvt;
+  pCnstDefPtr pvt = (pCnstDefPtr)ped->techPvt;
 
   if (pvt->input_low[0] == pvt->input_high[0] ||
       pvt->output_low[0] > ped->outFlo.format[0].levels - 1 ||
