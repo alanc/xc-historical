@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.47 88/09/06 10:27:38 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.48 88/09/06 16:42:26 jim Exp $";
 #endif
 
 
@@ -1644,6 +1644,7 @@ static DeleteOrKill(ctx, from, to, kill)
 	XtFree(ptr);
     }
     text.length = 0;
+    text.firstPos = 0;
     if (ReplaceText(ctx, from, to, &text)) {
 	XBell(XtDisplay(ctx), 50);
 	return;
@@ -1661,6 +1662,7 @@ StuffFromBuffer(ctx, buffer)
     extern char *XFetchBuffer();
     XtTextBlock text;
     text.ptr = XFetchBuffer(XtDisplay(ctx), &(text.length), buffer);
+    text.firstPos = 0;
     if (ReplaceText(ctx, ctx->text.insertPos, ctx->text.insertPos, &text)) {
 	XBell(XtDisplay(ctx), 50);
 	return;
@@ -2140,6 +2142,7 @@ static void InsertNewLineAndIndent(ctx, event)
     text.ptr = _XtTextGetText(ctx, pos1, pos2);
     text.length = strlen(text.ptr);
     if (InsertNewLine(ctx, event)) return;
+    text.firstPos = 0;
     if (ReplaceText(ctx, ctx->text.insertPos, ctx->text.insertPos, &text)) {
 	XBell(XtDisplay(ctx), 50);
 	EndAction(ctx);
@@ -2290,6 +2293,7 @@ static int InsertFileNamed(ctx, str)
     if (fid <= 0) return -1;
     _XtTextPrepareToUpdate(ctx);
     position = ctx->text.insertPos;
+    text.firstPos = 0;
     while ((text.length = read(fid, buf, 512)) > 0) {
 	text.ptr = buf;
 	(void) ReplaceText(ctx, position, position, &text);
@@ -2421,6 +2425,7 @@ static void InsertFile(w, event)
 	    XBell( XtDisplay(w), 50);
 	    text.ptr = ptr;
 	    text.length = strlen(ptr);
+	    text.firstPos = 0;
 	    (void) ReplaceText(ctx, ctx->text.insertPos, ctx->text.insertPos, &text);
 	    ctx->text.s.left = ctx->text.insertPos;
 	    ctx->text.s.right = ctx->text.insertPos = 
