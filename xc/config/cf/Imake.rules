@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.171 93/09/17 11:27:17 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.172 93/09/19 20:58:17 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1111,7 +1111,7 @@ clean::									@@\
 #else
 #define LinkBuildLibrary(lib) MakeDir($(BUILDLIBDIR))			@@\
 	RemoveFile($(BUILDLIBDIR)/lib)					@@\
-	$(LN) $(BUILDINCTOP)/$(CURRENT_DIR)/lib $(BUILDLIBDIR)/lib
+	cd $(BUILDLIBDIR); $(LN) $(BUILDINCTOP)/$(CURRENT_DIR)/lib .
 #endif
 #endif /* LinkBuildLibrary */
 
