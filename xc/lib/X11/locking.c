@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.c,v 1.27 94/02/09 23:22:09 rws Exp $
+ * $XConsortium: locking.c,v 1.28 94/02/20 15:13:46 rws Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -474,13 +474,15 @@ static void _XFancyLockDisplay(dpy)
  * user-level lock is in force, so it uses this instead of _XFancyLockDisplay.
  */
 #if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
-static void _XInternalLockDisplay(dpy, file, line)
+static void _XInternalLockDisplay(dpy, wskip, file, line)
     Display *dpy;
+    Bool wskip;
     char *file;			/* source file, from macro */
     int line;
 #else
-static void _XInternalLockDisplay(dpy)
+static void _XInternalLockDisplay(dpy, wskip)
     Display *dpy;
+    Bool wskip;
 #endif
 {
 #if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
@@ -488,7 +490,7 @@ static void _XInternalLockDisplay(dpy)
 #else
     _XLockDisplay(dpy);
 #endif
-    if (!(dpy->flags & XlibDisplayReply))
+    if (!wskip)
 	_XDisplayLockWait(dpy);
 }
 
