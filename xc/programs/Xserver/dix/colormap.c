@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 5.3 89/07/20 09:50:49 rws Exp $ */
+/* $XConsortium: colormap.c,v 5.4 89/07/21 14:44:59 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -1430,12 +1430,9 @@ AllocDirect (client, pmap, c, r, g, b, contig, pixels, prmask, pgmask, pbmask)
 	return(BadAlloc);
     }
 
-    okR = AllocCP(pmap, pmap->red, c, pmap->freeRed, r, contig,
-		  ppixRed, prmask);
-    okG = AllocCP(pmap, pmap->green, c, pmap->freeGreen, g, contig,
-		  ppixGreen, pgmask);
-    okB = AllocCP(pmap, pmap->blue, c, pmap->freeBlue, b, contig,
-		  ppixBlue, pbmask);
+    okR = AllocCP(pmap, pmap->red, c, r, contig, ppixRed, prmask);
+    okG = AllocCP(pmap, pmap->green, c, g, contig, ppixGreen, pgmask);
+    okB = AllocCP(pmap, pmap->blue, c, b, contig, ppixBlue, pbmask);
 
     if (okR && okG && okB)
     {
@@ -1533,8 +1530,7 @@ AllocPseudo (client, pmap, c, r, contig, pixels, pmask, pppixFirst)
 	return(BadAlloc);
     if(!(ppixTemp = (Pixel *)ALLOCATE_LOCAL(npix * sizeof(Pixel))))
 	return(BadAlloc);
-    ok = AllocCP(pmap, pmap->red, c, pmap->freeRed, r, contig,
-		 ppixTemp, pmask);
+    ok = AllocCP(pmap, pmap->red, c, r, contig, ppixTemp, pmask);
 
     if (ok)
     {
@@ -1577,10 +1573,10 @@ AllocPseudo (client, pmap, c, r, contig, pixels, pmask, pppixFirst)
  * (see AllocShared for why we care)
  */
 static Bool
-AllocCP (pmap, pentFirst, count, Free, planes, contig, pixels, pMask)
+AllocCP (pmap, pentFirst, count, planes, contig, pixels, pMask)
     ColormapPtr	pmap;
     EntryPtr	pentFirst;
-    int		count, Free, planes;
+    int		count, planes;
     Bool	contig;
     Pixel	*pixels, *pMask;
     
