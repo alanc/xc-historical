@@ -6,7 +6,7 @@
 # *************************************************************************
 # * Change the next line to point to where you have Common Lisp installed *
 # *************************************************************************
-CL	= /usr/local/cl
+CL	= /usr/local/bin/cl
 
 RM	= /bin/rm
 ECHO	= /bin/echo
