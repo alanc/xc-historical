@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontxlfd.c,v 1.15 94/02/08 12:30:04 gildea Exp $
+ * $XConsortium: fontxlfd.c,v 1.16 94/04/02 15:38:44 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -535,14 +535,14 @@ int *nranges;
     int n;
     unsigned long l;
     char *p1, *p2;
-    fsRange *result = NULL;
+    fsRange *result = (fsRange *)0;
 
     name = strchr(name, '-');
     for (n = 1; name && n < 14; n++)
 	name = strchr(name + 1, '-');
 
     *nranges = 0;
-    if (!name || !(p1 = strchr(name, '['))) return NULL;
+    if (!name || !(p1 = strchr(name, '['))) return (fsRange *)0;
     p1++;
 
     while (*p1 && *p1 != ']')
