@@ -1,33 +1,39 @@
-			    R6alpha Release Notes
-			       October 1, 1993
+			     R6beta Release Notes
+			      February 11, 1994
 
 This distribution is for X Consortium members only.
 
-Lots of acknowledgements of company and individual contributions are missing
-from these notes; forgive us, we'll remedy that before the final release.
+Many companies and individuals have cooperated and worked extremely hard to
+make this release a reality, and our thanks go out to them.  You will find
+many of them listed in the acknowledgements in the individual specifications
+that are out for public review.  Major implementation contributions come from
+Digital, Fujitsu, HP, NCD, NCR, SGI, Sony, SunSoft, and the staff of the X
+Consortium; many other individuals contributed smaller pieces of new
+functionality and bug fixes.  The final release notes will contain
+acknowledgements for all of these efforts.
 
 
 1. Source tree reorganization
 
 The first thing you may notice is that you can't find anything.  The source
-tree has undergone a major reorganization.  Hopefully, once you get used to
-the new layout, things will be easier to find.  The reorganization has
-simplified dependencies in the build process.
+tree has undergone a major reorganization.  Once you get used to the new
+layout, things will be easier to find.  The reorganization has simplified
+dependencies in the build process.
 
 The general layout under xc/ (renamed from mit/) is now:
 
 config/		config files, imake, makedepend, build utilities
 doc/		all documentation other than per-program man pages
 fonts/		bdf, Speedo, Type1 fonts
-Fresco/		Fresco
 include/	include files shared by multiple directories
 lib/		all libraries
 nls/		localization files
 programs/	all programs, including the X server
 registry	X Registry
 test/		X Test Suite and other test suites
-unsupported/	things that were in R5 that will probably move to contrib
 util/		patch, compress, other utilities
+
+The doc subtree has been reorganized since R6alpha.
 
 Various filenames have been changed to minimize name conflicts on DOS
 filesystems.  Conflicts remain for various header (.h) files.
@@ -38,10 +44,10 @@ filesystems.  Conflicts remain for various header (.h) files.
 You presumably know the drill by now, so this will be brief.  Edit
 xc/config/cf/site.def to suit your needs.  Check the appropriate
 xc/config/cf/vendor.cf file to make sure that OSMajorVersion, OSMinorVersion,
-and OSTeeyVersion are set correctly (change them if necessary).
+and OsTeenyVersion are set correctly (change them if necessary).
 
 On NT, type
-     make World.Win32 > world.log
+     nmake World.Win32 > world.log
 On other systems, find the BootstrapCFlags line, if any, in the vendor.cf
 file.  If there isn't one, type
      make World >& world.log
@@ -61,16 +67,13 @@ from ftp.x.org via anonymous ftp.
 
 In general, don't be surprised if the documentation is not up to date with the
 implementation.  Some of the man pages have been revised, some have not.
-Current documentation of at least some of the proposed R6 specifications are
-in xc/doc/specs/R6/.  Most other documentation in xc/doc has not been changed
-since R5.
 
 
 4. Bugs
 
-We have fixed a lot of bugs, but there are still a lot we haven't fixed.  We
-hope to fix a lot more bugs before beta.  The open bug database is included
-in this release as bugs/.
+We have fixed a lot of bugs, but there are still a fair number we haven't
+fixed.  We hope to fix many more bugs before the final release.  The open bug
+database is included in this release as bugs/.
 
 Please send bug reports about this release to xbugs@x.org.
 
@@ -79,34 +82,41 @@ Please send bug reports about this release to xbugs@x.org.
 
 We compiled this release on the following systems.
 
-A/UX 3.0.1	(X server does not work)
-AIX 3.2.1
+A/UX 3.0.1
+AIX 3.2.5
 BSD/386 1.0
 HP-UX 9.1
-IRIX 4.0.1
+IRIX 5.1.1.1
 Mach 2.5 Vers 2.00.1
 Microsoft Windows NT 3.1
-NEWS-OS 4.2.1C
-NEWS-OS 5.0U
+NCR Unix System V Release 4/MP-RAS
+NEWS-OS 6.0
+OSF/1 1.3
 OSF/1 1.0
 SunOS 4.1.3
 SunOS 5.3
-UNICOS 6.1
+UNICOS 8.0
 UNIX System V/386 Release 4.2 Version 1
+Unix System V/860 Release 4.0 Version 3
 Ultrix-32 4.3
 
-We have only done spot testing of the executables on many of them.  There are
+We have only done spot testing of the executables on some of these.  There are
 a fair number of compiler warnings generated on some systems; we hope to
-eliminate some of them by beta.  We have not exercised "make install" much at
-all, so don't be too surprised if you have some problems there.
+eliminate more of them by final.
+
+On SunOS 5.2 and 5.3, if you compile the libraries with threads support, you
+will need to compile thread stubs to get around OS library bugs.  The stubs
+are in xc/util/misc/thr_stubs.c.  Compile it and create libthr_stubs.a in that
+directory.  You'll have to manually install it if you try to build programs
+from "outside" our source tree; we'll fix this for the final release.
 
 
 5. Windows NT support
 
-The release should build with the Microsoft SDK.  No twm (missing lex and
-yacc), xterm, xdm, xconsole, xinit, xhost, or X server.  X libraries are not
-built as DLLs.  Imake works, albeit with some restrictions.  Wishful thinking
-for beta is to get the X libraries working as DLLs and to get xterm working.
+The release should build with the Microsoft SDK.  No Fresco, twm (missing lex
+and yacc), xterm, xdm, xconsole, xinit, xhost, xsm, or X server.  Xt, Xaw, and
+Xmu libraries are not built as DLLs, due to DLL brain damage.  Imake works,
+albeit with some restrictions.
 
 
 6. Configuration files
@@ -140,78 +150,166 @@ placed in a subdirectory rather than the shared library .o's.
 
 7. Fresco
 
-Fresco has not yet been integrated into the build process here at the X
-Consortium.  We are shipping the sources as received, unaltered.  If there are
-conflicts in how config files work, our apologies.  Whether Fresco will stay
-its own "universe" as an independent directory hierarchy or have pieces moved
-into other parts of the tree has not yet been discussed.
+Fresco has been mostly integrated into the build process.  The Fresco and Xtf
+libraries are found in xc/lib/Fresco and xc/lib/Xtf.  Ixx, dish, and i2mif
+have moved to contrib/programs.  The various Fresco example programs have
+moved to contrib/examples/Fresco.  Working Imakefiles are provided for almost
+all of the utilities and examples.
 
-A demo program is included that shows how a scripting language (Tcl) can
-rather easily be bound to Fresco through the CORBA dynamic invocation
+A demo program (dish) is included that shows how a scripting language (Tcl)
+can rather easily be bound to Fresco through the CORBA dynamic invocation
 mechanism.  For this reason, a copy of Tcl is included in contrib/lib/tcl.
+
+To build Fresco you must define either HasCplusplus or HasGcc2ForCplusplus in
+site.def; you may also have to set CplusplusCmd and/or CplusplusDependIncludes
+to invoke the appropriate C++ compiler and find the required header files
+during make depend.
+
+While we have integrated Fresco into the build procedure, we have not had the
+chance to compile it on many different platforms, or using many different
+compilers.  Other members have reported success building Fresco under SGI IRIX
+5.1 using SGI C++ 3.2, under Solaris 2.3 using SPARCCompiler C++ 3.0.1, and
+under OSF1 on a DEC Alpha using DEC C++.  We hope to have a variety of C++
+compilers available soon, and to extend the list of environments in which
+Fresco is known to build.
 
 
 8. XIE (X Image Extension)
 
-The alpha release from AGE Logic is included in this release.  We expect
-to release their beta release in late October or early November.
+The final release from AGE Logic is included in this release, matching the 5.0
+protocol.  It is a complete implementation of full XIE, except for the
+following techniques that are excluded from the SI:
+	ColorAlloc:	Match, Requantize
+	Convolve:	Replicate
+	Decode:		JPEG lossless
+	Encode:		JPEG lossless
+	Geometry:	AntialiasByArea, AntialiasByLowpass
+
+xieperf exercises the server functionality; it provides unit testing and a
+"reasonable measure" of multi-element photoflo testing.  Many of the tests
+have been modified to work on more diverse visuals including 4 bit
+PseudoColor, 8 bit GrayScale, 8 and 24 bit DirectColor, as well as 8, 16, and
+24 bit TrueColor.  The BandExtract element is used more frequently as it is
+better able to cope with the various DirectColor and TrueColor displays.  Some
+changes were made in colormap handling to aid in handling of various visuals,
+and to correctly free colormap properties.  xieperf is ICCCM compliant -- use
+the -WMSafe switch if a window manager is present.
+
+An XIElib specification is still in progress, and is not included in this
+release.  The XIElib code matches the 5.0 protocol.
+
+The JPEG compression and decompression code is based on the Independent JPEG
+Group's (IJG) JPEG software, Release 4.  This software provides baseline
+Huffman DCT encoding as defined by ISO/IEC DIS 10918-1, "Digital Compression
+and Coding of Continuous-tone Still Images, Part 1: Requirements and
+guidelines", and was chosen as a basis for our implementation of JPEG
+compression and decompression primarily because the IJG's design goals matched
+ours for the implementation of the XIE SI: achieve portability and flexibility
+without sacrificing performance.  Less than half of the files distributed by
+the IJG have been incorporated into the XIE SI.  The IJG's software is made
+available with restrictions; see xc/programs/Xserver/XIE/mixie/jpeg/README.
 
 
 9. XKB (X Keyboard extension)
 
-Support for XKB is in Xlib and the X server, but is not compiled in by default
-because we got it integrated too late to compile and test it on enough
-systems.  You can compile it in by setting
+Support for XKB in Xlib is compiled in by default except on the Cray and the
+Alpha AXP (the code does not yet work on 64-bit systems).  Support for XKB in
+the X server is not compiled in by default.  You can compile it in by setting
 
 #define BuildXKB YES			(for support in the X server)
-#define BuildXKBlib YES			(for support in Xlib)
 
 in the file xc/config/cf/site.def.  Note that enabling XKB in the X server is
 a pervasive change; you need to clean the server and rebuild everything if you
-change this option.  Also note that the XKB server code does not yet implement
-byte swapping.
+change this option.
 
-Turning on XKB in the X server probably requires changes to the vendor ddx
+Turning on XKB in the X server usually requires changes to the vendor ddx
 keyboard handling.  We've made a first stab in the svga and dec/ws ddxen, but
 they probably aren't correct (since we experience problems here).
   
-There are some XKB test programs in xc/unsupported/test/Xkb.  An incomplete
-revision of xmodmap is in xc/unsupported/programs/xmodmap.
+There are some XKB test programs in contrib/test/Xkb.
 
-The XKB suppport in Xlib is still at a very early stage of formal review, and
-could undergo significant change in naming, etc.
-
-
-10. ICE (Inter-Client Exchange)
-
-ICElib currently supports TCP, Unix Domain, DECnet, but not STREAMS.
-Currently, there is no support for multithreading.  The library does not
-yet check for BadLength and BadValue errors.  IceConnectionString currently
-returns NULL on an ICE connection created with IceAcceptConnection (it works
-for IceOpenConnection).
+The XKB support in Xlib is still at an early stage of formal review, and could
+undergo significant change.
 
 
-11. SM (Session Management)
+10. X Transport Library (xtrans)
 
-Currently, there is no support for multithreading.  The library does not yet
-check for BadLength and BadValue errors.
+The X Transport Library is intended to combine all system and transport
+specific code into a single place in the source tree.  This API should be used
+by all libraries, clients and servers of the X Window System.  Use of this API
+should allow the addition of new types of transports and support for new
+platforms without making any changes to the source except in the X Transport
+Interface code.
 
-A "pseudo" session manager, xpsm, and sample client, xpsmclient, can be found
-in xc/unsupported/programs/xpsm.  The main purpose of xpsm is to keep a log
-all client <-> session manager interaction, with the ability to send
-asynchronous messages (such as SaveYourself, Interact, Die, etc.) to clients
-that are in the session.  It should also serve as a good example of how one
-would write a session manager.  xpsm is not a "real" session manager in the
-sense that after xpsm terminates, all information about the clients that were
-in the session is lost.  There is no provision for restarting these clients
-the next time a session is started.  More details are in
-xc/unsupported/programs/xpsm/RELEASE_NOTES.
+This interface should solve the problem of multiple #ifdef TRANSPORT and
+#ifdef PLATFORM statements scattered throughout the source tree.
 
-A proposed remote execution facility built on rsh is available in
-contrib/programs/xrsh.  It has not been integrated into xpsm.
+This interface should provide enough functionality to support all types of
+protocols, including connection oriented protocols such as X11 and FS, and
+connection-less oriented protocols such as XDMCP.
+
+For R6beta, the following areas have been updated to use xtrans:
+	lib/X11 (including the Input Method code)
+	lib/ICE
+	lib/font/fc
+	lib/FS
+	XServer/os
+	xfs/os
+
+The XDMCP code in xdm and the X server has not been modified to use xtrans.
 
 
-12. Xlib
+11. ICE (Inter-Client Exchange)
+
+The ICE library supports the latest versions of the ICE protocol and library
+specifications (now in public review), except for the following exceptions:
+    - The current implementation does not support multithreading.
+    - The library does not yet check for BadLength and BadValue errors.
+
+Support has been added for MIT-MAGIC-COOKIE-1 authentication.
+
+An "iceauth" program was written to manipulate an ICE authority file (very
+similar to the "xauth" program).
+
+
+12. SM (Session Management)
+
+The Session Management library supports the latest versions of the XSMP
+protocol and library specifications (now in public review), except for the
+following exceptions:
+    - The current implementation does not support multithreading.
+    - The library does not yet check for BadLength and BadValue errors.
+
+A simple session manager has been developed to test the new Session Management
+protocol.  It has been renamed from xpsm in R6alpha to xsm in this release.
+At the moment, it does not exercise the complete XSMP protocol and the user
+interface is rather simple, but it does have enough functionality to make it
+useful.
+    - Handles accepting connections from clients
+    - Handles graceful or unexpected termination of clients
+    - Maintains database of all properties set by clients
+    - User interface provides a way to issue checkpoint and shutdown
+      messages to clients
+    - Manages client interaction with the user
+    - Ability to restart clients (clients running on remote machines
+      are handled using the new "rstart" protocol - see below)
+    - Requires MIT-MAGIC-COOKIE-1 authentication from clients.
+
+A new protocol, rstart, greatly simplifies the task of starting applications
+on remote machines.  It is built upon already existing remote execution
+protocols (like rsh).  The most important feature that it adds is the ability
+to pass environment variables and authentication data to the applications
+being started.
+
+xsm needs a bit more work to make it robust, and the user interface can surely
+be enhanced.  We have not yet written a proxy for connecting ICCCM 1.0 clients
+to the session manager; we expect to have one for the final release.
+
+A sample client (xsmclient) has been written using Smlib.  In the future, it
+can be modified to use the Xt support for session management.
+
+
+13. Xlib
 
 Xlib sources are in xc/lib/X11; we've renamed directories to match the
 lib<name>.a names.
@@ -220,10 +318,13 @@ Lots of Xlib source files were renamed to fit better on DOS systems.  The "X"
 prefix was dropped from most file names, and "CIE" and "TekHVC" prefixes were
 dropped.
 
-Thread support has been minimally tested on SunOS 5.2, OSF/1 1.0, Mach 2.5
-Vers 2.00.1, and Microsoft Windows NT 3.1.  A version of ico that can be
-compiled to use threads is in xc/unsupported/programs/ico.  Locking is still
-missing in various places, e.g., in Xrm and Context functions.
+More work has been done on threads support; it runs robustly on SunOS 5.3, DEC
+OSF/1 1.3, Mach 2.5 Vers 2.00.1, AIX 2.3, and Microsoft Windows NT 3.1.  The
+Xrm and Context data structures in Xlib are now locked against concurrent
+access.  Locking for Xcms and I18N support has not been reviewed.  A version
+of ico that can be compiled to use threads is in contrib/programs/ico.  A
+possible problem with the DEC scheduler makes high-speed animation
+applications run unevenly.
 
 The Display and GC structures have been made opaque to normal application
 code; references to private fields will get compiler errors.  You can work
@@ -240,6 +341,10 @@ HasPoll config option.
 
 The BIG-REQUESTS extension is supported.
 
+A new extension, XC-MISC, allows clients to get back ID ranges from the
+server.  Xlib handles this automatically under the covers.  This is useful for
+long-running applications that use many IDs over their lifetime.
+
 New functions (see the header files for interfaces):
 
 XInternAtoms, XGetAtomNames
@@ -251,73 +356,87 @@ XExtendedMaxRequestSize
 XESetBeforeFlush
 XConvertCase
 
-Kerberos V5 user-to-user authentication support is integrated, but has not
-been tested here.  Set the HasKrb5 config variable to YES to enable.
-
-At the last minute we got code donated for local connections on SVR4/Intel
-systems, but we didn't have time to integrate it.  A project for the near
-future.
+Kerberos V5 user-to-user authentication support is fully tested and in regular
+use at the X Consortium.  Set the HasKrb5 config variable to YES to enable.
 
 
-13. Xt
+14. Xt
 
-XtAppAddSignal, XtRemoveSignal, XtNoticeSignal.
+Xt contains new functionality as documented in the public review draft for R6,
+with the following exceptions:
 
-  XtAppAddSignal allows an application to add callback procedures that will be
-  called when a signal is "noticed."  XtNoticeSignal is called by the
-  application whenever it wants Xt to "notice" that a signal has been
-  received, e.g. from a UNIX signal(2) handler.  XtRemoveSignal is the inverse
-  of XtAppAddSignal.
+  2.4    The XtNsessionID resource is on the ApplicationShell.
+  2.5.5  In order to preserve the ability to call out to runtime
+         environments that do not provide call-by-value, the parameters
+         of type Cardinal in the XtAllocateProc type have been changed
+         to pointer to Cardinal.  This interface is under review and may
+         change.
+  3.4.3  The order of arguments to XtChangeManagedSet has changed.  The
+         name of the type of the proc and the order of arguments to the proc
+         has changed.
+  4.1.2  The new fields in the WMShell instance record appear earlier in
+         the record.  The ApplicationShell does not have a session resource;
+         session participation support is implemented in the Application
+         Shell.
+  4.1.3  The ApplicationShell has additional new resources.
+         The algorithm for setting the WM_CLIENT_LEADER resource is 
+         intentionally implemented differently than stated in the draft spec.
+         Also, the SM_CLIENT_ID property is implemented, which is not
+         mentioned in the draft specification.
+  9.6.1  Two new resource converters are implemented for resources defined
+         by the ApplicationShell widget: XtCvtStringToRestartStyle, and,
+         a primitive attempt is made for XtCvtStringToStringArray.  
+  10.4   XtUninstallAccelerators and XtUninstallAllAccelerators are not
+         implemented, and we do not expect to include this functionality in
+         the R6 Intrinsics.
+  11.13.1 The Hook Object's XtNshells and XtNnumShells resources are not
+         yet implemented.  
+  14     There is no new Session object.  All session management assistance
+         is implemented in the ApplicationShell.  The changes to the 
+         interfaces and algorithms described in this chapter will be
+         described on the Consortium's intrinsics mailing list.  
+         Existing applications with ApplicationShells created through 
+         XtAppInitialize, or which have a non-NULL argv resource, will 
+         attempt to connect to a session manager if the SESSION_MANAGER
+         environment variable is defined. To prevent this behavior, include
+                   *joinSession: False
+         in your X resource file.
+  14.1   XtSessionInitialize is not implemented and not expected in R6.
+  14.1.2 XtSessionRequestCheckpoint is not implemented; use
+         SmcRequestCheckpoint instead.
+  14.1.3 The interface to XtSessionGetToken no longer takes a type.
+         The token data structure is smaller; requesting an interact
+         is done by registering a callback on the XtNinteractCallback
+         list of the ApplicationShell.  
+  15.1   XtToolkitThreadIntialize returns Boolean, indicating whether
+         it was previously called.  (The use of process locking in the
+         implementation is under review and optimizations are expected.)
 
-XtLastEventProcessed.
+The Xt implementation allows a configuration choice of poll or select for I/O
+multiplexing, selectable at compile time by the HasPoll config option.
 
-  Allows an application to retrieve the last event per display dispatched via
-  XtDispatchEvent.
-
-XtRegisterDrawable, XtUnregisterDrawable.
-
-  Allows an application to arrange for events originating at one drawable,
-  e.g. a pixmap, to be dispatched to specified widgets.
-
-XtInsertEventTypeHandler, XtRemoveEventTypeHandler,
-XtRegisterExtensionSelector, XtSetEventDispatcher,
-XtGetKeyboardFocusWidget.
-
-  Allow an application to process extension events.
-
-XtCvtStringToGravity.
-
-  Moved from Xmu to Xt.
-
-XtAppAddBlockHook, XtRemoveBlockHook.
-
-  Allows an application to be notified that Xt is about to block in
-  XtAppNextEvent, providing an opportunity e.g. to flush file buffers, etc.
-
-XtToolkitThreadInitialize, XtAppLock, XtAppUnlock, XtProcessLock,
-XtProcessUnlock.
-
-  Application level support for threads on systems which have support for
-  them.  These functions exist as no-ops on systems which do not support
-  threads.  Thread support has been minimally tested on SunOS 5.2, OSF/1 1.0,
-  Mach 2.5 Vers 2.00.1, and Microsoft Windows NT 3.1.
-
-XtResolvePathname
-
-  Implements %D substitution, which substitutes the implementation-specific
-  default path.
-
-Choice of poll or select for I/O multiplexing.
-
-  Selectable at compile time by the HasPoll config option.
-
-Xlib additions.
-
+The Xt implementation has dependencies on R6 Xlib, specifically:
   Use XInternAtoms instead of multiple XInternAtom calls where possible.
   Input method support (Xlib internal connections).
+  Test for the XVisibleHint in the flags of XWMHints.
+
+When linking with Xt, you now need to also link with SMlib and ICElib.  This
+is automatic if you use the XTOOLLIB make variable or XawClientLibs imake
+variable in your Imakefiles.  The shared library major version number has
+been incremented because of binary incompatible changes to Shell.
+
+This implementation no longer allows NULL to be passed as the value in the
+name/value pair in a request to XtGetValues.  The default behavior is to print
+the error message "NULL ArgVal in XtGetValues" and exit.  To restore bug
+compatibility, recompile Resources.c -DGETVALUES_BUG
+
+Motif 1.2 defines the types XtTypedArg and XtTypedArgList in VaSimpleP.h.  To
+work around, in Motif VaSimple.c, if IntrinsicP.h is not already included
+before VaSimpleP.h, do so.  In VaSimpleP.h, fence off the type declarations
+with #if (XT_REVISION < 6) and #endif.
 
 
-14. Xaw
+15. Xaw
 
 Moved Clock, Logo, and Mailbox widgets to their respective apps, bumped shared
 library major rev because of this.
@@ -325,18 +444,18 @@ library major rev because of this.
 Text and Panner widget translations augmented to include keypad cursor keysyms
 in addition to normal cursor keysyms.
 
-Two other versions of Xaw are in contrib, Xaw-NCR and Xaw-OMRON.  Figuring out
-what to do for R6 is under discussion.
+The internationalization support from OMRON is now included.  Xaw uses native
+widechar support when available, otherwise it uses the Xlib widechar routines.
+Per system specifics are set in XawI18n.h.
 
 
-15. PEX
+16. PEX
 
 PEXlib for PEX 5.1 is included.  The R5 PHIGS library has been moved to
-xc/unsupported/lib/PHIGS.  The suspex test suite is available in
-contrib/test/suspex.
+contrib/lib/PHIGS.  The suspex test suite is available in contrib/test/suspex.
 
 
-16. Fonts
+17. Fonts
 
 There are three new Chinese bdf fonts in xc/fonts/bdf/misc (gb16fs.bdf,
 gb16st.bdf, gb24st.bdf).
@@ -345,20 +464,27 @@ Bitmap Charter fonts that are identical to the output generated from the
 outline font have been moved to xc/fonts/bdf/unnec_{75,100}dpi.
 
 
-17. Font library
+18. Font library
 
-The XLFD changes for matrix transformations, and proposed changes for
-artificial emboldening and charset subsetting, are implemented.
+The XLFD changes for matrix transformations, polymorphism, and charset
+subsetting, are implemented.  XLFD changes to charset subsetting voted on by
+the fontwork mailing list since R6 alpha have been implemented.
+
+Aliases in a fonts.alias file can allow one scalable alias name to match all
+instances of another font.  The "!" character introduces as comment line in
+fonts.alias files.
 
 
-18. Font server
+19. Font server
 
 The font server has been renamed from fs to xfs to avoid confusion with
 an AFS program.  The default port has changed from 7000 (used by AFS)
 to 7100, and has been registered with the Internet Assigned Numbers Authority.
 
 
-19. X server
+20. X server
+
+X Server Changes from R5 to R6alpha
 
 The server sources have moved to xc/programs/Xserver.  Server-side extension
 code exists as subdirectories.  The "ddx" directory is gone; mi, cfb, and mfb
@@ -366,9 +492,7 @@ are at the top level, and a "hw" (hardware) subdirectory now exists for
 holding vendor-specific ddx code.
 
 Function prototypes have been added to header files in Xserver/include, cfb,
-mfb, and os.  Prototypes will eventually be added to mi.  The goal is to have
-a prototype in place for every function call so that we get full type
-checking.
+mfb, and os.
 
 Support for pixmap privates has been added.  It is turned off by default, but
 can be activated by putting -DPIXPRIV in the ServerExtraDefines parameter in
@@ -380,9 +504,6 @@ functions and some pieces of functions have moved from window.c to miwindow.c.
 See the porting layer document for details.  Also, the contents of union
 _Validate (validate.h) are now device dependent; mivalidate.h contains a
 sample definition.
-
-An effort has been made to bring the ddx document up to date; see
-xc/doc/specs/Server/ddx.tbl.ms.
 
 An implementation of the SYNC extension is in place (Xserver/Xext/sync.c) and
 is believed to fully implement the current spec.  As part of this work, client
@@ -404,11 +525,6 @@ A new timer interface has been added to the os layer; see the functions in
 os/WaitFor.c.  This interface is used by XKB, but we haven't tried to use it
 anywhere else (like in Xext/sleepuntil.c) yet.
 
-Integration of 64-bit server changes for Digital Alpha didn't happen.  The dix
-and os code should be in pretty good shape (by compiling the server with
--D_XSERVER64), but changes for mfb and cfb and some image handling changes in
-dix did not make it in.
-
 Sun ddx: Expanded device probe table finds multiple frame buffers of the same
 type.  Expanded keymap tables provide support for European and Asian
 keyboards.  Added per-key autorepeat support.  Considerable cleanup and
@@ -418,34 +534,94 @@ included.
 HP ddx: cfb-based sources included as xc/programs/Xserver/hw/hp.
 
 svga ddx: new svga ddx for SVR4 included as xc/programs/Xserver/hw/svga.
-Because the local connection code did not get put in, there is a mismatch
-between what Xlib and the server do for local connections.  Local connections
-with the R6alpha Xlib work as long as you don't use authorization.  Local
-connections from other products probably won't work.
-
-The dix and os code for the multi-threaded X server is in
-xc/unsupported/programs/MTXserver.  The code is only in unsupported for lack
-of a better place right now.  We hope to integrate these changes into the main
-server sources.
-
-Server projects we want to complete by beta:
-
-Finish function prototyping.
-
-Finish merging 64-bit changes for Digital Alpha.
-
-Macroize region functions so that they can call the mi routines directly
-instead of through a screen function pointer.  Vendor feedback indicates this
-will be a significant win for window operations.
-
-Merge the single- and multi-threaded server sources.
-
-Add hooks for dynamic loading.
-
-Add local connection support for SVR4/Intel systems.
 
 
-20. xhost
+X Server Changes from R6alpha to R6beta
+
+Function prototypes for mi have been added.  See the mi header files.
+
+Redundant code for GC funcs was moved from cfbgc.c and mfbgc.c to migc.c.
+This file also contains a few utility functions like miComputeCompositeClip,
+which replaces the chunk of code that appears near the top of most versions of
+ValidateGC.
+
+The cfb and mfb code have been modified to perform 64 bit reads and writes of
+the framebuffer on the Alpha AXP.  These modifications should be usable on
+other 64 bit architectures as well, though we have not tested it on any
+others.  There are a few hacks in dix, notably ProcPutImage and ProcGetImage,
+to work around the fact that the protocol doesn't allow you to specify 64 bit
+padding.  Note that the server will still not run on a machine that does not
+have a 32 bit data type, like a Cray.
+
+Some tweaks to the way that PostChangeSaveUnder is called have been
+incorporated.
+
+For performance, all region operations are now invoked via macros which by
+default make direct calls to the appropriate mi functions.  You can
+conditionally compile them to continue calling through the screen structure.
+The following change was made throughout the server:
+
+	(*pScreen->RegionOp)(...) changes to REGION_OP(pScreen, ...);
+
+Some of the trivial region ops have been inlined in the macros.  For
+compatibility, the region function pointers remain in the screen structure
+even if the server is compiled to make direct calls to mi.  See
+include/regionstr.h.
+
+A generic callback manager is included and can be used to add notification
+style hooks anywhere in the server.  See dixutils.c.  The callback manager is
+now being used to provide notification of when the server is
+grabbed/ungrabbed, when a client's state changes, and when an event is sent to
+a client.  The latter two are used by the RECORD extension.
+
+A new server, Xvfb uses cfb or mfb code to render into a framebuffer that is
+allocated in virtual memory.  See Xserver/hw/vfb.  The framebuffer can be
+allocated in "normal" memory, shared memory, or as a memory mapped file.
+Xvfb's screen is normally not visible; however, when allocated as a memory
+mapped file, xwd can display the screen by specifying the framebuffer file as
+its input.
+
+A new option has been added, -config filename.  This lets you put server
+options in a file.  See os/utils.c.
+
+Xtrans has been installed into the os layer.  See os/connection.c, io.c, and
+transport.c.  As a result, the server now supports the many flavors of SVR4
+local connections.
+
+The client structure now has privates like windows, pixmaps, and gcs.  See
+include/dixstruct.h, dix/privates.c, and dispatch.c.
+
+An attempt has been made to merge the multi-threaded server source with the
+single-threaded source.  The result is in the xc/MTXserver directory.  The
+xc/Xserver directory was unaffected by this merge with the exception of the
+xc/Xserver/include directory, which both servers currently share.  The
+multi-threaded server is not currently functional, and a number of recent
+changes made to the single-threaded server have not been folded into the
+MTXserver.  Given resource constraints, it is unlikely that there will be much
+more progress by the final release, and we might move MTXserver to contrib.
+
+
+21. LBX (Low Bandwidth X)
+
+The code for the LBX proxy is in xc/programs/lbxproxy.  The X server extension
+is in xc/programs/Xserver/lbx.  Code shared by the proxy and server is in
+xc/lib/lbxutil.  LBX is turned off by default; set BuildLBX to YES in your
+site.cf to enable it.  We were not able to get LBX working in time for beta;
+we believe this is due to conflicts between Xtrans integration changes and LBX
+integration changes, both of which were put in late in the game and affected
+some of the same files in the server's os layer.  NCD does have LBX working in
+a pre-Xtrans server.
+
+
+22. RECORD extension
+
+A version of the extension is included as part of the Xtst library.  The
+implementation does not quite match the version 1.2 draft specification, but
+the spec is going to change anyway.  The GetConfig request is not fully
+implemented.  A test program is in contrib/test/record.
+
+
+23. xhost
 
 Two new families have been registered: LocalHost, for connections over a
 non-network transport, and Krb5Principal, for Kerberos V5 principals.
@@ -463,36 +639,56 @@ The "old-style" syntax for names is still supported when the name does not
 contain a colon.
 
 
-21. xrdb
+24. xrdb
 
 A bunch of new symbols are defined to tell you what extensions and visual
 classes are available.
 
 
-22. twm
+25. twm
 
-Interface for setting client priorities with the Sync extension.
+An interface for setting client priorities with the Sync extension has been
+added.  Session support has not yet been added; if someone wants to volunteer
+to do this, that would be great.
 
 
-23. X Test Suite
+26. xdm
 
-We expect to bundle the test suite in with R6, so it is included here.  We
-haven't had time yet to integrate the Xi and XIM tests that have been
-contributed, so they are in contrib/test/xsuite.  We expect to have these
-integrated by beta.
+There is a new resource, choiceTimeout, that controls how long to wait for a
+display to respond after the user has selected a host from the chooser.
 
-24. ANSIfication
+Support has been added for a modular, dynamically-loaded greeter library.
+This feature allows different dynamic libraries to by loaded by xdm at
+run-time to provide different login window interfaces without access to the
+xdm sources.  It only works on DEC OSF/1.  Perhaps someone from Sun can help
+us make it work for their platforms, too.  The name of the greeter library is
+controlled by another new resource, greeterLib.
+
+Xdm takes the user's password and gets Kerberos tickets for the session.
+Still do be done is to destroy the tickets when the session ends.
+
+
+26. X Test Suite
+
+The code has been fixed to work on Alpha AXP.  The Xi tests contributed by HP,
+and XIM tests contributed by Sun are integrated.
+
+
+27. ANSIfication
 
 We've changed our sources to stop using the bsd function names index, rindex,
 bcopy, bcmp; we now use strchr, strrchr, memcpy/memmove, and memcmp.  We still
 use the name bzero (because there is no bsd equivalent for the general case of
 memset) but it is translated to memset via a #define in <X11/Xfuncs.h>.  The
-bsd function names are still supported in <X11/Xos.h> and <X11/Xfuncs.h>, but
-by beta we expect to be building our sources with this compatibility aid
-disabled.
+bsd function names are still supported in <X11/Xos.h> and <X11/Xfuncs.h>.
 
 Most client-side uses of caddr_t should now be gone from our sources (a result
 of building on NT).  Explicit declarations of errno are now only used on
 non-ANSI systems.
 
-We still haven't worked on using ANSI/POSIX *_t types in very many places.
+The libraries use more standard POSIX *_t types.
+
+28. Miscellaneous
+
+A new version of the "patch" program is in xc/util/patch; it understands the
+unified diff format produced by GNU diff.
