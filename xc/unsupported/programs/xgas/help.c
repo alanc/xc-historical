@@ -91,7 +91,7 @@ createHelpWidgets( parent )
   helpText = XtVaCreateManagedWidget("helpText",
 			asciiTextWidgetClass, helpFrame,
 			XtNfromVert, (XtPointer)helpQuit,
-			XtNtype, XawAsciiString,
-			XtNuseStringInPlace, XtEtrue,
+			/*XtNtype, XawAsciiString,*/
+			/*XtNuseStringInPlace, True,*/
 			NULL);
 }
