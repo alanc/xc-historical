@@ -10,6 +10,9 @@ LOCAL_LIBRARIES = XawClientLibs
   SYS_LIBRARIES = -lelf
 #endif
 #endif
+#ifdef SGIArchitecture
+  SYS_LIBRARIES = -lmld
+#endif
            SRCS = xload.c get_load.c
            OBJS = xload.o get_load.o
  OSMAJORVERSION = OSMajorVersion
