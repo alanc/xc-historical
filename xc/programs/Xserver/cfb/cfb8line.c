@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfb8line.c,v 1.28 94/04/17 20:28:42 dpw Exp $
+ * $XConsortium: cfb8line.c,v 1.29 94/07/28 14:38:16 dpw Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -183,11 +183,15 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, pptInitOrig,
 #endif
 #ifndef ORIGIN
     register int _x1, _y1, _x2, _y2;	/* only used for CoordModePrevious */
+    int extents_x1, extents_y1, extents_x2, extents_y2;
 #endif /* !ORIGIN */
-    register int    upperleft, lowerright;
+#ifndef PREVIOUS
+    register int upperleft, lowerright;
+    CARD32	 ClipMask = 0x80008000;
+#endif /* !PREVIOUS */
 #ifdef POLYSEGMENT
     register int    capStyle;
-#endif
+#endif /* POLYSEGMENT */
 #ifdef SAVE_X2Y2
     register int    x2, y2;
 # define X1  x1_or_len
@@ -201,11 +205,10 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, pptInitOrig,
 # else
 #  define X1  intToX(y1_or_e1)
 #  define Y1  intToY(y1_or_e1)
-# endif
+# endif /* POLYSEGMENT */
 # define X2  intToX(c2)
 # define Y2  intToY(c2)
-#endif
-    CARD32	ClipMask = 0x80008000;
+#endif /* SAVE_X2Y2 */
     PixelType   *addr;
     int		    nwidth;
     cfbPrivGCPtr    devPriv;
@@ -220,10 +223,12 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, pptInitOrig,
     RROP_FETCH_GCPRIV(devPriv);
 #endif
     extents = &devPriv->pCompositeClip->extents;
+#ifndef PREVIOUS
     c2 = *((int *) &pDrawable->x);
     c2 -= (c2 & 0x8000) << 1;
     upperleft = *((int *) &extents->x1) - c2;
     lowerright = *((int *) &extents->x2) - c2 - 0x00010001;
+#endif /* !PREVIOUS */
     addr = addr + WIDTH_MUL(pDrawable->y,nwidth) + pDrawable->x;
 #ifdef POLYSEGMENT
     capStyle = pGC->capStyle - CapNotLast;
@@ -239,9 +244,12 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, pptInitOrig,
 	ppt = (int *)pptInit + 1;
 	_x1 = *x1p;
 	_y1 = *y1p;
-	
-	if (_x1 < extents->x1 || _x1 >= extents->x2 ||
-	    _y1 < extents->y1 || _y1 >= extents->y2)
+	extents_x1 = extents->x1 - pDrawable->x;
+	extents_x2 = extents->x2 - pDrawable->x;
+	extents_y1 = extents->y1 - pDrawable->y;
+	extents_y2 = extents->y2 - pDrawable->y;
+	if (_x1 < extents_x1 || _x1 >= extents_x2 ||
+	    _y1 < extents_y1 || _y1 >= extents_y2)
 	{
 	    c2 = *ppt++;
 	    intToCoord(c2, _x2, _y2);
@@ -297,8 +305,8 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, pptInitOrig,
 	    _x2 = _x1 + _x2;
 	    _y2 = _y1 + _y2;
 
-	    if (_x2 < extents->x1 || _x2 >= extents->x2 ||
-		_y2 < extents->y1 || _y2 >= extents->y2)
+	    if (_x1 < extents_x1 || _x1 >= extents_x2 ||
+		_y1 < extents_y1 || _y1 >= extents_y2)
 	    {
 		break;
 	    }
@@ -316,7 +324,7 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, pptInitOrig,
 #else
 	    y1_or_e1 = y2;
 	    x1_or_len = x2;
-#endif
+#endif /* SAVE_X2Y2 */
 	    c2 = *ppt++;
 
 	    if (isClipped (c2, upperleft, lowerright))
@@ -342,7 +350,7 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, pptInitOrig,
 	 */
 	if (y1_or_e1 != 0)
 	{
-#endif
+#endif /* POLYSEGMENT */
 	if (x1_or_len < y1_or_e1)
 	{
 #ifdef REARRANGE
@@ -448,37 +456,25 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, pptInitOrig,
 	}
 	else
 	{
-# ifndef POLYSEGMENT
-	    PixelType    *t;
-#endif
-
 # ifdef REARRANGE
 	    register int    e3;
 	    RROP_DECLARE
 	    RROP_FETCH_GCPRIV(devPriv);
-# endif
+# endif /* REARRANGE */
 	    if (stepmajor < 0)
 	    {
 		addrp -= x1_or_len;
-# ifndef POLYSEGMENT
-		t = addrp;
-# else
 		if (capStyle)
 		    x1_or_len++;
 		else
-# endif
 		    addrp++;
 	    }
 	    else
 	    {
-# ifndef POLYSEGMENT
-		t = addrp + x1_or_len;
-# else
 		if (capStyle)
 		    x1_or_len++;
-# endif
 	    }
-	    y1_or_e1 = ((int) addrp) & (sizeof (long) - 1);
+	    y1_or_e1 = ((int) addrp) & PIM;
 	    addrp = (PixelType *) (((unsigned char *) addrp) - y1_or_e1);
 #if PGSZ == 32
 #  if PWSH != 2
@@ -509,11 +505,8 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, pptInitOrig,
 	    	if (e3)
 		    RROP_SOLID_MASK((unsigned long *) addrp, e3);
 	    }
-# ifndef POLYSEGMENT
-	    addrp = t;
-# endif
 	}
-#endif
+#endif /* POLYSEGMENT */
     }
 #ifdef POLYSEGMENT
     if (nseg >= 0)
@@ -534,7 +527,7 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, pptInitOrig,
 #endif /* !ORIGIN */	    
 	return ((DDXPointPtr) ppt - pptInit) - 1;
     }
-#endif
+#endif /* POLYSEGMENT */
 
 #ifndef POLYSEGMENT
 # ifndef ORIGIN
@@ -568,7 +561,7 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, pptInitOrig,
 # endif
 	RROP_SOLID (addrp);
     }
-#endif
+#endif /* !POLYSEGMENT */
     return -1;
 }
 
@@ -873,7 +866,7 @@ RROP_NAME (cfb8ClippedLine) (pDrawable, pGC, x1, y1, x2, y2, boxp, shorten)
 #undef body
     }
     else
-#endif
+#endif /* !REARRANGE */
     {
 #define body {\
 	    RROP_SOLID(addrp); \
