@@ -20,8 +20,20 @@ FontList	*font_list;
 
 usage()
 {
-	fprintf(stderr,"%s: usage: %s [host:display] [pattern]\n", program_name,
+	fprintf(stderr,"usage: %s [-lmC1] [display] [pattern]\n", program_name,
 		program_name);
+	fprintf (stderr,
+	    "    -l                   give long info about each font\n");
+	fprintf (stderr,
+	    "    -m                   give min and max bounds\n");
+	fprintf (stderr,
+	    "    -C                   force columns\n");
+	fprintf (stderr,
+	    "    -1                   force single column\n");
+	fprintf (stderr,
+	    "    -display host:dpy    or -d host:dpy\n");
+	fprintf (stderr,
+	    "    host:dpy             obselete format, use -display\n");
 	exit(1);
 }
 
