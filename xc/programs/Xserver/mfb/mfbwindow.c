@@ -1,4 +1,4 @@
-/* $Header: mfbwindow.c,v 1.2 87/09/03 13:48:44 rws Locked $ */
+/* $Header: mfbwindow.c,v 1.3 87/11/05 12:00:59 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -128,6 +128,23 @@ int x, y;
 	pPrivWin->oldRotate.x = pWin->absCorner.x;
 	pPrivWin->oldRotate.y = pWin->absCorner.y;
     }
+
+    /* XXX  THIS IS THE WRONG FIX TO THE RIGHT PROBLEM   XXX
+     * When the window is moved, we need to invalidate any RotatedTile or
+     * RotatedStipple that exists in any GC currently validated against
+     * this window.  Bumping the serialNumber here is an expensive way to
+     * accomplish this.  A better fix is to have the rotated versions
+     * computed on demand by the routines that need them.  Have ValidateGC
+     * simply destroy the rotated versions when invalidated, add a flag to
+     * mfbPrivWin to indicate that the position has changed, set that flag
+     * here, and have routines that need to get the rotated versions check
+     * for a null pixmap or for the flag being set, and if so call a routine
+     * to recompute the correct rotations.  However, it is unknown how many
+     * ddx layers not under our control would break as a result, so for the
+     * moment we play it safe (and slow).
+     */
+    pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
+
     /* Again, we have no failure modes indicated by any of the routines
      * we've called, so we have to assume it worked */
     return (TRUE);
