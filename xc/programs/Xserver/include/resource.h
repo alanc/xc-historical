@@ -1,4 +1,4 @@
-/* $XConsortium: resource.h,v 1.8 89/07/03 14:57:21 rws Exp $ */
+/* $XConsortium: resource.h,v 1.9 89/07/16 14:38:27 rws Exp $ */
 /***********************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -52,7 +52,7 @@ typedef unsigned long RESTYPE;
 #define RT_OTHERCLIENT	((RESTYPE)8)
 #define RT_PASSIVEGRAB	((RESTYPE)9)
 #define RT_LASTPREDEF	RT_PASSIVEGRAB
-#define RT_NONE		0
+#define RT_NONE		((RESTYPE)0)
 
 /* bits and fields within a resource id */
 #define CLIENTOFFSET 20					/* client field */

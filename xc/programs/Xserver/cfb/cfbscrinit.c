@@ -113,9 +113,8 @@ cfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     int dpix, dpiy;		/* dots per inch */
     int width;			/* pixel width of frame buffer */
 {
-    VisualID	*pVids;
     register PixmapPtr pPixmap;
-    int	i, j;
+    int	i;
 
     if (cfbGeneration != serverGeneration)
     {

@@ -236,9 +236,7 @@ cfbValidateGC(pGC, changes, pDrawable)
     int         new_line, new_text, new_fillspans;
     /* flags for changing the proc vector */
     cfbPrivGCPtr devPriv;
-    DDXPointRec	oldOrg;		/* origin of thing GC was last used with */
 
-    oldOrg = pGC->lastWinOrg;
     pGC->lastWinOrg.x = pDrawable->x;
     pGC->lastWinOrg.y = pDrawable->y;
     if (pDrawable->type == DRAWABLE_WINDOW)

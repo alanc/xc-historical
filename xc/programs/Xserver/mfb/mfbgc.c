@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 5.4 89/07/17 10:22:59 rws Exp $ */
+/* $XConsortium: mfbgc.c,v 5.5 89/07/18 18:03:25 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -39,8 +39,6 @@ SOFTWARE.
 #include "maskbits.h"
 
 static void mfbDestroyOps();
-
-static PixmapPtr BogusPixmap = (PixmapPtr)1;
 
 static void mfbValidateGC(),	mfbChangeGC(),	    mfbCopyGC();
 static void mfbDestroyGC();
