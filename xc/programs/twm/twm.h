@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.23 89/04/13 10:01:37 jim Exp $
+ * $XConsortium: twm.h,v 1.24 89/04/13 15:48:48 jim Exp $
  *
  * twm include file
  *
@@ -260,7 +260,12 @@ extern char **Environ;
 
 
 extern void Done();
-extern void Error();
-extern void Other();
+extern int Error();
+extern int Other();
+
+extern Bool ErrorOccurred;
+extern XErrorEvent LastErrorEvent;
+
+#define ResetError() (ErrorOccurred = False)
 
 #endif /* _TWM_ */

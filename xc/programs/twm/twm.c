@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.42 89/05/04 19:02:57 keith Exp $
+ * $XConsortium: twm.c,v 1.43 89/05/04 19:39:51 keith Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.42 89/05/04 19:02:57 keith Exp $";
+"$XConsortium: twm.c,v 1.43 89/05/04 19:39:51 keith Exp $";
 #endif
 
 #include <stdio.h>
@@ -672,13 +672,16 @@ Done()
  ***********************************************************************
  */
 
-void
-Error(dpy, event)
-Display *dpy;
-XErrorEvent *event;
+Bool ErrorOccurred = False;
+XErrorEvent LastErrorEvent;
+
+int Error(dpy, event)
+    Display *dpy;
+    XErrorEvent *event;
 {
-    /* do nothing but absorb the error */
-    return;
+    LastErrorEvent = *event;
+    ErrorOccurred = True;
+    return 0;
 }
 
 /***********************************************************************
@@ -691,10 +694,12 @@ XErrorEvent *event;
  ***********************************************************************
  */
 
-void
-Other(dpy, event)
-Display *dpy;
-XErrorEvent *event;
+int Other(dpy, event)
+    Display *dpy;
+    XErrorEvent *event;
 {
     RedirectError = TRUE;
+    LastErrorEvent = *event;
+    ErrorOccurred = True;
+    return 0;
 }
