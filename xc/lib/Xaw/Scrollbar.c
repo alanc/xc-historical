@@ -340,6 +340,9 @@ static void Initialize( request, new, args, num_args )
 	    ? w->scrollbar.thickness : w->scrollbar.length;
 
     SetDimensions( w );
+    w->scrollbar.direction = 0;
+    w->scrollbar.topLoc = 0;
+    w->scrollbar.shownLength = 0;
 }
 
 static void Realize( gw, valueMask, attributes )
