@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.123 91/07/28 11:52:14 swick Exp $ */
+/* $XConsortium: TMparse.c,v 1.124 92/02/24 17:44:56 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1049,12 +1049,15 @@ static ModifierMask buttonModifierMasks[] = {
     0, Button1Mask, Button2Mask, Button3Mask, Button4Mask, Button5Mask
 };
 
-static String ParseEvent(str, event,error)
+static String ParseEvent(str, event, reps, plus, error)
     register String str;
     EventPtr	event;
+    int*	reps;
+    Boolean*	plus;
     Boolean* error;
 {
     Cardinal	tmEvent;
+    static String ParseRepeat();
 
     str = ParseModifiers(str, event,error);
     if (*error) return str;
@@ -1072,6 +1075,8 @@ static String ParseEvent(str, event,error)
          return PanicModeRecovery(str);
     }
     else str++;
+    if (*str == '(')
+	str = ParseRepeat(str, reps, plus);
     str = (*(events[tmEvent].parseDetail))(
         str, events[tmEvent].closure, event,error);
     if (*error) return str;
@@ -1423,13 +1428,11 @@ static void RepeatEvent(eventP, reps, plus, actionsP)
     }
 }
 
-static String ParseRepeat(str, eventP, actionsP)
+static String ParseRepeat(str, reps, plus)
     register String str;
-    EventPtr *eventP;
-    ActionPtr **actionsP;
+    int	*reps;
+    Boolean *plus;
 {
-    int reps;
-    Boolean plus = FALSE;
     String right_paren;
 
     /*** Parse the repetitions, for double click etc... ***/
@@ -1447,7 +1450,7 @@ static String ParseRepeat(str, eventP, actionsP)
 	if (len < sizeof repStr) {
 	    bcopy(start, repStr, len);
 	    repStr[len] = '\0';
-	    reps = StrToNum(repStr);
+	    *reps = StrToNum(repStr);
 	} else {
 	    Syntax ("Repeat count too large; ignored.", "");
 	    return right_paren;
@@ -1458,7 +1461,7 @@ static String ParseRepeat(str, eventP, actionsP)
     }
 
     if (*str == '+') {
-	plus = TRUE;
+	*plus = TRUE;
 	str++;
     }
     if (*str == ')')
@@ -1467,8 +1470,6 @@ static String ParseRepeat(str, eventP, actionsP)
 	Syntax("Missing ')'.","");
 	return right_paren;
     }
-
-    if (reps > 1 || plus) RepeatEvent(eventP, reps, plus, actionsP);
 
     return str;
 }
@@ -1525,17 +1526,21 @@ static String ParseEventSeq(str, eventSeqP, actionsP,error)
              }
              else str++;
 	} else {
+	    int reps = 0;
+	    Boolean plus = False;
+
             event = XtNew(EventRec);
             event->event = nullEvent;
             event->state = /* (StatePtr) -1 */ NULL;
             event->next = NULL;
             event->actions = NULL;
 
-	    str = ParseEvent(str, event,error);
+	    str = ParseEvent(str, event, &reps, &plus, error);
             if (*error) return str;
 	    *nextEvent = event;
 	    *actionsP = &event->actions;
-	    str = ParseRepeat(str, &event, actionsP);
+	    if (reps > 1 || plus)
+		RepeatEvent(&event, reps, plus, actionsP);
 	    nextEvent = &event->next;
 	}
 	ScanWhitespace(str);
