@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontscale.c,v 1.9 93/09/17 16:01:44 dpw Exp $
+ * $XConsortium: fontscale.c,v 1.10 93/09/17 18:26:42 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -118,6 +118,7 @@ FontFileCompleteXLFD (vals, def)
     fsResolution  *res;
     int		num_res;
     double	sx, sy, temp_matrix[4];
+    double	pixel_setsize_adjustment = 1.0;
     /*
      * If two of the three vertical scale values are specified, compute the
      * third.  If all three are specified, make sure they are consistent
@@ -226,7 +227,13 @@ FontFileCompleteXLFD (vals, def)
        now that we know the resolutions.  */
     if ((vals->values_supplied & PIXELSIZE_MASK) == PIXELSIZE_SCALAR)
     {
-	vals->pixel_matrix[0] *= (double)vals->x / (double)vals->y;
+	/* pixel_setsize_adjustment used below to modify permissible
+	   error in pixel/pointsize matching, since multiplying a
+	   number rounded to integer changes the amount of the error
+	   caused by the rounding */
+
+	pixel_setsize_adjustment = (double)vals->x / (double)vals->y;
+	vals->pixel_matrix[0] *= pixel_setsize_adjustment;
 	vals->values_supplied  = vals->values_supplied & ~PIXELSIZE_MASK |
 				 PIXELSIZE_SCALAR_NORMALIZED;
     }
@@ -247,7 +254,8 @@ FontFileCompleteXLFD (vals, def)
 	temp_matrix[3] = vals->point_matrix[3] * sy;
 	if (vals->values_supplied & PIXELSIZE_MASK)
 	{
-	    if (fabs(vals->pixel_matrix[0] - temp_matrix[0]) > 1 ||
+	    if (fabs(vals->pixel_matrix[0] - temp_matrix[0]) >
+		    pixel_setsize_adjustment ||
 		fabs(vals->pixel_matrix[1] - temp_matrix[1]) > 1 ||
 		fabs(vals->pixel_matrix[2] - temp_matrix[2]) > 1 ||
 		fabs(vals->pixel_matrix[3] - temp_matrix[3]) > 1)

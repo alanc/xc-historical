@@ -1,4 +1,4 @@
-/* $XConsortium: t1funcs.c,v 1.13 93/09/17 18:26:59 gildea Exp $ */
+/* $XConsortium: t1funcs.c,v 1.14 94/02/03 18:39:21 gildea Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -88,7 +88,8 @@ extern unsigned long *Xalloc();
 static void fill();
  
 /*ARGSUSED*/
-int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format, fmask)
+int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
+		       fmask, non_cachable_font)
     FontPathElementPtr  fpe;
     FontPtr             *ppFont;
     int                 flags;
@@ -97,6 +98,7 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format, fmask)
     FontScalablePtr     vals;
     fsBitmapFormat      format;
     fsBitmapFormatMask  fmask;
+    FontPtr		non_cachable_font;	/* We don't do licensing */
 {
        extern struct XYspace *IDENTITY;
        extern Bool fontfcnA();
@@ -125,6 +127,11 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format, fmask)
        long x0, width = 0;
        double x1, y1, t1 = .001, t2 = 0.0, t3 = 0.0, t4 = .001;
        double sxmult;
+
+       /* Reject ridiculously small font sizes that will blow up the math */
+       if (hypot(vals->pixel_matrix[0], vals->pixel_matrix[1]) < 1.0 ||
+	   hypot(vals->pixel_matrix[2], vals->pixel_matrix[3]) < 1.0)
+	   return BadFontName;
 
        /* set up default values */
        FontDefaultFormat(&bit, &byte, &glyph, &scan);
@@ -346,8 +353,9 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format, fmask)
  
        pFont->fontPrivate = (unsigned char *) type1;
 
-       if (count) width = (width * 10 + count / 2) / count;
- 
+       if (count)
+	   width = (width * 10 + (width > 0 ? count : -count) / 2) / count;
+
        T1FillFontInfo(pFont, vals, fileName, entry->name.name, width);
  
        *ppFont = pFont;

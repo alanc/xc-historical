@@ -1,4 +1,4 @@
-/* $XConsortium: spinfo.c,v 1.10 93/09/17 18:27:48 gildea Exp $ */
+/* $XConsortium: spinfo.c,v 1.11 93/09/22 16:59:16 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -262,8 +262,8 @@ sp_compute_bounds(spf, pinfo, flags, sWidth)
 	if (maxOverlap < overlap)
 	    maxOverlap = overlap;
 
-	total_width += fabs(pix_width);
-	*sWidth += abs((INT16)tmpchar.attributes);
+	total_width += pix_width;
+	*sWidth += (INT16)tmpchar.attributes;
 
 	if (flags & SaveMetrics) {
 	    id = spmf->enc[i * 2] - firstChar;
@@ -276,8 +276,10 @@ sp_compute_bounds(spf, pinfo, flags, sWidth)
     if (num_chars > 0)
     {
 	double n2 = (double)num_chars / 2.0;
-	spf->vals.width = (total_width * 10.0 + n2) / num_chars;
-	*sWidth = (int)((double)*sWidth * 10.0 + n2) / num_chars;
+	spf->vals.width = (total_width * 10.0 + (total_width > 0 ? n2 : -n2)) /
+			  num_chars;
+	*sWidth = (int)((double)*sWidth * 10.0 + (*sWidth > 0 ? n2 : -n2)) /
+			  num_chars;
     }
     else
     {
@@ -345,11 +347,10 @@ sp_compute_props(spf, fontname, pinfo, sWidth)
 	    pp->value = MakeAtom(ptr1, ptr3 - ptr1, TRUE);
 	    break;
 	case pixel_size:
-	    pp->value = spf->vals.pixel_matrix[3];
+	    pp->value = (int)(fabs(spf->vals.pixel_matrix[3]) + .5);
 	    break;
 	case point_size:
-	    pp->value = (int)(spf->vals.point_matrix[3] * 10.0 +
-			      (spf->vals.point_matrix[3] > 0 ? .5 : -.5));
+	    pp->value = (int)(fabs(spf->vals.point_matrix[3]) * 10.0 + .5);
 	    break;
 	case resolution_x:
 	    pp->value = spf->vals.x;

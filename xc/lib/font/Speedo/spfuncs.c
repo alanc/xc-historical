@@ -1,4 +1,4 @@
-/* $XConsortium: spfuncs.c,v 1.9 93/08/24 18:48:48 gildea Exp $ */
+/* $XConsortium: spfuncs.c,v 1.10 93/09/17 18:27:46 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -28,7 +28,8 @@
 #include "spint.h"
 
 /* ARGSUSED */
-SpeedoOpenScalable (fpe, pFont, flags, entry, fileName, vals, format, fmask)
+SpeedoOpenScalable (fpe, pFont, flags, entry, fileName, vals, format, fmask,
+		    non_cachable_font)
     FontPathElementPtr	fpe;
     FontPtr		*pFont;
     int			flags;
@@ -37,11 +38,11 @@ SpeedoOpenScalable (fpe, pFont, flags, entry, fileName, vals, format, fmask)
     FontScalablePtr	vals;
     fsBitmapFormat	format;
     fsBitmapFormatMask	fmask;
+    FontPtr		non_cachable_font;	/* We don't do licensing */
 {
     char	fullName[MAXFONTNAMELEN];
 
     strcpy (fullName, entry->name.name);
-    FontParseXLFDName (fullName, vals, FONT_XLFD_REPLACE_VALUE);
     return SpeedoFontLoad (pFont, fullName, fileName, entry, vals,
 			    format, fmask, flags);
 }

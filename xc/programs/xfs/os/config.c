@@ -1,4 +1,4 @@
-/* $XConsortium: config.c,v 1.10 93/08/24 18:49:44 gildea Exp $ */
+/* $XConsortium: config.c,v 1.11 93/09/20 18:08:45 hersh Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -55,7 +55,7 @@ static ConfigOptionRec config_options[] = {
     {"clone-self", config_set_bool},
     {"default-point-size", config_set_int},
     {"default-resolutions", config_set_resolutions},
-    {"defer", config_set_glyph_caching_mode},
+    {"deferglyphs", config_set_glyph_caching_mode},
     {"error-file", config_set_file},
     {"port", config_set_int},
     {"server-number", config_set_int},
@@ -507,8 +507,8 @@ config_set_glyph_caching_mode(parm, val)
     skip_list_val(val);
     t = *val;
     *val = '\0';
-    if (!strcmp(parm->parm_name, "defer")) {
-	SetGlyphCachingMode(start);
+    if (!strcmp(parm->parm_name, "deferglyphs")) {
+	ParseGlyphCachingMode(start);
     }
     *val = t;
     return val;

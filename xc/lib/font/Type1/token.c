@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: token.c,v 1.2 91/10/10 11:19:55 rws Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -182,6 +182,9 @@ isWHITE_SPACE(ch)\
  ? save_unsafe_ch(ch)\
  : (tokenTooLong = TRUE)\
 )
+
+#define save_ch_no_inc(ch) \
+((tokenCharP < tokenMaxP) && (*tokenCharP = ch))
  
 /*
  * -------------------------------------------------------------------
@@ -903,6 +906,10 @@ static int STRING(ch)
  
   } while(nest_level > 0);
  
+  /* If there's room, add a 0-byte termination without increasing string
+     length.  This fixes certain dependencies on 0-terminated strings */
+  save_ch_no_inc(0);
+
   return(DONE);
 }
  

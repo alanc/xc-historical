@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bitscale.c,v 1.17 93/09/22 16:59:19 gildea Exp $
+ * $XConsortium: bitscale.c,v 1.18 93/09/29 16:21:32 rws Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -34,9 +34,9 @@ void bitmapUnloadScalable();
 
 enum scaleType {
     atom, truncate_atom, pixel_size, point_size, resolution_x,
-    resolution_y, average_width, scaledX, scaledY, unscaled,
-    fontname, raw_ascent, raw_descent, raw_pixelsize, raw_pointsize,
-    raw_average_width, uncomputed
+    resolution_y, average_width, scaledX, scaledY, scaledSignedAbsX,
+    scaledAbsY, unscaled, fontname, raw_ascent, raw_descent,
+    raw_pixelsize, raw_pointsize, raw_average_width, uncomputed
 };
 
 typedef struct _fontProp {
@@ -91,23 +91,23 @@ static fontProp fontPropTable[] = {
     "NORM_SPACE", 0, scaledX,
     "MAX_SPACE", 0, scaledX,
     "END_SPACE", 0, scaledX,
-    "AVG_CAPITAL_WIDTH", 0, scaledX,
-    "AVG_LOWERCASE_WIDTH", 0, scaledX,
+    "AVG_CAPITAL_WIDTH", 0, scaledSignedAbsX,
+    "AVG_LOWERCASE_WIDTH", 0, scaledSignedAbsX,
     "QUAD_WIDTH", 0, scaledX,
-    "FIGURE_WIDTH", 0, scaledX,
+    "FIGURE_WIDTH", 0, scaledSignedAbsX,
     "SUPERSCRIPT_X", 0, scaledX,
     "SUPERSCRIPT_Y", 0, scaledY,
     "SUBSCRIPT_X", 0, scaledX,
     "SUBSCRIPT_Y", 0, scaledY,
-    "SUPERSCRIPT_SIZE", 0, scaledY,
-    "SUBSCRIPT_SIZE", 0, scaledY,
-    "SMALL_CAP_SIZE", 0, scaledY,
+    "SUPERSCRIPT_SIZE", 0, scaledAbsY,
+    "SUBSCRIPT_SIZE", 0, scaledAbsY,
+    "SMALL_CAP_SIZE", 0, scaledAbsY,
     "UNDERLINE_POSITION", 0, scaledY,
-    "UNDERLINE_THICKNESS", 0, scaledY,
+    "UNDERLINE_THICKNESS", 0, scaledAbsY,
     "STRIKEOUT_ASCENT", 0, scaledY,
     "STRIKEOUT_DESCENT", 0, scaledY,
-    "CAP_HEIGHT", 0, scaledY,
-    "X_HEIGHT", 0, scaledY,
+    "CAP_HEIGHT", 0, scaledAbsY,
+    "X_HEIGHT", 0, scaledAbsY,
     "ITALIC_ANGLE", 0, unscaled,
     "RELATIVE_SETWIDTH", 0, unscaled,
     "RELATIVE_WEIGHT", 0, unscaled,
@@ -386,6 +386,7 @@ computeProps(pf, wasStringProp, npf, isStringProp, nprops, xfactor, yfactor,
     int         n;
     int         count;
     fontProp   *t;
+    double      rawfactor;
 
     for (count = 0; nprops > 0; nprops--, pf++, wasStringProp++) {
 	n = sizeof(fontPropTable) / sizeof(fontProp);
@@ -394,29 +395,27 @@ computeProps(pf, wasStringProp, npf, isStringProp, nprops, xfactor, yfactor,
 	    continue;
 
 	switch (t->type) {
+	case scaledSignedAbsX:
+
+	    /* Is the sign of the AVG_CAPITAL_WIDTH, AVG_LOWERCASE_WIDTH,
+	       and FIGURE_WIDTH supposed to be affected by the
+	       transformation?  Assumption here is no.  If yes,
+	       scaledSignedAbsX case should be equivalent to scaledX case.  */
+
+	    npf->value = doround(fabs(xfactor) * (double)pf->value);
+	    rawfactor = sXfactor;
+	    break;
 	case scaledX:
 	    npf->value = doround(xfactor * (double)pf->value);
-	    npf->name = pf->name;
-	    npf++;
-	    count++;
-	    npf->value = doround(sXfactor * (double)pf->value);
-	    npf->name = rawFontPropTable[t - fontPropTable].atom;
-	    npf++;
-	    count++;
-	    *isStringProp++ = *wasStringProp;
-	    *isStringProp++ = *wasStringProp;
+	    rawfactor = sXfactor;
 	    break;
 	case scaledY:
 	    npf->value = doround(yfactor * (double)pf->value);
-	    npf->name = pf->name;
-	    npf++;
-	    count++;
-	    npf->value = doround(sYfactor * (double)pf->value);
-	    npf->name = rawFontPropTable[t - fontPropTable].atom;
-	    npf++;
-	    count++;
-	    *isStringProp++ = *wasStringProp;
-	    *isStringProp++ = *wasStringProp;
+	    rawfactor = sYfactor;
+	    break;
+	case scaledAbsY:
+	    npf->value = doround(fabs(yfactor * (double)pf->value));
+	    rawfactor = sYfactor;
 	    break;
 	case unscaled:
 	    npf->value = pf->value;
@@ -425,6 +424,18 @@ computeProps(pf, wasStringProp, npf, isStringProp, nprops, xfactor, yfactor,
 	    count++;
 	    *isStringProp++ = *wasStringProp;
 	    break;
+	}
+	if (t->type != unscaled)
+	{
+	    npf->name = pf->name;
+	    npf++;
+	    count++;
+	    npf->value = doround(rawfactor * (double)pf->value);
+	    npf->name = rawFontPropTable[t - fontPropTable].atom;
+	    npf++;
+	    count++;
+	    *isStringProp++ = *wasStringProp;
+	    *isStringProp++ = *wasStringProp;
 	}
     }
     return count;
@@ -497,10 +508,10 @@ ComputeScaledProperties(sourceFontInfo, name, vals, dx, dy, sdx, sdy,
 	    *isStringProp = 1;
 	    break;
 	case pixel_size:
-	    fp->value = vals->pixel_matrix[3];
+	    fp->value = doround(fabs(vals->pixel_matrix[3]));
 	    break;
 	case point_size:
-	    fp->value = doround(vals->point_matrix[3] * 10.0);
+	    fp->value = doround(fabs(vals->point_matrix[3] * 10.0));
 	    break;
 	case resolution_x:
 	    fp->value = vals->x;
@@ -867,7 +878,7 @@ ScaleFont(opf, widthMult, heightMult, sWidthMult, sHeightMult, vals,
 		if (pci->metrics.ascent == -pci->metrics.descent)
 		    pci->metrics.ascent++;
 	    }
-    
+
 	    bytestoalloc += BYTES_FOR_GLYPH(pci, glyph);
 	    pci++;
 	}
@@ -898,8 +909,8 @@ ScaleFont(opf, widthMult, heightMult, sWidthMult, sHeightMult, vals,
 	    ScaleBitmap (pf, opci, pci, inv_xform,
 			 widthMult, heightMult);
 	    totalchars++;
-	    totalwidth += abs(pci->metrics.characterWidth);
-	    *sWidth += abs((int)(INT16)pci->metrics.attributes);
+	    totalwidth += pci->metrics.characterWidth;
+	    *sWidth += (INT16)pci->metrics.attributes;
 	    glyphBytes += BYTES_FOR_GLYPH(pci, glyph);
 #define MINMAX(field) \
 	    if (pfi->minbounds.field > pci->metrics.field) \
@@ -929,8 +940,9 @@ ScaleFont(opf, widthMult, heightMult, sWidthMult, sHeightMult, vals,
     if (totalchars)
     {
 	int tc2 = totalchars / 2;
-	vals->width = (totalwidth * 10 + tc2) / totalchars;
-	*sWidth = (*sWidth * 10 + tc2) / totalchars;
+	vals->width = (totalwidth * 10 + (totalwidth > 0 ? tc2 : -tc2)) /
+		      totalchars;
+	*sWidth = (*sWidth * 10 + (*sWidth > 0 ? tc2 : -tc2)) / totalchars;
     }
     else
     {
@@ -1367,7 +1379,8 @@ FontFileLoadName(dirs, ndirs, name, pfont, format, fmask)
 #endif
 
 /* ARGSUSED */
-BitmapOpenScalable (fpe, pFont, flags, entry, fileName, vals, format, fmask)
+BitmapOpenScalable (fpe, pFont, flags, entry, fileName, vals, format, fmask,
+		    non_cachable_font)
     FontPathElementPtr	fpe;
     FontPtr		*pFont;
     int			flags;
@@ -1376,6 +1389,7 @@ BitmapOpenScalable (fpe, pFont, flags, entry, fileName, vals, format, fmask)
     FontScalablePtr	vals;
     fsBitmapFormat	format;
     fsBitmapFormatMask	fmask;
+    FontPtr		non_cachable_font;	/* We don't do licensing */
 {
     FontScalableRec	best;
     FontPtr		font = NullFont;
@@ -1399,6 +1413,12 @@ BitmapOpenScalable (fpe, pFont, flags, entry, fileName, vals, format, fmask)
 	    (format & BitmapFormatBitOrderMask))
 	return NullFontFileName;
 #endif
+
+    /* Reject outrageously small font sizes to keep the math from
+       blowing up. */
+    if (get_matrix_vertical_component(vals->pixel_matrix) < 1.0 ||
+	get_matrix_horizontal_component(vals->pixel_matrix) < 1.0)
+	return BadFontName;
 
     scaleFrom = FindBestToScale (fpe, entry, vals, &best, &dx, &dy,
 				 &sdx, &sdy, &scaleFPE);

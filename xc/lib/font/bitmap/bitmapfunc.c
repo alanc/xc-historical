@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bitmapfunc.c,v 1.5 93/08/24 18:49:01 gildea Exp $
+ * $XConsortium: bitmapfunc.c,v 1.6 93/09/17 18:26:58 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -81,7 +81,8 @@ static FontRendererRec	renderers[] = {
 	CAPABILITIES,
 };
 
-BitmapOpenBitmap (fpe, ppFont, flags, entry, fileName, format, fmask)
+BitmapOpenBitmap (fpe, ppFont, flags, entry, fileName, format, fmask,
+		  non_cachable_font)
     FontPathElementPtr	fpe;
     FontPtr		*ppFont;
     int			flags;
@@ -89,6 +90,7 @@ BitmapOpenBitmap (fpe, ppFont, flags, entry, fileName, format, fmask)
     char		*fileName;
     fsBitmapFormat	format;
     fsBitmapFormatMask	fmask;
+    FontPtr		non_cachable_font;	/* We don't do licensing */
 {
     FontFilePtr	file;
     FontPtr     pFont;

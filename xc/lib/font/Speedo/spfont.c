@@ -1,4 +1,4 @@
-/* $XConsortium: spfont.c,v 1.18 92/11/18 21:31:09 gildea Exp $ */
+/* $XConsortium: spfont.c,v 1.19 93/08/24 18:48:47 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -368,6 +368,11 @@ SpeedoFontLoad(ppfont, fontname, filename, entry, vals, format, fmask, flags)
 {
     FontPtr     pfont;
     int         ret;
+
+    /* Reject ridiculously small sizes that will blow up the math */
+    if (hypot(vals->pixel_matrix[0], vals->pixel_matrix[1]) < 1.0 ||
+	hypot(vals->pixel_matrix[2], vals->pixel_matrix[3]) < 1.0)
+	return BadFontName;
 
     pfont = (FontPtr) xalloc(sizeof(FontRec));
     if (!pfont) {

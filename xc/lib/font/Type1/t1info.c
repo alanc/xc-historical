@@ -1,4 +1,4 @@
-/* $XConsortium: t1info.c,v 1.11 93/09/17 18:27:00 gildea Exp $ */
+/* $XConsortium: t1info.c,v 1.12 93/09/22 16:59:20 gildea Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -58,6 +58,7 @@
 #include "fntfilst.h"
 #include "FSproto.h"
 #include "t1intf.h"
+#include <math.h>
  
 #define DECIPOINTSPERINCH 722.7
 #define DEFAULTRES 75
@@ -201,7 +202,7 @@ ComputeBounds(pInfo, pChars, Vals)
         if (pmetrics->attributes ||
 	    pmetrics->ascent != -pmetrics->descent ||
 	    pmetrics->leftSideBearing != pmetrics->rightSideBearing) {
-            width += abs(pmetrics->characterWidth);
+            width += pmetrics->characterWidth;
             numchars++;
             adjust_min_max(&minchar, &maxchar, pmetrics);
             overlap = pmetrics->rightSideBearing - pmetrics->characterWidth;
@@ -213,7 +214,8 @@ ComputeBounds(pInfo, pChars, Vals)
     if (numchars == 0)
 	Vals->width = 0;
     else
-	Vals->width = ((width * 10)+((numchars+1)/2)) / numchars;
+	Vals->width = (width * 10 + (width > 0 ? numchars : -numchars) / 2)
+		      / numchars;
     /* (We think the above average width value should be put into
         the Vals structure.  This may be wrong, and the proper
         behavior might be to regard the values in Vals as sacred,
@@ -332,11 +334,10 @@ ComputeStdProps(pInfo, Vals, Filename, Fontname, sAscent, sDescent, sWidth)
 	    pp->value = MakeAtom(ptr1, ptr3 - ptr1, TRUE);
 	    break;
          case pixel_size:
-            pp->value = Vals->pixel_matrix[3];
+            pp->value = (int)(fabs(Vals->pixel_matrix[3]) + .5);
             break;
          case point_size:
-            pp->value = Vals->point_matrix[3] * 10.0 +
-			(Vals->point_matrix[3] > 0 ? .5 : -.5);
+            pp->value = (int)(fabs(Vals->point_matrix[3]) * 10.0 + .5);
             break;
          case resolution_x:
             pp->value = Vals->x;

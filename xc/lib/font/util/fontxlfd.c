@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontxlfd.c,v 1.12 94/01/01 16:43:22 rws Exp $
+ * $XConsortium: fontxlfd.c,v 1.13 94/02/02 16:22:11 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -416,8 +416,12 @@ FontParseXLFDName(fname, vals, subst)
 
     /* Fill in deprecated fields for the benefit of rasterizers that care
        about them. */
-    tmpvals.pixel = tmpvals.pixel_matrix[3];
-    tmpvals.point = tmpvals.point_matrix[3] * 10;
+    tmpvals.pixel = (tmpvals.pixel_matrix[3] >= 0) ?
+		    (int)(tmpvals.pixel_matrix[3] + .5) :
+		    (int)(tmpvals.pixel_matrix[3] - .5);
+    tmpvals.point = (tmpvals.point_matrix[3] >= 0) ?
+                    (int)(tmpvals.point_matrix[3] * 10 + .5) :
+                    (int)(tmpvals.point_matrix[3] * 10 - .5);
 
     spacingLen = ptr4 - ptr3 + 1;
 

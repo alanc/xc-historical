@@ -1,4 +1,4 @@
-/* $XConsortium: charinfo.c,v 1.9 93/08/24 18:49:39 gildea Exp $ */
+/* $XConsortium: charinfo.c,v 1.10 93/09/20 18:10:47 hersh Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -172,7 +172,7 @@ GetExtents(client, pfont, flags, num_ranges, range, num_extents, data)
     fsXCharInfo *ci;
     fsXCharInfo cilocal;
     char *pci;
-    CharInfoPtr	*xchars, *xchars_cur, *temp;
+    CharInfoPtr	*xchars, *xchars_cur;
     CharInfoPtr xci;
     int		nchars;
     int		err;
@@ -194,7 +194,6 @@ GetExtents(client, pfont, flags, num_ranges, range, num_extents, data)
 
     ci = (fsXCharInfo *) pci;
     *num_extents = nchars;
-    temp = xchars;
     
     /* pack the data */
     xchars_cur = xchars;
@@ -206,11 +205,11 @@ GetExtents(client, pfont, flags, num_ranges, range, num_extents, data)
 	cilocal.right = xci->metrics.rightSideBearing;
 	cilocal.width = xci->metrics.characterWidth;
 	cilocal.attributes = xci->metrics.attributes;
-	memmove( pci, &cilocal, SIZEOF(fsXCharInfo));
+	bcopy(&cilocal, pci, SIZEOF(fsXCharInfo));
 	pci += SIZEOF(fsXCharInfo);
     }
     
-    fsfree (temp);
+    fsfree (xchars);
     
     *data = ci;
     
@@ -345,11 +344,8 @@ packGlyphs (client, pfont, format, flags, num_ranges, range, tsize, num_glyphs,
 	    if ((char *) gdata + size != bitc->bits)
 		contiguous = FALSE;
 	    if (mappad == BitmapFormatImageRectMin)
-	    {
 		dstbpr = GLYPH_SIZE(inkc, scanlinepad);
-		srcbpr = GLYPH_SIZE(bitc, src_glyph_pad);
-		if (dstbpr != srcbpr) reformat = TRUE;
-	    }
+	    if (dstbpr != GLYPH_SIZE(bitc, src_glyph_pad)) reformat = TRUE;
 	    if (mappad != BitmapFormatImageRectMax)
 	    {
 		height = inkc->metrics.ascent + inkc->metrics.descent;

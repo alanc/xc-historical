@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontdir.c,v 1.15 94/01/21 22:13:45 dpw Exp $
+ * $XConsortium: fontdir.c,v 1.16 94/02/03 10:07:07 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -382,6 +382,8 @@ FontFileFindNameInScalableDir(table, pat, vals)
 
 		if (table->entries[i].type == FONT_ENTRY_SCALABLE)
 		    cap = table->entries[i].u.scalable.renderer->capabilities;
+		else if (table->entries[i].type == FONT_ENTRY_ALIAS)
+		    cap = ~0;	/* Calling code will have to see if true */
 		else
 		    cap = 0;
 		if (((vs & PIXELSIZE_MASK) == PIXELSIZE_ARRAY ||
