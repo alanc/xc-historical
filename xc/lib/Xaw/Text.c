@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.121 89/11/01 18:35:04 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.122 89/11/07 18:11:14 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -2255,8 +2255,8 @@ TextWidget ctx;
     y -= ctx->text.hbar->core.height - 2 * ctx->text.hbar->core.border_width;
   
   max_pos = PositionForXY (ctx, x, y);
-  max_pos = SrcScan(ctx->text.source, max_pos, XawstEOL, XawsdRight, 1, TRUE);
-
+  max_pos = SrcScan(ctx->text.source, max_pos, XawstEOL, XawsdRight, 1, FALSE);
+  max_pos++;
   lines = LineForPosition(ctx, max_pos); /* number of visable lines. */
 #endif
   
