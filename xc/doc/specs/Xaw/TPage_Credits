@@ -12,7 +12,7 @@
 
 \s+1\fBX Window System\fP\s-1
 
-\s+1\fBX Version 11, Release 4\fP\s-1
+\s+1\fBX Version 11, Release 5\fP\s-1
 
 .sp 6
 .ce 4
@@ -111,7 +111,7 @@ Chris D. Peterson
 MIT X Consortium
 .De
 .bp
-.EH '\fBAthena Widget Set\fP''\fBX11, Release 4\fP'
-.OH '\fBAthena Widget Set\fP''\fBX11, Release 4\fP'
+.EH '\fBAthena Widget Set\fP''\fBX11, Release 5\fP'
+.OH '\fBAthena Widget Set\fP''\fBX11, Release 5\fP'
 .EF ''\fB % \fP''
 .OF ''\fB % \fP''
