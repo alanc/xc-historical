@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.166 93/10/11 11:01:31 rws Exp $ */
+/* $XConsortium: connection.c,v 1.167 93/10/11 15:28:45 rws Exp $ */
 /***********************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -264,7 +264,7 @@ open_tcp_socket ()
 }
 #endif /* TCPCONN */
 
-#if defined(UNIXCONN) && !defined(SYSV386)
+#if defined(UNIXCONN) && !defined(LOCALCONN)
 
 static struct sockaddr_un unsock;
 
@@ -334,7 +334,7 @@ open_unix_socket ()
 }
 #endif /*UNIXCONN */
 
-#ifdef SYSV386
+#ifdef LOCALCONN
 /*
  * This code amply demonstrates why vendors need to talk to each other
  * earlier rather than later.
@@ -1129,7 +1129,7 @@ xlocal_close_sockets()
     return(0);
 }
 
-static int
+int
 xlocal_getpeername(fd, from, fromlen)
   int fd;
   struct sockaddr *from;
@@ -1188,7 +1188,7 @@ xlocal_accept(fd, from, fromlen)
 }
 #define	accept		xlocal_accept
 
-#endif /* SYSV386 */
+#endif /* LOCALCONN */
 
 
 #ifdef hpux
@@ -1289,9 +1289,9 @@ CreateWellKnownSockets()
 
     WellKnownConnections = 0;
 
-#ifdef SYSV386
+#ifdef LOCALCONN
 	xlocal_create_sockets();
-#else  /* SYSV386 */
+#else  /* LOCALCONN */
 #ifdef TCPCONN
     if ((request = open_tcp_socket ()) != -1) {
 	WellKnownConnections |= (((FdMask)1) << request);
@@ -1323,7 +1323,7 @@ CreateWellKnownSockets()
     }
 #endif /* UNIXCONN */
 
-#endif /* SYSV386 */
+#endif /* LOCALCONN */
 
     if (WellKnownConnections == 0)
         FatalError ("Cannot establish any listening sockets");
@@ -1366,9 +1366,9 @@ ResetWellKnownSockets ()
 {
     ResetOsBuffers();
 
-#ifdef SYSV386
+#ifdef LOCALCONN
 	xlocal_reset_sockets();
-#else /* SYSV386 */
+#else /* LOCALCONN */
 #if defined(UNIXCONN) && !defined(SVR4)
     if (unixDomainConnection != -1)
     {
@@ -1392,7 +1392,7 @@ ResetWellKnownSockets ()
     }
 #endif /* UNIXCONN */
 
-#endif /* SYSV386 */
+#endif /* LOCALCONN */
 
 
     ResetAuthorization ();
@@ -1741,7 +1741,7 @@ CloseDownFileDescriptor(oc)
     FreeOsBuffers(oc);
     BITCLEAR(AllSockets, connection);
     BITCLEAR(AllClients, connection);
-#ifdef SYSV386
+#ifdef LOCALCONN
     BITCLEAR(AllStreams, connection);
 #endif
     BITCLEAR(ClientsWithInput, connection);
