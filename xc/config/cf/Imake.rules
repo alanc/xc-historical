@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.44 89/08/02 21:56:15 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.45 89/08/16 15:33:19 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -50,12 +50,14 @@
  *     	ProfiledLibraryObjectRule                ()
  *     	DebuggedLibraryObjectRule                ()
  *     	DebuggedAndProfiledLibraryObjectRule     ()
+ *      SharedLibraryObjectRule                  ()
+ *      SharedAndDebuggedLibraryObjectRule       ()
  *      SpecialObjectRule                        (objs,depends,options)
  *     	SpecialProfiledObjectRule                (objs,depends,options)
  *     	SpecialDebuggedObjectRule                (objs,depends,options)
  *     	SpecialDebuggedAndProfiledObjectRule     (objs,depends,options)
  *     	NormalLibraryTarget                      (libname,objlist)
- *      NormalSharedLibraryTarget                (libname,rev,objlist)
+ *      NormalSharedLibraryTarget                (libname,rev,solist,salist)
  *     	NormalLibraryTarget2                     (libname,objlist1,objlist2)
  *     	ProfiledLibraryTarget                    (libname,objlist)
  *     	DebuggedLibraryTarget                    (libname,objlist)
@@ -327,8 +329,12 @@ install:: lib/**/libname.a						@@\
  */
 #ifndef InstallSharedLibrary
 #define	InstallSharedLibrary(libname,rev,dest)				@@\
-install:: lib/**/libname.so.rev						@@\
-	$(INSTALL) -c $(INSTLIBFLAGS) lib/**/libname.so.rev dest
+install:: lib/**/libname.so.rev lib/**/libname.sa.rev			@@\
+	$(INSTALL) -c $(INSTLIBFLAGS) lib/**/libname.so.rev dest	@@\
+	@if [ -s lib/**/libname.sa.rev ]; then \			@@\
+	    echo "	" $(INSTALL) -c $(INSTLIBFLAGS) lib/**/libname.so.rev dest; fi @@\
+	    $(INSTALL) -c $(INSTLIBFLAGS) lib/**/libname.so.rev dest; \	@@\
+	fi
 #endif /* InstallSharedLibrary */
 
 
@@ -679,6 +685,85 @@ all::									@@\
 #endif /* DebuggedAndProfiledLibraryObjectRule */
 
 
+/*
+ * SharedLibraryObjectRule - generate make rules to build shared and "normal"
+ * object files.
+ */
+#ifndef SharedLibraryObjectRule
+#define SharedLibraryObjectRule()					@@\
+all::									@@\
+	@if [ ! -d shared ]; then mkdir shared; else exit 0; fi		@@\
+									@@\
+.c.o:									@@\
+	$(RM) $@ shared/$@						@@\
+	$(CC) -pic -c -DSUNSHLIB $(CFLAGS) $*.c				@@\
+	$(MV) $*.o shared/$*.o						@@\
+	$(CC) -c $(CFLAGS) $*.c						@@\
+
+#endif /* SharedLibraryObjectRule */
+
+/*
+ * SharedAndDebuggedLibraryObjectRule - generate make rules to build shared,
+ * debuggable, and "normal" object files.
+ */
+#ifndef SharedAndDebuggedLibraryObjectRule
+#define SharedAndDebuggedLibraryObjectRule()				@@\
+all::									@@\
+	@if [ ! -d shared ]; then mkdir shared; else exit 0; fi		@@\
+	@if [ ! -d debugger ]; then mkdir debugger; else exit 0; fi	@@\
+									@@\
+.c.o:									@@\
+	$(RM) $@ shared/$@ debugger/$@					@@\
+	$(CC) -pic -c -DSUNSHLIB $(CFLAGS) $*.c				@@\
+	$(MV) $*.o shared/$*.o						@@\
+	$(CC) -g -c $(CFLAGS) $*.c					@@\
+	$(MV) $*.o debugger/$*.o					@@\
+	$(CC) -c $(CFLAGS) $*.c						@@\
+									@@\
+clean::									@@\
+	-@if [ -d shared ]; then echo "	$(RM) shared/?*.o"; \	@@\
+		$(RM) shared/?*.o; else exit 0; fi			@@\
+	-@if [ -d debugger ]; then echo "	$(RM) debugger/?*.o"; \ @@\
+		$(RM) debugger/?*.o; else exit 0; fi			@@\
+
+#endif /* SharedAndDebuggedLibraryObjectRule */
+
+/*
+ * SpecialSharedAndDebuggedObjectRule - generate rules to compile a file 
+ * with special flags and to make shared and debuggable versions.
+ */
+#ifndef SpecialSharedAndDebuggedObjectRule
+#define	SpecialSharedAndDebuggedObjectRule(objs,depends,options)	@@\
+all::									@@\
+	@if [ ! -d shared ]; then mkdir shared; else exit 0; fi		@@\
+	@if [ ! -d debugger ]; then mkdir debugger; else exit 0; fi	@@\
+									@@\
+objs:	depends								@@\
+	$(RM) $@ shared/$@ debugger/$@					@@\
+	$(CC) -pic -c -DSUNSHLIB $(CFLAGS) options $*.c			@@\
+	$(MV) $*.o shared/$*.o						@@\
+	$(CC) -g -c $(CFLAGS) options $*.c				@@\
+	$(MV) $*.o debugger/$*.o					@@\
+	$(CC) -c $(CFLAGS) options $*.c
+#endif /* SpecialDebuggedAndProfiledObjectRule */
+
+/*
+ * SpecialSharedObjectRule - generate rules to compile a file 
+ * with special flags and to make shared and debuggable versions.
+ */
+#ifndef SpecialSharedObjectRule
+#define	SpecialSharedObjectRule(objs,depends,options)			@@\
+all::									@@\
+	@if [ ! -d shared ]; then mkdir shared; else exit 0; fi		@@\
+									@@\
+objs:	depends								@@\
+	$(RM) $@ shared/$@ 						@@\
+	$(CC) -pic -c -DSUNSHLIB $(CFLAGS) options $*.c			@@\
+	$(MV) $*.o shared/$*.o						@@\
+	$(CC) -c $(CFLAGS) options $*.c
+#endif /* SpecialDebuggedAndProfiledObjectRule */
+
+
 
 /*
  * SpecialObjectRule - generate rules to compile a file with special flags.
@@ -766,21 +851,34 @@ lib/**/libname.a: objlist						@@\
  */
 #ifndef NormalSharedLibraryTarget
 #if HasSunOSSharedLibraries
-#define NormalSharedLibraryTarget(libname,rev,objlist)			@@\
-AllTarget(lib/**/libname.so.rev)					@@\
+#define NormalSharedLibraryTarget(libname,rev,solist,salist)		@@\
+AllTarget(lib/**/libname.so.rev lib/**/libname.sa.rev)			@@\
 									@@\
-lib/**/libname.so.rev:  objlist						@@\
+lib/**/libname.so.rev:  solist						@@\
 	$(RM) $@~							@@\
-	$(LD) -o $@~ -assert pure-text objlist				@@\
+	(cd shared; $(LD) -o ../$@~ -assert pure-text solist)		@@\
 	$(RM) $@ 							@@\
 	$(MV) $@~ $@							@@\
 									@@\
+lib/**/libname.sa.rev:  salist						@@\
+	$(RM) $@							@@\
+	@if [ `echo salist | wc -w` -ne 0 ]; then \			@@\
+		echo "	$(AR) $@ salist; $(RANLIB) $@"; \		@@\
+		$(AR) $@ salist; $(RANLIB) $@; \			@@\
+	else \								@@\
+		echo "	touch $@"; touch $@; \				@@\
+	fi								@@\
+									@@\
 clean::									@@\
-	$(RM) lib/**/libname.so.rev					@@\
+	$(RM) lib/**/libname.so.rev lib/**/libname.sa.rev		@@\
+	-@if [ -d shared ]; then echo "	$(RM) shared/?*.o"; \	@@\
+		$(RM) shared/?*.o; else exit 0; fi			@@\
+	-@if [ -d debugger ]; then echo "	$(RM) debugger/?*.o"; \ @@\
+		$(RM) debugger/?*.o; else exit 0; fi			@@\
 
 #else
-#define NormalSharedLibraryTarget(libname,rev,objlist)			@@\
-NormalLibraryTarget(libname,objlist)
+#define NormalSharedLibraryTarget(libname,rev,solist,salist)		@@\
+NormalLibraryTarget(libname,solist salist)
 #endif /* HasSunOSSharedLibraries */
 #endif /* NormalSharedLibraryTarget */
 
@@ -876,7 +974,7 @@ objname/**/_p.o: objlist						@@\
 	$(LD) -X -r objlist -o $@					@@\
 									@@\
 clean::									@@\
-	-@if [ -d profiled ]; then echo "	$(RM) profiled/?*.o"; \	@@\
+	-@if [ -d profiled ]; then echo "	$(RM) profiled/?*.o"; \ @@\
 		$(RM) profiled/?*.o; else exit 0; fi
 #endif /* ProfiledRelocatableTarget */
 

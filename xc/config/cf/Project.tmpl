@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.30 89/07/18 16:56:00 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.31 89/08/21 10:03:48 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -225,14 +225,72 @@
 #ifndef RemoveTargetProgramByMoving
 #define RemoveTargetProgramByMoving NO
 #endif
+
 #ifndef HasSunOSSharedLibraries
 #define HasSunOSSharedLibraries NO
 #endif
-#ifndef SharedXlib
-#define SharedXlib NO
+
+#ifndef SharedLibX
+#if HasSunOSSharedLibraries
+#define SharedLibX YES
+#else
+#define SharedLibX NO
 #endif
+#endif
+#ifndef SharedLibOldX
+#if HasSunOSSharedLibraries
+#define SharedLibOldX YES
+#else
+#define SharedLibOldX NO
+#endif
+#endif
+#ifndef SharedLibXt
+#if HasSunOSSharedLibraries
+#define SharedLibXt YES
+#else
+#define SharedLibXt NO
+#endif
+#endif
+#ifndef SharedLibXaw
+#if HasSunOSSharedLibraries
+#define SharedLibXaw YES
+#else
+#define SharedLibXaw NO
+#endif
+#endif
+#ifndef SharedLibXmu
+#if HasSunOSSharedLibraries
+#define SharedLibXmu YES
+#else
+#define SharedLibXmu NO
+#endif
+#endif
+#ifndef SharedLibExtensions
+#if HasSunOSSharedLibraries
+#define SharedLibXext YES
+#else
+#define SharedLibXext NO
+#endif
+#endif
+
+
 #ifndef SharedXlibRev
 #define SharedXlibRev 4.2
+#endif
+#ifndef SharedOldXRev
+#define SharedOldXRev 4.0
+#endif
+#ifndef SharedXtRev
+#define SharedXtRev 4.0
+#endif
+#ifndef SharedXawRev
+#define SharedXawRev 4.0
+#endif
+#ifndef SharedXmuRev
+#define SharedXmuRev 4.0
+#endif
+#ifndef SharedXextRev
+#define SharedXextRev 4.0
 #endif
 
 #if NeedBerklibInXlib		/* what about regular Berklib */
@@ -252,7 +310,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.30 89/07/18 16:56:00 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.31 89/08/21 10:03:48 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -281,8 +339,13 @@ Berklib.c: sysV/Berklib.c					@@\
            MANDIR = ManDir		/* man pages for commands */
         LIBMANDIR = LibmanDir		/* man pages for library routines */
       XAPPLOADDIR = XAppLoadDir		/* application default resources */
-#if HasSunOSSharedLibraries && SharedXlib
+#if HasSunOSSharedLibraries
         SOXLIBREV = SharedXlibRev
+          SOXTREV = SharedXtRev
+         SOXAWREV = SharedXawRev
+        SOOLDXREV = SharedOldXRev
+         SOXMUREV = SharedXmuRev
+        SOXEXTREV = SharedXextRev
 #endif
           FCFLAGS = FontCompilerFlags
 

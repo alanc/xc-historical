@@ -17,7 +17,6 @@
 
 #if OSMajorVersion >= 4
 #define HasSunOSSharedLibraries YES
-#define SharedXlib YES
 #endif
 
 #if OSMajorVersion <= 3
@@ -46,7 +45,7 @@
 /* see below for ServerDefines */
 
 
-/**/# platform:  $XConsortium: sun.cf,v 1.23 89/08/16 16:05:44 jim Exp $
+/**/# platform:  $XConsortium: sun.cf,v 1.24 89/08/18 17:48:39 keith Exp $
 /**/# operating system:  OSName
 
 #if SunOSPlatform
