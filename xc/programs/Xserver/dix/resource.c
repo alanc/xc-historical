@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.78 89/09/19 11:41:41 keith Exp $ */
+/* $XConsortium: resource.c,v 1.79 89/10/08 15:16:32 rws Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -39,9 +39,9 @@ SOFTWARE.
  *      It is sometimes necessary for the server to create an ID that looks
  *      like it belongs to a client.  This ID, however,  must not be one
  *      the client actually can create, or we have the potential for conflict.
- *      The 20th bit of the ID is resevered for the server's use for this
+ *      The 30th bit of the ID is reserved for the server's use for this
  *      purpose.  By setting CLIENT_ID(id) to the client, the SERVER_BIT to
- *      1, and an otherwise unused ID in the low 19 bits, we can create a
+ *      1, and an otherwise arbitrary ID in the low 20 bits, we can create a
  *      resource "owned" by the client.
  *      
  *      The following IDs are currently reserved for siccing on the client:
@@ -166,7 +166,13 @@ InitClientResources(client)
     clientTable[i].buckets = INITBUCKETS;
     clientTable[i].elements = 0;
     clientTable[i].hashsize = INITHASHSIZE;
-    clientTable[i].fakeID = 100;
+    /* Many IDs allocated from the server client are visible to clients,
+     * so we don't use the SERVER_BIT for them, but we have to start
+     * past the magic value constants used in the protocol.  For normal
+     * clients, we can start from zero, with SERVER_BIT set.
+     */
+    clientTable[i].fakeID = client->clientAsMask |
+			    (client->index ? SERVER_BIT : 32);
     clientTable[i].expectID = client->clientAsMask;
     for (j=0; j<INITBUCKETS; j++) 
     {
@@ -201,11 +207,9 @@ Hash(client, id)
 
 XID
 FakeClientID(client)
-    int client;
+    register int client;
 {
-	return (
-	    (client<<CLIENTOFFSET) + (SERVER_BIT) +
-	    ((clientTable[client].fakeID++) & RESOURCE_ID_MASK));
+    return (clientTable[client].fakeID++);
 }
 
 Bool
@@ -474,7 +478,7 @@ LegalNewID(id, client)
     XID id;
     register ClientPtr client;
 {
-    return ((client->clientAsMask == CLIENT_BITS(id)) && !(id & SERVER_BIT) &&
+    return ((client->clientAsMask == (id & ~RESOURCE_ID_MASK)) &&
 	    ((clientTable[client->index].expectID <= id) ||
 	     !LookupIDByClass(id, RC_ANY)));
 }
