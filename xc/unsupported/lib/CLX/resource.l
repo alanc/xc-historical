@@ -34,7 +34,8 @@
 	   read-resources
 	   write-resources
 	   wm-resources
-	   set-wm-resources))
+	   set-wm-resources
+	   root-resources))
 
 #+clue ;; for CLUE only
 (defparameter *resource-subclassp* nil
@@ -135,26 +136,6 @@
   (if (symbolp stringable)
       (kintern stringable)
     (kintern (string-upcase (the string stringable)))))
-
-;; This is in the inner-loop of the resource search.
-;; Try to be as fast as possible.
-(proclaim '(inline stringable-equal))
-(defun stringable-equal (a b)
-  ;; Compare two stringables.
-  ;; Ignore case when comparing to a symbol.
-  (declare (type stringable a b))
-  (declare (values boolean))
-  (macrolet (#+(or ti lmi) ;; Over twice as fast as common-lisp string-equal
-	     (string-equal (a b)
-	       `(si:%string-equal ,a 0 ,b 0 nil)))
-    (if (symbolp a)
-	(if (symbolp b)
-	    (equal (the string (symbol-name a)) (the string (symbol-name b)))
-	  (string-equal (the string (symbol-name a)) (the string b)))
-      (if (symbolp b)
-	  (string-equal (the string a) (the string (symbol-name b)))
-	#+lispm (equal a b) ;; EQUAL is microcoded on lispm's
-	#-lispm (string= (the string a) (the string b))))))
 
 
 ;;;-----------------------------------------------------------------------------
@@ -486,7 +467,6 @@
   (declare (type string-char char))
   (member char key))
 
-(eval-when (compile eval) ;; Not needed after compilation
 (defmacro resource-with-open-file ((stream pathname &rest options) &body body)
   ;; Private WITH-OPEN-FILE, which, when pathname is a stream, uses it as the stream
   (let ((abortp (gensym))
@@ -500,7 +480,6 @@
 	     (setq ,abortp nil))
 	 (unless ,streamp
 	   (close stream :abort ,abortp))))))
-) ;; end eval-when
 
 (defun read-resources (database pathname &key key test test-not)
   ;; Merges resources from a file in standard X11 format with DATABASE.
@@ -606,7 +585,6 @@
       stream (or write #'princ) test test-not))
   database)
 
-
 (defun wm-resources (database window &key key test test-not)
   ;; Takes the resources associated with the RESOURCE_MANAGER property
   ;; of WINDOW (if any) and merges them with DATABASE.
@@ -643,33 +621,67 @@
       (write-resources database stream :write write
 		       :test test :test-not test-not))))
 
+(defun root-resources (screen &key database key test test-not)
+  "Returns a resource database containing the contents of the root window
+   RESOURCE_MANAGER property for the given SCREEN. If SCREEN is a display,
+   then its default screen is used. If an existing DATABASE is given, then
+   resource values are merged with the DATABASE and the modified DATABASE is
+   returned.
+
+   TEST and TEST-NOT are predicates for selecting which resources are
+   read.  Arguments are a resource name list and a resource value. The KEY
+   function, if given, is called to convert a resource value string to the
+   value given to TEST or TEST-NOT."
+
+  (declare (type (or screen display) screen)
+	   (type (or null resource-database) database)
+	   (type (or null (function (string) t)) key)
+	   (type (or null (function ((list string) t) boolean)) test test-not)
+	   (values resource-database))
+  (let* ((screen (if (type? screen 'display)
+		     (display-default-screen screen)
+		   screen))
+	 (window (screen-root screen)))
+    (wm-resources (or database (make-resource-database)) window
+		  :key key :test test :test-not test-not)))
+
+(defun set-root-resources (screen &key test test-not (write 'princ) database)
+  "Changes the contents of the root window RESOURCE_MANAGER property for the
+   given SCREEN. If SCREEN is a display, then its default screen is used. 
+
+   TEST and TEST-NOT are predicates for selecting which resources from the
+   DATABASE are written.  Arguments are a resource name list and a resource
+   value.  The WRITE function is used to convert a resource value into a
+   string stored in the property."
+
+  (declare (type (or screen display) screen)
+	(type (or null resource-database) database)
+	(type (or null (function ((list string) t) boolean)) test test-not)
+	(type (or null (function (string stream) t)) write)
+	(values resource-database))
+  (let* ((screen (if (type? screen 'display)
+		     (display-default-screen screen)
+		   screen))
+	 (window (screen-root screen)))
+    (set-wm-resources database window :write write :test test :test-not test-not)))
+
+(defsetf root-resources set-root-resources)
+
 (defun initialize-resource-database (display)
   ;; This function is (supposed to be) equivalent to the Xlib initialization
-  ;; code.  Note that the getenv call must be customized for your flavor of
-  ;; Lisp.
+  ;; code.
   (declare (type display display))
-  
   (let ((rdb (make-resource-database))
-	(homedir (user-homedir-pathname))
 	(rootwin (screen-root (car (display-roots display)))))
-    
-    ;; First read the server defaults if present, otherwise ~/.Xdefaults.
+    ;; First read the server defaults if present, otherwise from the default
+    ;; resource file
     (if (get-property rootwin :resource_manager)
 	(xlib:wm-resources rdb rootwin)
-      (let* ((xdef (pathname ".Xdefaults"))
-	     (path (merge-pathnames homedir xdef)))
-	(when (probe-file path)
+      (let ((path (default-resources-pathname)))
+	(when (and path (probe-file path))
 	  (read-resources rdb path))))
-    
-    ;; Next read from XENVIRONMENT if present, otherwise ~/.Xdefaults-host.
-    (let ((xenv #+excl (sys:getenv "XENVIRONMENT")
-		#-excl nil))		; Color me in.
-      (unless xenv
-	(setq xenv (merge-pathnames
-		    homedir
-		    (pathname (concatenate 'simple-string ".Xdefaults-"
-					   (short-site-name))))))
-      (when (probe-file xenv)
-	(xlib:read-resources rdb xenv)))
-
+    ;; Next read from the resources file 
+    (let ((path (resources-pathname)))
+      (when (and path (probe-file path))
+	(read-resources rdb path)))
     (setf (display-xdefaults display) rdb)))
