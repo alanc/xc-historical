@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: xrdb.c,v 11.22 88/09/06 14:36:10 jim Exp $";
+static char rcs_id[] = "$XConsortium: xrdb.c,v 11.23 88/10/31 08:40:55 rws Exp $";
 #endif
 
 /*
@@ -589,7 +589,7 @@ main (argc, argv)
     if (printit == 1) {
 	/* user wants to print contents */
 	if (xdefs)
-	    fputs (xdefs, stdout);
+	    printf ("%s", xdefs);	/* fputs broken in SunOS 4.0 */
     }
     if (showDefines || printit) {
 	XCloseDisplay (dpy);
