@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: pages.c,v 1.3 89/01/06 18:42:26 kit Exp $
+ * $XConsortium: pages.c,v 1.4 89/02/15 16:47:50 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -282,8 +282,8 @@ caddr_t struct_pointer,data;
  */
 
     if ( (bufp - buf) > (BUFSIZ - 10) )
-      while (*c != '\n')	/* toss everything until we find a <CR>. */
-	c++;
+      /* Toss everything until we find a <CR> or the end of the buffer. */
+      while ( (*c != '\n') && (*c != '\0') ) c++;
 
     switch(*c) {
 
