@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: extension.c,v 1.38 87/11/27 09:46:28 rws Locked $ */
+/* $Header: extension.c,v 1.39 87/11/27 10:02:12 rws Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -117,6 +117,18 @@ CloseDownExtensions()
     extensions = (ExtensionEntry **)NULL;
     lastEvent = EXTENSION_EVENT_BASE;
     lastError = FirstExtensionError;
+    for (i=0; i<MAXSCREENS; i++)
+    {
+	register ScreenProcEntry *spentry = &AuxillaryScreenProcs[i];
+
+	while (spentry->num)
+	{
+	    spentry->num--;
+	    Xfree(spentry->procList[spentry->num].name);
+	}
+	Xfree(spentry->procList);
+	spentry->procList = (ProcEntryPtr)NULL;
+    }
 }
 
 
@@ -210,13 +222,13 @@ LookupProc(name, pGC)
     GCPtr pGC;
 {
     register int i;
-    ScreenProcEntry spentry;
-    spentry  = AuxillaryScreenProcs[pGC->pScreen->myNum];
-    if (spentry.num)    
+    register ScreenProcEntry *spentry;
+    spentry  = &AuxillaryScreenProcs[pGC->pScreen->myNum];
+    if (spentry->num)    
     {
-        for (i = 0; i < spentry.num; i++)
-            if (strcmp(name, spentry.procList[i].name) == 0)
-                return(spentry.procList[i].proc);
+        for (i = 0; i < spentry->num; i++)
+            if (strcmp(name, spentry->procList[i].name) == 0)
+                return(spentry->procList[i].proc);
     }
     return (ExtensionLookupProc)NULL;
 }
@@ -236,8 +248,8 @@ RegisterScreenProc(name, pScreen, proc)
     ScreenPtr pScreen;
     ExtensionLookupProc proc;
 {
-    ScreenProcEntry *spentry;
-    ProcEntryPtr procEntry = (ProcEntryPtr)NULL;
+    register ScreenProcEntry *spentry;
+    register ProcEntryPtr procEntry = (ProcEntryPtr)NULL;
     int i;
 
     spentry = &AuxillaryScreenProcs[pScreen->myNum];
@@ -255,13 +267,9 @@ RegisterScreenProc(name, pScreen, proc)
         procEntry->proc = proc;
     else
     {
-	if (spentry->num)
-	    spentry->procList = (ProcEntryPtr)
-		Xrealloc(spentry->procList,
-		    sizeof(ProcEntryRec) * (spentry->num+1));
-	else
-	    spentry->procList = (ProcEntryPtr)
-		Xalloc(sizeof(ProcEntryRec));
+	spentry->procList = (ProcEntryPtr)
+			    Xrealloc(spentry->procList,
+				     sizeof(ProcEntryRec) * (spentry->num+1));
         procEntry = &spentry->procList[spentry->num];
         procEntry->name = (char *)Xalloc(strlen(name)+1);
         strcpy(procEntry->name, name);
