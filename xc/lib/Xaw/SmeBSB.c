@@ -1,4 +1,4 @@
-/* $XConsortium: SmeBSB.c,v 1.12 90/02/15 13:57:53 kit Exp $ */
+/* $XConsortium: SmeBSB.c,v 1.13 90/12/31 17:40:30 gildea Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -44,7 +44,7 @@
 
 #define ONE_HUNDRED 100
 
-#define offset(field) XtOffset(SmeBSBObject, sme_bsb.field)
+#define offset(field) XtOffsetOf(SmeBSBRec, sme_bsb.field)
 
 static XtResource resources[] = {
   {XtNlabel,  XtCLabel, XtRString, sizeof(String),

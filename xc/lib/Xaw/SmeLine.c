@@ -1,4 +1,4 @@
-/* $XConsortium: SmeLine.c,v 1.9 91/01/02 17:26:51 gildea Exp $ */
+/* $XConsortium: SmeLine.c,v 1.10 91/01/11 18:45:50 converse Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -41,7 +41,7 @@
 #include <X11/Xaw/SmeLineP.h>
 #include <X11/Xaw/Cardinals.h>
 
-#define offset(field) XtOffset(SmeLineObject, sme_line.field)
+#define offset(field) XtOffsetOf(SmeLineRec, sme_line.field)
 static XtResource resources[] = {
   {XtNlineWidth, XtCLineWidth, XtRDimension, sizeof(Dimension),
      offset(line_width), XtRImmediate, (XtPointer) 1},
