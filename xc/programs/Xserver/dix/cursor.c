@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $Header: cursor.c,v 1.27 87/08/28 19:07:20 karlton Exp $ */
+/* $Header: cursor.c,v 1.27 87/09/11 07:18:41 toddb Exp $ */
 
 #include "X.h"
 #include "scrnintstr.h"
@@ -38,6 +38,7 @@ SOFTWARE.
 /*
  * To be called indirectly by DeleteResource; must use exactly two args
  */
+/*ARGSUSED*/
 void
 FreeCursor( pCurs, cid)
     CursorPtr 	pCurs;
