@@ -314,6 +314,14 @@ DEVICEMODE
 .DS 0
 .TA .75i 1.75i
 .ta .75i 1.75i
+PROXIMITYSTATE
+	0	InProximity
+	1	OutOfProximity
+.DE
+.LP
+.DS 0
+.TA .75i 1.75i
+.ta .75i 1.75i
 BOOL
 	0	False
 	1	True
@@ -1525,9 +1533,9 @@ QueryDeviceState
 	1	4n + 4		length
 	1	n		number of valuators
 	1			mode
-		0	Relative
-		1	Absolute
-	n	LISTofCARD32		status of valuators
+		#x01	DeviceMode (0 = Relative, 1 = Absolute)
+		#x02	ProximityState (0 = InProximity, 1 = OutOfProximity)
+	4n	LISTofCARD32		status of valuators
 .DE
 .LP
 .DS 0
@@ -1571,7 +1579,7 @@ SetDeviceValuators
 	1	CARD8		first valuator
 	1	n    		number of valuators
 	1			unused
-	n	LISTofINT32	valuator values to set
+	4n	LISTofINT32	valuator values to set
 .DE
 .DS 0
 .TA .2i .5i 1.5i 3.5i
@@ -1585,6 +1593,96 @@ SetDeviceValuators
 		0	Success
 		1	AlreadyGrabbed
 	23				unused
+.DE
+.LP
+.DS 0
+.TA .2i .5i 1.5i 2.5i
+.ta .2i .5i 1.5i 2.5i
+GetDeviceControl
+	1	CARD8		input extension opcode
+	1	34		GetDeviceControl opcode
+	2	2		request length
+	2	CARD16		device control type
+	1	CARD8		device id
+	1			unused
+.DE
+.DS 0
+.TA .2i .5i 1.5i 3.5i
+.ta .2i .5i 1.5i 3.5i
+ =>
+	1	1			Reply
+	1	34			GetDeviceControl opcode
+	2	CARD16			sequence number
+	4	n/4			reply length
+	1	CARD8			status
+		0			Success
+		1			AlreadyGrabbed
+		3 + first_error		DeviceBusy
+	23				unused
+	n				DEVICESTATE
+.DE
+.DS 0
+.TA .2i .5i 1.5i 2.5i
+.ta .2i .5i 1.5i 2.5i
+DEVICESTATE			DEVICERESOLUTIONSTATE
+.DE
+.LP
+.DS 0
+.TA .2i .5i 1.5i 2.5i
+.ta .2i .5i 1.5i 2.5i
+DEVICERESOLUTIONSTATE
+ 	2	0		control type
+ 	2	8 + 12n		length
+ 	4	n    		num_valuators
+ 	4n	LISTOfCARD32	resolution values
+ 	4n	LISTOfCARD32	resolution min_values
+ 	4n	LISTOfCARD32	resolution max_values
+.DE
+.LP
+.DS 0
+.TA .2i .5i 1.5i 2.5i
+.ta .2i .5i 1.5i 2.5i
+.LP
+ChangeDeviceControl
+ 	1	CARD8		input extension opcode
+ 	1	35		ChangeDeviceControl opcode
+ 	2	2+n/4		request length
+ 	2	CARD16		control type
+ 	1	CARD8		device id
+ 	1			unused
+ 	n			DEVICECONTROL
+.DE
+.DS 0
+.TA .2i .5i 1.5i 2.5i
+.ta .2i .5i 1.5i 2.5i
+DEVICECONTROL		DEVICERESOLUTIONCTL
+.DE
+.LP
+.DS 0
+.TA .2i .5i 1.5i 2.5i
+.ta .2i .5i 1.5i 2.5i
+DEVICERESOLUTIONCTL
+ 	2	0		control type
+ 	2	8 + 4n		length
+ 	1	CARD8		first_valuator
+ 	1	n    		num_valuators
+ 	2			unused
+ 	4n	LISTOfCARD32	resolution values
+.DE
+.LP
+.DS 0
+.TA .2i .5i 1.5i 3.5i
+.ta .2i .5i 1.5i 3.5i
+ =>
+ 	1	1			Reply
+ 	1	35			ChangeDeviceControl opcode
+ 	2	CARD16			sequence number
+ 	4	0			reply length
+ 	1	CARD8			status
+ 		0			Success
+ 		1			AlreadyGrabbed
+ 		3 + first_error		DeviceBusy
+ 	23				unused
 .DE
 .ps +2
 Events
@@ -1627,6 +1725,7 @@ DeviceKeyPress
 	2	SETofKEYBUTMASK		state
 	1	BOOL		same-screen
 	1	CARD8		device id
+		#x80		MORE_EVENTS follow
 .DE
 .LP
 .DS 0
@@ -1648,6 +1747,7 @@ DeviceKeyRelease
 	2	SETofKEYBUTMASK			state
 	1	BOOL		same-screen
 	1	CARD8		device id
+		#x80		MORE_EVENTS follow
 .DE
 .LP
 .DS 0
@@ -1669,6 +1769,7 @@ DeviceButtonPress
 	2	SETofKEYBUTMASK		state
 	1	BOOL		same-screen
 	1	CARD8		device id
+		#x80		MORE_EVENTS follow
 .DE
 .LP
 .DS 0
@@ -1690,6 +1791,7 @@ DeviceButtonRelease
 	2	SETofKEYBUTMASK		state
 	1	BOOL		same-screen
 	1	CARD8		device id
+		#x80		MORE_EVENTS follow
 .DE
 .LP
 .DS 0
@@ -1713,6 +1815,7 @@ DeviceMotionNotify
 	2	SETofKEYBUTMASK		state
 	1	BOOL		same-screen
 	1	CARD8		device id
+		#x80		MORE_EVENTS follow
 .DE
 .DS 0
 .TA .2i .5i 1.5i 2.5i
@@ -1785,6 +1888,7 @@ ProximityIn
 	2	SETofKEYBUTMASK			state
 	1	BOOL		same-screen
 	1	CARD8		device id
+		#x80		MORE_EVENTS follow
 .DE
 .LP
 .DS 0
@@ -1806,6 +1910,7 @@ ProximityOut
 	2	SETofKEYBUTMASK			state
 	1	BOOL		same-screen
 	1	CARD8		device id
+		#x80		MORE_EVENTS follow
 .DE
 .LP
 DeviceStateNotify events may be immediately followed by zero or one
@@ -1817,15 +1922,18 @@ DeviceKeyStateNotify and/ or zero or more DeviceValuator events.
 DeviceStateNotify
 	1	CARD8		code
 	1	CARD8		device id
+		#x80		MORE_EVENTS follow
 	2	CARD16		sequence number
 	4	TIMESTAMP		time
 	1	CARD8		num_keys
 	1	CARD8		num_buttons
 	1	CARD8		num_valuators
-	1	CARD8		input classes reported
-		#x0001	reporting keys
-		#x0002	reporting buttons
-		#x0004	reporting valuators
+ 	1	CARD8		valuator mode and input classes reported
+ 		#x01	reporting keys
+ 		#x02	reporting buttons
+ 		#x04	reporting valuators
+ 		#x40	device mode (0 = Relative, 1 = Absolute)
+ 		#x80	proximity state (0 = InProximity, 1 = OutOfProximity)
 	4	LISTofCARD8		first 32 keys (if reported)
 	4	LISTofCARD8		first 32 buttons (if reported)
 	12	LISTofCARD32		first 3 valuators (if reported)
@@ -1837,6 +1945,7 @@ DeviceStateNotify
 DeviceKeyStateNotify
 	1	CARD8		code
 	1	CARD8		device id
+		#x80		MORE_EVENTS follow
 	2	CARD16		sequence number
 	28	LISTofCARD8		state of keys 33-255
 .DE
@@ -1847,6 +1956,7 @@ DeviceKeyStateNotify
 DeviceButtonStateNotify
 	1	CARD8		code
 	1	CARD8		device id
+		#x80		MORE_EVENTS follow
 	2	CARD16		sequence number
 	28	LISTofCARD8		state of buttons 33-255
 .DE
