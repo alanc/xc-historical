@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.54 94/07/18 15:08:03 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.55 94/07/19 12:38:38 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -607,7 +607,16 @@ char 		*previousId;
 	    }
 	}
 	free (previousId);
+
+	if (send_save)
+	{
+	    /* previous id was bogus, return bad status */
+
+	    return (0);
+	}
     }
+
+    client->restarted = (previousId != NULL);
 
     if (send_save) {
 	SmsSaveYourself(smsConn, SmSaveLocal, False, SmInteractStyleNone,
@@ -934,6 +943,8 @@ char 		**failureReasonRet;
     newClient->ice_conn = SmsGetIceConnection (smsConn);
     newClient->clientId = NULL;
     newClient->clientHostname = NULL;
+    newClient->restarted = False; /* wait till RegisterClient for true value */
+    newClient->userIssuedCheckpoint = False;
     newClient->interactPending = False;
     newClient->wantsPhase2 = False;
     newClient->numProps = 0;
