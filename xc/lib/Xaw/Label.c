@@ -1,4 +1,4 @@
-/* $XConsortium: Label.c,v 1.93 91/10/16 21:34:35 eswu Exp $ */
+/* $XConsortium: Label.c,v 1.94 93/09/18 18:11:19 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -603,7 +603,8 @@ static void Destroy(w)
 {
     LabelWidget lw = (LabelWidget)w;
 
-    XtFree( lw->label.label );
+    if ( lw->label.label != lw->core.name )
+	XtFree( lw->label.label );
     XtReleaseGC( w, lw->label.normal_GC );
     XtReleaseGC( w, lw->label.gray_GC);
     XmuReleaseStippledPixmap( XtScreen(w), lw->label.stipple );
