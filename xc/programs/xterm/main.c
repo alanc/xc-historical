@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.170 91/03/04 14:50:28 gildea Exp $ */
+/* $XConsortium: main.c,v 1.171 91/03/26 15:00:16 gildea Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -192,14 +192,7 @@ int	Ptyfd;
 
 SIGNAL_T Exit();
 
-#ifdef _POSIX_SOURCE
-#define _X_HAVE_UNISTD
-#endif
-#ifdef SVR4
-#define _X_HAVE_UNISTD
-#endif
-
-#ifdef _X_HAVE_UNISTD
+#ifndef X_NOT_POSIX
 #include <unistd.h>
 #else
 extern long lseek();
