@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.55 89/08/15 14:31:45 jim Exp $
+ * $XConsortium: XConnDis.c,v 11.56 89/08/16 10:04:58 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -623,6 +623,7 @@ static int MakeTCPConnection (phostname, idisplay, retries,
 
     return fd;
 }
+#undef INVALID_INETADDR
 #endif /* TCPCONN */
 
 
