@@ -3,7 +3,7 @@
 .ce 4
 \s+2\fBCompound Text Encoding\fP\s-2
 .sp 6p
-Version 1
+Version 1.1
 MIT X Consortium Standard
 Robert W. Scheifler
 .sp 2
@@ -217,10 +217,10 @@ _
 04/07	96	Right half of ISO 8859-6, Latin/Arabic alphabet
 04/08	96	Right half of ISO 8859-8, Latin/Hebrew alphabet
 04/12	96	Right half of ISO 8859-5, Latin/Cyrillic alphabet
-04/13	96	Right half of ISO/IEC DIS 8859-9, Latin alphabet No. 5
+04/13	96	Right half of ISO 8859-9, Latin alphabet No. 5
 
 04/01	94\u\s-22\s+2\d	GB2312-1980, China (PRC) Hanzi
-04/02	94\u\s-22\s+2\d	JIS X0208-1983, Japanese Graphic Character Set, Level 2
+04/02	94\u\s-22\s+2\d	JIS X0208-1983, Japanese Graphic Character Set
 04/03	94\u\s-22\s+2\d	KS C5601-1987, Korean Graphic Character Set
 .TE
 .RE
@@ -350,14 +350,11 @@ ISO8859-5	ISO 8859-5
 ISO8859-6	ISO 8859-6
 ISO8859-7	ISO 8859-7
 ISO8859-8	ISO 8859-8
-ISO8859-9	ISO/IEC DIS 8859-9
+ISO8859-9	ISO 8859-9
 JISX0201.1976-0	JIS X0201-1976 (reaffirmed 1984)
 GB2312.1980-0	GB2312-1980, GL encoding
-GB2312.1980-1	GB2312-1980, GR encoding
-JISX0208.1983-0	JIS X0208-1983, Level 2, GL encoding
-JISX0208.1983-1	JIS X0208-1983, Level 2, GR encoding
+JISX0208.1983-0	JIS X0208-1983, GL encoding
 KSC5601.1987-0	KS C5601-1987, GL encoding
-KSC5601.1987-1	KS C5601-1987, GR encoding
 .TE
 .RE
 .LP
@@ -407,7 +404,8 @@ l l.
 .TE
 .RE
 .LP
-In either case, V is in the range 02/00 to 02/15 and indicates the version
+In either case, V is in the range 02/00 to 02/15 and indicates the major
+version
 minus one of the specification being used.  These version control sequences are
 for use by clients that implement earlier versions, but have implemented a
 general parser.  The first control sequence indicates that it is acceptable to
