@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 1.189 89/05/01 12:18:59 rws Exp $ */
+/* $XConsortium: events.c,v 1.190 89/05/01 18:33:15 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1264,8 +1264,11 @@ CheckMotion(xE)
 #endif
     if (sprite.win != prevSpriteWin)
     {
-	if (prevSpriteWin != NullWindow)
+	if (prevSpriteWin != NullWindow) {
+	    if (!xE)
+		UpdateCurrentTimeIf();
 	    DoEnterLeaveEvents(prevSpriteWin, sprite.win, NotifyNormal);
+	}
 	PostNewCursor();
         return FALSE;
     }
@@ -2215,6 +2218,7 @@ ProcSetInputFocus(client)
     REQUEST(xSetInputFocusReq);
 
     REQUEST_SIZE_MATCH(xSetInputFocusReq);
+    UpdateCurrentTime();
     if ((stuff->revertTo != RevertToParent) &&
 	    (stuff->revertTo != RevertToPointerRoot) &&
 	    (stuff->revertTo != RevertToNone))
@@ -2305,6 +2309,7 @@ ProcGrabPointer(client)
     TimeStamp time;
 
     REQUEST_SIZE_MATCH(xGrabPointerReq);
+    UpdateCurrentTime();
     if ((stuff->pointerMode != GrabModeSync) &&
 	(stuff->pointerMode != GrabModeAsync))
     {
@@ -2448,6 +2453,7 @@ ProcUngrabPointer(client)
     REQUEST(xResourceReq);
 
     REQUEST_SIZE_MATCH(xResourceReq);
+    UpdateCurrentTime();
     time = ClientTimeToServerTime(stuff->id);
     if ((CompareTimeStamps(time, currentTime) != LATER) &&
 	    (CompareTimeStamps(time, device->grabTime) != EARLIER) &&
@@ -2468,6 +2474,7 @@ ProcGrabKeyboard(client)
     REQUEST(xGrabKeyboardReq);
 
     REQUEST_SIZE_MATCH(xGrabKeyboardReq);
+    UpdateCurrentTime();
     if ((stuff->pointerMode != GrabModeSync) &&
 	(stuff->pointerMode != GrabModeAsync))
     {
@@ -2535,6 +2542,7 @@ ProcUngrabKeyboard(client)
     REQUEST(xResourceReq);
 
     REQUEST_SIZE_MATCH(xResourceReq);
+    UpdateCurrentTime();
     time = ClientTimeToServerTime(stuff->id);
     if ((CompareTimeStamps(time, currentTime) != LATER) &&
 	(CompareTimeStamps(time, device->grabTime) != EARLIER) &&
