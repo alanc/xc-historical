@@ -196,8 +196,8 @@ cfbChangeWindowAttributes(pWin, mask)
     pPrivWin = (cfbPrivWin *)(pWin->devPrivate);
     while(mask)
     {
-	index = ffs(mask) -1;
-	mask &= ~(index = 1 << index);
+	index = lowbit (mask);
+	mask &= ~index;
 	switch(index)
 	{
 	  case CWBackingStore:

@@ -395,8 +395,8 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
 
     mask = changes;
     while (mask) {
-	index = ffs(mask) - 1;
-	mask &= ~(index = (1 << index));
+	index = lowbit (mask);
+	mask &= ~index;
 
 	/*
 	 * this switch acculmulates a list of which procedures might have
