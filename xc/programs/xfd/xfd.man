@@ -1,4 +1,4 @@
-.TH XFD 1 "12 June 1987" "X Version 11"
+.TH XFD 1 "1 March 1988" "X Version 11"
 .SH NAME
 xfd - X window system font displayer
 .SH SYNOPSIS
@@ -142,7 +142,10 @@ displayed.
 will also take a standard geometry specification (see X(1)).
 .SH "X DEFAULTS"
 .I Xfd
-uses a number of standard default values.
+uses the 
+.I XGetDefaults
+routine and therefore uses capitalized resource names, unlike clients written
+with the X Toolkit.
 .PP
 .TP 8
 .B BorderWidth
@@ -185,17 +188,22 @@ Set the file we should look in to get the bitmap for the icon.
 .TP 8
 .B Title
 Set the title to be used.
-.SH FILES
-/usr/new/lib/X/font/*.snf
 .SH "SEE ALSO"
-X(1), X(8C), xterm(1), xlsfonts(1)
+X(1), X(8C), xterm(1), xlsfonts(1), xrdb(1)
 .SH ENVIRONMENT
-DISPLAY	-	To find out which display you are using.
+.PP
+.TP 8
+.B DISPLAY
+to get the default host and display to use.
+.TP 8
+.B XENVIRONMENT
+to get the name of a resource fiel that overrides the global resources stored
+in the RESOURCE_MANGER property.
 .SH BUGS
 It should display the name of the font somewhere.
+.PP
+It should be rewritten to use the X toolkit.
 .SH AUTHOR
-Mark Lillibridge, MIT Project Athena
-.br
 Copyright (c) 1987 by Massachusetts Institute of Technology.
 .br
-See X(1) for a complete copyright notice.
+Mark Lillibridge, MIT Project Athena
