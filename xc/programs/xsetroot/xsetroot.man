@@ -26,7 +26,7 @@ characteristics will be reset to the default state.
 .PP
 Only one of the background color/tileing changing options 
 (-solid, -gray, -grey, -bitmap, and -mod) may be specified at a time.
-.SH DESCRIPTION
+.SH OPTIONS
 .PP
 The various options are as follows:
 .IP \fB-help\fP
