@@ -1,5 +1,5 @@
 /*
- * $XConsortium: access.c,v 1.9 91/05/12 09:41:14 keith Exp $
+ * $XConsortium: access.c,v 1.10 91/07/18 19:25:27 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -581,7 +581,7 @@ ForEachMatchingIndirectHost (clientAddress, connectionType, function, closure)
 		(*function) (connectionType, choice, closure);
 	}
 	else if (scanHostlist (d->hosts, clientAddress, connectionType,
-			  function, closure, 0, False))
+			  function, closure, 0, FALSE))
 	{
 	    haveLocalhost = 1;
 	}
@@ -669,7 +669,7 @@ ForEachChooserHost (clientAddress, connectionType, function, closure)
 	if (!d->chooser)
 	    break;
 	if (scanHostlist (d->hosts, clientAddress, connectionType,
-			  function, closure, 0, True))
+			  function, closure, 0, TRUE))
 	{
 	    haveLocalhost = 1;
 	}
