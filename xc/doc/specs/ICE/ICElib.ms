@@ -1694,7 +1694,7 @@ Indicates if a reply is being waited for.
 This function is used in two ways.  In the first, a client may
 generate a message and "block" by calling
 .PN IceProcessMessage
-repeatidly until it gets it's reply.  In the second case, a
+repeatedly until it gets it's reply.  In the second case, a
 client calls
 .PN IceProcessMessage
 with \fIreply_wait\fP\^ set to
