@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.82 92/01/09 20:36:13 keith Exp $ */
+/* $XConsortium: window.c,v 5.83 92/02/13 15:53:44 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -3995,7 +3995,7 @@ SaveScreens(on, mode)
 		(screenInfo.screens[i], type, on == SCREEN_SAVER_FORCER))
 		continue;
 	}
-	if (what == screenIsSaved)
+	if (type == screenIsSaved)
 	    continue;
 	switch (type) {
 	case SCREEN_SAVER_OFF:
