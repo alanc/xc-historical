@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xload_c = "$Header: xload.c,v 1.3 87/08/31 10:14:30 newman Locked $";
+static char *rcsid_xload_c = "$Header: xload.c,v 1.4 87/09/13 03:18:40 swick Locked $";
 #endif  lint
 
 #include <stdio.h> 
@@ -44,7 +44,7 @@ void main(argc, argv)
     char **argv;
 {
     char host[256];
-    Widget toplevel, w;
+    Widget toplevel;
     Arg arg;
     
     (void) gethostname(host,255);
@@ -52,14 +52,14 @@ void main(argc, argv)
       
     if (argc != 1) usage();
     
-    arg.name = XtNiconPixmap;
-    arg.value = (XtArgVal) XCreateBitmapFromData (XtDisplay(toplevel),
-       XtScreen(toplevel)->root,  xload_bits, xload_width, xload_height);
+    XtSetArg (arg, XtNiconPixmap, 
+	      XCreateBitmapFromData (XtDisplay(toplevel),
+				     XtScreen(toplevel)->root,
+				     xload_bits, xload_width, xload_height));
     XtSetValues (toplevel, &arg, 1);
 
-    arg.name = XtNlabel;
-    arg.value = (XtArgVal) host;
-    w = XtCreateWidget (argv[0], loadWidgetClass, toplevel, &arg, 1);
+    XtSetArg (arg, XtNlabel, host);
+    XtCreateManagedWidget (argv[0], loadWidgetClass, toplevel, &arg, 1);
     XtRealizeWidget (toplevel);
     XtMainLoop();
 }
