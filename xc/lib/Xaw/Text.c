@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Text.c,v 1.39 88/07/20 17:22:50 jim Exp $";
+static char rcsid[] = "$Header: Text.c,v 1.46 88/08/25 15:48:35 swick Exp $";
 #endif
 
 
@@ -73,32 +73,29 @@ static XtTextSelectType defaultSelectTypes[] = {
 
 static caddr_t defaultSelectTypesPtr = (caddr_t)defaultSelectTypes;
 extern char defaultTextTranslations[];	/* fwd ref */
-static int defWidth = 100;
-static int defHeight = DEFAULT_TEXT_HEIGHT;
-static int defZero = 0;
-static int defMargin = 10;
-static int defLeftMargin = 2;
+static Dimension defWidth = 100;
+static Dimension defHeight = DEFAULT_TEXT_HEIGHT;
 
 #define offset(field) XtOffset(TextWidget, field)
 static XtResource resources[] = {
-    {XtNwidth, XtCWidth, XtRInt, sizeof(int),
-        offset(core.width), XtRInt, (caddr_t)&defWidth},
+    {XtNwidth, XtCWidth, XtRDimension, sizeof(Dimension),
+        offset(core.width), XtRDimension, (caddr_t)&defWidth},
     {XtNcursor, XtCCursor, XtRCursor, sizeof(Cursor),
 	offset(simple.cursor), XtRString, "xterm"},
-    {XtNheight, XtCHeight, XtRInt, sizeof(int),
-        offset(core.height), XtRInt, (caddr_t)&defHeight},
+    {XtNheight, XtCHeight, XtRDimension, sizeof(Dimension),
+        offset(core.height), XtRDimension, (caddr_t)&defHeight},
     {XtNtextOptions, XtCTextOptions, XtRInt, sizeof (int),
-        offset(text.options), XtRInt, (caddr_t)&defZero},
+        offset(text.options), XtRImmediate, (caddr_t)0},
     {XtNdialogHOffset, XtCMargin, XtRInt, sizeof(int),
-	 offset(text.dialog_horiz_offset), XtRInt, (caddr_t)&defMargin},
+	 offset(text.dialog_horiz_offset), XtRImmediate, (caddr_t)0},
     {XtNdialogVOffset, XtCMargin, XtRInt, sizeof(int),
-	 offset(text.dialog_vert_offset), XtRInt, (caddr_t)&defMargin},
+	 offset(text.dialog_vert_offset), XtRImmediate, (caddr_t)0},
     {XtNdisplayPosition, XtCTextPosition, XtRInt,
-	 sizeof (XtTextPosition), offset(text.lt.top), XtRInt, (caddr_t)&defZero},
+	 sizeof (XtTextPosition), offset(text.lt.top), XtRImmediate, (caddr_t)0},
     {XtNinsertPosition, XtCTextPosition, XtRInt,
-        sizeof(XtTextPosition), offset(text.insertPos), XtRInt, (caddr_t)&defZero},
-    {XtNleftMargin, XtCMargin, XtRInt, sizeof (int),
-        offset(text.client_leftmargin), XtRInt, (caddr_t)&defLeftMargin},
+        sizeof(XtTextPosition), offset(text.insertPos), XtRImmediate, (caddr_t)0},
+    {XtNleftMargin, XtCMargin, XtRDimension, sizeof (Dimension),
+        offset(text.client_leftmargin), XtRImmediate, (caddr_t)2},
     {XtNselectTypes, XtCSelectTypes, XtRPointer,
         sizeof(XtTextSelectType*), offset(text.sarray),
 	XtRPointer, (caddr_t)&defaultSelectTypesPtr},
@@ -216,7 +213,7 @@ static void Initialize(request, new)
 	XtAddCallback( sbar, XtNthumbProc, ThumbProc, (caddr_t)ctx );
 	ctx->text.leftmargin +=
 	    sbar->core.width + (bw = sbar->core.border_width);
-	XtMoveWidget( sbar, -bw, -bw );
+	XtMoveWidget( sbar, -(Position)bw, -(Position)bw );
     }
 }
 
@@ -443,7 +440,7 @@ static void BuildLineTable (ctx, position)
   XtTextPosition position;
 {
     Position x, y;
-    Dimension width, realW, realH;
+    int width, realW, realH;
     int line, lines;
     XtTextPosition startPos, endPos;
     Boolean     rebuild;
@@ -555,19 +552,19 @@ _XtTextScroll(ctx, n)
 	    DisplayTextWindow(ctx);
 	else {
 	    XCopyArea(XtDisplay(ctx), XtWindow(ctx), XtWindow(ctx), ctx->text.gc,
-		      0, ctx->text.lt.info[n].y, ctx->core.width,
-		      ctx->core.height - ctx->text.lt.info[n].y,
+		      0, ctx->text.lt.info[n].y, (int)ctx->core.width,
+		      (int)ctx->core.height - ctx->text.lt.info[n].y,
 		      0, ctx->text.lt.info[0].y);
 	    (*ctx->text.sink->ClearToBackground)(ctx, 0,
 		ctx->text.lt.info[0].y + ctx->core.height - ctx->text.lt.info[n].y,
-		ctx->core.width, ctx->core.height);
+		(int)ctx->core.width, (int)ctx->core.height);
 	    if (n < ctx->text.lt.lines) n++;
 	    _XtTextNeedsUpdating(ctx,
 		    ctx->text.lt.info[ctx->text.lt.lines - n].position, ctx->text.lastPos);
 	    SetScrollBar(ctx);
 	}
     } else {
-	Dimension tempHeight;
+	int tempHeight;
 	n = -n;
 	target = ctx->text.lt.top;
 	top = (*ctx->text.source->Scan)(ctx->text.source, target, XtstEOL,
@@ -576,7 +573,7 @@ _XtTextScroll(ctx, n)
 	BuildLineTable(ctx, top);
 	if (ctx->text.lt.info[n].position == target) {
 	    XCopyArea(XtDisplay(ctx), XtWindow(ctx), XtWindow(ctx), ctx->text.gc,
-		      0, ctx->text.lt.info[0].y, ctx->core.width, tempHeight,
+		      0, ctx->text.lt.info[0].y, (int)ctx->core.width, tempHeight,
 		      0, ctx->text.lt.info[n].y);
 	    _XtTextNeedsUpdating(ctx, 
 		    ctx->text.lt.info[0].position, ctx->text.lt.info[n].position);
@@ -695,17 +692,17 @@ static int _XtTextSetNewSelection(ctx, left, right)
  * then inserts, at pos1, the text that was passed. As a side effect it
  * "invalidates" that portion of the displayed text (if any).
 */
-int ReplaceText (w, pos1, pos2, text)
-  Widget w;
+static
+int ReplaceText (ctx, pos1, pos2, text)
+  TextWidget ctx;
   XtTextPosition pos1, pos2;
   XtTextBlock *text;
 
  /* it is illegal to call this routine unless there is a valid line table!*/
 {
-    TextWidget ctx = (TextWidget)w;
     int i, line1, line2, visible, delta, error;
     Position x, y;
-    Dimension realW, realH, width;
+    int realW, realH, width;
     XtTextPosition startPos, endPos, updateFrom;
 
     /* the insertPos may not always be set to the right spot in XttextAppend */
@@ -803,7 +800,7 @@ static void DisplayText(w, pos1, pos2)
 {
     TextWidget ctx = (TextWidget)w;
     Position x, y;
-    Dimension height;
+    int height;
     int line, i, visible;
     XtTextPosition startPos, endPos;
 
@@ -826,16 +823,14 @@ static void DisplayText(w, pos1, pos2)
                 (*ctx->text.sink->ClearToBackground)
 		    (w, 0, y, ctx->text.leftmargin, height);
 	    if (startPos >= ctx->text.s.right || endPos <= ctx->text.s.left) {
-		(*ctx->text.sink->Display)(ctx, x, y,
-			startPos, endPos, FALSE);
+		(*ctx->text.sink->Display) (w, x, y, startPos, endPos, FALSE);
 	    } else if (startPos >= ctx->text.s.left && endPos <= ctx->text.s.right) {
-		(*ctx->text.sink->Display)(ctx, x, y,
-			startPos, endPos, TRUE);
+		(*ctx->text.sink->Display) (w, x, y, startPos, endPos, TRUE);
 	    } else {
-		DisplayText(ctx, startPos, ctx->text.s.left);
-		DisplayText(ctx, max(startPos, ctx->text.s.left), 
-			min(endPos, ctx->text.s.right));
-		DisplayText(ctx, ctx->text.s.right, endPos);
+		DisplayText(w, startPos, ctx->text.s.left);
+		DisplayText(w, max(startPos, ctx->text.s.left), 
+			    min(endPos, ctx->text.s.right));
+		DisplayText(w, ctx->text.s.right, endPos);
 	    }
 	}
 	startPos = endPos;
@@ -1013,7 +1008,7 @@ static ClearWindow (w)
 {
     if (XtIsRealized(w))
 	(*((TextWidget)w)->text.sink->
-	 ClearToBackground)	(w, 0, 0, w->core.width, w->core.height);
+	 ClearToBackground) (w, 0, 0, (int)w->core.width, (int)w->core.height);
 }
 
 
@@ -1024,7 +1019,7 @@ DisplayTextWindow (w)
   Widget w;
 {
     TextWidget ctx = (TextWidget) w;
-    ClearWindow(ctx);
+    ClearWindow(w);
     BuildLineTable(ctx, ctx->text.lt.top);
     _XtTextNeedsUpdating(ctx, zeroPosition, ctx->text.lastPos);
     SetScrollBar(ctx);
@@ -1185,7 +1180,7 @@ int _XtTextPrepareToUpdate(ctx)
   TextWidget ctx;
 {
     if (oldinsert < 0) {
-	InsertCursor(ctx, XtisOff);
+	InsertCursor((Widget)ctx, XtisOff);
 	ctx->text.numranges = 0;
 	ctx->text.showposition = FALSE;
 	oldinsert = ctx->text.insertPos;
@@ -1224,7 +1219,7 @@ static FlushUpdate(ctx)
 		ctx->text.updateTo[i] = ctx->text.updateTo[ctx->text.numranges];
 	    }
 	}
-	DisplayText(ctx, updateFrom, updateTo);
+	DisplayText((Widget)ctx, updateFrom, updateTo);
     }
 }
 
@@ -1288,7 +1283,7 @@ _XtTextExecuteUpdate(ctx)
 	if (oldinsert != ctx->text.insertPos || ctx->text.showposition)
 	    _XtTextShowPosition(ctx);
 	FlushUpdate(ctx);
-	InsertCursor(ctx, XtisOn);
+	InsertCursor((Widget)ctx, XtisOn);
 	oldinsert = -1;
     }
 }
@@ -2644,6 +2639,8 @@ TextClassRec textClassRec = {
     /* callback_private */      NULL,
     /* tm_table         */      defaultTextTranslations,
     /* query_geometry   */	XtInheritQueryGeometry,
+    /* display_accelerator*/	XtInheritDisplayAccelerator,
+    /* extension	*/	NULL
   },
   { /* text fields */
     /* empty            */	0
