@@ -334,4 +334,4 @@ else \
 }
 
 #define getleftbits(psrc, w, dst) \
-	getbits((psrc), 0, (w), (dst))
+	getbits((unsigned int *)(psrc), 0, (w), (dst))
