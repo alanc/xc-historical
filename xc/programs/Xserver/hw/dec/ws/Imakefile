@@ -1,20 +1,31 @@
 #include <Server.tmpl>
 
-SRCS = init.c ws_io.c ws_color.c cfbinit.c ext_device.c acc_none.c acc_2da.c \
-	acc_3d.c
-OBJS = init.o ws_io.o ws_color.o cfbinit.o ext_device.o acc_none.o acc_2da.o \
-	acc_3d.o
+#
+# Only color frame buffers are currently supported
+#
+#ACC=acc_2da
+#ACC=acc_3d
+ACC=acc_none
+
+SRCS = init.c ws_io.c ws_color.c cfbinit.c ext_device.c $(ACC).c
+OFILES = init.o
+
+OBJS = ws_io.o ws_color.o cfbinit.o ext_device.o $(ACC).o
 INCLUDES = -I. -I../../mfb -I../../mi -I../../../include -I$(INCLUDESRC) \
 		-I$(EXTENSIONSRC)/include
 LINTLIBS = ../../../dix/llib-ldix.ln ../../../os/4.2bsd/llib-los.ln \
 	   ../../mfb/llib-lmfb.ln ../../mi/llib-lmi.ln
 
-all: $(OBJS)
+all:: $(OFILES)
 
 NormalLibraryObjectRule()
 NormalLintTarget($(SRCS))
 
 lintlib:
 
+NormalLibraryTarget(dec,$(OBJS))
 DependTarget()
-InstallManPage(Xws,$(MANDIR))
+InstallManPage(Xdec,$(MANDIR))
+
+saber_src:
+	#load $(CFLAGS) $(SRCS)
