@@ -1,4 +1,4 @@
-/* $XConsortium: xwud.c,v 1.54 93/09/29 17:49:25 rws Exp $ */
+/* $XConsortium: xwud.c,v 1.55 94/02/07 23:34:14 rws Exp $ */
 /* Copyright 1985, 1986, 1988 Massachusetts Institute of Technology */
 
 /*
@@ -274,6 +274,9 @@ main(argc, argv)
 	    }
 	}
     }
+    else
+	/* no color map exists, turn on the raw option */
+	rawbits = True;
 
     /* alloc the pixel buffer */
     buffer_size = Image_Size(in_image);
