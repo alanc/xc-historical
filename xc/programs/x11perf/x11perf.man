@@ -1,0 +1,416 @@
+.TH X11PERF 1 "16 May 1989" "X Version 11"
+.SH NAME
+x11perf - X11 server performance test program
+.SH SYNOPSIS
+.B x11perf
+[-option ...]
+.SH DESCRIPTION
+The
+.I x11perf
+program runs one or more performance tests and reports timings of the
+operations.
+.PP
+Many graphics benchmarks assume that the graphics device is used to display the
+output of a single fancy graphics application, and that the user gets his work
+done on some other device, like a terminal.  Such benchmarks usually measure
+drawing speed for lines, polygons, text, etc.
+.PP
+Since workstations are not used as standalone graphics engines, but as
+super-terminals, 
+.I x11perf 
+measures window management performance as well as
+traditional graphics performace.  
+.I x11perf 
+includes benchmarks for the time it
+takes to create and map windows (as when you start up an application); to map a
+pre-existing set of windows onto the screen (as when you deiconify an
+application or pop up a menu); and to rearrange windows (as when you slosh
+windows to and fro trying to find the one you want).
+.PP
+.I x11perf 
+also measures graphics performance for operations not normally used in
+standalone graphics displays, but are nonetheless used frequently by X
+applications.  Such operations include CopyPlane (used by the DEC PostScript
+previewer), scrolling (used in text windows), and various stipples and tiles
+(used for CAD and half-toning, respectively).
+.PP
+.I x11perf 
+DOES NOT attempt to whittle down measurements to a single ``HeXStones''
+number.  
+We consider such numbers to be uninformative at best and misleading at
+worst.  
+.I x11perf 
+should be used to analyze particular strengths and weaknesses
+of servers, and is most useful when used by a server writer who wants to
+analyze and improve a server.
+While it can be used as a benchmark, it was written and is intended as
+a performance testing tool.
+Some servers which are very fast for certain applications, can be
+very slow for others.
+No single number or small set of numbers are sufficient to
+characterize how an X implementation will perform on all applications.
+However, by knowledge of your favorite application, you
+may be able to use the numbers
+.I x11perf
+reports to predict its performance on a given X implementation.
+.PP
+For repeatable results, 
+.I x11perf 
+should be run using a local connection on a
+freshly-started server.  The default configuration runs each test 5 times, in
+order to see if each trial takes approximately the same amount of time.
+Strange glitches should be examined; if non-repeatable one might
+chalk them up to
+daemons and network traffic.  Each trial is run for 5 seconds, in order to
+reduce random time differences.  The number of objects processed per second is
+displayed to 3 significant digits, but you'll be lucky on most UNIX system if
+the numbers are actually consistent to 2 digits.
+You should make sure the cursor is NOT in the test window during runs of
+.I x11perf .
+(A prize to people who correctly explain why!!).
+.PP
+The current program is mostly the responsibility of Joel McCormack.  It is
+based upon the x11perf developed by Phil Karlton, Susan Angebranndt, and Chris
+Kent, who wanted to assess performance differences between various servers.
+Mary Walker, Todd Newman, and several tests were added 
+in order to write and tune
+the PMAX (DECStation 3100) servers.  
+For a general release to the world, 
+.I x11perf 
+was rewritten to ease making comparisons between widely varying
+machines, to cover most important X functionality (the notable exception being
+wide lines), and to exercise graphics operations in as many different
+orientations and alignments as possible.
+.PP
+Before running a test,
+.I x11perf
+determines what the round trip time to the server is.
+By default it calibrates how long each test will take so that each test
+will run approximately the same length of time on servers of quite different
+speeds.
+This can only be approximate as some tests, to be fair, must be run
+completely at least once, and so may take a long time on some
+implementations.
+.SH OPTIONS
+.I x11perf 
+is solely Xlib based, and
+accepts the options listed below:
+.TP 8
+.B \-display host:dpy
+Specifies which display to use.
+.TP 8
+.B \-sync
+Specifies the tests should be run in synchronous mode.
+Normally only useful for debugging 
+.I x11perf .
+.TP 8
+.B \-repeat \fI<n>\fP
+Repeats each test 
+.I n
+times (by default each test is run 5 times).
+.TP 8
+.B \-time \fI<s>\fP
+Specifies how long in seconds each test should be run (default 5 seconds).
+.TP 8
+.B \-all
+Runs all tests.  This may take a while.
+.TP 8
+.B \-fg \fIcolor\fP
+Specifies the foreground color to use.
+.TP 8
+.B \-bg \fIcolor\fP
+Specifies the background color to use.
+.TP 8
+.B \-dot
+Dot.
+.TP 8
+.B \-rect1
+1x1 rectangle.
+.TP 8
+.B \-rect10
+10x10 rectangle.
+.TP 8
+.B \-rect100
+100x100 rectangle.
+.TP 8
+.B \-rect500
+500x500 rectangle.
+.TP 8
+.B \-tsrect1
+1x1 transparent stippled rectangle.
+.TP 8
+.B \-tsrect10
+10x10 transparent stippled rectangle.
+.TP 8
+.B \-tsrect100
+100x100 transparent stippled rectangle.
+.TP 8
+.B \-tsrect500
+500x500 transparent stippled rectangle.
+.TP 8
+.B \-osrect
+1x1 opaque stippled rectangle.
+.TP 8
+.B \-osrect10
+10x10 opaque stippled rectangle.
+.TP 8
+.B \-osrect100
+100x100 opaque stippled rectangle.
+.TP 8
+.B \-osrect500
+500x500 opaque stippled rectangle.
+.TP 8
+.B \-tilerect1
+1x1 4x4 tiled rectangle.
+.TP 8
+.B \-tilerect10
+10x10 4x4 tiled rectangle.
+.TP 8
+.B \-tilerect100
+100x100 4x4 tiled rectangle.
+.TP 8
+.B \-tilerect500
+500x500 4x4 tiled rectangle.
+.TP 8
+.B \-seg1
+1-pixel line segment.
+.TP 8
+.B \-seg10
+10-pixel line segment.
+.TP 8
+.B \-seg100
+100-pixel line segment.
+.TP 8
+.B \-seg500
+500-pixel line segment.
+.TP 8
+.B \-seg100c1
+100-pixel line segment (1 clip rectangle).
+.TP 8
+.B \-seg100c2
+100-pixel line segment (2 clip rectangles).
+.TP 8
+.B \-seg100c3
+100-pixel line segment (3 clip rectangles).
+.TP 8
+.B \-dseg100
+100-pixel dashed segment.
+.TP 8
+.B \-line1
+1-pixel line.
+.TP 8
+.B \-line10
+10-pixel line.
+.TP 8
+.B \-line100
+100-pixel line.
+.TP 8
+.B \-line500
+500-pixel line.
+.TP 8
+.B \-dline100
+100-pixel dashed line.
+.TP 8
+.B \-circle1
+1-pixel diameter circle.
+.TP 8
+.B \-circle10
+10-pixel diameter circle.
+.TP 8
+.B \-circle100
+100-pixel diameter circle.
+.TP 8
+.B \-circle500
+500-pixel diameter circle.
+.TP 8
+.B \-fcircle1
+1-pixel diameter solid circle.
+.TP 8
+.B \-fcircle10
+10-pixel diameter solid circle.
+.TP 8
+.B \-fcircle100
+100-pixel diameter solid circle.
+.TP 8
+.B \-fcircle500
+500-pixel diameter solid circle.
+.TP 8
+.B \-ellipse10
+10-pixel diameter ellipse.
+.TP 8
+.B \-ellipse100
+100-pixel diameter ellipse.
+.TP 8
+.B \-ellipse500
+500-pixel diameter ellipse.
+.TP 8
+.B \-fellipse10
+10-pixel diameter filled ellipse.
+.TP 8
+.B \-fellipse100
+100-pixel diameter filled ellipse.
+.TP 8
+.B \-fellipse500
+500-pixel diameter filled ellipse.
+.TP 8
+.B \-triangle1
+Fill 1-pixel/side triangle.
+.TP 8
+.B \-triangle10
+Fill 10-pixel/side triangle.
+.TP 8
+.B \-triangle100
+Fill 100-pixel/side triangle.
+.TP 8
+.B \-trap10
+Fill 10x10 trapezoid.
+.TP 8
+.B \-trap100
+Fill 100x100 trapezoid.
+.TP 8
+.B \-complex10
+Fill 10-pixel/side complex polygon.
+.TP 8
+.B \-complex100
+Fill 100-pixel/side complex polygons.
+.TP 8
+.B \-ftext
+Character in 80-char line (6x13).
+.TP 8
+.B \-tr10text
+Character in 80-char line (TR 10).
+.TP 8
+.B \-tr24text
+Character in 30-char line (TR 24).
+.TP 8
+.B \-polytext
+Character in 20/40/20 line (6x13, TR 10).
+.TP 8
+.B \-fitext
+Character in 80-char image line (6x13).
+.TP 8
+.B \-tr10itext
+Character in 80-char image line (TR 10).
+.TP 8
+.B \-tr24itext
+Character in 30-char image line (TR 24).
+.TP 8
+.B \-scroll10
+Scroll 10x10 pixels.
+.TP 8
+.B \-scroll100
+Scroll 100x100 pixels.
+.TP 8
+.B \-scroll500
+Scroll 500x500 pixels.
+.TP 8
+.B \-copyarea10
+Copy 10x10 square.
+.TP 8
+.B \-copyarea100
+Copy 100x100 square.
+.TP 8
+.B \-copyarea500
+Copy 500x500 square.
+.TP 8
+.B \-copypix10
+Copy 10x10 square from pixmap.
+.TP 8
+.B \-copypix100
+Copy 100x100 square from pixmap.
+.TP 8
+.B \-copypix500
+Copy 500x500 square from pixmap.
+.TP 8
+.B \-copyplane10
+Copy 10x10 1-bit deep plane.
+.TP 8
+.B \-copyplane100
+Copy 100x100 1-bit deep plane.
+.TP 8
+.B \-copyplane500
+Copy 500x500 1-bit deep plane.
+.TP 8
+.B \-putimage10
+PutImage 10x10 square.
+.TP 8
+.B \-putimage100
+PutImage 100x100 square.
+.TP 8
+.B \-putimage500
+PutImage 500x500 square.
+.TP 8
+.B \-getimage10
+GetImage 10x10 square.
+.TP 8
+.B \-getimage100
+GetImage 100x100 square.
+.TP 8
+.B \-getimage500
+GetImage 500x500 square.
+.TP 8
+.B \-noop
+X protocol NoOperation.
+.TP 8
+.B \-atom
+GetAtomName.
+.TP 8
+.B \-prop
+GetProperty.
+.TP 8
+.B \-gc
+Graphics context validation.
+.TP 8
+.B \-create
+Create and map subwindows.
+.TP 8
+.B \-ucreate
+Create unmapped window.
+.TP 8
+.B \-map
+Map window via parent.
+.TP 8
+.B \-unmap
+Unmap window via parent.
+.TP 8
+.B \-destroy
+Destroy window via parent.
+.TP 8
+.B \-popup
+Hide/expose window via popup.
+.TP 8
+.B \-move
+Move window.
+.TP 8
+.B \-umove
+Moved unmapped window.
+.TP 8
+.B \-resize
+Resize window.
+.TP 8
+.B \-uresize
+Resize unmapped window.
+.TP 8
+.B \-circulate
+Circulate window.
+.TP 8
+.B \-ucirculate
+Circulate Unmapped window.
+.SH X DEFAULTS
+There are no X defaults used by this program.
+.SH "SEE ALSO"
+X(1), xbench(1)
+.SH BUGS
+We hope not.
+.SH COPYRIGHT
+Copyright 1988, Digital Equipment Corporation.
+.br
+See \fIX(1)\fP for a full statement of rights and permissions.
+.SH AUTHORS
+Joel McCormack
+.br
+Phil Karlton
+.br
+Susan Angebranndt
+.br
+Chris Kent
