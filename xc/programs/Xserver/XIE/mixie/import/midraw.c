@@ -1,4 +1,4 @@
-/* $XConsortium: midraw.c,v 1.2 93/10/26 13:22:21 rws Exp $ */
+/* $XConsortium: midraw.c,v 1.3 93/10/31 09:45:07 dpw Exp $ */
 /**** module midraw.c ****/
 /******************************************************************************
 				NOTICE
@@ -230,7 +230,7 @@ static int ActivateIDrawAlign(flo,ped,pet)
   miDrawPtr		  ddx = (miDrawPtr) pet->private;
   bandPtr		  bnd = &pet->emitter[0];
   DrawablePtr	        pDraw = ValDrawable(flo,ped,raw->drawable);
-  char			 *dst = GetCurrentDst(char,flo,pet,bnd);
+  char			 *dst = GetCurrentDst(char *,flo,pet,bnd);
   CARD16		width = bnd->format->width;
 
   if(!pDraw || !dst) return FALSE;
@@ -251,7 +251,7 @@ static int ActivateIDrawAlign(flo,ped,pet)
     if(ddx->adjust)
       (*ddx->adjust)(dst, width);
 
-  } while(dst = GetNextDst(char,flo,pet,bnd,FLUSH));
+  } while(dst = GetNextDst(char *,flo,pet,bnd,FLUSH));
 
   return TRUE;
 }                               /* end ActivateIDrawAlign */
@@ -273,7 +273,7 @@ static int ActivateIDrawStrip(flo,ped,pet)
   if (!(pDraw = ValDrawable(flo,ped,raw->drawable)))
     return FALSE;
 
-  if (!(dst = GetCurrentDst(char,flo,pet,bnd)))
+  if (!(dst = GetCurrentDst(char *,flo,pet,bnd)))
     return FALSE;
 
   if(!XIEGetImage( pDraw,				/* drawable	*/
@@ -308,7 +308,7 @@ static int ActivateIDrawP(flo,ped,pet)
   if (!(pDraw = ValDrawable(flo,ped,raw->drawable)))
     return FALSE;
 
-  if(!(dst = GetCurrentDst(char,flo,pet,bnd)))
+  if(!(dst = GetCurrentDst(char *,flo,pet,bnd)))
     return FALSE;
 
   if(!XIEGetImage( pDraw,				/* drawable	*/
