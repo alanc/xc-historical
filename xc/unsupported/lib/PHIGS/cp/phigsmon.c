@@ -1,4 +1,4 @@
-/* $XConsortium: phigsmon.c,v 5.4 91/03/29 15:35:20 rws Exp $ */
+/* $XConsortium: phigsmon.c,v 5.5 91/04/04 15:50:40 gildea Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -170,7 +170,6 @@ set_up( s, es)
 {
     register Cp_handle	cph = NULL, tcph;
     Cpx_css_srvr	*css_srvr;
-    int			fdflags;
 
     /* Don't bother cleaning up on failure, the process will just exit. */
     if ( tcph = (Cp_handle)calloc( 1, sizeof(Cp_struct))) {
@@ -209,17 +208,18 @@ set_up( s, es)
 	    tcph->data.monitor.cmd_timeout.it_interval.tv_usec =
 		CPR_CMD_TIMEOUT;
 
-#if defined(hpux) && defined(FIOSNBIO)
-	    fdflags = 1;
-	    ioctl (s, FIOSNBIO, &fdflags);
+	    /* ultrix reads hang on Unix sockets, hpux reads fail */
+#if defined(O_NONBLOCK) && (!defined(ultrix) && !defined(hpux))
+	    (void)fcntl(s, F_SETFL, O_NONBLOCK);
 #else
-	    fdflags = fcntl( s, F_GETFL, 0);
-#ifdef O_NONBLOCK
-	    fdflags |= O_NONBLOCK;
+#ifdef FIOSNBIO
+	    {
+		int fdflags = 1;
+		ioctl (s, FIOSNBIO, &fdflags);
+	    }
 #else
-	    fdflags |= FNDELAY;
+	    (void)fcntl(s, F_SETFL, FNDELAY);
 #endif
-	    fcntl( s, F_SETFL, fdflags);
 #endif
 	    if ( getenv( "PEX_SI_API_SYNC" ) )
 		tcph->flags.err_sync = 1;
@@ -354,6 +354,12 @@ phg_check_and_dispatch_event( cph )
 
 extern XtAppContext	phg_cpm_init_toolkit();
 
+#ifdef DEBUG
+#define DEBUG_PHIGSMON_SOCKET_COMMAND "/tmp/phigs_command"
+#define DEBUG_PHIGSMON_SOCKET_ERROR "/tmp/phigs_error"
+#include <sys/un.h>
+#endif
+
 main(argc, argv)
     int		argc;
     char	*argv[];
@@ -363,7 +369,55 @@ main(argc, argv)
     int			(*rcv_cmd)();
     XtAppContext	app_con;
     
+
 #ifdef DEBUG
+#define Make(rendezvous,addr) {\
+	struct sockaddr_un	un_addr; \
+ \
+	unlink (addr); \
+	strcpy (un_addr.sun_path, addr); \
+	rendezvous = socket (AF_UNIX, SOCK_STREAM, 0); \
+	if (bind (rendezvous, &un_addr, sizeof (short) + strlen (addr)) == -1) \
+	{ \
+	    perror ("phigs debug bind"); \
+	    abort (); \
+	} \
+	listen (rendezvous, 5); \
+}
+
+#define Get(fd,rendezvous) { \
+	struct sockaddr_un	un_addr; \
+	int			addr_len; \
+	\
+	addr_len = sizeof (un_addr); \
+	fd = accept (rendezvous, &un_addr, &addr_len); \
+	if (fd == -1) {\
+	    perror ("phigs debug accept"); \
+	    abort (); \
+	}\
+}
+    {
+	int	r_command, s_command;
+	int	r_error, s_error;
+	int	pid;
+
+	Make (r_command, DEBUG_PHIGSMON_SOCKET_COMMAND);
+	Make (r_error, DEBUG_PHIGSMON_SOCKET_ERROR);
+	Get (s_command, r_command);
+	Get (s_error, r_error);
+	pid = getpid ();
+	write (s_command, &pid, sizeof (pid));
+	if (dup2 (s_command, 0) < 0) {
+	    perror ("phigs debug dup command");
+	    abort ();
+	}
+	if (dup2 (s_error, 1) < 0) {
+	    perror ("phigs debug dup error");
+	    abort ();
+	}
+    }
+#endif
+#ifdef SUN_DEBUG
     {
 	char	*trace_val;
 

@@ -1,4 +1,4 @@
-/* $XConsortium: cp_ccom.c,v 5.10 91/04/14 12:03:54 rws Exp $ */
+/* $XConsortium: cp_ccom.c,v 5.11 91/04/17 10:10:06 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1285,6 +1285,12 @@ dummy_attach( cph, fd )
 #endif /* ! PEX_API_SOCKET_IPC */
 
 
+#ifdef DEBUG
+#define DEBUG_PHIGSMON_SOCKET_COMMAND "/tmp/phigs_command"
+#define DEBUG_PHIGSMON_SOCKET_ERROR "/tmp/phigs_error"
+#include <sys/un.h>
+#endif
+
 static int
 fork_monitor( cph, argv )
     Cp_handle	cph;
@@ -1301,6 +1307,26 @@ fork_monitor( cph, argv )
     int			(*attach_buf)() = dummy_attach;
 #endif
 
+#ifdef DEBUG
+#define Connect(fd,addr) {\
+    struct sockaddr_un	un_addr; \
+\
+    strcpy (un_addr.sun_path, addr);\
+    fd = socket (AF_UNIX, SOCK_STREAM, 0);\
+    if (connect (fd, &un_addr, sizeof (short) + strlen (addr)))\
+    {\
+	perror ("phigsmon connect");\
+	abort ();\
+    }\
+}
+    Connect (cph->data.client.sfd, DEBUG_PHIGSMON_SOCKET_COMMAND);
+    Connect (cph->erh->data.client.sfd, DEBUG_PHIGSMON_SOCKET_ERROR);
+    if (read (cph->data.client.sfd, &pid, sizeof (pid)) != sizeof (pid))
+    {
+	perror ("phigsmon pid talk");
+	abort ();
+    }
+#else
     if ( !(monitor = phg_path( PHG_SERVER_NAME, cph->erh, 1))) {
 	ERR_REPORT( cph->erh, ERRN51);
 
@@ -1345,41 +1371,42 @@ fork_monitor( cph, argv )
 	     * ensures that errors buffered in the child will get flushed
 	     * when ERR_REPORT() is called below.
 	     */
-	    cph->erh->data.client.sfd = spe[0];
-	    {   int	fdflags;
-#if defined(hpux) && defined(FIOSNBIO)
-		fdflags = 1;
-		ioctl (spe[0], FIOSNBIO, &fdflags);
-#else
-		fdflags = fcntl( spe[0], F_GETFL, 0);
-#ifdef O_NONBLOCK
-		fdflags |= O_NONBLOCK;
-#else
-		fdflags |= FNDELAY;
-#endif
-		(void)fcntl( spe[0], F_SETFL, fdflags);
-#endif
-	    }
 	    phg_register_signal_func((unsigned long)pid, sig_wait, SIGCHLD);
 	    (void)close( sp[1]); (void)close( spe[1]);
-
-	    if (   handshake_child( cph, sp[0], pid )
-		    && (*attach_buf)( cph, sp[0] ) ) {
-		cph->data.client.sfd = sp[0];
-		cph->data.client.child_pid = pid;
-		status = 1;
-	    } else {
-		/* The following message was once used to help debug failures
-		 * in attaching shared memory IPC (versus other errors
-		 * causing ERRN1 to be raised).
-		 * perror(
-	"PARENT: (handshake_child && attach_shared_mem) failed, so ERR -1.");
-		 */
-		ERR_REPORT( cph->erh, ERRN1);
-		(void)close( sp[0]); (void)close( spe[0]);
-		cph->erh->data.client.sfd = -1; 
-	    }
 	}
+	cph->erh->data.client.sfd = spe[0];
+	cph->data.client.sfd = sp[0];
+    }
+#endif
+    {
+	/* ultrix reads hang on Unix sockets, hpux reads fail */
+#if defined(O_NONBLOCK) && (!defined(ultrix) && !defined(hpux))
+	(void)fcntl(cph->erh->data.client.sfd, F_SETFL, O_NONBLOCK);
+#else
+#ifdef FIOSNBIO
+	int	fdflags;
+	fdflags = 1;
+	(void)ioctl (cph->erh->data.client.sfd, FIOSNBIO, &fdflags);
+#else
+	(void)fcntl(cph->erh->data.client.sfd, F_SETFL, FNDELAY);
+#endif
+#endif
+    }
+    if (   handshake_child( cph, cph->data.client.sfd, pid )
+	    && (*attach_buf)( cph, cph->data.client.sfd ) ) {
+	cph->data.client.child_pid = pid;
+	status = 1;
+    } else {
+	/* The following message was once used to help debug failures
+	 * in attaching shared memory IPC (versus other errors
+	 * causing ERRN1 to be raised).
+	 * perror(
+"PARENT: (handshake_child && attach_shared_mem) failed, so ERR -1.");
+	 */
+	ERR_REPORT( cph->erh, ERRN1);
+	(void)close( cph->data.client.sfd); (void)close( cph->erh->data.client.sfd);
+	cph->erh->data.client.sfd = -1; 
+	cph->data.client.sfd = -1;
     }
 
     return status;
