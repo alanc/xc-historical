@@ -2722,8 +2722,8 @@ phg_utx_el_data_from_pex( oc, buf, ed )
 		RHEADER(QuadrilateralMesh)->vertexAttribs);
 	    ed->qmd3.colr_model = PEX_CONV_PEX_COLOUR_TYPE(
 		RHEADER(QuadrilateralMesh)->colourType);
-	    ed->qmd3.dim.size_x = RHEADER(QuadrilateralMesh)->nPts;
-	    ed->qmd3.dim.size_y = RHEADER(QuadrilateralMesh)->mPts;
+	    ed->qmd3.dim.size_x = RHEADER(QuadrilateralMesh)->mPts;
+	    ed->qmd3.dim.size_y = RHEADER(QuadrilateralMesh)->nPts;
 
 	    pexptr = (char *)(RHEADER(QuadrilateralMesh) + 1);
 	    if ( ed->qmd3.fflag != PFACET_NONE ) {
@@ -3778,8 +3778,8 @@ phg_utx_build_pex_oc( erh, el_type, ed, scratch, pex_oc )
 		= PEX_CONV_FROM_VertexFlag( ed->quad_mesh3.vflag );
 	    HEADER(QuadrilateralMesh)->facetAttribs
 		= PEX_CONV_FROM_FacetFlag( ed->quad_mesh3.fflag );
-	    HEADER(QuadrilateralMesh)->nPts = ed->quad_mesh3.dim.size_x;
-	    HEADER(QuadrilateralMesh)->mPts = ed->quad_mesh3.dim.size_y;
+	    HEADER(QuadrilateralMesh)->mPts = ed->quad_mesh3.dim.size_x;
+	    HEADER(QuadrilateralMesh)->nPts = ed->quad_mesh3.dim.size_y;
 	    if ( ed->quad_mesh3.fflag != PFACET_NONE ) {
 		buf += fdata_to_pex( ed->quad_mesh3.fflag,
 		    ed->quad_mesh3.colour_model, &ed->quad_mesh3.fdata, buf );
