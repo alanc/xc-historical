@@ -16,7 +16,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbfillrct.c,v 5.10 90/01/31 12:31:20 keith Exp $ */
+/* $XConsortium: cfbfillrct.c,v 5.11 90/03/01 16:36:02 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -36,6 +36,62 @@ extern void cfb8FillRectOpaqueStippled32();
 extern void cfb8FillRectTransparentStippled32();
 extern void cfb8FillRectStippledUnnatural();
 #endif
+
+
+#define CaseRRop(first,middle,last) { \
+	while (h--) { \
+	    pdst = pdstRect; \
+	    first \
+	    m = nmiddle; \
+	    while (m--) { \
+		middle \
+	    } \
+	    last \
+	    pdstRect += widthDst; \
+	} \
+}
+
+#ifdef FAST_CONSTANT_OFFSET_MODE
+#define CaseRRopGeneral(first,last)  { int part = nmiddle & 3; \
+	while (h--) { \
+	    pdst = pdstRect; \
+	    first \
+	    m = nmiddle; \
+	    pdst += part; \
+	    switch (part) { \
+	    case 3: \
+		pdst[-3] = DoRRop (pdst[-3], and, xor); \
+	    case 2: \
+		pdst[-2] = DoRRop (pdst[-2], and, xor); \
+	    case 1: \
+		pdst[-1] = DoRRop (pdst[-1], and, xor); \
+	    } \
+	    while ((m -= 4) >= 0) { \
+		pdst[0] = DoRRop (pdst[0], and, xor); \
+		pdst[1] = DoRRop (pdst[1], and, xor); \
+		pdst[2] = DoRRop (pdst[2], and, xor); \
+		pdst[3] = DoRRop (pdst[3], and, xor); \
+		pdst += 4; \
+	    } \
+	    last \
+	    pdstRect += widthDst; \
+	} \
+}
+#else
+#define CaseRRopGeneral(first,last) \
+    CaseRRop(first,*pdst = DoRRop (*pdst, and, xor); pdst++;, last)
+#endif
+
+#define SwitchRRop(rrop,first,last) { \
+    switch (rrop) { \
+    case GXcopy: \
+	CaseRRop(first,*pdst++ = xor;,last) break; \
+    case GXxor: \
+	CaseRRop(first,*pdst++ ^= xor;, last) break; \
+    default: \
+	CaseRRopGeneral(first,last) break; \
+    } \
+}
 
 void
 cfbFillRectSolid (pDrawable, pGC, nBox, pBox)
@@ -135,94 +191,21 @@ cfbFillRectSolid (pDrawable, pGC, nBox, pBox)
 
 		land = and | ~leftMask;
 		lxor = xor & leftMask;
+
 		if (rightMask)	/* left mask and right mask */
 		{
 		    unsigned long   rand, rxor;
 
 		    rand = and | ~rightMask;
 		    rxor = xor & rightMask;
-		    switch (rrop) {
-		    case GXcopy:
-			while (h--) {
-			    pdst = pdstRect;
-			    *pdst = DoRRop (*pdst, land, lxor);
-			    pdst++;
-			    m = nmiddle;
-			    while (m--)
-				*pdst++ = xor;
-			    *pdst = DoRRop (*pdst, rand, rxor);
-			    pdstRect += widthDst;
-			}
-			break;
-		    case GXxor:
-			while (h--) {
-			    pdst = pdstRect;
-			    *pdst = DoRRop (*pdst, land, lxor);
-			    pdst++;
-			    m = nmiddle;
-			    while (m--)
-				*pdst++ ^= xor;
-			    *pdst = DoRRop (*pdst, rand, rxor);
-			    pdstRect += widthDst;
-			}
-			break;
-		    default:
-			while (h--) {
-			    pdst = pdstRect;
-			    *pdst = DoRRop (*pdst, land, lxor);
-			    pdst++;
-			    m = nmiddle;
-			    while (m--)
-			    {
-				*pdst = DoRRop (*pdst, and, xor);
-				pdst++;
-			    }
-			    *pdst = DoRRop (*pdst, rand, rxor);
-			    pdstRect += widthDst;
-			}
-			break;
-		    }
+		    SwitchRRop(rrop,
+			    *pdst = DoRRop (*pdst, land, lxor); pdst++;,
+			    *pdst = DoRRop (*pdst, rand, rxor);)
 		}
 		else	/* left mask and no right mask */
 		{
-		    switch (rrop) {
-		    case GXcopy:
-			while (h--) {
-			    pdst = pdstRect;
-			    *pdst = DoRRop (*pdst, land, lxor);
-			    pdst++;
-			    m = nmiddle;
-			    while (m--)
-				*pdst++ = xor;
-			    pdstRect += widthDst;
-			}
-			break;
-		    case GXxor:
-			while (h--) {
-			    pdst = pdstRect;
-			    *pdst = DoRRop (*pdst, land, lxor);
-			    pdst++;
-			    m = nmiddle;
-			    while (m--)
-				*pdst++ ^= xor;
-			    pdstRect += widthDst;
-			}
-			break;
-		    default:
-			while (h--) {
-			    pdst = pdstRect;
-			    *pdst = DoRRop (*pdst, land, lxor);
-			    pdst++;
-			    m = nmiddle;
-			    while (m--)
-			    {
-				*pdst = DoRRop (*pdst, and, xor);
-				pdst++;
-			    }
-			    pdstRect += widthDst;
-			}
-			break;
-		    }
+		    SwitchRRop(rrop,
+			    *pdst = DoRRop (*pdst, land, lxor); pdst++;,)
 		}
 	    }
 	    else
@@ -233,76 +216,12 @@ cfbFillRectSolid (pDrawable, pGC, nBox, pBox)
 
 		    rand = and | ~rightMask;
 		    rxor = xor & rightMask;
-		    switch (rrop) {
-		    case GXcopy:
-			while (h--) {
-			    pdst = pdstRect;
-			    m = nmiddle;
-			    while (m--)
-				*pdst++ = xor;
-			    *pdst = DoRRop (*pdst, rand, rxor);
-			    pdstRect += widthDst;
-			}
-			break;
-		    case GXxor:
-			while (h--) {
-			    pdst = pdstRect;
-			    m = nmiddle;
-			    while (m--)
-				*pdst++ ^= xor;
-			    *pdst = DoRRop (*pdst, rand, rxor);
-			    pdstRect += widthDst;
-			}
-			break;
-		    default:
-			while (h--) {
-			    pdst = pdstRect;
-			    m = nmiddle;
-			    while (m--)
-			    {
-				*pdst = DoRRop (*pdst, and, xor);
-				pdst++;
-			    }
-			    *pdst = DoRRop (*pdst, rand, rxor);
-			    pdstRect += widthDst;
-			}
-			break;
-		    }
+		    SwitchRRop(rrop, ,
+			    *pdst = DoRRop (*pdst, rand, rxor);)
 		}
 		else	/* no left mask and no right mask */
 		{
-		    switch (rrop) {
-		    case GXcopy:
-			while (h--) {
-			    pdst = pdstRect;
-			    m = nmiddle;
-			    while (m--)
-				*pdst++ = xor;
-			    pdstRect += widthDst;
-			}
-			break;
-		    case GXxor:
-			while (h--) {
-			    pdst = pdstRect;
-			    m = nmiddle;
-			    while (m--)
-				*pdst++ ^= xor;
-			    pdstRect += widthDst;
-			}
-			break;
-		    default:
-			while (h--) {
-			    pdst = pdstRect;
-			    m = nmiddle;
-			    while (m--)
-			    {
-				*pdst = DoRRop (*pdst, and, xor);
-				pdst++;
-			    }
-			    pdstRect += widthDst;
-			}
-			break;
-		    }
+		    SwitchRRop(rrop, , )
 		}
 	    }
 	}
