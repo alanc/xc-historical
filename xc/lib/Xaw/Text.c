@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Text.c,v 1.31 88/02/14 14:16:04 rws Exp $";
+static char rcsid[] = "$Header: Text.c,v 1.32 88/02/14 19:15:55 swick Exp $";
 #endif
 
 /*
@@ -2399,6 +2399,7 @@ static void InsertFile(w, event)
 	{XtNiconName, (XtArgVal)DIALOG_LABEL},
 	{XtNgeometry, NULL},
 	{XtNallowShellResize, True},
+	{XtNsaveUnder, True},
     };
     Arg args[2];
     static XtCallbackRec callbacks[] = { {NULL, NULL}, {NULL, NULL} };
