@@ -1,5 +1,5 @@
 /*
- * $XConsortium: choose.c,v 1.8 91/07/18 19:17:28 rws Exp $
+ * $XConsortium: choose.c,v 1.9 91/08/25 10:48:43 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -68,6 +68,25 @@ FormatARRAY8 (a, buf, buflen)
     int		buflen;
 {
     return FormatBytes (a->data, a->length, buf, buflen);
+}
+
+/* Converts an Internet address in ARRAY8 format to a string in
+   familiar dotted address notation, e.g., "18.24.0.11"
+   Returns 1 if successful, 0 if not.
+   */
+static int
+ARRAY8ToDottedDecimal (a, buf, buflen)
+    ARRAY8Ptr	a;
+    char	*buf;
+    int		buflen;
+{
+    int i;
+
+    if (a->length != 4  ||  buflen < 20)
+	return 0;
+    sprintf(buf, "%d.%d.%d.%d",
+	    a->data[0], a->data[1], a->data[2], a->data[3]);
+    return 1;
 }
 
 typedef struct _IndirectUsers {
@@ -321,7 +340,7 @@ AddChooserHost (connectionType, addr, closure)
     {
 	*argp = parseArgs (*argp, "BROADCAST");
     }
-    else if (FormatARRAY8 (addr, hostbuf, sizeof (hostbuf)))
+    else if (ARRAY8ToDottedDecimal (addr, hostbuf, sizeof (hostbuf)))
     {
 	*argp = parseArgs (*argp, hostbuf);
     }
