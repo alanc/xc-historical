@@ -17,7 +17,7 @@ The following changes have been made to this directory since R2:
 	which required minor DIX changes.
      o  GetImage checks pWindow->viewable
      o  SelectionClear now sent to selection owner, not window creator
-     o  new utility funcition in dixutils.c CopyISOLatin1Lowered to
+     o  new utility function in dixutils.c CopyISOLatin1Lowered to
 	convert mixed case Latin1 strings to lower case.  Used by
 	the font routines and by the color-name lookup routines.
      o  bug with keysym map width fixed
