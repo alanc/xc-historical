@@ -1,0 +1,62 @@
+XCOMM $XConsortium: Imakefile,v 1.2 93/07/19 13:32:46 rws Exp $
+XCOMM build device dependent machine independent fax processing element objects
+#include <Server.tmpl>
+
+
+       SRCS =  jcdeflts.c \
+               jcexpand.c \
+               jchuff.c \
+	       jcmcu.c \
+	       jcsample.c \
+	       jcxie.c \
+	       jcxief.c \
+	       jdbuffer.c \
+	       jddeflts.c \
+	       jdhuff.c \
+	       jdlossy.c \
+	       jdmcu.c \
+	       jdsample.c \
+	       jdxie.c \
+	       jdxief.c \
+	       jelossy.c \
+	       jfwddct.c \
+	       jmemmgr.c \
+	       jmemsys.c \
+	       jrdjfif.c \
+	       jrevdct.c \
+	       jutils.c \
+	       jwrjfif.c 
+
+
+
+        OBJS = jcdeflts.o \
+               jcexpand.o \
+               jchuff.o \
+	       jcmcu.o \
+	       jcsample.o \
+	       jcxie.o \
+	       jcxief.o \
+	       jdbuffer.o \
+	       jddeflts.o \
+	       jdhuff.o \
+	       jdlossy.o \
+	       jdmcu.o \
+	       jdsample.o \
+	       jdxie.o \
+	       jdxief.o \
+	       jelossy.o \
+	       jfwddct.o \
+	       jmemmgr.o \
+	       jmemsys.o \
+	       jrdjfif.o \
+	       jrevdct.o \
+	       jutils.o \
+	       jwrjfif.o 
+
+   INCLUDES = -I. -I../include -I../../../include -I../../../../../include -I../../../../../../include -I../../../../../../server/include -I$(INCLUDESRC)
+
+SubdirLibraryRule($(OBJS))
+NormalLibraryObjectRule()
+NormalLintTarget($(SRCS))
+
+DependTarget()
