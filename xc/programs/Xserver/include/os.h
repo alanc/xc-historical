@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: os.h,v 1.40 91/02/14 19:36:01 keith Exp $ */
+/* $XConsortium: os.h,v 1.41 91/04/02 09:12:59 rws Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -89,6 +89,16 @@ char *alloca();
 #define DEALLOCATE_LOCAL(ptr)  /* as nothing */
 #endif /* who does alloca */
 #endif /* __GNUC__ */
+
+/*
+ * Warning: Prior to the RISCompilers 2.10 release, the MIPS alloca was
+ * unsuitable for the server.
+ */
+#if Mips
+#include <alloca.h>
+#define ALLOCATE_LOCAL(size) alloca((unsigned int)(size))
+#define DEALLOCATE_LOCAL(ptr)  /* as nothing */
+#endif
 
 #endif /* NO_ALLOCA */
 
