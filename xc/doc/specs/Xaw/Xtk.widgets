@@ -72,13 +72,13 @@ A sample interface (widget set) for programming
 .LP
 While the majority of the \*(xI functions are intended 
 for the widget programmer,
-a subset of the \*xI functions are to be used by application programmers
+a subset of the \*(xI functions are to be used by application programmers
 (see  \fI\*(xT\fP).
 The architectural model lets the widget programmer design new widgets
 by using the \*(xI and by combining other widgets.
 The application interface layers built on top of the \*(tk include a
 coordinated set of widgets and composition policies.
-Some of these widgets and policies are application domain-specific, 
+Some of these widgets and policies are specific to an application domain,
 and others are common across a number of application domains.
 .LP
 The \*(tk also can implement one or more application interface layer to:
@@ -122,7 +122,7 @@ A widget that is contained in another widget (parent).
 \fBClass\fP
 .IN "Class" "" "@DEF@"
 .IP
-The general group that a specific object belongs to.
+The general group to which a specific object belongs.
 .LP
 \fBClient\fP
 .IN "Client" "" "@DEF@"
@@ -161,7 +161,7 @@ some of the object's public functions are called directly by the application,
 while others are called indirectly when the application calls the common
 \*(xI functions.
 In general, if a function is common to all widgets,
-an application uses a single Intrinsic function to invoke the function for all
+an application uses a single \*(xI function to invoke the function for all
 types of widgets.
 If a function is unique to a single widget type,
 the widget exports the function as another ``Xt'' function.
@@ -180,7 +180,7 @@ by an application, or by user defaults.
 .PN Superclass
 .IP
 A larger class of which a specific class is a member.
-All members of a class also are members of the superclass.
+All members of a class are also members of the superclass.
 .LP
 \fBUser\fP
 .IN "User" "" "@DEF@"
@@ -196,8 +196,8 @@ widget).
 \fBWidget class\fP
 .IN "Widget class" "" "@DEF@"
 .IP
-The general group that a specific widget belongs to,
-which is otherwise know as the type of the widget.
+The general group to which a specific widget belongs,
+otherwise known as the type of the widget.
 .LP
 \fBWidget programmer\fP
 .IN "Widget programmer" "" "@DEF@"
@@ -234,7 +234,7 @@ Widget semantics are clearly separated from widget layout
 geometry.
 Widgets are concerned with implementing specific user-interface
 semantics.
-They have little say over issues such as their size or
+They have little control over issues such as their size or
 placement relative to other widget peers.
 Mechanisms are provided for associating geometric managers with widgets
 and for widgets to make suggestions about their own geometry.
@@ -247,7 +247,7 @@ Design Principles and Philosophy
 .XE
 The \*(tk follows two design principles throughout,
 which cover languages and language bindings as well as widget IDs.
-.SH
+.NH 3
 Languages and Language Bindings
 .LP
 The \*(tk facilitates access from objective languages.
@@ -283,28 +283,26 @@ The ownership of dynamically allocated storage is determined on a
 case-by-case basis.
 The application is also permitted to replace the standard
 memory allocation and freeing routines used by the library.
-.SH
+.NH 3
 Widget IDs
 .LP
-All references to widgets are made using a unique identifier
-that is known as the widget ID.
+All references to widgets use a unique identifier that is known as the widget ID.
 The widget ID is returned to the client by the
 .PN XtCreateWidget
 function.
 From an application programmer's perspective,
 a widget ID is an opaque data type;
-no particular interpretation may be assigned to it.
+no particular interpretation can be assigned to it.
 Given a widget ID, 
-the corresponding X window ID, the
+you can retrieve the corresponding X window ID, the
 .PN Display
 and 
 .PN Screen
-structures, and other information are readily available 
-by using \*(xI functions.
+structures, and other information by using \*(xI functions.
 .LP
 From a widget programmer's perspective,
 the widget ID actually is a pointer to a data structure 
-that is known as the widget instance record.
+known as the widget instance record.
 Several parts of the data structure are common to all widget types,
 while other parts are unique to a particular widget type.
 The widget's private data that is associated with a particular widget instance
@@ -339,8 +337,7 @@ In addition, they serve as examples or a starting point
 for those widget programmers who, using the \*(xI mechanisms,
 want to implement alternative application programming interfaces.
 .LP
-The remainder of this chapter discusses the common features of 
-the \*(tk widgets.
+This chapter discusses the common features of the \*(tk widgets.
 .NH 2
 Initializing the Toolkit
 .LP
@@ -349,7 +346,7 @@ Initializing the Toolkit
 .XE
 You must invoke the toolkit initialization function 
 .PN XtInitialize
-prior to invoking any other toolkit routines.
+before invoking any other toolkit routines.
 .PN XtInitialize
 opens the X server connection,
 parses standard parts of the command line,
@@ -375,7 +372,7 @@ Widget XtInitialize(\fIshell_name\fP, \fIapplication_class\fP, \fIoptions\fP, \
 .IP \fIshell_name\fP 1i
 Specifies the name of the application shell widget instance,
 which usually is something generic like ``main''.
-.IP \fIapplication_class\fP 1i
+.IP \fIapplication_class\ \ \ \fP 1i
 Specifies the class name of this application,
 which usually is the generic name for all instances of this application.
 By convention, the class name is formed by reversing the case of the
@@ -417,7 +414,7 @@ The first two steps can be combined by using
 In addition, 
 .PN XtRealizeWidget
 is automatically called when the child becomes managed if the parent
-already is realized.
+is already realized.
 .LP
 To allocate and initialize a widget, use
 .PN XtCreateWidget .
@@ -463,7 +460,7 @@ routine is invoked to inform the user of the error.
 .LP
 For further information,
 see the \fI\*(xI\fP.
-.SH
+.NH 2
 Common Arguments in the Widget Argument List
 .LP
 Although a widget can have unique arguments that it understands,
@@ -505,7 +502,7 @@ T}	T{
 Callback for 
 .PN XtDestroyWidget
 T}
-XtNheight	int	widget-dependent	Height of the widget
+XtNheight	int	Widget dependent	Height of the widget
 T{
 XtNmappedWhenManaged
 T}	T{
@@ -518,8 +515,8 @@ Whether
 is automatic
 T}
 XtNsensitive	Boolean	True	Whether widget should receive input
-XtNtranslations	TranslationTable	None	event-to-action translations
-XtNwidth	int	widget-dependent	Width of the widget
+XtNtranslations	TranslationTable	None	Event-to-action translations
+XtNwidth	int	Widget dependent	Width of the widget
 XtNx	int	0	x coordinate within parent
 XtNy	int	0	y coordinate within parent
 .sp 3p
@@ -562,12 +559,14 @@ Realizing a Widget
 .XS
 \*(SN Realizing a Widget
 .XE
-The \*(tk provides the application programmer with a single function that:
+The
+.PN XtRealizeWidget
+function performs two tasks:
 .IP \(bu 5
-First, creates an X window for the widget and, 
+Creates an X window for the widget and, 
 if it is a composite widget, for each of its managed children.
 .IP \(bu 5
-Then, maps each window onto the screen.
+Maps each window onto the screen.
 .IN "XtRealizeWidget" "" "@DEF@"
 .FD 0
 void XtRealizeWidget(\fIw\fP)
@@ -578,7 +577,7 @@ void XtRealizeWidget(\fIw\fP)
 Specifies the widget.
 .LP
 For further information about this function,
-see the \fI\*(xI\fP.
+see the \fI\*(xT\fP.
 .NH 2
 Standard Widget Manipulation Functions
 .LP
