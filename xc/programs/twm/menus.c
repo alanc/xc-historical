@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.108 89/11/03 14:59:15 jim Exp $
+ * $XConsortium: menus.c,v 1.109 89/11/03 16:19:18 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.108 89/11/03 14:59:15 jim Exp $";
+"$XConsortium: menus.c,v 1.109 89/11/03 16:19:18 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -199,45 +199,68 @@ Bool AddFuncKey (name, cont, mods, func, win_name, action)
     return True;
 }
 
+int MakeTitleButton (bm, width, height, func, action, menuroot, rightside)
+    Pixmap bm;
+    int width, height;
+    int func;
+    char *action;
+    MenuRoot *menuroot;
+    Bool rightside;
+{
+    TitleButton *tb = (TitleButton *) malloc (sizeof(TitleButton));
+
+    if (!tb) {
+	fprintf (stderr,
+		 "twm:  unable to allocate %d bytes for title button\n",
+		 sizeof(TitleButton));
+	return 0;
+    }
+
+    tb->next = NULL;
+    tb->bitmap = bm;
+    tb->width = width;
+    tb->height = height;
+    tb->func = func;
+    tb->action = action;
+    tb->menuroot = menuroot;
+    tb->rightside = rightside;
+
+    Scr->TBInfo.nbuttons++;
+    if (rightside) {
+	if (Scr->TBInfo.head) {		/* link it at end of list */
+	    TitleButton *tail;
+	    for (tail = Scr->TBInfo.head; tail->next; tail = tail->next) ;
+	    tail->next = tb;
+	} else {
+	    Scr->TBInfo.head = tb;
+	}
+    } else {				/* put it at beginning */
+	tb->next = Scr->TBInfo.head;
+	Scr->TBInfo.head = tb;
+    }
+    return 1;
+}
+
 int AddTitleButton (bitmapname, func, action, menuroot)
     char *bitmapname;
     int func;
     char *action;
     MenuRoot *menuroot;
 {
-    TitleButton *tb = (TitleButton *) malloc (sizeof(TitleButton));
+    int width, height;
+    Pixmap bm = FindBitmap (bitmapname, &width, &height);
 
-    if (!tb) {
-	fprintf (stderr,
-		 "twm:  unable to allocate %d bytes for title button \"%s\"\n",
-		 sizeof(TitleButton), bitmapname);
-	return 0;
-    }
-
-    tb->next = NULL;
-    tb->bitmap = FindBitmap (bitmapname, &tb->width, &tb->height);
-    if (!tb->bitmap) {
+    if (!bm) {
 	if (!Scr->questionPm)
 	  Scr->questionPm = XCreateBitmapFromData (dpy, Scr->Root,
 						   questionmark_bits,
 						   questionmark_width,
 						   questionmark_height);
-	tb->bitmap = Scr->questionPm;
-	tb->width = questionmark_width;
-	tb->height = questionmark_height;
+	bm = Scr->questionPm;
+	width = questionmark_width;
+	height = questionmark_height;
     }
-    tb->func = func;
-    tb->action = action;
-    tb->menuroot = menuroot;
-    Scr->TBInfo.nbuttons++;
-    if (Scr->TBInfo.head) {		/* link it into list */
-	TitleButton *tail;
-	for (tail = Scr->TBInfo.head; tail->next; tail = tail->next) ;
-	tail->next = tb;
-    } else {
-	Scr->TBInfo.head = tb;
-    }
-    return;
+    return MakeTitleButton (bm, width, height, func, action, menuroot, True);
 }
 
 
@@ -1247,9 +1270,21 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	    XWarpPointer(dpy, None, Scr->Root, 
 		0, 0, 0, 0, eventp->xbutton.x_root, eventp->xbutton.y_root);
 
-	if (w != tmp_win->icon_w)
-	{
-	    StartResize (eventp, tmp_win, (Bool) (tmp_win->resize_w == w));
+	if (w != tmp_win->icon_w) {	/* can't resize icons */
+	    register int i;
+	    register TBWindow *tbw;
+	    Bool lastbutton = False;	/* controls AutoRelativeResizing */
+
+	    /*
+	     * see if this is being done from the last button (resize)
+	     */
+	    if (tmp_win) {		/* if titlebar, then don't do */
+		if (tmp_win->titlebuttons &&
+		    tmp_win->titlebuttons[Scr->TBInfo.nbuttons-1].window == w)
+		  lastbutton = True;
+	    }
+
+	    StartResize (eventp, tmp_win, lastbutton);
 	    return TRUE;
 	}
 	break;

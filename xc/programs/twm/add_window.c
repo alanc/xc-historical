@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.98 89/11/03 16:15:23 jim Exp $
+ * $XConsortium: add_window.c,v 1.99 89/11/03 17:42:25 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.98 89/11/03 16:15:23 jim Exp $";
+"$XConsortium: add_window.c,v 1.99 89/11/03 17:42:25 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -706,10 +706,6 @@ IconMgr *iconp;
 
 	XSaveContext(dpy, tmp_win->title_w, TwmContext, tmp_win);
 	XSaveContext(dpy, tmp_win->title_w, ScreenContext, Scr);
-	XSaveContext(dpy, tmp_win->iconify_w, TwmContext, tmp_win);
-	XSaveContext(dpy, tmp_win->iconify_w, ScreenContext, Scr);
-	XSaveContext(dpy, tmp_win->resize_w, TwmContext, tmp_win);
-	XSaveContext(dpy, tmp_win->resize_w, ScreenContext, Scr);
 	for (i = 0; i < Scr->TBInfo.nbuttons; i++) {
 	    XSaveContext(dpy, tmp_win->titlebuttons[i].window, TwmContext,
 			 tmp_win);
@@ -1008,38 +1004,178 @@ TwmWindow *tmp_win;
     }
 }
 
+static void InsertResizeAndIconify (tmp_win)
+    TwmWindow *tmp_win;
+{
+    Pixmap iconify_pm, resize_pm;
+    int h = Scr->TBInfo.width;
+    XSegment segs[4];
+    GC gc, gcBack;
+    int w;
+
+    /*
+     * create the pixmaps
+     */
+
+    iconify_pm = XCreatePixmap (dpy, tmp_win->title_w, h, h, 1);
+    gc = XCreateGC (dpy, iconify_pm, 0L, NULL);
+    XSetForeground(dpy, gc, 0);
+    XFillRectangle (dpy, iconify_pm, gc, 0, 0, h, h);
+
+    resize_pm = XCreatePixmap (dpy, tmp_win->title_w, h, h, 1);
+    XFillRectangle (dpy, resize_pm, gc, 0, 0, h, h);
+
+    /* now draw the images in */
+    XSetForeground(dpy, gc, 1);
+
+    /* first the iconify button */
+    gcBack = XCreateGC (dpy, iconify_pm, 0L, NULL);
+    XSetForeground (dpy, gcBack, 0);
+
+    /*
+     * draw the logo large so that it gets as dense as possible; then white
+     * out the edges so that they look crisp
+     */
+    XmuDrawLogo (dpy, iconify_pm, gc, gcBack, -1, -1, h + 2, h + 2);
+    XDrawRectangle (dpy, iconify_pm, gcBack, 0, 0, h - 1, h - 1);
+    XFreeGC (dpy, gcBack);
+
+    /*
+     * draw the resize button, 
+     */
+    w = (h * 2) / 3;
+    segs[0].x1 = w; segs[0].y1 = 0; segs[0].x2 = w; segs[0].y2 = w;
+    segs[1].x1 = 0; segs[1].y1 = w; segs[1].x2 = w; segs[1].y2 = w;
+    w = w / 2;
+    segs[2].x1 = w; segs[2].y1 = 0; segs[2].x2 = w; segs[2].y2 = w;
+    segs[3].x1 = 0; segs[3].y1 = w; segs[3].x2 = w; segs[3].y2 = w;
+    XDrawSegments (dpy, resize_pm, gc, segs, 4);
+
+    /*
+     * done drawing
+     */
+    XFreeGC(dpy, gc);
+
+
+    /*
+     * add them to the titlebar
+     */
+    if (!MakeTitleButton (iconify_pm, h, h, F_ICONIFY, "", NULL, False)) {
+	fprintf (stderr, "twm:  unable to add iconify button\n");
+    }
+
+    /*
+     * Note that F_RESIZE in ExecuteFunction depends on resize being the
+     * last button; it could just as easily scan, but our UI guarantees it.
+     */
+    if (!MakeTitleButton (resize_pm, h, h, F_RESIZE, "", NULL, True)) {
+	fprintf (stderr, "twm:  unable to add resize button\n");
+    }
+    return;
+}
+
+
+static void CreateHighlightPixmap (tmp_win)
+    TwmWindow *tmp_win;
+{
+    XSetWindowAttributes attributes;	/* attributes for create windows */
+    Pixmap pm = None;
+    GC gc;
+    XGCValues gcv;
+    unsigned long valuemask;
+    int h = (Scr->TitleHeight - 2 * Scr->FramePadding);
+
+    /*
+     * If a special highlight pixmap was given, use that.  Otherwise,
+     * use a nice, even gray pattern.  The old horizontal lines look really
+     * awful on interlaced monitors (as well as resembling other looks a
+     * little bit too closely), but can be used by putting
+     *
+     *                 Pixmaps { TitleHighlight "hline2" }
+     *
+     * (or whatever the horizontal line bitmap is named) in the startup
+     * file.  If all else fails, use the foreground color to look like a 
+     * solid line.
+     */
+    if (!Scr->hilitePm) {
+	Scr->hilitePm = XCreateBitmapFromData (dpy, tmp_win->title_w, 
+					       gray_bits, gray_width, 
+					       gray_height);
+	Scr->hilite_pm_width = gray_width;
+	Scr->hilite_pm_height = gray_height;
+    }
+    if (Scr->hilitePm) {
+	pm = XCreatePixmap (dpy, tmp_win->title_w,
+			    Scr->hilite_pm_width, Scr->hilite_pm_height,
+			    Scr->d_depth);
+	gcv.foreground = tmp_win->title.fore;
+	gcv.background = tmp_win->title.back;
+	gcv.graphics_exposures = False;
+	gc = XCreateGC (dpy, pm,
+			(GCForeground|GCBackground|GCGraphicsExposures),
+			&gcv);
+	if (gc) {
+	    XCopyPlane (dpy, Scr->hilitePm, pm, gc, 0, 0, 
+			Scr->hilite_pm_width, Scr->hilite_pm_height,
+			0, 0, 1);
+	    XFreeGC (dpy, gc);
+	} else {
+	    XFreePixmap (dpy, pm);
+	    pm = None;
+	}
+    }
+    if (pm) {
+	valuemask = CWBackPixmap;
+	attributes.background_pixmap = pm;
+    } else {
+	valuemask = CWBackPixel;
+	attributes.background_pixel = tmp_win->title.fore;
+    }
+
+    tmp_win->hilite_w = XCreateWindow (dpy, tmp_win->title_w,
+				       0, Scr->FramePadding, 8, h,
+				       0, Scr->d_depth, CopyFromParent,
+				       Scr->d_visual, valuemask,
+				       &attributes);
+    if (pm) XFreePixmap (dpy, pm);
+    return;
+}
+
+
 
 CreateTitleButtons(tmp_win)
-TwmWindow *tmp_win;
+    TwmWindow *tmp_win;
 {
     unsigned long valuemask;		/* mask for create windows */
     XSetWindowAttributes attributes;	/* attributes for create windows */
-    int x, y, h;
+    int leftx, rightx, y, h;
     GC gc;
-    XGCValues gcv;
     TitleButton *tb;
 
     if (tmp_win->title_height == 0)
     {
-	tmp_win->iconify_w = 0;
-	tmp_win->resize_w = 0;
 	tmp_win->hilite_w = 0;
 	return;
     }
 
     if (!Scr->TBInfo.inited) {
 	TitleButton *tb;
+	int rightside = 0;
+
 	Scr->TBInfo.width = h = (Scr->TitleHeight - 2 *
-				 (Scr->FramePadding + Scr->ButtonIndent +
-				  TITLEBUTTON_BORDERWIDTH));
+				 (Scr->FramePadding + Scr->ButtonIndent + 1));
+	InsertResizeAndIconify (tmp_win);
 	Scr->TBInfo.pad = ((Scr->TitlePadding > 1)
 			   ? ((Scr->TitlePadding + 1) / 2) : 1);
-	Scr->TBInfo.totalwidth = (Scr->TBInfo.nbuttons *
-				  (h + Scr->TBInfo.pad +
-				   Scr->TBInfo.border * 2));
+	for (tb = Scr->TBInfo.head; tb; tb = tb->next) {
+	    if (tb->rightside) rightside++;
+	}
+	Scr->TBInfo.totalwidth = (rightside *
+				  (Scr->TBInfo.width + Scr->TBInfo.pad +
+				   Scr->TBInfo.border * 2) - Scr->TBInfo.pad);
 	for (tb = Scr->TBInfo.head; tb; tb = tb->next) {
 	    tb->dstx = (h - tb->width + 1) / 2;
-	    if (tb->dstx < 0) {		/* clip to minimize copy */
+	    if (tb->dstx < 0) {		/* clip to minimize copying */
 		tb->srcx = -(tb->dstx);
 		tb->width = h;
 		tb->dstx = 0;
@@ -1060,56 +1196,15 @@ TwmWindow *tmp_win;
     } else
       h = Scr->TBInfo.width;
 
-    if (!Scr->iconifyPm) {
-	XSegment segs[4];
-	GC gcBack;
-	int w;
-
-	Scr->iconifyPm = XCreatePixmap (dpy, tmp_win->title_w, h, h, 1);
-	gc = XCreateGC (dpy, Scr->iconifyPm, 0L, NULL);
-	XSetForeground(dpy, gc, 0);
-	XFillRectangle (dpy, Scr->iconifyPm, gc, 0, 0, h, h);
-
-	Scr->resizePm = XCreatePixmap (dpy, tmp_win->title_w, h, h, 1);
-	XFillRectangle (dpy, Scr->resizePm, gc, 0, 0, h, h);
-
-	/* now draw the images in */
-	XSetForeground(dpy, gc, 1);
-
-	/* first the iconify button */
-	gcBack = XCreateGC (dpy, Scr->iconifyPm, 0L, NULL);
-	XSetForeground (dpy, gcBack, 0);
-
-	/*
-	 * draw the logo large so that it gets as dense as possible; then white
-	 * out the edges so that they look crisp
-	 */
-	XmuDrawLogo (dpy, Scr->iconifyPm, gc, gcBack, -1, -1, h + 2, h + 2);
-	XDrawRectangle (dpy, Scr->iconifyPm, gcBack, 0, 0, h - 1, h - 1);
-	XFreeGC (dpy, gcBack);
-
-	/*
-	 * draw the resize button, 
-	 */
-	w = (h * 2) / 3;
-	segs[0].x1 = w; segs[0].y1 = 0; segs[0].x2 = w; segs[0].y2 = w;
-	segs[1].x1 = 0; segs[1].y1 = w; segs[1].x2 = w; segs[1].y2 = w;
-	w = w / 2;
-	segs[2].x1 = w; segs[2].y1 = 0; segs[2].x2 = w; segs[2].y2 = w;
-	segs[3].x1 = 0; segs[3].y1 = w; segs[3].x2 = w; segs[3].y2 = w;
-	XDrawSegments (dpy, Scr->resizePm, gc, segs, 4);
-
-
-	/*
-	 * done drawing
-	 */
-	XFreeGC(dpy, gc);
-    }
 
     /*
      * create the title bar windows; let the event handler deal with painting
      * so that we don't have to spend two pixmaps (or deal with hashing)
      */
+    leftx = y = (Scr->FramePadding + Scr->ButtonIndent);
+    rightx = (tmp_win->attr.width - Scr->FramePadding - Scr->ButtonIndent - 
+	      Scr->TBInfo.totalwidth);
+
     attributes.win_gravity = NorthWestGravity;
     attributes.background_pixel = tmp_win->title.back;
     attributes.border_pixel = tmp_win->title.fore;
@@ -1118,23 +1213,9 @@ TwmWindow *tmp_win;
     attributes.cursor = Scr->ButtonCursor;
     valuemask = (CWWinGravity | CWBackPixel | CWBorderPixel | CWEventMask |
 		 CWCursor);
-    x = y = (Scr->FramePadding + Scr->ButtonIndent);
-    tmp_win->iconify_w = XCreateWindow (dpy, tmp_win->title_w, x, y,
-					h, h, TITLEBUTTON_BORDERWIDTH, 0, 
-					CopyFromParent, CopyFromParent,
-				        valuemask, &attributes);
-    attributes.win_gravity = NorthEastGravity;
-    x = (tmp_win->attr.width - Scr->FramePadding - Scr->ButtonIndent - h - 1 -
-	 TITLEBUTTON_BORDERWIDTH);
-    tmp_win->resize_w = XCreateWindow (dpy, tmp_win->title_w, x, y,
-					h, h, 1, 0, 
-					CopyFromParent, CopyFromParent,
-				        valuemask, &attributes);
-    /*
-     * XXX - eventually make resize be a titlebutton
-     */
+
     tmp_win->titlebuttons = NULL;
-    if (Scr->TBInfo.nbuttons > 0) {
+    if (Scr->TBInfo.nbuttons > 0) {	/* at least resize, iconify */
 	tmp_win->titlebuttons = (TBWindow *) malloc (Scr->TBInfo.nbuttons *
 						     sizeof(TBWindow));
 	if (!tmp_win->titlebuttons) {
@@ -1145,92 +1226,40 @@ TwmWindow *tmp_win;
 	    int boxwidth = (Scr->TBInfo.width + Scr->TBInfo.border * 2 +
 			    Scr->TBInfo.pad);
 
-	    x -= Scr->TBInfo.totalwidth;
 	    for (tb = Scr->TBInfo.head, tbw = tmp_win->titlebuttons; tb;
 		 tb = tb->next, tbw++) {
-		/*
-		 * XXX - put windows in other direction
-		 */
+		int x;
+		if (tb->rightside) {
+		    x = rightx;
+		    rightx += boxwidth;
+		    attributes.win_gravity = NorthEastGravity;
+		} else {
+		    x = leftx;
+		    leftx += boxwidth;
+		    attributes.win_gravity = NorthWestGravity;
+		}
 		tbw->window = XCreateWindow (dpy, tmp_win->title_w, x, y,
 					     h, h, 1, 0, 
 					     CopyFromParent, CopyFromParent,
 					     valuemask, &attributes);
 		tbw->info = tb;
-		x += boxwidth;
 	    }
 	}
     }
 
     /*
-     * now go make the highlight bar; note that this could perhaps be a
-     * special titlebutton?
+     * and finally create the highlight window if doing highlighting
      */
-    h = (Scr->TitleHeight - 2 * Scr->FramePadding);
-
-    if (tmp_win->titlehighlight) {
-	Pixmap pm = None;
-
-	/*
-	 * If a special highlight pixmap was given, use that.  Otherwise,
-	 * use a nice, even gray pattern.  The old horizontal lines look really
-	 * awful on interlaced monitors (as well as resembling other looks a
-	 * little bit too closely), but can be used by putting
-	 *
-	 *                 Pixmaps { TitleHighlight "hline2" }
-	 *
-	 * (or whatever the horizontal line bitmap is named) in the startup
-	 * file.  If all else fails, use the foreground color to look like a 
-	 * solid line.
-	 */
-	if (!Scr->hilitePm) {
-	    Scr->hilitePm = XCreateBitmapFromData (dpy, tmp_win->title_w, 
-						   gray_bits, gray_width, 
-						   gray_height);
-	    Scr->hilite_pm_width = gray_width;
-	    Scr->hilite_pm_height = gray_height;
-	}
-	if (Scr->hilitePm) {
-	    pm = XCreatePixmap (dpy, tmp_win->title_w,
-				Scr->hilite_pm_width, Scr->hilite_pm_height,
-				Scr->d_depth);
-	    gcv.foreground = tmp_win->title.fore;
-	    gcv.background = tmp_win->title.back;
-	    gcv.graphics_exposures = False;
-	    gc = XCreateGC (dpy, pm,
-			    (GCForeground|GCBackground|GCGraphicsExposures),
-			    &gcv);
-	    if (gc) {
-		XCopyPlane (dpy, Scr->hilitePm, pm, gc, 0, 0, 
-			    Scr->hilite_pm_width, Scr->hilite_pm_height,
-			    0, 0, 1);
-		XFreeGC (dpy, gc);
-	    } else {
-		XFreePixmap (dpy, pm);
-		pm = None;
-	    }
-	}
-	if (pm) {
-	    valuemask = CWBackPixmap;
-	    attributes.background_pixmap = pm;
-	} else {
-	    valuemask = CWBackPixel;
-	    attributes.background_pixel = tmp_win->title.fore;
-	}
-
-	tmp_win->hilite_w = XCreateWindow (dpy, tmp_win->title_w,
-					   TitleBarX, Scr->FramePadding, 8, h,
-					   0, Scr->d_depth, CopyFromParent,
-					   Scr->d_visual, valuemask,
-					   &attributes);
-	if (pm) XFreePixmap (dpy, pm);
-    }
+    if (tmp_win->titlehighlight) 
+      CreateHighlightPixmap (tmp_win);
     else
-	tmp_win->hilite_w = 0;
+      tmp_win->hilite_w = 0;
 
     XMapSubwindows(dpy, tmp_win->title_w);
     if (tmp_win->hilite_w)
-	XUnmapWindow(dpy, tmp_win->hilite_w);
+      XUnmapWindow(dpy, tmp_win->hilite_w);
 }
+
 
 SetHighlightPixmap (filename)
     char *filename;

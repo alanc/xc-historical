@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.43 89/11/01 17:27:56 jim Exp $
+ * $XConsortium: resize.c,v 1.44 89/11/03 16:15:27 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.43 89/11/01 17:27:56 jim Exp $";
+"$XConsortium: resize.c,v 1.44 89/11/03 16:15:27 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -635,7 +635,7 @@ int x, y, w, h;
     XEvent client_event;
     XWindowChanges xwc;
     unsigned int   xwcm;
-    int title_width, width;
+    int title_width;
     int sendEvent;
 #ifdef SHAPE
     int reShape;
@@ -700,9 +700,13 @@ int x, y, w, h;
 
     if (tmp_win->title_height)
     {
-	int start = TitleBarX + tmp_win->name_width + Scr->TitlePadding;
-
-	width = (title_width - start - TitleBarX - Scr->TBInfo.totalwidth);
+	int boxwidth = (Scr->FramePadding + Scr->TBInfo.width + 
+			Scr->TBInfo.border * 2);
+	int start = (boxwidth + Scr->TitlePadding +
+		     tmp_win->name_width + Scr->TitlePadding);
+	int width = (title_width - start -
+		     (Scr->TitlePadding + Scr->TBInfo.totalwidth + 
+		      Scr->FramePadding));
 
         if (width <= 0)
         {

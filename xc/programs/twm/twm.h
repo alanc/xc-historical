@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.40 89/11/01 17:28:10 jim Exp $
+ * $XConsortium: twm.h,v 1.41 89/11/01 19:21:12 jim Exp $
  *
  * twm include file
  *
@@ -142,6 +142,7 @@ typedef struct _TitleButton {
     int func;				/* function to execute */
     char *action;			/* optional action arg */
     struct MenuRoot *menuroot;		/* menu to pop on F_MENU */
+    Bool rightside;			/* t: on right, f: on left */
 } TitleButton;
 
 typedef struct _TBWindow {
@@ -162,8 +163,6 @@ typedef struct TwmWindow
     int old_bw;			/* border width before reparenting */
     Window frame;		/* the frame window */
     Window title_w;		/* the title bar window */
-    Window iconify_w;		/* the iconify button */
-    Window resize_w;		/* the resize button */
     Window hilite_w;		/* the hilite window */
     Pixmap gray;
     Window icon_w;		/* the icon window */

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.97 89/11/03 13:26:52 jim Exp $
+ * $XConsortium: events.c,v 1.98 89/11/03 14:59:08 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.97 89/11/03 13:26:52 jim Exp $";
+"$XConsortium: events.c,v 1.98 89/11/03 14:59:08 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -854,22 +854,6 @@ HandleExpose()
 		Tmp_win->name, strlen(Tmp_win->name));
 	    flush_expose (Event.xany.window);
 	}
-	else if (Event.xany.window == Tmp_win->iconify_w)
-	{
-	    FB(Tmp_win->title.fore, Tmp_win->title.back);
-	    XCopyPlane(dpy, Scr->iconifyPm, Tmp_win->iconify_w, Scr->NormalGC,
-		0,0, h, h, 0, 0, 1);
-	    flush_expose (Event.xany.window);
-	    return;
-	}
-	else if (Event.xany.window == Tmp_win->resize_w)
-	{
-	    FB(Tmp_win->title.fore, Tmp_win->title.back);
-	    XCopyPlane(dpy, Scr->resizePm, Tmp_win->resize_w, Scr->NormalGC,
-		0,0, h, h, 0, 0, 1);
-	    flush_expose (Event.xany.window);
-	    return;
-  	}
 	else if (Event.xany.window == Tmp_win->icon_w)
 	{
 	    FBF(Tmp_win->iconc.fore, Tmp_win->iconc.back,
@@ -968,10 +952,6 @@ HandleDestroyNotify()
     {
 	XDeleteContext(dpy, Tmp_win->title_w, TwmContext);
 	XDeleteContext(dpy, Tmp_win->title_w, ScreenContext);
-	XDeleteContext(dpy, Tmp_win->iconify_w, TwmContext);
-	XDeleteContext(dpy, Tmp_win->iconify_w, ScreenContext);
-	XDeleteContext(dpy, Tmp_win->resize_w, TwmContext);
-	XDeleteContext(dpy, Tmp_win->resize_w, ScreenContext);
 	if (Tmp_win->hilite_w)
 	{
 	    XDeleteContext(dpy, Tmp_win->hilite_w, TwmContext);
@@ -1477,22 +1457,8 @@ HandleButtonPress()
     /* check the title bar buttons */
     if (Tmp_win && Tmp_win->title_height)
     {
-	int i;
-	TBWindow *tbw;
-
-	if (Event.xany.window == Tmp_win->iconify_w)
-	{
-	    ExecuteFunction(F_ICONIFY, NULL, Event.xany.window,
-		Tmp_win, &Event, C_TITLE, FALSE);
-	    return;
-	}
-
-	if (Event.xany.window == Tmp_win->resize_w)
-	{
-	    ExecuteFunction(F_RESIZE, NULL, Event.xany.window, Tmp_win,
-		&Event, C_TITLE, FALSE);
-	    return;
-	}
+	register int i;
+	register TBWindow *tbw;
 
 	for (i = 0, tbw = Tmp_win->titlebuttons; i < Scr->TBInfo.nbuttons;
 	     i++, tbw++) {
