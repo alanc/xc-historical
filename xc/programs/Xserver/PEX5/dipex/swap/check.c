@@ -1,4 +1,4 @@
-/* $XConsortium: check.c,v 5.1 91/02/16 09:57:15 rws Exp $ */
+/* $XConsortium: check.c,v 5.2 91/03/15 18:40:03 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -30,7 +30,6 @@ SOFTWARE.
 #include "PEXproto.h"
 #include "PEXprotost.h"
 #include "dipex.h"
-#include "floatdef.h"
 #include "pexSwap.h"
 #include "pex_site.h"
 #include "swapmacros.h"
@@ -45,11 +44,11 @@ SOFTWARE.
 	as a floating point specifier;
  */
 
-extern FLOAT SwapFLOAT();
-extern FLOAT SwapIEEEToVax();
-extern FLOAT SwapVaxToIEEE();
-extern FLOAT ConvertIEEEToVax();
-extern FLOAT ConvertVaxToIEEE();
+extern PEXFLOAT SwapFLOAT();
+extern PEXFLOAT SwapIEEEToVax();
+extern PEXFLOAT SwapVaxToIEEE();
+extern PEXFLOAT ConvertIEEEToVax();
+extern PEXFLOAT ConvertVaxToIEEE();
 extern OCFunction cPEXOutputCmd[];
 extern OCFunction uPEXOutputCmd[];
 extern RequestFunction PEXRequest[];
@@ -66,9 +65,9 @@ typedef struct {
 } checkStdHeader;
 
 
-static FLOAT
+static PEXFLOAT
 NoFloatConv( f )
-FLOAT f;
+PEXFLOAT f;
 {
     return (f);
 }
@@ -95,11 +94,20 @@ checkStdHeader *strmPtr;
    return(Success);
 }
 
+
+/* HACK ALERT ON */
+static INT16 lastfp[MAXCLIENTS];
+/* HACK ALERT OFF */
+
 static ErrorCode
 CheckFloat( cntxtPtr, strmPtr )
 pexContext *cntxtPtr;
 checkStdHeader *strmPtr;
 {
+/* HACK ALERT ON */
+extern INT16 lastfp[];
+/* HACK ALERT OFF */
+
     pexEnumTypeIndex fp;
 
     if (cntxtPtr->client->swapped) {
@@ -108,6 +116,7 @@ checkStdHeader *strmPtr;
 	cntxtPtr->pexSwapReply	    =  uPEXReply;
 	cntxtPtr->pexSwapReplyOC    =  uPEXOutputCmd;
 	swapshortc(strmPtr->fpFormat, fp);
+
 	if ( fp == SERVER_NATIVE_FP ) {
 	    cntxtPtr->swap->ConvertFLOAT =  (ConvFunction)SwapFLOAT;
 
@@ -122,6 +131,73 @@ checkStdHeader *strmPtr;
 
     } else {
 	if ( (fp = strmPtr->fpFormat) == SERVER_NATIVE_FP ) {
+	    cntxtPtr->pexRequest	=  PEXRequest;
+	    cntxtPtr->pexSwapRequestOC	=  0;
+	    cntxtPtr->pexSwapReply	=  0;
+	    cntxtPtr->pexSwapReplyOC	=  0;
+	    cntxtPtr->swap->ConvertFLOAT=  0;
+
+	} else {
+	    cntxtPtr->pexRequest	=  cPEXRequest;
+	    cntxtPtr->pexSwapRequestOC	=  cPEXOutputCmd; 
+	    cntxtPtr->pexSwapReply	=  uPEXReply;
+	    cntxtPtr->pexSwapReplyOC	=  uPEXOutputCmd;
+	    if (fp == PEXDEC_F_Floating)
+		cntxtPtr->swap->ConvertFLOAT = (ConvFunction)ConvertVaxToIEEE;
+	    else if (fp == PEXIeee_754_32)
+		cntxtPtr->swap->ConvertFLOAT = (ConvFunction)ConvertIEEEToVax;
+	/* we don't do the other kinds yet */
+	    else PEX_ERR_EXIT(PEXFloatingPointFormatError,fp,cntxtPtr);
+	}
+
+    };
+
+    /* HACK ALERT ON */
+    /* set the floating point format for use by HackFloat */
+    lastfp[cntxtPtr->client->index] = fp;
+    /* HACK ALERT OFF */
+
+    return(Success);
+}
+
+static ErrorCode
+HackFloat( cntxtPtr, strmPtr )
+pexContext *cntxtPtr;
+checkStdHeader *strmPtr;
+{
+extern INT16 lastfp[];
+
+    pexEnumTypeIndex fp;
+
+    /* This Routine is  a HACK to set the cntxtPtr up for any Requests
+       that need to SWAP Floats but don't have the fpFormat as part of
+       the request (ie PEXUpdatePickMeasure). Instead of getting the
+       fp type from the request it will retrieve it from a global array
+       which stores, on a per client basis the fpFormat of the last 
+       request that had one.
+    */
+
+    fp = lastfp[cntxtPtr->client->index];
+    if (cntxtPtr->client->swapped) {
+	cntxtPtr->pexRequest	    =  cPEXRequest;
+	cntxtPtr->pexSwapRequestOC  =  cPEXOutputCmd; 
+	cntxtPtr->pexSwapReply	    =  uPEXReply;
+	cntxtPtr->pexSwapReplyOC    =  uPEXOutputCmd;
+
+	if ( fp == SERVER_NATIVE_FP ) {
+	    cntxtPtr->swap->ConvertFLOAT =  (ConvFunction)SwapFLOAT;
+
+	} else {
+	    if (fp == PEXDEC_F_Floating)
+		cntxtPtr->swap->ConvertFLOAT = (ConvFunction)SwapVaxToIEEE;
+	    else if (fp == PEXIeee_754_32)
+		cntxtPtr->swap->ConvertFLOAT = (ConvFunction)SwapIEEEToVax;
+	/* we don't do the other kinds yet */
+	    else PEX_ERR_EXIT(PEXFloatingPointFormatError,fp,cntxtPtr);
+	}
+
+    } else {
+	if ( fp  == SERVER_NATIVE_FP ) {
 	    cntxtPtr->pexRequest	=  PEXRequest;
 	    cntxtPtr->pexSwapRequestOC	=  0;
 	    cntxtPtr->pexSwapReply	=  0;
@@ -233,7 +309,7 @@ RequestFunction set_tables[] = {
 /*  84	*/	NoFloat,		/* PEXCreatePickMeasure */
 /*  85	*/	NoFloat,		/* PEXFreePickMeasure */
 /*  86	*/	NoFloat,		/* PEXGetPickMeasure */
-/*  87	*/	NoFloat,		/* PEXUpdatePickMeasure */
+/*  87	*/	HackFloat,		/* PEXUpdatePickMeasure */
 /*  88	*/	NoFloat,		/* PEXOpenFont */
 /*  89	*/	NoFloat,		/* PEXCloseFont */
 /*  90	*/	NoFloat,		/* PEXQueryFont */
