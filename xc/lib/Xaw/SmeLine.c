@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: SmeLine.c,v 1.4 89/10/09 16:51:50 jim Exp $";
+static char Xrcsid[] = "$XConsortium: SmeLine.c,v 1.5 89/10/11 11:55:26 jim Exp $";
 #endif 
 
 /***********************************************************
@@ -262,6 +262,7 @@ Widget current, request, new;
 	CreateGC(new);
 	return(TRUE);
     }
+    return(FALSE);
 }
 
 /*	Function Name: QueryGeometry.
