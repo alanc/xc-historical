@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ConnDis.c,v 11.112 94/01/17 21:37:27 rws Exp $
+ * $XConsortium: ConnDis.c,v 11.113 94/01/18 17:29:18 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -27,8 +27,8 @@
 #define NEED_EVENTS
 
 #include <X11/Xlibint.h>
-#include <X11/Xtrans.h>
 #include "Xlibnet.h"
+#include <X11/Xtrans.h>
 #include <X11/Xauth.h>
 #include <stdio.h>
 #include <ctype.h>
