@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osinit.c,v 1.37 91/07/03 19:09:16 rws Exp $ */
+/* $XConsortium: osinit.c,v 1.38 91/07/06 13:05:44 rws Exp $ */
 #include "X.h"
 #include "os.h"
 #include "osdep.h"
@@ -94,9 +94,13 @@ OsInit()
 #endif
 	}
 
-#if !defined(SYSV) && !defined(SVR4)
+#ifndef X_NOT_POSIX
+	setsid();
+#else
+#ifndef SYSV
 	if (getpgrp (0) == 0)
 	    setpgrp (0, getpid ());
+#endif
 #endif
 
 #ifdef RLIMIT_DATA
