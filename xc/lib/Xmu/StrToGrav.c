@@ -1,5 +1,5 @@
 /*
- * $XConsortium: StrToLong.c,v 1.2 89/07/14 18:05:40 jim Exp $
+ * $XConsortium: StrToGrav.c,v 1.1 90/04/12 16:55:59 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -45,6 +45,10 @@ static struct _namepair {
     { NULLQUARK, XtESouthEast, SouthEastGravity },
     { NULLQUARK, XtEStatic, StaticGravity },
     { NULLQUARK, XtEUnmap, UnmapGravity },
+    { NULLQUARK, XtELeft, WestGravity },
+    { NULLQUARK, XtETop, NorthGravity },
+    { NULLQUARK, XtERight, EastGravity },
+    { NULLQUARK, XtEBottom, SouthGravity },
     { NULLQUARK, NULL, ForgetGravity }
 };
 
