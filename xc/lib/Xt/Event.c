@@ -92,7 +92,7 @@ void XtAddEventHandler(widget, eventMask, other, proc, closure)
 	p->non_filter = p->non_filter || other;
     }
 
-    if (XtIsRealize(widget)) {
+    if (XtIsRealized(widget)) {
 	EventMask mask = _XtBuildEventMask(widget);
 
 	if (oldMask != mask)
