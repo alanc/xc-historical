@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.206 88/07/29 12:13:42 keith Exp $ */
+/* $Header: window.c,v 1.207 88/08/14 17:29:25 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -1693,6 +1693,61 @@ MoveWindow(pWin, x, y, pNextSib)
     }    
 }
 
+static void
+gravityTranslate (x, y, oldx, oldy, dw, dh, gravity, destx, desty)
+int	x, y;		/* new window position */
+int	oldx, oldy;	/* old window position */
+int	gravity;
+int	*destx, *desty;	/* position relative to gravity */
+{
+    switch (gravity) {
+    case NorthWestGravity: 
+	*destx = x;
+	*desty = y;
+	break;
+    case NorthGravity:  
+	*destx = x + dw/2;
+	*desty = y;
+	break;
+    case NorthEastGravity:    
+	*destx = x + dw;	     
+	*desty = y;
+	break;
+    case WestGravity:         
+	*destx = x;
+	*desty = y + dh/2;
+	break;
+    case CenterGravity:    
+	*destx = x + dw/2;
+	*desty = y + dh/2;
+	break;
+    case EastGravity:         
+	*destx = x + dw;
+	*desty = y + dh/2;
+	break;
+    case SouthWestGravity:    
+	*destx = x;
+	*desty = y + dh;
+	break;
+    case SouthGravity:        
+	*destx = x + dw/2;
+	*desty = y + dh;
+	break;
+    case SouthEastGravity:    
+	*destx = x + dw;
+	*desty = y + dh;
+	break;
+    case StaticGravity:
+	*destx = oldx;
+	*desty = oldy;
+	break;
+    default:
+	*destx = x;
+	*desty = y;
+	break;
+    }
+}
+
 /* XXX need to retile border on each window with ParentRelative origin */
 static void
 ResizeChildrenWinSize(pWin, dx, dy, dw, dh)
@@ -1701,7 +1756,7 @@ ResizeChildrenWinSize(pWin, dx, dy, dw, dh)
 {
     register WindowPtr pSib;
     short x, y;
-    register short cwsx, cwsy;
+    int	cwsx, cwsy;
     Bool unmap = FALSE;
     register ScreenPtr pScreen;
     xEvent event;
@@ -1717,47 +1772,10 @@ ResizeChildrenWinSize(pWin, dx, dy, dw, dh)
 	cwsy = pSib->clientWinSize.y;
         if (dw || dh)
         {
-	    switch (pSib->winGravity)
-	    {
-	       case UnmapGravity: 
-                    unmap = TRUE;
-	       case NorthWestGravity: 
-		    break;
-               case NorthGravity:  
-                   cwsx += dw/2;
-		   break;
-               case NorthEastGravity:    
-		   cwsx += dw;	     
-		   break;
-               case WestGravity:         
-                   cwsy += dh/2;
-                   break;
-               case CenterGravity:    
-                   cwsx += dw/2;
-		   cwsy += dh/2;
-                   break;
-               case EastGravity:         
-                   cwsx += dw;
-		   cwsy += dh/2;
-                   break;
-               case SouthWestGravity:    
-		   cwsy += dh;
-                   break;
-               case SouthGravity:        
-                   cwsx += dw/2;
-		   cwsy += dh;
-                   break;
-               case SouthEastGravity:    
-                   cwsx += dw;
-		   cwsy += dh;
-		   break;
-               case StaticGravity:
-		   cwsx -= dx;
-		   cwsy -= dy;
-		   break;
-	       default:
-                   break;
-	    }
+	    if (pSib->winGravity == UnmapGravity)
+	        unmap = TRUE;
+	    gravityTranslate (cwsx, cwsy, cwsx - dx, cwsx - dy, dw, dh,
+			pSib->winGravity, &cwsx, &cwsy);
 	    if (cwsx != pSib->clientWinSize.x || cwsy != pSib->clientWinSize.y)
 	    {
 		event.u.u.type = GravityNotify;
@@ -1817,6 +1835,36 @@ ExposeAll(pWin, pScreen)
         return(WT_NOMATCH);
 }
 
+/*
+ * pValid is a region of the screen which has been
+ * successfully copied -- recomputed exposed regions for affected windows
+ */
+
+static int
+RecomputeExposures (pWin, pValid)
+    WindowPtr	pWin;
+    RegionPtr	pValid;
+{
+    ScreenPtr	pScreen;
+
+    if (pWin->realized)
+    {
+	pScreen = pWin->drawable.pScreen;
+	/*
+	 * compute exposed regions of this window
+	 */
+	(*pScreen->Subtract) (pWin->exposed, pWin->clipList, pValid);
+	/*
+	 * compute exposed regions of the border
+	 */
+	(*pScreen->Subtract) (pWin->borderExposed,
+ 				pWin->borderClip, pWin->winSize);
+	(*pScreen->Subtract) (pWin->borderExposed,
+ 				pWin->borderExposed, pValid);
+	return WT_WALKCHILDREN;
+    }
+    return WT_NOMATCH;
+}
 
 
 static void
@@ -1840,6 +1888,13 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
     register ScreenPtr pScreen;
     BoxPtr pBox;
     WindowPtr pFirstChange;
+    WindowPtr pChild;
+    RegionPtr	gravitate[StaticGravity + 1];
+    int		g;
+    int		nx, ny;		/* destination x,y */
+    RegionPtr	pRegion;
+    RegionPtr	destClip;	/* portions of destination already written */
+    RegionPtr	oldWinClip;	/* old clip list for window */
 
     /* if this is a root window, can't be resized */
     if (!(pParent = pWin->parent)) 
@@ -1848,10 +1903,36 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
     pScreen = pWin->drawable.pScreen;
     if (WasMapped) 
     {
-        if (pWin->bitGravity != ForgetGravity)
-            oldRegion = NotClippedByChildren(pWin);
+	/*
+	 * save the visible region of the window
+	 */
+	oldRegion = (*pScreen->RegionCreate) (NULL, 1);
+	(*pScreen->RegionCopy) (oldRegion, pWin->winSize);
+
         pBox = (* pScreen->RegionExtents)(pWin->borderSize);
 	anyMarked = MarkSiblingsBelowMe(pWin, pBox);
+
+	/*
+	 * catagorize child windows into regions to be moved
+	 */
+	for (g = 0; g <= StaticGravity; g++)
+	    gravitate[g] = (RegionPtr) NULL;
+	for (pChild = pWin->firstChild; pChild; pChild = pChild->nextSib)
+	{
+	    g = pChild->winGravity;
+	    if (g != UnmapGravity)
+	    {
+		if (!gravitate[g])
+		    gravitate[g] = (*pScreen->RegionCreate) (NULL, 1);
+		(*pScreen->Union) (gravitate[g], gravitate[g], pChild->borderClip);
+	    }
+	}
+	oldWinClip = NULL;
+	if (pWin->bitGravity != ForgetGravity)
+	{
+	    oldWinClip = (*pScreen->RegionCreate) (NULL, 1);
+	    (*pScreen->RegionCopy) (oldWinClip, pWin->clipList);
+	}
     }
     pWin->clientWinSize.x = x + bw;
     pWin->clientWinSize.y = y + bw;
@@ -1885,7 +1966,9 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 
     if (WasMapped) 
     {
-        RegionPtr pRegion;
+	pRegion = (*pScreen->RegionCreate) (NULL, 1);
+	if (pWin->backStorage && (pWin->backingStore != NotUseful))
+	    (*pScreen->RegionCopy) (pRegion, pWin->clipList);
 
 	anyMarked = MarkSiblingsBelowMe(pFirstChange, pBox) || anyMarked;
 #ifdef DO_SAVE_UNDERS
@@ -1902,106 +1985,137 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 	}
 #endif /* DO_SAVE_UNDERS */
 
-	if (pWin->bitGravity == ForgetGravity)
-	{
-	    (* pScreen->ValidateTree)(pParent, pFirstChange, TRUE, anyMarked);
-	    /* CopyWindow will step on borders, so re-paint them */
-	    (* pScreen->Subtract)(pWin->borderExposed, 
-			 pWin->borderClip, pWin->winSize);
-#ifdef notdef
-	    /* XXX this is unacceptable overkill
-	     * It is also wrong, since a bitGravity of Forget in the parent
-	     * should not affect the children -- ardeb
-	     */
-	    TraverseTree(pWin, ExposeAll, pScreen);
-#else
-	    (* pScreen->RegionCopy) (pWin->exposed, pWin->clipList);
-#endif notdef
+	(* pScreen->ValidateTree)(pParent, pFirstChange, TRUE, anyMarked);
+
+	DoObscures(pParent); 
+
+	/*
+	 * always redraw the border as CopyWindow will mash it
+	 */
+
+	(* pScreen->Subtract)(pWin->borderExposed, 
+				pWin->borderClip, pWin->winSize);
+
+	(* pScreen->RegionCopy) (pWin->exposed, pWin->clipList);
  
-	    DoObscures(pParent); 
-	    if (pWin->backStorage && (pWin->backingStore != NotUseful))
-	    {
-                (* pWin->backStorage->TranslateBackingStore) (pWin, 0, 0,
-							      (RegionPtr)NULL);
-	    }
-	    HandleExposures(pParent);
-	}
-	else
+	if (pWin->backStorage && (pWin->backingStore != NotUseful))
 	{
-	    pRegion = (* pScreen->RegionCreate)(NULL, 1);
-	    (* pScreen->RegionCopy)(pRegion, pWin->clipList);
-
-	    switch (pWin->bitGravity)
-	    {
-	      case NorthWestGravity: 
-		    break;
-              case NorthGravity:  
-                   x += dw/2;
-		   break;
-              case NorthEastGravity:    
-		   x += dw;	     
-		   break;
-              case WestGravity:         
-                   y += dh/2;
-                   break;
-              case CenterGravity:    
-                   x += dw/2;
-		   y += dh/2;
-                   break;
-              case EastGravity:         
-                   x += dw;
-		   y += dh/2;
-                   break;
-              case SouthWestGravity:    
-		   y += dh;
-                   break;
-              case SouthGravity:        
-                   x += dw/2;
-		   y += dh;
-                   break;
-              case SouthEastGravity:    
-                   x += dw;
-		   y += dh;
-		   break;
-	      case StaticGravity:
-		   x = oldx;
-		   y = oldy;
-		   break;
-	      default:
-                   break;
-	    }
-
-	    (* pScreen->ValidateTree)(pParent, pFirstChange, TRUE, anyMarked);
-
-	    DoObscures(pParent);
-	    if (pWin->backStorage && (pWin->backingStore != NotUseful))
-	    {
+	    if (pWin->bitGravity == ForgetGravity)
+        	(* pWin->backStorage->TranslateBackingStore) (pWin, 0, 0,
+							  (RegionPtr)NULL);
+	    else
                 (* pWin->backStorage->TranslateBackingStore) (pWin, 
 							      x - oldx,
 							      y - oldy,
 							      pRegion);
+	}
+
+	/*
+	 * add screen bits to the appropriate bucket
+	 */
+
+	if (oldWinClip)
+	{
+	    /*
+	     * clip to new clipList
+	     */
+	    gravityTranslate (x, y, oldx, oldy, dw, dh, pWin->bitGravity, &nx, &ny);
+	    (*pScreen->RegionCopy) (pRegion, oldWinClip);
+	    (*pScreen->TranslateRegion) (pRegion, nx - oldx, ny - oldy);
+	    (*pScreen->Intersect) (oldWinClip, pRegion, pWin->clipList);
+	    /*
+	     * don't step on any gravity bits which will be copied after this
+	     * region.  Note -- this assumes that the regions will be copied
+	     * in gravity order.
+	     */
+	    for (g = pWin->bitGravity + 1; g <= StaticGravity; g++)
+	    {
+		(*pScreen->Subtract) (oldWinClip, oldWinClip, gravitate[g]);
 	    }
-            oldpt.x = oldx - x + pWin->absCorner.x;
-	    oldpt.y = oldy - y + pWin->absCorner.y;
-	    (* pWin->CopyWindow)(pWin, oldpt, oldRegion);
+	    (*pScreen->TranslateRegion) (oldWinClip, oldx - nx, oldy - ny);
+	    g = pWin->bitGravity;
+	    if (!gravitate[g])
+		gravitate[g] = oldWinClip;
+	    else
+	    {
+		(*pScreen->Union) (gravitate[g], gravitate[g], oldWinClip);
+		(*pScreen->RegionDestroy) (oldWinClip);
+	    }
+	}
 
+	/*
+	 * move the bits on the screen
+	 */
 
-	    /* Note that oldRegion is *translated* by CopyWindow */
+	destClip = NULL;
+
+	for (g = 0; g <= StaticGravity; g++)
+	{
+	    if (!gravitate[g])
+	    	continue;
+
+	    gravityTranslate (x, y, oldx, oldy, dw, dh, g, &nx, &ny);
+
+            oldpt.x = oldx + (x - nx);
+	    oldpt.y = oldy + (y - ny);
+
+	    /* Note that gravitate[g] is *translated* by CopyWindow */
+
+	    /* only copy the remaining useful bits */
+
+	    (*pScreen->Intersect) (gravitate[g], gravitate[g], oldRegion);
+	    
+	    /* clip to not overwrite already copied areas */
+
+	    if (destClip) {
+		(*pScreen->TranslateRegion) (destClip, oldpt.x - x, oldpt.y - y);
+		(*pScreen->Subtract) (gravitate[g], gravitate[g], destClip);
+		(*pScreen->TranslateRegion) (destClip, x - oldpt.x, y - oldpt.y);
+	    }
+
+	    /* and move those bits */
+	    
+	    if (oldpt.x != x || oldpt.y != y)
+		(*pWin->CopyWindow)(pWin, oldpt, gravitate[g]);
+
+	    /* remove any overwritten bits from the remaining useful bits */
+
+	    (*pScreen->Subtract) (oldRegion, oldRegion, gravitate[g]);
 
 	    /*
-	     * We've taken care of those spots in oldRegion so they needn't
-	     * be re-exposed...
+	     * recompute exposed regions of child windows
 	     */
-	    (* pScreen->Subtract)(pWin->exposed, pWin->clipList, oldRegion);
-	    (* pScreen->RegionDestroy)(pRegion);
+	
+	    for (pChild = pWin->firstChild; pChild; pChild = pChild->nextSib)
+	    {
+		if (pChild->winGravity != g)
+		    continue;
+		(*pScreen->Intersect) (pRegion, pChild->borderClip, gravitate[g]);
+		TraverseTree (pChild, RecomputeExposures, pRegion);
+	    }
 
-	    /* CopyWindow will step on borders, so repaint them */
-	    (* pScreen->Subtract)(pWin->borderExposed, 
-				  pWin->borderClip, pWin->winSize);
+	    /*
+	     * remove the successfully copied regions of the
+	     * window from its exposed region
+	     */
 
-	    HandleExposures(pParent);
-	    (* pScreen->RegionDestroy)(oldRegion);
+	    if (g == pWin->bitGravity)
+		(*pScreen->Subtract) (pWin->exposed, pWin->exposed, gravitate[g]);
+	    if (!destClip)
+	    	destClip = gravitate[g];
+	    else
+	    {
+		(*pScreen->Union) (destClip, destClip, gravitate[g]);
+		(*pScreen->RegionDestroy) (gravitate[g]);
+	    }
 	}
+
+	(*pScreen->RegionDestroy) (oldRegion);
+	(*pScreen->RegionDestroy) (pRegion);
+	if (destClip)
+	    (*pScreen->RegionDestroy) (destClip);
+
+	HandleExposures(pParent);
 #ifdef DO_SAVE_UNDERS
 	if (DO_SAVE_UNDERS(pWin))
 	{
