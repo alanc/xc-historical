@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: inputstr.h,v 1.16 88/08/16 22:27:19 rws Exp $ */
+/* $XConsortium: inputstr.h,v 1.17 88/09/06 15:47:47 jim Exp $ */
 
 #ifndef INPUTSTRUCT_H
 #define INPUTSTRUCT_H
@@ -93,7 +93,7 @@ typedef struct _DeviceIntRec {
     TimeStamp	grabTime;
     Bool	startup;		/* true if needs to be turned on at
 				          server intialization time */
-    DeviceProc	deviceProc;		/* proc(DevicePtr, DEVICE_??). It is
+    DeviceProc	deviceProc;		/* proc(DevicePtr, DEVICE_xx). It is
 					  used to initialize, turn on, or
 					  turn off the device */
     Bool	inited;			/* TRUE if INIT returns Success */
