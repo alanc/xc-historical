@@ -1,4 +1,4 @@
-/* $XConsortium: wsb.c,v 5.5 92/01/29 09:48:14 hersh Exp $ */
+/* $XConsortium: wsb.c,v 5.6 92/01/29 17:41:33 mor Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -455,6 +455,9 @@ wsb_create_resources( ws )
     pexBitmask		dyn_tbls, dyn_nsets, dyn_attrs;
     Pint		err;
     CARD16		*card16_p;
+    Drawable            draw;
+    int                 numbufs, mbuf_event_base, mbuf_error_base;;
+
 
     /* Create the LUTs, renderer and pipeline context. */
     if ( !phg_wsx_create_LUTs( ws, 1, &err ) ) {
@@ -478,9 +481,44 @@ wsb_create_resources( ws )
     }
     */
 
+    /* Check the Workstation buffer mode and do the double buffer
+       create here if necessary This is simpler than on the workstation
+       since this PHIGS implementation only lets the Double Buffers
+       be created when the workstation is created, so no change action
+       need be done
+    */
+
+    /* initialize the local drawable variable */
+    draw = ws->drawable_id;
+    ws->out_ws.model.b.has_double_buffer = FALSE;
+
+    if (ws->type->desc_tbl.xwin_dt.buffer_mode == PHIGS_BUF_DOUBLE) {
+      if (XmbufQueryExtension(ws->display, &mbuf_event_base, &mbuf_error_base)){
+
+        /* the Multi-Buffer extension is there */
+        numbufs = XmbufCreateBuffers(ws->display, ws->drawable_id, 2,
+                     MultibufferUpdateActionBackground,
+                     MultibufferUpdateHintFrequent,
+                     &ws->out_ws.model.b.double_drawable[0]);
+        if  (numbufs == 2) {
+          /* got the buffers OK */
+          ws->out_ws.model.b.front = 0;
+          ws->out_ws.model.b.back = 1;
+          ws->out_ws.model.b.has_double_buffer = TRUE;
+          draw = ws->out_ws.model.b.double_drawable[1];
+          /* this isn't implemented yet
+            XmbufClearBufferArea(ws->display, draw, 0, 0, 0, 0, False);
+          */
+        } else
+          /* buffers didn't get created correctly, bag them  */
+          XmbufDestroyBuffers(ws->display, ws->drawable_id);
+      }
+    }
+
+
     /* Create the renderer, initializing the necessary attributes. */
     ws->rid = XAllocID(ws->display);
-    (void)PEXCreateRenderer( ws->display, ws->rid, ws->drawable_id,
+    (void)PEXCreateRenderer( ws->display, ws->rid, draw,
 	(pexBitmask)0, (CARD32)0, (char *)NULL );
 
     /* Make an inquiry to see if the create worked. */
@@ -798,10 +836,16 @@ phg_wsb_repaint_all( ws, clear_control, num_rects, exposure_rects )
     XRectangle	*exposure_rects;	/* may be NULL */
 {
     Wsb_output_ws	*owsb = &ws->out_ws.model.b;
+    int                 tmp;
+    Drawable            draw;
 
     register int	i;
 
-    if( clear_control == PFLAG_ALWAYS || owsb->surf_state == PSURF_NOT_EMPTY ) {
+    /* assuming this stuff does clear then don't do it when using Double Buff
+       since the swap will take care of that
+    */
+    if ((clear_control == PFLAG_ALWAYS || owsb->surf_state == PSURF_NOT_EMPTY)
+       && !ws->out_ws.model.b.has_double_buffer) {
 	/* TODO: Need a way to "clear" the window that uses the zero-th
 	 * entry in the WS colour table and runs it through colour mapping.
 	 */
@@ -816,7 +860,21 @@ phg_wsb_repaint_all( ws, clear_control, num_rects, exposure_rects )
     }
     owsb->surf_state = PSURF_EMPTY;
 
-    phg_wsb_traverse_all_postings( ws );
+    /* set the drawable correctly */
+    if (ws->out_ws.model.b.has_double_buffer)
+        draw = ws->out_ws.model.b.double_drawable[ws->out_ws.model.b.back];
+    else  /* single buffer */
+        draw = ws->drawable_id;
+
+    phg_wsb_traverse_all_postings( ws, draw );
+
+    /* now swap the buffers and update the drawable indices */
+    if (ws->out_ws.model.b.has_double_buffer) {
+          XmbufDisplayBuffers(ws->display, 1, &draw, 0, 0);
+          tmp = ws->out_ws.model.b.front;
+          ws->out_ws.model.b.front  = ws->out_ws.model.b.back;
+          ws->out_ws.model.b.back = tmp;
+    }
 
     /* Redraw input prompts & echos of any active input devices. */
     if ( ws->input_repaint && WS_ANY_INP_DEV_ACTIVE(ws) )
@@ -827,8 +885,9 @@ phg_wsb_repaint_all( ws, clear_control, num_rects, exposure_rects )
 
 
 void
-phg_wsb_traverse_all_postings( ws )
+phg_wsb_traverse_all_postings( ws, draw )
     Ws		*ws;
+    Drawable            draw;
 {
     register Wsb_output_ws	*owsb = &ws->out_ws.model.b;
     register Ws_post_str	*post_str, *end;
@@ -838,7 +897,7 @@ phg_wsb_traverse_all_postings( ws )
 	/* Set up for complete traversal. */
 	post_str = owsb->posted.lowest.higher;
 	end = &(owsb->posted.highest);
-	PEXBeginRendering( ws->display, ws->rid, ws->drawable_id );
+	PEXBeginRendering( ws->display, ws->rid, draw);
 	while ( post_str != end ) {
 	    phg_wsb_traverse_net( ws, post_str->structh );
 	    post_str = post_str->higher;
