@@ -17,9 +17,18 @@ without any express or implied warranty.
 
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
 
-/* $XConsortium: shmstr.h,v 1.5 89/08/31 12:58:17 rws Exp $ */
+#ifndef _SHMSTR_H_
+#define _SHMSTR_H_
+
+/* $XConsortium: shmstr.h,v 1.6 91/07/12 09:18:52 rws Exp $ */
 
 #include "XShm.h"
+
+#define ShmSeg CARD32
+#define Drawable CARD32
+#define VisualID CARD32
+#define GContext CARD32
+#define Pixmap CARD32
 
 #define SHMNAME "MIT-SHM"
 
@@ -166,3 +175,11 @@ typedef struct _ShmCompletion {
     CARD32	pad2 B32;
 } xShmCompletionEvent;
 #define sz_xShmCompletionEvent	32
+
+#undef ShmSeg
+#undef Drawable
+#undef VisualID
+#undef GContext
+#undef Pixmap
+
+#endif /* _SHMSTR_H_ */
