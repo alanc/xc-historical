@@ -1,4 +1,4 @@
-/* $XConsortium: FSlibInt.c,v 1.15 94/02/07 13:18:30 gildea Exp $ */
+/* $XConsortium: FSlibInt.c,v 1.16 94/04/17 20:15:21 gildea Exp gildea $ */
 
 /*
  * Copyright 1990 Network Computing Devices;
@@ -58,6 +58,7 @@ in this Software without prior written authorization from the X Consortium.
  */
 #include <stdio.h>
 #include "FSlibint.h"
+#include <X11/Xos.h>
 
 static void _EatData32();
 
@@ -904,11 +905,7 @@ static char *
 _SysErrorMsg(n)
     int         n;
 {
-#ifndef WIN32
-    extern char *sys_errlist[];
-    extern int  sys_nerr;
-#endif
-    char       *s = ((n >= 0 && n < sys_nerr) ? sys_errlist[n] : "unknown error");
+    char       *s = strerror(n);
 
     return (s ? s : "no such error");
 }
