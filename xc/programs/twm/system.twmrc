@@ -1,0 +1,42 @@
+#**********************************************************************
+#
+#  system.twmrc
+#
+#**********************************************************************
+
+Button1 =    : title : f.raise
+Button2 =    : title : f.move
+Button3 =    : title : f.lower
+
+Button1 =    : frame : f.raise
+Button2 =    : frame : f.move
+Button3 =    : frame : f.lower
+
+Button1 =    : icon  : f.iconify
+Button2 =    : icon  : f.move
+Button3 =    : icon  : f.lower
+
+Button1 =    : root  : f.menu "Clients"
+Button2 =    : root  : f.menu "TwmWindows"
+Button3 =    : root  : f.menu "Window Ops"
+
+Menu "Clients"
+{
+    "Clients"		f.title
+    "xterm 80x24"	!"xterm -fn fixed -geom 80x24 &"
+    "xterm 80x48"	!"xterm -fn fixed -geom 80x48 &"
+    "xclock"		!"xclock -geom 100x100 &"
+}
+
+Menu "Window Ops"
+{
+    "Window Ops"	f.title
+    "Refresh Screen"	f.refresh
+    "Refresh Window"	f.winrefresh
+    "Move"		f.move
+    "Raise"		f.raise
+    "Lower"		f.lower
+    "Resize"		f.resize
+    "(De)Iconify"	f.iconify
+    "Quit twm"		f.quit
+}

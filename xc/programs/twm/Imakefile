@@ -1,0 +1,74 @@
+#
+#Here is an Imakefile for twm.  It depends on having TWMDIR defined
+#in Imake.tmpl.  I like to use Imakefiles for everything, and I am sure
+#other people do also, so perhaps you could do us all a favor and
+#distribute this one.
+#
+
+#ifndef SignalReturnProcType
+#if defined(HPArchitecture) && OSMajorVersion <= 6 && OSMajorVersion <= 2
+#define SignalReturnProcType int
+#endif
+#if defined(SunArchitecture) && OSMajorVersion <= 3
+#define SignalReturnProcType int
+#endif
+#if defined(SunArchitecture) && OSMajorVersion >= 4
+#define SignalReturnProcType void
+#endif
+#if defined(MacIIArchitecture)
+#define SignalReturnProcType int
+#endif
+#if defined(UltrixArchitecture)
+#define SignalReturnProcType void
+#endif
+#if defined(ApolloArchitecture)
+#define SignalReturnProcType int
+#endif
+
+#ifndef SignalReturnProcType
+#define SignalReturnProcType int	/* not correct, but works more often */
+#endif
+#endif
+
+#if defined(SunArchitecture) || defined(UltrixArchitecture)
+#define HasPutenv
+#endif
+
+#ifndef HasPutenv
+      PUTENVDEF = -DNOPUTENV
+#endif
+
+       PROGRAMS = twm
+LOCAL_LIBRARIES = $(EXTENSIONLIB) $(XLIB)
+      OTHERSRCS = gram.y lex.l
+         YFLAGS = -d
+       SHAPEDEF = -DSHAPE
+        DEFINES = -DSIGPROCTYPE=SignalReturnProcType $(SHAPEDEF) $(PUTENVDEF)
+#       DEFINES = -DNOFOCUS
+
+SRCS1=	add_window.c gc.c list.c twm.c parse.c\
+        menus.c events.c resize.c util.c version.c iconmgr.c\
+	cursor.c icons.c
+
+OBJS1=	gram.o lex.o add_window.o gc.o list.o twm.o parse.o\
+        menus.o events.o resize.o util.o version.o iconmgr.o\
+	cursor.o icons.o
+
+all:: $(PROGRAMS)
+
+depend:: gram.h
+
+ComplexProgramTarget_1(twm,$(LOCAL_LIBRARIES),)
+
+InstallNonExec(Sample.twmrc, $(LIBDIR))
+InstallNonExec(Expert.twmrc, $(LIBDIR))
+InstallNonExec(Toms.twmrc, $(LIBDIR))
+InstallNonExec(xterm.icon, $(INCDIR)/bitmaps)
+
+gram.h gram.c: gram.y
+	yacc -d gram.y
+	$(MV) y.tab.c gram.c
+	$(MV) y.tab.h gram.h
+
+clean::
+	$(RM) y.tab.h y.tab.c lex.yy.c gram.h gram.c lex.c
