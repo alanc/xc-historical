@@ -1,4 +1,4 @@
-/* $XConsortium: XInput.h,v 1.18 94/02/21 10:38:50 rws Exp $ */
+/* $XConsortium: XInput.h,v 1.19 94/02/21 11:02:57 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -921,7 +921,7 @@ extern int	XGetDeviceFocus(
     XDevice*		/* device */,
     Window*		/* focus */,
     int*		/* revert_to */,
-    int*		/* time */
+    Time*		/* time */
 #endif
 );
 
