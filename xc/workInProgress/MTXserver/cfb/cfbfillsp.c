@@ -71,7 +71,7 @@ OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbfillsp.c,v 1.1 93/12/31 11:21:41 rob Exp $ */
+/* $XConsortium: cfbfillsp.c,v 1.2 94/01/04 00:02:07 rob Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -626,7 +626,7 @@ cfb8Stipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     cfbPrivGCPtr    devPriv;
 #ifdef MTX
     StippleRec      *pstipple;
-#endif MTX
+#endif /* MTX */
 
     devPriv = cfbGetGCPrivate(pGC);
 #ifdef MTX
@@ -635,7 +635,7 @@ cfb8Stipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     {
 #endif /* MTX */
 	cfb8CheckStipple (pGC->alu, pGC->fgPixel, pGC->planemask);
-#ifdef MTX
+#ifdef /* MTX */
 	pstipple->change = FALSE;
     }
 #endif /* MTX */
