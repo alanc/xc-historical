@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.149 93/08/15 18:07:22 converse Exp $ */
+/* $XConsortium: Event.c,v 1.150 93/08/15 18:55:41 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1157,85 +1157,78 @@ static Boolean DefaultDispatcher(event)
     GrabType    grabType;
     XtPerDisplayInput pdi;
     XtGrabList  grabList;
+    Boolean	was_dispatched = False;
 
     /* the default dispatcher discards all extension events */
     if (event->type >= LASTEvent)
 	return False;
 
-    grabType = pass;
     switch (event->type) {
       case KeyPress:
       case KeyRelease:
       case ButtonPress:
-      case ButtonRelease:	grabType = remap;
-				break;
+      case ButtonRelease:	grabType = remap;	break;
       case MotionNotify:
-      case EnterNotify:		grabType = ignore;
-	                        break;
+      case EnterNotify:		grabType = ignore;	break;
+      default:			grabType = pass;	break;
     }
+
     widget = XtWindowToWidget (event->xany.display, event->xany.window);
     pdi = _XtGetPerDisplayInput(event->xany.display);
     grabList = *_XtGetGrabList(pdi);
 
     if (widget == NULL) {
-	if (grabType != remap)
-	    return XFilterEvent(event, None);
-	/* event occurred in a non-widget window, but we've promised also
-	   to dispatch it to the nearest accessible spring_loaded widget */
-	else if ((widget = LookupSpringLoaded(grabList)) != NULL) {
-	    if (XFilterEvent(event, XtWindow(widget)))
-		return True;
-	    return XtDispatchEventToWidget(widget, event);
+	if (grabType == remap
+	    && (widget = LookupSpringLoaded(grabList)) != NULL) {
+	    /* event occurred in a non-widget window, but we've promised also
+	       to dispatch it to the nearest accessible spring_loaded widget */
+	    was_dispatched = (XFilterEvent(event, XtWindow(widget))
+			      || XtDispatchEventToWidget(widget, event));
 	}
-	return XFilterEvent(event, None);
+	else was_dispatched = XFilterEvent(event, None);
     }
-
-    switch (grabType) {
-      case pass:
-	if (XFilterEvent(event, XtWindow(widget)))
-	    return True;
-	return XtDispatchEventToWidget(widget, event);
-
-      case ignore:
+    else if (grabType == pass) {
+	was_dispatched = (XFilterEvent(event, XtWindow(widget))
+			  || XtDispatchEventToWidget(widget, event));
+    } 
+    else if (grabType == ignore) {
 	if ((grabList == NULL || _XtOnGrabList(widget, grabList))
 	    && XtIsSensitive(widget)) {
-	    if (XFilterEvent(event, XtWindow(widget)))
-		return True;
-	    return DispatchEvent(event, widget);
+	    was_dispatched = (XFilterEvent(event, XtWindow(widget))
+			      || DispatchEvent(event, widget));
 	}
-	return False;
-
-      case remap: {
-	  Boolean	was_dispatched = False;
-	  Widget	dspWidget;
-	  EventMask	mask = _XtConvertTypeToMask(event->type);
-	  extern Widget	_XtFindRemapWidget();
-	  extern void	_XtUngrabBadGrabs();
-
-	  dspWidget = _XtFindRemapWidget(event, widget, mask, pdi);
-	    
-	  if ((grabList == NULL || _XtOnGrabList(dspWidget, grabList))
-	      && XtIsSensitive(dspWidget)) {
-	      if (XFilterEvent(event, XtWindow(dspWidget)))
-		  return True;
-	      was_dispatched = XtDispatchEventToWidget(dspWidget, event);
-	  }
-	  else _XtUngrabBadGrabs(event, widget, mask, pdi);
-		
-	  /* Also dispatch to nearest accessible spring_loaded. */
-	  /* Fetch this afterward to reflect modal list changes */
-	  grabList = *_XtGetGrabList(pdi);
-	  widget = LookupSpringLoaded(grabList);
-	  if (widget != NULL && widget != dspWidget) {
-	      if (XFilterEvent(event, XtWindow(widget)))
-		  return True;
-	      was_dispatched |= XtDispatchEventToWidget(widget, event);
-	  }
-	  return was_dispatched;
-      }
     }
-    /* should never reach here */
-    return False;
+    else if (grabType == remap) {
+	EventMask	mask = _XtConvertTypeToMask(event->type);
+	Widget		dspWidget;
+	Boolean		was_filtered = False;
+	extern Widget	_XtFindRemapWidget();
+	extern void	_XtUngrabBadGrabs();
+
+	dspWidget = _XtFindRemapWidget(event, widget, mask, pdi);
+	    
+	if ((grabList == NULL ||_XtOnGrabList(dspWidget, grabList))
+	    && XtIsSensitive(dspWidget)) {
+	    was_dispatched =
+		((was_filtered = XFilterEvent(event, XtWindow(dspWidget)))
+		 || XtDispatchEventToWidget(dspWidget, event));
+	}
+	else _XtUngrabBadGrabs(event, widget, mask, pdi);
+
+	if (!was_filtered) {
+	    /* Also dispatch to nearest accessible spring_loaded. */
+	    /* Fetch this afterward to reflect modal list changes */
+	    grabList = *_XtGetGrabList(pdi);
+	    widget = LookupSpringLoaded(grabList);
+	    if (widget != NULL && widget != dspWidget) {
+		was_dispatched = (XFilterEvent(event, XtWindow(widget))
+				  || XtDispatchEventToWidget(widget, event)
+				  || was_dispatched);
+	    }
+	}
+    }
+
+    return was_dispatched;
 }
 
 Boolean XtDispatchEvent (event)
