@@ -24,8 +24,8 @@
         DEPLIBS = $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
 LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
   SYS_LIBRARIES = -lm
-           SRCS = xmag.c CutAndPaste.c RootWindow.c Scale.c 
-           OBJS = xmag.o CutAndPaste.o RootWindow.o Scale.o
+           SRCS = xmag.c CutPaste.c RootWindow.c Scale.c 
+           OBJS = xmag.o CutPaste.o RootWindow.o Scale.o
 
 ComplexProgramTarget(xmag)
 InstallAppDefaults(Xmag)
