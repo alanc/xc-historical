@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shape.c,v 1.8 89/04/11 09:53:14 rws Exp $ */
+/* $XConsortium: shape.c,v 1.9 89/04/13 13:29:09 keith Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -708,7 +708,7 @@ SendShapeNotify (pWin, which)
 	se.shaped = shaped;
 	if (client->swapped) {
 	    swapl (&se.window, n);
-	    swapl (&se.sequenceNumber, n);
+	    swaps (&se.sequenceNumber, n);
 	    swaps (&se.x, n);
 	    swaps (&se.y, n);
 	    swaps (&se.width, n);
