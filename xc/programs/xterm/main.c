@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.136 89/12/09 16:24:03 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.137 89/12/09 17:23:51 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -87,7 +87,6 @@ SOFTWARE.
 #undef FIONCLEX
 #define setpgrp2 setpgrp
 #include <sgtty.h>
-#include <sys/wait.h>
 #include <sys/resource.h>
 #endif
 #ifdef hpux
@@ -98,12 +97,10 @@ SOFTWARE.
 
 #ifndef SYSV				/* BSD systems */
 #include <sgtty.h>
-#include <sys/wait.h>
 #include <sys/resource.h>
 #define HAS_UTMP_UT_HOST
 #define HAS_BSD_GROUPS
 #endif	/* !SYSV */
-
 
 #include <stdio.h>
 #include <errno.h>
@@ -149,8 +146,9 @@ int	Ptyfd;
 #include "menu.h"
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
-#ifdef hpux
 #ifdef SIGTSTP
+#include <sys/wait.h>
+#ifdef hpux
 #include <sys/bsdtty.h>
 #endif
 #endif
