@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Scroll.c,v 1.42 88/09/06 16:42:16 jim Exp $";
+    "$XConsortium: Scroll.c,v 1.43 88/09/26 12:50:20 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -217,6 +217,8 @@ static FillArea(w, top, bottom, thumb)
 {
     Dimension length = bottom-top;
 
+    if (bottom < 0) return;
+
     switch(thumb) {
 	/* Fill the new Thumb location */
       case 1:
@@ -412,10 +414,28 @@ static void Redisplay( gw, event, region )
    Region region;		/* unused, NULL if called from Resize() */
 {
     ScrollbarWidget w = (ScrollbarWidget) gw;
+    int x, y;
+    unsigned int width, height;
 
-    /* Forces entire thumb to be painted. */
-    w->scrollbar.topLoc = -(w->scrollbar.shownLength);
-    PaintThumb( w ); 
+    if (w->scrollbar.orientation == XtorientHorizontal) {
+	x = w->scrollbar.topLoc;
+	y = 1;
+	width = w->scrollbar.shownLength;
+	height = w->core.height - 2;
+    } else {
+	x = 1;
+	y = w->scrollbar.topLoc;
+	width = w->core.width - 2;
+	height = w->scrollbar.shownLength;
+    }
+
+    if (XRectInRegion(region, x, y, width, height) != RectangleOut) {
+	XSetRegion( XtDisplay(w), w->scrollbar.gc, region );
+	/* Forces entire thumb to be painted. */
+	w->scrollbar.topLoc = -(w->scrollbar.length + 1);
+	PaintThumb( w ); 
+	XSetClipMask( XtDisplay(w), w->scrollbar.gc, None );
+    }
 }
 
 
