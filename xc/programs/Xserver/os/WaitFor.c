@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: WaitFor.c,v 1.62 93/09/22 19:43:26 rws Exp $ */
+/* $XConsortium: WaitFor.c,v 1.63 93/09/23 10:51:51 dpw Exp $ */
 
 /*****************************************************************
  * OS Depedent input routines:
@@ -99,7 +99,7 @@ extern int playback_on;
  *     pClientsReady is an array to store ready client->index values into.
  *****************/
 
-static long timeTilFrob = 0;		/* while screen saving */
+static INT32 timeTilFrob = 0;		/* while screen saving */
 
 int
 WaitForSomething(pClientsReady)
@@ -107,10 +107,10 @@ WaitForSomething(pClientsReady)
 {
     int i;
     struct timeval waittime, *wt;
-    long timeout;
+    INT32 timeout;
     FdSet clientsReadable;
     FdSet clientsWritable;
-    long curclient;
+    int curclient;
     int selecterr;
     int nready;
     FdSet devicesReadable;
@@ -136,7 +136,7 @@ WaitForSomething(pClientsReady)
 		       (GetTimeInMillis() - lastDeviceEventTime.milliseconds));
 	    if (timeout <= 0) /* may be forced by AutoResetServer() */
 	    {
-		long timeSinceSave;
+		INT32 timeSinceSave;
 
 		timeSinceSave = -timeout;
 		if ((timeSinceSave >= timeTilFrob) && (timeTilFrob >= 0))
@@ -295,7 +295,7 @@ WaitForSomething(pClientsReady)
 		{
 		    pClientsReady[nready++] = client_index;
 		}
-		clientsReadable[i] &= ~(1 << curclient);
+		clientsReadable[i] &= ~(((FdMask)1) << curclient);
 	    }
 	}	
     }
