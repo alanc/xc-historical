@@ -1,5 +1,5 @@
 /*
- * $XConsortium: handler.c,v 1.23 91/07/09 09:39:26 rws Exp $
+ * $XConsortium: handler.c,v 1.24 91/10/09 11:21:39 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -587,6 +587,7 @@ XtPointer res_box_ptr, filename_ptr;
     FILE * fp;
     char buf[BUFSIZ], * resource_string, *filename = (char *) filename_ptr;
     ResourceBoxInfo * res_box = (ResourceBoxInfo *) res_box_ptr;
+    char *value_ptr;
 
     if (filename != NULL) {
 	if (global_resources.allocated_save_resources_file) 
@@ -608,8 +609,11 @@ XtPointer res_box_ptr, filename_ptr;
 
     XtSetArg(args[0], XtNlabel, &resource_string);
     XtGetValues(res_box->res_label, args, ONE);
-    fputs(resource_string, fp);
-    fputs("\n", fp);
+
+    XtSetArg(args[0], XtNstring, &value_ptr);
+    XtGetValues(res_box->value_wid, args, ONE);
+
+    fprintf(fp, "%s %s\n", resource_string, value_ptr);
 
     fclose(fp);
 }
