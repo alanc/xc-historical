@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: VarCreate.c,v 1.3 89/11/08 17:46:42 swick Exp $";
+    "$XConsortium: VarCreate.c,v 1.4 89/11/09 15:50:17 swick Exp $";
 #endif
 
 /*
@@ -24,6 +24,8 @@ without express or implied warranty.
 
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
+#include <X11/Shell.h>
+#include "Xtos.h"
 #include "VarargsI.h"
 
 extern Widget _XtCreateWidget();
@@ -54,12 +56,12 @@ _XtVaCreateWidget(name, widget_class, parent, var)
 }
 
 
-#ifdef _STDC_
+#if IncludePrototypes
 Widget
 XtVaCreateWidget(String name, WidgetClass widget_class, Widget parent, ...)
 #else
-Widget
-XtVaCreateWidget(name, widget_class, parent, va_alist)
+/*VARARGS3*/
+Widget XtVaCreateWidget(name, widget_class, parent, va_alist)
     String name;
     WidgetClass widget_class;
     Widget parent;
@@ -77,12 +79,12 @@ XtVaCreateWidget(name, widget_class, parent, va_alist)
 }
 
 
-#ifdef _STDC_
+#if IncludePrototypes
 Widget
 XtVaCreateManagedWidget(String name, WidgetClass widget_class, Widget parent, ...)
 #else
-Widget
-XtVaCreateManagedWidget(name, widget_class, parent, va_alist)
+/*VARARGS3*/
+Widget XtVaCreateManagedWidget(name, widget_class, parent, va_alist)
     String name;
     WidgetClass widget_class;
     Widget parent;
@@ -101,12 +103,12 @@ XtVaCreateManagedWidget(name, widget_class, parent, va_alist)
 }
 
 
-#ifdef _STDC_
+#if IncludePrototypes
 Widget
 XtVaAppCreateShell(String name, String class, WidgetClass widget_class, Display* display, ...)
 #else
-Widget
-XtVaAppCreateShell(name, class, widget_class, display, va_alist)
+/*VARARGS4*/
+Widget XtVaAppCreateShell(name, class, widget_class, display, va_alist)
     String name;
     String class;
     WidgetClass widget_class;
@@ -133,12 +135,12 @@ XtVaAppCreateShell(name, class, widget_class, display, va_alist)
 }
 
 
-#ifdef _STDC_
+#if IncludePrototypes
 Widget
 XtVaCreatePopupShell(String name, WidgetClass widget_class, Widget parent, ...)
 #else
-Widget
-XtVaCreatePopupShell(name, widget_class, parent, va_alist)
+/*VARARGS3*/
+Widget XtVaCreatePopupShell(name, widget_class, parent, va_alist)
     String name;
     WidgetClass widget_class;
     Widget parent;
@@ -163,12 +165,12 @@ XtVaCreatePopupShell(name, widget_class, parent, va_alist)
     return widget;
 }
 
-#ifdef _STDC_
+#if IncludePrototypes
 void
 XtVaSetValues(Widget widget, ...)
 #else
-void
-XtVaSetValues(widget, va_alist)
+/*VARARGS1*/
+void XtVaSetValues(widget, va_alist)
     Widget widget;
     va_dcl
 #endif
@@ -189,12 +191,12 @@ XtVaSetValues(widget, va_alist)
 }
 
 
-#ifdef _STDC_
+#if IncludePrototypes
 void
 XtVaSetSubvalues(XtPointer base, XtResourceList resources, Cardinal num_resources, ...)
 #else
-void
-XtVaSetSubvalues(base, resources, num_resources, va_alist)
+/*VARARGS3*/
+void XtVaSetSubvalues(base, resources, num_resources, va_alist)
     XtPointer base;
     XtResourceList resources;
     Cardinal num_resources;
@@ -225,17 +227,17 @@ XtVaSetSubvalues(base, resources, num_resources, va_alist)
     va_end(var);
 }
 
-#ifdef _STDC_
+#if IncludePrototypes
 Widget
 XtVaAppInitialize(XtAppContext *app_context_return, String application_class,
 		  XrmOptionDescList options, Cardinal num_options,
 		  Cardinal *argc_in_out, String *argv_in_out,
 		  String *fallback_resources, ...)
 #else
-Widget
-XtVaAppInitialize(app_context_return, application_class, options,
-		  num_options, argc_in_out, argv_in_out,
-		  fallback_resources, va_alist)
+/*VARARGS7*/
+Widget XtVaAppInitialize(app_context_return, application_class, options,
+			 num_options, argc_in_out, argv_in_out,
+			 fallback_resources, va_alist)
     XtAppContext *app_context_return;
     String application_class;
     XrmOptionDescList options;
@@ -246,31 +248,74 @@ XtVaAppInitialize(app_context_return, application_class, options,
     va_dcl
 #endif
 {
-	Widget		w;
-	ArgList		args = (ArgList)NULL;
-	Cardinal	num_args;
-	va_list		var;
-	int		total_count, typed_count;		
+    XtAppContext app_con;
+    Display * dpy;
+    String *saved_argv;
+    register int i, saved_argc = *argc_in_out;
+    Widget root;
+    va_list var;
+    String attr;
+    int count = 0;
+    XtTypedArgList typed_args;
 
-	Va_start(var, fallback_resources);
+    XtToolkitInitialize();
+    
+/*
+ * Save away argv and argc so we can set the properties later 
+ */
+    
+    saved_argv = (String *)
+	ALLOCATE_LOCAL( (Cardinal)((*argc_in_out + 1) * sizeof(String)) );
+    if (saved_argv == NULL) _XtAllocError(NULL);
 
-	_XtCountVaList(var, &total_count, &typed_count);
+    for (i = 0 ; i < saved_argc ; i++) saved_argv[i] = argv_in_out[i];
+    saved_argv[i] = NULL;	/* NULL terminate that sucker. */
 
-	if (typed_count != 0) {
-		XtWarning("XtVaTypedArg is an invalid argument to XtVaAppInitialize()\n");
-	}
 
-	_XtVaToArgList((Widget)NULL, &args, &num_args, var);
-	w = XtAppInitialize(app_context_return, application_class, options,
-			    num_options, argc_in_out, argv_in_out,
-			    fallback_resources, args, num_args);
+    app_con = XtCreateApplicationContext();
 
-	if (args != (ArgList)NULL) {
-		XtFree((char *)args);
-	}
+    if (fallback_resources != NULL) /* save a procedure call */
+	XtAppSetFallbackResources(app_con, fallback_resources);
 
-	va_end(var);
+    dpy = XtOpenDisplay(app_con, (String) NULL, NULL, application_class,
+			options, num_options, argc_in_out, argv_in_out);
 
-	return	w;
+    if (dpy == NULL)
+	XtErrorMsg("invalidDisplay","xtInitialize","XtToolkitError",
+                   "Can't Open display", (String *) NULL, (Cardinal *)NULL);
+
+    Va_start(var, fallback_resources);
+    for(attr = va_arg(var,String); attr != NULL; attr = va_arg(var,String)) {
+        ++count;
+        if (strcmp(attr, XtVaTypedArg) == 0) {
+            va_arg(var, String);
+            va_arg(var, String);
+            va_arg(var, XtArgVal);
+            va_arg(var, int);
+        } else {
+            va_arg(var, XtArgVal);
+        }
+    }
+    va_end(var);
+
+    Va_start(var, fallback_resources);
+    typed_args = _XtVaCreateTypedArgList(var, count);
+    va_end(var);
+    
+    root =
+	XtVaAppCreateShell( NULL, application_class, 
+			    applicationShellWidgetClass, dpy,
+			    XtNscreen, (XtArgVal)DefaultScreenOfDisplay(dpy),
+			    XtNargc, (XtArgVal)saved_argc,
+			    XtNargv, (XtArgVal)saved_argv,
+			    XtVaNestedList, (XtVarArgsList)typed_args,
+			    NULL );
+   
+    if (app_context_return != NULL)
+	*app_context_return = app_con;
+
+    XtFree((XtPointer)typed_args);
+    DEALLOCATE_LOCAL((XtPointer)saved_argv);
+    return(root);
 }
 
