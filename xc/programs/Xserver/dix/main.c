@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 5.4 89/07/18 18:17:25 rws Exp $ */
+/* $XConsortium: main.c,v 5.5 89/07/18 20:49:20 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -219,6 +219,11 @@ main(argc, argv)
 	if (screenInfo.numScreens < 1)
 	    FatalError("no screens found");
 	InitExtensions(argc, argv);
+	for (i = 0; i < screenInfo.numScreens; i++)
+	{
+	    if (!CreateRootWindow(screenInfo.screens[i]))
+		FatalError("failed to create root window");
+	}
 	InitInput(argc, argv);
 	if (InitAndStartDevices(argc, argv) != Success)
 	    FatalError("failed to initialize core devices");
@@ -592,7 +597,7 @@ AddScreen(pfnInit, argc, argv)
     WindowTable[i] = NullWindow;
     screenInfo.screens[i] = pScreen;
     screenInfo.numScreens++;
-    if ((*pfnInit)(i, pScreen, argc, argv) && CreateRootWindow(pScreen))
+    if ((*pfnInit)(i, pScreen, argc, argv))
     {
 	if (CreateGCperDepth(i))
 	{
