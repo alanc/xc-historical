@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XMultibuf.c,v 1.18 89/10/08 19:23:53 jim Exp $
+ * $XConsortium: XMultibuf.c,v 1.19 89/11/01 09:10:50 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -35,6 +35,8 @@ static /* const */ char *multibuf_extension_name = MULTIBUFFER_PROTOCOL_NAME;
 
 #define MbufCheckExtension(dpy,i,val) \
   XextCheckExtension (dpy, i, multibuf_extension_name, val)
+#define MbufSimpleCheckExtension(dpy,i) \
+  XextSimpleCheckExtension (dpy, i, multibuf_extension_name)
 
 
 /*****************************************************************************
@@ -342,14 +344,13 @@ void XmbufDestroyBuffers (dpy, window)
     register xMbufDestroyImageBuffersReq *req;
     int i;
 
-    MbufCheckExtension (dpy, info, /**/);
+    MbufSimpleCheckExtension (dpy, info);
 
     LockDisplay (dpy);
     MbufGetReq (MbufDestroyImageBuffers, req, info);
     req->window = window;
     UnlockDisplay (dpy);
     SyncHandle ();
-    return;
 }
 
 
@@ -370,7 +371,7 @@ void XmbufDisplayBuffers (dpy, count, buffers, min_delay, max_delay)
     register xMbufDisplayImageBuffersReq *req;
     int i;
 
-    MbufCheckExtension (dpy, info, /**/);
+    MbufSimpleCheckExtension (dpy, info);
 
     LockDisplay (dpy);
     MbufGetReq (MbufDisplayImageBuffers, req, info);
@@ -380,7 +381,6 @@ void XmbufDisplayBuffers (dpy, count, buffers, min_delay, max_delay)
     PackData32 (dpy, buffers, count * sizeof (Multibuffer));
     UnlockDisplay (dpy);
     SyncHandle();
-    return;
 }
 
 
@@ -436,7 +436,7 @@ void XmbufChangeWindowAttributes (dpy, w, valuemask, attr)
     XExtDisplayInfo *info = find_display (dpy);
     register xMbufSetMultiBufferAttributesReq *req;
 
-    MbufCheckExtension (dpy, info, /**/);
+    MbufSimpleCheckExtension (dpy, info);
 
     LockDisplay (dpy);
     MbufGetReq (MbufSetMultiBufferAttributes, req, info);
@@ -454,7 +454,6 @@ void XmbufChangeWindowAttributes (dpy, w, valuemask, attr)
     }
     UnlockDisplay (dpy);
     SyncHandle();
-    return;
 }
 
 
@@ -509,7 +508,7 @@ void XmbufChangeBufferAttributes (dpy, b, valuemask, attr)
     XExtDisplayInfo *info = find_display (dpy);
     register xMbufSetBufferAttributesReq *req;
 
-    MbufCheckExtension (dpy, info, /**/);
+    MbufSimpleCheckExtension (dpy, info);
 
     LockDisplay (dpy);
     MbufGetReq (MbufSetBufferAttributes, req, info);
@@ -527,7 +526,6 @@ void XmbufChangeBufferAttributes (dpy, b, valuemask, attr)
     }
     UnlockDisplay (dpy);
     SyncHandle();
-    return;
 }
 
 
