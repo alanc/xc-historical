@@ -1,4 +1,4 @@
-/* $XConsortium: mifax.c,v 1.3 93/11/01 09:00:52 dpw Exp $ */
+/* $XConsortium: mifax.c,v 1.4 93/11/01 11:00:50 dpw Exp $ */
 /**** module mifax.c ****/
 /******************************************************************************
 				NOTICE
@@ -344,7 +344,10 @@ int ActivateICPhotoFax(flo,ped,pet)
       register int i,size=state->strip_size;
       register unsigned char *ucp = state->strip;
       for (i=0; i<size; ++i)
-	*ucp = _ByteReverseTable[*ucp]; ucp++;
+      {
+	*ucp = _ByteReverseTable[*ucp];
+	ucp++;
+      }
     }
   }
   /*
@@ -387,7 +390,10 @@ int ActivateICPhotoFax(flo,ped,pet)
 	  register CARD8 *ucp = dbnd->dataMap[i];
 	  register int size=pbytes;
 	  while (size--)	
-	    *ucp = _ByteReverseTable[*ucp]; ucp++;
+	  {
+	    *ucp = _ByteReverseTable[*ucp];
+	    ucp++;
+	  }
 	}
       }
       state->o_line += lines_found;
