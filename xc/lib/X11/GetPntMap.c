@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XGetPntMap.c,v 1.11 89/12/09 19:14:32 rws Exp $ */
+/* $XConsortium: XGetPntMap.c,v 1.12 89/12/09 21:24:44 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -41,7 +41,7 @@ int XGetPointerMapping (dpy, map, nmaps)
 #if NeedFunctionPrototypes
 KeySym *XGetKeyboardMapping (Display *dpy,
 #if NeedWidePrototypes
-			     int first_keycode,
+			     unsigned int first_keycode,
 #else
 			     KeyCode first_keycode,
 #endif
