@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.23 89/10/09 16:21:00 jim Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.24 89/10/11 15:53:58 kit Exp $";
 #endif 
 
 /*
@@ -207,7 +207,11 @@ Widget request, new;
 
   file = InitStringOrFile(src);
   LoadPieces(src, file, NULL);
+
   if (file != NULL) fclose(file);
+
+  if ( src->ascii_src.type == XawAsciiString )
+      src->ascii_src.string = NULL;
 }
 
 /*	Function Name: ReadText
@@ -634,6 +638,9 @@ Widget current, request, new;
     if (file != NULL) fclose(file);
     XawTextSetSource( XtParent(new), new, 0);   /* Tell text widget
 						   what happened. */
+    if ( src->ascii_src.type == XawAsciiString )
+	src->ascii_src.string = NULL;
+
     total_reset = TRUE;
   }
 

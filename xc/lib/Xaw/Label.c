@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Label.c,v 1.73 89/10/09 16:51:38 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Label.c,v 1.74 89/10/21 09:41:16 swick Exp $";
 #endif /* lint */
 
 
@@ -41,6 +41,7 @@ SOFTWARE.
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/LabelP.h>
 
+#define streq(a,b) (strcmp( (a), (b) ) == 0)
 
 #define MULTI_LINE_LABEL 32767
 
@@ -76,7 +77,6 @@ static void Initialize();
 static void Resize();
 static void Redisplay();
 static Boolean SetValues();
-static Boolean SetValuesHook();
 static void ClassInitialize();
 static void Destroy();
 static XtGeometryResult QueryGeometry();
@@ -107,7 +107,7 @@ LabelClassRec labelClassRec = {
     /* resize		  	*/	Resize,
     /* expose		  	*/	Redisplay,
     /* set_values	  	*/	SetValues,
-    /* set_values_hook		*/	SetValuesHook,
+    /* set_values_hook		*/	NULL,
     /* set_values_almost	*/	XtInheritSetValuesAlmost,
     /* get_values_hook		*/	NULL,
     /* accept_focus	 	*/	NULL,
@@ -354,15 +354,34 @@ static void Resize(w)
  * Set specified arguments into widget
  */
 
+#define PIXMAP 0
+#define WIDTH 1
+#define HEIGHT 2
+#define NUM_CHECKS 3
+
 /* ARGSUSED */
-static Boolean SetValues(current, request, new)
+static Boolean SetValues(current, request, new, args, num_args)
     Widget current, request, new;
+    ArgList args;
+    Cardinal *num_args;
 {
     LabelWidget curlw = (LabelWidget) current;
     LabelWidget reqlw = (LabelWidget) request;
     LabelWidget newlw = (LabelWidget) new;
-    Boolean was_resized = False;
-    Boolean redisplay = False;
+    int i;
+    Boolean was_resized = False, redisplay = False, checks[NUM_CHECKS];
+
+    for (i = 0; i < NUM_CHECKS; i++)
+	checks[i] = FALSE;
+
+    for (i = 0; i < *num_args; i++) {
+	if (streq(XtNbitmap, args[i].name))
+	    checks[PIXMAP] = TRUE;
+	if (streq(XtNwidth, args[i].name))
+	    checks[WIDTH] = TRUE;
+	if (streq(XtNheight, args[i].name))
+	    checks[HEIGHT] = TRUE;
+    }
 
     if (newlw->label.label == NULL) {
 	newlw->label.label = newlw->core.name;
@@ -378,31 +397,22 @@ static Boolean SetValues(current, request, new)
 	was_resized = True;
     }
 
-    if (was_resized
-	|| (curlw->label.font != newlw->label.font)
-	|| (curlw->label.justify != newlw->label.justify)
-	|| (curlw->label.pixmap != newlw->label.pixmap)) {
+    if (was_resized || (curlw->label.font != newlw->label.font) ||
+	(curlw->label.justify != newlw->label.justify) || checks[PIXMAP]) {
 
 	SetTextWidthAndHeight(newlw);
 	was_resized = True;
-
-	}
+    }
 
     /* recalculate the window size if something has changed. */
     if (newlw->label.resize && was_resized) {
-	if (curlw->core.width == reqlw->core.width) {
-	    newlw->core.width =
-		newlw->label.label_width +2*newlw->label.internal_width;
-	    if (newlw->core.width != reqlw->core.width)
-		newlw->label.resize = True+1; /* %%% hack alert! */
-	}
+	if ((curlw->core.width == reqlw->core.width) && !checks[WIDTH])
+	    newlw->core.width = (newlw->label.label_width +
+				 2 * newlw->label.internal_width);
 
-	if (curlw->core.height == reqlw->core.height) {
-	    newlw->core.height =
-		newlw->label.label_height + 2*newlw->label.internal_height;
-	    if (newlw->core.height != reqlw->core.height)
-		newlw->label.resize = True+1; /* %%% hack alert! */
-	}
+	if ((curlw->core.height == reqlw->core.height) && !checks[HEIGHT])
+	    newlw->core.height = (newlw->label.label_height + 
+				  2 * newlw->label.internal_height);
     }
 
     if (curlw->label.foreground != newlw->label.foreground
@@ -427,39 +437,6 @@ static Boolean SetValues(current, request, new)
     return was_resized || redisplay ||
 	   XtIsSensitive(current) != XtIsSensitive(new);
 }
-
-/* This entire routine is a hack.  The semantics of Label are that it
- * resizes itself to the optimum geometry for the label, unless the
- * client gave an explicit geometry.  Unfortunately, we can't easily
- * distinguish the case that the explicit geometry was identical to
- * the current geometry through the normal SetValues method.
- */
-static Boolean SetValuesHook(w, args, num_args)
-    Widget w;
-    ArgList args;
-    Cardinal *num_args;
-{
-    if (((LabelWidget)w)->label.resize == True+1) {
-	int i;
-	Boolean have_width = False;
-	Boolean have_height = False;
-	for (i = *num_args; i; i--, args++) {
-	    if (strcmp(args->name, XtNwidth) == 0) {
-		w->core.width = (Dimension)args->value;
-		if (have_height) break;
-		have_width = True;
-	    }
-	    else if (strcmp(args->name, XtNheight) == 0) {
-		w->core.height = (Dimension)args->value;
-		if (have_width) break;
-		have_height = True;
-	    }
-	}
-	((LabelWidget)w)->label.resize = True;
-    }
-    return False;
-}
-
 
 static void Destroy(w)
     Widget w;
