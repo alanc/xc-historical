@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: bdfutils.c,v 1.4 92/03/16 20:58:35 keith Exp $ */
+/* $XConsortium: bdfutils.c,v 1.5 92/03/26 17:38:18 gildea Exp $ */
 
 #include <ctype.h>
 
@@ -85,7 +85,8 @@ bdfInformation(pFile, message, a0, a1, a2, a3, a4, a5)
 /***====================================================================***/
 
 /*
- * read the next (non-comment) line and keep a count for error messages
+ * read the next (non-comment) line and keep a count for error messages.
+ * Returns buf, or NULL if EOF.
  */
 
 unsigned char *
@@ -109,6 +110,8 @@ bdfGetLine(file, buf, len)
 	    *b++ = c;
 	}
 	*b = '\0';
+	if (c == FontFileEOF)
+	    return NULL;
 	if (b != buf && !bdfIsPrefix(buf, "COMMENT"))
 	    break;
     }

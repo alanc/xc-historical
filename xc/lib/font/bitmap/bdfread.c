@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: bdfread.c,v 1.10 92/03/20 14:33:02 keith Exp $ */
+/* $XConsortium: bdfread.c,v 1.11 92/03/26 17:39:40 gildea Exp $ */
 
 #include <ctype.h>
 #include "fontfilest.h"
@@ -631,7 +631,7 @@ bdfReadProperties(file, pFont, pState)
     }
 
     line = bdfGetLine(file, lineBuf, BDFLINELEN);
-    if (!bdfIsPrefix(line, "ENDPROPERTIES")) {
+    if (!line || !bdfIsPrefix(line, "ENDPROPERTIES")) {
 	bdfError("missing 'ENDPROPERTIES'\n");
 	goto BAILOUT;
     }
