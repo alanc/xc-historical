@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.132 94/01/15 10:07:56 gildea Exp $ */
+/* $XConsortium: Xlibint.h,v 11.133 94/01/17 11:20:52 kaleb Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -26,6 +26,10 @@ without express or implied warranty.
 #endif
 
 #include <X11/Xlib.h>
+
+#ifdef WIN32
+#define _XFlush _XFlushIt
+#endif
 
 struct _XGC
 {
@@ -213,6 +217,14 @@ struct _XLockPtrs {
 };
 
 typedef struct _LockInfoRec *LockInfoPtr;
+
+#if defined(WIN32) && !defined(_XLIBINT_)
+#define _XCreateMutex_fn (*_XCreateMutex_fn_p)
+#define _XFreeMutex_fn (*_XFreeMutex_fn_p)
+#define _XLockMutex_fn (*_XLockMutex_fn_p)
+#define _XUnlockMutex_fn (*_XUnlockMutex_fn_p)
+#define _Xglobal_lock (*_Xglobal_lock_p)
+#endif
 
 /* in XlibInt.c */
 extern void (*_XCreateMutex_fn)(
