@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.143 93/08/13 19:51:03 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.144 93/08/14 16:17:56 rws Exp $
 #define DoNormalLib NormalLibX
 #define DoSharedLib SharedLibX
 #define DoDebugLib DebugLibX
@@ -1097,9 +1097,6 @@ depend:: ks_tables.h Wrap.h $(AUTHSRCS) $(XDMAUTHSRCS) $(LCHDRS) $(LCSYMSRCS)
 clean::
 	RemoveFiles(ks_tables_h ks_tables.h Wrap.h makekeys)
 	RemoveFiles($(AUTHSRCS) $(XDMAUTHSRCS) $(LCHDRS) $(LCSYMSRCS))
-	RemoveFiles($(OBJS1))
-	RemoveFiles($(OBJS2))
-	RemoveFiles($(OBJS3))
 
 DependTarget3($(SRCS1),$(SRCS2),$(SRCS3))
 
