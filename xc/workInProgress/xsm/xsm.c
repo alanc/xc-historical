@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.1 93/10/19 10:21:03 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.2 93/11/02 11:12:43 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -42,7 +42,7 @@ extern Status XtInitializeICE ();
 
 typedef struct _ClientRec {
     SmsConn	 	smsConn;
-    IceConn		iceConn;
+    IceConn		ice_conn;
     char 		*clientId;
     char		*clientHostname;
     Bool		interactPending;
@@ -230,7 +230,7 @@ char 		*previousId;
 
     printf (
 	"On IceConn fd = %d, received REGISTER CLIENT [Previous Id = %s]\n",
-	IceConnectionNumber (client->iceConn),
+	IceConnectionNumber (client->ice_conn),
 	previousId ? previousId : "NULL");
     printf ("\n");
 
@@ -242,7 +242,7 @@ char 		*previousId;
 
     printf (
 	"On IceConn fd = %d, sent REGISTER CLIENT REPLY [Client Id = %s]\n",
-	IceConnectionNumber (client->iceConn), id);
+	IceConnectionNumber (client->ice_conn), id);
     printf ("\n");
 
     if(previousId) {
@@ -368,11 +368,11 @@ char 		**reasonMsgs;
     SmsCleanUp (smsConn);
 
     printf ("ICE Connection closed, IceConn fd = %d\n",
-	IceConnectionNumber (client->iceConn));
+	IceConnectionNumber (client->ice_conn));
     printf ("\n");
 
-    IceSetShutdownNegotiation (client->iceConn, False);
-    IceCloseConnection (client->iceConn);
+    IceSetShutdownNegotiation (client->ice_conn, False);
+    IceCloseConnection (client->ice_conn);
 
     if (client == ClientList)
     {
@@ -485,13 +485,13 @@ SmPointer 	managerData;
 
 
 void
-PingReplyProc (iceConn, clientData)
+PingReplyProc (ice_conn, client_data)
 
-IceConn		iceConn;
-IcePointer	clientData;
+IceConn		ice_conn;
+IcePointer	client_data;
 
 {
-    ClientRec *client = (ClientRec *) clientData;
+    ClientRec *client = (ClientRec *) client_data;
 
     printf ("Client Id = %s, received PING REPLY\n", client->clientId);
     pingCount--;
@@ -512,7 +512,7 @@ SmsCallbacks	*callbacksRet;
     if(!newClient) nomem();
 
     newClient->smsConn = smsConn;
-    newClient->iceConn = SmsGetIceConnection (smsConn);
+    newClient->ice_conn = SmsGetIceConnection (smsConn);
     newClient->clientId = NULL;
     newClient->clientHostname = NULL;
     newClient->interactPending = False;
@@ -523,7 +523,7 @@ SmsCallbacks	*callbacksRet;
     numClients++;
 
     printf ("On IceConn fd = %d, client set up session management protocol\n",
-	IceConnectionNumber (newClient->iceConn));
+	IceConnectionNumber (newClient->ice_conn));
     printf ("\n");
 
 
@@ -560,10 +560,10 @@ SmsCallbacks	*callbacksRet;
  */
 
 void
-ListClientsXtProc (w, clientData, callData)
+ListClientsXtProc (w, client_data, callData)
 
 Widget		w;
-XtPointer 	clientData;
+XtPointer 	client_data;
 XtPointer 	callData;
 
 {
@@ -592,10 +592,10 @@ XtPointer 	callData;
 
 
 void
-SaveYourselfXtProc (w, clientData, callData)
+SaveYourselfXtProc (w, client_data, callData)
 
 Widget		w;
-XtPointer 	clientData;
+XtPointer 	client_data;
 XtPointer 	callData;
 
 {
@@ -630,10 +630,10 @@ XtPointer 	callData;
 
 
 void
-SaveOkXtProc (w, clientData, callData)
+SaveOkXtProc (w, client_data, callData)
 
 Widget		w;
-XtPointer 	clientData;
+XtPointer 	client_data;
 XtPointer 	callData;
 
 {
@@ -784,10 +784,10 @@ XtPointer 	callData;
 	    SmsCleanUp (client->smsConn);
 
 	    printf ("ICE Connection terminated, IceConn fd = %d\n",
-		IceConnectionNumber (client->iceConn));
+		IceConnectionNumber (client->ice_conn));
 
-	    IceSetShutdownNegotiation (client->iceConn, False);
-	    IceCloseConnection (client->iceConn);
+	    IceSetShutdownNegotiation (client->ice_conn, False);
+	    IceCloseConnection (client->ice_conn);
 
 	    FreeClientInfo (client);
 	    client = next;
@@ -807,10 +807,10 @@ XtPointer 	callData;
 
 
 void
-SaveCancelXtProc (w, clientData, callData)
+SaveCancelXtProc (w, client_data, callData)
 
 Widget		w;
-XtPointer 	clientData;
+XtPointer 	client_data;
 XtPointer 	callData;
 
 {
@@ -821,10 +821,10 @@ XtPointer 	callData;
 
 
 void
-ShutdownOkXtProc (w, clientData, callData)
+ShutdownOkXtProc (w, client_data, callData)
 
 Widget		w;
-XtPointer 	clientData;
+XtPointer 	client_data;
 XtPointer 	callData;
 
 {
@@ -835,10 +835,10 @@ XtPointer 	callData;
 
 
 void
-ShutdownCancelXtProc (w, clientData, callData)
+ShutdownCancelXtProc (w, client_data, callData)
 
 Widget		w;
-XtPointer 	clientData;
+XtPointer 	client_data;
 XtPointer 	callData;
 
 {
@@ -849,10 +849,10 @@ XtPointer 	callData;
 
 
 void
-ListPropXtProc (w, clientData, callData)
+ListPropXtProc (w, client_data, callData)
 
 Widget		w;
-XtPointer 	clientData;
+XtPointer 	client_data;
 XtPointer 	callData;
 
 {
@@ -898,10 +898,10 @@ XtPointer 	callData;
 
 
 void
-StartXtProc (w, clientData, callData)
+StartXtProc (w, client_data, callData)
 
 Widget		w;
-XtPointer 	clientData;
+XtPointer 	client_data;
 XtPointer 	callData;
 
 {
@@ -921,10 +921,10 @@ XtPointer 	callData;
 
 
 void
-PingXtProc (w, clientData, callData)
+PingXtProc (w, client_data, callData)
 
 Widget		w;
-XtPointer 	clientData;
+XtPointer 	client_data;
 XtPointer 	callData;
 
 {
@@ -942,7 +942,7 @@ XtPointer 	callData;
 
     while (client)
     {
-	IcePing (client->iceConn, PingReplyProc, (IcePointer) client);
+	IcePing (client->ice_conn, PingReplyProc, (IcePointer) client);
 	pingCount++;
 
 	printf ("Client Id = %s, sent PING\n", client->clientId);
@@ -967,36 +967,36 @@ XtPointer 	callData;
  */
 
 void
-newConnectionXtProc (clientData, source, id)
+newConnectionXtProc (client_data, source, id)
 
-XtPointer	clientData;
+XtPointer	client_data;
 int 		*source;
 XtInputId	*id;
 
 {
-    IceConn 	iceConn;
+    IceConn 	ice_conn;
 
-    if ((iceConn = IceAcceptConnection (*source)) == NULL)
+    if ((ice_conn = IceAcceptConnection (*source)) == NULL)
     {
 	printf ("IceAcceptConnection failed\n");
     }
     else
     {
-	while (IceConnectionStatus (iceConn) == IceConnectPending)
+	while (IceConnectionStatus (ice_conn) == IceConnectPending)
 	{
 	    XtAppProcessEvent (appContext, XtIMAll);
 	}
 
-	if (IceConnectionStatus (iceConn) == IceConnectAccepted)
+	if (IceConnectionStatus (ice_conn) == IceConnectAccepted)
 	{
 	    printf ("ICE Connection opened by client, IceConn fd = %d\n",
-		IceConnectionNumber (iceConn));
+		IceConnectionNumber (ice_conn));
 	    printf ("\n");
 	}
 	else
 	{
 	    printf ("ICE Connection rejected!\n");
-	    IceCloseConnection (iceConn);
+	    IceCloseConnection (ice_conn);
 	}
     }
 }
@@ -1009,9 +1009,9 @@ XtInputId	*id;
  */
 
 void
-myIOErrorHandler (iceConn)
+myIOErrorHandler (ice_conn)
 
-IceConn 	iceConn;
+IceConn 	ice_conn;
 
 {
     printf ("IO error handler invoked\n");
@@ -1026,7 +1026,7 @@ IceConn 	iceConn;
 	ClientRec *ptr = ClientList;
 	ClientRec *prev = NULL;
 	
-	while (ptr && ptr->iceConn != iceConn)
+	while (ptr && ptr->ice_conn != ice_conn)
 	{
 	    prev = ptr;
 	    ptr = ptr->next;
@@ -1034,7 +1034,7 @@ IceConn 	iceConn;
 
 	if (!ptr)
 	{
-	    fprintf (stderr, "Internal error; couldn't find iceConn\n");
+	    fprintf (stderr, "Internal error; couldn't find ice_conn\n");
 	    exit (1);
 	}
 	else
@@ -1048,11 +1048,11 @@ IceConn 	iceConn;
 	    FreeClientInfo (ptr);
 	    
 	    printf ("ICE Connection terminated (fd = %d)\n",
-	        IceConnectionNumber (iceConn));
+	        IceConnectionNumber (ice_conn));
 	    printf ("\n");
 
-	    IceSetShutdownNegotiation (iceConn, False);
-	    IceCloseConnection (iceConn);
+	    IceSetShutdownNegotiation (ice_conn, False);
+	    IceCloseConnection (ice_conn);
 
 	    numClients--;
 
