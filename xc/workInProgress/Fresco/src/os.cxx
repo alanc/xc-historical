@@ -81,6 +81,28 @@ extern "C" {
 #endif
 
 /*
+ * Most systems have gethostname, although not all of them
+ * provide a prototype in one of the standard places.  A few
+ * systems lack it altogether, in which case you have to use
+ * either uname or sysinfo.  Note that POSIX says uname need
+ * not return enough information to interface to the network
+ * (for example, it may return a nodename of "foo" instead
+ * of the canonical "foo.domain.name"), so you're better off
+ * using gethostname if you can
+ */
+
+#if defined(sun) && defined(SVR4)
+#define NEED_UTSNAME	/* avoid UCB compatiblity package */
+#include <sys/utsname.h>
+#endif
+
+#if !defined(NEED_UTSNAME) && (defined(AIXV3) || defined(__alpha))
+extern "C" {
+    int gethostname(char *, int);
+}
+#endif
+
+/*
  * Buffer size for internal path name computation.
  * The path stuff should really be reimplemented
  * with variable-length strings.
@@ -593,7 +615,7 @@ long InputFile::read(const char*& start) {
 	i->buf_ = new char[len];
     }
     start = i->buf_;
-    len = ::read(i->fd_, i->buf_, len);
+    len = ::read(i->fd_, i->buf_, (size_t)len);
 #endif
     i->pos_ += len;
     return len;
@@ -623,15 +645,21 @@ long StdInput::read(const char*& start) {
 
 /* class Host */
 
-extern "C" {
-    int gethostname(char*, int);
-}
-
 char Host::name_[100];
 
 const char* Host::name() {
     if (name_[0] == '\0') {
+#ifdef NEED_UTSNAME
+	struct utsname name;
+	uname(&name);
+	int len = strlen(name.nodename);
+	if (len >= sizeof(name_))
+	    len = sizeof(name_) - 1;
+	strncpy(name_, name.nodename, len);
+	name_[len] = '\0';
+#else
 	gethostname(name_, sizeof(name_));
+#endif
     }
     return name_;
 }
@@ -666,11 +694,10 @@ void ListImpl_range_error(long i) {
 
 /* would that these lived in a standard place ... */
 extern "C" {
-    extern int abs(int);
     extern double fabs(double);
 }
 
-int Math::abs(int x) { return ::abs(x); }
+int Math::abs(int x) { return x >= 0 ? x : -x; }
 long Math::abs(long x) { return x >= 0 ? x : -x; }
 double Math::abs(double x) { return ::fabs(x); }
 
