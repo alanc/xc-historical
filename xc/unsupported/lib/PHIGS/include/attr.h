@@ -1,4 +1,4 @@
-/* $XConsortium: attr.h,v 5.2 91/03/29 10:42:36 rws Exp $ */
+/* $XConsortium: attr.h,v 5.3 91/05/30 08:51:27 jap Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -37,8 +37,8 @@ typedef unsigned	Phg_attr_attribute;		/* 32 bit quantity */
  * pair.
  */
 #define	PHG_ATTR_TYPE(base_type, cardinality) \
-    (((((base_type)) & 0x07f) << 5) |	\
-     (((cardinality)) & 0x0f))
+    (((((unsigned)(base_type)) & 0x07f) << 5) |	\
+     (((unsigned)(cardinality)) & 0x0f))
 
 /* Base types in the range PHG_ATTR_BASE_UNUSED_FIRST
  * to PHG_ATTR_BASE_UNUSED_LAST are available for
@@ -108,9 +108,9 @@ typedef enum {
  * list_type-base_cardinality pair.
  */
 #define	PHG_ATTR_LIST_OF(list_type, list_ptr_type, base_cardinality) \
-    (((((list_type)) & 0x3) << 14) | \
-     (((list_ptr_type) & 0x1) << 13) | \
-     (((base_cardinality)) & 0x3fff))
+    (((((unsigned)(list_type)) & 0x3) << 14) | \
+     (((unsigned)(list_ptr_type) & 0x1) << 13) | \
+     (((unsigned)(base_cardinality)) & 0x3fff))
 
 typedef enum {
     PHG_ATTR_LIST_IS_INLINE	= 0,
@@ -165,9 +165,9 @@ typedef enum {
  * type    (16 bits): list type, list pointer type, base type, and cardinality
  */
 #define	PHG_ATTR(pkg, type, ordinal)	\
-    ( ((((pkg))	& 0x7f) << 24) | \
-      ((((ordinal))	& 0xff) << 16) | \
-       (((type))	& 0xefef)	)
+    ( ((((unsigned)(pkg))	& 0x7f) << 24) | \
+      ((((unsigned)(ordinal))	& 0xff) << 16) | \
+       (((unsigned)(type))	& 0xefef)	)
 
 typedef union {
     struct {
@@ -278,7 +278,7 @@ typedef enum {
 #define PHG_ATTR_PIXEL_OFFSET	0x00008000
 
 #define	PHG_ATTR_CU(unit, n)	\
-   (((unsigned)(unit)) | (((n) & 0x1FFF) << 16) |	\
+   (((unsigned)(unit)) | (((unsigned)(n) & 0x1FFF) << 16) |	\
     PHG_ATTR_CU_TAG | PHG_ATTR_PIXEL_OFFSET)
     
 #define	PHG_ATTR_CU_MASK		0xC0000000
