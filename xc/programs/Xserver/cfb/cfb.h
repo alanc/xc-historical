@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -68,7 +69,7 @@ extern void cfb8LineSS1Rect(), cfb8SegmentSS1Rect ();
 extern RegionPtr cfbCopyPlane();
 extern void cfbPolyFillArcSolidCopy(),cfbPolyFillArcSolidXor();
 extern void cfbPolyFillArcSolidGeneral();
-extern RegionPtr cfbCopyArea();
+extern RegionPtr cfbCopyArea(), cfbBitBlt();
 extern void cfbFillPoly1RectCopy(), cfbFillPoly1RectGeneral();
 
 extern void cfbPushPixels8();
