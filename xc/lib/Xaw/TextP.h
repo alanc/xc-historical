@@ -1,5 +1,5 @@
 /*
-* $Header: TextP.h,v 1.15 88/02/26 10:09:33 swick Exp $
+* $Header: TextP.h,v 1.17 88/08/19 13:51:23 swick Exp $
 */
 
 
@@ -55,7 +55,7 @@ SOFTWARE.
 #define PositionError 2
 
 /* constants that subclasses may want to know */
-#define DEFAULT_TEXT_HEIGHT ~0
+#define DEFAULT_TEXT_HEIGHT ((Dimension)~0)
 #define  yMargin 2
 
 typedef enum {XtsdLeft, XtsdRight} XtTextScanDirection;
