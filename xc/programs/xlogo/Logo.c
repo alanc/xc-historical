@@ -1,4 +1,4 @@
-/* $XConsortium: Logo.c,v 1.27 91/10/30 13:35:31 converse Exp $ */
+/* $XConsortium: Logo.c,v 1.28 93/09/18 20:05:58 rws Exp $ */
 
 /*
 Copyright 1988 by the Massachusetts Institute of Technology
@@ -18,7 +18,6 @@ without express or implied warranty.
 
 #include <X11/StringDefs.h>
 #include <X11/IntrinsicP.h>
-#include <X11/Xaw/XawInit.h>
 #include "LogoP.h"
 #include <X11/extensions/shape.h>
 
@@ -39,7 +38,7 @@ LogoClassRec logoClassRec = {
     /* superclass		*/	(WidgetClass) &simpleClassRec,
     /* class_name		*/	"Logo",
     /* widget_size		*/	sizeof(LogoRec),
-    /* class_initialize		*/	XawInitializeWidgetSet,
+    /* class_initialize		*/	NULL,
     /* class_part_initialize	*/	NULL,
     /* class_inited		*/	FALSE,
     /* initialize		*/	Initialize,
