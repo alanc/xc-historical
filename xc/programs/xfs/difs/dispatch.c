@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.8 92/01/31 17:40:44 eswu Exp $ */
+/* $XConsortium: dispatch.c,v 1.9 92/02/11 13:06:43 eswu Exp $ */
 /*
  * protocol dispatcher
  */
@@ -23,9 +23,6 @@
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
- * $NCDId: @(#)dispatch.c,v 4.11 1991/07/09 14:09:07 lemke Exp $
- *
  */
 
 #include	"FS.h"
@@ -312,6 +309,7 @@ SendErrToClient(client, error, data)
     case FSBadFont:
     case FSBadAccessContext:
     case FSBadIDChoice:
+    case FSBadEventMask:
 	if (client->swapped)
 	    SwapLongs((long *) data, 1);
 	extralen = sizeof(Font);
@@ -711,13 +709,11 @@ ProcOpenBitmapFont(client)
     }
     if (stuff->format_hint != 0 &&
 	    stuff->format_hint & ~ALL_FORMAT_BITS) {
-	SendErrToClient(client, FSBadFormat,
-			(pointer) &stuff->format_hint);
+	SendErrToClient(client, FSBadFormat, (pointer) &stuff->format_hint);
 	return FSBadFormat;
     }
     if (stuff->format_mask & ~ALL_FORMAT_MASK_BITS) {
-	SendErrToClient(client, FSBadFormat,
-			(pointer) &stuff->format_mask);
+	SendErrToClient(client, FSBadFormat, (pointer) &stuff->format_mask);
 	return FSBadFormat;
     }
     err = OpenFont(client, stuff->fid, stuff->format_hint, stuff->format_mask,
@@ -754,9 +750,20 @@ ProcQueryXInfo(client)
     /* get the header */
     err = LoadFontHeader(&cfp->font->info, &reply.header, &prop_info);
 
-    if (err != Successful) {
-	SendErrToClient(client, FontToFSError(err), (pointer) NULL);
+    switch (err)
+    {
+    case Successful:
+	break;
+    case AllocError:
+	SendErrToClient(client, FSBadAlloc, (pointer) 0);
 	return err;
+	break;
+    default:
+	ErrorF("ProcQueryXInfo: unexpected return val %d from LoadFontHeader",
+	       err);
+	SendErrToClient(client, FSBadImplementation, (pointer) 0);
+	return err;
+	break;
     }
     lendata = sizeof(fsPropInfo) +
 	prop_info->num_offsets * sizeof(fsPropOffset) +
