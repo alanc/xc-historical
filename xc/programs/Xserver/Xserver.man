@@ -50,6 +50,12 @@ All of the X servers accept the following command line options:
 sets pointer acceleration (i.e. the ratio of how much is reported to how much
 the user actually moved the pointer).
 .TP 8
+.B \-ac
+disables host-based access control mechanisms.  Enables access by any host,
+and permits any host to modify the access control list.
+Use with extreme caution.
+This option exists primarily for running test suites remotely.
+.TP 8
 .B \-auth \fIauthorization-file\fP
 Specifies a file which contains a collection of authorization records used
 to authenticate access.  See also the \fIxdm\fP and \fIXsecurity\fP manual

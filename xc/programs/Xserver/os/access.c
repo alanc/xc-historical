@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: access.c,v 1.51 91/07/09 15:13:16 rws Exp $ */
+/* $XConsortium: access.c,v 1.52 91/11/20 15:37:21 keith Exp $ */
 
 #include "Xos.h"
 #include "X.h"
@@ -62,6 +62,8 @@ SOFTWARE.
 #include <stdio.h>
 #include "dixstruct.h"
 #include "osdep.h"
+
+Bool defeatAccessControl = FALSE;
 
 #define acmp(a1, a2, len) bcmp((char *)(a1), (char *)(a2), len)
 #define acopy(a1, a2, len) bcopy((char *)(a1), (char *)(a2), len)
@@ -374,7 +376,7 @@ ResetHosts (display)
     pointer		addr;
     register struct hostent *hp;
 
-    AccessEnabled = DEFAULT_ACCESS_CONTROL;
+    AccessEnabled = defeatAccessControl ? FALSE : DEFAULT_ACCESS_CONTROL;
     LocalHostEnabled = FALSE;
     while (host = validhosts)
     {
@@ -459,7 +461,7 @@ AuthorizedClient(client)
     pointer		addr;
     register HOST	*host;
 
-    if (!client)
+    if (!client || defeatAccessControl)
 	return TRUE;
     alen = sizeof (from);
     if (!getpeername (((OsCommPtr)client->osPrivate)->fd, &from, &alen))

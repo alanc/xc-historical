@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.106 91/10/30 19:25:09 eswu Exp $ */
+/* $XConsortium: utils.c,v 1.107 91/12/29 13:19:38 eswu Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -64,6 +64,7 @@ extern int defaultColorVisualClass;
 extern long ScreenSaverTime;		/* for forcing reset */
 extern Bool permitOldBugs;
 extern int monitorResolution;
+extern Bool defeatAccessControl;
 
 Bool CoreDump;
 
@@ -164,6 +165,7 @@ void UseMsg()
 #if !defined(AIXrt) && !defined(AIX386)
     ErrorF("use: X [:<display>] [option]\n");
     ErrorF("-a #                   mouse acceleration (pixels)\n");
+    ErrorF("-ac                    disable access control restrictions\n");
 #ifdef MEMBUG
     ErrorF("-alloc int             chance alloc should fail\n");
 #endif
@@ -259,6 +261,10 @@ char	*argv[];
 	        defaultPointerControl.num = atoi(argv[i]);
 	    else
 		UseMsg();
+	}
+	else if ( strcmp( argv[i], "-ac") == 0)
+	{
+	    defeatAccessControl = TRUE;
 	}
 #ifdef MEMBUG
 	else if ( strcmp( argv[i], "-alloc") == 0)
