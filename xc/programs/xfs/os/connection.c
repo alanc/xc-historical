@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.14 91/07/25 12:15:49 keith Exp $ */
+/* $XConsortium: connection.c,v 1.15 91/07/31 01:09:25 keith Exp $ */
 /*
  * handles connections
  */
@@ -261,8 +261,6 @@ MakeNewConnections()
     int         i;
     ClientPtr   client;
     OsCommPtr   oc;
-    char       *ibuf;
-    unsigned char *obuf;
 
 #ifdef TCP_NODELAY
     union {
@@ -329,9 +327,7 @@ MakeNewConnections()
 #endif
 
 	oc = (OsCommPtr) fsalloc(sizeof(OsCommRec));
-	ibuf = (char *) fsalloc(BUFSIZE);
-	obuf = (unsigned char *) fsalloc(OutputBufferSize);
-	if (!oc || !ibuf || !obuf) {
+	if (!oc) {
 	    fsfree(oc);
 	    error_conn_max(newconn);
 	    close(newconn);
