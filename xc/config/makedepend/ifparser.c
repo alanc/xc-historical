@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: ifparser.c,v 1.1 92/08/22 13:05:38 rws Exp $
  *
  * Copyright 1992 Network Computing Devices, Inc.
  * 
@@ -56,7 +56,7 @@
  */
 
 #include "ifparser.h"
-
+#include <ctype.h>
 
 /****************************************************************************
 		   Internal Macros and Utilities for Parser
