@@ -595,7 +595,6 @@ status: {Success, DeviceBusy, AlreadyGrabbed}
 .br
 .sp
 .in -.5i
-.LP
 .NH 2
 Initializing Valuators on an Input Device
 .LP
@@ -637,6 +636,172 @@ first_valuator + num_valuators, a \fBValue\fP error will result.
 If the request succeeds, \fBSuccess\fP is returned.  If the specifed device is 
 grabbed by some other client, the request will fail and a status of
 \fBAlreadyGrabbed\fP will be returned.
+.NH 2 
+Getting Input Device Controls
+.LP
+.sp 1.5
+GetDeviceControl
+.in .5i
+device: DEVICE
+.br
+control: XID
+.br
+.sp
+Errors: Length, Device, Match, Value
+.br
+.in -.5i
+.sp 1.5
+=>
+.in +.5i
+controlState: {DeviceState}
+.br
+.sp
+.in -.5i
+.LP
+where
+.in +.5i
+.br
+.TS
+l lw(4i).
+T{
+DeviceState:
+T}	T{
+DeviceResolutionState
+T}
+.TE
+.in -.5i
+.br
+.sp
+Errors: Length, Device, Match, Value
+.LP
+This request returns the current state of the specified device control.
+The device control must be supported by the target server and device or an 
+error will result.  
+.LP
+If the request is successful, a pointer to a generic DeviceState 
+structure will be returned.  The information returned varies according to 
+the specified control and is mapped by a structure appropriate for that
+control.
+.LP
+GetDeviceControl will fail with a BadValue error if the server does not support
+the specified control.  It will fail with a BadMatch error if the device
+does not support the specified control.
+.LP
+Supported device controls and the information returned for them include:
+.LP
+.TS
+l lw(4i).
+T{
+DEVICE_RESOLUTION:
+T}	T{
+[control: CARD16
+.br
+\ length: CARD16
+.br
+\ num_valuators: CARD8
+.br
+\ resolutions: LISTofCARD32
+.br
+\ min_resolutions: LISTofCARD32
+.br
+\ max_resolutions: LISTofCARD32]
+T}
+.TE
+.LP
+This device control returns a list of valuators and the range of valid 
+resolutions allowed for each.  Valuators are numbered beginning with 0.
+Resolutions for all valuators on the device are returned.  
+For each valuator i on the device, resolutions[i] returns the current setting
+of the resolution, min_resolutions[i] returns the minimum valid setting,
+and max_resolutions[i] returns the maximum valid setting.
+.LP
+When this control is specified, XGetDeviceControl will fail with a BadMatch
+error if the specified device has no valuators.
+.sp 1.5
+ChangeDeviceControl
+.in .5i
+device: DEVICE
+.br
+control: DeviceControl
+.br
+.sp
+.in -.5i
+.LP
+where
+.in +.5i
+.br
+.TS
+l lw(4i).
+T{
+DeviceControl:
+T}	T{
+DeviceResolutionControl
+T}
+.TE
+.in -.5i
+.br
+.sp
+Errors: Length, Device, Match, Value
+.br
+=>
+.in +.5i
+status: {Success, DeviceBusy, AlreadyGrabbed}
+.br
+.sp
+.in -.5i
+.LP
+ChangeDeviceControl changes the specifed device control according to the values
+specified in the DeviceControl structure.  The device control must be supported
+by the target server and device or an error will result.
+.LP
+The information passed with this request varies according to the specified 
+control and is mapped by a structure appropriate for that control.
+.LP
+ChangeDeviceControl will fail with a BadValue error if the server does not 
+support the specified control.  It will fail with a BadMatch error if the 
+server supports the specified control, but the requested device does not.
+The request will fail and return a status of DeviceBusy if another client 
+already has the device open with a device control state that conflicts with
+the one specified in the request.  It will fail with a status of 
+AlreadyGrabbed if some other client has grabbed the specified device.  If 
+the request succeeds, Success is returned.  If it fails, the device control 
+is left unchanged.
+.LP
+Supported device controls and the information specified for them include:
+.LP
+.TS
+l lw(4i).
+T{
+DEVICE_RESOLUTION:
+T}	T{
+[control: CARD16
+.br
+\ length: CARD16
+.br
+\ first_valuator: CARD8
+.br
+\ num_valuators: CARD8
+.br
+\ resolutions: LISTofCARD32]
+T}
+.TE
+.LP
+This device control changes the resolution of the specified valuators
+on the specified extension input device.  Valuators are numbered beginning
+with zero.  Only the valuators in the range specified by first_valuator
+and num_valuators are set.  A value of -1 in the resolutions list indicates 
+that the resolution for this valuator is not to be changed.  num_valuators 
+specifies the number of valuators in the resolutions list.
+.LP
+When this control is specified, XChangeDeviceControl will fail with a BadMatch
+error if the specified device has no valuators.  If a resolution is specified
+that is not within the range of valid values (as returned by XGetDeviceControl)
+the request will fail with a BadValue error.  If the number of valuators
+supported by the device is less than the expression first_valuator + 
+num_valuators, a BadValue error will result.
+.LP
+If the request fails for any reason, none of the valuator resolutions will be 
+changed.
 .NH 2
 Selecting Extension Device Events
 .LP
@@ -1850,7 +2015,8 @@ l lw(4i).
 T{
 FEEDBACKCONTROL:
 T}	T{
-{KBDFEEDBACKCONTROL, PTRFEEDBACKCONTROL, INTEGERFEEDBACKCONTROL, STRINGFEEDBACKCONTROL, BELLFEEDBACKCONTROL, LEDFEEDBACKCONTROL}
+{KBDFEEDBACKCONTROL, PTRFEEDBACKCONTROL, INTEGERFEEDBACKCONTROL,
+STRINGFEEDBACKCONTROL, BELLFEEDBACKCONTROL, LEDFEEDBACKCONTROL}
 T}
 .TE
 .br
@@ -2395,7 +2561,20 @@ T}	T{
 .br
 \ num_valuators: CARD8
 .br
-\ mode: {Absolute, Relative}
+mode: CARD8
+.in +.5i
+.br
+#x01 device mode
+.in +.5i
+.br
+(0 = Relative, 1 = Absolute)
+.br
+.in -.5i
+#x02 proximity state
+.in +.5i
+.br
+(0 = InProximity, 1 = OutOfProximity)
+.in -1.0i
 .br
 \ valuators: LISTofINT32]
 T}
@@ -2434,6 +2613,15 @@ buttons, keys, and valuators on the specified input device.
 The \fIbuttons\fP and \fIkeys\fP arrays, byte N (from 0) contains the
 bits for key or button 8N to 8N+7 with the least significant bit in the
 byte representing key or button 8N.
+.LP
+If the device has valuators, a bit in the mode field indicates whether the
+device is reporting Absolute or Relative data.  If it is reporting Absolute
+data, the valuators array will contain the current value of the valuators.
+If it is reporting Relative data, the valuators array will contain undefined
+data.
+.LP
+If the device reports proximity information, a bit in the mode field indicates
+whether the device is InProximity or OutOfProximity.
 .NH 1
 Events
 .LP
@@ -2504,12 +2692,16 @@ T}	T{
 Component
 T}
 T{
-DeviceKeyPress, DeviceKeyRelease
+DeviceKeyPress, 
+.br
+DeviceKeyRelease
 T}	T{
 KEYCODE
 T}
 T{
-DeviceButtonPress, DeviceButtonRelease
+DeviceButtonPress, 
+.br
+DeviceButtonRelease
 T}	T{
 BUTTON
 T}
@@ -2622,7 +2814,33 @@ num_buttons: CARD8
 .br
 num_valuators: CARD8
 .br
-classes_reported: CARD8
+classes_reported: CARD8 {SetOfDeviceMode | SetOfInputClass}
+.in +.5i
+.br
+SetOfDeviceMode:
+.in +.5i
+.br
+#x80 ProximityState
+.in +.5i
+.br
+0 = InProxmity, 1 = OutOfProximity
+.in -.5i
+.br
+#x40 Device Mode
+.in +.5i
+.br
+(0 = Relative, 1 = Absolute)
+.br
+.in -1.0i
+SetOfInputClass:
+.in +.5i
+.br
+#x04 reporting valuators
+.br
+#x02 reporting buttons
+.br
+#x01 reporting keys
+.in -1.0i
 .br
 buttons: LISTofCARD8
 .br
