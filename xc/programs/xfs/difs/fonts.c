@@ -1,4 +1,4 @@
-/* $XConsortium: fonts.c,v 1.8 91/07/18 22:36:11 keith Exp $ */
+/* $XConsortium: fonts.c,v 1.9 92/01/30 16:53:17 eswu Exp $ */
 /*
  * font control
  */
@@ -1125,11 +1125,7 @@ FontPtr
 find_old_font(id)
     FSID        id;
 {
-    ClientFontPtr cfp;
-
-    cfp = (ClientFontPtr) LookupIDByType(SERVER_CLIENT, id, RT_NONE);
-
-    return cfp->font;
+    return (FontPtr) LookupIDByType(SERVER_CLIENT, id, RT_NONE);
 }
 
 Font
