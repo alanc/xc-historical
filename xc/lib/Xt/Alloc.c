@@ -1,4 +1,4 @@
-/* $XConsortium: Alloc.c,v 1.34 90/11/14 20:00:44 rws Exp $ */
+/* $XConsortium: Alloc.c,v 1.35 90/12/30 12:05:43 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -43,6 +43,13 @@ void _XtAllocError(type)
 	       "Cannot perform %s", &type, &num_params);
 }
 
+void _XtHeapInit(heap)
+    Heap*	heap;
+{
+    heap->start = NULL;
+    heap->bytes_remaining = 0;
+}
+
 #ifndef XTTRACEMEMORY
 
 char *XtMalloc(size)
@@ -81,6 +88,70 @@ void XtFree(ptr)
     char *ptr;
 {
    if (ptr != NULL) Xfree(ptr);
+}
+
+#ifndef HEAP_SEGMENT_SIZE
+#define HEAP_SEGMENT_SIZE 1492
+#endif
+
+char* _XtHeapAlloc(heap, bytes)
+    Heap*	heap;
+    Cardinal	bytes;
+{
+    register char* heap_loc;
+    if (heap == NULL) return XtMalloc(bytes);
+    if (heap->bytes_remaining < bytes) {
+	if ((bytes + sizeof(char*)) >= (HEAP_SEGMENT_SIZE>>1)) {
+	    /* preserve current segment; insert this one in front */
+#ifdef _TRACE_HEAP
+	    printf( "allocating large segment (%d bytes) on heap %#x\n",
+		    bytes, heap );
+#endif
+	    heap_loc = XtMalloc(bytes + sizeof(char*));
+	    if (heap->start) {
+		*(char**)heap_loc = *(char**)heap->start;
+		*(char**)heap->start = heap_loc;
+	    }
+	    else {
+		*(char**)heap_loc = NULL;
+		heap->start = heap_loc;
+	    }
+	    return heap_loc + sizeof(char*);
+	}
+	/* else discard remainder of this segment */
+#ifdef _TRACE_HEAP
+	printf( "allocating new segment on heap %#x\n", heap );
+#endif
+	heap_loc = XtMalloc((unsigned)HEAP_SEGMENT_SIZE);
+	*(char**)heap_loc = heap->start;
+	heap->start = heap_loc;
+	heap->current = heap_loc + sizeof(char*);
+	heap->bytes_remaining = HEAP_SEGMENT_SIZE - sizeof(char*);
+    }
+#ifdef WORD64
+    /* round to nearest 8-byte boundary */
+    bytes = (bytes + 7) & (~7);
+#else
+    /* round to nearest 4-byte boundary */
+    bytes = (bytes + 3) & (~3);
+#endif /* WORD64 */
+    heap_loc = heap->current;
+    heap->current += bytes;
+    heap->bytes_remaining -= bytes; /* can be negative, if rounded */
+    return heap_loc;
+}
+
+void _XtHeapFree(heap)
+    Heap*	heap;
+{
+    char* segment = heap->start;
+    while (segment != NULL) {
+	char* next_segment = *(char**)segment;
+	XtFree(segment);
+	segment = next_segment;
+    }
+    heap->start = NULL;
+    heap->bytes_remaining = 0;
 }
 
 #else
