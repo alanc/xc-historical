@@ -1,4 +1,4 @@
-/* $XConsortium: error.c,v 1.2 93/10/26 20:19:02 rws Exp $ */
+/* $XConsortium: error.c,v 1.3 93/10/30 14:08:14 rws Exp $ */
 /**** module error.c ****/
 /****************************************************************************
 				NOTICE
@@ -209,12 +209,14 @@ int SendFloError(client, flo)
   case	xieErrNoFloLUT:
   case	xieErrNoFloPhotomap:
   case	xieErrNoFloROI:
-    if( client->swapped )
+    if( client->swapped ) {
       swapl(&((xieFloResourceErr *)(&err))->resourceID, n);
+    }
     break;
   case	xieErrNoFloDomain:
-    if( client->swapped )
+    if( client->swapped ) {
       swaps(&((xieFloDomainErr *)(&err))->domainSrc, n);
+    }
     break;
   case	xieErrNoFloTechnique:
     if( client->swapped ) {
@@ -223,8 +225,9 @@ int SendFloError(client, flo)
     }
     break;
   case	xieErrNoFloValue:
-    if( client->swapped )
+    if( client->swapped ) {
       swapl(&((xieFloValueErr *)(&err))->badValue, n);
+    }
     break;
   default:
     status = BadImplementation;
