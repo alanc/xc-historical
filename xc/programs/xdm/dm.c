@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.31 89/12/09 19:28:48 rws Exp $
+ * $XConsortium: dm.c,v 1.32 89/12/15 20:11:50 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -324,7 +324,10 @@ WaitForChild ()
 		break;
 	    case SIGTERM * 256 + 1:
 		Debug ("Display exited on SIGTERM\n");
-		StopDisplay(d);
+		if (d->displayType.origin == FromXDMCP)
+		    StopDisplay(d);
+		else
+		    RestartDisplay (d, TRUE);
 		break;
 	    case REMANAGE_DISPLAY:
 		Debug ("Display exited with REMANAGE_DISPLAY\n");
@@ -356,7 +359,10 @@ WaitForChild ()
 		Debug ("Server for display %s terminated unexpectedly, status %d\n", d->name, waitVal (status));
 		LogError ("Server for display %s terminated unexpectedly\n", d->name);
 		if (d->pid != -1)
+		{
+		    Debug ("Terminating session pid %d\n", d->pid);
 		    TerminateProcess (d->pid);
+		}		
 		break;
 	    case notRunning:
 		Debug ("Server exited for notRunning session on display %s\n", d->name);
@@ -583,6 +589,7 @@ StorePid ()
 	    }
 #endif
 	}
+	close(creat(pidFile, 0666));
 	fprintf (pidFilePtr, "%d\n", getpid ());
     }
     return 0;
