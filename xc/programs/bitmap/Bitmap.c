@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.15 90/10/31 18:26:21 dave Exp $
+ * $XConsortium: Bitmap.c,v 1.16 90/11/01 19:34:08 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -62,8 +62,8 @@ static XtResource resources[] = {
      offset(foreground_pixel), XtRString, XtDefaultForeground},
 {XtNhighlight, XtCHighlight, XtRPixel, sizeof(Pixel),
      offset(highlight_pixel), XtRString, XtDefaultForeground},
-{XtNframing, XtCFraming, XtRPixel, sizeof(Pixel),
-     offset(framing_pixel), XtRString, XtDefaultForeground},
+{XtNframe, XtCFrame, XtRPixel, sizeof(Pixel),
+     offset(frame_pixel), XtRString, XtDefaultForeground},
 {XtNgridTolerance, XtCGridTolerance, XtRDimension, sizeof(Dimension),
      offset(grid_tolerance), XtRImmediate, (XtPointer) DefaultGridTolerance},
 {XtNbitmapWidth, XtCBitmapWidth, XtRDimension, sizeof(Dimension),
@@ -82,10 +82,10 @@ static XtResource resources[] = {
      offset(axes), XtRImmediate, (XtPointer) DefaultAxes},
 {XtNsquareSize, XtCSquareSize, XtRDimension, sizeof(Dimension),
      offset(squareW), XtRImmediate, (XtPointer) DefaultSquareSize},
-{XtNdistance, XtCDistance, XtRDimension, sizeof(Dimension),
-     offset(distance), XtRImmediate, (XtPointer) DefaultDistance},
 {XtNsquareSize, XtCSquareSize, XtRDimension, sizeof(Dimension),
      offset(squareH), XtRImmediate, (XtPointer) DefaultSquareSize},
+{XtNdistance, XtCDistance, XtRDimension, sizeof(Dimension),
+     offset(distance), XtRImmediate, (XtPointer) DefaultDistance},
 {XtNxHot, XtCXHot, XtRPosition, sizeof(Position),
      offset(hot.x), XtRImmediate, (XtPointer) NotSet},
 {XtNyHot, XtCYHot, XtRPosition, sizeof(Position),
@@ -699,7 +699,7 @@ static void Initialize(request, new, argv, argc)
 					    mask, &values);
 
 
-    values.foreground = new->bitmap.framing_pixel;
+    values.foreground = new->bitmap.frame_pixel;
     values.background = new->core.background_pixel;
     values.foreground ^= values.background;
     mask = GCForeground | GCBackground | GCFunction;
@@ -710,7 +710,7 @@ static void Initialize(request, new, argv, argc)
     }
     values.fill_style = (new->bitmap.dashed ? FillStippled : FillSolid);
 
-    new->bitmap.framing_gc = XCreateGC(XtDisplay(new), 
+    new->bitmap.frame_gc = XCreateGC(XtDisplay(new), 
 				     RootWindow(XtDisplay(new), 
 						DefaultScreen(XtDisplay(new))),
 				     mask, &values);
@@ -1026,7 +1026,7 @@ int BWWriteFile(w, filename, basename)
     }
 
     if (DEBUG)
-	fprintf(stderr, "Saving filename: %s\n", filename);
+	fprintf(stderr, "Saving filename: %s %s\n", filename, basename);
 
     status = XmuWriteBitmapDataToFile(filename, basename,
 				      image->width, image->height, image->data,
@@ -1314,7 +1314,7 @@ static void Destroy(w)
 
     XtDestroyGC(BW->bitmap.drawing_gc);
     XtDestroyGC(BW->bitmap.highlighting_gc);
-    XtDestroyGC(BW->bitmap.framing_gc);
+    XtDestroyGC(BW->bitmap.frame_gc);
     XtDestroyGC(BW->bitmap.axes_gc);
     BWRemoveAllRequests(w);
 }
@@ -1395,7 +1395,7 @@ void BWClip(w, from_x, from_y, to_x, to_y)
 		       &rectangle, 1,
 		       Unsorted);
     XSetClipRectangles(XtDisplay(BW),
-		       BW->bitmap.framing_gc,
+		       BW->bitmap.frame_gc,
 		       0, 0,
 		       &rectangle, 1,
 		       Unsorted);
@@ -1427,7 +1427,7 @@ void BWUnclip(w)
 		       &rectangle, 1,
 		       Unsorted);
     XSetClipRectangles(XtDisplay(BW),
-		       BW->bitmap.framing_gc,
+		       BW->bitmap.frame_gc,
 		       0, 0,
 		       &rectangle, 1,
 		       Unsorted);
@@ -1458,13 +1458,13 @@ void Refresh(BW, x, y, width, height)
 	       False);
 
     XSetClipRectangles(XtDisplay(BW),
-		       BW->bitmap.framing_gc,
+		       BW->bitmap.frame_gc,
 		       0, 0,
 		       &rectangle, 1,
 		       Unsorted);
 
     XDrawRectangle(XtDisplay(BW), XtWindow(BW),
-		   BW->bitmap.framing_gc,
+		   BW->bitmap.frame_gc,
 		   InWindowX(BW, 0) - 1, InWindowY(BW, 0) - 1,
 		   InWindowX(BW, BW->bitmap.width) - InWindowX(BW, 0) + 1, 
 		   InWindowY(BW, BW->bitmap.height) - InWindowY(BW, 0) + 1);
@@ -1540,23 +1540,23 @@ void BWSwitchDashed(w)
     rectangle.height = BW->core.height;
 
     XSetClipRectangles(XtDisplay(BW),
-		       BW->bitmap.framing_gc,
+		       BW->bitmap.frame_gc,
 		       0, 0,
 		       &rectangle, 1,
 		       Unsorted);
 
     XDrawRectangle(XtDisplay(BW), XtWindow(BW),
-		   BW->bitmap.framing_gc,
+		   BW->bitmap.frame_gc,
 		   InWindowX(BW, 0) - 1, InWindowY(BW, 0) - 1,
 		   InWindowX(BW, BW->bitmap.width) - InWindowX(BW, 0) + 1, 
 		   InWindowY(BW, BW->bitmap.height) - InWindowY(BW, 0) + 1);
     
     BW->bitmap.dashed ^= True;
-    XSetFillStyle(XtDisplay(BW), BW->bitmap.framing_gc,
+    XSetFillStyle(XtDisplay(BW), BW->bitmap.frame_gc,
 		  (BW->bitmap.dashed ? FillStippled : FillSolid));
  
     XDrawRectangle(XtDisplay(BW), XtWindow(BW),
-		   BW->bitmap.framing_gc,
+		   BW->bitmap.frame_gc,
 		   InWindowX(BW, 0) - 1, InWindowY(BW, 0) - 1,
 		   InWindowX(BW, BW->bitmap.width) - InWindowX(BW, 0) + 1, 
 		   InWindowY(BW, BW->bitmap.height) - InWindowY(BW, 0) + 1);

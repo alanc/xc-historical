@@ -1,5 +1,5 @@
 /*
- * $XConsortium: BitmapP.h,v 1.6 90/06/09 20:19:47 dmatic Exp $
+ * $XConsortium: BitmapP.h,v 1.7 90/10/31 18:26:27 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -92,7 +92,7 @@ typedef struct {
   /* resources */
   Pixel            foreground_pixel;
   Pixel            highlight_pixel;
-  Pixel            framing_pixel;
+  Pixel            frame_pixel;
   Pixmap           stipple;
   Boolean          stippled;
   Boolean          proportional;
@@ -117,7 +117,7 @@ typedef struct {
   BWArea           mark, buffer_mark;
   GC               drawing_gc;
   GC               highlighting_gc;
-  GC               framing_gc;
+  GC               frame_gc;
   GC               axes_gc;
   Boolean          changed;
   Boolean          fold;

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Graphics.c,v 1.3 90/10/31 18:26:30 dave Exp $
+ * $XConsortium: Graphics.c,v 1.4 90/11/01 19:34:22 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -80,13 +80,13 @@ bit BWGetBit(w, x, y)
     (*(image->data + (x) / 8 + (y) * image->bytes_per_line) &=\
      (bit)~(1 << ((x) % 8)))
 
-/*
+
 #define HighlightSquare(BW, x, y)\
     XFillRectangle(XtDisplay(BW), XtWindow(BW),\
                    BW->bitmap.highlighting_gc,\
 		   InWindowX(BW, x), InWindowY(BW, y),\
                    BW->bitmap.squareW, BW->bitmap.squareH)
-*/
+/*
 void HighlightSquare(BW, x, y)
     BitmapWidget BW;
     Position x, y;
@@ -96,15 +96,15 @@ void HighlightSquare(BW, x, y)
 		   InWindowX(BW, x), InWindowY(BW, y),
                    BW->bitmap.squareW, BW->bitmap.squareH);
 }
+*/
 
-/*
 #define DrawSquare(BW, x, y)\
     XFillRectangle(XtDisplay(BW), XtWindow(BW),\
                    BW->bitmap.drawing_gc,\
 		   InWindowX(BW, x), InWindowY(BW, y),\
                    BW->bitmap.squareW, BW->bitmap.squareH) 
-*/
 
+/*
 void DrawSquare(BW, x, y)
     BitmapWidget BW;
     Position x, y;
@@ -114,6 +114,7 @@ void DrawSquare(BW, x, y)
 		   InWindowX(BW, x), InWindowY(BW, y),
                    BW->bitmap.squareW, BW->bitmap.squareH);
 }
+*/
 
 #define InvertPoint(BW, x, y)\
     {InvertBit(BW->bitmap.image, x, y); DrawSquare(BW, x, y);}
@@ -182,8 +183,10 @@ void BWClearHotSpot(w)
 {
     BitmapWidget BW = (BitmapWidget) w;
     
-    DrawHotSpot(BW, BW->bitmap.hot.x, BW->bitmap.hot.y);
-    BW->bitmap.hot.x = BW->bitmap.hot.y = NotSet;
+    if (QuerySet(BW->bitmap.hot.x, BW->bitmap.hot.y)) {
+      DrawHotSpot(BW, BW->bitmap.hot.x, BW->bitmap.hot.y);
+      BW->bitmap.hot.x = BW->bitmap.hot.y = NotSet;
+    }
 }
 
 void BWDrawHotSpot(w, x, y, value)
@@ -261,13 +264,13 @@ void BWDrawGrid(w, from_x, from_y, to_x, to_y)
   
     for(i = from_x + (from_x == 0); i <= to_x; i++)
 	XDrawLine(XtDisplay(BW), XtWindow(BW), 
-		  BW->bitmap.framing_gc,
+		  BW->bitmap.frame_gc,
 		  InWindowX(BW, i), InWindowY(BW, from_y),
 		  InWindowX(BW, i), InWindowY(BW, to_y + 1));
   
     for(i = from_y + (from_y == 0); i <= to_y; i++)
 	XDrawLine(XtDisplay(BW), XtWindow(BW), 
-		  BW->bitmap.framing_gc,
+		  BW->bitmap.frame_gc,
 		  InWindowX(BW, from_x), InWindowY(BW, i),
 		  InWindowX(BW, to_x + 1), InWindowY(BW, i));
 }
@@ -1469,7 +1472,8 @@ void BWUndo(w)
 	     DrawSquare(BW, x, y);
 
     BWSetHotSpot(w, BW->bitmap.buffer_hot.x, BW->bitmap.buffer_hot.y);
-/*    BWMark(w, BW->bitmap.buffer_mark.from_x, BW->bitmap.buffer_mark.from_y,
+/*    
+    BWMark(w, BW->bitmap.buffer_mark.from_x, BW->bitmap.buffer_mark.from_y,
 	   BW->bitmap.buffer_mark.to_x, BW->bitmap.buffer_mark.to_y);
 */
     BW->bitmap.buffer_hot = tmp_hot;

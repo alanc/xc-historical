@@ -1,5 +1,5 @@
 /*
- * $XConsortium: BitEdit.c,v 1.11 90/11/01 19:33:55 dave Exp $
+ * $XConsortium: BitEdit.c,v 1.12 90/11/06 16:48:40 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -41,11 +41,12 @@
 
 #include <X11/bitmaps/xlogo16>
 
-static char *usage = "[-options ...] filename\n\
+static char *usage = "[-options ...] filename basename\n\
 \n\
-where options include:\n\
+where options include all standard toolkit options plus:\n\
      -size WIDTHxHEIGHT\n\
      -squares dimension\n\
+     -gt dimension\n\
      -grid, +grid\n\
      -axes, +axes\n\
      -dashed, +dashed\n\
@@ -64,6 +65,11 @@ static XrmOptionDescRec options[] = {
   {
     "-squares",
     "*squareSize",
+    XrmoptionSepArg,
+    NULL},
+  {
+    "-gt",
+    "*gridTolerance",
     XrmoptionSepArg,
     NULL},
   {
@@ -133,7 +139,7 @@ static XrmOptionDescRec options[] = {
     NULL},
   {
     "-fr", 
-    "*framing", 
+    "*frame", 
     XrmoptionSepArg, 
     NULL},
   {
@@ -156,50 +162,52 @@ typedef struct {
   } ButtonRec;
 
 static ButtonRec file_menu[] = {
-#define Load 26
+#define NewFile 101
+  {NewFile, "newFile", True},
+#define Load 102
   {Load, "load", True},
-#define Insert 101
+#define Insert 103
   {Insert, "insert", True},
-#define Save 27
+#define Save 104
   {Save, "save", True},
-#define SaveAs 28
+#define SaveAs 105
   {SaveAs, "saveAs", True},
-#define Resize 24
+#define Resize 106
   {Resize, "resize", True},
-#define Rescale 79
+#define Rescale 107
   {Rescale, "rescale", True},
-#define Filename 74
+#define Filename 108
   {Filename, "filename", True},
-#define Basename 73
+#define Basename 109
   {Basename, "basename", True},
 #define Dummy -1
   {Dummy, "line", False},
-#define Quit 75
+#define Quit 110
   {Quit, "quit", True},
 };
 
 static ButtonRec edit_menu[] = {
-#define Image 77
+#define Image 201
   {Image, "image", True},
-#define Grid 23
+#define Grid 203
   {Grid, "grid", True},
-#define Dashed 32
+#define Dashed 204
   {Dashed, "dashed", True},
-#define Axes 34
+#define Axes 205
   {Axes, "axes", True},
-#define Stippled 98
+#define Stippled 206
   {Stippled, "stippled", True},
-#define Proportional 97
+#define Proportional 207
   {Proportional, "proportional", True},
-#define Zoom 100
+#define Zoom 208
   {Zoom, "zoom", True},
 /* Dummy */
   {Dummy, "line", False},
-#define Cut 30
+#define Cut 209
   {Cut, "cut", True},
-#define Copy 31
+#define Copy 210
   {Copy, "copy", True},
-#define Paste 4
+#define Paste 211
   {Paste, "paste", True},
 };
 
@@ -210,47 +218,47 @@ static ButtonRec buttons[] = {
   {Set, "set", False},
 /*#define Invert 3*/
   {Invert, "invert", False},
-#define CopyImm 102
+#define CopyImm 4
   {CopyImm, "copy", True},
-#define MoveImm 103
+#define MoveImm 5
   {MoveImm, "move", True},
-#define FlipHoriz 11
+#define FlipHoriz 6
   {FlipHoriz, "flipHoriz", False},
 #define Up 7
   {Up, "up", False},
-#define FlipVert 12
+#define FlipVert 8
   {FlipVert, "flipVert", False},
 #define Left 9
   {Left, "left", False},
-#define Fold 99
+#define Fold 10
   {Fold, "fold", False},
-#define Right 10
+#define Right 11
   {Right, "right", False},
-#define RotateLeft 33
+#define RotateLeft 12
   {RotateLeft, "rotateLeft", False},
-#define Down 8
+#define Down 13
   {Down, "down", False},
-#define RotateRight 13
+#define RotateRight 14
   {RotateRight, "rotateRight", False},
-#define Point 14
+#define Point 15
   {Point, "point", True},
-#define Curve 41
+#define Curve 16
   {Curve, "curve", True},
-#define Line 15
+#define Line 17
   {Line, "line", True},
-#define Rectangle 16
+#define Rectangle 18
   {Rectangle, "rectangle", True},
-#define FilledRectangle 17
+#define FilledRectangle 19
   {FilledRectangle, "filledRectangle", True},
-#define Circle 18
+#define Circle 20
   {Circle, "circle", True},
-#define FilledCircle 19
+#define FilledCircle 21
   {FilledCircle, "filledCircle", True},
-#define FloodFill 20
+#define FloodFill 22
   {FloodFill, "floodFill", True},
-#define SetHotSpot 21
+#define SetHotSpot 23
   {SetHotSpot, "setHotSpot", True},
-#define ClearHotSpot 22
+#define ClearHotSpot 24
   {ClearHotSpot, "clearHotSpot", False},
 #define Undo 25
   {Undo, "undo", False},
@@ -274,7 +282,7 @@ Boolean image_visible = False;
 Pixmap check_mark;
 Dialog input_dialog, error_dialog, qsave_dialog;
 Time btime;
-String filename = "", basename = "", format = "";
+String filename = NULL, basename = NULL, format;
 char message[80];
 
 void ShowImage();
@@ -415,7 +423,8 @@ void DoQuit()
 				NULL, NULL, XtGrabExclusive) == Retry) 
 		    goto RetryQuit;
 	    }
-	    
+	    break;
+
 	case Cancel:
 	    return;
 	}
@@ -518,6 +527,20 @@ void TheCallback(w, id)
 		BWClearChanged(bitmap_widget);
 		FixStatus();
 	    }
+	}
+	break;
+
+    case NewFile:
+	BWGetFilename(bitmap_widget, &filename);
+	if (PopupDialog(input_dialog, "New file:", 
+			filename, &filename, XtGrabExclusive) == Okay) {
+	    BWChangeFilename(bitmap_widget, filename);
+	    BWChangeBasename(bitmap_widget, filename);
+	    BWStoreToBuffer(bitmap_widget);
+	    BWClear(bitmap_widget);
+	    BWChangeNotify(bitmap_widget, NULL, NULL);
+	    BWClearChanged(bitmap_widget);
+	    FixStatus();
 	}
 	break;
 
@@ -868,7 +891,7 @@ void main(argc, argv)
 			      options, XtNumber(options), 
 			      (Cardinal *)&argc, argv);
 
-    if (argc > 1) {
+    if (argc > 3) {
 	fprintf(stderr, usage);
 	exit (0);
     }
@@ -962,6 +985,14 @@ void main(argc, argv)
 					  pane_widget, NULL, 0);
 
     XtRealizeWidget(top_widget);
+
+    if (argc > 1)
+      if (BWReadFile(bitmap_widget, argv[1], NULL)) {
+	BWChangeFilename(bitmap_widget, argv[1]);
+	BWChangeBasename(bitmap_widget, argv[1]);
+      }
+    if (argc > 2)
+      BWChangeBasename(bitmap_widget, argv[2]);
 
     wm_delete_window = XInternAtom(XtDisplay(top_widget), "WM_DELETE_WINDOW",
 				   False);

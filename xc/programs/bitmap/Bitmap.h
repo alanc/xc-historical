@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.h,v 1.5 90/10/31 18:26:25 dave Exp $
+ * $XConsortium: Bitmap.h,v 1.6 90/11/01 19:34:14 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -42,7 +42,7 @@
  background	     Background		Pixel		XtDefaultBackground
  foreground          Foredround         Pixel           XtDefaultForeground
  highlight           Highlight          Pixel           XtDefaultForeground
- framing             Framing            Pixel           XtDefaultForeground
+ frame               Frame              Pixel           XtDefaultForeground
  border		     BorderColor	Pixel		XtDefaultForeground
  borderWidth	     BorderWidth	Dimension	1
  mappedWhenManaged   MappedWhenManaged	Boolean		True
@@ -100,7 +100,7 @@
 #define XtNbasename "basename"
 #define XtNmouseForeground "mouseForeground"
 #define XtNmouseBackground "mouseBackground"
-#define XtNframing "framing"
+#define XtNframe "frame"
 #define XtNdistance "distance"
 #define XtNproportional "proportional"
 
@@ -126,7 +126,7 @@
 #define XtCButton5Action "Button5Action"
 #define XtCFilename "Filename"
 #define XtCBasename "Basename"
-#define XtCFraming "Framing"
+#define XtCFrame "Frame"
 #define XtCDistance "Distance"
 #define XtCProportional "Proportional"
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Dialog.c,v 1.4 90/09/14 13:38:56 dmatic Exp $
+ * $XConsortium: Dialog.c,v 1.5 90/11/01 19:34:18 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -160,9 +160,12 @@ int PopupDialog(popup, message, suggestion, answer, grab)
   selected = Empty;
 
   XtPopup(popup->shell_widget, grab);
+  XWarpPointer(XtDisplay(popup->shell_widget), 
+	       XtWindow(popup->top_widget),
+	       XtWindow(popup->shell_widget), 
+	       0, 0, top_width, top_height,
+	       popup_width / 2, popup_height / 2);
 
-  XtSetKeyboardFocus(popup->top_widget, popup->shell_widget);
-  
   while ((selected & popup->options) == Empty) {
       XEvent event;
       XtNextEvent(&event);

@@ -1,31 +1,24 @@
 
 ! The App-defaults file for Bitmap.
 
-! resources for a color workstation.
-!
-
-! bitmap*background: medium blue
-! bitmap*foreground: cyan
-! bitmap*borderColor: plum
-! bitmap*framing: deep sky blue
-! bitmap*highlight: magenta
-! bitmap*Command.background: purple
-! bitmap*Toggle.background: purple
-! bitmap*MenuButton.background: purple
-! bitmap*Command.foreground: white
-! bitmap*Toggle.foreground: white
-! bitmap*MenuButton.foreground: white
-! bitmap*status.foreground: green
-! bitmap*Dialog.icon.foreground: pale green
-
-bitmap*background: black
-bitmap*foreground: white
-bitmap*borderColor: white
-bitmap*framing: white
-bitmap*highlight: white
+#if (COLOR)
+*background: medium blue
+*foreground: cyan
+*borderColor: plum
+*frame: deep sky blue
+*highlight: magenta
+*Command.background: purple
+*Toggle.background: purple
+*MenuButton.background: purple
+*Command.foreground: white
+*Toggle.foreground: white
+*MenuButton.foreground: white
+*status.foreground: green
+*Dialog.icon.foreground: pale green
+#endif
 
 *TransientShell.allowShellResize:	True
-*font:			-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-iso*-*
+*font:					variable
 *shapeStyle:				oval
 *cursor:				left_ptr
 *pane.orientation:			horizontal
@@ -39,13 +32,13 @@ bitmap*highlight: white
 *form*width:              		120
 *form*height:             		15
 
-*Toggle.translations:	<EnterWindow>:	highlight(WhenUnset)\n\
-			<LeaveWindow>:	unhighlight()\n\
+*Toggle.translations:	<EnterWindow>:		highlight(WhenUnset)\n\
+			<LeaveWindow>:		unhighlight()\n\
 			<Btn1Down>,<Btn1Up>: 	set() notify()
 
-*MenuButton.translations:	<EnterWindow>:  highlight()\n\
-				<LeaveWindow>:  reset()\n\
-				<BtnDown>:  reset() fix-menu() PopupMenu()
+*MenuButton.translations:<EnterWindow>:		highlight()\n\
+			<LeaveWindow>:  	reset()\n\
+			<BtnDown>:  		reset() fix-menu() PopupMenu()
 
 *Dialog.value.translations:#override<Key>Return:set-okay()
 *image.label.translations:#override<Btn1Down>,<Btn1Up>:image()
@@ -57,18 +50,17 @@ bitmap*highlight: white
 *bitmap.dashed:				on
 *bitmap.cursor:           		tcross
 *bitmap.stipple:			Stipple
-
-! more color resources
-! bitmap*bitmap.stippled:                 off
-
-bitmap*bitmap.stippled:                 on
+#if (COLOR)
+*bitmap.stippled:                 	off
+#else
+*bitmap.stippled:                 	on
+#endif
 
 *TransientShell.width:			300
 
 *input*icon:				Term
 *qsave*icon:				Term
 *error*icon:				Excl
-!*Dialog.value.borderWidth:		0
 *Dialog.yes.label:			Yes
 *Dialog.no.label:			No
 *Dialog.okay.label:			OK
@@ -76,7 +68,7 @@ bitmap*bitmap.stippled:                 on
 *Dialog.cancel.label:			Cancel
 *Dialog.retry.label:			Retry
 
-*MenuButton.width:			48
+*MenuButton.width:			58
 
 *SimpleMenu.width:			0
 *SimpleMenu.height:			0
@@ -99,6 +91,7 @@ bitmap*bitmap.stippled:                 on
 
 *SmeBSB.HorizontalMargins:		32
 
+*fileMenu.newFile.label:		New File...
 *fileMenu.load.label:			Load...
 *fileMenu.insert.label:			Insert...
 *fileMenu.save.label:			Save
