@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: xdmcp.c,v 1.3 91/07/18 18:57:22 gildea Exp $
+ * $XConsortium: xdmcp.c,v 1.4 91/10/31 09:39:46 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -268,6 +268,8 @@ ClientAddress (from, addr, port, type)
 
     *type = family;
 }
+
+/* computes an X display name */
 
 static char *
 NetworkAddressToName(connectionType, connectionAddress, displayNumber)
@@ -1034,15 +1036,26 @@ NetworkAddressToHostname (connectionType, connectionAddress)
     case FamilyInternet:
 	{
 	    struct hostent	*hostent;
+	    char dotted[20];
+	    char *local_name;
 
 	    hostent = gethostbyaddr ((char *)connectionAddress->data,
 				     connectionAddress->length, AF_INET);
 
-	    if (!hostent)
+	    if (hostent)
+		local_name = hostent->h_name;
+	    else {
+		/* can't get name, so use emergency fallback */
+		sprintf(dotted, "%d.%d.%d.%d",
+			(char *)connectionAddress->data[0],
+			(char *)connectionAddress->data[1],
+			(char *)connectionAddress->data[2],
+			(char *)connectionAddress->data[3]);
+		local_name = dotted;
+	    }
+	    if (!getString (name, strlen (local_name)))
 		break;
-	    if (!getString (name, strlen (hostent->h_name)))
-		break;
-	    strcpy (name, hostent->h_name);
+	    strcpy (name, local_name);
 	    break;
 	}
 #ifdef DNET
