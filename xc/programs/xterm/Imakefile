@@ -20,7 +20,10 @@
 #define TtyDef /**/
 #endif
 
-/* add -DWTMP and -DLASTLOG if you want them */
+/*
+ * add -DWTMP and -DLASTLOG if you want them; make sure that bcopy can
+ * handle overlapping copies before using it.
+ */
         DEFINES = -DUTMP -DBcopy=bcopy TtyDef
           SRCS1 = button.c charproc.c cursor.c data.c input.c \
 		  main.c menu.c misc.c screen.c scrollbar.c tabs.c \
