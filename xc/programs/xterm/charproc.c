@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.126 90/06/07 15:49:59 jim Exp $
+ * $XConsortium: charproc.c,v 1.127 90/06/08 13:58:12 jim Exp $
  */
 
 
@@ -153,7 +153,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.126 90/06/07 15:49:59 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.127 90/06/08 13:58:12 jim Exp $";
 #endif	/* lint */
 
 static int nparam;
@@ -2634,12 +2634,13 @@ void DoSetSelectedFont(w, client_data, selection, type, value, length, format)
     unsigned long *length;
     int *format;
 {
+    char *val = (char *)value;
     int len;
     if (*type != XA_STRING || *format != 8) { Bell(); return; }
-    len = strlen(value);
+    len = strlen(val);
     if (len > 0) {
-	if (value[len-1] == '\n') value[len-1] = '\0';
-	if (!LoadNewFont (&term->screen, value, NULL, True, 
+	if (val[len-1] == '\n') val[len-1] = '\0';
+	if (!LoadNewFont (&term->screen, val, NULL, True, 
 			  fontMenu_fontescape))
 	  Bell();
     }
