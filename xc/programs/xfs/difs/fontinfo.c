@@ -1,4 +1,4 @@
-/* $XConsortium: fontinfo.c,v 1.6 91/07/18 22:34:57 keith Exp $ */
+/* $XConsortium: fontinfo.c,v 1.7 91/07/25 12:24:51 keith Exp $ */
 /*
  * font data query
  */
@@ -23,9 +23,6 @@
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
- * @(#)fontinfo.c	4.1	5/2/91
- *
  */
 
 #include        "FS.h"
@@ -132,7 +129,8 @@ convert_props(pinfo, props)
 
 
 int
-LoadFontHeader(pinfo, hdr, pi)
+LoadXFontInfo(client, pinfo, hdr, pi)
+    ClientPtr client;		/* for client version info */
     FontInfoPtr pinfo;
     fsFontHeader *hdr;
     fsPropInfo **pi;
@@ -147,12 +145,21 @@ LoadFontHeader(pinfo, hdr, pi)
 
     if (pinfo->inkInside)
 	hdr->flags |= FontInfoInkInside;
-    hdr->char_range.min_char.low = pinfo->firstCol;
-    hdr->char_range.min_char.high = pinfo->firstRow;
-    hdr->char_range.max_char.low = pinfo->lastCol;
-    hdr->char_range.max_char.high = pinfo->lastRow;
-    hdr->default_char.low = pinfo->defaultCh & 0xff;
-    hdr->default_char.high = pinfo->defaultCh >> 8;
+    if (client->major_version > 1) {
+	hdr->char_range.min_char.low = pinfo->firstCol;
+	hdr->char_range.min_char.high = pinfo->firstRow;
+	hdr->char_range.max_char.low = pinfo->lastCol;
+	hdr->char_range.max_char.high = pinfo->lastRow;
+	hdr->default_char.low = pinfo->defaultCh & 0xff;
+	hdr->default_char.high = pinfo->defaultCh >> 8;
+    } else {
+	hdr->char_range.min_char.high = pinfo->firstCol;
+	hdr->char_range.min_char.low = pinfo->firstRow;
+	hdr->char_range.max_char.high = pinfo->lastCol;
+	hdr->char_range.max_char.low = pinfo->lastRow;
+	hdr->default_char.high = pinfo->defaultCh & 0xff;
+	hdr->default_char.low = pinfo->defaultCh >> 8;
+    }
 
     CopyCharInfo(&pinfo->ink_minbounds, &hdr->min_bounds);
     CopyCharInfo(&pinfo->ink_maxbounds, &hdr->max_bounds);
@@ -233,6 +240,26 @@ build_range(type, src, item_size, num, all)
     }
 }
 
+/*
+ * provide backward compatibility with version 1, which had
+ * the bytes of char2b backwards
+ */
+static void
+swap_char2b (values, number)
+    fsChar2b *values;
+    int number;
+{
+    fsChar2b temp;
+    int i;
+
+    for (i = 0; i < number; i++) {
+	temp.low = ((fsChar2b_version1 *)values)->low;
+	temp.high = ((fsChar2b_version1 *)values)->high;
+	*values++ = temp;
+    }
+}
+
+
 static Bool
 do_query_extents(client, c)
     ClientPtr   client;
@@ -244,7 +271,7 @@ do_query_extents(client, c)
     fsCharInfo *extents;
     fsQueryXExtents8Reply reply;
 
-    err = (*c->pfont->get_extents) ((pointer) c->client, c->pfont,
+    err = GetExtents (c->client, c->pfont,
 		     c->flags, c->nranges, c->range, &num_extents, &extents);
     if (err == Suspended) {
 	if (!c->slept) {
@@ -288,6 +315,9 @@ QueryExtents(client, cfp, item_size, nranges, range_flag, range_data)
     fsRange    *fixed_range;
     Bool        all_glyphs = FALSE;
 
+    if (item_size == 2  &&  client->major_version == 1)
+	swap_char2b (range_data, nranges);
+
     fixed_range = build_range(range_flag, range_data, item_size,
 			      &nranges, &all_glyphs);
 
@@ -322,7 +352,7 @@ do_query_bitmaps(client, c)
     fsQueryXBitmaps8Reply reply;
     int		freedata;
 
-    err = (*c->pfont->get_bitmaps) ((pointer) c->client, c->pfont, c->format,
+    err = GetBitmaps (c->client, c->pfont, c->format,
 				    c->flags, c->nranges, c->range,
 			     &data_size, &num_glyphs, &offsets, &glyph_data, &freedata);
 
@@ -375,6 +405,9 @@ QueryBitmaps(client, cfp, item_size, format, nranges, range_flag, range_data)
     QBclosurePtr c;
     fsRange    *fixed_range;
     Bool        all_glyphs = FALSE;
+
+    if (item_size == 2  &&  client->major_version == 1)
+	swap_char2b (range_data, nranges);
 
     fixed_range = build_range(range_flag, range_data, item_size,
 			      &nranges, &all_glyphs);
