@@ -12,7 +12,7 @@
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- *	"$Header: sun.h,v 4.5 88/02/29 00:37:21 rws Exp $ SPRITE (Berkeley)"
+ *	"$XConsortium: sun.h,v 4.6 88/03/15 14:29:43 rws Exp $ SPRITE (Berkeley)"
  */
 #ifndef _SUN_H_
 #define _SUN_H_
