@@ -1,4 +1,4 @@
-/* $XConsortium: xexevents.c,v 1.12 90/05/18 11:34:58 rws Exp $ */
+/* $XConsortium: xexevents.c,v 1.13 90/05/18 11:38:09 rws Exp $ */
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
 Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1199,4 +1199,5 @@ DeviceEventSuppressForWindow(pWin, client, mask, maskndx)
 	wOtherInputMasks(pWin)->dontPropagateMask[maskndx] = mask;
 	}
     RecalculateDeviceDeliverableEvents(pWin);
+    return Success;
     }
