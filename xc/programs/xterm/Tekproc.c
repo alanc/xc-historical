@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.86 91/02/05 19:44:18 gildea Exp $
+ * $XConsortium: Tekproc.c,v 1.86 91/02/05 20:07:37 gildea Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -205,23 +205,23 @@ static Dimension defOne = 1;
 
 static XtResource resources[] = {
     {XtNwidth, XtCWidth, XtRDimension, sizeof(Dimension),
-	 XtOffset(Widget, core.width), XtRDimension, (caddr_t)&defOne},
+	 XtOffsetOf(CoreRec, core.width), XtRDimension, (caddr_t)&defOne},
     {XtNheight, XtCHeight, XtRDimension, sizeof(Dimension),
-	 XtOffset(Widget, core.height), XtRDimension, (caddr_t)&defOne},
+	 XtOffsetOf(CoreRec, core.height), XtRDimension, (caddr_t)&defOne},
     {"fontLarge", XtCFont, XtRFontStruct, sizeof(XFontStruct *),
-       XtOffset(TekWidget, tek.Tfont[TEK_FONT_LARGE]),
+       XtOffsetOf(TekWidgetRec, tek.Tfont[TEK_FONT_LARGE]),
        XtRString, "9x15"},
     {"font2", XtCFont, XtRFontStruct, sizeof(XFontStruct *),
-       XtOffset(TekWidget, tek.Tfont[TEK_FONT_2]),
+       XtOffsetOf(TekWidgetRec, tek.Tfont[TEK_FONT_2]),
        XtRString, "6x13"},
     {"font3", XtCFont, XtRFontStruct, sizeof(XFontStruct *),
-       XtOffset(TekWidget, tek.Tfont[TEK_FONT_3]),
+       XtOffsetOf(TekWidgetRec, tek.Tfont[TEK_FONT_3]),
        XtRString, "8x13"},
     {"fontSmall", XtCFont, XtRFontStruct, sizeof(XFontStruct *),
-       XtOffset(TekWidget, tek.Tfont[TEK_FONT_SMALL]),
+       XtOffsetOf(TekWidgetRec, tek.Tfont[TEK_FONT_SMALL]),
        XtRString, "6x10"},
     {"initialFont", "InitialFont", XtRString, sizeof(char *),
-       XtOffset(TekWidget, tek.initial_font),
+       XtOffsetOf(TekWidgetRec, tek.initial_font),
        XtRString, "large"},
 };
 
