@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.171 91/03/26 15:00:16 gildea Exp $ */
+/* $XConsortium: main.c,v 1.172 91/03/27 18:05:52 gildea Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -721,6 +721,9 @@ char **argv;
         d_ltc.t_werasc = 0;
         d_ltc.t_lnextc = 0;
 #endif /* TIOCSLTC */
+#ifdef TIOCLSET
+	d_lmode = 0;
+#endif /* TIOCLSET */
 #else  /* else !macII */
 	d_tio.c_iflag = ICRNL|IXON;
 	d_tio.c_oflag = OPOST|ONLCR|TAB3;
@@ -1385,15 +1388,31 @@ spawn ()
 			/* get a copy of the current terminal's state */
 
 #ifdef USE_SYSV_TERMIO
-			if(ioctl(tty, TCGETA, &tio) == -1)
+		        /* SVR4 fails here if xterm started
+			   from twm from xdm from /etc/rc.
+			   Hence the protection for the next 3 ioctl's.
+			   Something about not having a controlling tty. */
+		        if(ioctl(tty, TCGETA, &tio) == -1)
+#ifndef SVR4
 				SysError(ERROR_TIOCGETP);
+#else /* SVR4 */
+			        tio = d_tio;
+#endif /* SVR4 */
 #ifdef TIOCSLTC
 			if(ioctl(tty, TIOCGLTC, &ltc) == -1)
+#ifndef SVR4
 				SysError(ERROR_TIOCGLTC);
+#else /* SVR4 */
+				ltc = d_ltc;
+#endif /* SVR4 */
 #endif	/* TIOCSLTC */
 #ifdef TIOCLSET
 			if(ioctl(tty, TIOCLGET, &lmode) == -1)
+#ifndef SVR4
 				SysError(ERROR_TIOCLGET);
+#else /* SVR4 */
+				lmode = d_lmode;
+#endif /* SVR4 */
 #endif	/* TIOCLSET */
 #else	/* not USE_SYSV_TERMIO */
 			if(ioctl(tty, TIOCGETP, (char *)&sg) == -1)
