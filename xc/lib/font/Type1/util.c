@@ -29,7 +29,6 @@
 /* Author: Katherine A. Hitchcock    IBM Almaden Research Laboratory */
  
 #include <stdio.h>
-#include <stdlib.h>
 #include "util.h"
  
 extern char *type1alloc();
