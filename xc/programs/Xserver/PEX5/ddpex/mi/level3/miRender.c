@@ -1,4 +1,4 @@
-/* $XConsortium: miRender.c,v 5.14 92/11/18 19:52:44 hersh Exp $ */
+/* $XConsortium: miRender.c,v 5.15 92/11/19 15:15:44 hersh Exp $ */
 
 
 /***********************************************************
@@ -122,8 +122,8 @@ InitRenderer(pRend)
      * make sure everything is updated.
      */
     pRend->tablesMask = 0;
-    pRend->namesetsMask = ~0;
-    pRend->attrsMask = ~0;
+    pRend->namesetsMask = 0;
+    pRend->attrsMask = 0;
 
     /*
      * Create a DDContext and associate it with the Renderer
@@ -1086,7 +1086,7 @@ BeginRendering(pRend, pDrawable)
      * The default (0) entry in the Color Approx Table is used
      * to compute the pixel.
      */
-    if (pddc->Static.attrs->clearI) {
+    if (pRend->clearI) {
 
       unsigned long   colorindex, gcmask;
       GCPtr           pGC;
@@ -1101,7 +1101,7 @@ BeginRendering(pRend, pDrawable)
       int             i;
 
       pDraw = pRend->pDrawable;
-      miColourtoIndex(pRend, 0, &pddc->Static.attrs->backgroundColour,
+      miColourtoIndex(pRend, 0, &pRend->backgroundColour,
                       &colorindex);
       pGC = CreateScratchGC(pDraw->pScreen, pDraw->depth);
       gcmask = GCForeground;
@@ -1211,6 +1211,10 @@ BeginStructure(pRend, sId)
     ErrorF( " BeginStructure %d\n", sId);
 #endif
 
+    /* if renderer idle ignore.... */
+    if (pRend->state == PEXIdle)
+      return Success;
+
     /* 
      * Push the current ddContext attributes onto the stack and create
      * a new instance of these attributes.
@@ -1304,6 +1308,10 @@ EndStructure(pRend)
 #ifdef DDTEST
     ErrorF( " EndStructure\n");
 #endif
+
+    /* if renderer idle ignore.... */
+    if (pRend->state == PEXIdle)
+      return Success;
 
     /*
      * Pop ddContext off stack - retrieve attributes for current structure */
