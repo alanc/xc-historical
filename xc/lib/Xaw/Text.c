@@ -1545,7 +1545,6 @@ static StartAction(ctx, event)
 {
     _XtTextPrepareToUpdate(ctx);
     if (event) {
-	if (event->type == ButtonPress) TextAcceptFocus((Widget)ctx);
     /* this code is wrong if actions bound to non-button events! */
 	ctx->text.time = event->xbutton.time;
 	ctx->text.ev_x = event->xbutton.x;
