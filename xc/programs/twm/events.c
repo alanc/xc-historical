@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.164 90/10/17 11:19:19 converse Exp $
+ * $XConsortium: events.c,v 1.165 90/12/01 13:06:05 rws Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.164 90/10/17 11:19:19 converse Exp $";
+"$XConsortium: events.c,v 1.165 90/12/01 13:06:05 rws Exp $";
 #endif
 
 #include <stdio.h>
@@ -1405,12 +1405,19 @@ HandleMotionNotify()
  *
  ***********************************************************************
  */
-
 void
 HandleButtonRelease()
 {
     int xl, xr, yt, yb, w, h;
     unsigned mask;
+
+
+    if (InfoLines) 		/* delete info box on 2nd button release  */
+      if (Context == C_IDENTIFY) {
+	XUnmapWindow(dpy, Scr->InfoWindow);
+	InfoLines = 0;
+	Context = C_NO_CONTEXT;
+      }
 
     if (DragWindow != None)
     {
@@ -1610,17 +1617,21 @@ HandleButtonPress()
     unsigned int modifier;
     Cursor cur;
 
+/*****
+    if (InfoLines) { delete info box on button press other than on box 
+	XUnmapWindow(dpy, Scr->InfoWindow);
+	InfoLines = 0;
+	Context = C_NO_CONTEXT;
+      }
+*****/
+
     /* pop down the menu, if any */
     if (ActiveMenu != NULL)
 	PopDownMenu();
 
-    if (InfoLines) {
-	XUnmapWindow(dpy, Scr->InfoWindow);
-	InfoLines = 0;
-    }
     XSync(dpy, 0);			/* XXX - remove? */
 
-    if (ButtonPressed != -1)
+    if (ButtonPressed != -1 && !InfoLines) /* want menus if we have info box */
     {
 	/* we got another butt press in addition to one still held
 	 * down, we need to cancel the operation we were doing
@@ -1683,6 +1694,9 @@ HandleButtonPress()
     }
 
     Context = C_NO_CONTEXT;
+
+    if (Event.xany.window == Scr->InfoWindow)
+      Context = C_IDENTIFY;
 
     if (Event.xany.window == Scr->Root)
 	Context = C_ROOT;

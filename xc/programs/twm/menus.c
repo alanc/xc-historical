@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.165 90/10/03 14:27:01 converse Exp $
+ * $XConsortium: menus.c,v 1.166 90/10/17 11:26:49 converse Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.165 90/10/03 14:27:01 converse Exp $";
+"$XConsortium: menus.c,v 1.166 90/10/17 11:26:49 converse Exp $";
 #endif
 
 #include <stdio.h>
@@ -2425,7 +2425,7 @@ TwmWindow *t;
 	px = py = 0;
     }
     XMoveResizeWindow(dpy, Scr->InfoWindow, px, py, width, height);
-    XMapRaised(dpy, Scr->InfoWindow);
+    XMapRaised(dpy, Scr->InfoWindow); 
     InfoLines = n;
 }
 

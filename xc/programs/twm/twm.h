@@ -27,7 +27,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.66 90/11/15 11:39:35 dave Exp $
+ * $XConsortium: twm.h,v 1.67 90/12/01 13:05:40 rws Exp $
  *
  * twm include file
  *
@@ -85,7 +85,8 @@ typedef SIGNAL_T (*SigProc)();	/* type of function returned by signal() */
 #define C_FRAME		4
 #define C_ICONMGR	5
 #define C_NAME		6
-#define NUM_CONTEXTS	7
+#define C_IDENTIFY      7
+#define NUM_CONTEXTS	8
 
 #define C_WINDOW_BIT	(1 << C_WINDOW)
 #define C_TITLE_BIT	(1 << C_TITLE)

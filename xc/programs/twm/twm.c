@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.117 90/11/15 11:39:39 dave Exp $
+ * $XConsortium: twm.c,v 1.118 90/12/01 13:05:29 rws Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.117 90/11/15 11:39:39 dave Exp $";
+"$XConsortium: twm.c,v 1.118 90/12/01 13:05:29 rws Exp $";
 #endif
 
 #include <stdio.h>
@@ -462,8 +462,8 @@ main(argc, argv, environ)
 	
 	attributes.border_pixel = Scr->DefaultC.fore;
 	attributes.background_pixel = Scr->DefaultC.back;
-	attributes.event_mask = (ExposureMask |
-				 KeyPressMask | ButtonPressMask);
+	attributes.event_mask = (ExposureMask | ButtonPressMask |
+				 KeyPressMask | ButtonReleaseMask);
 	attributes.backing_store = NotUseful;
 	attributes.cursor = XCreateFontCursor (dpy, XC_hand2);
 	valuemask = (CWBorderPixel | CWBackPixel | CWEventMask | 
