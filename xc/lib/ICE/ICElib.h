@@ -1,4 +1,4 @@
-/* $XConsortium: ICElib.h,v 1.33 94/03/18 10:23:56 mor Exp $ */
+/* $XConsortium: ICElib.h,v 1.34 94/03/30 19:11:10 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -57,6 +57,7 @@ typedef enum {
 typedef enum {
     IceProtocolSetupSuccess,
     IceProtocolSetupFailure,
+    IceProtocolSetupIOError,
     IceProtocolAlreadyActive
 } IceProtocolSetupStatus;
 
@@ -65,6 +66,19 @@ typedef enum {
     IceAcceptFailure,
     IceAcceptBadMalloc
 } IceAcceptStatus;
+
+typedef enum {
+    IceClosedNow,
+    IceClosedASAP,
+    IceConnectionInUse,
+    IceStartedShutdownNegotiation
+} IceCloseStatus;
+
+typedef enum {
+    IceProcessMessagesSuccess,
+    IceProcessMessagesIOError,
+    IceProcessMessagesConnectionClosed
+} IceProcessMessagesStatus;
 
 typedef struct {
     unsigned long	sequence_of_request;
@@ -85,14 +99,15 @@ typedef void (*IceWatchProc) (
 #endif
 );
 
-typedef Bool (*IcePoProcessMsgProc) (
+typedef void (*IcePoProcessMsgProc) (
 #if NeedFunctionPrototypes
     IceConn 		/* iceConn */,
     IcePointer		/* clientData */,
     int			/* opcode */,
     unsigned long	/* length */,
     Bool		/* swap */,
-    IceReplyWaitInfo *  /* replyWait */
+    IceReplyWaitInfo *  /* replyWait */,
+    Bool *		/* replyReadyRet */
 #endif
 );
 
@@ -240,6 +255,7 @@ extern int IceRegisterForProtocolReply (
 extern IceConn IceOpenConnection (
 #if NeedFunctionPrototypes
     char *		/* networkIdsList */,
+    IcePointer		/* context */,
     Bool		/* mustAuthenticate */,
     int			/* majorOpcodeCheck */,
     int			/* errorLength */,
@@ -309,7 +325,7 @@ extern Bool IceCheckShutdownNegotiation (
 #endif
 );
 
-extern Status IceCloseConnection (
+extern IceCloseStatus IceCloseConnection (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */
 #endif
@@ -351,10 +367,11 @@ extern Status IceProtocolShutdown (
 #endif
 );
 
-extern Bool IceProcessMessages (
+extern IceProcessMessagesStatus IceProcessMessages (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
-    IceReplyWaitInfo *	/* replyWait */
+    IceReplyWaitInfo *	/* replyWait */,
+    Bool *		/* replyReadyRet */
 #endif
 );
 
