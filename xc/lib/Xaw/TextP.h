@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextP.h,v 1.23 88/09/19 15:46:04 swick Exp $
+* $XConsortium: TextP.h,v 1.24 88/09/29 18:52:47 swick Exp $
 */
 
 
@@ -72,7 +72,7 @@ typedef struct _XtTextSource {
     XtTextPosition	(*Scan)();
     void		(*AddWidget)( /* source, widget */ );
     void		(*RemoveWidget)( /* source, widget */ );
-    void		(*SetSelection)( /* source, selection, left, right */);
+    void		(*SetSelection)( /* source, left, right, selection */);
     Boolean		(*ConvertSelection)( /* Display*, source, ... */ );
     XtTextEditType	edit_mode;
     caddr_t		data;	    

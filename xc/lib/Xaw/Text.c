@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.65 88/10/03 11:37:33 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.66 88/10/03 17:13:05 swick Exp $";
 #endif
 
 
@@ -813,8 +813,8 @@ static int _XtTextSetNewSelection(ctx, left, right)
     ctx->text.s.left = left;
     ctx->text.s.right = right;
     if (ctx->text.source->SetSelection != nullProc) {
-	(*ctx->text.source->SetSelection) (ctx->text.source, XA_PRIMARY,
-					   left, right);
+	(*ctx->text.source->SetSelection) (ctx->text.source,
+					   left, right, XA_PRIMARY);
     }
     if (right > left)
 	XtOwnSelection((Widget)ctx, XA_PRIMARY, ctx->text.time,
