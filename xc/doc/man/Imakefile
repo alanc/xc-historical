@@ -1,3 +1,5 @@
+XCOMM $XConsortium$
+
 #if InstallLibManPages
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
