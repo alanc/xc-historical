@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: handle.c,v 1.22 91/01/23 12:20:41 gildea Exp $
+ * $XConsortium: handle.c,v 1.23 91/07/17 22:26:34 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -42,6 +42,31 @@ struct wq work_queue = {NULL, NULL};
  * common utility routines
  */
 
+KeyCode *KeysymToKeycodes(dpy, keysym, pnum_kcs)
+    Display *dpy;
+    KeySym keysym;
+    int *pnum_kcs;
+{
+    KeyCode *kcs = NULL;
+    int i, j;
+
+    *pnum_kcs = 0;
+    for (i = min_keycode; i <= max_keycode; i++) {
+	for (j = 0; j < 8; j++) {
+	    if (XKeycodeToKeysym(dpy, (KeyCode) i, j) == keysym) {
+		if (!kcs)
+		    kcs = (KeyCode *)malloc(sizeof(KeyCode));
+		else
+		    kcs = (KeyCode *)realloc((char *)kcs, *pnum_kcs + 1);
+		kcs[*pnum_kcs] = i;
+		*pnum_kcs += 1;
+		break;
+	    }
+	}
+    }
+    return kcs;
+}
+
 char *copy_to_scratch (s, len)
     char *s;
     int len;
@@ -80,7 +105,7 @@ void initialize_map ()
     return;
 }
 
-static void do_keycode(), do_keysym(), finish_keycode();
+static void do_keycode(), do_keysym(), finish_keycodes();
 static void do_add(), do_remove(), do_clear(), do_pointer();
 static int get_keysym_list();
 
@@ -331,7 +356,7 @@ static void do_keycode (line, len)
 	return;
     }
 
-    finish_keycode (line, len, keycode);
+    finish_keycodes (line, len, &keycode, 1);
 }
 
 
@@ -349,7 +374,7 @@ static void do_keysym (line, len)
     int len;
 {
     int n;
-    KeyCode keycode;
+    KeyCode *keycodes;
     KeySym keysym;
     char *tmpname;
 
@@ -368,27 +393,29 @@ static void do_keysym (line, len)
 	return;
     }
 
-    keycode = XKeysymToKeycode (dpy, keysym);
-    if (verbose) {
-	printf ("! Keysym %s (0x%lx) corresponds to keycode 0x%x\n", 
-		tmpname, (long) keysym, keycode);
-    }
-    if ((int)keycode < min_keycode || (int)keycode > max_keycode) {
-	if (!verbose) {
-	    printf ("! Keysym %s (0x%lx) corresponds to keycode 0x%x\n", 
-		    tmpname, (long) keysym, keycode);
-	}
-	badmsg ("keysym target keysym '%s', out of range", tmpname);
+    keycodes = KeysymToKeycodes (dpy, keysym, &n);
+    if (n == 0) {
+	badmsg ("keysym target keysym '%s', no corresponding keycodes",
+		tmpname);
 	return;
     }
+    if (verbose) {
+	int i;
+	printf ("! Keysym %s (0x%lx) corresponds to keycode(s)",
+		tmpname, (long) keysym);
+	for (i = 0; i < n; i++)
+	    printf (" 0x%x", keycodes[i]);
+	printf("\n");
+    }
 
-    finish_keycode (line, len, keycode);
+    finish_keycodes (line, len, keycodes, n);
 }
 
-static void finish_keycode (line, len, keycode)
+static void finish_keycodes (line, len, keycodes, count)
     char *line;
     int len;
-    KeyCode keycode;
+    KeyCode *keycodes;
+    int count;
 {
     int n;
     KeySym *kslist;
@@ -411,20 +438,22 @@ static void finish_keycode (line, len, keycode)
     if (get_keysym_list (line, len, &n, &kslist) < 0)
 	return;
 
-    uop = AllocStruct (union op);
-    if (!uop) {
-	badmsg ("attempt to allocate a %ld byte keycode opcode",
-		(long) sizeof (struct op_keycode));
-	return;
+    while (--count >= 0) {
+	uop = AllocStruct (union op);
+	if (!uop) {
+	    badmsg ("attempt to allocate a %ld byte keycode opcode",
+		    (long) sizeof (struct op_keycode));
+	    return;
+	}
+	opk = &uop->keycode;
+
+	opk->type = doKeycode;
+	opk->target_keycode = keycodes[count];
+	opk->count = n;
+	opk->keysyms = kslist;
+
+	add_to_work_queue (uop);
     }
-    opk = &uop->keycode;
-
-    opk->type = doKeycode;
-    opk->target_keycode = keycode;
-    opk->count = n;
-    opk->keysyms = kslist;
-
-    add_to_work_queue (uop);
 
 #ifdef later
     /* make sure we handle any special keys */
@@ -591,6 +620,7 @@ static void do_remove (line, len)
     int n;
     int nc;
     int i;
+    int tot;
     int modifier;
     KeySym *kslist;
     KeyCode *kclist;
@@ -644,25 +674,40 @@ static void do_remove (line, len)
 	return;
     }
 
+    tot = n;
     nc = 0;
     for (i = 0; i < n; i++) {
-	KeyCode kc = XKeysymToKeycode (dpy, kslist[i]);
-	if (verbose) {
+        int num_kcs;
+	KeyCode *kcs;
+	kcs = KeysymToKeycodes (dpy, kslist[i], &num_kcs);
+	if (num_kcs == 0) {
 	    char *tmpname = XKeysymToString (kslist[i]);
-	    printf ("! Keysym %s (0x%lx) corresponds to keycode 0x%x\n", 
-		    tmpname ? tmpname : "?", (long) kslist[i], kc);
-	}
-	if ((int)kc < min_keycode || (int)kc > max_keycode) {
-	    char *tmpname = XKeysymToString (kslist[i]);
-	    printf ("! Keysym %s (0x%lx), keycode 0x%x, ",
-		    tmpname ? tmpname : "?", (long) kslist[i], kc);
-	    printf ("out of range [0x%x, 0x%x]\n", 
-		    min_keycode, max_keycode);
-	    badmsg ("keycode value 0x%lx in remove modifier list",
-		    (long) kc);
+	    badmsg ("keysym in remove modifier list '%s', no corresponding keycodes",
+		    tmpname ? tmpname : "?");
 	    continue;
 	}
-	kclist[nc++] = kc;		/* okay, add it to list */
+	if (verbose) {
+	    int j;
+	    char *tmpname = XKeysymToString (kslist[i]);
+	    printf ("! Keysym %s (0x%lx) corresponds to keycode(s)", 
+		    tmpname ? tmpname : "?", (long) kslist[i]);
+	    for (j = 0; j < num_kcs; j++)
+		printf(" 0x%x", kcs[j]);
+	    printf("\n");
+	}
+	if (nc + num_kcs > tot) {
+	    int j;
+	    tot = nc + num_kcs;
+	    kclist = (KeyCode *)realloc((char *)kclist, tot * sizeof(KeyCode));
+	    if (!kclist) {
+		badmsg ("attempt to allocate %ld byte keycode list",
+			(long) (tot * sizeof (KeyCode)));
+		free ((char *) kslist);
+		return;
+	    }
+	}
+	while (--num_kcs >= 0)
+	    kclist[nc++] = *kcs++;		/* okay, add it to list */
     }
 
     free ((char *) kslist);		/* all done with it */
@@ -1006,8 +1051,9 @@ static void check_special_keys (keycode, n, kslist)
 	     * that are in the modifier list
 	     */
 	    for (k = 0; k < n; k++) {
-		KeyCode kc = XKeysymToKeycode (dpy, kslist[k]);
+		KeyCodes kc;
 
+		kc = XKeysymToKeycode (dpy, kslist[k]);
 		if (kc == *kcp) {	/* yup, found one */
 		    /*
 		     * have to generate a remove of the CURRENT keycode
@@ -1181,10 +1227,16 @@ static int exec_add (opam)
 
     status = 0;
     for (i = 0; i < opam->count; i++) {
-	KeyCode kc = XKeysymToKeycode (dpy, opam->keysyms[i]);
+	int num_kcs;
+	KeyCode *kcs;
 
-	if (AddModifier (&map, kc, opam->modifier) < 0)
-	  status = -1;
+	kcs = KeysymToKeycodes (dpy, opam->keysyms[i], &num_kcs);
+	if (num_kcs == 0)
+	    status = -1;
+	while (--num_kcs >= 0) {
+	    if (AddModifier (&map, *kcs++, opam->modifier) < 0)
+		status = -1;
+	}
     }
     return (status);
 }
