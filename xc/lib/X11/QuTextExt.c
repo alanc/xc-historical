@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XQuTextExt.c,v 11.11 88/08/11 14:32:38 jim Exp $ */
+/* $XConsortium: XQuTextExt.c,v 11.12 88/09/06 16:10:03 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986, 1987	*/
 
 #define NEED_REPLIES
@@ -35,8 +35,11 @@ XQueryTextExtents (dpy, fid, string, nchars, dir, font_ascent, font_descent,
 	*ptr++ = *string++;
     }
     Data (dpy, buf, nbytes);
-    if (!_XReply (dpy, (xReply *)&rep, 0, xTrue))
+    if (!_XReply (dpy, (xReply *)&rep, 0, xTrue)) {
+        UnlockDisplay(dpy);
+	SyncHandle();
 	return (0);
+    }
     *dir = rep.drawDirection;
     *font_ascent = cvtINT16toInt (rep.fontAscent);
     *font_descent = cvtINT16toInt (rep.fontDescent);
