@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.214 94/01/30 14:21:48 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.215 94/02/04 15:29:57 dpw Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -783,7 +783,7 @@ SharedLibReferences(PHIGS,phigs,$(PHIGSLIBSRC),SOPHIGSREV,SharedPhigsRev)
 UnsharedLibReferences(PHIGS,phigs,$(PHIGSLIBSRC))
 #endif
 
-UnsharedLibReferences(XBSD,Xbsd,$(LIBSRC)/Berk)
+UnsharedLibReferences(XBSD,Xbsd,$(LIBSRC)/Xbsd)
 
 #ifndef SharedLibICE
 #define SharedLibICE HasSharedLibraries
