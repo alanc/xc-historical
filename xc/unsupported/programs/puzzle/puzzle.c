@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: puzzle.c,v 1.8 89/12/12 14:43:05 rws Exp $
+ *	$XConsortium: puzzle.c,v 1.9 91/02/18 16:30:58 converse Exp $
  */
 
 /* Puzzle - (C) Copyright 1987, 1988 Don Bennett.
@@ -25,8 +25,8 @@
  ** indirectly from John Nagle.
  **/
 
-#include <stdio.h>
 #include <X11/Xos.h>
+#include <stdio.h>
 #include <setjmp.h>
 
 #define min(x,y)	(((x)>(y))?(x):(y))
@@ -415,7 +415,8 @@ int dir,dist;
      LogMoveSpace(first_x,first_y,last_x,last_y,shift_dir);
 }
 
-#if defined(USG) && !defined(CRAY)
+/* SYSV386 gets this from libBerk.a */
+#if defined(USG) && !defined(CRAY) && !defined(SYSV386)
 int gettimeofday (tvp, tzp)
     struct timeval *tvp;
     struct timezone *tzp;
