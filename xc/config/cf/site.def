@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.41 91/11/09 16:50:56 keith Exp $
+XCOMM site:  $XConsortium: site.def,v 1.42 91/11/10 06:19:26 jsw Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -30,6 +30,8 @@ XCOMM site:  $XConsortium: site.def,v 1.41 91/11/09 16:50:56 keith Exp $
  *			Use at Your Own Risk				     *
  *                                                                           *
  *****************************************************************************/
+
+#include <host.def>
 
 #ifdef BeforeVendorCF
 
