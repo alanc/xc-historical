@@ -1,4 +1,4 @@
-/* $XConsortium: sunIo.c,v 5.10 92/11/24 10:48:32 rws Exp $ */
+/* $XConsortium: sunIo.c,v 5.11 93/08/06 14:29:24 kaleb Exp $ */
 /*-
  * sunIo.c --
  *	Functions to handle input from the keyboard and mouse.
@@ -112,7 +112,6 @@ void sunEnqueueEvents ()
     PtrAgain = TRUE;
     numKbdEvents = 0;
     KbdAgain = TRUE;
-    lastEvent = (Firm_event *)0;
 
     /*
      * So long as one event from either device remains unprocess, we loop:
