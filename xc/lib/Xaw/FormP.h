@@ -1,4 +1,4 @@
-/* $XConsortium: FormP.h,v 1.13 89/03/30 16:05:30 jim Exp $ */
+/* $XConsortium: FormP.h,v 1.14 89/05/11 01:05:20 kit Exp $ */
 /* Copyright	Massachusetts Institute of Technology	1987 */
 
 
@@ -62,6 +62,9 @@ typedef struct _FormRec {
 } FormRec;
 
 typedef struct _FormConstraintsPart {
+/*
+ * Constraint Resources.
+ */
     XtEdgeType	top, bottom,	/* where to drag edge on resize		*/
 		left, right;
     int		dx;		/* desired horiz offset			*/
@@ -69,6 +72,18 @@ typedef struct _FormConstraintsPart {
     int		dy;		/* desired vertical offset		*/
     Widget	vert_base;	/* measure dy from here if non-null	*/
     Boolean	allow_resize;	/* TRUE if child may request resize	*/
+
+/*
+ * Private contstraint resources.
+ */
+
+    int         virtual_width, virtual_height; 
+
+/*
+ * What the size of this child would be if we did not impose the 
+ * constraint the width and height must be greater than zero (0).
+ */
+
 } FormConstraintsPart;
 
 typedef struct _FormConstraintsRec {

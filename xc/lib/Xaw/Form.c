@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Form.c,v 1.23 89/03/30 16:53:39 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Form.c,v 1.24 89/05/11 01:05:15 kit Exp $";
 #endif /* lint */
 
 
@@ -213,7 +213,7 @@ static void Initialize(request, new)
 
     fw->form.old_width = fw->core.width;
     fw->form.old_height = fw->core.height;
-    fw->form.no_refigure = 0;
+    fw->form.no_refigure = FALSE;
     fw->form.needs_relayout = FALSE;
 }
 
@@ -276,13 +276,15 @@ static Position TransformCoord(loc, old, new, type)
     XtEdgeType type;
 {
     if (type == XtRubber) {
-        if (old > 0)
+        if ( ((int) old) > 0)
 	    loc = (loc * new) / old;
     }
     else if (type == XtChainBottom || type == XtChainRight)
-	loc += (Position)new - (Position)old;
+      loc += (Position)new - (Position)old;
 
-    return (loc > 0) ? loc : 0;
+    /* I don't see any problem with returning values less than zero. */
+
+    return (loc);
 }
 
 
@@ -294,7 +296,7 @@ static void Resize(w)
     int num_children = fw->composite.num_children;
     Widget *childP;
     Position x, y;
-    int width, height;
+    Dimension width, height;
 
     for (childP = children; childP - children < num_children; childP++) {
 	FormConstraints form = (FormConstraints)(*childP)->core.constraints;
@@ -303,22 +305,30 @@ static void Resize(w)
 			    fw->core.width, form->form.left );
 	y = TransformCoord( (*childP)->core.y, fw->form.old_height,
 			    fw->core.height, form->form.top );
-	width =
+
+	form->form.virtual_width =
 	  TransformCoord((Position)((*childP)->core.x
-				    + (*childP)->core.width
-				    + (*childP)->core.border_width),
+				    + form->form.virtual_width
+				    + 2 * (*childP)->core.border_width),
 			 fw->form.old_width, fw->core.width,
-			 form->form.right ) -x - (*childP)->core.border_width;
-	height =
+			 form->form.right )
+	    - (x + 2 * (*childP)->core.border_width);
+
+	form->form.virtual_height =
 	  TransformCoord((Position)((*childP)->core.y
-				    + (*childP)->core.height
-				    + (*childP)->core.border_width),
+				    + form->form.virtual_height
+				    + 2 * (*childP)->core.border_width),
 			 fw->form.old_height, fw->core.height,
-			 form->form.bottom ) -y - (*childP)->core.border_width;
-	if (width < 1) width = 1;
-	if (height < 1) height = 1;
+			 form->form.bottom ) 
+	    - ( y + 2 * (*childP)->core.border_width);
+	
+	width = (Dimension) 
+	       (form->form.virtual_width < 1) ? 1 : form->form.virtual_width;
+	height = (Dimension)
+	       (form->form.virtual_height < 1) ? 1 : form->form.virtual_height;
+
 	XtMoveWidget( (*childP), x, y );
-	XtResizeWidget( (*childP), (Dimension)width, (Dimension)height,
+	XtResizeWidget( (*childP), width, height,
 		        (*childP)->core.border_width );
     }
 
@@ -354,8 +364,9 @@ static XtGeometryResult GeometryManager(w, request, reply)
 	return XtGeometryNo;
 
     if (!(request->request_mode & XtCWQueryOnly)) {
-	w->core.width = allowed.width;
-	w->core.height = allowed.height;
+        /* reset virtual width and height. */
+      	form->form.virtual_width = w->core.width = allowed.width;
+	form->form.virtual_height = w->core.height = allowed.height;
 	RefigureLocations( w->core.parent );
     }
     return XtGeometryYes;
@@ -385,7 +396,6 @@ static void ConstraintInitialize(request, new)
         form->form.dy = fw->form.default_spacing;
 }
 
-
 /* ARGSUSED */
 static Boolean ConstraintSetValues(current, request, new)
     Widget current, request, new;
@@ -395,30 +405,39 @@ static Boolean ConstraintSetValues(current, request, new)
 
 static void ChangeManaged(w)
     Widget w;
-{
-#ifdef notdef
-    FormWidget fw = (FormWidget)w;
-    WidgetList children = fw->composite.children;
-    int num_children = fw->composite.num_children;
-    Widget child, *childP, *unmanagedP;
+{ 
+  FormWidget fw = (FormWidget)w;
+  FormConstraints form;
+  WidgetList children, childP;
+  int num_children = fw->composite.num_children;
+  Widget child;
+  
+  /*
+   * Reset virtual width and height for all children.
+   */
+  
+  for (children = childP = fw->composite.children ;
+       childP - children < num_children; childP++) {
+    child = *childP;
+    if (XtIsManaged(child)) {
+      form = (FormConstraints)child->core.constraints;
 
-    unmanagedP = NULL;
-    for (childP = children; childP - children < num_children; childP++) {
-	if (XtIsManaged(*childP)) {
-	    if (unmanagedP) {
-		child = *unmanagedP;
-		*unmanagedP = *childP;
-		*childP = child;
-		childP = unmanagedP;	/* simplest to just backtrack */
-	    }
-	}
-	else {
-	    if (!unmanagedP)
-		unmanagedP = childP;
-	}
+/*
+ * If the size is one (1) then we must not change the virtual sizes, as
+ * they contain useful information.  If someone actually wants a widget of
+ * width or height one (1) in a form widget he will lose, can't win them all.
+ *
+ * Chris D. Peterson 2/9/89.
+ */
+	 
+
+      if ( child->core.width != 1)
+	form->form.virtual_width = (int) child->core.width;
+      if ( child->core.height != 1)
+	form->form.virtual_height = (int) child->core.height;
     }
-#endif
-    RefigureLocations( w );
+  }
+  RefigureLocations( w );
 }
     
 /**********************************************************************
@@ -428,7 +447,7 @@ static void ChangeManaged(w)
  **********************************************************************/
 
 /* 
- * Set or reset figuring (ignored if realized)
+ * Set or reset figuring (ignored if not realized)
  */
 
 void XawFormDoLayout(w, doit)
@@ -437,12 +456,8 @@ Boolean doit;
 {
     register FormWidget fw = (FormWidget)w;
 
-    if (doit && fw->form.no_refigure > 0)
-	fw->form.no_refigure--;
-    else
-	if (!XtIsRealized(w))
-	    fw->form.no_refigure++;
+    fw->form.no_refigure = !doit;
 
-    if (fw->form.needs_relayout)
-	RefigureLocations( w );
+    if ( XtIsRealized(w) && fw->form.needs_relayout )
+        RefigureLocations( w );
 }
