@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sony.cf,v 1.46 94/01/01 17:56:19 rws Exp $
+XCOMM platform:  $XConsortium: sony.cf,v 1.47 94/01/01 18:27:00 rws Exp $
 
 #ifdef SonyBsdArchitecture
 
@@ -45,6 +45,7 @@ XCOMM platform:  $XConsortium: sony.cf,v 1.46 94/01/01 17:56:19 rws Exp $
 #define BootstrapCFlags		-Dsony
 #define SystemV4		YES
 #define CcCmd			/usr/bin/cc
+#if OSMajorVersion >= 6
 #define DefaultCCOptions	-Xc -Wf,-XNp9000,-XNd6000
 #define PexCCOptions		-Xc -Wf,-XNp15000,-XNd15000
 #define SharedLibraryLoadFlags -G -rpath $(USRLIBDIR)
@@ -52,6 +53,10 @@ XCOMM platform:  $XConsortium: sony.cf,v 1.46 94/01/01 17:56:19 rws Exp $
 #define SharedXmuReqs $(LDPRELIB) $(XTOOLLIB)
 #define FixupLibReferences() /**/
 #include <sv4Lib.rules>
+#else
+#define DefaultCCOptions	-Wf,-XNp9000,-XNd6000
+#define PexCCOptions		-Wf,-XNp15000,-XNd15000
+#endif
 
 #endif
 XCOMM operating system:  OSName
