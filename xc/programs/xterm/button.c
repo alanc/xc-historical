@@ -1,4 +1,4 @@
-/* $XConsortium: button.c,v 1.56 91/02/05 19:44:58 gildea Exp $ */
+/* $XConsortium: button.c,v 1.56 91/02/05 20:07:45 gildea Exp $ */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  *
@@ -267,7 +267,7 @@ Cardinal num_params;
 	char *line = XFetchBuffer(screen->display, &inbytes, buffer);
 	nbytes = (unsigned long) inbytes;
 	if (nbytes > 0)
-	    SelectionReceived(w, NULL, &selection, &type, (caddr_t)line,
+	    SelectionReceived(w, NULL, &selection, &type, (XtPointer)line,
 			      &nbytes, &fmt8);
 	else if (num_params > 1)
 	    _GetSelection(w, time, params+1, num_params-1);
@@ -276,22 +276,23 @@ Cardinal num_params;
 	if (--num_params) {
 	    list = XtNew(struct _SelectionList);
 	    list->params = params + 1;
-	    list->count = num_params;
+	    list->count = num_params; /* decremented above */
 	    list->time = time;
 	} else list = NULL;
 	XtGetSelectionValue(w, selection, XA_STRING, SelectionReceived,
-			    (caddr_t)list, time);
+			    (XtPointer)list, time);
     }
 }
 
+/* SelectionReceived: stuff received selection text into pty */
 
 /* ARGSUSED */
 static void SelectionReceived(w, client_data, selection, type,
 			      value, length, format)
 Widget w;
-caddr_t client_data;
+XtPointer client_data;
 Atom *selection, *type;
-caddr_t value;
+XtPointer value;
 unsigned long *length;
 int *format;
 {
@@ -300,6 +301,7 @@ int *format;
     char *line = (char*)value;
 				  
     if (*type == 0 /*XT_CONVERT_FAIL*/ || *length == 0) {
+	/* could not get this selection, so see if there are more to try */
 	struct _SelectionList* list = (struct _SelectionList*)client_data;
 	if (list != NULL) {
 	    _GetSelection(w, list->time, list->params, list->count);
@@ -307,6 +309,8 @@ int *format;
 	}
 	return;
     }
+
+    /* write data to pty a line at a time */
 
     end = &line[*length];
     lag = line;
@@ -487,7 +491,7 @@ EndExtend(event, params, num_params, use_cursor_loc)
 	if (startSRow != endSRow || startSCol != endSCol) {
 		if (replyToEmacs) {
 			if (rawRow == startSRow && rawCol == startSCol 
-			 && row == endSRow && col == endSCol) {
+			    && row == endSRow && col == endSCol) {
 			 	/* Use short-form emacs select */
 				strcpy(line, "\033[t");
 				line[3] = ' ' + endSCol + 1;
@@ -1118,7 +1122,7 @@ int *format;
 		    target, type, (caddr_t*)&std_targets, &std_length, format
 		   );
 	*length = std_length + 5;
-	*value = (caddr_t)XtMalloc(sizeof(Atom)*(*length));
+	*value = (XtPointer)XtMalloc(sizeof(Atom)*(*length));
 	targetP = *(Atom**)value;
 	*targetP++ = XA_STRING;
 	*targetP++ = XA_TEXT(d);
