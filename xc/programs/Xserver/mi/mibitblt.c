@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mibitblt.c,v 1.66 88/09/06 14:48:57 jim Exp $ */
+/* $XConsortium: mibitblt.c,v 1.67 88/09/20 16:00:54 keith Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -626,10 +626,10 @@ miCopyPlane(pSrcDrawable, pDstDrawable,
 	miOpqStipDrawable(pDstDrawable, pGC, prgnSrc, ptile, 0,
 			  box.x2 - box.x1, box.y2 - box.y1,
 			  dstx + box.x1, dsty + box.y1);
+	Xfree(ptile);
     }
     prgnExposed = miHandleExposures(pSrcDrawable, pDstDrawable, pGC, srcx, srcy,
 		      width, height, dstx, dsty, bitPlane);
-    Xfree(ptile);
     (*pGC->pScreen->RegionDestroy)(prgnSrc);
     return prgnExposed;
 }
