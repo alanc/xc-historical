@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.115 91/05/09 12:25:57 converse Exp $ */
+/* $XConsortium: TMparse.c,v 1.116 91/05/09 16:27:51 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1814,8 +1814,8 @@ Boolean XtCvtStringToAcceleratorTable(dpy, args, num_args, from, to, closure)
 
     if (*num_args != 0)
         XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
-	  "invalidParameters","compileAccelerators",XtCXtToolkitError,
-          "String to TranslationTable needs no extra arguments",
+	  "wrongParameters","cvtStringToAcceleratorTable",XtCXtToolkitError,
+          "String to AcceleratorTable conversion needs no extra arguments",
 	  (String *)NULL, (Cardinal *)NULL);
      str = (String)(from->addr);
      if (str == NULL)
@@ -1851,9 +1851,9 @@ XtCvtStringToTranslationTable(dpy, args, num_args, from, to, closure_ret)
     
     if (*num_args != 0)
       XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
-		      "invalidParameters","compileTranslations",XtCXtToolkitError,
-		      "String to TranslationTable conversion needs no extra arguments",
-		      (String *)NULL, (Cardinal *)NULL);
+	    "wrongParameters","cvtStringToTranslationTable",XtCXtToolkitError,
+	    "String to TranslationTable conversion needs no extra arguments",
+	    (String *)NULL, (Cardinal *)NULL);
     str = (String)(from->addr);
     if (str == NULL)
       return False;
