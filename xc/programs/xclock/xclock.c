@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: xclock.c,v 1.29 90/05/01 18:21:49 converse Exp $";
+static char rcsid[] = "$XConsortium: xclock.c,v 1.30 91/01/09 16:48:06 gildea Exp $";
 #endif /* lint */
 
 /*
@@ -89,7 +89,7 @@ void main(argc, argv)
     XtAppContext app_con;
 
     toplevel = XtAppInitialize (&app_con, "XClock", options, XtNumber(options),
-				(Cardinal *)&argc, argv, NULL, NULL, ZERO);
+				&argc, argv, NULL, NULL, ZERO);
     if (argc != 1) Syntax(argv[0]);
 
     XtAppAddActions (app_con, xclock_actions, XtNumber(xclock_actions));
