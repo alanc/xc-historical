@@ -1,4 +1,4 @@
-/* $Header: region.h,v 11.7 87/09/03 16:32:32 newman Locked $ */
+/* $Header: region.h,v 11.8 87/09/03 17:20:11 newman Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -50,8 +50,8 @@ typedef struct {
  */
 
 typedef struct _XRegion {
-    short size;
-    short numRects;
+    long size;
+    long numRects;
     BOX *rects;
     BOX extents;
 } REGION;
