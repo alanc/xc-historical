@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.16 89/09/08 14:34:03 keith Exp $
+ * $XConsortium: dm.h,v 1.17 89/09/09 12:59:18 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -179,6 +179,8 @@ struct verify_info {
 # define REMANAGE_DISPLAY	1	/* force remanage */
 # define UNMANAGE_DISPLAY	2	/* force deletion */
 
+extern char	*config;
+
 extern char	*servers;
 extern int	request_port;
 extern int	debugLevel;
@@ -186,6 +188,7 @@ extern char	*errorLogFile;
 extern int	daemonMode;
 extern char	*pidFile;
 extern char	*remoteAuthDir;
+extern int	autoRescan;
 
 extern struct display	*FindDisplayByName (),
 			*FindDisplayBySessionID (),

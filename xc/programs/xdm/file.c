@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: file.c,v 1.8 89/01/16 17:11:07 keith Exp $
+ * $XConsortium: file.c,v 1.9 89/08/31 11:34:56 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -23,10 +23,11 @@
  */
 
 # include	"dm.h"
-# include	"buf.h"
+# include	<ctype.h>
 # include	<signal.h>
 
-extern void	free (), bcopy ();
+extern void	free ();
+extern char	*malloc (), *realloc ();
 
 DisplayTypeMatch (d1, d2)
 DisplayType	d1, d2;
@@ -36,120 +37,153 @@ DisplayType	d1, d2;
 	       d1.origin == d2.origin;
 }
 
-ReadDisplay (file, acceptableTypes, numAcceptable)
-struct buffer	*file;
+static void
+freeArgs (args)
+    char    **args;
+{
+    char    **a;
+
+    for (a = args; *a; a++)
+	free (*a);
+    free ((char *) args);
+}
+
+static char **
+splitIntoWords (s)
+    char    *s;
+{
+    char    **args, **newargs;
+    char    *wordStart;
+    int	    nargs;
+
+    args = 0;
+    nargs = 0;
+    while (*s)
+    {
+	while (*s && isspace (*s))
+	    ++s;
+	if (!*s || *s == '#')
+	    break;
+	wordStart = s;
+	while (*s && *s != '#' && !isspace (*s))
+	    ++s;
+	if (!args)
+	{
+    	    args = (char **) malloc (2 * sizeof (char *));
+    	    if (!args)
+	    	return NULL;
+	}
+	else
+	{
+	    newargs = (char **) realloc ((char *) args,
+					 (nargs+2)*sizeof (char *));
+	    if (!newargs)
+	    {
+	    	freeArgs (args);
+	    	return NULL;
+	    }
+	    args = newargs;
+	}
+	args[nargs] = malloc (s - wordStart);
+	if (!args[nargs])
+	{
+	    freeArgs (args);
+	    return NULL;
+	}
+	strncpy (args[nargs], wordStart, s - wordStart);
+	args[nargs][s-wordStart] = '\0';
+	++nargs;
+	args[nargs] = NULL;
+    }
+    return args;
+}
+
+static char **
+copyArgs (args)
+    char    **args;
+{
+    char    **a, **new, **n;
+    int	    i;
+
+    for (a = args; *a; a++)
+	;
+    new = (char **) malloc ((a - args + 1) * sizeof (char *));
+    if (!new)
+	return NULL;
+    n = new;
+    a = args;
+    while (*n++ = *a++)
+	;
+    return new;
+}
+
+freeSomeArgs (args, n)
+    char    **args;
+    int	    n;
+{
+    char    **a;
+
+    a = args;
+    while (n--)
+	free (*a++);
+    free ((char *) args);
+}
+
+ParseDisplay (source, acceptableTypes, numAcceptable)
+char		*source;
 DisplayType	*acceptableTypes;
 int		numAcceptable;
 {
-	int		c;
-	char		**args, **newargs;
-	struct display	*d;
-	DisplayType	type;
-	char		word[1024];
-	char		typeText[1024];
-	int		i;
+    char		**args, **a;
+    struct display	*d;
+    DisplayType	type;
 
-	c = readWord (file, word, sizeof (word));
-	if (word[0] != '\0') {
-		if (c == EOB || c == '\n') {
-			LogError ("missing display type for display %s", word);
-			return c;
-		}
-		if (d = FindDisplayByName (word)) {
-			d->state = OldEntry;
-		} else {
-			c = readWord (file, typeText, sizeof (typeText));
-			Debug ("read display %s type %s\n", word, typeText);
-			type = parseDisplayType (typeText);
-			while (numAcceptable--)
-				if (DisplayTypeMatch (*acceptableTypes++, type))
-					goto acceptable;
-			LogError ("unacceptable display type %s for display %s\n", typeText, word);
-		}
-		while (c != EOB && c != '\n')
-			c = bufc (file);
-		return c;
-acceptable:;
-		d = NewDisplay (word, (char *) 0);
-		if (!d) {
-			LogOutOfMem ("ReadDisplay");
-			goto skipLine;
-		}
-		Debug ("new display %s\n", d->name);
-		d->displayType = type;
-		d->state = NewEntry;
-#ifdef UDP_SOCKET
-		if (sockaddr)
-			d->addr = *(struct sockaddr_in *) sockaddr;
-		else
-			bzero (d->addr, sizeof (d->addr));
-#endif
-		i = 0;
-		args = (char **) malloc (sizeof (char *));
-		if (!args) {
-			LogOutOfMem ("ReadDisplay");
-			d->argv = 0;
-			goto skipLine;
-		}
-		while (c != EOB && c != '\n') {
-			c = readWord (file, word, sizeof (word));
-			if (word[0] != '\0') {
-				args[i] = malloc ((unsigned) (strlen (word) + 1));
-				if (!args[i]) {
-					LogOutOfMem ("ReadDisplay");
-					break;
-				}
-				strcpy (args[i], word);
-				newargs = (char **) 
-				    malloc ((unsigned) ((i+2) * sizeof (char **)));
-				if (!newargs) {
-					LogOutOfMem ("ReadDisplay");
-					break;
-				}
-				bcopy ((char *) args, (char *) newargs,
-				       (i+1) * sizeof (char **));
-				free ((char *) args);
-				args = newargs;
-				i++;
-			}
-		}
-		args[i] = 0;
-		d->argv = args;
-skipLine:	;
-		while (c != EOB && c != '\n')
-			c = readWord (file, word, sizeof (word));
-	}
-	return c;
-}
-
-# define isbreak(c)	((c) == ' ' || (c) == '\t' || (c) == '\n')
-
-int
-readWord (file, word, len)
-struct buffer	*file;
-char	*word;
-int	len;
-{
-	int	c;
-	int	i;
-
-	while ((c = bufc (file)) != EOB)
-		if (!isbreak (c))
-			break;
-	if (c == EOB) {
-		word[0] = '\0';
-		return EOB;
-	}
-	word[0] = c;
-	i = 1;
-	while ((c = bufc (file)) != EOB && !isbreak (c)) {
-		if (i < len-1 && c != '\r') {
-			word[i] = c;
-			++i;
-		}
-	}
-	word[i] = '\0';
-	return c;
+    args = splitIntoWords (source);
+    if (!args)
+	return;
+    if (!args[0])
+    {
+	LogError ("Missing display name in servers file\n");
+	freeArgs (args);
+	return;
+    }
+    if (!args[1])
+    {
+	LogError ("Missing display type for %s\n", args[0]);
+	freeArgs (args);
+	return;
+    }
+    d = FindDisplayByName (args[0]);
+    type = parseDisplayType (args[1]);
+    while (numAcceptable)
+    {
+	if (DisplayTypeMatch (*acceptableTypes, type))
+	    break;
+	--numAcceptable;
+	++acceptableTypes;
+    }
+    if (!numAcceptable)
+    {
+	LogError ("Unacceptable display type %s for display %s\n",
+		  args[1], args[0]);
+    }
+    if (d)
+    {
+	d->state = OldEntry;
+	Debug ("Found existing display:  %s %s", d->name, args[1]);
+	freeArgs (d->argv);
+    }
+    else
+    {
+	d = NewDisplay (args[0], (char *) 0);
+	Debug ("Found new display:  %s %s", d->name, args[1]);
+    }
+    d->displayType = type;
+    d->argv = copyArgs (args+2);
+    for (a = d->argv; a && *a; a++)
+	Debug (" %s", *a);
+    Debug ("\n");
+    freeSomeArgs (args, 2);
 }
 
 static struct displayMatch {
@@ -158,8 +192,6 @@ static struct displayMatch {
 } displayTypes[] = {
 	"local",		{ Local, Permanent, FromFile },
 	"foreign",		{ Foreign, Permanent, FromFile },
-	"transient",		{ Foreign, Transient, FromFile },
-	"localTransient",	{ Local,  Transient, FromFile },
 	0,			{ Local, Permanent, FromFile },
 };
 

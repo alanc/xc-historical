@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.17 89/08/31 11:34:48 keith Exp $
+ * $XConsortium: dm.c,v 1.18 89/09/08 14:34:00 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -23,15 +23,17 @@
  */
 
 # include	<stdio.h>
+# include	<X11/Xos.h>
 # include	<sys/signal.h>
+# include	<sys/stat.h>
 # include	<varargs.h>
 # include	"dm.h"
-# include	"buf.h"
 
 extern void	exit (), abort ();
 
 static void	RescanServers ();
-static int	Rescan;
+int		Rescan;
+static long	ServersModTime, ConfigModTime;
 static void	TerminateAll (), RescanNotify ();
 
 #ifndef NOXDMTITLE
@@ -72,6 +74,7 @@ char	**argv;
      *	    for each entry
      */
     ScanServers ();
+    StartDisplays ();
     (void) signal (SIGHUP, RescanNotify);
 #ifndef SYSV
     (void) signal (SIGCHLD, ChildNotify);
@@ -79,7 +82,10 @@ char	**argv;
     while (AnyWellKnownSockets() || AnyDisplaysLeft ())
     {
 	if (Rescan)
+	{
 	    RescanServers ();
+	    Rescan = 0;
+	}
 #ifdef SYSV
 	WaitForChild ();
 #else
@@ -92,49 +98,54 @@ char	**argv;
 static void
 RescanNotify ()
 {
-	void	RescanNotify ();
+    void	RescanNotify ();
 
-	Debug ("Caught SIGHUP\n");
-	Rescan = 1;
+    Debug ("Caught SIGHUP\n");
+    Rescan = 1;
 #ifdef SYSV
-	signal (SIGHUP, RescanNotify);
+    signal (SIGHUP, RescanNotify);
 #endif
 }
 
 ScanServers ()
 {
-    struct buffer	*serversFile;
-    int		fd;
+    char	lineBuf[10240];
+    int		len;
+    FILE	*serversFile;
+    struct stat	statb;
     static DisplayType	acceptableTypes[] =
 	    { { Local, Permanent, FromFile },
-	      { Local, Transient, FromFile },
-	      { Local, Permanent, FromFile },
-	      { Local, Transient, FromFile },
 	      { Foreign, Permanent, FromFile },
-	      { Foreign, Transient, FromFile },
 	    };
 
-    if (servers[0] == '/') {
-	fd = open (servers, 0);
-	if (fd == -1) {
+#define NumTypes    (sizeof (acceptableTypes) / sizeof (acceptableTypes[0]))
+
+    if (servers[0] == '/')
+    {
+	serversFile = fopen (servers, "r");
+	if (serversFile == NULL)
+ 	{
 	    LogError ("cannot access servers file %s\n", servers);
 	    return;
 	}
-	serversFile = fileOpen (fd);
-    } else {
-	fd = -1;
-	serversFile = dataOpen (servers, strlen (servers));
+	if (ServersModTime == 0)
+	{
+	    fstat (fileno (serversFile), &statb);
+	    ServersModTime = statb.st_mtime;
+	}
+	while (fgets (lineBuf, sizeof (lineBuf)-1, serversFile))
+	{
+	    len = strlen (lineBuf);
+	    if (lineBuf[len-1] == '\n')
+		lineBuf[len-1] = '\0';
+	    ParseDisplay (lineBuf, acceptableTypes, NumTypes);
+	}
+	fclose (serversFile);
     }
-    if (serversFile == NULL)
-	return;
-    while (ReadDisplay (serversFile, acceptableTypes,
-			sizeof (acceptableTypes) / sizeof (acceptableTypes[0]))
-			!= EOB)
-	;
-    StartDisplays ();
-    bufClose (serversFile);
-    if (fd != -1)
-	close (fd);
+    else
+    {
+	ParseDisplay (lineBuf, acceptableTypes, NumTypes);
+    }
 }
 
 static void
@@ -148,10 +159,42 @@ static void
 RescanServers ()
 {
     Debug ("rescanning servers\n");
-    Rescan = 0;
+    LogInfo ("Rescanning both config and servers files\n");
     ForEachDisplay (MarkDisplay);
     ReinitResources ();
+    LoadDMResources ();
     ScanServers ();
+    StartDisplays ();
+}
+
+static
+RescanIfMod ()
+{
+    struct stat	statb;
+
+    if (stat (config, &statb) != -1)
+    {
+	if (statb.st_mtime > ConfigModTime)
+	{
+	    Debug ("Config file %s has changed, rereading\n", config);
+	    LogInfo ("Rereading configuration file %s\n", config);
+	    ConfigModTime = statb.st_mtime;
+	    ReinitResources ();
+	    LoadDMResources ();
+	}
+    }
+    if (servers[0] == '/' && stat(servers, &statb) != -1)
+    {
+	if (statb.st_mtime > ServersModTime)
+	{
+	    Debug ("Servers file %s has changed, rescanning\n", servers);
+	    LogInfo ("Rereading servers file %s\n", servers);
+	    ServersModTime = statb.st_mtime;
+	    ForEachDisplay (MarkDisplay);
+	    ScanServers ();
+	}
+    }
+    
 }
 
 /*
@@ -185,21 +228,24 @@ WaitForChild ()
     int		pid;
     struct display	*d;
     waitType	status;
+    int		mask;
 
 #ifdef SYSV
     /* XXX classic sysV signal race condition here with RescanNotify */
     if ((pid = wait (&status)) != -1)
 #else
-    sigblock (sigmask (SIGCHLD) | sigmask (SIGHUP));
+    mask = sigblock (sigmask (SIGCHLD) | sigmask (SIGHUP));
+    Debug ("signals blocked, mask was 0x%x\n", mask);
     if (!ChildReady && !Rescan)
-	sigpause (0);
-    else
-	sigblock (0);
+	sigpause (mask);
     ChildReady = 0;
+    sigsetmask (mask);
     while ((pid = wait3 (&status, WNOHANG, (struct rusage *) 0)) > 0)
 #endif
     {
-	Debug ("pid: %d\n", pid);
+	Debug ("Manager wait returns pid: %d\n", pid);
+	if (autoRescan)
+	    RescanIfMod ();
 	d = FindDisplayByPid (pid);
 	if (d) {
 	    d->status = notRunning;
@@ -210,22 +256,19 @@ WaitForChild ()
 		break;
 	    case OBEYSESS_DISPLAY:
 		Debug ("Display exited with OBEYSESS_DISPLAY\n");
-		if (d->displayType.lifetime == Permanent)
-		    StartDisplay (d);
-		else
+		if (d->displayType.lifetime != Permanent)
 		    RemoveDisplay (d);
 		break;
 	    default:
 		Debug ("Display exited with unknown status %d\n", waitVal(status));
-		StartDisplay (d);
 		break;
 	    case REMANAGE_DISPLAY:
 		Debug ("Display exited with REMANAGE_DISPLAY\n");
-		StartDisplay (d);
 		break;
 	    }
 	}
     }
+    StartDisplays ();
 }
 
 static void
@@ -238,13 +281,14 @@ struct display	*d;
     {
 	switch (d->state) {
 	case MissingEntry:
-		TerminateDisplay (d);
-		break;
+	    TerminateDisplay (d);
+	    break;
 	case NewEntry:
-		StartDisplay (d);
-		break;
+	    d->state = OldEntry;
 	case OldEntry:
-		break;
+	    if (d->status == notRunning)
+		StartDisplay (d);
+	    break;
 	}
     }
 }
@@ -264,6 +308,9 @@ struct display	*d;
     {
     case 0:
 	CleanUpChild ();
+	LoadDisplayResources (d);
+	if (d->authName)
+		d->authNameLen = strlen (d->authName);
 	ManageDisplay (d);
 	exit (REMANAGE_DISPLAY);
     case -1:
