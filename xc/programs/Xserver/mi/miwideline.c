@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.27 90/01/23 15:36:25 keith Exp $
+ * $XConsortium: miwideline.c,v 1.28 90/02/09 14:17:14 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -1280,7 +1280,25 @@ miWideLine (pDrawable, pGC, mode, npt, pPts)
     y2 = pPts->y;
     first = TRUE;
     selfJoin = FALSE;
-    if (x2 == pPts[npt-1].x && y2 == pPts[npt-1].y)
+    if (mode == CoordModePrevious)
+    {
+	int nptTmp;
+	DDXPointPtr pPtsTmp;
+
+	x1 = x2;
+	y1 = y2;
+	nptTmp = npt;
+	pPtsTmp = pPts + 1;
+	while (--nptTmp)
+	{
+	    x1 += pPtsTmp->x;
+	    y1 += pPtsTmp->y;
+	    ++pPtsTmp;
+	}
+	if (x2 == x1 && y2 == y1)
+	    selfJoin = TRUE;
+    }
+    else if (x2 == pPts[npt-1].x && y2 == pPts[npt-1].y)
     {
 	selfJoin = TRUE;
     }
@@ -1396,12 +1414,20 @@ miWideDashSegment (pDrawable, pGC, spanData, pDashOffset, pDashIndex,
     double	    saveK;
     Bool	    first = TRUE;
     double	    lcenterx, lcentery, rcenterx, rcentery;
+    unsigned long   fgPixel, bgPixel;
     
     dx = x2 - x1;
     dy = y2 - y1;
     dashIndex = *pDashIndex;
     pDash = pGC->dash;
     dashRemain = pDash[dashIndex] - *pDashOffset;
+    fgPixel = pGC->fgPixel;
+    bgPixel = pGC->bgPixel;
+    if (pGC->fillStyle == FillOpaqueStippled ||
+	pGC->fillStyle == FillTiled)
+    {
+	bgPixel = fgPixel;
+    }
 
     l = ((double) pGC->lineWidth) / 2.0;
     if (dx == 0)
@@ -1540,7 +1566,7 @@ miWideDashSegment (pDrawable, pGC, spanData, pDashOffset, pDashIndex,
 	    }
 	    y = miPolyBuildPoly (vertices, slopes, 4, x1, y1,
 			     	 left, right, &nleft, &nright, &h);
-	    pixel = (dashIndex & 1) ? pGC->bgPixel : pGC->fgPixel;
+	    pixel = (dashIndex & 1) ? bgPixel : fgPixel;
 	    miFillPolyHelper (pDrawable, pGC, pixel, spanData, y, h, left, right, nleft, nright);
 
 	    if (pGC->lineStyle == LineOnOffDash)
