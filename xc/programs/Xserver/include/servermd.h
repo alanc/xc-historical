@@ -23,14 +23,14 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $Header: servermd.h,v 1.27 87/12/16 15:19:23 rws Locked $ */
+/* $Header: servermd.h,v 1.28 88/02/06 16:49:46 rws Exp $ */
 
 /*
  * The vendor string identifies the vendor responsible for the
  * server executable.
  */
 #ifndef VENDOR_STRING
-#define VENDOR_STRING "Massachusetts Institute of Technology"
+#define VENDOR_STRING "MIT X Consortium"
 #endif	VENDOR_STRING
 
 /*
@@ -39,7 +39,7 @@ SOFTWARE.
  * by the vendor.
  */
 #ifndef VENDOR_RELEASE
-#define VENDOR_RELEASE	1
+#define VENDOR_RELEASE	2
 #endif	VENDOR_RELEASE
 
 /*
