@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.144 93/08/14 16:17:56 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.145 93/08/15 13:42:37 rws Exp $
 #define DoNormalLib NormalLibX
 #define DoSharedLib SharedLibX
 #define DoDebugLib DebugLibX
@@ -1083,10 +1083,12 @@ LinkSourceFile(Wrap.h,$(XDMCPLIBSRC))
 LinkSourceFile(Wrap.c,$(XDMCPLIBSRC))
 LinkSourceFile(Wraphelp.c,$(XDMCPLIBSRC))
 
+MAKEKEYS = ./makekeys
+
 ks_tables.h: $(INCLUDESRC)/keysymdef.h util/makekeys.c
 	RemoveFiles($@ ProgramTargetName(makekeys) makekeys.Osuf)
 	-LinkRule(makekeys,$(CFLAGS) $(LOCAL_LDFLAGS),util/makekeys.c,$(LDLIBS))
-	DotProgramTargetName(makekeys) < $(INCLUDESRC)/keysymdef.h > ks_tables_h
+	RunProgram(MAKEKEYS,< $(INCLUDESRC)/keysymdef.h > ks_tables_h)
 	$(MV) ks_tables_h $@
 	RemoveFiles(ProgramTargetName(makekeys) makekeys.Osuf ks_tables_h)
 
