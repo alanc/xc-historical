@@ -1,4 +1,4 @@
-/* $XConsortium: melut.c,v 1.1 93/10/26 09:49:05 rws Exp $ */
+/* $XConsortium: melut.c,v 1.2 93/10/31 09:43:40 dpw Exp $ */
 /**** module melut.c ****/
 /******************************************************************************
 				NOTICE
@@ -163,7 +163,7 @@ static int ActivateELUT(flo,ped,pet)
   for(b = 0; b < bands; ++sbnd, ++dbnd, ++b) {
 
     /* get pointer to the initial src data (i.e. beginning of strip) */
-    src = GetCurrentSrc(CARD8,flo,pet,sbnd);
+    src = GetCurrentSrc(CARD8 *,flo,pet,sbnd);
 
     /* LUT only has 1 strip per band */
     if(!PassStrip(flo,pet,dbnd,sbnd->strip))
