@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ibmColor.c,v 1.1 91/05/10 08:59:17 jap Exp $
+ * $XConsortium: skyProcs.h,v 1.1 91/05/10 09:09:08 jap Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -45,6 +45,13 @@ extern int  skyListInstalledColormaps();
 extern void skyInstallColormap();
 extern void skyUninstallColormap();
 extern void skyRefreshColormaps();
+
+extern void SkywaySetColor();
+extern void SkywayBitBlt();
+extern void SkywayFillSolid();
+extern void SkywayTileRect();
+extern void skywayReadColorImage();
+extern void skywayDrawColorImage();
 
 extern Bool cfbScreenInit();
 

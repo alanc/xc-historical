@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ibmColor.c,v 1.1 91/05/10 08:59:17 jap Exp $
+ * $XConsortium: skyInfo.c,v 1.1 91/05/10 09:09:04 jap Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -39,10 +39,8 @@
 
 #include "hftUtils.h"
 
-#ifndef SOFTWARE_CURSOR
 extern void skyMoveCursor();   /*in skyCur.c */
 extern void skyRemoveCursor();   /*in skyCur.c */
-#endif
 
 PixmapFormatRec skyPixmapFormats[]= { { 8, 8, 32 } };
 
@@ -52,11 +50,7 @@ ibmPerScreenInfo skywayScreenInfoStruct = {
 	skyPixmapFormats,       /* pixmap formats */
 	skyScreenIO,
 	skyProbe,
-#ifndef SOFTWARE_CURSOR
 	skyRemoveCursor,    /*(*ibm_HideCursor)()*/
-#else
-        0,
-#endif
 	"-colorgda",
 	"",
 	"",
@@ -66,11 +60,7 @@ ibmPerScreenInfo skywayScreenInfoStruct = {
 	0,                      /* ibm_ScreenFD */
 	0,                      /* ibm_Wanted */
 	0,0,                    /* ibm_CursorHotX,ibm_CursorHotY */
-#ifndef SOFTWARE_CURSOR
 	skyMoveCursor,          /* (*ibm_CursorShow)() */
-#else
-	0,                      /* (*ibm_CursorShow)() */
-#endif
 	0,                      /* ibm_CurrentCursor */
 	0,                      /* ibm_ScreenState */
 	HFT_SKYWAY_ID           /* ibm_DeviceID */

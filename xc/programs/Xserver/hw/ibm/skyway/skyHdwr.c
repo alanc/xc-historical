@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ibmColor.c,v 1.1 91/05/10 08:59:17 jap Exp $
+ * $XConsortium: skyHdwr.c,v 1.1 91/05/10 09:09:02 jap Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -41,6 +41,8 @@
 
 #include "skyHdwr.h"
 #include "skyReg.h"
+
+void SkywayFillSolid();
 
 int skyHdwrInit(index)
 int index ;
@@ -97,7 +99,7 @@ SKYWAY_SINDEX_REG(index) = 0x1a93;
 SKYWAY_SINDEX_REG(index) = 0x1cc5;
 SKYWAY_SINDEX_REG(index) = 0x1e06;
 SKYWAY_SINDEX_REG(index) = 0x2a04;
-/* pass tow end */
+/* pass two end */
 
 SKYWAY_SINDEX_REG(index) = 0x10db;/* 1760 pixels per scan line          */
 SKYWAY_SINDEX_REG(index) = 0x129f;/* 1280 pixels in active picture area */
@@ -125,6 +127,8 @@ SKYWAY_SINDEX_REG(index) = 0x5063;/* set Display Mode 1 register to:    */
 	                        /*      Composite syncs enabled         */
 	                        /*      + Vertical, - Horizontal        */
 	                        /*         sync polarity                */
+
+ SkywayFillSolid(0,0x3,0xff,0,0,1280,1024,index);
 
    return( 0 );
 
@@ -154,5 +158,232 @@ skySetColor(number,red,green,blue,index)
     SKYWAYSetRGBColor(index,red,green,blue) ;
 
    return;
+
+}
+
+void
+SkywayTileRect(pTile, alu, pm, x, y, w, h, xSrc, ySrc )
+    PixmapPtr pTile;
+    int alu ;
+    unsigned long int pm ;
+    int x, y, w, h, xSrc, ySrc;
+{
+
+ register unsigned char	*psrc, *pSRC ;
+ register volatile unsigned char *pdst, *pDST ;
+ int	xoff, yoff, i,j ;
+ int    index ;
+
+ TRACE(("SkywayTileRect(0x%x,%d,0x%x,%d,%d,%d,%d,0x%x,0x%x)\n",
+		pTile,alu,pm,x,y,w,h,xSrc,ySrc));
+
+ index = pTile->drawable.pScreen->myNum ;
+ skywayWaitFifo2(index);
+
+ SKYWAYSetCCC(index,Color_Cmp_Fal);
+ SKYWAYSetALU(index,alu);
+ SKYWAYSetPlaneMask(index,pm & 0xffff);
+
+ SKYWAYSetupScreenPixmap(index,PixSize8) ;  /* PixSize4 for skymono */
+
+ SKYWAYSetPixmapDstOffset(index,x,y);
+ SKYWAYSetWidth(index,w - 1) ;
+ SKYWAYSetHeight(index,h - 1) ;
+
+ /* Move data into adapter ; wait for DMA */
+
+ skywayWaitFifo2(index);
+
+ pSRC = (unsigned char *) pTile->devPrivate.ptr ;
+ pDST = (unsigned char *) SKYWAY_TILEOFFSET[index] ; 
+
+ TRACE((" pTile->devKind is %d \n",pTile->devKind));
+
+ for ( i = 0 ; i < pTile->drawable.height ; i++  )
+ {
+	psrc = pSRC ;
+	pdst = pDST ;
+
+	for ( j =0 ; j < pTile->drawable.width ; j++)
+	    *pdst++ = *psrc++ ;
+
+	    pSRC += pTile->devKind ;
+	    pDST += pTile->drawable.width ;
+
+ }
+
+ /* src pattern */
+
+ xoff = (x - xSrc) % pTile->drawable.width ;
+ yoff = (y - ySrc) % pTile->drawable.height ;
+ TRACE(("xoff is %d yoff is %d \n",xoff,yoff));
+ TRACE(("xSrc is %d ySrc is %d \n",xSrc,ySrc));
+
+ SKYWAYSetPixmapIndex(index,PixMapA) ;
+ SKYWAYSetPixmapBase(index,SC_INVBASEOFFSET) ; 
+ SKYWAYSetPixmapWidth(index,pTile->drawable.width - 1) ;
+ SKYWAYSetPixmapHeight(index,pTile->drawable.height - 1) ;
+ SKYWAYSetPixmapFormat(index,MI1 | PixSize8) ;
+ SKYWAYSetPixmapSrcOffset(index,xoff, yoff);
+
+ SKYWAY_PO_REG(index)   =   POSrcA | POForeSrc | POStepBlt |
+		     PODestC | POPatFore |
+		     POMaskDis | POModeAll | POOct0 ;
+
+ skywayWaitFifo2(index);
+
+}
+
+void
+SkywayFillSolid( color, alu, pm, x, y, w, h,index)
+     int   color ;
+     unsigned int alu, pm ;
+     short  x, y ;
+     short  w, h ;
+     int    index ;
+{
+
+ TRACE(("SkywayFillSolid\n"));
+
+ skywayWaitFifo2(index);
+
+ SKYWAYSetCCC(index,Color_Cmp_Fal);
+ SKYWAYSetALU(index,alu);
+ SKYWAYSetPlaneMask(index,pm & 0xffff);
+ SKYWAYSetForegroundColor(index,color);	
+
+ /* Set the foreground field for the Pixel Operations Register to */
+ /* indicate the color is coming from a register */
+
+ SKYWAYSetupScreenPixmap(index,PixSize8) ;
+
+ SKYWAYSetPixmapDstOffset(index,x,y);
+ SKYWAYSetWidth(index,w - 1) ;
+ SKYWAYSetHeight(index,h - 1) ;
+
+ SKYWAY_PO_REG(index)   =   POForeReg | POStepBlt |
+		     PODestC | POPatFore |
+		     POMaskDis | POModeAll | POOct0 ;
+
+ skywayWaitFifo2(index);
+
+} 
+
+skywaySetupMask(xoff,yoff,width,height,pmask,index)
+int xoff,yoff,width,height,pmask ;
+int index ;
+{
+
+	SKYWAY_PMI_REG(index) = PixMapD ;
+        SKYWAY_PMB_REG(index) = SKYWAY_MASKMAP_START ;
+        SKYWAY_PMW_REG(index) = width -  1 ;
+        SKYWAY_PMH_REG(index) = height - 1 ;
+        SKYWAY_PMF_REG(index) = MI1 | PixSize1 ;
+  	SKYWAY_DSTX_REG(index) = xoff ;
+  	SKYWAY_DSTY_REG(index) = yoff ;
+	SKYWAYSetPlaneMask(index,pmask & 0xffff);
+
+  	SKYWAY_PO_REG(index) |= POMaskEn ;   /* Dangerous */
+
+}
+
+void
+SkywayBitBlt(alu,pScreen,pmask,sx,sy,dx,dy,w,h)
+     int alu,pmask ;
+     ScreenPtr pScreen ;
+     int sx,sy,dx,dy,w,h;	
+{
+ short over_y, over_x;
+ unsigned int octant;
+ int index ;
+
+TRACE(("SkywayBitBltXXXXXXX(0x%x,0x%x,%d,%d,%d,%d,%d,%d)\n",
+	alu,pmask,sx,sy,dx,dy,w,h));
+
+index = pScreen->myNum ;
+
+  /* BLT overlap codes */
+
+#define D_NOT_OVER 0            /* no overlap */
+#define D_TOP_EDGE_OVER 1       /* source overlaps top of destination */
+#define D_BOTTOM_EDGE_OVER 2    /* source overlaps bottom of destination */
+#define D_LEFT_EDGE_OVER 1      /* source overlaps left of destination */
+#define D_RIGHT_EDGE_OVER 2     /* source overlaps right of destination */
+
+
+   /* Set up the source & destination offsets. */
+
+    /* First determine whether the source and destination overlap. */
+    over_x = over_y = D_NOT_OVER;    /* initialize to no-overlap code */
+
+    /* Check the y values. */
+    if (dy >= sy) {	   /* maybe top of d is in s */
+	if (dy < (sy + h))    /* top of d is in s */
+	    over_y = D_TOP_EDGE_OVER;
+    } else {	    /* maybe bottom of d is in s */
+	if (sy < (dy + h))    /* bottom of d is in s */
+	    over_y = D_BOTTOM_EDGE_OVER;
+    }
+
+    /* Check the x values. */
+    if (dx >= sx) {	   /* maybe left of d is in s */
+	if (dx < (sx + w))    /* left of d is in s */
+	    over_x = D_LEFT_EDGE_OVER;
+    } else {	    /* maybe right of d is in s */
+	if (sx < (dx + w))    /* right of d is in s */
+	    over_x = D_RIGHT_EDGE_OVER;
+    }
+
+    octant = POOct0;	/* in case no corners overlap */
+    if (over_y == D_TOP_EDGE_OVER) {
+	if (over_x == D_LEFT_EDGE_OVER) {
+	    octant = POOct6;	/* upper left of d is in s */
+
+	    /* Point to the lower-right corner */
+	    sx += (w - 1);
+	    sy += (h - 1);
+	    dx += (w - 1);
+	    dy += (h - 1);
+	} else if (over_x == D_RIGHT_EDGE_OVER) {
+	    octant = POOct2;	/* upper right of d is in s */
+
+	    /* Point to the bottom left corner */
+	    sy += (h - 1);
+	    dy += (h - 1);
+	}
+    } else if (over_y == D_BOTTOM_EDGE_OVER) {
+	if (over_x == D_LEFT_EDGE_OVER) {
+	    octant = POOct4;	/* lower left of d is in s */
+
+	    /* Point to the upper right corner */
+	    sx += (w - 1);
+	    dx += (w - 1);
+	} else if (over_x == D_RIGHT_EDGE_OVER) {
+	    octant = POOct0;	/* lower right of d is in s */
+
+	    /* Already pointing to the upper left corner... */
+	}
+    }
+
+skywayWaitFifo2(index);
+SKYWAYSetupScreenPixmap(index,PixSize8) ;
+
+SKYWAYSetPixmapSrcOffset(index,sx,sy);
+SKYWAYSetPixmapDstOffset(index,dx,dy);
+SKYWAYSetWidth(index,w - 1);
+SKYWAYSetHeight(index,h - 1);
+
+/* Set up the plane mask and alu. */
+
+SKYWAYSetPlaneMask(index,pmask & 0xffff);
+SKYWAYSetALU(index,alu);
+SKYWAYSetCCC(index,Color_Cmp_Fal); /* Disable */
+
+/* Set up the pixel operations register and do the actual BLT... */
+
+SKYWAY_PO_REG(index) = POForeSrc | POBackSrc | POStepBlt | POSrcC | PODestC |
+		POPatFore | POMaskDis | POModeAll | octant;
+
+skywayWaitFifo2(index);
 
 }

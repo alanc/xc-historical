@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ibmColor.c,v 1.1 91/05/10 08:59:17 jap Exp $
+ * $XConsortium: skySave.c,v 1.1 91/05/10 09:09:05 jap Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -45,10 +45,8 @@
 #include "skyProcs.h"
 #include "ibmTrace.h"
 
-#ifndef SOFTWARE_CURSOR
 #include "ibmScreen.h"
 extern Bool skyDisplayCursor();
-#endif
 
 extern unsigned int skyHandle ;
 
@@ -78,9 +76,7 @@ int             restoreBits;
 
     skyHdwrInit(index);
     skyRefreshColormaps(pScreen);
-#ifndef SOFTWARE_CURSOR
     skyDisplayCursor( pScreen, ibmCurrentCursor(index) );
-#endif
 }
 
 /*

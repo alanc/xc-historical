@@ -3,6 +3,7 @@
 
 SRCS =	 	skyInfo.c	\
 		skyIO.c	        \
+		skyImg.c        \
 		skyHdwr.c	\
 		skyCur.c        \
 		skySave.c       \
@@ -12,6 +13,7 @@ SRCS =	 	skyInfo.c	\
 
 OBJS =	 	skyInfo.o       \
 		skyIO.o	        \
+		skyImg.o        \
 		skyHdwr.o       \
 		skyCur.o        \
 		skySave.o       \

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ibmColor.c,v 1.1 91/05/10 08:59:17 jap Exp $
+ * $XConsortium: skyCur.c,v 1.1 91/05/10 09:09:01 jap Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -52,9 +52,7 @@ static Bool skyCursorOffScreen();
 static void skyCrossScreen();
 extern void miPointerQueueEvent();
 
-#ifndef SOFTWARE_CURSOR
 void skyRecolorCursor();
-#endif
 
 miPointerScreenFuncRec skyPointerScreenFuncs = {
     skyCursorOffScreen,
@@ -112,7 +110,6 @@ else /* either TileShape or StippleShape */
 return;
 }
 
-#ifndef SOFTWARE_CURSOR
 /* following procedures used for skyway hardware cursor */
 Bool
 skyRealizeCursor( pScr, pCurs)
@@ -209,7 +206,7 @@ skyDisplayCursor( pScr, pCurs )
       }
     }
 
-    /* ensable the cursor in the DAC */
+    /* enable the cursor in the DAC */
     SKYWAY_SINDEX_REG(index) = CursLo_Plane0;
     SKYWAY_SINDEX_REG(index) = CursCntl_Plane0 | DAC_enable;
 
@@ -248,7 +245,7 @@ int  index  =  ibmCurrentScreen;
     SKYWAY_SINDEX_REG(index) = CursCntl_Plane0 | (y & 0x00FF);
     SKYWAY_SINDEX_REG(index) = CursCntl_Plane0 |  y >> 8;
 
-    /* ensable the cursor in the DAC */
+    /* enable the cursor in the DAC */
     SKYWAY_SINDEX_REG(index) = CursLo_Plane0;
     SKYWAY_SINDEX_REG(index) = CursCntl_Plane0 | DAC_enable;
 
@@ -304,7 +301,7 @@ skyRecolorCursor (pScr, pCurs, visible)
     *dptr = pCurs->foreGreen >> 8;
     *dptr = pCurs->foreBlue >> 8;
 
-    /* ensable the cursor in the DAC */
+    /* enable the cursor in the DAC */
     SKYWAY_SINDEX_REG(index) = CursLo_Plane0;
     SKYWAY_SINDEX_REG(index) = CursCntl_Plane0 | DAC_enable;
 
@@ -342,10 +339,9 @@ skyRemoveCursor( pScr, pCurs )
       SKYWAY_SINDEX_REG(index) = CursImg_Plane1;
     }
 
-    /* ensable the cursor in the DAC */
+    /* enable the cursor in the DAC */
     SKYWAY_SINDEX_REG(index) = CursLo_Plane0;
     SKYWAY_SINDEX_REG(index) = CursCntl_Plane0 | DAC_enable;
 
     return;
 }
-#endif
