@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: StripChart.c,v 1.5 89/09/14 17:01:11 kit Exp $";
+static char Xrcsid[] = "$XConsortium: StripChart.c,v 1.6 89/10/09 16:21:08 jim Exp $";
 #endif
 
 /***********************************************************
@@ -59,7 +59,7 @@ static XtResource resources[] = {
 
 #undef offset
 
-static void Initialize(), Destroy(), Redisplay(), MoveChart();
+static void Initialize(), Destroy(), Redisplay(), MoveChart(), SetClipMask();
 static Boolean SetValues();
 static int repaint_window();
 
@@ -85,7 +85,7 @@ StripChartClassRec stripChartClassRec = {
     /* compress_enterleave	*/	TRUE,
     /* visible_interest		*/	FALSE,
     /* destroy			*/	Destroy,
-    /* resize			*/	NULL,
+    /* resize			*/	SetClipMask,
     /* expose			*/	Redisplay,
     /* set_values		*/	SetValues,
     /* set_values_hook		*/	NULL,
@@ -127,7 +127,10 @@ unsigned int which;
 
   if (which & FOREGROUND) {
     myXGCV.foreground = w->strip_chart.fgpixel;
-    w->strip_chart.fgGC = XtGetGC((Widget) w, GCForeground, &myXGCV);
+    myXGCV.fill_style = FillStippled;
+    w->strip_chart.fgGC = XCreateGC( XtDisplay((Widget) w),
+				    RootWindowOfScreen(XtScreen( (Widget) w)),
+				    GCFillStyle | GCForeground, &myXGCV);
   }
 
   if (which & HIGHLIGHT) {
@@ -149,7 +152,7 @@ StripChartWidget w;
 unsigned int which;
 {
   if (which & FOREGROUND) 
-    XtReleaseGC((Widget) w, w->strip_chart.fgGC);
+    XFreeGC( XtDisplay((Widget) w), w->strip_chart.fgGC);
 
   if (which & HIGHLIGHT) 
     XtReleaseGC((Widget) w, w->strip_chart.hiGC);
@@ -281,14 +284,18 @@ int left, width;
       scale = ((int) (w->strip_chart.max_value)) + 1;
     if (scale < w->strip_chart.min_scale)
       scale = w->strip_chart.min_scale;
+
     if (scale != w->strip_chart.scale) {
       w->strip_chart.scale = scale;
       left = 0;
       width = next;
       scalewidth = w->core.width;
-      if (XtIsRealized ((Widget) w)) {
+
+      SetClipMask(w);
+
+      if (XtIsRealized ((Widget) w)) 
 	XClearWindow (XtDisplay (w), XtWindow (w));
-      }
+
     }
 
     if (XtIsRealized((Widget)w)) {
@@ -307,12 +314,15 @@ int left, width;
 	if (next < ++width) width = next;
 
 	/* Draw data point lines. */
-	for (i = left; i < width; i++)
-	    XDrawLine(dpy, win, w->strip_chart.fgGC, i, w->core.height,
-		  i, (int) (w->core.height - 
-			    (w->strip_chart.valuedata[i] * w->core.height)
-			    /w->strip_chart.scale));
-        }
+	for (i = left; i < width; i++) {
+	    int height = (w->strip_chart.valuedata[i] *
+			  w->core.height) / w->strip_chart.scale;
+
+	    XFillRectangle(dpy, win, w->strip_chart.fgGC, 
+			   i, ((int) w->core.height) - height, 
+			   (unsigned int) 1, (unsigned int) w->core.height);
+	}
+    }
 
     return(next);
 }
@@ -415,4 +425,52 @@ static Boolean SetValues (current, request, new)
     CreateGC(w, new_gc);
 
     return( ret_val );
+}
+
+/*	Function Name: SetClipMask
+ *	Description: Creates the clip mask to draw graph lines through, and
+ *                   set this mask in the GC used to draw the graph.
+ *	Arguments: w - the StripChart widget.
+ *	Returns: none.
+ */
+
+#define STIPPLE_HEIGHT ( (unsigned int) w->core.height)
+#define STIPPLE_WIDTH  ( (unsigned int) 1 )
+#define STIPPLE_DEPTH  ( (unsigned int) 1 ) 
+
+static void
+SetClipMask(w)
+StripChartWidget w;
+{
+    GC gc;
+    XGCValues values;
+    Display * disp = XtDisplay((Widget) w);
+    Pixmap stipple;
+    int i, j;
+    
+    stipple = XCreatePixmap(disp, RootWindowOfScreen(XtScreen((Widget) w)),
+			    STIPPLE_WIDTH, STIPPLE_HEIGHT, STIPPLE_DEPTH);
+
+    values.foreground = 1;
+    values.background = 0;
+    gc = XCreateGC(disp, stipple, GCForeground | GCBackground, &values);
+
+    XFillRectangle(disp, stipple, gc, 0, 0, STIPPLE_WIDTH, STIPPLE_HEIGHT);
+
+    values.foreground = 0;
+    values.background = 1;
+    XChangeGC(disp, gc, GCForeground | GCBackground, &values);
+
+    /* Draw graph reference lines into clip mask */
+
+    for (i = 1; i < w->strip_chart.scale; i++) {
+	j = (i * STIPPLE_HEIGHT) / w->strip_chart.scale;
+	XDrawPoint(disp, stipple, gc, 0, j);
+    }
+
+    values.stipple = stipple;
+    XChangeGC(disp, w->strip_chart.fgGC, GCStipple, &values);
+
+    XFreeGC(disp, gc);
+    XFreePixmap(disp, stipple);
 }
