@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Shell.h,v 1.18 89/06/16 18:09:20 jim Exp $
+* $XConsortium: Shell.h,v 1.19 89/09/14 10:28:49 swick Exp $
 * $oHeader: Shell.h,v 1.2 88/08/18 15:56:14 asente Exp $
 */
 /***********************************************************
@@ -47,6 +47,10 @@ SOFTWARE.
 #define XtCIconMask "IconMask"
 #define XtNwindowGroup "windowGroup"
 #define XtCWindowGroup "WindowGroup"
+#define XtNvisual "visual"
+#define XtCVisual "Visual"
+#define XtNtitleEncoding "titleEncoding"
+#define XtCEncoding "Encoding"
  
 #define XtNsaveUnder "saveUnder"
 #define XtCSaveUnder "SaveUnder"
@@ -54,6 +58,10 @@ SOFTWARE.
 #define XtCTransient "Transient"
 #define XtNoverrideRedirect "overrideRedirect"
 #define XtCOverrideRedirect "OverrideRedirect"
+#define XtNtransientFor "transientFor"
+#define XtCTransientFor "TransientFor"
+
+#define XtNiconNameEncoding "iconNameEncoding"
 
 #define XtNallowShellResize "allowShellResize"
 #define XtCAllowShellResize "AllowShellResize"
@@ -62,6 +70,8 @@ SOFTWARE.
 
 #define XtNtitle "title"
 #define XtCTitle "Title"
+
+#define XtRAtom "Atom"
 
 /* 
  * The following are only used at creation and can not be changed via 
