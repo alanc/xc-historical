@@ -24,6 +24,7 @@ SOFTWARE.
 
 /* PEX/PHIGS workstation utility functions. */
 
+#include <X11/Xlibint.h>
 #include "phg.h"
 #include "cp.h"
 #include "ws.h"
@@ -32,8 +33,7 @@ SOFTWARE.
 #include "PEXmacs.h"
 #include "PEXfuncs.h"
 #include "phigspex.h"
-#include "X11/Xatom.h"
-#include <X11/Xlibint.h>
+#include <X11/Xatom.h>
 
 
 
