@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.h,v 1.20 94/07/26 14:12:37 mor Exp $ */
+/* $XConsortium: xsm.h,v 1.21 94/07/28 11:25:21 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -123,6 +123,11 @@ extern char		*display_env, *non_local_display_env;
 extern char		*session_env, *non_local_session_env;
 extern char		*audio_env;
 
+extern Bool		need_to_name_session;
+
+extern Bool		shutdown_after_name;
+extern Bool		checkpoint_after_name;
+
 extern Bool		remote_allowed;
 
 extern XtAppContext	appContext;
@@ -146,7 +151,7 @@ extern int		interactCount;
 extern Bool		shutdownInProgress;
 extern Bool	        saveInProgress;
 extern Bool		shutdownCancelled;
-extern Bool		shutdownDialogUp;
+extern Bool		wantShutdown;
 
 extern int		sessionNameCount;
 extern String		*sessionNames;

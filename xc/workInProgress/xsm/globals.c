@@ -1,4 +1,4 @@
-/* $XConsortium: globals.c,v 1.6 94/07/21 14:54:25 mor Exp $ */
+/* $XConsortium: globals.c,v 1.7 94/07/26 14:11:39 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -31,7 +31,7 @@ int		numClients = 0;
 int		saveDoneCount = 0;
 int		interactCount = 0;
 int		phase2RequestCount = 0;
-Bool		shutdownDialogUp = False;
+Bool		wantShutdown = False;
 Bool		shutdownInProgress = False;
 Bool		saveInProgress = False;
 Bool		shutdownCancelled = False;
@@ -57,6 +57,10 @@ String		*sessionNames = NULL;
 char		*display_env = NULL, *non_local_display_env = NULL;
 char		*session_env = NULL, *non_local_session_env = NULL;
 char		*audio_env = NULL;
+
+Bool		need_to_name_session = False;
+Bool		shutdown_after_name = False;
+Bool		checkpoint_after_name = False;
 
 Bool		remote_allowed;
 
