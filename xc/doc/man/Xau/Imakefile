@@ -1,0 +1,8 @@
+XCOMM $XConsortium$
+
+MANDIR = $(LIBMANDIR)
+MANSUFFIX = $(LIBMANSUFFIX)
+
+all::
+
+InstallManPage(Xau,$(MANDIR))
