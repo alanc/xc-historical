@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Resources.c,v 1.80 89/11/14 14:21:14 swick Exp $";
+    "$XConsortium: Resources.c,v 1.81 89/12/14 12:18:36 swick Exp $";
 /* $oHeader: Resources.c,v 1.6 88/09/01 13:39:14 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -282,19 +282,6 @@ void  XrmCompileResourceList(resources, num_resources)
     }
 #undef xrmres
 } /* XrmCompileResourceList */
-
-static void BadType(type, name)
-    XrmQuark type, name;
-{
-    String params[2];
-    Cardinal num_params = 2;
-
-    params[0] = XrmQuarkToString(type);
-    params[1] = XrmQuarkToString(name);
-    XtWarningMsg("invalidTypeOverride", "xtDependencies", "XtToolkitError",
-	"Representation type %s must match superclass's to override %s",
-	params, &num_params);
-} /* BadType */
 
 static void BadSize(size, name)
     Cardinal size;
@@ -624,7 +611,7 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 		to_val.size = rx->xrm_size;
 		to_val.addr = base - rx->xrm_offset - 1;
 		converted = _XtConvert(widget, from_type, &from_val,
-					rx->xrm_type, &to_val, 
+					xrm_type, &to_val, 
 					persistent_resources ?
 					NULL : &cache_ref[cache_ref_size]);
 		if (converted) {
@@ -702,7 +689,10 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 			      widget,-(rx->xrm_offset+1), pv);
 
 		    } else if (xrm_default_type == QImmediate) {
-			if (rx->xrm_size == sizeof(int)) {
+			/* XtRImmediate == XtRString for type XtRString */
+			if (xrm_type == QString) {
+			    pv->addr = rx->xrm_default_addr;
+			} else if (rx->xrm_size == sizeof(int)) {
 			    int_val = (int)rx->xrm_default_addr;
 			    pv->addr = (XtPointer) &int_val;
 			} else if (rx->xrm_size == sizeof(short)) {
@@ -740,16 +730,16 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 		    }
 		}
 		if (!already_copied) {
-		    if (pv->addr != NULL) {
-			if (xrm_type == QString) {
-			    *((String*)(base - rx->xrm_offset - 1)) = pv->addr;
-			} else {
+		    if (xrm_type == QString) {
+			*((String*)(base - rx->xrm_offset - 1)) = pv->addr;
+		    } else {
+			if (pv->addr != NULL) {
 			    XtBCopy(pv->addr, base - rx->xrm_offset - 1,
 				    rx->xrm_size);
+			} else {
+			    /* didn't get value, initialize to NULL... */
+			    XtBZero(base - rx->xrm_offset - 1, rx->xrm_size);
 			}
-		    } else {
-			/* didn't get value, initialize to NULL... */
-			XtBZero(base - rx->xrm_offset - 1, rx->xrm_size);
 		    }
 		}
 
