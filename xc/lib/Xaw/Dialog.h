@@ -1,4 +1,4 @@
-/* $Header: Dialog.h,v 1.1 87/09/11 07:57:32 swick Locked $ */
+/* $Header: Dialog.h,v 1.2 87/12/23 07:41:49 swick Locked $ */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  * 
@@ -39,18 +39,8 @@ typedef struct _DialogRec	*DialogWidget;
 
 extern WidgetClass dialogWidgetClass;
 
-/* oldXtk compatability routines */
-extern Window XtDialogCreate();
-			/* parent, description, valueinit, args, argCount */
-    /* Window parent; */
-    /* char *description; */
-    /* char *valueinit; */
-    /* ArgList args; */
-    /* int argCount; */
-
-extern void XtDialogAddButton(); /* dpy, window, name, function, param */
-    /* Display *dpy; */
-    /* Window window; */
+extern void XtDialogAddButton(); /* parent, name, function, param */
+    /* Wiget parent; */
     /* char *name; */
     /* void (*function)(); */
     /* caddr_t param; */
