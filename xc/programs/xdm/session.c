@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.62 93/09/30 15:27:25 gildea Exp $
+ * $XConsortium: session.c,v 1.63 94/01/12 18:27:29 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -35,6 +35,9 @@
 #ifdef SECURE_RPC
 # include <rpc/rpc.h>
 # include <rpc/key_prot.h>
+#endif
+#ifdef K5AUTH
+# include <krb5/krb5.h>
 #endif
 
 #ifdef X_NOT_STDC_ENV
@@ -157,9 +160,24 @@ struct display	*d;
 	    FailedLogin (d, &greet);
     }
     DeleteXloginResources (d, dpy);
-#ifdef SECURE_RPC
+    CloseGreet (d);
+    Debug ("Greet loop finished\n");
+    /*
+     * Run system-wide initialization file
+     */
+    if (source (verify.systemEnviron, d->startup) != 0)
+    {
+	Debug ("Startup program %s exited with non-zero status\n",
+		d->startup);
+	SessionExit (d, OBEYSESS_DISPLAY, FALSE);
+    }
+    /*
+     * for user-based authorization schemes,
+     * add the user to the server's allowed "hosts" list.
+     */
     for (i = 0; i < d->authNum; i++)
     {
+#ifdef SECURE_RPC
 	if (d->authorizations[i]->name_length == 9 &&
 	    memcmp(d->authorizations[i]->name, "SUN-DES-1", 9) == 0)
 	{
@@ -173,20 +191,25 @@ struct display	*d;
 	    addr.length = strlen (netname);
 	    addr.address = netname;
 	    XAddHost (dpy, &addr);
-	    break;
 	}
-    }
 #endif
-    CloseGreet (d);
-    Debug ("Greet loop finished\n");
-    /*
-     * Run system-wide initialization file
-     */
-    if (source (verify.systemEnviron, d->startup) != 0)
-    {
-	Debug ("Startup program %s exited with non-zero status\n",
-		d->startup);
-	SessionExit (d, OBEYSESS_DISPLAY, FALSE);
+#ifdef K5AUTH
+	if (d->authorizations[i]->name_length == 13 &&
+	    memcmp(d->authorizations[i]->name, "KERBEROS-V5-1", 13) == 0)
+	{
+	    /* Update server's auth file with user-specific info.
+	     * Don't need to AddHost because X server will do that
+	     * automatically when it reads the cache we are about
+	     * to point it at.
+	     */
+	    extern Xauth *Krb5GetAuthForUid();
+
+	    XauDisposeAuth (d->authorizations[i]);
+	    d->authorizations[i] =
+		Krb5GetAuthForUid(13, "KERBEROS-V5-1", verify.uid);
+	    SaveServerAuthorizations (d, d->authorizations, d->authNum);
+	} 
+#endif
     }
     clientPid = 0;
     if (!Setjmp (abortSession)) {
@@ -434,7 +457,12 @@ StartClient (verify, d, pidp, name, passwd)
 	}
 #endif /* AIXV3 */
 
+	/*
+	 * for user-based authorization schemes,
+	 * use the password to get the user's credentials.
+	 */
 #ifdef SECURE_RPC
+	/* do like "keylogin" program */
 	{
 	    char    netname[MAXNETNAMELEN+1], secretkey[HEXKEYBYTES+1];
 	    int	    ret;
@@ -452,7 +480,6 @@ StartClient (verify, d, pidp, name, passwd)
 	    if (ret && *secretkey)
 	    {
 		ret = key_setsecret(secretkey);
-		bzero(secretkey, strlen(secretkey));
 		Debug ("key_setsecret returns %d\n", ret);
 	    }
 	    else
@@ -471,8 +498,32 @@ StartClient (verify, d, pidp, name, passwd)
 		    }
 		}
 	    }
+	    bzero(secretkey, strlen(secretkey));
 	}
 #endif
+#ifdef K5AUTH
+	/* do like "kinit" program */
+	{
+	    int i, j;
+	    int result;
+
+	    result = Krb5Init(name, passwd);
+	    if (result != 0) {
+		for (i = 0; i < d->authNum; i++)
+		{
+		    if (d->authorizations[i]->name_length == 13 &&
+			memcmp(d->authorizations[i]->name, "KERBEROS-V5-1", 13) == 0)
+		    {
+			/* remove Kerberos from authorizations list */
+			for (j = i+1; j < d->authNum; j++)
+			    d->authorizations[j-1] = d->authorizations[j];
+			d->authNum--;
+			break;
+		    }
+		}
+	    }
+	}
+#endif /* K5AUTH */
 	bzero(passwd, strlen(passwd));
 	SetUserAuthorization (d, verify);
 	home = getEnv (verify->userEnviron, "HOME");
