@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.1 89/07/16 21:04:13 keith Exp $ */
+/* $XConsortium: miarc.c,v 5.2 89/07/20 15:33:11 keith Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -1294,6 +1294,13 @@ miComputeArcs (parcs, narcs, pGC)
 				prevDashAngle = dashAngle;
 				dashAngle = computeAngleFromPath (prevDashAngle, endAngle,
 							&map, &dashRemaining, backwards);
+				/* avoid troubles with huge arcs and small dashes */
+				if (dashAngle == prevDashAngle) {
+					if (backwards)
+						dashAngle--;
+					else
+						dashAngle++;
+				}
 				if (iphase == 0 || isDoubleDash) {
 					xarc = parcs[i];
 					xarc.angle1 = prevDashAngle;
