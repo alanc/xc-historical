@@ -18,7 +18,7 @@
 .ce 4
 Chris D. Peterson
 .sp 6p
-MIT X Consortium
+formerly MIT X Consortium
 .bp
 \&
 .ps 9
@@ -63,7 +63,7 @@ has been Ralph's, many other people have contributed to the code.
 .Ds
 Mark Ackerman (formerly Project Athena)
 Donna Converse (MIT X Consortium)
-Jim Fulton (MIT X Consortium)
+Jim Fulton (formerly MIT X Consortium)
 Loretta Guarino-Reid (Digital WSL)
 Charles Haynes (Digital WSL)
 Rich Hyde (Digital WSL)
@@ -71,7 +71,7 @@ Mary Larson (Digital UEG)
 Joel McCormack (Digital WSL)
 Ron Newman (formerly Project Athena)
 Jeanne Rich (Digital WSL)
-Terry Weissman (Digital WSL)
+Terry Weissman (formerly Digital WSL)
 .De
 .LP
 While not much remains of the X10 toolkit, many of the ideas for this
@@ -82,11 +82,11 @@ implementation of the X10 toolkit were done by:
 Mike Gancarz (formerly Digital UEG)
 Charles Haynes (Digital WSL)
 Phil Karlton (formerly Digital WSL)
-Kathleen Langone  (Digital UEG)
+Kathleen Langone (Digital UEG)
 Mary Larson (Digital UEG)
 Ram Rao (Digital UEG)
 Smokey Wallace (formerly Digital WSL)
-Terry Weissman (Digital WSL)
+Terry Weissman (formerly Digital WSL)
 .De
 .LP
 I have used the formatting ideas, and some of the words from previous
@@ -95,7 +95,7 @@ written by:
 .LP
 .Ds
 Ralph R. Swick (Project Athena/ Digital)
-Terry Weissman (Digital WSL)
+Terry Weissman (formerly Digital WSL)
 Al Mento (Digital UEG)
 .De
 .LP
@@ -109,6 +109,16 @@ details.
 .Ds 0
 Chris D. Peterson
 MIT X Consortium
+December, 1989
+.De
+.sp
+.LP
+The R5 edition of this manual has been edited by the research staff of 
+the MIT X Consortium, with significant contributions by Jim Fulton (NCD).
+.sp
+.Ds 0
+Donna Converse
+July, 1991
 .De
 .bp
 .EH '\fBAthena Widget Set\fP''\fBX11, Release 5\fP'

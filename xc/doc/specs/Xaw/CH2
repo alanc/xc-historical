@@ -206,17 +206,17 @@ backgroundPixmap	Pixmap	Pixmap	XtUnspecifiedPixmap
 borderColor	BorderColor	Pixel	XtDefaultForeground
 borderPixmap	Pixmap	Pixmap	XtUnspecifiedPixmap
 borderWidth	BorderWidth	Dimension	1
-colormap	Colormap	Pointer	Parent's Colormap
+colormap	Colormap	Colormap	Parent's Colormap
 depth	Depth	int	Parent's Depth
 destroyCallback	Callback	XtCallbackList	NULL
 height	Height	Dimension	\fIwidget dependent\fP
 mappedWhenManaged	MappedWhenManaged	Boolean	True
-screen	Screen	Pointer	Parent's Screen
+screen	Screen	Screen	Parent's Screen
 sensitive	Sensitive	Boolean	True
 translations	Translations	TranslationTable	\fIwidget dependent\fP
 width	Width	Dimension	\fIwidget dependent\fP
-x	X	Position	0
-y	Y	Position	0
+x	Position	Position	0
+y	Position	Position	0
 .sp 3p
 _
 .TE
@@ -257,9 +257,9 @@ _
 .nr VS 13
 .IN "XtDefaultForeground" "" ""
 .NH 2
-Resources Conversions
+Resource Conversions
 .XS
-	Resources Conversions
+	Resource Conversions
 .XE
 .IN "conversions" "" "@DEF@"
 .IN "string conversions" "" "@DEF@"
@@ -282,7 +282,7 @@ widget.  When these occur, the documentation section for that widget
 will describe the converter.
 .NH 3
 Cursor Conversion
-.IN "conversions" "cursor" "@DEF@"
+.IN "conversions" "Cursor" "@DEF@"
 .IN "cursor" "" ""
 .LP
 The value for the \fBcursor\fP resource is specified in the resource
@@ -307,7 +307,7 @@ file path is used (see section 2.4.3).
 .NH 3
 Pixel Conversion
 .LP
-.IN "conversions" "pixel" "@DEF@"
+.IN "conversions" "Pixel" "@DEF@"
 .IN "pixel" "" ""
 .IN "rgb.txt" "" ""
 .IN "XtDefaultForeground" "" ""
@@ -328,7 +328,7 @@ The special strings `XtDefaultForeground' and `XtDefaultBackground'
 .NH 3
 Bitmap Conversion
 .IN "bitmap conversions" "" "@DEF@"
-.IN "conversions" "bitmap" "@DEF@"
+.IN "conversions" "Bitmap" "@DEF@"
 .IN "bitmapFilePath" "" "@DEF@"
 .IN "BitmapFilePath" "" "@DEF@"
 .IN "/usr/include/X11/bitmaps" "" ""
@@ -806,7 +806,7 @@ values; the resource manager, and an argument list passed into
 XtCreateWidget.  While resources values will get updated no matter
 which method you use, the two methods provide slightly different
 functionality. 
-.IP "Resource Manager" .75i
+.IP Resource Manager .75i
 This method picks up resource definitions described in \fI\*(xL\fP from
 many different locations at run time.  The locations most important to
 the application programmer are the \fIfallback resources\fP and the
@@ -817,7 +817,7 @@ particular needs of each individual user.  These values can also be
 modified without the need to rebuild the application, allowing rapid
 prototyping of user interfaces.  Application programmers should use
 resources in preference to hard-coded values whenever possible.
-.IP "Argument Lists"
+.IP Argument Lists .75 i
 The values passed into the widget at creation time via an argument list
 cannot be modified by the user, and allow no opportunity for
 customization.  It is used to set resources that cannot be specified as
@@ -913,7 +913,7 @@ adding the application resources is \fBXtGetApplicationResources\fP.
 .IN "XtGetApplicationResources"
 .IP \(bu 5
 Be careful when creating resource files.  Since widgets will
-\fBignore\fP resources that they do not understand, any spelling
+ignore resources that they do not understand, any spelling
 errors will cause a resource to have no effect.
 .IP \(bu 5
 Only one resource line will match any given resource.  There is a set
@@ -1065,9 +1065,9 @@ Example Programs
 The best way to understand how to use any programming library is by
 trying some simple examples.  A collection of example programs that
 introduces each of the widgets in that Athena widget set, as well as many
-important toolkit programming concepts, is available in the X11R4
-release as distributed by M.I.T.  It can be found in the directory
-\fBexamples/Xaw\fP, but see your site administrator for the exact
+important toolkit programming concepts, is available in the X11R5
+release as distributed by MIT.  It can be found in the directory
+\fBcontrb/examples/Xaw\fP, but see your site administrator for the exact
 location of these files on your system.
 .LP
 The README file from that directory is included here for reference.
@@ -1136,7 +1136,3 @@ work up to more complex ones.
 
 
 .fi
-
-
-
-

@@ -25,8 +25,8 @@ The Form widget can contain an arbitrary number of children or
 subwidgets.  The Form provides geometry management for its children,
 which allows individual control of the position of each child.  Any
 combination of children can be added to a Form.  The initial positions
-of the children may be computed relative to the positions of other
-children.  When the Form is resized, it computes new positions and
+of the children may be computed relative to the positions of previously
+created children.  When the Form is resized, it computes new positions and
 sizes for its children.  This computation is based upon information
 provided when a child is added to the Form.
 .LP
@@ -66,19 +66,19 @@ borderColor	BorderColor	Pixel		XtDefaultForeground
 borderPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
 borderWidth	BorderWidth	Dimension		1
 children	ReadOnly	WidgetList	R	NULL
-colormap	Colormap	Pointer		Parent's Colormap
+colormap	Colormap	Colormap		Parent's Colormap
 defaultDistance	Thickness	int		4
 depth	Depth	int	C	Parent's Depth
 destroyCallback	Callback	XtCallbackList		NULL
 height	Height	Dimension	A	Enough space to contain all children
 mappedWhenManaged	MappedWhenManaged	Boolean		True
 numChildren	ReadOnly	Cardinal	R	0
-screen	Screen	Pointer	R	Parent's Screen
+screen	Screen	Screen	R	Parent's Screen
 sensitive	Sensitive	Boolean		True
 translations	Translations	TranslationTable		NULL
 width	Width	Dimension	A	Enough space to contain all children
-x	X	Position		0
-y	Y	Position		0
+x	Position	Position		0
+y	Position	Position		0
 .sp 3p
 _
 .TE
@@ -192,7 +192,7 @@ _
 Example
 .LP
 If you wish to force the Form to never resize one or more of its
-children then set \fBleft\fP and \fBright\fP to \fBXawChainLeft\fP and
+children, then set \fBleft\fP and \fBright\fP to \fBXawChainLeft\fP and
 \fBtop\fP and \fBbottom\fP to \fBXawChainTop\fP.  This will cause the
 child to remain a fixed distance from the top and left edges of the
 Form, and never to resize.

@@ -7,6 +7,43 @@ Text Functions
 The following functions are provided as convenience routines for use with
 the Text widget.  Although many of these actions can be performed by
 modifying resources, these interfaces are frequently more efficient.
+.LP
+These data structures are defined in the Text widget's public header file,
+<X11/Xaw/Text.h>.
+.LP
+.IN "XawTextPosition" "" "@DEF@"
+typedef long XawTextPosition;
+.sp
+.LP
+Character positions in the Text widget begin at 0 and end at n+1, where
+n is the number of characters in the Text source widget.
+.LP
+.IN "XawTextBlock" "" "@DEF@"
+.Ds 0
+.TA .5i 1.5i 2.25i 
+.ta .5i 1.5i 2.25i
+typedef struct {
+	int \fIfirstPos\fP;
+	int \fIlength\fP;
+	char *\fIptr\fP;
+	unsigned long \fIformat\fP;
+} XawTextBlock, *XawTextBlockPtr;
+.De
+.LP
+.IN "XawTextBlockPtr" ""
+.IP \fIfirstPos\fP 1.0i
+The first position, or index, to use within the \fIptr\fP field.
+The value is commonly zero.
+.IP \fIlength\fP 1.0i
+The number of characters to be used from the \fIptr\fP field.
+The number of characters used is commonly the number of characters
+in \fIptr\fP, and must not be greater than the length of the string
+in \fIptr\fP.
+.IP \fIptr\fP 1.0i
+Contains the string to be referenced by the Text widget.
+.IP \fIformat\fP 1.0i
+This field is not currently used, but should be specified as
+\fBFMT8BIT\fP.
 .NH 3
 Selecting Text
 .LP
@@ -96,44 +133,13 @@ This function may return the following values:
 The text replacement was successful.
 .IP \fBXawPositionError\fP 1.25i
 .IN "XawPositionError" ""
-The edit mode is \fBXawtextAppend\fP and \fIstart\fP is not the last
-character of the source.
+The edit mode is \fBXawtextAppend\fP and \fIstart\fP is not the position of
+the last character of the source.
 .IP \fBXawEditError\fP 1.25i
 .IN "XawEditError" ""
 Either the Source was read-only or the range to be deleted is larger
-than the length of the Source. 
-.LP
-.sp 1
-The \fBXawTextBlock\fP structure is defined in the Text widget's
-public header file as follows: 
-.LP
-.IN "XawTextBlock" "" "@DEF@"
-.Ds 0
-.TA .5i 1.5i 2.25i 
-.ta .5i 1.5i 2.25i
-typedef struct {
-	int \fIfirstPos\fP;
-	int \fIlength\fP;
-	char \fI*ptr\fP;
-	Atom \fIformat\fP;
-} XawTextBlock, *TextBlockPtr;
-.De
-.LP
-.IN "XawTextBlock" ""
-.IN "TextBlockPtr" ""
-.IN "TextBlock" ""
-.IP \fIfirstPos\fP 1.0i
-The starting point to use within the ptr field.
-The value is usually zero.  
-.IP \fIlength\fP 1.0i
-The number of characters that to be transferred from the
-ptr field.  The number of characters transferred is usually the number
-of characters in ptr.
-.IP \fIptr\fP 1.0i
-Contains the string to insert into the text widget.
-.IP \fIformat\fP 1.0i
-This field is not currently used, but should be specified as
-\fBFMT8BIT\fP.  
+than the length of the Source.
+
 .LP
 The \fBXawTextReplace\fP arguments \fIstart\fP and
 \fIend\fP represent the text source character positions for the
@@ -164,11 +170,10 @@ Specifies the Text widget.
 Specifies the direction to search in.  Legal values are
 \fBXawsdLeft\fP and \fBXawsdRight\fP.
 .IP \fItext\fP 1i
-Specifies a text block structure (see \fBXawTextReplace\fP for the
-definition) that contains the text to search for.
+Specifies a text block structure that contains the text to search for.
 .LP
-The \fBXawTextSearch\fP function will begin at the insert point
-location and search in the 
+The \fBXawTextSearch\fP function will begin at the insertion point
+and search in the 
 direction specified for a string that matches the one passed in 
 \fItext\fP.  If the string is found the location of the first
 character in the string is returned.  If the string could not be
@@ -277,7 +282,7 @@ Calling this function is equivalent to setting the value of the
 \fBselectionTypes\fP resource. 
 .LP
 .sp 1
-To move the insert point to the specified source position, use
+To move the insertion point to the specified source position, use
 \fBXawTextSetInsertionPoint\fP:
 .IN "XawTextSetInsertionPoint" "" "@DEF@"
 .FD 0
@@ -290,14 +295,14 @@ void XawTextSetInsertionPoint(\fIw\fP, \fIposition\fP)
 .IP \fIw\fP 1i
 Specifies the Text widget.
 .IP \fIposition\fP 1i
-Specifies the new position for the insert point.
+Specifies the new position for the insertion point.
 .LP
 The text will be scrolled vertically if necessary to make the line
-containing the insert point visible.  Calling this function is
+containing the insertion point visible.  Calling this function is
 equivalent to setting the \fBinsertPosition\fP resource. 
 .LP
 .sp 1
-To obtain the current position of the insert point, use
+To obtain the current position of the insertion point, use
 \fBXawTextGetInsertionPoint\fP:
 .IN "XawTextGetInsertionPoint" "" "@DEF@"
 .FD 0
@@ -350,7 +355,7 @@ This function returns the text source that this Text widget is currently
 using.
 .LP
 .sp
-To enable and disable the insert point, use
+To enable and disable the insertion point, use
 \fBXawTextDisplayCaret\fP:
 .IN "XawTextDisplayCaret" "" "@DEF@"
 .FD 0
@@ -365,7 +370,7 @@ Specifies the Text widget.
 .IP \fIvisible\fP 1i
 Specifies whether or not the caret should be displayed.
 .LP
-If \fIvisible\fP is \fBFalse\fP the insert point will be disabled.
+If \fIvisible\fP is \fBFalse\fP the insertion point will be disabled.
 The marker is re-enabled either by setting \fIvisible\fP to \fBTrue\fP, by
 calling \fBXtSetValues\fP, or by executing the \fIdisplay-caret\fP
 action routine.

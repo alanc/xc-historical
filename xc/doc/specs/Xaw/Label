@@ -38,6 +38,7 @@ retrieved from the argument list or from the resource database:
 .vs 11
 .nr VS 11
 .TS H
+expand;
 lw(1i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
 .sp 3p
@@ -56,7 +57,7 @@ bitmap	Bitmap	Pixmap		None
 borderColor	BorderColor	Pixel		XtDefaultForeground
 borderPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
 borderWidth	BorderWidth	Dimension		1
-colormap	Colormap	Pointer		Parent's Colormap
+colormap	Colormap	Colormap		Parent's Colormap
 cursor	Cursor	Cursor		None
 cursorName	Cursor	String		NULL
 depth	Depth	int	C	Parent's Depth
@@ -75,12 +76,12 @@ mappedWhenManaged	MappedWhenManaged	Boolean		True
 pointerColor	Foreground	Pixel		XtDefaultForeground
 pointerColorBackground	Background	Pixel		XtDefaultBackground
 resize	Resize	Boolean		True
-screen	Screen	Pointer	R	Parent's Screen
+screen	Screen	Screen	R	Parent's Screen
 sensitive	Sensitive	Boolean		True
 translations	Translations	TranslationTable		See above
 width	Width	Dimension	A	\fBLabel\fP width + 2 * \fBinternalWidth\fP
-x	X	Position		0
-y	Y	Position		0
+x	Position	Position		0
+y	Position	Position		0
 .sp 3p
 _
 .TE

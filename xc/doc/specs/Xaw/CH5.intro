@@ -31,9 +31,9 @@ needed, it can be added by implementing a new TextSource or TextSink, or
 by subclassing the Text Widget (See Section 5.8 for customization
 details.)
 .LP
-The word \fIinsert point\fP is used in this chapter to refer to the text
-caret.  This is the caret that is displayed between two characters in
-the file.  The insert point marks the location where any new characters
+The words \fIinsertion point\fP are used in this chapter to refer to the text
+caret.  This is the symbol that is displayed between two characters in
+the file.  The insertion point marks the location where any new characters
 will be added to the file.  To avoid confusion the pointer cursor will 
 always be referred to as the \fIpointer\fP.
 .LP
@@ -49,10 +49,10 @@ Read-only
 .LP
 Read-only mode does not allow the user or the programmer to modify the text
 in the widget.  While the programmer may reset the entire string in
-read-only mode with \fBXtSetValues\fP, it may not modify parts of the
+read-only mode with \fBXtSetValues\fP, he may not modify parts of the
 text with \fBXawTextReplace\fP.  Append-only and editable modes allow
 .IN "XawTextReplace" ""
-the text at the insert point to be modified.  The only difference is
+the text at the insertion point to be modified.  The only difference is
 that text may only be added to or removed from the end of a buffer in
 append-only mode.
 .LP
@@ -131,8 +131,8 @@ Search and Replace
 The Text widget provides a search popup that can be used to search for a
 string within the current Text widget.  The popup can be activated by
 typing either \fIControl-r\fP or \fIControl-s\fP.  If \fIControl-s\fP is
-used the search will be forward in the file from the current insert point
-location; if \fIControl-r\fP is used the search will be backward.  The
+used the search will be forward in the file from the current location of the
+insertion point; if \fIControl-r\fP is used the search will be backward.  The
 activated popup is placed under the pointer.  It has a number of buttons
 that allow both text searches and text replacements to be performed.
 .LP
@@ -144,7 +144,7 @@ the appropriate button.
 .LP
 Directly under the buttons there are two text areas, one labeled
 \fISearch for:\fP and the other labeled \fIReplace with:\fP.  If this is
-a read-only Text widget the \fIReplace with:\fP field will be grayed out
+a read-only Text widget the \fIReplace with:\fP field will be insensitive
 and no replacements will be allowed.  After each of these labels will be
 a text field.  This field will allow the user to enter a string to
 search for and the string to replace it with.  Only one of these text
@@ -181,7 +181,7 @@ Replace the currently highlighted string with the string in the
 query-replace.
 .IP \fBReplace-All\fP 15
 Replace all occurrences of the search string with the replace string from
-the current insert point position to the end (or beginning) of the
+the current insertion point position to the end (or beginning) of the
 file.  There is no key sequence to perform this action.
 .IP \fBCancel\fP 15
 Remove the search popup from the screen.
@@ -217,7 +217,7 @@ the pointer, and any text typed while the focus is in this popup will be
 redirected to the text field used for the filename.  When the desired
 filename has been entered, click on \fIInsert File\fP, or type
 \fICarriage Return\fP.  The named file will then be inserted in the text
-widget beginning at the insert point position.  If an error occurs when
+widget beginning at the insertion point position.  If an error occurs when
 opening the file, an error message will be printed, prompting the user
 to enter the filename again.  The file insert may be aborted by clicking
 on \fICancel\fP.  If \fIMeta-i\fP is typed at a text widget that is
@@ -246,14 +246,14 @@ and paste
 into the text widget some text that another application (or text
 widget) has put in the \fBPRIMARY\fP selection.
 .LP
-The simplest method of selecting text is to press pointer Button 1
+The simplest method of selecting text is to press pointer button 1
 on the beginning of the text to be selected, drag the pointer until all
 of the desired text is highlighted, and then release the button to
 activate the selection.  The text may now be pasted into any other
 application.  This selection will remain active until some other client
 makes a selection.
 .LP
-To modify a currently active selection, click pointer Button 3 near
+To modify a currently active selection, click pointer button 3 near
 either the end or the beginning of the selection that you want to
 adjust.  This end of the selection may be moved while holding down pointer
 button 3.  When the proper area has been highlighted release the pointer
@@ -261,7 +261,7 @@ button to activate the selection.
 .LP
 To paste text that some other application or Text widget has
 put into the \fBPRIMARY\fP selection use pointer button 2.  
-First place the insert point where you would like the text to be inserted,
+First place the insertion point where you would like the text to be inserted,
 then click and release pointer button 2.  The text
 that is in the \fBPRIMARY\fP selection will be placed into the Text widget.
 .LP

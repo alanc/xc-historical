@@ -38,6 +38,7 @@ retrieved from the argument list or from the resource database:
 .vs 11
 .nr VS 11
 .TS H
+expand;
 lw(1i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
 .sp 3p
@@ -56,7 +57,7 @@ borderColor	BorderColor	Pixel		XtDefaultForeground
 borderPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
 borderWidth	BorderWidth	Dimension		1
 callback	Callback	Callback		NULL
-colormap	Colormap	Pointer		Parent's Colormap
+colormap	Colormap	Colormap		Parent's Colormap
 columnSpacing	Spacing	Dimension		6
 cursor	Cursor	Cursor		XC_left_ptr
 cursorName	Cursor	String		NULL
@@ -71,20 +72,20 @@ insensitiveBorder	Insensitive	Pixmap		GreyPixmap
 internalHeight	Height	Dimension		2
 internalWidth	Width	Dimension		4
 list	List	Pointer		name of widget
-longest	Longest	int	A	computed at runtime
+longest	Longest	int	A	0
 mappedWhenManaged	MappedWhenManaged	Boolean		True
 numberStrings	NumberStrings	int	A	computed for NULL terminated list
 pasteBuffer	Boolean	Boolean		False
 pointerColor	Foreground	Pixel		XtDefaultForeground
 pointerColorBackground	Background	Pixel		XtDefaultBackground
 rowSpacing	Spacing	Dimension		2
-verticalList	Boolean	Boolean		False
-screen	Screen	Pointer	R	Parent's Screen
+screen	Screen	Screen	R	Parent's Screen
 sensitive	Sensitive	Boolean		True
 translations	Translations	TranslationTable		See below
+verticalList	Boolean	Boolean		False
 width	Width	Dimension	A	Enough space to contain the list
-x	X	Position		0
-y	Y	Position		0
+x	Position	Position		0
+y	Position	Position		0
 .sp 3p
 _
 .TE
@@ -137,13 +138,15 @@ An array of text strings displayed in the List widget.  If
 \fBnumberStrings\fP is zero (the default) then the \fBlist\fP must be
 NULL terminated.  If a value is not specified for the \fBlist\fP, then
 \fBnumberStrings\fP is set to 1, and the name of the widget is used as
-the \fBlist\fP.  The \fBlist\fP is used in place, and must be available
+the \fBlist\fP, and \fBlongest\fP is set to the length of the name of the
+widget.  The \fBlist\fP is used in place, and must be available
 to the List widget for the lifetime of this widget, or until it is
 changed with \fBXtSetValues\fP or \fBXawListChange\fP.
 .IP \fBlongest\fP
 Specifies the width, in pixels, of the longest string in the current
 list.  The List widget will compute this value if zero (the default)
-is specified.
+is specified.  If this resource is not correctly specified, selection of
+list items may not work properly.
 .Mm
 .IP \fBnumberStrings\fP 1.5i
 The number of strings in the current list.  If a value of zero (the
@@ -158,6 +161,9 @@ selected list element will be put into \fBCUT_BUFFER_0\fP.
 .Sc
 .Se
 .Tr
+.IP \fBverticalList\fP 1.5i
+If this resource is set to \fBTrue\fP then the list elements will be 
+presented in column major order.
 .Xy
 .NH 3
 List Actions

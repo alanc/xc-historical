@@ -55,19 +55,19 @@ borderColor	BorderColor	Pixel		XtDefaultForeground
 borderPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
 borderWidth	BorderWidth	Dimension		1
 children	ReadOnly	WidgetList	R	NULL
-colormap	Colormap	Pointer		Parent's Colormap
+colormap	Colormap	Colormap		Parent's Colormap
 depth	Depth	int	C	Parent's Depth
 destroyCallback	Callback	XtCallbackList		NULL
 height	Height	Dimension	A	see \fBLayout Semantics\fP
 mappedWhenManaged	MappedWhenManaged	Boolean		True
 numChildren	ReadOnly	Cardinal	R	0
 reportCallback	ReportCallback	Callback		NULL
-screen	Screen	Pointer	R	Parent's Screen
+screen	Screen	Screen	R	Parent's Screen
 sensitive	Sensitive	Boolean		True
 translations	Translations	TranslationTable		NULL
 width	Width	Dimension	A	see \fBLayout Semantics\fP
-x	X	Position		0
-y	Y	Position		0
+x	Position	Position		0
+y	Position	Position		0
 .sp 3p
 _
 .TE

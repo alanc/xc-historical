@@ -48,6 +48,7 @@ _
 .R
 .sp 3p
 ancestorSensitive	AncestorSensitive	Boolean	True
+callback	Callback	XtCallbackList	NULL
 destroyCallback	Callback	XtCallbackList	NULL
 height	Height	Dimension	0
 sensitive	Sensitive	Boolean	True
@@ -65,7 +66,6 @@ _
 Keep in mind that the SimpleMenu widget will force all menu items to
 be the width of the widest entry. 
 .Se
-.Xy
 .NH 3
 Subclassing the Sme Object
 .IN "Sme object" "subclassing" "@DEF"

@@ -217,7 +217,7 @@ Specifies the position to begin scanning the source.
 .IP \fItype\fP 1i
 Specifies the type of boundary to scan for, may be one of:
 \fBXawstPosition\fP, \fBXawstWhiteSpace\fP, \fBXawstEOL\fP,
-.IN "XawstPosition" ""
+.IN "XawstPositions" ""
 .IN "XawstWhiteSpace" ""
 .IN "XawstEOL" ""
 \fBXawstParagraph\fP, \fBXawstAll\fP.  The exact meaning of these
@@ -237,7 +237,7 @@ Specifies whether the boundary itself should be included in the scan.
 The \fBScan\fP function returns the position in the text source of the desired
 boundary.  It is expected to return a valid address for
 all calls made to it, thus if a particular request is made that would take
-the text widget beyond an end of the source it must just return the
+the text widget beyond the end of the source it must return the
 position of that end.
 .NH 4
 Searching through a TextSrc
@@ -253,7 +253,7 @@ XawTextPosition \fIposition\fP;
 .br
 XawTextScanDirection \fIdir\fP;
 .br
-XawTextBlock \fI*count\fP;
+XawTextBlock \fI*text\fP;
 .FN
 .IP \fIw\fP 1i
 Specifies the TextSrc object.

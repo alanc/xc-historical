@@ -104,7 +104,7 @@ borderColor	BorderColor	Pixel		XtDefaultForeground
 borderPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
 borderWidth	BorderWidth	Dimension		1
 children	ReadOnly	WidgetList	R	NULL
-colormap	Colormap	Pointer		Parent's Colormap
+colormap	Colormap	Colormap		Parent's Colormap
 cursor	Cursor	Cursor		None
 depth	Depth	int	C	Parent's Depth
 destroyCallback	Callback	XtCallbackList		NULL
@@ -123,15 +123,15 @@ numChildren	ReadOnly	Cardinal	R	0
 orientation	Orientation	Orientation		XtorientVertical
 refigureMode	Boolean	Boolean		True
 rightCursor	Cursor	Cursor		sb_right_arrow
-screen	Screen	Pointer	R	Parent's Screen
+screen	Screen	Screen	R	Parent's Screen
 sensitive	Sensitive	Boolean		True
 translations	Translations	TranslationTable		NULL
 upperCursor	Cursor	Cursor		sb_up_arrow
 verticalBetweenCursor	Cursor	Cursor		sb_left_arrow
 verticalGripCursor	Cursor	Cursor		sb_v_double_arrow
 width	Width	Dimension	A	Depends on orientation
-x	X	Position		0
-y	Y	Position		0
+x	Paned	Position		0
+y	Paned	Position		0
 .sp 3p
 _
 .TE
@@ -214,6 +214,7 @@ The orientation to stack the panes.  This value can be either
 \fBXtorientVertical\fP or \fBXtorientHorizontal\fP.
 .IN "XtorientVertical" ""
 .IN "XtorientHorizontal" ""
+.IN "conversions" "Orientation"
 .Rs "vertical \fPand\fB horizontal"
 .IP \fBrefigureMode\fP 1.5i
 This resource allows pane layout to be suspended.  If this value is
@@ -269,7 +270,7 @@ geometry requests from this child.
 .ns
 .IP \fBmin\fP 1.5i
 The absolute maximum or minimum size for this pane.  These values will
-never be overridden by the Paned widget.  This may case some panes to
+never be overridden by the Paned widget.  This may cause some panes to be
 pushed off the bottom (or right) edge of the paned widget.
 .IP \fBpreferredPaneSize\fP 1.5i
 Normally the paned widget makes a QueryGeometry call on a child to
@@ -286,7 +287,7 @@ associated with a pane is either below or to the right of the pane.  No
 grip is ever shown for the last pane.
 .IP \fBskipAdjust\fP 1.5i
 This resource is used to determine which pane is forced to be resized.
-Setting this value to \fBTrue\fP make this pane less likely to be
+Setting this value to \fBTrue\fP makes this pane less likely to be
 forced to be resized.  See \fBLayout Semantics\fP for details.
 .NH 3
 Layout Semantics
@@ -455,11 +456,11 @@ To retrieve the minimum and maximum height settings for a pane, use
 .PN XawPanedGetMinMax :
 .IN "XawPanedGetMinMax" "" "@DEF@"
 .FD 0
-void XawPanedGetMinMax(\fIw\fP, \fImin\fP, \fImax\fP)
+void XawPanedGetMinMax(\fIw\fP, \fImin_return\fP, \fImax_return\fP)
 .br
      Widget \fIw\fP;
 .br
-     int \fI*min_return\fP, \fI*max_return\fP;   /* RETURNED */
+     int \fI*min_return\fP, \fI*max_return\fP;
 .FN
 .IP \fIw\fP 1i
 Specifies the child pane.

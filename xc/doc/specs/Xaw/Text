@@ -39,6 +39,7 @@ retrieved from the argument list or from the resource database:
 .vs 11
 .nr VS 11
 .TS H
+expand;
 lw(1i) lw(1i) lw(1.1i) lw(.5i) lw(1.9i).
 _
 .sp 3p
@@ -68,12 +69,12 @@ displayPosition	TextPosition	XawTextPosition		0
 height	Height	Dimension	A	Font height + margins
 insensitiveBorder	Insensitive	Pixmap		GreyPixmap
 insertPosition	TextPosition	int		0
-leftMargin	Margin	Dimension		2
+leftMargin	Margin	Position		2
 mappedWhenManaged	MappedWhenManaged	Boolean		True
 pointerColor	Foreground	Pixel		XtDefaultForeground
 pointerColorBackground	Background	Pixel		XtDefaultBackground
 resize	Resize	XawTextResizeMode		XawtextResizeNever
-rightMargin	Margin	Position		2
+rightMargin	Margin	Position		4
 screen	Screen	Pointer	R	Parent's Screen
 scrollHorizontal	Scroll	ScrollMode		XawtextScrollNever
 scrollVertical	Scroll	XawTextScrollMode		XawtextScrollNever

@@ -48,6 +48,7 @@ retrieved from the argument list or from the resource database:
 .vs 11
 .nr VS 11
 .TS H
+expand;
 lw(1i) lw(1i) lw(1.1i) lw(.5i) lw(1.9i).
 _
 .sp 3p
@@ -68,8 +69,9 @@ borderPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
 borderWidth	BorderWidth	Dimension		1
 bottomMargin	Margin	Position		2
 callback	Callback	XtCallbackList		NULL
-colormap	Colormap	Pointer		Parent's Colormap
+colormap	Colormap	Colormap		Parent's Colormap
 cursor	Cursor	Cursor		XC_xterm
+cursorName	Cursor	String		NULL
 dataCompression	DataCompression	Boolean		True
 depth	Depth	int	C	Parent's Depth
 destroyCallback	Callback	XtCallbackList		NULL
@@ -87,9 +89,11 @@ leftMargin	Margin	Dimension		2
 length	Length	int	A	length of \fBstring\fP
 mappedWhenManaged	MappedWhenManaged	Boolean		True
 pieceSize	PieceSize	XawTextPosition		BUFSIZ
+pointerColor	Foreground	Pixel		XtDefaultForeground
+pointerColorBackground	Background	Pixel		XtDefaultBackground
 resize	Resize	XawTextResizeMode		XawtextResizeNever
 rightMargin	Margin	Position		2
-screen	Screen	Pointer	R	Parent's Screen
+screen	Screen	Screen	R	Parent's Screen
 scrollHorizontal	Scroll	XawTextScrollMode		XawtextScrollNever
 scrollVertical	Scroll	XawTextScrollMode		XawtextScrollNever
 selectTypes	SelectTypes	XawTextSelectType*		See above
@@ -103,8 +107,8 @@ type	Type	XawAsciiType		XawAsciiString
 useStringInPlace	UseStringInPlace	Boolean		False
 width	Width	Dimension		100
 wrap	Wrap	WrapMode		XawtextWrapNever
-x	X	Position		0
-y	Y	Position		0
+x	Position	Position		0
+y	Position	Position		0
 .sp 3p
 _
 .TE
@@ -124,6 +128,7 @@ _
 .Oc AsciiText
 .Cm
 .Cu
+.Pn
 .Od AsciiText
 .Dp
 .Dc
@@ -139,6 +144,8 @@ _
 .Ti
 .Ol AsciiText
 .Mm
+.Pf
+.Pb
 .Op AsciiText
 .Tz
 .Sc

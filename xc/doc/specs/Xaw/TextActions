@@ -47,6 +47,7 @@ Miscellaneous	New Line
 	form-paragraph		kill-to-end-of-line
 	transpose-characters		kill-paragraph
 	no-op		kill-to-end-of-paragraph
+	XawWMProtocols
 .De
 .sp
 .LP
@@ -185,8 +186,7 @@ The New Line Actions
 .sp
 .IP newline-and-indent(\|) 2.0i
 This action inserts a newline into the text and adds spaces to
-that line to indent it to match the previous line [ This action is
-still a bit buggy ].
+that line to indent it to match the previous line.
 .IP newline-and-backup(\|) 2.0i
 This action inserts a newline into the text \fIafter\fP the insert point.
 .IP newline(\|) 2.0i
@@ -227,7 +227,7 @@ on the screen, clears the entire screen, and redisplays it.
 .IP insert-file([\fIfilename\fP]) 2.0i
 This action activates the insert file popup.  The \fIfilename\fP
 option specifies the default filename to put in the filename buffer of
-the popup.  If no \fIfilename\fP is specified the the buffer is empty
+the popup.  If no \fIfilename\fP is specified the buffer is empty
 at startup.
 .IP insert-char(\|) 2.0i
 This action may only be attached to a key event. It
@@ -297,6 +297,21 @@ be advanced one character.
 The no-op action makes no change to the text widget, and is mainly used
 to override translations.  This action takes one optional argument.  If
 this argument is \fIRingBell\fP then a beep is sent to the display.
+.IP XawWMProtocols([\fIwm_protocol_name\fP]) 2.0i
+.IN "XawWMProtocols"
+.sp
+This action is written specifically for the transient shells instantiated by
+the Text widget, which are the file insertion and the search and replace
+dialog boxes.  This action is attached to those shells by the Text widget,
+in order to handle ClientMessage events with the WM_PROTOCOLS atom in the
+detail field.  This action supports WM_DELETE_WINDOW on the Text widget
+popups, and may support other window manager protocols if necessary in 
+the future.  The popup will be dismissed if the window manager sends
+a WM_DELETE_WINDOW request and there are no parameters in the action
+call, which is the default.  The popup will also be dismissed if the
+parameters include the string "wm_delete_window", and the event is a
+ClientMessage event requesting dismissal or is not a ClientMessage event.
+This action is not sensitive to the case of the strings passed as parameters.
 .NH 3
 Text Selections for Application Programmers
 .IN "Text widget" "Text Selections for Application Programmers"

@@ -59,7 +59,7 @@ borderWidth	BorderWidth	Dimension		1
 bottomMargin	VerticalMargins	Dimension		0
 children	ReadOnly	WidgetList	R	NULL
 createPopupChildProc	CreatePopupChildProc	Function		NULL
-colormap	Colormap	Pointer		Parent's Colormap
+colormap	Colormap	Colormap		Parent's Colormap
 cursor	Cursor	Cursor		None
 depth	Depth	int	C	Parent's Depth
 destroyCallback	Callback	XtCallbackList		NULL
@@ -71,19 +71,19 @@ mappedWhenManaged	MappedWhenManaged	Boolean		True
 menuOnScreen	MenuOnScreen	Boolean		True
 numChildren	ReadOnly	Cardinal	R	0
 overrideRedirect	OverrideRedirect	Boolean		True
-popdownCallback	Callback	Callback		NULL
-popupCallback	Callback	Callback		NULL
+popdownCallback	Callback	XtCallbackList		NULL
+popupCallback	Callback	XtCallbackList		NULL
 popupOnEntry	PopupOnEntry	Widget	A	Label or first entry
 rowHeight	RowHeight	Dimension		0
 saveUnder	SaveUnder	Boolean		False
-screen	Screen	Pointer	R	Parent's Screen
+screen	Screen	Screen	R	Parent's Screen
 sensitive	Sensitive	Boolean		True
 topMargin	VerticalMargins	Dimension		0
 translations	Translations	TranslationTable		See below
 visual	Visual	Visual		CopyFromParent
 width	Width	Dimension		Width of widest entry
-x	X	Position		0
-y	Y	Position		0
+x	Position	Position		0
+y	Position	Position		0
 .sp 3p
 _
 .TE
@@ -94,6 +94,7 @@ _
 .Ac
 .As
 .IP \fBbackingStore\fP 1.5i
+.IN "conversions" "BackingStore"
 Determines what type of backing store will be used for the menu.  Legal
 values for this resource are \fBNotUseful\fP, \fBWhenMapped\fP, and
 \fBAlways\fP.  These values are the backing-store integers defined in
@@ -235,6 +236,9 @@ translation table of the widget that will be popping up the menu.  The
 the SimpleMenu widget when the first one is created or the convenience
 routine \fBXawSimpleMenuAddGlobalActions\fP is called.
 .LP
+Translation writers should be aware that Xt does not register grabs on
+``don't care'' modifiers, and therefore the left hand side of the
+production should be written to exclude unspecified modifiers.
 For example these are the translations needed to popup some of
 \fBxterm's\fP menus: 
 .sp
@@ -242,8 +246,8 @@ For example these are the translations needed to popup some of
 .Ds 0
 .TA .5i 2.25i
 .ta .5i 2.25i
-	Ctrl<Btn1Down>: XawPositionSimpleMenu(xterm) MenuPopup(xterm)
-	Ctrl<Btn2Down>: XawPositionSimpleMenu(modes) MenuPopup(modes)
+	!Ctrl<Btn1Down>: XawPositionSimpleMenu(xterm) MenuPopup(xterm)
+	!Ctrl<Btn2Down>: XawPositionSimpleMenu(modes) MenuPopup(modes)
 .De
 .sp 1
 .LP

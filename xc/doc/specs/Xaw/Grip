@@ -36,6 +36,7 @@ retrieved from the argument list or from the resource database:
 .vs 11
 .nr VS 11
 .TS H
+expand;
 lw(1i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
 .sp 3p
@@ -54,7 +55,7 @@ borderColor	BorderColor	Pixel		XtDefaultForeground
 borderPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
 borderWidth	BorderWidth	Dimension		0
 callback	Callback	Callback		NULL
-colormap	Colormap	Pointer		Parent's Colormap
+colormap	Colormap	Colormap		Parent's Colormap
 cursor	Cursor	Cursor		None
 cursorName	Cursor	String		NULL
 depth	Depth	int	C	Parent's Depth
@@ -65,12 +66,12 @@ insensitiveBorder	Insensitive	Pixmap		GreyPixmap
 mappedWhenManaged	MappedWhenManaged	Boolean		True
 pointerColor	Foreground	Pixel		XtDefaultForeground
 pointerColorBackground	Background	Pixel		XtDefaultBackground
-screen	Screen	Pointer	R	Parent's Screen
+screen	Screen	Screen	R	Parent's Screen
 sensitive	Sensitive	Boolean		True
 translations	Translations	TranslationTable		NULL
 width	Width	Dimension		8
-x	X	Position		0
-y	Y	Position		0
+x	Position	Position		0
+y	Position	Position		0
 .sp 3p
 _
 .TE
@@ -132,9 +133,11 @@ typedef struct _XawGripCallData {
 	XEvent *event;
 	String *params;
 	Cardinal num_params;
-} XawGripCallDataRec, *XawGripCallData;
+} XawGripCallDataRec, *XawGripCallData,
+  GripCallDataRec, *GripCallData; /* supported for R4 compatibility */
 .IN "XawGripCallDataRec" ""
 .IN "XawGripCallData" ""
+.IN "GripCallData" ""
 .sp
 .De
 .LP

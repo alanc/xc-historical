@@ -62,7 +62,7 @@ borderColor	BorderColor	Pixel		XtDefaultForeground
 borderPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
 borderWidth	BorderWidth	Dimension		1
 children	ReadOnly	WidgetList	R	NULL
-colormap	Colormap	Pointer		Parent's Colormap
+colormap	Colormap	Colormap		Parent's Colormap
 depth	Depth	int	C	Parent's Depth
 destroyCallback	Callback	XtCallbackList		NULL
 height	Height	Dimension	A	see \fBLayout Semantics\fP
@@ -70,13 +70,13 @@ hSpace	HSpace	Dimension		4
 mappedWhenManaged	MappedWhenManaged	Boolean		True
 numChildren	ReadOnly	Cardinal	R	0
 orientation	Orientation	Orientation		XtorientVertical
-screen	Screen	Pointer	R	Parent's Screen
+screen	Screen	Screen	R	Parent's Screen
 sensitive	Sensitive	Boolean		True
 vSpace	VSpace	Dimension		4
 translations	Translations	TranslationTable		NULL
 width	Width	Dimension	A	see \fBLayout Semantics\fP
-x	X	Position		0
-y	Y	Position		0
+x	Position	Position		0
+y	Position	Position		0
 .sp 3p
 _
 .TE
@@ -111,6 +111,7 @@ returned by the query_geometry class method) is tall and narrow
 \fBXtorientVertical\fP or short and wide \fPXtorientHorizontal\fP.
 .IN "XtorientVertical" ""
 .IN "XtorientHorizontal" ""
+.IN "conversions" "Orientation"
 When the Box is a child of a parent which enforces width constraints, it
 is usually better to specify \fBXtorientVertical\fP (the default).
 When the parent enforces height constraints, it is usually better to

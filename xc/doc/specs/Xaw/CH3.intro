@@ -38,7 +38,14 @@ A rectangle that may contain one or more lines of text or a bitmap image.
 .IN "List widget" ""
 A list of text strings presented in row column format that may be
 individually selected.  When an element is selected an action may take
-place. 
+place.
+.IP \fBPanner\fP 1i
+.IN "Panner widget" ""
+A rectangular area containing a \fIslider\fP that may be moved in two
+dimensions.  Notification of movement may be continuous or discrete.
+.IP \fBRepeater\fP 1i
+.IN "Repeater widget" ""
+A push button that triggers an action at an increasing rate when selected.
 .IP \fBScrollbar\fP
 .IN "Scrollbar widget" ""
 A rectangular area containing a \fIthumb\fP that when slid along one
@@ -56,4 +63,3 @@ A real time data graph that will automatically update and scroll.
 A push button (see Command) that contains state information.  Toggles
 may also be used as radio buttons to implement a "one of many" group
 of buttons. 
-

@@ -421,4 +421,4 @@ function.
 .OF ''''
 .bp
 .tm .pn \n%
-.TC
+.PX

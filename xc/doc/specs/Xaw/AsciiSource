@@ -24,33 +24,54 @@ The AsciiSrc object is used by a text widget to read the text from a
 file or string in memory.  It understands all Latin1 characters plus Tab
 and Carriage Return.
 .LP
-The AsciiSrc can be either of two types:
-.IP \fBXawAsciiFile\fP 1.25i
-.IN "XawAsciiFile"
-AsciiSrc objects of this type read the text from a file and store it
-into an internal buffer.  This buffer may then be modified (provided the
-text widget is in the correct edit mode) just as if it were a source of
-type \fBXawAsciiString\fP.  Unlike previous versions of the AsciiSrc it
-is now possible to specify an editable disk source.  The file is never
+The AsciiSrc can be either of two types: \fBXawAsciiFile\fP
+or \fBXawAsciiString\fP.
+.LP
+AsciiSrc objects of type \fBXawAsciiFile\fP read the text from a file and
+store it
+into an internal buffer.  This buffer may then be modified, provided the
+text widget is in the correct edit mode, just as if it were a source of
+type \fBXawAsciiString\fP.  Unlike R3 and earlier versions of the AsciiSrc,
+it is now possible to specify an editable disk source.  The file is not
 updated, however, until a call to \fBXawAsciiSave\fP is made.  When the
 source is in this mode the \fBuseStringInPlace\fP resource is ignored.
-.IP \fBXawAsciiString\fP 1.25i
-.IN "XawAsciiString"
-AsciiSrc objects of this type have the text buffer passed as a string.
-This buffer normally will be copied and managed internally.  It is also
-possible to use the string in place, by setting the
-\fBuseStringInPlace\fP resource, and specifying the length of the
-allocated buffer in the \fBlength\fP resource.
 .LP
-If the application chooses to allow the AsciiSrc to manage the string
-internally (by default \fBuseStringInPlace\fP is \fBFalse\fP) then it
-need not worry about running out of buffer space (subject to the total
-memory available to the application).  The performance does not decay
-linearly as the buffer grows large, as is necessarily the case when the
-text buffer is used in place.  If this mode is used, the string passed
-to the AsciiSrc at startup is not updated as the user types.  The only
-way to get the latest version of the text string is with
-\fBXtGetValues\fP.
+AsciiSrc objects of type \fBXawAsciiString\fP have the text buffer
+implemented as a string.  The string owner is responsible for allocating
+and managing storage for the string.
+.LP
+In the default case for AsciiSrc objects of type \fBXawAsciiString\fP,
+the resource \fBuseStringInPlace\fP is false,
+and the widget owns the string.  The initial value of the 
+string resource, and any update made by the application
+programmer to the string resource with \fBXtSetValues\fP, is copied 
+into memory private to the widget, and managed internally by the widget.
+The application writer
+does not need to worry about running out of buffer space
+(subject to the total memory available to the application).
+The performance does not decay linearly as the buffer grows
+large, as is necessarily the case when the text buffer is used
+in place.   The application writer must use \fBXtGetValues\fP to
+determine the contents of the text buffer, which will return
+a copy of the widget's text buffer as
+it existed at the time of the \fBXtGetValues\fP call.   This copy
+is not affected by subsequent updates to the text buffer, i.e.,
+it is not updated as the user types input into the text buffer.
+This copy is freed upon the next call to XtGetValues to 
+retrieve the string resource; however, to conserve memory,
+there is a convenience routine, \fBXawAsciiSrcFreeString\fP, allowing the
+application programmer to direct the widget to free the copy.
+.LP
+When the resource \fBuseStringInPlace\fP is true and the AsciiSrc object
+is of type \fBXawAsciiString\fP, the application
+is the string owner.  The widget will take the value
+of the string resource as its own text buffer, and the \fBlength\fP
+resource indicates the buffer size.   In this case
+the buffer contents change as the user types at the widget;
+it is not necessary to call \fBXtGetValues\fP on the string 
+resource to determine the contents of the buffer -- it will
+simply return the address of the application's implementation
+of the text buffer.
 .De
 .NH 3
 Resources
@@ -74,12 +95,12 @@ _
 .TH
 .R
 .sp 3p
-callback	Callback	Callback		NULL
+callback	Callback	XtCallbackList		NULL
 dataCompression	DataCompression	Boolean		True
 destroyCallback	Callback	Callback		NULL
 editType	EditType	EditMode		XawtextRead
-length	Length	int	A	length of \fBstring\fP
-pieceSize	PieceSize	int		BUFSIZ
+length	Length	Int	A	length of \fBstring\fP
+pieceSize	PieceSize	Int		BUFSIZ
 string	String	String		NULL
 type	Type	AsciiType		XawAsciiString
 useStringInPlace	UseStringInPlace	Boolean		False

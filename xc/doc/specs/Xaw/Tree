@@ -45,6 +45,7 @@ retrieved from the argument list or from the resource database:
 .vs 11
 .nr VS 11
 .TS H
+expand;
 lw(1i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
 .sp 3p
@@ -64,23 +65,23 @@ borderColor	BorderColor	Pixel		XtDefaultForeground
 borderPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
 borderWidth	BorderWidth	Dimension		1
 children	ReadOnly	WidgetList	R	NULL
-colormap	Colormap	Pointer		Parent's Colormap
+colormap	Colormap	Colormap		Parent's Colormap
 depth	Depth	int	C	Parent's Depth
 destroyCallback	Callback	XtCallbackList		NULL
-foreground	Foreground	Pixel	XtDefaultForeground
+foreground	Foreground	Pixel		XtDefaultForeground
 gravity	Gravity	XtGravity		WestGravity
 height	Height	Dimension	A	see \fBLayout Semantics\fP
 hSpace	HSpace	Dimension		4
 lineWidth	LineWidth	Dimension		0
 mappedWhenManaged	MappedWhenManaged	Boolean		True
 numChildren	ReadOnly	Cardinal	R	0
-screen	Screen	Pointer	R	Parent's Screen
+screen	Screen	Screen	R	Parent's Screen
 sensitive	Sensitive	Boolean		True
 vSpace	VSpace	Dimension		4
 translations	Translations	TranslationTable		NULL
 width	Width	Dimension	A	see \fBLayout Semantics\fP
-x	X	Position		0
-y	Y	Position		0
+x	Position	Position		0
+y	Position	Position		0
 .sp 3p
 _
 .TE
@@ -101,9 +102,11 @@ Whether or not to layout the tree every time a node is added or removed.
 .Dc
 .Lg
 .IP \fBgravity\fP 1.5i
+.IN "conversions" "Gravity"
 Specifies the side of the widget from which the tree should grow.  Valid
 values include \fBWestGravity\fP, \fBNorthGravity\fP, \fBEastGravity\fP, and
 \fBSouthGravity\fP.
+.Rs "\fP the legal values\fB"
 .Hw
 .IP \fBhSpace\fP 1.5i
 .br

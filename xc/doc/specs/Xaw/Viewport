@@ -56,30 +56,31 @@ _
 .R
 .sp 3p
 accelerators	Accelerators	AcceleratorTable		NULL
-ancestorSensitive	AncestorSensitive	Boolean	D	True
 allowHoriz	Boolean	Boolean		False
 allowVert	Boolean	Boolean		False
+ancestorSensitive	AncestorSensitive	Boolean	D	True
 background	Background	Pixel		XtDefaultBackground
 backgroundPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
 borderColor	BorderColor	Pixel		XtDefaultForeground
 borderPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
 borderWidth	BorderWidth	Dimension		1
 children	ReadOnly	WidgetList	R	NULL
-colormap	Colormap	Pointer		Parent's Colormap
+colormap	Colormap	Colormap		Parent's Colormap
 depth	Depth	int	C	Parent's Depth
 destroyCallback	Callback	XtCallbackList		NULL
 forceBars	Boolean	Boolean		False
 height	Height	Dimension		height of the child
 mappedWhenManaged	MappedWhenManaged	Boolean		True
 numChildren	ReadOnly	Cardinal	R	0
-screen	Screen	Pointer	R	Parent's Screen
+reportCallback	ReportCallback	XtCallbackList		NULL
+screen	Screen	Screen	R	Parent's Screen
 sensitive	Sensitive	Boolean		True
 translations	Translations	TranslationTable		NULL
 useBottom	Boolean	Boolean		False
 useRight	Boolean	Boolean		False
 width	Width	Dimension		width of the child
-x	X	Position		0
-y	Y	Position		0
+x	Position	Position		0
+y	Position	Position		0
 .sp 3p
 _
 .TE
@@ -112,6 +113,10 @@ when the inner window is larger than the frame.
 .Hw
 .Mm
 .Nc
+.IP \fBreportCallback\fP 1.5i
+These callbacks will be executed whenever the Viewport adjusts the viewed
+area of the child.  The call_data parameter is a pointer to an XawPannerReport
+structure.
 .Sc
 .Se
 .Tr
@@ -146,7 +151,7 @@ appropriate dimension.
 .LP
 The scrollbar children of the Viewport are named \fBhorizontal\fP and
 \fBvertical\fP.  By using these names the programmer can specify resources
-for the individual scrollbars.  \fBXtSetvalues\fP can be used to modify
+for the individual scrollbars.  \fBXtSetValues\fP can be used to modify
 the resources dynamically once the widget ID has been obtained with
 \fBXtNameToWidget\fP.
 .IN "XtNameToWidget" ""
