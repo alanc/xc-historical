@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: wstx_alst.c,v 5.1 91/02/16 09:50:44 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -30,6 +30,7 @@ SOFTWARE.
 #include <sys/types.h>
 #include "attr.h"
 #include <varargs.h>
+#include <X11/Xfuncs.h>
 
 /* NON_PORTABLE means that the var-args list is treated
  * as an avlist.  This is known to work for Sun1/2/3/4.
