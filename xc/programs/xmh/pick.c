@@ -1,5 +1,5 @@
 /*
- * $XConsortium: pick.c,v 2.43 91/07/05 15:16:42 converse Exp $
+ * $XConsortium: pick.c,v 2.44 91/07/05 18:58:25 converse Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -469,22 +469,6 @@ static void ExecCancel(w, closure, call_data)
 }
 
 
-/*ARGSUSED*/
-void XmhCancelPick(w, event, params, num_params)
-    Widget	w;
-    XEvent	*event;
-    String	*params;
-    Cardinal	*num_params;
-{
-    Scrn	scrn;
-    if (event->type == ClientMessage &&
-	event->xclient.data.l[0] != wm_delete_window)
-	return;
-    scrn = ScrnFromWidget(w);
-    (void) DestroyScrn(scrn);
-}
-
-
 static FormEntry CreateWidget(row, class, args, num_args)
   RowList row;
   WidgetClass class;
@@ -772,9 +756,6 @@ AddPick(scrn, toc, fromseq, toseq)
 	pick->details = details = MakeAForm(pick);
 	pick->general = general = MakeAForm(pick);
 	FindStdWidth();
-
-	XtOverrideTranslations(scrn->parent,
-	  XtParseTranslationTable("<Message>WM_PROTOCOLS: XmhCancelPick()\n"));
 	XawPanedSetRefigureMode(scrn->widget, False);
 	PrepareToUpdate(details);
 	AddDetailGroup(details);
