@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGetWAttrs.c,v 11.18 87/09/11 08:09:17 toddb Exp $ */
+/* $Header: XGetWAttrs.c,v 11.19 88/08/09 15:57:31 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -50,8 +50,8 @@ Status XGetWindowAttributes(dpy, w, att)
 	SyncHandle();
 	return (0);
 	}
-    att->x = rep2.x;
-    att->y = rep2.y;
+    att->x = cvtINT16toInt (rep2.x);
+    att->y = cvtINT16toInt (rep2.y);
     att->width = rep2.width;
     att->height = rep2.height;
     att->border_width = rep2.borderWidth;

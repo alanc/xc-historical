@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XFont.c,v 11.23 88/08/09 15:56:32 jim Exp $ */
+/* $Header: XFont.c,v 11.24 88/08/10 16:07:41 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 #define NEED_REPLIES
 #include "Xlibint.h"
@@ -89,8 +89,8 @@ XFontStruct *_XQueryFont (dpy, fid)	/* Internal-only entry point */
     fs->max_byte1 		= reply.maxByte1;
     fs->default_char 		= reply.defaultChar;
     fs->all_chars_exist 	= reply.allCharsExist;
-    fs->ascent 			= reply.fontAscent;
-    fs->descent 		= reply.fontDescent;
+    fs->ascent 			= cvtINT16toInt (reply.fontAscent);
+    fs->descent 		= cvtINT16toInt (reply.fontDescent);
     
 #ifdef MUSTCOPY
     {

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XTrCoords.c,v 11.10 87/06/10 23:28:42 jg Exp $ */
+/* $Header: XTrCoords.c,v 11.10 87/09/11 08:07:48 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -30,8 +30,8 @@ int XTranslateCoordinates(dpy, src_win, dest_win, src_x, src_y,
 	}
 	
     *child = rep.child;
-    *dst_x = rep.dstX;
-    *dst_y = rep.dstY;
+    *dst_x = cvtINT16toInt (rep.dstX);
+    *dst_y = cvtINT16toInt (rep.dstY);
     UnlockDisplay(dpy);
     SyncHandle();
     return ((int)rep.sameScreen);

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XQuPntr.c,v 11.12 87/06/10 23:14:53 jg Exp $ */
+/* $Header: XQuPntr.c,v 11.12 87/09/11 08:06:04 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -26,10 +26,10 @@ Bool XQueryPointer(dpy, w, root, child, root_x, root_y, win_x, win_y, mask)
 
     *root = rep.root;
     *child = rep.child;
-    *root_x = rep.rootX;
-    *root_y = rep.rootY;
-    *win_x = rep.winX;
-    *win_y = rep.winY;
+    *root_x = cvtINT16toInt (rep.rootX);
+    *root_y = cvtINT16toInt (rep.rootY);
+    *win_x = cvtINT16toInt (rep.winX);
+    *win_y = cvtINT16toInt (rep.winY);
     *mask = rep.mask;
     UnlockDisplay(dpy);
     SyncHandle();

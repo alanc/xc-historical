@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGetGeom.c,v 11.12 87/07/24 12:11:13 jg Exp $ */
+/* $Header: XGetGeom.c,v 11.12 87/09/11 08:04:05 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -23,8 +23,8 @@ Status XGetGeometry (dpy, d, root, x, y, width, height, borderWidth, depth)
 	return (0);
 	}
     *root = rep.root;
-    *x = rep.x;
-    *y = rep.y;
+    *x = cvtINT16toInt (rep.x);
+    *y = cvtINT16toint (rep.y);
     *width = rep.width;
     *height = rep.height;
     *borderWidth = rep.borderWidth;
