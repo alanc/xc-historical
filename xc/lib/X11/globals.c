@@ -1,41 +1,21 @@
 /*
- * $XConsortium: globals.c,v 1.2 89/06/15 15:59:07 jim Exp $
- */
-
-/*
- * Copyright 1988, 1989 AT&T, Inc.
+ * $XConsortium: globals.c,v 1.3 89/06/15 18:44:50 jim Exp $
  *
- * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose and without fee is hereby granted, provided
- * that the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of AT&T not be used in advertising
- * or publicity pertaining to distribution of the software without specific,
- * written prior permission.  AT&T makes no representations about the
- * suitability of this software for any purpose.  It is provided "as is"
- * without express or implied warranty.
+ * Copyright 1989 Massachusetts Institute of Technology
  *
- * AT&T DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL AT&T
- * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
-*/
-
-/*'copyright	"%c%"'*/
-
-
-/*
- * Global data
+ *                                 Global data
  *
  * This file should contain only those objects which must be predefined.
+ */
+#include "Xlib.h"
+
+
+/*
  * If possible, it is useful to have the global data default to a null value.
  * Some shared library implementations are *much* happier if there isn't any
  * global initialized data.
  */
-
 #ifdef NULL_NOT_ZERO			/* then need to initialize */
 /*
  * need to explicitly initialize variables to null values
@@ -60,8 +40,6 @@
 #define INIT(t,var,val) t var	/* let it default to zero */
 #endif
 
-#include "Xlib.h"			/* for definition of Display */
-
 
 /*
  * Error handlers; used to be in XlibInt.c
@@ -74,7 +52,6 @@ INIT (funcptr, _XIOErrorFunction, NULL);
 /*
  * Debugging information and display list; used to be in XOpenDis.c
  */
-
 INIT (int, _Xdebug, 0);
 INIT (Display *, _XHeadOfDisplayList, NULL);
 
