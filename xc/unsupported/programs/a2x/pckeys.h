@@ -1,4 +1,4 @@
-	/* $XConsortium: pckeys.h,v 1.1 93/04/12 13:31:06 rws Exp $ */
+	/* $XConsortium: pckeys.h,v 1.2 93/04/12 20:05:18 rws Exp $ */
 
 {
 {None, None},			/* 100 */
@@ -52,8 +52,8 @@
 {Meta, XK_b},			/* 130 */
 {Meta, XK_n},			/* 131 */
 {Meta, XK_m},			/* 132 */
-{Meta, XK_comma},		/* 133 */
-{Meta, XK_period},		/* 134 */
+{Meta, XK_less},		/* 133 */
+{Meta, XK_greater},		/* 134 */
 {Meta, XK_slash},		/* 135 */
 {None, None},			/* 136 */
 {Meta, XK_KP_Multiply},		/* 137 */
