@@ -1,4 +1,4 @@
-/* $XConsortium: TranslateI.h,v 1.42 91/06/14 17:58:41 converse Exp $ */
+/* $XConsortium: TranslateI.h,v 1.43 92/02/24 17:42:20 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -275,9 +275,9 @@ typedef struct _ActionHookRec {
 #define TMKEYCACHESIZE (1<<TMKEYCACHELOG2)
 
 typedef struct _KeyCacheRec {
-    Modifiers modifiers_return; /* constant for a give XtKeyProc */
+    unsigned char modifiers_return[256]; /* constant per KeyCode, key proc */
     KeyCode keycode[TMKEYCACHESIZE];
-    unsigned short modifiers[TMKEYCACHESIZE];
+    unsigned char modifiers[TMKEYCACHESIZE];
     KeySym keysym[TMKEYCACHESIZE];
 } TMKeyCache;
 
