@@ -10,7 +10,7 @@ is used to get or set the contents of the RESOURCE_MANAGER property
 on the root window of screen 0.  You would normally run this program from 
 your .login script.  
 .LP
-The resource manager (used by the Xlib routine XGetDefaults and the
+The resource manager (used by the Xlib routine XGetDefault and the
 Xt toolkit) uses the RESOURCE_MANAGER property to get user preferences about 
 color, fonts, and so on for applications.  Having this information in
 the server (where it is available to all clients) instead of on disk,

@@ -143,7 +143,7 @@ window.
 .SH "X DEFAULTS"
 .I Xfd
 uses the 
-.I XGetDefaults
+.I XGetDefault
 routine and therefore uses capitalized resource names, unlike clients written
 with the X Toolkit.
 .PP

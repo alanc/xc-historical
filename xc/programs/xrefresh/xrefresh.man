@@ -59,7 +59,7 @@ DISPLAY, and therefore this argument is not normally specified.
 .SH X DEFAULTS
 .PP
 This program uses the 
-.I XGetDefaults
+.I XGetDefault
 routine and therefore uses capitalized named instead of ones starting
 with lower case letters.
 .PP
