@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.21 89/02/10 13:31:45 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.22 89/02/10 19:11:53 kit Exp $";
 #endif lint
 
 
@@ -42,6 +42,7 @@ SOFTWARE.
 #include <X11/Label.h>
 #include <X11/DialogP.h>
 
+#define streq(a,b) (strcmp( (a), (b) ) == 0)
 
 static XtResource resources[] = {
   {XtNlabel, XtCLabel, XtRString, sizeof(String),
@@ -125,10 +126,7 @@ Widget request, new;
     static Arg arglist[5];
     Cardinal num_args = 0;
 
-    if (dw->dialog.label != NULL) {
-        dw->dialog.label = XtNewString(dw->dialog.label);
-	XtSetArg(arglist[num_args], XtNlabel, dw->dialog.label); num_args++;
-    }
+    XtSetArg(arglist[num_args], XtNlabel, dw->dialog.label); num_args++;
     XtSetArg(arglist[num_args], XtNborderWidth, 0); num_args++;
     XtSetArg(arglist[num_args], XtNleft, XtChainLeft); num_args++;
     XtSetArg(arglist[num_args], XtNright, XtChainRight); num_args++;
@@ -147,7 +145,6 @@ Widget w;
 {
     DialogWidget dw = (DialogWidget) w;
 
-    if (dw->dialog.label != NULL) XtFree(dw->dialog.label);
     if (dw->dialog.value != NULL) XtFree(dw->dialog.value);
 }
 
@@ -199,11 +196,9 @@ Widget current, request, new;
         w->dialog.max_length = old->dialog.max_length;
     }
 
-    if ( w->dialog.label != old->dialog.label ) {
-        if (old->dialog.label != NULL) 
-	    XtFree(old->dialog.label);
-	if (w->dialog.label != NULL)
-	    w->dialog.label = XtNewString( w->dialog.label);
+    if ( (w->dialog.label != old->dialog.label) ||
+	 ((w->dialog.label != NULL) && /* we already know the label's are == */
+	   streq(w->dialog.label, old->dialog.label)) ) {
         num_args = 0;
         XtSetArg( args[num_args], XtNlabel, w->dialog.label ); num_args++;
 	XtSetValues( w->dialog.labelW, args, num_args );
