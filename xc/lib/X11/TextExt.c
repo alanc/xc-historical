@@ -1,4 +1,4 @@
-/* $XConsortium: XTextExt.c,v 11.12 88/06/19 16:53:52 rws Exp $ */
+/* $XConsortium: XTextExt.c,v 11.13 88/09/06 16:11:05 jim Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -37,7 +37,7 @@ XCharStruct *GetCS(min_bounds, pCS, firstCol, numCols, firstRow, numRows, ind,
     XCharStruct *min_bounds;
     XCharStruct pCS[];
     unsigned int firstCol, numCols, firstRow, numRows, ind, chDefault;
-    char *chars;
+    unsigned char *chars;
 {
     XCharStruct *cs;
     unsigned int c;
@@ -62,16 +62,14 @@ XCharStruct *GetCS2d(min_bounds, pCS, firstCol, numCols, firstRow, numRows, ind,
     XCharStruct *min_bounds;
     XCharStruct pCS[];
     unsigned int firstCol, numCols, firstRow, numRows, ind, chDefault;
-    char *chars;
+    unsigned char *chars;
 {
     XCharStruct *cs;
     unsigned int row, col, c;
 
-    row = (chars[ind] >> 8)-firstRow;
-    col = (chars[ind] & 0xff)-firstCol;
-    if ((row < numRows) && (col < numCols)) {
+    c = chars[ind] - firstCol;
+    if ((firstRow == 0) && (c < numCols)) {
   	if ( pCS == NULL ) return min_bounds;
-        c = row*numCols + col;
 	cs = &pCS[c];
 	if (! (cs->attributes & CI_NONEXISTCHAR)) return cs;
     }
@@ -106,7 +104,7 @@ GetGlyphs(font, count, chars, getGlyph, glyphcount, glyphs)
     for (i=0; i < count; i++) {
 	cs = (* getGlyph)(
 	    &font->min_bounds, font->per_char, firstCol, numCols, firstRow, numRows,
-	    i, chars, chDefault);
+	    i, (unsigned char *) chars, chDefault);
 	if (cs != NULL) glyphs[n++] = cs;
     }
     *glyphcount = n;
