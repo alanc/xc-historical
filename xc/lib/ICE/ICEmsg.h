@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: ICEmsg.h,v 1.1 94/03/18 16:02:03 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -21,6 +21,140 @@ Author: Ralph Mor, X Consortium
 #define _ICEMSG_H_
 
 #include <X11/ICE/ICEconn.h>
+
+/*
+ * Function prototypes for internal ICElib functions
+ */
+
+extern Status _IceRead (
+#if NeedFunctionPrototypes
+    IceConn		/* iceConn */,
+    unsigned long	/* nbytes */,
+    char *		/* ptr */
+#endif
+);
+
+extern void _IceReadSkip (
+#if NeedFunctionPrototypes
+    IceConn		/* iceConn */,
+    unsigned long	/* nbytes */
+#endif
+);
+
+extern void _IceWrite (
+#if NeedFunctionPrototypes
+    IceConn		/* iceConn */,
+    unsigned long	/* nbytes */,
+    char *		/* ptr */
+#endif
+);
+
+
+extern void _IceErrorBadMinor (
+#if NeedFunctionPrototypes
+    IceConn		/* iceConn */,
+    int			/* majorOpcode */,
+    int			/* offendingMinor */,
+    int			/* severity */
+#endif
+);
+
+extern void _IceErrorBadState (
+#if NeedFunctionPrototypes
+    IceConn		/* iceConn */,
+    int			/* majorOpcode */,
+    int			/* offendingMinor */,
+    int			/* severity */
+#endif
+);
+
+extern void _IceErrorBadLength (
+#if NeedFunctionPrototypes
+    IceConn		/* iceConn */,
+    int			/* majorOpcode */,
+    int			/* offendingMinor */,
+    int			/* severity */
+#endif
+);
+
+extern void _IceErrorBadValue (
+#if NeedFunctionPrototypes
+    IceConn		/* iceConn */,
+    int			/* majorOpcode */,
+    int			/* offendingMinor */,
+    int			/* offset */,
+    int			/* length */,
+    IcePointer		/* value */
+#endif
+);
+
+extern void _IceErrorBadMajor (
+#if NeedFunctionPrototypes
+    IceConn		/* iceConn */,
+    int			/* offendingMajor */,
+    int			/* offendingMinor */,
+    int			/* severity */
+#endif
+);
+
+extern void _IceErrorNoAuthentication (
+#if NeedFunctionPrototypes
+    IceConn		/* iceConn */,
+    int			/* offendingMinor */
+#endif
+);
+
+extern void _IceErrorNoVersion (
+#if NeedFunctionPrototypes
+    IceConn		/* iceConn */,
+    int			/* offendingMinor */
+#endif
+);
+
+extern void _IceErrorSetupFailed (
+#if NeedFunctionPrototypes
+    IceConn		/* iceConn */,
+    int			/* offendingMinor */,
+    char *		/* reason */
+#endif
+);
+
+extern void _IceErrorAuthenticationRejected (
+#if NeedFunctionPrototypes
+    IceConn		/* iceConn */,
+    int			/* offendingMinor */,
+    char *		/* reason */
+#endif
+);
+
+extern void _IceErrorAuthenticationFailed (
+#if NeedFunctionPrototypes
+    IceConn		/* iceConn */,
+    int			/* offendingMinor */,
+    char *		/* reason */
+#endif
+);
+
+extern void _IceErrorProtocolDuplicate (
+#if NeedFunctionPrototypes
+    IceConn		/* iceConn */,
+    char *		/* protocolName */
+#endif
+);
+
+extern void _IceErrorMajorOpcodeDuplicate (
+#if NeedFunctionPrototypes
+    IceConn		/* iceConn */,
+    int			/* majorOpcode */
+#endif
+);
+
+extern void _IceErrorUnknownProtocol (
+#if NeedFunctionPrototypes
+    IceConn		/* iceConn */,
+    char *		/* protocolName */
+#endif
+);
 
 
 /*
