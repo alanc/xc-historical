@@ -1,5 +1,5 @@
 /*
- * $XConsortium: globals.c,v 1.12 91/01/08 14:42:07 gildea Exp $
+ * $XConsortium: globals.c,v 1.13 91/07/12 15:54:41 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -222,9 +222,3 @@ int			XTestFakeAckType   = 1;
  * NOTE: any additional external definition NEED
  * to be inserted ABOVE this point!!!
  */
-
-
- _XQEvent * _qfree = NULL;
- long _qfreeFlag = 0;
- void * _qfreePtr = NULL;
-
