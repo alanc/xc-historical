@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miOCs.c,v 5.1 91/02/16 09:55:15 rws Exp $ */
 
 
 /***********************************************************
@@ -36,7 +36,6 @@ SOFTWARE.
 #include "gcstruct.h"
 #include "miLight.h"
 
-extern	ddFLOAT		ident4x4[];
 
 /* Level II Output Command Attributes */
 
@@ -767,8 +766,9 @@ miLocalTransform(pRend, pOC)
 			pddc->Dynamic->pPCAttr->localMat, pLT->matrix);
 	    break;
 	case PEXReplace:
-	    bcopy( pLT->matrix, pddc->Dynamic->pPCAttr->localMat, 
-		    16*sizeof(ddFLOAT));
+	    bcopy( (char *)(pLT->matrix),
+		   (char *)(pddc->Dynamic->pPCAttr->localMat),
+                   16*sizeof(ddFLOAT));
 	    break;
     }
 
@@ -843,7 +843,8 @@ miLocalTransform2D(pRend, pOC)
 			pddc->Dynamic->pPCAttr->localMat, temp);
 	    break;
 	case PEXReplace:
-	    bcopy( temp,  pddc->Dynamic->pPCAttr->localMat, 16*sizeof(ddFLOAT));
+	    bcopy( (char *)temp,  (char *)(pddc->Dynamic->pPCAttr->localMat), 
+		    16*sizeof(ddFLOAT));
 	    break;
     }
 
@@ -881,7 +882,8 @@ miGlobalTransform(pRend, pOC)
     miDDContext    *pddc = (miDDContext *)(pRend->pDDContext);
     pexGlobalTransform *pGT = (pexGlobalTransform *)(pOC+1);
 
-    bcopy( pGT->matrix, pddc->Dynamic->pPCAttr->globalMat, 16 * sizeof(ddFLOAT));
+    bcopy( (char *)(pGT->matrix), (char *)(pddc->Dynamic->pPCAttr->globalMat),
+	    16 * sizeof(ddFLOAT));
 
     /* Update composite transforms */
     /* First, composite [CMM] */
@@ -1216,8 +1218,7 @@ miSetMCVolume(pRend, pOC)
     listofObj		*pc_MCV;
     ddHalfSpace		*OC_HS, tmp_HS;
     int			i, count;
-    ddPointUnion	in_pt, out_pt;
-    ddFLOAT		*f, length;
+    ddFLOAT		length;
 
     static  ddFLOAT	vect_xform[4][4];
 
@@ -1235,27 +1236,23 @@ miSetMCVolume(pRend, pOC)
     for(i = 0; i < count; i++) {	    
 
 	/* transform ref point and vector to world coords */
-	in_pt.ptr = (char *)(&OC_HS->orig_point);
-	f = &pddc->Dynamic->mc_to_wc_xform[0][0];
-
 	/* transform ref point */ 
 
-	miTransformPoint(in_pt.ptr, pddc->Dynamic->mc_to_wc_xform,
+	miTransformPoint(&OC_HS->orig_point, pddc->Dynamic->mc_to_wc_xform,
                          &tmp_HS.point);
 
 	/* transform ref vector 
 	 * Vectors are transformed using the inverse transpose 
 	 */
-	in_pt.ptr = (char *)(&OC_HS->orig_vector);
 
-	miMatCopy(&pddc->Dynamic->mc_to_wc_xform[0][0],
-		  &vect_xform[0][0]);
+	miMatCopy(pddc->Dynamic->mc_to_wc_xform,
+		  vect_xform);
 
-	miMatInverse(&vect_xform[0][0]);
+	miMatInverse(vect_xform);
 
-	miMatTranspose(&vect_xform[0][0]);
+	miMatTranspose(vect_xform);
 
-        miTransformPoint(in_pt.ptr, vect_xform, 
+        miTransformVector(&OC_HS->orig_vector, vect_xform, 
                          &tmp_HS.vector);
 
 	puAddToList(&tmp_HS, 1, pc_MCV);
