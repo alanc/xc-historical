@@ -395,21 +395,21 @@ macIIColorInit (index, pScreen, argc, argv)
 
     switch (depth) {
 	case 8:
-	    InitProc = &cfbScreenInit;
+	    InitProc = cfbScreenInit;
 	    break;
 	case 16:
-	    InitProc = &cfb16ScreenInit;
+	    InitProc = cfb16ScreenInit;
 	    break;
 	case 24:
-	    InitProc = &macII24ScreenInit;
+	    InitProc = macII24ScreenInit;
 	    bitsPerPixel = 32;
 /* 	    defaultColorVisualClass = TrueColor; */
 	    break;
 	case 32:
 #ifdef SEPARATE_24
-	    InitProc = &cfb32ScreenInit;
+	    InitProc = cfb32ScreenInit;
 #else
-	    InitProc = &macII24ScreenInit;
+	    InitProc = macII24ScreenInit;
 #endif
 	    break;
 	default:
