@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.37 91/12/16 14:07:39 gildea Exp $
+ * $XConsortium: process.c,v 1.38 91/12/16 19:34:35 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -736,7 +736,7 @@ static int write_auth_file (tmpnam)
     char *tmpnam;
 {
     FILE *fp;
-    AuthList *list;
+    AuthList *list, *magic_cookie;
 
     /*
      * xdm and auth spec assumes auth file is 12 or fewer characters
@@ -751,8 +751,23 @@ static int write_auth_file (tmpnam)
 	return -1;
     } 
 
+    /*
+     * Write MIT-MAGIC-COOKIE-1 first, because R4 Xlib knows
+     * only that and uses the first authorization it finds.
+     */
+    magic_cookie = (AuthList *)NULL;
     for (list = xauth_head; list; list = list->next) {
-	XauWriteAuth (fp, list->auth);
+	if (list->auth->name_length == 18
+	    && strncmp(list->auth->name, "MIT-MAGIC-COOKIE-1", 18) == 0)
+	{
+	    magic_cookie = list;
+	    XauWriteAuth (fp, list->auth);
+	    break;
+	}
+    }
+    for (list = xauth_head; list; list = list->next) {
+	if (list != magic_cookie)
+	    XauWriteAuth (fp, list->auth);
     }
 
     (void) fclose (fp);
@@ -1035,7 +1050,7 @@ static int iterdpy (inputfilename, lineno, start,
     int status;
     int errors = 0;
     Xauth proto;
-    AuthList *l;
+    AuthList *l, *next;
 
     /*
      * iterate
@@ -1050,7 +1065,8 @@ static int iterdpy (inputfilename, lineno, start,
 	    continue;
 	}
 	status = 0;
-	for (l = xauth_head; l; l = l->next) {
+	for (l = xauth_head; l; l = next) {
+	    next = l->next;
 	    if (match_auth_dpy (&proto, l->auth)) {
 		if (yfunc) {
 		    status = (*yfunc) (inputfilename, lineno,
@@ -1084,42 +1100,19 @@ static int remove_entry (inputfilename, lineno, auth, data)
 {
     int *nremovedp = (int *) data;
     AuthList **listp = &xauth_head;
-    AuthList *prev = NULL, *list = (*listp);
-    int removed = 0, notremoved = 0;
-
-    if (!list) {
-	*nremovedp = 0;
-	return 1;			/* if nothing to remove */
-    }
+    AuthList *list;
 
     /*
-     * run through list removing any records that match
+     * unlink the auth we were asked to
      */
-    while (list) {
-	if (match_auth_dpy (list->auth, auth)) {
-	    AuthList *next = list->next;	      /* next one to look at */
-	    if (prev) {
-		prev->next = next;		       /* unlink current one */
-	    } else {
-		*listp = next;			       /* bump start of list */
-	    }
-	    XauDisposeAuth (list->auth);                    /* free the auth */
-	    free (list);				    /* free the link */
-	    list = next;			  /* go look at the next one */
-	    removed++;
-	    xauth_modified = True;
-	} else {
-	    notremoved++;
-	    prev = list;
-	    list = list->next;
-	}
-    }
-
-    if (notremoved == 0) {		/* if nothing left */
-	*listp = NULL;			/* then null out list */
-    }
-    *nremovedp = removed;
-    return 0;
+    while ((list = *listp)->auth != auth)
+	listp = &list->next;
+    *listp = list->next;
+    XauDisposeAuth (list->auth);                    /* free the auth */
+    free (list);				    /* free the link */
+    xauth_modified = True;
+    (*nremovedp)++;
+    return 1;
 }
 
 /*
@@ -1558,9 +1551,7 @@ static int do_quit (inputfilename, lineno, argc, argv)
     /* allow bogus stuff */
     die (0);
     /* NOTREACHED */
-#ifdef SIGNALRETURNSINT
     return -1;				/* for picky compilers */
-#endif
 }
 
 
