@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: XlcUTF.h,v 1.1 93/09/17 13:31:56 rws Exp $ */
 /******************************************************************
 
               Copyright 1993 by SunSoft, Inc.
@@ -31,9 +31,6 @@ OR PERFORMANCE OF THIS SOFTWARE.
 #include <stdio.h>
 
 typedef unsigned short Rune;		/* 16 bits */
-#if   !defined(AIXV3) && !defined(FUJITSU_SXG)
-typedef unsigned char uchar;
-#endif
 #define		Runeerror	0x80	/* decoding error in UTF */
 #define		Runeself	0x80	/* rune and UTF sequences are the same (<) */
 #define		UTFmax		3	/* maximum bytes per rune */
