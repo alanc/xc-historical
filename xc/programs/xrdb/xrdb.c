@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char rcs_id[] = "$Header: xrdb.c,v 11.9 88/01/22 18:31:17 jim Locked $";
+static char rcs_id[] = "$Header: xrdb.c,v 11.10 88/01/26 16:19:32 jim Locked $";
 #endif
 
 /*
@@ -408,26 +408,23 @@ void Syntax ()
 	     ProgramName);
     fprintf (stderr, "where options include:\n");
     fprintf (stderr, "    -display host:dpy        which display to use\n");
-    fprintf (stderr, "    -cpp filename            C pre-processor to use\n");
+    fprintf (stderr, "    -cpp filename            C preprocessor to use\n");
     fprintf (stderr, "    -nocpp                   do not run through cpp\n");
     fprintf (stderr, "    -query                   query resources\n");
     fprintf (stderr, "    -merge                   merge resources\n");
     fprintf (stderr, "    -edit                    edit resources\n");
     fprintf (stderr, "    -backup string           backup suffix\n");
-    fprintf (stderr, "    -defines                 show defines\n");
+    fprintf (stderr, "    -show                    show defines\n");
     fprintf (stderr, "    -remove                  remove properties\n");
     fprintf (stderr, "    -Ddefine=value           passed to cpp\n");
     fprintf (stderr, "    -Udefine                 passed to cpp\n");
     fprintf (stderr, "    -Idirectory              passed to cpp\n");
-    fprintf (stderr, 
-"\nIf no input filename is given, stdin will be read.  By default,\n");
-    fprintf (stderr, "%s is the name of the C pre-processor and \"%s\" is \n",
-	     CPP, BACKUP_SUFFIX);
-    fprintf (stderr, 
-"the backup suffix.  The display may be specified using the obsolete\n");
-    fprintf (stderr,
-"form host:dpy (no -display), but this is unsupported.\n");
     fprintf (stderr, "\n");
+    fprintf (stderr,
+"A - or no input filename represents stdin.  By default, the program will\n");
+    fprintf (stderr,
+"use %s as the C preprocessor and \"%s\" as the backup suffix.\n",
+	     CPP, BACKUP_SUFFIX);
     exit (1);
 }
 
@@ -463,56 +460,61 @@ main (argc, argv)
 	char *arg = argv[i];
 
 	if (arg[0] == '-') {
-	    if (strcmp ("-display", argv[i]) == 0) {	/* -display host:dpy */
-		if (++i >= argc) Syntax ();
-		displayname = argv[i];
-		continue;
-	    } else {
-		switch (arg[1]) {
-		    case 'g':			/* -geometry */
-			if (++i >= argc) Syntax ();
-			/* ignore geometry */
-			continue;
-		    case 'c':			/* -cpp */
-			if (++i >= argc) Syntax ();
-			cpp_program = argv[i];
-			continue;
-		    case 'n':			/* -nocpp */
-			usecpp = 0;
-			continue;
-		    case 'q':			/* -query */
-			printit = 1;
-			continue;
-		    case 'm':			/* -merge */
-			merge = 1;
-			continue;
-		    case 'e':			/* -edit */
-			editFile = 1;
-			continue;
-		    case 'b':			/* -backup suffix */
-			if (++i >= argc) Syntax ();
-			backup_suffix = argv[i];
-			continue;
-		    case 'd':			/* -defines */
-			showDefines = 1;
-			continue;
-		    case 'r':			/* -remove */
-			removeProp = 1;
-			continue;
-		    case 'I':			/* -I for cpp */
-		    case 'U':			/* -U for cpp */
-		    case 'D':			/* -D for cpp */
-			strcat(defines, " \"");
-			strcat(defines, arg);
-			strcat(defines, "\"");
-			continue;
-		    default:
-			Syntax ();
-		}
-	    }
+	    switch (arg[1]) {
+		case 'h':			/* -help */
+		    Syntax ();
+		    /* doesn't return */
+		case 'd':			/* -display */
+		    if (++i >= argc) Syntax ();
+		    displayname = argv[i];
+		    continue;
+		case 'g':			/* -geometry */
+		    if (++i >= argc) Syntax ();
+		    /* ignore geometry */
+		    continue;
+		case 'c':			/* -cpp */
+		    if (++i >= argc) Syntax ();
+		    cpp_program = argv[i];
+		    continue;
+		case 'n':			/* -nocpp */
+		    usecpp = 0;
+		    continue;
+		case 'q':			/* -query */
+		    printit = 1;
+		    continue;
+		case 'm':			/* -merge */
+		    merge = 1;
+		    continue;
+		case 'e':			/* -edit */
+		    editFile = 1;
+		    continue;
+		case 'b':			/* -backup suffix */
+		    if (++i >= argc) Syntax ();
+		    backup_suffix = argv[i];
+		    continue;
+		case 's':			/* -show */
+		    showDefines = 1;
+		    continue;
+		case 'r':			/* -remove */
+		    removeProp = 1;
+		    continue;
+		case 'I':			/* -I for cpp */
+		case 'U':			/* -U for cpp */
+		case 'D':			/* -D for cpp */
+		    strcat(defines, " \"");
+		    strcat(defines, arg);
+		    strcat(defines, "\"");
+		    continue;
+		case '\0':			/* - */
+		    filename = NULL;
+		    continue;
+		default:
+		    Syntax ();
+		    /* doesn't return */
+	    }						/* end switch */
 	} else if (arg[0] == '=') 
 	    continue;
-	else if (index (arg, ':') != NULL)		/* old style */
+	else if (index (arg, ':') != NULL)		/* obselete */
 	    displayname = arg;
 	else
 	    filename = arg;
@@ -525,7 +527,7 @@ main (argc, argv)
 
     DoDefines(dpy, defines, ProgramName, displayname);
     if (showDefines)
-	fprintf(stderr, "%s:%s\n", ProgramName, defines);
+	fprintf(stderr, "%s\n", defines);
     if (printit == 1) {
 	/* user wants to print contents */
 	if (dpy->xdefaults)
