@@ -700,7 +700,7 @@ void XmuCvtStringToBackingStore(\fIargs\fP, \fInum_args\fP, \fIfromVal\fP, \fIto
 .IP \fIargs\fP 1i
 this argument is ignored
 .IP \fInum_args\fP 1i
-this argument is ignored
+this argument must be a pointer to a Cardinal containing the value 0
 .IP \fIfromVal\fP 1i
 specifies the string to convert
 .IP \fItoVal\fP
@@ -866,6 +866,57 @@ XtAddConverter(XtRString, XtRCursor, XmuCvtStringToCursor,
 		 screenConvertArg, XtNumber(screenConvertArg));
 .sp
 .FD 0
+void XmuCvtStringToGravity(\fIargs\fP, \fInum_args\fP, \fIfromVal\fP, \fItoVal\fP)
+.br
+     XrmValuePtr *\fIargs\fP;
+.br
+      Cardinal *\fInum_args\fP;
+.br
+      XrmValuePtr \fIfromVal\fP;
+.br
+      XrmValuePtr \fItoVal\fP;
+.FN
+.IP \fIargs\fP 1i
+this argument is ignored
+.IP \fInum_args\fP 1i
+this argument must be a pointer to a Cardinal containing the value 0
+.IP \fIfromVal\fP 1i
+specifies the string to convert
+.IP \fItoVal\fP
+returns the converted value
+.LP
+This function converts a string to an
+.PN XtGravity
+enumeration value.  The string "forget" and a NULL value convert to
+.PN ForgetGravity ,
+"NorthWestGravity" converts to 
+.PN NorthWestGravity ,
+the strings "NorthGravity" and "top" convert to
+.PN NorthGravity ,
+"NorthEastGravity" converts to
+.PN NorthEastGravity ,
+the strings "West" and "left" convert to
+.PN WestGravity ,
+"CenterGravity" converts to
+.PN CenterGravity ,
+"EastGravity" and "right" convert to
+.PN EastGravity ,
+"SouthWestGravity" converts to
+.PN SouthWestGravity ,
+"SouthGravity" and "bottom" convert to
+.PN SouthGravity ,
+"SouthEastGravity" converts to
+.PN SouthEastGravity ,
+"StaticGravity" converts to
+.PN StaticGravity ,
+and "UnmapGravity" converts to
+.PN UnmapGravity .
+The case of the string does not matter.  To use this converter, include
+the following in your widget's class initialize procedure:
+.LP
+XtAddConverter(XtRString, XtRGravity, XmuCvtStringToGravity, NULL, 0);
+.sp
+.FD 0
 void XmuCvtStringToJustify(\fIargs\fP, \fInum_args\fP, \fIfromVal\fP, \fItoVal\fP)
 .br
       XrmValuePtr *\fIargs\fP;
@@ -912,7 +963,7 @@ void XmuCvtStringToLong(\fIargs\fP, \fInum_args\fP, \fIfromVal\fP, \fItoVal\fP)
 .IP \fIargs\fP 1i
 this argument is ignored
 .IP \fInum_args\fP 1i
-this argument must be zero
+this argument must be a pointer to a Cardinal containing 0
 .IP \fIfromVal\fP 1i
 specifies the string to convert
 .IP \fItoVal\fP
@@ -1097,7 +1148,7 @@ the display to use for conversion warnings
 .IP \fIargs\fP 1i
 this sole argument is the parent Widget
 .IP \fInum_args\fP 1i
-this argument must be 1
+this argument must be a pointer to a Cardinal containing the value 1
 .IP \fIfromVal\fP 1i
 specifies the string to convert
 .IP \fItoVal\fP
