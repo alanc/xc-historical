@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.15 91/07/31 01:09:25 keith Exp $ */
+/* $XConsortium: connection.c,v 1.16 91/07/29 16:10:41 keith Exp $ */
 /*
  * handles connections
  */
@@ -310,10 +310,9 @@ MakeNewConnections()
 
 	/* ultrix reads hang on Unix sockets, hpux reads fail */
 
-#if defined(O_NONBLOCK) && (!defined(ultrix) && !defined(hpux))
+#if defined(O_NONBLOCK) && (!defined(ultrix) && !defined(hpux) && !defined(AIXV3))
 	(void) fcntl(newconn, F_SETFL, O_NONBLOCK);
 #else
-
 #ifdef FIOSNBIO
 	{
 	    int         arg = 1;
@@ -321,9 +320,16 @@ MakeNewConnections()
 	    ioctl(newconn, FIOSNBIO, &arg);
 	}
 #else
+#if defined(AIXV3) && defined(FIONBIO)
+	{
+	    int arg;
+	    arg = 1;
+	    ioctl(newconn, FIONBIO, &arg);
+	}
+#else
 	(void) fcntl(newconn, F_SETFL, FNDELAY);
 #endif
-
+#endif
 #endif
 
 	oc = (OsCommPtr) fsalloc(sizeof(OsCommRec));

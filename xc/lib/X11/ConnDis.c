@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.84 91/07/18 16:07:35 gildea Exp $
+ * $XConsortium: XConnDis.c,v 11.85 91/07/19 23:07:39 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -795,7 +795,7 @@ _XSendClientPrefix (dpy, client, auth_proto, auth_string)
      * Set the connection non-blocking since we use select() to block.
      */
     /* ultrix reads hang on Unix sockets, hpux reads fail */
-#if defined(O_NONBLOCK) && (!defined(ultrix) && !defined(hpux))
+#if defined(O_NONBLOCK) && (!defined(ultrix) && !defined(hpux) && !defined(AIXV3))
     (void) fcntl (dpy->fd, F_SETFL, O_NONBLOCK);
 #else
 #ifdef FIOSNBIO
@@ -804,7 +804,15 @@ _XSendClientPrefix (dpy, client, auth_proto, auth_string)
 	ioctl (dpy->fd, FIOSNBIO, &arg);
     }
 #else
+#if defined(AIXV3) && defined(FIONBIO)
+    {
+	int arg;
+	arg = 1;
+	ioctl(dpy->fd, FIONBIO, &arg);
+    }
+#else
     (void) fcntl (dpy->fd, F_SETFL, FNDELAY);
+#endif
 #endif
 #endif
     return len == 0;

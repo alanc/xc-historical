@@ -1,4 +1,4 @@
-/* $XConsortium: FSConnServ.c,v 1.12 91/07/20 14:01:41 rws Exp $ */
+/* $XConsortium: FSConnServ.c,v 1.13 91/08/22 19:26:26 gildea Exp $ */
 
 /* @(#)FSConnServ.c	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
@@ -370,7 +370,7 @@ _FSConnectServer(server_name, expanded_name)
      */
 
     /* ultrix reads hang on Unix sockets, hpux reads fail */
-#if defined(O_NONBLOCK) && (!defined(ultrix) && !defined(hpux))
+#if defined(O_NONBLOCK) && (!defined(ultrix) && !defined(hpux) && !defined(AIXV3))
     (void) fcntl (fd, F_SETFL, O_NONBLOCK);
 #else
 #ifdef FIOSNBIO
@@ -379,7 +379,15 @@ _FSConnectServer(server_name, expanded_name)
 	ioctl (fd, FIOSNBIO, &arg);
     }
 #else
+#if defined(AIXV3) && defined(FIONBIO)
+    {
+	int arg;
+	arg = 1;
+	ioctl(fd, FIONBIO, &arg);
+    }
+#else
     (void) fcntl (fd, F_SETFL, FNDELAY);
+#endif
 #endif
 #endif
 
