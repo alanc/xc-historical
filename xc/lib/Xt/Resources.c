@@ -1,4 +1,4 @@
-/* $XConsortium: Resources.c,v 1.114 93/09/25 10:38:40 rws Exp $ */
+/* $XConsortium: Resources.c,v 1.115 93/10/06 17:36:04 kaleb Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -419,7 +419,8 @@ void _XtDependencies(class_resp, class_num_resp, super_res, super_num_res,
     /* Allocate and initialize new_res with superclass resource pointers */
     new_num_res = super_num_res + class_num_res;
     new_res = (XrmResourceList *) XtMalloc(new_num_res*sizeof(XrmResourceList));
-    XtMemmove(new_res, super_res, super_num_res * sizeof(XrmResourceList));
+    if (super_num_res > 0)
+	XtMemmove(new_res, super_res, super_num_res * sizeof(XrmResourceList));
     
     /* Put pointers to class resource entries into new_res */
     new_next = super_num_res;
