@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.135 94/01/18 14:50:43 kaleb Exp $ */
+/* $XConsortium: NextEvent.c,v 1.136 94/02/04 14:20:03 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -75,16 +75,6 @@ static SignalEventRec* freeSignalRecs;
 #else
 #define FIXUP_TIMEVAL(t)
 #endif /*NEEDS_NTPD_FIXUP*/
-
-#if defined(WIN32) || defined(VMS)
-#define GETTIMEOFDAY(t) gettimeofday(t)
-#else
-#ifdef SVR4
-#define GETTIMEOFDAY(t) (void) gettimeofday(t)
-#else
-#define GETTIMEOFDAY(t) (void) gettimeofday(t,(struct timezone*)NULL)
-#endif
-#endif
 
 /*
  * Private routines
