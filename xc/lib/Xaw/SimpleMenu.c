@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.29 89/10/16 18:20:05 kit Exp $";
+static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.30 89/11/16 12:30:13 kit Exp $";
 #endif 
 
 /***********************************************************
@@ -302,7 +302,7 @@ Region region;
     SmeObject * entry;
     SmeObjectClass class;
 
-    if (region == NULL) 
+    if (region == NULL)
 	XClearWindow(XtDisplay(w), XtWindow(w));
 
     /*
@@ -874,8 +874,8 @@ Dimension *width_ret, *height_ret;
     SimpleMenuWidget smw;
     Dimension width, height;
     Boolean do_layout = ((height_ret == NULL) || (width_ret == NULL));
-
-    height = width = 0;
+    Boolean allow_change_size;
+    height = 0;
 
     if ( XtIsSubclass(w, simpleMenuWidgetClass) ) {
 	smw = (SimpleMenuWidget) w;
@@ -885,6 +885,9 @@ Dimension *width_ret, *height_ret;
 	smw = (SimpleMenuWidget) XtParent(w);
 	current_entry = (SmeObject) w;
     }
+
+    allow_change_size = (!XtIsRealized((Widget)smw) ||
+			 (smw->shell.allow_shell_resize));
 
     if ( smw->simple_menu.menu_height )
 	height = smw->core.height;
@@ -912,25 +915,21 @@ Dimension *width_ret, *height_ret;
     
     if (smw->simple_menu.menu_width)
 	width = smw->core.width;
-    else {
-	Boolean realized = XtIsRealized( (Widget) smw );
-
-	if ( (!realized) || (do_layout) ||
-	    ((!smw->shell.allow_shell_resize) && realized) )
-	    width = GetMenuWidth((Widget) smw, (Widget) current_entry);
-    }
+    else if ( allow_change_size )
+	width = GetMenuWidth((Widget) smw, (Widget) current_entry);
+    else
+	width = smw->core.width;
 
     if (do_layout) {
 	ForAllChildren(smw, entry)
 	    if (XtIsManaged( (Widget) *entry)) 
 		(*entry)->rectangle.width = width;
 
-	if (smw->shell.allow_shell_resize || !XtIsRealized((Widget) smw) ) 
+	if (allow_change_size)
 	    MakeSetValuesRequest((Widget) smw, width, height);
     }
     else {
-	if (width != 0)
-	    *width_ret = width;
+	*width_ret = width;
 	if (height != 0)
 	    *height_ret = height;
     }
@@ -997,10 +996,11 @@ XPoint * location;
     if (location == NULL) {
 	Window junk1, junk2;
 	int root_x, root_y, junkX, junkY;
+	unsigned int junkM;
 	
 	location = &t_point;
 	if (XQueryPointer(XtDisplay(w), XtWindow(w), &junk1, &junk2, 
-			  &root_x, &root_y, &junkX, &junkY) == FALSE) {
+			  &root_x, &root_y, &junkX, &junkY, &junkM) == FALSE) {
 	    char error_buf[BUFSIZ];
 	    sprintf(error_buf, "%s %s", "Xaw - SimpleMenuWidget:",
 		    "Could not find location of mouse pointer");
