@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 5.14 91/02/23 00:33:34 keith Exp $ */
+/* $XConsortium: main.c,v 5.15 91/05/27 12:48:00 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -220,6 +220,7 @@ main(argc, argv)
 	ResetScreenPrivates();
 	ResetWindowPrivates();
 	ResetGCPrivates();
+	ResetFontPrivateIndex();
 	InitOutput(&screenInfo, argc, argv);
 	if (screenInfo.numScreens < 1)
 	    FatalError("no screens found");

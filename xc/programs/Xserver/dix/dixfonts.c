@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.28 91/07/18 22:41:11 keith Exp $ */
+/* $XConsortium: dixfonts.c,v 1.29 91/07/19 23:21:13 keith Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -1185,7 +1185,6 @@ DeleteClientFontStuff(client)
 InitFonts ()
 {
     patternCache = MakeFontPatternCache();
-    ResetFontPrivateIndex();
     FontFileRegisterFpeFunctions();
     fs_register_fpe_functions();
 }
