@@ -90,10 +90,10 @@ char *path;
 {
   char file[BUFSIZ];
   int i;
-#define NoSuf  0
-#define Suffix 1
-#define Fold 2
-#define FoldSuffix 3
+#define NoSuf  (char *)0
+#define Suffix (char *)1
+#define Fold (char *)2
+#define FoldSuffix (char *)3
   static char *cname[] = {
     "(1) User Commands",	Suffix,	"1",	"1bsd",	NULL,
     "(1) User Commands (instant)",	NoSuf,	"1r",	"1rb",	NULL,
