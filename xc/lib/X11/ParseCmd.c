@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ParseCmd.c,v 1.14 88/09/19 13:55:46 jim Exp $
+ * $XConsortium: ParseCmd.c,v 1.15 88/10/12 16:29:36 swick Exp $
  */
 
 /***********************************************************
@@ -148,19 +148,26 @@ void XrmParseCommand(pdb, options, num_options, prefix, argc, argv)
 		    break;
 
 		case XrmoptionSepArg:
-		    --(*argc);
-		    ++argv; --myargc; --(*argc);
-		    PutCommandResource(*argv);
+		    if (myargc > 1) {
+			++argv; --myargc; --(*argc); --(*argc);
+			PutCommandResource(*argv);
+		    } else
+			(*argsave++) = (*argv);
 		    break;
 		
 		case XrmoptionResArg:
-		    ++argv; --myargc; --(*argc); --(*argc);
-		    XrmPutLineResource(pdb, *argv);
+		    if (myargc > 1) {
+			++argv; --myargc; --(*argc); --(*argc);
+			XrmPutLineResource(pdb, *argv);
+		    } else
+			(*argsave++) = (*argv);
 		    break;
 		
 		case XrmoptionSkipArg:
-		    --myargc;
-		    (*argsave++) = (*argv++);
+		    if (myargc > 1) {
+			--myargc;
+			(*argsave++) = (*argv++);
+		    }
 		    (*argsave++) = (*argv); 
 		    break;
 
