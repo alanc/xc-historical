@@ -1,5 +1,5 @@
 /*
- * $XConsortium: saver.c,v 1.1 92/02/13 16:08:22 keith Exp $
+ * $XConsortium: saver.c,v 1.2 92/02/13 17:03:58 keith Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -130,10 +130,17 @@ void
 ScreenSaverExtensionInit()
 {
     ExtensionEntry *extEntry, *AddExtension();
+    int		    i;
+    ScreenPtr	    pScreen;
 
     AttrType = CreateNewResourceType(ScreenSaverFreeAttr);
     EventType = CreateNewResourceType(ScreenSaverFreeEvents);
     ScreenPrivateIndex = AllocateScreenPrivateIndex ();
+    for (i = 0; i < screenInfo.numScreens; i++)
+    {
+	pScreen = screenInfo.screens[i];
+	SetScreenPrivate (pScreen, NULL);
+    }
     if (AttrType && EventType && ScreenPrivateIndex != -1 &&
 	(extEntry = AddExtension(ScreenSaverName, ScreenSaverNumberEvents, 0,
 				 ProcScreenSaverDispatch, SProcScreenSaverDispatch,
@@ -333,6 +340,7 @@ SendScreenSaverNotify (pScreen, state, forced)
     int				type;
     ScreenSaverStuffPtr		pSaver;
 
+    UpdateCurrentTimeIf ();
     mask = ScreenSaverNotifyMask;
     if (state == ScreenSaverCycle)
 	mask = ScreenSaverCycleMask;
@@ -341,7 +349,7 @@ SendScreenSaverNotify (pScreen, state, forced)
     if (!pPriv)
 	return;
     pSaver = &savedScreenInfo[pScreen->myNum];
-    if (pSaver->ExternalScreenSaver)
+    if (pPriv->attr)
 	type = ScreenSaverExternal;
     else if (ScreenSaverBlanking != DontPreferBlanking)
 	type = ScreenSaverBlanked;
@@ -400,8 +408,8 @@ CreateSaverWindow (pScreen)
     pSaver = &savedScreenInfo[pScreen->myNum];
     if (pSaver->pWindow)
     {
-	FreeResource (pSaver->wid, RT_NONE);
 	pSaver->pWindow = NullWindow;
+	FreeResource (pSaver->wid, RT_NONE);
 	if (pPriv)
 	{
 	    pPriv->hasWindow = FALSE;
@@ -512,8 +520,10 @@ DestroySaverWindow (pScreen)
 
     pSaver = &savedScreenInfo[pScreen->myNum];
     if (pSaver->pWindow)
+    {
+	pSaver->pWindow = NullWindow;
 	FreeResource (pSaver->wid);
-    pSaver->pWindow = NullWindow;
+    }
     pPriv->hasWindow = FALSE;
     if (pPriv->oldMap != None)
     {
@@ -530,8 +540,9 @@ ScreenSaverHandle (pScreen, xstate, force)
     int		xstate;
     Bool	force;
 {
-    int	    state;
-    Bool    ret = FALSE;
+    int				state;
+    Bool			ret = FALSE;
+    ScreenSaverScreenPrivatePtr	pPriv;
 
     switch (xstate)
     {
@@ -545,6 +556,10 @@ ScreenSaverHandle (pScreen, xstate, force)
 	break;
     case SCREEN_SAVER_CYCLE:	
 	state = ScreenSaverCycle;
+	pPriv = GetScreenPrivate (pScreen);
+	if (pPriv && pPriv->hasWindow)
+	    ret = TRUE;
+	
     }
     SendScreenSaverNotify (pScreen, state, force);
     return ret;
@@ -581,6 +596,7 @@ ProcScreenSaverQueryInfo (client)
     ScreenSaverStuffPtr		pSaver;
     DrawablePtr			pDraw;
     long			lastInput;
+    ScreenSaverScreenPrivatePtr	pPriv;
 
     REQUEST_SIZE_MATCH (xScreenSaverQueryInfoReq);
     pDraw = (DrawablePtr) LookupDrawable (stuff->drawable, client);
@@ -588,6 +604,7 @@ ProcScreenSaverQueryInfo (client)
 	return BadDrawable;
 
     pSaver = &savedScreenInfo[pDraw->pScreen->myNum];
+    pPriv = GetScreenPrivate (pDraw->pScreen);
 
     UpdateCurrentTime ();
     lastInput = TimeSinceLastInputEvent();
@@ -623,7 +640,7 @@ ProcScreenSaverQueryInfo (client)
 	rep.cycle = 0;
     }
     rep.eventMask = getEventMask (pDraw->pScreen, client);
-    if (pSaver->ExternalScreenSaver)
+    if (pPriv && pPriv->attr)
 	rep.saverType = ScreenSaverExternal;
     else if (ScreenSaverBlanking != DontPreferBlanking)
 	rep.saverType = ScreenSaverBlanked;
@@ -650,7 +667,7 @@ ProcScreenSaverSelectInput (client)
     DrawablePtr			pDraw;
 
     REQUEST_SIZE_MATCH (xScreenSaverSelectInputReq);
-    pDraw = (DrawablePtr) LookupDrawable (stuff->drawable);
+    pDraw = (DrawablePtr) LookupDrawable (stuff->drawable, client);
     if (!pDraw)
 	return BadDrawable;
     if (!setEventMask (pDraw->pScreen, client, stuff->eventMask))
@@ -692,7 +709,7 @@ ProcScreenSaverSetAttributes (client)
     ColormapPtr			pCmap;
 
     REQUEST_AT_LEAST_SIZE (xScreenSaverSetAttributesReq);
-    pDraw = (DrawablePtr) LookupDrawable (stuff->drawable);
+    pDraw = (DrawablePtr) LookupDrawable (stuff->drawable, client);
     if (!pDraw)
 	return BadDrawable;
     pScreen = pDraw->pScreen;
@@ -1051,7 +1068,7 @@ ProcScreenSaverUnsetAttributes (client)
     ScreenSaverScreenPrivatePtr	pPriv;
 
     REQUEST_SIZE_MATCH (xScreenSaverUnsetAttributesReq);
-    pDraw = (DrawablePtr) LookupDrawable (stuff->drawable);
+    pDraw = (DrawablePtr) LookupDrawable (stuff->drawable, client);
     if (!pDraw)
 	return BadDrawable;
     pPriv = GetScreenPrivate (pDraw->pScreen);
