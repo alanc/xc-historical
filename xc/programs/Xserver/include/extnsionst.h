@@ -1,4 +1,4 @@
-/* $XConsortium: extnsionst.h,v 1.5 88/09/06 15:49:10 jim Exp $ */
+/* $XConsortium: extnsionst.h,v 1.6 89/03/11 15:10:09 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -34,6 +34,8 @@ typedef struct _ExtensionEntry {
     int eventLast;
     int errorBase;
     int errorLast;
+    int num_aliases;
+    char **aliases;
     pointer extPrivate;
 } ExtensionEntry;
 
@@ -91,6 +93,7 @@ extern void InitExtensions();
 extern int ProcQueryExtension();
 extern int ProcListExtensions();
 extern ExtensionEntry *AddExtension();
+extern Bool AddExtensionAlias();
 extern ExtensionLookupProc LookupProc();
 extern Bool RegisterProc();
 extern Bool RegisterScreenProc();
