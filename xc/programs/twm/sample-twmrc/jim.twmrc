@@ -116,6 +116,8 @@ Button1 = c|m|s: root			  : f.refresh
 #"F20"   =      : all                      : f.warptoscreen "next"
 
 "F24"	=      : all			  : f.warpto "xmh"
+"F25"   =      : all			  : f.warpto "[expo]"
+"F26"   =      : all                      : f.warpto "emacs"
 "F28"   =      : all                      : f.warpring "next"
 "F30"   =      : all                      : f.warptoiconmgr ""
 "F32"   =      : all                      : f.raiselower
