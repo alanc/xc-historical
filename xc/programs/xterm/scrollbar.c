@@ -37,6 +37,7 @@
 #include "data.h"
 #include <X11/Scroll.h> /* should come from Xaw/Scroll.h at some point */
 #include "error.h"
+#include <X11/Shell.h>
 
 extern void bcopy();
 
@@ -72,23 +73,18 @@ static void ResizeScreen(xw, min_width, min_height )
 	XWindowAttributes oldAttributes;
 	XEvent event;
         Dimension junk;  /* for values returned by XtMakeResizeRequest */
+	static Arg argList[] = {
+	    {XtNminWidth,	0},
+	    {XtNminHeight,	0},
+	    {XtNwidthInc,	0},
+	    {XtNheightInc,	0}
+	};
 
-	XGrabServer(screen->display);
-	if (!XGetSizeHints(screen->display, XtWindow(xw->core.parent),
-		&sizehints, XA_WM_NORMAL_HINTS))
-	    sizehints.flags = 0;
-	sizehints.min_width = min_width;
-	sizehints.min_height = min_height;
-	sizehints.width_inc = FontWidth(screen);
-	sizehints.height_inc = FontHeight(screen);
-	sizehints.width =  (screen->max_col + 1) * FontWidth(screen)
-				+ min_width;
-	sizehints.height = FontHeight(screen) * (screen->max_row + 1)
-				+ min_height;
-	sizehints.flags |= PMinSize|PResizeInc;
-	XSetSizeHints(screen->display,
-	 XtWindow(xw->core.parent), &sizehints, XA_WM_NORMAL_HINTS);
-	XUngrabServer(screen->display);
+	argList[0].value = (XtArgVal)min_width;
+	argList[1].value = (XtArgVal)min_height;
+	argList[2].value = (XtArgVal)FontWidth(screen);
+	argList[3].value = (XtArgVal)FontHeight(screen);
+	XtSetValues( xw->core.parent, argList, XtNumber(argList) );
 
 	XGetWindowAttributes( screen->display, TextWindow(screen),
 			      &oldAttributes );
@@ -107,14 +103,6 @@ static void ResizeScreen(xw, min_width, min_height )
 	    (unsigned) (screen->max_col + 1) * FontWidth(screen) + min_width,
 	    (unsigned) FontHeight(screen) * (screen->max_row + 1) + min_height,
             &junk, &junk);
-
-	/*
-	 * the following is hack until we figure out why XtMakeResizeRequest
-	 * is spitting up all over the normal hints [jim]
-	 */
-	XSetSizeHints(screen->display,
-	 XtWindow(xw->core.parent), &sizehints, XA_WM_NORMAL_HINTS);
-
 
 	/* wait for a window manager to actually do it */
 	XIfEvent( screen->display, &event, IsEventType, ConfigureNotify );
