@@ -1,9 +1,9 @@
+#include <Server.tmpl>
+IMAKE_DEFINES = $(EXT_DEFINES)
+
 #ifdef XINPUT
 #define IHaveSubdirs
 #endif
-
-#include <Server.tmpl>
-IMAKE_DEFINES = $(EXT_DEFINES)
 
 #ifdef SHAPE
   SHAPESRCS = shape.c
