@@ -1,4 +1,4 @@
-/* $XConsortium: Geometry.c,v 1.51 90/12/28 14:21:32 gildea Exp $ */
+/* $XConsortium: Geometry.c,v 1.52 91/01/10 21:10:06 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -49,8 +49,9 @@ static void ClearRectObjAreas(r, old)
 }
 
 /*
- * This function is exactly like XtMakeGeometryRequest except that
- * it will return an extra variable.
+ * Internal function used by XtMakeGeometryRequest and XtSetValues.
+ * Returns more data than the public interface.  Does not convert
+ * XtGeometryDone to XtGeometryYes.
  *
  * clear_rect_obj - *** RETURNED ***  
  *		    TRUE if the rect obj has been cleared, false otherwise.
@@ -210,9 +211,6 @@ _XtMakeGeometryRequest (widget, request, reply, clear_rect_obj)
     if ((returnCode != XtGeometryYes) || 
 	(changeMask & XtCWQueryOnly) || !XtIsRealized(widget)) {
 
-	if (returnCode == XtGeometryDone)
-	    returnCode = XtGeometryYes;
-
 	return returnCode;
     }
 
@@ -262,8 +260,11 @@ XtGeometryResult XtMakeGeometryRequest (widget, request, reply)
     XtWidgetGeometry *request, *reply;
 {
     Boolean junk;
+    XtGeometryResult returnCode;
 
-    return(_XtMakeGeometryRequest(widget, request, reply, &junk));
+    returnCode = _XtMakeGeometryRequest(widget, request, reply, &junk);
+
+    return ((returnCode == XtGeometryDone) ? XtGeometryYes : returnCode);
 }
 
 #if NeedFunctionPrototypes
