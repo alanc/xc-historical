@@ -14,7 +14,7 @@ without express or implied warranty.
 
 */
 
-/* $XConsortium: miscrinit.c,v 5.0 90/01/23 15:39:27 rws Exp $ */
+/* $XConsortium: miscrinit.c,v 5.0 90/09/24 09:18:02 rws Exp $ */
 
 #include "X.h"
 #include "servermd.h"
@@ -34,6 +34,12 @@ miCloseScreen (index, pScreen)
     xfree (pScreen->devPrivate);
     return TRUE;
 }
+
+/*
+ * If you pass in bsfuncs, then you must preinitialize the missing
+ * screen procs before calling miScreenInit, so that the backing store
+ * code can correctly wrap them.
+ */
 
 Bool
 miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
@@ -93,7 +99,7 @@ miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
 	pScreen->devPrivate = pbits;
     pScreen->numVisuals = numVisuals;
     pScreen->visuals = visuals;
-    if (pbits)
+    if (width)
 	pScreen->CloseScreen = miCloseScreen;
     /* else CloseScreen */
     /* QueryBestSize, SaveScreen, GetImage, GetSpans */
