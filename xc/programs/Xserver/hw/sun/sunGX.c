@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: sunGX.c,v 1.16 92/11/24 11:36:33 rws Exp $";
+static char *rid="$XConsortium: sunGX.c,v 1.17 93/07/11 15:03:06 rws Exp $";
 #endif /* lint */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
@@ -1540,7 +1540,7 @@ sunGXPolyGlyphBlt (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     int		    x, y;
     unsigned int    nglyph;
     CharInfoPtr	    *ppci;		/* array of character info */
-    unsigned long   *pglyphBase;
+    char            *pglyphBase;
 {
     sunGXPtr	    gx = sunGXGetScreenPrivate (pDrawable->pScreen);
     int		    h;
@@ -1621,7 +1621,7 @@ sunGXTEGlyphBlt (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     int 	x, y;
     unsigned int nglyph;
     CharInfoPtr *ppci;		/* array of character info */
-    unsigned char *pglyphBase;	/* start of array of glyphs */
+    char *pglyphBase;		/* start of array of glyphs */
 {
     sunGXPtr	    gx = sunGXGetScreenPrivate (pDrawable->pScreen);
     int		    h, hTmp;
@@ -1743,9 +1743,9 @@ sunGXPolyTEGlyphBlt (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     int 	x, y;
     unsigned int nglyph;
     CharInfoPtr *ppci;		/* array of character info */
-    unsigned char *pglyphBase;	/* start of array of glyphs */
+    char *pglyphBase;		/* start of array of glyphs */
 {
-    sunGXTEGlyphBlt (pDrawable, pGC, x, y, nglyph, ppci, (unsigned char *) 1);
+    sunGXTEGlyphBlt (pDrawable, pGC, x, y, nglyph, ppci, (char *) 1);
 }
 
 static void
