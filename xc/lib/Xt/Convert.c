@@ -1,4 +1,4 @@
-/* $XConsortium: Convert.c,v 1.60 91/06/13 17:46:47 converse Exp $ */
+/* $XConsortium: Convert.c,v 1.61 91/06/14 16:21:45 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -379,7 +379,7 @@ CacheEnter(heap, converter, args, num_args, from, to, succeeded, hash,
 	XtBCopy(from->addr, &p->from.addr, from->size);
     } else {
 	p->from_is_value = False;
-	p->from.addr = (caddr_t)_XtHeapAlloc(heap, from->size);
+	p->from.addr = (XPointer)_XtHeapAlloc(heap, from->size);
 	bcopy((char *)from->addr, (char *)p->from.addr, from->size);
     }
     p->num_args = num_args;
@@ -387,7 +387,7 @@ CacheEnter(heap, converter, args, num_args, from, to, succeeded, hash,
 	XrmValue *pargs = CARGS(p);
 	for (i = 0; i < num_args; i++) {
 	    pargs[i].size = args[i].size;
-	    pargs[i].addr = (caddr_t)_XtHeapAlloc(heap, args[i].size);
+	    pargs[i].addr = (XPointer)_XtHeapAlloc(heap, args[i].size);
 	    XtBCopy(args[i].addr, pargs[i].addr, args[i].size);
 	}
     }
@@ -400,7 +400,7 @@ CacheEnter(heap, converter, args, num_args, from, to, succeeded, hash,
 	XtBCopy(to->addr, &p->to.addr, to->size);
     } else {
 	p->to_is_value = False;
-	p->to.addr = (caddr_t)_XtHeapAlloc(heap, to->size);
+	p->to.addr = (XPointer)_XtHeapAlloc(heap, to->size);
 	bcopy((char *)to->addr, (char *)p->to.addr, to->size);
     }
     return p;
@@ -501,9 +501,9 @@ static void ComputeArgs(widget, convert_args, num_args, args)
 	case XtBaseOffset:
 #if defined(CRAY1) && !defined(__STDC__)
 	    args[i].addr =
-		(caddr_t)((int)widget + (int)convert_args[i].address_id);
+		(XPointer)((int)widget + (int)convert_args[i].address_id);
 #else
-	    args[i].addr = (caddr_t)((char *)widget + (int)convert_args[i].address_id);
+	    args[i].addr = (XPointer)((char *)widget + (int)convert_args[i].address_id);
 #endif
 	    break;
 
@@ -517,15 +517,15 @@ static void ComputeArgs(widget, convert_args, num_args, args)
 
 #if defined(CRAY1) && !defined(__STDC__)
 	    args[i].addr =
-		(caddr_t)((int)ancestor + (int)convert_args[i].address_id);
+		(XPointer)((int)ancestor + (int)convert_args[i].address_id);
 #else
 	    args[i].addr =
-		(caddr_t)((char *)ancestor + (int)convert_args[i].address_id);
+		(XPointer)((char *)ancestor + (int)convert_args[i].address_id);
 #endif
 	    break;
 
 	case XtImmediate:
-	    args[i].addr = (caddr_t) &(convert_args[i].address_id);
+	    args[i].addr = (XPointer) &(convert_args[i].address_id);
 	    break;
 
 	case XtProcedureArg:
@@ -552,9 +552,9 @@ static void ComputeArgs(widget, convert_args, num_args, args)
 		offset = 0;
 	    }
 #if defined(CRAY1) && !defined(__STDC__)
-	    args[i].addr = (caddr_t)((int)widget + offset);
+	    args[i].addr = (XPointer)((int)widget + offset);
 #else
-	    args[i].addr = (caddr_t)((char *)widget + offset);
+	    args[i].addr = (XPointer)((char *)widget + offset);
 #endif
 	    break;
 	default:
@@ -606,7 +606,7 @@ void XtDirectConvert(converter, args, num_args, from, to)
 		/* Perfect match */
 		to->size = p->to.size;
 		if (p->to_is_value)
-		    to->addr = (caddr_t)&p->to.addr;
+		    to->addr = (XPointer)&p->to.addr;
 		else
 		    to->addr = p->to.addr;
 		return;
@@ -708,7 +708,7 @@ _XtCallConverter(dpy, converter,
 			} else {	/* old-style call */
 			    to->size = p->to.size;
 			    if (p->to_is_value)
-				to->addr = (caddr_t)&p->to.addr;
+				to->addr = (XPointer)&p->to.addr;
 			    else
 				to->addr = p->to.addr;
 			}
@@ -970,7 +970,7 @@ static void _XtFreeCacheRec(app, p, prev)
 		args = CARGS(p);
 	    toc.size = p->to.size;
 	    if (p->to_is_value)
-		toc.addr = (caddr_t)&p->to.addr;
+		toc.addr = (XPointer)&p->to.addr;
 	    else
 		toc.addr = p->to.addr;
 	    (*CEXT(p)->destructor) (app, &toc, CEXT(p)->closure, args,
