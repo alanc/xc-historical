@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: extension.c,v 1.35 87/09/07 11:20:50 rws Locked $ */
+/* $Header: extension.c,v 1.36 87/09/09 13:16:05 rws Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -104,16 +104,14 @@ ExtensionEntry *AddExtension(name, NumEvents, NumErrors, MainProc,
 
 CloseDownExtensions()
 {
-    register int i;
-
-    for (i = 0; i < NumExtensions; i++)
+    while (NumExtensions)
     {
-	(* extensions[i]->CloseDown)(extensions[i]);
-	Xfree(extensions[i]->name);
-	Xfree(extensions[i]);
+	NumExtensions--;
+	(* extensions[NumExtensions]->CloseDown)(extensions[NumExtensions]);
+	Xfree(extensions[NumExtensions]->name);
+	Xfree(extensions[NumExtensions]);
     }
     Xfree(extensions);
-    NumExtensions = 0;
     extensions = (ExtensionEntry **)NULL;
     lastEvent = EXTENSION_EVENT_BASE;
     lastError = FirstExtensionError;
