@@ -1,4 +1,4 @@
-/* $XConsortium: windowstr.h,v 5.3 89/06/13 17:59:29 keith Exp $ */
+/* $XConsortium: windowstr.h,v 5.4 89/07/04 16:10:16 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -50,15 +50,11 @@ typedef struct _BackingStoreFuncs {
 } BackingStoreFuncs;
 
 typedef struct _BackingStore {
-    RegionPtr		obscured;
-    DDXPointRec		oldAbsCorner;    /* Screen origin of obscured region */
     BackingStoreFuncs	*funcs;
     DevUnion		devPrivate;
 } BackingStoreRec;
 
-/*
- * this structure is currently unused 
- */
+typedef enum { VTOther, VTStack, VTMove, VTUnmap, VTMap } VTKind;
 
 typedef struct _Validate {
     RegionPtr		exposed;	/* exposed regions, translated */
