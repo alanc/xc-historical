@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Scroll.c,v 1.7 87/09/14 00:43:28 swick Locked $";
+static char rcsid[] = "$Header: Scroll.c,v 1.8 87/12/02 15:59:40 swick Locked $";
 #endif lint
 
 /*
@@ -39,20 +39,25 @@ static char rcsid[] = "$Header: Scroll.c,v 1.7 87/09/14 00:43:28 swick Locked $"
 /* Private definitions. */
 
 static char *defaultTranslationTable[] = {
-	"<Btn1Down>:		StartPageBack()", /* should be generic... */
-	"<Btn2Down>:		StartScroll()",
-	"<Btn3Down>:		StartPageForward()", /* ...but needs TM args */
-	"<Btn1Up>:		DoPageBack()",
-	"<Btn2Up>:		DoScroll()",
-	"<Btn3Up>:		DoPageForward()",
-	"<Motion>2:		MoveThumb()", /* bug? in TM forces button spec here */
-	NULL
+    "<Btn1Down>:   StartScroll(Forward)",
+    "<Btn2Down>:   StartScroll(Continuous) DoThumb()",
+    "<Btn3Down>:   StartScroll(Backward)",
+    "<Btn2Motion>: DoThumb()",
+    "Any<BtnUp>:   DoScroll(Proportional) EndScroll()", /* ||| 'Any' should default */
+#ifdef bogusScrollKeys
+    /* examples */
+    "<KeyPress>f:  StartScroll(Forward) DoScroll(FullLength) EndScroll()",
+    "<KeyPress>b:  StartScroll(Backward) DoScroll(FullLength) EndScroll()",
+#endif
+    NULL
 };
 
 /* grodyness needed because Xrm wants pointer to thing, not thing... */
 static caddr_t defaultTranslations = (caddr_t)defaultTranslationTable;
 
 static XtResource resources[] = {
+  {XtNwidth, XtCWidth, XrmRInt, sizeof(int),
+     XtOffset(ScrollbarWidget, core.width), XtRString, "10"},
   {XtNorientation, XtCOrientation, XtROrientation, sizeof(XtOrientation),
      XtOffset(ScrollbarWidget, scrollbar.orientation), XtRString, "vertical"},
   {XtNscrollProc, XtCCallback, XtRPointer, sizeof(caddr_t),
@@ -87,22 +92,16 @@ static void Resize();
 static void Redisplay();
 static Boolean SetValues();
 
-static void StartPageBack();
-static void StartSmoothScroll();
-static void StartPageForward();
-static void DoPageBack();
-static void DoSmoothScroll();
-static void DoPageForward();
-static void MoveThumb();
+static void StartScroll();
+static void DoThumb();
+static void DoScroll();
+static void EndScroll();
 
 static XtActionsRec actions[] = {
-	{"StartPageBack",	StartPageBack},
-	{"StartScroll",		StartSmoothScroll},
-	{"StartPageForward",	StartPageForward},
-	{"DoPageBack",		DoPageBack},
-	{"DoScroll",		DoSmoothScroll},
-	{"DoPageForward",	DoPageForward},
-	{"MoveThumb",		MoveThumb},
+	{"StartScroll",		StartScroll},
+	{"DoThumb",		DoThumb},
+	{"DoScroll",		DoScroll},
+	{"EndScroll",		EndScroll},
 	{NULL,NULL}
 };
 
@@ -121,7 +120,7 @@ static ScrollbarClassRec scrollbarClassRec = {
     /* resources        */      resources,
     /* num_resources    */      XtNumber(resources),
     /* xrm_class        */      NULLQUARK,
-    /* compress_motion	*/	FALSE,
+    /* compress_motion	*/	TRUE,
     /* compress_exposure*/	TRUE,
     /* visible_interest */      FALSE,
     /* destroy          */      NULL,
@@ -265,22 +264,22 @@ static void PaintThumb( w )
   ScrollbarWidget w;
 {
     int length, oldtop, oldbot, newtop, newbot;
+
     length = PICKLENGTH(w, w->core.width, w->core.height);
     oldtop = w->scrollbar.topLoc;
     oldbot = oldtop + w->scrollbar.shownLength;
     newtop = length * w->scrollbar.top;
     newbot = newtop + length * (w->scrollbar.shown);
     if (newbot < newtop + MINBARHEIGHT) newbot = newtop + MINBARHEIGHT;
-    if (newtop < oldtop)
-	FillArea(w, newtop, MIN(newbot, oldtop), 1);
-    if (newtop > oldtop)
-	FillArea(w, oldtop, MIN(newtop, oldbot), 0);
-    if (newbot < oldbot)
-	FillArea(w, MAX(newbot, oldtop), oldbot, 0);
-    if (newbot > oldbot)
-	FillArea(w, MAX(newtop, oldbot), newbot, 1);
     w->scrollbar.topLoc = newtop;
     w->scrollbar.shownLength = newbot - newtop;
+
+    if (XtIsRealized(w)) {
+	if (newtop < oldtop) FillArea(w, newtop, MIN(newbot, oldtop), 1);
+	if (newtop > oldtop) FillArea(w, oldtop, MIN(newtop, oldbot), 0);
+	if (newbot < oldbot) FillArea(w, MAX(newbot, oldtop), oldbot, 0);
+	if (newbot > oldbot) FillArea(w, MAX(newtop, oldbot), newbot, 1);
+    }
 }
 
 
@@ -301,7 +300,7 @@ static void Initialize( request, new, args, num_args )
     gcValues.foreground = w->scrollbar.foreground;
     gcValues.fill_style = FillTiled;
     gcValues.tile = w->scrollbar.thumb;
-    w->scrollbar.gc = XtGetGC( w,
+    w->scrollbar.gc = XtGetGC( new,
 			       GCForeground | GCFillStyle | GCTile,
 			       &gcValues);
 
@@ -335,7 +334,7 @@ static Boolean SetValues( current, request, desired, last )
    Widget current,		/* what I am */
           request,		/* what he wants me to be */
           desired;		/* what I will become */
-   Boolean last;
+   Boolean last;		/* TRUE if not called by subclass */
 {
     ScrollbarWidget w = (ScrollbarWidget) current;
     ScrollbarWidget rw = (ScrollbarWidget) request;
@@ -360,6 +359,11 @@ static Boolean SetValues( current, request, desired, last )
 
     if (redraw)
 	w->scrollbar.topLoc = -1000;
+
+#ifdef notdef
+    if (last)
+        XtSetValuesGeometryRequest( current, desired, (XtWidgetGeometry*)NULL);
+#endif
 
     return( redraw || thumbmoved );
 }
@@ -392,15 +396,20 @@ static void Redisplay( gw, event )
 }
 
 
-static void StartScroll(gw, event, direction)
+static void StartScroll( gw, event, params, num_params )
   Widget gw;
   XEvent *event;
-  char direction;		/* Back|Forward|Smooth */
+  String *params;		/* direction: Back|Forward|Smooth */
+  Cardinal num_params;		/* we only support 1 */
 {
     ScrollbarWidget w = (ScrollbarWidget) gw;
     Cursor cursor;
+    char direction;
 
-    if (w->scrollbar.direction != 0) return;
+    if (w->scrollbar.direction != 0) return; /* if we're already scrolling */
+    if (num_params > 0) direction = *params[0];
+    else		direction = 'C';
+
     w->scrollbar.direction = direction;
 
     switch( direction ) {
@@ -414,8 +423,8 @@ static void StartScroll(gw, event, direction)
 				   ? w->scrollbar.downCursor
 				   : w->scrollbar.rightCursor; break;
 
-	case 'S':
-	case 's':	cursor = (w->scrollbar.orientation == XtorientVertical)
+	case 'C':
+	case 'c':	cursor = (w->scrollbar.orientation == XtorientVertical)
 				   ? w->scrollbar.rightCursor
 				   : w->scrollbar.upCursor; break;
 
@@ -425,115 +434,83 @@ static void StartScroll(gw, event, direction)
     XDefineCursor(XtDisplay(w), XtWindow(w), cursor);
 
     XFlush(XtDisplay(w));
-
-    if (direction == 'S' || direction == 's') MoveThumb(gw, event);
-
 }
 
 
-/* The following are only needed until the TM implements args */
-
-static void StartPageBack( gw, event )
+static void DoScroll( gw, event, params, num_params   )
    Widget gw;
    XEvent *event;
-{
-    StartScroll( gw, event, 'B' );
-};
-
-static void StartPageForward( gw, event )
-   Widget gw;
-   XEvent *event;
-{
-    StartScroll( gw, event, 'F' );
-};
-
-static void StartSmoothScroll( gw, event )
-   Widget gw;
-   XEvent *event;
-{
-    StartScroll( gw, event, 'S' );
-};
-
-
-static void DoScroll( gw, event, direction )
-   Widget gw;
-   XEvent *event;
-   char direction;
+   String *params;		/* style: Proportional|FullLength */
+   Cardinal num_params;		/* we only support 1 */
 {
     ScrollbarWidget w = (ScrollbarWidget) gw;
+    int call_data;
+    char style;
 
-    if (w->scrollbar.direction == 0) return;
+    if (w->scrollbar.direction == 0) return; /* if no StartScroll */
+
+    if (num_params > 0) style = *params[0];
+    else		style = 'P';
+
+    switch( style ) {
+        case 'P':    /* Proportional */
+        case 'p':    call_data = InRange( PICKLENGTH( w, event->xmotion.x,
+						      event->xmotion.y),
+					  0,
+					  PICKLENGTH( w, w->core.width,
+						      w->core.height)); break;
+
+        case 'F':    /* FullLength */
+        case 'f':    call_data = PICKLENGTH( w, w->core.width,
+					     w->core.height); break;
+    }
+
+    switch( w->scrollbar.direction ) {
+        case 'B':
+        case 'b':    call_data = -call_data;
+	  	     /* fall through */
+        case 'F':
+	case 'f':    XtCallCallbacks( gw, XtNscrollProc, (caddr_t)call_data );
+	             break;
+
+        case 'C':
+	case 'c':    /* DoThumb has already called the thumbProc(s) */
+		     break;
+    }
+}
+
+/* ARGSUSED */
+static void EndScroll(gw, event, params, num_params )
+   Widget gw;
+   XEvent *event;		/* unused */
+   String *params;		/* unused */
+   Cardinal num_params;		/* unused */
+{
+    ScrollbarWidget w = (ScrollbarWidget) gw;
 
     XDefineCursor(XtDisplay(w), XtWindow(w), w->scrollbar.inactiveCursor);
     XFlush(XtDisplay(w));
 
-    switch( direction ) {
-        case 'B':
-	case 'b':
-        case 'F':
-	case 'f':    XtCallCallbacks(
-			    gw,
-			    XtNscrollProc,
-			    (caddr_t)InRange( PICKLENGTH( w,
-							  event->xmotion.x,
-							  event->xmotion.y),
-					      0,
-					      (int)PICKLENGTH( w,
-							       w->core.width,
-							       w->core.height))
-			    );
-	             break;
-
-        case 'S':
-	case 's':    /* MoveThumb has already called the thumbProc(s) */
-		     break;
-    }
-
     w->scrollbar.direction = 0;
-
 }
 
-/* The following are only needed until the TM implements args */
 
-static void DoPageBack( gw, event )
+/* ARGSUSED */
+static void DoThumb( gw, event, params, num_params )
    Widget gw;
    XEvent *event;
-{
-    DoScroll( gw, event, 'B' );
-}
-
-static void DoPageForward( gw, event )
-   Widget gw;
-   XEvent *event;
-{
-    DoScroll( gw, event, 'F' );
-};
-
-static void DoSmoothScroll( gw, event )
-   Widget gw;
-   XEvent *event;
-{
-    DoScroll( gw, event, 'S' );
-};
-
-
-
-static void MoveThumb( gw, event )
-   Widget gw;
-   XEvent *event;
+   String *params;		/* unused */
+   Cardinal num_params;		/* unused */
 {
     ScrollbarWidget w = (ScrollbarWidget) gw;
 
-    if (w->scrollbar.direction == 0) return;
+    if (w->scrollbar.direction == 0) return; /* if no StartScroll */
 
     w->scrollbar.top = FractionLoc(w, event->xmotion.x, event->xmotion.y);
     PaintThumb(w);
-
-/*    XFlush(XtDisplay(w)); */
+    XFlush(XtDisplay(w));
 
     XtCallCallbacks( gw, XtNthumbProc, (caddr_t)w->scrollbar.top);
-
-    w->scrollbar.direction = 'S';
 }
 
 
