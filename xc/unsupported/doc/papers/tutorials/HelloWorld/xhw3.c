@@ -7,7 +7,7 @@
 #define	STRING	"Hello,  World"
 
 Arg wargs[] = {
-    XtNlabel,	(XtArgVal) STRING,
+    {XtNlabel,	(XtArgVal) STRING},
 };
 
 main(argc, argv)
