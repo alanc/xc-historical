@@ -1,4 +1,4 @@
-/* $XConsortium: pexSc.c,v 5.5 92/06/02 18:12:19 hersh Exp $ */
+/* $XConsortium: pexSc.c,v 5.6 92/12/01 17:17:51 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -271,7 +271,16 @@ pexCreateSearchContextReq *strmPtr;
     psc->inverted.maxPairs=SC_NS_LIMIT;
     psc->inverted.pPairs =
 		(ddNSPair *)Xalloc(psc->inverted.maxPairs * sizeof(ddNSPair));
-    psc->startPath = 0;
+
+    psc->position.x = psc->position.y = psc->position.z = 0.0;
+    psc->distance = 0.0;
+    psc->ceiling = 1;
+    psc->modelClipFlag = xFalse;
+
+    if (strmPtr->itemMask & PEXSCStartPath)
+	psc->startPath = 0;   /* list will be created in UpdateSearchContext */
+    else
+	psc->startPath = puCreateList(DD_ELEMENT_REF);
 
     ptr = (unsigned char *) (strmPtr + 1);
 
