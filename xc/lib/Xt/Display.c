@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Display.c,v 1.42 90/04/04 11:27:45 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Display.c,v 1.43 90/04/05 10:51:28 swick Exp $";
 /* $oHeader: Display.c,v 1.9 88/09/01 11:28:47 asente Exp $ */
 #endif /*lint*/
 
@@ -128,7 +128,6 @@ Display *XtOpenDisplay(app, displayName, applName, className,
 {
 	char  displayCopy[256];
 	int i;
-	char *rindex(), *index(), *strncpy();
 	Display *d;
 #ifdef OLDCOLONDISPLAY
 	int squish = -1;
