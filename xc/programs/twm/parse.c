@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: parse.c,v 1.33 89/12/08 19:18:35 jim Exp $
+ * $XConsortium: parse.c,v 1.34 89/12/09 16:18:34 jim Exp $
  *
  * parse the .twmrc file
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: parse.c,v 1.33 89/12/08 19:18:35 jim Exp $";
+"$XConsortium: parse.c,v 1.34 89/12/09 16:18:34 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -58,7 +58,7 @@ static int ptr = 0;
 static int len = 0;
 static char buff[BUF_LEN+1];
 static char overflowbuff[20];		/* really only need one */
-static int overflowlen = 0;
+static int overflowlen;
 static char **stringListSource, *currentString;
 static int ParseUsePPosition();
 
@@ -97,6 +97,7 @@ static int doparse (ifunc, srctypename, srcname)
     yylineno = 1;
     ParseError = FALSE;
     twmInputFunc = ifunc;
+    overflowlen = 0;
 
     yyparse();
 
