@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*-
  * sunCursor.c --
  *	Functions for maintaining the Sun software cursor...
