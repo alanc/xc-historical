@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xlcint.h,v 11.9 91/04/23 18:19:16 rws Exp $
+ * $XConsortium: Xlcint.h,v 11.10 91/04/23 18:46:07 rws Exp $
  */
 
 /*
@@ -200,17 +200,17 @@ typedef struct {
 
     int (*mb_escapement)(
 #if NeedFunctionPrototypes
-	Display*, XFontSet, char*, int
+	XFontSet, char*, int
 #endif
 	);
     int (*mb_extents)(
 #if NeedFunctionPrototypes
-	Display*, XFontSet, char*, int, XRectangle*, XRectangle*
+	XFontSet, char*, int, XRectangle*, XRectangle*
 #endif
 	);
-    int (*mb_extents_per_char)(
+    Status (*mb_extents_per_char)(
 #if NeedFunctionPrototypes
-	Display*, XFontSet, char*, int, XRectangle*, XRectangle*, int, int*,
+	XFontSet, char*, int, XRectangle*, XRectangle*, int, int*,
 	XRectangle*, XRectangle*
 #endif
 	);
@@ -229,17 +229,17 @@ typedef struct {
 
     int (*wc_escapement)(
 #if NeedFunctionPrototypes
-	Display*, XFontSet, wchar_t*, int
+	XFontSet, wchar_t*, int
 #endif
 	);
     int (*wc_extents)(
 #if NeedFunctionPrototypes
-	Display*, XFontSet, wchar_t*, int, XRectangle*, XRectangle*
+	XFontSet, wchar_t*, int, XRectangle*, XRectangle*
 #endif
 	);
-    int (*wc_extents_per_char)(
+    Status (*wc_extents_per_char)(
 #if NeedFunctionPrototypes
-	Display*, XFontSet, wchar_t*, int, XRectangle*, XRectangle*, int, int*,
+	XFontSet, wchar_t*, int, XRectangle*, XRectangle*, int, int*,
 	XRectangle*, XRectangle*
 #endif
 	);
