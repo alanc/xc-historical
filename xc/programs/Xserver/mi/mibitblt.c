@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mibitblt.c,v 1.57 88/05/21 17:24:48 rws Exp $ */
+/* $Header: mibitblt.c,v 1.58 88/07/06 11:18:37 rws Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -255,7 +255,7 @@ miCopyArea(pSrcDrawable, pDstDrawable,
         Xfree(pbits);
     }
     miHandleExposures(pSrcDrawable, pDstDrawable, pGC, xIn, yIn,
-		      widthSrc, heightSrc, xOut, yOut);
+		      widthSrc, heightSrc, xOut, yOut, 0);
     if(realSrcClip)
 	(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
 		
@@ -630,7 +630,7 @@ miCopyPlane(pSrcDrawable, pDstDrawable,
     miOpqStipDrawable(pDstDrawable, pGC, prgnSrc, ptile, 0,
                       width, height, dstx, dsty);
     miHandleExposures(pSrcDrawable, pDstDrawable, pGC, srcx, srcy,
-		      width, height, dstx, dsty);
+		      width, height, dstx, dsty, bitPlane);
     Xfree(ptile);
     (*pGC->pScreen->RegionDestroy)(prgnSrc);
 }
