@@ -29,30 +29,28 @@
  * The MANPATH enviornment variable will override this.
  */
 
-#ifndef DEFAULTMANPATH
+#ifndef SYSMANPATH
 
 #ifdef macII
-#  define MANDIR "/usr/catman/u_man:/usr/catman/a_man"
+#  define SYSMANPATH "/usr/catman/u_man:/usr/catman/a_man"
 #endif /* macII */
 #ifdef SVR4
-#  define MANDIR "/usr/share/man"
+#  define SYSMANPATH "/usr/share/man"
 #endif /* SVR4 */
 #ifdef hcx
-#  define MANDIR "/usr/catman/local_man:/usr/catman/u_man:/usr/catman/a_man:/usr/catman/p_man:/usr/catman/ada_man"
+#  define SYSMANPATH "/usr/catman/local_man:/usr/catman/u_man:/usr/catman/a_man:/usr/catman/p_man:/usr/catman/ada_man"
 #endif /* hcx */
 #if defined(SYSV) && defined(SYSV386)
-#  define MANDIR "/usr/catman/u_man:/usr/catman/p_man"
+#  define SYSMANPATH "/usr/catman/u_man:/usr/catman/p_man"
 #endif /* SYSV386 */
 #ifdef sgi
-#  define MANDIR "/usr/catman/a_man:/usr/catman/g_man:/usr/catman/p_man:/usr/catman/u_man:/usr/man/p_man:/usr/man/u_man:/usr/man"
+#  define SYSMANPATH "/usr/catman/a_man:/usr/catman/g_man:/usr/catman/p_man:/usr/catman/u_man:/usr/man/p_man:/usr/man/u_man:/usr/man"
 #endif /* sgi */
 
-#ifndef MANDIR
-#  define MANDIR "/usr/man"
+#ifndef SYSMANPATH
+#  define SYSMANPATH "/usr/man"
 #endif
 
-#else
-#define MANDIR DEFAULTMANPATH
 #endif
 
 /*
