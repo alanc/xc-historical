@@ -1,4 +1,4 @@
-/* $XConsortium: Xcmsint.h,v 1.1 91/02/11 11:50:46 dave Exp $ */
+/* $XConsortium: Xcmsint.h,v 1.2 91/02/11 18:18:10 dave Exp $ */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -39,7 +39,7 @@
 #define Xcmsint_H
 
 #include <sys/types.h>
-#include "Xcms.h"
+#include <X11/Xcms.h>
 
 /*
  *	DEFINES

@@ -272,7 +272,7 @@ extern Status XcmsConvertColors (
     XcmsColor []	/* colorArry_in_out */,
     unsigned int	/* nColors */,
     XcmsSpecFmt		/* targetFormat */,
-    Bool []		/* compArry_return */
+    Bool*		/* compArry_return */
 #endif
 );
 
@@ -346,7 +346,7 @@ extern Status XcmsStoreColors (
     Colormap		/* colormap */,
     XcmsColor []	/* colorArry_in */,
     unsigned int	/* nColors */,
-    Bool []		/* compArry_return */
+    Bool*		/* compArry_return */
 #endif
 );
 
