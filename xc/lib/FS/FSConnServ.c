@@ -1,6 +1,6 @@
-/* $XConsortium: FSConnServ.c,v 1.15 91/11/29 13:47:40 rws Exp $ */
+/* $XConsortium: FSConnServ.c,v 1.17 93/07/06 15:15:42 gildea Exp $ */
 
-/* @(#)FSConnServ.c	4.1	91/05/02
+/*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
  * Massachusetts Institute of Technology
@@ -419,6 +419,9 @@ _FSConnectServer(server_name, expanded_name)
     while (*numbuf_ptr != '\0')
 	*(server_ptr++) = *(numbuf_ptr++);
     *server_ptr = '\0';
+    FSfree(tmp_svr_num);
+    if (tmp_server_addr)
+	FSfree(tmp_server_addr);
     (void) strcpy(expanded_name, serverbuf);
     return (fd);
 
