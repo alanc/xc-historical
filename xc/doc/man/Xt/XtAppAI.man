@@ -188,6 +188,11 @@ function causes the \*(xI read routine to stop watching for input
 from the input source.
 .SH "SEE ALSO"
 XtAppAddTimeOut(3Xt),XtAppAddSignal(3Xt)
+.br
+\fI\*(xT\fP
+.br
+\fI\*(xL\fP
+.LP
 .SH "BUGS"
 In ANSI C it is necessary to cast the condition to an XtPointer, e.g.:
 .RS 4
@@ -204,8 +209,3 @@ proc,
 .br
 client_data);
 .RE
-.LP
-.br
-\fI\*(xT\fP
-.br
-\fI\*(xL\fP
