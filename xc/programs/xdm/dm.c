@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.36 90/02/07 18:47:14 keith Exp $
+ * $XConsortium: dm.c,v 1.37 90/02/12 17:56:21 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -302,7 +302,8 @@ WaitForChild ()
 		break;
 	    case OBEYSESS_DISPLAY:
 		Debug ("Display exited with OBEYSESS_DISPLAY\n");
-		if (d->displayType.lifetime != Permanent)
+		if (d->displayType.lifetime != Permanent ||
+		    d->status == zombie)
 		    StopDisplay (d);
 		else
 		    RestartDisplay (d, FALSE);
@@ -315,7 +316,8 @@ WaitForChild ()
 		break;
 	    case OPENFAILED_DISPLAY:
 		Debug ("Display exited with OPENFAILED_DISPLAY\n");
-		if (d->displayType.origin == FromXDMCP)
+		if (d->displayType.origin == FromXDMCP ||
+		    d->status == zombie)
 		{
 		    SendFailed (d, "Cannot open display");
 		    StopDisplay (d);
