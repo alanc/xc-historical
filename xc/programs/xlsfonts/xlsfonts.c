@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xlsfonts.c,v 1.26 89/06/30 14:18:24 jim Exp $
+ * $XConsortium: xlsfonts.c,v 1.27 89/09/25 14:17:13 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -37,6 +37,7 @@ int columns = 0;
 #define L_LONG 2
 #define L_VERYLONG 3
 
+Bool	sort_output = True;
 int	long_list = L_SHORT;
 int	nnames = N_START;
 int	font_cnt;
@@ -60,6 +61,8 @@ usage()
 	"    -C                       force columns\n");
 	fprintf (stderr,
 	"    -1                       force single column\n");
+	fprintf (stderr,
+	"    -u                       keep output unsorted\n");
 	fprintf (stderr,
 	"    -w width                 maximum width for multiple columns\n");
 	fprintf (stderr,
@@ -114,6 +117,9 @@ char **argv;
 					argv++;
 					columns = atoi(argv[0]);
 					goto next;
+				case 'u':
+					sort_output = False;
+					break;
 				default:
 					usage();
 					break;
@@ -193,7 +199,7 @@ show_fonts()
 		return;
 
 	/* first sort the output */
-	qsort(font_list, font_cnt, sizeof(FontList), compare);
+	if (sort_output) qsort(font_list, font_cnt, sizeof(FontList), compare);
 
 	if (long_list > L_MEDIUM) {
 	    for (i = 0; i < font_cnt; i++) {
