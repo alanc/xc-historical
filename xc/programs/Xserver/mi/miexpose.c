@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: miexpose.c,v 1.29 88/04/10 12:03:10 rws Exp $ */
+/* $Header: miexpose.c,v 1.30 88/07/06 11:19:53 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -59,18 +59,23 @@ this will NOT work unless this routine is allowed to complete before
 the dispatcher looks at this client again.
 
 NOTE:
-    this does not deal with backing store.
+     added argument 'plane' is used to indicate how exposures from backing
+store should be accomplished. If plane is 0 (i.e. no bit plane), CopyArea
+should be used, else a CopyPlane of the indicated plane will be used. The
+exposing is done by the backing store's GraphicsExpose function, of course.
+
 */
 
 void
 miHandleExposures(pSrcDrawable, pDstDrawable,
-		  pGC, srcx, srcy, width, height, dstx, dsty)
+		  pGC, srcx, srcy, width, height, dstx, dsty, plane)
     register DrawablePtr	pSrcDrawable;
     register DrawablePtr	pDstDrawable;
     GCPtr 			pGC;
     int 			srcx, srcy;
     int 			width, height;
     int 			dstx, dsty;
+    unsigned long		plane;
 {
     register ScreenPtr pscr = pGC->pScreen;
     RegionPtr prgnSrcClip;	/* drawable-relative source clip */
@@ -84,6 +89,7 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
 				   and then screen relative to paint 
 				   the window background
 				*/
+    WindowPtr pSrcWin;
 
     if (pSrcDrawable->type == DRAWABLE_WINDOW)
     {
@@ -97,6 +103,7 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
 	    (*pscr->RegionCopy)(prgnSrcClip,
 				((WindowPtr)pSrcDrawable)->clipList);
 	}
+	pSrcWin = (WindowPtr)pSrcDrawable;
 	(*pscr->TranslateRegion)(prgnSrcClip,
 				 -((WindowPtr)pSrcDrawable)->absCorner.x,
 				 -((WindowPtr)pSrcDrawable)->absCorner.y);
@@ -110,6 +117,7 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
 	box.x2 = ((PixmapPtr)pSrcDrawable)->width;
 	box.y2 = ((PixmapPtr)pSrcDrawable)->height;
 	prgnSrcClip = (*pscr->RegionCreate)(&box, 1);
+	pSrcWin = (WindowPtr)NULL;
     }
 
     if (pDstDrawable == pSrcDrawable)
@@ -157,6 +165,22 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
     prgnExposed = (*pscr->RegionCreate)(NullBox, 1);
     (*pscr->Inverse)(prgnExposed, prgnSrc, &srcBox);
 
+    if (pSrcWin && (pSrcWin->backingStore != NotUseful) &&
+	(pSrcWin->backStorage != (BackingStorePtr)NULL))
+    {
+	/*
+	 * Copy any areas from the source backing store. Modifies
+	 * prgnExposed.
+	 */
+	(* pSrcWin->backStorage->ExposeCopy) (pSrcDrawable,
+					      pDstDrawable,
+					      pGC,
+					      prgnExposed,
+					      srcx, srcy,
+					      dstx, dsty,
+					      plane);
+    }
+    
     /* move them over the destination */
     (*pscr->TranslateRegion)(prgnExposed, dstx-srcx, dsty-srcy);
 
@@ -260,35 +284,66 @@ miWindowExposures(pWin)
 	register xEvent *pe;
 	register BoxPtr pBox;
 	register int i;
+	RegionPtr exposures = prgn;
 
-        (*pWin->PaintWindowBackground)(pWin, prgn, PW_BACKGROUND);
-	(* pWin->drawable.pScreen->TranslateRegion)(prgn,
-			-pWin->absCorner.x, -pWin->absCorner.y);
+	/*
+	 * Restore from backing-store FIRST. Note that while the double
+	 * translation is somewhat expensive, it's not as expensive as
+	 * the double refresh. In addition, much of the time, pWin->exposed
+	 * will come back empty from RestoreAreas, so the second
+	 * translation won't happen.
+	 */
  	if (pWin->backingStore != NotUseful && pWin->backStorage)
 	{
-		/* modifies pWin->exposed */
-	    (*pWin->backStorage->RestoreAreas)(pWin);
+	    /*
+	     * RestoreAreas needs the region window-relative, but
+	     * PaintWindowBackground needs it absolute, so translate down
+	     * then back again. Note that RestoreAreas modifies prgn
+	     * (pWin->exposed).
+	     */
+	    (* pWin->drawable.pScreen->TranslateRegion)(prgn,
+							-pWin->absCorner.x,
+							-pWin->absCorner.y);
+	    exposures = (*pWin->backStorage->RestoreAreas)(pWin);
+	    if (prgn->numRects == 0)
+	    {
+		return;
+	    }
+	    else
+	    {
+		(* pWin->drawable.pScreen->TranslateRegion)(prgn,
+							    pWin->absCorner.x,
+							    pWin->absCorner.y);
+	    }
 	}
-	pBox = prgn->rects;
-        
-	if(!(pEvent = (xEvent *)
-	    ALLOCATE_LOCAL(prgn->numRects * sizeof(xEvent))))
-	    return;
-	pe = pEvent;
-        
-	for (i=1; i<=prgn->numRects; i++, pe++, pBox++)
+        (*pWin->PaintWindowBackground)(pWin, prgn, PW_BACKGROUND);
+	if (exposures)
 	{
-	    pe->u.u.type = Expose;
-	    pe->u.expose.window = pWin->wid;
-	    pe->u.expose.x = pBox->x1;
-	    pe->u.expose.y = pBox->y1;
-	    pe->u.expose.width = pBox->x2 - pBox->x1;
-	    pe->u.expose.height = pBox->y2 - pBox->y1;
-	    pe->u.expose.count = (prgn->numRects - i);
+	    (* pWin->drawable.pScreen->TranslateRegion)(exposures,
+			-pWin->absCorner.x, -pWin->absCorner.y);
+	    pBox = exposures->rects;
+
+	    if(!(pEvent = (xEvent *)
+		ALLOCATE_LOCAL(exposures->numRects * sizeof(xEvent))))
+		return;
+	    pe = pEvent;
+
+	    for (i=1; i<=exposures->numRects; i++, pe++, pBox++)
+	    {
+		pe->u.u.type = Expose;
+		pe->u.expose.window = pWin->wid;
+		pe->u.expose.x = pBox->x1;
+		pe->u.expose.y = pBox->y1;
+		pe->u.expose.width = pBox->x2 - pBox->x1;
+		pe->u.expose.height = pBox->y2 - pBox->y1;
+		pe->u.expose.count = (exposures->numRects - i);
+	    }
+	    DeliverEvents(pWin, pEvent, exposures->numRects, NullWindow);
+	    DEALLOCATE_LOCAL(pEvent);
+	    if (exposures != prgn)
+	        (* pWin->drawable.pScreen->RegionDestroy) (exposures);
 	}
-	DeliverEvents(pWin, pEvent, prgn->numRects, NullWindow);
 	prgn->numRects = 0;
-	DEALLOCATE_LOCAL(pEvent);
     }
 }
 
@@ -314,8 +369,9 @@ to get the tile to align correctly we set the GC's tile origin to
 be the (x,y) of the window's upper left corner, after which we
 get the right bits when drawing into the root.
 
-in order to call ChangeGC, we need to get an id for the pixmap, and
-enter it in the resource table.
+because the clip_mask is being set to None, we may call DoChangeGC with
+fPointer set true, thus we no longer need to install the background or
+border tile in the resource table.
 */
 void
 miPaintWindow(pWin, prgn, what)
@@ -329,7 +385,6 @@ int what;
     DDXPointRec oldCorner;
     BoxRec box;
     GCPtr pGC;
-    int pid = 0;
     register int i;
     register BoxPtr pbox;
     register ScreenPtr pScreen = pWin->drawable.pScreen;
@@ -359,10 +414,7 @@ int what;
 	else
 	{
 	    gcval[1] = FillTiled;
-	    pid = FakeClientID(0);
-	    AddResource(pid, RT_PIXMAP, pWin->backgroundTile,
-			NoopDDA, RC_CORE);
-	    gcval[2] = pid;
+	    gcval[2] = (int)pWin->backgroundTile;
 	    gcmask |= GCTile;
 	}
     }
@@ -377,15 +429,12 @@ int what;
 	else
 	{
 	    gcval[1] = FillTiled;
-	    pid = FakeClientID(0);
-	    AddResource(pid, RT_PIXMAP, pWin->borderTile,
-			NoopDDA, RC_CORE);
-	    gcval[2] = pid;
+	    gcval[2] = (int)pWin->borderTile;
 	    gcmask |= GCTile;
 	}
     }
     pGC = GetScratchGC(pWin->drawable.depth, pWin->drawable.pScreen);
-    DoChangeGC(pGC, gcmask, gcval, 0);
+    DoChangeGC(pGC, gcmask, gcval, 1);
 
     box.x1 = 0;
     box.y1 = 0;
@@ -397,6 +446,10 @@ int what;
     pWin->absCorner.x = pWin->absCorner.y = 0;
     pWin->clipList = (*pScreen->RegionCreate)(&box, 1);
     pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
+
+    if (pWin->backingStore != NotUseful && pWin->backStorage)
+	(*pWin->backStorage->DrawGuarantee) (pWin, pGC, GuaranteeVisBack);
+
     ValidateGC(pWin, pGC);
 
     prect = (xRectangle *)ALLOCATE_LOCAL(prgn->numRects * sizeof(xRectangle));
@@ -412,12 +465,14 @@ int what;
     (*pGC->PolyFillRect)(pWin, pGC, prgn->numRects, prect);
     DEALLOCATE_LOCAL(prect);
 
-    if (pid)
-	FreeResource(pid, RC_CORE);
     (*pScreen->RegionDestroy)(pWin->clipList);
     pWin->clipList = prgnWin;
     pWin->absCorner = oldCorner;
     pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
+
+    if (pWin->backingStore != NotUseful && pWin->backStorage)
+	(*pWin->backStorage->DrawGuarantee) (pWin, pGC, GuaranteeNothing);
+
     FreeScratchGC(pGC);
 }
 
