@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.58 88/08/13 14:05:44 rws Exp $ */
+/* $Header: dispatch.c,v 1.59 88/08/14 11:29:07 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -3288,15 +3288,27 @@ NextAvailableClient()
 SendConnectionSetupInfo(client)
     ClientPtr client;
 {
-    xWindowRoot *root;
-    int i;
+    register xWindowRoot *root;
+    register int i;
 
     ((xConnSetup *)ConnectionInfo)->ridBase = client->clientAsMask;
     ((xConnSetup *)ConnectionInfo)->ridMask = 0xfffff;
         /* fill in the "currentInputMask" */
     root = (xWindowRoot *)(ConnectionInfo + connBlockScreenStart);
-    for (i=0; i<screenInfo.numScreens; root++, i++) 
+    for (i=0; i<screenInfo.numScreens; i++) 
+    {
+	register int j;
+	register xDepth *pDepth;
+
         root->currentInputMask = WindowTable[i].allEventMasks;
+	pDepth = (xDepth *)(root + 1);
+	for (j = 0; j < root->nDepths; j++)
+	{
+	    pDepth = (xDepth *)(((char *)(pDepth + 1)) +
+				pDepth->nVisuals * sizeof(xVisualType));
+	}
+	root = (xWindowRoot *)pDepth;
+    }
 
     if (client->swapped) {
 	WriteSConnSetupPrefix(client, &connSetupPrefix);
