@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: bifmacro.h,v 5.1 91/02/16 10:06:57 rws Exp $ */
 
 /*
  */
@@ -140,10 +140,10 @@
 	switch ( begin_or_end )\
 	{\
 	case BIF_P_BEGIN:\
-		printf("Beginning what \n");\
+		printf("Beginning %s \n", what);\
 		break;\
 	case BIF_P_END:\
-		printf("End what \n");\
+		printf("End %s \n", what);\
 		break;\
 	}\
 } /* End macro BEGEND */
