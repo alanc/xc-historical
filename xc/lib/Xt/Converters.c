@@ -1,4 +1,4 @@
-/* $XConsortium: Converters.c,v 1.67 91/04/08 19:12:00 converse Exp $ */
+/* $XConsortium: Converters.c,v 1.68 91/04/09 16:19:36 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -77,6 +77,9 @@ void XtDisplayStringConversionWarning(dpy, from, toType)
     String from, toType;
 #endif
 {
+#ifndef NO_MIT_HACKS	
+    /* Allow suppression of conversion warnings. %%%  Not specified. */
+
     static enum {Check, Report, Ignore} report_it = Check;
 
     if (report_it == Check) {
@@ -110,6 +113,7 @@ void XtDisplayStringConversionWarning(dpy, from, toType)
     }
 
     if (report_it == Report) {
+#endif /* ifndef NO_MIT_HACKS */
 	String params[2];
 	Cardinal num_params = 2;
 	params[0] = (String)from;
@@ -118,7 +122,9 @@ void XtDisplayStringConversionWarning(dpy, from, toType)
 		   XtNconversionError,"string",XtCXtToolkitError,
 		   "Cannot convert string \"%s\" to type %s",
 		    params,&num_params);
+#ifndef NO_MIT_HACKS	
     }
+#endif /* ifndef NO_MIT_HACKS */
 }
 
 #if NeedFunctionPrototypes
