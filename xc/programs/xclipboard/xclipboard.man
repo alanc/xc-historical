@@ -1,4 +1,4 @@
-.TH XCLIPBOARD 1 "23 October 1988" "X Version 11"
+.TH XCLIPBOARD 1 "Release 4" "X Version 11"
 .de Ds
 .nf
 .\\$1D \\$2 \\$1

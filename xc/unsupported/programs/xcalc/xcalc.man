@@ -11,7 +11,7 @@
 .if n .sp 1
 .if t .sp .5
 ..
-.TH XCALC 1 "4 May 1989" "X Version 11"
+.TH XCALC 1 "Release 4" "X Version 11"
 .SH NAME
 xcalc \- scientific calculator for X
 .SH SYNOPSIS
