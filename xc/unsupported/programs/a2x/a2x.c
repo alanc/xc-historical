@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.25 92/03/24 15:38:08 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.26 92/03/24 15:52:09 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -485,44 +485,36 @@ has_bs(c)
 }
 
 void
-undo_backspaces()
+undo_stroke()
 {
     char c;
 
-    for (; history_end; history_end--) {
-	c = history[history_end-1];
-	if (!in_control_seq &&
-	    ((c == control_end) ||
-	     ((history_end > 1) &&
-	      (history[history_end-2] == control_char)))) {
-	    in_control_seq = True;
-	    need_bs = False;
-	}
-	if (c == control_char && in_control_seq) {
-	    if (need_bs && !iscntrl(history[history_end]))
-		do_char('\b');
-	    in_control_seq = False;
-	    if (!curbscount &&
-		(history_end < 3 ||
-		 has_bs(history[history_end-2]) ||
-		 history[history_end-3] != control_char)) {
-		history_end--;
-		return;
-	    }
-	}
-	else if (has_bs(c)) {
-	    if (!curbscount)
-		return;
-	    curbscount--;
-	    if (in_control_seq)
-		need_bs = True;
-	    else
-		do_char('\b');
-	}
+    if (!history_end) {
+	in_control_seq = False;
+	for (; curbscount; curbscount--)
+	    do_char('\b');
+	return;
     }
-    in_control_seq = False;
-    for (; curbscount; curbscount--)
-	do_char('\b');
+    c = history[history_end-1];
+    if (!in_control_seq &&
+	((c == control_end) ||
+	 ((history_end > 1) &&
+	  (history[history_end-2] == control_char)))) {
+	in_control_seq = True;
+	need_bs = False;
+    }
+    if (c == control_char && in_control_seq) {
+	if (need_bs && !iscntrl(history[history_end]))
+	    do_char('\b');
+	in_control_seq = False;
+    } else if (has_bs(c)) {
+	curbscount--;
+	if (in_control_seq)
+	    need_bs = True;
+	else
+	    do_char('\b');
+    }
+    history_end--;
 }
 
 void
@@ -533,23 +525,27 @@ do_backspace(c)
     Bool partial = False;
 
     curbscount++;
-    if (!in_control_seq) {
-	for (u = undos; u->bscount; u++) {
-	    if (history_end >= u->seq_len &&
-		!bcmp(history+history_end-u->seq_len, u->seq, u->seq_len)) {
-		if (curbscount < u->bscount)
-		    partial = True;
-		else {
-		    history_end -= u->seq_len;
-		    curbscount -= u->bscount;
-		    process(u->undo, u->undo_len, 0);
-		    return;
+    while (curbscount) {
+	if (!in_control_seq) {
+	    for (u = undos; u->bscount; u++) {
+		if (history_end >= u->seq_len &&
+		    !bcmp(history+history_end-u->seq_len, u->seq,
+			  u->seq_len)) {
+		    if (curbscount < u->bscount)
+			partial = True;
+		    else {
+			history_end -= u->seq_len;
+			curbscount -= u->bscount;
+			process(u->undo, u->undo_len, 0);
+			return;
+		    }
 		}
 	    }
+	    if (partial)
+		return;
 	}
+	undo_stroke();
     }
-    if (!partial)
-	undo_backspaces();
 }
 
 char *
@@ -679,11 +675,24 @@ debug_state()
     fprintf(stderr, "bscount: %d\n", curbscount);
     fprintf(stderr, "need_bs: %d\n", need_bs);
     fprintf(stderr, "history: ");
-    for (i = history_end - 10; i < history_end; i++) {
-	if (i >= 0)
-	    fprintf(stderr, "%d ", history[i]);
+    for (i = history_end - 70; i < history_end + 20; i++) {
+	if (i < 0)
+	    continue;
+	if (i >= sizeof(history))
+	    break;
+	if (i == history_end)
+	    fprintf(stderr, "\ndeleted: ");
+	if (history[i] == '\177')
+	    fprintf(stderr, "^?");
+	else if (history[i] == control_end)
+	    fprintf(stderr, "^T");
+	else if (iscntrl(history[i]))
+	    fprintf(stderr, "^%c", history[i] + '@');
+	else
+	    fprintf(stderr, "%c", history[i]);
     }
     fprintf(stderr, "\n");
+    in_control_seq = False;
 }
 
 void
@@ -702,12 +711,11 @@ process(buf, n, len)
 		do_backspace(buf[i]);
 		continue;
 	    } else if (curbscount) {
-		undo_backspaces();
-		if (in_control_seq) {
-		    fprintf(stderr, "still in control seq\n");
-		    debug_state();
-		    in_control_seq = False;
-		}
+		while (curbscount)
+		    undo_stoke();
+	    } else if (in_control_seq) {
+		fprintf(stderr, "still in control seq\n");
+		debug_state();
 	    }
 	}
 	if (buf[i] != control_char) {
