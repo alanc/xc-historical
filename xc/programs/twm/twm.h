@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.63 90/04/13 13:38:30 jim Exp $
+ * $XConsortium: twm.h,v 1.64 90/04/13 13:52:07 jim Exp $
  *
  * twm include file
  *
@@ -51,6 +51,7 @@
 #endif
 
 typedef unsigned long Pixel;
+#define PIXEL_ALREADY_TYPEDEFED		/* for Xmu/Drawing.h */
 
 #ifdef SIGNALRETURNSINT
 #define SIGNAL_T int

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xfd.c,v 1.17 89/08/07 19:46:31 jim Exp $
+ * $XConsortium: xfd.c,v 1.18 89/12/10 17:10:06 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -133,7 +133,7 @@ main (argc, argv)
     ProgramName = argv[0];
 
     toplevel = XtInitialize (NULL, "Xfd", xfd_options, XtNumber(xfd_options),
-			     &argc, argv);
+			     (Cardinal *) &argc, argv);
     if (argc != 1) usage ();
     XtAppAddActions (XtWidgetToApplicationContext (toplevel),
                      xfd_actions, XtNumber (xfd_actions));

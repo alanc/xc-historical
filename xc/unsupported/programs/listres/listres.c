@@ -1,5 +1,5 @@
 /*
- * $XConsortium: listres.c,v 1.26 90/03/06 18:30:49 jim Exp $
+ * $XConsortium: listres.c,v 1.27 90/03/23 11:12:39 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -137,7 +137,7 @@ static void list_known_widgets ()
     sprintf (format, "%%-%ds  ", width);
     for (i = 0, wn = widget_list; i < nwidgets; i++, wn++) {
 	printf (format, wn->label);
-	print_classname (wn, NULL, 0, False);
+	print_classname (wn, (XmuWidgetNode *) NULL, 0, False);
 	putchar ('\n');
     }
 }
@@ -245,7 +245,7 @@ main (argc, argv)
     ProgramName = argv[0];
 
     toplevel = XtInitialize (NULL, "Listres", Options, XtNumber (Options),
-			     &argc, argv);
+			     (Cardinal *) &argc, argv);
     container = XtCreateWidget ("dummy", widgetClass, toplevel, NULL, ZERO);
 
     XtGetApplicationResources (toplevel, (caddr_t) &Appresources,

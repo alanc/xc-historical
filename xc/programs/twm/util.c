@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: util.c,v 1.38 90/03/13 15:29:30 jim Exp $
+ * $XConsortium: util.c,v 1.39 90/03/16 12:06:46 jim Exp $
  *
  * utility routines for twm
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: util.c,v 1.38 90/03/13 15:29:30 jim Exp $";
+"$XConsortium: util.c,v 1.39 90/03/16 12:06:46 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -360,8 +360,8 @@ Pixmap FindBitmap (name, widthp, heightp)
     /*
      * look along bitmapFilePath resource same as toolkit clients
      */
-    pm = XmuLocateBitmapFile (ScreenOfDisplay(dpy, Scr->screen), bigname,
-			      NULL, 0, widthp, heightp, &HotX, &HotY);
+    pm = XmuLocateBitmapFile (ScreenOfDisplay(dpy, Scr->screen), bigname, NULL,
+			      0, (int *)widthp, (int *)heightp, &HotX, &HotY);
     if (pm == None && Scr->IconDirectory && bigname[0] != '/') {
 	if (bigname != name) free (bigname);
 	/*

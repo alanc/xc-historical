@@ -5,7 +5,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$XConsortium: xditview.c,v 1.16 89/12/07 10:45:12 rws Exp $";
+static char rcsid[] = "$XConsortium: xditview.c,v 1.17 89/12/10 17:05:08 rws Exp $";
 #endif /* lint */
 
 #include <X11/Xatom.h>
@@ -112,7 +112,7 @@ void main(argc, argv)
 
     toplevel = XtInitialize("main", "Xditview",
 			    options, XtNumber (options),
- 			    &argc, argv);
+ 			    (Cardinal *) &argc, argv);
     if (argc > 2)
 	Syntax(argv[0]);
 

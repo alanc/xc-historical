@@ -1,4 +1,4 @@
-/* $XConsortium: Atoms.c,v 1.6 89/12/07 09:22:32 rws Exp $
+/* $XConsortium: Atoms.c,v 1.7 89/12/08 12:04:05 rws Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -176,7 +176,7 @@ void XmuInternStrings(d, names, count, atoms)
 
     if (count > cache_size) {
 	cache_size += count;
-	cache = (AtomPtr*)XtRealloc(cache, cache_size*sizeof(AtomPtr));
+	cache = (AtomPtr*)XtRealloc((char *)cache, cache_size*sizeof(AtomPtr));
     }
     for (i = 0; i < count; i++) {
 	register int p;
@@ -187,7 +187,8 @@ void XmuInternStrings(d, names, count, atoms)
 	}
 	if (p == last) {
 	    if (last == cache_size) {
-		cache = (AtomPtr*)XtRealloc(cache, (++cache_size)*sizeof(AtomPtr));
+		cache = (AtomPtr*)XtRealloc((char *)cache,
+					    (++cache_size)*sizeof(AtomPtr));
 	    }
 	    cache[last++] = XmuMakeAtom(names[i]);
 	}

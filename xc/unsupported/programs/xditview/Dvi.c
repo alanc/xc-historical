@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Dvi.c,v 1.8 89/07/21 14:22:01 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Dvi.c,v 1.9 89/12/10 16:12:25 rws Exp $";
 #endif /* lint */
 
 /*
@@ -331,7 +331,7 @@ SetDeviceResolution (dw, resolution)
 		request.request_mode = CWWidth|CWHeight;
 		request.width = MY_WIDTH(dw);
 		request.height = MY_HEIGHT(dw);
-		XtMakeGeometryRequest (dw, &request, &reply);
+		XtMakeGeometryRequest ((Widget) dw, &request, &reply);
 	}
 }
 

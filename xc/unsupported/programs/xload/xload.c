@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: xload.c,v 1.25 89/12/08 18:15:27 jim Exp $";
+static char rcsid[] = "$XConsortium: xload.c,v 1.26 89/12/11 15:53:27 kit Exp $";
 #endif /* lint */
 
 #include <stdio.h> 
@@ -109,8 +109,8 @@ void main(argc, argv)
     XLoadResources resources;
 
     ProgramName = argv[0];
-    toplevel = XtInitialize(NULL, "XLoad", 
-			    options, XtNumber(options), &argc, argv);
+    toplevel = XtInitialize(NULL, "XLoad", options, XtNumber(options),
+			    (Cardinal *) &argc, argv);
       
     XtGetApplicationResources( toplevel, (caddr_t) &resources, 
 			      my_resources, XtNumber(my_resources),

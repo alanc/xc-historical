@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xlogo.c,v 1.11 89/12/09 13:13:19 kit Exp $
+ * $XConsortium: xlogo.c,v 1.12 90/04/17 17:40:10 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -66,7 +66,8 @@ char **argv;
     XtAppContext app_con;
 
     toplevel = XtAppInitialize(&app_con, "XLogo", options, XtNumber(options), 
-			       &argc, argv, fallback_resources, NULL, ZERO);
+			       (Cardinal *) &argc, argv, fallback_resources,
+			       NULL, ZERO);
 
     if (argc != 1) 
 	Syntax(argv[0]);

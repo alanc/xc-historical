@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xbiff.c,v 1.14 89/12/11 16:01:25 kit Exp $
+ * $XConsortium: xbiff.c,v 1.15 89/12/12 13:55:33 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -74,7 +74,7 @@ void main (argc, argv)
     ProgramName = argv[0];
 
     toplevel = XtInitialize ("main", "XBiff", options, XtNumber (options),
-			     &argc, argv);
+			     (Cardinal *) &argc, argv);
     if (argc != 1) Usage ();
 
     /*

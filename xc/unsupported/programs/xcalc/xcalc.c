@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xcalc.c,v 1.9 89/12/08 19:30:28 converse Exp $
+ * $XConsortium: xcalc.c,v 1.10 89/12/15 18:48:55 converse Exp $
  *
  * xcalc.c  -  a hand calculator for the X Window system
  * 
@@ -111,7 +111,7 @@ void main(argc, argv)
 
 
     toplevel = XtInitialize(NULL, "XCalc", Options, XtNumber(Options),
-			    &argc, argv);
+			    (Cardinal *) &argc, argv);
     if (argc != 1) Syntax(argc, argv);
     
     XtSetArg(args[0], XtNinput, True);
