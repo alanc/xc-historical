@@ -6,7 +6,7 @@ PEXDIRS = PEX
 #endif
 
 /* tools must be built before bdf */
-        SUBDIRS = include lib tools bdf $(PEXDIRS)
+        SUBDIRS = lib tools bdf $(PEXDIRS)
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
