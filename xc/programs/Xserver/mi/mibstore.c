@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.4 89/06/16 18:02:50 keith Exp $ */
+/* $XConsortium: mibstore.c,v 5.5 89/06/21 11:22:41 rws Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2965,15 +2965,15 @@ miBSSaveDoomedAreas(pWin)
  *-----------------------------------------------------------------------
  * miBSRestoreAreas --
  *	Restore areas from backing-store that are no longer obscured.
- *	expects pWin->exposed to contain a screen-relative area.
+ *	expects prgnExposed to contain a screen-relative area.
  *
  * Results:
  *	The region to generate exposure events on (which may be
  *	different from the region to paint).
  *
  * Side Effects:
- *	Areas are copied from pBackingPixmap to the screen. pWin->exposed
- *	is replaced with the region that could not be restored from
+ *	Areas are copied from pBackingPixmap to the screen. prgnExposed
+ *	is altered to contain the region that could not be restored from
  *	backing-store.
  *
  * Notes:
@@ -2983,22 +2983,19 @@ miBSSaveDoomedAreas(pWin)
  *	client's next output request will result in a call to ValidateGC,
  *	since the window clip region has changed, which will in turn call
  *	miValidateBackingStore.
- *	   it replaces pWin->exposed with the region that could not be
- *	restored from backing-store.
- *	   NOTE: this must be called with pWin->exposed window-relative.
  *-----------------------------------------------------------------------
  */
 static RegionPtr
-miBSRestoreAreas(pWin)
+miBSRestoreAreas(pWin, prgnExposed)
     register WindowPtr pWin;
+    RegionPtr prgnExposed;
 {
     PixmapPtr pBackingPixmap;
     miBSWindowPtr pBackingStore;
     RegionPtr prgnSaved;
-    RegionPtr prgnExposed;
     RegionPtr prgnRestored;
     register ScreenPtr pScreen;
-    RegionPtr exposures = pWin->exposed;
+    RegionPtr exposures = prgnExposed;
     Bool retile;
 
     pScreen = pWin->drawable.pScreen;
@@ -3006,7 +3003,6 @@ miBSRestoreAreas(pWin)
     pBackingPixmap = pBackingStore->pBackingPixmap;
 
     prgnSaved = pBackingStore->pSavedRegion;
-    prgnExposed = pWin->exposed;
 
     if (pBackingStore->status == StatusContents)
     {
@@ -3018,7 +3014,7 @@ miBSRestoreAreas(pWin)
 	(* pScreen->Intersect)(prgnRestored, prgnExposed, prgnSaved);
 	
 	/*
-	 * Since pWin->exposed is no longer obscured, we no longer
+	 * Since prgnExposed is no longer obscured, we no longer
 	 * will have a valid copy of it in backing-store, but there is a valid
 	 * copy of it on screen, so subtract the area we just restored from
 	 * from the area to be exposed.
