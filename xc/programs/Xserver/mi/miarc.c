@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: miarc.c,v 1.48 87/12/09 18:56:45 rws Exp $ */
+/* $Header: miarc.c,v 1.49 88/02/02 13:42:01 rws Exp $ */
 /* Author: Todd Newman */
 #include "X.h"
 #include "Xprotostr.h"
@@ -276,7 +276,9 @@ miPolyFillArc(pDraw, pGC, narcs, parcs)
 	    {
 		pPts[0].x = parcs[i].x + parcs[i].width/2;
 		pPts[0].y = parcs[i].y + parcs[i].height/2;
-		(*pGC->FillPolygon)(pDraw, pGC, Convex,
+		(*pGC->FillPolygon)(pDraw, pGC,
+				    (parcs[i].angle2 > FULLCIRCLE / 2) ?
+				    Nonconvex : Convex,
 			            CoordModeOrigin, cpt + 1, pPts);
 		Xfree((pointer) pPts);
 	    }
@@ -397,8 +399,12 @@ miGetArcPts(parc, cpt, ppPts)
 	x1 = x2; y1 = y2;
     }
     /* adjust the last point */
-    poly[cpt +i -1].x = ROUNDTOINT(cos(st + et) * parc->width/2.0 + xc);
-    poly[cpt +i -1].y = ROUNDTOINT(sin(st + et) * parc->height/2.0 + yc);
+    if (abs(parc->angle2) >= FULLCIRCLE)
+	poly[cpt +i -1] = poly[0];
+    else {
+	poly[cpt +i -1].x = ROUNDTOINT(cos(st + et) * parc->width/2.0 + xc);
+	poly[cpt +i -1].y = ROUNDTOINT(sin(st + et) * parc->height/2.0 + yc);
+    }
 
     return(count);
 }
