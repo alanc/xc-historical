@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.3 89/07/03 16:38:01 rws Exp $ */
+/* $XConsortium: dispatch.c,v 5.4 89/07/03 18:45:10 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -241,7 +241,6 @@ FlushClientCaches(id)
 }
 
 #define MAJOROP ((xReq *)client->requestBuffer)->reqType
-#define MINOROP 0 /* XXX */
 
 Dispatch()
 {
@@ -323,7 +322,9 @@ Dispatch()
 		    if (client->noClientException != Success)
                         CloseDownClient(client);
                     else
-		        Oops(client, MAJOROP, MINOROP, result);
+		        SendErrorToClient(client, MAJOROP,
+					  MinorOpcodeOfRequest(client),
+					  client->errorValue, result);
 		    break;
 	        }
 	    }
@@ -336,7 +337,6 @@ Dispatch()
 }
 
 #undef MAJOROP
-#undef MINOROP
 
 /*ARGSUSED*/
 int
@@ -3470,34 +3470,24 @@ ProcEstablishConnection(client)
     return (client->noClientException);
 }
 
-/*****************
- * Oops
- *    Send an Error back to the client. 
- *****************/
-
-Oops (client, reqCode, minorCode, status)
+SendErrorToClient(client, majorCode, minorCode, resId, errorCode)
     ClientPtr client;
-    unsigned reqCode, minorCode;
-    int status;
+    unsigned majorCode;
+    unsigned short minorCode;
+    XID resId;
+    int errorCode;
 {
     xError rep;
 
     rep.type = X_Error;
     rep.sequenceNumber = client->sequence;
-    rep.errorCode = status;
-    rep.majorCode = reqCode;
+    rep.errorCode = errorCode;
+    rep.majorCode = majorCode;
     rep.minorCode = minorCode;
-    rep.resourceID = client->errorValue;
+    rep.resourceID = resId;
 
-#ifdef notdef
-    ErrorF(  "OOPS! => client: %x, seq: %d, err: %d, maj:%d, min: %d resID: %x\n",
-    	client->index, rep.sequenceNumber, rep.errorCode,
-	rep.majorCode, rep.minorCode, rep.resourceID);
-#endif
-
-    WriteEventsToClient (client, 1, (xEvent *) &rep); 
+    WriteEventsToClient (client, 1, (xEvent *)&rep);
 }
-
 
 void
 DeleteWindowFromAnySelections(pWin)
