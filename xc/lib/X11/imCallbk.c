@@ -1,4 +1,4 @@
-/* $XConsortium: imCallbk.c,v 1.1 94/01/20 17:56:44 rws Exp $ */
+/* $XConsortium: imCallbk.c,v 1.2 94/01/23 16:42:35 kaleb Exp $ */
 /***********************************************************************
 Copyright 1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 
@@ -589,10 +589,10 @@ _read_text_from_packet(im, buf, text)
 	    memcpy(tmp_buf, buf, tmp_len);
 	    tmp_buf[tmp_len] = '\0';
 
-	    text->encoding_is_wchar = False; /* check HM */
-	    text->length = _Ximctstombs(im, 
+	    text->encoding_is_wchar = False;
+	    text->length = _Ximctstowcs(im, 
 					tmp_buf, tmp_len, 
-					(char*)NULL, 0, 
+					(wchar_t*)NULL, 0, 
 					&s); /* CT? HM */
 	    if (s != XLookupNone) {
 		if (text->string.multi_byte = (char*)Xmalloc(text->length)) {
@@ -668,17 +668,17 @@ _XimPreeditDrawCallback(im, ic, proto, len)
     /* invoke the callback
      */
     if (cb && cb->callback) {
-	p = XIM_HEADER_SIZE;
+	p = 0;
 	cbs.caret      = (int)*(INT32*)&proto[p]; p += sz_INT32;
 	cbs.chg_first  = (int)*(INT32*)&proto[p]; p += sz_INT32;
 	cbs.chg_length = (int)*(INT32*)&proto[p]; p += sz_INT32;
 	if (cbs.text = (XIMText*)Xmalloc(sizeof(XIMText))) {
-	    _read_text_from_packet(im, (char*)&proto[p], (XIMText *)&cbs.text);
+	    _read_text_from_packet(im, (char*)&proto[p], (XIMText*)cbs.text);
 	}
 
 	(*cb->callback)((XIC)ic, cb->client_data, &cbs);
 
-	_free_memory_for_text((XIMText *)&cbs.text);
+	_free_memory_for_text((XIMText*)cbs.text);
     }
     else {
 

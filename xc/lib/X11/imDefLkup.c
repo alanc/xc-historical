@@ -1,4 +1,4 @@
-/* $XConsortium: imDefLkup.c,v 1.5 93/09/24 10:32:08 rws Exp $ */
+/* $XConsortium: imDefLkup.c,v 1.6 94/01/20 18:04:08 rws Exp $ */
 /******************************************************************
 
            Copyright 1992, 1993 by FUJITSU LIMITED
@@ -852,47 +852,77 @@ _Ximctstombs(im, from, from_len, to, to_len, state)
     XlcConv	 conv = im->private.proto.ctom_conv;
     int		 from_left;
     int		 to_left;
-    int		 ret;
+    int		 from_savelen;
+    int		 to_savelen;
+    int		 from_cnvlen;
+    int		 to_cnvlen;
+    char	*from_buf;
+    char	*to_buf;
+    Status	 tmp_state;
 
-    if (!conv || !from) {
+    if (!state)
+	state = &tmp_state;
+
+    if (!conv || !from || !from_len) {
 	*state = XLookupNone;
 	return 0;
     }
 
-    if (to) {
+    if (to && to_len) {
 	from_left = from_len;
-	to_left = to_len;
-	if (_XlcConvert(conv, (XPointer *)&from, &from_left,
-				 (XPointer *)&to, &to_left, NULL, 0) < 0) {
-	    *state = XLookupNone;
-	    return 0;
-	}
-	if (from_left == 0) {
-	    ret = to_len - to_left;
-	    if (to_left > 0)
-		to[ret] = '\0';
-	    if (ret > 0)
-		*state = XLookupChars;
-	    else
+	to_left = to_len - 1;
+	from_cnvlen = 0;
+	to_cnvlen = 0;
+	for (;;) {
+	    from_savelen = from_left;
+	    to_savelen = to_left;
+	    from_buf = &from[from_cnvlen];
+	    to_buf = &to[to_cnvlen];
+	    if (_XlcConvert(conv, (XPointer *)&from_buf, &from_left,
+				 (XPointer *)&to_buf, &to_left, NULL, 0) < 0) {
 		*state = XLookupNone;
-	    return ret;
+		return 0;
+	    }
+	    from_cnvlen += (from_savelen - from_left);
+	    to_cnvlen += (to_savelen - to_left);
+	    if (from_left == 0) {
+		if (to_cnvlen > 0) {
+		    to[to_cnvlen] = '\0';
+		    *state = XLookupChars;
+		} else {
+		    *state = XLookupNone;
+		}
+		return to_cnvlen;
+	    }
+	    if (to_left == 0)
+		break;
 	}
     }
 
     from_left = from_len;
-    to_left = MAXINT;
-    to = NULL;
-    if (_XlcConvert(conv, (XPointer *)&from, &from_left,
-				 (XPointer *)&to, &to_left, NULL, 0) < 0) {
-	*state = XLookupNone;
-	return 0;
+    from_cnvlen = 0;
+    to_cnvlen = 0;
+    to_buf = NULL;
+    for (;;) {
+	from_savelen = from_left;
+	to_left = MAXINT;
+	from_buf = &from[from_cnvlen];
+	if (_XlcConvert(conv, (XPointer *)&from_buf, &from_left,
+				 (XPointer *)&to_buf, &to_left, NULL, 0) < 0) {
+	    *state = XLookupNone;
+	    return 0;
+	}
+	from_cnvlen += (from_savelen - from_left);
+	to_cnvlen += (MAXINT - to_left);
+	if (from_left == 0) {
+	    if (to_cnvlen > 0)
+		*state = XBufferOverflow;
+	    else
+		*state = XLookupNone;
+	    break;
+	}
     }
-    ret = to_len - to_left;
-    if (ret > 0)
-	*state = XBufferOverflow;
-    else
-	*state = XLookupNone;
-    return ret;
+    return to_cnvlen;
 }
 
 Public int
@@ -907,47 +937,77 @@ _Ximctstowcs(im, from, from_len, to, to_len, state)
     XlcConv	 conv = im->private.proto.ctow_conv;
     int		 from_left;
     int		 to_left;
-    int		 ret;
+    int		 from_savelen;
+    int		 to_savelen;
+    int		 from_cnvlen;
+    int		 to_cnvlen;
+    char	*from_buf;
+    wchar_t	*to_buf;
+    Status	 tmp_state;
 
-    if (!conv || !from) {
+    if (!state)
+	state = &tmp_state;
+
+    if (!conv || !from || !from_len) {
 	*state = XLookupNone;
 	return 0;
     }
 
-    if (to) {
+    if (to && to_len) {
 	from_left = from_len;
-	to_left = to_len;
-	if (_XlcConvert(conv, (XPointer *)&from, &from_left,
-				 (XPointer *)&to, &to_left, NULL, 0) < 0) {
+	to_left = to_len - 1;
+	from_cnvlen = 0;
+	to_cnvlen = 0;
+	for (;;) {
+	    from_savelen = from_left;
+	    to_savelen = to_left;
+	    from_buf = &from[from_cnvlen];
+	    to_buf = &to[to_cnvlen];
+	    if (_XlcConvert(conv, (XPointer *)&from_buf, &from_left,
+				 (XPointer *)&to_buf, &to_left, NULL, 0) < 0) {
+		*state = XLookupNone;
+		return 0;
+	    }
+	    from_cnvlen += (from_savelen - from_left);
+	    to_cnvlen += (to_savelen - to_left);
+	    if (from_left == 0) {
+		if (to_cnvlen > 0) {
+		    to[to_cnvlen] = (wchar_t)'\0';
+		    *state = XLookupChars;
+		} else {
+		    *state = XLookupNone;
+		}
+		return to_cnvlen;
+	    }
+	    if (to_left == 0)
+		break;
+	}
+    }
+		
+    from_left = from_len;
+    from_cnvlen = 0;
+    to_cnvlen = 0;
+    to_buf = (wchar_t *)NULL;
+    for (;;) {
+	from_savelen = from_left;
+	to_left = MAXINT;
+	from_buf = &from[from_cnvlen];
+	if (_XlcConvert(conv, (XPointer *)&from_buf, &from_left,
+				 (XPointer *)&to_buf, &to_left, NULL, 0) < 0) {
 	    *state = XLookupNone;
 	    return 0;
 	}
+	from_cnvlen += (from_savelen - from_left);
+	to_cnvlen += (MAXINT - to_left);
 	if (from_left == 0) {
-	    ret = to_len - to_left;
-	    if (to_left > 0)
-		to[ret] = (wchar_t)'\0';
-	    if (ret > 0)
-		*state = XLookupChars;
+	    if (to_cnvlen > 0)
+		*state = XBufferOverflow;
 	    else
 		*state = XLookupNone;
-	    return ret;
+	    break;
 	}
     }
-
-    from_left = from_len;
-    to_left = MAXINT;
-    to = NULL;
-    if (_XlcConvert(conv, (XPointer *)&from, &from_left,
-				 (XPointer *)&to, &to_left, NULL, 0) < 0) {
-	*state = XLookupNone;
-	return 0;
-    }
-    ret = to_len - to_left;
-    if (ret > 0)
-	*state = XBufferOverflow;
-    else
-	*state = XLookupNone;
-    return ret;
+    return to_cnvlen;
 }
 
 Public int
