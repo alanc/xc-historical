@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: iconmgr.c,v 1.37 89/12/10 17:47:17 jim Exp $
+ * $XConsortium: iconmgr.c,v 1.38 89/12/10 19:20:38 jim Exp $
  *
  * Icon Manager routines
  *
@@ -39,6 +39,8 @@
 #include "siconify.bm"
 #include <X11/Xos.h>
 #include <X11/Xmu/CharSet.h>
+
+int strcmp();
 
 int iconmgr_textx = siconify_width+11;
 WList *Active = NULL;
