@@ -267,25 +267,38 @@ cfbChangeWindowAttributes(pWin, mask)
 	      break;
 
 	  case CWBorderPixmap:
-	      if(cfbPadPixmap(pWin->borderTile))
+	      switch((int)pWin->borderTile)
 	      {
-		  pPrivWin->fastBorder = 1;
-		  pPrivWin->oldRotate.x = pWin->absCorner.x;
-		  pPrivWin->oldRotate.y = pWin->absCorner.y;
-		  if (pPrivWin->pRotatedBorder)
-		      cfbDestroyPixmap(pPrivWin->pRotatedBorder);
-		  pPrivWin->pRotatedBorder =
-		    cfbCopyPixmap(pWin->borderTile);
-		  cfbXRotatePixmap(pPrivWin->pRotatedBorder,
-				pWin->absCorner.x);
-		  cfbYRotatePixmap(pPrivWin->pRotatedBorder,
-				pWin->absCorner.y);
-		  pWin->PaintWindowBorder = cfbPaintArea32;
-	      }
-	      else
-	      {
+		case None:
+		  pWin->PaintWindowBorder = cfbPaintAreaNone;
 		  pPrivWin->fastBorder = 0;
-		  pWin->PaintWindowBorder = cfbPaintAreaOther;
+		  break;
+		case ParentRelative:
+		  pWin->PaintWindowBorder = cfbPaintAreaPR;
+		  pPrivWin->fastBorder = 0;
+		  break;
+		default:
+		  if(cfbPadPixmap(pWin->borderTile))
+		  {
+		      pPrivWin->fastBorder = 1;
+		      pPrivWin->oldRotate.x = pWin->absCorner.x;
+		      pPrivWin->oldRotate.y = pWin->absCorner.y;
+		      if (pPrivWin->pRotatedBorder)
+			  cfbDestroyPixmap(pPrivWin->pRotatedBorder);
+		      pPrivWin->pRotatedBorder =
+			cfbCopyPixmap(pWin->borderTile);
+		      cfbXRotatePixmap(pPrivWin->pRotatedBorder,
+				    pWin->absCorner.x);
+		      cfbYRotatePixmap(pPrivWin->pRotatedBorder,
+				    pWin->absCorner.y);
+		      pWin->PaintWindowBorder = cfbPaintArea32;
+		  }
+		  else
+		  {
+		      pPrivWin->fastBorder = 0;
+		      pWin->PaintWindowBorder = cfbPaintAreaOther;
+		  }
+		  break;
 	      }
 	      break;
 	    case CWBorderPixel:
