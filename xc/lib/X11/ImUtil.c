@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XImUtil.c,v 11.23 88/02/20 20:28:20 rws Exp $ */
+/* $Header: XImUtil.c,v 11.24 88/02/23 14:15:19 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -590,9 +590,9 @@ int _XSetImage (srcimg, dstimg, x, y)
  *
  */
 
-int _XAddPixel (ximage, value)
+_XAddPixel (ximage, value)
     register XImage *ximage;
-    int value;
+    long value;
 
 {
 	unsigned long pixel;
@@ -660,7 +660,6 @@ int _XAddPixel (ximage, value)
 		_XReportBadImage("format", ximage->format, "_XAddPixel");
 	  }
 	}
-	return 1;
 }
 
 /*
