@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.148 93/08/15 17:34:00 converse Exp $ */
+/* $XConsortium: Event.c,v 1.148 93/08/15 17:40:22 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -742,7 +742,7 @@ static void CompressExposures();
 /* because some compilers allocate all local locals on procedure entry */
 #define EHSIZE 4
 
-static Boolean _XtDispatchEventToWidget(event, widget, mask, pd)
+static Boolean DispatchEventToWidget(event, widget, mask, pd)
     register XEvent    *event;
     Widget    widget;
     EventMask mask;
@@ -862,8 +862,8 @@ Boolean XtDispatchEventToWidget(widget, event)
     mask = _XtConvertTypeToMask(event->xany.type);
     if (event->xany.type == MotionNotify)
 	mask |= (event->xmotion.state & KnownButtons);
-    was_dispatched = _XtDispatchEventToWidget(event, widget, mask, 
-				     _XtGetPerDisplay(event->xany.display));
+    was_dispatched = DispatchEventToWidget(event, widget, mask, 
+				       _XtGetPerDisplay(event->xany.display));
     return was_dispatched;
 }
 
@@ -1159,12 +1159,12 @@ static Boolean DispatchEvent(event, widget, mask, pd)
 	}
     }
 
-    return _XtDispatchEventToWidget(event, widget, mask, pd);
+    return DispatchEventToWidget(event, widget, mask, pd);
 }
 
 typedef enum _GrabType {pass, ignore, remap} GrabType;
 
-static Boolean DecideToDispatch(event)
+static Boolean DefaultDispatcher(event)
     XEvent  *event;
 {
     register    Widget widget;
@@ -1206,7 +1206,7 @@ static Boolean DecideToDispatch(event)
 	else if ((widget = LookupSpringLoaded(grabList)) != NULL) {
 	    if (XFilterEvent(event, XtWindow(widget)))
 		return True;
-	    return _XtDispatchEventToWidget(event, widget, mask, pd);
+	    return DispatchEventToWidget(event, widget, mask, pd);
 	}
 	return XFilterEvent(event, None);
     }
@@ -1215,7 +1215,7 @@ static Boolean DecideToDispatch(event)
       case pass:
 	if (XFilterEvent(event, XtWindow(widget)))
 	    return True;
-	return _XtDispatchEventToWidget(event, widget, mask, pd);
+	return DispatchEventToWidget(event, widget, mask, pd);
 
       case ignore:
 	if ((grabList == NULL || _XtOnGrabList(widget, grabList))
@@ -1237,8 +1237,8 @@ static Boolean DecideToDispatch(event)
 	      && XtIsSensitive(dspWidget)) {
 	      if (XFilterEvent(event, XtWindow(widget)))
 		  return True;
-	      was_dispatched = _XtDispatchEventToWidget(event, dspWidget,
-							mask, pd);
+	      was_dispatched = DispatchEventToWidget(event, dspWidget,
+						     mask, pd);
 	  }
 	  else _XtUngrabBadGrabs(event, widget, mask, pdi);
 		
@@ -1247,8 +1247,9 @@ static Boolean DecideToDispatch(event)
 	  grabList = *_XtGetGrabList(pdi);
 	  widget = LookupSpringLoaded(grabList);
 	  if (widget != NULL && widget != dspWidget) {
-	      was_dispatched |= _XtDispatchEventToWidget(event, widget,
-							 mask, pd);
+	      if (XFilterEvent(event, XtWindow(widget)))
+		  return True;
+	      was_dispatched |= DispatchEventToWidget(event, widget, mask, pd);
 	  }
 	  return was_dispatched;
       }
@@ -1266,7 +1267,7 @@ Boolean XtDispatchEvent (event)
     int starting_count = app->destroy_count;
     XtPerDisplay pd = _XtGetPerDisplay(event->xany.display);
     Time	time = 0;
-    XtEventDispatchProc dispatch = DecideToDispatch;
+    XtEventDispatchProc dispatch = DefaultDispatcher;
     void _XtRefreshMapping();
 
     switch (event->xany.type) {
@@ -1287,7 +1288,7 @@ Boolean XtDispatchEvent (event)
 
     if (pd->dispatcher_list) {
 	dispatch = pd->dispatcher_list[event->xany.type];
-	if (dispatch == NULL) dispatch = DecideToDispatch;
+	if (dispatch == NULL) dispatch = DefaultDispatcher;
     }
     was_dispatched = (*dispatch)(event);
 
@@ -1511,7 +1512,7 @@ void _XtSendFocusEvent(child, type)
 	event.detail = NotifyAncestor;
 	if (XFilterEvent((XEvent*)&event, XtWindow(child)))
 	    return;
-	_XtDispatchEventToWidget((XEvent*)&event, child,
+	DispatchEventToWidget((XEvent*)&event, child,
 				 _XtConvertTypeToMask(type),
 				 _XtGetPerDisplay(dpy));
     }
@@ -1547,11 +1548,11 @@ XtEventDispatchProc XtSetEventDispatcher(dpy, event_type, proc)
     list = pd->dispatcher_list;
     if (!list) {
 	if (proc) list = pd->dispatcher_list = NewDispatcherList();
-	else return DecideToDispatch;
+	else return DefaultDispatcher;
     }
     old_proc = list[event_type];
     list[event_type] = proc;
-    if (old_proc == NULL) old_proc = DecideToDispatch;
+    if (old_proc == NULL) old_proc = DefaultDispatcher;
     return old_proc;
 }
 
