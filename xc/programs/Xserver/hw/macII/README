@@ -48,8 +48,8 @@ Build the system by:
 
 Many X clients assume the mouse has three buttons. The A/UX X server simulates
 the middle and right mouse buttons with keystrokes -- the left-arrow key
-generates middle button events, and the left-arrow key generates left button
-events. -- the real mouse button generates left button events. The 
+generates middle button events, and the right-arrow key generates right button
+events -- the real mouse button generates left button events. The 
 open-apple or cloverleaf key is the "Meta" modifier, Meta can also be obtained
 by pressing the up-arrow key. The down-arrow key duplicates the Control key.
 Meta, Control, and Shift are often used in combination with other keystrokes
