@@ -122,16 +122,21 @@ Machines that have more than one
 display can repeat this process using \fIttyqe\fP for \fIttyv1\fP, and 
 so on.
 .PP
-With this done, you can set up \fI\/etc\/ttys\fP to run \fIX\fP and \fIxterm\fP
-by adding the following entry (the \\'s is to make the lines fit on this 
+With this done, you can set up \fI\/etc\/ttys\fP to run \fIX\fP and 
+\fIxterm\fP.  Although the release will install both the X server and 
+\fIxterm\fP in /usr/bin/X11 by default, many sites choose to make a copy of
+both of these programs on the root partition (usually in /etc) so that they
+may still be used even if the partition containing /usr/bin/X11 isn't mounted.
+For example (the \\'s is to make the lines fit on this 
 manual page, the real entries have to occupy just one line):
 .sp
 .nf
-	ttyv0 "/etc/xterm -L -geometry -1+1 -display :0" xterm on \\
-		secure window="/etc/X :0 -c -l"
+	ttyv0 "/etc/xterm -L -geometry 80x24+1+1 -display :0" xterm on \\
+		secure window="/etc/Xqvss :0"
 .fi
 .sp
-on the client machine.  
+on the client machine.  Note that the name of the server should correspond to
+the type of display being used.
 .PP
 Important note:  some versions of \fIinit\fP have relatively small
 program name buffer sizes, so you may find that you can't list many 
