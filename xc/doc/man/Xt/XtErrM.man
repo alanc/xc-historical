@@ -6,7 +6,7 @@
 .ds xC Inter-Client Communication Conventions Manual
 .ds Rn 3
 .ds Vn 2.2
-.hw XtSet-Error-Msg-Handler XtSet-Warning-Msg-Handler wid-get
+.hw XtError-Msg XtSet-Error-Msg-Handler XtSet-Warning-Msg-Handler XtWarning-Msg wid-get
 .na
 .de Ds
 .nf
