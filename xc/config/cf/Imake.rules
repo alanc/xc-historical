@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.162 93/09/06 10:23:14 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.163 93/09/06 13:10:50 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -545,7 +545,7 @@ clean::									@@\
 #define	InstallLibrary(libname,dest)					@@\
 install:: LibraryTargetName(libname)					@@\
 	MakeDir($(DESTDIR)dest)						@@\
-	$(INSTALL) -c $(INSTLIBFLAGS) LibraryTargetName(libname) $(DESTDIR)dest @@\
+	$(INSTALL) $(INSTALLFLAGS) $(INSTLIBFLAGS) LibraryTargetName(libname) $(DESTDIR)dest @@\
 	RanLibrary($(RANLIBINSTFLAGS) $(DESTDIR)dest/LibraryTargetName(libname))
 #endif /* InstallLibrary */
 
@@ -578,7 +578,7 @@ install::								@@\
 #define	InstallLintLibrary(libname,dest)				@@\
 install.ln:: Concat(llib-l,libname.ln)					@@\
 	MakeDir($(DESTDIR)dest)						@@\
-	$(INSTALL) -c $(INSTLIBFLAGS) Concat(llib-l,libname.ln) $(DESTDIR)dest
+	$(INSTALL) $(INSTALLFLAGS) $(INSTLIBFLAGS) Concat(llib-l,libname.ln) $(DESTDIR)dest
 #endif /* InstallLintLibrary */
 
 
@@ -593,7 +593,7 @@ install.ln:: Concat(llib-l,libname.ln)					@@\
 #define	InstallManPageLong(file,destdir,dest)				@@\
 install.man:: file.man							@@\
 	MakeDir($(DESTDIR)destdir)					@@\
-	$(INSTALL) -c $(INSTMANFLAGS) file.man $(DESTDIR)destdir/dest.$(MANSUFFIX)
+	$(INSTALL) $(INSTALLFLAGS) $(INSTMANFLAGS) file.man $(DESTDIR)destdir/dest.$(MANSUFFIX)
 #endif /* InstallManPageLong */
 
 
@@ -616,7 +616,7 @@ install.man::								@@\
 	RemoveFile($${TMP}); \						@@\
 	echo .so `basename destdir`/file.$(MANSUFFIX) > $${TMP}; \	@@\
 	for i in aliases; do (set -x; \					@@\
-	$(INSTALL) -c $(INSTMANFLAGS) $${TMP} $(DESTDIR)destdir/$$i.$(MANSUFFIX)); \ @@\
+	$(INSTALL) $(INSTALLFLAGS) $(INSTMANFLAGS) $${TMP} $(DESTDIR)destdir/$$i.$(MANSUFFIX)); \ @@\
 	done; \								@@\
 	RemoveFile($${TMP}))
 #endif /* InstallManPageAliases */
@@ -629,7 +629,7 @@ install.man::								@@\
 #define	InstallNamedNonExec(srcname,dstname,dest)			@@\
 install:: srcname							@@\
 	MakeDir($(DESTDIR)dest)						@@\
-	$(INSTALL) -c $(INSTDATFLAGS) srcname $(DESTDIR)dest/dstname
+	$(INSTALL) $(INSTALLFLAGS) $(INSTDATFLAGS) srcname $(DESTDIR)dest/dstname
 #endif /* InstallNamedNonExec */
 
 
@@ -640,7 +640,7 @@ install:: srcname							@@\
 #define	InstallNonExecFile(file,dest)					@@\
 install:: file								@@\
 	MakeDir($(DESTDIR)dest)						@@\
-	$(INSTALL) -c $(INSTDATFLAGS) file $(DESTDIR)dest
+	$(INSTALL) $(INSTALLFLAGS) $(INSTDATFLAGS) file $(DESTDIR)dest
 #endif /* InstallNonExecFile */
 
 
@@ -651,7 +651,7 @@ install:: file								@@\
 #ifndef InstallNonExec
 #define	InstallNonExec(file,dest)					@@\
 install:: file								@@\
-	$(INSTALL) -c $(INSTDATFLAGS) file $(DESTDIR)dest
+	$(INSTALL) $(INSTALLFLAGS) $(INSTDATFLAGS) file $(DESTDIR)dest
 #endif /* InstallNonExec */
 
 
@@ -663,7 +663,7 @@ install:: file								@@\
 #define InstallProgramWithFlags(program,dest,flags)			@@\
 install:: program							@@\
 	MakeDir($(DESTDIR)dest)						@@\
-	$(INSTALL) -c $(INSTPGMFLAGS) flags program $(DESTDIR)dest
+	$(INSTALL) $(INSTALLFLAGS) $(INSTPGMFLAGS) flags program $(DESTDIR)dest
 #endif /* InstallProgramWithFlags */
 
 
@@ -685,7 +685,7 @@ InstallProgramWithFlags(program,dest,NullParameter)
 #define	InstallScript(program,dest)					@@\
 install:: program.script						@@\
 	MakeDir($(DESTDIR)dest)						@@\
-	$(INSTALL) -c $(INSTBINFLAGS) program.script $(DESTDIR)dest/program
+	$(INSTALL) $(INSTALLFLAGS) $(INSTBINFLAGS) program.script $(DESTDIR)dest/program
 #endif /* InstallScript */
 
 
@@ -696,7 +696,7 @@ install:: program.script						@@\
 #define	InstallNamedProg(srcname,dstname,dest)				@@\
 install:: srcname							@@\
 	MakeDir($(DESTDIR)dest)						@@\
-	$(INSTALL) -c $(INSTBINFLAGS) srcname $(DESTDIR)dest/dstname
+	$(INSTALL) $(INSTALLFLAGS) $(INSTBINFLAGS) srcname $(DESTDIR)dest/dstname
 #endif /* InstallNamedProg */
 
 
@@ -723,7 +723,7 @@ step:: list								@@\
 	MakeDir($(DESTDIR)dest)						@@\
 	@case '${MFLAGS}' in *[i]*) set +e;; esac; \			@@\
 	for i in list; do \						@@\
-		(set -x; $(INSTALL) -c flags $$i $(DESTDIR)dest); \	@@\
+		(set -x; $(INSTALL) $(INSTALLFLAGS) flags $$i $(DESTDIR)dest); \	@@\
 	done
 #endif /* InstallMultipleDestFlags */
 
