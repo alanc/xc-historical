@@ -21,11 +21,12 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbbres.c,v 1.3 89/09/14 17:04:13 rws Exp $ */
+/* $XConsortium: cfbbres.c,v 1.4 89/09/19 15:34:59 keith Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "cfb.h"
 #include "cfbmskbits.h"
+#include "servermd.h"
 
 /* Solid bresenham line */
 /* NOTES
@@ -77,12 +78,15 @@ int len;	/* length of line */
     register int e3 = e2-e1;
 
 #if (PPW == 4)
+    if (len == 0)
+	return;
     if ((planemask & PIM) == PIM)
     {
     	/* point to first point */
     	nlwidth <<= 2;
     	addrb = (unsigned char *)(addrl) + (y1 * nlwidth) + x1;
-    	yinc = signdy * nlwidth;
+	if (signdy < 0)
+	    nlwidth = -nlwidth;
     	xinc = signdx;
     	e = e-e1;			/* to make looping easier */
     
@@ -90,6 +94,7 @@ int len;	/* length of line */
     	{
 	    if (rop == GXcopy)
 	    {
+		len--;
 	    	Duff (len,
 	    	{ 
 	    	    *addrb = pixel;
@@ -97,11 +102,12 @@ int len;	/* length of line */
 	    	    addrb += xinc;
 	    	    if (e >= 0)
 	    	    {
-		    	addrb += yinc;
+		    	addrb += nlwidth;
 		    	e += e3;
 	    	    }
 	    	}
 	    	)
+		*addrb = pixel;
 	    }
 	    else
 	    {
@@ -112,7 +118,7 @@ int len;	/* length of line */
 	    	    addrb += xinc;
 	    	    if (e >= 0)
 	    	    {
-		    	addrb += yinc;
+		    	addrb += nlwidth;
 		    	e += e3;
 	    	    }
 	    	}
@@ -122,11 +128,12 @@ int len;	/* length of line */
     	{
 	    if (rop == GXcopy)
 	    {
+		len--;
 	    	Duff (len,
 	    	{
 	    	    *addrb = pixel;
 	    	    e += e1;
-	    	    addrb += yinc;
+	    	    addrb += nlwidth;
 	    	    if (e >= 0)
 	    	    {
 		    	addrb += xinc;
@@ -134,6 +141,7 @@ int len;	/* length of line */
 	    	    }
     	    	}
 	    	)
+		*addrb = pixel;
 	    }
 	    else
 	    {
@@ -141,7 +149,7 @@ int len;	/* length of line */
 	    	{
 	    	    *addrb = DoRop (rop, pixel, *addrb);
 	    	    e += e1;
-	    	    addrb += yinc;
+	    	    addrb += nlwidth;
 	    	    if (e >= 0)
 	    	    {
 		    	addrb += xinc;
