@@ -1,4 +1,4 @@
-/* $XConsortium: pl_nameset.c,v 1.1 92/05/08 15:13:10 mor Exp $ */
+/* $XConsortium: pl_nameset.c,v 1.2 92/07/16 11:03:39 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -142,17 +142,17 @@ INPUT PEXNameSet	destNs;
 }
 
 
-PEXName *
-PEXGetNameSet (display, ns, numNamesReturn)
+Status
+PEXGetNameSet (display, ns, numNamesReturn, namesReturn)
 
 INPUT Display		*display;
 INPUT PEXNameSet	ns;
 OUTPUT unsigned long	*numNamesReturn;
+OUTPUT PEXName		**namesReturn;
 
 {
     pexGetNameSetReq	*req;
     pexGetNameSetReply	rep;
-    PEXName		*pn;
 
 
     /*
@@ -174,7 +174,8 @@ OUTPUT unsigned long	*numNamesReturn;
         UnlockDisplay (display);
         PEXSyncHandle (display);
 	*numNamesReturn = 0;
-	return (NULL); 		/* return an error */
+	*namesReturn = NULL;
+	return (0); 		/* return an error */
     }
 
     *numNamesReturn = rep.numNames;
@@ -184,10 +185,10 @@ OUTPUT unsigned long	*numNamesReturn;
      * Allocate a buffer for the replies to pass back to the user.
      */
 
-    pn = (PEXName *) PEXAllocBuf ((unsigned) (rep.length << 2));
+    *namesReturn = (PEXName *) PEXAllocBuf ((unsigned) (rep.length << 2));
 
     if (rep.numNames)
-        _XRead (display, (char *) pn, (long) (rep.length << 2));
+        _XRead (display, (char *) *namesReturn, (long) (rep.length << 2));
 
 
    /*
@@ -197,7 +198,7 @@ OUTPUT unsigned long	*numNamesReturn;
     UnlockDisplay (display);
     PEXSyncHandle (display);
 
-    return (pn);
+    return (1);
 }
 
 
