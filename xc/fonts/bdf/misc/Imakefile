@@ -1,5 +1,5 @@
-OBJS = FontObj(5x8) FontObj(6x9) FontObj(6x10) FontObj(6x12) FontObj(6x13) \
-	FontObj(6x13B) FontObj(7x13) FontObj(7x13B) FontObj(8x13) \
+OBJS = FontObj(5x7) FontObj(5x8) FontObj(6x9) FontObj(6x10) FontObj(6x12) \
+	FontObj(6x13) FontObj(6x13B) FontObj(7x13) FontObj(7x13B) FontObj(8x13) \
 	FontObj(8x13B) FontObj(9x15) FontObj(9x15B) FontObj(10x20) \
 	FontObj(cursor) FontObj(deccurs) FontObj(decsess) FontObj(olcursor) \
 	FontObj(olgl10) FontObj(olgl12) FontObj(olgl14) FontObj(olgl19) \
@@ -20,6 +20,7 @@ FONTINSTDIR = $(FONTDIR)/misc
 
 MakeFonts()
 
+FontTarget(5x7)
 FontTarget(5x8)
 FontTarget(6x9)
 FontTarget(6x10)
