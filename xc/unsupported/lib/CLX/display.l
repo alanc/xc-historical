@@ -316,6 +316,7 @@
 				  :scanline-pad (card8-get 2))
 						; 5 unused bytes
 	      (display-pixmap-formats display)))
+      (setf (display-pixmap-formats display) (nreverse (display-pixmap-formats display)))
       ;; Initialize the screens
       (dotimes (i num-roots)
 	(buffer-input display buffer-bbuf 0 40)
@@ -361,8 +362,9 @@
 		        ;; 4 bytes unused
 		      visuals))
 	      (push (cons depth (nreverse visuals)) depths)))
-	  (setf (screen-depths screen) depths)
+	  (setf (screen-depths screen) (nreverse depths))
 	  (push screen (display-roots display))))
+      (setf (display-roots display) (nreverse (display-roots display)))
       (setf (display-default-screen display) (first (display-roots display)))))
   display)
 
