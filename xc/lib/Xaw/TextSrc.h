@@ -1,5 +1,5 @@
 /*
- * $XConsortium: TextSrc.h,v 1.6 90/05/08 15:17:36 converse Exp $
+ * $XConsortium: TextSrc.h,v 1.7 90/12/01 13:02:13 rws Exp $
  */
 
 /***********************************************************
@@ -186,7 +186,7 @@ extern Boolean XawTextSourceConvertSelection(
     Atom*		/* selection */,
     Atom*		/* target */,
     Atom*		/* type */,
-    caddr_t*		/* value_return */,
+    XtPointer*		/* value_return */,
     unsigned long*	/* length_return */,
     int*		/* format_return */
 #endif
