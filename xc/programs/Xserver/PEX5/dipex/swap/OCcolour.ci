@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: OCcolour.ci,v 5.1 91/02/16 09:57:23 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -37,7 +37,6 @@ pexSwap		*swapPtr;
 pexMarkerColour	*strmPtr;
 {
 
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_FUNC_PREFIX(SwapColourSpecifier) (  swapPtr, &(strmPtr->colourSpec));
 }
 
@@ -49,7 +48,6 @@ pexSwap			*swapPtr;
 pexSurfaceReflAttr	*strmPtr;
 {
 
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_FUNC_PREFIX(SwapReflectionAttr) (swapPtr, &(strmPtr->reflectionAttr));
 
 }
