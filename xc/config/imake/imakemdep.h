@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.56 93/08/07 11:43:21 rws Exp $
+ * $XConsortium: imakemdep.h,v 1.57 93/08/09 14:53:25 rws Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.
  * When porting imake, read each of the steps below and add in any necessary
@@ -77,7 +77,7 @@
 #endif
 
 #ifdef WIN32
-#define imake_ccflags "-nologo -batch -Za"
+#define imake_ccflags "-nologo -batch -D__STDC__"
 #endif
 #else /* not CCIMAKE */
 #ifndef MAKEDEPEND
@@ -272,7 +272,7 @@ char *cpp_argv[ARGUMENTS] = {
 	"-DWIN32",
 	"-nologo",
 	"-batch",
-	"-Za",
+	"-D__STDC__",
 #endif
 };
 #else /* else MAKEDEPEND */
