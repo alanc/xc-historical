@@ -1,5 +1,5 @@
 /*
- * $XConsortium: EditresCom.c,v 1.23 91/04/10 19:18:12 rws Exp $
+ * $XConsortium: EditresCom.c,v 1.24 91/04/11 09:04:28 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -152,32 +152,28 @@ Boolean *cont;
     ResIdent ident;
     static Boolean first_time = FALSE;
     static Atom res_editor, res_comm;
-    Display * disp;
-
-    if (!first_time) {
-	disp = XtDisplay(w);
-
-	first_time = TRUE;
-	res_editor = XInternAtom(disp, EDITRES_NAME, False);
-	res_editor_command = XInternAtom(disp, EDITRES_COMMAND_ATOM, False);
-	res_editor_protocol = XInternAtom(disp, EDITRES_PROTOCOL_ATOM, False);
-
-	/*
-	 * Used in later proceedures. 
-	 */
-
-	client_value = XInternAtom(disp, EDITRES_CLIENT_VALUE, False);
-	LoadResources(w);
-    }
+    Display * dpy;
 
     if (event->type == ClientMessage) {
 	XClientMessageEvent * c_event = (XClientMessageEvent *) event;
+	dpy = XtDisplay(w);
+
+	if (!first_time) {
+	    first_time = TRUE;
+	    res_editor = XInternAtom(dpy, EDITRES_NAME, False);
+	    res_editor_command = XInternAtom(dpy, EDITRES_COMMAND_ATOM, False);
+	    res_editor_protocol = XInternAtom(dpy, EDITRES_PROTOCOL_ATOM,
+					      False);
+
+	    /* Used in later procedures. */
+	    client_value = XInternAtom(dpy, EDITRES_CLIENT_VALUE, False);
+	    LoadResources(w);
+	}
 
 	if ((c_event->message_type != res_editor) ||
 	    (c_event->format != EDITRES_SEND_EVENT_FORMAT))
 	    return;
 
-	disp = XtDisplay(w);
 	time = c_event->data.l[0];
 	res_comm = c_event->data.l[1];
 	ident = (ResIdent) c_event->data.l[2];
