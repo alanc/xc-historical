@@ -371,6 +371,11 @@ Name						Reference
 ----						---------
 "DEC"						[27]
 	registry prefix
+"DEC.CNS11643.1986-2"				[53]
+	CNS11643 2-plane using the encoding
+	suggested in that standard
+"DEC.DTSCS.1990-2"				[54]
+	DEC Taiwan Supplemental Character Set
 "GB2312.1980-0"					[39],[12]
 	China (PRC) Hanzi, GL encoding
 "GB2312.1980-1"					[39],[12]
@@ -556,6 +561,16 @@ Name						Reference
 
 "Acorn"						[49]
 "MIT"						[8]
+
+
+20. NON-STANDARD CHARACTER SET ENCODINGS
+
+"DEC.CNS11643.1986-2"				[53]
+	CNS11643 2-plane using the recommended
+	internal representation scheme
+"DEC.DTSCS.1990-2"				[54]
+	DEC Taiwan Supplemental Character Set
+
 
 REFERENCES
 
@@ -787,4 +802,14 @@ REFERENCES
 	Information Equipment Sector
 	Matsushita Electric Industrial Co., Ltd.
 	1006, Kadoma, Osaka, 571 Japan
+
+[53]	CNS11643
+	National Bureau of Standards
+	Taiwan, Republic of China
+
+[54]	KH Chan
+	Digital Equipment Co.
+	2-4/F Henan Building
+	90 Jaffe Road, Wanchai,
+	Hong Kong
 Sumitomo Electric Workstation Corp.	[77]
