@@ -1,4 +1,4 @@
-/* $XConsortium: misc.c,v 1.3 93/09/10 14:11:51 mor Exp $ */
+/* $XConsortium: misc.c,v 1.4 93/09/12 14:19:19 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -190,8 +190,33 @@ register char	 *ptr;
 	    else 
 	    {
 		/*
-		 * Fatal IO error, invoke the IO error handler.
+		 * Fatal IO error.  First notify each protocol's IceIOErrorCB
+		 * callback, then invoke the application IO error handler.
 		 */
+
+		if (iceConn->process_msg_info)
+		{
+		    int i;
+
+		    for (i = iceConn->his_min_opcode;
+			i <= iceConn->his_max_opcode; i++)
+		    {
+			_IceProcessMsgInfo *process;
+
+			process = &iceConn->process_msg_info[
+			    i - iceConn->his_min_opcode];
+
+			if (process->in_use)
+			{
+			    IceIOErrorCB IOErrCB = process->accept_flag ?
+				process->protocol->accept_client->io_error_cb :
+				process->protocol->orig_client->io_error_cb;
+
+			    if (IOErrCB)
+				(*IOErrCB) (iceConn);
+			}
+		    }
+		}
 
 		(*_IceIOErrorHandler) (iceConn);
 
@@ -245,9 +270,34 @@ register char	 *ptr;
 	    errno = WSAGetLastError();
 #endif
 	    /*
-	     * Fatal IO error, invoke the IO error handler.
+	     * Fatal IO error.  First notify each protocol's IceIOErrorCB
+	     * callback, then invoke the application IO error handler.
 	     */
-	    
+
+	    if (iceConn->process_msg_info)
+	    {
+		int i;
+
+		for (i = iceConn->his_min_opcode;
+		     i <= iceConn->his_max_opcode; i++)
+		{
+		    _IceProcessMsgInfo *process;
+
+		    process = &iceConn->process_msg_info[
+			i - iceConn->his_min_opcode];
+
+		    if (process->in_use)
+		    {
+			IceIOErrorCB IOErrCB = process->accept_flag ?
+			    process->protocol->accept_client->io_error_cb :
+			    process->protocol->orig_client->io_error_cb;
+
+			if (IOErrCB)
+			    (*IOErrCB) (iceConn);
+		    }
+		}
+	    }
+
 	    (*_IceIOErrorHandler) (iceConn);
 
 
@@ -304,7 +354,7 @@ int 	myOpcode;
 	for (i = hisOpcode + 1; i < iceConn->his_min_opcode; i++)
 	{
 	    iceConn->process_msg_info[i -
-		iceConn->his_min_opcode].in_use = 0;
+		iceConn->his_min_opcode].in_use = False;
 
 	    iceConn->process_msg_info[i -
 		iceConn->his_min_opcode].protocol = NULL;
@@ -331,7 +381,7 @@ int 	myOpcode;
 	for (i = iceConn->his_max_opcode + 1; i < hisOpcode; i++)
 	{
 	    iceConn->process_msg_info[i -
-		iceConn->his_min_opcode].in_use = 0;
+		iceConn->his_min_opcode].in_use = False;
 
 	    iceConn->process_msg_info[i -
 		iceConn->his_min_opcode].protocol = NULL;
@@ -341,7 +391,10 @@ int 	myOpcode;
     }
 
     iceConn->process_msg_info[hisOpcode -
-	iceConn->his_min_opcode].in_use = 1;
+	iceConn->his_min_opcode].in_use = True;
+
+    iceConn->process_msg_info[hisOpcode -
+	iceConn->his_min_opcode].my_opcode = myOpcode;
 
     iceConn->process_msg_info[hisOpcode -
 	iceConn->his_min_opcode].protocol = &_IceProtocols[myOpcode - 1];
