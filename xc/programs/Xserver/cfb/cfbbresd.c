@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbbresd.c,v 1.11 91/12/19 14:16:03 keith Exp $ */
+/* $XConsortium: cfbbresd.c,v 1.12 91/12/26 14:36:31 keith Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "cfb.h"
@@ -49,7 +49,9 @@ cfbBresD(rrops,
     int		    e2;
     int		    len;		/* length of line */
 {
+#ifdef PIXEL_ADDR
     register PixelType	*addrp;
+#endif
     register		int e3 = e2-e1;
     int			dashIndex;
     int			dashOffset;
