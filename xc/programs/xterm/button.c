@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: button.c,v 1.30 89/01/04 13:33:45 swick Exp $
+ *	$XConsortium: button.c,v 1.31 89/01/04 14:52:26 swick Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.30 89/01/04 13:33:45 swick Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.31 89/01/04 14:52:26 swick Exp $";
 #endif	/* lint */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -881,10 +881,17 @@ register int frow, fcol, trow, tcol;
 	register int i, j;
 	GC tempgc;
 
-	if (frow < 0) frow = 0;
-	if (trow < 0) trow = 0;
-	if (frow > screen->max_row) frow = screen->max_row;
-	if (trow > screen->max_row) trow = screen->max_row;
+	if (frow < 0)
+	    frow = fcol = 0;
+	else if (frow > screen->max_row)
+	    return;		/* nothing to do, since trow >= frow */
+
+	if (trow < 0)
+	    return;		/* nothing to do, since frow <= trow */
+	else if (trow > screen->max_row) {
+	    trow = screen->max_row;
+	    tcol = screen->max_col+1;
+	}
 	if (frow == trow && fcol == tcol)
 		return;
 
