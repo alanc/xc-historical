@@ -1,25 +1,25 @@
-XCOMM site:  $XConsortium: site.sample,v 1.13 94/08/02 16:01:35 gildea Exp matt $
+XCOMM site:  $XConsortium: site.sample,v 1.14 94/08/15 17:40:43 matt Exp gildea $
 
-/*****************************************************************************
- *                                                                           *
- *			   SITE-SPECIFIC DEFINITIONS                         *
- *                                                                           *
- * This file contains two halves, one included before the vendor-specific    *
- * configuration file (.cf file), and one included after the .cf file.       *
- * The before-half should be protected by #ifdef BeforeVendorCF, and the     *
- * after-half should be protected by #ifdef AfterVendorCF.                   *
- *                                                                           *
- * The before-half should only set things that the .cf file depends on.      *
- * For the .cf files shipped in this release, the main variables in this     *
- * category are HasGcc, HasGcc2, and HasCplusplus 			     *
- *                                                                           *
- * The after-half should contain all other definitions.  For example,        *
- * place your ProjectRoot definition here.                                   *
- *                                                                           *
- * OS Major and Minor version numbers should be changed directly in the .cf  *
- * file, not overridden in site.def.                                         *
- *                                                                           *
- *****************************************************************************/
+/***************************************************************************
+ *                                                                         *
+ *			   SITE-SPECIFIC DEFINITIONS                       *
+ *                                                                         *
+ * This file contains two halves, one included before the vendor-specific  *
+ * configuration file (.cf file), and one included after the .cf file.     *
+ * The before-half should be protected by #ifdef BeforeVendorCF, and the   *
+ * after-half should be protected by #ifdef AfterVendorCF.                 *
+ *                                                                         *
+ * The before-half should only set things that the .cf file depends on.    *
+ * For the .cf files shipped in this release, the main variables in this   *
+ * category are HasGcc, HasGcc2, and HasCplusplus 			   *
+ *                                                                         *
+ * The after-half should contain all other definitions.  For example,      *
+ * place your ProjectRoot definition here.                                 *
+ *                                                                         *
+ * OS Major and Minor version numbers should be changed directly in the    *
+ * .cf file, not overridden in site.def.                                   *
+ *                                                                         *
+ ***************************************************************************/
 
 /* if you want host-specific customization, this is one way to do it */
 /*
@@ -33,9 +33,7 @@ XCOMM site:  $XConsortium: site.sample,v 1.13 94/08/02 16:01:35 gildea Exp matt 
 
 #ifdef BeforeVendorCF
 
-/*
-#include <host.def>
-*/
+/* #include <host.def> */
 
 /*
 #ifndef HasGcc2
@@ -142,8 +140,6 @@ XCOMM site:  $XConsortium: site.sample,v 1.13 94/08/02 16:01:35 gildea Exp matt 
 #endif
 */
 
-/*
-#include <host.def>
-*/
+/* #include <host.def> */
 
 #endif /* AfterVendorCF */
