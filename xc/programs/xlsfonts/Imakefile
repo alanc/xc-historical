@@ -1,8 +1,5 @@
-       INCLUDES = -I$(TOP) -Isimple-lib
-LOCAL_LIBRARIES = $(SLB) $(XLIB)
-            SLB = simple-lib/libslb.a
+LOCAL_LIBRARIES = $(XLIB)
+           SRCS = xlsfonts.c simple.c
+           OBJS = xlsfonts.o simple.o
 
-SimpleProgramTarget(xlsfonts, $(BINDIR))
-
-$(SLB):
-	cd simple-lib; $(MAKE)
+ComplexProgramTarget(xlsfonts, $(BINDIR))
