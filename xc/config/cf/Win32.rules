@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.rules,v 1.24 93/09/11 18:39:12 rws Exp $
+XCOMM platform:  $XConsortium: Win32.rules,v 1.25 93/09/12 09:59:36 rws Exp $
 
 .c.obj:
 	$(CC) -c $*.c @<<
@@ -176,13 +176,12 @@ NormalLibraryTarget(libname,objlist1 objlist2 objlist3)
 AllTarget(LibraryTargetName(libname))					@@\
 									@@\
 XVARdef0 = deplist							@@\
-XVARdef1 = $(XVARuse0:/=\)						@@\
-XVARdef2 = objlist							@@\
-XVARdef3 = $(XVARuse1:/=\)						@@\
+XVARdef1 = objlist							@@\
+XVARdef2 = $(XVARuse1:/=\)						@@\
 									@@\
-LibraryTargetName(libname): $(XVARuse1:.o=.obj)				@@\
+LibraryTargetName(libname): $(XVARuse0:/=\)				@@\
 	RemoveFile($@)							@@\
-	MakeLibrary($@,$(XVARuse3:.o=.obj))
+	MakeLibrary($@,$(XVARuse2:.o=.obj))
 
 #define	ProfiledLibraryTarget(libname,objlist)				@@\
 AllTarget(LibraryTargetNameSuffix(libname,_p))				@@\
