@@ -237,10 +237,12 @@ OBJS =\
 	$(AIDOBJS)
 
 NormalLibraryTarget(X11,$(OBJS))
-AliasedLibraryTarget(X11,X)
 LintLibraryTarget(X11,*.c)
 InstallLibrary(X11,$(USRLIBDIR))
-InstallLibraryAlias(X11,X,$(USRLIBDIR))
+# Uncomment the following two lines if you need compatibility for
+# ancient Makefiles (that refer to libX.a or -lX instead of -lX11)
+#AliasedLibraryTarget(X11,X)
+#InstallLibraryAlias(X11,X,$(USRLIBDIR))
 InstallLintLibrary(X11,$(LINTLIBDIR))
 InstallMultiple($(HEADERS),$(INCDIR))
 InstallNonExec(XErrorDB,$(LIBDIR))
