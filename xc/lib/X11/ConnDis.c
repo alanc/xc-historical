@@ -1,5 +1,5 @@
 #include "copyright.h"
-/* $Header: XConnDis.c,v 11.26 88/05/17 14:04:26 rws Exp $ */
+/* $Header: XConnDis.c,v 11.27 88/05/18 18:23:13 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 #define NEED_EVENTS
 /*
@@ -139,7 +139,7 @@ int _XConnectDisplay (display_name, expanded_name, screen_num)
 	    /*
 	     * build the target object name.
 	     */
-	    sprintf(objname, "X%d", display_num);
+	    sprintf(objname, "X$X%d", display_num);
 	    /*
 	     * Attempt to open the DECnet connection, return -1 if fails.
 	     */

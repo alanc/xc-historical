@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: connection.c,v 1.68 88/05/17 13:50:59 rws Exp $ */
+/* $Header: connection.c,v 1.69 88/05/24 10:21:49 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -233,7 +233,7 @@ CreateWellKnownSockets()
     {
 	bzero ((char *)&dnsock, sizeof (dnsock));
 	dnsock.sdn_family = AF_DECnet;
-	sprintf(dnsock.sdn_objname, "X%d", atoi (display));
+	sprintf(dnsock.sdn_objname, "X$X%d", atoi (display));
 	dnsock.sdn_objnamel = strlen(dnsock.sdn_objname);
 	if (bind (request, (struct sockaddr *) &dnsock, sizeof (dnsock)))
 		Error ("Binding DECnet socket");
