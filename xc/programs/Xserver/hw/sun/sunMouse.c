@@ -55,6 +55,8 @@ typedef struct {
     Bool    mouseMoved;	    /* Mouse has moved */
 } SunMsPrivRec, *SunMsPrivPtr;
 
+Bool			PointerConfinedToScreen();
+
 static void 	  	sunMouseCtrl();
 static int 	  	sunMouseGetMotionEvents();
 static Firm_event 	*sunMouseGetEvents();
@@ -392,7 +394,8 @@ sunMouseProcessEvent (pMouse, fe)
              */
             if (screenInfo.numScreens > 1 &&
                 (pPriv->x > pPriv->pScreen->width ||
-                 pPriv->x < 0)) {
+                 pPriv->x < 0) &&
+		!PointerConfinedToScreen()) {
                 sunRemoveCursor();
                 /* disable color plane if it's current */
                 index = pPriv->pScreen->myNum;
