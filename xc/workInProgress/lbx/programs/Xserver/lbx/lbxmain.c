@@ -1,5 +1,5 @@
 /*
- * $NCDId: @(#)lbxmain.c,v 1.17 1994/01/22 02:15:21 dct Exp $
+ * $NCDId: @(#)lbxmain.c,v 1.18 1994/02/02 18:37:28 lemke Exp $
  * $NCDOr: lbxmain.c,v 1.4 1993/12/06 18:47:18 keithp Exp keithp $
  *
  * Copyright 1992 Network Computing Devices
@@ -29,6 +29,7 @@
 #define NEED_EVENTS
 #include "X.h"
 #include "Xproto.h"
+#include "Xos.h"
 #include "misc.h"
 #include "os.h"
 #include "dixstruct.h"
@@ -45,8 +46,17 @@
 #include "lbxserve.h"
 #include "Xfuncproto.h"
 #include <errno.h>
+#ifdef X_NOT_STDC_ENV
+extern int errno;
+#endif
 #include <sys/uio.h>
 #include <stdio.h>
+
+#ifndef X_NOT_POSIX
+#include <unistd.h>
+#else
+extern int read();
+#endif
 
 #define MAXBYTESDIFF	8
 #define MAXDELTASIZE	(((sz_xLbxDeltaReq + (MAXBYTESDIFF << 1) + 2) / 4) * 4)
@@ -387,9 +397,10 @@ LbxWritev (connection, iov, num)
     return total;
 }
 
+void
 LbxWakeupHandler (data, result, pReadmask)
     pointer	    data;
-    unsigned long   result;
+    int		    result;
     pointer	    pReadmask;
 {
     return;
@@ -511,9 +522,10 @@ LbxCheckCompressInput (dummy1, dummy2)
 
 extern int  NewOutputPending;
 
+void
 LbxBlockHandler (data, timeout, readmask)
     pointer data;
-    pointer timeout;
+    OSTimePtr timeout;
     pointer readmask;
 {
     if (lbxAnyOutputPending)
@@ -553,7 +565,8 @@ LbxSwitchRecv (proxy, lbxClient)
     }
     client = lbxClient->client;
     DBG (DBG_SWITCH, (stderr, "switching input to client %d\n", lbxClient->index));
-    if (!LbxIsClientBlocked (client))
+    if (!LbxIsClientBlocked (client)
+	&& proxy->curDix != lbxClient)
     {
 	SwitchClientInput (proxy->curDix->client, client, 0);
 	proxy->curDix = lbxClient;
@@ -629,7 +642,7 @@ LbxReadRequestFromClient (client)
 	    else if (MINOROP(client) == X_LbxDelta) {
 		ret = ProcLbxDelta (client);
 		DBG(DBG_DELTA, (stderr, "delta decompressed msg %d, len = %d\n",
-				(unsigned) client->requestBuffer[0], ret));
+				*((unsigned *) client->requestBuffer), ret));
 	    }
 	    cacheable = FALSE; /* not caching any LBX requests for now */
 	}
@@ -642,7 +655,7 @@ LbxReadRequestFromClient (client)
 		--lbxClient->reqs_pending;
 	    else if (cacheable) {
 		DBG(DBG_DELTA, (stderr, "caching msg %d, len = %d, index = %d\n",
-				(unsigned) client->requestBuffer[0], ret,
+				*((unsigned *) client->requestBuffer), ret,
 				proxy->indeltas.nextDelta));
 		LBXAddDeltaIn(&proxy->indeltas, client->requestBuffer, ret);
 	    }
@@ -650,7 +663,7 @@ LbxReadRequestFromClient (client)
 	}
 	if (cacheable) {
 	    DBG(DBG_DELTA, (stderr, "caching msg %d, len = %d, index = %d\n",
-			    (unsigned) client->requestBuffer[0], ret,
+			    *((unsigned *) client->requestBuffer), ret,
 			    proxy->indeltas.nextDelta));
 	    LBXAddDeltaIn(&proxy->indeltas, client->requestBuffer, ret);
 	}
@@ -783,11 +796,11 @@ LbxShutdownProxy (proxy)
 	}
     }
     LbxFlushTags(proxy);
+    if (proxy->lzwHandle)
+	--lbxCompressWorkProcCount;
     LbxFreeProxy(proxy);
     if (!--lbxBlockHandlerCount)
 	RemoveBlockAndWakeupHandlers (LbxBlockHandler, LbxWakeupHandler, NULL);
-    if (proxy->lzwHandle)
-	--lbxCompressWorkProcCount;
 }
 
 int
@@ -814,7 +827,22 @@ ProcLbxQueryVersion(client)
     return (client->noClientException);
 }
 
-extern int  read (), writev ();
+/*  This is rather bogus.  Since we are going to assign a function
+ *  pointer to writev below, we have to declare it.  There seems to be
+ *  no portable way to do this.  If you just declare it, some compilers
+ *  will complain.  If you include unistd.h, you may or may not get it,
+ *  and there's no way to tell.  It's not defined by Posix, so you
+ *  can't reliably use X_NOT_POSIX to conditionally include something vs.
+ *  declaring it yourself.  So, we introduce a new function whose sole job is
+ *  to call writev.  This way writev itself doesn't have to be predeclared.
+ */
+int Writev(fd, iov, iovcnt)
+     int fd;
+     struct iovec *iov;
+     int iovcnt;
+{
+    writev(fd, iov, iovcnt);
+}
 
 int
 ProcLbxStartProxy(client)
@@ -915,7 +943,7 @@ ProcLbxStartProxy(client)
     }
     else {
 	proxy->read = read;
-	proxy->writev = writev;
+	proxy->writev = Writev;
     }
 
     SwitchConnectionFuncs (client, LbxRead, LbxWritev, LbxCloseClient);
