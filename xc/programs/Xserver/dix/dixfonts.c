@@ -21,7 +21,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.50 94/04/17 20:26:30 gildea Exp $ */
+/* $XConsortium: dixfonts.c,v 1.51 94/08/02 17:41:45 dpw Exp dpw $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -1641,7 +1641,7 @@ static      FontPathElementPtr
 find_existing_fpe(list, num, name, len)
     FontPathElementPtr *list;
     int         num;
-    char       *name;
+    unsigned char *name;
     int         len;
 {
     FontPathElementPtr fpe;
