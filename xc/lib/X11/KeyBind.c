@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XKeyBind.c,v 11.57 89/12/10 10:14:27 rws Exp $ */
+/* $XConsortium: XKeyBind.c,v 11.58 89/12/11 19:09:38 rws Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /* Beware, here be monsters (still under construction... - JG */
@@ -21,8 +21,8 @@ static ComputeMaskFromKeytrans();
 static int Initialize();
 static void XConvertCase();
 
-struct XKeytrans {
-	struct XKeytrans *next;/* next on list */
+struct _XKeytrans {
+	struct _XKeytrans *next;/* next on list */
 	char *string;		/* string to return when the time comes */
 	int len;		/* length of string (since NULL is legit)*/
 	KeySym key;		/* keysym rebound */
@@ -123,10 +123,11 @@ InitModMap(dpy)
     register XModifierKeymap *map;
     register int i, j, n;
     KeySym sym;
-    register struct XKeytrans *p;
+    register struct _XKeytrans *p;
 
     if (! (dpy->modifiermap = map = XGetModifierMapping(dpy)))
 	return 0;
+    dpy->free_funcs->modifiermap = XFreeModifiermap;
     if ((! dpy->keysyms) && (! Initialize(dpy)))
 	return 0;
     LockDisplay(dpy);
@@ -309,7 +310,7 @@ XTranslateKeySym(dpy, symbol, modifiers, buffer, nbytes)
     char *buffer;
     int nbytes;
 {
-    register struct XKeytrans *p; 
+    register struct _XKeytrans *p; 
     int length;
     unsigned long hiBytes;
     register unsigned char c;
@@ -385,6 +386,20 @@ XLookupString (event, buffer, nbytes, keysym, status)
 			    buffer, nbytes);
 }
 
+static void
+_XFreeKeyBindings (dpy)
+    Display *dpy;
+{
+    register struct _XKeytrans *p, *np;
+
+    for (p = dpy->key_bindings; p; p = np) {
+	np = p->next;
+	Xfree(p->string);
+	Xfree((char *)p->modifiers);
+	Xfree((char *)p);
+    }   
+}
+
 #if NeedFunctionPrototypes
 XRebindKeysym (
     Display *dpy,
@@ -403,7 +418,7 @@ XRebindKeysym (dpy, keysym, mlist, nm, str, nbytes)
     int nbytes;
 #endif
 {
-    register struct XKeytrans *tmp, *p;
+    register struct _XKeytrans *tmp, *p;
     int nb;
 
     if ((! dpy->keysyms) && (! Initialize(dpy)))
@@ -412,7 +427,7 @@ XRebindKeysym (dpy, keysym, mlist, nm, str, nbytes)
     tmp = dpy->key_bindings;
     nb = sizeof(KeySym) * nm;
 
-    if ((! (p = (struct XKeytrans *) Xmalloc( sizeof(struct XKeytrans)))) ||
+    if ((! (p = (struct _XKeytrans *) Xmalloc( sizeof(struct _XKeytrans)))) ||
 	((! (p->string = (char *) Xmalloc( (unsigned) nbytes))) && 
 	 (nbytes > 0)) ||
 	((! (p->modifiers = (KeySym *) Xmalloc( (unsigned) nb))) &&
@@ -427,6 +442,7 @@ XRebindKeysym (dpy, keysym, mlist, nm, str, nbytes)
     }
 
     dpy->key_bindings = p;
+    dpy->free_funcs->key_bindings = _XFreeKeyBindings;
     p->next = tmp;	/* chain onto list */
     bcopy ((char *) str, p->string, nbytes);
     p->len = nbytes;
@@ -436,19 +452,6 @@ XRebindKeysym (dpy, keysym, mlist, nm, str, nbytes)
     ComputeMaskFromKeytrans(dpy, p);
     UnlockDisplay(dpy);
     return;
-}
-
-_XFreeKeyBindings (dpy)
-    Display *dpy;
-{
-    register struct XKeytrans *p, *np;
-
-    for (p = dpy->key_bindings; p; p = np) {
-	np = p->next;
-	Xfree(p->string);
-	Xfree((char *)p->modifiers);
-	Xfree((char *)p);
-    }   
 }
 
 /*
@@ -482,7 +485,7 @@ FindKeyCode(dpy, code)
 static
 ComputeMaskFromKeytrans(dpy, p)
     Display *dpy;
-    register struct XKeytrans *p;
+    register struct _XKeytrans *p;
 {
     register int i;
     register CARD8 code;
