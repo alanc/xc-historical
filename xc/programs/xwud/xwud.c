@@ -1,4 +1,4 @@
-/* $XConsortium: xwud.c,v 1.43 91/02/09 16:53:46 rws Exp $ */
+/* $XConsortium: xwud.c,v 1.44 91/03/12 08:53:38 rws Exp $ */
 /* Copyright 1985, 1986, 1988 Massachusetts Institute of Technology */
 
 /*
@@ -65,7 +65,7 @@ main(argc, argv)
     Display *dpy;
     int screen;
     register int i;
-    XImage in_image, *out_image;
+    XImage *in_image, *out_image;
     XSetWindowAttributes attributes;
     XVisualInfo vinfo, *vinfos;
     long mask;
@@ -217,22 +217,36 @@ main(argc, argv)
       Error("Unable to read window name from dump file.");
 
     /* initialize the input image */
-    in_image.width = (int) header.pixmap_width;
-    in_image.height = (int) header.pixmap_height;
-    in_image.xoffset = (int) header.xoffset;
-    in_image.format = (int) header.pixmap_format;
-    in_image.byte_order = (int) header.byte_order;
-    in_image.bitmap_unit = (int) header.bitmap_unit;
-    in_image.bitmap_bit_order = (int) header.bitmap_bit_order;
-    in_image.bitmap_pad = (int) header.bitmap_pad;
-    in_image.depth = (int) header.pixmap_depth;
-    in_image.bits_per_pixel = (int) header.bits_per_pixel;
-    in_image.bytes_per_line = (int) header.bytes_per_line;
-    in_image.red_mask = header.red_mask;
-    in_image.green_mask = header.green_mask;
-    in_image.blue_mask = header.blue_mask;
-    in_image.obdata = NULL;
-    _XInitImageFuncPtrs(&in_image);
+
+    /* This is a crock.  Xlib does not provide a way to create an
+     * arbitrary image and get the internal image functions correctly
+     * initialized.  So, we cheat.
+     */
+    {
+	Display fakedpy;
+	ScreenFormat fakefmt;
+
+	fakedpy.byte_order = (int) header.byte_order;
+	fakedpy.bitmap_unit = (int) header.bitmap_unit;
+	fakedpy.bitmap_bit_order = (int) header.bitmap_bit_order;
+	fakedpy.pixmap_format = &fakefmt;
+	fakedpy.nformats = 1;
+	fakefmt.depth = (int) header.pixmap_depth;
+	fakefmt.bits_per_pixel = (int) header.bits_per_pixel;
+
+	in_image = XCreateImage(&fakedpy, NULL,
+				(int) header.pixmap_depth,
+				(int) header.pixmap_format,
+				(int) header.xoffset, NULL,
+				(int) header.pixmap_width,
+				(int) header.pixmap_height,
+				(int) header.bitmap_pad,
+				(int) header.bytes_per_line);
+    }
+
+    in_image->red_mask = header.red_mask;
+    in_image->green_mask = header.green_mask;
+    in_image->blue_mask = header.blue_mask;
 
     /* read in the color map buffer */
     if(ncolors = header.ncolors) {
@@ -250,7 +264,7 @@ main(argc, argv)
     }
 
     /* alloc the pixel buffer */
-    buffer_size = Image_Size(&in_image);
+    buffer_size = Image_Size(in_image);
     if((buffer = malloc(buffer_size)) == NULL)
       Error("Can't malloc data buffer.");
 
@@ -261,20 +275,20 @@ main(argc, argv)
      /* close the input file */
     (void) fclose(in_file);
 
-    if (plane >= in_image.depth)
+    if (plane >= in_image->depth)
 	Error("plane number exceeds image depth");
-    if ((in_image.format == XYPixmap) && (plane >= 0)) {
-	buffer += in_image.bytes_per_line * in_image.height *
-		  (in_image.depth - (plane + 1));
-	in_image.depth = 1;
+    if ((in_image->format == XYPixmap) && (plane >= 0)) {
+	buffer += in_image->bytes_per_line * in_image->height *
+		  (in_image->depth - (plane + 1));
+	in_image->depth = 1;
 	ncolors = 0;
     }
-    if (in_image.depth == 1) {
-	in_image.format = XYBitmap;
+    if (in_image->depth == 1) {
+	in_image->format = XYBitmap;
 	newmap = False;
 	rawbits = True;
     }
-    in_image.data = buffer;
+    in_image->data = buffer;
 
     if (std) {
 	map_name = malloc(strlen(std) + 9);
@@ -329,8 +343,8 @@ main(argc, argv)
 	      Error("invalid visual specifier");
 	}
     }
-    if (rawbits && (in_image.depth > 1) && (plane < 0)) {
-	vinfo.depth = in_image.depth;
+    if (rawbits && (in_image->depth > 1) && (plane < 0)) {
+	vinfo.depth = in_image->depth;
 	mask |= VisualDepthMask;
     }
     vinfos = XGetVisualInfo(dpy, mask, &vinfo, &count);
@@ -356,8 +370,8 @@ main(argc, argv)
 		break;
 	    }
 	}
-    } else if ((in_image.depth == 1) ||
-	       ((in_image.format == ZPixmap) && (plane >= 0)) ||
+    } else if ((in_image->depth == 1) ||
+	       ((in_image->format == ZPixmap) && (plane >= 0)) ||
 	       rawbits) {
 	vinfo = vinfos[0];
 	if (!(mask & VisualIDMask)) {
@@ -377,7 +391,7 @@ main(argc, argv)
 	    int z1, z2;
 	    z2 = EffectiveSize(&vinfos[i]);
 	    if ((z2 >= ncolors) &&
-		(vinfos[i].depth == in_image.depth) &&
+		(vinfos[i].depth == in_image->depth) &&
 		(vinfos[i].class == header.visual_class))
 	    {
 		vinfo = vinfos[i];
@@ -393,7 +407,7 @@ main(argc, argv)
 	    (vinfo.class != StaticGray) &&
 	    (vinfo.class != StaticColor) &&
 	    (vinfo.class == header.visual_class) &&
-	    (vinfo.depth == in_image.depth) &&
+	    (vinfo.depth == in_image->depth) &&
 	    ((vinfo.class == PseudoColor) ||
 	     (vinfo.class == GrayScale) ||
 	     ((vinfo.red_mask == header.red_mask) &&
@@ -406,7 +420,7 @@ main(argc, argv)
 
     /* get the appropriate colormap */
     if (newmap && (vinfo.class & 1) &&
-	(vinfo.depth == in_image.depth) &&
+	(vinfo.depth == in_image->depth) &&
 	(vinfo.class == header.visual_class) &&
 	(vinfo.colormap_size >= ncolors) &&
 	(vinfo.red_mask == header.red_mask) &&
@@ -431,35 +445,35 @@ main(argc, argv)
     }
 
     /* create the output image */
-    if ((in_image.format == ZPixmap) && (plane >= 0)) {
+    if ((in_image->format == ZPixmap) && (plane >= 0)) {
 	out_image = XCreateImage(dpy, vinfo.visual, 1,
 				 XYBitmap, 0, NULL,
-				 in_image.width, in_image.height,
+				 in_image->width, in_image->height,
 				 XBitmapPad(dpy), 0);
 	out_image->data = malloc(Image_Size(out_image));
-	Extract_Plane(&in_image, out_image, plane);
+	Extract_Plane(in_image, out_image, plane);
 	ncolors = 0;
     } else if (rawbits || newmap) {
-	out_image = &in_image;
+	out_image = in_image;
     } else {
 	out_image = XCreateImage(dpy, vinfo.visual, vinfo.depth,
 				 (vinfo.depth == 1) ? XYBitmap :
-						      in_image.format,
-				 in_image.xoffset, NULL,
-				 in_image.width, in_image.height,
+						      in_image->format,
+				 in_image->xoffset, NULL,
+				 in_image->width, in_image->height,
 				 XBitmapPad(dpy), 0);
 	out_image->data = malloc(Image_Size(out_image));
 	if (std) {
 	    if (!stdmap->green_max && !stdmap->blue_max && IsGray(dpy, stdmap))
-		Do_StdGray(dpy, stdmap, ncolors, colors, &in_image, out_image);
+		Do_StdGray(dpy, stdmap, ncolors, colors, in_image, out_image);
 	    else
-		Do_StdCol(dpy, stdmap, ncolors, colors, &in_image, out_image);
+		Do_StdCol(dpy, stdmap, ncolors, colors, in_image, out_image);
 	} else if ((header.visual_class == TrueColor) ||
 		   (header.visual_class == DirectColor))
 	    Do_Direct(dpy, &header, &colormap, ncolors, colors,
-		      &in_image, out_image);
+		      in_image, out_image);
 	else
-	    Do_Pseudo(dpy, &colormap, ncolors, colors, &in_image, out_image);
+	    Do_Pseudo(dpy, &colormap, ncolors, colors, in_image, out_image);
     }
 
     if (out_image->depth == 1) {
@@ -757,8 +771,8 @@ Do_Direct(dpy, header, colormap, ncolors, colors, in_image, out_image)
     unsigned long rmask, gmask, bmask;
     int rshift = 0, gshift = 0, bshift = 0;
     int i;
-    unsigned long pix;
-    unsigned long *pixels = (unsigned long *)NULL;
+    unsigned long pix, xpix;
+    unsigned long *pixels, *rpixels;
 
     rmask = header->red_mask;
     while (!(rmask & 1)) {
@@ -775,38 +789,79 @@ Do_Direct(dpy, header, colormap, ncolors, colors, in_image, out_image)
 	bmask >>= 1;
 	bshift++;
     }
-    if (in_image->depth <= 12)
-    {
+    if (in_image->depth <= 12) {
 	pix = 1 << in_image->depth;
 	pixels = (unsigned long *)malloc(sizeof(unsigned long) * pix);
 	for (i = 0; i < pix; i++)
-	   pixels[i] = ~0L;
-    }
-    color.flags = DoRed | DoGreen | DoBlue;
-    for (y = 0; y < in_image->height; y++) {
-	for (x = 0; x < in_image->width; x++) {
-	    pix = XGetPixel(in_image, x, y);
-	    if (!pixels || ((color.pixel = pixels[pix]) == ~0L)) {
-		color.red = (pix >> rshift) & rmask;
-		color.green = (pix >> gshift) & gmask;
-		color.blue = (pix >> bshift) & bmask;
-		if (ncolors) {
-		    color.red = colors[color.red].red;
-		    color.green = colors[color.green].green;
-		    color.blue = colors[color.blue].blue;
-		} else {
-		    color.red = ((unsigned long)color.red * 65535) / rmask;
-		    color.green = ((unsigned long)color.green * 65535) / gmask;
-		    color.blue = ((unsigned long)color.blue * 65535) / bmask;
-		}
-		if (!XAllocColor(dpy, *colormap, &color)) {
-		    *colormap = CopyColormapAndFree(dpy, *colormap);
-		    XAllocColor(dpy, *colormap, &color);
-		}
-		if (pixels)
+	    pixels[i] = ~0L;
+	color.flags = DoRed | DoGreen | DoBlue;
+	for (y = 0; y < in_image->height; y++) {
+	    for (x = 0; x < in_image->width; x++) {
+		pix = XGetPixel(in_image, x, y);
+		if ((color.pixel = pixels[pix]) == ~0L) {
+		    color.red = (pix >> rshift) & rmask;
+		    color.green = (pix >> gshift) & gmask;
+		    color.blue = (pix >> bshift) & bmask;
+		    if (ncolors) {
+			color.red = colors[color.red].red;
+			color.green = colors[color.green].green;
+			color.blue = colors[color.blue].blue;
+		    } else {
+			color.red = (((unsigned long)color.red * 65535) /
+				     rmask);
+			color.green = (((unsigned long)color.green * 65535) /
+				       gmask);
+			color.blue = (((unsigned long)color.blue * 65535) /
+				      bmask);
+		    }
+		    if (!XAllocColor(dpy, *colormap, &color)) {
+			*colormap = CopyColormapAndFree(dpy, *colormap);
+			XAllocColor(dpy, *colormap, &color);
+		    }
 		    pixels[pix] = color.pixel;
+		}
+		XPutPixel(out_image, x, y, color.pixel);
 	    }
-	    XPutPixel(out_image, x, y, color.pixel);
+	}
+    } else {
+	pix = 1 << 12;
+	pixels = (unsigned long *)malloc(sizeof(unsigned long) * pix);
+	rpixels = (unsigned long *)malloc(sizeof(unsigned long) * pix);
+	for (i = 0; i < pix; i++) {
+	    pixels[i] = ~0L;
+	    rpixels[i] = ~0L;
+	}
+	color.flags = DoRed | DoGreen | DoBlue;
+	for (y = 0; y < in_image->height; y++) {
+	    for (x = 0; x < in_image->width; x++) {
+		pix = XGetPixel(in_image, x, y);
+		xpix = ((pix >> 12) ^ pix) & ((1 << 12) - 1);
+		if (((color.pixel = pixels[xpix]) == ~0L) ||
+		    (rpixels[xpix] != pix)) {
+		    color.red = (pix >> rshift) & rmask;
+		    color.green = (pix >> gshift) & gmask;
+		    color.blue = (pix >> bshift) & bmask;
+		    if (ncolors) {
+			color.red = colors[color.red].red;
+			color.green = colors[color.green].green;
+			color.blue = colors[color.blue].blue;
+		    } else {
+			color.red = (((unsigned long)color.red * 65535) /
+				     rmask);
+			color.green = (((unsigned long)color.green * 65535) /
+				       gmask);
+			color.blue = (((unsigned long)color.blue * 65535) /
+				      bmask);
+		    }
+		    if (!XAllocColor(dpy, *colormap, &color)) {
+			*colormap = CopyColormapAndFree(dpy, *colormap);
+			XAllocColor(dpy, *colormap, &color);
+		    }
+		    pixels[xpix] = color.pixel;
+		    rpixels[xpix] = pix;
+		}
+		XPutPixel(out_image, x, y, color.pixel);
+	    }
 	}
     }
 }
