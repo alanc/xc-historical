@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.56 92/04/15 20:21:10 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.57 92/04/16 09:59:21 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -660,67 +660,90 @@ box_left(univ, iuniv)
 }
 
 void
+find_closest_point(univ, px, py)
+    Region univ;
+    int *px;
+    int *py;
+{
+    int x, y;
+    int max, i;
+    Box box;
+
+    x = *px;
+    y = *py;
+    if (XPointInRegion(univ, x, y) || XEmptyRegion(univ))
+	return;
+    compute_box(univ, &box);
+    if (box.x2 < x)
+	max = x - box.x2;
+    else if (box.x1 > x)
+	max = box.x1 - x;
+    else
+	max = 0;
+    if (box.y2 < y)
+	i = y - box.y2;
+    else if (box.y1 > y)
+	i = box.y1 - y;
+    else
+	i = 0;
+    if (i > max)
+	max = i;
+    for (; 1; max++) {
+	for (i = 0; i <= max; i++) {
+	    if (XPointInRegion(univ, x - max, y - i)) {
+		*px -= max;
+		*py -= i;
+		return;
+	    }
+	    if (XPointInRegion(univ, x - max, y + i)) {
+		*px -= max;
+		*py += i;
+		return;
+	    }
+	    if (XPointInRegion(univ, x + max, y - i)) {
+		*px += max;
+		*py -= i;
+		return;
+	    }
+	    if (XPointInRegion(univ, x + max, y + i)) {
+		*px += max;
+		*py += i;
+		return;
+	    }
+	    if (XPointInRegion(univ, x - i, y - max)) {
+		*px -= i;
+		*py -= max;
+		return;
+	    }
+	    if (XPointInRegion(univ, x - i, y + max)) {
+		*px -= i;
+		*py += max;
+		return;
+	    }
+	    if (XPointInRegion(univ, x + i, y - max)) {
+		*px += i;
+		*py -= max;
+		return;
+	    }
+	    if (XPointInRegion(univ, x + i, y + max)) {
+		*px += i;
+		*py += max;
+		return;
+	    }
+	}
+    }
+}
+
+
+void
 compute_point(univ, wa, rec)
     Region univ;
     XWindowAttributes *wa;
     Closest *rec;
 {
-    int lim;
-    int max;
-    int i;
-
     rec->bestx = wa->x + wa->width / 2 + wa->border_width;
     rec->besty = wa->y + wa->height / 2 + wa->border_width;
-    if (XPointInRegion(univ, rec->bestx, rec->besty))
-	return;
-    lim = wa->width;
-    if (wa->height > wa->width)
-	lim = wa->height;
-    lim = lim / 2 + wa->border_width;
-    for (max = 0; max <= lim; max++) {
-	for (i = 0; i <= max; i++) {
-	    if (XPointInRegion(univ, rec->bestx - max, rec->besty - i)) {
-		rec->bestx -= max;
-		rec->besty -= i;
-		return;
-	    }
-	    if (XPointInRegion(univ, rec->bestx - max, rec->besty + i)) {
-		rec->bestx -= max;
-		rec->besty += i;
-		return;
-	    }
-	    if (XPointInRegion(univ, rec->bestx + max, rec->besty - i)) {
-		rec->bestx += max;
-		rec->besty -= i;
-		return;
-	    }
-	    if (XPointInRegion(univ, rec->bestx + max, rec->besty + i)) {
-		rec->bestx += max;
-		rec->besty += i;
-		return;
-	    }
-	    if (XPointInRegion(univ, rec->bestx - i, rec->besty - max)) {
-		rec->bestx -= i;
-		rec->besty -= max;
-		return;
-	    }
-	    if (XPointInRegion(univ, rec->bestx - i, rec->besty + max)) {
-		rec->bestx -= i;
-		rec->besty += max;
-		return;
-	    }
-	    if (XPointInRegion(univ, rec->bestx + i, rec->besty - max)) {
-		rec->bestx += i;
-		rec->besty -= max;
-		return;
-	    }
-	    if (XPointInRegion(univ, rec->bestx + i, rec->besty + max)) {
-		rec->bestx += i;
-		rec->besty += max;
-		return;
-	    }
-	}
-    }
+    find_closest_point(univ, &rec->bestx, &rec->besty);
 }
 
 Region
@@ -983,6 +1006,18 @@ compute_best_down(rec, univ, cx, cy)
 }
 
 double
+compute_best_close(rec, univ, cx, cy)
+    Closest *rec;
+    Region univ;
+    int cx;
+    int cy;
+{
+    find_closest_point(univ, &cx, &cy);
+    return ((cx - rec->rootx) * (cx - rec->rootx) +
+	    (cy - rec->rooty) * (cy - rec->rooty));
+}
+
+double
 compute_distance(rec, univ)
     Closest *rec;
     Region univ;
@@ -1048,8 +1083,7 @@ compute_distance(rec, univ)
 	    y = box.y1;
 	else
 	    y = rec->rooty;
-	return (rec->xmult * (x - rec->rootx) * (x - rec->rootx) +
-		rec->ymult * (y - rec->rooty) * (y - rec->rooty));
+	return compute_best_close(rec, univ, x, y);
     }
 }
 
