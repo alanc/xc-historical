@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.10 87/09/03 11:59:19 toddb Locked $ */
+/* $Header: dispatch.c,v 1.11 87/09/03 13:06:06 toddb Locked $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1740,13 +1740,11 @@ ProcGetImage(client)
          stuff->x < -((WindowPtr)pDraw)->borderWidth ||
          stuff->x + stuff->width >
               ((WindowPtr)pDraw)->borderWidth +
-              ((WindowPtr)pDraw)->clientWinSize.width +
-              ((WindowPtr)pDraw)->clientWinSize.x ||
+              ((WindowPtr)pDraw)->clientWinSize.width ||
          stuff->y < -((WindowPtr)pDraw)->borderWidth ||
          stuff->y + stuff->height >
               ((WindowPtr)pDraw)->borderWidth +
-              ((WindowPtr)pDraw)->clientWinSize.height +
-              ((WindowPtr)pDraw)->clientWinSize.y
+              ((WindowPtr)pDraw)->clientWinSize.height
         )
 	    return(BadMatch);
 	xgi.visual = ((WindowPtr) pDraw)->visual;
