@@ -1,5 +1,5 @@
 /*
- * $XConsortium: editres.c,v 1.10 91/01/09 17:45:17 gildea Exp $
+ * $XConsortium: editres.c,v 1.11 91/01/10 14:01:52 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
