@@ -1,4 +1,4 @@
-/* $XConsortium: KeyBind.c,v 11.68 92/12/14 11:01:27 rws Exp $ */
+/* $XConsortium: KeyBind.c,v 11.69 93/09/07 21:31:11 rws Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /*
@@ -156,14 +156,17 @@ ResetModMap(dpy)
 	    }
 	}
     }
-    /* Now find any Mod<n> modifier acting as the Group modifier */
+    /* Now find any Mod<n> modifier acting as the Group or Numlock modifier */
     dpy->mode_switch = 0;
+    dpy->num_lock = 0;
     n *= 4;
     for (i = 3*map->max_keypermod; i < n; i++) {
 	for (j = 0; j < dpy->keysyms_per_keycode; j++) {
 	    sym = KeyCodetoKeySym(dpy, map->modifiermap[i], j);
 	    if (sym == XK_Mode_switch)
 		dpy->mode_switch |= 1 << (i / map->max_keypermod);
+	    if (sym == XK_Num_Lock)
+		dpy->num_lock |= 1 << (i / map->max_keypermod);
 	}
     }
     for (p = dpy->key_bindings; p; p = p->next)
@@ -349,7 +352,8 @@ XTranslateKey(dpy, keycode, modifiers, modifiers_return, keysym_return)
 
     if ((! dpy->keysyms) && (! Initialize(dpy)))
 	return 0;
-    *modifiers_return = (ShiftMask|LockMask) | dpy->mode_switch;
+    *modifiers_return = ((ShiftMask|LockMask)
+			 | dpy->mode_switch | dpy->num_lock);
     if (((int)keycode < dpy->min_keycode) || ((int)keycode > dpy->max_keycode))
     {
 	*keysym_return = NoSymbol;
@@ -363,7 +367,14 @@ XTranslateKey(dpy, keycode, modifiers, modifiers_return, keysym_return)
 	syms += 2;
 	per -= 2;
     }
-    if (!(modifiers & ShiftMask) &&
+    if ((modifiers & dpy->num_lock) &&
+	(per > 1 && (IsKeypadKey(syms[1]) || IsPrivateKeypadKey(syms[1])))) {
+	if ((modifiers & ShiftMask) ||
+	    ((modifiers & LockMask) && (dpy->lock_meaning == XK_Shift_Lock)))
+	    *keysym_return = syms[0];
+	else
+	    *keysym_return = syms[1];
+    } else if (!(modifiers & ShiftMask) &&
 	(!(modifiers & LockMask) || (dpy->lock_meaning == NoSymbol))) {
 	if ((per == 1) || (syms[1] == NoSymbol))
 	    XConvertCase(dpy, syms[0], keysym_return, &usym);
