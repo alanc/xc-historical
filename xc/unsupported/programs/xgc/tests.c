@@ -19,6 +19,12 @@
 #define PI 3.14159265
 #endif
 
+#ifdef SYSV
+#define random rand
+#endif
+
+extern long random();
+
 extern XStuff X;
 extern Widget result;
 
