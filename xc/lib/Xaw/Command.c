@@ -167,7 +167,7 @@ static void Get_inverseGC(cbw)
     	GCBackground | GCForeground | GCFont | GCFillStyle, &values);
 }
 
-static void Get_highlightedGC(cbw)
+static void Get_highlightGC(cbw)
     CommandWidget cbw;
 {
     XGCValues	values;
@@ -383,7 +383,7 @@ static void SetValues(old, new)
      if (XtLField(newcbw,foreground) != ComWforeground)
        {
 	 Get_inverseGC(newcbw);
-	 Get_highlightedGC(newcbw);
+	 Get_highlightGC(newcbw);
        }
     else 
       {
