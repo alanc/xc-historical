@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.77 92/06/28 17:47:45 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.78 93/09/04 16:38:11 rws Exp $
 
 #define DoNormalLib NormalLibXmu
 #define DoSharedLib SharedLibXmu
@@ -17,7 +17,6 @@ REQUIREDLIBS = SharedXmuReqs
 #if HasSharedLibraries
    SHAREDCODEDEF = SharedCodeDef -DXTSTRINGDEFINES
 #endif
-   INSTALLFLAGS = $(INSTINCFLAGS)
        LINTLIBS = $(LINTXLIB) 
 
 #ifdef OsNameDefines

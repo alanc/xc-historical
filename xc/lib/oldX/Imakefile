@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.25 93/09/04 16:46:19 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.26 93/10/11 12:41:41 rws Exp $
 #define DoNormalLib NormalOldX
 #define DoSharedLib SharedOldX
 #define DoDebugLib DebugOldX
@@ -14,7 +14,6 @@ REQUIREDLIBS = SharedOldXReqs
         DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
        INCLUDES = -I$(INCLUDESRC) -I$(XLIBSRC)
-   INSTALLFLAGS = $(INSTINCFLAGS)
            SRCS = \
 		XDraw.c \
 		XCrAssoc.c \

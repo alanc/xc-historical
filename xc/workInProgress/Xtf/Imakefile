@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.4 94/03/09 11:26:59 matt Exp $
+XCOMM $XConsortium: Imakefile,v 1.5 94/03/28 17:10:25 matt Exp $
 #define DoNormalLib NormalLibXtf
 #define DoSharedLib SharedLibXtf
 #define DoDebugLib DebugLibXtf
@@ -10,7 +10,6 @@ XCOMM $XConsortium: Imakefile,v 1.4 94/03/09 11:26:59 matt Exp $
 REQUIREDLIBS = SharedXtfReqs
 #endif
 
-  INSTALLFLAGS = $(INSTINCFLAGS)
       LINTLIBS = $(LINTXLIB)
 DEPEND_DEFINES = CplusplusDependIncludes
 
