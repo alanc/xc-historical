@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Label.c,v 1.58 88/09/27 16:43:51 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Label.c,v 1.59 88/09/29 13:34:21 swick Exp $";
 #endif lint
 
 
@@ -75,6 +75,7 @@ static void Redisplay();
 static Boolean SetValues();
 static void ClassInitialize();
 static void Destroy();
+static XtGeometryResult QueryGeometry();
 
 LabelClassRec labelClassRec = {
   {
@@ -109,7 +110,7 @@ LabelClassRec labelClassRec = {
     /* version			*/	XtVersion,
     /* callback_private   	*/	NULL,
     /* tm_table		   	*/	NULL,
-    /* query_geometry		*/	XtInheritQueryGeometry,
+    /* query_geometry		*/	QueryGeometry,
     /* display_accelerator	*/	XtInheritDisplayAccelerator,
     /* extension		*/	NULL
   }
@@ -422,4 +423,26 @@ static void Destroy(w)
 
     XtReleaseGC( w, lw->label.normal_GC );
     XtReleaseGC( w, lw->label.gray_GC);
+}
+
+
+static XtGeometryResult QueryGeometry(w, intended, preferred)
+    Widget w;
+    XtWidgetGeometry *intended, *preferred;
+{
+    register LabelWidget lw = (LabelWidget)w;
+
+    preferred->request_mode = CWWidth | CWHeight;
+    preferred->width = lw->label.label_width + 2 * lw->label.internal_width;
+    preferred->height = lw->label.label_height + 2*lw->label.internal_height;
+    if (  ((intended->request_mode & (CWWidth | CWHeight))
+	   	== (CWWidth | CWHeight)) &&
+	  intended->width == preferred->width &&
+	  intended->height == preferred->height)
+	return XtGeometryYes;
+    else if (preferred->width == w->core.width &&
+	     preferred->height == w->core.height)
+	return XtGeometryNo;
+    else
+	return XtGeometryAlmost;
 }
