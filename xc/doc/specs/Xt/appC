@@ -345,7 +345,7 @@ An old-format resource converter procedure pointer is of type
 .PN XtConverter :
 .IN "XtConverter" "" "@DEF@"
 .FD 0
-typedef void (*XtConverter)(XrmValue *, Cardinal *, XrmValue *, XrmValue *);
+typedef void (*XtConverter)(XrmValue*, Cardinal*, XrmValue*, XrmValue*);
 .br
       XrmValue *\fIargs\fP;
 .br

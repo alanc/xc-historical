@@ -54,7 +54,7 @@ The translation action procedure pointer is of type
 .IN "action_proc procedure" "" "@DEF@"
 .IN "XtActionProc" "" "@DEF@"
 .FD 0
-typedef void (*XtActionProc)(Widget, XEvent *, String *, Cardinal *);
+typedef void (*XtActionProc)(Widget, XEvent*, String*, Cardinal*);
 .br
       Widget \fIw\fP;
 .br
@@ -792,8 +792,8 @@ KeyCode-to-KeySym-translator procedure pointers are of type
 .PN XtKeyProc :
 .IN "XtKeyProc" "" "@DEF@"
 .FD 0
-typedef void (*XtKeyProc)(Display *, KeyCode, Modifiers, Modifiers *, \
-KeySym *);
+typedef void (*XtKeyProc)(Display*, KeyCode, Modifiers, Modifiers*, \
+KeySym*);
 .br
       Display *\fIdisplay\fP;
 .br
