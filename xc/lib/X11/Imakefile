@@ -8,6 +8,8 @@
         AIDSRCS = BandAidLibrarySources
         AIDOBJS = BandAidLibraryObjects
 #endif
+       AUTHOBJS = AuDispose.o AuGetAddr.o AuFileName.o AuRead.o 
+       AUTHSRCS = AuDispose.c AuGetAddr.c AuFileName.c AuRead.c 
            SRCS = *.c $(AIDSRCS)
         HEADERS = Xlib.h Xresource.h Xutil.h cursorfont.h
        LINTLIBS =
@@ -238,7 +240,8 @@ OBJS2 =\
 	XlibInt.o \
 	Xrm.o \
 	evtomask.o \
-	$(AIDOBJS)
+	$(AIDOBJS) \
+	$(AUTHOBJS)
 
 OBJS =\
 	$(OBJS1) $(OBJS2)
@@ -297,6 +300,22 @@ AliasedLibraryTarget(X11_d,X_d)
 BandAidLibraryMake()
 depend::  BandAidLibrarySources
 #endif
+
+AuDispose.c:  $(XAUTHSRC)/AuDispose.c
+	$(RM) $@
+	$(LN) $? $@
+
+AuGetAddr.c:  $(XAUTHSRC)/AuGetAddr.c
+	$(RM) $@
+	$(LN) $? $@
+
+AuFileName.c:  $(XAUTHSRC)/AuFileName.c
+	$(RM) $@
+	$(LN) $? $@
+
+AuRead.c:  $(XAUTHSRC)/AuRead.c
+	$(RM) $@
+	$(LN) $? $@
 
 DependTarget()
 
