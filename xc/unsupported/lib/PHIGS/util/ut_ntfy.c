@@ -1,4 +1,4 @@
-/* $XConsortium: ut_ntfy.c,v 5.2 91/02/18 11:18:25 rws Exp $ */
+/* $XConsortium: ut_ntfy.c,v 5.3 91/04/14 13:00:49 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -110,7 +110,7 @@ int		     signal_num;
 	}
 	trav = trav->next;
     }
-#ifdef SYSV
+#if defined(SYSV) || defined(SVR4)
     /* Have to reinstall the signal handler. */
     (void)signal(signal_num, timer_dispatcher);
 #endif
@@ -278,7 +278,7 @@ int		     signal_num;
 	(*curr->sig_handler)(curr->client_id, signal_num);
 	curr = curr->next;
     }
-#ifdef SYSV
+#if defined(SYSV) || defined(SVR4)
     /* Have to reinstall the signal handler. */
     (void)signal(signal_num, sig_dispatcher);
 #endif
