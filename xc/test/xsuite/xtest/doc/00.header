@@ -1,4 +1,4 @@
-.\" $XConsortium: 00.header,v 1.7 92/07/06 14:31:32 gildea Exp $
+.\" $XConsortium: 00.header,v 1.8 92/07/07 12:07:48 gildea Exp $
 .de TP
 .sp 1
 .tl \\*(}t
@@ -18,7 +18,7 @@
 .ds xT "X\ Test Suite
 .ds xP X\ Protocol tests
 .ds xL Xlib tests
-.ds xR "Release\ 1.2
+.ds xR "X\ Version\ 11\ Release\ 6
 .ds cH "0"
 .nr Hs 4
 .S 18
