@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.19 89/07/16 11:55:00 keith Exp $ */
+/* $XConsortium: window.c,v 5.20 89/07/16 17:23:15 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -1940,6 +1940,8 @@ ResizeChildrenWinSize(pWin, dx, dy, dw, dh)
 				     pChild->origin.y;
 		SetWinSize (pChild);
 		SetBorderSize (pChild);
+		(* pScreen->PositionWindow)(pChild,
+				    pChild->drawable.x, pChild->drawable.y);
 		if (pChild->firstChild)
 		{
 		    pChild = pChild->firstChild;
