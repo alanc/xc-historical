@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: snfread.c,v 1.8 91/07/10 08:22:04 rws Exp $ */
+/* $XConsortium: snfread.c,v 1.9 91/07/22 20:46:11 keith Exp $ */
 
 #include <ctype.h>
 #include "fontfilest.h"
@@ -175,16 +175,24 @@ snfReadFont(pFont, file, bit, byte, glyph, scan)
     int         props_off;
     int         isStringProp_off;
     int         ink_off;
+    char	*bitmaps, *repad_bitmaps;
+    int		def_bit, def_byte, def_glyph, def_scan;
 
     ret = snfReadHeader(&fi, file);
     if (ret != Successful)
 	return ret;
+
+    SnfGetFormat (&def_bit, &def_byte, &def_glyph, &def_scan);
 
     /*
      * we'll allocate one chunk of memory and split it among the various parts
      * of the font:
      * 
      * BitmapFontRec CharInfoRec's Glyphs Encoding DIX Properties Ink CharInfoRec's
+     *
+     * If the glyphpad is not the same as the font file, then the glyphs
+     * are allocated separately, to be later realloc'ed when we know
+     * how big to make them.
      */
 
     bitmapsSize = BYTESOFGLYPHINFO(&fi);
@@ -192,9 +200,6 @@ snfReadFont(pFont, file, bit, byte, glyph, scan)
     bytestoalloc = sizeof(BitmapFontRec);	/* bitmapFont */
     metrics_off = bytestoalloc;
     bytestoalloc += num_chars * sizeof(CharInfoRec);	/* metrics */
-    bitmaps_off = bytestoalloc;
-    bytestoalloc += bitmapsSize;/* bitmaps */
-    bytestoalloc = (bytestoalloc + 3) & ~3;
     encoding_off = bytestoalloc;
     bytestoalloc += num_chars * sizeof(CharInfoPtr);	/* encoding */
     props_off = bytestoalloc;
@@ -210,6 +215,12 @@ snfReadFont(pFont, file, bit, byte, glyph, scan)
     if (!fontspace)
 	return AllocError;
 
+    bitmaps = (char *) xalloc (bitmapsSize);
+    if (!bitmaps)
+    {
+	xfree (fontspace);
+	return AllocError;
+    }
     /*
      * now fix up pointers
      */
@@ -217,8 +228,8 @@ snfReadFont(pFont, file, bit, byte, glyph, scan)
     bitmapFont = (BitmapFontPtr) fontspace;
     bitmapFont->num_chars = num_chars;
     bitmapFont->metrics = (CharInfoPtr) (fontspace + metrics_off);
-    bitmapFont->bitmaps = (char *) (fontspace + bitmaps_off);
     bitmapFont->encoding = (CharInfoPtr *) (fontspace + encoding_off);
+    bitmapFont->bitmaps = bitmaps;
     bitmapFont->pDefault = NULL;
     bitmapFont->bitmapExtra = NULL;
     pFont->info.props = (FontPropPtr) (fontspace + props_off);
@@ -234,7 +245,7 @@ snfReadFont(pFont, file, bit, byte, glyph, scan)
 
     ret = Successful;
     for (i = 0; ret == Successful && i < num_chars; i++) {
-	ret = snfReadCharInfo(file, &bitmapFont->metrics[i], bitmapFont->bitmaps);
+	ret = snfReadCharInfo(file, &bitmapFont->metrics[i], bitmaps);
 	if (bitmapFont->metrics[i].bits)
 	    bitmapFont->encoding[i] = &bitmapFont->metrics[i];
 	else
@@ -249,11 +260,61 @@ snfReadFont(pFont, file, bit, byte, glyph, scan)
      * read the glyphs
      */
 
-    if (FontFileRead(file, (char *) bitmapFont->bitmaps, bitmapsSize) !=
-	    bitmapsSize) {
+    if (FontFileRead(file, (char *) bitmaps, bitmapsSize) != bitmapsSize) {
+	xfree(bitmaps);
 	xfree(fontspace);
 	return BadFontName;
     }
+
+    if (def_bit != bit)
+	BitOrderInvert(bitmaps, bitmapsSize);
+    if ((def_byte == def_bit) != (bit == byte)) {
+	switch (bit == byte ? def_scan : scan) {
+	case 1:
+	    break;
+	case 2:
+	    TwoByteSwap(bitmaps, bitmapsSize);
+	    break;
+	case 4:
+	    FourByteSwap(bitmaps, bitmapsSize);
+	    break;
+	}
+    }
+    if (def_glyph != glyph) {
+	char	    *padbitmaps;
+	int         sizepadbitmaps;
+	int	    sizechar;
+	CharInfoPtr metric;
+
+	sizepadbitmaps = 0;
+	metric = bitmapFont->metrics;
+	for (i = 0; i < num_chars; i++)
+	{
+	    if (metric->bits)
+		sizepadbitmaps += BYTES_FOR_GLYPH(metric,glyph);
+	    metric++;
+	}
+	padbitmaps = (char *) xalloc(sizepadbitmaps);
+	if (!padbitmaps) {
+	    xfree (bitmaps);
+	    xfree (fontspace);
+	    return AllocError;
+	}
+	metric = bitmapFont->metrics;
+	bitmapFont->bitmaps = padbitmaps;
+	for (i = 0; i < num_chars; i++) {
+	    sizechar = RepadBitmap(metric->bits, padbitmaps,
+			       def_glyph, glyph,
+			       metric->metrics.rightSideBearing -
+			       metric->metrics.leftSideBearing,
+			       metric->metrics.ascent + metric->metrics.descent);
+	    metric->bits = padbitmaps;
+	    padbitmaps += sizechar;
+	    metric++;
+	}
+	xfree(bitmaps);
+    }
+
     /* now read and atom'ize properties */
 
     ret = snfReadProps(&fi, &pFont->info, file);
@@ -365,5 +426,34 @@ static void
 snfUnloadFont(pFont)
     FontPtr	    pFont;
 {
-    xfree(pFont->fontPrivate);
+    BitmapFontPtr   bitmapFont;
+
+    bitmapFont = (BitmapFontPtr) pFont->fontPrivate;
+    xfree (bitmapFont->bitmaps);
+    xfree (bitmapFont);
+    xfree (pFont);
+}
+
+static int  snf_set;
+static int  snf_bit, snf_byte, snf_glyph, snf_scan;
+
+SnfSetFormat (bit, byte, glyph, scan)
+    int	bit, byte, glyph, scan;
+{
+    snf_bit = bit;
+    snf_byte = byte;
+    snf_glyph = glyph;
+    snf_scan = scan;
+    snf_set = 1;
+}
+
+SnfGetFormat (bit, byte, glyph, scan)
+    int	*bit, *byte, *glyph, *scan;
+{
+    if (!snf_set)
+	FontDefaultFormat (&snf_bit, &snf_byte, &snf_glyph, &snf_scan);
+    *bit = snf_bit;
+    *byte = snf_byte;
+    *glyph = snf_glyph;
+    *scan = snf_scan;
 }
