@@ -1420,8 +1420,17 @@ and
 windows act identically in other respects\-properties,
 grabs, input control, and so on.
 .LP
-The window is placed on top in the stacking order with respect to siblings.
-The x and y coordinates are relative to the parent's origin
+The coordinate system has the X axis horizontal and the Y axis vertical, 
+with the origin [0, 0] at the upper left.
+Coordinates are integral,
+in terms of pixels,
+and coincide with pixel centers.
+Each window and pixmap has its own coordinate system.
+For a window, 
+the origin is inside the border at the inside upper left.
+.LP
+The x and y coordinates
+for the window are relative to the parent's origin
 and specify the position of the upper-left outer corner of the window
 (not the origin).
 The width and height specify the inside size (not including the border)
@@ -1433,6 +1442,8 @@ The border-width for an
 window must be zero (or a 
 .PN Match 
 error results).
+.LP
+The window is placed on top in the stacking order with respect to siblings.
 .LP
 The value-mask and value-list specify attributes of the window that are
 to be explicitly initialized.
