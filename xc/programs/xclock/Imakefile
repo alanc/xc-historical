@@ -1,7 +1,6 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.13 91/07/17 00:46:16 gildea Exp $
         DEPLIBS = XawClientDepLibs
 LOCAL_LIBRARIES = XawClientLibs
-  SYS_LIBRARIES = -lm
            SRCS = xclock.c
            OBJS = xclock.o
 
