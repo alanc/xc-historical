@@ -1,4 +1,4 @@
-/* $XConsortium: verify.c,v 1.32 94/04/17 20:03:55 gildea Exp converse $ */
+/* $XConsortium: verify.c,v 1.33 94/09/21 20:49:08 converse Exp converse $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -40,9 +40,6 @@ from the X Consortium.
 
 # include	"dm.h"
 # include	<pwd.h>
-# ifdef NGROUPS_MAX
-# include	<grp.h>
-# endif
 #ifdef USESHADOW
 # include	<shadow.h>
 #endif
@@ -94,56 +91,6 @@ char	*user, *home, *shell;
     return env;
 }
 
-#ifdef NGROUPS_MAX
-static int
-groupMember (name, members)
-    char *name;
-    char **members;
-{
-	while (*members) {
-		if (!strcmp (name, *members))
-			return 1;
-		++members;
-	}
-	return 0;
-}
-
-static void
-getGroups (name, verify, gid)
-    char		*name;
-    struct verify_info	*verify;
-    int			gid;
-{
-	int		ngroups;
-	struct group	*g;
-	int		i;
-
-	ngroups = 0;
-	verify->groups[ngroups++] = gid;
-	setgrent ();
-	/* SUPPRESS 560 */
-	while (g = getgrent()) {
-		/*
-		 * make the list unique
-		 */
-		for (i = 0; i < ngroups; i++)
-			if (verify->groups[i] == g->gr_gid)
-				break;
-		if (i != ngroups)
-			continue;
-		if (groupMember (name, g->gr_mem)) {
-			if (ngroups >= NGROUPS_MAX)
-				LogError ("%s belongs to more than %d groups, %s ignored\n",
-					name, NGROUPS_MAX, g->gr_name);
-			else
-				verify->groups[ngroups++] = g->gr_gid;
-		}
-	}
-	verify->ngroups = ngroups;
-	endgrent ();
-}
-#endif /* NGROUPS_MAX */
-
 Verify (d, greet, verify)
 struct display		*d;
 struct greet_info	*greet;
@@ -192,11 +139,7 @@ struct verify_info	*verify;
 	Debug ("verify succeeded\n");
 /*	bzero(greet->password, strlen(greet->password)); */
 	verify->uid = p->pw_uid;
-#ifdef NGROUPS_MAX
-	getGroups (greet->name, verify, p->pw_gid);
-#else
 	verify->gid = p->pw_gid;
-#endif
 	home = p->pw_dir;
 	shell = p->pw_shell;
 	argv = 0;
