@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 1.118 89/03/18 16:21:30 rws Exp $ */
+/* $XConsortium: gc.c,v 1.119 89/03/20 11:08:57 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -56,13 +56,12 @@ ValidateGC(pDraw, pGC)
     pQInit = (GCInterestPtr) &pGC->pNextGCInterest;
     if (pGC->serialNumber != pDraw->serialNumber)
         pGC->stateChanges |= GC_CALL_VALIDATE_BIT;
-    do
+    while(pQ != pQInit)
     {
 	if (pQ->ValInterestMask & pGC->stateChanges)
 	    (* pQ->ValidateGC) (pGC, pQ, pGC->stateChanges, pDraw);
 	pQ = pQ->pNextGCInterest;
     }
-    while(pQ != pQInit);
     pGC->stateChanges = 0;
     pGC->serialNumber = pDraw->serialNumber;
 }
@@ -400,7 +399,7 @@ DoChangeGC(pGC, mask, pval, fPointer)
     }
     pQ = pGC->pNextGCInterest;
     pQInit = (GCInterestPtr) &pGC->pNextGCInterest;
-    do
+    while(pQ != pQInit)
     {
 	/* I assume that if you've set a change interest mask, you've set a
 	 * changeGC function */
@@ -408,7 +407,6 @@ DoChangeGC(pGC, mask, pval, fPointer)
 	    (*pQ->ChangeGC)(pGC, pQ, maskQ);
 	pQ = pQ->pNextGCInterest;
     }
-    while(pQ != pQInit);
     return error;
 }
 
@@ -461,6 +459,8 @@ CreateGC(pDrawable, mask, pval, pStatus)
     pGC->alu = GXcopy; /* dst <- src */
     pGC->planemask = ~0;
     pGC->serialNumber = GC_CHANGE_SERIAL_BIT;
+    pGC->pNextGCInterest = (GCInterestPtr)&pGC->pNextGCInterest;
+    pGC->pLastGCInterest = (GCInterestPtr)&pGC->pNextGCInterest;
 
     pGC->fgPixel = 0;
     pGC->bgPixel = 1;
@@ -691,22 +691,20 @@ CopyGC(pgcSrc, pgcDst, mask)
     }
     pQ = pgcSrc->pNextGCInterest;
     pQInit = (GCInterestPtr) &pgcSrc->pNextGCInterest;
-    do
+    while(pQ != pQInit)
     {
 	if(pQ->CopyGCSource)
 	    (*pQ->CopyGCSource)(pgcSrc, pQ, maskQ, pgcDst);
 	pQ = pQ->pNextGCInterest;
     }
-    while(pQ != pQInit);
     pQ = pgcDst->pNextGCInterest;
     pQInit = (GCInterestPtr) &pgcDst->pNextGCInterest;
-    do
+    while(pQ != pQInit)
     {
 	if(pQ->CopyGCDest)
 	    (*pQ->CopyGCDest)(pgcDst, pQ, maskQ, pgcSrc);
 	pQ = pQ->pNextGCInterest;
     }
-    while(pQ != pQInit);
     return error;
 }
 
@@ -731,14 +729,13 @@ FreeGC(pGC, gid)
 
     pQ = pGC->pNextGCInterest;
     pQInit = (GCInterestPtr) &pGC->pNextGCInterest;
-    do
+    while (pQ != pQInit)
     {
         pQnext = pQ->pNextGCInterest;
 	if(pQ->DestroyGC)
 	    (*pQ->DestroyGC) (pGC, pQ);
 	pQ = pQnext;
     }
-    while(pQ != pQInit);
     xfree(pGC->dash);
     xfree(pGC);
     return(Success);
@@ -804,6 +801,8 @@ CreateScratchGC(pScreen, depth)
     pGC->alu = GXcopy; /* dst <- src */
     pGC->planemask = ~0;
     pGC->serialNumber = 0;
+    pGC->pNextGCInterest = (GCInterestPtr)&pGC->pNextGCInterest;
+    pGC->pLastGCInterest = (GCInterestPtr)&pGC->pNextGCInterest;
 
     pGC->fgPixel = 0;
     pGC->bgPixel = 1;
@@ -978,13 +977,12 @@ register unsigned char *pdash;
 
     pQ = pGC->pNextGCInterest;
     pQInit = (GCInterestPtr) &pGC->pNextGCInterest;
-    do
+    while(pQ != pQInit)
     {
 	if(pQ->ChangeInterestMask & maskQ)
 	    (*pQ->ChangeGC)(pGC, pQ, maskQ);
 	pQ = pQ->pNextGCInterest;
     }
-    while(pQ != pQInit);
     return Success;
 }
 
@@ -1065,13 +1063,12 @@ SetClipRects(pGC, xOrigin, yOrigin, nrects, prects, ordering)
     (*pGC->ChangeClip)(pGC, newct, prectsNew, nrects);
     pQ = pGC->pNextGCInterest;
     pQInit = (GCInterestPtr) &pGC->pNextGCInterest;
-    do
+    while(pQ != pQInit)
     {
 	if(pQ->ChangeInterestMask & (GCClipXOrigin|GCClipYOrigin|GCClipMask))
 	    (*pQ->ChangeGC)(pGC, pQ, (GCClipXOrigin|GCClipYOrigin|GCClipMask));
 	pQ = pQ->pNextGCInterest;
     }
-    while(pQ != pQInit);
     return Success;
 
 }
