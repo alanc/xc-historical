@@ -319,7 +319,14 @@
   (input-function 'buffer-read-default)
   )
 
-;; This is here because.
+;; These are here because.
+
+(defparameter *xlib-package* (find-package (string 'xlib)))
 
 (defun xintern (&rest parts)
-  (intern (apply #'concatenate 'string (mapcar #'string parts)) 'xlib))
+  (intern (apply #'concatenate 'string (mapcar #'string parts)) *xlib-package*))
+
+(defparameter *keyword-package* (find-package (string 'keyword)))
+
+(defun kintern (name)
+  (intern (string name) *keyword-package*))
