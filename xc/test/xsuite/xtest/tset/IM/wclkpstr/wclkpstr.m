@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: wclkpstr.m,v 1.1 94/01/29 16:08:23 rws Exp $ */
 /*
  * Copyright 1993 by Sun Microsystems, Inc. Mountain View, CA.
  *
@@ -198,7 +198,7 @@ char mbbuffer_return[256];
 			cmplen = wlen;
 			if(res>0 && res<wlen) cmplen = res;
 
-			if(wsncmp(buffer_return, wcomp_str, cmplen) != 0)
+			if(!xim_wsneq(buffer_return, wcomp_str, cmplen))
 			{
 				wcstombs(mbcomp_str,wcomp_str,256);
 				wcstombs(mbbuffer_return,buffer_return,256);
@@ -226,7 +226,7 @@ char mbbuffer_return[256];
 			cmplen = wlen;
 			if(res>0 && res<wlen) cmplen = res;
 
-			if(wsncmp(buffer_return, wcomp_strcap, cmplen) != 0)
+			if(!xim_wsneq(buffer_return, wcomp_strcap, cmplen))
 			{
 				wcstombs(mbcomp_str,wcomp_str,256);
 				wcstombs(mbbuffer_return,buffer_return,256);
@@ -384,7 +384,7 @@ char mbbuffer_return[256];
 			cmplen = wlen;
 			if(res > 0 && res < wlen) cmplen = res;
 
-			if(wsncmp(buffer_return, wbuf, cmplen) != 0)
+			if(!xim_wsneq(buffer_return, wbuf, cmplen))
 			{
 				wcstombs(mbbuffer_return,buffer_return,wlen);
 				wcstombs(buf,wbuf,wlen);
@@ -694,7 +694,7 @@ char mbbuffer_return[256];
 			else
 				CHECK;
 
-			if(wsncmp(buffer_return,wbuf, wlen) != 0)
+			if(!xim_wsneq(buffer_return,wbuf, wlen))
 			{
 				wcstombs(mbbuffer_return,buffer_return,256);
 				wcstombs(buf,wbuf,256);
