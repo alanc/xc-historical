@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: parse.c,v 1.16 89/11/15 14:55:13 jim Exp $
+ * $XConsortium: parse.c,v 1.17 89/11/16 10:56:47 jim Exp $
  *
  * parse the .twmrc file
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: parse.c,v 1.16 89/11/15 14:55:13 jim Exp $";
+"$XConsortium: parse.c,v 1.17 89/11/16 10:56:47 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -274,8 +274,7 @@ typedef struct _TwmKeyword {
 #define kw0_NoTitleFocus		20
 #define kw0_RandomPlacement		21
 #define kw0_DecorateTransients		22
-#define kw0_SqueezeTitle		23
-#define kw0_ShowIconManager		24
+#define kw0_ShowIconManager		23
 
 #define kws_UsePPosition		1
 #define kws_IconFont			2
@@ -333,6 +332,7 @@ static TwmKeyword keytable[] = {
     { "button",			BUTTON, 0 },
     { "buttonindent",		NKEYWORD, kwn_ButtonIndent },
     { "c",			CONTROL, 0 },
+    { "center",			JKEYWORD, J_CENTER },
     { "clientborderwidth",	KEYWORD, kw0_ClientBorderWidth },
     { "color",			COLOR, 0 },
     { "constrainedmovetime",	NKEYWORD, kwn_ConstrainedMoveTime },
@@ -345,6 +345,7 @@ static TwmKeyword keytable[] = {
     { "destroy",		KILL, 0 },
     { "donticonifybyunmapping",	DONT_ICONIFY_BY_UNMAPPING, 0 },
     { "dontmoveoff",		KEYWORD, kw0_DontMoveOff },
+    { "dontsqueezetitle",	DONT_SQUEEZE_TITLE, 0 },
     { "east",			DKEYWORD, D_EAST },
     { "f",			FRAME, 0 },
     { "f.autoraise",		FKEYWORD, F_AUTORAISE },
@@ -433,6 +434,7 @@ static TwmKeyword keytable[] = {
     { "iconregion",		ICON_REGION, 0 },
     { "icons",			ICONS, 0 },
     { "interpolatemenucolors",	KEYWORD, kw0_InterpolateMenuColors },
+    { "left",			JKEYWORD, J_LEFT },
     { "lefttitlebutton",	LEFT_TITLEBUTTON, 0 },
     { "m",			META, 0 },
     { "maketitle",		MAKE_TITLE, 0 },
@@ -468,6 +470,7 @@ static TwmKeyword keytable[] = {
     { "resize",			RESIZE, 0 },
     { "resizefont",		SKEYWORD, kws_ResizeFont },
     { "restartpreviousstate",	KEYWORD, kw0_RestartPreviousState },
+    { "right",			JKEYWORD, J_RIGHT },
     { "righttitlebutton",	RIGHT_TITLEBUTTON, 0 },
     { "root",			ROOT, 0 },
     { "s",			SHIFT, 0 },
@@ -476,7 +479,7 @@ static TwmKeyword keytable[] = {
     { "showiconmanager",	KEYWORD, kw0_ShowIconManager },
     { "sorticonmanager",	KEYWORD, kw0_SortIconManager },
     { "south",			DKEYWORD, D_SOUTH },
-    { "squeezetitle",		KEYWORD, kw0_SqueezeTitle },
+    { "squeezetitle",		SQUEEZE_TITLE, 0 },
     { "starticonified",		START_ICONIFIED, 0 },
     { "t",			TITLE, 0 },
     { "title",			TITLE, 0 },
@@ -620,10 +623,6 @@ int do_single_keyword (keyword)
 
       case kw0_DecorateTransients:
 	Scr->DecorateTransients = TRUE;
-	return 1;
-
-      case kw0_SqueezeTitle:
-	Scr->SqueezeTitle = TRUE;
 	return 1;
 
       case kw0_ShowIconManager:
@@ -844,3 +843,49 @@ static int ParseUsePPosition (s)
 }
 
 
+do_squeeze_entry (list, name, justify, num, denom)
+    name_list *list;			/* squeeze or dont-squeeze list */
+    char *name;				/* window name */
+    int justify;			/* left, center, right */
+    int num;				/* signed num */
+    int denom;				/* 0 or indicates fraction denom */
+{
+    int absnum = (num < 0 ? -num : num);
+
+    if (denom < 0) {
+	twmrc_error_prefix();
+	fprintf (stderr, "negative SqueezeTitle denominator %d\n", denom);
+	return;
+    }
+    if (absnum > denom && denom != 0) {
+	twmrc_error_prefix();
+	fprintf (stderr, "SqueezeTitle fraction %d/%d outside window\n",
+		 num, denom);
+	return;
+    }
+    if (denom == 1) {
+	twmrc_error_prefix();
+	fprintf (stderr, "useless SqueezeTitle faction %d/%d, assuming 0/0\n",
+		 num, denom);
+	num = 0;
+	denom = 0;
+    }
+
+#ifdef SHAPE
+    if (HasShape) {
+	SqueezeInfo *sinfo;
+	sinfo = (SqueezeInfo *) malloc (sizeof(SqueezeInfo));
+
+	if (!sinfo) {
+	    twmrc_error_prefix();
+	    fprintf (stderr, "unable to allocate %d bytes for squeeze info\n",
+		     sizeof(SqueezeInfo));
+	    return;
+	}
+	sinfo->justify = justify;
+	sinfo->num = num;
+	sinfo->denom = denom;
+	AddToList (list, name, (char *) sinfo);
+    }
+#endif
+}

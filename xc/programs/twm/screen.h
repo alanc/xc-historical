@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: screen.h,v 1.49 89/11/05 18:36:33 jim Exp $
+ * $XConsortium: screen.h,v 1.50 89/11/06 09:17:13 jim Exp $
  *
  * twm per-screen data include file
  *
@@ -144,6 +144,8 @@ typedef struct ScreenInfo
     name_list *IconifyByUn;	/* windows to iconify by unmapping */
     name_list *StartIconified;	/* windows to start iconic */
     name_list *IconManagerHighlightL;	/* icon manager highlight colors */
+    name_list *SqueezeTitleL;		/* windows of which to squeeze title */
+    name_list *DontSqueezeTitleL;	/* windows of which not to squeeze */
 
     GC NormalGC;		/* normal GC for everything */
     GC MenuGC;			/* gc for menus */

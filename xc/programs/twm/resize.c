@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.48 89/11/05 17:47:13 jim Exp $
+ * $XConsortium: resize.c,v 1.49 89/11/13 18:11:32 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.48 89/11/05 17:47:13 jim Exp $";
+"$XConsortium: resize.c,v 1.49 89/11/13 18:11:32 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -676,18 +676,13 @@ int x, y, w, h;
 	xwc.width = w - 2 * tmp_win->title_bw;
     title_width = xwc.width;
 
-#ifdef SHAPE
-    if (!HasShape)
-	Scr->SqueezeTitle = FALSE;
-#endif
-
     ComputeWindowTitleOffsets (tmp_win, xwc.width, True);
 
 #ifdef SHAPE
     reShape = FALSE;
     if (tmp_win->wShaped && w != tmp_win->frame_width)
 	reShape = TRUE;
-    if (Scr->SqueezeTitle)
+    if (tmp_win->squeeze_info)
     {
 	title_width = tmp_win->rightx + Scr->TBInfo.rightoff;
 	if (title_width < xwc.width)
@@ -930,22 +925,40 @@ TwmWindow   *tmp_win;
 	expect_title_width = tmp_win->frame_width;
 	if (tmp_win->title_x >= 0)
 	    expect_title_width -= 2 * tmp_win->title_bw;
-	if (Scr->SqueezeTitle && tmp_win->title_width != expect_title_width)
+	printf ("title:  %stitle_x %d, title_width, expected_width %d\n",
+		tmp_win->squeeze_info ? "squeeze, " : "",
+		tmp_win->title_x, tmp_win->title_width, expect_title_width);
+	if (tmp_win->squeeze_info &&
+	    tmp_win->title_width != expect_title_width)
 	{
 	    XRectangle  newBounding[2];
 	    XRectangle  newClip[2];
-    
-	    newBounding[0].x = -tmp_win->frame_bw;
+	    int oldx = tmp_win->title_x, oldy = tmp_win->title_y;
+
+	    ComputeTitleLocation (tmp_win);
+	    if (oldx != tmp_win->title_x || oldy != tmp_win->title_y)
+	      XMoveWindow (dpy, tmp_win->title_w, 
+			   tmp_win->title_x + tmp_win->frame_bw,
+			   tmp_win->title_y + tmp_win->frame_bw);
+
+	    /*
+	     * build the border clipping rectangles; one around title, one
+	     * around window
+	     */
+	    newBounding[0].x = tmp_win->title_x;
 	    newBounding[0].y = -tmp_win->frame_bw;
-	    newBounding[0].width = tmp_win->title_width + tmp_win->frame_bw + tmp_win->title_bw;
+	    newBounding[0].width = (tmp_win->title_width + 
+				    2 * tmp_win->frame_bw);
 	    newBounding[0].height = tmp_win->title_height;
-	    newBounding[1].x = newBounding[0].x;
+	    newBounding[1].x = -tmp_win->frame_bw;
 	    newBounding[1].y = newBounding[0].y + newBounding[0].height;
-	    newBounding[1].width = tmp_win->frame_bw * 2 + tmp_win->frame_width;
-	    newBounding[1].height = tmp_win->frame_height - newBounding[1].y + tmp_win->frame_bw;
+	    newBounding[1].width = (tmp_win->frame_width + 
+				    tmp_win->frame_bw * 2);
+	    newBounding[1].height = (tmp_win->frame_height - newBounding[1].y +
+				     tmp_win->frame_bw);
 	    XShapeCombineRectangles (dpy, dest, ShapeBounding, 0, 0,
 				     newBounding, 2, ShapeSet, YXBanded);
-	    newClip[0].x = 0;
+	    newClip[0].x = tmp_win->title_x + tmp_win->frame_bw;
 	    newClip[0].y = 0;
 	    newClip[0].width = tmp_win->title_width;
 	    newClip[0].height = tmp_win->title_height;

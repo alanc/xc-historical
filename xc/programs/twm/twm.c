@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.81 89/11/06 09:17:40 jim Exp $
+ * $XConsortium: twm.c,v 1.82 89/11/06 16:16:20 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.81 89/11/06 09:17:40 jim Exp $";
+"$XConsortium: twm.c,v 1.82 89/11/06 16:16:20 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -302,6 +302,8 @@ main(argc, argv, environ)
 	Scr->IconManagerBL = NULL;
 	Scr->IconMgrs = NULL;
 	Scr->StartIconified = NULL;
+	Scr->SqueezeTitleL = NULL;
+	Scr->DontSqueezeTitleL = NULL;
 	/* remember to put an initialization in InitVariables also
 	 */
 

@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.108 89/11/14 15:03:10 jim Exp $
+ * $XConsortium: add_window.c,v 1.109 89/11/15 14:27:33 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.108 89/11/14 15:03:10 jim Exp $";
+"$XConsortium: add_window.c,v 1.109 89/11/15 14:27:33 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -67,7 +67,7 @@ static int PlaceX = 50;
 static int PlaceY = 50;
 static void CreateTitleButtons();
 static void InsertResizeAndIconify(), ComputeCommonTitleOffsets();
-void ComputeWindowTitleOffsets();
+void ComputeWindowTitleOffsets(), ComputeTitleLocation();
 
 char NoName[] = "Untitled"; /* name if no name is specified */
 
@@ -243,6 +243,27 @@ IconMgr *iconp;
     tmp_win->iconify_by_unmapping |= 
 	(short)LookInList(Scr->IconifyByUn, tmp_win->full_name,
 	    &tmp_win->class);
+
+    tmp_win->squeeze_info = NULL;
+#ifdef SHAPE
+    /*
+     * get the squeeze information; note that this does not have to be freed
+     * since it is coming from the screen list
+     */
+    if (HasShape) {
+	if (!LookInList (Scr->DontSqueezeTitleL, tmp_win->full_name, 
+			 &tmp_win->class)) {
+	    tmp_win->squeeze_info = (SqueezeInfo *)
+	      LookInList (Scr->SqueezeTitleL, tmp_win->full_name,
+			  &tmp_win->class);
+	    if (!tmp_win->squeeze_info) {
+		static SqueezeInfo default_squeeze = { J_LEFT, 0, 0 };
+		if (Scr->SqueezeTitle)
+		  tmp_win->squeeze_info = &default_squeeze;
+	    }
+	}
+      }
+#endif
 
     tmp_win->old_bw = tmp_win->attr.border_width;
 
@@ -605,8 +626,7 @@ IconMgr *iconp;
 				    Scr->d_depth, CopyFromParent,
 				    Scr->d_visual, valuemask, &attributes);
     
-    tmp_win->title_x = -tmp_win->title_bw;
-    tmp_win->title_y = -tmp_win->title_bw;
+    ComputeTitleLocation (tmp_win);
 
     if (tmp_win->title_height)
     {
@@ -1185,7 +1205,7 @@ void ComputeWindowTitleOffsets (tmp_win, width, squeeze)
     if (tmp_win->hilite_w || Scr->TBInfo.nright > 0) 
       tmp_win->highlightx += Scr->TitlePadding;
     tmp_win->rightx = width - 1 - Scr->TBInfo.rightoff;
-    if (squeeze && Scr->SqueezeTitle) {
+    if (squeeze && tmp_win->squeeze_info) {
 	int rx = (tmp_win->highlightx + 
 		  (tmp_win->hilite_w
 		    ? Scr->TBInfo.width : 0) +
@@ -1195,6 +1215,59 @@ void ComputeWindowTitleOffsets (tmp_win, width, squeeze)
     }
     return;
 }
+
+void ComputeTitleLocation (tmp)
+    TwmWindow *tmp;
+{
+#ifdef SHAPE
+    SqueezeInfo *si = tmp->squeeze_info;
+    
+    if (si) {
+	int basex;
+	int maxwidth = tmp->frame_width - 2 * tmp->title_bw;
+
+	/*
+	 * figure label base from squeeze info (justification fraction)
+	 */
+	if (si->denom == 0) {	/* num is pixel based */
+	    if ((basex = si->num) == 0) {  /* look for special cases */
+		switch (si->justify) {
+		  case J_RIGHT:
+		    basex = maxwidth;
+		    break;
+		  case J_CENTER:
+		    basex = maxwidth / 2;
+		break;
+		}
+	    }
+	} else {			/* num/denom is fraction */
+	    basex = (((si->num * maxwidth) / si->denom) +
+		     (si->num < 0) ? maxwidth : 0);
+	}
+
+	/*
+	 * adjust for left (nop), center, right justify and clip
+	 */
+	switch (si->justify) {
+	  case J_CENTER:
+	    basex -= tmp->title_width / 2;
+	    break;
+	  case J_RIGHT:
+	    basex -= tmp->title_width - 1;
+	    break;
+	}
+	if (basex > maxwidth - tmp->title_width + 1)
+	  basex = maxwidth - tmp->title_width + 1;
+	if (basex < 0) basex = 0;
+
+	tmp->title_x = basex - tmp->frame_bw;
+    } else
+#else
+    tmp->title_x = -tmp->frame_bw;
+#endif
+    tmp->title_y = -tmp->frame_bw;
+}
+
 
 static void CreateTitleButtons(tmp_win)
     TwmWindow *tmp_win;

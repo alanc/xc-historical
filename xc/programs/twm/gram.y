@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.71 89/11/13 18:22:54 jim Exp $
+ * $XConsortium: gram.y,v 1.72 89/11/16 10:56:44 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -38,7 +38,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.71 89/11/13 18:22:54 jim Exp $";
+"$XConsortium: gram.y,v 1.72 89/11/16 10:56:44 jim Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -62,7 +62,6 @@ static int Button;
 static name_list **list;
 static int cont = 0;
 static int color;
-int num[5], mult, indx = 0;
 int mods = 0;
 
 extern int do_single_keyword(), do_string_keyword(), do_number_keyword();
@@ -84,15 +83,15 @@ extern int yylineno;
 %token <num> ICONIFY_BY_UNMAPPING DONT_ICONIFY_BY_UNMAPPING 
 %token <num> NO_TITLE AUTO_RAISE NO_HILITE ICON_REGION 
 %token <num> META SHIFT CONTROL WINDOW TITLE ICON ROOT FRAME 
-%token <num> COLON EQUALS 
+%token <num> COLON EQUALS SQUEEZE_TITLE DONT_SQUEEZE_TITLE
 %token <num> START_ICONIFIED NO_TITLE_HILITE TITLE_HILITE
 %token <num> MOVE RESIZE WAIT SELECT KILL LEFT_TITLEBUTTON RIGHT_TITLEBUTTON 
 %token <num> NUMBER KEYWORD NKEYWORD CKEYWORD CLKEYWORD FKEYWORD FSKEYWORD 
-%token <num> DKEYWORD
+%token <num> DKEYWORD JKEYWORD 
 %token <ptr> STRING SKEYWORD
 
 %type <ptr> string
-%type <num> action button number tbutton full fullkey 
+%type <num> action button number signed_number tbutton full fullkey
 
 %start twmrc 
 
@@ -108,6 +107,7 @@ stmt		: error
 		| noarg
 		| sarg
 		| narg
+		| squeeze
 		| ICON_REGION string DKEYWORD DKEYWORD number number
 					{ AddIconRegion($2, $3, $4, $5, $6); }
 		| ICONMGR_GEOMETRY string number	{ if (Scr->FirstTime)
@@ -183,7 +183,6 @@ stmt		: error
 					}
 		| DONT_ICONIFY_BY_UNMAPPING { list = &Scr->DontIconify; }
 		  win_list
-		| geometry
 		| ICONMGR_NOSHOW	{ list = &Scr->IconMgrNoShow; }
 		  win_list
 		| ICONMGR_NOSHOW	{ Scr->IconManagerDontShow = TRUE; }
@@ -443,6 +442,28 @@ win_color_entry	: string string		{ if (Scr->FirstTime &&
 					      color == Scr->Monochrome)
 					    AddToList(list, $1, $2); }
 		;
+
+squeeze		: SQUEEZE_TITLE { 
+#ifdef SHAPE
+				    if (HasShape) Scr->SqueezeTitle = TRUE;
+#endif
+				}
+		| SQUEEZE_TITLE { list = &Scr->SqueezeTitleL; }
+		  LB win_sqz_entries RB
+		| DONT_SQUEEZE_TITLE { Scr->SqueezeTitle = FALSE; }
+		| DONT_SQUEEZE_TITLE { list = &Scr->DontSqueezeTitleL; }
+		  win_list
+		;
+
+win_sqz_entries	: /* Empty */
+		| win_sqz_entries string JKEYWORD signed_number number	{
+				if (Scr->FirstTime) {
+				   do_squeeze_entry (list, $2, $3, $4, $5);
+				}
+			}
+		;
+
+
 iconm_list	: LB iconm_entries RB
 		;
 
@@ -555,21 +576,9 @@ action		: FKEYWORD	{ $$ = $1; }
 		;
 
 
-geometry	: plus_minus_number plus_minus_number {
-					printf("(%d, %d)\n", num[0], num[1]);
-					indx = 0;
-					}
-		;
-plus_minus_number: plus_minus number	{ num[indx++] = mult * $2; }
-		;
-
-plus_minus	: plus
-		| minus
-		;
-
-plus		: PLUS			{ mult = 1; }
-		;
-minus		: MINUS			{ mult = -1; }
+signed_number	: number		{ $$ = $1; }
+		| PLUS number		{ $$ = $2; }
+		| MINUS number		{ $$ = -($2); }
 		;
 
 button		: BUTTON		{ $$ = $1;

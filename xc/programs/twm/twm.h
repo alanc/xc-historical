@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.44 89/11/03 21:55:12 keith Exp $
+ * $XConsortium: twm.h,v 1.45 89/11/05 17:47:29 jim Exp $
  *
  * twm include file
  *
@@ -150,6 +150,17 @@ typedef struct _TBWindow {
     TitleButton *info;			/* description of this window */
 } TBWindow;
 
+typedef struct _SqueezeInfo {
+    int justify;			/* left, center, right */
+    int num;				/* signed pixel count or numerator */
+    int denom;				/* 0 for pix count or denominator */
+} SqueezeInfo;
+
+#define J_LEFT			1
+#define J_CENTER		2
+#define J_RIGHT			3
+
+
 
 /* for each window that is on the display, one of these structures
  * is allocated and linked into a list 
@@ -232,6 +243,7 @@ typedef struct TwmWindow
     int current_cmap_window;	/* current index into cmapws list */
     Bool xfree_cmap_windows;	/* t if need to XFree prop instead of free */
     TBWindow *titlebuttons;
+    SqueezeInfo *squeeze_info;	/* should the title be squeezed? */
 } TwmWindow;
 
 #define DoesWmTakeFocus		(1L << 0)
