@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.4 89/07/05 20:18:05 rws Exp $ */
+/* $XConsortium: window.c,v 5.5 89/07/05 21:33:42 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -838,7 +838,12 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
     SetWindowToDefaults(pWin);
 
     if (visual != wVisual (pParent)) {
-	MakeWindowOptional (pWin);
+	if (!MakeWindowOptional (pWin))
+	{
+	    xfree (pWin);
+	    *error = BadAlloc;
+	    return NullWindow;
+	}
 	pWin->optional->visual = visual;
 	pWin->optional->colormap = None;
     }
@@ -1064,22 +1069,6 @@ DestroySubwindows(pWin, client)
  *  to most significant bit in the mask.  
  *****/
  
-/*
- * this macro can't be a function as it must accept 'field'
- * as an argument.
- */
-
-#define ReplaceChildValues(pWin, field, oldValue, additionalTest, additionalCode)   \
-{								    \
-    WindowPtr	pXXChild;					    \
-    for (pXXChild = pWin->firstChild; pXXChild; pXXChild=pXXChild->nextSib)\
-	if (!pXXChild->optional additionalTest) {		    \
-	    MakeWindowOptional (pXXChild);			    \
-	    pXXChild->optional->field = oldValue;		    \
-	    additionalCode;					    \
-	}							    \
-}
-
 int
 ChangeWindowAttributes(pWin, vmask, vlist, client)
     WindowPtr pWin;
@@ -1093,6 +1082,10 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
     Pixmap pixID;
     CursorPtr pCursor;
     Cursor cursorID;
+    WindowPtr pChild;
+    Colormap cmap;
+    ColormapPtr	pCmap;
+    xEvent xE;
     int result;
     ScreenPtr pScreen;
     Mask vmaskCopy = 0;
@@ -1265,8 +1258,11 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 	    break;
 	  case CWBackingPlanes:
 	    if (pWin->optional || (CARD32) *pVlist) {
-		if (!pWin->optional)
-		    MakeWindowOptional (pWin);
+		if (!pWin->optional && !MakeWindowOptional (pWin))
+		{
+		    error = BadAlloc;
+		    goto PatchUp;
+		}
 		pWin->optional->backingBitPlanes = (CARD32) *pVlist;
 		if (!*pVlist)
 		    checkOptional = 1;
@@ -1275,8 +1271,11 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 	    break;
 	  case CWBackingPixel:
 	    if (pWin->optional || (CARD32) *pVlist) {
-		if (!pWin->optional)
-		    MakeWindowOptional (pWin);
+		if (!pWin->optional && !MakeWindowOptional (pWin))
+		{
+		    error = BadAlloc;
+		    goto PatchUp;
+		}
 		pWin->optional->backingPixel = (CARD32) *pVlist;
 		if (!*pVlist)
 		    checkOptional = 1;
@@ -1342,12 +1341,6 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 	    pWin->overrideRedirect = val;
 	    break;
 	  case CWColormap:
-	    {
-            Colormap	cmap, oldCmap;
-	    ColormapPtr	pCmap;
-	    WindowPtr	pChild;
-	    xEvent	xE;
-
 	    cmap = (Colormap) *pVlist;
 	    pVlist++;
 	    if (cmap == CopyFromParent)
@@ -1378,15 +1371,18 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 		error = BadMatch;
 		goto PatchUp;
 	    }
-	    oldCmap = wColormap (pWin);
-	    if (oldCmap != cmap)
+	    if (cmap != wColormap (pWin))
 	    {
 		if (!pWin->optional)
-		    MakeWindowOptional (pWin);
+		{
+		    if (!MakeWindowOptional (pWin))
+		    {
+			error = BadAlloc;
+			goto PatchUp;
+		    }
+		}
 		else if (pWin->parent && cmap == wColormap (pWin->parent))
 		    checkOptional = 1;
-
-		pWin->optional->colormap = cmap;
 
 		/*
 		 * propagate the original colormap to any children
@@ -1395,11 +1391,22 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 
 		for (pChild = pWin->firstChild; pChild; pChild=pChild->nextSib)
 		{
-		    if (!pChild->optional)
+		    if (!pChild->optional && !MakeWindowOptional (pChild))
 		    {
-			MakeWindowOptional (pChild);
-			pChild->optional->colormap = oldCmap;
-		    } else if (pChild->optional->colormap == cmap)
+			error = BadAlloc;
+			goto PatchUp;
+		    }
+		}
+
+		pWin->optional->colormap = cmap;
+
+		/*
+		 * check on any children now matching the new colormap
+		 */
+
+		for (pChild = pWin->firstChild; pChild; pChild=pChild->nextSib)
+		{
+		    if (pChild->optional->colormap == cmap)
 			CheckWindowOptionalNeed (pChild);
 		}
 
@@ -1411,12 +1418,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 		DeliverEvents(pWin, &xE, 1, NullWindow);
 	    }
 	    break;
-	    }
 	  case CWCursor:
-	    {
-	    CursorPtr	oCursor;
-	    WindowPtr	pChild;
-
 	    cursorID = (Cursor ) *pVlist;
 	    pVlist++;
 	    /*
@@ -1440,9 +1442,22 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 	    	}
 	    }
 
-	    oCursor = wCursor (pWin);
+	    if (pCursor != wCursor (pWin))
+	    {
+	    	/*
+	     	 * patch up child windows so they don't lose cursors.
+	     	 */
 
-	    if (oCursor != pCursor)
+	    	for (pChild = pWin->firstChild; pChild; pChild=pChild->nextSib)
+		{
+		    if (!pChild->optional && !pChild->cursorIsNone &&
+			!MakeWindowOptional (pChild))
+		    {
+			error = BadAlloc;
+			goto PatchUp;
+		    }
+	    	}
+
 		if (pCursor == (CursorPtr) None)
 		{
 		    pWin->cursorIsNone = TRUE;
@@ -1455,41 +1470,33 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 		    }
 		} else {
 		    if (!pWin->optional)
-			MakeWindowOptional (pWin);
+		    {
+			if (!MakeWindowOptional (pWin))
+			{
+			    error = BadAlloc;
+			    goto PatchUp;
+			}
+		    }
 		    else if (pWin->parent && pCursor == wCursor (pWin->parent))
 			checkOptional = 1;
 		    if (pWin->optional->cursor != (CursorPtr) None)
 			FreeCursor (pWin->optional->cursor);
 		    pWin->optional->cursor = pCursor;
 		    pCursor->refcnt++;
-		}
+		    /*
+		     * check on any children now matching the new cursor
+		     */
 
-	    	/*
-	     	 * patch up child windows so they don't lose cursors.
-	     	 */
-
-	    	for (pChild = pWin->firstChild; pChild; pChild=pChild->nextSib) {
-		    if (!pChild->optional) {
-			if (pChild->cursorIsNone == FALSE) {
-		    	    if (oCursor == (CursorPtr) None)
-			    	pChild->cursorIsNone = TRUE;
-		    	    else {
-			    	MakeWindowOptional (pChild);
-				if (pChild->optional->cursor)
-				    FreeCursor (pChild->optional->cursor);
-			    	pChild->optional->cursor = oCursor;
-				oCursor->refcnt++;
-		    	    }
-			}
-		    } else {
-			if (pChild->optional->cursor == pCursor)
+		    for (pChild=pWin->firstChild; pChild; pChild=pChild->nextSib)
+		    {
+			if (pChild->optional &&
+			    (pChild->optional->cursor == pCursor))
 			    CheckWindowOptionalNeed (pChild);
 		    }
-	    	}
+		}
 
 	    	WindowHasNewCursor( pWin);
 	    }
-
 	    break;
      	 default:
 	    error = BadValue;
@@ -2945,6 +2952,8 @@ ReparentWindow(pWin, pParent, x, y, client)
         return(BadMatch);
     if (TraverseTree(pWin, CompareWIDs, (pointer)&pParent->drawable.id) == WT_STOPWALKING)
         return(BadMatch);		
+    if (!MakeWindowOptional(pWin))
+	return(BadAlloc);
 
     if (WasMapped)
        UnmapWindow(pWin, FALSE);
@@ -3005,6 +3014,8 @@ ReparentWindow(pWin, pParent, x, y, client)
 
     (* pScreen->PositionWindow)(pWin, pWin->drawable.x, pWin->drawable.y);
     ResizeChildrenWinSize(pWin, 0, 0, 0, 0);
+
+    CheckWindowOptionalNeed(pWin);
 
     if (WasMapped)
         MapWindow(pWin, client);
@@ -3762,7 +3773,7 @@ MakeWindowOptional (pWin)
 #endif
     parentOptional = FindWindowWithOptional(pWin)->optional;
     optional->visual = parentOptional->visual;
-    if (parentOptional->cursor)
+    if (!pWin->cursorIsNone)
     {
 	optional->cursor = parentOptional->cursor;
 	optional->cursor->refcnt++;
