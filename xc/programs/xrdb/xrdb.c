@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: xrdb.c,v 11.20 88/06/29 14:39:59 jim Exp $";
+static char rcs_id[] = "$XConsortium: xrdb.c,v 11.22 88/09/06 14:36:10 jim Exp $";
 #endif
 
 /*
@@ -201,8 +201,6 @@ void GetEntries(entries, buff)
 	while (temp[0] == ' ' || temp[0] == '\t') {
 	    temp++; length--;
 	}
-	while (temp[length-1] == ' ' || temp[length-1] == '\t')
-	    temp[--length] = '\0';
 	entry.value = temp;
 
 	AddEntry(entries, entry);
