@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.15 89/03/21 09:50:20 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.16 89/04/07 14:20:01 jim Exp $
 
 /*
  * MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -17,6 +17,83 @@
  * where programlibs is LOCAL_LIBRARIES for ComplexProgramTarget
  * and EXTRA comes with syslibs from the LDFLAGS
  */
+
+/*
+ * The following rules macros are defined:
+ *
+ *     	SingleProgramTarget              (program,objects,locallibs,syslibs)
+ *     	SimpleProgramTarget                      (program)
+ *     	ComplexProgramTarget                     (program)
+ *     	ComplexProgramTarget_1                   (program,locallib,syslib)
+ *     	ComplexProgramTarget_2                   (program,locallib,syslib)
+ *     	ComplexProgramTarget_3                   (program,locallib,syslib)
+ *     	ServerTarget                     (server,subdirs,objects,libs,syslibs)
+ *     	InstallLibrary                           (libname,dest)
+ *     	InstallLibraryAlias                      (libname,alias,dest)
+ *     	InstallLintLibrary                       (libname,dest)
+ *     	InstallManPageLong                       (file,destdir,dest)
+ *     	InstallManPage                           (file,dest)
+ *     	InstallNonExec                           (file,dest)
+ *     	InstallProgram                           (program,dest)
+ *      InstallProgramWithFlags                  (program,dest,flags)
+ *     	InstallScript                            (program,dest)
+ *      InstallMultipleDestFlags                 (step,list,dest,flags)
+ *      InstallMultipleDest                      (step,list,dest)
+ *     	InstallMultiple                          (list,dest)
+ *      InstallMultipleFlags                     (list,dest,flags)
+ *      InstallMultipleMan                       (list,dest)
+ *     	InstallAppDefaults                       (class)
+ *      DependDependency                         ()
+ *     	DependTarget                             ()
+ *     	CleanTarget                              ()
+ *     	TagsTarget                               ()
+ *      ImakeDependency                          ()
+ *     	BuildMakefileTarget                      (imakefile,imakeflags)
+ *      MakefileTarget                           ()
+ *     	NormalLibraryObjectRule                  ()
+ *     	ProfiledLibraryObjectRule                ()
+ *     	DebuggedLibraryObjectRule                ()
+ *     	DebuggedAndProfiledLibraryObjectRule     ()
+ *      SpecialObjectRule                        (objs,depends,options)
+ *     	SpecialProfiledObjectRule                (objs,depends,options)
+ *     	SpecialDebuggedObjectRule                (objs,depends,options)
+ *     	SpecialDebuggedAndProfiledObjectRule     (objs,depends,options)
+ *     	NormalLibraryTarget                      (libname,objlist)
+ *     	NormalLibraryTarget2                     (libname,objlist1,objlist2)
+ *     	ProfiledLibraryTarget                    (libname,objlist)
+ *     	DebuggedLibraryTarget                    (libname,objlist)
+ *     	AliasedLibraryTarget                     (libname,alias)
+ *     	NormalRelocatableTarget                  (objname,objlist)
+ *     	ProfiledRelocatableTarget                (objname,objlist)
+ *     	DebuggedRelocatableTarget                (objname,objlist)
+ *     	LintLibraryTarget                        (libname,srclist)
+ *      NormalLintTarget                         (srclist)
+ *      MakeSubdirs                              (dirs)
+ *      NamedMakeSubdirs                         (name,dirs)
+ *      DependSubdirs                            (dirs)
+ *      NamedDependSubdirs                       (name,dirs)
+ *      InstallSubdirs                           (dirs)
+ *      InstallManSubdirs                        (dirs)
+ *      CleanSubdirs                             (dirs)
+ *      TagSubdirs                               (dirs)
+ *      MakeLintSubdirs                          (dirs,target,subtarget)
+ *      LintSubdirs                              (dirs)
+ *      MakeLintLibSubdirs                       (dirs)
+ *      MakeMakeSubdirs                          (dirs,target)
+ *      MakeNsubdirMakefiles                     ()
+ *      MakefileSubdirs                          (dirs)
+ *      CppScriptTarget                          (dst,src,defs,deplist)
+ *      MakeScriptFromCpp                        (name,defs)
+ *      MakeDirectories                          (step,dirs)
+ *      MakeFonts                                ()
+ *      InstallFonts                             (dest)
+ *      InstallFontAliases                       (dest)
+ *      FontTarget                               (basename)
+ *      CompressedFontTarget                     (basename)
+ *      AllTarget                                (depends)
+ */
+
+
 
 
 /*
