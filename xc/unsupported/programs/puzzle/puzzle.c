@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: puzzle.c,v 1.9 91/02/18 16:30:58 converse Exp $
+ *	$XConsortium: puzzle.c,v 1.10 91/05/11 16:17:12 gildea Exp $
  */
 
 /* Puzzle - (C) Copyright 1987, 1988 Don Bennett.
@@ -88,7 +88,7 @@ extern int PuzzleWidth, PuzzleHeight;
 int layers;
 
 int *tmp_matrix;
-int *target;
+int *targetm;
 int *locked;
 int *loclist;
 int *position;
@@ -150,13 +150,13 @@ int loc;
    move_space(current_dir,dist);
 }
 
-move_piece(loc,target)
-int loc,target;
+move_piece(loc,targetm)
+int loc,targetm;
 {
    int i;
    int plan[MAX_PLAN];
 
-   plan_move(loc,target,plan);
+   plan_move(loc,targetm,plan);
    for (i=1; i<=plan[0]; i++)
       switch(plan[i]) {
       case LEFT:	locked[loc] = 1;
@@ -431,7 +431,7 @@ int gettimeofday (tvp, tzp)
 initialize()
 {
    /** Initialize the position and
-    ** the target matrices;
+    ** the targetm matrices;
     **/
 
    int i;
@@ -446,7 +446,7 @@ initialize()
    ExtraColumns = PuzzleWidth - PuzzleSize;
 
    tmp_matrix = (int *) malloc(PuzzleWidth*PuzzleHeight*sizeof(int));
-   target     = (int *) malloc(PuzzleWidth*PuzzleHeight*sizeof(int));
+   targetm     = (int *) malloc(PuzzleWidth*PuzzleHeight*sizeof(int));
    locked     = (int *) malloc(PuzzleWidth*PuzzleHeight*sizeof(int));
    loclist    = (int *) malloc(PuzzleWidth*PuzzleHeight*sizeof(int));
    position   = (int *) malloc(PuzzleWidth*PuzzleHeight*sizeof(int));
@@ -454,19 +454,19 @@ initialize()
    for (i=0; i<PuzzleWidth*PuzzleHeight; i++)
       locked[i] = 0;
 
-   if (!tmp_matrix || !target || !locked || !loclist || !position) {
+   if (!tmp_matrix || !targetm || !locked || !loclist || !position) {
        printf("matrix allocation failed.\n");
        exit(1);
    }
 
    for (i=0; i<PuzzleWidth*PuzzleHeight-1; i++) {
-      target[i] = i+1;
+      targetm[i] = i+1;
       position[i] = i+1;
    }
 
    /** assert i == PuzzleWidth * PuzzleHeight - 1; **/
    position[i] = 0;
-   target[i] = 0;
+   targetm[i] = 0;
 
    space_x = PuzzleWidth - 1;
    space_y = PuzzleHeight - 1;
@@ -483,13 +483,13 @@ initialize()
 
    for (i=0; i<layers-1; i++) {
       /** move the space left one; **/
-      target[indx(sp_x,sp_y)] = target[indx(sp_x-1,sp_y)];
-      target[indx(sp_x-1,sp_y)] = 0;
+      targetm[indx(sp_x,sp_y)] = targetm[indx(sp_x-1,sp_y)];
+      targetm[indx(sp_x-1,sp_y)] = 0;
       sp_x -= 1;
 
       /** move the space up one; **/
-      target[indx(sp_x,sp_y)] = target[indx(sp_x,sp_y-1)];
-      target[indx(sp_x,sp_y-1)] = 0;
+      targetm[indx(sp_x,sp_y)] = targetm[indx(sp_x,sp_y-1)];
+      targetm[indx(sp_x,sp_y-1)] = 0;
       sp_y -= 1;
    }
 }
@@ -528,7 +528,7 @@ Scramble()
 
 solve_layer_0()
 {
-   move_piece(find_piece(target[UL(0)]),UL(0));
+   move_piece(find_piece(targetm[UL(0)]),UL(0));
    move_space_to(LR(0));   
 }
 
@@ -536,8 +536,8 @@ do_last_two_on_edge(ntlast,last,tmp,emergency)
 int ntlast,last,tmp,emergency;
 {
    int last_piece, ntlast_piece;
-   last_piece = target[last];
-   ntlast_piece = target[ntlast];
+   last_piece = targetm[last];
+   ntlast_piece = targetm[ntlast];
 
    move_piece(find_piece(ntlast_piece),last);
    locked[last] = 1;
@@ -588,13 +588,13 @@ int layer;
       ll = LL(layer);
       lr = LR(layer);
 
-      move_piece(find_piece(target[ul]),ul);
+      move_piece(find_piece(targetm[ul]),ul);
       locked[ul] = 1;
-      move_piece(find_piece(target[ur]),ur);
+      move_piece(find_piece(targetm[ur]),ur);
       locked[ur] = 1;
-      move_piece(find_piece(target[ll]),ll);
+      move_piece(find_piece(targetm[ll]),ll);
       locked[ll] = 1;
-      move_piece(find_piece(target[lr]),lr);
+      move_piece(find_piece(targetm[lr]),lr);
       locked[lr] = 1;
 
       /** Strategy for doing the pieces between the corners:
@@ -611,7 +611,7 @@ int layer;
       /** top edge **/
       /**************/
       for (i=ul+1; i<ur-2; i++) {
-         move_piece(find_piece(target[i]),i);
+         move_piece(find_piece(targetm[i]),i);
          locked[i] = 1;
       }
 
@@ -625,7 +625,7 @@ int layer;
       /** bottom edge **/
       /*****************/
       for (i=ll+1; i<lr-2; i++) {
-         move_piece(find_piece(target[i]),i);
+         move_piece(find_piece(targetm[i]),i);
          locked[i] = 1;
       }
 
@@ -639,7 +639,7 @@ int layer;
       /** left side **/
       /***************/
       for (i=ul+PuzzleWidth; i<ll-2*PuzzleWidth; i+=PuzzleWidth) {
-         move_piece(find_piece(target[i]),i);
+         move_piece(find_piece(targetm[i]),i);
          locked[i] = 1;
       }
 
@@ -653,7 +653,7 @@ int layer;
       /** right side **/
       /****************/
       for (i=ur+PuzzleWidth; i<lr-2*PuzzleWidth; i+=PuzzleWidth) {
-         move_piece(find_piece(target[i]),i);
+         move_piece(find_piece(targetm[i]),i);
          locked[i] = 1;
       }
 
@@ -672,7 +672,7 @@ int row;
 
     for (i=0; i<PuzzleWidth-2; i++) {
 	loc = indx(i,row);
-	move_piece(find_piece(target[loc]),loc);
+	move_piece(find_piece(targetm[loc]),loc);
 	locked[loc] = 1;
     }
 
@@ -690,7 +690,7 @@ int col;
 
     for (i=0; i<PuzzleHeight-2; i++) {
 	loc = indx(col,i);
-	move_piece(find_piece(target[loc]),loc);
+	move_piece(find_piece(targetm[loc]),loc);
 	locked[loc] = 1;
     }
 
