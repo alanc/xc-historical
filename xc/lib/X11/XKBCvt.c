@@ -1,4 +1,4 @@
-/* "$XConsortium: XKBCvt.c,v 1.4 93/09/28 19:48:40 rws Exp $"; */
+/* "$XConsortium: XKBCvt.c,v 1.5 93/09/28 20:06:18 rws Exp $"; */
 
 /*
  * Copyright 1988, 1989 by the Massachusetts Institute of Technology
@@ -42,9 +42,9 @@ extern char *getenv();
 #define Const /**/
 #endif
 #if __STDC__ && !defined(NORCONST)
-#define RConst /**/
+#define RConst const
 #else
-#define RConst Const
+#define RConst /**/
 #endif
 
 /* bit (1<<i) means character is in codeset i */
