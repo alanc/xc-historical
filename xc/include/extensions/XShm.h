@@ -17,7 +17,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: Xshm.h,v 1.0 89/03/31 13:16:33 keith Exp $ */
+/* $XConsortium: XShm.h,v 1.0 89/08/18 17:50:08 rws Exp $ */
 
 #ifndef _XSHM_H_
 #define _XSHM_H_
@@ -55,6 +55,11 @@ typedef struct {
     char *addr;
     Bool readOnly;
 } XShmSegmentInfo;
+
+Bool XShmQueryVersion();
+ShmSeg XShmAttach();
+XImage *XShmCreateImage();
+Pixmap XShmCreatePixmap();
 
 #endif
 
