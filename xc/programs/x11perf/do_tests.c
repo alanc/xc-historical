@@ -70,6 +70,11 @@ extern void DoCopyArea();
 extern void MidCopyArea();
 extern void EndCopyArea();
 
+extern void InitCopyArea2();
+extern void DoCopyArea2();
+extern void MidCopyArea2();
+extern void EndCopyArea2();
+
 extern void InitTriangles();
 extern void DoTriangles();
 extern void EndTriangles();
@@ -206,9 +211,13 @@ Test test[] = {
 		InitScrolling, DoScrolling, MidScroll,
 		EndScrolling, False, False,
 		{50, 1, False}},
-  {"-copyarea", "copyarea",
+  {"-copyarea", "Copyarea",
 		InitCopyArea, DoCopyArea, MidCopyArea,
 		EndCopyArea, False, False,
+		{200, 1, False}},
+  {"-copyarea2", "Copyarea from pixmap",
+		InitCopyArea2, DoCopyArea2, MidCopyArea2,
+		EndCopyArea2, False, False,
 		{200, 1, False}},
   {"-triangle", "Fill Polygon, triangles",
 		InitTriangles, DoTriangles, NullProc, EndTriangles, 
