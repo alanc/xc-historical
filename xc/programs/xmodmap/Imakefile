@@ -1,0 +1,9 @@
+/* $Header$ */
+       PROGRAMS = xmodmap xprkbd
+          OBJS1 = xmodmap.o
+          SRCS1 = xmodmap.c
+          OBJS2 = xprkbd.o
+          SRCS2 = xprkbd.c
+
+ComplexProgramTarget_1(xmodmap,$(XLIB),)
+ComplexProgramTarget_2(xprkbd,$(XLIB),)
