@@ -470,19 +470,37 @@ int	i,m;
 		if (m!=0)
 		    printf("                  ");
 		if (type->map[m].real_mods==0) {
-		    printf("%s= %d\n",
+		    printf("%s= %d",
 			vmodsText(dpy,desc,type->map[m].vmods),
 			type->map[m].level);
 		}
 		else if (type->map[m].vmods==0) {
-		    printf("%s= %d\n",
+		    printf("%s= %d",
 			stateText(type->map[m].real_mods),type->map[m].level);
 		}
 		else {
-		    printf("%s+%s= %d\n",
+		    printf("%s+%s= %d",
 			vmodsText(dpy,desc,type->map[m].vmods),
 			stateText(type->map[m].real_mods),type->map[m].level);
 		}
+		if (type->preserve) {
+		    unsigned rmods= type->preserve[m].real_mods;
+		    unsigned vmods= type->preserve[m].vmods;
+		    unsigned mask=  type->preserve[m].mask;
+		    if (rmods!=0) {
+			printf(" [preserve %s (%s",stateText(mask),
+						   stateText(rmods));
+			if (type->preserve[m].vmods!=0) {
+			     printf("+%s)]",vmodsText(dpy,desc,vmods));
+			}
+			else printf("]");
+		    }
+		    else if (vmods!=0) {
+			printf(" [preserve %s (%s)]",stateText(mask),
+						vmodsText(dpy,desc,vmods));
+		    }
+		}
+		printf("\n");
 	    }
 	}
 	if (type->lvl_names!=NULL) {
