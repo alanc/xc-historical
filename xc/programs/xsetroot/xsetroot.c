@@ -21,7 +21,7 @@
 
 usage()
 {
-	fprintf(stderr, "%s: usage: %s [-fg <color>] [-bg <color>] [-rv] [-help] [-def] [-name <string>] [-cursor <cursor file> <mask file>] [-solid <color>] [-gray] [-grey] [-bitmap file] [-mod <x> <y>] [<host>:<display>]\n\nNOTE: *** Use only one of -solid, -gray, -grey, -bitmap, and -mod ***\n\n", program_name, program_name);
+	fprintf(stderr, "%s: usage: %s [-fg <color>] [-bg <color>] [-rv] [-help] [-def] [-name <string>] [-cursor <cursor file> <mask file>] [-solid <color>] [-gray] [-grey] [-bitmap <filename>] [-mod <x> <y>] [<host>:<display>]\n\nNOTE: *** Use only one of -solid, -gray, -grey, -bitmap, and -mod ***\n\n", program_name, program_name);
 	exit(1);
 }
 
