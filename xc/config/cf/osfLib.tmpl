@@ -1,4 +1,4 @@
-XCOMM $XConsortium: osfLib.tmpl,v 1.1 92/06/28 17:44:43 rws Exp $
+XCOMM $XConsortium: osfLib.tmpl,v 1.2 92/06/28 19:23:17 rws Exp $
 
 /*
  * OSF/1 shared library template
@@ -18,7 +18,7 @@ XCOMM $XConsortium: osfLib.tmpl,v 1.1 92/06/28 17:44:43 rws Exp $
 #ifndef SharedXawRev
 #define SharedXawRev 5.0
 #endif
-#define SharedXawReqs $(XMULIB) $(XTOOLLIB) $(XLIB)
+#define SharedXawReqs $(XMULIB) $(XTOOLLIB) $(XLIB) -init _XawFixupVendorShell
 #ifndef SharedXmuRev
 #define SharedXmuRev 5.0
 #endif
