@@ -1,5 +1,4 @@
-/* static char rcsid[] = "$XConsortium: StrToCurs.c,v 1.9 90/03/05 17:48:11 kit Exp $"; */
-
+/* $XConsortium: StrToCurs.c,v 1.10 90/07/15 16:18:56 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -28,12 +27,22 @@ SOFTWARE.
 #include	<X11/IntrinsicP.h>	/* 'cause CoreP.h needs it */
 #include	<X11/CoreP.h>		/* just to do XtConvert() */
 #include	<X11/StringDefs.h>
-#include	<sys/param.h>		/* just to get MAXPATHLEN */
-#ifndef MAXPATHLEN
-#define MAXPATHLEN 256
-#endif
 #include	<X11/Xmu/Converters.h>
 #include	<X11/Xmu/Drawing.h>
+
+#ifndef PATH_MAX
+#ifdef _POSIX_SOURCE
+#include <limits.h>
+#else
+#include <sys/param.h>
+#ifdef MAXPATHLEN
+#define PATH_MAX MAXPATHLEN
+#endif
+#endif /* _POSIX_SOURCE */
+#ifndef PATH_MAX
+#define PATH_MAX 1024
+#endif
+#endif /* PATH_MAX */
 
 
 /*
@@ -79,7 +88,7 @@ void XmuCvtStringToCursor(args, num_args, fromVal, toVal)
     char *name = (char *)fromVal->addr;
     Screen *screen;
     register int i;
-    char maskname[MAXPATHLEN];
+    char maskname[PATH_MAX];
     Pixmap source, mask;
     static XColor bgColor = {0, ~0, ~0, ~0};  /* XXX - make a resource */
     static XColor fgColor = {0, 0, 0, 0};     /* XXX - ditto */
@@ -95,7 +104,7 @@ void XmuCvtStringToCursor(args, num_args, fromVal, toVal)
     screen = *((Screen **) args[0].addr);
 
     if (0 == strncmp(FONTSPECIFIER, name, strlen(FONTSPECIFIER))) {
-	char source_name[MAXPATHLEN], mask_name[MAXPATHLEN];
+	char source_name[PATH_MAX], mask_name[PATH_MAX];
 	int source_char, mask_char, fields;
 	WidgetRec widgetRec;
 	Font source_font, mask_font;
