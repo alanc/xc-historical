@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.48 90/01/11 10:30:01 rws Exp $ */
+/* $XConsortium: window.c,v 5.49 90/01/22 15:18:20 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -521,6 +521,7 @@ SetWindowToDefaults(pWin)
     pWin->cursorIsNone = TRUE;
 
     pWin->backingStore = NotUseful;
+    pWin->DIXsaveUnder = FALSE;
     pWin->backStorage = (pointer) NULL;
 
     pWin->mapped = FALSE;           /* off */
