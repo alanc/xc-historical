@@ -1,5 +1,10 @@
 #!/bin/sh
 
+#
+# This script is used to generate the FONT property given correct information
+# in the various other fields.
+#
+
 awk 'BEGIN {
 	fontname_registry = ""; 
 	foundry = "";
