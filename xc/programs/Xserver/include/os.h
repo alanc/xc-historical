@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: os.h,v 1.52 93/09/26 12:06:16 rws Exp $ */
+/* $XConsortium: os.h,v 1.53 93/09/26 18:16:41 rws Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -101,6 +101,8 @@ char *alloca();
 #define DEALLOCATE_LOCAL(ptr) Xfree((pointer)(ptr))
 #endif /* ALLOCATE_LOCAL */
 
+#define xnfalloc(size) XNFalloc((unsigned long)(size))
+#define xnfrealloc(ptr, size) XNFrealloc((pointer)(ptr), (unsigned long)(size))
 
 #define xalloc(size) Xalloc((unsigned long)(size))
 #define xrealloc(ptr, size) Xrealloc((pointer)(ptr), (unsigned long)(size))

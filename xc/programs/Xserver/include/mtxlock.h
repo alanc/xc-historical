@@ -28,7 +28,7 @@
  *
  ************************************************************************/
 
-/* $XConsortium: mtxlock.h,v 1.6 93/12/03 01:21:41 rob Exp $ */
+/* $XConsortium: mtxlock.h,v 1.7 93/12/03 01:48:27 rob Exp $ */
 
 #ifndef MTXLOCK_H
 #define MTXLOCK_H
@@ -45,6 +45,7 @@
 #include "POQ.h"
 
 #ifndef MTX
+/* XXX need MTX_REP_LOCK_DEVICES() */
 #define MTX_LOCK_DEVICES() /* nothing */
 #define MTX_UNLOCK_DEVICES() /* nothing */
 #else /* MTX */
@@ -266,6 +267,7 @@
  *
  ***********************************************************************/
 #ifdef MTX
+/* XXX MTX_REP_LOCK_AND_VERIFY_WINDOW LOCK_AND_VERIFY_WINDOW */
 #define MTX_LOCK_AND_VERIFY_WINDOW LOCK_AND_VERIFY_WINDOW
 #else
 #define MTX_LOCK_AND_VERIFY_WINDOW(pWin, winID, client, regionType, conflictMask)\
@@ -371,6 +373,7 @@
  *
  ***********************************************************************/
 #ifdef MTX
+/* XXX need MTX_REP_LOCK_AND_VERIFY_ALL_WINDOWS */
 #define MTX_LOCK_AND_VERIFY_ALL_WINDOWS LOCK_AND_VERIFY_ALL_WINDOWS
 #else
 #define MTX_LOCK_AND_VERIFY_ALL_WINDOWS(pWin1, pWin2, winID1, winID2, client, regionType, conflictMask)\
@@ -447,6 +450,7 @@
  *
  ***********************************************************************/
 #ifdef MTX
+/* XXX need MTX_REP_LOCK_AND_VERIFY_DRAWABLE */
 #define MTX_LOCK_AND_VERIFY_DRAWABLE LOCK_AND_VERIFY_DRAWABLE
 #else
 #define MTX_LOCK_AND_VERIFY_DRAWABLE(pDraw, stuffDrawable, client, conflictMask)\
@@ -478,6 +482,7 @@
  *
  ***********************************************************************/
 #ifdef MTX
+/* XXX need MTX_REP_LOCK_AND_VERIFY_GEOMETRABLE */
 #define MTX_LOCK_AND_VERIFY_GEOMETRABLE LOCK_AND_VERIFY_GEOMETRABLE
 #else
 #define MTX_LOCK_AND_VERIFY_GEOMETRABLE(pDraw, drawID, client, conflictMask)\
@@ -701,6 +706,7 @@
  *
  ***********************************************************************/
 #ifdef MTX
+/* XXX need MTX_REP_LOCK_AND_VERIFY_COLORMAP */
 #define MTX_LOCK_AND_VERIFY_COLORMAP LOCK_AND_VERIFY_COLORMAP
 #else
 #define MTX_LOCK_AND_VERIFY_COLORMAP(pMap, mapID, client, conflictMask)	\
@@ -783,6 +789,7 @@
  *
  ***********************************************************************/
 #ifdef MTX
+/* XXX need MTX_REP_LOCK_AND_VERIFY_GC_FONT */
 #define MTX_LOCK_AND_VERIFY_GC_FONT(pFont, pGC, fontID, client, conflictMask)\
     LOCK_AND_VERIFY_GC_FONT(pFont, fontID, client, conflictMask)
 #else
@@ -851,6 +858,7 @@
  *
  ***********************************************************************/
 #ifdef MTX
+/* XXX need MTX_DEV_LOCK_AND_VERIFY_CURSOR to handle DEVICE lock */
 #define MTX_LOCK_AND_VERIFY_CURSOR LOCK_AND_VERIFY_CURSOR
 #else
 #define MTX_LOCK_AND_VERIFY_CURSOR(pCursor, cursorID, client, conflictMask)\
@@ -895,6 +903,7 @@
  ***********************************************************************/
 
 #ifdef MTX
+/* XXX need MTX_REP_LOCK_PENDING_OPERATION_QUEUE */
 #define MTX_LOCK_PENDING_OPERATION_QUEUE LOCK_PENDING_OPERATION_QUEUE
 #else
 #define MTX_LOCK_PENDING_OPERATION_QUEUE(client, conflictMask) /* nothing */
