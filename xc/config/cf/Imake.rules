@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.160 93/09/05 13:23:52 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.161 93/09/05 17:54:30 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1093,6 +1093,10 @@ clean::									@@\
 #endif
 #endif /* LinkBuildLibrary */
 
+#ifndef _LinkBuildLibrary /* will get redefined elsewhere */
+#define _LinkBuildLibrary(lib) $(_NULLCMD_)
+#endif /* _LinkBuildLibrary */
+
 /*
  * NormalLibraryTarget - generate rules to create a library.
  */
@@ -1104,7 +1108,7 @@ LibraryTargetName(libname): objlist					@@\
 	RemoveFile($@)							@@\
 	MakeLibrary($@,objlist)						@@\
 	RanLibrary($@)							@@\
-	LinkBuildLibrary($@)
+	_LinkBuildLibrary($@)
 #endif /* NormalLibraryTarget */
 
 
@@ -1121,7 +1125,7 @@ LibraryTargetName(libname): objlist1 objlist2				@@\
 	MakeLibrary($@,objlist1)					@@\
 	MakeLibrary($@,objlist2)					@@\
 	RanLibrary($@)							@@\
-	LinkBuildLibrary($@)
+	_LinkBuildLibrary($@)
 #endif /* NormalLibraryTarget2 */
 
 
@@ -1139,7 +1143,7 @@ LibraryTargetName(libname): objlist1 objlist2 objlist3			@@\
 	MakeLibrary($@,objlist2)					@@\
 	MakeLibrary($@,objlist3)					@@\
 	RanLibrary($@)							@@\
-	LinkBuildLibrary($@)
+	_LinkBuildLibrary($@)
 #endif /* NormalLibraryTarget3 */
 
 
@@ -1154,7 +1158,7 @@ LibraryTargetName(libname): deplist					@@\
 	RemoveFile($@)							@@\
 	MakeLibrary($@,objlist)						@@\
 	RanLibrary($@)							@@\
-	LinkBuildLibrary($@)
+	_LinkBuildLibrary($@)
 #endif /* NormalDepLibraryTarget */
 
 
@@ -1169,7 +1173,7 @@ LibraryTargetName(libname): objlist					@@\
 	RemoveFile($@)							@@\
 	(cd down; MakeLibrary(up/$@,objlist))				@@\
 	RanLibrary($@)							@@\
-	LinkBuildLibrary($@)
+	_LinkBuildLibrary($@)
 #endif /* UnsharedLibraryTarget */
 
 
@@ -1187,7 +1191,7 @@ LibraryTargetName(libname): objlist1 objlist2 objlist3			@@\
 	(cd down; MakeLibrary(up/$@,objlist2))				@@\
 	(cd down; MakeLibrary(up/$@,objlist3))				@@\
 	RanLibrary($@)							@@\
-	LinkBuildLibrary($@)
+	_LinkBuildLibrary($@)
 #endif /* UnsharedLibraryTarget3 */
 
 
