@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.45 93/09/20 18:00:10 hersh Exp $
+ * $XConsortium: process.c,v 1.46 93/09/26 15:40:51 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -44,7 +44,7 @@ extern Bool nameserver_timedout;
 #endif
 
 #define SECURERPC "SUN-DES-1"
-#define K5AUTH "KERBEROS-V5-1"
+#define K5AUTH "MIT-KERBEROS-5"
 
 #define XAUTH_DEFAULT_RETRIES 10	/* number of competitors we expect */
 #define XAUTH_DEFAULT_TIMEOUT 2		/* in seconds, be quick */

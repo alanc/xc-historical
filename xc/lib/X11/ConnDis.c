@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ConnDis.c,v 11.111 94/01/17 21:29:31 mor Exp $
+ * $XConsortium: ConnDis.c,v 11.112 94/01/17 21:37:27 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -475,8 +475,8 @@ _XSendClientPrefix (dpy, client, auth_proto, auth_string, prefix)
 	return -1;
 
 #ifdef K5AUTH
-    if (auth_length == 13 &&
-	!strncmp(auth_proto, "KERBEROS-V5-1", 13))
+    if (auth_length == 14 &&
+	!strncmp(auth_proto, "MIT-KERBEROS-5", 14))
     {
 	return k5_clientauth(dpy, prefix);
     } else
@@ -527,7 +527,7 @@ static char *xauth_data = NULL;	 /* NULL means get default data */
 
 static char *default_xauth_names[] = {
 #ifdef K5AUTH
-    "KERBEROS-V5-1",
+    "MIT-KERBEROS-5",
 #endif
 #ifdef SECURE_RPC
     "SUN-DES-1",
@@ -540,7 +540,7 @@ static char *default_xauth_names[] = {
 
 static int default_xauth_lengths[] = {
 #ifdef K5AUTH
-    13,     /* strlen ("KERBEROS-V5-1") */
+    14,     /* strlen ("MIT-KERBEROS-5") */
 #endif
 #ifdef SECURE_RPC
     9,	    /* strlen ("SUN-DES-1") */

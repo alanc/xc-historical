@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.48 93/09/20 18:03:11 hersh Exp $
+ * $XConsortium: auth.c,v 1.49 94/01/14 19:40:07 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -113,7 +113,7 @@ static struct AuthProtocol AuthProtocols[] = {
 },
 #endif
 #ifdef K5AUTH
-{ (unsigned short) 13, "KERBEROS-V5-1",
+{ (unsigned short) 14, "MIT-KERBEROS-5",
     Krb5InitAuth, Krb5GetAuth, NULL,
 },
 #endif
@@ -404,8 +404,8 @@ SetAuthorization (d)
 	if (auth[i]->name_length == 9 &&
 	    memcmp(auth[i]->name, "SUN-DES-1", 9) == 0)
 	    continue;
-	if (auth[i]->name_length == 13 &&
-	    memcmp(auth[i]->name, "KERBEROS-V5-1", 13) == 0)
+	if (auth[i]->name_length == 14 &&
+	    memcmp(auth[i]->name, "MIT-KERBEROS-5", 14) == 0)
 	    continue;
 	XSetAuthorization (auth[i]->name, (int) auth[i]->name_length,
 			   auth[i]->data, (int) auth[i]->data_length);
@@ -971,8 +971,8 @@ struct verify_info	*verify;
 		/* client will just use default Kerberos cache, so don't
 		 * even write cache info into the authority file.
 		 */
-		if (auths[i]->name_length == 13 &&
-		    !strncmp (auths[i]->name, "KERBEROS-V5-1", 13))
+		if (auths[i]->name_length == 14 &&
+		    !strncmp (auths[i]->name, "MIT-KERBEROS-5", 14))
 		    auths[i]->data_length = 0;
 	    	if (d->displayType.location == Local)
 	    	    writeLocalAuth (new, auths[i], d->name);

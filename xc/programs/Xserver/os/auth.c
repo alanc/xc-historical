@@ -1,7 +1,7 @@
 /*
  * authorization hooks for the server
  *
- * $XConsortium: auth.c,v 1.16 93/11/13 10:04:30 rws Exp $
+ * $XConsortium: auth.c,v 1.17 94/01/14 19:08:34 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -87,7 +87,7 @@ static struct protocol   protocols[] = {
 },
 #endif
 #ifdef K5AUTH
-{   (unsigned short) 13, "KERBEROS-V5-1",
+{   (unsigned short) 14, "MIT-KERBEROS-5",
 		K5Add, K5Check, K5Reset,
 		K5ToID, K5FromID, K5Remove,
 },

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.63 94/01/12 18:27:29 gildea Exp $
+ * $XConsortium: session.c,v 1.64 94/01/14 19:40:13 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -194,8 +194,8 @@ struct display	*d;
 	}
 #endif
 #ifdef K5AUTH
-	if (d->authorizations[i]->name_length == 13 &&
-	    memcmp(d->authorizations[i]->name, "KERBEROS-V5-1", 13) == 0)
+	if (d->authorizations[i]->name_length == 14 &&
+	    memcmp(d->authorizations[i]->name, "MIT-KERBEROS-5", 14) == 0)
 	{
 	    /* Update server's auth file with user-specific info.
 	     * Don't need to AddHost because X server will do that
@@ -206,7 +206,7 @@ struct display	*d;
 
 	    XauDisposeAuth (d->authorizations[i]);
 	    d->authorizations[i] =
-		Krb5GetAuthForUid(13, "KERBEROS-V5-1", verify.uid);
+		Krb5GetAuthForUid(14, "MIT-KERBEROS-5", verify.uid);
 	    SaveServerAuthorizations (d, d->authorizations, d->authNum);
 	} 
 #endif
@@ -511,8 +511,8 @@ StartClient (verify, d, pidp, name, passwd)
 	    if (result != 0) {
 		for (i = 0; i < d->authNum; i++)
 		{
-		    if (d->authorizations[i]->name_length == 13 &&
-			memcmp(d->authorizations[i]->name, "KERBEROS-V5-1", 13) == 0)
+		    if (d->authorizations[i]->name_length == 14 &&
+			memcmp(d->authorizations[i]->name, "MIT-KERBEROS-5", 14) == 0)
 		    {
 			/* remove Kerberos from authorizations list */
 			for (j = i+1; j < d->authNum; j++)
