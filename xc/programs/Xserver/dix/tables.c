@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: tables.c,v 1.14 87/08/06 15:33:14 newman Locked $ */
+/* $Header: tables.c,v 1.15 87/08/12 15:52:53 newman Locked $ */
 
 extern int    ProcBadRequest(), ProcCreateWindow(),
     ProcChangeWindowAttributes(), ProcGetWindowAttributes(),
@@ -116,7 +116,6 @@ extern void
     SSelectionNotifyEvent(), SColormapEvent(), SClientMessageEvent();
 
 extern void
-    SBadRequestReply(), NotImplemented(),
     SGetWindowAttributesReply(), SGetGeometryReply(), SQueryTreeReply(),
     SInternAtomReply(), SGetAtomNameReply(), SGetPropertyReply(),
     SListPropertiesReply(), 
@@ -128,10 +127,10 @@ extern void
     SAllocColorReply(), SAllocNamedColorReply(), SAllocColorCellsReply(),
     SAllocColorPlanesReply(), SQueryColorsReply(), SLookupColorReply(),
     SQueryBestSizeReply(), SListExtensionsReply(),
-    SGetKeyboardMappingReply(), SGetPointerMappingReply(),
-    SGetKeyboardControlReply(), SGetPointerControlReply(),
-    SSetModifierMappingReply(), SGetModifierMappingReply(),
-    SGetScreenSaverReply(), SListHostsReply(), SGenericReply();
+    SGetKeyboardMappingReply(), SGetKeyboardControlReply(), 
+    SGetPointerControlReply(), SGetScreenSaverReply(), 
+    SListHostsReply(), SGetPointerMappingReply(),
+    SGetModifierMappingReply(), SGenericReply();
 
 int (* ProcVector[256]) () =
 {
