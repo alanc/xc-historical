@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Create.c,v 1.57 89/09/12 16:46:36 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Create.c,v 1.58 89/09/13 13:11:59 swick Exp $";
 /* $oHeader: Create.c,v 1.5 88/09/01 11:26:22 asente Exp $ */
 #endif /*lint*/
 
@@ -80,13 +80,38 @@ void XtInitializeWidgetClass(wc)
 	XtEnum inited = 0x01;
 #define LeaveIfClass(c, d) if (pc == c) { inited = d; break; }
 	for (pc = wc; pc; pc = pc->core_class.superclass) {
-	    LeaveIfClass(rectObjClass,		   0x03);
-	    LeaveIfClass(coreWidgetClass,	   0x07);
-	    LeaveIfClass(compositeWidgetClass,	   0x0f);
-	    LeaveIfClass(constraintWidgetClass,    0x1f);
-	    LeaveIfClass(shellWidgetClass,	   0x2f);
-	    LeaveIfClass(wmShellWidgetClass,	   0x6f);
-	    LeaveIfClass(topLevelShellWidgetClass, 0xef);
+	    LeaveIfClass(rectObjClass, 0x01 |
+			 RectObjClassFlag);
+	    LeaveIfClass(coreWidgetClass, 0x01 |
+			 RectObjClassFlag |
+			 WidgetClassFlag);
+	    LeaveIfClass(compositeWidgetClass, 0x01 |
+			 RectObjClassFlag |
+			 WidgetClassFlag |
+			 CompositeClassFlag);
+	    LeaveIfClass(constraintWidgetClass, 0x01 |
+			 RectObjClassFlag |
+			 WidgetClassFlag |
+			 CompositeClassFlag |
+			 ConstraintClassFlag);
+	    LeaveIfClass(shellWidgetClass, 0x01 |
+			 RectObjClassFlag |
+			 WidgetClassFlag |
+			 CompositeClassFlag |
+			 ShellClassFlag);
+	    LeaveIfClass(wmShellWidgetClass, 0x01 |
+			 RectObjClassFlag |
+			 WidgetClassFlag |
+			 CompositeClassFlag |
+			 ShellClassFlag |
+			 WMShellClassFlag);
+	    LeaveIfClass(topLevelShellWidgetClass, 0x01 |
+			 RectObjClassFlag |
+			 WidgetClassFlag |
+			 CompositeClassFlag |
+			 ShellClassFlag |
+			 WMShellClassFlag |
+			 TopLevelClassFlag);
 	}
 #undef LeaveIfClass
 	wc->core_class.class_inited = inited;
@@ -232,7 +257,7 @@ Widget XtCreateWidget(name, widget_class, parent, args, num_args)
     }
     if (!widget_class->core_class.class_inited)
 	XtInitializeWidgetClass(widget_class);
-    if ((widget_class->core_class.class_inited & 0x04) == 0) {
+    if ((widget_class->core_class.class_inited & WidgetClassFlag) == 0) {
 	/* not a widget */
 	if (XtIsComposite(parent)) {
 	    CompositeClassExtension ext;
@@ -241,6 +266,18 @@ Widget XtCreateWidget(name, widget_class, parent, args, num_args)
 			 ->composite_class.extension;
 		 ext != NULL && ext->record_type != NULLQUARK;
 		 ext = (CompositeClassExtension)ext->next_extension);
+	    if (ext != NULL &&
+		(ext->version != XtCompositeExtensionVersion
+		 || ext->record_size != sizeof(CompositeClassExtensionRec))) {
+		String params[1];
+		Cardinal num_params = 1;
+		params[0] = XtClass(parent)->core_class.class_name;
+		XtAppWarningMsg(XtWidgetToApplicationContext(parent),
+		  "invalidExtension", "xtCreateWidget", "XtToolkitError",
+		  "widget class %s has invalid CompositeClassExtension record",
+		  params, &num_params);
+		ext = NULL;
+	    }
 	    if (ext == NULL || !ext->accepts_objects) {
 		String params[2];
 		Cardinal num_params = 2;
