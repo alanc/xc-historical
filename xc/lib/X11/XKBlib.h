@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: XKBlib.h,v 1.1 93/09/28 00:01:44 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -264,16 +264,17 @@ extern	Bool	XkbIgnoreExtension(
 extern	Bool	XkbQueryExtension(
 #if NeedFunctionPrototypes
 	Display *		/* display */,
+	int *			/* opcodeReturn */,
 	int *			/* eventBaseReturn */,
-	int *			/* errorBaseReturn */
+	int *			/* errorBaseReturn */,
+	int *			/* majorRtrn */,
+	int *			/* minorRtrn */
 #endif
 );
 
 extern	Bool	XkbUseExtension(
 #if NeedFunctionPrototypes
-	Display *		/* display */,
-	int *			/* srvMajorRtrn */,
-	int *			/* srvMinorRtrn */
+	Display *		/* display */
 #endif
 );
 
