@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.31 89/11/25 15:17:19 rws Exp $ */
+/* $XConsortium: cfbgc.c,v 5.32 89/11/29 19:53:03 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -45,6 +45,11 @@ SOFTWARE.
 static void cfbValidateGC(), cfbChangeGC(), cfbCopyGC(), cfbDestroyGC();
 static void cfbChangeClip(), cfbDestroyClip(), cfbCopyClip();
 static cfbDestroyOps();
+
+extern void cfbTile32FS();
+#if PPW == 4
+extern void cfb8Stipple32FS(), cfb8OpaqueStipple32FS();
+#endif
 
 static GCFuncs cfbFuncs = {
     cfbValidateGC,
@@ -661,16 +666,29 @@ cfbValidateGC(pGC, changes, pDrawable)
 	    pGC->ops->FillSpans = cfbSolidFS;
 	    break;
 	case FillTiled:
-	    pGC->ops->FillSpans = cfbUnnaturalTileFS;
+	    if (devPriv->pRotatedPixmap)
+		pGC->ops->FillSpans = cfbTile32FS;
+	    else
+		pGC->ops->FillSpans = cfbUnnaturalTileFS;
 	    break;
 	case FillStippled:
-	    pGC->ops->FillSpans = cfbUnnaturalStippleFS;
+#if PPW == 4
+	    if (devPriv->pRotatedPixmap)
+		pGC->ops->FillSpans = cfb8Stipple32FS;
+	    else
+#endif
+		pGC->ops->FillSpans = cfbUnnaturalStippleFS;
 	    break;
 	case FillOpaqueStippled:
 	    if (pGC->fgPixel == pGC->bgPixel)
 		pGC->ops->FillSpans = cfbSolidFS;
 	    else
-		pGC->ops->FillSpans = cfbUnnaturalStippleFS;
+#if PPW == 4
+		if (devPriv->pRotatedPixmap)
+		    pGC->ops->FillSpans = cfb8OpaqueStipple32FS;
+		else
+#endif
+		    pGC->ops->FillSpans = cfbUnnaturalStippleFS;
 	    break;
 	default:
 	    FatalError("cfbValidateGC: illegal fillStyle\n");
