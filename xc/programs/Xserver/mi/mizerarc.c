@@ -17,7 +17,7 @@ Author:  Bob Scheifler, MIT X Consortium
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.c,v 5.25 90/06/08 14:50:31 rws Exp $ */
+/* $XConsortium: mizerarc.c,v 5.26 91/06/01 17:21:01 rws Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -170,7 +170,7 @@ miZeroArcSetup(arc, info, ok360)
     }
     angle1 = arc->angle1;
     angle2 = arc->angle2;
-    if ((angle1 == 0) && (angle2 == FULLCIRCLE))
+    if ((angle1 == 0) && (angle2 >= FULLCIRCLE))
     {
 	startAngle = 0;
 	endAngle = 0;
