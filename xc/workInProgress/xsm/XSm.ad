@@ -1,4 +1,4 @@
-! $XConsortium: XSm.ad,v 1.24 94/12/13 20:45:45 mor Exp mor $
+! $XConsortium: XSm.ad,v 1.25 94/12/21 16:58:26 mor Exp mor $
 *chooseSessionPopup*font:		12x24
 *chooseSessionLabel.label:		Session Menu
 *chooseSessionMessageLabel.label:	Press button again to confirm...
@@ -16,8 +16,8 @@
 *logButton.label:		Session Log
 *checkPointButton.label:	Checkpoint
 *shutdownButton.label:		Shutdown
-*shutdownSave.label:		With Save
-*shutdownDontSave.label:	No Save
+*shutdownSave.label:		With Checkpoint
+*shutdownDontSave.label:	Immediately
 
 *logPopup.title:		Session Log
 *logOkButton.label:		OK
@@ -57,6 +57,29 @@
 *interactStyleAny.label:	Any
 
 *saveCancelButton.label:	Cancel
+
+*helpSaveButton.label:		Help
+*helpSaveOkButton.label:	OK
+
+*helpSaveText.label:\n\
+Save types\n\
+----------\n\
+Local  - Applications should save enough information to\n\
+         restore the state as seen by the user.\n\
+         The save should not affect data seen by other users.\n\
+\n\
+Global - Applications should commit all of their data to\n\
+         permanent, globally accessible storage.\n\
+\n\
+Both   - Applications should commit their data to global\n\
+         storage and also save state local to the user.\n\
+\n\n\
+Interaction styles\n\
+------------------\n\
+None   - Don't allow user interaction\n\
+Errors - Allow user interaction only if an error occurs\n\
+Any    - Allow user interaction for any reason\n\
+\n
 
 *nameInUsePopup.title:		Warning
 *nameInUseOverwriteButton.label: Overwrite
