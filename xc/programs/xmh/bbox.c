@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: bbox.c,v 1.7 87/10/09 14:01:26 weissman Exp $";
+static char rcs_id[] = "$Header: bbox.c,v 1.8 87/12/30 07:41:04 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -200,13 +200,11 @@ int enabled;			/* Whether button is initially enabled. */
 char **extra;			/* Extra translation bindings. */
 {
     extern void DoButtonPress();
-    static void (*foo)() = DoButtonPress;
     Button button;
     int i;
-    static Arg arglist[] = {
-	{XtNfunction, NULL},
-	{XtNparameter, NULL},
-    };
+    static XtCallbackRec callback[] = { {DoButtonPress, NULL}, {NULL, NULL} };
+    static Arg arglist[] = { {XtNcallback, (XtArgVal)callback} };
+
     if (position > buttonbox->numbuttons) position = buttonbox->numbuttons;
     buttonbox->numbuttons++;
     buttonbox->button = (Button *)
@@ -216,8 +214,7 @@ char **extra;			/* Extra translation bindings. */
 	buttonbox->button[i] = buttonbox->button[i-1];
     button = buttonbox->button[position] = XtNew(ButtonRec);
     bzero((char *) button, sizeof(ButtonRec));
-    bcopy((char *)&foo, (char *)&(arglist[0].value), sizeof(XtArgVal));
-    arglist[1].value = (XtArgVal)button;
+    callback[0].closure = (caddr_t)button;
     button->buttonbox = buttonbox;
     button->name = MallocACopy(name);
     button->widget = XtCreateWidget(name, commandWidgetClass,
@@ -385,7 +382,7 @@ void BBoxLockSize(buttonbox)
 ButtonBox buttonbox;
 {
     buttonbox->maxheight = GetHeight((Widget) buttonbox->inner);
-    DwtPaneSetMinMax(buttonbox->outer, 5, buttonbox->maxheight);
+    XtPaneSetMinMax(buttonbox->outer, 5, buttonbox->maxheight);
     buttonbox->fullsized = FALSE;
 }
 
