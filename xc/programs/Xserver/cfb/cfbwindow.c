@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cfbwindow.c,v 5.13 92/02/11 15:04:25 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -44,6 +44,12 @@ cfbCreateWindow(pWin)
     pPrivWin->pRotatedBackground = NullPixmap;
     pPrivWin->fastBackground = FALSE;
     pPrivWin->fastBorder = FALSE;
+
+#ifdef PIXMAP_PER_WINDOW
+    /* Setup pointer to Screen pixmap */
+    pWin->devPrivates[frameWindowPrivateIndex].ptr =
+	(pointer) cfbGetScreenPixmap(pWin->drawable.pScreen);
+#endif
 
     return TRUE;
 }
@@ -228,9 +234,9 @@ cfbChangeWindowAttributes(pWin, mask)
 			 pBgWin->backgroundState == ParentRelative;
 			 pBgWin = pBgWin->parent);
 		    cfbXRotatePixmap(pPrivWin->pRotatedBorder,
-				  pWin->drawable.x - pPrivWin->oldRotate.x);
+				  pBgWin->drawable.x - pPrivWin->oldRotate.x);
 		    cfbYRotatePixmap(pPrivWin->pRotatedBorder,
-				  pWin->drawable.y - pPrivWin->oldRotate.y);
+				  pBgWin->drawable.y - pPrivWin->oldRotate.y);
 		}
 	    }
 	    else if (((width = (pWin->background.pixmap->drawable.width * PSZ)) <= 32) &&
