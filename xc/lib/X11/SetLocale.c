@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XSetLocale.c,v 1.8 91/02/04 12:32:53 morisaki Exp $
+ * $XConsortium: XSetLocale.c,v 1.8 91/02/14 16:29:34 rws Exp $
  */
 
 /*
@@ -34,15 +34,8 @@
 
 #include <stdio.h>
 #include <X11/Xos.h>
-
-#include <X11/mwchar.h>
-#include <X11/Xlocale.h>
-
-/*
- * compatable with X
- */
-#define True            1
-#define False           0
+#include "Xlibint.h"
+#include "Xlocale.h"
 
 #define MAXLOCALE       64      /* buffer size of locale name */
 
@@ -63,14 +56,14 @@ static char    *_XlcGetDefaultLocaleName();
 
 extern Bool     _XlcInitializeLocale();
 extern XLocale *_XlcGetLocaleTemplate();
-extern XLocale *XlcGetCurrentLocale();
+extern XLocale *_XlcGetCurrentLocale();
 
 XLocale        *_xlocale_ = NULL;
 
 char           *
 _Xsetlocale(lc_category, lc_name)
-int             lc_category;    /* locale category */
-char           *lc_name;        /* locale name */
+    int             lc_category;    /* locale category */
+    char           *lc_name;        /* locale name */
 {
     XLocale        *current,
                    *template;
@@ -88,7 +81,7 @@ char           *lc_name;        /* locale name */
     if (CheckCategory(lc_category) == False)
         return (NULL);
 
-    current = XlcGetCurrentLocale();
+    current = _XlcGetCurrentLocale();
 
     if (lc_name == NULL) {
         /* query the current locale name */
@@ -146,7 +139,7 @@ char           *lc_name;        /* locale name */
 
 static char    *
 _XlcGetDefaultLocaleName(category)
-int             category;
+    int             category;
 {
     char           *locale_name;
     char           *malloc();
@@ -166,7 +159,7 @@ int             category;
  */
 static char    *
 _XlcLocaleFromEnviron(category)
-int             category;
+    int             category;
 {
     char           *s;
     char           *getenv();
@@ -193,8 +186,8 @@ int             category;
  */
 static char    *
 _XlcLocaleFromResource(dpy, category)
-Display        *dpy;
-int             category;
+    Display        *dpy;
+    int             category;
 {
     Window          win = DefaultRootWindow(dpy);
     unsigned char  *prop;
@@ -216,7 +209,7 @@ int             category;
      */
     if (actual_type == XA_STRING && actual_format == 8 && nitems != 0) {
         (void) strcpy(progname, prop);
-        XFree((char *) prop);
+        Xfree((char *) prop);
     } else {
         (void) strcpy(progname, "*");
     }
@@ -231,8 +224,8 @@ int             category;
  */
 static int
 CategoryName(category, catname)
-int             category;
-char           *catname;
+    int             category;
+    char           *catname;
 {
     switch (category) {
     case XLC_CODESET:

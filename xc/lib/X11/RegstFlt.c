@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XRegstFlt.c,v 1.2 91/02/14 16:27:03 rws Exp $
+ * $XConsortium: XRegstFlt.c,v 1.3 91/02/16 12:25:10 rws Exp $
  */
 
  /*
@@ -29,66 +29,54 @@
   *				kuwa%omron.co.jp@uunet.uu.net
   */				
 
-#include <stdio.h>
-#include <X11/Xlib.h>
-#include <X11/XIMlib.h>
-#include "XIMlibint.h"
-#include "XFilter.h"
+#include "Xlibint.h"
+#include "Xi18nint.h"
 
 /*
  * Register a filter with the filter machinery.
  */
 void
 XRegisterFilter(display, window, event_mask, nonmaskable, filter, client_data)
-Display *display;
-Window window;
-unsigned long event_mask;
-Bool nonmaskable;
-Bool (*filter)();
-XIMValue client_data;
+    Display *display;
+    Window window;
+    unsigned long event_mask;
+    Bool nonmaskable;
+    Bool (*filter)();
+    XIMValue client_data;
 {
-    register XFilterEventList	prev, fl;
     XFilterEventRec		*rec;
 
-    for (prev = NULL, fl = filter_list; fl != NULL; prev = fl, fl = fl->next);
-    if ((rec = (XFilterEventList)XIMMalloc(sizeof(XFilterEventRec))) == NULL) {
+    rec = (XFilterEventList)Xmalloc(sizeof(XFilterEventRec));
+    if (!rec)
 	return;
-    }
-    if (prev == NULL) {
-	filter_list = rec;
-    } else {
-	prev->next = rec;
-    }
-    rec->display = display;
     rec->window = window;
     rec->event_mask = event_mask;
     rec->nonmaskable = nonmaskable;
     rec->filter = filter;
     rec->client_data = client_data;
-    rec->next = NULL;
+    LockDisplay(display);
+    rec->next = display->im_filters;
+    display->im_filters = rec;
+    UnlockDisplay(display);
     return;
 }
 
 void
 XUnregisterFilter(display, window, filter, client_data)
-Display *display;
-Window window;
-Bool (*filter)();
-XIMValue client_data;
+    Display *display;
+    Window window;
+    Bool (*filter)();
+    XIMValue client_data;
 {
-    register XFilterEventList	prev, fl;
+    register XFilterEventList	*prev, fl;
     XFilterEventRec		*rec;
 
-    for (prev = NULL, fl = filter_list; fl != NULL; prev = fl, fl = fl->next) {
-	if (fl->display == display && fl->window == window
-	    && fl->filter == filter && fl->client_data == client_data) {
-	    if (prev == NULL) {
-		filter_list = NULL;
-	    } else {
-		prev->next = fl->next;
-	    }
-	    XIMFree((char *)fl);
-	    return;
+    for (prev = &display->im_filters; fl = *prev; prev = &fl->next) {
+	if (fl->window == window &&
+	    fl->filter == filter && fl->client_data == client_data) {
+	    *prev = fl->next;
+	    Xfree((char *)fl);
+	    break;
 	}
     }
     return;

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XFilterEv.c,v 1.2 91/02/04 11:48:32 morisaki Exp $
+ * $XConsortium: XFilterEv.c,v 1.2 91/02/14 16:22:07 rws Exp $
  */
 
  /*
@@ -29,75 +29,44 @@
   *				kuwa%omron.co.jp@uunet.uu.net
   */				
 
-#include <stdio.h>
-#include <X11/Xlib.h>
-#include <X11/XIMlib.h>
-#include "XIMlibint.h"
-#include "XFilter.h"
+#define NEED_EVENTS
+#include "Xlibint.h"
+#include "Xi18nint.h"
 
-XFilterEventList filter_list = NULL;
+#if __STDC__
+#define Const const
+#else
+#define Const /**/
+#endif
+extern long Const _event_to_mask[];
 
 /*
  * Look up if there is a specified filter for the event.
  */
 Bool
 XFilterEvent(ev, window)
-XEvent *ev;
-Window window;
+    XEvent *ev;
+    Window window;
 {
     XFilterEventList	p;
     Window		win;
     int			ret = False;
-    static unsigned long masks[] = {
-	0,						/* shouldn't see 0  */
-	0,						/* shouldn't see 1  */
-	KeyPressMask,					/* KeyPress	    */
-	KeyReleaseMask,					/* KeyRelease       */
-	ButtonPressMask,				/* ButtonPress      */
-	ButtonReleaseMask,				/* ButtonRelease    */
-	PointerMotionMask | Button1MotionMask		/* MotionNotify     */
-	  | Button2MotionMask | Button3MotionMask
-	  | Button4MotionMask | Button5MotionMask,
-	EnterWindowMask,				/* EnterNotify      */
-	LeaveWindowMask,				/* LeaveNotify      */
-	FocusChangeMask,				/* FocusIn          */
-	FocusChangeMask,				/* FocusOut         */
-	KeymapStateMask,				/* KeymapNotify     */
-	ExposureMask,					/* Expose           */
-	0,						/* GraphicsExpose   */
-	0,						/* NoExpose         */
-	VisibilityChangeMask,				/* VisibilityNotify */
-	SubstructureNotifyMask,				/* CreateNotify     */
-	StructureNotifyMask | SubstructureNotifyMask,	/* DestroyNotify    */
-	StructureNotifyMask | SubstructureNotifyMask,	/* UnmapNotify      */
-	StructureNotifyMask | SubstructureNotifyMask,	/* MapNotify        */
-	SubstructureRedirectMask,			/* MapRequest       */
-	StructureNotifyMask | SubstructureNotifyMask,	/* ReparentNotify   */
-	StructureNotifyMask | SubstructureNotifyMask,	/* ConfigureNotify  */
-	SubstructureRedirectMask,			/* ConfigureRequest */
-	StructureNotifyMask | SubstructureNotifyMask,	/* GravityNotify    */
-	ResizeRedirectMask,				/* ResizeRequest    */
-	StructureNotifyMask | SubstructureNotifyMask,	/* CirculateNotify  */
-	SubstructureRedirectMask,			/* CirculateRequest */
-	PropertyChangeMask,				/* PropertyNotify   */
-	0,						/* SelectionClear   */
-	0,						/* SelectionRequest */
-	0,						/* SelectionNotify  */
-	ColormapChangeMask,				/* ColormapNotify   */
-	0,						/* ClientMessage    */
-	0,						/* MappingNotify    */
-    };
+    long		mask;
 
-    if (window) {
+    if (window)
 	win = window;
-    } else {
+    else
 	win = ev->xany.window;
-    }
-    for (p = filter_list; p != NULL; p = p->next) {
-	if (ev->xany.display == p->display && win == p->window) {
-	    if ((masks[ev->type] && (masks[ev->type] & p->event_mask)) || (masks[ev->type] == 0 && p->nonmaskable)) {
-	      return((*(p->filter))(p->display, p->window, ev,
-				    p->client_data));
+    if (ev->type >= LASTEvent)
+	return False;
+    mask = _event_to_mask[ev->type];
+
+    for (p = ev->xany.display->im_filters; p != NULL; p = p->next) {
+	if (win == p->window) {
+	    if ((mask && (mask & p->event_mask)) ||
+		(!mask && p->nonmaskable)) {
+		return((*(p->filter))(ev->xany.display, p->window, ev,
+				      p->client_data));
 	    }
 	}
     }
