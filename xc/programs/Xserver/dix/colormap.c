@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: colormap.c,v 1.67 88/03/15 14:48:46 rws Exp $ */
+/* $Header: colormap.c,v 1.68 88/03/15 17:03:56 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -1463,7 +1463,7 @@ AllocCP (pmap, pentFirst, count, Free, planes, contig, pixels, pMask)
        (Non-contiguous masks need one more bit than contiguous masks). Then
        the smallest such mask consists of the rightmost planes-1 bits set, then
        a zero, then a one in position planes + 1. The formula is
-         (0x11 << (planes-1)) -1
+         (3 << (planes-1)) -1
        The largest such masks consists of the leftmost planes-1 bits set, then
        a zero, then a one bit in position dplanes-planes-1. If dplanes is
        smaller than 32 (the number of bits in a word) then the formula is:
@@ -1477,8 +1477,8 @@ AllocCP (pmap, pentFirst, count, Free, planes, contig, pixels, pMask)
     */
 
     finalmask =
-        (1<<((planes-1) - 1) << (dplanes-planes+1)) + (1<<(dplanes-planes-1));
-    for (mask = (0x11 << (planes -1) - 1); mask <= finalmask; mask++)
+        (((1<<(planes-1)) - 1) << (dplanes-planes+1)) + (1<<(dplanes-planes-1));
+    for (mask = (3 << (planes -1)) - 1; mask <= finalmask; mask++)
     {
         /* next 3 magic statements count number of ones (HAKMEM #169) */
         pixel = (mask >> 1) & 033333333333;
@@ -1524,8 +1524,7 @@ AllocCP (pmap, pentFirst, count, Free, planes, contig, pixels, pMask)
 	    return (TRUE);
 	}
     }
-    pixels = pMask = (Pixel *)NULL;
-    return (BadAlloc);
+    return (FALSE);
 }
 
 static void
