@@ -1,4 +1,4 @@
-/* $XConsortium: pl_pick.c,v 1.3 92/05/20 22:06:01 mor Exp $ */
+/* $XConsortium: pl_pick.c,v 1.4 92/06/12 10:21:03 mor Exp $ */
 
 /************************************************************************
 Copyright 1992 by ShoGraphics, Inc., Mountain View, California,
@@ -676,10 +676,10 @@ OUTPUT int			*undetectable_return;
     size = sizeof (PEXPickPath) + 
 	rep.numPickElRefs * sizeof (PEXPickElementRef);
 
-    if (!PickCacheInUse && size <= PickCacheSize)
+    if (!PEXPickCacheInUse && size <= PEXPickCacheSize)
     {
-	pathRet = PickCache;
-	PickCacheInUse = 1;
+	pathRet = PEXPickCache;
+	PEXPickCacheInUse = 1;
     }
     else
 	pathRet = (PEXPickPath *) PEXAllocBuf ((unsigned) size);
@@ -768,10 +768,10 @@ OUTPUT int			*undetectable_return;
     size = sizeof (PEXPickPath) + 
 	rep.numPickElRefs * sizeof (PEXPickElementRef);
 
-    if (!PickCacheInUse && size <= PickCacheSize)
+    if (!PEXPickCacheInUse && size <= PEXPickCacheSize)
     {
-	pathRet = PickCache;
-	PickCacheInUse = 1;
+	pathRet = PEXPickCache;
+	PEXPickCacheInUse = 1;
     }
     else
 	pathRet = (PEXPickPath *) PEXAllocBuf ((unsigned) size);
@@ -923,10 +923,10 @@ OUTPUT unsigned long	*count_return;
 	total_size += size;
     }
 
-    if (!PickCacheInUse && total_size <= PickCacheSize)
+    if (!PEXPickCacheInUse && total_size <= PEXPickCacheSize)
     {
-	pspRet = PickCache;
-	PickCacheInUse = 1;
+	pspRet = PEXPickCache;
+	PEXPickCacheInUse = 1;
     }
     else
 	pspRet = (PEXPickPath *) PEXAllocBuf ((unsigned) total_size);
@@ -1053,10 +1053,10 @@ OUTPUT unsigned long	*count_return;
 	total_size += size;
     }
 
-    if (!PickCacheInUse && total_size <= PickCacheSize)
+    if (!PEXPickCacheInUse && total_size <= PEXPickCacheSize)
     {
-	pspRet = PickCache;
-	PickCacheInUse = 1;
+	pspRet = PEXPickCache;
+	PEXPickCacheInUse = 1;
     }
     else
 	pspRet = (PEXPickPath *) PEXAllocBuf ((unsigned) total_size);
