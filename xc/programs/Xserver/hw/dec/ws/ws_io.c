@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: ws_io.c,v 1.5 91/10/30 16:27:45 rws Exp $ */
+/* $XConsortium: ws_io.c,v 1.6 92/04/06 18:20:28 keith Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -57,6 +57,7 @@ SOFTWARE.
 extern ws_descriptor wsinfo;
 void wsCursorControl();
 static Bool wsDisplayCursor();
+static Bool wsSetCursorPosition();
 
 extern ws_screen_descriptor screenDesc[];
 extern int wsFd;
