@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: osf1.cf,v 1.32 94/03/30 13:47:06 dpw Exp $
+XCOMM platform:  $XConsortium: osf1.cf,v 1.33 94/04/01 19:59:10 kaleb Exp $
 /* only tested with Digital OSF/1 */
 
 #ifdef AlphaArchitecture
@@ -48,7 +48,6 @@ XCOMM operating system:  OSName
 #endif
 #ifdef MipsArchitecture
 #define DefaultCCOptions	-Xc
-#define XawI18nDefines		-DUSE_XWCHAR_STRING
 /* XKB library code is not 64-bit ready yet */
 #define XdecServer YES
 #define ServerOSDefines -DDDXTIME

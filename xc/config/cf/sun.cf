@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.121 94/04/01 19:59:14 kaleb Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.122 94/04/01 20:20:44 matt Exp $
 
 #ifdef SVR4
 #ifdef i386Architecture
@@ -95,9 +95,6 @@ XCOMM operating system:  OSName
 #if OSMinorVersion > 1 || (OSMinorVersion == 1 && OSTeenyVersion > 1)
 /* You ALSO need this if you have Sun ld patch 100170-06 or later to 4.1.1 */
 #define SunPost411FCSLd	  YES
-#endif
-#ifndef XawI18nDefines
-#define XawI18nDefines    -DUSE_XWCHAR_STRING
 #endif
 #endif
 
