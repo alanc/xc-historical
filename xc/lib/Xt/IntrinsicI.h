@@ -1,6 +1,6 @@
 /*
-* $XConsortium: IntrinsicI.h,v 1.4 88/08/26 16:14:40 asente Exp $
-* $oHeader: IntrinsicI.h,v 1.4 88/08/26 16:14:40 asente Exp $
+* $XConsortium: IntrinsicI.h,v 1.22 88/09/03 11:40:55 swick Exp $
+* $oHeader: IntrinsicI.h,v 1.5 88/08/31 16:21:08 asente Exp $
 */
 
 /***********************************************************
@@ -35,8 +35,8 @@ SOFTWARE.
 #include "TranslateI.h"
 #include "CallbackI.h"
 #include "CompositeI.h"
-#include "InitializeI.h"
 #include "ConvertI.h"
+#include "InitializeI.h"
 #include "ResourceI.h"
 #include "EventI.h"
 
