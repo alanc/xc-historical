@@ -119,10 +119,6 @@ Button3 = m    : window|icon|frame|title  : f.function "move-or-raise"
 Button1 = c|m|s: root			  : f.refresh
 #"F20"   =      : all                      : f.warptoscreen "next"
 
-"F9"    =      : all                      : f.lefticonmgr
-"F10"   =      : all                      : f.righticonmgr
-"F11"   =      : all                      : f.downiconmgr
-"F12"   =      : all                      : f.upiconmgr
 "F24"	=      : all			  : f.warpto "xmh"
 "F25"   =      : all			  : f.warpto "[expo]"
 "F26"   =      : all                      : f.warpto "emacs"
