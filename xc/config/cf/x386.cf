@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: x386.cf,v 1.2 91/07/05 13:02:25 rws Exp $
+XCOMM platform:  $XConsortium: x386.cf,v 1.3 91/07/13 22:08:58 rws Exp $
 
 /*****************************************************************************
  *			  Site-specfic parameters                            *
@@ -12,8 +12,6 @@ XCOMM platform:  $XConsortium: x386.cf,v 1.2 91/07/05 13:02:25 rws Exp $
 #define HasSockets		YES
 #define HasNdbm			YES	/* correct for GNU dbm & SVR4 */
 #define ProjectRoot		/usr/X386
-#define XdmServersType		ws
-#define InstallXinitConfig	YES
 #define StripInstalledPrograms	YES
 #define X386Server		YES
 #define ExtensionOSDefines	-DXTESTEXT1
