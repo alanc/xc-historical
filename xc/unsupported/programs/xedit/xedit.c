@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: xedit.c,v 1.16 88/10/18 12:09:37 swick Exp $";
+static char rcs_id[] = "$XConsortium: xedit.c,v 1.16 88/10/18 13:30:41 swick Exp $";
 #endif
 
 /*
@@ -180,7 +180,7 @@ main(argc, argv)
     toplevel = XtInitialize( "xedit", "Xedit", NULL, 0, &argc, argv);
     XtSetArg(args[0], XtNwidth, &width);
     XtSetArg(args[1], XtNheight, &height);
-    XtGetValues(toplevel, args, XtNumber(args));
+    XtGetValues(toplevel, args, (Cardinal)2);
     if (width == 0) width = DEFWIDTH;
     if (height == 0) height = DEFHEIGHT;
     XtSetArg(args[0], XtNwidth, width);
