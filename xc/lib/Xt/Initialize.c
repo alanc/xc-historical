@@ -1,4 +1,4 @@
-/* "$XConsortium: Initialize.c,v 1.166 90/12/21 16:26:21 rws Exp $"; */
+/* "$XConsortium: Initialize.c,v 1.167 90/12/21 16:43:09 rws Exp $"; */
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 
 /***********************************************************
@@ -509,6 +509,8 @@ void _XtDisplayInitialize(dpy, pd, name, class, urlist, num_urs, argc, argv)
 	  search_list = (XrmHashTable*)
 	     ALLOCATE_LOCAL( SEARCH_LIST_SIZE*sizeof(XrmHashTable) ))
 	    == NULL) _XtAllocError(NULL);
+	name_list[1] = NULLQUARK;
+	class_list[1] = NULLQUARK;
 
 	while (!XrmQGetSearchList(db, name_list, class_list,
 				  search_list, search_list_size)) {
