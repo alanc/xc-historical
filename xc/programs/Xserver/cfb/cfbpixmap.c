@@ -110,12 +110,11 @@ static int masktab[32] =
 #endif
 
 PixmapPtr
-cfbCreatePixmap (pScreen, width, height, depth, format)
+cfbCreatePixmap (pScreen, width, height, depth)
     ScreenPtr	pScreen;
     int		width;
     int		height;
     int		depth;
-    int		format;
 {
     register PixmapPtr pPixmap;
     int size;
