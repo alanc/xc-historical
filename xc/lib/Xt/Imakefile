@@ -35,6 +35,7 @@ HEADERS = \
 	Text.h \
 	TopLevel.h \
 	TM.h \
+	Viewport.h \
 	VPaned.h
 
 SRCS = \
@@ -68,6 +69,7 @@ SRCS = \
 	Text.c \
 	TMparse.c \
 	TMstate.c \
+	Viewport.c \
 	VPaned.c
 
 OBJS = \
@@ -101,6 +103,7 @@ OBJS = \
 	Text.o \
 	TMparse.o \
 	TMstate.o \
+	Viewport.o \
 	VPaned.o
 
 #if DebugLibXtk && ProfileLibXtk
