@@ -28,6 +28,8 @@
  *
  ************************************************************************/
 
+#ifdef XTHREADS
+
 #include "X.h"
 #include "Xproto.h"
 #include "windowstr.h"
@@ -150,3 +152,5 @@ UnlockDevicesAndPOQ(client)
     UnlockDevices();
     UNLOCK_PENDING_OPERATION_QUEUE(client);
 }
+
+#endif /* XTHREADS */

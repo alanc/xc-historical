@@ -28,6 +28,8 @@
  *
  ************************************************************************/
 
+#ifdef XTHREADS
+
 #include "X.h"
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -564,3 +566,4 @@ MarkClientException(client)
 {
     client->noClientException = -1;
 }
+#endif /* XTHREADS */
