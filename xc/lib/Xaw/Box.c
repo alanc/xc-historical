@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: ButtonBox.c,v 1.10 87/09/11 21:18:34 swick Locked $";
+static char rcsid[] = "$Header: ButtonBox.c,v 1.11 87/09/13 13:07:53 newman Locked $";
 #endif lint
 
 /*
@@ -329,20 +329,20 @@ static void ChangeManaged(bbw)
     Resize(bbw);
 }
 
-static void Initialize(bbw, args, num_args)
-    ButtonBoxWidget bbw;
+static void Initialize(request, new, args, num_args)
+    ButtonBoxWidget request, new;
     ArgList args;
     Cardinal num_args;
 {
 /* ||| What are consequences of letting height, width be 0? If okay, then
        Initialize can be NULL */
 
-    if (bbw->core.width == 0)
-        bbw->core.width =
-	    ((bbw->button_box.h_space != 0) ? bbw->button_box.h_space : 10);
-    if (bbw->core.height == 0)
-	bbw->core.height = 
-	    ((bbw->button_box.v_space != 0) ? bbw->button_box.v_space : 10);
+    if (new->core.width == 0)
+        new->core.width =
+	    ((new->button_box.h_space != 0) ? new->button_box.h_space : 10);
+    if (new->core.height == 0)
+	new->core.height = 
+	    ((new->button_box.v_space != 0) ? new->button_box.v_space : 10);
 } /* Initialize */
 
 /* ||| Should Realize just return a modified mask and attributes?  Or will some
@@ -369,8 +369,9 @@ static void Realize(w, valueMask, attributes)
  *
  */
 
-static void SetValues (old, new)
-    ButtonBoxWidget old, new;
+static void SetValues (current, request, new, last)
+    ButtonBoxWidget current, request, new;
+    Boolean last;
 {
     /* ||| Old code completely bogus, need background, etc., then
     XtMakeGeometryRequest, then relayout */
