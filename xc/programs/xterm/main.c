@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.192 91/07/09 17:46:50 gildea Exp $";
+static char *rid="$XConsortium: main.c,v 1.193 91/07/14 12:57:45 gildea Exp $";
 #endif /* lint */
 
 /*
@@ -85,6 +85,9 @@ SOFTWARE.
 #define USE_SYSV_SIGHUP
 #endif
 
+#if defined(sony) && defined(bsd43) && !defined(KANJI)
+#define KANJI
+#endif
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 
@@ -293,6 +296,12 @@ static struct  ltchars d_ltc = {
 };
 static int d_disipline = NTTYDISC;
 static long int d_lmode = LCRTBS|LCRTERA|LCRTKIL|LCTLECH;
+#ifdef sony
+static long int d_jmode = KM_SYSSJIS|KM_ASCII;
+static struct jtchars d_jtc = {
+	'J', 'B'
+};
+#endif /* sony */
 #endif /* USE_SYSV_TERMIO */
 
 static int parse_tty_modes ();
@@ -1394,6 +1403,10 @@ spawn ()
 	struct tchars tc;
 	struct ltchars ltc;
 	struct sgttyb sg;
+#ifdef sony
+	int jmode;
+	struct jtchars jtc;
+#endif /* sony */
 #endif	/* USE_SYSV_TERMIO */
 
 	char termcap [1024];
@@ -1487,6 +1500,10 @@ spawn ()
 				discipline = d_disipline;
 				ltc = d_ltc;
 				lmode = d_lmode;
+#ifdef sony
+				jtc = d_jtc;
+				jmode = d_jmode;
+#endif /* sony */
 #endif	/* USE_SYSV_TERMIO */
 			} else {
 			    SysError(ERROR_OPDEVTTY);
@@ -1532,6 +1549,12 @@ spawn ()
 				SysError (ERROR_TIOCGLTC);
 			if(ioctl(tty, TIOCLGET, (char *)&lmode) == -1)
 				SysError (ERROR_TIOCLGET);
+#ifdef sony
+			if(ioctl(tty, TIOCKGET, (char *)&jmode) == -1)
+				SysError (ERROR_TIOCKGET);
+			if(ioctl(tty, TIOCKGETC, (char *)&jtc) == -1)
+				SysError (ERROR_TIOCKGETC);
+#endif /* sony */
 #endif	/* USE_SYSV_TERMIO */
 			close (tty);
 			/* tty is no longer an open fd! */
@@ -1935,6 +1958,13 @@ spawn ()
 		    sg.sg_ospeed = B9600;
 		    /* reset t_brkc to default value */
 		    tc.t_brkc = -1;
+#ifdef sony
+		    if (screen->input_eight_bits)
+			lmode |= LPASS8;
+		    else
+			lmode &= ~(LPASS8);
+		    jmode &= ~KM_KANJI;
+#endif /* sony */
 
 #define TMODE(ind,var) if (ttymodelist[ind].set) var = ttymodelist[ind].value;
 		    if (override_tty_modes) {
@@ -1966,6 +1996,12 @@ spawn ()
 			    HsSysError (cp_pipe[1], ERROR_TIOCSLTC);
 		    if (ioctl (tty, TIOCLSET, (char *)&lmode) == -1)
 			    HsSysError (cp_pipe[1], ERROR_TIOCLSET);
+#ifdef sony
+		    if (ioctl (tty, TIOCKSET, (char *)&jmode) == -1)
+			    HsSysError (cp_pipe[1], ERROR_TIOCKSET);
+		    if (ioctl (tty, TIOCKSETC, (char *)&jtc) == -1)
+			    HsSysError (cp_pipe[1], ERROR_TIOCKSETC);
+#endif /* sony */
 #endif	/* !USE_SYSV_TERMIO */
 #ifdef TIOCCONS
 		    if (Console) {
