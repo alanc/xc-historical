@@ -419,7 +419,7 @@ Encrypt.c:  $(XDMCPLIBSRC)/Encrypt.c
 ks_tables.h: $(INCLUDESRC)/keysymdef.h makekeys.C
 	$(RM) $@ makekeys.c
 	$(LN) makekeys.C makekeys.c
-	$(CC) -o makekeys makekeys.c $(LDOPTIONS) $(LDLIBS) $(EXTRA_LOAD_FLAGS)
+	$(CC) -o makekeys makekeys.c $(CFLAGS) $(LOCAL_LDFLAGS) $(LDLIBS) $(EXTRA_LOAD_FLAGS)
 	./makekeys < $(INCLUDESRC)/keysymdef.h > ks_tables_h
 	$(MV) ks_tables_h $@
 	$(RM) makekeys makekeys.c ks_tables_h
