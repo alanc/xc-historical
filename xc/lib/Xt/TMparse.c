@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.103 91/01/10 17:16:18 converse Exp $ */
+/* $XConsortium: TMparse.c,v 1.104 91/01/10 20:28:31 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -118,8 +118,6 @@ static ModifierRec modifiers[] = {
     {"c",	0,	ParseModImmed,ControlMask},
     {"s",	0,	ParseModImmed,ShiftMask},
     {"l",	0,	ParseModImmed,LockMask},
-
-    {NULL, NULL, NULL},
 };
 
 static NameValueRec buttonNames[] = {
@@ -335,7 +333,7 @@ static EventKey events[] = {
 
 /* Event Name,	  Quark, Event Type,	Detail Parser, Closure */
 
-{ NULL, NULL, NULL, NULL, NULL}};
+};
 
 static Boolean initialized = FALSE;
 
@@ -370,22 +368,40 @@ static void CompileNameValueTable(table)
         table[i].signature = XrmPermStringToQuark(table[i].name);
 }
 
-static void Compile_XtEventTable(table)
-    EventKeys	table;
+static int OrderEvents(a, b)
+    EventKey	*a, *b;
 {
-    register int i;
-
-    for (i=0; table[i].event; i++)
-        table[i].signature = XrmPermStringToQuark(table[i].event);
+    return ((a->signature < b->signature) ? -1 : 1);
 }
-static void Compile_XtModifierTable(table)
-    ModifierKeys table;
 
+static void Compile_XtEventTable(table, count)
+    EventKeys	table;
+    Cardinal	count;
 {
     register int i;
+    register EventKeys entry = table;
 
-    for (i=0; table[i].name; i++)
-        table[i].signature = XrmPermStringToQuark(table[i].name);
+    for (i=count; --i >= 0; entry++)
+	entry->signature = XrmPermStringToQuark(entry->event);
+    qsort(table, count, sizeof(EventKey), OrderEvents);
+}
+
+static int OrderModifiers(a, b)
+    ModifierRec *a, *b;
+{
+    return ((a->signature < b->signature) ? -1 : 1);
+}
+
+static void Compile_XtModifierTable(table, count)
+    ModifierKeys table;
+    Cardinal count;
+{
+    register int i;
+    register ModifierKeys entry = table;
+
+    for (i=count; --i >= 0; entry++)
+	entry->signature = XrmPermStringToQuark(entry->name);
+    qsort(table, count, sizeof(ModifierRec), OrderModifiers);
 }
 
 static String PanicModeRecovery(str)
@@ -421,16 +437,30 @@ static Cardinal LookupTMEventType(eventStr,error)
   String eventStr;
   Boolean *error;
 {
-    register Cardinal   i;
+    register int   i, left, right;
     register XrmQuark	signature;
+    static int 	previous = 0;
 
-    signature = StringToQuark(eventStr);
-    for (i = 0; events[i].signature; i++)
-        if (events[i].signature == signature) return i;
+    if ((signature = StringToQuark(eventStr)) == events[previous].signature)
+	return (Cardinal) previous;
+
+    left = 0;
+    right = XtNumber(events) - 1;
+    while (left <= right) {
+	i = (left + right) >> 1;
+	if (signature < events[i].signature)
+	    right = i - 1;
+	else if (signature > events[i].signature)
+	    left = i + 1;
+	else {
+	    previous = i;
+	    return (Cardinal) i;
+	}
+    }
 
     Syntax("Unknown event type :  ",eventStr);
     *error = TRUE;
-    return i;
+    return (Cardinal) i;
 }
 
 /***********************************************************************
@@ -522,16 +552,35 @@ static Boolean _XtLookupModifier(name,lateBindings,notFlag,valueP,check)
     Value *valueP;
     Bool check;
 {
-   register int i;
+   register int i, left, right;
    register XrmQuark signature = StringToQuark(name);
-   for (i=0; modifiers[i].name != NULL; i++)
-      if (modifiers[i].signature == signature) {
-          if (check == TRUE)  *valueP = modifiers[i].value;
-          if ((modifiers[i].modifierParseProc != NULL) && (check == FALSE))
-            (*modifiers[i].modifierParseProc)(name,
-                modifiers[i].value,lateBindings,notFlag,valueP);
-      return TRUE;
-      }
+   static int previous = 0;
+   
+   if (signature == modifiers[previous].signature) {
+       if (check == TRUE)  *valueP = modifiers[previous].value;
+       if ((modifiers[previous].modifierParseProc != NULL) && (check == FALSE))
+	   (*modifiers[previous].modifierParseProc)
+	      (name, modifiers[previous].value, lateBindings, notFlag, valueP);
+       return TRUE;
+   }
+
+   left = 0;
+   right = XtNumber(modifiers) - 1;
+   while (left <= right) {
+       i = (left + right) >> 1;
+       if (signature < modifiers[i].signature)
+	   right = i - 1;
+       else if (signature > modifiers[i].signature)
+	   left = i + 1;
+       else {
+	   previous = i;
+	   if (check == TRUE)  *valueP = modifiers[i].value;
+	   if ((modifiers[i].modifierParseProc != NULL) && (check == FALSE))
+	       (*modifiers[i].modifierParseProc)
+		   (name, modifiers[i].value, lateBindings, notFlag, valueP);
+	   return TRUE;
+       }
+   }
    return FALSE;
 }
 
@@ -1954,8 +2003,8 @@ void _XtTranslateInitialize()
 
     initialized = TRUE;
 
-    Compile_XtEventTable( events );
-    Compile_XtModifierTable( modifiers );
+    Compile_XtEventTable( events, XtNumber(events) );
+    Compile_XtModifierTable( modifiers, XtNumber(modifiers) );
     CompileNameValueTable( buttonNames );
     CompileNameValueTable( notifyModes );
     CompileNameValueTable( motionDetails );
