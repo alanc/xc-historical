@@ -6,6 +6,7 @@
           OBJS2 = xhw1.o
           OBJS3 = xhw3.o
           OBJS4 = hw.o
+          SRCS = $(SRCS1) $(SRCS2) $(SRCS3) $(SRCS4)
 
 SingleProgramTarget(xhw0, $(OBJS1), $(XLIB), )
 
@@ -15,4 +16,4 @@ SingleProgramTarget(xhw3, $(OBJS3), $(XTOOLLIB) $(OLDXRMLIB) $(XLIB), )
 
 SingleProgramTarget(hw, $(OBJS4),, )
 
-
+DependTarget()
