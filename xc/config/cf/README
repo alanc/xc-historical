@@ -1,7 +1,9 @@
-$XConsortium: README,v 1.36 94/04/13 14:50:52 rws Exp $
+$XConsortium: README,v 1.37 94/04/18 17:13:36 gildea Exp $
 
 The easiest way to write an Imakefile is to find another one that does
 something similar and copy/modify it!
+
+To change any of these variables, edit the site.def file.
 
 Imake.tmpl provides defaults for the following variables:
 
@@ -146,7 +148,8 @@ Project.tmpl provides defaults for the following variables:
 	BuildServer		build X server
 	BuildXIE		build X Image Extension
 	BuildDIS		build Document Imaging Subset of XIE
-	BuildXInputExt		build X Input extension
+	BuildXInputExt		build X Input extension (requires ddx support,
+					which exists only in Xhp)
 	BuildXInputLib		build X Input library
 	BuildXKB		build X Keyboard Extension?
 	ConfigDir		install directory for config files
@@ -373,3 +376,5 @@ The following variables are used by some part of the tree:
 	SvgaConfig		default SVGA configuration
 	HasGetReturnAddress	util/memleak
 	HasShadowPasswd		system has getspnam() function
+	XnestServer		build X server with Xlib-based ddx
+	XVirtualFramebufferServer	build X server with virtual memory framebuffer
