@@ -409,6 +409,7 @@ CompositeWidget wid;
 			childwid->core.width = w->core.width;
 			childwid->core.height = w->core.height;
 			childwid->core.border_width = w->core.border_width;
+			XtWidgetResize(childwid);
 		}
 	}
 
