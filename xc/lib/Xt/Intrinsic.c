@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.161 91/01/10 21:08:09 converse Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.162 91/02/08 17:31:34 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -32,6 +32,12 @@ SOFTWARE.
 #include <sys/stat.h>
 #endif /* VMS */
 #include "Quarks.h"
+
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+extern char *getenv();
+#endif
 
 String XtCXtToolkitError = "XtToolkitError";
 
@@ -927,7 +933,6 @@ String XtResolvePathname(dpy, type, filename, suffix, path, substitutions,
     char *massagedPath;
     int bytesAllocd, bytesLeft;
     char *ch, *result;
-    extern char* getenv();
     Substitution merged_substitutions;
     XrmRepresentation db_type;
     XrmValue value;

@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.178 91/03/07 19:15:11 rws Exp $ */
+/* $XConsortium: Initialize.c,v 1.179 91/03/27 17:58:16 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -40,7 +40,11 @@ SOFTWARE.
 #define Const /**/
 #endif
 
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
 extern char *getenv();
+#endif
 
 extern void _XtConvertInitialize();
 
