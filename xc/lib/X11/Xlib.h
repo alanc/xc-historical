@@ -1,4 +1,4 @@
-/* $Header: Xlib.h,v 11.142 88/06/20 11:17:19 rws Exp $ */
+/* $Header: Xlib.h,v 11.143 88/06/28 18:19:18 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -989,7 +989,7 @@ typedef union { Display *display;
 		Visual *visual;
 		Screen *screen;
 		ScreenFormat *pixmap_format;
-		XFontStruct *font } XEDataObject;
+		XFontStruct *font; } XEDataObject;
 #endif
 /* 
  * X function declarations.
