@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.15 89/07/21 17:07:51 swick Exp $ */
+/* $XConsortium: InitialI.h,v 1.16 89/09/12 16:45:50 swick Exp $ */
 /* $oHeader: InitializeI.h,v 1.8 88/09/01 11:25:04 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -112,6 +112,7 @@ typedef struct _XtAppStruct {
     short count, max, last;
     Boolean sync, rv, being_destroyed, error_inited;
     Heap heap;
+    String * fallback_resources;       /* Set by XtAppSetFallbackResources. */
 } XtAppStruct;
 
 extern void _XtSetDefaultErrorHandlers();

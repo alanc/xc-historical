@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Display.c,v 1.24 89/09/12 16:46:49 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Display.c,v 1.25 89/09/14 10:14:46 swick Exp $";
 /* $oHeader: Display.c,v 1.9 88/09/01 11:28:47 asente Exp $ */
 #endif /*lint*/
 
@@ -211,7 +211,6 @@ XtDisplayInitialize(app, dpy, name, classname, urlist, num_urs, argc, argv)
 	XtPerDisplay pd;
 	static XtPerDisplay NewPerDisplay();
 
-	if (app == NULL) app = _XtDefaultAppContext();
 	XtAddToAppContext(dpy, app);
 
 	pd = NewPerDisplay(dpy);

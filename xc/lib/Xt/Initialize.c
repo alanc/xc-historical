@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.135 89/08/23 19:02:33 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.136 89/09/12 16:47:49 swick Exp $";
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 #endif /* lint */
 
@@ -268,6 +268,24 @@ static XrmDatabase GetEnvironmentDefaults()
 	return rdb;
 }
 
+static XrmDatabase GetFallbackResourceDatabase(dpy)
+        Display * dpy;
+{
+	XtPerDisplay pd = _XtGetPerDisplay(dpy);
+        XrmDatabase db = NULL;
+	char ** res;
+
+	if ( (res = pd->appContext->fallback_resources) == NULL)
+	    return(NULL);
+	
+	for ( ; *res != NULL ; res++) {
+	    printf("Putting line resource: %s\n", *res);
+	    XrmPutLineResource(&db, *res);
+	}
+
+	return(db);
+}
+
 static void GetInitialResourceDatabase(dpy, classname)
 	Display *dpy;
 	char *classname;
@@ -280,19 +298,22 @@ static void GetInitialResourceDatabase(dpy, classname)
 	   in R3 and since the circumstances are likely rare, and since
 	   there's an easy user work-around, we'll just punt. */
 	/* ||| Xt shouldn't be using dpy->db. */
+
 	dpy->db = XrmGetStringDatabase( "" );
 
-	rdb = GetAppSystemDefaults(classname);
-	if (rdb != NULL) XrmMergeDatabases(rdb, &(dpy->db));
+	if ( (rdb = GetAppSystemDefaults(classname)) != NULL) 
+	    XrmMergeDatabases(rdb, &(dpy->db));
+	else if ( (rdb = GetFallbackResourceDatabase(dpy)) != NULL )
+	    XrmMergeDatabases(rdb, &(dpy->db));
+	
+	if ( (rdb = GetAppUserDefaults(classname)) != NULL )
+	    XrmMergeDatabases(rdb, &(dpy->db));
 
-	rdb = GetAppUserDefaults(classname);
-	if (rdb != NULL) XrmMergeDatabases(rdb, &(dpy->db));
+	if ( (rdb = GetUserDefaults(dpy)) != NULL ) 
+	    XrmMergeDatabases(rdb, &(dpy->db));
 
-	rdb = GetUserDefaults(dpy);
-	if (rdb != NULL) XrmMergeDatabases(rdb, &(dpy->db));
-
-	rdb = GetEnvironmentDefaults();
-	if (rdb != NULL) XrmMergeDatabases(rdb, &(dpy->db));
+	if ( (rdb = GetEnvironmentDefaults()) != NULL )
+	    XrmMergeDatabases(rdb, &(dpy->db));
 }
 
 
@@ -460,62 +481,124 @@ void _XtDisplayInitialize(dpy, app, name, classname, urlist, num_urs, argc, argv
 	}
 	XtFree( (char*)options );
 }
-	
-/*
- * This routine creates the desired widget and does the "Right Thing" for
- * the toolkit and for window managers.
+
+/*	Function Name: XtAppSetFallbackResources
+ *	Description: Sets the fallback resource list that will be loaded
+ *                   at display initialization time.
+ *	Arguments: app_context - the app context.
+ *                 specification_list - the resource specification list.
+ *	Returns: none.
  */
-#ifdef SUNSHLIB
-#define XtInitialize _XtInitialize
-#endif
 
-/*ARGSUSED*/
-Widget XtInitialize(name, classname, urlist, num_urs, argc, argv)
-	char *name;		/* unused in R3 */
-	char *classname;
-	XrmOptionDescRec *urlist;
-	Cardinal num_urs;
-	Cardinal *argc;
-	char *argv[];
+void
+XtAppSetFallbackResources(app_context, specification_list)
+XtAppContext app_context;
+String *specification_list;
 {
-	Display *dpy;
-	Screen *scrn;
-	char **saved_argv;
-	int saved_argc = *argc;
-	Widget root;
-	int i;
-	Arg   args[8];
-	Cardinal num_args = 0;
-
-#ifdef SUNSHLIB
-#undef XtInitialize
-#endif
-
-	XtToolkitInitialize();
-
-	/* save away argv and argc so I can set the properties latter */
-
-	saved_argv = (char **) XtCalloc(
-		(unsigned) ((*argc) + 1) , (unsigned)sizeof(*saved_argv));
-
-	for (i = 0 ; i < *argc ; i++) saved_argv[i] = argv[i];
-	saved_argv[i] = NULL;
-
-	dpy = XtOpenDisplay((XtAppContext) NULL, (String) NULL, NULL,
-		classname, urlist, num_urs, argc, argv);
-	if (dpy == NULL) {
-             XtErrorMsg("invalidDisplay","xtInitialize","XtToolkitError",
-                   "Can't Open display", (String *) NULL, (Cardinal *)NULL);
-	}
-	scrn = DefaultScreenOfDisplay(dpy);
-
-        XtSetArg(args[num_args], XtNscreen, scrn);	num_args++;
-	XtSetArg(args[num_args], XtNargc, saved_argc);	num_args++;
-	XtSetArg(args[num_args], XtNargv, saved_argv);	num_args++;
-
-        root = XtAppCreateShell(NULL, classname, 
-		applicationShellWidgetClass, dpy, args, num_args);
-
-	return root;
+    app_context->fallback_resources = specification_list;
 }
 
+/*	Function Name: XtAppInitialize
+ *	Description: A convience routine for Initializing the toolkit.
+ *	Arguments: app_context_return - The application context of the
+ *                                      application
+ *                 application_class  - The class of the application.
+ *                 options            - The option list.
+ *                 num_options        - The number of options in the above list
+ *                 argc_in_out, argv_in_out - number and list of command line
+ *                                            arguments.
+ *                 fallback_resource  - The fallback list of resources.
+ *                 args, num_args     - Arguements to use when creating the 
+ *                                      shell widget.
+ *	Returns: The shell widget.
+ */
+	
+Widget
+XtAppInitialize(app_context_return, application_class, options, num_options,
+		argc_in_out, argv_in_out, fallback_resources, 
+		args_in, num_args_in)
+XtAppContext * app_context_return;
+String application_class;
+XrmOptionDescRec *options;
+Cardinal num_options, *argc_in_out, num_args_in;
+String *argv_in_out, * fallback_resources;     
+ArgList args_in;
+{
+    XtAppContext app_con;
+    Display * dpy;
+    String *saved_argv;
+    register int i, saved_argc = *argc_in_out;
+    Widget root;
+    Arg args[3], *merged_args;
+    Cardinal num = 0;
+    
+    XtToolkitInitialize();
+    
+/*
+ * Save away argv and argc so we can set the properties later 
+ */
+    
+    saved_argv = (String *) XtMalloc( (Cardinal) ((*argc_in_out + 1) *
+						  sizeof(String)) );
+
+    for (i = 0 ; i < saved_argc ; i++) saved_argv[i] = argv_in_out[i];
+    saved_argv[i] = NULL;	/* NULL terminate that sucker. */
+
+
+    app_con = XtCreateApplicationContext();
+
+    XtAppSetFallbackResources(app_con, fallback_resources);
+
+    dpy = XtOpenDisplay(app_con, (String) NULL, NULL, application_class,
+			options, num_options, argc_in_out, argv_in_out);
+
+    if (dpy == NULL)
+	XtErrorMsg("invalidDisplay","xtInitialize","XtToolkitError",
+                   "Can't Open display", (String *) NULL, (Cardinal *)NULL);
+
+    XtSetArg(args[num], XtNscreen, DefaultScreenOfDisplay(dpy)); num++;
+    XtSetArg(args[num], XtNargc, saved_argc);	                 num++;
+    XtSetArg(args[num], XtNargv, saved_argv);	                 num++;
+
+    merged_args = XtMergeArgLists(args_in, num_args_in, args, num);
+    num += num_args_in;
+
+    root = XtAppCreateShell(NULL, application_class, 
+			    applicationShellWidgetClass,dpy, merged_args, num);
+    
+    if (app_context_return != NULL)
+	*app_context_return = app_con;
+
+    XtFree(merged_args);
+    XtFree(saved_argv);
+    return(root);
+}
+
+/*	Function Name: XtInitialize
+ *	Description: This function can be used to initialize the toolkit.
+ *	Arguments: name - ** UNUSED **
+ *                 classname - name of the application class.
+ *                 options, num_options - the command line option info.
+ *                 argc, argc - the command line args from main().
+ *	Returns: a shell widget.
+ */
+	
+/*ARGSUSED*/
+Widget 
+XtInitialize(name, classname, options, num_options, argc, argv)
+String name, classname;
+XrmOptionDescRec *options;
+Cardinal num_options, *argc;
+String *argv;
+{
+    Widget root;
+    XtAppContext app_con;
+    register ProcessContext process = _XtGetProcessContext();
+
+    root = XtAppInitialize(&app_con, classname, options, num_options,
+			   argc, argv, NULL, NULL, (Cardinal) 0);
+
+    process->defaultAppContext = app_con;
+    
+    return(root);
+}
