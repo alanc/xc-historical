@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.183 90/12/11 22:38:39 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.184 90/12/26 10:02:29 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -530,6 +530,15 @@ typedef struct _XDisplay {
 	unsigned int mode_switch;  /* keyboard group modifiers */
 	struct _XContextDB *context_db; /* context database */
 	Bool (**error_vec)();      /* vector for wire to error */
+	/*
+	 * TekCMS per Display Information
+	 *      See TekCMS.h for XcmsCCC structure definition,
+	 *      and TekCMSP.h for XcmsCmapRec structure definition.
+	 */
+	struct {
+	   caddr_t defaultCCCs;  /* pointer to an array of default XcmsCCC */
+	   caddr_t clientCmaps;  /* pointer to linked list of XcmsCmapRec */
+	} cms;
 } Display;
 
 #if NeedFunctionPrototypes	/* prototypes require event type definitions */
