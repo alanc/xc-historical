@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 1.178 89/03/31 13:18:17 keith Exp $ */
+/* $XConsortium: events.c,v 1.179 89/04/05 10:48:46 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -184,7 +184,7 @@ static Mask filters[128] =
 	KeyReleaseMask,		       /* KeyRelease */
 	ButtonPressMask,	       /* ButtonPress */
 	ButtonReleaseMask,	       /* ButtonRelease */
-	MotionMask,		       /* MotionNotify - special cased */
+	PointerMotionMask,	       /* MotionNotify (initial state) */
 	EnterWindowMask,	       /* EnterNotify */
 	LeaveWindowMask,	       /* LeaveNotify */
 	FocusChangeMask,	       /* FocusIn */
