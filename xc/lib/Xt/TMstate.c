@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.173 94/04/17 20:14:56 kaleb Exp kaleb $ */
+/* $XConsortium: TMstate.c,v 1.174 94/09/15 19:42:47 kaleb Exp kaleb $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -589,6 +589,13 @@ static void HandleActions(w, event, stateTree, accelWidget, procs, actions)
     Widget		bindWidget;
 
     bindWidget = accelWidget ? accelWidget : w;
+    if (accelWidget && !XtIsSensitive(accelWidget) &&
+	(event->type == KeyPress || event->type == KeyRelease ||
+	event->type == ButtonPress || event->type == ButtonRelease ||
+	event->type == MotionNotify || event->type == EnterNotify ||
+	event->type == LeaveNotify || event->type == FocusIn ||
+	event->type == FocusOut))
+	return;
 
     actionHookList = XtWidgetToApplicationContext(w)->action_hook_list;
 
