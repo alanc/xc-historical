@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyIO.c,v 1.1 91/05/10 09:09:03 jap Exp $
+ * $XConsortium: skySGC.c,v 1.2 91/07/16 13:16:29 jap Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -37,26 +37,13 @@
 
 extern RegionPtr pgcCopyArea();
 
-static void
+void
 skyValidateGC(pGC, changes, pDrawable)
     register GCPtr  pGC;
     Mask	    changes;
     DrawablePtr	    pDrawable;
 {
-	cfbValidateGC(pGC,changes,pDrawable);
-	pGC->ops->CopyArea = pgcCopyArea ;
-}
-
-Bool
-skyCreateGC(pGC)
-    register GCPtr pGC;
-{
-
-    if(! cfbCreateGC(pGC))
-	return FALSE ;
-
-   if (pGC->depth == 8 )
-    pGC->funcs->ValidateGC = skyValidateGC;
-
-    return TRUE;
+  cfbValidateGC(pGC,changes,pDrawable);
+  if (pGC->depth == 8)
+    pGC->ops->CopyArea = pgcCopyArea ;
 }
