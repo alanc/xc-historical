@@ -32,6 +32,7 @@ extern void DoGetProperty();
 
 extern Bool InitRectangles();
 extern void DoRectangles();
+extern void DoOutlineRectangles();
 extern void EndRectangles();
 
 extern Bool InitGC();
@@ -59,6 +60,7 @@ extern void EndLines();
 extern Bool InitCircles();
 extern Bool InitPartCircles();
 extern Bool InitWideCircles();
+extern Bool InitPartWideCircles();
 extern Bool InitDashedCircles();
 extern Bool InitWideDashedCircles();
 extern Bool InitDoubleDashedCircles();
@@ -69,6 +71,7 @@ extern Bool InitSlicePartCircles();
 extern Bool InitEllipses();
 extern Bool InitPartEllipses();
 extern Bool InitWideEllipses();
+extern Bool InitPartWideEllipses();
 extern Bool InitDashedEllipses();
 extern Bool InitWideDashedEllipses();
 extern Bool InitDoubleDashedEllipses();
@@ -424,6 +427,30 @@ Test test[] = {
 		InitWideDoubleDashedLines, DoLines, NullProc, EndLines,
 		ROP,     0,
 		{100, 100}},
+  {"-orect10",	    "10x10 rectangle outlines",
+		InitRectangles, DoOutlineRectangles, NullProc, EndRectangles,
+		ROP,     0,
+		{POLY, 10, NULL, "0", FillSolid}},
+  {"-orect100",	    "100x100 rectangle outlines",
+		InitRectangles, DoOutlineRectangles, NullProc, EndRectangles,
+		ROP,     0,
+		{36, 100, NULL, "0", FillSolid}},
+  {"-orect500",	    "500x500 rectangle outlines",
+		InitRectangles, DoOutlineRectangles, NullProc, EndRectangles,
+		ROP,     0,
+		{1, 500, NULL, "0", FillSolid}},
+  {"-worect10",	    "10x10 wide rectangle outlines",
+		InitRectangles, DoOutlineRectangles, NullProc, EndRectangles,
+		ROP,     0,
+		{POLY, 10, NULL, "1", FillSolid}},
+  {"-worect100",    "100x100 wide rectangle outlines",
+		InitRectangles, DoOutlineRectangles, NullProc, EndRectangles,
+		ROP,     0,
+		{36, 100, NULL, "10", FillSolid}},
+  {"-worect500",    "500x500 wide rectangle outlines",
+		InitRectangles, DoOutlineRectangles, NullProc, EndRectangles,
+		ROP,     0,
+		{1, 500, NULL, "50", FillSolid}},
   {"-circle1",  "1-pixel circle",
 		InitCircles, DoArcs, NullProc, EndArcs,
 		ROP,     0,
@@ -474,6 +501,14 @@ Test test[] = {
 		{POLY, 10}},
   {"-pcircle100", "100-pixel partial circle",
 		InitPartCircles, DoArcs, NullProc, EndArcs,
+		ROP,     0,
+		{198, 100}},
+  {"-wpcircle10", "10-pixel partial wide circle",
+		InitPartWideCircles, DoArcs, NullProc, EndArcs,
+		ROP,     0,
+		{POLY, 10}},
+  {"-wpcircle100", "100-pixel partial wide circle",
+		InitPartWideCircles, DoArcs, NullProc, EndArcs,
 		ROP,     0,
 		{198, 100}},
   {"-fcircle1",  "1-pixel solid circle",
@@ -556,6 +591,14 @@ Test test[] = {
 		InitPartEllipses, DoArcs, NullProc, EndArcs,
 		ROP,     0,
 		{360, 100}},
+  {"-wpellipse10", "10-pixel partial wide ellipse",
+		InitPartWideEllipses, DoArcs, NullProc, EndArcs,
+		ROP,     0,
+		{540, 10}},
+  {"-wpellipse100", "100-pixel partial wide ellipse",
+		InitPartWideEllipses, DoArcs, NullProc, EndArcs,
+		ROP,     0,
+		{360, 100}},
   {"-fellipse10", "10-pixel filled ellipse",
 		InitEllipses, DoFilledArcs, NullProc, EndArcs,
 		ROP,     0,
@@ -572,7 +615,7 @@ Test test[] = {
 		InitChordPartEllipses, DoFilledArcs, NullProc, EndArcs,
 		ROP,     0,
 		{270, 10}},
-  {"-fcpellipse100", "100-pixel fill chord ellipse",
+  {"-fcpellipse100", "100-pixel fill chord partial ellipse",
 		InitChordPartEllipses, DoFilledArcs, NullProc, EndArcs,
 		ROP,     0,
 		{36, 100}},
@@ -580,7 +623,7 @@ Test test[] = {
 		InitSlicePartEllipses, DoFilledArcs, NullProc, EndArcs,
 		ROP,     0,
 		{270, 10}},
-  {"-fspellipse100", "100-pixel fill slice ellipse",
+  {"-fspellipse100", "100-pixel fill slice partial ellipse",
 		InitSlicePartEllipses, DoFilledArcs, NullProc, EndArcs,
 		ROP,     0,
 		{36, 100}},
