@@ -1,5 +1,5 @@
 /*
- *	$Header: util.c,v 1.2 88/02/12 08:51:02 jim Exp $
+ *	$Header: util.c,v 1.3 88/02/12 12:01:07 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* util.c */
 
 #ifndef lint
-static char rcs_id[] = "$Header: util.c,v 1.2 88/02/12 08:51:02 jim Exp $";
+static char rcs_id[] = "$Header: util.c,v 1.3 88/02/12 12:01:07 jim Exp $";
 #endif	/* lint */
 
 #include <stdio.h>
@@ -926,11 +926,15 @@ ReverseVideo (term)
 	MenuNewCursor(screen->arrow);
 #endif	/* MODEMENU */
 
-	if (term->core.border_width && (term->core.border_pixel == term->core.background_pixel)) {
-	    term->core.border_pixel = screen->foreground;
-	    XSetWindowBorder(screen->display, term->core.parent->core.window, screen->foreground);
-	    if(tek) {
-		XSetWindowBorder(screen->display, tekWidget->core.parent->core.window, screen->foreground );
+	
+	if (term) {
+	    if (term->core.border_pixel == term->core.background_pixel) {
+		term->core.border_pixel = screen->foreground;
+		term->core.parent->core.border_pixel = screen->foreground;
+		if (term->core.parent->core.window)
+		  XSetWindowBorder (screen->display,
+				    term->core.parent->core.window,
+				    term->core.border_pixel);
 	    }
 	}
 

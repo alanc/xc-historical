@@ -1,5 +1,5 @@
 /*
- * $Header: Tekproc.c,v 1.18 88/02/18 16:48:50 jim Exp $
+ * $Header: Tekproc.c,v 1.19 88/02/18 17:07:40 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -115,7 +115,7 @@ char *curs_color;
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$Header: Tekproc.c,v 1.18 88/02/18 16:48:50 jim Exp $";
+static char rcs_id[] = "$Header: Tekproc.c,v 1.19 88/02/18 17:07:40 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -208,7 +208,7 @@ static Boolean Tfailed = FALSE;
 TekWidget CreateTekWidget ()
 {
     Widget tekshellwidget;
-    char *tek_name = "Tektronix";	/* should be a resource */
+    char *tek_name = "tektronix";	/* should be a resource */
     extern Arg ourTopLevelShellArgs[];
     extern int number_ourTopLevelShellArgs;
 
@@ -1371,6 +1371,18 @@ register TScreen *screen;
 	 screen->Tforeground);
 	XSetBackground(screen->display, screen->TnormalGC, 
 	 screen->Tbackground);
+
+	if (tekWidget) {
+	    if (tekWidget->core.border_pixel == screen->Tbackground) {
+		tekWidget->core.border_pixel = screen->Tforeground;
+		tekWidget->core.parent->core.border_pixel =
+		  screen->Tforeground;
+		if (tekWidget->core.parent->core.window)
+		  XSetWindowBorder (screen->display,
+				    tekWidget->core.parent->core.window,
+				    tekWidget->core.border_pixel);
+	    }
+	}
 
 	for(i = 0 ; i < TEKNUMLINES ; i++) {
 		XSetForeground(screen->display, screen->linepat[i], 
