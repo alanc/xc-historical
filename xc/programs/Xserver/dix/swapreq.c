@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: swapreq.c,v 1.33 91/06/01 12:49:35 rws Exp $ */
+/* $XConsortium: swapreq.c,v 1.34 91/06/05 17:20:22 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -1119,8 +1119,10 @@ int
 SProcNoOperation(client)
     ClientPtr client;
 {
-    /* noop -- don't do anything */
-    return(Success);
+    register char n;
+    REQUEST(xReq);
+    swaps(&stuff->length, n);
+    return ((* ProcVector[X_NoOperation])(client));
 }
 
 SwapTimecoord(pCoord)
