@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xlcint.h,v 11.1 91/04/01 18:13:55 gildea Exp $
+ * $XConsortium: Xlcint.h,v 11.1 91/04/06 13:18:19 rws Exp $
  */
 
 /*
@@ -290,7 +290,12 @@ typedef struct {
 	XIM
 #endif
 	);
-    Status (*get_values)(
+    char* (*get_values)(
+#if NeedFunctionPrototypes
+	XIM, XIMArg*
+#endif
+	);
+    XIC (*create_ic)(
 #if NeedFunctionPrototypes
 	XIM, XIMArg*
 #endif
@@ -312,15 +317,7 @@ typedef struct {
  */
 typedef struct {
     XLCd		lcd;			/* LC of this input method */
-
-    XIC (*create_ic)(
-#if NeedFunctionPrototypes
-	XIM, XIMArg*
-#endif
-	);
-
-    int			num_ic;			/* XIC's of this XIM */
-    XIC *		ic_list;
+    XIC			ic_chain;		/* list of ICs for this IM */
 
     Display *		display;               	/* display */
     XrmDatabase 	rdb;
@@ -409,6 +406,7 @@ typedef struct {
  */
 typedef struct {
     XIM			im;			/* XIM this IC belongs too */
+    XIC			next;			/* linked list of ICs for IM */
 
     Window		client_window;		/* window IM can use for */
 						/* display or subwindows */
@@ -436,9 +434,9 @@ typedef struct _XIC {
     XICCoreRec		core;			/* data of this IC */
 } XICRec;
 
-typedef Bool (*XLCdLoadProc)(
+typedef XLCd (*XLCdLoadProc)(
 #if NeedFunctionPrototypes
-    XLCd
+    char*
 #endif
 );
 
@@ -458,6 +456,35 @@ extern char *_XlcDefaultMapModifiers(
     XLCd	/* lcd */,
     char*	/* user_mods */,
     char*	/* prog_mods */
+#endif
+);
+
+extern void _XIMCompileResourceList(
+#if NeedFunctionPrototypes
+    XIMResourceList	/* res */,
+    unsigned int	/* num_res */
+#endif
+);
+
+extern void _XCopyToArg(
+#if NeedFunctionPrototypes
+    XPointer		/* src */,
+    XPointer*		/* dst */,
+    unsigned int	/* size */
+#endif
+);
+
+extern void _XAddIC(
+#if NeedFunctionPrototypes
+    XIM		/* im */,
+    XIC		/* ic */
+#endif
+);
+
+extern void _XRemoveIC(
+#if NeedFunctionPrototypes
+    XIM		/* im */,
+    XIC		/* ic */
 #endif
 );
 
