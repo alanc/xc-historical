@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: appres.c,v 1.1 89/07/20 16:30:56 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -39,7 +39,7 @@ main (argc, argv)
     char **argv;
 {
     Widget toplevel;
-    char *classname = "Dumpres";
+    char *classname = "Appres";
     char tmpbuf[256];
     char buf[BUFSIZ];
     FILE *fp;
