@@ -1,0 +1,48 @@
+#
+# Preserve this order
+#
+        SUBDIRS = \
+		$(INCLUDEDIR) \
+		$(SERVERDIR) \
+		$(XLIBDIR) \
+		$(TOOLKITDIR) \
+		$(XMENUDIR) \
+		$(FONTDIR) \
+		$(CLIENTDIR)
+
+all:
+	for i in $(SUBDIRS) ;\
+	do \
+		(set -x; cd $$i ; make $(MFLAGS)); \
+	done
+
+depend::
+	for i in $(SUBDIRS) ;\
+	do \
+		(cd $$i ; make $(MFLAGS) depend ); \
+	done
+
+clean::
+	for i in $(SUBDIRS) $(UTILDIR) ;\
+	do \
+		(cd $$i ; make $(MFLAGS) clean ); \
+	done
+
+install::
+	for i in $(SUBDIRS) ;\
+	do \
+		(cd $$i ; make $(MFLAGS) install ); \
+	done
+
+Makefiles: Makefile
+	@$(MAKE) real_makefiles_target NEWTOP=../
+
+real_makefiles_target: 
+	@for i in $(SUBDIRS) ;\
+	do \
+		(set -x; cd $$i; $(IMAKE_CMD) -DTOPDIR=..); \
+	done; \
+	for i in $(LIBRARYDIR) $(CLIENTDIR) $(SERVERDIR) ;\
+	do \
+		(set -x; cd $$i; $(MAKE) Makefiles); \
+	done
