@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XMultibuf.c,v 1.25 91/01/05 16:34:04 rws Exp $
+ * $XConsortium: XMultibuf.c,v 1.26 91/05/04 19:32:35 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -693,5 +693,29 @@ Window XmbufCreateStereoWindow (dpy, parent, x, y, width, height, border_width,
     UnlockDisplay(dpy);
     SyncHandle();
     return wid;
+}
+
+void XmbufClearBufferArea (dpy, buffer, x, y, width, height, exposures)
+     Display *dpy;
+     Multibuffer buffer;
+     int x, y;
+     unsigned int width, height;
+     Bool exposures;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    register xMbufClearImageBufferAreaReq *req;
+
+    MbufSimpleCheckExtension (dpy, info);
+
+    LockDisplay (dpy);
+    MbufGetReq (MbufClearImageBufferArea, req, info);
+    req->buffer = buffer;
+    req->x      = x;
+    req->y      = y;
+    req->width  = width;
+    req->height = height;
+    req->exposures = exposures;
+    UnlockDisplay (dpy);
+    SyncHandle();
 }
 
