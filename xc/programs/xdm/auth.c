@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.38 91/04/03 17:14:47 gildea Exp $
+ * $XConsortium: auth.c,v 1.39 91/05/06 23:53:47 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -24,29 +24,43 @@
  * maintain the authorization generation daemon
  */
 
-# include   "dm.h"
-# include   <setjmp.h>
-# include   <sys/types.h>
-# include   <sys/ioctl.h>
-# include   <sys/socket.h>
-# include   <sys/stat.h>
+#include "dm.h"
+#include <X11/X.h>
+#include <setjmp.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/socket.h>
+#ifndef ESIX
+# include <sys/ioctl.h>
+#endif /* !ESIX */
+
+#ifdef SYSV386
+# include <sys/utsname.h>
+# include <sys/stream.h>
+# ifdef ISC
+#  include <sys/sioctl.h>
+# endif /* ISC */
+# ifdef ESIX
+#  include <lan/net_ioctl.h>
+# endif /* ESIX */
+#endif /* SYSV386 */
+
 #ifdef hpux
-# include   <sys/utsname.h>
+# include <sys/utsname.h>
 #endif
 #ifdef SVR4
-# include   <sys/utsname.h>
-# include   <netdb.h>
-# include   <sys/sockio.h>
+# include <sys/utsname.h>
+# include <netdb.h>
+# include <sys/sockio.h>
 #endif
-# include    <net/if.h>
+#include <net/if.h>
 #ifdef TCPCONN
-# include   <netinet/in.h>
+# include <netinet/in.h>
 #endif
 #ifdef DNETCONN
-# include    <netdnet/dn.h>
-# include    <netdnet/dnetdb.h>
+# include <netdnet/dn.h>
+# include <netdnet/dnetdb.h>
 #endif
-# include    <X11/X.h>
 
 extern int	MitInitAuth ();
 extern Xauth	*MitGetAuth ();
