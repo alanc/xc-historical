@@ -1,4 +1,4 @@
-/* $XConsortium: xmag.c,v 1.22 91/09/12 17:24:04 rws Exp $ */
+/* $XConsortium: xmag.c,v 1.23 91/10/21 14:32:25 eswu Exp $ */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -25,7 +25,6 @@
 
 
 
-#include <stdio.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 #include <X11/Xaw/Paned.h>
@@ -35,7 +34,13 @@
 #include "RootWindow.h"
 #include "Scale.h"
 #include <X11/cursorfont.h>
+
+#include <stdio.h>
 #include <X11/Xmu/Error.h>
+
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>		/* for exit() and abs() */
+#endif
 
 #define SRCWIDTH  64
 #define SRCHEIGHT 64
@@ -43,6 +48,8 @@
 #define min(a, b) a < b ? a : b
 
 extern void SWGrabSelection();
+extern void SWRequestSelection();
+extern int  SWGetImagePixel();
 
 
 
@@ -69,7 +76,7 @@ static XtIntervalId hlId;
 
 
 /* global variables */
-XtAppContext app;
+static XtAppContext app;
 static Cursor ulAngle, urAngle, lrAngle, llAngle;
 static Display *dpy;
 static int scr;
@@ -294,7 +301,7 @@ ReplaceAP(w, event, params, num_params)
 /*
  * PopupPixelAP() -- Show pixel information.
  */
-static void 
+static void			/* ARGSUSED */
 PopupPixelAP(w, event, params, num_params)
     Widget w;
     XEvent *event;
@@ -346,7 +353,7 @@ PopupPixelAP(w, event, params, num_params)
 /*
  * UpdatePixelAP() -- Update pixel information.
  */
-static void 
+static void			/* ARGSUSED */
 UpdatePixelAP(w, event, params, num_params)
     Widget w;
     XEvent *event;
@@ -385,7 +392,7 @@ UpdatePixelAP(w, event, params, num_params)
 /*
  * PopdownPixelAP() -- Remove pixel info.
  */
-static void 
+static void			/* ARGSUSED */
 PopdownPixelAP(w, event, params, num_params)
     Widget w;
     XEvent *event;
@@ -1007,8 +1014,12 @@ static void
 RedoOldScale(data)
      hlPtr data;
 {
-  Arg wargs[3]; int n; Dimension scaleWidth, scaleHeight;
-  Visual *oldVis; int oldDepth; Colormap oldCmap;
+  Arg wargs[3];
+  int n;
+  Visual *oldVis;
+  int oldDepth;
+  Colormap oldCmap;
+
   n=0;
   XtSetArg(wargs[n], XtNvisual, &oldVis); n++;
   XtSetArg(wargs[n], XtNdepth, &oldDepth); n++;
@@ -1073,7 +1084,7 @@ ParseSourceGeom()
 /*
  * Main program.
  */
-main(argc, argv)
+void main(argc, argv)
      int argc;
      char **argv;
 {
@@ -1101,7 +1112,7 @@ main(argc, argv)
   SetupGC();
   CreateRoot();
   if (!(XValue & srcStat && YValue & srcStat))
-    StartRootPtrGrab(True, NULL);
+    StartRootPtrGrab(True, (hlPtr)NULL);
   wm_delete_window = XInternAtom(dpy, "WM_DELETE_WINDOW", False);
   XtAppMainLoop(app);
 }

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: CutPaste.c,v 1.2 91/05/08 18:12:40 dave Exp $
+ * $XConsortium: CutPaste.c,v 1.3 91/07/19 18:29:10 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,18 +23,20 @@
  * Author:  Davor Matic, MIT X Consortium
  */
 
-#include <stdio.h>
-#include <X11/Xatom.h>
 #include <X11/IntrinsicP.h>
+#include <X11/Xatom.h>
 #include "ScaleP.h"
 #include "Scale.h"
+#include <stdio.h>
 
 #define XtStrlen(s) ((s) ? strlen(s) : 0)
 
 extern Pixmap SWGetPixmap();
+extern void SWAutoscale();
 
 /* ARGSUSED */
-Boolean ConvertSelection(w, selection, target, type, vret, length, format)
+static Boolean
+ConvertSelection(w, selection, target, type, vret, length, format)
     Widget w;
     Atom *selection, *target, *type;
     XtPointer *vret;
@@ -83,7 +85,7 @@ Boolean ConvertSelection(w, selection, target, type, vret, length, format)
 }
 
 /* ARGSUSED */
-void LoseSelection(w, selection)
+static void LoseSelection(w, selection)
     Widget w;
     Atom *selection;
 {
@@ -92,7 +94,7 @@ void LoseSelection(w, selection)
 }
 
 /* ARGSUSED */
-void SelectionDone(w, selection, target)
+static void SelectionDone(w, selection, target)
     Widget w;
     Atom *selection, *target;
 {
@@ -115,7 +117,8 @@ void SWGrabSelection(w, time)
 }
 
 /* ARGSUSED */
-void SelectionCallback(w, clientData, selection, type, v, length, format)
+static void
+SelectionCallback(w, clientData, selection, type, v, length, format)
     Widget w;
     XtPointer clientData; 
     Atom *selection, *type;
