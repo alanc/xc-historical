@@ -1,4 +1,4 @@
-/* "$XConsortium: TMstate.c,v 1.108 90/07/06 12:30:35 swick Exp $"; */
+/* "$XConsortium: TMstate.c,v 1.109 90/07/12 17:53:36 swick Exp $"; */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -37,7 +37,8 @@ SOFTWARE.
 #include <stdio.h>
 #include "IntrinsicI.h"
 
-#ifdef __STDC__
+/* VMS linker doesn't believe relocatable addrs can be const */
+#if defined(__STDC__) && !defined(VMS)
 #define Const const
 #else
 #define Const /**/
