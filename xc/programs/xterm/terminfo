@@ -1,11 +1,11 @@
-# $XConsortium: terminfo,v 1.6 92/11/23 21:46:49 gildea Exp $
+# $XConsortium: terminfo,v 1.7 93/07/29 14:20:28 gildea Exp $
 # meml locks memory above the cursor; memu unlocks (ala HP terminals)
 #
-xterm|vs100|xterm-65|xterm terminal emulator,
+xterm|xterm-24|xterms|vs100|xterm terminal emulator,
 	is2=\E7\E[r\E[m\E[?7h\E[?1;3;4;6l\E[4l\E8\E>,
 	rs2=\E7\E[r\E[m\E[?7h\E[?1;3;4;6l\E[4l\E8\E>,
 	am,
-	cols#80, lines#65,
+	cols#80, lines#24,
 	clear=\E[H\E[2J, cup=\E[%i%p1%d;%p2%dH,
 	csr=\E[%i%p1%d;%p2%dr,
 	cud=\E[%p1%dB, cud1=\n, cuu=\E[%p1%dA, cuu1=\E[A,
@@ -28,8 +28,8 @@ xterm|vs100|xterm-65|xterm terminal emulator,
 	dch=\E[%p1%dP, dch1=\E[P,
 	tbc=\E[3k,
 	xenl,
-xterms|vs100s|xterm-24|xterm terminal emulator (small screen 24x80),
-	cols#80, lines#24,
+xterm-65|xterm terminal emulator (tall screen 65x80),
+	lines#65,
 	use=xterm,
 xterm-bold|xterm with bold instead of underline,
 	smul=\E[1m, use=xterm,
