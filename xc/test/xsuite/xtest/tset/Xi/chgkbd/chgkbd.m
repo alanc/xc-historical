@@ -14,7 +14,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: chgkbd.m,v 1.5 94/01/30 12:08:57 rws Exp $
+ * $XConsortium: chgkbd.m,v 1.6 94/02/21 12:12:29 rws Exp $
  */
 >>TITLE XChangeKeyboardDevice XINPUT
 void
@@ -23,6 +23,7 @@ Display	*display = Dsp;
 XDevice *device;
 >>EXTERN
 extern ExtDeviceInfo Devs;
+extern int MinKeyCode;
 
 >>ASSERTION Good B 3
 A call to xname changes the X keyboard.
@@ -106,8 +107,20 @@ int i, ndevices, savid;
 		savid = list->id;
 
 	device = Devs.Key;
-	if ((client1 = XOpenDisplay("")) == NULL)
+/* Create client1, without causing resource registration. */
+	if (config.display == (char *) NULL) {
+		delete("config.display not set");
 		return;
+	}
+	else
+		CHECK;
+	client1 = XOpenDisplay(config.display);
+	if (client1 == (Display *) NULL) {
+		delete("Couldn't create client1.");
+		return;
+	}
+	else
+		CHECK;
 
 	display = client1;
 	XCALL;
@@ -133,7 +146,7 @@ int i, ndevices, savid;
 	    report("%s: Couldn't restore X keyboard\n",TestName);
 	    FAIL;
 	    }
-	CHECKPASS(2);
+	CHECKPASS(4);
 
 >>ASSERTION Good B 3
 After a successful call to ChangeKeyboardDevice, the focus state of
@@ -265,7 +278,7 @@ fail with a BadDevice error, when the new keyboard is specified.
 XID baddevice, devicekeypress;
 XDeviceInfo *list;
 int i, ndevices, revert, nfeed, mask, ksyms_per;
-int nevents, mode, evcount, valuators, min, max, count=0;
+int nevents, mode, evcount, valuators, count=0;
 Window focus, w;
 Time time;
 XKbdFeedbackControl feedctl;
@@ -463,7 +476,7 @@ XEvent ev;
 	feedctl.class = KbdFeedbackClass;
 	feedctl.percent = 0;
 	mask = DvPercent;
-	XChangeFeedbackControl(display, device, mask, (XFeedbackControl *)&feedctl);
+	XChangeFeedbackControl(display, device, mask, (XFeedbackControl *) &feedctl);
 	if (geterr() == baddevice)
 		{
 		CHECK;
@@ -472,8 +485,7 @@ XEvent ev;
 	else
 		FAIL;
 
-	XDisplayKeycodes(display, &min, &max);
-	XGetDeviceKeyMapping(display, device, min, 1, &ksyms_per);
+	XGetDeviceKeyMapping(display, device, MinKeyCode, 1, &ksyms_per);
 	if (geterr() == baddevice)
 		{
 		CHECK;
@@ -482,7 +494,7 @@ XEvent ev;
 	else
 		FAIL;
 
-	XChangeDeviceKeyMapping(display, device, min, 1, &ksyms, 1);
+	XChangeDeviceKeyMapping(display, device, MinKeyCode, 1, &ksyms, 1);
 	if (geterr() == baddevice)
 		{
 		CHECK;
@@ -545,7 +557,7 @@ XEvent ev;
 	else
 		FAIL;
 
-	XDeviceBell(display, device, KbdFeedbackClass, 0, 100);
+	XDeviceBell(display, device, 0, 0, 100);
 	if (geterr() == baddevice)
 		{
 		CHECK;
@@ -568,7 +580,7 @@ XEvent ev;
 	dctl.num_valuators=1;
 	dctl.first_valuator=0;
 	dctl.resolutions = &valuators;
-	XChangeDeviceControl(display, device, DEVICE_RESOLUTION, (XDeviceControl *)&dctl);
+	XChangeDeviceControl(display, device, DEVICE_RESOLUTION, (XDeviceControl *) &dctl);
 	if (geterr() == baddevice)
 		{
 		CHECK;
