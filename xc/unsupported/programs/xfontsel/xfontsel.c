@@ -1,8 +1,4 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: xfontsel.c,v 1.18 90/11/07 11:00:58 dave Exp $";
-#endif
-
-/*
+/* $XConsortium: xfontsel.c,v 1.19 91/01/09 17:24:54 rws Exp $
 
 Copyright 1985, 1986, 1987, 1988, 1989 by the
 Massachusetts Institute of Technology
@@ -190,7 +186,7 @@ static Boolean patternFieldSpecified[FIELD_COUNT]; /* = 0 */
 
 
 void main(argc, argv)
-    unsigned int argc;
+    int argc;
     char **argv;
 {
     Widget topLevel, pane;
