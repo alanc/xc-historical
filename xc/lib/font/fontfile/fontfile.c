@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontfile.c,v 1.14 93/09/17 16:01:29 dpw Exp $
+ * $XConsortium: fontfile.c,v 1.15 93/09/17 18:26:40 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -307,7 +307,7 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
 		    FontParseXLFDName(*aliasName, &tmpVals,
 				      FONT_XLFD_REPLACE_NONE))
 		{
-		    double *matrix = NULL, tempmatrix[4];
+		    double *matrix = 0, tempmatrix[4];
 		    int nameok = 1;
 
 		    vals.nranges = nranges;
