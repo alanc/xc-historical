@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.36 91/05/04 23:08:02 keith Exp $ */
+/* $XConsortium: events.c,v 5.37 91/05/05 18:59:45 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -504,6 +504,8 @@ EnqueueEvent(xE, device, count)
 	{
 	    tail->event->u.keyButtonPointer.rootX = sprite.hotPhys.x;
 	    tail->event->u.keyButtonPointer.rootY = sprite.hotPhys.y;
+	    tail->event->u.keyButtonPointer.time = xE->u.keyButtonPointer.time;
+	    tail->months = currentTime.months;
 	    return;
 	}
     }
