@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.101 91/05/09 14:42:42 gildea Exp $
+ * $XConsortium: Tekproc.c,v 1.102 91/05/10 16:56:57 gildea Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -621,8 +621,8 @@ static int Tinput()
 			return(*rptr++);
 		if(tek = TekRefresh->next) {
 			TekRefresh = tek;
-			rcnt = tek->count - 1;
 			rptr = tek->data;
+			rcnt = tek->count - 1;
 			TekSetFontSize(tek->fontsize);
 			return(*rptr++);
 		}
@@ -749,6 +749,7 @@ void TekExpose(w, event, region)
 	Tpushback = Tpushb;
 	screen->cur_X = 0;
 	screen->cur_Y = TEKHOME;
+	TekSetFontSize(screen->page.fontsize);
 	screen->cur = screen->page;
 	screen->margin = MARGIN1;
 	if(screen->TekGIN) {
