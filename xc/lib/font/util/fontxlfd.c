@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontxlfd.c,v 1.10 93/09/20 15:56:41 gildea Exp $
+ * $XConsortium: fontxlfd.c,v 1.11 93/09/22 16:59:25 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -29,7 +29,7 @@
 #include	<X11/Xos.h>
 #include	<math.h>
 #include	<stdlib.h>
-#if defined(X_NOT_STDC_ENV) || (defined(sony) && !defined(SYSTYPE_SYSV))
+#if defined(X_NOT_STDC_ENV) || (defined(sony) && !defined(SYSTYPE_SYSV) && !defined(_SYSTYPE_SYSV))
 #define NO_LOCALE
 #endif
 #ifndef NO_LOCALE
