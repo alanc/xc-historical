@@ -18,11 +18,10 @@
 #include "ostuff.h"
 
 #include "bitmaps/gray"
-#include "bitmaps/root_weave"
 
 usage()
 {
-	fprintf(stderr, "%s: usage: %s [-fg <color>] [-bg <color>] [-rv] [-help] [-def] [-name <string>] [-cursor <cursor file> <mask file>] [-solid <color>] [-gray] [-grey] [-bitmap <filename>] [-mod <x> <y>] [<host>:<display>]\n\nNOTE: *** Use only one of -solid, -gray, -grey, -bitmap, and -mod ***\n\n", program_name, program_name);
+	outl("%s: usage: %s [-fg <color>] [-bg <color>] [-rv] [-help] [-def] [-name <string>] [-cursor <cursor file> <mask file>] [-solid <color>] [-gray] [-grey] [-bitmap <filename>] [-mod <x> <y>] [<host>:<display>]\n\nNOTE: *** Use only one of -solid, -gray, -grey, -bitmap, and -mod ***\n\n", program_name, program_name);
 	exit(1);
 }
 
@@ -92,7 +91,6 @@ main(argc, argv)
     }
     if (!strcmp("-mod", argv[i])) {
       if (++i>=argc) usage();
-      outl("setting mod_x!");
       mod_x = atoi(argv[i]);
       if (++i>=argc) usage();
       mod_y = atoi(argv[i]);
@@ -137,12 +135,12 @@ main(argc, argv)
   if (bitmap_file) {
 	  bitmap = ReadBitmapFile(RootWindow(dpy, screen), bitmap_file,
 				  &ww, &hh, 0, 0);
-	  SetBackgroundToBitmap(bitmap);
+	  SetBackgroundToBitmap(bitmap, ww, hh);
   }
 
   /* Handle set background to a modula pattern */
   if (mod_x != -1)
-    SetBackgroundToBitmap(MakeModulaBitmap(mod_x, mod_y));
+    SetBackgroundToBitmap(MakeModulaBitmap(mod_x, mod_y), 16, 16);
 
   /* Handle set name */
   if (name)
@@ -150,16 +148,10 @@ main(argc, argv)
 
   /* Handle restore defaults */
   if (restore_defaults) {
-    if (!cursor_file) {
-      printf("Reseting cursor not done because it crashes the server...\n");
-/*      XUndefineCursor(dpy, RootWindow(dpy, screen)); */
-    }
-    if (!excl) {
-      /* because of Xlib bug.... */
-	    SetBackgroundToData(root_weave_bits, root_weave_width,
-				root_weave_height);
-/*      XSetBackgroundPixmap(dpy, RootWindow(dpy, screen), (Pixmap) 0);*/
-    }
+    if (!cursor_file)
+      XUndefineCursor(dpy, RootWindow(dpy, screen)); 
+    if (!excl)
+      XSetWindowBackgroundPixmap(dpy, RootWindow(dpy, screen), (Pixmap) 0);
   }
 
   /* Clear the root window, flush all output and exit. */
@@ -173,7 +165,8 @@ main(argc, argv)
  *                        bitmap.
  */
 SetBackgroundToBitmap(bitmap, width, height)
-Pixmap bitmap;
+     Pixmap bitmap;
+     int width, height;
 {
 	Pixmap pix;
 	GC gc;
@@ -211,7 +204,7 @@ int width, height;
 	bitmap = XCreateBitmapFromData(dpy, RootWindow(dpy, screen),
 				       data, width, height);
 
-	SetBackgroundToBitmap(bitmap);
+	SetBackgroundToBitmap(bitmap, width, height);
 }
 
 
