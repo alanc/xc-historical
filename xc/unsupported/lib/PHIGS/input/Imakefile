@@ -1,5 +1,5 @@
 ##
-# $XConsortium: Imakefile,v 5.4 91/02/18 11:00:41 rws Exp $
+# $XConsortium: Imakefile,v 5.5 91/02/18 11:43:42 rws Exp $
 ##
 ## 
 ## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -25,16 +25,12 @@
 
 #include <Library.tmpl>
 
-#define PassCDebugFlags
-
 #ifndef PexPhigsCDebugFlags
 #define PexPhigsCDebugFlags LibraryCDebugFlags
 #endif
 
 CDEBUGFLAGS = PexPhigsCDebugFlags
     DEFINES = PexPhigsDefines
-
-     LIBCODE = libinp.a
 
 CSRCS = sin.c sin_ws.c sin_q.c sin_cvs.c sin_dev.c \
 	sin_val.c sin_cho.c sin_strg.c
@@ -45,7 +41,7 @@ OBJS = sin.o sin_ws.o sin_q.o sin_cvs.o sin_dev.o \
 HSRCS = sin_priv.h sin_cvs.h
 SRCS = $(CSRCS) $(HSRCS)
 
-.SUFFIXES: .o .a
+.SUFFIXES: .o
 
    PEXAPIINC = -I../include
   PEXINCLUDE = -I../../../include/PEX
@@ -57,17 +53,12 @@ XLINT_LIBS = $(LINTXAW) $(LINTXTOOL) $(LINTXLIB)
 LINT_FILTER_FILE = ../include/lint_filter_strings
 LINT_FILTER = fgrep -v -f $(LINT_FILTER_FILE) | cat
 
-all:: Pex
+all:: DONE
+
+DONE: ${OBJS}
+	touch DONE
 
 extract : $(SRCS)
-
-Pex: ${OBJS}
-	@echo "putting off ar of $(LIBCODE)"
-#	ar rl $(LIBCODE) $(OBJS)
-
-# Force Re-Compliation
-FRC:
-	@echo "forcing remake"
 
 lint:   $(SRCS)
 	$(LINT) $(CSRCS) $(LINTFLAGS) $(LINT_LIBS) | $(LINT_FILTER)
@@ -85,3 +76,6 @@ SpecialObjectRule(hpext.o, $(IRULESRC)/$(MACROFILE), $(EXT_DEFINES))
 #endif
 
 DependTarget()
+
+clean::
+	$(RM) DONE

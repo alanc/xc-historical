@@ -1,5 +1,5 @@
 ##
-# $XConsortium: Imakefile,v 5.4 91/02/18 10:58:14 rws Exp $
+# $XConsortium: Imakefile,v 5.5 91/02/18 11:41:47 rws Exp $
 ##
 ## 
 ## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -25,16 +25,12 @@
 
 #include <Library.tmpl>
 
-#define PassCDebugFlags
-
 #ifndef PexPhigsCDebugFlags
 #define PexPhigsCDebugFlags LibraryCDebugFlags
 #endif
 
 CDEBUGFLAGS = PexPhigsCDebugFlags
     DEFINES = PexPhigsDefines
-
-     LIBCODE = libcp.a
 
 CSRCS = cp_util.c cp_ccom.c cp_rcom.c cp_inp.c psl.c \
 	cpx_clnt.c cpx_util.c cpx_css.c cpx_ws.c cpx_ar.c cpx_misc.c cpx_pm.c \
@@ -54,7 +50,7 @@ ASRCS = $(CSRCS) $(HSRCS)
 
 MONLIBS = ../libphigs.a $(XAWLIB) $(XTOOLLIB) $(XMULIB) $(XLIB) $(LDLIBS) -lm
 
-.SUFFIXES: .o .a .lint
+.SUFFIXES: .o .lint
 
    PEXAPIINC = -I../include
   PEXINCLUDE = -I../../../include/PEX
@@ -67,21 +63,16 @@ XLINT_LIBS = $(LINTXTOOL) $(LINTXLIB)
 LINT_FILTER_FILE = ../include/lint_filter_strings
 LINT_FILTER = fgrep -v -f $(LINT_FILTER_FILE) | cat
 
-all:: Pex
+all:: DONE
+
+DONE: ${OBJS}
+	touch DONE
 
 extract : $(ASRCS)
 
-Pex: ${OBJS}
-	@echo "putting off ar of $(LIBCODE)"
-#	ar rl $(LIBCODE) $(OBJS)
-
-# Force Re-Compliation
-FRC:
-	@echo "forcing remake"
-
-CHILD = phigsmon
-$(CHILD) : $(CHILD).o
+phigsmon: phigsmon.o
 	$(CC) $(CFLAGS) $@.o -o $@ $(MONLIBS) $(EXTRA_LOAD_FLAGS)
+
 
 lint:   $(ASRCS)
 	$(LINT) $(CSRCS) $(LINTFLAGS) $(LINT_LIBS) | $(LINT_FILTER)
@@ -101,6 +92,9 @@ llib-lcp.ln : $(ASRCS)
 SpecialObjectRule(hpext.o, $(IRULESRC)/$(MACROFILE), $(EXT_DEFINES))
 #endif
 
-SRCS = $(CSRCS) $(HSRCS) $(CHILD).c
+SRCS = $(CSRCS) $(HSRCS) phigsmon.c
 
 DependTarget()
+
+clean::
+	$(RM) DONE phigsmon
