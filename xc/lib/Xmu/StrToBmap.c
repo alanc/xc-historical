@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: StrToBmap.c,v 1.2 89/03/17 12:13:09 swick Exp $";
+static char rcsid[] = "$XConsortium: StrToBmap.c,v 1.3 89/03/30 17:07:14 jim Exp $";
 #endif /* lint */
 
 
@@ -71,11 +71,17 @@ void XmuCvtStringToPixmap(args, num_args, fromVal, toVal)
     static Pixmap pixmap;
     char *name = (char *)fromVal->addr;
     Screen *screen;
-    static char* bitmap_file_path = NULL;
+    static char *bitmap_file_path = NULL;
+    static Bool try_default_path = True;
+    Bool try_plain_name = True;
     char filename[MAXPATHLEN];
     static XColor bgColor = {0, 0, 0, 0};
     static XColor fgColor = {0, ~0, ~0, ~0};
     int width, height, xhot, yhot;
+    int i;
+    Bool gotit;
+    Display *dpy;
+    Window root;
 
     if (*num_args != 1)
      XtErrorMsg("wrongParameters","cvtStringToPixmap","XtToolkitError",
@@ -83,6 +89,8 @@ void XmuCvtStringToPixmap(args, num_args, fromVal, toVal)
               (String *)NULL, (Cardinal *)NULL);
 
     screen = *((Screen **) args[0].addr);
+    dpy = DisplayOfScreen (screen);
+    root = RootWindowOfScreen (screen);
 
     if (strcmp(name, "None") == 0) {
 	pixmap = None;
@@ -96,6 +104,9 @@ void XmuCvtStringToPixmap(args, num_args, fromVal, toVal)
 	return;
     }
 
+    /*
+     * the following will only work on single displays....
+     */
     if (bitmap_file_path == NULL) {
 	XrmName xrm_name[2];
 	XrmClass xrm_class[2];
@@ -105,25 +116,59 @@ void XmuCvtStringToPixmap(args, num_args, fromVal, toVal)
 	xrm_name[1] = NULL;
 	xrm_class[0] = XrmStringToClass( "BitmapFilePath" );
 	xrm_class[1] = NULL;
-	if (XrmQGetResource( XtDatabase(DisplayOfScreen(screen)),
-			     xrm_name, xrm_class, &rep_type, &value )
-	    && rep_type == XrmStringToQuark(XtRString))
+	if (XrmQGetResource (XtDatabase(dpy), xrm_name, xrm_class, 
+			     &rep_type, &value) &&
+	    rep_type == XrmStringToQuark(XtRString))
 	    bitmap_file_path = value.addr;
-	else
+	else {
 	    bitmap_file_path = BITMAPDIR;
+	    try_default_path = False;
+	}
     }
 
-    if ( name[0] == '/' || name[0] == '.' )
- 	strcpy( filename, name );
-    else
-	sprintf( filename, "%s/%s", bitmap_file_path, name );
+    /*
+     * Search order:
+     *    1.  name if it begins with / or ./
+     *    2.  prefix/name
+     *    3.  BITMAPDIR/name
+     *    4.  name if didn't begin with / or .
+     */
 
-    if (XReadBitmapFile( DisplayOfScreen(screen), RootWindowOfScreen(screen),
-			 filename, &width, &height, &pixmap, &xhot, &yhot )
-	!= BitmapSuccess) {
-	XtStringConversionWarning( name, "Pixmap" );
+    gotit = False;
+    for (i = 1; i <= 4; i++) {
+	char *fn = filename;
+
+	switch (i) {
+	  case 1:
+	    if (!(name[0] == '/' || (name[0] == '.') && name[1] == '/')) 
+	      continue;
+	    fn = name;
+	    try_plain_name = False;
+	    break;
+	  case 2:
+	    sprintf (filename, "%s/%s", bitmap_file_path, name);
+	    break;
+	  case 3:
+	    if (!try_default_path) continue;
+	    sprintf (filename, "%s/%s", BITMAPDIR, name);
+	    break;
+	  case 4:
+	    if (!try_plain_name) continue;
+	    fn = name;
+	    break;
+	}
+
+	if (XReadBitmapFile (dpy, root, fn, &width, &height, 
+			     &pixmap, &xhot, &yhot) == BitmapSuccess) {
+	    gotit = True;
+	    break;
+	}
+    }
+
+    if (gotit) {
+	done (&pixmap, Pixmap);
+    } else {
+	XtStringConversionWarning (name, "Pixmap");
 	return;
     }
-
-    done(&pixmap, Pixmap);
 }
