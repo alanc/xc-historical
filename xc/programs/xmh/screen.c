@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: screen.c,v 2.13 88/01/25 17:52:19 swick Locked $";
+static char rcs_id[] = "$Header: screen.c,v 2.14 88/02/06 10:10:06 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -51,7 +51,6 @@ Scrn scrn;
     BBoxAddButton(buttonbox, "save", ExecSaveView, 999, FALSE, NULL);
     BBoxAddButton(buttonbox, "print", ExecPrintView, 999, TRUE, NULL);
     BBoxStartUpdate(buttonbox);
-    BBoxLockSize(buttonbox);
 }
     
 
@@ -73,7 +72,6 @@ Scrn scrn;
     BBoxAddButton(buttonbox, "compose", ExecComposeMessage, 999, TRUE, NULL);
     BBoxAddButton(buttonbox, "save", ExecSaveDraft, 999, TRUE, NULL);
     BBoxStartUpdate(buttonbox);
-    BBoxLockSize(buttonbox);
 }
 
 
@@ -198,7 +196,6 @@ Scrn scrn;
     for (i=0 ; i<numFolders ; i++)
       BBoxAddButton(buttonbox, TocName(folderList[i]), NoOp, 999, TRUE, extra);
     BBoxStartUpdate(buttonbox);
-    BBoxLockSize(buttonbox);
 
     buttonbox = scrn->mainbuttons;
     BBoxStopUpdate(buttonbox);
@@ -210,13 +207,11 @@ Scrn scrn;
     BBoxAddButton(buttonbox, "create", ExecCreateFolder, 999, TRUE, NULL);
     BBoxAddButton(buttonbox, "delete", ExecDeleteFolder, 999, TRUE, NULL);
     BBoxStartUpdate(buttonbox);
-    BBoxLockSize(buttonbox);
 
     buttonbox = scrn->seqbuttons;
     BBoxStopUpdate(buttonbox);
     BBoxAddButton(buttonbox, "all", NoOp, 999, TRUE, extra2);
     BBoxStartUpdate(buttonbox);
-    BBoxLockSize(buttonbox);
 
     XtTextSetSelectionArray(scrn->tocwidget, sarray);
 
@@ -246,11 +241,26 @@ Scrn scrn;
 		  999, TRUE, NULL);
     BBoxAddButton(buttonbox, "deleteSeq", ExecDeleteSeq, 999, TRUE, NULL);
     BBoxStartUpdate(buttonbox);
-    BBoxLockSize(buttonbox);
 
     FillViewButtons(scrn);
 
     XtPanedSetRefigureMode(scrn->widget, TRUE);
+
+    /* now need to realize the tree, causing all the change_managed procs
+       to be executed so things get their correct size.  However, we don't
+       want to be mapped just yet as there's a little more fiddling to do
+    */
+    arglist[0].value = (XtArgVal) NoMailPixmap;
+    /* %%% Wrong; should check InitialFolder->mailpending.  */
+    XtSetValues(scrn->parent, arglist, XtNumber(arglist));
+    XtSetMappedWhenManaged(scrn->widget, FALSE);
+    XtRealizeWidget(scrn->parent);
+
+    BBoxLockSize(scrn->folderbuttons);
+    BBoxLockSize(scrn->mainbuttons);
+    BBoxLockSize(scrn->seqbuttons);
+    BBoxLockSize(scrn->tocbuttons);
+    BBoxLockSize(scrn->viewbuttons);
 
 /* %%%  XtPanedAllowResizing(scrn->widget, FALSE); */
     theight = GetHeight((Widget)scrn->tocwidget) +
@@ -259,10 +269,7 @@ Scrn scrn;
     XtPanedGetMinMax((Widget) scrn->tocwidget, &min, &max);
     XtPanedSetMinMax((Widget) scrn->tocwidget, theight, theight);
     XtPanedSetMinMax((Widget) scrn->tocwidget, min, max);
-
-    arglist[0].value = (XtArgVal) NoMailPixmap;
-		/* %%% Wrong; should check InitialFolder->mailpending.  */
-    XtSetValues(scrn->parent, arglist, XtNumber(arglist));
+    XtSetMappedWhenManaged(scrn->widget, TRUE);
 }
 
 
