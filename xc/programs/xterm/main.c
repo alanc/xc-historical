@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.146 90/03/14 17:00:53 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.147 90/03/14 17:05:16 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -1926,23 +1926,13 @@ spawn ()
 		}
 		/*
 		 * work around broken termcap entries */
-		/* match 'xterm' or 'xterms' */
-		if (strncmp(TermName, "xterm", 5) == 0)	{
-		    if (resource.useInsertMode)	{
-			remove_termcap_entry (newtc, ":ic=");
-			/* don't get duplicates */
-			remove_termcap_entry (newtc, ":im=");
-			remove_termcap_entry (newtc, ":ei=");
-			remove_termcap_entry (newtc, ":mi");
-			strcat (newtc, ":im=\\E[4h:ei=\\E[4l:mi:");
-		    } else	{
-			remove_termcap_entry (newtc, ":im=");
-			remove_termcap_entry (newtc, ":ei=");
-			remove_termcap_entry (newtc, ":mi");
-			/* don't get duplicates */
-			remove_termcap_entry (newtc, ":ic=");
-			strcat (newtc, ":ic=\\E[@:");
-		    }
+		if (resource.useInsertMode)	{
+		    remove_termcap_entry (newtc, ":ic=");
+		    /* don't get duplicates */
+		    remove_termcap_entry (newtc, ":im=");
+		    remove_termcap_entry (newtc, ":ei=");
+		    remove_termcap_entry (newtc, ":mi");
+		    strcat (newtc, ":im=\\E[4h:ei=\\E[4l:mi:");
 		}
 		Setenv ("TERMCAP=", newtc);
 #endif /* USE_SYSV_ENVVAR */
