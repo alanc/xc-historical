@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_dec.c,v 1.12 92/12/07 19:40:53 mor Exp $ */
+/* $XConsortium: pl_oc_dec.c,v 1.10 93/02/23 14:40:50 mor Exp $ */
 
 /******************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -1388,7 +1388,7 @@ PEXOCData	*ocDest;
 	ocDest->data.TriangleStrip.facet_data.index = (PEXColorIndexed *)
 	    PEXAllocBuf ((oc->numVertices - 2) * facetSize);
 
-	EXTRACT_LISTOF_FACET (oc->numVertices - 2, *ocSrc, facetSize,
+	EXTRACT_LISTOF_FACET ((oc->numVertices - 2), *ocSrc, facetSize,
 	    oc->colorType, oc->facetAttribs,
 	    ocDest->data.TriangleStrip.facet_data, fpConvert, fpFormat);
     }

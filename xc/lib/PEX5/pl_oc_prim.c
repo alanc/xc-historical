@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_prim.c,v 1.13 92/12/07 19:42:17 mor Exp $ */
+/* $XConsortium: pl_oc_prim.c,v 1.12 93/02/23 14:40:54 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -1716,7 +1716,7 @@ INPUT PEXArrayOfVertex		vertices;
 
     if (facetAttributes)
     {
-	OC_LISTOF_FACET (numVertices - 2, lenofFacet, colorType,
+	OC_LISTOF_FACET ((numVertices - 2), lenofFacet, colorType,
 	    facetAttributes, facetData, fpConvert, fpFormat);
     }
 

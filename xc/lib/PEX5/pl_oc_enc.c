@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_enc.c,v 1.9 92/12/07 19:39:54 mor Exp $ */
+/* $XConsortium: pl_oc_enc.c,v 1.7 93/02/23 14:40:52 mor Exp $ */
 
 /******************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -1545,7 +1545,8 @@ char		**ocDest;
 
     if (facetAttributes)
     {
-	STORE_LISTOF_FACET (numVertices - 2, NUMBYTES (lenofFacet), colorType,
+	STORE_LISTOF_FACET ((numVertices - 2),
+	    NUMBYTES (lenofFacet), colorType,
 	    facetAttributes, ocSrc->data.TriangleStrip.facet_data,
 	    *ocDest, fpConvert, fpFormat);
     }
