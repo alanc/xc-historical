@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.152 93/08/24 18:47:48 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.153 93/08/24 18:49:43 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -328,7 +328,7 @@ ProgramTargetName(program): objects deplibs				@@\
 PurifyProgramTarget(program,objects deplibs,objects $(LDOPTIONS) locallibs $(LDLIBS) syslibs $(EXTRA_LOAD_FLAGS)) @@\
 									@@\
 clean::									@@\
-	RemoveFile(program)
+	RemoveFile(ProgramTargetName(program))
 #endif /* NormalProgramTarget */
 
 
@@ -391,7 +391,7 @@ DependTarget()								@@\
 LintTarget()								@@\
 									@@\
 clean::									@@\
-	RemoveFile($(PROGRAM))
+	RemoveFile(ProgramTargetName(program))
 #endif /* ComplexProgramTarget */
 
 
@@ -467,7 +467,12 @@ Concat(load,server):							@@\
 	LinkRule(ProgramTargetName(server),$(CDEBUGFLAGS) $(CCOPTIONS),objects,libs $(EXTRA_LIBRARIES) syslibs) @@\
 									@@\
 PurifyProgramTarget(server,subdirs objects libs,$(CDEBUGFLAGS) $(CCOPTIONS) objects libs $(EXTRA_LIBRARIES) syslibs $(EXTRA_LOAD_FLAGS)) @@\
-PurifyLinkTarget(Concat(load,server),server,$(CDEBUGFLAGS) $(CCOPTIONS) objects libs $(EXTRA_LIBRARIES) syslibs $(EXTRA_LOAD_FLAGS))
+PurifyLinkTarget(Concat(load,server),server,$(CDEBUGFLAGS) $(CCOPTIONS) objects libs $(EXTRA_LIBRARIES) syslibs $(EXTRA_LOAD_FLAGS)) @@\
+									@@\
+InstallProgram(server,$(BINDIR))					@@\
+									@@\
+clean::									@@\
+	RemoveFile(ProgramTargetName(server))
 #endif /* ServerTarget */
 
 
