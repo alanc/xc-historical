@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.22 94/02/08 13:44:26 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.23 94/02/17 13:08:02 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -969,10 +969,7 @@ XtPointer 	callData;
 	    perror("fork");
 	    break;
 	case 0:
-	    if (app_resources.verbose)
-		execlp("xsmclient", "xsmclient", "-verbose", (char *)NULL);
-	    else
-		execlp("xsmclient", "xsmclient", (char *)NULL);
+	    execlp("xsmclient", "xsmclient", (char *)NULL);
 	    perror("xsmclient");
 	    _exit(255);
 	default:
