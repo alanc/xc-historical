@@ -1,4 +1,4 @@
-/* $XConsortium: Keyboard.c,v 1.34 94/04/17 20:14:26 kaleb Exp converse $ */
+/* $XConsortium: Keyboard.c,v 1.36 95/06/15 20:20:33 converse Exp $ */
 
 /********************************************************
 
@@ -74,8 +74,7 @@ static Widget	*pathTrace = NULL;
 static int	pathTraceDepth = 0;
 static int	pathTraceMax = 0;
 
-/* FindKeyDestination, ancestor list for Xt focus management */
-static Display	*pseudoTraceDisplay = NULL;
+/* FindKeyDestination cache of focus destination and ancestors up to source */
 static Widget	*pseudoTrace = NULL;
 static int	pseudoTraceDepth = 0;
 static int	pseudoTraceMax = 0;
@@ -342,8 +341,6 @@ static Widget 	FindKeyDestination(widget, event,
 			    XtServerGrabPtr	grab;
 
 			    if (!pseudoTraceDepth || 
-				!(pseudoTraceDisplay ==
-				 XtDisplay(widget)) ||
 				!(focusWidget == pseudoTrace[0]) ||
 				!(lca == pseudoTrace[pseudoTraceDepth]))
 			      {
@@ -357,7 +354,6 @@ static Widget 	FindKeyDestination(widget, event,
 						   &pseudoTraceDepth,
 						   focusWidget,
 						   lca);
-				  pseudoTraceDisplay = XtDisplay(widget);
 				  /* ignore lca */
 				  pseudoTraceDepth--;
 			      }
@@ -752,7 +748,6 @@ void XtSetKeyboardFocus(widget, descendant)
     Widget widget;
     Widget descendant;
 {
-    Display* dpy;
     XtPerDisplayInput pdi;
     XtPerWidgetInput pwi;
     Widget oldDesc, oldTarget, target, hookobj;
@@ -760,8 +755,7 @@ void XtSetKeyboardFocus(widget, descendant)
 
     LOCK_APP(app);
     LOCK_PROCESS;
-    dpy = XtDisplay (widget);
-    pdi = _XtGetPerDisplayInput(dpy);
+    pdi = _XtGetPerDisplayInput(XtDisplay(widget));
     pwi = _XtGetPerWidgetInput(widget, TRUE);
     oldDesc = pwi->focusKid;
 
@@ -780,8 +774,7 @@ void XtSetKeyboardFocus(widget, descendant)
 	
 	if (oldDesc) {
 	    /* invalidate FindKeyDestination's ancestor list */
-	    if (pseudoTraceDepth && pseudoTraceDisplay == dpy &&
-		oldTarget == pseudoTrace[0])
+	    if (pseudoTraceDepth && oldTarget == pseudoTrace[0])
 		pseudoTraceDepth = 0;
 
 	    XtRemoveCallback(oldDesc, XtNdestroyCallback, 
