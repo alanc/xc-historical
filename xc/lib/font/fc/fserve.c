@@ -1,4 +1,4 @@
-/* $XConsortium: fserve.c,v 1.14 91/07/26 20:59:30 keith Exp $ */
+/* $XConsortium: fserve.c,v 1.15 92/01/30 16:21:40 eswu Exp $ */
 /*
  *
  * Copyright 1990 Network Computing Devices
@@ -1376,6 +1376,7 @@ fs_send_load_glyphs(client, pfont, nchars, item_size, data)
     blockedglyph = (FSBlockedGlyphPtr) blockrec->data;
     blockedglyph->pfont = pfont;
     blockedglyph->expected_range = range;
+    blockedglyph->done = FALSE;
 
     /* send the request */
     req.reqType = FS_QueryXBitmaps8;
@@ -1497,6 +1498,7 @@ fs_send_load_extents(client, pfont, flags, nranges, range)
     blockedextent->pfont = pfont;
     blockedextent->expected_ranges = range;
     blockedextent->nranges = nranges;
+    blockedextent->done = FALSE;
 
     /*
      * see if the desired extents already exist, and return Successful if they
@@ -1629,7 +1631,7 @@ fs_send_load_bitmaps(client, pfont, format, flags, nranges, range)
     FSBlockDataPtr blockrec;
     FSBlockedBitmapPtr blockedbitmap;
     int         res;
-    fsQueryXBitmaps8Req req;
+    fsQueryXBitmaps16Req req;
     FSFontDataPtr fsd = (FSFontDataPtr) (pfont->fpePrivate);
     FontPathElementPtr fpe = fsd->fpe;
     FSFpePtr    conn = (FSFpePtr) fpe->private;
@@ -1642,6 +1644,7 @@ fs_send_load_bitmaps(client, pfont, format, flags, nranges, range)
     blockedbitmap->pfont = pfont;
     blockedbitmap->expected_ranges = range;
     blockedbitmap->nranges = nranges;
+    blockedbitmap->done = FALSE;
 
     /*
      * see if the desired glyphs already exist, and return Successful if they
@@ -1652,14 +1655,14 @@ fs_send_load_bitmaps(client, pfont, format, flags, nranges, range)
 	return Successful;
 
     /* send the request */
-    req.reqType = FS_QueryXBitmaps8;
+    req.reqType = FS_QueryXBitmaps16;
     req.fid = ((FSFontDataPtr) pfont->fpePrivate)->fontid;
     req.format = format;
     req.range = TRUE;
-    req.length = (sizeof(fsQueryXBitmaps8Req) + sizeof(fsRange) * nranges) >> 2;
+    req.length = (sizeof(fsQueryXBitmaps16Req) + sizeof(fsRange) * nranges) >> 2;
     req.num_ranges = nranges;
-    _fs_add_req_log(conn, FS_QueryXBitmaps8);
-    _fs_write(conn, (char *) &req, sizeof(fsQueryXBitmaps8Req));
+    _fs_add_req_log(conn, FS_QueryXBitmaps16);
+    _fs_write(conn, (char *) &req, sizeof(fsQueryXBitmaps16Req));
     _fs_write(conn, (char *) range, sizeof(fsRange) * nranges);
 
     return Suspended;
