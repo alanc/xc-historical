@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XAllCells.c,v 11.14 87/06/03 11:46:54 jg Exp $ */
+/* $Header: XAllCells.c,v 11.14 87/09/11 08:00:51 jim Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 #define NEED_REPLIES
 
@@ -30,8 +30,8 @@ unsigned long pixels[]; /* LISTofCARD32 */ /* RETURN */
     status = _XReply(dpy, (xReply *)&rep, 0, xFalse);
 
     if (status) {
-	_XRead (dpy, (char *) pixels, 4 * rep.nPixels);
-	_XRead (dpy, (char *) masks, 4 * rep.nMasks);
+	_XRead (dpy, (char *) pixels, 4L * (long) (rep.nPixels));
+	_XRead (dpy, (char *) masks, 4L * (long) (rep.nMasks));
     }
 
     UnlockDisplay(dpy);
