@@ -1,4 +1,4 @@
-/* $XConsortium: toc.h,v 2.3 88/01/25 15:25:17 swick Exp $ */
+/* $XConsortium: toc.h,v 2.4 88/09/06 17:23:36 jim Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -60,4 +60,4 @@ extern void TocIncorporate();
 extern void TocMsgChanged();
 extern Msg TocMsgFromId();
 
-#endif _toc_h
+#endif /* _toc_h */

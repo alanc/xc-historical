@@ -1,5 +1,5 @@
 /*
- *	rcs_id[] = "$XConsortium: xmh.h,v 2.14 88/09/06 17:23:57 jim Exp $";
+ *	rcs_id[] = "$XConsortium: xmh.h,v 2.15 89/04/10 11:49:29 converse Exp $";
  */
 
 /*
@@ -129,4 +129,4 @@ typedef struct {
 #include "msg.h"
 #include "toc.h"
 
-#endif _xmh_h
+#endif /* _xmh_h */

@@ -1,4 +1,4 @@
-/* $XConsortium: tocintrnl.h,v 2.5 88/08/10 09:36:53 swick Exp $ */
+/* $XConsortium: tocintrnl.h,v 2.6 88/09/06 17:23:45 jim Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -91,4 +91,4 @@ typedef struct _TocRec {
    long		lastreaddate;	/* Last time we read or wrote the cache. */
 } TocRec;
 
-#endif _tocinternal_h
+#endif /* _tocinternal_h */

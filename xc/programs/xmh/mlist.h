@@ -1,4 +1,4 @@
-/* $XConsortium: mlist.h,v 2.2 88/01/25 15:43:11 swick Exp $ */
+/* $XConsortium: mlist.h,v 2.3 88/09/06 17:23:23 jim Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -34,4 +34,4 @@ extern MsgList MakeSingleMsgList();
 extern void FreeMsgList();
 extern MsgList StringToMsgList();
 
-#endif _mlist_h
+#endif /* _mlist_h */

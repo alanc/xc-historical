@@ -1,4 +1,4 @@
-/* $XConsortium: msg.h,v 2.3 88/02/24 15:37:53 swick Exp $ */
+/* $XConsortium: msg.h,v 2.4 88/09/06 17:23:26 jim Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -56,4 +56,4 @@ extern void MsgLoadCopy();
 extern void MsgCheckPoint();
 extern void MsgFree();
 
-#endif _msg_h
+#endif /* _msg_h */
