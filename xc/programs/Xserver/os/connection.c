@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.182 94/03/08 20:31:40 dpw Exp $ */
+/* $XConsortium: connection.c,v 1.184 94/03/10 09:07:49 dpw Exp $ */
 /***********************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -89,6 +89,12 @@ extern int read(), writev();
 #endif
 #endif /* LBX */
 
+#ifdef X_NOT_POSIX
+#define Pid_t int
+#else
+#define Pid_t pid_t
+#endif
+
 #ifdef DNETCONN
 #include <netdnet/dn.h>
 #endif /* DNETCONN */
@@ -111,7 +117,7 @@ Bool AnyClientsWriteBlocked;	/* true if some client blocked on write */
 
 Bool RunFromSmartParent;	/* send SIGUSR1 to parent process */
 Bool PartialNetwork;		/* continue even if unable to bind all addrs */
-static int ParentProcess;
+static Pid_t ParentProcess;
 
 static Bool debug_conns = FALSE;
 
@@ -202,7 +208,7 @@ CreateWellKnownSockets()
 #ifdef LBX
     for (i=0; i<MAXSOCKS; i++) ConnectionOutputTranslation[i] = 0;
 #endif
-#ifndef X_NOT_POSIX
+#if !defined(X_NOT_POSIX) && !defined(__FreeBSD__) && !defined(__386BSD__) && !defined(__NetBSD__)
     lastfdesc = sysconf(_SC_OPEN_MAX) - 1;
 #else
 #ifdef hpux
