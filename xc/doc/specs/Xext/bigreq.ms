@@ -1,5 +1,5 @@
 .\" Use -ms and macros.t
-.\" $XConsortium: bigreq.ms,v 1.1 92/09/07 17:29:57 rws Exp $
+.\" $XConsortium: bigreq.ms,v 1.2 92/09/07 17:33:22 rws Exp $
 .EH ''''
 .OH ''''
 .EF ''''
@@ -265,3 +265,12 @@ Display	*display;
 Returns zero (0) if the specified display does not support this
 extension, otherwise returns the maximum-request-length (in 4-byte
 units) supported by the server through the extended-length encoding.
+.LP
+I propose this separate function because I am not sure of the
+consequences of changing the existing XMaxRequestSize function to return
+a value greater than 65535.  Are there good arguments on either side?
+.NH 1
+Acknowledgements
+.LP
+Clive Feather (IXI) originated the idea of using a zero value to signal
+an extended-length encoding.
