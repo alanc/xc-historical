@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: command.c,v 2.29 89/10/06 15:02:18 converse Exp $";
+    "$XConsortium: command.c,v 2.30 89/10/08 14:06:39 rws Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987, 1989
@@ -243,6 +243,7 @@ static int _DoCommandToFileOrPipe(argv, inputfd, outputfd, bufP, lenP)
 		 * guaranteed to be able to malloc in a signal handler.
 		 */
 		readfds = fds;
+                if (childdone) break;
 DEBUG("blocking.\n")
 		(void) select(num_fds, (int *) &readfds,
 			  (int *) NULL, (int *) NULL, (struct timeval *) NULL);
