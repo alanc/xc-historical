@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.26 87/12/31 15:09:51 rws Exp $ */
+/* $Header: dispatch.c,v 1.27 88/01/02 12:02:36 rws Locked $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -3172,66 +3172,4 @@ MarkClientException(client)
     ClientPtr client;
 {
     client->noClientException = -1;
-}
-
-
-/* Byte swap a list of longs */
-
-SwapLongs (list, count)
-	register long *list;
-	register int count;
-{
-	register int n;
-
-	while (count >= 8) {
-	    swapl(list+0, n);
-	    swapl(list+1, n);
-	    swapl(list+2, n);
-	    swapl(list+3, n);
-	    swapl(list+4, n);
-	    swapl(list+5, n);
-	    swapl(list+6, n);
-	    swapl(list+7, n);
-	    list += 8;
-	    count -= 8;
-	}
-	while (--count >= 0) {
-	    swapl(list, n);
-	    list++;
-	}
-}
-
-/* Byte swap a list of shorts */
-
-SwapShorts (list, count)
-	register short *list;
-	register int count;
-{
-	register int n;
-
-	while (count >= 16) {
-	    swaps(list+0, n);
-	    swaps(list+1, n);
-	    swaps(list+2, n);
-	    swaps(list+3, n);
-	    swaps(list+4, n);
-	    swaps(list+5, n);
-	    swaps(list+6, n);
-	    swaps(list+7, n);
-	    swaps(list+8, n);
-	    swaps(list+9, n);
-	    swaps(list+10, n);
-	    swaps(list+11, n);
-	    swaps(list+12, n);
-	    swaps(list+13, n);
-	    swaps(list+14, n);
-	    swaps(list+15, n);
-	    list += 16;
-	    count -= 16;
-	}
-	while (--count >= 0) 
-        {
-	    swaps(list, n);
-	    list++;
-	}
 }
