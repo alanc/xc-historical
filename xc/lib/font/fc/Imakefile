@@ -1,7 +1,7 @@
-XCOMM $XConsortium: Imakefile,v 1.9 91/07/19 15:49:32 rws Exp $
-#
-# Make file for font handling routines
-#
+XCOMM $XConsortium: Imakefile,v 1.10 91/07/22 22:20:59 rws Exp $
+XCOMM
+XCOMM Make file for font handling routines
+XCOMM
 #include <Server.tmpl>
 
         INCLUDES = -I$(FONTSRC)/include -I../include
