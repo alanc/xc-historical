@@ -1,4 +1,4 @@
-/* $Header: resource.h,v 1.1 87/09/11 07:49:54 rws Locked $ */
+/* $Header: resource.h,v 1.2 87/12/30 18:13:35 rws Locked $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -55,7 +55,7 @@ SOFTWARE.
 #define CLIENTOFFSET 20					/* client field */
 #define RESOURCE_ID_MASK	0x7FFFF			/* low 19 bits */
 #define CLIENT_BITS(id) ((id) & 0xfff00000)		/* hi 12 bits */
-#define CLIENT_ID(id) (CLIENT_BITS(id) >> CLIENTOFFSET)	/* hi 12 bits */
+#define CLIENT_ID(id) ((int)(CLIENT_BITS(id) >> CLIENTOFFSET))	/* hi 12 bits */
 #define SERVER_BIT		0x80000			/* 20th bit reserved */
 #define SERVER_BIT_SHIFT	19			/* 20th bit reserved */
 #define FAKE_CLIENT_ID(c, i) FakeClientID(c)
