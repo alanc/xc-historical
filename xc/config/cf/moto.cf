@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: moto.cf,v 1.7 91/07/05 13:02:18 rws Exp $
+XCOMM platform:  $XConsortium: moto.cf,v 1.8 91/07/12 17:09:39 rws Exp $
 
 #if defined(MotoR3Architecture)
 
@@ -6,14 +6,15 @@ XCOMM platform:  $XConsortium: moto.cf,v 1.7 91/07/05 13:02:18 rws Exp $
 #define OSMajorVersion         3
 #define OSMinorVersion         2
 
-#define SystemV                YES
-#define StandardDefines        -DSYSV -DUSG -DMOTOROLA
-#define Malloc0ReturnsNull     YES
-#define LnCmd                  ln -s
-#define HasSockets             YES
-#define BuildServer            NO
-#define MotifBC                YES
-#define UseCCMakeDepend        YES
+#define SystemV			YES
+#define BootstrapCFlags		-DSYSV -DMOTOROLA
+#define StandardDefines		-DSYSV -DUSG -DMOTOROLA
+#define Malloc0ReturnsNull	YES
+#define LnCmd			ln -s
+#define HasSockets		YES
+#define BuildServer		NO
+#define MotifBC			YES
+#define UseCCMakeDepend		YES
 
 #define DefaultUserPath   	:/bin:/usr/bin:$(BINDIR)
 #define DefaultSystemPath 	/etc:/bin:/usr/bin:$(BINDIR)
@@ -29,7 +30,7 @@ XCOMM platform:  $XConsortium: moto.cf,v 1.7 91/07/05 13:02:18 rws Exp $
 
 #define SystemV4		YES
 #define BootstrapCFlags		-DSVR4 -DMOTOROLA
-#define StandardDefines         -DSVR4 -DMOTOROLA /* -D_POSIX_SOURCE */
+#define StandardDefines         -DSVR4 -DMOTOROLA
 #define HasSockets		YES
 #define BuildServer		NO
 #define MotifBC                 YES
