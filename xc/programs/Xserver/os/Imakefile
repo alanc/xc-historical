@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.58 92/09/07 14:04:45 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.59 92/09/16 11:57:50 rws Exp $
 #include <Server.tmpl>
 
 #if (SystemV || SystemV4) && !HasSockets
@@ -12,7 +12,7 @@ XCOMM $XConsortium: Imakefile,v 1.58 92/09/07 14:04:45 rws Exp $
 
 #ifdef HPArchitecture
 #define OtherSources hpsocket.c 
-#define OtherObjects hpsocket.o dbm.o 
+#define OtherObjects hpsocket.o
 #endif
 
 #ifdef R4FontStructures
@@ -81,11 +81,6 @@ BOOTSTRAPCFLAGS =
  DEPEND_DEFINES = $(DBM_DEFINES)
        LINTLIBS = ../dix/llib-ldix.ln
 
-#ifdef HPArchitecture
-         DBMLIB = /usr/lib/libdbm.a
-    XLIBSYSVDIR = $(TOP)/lib/X/sysV
-#endif /* HPArchitecture */
-
 #ifdef NEED_ALLOCA_FROM_LIBPW
           PWLIB = /lib/libPW.a
 #endif /* NEED_ALLOCA_FROM_LIBPW */
@@ -94,32 +89,6 @@ NormalLibraryObjectRule()
 NormalLibraryTarget(os,$(OBJS))
 LintLibraryTarget(os,$(SRCS))
 NormalLintTarget($(SRCS))
-
-#ifdef HPArchitecture
-XCOMM
-XCOMM The following kludge is necessary because dbm already has a global 
-XCOMM routine named "bcopy" that is implemented in a silly way.  So, we have to 
-XCOMM extract the objects from the library, force the bcopy routine to be 
-XCOMM local to the one file, put the result into a temporary file, rename the 
-XCOMM temporary file to its proper name, and link it together with
-XCOMM everything else to form the object file that we link into the server.
-XCOMM
-#ifdef hp9000s300
-dbm.o:  $(DBMLIB)
-	rm -f dbm.o
-	if [ ! -d dbm ]; then $(RM) -r dbm; mkdir dbm; else /bin/true; fi
-	(cd dbm; rm -f *.o; ar -x $(DBMLIB); \
-	ld -r -o a.out.o -h _bcopy ndbm.o; \
-	mv a.out.o ndbm.o; ld -r -o ../dbm.o *.o)
-#else
-dbm.o:  $(DBMLIB)
-	rm -f dbm.o
-	if [ ! -d dbm ]; then $(RM) -r dbm; mkdir dbm; else /bin/true; fi
-	(cd dbm; rm -f *.o; ar -x $(DBMLIB); \
-	ld -r -o a.out.o -h bcopy ndbm.o; \
-	mv a.out.o ndbm.o; ld -r -o ../dbm.o *.o)
-#endif /* hp9000s300 */
-#endif /* HPArchitecture */
 
 #ifdef NEED_ALLOCA_FROM_LIBPW
 XCOMM
