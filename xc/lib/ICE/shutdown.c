@@ -1,4 +1,4 @@
-/* $XConsortium: shutdown.c,v 1.9 93/12/07 11:04:17 mor Exp $ */
+/* $XConsortium: shutdown.c,v 1.10 94/01/31 11:01:48 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -103,7 +103,7 @@ IceConn     iceConn;
     /*
      * If this connection object was never valid, we can close
      * it right now.  This happens if IceAcceptConnection was
-     * called, but after calling IceProcessMessage several times
+     * called, but after calling IceProcessMessages several times
      * the connection was rejected (because of authentication or
      * some other reason).
      */
