@@ -1,7 +1,7 @@
 /*
  * xrdb - X resource manager database utility
  *
- * $XConsortium: xrdb.c,v 11.70 93/09/12 15:31:46 rws Exp $
+ * $XConsortium: xrdb.c,v 11.71 93/09/12 16:36:17 rws Exp $
  */
 
 /*
@@ -1251,7 +1251,7 @@ ReProcess(scrno, doScreen)
 fatal(char *msg, ...)
 #else
 fatal(msg, x1, x2, x3, x4, x5, x6)
-    char *msg, *prog;
+    char *msg;
     int x1, x2, x3, x4, x5, x6;
 #endif
 {
