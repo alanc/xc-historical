@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.38 91/07/01 17:02:36 keith Exp $
+ * $XConsortium: miwideline.c,v 1.39 91/07/02 13:11:03 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -1454,36 +1454,36 @@ miWideLine (pDrawable, pGC, mode, npt, pPts)
     Bool	    somethingDrawn = FALSE;
     Bool	    selfJoin;
 
-    if (npt <= 1)
-	return;
-
     spanData = miSetupSpanData (pGC, &spanDataRec, npt);
     pixel = pGC->fgPixel;
     x2 = pPts->x;
     y2 = pPts->y;
     first = TRUE;
     selfJoin = FALSE;
-    if (mode == CoordModePrevious)
+    if (npt > 1)
     {
-	int nptTmp;
-	DDXPointPtr pPtsTmp;
-
-	x1 = x2;
-	y1 = y2;
-	nptTmp = npt;
-	pPtsTmp = pPts + 1;
-	while (--nptTmp)
-	{
-	    x1 += pPtsTmp->x;
-	    y1 += pPtsTmp->y;
-	    ++pPtsTmp;
-	}
-	if (x2 == x1 && y2 == y1)
+    	if (mode == CoordModePrevious)
+    	{
+	    int nptTmp;
+	    DDXPointPtr pPtsTmp;
+    
+	    x1 = x2;
+	    y1 = y2;
+	    nptTmp = npt;
+	    pPtsTmp = pPts + 1;
+	    while (--nptTmp)
+	    {
+	    	x1 += pPtsTmp->x;
+	    	y1 += pPtsTmp->y;
+	    	++pPtsTmp;
+	    }
+	    if (x2 == x1 && y2 == y1)
+	    	selfJoin = TRUE;
+    	}
+    	else if (x2 == pPts[npt-1].x && y2 == pPts[npt-1].y)
+    	{
 	    selfJoin = TRUE;
-    }
-    else if (x2 == pPts[npt-1].x && y2 == pPts[npt-1].y)
-    {
-	selfJoin = TRUE;
+    	}
     }
     projectLeft = pGC->capStyle == CapProjecting && !selfJoin;
     projectRight = FALSE;
