@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.157 91/04/08 14:58:16 converse Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.158 91/04/09 13:50:51 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -2294,8 +2294,9 @@ extern void XtReleaseGC(
 
 
 
-extern void XtReleaseCacheRef(
+extern void XtAppReleaseCacheRefs(
 #if NeedFunctionPrototypes
+    XtAppContext	/* app */,
     XtCacheRef*		/* cache_ref */
 #endif
 );
