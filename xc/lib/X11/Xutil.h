@@ -1,4 +1,4 @@
-/* $XConsortium: Xutil.h,v 11.68 91/04/13 11:27:07 rws Exp $ */
+/* $XConsortium: Xutil.h,v 11.69 91/05/01 08:40:59 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -196,11 +196,12 @@ typedef struct _XComposeStatus {
   (((unsigned)(keysym) >= XK_F1)       && ((unsigned)(keysym) <= XK_F35))
 
 #define IsMiscFunctionKey(keysym) \
-  (((unsigned)(keysym) >= XK_Select)   && ((unsigned)(keysym) <  XK_KP_Space))
+  (((unsigned)(keysym) >= XK_Select)   && ((unsigned)(keysym) <= XK_Break))
 
 #define IsModifierKey(keysym) \
-  (((unsigned)(keysym) >= XK_Shift_L)  && ((unsigned)(keysym) <= XK_Hyper_R))
-
+  ((((unsigned)(keysym) >= XK_Shift_L) && ((unsigned)(keysym) <= XK_Hyper_R)) \
+   || ((unsigned)(keysym) == XK_Mode_switch) \
+   || ((unsigned)(keysym) == XK_Num_Lock))
 /*
  * opaque reference to Region data type 
  */
