@@ -3,7 +3,7 @@
 \fIxmh\fR \- X window interface to the mh Mail Handler
 .SH SYNOPSIS
 .B xmh
-[-path \fImailpath\fR] [-initial \fIfoldername\fR] [-flag]
+[-path \fImailpath\fR] [-initial \fIfoldername\fR] [-flag] [\fItoolkitoptions\fR]
 .SH DESCRIPTION
 \fIXmh\fR is a program that provides a window-oriented front end to the mh
 Mail Handler. It is designed to take advantage of a large graphical
@@ -95,37 +95,36 @@ you can drag around the grey area.  This makes it easy to get to the top
 of the data: just press with the middle, drag off the top of the
 scrollbar, and release.
 
-If you click with the left button, then the data to the right of the mouse
-pointer will scroll to the top of the window.  If you click with the right
-button, then the data at the top of the window will scroll down to where
+If you click with button 1, then the data to the right of the mouse
+pointer will scroll to the top of the window.  If you click with mouse
+button 3, then the data at the top of the window will scroll down to where
 the mouse pointer is.
 
 .SH BUTTONBOXES
 Any area consisting of many words or short phrases, each enclosed in a
 box, is called a \fIbuttonbox\fR.  Each box is actually a button that you
-can press by moving the mouse pointer onto it and pressing any mouse
-button.  If a given buttonbox has more buttons in it than can fit, it will
+can press by moving the mouse pointer onto it and pressing mouse button 1.
+If a given buttonbox has more buttons in it than can fit, it will
 be displayed with a scrollbar, so you can always scroll to the button you
 want.
 
 .SH ADJUSTING THE RELATIVE SIZES OF AREAS ON THE SCREEN
 If you're not satisfied with the size of the various areas on the screen,
 they can easily be changed.  Near the right edge of the border between
-each region is a black box, called a \fIknob\fR.  Simply point to that
-knob with the mouse pointer, press a mouse button, drag up or down, and
+each region is a black box, called a \fIgrip\fR.  Simply point to that
+grip with the mouse pointer, press a mouse button, drag up or down, and
 release.  Exactly what happens depends on which mouse button you press.
 
 If you drag with the middle button, then only that border will move.  This
 mode is simplest to understand, but is probably the least useful.
 
-If you drag with the left mouse button, then you are adjusting the size of
+If you drag with mouse button 1, then you are adjusting the size of
 the window above.  \fIXmh\fR will attempt to compensate by adjusting some
-window below it, but it will not change the size of buttonboxes below it.
+window below it.
 
-If you drag with the right mouse button, then you are adjusting the size
+If you drag with mouse button 3, then you are adjusting the size
 of the window below.  \fIXmh\fR will attempt to compensate by adjusting
-some window above it, but it will not change the size of buttonboxes above
-it.
+some window above it.
 
 All windows have a mininum and maximum size; you will never be allowed to
 move a border past the point where it would make a window have an invalid
@@ -175,9 +174,9 @@ CONFIRMATION WINDOWS).
 .SH HIGHLIGHTED MESSAGES, SELECTED MESSAGES
 .SH AND THE CURRENT MESSAGE
 It is possible to highlight a set of messages in the list of messages for the
-viewed folder.  To highlight a message, just click on it with the left mouse
-button.  To highlight a range of messages, click on the first one with the
-left mouse button and on the last one with the right mouse button.
+viewed folder.  To highlight a message, just click on it with mouse button 1.
+To highlight a range of messages, click on the first one with
+mouse button 1 and on the last one with mouse button 3.
 
 The selected messages are the same as the highlighted messages, if any.  If no
 messages are highlighted, then the selected messages are considered the same
@@ -193,7 +192,7 @@ contains commands to deal with messages:
 .TP 8
 .B Incorporate New Mail
 Add any new mail received to your inbox folder, and set the current
-message to be the first new message.  (This button appears only if
+message to be the first new message.  (This button is selectable only if
 ``inbox'' is the folder being viewed.)
 .PP
 .TP 8
@@ -257,8 +256,9 @@ folder.
 .PP
 .TP 8
 .B Print
-Print the selected messages.  \fIXmh\fR prints by by invoking
-the \fIenscript\fR(1) command.
+Print the selected messages.  \fIXmh\fR normally prints by invoking
+the \fIenscript\fR(1) command, but you may change the command it uses.
+(See CUSTOMIZING, below).
 .PP
 .TP 8
 .B Pack folder
@@ -297,7 +297,7 @@ Remove the selected messages from the selected sequence.
 .TP 8
 .B Delete Sequence
 Remove the selected sequence entirely.  Note the messages themselves are
-not effected; they simply are no longer grouped together as a message-sequence.
+not affected; they simply are no longer grouped together as a message-sequence.
 
 .SH VIEW WINDOWS
 The commands in these windows are the same as the message commands by the
@@ -333,17 +333,17 @@ using the ``Use as Composition'' command.
 All of the text editing commands are actually defined by the Text widget
 in the X Toolkit.  The commands may be bound to different keys than the
 defaults described below through the standard X Toolkit key re-binding
-mechanisms.  See the X Toolkit documentation for more details.
+mechanisms.  See the X Toolkit and Athena Widgets documentation for more details.
 
 Whenever you are asked to enter any text, you will be using a standard
 text editing interface.  Various control and meta keystroke combinations
 are bound to a somewhat Emacs-like set of commands.  In addition, the
 mouse buttons may be used to select a portion of text or to move the
-insertion point in the text. Pressing the left mouse button causes the
-insertion point to move to the mouse pointer.  Double-clicking the left
-button selects a word, triple-clicking selects a paragraph, and
+insertion point in the text. Pressing mouse button 1 causes the
+insertion point to move to the mouse pointer.  Double-clicking
+button 1 selects a word, triple-clicking selects a paragraph, and
 quadruple-clicking selects everything.  Any selection may be extended in
-either direction by using the right mouse button.
+either direction by using mouse button 3.
 
 In the following, a \fIline\fR refers to one displayed row of characters
 in the window.  A \fIparagraph\fR refers to the text between carriage
@@ -462,6 +462,7 @@ Move up to the previous screenfull of text.
 Stuff the last selected text here.  Note that this can be text selected in
 some other text subwindow.  Also, if you select some text in an xterm
 window, it may be inserted in an \fIxmh\fR window with this command.
+Pressing mouse button 2 is equivalent to this.
 .PP
 .TP 8
 .B Meta-Z
@@ -470,8 +471,6 @@ Scroll the text one line down.
 .TP 8
 .B Delete
 Delete the previous character.
-.PP
-For more information, see CUSTOMIZING TEXT EDITING.
 
 .SH CONFIRMATION WINDOWS
 Whenever you press a button that may cause you to lose some work or is
@@ -568,7 +567,7 @@ state.
 
 .SH CUSTOMIZING XMH
 As with all standard X applications, \fIxmh\fR may be customized through entries
-in your .Xdefaults file.  The following .Xdefaults entries are defined:
+in the resource manager.  The following resource manager entries are defined:
 [Note: the entry names must be entered in either all lower-case, or in
 the exact case shown below.]
 .TP 8
@@ -584,7 +583,7 @@ What font to use for button names.  (Default is ``timrom10''.)
 .B CheckNewMail
 If True, \fIxmh\fP will check at regular intervals to see if new mail
 has arrived for any of the folders.  A visual indication will be given
-if new mail is waiting to be retrieved.
+if new mail is waiting to be retrieved.  (Default is True.)
 .PP
 .TP 8
 .B CompButtonLines
@@ -630,14 +629,16 @@ within messages by scrolling them off.  (Default is ``on''.)
 .PP
 .TP 8
 .B InitialFolder
-Which folder to display on startup.  (Default is ``inbox''.)
+Which folder to display on startup.  May also be set with the command-line
+option \fB-initial\fR.  (Default is ``inbox''.)
 .PP
 .TP 8
 .B InitialIncFile
 The file name of your incoming mail drop.  \fIxmh\fR tries to construct
 a filename for the ``inc -file'' command, but in some installations
 (e.g. those using the Post Office Protocol) no file is appropriate.
-In this case, \fBInitialIncFile\fR should be specified as the empty string.
+In this case, \fBInitialIncFile\fR should be specified as the empty string,
+and \fIinc\fR will be invoked without a -file argument.
 .PP
 .TP 8
 .B LabelFont
@@ -653,7 +654,7 @@ with the command-line option, \fB-path\fR. (Default is the
 .B MailWaitingFlag
 If True, \fIxmh\fR will attempt to set an indication in it's icon when
 new mail is waiting to be retrieved.  If this option is True, then
-CheckNewMail is assumed to be True as well.  The ``-flag'' command line
+CheckNewMail is assumed to be True as well.  The \fB-flag\fR command line
 option is a quick way to turn MailWaitingFlag on.
 .PP
 .TP 8
@@ -678,19 +679,15 @@ What font to use for static text fields in pick windows.  (Default is
 .TP 8
 .B PrintCommand
 What sh command to execute to print a message.  Note that stdout and stderr
-must be specifically redirected!  (Default is ``enscript >/dev/null
+must be specifically redirected!  If a message or range of messages is
+selected for printing, the full file paths of each message file is
+appended to the specified print command.   (Default is ``enscript >/dev/null
 2>/dev/null'').
 .PP
 .TP 8
 .B TempDir
-Directory for \fIxmh\fR to store temporary directories.  For protection, a user
+Directory for \fIxmh\fR to store temporary directories.  For privacy, a user
 might want to change this to a private directory.  (Default is ``/tmp''.)
-.PP
-.TP 8
-.B TerseButtonNames
-If ``on'', then command buttons will be displayed with much shorter names.
-It is highly recommended to use this after gaining familiarity with
-\fIxmh\fR. (Default is ``off''.)
 .PP
 .TP 8
 .B TocButtonLines
@@ -711,7 +708,7 @@ How messages to display in a folder's table of contents.  (Default is 10.)
 .TP 8
 .B TocWidth
 How many characters to generate for each message in a folder's table of
-contents.  (Default is 300.  Use 80 if you plan to use \fImhe\fR a lot.)
+contents.  (Default is 100.  Use 80 if you plan to use \fImhe\fR a lot.)
 .PP
 .TP 8
 .B ViewButtonLines
@@ -738,11 +735,11 @@ the width is not specified (e.g., "", "=x300", "-0+0), then half of the
 display width is used.  If unspecified, the height of a pick window
 defaults to half the height of the display.
 
-Any of these options may also be specified on the command line by including a
-word that contains the name of the .Xdefault option, an ``='', and the
-desired value.  Thus, to run \fIxmh\fR with terse button names,
+Any of these options may also be specified on the command line by
+using the standard X Toolkit resource specification mechanism.
+Thus, to run \fIxmh\fR showing all message headers,
 
-% xmh tersebuttonnames=on
+% xmh -xrm '*HideBoringHeaders:off'
 
 .SH FILES
 ~/Mail
@@ -753,8 +750,6 @@ desired value.  Thus, to run \fIxmh\fR with terse button names,
 mh (1) - the mh Mail Handler
 
 .SH BUGS
-Command-line syntax is silly.
-
 Printing support is minimal.
 
 Keyboard shortcuts for commands would be nice.
@@ -765,8 +760,6 @@ Should determine by itself if the user hasn't used \fImh\fR before, and
 offer to set things up for him or her.
 
 Still a few commands missing (rename folder, remail message).
-
-The user should probably be able to customize the buttonboxes somewhat.
 
 Needs sub-folder support.
 
