@@ -1,4 +1,4 @@
-/* $XConsortium: Destroy.c,v 1.30 90/08/27 12:49:11 swick Exp $ */
+/* $XConsortium: Destroy.c,v 1.31 90/08/29 14:09:46 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -133,9 +133,7 @@ static void XtPhase2Destroy (widget)
 
     parent = widget->core.parent;
 
-    if (parent != NULL && XtIsComposite(parent) &&
-	(! XtIsShell(widget) || ! IsPopup(widget)))
-    {
+    if (parent != NULL && XtIsComposite(parent) && !IsPopup(widget)) {
 	XtWidgetProc delete_child =
 	    ((CompositeWidgetClass) parent->core.widget_class)->
 		composite_class.delete_child;
