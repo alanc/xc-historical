@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: mkfontdir.c,v 1.6 91/12/09 16:51:28 converse Exp $ */
+/* $XConsortium: mkfontdir.c,v 1.7 92/11/22 22:47:52 gildea Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/Xfuncs.h>
@@ -75,6 +75,8 @@ extern int errno;
 #define  XK_LATIN1
 #include <X11/keysymdef.h>
 
+char *progName;
+
 static Bool
 WriteFontTable(dirName, table)
     char	    *dirName;
@@ -86,10 +88,19 @@ WriteFontTable(dirName, table)
     FontEntryPtr    entry;
 
     sprintf (full_name, "%s/%s", dirName, FontDirFile);
+
+    /* remove old fonts.dir, in case it is a link */
+
+    if (unlink(full_name) < 0 && errno != ENOENT)
+    {
+	fprintf(stderr, "%s: cannot unlink %s\n", progName, full_name);
+	return FALSE;
+    }
+
     file = fopen (full_name, "w");
     if (!file)
     {
-	fprintf (stderr, "mkfontdir: can't create directory %s\n", full_name);
+	fprintf (stderr, "%s: can't create directory %s\n", progName, full_name);
 	return FALSE;
     }
     fprintf(file, "%d\n", table->used);
@@ -194,7 +205,7 @@ ProcessFile (dirName, fileName, table)
 
     if (existing = FontNameExists (table, font_name))
     {
-	fprintf (stderr, "Duplicate font names %s\n", font_name);
+	fprintf (stderr, "%s: Duplicate font names %s\n", progName, font_name);
 	fprintf (stderr, "\t%s %s\n", existing, fileName);
 	return FALSE;
     }
@@ -295,7 +306,6 @@ LoadDirectory (dirName, table)
 	    }
 	}
     }
-    status = TRUE;
     for (hash = 0; hash < HASH_SIZE; hash++)
     {
 	for (bucket = hashTable[hash]; bucket; bucket = next)
@@ -303,17 +313,17 @@ LoadDirectory (dirName, table)
 	    next = bucket->next;
 	    strcpy (fileName, bucket->name);
 	    strcat (fileName, bucket->renderer->fileSuffix);
-	    if (status)
+	    if (!ProcessFile (dirName, fileName, table))
 	    {
-	    	if (!ProcessFile (dirName, fileName, table))
-		    status = FALSE;
+		fprintf(stderr, "%s: unable to process font %s/%s, skipping\n",
+			progName, dirName, fileName);
 	    }
 	    free (bucket->name);
 	    free (bucket);
 	}
     }
     free (hashTable);
-    return status;
+    return TRUE;
 }
 
 LoadScalable (dirName, table)
@@ -341,13 +351,14 @@ LoadScalable (dirName, table)
 	while ((count = fscanf(file, "%s %[^\n]\n", file_name, font_name)) != EOF) {
 	    if (count != 2) {
 		fclose(file);
-		fprintf (stderr, "bad format for %s file\n", dir_file);
+		fprintf (stderr, "%s: bad format for %s file\n",
+			 progName, dir_file);
 		return FALSE;
 	    }
 	    if (!AddEntry (table, font_name, file_name))
 	    {
 		fclose (file);
-		fprintf (stderr, "out of memory\n");
+		fprintf (stderr, "%s: out of memory\n", progName);
 		return FALSE;
 	    }
 	}
@@ -412,12 +423,13 @@ main (argc, argv)
     int i;
 
     BitmapRegisterFontFileFunctions ();
+    progName = argv[0];
     if (argc == 1)
     {
 	if (!DoDirectory("."))
 	{
 	    fprintf (stderr, "%s: failed to create directory in %s\n",
-		     argv[0], ".");
+		     progName, ".");
 	    exit (1);
 	}
     }
@@ -426,7 +438,7 @@ main (argc, argv)
 	    if (!DoDirectory(argv[i]))
 	    {
 		fprintf (stderr, "%s: failed to create directory in %s\n",
-			 argv[0], argv[i]);
+			 progName, argv[i]);
 		exit (1);
 	    }
  	}
