@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.165 91/05/17 18:36:22 gildea Exp $
+ * $XConsortium: charproc.c,v 1.166 91/05/29 18:06:43 gildea Exp $
  */
 
 /*
@@ -301,6 +301,7 @@ static XtActionsRec actionsList[] = {
     { "set-altscreen",		HandleAltScreen },
     { "soft-reset",		HandleSoftReset },
     { "hard-reset",		HandleHardReset },
+    { "clear-saved-lines",	HandleClearSavedLines },
     { "set-terminal-type",	HandleSetTerminalType },
     { "set-visibility",		HandleVisibility },
     { "set-tek-text",		HandleSetTekText },

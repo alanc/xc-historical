@@ -1,4 +1,4 @@
-/* $XConsortium: menu.h,v 1.20 91/05/10 16:57:29 gildea Exp $ */
+/* $XConsortium: menu.h,v 1.21 91/05/11 23:26:57 gildea Exp $ */
 
 /* Copyright 1989 Massachusetts Institute of Technology */
 
@@ -46,6 +46,7 @@ extern void HandleMarginBell();
 extern void HandleAltScreen();
 extern void HandleSoftReset();
 extern void HandleHardReset();
+extern void HandleClearSavedLines();
 extern void HandleSetTerminalType();
 extern void HandleVisibility();
 extern void HandleSetTekText();
@@ -98,10 +99,11 @@ extern void DoSecureKeyboard();
 #define vtMenu_line1 15
 #define vtMenu_softreset 16
 #define vtMenu_hardreset 17
-#define vtMenu_line2 18
-#define vtMenu_tekshow 19
-#define vtMenu_tekmode 20
-#define vtMenu_vthide 21
+#define vtMenu_clearsavedlines 18
+#define vtMenu_line2 19
+#define vtMenu_tekshow 20
+#define vtMenu_tekmode 21
+#define vtMenu_vthide 22
 
 /*
  * items in vt100 font menu

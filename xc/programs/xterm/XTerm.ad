@@ -36,6 +36,7 @@
 *vtMenu*altscreen*Label:  Show Alternate Screen
 *vtMenu*softreset*Label:  Do Soft Reset
 *vtMenu*hardreset*Label:  Do Full Reset
+*vtMenu*clearsavedlines*Label:  Reset and Clear Saved Lines
 *vtMenu*tekshow*Label:  Show Tek Window
 *vtMenu*tekmode*Label:  Switch to Tek Mode
 *vtMenu*vthide*Label:  Hide VT Window

@@ -1,4 +1,4 @@
-/* $XConsortium: menu.c,v 1.57 91/05/10 16:57:25 gildea Exp $ */
+/* $XConsortium: menu.c,v 1.58 91/05/11 22:46:25 gildea Exp $ */
 /*
 Copyright 1989 Massachusetts Institute of Technology
 
@@ -33,15 +33,16 @@ Arg menuArgs[2] = {{ XtNleftBitmap, (XtArgVal) 0 },
 void do_hangup();
 
 static void do_securekbd(), do_allowsends(), do_visualbell(), do_logging(),
-  do_redraw(), do_suspend(), do_continue(), do_interrupt(), 
-  do_terminate(), do_kill(), do_quit(), do_scrollbar(), do_jumpscroll(),
-  do_reversevideo(), do_autowrap(), do_reversewrap(), do_autolinefeed(),
-  do_appcursor(), do_appkeypad(), do_scrollkey(), do_scrollttyoutput(),
-  do_allow132(), do_cursesemul(), do_marginbell(), do_tekshow(), 
-  do_altscreen(), do_softreset(), do_hardreset(), do_tekmode(), do_vthide(), 
-  do_tektextlarge(), do_tektext2(), do_tektext3(), do_tektextsmall(), 
-  do_tekpage(), do_tekreset(), do_tekcopy(), do_vtshow(), do_vtmode(), 
-  do_tekhide(), do_vtfont();
+    do_redraw(), do_suspend(), do_continue(), do_interrupt(), 
+    do_terminate(), do_kill(), do_quit(), do_scrollbar(), do_jumpscroll(),
+    do_reversevideo(), do_autowrap(), do_reversewrap(), do_autolinefeed(),
+    do_appcursor(), do_appkeypad(), do_scrollkey(), do_scrollttyoutput(),
+    do_allow132(), do_cursesemul(), do_marginbell(), do_tekshow(), 
+    do_altscreen(), do_softreset(), do_hardreset(), do_clearsavedlines(),
+    do_tekmode(), do_vthide(), 
+    do_tektextlarge(), do_tektext2(), do_tektext3(), do_tektextsmall(), 
+    do_tekpage(), do_tekreset(), do_tekcopy(), do_vtshow(), do_vtmode(), 
+    do_tekhide(), do_vtfont();
 
 
 /*
@@ -72,7 +73,7 @@ MenuEntry vtMenuEntries[] = {
     { "appcursor",	do_appcursor, NULL },		/*  6 */
     { "appkeypad",	do_appkeypad, NULL },		/*  7 */
     { "scrollkey",	do_scrollkey, NULL },		/*  8 */
-    { "scrollttyoutput",	do_scrollttyoutput, NULL },	/*  9 */
+    { "scrollttyoutput",do_scrollttyoutput, NULL },	/*  9 */
     { "allow132",	do_allow132, NULL },		/* 10 */
     { "cursesemul",	do_cursesemul, NULL },		/* 11 */
     { "visualbell",	do_visualbell, NULL },		/* 12 */
@@ -81,10 +82,11 @@ MenuEntry vtMenuEntries[] = {
     { "line1",		NULL, NULL },			/* 15 */
     { "softreset",	do_softreset, NULL },		/* 16 */
     { "hardreset",	do_hardreset, NULL },		/* 17 */
-    { "line2",		NULL, NULL },			/* 18 */
-    { "tekshow",	do_tekshow, NULL },		/* 19 */
-    { "tekmode",	do_tekmode, NULL },		/* 20 */
-    { "vthide",		do_vthide, NULL }};		/* 21 */
+    { "clearsavedlines",do_clearsavedlines, NULL },	/* 18 */
+    { "line2",		NULL, NULL },			/* 19 */
+    { "tekshow",	do_tekshow, NULL },		/* 20 */
+    { "tekmode",	do_tekmode, NULL },		/* 21 */
+    { "vthide",		do_vthide, NULL }};		/* 22 */
 
 MenuEntry fontMenuEntries[] = {
     { "fontdefault",	do_vtfont, NULL },		/*  0 */
@@ -648,6 +650,18 @@ static void do_hardreset (gw, closure, data)
 }
 
 
+static void do_clearsavedlines (gw, closure, data)
+    Widget gw;
+    caddr_t closure, data;
+{
+    register TScreen *screen = &term->screen;
+
+    screen->savedlines = 0;
+    ScrollBarDrawThumb(screen->scrollWidget);
+    VTReset (TRUE); 
+}
+
+
 static void do_tekmode (gw, closure, data)
     Widget gw;
     caddr_t closure, data;
@@ -1097,6 +1111,16 @@ void HandleHardReset(w, event, params, param_count)
     Cardinal *param_count;
 {
     do_hardreset(w, NULL, NULL);
+}
+
+/* ARGSUSED */
+void HandleClearSavedLines(w, event, params, param_count)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *param_count;
+{
+    do_clearsavedlines(w, NULL, NULL);
 }
 
 void HandleSetTerminalType(w, event, params, param_count)
