@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: screen.c,v 1.12 89/05/17 16:37:15 jim Exp $
+ *	$XConsortium: screen.c,v 1.13 89/05/26 11:39:03 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* screen.c */
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: screen.c,v 1.12 89/05/17 16:37:15 jim Exp $";
+static char rcs_id[] = "$XConsortium: screen.c,v 1.13 89/05/26 11:39:03 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xlib.h>
@@ -142,7 +142,7 @@ char *str;
 register unsigned flags;
 register int length;		/* length of string */
 {
-	register Char *att;
+	register Char *attrs;
 	register int avail  = screen->max_col - screen->cur_col + 1;
 	register Char *col;
 
@@ -152,11 +152,11 @@ register int length;		/* length of string */
 		return;
 
 	col = screen->buf[avail = 2 * screen->cur_row] + screen->cur_col;
-	att = screen->buf[avail + 1] + screen->cur_col;
+	attrs = screen->buf[avail + 1] + screen->cur_col;
 	flags &= ATTRIBUTES;
 	bcopy(str, col, length);
 	while(length-- > 0)
-		*att++ = flags;
+		*attrs++ = flags;
 }
 
 ScrnInsertLine (sb, last, where, n, size)
@@ -240,15 +240,15 @@ register int col, n;
 {
 	register int i, j;
 	register Char *ptr = sb [2 * row];
-	register Char *att = sb [2 * row + 1];
+	register Char *attrs = sb [2 * row + 1];
 
 	for (i = size - 1; i >= col + n; i--) {
 		ptr[i] = ptr[j = i - n];
-		att[i] = att[j];
+		attrs[i] = attrs[j];
 	}
 
 	bzero (ptr + col, n);
-	bzero (att + col, n);
+	bzero (attrs + col, n);
 }
 
 
@@ -261,13 +261,13 @@ register int row, size;
 register int n, col;
 {
 	register Char *ptr = sb[2 * row];
-	register Char *att = sb[2 * row + 1];
+	register Char *attrs = sb[2 * row + 1];
 	register nbytes = (size - n - col);
 
 	bcopy (ptr + col + n, ptr + col, nbytes);
-	bcopy (att + col + n, att + col, nbytes);
+	bcopy (attrs + col + n, attrs + col, nbytes);
 	bzero (ptr + size - n, n);
-	bzero (att + size - n, n);
+	bzero (attrs + size - n, n);
 }
 
 
@@ -296,7 +296,7 @@ Boolean force;			/* ... leading/trailing spaces */
 		screen->cursor_state = OFF;
 	for (row = toprow; row <= maxrow; y += FontHeight(screen), row++) {
 	   register Char *chars;
-	   register Char *att;
+	   register Char *attrs;
 	   register int col = leftcol;
 	   int maxcol = leftcol + ncols - 1;
 	   int lastind;
@@ -314,7 +314,7 @@ Boolean force;			/* ... leading/trailing spaces */
 	   	continue;
 
 	   chars = screen->buf [2 * (lastind + topline)];
-	   att = screen->buf [2 * (lastind + topline) + 1];
+	   attrs = screen->buf [2 * (lastind + topline) + 1];
 
 	   if (row < screen->startHRow || row > screen->endHRow ||
 	       (row == screen->startHRow && maxcol < screen->startHCol) ||
@@ -322,11 +322,11 @@ Boolean force;			/* ... leading/trailing spaces */
 	       {
 	       /* row does not intersect selection; don't hilite */
 	       if (!force) {
-		   while (col <= maxcol && (att[col] & ~BOLD) == 0 &&
+		   while (col <= maxcol && (attrs[col] & ~BOLD) == 0 &&
 			  (chars[col] & ~040) == 0)
 		       col++;
 
-		   while (col <= maxcol && (att[maxcol] & ~BOLD) == 0 &&
+		   while (col <= maxcol && (attrs[maxcol] & ~BOLD) == 0 &&
 			  (chars[maxcol] & ~040) == 0)
 		       maxcol--;
 	       }
@@ -350,7 +350,7 @@ Boolean force;			/* ... leading/trailing spaces */
 
 	   if (col > maxcol) continue;
 
-	   flags = att[col];
+	   flags = attrs[col];
 
 	   if ( (!hilite && (flags & INVERSE) != 0) ||
 	        (hilite && (flags & INVERSE) == 0) )
@@ -364,7 +364,7 @@ Boolean force;			/* ... leading/trailing spaces */
 	   lastind = col;
 
 	   for (; col <= maxcol; col++) {
-		if (att[col] != flags) {
+		if (attrs[col] != flags) {
 		   XDrawImageString(screen->display, TextWindow(screen), 
 		        	gc, x, y, &chars[lastind], n = col - lastind);
 		   if((flags & BOLD) && screen->enbolden)
@@ -378,7 +378,7 @@ Boolean force;			/* ... leading/trailing spaces */
 
 		   lastind = col;
 
-		   flags = att[col];
+		   flags = attrs[col];
 
 	   	   if ((!hilite && (flags & INVERSE) != 0) ||
 		       (hilite && (flags & INVERSE) == 0) )
