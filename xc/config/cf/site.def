@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.120 94/04/01 10:30:25 matt Exp $
+XCOMM site:  $XConsortium: site.def,v 1.121 94/04/01 17:12:14 matt Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -130,7 +130,7 @@ XCOMM site:  $XConsortium: site.def,v 1.120 94/04/01 10:30:25 matt Exp $
 #ifdef AfterVendorCF
 
 #ifdef CrayArchitecture
-#define ProjectRoot /hot/u2/n4920/X11
+#define ProjectRoot /X11R4/X11R6/X11
 #else
 #define ProjectRoot /X11
 #endif
