@@ -71,6 +71,3 @@ XTerm*tek4014*font2: 8x13
 XTerm*tek4014*font3: 6x13
 XTerm*tek4014*fontSmall: 6x10
 
-! the following for compatibility
-XTerm*vtMenu*scrollinput*Label:  Scroll to Bottom on Tty Output
-
