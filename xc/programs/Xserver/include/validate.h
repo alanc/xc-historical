@@ -1,4 +1,4 @@
-/* $XConsortium: validate.h,v 5.1 89/07/21 13:58:27 keith Exp $ */
+/* $XConsortium: validate.h,v 5.2 90/03/16 17:17:01 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -22,19 +22,8 @@ purpose.  It is provided "as is" without express or implied warranty.
 
 typedef enum { VTOther, VTStack, VTMove, VTUnmap, VTMap } VTKind;
 
-typedef union _Validate {
-    struct BeforeValidate {
-	DDXPointRec	oldAbsCorner;	/* old window position */
-	RegionPtr	borderVisible;	/* visible region of border, */
-					/* non-null when size changes */
-	Bool		resized;	/* unclipped winSize has changed - */
-					/* don't call SaveDoomedAreas */
-    } before;
-    struct AfterValidate {
-	RegionRec	exposed;	/* exposed regions, absolute pos */
-	RegionRec	borderExposed;
-    } after;
-} ValidateRec, *ValidatePtr;
+/* union _Validate is now device dependent; see mivalidate.h for an example */
+typedef union _Validate *ValidatePtr;
 
 #define UnmapValData ((ValidatePtr)1)
 
