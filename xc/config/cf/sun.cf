@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.135 94/10/03 21:32:05 gildea Exp kaleb $
+XCOMM platform:  $XConsortium: sun.cf,v 1.136 94/12/05 17:19:52 kaleb Exp kaleb $
 
 #ifdef SVR4Architecture
 #ifdef i386Architecture
@@ -132,8 +132,13 @@ XCOMM operating system:  OSName
 #endif
 #endif
 
+#ifdef i386Architecture
+#define ServerExtraDefines AllocateLocalDefines XFree86ServerDefines
+#define ServerOSDefines    XFree86ServerOSDefines
+#else
 #define ServerExtraDefines AllocateLocalDefines
 #define ServerOSDefines   -DDDXOSINIT
+#endif
 
 #if OSMajorVersion > 4
 #define BootstrapCFlags	  -DSVR4
@@ -204,6 +209,15 @@ XCOMM operating system:  OSName
 #endif
 
 #if HasGcc
+#if OSMajorVersion > 4 && defined(i386Architecture)
+#ifndef DefaultCCOptions
+#if OSMinorVersion == 1
+#define DefaultCCOptions -DNO_ASM
+#else
+#define DefaultCCOptions -ansi -DNO_ASM
+#endif
+#endif
+#endif
 #if HasGcc2
 #define OptimizedCDebugFlags -O2
 #else

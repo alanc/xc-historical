@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ncr.cf,v 1.13 94/11/21 17:13:14 kaleb Exp kaleb $
+XCOMM platform:  $XConsortium: ncr.cf,v 1.14 94/12/08 02:24:27 kaleb Exp kaleb $
 #define OSName			Unix System V Release 4/MP-RAS
 #define OSVendor		NCR
 XCOMM operating system:  OSName
@@ -14,7 +14,7 @@ XCOMM operating system:  OSName
 #define DefaultCDebugFlags	-O3
 #define AllocateLocalDefines	-DINCLUDE_ALLOCA_H
 #define ServerExtraDefines      -DNO_SECONDARY -DSTATIC_COLOR -DAVOID_GLYPHBLT AllocateLocalDefines
-#define ServerOSDefines         -DDDXTIME -DDDXOSINIT
+#define ServerOSDefines         XFree86ServerOSDefines -DDDXTIME
 
 XCOMM This has not been tested, don't turn it on yet.
 XCOMM #define ExtensionOSDefines	-DXTESTEXT1

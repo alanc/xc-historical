@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: FreeBSD.cf,v 1.2 94/11/21 17:13:14 kaleb Exp kaleb $
+XCOMM platform:  $XConsortium: FreeBSD.cf,v 1.3 94/12/04 13:38:51 kaleb Exp kaleb $
 
 #define OSName            FreeBSD 1.1
 #define OSVendor          /**/
@@ -37,12 +37,12 @@ XCOMM operating system:  OSName
 #define CcCmd gcc
 #define DefaultCCOptions /**/
 
-#ifdef __i386__
+#ifdef i386Architecture
 #define OptimizedCDebugFlags -m486 -O2
 #else
 #define OptimizedCDebugFlags -O2
 #endif
-#define ServerOSDefines	-DDDXTIME
+#define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME
 #define ServerExtraDefines GccGasOption
 
 #define StandardDefines	-DCSRG_BASED
@@ -52,6 +52,7 @@ XCOMM operating system:  OSName
 #define SetTtyGroup     YES
 #define HasNdbm         YES
 #define HasShm          YES
+#define HasWChar32      YES
 
 #define HasLibCrypt	YES
 
@@ -59,7 +60,6 @@ XCOMM operating system:  OSName
 
 #include <bsdLib.rules>
 
-#ifdef __i386__
+#ifdef i386Architecture
 #include <xfree86.cf>
 #endif
-#define HasWChar32      YES

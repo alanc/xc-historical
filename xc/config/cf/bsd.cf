@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: bsd.cf,v 1.20 93/09/12 21:34:10 rws Exp $
+XCOMM platform:  $XConsortium: bsd.cf,v 1.21 93/12/13 17:17:22 dpw Exp kaleb $
 
 #define OSName            4.3bsd
 XCOMM operating system:  OSName
@@ -6,7 +6,7 @@ XCOMM operating system:  OSName
 #define OSMinorVersion    3
 
 #define BootstrapCFlags -DNOSTDHDRS
-#define StandardDefines -DNOSTDHDRS
+#define StandardDefines -DNOSTDHDRS -DCSRG_BASED
 #define HasVoidSignalReturn NO
 #define HasBsearch NO
 #define DirFailPrefix -

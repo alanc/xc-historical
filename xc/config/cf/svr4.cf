@@ -1,4 +1,4 @@
-XCOMM $XConsortium: svr4.cf,v 1.7 94/11/21 17:13:14 kaleb Exp kaleb $
+XCOMM $XConsortium: svr4.cf,v 1.8 94/12/05 17:19:52 kaleb Exp kaleb $
 /*
  * A default OS name
  */
@@ -78,7 +78,7 @@ XCOMM $XConsortium: svr4.cf,v 1.7 94/11/21 17:13:14 kaleb Exp kaleb $
 #define	YaccCmd	/usr/ccs/bin/yacc
 #endif
 
-#if (OSMajorVersion == 0)
+#if (OSMinorVersion == 0)
 #ifndef XawI18nDefines
 #define XawI18nDefines		-DUSE_XWCHAR_STRING
 #endif
@@ -105,7 +105,7 @@ XCOMM $XConsortium: svr4.cf,v 1.7 94/11/21 17:13:14 kaleb Exp kaleb $
 #endif
 #endif
 #ifndef ServerOSDefines
-#define ServerOSDefines -DDDXTIME -DDDXOSINIT
+#define ServerOSDefines XFree86ServerOSDefines -DDDXTIME
 #endif
 #endif
 
@@ -130,7 +130,7 @@ XCOMM $XConsortium: svr4.cf,v 1.7 94/11/21 17:13:14 kaleb Exp kaleb $
 #define FileManSuffix           4
 #endif
 
-#include <sv4Lib.rules>
 #ifdef i386Architecture
 #include <xfree86.cf>
 #endif
+#include <sv4Lib.rules>

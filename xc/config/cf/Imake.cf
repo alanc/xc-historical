@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imake.cf,v 1.17 94/12/07 10:12:48 kaleb Exp kaleb $
+XCOMM $XConsortium: Imake.cf,v 1.18 94/12/08 02:34:19 kaleb Exp kaleb $
 /*
  * To add support for another platform:
  * 
@@ -58,6 +58,10 @@ XCOMM $XConsortium: Imake.cf,v 1.17 94/12/07 10:12:48 kaleb Exp kaleb $
 #ifdef __i386__
 #define i386BsdArchitecture
 #define i386Architecture
+#endif
+#if defined(__sparc__) || defined(sparc)
+#define SparcArchitecture
+#undef sparc
 #endif
 #endif /* NetBSD */
 

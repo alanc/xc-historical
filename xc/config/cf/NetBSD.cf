@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: NetBSD.cf,v 1.2 94/11/21 17:13:14 kaleb Exp kaleb $
+XCOMM platform:  $XConsortium: NetBSD.cf,v 1.3 94/12/04 13:39:53 kaleb Exp kaleb $
 
 #define OSName		NetBSD
 #define	OSVendor	/**/
@@ -41,24 +41,34 @@ XCOMM operating system:  OSName
 #endif
 
 #define CcCmd gcc
-#define DefaultCCOptions /**/
-
-#ifdef __i386__
-#define OptimizedCDebugFlags -m486 -O2
-#define ServerOSDefines	-DDDXTIME
+#if UseInstalled
+#define DefaultCCOptions	/**/
 #else
-#define OptimizedCDebugFlags -O2
-#define ServerOSDefines /**/
+#define DefaultCCOptions	-ansi -Dasm=__asm
 #endif
-#define ServerExtraDefines GccGasOption -DSTATIC_COLOR -DAVOID_GLYPHBLT
+
+#ifdef i386Architecture
+#define OptimizedCDebugFlags	-m486 -O2
+#define ServerOSDefines		XFree86ServerOSDefines -DDDXTIME
+#else
+#define OptimizedCDebugFlags	-O2
+# ifdef SparcArchitecture
+#  define ServerOSDefines	-DDDXOSINIT
+# else
+#  define ServerOSDefines	/**/
+# endif
+#endif
+#define ServerExtraDefines GccGasOption XFree86ServerDefines
 
 #define StandardDefines	-DCSRG_BASED
-#define XawI18nDefines  -DUSE_XWCHAR_STRING -DUSE_XMBTOWC
+#define XawI18nDefines	-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
 
 #define TroffCmd        groff -Tps
 #define SetTtyGroup     YES
+#define DBMLibrary	/**/
 #define HasNdbm         YES
 #define HasShm          YES
+#define HasWChar32      YES
 
 #define HasLibCrypt	YES
 
@@ -68,6 +78,7 @@ XCOMM Man pages need to be formatted when installed, so override the default
 XCOMM imake rules.
 
 #define ManSuffix	1
+#define FileManSuffix	5
 #define ManSourcePath	$(MANPATH)/cat
 
 #define InstallManPageLong(file,destdir,dest)                           @@\
@@ -118,7 +129,21 @@ install.man:: 								@@\
 
 #include <bsdLib.rules>
 
-#ifdef __i386__
+#ifdef SparcArchitecture
+#ifndef Xsun24Server
+#define Xsun24Server	NO
+#endif
+#ifndef XsunServer
+#define XsunServer	YES
+#endif
+#ifndef XsunMonoServer
+#define XsunMonoServer	YES
+#endif
+#ifndef UseRGBTxt
+#define UseRGBTxt	YES
+#endif
+#endif
+
+#ifdef i386Architecture
 # include <xfree86.cf>
 #endif
-#define HasWChar32      YES
