@@ -5,56 +5,15 @@ xlogo - X Window System logo
 .B xlogo
 [-\fItoolkitoption\fP ...]
 .SH DESCRIPTION
-The
-.I xlogo
-program displays the X Window System logo.  This program is
+The \fIxlogo\fP program displays the X Window System logo.  This program is
 nothing more than a wrapper around the \fIundocumented\fP Athena Logo widget.
 .SH OPTIONS
 .I Xlogo
-accepts all of the standard X Toolkit command line options, of which the
-following are used most frequently:
-.TP 8
-.B \-bg \fIcolor\fP
-This option specifies the color to use for the background of the window.  
-The default is depends on whether \fIreverseVideo\fP is specified.  If
-\fIreverseVideo\fP is specified the default is \fIlblack\fP, otherwise
-the default is \fIwhite\fP.
-.TP 8
-.B \-bd \fIcolor\fP
-This option specifies the color to use for the border of the window.
-The default is depends on whether \fIreverseVideo\fP is specified.  If
-\fIreverseVideo\fP is specified the default is \fIlwhite\fP, otherwise
-the default is \fIblack\fP.
-.TP 8
-.B \-bw \fInumber\fP
-This option specifies the width, in pixels, of the border surrounding the 
-window.
-.TP 8
-.B \-fg \fIcolor\fP
-This option specifies the color to use for displaying the logo.
-The default is depends on whether \fIreverseVideo\fP is specified.  If
-\fIreverseVideo\fP is specified the default is \fIlwhite\fP, otherwise
-the default is \fIblack\fP.
-.TP 8
-.B \-rv
-This option indicates that reverse video should be simulated, changing the
-default value for the foreground, background and border colors.
-.TP 8
-.B \-geometry \fIgeometry\fP
-This option specifies the prefered size and position of the logo window.
-See \fIX(1)\fP for details on the syntax of this argument.
-.TP 8
-.B \-display \fIdisplay\fP
-This option specifies the X server to contact. See \fIX(1)\fP for details on 
-the syntax of this argument.
-.TP 8
-.B \-xrm \fIresourcestring\fP
-This option specifies a resource string to be used.  This is especially
-useful for setting resources that do not have separate command line options.
+accepts all of the standard X Toolkit command line options, see \fIX(1)\fP
+for details.
 .SH RESOURCES
 This program uses the \fILogo\fP widget in the Athena widget set.  It
 understands all of the core resource names and classes as well as:
-.PP
 .TP 8
 .B width (\fPclass\fB Width)
 Specifies the width of the logo.  The default width is 100 pixels.
@@ -74,14 +33,14 @@ default value for the foreground, background and border colors.
 The widgets used by xlogo are listed below.  Widgets are listed by
 name and class.  
 .sp
-.Ds 5
-.TA .5i 1.0i 1.5i
-.ta .5i 1.0i 1.5i
-<application name> - XLogo
+.nf
+.TA .5i 
+.ta .5i 
+xlogo - XLogo
 	xlogo - Logo
-.De
+.fi
+.sp
 .SH ENVIRONMENT
-.PP
 .TP 8
 .B DISPLAY
 to get the default host and display number.
@@ -90,7 +49,7 @@ to get the default host and display number.
 to get the name of a resource file that overrides the global resources
 stored in the RESOURCE_MANAGER property.
 .SH SEE ALSO
-X(1), xrdb(1), Athena Logo widget
+X(1), xrdb(1)
 .SH COPYRIGHT
 Copyright 1988, Massachusetts Institute of Technology.
 .br
