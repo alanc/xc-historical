@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbimggblt.c,v 5.4 89/11/24 18:01:45 rws Exp $ */
+/* $XConsortium: mfbimggblt.c,v 5.5 91/01/27 13:02:09 keith Exp $ */
 #include	"X.h"
 #include	"Xmd.h"
 #include	"Xproto.h"
@@ -175,9 +175,9 @@ MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 
 /* pcc doesn't like this.  why?
     ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->FillArea = 
-			(pGC->bgPixel ? mfbSolidWhiteArea : mfbSolidBlackArea);
+			((pGC->bgPixel & 1) ? mfbSolidWhiteArea : mfbSolidBlackArea);
 */
-    if (pGC->bgPixel)
+    if (pGC->bgPixel & 1)
         ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->FillArea = mfbSolidWhiteArea;
     else
         ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->FillArea = mfbSolidBlackArea;
