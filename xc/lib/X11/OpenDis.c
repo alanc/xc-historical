@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.121 91/12/17 17:55:22 rws Exp $
+ * $XConsortium: XOpenDis.c,v 11.122 91/12/18 19:36:35 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -526,6 +526,30 @@ static OutOfMemory (dpy, setup)
 _XFreeDisplayStructure(dpy)
 	register Display *dpy;
 {
+	while (dpy->ext_procs) {
+	    _XExtension *ext = dpy->ext_procs;
+	    dpy->ext_procs = ext->next;
+	    if (ext->name)
+		Xfree (ext->name);
+	    Xfree ((char *)ext);
+	}
+	if (dpy->im_filters)
+	   (*dpy->free_funcs->im_filters)(dpy);
+	if (dpy->cms.clientCmaps)
+	   (*dpy->free_funcs->clientCmaps)(dpy);
+	if (dpy->cms.defaultCCCs)
+	   (*dpy->free_funcs->defaultCCCs)(dpy);
+	if (dpy->cms.perVisualIntensityMaps)
+	   (*dpy->free_funcs->intensityMaps)(dpy);
+	if (dpy->atoms)
+	    (*dpy->free_funcs->atoms)(dpy);
+	if (dpy->modifiermap)
+	   (*dpy->free_funcs->modifiermap)(dpy->modifiermap);
+	if (dpy->key_bindings)
+	   (*dpy->free_funcs->key_bindings)(dpy);
+	if (dpy->context_db)
+	   (*dpy->free_funcs->context_db)(dpy);
+
 	if (dpy->screens) {
 	    register int i;
 
@@ -571,36 +595,12 @@ _XFreeDisplayStructure(dpy)
 
         if (dpy->buffer)
 	   Xfree (dpy->buffer);
-	if (dpy->atoms)
-	    (*dpy->free_funcs->atoms)(dpy);
 	if (dpy->keysyms)
 	   Xfree ((char *) dpy->keysyms);
-	if (dpy->modifiermap)
-	   (*dpy->free_funcs->modifiermap)(dpy->modifiermap);
 	if (dpy->xdefaults)
 	   Xfree (dpy->xdefaults);
-	if (dpy->key_bindings)
-	   (*dpy->free_funcs->key_bindings)(dpy);
 	if (dpy->error_vec)
 	    Xfree ((char *)dpy->error_vec);
-	if (dpy->context_db)
-	   (*dpy->free_funcs->context_db)(dpy);
-	if (dpy->cms.defaultCCCs)
-	   (*dpy->free_funcs->defaultCCCs)(dpy);
-	if (dpy->cms.clientCmaps)
-	   (*dpy->free_funcs->clientCmaps)(dpy);
-	if (dpy->cms.perVisualIntensityMaps)
-	   (*dpy->free_funcs->intensityMaps)(dpy);
-	if (dpy->im_filters)
-	   (*dpy->free_funcs->im_filters)(dpy);
-
-	while (dpy->ext_procs) {
-	    _XExtension *ext = dpy->ext_procs;
-	    dpy->ext_procs = ext->next;
-	    if (ext->name)
-		Xfree (ext->name);
-	    Xfree ((char *)ext);
-	}
 
 	_XFreeExtData (dpy->ext_data);
 	Xfree ((char *)dpy->free_funcs);
