@@ -100,9 +100,9 @@ all:: $(IMPORTS1) $(IMPORTS2) $(SUBIMPORTS) extensions
 
 extensions::
 	-if [ ! -d $@ ]; then \
-	    if [ -f $@ ]; then $(RM) $@; fi; \
+	    if [ -f $@ ]; then $(RM) $@; else /bin/true ; fi; \
 	    mkdir $@; \
-	fi
+	else exit 0; fi
 
 MakeDirectories(install, $(INCDIR))
 
@@ -113,7 +113,7 @@ clean::
 	@-(list=`echo $(IMPORTS2) | sed -e 's/[^ ]*\///g'`; set -x; $(RM) $$list)
 	@-(if [ -d extensions ]; then \
 		list=`echo $(SUBIMPORTS) | sed -e 's/[^ ]*\///g'`; \
-		set -x; cd extensions; $(RM) $$list; fi)
+		set -x; cd extensions; $(RM) $$list; else exit 0; fi)
 
 install::
 	-cd $(INCDIR); mkdir $(SUBDIRS)
@@ -125,7 +125,7 @@ install::
 			  if [ ! -d $$f ]; then \
 			    $(RM) $(INCDIR)/$$i/$$f; \
 			    $(INSTALL) -c $(INSTALLFLAGS) $$f $(INCDIR)/$$i; \
-			  fi; \
+			  else /bin/true; fi; \
 			done; \
 		); \
 	done
