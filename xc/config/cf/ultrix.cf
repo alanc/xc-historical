@@ -1,9 +1,9 @@
-XCOMM platform:  $XConsortium: ultrix.cf,v 1.48 92/05/31 14:13:46 rws Exp $
+XCOMM platform:  $XConsortium: ultrix.cf,v 1.49 92/05/31 14:33:36 rws Exp $
 
-#define OSName            Ultrix-32 4.2
+#define OSName            Ultrix-32 4.3
 XCOMM operating system:  OSName
 #define OSMajorVersion    4
-#define OSMinorVersion    2
+#define OSMinorVersion    3
 
 #define HasNdbm YES
 #define HasPutenv YES
