@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.141 90/04/13 13:27:01 jim Exp $
+ * $XConsortium: add_window.c,v 1.142 90/04/13 13:34:37 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.141 90/04/13 13:27:01 jim Exp $";
+"$XConsortium: add_window.c,v 1.142 90/04/13 13:34:37 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -146,7 +146,6 @@ IconMgr *iconp;
     int actual_format;
     unsigned long nitems, bytesafter;
     int ask_user;		/* don't know where to put the window */
-    long supplied = 0;
     int gravx, gravy;			/* gravity signs for positioning */
     int namelen;
     int bw2;
@@ -185,8 +184,7 @@ IconMgr *iconp;
     else
 	tmp_win->group = NULL;
 
-    if (!XGetWMNormalHints (dpy, tmp_win->w, &tmp_win->hints, &supplied))
-      tmp_win->hints.flags = 0;
+    GetWindowSizeHints (tmp_win);
 
     /*
      * The July 27, 1988 draft of the ICCCM ignores the size and position
@@ -315,7 +313,6 @@ IconMgr *iconp;
 	tmp_win->wmhints->flags |= StateHint;
     }
 
-    if (!(supplied & PWinGravity)) SimulateWinGravity (tmp_win);
     GetGravityOffsets (tmp_win, &gravx, &gravy);
 
 
@@ -1446,10 +1443,20 @@ FetchWmColormapWindows (tmp)
 }
 
 
-SimulateWinGravity (tmp)
+void GetWindowSizeHints (tmp)
     TwmWindow *tmp;
 {
-    if (tmp->hints.flags & USPosition) {
+    long supplied = 0;
+
+    if (!XGetWMNormalHints (dpy, tmp->w, &tmp->hints, &supplied))
+      tmp->hints.flags = 0;
+
+    if (tmp->hints.flags & PResizeInc) {
+	if (tmp->hints.width_inc == 0) tmp->hints.width_inc = 1;
+	if (tmp->hints.height_inc == 0) tmp->hints.height_inc = 1;
+    }
+
+    if (!(supplied & PWinGravity) && (tmp->hints.flags & USPosition)) {
 	static int gravs[] = { SouthEastGravity, SouthWestGravity,
 			       NorthEastGravity, NorthWestGravity };
 	int right =  tmp->attr.x + tmp->attr.width + 2 * tmp->old_bw;

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.155 90/04/13 13:37:19 jim Exp $
+ * $XConsortium: events.c,v 1.156 90/04/13 13:40:55 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.155 90/04/13 13:37:19 jim Exp $";
+"$XConsortium: events.c,v 1.156 90/04/13 13:40:55 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -648,7 +648,6 @@ HandlePropertyNotify()
     unsigned long valuemask;		/* mask for create windows */
     XSetWindowAttributes attributes;	/* attributes for create windows */
     Pixmap pm;
-    long supplied;
 
     /* watch for standard colormap changes */
     if (Event.xproperty.window == Scr->Root) {
@@ -821,9 +820,7 @@ HandlePropertyNotify()
 	break;
 
       case XA_WM_NORMAL_HINTS:
-	if (XGetWMNormalHints (dpy, Tmp_win->w, &Tmp_win->hints, &supplied) &&
-	    !(supplied & PWinGravity))
-	  SimulateWinGravity (Tmp_win);
+	GetWindowSizeHints (Tmp_win);
 	break;
 
       default:
