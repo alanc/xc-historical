@@ -1,6 +1,6 @@
-.\" $XConsortium: ddx.tbl.ms,v 1.33 93/06/24 11:49:56 dpw Exp $"
-.EF 'Porting Layer Definition'- % -'June 23, 1993'
-.OF 'Porting Layer Definition'- % -'June 23, 1993'
+.\" $XConsortium: ddx.tbl.ms,v 1.34 93/09/03 13:23:21 dpw Exp $"
+.EF 'Porting Layer Definition'- % -'September 30, 1993'
+.OF 'Porting Layer Definition'- % -'September 30, 1993'
 .EH '''
 .OH '''
 .TL
@@ -29,7 +29,7 @@ Keith Packard
 .AI
 MIT X Consortium
 .sp
-Revised for Release 6 by
+Revised for Release 6alpha by
 .AU
 David P. Wiggins
 .AI
@@ -333,7 +333,7 @@ low level memory management.
 .fi
 OsInit initializes your OS code, performing whatever tasks need to be done.
 Frequently there is not much to be done.
-The sample server implementation is in server/os/osinit.c.
+The sample server implementation is in Xserver/os/osinit.c.
 
 .NH 2
 Scheduling and Request Delivery
@@ -483,7 +483,7 @@ be called before the Screen handlers:
 .LP
 The WaitForSomething on the sample server also has a built
 in screen saver that darkens the screen if no input happens for a period of time.
-The sample server implementation is in server/os/WaitFor.c.
+The sample server implementation is in Xserver/os/WaitFor.c.
 .LP
 Note that WaitForSomething() may be called when you already have several
 outstanding things (events, requests, or new clients) queued up.
@@ -550,7 +550,7 @@ These two routines are
 called from the initialize cases of the
 Input Procedures that are stored in the DeviceRec (the
 routine passed to AddInputDevice()).
-The sample server implementation is in server/os/connection.c.
+The sample server implementation is in Xserver/os/connection.c.
 .nf
 
 	Bool isItTimeToYield;
@@ -690,7 +690,7 @@ routine is called from the main loop:
 	ResetWellKnownSockets()
 .fi
 Sample implementations of both of these routines are found in 
-server/os/connection.c.
+Xserver/os/connection.c.
 .LP
 For more details, see the section called "Connection Setup" in the X protocol specification.
 
@@ -722,7 +722,7 @@ This length is measured in 32-bit words, not in bytes.  Therefore, the
 theoretical maximum request is 256K.
 (However, the maximum length allowed is dependent upon the server's input
 buffer.  This size is sent to the client upon connection.  The maximum 
-size is the constant MAX_REQUEST_SIZE in server/include/os.h)
+size is the constant MAX_REQUEST_SIZE in Xserver/include/os.h)
 The rest of the request you return is
 assumed NOT to be correctly swapped for internal 
 use, because that is the responsibility of DIX.
@@ -738,7 +738,7 @@ DIX may modify it in place but will not otherwise cause damage.
 Of course, the request must be contiguous; you must 
 shuffle it around in your buffers if not.
 
-The sample server implementation is in server/os/io.c.
+The sample server implementation is in Xserver/os/io.c.
 
 .XS
 Inserting Data for Clients
@@ -786,7 +786,7 @@ ClientPtr "who".
 It returns the number of bytes written, but for simplicity,
 the number returned must be either the same value as the number
 requested, or -1, signaling an error.
-The sample server implementation is in server/os/io.c.
+The sample server implementation is in Xserver/os/io.c.
 .LP
 .nf
 	SendErrorToClient(client, majorCode, minorCode, resId, errorCode)
@@ -816,7 +816,7 @@ FlushAllOutput() unconditionally flushes all output to clients;
 FlushIfCriticalOutputPending() flushes output only if
 SetCriticalOutputPending() has be called since the last time output
 was flushed.
-The sample server implementation is in server/os/io.c and
+The sample server implementation is in Xserver/os/io.c and
 actually ignores requests to flush output on a per-client basis
 if it knows that there
 are requests in that client's input queue.
@@ -862,7 +862,7 @@ The versions in the sample server also do some checking that is useful for debug
 Consult a C runtime library reference manual for more details.
 
 The macros ALLOCATE_LOCAL and DEALLOCATE_LOCAL are provided in
-server/include/os.h.  These are useful if
+Xserver/include/os.h.  These are useful if
 your compiler supports alloca() (or some
 method of allocating memory from the stack); and are defined appropriately
 on systems which support it.
@@ -935,7 +935,7 @@ a chance to reset the hardware, and then
 terminate the server; it must not return.
 .LP
 The sample server implementation for these routines
-is in server/os/util.c.
+is in Xserver/os/util.c.
 
 .NH 1
 DDX LAYER
@@ -993,7 +993,7 @@ DIX can locate any DeviceRec through InputInfo.
 In addition, it has a special pointer to identify the main pointing device
 and a special pointer to identify the main keyboard.
 .LP
-The DeviceRec (server/include/input.h) is a device-independent
+The DeviceRec (Xserver/include/input.h) is a device-independent
 structure that contains the state of an input device.
 A DevicePtr is simply a pointer to a DeviceRec.
 .LP
@@ -1364,7 +1364,7 @@ You call this DIX routine when a keyboard device is initialized and
 its device procedure is called with
 DEVICE_INIT.
 The formats of the keysyms and modifier maps are defined in 
-server/include/input.h. 
+Xserver/include/input.h. 
 They describe the layout of keys on the keyboards, and the glyphs 
 associated with them.  ( See the next section for information on
 setting up the modifier map and the keysym map.)
@@ -1394,9 +1394,9 @@ Each element of this array is a list of codes for glyphs that are on that key.
 There is no limit to the number of glyphs that can be on a key.
 .LP
 The sample server sets up the keycode and modifier maps in 
-server/ddx/dec/lk201/lk201.c.  This is the map passed to the routine
+Xserver/hw/dec/lk201/lk201.c.  This is the map passed to the routine
 InitKeyboardDeviceStruct().   Once the map is set up, DIX keeps and
-maintains the client's changes to it.  See also server/ddx/dec/lk201/keynames.h
+maintains the client's changes to it.  See also Xserver/hw/dec/lk201/keynames.h
 for the association between lk201 keys and the keysyms in X11/keysym.h.
 
 The X protocol defines standard keycap glyph markings to indicate the 
@@ -1448,7 +1448,7 @@ These are all defined in X11/keysym.h.
 
 Legal modifier keys must generate both up and down transitions.  When 
 a client tries to change a modifier key (for instance, to make "A" the
-"Control" key), DIX calls the following routine (in server/ddx/dec/lk201/lk201.c)
+"Control" key), DIX calls the following routine (in Xserver/hw/dec/lk201/lk201.c)
 .nf
 
 	Bool LegalModifier(key)
@@ -1505,7 +1505,7 @@ Data Structures
 X supports multiple screens that are connected to the same
 server.  Therefore, all the per-screen information is bundled into one data
 structure of attributes and procedures, which is the ScreenRec (see 
-server/include/scrnintstr.h).  
+Xserver/include/scrnintstr.h).  
 The procedure entry points in a ScreenRec operate on 
 regions, colormaps, cursors, and fonts, because these resources
 can differ in format from one screen to another.
@@ -1649,8 +1649,8 @@ graphics system, you should keep that implementation.)
 The procedure pointers to the region operators are located in the
 ScreenRec data structure.
 The definition of a region can be found in the file 
-server/include/regionstr.h.
-The region code is found in server/ddx/mi/miregion.c.
+Xserver/include/regionstr.h.
+The region code is found in Xserver/mi/miregion.c.
 DDX implementations using other region formats will
 need to supply different versions of the region operators.
 
@@ -1770,7 +1770,7 @@ RectIn returns one of the defined constants
 rgnIN, rgnOUT, or rgnPART, depending upon whether the box is entirely
 inside the region, entirely outside of the region, or partly in and partly out of 
 the region.
-These constants are defined in server/include/region.h.
+These constants are defined in Xserver/include/region.h.
 .nf
 
 	Bool pScreen->PointInRegion(pRegion, x, y, pBox)
@@ -1888,7 +1888,7 @@ size, but some hardware cursor schemes allow a maximum of N pixels by M
 pixels.  Therefore, you are allowed to transform the cursor to a smaller
 size, but be sure to include the hot-spot.
 
-CursorBits in server/include/cursorstr.h
+CursorBits in Xserver/include/cursorstr.h
 is a device-independent structure containing a device-independent
 representation of the bits for the source and mask.  
 (This is possible because the bitmap representation is the same
@@ -2289,7 +2289,7 @@ If any client has requested ColormapNotify events, the DDX layer must notify the
 be used to find such windows.  The DIX routines TellNoMap(), 
 TellNewMap()  and TellGainedMap() are provided to be used as 
 the procedure parameter to WalkTree.  These procedures are in
-server/dix/colormap.c.)
+Xserver/dix/colormap.c.)
 .nf
 
 	int pScreen->ListInstalledColormaps(pScreen, pCmapList)
@@ -2483,7 +2483,7 @@ has an opportunity at font-load time
 to "realize" a font into some internal format if necessary. 
 This happens every time the font is loaded into memory.
 
-A font (FontRec in server/include/dixfontstr.h) is
+A font (FontRec in Xserver/include/dixfontstr.h) is
 a device-independent structure containing a device-independent
 representation of the font.  When a font is created, it is "realized"
 for each screen.  At this point, the screen has the chance to convert
@@ -2539,7 +2539,7 @@ height for cursors that you can handle.
 For TileShape and StippleShape, start with the suggested values in pWidth
 and pHeight and modify them in place to be optimal values that are
 greater than or equal to the suggested values.
-The sample server implementation is in server/ddx/mfb/mfbmisc.c.
+The sample server implementation is in Xserver/mfb/mfbmisc.c.
 .nf
 
 	pScreen->SourceValidate(pDrawable, x, y, width, height)
@@ -2620,8 +2620,8 @@ handled by a processor with an independent address space, there is no
 point having a pointer to the bit image itself.
 
 The definition of a drawable and a pixmap can be found in the file
-server/include/pixmapstr.h.
-The definition of a window can be found in the file server/include/windowstr.h.
+Xserver/include/pixmapstr.h.
+The definition of a window can be found in the file Xserver/include/windowstr.h.
 
 .NH 3
 Pixmaps
@@ -2672,7 +2672,7 @@ for the pixmap data, and if the implementation is using the
 devPrivate field as a pointer to the pixmap data, it should be
 set to NULL.
 If successful, it returns a pointer to the new pixmap; if not, it returns NULL.
-See server/ddx/mfb/mfbpixmap.c for the sample server implementation.
+See Xserver/mfb/mfbpixmap.c for the sample server implementation.
 .nf
 
 	Bool pScreen->DestroyPixmap(pPixmap)
@@ -2682,7 +2682,7 @@ This ScreenRec procedure must "destroy" a pixmap.
 It should decrement the reference count and, if zero, it 
 must deallocate the PixmapRec and all attached devPrivate blocks.
 If successful, it returns TRUE. 
-See server/ddx/mfb/mfbpixmap.c for the sample server implementation.
+See Xserver/mfb/mfbpixmap.c for the sample server implementation.
 .nf
 
 	Bool							/* NEW IN R6 */
@@ -2702,7 +2702,7 @@ pScreen->CreatePixmap, probably with a zero width or height to avoid
 allocating space for the pixmap data.  pPixData is assumed to be the
 pixmap data; it will be stored in an implementation-dependent place
 (usually pPixmap->devPrivate.ptr).  This routine returns
-TRUE if successful.  See server/ddx/mi/miscrinit.c for the sample
+TRUE if successful.  See Xserver/mi/miscrinit.c for the sample
 server implementation.
 .nf
 
@@ -2860,7 +2860,7 @@ This routine is a hook for when DIX creates a window.
 It should fill in the "Window Procedures in the WindowRec" below
 and also allocate the devPrivate block for it.
 
-See server/ddx/mfb/mfbwindow.c for the sample server implementation.
+See Xserver/mfb/mfbwindow.c for the sample server implementation.
 .nf
 
 	Bool pScreen->DestroyWindow(pWin);
@@ -2870,7 +2870,7 @@ This routine is a hook for when DIX destroys a window.
 It should deallocate the devPrivate block for it and any other blocks that need
 to be freed, besides doing other cleanup actions.
 
-See server/ddx/mfb/mfbwindow.c for the sample server implementation.
+See Xserver/mfb/mfbwindow.c for the sample server implementation.
 .nf
 
 	Bool pScreen->PositionWindow(pWin, x, y);
@@ -2885,7 +2885,7 @@ aligned to longword locations in the frame buffer, then you should rotate your t
 The actual graphics involved in moving the pixels on the screen and drawing the
 border are handled by CopyWindow(), below.
 .LP
-See server/ddx/mfb/mfbwindow.c for the sample server implementation.
+See Xserver/mfb/mfbwindow.c for the sample server implementation.
 .nf
 
 	Bool pScreen->RealizeWindow(pWin);
@@ -2926,7 +2926,7 @@ set of routines stored in the WindowRec.)
 ValidateTree calculates the clipping region for the parent window and
 all of its children.
 This routine must be provided. The sample
-server has a machine-independent version in server/ddx/mi/mivaltree.c.  This
+server has a machine-independent version in Xserver/mi/mivaltree.c.  This
 is a very difficult routine to replace.
 .nf
 
@@ -2956,7 +2956,7 @@ The count field in the expose event is a hint to the
 client as to the number of
 regions that are after this one.
 This routine must be provided. The sample
-server has a machine-independent version in server/ddx/mi/miexpose.c.
+server has a machine-independent version in Xserver/mi/miexpose.c.
 .nf
 
 	void pScreen->ClipNotify (pWin, dx, dy)
@@ -3005,7 +3005,7 @@ ClearToBackground should write the background color or tile to the
 rectangle in question (probably using PaintWindowBackground).
 If w or h is zero, it clears all the way to the right or lower edge of the window.
 
-The sample server implementation is in server/ddx/mi/miwindow.c.
+The sample server implementation is in Xserver/mi/miwindow.c.
 .nf
 
 	void pScreen->PaintWindowBackground(pWin, region, kind)
@@ -3063,7 +3063,7 @@ in oldRegion (with reference point oldpt) are copied to the
 window's new region (pWin->borderClip).   pWin->borderClip is gotten
 directly from the window, rather than passing it as a parameter.
 
-The sample server implementation is in server/ddx/mfb/mfbwindow.c.
+The sample server implementation is in Xserver/mfb/mfbwindow.c.
 
 .NH 4
 Screen Operations for Backing Store
@@ -3076,7 +3076,7 @@ interface.  For screens not supporting backing store, these pointers
 may be nul.  Servers that implement some backing store scheme 
 must fill in the procedure pointers for the procedures below,
 and must maintain the backStorage field in each window struct.
-The sample implementation is in ddx/mi/mibstore.c.
+The sample implementation is in mi/mibstore.c.
 .nf
 
 	void pScreen->SaveDoomedAreas(pWin, pRegion, dx, dy)
@@ -3118,6 +3118,149 @@ underneath its parent as a result of bitgravity.  The returned region
 represents occluded areas of the window for which the backing store
 contents are invalid.
 
+.NH 4
+Screen Operations for Multi-Layered Framebuffers (NEW IN R6)
+.XS
+Screen Operations for Multi-Layered Framebuffers
+.XE
+.LP
+The following screen functions are useful if you have a framebuffer with
+multiple sets of independent bit planes, e.g. overlays or underlays in
+addition to the "main" planes.  If you have a simple single-layer
+framebuffer, you should probably use the mi versions of these routines
+in mi/miwindow.c.  This can be easily accomplished by calling miScreenInit.
+.nf
+
+    void pScreen->MarkWindow(
+	WindowPtr pWin
+    )
+.fi
+This entire dix function MarkWindow has moved to ddx and is accessed via
+this screen function.
+This function should store something, usually a pointer to a device-dependent
+structure, in pWin->valdata so that ValidateTree has the information
+it needs to validate the window.
+.nf
+
+    Bool pScreen->MarkOverlappedWindows(
+	WindowPtr parent,
+	WindowPtr firstChild,
+	WindowPtr * ppLayerWin
+    )
+.fi
+This entire dix function MarkWindow has moved to ddx and is accessed via
+this screen function.
+The only difference is that it returns another piece of information:
+ppLayerWin is filled in with a pointer to the window at which save under
+marking and ValidateTree should begin.  In the single-layered framebuffer
+case, pLayerWin == pWin.
+.nf
+
+    Bool pScreen->ChangeSaveUnder(
+	WindowPtr pLayerWin,
+	WindowPtr firstChild
+    )
+.fi
+The dix functions ChangeSaveUnder and CheckSaveUnder have moved to ddx and 
+are accessed via this screen function.  pLayerWin should be the window
+returned in the ppLayerWin parameter of MarkOverlappedWindows.  The function
+may turn on backing store for windows that might be covered, and may partially
+turn off backing store for windows.  It returns TRUE if PostChangeSaveUnder
+needs to be called to finish turning off backing store.
+.nf
+
+    void pScreen->PostChangeSaveUnder(
+	WindowPtr pLayerWin,
+	WindowPtr firstChild
+    )
+.fi
+The dix function DoChangeSaveUnder has moved to ddx and is accessed via
+this screen function.  This function completes the job of turning off
+backing store that was started by ChangeSaveUnder.
+.nf
+
+    void pScreen->MoveWindow(
+	WindowPtr pWin,
+	int x,
+	int y,
+	WindowPtr pSib,
+	VTKind kind
+    )
+.fi
+The dix function MoveWindow has moved to ddx and is accessed via
+this screen function.  The new position of the window is given by 
+x,y.  kind is VTMove if the window is only moving, or VTOther if 
+the border is also changing.
+.nf
+
+    void pScreen->ResizeWindow(
+	WindowPtr pWin,
+	int x,
+	int y, 
+	unsigned int w,
+	unsigned int h,
+	WindowPtr pSib
+    )
+.fi
+The dix function SlideAndSizeWindow has moved to ddx and is accessed via
+this screen function.  The new position is given by x,y.  The new size
+is given by w,h.
+.nf
+
+    WindowPtr pScreen->GetLayerWindow(
+	WindowPtr pWin
+    )
+.fi
+This is a new function which returns a child of the layer parent of pWin.
+.nf
+
+    void pScreen->HandleExposures(
+	WindowPtr pWin
+    )
+.fi
+The dix function HandleExposures has moved to ddx and is accessed via
+this screen function.  This function is called after ValidateTree and
+uses the information contained in valdata to send exposures to windows.
+.nf
+
+    void pScreen->ReparentWindow(
+	WindowPtr pWin,
+	WindowPtr pPriorParent
+    )
+.fi
+This function will be called when a window is reparented.  At the time of
+the call, pWin will already be spliced into its new position in the
+window tree, and pPriorParent is its previous parent.  This function
+can be NULL.
+.nf
+
+    void pScreen->SetShape(
+	WindowPtr pWin
+    )
+.fi
+The dix function SetShape has moved to ddx and is accessed via
+this screen function.  The window's new shape will have already been
+stored in the window when this function is called.
+.nf
+
+    void pScreen->ChangeBorderWidth(
+	WindowPtr pWin,
+	unsigned int width
+    )
+.fi
+The dix function ChangeBorderWidth has moved to ddx and is accessed via
+this screen function.  The new border width is given by width.
+.nf
+
+    void pScreen->MarkUnrealizedWindow(
+	WindowPtr pChild,
+	WindowPtr pWin,
+	Bool fromConfigure
+    )
+.fi
+This function is called for windows that are being unrealized as part of
+an UnrealizeTree.  pChild is the window being unrealized, pWin is an
+ancestor, and the fromConfigure value is simply propogated from UnrealizeTree.
 .NH 2
 Graphics Contexts and Validation
 .XS
@@ -3153,7 +3296,7 @@ consumed by each GC, it is wise to create a few "boilerplate" GC ops vectors
 which can be shared by every GC which matches the constraints for that set.
 Also, it is usually reasonable to have every GC created by a particular
 module to share a common set of GC funcs.  Samples of this sort of
-sharing can be seen in ddx/cfb/cfbgc.c and ddx/mfb/mfbgc.c.
+sharing can be seen in cfb/cfbgc.c and mfb/mfbgc.c.
 
 The DDX software is notified any time the client (or DIX) uses a changed GC.
 For instance, if the hardware has special support for drawing fixed-width
@@ -3164,7 +3307,7 @@ lays out glyphs by hand in software, depending upon the new font that is
 selected.
 
 A definition of these structures can be found in the file 
-server/include/gcstruct.h.
+Xserver/include/gcstruct.h.
 
 Also included in each GC is an array of devPrivates which portions of the
 DDX can use for any reason.  Entries in this array are allocated with
@@ -3181,13 +3324,13 @@ CreateGC, ChangeGC, CopyGC, SetClipRects, SetDashes, and FreeGC.
 	    int *pStatus;
 
 	int ChangeGC(pGC, mask, pval)
-	    GC *pGC;
+	    GCPtr pGC;
 	    BITS32 mask;
 	    XID *pval;
 
 	int CopyGC(pgcSrc, pgcDst, mask)
-	    GC *pgcSrc;
-	    GC *pgcDst;
+	    GCPtr pgcSrc;
+	    GCPtr pgcDst;
 	    BITS32 mask;
 
 	int SetClipRects(pGC, xOrigin, yOrigin, nrects, prects, ordering)
@@ -3248,7 +3391,7 @@ Details of operation
 .LP
 At screen initialization, a screen must supply a GC creation procedure.
 At GC creation, the screen must fill in GC funcs and GC ops vectors
-(server/include/gcstruct.h).  For any particular GC, the func vector
+(Xserver/include/gcstruct.h).  For any particular GC, the func vector
 must remain constant, while the op vector may vary.  This invariant is to
 ensure that Wrappers work correctly.
 
@@ -3348,7 +3491,7 @@ In this way, your drawing primitive routines (and whatever is below them)
 can easily determine what to clip and where.
 You should combine the regions clientClip (the region that the client desires to
 clip output to) and the region returned by NotClippedByChildren(), in DIX.
-An example is in server/ddx/mfb/mfbgc.c.
+An example is in Xserver/mfb/mfbgc.c.
 
 Some kinds of extension software may cause this routine to be called more than originally
 intended; you should not rely on algorithms that will break under such circumstances.
@@ -3409,7 +3552,7 @@ type is CT_UNSORTED, CT_YBANDED or CT_YXBANDED, then pValue pointer to a
 list of rectangles, nrects long.  If type is CT_REGION, then
 pValue pointer to a RegionRec from the mi region code.  If type
 is CT_PIXMAP pValue is a pointer to a pixmap.  (The defines
-for CT_NONE, etc. are in server/include/gc.h.)
+for CT_NONE, etc. are in Xserver/include/gc.h.)
 This routine is responsible for incrementing any necessary reference
 counts (e.g. for a pixmap clip mask) for the new clipmask and 
 freeing anything that used to be in the GC's clipMask field.  
@@ -3614,7 +3757,7 @@ event must be sent for the client to correctly repaint them.  Of
 course, if you implement some sort of backing store, you could do this
 without resorting to exposure events.
 
-An example implementation is mfbCopyArea() in server/ddx/mfb/mfbbitblt.c.
+An example implementation is mfbCopyArea() in Xserver/mfb/mfbbitblt.c.
 .nf
 
 	RegionPtr pGC->ops->CopyPlane(src, dst, pGC, srcx, srcy, w, h, dstx, dsty, plane)
@@ -3633,7 +3776,7 @@ and background colors to it.
 All other conditions of CopyArea apply to CopyPlane too.
 
 An example implementation is mfbCopyPlane() in 
-server/ddx/mfb/mfbbitblt.c.
+Xserver/mfb/mfbbitblt.c.
 .nf
 
 	void pGC->ops->PolyPoint(dst, pGC, mode, n, pPoint)
@@ -3649,8 +3792,8 @@ mode is one of the defined constants Origin (absolute coordinates) or Previous
 (each coordinate is relative to the last).
 Note that this does not use the background color or any tiles or stipples.
 
-Example implementations are mfbPolyPoint() in server/ddx/mfb/mfbpolypnt.c and 
-miPolyPoint in server/ddx/mi/mipolypnt.c.
+Example implementations are mfbPolyPoint() in Xserver/mfb/mfbpolypnt.c and 
+miPolyPoint in Xserver/mi/mipolypnt.c.
 .nf
 
 	void pGC->ops->Polylines(dst, pGC, mode, n, pPoint)
@@ -3668,7 +3811,7 @@ mode is one of the defined constants Previous or Origin, depending upon
 whether the points are each relative to the last or are absolute.
 
 Example implementations are miWideLine() and miWideDash() in
-ddx/mi/miwideline.c and miZeroLine() in ddx/mi/mizerline.c.
+mi/miwideline.c and miZeroLine() in mi/mizerline.c.
 .nf
 
 	void pGC->ops->PolySegment(dst, pGC, n, pPoint)
@@ -3692,7 +3835,7 @@ An example implementation is miPolySegment() in mipolyseg.c.
 .fi
 PolyRectangle draws outlines of rectangles for each rectangle in the array.
 
-An example implementation is miPolyRectangle() in server/ddx/mi/mipolyrect.c.
+An example implementation is miPolyRectangle() in Xserver/mi/mipolyrect.c.
 .nf
 
 	void pGC->ops->PolyArc(dst, pGC, n, pArc)
@@ -3704,8 +3847,8 @@ An example implementation is miPolyRectangle() in server/ddx/mi/mipolyrect.c.
 PolyArc draws connected conic arcs according to the descriptions in the array.
 See the protocol specification for more details.
 
-Example implementations are miZeroPolyArc in server/ddx/mi/mizerarc. and
-miPolyArc() in server/ddx/mi/miarc.c.
+Example implementations are miZeroPolyArc in Xserver/mi/mizerarc. and
+miPolyArc() in Xserver/mi/miarc.c.
 .nf
 
 	void pGC->ops->FillPolygon(dst, pGC, shape, mode, count, pPoint)
@@ -3727,7 +3870,7 @@ You can choose appropriate algorithms or hardware based upon mode.
 mode is one of the defined constants Previous or Origin, depending upon
 whether the points are each relative to the last or are absolute.
 
-An example implementation is miFillPolygon() in server/ddx/mi/mipoly.c.
+An example implementation is miFillPolygon() in Xserver/mi/mipoly.c.
 .nf
 
 	void pGC->ops->PolyFillRect(dst, pGC, n, pRect)
@@ -3738,8 +3881,8 @@ An example implementation is miFillPolygon() in server/ddx/mi/mipoly.c.
 .fi
 PolyFillRect fills multiple rectangles.
 
-Example implementations are mfbPolyFillRect() in server/ddx/mfb/mfbfillrct.c and 
-miPolyFillRect() in server/ddx/mi/mifillrct.c.
+Example implementations are mfbPolyFillRect() in Xserver/mfb/mfbfillrct.c and 
+miPolyFillRect() in Xserver/mi/mifillrct.c.
 .nf
 
 	void pGC->ops->PolyFillArc(dst, pGC, n, pArc)
@@ -3752,7 +3895,7 @@ PolyFillArc fills a shape for each arc in the
 list that is bounded by the arc and one or two
 line segments with the current fill style.
 
-An example implementation is miPolyFillArc() in server/ddx/mi/mifillarc.c.
+An example implementation is miPolyFillArc() in Xserver/mi/mifillarc.c.
 .nf
 
 	void pGC->ops->PutImage(dst, pGC, depth, x, y, w, h, leftPad, format, pBinImage)
@@ -3775,7 +3918,7 @@ pixmap image must be a Bitmap.
 If a Bitmap, the foreground and background colors will be applied 
 to the destination.
 
-An example implementation is miPutImage() in server/ddx/mfb/mibitblt.c.
+An example implementation is miPutImage() in Xserver/mfb/mibitblt.c.
 .nf
 
 	void pScreen->GetImage(src, x, y, w, h, format, planeMask, pBinImage)
@@ -3801,7 +3944,7 @@ If format is XYPixmap, planemask is guaranteed to have a single
 bit set; the bits should be written in Bitmap format, which
 is the format for a single plane of an XYPixmap.
 
-An example implementation is miGetImage() in server/ddx/mi/mibitblt.c.
+An example implementation is miGetImage() in Xserver/mi/mibitblt.c.
 .nf
 
 	void pGC->ops->ImageText8(pDraw, pGC, x, y, count, chars)
@@ -3816,7 +3959,7 @@ The text is drawn in the foreground color;
 the background color fills the remainder of the character rectangles.
 The coordinates specify the baseline and start of the text.
 
-An example implementation is miImageText8() in server/ddx/mi/mipolytext.c.
+An example implementation is miImageText8() in Xserver/mi/mipolytext.c.
 .nf
 
 	int pGC->ops->PolyText8(pDraw, pGC, x, y, count, chars)
@@ -3831,7 +3974,7 @@ the current fill style for special effects such as
 shaded text.
 See the X protocol specification for more details.
 
-An example implementation is miPolyText8() in server/ddx/mi/mipolytext.c.
+An example implementation is miPolyText8() in Xserver/mi/mipolytext.c.
 .nf
 
 	int pGC->ops->PolyText16(pDraw, pGC, x, y, count, chars)
@@ -3868,14 +4011,14 @@ Each font has row and column minimum and maximum values; the CharInfo
 structures form a two-dimensional matrix.
 
 Example implementations are miPolyText16() and 
-miImageText16() in server/ddx/mi/mipolytext.c.
+miImageText16() in Xserver/mi/mipolytext.c.
 
 See the X protocol specification for more details on these graphic operations.
 .LP
 There is a hook in the GC ops, called LineHelper, that used to be used in the
 sample implementation by the code for wide lines.  It no longer servers any
-purpose
-
+purpose in the sample servers, but still exists, #ifdef'ed by NEED_LINEHELPER,
+in case someone needs it.
 .NH 2
 Pixblit Procedures
 .XS
@@ -4106,7 +4249,7 @@ Although text drawing will work, it will be very slow.
 		int x , y;
 		unsigned int nglyph;
 		CharInfoRec **ppci;		/* array of character info */
-		char *pglyphBase;		/* unused in R5 */
+		char *pglyphBase;		/* unused since R5 */
 
 .fi
 .LP
@@ -4123,7 +4266,7 @@ and stipple, patOrg, fgPixel and bgPixel (for fillStyle OpaqueStipple).
 		int x , y;
 		unsigned int nglyph;
 		CharInfoRec **ppci;	/* array of character info */
-		char *pglyphBase;	/* unused in R5 */
+		char *pglyphBase;	/* unused since R5 */
 
 .fi
 .LP
@@ -4152,7 +4295,7 @@ and such; it is to be used for WYSIWYG word processing and similar systems.
 Both of these routines must clip themselves to the overall clipping region.
 
 Example implementations in mi are miPolyGlyphBlt() and 
-miImageGlyphBlt() in server/ddx/mi/miglblt.c.
+miImageGlyphBlt() in Xserver/mi/miglblt.c.
 
 .NH 4
 PushPixels routine
@@ -4180,7 +4323,7 @@ Although it will work, it will be slow.
 .nf
 
 	void pGC->ops->PushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
-		GC *pGC;
+		GCPtr pGC;
 		PixmapPtr pBitMap;
 		DrawablePtr pDrawable;
 		int dx, dy, xOrg, yOrg;
@@ -4205,7 +4348,7 @@ in the bitmap, the destination is left the way it is.
 
 This routine must clip to the overall clipping region.
 
-An Example implementation is miPushPixels() in server/ddx/mi/mipushpxl.c.
+An Example implementation is miPushPixels() in Xserver/mi/mipushpxl.c.
 
 .NH 2
 Shutdown Procedures
@@ -4634,12 +4777,12 @@ included in any one of the specified classes.
 .NH 2
 Macros and Other Helpers
 .LP
-There are a number of macros in server/include/dix.h which
+There are a number of macros in Xserver/include/dix.h which
 are useful to the extension writer.  Ones of particular interest
 are: REQUEST, REQUEST_SIZE_MATCH, REQUEST_AT_LEAST_SIZE,
 REQUEST_FIXED_SIZE, LEGAL_NEW_RESOURCE, LOOKUP_DRAWABLE, VERIFY_GC, and
 VALIDATE_DRAWABLE_AND_GC. Useful byte swapping macros can be found
-in server/include/misc.h: lswapl, lswaps, LengthRestB, LengthRestS,
+in Xserver/include/misc.h: lswapl, lswaps, LengthRestB, LengthRestS,
 LengthRestL, SwapRestS, SwapRestL, swapl, swaps, cpswapl, and cpswaps.
 .bp
 .NH 1
@@ -4657,11 +4800,11 @@ categories.  Notice that many of the graphics routines have both
 mi and mfb implementations.
 .TS
 l l.
-dix	portable to all systems; do not attempt to rewrite (server/dix)
-4.2	written for 4.2/4.3bsd Unix or equivalent (server/os)
-ddx	frame buffer dependent (examples in server/ddx/mfb,server/ddx/cfb)
-mi	routine provided in server/ddx/mi
-hd	hardware dependent (examples in many server/ddx directories)
+dix	portable to all systems; do not attempt to rewrite (Xserver/dix)
+4.2	written for 4.2/4.3bsd Unix or equivalent (Xserver/os)
+ddx	frame buffer dependent (examples in Xserver/mfb,Xserver/cfb)
+mi	routine provided in Xserver/mi
+hd	hardware dependent (examples in many Xserver/ddx directories)
 none	not implemented in sample implementation
 .TE
 .TS
