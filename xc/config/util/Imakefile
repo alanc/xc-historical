@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.5 94/02/10 16:48:27 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.6 94/03/24 16:40:30 gildea Exp $
 #if UseCCMakeDepend
 MDEP_PROG = makedepend
 #endif
@@ -9,9 +9,7 @@ MDEP_PROG = makedepend
 all:: $(PROGRAMS)
 
 CppScriptTarget(xmkmf,xmkmf.cpp,-DCONFIGDIRSPEC='"'"-I$(CONFIGDIR)"'"',$(ICONFIGFILES))
-#if UseCCMakeDepend
 CppScriptTarget(makedepend,mdepend.cpp,-DPREPROC='"'"$(PREPROCESSCMD)"'"',$(ICONFIGFILES))
-#endif
 CppScriptTarget(mergelib,mergelib.cpp,"-DARCMD=$(AR)" "-DRANLIB=$(RANLIB)",$(ICONFIGFILES))
 
 #if HasSymLinks
