@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Varargs.c,v 1.1 89/11/08 17:47:41 swick Exp $";
+    "$XConsortium: Varargs.c,v 1.2 89/11/09 11:12:11 swick Exp $";
 #endif
 /*
 
@@ -23,27 +23,9 @@ without express or implied warranty.
 
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
-#include <X11/Quarks.h>
 #include "VarargsI.h"
 #include "ResourceI.h"
 
-
-/*
- *   _XtVarargsInitialize()
- *
- *   Initializes Quarks for resource types ...
- *   called from XtToolkitInitialize
- *
- */
-
-XrmQuark XtQVaNestedList;
-XrmQuark XtQVaTypedArg;
-
-void _XtVarargsInitialize()
-{
-	XtQVaNestedList = StringToQuark((String)XtVaNestedList);
-	XtQVaTypedArg = StringToQuark((String)XtVaTypedArg);
-}
 
 /*
  *    Given a nested list, _XtCountNestedList() returns counts of the
@@ -57,7 +39,7 @@ _XtCountNestedList(avlist, total_count, typed_count)
     int             *typed_count;
 {
     for (; avlist->name != NULL; avlist++) {
-        if(StringToQuark(avlist->name) == XtQVaNestedList) {
+        if (strcmp(avlist->name, XtVaNestedList) == 0) {
             _XtCountNestedList((XtTypedArgList)avlist->value, total_count,
                 	       typed_count);
         } else {
@@ -89,14 +71,14 @@ _XtCountVaList(var, total_count, typed_count)
  
     for(attr = va_arg(var, String) ; attr != NULL;
                         attr = va_arg(var, String)) {
-        if (StringToQuark(attr) == XtQVaTypedArg) {
+        if (strcmp(attr, XtVaTypedArg) == 0) {
             va_arg(var, String);
             va_arg(var, String);
             va_arg(var, XtArgVal);
             va_arg(var, int);
             ++(*total_count);
             ++(*typed_count);
-        } else if (StringToQuark(attr) == XtQVaNestedList) {
+        } else if (strcmp(attr, XtVaNestedList) == 0) {
             _XtCountNestedList(va_arg(var, XtTypedArgList), total_count,
                 typed_count);
         } else {
@@ -122,21 +104,21 @@ XtVaCreateArgsList(unused, va_alist)
     va_dcl
 #endif
 {
-    va_list    	    var;
-    String	    attr;
+    va_list var;
     XtTypedArgList  avlist;
     int		    count = 0;
+    String	    attr;
 
     /*
      * Count the number of attribute-value pairs in the list.
      * Note: The count is required only to allocate enough space to store
-     * the list. Thefore nested lists are not counted recursively.
+     * the list. Therefore nested lists are not counted recursively.
      */
     Va_start(var,unused);
     for(attr = va_arg(var, String) ; attr != NULL;
                         attr = va_arg(var, String)) {
         ++count;
-        if (StringToQuark(attr) == XtQVaTypedArg) {
+        if (strcmp(attr, XtVaTypedArg) == 0) {
             va_arg(var, String);
             va_arg(var, String);
             va_arg(var, XtArgVal);
@@ -147,13 +129,26 @@ XtVaCreateArgsList(unused, va_alist)
     }
     va_end(var);
 
+    Va_start(var,unused);
+    avlist = _XtVaCreateTypedArgList(var, count);
+    va_end(var);
+    return (XtVarArgsList)avlist;
+}
+
+
+XtTypedArgList _XtVaCreateTypedArgList(var, count)
+    va_list    	    var;     
+    register int    count;
+{
+    String	    attr;
+    XtTypedArgList  avlist;
+
     avlist = (XtTypedArgList)
 		XtCalloc((int)count + 1, (unsigned)sizeof(XtTypedArg));
 
-    Va_start(var,unused);
     for(attr = va_arg(var, String), count = 0; attr != NULL; 
 		attr = va_arg(var, String)) {
-	if (StringToQuark(attr) == XtQVaTypedArg) {
+	if (strcmp(attr, XtVaTypedArg) == 0) {
 	    avlist[count].name = va_arg(var, String);
 	    avlist[count].type = va_arg(var, String);
 	    avlist[count].value = va_arg(var, XtArgVal);
@@ -166,9 +161,8 @@ XtVaCreateArgsList(unused, va_alist)
 	++count;
     }
     avlist[count].name = NULL;
-    va_end(var);
 
-    return((XtVarArgsList)avlist);
+    return avlist;
 }
 
 
@@ -215,7 +209,7 @@ _XtTypedArgToArg(widget, typed_arg, arg_return, resources, num_resources)
        
     to_val.addr = NULL;
     from_val.size = typed_arg->size;
-    if ((StringToQuark(typed_arg->type) == XtQString) ||
+    if ((strcmp(typed_arg->type, XtRString) == 0) ||
             (typed_arg->size > sizeof(XtArgVal))) {
         from_val.addr = (caddr_t)typed_arg->value;
     } else {
@@ -267,7 +261,7 @@ _XtNestedArgtoArg(widget, avlist, args, resources, num_resources)
                 count += _XtTypedArgToArg(widget, avlist, (args+count),
                              resources, num_resources);
             }
-        } else if(StringToQuark(avlist->name) == XtQVaNestedList) {
+        } else if (strcmp(avlist->name, XtVaNestedList) == 0) {
             count += _XtNestedArgtoArg(widget, (XtTypedArgList)avlist->value,
                         (args+count), resources, num_resources);
         } else {
@@ -314,7 +308,7 @@ _XtVaToArgList(widget, args_return, num_args_return, var)
 
     for(attr = va_arg(var, String) ; attr != NULL;
 			attr = va_arg(var, String)) {
-	if (StringToQuark(attr) == XtQVaTypedArg) {
+	if (strcmp(attr, XtVaTypedArg) == 0) {
 	    typed_arg.name = va_arg(var, String);
 	    typed_arg.type = va_arg(var, String);
 	    typed_arg.value = va_arg(var, XtArgVal);
@@ -329,7 +323,7 @@ _XtVaToArgList(widget, args_return, num_args_return, var)
 		count += _XtTypedArgToArg(widget, &typed_arg, &args[count],
 			     resources, num_resources);
 	    }
-	} else if (StringToQuark(attr) == XtQVaNestedList) {
+	} else if (strcmp(attr, XtVaNestedList) == 0) {
 	    if (widget != NULL || !fetched_resource_list) {
 		XtGetResourceList(XtClass(widget), &resources, &num_resources);
 		fetched_resource_list = True;
@@ -366,7 +360,7 @@ static int _XtNestedArgtoTypedArg(args, avlist)
             (args+count)->size = avlist->size;
             (args+count)->value = avlist->value;
             ++count; 
-        } else if(StringToQuark(avlist->name) == XtQVaNestedList) {             
+        } else if(strcmp(avlist->name, XtVaNestedList) == 0) {             
             count += _XtNestedArgtoTypedArg((args+count),  
                             (XtTypedArgList)avlist->value); 
         } else {                             
@@ -403,13 +397,13 @@ _XtVaToTypedArgList(var, args_return, num_args_return)
 
     for(attr = va_arg(var, String), count = 0 ; attr != NULL;
 		    attr = va_arg(var, String)) {
-        if (StringToQuark(attr) == XtQVaTypedArg) {
+        if (strcmp(attr, XtVaTypedArg) == 0) {
 	    args[count].name = va_arg(var, String);
 	    args[count].type = va_arg(var, String);
 	    args[count].value = va_arg(var, XtArgVal);
 	    args[count].size = va_arg(var, int);
 	    ++count;
-	} else if (StringToQuark(attr) == XtQVaNestedList) {
+	} else if (strcmp(attr, XtVaNestedList) == 0) {
    	    count += _XtNestedArgtoTypedArg(&args[count], 
 			va_arg(var, XtTypedArgList));
 	} else {
