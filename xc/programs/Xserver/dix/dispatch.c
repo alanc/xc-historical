@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.5 89/07/03 19:52:39 rws Exp $ */
+/* $XConsortium: dispatch.c,v 5.6 89/07/04 16:10:54 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -39,6 +39,7 @@ SOFTWARE.
 #include "opaque.h"
 #include "input.h"
 #include "servermd.h"
+#include "extnsionst.h"
 
 extern WindowPtr *WindowTable;
 extern xConnSetupPrefix connSetupPrefix;
@@ -1058,7 +1059,7 @@ ProcTranslateCoords(client)
 		 */
 		&& (!wBoundingShape(pWin) ||
 		    (*pWin->drawable.pScreen->PointInRegion)
-			    (pWin->borderSize, x, y, &box))
+			    (&pWin->borderSize, x, y, &box))
 #endif
 		)
             {
