@@ -1,4 +1,4 @@
-/* $XConsortium: io.c,v 1.7 92/05/12 18:08:16 gildea Exp $ */
+/* $XConsortium: io.c,v 1.8 92/05/15 10:38:59 gildea Exp $ */
 /*
  * i/o functions
  */
@@ -316,12 +316,13 @@ ResetCurrentRequest(client)
     }
 }
 
-static int  padlength[4] = {0, 3, 2, 1};
-
 int
-FlushClient(client, oc)
+FlushClient(client, oc, extraBuf, extraCount, padsize)
     ClientPtr   client;
     OsCommPtr   oc;
+    char       *extraBuf;
+    int         extraCount;
+    int         padsize;
 {
     ConnectionOutputPtr oco = oc->output;
     int         fd = oc->fd;
@@ -334,17 +335,13 @@ FlushClient(client, oc)
     if (!oco)
 	return 0;
     written = 0;
-    notWritten = oco->count;
+    notWritten = oco->count + extraCount + padsize;
     todo = notWritten;
     while (notWritten) {
 	long        before = written;
 	long        remain = todo;
 	int         i = 0;
 	long        len;
-
-	/* XXX - now that FlushClient doesn't take an extraBuffer
-	   argument, we don't really need the fancy writev code.
-	   */
 
 	/*-
 	 * You could be very general here and have "in" and "out" iovecs and
@@ -376,6 +373,8 @@ FlushClient(client, oc)
 	}
 
 	InsertIOV((char *) oco->buf, oco->count);
+	InsertIOV(extraBuf, extraCount);
+	InsertIOV(padBuffer, padsize);
 
 	errno = 0;
 	if ((len = writev(fd, iov, i)) >= 0) {
@@ -413,8 +412,12 @@ FlushClient(client, oc)
 		oco->size = notWritten + OutputBufferSize;
 		oco->buf = obuf;
 	    }
+	    if ((len = extraCount - written) > 0) {
+		bcopy(extraBuf + written,
+		      (char *) oco->buf + oco->count, len);
+	    }
 	    oco->count = notWritten;
-	    return 0;
+	    return extraCount;
 	} else {
 	    close(fd);
 	    MarkClientException(client);
@@ -441,7 +444,7 @@ FlushClient(client, oc)
     }
     oc->output = (ConnectionOutputPtr) NULL;
 
-    return 0;
+    return extraCount;
 }
 
 void
@@ -474,7 +477,7 @@ FlushAllOutput()
 		BITSET(OutputPending, oc->fd);
 		NewOutputPending = TRUE;
 	    } else {
-		(void) FlushClient(client, oc);
+		(void) FlushClient(client, oc, (char *) NULL, 0, 0);
 	    }
 	}
     }
@@ -507,13 +510,9 @@ write_to_client_internal(client, count, buf, padBytes)
 	oc->output = oco;
     }
     if (oco->count + count + padBytes > oco->size) {
-	register int i;
-
 	BITCLEAR(OutputPending, oc->fd);
 	NewOutputPending = FALSE;
-	i = FlushClient(client, oc);
-	if (i < 0)
-	    return i;
+	return FlushClient(client, oc, buf, count, padBytes);
     }
     NewOutputPending = TRUE;
     BITSET(OutputPending, oc->fd);
@@ -530,6 +529,8 @@ WriteToClientUnpadded(client, count, buf)
 {
     write_to_client_internal(client, count, buf, 0);
 }
+
+static int  padlength[4] = {0, 3, 2, 1};
 
 WriteToClient(client, count, buf)
     ClientPtr   client;

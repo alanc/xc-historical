@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.17 91/09/09 18:56:03 rws Exp $ */
+/* $XConsortium: connection.c,v 1.18 92/05/15 10:41:39 gildea Exp $ */
 /*
  * handles connections
  */
@@ -468,7 +468,7 @@ CloseDownConnection(client)
     OsCommPtr   oc = (OsCommPtr) client->osPrivate;
 
     if (oc->output && oc->output->count)
-	FlushClient(client, oc);
+	FlushClient(client, oc, (char *) NULL, 0, 0);
     ConnectionTranslation[oc->fd] = 0;
     close_fd(oc);
     client->osPrivate = (pointer) NULL;
