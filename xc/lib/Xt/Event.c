@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.164 94/03/31 20:24:47 converse Exp $ */
+/* $XConsortium: Event.c,v 1.165 94/03/31 20:56:11 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -968,12 +968,11 @@ typedef struct _CheckExposeInfo {
     int type1, type2;		/* Types of events to check for. */
     Boolean maximal;		/* Ignore non-exposure events? */
     Boolean non_matching;	/* Was there an event that did not 
-				   match eighter type? */
+				   match either type? */
     Window window;		/* Window to match. */
 } CheckExposeInfo;
 
-#define GetCount(ev) ( ((ev)->type == GraphicsExpose) ? \
-		       (ev)->xgraphicsexpose.count : (ev)->xexpose.count)
+#define GetCount(ev) (((XExposeEvent *)(ev))->count)
 
 static void SendExposureEvent();
 static Bool CheckExposureEvent();
@@ -999,13 +998,15 @@ XEvent * event;
     XtPerDisplay pd = _XtGetPerDisplay(dpy);
     XtEnum comp_expose;
     XtEnum comp_expose_type;
+    Boolean no_region;
 
     LOCK_PROCESS;
     comp_expose = COMP_EXPOSE;
-    comp_expose_type = COMP_EXPOSE_TYPE;
     UNLOCK_PROCESS;
+    comp_expose_type = comp_expose & 0x0f;
+    no_region = ((comp_expose & XtExposeNoRegion) ? True : False);
 
-    if (comp_expose & XtExposeNoRegion)
+    if (no_region)
 	AddExposureToRectangularRegion(event, pd->region);
     else
 	XtAddExposureToRegion(event, pd->region);
@@ -1013,8 +1014,8 @@ XEvent * event;
     if ( GetCount(event) != 0 )
  	return;
  
-    if ( (comp_expose_type == XtExposeCompressSeries) ||
-	(XEventsQueued(dpy, QueuedAfterReading) == 0) ) {
+    if ((comp_expose_type == XtExposeCompressSeries) ||
+	(XEventsQueued(dpy, QueuedAfterReading) == 0)) {
 	SendExposureEvent(event, widget, pd);
 	return;
     }
@@ -1027,7 +1028,7 @@ XEvent * event;
 	info.type1 = event->type;
 	info.type2 = 0;
     }
-    info.maximal =(comp_expose_type == XtExposeCompressMaximal) ? True : False;
+    info.maximal = (comp_expose_type == XtExposeCompressMaximal);
     info.non_matching = FALSE;
     info.window = XtWindow(widget);
 
@@ -1058,7 +1059,7 @@ XEvent * event;
 			  CheckExposureEvent, (char *) &info)) {
 
 	    count = GetCount(&event_return);
- 	    if (comp_expose & XtExposeNoRegion)
+ 	    if (no_region)
 		AddExposureToRectangularRegion(&event_return, pd->region);
  	    else
 		XtAddExposureToRegion(&event_return, pd->region);
@@ -1067,7 +1068,7 @@ XEvent * event;
 	    XIfEvent(dpy, &event_return,
 		     CheckExposureEvent, (char *) &info);
 	    count = GetCount(&event_return);
- 	    if (comp_expose & XtExposeNoRegion)
+ 	    if (no_region)
 		AddExposureToRectangularRegion(&event_return, pd->region);
  	    else
 		XtAddExposureToRegion(&event_return, pd->region);
@@ -1084,24 +1085,13 @@ void XtAddExposureToRegion(event, region)
     Region   region;
 {
     XRectangle rect;
+    XExposeEvent *ev = (XExposeEvent *) event;
+    /* Expose and GraphicsExpose fields of interest are at identical offsets */
 
-    switch (event->type) {
-	case Expose:
-		rect.x = event->xexpose.x;
-		rect.y = event->xexpose.y;
-		rect.width = event->xexpose.width;
-		rect.height = event->xexpose.height;
-		break;
-	case GraphicsExpose:
-		rect.x = event->xgraphicsexpose.x;
-		rect.y = event->xgraphicsexpose.y;
-		rect.width = event->xgraphicsexpose.width;
-		rect.height = event->xgraphicsexpose.height;
-		break;
-	default:
-		return;
-    }
-
+    rect.x = ev->x;
+    rect.y = ev->y;
+    rect.width = ev->width;
+    rect.height = ev->height;
     XUnionRectWithRegion(&rect, region, region);
 }
 
@@ -1118,23 +1108,13 @@ static void AddExposureToRectangularRegion(event, region)
      Region  region;
 {
     XRectangle rect;
+    XExposeEvent *ev = (XExposeEvent *) event;
+    /* Expose and GraphicsExpose fields of interest are at identical offsets */
 
-    switch (event->type) {
-      case Expose:
-	rect.x = event->xexpose.x;
-	rect.y = event->xexpose.y;
-	rect.width = event->xexpose.width;
-	rect.height = event->xexpose.height;
-	break;
-      case GraphicsExpose:
-	rect.x = event->xgraphicsexpose.x;
-	rect.y = event->xgraphicsexpose.y;
-	rect.width = event->xgraphicsexpose.width;
-	rect.height = event->xgraphicsexpose.height;
-	break;
-      default:
-	return;
-    }
+    rect.x = ev->x;
+    rect.y = ev->y;
+    rect.width = ev->width;
+    rect.height = ev->height;
 
     if (XEmptyRegion(region)) {
 	XUnionRectWithRegion(&rect, region, region);
@@ -1180,20 +1160,13 @@ XtPerDisplay pd;
     XtExposeProc expose;
     XRectangle rect;
     XtEnum comp_expose;
-
+    XExposeEvent *ev = (XExposeEvent *) event;
+   
     XClipBox(pd->region, &rect);
-    if (event->type == Expose) {
-	event->xexpose.x = rect.x;
-	event->xexpose.y = rect.y;
-	event->xexpose.width = rect.width;
-	event->xexpose.height = rect.height;
-    }
-    else {			/* Graphics Expose Event. */
-	event->xgraphicsexpose.x = rect.x;
-	event->xgraphicsexpose.y = rect.y;
-	event->xgraphicsexpose.width = rect.width;
-	event->xgraphicsexpose.height = rect.height;
-    }
+    ev->x = rect.x;
+    ev->y = rect.y;
+    ev->width = rect.width;
+    ev->height = rect.height;
 
     LOCK_PROCESS;
     comp_expose = COMP_EXPOSE;
