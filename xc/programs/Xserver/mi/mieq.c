@@ -1,5 +1,5 @@
 /*
- * $XConsortium: mieq.c,v 1.1 91/04/26 21:46:13 keith Exp $
+ * $XConsortium: mieq.c,v 1.2 91/05/04 23:10:48 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -99,11 +99,11 @@ mieqEnqueue (e)
     else
     {
     	newtail = oldtail + 1;
+    	if (newtail == QUEUE_SIZE)
+	    newtail = 0;
     	/* Toss events which come in late */
     	if (newtail == miEventQueue.head)
 	    return;
-    	if (newtail == QUEUE_SIZE)
-	    newtail = 0;
 	miEventQueue.tail = newtail;
     }
     miEventQueue.lastMotion = isMotion;
@@ -135,6 +135,7 @@ mieqProcessInputEvents ()
 {
     EventRec	*e;
     int		x, y;
+    xEvent	xe;
 
     while (miEventQueue.head != miEventQueue.tail)
     {
@@ -160,22 +161,23 @@ mieqProcessInputEvents ()
 	}
 	else
 	{
-	    switch (e->event.u.u.type) 
-	    {
-	    case KeyPress:
-	    case KeyRelease:
-	    	(*miEventQueue.pKbd->processInputProc)
-					    (&e->event, miEventQueue.pKbd, 1);
-	    	break;
-	    default:
-	    	(*miEventQueue.pPtr->processInputProc)
-					    (&e->event, miEventQueue.pPtr, 1);
-	    	break;
-	    }
+	    xe = e->event;
 	    if (miEventQueue.head == QUEUE_SIZE - 1)
 	    	miEventQueue.head = 0;
 	    else
 	    	++miEventQueue.head;
+	    switch (xe.u.u.type) 
+	    {
+	    case KeyPress:
+	    case KeyRelease:
+	    	(*miEventQueue.pKbd->processInputProc)
+					    (&xe, miEventQueue.pKbd, 1);
+	    	break;
+	    default:
+	    	(*miEventQueue.pPtr->processInputProc)
+					    (&xe, miEventQueue.pPtr, 1);
+	    	break;
+	    }
 	}
     }
 }
