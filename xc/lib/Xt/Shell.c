@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Shell.c,v 1.19 88/02/19 15:59:38 swick Exp $";
+static char rcsid[] = "$Header: Shell.c,v 1.20 88/02/21 16:22:09 swick Exp $";
 #endif lint
 
 /*
@@ -44,6 +44,9 @@ static char rcsid[] = "$Header: Shell.c,v 1.19 88/02/19 15:59:38 swick Exp $";
 #include "ShellP.h"
 #include "Vendor.h"
 #include "VendorP.h"
+
+Atom WM_CONFIGURE_DENIED;
+Atom WM_MOVED;
 
 /***************************************************************************
  *
