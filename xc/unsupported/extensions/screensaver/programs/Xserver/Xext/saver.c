@@ -1,5 +1,5 @@
 /*
- * $XConsortium: saver.c,v 1.6 92/02/28 18:55:28 keith Exp $
+ * $XConsortium: saver.c,v 1.7 92/03/19 18:34:48 rws Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -542,7 +542,7 @@ DestroySaverWindow (pScreen)
     if (pSaver->pWindow)
     {
 	pSaver->pWindow = NullWindow;
-	FreeResource (pSaver->wid);
+	FreeResource (pSaver->wid, RT_NONE);
     }
     pPriv->hasWindow = FALSE;
     CheckScreenPrivate (pScreen);
