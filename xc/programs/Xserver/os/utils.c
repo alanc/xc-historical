@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.125 93/09/13 20:38:13 rws Exp $ */
+/* $XConsortium: utils.c,v 1.126 93/09/13 20:54:52 rws Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -354,9 +354,9 @@ char	*argv[];
 	    else
 		UseMsg();
 	}
-	else if ( strcmp( argv[i], "-defer") == 0)
+	else if ( strcmp( argv[i], "-deferglyphs") == 0)
 	{
-	    if(++i >= argc || !SetGlyphCachingMode(argv[i]))
+	    if(++i >= argc || !ParseGlyphCachingMode(argv[i]))
 		UseMsg();
 	}
 	else if ( strcmp( argv[i], "-f") == 0)
