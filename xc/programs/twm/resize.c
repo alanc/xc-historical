@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.77 91/01/09 17:13:42 rws Exp $
+ * $XConsortium: resize.c,v 1.78 91/03/13 10:08:33 dave Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -201,11 +201,11 @@ int x, y, w, h;
     dragWidth = origWidth = w - 2 * tmp_win->frame_bw;
     dragHeight = origHeight = h - 2 * tmp_win->frame_bw;
     clampTop = clampBottom = clampLeft = clampRight = clampDX = clampDY = 0;
-
+/*****
     if (Scr->AutoRelativeResize) {
 	clampRight = clampBottom = 1;
     }
-
+*****/
     last_width = 0;
     last_height = 0;
     DisplaySize(tmp_win, origWidth, origHeight);
