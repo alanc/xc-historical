@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfb8cppl.c,v 1.11 93/09/13 09:35:18 dpw Exp $
+ * $XConsortium: cfb8cppl.c,v 1.12 93/12/13 17:21:36 dpw Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -32,13 +32,11 @@
 #include "scrnintstr.h"
 #include "windowstr.h"
 #include "cfb.h"
-#undef PSZ /* for maskbits.h */
-#undef PixelType
 #include "maskbits.h"
 #include "mergerop.h"
 
 #if BITMAP_BIT_ORDER == MSBFirst
-#define LeftMost    (PGSZ-1)
+#define LeftMost    (MFB_PPW-1)
 #define StepBit(bit, inc)  ((bit) -= (inc))
 #else
 #define LeftMost    0
