@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.28 90/02/07 17:35:42 jim Exp $
+ * $XConsortium: viewres.c,v 1.29 90/02/07 17:38:43 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -113,8 +113,8 @@ static XtActionsRec viewres_actions[] = {
 #define VIEW_CLASSES 1
 #define VIEW_HORIZONTAL 2
 #define VIEW_VERTICAL 3
-#define VIEW_RESOURCES 4
-#define VIEW_NORESOURCES 5
+#define VIEW_SHOW_RESOURCES 4
+#define VIEW_HIDE_RESOURCES 5
 #define VIEW_number 6
 
 #define SELECT_NOTHING 0
@@ -221,8 +221,37 @@ static Boolean create_resource_lw (node)
     return TRUE;
 }
 
+static void update_selection_items ()
+{
+    register int i;
+    static Arg args[1] = {{ XtNsensitive, (XtArgVal) FALSE }};
+    Boolean show = FALSE, hide = FALSE;
+
+    for (i = 0; i < selected_list.n_elements; i++) {
+	WidgetNode *node = selected_list.elements[i];
+	/*
+	 * If node has any new resources then may be shown (if not
+	 * already being shown).  If node has widget and is managed,
+	 * then may be hidden.
+	 */
+	if (node->nnewresources > 0) {
+	    if (node->resource_lw && XtIsManaged(node->resource_lw)) {
+		hide = TRUE;
+	    } else {
+		show = TRUE;
+	    }
+	}
+    }
+	    
+    args[0].value = (XtArgVal) show;
+    XtSetValues (view_widgets[VIEW_SHOW_RESOURCES], args, ONE);
+    args[0].value = (XtArgVal) hide;
+    XtSetValues (view_widgets[VIEW_HIDE_RESOURCES], args, ONE);
+}
+
+
 /* ARGSUSED */
-static void view_resources_callback (gw, closure, data)
+static void show_resources_callback (gw, closure, data)
     Widget gw;
     caddr_t closure;			/* TRUE or FALSE */
     caddr_t data;
@@ -248,6 +277,7 @@ static void view_resources_callback (gw, closure, data)
     }
     XawTreeForceLayout (treeWidget);
     XMapWindow (XtDisplay(treeWidget), XtWindow(treeWidget));
+    update_selection_items ();
 }
 
 
@@ -289,6 +319,7 @@ static int copydown (start)
     }
     return (start - cur);
 }
+
 
 static void add_to_selected_list (node, updatewidget)
     WidgetNode *node;
@@ -419,6 +450,8 @@ static void select_callback (gw, closure, data)
 	XBell (XtDisplay(gw), 0);
 	return;
     }
+
+    update_selection_items ();
 }
 
 /* ARGSUSED */
@@ -435,6 +468,8 @@ static void toggle_callback (gw, closure, data)
     } else {
 	(void) remove_from_selected_list (node, FALSE);
     }
+
+    update_selection_items ();
 }
 
 main (argc, argv)
@@ -518,9 +553,9 @@ main (argc, argv)
 
     (void) XtCreateManagedWidget ("line2", smeLineObjectClass, viewMenu,
 				  NULL, ZERO);
-    callback_rec[0].callback = (XtCallbackProc) view_resources_callback;
-    MAKE_VIEW (VIEW_RESOURCES, TRUE, "viewResources");
-    MAKE_VIEW (VIEW_NORESOURCES, FALSE, "viewNoResources");
+    callback_rec[0].callback = (XtCallbackProc) show_resources_callback;
+    MAKE_VIEW (VIEW_SHOW_RESOURCES, TRUE, "viewResources");
+    MAKE_VIEW (VIEW_HIDE_RESOURCES, FALSE, "viewNoResources");
 #undef MAKE_VIEW
 
     /*
@@ -559,6 +594,7 @@ main (argc, argv)
 
     set_labeltype_menu (Appresources.show_variable, FALSE);
     set_orientation_menu ((Boolean)(orient == XtorientHorizontal), FALSE);
+    update_selection_items ();
     build_tree (topnode, treeWidget, NULL);
     XtRealizeWidget (toplevel);
     XtAppMainLoop (app_con);
@@ -712,10 +748,10 @@ static void HandleShowResources (w, event, params, num_params)
     Cardinal *num_params;
 {
     if (*num_params == 0) {
-	view_resources_callback (w, (caddr_t) TRUE, NULL);
+	show_resources_callback (w, (caddr_t) TRUE, NULL);
     } else {
 	do_single_arg (w, params, *num_params, boolean_nametable,
-		       XtNumber(boolean_nametable), view_resources_callback);
+		       XtNumber(boolean_nametable), show_resources_callback);
     }
 }
 
