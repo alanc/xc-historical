@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.109 91/05/11 10:17:38 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.110 91/07/01 15:44:07 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -94,6 +94,7 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.109 91/05/11 10:17:38 rws Exp $
  *	MakeDirectories				(step,dirs)
  *	MakeFontsDir				(deplist)
  *	MakeFonts				()
+ *	InstallFontObjs				(objs,dest)
  *	InstallFonts				(dest)
  *	InstallFontAliases			(dest)
  *	InstallFontScale			(dest)
@@ -1291,15 +1292,24 @@ clean::									@@\
 
 
 /*
- * InstallFonts - generate rules to install font files
+ * InstallFontObjs - generate rules to install font files
  */
-#ifndef InstallFonts
-#define InstallFonts(dest)						@@\
-InstallMultipleFlags($(OBJS),dest,$(INSTDATFLAGS))			@@\
+#ifndef InstallFontObjs
+#define InstallFontObjs(objs,dest)					@@\
+InstallMultipleFlags(objs,dest,$(INSTDATFLAGS))				@@\
 									@@\
 install::  fonts.dir							@@\
 	MakeDir($(DESTDIR)dest)						@@\
 	$(INSTALL) -c $(INSTDATFLAGS) fonts.dir $(DESTDIR)dest
+#endif /* InstallFontObjs */
+
+
+/*
+ * InstallFonts - generate rules to install font files
+ */
+#ifndef InstallFonts
+#define InstallFonts(dest)						@@\
+InstallFontObjs($(OBJS),dest)
 #endif /* InstallFonts */
 
 
