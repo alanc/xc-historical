@@ -1,7 +1,7 @@
+
+/* $XConsortium: sun.h,v 5.17 93/07/12 09:30:39 dpw Exp $ */
+
 /*-
- * sun.h --
- *	Internal declarations for the sun ddx interface
- *
  * Copyright (c) 1987 by the Regents of the University of California
  *
  * Permission to use, copy, modify, and distribute this
@@ -11,86 +11,154 @@
  * makes no representations about the suitability of this
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
- *
- *	"$XConsortium: sun.h,v 5.16 93/03/14 16:20:03 rws Exp $ SPRITE (Berkeley)"
  */
-#ifndef _SUN_H_
+
+#ifndef _SUN_H_ 
 #define _SUN_H_
 
-#include    <errno.h>
-extern int  errno;
-#include    <sys/param.h>
-#include    <sys/types.h>
-#include    <sys/time.h>
-#include    <sys/file.h>
-#include    <sys/fcntl.h>
+/* X headers */
+#include "Xos.h"
+#include "X.h"
+#include "Xproto.h"
+
+/* general system headers */
+#ifndef NOSTDHDRS
+# ifndef PSZ
+# include <stdlib.h>
+# endif
+#else
+# include <malloc.h>
+extern char *getenv();
+#endif
+
+/* system headers common to both SunOS and Solaris */
+#include <sys/param.h>
+#include <sys/file.h>
+#include <sys/filio.h>
+#include <sys/ioctl.h>
+#include <sys/resource.h>
 #if !defined(SVR4) || defined(_POSIX_SOURCE)
-# include   <signal.h>
+#include <signal.h>
 #else
 #define _POSIX_SOURCE
-# include   <signal.h>
+# include <signal.h>
 #undef _POSIX_SOURCE
 #endif
-#ifdef SVR4
-#include    <sys/kbd.h>
-#include    <sys/kbio.h>
-#include    <sys/msio.h>
-#include    <sys/fbio.h>
+#include <fcntl.h>
+#ifndef i386
+# include <poll.h>
 #else
-#include    <sundev/kbd.h>
-#include    <sundev/kbio.h>
-#include    <sundev/msio.h>
-#include    <sun/fbio.h>
+# include <sys/poll.h>
 #endif
+#include <errno.h>
+#include <memory.h>
+extern int errno;
+extern int gettimeofday();
+
+/* 
+ * Sun specific headers Sun moved in Solaris.
+ *
+ * Even if only needed by one source file, I have put them here 
+ * to simplify finding them...
+ */
+#ifdef SVR4
+# include <sys/fbio.h>
+# include <sys/kbd.h>
+# include <sys/kbio.h>
+# include <sys/msio.h>
+# include <sys/vuid_event.h>
+# include <sys/memreg.h>
+# include <stropts.h>
+# define usleep(usec) poll((struct pollfd *) 0, (size_t) 0, usec / 1000)
+#else
+# include <sun/fbio.h>
+# include <sundev/kbd.h>
+# include <sundev/kbio.h>
+# include <sundev/msio.h>
+# include <sundev/vuid_event.h>
+# include <pixrect/pixrect.h>
+# include <pixrect/memreg.h>
+extern int ioctl();
+extern int getrlimit();
+extern int setrlimit();
+extern int getpagesize();
+#endif
+
+/* 
+ * Server specific headers
+ */
+#include "misc.h"
+#include "scrnintstr.h"
+#ifdef NEED_EVENTS
+# include "inputstr.h"
+#endif
+#include "input.h"
+#include "colormapst.h"
+#include "colormap.h"
+#include "cursorstr.h"
+#include "cursor.h"
+#include "dixstruct.h"
+#include "dix.h"
+#include "opaque.h"
+#include "resource.h"
+#include "servermd.h"
+#include "windowstr.h"
+
+/* 
+ * ddx specific headers 
+ */
+#ifndef PSZ
+/* MIT ddx/sun only knows 8-bit deep devices :-( */
+# define PSZ 8
+#endif
+#include "mipointer.h"
+
+/* 
+ * you would think, for as much as these seem to be used, that they'd
+ * be prototyped/declared in a header file somewhere...
+ */
+extern void mieqEnqueue();
+extern Bool miDCInitialize();
+extern int cfbExpandDirectColors();
+extern int monitorResolution;
 
 /*
- * SUN_WINDOWS is now defined (or not) by the Makefile
- * variable $(SUNWINDOWSFLAGS) in server/Makefile.
+ * These are needed for the GX
  */
+extern Bool cfbSetupScreen();
+extern int cfbFinishScreenInit();
 
-#ifdef SUN_WINDOWS
-#include    <varargs.h>
-#include    <sys/ioctl.h>
-#include    <stdio.h>
-#ifdef SVR4
-#include    <sys/pixrect_hs.h>
-#include    <sys/rect.h>
-#include    <sys/rectlist.h>
-#include    <sys/pixwin.h>
-#include    <sys/win_screen.h>
-#include    <sys/win_input.h>
-#include    <sys/cms.h>
-#include    <sys/win_struct.h>
-#else
-#include    <pixrect/pixrect_hs.h>
-#include    <sunwindow/rect.h>
-#include    <sunwindow/rectlist.h>
-#include    <sunwindow/pixwin.h>
-#include    <sunwindow/win_screen.h>
-#include    <sunwindow/win_input.h>
-#include    <sunwindow/cms.h>
-#include    <sunwindow/win_struct.h>
-#endif
-#else 
-/* already included by sunwindow/win_input.h */
-#ifdef SVR4
-#include    <sys/vuid_event.h>
-#else
-#include    <sundev/vuid_event.h>
-#endif
-#endif /* SUN_WINDOWS */
 
-#include    "X.h"
-#include    "Xproto.h"
-#include    "misc.h"
-#include    "scrnintstr.h"
-#ifdef NEED_EVENTS
-#include    "inputstr.h"
-#endif /* NEED_EVENTS */
-#include    "input.h"
-#include    "colormapst.h"
-#include    "dix.h"
-#include    "cursor.h"
+/* Frame buffer devices */
+#ifdef SVR4
+# define CGTWO0DEV	"/dev/fbs/cgtwo0"
+# define CGTWO1DEV	"/dev/fbs/cgtwo1"
+# define CGTWO2DEV	"/dev/fbs/cgtwo2"
+# define CGTHREE0DEV	"/dev/fbs/cgthree0"
+# define CGTHREE1DEV	"/dev/fbs/cgthree1"
+# define CGTHREE2DEV	"/dev/fbs/cgthree2"
+# define CGFOUR0DEV	"/dev/fbs/cgfour0"
+# define CGSIX0DEV	"/dev/fbs/cgsix0"
+# define CGSIX1DEV	"/dev/fbs/cgsix1"
+# define CGSIX2DEV	"/dev/fbs/cgsix2"
+# define BWTWO0DEV	"/dev/fbs/bwtwo0"
+# define BWTWO1DEV	"/dev/fbs/bwtwo1"
+# define BWTWO2DEV	"/dev/fbs/bwtwo2"
+#else
+# define CGTWO0DEV	"/dev/cgtwo0"
+# define CGTWO1DEV	"/dev/cgtwo1"
+# define CGTWO2DEV	"/dev/cgtwo2"
+# define CGTHREE0DEV	"/dev/cgthree0"
+# define CGTHREE1DEV	"/dev/cgthree1"
+# define CGTHREE2DEV	"/dev/cgthree2"
+# define CGFOUR0DEV	"/dev/cgfour0"
+# define CGSIX0DEV	"/dev/cgsix0"
+# define CGSIX1DEV	"/dev/cgsix1"
+# define CGSIX2DEV	"/dev/cgsix2"
+# define BWTWO0DEV	"/dev/bwtwo0"
+# define BWTWO1DEV	"/dev/bwtwo1"
+# define BWTWO2DEV	"/dev/bwtwo2"
+#endif
 
 /*
  * MAXEVENTS is the maximum number of events the mouse and keyboard functions
@@ -109,6 +177,7 @@ extern int  errno;
  */
 typedef struct kbPrivate {
     int	    	  type;           	/* Type of keyboard */
+    int           layout;		/* The layout of the keyboard */
     int	    	  fd;	    	    	/* Descriptor open to device */
     Firm_event	  *(*GetEvents)();  	/* Function to read events */
     void    	  (*EnqueueEvent)();	/* Function to process an event */
@@ -118,15 +187,17 @@ typedef struct kbPrivate {
     KeybdCtrl	  *ctrl;    	    	/* Current control structure (for
  					 * keyclick, bell duration, auto-
  					 * repeat, etc.) */
-    char	  lockLight;		/* Caps Lock light state */
 } KbPrivRec, *KbPrivPtr;
 
-#define SUN_LOCK_LED	8	/* can't find this in an include file */
-#define SUN_LED_MASK	0x0f	/*  nor this */
-#define	MIN_KEYCODE	8	/* necessary to avoid the mouse buttons */
-#ifndef KB_SUN4
-#define KB_SUN4		0x04	/* Type 4 Sun keyboard */
-#endif
+typedef struct {
+    BYTE	key;
+    KeySym	sym1, sym2;
+} SunKPmapRec;
+
+typedef struct {
+    BYTE	key;
+    CARD8	modifiers;
+} SunModmapRec;
 
 /*
  * Data private to any sun pointer device.
@@ -143,55 +214,9 @@ typedef struct ptrPrivate {
     pointer    	  devPrivate;	    	/* Field private to device */
 } PtrPrivRec, *PtrPrivPtr;
 
-/*
- * Cursor-private data
- *	screenBits	saves the contents of the screen before the cursor
- *	    	  	was placed in the frame buffer.
- *	source	  	a bitmap for placing the foreground pixels down
- *	srcGC	  	a GC for placing the foreground pixels down.
- *	    	  	Prevalidated for the cursor's screen.
- *	invSource 	a bitmap for placing the background pixels down.
- *	invSrcGC  	a GC for placing the background pixels down.
- *	    	  	Also prevalidated for the cursor's screen Pixmap.
- *	temp	  	a temporary pixmap for low-flicker cursor motion --
- *	    	  	exists to avoid the overhead of creating a pixmap
- *	    	  	whenever the cursor must be moved.
- *	fg, bg	  	foreground and background pixels. For a color display,
- *	    	  	these are allocated once and the rgb values changed
- *	    	  	when the cursor is recolored.
- *	scrX, scrY	the coordinate on the screen of the upper-left corner
- *	    	  	of screenBits.
- *	state	  	one of CR_IN, CR_OUT and CR_XING to track whether the
- *	    	  	cursor is in or out of the frame buffer or is in the
- *	    	  	process of going from one state to the other.
- */
-typedef enum {
-    CR_IN,		/* Cursor in frame buffer */
-    CR_OUT,		/* Cursor out of frame buffer */
-    CR_XING	  	/* Cursor in flux */
-} CrState;
-
-typedef struct crPrivate {
-    PixmapPtr  	        screenBits; /* Screen before cursor put down */
-    PixmapPtr  	        source;     /* Cursor source (foreground bits) */
-    GCPtr   	  	srcGC;	    /* Foreground GC */
-    PixmapPtr  	        invSource;  /* Cursor source inverted (background) */
-    GCPtr   	  	invSrcGC;   /* Background GC */
-    PixmapPtr  	        temp;	    /* Temporary pixmap for merging screenBits
-				     * and the sources. Saves creation time */
-    Pixel   	  	fg; 	    /* Foreground color */
-    Pixel   	  	bg; 	    /* Background color */
-    int	    	  	scrX,	    /* Screen X coordinate of screenBits */
-			scrY;	    /* Screen Y coordinate of screenBits */
-    CrState		state;      /* Current state of the cursor */
-} CrPrivRec, *CrPrivPtr;
-
-extern int  sunScreenIndex;
-
 typedef struct {
     int		    width, height;
     Bool	    has_cursor;
-    CursorPtr	    pCursor;	    /* current cursor */
 } sunCursorRec, *sunCursorPtr;
 
 typedef struct {
@@ -200,9 +225,6 @@ typedef struct {
     void	    (*UpdateColormap)();
     sunCursorRec    hardwareCursor;
     Bool	    hasHardwareCursor;
-#ifdef SUN_WINDOWS
-    Bool	    (*SetCursorPosition)();
-#endif
 } sunScreenRec, *sunScreenPtr;
 
 #define GetScreenPrivate(s)   ((sunScreenPtr) ((s)->devPrivates[sunScreenIndex].ptr))
@@ -216,86 +238,47 @@ typedef struct {
  *	fb  	  	pointer to the mapped image of the frame buffer. Used
  *	    	  	by the driving routines for the specific frame buffer
  *	    	  	type.
- *	mapped	  	flag set true by the driver when the frame buffer has
- *	    	  	been mapped in.
  *	parent	  	set true if the frame buffer is actually a SunWindows
  *	    	  	window.
- *	fbPriv	  	Data private to the frame buffer type.
  */
 typedef struct {
-    unsigned char *	fb; 	    /* Frame buffer itself */
-    Bool    	  	mapped;	    /* TRUE if frame buffer already mapped */
-    Bool		parent;	    /* TRUE if fd is a SunWindows window */
-    int	    	  	fd; 	    /* Descriptor open to frame buffer */
-    struct fbtype 	info;	    /* Frame buffer characteristics */
-    void		(*EnterLeave)();    /* screen switch */
-    unsigned char * 	fbPriv;	    /* Frame-buffer-dependent data */
+    unsigned char *	fb;	/* Frame buffer itself */
+    Bool	notused1;	/* R5 sunGX.o.dist needs this here */
+    Bool	notused2;	/* R5 sunGX.o.dist needs this here */
+    int		fd;		/* frame buffer for ioctl()s, CG2 only */
+    struct fbtype info;		/* Frame buffer characteristics */
+    void	(*EnterLeave)();/* screen switch, CG4 only */
+    unsigned char *	fbPriv;	/* fbattr stuff, for the real type */
 } fbFd;
 
-extern Bool sunSupportsDepth8;
-extern unsigned long sunGeneration;
-
-
 typedef struct _sunFbDataRec {
-    Bool    (*probeProc)();	/* probe procedure for this fb */
-    char    *devName;		/* device filename */
-    Bool    (*createProc)();	/* create procedure for this fb */
+    Bool	(*init)();	/* init procedure for this fb */
+    char	*name;		/* /usr/include/fbio names */
 } sunFbDataRec;
 
-extern sunFbDataRec sunFbData[];
-/*
- * Cursor functions
- */
-extern void 	  sunInitCursor();
-#ifdef SUN_WINDOWS
-extern Bool	  sunSetCursorPosition();
-extern Bool	  (*realSetCursorPosition)();
-#endif
+extern Bool		sunSupportsDepth8;
+extern Bool		sunSupportsDepth24;
+extern Bool		sunAutoRepeatHandlersInstalled;
+extern sunFbDataRec	sunFbData[];
+extern fbFd		sunFbs[];
+extern Bool		sunDoF11, sunDoNumlock, sunDoCompose;
+extern long		sunAutoRepeatInitiate;
+extern long		sunAutoRepeatDelay;
+extern int		sunScreenIndex;
+extern int*		sunProtected;
 
-/*
- * Initialization
- */
-extern Bool 	  sunScreenInit();
-extern int  	  sunOpenFrameBuffer();
-
-extern fbFd 	  sunFbs[];
-
-extern int monitorResolution;
-
-#define AUTOREPEAT_INITIATE	(200)		/* milliseconds */
-#define AUTOREPEAT_DELAY	(50)		/* milliseconds */
-/*
- * We signal autorepeat events with the unique Firm_event
- * id AUTOREPEAT_EVENTID.
- * Because inputevent ie_code is set to Firm_event ids in
- * sunKbdProcessEventSunWin, and ie_code is short whereas
- * Firm_event id is u_short, we use 0x7fff.
- */
-#define AUTOREPEAT_EVENTID      (0x7fff)        /* AutoRepeat Firm_event id */
-
-extern int	autoRepeatKeyDown;		/* TRUE if key down */
-extern int	autoRepeatReady;		/* TRUE if time out */
-extern int	autoRepeatDebug;		/* TRUE if debugging */
-extern long	autoRepeatInitiate;
-extern long 	autoRepeatDelay;
-extern struct timeval autoRepeatLastKeyDownTv;
-extern struct timeval autoRepeatDeltaTv;
-
-#define tvminus(tv, tv1, tv2)	/* tv = tv1 - tv2 */ \
-		if ((tv1).tv_usec < (tv2).tv_usec) { \
-			(tv1).tv_usec += 1000000; \
-			(tv1).tv_sec -= 1; \
-		} \
-		(tv).tv_usec = (tv1).tv_usec - (tv2).tv_usec; \
-		(tv).tv_sec = (tv1).tv_sec - (tv2).tv_sec;
-
-#define tvplus(tv, tv1, tv2)	/* tv = tv1 + tv2 */ \
-		(tv).tv_sec = (tv1).tv_sec + (tv2).tv_sec; \
-		(tv).tv_usec = (tv1).tv_usec + (tv2).tv_usec; \
-		if ((tv).tv_usec > 1000000) { \
-			(tv).tv_usec -= 1000000; \
-			(tv).tv_sec += 1; \
-		}
+extern Bool		sunCursorInitialize();
+extern void		sunDisableCursor();
+extern int		sunChangeKbdTranslation();
+extern void		sunNonBlockConsoleOff();
+extern void		sunSetTimeSinceLastInputEvent();
+extern void		sunEnqueueEvents();
+extern int		sunGXInit();
+extern Bool		sunSaveScreen();
+extern Bool		sunScreenInit();
+extern pointer		sunMemoryMap();
+extern Bool		sunScreenAllocate();
+extern Bool		sunInitCommon();
 
 /*-
  * TVTOMILLI(tv)
@@ -303,8 +286,4 @@ extern struct timeval autoRepeatDeltaTv;
  */
 #define TVTOMILLI(tv)	(((tv).tv_usec/1000)+((tv).tv_sec*1000))
 
-#ifdef SUN_WINDOWS
-extern int windowFd;
-#endif /* SUN_WINDOWS */
-
-#endif /* _SUN_H_ */
+#endif
