@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: tables.c,v 1.16 87/08/20 17:16:29 toddb Locked $ */
+/* $Header: tables.c,v 1.17 87/09/07 19:46:18 newman Locked $ */
 
 extern int    ProcBadRequest(), ProcCreateWindow(),
     ProcChangeWindowAttributes(), ProcGetWindowAttributes(),
@@ -113,7 +113,7 @@ extern void
     SConfigureNotifyEvent(), SConfigureRequestEvent(), SGravityEvent(),
     SResizeRequestEvent(), SCirculateEvent(), SCirculateEvent(),
     SPropertyEvent(), SSelectionClearEvent(), SSelectionRequestEvent(),
-    SSelectionNotifyEvent(), SColormapEvent(), SClientMessageEvent();
+    SSelectionNotifyEvent(), SColormapEvent(), SClientMessageEvent(), SMappingEvent();
 
 extern void
     SGetWindowAttributesReply(), SGetGeometryReply(), SQueryTreeReply(),
@@ -432,7 +432,7 @@ void (* EventSwapVector[128]) () =
     SSelectionNotifyEvent,
     SColormapEvent,
     SClientMessageEvent,
-    SKeymapNotifyEvent
+    SMappingEvent,
 };
 
 
