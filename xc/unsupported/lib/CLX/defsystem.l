@@ -123,7 +123,8 @@
 	   (:in-order-to :compile (:load bufmac)))
   (:module display ("display")
 	   (:in-order-to :compile (:load macros))
-	   (:in-order-to :compile (:load bufmac)))
+	   (:in-order-to :compile (:load bufmac))
+	   (:in-order-to :compile (:load buffer)))
   (:module gcontext ("gcontext")
 	   (:in-order-to :compile (:load macros))
 	   (:in-order-to :compile (:load bufmac))
@@ -173,7 +174,7 @@
 
 #+lucid
 (defun clx-foreign-files ()
-  (load "make-sequence-patch")
+  #-lcl3.0 (load "make-sequence-patch")
   (define-c-function (xlib::connect-to-server "_connect_to_server")
 		     (host display)
 		     :result-type :integer)
