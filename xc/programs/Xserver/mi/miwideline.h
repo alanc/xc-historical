@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.h,v 1.3 89/10/31 17:38:52 keith Exp $
+ * $XConsortium: miwideline.h,v 1.5 89/11/21 19:04:44 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -114,7 +114,7 @@ typedef struct _LineFace {
 #define ICEIL(x) ((int)ceil(x))
 #else
 #ifdef __GNUC__
-static inline int ICEIL(x)
+static __inline int ICEIL(x)
     double x;
 {
     int _cTmp = x;

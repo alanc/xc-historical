@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miregion.c,v 1.51 89/09/20 15:00:06 rws Exp $ */
+/* $XConsortium: miregion.c,v 1.52 89/09/24 15:39:53 rws Exp $ */
 
 #include <stdio.h>
 #include "miscstruct.h"
@@ -30,8 +30,8 @@ SOFTWARE.
 #include "Xprotostr.h"
 #include "gc.h"
 
-#if defined (__GNUC__) && defined (__STDC__) && !defined (__STRICT_ANSI) && !defined (NO_INLINES)
-#define INLINE	inline
+#if defined (__GNUC__) && !defined (NO_INLINES)
+#define INLINE	__inline
 #else
 #define INLINE
 #endif

@@ -1,4 +1,4 @@
-/* $XConsortium: mifpoly.h,v 1.4 88/10/15 17:50:06 keith Exp $ */
+/* $XConsortium: mifpoly.h,v 1.5 89/07/28 12:05:47 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -45,7 +45,7 @@ SOFTWARE.
 #define ICEIL(x) ((int)ceil(x))
 #else
 #ifdef __GNUC__
-static inline int ICEIL(x)
+static __inline int ICEIL(x)
     double x;
 {
     int _cTmp = x;
