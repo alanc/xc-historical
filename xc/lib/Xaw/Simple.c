@@ -1,4 +1,4 @@
-/* $XConsortium: Simple.c,v 1.28 91/01/06 16:08:38 rws Exp $ */
+/* $XConsortium: Simple.c,v 1.29 91/02/17 16:03:29 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -113,6 +113,8 @@ static void ClassPartInitialize(class)
     WidgetClass class;
 {
     register SimpleWidgetClass c = (SimpleWidgetClass)class;
+    register SimpleWidgetClass super = (SimpleWidgetClass) 
+	c->core_class.superclass;
 
     if (c->simple_class.change_sensitive == NULL) {
 	char buf[BUFSIZ];
@@ -125,7 +127,7 @@ static void ClassPartInitialize(class)
     }
 
     if (c->simple_class.change_sensitive == XtInheritChangeSensitive)
-	c->simple_class.change_sensitive = ChangeSensitive;
+	c->simple_class.change_sensitive = super->simple_class.change_sensitive;
 }
 
 static void Realize(w, valueMask, attributes)
