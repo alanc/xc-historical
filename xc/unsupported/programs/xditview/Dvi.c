@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Dvi.c,v 1.1 89/03/01 15:50:38 keith Exp $";
+static char Xrcsid[] = "$XConsortium: Dvi.c,v 1.2 89/03/03 13:57:50 keith Exp $";
 #endif lint
 
 /*
@@ -279,6 +279,7 @@ static void OpenFile (dw)
 		dw->dvi.tmpFile = 0;
 	}
 	dw->dvi.requested_page = 1;
+	dw->dvi.last_page = 0;
 }
 
 static XtGeometryResult
