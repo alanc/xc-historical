@@ -1,4 +1,4 @@
-/* $XConsortium: Xtranssock.c,v 1.19 94/03/02 12:16:25 mor Exp $ */
+/* $XConsortium: Xtranssock.c,v 1.20 94/03/15 13:20:33 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -147,22 +147,6 @@ char *family;
     }
 
     return -1;
-}
-
-
-static int
-is_numeric (str)
-
-char *str;
-
-{
-    int i;
-
-    for (i = 0; i < (int) strlen (str); i++)
-	if (!isdigit (str[i]))
-	    return (0);
-
-    return (1);
 }
 
 
