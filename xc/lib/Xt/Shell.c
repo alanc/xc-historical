@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.96 91/02/05 19:36:21 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.100 91/05/07 12:35:06 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1864,6 +1864,18 @@ static Boolean WMSetValues(old, ref, new, args, num_args)
 	}
 #undef NEQ
 
+ 	if (set_prop && nwmshell->wm.transient != owmshell->wm.transient) {
+ 	    if (nwmshell->wm.transient) {
+		if (!XtIsTransientShell(new) &&
+		    nwmshell->wm.wm_hints.window_group != 
+		       XtUnspecifiedWindowGroup)
+		    XSetTransientForHint(XtDisplay(new), XtWindow(new),
+					 nwmshell->wm.wm_hints.window_group);
+	    }
+ 	    else XDeleteProperty(XtDisplay(new), XtWindow(new),
+ 				 XA_WM_TRANSIENT_FOR);
+ 	}
+	
 	return FALSE;
 }
 
