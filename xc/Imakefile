@@ -108,11 +108,6 @@ Everything::
 	@echo ""
 	@echo "Rebuilding Release 4 of the X Window System"
 	@echo ""
-	@echo "##############################################################"
-	@echo "# Did you remember to check the configuration parameters in  #"
-	@echo "# the directory ./config and set BOOTSTRAPCFLAGS if needed?  #"
-	@echo "##############################################################"
-	@echo ""
 	@date
 	@echo ""
 	cd $(IMAKESRC); $(MAKE) -f Makefile.ini BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)"
