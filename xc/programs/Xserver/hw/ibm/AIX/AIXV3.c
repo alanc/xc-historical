@@ -1,5 +1,5 @@
 /*
- * $XConsortium:AIXV3.c,v 1.0 89/09/26 19:57:08 jim Exp $
+ * $XConsortium: AIXV3.c,v 1.1 91/05/10 07:41:20 jap Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -22,8 +22,6 @@
  * SOFTWARE.
  *
 */
-
-static char sccsid[] = "@(#)AIXV3.c     1.4  com/XTOP/server/ddx/ibm/AIX,3.1,9008 2/20/90 10:27:15";
 
 #ifndef AIXV3
 #include <sys/select.h>
