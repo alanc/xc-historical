@@ -46,6 +46,6 @@ clean::
 		(cd $$i; make $(MFLAGS) clean) ; \
 	done
 	(cd bdf; $(RM_CMD))
-	(cd snf; $(RM_CMD) Makefile )
+	(cd snf; $(RM_CMD) Makefile *.snf)
 
 FRC:
