@@ -155,6 +155,7 @@
 	  colormap-equal
 	  colormap-id
 	  colormap-display
+	  colormap-visual-info
 	  cursor
 	  cursor-p
 	  cursor-equal
@@ -515,6 +516,7 @@
 (def-clx-class (colormap (:copier nil))
   (id 0 :type resource-id)
   (display nil :type (or null display))
+  (visual-info nil :type (or null visual-info))
   )
 
 (def-clx-class (cursor (:copier nil))
