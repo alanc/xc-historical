@@ -1,4 +1,4 @@
-/* $XConsortium: Converters.c,v 1.73 91/05/05 20:00:54 converse Exp $ */
+/* $XConsortium: Converters.c,v 1.74 91/05/06 11:34:32 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -375,11 +375,13 @@ Boolean XtCvtIntToColor(dpy, args, num_args, fromVal, toVal, closure_ret)
     Screen	*screen;
     Colormap	colormap;
 
-    if (*num_args != 2)
-      XtAppErrorMsg(XtDisplayToApplicationContext(dpy),
+    if (*num_args != 2) {
+      XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
 	 XtNwrongParameters,"cvtIntOrPixelToXColor",XtCXtToolkitError,
          "Pixel to color conversion needs screen and colormap arguments",
           (String *)NULL, (Cardinal *)NULL);
+      return False;
+    }
     screen = *((Screen **) args[0].addr);
     colormap = *((Colormap *) args[1].addr);
     c.pixel = *(int *)fromVal->addr;
@@ -407,11 +409,13 @@ Boolean XtCvtStringToPixel(dpy, args, num_args, fromVal, toVal, closure_ret)
     String          params[1];
     Cardinal	    num_params=1;
 
-    if (*num_args != 2)
-     XtAppErrorMsg(pd->appContext, XtNwrongParameters, "cvtStringToPixel",
-		   XtCXtToolkitError,
+    if (*num_args != 2) {
+     XtAppWarningMsg(pd->appContext, XtNwrongParameters, "cvtStringToPixel",
+		     XtCXtToolkitError,
 	"String to pixel conversion needs screen and colormap arguments",
         (String *)NULL, (Cardinal *)NULL);
+     return False;
+    }
 
     screen = *((Screen **) args[0].addr);
     colormap = *((Colormap *) args[1].addr);
@@ -484,10 +488,12 @@ static void FreePixel(app, toVal, closure, args, num_args)
     Screen	    *screen;
     Colormap	    colormap;
 
-    if (*num_args != 2)
-     XtAppErrorMsg(app, XtNwrongParameters,"freePixel",XtCXtToolkitError,
+    if (*num_args != 2) {
+     XtAppWarningMsg(app, XtNwrongParameters,"freePixel",XtCXtToolkitError,
 	"Freeing a pixel requires screen and colormap arguments",
         (String *)NULL, (Cardinal *)NULL);
+     return;
+    }
 
     screen = *((Screen **) args[0].addr);
     colormap = *((Colormap *) args[1].addr);
@@ -512,11 +518,13 @@ static void FetchDisplayArg(widget, size, value)
     Cardinal *size;
     XrmValue* value;
 {
-    if (widget == NULL) {
+    if (widget == NULL)
 	XtErrorMsg("missingWidget", "fetchDisplayArg", XtCXtToolkitError,
 		   "FetchDisplayArg called without a widget to reference",
 		   (String*)NULL, (Cardinal*)NULL);
-    }
+        /* can't return any useful Display and caller will de-ref NULL,
+	   so aborting is the only useful option */
+
     value->size = sizeof(Display*);
     value->addr = (XPointer)&DisplayOfScreen(XtScreenOfObject(widget));
 }
@@ -621,11 +629,13 @@ Boolean XtCvtStringToCursor(dpy, args, num_args, fromVal, toVal, closure_ret)
     char *name = (char *)fromVal->addr;
     register int i;
 
-    if (*num_args != 1)
-	XtAppErrorMsg(XtDisplayToApplicationContext(dpy),
+    if (*num_args != 1) {
+	XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
 	     XtNwrongParameters,"cvtStringToCursor",XtCXtToolkitError,
              "String to cursor conversion needs display argument",
               (String *)NULL, (Cardinal *)NULL);
+	return False;
+    }
 
     for (i=0, nP=cursor_names; i < XtNumber(cursor_names); i++, nP++ ) {
 	if (strcmp(name, nP->name) == 0) {
@@ -648,11 +658,13 @@ static void FreeCursor(app, toVal, closure, args, num_args)
 {
     Display*	display;
 
-    if (*num_args != 1)
-     XtAppErrorMsg(app,
+    if (*num_args != 1) {
+     XtAppWarningMsg(app,
 	     XtNwrongParameters,"freeCursor",XtCXtToolkitError,
              "Free Cursor requires display argument",
               (String *)NULL, (Cardinal *)NULL);
+     return;
+    }
 
     display = *(Display**)args[0].addr;
     XFreeCursor( display, *(Cursor*)toVal->addr );
@@ -760,11 +772,13 @@ Boolean XtCvtStringToFont(dpy, args, num_args, fromVal, toVal, closure_ret)
     Font	f;
     Display*	display;
 
-    if (*num_args != 1)
-	XtAppErrorMsg(XtDisplayToApplicationContext(dpy),
+    if (*num_args != 1) {
+	XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
 	     XtNwrongParameters,"cvtStringToFont",XtCXtToolkitError,
              "String to font conversion needs display argument",
               (String *) NULL, (Cardinal *)NULL);
+	return False;
+    }
 
     display = *(Display**)args[0].addr;
 
@@ -811,11 +825,11 @@ Boolean XtCvtStringToFont(dpy, args, num_args, fromVal, toVal, closure_ret)
     if (f != 0)
 	goto Done;
 
-    XtAppErrorMsg(XtDisplayToApplicationContext(dpy),
-	     "noFont","cvtStringToFont",XtCXtToolkitError,
-             "Unable to load any useable ISO8859-1 font",
-              (String *) NULL, (Cardinal *)NULL);
-    
+    XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
+		    "noFont","cvtStringToFont",XtCXtToolkitError,
+		    "Unable to load any useable ISO8859-1 font",
+		    (String *) NULL, (Cardinal *)NULL);
+
     return False;
 }
 
@@ -828,11 +842,13 @@ static void FreeFont(app, toVal, closure, args, num_args)
     Cardinal	*num_args;
 {
     Display *display;
-    if (*num_args != 1)
-	XtAppErrorMsg(app,
+    if (*num_args != 1) {
+	XtAppWarningMsg(app,
 	     XtNwrongParameters,"freeFont",XtCXtToolkitError,
              "Free Font needs display argument",
               (String *) NULL, (Cardinal *)NULL);
+	return;
+    }
 
     display = *(Display**)args[0].addr;
     XUnloadFont( display, *(Font*)toVal->addr );
@@ -870,11 +886,13 @@ Boolean XtCvtStringToFontSet(dpy, args, num_args, fromVal, toVal, closure_ret)
     int       missing_charset_count;
     char*     def_string;
 
-    if (*num_args != 2)
-      XtAppErrorMsg(XtDisplayToApplicationContext(dpy),
+    if (*num_args != 2) {
+      XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
            XtNwrongParameters,"cvtStringToFontSet",XtCXtToolkitError,
              "String to FontSet conversion needs display and locale arguments",
               (String *) NULL, (Cardinal *)NULL);
+      return False;
+    }
 
     display = *(Display**)args[0].addr;
 
@@ -965,11 +983,13 @@ static void FreeFontSet(app, toVal, closure, args, num_args)
     Cardinal		*num_args;
 {
     Display *display;
-    if (*num_args != 2)
-      XtAppErrorMsg(app,
+    if (*num_args != 2) {
+      XtAppWarningMsg(app,
            XtNwrongParameters,"freeFontSet",XtCXtToolkitError,
              "FreeFontSet needs display and locale arguments",
               (String *) NULL, (Cardinal *)NULL);
+      return;
+    }
 
     display = *(Display**)args[0].addr;
     XFreeFontSet( display, *(XFontSet*)toVal->addr );
@@ -1008,11 +1028,13 @@ XtCvtStringToFontStruct(dpy, args, num_args, fromVal, toVal, closure_ret)
     XFontStruct	    *f;
     Display*	display;
 
-    if (*num_args != 1)
-     XtAppErrorMsg(XtDisplayToApplicationContext(dpy),
+    if (*num_args != 1) {
+     XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
 	     XtNwrongParameters,"cvtStringToFontStruct",XtCXtToolkitError,
              "String to font conversion needs display argument",
               (String *) NULL, (Cardinal *)NULL);
+     return False;
+    }
 
     display = *(Display**)args[0].addr;
 
@@ -1062,7 +1084,7 @@ XtCvtStringToFontStruct(dpy, args, num_args, fromVal, toVal, closure_ret)
     if (f != NULL)
 	goto Done;
 
-    XtAppErrorMsg(XtDisplayToApplicationContext(dpy),
+    XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
 	     "noFont","cvtStringToFontStruct",XtCXtToolkitError,
              "Unable to load any useable ISO8859-1 font",
               (String *) NULL, (Cardinal *)NULL);
@@ -1079,11 +1101,13 @@ static void FreeFontStruct(app, toVal, closure, args, num_args)
     Cardinal	*num_args;
 {
     Display *display;
-    if (*num_args != 1)
-     XtAppErrorMsg(app,
+    if (*num_args != 1) {
+     XtAppWarningMsg(app,
 	     XtNwrongParameters,"freeFontStruct",XtCXtToolkitError,
              "Free FontStruct requires display argument",
               (String *) NULL, (Cardinal *)NULL);
+     return;
+    }
 
     display = *(Display**)args[0].addr;
     XFreeFont( display, *(XFontStruct**)toVal->addr );
