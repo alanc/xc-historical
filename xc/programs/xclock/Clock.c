@@ -1,4 +1,4 @@
-/* $XConsortium: Clock.c,v 1.59 91/03/29 10:25:05 converse Exp $ */
+/* $XConsortium: Clock.c,v 1.60 91/04/01 20:35:23 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -245,10 +245,10 @@ static void Destroy (gw)
 {
      ClockWidget w = (ClockWidget) gw;
      if (w->clock.interval_id) XtRemoveTimeOut (w->clock.interval_id);
-     XtDestroyGC (w->clock.myGC);
-     XtDestroyGC (w->clock.HighGC);
-     XtDestroyGC (w->clock.HandGC);
-     XtDestroyGC (w->clock.EraseGC);
+     XtReleaseGC (gw, w->clock.myGC);
+     XtReleaseGC (gw, w->clock.HighGC);
+     XtReleaseGC (gw, w->clock.HandGC);
+     XtReleaseGC (gw, w->clock.EraseGC);
 }
 
 static void Resize (gw) 
@@ -757,7 +757,7 @@ static Boolean SetValues (gcurrent, grequest, gnew)
 	  myXGCV.background = new->core.background_pixel;
           myXGCV.font = new->clock.font->fid;
 	  myXGCV.line_width = 0;
-	  XtDestroyGC (current->clock.myGC);
+	  XtReleaseGC (gcurrent, current->clock.myGC);
 	  new->clock.myGC = XtGetGC(gcurrent, valuemask, &myXGCV);
 	  redisplay = TRUE;
           }
@@ -767,7 +767,7 @@ static Boolean SetValues (gcurrent, grequest, gnew)
 	  myXGCV.foreground = new->clock.fgpixel;
           myXGCV.font = new->clock.font->fid;
 	  myXGCV.line_width = 0;
-	  XtDestroyGC (current->clock.HighGC);
+	  XtReleaseGC (gcurrent, current->clock.HighGC);
 	  new->clock.HighGC = XtGetGC((Widget)gcurrent, valuemask, &myXGCV);
 	  redisplay = TRUE;
           }
@@ -775,7 +775,7 @@ static Boolean SetValues (gcurrent, grequest, gnew)
       if (new->clock.Hdpixel != current->clock.Hdpixel) {
           valuemask = GCForeground;
 	  myXGCV.foreground = new->clock.fgpixel;
-	  XtDestroyGC (current->clock.HandGC);
+	  XtReleaseGC (gcurrent, current->clock.HandGC);
 	  new->clock.HandGC = XtGetGC((Widget)gcurrent, valuemask, &myXGCV);
 	  redisplay = TRUE;
           }
@@ -784,7 +784,7 @@ static Boolean SetValues (gcurrent, grequest, gnew)
           valuemask = GCForeground | GCLineWidth;
 	  myXGCV.foreground = new->core.background_pixel;
 	  myXGCV.line_width = 0;
-	  XtDestroyGC (current->clock.EraseGC);
+	  XtReleaseGC (gcurrent, current->clock.EraseGC);
 	  new->clock.EraseGC = XtGetGC((Widget)gcurrent, valuemask, &myXGCV);
 	  redisplay = TRUE;
 	  }
