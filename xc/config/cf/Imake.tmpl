@@ -4,7 +4,7 @@
 
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.183 93/08/26 09:02:22 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.184 93/09/03 10:03:16 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate <vendor>.cf
 XCOMM configuration files.  Site-specific parameters should be set in the file
@@ -854,6 +854,14 @@ XCOMM the platform-specific parameters - edit site.def to change
 #define PurifyOptions /**/
 #endif
 #endif
+#if HasTestCenter
+#ifndef ProofCmd
+#define ProofCmd proof
+#endif
+#ifndef ProofOptions
+#define ProofOptions /**/
+#endif
+#endif
 #ifndef PathSeparator
 #define PathSeparator /
 #endif
@@ -952,6 +960,10 @@ XCOMM the platform-specific parameters - edit site.def to change
 #if HasPurify
            PURIFY = PurifyCmd
     PURIFYOPTIONS = PurifyOptions
+#endif
+#if HasTestCenter
+           PROOF = ProofCmd
+    PROOFOPTIONS = ProofOptions
 #endif
      STD_INCLUDES = StandardIncludes
   STD_CPP_DEFINES = StandardCppDefines
