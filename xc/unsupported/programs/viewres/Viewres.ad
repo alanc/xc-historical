@@ -1,12 +1,11 @@
-!*Panner.resize: off
-!*Panner.height: 50
-!*Panner.width: 200
 *Panner*backgroundStipple: grid2
 
 *allowShellResize: true
 *buttonbox*ShapeStyle: oval
-*treeform.Thickness: 0
-*treeform.borderWidth: 0
+*Form*Panner.Thickness: -1
+*Form.defaultDistance: 0
+*Form.BorderWidth: 0
+*Porthole.BorderWidth: 0
 *Porthole.top: ChainTop
 *Porthole.left: ChainLeft
 *Porthole.bottom: ChainBottom
@@ -17,9 +16,6 @@
 *Panner.bottom: ChainTop
 *Panner.right:  ChainLeft
 *Panner.resizable: on
-*Tree.borderWidth: 0
-*Porthole.borderWidth: 0
-*Panner*DefaultScale: 5
 *Tree*ShapeStyle: rectangle
 *Tree*Toggle*BorderWidth: 0
 *Porthole*Box.BorderWidth: 0
