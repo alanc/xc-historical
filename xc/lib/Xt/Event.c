@@ -334,6 +334,9 @@ void DispatchEvent(event, widget, mask)
 
 {
     XtEventRec *p;   
+    XtEventHandler proc[100];
+    Opaque closure[100];
+    int numprocs, i;
     if (mask == ExposureMask) {
       if ((widget->core.widget_class->core_class.compress_exposure)
         && (event->xexpose.count != 0)) 
@@ -344,11 +347,17 @@ void DispatchEvent(event, widget, mask)
     if ((mask == VisibilityNotify) &&
             !(widget->core.widget_class->core_class.visible_interest)) return;
 
-    for (p=widget->core.event_table; p != NULL; p = p->next) {
-	if ((mask & p->mask) != 0 || (mask == 0 && p->non_filter == TRUE)) 
-              (*(p->proc))(widget, p->closure, event);
-         }
-    return;
+    /* Have to copy the procs into an array, because calling one of them */
+    /* might call XtRemoveEventHandler, which would break our linked list.*/
+    numprocs = 0;
+    for (p=widget->core.event_table; p != NULL; p = p->next)
+	if ((mask & p->mask) != 0 || (mask == 0 && p->non_filter)) {
+	    proc[numprocs] = p->proc;
+	    closure[numprocs++] = p->closure;
+	}
+
+    for (i=0 ; i<numprocs ; i++)
+	(*(proc[i]))(widget, closure[i], event);
 }
 
 
