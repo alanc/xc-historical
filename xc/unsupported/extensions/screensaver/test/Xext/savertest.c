@@ -1,5 +1,5 @@
 /*
- * $XConsortium: savertest.c,v 1.2 92/02/28 18:11:18 keith Exp $
+ * $XConsortium: savertest.c,v 1.3 92/02/28 18:56:09 keith Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -105,7 +105,7 @@ main(argc, argv)
     
     root = DefaultRootWindow (dpy);
 
-    info = XScreenSaverAllocateInfo (dpy);
+    info = XScreenSaverAllocInfo ();
     if (!XScreenSaverQueryInfo (dpy, root, info))
 	fatal ("QueryInfo");
     printf ("window: 0x%x\n", info->window);
