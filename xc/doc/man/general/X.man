@@ -354,7 +354,7 @@ It also has various font name aliases for the fonts, including
 .TP 8
 .I /usr/lib/X11/fonts/Speedo
 This directory contains outline fonts for Bitstream's Speedo rasterizer.
-The Charter font, in normal, bold, italic, and bold italic, is provided,
+A single font face, in normal, bold, italic, and bold italic, is provided,
 contributed by Bitstream, Inc.
 .TP 8
 .I /usr/lib/X11/fonts/75dpi
@@ -870,7 +870,6 @@ this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 .SH TRADEMARKS
 .PP
-UNIX and OPEN LOOK are trademarks of AT&T.
 X Window System is a trademark of MIT.
 .SH AUTHORS
 .PP
