@@ -69,7 +69,7 @@ extern void cfbDestroyClip();
 extern void cfbCopyClip();
 extern void cfbChangeClip();
 extern void cfbCopyGCDest();
-extern void cfbCopyArea();
+extern RegionPtr cfbCopyArea();
 
 extern void cfbSetSpans();
 extern unsigned int *cfbGetSpans();
@@ -101,8 +101,8 @@ extern void  miFillPolyArc();
 
 extern void miPutImage();
 extern void miGetImage();
-extern void miCopyArea();
-extern void miCopyPlane();
+extern RegionPtr miCopyArea();
+extern RegionPtr miCopyPlane();
 extern void miPolyPoint();
 extern void miPushPixels();
 

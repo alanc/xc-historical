@@ -155,6 +155,7 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpi)
     pScreen->RegionNotEmpty = miRegionNotEmpty;
     pScreen->RegionEmpty = miRegionEmpty;
     pScreen->RegionExtents = miRegionExtents;
+    pScreen->SendGraphicsExpose = miSendGraphicsExpose;
 
     pScreen->BlockHandler = NoopDDA;
     pScreen->WakeupHandler = NoopDDA;

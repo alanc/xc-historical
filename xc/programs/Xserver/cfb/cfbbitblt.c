@@ -60,6 +60,7 @@ SOFTWARE.
 #include "windowstr.h"
 #include "pixmapstr.h"
 #include "scrnintstr.h"
+#include "mi.h"
 
 #include "cfb.h"
 #include "cfbmskbits.h"
@@ -79,7 +80,7 @@ destination.  this is a simple translation.
     do graphics exposures
 */
 
-void
+RegionPtr
 cfbCopyArea(pSrcDrawable, pDstDrawable,
             pGC, srcx, srcy, width, height, dstx, dsty)
 register DrawablePtr pSrcDrawable;
@@ -93,7 +94,7 @@ int dstx, dsty;
     RegionPtr prgnSrcClip;      /* may be a new region, or just a copy */
     int realSrcClip = 0;        /* non-0 if we've created a src clip */
  
-    RegionPtr prgnDst;
+    RegionPtr prgnDst, prgnExposed;
     DDXPointPtr pptSrc;
     register DDXPointPtr ppt;
     register BoxPtr pbox;
@@ -167,11 +168,10 @@ int dstx, dsty;
     {
         if (!((WindowPtr)pDstDrawable)->realized)
         {
-            miSendNoExpose(pGC);
             (*pGC->pScreen->RegionDestroy)(prgnDst);
             if (realSrcClip)
                 (*pGC->pScreen->RegionDestroy)(prgnSrcClip);
-            return;
+            return NULL;
         }
         dstx += ((WindowPtr)pDstDrawable)->absCorner.x;
         dsty += ((WindowPtr)pDstDrawable)->absCorner.y;
@@ -194,7 +194,7 @@ int dstx, dsty;
 	    (*pGC->pScreen->RegionDestroy)(prgnDst);
 	    if (realSrcClip)
 		(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
-	    return;
+	    return NULL;
 	}
 	pbox = prgnDst->rects;
 	ppt = pptSrc;
@@ -210,7 +210,7 @@ int dstx, dsty;
     }
 
     if (((cfbPrivGC *)(pGC->devPriv))->fExpose)
-	miHandleExposures(pSrcDrawable, pDstDrawable, pGC,
+	prgnExposed = miHandleExposures(pSrcDrawable, pDstDrawable, pGC,
 			  origSource.x, origSource.y,
 			  origSource.width, origSource.height,
 			  origDest.x, origDest.y, 0);
@@ -218,6 +218,7 @@ int dstx, dsty;
     (*pGC->pScreen->RegionDestroy)(prgnDst);
     if (realSrcClip)
         (*pGC->pScreen->RegionDestroy)(prgnSrcClip);
+    return prgnExposed;
 }
 
 
