@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: xlogo.c,v 1.4 88/09/06 17:24:20 jim Exp $";
+static char rcsid[] = "$XConsortium: xlogo.c,v 1.5 88/09/12 15:32:49 jim Exp $";
 #endif  lint
 
 #include <X11/Xlib.h>
@@ -46,6 +46,9 @@ void main(argc, argv)
     XFreeGC(XtDisplay(toplevel), gcFore);
     XFreeGC(XtDisplay(toplevel), gcBack);
     arg.name = XtNiconPixmap;
+    arg.value = (XtArgVal) icon;
+    XtSetValues (toplevel, &arg, ONE); 
+    arg.name = XtNiconMask;
     arg.value = (XtArgVal) icon;
     XtSetValues (toplevel, &arg, ONE); 
     XtCreateManagedWidget("xlogo", logoWidgetClass, toplevel, NULL, ZERO);
