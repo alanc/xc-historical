@@ -1,5 +1,5 @@
 /*
- * $XConsortium: parse.c,v 1.6 88/09/06 17:53:40 jim Exp $
+ * $XConsortium: parse.c,v 1.8 88/09/22 13:30:00 martin Exp $
  */
 #include "def.h"
 #include	<sys/signal.h>
@@ -18,16 +18,26 @@ find_includes(filep, file, file_red, recursion)
 	while (line = getline(filep)) {
 		switch(type = deftype(line, filep, file_red, file, TRUE)) {
 		case IF:
+		doif:
 			type = find_includes(filep, file,
 				file_red, recursion+1);
+			while ((type == ELIF) || (type == ELIFFALSE))
+				type = gobble(filep, file, file_red);
 			if (type == ELSE)
 				gobble(filep, file, file_red);
 			break;
 		case IFFALSE:
+		    doiffalse:
 			type = gobble(filep, file, file_red);
 			if (type == ELSE)
-				find_includes(filep, file,
-					file_red, recursion+1);
+			    find_includes(filep, file,
+				file_red, recursion+1);
+			else
+			if (type == ELIF)
+			    goto doif;
+			else
+			if (type == ELIFFALSE)
+			    goto doiffalse;
 			break;
 		case IFDEF:
 		case IFNDEF:
@@ -54,6 +64,8 @@ find_includes(filep, file, file_red, recursion)
 			}
 			break;
 		case ELSE:
+		case ELIFFALSE:
+		case ELIF:
 			if (!recursion)
 				gobble(filep, file, file_red);
 		case ENDIF:
@@ -63,6 +75,22 @@ find_includes(filep, file, file_red, recursion)
 			define(line, file);
 			break;
 		case UNDEF:
+			/*
+			 * undefine all occurances of line by killing s_name
+			 */
+			if (!*line) {
+			    log("%s, line %d: incomplete undef == \"%s\"\n",
+				file_red->i_file, filep->f_line, line);
+			    break;
+			}
+		    {
+			struct symtab *val;
+			for(val = defined(line, file_red);
+			    (val && val->s_name);
+			    val = defined(line, file_red))
+
+			    *(val->s_name) = '\0';
+		    }
 			break;
 		case INCLUDE:
 			add_include(file, file_red, line, FALSE);
@@ -74,12 +102,18 @@ find_includes(filep, file, file_red, recursion)
 		case EJECT:
 			break;
 		case -1:
-			log("%s, line %d: unknown directive == \"%s\"\n",
-				file_red->i_file, filep->f_line, line);
+			log("%s", file_red->i_file);
+			if (file_red != file)
+			    log(" (reading %s)", file->i_file);
+			log(", line %d: unknown directive == \"%s\"\n",
+			    filep->f_line, line);
 			break;
 		case -2:
-			log("%s, line %d: incomplete include == \"%s\"\n",
-				file_red->i_file, filep->f_line, line);
+			log("%s", file_red->i_file);
+			if (file_red != file)
+			    log(" (reading %s)", file->i_file);
+			log(", line %d: incomplete include == \"%s\"\n",
+			    filep->f_line, line);
 			break;
 		}
 	}
@@ -100,8 +134,10 @@ gobble(filep, file, file_red)
 		case IFDEF:
 		case IFNDEF:
 			type = gobble(filep, file, file_red);
+			while ((type == ELIF) || (type == ELIFFALSE))
+			    type = gobble(filep, file, file_red);
 			if (type == ELSE)
-				type = gobble(filep, file, file_red);
+			        type = gobble(filep, file, file_red);
 			break;
 		case ELSE:
 		case ENDIF:
@@ -116,6 +152,9 @@ gobble(filep, file, file_red)
 		case PRAGMA:
 		case EJECT:
 			break;
+		case ELIF:
+		case ELIFFALSE:
+			return(type);
 		case -1:
 			log("%s, line %d: unknown directive == \"%s\"\n",
 				file_red->i_file, filep->f_line, line);
@@ -153,11 +192,33 @@ deftype(line, filep, file_red, file, parse_it)
 	ret = match(directive, directives);
 	*p = savechar;
 
-	/*
-	 * If we don't recognize this compiler directive or we happen
-	 * to just be gobbling up text while waiting for an #endif or
-	 * a #else, then we don't need to parse this line.
+	/* If we don't recognize this compiler directive or we happen to just
+	 * be gobbling up text while waiting for an #endif or #elif or #else
+	 * in the case of an #elif we must check the zero_value and return an
+	 * ELIF or an ELIFFALSE.
 	 */
+
+	if (ret == ELIF && !parse_it)
+	{
+	    while (*p == ' ' || *p == '\t')
+		p++;
+	    /*
+	     * parse an expression.
+	     */
+	    debug0("%s, line %d: #elif %s ",
+		   file->i_file, filep->f_line, p);
+	    if (zero_value(p, filep, file_red))
+	    {
+		debug0("false...\n");
+		return(ELIFFALSE);
+	    }
+	    else
+	    {
+		debug0("true...\n");
+		return(ret);
+	    }
+	}
+
 	if (ret < 0 || ! parse_it)
 		return(ret);
 
@@ -191,13 +252,22 @@ deftype(line, filep, file_red, file, parse_it)
 	case INCLUDE:
 		debug2("%s, line %d: #include %s\n",
 			file->i_file, filep->f_line, p);
+
 		/* Support ANSI macro substitution */
 		{
 		    struct symtab *sym = defined(p, file_red);
-		    if (sym) {
+		    while (sym) {
 			p = sym->s_value;
+			debug3("%s : #includes SYMBOL %s = %s\n",
+			       file->i_incstring,
+			       sym -> s_name,
+			       sym -> s_value);
+			/* mark file as having included a 'soft include' */
+			file->i_included_sym = TRUE; 
+			sym = defined(p, file_red);
 		    }
 		}
+
 		/*
 		 * Separate the name of the include file.
 		 */
@@ -222,6 +292,7 @@ deftype(line, filep, file_red, file, parse_it)
 		break;
 	case ELSE:
 	case ENDIF:
+	case ELIF:
 	case PRAGMA:
 	case EJECT:
 		debug0("%s, line %d: #%s\n",

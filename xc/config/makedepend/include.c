@@ -1,5 +1,5 @@
 /*
- * $XConsortium: include.c,v 1.4 88/08/21 14:07:32 rws Exp $
+ * $XConsortium: include.c,v 1.6 88/09/22 13:31:51 martin Exp $
  */
 #include "def.h"
 
@@ -25,10 +25,11 @@ struct inclist *inc_path(file, include, dot)
 	 * has already been expanded.
 	 */
 	for (ip = inclist; ip->i_file; ip++)
-		if (strcmp(ip->i_incstring, include) == 0) {
-			found = TRUE;
-			break;
-		}
+	    if ((strcmp(ip->i_incstring, include) == 0) && !ip->i_included_sym)
+	    {
+		found = TRUE;
+		break;
+	    }
 
 	/*
 	 * If the path was surrounded by "", then check the absolute
@@ -209,6 +210,7 @@ struct inclist *newinclude(newfile, incstring)
 	if (inclistp == inclist + MAXFILES - 1)
 		log_fatal("out of space: increase MAXFILES\n");
 	ip->i_file = copy(newfile);
+	ip->i_included_sym = FALSE;
 	if (incstring == NULL)
 		ip->i_incstring = ip->i_file;
 	else
@@ -236,12 +238,17 @@ included_by(ip, newfile)
 	else {
 		for (i=0; i<ip->i_listlen; i++)
 			if (ip->i_list[ i ] == newfile) {
+			    if (!ip->i_included_sym)
+			    {
+				/* only bitch if ip has */
+				/* no #include SYMBOL lines  */
 				log("%s includes %s more than once!\n",
 					ip->i_file, newfile->i_file);
 				log("Already have\n");
 				for (i=0; i<ip->i_listlen; i++)
 					log("\t%s\n", ip->i_list[i]->i_file);
-				return;
+			    }
+			    return;
 			}
 		ip->i_list = (struct inclist **) realloc(ip->i_list,
 			sizeof(struct inclist *) * ++ip->i_listlen);

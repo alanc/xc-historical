@@ -1,5 +1,5 @@
 /*
- * $XConsortium: def.h,v 1.4 88/08/21 11:32:11 rws Exp $
+ * $XConsortium: def.h,v 1.6 88/09/22 13:31:49 martin Exp $
  */
 #include <stdio.h>
 #include <ctype.h>
@@ -29,16 +29,18 @@
 #define	INCLUDE		7
 #define	LINE		8
 #define	PRAGMA		9
-#define EJECT		10
-#define	IFFALSE		11	/* pseudo value --- never matched */
-#define	INCLUDEDOT	12	/* pseudo value --- never matched */
+#define ELIF		10
+#define EJECT		11
+#define	IFFALSE		12	/* pseudo value --- never matched */
+#define ELIFFALSE	13	/* pseudo value --- never matched */
+#define	INCLUDEDOT	14	/* pseudo value --- never matched */
 
 #ifdef DEBUG
 extern int	debug;
 #define	debug0	((debug&0x0001)==0) ? debug : log /* show ifn*(def)*,endif */
 #define	debug1	((debug&0x0002)==0) ? debug : log /* trace defined/!defined */
 #define	debug2	((debug&0x0004)==0) ? debug : log /* show #include */
-#define	debug3	((debug&0x0008)==0) ? debug : log /* unused */
+#define	debug3	((debug&0x0008)==0) ? debug : log /* show #include SYMBOL */
 #define	debug4	((debug&0x0010)==0) ? debug : log /* unused */
 #define	debug5	((debug&0x0020)==0) ? debug : log /* unused */
 #define	debug6	((debug&0x0040)==0) ? debug : log /* unused */
@@ -71,6 +73,8 @@ struct	inclist {
 	boolean		i_notified;	/* whether we have revealed includes */
 	boolean		i_marked;	/* whether it's in the makefile */
 	boolean		i_searched;	/* whether we have read this */
+	boolean         i_included_sym; /* whether #include SYMBOL was found */
+					/* Can't use i_list if TRUE */
 };
 
 struct filepointer {
