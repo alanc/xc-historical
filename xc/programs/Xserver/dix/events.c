@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.132 88/01/02 13:02:43 rws Locked $ */
+/* $Header: events.c,v 1.133 88/01/02 13:21:47 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -3506,7 +3506,7 @@ ProcGrabKey(client)
     }
 
     temporaryGrab = CreateGrab(client, inputInfo.keyboard, pWin, 
-	(KeyPressMask | KeyReleaseMask), (Bool)stuff->ownerEvents,
+	(Mask)(KeyPressMask | KeyReleaseMask), (Bool)stuff->ownerEvents,
 	(Bool)stuff->keyboardMode, (Bool)stuff->pointerMode,
 	stuff->modifiers, stuff->key);
 
@@ -3577,7 +3577,7 @@ ProcGrabButton(client)
 
 
     temporaryGrab = CreateGrab(client, inputInfo.pointer, pWin, 
-	(stuff->eventMask | ButtonPressMask | ButtonReleaseMask),
+	(Mask)(stuff->eventMask | ButtonPressMask | ButtonReleaseMask),
 	(Bool)stuff->ownerEvents, (Bool) stuff->keyboardMode,
 	(Bool)stuff->pointerMode, stuff->modifiers, stuff->button);
 
