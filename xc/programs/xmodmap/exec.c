@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: exec.c,v 1.3 88/05/04 16:04:09 jim Exp $
+ * $XConsortium: exec.c,v 1.4 88/09/06 17:33:26 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  * Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
@@ -48,6 +48,11 @@ int UpdateModifierMapping (map)
     XModifierKeymap *map;
 {
     int retries, timeout;
+    unsigned char keymap[32];
+    int i;
+    static unsigned int masktable[8] = {
+	0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80 };
+
 
     for (retries = 5, timeout = 2; retries > 0; retries--, timeout <<= 1) {
 	int result;
@@ -57,8 +62,18 @@ int UpdateModifierMapping (map)
 	  case MappingSuccess:	/* Success */
 	    return (0);
 	  case MappingBusy:		/* Busy */
-	    fprintf (stderr, "%s:  You have %d seconds to lift your hands\n",
+	    XQueryKeymap (dpy, (char *) keymap);
+	    fprintf (stderr,
+	     "%s:  please release the following keys within %d seconds:\n",
 		     ProgramName, timeout);
+	    for (i = 0; i < 256; i++) {
+		if (keymap[i >> 3] & masktable[i & 7]) {
+		    KeySym ks = XKeycodeToKeysym (dpy, (KeyCode) i, 0);
+		    char *cp = XKeysymToString (ks);
+		    fprintf (stderr, "    %s (keysym 0x%x, keycode %d)\n",
+			     cp ? cp : "UNNAMED", ks, i);
+		}
+	    }
 	    sleep (timeout);
 	    continue;
 	  case MappingFailed:
