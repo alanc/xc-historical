@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 5.24 93/09/20 16:48:08 dpw Exp $ */
+/* $XConsortium: gc.c,v 5.25 94/01/21 21:59:58 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -1194,7 +1194,8 @@ GetScratchGC(depth, pScreen)
 	    pGC->graphicsExposures = FALSE;
 	    pGC->clipOrg.x = 0;
 	    pGC->clipOrg.y = 0;
-	    /* can't change clip type, because we might drop storage */
+	    if (pGC->clientClipType != CT_NONE)
+		(*pGC->funcs->ChangeClip) (pGC, CT_NONE, NULL, 0);
 	    pGC->stateChanges = (1 << GCLastBit+1) - 1;
 	    return pGC;
 	}
