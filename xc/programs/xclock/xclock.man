@@ -89,7 +89,7 @@ displays.  The default padding is 10 in digital mode and 8 in analog mode.
 .PP
 .TP 8
 .B \-rv
-This is a standard toolkit option.
+This is a standard X toolkit option.
 The foreground and background colors are reversed.
 .PP
 .TP 8
@@ -111,7 +111,7 @@ Cause the clock to ``chime'' once on the half hour and twice on the hour.
 .PP
 .TP 8
 .B \-geometry \fIgeometry\fP
-This is standard toolkit command line option.
+This is standard X toolkit command line option.
 The clock window is created with the specified
 size according to the geometry specification.
 See \fIX(1)\fP for details.
@@ -122,7 +122,7 @@ any unspecified offset is -0.  All values are in pixels.
 .PP
 .TP 8
 .B \-display \fIhost\fP:\fIdisplay\fP
-This is a standard toolkit command line option.
+This is a standard X toolkit command line option.
 Normally,
 .I xclock
 gets  the host and display number to use from the environment variable
@@ -143,14 +143,14 @@ local  host  is  assumed.   If  the  display  is omitted, display 0 is
 assumed, the ``:'' is necessary in either case.
 .TP 8
 .B \-xrm \fIresourcestring\fP
-This is a standard toolkit command line option that allows you pass in 
+This is a standard X toolkit command line option that allows you pass in 
 resource manager lines as they would appear in your resources file (as used
 by 
 .I xrdb
 or the XENVIRONMENT environment variable).
 .SH X DEFAULTS
 This program uses the 
-.I xclock
+.I Clock
 widget in the X Toolkit.  It understands all of the core resource names and
 classes as well as:
 .PP
