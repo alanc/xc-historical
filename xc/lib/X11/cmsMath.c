@@ -1,7 +1,7 @@
 /*
  * square and cube roots by Newton's method
  *
- * $XConsortium$
+ * $XConsortium: XcmsMath.c,v 1.2 91/02/06 19:22:32 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -25,19 +25,7 @@
  * Stephen Gildea, MIT X Consortium, January 1991
  */
 
-/* header files should say this: */
-#ifdef __GNUC__
-const double XcmsCubeRoot(double a);
-const double XcmsSquareRoot(double a);
-#else
-#ifdef __STDC__
-double XcmsCubeRoot(double a);
-double XcmsSquareRoot(double a);
-#else
-double XcmsCubeRoot();
-double XcmsSquareRoot();
-#endif
-#endif
+#include "XcmsMath.h"
 
 #ifdef __STDC__
 #include <float.h>
@@ -79,16 +67,15 @@ XcmsCubeRoot(a)
     else
 	cur_guess = abs_a*8.;
 
-    while (1) {
+    do {
 #ifdef _X_ROOT_STATS
 	cbrt_loopcount++;
 #endif
 	delta = (cur_guess - abs_a/(cur_guess*cur_guess))/3.;
 	cur_guess -= delta;
 	if (delta < 0.) delta = -delta;
-	if (delta < cur_guess*epsilon_factor)
-	    break;
-    }
+    } while (delta >= cur_guess*epsilon_factor);
+
     if (a < 0.)
 	cur_guess = -cur_guess;
 
@@ -128,16 +115,15 @@ XcmsSquareRoot(a)
     else
 	cur_guess = a*4.;
 
-    while (1) {
+    do {
 #ifdef _X_ROOT_STATS
 	sqrt_loopcount++;
 #endif
 	delta = (cur_guess - a/cur_guess)/2.;
 	cur_guess -= delta;
 	if (delta < 0.) delta = -delta;
-	if (delta < cur_guess*epsilon_factor)
-	    break;
-    }
+    } while (delta >= cur_guess*epsilon_factor);
+
 #ifdef DEBUG
     printf("XcmsSquareRoot returning %g\n", cur_guess);
 #endif
