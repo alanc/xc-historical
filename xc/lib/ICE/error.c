@@ -1,4 +1,4 @@
-/* $XConsortium: error.c,v 1.3 93/09/21 14:16:40 mor Exp $ */
+/* $XConsortium: error.c,v 1.4 93/09/22 17:55:19 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -19,15 +19,16 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include <stdio.h>
 
 void
-_IceErrorBadMinor (iceConn, offendingMinor, severity)
+_IceErrorBadMinor (iceConn, majorOpcode, offendingMinor, severity)
 
 IceConn	iceConn;
+int	majorOpcode;
 int	offendingMinor;
 int	severity;
 
 {
     IceErrorHeader (iceConn,
-	0, offendingMinor,
+	majorOpcode, offendingMinor,
 	iceConn->sequence - 1,
 	severity,
 	IceBadMinor,
@@ -38,15 +39,16 @@ int	severity;
 
 
 void
-_IceErrorBadState (iceConn, offendingMinor, severity)
+_IceErrorBadState (iceConn, majorOpcode, offendingMinor, severity)
 
 IceConn	iceConn;
+int	majorOpcode;
 int	offendingMinor;
 int	severity;
 
 {
     IceErrorHeader (iceConn,
-	0, offendingMinor,
+	majorOpcode, offendingMinor,
 	iceConn->sequence - 1,
 	severity,
 	IceBadState,
@@ -57,15 +59,16 @@ int	severity;
 
 
 void
-_IceErrorBadLength (iceConn, offendingMinor, severity)
+_IceErrorBadLength (iceConn, majorOpcode, offendingMinor, severity)
 
 IceConn	iceConn;
+int	majorOpcode;
 int	offendingMinor;
 int	severity;
 
 {
     IceErrorHeader (iceConn,
-	0, offendingMinor,
+	majorOpcode, offendingMinor,
 	iceConn->sequence - 1,
 	severity,
 	IceBadLength,
@@ -76,9 +79,10 @@ int	severity;
 
 
 void
-_IceErrorBadValue (iceConn, offendingMinor, offset, length, value)
+_IceErrorBadValue (iceConn, majorOpcode, offendingMinor, offset, length, value)
 
 IceConn		iceConn;
+int		majorOpcode;
 int		offendingMinor;
 int		offset;
 int		length;		/* in bytes */
@@ -86,11 +90,11 @@ IcePointer	value;
 
 {
     IceErrorHeader (iceConn,
-	0, offendingMinor,
+	majorOpcode, offendingMinor,
 	iceConn->sequence - 1,
 	IceCanContinue,
 	IceBadValue,
-	WORD64COUNT (length));
+	WORD64COUNT (8 + length));
 
     IceWriteData32 (iceConn, 4, &offset);
     IceWriteData32 (iceConn, 4, &length);
