@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.70 89/10/03 16:15:13 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.71 89/10/04 11:50:11 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif /* lint */
 
@@ -28,6 +28,10 @@ SOFTWARE.
 ******************************************************************/
 
 #define SHELL
+
+#ifndef DEFAULT_WM_TIMEOUT
+#define DEFAULT_WM_TIMEOUT 5000
+#endif
 
 #include <pwd.h>
 #include <stdio.h>
@@ -86,16 +90,16 @@ static XtResource shellResources[]=
 	{ XtNallowShellResize, XtCAllowShellResize, XtRBoolean,
 	    sizeof(Boolean), Offset(shell.allow_shell_resize),
 	    XtRImmediate, (XtPointer)False},
-	{ XtNgeometry, XtCGeometry, XtRString, sizeof(XtPointer), 
-	    Offset(shell.geometry), XtRString, (XtPointer) NULL},
+	{ XtNgeometry, XtCGeometry, XtRString, sizeof(String), 
+	    Offset(shell.geometry), XtRString, (XtPointer)NULL},
 	{ XtNcreatePopupChildProc, XtCCreatePopupChildProc, XtRFunction,
 	    sizeof(XtCreatePopupChildProc), Offset(shell.create_popup_child_proc),
 	    XtRFunction, NULL},
 	{ XtNsaveUnder, XtCSaveUnder, XtRBoolean, sizeof(Boolean),
 	    Offset(shell.save_under), XtRImmediate, (XtPointer)False},
-	{ XtNpopupCallback, XtCCallback, XtRCallback, sizeof(XtPointer),
+	{ XtNpopupCallback, XtCCallback, XtRCallback, sizeof(XtCallbackList),
 	    Offset(shell.popup_callback), XtRCallback, (XtPointer) NULL},
-	{ XtNpopdownCallback, XtCCallback, XtRCallback, sizeof(XtPointer),
+	{ XtNpopdownCallback, XtCCallback, XtRCallback, sizeof(XtCallbackList),
 	    Offset(shell.popdown_callback), XtRCallback, (XtPointer) NULL},
 	{ XtNoverrideRedirect, XtCOverrideRedirect,
 	    XtRBoolean, sizeof(Boolean), Offset(shell.override_redirect),
@@ -242,12 +246,12 @@ externaldef(overrideshellwidgetclass) WidgetClass overrideShellWidgetClass =
 
 static XtResource wmResources[]=
 {
-	{ XtNtitle, XtCTitle, XtRString, sizeof(char *),
+	{ XtNtitle, XtCTitle, XtRString, sizeof(String),
 	    Offset(wm.title), XtRString, NULL},
 	{ XtNtitleEncoding, XtCEncoding, XtRAtom, sizeof(Atom),
 	    Offset(wm.title_encoding), XtRImmediate, (XtPointer)XA_STRING},
 	{ XtNwmTimeout, XtCWmTimeout, XtRInt, sizeof(int),
-	    Offset(wm.wm_timeout), XtRImmediate, (XtPointer)5000},
+	    Offset(wm.wm_timeout), XtRImmediate,(XtPointer)DEFAULT_WM_TIMEOUT},
 	{ XtNwaitForWm, XtCWaitForWm, XtRBoolean, sizeof(Boolean),
 	    Offset(wm.wait_for_wm), XtRImmediate, (XtPointer)True},
 	{ XtNtransient, XtCTransient, XtRBoolean, sizeof(Boolean),
@@ -298,9 +302,9 @@ static XtResource wmResources[]=
 	{ XtNinitialState, XtCInitialState, XtRInitialState, sizeof(int),
 	    Offset(wm.wm_hints.initial_state),
 	    XtRImmediate, (XtPointer)NormalState},
-	{ XtNiconPixmap, XtCIconPixmap, XtRBitmap, sizeof(XtPointer),
+	{ XtNiconPixmap, XtCIconPixmap, XtRBitmap, sizeof(Pixmap),
 	    Offset(wm.wm_hints.icon_pixmap), XtRPixmap, NULL},
-	{ XtNiconWindow, XtCIconWindow, XtRWindow, sizeof(XtPointer),
+	{ XtNiconWindow, XtCIconWindow, XtRWindow, sizeof(Window),
 	    Offset(wm.wm_hints.icon_window), XtRWindow,   (XtPointer) NULL},
 	{ XtNiconX, XtNiconX, XtRInt, sizeof(int),
 	    Offset(wm.wm_hints.icon_x),
@@ -308,9 +312,9 @@ static XtResource wmResources[]=
 	{ XtNiconY, XtNiconY, XtRInt, sizeof(int),
 	    Offset(wm.wm_hints.icon_y),
 	    XtRImmediate, (XtPointer)XtUnspecifiedShellInt},
-	{ XtNiconMask, XtCIconMask, XtRBitmap, sizeof(XtPointer),
+	{ XtNiconMask, XtCIconMask, XtRBitmap, sizeof(Pixmap),
 	    Offset(wm.wm_hints.icon_mask), XtRPixmap, NULL},
-	{ XtNwindowGroup, XtCWindowGroup, XtRWindow, sizeof(XID),
+	{ XtNwindowGroup, XtCWindowGroup, XtRWindow, sizeof(Window),
 	    Offset(wm.wm_hints.window_group),
 	    XtRImmediate, (XtPointer)XtUnspecifiedWindow}
 };
@@ -455,7 +459,7 @@ externaldef(transientshellwidgetclass) WidgetClass transientShellWidgetClass =
 
 static XtResource topLevelResources[]=
 {
-	{ XtNiconName, XtCIconName, XtRString, sizeof(XtPointer),
+	{ XtNiconName, XtCIconName, XtRString, sizeof(String),
 	    Offset(topLevel.icon_name), XtRString, (XtPointer) NULL},
 	{ XtNiconNameEncoding, XtCEncoding, XtRAtom, sizeof(Atom),
 	    Offset(topLevel.icon_name_encoding), XtRImmediate,
@@ -535,7 +539,7 @@ static XtResource applicationResources[]=
 {
 	{ XtNargc, XtCArgc, XtRInt, sizeof(int),
 	    Offset(application.argc), XtRImmediate, (XtPointer)0}, 
-	{ XtNargv, XtCArgv, XtRPointer, sizeof(XtPointer),
+	{ XtNargv, XtCArgv, XtRPointer, sizeof(String*),
 	    Offset(application.argv), XtRPointer, (XtPointer) NULL}
 };
 
@@ -1455,9 +1459,9 @@ static XtGeometryResult GeometryManager( wid, request, reply )
 }
 
 typedef struct {
-	Widget w;
-	XWindowChanges *values;
-	int others;
+	Widget  w;
+	int     request_num;
+	Boolean done;
 } QueryStruct;
 
 static Bool isMine(dpy, event, arg)
@@ -1466,85 +1470,78 @@ static Bool isMine(dpy, event, arg)
 	char *arg;
 {
 	QueryStruct *q = (QueryStruct *) arg;
-	Widget w = q->w;
+	register Widget w = q->w;
 	
 	if ( (dpy != XtDisplay(w)) || (event->xany.window != XtWindow(w)) ) {
 	    return FALSE;
 	}
-	if (event->type == ConfigureNotify) {
-	    XConfigureEvent *ce = (XConfigureEvent *) event;
-	    if (ce->width == q->values->width && 
-		    ce->height == q->values->height) {
+	if (event->xany.serial >= q->request_num) {
+	    if (event->type == ConfigureNotify) {
+		q->done = TRUE;
 		return TRUE;
-	    } else {
-		q->others++;
-		return FALSE;
-	    }
-	}
-	if (event->type == ClientMessage &&
-		(event->xclient.message_type == WM_CONFIGURE_DENIED(w) ||
-		 event->xclient.message_type == WM_MOVED(w))) {
-	    return TRUE;
-	}
-	return FALSE;
-}
-
-static Bool findOthers(dpy, event, arg)
-	Display *dpy;
-	register XEvent  *event;
-	char *arg;
-{
-	QueryStruct *q = (QueryStruct *) arg;
-	Widget w = q->w;
-	
-	if ( (dpy != XtDisplay(w)) || (event->xany.window != XtWindow(w)) ) {
+	    } else
+		/* This is draft-ICCCM stuff; here for compatibility */
+		if (event->type == ClientMessage &&
+		    (event->xclient.message_type == WM_CONFIGURE_DENIED(w) ||
+		     event->xclient.message_type == WM_MOVED(w))) {
+		    q->done = TRUE;
+		    return TRUE;
+		}
 	    return FALSE;
 	}
-	if (event->type == ConfigureNotify) {
-	    XConfigureEvent *ce = (XConfigureEvent *) event;
-	    if (ce->width != q->values->width || 
-		    ce->height != q->values->height) {
-		return TRUE;
-	    } 
+	else if (event->type == ConfigureNotify ||
+		 (event->type == ClientMessage &&
+		  (event->xclient.message_type == WM_CONFIGURE_DENIED(w) ||
+		   event->xclient.message_type == WM_MOVED(w))))
+	    return TRUE;	/* flush old events */
+	else if (event->type == ReparentNotify
+		 && event->xreparent.window == XtWindow(w)) {
+	    /* we might get ahead of this event, so just in case someone
+	     * asks for coordinates before this event is dispatched...
+	     */
+	    register ShellWidget s = (ShellWidget)w;
+	    if (event->xreparent.parent != RootWindowOfScreen(XtScreen(w)))
+		s->shell.client_specified &= ~_XtShellNotReparented;
+	    else
+		s->shell.client_specified |= _XtShellNotReparented;
 	}
 	return FALSE;
 }
 
-static _wait_for_response(w, values, event)
-	WMShellWidget     w;
-	XWindowChanges *values;
+static _wait_for_response(w, event, request_num)
+	ShellWidget	w;
 	XEvent		*event;
+        int		request_num;
 {
 	XtAppContext app = XtWidgetToApplicationContext((Widget) w);
 	QueryStruct q;
-	XEvent junkevent;
-	unsigned long timeout = w->wm.wm_timeout;
+	unsigned long timeout;
+
+	if (XtIsWMShell((Widget)w))
+	    timeout = ((WMShellWidget)w)->wm.wm_timeout;
+	else
+	    timeout = DEFAULT_WM_TIMEOUT;
 
 	XFlush(XtDisplay(w));
 	q.w = (Widget) w;
-	q.values = values;
+	q.request_num = request_num;
+	q.done = FALSE;
+	
 	for(;;) {
-	    q.others = 0;
-	    if (XCheckIfEvent(XtDisplay(w), event, isMine, (char *) &q)) {
-		/* The event we want is there; but maybe others too.  If so,
-		   get them out of the queue */
-		if (event->xany.type != ConfigureNotify) return TRUE;
-		for (; q.others > 0; q.others--) {
-		    if (!XCheckIfEvent(XtDisplay(w), &junkevent,
-			    findOthers, (char *) &q)) {
-			XtAppErrorMsg(XtWidgetToApplicationContext((Widget)w),
-				"missingEvent","shell","XtToolkitError",
-				"Events are disappearing from under Shell",
-				(String *)NULL, (Cardinal *)NULL);
-		    }
-		}
+ 	    /*
+ 	     * look for match event and discard all prior configures
+ 	     */
+	    (void)XCheckIfEvent( XtDisplay(w), event, isMine, (char*)&q);
+
+	    if (q.done)
 		return TRUE;
-	    } else {
-		if (_XtwaitForSomething(TRUE, TRUE, FALSE, TRUE, &timeout,
-			app) != -1) continue;
-		if (timeout == 0)
-		  return FALSE;
-	    }
+
+	    if (_XtwaitForSomething(TRUE, TRUE, FALSE, TRUE, &timeout, app)
+		!= -1) continue; /* %%% we're in trouble if an event arrives
+				  * on another display
+				  */
+	    if (timeout == 0)
+		return FALSE;
 	}
 }
 
@@ -1559,15 +1556,23 @@ static XtGeometryResult RootGeometryManager(w, request, reply)
     XEvent event;
     Boolean wm = XtIsWMShell(w);
     register struct _OldXSizeHints *hintp;
-    int oldx, oldy;
+    int oldx, oldy, oldwidth, oldheight, oldborder_width, request_num;
 
     if (wm) {
 	hintp = &wmshell->wm.size_hints;
-	oldx = hintp->x = w->core.x;
-	oldy = hintp->y = w->core.y;
-	hintp->width = w->core.width;
-	hintp->height = w->core.height;
+	oldx = w->core.x;
+	oldy = w->core.y;
+	oldwidth = w->core.width;
+	oldheight = w->core.height;
+	oldborder_width = w->core.border_width;
     }
+
+#define PutBackGeometry() \
+	{ w->core.x = oldx; \
+	  w->core.y = oldy; \
+	  w->core.width = oldwidth; \
+	  w->core.height = oldheight; \
+	  w->core.border_width = oldborder_width; }
 
     if (mask & CWX) {
 	    if (w->core.x == request->x) mask &= ~CWX;
@@ -1594,33 +1599,33 @@ static XtGeometryResult RootGeometryManager(w, request, reply)
     if (mask & CWBorderWidth) {
 	    if (w->core.border_width == request->border_width) {
 		    mask &= ~CWBorderWidth;
-	    } else w->core.border_width = values.border_width
-				= request->border_width;
+	    } else
+		w->core.border_width =
+		    values.border_width =
+			request->border_width;
     }
     if (mask & CWWidth) {
-	    values.width = request->width;
 	    if (w->core.width == values.width) mask &= ~CWWidth;
 	    else {
-		w->core.width = values.width;
+		w->core.width = values.width = request->width;
 		if (wm) {
 		    hintp->flags &= ~USSize;
 		    hintp->flags |= PSize;
 		    hintp->width = values.width;
 		}
 	    }
-    } else values.width = w->core.width; /* for _wait_for_response */
+    }
     if (mask & CWHeight) {
-	    values.height = request->height;
 	    if (w->core.height == values.height) mask &= ~CWHeight;
 	    else {
-		w->core.height = values.height;
+		w->core.height = values.height = request->height;
 		if (wm) {
 		    hintp->flags &= ~USSize;
 		    hintp->flags |= PSize;
 		    hintp->height = values.height;
 		}
 	    }
-    } else values.height = w->core.height; /* for _wait_for_response */
+    }
     if (mask & CWStackMode) {
 	values.stack_mode = request->stack_mode;
 	if (mask & CWSibling)
@@ -1634,6 +1639,7 @@ static XtGeometryResult RootGeometryManager(w, request, reply)
 	_SetWMSizeHints(wmshell);
     }
 
+    request_num = NextRequest(XtDisplay(w));
     XConfigureWindow(XtDisplay(w), XtWindow(w), mask, &values);
 
     if (wmshell->shell.override_redirect) return XtGeometryDone;
@@ -1648,30 +1654,51 @@ static XtGeometryResult RootGeometryManager(w, request, reply)
 	     * so I will do the work and 
 	     * say no so if a new WM starts up,
 	     * or the current one recovers
-	     * my size requests will be visable
+	     * my size requests will be visible
 	     */
 	    return XtGeometryNo;
     }
 
-    if (_wait_for_response(wmshell, &values, &event)){
+    if (_wait_for_response((ShellWidget)w, &event, request_num)) {
 	/* got an event */
 	if (event.type == ConfigureNotify) {
-	    w->core.width = event.xconfigure.width;
-	    w->core.height = event.xconfigure.height;
-	    w->core.border_width = event.xconfigure.border_width;
-	    if (event.xany.send_event /* ICCCM compliant synth */
-		|| wmshell->shell.client_specified & _XtShellNotReparented)
-	    {
-		w->core.x = event.xconfigure.x;
-		w->core.y = event.xconfigure.y;
-		wmshell->shell.client_specified |= _XtShellPositionValid;
+
+#define NEQ(x, msk) ((mask & msk) && (values.x != event.xconfigure.x))	
+	    if (NEQ(x, CWX) ||
+		NEQ(y, CWY) ||
+		NEQ(width, CWWidth) ||
+		NEQ(height, CWHeight) ||
+		NEQ(border_width, CWBorderWidth)) {
+#undef NEQ
+		XPutBackEvent(XtDisplay(w), &event);
+		PutBackGeometry();
+		/*
+		 * We just potentially re-ordered the event queue
+		 * w.r.t. ConfigureNotifies with some trepidation.
+		 * But this is probably a Good Thing because we
+		 * will know the new true state of the world sooner
+		 * this way.
+		 */
+		return XtGeometryNo;
 	    }
-	    else wmshell->shell.client_specified &= ~_XtShellPositionValid;
-	    return XtGeometryDone;
-	} else if (event.type == ClientMessage &&
-		   event.xclient.message_type == WM_CONFIGURE_DENIED(w)) {
-	    w->core.x = oldx;
-	    w->core.y = oldy;
+	    else {
+		w->core.width = event.xconfigure.width;
+		w->core.height = event.xconfigure.height;
+		w->core.border_width = event.xconfigure.border_width;
+		if (event.xany.send_event || /* ICCCM compliant synth */
+		    wmshell->shell.client_specified & _XtShellNotReparented) {
+
+		    w->core.x = event.xconfigure.x;
+		    w->core.y = event.xconfigure.y;
+		    wmshell->shell.client_specified |= _XtShellPositionValid;
+		}
+		else wmshell->shell.client_specified &= ~_XtShellPositionValid;
+		return XtGeometryDone;
+	    }
+	} else if (!wm ||
+		   (event.type == ClientMessage &&
+		    event.xclient.message_type == WM_CONFIGURE_DENIED(w))) {
+	    PutBackGeometry();
 	    return XtGeometryNo;
 	} else if (event.type == ClientMessage &&
 		    event.xclient.message_type == WM_MOVED(w)) {
@@ -1679,14 +1706,14 @@ static XtGeometryResult RootGeometryManager(w, request, reply)
 	    w->core.y = event.xclient.data.s[1];
 	    wmshell->shell.client_specified |= _XtShellPositionValid;
 	    return XtGeometryDone;
-	} else XtAppErrorMsg(XtWidgetToApplicationContext((Widget)w),
-			     "internalError", "shell", "XtToolkitError",
-			     "Shell's window manager interaction is broken",
-			     (String *)NULL, (Cardinal *)NULL);
-    } else {
-	wmshell->wm.wait_for_wm = FALSE;
-	return XtGeometryNo;
+	} else XtAppWarningMsg(XtWidgetToApplicationContext((Widget)w),
+			       "internalError", "shell", "XtToolkitError",
+			       "Shell's window manager interaction is broken",
+			       (String *)NULL, (Cardinal *)NULL);
+    } else /* no event */ {
+	wmshell->wm.wait_for_wm = FALSE; /* timed out; must be broken */
     }
+#undef PutBackGeometry
     return XtGeometryNo;
 }
 
@@ -1818,8 +1845,7 @@ static Boolean TopLevelSetValues(oldW, refW, newW, args, num_args)
 
     if (old->topLevel.icon_name != new->topLevel.icon_name) {
 	XtFree((XtPointer)old->topLevel.icon_name);
-	new->topLevel.icon_name = XtNewString(
-	    new->topLevel.icon_name);
+	new->topLevel.icon_name = XtNewString(new->topLevel.icon_name);
 	name_changed = True;
     } else
 	name_changed = False;
