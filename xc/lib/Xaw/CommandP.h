@@ -1,5 +1,5 @@
 /*
-* $XConsortium: CommandP.h,v 1.25 89/05/11 01:05:06 kit Exp $
+* $XConsortium: CommandP.h,v 1.26 89/09/23 00:36:49 swick Exp $
 */
 
 
@@ -97,6 +97,7 @@ typedef struct {
 #ifdef SHAPE
     /* more resources */
     int			shape_style;    
+    Dimension		corner_width, corner_height;
 #endif
 } CommandPart;
 
