@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.158 90/04/13 14:01:01 jim Exp $
+ * $XConsortium: menus.c,v 1.159 90/04/17 12:11:45 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.158 90/04/13 14:01:01 jim Exp $";
+"$XConsortium: menus.c,v 1.159 90/04/17 12:11:45 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -465,23 +465,36 @@ UpdateMenu()
     while (TRUE)
     {
 	/* block until there is an event */
-	do {
-	    XMaskEvent(dpy,
-		ButtonPressMask | ButtonReleaseMask |
-		EnterWindowMask | ExposureMask |
-		VisibilityChangeMask | LeaveWindowMask |
-		ButtonMotionMask, &Event);
-	    if (!DispatchEvent ()) continue;
-	    if (Event.type == ButtonRelease || Cancel)
-		return;
-	} while (Event.type != MotionNotify);
-	/* if we haven't recieved the enter notify yet, wait */
-	if (ActiveMenu && !ActiveMenu->entered)
+	XMaskEvent(dpy,
+	    ButtonPressMask | ButtonReleaseMask |
+	    EnterWindowMask | ExposureMask |
+	    VisibilityChangeMask | LeaveWindowMask |
+	    ButtonMotionMask, &Event);
+
+	if (Event.type == MotionNotify) {
+	    /* discard any extra motion events before a release */
+	    while(XCheckMaskEvent(dpy,
+		ButtonMotionMask | ButtonReleaseMask, &Event))
+		if (Event.type == ButtonRelease)
+		    break;
+	}
+
+	if (!DispatchEvent ())
+	    continue;
+
+	if (Event.type == ButtonRelease || Cancel)
+	    return;
+
+	if (Event.type != MotionNotify)
 	    continue;
 
 	done = FALSE;
 	XQueryPointer( dpy, ActiveMenu->w, &JunkRoot, &JunkChild,
 	    &x_root, &y_root, &x, &y, &JunkMask);
+
+	/* if we haven't recieved the enter notify yet, wait */
+	if (ActiveMenu && !ActiveMenu->entered)
+	    continue;
 
 	XFindContext(dpy, ActiveMenu->w, ScreenContext, (caddr_t *)&Scr);
 
@@ -975,7 +988,8 @@ Bool PopUpMenu (menu, x, y, center)
     menu->prev = ActiveMenu;
 
     XGrabPointer(dpy, Scr->Root, True,
-	ButtonPressMask | ButtonReleaseMask | ButtonMotionMask,
+	ButtonPressMask | ButtonReleaseMask |
+	ButtonMotionMask | PointerMotionHintMask,
 	GrabModeAsync, GrabModeAsync,
 	Scr->Root, Scr->MenuCursor, CurrentTime);
 
@@ -1300,6 +1314,14 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 			 EnterWindowMask | LeaveWindowMask |
 			 ButtonMotionMask, &Event);
 
+	    	if (Event.type == MotionNotify) {
+		    /* discard any extra motion events before a release */
+		    while(XCheckMaskEvent(dpy,
+			ButtonMotionMask | ButtonReleaseMask, &Event))
+			if (Event.type == ButtonRelease)
+				break;
+	    	}
+
 		if (!DispatchEvent ()) continue;
 
 	    } while (!(Event.type == ButtonRelease || Cancel));
@@ -1340,7 +1362,8 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	    XGrabServer(dpy);
 	}
 	XGrabPointer(dpy, eventp->xbutton.root, True,
-	    ButtonPressMask | ButtonReleaseMask | ButtonMotionMask,
+	    ButtonPressMask | ButtonReleaseMask |
+	    ButtonMotionMask | PointerMotionHintMask,
 	    GrabModeAsync, GrabModeAsync,
 	    Scr->Root, Scr->MoveCursor, CurrentTime);
 
@@ -1435,9 +1458,18 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 				    EnterWindowMask | LeaveWindowMask |
 				    ExposureMask | ButtonMotionMask |
 				    VisibilityChangeMask, &Event);
+
 	    /* throw away enter and leave events until release */
 	    if (Event.xany.type == EnterNotify ||
 		Event.xany.type == LeaveNotify) continue; 
+
+	    if (Event.type == MotionNotify) {
+		/* discard any extra motion events before a release */
+		while(XCheckMaskEvent(dpy,
+		    ButtonMotionMask | ButtonReleaseMask, &Event))
+		    if (Event.type == ButtonRelease)
+			break;
+	    }
 
 	    if (!DispatchEvent ()) continue;
 

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.157 90/04/17 14:04:40 jim Exp $
+ * $XConsortium: events.c,v 1.158 90/04/20 14:59:41 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.157 90/04/17 14:04:40 jim Exp $";
+"$XConsortium: events.c,v 1.158 90/04/20 14:59:41 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1381,6 +1381,11 @@ HandleMotionNotify()
 {
     if (ResizeWindow != NULL)
     {
+	XQueryPointer( dpy, Event.xany.window,
+	    &(Event.xmotion.root), &JunkChild,
+	    &(Event.xmotion.x_root), &(Event.xmotion.y_root),
+	    &(Event.xmotion.x), &(Event.xmotion.y),
+	    &JunkMask);
 	XFindContext(dpy, ResizeWindow, TwmContext, (caddr_t *)&Tmp_win);
 	DoResize(Event.xmotion.x_root, Event.xmotion.y_root, Tmp_win);
     }

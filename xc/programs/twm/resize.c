@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.69 90/03/27 11:55:03 jim Exp $
+ * $XConsortium: resize.c,v 1.70 90/04/13 13:27:10 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.69 90/03/27 11:55:03 jim Exp $";
+"$XConsortium: resize.c,v 1.70 90/04/13 13:27:10 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -143,7 +143,8 @@ Bool fromtitlebar;
     ResizeWindow = tmp_win->frame;
     XGrabServer(dpy);
     XGrabPointer(dpy, Scr->Root, True,
-        ButtonPressMask | ButtonReleaseMask | ButtonMotionMask,
+        ButtonPressMask | ButtonReleaseMask |
+	ButtonMotionMask | PointerMotionHintMask,
         GrabModeAsync, GrabModeAsync,
         Scr->Root, Scr->ResizeCursor, CurrentTime);
 
@@ -194,7 +195,7 @@ int x, y, w, h;
 {
     XGrabServer(dpy);
     XGrabPointer(dpy, Scr->Root, True,
-        ButtonReleaseMask | ButtonMotionMask,
+        ButtonReleaseMask | ButtonMotionMask | PointerMotionHintMask,
         GrabModeAsync, GrabModeAsync,
         Scr->Root, Scr->ResizeCursor, CurrentTime);
 

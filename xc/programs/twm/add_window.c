@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.142 90/04/13 13:34:37 jim Exp $
+ * $XConsortium: add_window.c,v 1.143 90/04/17 14:04:35 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.142 90/04/13 13:34:37 jim Exp $";
+"$XConsortium: add_window.c,v 1.143 90/04/17 14:04:35 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -379,7 +379,8 @@ IconMgr *iconp;
 		 * this will cause a warp to the indicated root
 		 */
 		stat = XGrabPointer(dpy, Scr->Root, False,
-		    ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
+		    ButtonPressMask | ButtonReleaseMask |
+		    PointerMotionMask | PointerMotionHintMask,
 		    GrabModeAsync, GrabModeAsync,
 		    Scr->Root, UpperLeftCursor, CurrentTime);
 
@@ -411,6 +412,15 @@ IconMgr *iconp;
 	    while (TRUE)
 		{
 		XMaskEvent(dpy, ButtonPressMask | PointerMotionMask, &event);
+
+		if (Event.type == MotionNotify) {
+		    /* discard any extra motion events before a release */
+		    while(XCheckMaskEvent(dpy,
+			ButtonMotionMask | ButtonPressMask, &Event))
+			if (Event.type == ButtonPress)
+			    break;
+		}
+
 
 		if (event.type == ButtonPress) {
 		    AddingX = event.xbutton.x_root;
@@ -468,6 +478,14 @@ IconMgr *iconp;
 		{
 		    XMaskEvent(dpy,
 			       ButtonReleaseMask | ButtonMotionMask, &event);
+
+		    if (Event.type == MotionNotify) {
+			/* discard any extra motion events before a release */
+			while(XCheckMaskEvent(dpy,
+			    ButtonMotionMask | ButtonReleaseMask, &Event))
+			    if (Event.type == ButtonRelease)
+				break;
+		    }
 
 		    if (event.type == ButtonRelease)
 		    {
