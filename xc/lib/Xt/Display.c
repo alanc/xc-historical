@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.64 91/02/03 18:30:26 rws Exp $ */
+/* $XConsortium: Display.c,v 1.65 91/02/05 16:58:14 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -269,7 +269,6 @@ XtDisplayInitialize(app, dpy, name, classname, urlist, num_urs, argc, argv)
 	pd->per_screen_db = (XrmDatabase *)XtCalloc(ScreenCount(dpy),
 						    sizeof(XrmDatabase));
 	pd->cmd_db = (XrmDatabase)NULL;
-	pd->def_db_screen_specific = False;
 	_XtDisplayInitialize(dpy, pd, (String)name, (String)classname, urlist, 
 			     num_urs, argc, argv);
 }
