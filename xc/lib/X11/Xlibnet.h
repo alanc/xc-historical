@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibnet.h,v 1.21 93/07/22 12:52:57 gildea Exp $ */
+/* $XConsortium: Xlibnet.h,v 1.22 93/08/13 19:52:58 rws Exp $ */
 
 /*
 Copyright 1991 Massachusetts Institute of Technology
@@ -106,7 +106,10 @@ without express or implied warranty.
 
 #ifdef USE_POLL
 #include <sys/poll.h>
-#else
+#endif
+
+#if !defined(USE_POLL) || defined(STREAMSCONN)
+
 #define MSKCNT ((OPEN_MAX + 31) / 32)
 
 #if (MSKCNT==1)
