@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.109 91/03/30 09:42:56 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.110 91/04/05 14:53:36 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate .cf
 XCOMM configuration files.  Site-wide parameters may be set in the file
@@ -546,17 +546,6 @@ XCOMM site-specific configuration parameters - edit site.def to change
 #ifndef RmCmd
 #define RmCmd rm -f
 #endif
-#ifndef StandardCppDefines
-#if SystemV
-#define StandardCppDefines -DSYSV
-#else
-#if SystemV4
-#define StandardCppDefines -DSVR4
-#else
-#define StandardCppDefines /**/
-#endif
-#endif
-#endif
 #ifndef StandardIncludes
 #define StandardIncludes /**/			/* for platform-specifics */
 #endif
@@ -570,6 +559,9 @@ XCOMM site-specific configuration parameters - edit site.def to change
 #define StandardDefines /**/
 #endif
 #endif
+#endif
+#ifndef StandardCppDefines
+#define StandardCppDefines StandardDefines
 #endif
 #ifndef Malloc0ReturnsNull
 #define Malloc0ReturnsNull NO
