@@ -1,4 +1,4 @@
-/* $XConsortium: FSOpenServ.c,v 1.2 91/05/13 15:11:48 gildea Exp $ */
+/* $XConsortium: FSOpenServ.c,v 1.3 91/07/16 20:32:16 keith Exp $ */
 
 /* @(#)FSOpenServ.c	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
@@ -29,7 +29,7 @@
 
 #include	<stdio.h>
 #include	"FSlibint.h"
-#include	<X11/Xos.h>
+#include 	<X11/Xtrans.h>
 
 int         _FSdebug = 0;
 
@@ -56,7 +56,6 @@ FSOpenServer(server)
 {
     FSServer   *svr;
     int         i;
-    char       *server_name;
     int         endian;
     fsConnClientPrefix client;
     fsConnSetup prefix;
@@ -68,30 +67,30 @@ FSOpenServer(server)
     AlternateServer *alts;
     int         altlen;
     char       *vendor_string;
-    char        serverbuf[256];
     long        setuplength;
     extern int  _FSSendClientPrefix();
-    extern int  _FSConnectServer();
+    extern XtransConnInfo _FSConnectServer();
 #ifdef X_NOT_STDC_ENV
     extern char *getenv();
 #endif
 
     if (server == NULL || *server == '\0') {
-	if ((server_name = getenv("FONTSERVER")) == NULL) {
+	if ((server = getenv("FONTSERVER")) == NULL) {
 	    return (FSServer *) NULL;
 	}
-    } else {
-	server_name = server;
     }
+
     if ((svr = (FSServer *) FScalloc(1, sizeof(FSServer))) == NULL) {
 	errno = ENOMEM;
 	return (FSServer *) NULL;
     }
-    serverbuf[0] = '\0';
-    if ((svr->fd = _FSConnectServer(server_name, serverbuf)) < 0) {
+    if ((svr->trans_conn = _FSConnectServer(server)) == NULL) {
 	FSfree((char *) svr);
 	return (FSServer *) NULL;
     }
+
+    svr->fd = _FSTransGetConnectionNumber (svr->trans_conn);
+
     endian = 1;
     if (*(char *) &endian)
 	client.byteOrder = 'l';
@@ -158,7 +157,7 @@ FSOpenServer(server)
 
     if (prefix.status != AuthSuccess) {
 	fprintf(stderr, "%s: connection to \"%s\" refused by server\r\n%s: ",
-		"FSlib", serverbuf, "FSlib");
+		"FSlib", server, "FSlib");
 	FSfree((char *) svr);
 	FSfree(setup);
 	return (FSServer *) NULL;
@@ -198,12 +197,12 @@ FSOpenServer(server)
     svr->last_request_read = 0;
     svr->last_req = (char *) &_dummy_request;
 
-    if ((svr->server_name = FSmalloc((unsigned) (strlen(serverbuf) + 1)))
+    if ((svr->server_name = FSmalloc((unsigned) (strlen(server) + 1)))
 	    == NULL) {
 	OutOfMemory(svr, setup);
 	return (FSServer *) NULL;
     }
-    (void) strcpy(svr->server_name, serverbuf);
+    (void) strcpy(svr->server_name, server);
 
     /* setup the output buffers */
     if ((svr->bufptr = svr->buffer = FSmalloc(BUFSIZE)) == NULL) {
@@ -231,7 +230,7 @@ OutOfMemory(svr, setup)
     FSServer   *svr;
     char       *setup;
 {
-    _FSDisconnectServer(svr->fd);
+    _FSDisconnectServer(svr->trans_conn);
     _FSFreeServerStructure(svr);
     FSfree(setup);
     errno = ENOMEM;

@@ -1,4 +1,4 @@
-/* $XConsortium: FSlibos.h,v 1.16 93/09/22 21:52:01 rws Exp $ */
+/* $XConsortium: FSlibos.h,v 1.17 93/09/25 13:38:27 rws Exp $ */
 
 /* @(#)FSlibos.h	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
@@ -30,57 +30,7 @@
 #include <X11/Xfuncs.h>
 #include <X11/Xosdefs.h>
 
-#ifdef LONG64
-typedef int BytesReadable_t;
-#else
-typedef long BytesReadable_t;
-#endif
-
 #ifndef WIN32
-
-/* Sorry, we do not really support streams yet */
-#ifdef STREAMSCONN
-#undef STREAMSCONN
-#endif
-
-#ifdef STREAMSCONN
-#ifdef SYSV
-/*
- * UNIX System V Release 3.2
- */
-#include <sys/stropts.h>
-#define BytesReadable(fd,ptr) (_FSBytesReadable ((fd), (ptr)))
-#define MALLOC_0_RETURNS_NULL
-#include <sys/ioctl.h>
-#endif /* SYSV */
-#ifdef SVR4
-/*
- * TLI (Streams-based) networking
- */
-#define BytesReadable(fd,ptr) (_FSBytesReadable ((fd), (ptr)))
-#include <sys/uio.h>		/* define struct iovec */
-
-#endif /* SVR4 */
-#else /* not STREAMSCONN */
-/*
- * 4.2BSD-based systems
- */
-#include <netinet/in.h>
-#include <sys/ioctl.h>
-#include <netdb.h>
-#include <sys/uio.h>		/* needed for FSlibInt.c */
-#ifdef SVR4
-#include <sys/filio.h>
-#endif
-
-#if defined(SYSV386) && defined(SYSV)
-#include <net/errno.h>
-#include <sys/stropts.h>
-#define BytesReadable(fd,ptr) ioctl((fd), I_NREAD, (char *)(ptr))
-#else
-#define BytesReadable(fd, ptr) ioctl ((fd), FIONREAD, (char *)(ptr))
-#endif
-#endif /* STREAMSCONN else */
 
 #ifndef X_NOT_POSIX
 #ifdef _POSIX_SOURCE
@@ -249,13 +199,6 @@ typedef unsigned long FdSet[MSKCNT];
 #undef BOOL
 #include <X11/Xw32defs.h>
 
-#define BytesReadable(fd,ptr) ioctlsocket((SOCKET)fd, FIONREAD, (u_long *)ptr)
-
-struct iovec {
-    caddr_t iov_base;
-    int iov_len;
-};
-
 typedef fd_set FdSet;
 
 #define CLEARBITS(set) FD_ZERO(&set)
@@ -264,6 +207,7 @@ typedef fd_set FdSet;
 
 #endif
 
+#include <X11/Xtrans.h>
 #ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
 #include <string.h>
@@ -321,11 +265,6 @@ void exit();
 #ifdef USG
 
 #if defined(USG) && !defined(CRAY) && !defined(umips) && !defined(MOTOROLA)
-struct iovec {
-    caddr_t     iov_base;
-    int         iov_len;
-};
-
 #ifndef __TIMEVAL__
 #define __TIMEVAL__
 struct timeval {		/* BSD has in <sys/time.h> */
@@ -339,50 +278,5 @@ struct timeval {		/* BSD has in <sys/time.h> */
 
 #endif				/* USG */
 
-
-#ifdef STREAMSCONN
-#include "FSstreams.h"
-
-#if (!defined(EWOULDBLOCK)) && defined(EAGAIN)
-#define EWOULDBLOCK EAGAIN
-#endif
-
-extern char _FSsTypeOfStream[];
-extern FSstream _FSsStream[];
-
-#define ReadFromServer(svr, data, size) \
-	(*_FSsStream[_FSsTypeOfStream[svr]].ReadFromStream)((svr), (data), (size), \
-						     BUFFERING)
-#define WriteToServer(svr, bufind, size) \
-	(*_FSsStream[_FSsTypeOfStream[svr]].WriteToStream)((svr), (bufind), (size))
-
-#else				/* else not STREAMSCONN */
-
-/*
- * bsd can read from sockets directly
- */
-#ifdef WIN32
-#define ReadFromServer(dpy,data,size) recv((SOCKET)(dpy), data, size, 0)
-#define WriteToServer(dpy,data,size) send((SOCKET)(dpy), data, size, 0)
-#else
-#define ReadFromServer(svr, data, size) read((svr), (data), (size))
-#define WriteToServer(svr, bufind, size) write((svr), (bufind), (size))
-#endif
-#endif				/* STREAMSCONN */
-
-
-#ifndef WIN32
-#ifndef USL_COMPAT
-#if !defined(USG) || defined(MOTOROLA)
-#if !(defined(SYSV) && defined(SYSV386))
-#define _FSReadV readv
-#endif
-#define _FSWriteV writev
-#endif
-#endif /* !USL_COMPAT */
-#endif
-
-#define ReadvFromServer(svr, iov, iovcnt) _FSReadV((svr), (iov), (iovcnt))
-#define WritevToServer(svr, iov, iovcnt) _FSWriteV((svr), (iov), (iovcnt))
 
 #define SearchString(string, char) index((string), (char))

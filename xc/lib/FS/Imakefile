@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.13 93/08/18 20:42:13 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.14 93/09/04 16:24:19 rws Exp $
 #define DoNormalLib NormalLibFS
 #define DoSharedLib SharedLibFS
 #define DoDebugLib DebugLibFS
@@ -10,6 +10,9 @@ XCOMM $XConsortium: Imakefile,v 1.13 93/08/18 20:42:13 rws Exp $
 #if Malloc0ReturnsNull
         DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
+
+DEPEND_DEFINES = $(TRANS_INCLUDES) $(CONN_DEFINES)
+
 HEADERS = FSlib.h
 
 INCLUDES = -I$(FONTINCSRC)
@@ -18,15 +21,15 @@ SRCS =	FSClServ.c FSCloseFt.c FSConnServ.c FSErrDis.c FSErrHndlr.c \
 	FSFlush.c FSFontInfo.c FSFtNames.c FSGetCats.c FSListCats.c \
 	FSListExt.c FSMisc.c FSNextEv.c FSOpenFont.c FSOpenServ.c \
 	FSQGlyphs.c FSQXExt.c FSQXInfo.c FSQuExt.c FSServName.c \
-	FSSetCats.c FSSync.c FSSynchro.c FSlibInt.c
+	FSSetCats.c FSSync.c FSSynchro.c FSlibInt.c transport.c
 
 OBJS =	FSClServ.o FSCloseFt.o FSConnServ.o FSErrDis.o FSErrHndlr.o \
 	FSFlush.o FSFontInfo.o FSFtNames.o FSGetCats.o FSListCats.o \
 	FSListExt.o FSMisc.o FSNextEv.o FSOpenFont.o FSOpenServ.o \
 	FSQGlyphs.o FSQXExt.o FSQXInfo.o FSQuExt.o FSServName.o \
-	FSSetCats.o FSSync.o FSSynchro.o FSlibInt.o
+	FSSetCats.o FSSync.o FSSynchro.o FSlibInt.o transport.o
 
-CONN_DEFINES = ConnectionFlags
+CONN_DEFINES = ConnectionFlags -DFS
 #if HasBSD44Sockets
 SOCK_DEFINES = -DBSD44SOCKETS
 #endif
@@ -35,5 +38,7 @@ SOCK_DEFINES = -DBSD44SOCKETS
 
 SpecialCObjectRule(FSlibInt,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialCObjectRule(FSConnServ,$(ICONFIGFILES),$(CONN_DEFINES) $(SOCK_DEFINES))
+SpecialCLibObjectRule(transport,$(ICONFIGFILES),$(TRANS_INCLUDES) $(CONN_DEFINES) $(SOCK_DEFINES))
+LinkSourceFile(transport.c,$(TRANSCOMMSRC))
 
 DependTarget()
