@@ -1,5 +1,5 @@
 /*
- * $XConsortium: actions.h,v 1.7 91/07/06 15:55:03 converse Exp $
+ * $XConsortium: actions.h,v 1.8 91/07/10 19:37:32 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -41,19 +41,15 @@ extern void	XmhSetCurrentFolder();
 extern void	XmhLeaveFolderButton();
 extern void 	XmhPushFolder();
 extern void	XmhPopFolder();
+extern void	XmhWMProtocols();
 
 	/* from msg.c */
 
 extern void	XmhInsert();
 
-	/* from pick.c */
-
-extern void	XmhCancelPick();
-
 	/* from popup.c */
 
 extern void	XmhPromptOkayAction();
-extern void	XmhWMDeletePopup();
 
 	/* from toc.c */
 
