@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: os.h,v 1.24 88/07/25 10:35:29 toddb Exp $ */
+/* $Header: os.h,v 1.25 88/09/03 20:54:58 jim Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -57,9 +57,9 @@ pragma on(alloca);
 #endif
 
 
-#if defined(vax) || defined(sun) || defined(macII) || defined(hpux)
+#if defined(vax) || defined(sun) || defined(macII)
 /*
- * The macII and hpux systems extract alloca.o from /lib/libPW.a; if you
+ * Some System V boxes extract alloca.o from /lib/libPW.a; if you
  * decide that you don't want to use alloca, you might want to fix 
  * ../os/4.2bsd/Imakefile
  */
