@@ -1,4 +1,4 @@
-/* $XConsortium: popup.c,v 2.29 91/07/02 18:02:16 converse Exp $
+/* $XConsortium: popup.c,v 2.30 91/07/05 15:10:58 converse Exp $
  *
  *
  *			  COPYRIGHT 1989
@@ -42,7 +42,7 @@ static String XmhNnotice = "notice";
 static String XmhNokay = "okay";
 static String XmhNprompt = "prompt";
 static String XmhNvalue = "value";
-
+    
 /* The popups were originally parented from toplevel and neglected the
  * transientFor resource.  In order not to break existing user resource
  * settings for the popups, transientFor is set independent of the parent,
@@ -460,4 +460,41 @@ void PopupError(widget, message)
     TheUsual(error_popup);
     InsureVisibility(error_popup, dialog, x, y, !positioned, !positioned);
     XtPopup(error_popup, XtGrabNone);
+}
+
+/*ARGSUSED*/
+static void PopupWarningHandler(name, type, class, msg, params, num)
+    String name;
+    String type;
+    String class;
+    String msg;
+    String *params;
+    Cardinal *num;
+{
+    char buffer[500];
+
+    XtGetErrorDatabaseText(name, type, class, msg, buffer, 500);
+    if (!params || !num || !*num)
+	PopupError((Widget)NULL, buffer);
+    else {
+	int i = *num;
+	String par[10];
+	char message[500];
+
+	if (i > 10) i = 10;
+	bcopy((char*)params, (char*)par, i * sizeof(String));
+	bzero( &par[i], (10-i) * sizeof(String));
+        (void) sprintf(message, buffer, par[0], par[1], par[2], par[3],
+		       par[4], par[5], par[6], par[7], par[8], par[9]);
+	PopupError((Widget)NULL, message); 
+	if (i != *num)
+	    PopupError((Widget)NULL,
+		       "Some arguments in previous message were lost.");
+    }
+}
+
+void PopupInit(app)
+    XtAppContext app;
+{
+    (void) XtAppSetWarningMsgHandler(app, PopupWarningHandler);
 }
