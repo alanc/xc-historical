@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: xtwatch.c,v 1.4 94/03/21 13:28:21 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -18,12 +18,8 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include <X11/Intrinsic.h>
 
 
-/*
- * This stuff goes in Xt
- */
-
 Status
-XtInitializeICE (appContext)
+InitWatchProcs (appContext)
 
 XtAppContext appContext;
 
