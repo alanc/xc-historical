@@ -81,6 +81,7 @@
 	  missing-parameter
 	  invalid-font
 	  device-busy
+	  get-external-event-code
 	  define-extension
 	  extension-opcode
 	  define-error
@@ -399,26 +400,37 @@
   (declare (type display display)
 	   (type (or null number) timeout))
   (declare-values eof-or-timeout)
-  (loop
-    (when (display-waiting-reply-p display) ;; See comments above
-      (with-display (display)
-	;; Flag whould be already NIL.  Reset it here incase wait-for-reply aborted.
-	(setf (display-waiting-reply-p display) nil)))
-    (with-input-lock (display)
-      ;; Return if events read while waiting for locks
-      (when (display-new-events display)
-	(return nil))
-      (unless (display-waiting-reply-p display) ;; Give up input-lock if waiting event
+  (do ((do-force-output nil))
+      (nil) ;; forever
+    (block retry
+      (when (display-waiting-reply-p display) ;; See comments above
+	(with-display (display)
+	  ;; Flag whould be already NIL.  Reset it here incase wait-for-reply aborted.
+	  (setf (display-waiting-reply-p display) nil)))
+      ;; When first pass determined no input available
+      (when do-force-output
+	(setq do-force-output nil)		; To avoid deadlocks, avoid display
+	(display-force-output display)		; operations inside with-input-lock.
+	(when (and timeout (zerop timeout))
+	  (return :timeout)))			; Optimize zero timeout case.
+      (with-input-lock (display)
+	;; Return if events read while waiting for locks
+	(when (display-new-events display)
+	  (return nil))
+	;; Give up input-lock if waiting event
+	(when (display-waiting-reply-p display)
+	  (return-from retry))
 	(let ((event (allocate-event))
 	      (eofp :timeout))
 	  (reading-event (event)
 	    ;; Check for input pending
 	    (when force-output-p
+	      (setq force-output-p nil)
 	      ;; Read with timeout = 0, which doesn't hang when no input available
 	      (when (setq eofp (buffer-input display buffer-bbuf 0 *replysize* 0))
-		(display-force-output display)     ;; When no available input
-		(when (and timeout (zerop timeout));; Optimize zero timeout case
-		  (return :timeout))))
+		(deallocate-event event)
+		(setq do-force-output t)	; Loop back and force output
+		(return-from retry)))		; when no available input
 	    ;; Hang waiting for an event
 	    (when eofp
 	      (when (eq eofp :timeout)
@@ -427,38 +439,38 @@
 		(deallocate-event event)
 		(if (eq eofp :timeout)
 		    (return eofp)
-		  (progn
-		    (x-error 'server-disconnect :display display)
-		    (setf (display-dead display) t)))))
+		    (progn
+		      (x-error 'server-disconnect :display display)
+		      (setf (display-dead display) t)))))
 	    ;; Check for replies and errors
 	    (let ((type (read-card8 0)))
 	      (case type
 		(0				; Error
-		 (if (display-lock display)
-		     (buffer-replace (buffer-obuf8 display)
-				     buffer-bbuf
-				     0
-				     *replysize*)
-		   (report-error display event)))
+		  (if (display-lock display)
+		      (buffer-replace (buffer-obuf8 display)
+				      buffer-bbuf
+				      0
+				      *replysize*)
+		      (report-error display event)))
 		(1				; Normal reply
-		 (if (display-waiting-reply-p display)
-		     (progn
-		       (buffer-replace (reply-ibuf8 (display-reply-buffer display))
-				       buffer-bbuf
-				       0
-				       *replysize*)
-		       (setf (display-waiting-reply-p display) :in-buffer))
-		   (x-cerror "Ignore"
-			     'unexpected-reply
-			     :display display
-			     :req-sequence (ldb (byte 16 0) (buffer-request-number display))
-			     :msg-sequence (read-card16 2)
-			     :length (+ (* (read-card32 4) 4) *replysize*))))
+		  (if (display-waiting-reply-p display)
+		      (progn
+			(buffer-replace (reply-ibuf8 (display-reply-buffer display))
+					buffer-bbuf
+					0
+					*replysize*)
+			(setf (display-waiting-reply-p display) :in-buffer))
+		      (x-cerror "Ignore"
+				'unexpected-reply
+				:display display
+				:req-sequence (ldb (byte 16 0) (buffer-request-number display))
+				:msg-sequence (read-card16 2)
+				:length (+ (* (read-card32 4) 4) *replysize*))))
 		(otherwise			; Event
-		 (setf (event-code event)
-		       (get-internal-event-code display (read-card8 0)))
-		 (enqueue-event event display)
-		 (return nil))))))))))
+		  (setf (event-code event)
+			(get-internal-event-code display (read-card8 0)))
+		  (enqueue-event event display)
+		  (return nil))))))))))
 
 (proclaim '(special *recursive-event-queue*))
 
@@ -1008,7 +1020,7 @@
 			   (if (consp events)
 			       (progn
 				 (setq true-events (mapcar #'canonicalize-event-name events))
-				 (dolist (event all-events)
+				 (dolist (event true-events)
 				   (setf (aref all-events (get-event-code event)) 1)))
 			       (setf true-events (canonicalize-event-name events)
 				     (aref all-events (get-event-code true-events)) 1))
