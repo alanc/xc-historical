@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfb.h,v 5.3 89/07/12 17:17:54 keith Exp $ */
+/* $XConsortium: mfb.h,v 5.4 89/07/16 16:32:02 rws Exp $ */
 /* Monochrome Frame Buffer definitions 
    written by drewry, september 1986
 */
@@ -133,13 +133,9 @@ extern void mfbCopyGCDest();
 the bits in the hardware framebuffer.  note that devKind can be poked to
 make the code work for framebuffers that are wider than their
 displayable screen (e.g. the early vsII, which displayed 960 pixels
-across, but was 1024 in the hardware.)  this is left to the
-code that calls mfbScreenInit(), rather than having mfbScreenInit()
-take yet another parameter.
+across, but was 1024 in the hardware.)
 
    private field of GC 
-	pAbsClientRegion is always a real region, although perhaps
-an empty one.
 	Freeing pCompositeClip is done based on the value of
 freeCompClip; if freeCompClip is not carefully maintained, we will end
 up losing storage or freeing something that isn't ours.
@@ -149,38 +145,23 @@ typedef struct {
     unsigned char	rop;		/* reduction of rasterop to 1 of 3 */
     unsigned char	ropOpStip;	/* rop for opaque stipple */
     unsigned char	ropFillArea;	/*  == alu, rop, or ropOpStip */
-    short	fExpose;		/* callexposure handling ? */
-    short	freeCompClip;
+    unsigned	fExpose:1;		/* callexposure handling ? */
+    unsigned	freeCompClip:1;
     PixmapPtr	pRotatedTile;		/* tile/stipple  rotated to align */
     PixmapPtr	pRotatedStipple;	/* with window and using offsets */
-    RegionPtr	pAbsClientRegion;	/* client region in screen coords */
     RegionPtr	pCompositeClip;		/* free this based on freeCompClip
 					   flag rather than NULLness */
     void 	(* FillArea)();		/* fills regions; look at the code */
-    PixmapPtr   *ppPixmap;		/* points to the pixmapPtr to
-					   use for tiles and stipples */
     } mfbPrivGC;
 typedef mfbPrivGC	*mfbPrivGCPtr;
 
 extern int  mfbGCPrivateIndex;		/* index into GC private array */
 extern int  mfbWindowPrivateIndex;	/* index into Window private array */
 
-/* freeCompositeClip values */
-#define REPLACE_CC	0		/* compsite clip is a copy of a
-					   pointer, so it doesn't need to 
-					   be freed; just overwrite it.
-					   this happens if there is no
-					   client clip and the gc has
-					   ClipByChildren in it.
-					*/
-#define FREE_CC		1		/* composite clip is a real
-					   region that we need to free
-					*/
-
 /* private field of window */
 typedef struct {
-    int		fastBorder;	/* non-zero if border tile is 32 bits wide */
-    int		fastBackground;
+    unsigned fastBorder:1;	/* non-zero if border tile is 32 bits wide */
+    unsigned fastBackground:1;
     DDXPointRec	oldRotate;
     PixmapPtr	pRotatedBackground;
     PixmapPtr	pRotatedBorder;
