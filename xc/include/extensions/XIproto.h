@@ -1,4 +1,4 @@
-/* $XConsortium: XIproto.h,v 1.1 89/10/13 17:10:51 jim Exp $ */
+/* $XConsortium: XIproto.h,v 1.2 89/11/08 17:25:07 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -63,6 +63,28 @@ struct tmask
     Mask	mask;
     BOOL	select;
     };
+
+/*********************************************************
+ *
+ * Event constants used by library.
+ *
+ */
+
+#define XI_DeviceValuator		0
+#define XI_DeviceKeyPress		1
+#define XI_DeviceKeyRelease		2
+#define XI_DeviceButtonPress		3
+#define XI_DeviceButtonRelease		4
+#define XI_DeviceMotionNotify		5
+#define XI_DeviceFocusIn		6
+#define XI_DeviceFocusOut		7
+#define XI_ProximityIn			8
+#define XI_ProximityOut			9
+#define XI_DeviceStateNotify		10
+#define XI_DeviceMappingNotify		11
+#define XI_ChangeDeviceNotify		12
+#define XI_DeviceKeystateNotify		13
+#define XI_DeviceButtonstateNotify	14
 
 /*********************************************************
  *
