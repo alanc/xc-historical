@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.79 93/04/13 11:50:36 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.80 93/04/13 15:38:42 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -48,6 +48,7 @@ Name						Reference
 "TEK"						[43]
 "visual"					[5]
 "VIT"						[46]
+"WRI"						[102]
 "WYSE"						[68]
 "X3D"						[8]
 "Xerox"						[91]
@@ -258,6 +259,7 @@ String						Reference
 "Stellar Computer Inc."				[28]
 "Sun Microsystems, Inc."			[101]
 "VIT-Visual Information Technologies, Inc (VITec)"	[46]
+"Wolfram Research, Inc."			[102]
 "Wyse Technology Inc."				[68]
 "X11/NeWS - Sun Microsystems, Inc."		[58]
 
@@ -389,6 +391,7 @@ Name						Reference
 "_SJIS_STRING"					[37]
 "_EUC_STRING"					[37]
 "_JIS_STRING"					[37]
+"_WRI_XWD_RLED"					[102]
 "_XWNMO"					[45]
 
 9. SELECTION NAMES
@@ -450,6 +453,7 @@ Name						Reference
 "_SJIS_STRING"					[37]
 "_EUC_STRING"					[37]
 "_JIS_STRING"					[37]
+"_WRI_XWD_RLED"					[102]
 
 11. WM_PROTOCOLS PROTOCOLS
 
@@ -1286,3 +1290,6 @@ REFERENCES
 	Sun Microsystems, Inc.
 	2550 Garcia Ave.,
 	Mountain View CA. 94043
+
+[102]	John L. Cwikla
+	Wolfram Research, Inc.
