@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.195 93/10/21 18:38:17 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.196 93/10/23 12:02:32 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -454,8 +454,10 @@ int _XSeqSyncFunction(dpy)
 
     LockDisplay(dpy);
     dpy->synchandler = func = dpy->savedsynchandler;
-    GetEmptyReq(GetInputFocus, req);
-    (void) _XReply (dpy, (xReply *)&rep, 0, xTrue);
+    if ((dpy->request - dpy->last_request_read) >= (BUFSIZE / SIZEOF(xReq))) {
+	GetEmptyReq(GetInputFocus, req);
+	(void) _XReply (dpy, (xReply *)&rep, 0, xTrue);
+    }
     UnlockDisplay(dpy);
     if (func) (*func)(dpy);
     return 0;
