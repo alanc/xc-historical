@@ -1,4 +1,4 @@
-/* $XConsortium: XTest.c,v 1.8 92/12/17 11:45:41 rws Exp $ */
+/* $XConsortium: XTest.c,v 1.9 93/02/05 17:09:43 rws Exp $ */
 /*
 
 Copyright 1990, 1991 by UniSoft Group Limited
@@ -251,39 +251,29 @@ XTestFakeRelativeMotionEvent(dpy, dx, dy, delay)
     return 1;
 }
 
-XTestFakeDeviceKeyEvent(dpy, dev, keycode, is_press, axes, n_axes, delay)
+static void
+send_axes(dpy, info, req, dev, axes, n_axes)
     Display *dpy;
+    XExtDisplayInfo *info;
+    xXTestFakeInputReq *req;
     XDevice *dev;
-    unsigned int keycode;
-    Bool is_press;
     int *axes;
     int n_axes;
-    unsigned long delay;
 {
-    XExtDisplayInfo *info = find_display (dpy);
-    register xXTestFakeInputReq *req;
     deviceValuator ev;
+    int n;
 
-    XTestICheckExtension (dpy, info, 0);
-
-    LockDisplay(dpy);
-    GetReq(XTestFakeInput, req);
-    req->reqType = info->codes->major_opcode;
-    req->xtReqType = X_XTestFakeInput;
-    req->type = is_press ? XI_DeviceKeyPress : XI_DeviceKeyRelease;
-    req->type += (int)info->data;
-    req->detail = keycode;
-    req->time = delay;
-    req->deviceid = dev->device_id;
-    if (n_axes) {
-	req->deviceid |= MORE_EVENTS;
-	ev.type = XI_DeviceValuator + (int)info->data;
-	ev.deviceid = dev->device_id;
-	ev.num_valuators = n_axes;
-	ev.first_valuator = 0;
-	req->length += SIZEOF(xEvent) >> 2;
-	switch (n_axes)
-	{
+    req->deviceid |= MORE_EVENTS;
+    req->length += ((n_axes + 5) / 6) * (SIZEOF(xEvent) >> 2);
+    ev.type = XI_DeviceValuator + (int)info->data;
+    ev.deviceid = dev->device_id;
+    ev.num_valuators = n_axes;
+    ev.first_valuator = 0;
+    while (n_axes > 0) {
+	n = n_axes;
+	if (n > 6)
+	    n = 6;
+	switch (n) {
 	case 6:
 	    ev.valuator5 = *(axes+5);
 	case 5:
@@ -298,7 +288,37 @@ XTestFakeDeviceKeyEvent(dpy, dev, keycode, is_press, axes, n_axes, delay)
 	    ev.valuator0 = *axes;
 	}
 	Data(dpy, (char *)&ev, SIZEOF(xEvent));
+	axes += n;
+	n_axes -= n;
+	ev.first_valuator += n;
     }
+}
+
+XTestFakeDeviceKeyEvent(dpy, dev, keycode, is_press, axes, n_axes, delay)
+    Display *dpy;
+    XDevice *dev;
+    unsigned int keycode;
+    Bool is_press;
+    int *axes;
+    int n_axes;
+    unsigned long delay;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    register xXTestFakeInputReq *req;
+
+    XTestICheckExtension (dpy, info, 0);
+
+    LockDisplay(dpy);
+    GetReq(XTestFakeInput, req);
+    req->reqType = info->codes->major_opcode;
+    req->xtReqType = X_XTestFakeInput;
+    req->type = is_press ? XI_DeviceKeyPress : XI_DeviceKeyRelease;
+    req->type += (int)info->data;
+    req->detail = keycode;
+    req->time = delay;
+    req->deviceid = dev->device_id;
+    if (n_axes)
+	send_axes(dpy, info, req, dev, axes, n_axes);
     UnlockDisplay(dpy);
     SyncHandle();
     return 1;
@@ -315,7 +335,6 @@ XTestFakeDeviceButtonEvent(dpy, dev, button, is_press, axes, n_axes, delay)
 {
     XExtDisplayInfo *info = find_display (dpy);
     register xXTestFakeInputReq *req;
-    deviceValuator ev;
 
     XTestICheckExtension (dpy, info, 0);
 
@@ -328,30 +347,8 @@ XTestFakeDeviceButtonEvent(dpy, dev, button, is_press, axes, n_axes, delay)
     req->detail = button;
     req->time = delay;
     req->deviceid = dev->device_id;
-    if (n_axes) {
-	req->deviceid |= MORE_EVENTS;
-	ev.type = XI_DeviceValuator + (int)info->data;
-	ev.deviceid = dev->device_id;
-	ev.num_valuators = n_axes;
-	ev.first_valuator = 0;
-	req->length += SIZEOF(xEvent) >> 2;
-	switch (n_axes)
-	{
-	case 6:
-	    ev.valuator5 = *(axes+5);
-	case 5:
-	    ev.valuator4 = *(axes+4);
-	case 4:
-	    ev.valuator3 = *(axes+3);
-	case 3:
-	    ev.valuator2 = *(axes+2);
-	case 2:
-	    ev.valuator1 = *(axes+1);
-	case 1:
-	    ev.valuator0 = *axes;
-	}
-	Data(dpy, (char *)&ev, SIZEOF(xEvent));
-    }
+    if (n_axes)
+	send_axes(dpy, info, req, dev, axes, n_axes);
     UnlockDisplay(dpy);
     SyncHandle();
     return 1;
@@ -367,7 +364,6 @@ XTestFakeProximityEvent(dpy, dev, in_prox, axes, n_axes, delay)
 {
     XExtDisplayInfo *info = find_display (dpy);
     register xXTestFakeInputReq *req;
-    deviceValuator ev;
 
     XTestICheckExtension (dpy, info, 0);
 
@@ -379,30 +375,8 @@ XTestFakeProximityEvent(dpy, dev, in_prox, axes, n_axes, delay)
     req->type += (int)info->data;
     req->time = delay;
     req->deviceid = dev->device_id;
-    if (n_axes) {
-	req->deviceid |= MORE_EVENTS;
-	ev.type = XI_DeviceValuator + (int)info->data;
-	ev.deviceid = dev->device_id;
-	ev.num_valuators = n_axes;
-	ev.first_valuator = 0;
-	req->length += SIZEOF(xEvent) >> 2;
-	switch (n_axes)
-	{
-	case 6:
-	    ev.valuator5 = *(axes+5);
-	case 5:
-	    ev.valuator4 = *(axes+4);
-	case 4:
-	    ev.valuator3 = *(axes+3);
-	case 3:
-	    ev.valuator2 = *(axes+2);
-	case 2:
-	    ev.valuator1 = *(axes+1);
-	case 1:
-	    ev.valuator0 = *axes;
-	}
-	Data(dpy, (char *)&ev, SIZEOF(xEvent));
-    }
+    if (n_axes)
+	send_axes(dpy, info, req, dev, axes, n_axes);
     UnlockDisplay(dpy);
     SyncHandle();
     return 1;
@@ -418,7 +392,6 @@ XTestFakeDeviceMotionEvent(dpy, dev, is_relative, axes, n_axes, delay)
 {
     XExtDisplayInfo *info = find_display (dpy);
     register xXTestFakeInputReq *req;
-    deviceValuator ev;
 
     XTestICheckExtension (dpy, info, 0);
 
@@ -429,28 +402,8 @@ XTestFakeDeviceMotionEvent(dpy, dev, is_relative, axes, n_axes, delay)
     req->type = XI_DeviceMotionNotify + (int)info->data;
     req->detail = is_relative;
     req->time = delay;
-    req->deviceid = dev->device_id | MORE_EVENTS;
-    ev.type = XI_DeviceValuator + (int)info->data;
-    ev.deviceid = dev->device_id;
-    ev.num_valuators = n_axes;
-    ev.first_valuator = 0;
-    req->length += SIZEOF(xEvent) >> 2;
-    switch (n_axes)
-    {
-    case 6:
-	ev.valuator5 = *(axes+5);
-    case 5:
-	ev.valuator4 = *(axes+4);
-    case 4:
-	ev.valuator3 = *(axes+3);
-    case 3:
-	ev.valuator2 = *(axes+2);
-    case 2:
-	ev.valuator1 = *(axes+1);
-    case 1:
-	ev.valuator0 = *axes;
-    }
-    Data(dpy, (char *)&ev, SIZEOF(xEvent));
+    req->deviceid = dev->device_id;
+    send_axes(dpy, info, req, dev, axes, n_axes);
     UnlockDisplay(dpy);
     SyncHandle();
     return 1;
