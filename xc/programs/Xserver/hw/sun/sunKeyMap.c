@@ -1,4 +1,4 @@
-/* $XConsortium: sunKeyMap.c,v 4.12 93/08/08 18:28:13 kaleb Exp $ */
+/* $XConsortium: sunKeyMap.c,v 4.13 93/08/13 14:34:18 kaleb Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -115,9 +115,9 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #ifdef US2
 
 static KeySym US2Keymap[] = {
-	XK_L1,		NoSymbol,		/* 0x01 */
-	NoSymbol,	NoSymbol,		/* 0x02 */
-	XK_L2,		NoSymbol,		/* 0x03 */
+	XK_L1,		NoSymbol,		/* 0x1 */
+	NoSymbol,	NoSymbol,		/* 0x2 */
+	XK_L2,		NoSymbol,		/* 0x3 */
 	NoSymbol,	NoSymbol,		/* 0x4 */
 	XK_F1,		NoSymbol,		/* 0x5 */
 	XK_F2,		NoSymbol,		/* 0x6 */
@@ -262,9 +262,9 @@ static SunModmapRec US2Modmap[] = {
 #ifdef US3
 
 static KeySym US3Keymap[] = {
-	XK_L1,		NoSymbol,		/* 0x01 */
-	NoSymbol,	NoSymbol,		/* 0x02 */
-	XK_L2,		NoSymbol,		/* 0x03 */
+	XK_L1,		NoSymbol,		/* 0x1 */
+	NoSymbol,	NoSymbol,		/* 0x2 */
+	XK_L2,		NoSymbol,		/* 0x3 */
 	NoSymbol,	NoSymbol,		/* 0x4 */
 	XK_F1,		NoSymbol,		/* 0x5 */
 	XK_F2,		NoSymbol,		/* 0x6 */
@@ -427,9 +427,9 @@ SunModmapRec *sunModMaps[] = {
 #ifdef CANADA4
 
 static KeySym Canada4Keymap[] = {
-	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
+	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
-	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
+	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
 	XK_Escape,	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
@@ -437,7 +437,7 @@ static KeySym Canada4Keymap[] = {
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  8*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  9*/
 	XK_F3,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 10*/
-	SunXK_F36,	NoSymbol,	NoSymbol,	NoSymbol,	/* 11*/
+	XK_F11,		NoSymbol,	SunXK_F36,	NoSymbol,	/* 11*/
 	XK_F4,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 12*/
 	XK_Control_R,	NoSymbol,	NoSymbol,	NoSymbol,	/* 13*/
 	XK_F5,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 14*/
@@ -447,12 +447,12 @@ static KeySym Canada4Keymap[] = {
 	XK_F8,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 18*/
 	XK_Alt_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 19*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 20*/
-	XK_R1,  	XK_R1,  	XK_Pause,	NoSymbol,	/* 21*/
-	XK_R2,  	XK_R2,  	XK_Print,	NoSymbol,	/* 22*/
-	XK_R3,  	XK_R3,  	XK_Scroll_Lock,	XK_Break,	/* 23*/
+	XK_Pause,  	NoSymbol,  	XK_R1,		NoSymbol,	/* 21*/
+	XK_Print,  	NoSymbol,  	XK_R2,		NoSymbol,	/* 22*/
+	XK_Break,  	XK_Scroll_Lock,	XK_R3,		NoSymbol,	/* 23*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 24*/
-	XK_L3,  	XK_L3,  	SunXK_Props,	NoSymbol,	/* 25*/
-	XK_L4,  	XK_L4,  	SunXK_Undo,	NoSymbol,	/* 26*/
+	SunXK_Props,  	NoSymbol,  	XK_L3,		NoSymbol,	/* 25*/
+	SunXK_Undo,  	NoSymbol,  	XK_L4,		NoSymbol,	/* 26*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 27*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 28*/
 	XK_degree,	NoSymbol,	XK_notsign,	NoSymbol,	/* 29*/
@@ -464,20 +464,20 @@ static KeySym Canada4Keymap[] = {
 	XK_6,   	XK_question,	NoSymbol,	NoSymbol,	/* 35*/
 	XK_7,   	XK_ampersand,	XK_braceleft,	NoSymbol,	/* 36*/
 	XK_8,   	XK_asterisk,	XK_bracketleft,	NoSymbol,	/* 37*/
-	XK_9,   	XK_parenleft,	XK_bracketright,	NoSymbol,	/* 38*/
+	XK_9,   	XK_parenleft,	XK_bracketright,NoSymbol,	/* 38*/
 	XK_0,   	XK_parenright,	XK_braceright,	NoSymbol,	/* 39*/
 	XK_minus,	XK_underscore,	XK_bar, 	NoSymbol,	/* 40*/
 	XK_equal,	XK_plus,	NoSymbol,	NoSymbol,	/* 41*/
 	XK_Agrave,	NoSymbol,	XK_quoteleft,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
-	XK_R4,  	XK_R4,  	XK_KP_Equal,	NoSymbol,	/* 45*/
-	XK_R5,  	XK_R5,  	XK_KP_Divide,	NoSymbol,	/* 46*/
-	XK_R6,  	XK_R6,  	XK_KP_Multiply,	NoSymbol,	/* 47*/
+	XK_KP_Equal,  	XK_KP_Equal,  	XK_R4,		NoSymbol,	/* 45*/
+	XK_KP_Divide,  	XK_KP_Divide,  	XK_R5,		NoSymbol,	/* 46*/
+	XK_KP_Multiply,	XK_KP_Multiply,	XK_R6,		NoSymbol,	/* 47*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
-	XK_L5,  	XK_L5,  	SunXK_Front,	NoSymbol,	/* 49*/
-	XK_Delete,	XK_Delete,	XK_KP_Decimal,	NoSymbol,	/* 50*/
-	XK_L6,  	XK_L6,  	SunXK_Copy,	NoSymbol,	/* 51*/
+	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
+	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
+	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 52*/
 	XK_Tab, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 53*/
 	XK_Q,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 54*/
@@ -490,16 +490,16 @@ static KeySym Canada4Keymap[] = {
 	XK_I,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 61*/
 	XK_O,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 62*/
 	XK_P,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 63*/
-	SunXK_FA_Circum,	SunXK_FA_Diaeresis,	XK_asciicircum,	NoSymbol,	/* 64*/
+	SunXK_FA_Circum,SunXK_FA_Diaeresis,XK_asciicircum,NoSymbol,	/* 64*/
 	XK_Ccedilla,	NoSymbol,	XK_asciitilde,	NoSymbol,	/* 65*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
-	XK_R7,  	XK_R7,  	XK_KP_7,	XK_Home,	/* 68*/
-	XK_Up,  	XK_R8,  	XK_KP_8,	NoSymbol,	/* 69*/
-	XK_R9,  	XK_R9,  	XK_KP_9,	XK_Prior,	/* 70*/
+	XK_KP_Home,  	XK_KP_7,  	XK_R7,		NoSymbol,	/* 68*/
+	XK_KP_Up,  	XK_KP_8,  	XK_R8,		NoSymbol,	/* 69*/
+	XK_KP_Prior,  	XK_KP_9,  	XK_R9,		XK_Prior,	/* 70*/
 	XK_KP_Subtract,	NoSymbol,	NoSymbol,	NoSymbol,	/* 71*/
-	XK_L7,  	XK_L7,  	SunXK_Open,	NoSymbol,	/* 72*/
-	XK_L8,  	XK_L8,  	SunXK_Paste,	NoSymbol,	/* 73*/
+	SunXK_Open,  	NoSymbol,  	XK_L7,		NoSymbol,	/* 72*/
+	SunXK_Paste,  	NoSymbol,  	XK_L8,		NoSymbol,	/* 73*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 74*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 75*/
 	XK_Caps_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
@@ -514,20 +514,20 @@ static KeySym Canada4Keymap[] = {
 	XK_L,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 85*/
 	XK_semicolon,	XK_colon,	NoSymbol,	NoSymbol,	/* 86*/
 	XK_Egrave,	NoSymbol,	NoSymbol,	NoSymbol,	/* 87*/
-	SunXK_F37,	NoSymbol,	NoSymbol,	NoSymbol,	/* 88*/
+	XK_F12,		NoSymbol,	SunXK_F37,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
-	XK_Left,	XK_R10, 	XK_KP_4,	NoSymbol,	/* 91*/
-	XK_R11, 	XK_R11, 	XK_KP_5,	NoSymbol,	/* 92*/
-	XK_Right,	XK_R12, 	XK_KP_6,	NoSymbol,	/* 93*/
-	XK_Insert,	XK_Insert,	XK_KP_0,	NoSymbol,	/* 94*/
-	XK_L9,  	XK_L9,  	SunXK_Find,	NoSymbol,	/* 95*/
+	XK_KP_Left,	XK_KP_4, 	XK_R10,		NoSymbol,	/* 91*/
+	NoSymbol, 	XK_KP_5, 	XK_R11,		NoSymbol,	/* 92*/
+	XK_KP_Right,	XK_KP_6, 	XK_R12,		NoSymbol,	/* 93*/
+	XK_KP_Insert,	XK_KP_0,	NoSymbol,	NoSymbol,	/* 94*/
+	SunXK_Find,  	NoSymbol,  	XK_L9,		NoSymbol,	/* 95*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 96*/
-	XK_L10, 	XK_L10, 	SunXK_Cut,	NoSymbol,	/* 97*/
+	SunXK_Cut, 	NoSymbol, 	XK_L10,		NoSymbol,	/* 97*/
 	XK_Num_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 98*/
 	XK_Shift_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 99*/
-	XK_Z,   	NoSymbol,	XK_guillemotleft,	NoSymbol,	/*100*/
-	XK_X,   	NoSymbol,	XK_guillemotright,	NoSymbol,	/*101*/
+	XK_Z,   	NoSymbol,	XK_guillemotleft,NoSymbol,	/*100*/
+	XK_X,   	NoSymbol,	XK_guillemotright,NoSymbol,	/*101*/
 	XK_C,   	NoSymbol,	NoSymbol,	NoSymbol,	/*102*/
 	XK_V,   	NoSymbol,	NoSymbol,	NoSymbol,	/*103*/
 	XK_B,   	NoSymbol,	NoSymbol,	NoSymbol,	/*104*/
@@ -538,9 +538,9 @@ static KeySym Canada4Keymap[] = {
 	XK_Eacute,	NoSymbol,	XK_slash,	NoSymbol,	/*109*/
 	XK_Shift_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*110*/
 	XK_Linefeed,	NoSymbol,	NoSymbol,	NoSymbol,	/*111*/
-	XK_R13, 	XK_R13, 	XK_KP_1,	XK_End, 	/*112*/
-	XK_Down,	XK_R14, 	XK_KP_2,	NoSymbol,	/*113*/
-	XK_R15, 	XK_R15, 	XK_KP_3,	XK_Next,	/*114*/
+	XK_KP_End, 	XK_KP_1, 	XK_R13,		NoSymbol, 	/*112*/
+	XK_KP_Down,	XK_KP_2, 	XK_R14,		NoSymbol,	/*113*/
+	XK_KP_Next, 	XK_KP_3, 	XK_R15,		NoSymbol,	/*114*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*115*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*116*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*117*/
@@ -577,17 +577,17 @@ static SunModmapRec Canada4Modmap[] = {
 #ifdef DENMARK4
 
 static KeySym Denmark4Keymap[] = {
-	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
+	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
-	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
+	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
 	XK_F3,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  8*/
-	SunXK_F36,	NoSymbol,	NoSymbol,	NoSymbol,	/*  9*/
+	XK_F11,		NoSymbol,	SunXK_F36,	NoSymbol,	/*  9*/
 	XK_F4,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 10*/
-	SunXK_F37,	NoSymbol,	NoSymbol,	NoSymbol,	/* 11*/
+	XK_F12,		NoSymbol,	SunXK_F37,	NoSymbol,	/* 11*/
 	XK_F5,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 12*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 13*/
 	XK_F6,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 14*/
@@ -597,12 +597,12 @@ static KeySym Denmark4Keymap[] = {
 	XK_F9,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 18*/
 	XK_Alt_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 19*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 20*/
-	XK_R1,  	XK_R1,  	XK_Pause,	NoSymbol,	/* 21*/
-	XK_R2,  	XK_R2,  	XK_Print,	NoSymbol,	/* 22*/
-	XK_R3,  	XK_R3,  	XK_Scroll_Lock,	XK_Break,	/* 23*/
+	XK_Pause,  	XK_R1,  	XK_Pause,	NoSymbol,	/* 21*/
+	XK_Print,  	XK_R2,  	XK_Print,	NoSymbol,	/* 22*/
+	XK_Break,  	XK_Scroll_Lock,	XK_R3,		NoSymbol,	/* 23*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 24*/
-	XK_L3,  	XK_L3,  	SunXK_Props,	NoSymbol,	/* 25*/
-	XK_L4,  	XK_L4,  	SunXK_Undo,	NoSymbol,	/* 26*/
+	SunXK_Props,  	NoSymbol,  	XK_L3,		NoSymbol,	/* 25*/
+	SunXK_Undo,  	NoSymbol,  	XK_L4,		NoSymbol,	/* 26*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 27*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 28*/
 	XK_Escape,	NoSymbol,	NoSymbol,	NoSymbol,	/* 29*/
@@ -614,20 +614,20 @@ static KeySym Denmark4Keymap[] = {
 	XK_6,   	XK_ampersand,	NoSymbol,	NoSymbol,	/* 35*/
 	XK_7,   	XK_slash,	XK_braceleft,	NoSymbol,	/* 36*/
 	XK_8,   	XK_parenleft,	XK_bracketleft,	NoSymbol,	/* 37*/
-	XK_9,   	XK_parenright,	XK_bracketright,	NoSymbol,	/* 38*/
+	XK_9,   	XK_parenright,	XK_bracketright,NoSymbol,	/* 38*/
 	XK_0,   	XK_equal,	XK_braceright,	NoSymbol,	/* 39*/
 	XK_plus,	XK_question,	NoSymbol,	NoSymbol,	/* 40*/
 	SunXK_FA_Acute,	SunXK_FA_Grave,	XK_bar, 	NoSymbol,	/* 41*/
 	XK_quoteright,	XK_asterisk,	XK_quoteleft,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
-	XK_R4,  	XK_R4,  	XK_KP_Equal,	NoSymbol,	/* 45*/
-	XK_R5,  	XK_R5,  	XK_KP_Divide,	NoSymbol,	/* 46*/
-	XK_R6,  	XK_R6,  	XK_KP_Multiply,	NoSymbol,	/* 47*/
+	XK_KP_Equal,  	NoSymbol,  	XK_R4,		NoSymbol,	/* 45*/
+	XK_KP_Divide,  	NoSymbol,  	XK_R5,		NoSymbol,	/* 46*/
+	XK_KP_Multiply, NoSymbol,  	XK_R6,		NoSymbol,	/* 47*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
-	XK_L5,  	XK_L5,  	SunXK_Front,	NoSymbol,	/* 49*/
-	XK_Delete,	XK_Delete,	XK_KP_Decimal,	NoSymbol,	/* 50*/
-	XK_L6,  	XK_L6,  	SunXK_Copy,	NoSymbol,	/* 51*/
+	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
+	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
+	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 52*/
 	XK_Tab, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 53*/
 	XK_Q,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 54*/
@@ -641,15 +641,15 @@ static KeySym Denmark4Keymap[] = {
 	XK_O,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 62*/
 	XK_P,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 63*/
 	XK_Aring,	NoSymbol,	NoSymbol,	NoSymbol,	/* 64*/
-	SunXK_FA_Diaeresis,	SunXK_FA_Circum,	SunXK_FA_Tilde,	NoSymbol,	/* 65*/
+	SunXK_FA_Diaeresis,SunXK_FA_Circum,SunXK_FA_Tilde,NoSymbol,	/* 65*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	SunXK_AltGraph,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
-	XK_R7,  	XK_R7,  	XK_KP_7,	XK_Home,	/* 68*/
-	XK_Up,  	XK_R8,  	XK_KP_8,	NoSymbol,	/* 69*/
-	XK_R9,  	XK_R9,  	XK_KP_9,	XK_Prior,	/* 70*/
+	XK_KP_Home,  	XK_KP_7,  	XK_R7,		NoSymbol,	/* 68*/
+	XK_KP_Up,  	XK_KP_8,  	XK_R8,		NoSymbol,	/* 69*/
+	XK_KP_Prior,  	XK_KP_9,  	XK_R9,		NoSymbol,	/* 70*/
 	XK_KP_Subtract,	NoSymbol,	NoSymbol,	NoSymbol,	/* 71*/
-	XK_L7,  	XK_L7,  	SunXK_Open,	NoSymbol,	/* 72*/
-	XK_L8,  	XK_L8,  	SunXK_Paste,	NoSymbol,	/* 73*/
+	SunXK_Open,  	NoSymbol,  	XK_L7,		NoSymbol,	/* 72*/
+	SunXK_Paste,  	NoSymbol,  	XK_L8,		NoSymbol,	/* 73*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 74*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 75*/
 	XK_Caps_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
@@ -667,13 +667,13 @@ static KeySym Denmark4Keymap[] = {
 	XK_onehalf,	XK_section,	NoSymbol,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
-	XK_Left,	XK_R10, 	XK_KP_4,	NoSymbol,	/* 91*/
-	XK_R11, 	XK_R11, 	XK_KP_5,	NoSymbol,	/* 92*/
-	XK_Right,	XK_R12, 	XK_KP_6,	NoSymbol,	/* 93*/
-	XK_Insert,	XK_Insert,	XK_KP_0,	NoSymbol,	/* 94*/
-	XK_L9,  	XK_L9,  	SunXK_Find,	NoSymbol,	/* 95*/
+	XK_KP_Left,	XK_KP_4, 	XK_R10,		NoSymbol,	/* 91*/
+	NoSymbol, 	XK_KP_5, 	XK_R11,		NoSymbol,	/* 92*/
+	XK_KP_Right,	XK_KP_6, 	XK_R12,		NoSymbol,	/* 93*/
+	XK_KP_Insert,	XK_KP_0,	NoSymbol,	NoSymbol,	/* 94*/
+	SunXK_Find,  	NoSymbol,  	XK_L9,		NoSymbol,	/* 95*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 96*/
-	XK_L10, 	XK_L10, 	SunXK_Cut,	NoSymbol,	/* 97*/
+	SunXK_Cut, 	NoSymbol, 	XK_L10,		NoSymbol,	/* 97*/
 	XK_Num_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 98*/
 	XK_Shift_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 99*/
 	XK_Z,   	NoSymbol,	NoSymbol,	NoSymbol,	/*100*/
@@ -688,9 +688,9 @@ static KeySym Denmark4Keymap[] = {
 	XK_minus,	XK_underscore,	NoSymbol,	NoSymbol,	/*109*/
 	XK_Shift_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*110*/
 	XK_Linefeed,	NoSymbol,	NoSymbol,	NoSymbol,	/*111*/
-	XK_R13, 	XK_R13, 	XK_KP_1,	XK_End, 	/*112*/
-	XK_Down,	XK_R14, 	XK_KP_2,	NoSymbol,	/*113*/
-	XK_R15, 	XK_R15, 	XK_KP_3,	XK_Next,	/*114*/
+	XK_KP_End, 	XK_KP_1, 	XK_R13,		NoSymbol, 	/*112*/
+	XK_KP_Down,	XK_KP_2, 	XK_R14,		NoSymbol,	/*113*/
+	XK_KP_Next, 	XK_KP_3, 	XK_R15,		NoSymbol,	/*114*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*115*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*116*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*117*/
@@ -727,17 +727,17 @@ static SunModmapRec Denmark4Modmap[] = {
 #ifdef DENMARK5
 
 static KeySym Denmark5Keymap[] = {
-	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
+	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
-	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
+	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
 	XK_F3,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  8*/
-	SunXK_F36,	NoSymbol,	NoSymbol,	NoSymbol,	/*  9*/
+	XK_F11,		NoSymbol,	SunXK_F36,	NoSymbol,	/*  9*/
 	XK_F4,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 10*/
-	SunXK_F37,	NoSymbol,	NoSymbol,	NoSymbol,	/* 11*/
+	XK_F12,		NoSymbol,	SunXK_F37,	NoSymbol,	/* 11*/
 	XK_F5,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 12*/
 	SunXK_AltGraph,	NoSymbol,	NoSymbol,	NoSymbol,	/* 13*/
 	XK_F6,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 14*/
@@ -747,12 +747,12 @@ static KeySym Denmark5Keymap[] = {
 	XK_F9,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 18*/
 	XK_Alt_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 19*/
 	XK_Up,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 20*/
-	XK_R1,  	XK_R1,  	XK_Pause,	XK_Break,	/* 21*/
-	XK_R2,  	XK_R2,  	XK_Print,	SunXK_Sys_Req,	/* 22*/
-	XK_R3,  	XK_R3,  	XK_Scroll_Lock,	NoSymbol,	/* 23*/
+	XK_Pause,  	NoSymbol,  	XK_Break,	NoSymbol,	/* 21*/
+	XK_Print,  	NoSymbol,  	XK_Sys_Req,	SunXK_Sys_Req,	/* 22*/
+	XK_Scroll_Lock, NoSymbol,  	NoSymbol,	NoSymbol,	/* 23*/
 	XK_Left,	NoSymbol,	NoSymbol,	NoSymbol,	/* 24*/
-	XK_L3,  	XK_L3,  	SunXK_Props,	NoSymbol,	/* 25*/
-	XK_L4,  	XK_L4,  	SunXK_Undo,	NoSymbol,	/* 26*/
+	SunXK_Props,  	NoSymbol,  	XK_L3,		NoSymbol,	/* 25*/
+	SunXK_Undo,  	NoSymbol,  	XK_L4,		NoSymbol,	/* 26*/
 	XK_Down,	NoSymbol,	NoSymbol,	NoSymbol,	/* 27*/
 	XK_Right,	NoSymbol,	NoSymbol,	NoSymbol,	/* 28*/
 	XK_Escape,	NoSymbol,	NoSymbol,	NoSymbol,	/* 29*/
@@ -764,7 +764,7 @@ static KeySym Denmark5Keymap[] = {
 	XK_6,   	XK_ampersand,	XK_asciicircum,	NoSymbol,	/* 35*/
 	XK_7,   	XK_slash,	XK_braceleft,	NoSymbol,	/* 36*/
 	XK_8,   	XK_parenleft,	XK_bracketleft,	NoSymbol,	/* 37*/
-	XK_9,   	XK_parenright,	XK_bracketright,	NoSymbol,	/* 38*/
+	XK_9,   	XK_parenright,	XK_bracketright,NoSymbol,	/* 38*/
 	XK_0,   	XK_equal,	XK_braceright,	NoSymbol,	/* 39*/
 	XK_plus,	XK_question,	NoSymbol,	NoSymbol,	/* 40*/
 	SunXK_FA_Acute,	SunXK_FA_Grave,	XK_bar, 	NoSymbol,	/* 41*/
@@ -772,12 +772,12 @@ static KeySym Denmark5Keymap[] = {
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 45*/
-	XK_R5,  	XK_R5,  	XK_KP_Divide,	NoSymbol,	/* 46*/
-	XK_R6,  	XK_R6,  	XK_KP_Multiply,	NoSymbol,	/* 47*/
+	XK_KP_Divide,  	NoSymbol,  	NoSymbol,	NoSymbol,	/* 46*/
+	XK_KP_Multiply, NoSymbol,  	NoSymbol,	NoSymbol,	/* 47*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
-	XK_L5,  	XK_L5,  	SunXK_Front,	NoSymbol,	/* 49*/
-	XK_Delete,	XK_Delete,	XK_KP_Separator,	NoSymbol,	/* 50*/
-	XK_L6,  	XK_L6,  	SunXK_Copy,	NoSymbol,	/* 51*/
+	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
+	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 50*/
+	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
 	XK_Home,	NoSymbol,	NoSymbol,	NoSymbol,	/* 52*/
 	XK_Tab, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 53*/
 	XK_Q,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 54*/
@@ -791,15 +791,15 @@ static KeySym Denmark5Keymap[] = {
 	XK_O,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 62*/
 	XK_P,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 63*/
 	XK_Aring,	NoSymbol,	NoSymbol,	NoSymbol,	/* 64*/
-	SunXK_FA_Diaeresis,	SunXK_FA_Circum,	SunXK_FA_Tilde,	NoSymbol,	/* 65*/
+	SunXK_FA_Diaeresis,SunXK_FA_Circum,SunXK_FA_Tilde,NoSymbol,	/* 65*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
-	XK_R7,  	XK_R7,  	XK_KP_7,	XK_Home,	/* 68*/
-	XK_Up,  	XK_R8,  	XK_KP_8,	NoSymbol,	/* 69*/
-	XK_R9,  	XK_R9,  	XK_KP_9,	XK_Prior,	/* 70*/
-	XK_R4,  	XK_R4,  	XK_KP_Subtract,	NoSymbol,	/* 71*/
-	XK_L7,  	XK_L7,  	SunXK_Open,	NoSymbol,	/* 72*/
-	XK_L8,  	XK_L8,  	SunXK_Paste,	NoSymbol,	/* 73*/
+	XK_KP_Home,  	XK_KP_7,  	NoSymbol,	NoSymbol,	/* 68*/
+	XK_KP_Up,  	XK_KP_8,  	NoSymbol,	NoSymbol,	/* 69*/
+	XK_KP_Prior,  	XK_KP_9,  	NoSymbol,	NoSymbol,	/* 70*/
+	XK_KP_Subtract,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 71*/
+	SunXK_Open,  	NoSymbol,  	XK_L7,		NoSymbol,	/* 72*/
+	SunXK_Paste,  	NoSymbol,  	XK_L8,		NoSymbol,	/* 73*/
 	XK_End, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 74*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 75*/
 	XK_Control_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
@@ -817,13 +817,13 @@ static KeySym Denmark5Keymap[] = {
 	XK_quoteright,	XK_asterisk,	XK_quoteleft,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
-	XK_Left,	XK_R10, 	XK_KP_4,	NoSymbol,	/* 91*/
-	XK_R11, 	XK_R11, 	XK_KP_5,	NoSymbol,	/* 92*/
-	XK_Right,	XK_R12, 	XK_KP_6,	NoSymbol,	/* 93*/
-	XK_Insert,	XK_Insert,	XK_KP_0,	NoSymbol,	/* 94*/
-	XK_L9,  	XK_L9,  	SunXK_Find,	NoSymbol,	/* 95*/
+	XK_KP_Left,	XK_KP_4, 	NoSymbol,	NoSymbol,	/* 91*/
+	NoSymbol, 	XK_KP_5, 	NoSymbol,	NoSymbol,	/* 92*/
+	XK_KP_Right,	XK_KP_6, 	NoSymbol,	NoSymbol,	/* 93*/
+	XK_KP_Insert,	XK_KP_0,	NoSymbol,	NoSymbol,	/* 94*/
+	SunXK_Find,  	NoSymbol,  	XK_L9,		NoSymbol,	/* 95*/
 	XK_Prior,	NoSymbol,	NoSymbol,	NoSymbol,	/* 96*/
-	XK_L10, 	XK_L10, 	SunXK_Cut,	NoSymbol,	/* 97*/
+	SunXK_Cut, 	NoSymbol, 	XK_L10,		NoSymbol,	/* 97*/
 	XK_Num_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 98*/
 	XK_Shift_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 99*/
 	XK_Z,   	NoSymbol,	NoSymbol,	NoSymbol,	/*100*/
@@ -838,9 +838,9 @@ static KeySym Denmark5Keymap[] = {
 	XK_minus,	XK_underscore,	NoSymbol,	NoSymbol,	/*109*/
 	XK_Shift_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*110*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*111*/
-	XK_R13, 	XK_R13, 	XK_KP_1,	XK_End, 	/*112*/
-	XK_Down,	XK_R14, 	XK_KP_2,	NoSymbol,	/*113*/
-	XK_R15, 	XK_R15, 	XK_KP_3,	XK_Next,	/*114*/
+	XK_KP_End, 	XK_KP_1, 	NoSymbol,	NoSymbol, 	/*112*/
+	XK_KP_Down,	XK_KP_2, 	NoSymbol,	NoSymbol,	/*113*/
+	XK_KP_Next, 	XK_KP_3, 	NoSymbol,	NoSymbol,	/*114*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*115*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*116*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*117*/
@@ -877,17 +877,17 @@ static SunModmapRec Denmark5Modmap[] = {
 #ifdef FRANCE5
 
 static KeySym France5Keymap[] = {
-	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
+	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
-	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
+	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
 	XK_F3,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  8*/
-	SunXK_F36,	NoSymbol,	NoSymbol,	NoSymbol,	/*  9*/
+	XK_F11,		NoSymbol,	SunXK_F36,	NoSymbol,	/*  9*/
 	XK_F4,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 10*/
-	SunXK_F37,	NoSymbol,	NoSymbol,	NoSymbol,	/* 11*/
+	XK_F12,		NoSymbol,	SunXK_F37,	NoSymbol,	/* 11*/
 	XK_F5,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 12*/
 	SunXK_AltGraph,	NoSymbol,	NoSymbol,	NoSymbol,	/* 13*/
 	XK_F6,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 14*/
@@ -897,12 +897,12 @@ static KeySym France5Keymap[] = {
 	XK_F9,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 18*/
 	XK_Alt_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 19*/
 	XK_Up,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 20*/
-	XK_R1,  	XK_R1,  	XK_Pause,	XK_Break,	/* 21*/
-	XK_R2,  	XK_R2,  	XK_Print,	SunXK_Sys_Req,	/* 22*/
-	XK_R3,  	XK_R3,  	XK_Scroll_Lock,	NoSymbol,	/* 23*/
+	XK_Pause,  	NoSymbol,  	XK_Break,	NoSymbol,	/* 21*/
+	XK_Print,  	NoSymbol,  	XK_Sys_Req,	SunXK_Sys_Req,	/* 22*/
+	XK_Scroll_Lock,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 23*/
 	XK_Left,	NoSymbol,	NoSymbol,	NoSymbol,	/* 24*/
-	XK_L3,  	XK_L3,  	SunXK_Props,	NoSymbol,	/* 25*/
-	XK_L4,  	XK_L4,  	SunXK_Undo,	NoSymbol,	/* 26*/
+	SunXK_Props,  	NoSymbol,  	XK_L3,		NoSymbol,	/* 25*/
+	SunXK_Undo,  	NoSymbol,  	XK_L4,		NoSymbol,	/* 26*/
 	XK_Down,	NoSymbol,	NoSymbol,	NoSymbol,	/* 27*/
 	XK_Right,	NoSymbol,	NoSymbol,	NoSymbol,	/* 28*/
 	XK_Escape,	NoSymbol,	NoSymbol,	NoSymbol,	/* 29*/
@@ -916,18 +916,18 @@ static KeySym France5Keymap[] = {
 	XK_underscore,	XK_8,   	XK_backslash,	NoSymbol,	/* 37*/
 	XK_ccedilla,	XK_9,   	XK_asciicircum,	NoSymbol,	/* 38*/
 	XK_agrave,	XK_0,   	XK_at,  	NoSymbol,	/* 39*/
-	XK_parenright,	XK_degree,	XK_bracketright,	NoSymbol,	/* 40*/
+	XK_parenright,	XK_degree,	XK_bracketright,NoSymbol,	/* 40*/
 	XK_equal,	XK_plus,	XK_braceright,	NoSymbol,	/* 41*/
 	XK_twosuperior,	NoSymbol,	NoSymbol,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 45*/
-	XK_R5,  	XK_R5,  	XK_KP_Divide,	NoSymbol,	/* 46*/
-	XK_R6,  	XK_R6,  	XK_KP_Multiply,	NoSymbol,	/* 47*/
+	XK_KP_Divide,  	NoSymbol,  	NoSymbol,	NoSymbol,	/* 46*/
+	XK_KP_Multiply,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 47*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
-	XK_L5,  	XK_L5,  	SunXK_Front,	NoSymbol,	/* 49*/
-	XK_Delete,	XK_Delete,	XK_KP_Decimal,	NoSymbol,	/* 50*/
-	XK_L6,  	XK_L6,  	SunXK_Copy,	NoSymbol,	/* 51*/
+	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
+	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
+	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
 	XK_Home,	NoSymbol,	NoSymbol,	NoSymbol,	/* 52*/
 	XK_Tab, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 53*/
 	XK_A,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 54*/
@@ -940,16 +940,16 @@ static KeySym France5Keymap[] = {
 	XK_I,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 61*/
 	XK_O,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 62*/
 	XK_P,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 63*/
-	SunXK_FA_Circum,	SunXK_FA_Diaeresis,	NoSymbol,	NoSymbol,	/* 64*/
+	SunXK_FA_Circum,SunXK_FA_Diaeresis,NoSymbol,	NoSymbol,	/* 64*/
 	XK_dollar,	XK_sterling,	XK_currency,	NoSymbol,	/* 65*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
-	XK_R7,  	XK_R7,  	XK_KP_7,	XK_Home,	/* 68*/
-	XK_Up,  	XK_R8,  	XK_KP_8,	NoSymbol,	/* 69*/
-	XK_R9,  	XK_R9,  	XK_KP_9,	XK_Prior,	/* 70*/
-	XK_R4,  	XK_R4,  	XK_KP_Subtract,	NoSymbol,	/* 71*/
-	XK_L7,  	XK_L7,  	SunXK_Open,	NoSymbol,	/* 72*/
-	XK_L8,  	XK_L8,  	SunXK_Paste,	NoSymbol,	/* 73*/
+	XK_KP_Home,  	XK_KP_7,  	NoSymbol,	NoSymbol,	/* 68*/
+	XK_KP_Up,  	XK_KP_8,  	NoSymbol,	NoSymbol,	/* 69*/
+	XK_KP_Prior,  	XK_KP_9,  	NoSymbol,	NoSymbol,	/* 70*/
+	XK_KP_Subtract,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 71*/
+	SunXK_Open,  	NoSymbol,  	XK_L7,		NoSymbol,	/* 72*/
+	SunXK_Paste,  	NoSymbol,  	XK_L8,		NoSymbol,	/* 73*/
 	XK_End, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 74*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 75*/
 	XK_Control_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
@@ -967,13 +967,13 @@ static KeySym France5Keymap[] = {
 	XK_asterisk,	XK_mu,  	NoSymbol,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
-	XK_Left,	XK_R10, 	XK_KP_4,	NoSymbol,	/* 91*/
-	XK_R11, 	XK_R11, 	XK_KP_5,	NoSymbol,	/* 92*/
-	XK_Right,	XK_R12, 	XK_KP_6,	NoSymbol,	/* 93*/
-	XK_Insert,	XK_Insert,	XK_KP_0,	NoSymbol,	/* 94*/
-	XK_L9,  	XK_L9,  	SunXK_Find,	NoSymbol,	/* 95*/
+	XK_KP_Left,	XK_KP_4, 	NoSymbol,	NoSymbol,	/* 91*/
+	NoSymbol, 	XK_KP_5, 	NoSymbol,	NoSymbol,	/* 92*/
+	XK_KP_Right,	XK_KP_6, 	NoSymbol,	NoSymbol,	/* 93*/
+	XK_KP_Insert,	XK_KP_0,	NoSymbol,	NoSymbol,	/* 94*/
+	SunXK_Find,  	NoSymbol,  	XK_L9,		NoSymbol,	/* 95*/
 	XK_Prior,	NoSymbol,	NoSymbol,	NoSymbol,	/* 96*/
-	XK_L10, 	XK_L10, 	SunXK_Cut,	NoSymbol,	/* 97*/
+	SunXK_Cut, 	NoSymbol, 	XK_L10,		NoSymbol,	/* 97*/
 	XK_Num_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 98*/
 	XK_Shift_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 99*/
 	XK_W,   	NoSymbol,	NoSymbol,	NoSymbol,	/*100*/
@@ -988,9 +988,9 @@ static KeySym France5Keymap[] = {
 	XK_exclam,	XK_section,	NoSymbol,	NoSymbol,	/*109*/
 	XK_Shift_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*110*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*111*/
-	XK_R13, 	XK_R13, 	XK_KP_1,	XK_End, 	/*112*/
-	XK_Down,	XK_R14, 	XK_KP_2,	NoSymbol,	/*113*/
-	XK_R15, 	XK_R15, 	XK_KP_3,	XK_Next,	/*114*/
+	XK_KP_End, 	XK_KP_1, 	NoSymbol,	NoSymbol, 	/*112*/
+	XK_KP_Down,	XK_KP_2, 	NoSymbol,	NoSymbol,	/*113*/
+	XK_KP_Next, 	XK_KP_3, 	NoSymbol,	XK_Next,	/*114*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*115*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*116*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*117*/
@@ -1027,38 +1027,38 @@ static SunModmapRec France5Modmap[] = {
 #ifdef FRANCEBELG4
 
 static KeySym FranceBelg4Keymap[] = {
-	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
+	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
-	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
+	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
 	XK_F3,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  8*/
-	SunXK_F36,	NoSymbol,	NoSymbol,	NoSymbol,	/*  9*/
+	XK_F11,		NoSymbol,	SunXK_F36,	NoSymbol,	/*  9*/
 	XK_F4,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 10*/
-	SunXK_F37,	NoSymbol,	NoSymbol,	NoSymbol,	/* 11*/
+	XK_F12,		NoSymbol,	SunXK_F37,	NoSymbol,	/* 11*/
 	XK_F5,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 12*/
 	XK_Caps_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 13*/
 	XK_F6,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 14*/
-	XK_bracketright,	XK_braceright,	XK_guillemotright,	NoSymbol,	/* 15*/
+	XK_bracketright,XK_braceright,	XK_guillemotright,NoSymbol,	/* 15*/
 	XK_F7,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 16*/
 	XK_F8,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 17*/
 	XK_F9,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 18*/
 	XK_Alt_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 19*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 20*/
-	XK_R1,  	XK_R1,  	XK_Pause,	NoSymbol,	/* 21*/
-	XK_R2,  	XK_R2,  	XK_Print,	NoSymbol,	/* 22*/
-	XK_R3,  	XK_R3,  	XK_Scroll_Lock,	XK_Break,	/* 23*/
+	XK_Pause,  	NoSymbol,  	XK_R1,		NoSymbol,	/* 21*/
+	XK_Print,  	NoSymbol,  	XK_R2,		NoSymbol,	/* 22*/
+	XK_Break,  	XK_Scroll_Lock,	XK_R3,		NoSymbol,	/* 23*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 24*/
-	XK_L3,  	XK_L3,  	SunXK_Props,	NoSymbol,	/* 25*/
-	XK_L4,  	XK_L4,  	SunXK_Undo,	NoSymbol,	/* 26*/
+	SunXK_Props,  	NoSymbol,  	XK_L3,		NoSymbol,	/* 25*/
+	SunXK_Undo,  	NoSymbol,  	XK_L4,		NoSymbol,	/* 26*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 27*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 28*/
 	XK_Escape,	NoSymbol,	NoSymbol,	NoSymbol,	/* 29*/
 	XK_ampersand,	XK_1,   	NoSymbol,	NoSymbol,	/* 30*/
 	XK_eacute,	XK_2,   	XK_twosuperior,	NoSymbol,	/* 31*/
-	XK_quotedbl,	XK_3,   	XK_threesuperior,	NoSymbol,	/* 32*/
+	XK_quotedbl,	XK_3,   	XK_threesuperior,NoSymbol,	/* 32*/
 	XK_quoteright,	XK_4,   	NoSymbol,	NoSymbol,	/* 33*/
 	XK_parenleft,	XK_5,   	NoSymbol,	NoSymbol,	/* 34*/
 	XK_section,	XK_6,   	XK_asciicircum,	NoSymbol,	/* 35*/
@@ -1071,13 +1071,13 @@ static KeySym FranceBelg4Keymap[] = {
 	XK_asterisk,	XK_bar, 	XK_currency,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
-	XK_R4,  	XK_R4,  	XK_KP_Equal,	NoSymbol,	/* 45*/
-	XK_R5,  	XK_R5,  	XK_KP_Divide,	NoSymbol,	/* 46*/
-	XK_R6,  	XK_R6,  	XK_KP_Multiply,	NoSymbol,	/* 47*/
+	XK_KP_Equal,  	XK_KP_Equal,  	XK_R4,		NoSymbol,	/* 45*/
+	XK_KP_Divide,  	XK_KP_Divide,  	XK_R5,		NoSymbol,	/* 46*/
+	XK_KP_Multiply,	XK_KP_Multiply,	XK_R6,		NoSymbol,	/* 47*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
-	XK_L5,  	XK_L5,  	SunXK_Front,	NoSymbol,	/* 49*/
-	XK_Delete,	XK_Delete,	XK_KP_Decimal,	NoSymbol,	/* 50*/
-	XK_L6,  	XK_L6,  	SunXK_Copy,	NoSymbol,	/* 51*/
+	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
+	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
+	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 52*/
 	XK_Tab, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 53*/
 	XK_A,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 54*/
@@ -1090,16 +1090,16 @@ static KeySym FranceBelg4Keymap[] = {
 	XK_I,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 61*/
 	XK_O,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 62*/
 	XK_P,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 63*/
-	SunXK_FA_Circum,	SunXK_FA_Diaeresis,	NoSymbol,	NoSymbol,	/* 64*/
+	SunXK_FA_Circum,SunXK_FA_Diaeresis,NoSymbol,	NoSymbol,	/* 64*/
 	XK_quoteleft,	XK_dollar,	XK_at,  	NoSymbol,	/* 65*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
-	XK_R7,  	XK_R7,  	XK_KP_7,	XK_Home,	/* 68*/
-	XK_Up,  	XK_R8,  	XK_KP_8,	NoSymbol,	/* 69*/
-	XK_R9,  	XK_R9,  	XK_KP_9,	XK_Prior,	/* 70*/
-	XK_KP_Subtract,	NoSymbol,	NoSymbol,	NoSymbol,	/* 71*/
-	XK_L7,  	XK_L7,  	SunXK_Open,	NoSymbol,	/* 72*/
-	XK_L8,  	XK_L8,  	SunXK_Paste,	NoSymbol,	/* 73*/
+	XK_KP_Home,  	XK_KP_7,  	XK_R7,		NoSymbol,	/* 68*/
+	XK_KP_Up,  	XK_KP_8,  	XK_R8,		NoSymbol,	/* 69*/
+	XK_KP_Prior,  	XK_KP_9,  	XK_R9,		NoSymbol,	/* 70*/
+	XK_KP_Subtract,	XK_KP_Subtract,	NoSymbol,	NoSymbol,	/* 71*/
+	SunXK_Open,  	NoSymbol,  	XK_L7,		NoSymbol,	/* 72*/
+	SunXK_Paste,  	NoSymbol,  	XK_L8,		NoSymbol,	/* 73*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 74*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 75*/
 	XK_Control_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
@@ -1114,16 +1114,16 @@ static KeySym FranceBelg4Keymap[] = {
 	XK_L,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 85*/
 	XK_M,   	NoSymbol,	XK_mu,  	NoSymbol,	/* 86*/
 	XK_ugrave,	XK_percent,	NoSymbol,	NoSymbol,	/* 87*/
-	XK_bracketleft,	XK_braceleft,	XK_guillemotleft,	NoSymbol,	/* 88*/
+	XK_bracketleft,	XK_braceleft,	XK_guillemotleft,NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
-	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
-	XK_Left,	XK_R10, 	XK_KP_4,	NoSymbol,	/* 91*/
-	XK_R11, 	XK_R11, 	XK_KP_5,	NoSymbol,	/* 92*/
-	XK_Right,	XK_R12, 	XK_KP_6,	NoSymbol,	/* 93*/
-	XK_Insert,	XK_Insert,	XK_KP_0,	NoSymbol,	/* 94*/
-	XK_L9,  	XK_L9,  	SunXK_Find,	NoSymbol,	/* 95*/
+	XK_KP_Enter,	XK_KP_Enter,	NoSymbol,	NoSymbol,	/* 90*/
+	XK_KP_Left,	XK_KP_4, 	XK_R10,		NoSymbol,	/* 91*/
+	NoSymbol, 	XK_KP_5, 	XK_R11,		NoSymbol,	/* 92*/
+	XK_KP_Right,	XK_KP_6, 	XK_R12,		NoSymbol,	/* 93*/
+	XK_KP_Insert,	XK_KP_0,	NoSymbol,	NoSymbol,	/* 94*/
+	SunXK_Find,  	NoSymbol,  	XK_L9,		NoSymbol,	/* 95*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 96*/
-	XK_L10, 	XK_L10, 	SunXK_Cut,	NoSymbol,	/* 97*/
+	SunXK_Cut, 	NoSymbol, 	XK_L10,		NoSymbol,	/* 97*/
 	XK_Num_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 98*/
 	XK_Shift_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 99*/
 	XK_W,   	NoSymbol,	NoSymbol,	NoSymbol,	/*100*/
@@ -1138,9 +1138,9 @@ static KeySym FranceBelg4Keymap[] = {
 	XK_equal,	XK_plus,	NoSymbol,	NoSymbol,	/*109*/
 	XK_Shift_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*110*/
 	XK_Linefeed,	NoSymbol,	NoSymbol,	NoSymbol,	/*111*/
-	XK_R13, 	XK_R13, 	XK_KP_1,	XK_End, 	/*112*/
-	XK_Down,	XK_R14, 	XK_KP_2,	NoSymbol,	/*113*/
-	XK_R15, 	XK_R15, 	XK_KP_3,	XK_Next,	/*114*/
+	XK_KP_End, 	XK_KP_1, 	XK_R13,		NoSymbol, 	/*112*/
+	XK_KP_Down,	XK_KP_2, 	XK_R14,		NoSymbol,	/*113*/
+	XK_KP_Next, 	XK_KP_3, 	XK_R15,		NoSymbol,	/*114*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*115*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*116*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*117*/
@@ -1151,7 +1151,7 @@ static KeySym FranceBelg4Keymap[] = {
 	XK_Meta_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*122*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*123*/
 	XK_less,	XK_greater,	NoSymbol,	NoSymbol,	/*124*/
-	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
+	XK_KP_Add,	XK_KP_Add,	NoSymbol,	NoSymbol,	/*125*/
 };
 
 static SunModmapRec FranceBelg4Modmap[] = {
@@ -1177,38 +1177,38 @@ static SunModmapRec FranceBelg4Modmap[] = {
 #ifdef GERMANY4
 
 static KeySym Germany4Keymap[] = {
-	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
+	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
-	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
+	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
 	XK_F3,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  8*/
-	SunXK_F36,	NoSymbol,	NoSymbol,	NoSymbol,	/*  9*/
+	XK_F11,		NoSymbol,	SunXK_F36,	NoSymbol,	/*  9*/
 	XK_F4,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 10*/
-	SunXK_F37,	NoSymbol,	NoSymbol,	NoSymbol,	/* 11*/
+	XK_F12,		NoSymbol,	SunXK_F37,	NoSymbol,	/* 11*/
 	XK_F5,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 12*/
 	XK_Alt_R,	NoSymbol,	NoSymbol,	NoSymbol,	/* 13*/
 	XK_F6,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 14*/
-	XK_bracketright,	XK_braceright,	XK_guillemotright,	NoSymbol,	/* 15*/
+	XK_bracketright,XK_braceright,XK_guillemotright,NoSymbol,	/* 15*/
 	XK_F7,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 16*/
 	XK_F8,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 17*/
 	XK_F9,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 18*/
 	SunXK_AltGraph,	NoSymbol,	NoSymbol,	NoSymbol,	/* 19*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 20*/
-	XK_R1,  	XK_R1,  	XK_Pause,	NoSymbol,	/* 21*/
-	XK_R2,  	XK_R2,  	XK_Print,	NoSymbol,	/* 22*/
-	XK_R3,  	XK_R3,  	XK_Scroll_Lock,	XK_Break,	/* 23*/
+	XK_Pause,  	NoSymbol,  	XK_R1,		NoSymbol,	/* 21*/
+	XK_Print,  	NoSymbol,  	XK_R2,		NoSymbol,	/* 22*/
+	XK_Scroll_Lock,	NoSymbol,  	XK_R3,		NoSymbol,	/* 23*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 24*/
-	XK_L3,  	XK_L3,  	SunXK_Props,	NoSymbol,	/* 25*/
-	XK_L4,  	XK_L4,  	SunXK_Undo,	NoSymbol,	/* 26*/
+	SunXK_Props,  	NoSymbol,  	XK_L3,		NoSymbol,	/* 25*/
+	SunXK_Undo,  	NoSymbol,  	XK_L4,		NoSymbol,	/* 26*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 27*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 28*/
 	XK_Escape,	NoSymbol,	NoSymbol,	NoSymbol,	/* 29*/
 	XK_1,   	XK_exclam,	NoSymbol,	NoSymbol,	/* 30*/
 	XK_2,   	XK_quotedbl,	XK_twosuperior,	NoSymbol,	/* 31*/
-	XK_3,   	XK_section,	XK_threesuperior,	NoSymbol,	/* 32*/
+	XK_3,   	XK_section,	XK_threesuperior,NoSymbol,	/* 32*/
 	XK_4,   	XK_dollar,	NoSymbol,	NoSymbol,	/* 33*/
 	XK_5,   	XK_percent,	NoSymbol,	NoSymbol,	/* 34*/
 	XK_6,   	XK_ampersand,	NoSymbol,	NoSymbol,	/* 35*/
@@ -1221,13 +1221,13 @@ static KeySym Germany4Keymap[] = {
 	XK_numbersign,	XK_asciicircum,	XK_at,  	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
-	XK_R4,  	XK_R4,  	XK_KP_Equal,	NoSymbol,	/* 45*/
-	XK_R5,  	XK_R5,  	XK_KP_Divide,	NoSymbol,	/* 46*/
-	XK_R6,  	XK_R6,  	XK_KP_Multiply,	NoSymbol,	/* 47*/
+	XK_KP_Equal,  	NoSymbol,  	XK_R4,		NoSymbol,	/* 45*/
+	XK_KP_Divide,  	NoSymbol,  	XK_R5,		NoSymbol,	/* 46*/
+	XK_KP_Multiply,	NoSymbol,	XK_R6,		NoSymbol,	/* 47*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
-	XK_L5,  	XK_L5,  	SunXK_Front,	NoSymbol,	/* 49*/
-	XK_Delete,	XK_Delete,	XK_KP_Decimal,	NoSymbol,	/* 50*/
-	XK_L6,  	XK_L6,  	SunXK_Copy,	NoSymbol,	/* 51*/
+	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
+	XK_KP_Delete,	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	/* 50*/
+	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 52*/
 	XK_Tab, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 53*/
 	XK_Q,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 54*/
@@ -1244,12 +1244,12 @@ static KeySym Germany4Keymap[] = {
 	XK_plus,	XK_asterisk,	XK_asciitilde,	NoSymbol,	/* 65*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
-	XK_R7,  	XK_R7,  	XK_KP_7,	XK_Home,	/* 68*/
-	XK_Up,  	XK_R8,  	XK_KP_8,	NoSymbol,	/* 69*/
-	XK_R9,  	XK_R9,  	XK_KP_9,	XK_Prior,	/* 70*/
-	XK_KP_Subtract,	NoSymbol,	NoSymbol,	NoSymbol,	/* 71*/
-	XK_L7,  	XK_L7,  	SunXK_Open,	NoSymbol,	/* 72*/
-	XK_L8,  	XK_L8,  	SunXK_Paste,	NoSymbol,	/* 73*/
+	XK_KP_Home,  	XK_KP_7,  	XK_R7,		NoSymbol,	/* 68*/
+	XK_KP_Up,  	XK_KP_8,  	XK_R8,		NoSymbol,	/* 69*/
+	XK_KP_Prior,  	XK_KP_9,  	XK_R9,		NoSymbol,	/* 70*/
+	XK_KP_Subtract,	XK_KP_Subtract,	NoSymbol,	NoSymbol,	/* 71*/
+	SunXK_Open,  	NoSymbol,  	XK_L7,		NoSymbol,	/* 72*/
+	SunXK_Paste,  	NoSymbol,  	XK_L8,		NoSymbol,	/* 73*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 74*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 75*/
 	XK_Caps_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
@@ -1264,16 +1264,16 @@ static KeySym Germany4Keymap[] = {
 	XK_L,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 85*/
 	XK_Odiaeresis,	NoSymbol,	NoSymbol,	NoSymbol,	/* 86*/
 	XK_Adiaeresis,	NoSymbol,	NoSymbol,	NoSymbol,	/* 87*/
-	XK_bracketleft,	XK_braceleft,	XK_guillemotleft,	NoSymbol,	/* 88*/
+	XK_bracketleft,	XK_braceleft,	XK_guillemotleft,NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
-	XK_Left,	XK_R10, 	XK_KP_4,	NoSymbol,	/* 91*/
-	XK_R11, 	XK_R11, 	XK_KP_5,	NoSymbol,	/* 92*/
-	XK_Right,	XK_R12, 	XK_KP_6,	NoSymbol,	/* 93*/
-	XK_Insert,	XK_Insert,	XK_KP_0,	NoSymbol,	/* 94*/
-	XK_L9,  	XK_L9,  	SunXK_Find,	NoSymbol,	/* 95*/
+	XK_KP_Left,	XK_KP_4, 	XK_R10,		NoSymbol,	/* 91*/
+	NoSymbol, 	XK_KP_5, 	XK_R11,		NoSymbol,	/* 92*/
+	XK_KP_Right,	XK_KP_6, 	XK_R12,		NoSymbol,	/* 93*/
+	XK_KP_Insert,	XK_KP_0,	NoSymbol,	NoSymbol,	/* 94*/
+	SunXK_Find,  	NoSymbol,  	XK_L9,		NoSymbol,	/* 95*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 96*/
-	XK_L10, 	XK_L10, 	SunXK_Cut,	NoSymbol,	/* 97*/
+	SunXK_Cut, 	NoSymbol, 	XK_L10,		NoSymbol,	/* 97*/
 	XK_Num_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 98*/
 	XK_Shift_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 99*/
 	XK_Y,   	NoSymbol,	NoSymbol,	NoSymbol,	/*100*/
@@ -1288,9 +1288,9 @@ static KeySym Germany4Keymap[] = {
 	XK_minus,	XK_underscore,	NoSymbol,	NoSymbol,	/*109*/
 	XK_Shift_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*110*/
 	XK_Linefeed,	NoSymbol,	NoSymbol,	NoSymbol,	/*111*/
-	XK_R13, 	XK_R13, 	XK_KP_1,	XK_End, 	/*112*/
-	XK_Down,	XK_R14, 	XK_KP_2,	NoSymbol,	/*113*/
-	XK_R15, 	XK_R15, 	XK_KP_3,	XK_Next,	/*114*/
+	XK_KP_End, 	XK_KP_1, 	XK_R13,		NoSymbol, 	/*112*/
+	XK_KP_Down,	XK_KP_2, 	XK_R14,		NoSymbol,	/*113*/
+	XK_KP_Next, 	XK_KP_3, 	XK_R15,		NoSymbol,	/*114*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*115*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*116*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*117*/
@@ -1327,17 +1327,17 @@ static SunModmapRec Germany4Modmap[] = {
 #ifdef GERMANY5
 
 static KeySym Germany5Keymap[] = {
-	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
+	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
-	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
+	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
 	XK_F3,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  8*/
-	SunXK_F36,	NoSymbol,	NoSymbol,	NoSymbol,	/*  9*/
+	XK_F11,		NoSymbol,	SunXK_F36,	NoSymbol,	/*  9*/
 	XK_F4,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 10*/
-	SunXK_F37,	NoSymbol,	NoSymbol,	NoSymbol,	/* 11*/
+	XK_F12,		NoSymbol,	SunXK_F37,	NoSymbol,	/* 11*/
 	XK_F5,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 12*/
 	SunXK_AltGraph,	NoSymbol,	NoSymbol,	NoSymbol,	/* 13*/
 	XK_F6,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 14*/
@@ -1347,24 +1347,24 @@ static KeySym Germany5Keymap[] = {
 	XK_F9,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 18*/
 	XK_Alt_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 19*/
 	XK_Up,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 20*/
-	XK_R1,  	XK_R1,  	XK_Pause,	XK_Break,	/* 21*/
-	XK_R2,  	XK_R2,  	XK_Print,	SunXK_Sys_Req,	/* 22*/
-	XK_R3,  	XK_R3,  	XK_Scroll_Lock,	NoSymbol,	/* 23*/
+	XK_Pause,  	NoSymbol,  	XK_Break,	NoSymbol,	/* 21*/
+	XK_Print,  	NoSymbol,  	XK_Sys_Req,	SunXK_Sys_Req,	/* 22*/
+	XK_Scroll_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 23*/
 	XK_Left,	NoSymbol,	NoSymbol,	NoSymbol,	/* 24*/
-	XK_L3,  	XK_L3,  	SunXK_Props,	NoSymbol,	/* 25*/
-	XK_L4,  	XK_L4,  	SunXK_Undo,	NoSymbol,	/* 26*/
+	SunXK_Props,  	NoSymbol,  	XK_L3,		NoSymbol,	/* 25*/
+	SunXK_Undo,  	NoSymbol,  	XK_L4,		NoSymbol,	/* 26*/
 	XK_Down,	NoSymbol,	NoSymbol,	NoSymbol,	/* 27*/
 	XK_Right,	NoSymbol,	NoSymbol,	NoSymbol,	/* 28*/
 	XK_Escape,	NoSymbol,	NoSymbol,	NoSymbol,	/* 29*/
 	XK_1,   	XK_exclam,	NoSymbol,	NoSymbol,	/* 30*/
 	XK_2,   	XK_quotedbl,	XK_twosuperior,	NoSymbol,	/* 31*/
-	XK_3,   	XK_section,	XK_threesuperior,	NoSymbol,	/* 32*/
+	XK_3,   	XK_section,	XK_threesuperior,NoSymbol,	/* 32*/
 	XK_4,   	XK_dollar,	NoSymbol,	NoSymbol,	/* 33*/
 	XK_5,   	XK_percent,	NoSymbol,	NoSymbol,	/* 34*/
 	XK_6,   	XK_ampersand,	NoSymbol,	NoSymbol,	/* 35*/
 	XK_7,   	XK_slash,	XK_braceleft,	NoSymbol,	/* 36*/
 	XK_8,   	XK_parenleft,	XK_bracketleft,	NoSymbol,	/* 37*/
-	XK_9,   	XK_parenright,	XK_bracketright,	NoSymbol,	/* 38*/
+	XK_9,   	XK_parenright,	XK_bracketright,NoSymbol,	/* 38*/
 	XK_0,   	XK_equal,	XK_braceright,	NoSymbol,	/* 39*/
 	XK_ssharp,	XK_question,	XK_backslash,	NoSymbol,	/* 40*/
 	SunXK_FA_Acute,	SunXK_FA_Grave,	NoSymbol,	NoSymbol,	/* 41*/
@@ -1372,12 +1372,12 @@ static KeySym Germany5Keymap[] = {
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 45*/
-	XK_R5,  	XK_R5,  	XK_KP_Divide,	NoSymbol,	/* 46*/
-	XK_R6,  	XK_R6,  	XK_KP_Multiply,	NoSymbol,	/* 47*/
+	XK_KP_Divide,  	NoSymbol,  	NoSymbol,	NoSymbol,	/* 46*/
+	XK_KP_Multiply,	NoSymbol,	NoSymbol,	NoSymbol,	/* 47*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
-	XK_L5,  	XK_L5,  	SunXK_Front,	NoSymbol,	/* 49*/
-	XK_Delete,	XK_Delete,	XK_KP_Separator,	NoSymbol,	/* 50*/
-	XK_L6,  	XK_L6,  	SunXK_Copy,	NoSymbol,	/* 51*/
+	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
+	XK_KP_Delete,	XK_KP_Separator,NoSymbol,	NoSymbol,	/* 50*/
+	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
 	XK_Home,	NoSymbol,	NoSymbol,	NoSymbol,	/* 52*/
 	XK_Tab, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 53*/
 	XK_q,   	XK_Q,   	XK_at,  	NoSymbol,	/* 54*/
@@ -1394,12 +1394,12 @@ static KeySym Germany5Keymap[] = {
 	XK_plus,	XK_asterisk,	XK_asciitilde,	NoSymbol,	/* 65*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
-	XK_R7,  	XK_R7,  	XK_KP_7,	XK_Home,	/* 68*/
-	XK_Up,  	XK_R8,  	XK_KP_8,	NoSymbol,	/* 69*/
-	XK_R9,  	XK_R9,  	XK_KP_9,	XK_Prior,	/* 70*/
-	XK_R4,  	XK_R4,  	XK_KP_Subtract,	NoSymbol,	/* 71*/
-	XK_L7,  	XK_L7,  	SunXK_Open,	NoSymbol,	/* 72*/
-	XK_L8,  	XK_L8,  	SunXK_Paste,	NoSymbol,	/* 73*/
+	XK_KP_Home,  	XK_KP_7,  	NoSymbol,	NoSymbol,	/* 68*/
+	XK_KP_Up,  	XK_KP_8,  	NoSymbol,	NoSymbol,	/* 69*/
+	XK_KP_Prior,  	XK_KP_9,  	NoSymbol,	NoSymbol,	/* 70*/
+	XK_KP_Subtract,	NoSymbol,	NoSymbol,	NoSymbol,	/* 71*/
+	SunXK_Open,  	NoSymbol,  	XK_L7,		NoSymbol,	/* 72*/
+	SunXK_Paste,  	NoSymbol,  	XK_L8,		NoSymbol,	/* 73*/
 	XK_End, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 74*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 75*/
 	XK_Control_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
@@ -1417,13 +1417,13 @@ static KeySym Germany5Keymap[] = {
 	XK_numbersign,	XK_quoteright,	XK_quoteleft,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
-	XK_Left,	XK_R10, 	XK_KP_4,	NoSymbol,	/* 91*/
-	XK_R11, 	XK_R11, 	XK_KP_5,	NoSymbol,	/* 92*/
-	XK_Right,	XK_R12, 	XK_KP_6,	NoSymbol,	/* 93*/
-	XK_Insert,	XK_Insert,	XK_KP_0,	NoSymbol,	/* 94*/
-	XK_L9,  	XK_L9,  	SunXK_Find,	NoSymbol,	/* 95*/
+	XK_KP_Left,	XK_KP_4, 	NoSymbol,	NoSymbol,	/* 91*/
+	NoSymbol, 	XK_KP_5, 	NoSymbol,	NoSymbol,	/* 92*/
+	XK_KP_Right,	XK_KP_6, 	NoSymbol,	NoSymbol,	/* 93*/
+	XK_KP_Insert,	XK_KP_0,	NoSymbol,	NoSymbol,	/* 94*/
+	SunXK_Find,  	NoSymbol,  	XK_L9,		NoSymbol,	/* 95*/
 	XK_Prior,	NoSymbol,	NoSymbol,	NoSymbol,	/* 96*/
-	XK_L10, 	XK_L10, 	SunXK_Cut,	NoSymbol,	/* 97*/
+	SunXK_Cut, 	NoSymbol, 	XK_L10,		NoSymbol,	/* 97*/
 	XK_Num_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 98*/
 	XK_Shift_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 99*/
 	XK_Y,   	NoSymbol,	NoSymbol,	NoSymbol,	/*100*/
@@ -1438,9 +1438,9 @@ static KeySym Germany5Keymap[] = {
 	XK_minus,	XK_underscore,	NoSymbol,	NoSymbol,	/*109*/
 	XK_Shift_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*110*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*111*/
-	XK_R13, 	XK_R13, 	XK_KP_1,	XK_End, 	/*112*/
-	XK_Down,	XK_R14, 	XK_KP_2,	NoSymbol,	/*113*/
-	XK_R15, 	XK_R15, 	XK_KP_3,	XK_Next,	/*114*/
+	XK_KP_End, 	XK_KP_1, 	NoSymbol,	NoSymbol, 	/*112*/
+	XK_KP_Down,	XK_KP_2, 	NoSymbol,	NoSymbol,	/*113*/
+	XK_KP_Next, 	XK_KP_3, 	NoSymbol,	NoSymbol,	/*114*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*115*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*116*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*117*/
@@ -1451,7 +1451,7 @@ static KeySym Germany5Keymap[] = {
 	XK_Meta_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*122*/
 	XK_Next,	NoSymbol,	NoSymbol,	NoSymbol,	/*123*/
 	XK_less,	XK_greater,	XK_bar, 	NoSymbol,	/*124*/
-	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
+	XK_KP_Add,	XK_KP_Add,	NoSymbol,	NoSymbol,	/*125*/
 };
 
 static SunModmapRec Germany5Modmap[] = {
@@ -1477,38 +1477,38 @@ static SunModmapRec Germany5Modmap[] = {
 #ifdef ITALY4
 
 static KeySym Italy4Keymap[] = {
-	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
+	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
-	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
+	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
 	XK_F3,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  8*/
-	SunXK_F36,	NoSymbol,	NoSymbol,	NoSymbol,	/*  9*/
+	XK_F11,		NoSymbol,	SunXK_F36,	NoSymbol,	/*  9*/
 	XK_F4,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 10*/
-	SunXK_F37,	NoSymbol,	NoSymbol,	NoSymbol,	/* 11*/
+	XK_F12,		NoSymbol,	SunXK_F37,	NoSymbol,	/* 11*/
 	XK_F5,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 12*/
 	SunXK_AltGraph,	NoSymbol,	NoSymbol,	NoSymbol,	/* 13*/
 	XK_F6,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 14*/
-	XK_bracketright,	XK_braceright,	XK_guillemotright,	NoSymbol,	/* 15*/
+	XK_bracketright,XK_braceright,	XK_guillemotright,NoSymbol,	/* 15*/
 	XK_F7,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 16*/
 	XK_F8,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 17*/
 	XK_F9,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 18*/
 	XK_Alt_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 19*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 20*/
-	XK_R1,  	XK_R1,  	XK_Pause,	NoSymbol,	/* 21*/
-	XK_R2,  	XK_R2,  	XK_Print,	NoSymbol,	/* 22*/
-	XK_R3,  	XK_R3,  	XK_Scroll_Lock,	XK_Break,	/* 23*/
+	XK_Pause,  	NoSymbol,  	XK_R1,		NoSymbol,	/* 21*/
+	XK_Print,  	NoSymbol,  	XK_R2,		NoSymbol,	/* 22*/
+	XK_Break, 	XK_Scroll_Lock,	XK_R3,		NoSymbol,	/* 23*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 24*/
-	XK_L3,  	XK_L3,  	SunXK_Props,	NoSymbol,	/* 25*/
-	XK_L4,  	XK_L4,  	SunXK_Undo,	NoSymbol,	/* 26*/
+	SunXK_Props,  	NoSymbol,  	XK_L3,		NoSymbol,	/* 25*/
+	SunXK_Undo,  	NoSymbol,  	XK_L4,		NoSymbol,	/* 26*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 27*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 28*/
 	XK_Escape,	NoSymbol,	NoSymbol,	NoSymbol,	/* 29*/
 	XK_1,   	XK_exclam,	NoSymbol,	NoSymbol,	/* 30*/
 	XK_2,   	XK_quotedbl,	XK_twosuperior,	NoSymbol,	/* 31*/
-	XK_3,   	XK_sterling,	XK_threesuperior,	NoSymbol,	/* 32*/
+	XK_3,   	XK_sterling,	XK_threesuperior,NoSymbol,	/* 32*/
 	XK_4,   	XK_dollar,	NoSymbol,	NoSymbol,	/* 33*/
 	XK_5,   	XK_percent,	NoSymbol,	NoSymbol,	/* 34*/
 	XK_6,   	XK_ampersand,	XK_notsign,	NoSymbol,	/* 35*/
@@ -1521,13 +1521,13 @@ static KeySym Italy4Keymap[] = {
 	XK_ugrave,	XK_section,	NoSymbol,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
-	XK_R4,  	XK_R4,  	XK_KP_Equal,	NoSymbol,	/* 45*/
-	XK_R5,  	XK_R5,  	XK_KP_Divide,	NoSymbol,	/* 46*/
-	XK_R6,  	XK_R6,  	XK_KP_Multiply,	NoSymbol,	/* 47*/
+	XK_KP_Equal,  	NoSymbol,  	XK_R4,		NoSymbol,	/* 45*/
+	XK_KP_Divide,  	NoSymbol,  	XK_R5,		NoSymbol,	/* 46*/
+	XK_KP_Multiply,	NoSymbol,	XK_R6,		NoSymbol,	/* 47*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
-	XK_L5,  	XK_L5,  	SunXK_Front,	NoSymbol,	/* 49*/
-	XK_Delete,	XK_Delete,	XK_KP_Decimal,	NoSymbol,	/* 50*/
-	XK_L6,  	XK_L6,  	SunXK_Copy,	NoSymbol,	/* 51*/
+	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
+	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
+	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 52*/
 	XK_Tab, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 53*/
 	XK_Q,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 54*/
@@ -1544,12 +1544,12 @@ static KeySym Italy4Keymap[] = {
 	XK_plus,	XK_asterisk,	XK_asciitilde,	NoSymbol,	/* 65*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
-	XK_R7,  	XK_R7,  	XK_KP_7,	XK_Home,	/* 68*/
-	XK_Up,  	XK_R8,  	XK_KP_8,	NoSymbol,	/* 69*/
-	XK_R9,  	XK_R9,  	XK_KP_9,	XK_Prior,	/* 70*/
+	XK_KP_Home,  	XK_KP_7,  	XK_R7,		NoSymbol,	/* 68*/
+	XK_KP_Up,  	XK_KP_8,  	XK_R8,		NoSymbol,	/* 69*/
+	XK_KP_Prior,  	XK_KP_9,  	XK_R9,		NoSymbol,	/* 70*/
 	XK_KP_Subtract,	NoSymbol,	NoSymbol,	NoSymbol,	/* 71*/
-	XK_L7,  	XK_L7,  	SunXK_Open,	NoSymbol,	/* 72*/
-	XK_L8,  	XK_L8,  	SunXK_Paste,	NoSymbol,	/* 73*/
+	SunXK_Open,  	NoSymbol,  	XK_L7,		NoSymbol,	/* 72*/
+	SunXK_Paste,  	NoSymbol,  	XK_L8,		NoSymbol,	/* 73*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 74*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 75*/
 	XK_Caps_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
@@ -1564,16 +1564,16 @@ static KeySym Italy4Keymap[] = {
 	XK_L,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 85*/
 	XK_ograve,	XK_ccedilla,	XK_at,  	NoSymbol,	/* 86*/
 	XK_agrave,	XK_degree,	XK_numbersign,	NoSymbol,	/* 87*/
-	XK_bracketleft,	XK_braceleft,	XK_guillemotleft,	NoSymbol,	/* 88*/
+	XK_bracketleft,	XK_braceleft,	XK_guillemotleft,NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
-	XK_Left,	XK_R10, 	XK_KP_4,	NoSymbol,	/* 91*/
-	XK_R11, 	XK_R11, 	XK_KP_5,	NoSymbol,	/* 92*/
-	XK_Right,	XK_R12, 	XK_KP_6,	NoSymbol,	/* 93*/
-	XK_Insert,	XK_Insert,	XK_KP_0,	NoSymbol,	/* 94*/
-	XK_L9,  	XK_L9,  	SunXK_Find,	NoSymbol,	/* 95*/
+	XK_KP_Left,	XK_KP_4, 	XK_R4,		NoSymbol,	/* 91*/
+	NoSymbol, 	XK_KP_5, 	XK_R5,		NoSymbol,	/* 92*/
+	XK_KP_Right,	XK_KP_6, 	XK_R6,		NoSymbol,	/* 93*/
+	XK_KP_Insert,	XK_KP_0,	NoSymbol,	NoSymbol,	/* 94*/
+	SunXK_Find,  	NoSymbol,  	XK_L9,		NoSymbol,	/* 95*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 96*/
-	XK_L10, 	XK_L10, 	SunXK_Cut,	NoSymbol,	/* 97*/
+	SunXK_Cut, 	NoSymbol, 	XK_L10,		NoSymbol,	/* 97*/
 	XK_Num_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 98*/
 	XK_Shift_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 99*/
 	XK_Z,   	NoSymbol,	NoSymbol,	NoSymbol,	/*100*/
@@ -1588,9 +1588,9 @@ static KeySym Italy4Keymap[] = {
 	XK_minus,	XK_underscore,	NoSymbol,	NoSymbol,	/*109*/
 	XK_Shift_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*110*/
 	XK_Linefeed,	NoSymbol,	NoSymbol,	NoSymbol,	/*111*/
-	XK_R13, 	XK_R13, 	XK_KP_1,	XK_End, 	/*112*/
-	XK_Down,	XK_R14, 	XK_KP_2,	NoSymbol,	/*113*/
-	XK_R15, 	XK_R15, 	XK_KP_3,	XK_Next,	/*114*/
+	XK_KP_End, 	XK_KP_1, 	XK_R13,		NoSymbol, 	/*112*/
+	XK_KP_Down,	XK_KP_2, 	XK_R14,		NoSymbol,	/*113*/
+	XK_KP_Next, 	XK_KP_3, 	XK_R15,		NoSymbol,	/*114*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*115*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*116*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*117*/
@@ -1627,17 +1627,17 @@ static SunModmapRec Italy4Modmap[] = {
 #ifdef ITALY5
 
 static KeySym Italy5Keymap[] = {
-	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
+	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
-	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
+	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
 	XK_F3,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  8*/
-	SunXK_F36,	NoSymbol,	NoSymbol,	NoSymbol,	/*  9*/
+	XK_F11,		NoSymbol,	SunXK_F36,	NoSymbol,	/*  9*/
 	XK_F4,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 10*/
-	SunXK_F37,	NoSymbol,	NoSymbol,	NoSymbol,	/* 11*/
+	XK_F12,		NoSymbol,	SunXK_F37,	NoSymbol,	/* 11*/
 	XK_F5,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 12*/
 	SunXK_AltGraph,	NoSymbol,	NoSymbol,	NoSymbol,	/* 13*/
 	XK_F6,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 14*/
@@ -1647,12 +1647,12 @@ static KeySym Italy5Keymap[] = {
 	XK_F9,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 18*/
 	XK_Alt_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 19*/
 	XK_Up,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 20*/
-	XK_R1,  	XK_R1,  	XK_Pause,	XK_Break,	/* 21*/
-	XK_R2,  	XK_R2,  	XK_Print,	SunXK_Sys_Req,	/* 22*/
-	XK_R3,  	XK_R3,  	XK_Scroll_Lock,	NoSymbol,	/* 23*/
+	XK_Pause,  	XK_Break,  	NoSymbol,	NoSymbol,	/* 21*/
+	XK_Print,  	NoSymbol,  	XK_Sys_Req,	SunXK_Sys_Req,	/* 22*/
+	XK_Scroll_Lock,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 23*/
 	XK_Left,	NoSymbol,	NoSymbol,	NoSymbol,	/* 24*/
-	XK_L3,  	XK_L3,  	SunXK_Props,	NoSymbol,	/* 25*/
-	XK_L4,  	XK_L4,  	SunXK_Undo,	NoSymbol,	/* 26*/
+	SunXK_Props,  	NoSymbol,  	XK_L3,		NoSymbol,	/* 25*/
+	SunXK_Undo,  	NoSymbol,  	XK_L4,		NoSymbol,	/* 26*/
 	XK_Down,	NoSymbol,	NoSymbol,	NoSymbol,	/* 27*/
 	XK_Right,	NoSymbol,	NoSymbol,	NoSymbol,	/* 28*/
 	XK_Escape,	NoSymbol,	NoSymbol,	NoSymbol,	/* 29*/
@@ -1672,12 +1672,12 @@ static KeySym Italy5Keymap[] = {
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 45*/
-	XK_R5,  	XK_R5,  	XK_KP_Divide,	NoSymbol,	/* 46*/
-	XK_R6,  	XK_R6,  	XK_KP_Multiply,	NoSymbol,	/* 47*/
+	XK_KP_Divide,  	XK_KP_Divide,  	NoSymbol,	NoSymbol,	/* 46*/
+	XK_KP_Multiply,	XK_KP_Multiply,	NoSymbol,	NoSymbol,	/* 47*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
-	XK_L5,  	XK_L5,  	SunXK_Front,	NoSymbol,	/* 49*/
-	XK_Delete,	XK_Delete,	XK_KP_Decimal,	NoSymbol,	/* 50*/
-	XK_L6,  	XK_L6,  	SunXK_Copy,	NoSymbol,	/* 51*/
+	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
+	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
+	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
 	XK_Home,	NoSymbol,	NoSymbol,	NoSymbol,	/* 52*/
 	XK_Tab, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 53*/
 	XK_Q,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 54*/
@@ -1691,15 +1691,15 @@ static KeySym Italy5Keymap[] = {
 	XK_O,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 62*/
 	XK_P,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 63*/
 	XK_egrave,	XK_eacute,	XK_bracketleft,	NoSymbol,	/* 64*/
-	XK_plus,	XK_asterisk,	XK_bracketright,	NoSymbol,	/* 65*/
+	XK_plus,	XK_asterisk,	XK_bracketright,NoSymbol,	/* 65*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
-	XK_R7,  	XK_R7,  	XK_KP_7,	XK_Home,	/* 68*/
-	XK_Up,  	XK_R8,  	XK_KP_8,	NoSymbol,	/* 69*/
-	XK_R9,  	XK_R9,  	XK_KP_9,	XK_Prior,	/* 70*/
-	XK_R4,  	XK_R4,  	XK_KP_Subtract,	NoSymbol,	/* 71*/
-	XK_L7,  	XK_L7,  	SunXK_Open,	NoSymbol,	/* 72*/
-	XK_L8,  	XK_L8,  	SunXK_Paste,	NoSymbol,	/* 73*/
+	XK_KP_Home,  	XK_KP_7,  	NoSymbol,	NoSymbol,	/* 68*/
+	XK_KP_Up,  	XK_KP_8,  	NoSymbol,	NoSymbol,	/* 69*/
+	XK_KP_Prior,  	XK_KP_9,  	NoSymbol,	NoSymbol,	/* 70*/
+	XK_KP_Subtract,	NoSymbol,	NoSymbol,	NoSymbol,	/* 71*/
+	SunXK_Open,  	NoSymbol,  	XK_L7,		NoSymbol,	/* 72*/
+	SunXK_Paste,  	NoSymbol,  	XK_L8,		NoSymbol,	/* 73*/
 	XK_End, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 74*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 75*/
 	XK_Control_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
@@ -1716,14 +1716,14 @@ static KeySym Italy5Keymap[] = {
 	XK_agrave,	XK_degree,	XK_numbersign,	NoSymbol,	/* 87*/
 	XK_ugrave,	XK_section,	XK_asciitilde,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
-	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
-	XK_Left,	XK_R10, 	XK_KP_4,	NoSymbol,	/* 91*/
-	XK_R11, 	XK_R11, 	XK_KP_5,	NoSymbol,	/* 92*/
-	XK_Right,	XK_R12, 	XK_KP_6,	NoSymbol,	/* 93*/
-	XK_Insert,	XK_Insert,	XK_KP_0,	NoSymbol,	/* 94*/
-	XK_L9,  	XK_L9,  	SunXK_Find,	NoSymbol,	/* 95*/
+	XK_KP_Enter,	XK_KP_Enter,	NoSymbol,	NoSymbol,	/* 90*/
+	XK_KP_Left,	XK_KP_4, 	NoSymbol,	NoSymbol,	/* 91*/
+	NoSymbol, 	XK_KP_5, 	NoSymbol,	NoSymbol,	/* 92*/
+	XK_KP_Right,	XK_KP_6, 	NoSymbol,	NoSymbol,	/* 93*/
+	XK_KP_Insert,	XK_KP_0,	NoSymbol,	NoSymbol,	/* 94*/
+	SunXK_Find,  	NoSymbol,  	XK_L9,		NoSymbol,	/* 95*/
 	XK_Prior,	NoSymbol,	NoSymbol,	NoSymbol,	/* 96*/
-	XK_L10, 	XK_L10, 	SunXK_Cut,	NoSymbol,	/* 97*/
+	SunXK_Cut, 	NoSymbol, 	XK_L10,		NoSymbol,	/* 97*/
 	XK_Num_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 98*/
 	XK_Shift_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 99*/
 	XK_Z,   	NoSymbol,	NoSymbol,	NoSymbol,	/*100*/
@@ -1738,9 +1738,9 @@ static KeySym Italy5Keymap[] = {
 	XK_minus,	XK_underscore,	NoSymbol,	NoSymbol,	/*109*/
 	XK_Shift_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*110*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*111*/
-	XK_R13, 	XK_R13, 	XK_KP_1,	XK_End, 	/*112*/
-	XK_Down,	XK_R14, 	XK_KP_2,	NoSymbol,	/*113*/
-	XK_R15, 	XK_R15, 	XK_KP_3,	XK_Next,	/*114*/
+	XK_KP_End, 	XK_KP_1, 	NoSymbol,	NoSymbol, 	/*112*/
+	XK_KP_Down,	XK_KP_2, 	NoSymbol,	NoSymbol,	/*113*/
+	XK_KP_Next, 	XK_KP_3, 	NoSymbol,	NoSymbol,	/*114*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*115*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*116*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*117*/
@@ -1751,7 +1751,7 @@ static KeySym Italy5Keymap[] = {
 	XK_Meta_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*122*/
 	XK_Next,	NoSymbol,	NoSymbol,	NoSymbol,	/*123*/
 	XK_less,	XK_greater,	NoSymbol,	NoSymbol,	/*124*/
-	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
+	XK_KP_Add,	XK_KP_Add,	NoSymbol,	NoSymbol,	/*125*/
 };
 
 static SunModmapRec Italy5Modmap[] = {
@@ -1777,17 +1777,17 @@ static SunModmapRec Italy5Modmap[] = {
 #ifdef JAPAN4
 
 static KeySym Japan4Keymap[] = {
-	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
+	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
-	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
+	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
 	XK_F3,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  8*/
-	SunXK_F36,	NoSymbol,	NoSymbol,	NoSymbol,	/*  9*/
+	XK_F11,		NoSymbol,	SunXK_F36,	NoSymbol,	/*  9*/
 	XK_F4,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 10*/
-	SunXK_F37,	NoSymbol,	NoSymbol,	NoSymbol,	/* 11*/
+	XK_F12,		NoSymbol,	SunXK_F37,	NoSymbol,	/* 11*/
 	XK_F5,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 12*/
 	SunXK_AltGraph,	NoSymbol,	NoSymbol,	NoSymbol,	/* 13*/
 	XK_F6,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 14*/
@@ -1797,12 +1797,12 @@ static KeySym Japan4Keymap[] = {
 	XK_F9,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 18*/
 	XK_Alt_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 19*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 20*/
-	XK_R1,  	XK_R1,  	XK_Pause,	NoSymbol,	/* 21*/
-	XK_R2,  	XK_R2,  	XK_Print,	NoSymbol,	/* 22*/
-	XK_R3,  	XK_R3,  	XK_Scroll_Lock,	XK_Break,	/* 23*/
+	XK_Pause,  	NoSymbol,  	XK_R1,		NoSymbol,	/* 21*/
+	XK_Print,  	NoSymbol,  	XK_R2,		NoSymbol,	/* 22*/
+	XK_Break,  	XK_Scroll_Lock,	XK_R3,		NoSymbol,	/* 23*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 24*/
-	XK_L3,  	XK_L3,  	SunXK_Props,	NoSymbol,	/* 25*/
-	XK_L4,  	XK_L4,  	SunXK_Undo,	NoSymbol,	/* 26*/
+	SunXK_Props,  	NoSymbol,  	XK_L3,		NoSymbol,	/* 25*/
+	SunXK_Undo,  	NoSymbol,  	XK_L4,		NoSymbol,	/* 26*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 27*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 28*/
 	XK_Escape,	NoSymbol,	NoSymbol,	NoSymbol,	/* 29*/
@@ -1818,16 +1818,16 @@ static KeySym Japan4Keymap[] = {
 	XK_0,   	XK_0,   	XK_kana_WA,	XK_kana_WO,	/* 39*/
 	XK_minus,	XK_equal,	XK_kana_HO,	NoSymbol,	/* 40*/
 	XK_asciicircum,	XK_asciitilde,	XK_kana_HE,	NoSymbol,	/* 41*/
-	XK_bracketright,	XK_braceright,	XK_kana_MU,	XK_kana_closingbracket,	/* 42*/
+	XK_bracketright,XK_braceright,	XK_kana_MU,	XK_kana_closingbracket,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
-	XK_R4,  	XK_R4,  	XK_KP_Equal,	NoSymbol,	/* 45*/
-	XK_R5,  	XK_R5,  	XK_KP_Divide,	NoSymbol,	/* 46*/
-	XK_R6,  	XK_R6,  	XK_KP_Multiply,	NoSymbol,	/* 47*/
+	XK_KP_Equal,  	NoSymbol,  	XK_R4,		NoSymbol,	/* 45*/
+	XK_KP_Divide,  	NoSymbol,  	XK_R5,		NoSymbol,	/* 46*/
+	XK_KP_Multiply,	NoSymbol,	XK_R6,		NoSymbol,	/* 47*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
-	XK_L5,  	XK_L5,  	SunXK_Front,	NoSymbol,	/* 49*/
-	XK_Delete,	XK_Delete,	XK_KP_Decimal,	NoSymbol,	/* 50*/
-	XK_L6,  	XK_L6,  	SunXK_Copy,	NoSymbol,	/* 51*/
+	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
+	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
+	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 52*/
 	XK_Tab, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 53*/
 	XK_q,   	XK_Q,   	XK_kana_TA,	NoSymbol,	/* 54*/
@@ -1841,15 +1841,15 @@ static KeySym Japan4Keymap[] = {
 	XK_o,   	XK_O,   	XK_kana_RA,	NoSymbol,	/* 62*/
 	XK_p,   	XK_P,   	XK_kana_SE,	NoSymbol,	/* 63*/
 	XK_at,  	XK_quoteleft,	XK_voicedsound,	NoSymbol,	/* 64*/
-	XK_bracketleft,	XK_braceleft,	XK_semivoicedsound,	XK_kana_openingbracket,	/* 65*/
+	XK_bracketleft,	XK_braceleft,	XK_semivoicedsound,XK_kana_openingbracket,	/* 65*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
-	XK_R7,  	XK_R7,  	XK_KP_7,	XK_Home,	/* 68*/
-	XK_Up,  	XK_R8,  	XK_KP_8,	NoSymbol,	/* 69*/
-	XK_R9,  	XK_R9,  	XK_KP_9,	XK_Prior,	/* 70*/
-	XK_KP_Subtract,	NoSymbol,	NoSymbol,	NoSymbol,	/* 71*/
-	XK_L7,  	XK_L7,  	SunXK_Open,	NoSymbol,	/* 72*/
-	XK_L8,  	XK_L8,  	SunXK_Paste,	NoSymbol,	/* 73*/
+	XK_KP_Home,  	XK_KP_7,  	XK_R7,		NoSymbol,	/* 68*/
+	XK_KP_Up,  	XK_KP_8,  	XK_R8,		NoSymbol,	/* 69*/
+	XK_KP_Prior,  	XK_KP_9,  	XK_R9,		NoSymbol,	/* 70*/
+	XK_KP_Subtract,	XK_KP_Subtract,	NoSymbol,	NoSymbol,	/* 71*/
+	SunXK_Open,  	NoSymbol,  	XK_L7,		NoSymbol,	/* 72*/
+	SunXK_Paste,  	NoSymbol,  	XK_L8,		NoSymbol,	/* 73*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 74*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 75*/
 	XK_Control_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
@@ -1864,16 +1864,16 @@ static KeySym Japan4Keymap[] = {
 	XK_l,   	XK_L,   	XK_kana_RI,	NoSymbol,	/* 85*/
 	XK_semicolon,	XK_plus,	XK_kana_RE,	NoSymbol,	/* 86*/
 	XK_colon,	XK_asterisk,	XK_kana_KE,	NoSymbol,	/* 87*/
-	XK_backslash,	XK_bar, 	XK_prolongedsound,	NoSymbol,	/* 88*/
+	XK_backslash,	XK_bar, 	XK_prolongedsound,NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
-	XK_Left,	XK_R10, 	XK_KP_4,	NoSymbol,	/* 91*/
-	XK_R11, 	XK_R11, 	XK_KP_5,	NoSymbol,	/* 92*/
-	XK_Right,	XK_R12, 	XK_KP_6,	NoSymbol,	/* 93*/
-	XK_Insert,	XK_Insert,	XK_KP_0,	NoSymbol,	/* 94*/
-	XK_L9,  	XK_L9,  	SunXK_Find,	NoSymbol,	/* 95*/
+	XK_KP_Left,	XK_KP_4, 	XK_R10,		NoSymbol,	/* 91*/
+	NoSymbol, 	XK_KP_5, 	XK_R11,		NoSymbol,	/* 92*/
+	XK_KP_Right,	XK_KP_6, 	XK_R12,		NoSymbol,	/* 93*/
+	XK_KP_Insert,	XK_KP_0,	NoSymbol,	NoSymbol,	/* 94*/
+	SunXK_Find,  	NoSymbol,  	XK_L9,		NoSymbol,	/* 95*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 96*/
-	XK_L10, 	XK_L10, 	SunXK_Cut,	NoSymbol,	/* 97*/
+	SunXK_Cut, 	NoSymbol, 	XK_L10,		NoSymbol,	/* 97*/
 	XK_Num_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 98*/
 	XK_Shift_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 99*/
 	XK_z,   	XK_Z,   	XK_kana_TSU,	XK_kana_tsu,	/*100*/
@@ -1888,9 +1888,9 @@ static KeySym Japan4Keymap[] = {
 	XK_slash,	XK_question,	XK_kana_ME,	XK_kana_conjunctive,	/*109*/
 	XK_Shift_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*110*/
 	XK_backslash,	XK_underscore,	XK_kana_RO,	NoSymbol,	/*111*/
-	XK_R13, 	XK_R13, 	XK_KP_1,	XK_End, 	/*112*/
-	XK_Down,	XK_R14, 	XK_KP_2,	NoSymbol,	/*113*/
-	XK_R15, 	XK_R15, 	XK_KP_3,	XK_Next,	/*114*/
+	XK_KP_End, 	XK_KP_1, 	XK_R13,		NoSymbol, 	/*112*/
+	XK_KP_Down,	XK_KP_2, 	XK_R14,		NoSymbol,	/*113*/
+	XK_KP_Next, 	XK_KP_3, 	XK_R15,		NoSymbol,	/*114*/
 	XK_Execute,	NoSymbol,	NoSymbol,	NoSymbol,	/*115*/
 	XK_Kanji,	NoSymbol,	NoSymbol,	NoSymbol,	/*116*/
 	XK_Henkan_Mode,	NoSymbol,	NoSymbol,	NoSymbol,	/*117*/
@@ -1901,7 +1901,7 @@ static KeySym Japan4Keymap[] = {
 	XK_Meta_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*122*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*123*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*124*/
-	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
+	XK_KP_Add,	XK_KP_Add,	NoSymbol,	NoSymbol,	/*125*/
 };
 
 static SunModmapRec Japan4Modmap[] = {
@@ -1927,17 +1927,17 @@ static SunModmapRec Japan4Modmap[] = {
 #ifdef JAPAN5
 
 static KeySym Japan5Keymap[] = {
-	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
+	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
-	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
+	SunXK_Again,  	NoSymbol,  	XK_L2,	NoSymbol,	/*  3*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
 	XK_F3,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  8*/
-	SunXK_F36,	NoSymbol,	NoSymbol,	NoSymbol,	/*  9*/
+	XK_F11,		NoSymbol,	SunXK_F36,	NoSymbol,	/*  9*/
 	XK_F4,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 10*/
-	SunXK_F37,	NoSymbol,	NoSymbol,	NoSymbol,	/* 11*/
+	XK_F12,		NoSymbol,	SunXK_F37,	NoSymbol,	/* 11*/
 	XK_F5,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 12*/
 	SunXK_AltGraph,	NoSymbol,	NoSymbol,	NoSymbol,	/* 13*/
 	XK_F6,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 14*/
@@ -1947,12 +1947,12 @@ static KeySym Japan5Keymap[] = {
 	XK_F9,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 18*/
 	XK_Alt_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 19*/
 	XK_Up,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 20*/
-	XK_R1,  	XK_R1,  	XK_Pause,	XK_Break,	/* 21*/
-	XK_R2,  	XK_R2,  	XK_Print,	SunXK_Sys_Req,	/* 22*/
-	XK_R3,  	XK_R3,  	XK_Scroll_Lock,	NoSymbol,	/* 23*/
+	XK_Pause,  	NoSymbol,  	XK_Break,	NoSymbol,	/* 21*/
+	XK_Print,  	NoSymbol,  	XK_Sys_Req,	SunXK_Sys_Req,	/* 22*/
+	XK_Scroll_Lock,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 23*/
 	XK_Left,	NoSymbol,	NoSymbol,	NoSymbol,	/* 24*/
-	XK_L3,  	XK_L3,  	SunXK_Props,	NoSymbol,	/* 25*/
-	XK_L4,  	XK_L4,  	SunXK_Undo,	NoSymbol,	/* 26*/
+	SunXK_Props,  	NoSymbol,  	XK_L3,		NoSymbol,	/* 25*/
+	SunXK_Undo,  	NoSymbol,  	XK_L4,		NoSymbol,	/* 26*/
 	XK_Down,	NoSymbol,	NoSymbol,	NoSymbol,	/* 27*/
 	XK_Right,	NoSymbol,	NoSymbol,	NoSymbol,	/* 28*/
 	XK_Escape,	NoSymbol,	NoSymbol,	NoSymbol,	/* 29*/
@@ -1968,16 +1968,16 @@ static KeySym Japan5Keymap[] = {
 	XK_0,   	XK_0,   	XK_kana_WA,	XK_kana_WO,	/* 39*/
 	XK_minus,	XK_equal,	XK_kana_HO,	NoSymbol,	/* 40*/
 	XK_asciicircum,	XK_asciitilde,	XK_kana_HE,	NoSymbol,	/* 41*/
-	XK_backslash,	XK_bar, 	XK_prolongedsound,	NoSymbol,	/* 42*/
+	XK_backslash,	XK_bar, 	XK_prolongedsound,NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 45*/
-	XK_R5,  	XK_R5,  	XK_KP_Divide,	NoSymbol,	/* 46*/
-	XK_R6,  	XK_R6,  	XK_KP_Multiply,	NoSymbol,	/* 47*/
+	XK_KP_Divide,  	NoSymbol,  	NoSymbol,	NoSymbol,	/* 46*/
+	XK_KP_Multiply,	NoSymbol,	NoSymbol,	NoSymbol,	/* 47*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
-	XK_L5,  	XK_L5,  	SunXK_Front,	NoSymbol,	/* 49*/
-	XK_Delete,	XK_Delete,	XK_KP_Decimal,	NoSymbol,	/* 50*/
-	XK_L6,  	XK_L6,  	SunXK_Copy,	NoSymbol,	/* 51*/
+	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
+	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
+	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
 	XK_Home,	NoSymbol,	NoSymbol,	NoSymbol,	/* 52*/
 	XK_Tab, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 53*/
 	XK_q,   	XK_Q,   	XK_kana_TA,	NoSymbol,	/* 54*/
@@ -1991,15 +1991,15 @@ static KeySym Japan5Keymap[] = {
 	XK_o,   	XK_O,   	XK_kana_RA,	NoSymbol,	/* 62*/
 	XK_p,   	XK_P,   	XK_kana_SE,	NoSymbol,	/* 63*/
 	XK_at,  	XK_quoteleft,	XK_voicedsound,	NoSymbol,	/* 64*/
-	XK_bracketleft,	XK_braceleft,	XK_semivoicedsound,	XK_kana_openingbracket,	/* 65*/
+	XK_bracketleft,	XK_braceleft,	XK_semivoicedsound,XK_kana_openingbracket,	/* 65*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
-	XK_R7,  	XK_R7,  	XK_KP_7,	XK_Home,	/* 68*/
-	XK_Up,  	XK_R8,  	XK_KP_8,	NoSymbol,	/* 69*/
-	XK_R9,  	XK_R9,  	XK_KP_9,	XK_Prior,	/* 70*/
-	XK_R4,  	XK_R4,  	XK_KP_Subtract,	NoSymbol,	/* 71*/
-	XK_L7,  	XK_L7,  	SunXK_Open,	NoSymbol,	/* 72*/
-	XK_L8,  	XK_L8,  	SunXK_Paste,	NoSymbol,	/* 73*/
+	XK_KP_Home,  	XK_KP_7,  	NoSymbol,	NoSymbol,	/* 68*/
+	XK_KP_Up,  	XK_KP_8,  	NoSymbol,	NoSymbol,	/* 69*/
+	XK_KP_Prior,  	XK_KP_9,  	NoSymbol,	NoSymbol,	/* 70*/
+	XK_KP_Subtract,	NoSymbol,	NoSymbol,	NoSymbol,	/* 71*/
+	SunXK_Open,  	NoSymbol,  	XK_L7,		NoSymbol,	/* 72*/
+	SunXK_Paste,  	NoSymbol,  	XK_L8,		NoSymbol,	/* 73*/
 	XK_End, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 74*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 75*/
 	XK_Control_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
@@ -2014,16 +2014,16 @@ static KeySym Japan5Keymap[] = {
 	XK_l,   	XK_L,   	XK_kana_RI,	NoSymbol,	/* 85*/
 	XK_semicolon,	XK_plus,	XK_kana_RE,	NoSymbol,	/* 86*/
 	XK_colon,	XK_asterisk,	XK_kana_KE,	NoSymbol,	/* 87*/
-	XK_bracketright,	XK_braceright,	XK_kana_MU,	XK_kana_closingbracket,	/* 88*/
+	XK_bracketright,XK_braceright,	XK_kana_MU,	XK_kana_closingbracket,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
-	XK_Left,	XK_R10, 	XK_KP_4,	NoSymbol,	/* 91*/
-	XK_R11, 	XK_R11, 	XK_KP_5,	NoSymbol,	/* 92*/
-	XK_Right,	XK_R12, 	XK_KP_6,	NoSymbol,	/* 93*/
-	XK_Insert,	XK_Insert,	XK_KP_0,	NoSymbol,	/* 94*/
-	XK_L9,  	XK_L9,  	SunXK_Find,	NoSymbol,	/* 95*/
+	XK_KP_Left,	XK_KP_4, 	NoSymbol,	NoSymbol,	/* 91*/
+	NoSymbol, 	XK_KP_5, 	NoSymbol,	NoSymbol,	/* 92*/
+	XK_KP_Right,	XK_KP_6, 	NoSymbol,	NoSymbol,	/* 93*/
+	XK_KP_Insert,	XK_KP_0,	NoSymbol,	NoSymbol,	/* 94*/
+	SunXK_Find,  	NoSymbol,  	XK_L9,		NoSymbol,	/* 95*/
 	XK_Prior,	NoSymbol,	NoSymbol,	NoSymbol,	/* 96*/
-	XK_L10, 	XK_L10, 	SunXK_Cut,	NoSymbol,	/* 97*/
+	SunXK_Cut, 	NoSymbol, 	XK_L10,		NoSymbol,	/* 97*/
 	XK_Num_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 98*/
 	XK_Shift_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 99*/
 	XK_z,   	XK_Z,   	XK_kana_TSU,	XK_kana_tsu,	/*100*/
@@ -2038,9 +2038,9 @@ static KeySym Japan5Keymap[] = {
 	XK_slash,	XK_question,	XK_kana_ME,	XK_kana_conjunctive,	/*109*/
 	XK_Shift_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*110*/
 	XK_backslash,	XK_underscore,	XK_kana_RO,	NoSymbol,	/*111*/
-	XK_R13, 	XK_R13, 	XK_KP_1,	XK_End, 	/*112*/
-	XK_Down,	XK_R14, 	XK_KP_2,	NoSymbol,	/*113*/
-	XK_R15, 	XK_R15, 	XK_KP_3,	XK_Next,	/*114*/
+	XK_KP_End, 	XK_KP_1, 	NoSymbol,	NoSymbol, 	/*112*/
+	XK_KP_Down,	XK_KP_2, 	NoSymbol,	NoSymbol,	/*113*/
+	XK_KP_Next, 	XK_KP_3, 	NoSymbol,	NoSymbol,	/*114*/
 	XK_Execute,	NoSymbol,	NoSymbol,	NoSymbol,	/*115*/
 	XK_Kanji,	NoSymbol,	NoSymbol,	NoSymbol,	/*116*/
 	XK_Henkan_Mode,	NoSymbol,	NoSymbol,	NoSymbol,	/*117*/
@@ -2051,7 +2051,7 @@ static KeySym Japan5Keymap[] = {
 	XK_Meta_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*122*/
 	XK_Next,	NoSymbol,	NoSymbol,	NoSymbol,	/*123*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*124*/
-	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
+	XK_KP_Add,	XK_KP_Add,	NoSymbol,	NoSymbol,	/*125*/
 };
 
 static SunModmapRec Japan5Modmap[] = {
@@ -2077,17 +2077,17 @@ static SunModmapRec Japan5Modmap[] = {
 #ifdef KOREA4
 
 static KeySym Korea4Keymap[] = {
-	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
+	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
-	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
+	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
 	XK_F3,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  8*/
-	SunXK_F36,	NoSymbol,	NoSymbol,	NoSymbol,	/*  9*/
+	XK_F11,		NoSymbol,	SunXK_F36,	NoSymbol,	/*  9*/
 	XK_F4,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 10*/
-	SunXK_F37,	NoSymbol,	NoSymbol,	NoSymbol,	/* 11*/
+	XK_F12,		NoSymbol,	SunXK_F37,	NoSymbol,	/* 11*/
 	XK_F5,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 12*/
 	XK_Linefeed,	NoSymbol,	NoSymbol,	NoSymbol,	/* 13*/
 	XK_F6,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 14*/
@@ -2097,12 +2097,12 @@ static KeySym Korea4Keymap[] = {
 	XK_F9,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 18*/
 	XK_Alt_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 19*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 20*/
-	XK_R1,  	XK_R1,  	XK_Pause,	NoSymbol,	/* 21*/
-	XK_R2,  	XK_R2,  	XK_Print,	NoSymbol,	/* 22*/
-	XK_R3,  	XK_R3,  	XK_Scroll_Lock,	XK_Break,	/* 23*/
+	XK_Pause,  	NoSymbol,  	XK_R1,		NoSymbol,	/* 21*/
+	XK_Print,  	NoSymbol,  	XK_R2,		NoSymbol,	/* 22*/
+	XK_Break,	XK_Scroll_Lock,	XK_R3,		NoSymbol,	/* 23*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 24*/
-	XK_L3,  	XK_L3,  	SunXK_Props,	NoSymbol,	/* 25*/
-	XK_L4,  	XK_L4,  	SunXK_Undo,	NoSymbol,	/* 26*/
+	SunXK_Props,  	NoSymbol,  	XK_L3,		NoSymbol,	/* 25*/
+	SunXK_Undo,  	NoSymbol,  	XK_L4,		NoSymbol,	/* 26*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 27*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 28*/
 	XK_Escape,	NoSymbol,	NoSymbol,	NoSymbol,	/* 29*/
@@ -2121,13 +2121,13 @@ static KeySym Korea4Keymap[] = {
 	XK_quoteleft,	XK_asciitilde,	NoSymbol,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
-	XK_R4,  	XK_R4,  	XK_KP_Equal,	NoSymbol,	/* 45*/
-	XK_R5,  	XK_R5,  	XK_KP_Divide,	NoSymbol,	/* 46*/
-	XK_R6,  	XK_R6,  	XK_KP_Multiply,	NoSymbol,	/* 47*/
+	XK_KP_Equal,  	NoSymbol,  	XK_R4,		NoSymbol,	/* 45*/
+	XK_KP_Divide,  	NoSymbol,  	XK_R5,		NoSymbol,	/* 46*/
+	XK_KP_Multiply,	NoSymbol,	XK_R6,		NoSymbol,	/* 47*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
-	XK_L5,  	XK_L5,  	SunXK_Front,	NoSymbol,	/* 49*/
-	XK_Delete,	XK_Delete,	XK_KP_Decimal,	NoSymbol,	/* 50*/
-	XK_L6,  	XK_L6,  	SunXK_Copy,	NoSymbol,	/* 51*/
+	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
+	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
+	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 52*/
 	XK_Tab, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 53*/
 	XK_Q,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 54*/
@@ -2141,15 +2141,15 @@ static KeySym Korea4Keymap[] = {
 	XK_O,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 62*/
 	XK_P,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 63*/
 	XK_bracketleft,	XK_braceleft,	NoSymbol,	NoSymbol,	/* 64*/
-	XK_bracketright,	XK_braceright,	NoSymbol,	NoSymbol,	/* 65*/
+	XK_bracketright,XK_braceright,	NoSymbol,	NoSymbol,	/* 65*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
-	XK_R7,  	XK_R7,  	XK_KP_7,	XK_Home,	/* 68*/
-	XK_Up,  	XK_R8,  	XK_KP_8,	NoSymbol,	/* 69*/
-	XK_R9,  	XK_R9,  	XK_KP_9,	XK_Prior,	/* 70*/
+	XK_KP_Home,  	XK_KP_7,  	XK_R7,		NoSymbol,	/* 68*/
+	XK_KP_Up,  	XK_KP_8,  	XK_R8,		NoSymbol,	/* 69*/
+	XK_KP_Prior,  	XK_KP_9,  	XK_R9,		NoSymbol,	/* 70*/
 	XK_KP_Subtract,	NoSymbol,	NoSymbol,	NoSymbol,	/* 71*/
-	XK_L7,  	XK_L7,  	SunXK_Open,	NoSymbol,	/* 72*/
-	XK_L8,  	XK_L8,  	SunXK_Paste,	NoSymbol,	/* 73*/
+	SunXK_Open,  	NoSymbol,  	XK_L7,		NoSymbol,	/* 72*/
+	SunXK_Paste,  	NoSymbol,  	XK_L8,		NoSymbol,	/* 73*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 74*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 75*/
 	XK_Control_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
@@ -2167,13 +2167,13 @@ static KeySym Korea4Keymap[] = {
 	XK_backslash,	XK_bar, 	XK_brokenbar,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
-	XK_Left,	XK_R10, 	XK_KP_4,	NoSymbol,	/* 91*/
-	XK_R11, 	XK_R11, 	XK_KP_5,	NoSymbol,	/* 92*/
-	XK_Right,	XK_R12, 	XK_KP_6,	NoSymbol,	/* 93*/
-	XK_Insert,	XK_Insert,	XK_KP_0,	NoSymbol,	/* 94*/
-	XK_L9,  	XK_L9,  	SunXK_Find,	NoSymbol,	/* 95*/
+	XK_KP_Left,	XK_KP_4, 	XK_R10,		NoSymbol,	/* 91*/
+	NoSymbol, 	XK_KP_5, 	XK_R11,		NoSymbol,	/* 92*/
+	XK_KP_Right,	XK_KP_6, 	XK_R12,		NoSymbol,	/* 93*/
+	XK_KP_Insert,	XK_KP_0,	NoSymbol,	NoSymbol,	/* 94*/
+	SunXK_Find,  	NoSymbol,  	XK_L9,		NoSymbol,	/* 95*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 96*/
-	XK_L10, 	XK_L10, 	SunXK_Cut,	NoSymbol,	/* 97*/
+	SunXK_Cut, 	NoSymbol, 	XK_L10,		NoSymbol,	/* 97*/
 	XK_Num_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 98*/
 	XK_Shift_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 99*/
 	XK_Z,   	NoSymbol,	NoSymbol,	NoSymbol,	/*100*/
@@ -2188,9 +2188,9 @@ static KeySym Korea4Keymap[] = {
 	XK_slash,	XK_question,	NoSymbol,	NoSymbol,	/*109*/
 	XK_Shift_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*110*/
 	SunXK_AltGraph,	NoSymbol,	NoSymbol,	NoSymbol,	/*111*/
-	XK_R13, 	XK_R13, 	XK_KP_1,	XK_End, 	/*112*/
-	XK_Down,	XK_R14, 	XK_KP_2,	NoSymbol,	/*113*/
-	XK_R15, 	XK_R15, 	XK_KP_3,	XK_Next,	/*114*/
+	XK_KP_End, 	XK_KP_1, 	XK_R13,		NoSymbol, 	/*112*/
+	XK_KP_Down,	XK_KP_2, 	XK_R14,		NoSymbol,	/*113*/
+	XK_KP_Next, 	XK_KP_3, 	XK_R15,		NoSymbol,	/*114*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*115*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*116*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*117*/
@@ -2227,17 +2227,17 @@ static SunModmapRec Korea4Modmap[] = {
 #ifdef KOREA5
 
 static KeySym Korea5Keymap[] = {
-	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
+	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
-	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
+	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
 	XK_F3,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  8*/
-	SunXK_F36,	NoSymbol,	NoSymbol,	NoSymbol,	/*  9*/
+	XK_F11,		NoSymbol,	SunXK_F36,	NoSymbol,	/*  9*/
 	XK_F4,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 10*/
-	SunXK_F37,	NoSymbol,	NoSymbol,	NoSymbol,	/* 11*/
+	XK_F12,		NoSymbol,	SunXK_F37,	NoSymbol,	/* 11*/
 	XK_F5,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 12*/
 	SunXK_AltGraph,	NoSymbol,	NoSymbol,	NoSymbol,	/* 13*/
 	XK_F6,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 14*/
@@ -2247,12 +2247,12 @@ static KeySym Korea5Keymap[] = {
 	XK_F9,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 18*/
 	XK_Alt_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 19*/
 	XK_Up,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 20*/
-	XK_R1,  	XK_R1,  	XK_Pause,	XK_Break,	/* 21*/
-	XK_R2,  	XK_R2,  	XK_Print,	SunXK_Sys_Req,	/* 22*/
-	XK_R3,  	XK_R3,  	XK_Scroll_Lock,	NoSymbol,	/* 23*/
+	XK_Pause,  	NoSymbol,  	XK_Break,	NoSymbol,	/* 21*/
+	XK_Print,  	NoSymbol,  	XK_Sys_Req,	SunXK_Sys_Req,	/* 22*/
+	XK_Scroll_Lock,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 23*/
 	XK_Left,	NoSymbol,	NoSymbol,	NoSymbol,	/* 24*/
-	XK_L3,  	XK_L3,  	SunXK_Props,	NoSymbol,	/* 25*/
-	XK_L4,  	XK_L4,  	SunXK_Undo,	NoSymbol,	/* 26*/
+	SunXK_Props,  	NoSymbol,  	XK_L3,		NoSymbol,	/* 25*/
+	SunXK_Undo,  	NoSymbol,  	XK_L4,		NoSymbol,	/* 26*/
 	XK_Down,	NoSymbol,	NoSymbol,	NoSymbol,	/* 27*/
 	XK_Right,	NoSymbol,	NoSymbol,	NoSymbol,	/* 28*/
 	XK_Escape,	NoSymbol,	NoSymbol,	NoSymbol,	/* 29*/
@@ -2272,12 +2272,12 @@ static KeySym Korea5Keymap[] = {
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 45*/
-	XK_R5,  	XK_R5,  	XK_KP_Divide,	NoSymbol,	/* 46*/
-	XK_R6,  	XK_R6,  	XK_KP_Multiply,	NoSymbol,	/* 47*/
+	XK_KP_Divide,  	NoSymbol,  	NoSymbol,	NoSymbol,	/* 46*/
+	XK_KP_Multiply, NoSymbol,  	NoSymbol,	NoSymbol,	/* 47*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
-	XK_L5,  	XK_L5,  	SunXK_Front,	NoSymbol,	/* 49*/
-	XK_Delete,	XK_Delete,	XK_KP_Decimal,	NoSymbol,	/* 50*/
-	XK_L6,  	XK_L6,  	SunXK_Copy,	NoSymbol,	/* 51*/
+	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
+	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
+	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
 	XK_Home,	NoSymbol,	NoSymbol,	NoSymbol,	/* 52*/
 	XK_Tab, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 53*/
 	XK_Q,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 54*/
@@ -2291,15 +2291,15 @@ static KeySym Korea5Keymap[] = {
 	XK_O,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 62*/
 	XK_P,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 63*/
 	XK_bracketleft,	XK_braceleft,	NoSymbol,	NoSymbol,	/* 64*/
-	XK_bracketright,	XK_braceright,	NoSymbol,	NoSymbol,	/* 65*/
+	XK_bracketright,XK_braceright,	NoSymbol,	NoSymbol,	/* 65*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
-	XK_R7,  	XK_R7,  	XK_KP_7,	XK_Home,	/* 68*/
-	XK_Up,  	XK_R8,  	XK_KP_8,	NoSymbol,	/* 69*/
-	XK_R9,  	XK_R9,  	XK_KP_9,	XK_Prior,	/* 70*/
-	XK_R4,  	XK_R4,  	XK_KP_Subtract,	NoSymbol,	/* 71*/
-	XK_L7,  	XK_L7,  	SunXK_Open,	NoSymbol,	/* 72*/
-	XK_L8,  	XK_L8,  	SunXK_Paste,	NoSymbol,	/* 73*/
+	XK_KP_Home,  	XK_KP_7,  	NoSymbol,	NoSymbol,	/* 68*/
+	XK_KP_Up,  	XK_KP_8,  	NoSymbol,	NoSymbol,	/* 69*/
+	XK_KP_Prior,  	XK_KP_9,  	NoSymbol,	NoSymbol,	/* 70*/
+	XK_KP_Subtract, NoSymbol,  	NoSymbol,	NoSymbol,	/* 71*/
+	SunXK_Open,  	NoSymbol,  	XK_L7,		NoSymbol,	/* 72*/
+	SunXK_Paste,  	NoSymbol,  	XK_L8,		NoSymbol,	/* 73*/
 	XK_End, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 74*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 75*/
 	XK_Control_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
@@ -2317,13 +2317,13 @@ static KeySym Korea5Keymap[] = {
 	XK_backslash,	XK_bar, 	XK_brokenbar,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
-	XK_Left,	XK_R10, 	XK_KP_4,	NoSymbol,	/* 91*/
-	XK_R11, 	XK_R11, 	XK_KP_5,	NoSymbol,	/* 92*/
-	XK_Right,	XK_R12, 	XK_KP_6,	NoSymbol,	/* 93*/
-	XK_Insert,	XK_Insert,	XK_KP_0,	NoSymbol,	/* 94*/
-	XK_L9,  	XK_L9,  	SunXK_Find,	NoSymbol,	/* 95*/
+	XK_KP_Left,	XK_KP_4, 	NoSymbol,	NoSymbol,	/* 91*/
+	NoSymbol, 	XK_KP_5, 	NoSymbol,	NoSymbol,	/* 92*/
+	XK_KP_Right,	XK_KP_6, 	NoSymbol,	NoSymbol,	/* 93*/
+	XK_KP_Insert,	XK_KP_0,	NoSymbol,	NoSymbol,	/* 94*/
+	SunXK_Find,  	NoSymbol,  	XK_L9,		NoSymbol,	/* 95*/
 	XK_Prior,	NoSymbol,	NoSymbol,	NoSymbol,	/* 96*/
-	XK_L10, 	XK_L10, 	SunXK_Cut,	NoSymbol,	/* 97*/
+	SunXK_Cut, 	NoSymbol, 	XK_L10,		NoSymbol,	/* 97*/
 	XK_Num_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 98*/
 	XK_Shift_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 99*/
 	XK_Z,   	NoSymbol,	NoSymbol,	NoSymbol,	/*100*/
@@ -2338,9 +2338,9 @@ static KeySym Korea5Keymap[] = {
 	XK_slash,	XK_question,	NoSymbol,	NoSymbol,	/*109*/
 	XK_Shift_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*110*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*111*/
-	XK_R13, 	XK_R13, 	XK_KP_1,	XK_End, 	/*112*/
-	XK_Down,	XK_R14, 	XK_KP_2,	NoSymbol,	/*113*/
-	XK_R15, 	XK_R15, 	XK_KP_3,	XK_Next,	/*114*/
+	XK_KP_End, 	XK_KP_1, 	NoSymbol,	NoSymbol, 	/*112*/
+	XK_KP_Down,	XK_KP_2, 	NoSymbol,	NoSymbol,	/*113*/
+	XK_KP_Next, 	XK_KP_3, 	NoSymbol,	NoSymbol,	/*114*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*115*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*116*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*117*/
@@ -2377,17 +2377,17 @@ static SunModmapRec Korea5Modmap[] = {
 #ifdef NETHERLAND4
 
 static KeySym Netherland4Keymap[] = {
-	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
+	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
-	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
+	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
 	XK_F3,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  8*/
-	SunXK_F36,	NoSymbol,	NoSymbol,	NoSymbol,	/*  9*/
+	XK_F11,		NoSymbol,	SunXK_F36,	NoSymbol,	/*  9*/
 	XK_F4,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 10*/
-	SunXK_F37,	NoSymbol,	NoSymbol,	NoSymbol,	/* 11*/
+	XK_F12,		NoSymbol,	SunXK_F37,	NoSymbol,	/* 11*/
 	XK_F5,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 12*/
 	XK_Caps_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 13*/
 	XK_F6,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 14*/
@@ -2397,37 +2397,37 @@ static KeySym Netherland4Keymap[] = {
 	XK_F9,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 18*/
 	XK_Alt_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 19*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 20*/
-	XK_R1,  	XK_R1,  	XK_Pause,	NoSymbol,	/* 21*/
-	XK_R2,  	XK_R2,  	XK_Print,	NoSymbol,	/* 22*/
-	XK_R3,  	XK_R3,  	XK_Scroll_Lock,	XK_Break,	/* 23*/
+	XK_Pause,  	NoSymbol,  	XK_R1,		NoSymbol,	/* 21*/
+	XK_Print,  	NoSymbol,  	XK_R2,		NoSymbol,	/* 22*/
+	XK_Break,  	XK_Scroll_Lock,	XK_R3,		NoSymbol,	/* 23*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 24*/
-	XK_L3,  	XK_L3,  	SunXK_Props,	NoSymbol,	/* 25*/
-	XK_L4,  	XK_L4,  	SunXK_Undo,	NoSymbol,	/* 26*/
+	SunXK_Props,  	NoSymbol,  	XK_L3,		NoSymbol,	/* 25*/
+	SunXK_Undo,  	NoSymbol,  	XK_L4,		NoSymbol,	/* 26*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 27*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 28*/
 	XK_Escape,	NoSymbol,	NoSymbol,	NoSymbol,	/* 29*/
 	XK_1,   	XK_exclam,	XK_onesuperior,	NoSymbol,	/* 30*/
 	XK_2,   	XK_quotedbl,	XK_twosuperior,	NoSymbol,	/* 31*/
-	XK_3,   	XK_numbersign,	XK_threesuperior,	NoSymbol,	/* 32*/
+	XK_3,   	XK_numbersign,	XK_threesuperior,NoSymbol,	/* 32*/
 	XK_4,   	XK_dollar,	XK_onequarter,	NoSymbol,	/* 33*/
 	XK_5,   	XK_percent,	XK_onehalf,	NoSymbol,	/* 34*/
-	XK_6,   	XK_ampersand,	XK_threequarters,	NoSymbol,	/* 35*/
+	XK_6,   	XK_ampersand,	XK_threequarters,NoSymbol,	/* 35*/
 	XK_7,   	XK_underscore,	XK_sterling,	NoSymbol,	/* 36*/
 	XK_8,   	XK_parenleft,	XK_braceleft,	NoSymbol,	/* 37*/
 	XK_9,   	XK_parenright,	XK_braceright,	NoSymbol,	/* 38*/
 	XK_0,   	XK_quoteright,	XK_quoteleft,	NoSymbol,	/* 39*/
 	XK_slash,	XK_question,	NoSymbol,	NoSymbol,	/* 40*/
-	XK_degree,	SunXK_FA_Tilde,	SunXK_FA_Cedilla,	NoSymbol,	/* 41*/
+	XK_degree,	SunXK_FA_Tilde,	SunXK_FA_Cedilla,NoSymbol,	/* 41*/
 	XK_less,	XK_greater,	NoSymbol,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
-	XK_R4,  	XK_R4,  	XK_KP_Equal,	NoSymbol,	/* 45*/
-	XK_R5,  	XK_R5,  	XK_KP_Divide,	NoSymbol,	/* 46*/
-	XK_R6,  	XK_R6,  	XK_KP_Multiply,	NoSymbol,	/* 47*/
+	XK_KP_Equal,  	NoSymbol,  	XK_R4,		NoSymbol,	/* 45*/
+	XK_KP_Divide,  	NoSymbol,  	XK_R5,		NoSymbol,	/* 46*/
+	XK_KP_Multiply, NoSymbol,  	XK_R6,		NoSymbol,	/* 47*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
-	XK_L5,  	XK_L5,  	SunXK_Front,	NoSymbol,	/* 49*/
-	XK_Delete,	XK_Delete,	XK_KP_Decimal,	NoSymbol,	/* 50*/
-	XK_L6,  	XK_L6,  	SunXK_Copy,	NoSymbol,	/* 51*/
+	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
+	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
+	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 52*/
 	XK_Tab, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 53*/
 	XK_Q,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 54*/
@@ -2440,16 +2440,16 @@ static KeySym Netherland4Keymap[] = {
 	XK_I,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 61*/
 	XK_O,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 62*/
 	XK_P,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 63*/
-	SunXK_FA_Diaeresis,	XK_asciicircum,	SunXK_FA_Circum,	NoSymbol,	/* 64*/
+	SunXK_FA_Diaeresis,XK_asciicircum,SunXK_FA_Circum,NoSymbol,	/* 64*/
 	XK_asterisk,	XK_brokenbar,	XK_asciitilde,	NoSymbol,	/* 65*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
-	XK_R7,  	XK_R7,  	XK_KP_7,	XK_Home,	/* 68*/
-	XK_Up,  	XK_R8,  	XK_KP_8,	NoSymbol,	/* 69*/
-	XK_R9,  	XK_R9,  	XK_KP_9,	XK_Prior,	/* 70*/
+	XK_KP_Home,  	XK_KP_7,  	XK_R7,		NoSymbol,	/* 68*/
+	XK_KP_Up,  	XK_KP_8,  	XK_R8,		NoSymbol,	/* 69*/
+	XK_KP_Prior,  	XK_KP_9,  	XK_R9,		NoSymbol,	/* 70*/
 	XK_KP_Subtract,	NoSymbol,	NoSymbol,	NoSymbol,	/* 71*/
-	XK_L7,  	XK_L7,  	SunXK_Open,	NoSymbol,	/* 72*/
-	XK_L8,  	XK_L8,  	SunXK_Paste,	NoSymbol,	/* 73*/
+	SunXK_Open,  	NoSymbol,  	XK_L7,		NoSymbol,	/* 72*/
+	SunXK_Paste,  	NoSymbol,  	XK_L8,		NoSymbol,	/* 73*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 74*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 75*/
 	XK_Control_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
@@ -2467,17 +2467,17 @@ static KeySym Netherland4Keymap[] = {
 	XK_at,  	XK_section,	XK_notsign,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
-	XK_Left,	XK_R10, 	XK_KP_4,	NoSymbol,	/* 91*/
-	XK_R11, 	XK_R11, 	XK_KP_5,	NoSymbol,	/* 92*/
-	XK_Right,	XK_R12, 	XK_KP_6,	NoSymbol,	/* 93*/
-	XK_Insert,	XK_Insert,	XK_KP_0,	NoSymbol,	/* 94*/
-	XK_L9,  	XK_L9,  	SunXK_Find,	NoSymbol,	/* 95*/
+	XK_KP_Left,	XK_KP_4, 	XK_R10,		NoSymbol,	/* 91*/
+	NoSymbol, 	XK_KP_5, 	XK_R11,		NoSymbol,	/* 92*/
+	XK_KP_Right,	XK_KP_6, 	XK_R12,		NoSymbol,	/* 93*/
+	XK_KP_Insert,	XK_KP_0,	NoSymbol,	NoSymbol,	/* 94*/
+	SunXK_Find,  	NoSymbol,  	XK_L9,		NoSymbol,	/* 95*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 96*/
-	XK_L10, 	XK_L10, 	SunXK_Cut,	NoSymbol,	/* 97*/
+	SunXK_Cut, 	NoSymbol, 	XK_L10,		NoSymbol,	/* 97*/
 	XK_Num_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 98*/
 	XK_Shift_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 99*/
-	XK_Z,   	NoSymbol,	XK_guillemotleft,	NoSymbol,	/*100*/
-	XK_X,   	NoSymbol,	XK_guillemotright,	NoSymbol,	/*101*/
+	XK_Z,   	NoSymbol,	XK_guillemotleft,NoSymbol,	/*100*/
+	XK_X,   	NoSymbol,	XK_guillemotright,NoSymbol,	/*101*/
 	XK_C,   	NoSymbol,	XK_cent,	NoSymbol,	/*102*/
 	XK_V,   	NoSymbol,	NoSymbol,	NoSymbol,	/*103*/
 	XK_B,   	NoSymbol,	NoSymbol,	NoSymbol,	/*104*/
@@ -2488,9 +2488,9 @@ static KeySym Netherland4Keymap[] = {
 	XK_minus,	XK_equal,	NoSymbol,	NoSymbol,	/*109*/
 	XK_Shift_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*110*/
 	XK_Linefeed,	NoSymbol,	NoSymbol,	NoSymbol,	/*111*/
-	XK_R13, 	XK_R13, 	XK_KP_1,	XK_End, 	/*112*/
-	XK_Down,	XK_R14, 	XK_KP_2,	NoSymbol,	/*113*/
-	XK_R15, 	XK_R15, 	XK_KP_3,	XK_Next,	/*114*/
+	XK_KP_End, 	XK_KP_1, 	XK_R13,		NoSymbol, 	/*112*/
+	XK_KP_Down,	XK_KP_2, 	XK_R14,		NoSymbol,	/*113*/
+	XK_KP_Next, 	XK_KP_3, 	XK_R15,		NoSymbol,	/*114*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*115*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*116*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*117*/
@@ -2500,7 +2500,7 @@ static KeySym Netherland4Keymap[] = {
 	XK_space,	NoSymbol,	NoSymbol,	NoSymbol,	/*121*/
 	XK_Meta_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*122*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*123*/
-	XK_bracketright,	XK_bracketleft,	NoSymbol,	NoSymbol,	/*124*/
+	XK_bracketright,XK_bracketleft,	NoSymbol,	NoSymbol,	/*124*/
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
@@ -2527,17 +2527,17 @@ static SunModmapRec Netherland4Modmap[] = {
 #ifdef NETHERLAND5
 
 static KeySym Netherland5Keymap[] = {
-	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
+	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
-	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
+	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
 	XK_F3,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  8*/
-	SunXK_F36,	NoSymbol,	NoSymbol,	NoSymbol,	/*  9*/
+	XK_F11,		NoSymbol,	SunXK_F36,	NoSymbol,	/*  9*/
 	XK_F4,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 10*/
-	SunXK_F37,	NoSymbol,	NoSymbol,	NoSymbol,	/* 11*/
+	XK_F12,		NoSymbol,	SunXK_F37,	NoSymbol,	/* 11*/
 	XK_F5,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 12*/
 	SunXK_AltGraph,	NoSymbol,	NoSymbol,	NoSymbol,	/* 13*/
 	XK_F6,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 14*/
@@ -2547,37 +2547,37 @@ static KeySym Netherland5Keymap[] = {
 	XK_F9,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 18*/
 	XK_Alt_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 19*/
 	XK_Up,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 20*/
-	XK_R1,  	XK_R1,  	XK_Pause,	XK_Break,	/* 21*/
-	XK_R2,  	XK_R2,  	XK_Print,	SunXK_Sys_Req,	/* 22*/
-	XK_R3,  	XK_R3,  	XK_Scroll_Lock,	NoSymbol,	/* 23*/
+	XK_Pause,  	NoSymbol,  	XK_Break,	NoSymbol,	/* 21*/
+	XK_Print,  	NoSymbol,  	XK_Sys_Req,	SunXK_Sys_Req,	/* 22*/
+	XK_Scroll_Lock,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 23*/
 	XK_Left,	NoSymbol,	NoSymbol,	NoSymbol,	/* 24*/
-	XK_L3,  	XK_L3,  	SunXK_Props,	NoSymbol,	/* 25*/
-	XK_L4,  	XK_L4,  	SunXK_Undo,	NoSymbol,	/* 26*/
+	SunXK_Props,  	NoSymbol,  	XK_L3,		NoSymbol,	/* 25*/
+	SunXK_Undo,  	NoSymbol,  	XK_L4,		NoSymbol,	/* 26*/
 	XK_Down,	NoSymbol,	NoSymbol,	NoSymbol,	/* 27*/
 	XK_Right,	NoSymbol,	NoSymbol,	NoSymbol,	/* 28*/
 	XK_Escape,	NoSymbol,	NoSymbol,	NoSymbol,	/* 29*/
 	XK_1,   	XK_exclam,	XK_onesuperior,	NoSymbol,	/* 30*/
 	XK_2,   	XK_quotedbl,	XK_twosuperior,	NoSymbol,	/* 31*/
-	XK_3,   	XK_numbersign,	XK_threesuperior,	NoSymbol,	/* 32*/
+	XK_3,   	XK_numbersign,	XK_threesuperior,NoSymbol,	/* 32*/
 	XK_4,   	XK_dollar,	XK_onequarter,	NoSymbol,	/* 33*/
 	XK_5,   	XK_percent,	XK_onehalf,	NoSymbol,	/* 34*/
-	XK_6,   	XK_ampersand,	XK_threequarters,	NoSymbol,	/* 35*/
+	XK_6,   	XK_ampersand,	XK_threequarters,NoSymbol,	/* 35*/
 	XK_7,   	XK_underscore,	XK_sterling,	NoSymbol,	/* 36*/
 	XK_8,   	XK_parenleft,	XK_braceleft,	NoSymbol,	/* 37*/
 	XK_9,   	XK_parenright,	XK_braceright,	NoSymbol,	/* 38*/
 	XK_0,   	XK_quoteright,	XK_quoteleft,	NoSymbol,	/* 39*/
 	XK_slash,	XK_question,	XK_backslash,	NoSymbol,	/* 40*/
-	XK_degree,	SunXK_FA_Tilde,	SunXK_FA_Cedilla,	NoSymbol,	/* 41*/
+	XK_degree,	SunXK_FA_Tilde,	SunXK_FA_Cedilla,NoSymbol,	/* 41*/
 	XK_at,  	XK_section,	XK_notsign,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 45*/
-	XK_R5,  	XK_R5,  	XK_KP_Divide,	NoSymbol,	/* 46*/
-	XK_R6,  	XK_R6,  	XK_KP_Multiply,	NoSymbol,	/* 47*/
+	XK_KP_Divide,  	NoSymbol,  	NoSymbol,	NoSymbol,	/* 46*/
+	XK_KP_Multiply,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 47*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
-	XK_L5,  	XK_L5,  	SunXK_Front,	NoSymbol,	/* 49*/
-	XK_Delete,	XK_Delete,	XK_KP_Separator,	NoSymbol,	/* 50*/
-	XK_L6,  	XK_L6,  	SunXK_Copy,	NoSymbol,	/* 51*/
+	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
+	XK_KP_Delete,	XK_KP_Separator,NoSymbol,	NoSymbol,	/* 50*/
+	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
 	XK_Home,	NoSymbol,	NoSymbol,	NoSymbol,	/* 52*/
 	XK_Tab, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 53*/
 	XK_Q,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 54*/
@@ -2590,16 +2590,16 @@ static KeySym Netherland5Keymap[] = {
 	XK_I,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 61*/
 	XK_O,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 62*/
 	XK_P,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 63*/
-	SunXK_FA_Diaeresis,	SunXK_FA_Circum,	NoSymbol,	NoSymbol,	/* 64*/
+	SunXK_FA_Diaeresis,SunXK_FA_Circum,NoSymbol,	NoSymbol,	/* 64*/
 	XK_asterisk,	XK_bar, 	XK_asciitilde,	NoSymbol,	/* 65*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
-	XK_R7,  	XK_R7,  	XK_KP_7,	XK_Home,	/* 68*/
-	XK_Up,  	XK_R8,  	XK_KP_8,	NoSymbol,	/* 69*/
-	XK_R9,  	XK_R9,  	XK_KP_9,	XK_Prior,	/* 70*/
-	XK_R4,  	XK_R4,  	XK_KP_Subtract,	NoSymbol,	/* 71*/
-	XK_L7,  	XK_L7,  	SunXK_Open,	NoSymbol,	/* 72*/
-	XK_L8,  	XK_L8,  	SunXK_Paste,	NoSymbol,	/* 73*/
+	XK_KP_Home,  	XK_KP_7,  	NoSymbol,	NoSymbol,	/* 68*/
+	XK_KP_Up,  	XK_KP_8,  	NoSymbol,	NoSymbol,	/* 69*/
+	XK_KP_Prior,  	XK_KP_9,  	NoSymbol,	NoSymbol,	/* 70*/
+	XK_KP_Subtract,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 71*/
+	SunXK_Open,  	NoSymbol,  	XK_L7,		NoSymbol,	/* 72*/
+	SunXK_Paste,  	NoSymbol,  	XK_L8,		NoSymbol,	/* 73*/
 	XK_End, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 74*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 75*/
 	XK_Control_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
@@ -2617,30 +2617,30 @@ static KeySym Netherland5Keymap[] = {
 	XK_less,	XK_greater,	XK_asciicircum,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
-	XK_Left,	XK_R10, 	XK_KP_4,	NoSymbol,	/* 91*/
-	XK_R11, 	XK_R11, 	XK_KP_5,	NoSymbol,	/* 92*/
-	XK_Right,	XK_R12, 	XK_KP_6,	NoSymbol,	/* 93*/
-	XK_Insert,	XK_Insert,	XK_KP_0,	NoSymbol,	/* 94*/
-	XK_L9,  	XK_L9,  	SunXK_Find,	NoSymbol,	/* 95*/
+	XK_KP_Left,	XK_KP_4, 	NoSymbol,	NoSymbol,	/* 91*/
+	NoSymbol, 	XK_KP_5, 	NoSymbol,	NoSymbol,	/* 92*/
+	XK_KP_Right,	XK_KP_6, 	NoSymbol,	NoSymbol,	/* 93*/
+	XK_KP_Insert,	XK_KP_0,	NoSymbol,	NoSymbol,	/* 94*/
+	SunXK_Find,  	NoSymbol,  	XK_L9,		NoSymbol,	/* 95*/
 	XK_Prior,	NoSymbol,	NoSymbol,	NoSymbol,	/* 96*/
-	XK_L10, 	XK_L10, 	SunXK_Cut,	NoSymbol,	/* 97*/
+	SunXK_Cut, 	NoSymbol, 	XK_L10,		NoSymbol,	/* 97*/
 	XK_Num_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 98*/
 	XK_Shift_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 99*/
-	XK_z,   	XK_Z,   	XK_guillemotleft,	NoSymbol,	/*100*/
-	XK_x,   	XK_X,   	XK_guillemotright,	NoSymbol,	/*101*/
+	XK_z,   	XK_Z,   	XK_guillemotleft,NoSymbol,	/*100*/
+	XK_x,   	XK_X,   	XK_guillemotright,NoSymbol,	/*101*/
 	XK_c,   	XK_C,   	XK_cent,	NoSymbol,	/*102*/
 	XK_V,   	NoSymbol,	NoSymbol,	NoSymbol,	/*103*/
 	XK_B,   	NoSymbol,	NoSymbol,	NoSymbol,	/*104*/
 	XK_N,   	NoSymbol,	NoSymbol,	NoSymbol,	/*105*/
 	XK_m,   	XK_M,   	XK_mu,  	NoSymbol,	/*106*/
 	XK_comma,	XK_semicolon,	NoSymbol,	NoSymbol,	/*107*/
-	XK_period,	XK_colon,	XK_periodcentered,	NoSymbol,	/*108*/
+	XK_period,	XK_colon,	XK_periodcentered,NoSymbol,	/*108*/
 	XK_minus,	XK_equal,	NoSymbol,	NoSymbol,	/*109*/
 	XK_Shift_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*110*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*111*/
-	XK_R13, 	XK_R13, 	XK_KP_1,	XK_End, 	/*112*/
-	XK_Down,	XK_R14, 	XK_KP_2,	NoSymbol,	/*113*/
-	XK_R15, 	XK_R15, 	XK_KP_3,	XK_Next,	/*114*/
+	XK_KP_End, 	XK_KP_1, 	NoSymbol,	NoSymbol, 	/*112*/
+	XK_KP_Down,	XK_KP_2, 	NoSymbol,	NoSymbol,	/*113*/
+	XK_KP_Next, 	XK_KP_3, 	NoSymbol,	NoSymbol,	/*114*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*115*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*116*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*117*/
@@ -2650,7 +2650,7 @@ static KeySym Netherland5Keymap[] = {
 	XK_space,	NoSymbol,	NoSymbol,	NoSymbol,	/*121*/
 	XK_Meta_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*122*/
 	XK_Next,	NoSymbol,	NoSymbol,	NoSymbol,	/*123*/
-	XK_bracketright,	XK_bracketleft,	XK_brokenbar,	NoSymbol,	/*124*/
+	XK_bracketright,XK_bracketleft,	XK_brokenbar,	NoSymbol,	/*124*/
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
@@ -2677,17 +2677,17 @@ static SunModmapRec Netherland5Modmap[] = {
 #ifdef NORWAY4
 
 static KeySym Norway4Keymap[] = {
-	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
+	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
-	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
+	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
 	XK_F3,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  8*/
-	SunXK_F36,	NoSymbol,	NoSymbol,	NoSymbol,	/*  9*/
+	XK_F11,		NoSymbol,	SunXK_F36,	NoSymbol,	/*  9*/
 	XK_F4,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 10*/
-	SunXK_F37,	NoSymbol,	NoSymbol,	NoSymbol,	/* 11*/
+	XK_F12,		NoSymbol,	SunXK_F37,	NoSymbol,	/* 11*/
 	XK_F5,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 12*/
 	SunXK_AltGraph,	NoSymbol,	NoSymbol,	NoSymbol,	/* 13*/
 	XK_F6,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 14*/
@@ -2697,12 +2697,12 @@ static KeySym Norway4Keymap[] = {
 	XK_F9,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 18*/
 	XK_Alt_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 19*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 20*/
-	XK_R1,  	XK_R1,  	XK_Pause,	NoSymbol,	/* 21*/
-	XK_R2,  	XK_R2,  	XK_Print,	NoSymbol,	/* 22*/
-	XK_R3,  	XK_R3,  	XK_Scroll_Lock,	XK_Break,	/* 23*/
+	XK_Pause,  	NoSymbol,  	XK_R1,		NoSymbol,	/* 21*/
+	XK_Print,  	NoSymbol,  	XK_R2,		NoSymbol,	/* 22*/
+	XK_Break,  	XK_Scroll_Lock,	XK_R3,		NoSymbol,	/* 23*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 24*/
-	XK_L3,  	XK_L3,  	SunXK_Props,	NoSymbol,	/* 25*/
-	XK_L4,  	XK_L4,  	SunXK_Undo,	NoSymbol,	/* 26*/
+	SunXK_Props,  	NoSymbol,  	XK_L3,		NoSymbol,	/* 25*/
+	SunXK_Undo,  	NoSymbol,  	XK_L4,		NoSymbol,	/* 26*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 27*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 28*/
 	XK_Escape,	NoSymbol,	NoSymbol,	NoSymbol,	/* 29*/
@@ -2714,20 +2714,20 @@ static KeySym Norway4Keymap[] = {
 	XK_6,   	XK_ampersand,	NoSymbol,	NoSymbol,	/* 35*/
 	XK_7,   	XK_slash,	XK_braceleft,	NoSymbol,	/* 36*/
 	XK_8,   	XK_parenleft,	XK_bracketleft,	NoSymbol,	/* 37*/
-	XK_9,   	XK_parenright,	XK_bracketright,	NoSymbol,	/* 38*/
+	XK_9,   	XK_parenright,	XK_bracketright,NoSymbol,	/* 38*/
 	XK_0,   	XK_equal,	XK_braceright,	NoSymbol,	/* 39*/
 	XK_plus,	XK_question,	NoSymbol,	NoSymbol,	/* 40*/
 	XK_backslash,	SunXK_FA_Grave,	SunXK_FA_Acute,	NoSymbol,	/* 41*/
 	XK_quoteright,	XK_asterisk,	XK_quoteleft,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
-	XK_R4,  	XK_R4,  	XK_KP_Equal,	NoSymbol,	/* 45*/
-	XK_R5,  	XK_R5,  	XK_KP_Divide,	NoSymbol,	/* 46*/
-	XK_R6,  	XK_R6,  	XK_KP_Multiply,	NoSymbol,	/* 47*/
+	XK_KP_Equal,  	NoSymbol,  	XK_R4,		NoSymbol,	/* 45*/
+	XK_KP_Divide,  	NoSymbol,  	XK_R5,		NoSymbol,	/* 46*/
+	XK_KP_Multiply,	NoSymbol,  	XK_R6,		NoSymbol,	/* 47*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
-	XK_L5,  	XK_L5,  	SunXK_Front,	NoSymbol,	/* 49*/
-	XK_Delete,	XK_Delete,	XK_KP_Decimal,	NoSymbol,	/* 50*/
-	XK_L6,  	XK_L6,  	SunXK_Copy,	NoSymbol,	/* 51*/
+	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
+	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
+	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 52*/
 	XK_Tab, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 53*/
 	XK_Q,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 54*/
@@ -2741,15 +2741,15 @@ static KeySym Norway4Keymap[] = {
 	XK_O,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 62*/
 	XK_P,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 63*/
 	XK_Aring,	NoSymbol,	NoSymbol,	NoSymbol,	/* 64*/
-	SunXK_FA_Diaeresis,	SunXK_FA_Circum,	SunXK_FA_Tilde,	NoSymbol,	/* 65*/
+	SunXK_FA_Diaeresis,SunXK_FA_Circum,SunXK_FA_Tilde,NoSymbol,	/* 65*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
-	XK_R7,  	XK_R7,  	XK_KP_7,	XK_Home,	/* 68*/
-	XK_Up,  	XK_R8,  	XK_KP_8,	NoSymbol,	/* 69*/
-	XK_R9,  	XK_R9,  	XK_KP_9,	XK_Prior,	/* 70*/
+	XK_KP_Home,  	XK_KP_7,  	XK_R7,		NoSymbol,	/* 68*/
+	XK_KP_Up,  	XK_KP_8,  	XK_R8,		NoSymbol,	/* 69*/
+	XK_KP_Prior,  	XK_KP_9,  	XK_R9,		NoSymbol,	/* 70*/
 	XK_KP_Subtract,	NoSymbol,	NoSymbol,	NoSymbol,	/* 71*/
-	XK_L7,  	XK_L7,  	SunXK_Open,	NoSymbol,	/* 72*/
-	XK_L8,  	XK_L8,  	SunXK_Paste,	NoSymbol,	/* 73*/
+	SunXK_Open,  	NoSymbol,  	XK_L7,		NoSymbol,	/* 72*/
+	SunXK_Paste,  	NoSymbol,  	XK_L8,		NoSymbol,	/* 73*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 74*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 75*/
 	XK_Caps_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
@@ -2767,13 +2767,13 @@ static KeySym Norway4Keymap[] = {
 	XK_bar, 	XK_section,	NoSymbol,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
-	XK_Left,	XK_R10, 	XK_KP_4,	NoSymbol,	/* 91*/
-	XK_R11, 	XK_R11, 	XK_KP_5,	NoSymbol,	/* 92*/
-	XK_Right,	XK_R12, 	XK_KP_6,	NoSymbol,	/* 93*/
-	XK_Insert,	XK_Insert,	XK_KP_0,	NoSymbol,	/* 94*/
-	XK_L9,  	XK_L9,  	SunXK_Find,	NoSymbol,	/* 95*/
+	XK_KP_Left,	XK_KP_4, 	XK_R10,		NoSymbol,	/* 91*/
+	NoSymbol, 	XK_KP_5, 	XK_R11,		NoSymbol,	/* 92*/
+	XK_KP_Right,	XK_KP_6, 	XK_R12,		NoSymbol,	/* 93*/
+	XK_KP_Insert,	XK_KP_0,	NoSymbol,	NoSymbol,	/* 94*/
+	SunXK_Find,  	NoSymbol,  	XK_L9,		NoSymbol,	/* 95*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 96*/
-	XK_L10, 	XK_L10, 	SunXK_Cut,	NoSymbol,	/* 97*/
+	SunXK_Cut, 	NoSymbol, 	XK_L10,		NoSymbol,	/* 97*/
 	XK_Num_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 98*/
 	XK_Shift_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 99*/
 	XK_Z,   	NoSymbol,	NoSymbol,	NoSymbol,	/*100*/
@@ -2788,9 +2788,9 @@ static KeySym Norway4Keymap[] = {
 	XK_minus,	XK_underscore,	NoSymbol,	NoSymbol,	/*109*/
 	XK_Shift_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*110*/
 	XK_Linefeed,	NoSymbol,	NoSymbol,	NoSymbol,	/*111*/
-	XK_R13, 	XK_R13, 	XK_KP_1,	XK_End, 	/*112*/
-	XK_Down,	XK_R14, 	XK_KP_2,	NoSymbol,	/*113*/
-	XK_R15, 	XK_R15, 	XK_KP_3,	XK_Next,	/*114*/
+	XK_KP_End, 	XK_KP_1, 	XK_R13,		NoSymbol, 	/*112*/
+	XK_KP_Down,	XK_KP_2, 	XK_R14,		NoSymbol,	/*113*/
+	XK_KP_Next, 	XK_KP_3, 	XK_R15,		NoSymbol,	/*114*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*115*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*116*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*117*/
@@ -2827,17 +2827,17 @@ static SunModmapRec Norway4Modmap[] = {
 #ifdef NORWAY5
 
 static KeySym Norway5Keymap[] = {
-	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
+	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
-	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
+	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
 	XK_F3,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  8*/
-	SunXK_F36,	NoSymbol,	NoSymbol,	NoSymbol,	/*  9*/
+	XK_F11,		NoSymbol,	SunXK_F36,	NoSymbol,	/*  9*/
 	XK_F4,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 10*/
-	SunXK_F37,	NoSymbol,	NoSymbol,	NoSymbol,	/* 11*/
+	XK_F12,		NoSymbol,	SunXK_F37,	NoSymbol,	/* 11*/
 	XK_F5,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 12*/
 	SunXK_AltGraph,	NoSymbol,	NoSymbol,	NoSymbol,	/* 13*/
 	XK_F6,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 14*/
@@ -2847,12 +2847,12 @@ static KeySym Norway5Keymap[] = {
 	XK_F9,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 18*/
 	XK_Alt_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 19*/
 	XK_Up,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 20*/
-	XK_R1,  	XK_R1,  	XK_Pause,	XK_Break,	/* 21*/
-	XK_R2,  	XK_R2,  	XK_Print,	SunXK_Sys_Req,	/* 22*/
-	XK_R3,  	XK_R3,  	XK_Scroll_Lock,	NoSymbol,	/* 23*/
+	XK_Pause,  	NoSymbol,  	XK_Break,	NoSymbol,	/* 21*/
+	XK_Print,  	NoSymbol,  	XK_Sys_Req,	SunXK_Sys_Req,	/* 22*/
+	XK_Scroll_Lock,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 23*/
 	XK_Left,	NoSymbol,	NoSymbol,	NoSymbol,	/* 24*/
-	XK_L3,  	XK_L3,  	SunXK_Props,	NoSymbol,	/* 25*/
-	XK_L4,  	XK_L4,  	SunXK_Undo,	NoSymbol,	/* 26*/
+	SunXK_Props,  	NoSymbol,  	XK_L3,		NoSymbol,	/* 25*/
+	SunXK_Undo,  	NoSymbol,  	XK_L4,		NoSymbol,	/* 26*/
 	XK_Down,	NoSymbol,	NoSymbol,	NoSymbol,	/* 27*/
 	XK_Right,	NoSymbol,	NoSymbol,	NoSymbol,	/* 28*/
 	XK_Escape,	NoSymbol,	NoSymbol,	NoSymbol,	/* 29*/
@@ -2864,7 +2864,7 @@ static KeySym Norway5Keymap[] = {
 	XK_6,   	XK_ampersand,	XK_asciicircum,	NoSymbol,	/* 35*/
 	XK_7,   	XK_slash,	XK_braceleft,	NoSymbol,	/* 36*/
 	XK_8,   	XK_parenleft,	XK_bracketleft,	NoSymbol,	/* 37*/
-	XK_9,   	XK_parenright,	XK_bracketright,	NoSymbol,	/* 38*/
+	XK_9,   	XK_parenright,	XK_bracketright,NoSymbol,	/* 38*/
 	XK_0,   	XK_equal,	XK_braceright,	NoSymbol,	/* 39*/
 	XK_plus,	XK_question,	NoSymbol,	NoSymbol,	/* 40*/
 	XK_backslash,	SunXK_FA_Grave,	SunXK_FA_Acute,	NoSymbol,	/* 41*/
@@ -2872,12 +2872,12 @@ static KeySym Norway5Keymap[] = {
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 45*/
-	XK_R5,  	XK_R5,  	XK_KP_Divide,	NoSymbol,	/* 46*/
-	XK_R6,  	XK_R6,  	XK_KP_Multiply,	NoSymbol,	/* 47*/
+	XK_KP_Divide,  	NoSymbol,  	NoSymbol,	NoSymbol,	/* 46*/
+	XK_KP_Multiply, NoSymbol,  	NoSymbol,	NoSymbol,	/* 47*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
-	XK_L5,  	XK_L5,  	SunXK_Front,	NoSymbol,	/* 49*/
-	XK_Delete,	XK_Delete,	XK_KP_Separator,	NoSymbol,	/* 50*/
-	XK_L6,  	XK_L6,  	SunXK_Copy,	NoSymbol,	/* 51*/
+	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
+	XK_KP_Delete,	XK_KP_Separator,NoSymbol,	NoSymbol,	/* 50*/
+	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
 	XK_Home,	NoSymbol,	NoSymbol,	NoSymbol,	/* 52*/
 	XK_Tab, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 53*/
 	XK_Q,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 54*/
@@ -2891,15 +2891,15 @@ static KeySym Norway5Keymap[] = {
 	XK_O,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 62*/
 	XK_P,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 63*/
 	XK_Aring,	NoSymbol,	NoSymbol,	NoSymbol,	/* 64*/
-	SunXK_FA_Diaeresis,	SunXK_FA_Circum,	SunXK_FA_Tilde,	NoSymbol,	/* 65*/
+	SunXK_FA_Diaeresis,SunXK_FA_Circum,SunXK_FA_Tilde,NoSymbol,	/* 65*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
-	XK_R7,  	XK_R7,  	XK_KP_7,	XK_Home,	/* 68*/
-	XK_Up,  	XK_R8,  	XK_KP_8,	NoSymbol,	/* 69*/
-	XK_R9,  	XK_R9,  	XK_KP_9,	XK_Prior,	/* 70*/
-	XK_R4,  	XK_R4,  	XK_KP_Subtract,	NoSymbol,	/* 71*/
-	XK_L7,  	XK_L7,  	SunXK_Open,	NoSymbol,	/* 72*/
-	XK_L8,  	XK_L8,  	SunXK_Paste,	NoSymbol,	/* 73*/
+	XK_KP_Home,  	XK_KP_7,  	NoSymbol,	NoSymbol,	/* 68*/
+	XK_KP_Up,  	XK_KP_8,  	NoSymbol,	NoSymbol,	/* 69*/
+	XK_KP_Prior,  	XK_KP_9,  	NoSymbol,	NoSymbol,	/* 70*/
+	XK_KP_Subtract,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 71*/
+	SunXK_Open,  	NoSymbol,  	XK_L7,		NoSymbol,	/* 72*/
+	SunXK_Paste,  	NoSymbol,  	XK_L8,		NoSymbol,	/* 73*/
 	XK_End, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 74*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 75*/
 	XK_Control_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
@@ -2917,13 +2917,13 @@ static KeySym Norway5Keymap[] = {
 	XK_quoteright,	XK_asterisk,	XK_quoteleft,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
-	XK_Left,	XK_R10, 	XK_KP_4,	NoSymbol,	/* 91*/
-	XK_R11, 	XK_R11, 	XK_KP_5,	NoSymbol,	/* 92*/
-	XK_Right,	XK_R12, 	XK_KP_6,	NoSymbol,	/* 93*/
-	XK_Insert,	XK_Insert,	XK_KP_0,	NoSymbol,	/* 94*/
-	XK_L9,  	XK_L9,  	SunXK_Find,	NoSymbol,	/* 95*/
+	XK_KP_Left,	XK_KP_4, 	NoSymbol,	NoSymbol,	/* 91*/
+	NoSymbol, 	XK_KP_5, 	NoSymbol,	NoSymbol,	/* 92*/
+	XK_KP_Right,	XK_KP_6, 	NoSymbol,	NoSymbol,	/* 93*/
+	XK_KP_Insert,	XK_KP_0,	NoSymbol,	NoSymbol,	/* 94*/
+	SunXK_Find,  	NoSymbol,  	XK_L9,		NoSymbol,	/* 95*/
 	XK_Prior,	NoSymbol,	NoSymbol,	NoSymbol,	/* 96*/
-	XK_L10, 	XK_L10, 	SunXK_Cut,	NoSymbol,	/* 97*/
+	SunXK_Cut, 	NoSymbol, 	XK_L10,		NoSymbol,	/* 97*/
 	XK_Num_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 98*/
 	XK_Shift_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 99*/
 	XK_Z,   	NoSymbol,	NoSymbol,	NoSymbol,	/*100*/
@@ -2938,9 +2938,9 @@ static KeySym Norway5Keymap[] = {
 	XK_minus,	XK_underscore,	NoSymbol,	NoSymbol,	/*109*/
 	XK_Shift_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*110*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*111*/
-	XK_R13, 	XK_R13, 	XK_KP_1,	XK_End, 	/*112*/
-	XK_Down,	XK_R14, 	XK_KP_2,	NoSymbol,	/*113*/
-	XK_R15, 	XK_R15, 	XK_KP_3,	XK_Next,	/*114*/
+	XK_KP_End, 	XK_KP_1, 	NoSymbol,	NoSymbol, 	/*112*/
+	XK_KP_Down,	XK_KP_2, 	NoSymbol,	NoSymbol,	/*113*/
+	XK_KP_Next, 	XK_KP_3, 	NoSymbol,	NoSymbol,	/*114*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*115*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*116*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*117*/
@@ -2977,32 +2977,32 @@ static SunModmapRec Norway5Modmap[] = {
 #ifdef PORTUGAL4
 
 static KeySym Portugal4Keymap[] = {
-	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
+	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
-	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
+	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
 	XK_F3,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  8*/
-	SunXK_F36,	NoSymbol,	NoSymbol,	NoSymbol,	/*  9*/
+	XK_F11,		NoSymbol,	SunXK_F36,	NoSymbol,	/*  9*/
 	XK_F4,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 10*/
-	SunXK_F37,	NoSymbol,	NoSymbol,	NoSymbol,	/* 11*/
+	XK_F12,		NoSymbol,	SunXK_F37,	NoSymbol,	/* 11*/
 	XK_F5,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 12*/
 	SunXK_AltGraph,	NoSymbol,	NoSymbol,	NoSymbol,	/* 13*/
 	XK_F6,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 14*/
-	XK_bracketright,	XK_braceright,	XK_guillemotright,	NoSymbol,	/* 15*/
+	XK_bracketright,XK_braceright,	XK_guillemotright,NoSymbol,	/* 15*/
 	XK_F7,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 16*/
 	XK_F8,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 17*/
 	XK_F9,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 18*/
 	XK_Alt_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 19*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 20*/
-	XK_R1,  	XK_R1,  	XK_Pause,	NoSymbol,	/* 21*/
-	XK_R2,  	XK_R2,  	XK_Print,	NoSymbol,	/* 22*/
-	XK_R3,  	XK_R3,  	XK_Scroll_Lock,	XK_Break,	/* 23*/
+	XK_Pause,  	NoSymbol,  	XK_R1,		NoSymbol,	/* 21*/
+	XK_Print,  	NoSymbol,  	XK_R2,		NoSymbol,	/* 22*/
+	XK_Break,  	XK_Scroll_Lock,	XK_R3,		XK_Break,	/* 23*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 24*/
-	XK_L3,  	XK_L3,  	SunXK_Props,	NoSymbol,	/* 25*/
-	XK_L4,  	XK_L4,  	SunXK_Undo,	NoSymbol,	/* 26*/
+	SunXK_Props,  	NoSymbol,  	XK_L3,		NoSymbol,	/* 25*/
+	SunXK_Undo,  	NoSymbol,  	XK_L4,		NoSymbol,	/* 26*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 27*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 28*/
 	XK_Escape,	NoSymbol,	NoSymbol,	NoSymbol,	/* 29*/
@@ -3017,17 +3017,17 @@ static KeySym Portugal4Keymap[] = {
 	XK_9,   	XK_parenright,	XK_backslash,	NoSymbol,	/* 38*/
 	XK_0,   	XK_equal,	XK_bar, 	NoSymbol,	/* 39*/
 	XK_quoteright,	XK_question,	XK_quoteleft,	NoSymbol,	/* 40*/
-	XK_exclamdown,	XK_questiondown,	NoSymbol,	NoSymbol,	/* 41*/
-	SunXK_FA_Tilde,	SunXK_FA_Circum,	XK_asciicircum,	NoSymbol,	/* 42*/
+	XK_exclamdown,	XK_questiondown,NoSymbol,	NoSymbol,	/* 41*/
+	SunXK_FA_Tilde,	SunXK_FA_Circum,XK_asciicircum,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
-	XK_R4,  	XK_R4,  	XK_KP_Equal,	NoSymbol,	/* 45*/
-	XK_R5,  	XK_R5,  	XK_KP_Divide,	NoSymbol,	/* 46*/
-	XK_R6,  	XK_R6,  	XK_KP_Multiply,	NoSymbol,	/* 47*/
+	XK_KP_Equal,  	NoSymbol,  	XK_R4,		NoSymbol,	/* 45*/
+	XK_KP_Divide,  	NoSymbol,  	XK_R5,		NoSymbol,	/* 46*/
+	XK_KP_Multiply,	NoSymbol,  	XK_R6,		NoSymbol,	/* 47*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
-	XK_L5,  	XK_L5,  	SunXK_Front,	NoSymbol,	/* 49*/
-	XK_Delete,	XK_Delete,	XK_KP_Decimal,	NoSymbol,	/* 50*/
-	XK_L6,  	XK_L6,  	SunXK_Copy,	NoSymbol,	/* 51*/
+	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
+	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
+	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 52*/
 	XK_Tab, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 53*/
 	XK_Q,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 54*/
@@ -3040,16 +3040,16 @@ static KeySym Portugal4Keymap[] = {
 	XK_I,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 61*/
 	XK_O,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 62*/
 	XK_P,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 63*/
-	SunXK_FA_Diaeresis,	XK_asterisk,	XK_plus,	NoSymbol,	/* 64*/
+	SunXK_FA_Diaeresis,XK_asterisk,	XK_plus,	NoSymbol,	/* 64*/
 	SunXK_FA_Acute,	SunXK_FA_Grave,	XK_asciitilde,	NoSymbol,	/* 65*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
-	XK_R7,  	XK_R7,  	XK_KP_7,	XK_Home,	/* 68*/
-	XK_Up,  	XK_R8,  	XK_KP_8,	NoSymbol,	/* 69*/
-	XK_R9,  	XK_R9,  	XK_KP_9,	XK_Prior,	/* 70*/
+	XK_KP_Home,  	XK_KP_7,  	XK_R7,		NoSymbol,	/* 68*/
+	XK_KP_Up,  	XK_KP_8,  	XK_R8,		NoSymbol,	/* 69*/
+	XK_KP_Prior,  	XK_KP_9,  	XK_R9,		NoSymbol,	/* 70*/
 	XK_KP_Subtract,	NoSymbol,	NoSymbol,	NoSymbol,	/* 71*/
-	XK_L7,  	XK_L7,  	SunXK_Open,	NoSymbol,	/* 72*/
-	XK_L8,  	XK_L8,  	SunXK_Paste,	NoSymbol,	/* 73*/
+	SunXK_Open,  	NoSymbol,  	XK_L7,		NoSymbol,	/* 72*/
+	SunXK_Paste,  	NoSymbol,  	XK_L8,		NoSymbol,	/* 73*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 74*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 75*/
 	XK_Caps_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
@@ -3064,16 +3064,16 @@ static KeySym Portugal4Keymap[] = {
 	XK_L,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 85*/
 	XK_Ccedilla,	NoSymbol,	NoSymbol,	NoSymbol,	/* 86*/
 	XK_masculine,	XK_ordfeminine,	NoSymbol,	NoSymbol,	/* 87*/
-	XK_bracketleft,	XK_braceleft,	XK_guillemotleft,	NoSymbol,	/* 88*/
+	XK_bracketleft,	XK_braceleft,	XK_guillemotleft,NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
-	XK_Left,	XK_R10, 	XK_KP_4,	NoSymbol,	/* 91*/
-	XK_R11, 	XK_R11, 	XK_KP_5,	NoSymbol,	/* 92*/
-	XK_Right,	XK_R12, 	XK_KP_6,	NoSymbol,	/* 93*/
-	XK_Insert,	XK_Insert,	XK_KP_0,	NoSymbol,	/* 94*/
-	XK_L9,  	XK_L9,  	SunXK_Find,	NoSymbol,	/* 95*/
+	XK_KP_Left,	XK_KP_4, 	XK_R10,		NoSymbol,	/* 91*/
+	NoSymbol, 	XK_KP_5, 	XK_R11,		NoSymbol,	/* 92*/
+	XK_KP_Right,	XK_KP_6, 	XK_R12,		NoSymbol,	/* 93*/
+	XK_KP_Insert,	XK_KP_0,	NoSymbol,	NoSymbol,	/* 94*/
+	SunXK_Find,  	NoSymbol,  	XK_L9,		NoSymbol,	/* 95*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 96*/
-	XK_L10, 	XK_L10, 	SunXK_Cut,	NoSymbol,	/* 97*/
+	SunXK_Cut, 	NoSymbol, 	XK_L10,		NoSymbol,	/* 97*/
 	XK_Num_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 98*/
 	XK_Shift_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 99*/
 	XK_Z,   	NoSymbol,	NoSymbol,	NoSymbol,	/*100*/
@@ -3088,9 +3088,9 @@ static KeySym Portugal4Keymap[] = {
 	XK_minus,	XK_underscore,	NoSymbol,	NoSymbol,	/*109*/
 	XK_Shift_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*110*/
 	XK_Linefeed,	NoSymbol,	NoSymbol,	NoSymbol,	/*111*/
-	XK_R13, 	XK_R13, 	XK_KP_1,	XK_End, 	/*112*/
-	XK_Down,	XK_R14, 	XK_KP_2,	NoSymbol,	/*113*/
-	XK_R15, 	XK_R15, 	XK_KP_3,	XK_Next,	/*114*/
+	XK_KP_End, 	XK_KP_1, 	XK_R13,		NoSymbol, 	/*112*/
+	XK_KP_Down,	XK_KP_2, 	XK_R14,		NoSymbol,	/*113*/
+	XK_KP_Next, 	XK_KP_3, 	XK_R15,		NoSymbol,	/*114*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*115*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*116*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*117*/
@@ -3127,17 +3127,17 @@ static SunModmapRec Portugal4Modmap[] = {
 #ifdef PORTUGAL5
 
 static KeySym Portugal5Keymap[] = {
-	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
+	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
-	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
+	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
 	XK_F3,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  8*/
-	SunXK_F36,	NoSymbol,	NoSymbol,	NoSymbol,	/*  9*/
+	XK_F11,		NoSymbol,	SunXK_F36,	NoSymbol,	/*  9*/
 	XK_F4,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 10*/
-	SunXK_F37,	NoSymbol,	NoSymbol,	NoSymbol,	/* 11*/
+	XK_F12,		NoSymbol,	SunXK_F37,	NoSymbol,	/* 11*/
 	XK_F5,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 12*/
 	SunXK_AltGraph,	NoSymbol,	NoSymbol,	NoSymbol,	/* 13*/
 	XK_F6,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 14*/
@@ -3147,12 +3147,12 @@ static KeySym Portugal5Keymap[] = {
 	XK_F9,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 18*/
 	XK_Alt_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 19*/
 	XK_Up,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 20*/
-	XK_R1,  	XK_R1,  	XK_Pause,	XK_Break,	/* 21*/
-	XK_R2,  	XK_R2,  	XK_Print,	SunXK_Sys_Req,	/* 22*/
-	XK_R3,  	XK_R3,  	XK_Scroll_Lock,	NoSymbol,	/* 23*/
+	XK_Pause,  	NoSymbol,  	XK_Break,	NoSymbol,	/* 21*/
+	XK_Print,  	NoSymbol,  	XK_Sys_Req,	SunXK_Sys_Req,	/* 22*/
+	XK_Scroll_Lock,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 23*/
 	XK_Left,	NoSymbol,	NoSymbol,	NoSymbol,	/* 24*/
-	XK_L3,  	XK_L3,  	SunXK_Props,	NoSymbol,	/* 25*/
-	XK_L4,  	XK_L4,  	SunXK_Undo,	NoSymbol,	/* 26*/
+	SunXK_Props,  	NoSymbol,  	XK_L3,		NoSymbol,	/* 25*/
+	SunXK_Undo,  	NoSymbol,  	XK_L4,		NoSymbol,	/* 26*/
 	XK_Down,	NoSymbol,	NoSymbol,	NoSymbol,	/* 27*/
 	XK_Right,	NoSymbol,	NoSymbol,	NoSymbol,	/* 28*/
 	XK_Escape,	NoSymbol,	NoSymbol,	NoSymbol,	/* 29*/
@@ -3164,20 +3164,20 @@ static KeySym Portugal5Keymap[] = {
 	XK_6,   	XK_ampersand,	XK_asciicircum,	NoSymbol,	/* 35*/
 	XK_7,   	XK_slash,	XK_braceleft,	NoSymbol,	/* 36*/
 	XK_8,   	XK_parenleft,	XK_bracketleft,	NoSymbol,	/* 37*/
-	XK_9,   	XK_parenright,	XK_bracketright,	NoSymbol,	/* 38*/
+	XK_9,   	XK_parenright,	XK_bracketright,NoSymbol,	/* 38*/
 	XK_0,   	XK_equal,	XK_braceright,	NoSymbol,	/* 39*/
 	XK_quoteright,	XK_question,	XK_quoteleft,	NoSymbol,	/* 40*/
-	XK_guillemotleft,	XK_guillemotright,	NoSymbol,	NoSymbol,	/* 41*/
+	XK_guillemotleft,XK_guillemotright,NoSymbol,	NoSymbol,	/* 41*/
 	XK_backslash,	XK_bar, 	NoSymbol,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 45*/
-	XK_R5,  	XK_R5,  	XK_KP_Divide,	NoSymbol,	/* 46*/
-	XK_R6,  	XK_R6,  	XK_KP_Multiply,	NoSymbol,	/* 47*/
+	XK_KP_Divide,  	NoSymbol,  	NoSymbol,	NoSymbol,	/* 46*/
+	XK_KP_Multiply,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 47*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
-	XK_L5,  	XK_L5,  	SunXK_Front,	NoSymbol,	/* 49*/
-	XK_Delete,	XK_Delete,	XK_KP_Decimal,	NoSymbol,	/* 50*/
-	XK_L6,  	XK_L6,  	SunXK_Copy,	NoSymbol,	/* 51*/
+	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
+	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
+	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
 	XK_Home,	NoSymbol,	NoSymbol,	NoSymbol,	/* 52*/
 	XK_Tab, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 53*/
 	XK_Q,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 54*/
@@ -3190,16 +3190,16 @@ static KeySym Portugal5Keymap[] = {
 	XK_I,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 61*/
 	XK_O,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 62*/
 	XK_P,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 63*/
-	XK_plus,	XK_asterisk,	SunXK_FA_Diaeresis,	NoSymbol,	/* 64*/
+	XK_plus,	XK_asterisk,	SunXK_FA_Diaeresis,NoSymbol,	/* 64*/
 	SunXK_FA_Acute,	SunXK_FA_Grave,	NoSymbol,	NoSymbol,	/* 65*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
-	XK_R7,  	XK_R7,  	XK_KP_7,	XK_Home,	/* 68*/
-	XK_Up,  	XK_R8,  	XK_KP_8,	NoSymbol,	/* 69*/
-	XK_R9,  	XK_R9,  	XK_KP_9,	XK_Prior,	/* 70*/
-	XK_R4,  	XK_R4,  	XK_KP_Subtract,	NoSymbol,	/* 71*/
-	XK_L7,  	XK_L7,  	SunXK_Open,	NoSymbol,	/* 72*/
-	XK_L8,  	XK_L8,  	SunXK_Paste,	NoSymbol,	/* 73*/
+	XK_KP_Home,  	XK_KP_7,  	NoSymbol,	NoSymbol,	/* 68*/
+	XK_KP_Up,  	XK_KP_8,  	NoSymbol,	NoSymbol,	/* 69*/
+	XK_KP_Prior,  	XK_KP_9,  	NoSymbol,	NoSymbol,	/* 70*/
+	XK_KP_Subtract,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 71*/
+	SunXK_Open,  	NoSymbol,  	XK_L7,		NoSymbol,	/* 72*/
+	SunXK_Paste,  	NoSymbol,  	XK_L8,		NoSymbol,	/* 73*/
 	XK_End, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 74*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 75*/
 	XK_Control_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
@@ -3214,16 +3214,16 @@ static KeySym Portugal5Keymap[] = {
 	XK_L,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 85*/
 	XK_Ccedilla,	NoSymbol,	NoSymbol,	NoSymbol,	/* 86*/
 	XK_masculine,	XK_ordfeminine,	NoSymbol,	NoSymbol,	/* 87*/
-	SunXK_FA_Tilde,	SunXK_FA_Circum,	NoSymbol,	NoSymbol,	/* 88*/
+	SunXK_FA_Tilde,	SunXK_FA_Circum,NoSymbol,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
-	XK_Left,	XK_R10, 	XK_KP_4,	NoSymbol,	/* 91*/
-	XK_R11, 	XK_R11, 	XK_KP_5,	NoSymbol,	/* 92*/
-	XK_Right,	XK_R12, 	XK_KP_6,	NoSymbol,	/* 93*/
-	XK_Insert,	XK_Insert,	XK_KP_0,	NoSymbol,	/* 94*/
-	XK_L9,  	XK_L9,  	SunXK_Find,	NoSymbol,	/* 95*/
+	XK_KP_Left,	XK_KP_4, 	NoSymbol,	NoSymbol,	/* 91*/
+	NoSymbol, 	XK_KP_5, 	NoSymbol,	NoSymbol,	/* 92*/
+	XK_KP_Right,	XK_KP_6, 	NoSymbol,	NoSymbol,	/* 93*/
+	XK_KP_Insert,	XK_KP_0,	NoSymbol,	NoSymbol,	/* 94*/
+	SunXK_Find,  	NoSymbol,  	XK_L9,		NoSymbol,	/* 95*/
 	XK_Prior,	NoSymbol,	NoSymbol,	NoSymbol,	/* 96*/
-	XK_L10, 	XK_L10, 	SunXK_Cut,	NoSymbol,	/* 97*/
+	SunXK_Cut, 	NoSymbol, 	XK_L10,		NoSymbol,	/* 97*/
 	XK_Num_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 98*/
 	XK_Shift_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 99*/
 	XK_Z,   	NoSymbol,	NoSymbol,	NoSymbol,	/*100*/
@@ -3238,9 +3238,9 @@ static KeySym Portugal5Keymap[] = {
 	XK_minus,	XK_underscore,	NoSymbol,	NoSymbol,	/*109*/
 	XK_Shift_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*110*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*111*/
-	XK_R13, 	XK_R13, 	XK_KP_1,	XK_End, 	/*112*/
-	XK_Down,	XK_R14, 	XK_KP_2,	NoSymbol,	/*113*/
-	XK_R15, 	XK_R15, 	XK_KP_3,	XK_Next,	/*114*/
+	XK_KP_End, 	XK_KP_1, 	NoSymbol,	NoSymbol, 	/*112*/
+	XK_KP_Down,	XK_KP_2, 	NoSymbol,	NoSymbol,	/*113*/
+	XK_KP_Next, 	XK_KP_3, 	NoSymbol,	NoSymbol,	/*114*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*115*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*116*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*117*/
@@ -3277,17 +3277,17 @@ static SunModmapRec Portugal5Modmap[] = {
 #ifdef SPAIN5
 
 static KeySym Spain5Keymap[] = {
-	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
+	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
-	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
+	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
 	XK_F3,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  8*/
-	SunXK_F36,	NoSymbol,	NoSymbol,	NoSymbol,	/*  9*/
+	XK_F11,		NoSymbol,	SunXK_F36,	NoSymbol,	/*  9*/
 	XK_F4,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 10*/
-	SunXK_F37,	NoSymbol,	NoSymbol,	NoSymbol,	/* 11*/
+	XK_F12,		NoSymbol,	SunXK_F37,	NoSymbol,	/* 11*/
 	XK_F5,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 12*/
 	SunXK_AltGraph,	NoSymbol,	NoSymbol,	NoSymbol,	/* 13*/
 	XK_F6,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 14*/
@@ -3297,18 +3297,18 @@ static KeySym Spain5Keymap[] = {
 	XK_F9,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 18*/
 	XK_Alt_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 19*/
 	XK_Up,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 20*/
-	XK_R1,  	XK_R1,  	XK_Pause,	XK_Break,	/* 21*/
-	XK_R2,  	XK_R2,  	XK_Print,	SunXK_Sys_Req,	/* 22*/
-	XK_R3,  	XK_R3,  	XK_Scroll_Lock,	NoSymbol,	/* 23*/
+	XK_Pause,  	NoSymbol,  	XK_Break,	NoSymbol,	/* 21*/
+	XK_Print,  	NoSymbol,  	XK_Sys_Req,	SunXK_Sys_Req,	/* 22*/
+	XK_Scroll_Lock,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 23*/
 	XK_Left,	NoSymbol,	NoSymbol,	NoSymbol,	/* 24*/
-	XK_L3,  	XK_L3,  	SunXK_Props,	NoSymbol,	/* 25*/
-	XK_L4,  	XK_L4,  	SunXK_Undo,	NoSymbol,	/* 26*/
+	SunXK_Props,  	NoSymbol,  	XK_L3,		NoSymbol,	/* 25*/
+	SunXK_Undo,  	NoSymbol,  	XK_L4,		NoSymbol,	/* 26*/
 	XK_Down,	NoSymbol,	NoSymbol,	NoSymbol,	/* 27*/
 	XK_Right,	NoSymbol,	NoSymbol,	NoSymbol,	/* 28*/
 	XK_Escape,	NoSymbol,	NoSymbol,	NoSymbol,	/* 29*/
 	XK_1,   	XK_exclam,	XK_bar, 	NoSymbol,	/* 30*/
 	XK_2,   	XK_quotedbl,	XK_at,  	NoSymbol,	/* 31*/
-	XK_3,   	XK_periodcentered,	XK_numbersign,	NoSymbol,	/* 32*/
+	XK_3,   	XK_periodcentered,XK_numbersign,NoSymbol,	/* 32*/
 	XK_4,   	XK_dollar,	XK_asciicircum,	NoSymbol,	/* 33*/
 	XK_5,   	XK_percent,	XK_asciitilde,	NoSymbol,	/* 34*/
 	XK_6,   	XK_ampersand,	XK_notsign,	NoSymbol,	/* 35*/
@@ -3317,17 +3317,17 @@ static KeySym Spain5Keymap[] = {
 	XK_9,   	XK_parenright,	NoSymbol,	NoSymbol,	/* 38*/
 	XK_0,   	XK_equal,	NoSymbol,	NoSymbol,	/* 39*/
 	XK_quoteright,	XK_question,	XK_quoteleft,	NoSymbol,	/* 40*/
-	XK_exclamdown,	XK_questiondown,	NoSymbol,	NoSymbol,	/* 41*/
+	XK_exclamdown,	XK_questiondown,NoSymbol,	NoSymbol,	/* 41*/
 	XK_masculine,	XK_ordfeminine,	XK_backslash,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 45*/
-	XK_R5,  	XK_R5,  	XK_KP_Divide,	NoSymbol,	/* 46*/
-	XK_R6,  	XK_R6,  	XK_KP_Multiply,	NoSymbol,	/* 47*/
+	XK_KP_Divide,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 46*/
+	XK_KP_Multiply,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 47*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
-	XK_L5,  	XK_L5,  	SunXK_Front,	NoSymbol,	/* 49*/
-	XK_Delete,	XK_Delete,	XK_KP_Decimal,	NoSymbol,	/* 50*/
-	XK_L6,  	XK_L6,  	SunXK_Copy,	NoSymbol,	/* 51*/
+	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
+	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
+	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
 	XK_Home,	NoSymbol,	NoSymbol,	NoSymbol,	/* 52*/
 	XK_Tab, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 53*/
 	XK_Q,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 54*/
@@ -3340,16 +3340,16 @@ static KeySym Spain5Keymap[] = {
 	XK_I,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 61*/
 	XK_O,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 62*/
 	XK_P,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 63*/
-	SunXK_FA_Grave,	SunXK_FA_Circum,	XK_bracketleft,	NoSymbol,	/* 64*/
-	XK_plus,	XK_asterisk,	XK_bracketright,	NoSymbol,	/* 65*/
+	SunXK_FA_Grave,	SunXK_FA_Circum,XK_bracketleft,	NoSymbol,	/* 64*/
+	XK_plus,	XK_asterisk,	XK_bracketright,NoSymbol,	/* 65*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
-	XK_R7,  	XK_R7,  	XK_KP_7,	XK_Home,	/* 68*/
-	XK_Up,  	XK_R8,  	XK_KP_8,	NoSymbol,	/* 69*/
-	XK_R9,  	XK_R9,  	XK_KP_9,	XK_Prior,	/* 70*/
-	XK_R4,  	XK_R4,  	XK_KP_Subtract,	NoSymbol,	/* 71*/
-	XK_L7,  	XK_L7,  	SunXK_Open,	NoSymbol,	/* 72*/
-	XK_L8,  	XK_L8,  	SunXK_Paste,	NoSymbol,	/* 73*/
+	XK_KP_Home,  	XK_KP_7,  	NoSymbol,	NoSymbol,	/* 68*/
+	XK_KP_Up,  	XK_KP_8,  	NoSymbol,	NoSymbol,	/* 69*/
+	XK_KP_Prior,  	XK_KP_9,  	NoSymbol,	NoSymbol,	/* 70*/
+	XK_KP_Subtract,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 71*/
+	SunXK_Open,  	NoSymbol,  	XK_L7,		NoSymbol,	/* 72*/
+	SunXK_Paste,  	NoSymbol,  	XK_L8,		NoSymbol,	/* 73*/
 	XK_End, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 74*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 75*/
 	XK_Control_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
@@ -3363,17 +3363,17 @@ static KeySym Spain5Keymap[] = {
 	XK_K,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 84*/
 	XK_L,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 85*/
 	XK_Ntilde,	NoSymbol,	NoSymbol,	NoSymbol,	/* 86*/
-	SunXK_FA_Acute,	SunXK_FA_Diaeresis,	XK_braceleft,	NoSymbol,	/* 87*/
+	SunXK_FA_Acute,	SunXK_FA_Diaeresis,XK_braceleft,NoSymbol,	/* 87*/
 	XK_ccedilla,	XK_Ccedilla,	XK_braceright,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
-	XK_Left,	XK_R10, 	XK_KP_4,	NoSymbol,	/* 91*/
-	XK_R11, 	XK_R11, 	XK_KP_5,	NoSymbol,	/* 92*/
-	XK_Right,	XK_R12, 	XK_KP_6,	NoSymbol,	/* 93*/
-	XK_Insert,	XK_Insert,	XK_KP_0,	NoSymbol,	/* 94*/
-	XK_L9,  	XK_L9,  	SunXK_Find,	NoSymbol,	/* 95*/
+	XK_KP_Left,	XK_KP_4, 	NoSymbol,	NoSymbol,	/* 91*/
+	NoSymbol, 	XK_KP_5, 	NoSymbol,	NoSymbol,	/* 92*/
+	XK_KP_Right,	XK_KP_6, 	NoSymbol,	NoSymbol,	/* 93*/
+	XK_KP_Insert,	XK_KP_0,	NoSymbol,	NoSymbol,	/* 94*/
+	SunXK_Find,  	NoSymbol,  	XK_L9,		NoSymbol,	/* 95*/
 	XK_Prior,	NoSymbol,	NoSymbol,	NoSymbol,	/* 96*/
-	XK_L10, 	XK_L10, 	SunXK_Cut,	NoSymbol,	/* 97*/
+	SunXK_Cut, 	NoSymbol, 	XK_L10,		NoSymbol,	/* 97*/
 	XK_Num_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 98*/
 	XK_Shift_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 99*/
 	XK_Z,   	NoSymbol,	NoSymbol,	NoSymbol,	/*100*/
@@ -3388,9 +3388,9 @@ static KeySym Spain5Keymap[] = {
 	XK_minus,	XK_underscore,	NoSymbol,	NoSymbol,	/*109*/
 	XK_Shift_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*110*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*111*/
-	XK_R13, 	XK_R13, 	XK_KP_1,	XK_End, 	/*112*/
-	XK_Down,	XK_R14, 	XK_KP_2,	NoSymbol,	/*113*/
-	XK_R15, 	XK_R15, 	XK_KP_3,	XK_Next,	/*114*/
+	XK_KP_End, 	XK_KP_1, 	NoSymbol,	NoSymbol, 	/*112*/
+	XK_KP_Down,	XK_KP_2, 	NoSymbol,	NoSymbol,	/*113*/
+	XK_KP_Next, 	XK_KP_3, 	NoSymbol,	NoSymbol,	/*114*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*115*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*116*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*117*/
@@ -3427,38 +3427,38 @@ static SunModmapRec Spain5Modmap[] = {
 #ifdef SPAINLATAM4
 
 static KeySym SpainLatAm4Keymap[] = {
-	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
+	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
-	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
+	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
 	XK_F3,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  8*/
-	SunXK_F36,	NoSymbol,	NoSymbol,	NoSymbol,	/*  9*/
+	XK_F11,		NoSymbol,	SunXK_F36,	NoSymbol,	/*  9*/
 	XK_F4,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 10*/
-	SunXK_F37,	NoSymbol,	NoSymbol,	NoSymbol,	/* 11*/
+	XK_F12,		NoSymbol,	SunXK_F37,	NoSymbol,	/* 11*/
 	XK_F5,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 12*/
 	SunXK_AltGraph,	NoSymbol,	NoSymbol,	NoSymbol,	/* 13*/
 	XK_F6,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 14*/
-	XK_bracketright,	XK_braceright,	XK_guillemotright,	NoSymbol,	/* 15*/
+	XK_bracketright,XK_braceright,	XK_guillemotright,NoSymbol,	/* 15*/
 	XK_F7,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 16*/
 	XK_F8,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 17*/
 	XK_F9,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 18*/
 	XK_Alt_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 19*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 20*/
-	XK_R1,  	XK_R1,  	XK_Pause,	NoSymbol,	/* 21*/
-	XK_R2,  	XK_R2,  	XK_Print,	NoSymbol,	/* 22*/
-	XK_R3,  	XK_R3,  	XK_Scroll_Lock,	XK_Break,	/* 23*/
+	XK_Pause,  	NoSymbol,  	XK_R1,		NoSymbol,	/* 21*/
+	XK_Print,  	NoSymbol,  	XK_R2,		NoSymbol,	/* 22*/
+	XK_Scroll_Lock,	NoSymbol,  	XK_R3,		XK_Break,	/* 23*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 24*/
-	XK_L3,  	XK_L3,  	SunXK_Props,	NoSymbol,	/* 25*/
-	XK_L4,  	XK_L4,  	SunXK_Undo,	NoSymbol,	/* 26*/
+	SunXK_Props,  	NoSymbol,  	XK_L3,		NoSymbol,	/* 25*/
+	SunXK_Undo,  	NoSymbol,  	XK_L4,		NoSymbol,	/* 26*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 27*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 28*/
 	XK_Escape,	NoSymbol,	NoSymbol,	NoSymbol,	/* 29*/
 	XK_1,   	XK_exclam,	NoSymbol,	NoSymbol,	/* 30*/
 	XK_2,   	XK_quotedbl,	XK_at,  	NoSymbol,	/* 31*/
-	XK_3,   	XK_periodcentered,	XK_numbersign,	NoSymbol,	/* 32*/
+	XK_3,   	XK_periodcentered,XK_numbersign,NoSymbol,	/* 32*/
 	XK_4,   	XK_dollar,	NoSymbol,	NoSymbol,	/* 33*/
 	XK_5,   	XK_percent,	XK_degree,	NoSymbol,	/* 34*/
 	XK_6,   	XK_ampersand,	XK_notsign,	NoSymbol,	/* 35*/
@@ -3467,17 +3467,17 @@ static KeySym SpainLatAm4Keymap[] = {
 	XK_9,   	XK_parenright,	XK_backslash,	NoSymbol,	/* 38*/
 	XK_0,   	XK_equal,	XK_bar, 	NoSymbol,	/* 39*/
 	XK_quoteright,	XK_question,	XK_quoteleft,	NoSymbol,	/* 40*/
-	XK_exclamdown,	XK_questiondown,	NoSymbol,	NoSymbol,	/* 41*/
+	XK_exclamdown,	XK_questiondown,NoSymbol,	NoSymbol,	/* 41*/
 	XK_Ccedilla,	NoSymbol,	NoSymbol,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
-	XK_R4,  	XK_R4,  	XK_KP_Equal,	NoSymbol,	/* 45*/
-	XK_R5,  	XK_R5,  	XK_KP_Divide,	NoSymbol,	/* 46*/
-	XK_R6,  	XK_R6,  	XK_KP_Multiply,	NoSymbol,	/* 47*/
+	XK_KP_Equal,  	NoSymbol,  	XK_R4,		NoSymbol,	/* 45*/
+	XK_KP_Divide,  	NoSymbol,  	XK_R5,		NoSymbol,	/* 46*/
+	XK_KP_Multiply,	NoSymbol,  	XK_R6,		NoSymbol,	/* 47*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
-	XK_L5,  	XK_L5,  	SunXK_Front,	NoSymbol,	/* 49*/
-	XK_Delete,	XK_Delete,	XK_KP_Decimal,	NoSymbol,	/* 50*/
-	XK_L6,  	XK_L6,  	SunXK_Copy,	NoSymbol,	/* 51*/
+	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
+	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
+	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 52*/
 	XK_Tab, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 53*/
 	XK_Q,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 54*/
@@ -3490,16 +3490,16 @@ static KeySym SpainLatAm4Keymap[] = {
 	XK_I,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 61*/
 	XK_O,   	NoSymbol,	XK_masculine,	NoSymbol,	/* 62*/
 	XK_P,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 63*/
-	SunXK_FA_Grave,	SunXK_FA_Circum,	XK_asciicircum,	NoSymbol,	/* 64*/
+	SunXK_FA_Grave,	SunXK_FA_Circum,XK_asciicircum,	NoSymbol,	/* 64*/
 	XK_plus,	XK_asterisk,	XK_asciitilde,	NoSymbol,	/* 65*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
-	XK_R7,  	XK_R7,  	XK_KP_7,	XK_Home,	/* 68*/
-	XK_Up,  	XK_R8,  	XK_KP_8,	NoSymbol,	/* 69*/
-	XK_R9,  	XK_R9,  	XK_KP_9,	XK_Prior,	/* 70*/
+	XK_KP_Home,  	XK_KP_7,  	XK_R7,		NoSymbol,	/* 68*/
+	XK_KP_Up,  	XK_KP_8,  	XK_R8,		NoSymbol,	/* 69*/
+	XK_KP_Prior,  	XK_KP_9,  	XK_R9,		NoSymbol,	/* 70*/
 	XK_KP_Subtract,	NoSymbol,	NoSymbol,	NoSymbol,	/* 71*/
-	XK_L7,  	XK_L7,  	SunXK_Open,	NoSymbol,	/* 72*/
-	XK_L8,  	XK_L8,  	SunXK_Paste,	NoSymbol,	/* 73*/
+	SunXK_Open,  	NoSymbol,  	XK_L7,		NoSymbol,	/* 72*/
+	SunXK_Paste,  	NoSymbol,  	XK_L8,		NoSymbol,	/* 73*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 74*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 75*/
 	XK_Caps_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
@@ -3513,17 +3513,17 @@ static KeySym SpainLatAm4Keymap[] = {
 	XK_K,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 84*/
 	XK_L,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 85*/
 	XK_Ntilde,	NoSymbol,	NoSymbol,	NoSymbol,	/* 86*/
-	SunXK_FA_Acute,	SunXK_FA_Diaeresis,	NoSymbol,	NoSymbol,	/* 87*/
-	XK_bracketleft,	XK_braceleft,	XK_guillemotleft,	NoSymbol,	/* 88*/
+	SunXK_FA_Acute,	SunXK_FA_Diaeresis,NoSymbol,	NoSymbol,	/* 87*/
+	XK_bracketleft,	XK_braceleft,	XK_guillemotleft,NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
-	XK_Left,	XK_R10, 	XK_KP_4,	NoSymbol,	/* 91*/
-	XK_R11, 	XK_R11, 	XK_KP_5,	NoSymbol,	/* 92*/
-	XK_Right,	XK_R12, 	XK_KP_6,	NoSymbol,	/* 93*/
-	XK_Insert,	XK_Insert,	XK_KP_0,	NoSymbol,	/* 94*/
-	XK_L9,  	XK_L9,  	SunXK_Find,	NoSymbol,	/* 95*/
+	XK_KP_Left,	XK_KP_4, 	XK_R10,		NoSymbol,	/* 91*/
+	NoSymbol, 	XK_KP_5, 	XK_R11,		NoSymbol,	/* 92*/
+	XK_KP_Right,	XK_KP_6, 	XK_R12,		NoSymbol,	/* 93*/
+	XK_KP_Insert,	XK_KP_0,	NoSymbol,	NoSymbol,	/* 94*/
+	SunXK_Find,  	NoSymbol,  	XK_L9,		NoSymbol,	/* 95*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 96*/
-	XK_L10, 	XK_L10, 	SunXK_Cut,	NoSymbol,	/* 97*/
+	SunXK_Cut, 	NoSymbol, 	XK_L10,		NoSymbol,	/* 97*/
 	XK_Num_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 98*/
 	XK_Shift_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 99*/
 	XK_Z,   	NoSymbol,	NoSymbol,	NoSymbol,	/*100*/
@@ -3538,9 +3538,9 @@ static KeySym SpainLatAm4Keymap[] = {
 	XK_minus,	XK_underscore,	NoSymbol,	NoSymbol,	/*109*/
 	XK_Shift_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*110*/
 	XK_Linefeed,	NoSymbol,	NoSymbol,	NoSymbol,	/*111*/
-	XK_R13, 	XK_R13, 	XK_KP_1,	XK_End, 	/*112*/
-	XK_Down,	XK_R14, 	XK_KP_2,	NoSymbol,	/*113*/
-	XK_R15, 	XK_R15, 	XK_KP_3,	XK_Next,	/*114*/
+	XK_KP_End, 	XK_KP_1, 	XK_R13,		NoSymbol, 	/*112*/
+	XK_KP_Down,	XK_KP_2, 	XK_R14,		NoSymbol,	/*113*/
+	XK_KP_Next, 	XK_KP_3, 	XK_R15,		NoSymbol,	/*114*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*115*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*116*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*117*/
@@ -3577,17 +3577,17 @@ static SunModmapRec SpainLatAm4Modmap[] = {
 #ifdef SWEDEN5
 
 static KeySym Sweden5Keymap[] = {
-	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
+	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
-	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
+	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
 	XK_F3,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  8*/
-	SunXK_F36,	NoSymbol,	NoSymbol,	NoSymbol,	/*  9*/
+	XK_F11,		NoSymbol,	SunXK_F36,	NoSymbol,	/*  9*/
 	XK_F4,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 10*/
-	SunXK_F37,	NoSymbol,	NoSymbol,	NoSymbol,	/* 11*/
+	XK_F12,		NoSymbol,	SunXK_F37,	NoSymbol,	/* 11*/
 	XK_F5,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 12*/
 	SunXK_AltGraph,	NoSymbol,	NoSymbol,	NoSymbol,	/* 13*/
 	XK_F6,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 14*/
@@ -3597,12 +3597,12 @@ static KeySym Sweden5Keymap[] = {
 	XK_F9,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 18*/
 	XK_Alt_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 19*/
 	XK_Up,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 20*/
-	XK_R1,  	XK_R1,  	XK_Pause,	XK_Break,	/* 21*/
-	XK_R2,  	XK_R2,  	XK_Print,	SunXK_Sys_Req,	/* 22*/
-	XK_R3,  	XK_R3,  	XK_Scroll_Lock,	NoSymbol,	/* 23*/
+	XK_Pause,  	NoSymbol,  	XK_Break,	NoSymbol,	/* 21*/
+	XK_Print,  	NoSymbol,  	XK_Sys_Req,	SunXK_Sys_Req,	/* 22*/
+	XK_Scroll_Lock,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 23*/
 	XK_Left,	NoSymbol,	NoSymbol,	NoSymbol,	/* 24*/
-	XK_L3,  	XK_L3,  	SunXK_Props,	NoSymbol,	/* 25*/
-	XK_L4,  	XK_L4,  	SunXK_Undo,	NoSymbol,	/* 26*/
+	SunXK_Props,  	NoSymbol,  	XK_L3,		NoSymbol,	/* 25*/
+	SunXK_Undo,  	NoSymbol,  	XK_L4,		NoSymbol,	/* 26*/
 	XK_Down,	NoSymbol,	NoSymbol,	NoSymbol,	/* 27*/
 	XK_Right,	NoSymbol,	NoSymbol,	NoSymbol,	/* 28*/
 	XK_Escape,	NoSymbol,	NoSymbol,	NoSymbol,	/* 29*/
@@ -3614,7 +3614,7 @@ static KeySym Sweden5Keymap[] = {
 	XK_6,   	XK_ampersand,	NoSymbol,	NoSymbol,	/* 35*/
 	XK_7,   	XK_slash,	XK_braceleft,	NoSymbol,	/* 36*/
 	XK_8,   	XK_parenleft,	XK_bracketleft,	NoSymbol,	/* 37*/
-	XK_9,   	XK_parenright,	XK_bracketright,	NoSymbol,	/* 38*/
+	XK_9,   	XK_parenright,	XK_bracketright,NoSymbol,	/* 38*/
 	XK_0,   	XK_equal,	XK_braceright,	NoSymbol,	/* 39*/
 	XK_plus,	XK_question,	XK_backslash,	NoSymbol,	/* 40*/
 	SunXK_FA_Acute,	SunXK_FA_Grave,	NoSymbol,	NoSymbol,	/* 41*/
@@ -3622,12 +3622,12 @@ static KeySym Sweden5Keymap[] = {
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 45*/
-	XK_R5,  	XK_R5,  	XK_KP_Divide,	NoSymbol,	/* 46*/
-	XK_R6,  	XK_R6,  	XK_KP_Multiply,	NoSymbol,	/* 47*/
+	XK_KP_Divide,  	NoSymbol,  	NoSymbol,	NoSymbol,	/* 46*/
+	XK_KP_Multiply,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 47*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
-	XK_L5,  	XK_L5,  	SunXK_Front,	NoSymbol,	/* 49*/
-	XK_Delete,	XK_Delete,	XK_KP_Separator,	NoSymbol,	/* 50*/
-	XK_L6,  	XK_L6,  	SunXK_Copy,	NoSymbol,	/* 51*/
+	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
+	XK_KP_Delete,	XK_KP_Separator,NoSymbol,	NoSymbol,	/* 50*/
+	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
 	XK_Home,	NoSymbol,	NoSymbol,	NoSymbol,	/* 52*/
 	XK_Tab, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 53*/
 	XK_Q,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 54*/
@@ -3641,15 +3641,15 @@ static KeySym Sweden5Keymap[] = {
 	XK_O,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 62*/
 	XK_P,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 63*/
 	XK_Aring,	NoSymbol,	NoSymbol,	NoSymbol,	/* 64*/
-	SunXK_FA_Diaeresis,	XK_asciicircum,	XK_asciitilde,	NoSymbol,	/* 65*/
+	SunXK_FA_Diaeresis,XK_asciicircum,XK_asciitilde,NoSymbol,	/* 65*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
-	XK_R7,  	XK_R7,  	XK_KP_7,	XK_Home,	/* 68*/
-	XK_Up,  	XK_R8,  	XK_KP_8,	NoSymbol,	/* 69*/
-	XK_R9,  	XK_R9,  	XK_KP_9,	XK_Prior,	/* 70*/
-	XK_R4,  	XK_R4,  	XK_KP_Subtract,	NoSymbol,	/* 71*/
-	XK_L7,  	XK_L7,  	SunXK_Open,	NoSymbol,	/* 72*/
-	XK_L8,  	XK_L8,  	SunXK_Paste,	NoSymbol,	/* 73*/
+	XK_KP_Home,  	XK_KP_7,  	NoSymbol,	NoSymbol,	/* 68*/
+	XK_KP_Up,  	XK_KP_8,  	NoSymbol,	NoSymbol,	/* 69*/
+	XK_KP_Prior,  	XK_KP_9,  	NoSymbol,	NoSymbol,	/* 70*/
+	XK_KP_Subtract,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 71*/
+	SunXK_Open,  	NoSymbol,  	XK_L7,		NoSymbol,	/* 72*/
+	SunXK_Paste,  	NoSymbol,  	XK_L8,		NoSymbol,	/* 73*/
 	XK_End, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 74*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 75*/
 	XK_Control_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
@@ -3667,13 +3667,13 @@ static KeySym Sweden5Keymap[] = {
 	XK_quoteright,	XK_asterisk,	XK_quoteleft,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
-	XK_Left,	XK_R10, 	XK_KP_4,	NoSymbol,	/* 91*/
-	XK_R11, 	XK_R11, 	XK_KP_5,	NoSymbol,	/* 92*/
-	XK_Right,	XK_R12, 	XK_KP_6,	NoSymbol,	/* 93*/
-	XK_Insert,	XK_Insert,	XK_KP_0,	NoSymbol,	/* 94*/
-	XK_L9,  	XK_L9,  	SunXK_Find,	NoSymbol,	/* 95*/
+	XK_KP_Left,	XK_KP_4, 	NoSymbol,	NoSymbol,	/* 91*/
+	NoSymbol, 	XK_KP_5, 	NoSymbol,	NoSymbol,	/* 92*/
+	XK_KP_Right,	XK_KP_6, 	NoSymbol,	NoSymbol,	/* 93*/
+	XK_KP_Insert,	XK_KP_0,	NoSymbol,	NoSymbol,	/* 94*/
+	SunXK_Find,  	NoSymbol,  	XK_L9,		NoSymbol,	/* 95*/
 	XK_Prior,	NoSymbol,	NoSymbol,	NoSymbol,	/* 96*/
-	XK_L10, 	XK_L10, 	SunXK_Cut,	NoSymbol,	/* 97*/
+	SunXK_Cut, 	NoSymbol, 	XK_L10,		NoSymbol,	/* 97*/
 	XK_Num_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 98*/
 	XK_Shift_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 99*/
 	XK_Z,   	NoSymbol,	NoSymbol,	NoSymbol,	/*100*/
@@ -3688,9 +3688,9 @@ static KeySym Sweden5Keymap[] = {
 	XK_minus,	XK_underscore,	NoSymbol,	NoSymbol,	/*109*/
 	XK_Shift_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*110*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*111*/
-	XK_R13, 	XK_R13, 	XK_KP_1,	XK_End, 	/*112*/
-	XK_Down,	XK_R14, 	XK_KP_2,	NoSymbol,	/*113*/
-	XK_R15, 	XK_R15, 	XK_KP_3,	XK_Next,	/*114*/
+	XK_KP_End, 	XK_KP_1, 	NoSymbol,	NoSymbol, 	/*112*/
+	XK_KP_Down,	XK_KP_2, 	NoSymbol,	NoSymbol,	/*113*/
+	XK_KP_Next, 	XK_KP_3, 	NoSymbol,	NoSymbol,	/*114*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*115*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*116*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*117*/
@@ -3727,17 +3727,17 @@ static SunModmapRec Sweden5Modmap[] = {
 #ifdef SWEDENFIN4
 
 static KeySym SwedenFin4Keymap[] = {
-	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
+	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
-	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
+	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
 	XK_F3,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  8*/
-	SunXK_F36,	NoSymbol,	NoSymbol,	NoSymbol,	/*  9*/
+	XK_F11,		NoSymbol,	SunXK_F36,	NoSymbol,	/*  9*/
 	XK_F4,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 10*/
-	SunXK_F37,	NoSymbol,	NoSymbol,	NoSymbol,	/* 11*/
+	XK_F12,		NoSymbol,	SunXK_F37,	NoSymbol,	/* 11*/
 	XK_F5,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 12*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 13*/
 	XK_F6,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 14*/
@@ -3747,12 +3747,12 @@ static KeySym SwedenFin4Keymap[] = {
 	XK_F9,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 18*/
 	XK_Alt_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 19*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 20*/
-	XK_R1,  	XK_R1,  	XK_Pause,	NoSymbol,	/* 21*/
-	XK_R2,  	XK_R2,  	XK_Print,	NoSymbol,	/* 22*/
-	XK_R3,  	XK_R3,  	XK_Scroll_Lock,	XK_Break,	/* 23*/
+	XK_Pause,  	NoSymbol,  	XK_R1,		NoSymbol,	/* 21*/
+	XK_Print,  	NoSymbol,  	XK_R2,		NoSymbol,	/* 22*/
+	XK_Break,  	XK_Scroll_Lock,	XK_R3,		NoSymbol,	/* 23*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 24*/
-	XK_L3,  	XK_L3,  	SunXK_Props,	NoSymbol,	/* 25*/
-	XK_L4,  	XK_L4,  	SunXK_Undo,	NoSymbol,	/* 26*/
+	SunXK_Props,  	NoSymbol,  	XK_L3,		NoSymbol,	/* 25*/
+	SunXK_Undo,  	NoSymbol,  	XK_L4,		NoSymbol,	/* 26*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 27*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 28*/
 	XK_Escape,	NoSymbol,	NoSymbol,	NoSymbol,	/* 29*/
@@ -3764,20 +3764,20 @@ static KeySym SwedenFin4Keymap[] = {
 	XK_6,   	XK_ampersand,	NoSymbol,	NoSymbol,	/* 35*/
 	XK_7,   	XK_slash,	XK_braceleft,	NoSymbol,	/* 36*/
 	XK_8,   	XK_parenleft,	XK_bracketleft,	NoSymbol,	/* 37*/
-	XK_9,   	XK_parenright,	XK_bracketright,	NoSymbol,	/* 38*/
+	XK_9,   	XK_parenright,	XK_bracketright,NoSymbol,	/* 38*/
 	XK_0,   	XK_equal,	XK_braceright,	NoSymbol,	/* 39*/
 	XK_plus,	XK_question,	XK_backslash,	NoSymbol,	/* 40*/
 	SunXK_FA_Acute,	SunXK_FA_Grave,	NoSymbol,	NoSymbol,	/* 41*/
 	XK_quoteright,	XK_asterisk,	XK_quoteleft,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
-	XK_R4,  	XK_R4,  	XK_KP_Equal,	NoSymbol,	/* 45*/
-	XK_R5,  	XK_R5,  	XK_KP_Divide,	NoSymbol,	/* 46*/
-	XK_R6,  	XK_R6,  	XK_KP_Multiply,	NoSymbol,	/* 47*/
+	XK_KP_Equal,  	NoSymbol,  	XK_R4,		NoSymbol,	/* 45*/
+	XK_KP_Divide,  	NoSymbol,  	XK_R5,		NoSymbol,	/* 46*/
+	XK_KP_Multiply,	NoSymbol,  	XK_R6,		NoSymbol,	/* 47*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
-	XK_L5,  	XK_L5,  	SunXK_Front,	NoSymbol,	/* 49*/
-	XK_Delete,	XK_Delete,	XK_KP_Decimal,	NoSymbol,	/* 50*/
-	XK_L6,  	XK_L6,  	SunXK_Copy,	NoSymbol,	/* 51*/
+	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
+	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
+	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 52*/
 	XK_Tab, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 53*/
 	XK_Q,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 54*/
@@ -3791,15 +3791,15 @@ static KeySym SwedenFin4Keymap[] = {
 	XK_O,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 62*/
 	XK_P,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 63*/
 	XK_Aring,	NoSymbol,	NoSymbol,	NoSymbol,	/* 64*/
-	SunXK_FA_Diaeresis,	SunXK_FA_Circum,	SunXK_FA_Tilde,	NoSymbol,	/* 65*/
+	SunXK_FA_Diaeresis,SunXK_FA_Circum,SunXK_FA_Tilde,NoSymbol,	/* 65*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	SunXK_AltGraph,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
-	XK_R7,  	XK_R7,  	XK_KP_7,	XK_Home,	/* 68*/
-	XK_Up,  	XK_R8,  	XK_KP_8,	NoSymbol,	/* 69*/
-	XK_R9,  	XK_R9,  	XK_KP_9,	XK_Prior,	/* 70*/
+	XK_KP_Home,  	XK_KP_7,  	XK_R7,		NoSymbol,	/* 68*/
+	XK_KP_Up,  	XK_KP_8,  	XK_R8,		NoSymbol,	/* 69*/
+	XK_KP_Prior,  	XK_KP_9,  	XK_R8,		NoSymbol,	/* 70*/
 	XK_KP_Subtract,	NoSymbol,	NoSymbol,	NoSymbol,	/* 71*/
-	XK_L7,  	XK_L7,  	SunXK_Open,	NoSymbol,	/* 72*/
-	XK_L8,  	XK_L8,  	SunXK_Paste,	NoSymbol,	/* 73*/
+	SunXK_Open,  	NoSymbol,  	XK_L7,		NoSymbol,	/* 72*/
+	SunXK_Paste,  	NoSymbol,  	XK_L8,		NoSymbol,	/* 73*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 74*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 75*/
 	XK_Caps_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
@@ -3817,13 +3817,13 @@ static KeySym SwedenFin4Keymap[] = {
 	XK_section,	XK_onehalf,	NoSymbol,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
-	XK_Left,	XK_R10, 	XK_KP_4,	NoSymbol,	/* 91*/
-	XK_R11, 	XK_R11, 	XK_KP_5,	NoSymbol,	/* 92*/
-	XK_Right,	XK_R12, 	XK_KP_6,	NoSymbol,	/* 93*/
-	XK_Insert,	XK_Insert,	XK_KP_0,	NoSymbol,	/* 94*/
-	XK_L9,  	XK_L9,  	SunXK_Find,	NoSymbol,	/* 95*/
+	XK_KP_Left,	XK_KP_4, 	XK_R10,		NoSymbol,	/* 91*/
+	NoSymbol, 	XK_KP_5, 	XK_R11,		NoSymbol,	/* 92*/
+	XK_KP_Right,	XK_KP_6, 	XK_R12,		NoSymbol,	/* 93*/
+	XK_KP_Insert,	XK_KP_0,	NoSymbol,	NoSymbol,	/* 94*/
+	SunXK_Find,  	NoSymbol,  	XK_L9,		NoSymbol,	/* 95*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 96*/
-	XK_L10, 	XK_L10, 	SunXK_Cut,	NoSymbol,	/* 97*/
+	SunXK_Cut, 	NoSymbol, 	XK_L10,		NoSymbol,	/* 97*/
 	XK_Num_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 98*/
 	XK_Shift_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 99*/
 	XK_Z,   	NoSymbol,	NoSymbol,	NoSymbol,	/*100*/
@@ -3838,9 +3838,9 @@ static KeySym SwedenFin4Keymap[] = {
 	XK_minus,	XK_underscore,	NoSymbol,	NoSymbol,	/*109*/
 	XK_Shift_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*110*/
 	XK_Linefeed,	NoSymbol,	NoSymbol,	NoSymbol,	/*111*/
-	XK_R13, 	XK_R13, 	XK_KP_1,	XK_End, 	/*112*/
-	XK_Down,	XK_R14, 	XK_KP_2,	NoSymbol,	/*113*/
-	XK_R15, 	XK_R15, 	XK_KP_3,	XK_Next,	/*114*/
+	XK_KP_End, 	XK_KP_1, 	XK_R13,		NoSymbol, 	/*112*/
+	XK_KP_Down,	XK_KP_2, 	XK_R14,		NoSymbol,	/*113*/
+	XK_KP_Next, 	XK_KP_3, 	XK_R15,		NoSymbol,	/*114*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*115*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*116*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*117*/
@@ -3877,17 +3877,17 @@ static SunModmapRec SwedenFin4Modmap[] = {
 #ifdef SWISSFR4
 
 static KeySym SwissFr4Keymap[] = {
-	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
+	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
-	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
+	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
 	XK_F3,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  8*/
-	SunXK_F36,	NoSymbol,	NoSymbol,	NoSymbol,	/*  9*/
+	XK_F11,		NoSymbol,	SunXK_F36,	NoSymbol,	/*  9*/
 	XK_F4,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 10*/
-	SunXK_F37,	NoSymbol,	NoSymbol,	NoSymbol,	/* 11*/
+	XK_F12,		NoSymbol,	SunXK_F37,	NoSymbol,	/* 11*/
 	XK_F5,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 12*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 13*/
 	XK_F6,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 14*/
@@ -3897,12 +3897,12 @@ static KeySym SwissFr4Keymap[] = {
 	XK_F9,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 18*/
 	XK_Alt_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 19*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 20*/
-	XK_R1,  	XK_R1,  	XK_Pause,	NoSymbol,	/* 21*/
-	XK_R2,  	XK_R2,  	XK_Print,	NoSymbol,	/* 22*/
-	XK_R3,  	XK_R3,  	XK_Scroll_Lock,	XK_Break,	/* 23*/
+	XK_Pause,  	NoSymbol,  	XK_R1,		NoSymbol,	/* 21*/
+	XK_Print,  	NoSymbol,  	XK_R2,		NoSymbol,	/* 22*/
+	XK_Break,  	XK_Scroll_Lock,	XK_R3,		NoSymbol,	/* 23*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 24*/
-	XK_L3,  	XK_L3,  	SunXK_Props,	NoSymbol,	/* 25*/
-	XK_L4,  	XK_L4,  	SunXK_Undo,	NoSymbol,	/* 26*/
+	SunXK_Props,  	NoSymbol,  	XK_L3,		NoSymbol,	/* 25*/
+	SunXK_Undo,  	NoSymbol,  	XK_L4,		NoSymbol,	/* 26*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 27*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 28*/
 	XK_Escape,	NoSymbol,	NoSymbol,	NoSymbol,	/* 29*/
@@ -3917,17 +3917,17 @@ static KeySym SwissFr4Keymap[] = {
 	XK_9,   	XK_parenright,	XK_backslash,	NoSymbol,	/* 38*/
 	XK_0,   	XK_equal,	XK_asciicircum,	NoSymbol,	/* 39*/
 	XK_quoteright,	XK_question,	XK_quoteleft,	NoSymbol,	/* 40*/
-	SunXK_FA_Circum,	SunXK_FA_Grave,	NoSymbol,	NoSymbol,	/* 41*/
+	SunXK_FA_Circum,SunXK_FA_Grave,	NoSymbol,	NoSymbol,	/* 41*/
 	XK_dollar,	SunXK_FA_Tilde,	XK_sterling,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
-	XK_R4,  	XK_R4,  	XK_KP_Equal,	NoSymbol,	/* 45*/
-	XK_R5,  	XK_R5,  	XK_KP_Divide,	NoSymbol,	/* 46*/
-	XK_R6,  	XK_R6,  	XK_KP_Multiply,	NoSymbol,	/* 47*/
+	XK_KP_Equal,  	NoSymbol,  	XK_R4,		NoSymbol,	/* 45*/
+	XK_KP_Divide,  	NoSymbol,  	XK_R5,		NoSymbol,	/* 46*/
+	XK_KP_Multiply,	NoSymbol,  	XK_R6,		NoSymbol,	/* 47*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
-	XK_L5,  	XK_L5,  	SunXK_Front,	NoSymbol,	/* 49*/
-	XK_Delete,	XK_Delete,	XK_KP_Decimal,	NoSymbol,	/* 50*/
-	XK_L6,  	XK_L6,  	SunXK_Copy,	NoSymbol,	/* 51*/
+	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
+	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
+	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 52*/
 	XK_Tab, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 53*/
 	XK_Q,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 54*/
@@ -3941,15 +3941,15 @@ static KeySym SwissFr4Keymap[] = {
 	XK_O,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 62*/
 	XK_P,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 63*/
 	XK_egrave,	XK_udiaeresis,	NoSymbol,	NoSymbol,	/* 64*/
-	SunXK_FA_Diaeresis,	SunXK_FA_Acute,	NoSymbol,	NoSymbol,	/* 65*/
+	SunXK_FA_Diaeresis,SunXK_FA_Acute,NoSymbol,	NoSymbol,	/* 65*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	SunXK_AltGraph,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
-	XK_R7,  	XK_R7,  	XK_KP_7,	XK_Home,	/* 68*/
-	XK_Up,  	XK_R8,  	XK_KP_8,	NoSymbol,	/* 69*/
-	XK_R9,  	XK_R9,  	XK_KP_9,	XK_Prior,	/* 70*/
+	XK_KP_Home,  	XK_KP_7,  	XK_R7,		NoSymbol,	/* 68*/
+	XK_KP_Up,  	XK_KP_8,  	XK_R8,		NoSymbol,	/* 69*/
+	XK_KP_Prior,  	XK_KP_9,  	XK_R9,		NoSymbol,	/* 70*/
 	XK_KP_Subtract,	NoSymbol,	NoSymbol,	NoSymbol,	/* 71*/
-	XK_L7,  	XK_L7,  	SunXK_Open,	NoSymbol,	/* 72*/
-	XK_L8,  	XK_L8,  	SunXK_Paste,	NoSymbol,	/* 73*/
+	SunXK_Open,  	NoSymbol,  	XK_L7,		NoSymbol,	/* 72*/
+	SunXK_Paste,  	NoSymbol,  	XK_L8,		NoSymbol,	/* 73*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 74*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 75*/
 	XK_Caps_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
@@ -3967,13 +3967,13 @@ static KeySym SwissFr4Keymap[] = {
 	XK_less,	XK_braceleft,	NoSymbol,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
-	XK_Left,	XK_R10, 	XK_KP_4,	NoSymbol,	/* 91*/
-	XK_R11, 	XK_R11, 	XK_KP_5,	NoSymbol,	/* 92*/
-	XK_Right,	XK_R12, 	XK_KP_6,	NoSymbol,	/* 93*/
-	XK_Insert,	XK_Insert,	XK_KP_0,	NoSymbol,	/* 94*/
-	XK_L9,  	XK_L9,  	SunXK_Find,	NoSymbol,	/* 95*/
+	XK_KP_Left,	XK_KP_4, 	XK_R10,		NoSymbol,	/* 91*/
+	NoSymbol, 	XK_KP_5, 	XK_R11,		NoSymbol,	/* 92*/
+	XK_KP_Right,	XK_KP_6, 	XK_R12,		NoSymbol,	/* 93*/
+	XK_KP_Insert,	XK_KP_0,	NoSymbol,	NoSymbol,	/* 94*/
+	SunXK_Find,  	NoSymbol,  	XK_L9,		NoSymbol,	/* 95*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 96*/
-	XK_L10, 	XK_L10, 	SunXK_Cut,	NoSymbol,	/* 97*/
+	SunXK_Cut, 	NoSymbol, 	XK_L10,		NoSymbol,	/* 97*/
 	XK_Num_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 98*/
 	XK_Shift_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 99*/
 	XK_Y,   	NoSymbol,	NoSymbol,	NoSymbol,	/*100*/
@@ -3988,9 +3988,9 @@ static KeySym SwissFr4Keymap[] = {
 	XK_minus,	XK_underscore,	NoSymbol,	NoSymbol,	/*109*/
 	XK_Shift_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*110*/
 	XK_Linefeed,	NoSymbol,	NoSymbol,	NoSymbol,	/*111*/
-	XK_R13, 	XK_R13, 	XK_KP_1,	XK_End, 	/*112*/
-	XK_Down,	XK_R14, 	XK_KP_2,	NoSymbol,	/*113*/
-	XK_R15, 	XK_R15, 	XK_KP_3,	XK_Next,	/*114*/
+	XK_KP_End, 	XK_KP_1, 	XK_R13,		NoSymbol, 	/*112*/
+	XK_KP_Down,	XK_KP_2, 	XK_R14,		NoSymbol,	/*113*/
+	XK_KP_Next, 	XK_KP_3, 	XK_R15,		NoSymbol,	/*114*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*115*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*116*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*117*/
@@ -4000,7 +4000,7 @@ static KeySym SwissFr4Keymap[] = {
 	XK_space,	NoSymbol,	NoSymbol,	NoSymbol,	/*121*/
 	XK_Meta_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*122*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*123*/
-	XK_bracketright,	XK_bracketleft,	NoSymbol,	NoSymbol,	/*124*/
+	XK_bracketright,XK_bracketleft,	NoSymbol,	NoSymbol,	/*124*/
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
@@ -4027,17 +4027,17 @@ static SunModmapRec SwissFr4Modmap[] = {
 #ifdef SWISSFR5
 
 static KeySym SwissFr5Keymap[] = {
-	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
+	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
-	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
+	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
 	XK_F3,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  8*/
-	SunXK_F36,	NoSymbol,	NoSymbol,	NoSymbol,	/*  9*/
+	XK_F11,		NoSymbol,	SunXK_F36,	NoSymbol,	/*  9*/
 	XK_F4,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 10*/
-	SunXK_F37,	NoSymbol,	NoSymbol,	NoSymbol,	/* 11*/
+	XK_F12,		NoSymbol,	SunXK_F37,	NoSymbol,	/* 11*/
 	XK_F5,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 12*/
 	SunXK_AltGraph,	NoSymbol,	NoSymbol,	NoSymbol,	/* 13*/
 	XK_F6,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 14*/
@@ -4047,12 +4047,12 @@ static KeySym SwissFr5Keymap[] = {
 	XK_F9,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 18*/
 	XK_Alt_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 19*/
 	XK_Up,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 20*/
-	XK_R1,  	XK_R1,  	XK_Pause,	XK_Break,	/* 21*/
-	XK_R2,  	XK_R2,  	XK_Print,	SunXK_Sys_Req,	/* 22*/
-	XK_R3,  	XK_R3,  	XK_Scroll_Lock,	NoSymbol,	/* 23*/
+	XK_Pause,  	NoSymbol,  	XK_Break,	NoSymbol,	/* 21*/
+	XK_Print,  	NoSymbol,  	XK_Sys_Req,	SunXK_Sys_Req,	/* 22*/
+	XK_Scroll_Lock,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 23*/
 	XK_Left,	NoSymbol,	NoSymbol,	NoSymbol,	/* 24*/
-	XK_L3,  	XK_L3,  	SunXK_Props,	NoSymbol,	/* 25*/
-	XK_L4,  	XK_L4,  	SunXK_Undo,	NoSymbol,	/* 26*/
+	SunXK_Props,  	NoSymbol,  	XK_L3,		NoSymbol,	/* 25*/
+	SunXK_Undo,  	NoSymbol,  	XK_L4,		NoSymbol,	/* 26*/
 	XK_Down,	NoSymbol,	NoSymbol,	NoSymbol,	/* 27*/
 	XK_Right,	NoSymbol,	NoSymbol,	NoSymbol,	/* 28*/
 	XK_Escape,	NoSymbol,	NoSymbol,	NoSymbol,	/* 29*/
@@ -4067,17 +4067,17 @@ static KeySym SwissFr5Keymap[] = {
 	XK_9,   	XK_parenright,	NoSymbol,	NoSymbol,	/* 38*/
 	XK_0,   	XK_equal,	XK_quoteleft,	NoSymbol,	/* 39*/
 	XK_quoteright,	XK_question,	SunXK_FA_Acute,	NoSymbol,	/* 40*/
-	SunXK_FA_Circum,	SunXK_FA_Grave,	SunXK_FA_Tilde,	NoSymbol,	/* 41*/
+	SunXK_FA_Circum,SunXK_FA_Grave,	SunXK_FA_Tilde,	NoSymbol,	/* 41*/
 	XK_section,	XK_degree,	NoSymbol,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 45*/
-	XK_R5,  	XK_R5,  	XK_KP_Divide,	NoSymbol,	/* 46*/
-	XK_R6,  	XK_R6,  	XK_KP_Multiply,	NoSymbol,	/* 47*/
+	XK_KP_Divide,  	NoSymbol,  	NoSymbol,	NoSymbol,	/* 46*/
+	XK_KP_Multiply,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 47*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
-	XK_L5,  	XK_L5,  	SunXK_Front,	NoSymbol,	/* 49*/
-	XK_Delete,	XK_Delete,	XK_KP_Decimal,	NoSymbol,	/* 50*/
-	XK_L6,  	XK_L6,  	SunXK_Copy,	NoSymbol,	/* 51*/
+	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
+	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
+	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
 	XK_Home,	NoSymbol,	NoSymbol,	NoSymbol,	/* 52*/
 	XK_Tab, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 53*/
 	XK_Q,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 54*/
@@ -4091,15 +4091,15 @@ static KeySym SwissFr5Keymap[] = {
 	XK_O,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 62*/
 	XK_P,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 63*/
 	XK_egrave,	XK_udiaeresis,	XK_bracketleft,	NoSymbol,	/* 64*/
-	SunXK_FA_Diaeresis,	XK_exclam,	XK_bracketright,	NoSymbol,	/* 65*/
+	SunXK_FA_Diaeresis,XK_exclam,	XK_bracketright,NoSymbol,	/* 65*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
-	XK_R7,  	XK_R7,  	XK_KP_7,	XK_Home,	/* 68*/
-	XK_Up,  	XK_R8,  	XK_KP_8,	NoSymbol,	/* 69*/
-	XK_R9,  	XK_R9,  	XK_KP_9,	XK_Prior,	/* 70*/
-	XK_R4,  	XK_R4,  	XK_KP_Subtract,	NoSymbol,	/* 71*/
-	XK_L7,  	XK_L7,  	SunXK_Open,	NoSymbol,	/* 72*/
-	XK_L8,  	XK_L8,  	SunXK_Paste,	NoSymbol,	/* 73*/
+	XK_KP_Home,  	XK_KP_7,  	NoSymbol,	NoSymbol,	/* 68*/
+	XK_KP_Up,  	XK_KP_8,  	NoSymbol,	NoSymbol,	/* 69*/
+	XK_KP_Prior,  	XK_KP_9,  	NoSymbol,	NoSymbol,	/* 70*/
+	XK_KP_Subtract,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 71*/
+	SunXK_Open,  	NoSymbol,  	XK_L7,		NoSymbol,	/* 72*/
+	SunXK_Paste,  	NoSymbol,  	XK_L8,		NoSymbol,	/* 73*/
 	XK_End, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 74*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 75*/
 	XK_Control_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
@@ -4117,13 +4117,13 @@ static KeySym SwissFr5Keymap[] = {
 	XK_dollar,	XK_sterling,	XK_braceright,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
-	XK_Left,	XK_R10, 	XK_KP_4,	NoSymbol,	/* 91*/
-	XK_R11, 	XK_R11, 	XK_KP_5,	NoSymbol,	/* 92*/
-	XK_Right,	XK_R12, 	XK_KP_6,	NoSymbol,	/* 93*/
-	XK_Insert,	XK_Insert,	XK_KP_0,	NoSymbol,	/* 94*/
-	XK_L9,  	XK_L9,  	SunXK_Find,	NoSymbol,	/* 95*/
+	XK_KP_Left,	XK_KP_4, 	NoSymbol,	NoSymbol,	/* 91*/
+	NoSymbol, 	XK_KP_5, 	NoSymbol,	NoSymbol,	/* 92*/
+	XK_KP_Right,	XK_KP_6, 	NoSymbol,	NoSymbol,	/* 93*/
+	XK_KP_Insert,	XK_KP_0,	NoSymbol,	NoSymbol,	/* 94*/
+	SunXK_Find,  	NoSymbol,  	XK_L9,		NoSymbol,	/* 95*/
 	XK_Prior,	NoSymbol,	NoSymbol,	NoSymbol,	/* 96*/
-	XK_L10, 	XK_L10, 	SunXK_Cut,	NoSymbol,	/* 97*/
+	SunXK_Cut, 	NoSymbol, 	XK_L10,		NoSymbol,	/* 97*/
 	XK_Num_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 98*/
 	XK_Shift_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 99*/
 	XK_Y,   	NoSymbol,	NoSymbol,	NoSymbol,	/*100*/
@@ -4138,9 +4138,9 @@ static KeySym SwissFr5Keymap[] = {
 	XK_minus,	XK_underscore,	NoSymbol,	NoSymbol,	/*109*/
 	XK_Shift_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*110*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*111*/
-	XK_R13, 	XK_R13, 	XK_KP_1,	XK_End, 	/*112*/
-	XK_Down,	XK_R14, 	XK_KP_2,	NoSymbol,	/*113*/
-	XK_R15, 	XK_R15, 	XK_KP_3,	XK_Next,	/*114*/
+	XK_KP_End, 	XK_KP_1, 	NoSymbol,	NoSymbol, 	/*112*/
+	XK_KP_Down,	XK_KP_2, 	NoSymbol,	NoSymbol,	/*113*/
+	XK_KP_Next, 	XK_KP_3, 	NoSymbol,	NoSymbol,	/*114*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*115*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*116*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*117*/
@@ -4177,17 +4177,17 @@ static SunModmapRec SwissFr5Modmap[] = {
 #ifdef SWISSGE4
 
 static KeySym SwissGe4Keymap[] = {
-	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
+	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
-	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
+	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
 	XK_F3,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  8*/
-	SunXK_F36,	NoSymbol,	NoSymbol,	NoSymbol,	/*  9*/
+	XK_F11,		NoSymbol,	SunXK_F36,	NoSymbol,	/*  9*/
 	XK_F4,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 10*/
-	SunXK_F37,	NoSymbol,	NoSymbol,	NoSymbol,	/* 11*/
+	XK_F12,		NoSymbol,	SunXK_F37,	NoSymbol,	/* 11*/
 	XK_F5,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 12*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 13*/
 	XK_F6,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 14*/
@@ -4197,12 +4197,12 @@ static KeySym SwissGe4Keymap[] = {
 	XK_F9,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 18*/
 	XK_Alt_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 19*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 20*/
-	XK_R1,  	XK_R1,  	XK_Pause,	NoSymbol,	/* 21*/
-	XK_R2,  	XK_R2,  	XK_Print,	NoSymbol,	/* 22*/
-	XK_R3,  	XK_R3,  	XK_Scroll_Lock,	XK_Break,	/* 23*/
+	XK_Pause,  	NoSymbol,  	XK_R1,		NoSymbol,	/* 21*/
+	XK_Print,  	NoSymbol,  	XK_R2,		NoSymbol,	/* 22*/
+	XK_Break,  	XK_Scroll_Lock,	XK_R3,		NoSymbol,	/* 23*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 24*/
-	XK_L3,  	XK_L3,  	SunXK_Props,	NoSymbol,	/* 25*/
-	XK_L4,  	XK_L4,  	SunXK_Undo,	NoSymbol,	/* 26*/
+	SunXK_Props,  	NoSymbol,  	XK_L3,		NoSymbol,	/* 25*/
+	SunXK_Undo,  	NoSymbol,  	XK_L4,		NoSymbol,	/* 26*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 27*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 28*/
 	XK_Escape,	NoSymbol,	NoSymbol,	NoSymbol,	/* 29*/
@@ -4217,17 +4217,17 @@ static KeySym SwissGe4Keymap[] = {
 	XK_9,   	XK_parenright,	XK_backslash,	NoSymbol,	/* 38*/
 	XK_0,   	XK_equal,	XK_asciicircum,	NoSymbol,	/* 39*/
 	XK_quoteright,	XK_question,	XK_quoteleft,	NoSymbol,	/* 40*/
-	SunXK_FA_Circum,	SunXK_FA_Grave,	NoSymbol,	NoSymbol,	/* 41*/
+	SunXK_FA_Circum,SunXK_FA_Grave,	NoSymbol,	NoSymbol,	/* 41*/
 	XK_dollar,	SunXK_FA_Tilde,	XK_sterling,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
-	XK_R4,  	XK_R4,  	XK_KP_Equal,	NoSymbol,	/* 45*/
-	XK_R5,  	XK_R5,  	XK_KP_Divide,	NoSymbol,	/* 46*/
-	XK_R6,  	XK_R6,  	XK_KP_Multiply,	NoSymbol,	/* 47*/
+	XK_KP_Equal,  	NoSymbol,  	XK_R4,		NoSymbol,	/* 45*/
+	XK_KP_Divide,  	NoSymbol,  	XK_R5,		NoSymbol,	/* 46*/
+	XK_KP_Multiply,	NoSymbol,  	XK_R6,		NoSymbol,	/* 47*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
-	XK_L5,  	XK_L5,  	SunXK_Front,	NoSymbol,	/* 49*/
-	XK_Delete,	XK_Delete,	XK_KP_Decimal,	NoSymbol,	/* 50*/
-	XK_L6,  	XK_L6,  	SunXK_Copy,	NoSymbol,	/* 51*/
+	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
+	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
+	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 52*/
 	XK_Tab, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 53*/
 	XK_Q,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 54*/
@@ -4241,15 +4241,15 @@ static KeySym SwissGe4Keymap[] = {
 	XK_O,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 62*/
 	XK_P,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 63*/
 	XK_udiaeresis,	XK_egrave,	NoSymbol,	NoSymbol,	/* 64*/
-	SunXK_FA_Diaeresis,	SunXK_FA_Acute,	NoSymbol,	NoSymbol,	/* 65*/
+	SunXK_FA_Diaeresis,SunXK_FA_Acute,NoSymbol,	NoSymbol,	/* 65*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	SunXK_AltGraph,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
-	XK_R7,  	XK_R7,  	XK_KP_7,	XK_Home,	/* 68*/
-	XK_Up,  	XK_R8,  	XK_KP_8,	NoSymbol,	/* 69*/
-	XK_R9,  	XK_R9,  	XK_KP_9,	XK_Prior,	/* 70*/
+	XK_KP_Home,  	XK_KP_7,  	XK_R7,		NoSymbol,	/* 68*/
+	XK_KP_Up,  	XK_KP_8,  	XK_R8,		NoSymbol,	/* 69*/
+	XK_KP_Prior,  	XK_KP_9,  	XK_R9,		NoSymbol,	/* 70*/
 	XK_KP_Subtract,	NoSymbol,	NoSymbol,	NoSymbol,	/* 71*/
-	XK_L7,  	XK_L7,  	SunXK_Open,	NoSymbol,	/* 72*/
-	XK_L8,  	XK_L8,  	SunXK_Paste,	NoSymbol,	/* 73*/
+	SunXK_Open,  	NoSymbol,  	XK_L7,		NoSymbol,	/* 72*/
+	SunXK_Paste,  	NoSymbol,  	XK_L8,		NoSymbol,	/* 73*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 74*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 75*/
 	XK_Caps_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
@@ -4267,13 +4267,13 @@ static KeySym SwissGe4Keymap[] = {
 	XK_less,	XK_braceleft,	NoSymbol,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
-	XK_Left,	XK_R10, 	XK_KP_4,	NoSymbol,	/* 91*/
-	XK_R11, 	XK_R11, 	XK_KP_5,	NoSymbol,	/* 92*/
-	XK_Right,	XK_R12, 	XK_KP_6,	NoSymbol,	/* 93*/
-	XK_Insert,	XK_Insert,	XK_KP_0,	NoSymbol,	/* 94*/
-	XK_L9,  	XK_L9,  	SunXK_Find,	NoSymbol,	/* 95*/
+	XK_KP_Left,	XK_KP_4, 	XK_R10,		NoSymbol,	/* 91*/
+	NoSymbol, 	XK_KP_5, 	XK_R11,		NoSymbol,	/* 92*/
+	XK_KP_Right,	XK_KP_6, 	XK_R12,		NoSymbol,	/* 93*/
+	XK_KP_Insert,	XK_KP_0,	NoSymbol,	NoSymbol,	/* 94*/
+	SunXK_Find,  	NoSymbol,  	XK_L9,		NoSymbol,	/* 95*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 96*/
-	XK_L10, 	XK_L10, 	SunXK_Cut,	NoSymbol,	/* 97*/
+	SunXK_Cut, 	NoSymbol, 	XK_L10,		NoSymbol,	/* 97*/
 	XK_Num_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 98*/
 	XK_Shift_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 99*/
 	XK_Y,   	NoSymbol,	NoSymbol,	NoSymbol,	/*100*/
@@ -4288,9 +4288,9 @@ static KeySym SwissGe4Keymap[] = {
 	XK_minus,	XK_underscore,	NoSymbol,	NoSymbol,	/*109*/
 	XK_Shift_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*110*/
 	XK_Linefeed,	NoSymbol,	NoSymbol,	NoSymbol,	/*111*/
-	XK_R13, 	XK_R13, 	XK_KP_1,	XK_End, 	/*112*/
-	XK_Down,	XK_R14, 	XK_KP_2,	NoSymbol,	/*113*/
-	XK_R15, 	XK_R15, 	XK_KP_3,	XK_Next,	/*114*/
+	XK_KP_End, 	XK_KP_1, 	XK_R13,		NoSymbol, 	/*112*/
+	XK_KP_Down,	XK_KP_2, 	XK_R14,		NoSymbol,	/*113*/
+	XK_KP_Next, 	XK_KP_3, 	XK_R15,		NoSymbol,	/*114*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*115*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*116*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*117*/
@@ -4300,7 +4300,7 @@ static KeySym SwissGe4Keymap[] = {
 	XK_space,	NoSymbol,	NoSymbol,	NoSymbol,	/*121*/
 	XK_Meta_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*122*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*123*/
-	XK_bracketright,	XK_bracketleft,	NoSymbol,	NoSymbol,	/*124*/
+	XK_bracketright,XK_bracketleft,	NoSymbol,	NoSymbol,	/*124*/
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
@@ -4327,17 +4327,17 @@ static SunModmapRec SwissGe4Modmap[] = {
 #ifdef SWISSGE5
 
 static KeySym SwissGe5Keymap[] = {
-	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
+	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
-	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
+	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
 	XK_F3,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  8*/
-	SunXK_F36,	NoSymbol,	NoSymbol,	NoSymbol,	/*  9*/
+	XK_F11,		NoSymbol,	SunXK_F36,	NoSymbol,	/*  9*/
 	XK_F4,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 10*/
-	SunXK_F37,	NoSymbol,	NoSymbol,	NoSymbol,	/* 11*/
+	XK_F12,		NoSymbol,	SunXK_F37,	NoSymbol,	/* 11*/
 	XK_F5,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 12*/
 	SunXK_AltGraph,	NoSymbol,	NoSymbol,	NoSymbol,	/* 13*/
 	XK_F6,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 14*/
@@ -4347,12 +4347,12 @@ static KeySym SwissGe5Keymap[] = {
 	XK_F9,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 18*/
 	XK_Alt_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 19*/
 	XK_Up,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 20*/
-	XK_R1,  	XK_R1,  	XK_Pause,	XK_Break,	/* 21*/
-	XK_R2,  	XK_R2,  	XK_Print,	SunXK_Sys_Req,	/* 22*/
-	XK_R3,  	XK_R3,  	XK_Scroll_Lock,	NoSymbol,	/* 23*/
+	XK_Pause,  	NoSymbol,  	XK_Break,	NoSymbol,	/* 21*/
+	XK_Print,  	NoSymbol,  	XK_Sys_Req,	SunXK_Sys_Req,	/* 22*/
+	XK_Scroll_Lock,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 23*/
 	XK_Left,	NoSymbol,	NoSymbol,	NoSymbol,	/* 24*/
-	XK_L3,  	XK_L3,  	SunXK_Props,	NoSymbol,	/* 25*/
-	XK_L4,  	XK_L4,  	SunXK_Undo,	NoSymbol,	/* 26*/
+	SunXK_Props,  	NoSymbol,  	XK_L3,		NoSymbol,	/* 25*/
+	SunXK_Undo,  	NoSymbol,  	XK_L4,		NoSymbol,	/* 26*/
 	XK_Down,	NoSymbol,	NoSymbol,	NoSymbol,	/* 27*/
 	XK_Right,	NoSymbol,	NoSymbol,	NoSymbol,	/* 28*/
 	XK_Escape,	NoSymbol,	NoSymbol,	NoSymbol,	/* 29*/
@@ -4367,17 +4367,17 @@ static KeySym SwissGe5Keymap[] = {
 	XK_9,   	XK_parenright,	NoSymbol,	NoSymbol,	/* 38*/
 	XK_0,   	XK_equal,	XK_quoteleft,	NoSymbol,	/* 39*/
 	XK_quoteright,	XK_question,	SunXK_FA_Acute,	NoSymbol,	/* 40*/
-	SunXK_FA_Circum,	SunXK_FA_Grave,	SunXK_FA_Tilde,	NoSymbol,	/* 41*/
+	SunXK_FA_Circum,SunXK_FA_Grave,	SunXK_FA_Tilde,	NoSymbol,	/* 41*/
 	XK_section,	XK_degree,	NoSymbol,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 45*/
-	XK_R5,  	XK_R5,  	XK_KP_Divide,	NoSymbol,	/* 46*/
-	XK_R6,  	XK_R6,  	XK_KP_Multiply,	NoSymbol,	/* 47*/
+	XK_KP_Divide,  	NoSymbol,  	NoSymbol,	NoSymbol,	/* 46*/
+	XK_KP_Multiply, NoSymbol,  	NoSymbol,	NoSymbol,	/* 47*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
-	XK_L5,  	XK_L5,  	SunXK_Front,	NoSymbol,	/* 49*/
-	XK_Delete,	XK_Delete,	XK_KP_Decimal,	NoSymbol,	/* 50*/
-	XK_L6,  	XK_L6,  	SunXK_Copy,	NoSymbol,	/* 51*/
+	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
+	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
+	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
 	XK_Home,	NoSymbol,	NoSymbol,	NoSymbol,	/* 52*/
 	XK_Tab, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 53*/
 	XK_Q,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 54*/
@@ -4391,15 +4391,15 @@ static KeySym SwissGe5Keymap[] = {
 	XK_O,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 62*/
 	XK_P,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 63*/
 	XK_udiaeresis,	XK_egrave,	XK_bracketleft,	NoSymbol,	/* 64*/
-	SunXK_FA_Diaeresis,	XK_exclam,	XK_bracketright,	NoSymbol,	/* 65*/
+	SunXK_FA_Diaeresis,XK_exclam,	XK_bracketright,NoSymbol,	/* 65*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
-	XK_R7,  	XK_R7,  	XK_KP_7,	XK_Home,	/* 68*/
-	XK_Up,  	XK_R8,  	XK_KP_8,	NoSymbol,	/* 69*/
-	XK_R9,  	XK_R9,  	XK_KP_9,	XK_Prior,	/* 70*/
-	XK_R4,  	XK_R4,  	XK_KP_Subtract,	NoSymbol,	/* 71*/
-	XK_L7,  	XK_L7,  	SunXK_Open,	NoSymbol,	/* 72*/
-	XK_L8,  	XK_L8,  	SunXK_Paste,	NoSymbol,	/* 73*/
+	XK_KP_Home,  	XK_KP_7,  	NoSymbol,	NoSymbol,	/* 68*/
+	XK_KP_Up,  	XK_KP_8,  	NoSymbol,	NoSymbol,	/* 69*/
+	XK_KP_Prior,  	XK_KP_9,  	NoSymbol,	NoSymbol,	/* 70*/
+	XK_KP_Subtract,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 71*/
+	SunXK_Open,  	NoSymbol,  	XK_L7,		NoSymbol,	/* 72*/
+	SunXK_Paste,  	NoSymbol,  	XK_L8,		NoSymbol,	/* 73*/
 	XK_End, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 74*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 75*/
 	XK_Control_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
@@ -4417,13 +4417,13 @@ static KeySym SwissGe5Keymap[] = {
 	XK_dollar,	XK_sterling,	XK_braceright,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
-	XK_Left,	XK_R10, 	XK_KP_4,	NoSymbol,	/* 91*/
-	XK_R11, 	XK_R11, 	XK_KP_5,	NoSymbol,	/* 92*/
-	XK_Right,	XK_R12, 	XK_KP_6,	NoSymbol,	/* 93*/
-	XK_Insert,	XK_Insert,	XK_KP_0,	NoSymbol,	/* 94*/
-	XK_L9,  	XK_L9,  	SunXK_Find,	NoSymbol,	/* 95*/
+	XK_KP_Left,	XK_KP_4, 	NoSymbol,	NoSymbol,	/* 91*/
+	NoSymbol, 	XK_KP_5, 	NoSymbol,	NoSymbol,	/* 92*/
+	XK_KP_Right,	XK_KP_6, 	NoSymbol,	NoSymbol,	/* 93*/
+	XK_KP_Insert,	XK_KP_0,	NoSymbol,	NoSymbol,	/* 94*/
+	SunXK_Find,  	NoSymbol,  	XK_L9,		NoSymbol,	/* 95*/
 	XK_Prior,	NoSymbol,	NoSymbol,	NoSymbol,	/* 96*/
-	XK_L10, 	XK_L10, 	SunXK_Cut,	NoSymbol,	/* 97*/
+	SunXK_Cut, 	NoSymbol, 	XK_L10,		NoSymbol,	/* 97*/
 	XK_Num_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 98*/
 	XK_Shift_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 99*/
 	XK_Y,   	NoSymbol,	NoSymbol,	NoSymbol,	/*100*/
@@ -4438,9 +4438,9 @@ static KeySym SwissGe5Keymap[] = {
 	XK_minus,	XK_underscore,	NoSymbol,	NoSymbol,	/*109*/
 	XK_Shift_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*110*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*111*/
-	XK_R13, 	XK_R13, 	XK_KP_1,	XK_End, 	/*112*/
-	XK_Down,	XK_R14, 	XK_KP_2,	NoSymbol,	/*113*/
-	XK_R15, 	XK_R15, 	XK_KP_3,	XK_Next,	/*114*/
+	XK_KP_End, 	XK_KP_1, 	NoSymbol,	NoSymbol, 	/*112*/
+	XK_KP_Down,	XK_KP_2, 	NoSymbol,	NoSymbol,	/*113*/
+	XK_KP_Next, 	XK_KP_3, 	NoSymbol,	NoSymbol,	/*114*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*115*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*116*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*117*/
@@ -4477,17 +4477,17 @@ static SunModmapRec SwissGe5Modmap[] = {
 #ifdef TAIWAN4
 
 static KeySym Taiwan4Keymap[] = {
-	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
+	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
-	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
+	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
 	XK_F3,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  8*/
-	SunXK_F36,	NoSymbol,	NoSymbol,	NoSymbol,	/*  9*/
+	XK_F11,		NoSymbol,	SunXK_F36,	NoSymbol,	/*  9*/
 	XK_F4,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 10*/
-	SunXK_F37,	NoSymbol,	NoSymbol,	NoSymbol,	/* 11*/
+	XK_F12,		NoSymbol,	SunXK_F37,	NoSymbol,	/* 11*/
 	XK_F5,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 12*/
 	SunXK_AltGraph,	NoSymbol,	NoSymbol,	NoSymbol,	/* 13*/
 	XK_F6,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 14*/
@@ -4497,12 +4497,12 @@ static KeySym Taiwan4Keymap[] = {
 	XK_F9,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 18*/
 	XK_Alt_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 19*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 20*/
-	XK_R1,  	XK_R1,  	XK_Pause,	NoSymbol,	/* 21*/
-	XK_R2,  	XK_R2,  	XK_Print,	NoSymbol,	/* 22*/
-	XK_R3,  	XK_R3,  	XK_Scroll_Lock,	XK_Break,	/* 23*/
+	XK_Pause,  	NoSymbol,  	XK_R1,		NoSymbol,	/* 21*/
+	XK_Print,  	NoSymbol,  	XK_R2,		NoSymbol,	/* 22*/
+	XK_Break,  	XK_Scroll_Lock,	XK_R3,		NoSymbol,	/* 23*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 24*/
-	XK_L3,  	XK_L3,  	SunXK_Props,	NoSymbol,	/* 25*/
-	XK_L4,  	XK_L4,  	SunXK_Undo,	NoSymbol,	/* 26*/
+	SunXK_Props,  	NoSymbol,  	XK_L3,		NoSymbol,	/* 25*/
+	SunXK_Undo,  	NoSymbol,  	XK_L4,		NoSymbol,	/* 26*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 27*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 28*/
 	XK_Escape,	NoSymbol,	NoSymbol,	NoSymbol,	/* 29*/
@@ -4521,13 +4521,13 @@ static KeySym Taiwan4Keymap[] = {
 	XK_quoteleft,	XK_asciitilde,	NoSymbol,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
-	XK_R4,  	XK_R4,  	XK_KP_Equal,	NoSymbol,	/* 45*/
-	XK_R5,  	XK_R5,  	XK_KP_Divide,	NoSymbol,	/* 46*/
-	XK_R6,  	XK_R6,  	XK_KP_Multiply,	NoSymbol,	/* 47*/
+	XK_KP_Equal,  	NoSymbol,  	XK_R4,		NoSymbol,	/* 45*/
+	XK_KP_Divide,  	NoSymbol,  	XK_R5,		NoSymbol,	/* 46*/
+	XK_KP_Multiply, NoSymbol,  	XK_R6,		NoSymbol,	/* 47*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
-	XK_L5,  	XK_L5,  	SunXK_Front,	NoSymbol,	/* 49*/
-	XK_Delete,	XK_Delete,	XK_KP_Decimal,	NoSymbol,	/* 50*/
-	XK_L6,  	XK_L6,  	SunXK_Copy,	NoSymbol,	/* 51*/
+	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
+	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
+	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 52*/
 	XK_Tab, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 53*/
 	XK_Q,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 54*/
@@ -4541,15 +4541,15 @@ static KeySym Taiwan4Keymap[] = {
 	XK_O,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 62*/
 	XK_P,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 63*/
 	XK_bracketleft,	XK_braceleft,	NoSymbol,	NoSymbol,	/* 64*/
-	XK_bracketright,	XK_braceright,	NoSymbol,	NoSymbol,	/* 65*/
+	XK_bracketright,XK_braceright,	NoSymbol,	NoSymbol,	/* 65*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
-	XK_R7,  	XK_R7,  	XK_KP_7,	XK_Home,	/* 68*/
-	XK_Up,  	XK_R8,  	XK_KP_8,	NoSymbol,	/* 69*/
-	XK_R9,  	XK_R9,  	XK_KP_9,	XK_Prior,	/* 70*/
+	XK_KP_Home,  	XK_KP_7,  	XK_R7,		NoSymbol,	/* 68*/
+	XK_KP_Up,  	XK_KP_8,  	XK_R8,		NoSymbol,	/* 69*/
+	XK_KP_Prior,  	XK_KP_9,  	XK_R9,		NoSymbol,	/* 70*/
 	XK_KP_Subtract,	NoSymbol,	NoSymbol,	NoSymbol,	/* 71*/
-	XK_L7,  	XK_L7,  	SunXK_Open,	NoSymbol,	/* 72*/
-	XK_L8,  	XK_L8,  	SunXK_Paste,	NoSymbol,	/* 73*/
+	SunXK_Open,  	NoSymbol,  	XK_L7,		NoSymbol,	/* 72*/
+	SunXK_Paste,  	NoSymbol,  	XK_L8,		NoSymbol,	/* 73*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 74*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 75*/
 	XK_Control_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
@@ -4567,13 +4567,13 @@ static KeySym Taiwan4Keymap[] = {
 	XK_backslash,	XK_bar, 	XK_brokenbar,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
-	XK_Left,	XK_R10, 	XK_KP_4,	NoSymbol,	/* 91*/
-	XK_R11, 	XK_R11, 	XK_KP_5,	NoSymbol,	/* 92*/
-	XK_Right,	XK_R12, 	XK_KP_6,	NoSymbol,	/* 93*/
-	XK_Insert,	XK_Insert,	XK_KP_0,	NoSymbol,	/* 94*/
-	XK_L9,  	XK_L9,  	SunXK_Find,	NoSymbol,	/* 95*/
+	XK_KP_Left,	XK_KP_4, 	XK_R10,		NoSymbol,	/* 91*/
+	NoSymbol, 	XK_KP_5, 	XK_R11,		NoSymbol,	/* 92*/
+	XK_KP_Right,	XK_KP_6, 	XK_R12,		NoSymbol,	/* 93*/
+	XK_KP_Insert,	XK_KP_0,	NoSymbol,	NoSymbol,	/* 94*/
+	SunXK_Find,  	NoSymbol,  	XK_L9,		NoSymbol,	/* 95*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 96*/
-	XK_L10, 	XK_L10, 	SunXK_Cut,	NoSymbol,	/* 97*/
+	SunXK_Cut, 	NoSymbol, 	XK_L10,		NoSymbol,	/* 97*/
 	XK_Num_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 98*/
 	XK_Shift_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 99*/
 	XK_Z,   	NoSymbol,	NoSymbol,	NoSymbol,	/*100*/
@@ -4588,9 +4588,9 @@ static KeySym Taiwan4Keymap[] = {
 	XK_slash,	XK_question,	NoSymbol,	NoSymbol,	/*109*/
 	XK_Shift_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*110*/
 	XK_Linefeed,	NoSymbol,	NoSymbol,	NoSymbol,	/*111*/
-	XK_R13, 	XK_R13, 	XK_KP_1,	XK_End, 	/*112*/
-	XK_Down,	XK_R14, 	XK_KP_2,	NoSymbol,	/*113*/
-	XK_R15, 	XK_R15, 	XK_KP_3,	XK_Next,	/*114*/
+	XK_KP_End, 	XK_KP_1, 	XK_R13,		NoSymbol, 	/*112*/
+	XK_KP_Down,	XK_KP_2, 	XK_R14,		NoSymbol,	/*113*/
+	XK_KP_Next, 	XK_KP_3, 	XK_R15,		NoSymbol,	/*114*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*115*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*116*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*117*/
@@ -4627,17 +4627,17 @@ static SunModmapRec Taiwan4Modmap[] = {
 #ifdef TAIWAN5
 
 static KeySym Taiwan5Keymap[] = {
-	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
+	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
-	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
+	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
 	XK_F3,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  8*/
-	SunXK_F36,	NoSymbol,	NoSymbol,	NoSymbol,	/*  9*/
+	XK_F11,		NoSymbol,	SunXK_F36,	NoSymbol,	/*  9*/
 	XK_F4,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 10*/
-	SunXK_F37,	NoSymbol,	NoSymbol,	NoSymbol,	/* 11*/
+	XK_F12,		NoSymbol,	SunXK_F37,	NoSymbol,	/* 11*/
 	XK_F5,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 12*/
 	SunXK_AltGraph,	NoSymbol,	NoSymbol,	NoSymbol,	/* 13*/
 	XK_F6,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 14*/
@@ -4647,12 +4647,12 @@ static KeySym Taiwan5Keymap[] = {
 	XK_F9,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 18*/
 	XK_Alt_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 19*/
 	XK_Up,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 20*/
-	XK_R1,  	XK_R1,  	XK_Pause,	XK_Break,	/* 21*/
-	XK_R2,  	XK_R2,  	XK_Print,	SunXK_Sys_Req,	/* 22*/
-	XK_R3,  	XK_R3,  	XK_Scroll_Lock,	NoSymbol,	/* 23*/
+	XK_Pause,  	NoSymbol,  	XK_Break,	NoSymbol,	/* 21*/
+	XK_Print,  	NoSymbol,  	XK_Sys_Req,	SunXK_Sys_Req,	/* 22*/
+	XK_Scroll_Lock,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 23*/
 	XK_Left,	NoSymbol,	NoSymbol,	NoSymbol,	/* 24*/
-	XK_L3,  	XK_L3,  	SunXK_Props,	NoSymbol,	/* 25*/
-	XK_L4,  	XK_L4,  	SunXK_Undo,	NoSymbol,	/* 26*/
+	SunXK_Props,  	NoSymbol,  	XK_L3,		NoSymbol,	/* 25*/
+	SunXK_Undo,  	NoSymbol,  	XK_L4,		NoSymbol,	/* 26*/
 	XK_Down,	NoSymbol,	NoSymbol,	NoSymbol,	/* 27*/
 	XK_Right,	NoSymbol,	NoSymbol,	NoSymbol,	/* 28*/
 	XK_Escape,	NoSymbol,	NoSymbol,	NoSymbol,	/* 29*/
@@ -4672,12 +4672,12 @@ static KeySym Taiwan5Keymap[] = {
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 45*/
-	XK_R5,  	XK_R5,  	XK_KP_Divide,	NoSymbol,	/* 46*/
-	XK_R6,  	XK_R6,  	XK_KP_Multiply,	NoSymbol,	/* 47*/
+	XK_KP_Divide,  	NoSymbol,  	NoSymbol,	NoSymbol,	/* 46*/
+	XK_KP_Multiply,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 47*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
-	XK_L5,  	XK_L5,  	SunXK_Front,	NoSymbol,	/* 49*/
-	XK_Delete,	XK_Delete,	XK_KP_Decimal,	NoSymbol,	/* 50*/
-	XK_L6,  	XK_L6,  	SunXK_Copy,	NoSymbol,	/* 51*/
+	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
+	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
+	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
 	XK_Home,	NoSymbol,	NoSymbol,	NoSymbol,	/* 52*/
 	XK_Tab, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 53*/
 	XK_Q,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 54*/
@@ -4691,15 +4691,15 @@ static KeySym Taiwan5Keymap[] = {
 	XK_O,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 62*/
 	XK_P,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 63*/
 	XK_bracketleft,	XK_braceleft,	NoSymbol,	NoSymbol,	/* 64*/
-	XK_bracketright,	XK_braceright,	NoSymbol,	NoSymbol,	/* 65*/
+	XK_bracketright,XK_braceright,	NoSymbol,	NoSymbol,	/* 65*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
-	XK_R7,  	XK_R7,  	XK_KP_7,	XK_Home,	/* 68*/
-	XK_Up,  	XK_R8,  	XK_KP_8,	NoSymbol,	/* 69*/
-	XK_R9,  	XK_R9,  	XK_KP_9,	XK_Prior,	/* 70*/
-	XK_R4,  	XK_R4,  	XK_KP_Subtract,	NoSymbol,	/* 71*/
-	XK_L7,  	XK_L7,  	SunXK_Open,	NoSymbol,	/* 72*/
-	XK_L8,  	XK_L8,  	SunXK_Paste,	NoSymbol,	/* 73*/
+	XK_KP_Home,  	XK_KP_7,  	NoSymbol,	NoSymbol,	/* 68*/
+	XK_KP_Up,  	XK_KP_8,  	NoSymbol,	NoSymbol,	/* 69*/
+	XK_KP_Prior,  	XK_KP_9,  	NoSymbol,	NoSymbol,	/* 70*/
+	XK_KP_Subtract,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 71*/
+	SunXK_Open,  	NoSymbol,  	XK_L7,		NoSymbol,	/* 72*/
+	SunXK_Paste,  	NoSymbol,  	XK_L8,		NoSymbol,	/* 73*/
 	XK_End, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 74*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 75*/
 	XK_Control_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
@@ -4717,13 +4717,13 @@ static KeySym Taiwan5Keymap[] = {
 	XK_backslash,	XK_bar, 	XK_brokenbar,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
-	XK_Left,	XK_R10, 	XK_KP_4,	NoSymbol,	/* 91*/
-	XK_R11, 	XK_R11, 	XK_KP_5,	NoSymbol,	/* 92*/
-	XK_Right,	XK_R12, 	XK_KP_6,	NoSymbol,	/* 93*/
-	XK_Insert,	XK_Insert,	XK_KP_0,	NoSymbol,	/* 94*/
-	XK_L9,  	XK_L9,  	SunXK_Find,	NoSymbol,	/* 95*/
+	XK_KP_Left,	XK_KP_4, 	NoSymbol,	NoSymbol,	/* 91*/
+	NoSymbol, 	XK_KP_5, 	NoSymbol,	NoSymbol,	/* 92*/
+	XK_KP_Right,	XK_KP_6, 	NoSymbol,	NoSymbol,	/* 93*/
+	XK_KP_Insert,	XK_KP_0,	NoSymbol,	NoSymbol,	/* 94*/
+	SunXK_Find,  	NoSymbol,  	XK_L9,		NoSymbol,	/* 95*/
 	XK_Prior,	NoSymbol,	NoSymbol,	NoSymbol,	/* 96*/
-	XK_L10, 	XK_L10, 	SunXK_Cut,	NoSymbol,	/* 97*/
+	SunXK_Cut, 	NoSymbol, 	XK_L10,		NoSymbol,	/* 97*/
 	XK_Num_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 98*/
 	XK_Shift_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 99*/
 	XK_Z,   	NoSymbol,	NoSymbol,	NoSymbol,	/*100*/
@@ -4738,9 +4738,9 @@ static KeySym Taiwan5Keymap[] = {
 	XK_slash,	XK_question,	NoSymbol,	NoSymbol,	/*109*/
 	XK_Shift_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*110*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*111*/
-	XK_R13, 	XK_R13, 	XK_KP_1,	XK_End, 	/*112*/
-	XK_Down,	XK_R14, 	XK_KP_2,	NoSymbol,	/*113*/
-	XK_R15, 	XK_R15, 	XK_KP_3,	XK_Next,	/*114*/
+	XK_KP_End, 	XK_KP_1, 	NoSymbol,	NoSymbol, 	/*112*/
+	XK_KP_Down,	XK_KP_2, 	NoSymbol,	NoSymbol,	/*113*/
+	XK_KP_Next, 	XK_KP_3, 	NoSymbol,	NoSymbol,	/*114*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*115*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*116*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*117*/
@@ -4777,17 +4777,17 @@ static SunModmapRec Taiwan5Modmap[] = {
 #ifdef UK4
 
 static KeySym UK4Keymap[] = {
-	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
+	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
-	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
+	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
 	XK_F3,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  8*/
-	SunXK_F36,	NoSymbol,	NoSymbol,	NoSymbol,	/*  9*/
+	XK_F11,		NoSymbol,	SunXK_F36,	NoSymbol,	/*  9*/
 	XK_F4,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 10*/
-	SunXK_F37,	NoSymbol,	NoSymbol,	NoSymbol,	/* 11*/
+	XK_F12,		NoSymbol,	SunXK_F37,	NoSymbol,	/* 11*/
 	XK_F5,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 12*/
 	SunXK_AltGraph,	NoSymbol,	NoSymbol,	NoSymbol,	/* 13*/
 	XK_F6,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 14*/
@@ -4797,12 +4797,12 @@ static KeySym UK4Keymap[] = {
 	XK_F9,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 18*/
 	XK_Alt_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 19*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 20*/
-	XK_R1,  	XK_R1,  	XK_Pause,	NoSymbol,	/* 21*/
-	XK_R2,  	XK_R2,  	XK_Print,	NoSymbol,	/* 22*/
-	XK_R3,  	XK_R3,  	XK_Scroll_Lock,	XK_Break,	/* 23*/
+	XK_Pause,  	NoSymbol,  	XK_R1,		NoSymbol,	/* 21*/
+	XK_Print,  	NoSymbol,  	XK_R2,		NoSymbol,	/* 22*/
+	XK_Break,  	XK_Scroll_Lock,	XK_R3,		NoSymbol,	/* 23*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 24*/
-	XK_L3,  	XK_L3,  	SunXK_Props,	NoSymbol,	/* 25*/
-	XK_L4,  	XK_L4,  	SunXK_Undo,	NoSymbol,	/* 26*/
+	SunXK_Props,  	NoSymbol,  	XK_L3,		NoSymbol,	/* 25*/
+	SunXK_Undo,  	NoSymbol,  	XK_L4,		NoSymbol,	/* 26*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 27*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 28*/
 	XK_Escape,	NoSymbol,	NoSymbol,	NoSymbol,	/* 29*/
@@ -4821,13 +4821,13 @@ static KeySym UK4Keymap[] = {
 	XK_quoteleft,	XK_asciitilde,	NoSymbol,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
-	XK_R4,  	XK_R4,  	XK_KP_Equal,	NoSymbol,	/* 45*/
-	XK_R5,  	XK_R5,  	XK_KP_Divide,	NoSymbol,	/* 46*/
-	XK_R6,  	XK_R6,  	XK_KP_Multiply,	NoSymbol,	/* 47*/
+	XK_KP_Equal,  	NoSymbol,  	XK_R4,		NoSymbol,	/* 45*/
+	XK_KP_Divide,  	NoSymbol,  	XK_R5,		NoSymbol,	/* 46*/
+	XK_KP_Multiply,	NoSymbol,  	XK_R6,		NoSymbol,	/* 47*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
-	XK_L5,  	XK_L5,  	SunXK_Front,	NoSymbol,	/* 49*/
-	XK_Delete,	XK_Delete,	XK_KP_Decimal,	NoSymbol,	/* 50*/
-	XK_L6,  	XK_L6,  	SunXK_Copy,	NoSymbol,	/* 51*/
+	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
+	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
+	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 52*/
 	XK_Tab, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 53*/
 	XK_Q,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 54*/
@@ -4841,15 +4841,15 @@ static KeySym UK4Keymap[] = {
 	XK_O,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 62*/
 	XK_P,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 63*/
 	XK_bracketleft,	XK_braceleft,	NoSymbol,	NoSymbol,	/* 64*/
-	XK_bracketright,	XK_braceright,	NoSymbol,	NoSymbol,	/* 65*/
+	XK_bracketright,XK_braceright,	NoSymbol,	NoSymbol,	/* 65*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
-	XK_R7,  	XK_R7,  	XK_KP_7,	XK_Home,	/* 68*/
-	XK_Up,  	XK_R8,  	XK_KP_8,	NoSymbol,	/* 69*/
-	XK_R9,  	XK_R9,  	XK_KP_9,	XK_Prior,	/* 70*/
+	XK_KP_Home,  	XK_KP_7,  	XK_R7,		NoSymbol,	/* 68*/
+	XK_KP_Up,  	XK_KP_8,  	XK_R8,		NoSymbol,	/* 69*/
+	XK_KP_Prior,  	XK_KP_9,  	XK_R9,		NoSymbol,	/* 70*/
 	XK_KP_Subtract,	NoSymbol,	NoSymbol,	NoSymbol,	/* 71*/
-	XK_L7,  	XK_L7,  	SunXK_Open,	NoSymbol,	/* 72*/
-	XK_L8,  	XK_L8,  	SunXK_Paste,	NoSymbol,	/* 73*/
+	SunXK_Open,  	NoSymbol,  	XK_L7,		NoSymbol,	/* 72*/
+	SunXK_Paste,  	NoSymbol,  	XK_L8,		NoSymbol,	/* 73*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 74*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 75*/
 	XK_Control_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
@@ -4867,13 +4867,13 @@ static KeySym UK4Keymap[] = {
 	XK_backslash,	XK_bar, 	NoSymbol,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
-	XK_Left,	XK_R10, 	XK_KP_4,	NoSymbol,	/* 91*/
-	XK_R11, 	XK_R11, 	XK_KP_5,	NoSymbol,	/* 92*/
-	XK_Right,	XK_R12, 	XK_KP_6,	NoSymbol,	/* 93*/
-	XK_Insert,	XK_Insert,	XK_KP_0,	NoSymbol,	/* 94*/
-	XK_L9,  	XK_L9,  	SunXK_Find,	NoSymbol,	/* 95*/
+	XK_KP_Left,	XK_KP_4, 	XK_R10,		NoSymbol,	/* 91*/
+	NoSymbol, 	XK_KP_5, 	XK_R11,		NoSymbol,	/* 92*/
+	XK_KP_Right,	XK_KP_6, 	XK_R12,		NoSymbol,	/* 93*/
+	XK_KP_Insert,	XK_KP_0,	NoSymbol,	NoSymbol,	/* 94*/
+	SunXK_Find,  	NoSymbol,  	XK_L9,		NoSymbol,	/* 95*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 96*/
-	XK_L10, 	XK_L10, 	SunXK_Cut,	NoSymbol,	/* 97*/
+	SunXK_Cut, 	NoSymbol, 	XK_L10,		NoSymbol,	/* 97*/
 	XK_Num_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 98*/
 	XK_Shift_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 99*/
 	XK_Z,   	NoSymbol,	NoSymbol,	NoSymbol,	/*100*/
@@ -4888,9 +4888,9 @@ static KeySym UK4Keymap[] = {
 	XK_slash,	XK_question,	NoSymbol,	NoSymbol,	/*109*/
 	XK_Shift_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*110*/
 	XK_Linefeed,	NoSymbol,	NoSymbol,	NoSymbol,	/*111*/
-	XK_R13, 	XK_R13, 	XK_KP_1,	XK_End, 	/*112*/
-	XK_Down,	XK_R14, 	XK_KP_2,	NoSymbol,	/*113*/
-	XK_R15, 	XK_R15, 	XK_KP_3,	XK_Next,	/*114*/
+	XK_KP_End, 	XK_KP_1, 	XK_R13,		NoSymbol, 	/*112*/
+	XK_KP_Down,	XK_KP_2, 	XK_R14,		NoSymbol,	/*113*/
+	XK_KP_Next, 	XK_KP_3, 	XK_R15,		NoSymbol,	/*114*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*115*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*116*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*117*/
@@ -4927,17 +4927,17 @@ static SunModmapRec UK4Modmap[] = {
 #ifdef UK5
 
 static KeySym UK5Keymap[] = {
-	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
+	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
-	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
+	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
 	XK_F3,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  8*/
-	SunXK_F36,	NoSymbol,	NoSymbol,	NoSymbol,	/*  9*/
+	XK_F11,		NoSymbol,	SunXK_F36,	NoSymbol,	/*  9*/
 	XK_F4,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 10*/
-	SunXK_F37,	NoSymbol,	NoSymbol,	NoSymbol,	/* 11*/
+	XK_F12,		NoSymbol,	SunXK_F37,	NoSymbol,	/* 11*/
 	XK_F5,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 12*/
 	SunXK_AltGraph,	NoSymbol,	NoSymbol,	NoSymbol,	/* 13*/
 	XK_F6,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 14*/
@@ -4947,12 +4947,12 @@ static KeySym UK5Keymap[] = {
 	XK_F9,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 18*/
 	XK_Alt_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 19*/
 	XK_Up,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 20*/
-	XK_R1,  	XK_R1,  	XK_Pause,	XK_Break,	/* 21*/
-	XK_R2,  	XK_R2,  	XK_Print,	SunXK_Sys_Req,	/* 22*/
-	XK_R3,  	XK_R3,  	XK_Scroll_Lock,	NoSymbol,	/* 23*/
+	XK_Pause,  	NoSymbol,  	XK_Break,	NoSymbol,	/* 21*/
+	XK_Print,  	NoSymbol,  	XK_Sys_Req,	SunXK_Sys_Req,	/* 22*/
+	XK_Scroll_Lock, NoSymbol,  	NoSymbol,	NoSymbol,	/* 23*/
 	XK_Left,	NoSymbol,	NoSymbol,	NoSymbol,	/* 24*/
-	XK_L3,  	XK_L3,  	SunXK_Props,	NoSymbol,	/* 25*/
-	XK_L4,  	XK_L4,  	SunXK_Undo,	NoSymbol,	/* 26*/
+	SunXK_Props,  	NoSymbol,  	XK_L3,		NoSymbol,	/* 25*/
+	SunXK_Undo,  	NoSymbol,  	XK_L4,		NoSymbol,	/* 26*/
 	XK_Down,	NoSymbol,	NoSymbol,	NoSymbol,	/* 27*/
 	XK_Right,	NoSymbol,	NoSymbol,	NoSymbol,	/* 28*/
 	XK_Escape,	NoSymbol,	NoSymbol,	NoSymbol,	/* 29*/
@@ -4972,12 +4972,12 @@ static KeySym UK5Keymap[] = {
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 45*/
-	XK_R5,  	XK_R5,  	XK_KP_Divide,	NoSymbol,	/* 46*/
-	XK_R6,  	XK_R6,  	XK_KP_Multiply,	NoSymbol,	/* 47*/
+	XK_KP_Divide,  	NoSymbol,  	NoSymbol,	NoSymbol,	/* 46*/
+	XK_KP_Multiply,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 47*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
-	XK_L5,  	XK_L5,  	SunXK_Front,	NoSymbol,	/* 49*/
-	XK_Delete,	XK_Delete,	XK_KP_Decimal,	NoSymbol,	/* 50*/
-	XK_L6,  	XK_L6,  	SunXK_Copy,	NoSymbol,	/* 51*/
+	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
+	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
+	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
 	XK_Home,	NoSymbol,	NoSymbol,	NoSymbol,	/* 52*/
 	XK_Tab, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 53*/
 	XK_Q,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 54*/
@@ -4991,15 +4991,15 @@ static KeySym UK5Keymap[] = {
 	XK_O,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 62*/
 	XK_P,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 63*/
 	XK_bracketleft,	XK_braceleft,	NoSymbol,	NoSymbol,	/* 64*/
-	XK_bracketright,	XK_braceright,	NoSymbol,	NoSymbol,	/* 65*/
+	XK_bracketright,XK_braceright,	NoSymbol,	NoSymbol,	/* 65*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
-	XK_R7,  	XK_R7,  	XK_KP_7,	XK_Home,	/* 68*/
-	XK_Up,  	XK_R8,  	XK_KP_8,	NoSymbol,	/* 69*/
-	XK_R9,  	XK_R9,  	XK_KP_9,	XK_Prior,	/* 70*/
-	XK_R4,  	XK_R4,  	XK_KP_Subtract,	NoSymbol,	/* 71*/
-	XK_L7,  	XK_L7,  	SunXK_Open,	NoSymbol,	/* 72*/
-	XK_L8,  	XK_L8,  	SunXK_Paste,	NoSymbol,	/* 73*/
+	XK_KP_Home,  	XK_KP_7,  	NoSymbol,	NoSymbol,	/* 68*/
+	XK_KP_Up,  	XK_KP_8,  	NoSymbol,	NoSymbol,	/* 69*/
+	XK_KP_Prior,  	XK_KP_9,  	NoSymbol,	NoSymbol,	/* 70*/
+	XK_KP_Subtract,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 71*/
+	SunXK_Open,  	NoSymbol,  	XK_L7,		NoSymbol,	/* 72*/
+	SunXK_Paste,  	NoSymbol,  	XK_L8,		NoSymbol,	/* 73*/
 	XK_End, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 74*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 75*/
 	XK_Control_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
@@ -5017,13 +5017,13 @@ static KeySym UK5Keymap[] = {
 	XK_numbersign,	XK_asciitilde,	NoSymbol,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
-	XK_Left,	XK_R10, 	XK_KP_4,	NoSymbol,	/* 91*/
-	XK_R11, 	XK_R11, 	XK_KP_5,	NoSymbol,	/* 92*/
-	XK_Right,	XK_R12, 	XK_KP_6,	NoSymbol,	/* 93*/
-	XK_Insert,	XK_Insert,	XK_KP_0,	NoSymbol,	/* 94*/
-	XK_L9,  	XK_L9,  	SunXK_Find,	NoSymbol,	/* 95*/
+	XK_KP_Left,	XK_KP_4, 	NoSymbol,	NoSymbol,	/* 91*/
+	NoSymbol, 	XK_KP_5, 	NoSymbol,	NoSymbol,	/* 92*/
+	XK_KP_Right,	XK_KP_6, 	NoSymbol,	NoSymbol,	/* 93*/
+	XK_KP_Insert,	XK_KP_0,	NoSymbol,	NoSymbol,	/* 94*/
+	SunXK_Find,  	NoSymbol,  	XK_L9,		NoSymbol,	/* 95*/
 	XK_Prior,	NoSymbol,	NoSymbol,	NoSymbol,	/* 96*/
-	XK_L10, 	XK_L10, 	SunXK_Cut,	NoSymbol,	/* 97*/
+	SunXK_Cut, 	NoSymbol, 	XK_L10,		NoSymbol,	/* 97*/
 	XK_Num_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 98*/
 	XK_Shift_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 99*/
 	XK_Z,   	NoSymbol,	NoSymbol,	NoSymbol,	/*100*/
@@ -5038,9 +5038,9 @@ static KeySym UK5Keymap[] = {
 	XK_slash,	XK_question,	NoSymbol,	NoSymbol,	/*109*/
 	XK_Shift_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*110*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*111*/
-	XK_R13, 	XK_R13, 	XK_KP_1,	XK_End, 	/*112*/
-	XK_Down,	XK_R14, 	XK_KP_2,	NoSymbol,	/*113*/
-	XK_R15, 	XK_R15, 	XK_KP_3,	XK_Next,	/*114*/
+	XK_KP_End, 	XK_KP_1, 	NoSymbol,	NoSymbol, 	/*112*/
+	XK_KP_Down,	XK_KP_2, 	NoSymbol,	NoSymbol,	/*113*/
+	XK_KP_Next, 	XK_KP_3, 	NoSymbol,	NoSymbol,	/*114*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*115*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*116*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*117*/
@@ -5077,7 +5077,7 @@ static SunModmapRec UK5Modmap[] = {
 #ifdef US101A
 
 static KeySym US101AKeymap[] = {
-	XK_R1,  	XK_R1,  	XK_Pause,	XK_Break,	/*  1*/
+	XK_Pause,  	NoSymbol,  	XK_Break,	NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  3*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
@@ -5085,9 +5085,9 @@ static KeySym US101AKeymap[] = {
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
 	XK_F3,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  8*/
-	SunXK_F36,	NoSymbol,	NoSymbol,	NoSymbol,	/*  9*/
+	XK_F11,		NoSymbol,	SunXK_F36,	NoSymbol,	/*  9*/
 	XK_F4,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 10*/
-	SunXK_F37,	NoSymbol,	NoSymbol,	NoSymbol,	/* 11*/
+	XK_F12,		NoSymbol,	SunXK_F37,	NoSymbol,	/* 11*/
 	XK_F5,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 12*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 13*/
 	XK_F6,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 14*/
@@ -5096,15 +5096,15 @@ static KeySym US101AKeymap[] = {
 	XK_F8,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 17*/
 	XK_F9,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 18*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 19*/
-	XK_Up,  	XK_L7,  	SunXK_Open,	NoSymbol,	/* 20*/
+	XK_Up,  	NoSymbol,  	NoSymbol,	NoSymbol,	/* 20*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 21*/
-	XK_R2,  	XK_R2,  	XK_Print,	SunXK_Sys_Req,	/* 22*/
-	XK_R3,  	XK_R3,  	XK_Scroll_Lock,	NoSymbol,	/* 23*/
-	XK_Left,	XK_L8,  	SunXK_Paste,	NoSymbol,	/* 24*/
-	XK_Insert,	XK_L1,  	SunXK_Stop,	NoSymbol,	/* 25*/
-	XK_End, 	XK_L5,  	SunXK_Front,	NoSymbol,	/* 26*/
-	XK_Down,	XK_L9,  	SunXK_Find,	NoSymbol,	/* 27*/
-	XK_Right,	XK_L10, 	SunXK_Cut,	NoSymbol,	/* 28*/
+	XK_Print,  	NoSymbol,  	XK_Sys_Req,	SunXK_Sys_Req,	/* 22*/
+	XK_Scroll_Lock, NoSymbol,  	NoSymbol,	NoSymbol,	/* 23*/
+	XK_Left,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 24*/
+	XK_Insert,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 25*/
+	XK_End, 	NoSymbol,  	NoSymbol,	NoSymbol,	/* 26*/
+	XK_Down,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 27*/
+	XK_Right,	NoSymbol, 	NoSymbol,	NoSymbol,	/* 28*/
 	XK_Escape,	NoSymbol,	NoSymbol,	NoSymbol,	/* 29*/
 	XK_1,   	XK_exclam,	NoSymbol,	NoSymbol,	/* 30*/
 	XK_2,   	XK_at,  	NoSymbol,	NoSymbol,	/* 31*/
@@ -5122,12 +5122,12 @@ static KeySym US101AKeymap[] = {
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 45*/
-	XK_R5,  	XK_R5,  	XK_KP_Divide,	NoSymbol,	/* 46*/
-	XK_R6,  	XK_R6,  	XK_KP_Multiply,	NoSymbol,	/* 47*/
+	XK_KP_Divide,  	NoSymbol,  	NoSymbol,	NoSymbol,	/* 46*/
+	XK_KP_Multiply,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 47*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 49*/
-	XK_Delete,	XK_Delete,	XK_KP_Decimal,	NoSymbol,	/* 50*/
-	XK_Prior,	XK_L3,  	SunXK_Props,	NoSymbol,	/* 51*/
+	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
+	XK_Prior,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 51*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 52*/
 	XK_Tab, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 53*/
 	XK_Q,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 54*/
@@ -5141,15 +5141,15 @@ static KeySym US101AKeymap[] = {
 	XK_O,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 62*/
 	XK_P,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 63*/
 	XK_bracketleft,	XK_braceleft,	NoSymbol,	NoSymbol,	/* 64*/
-	XK_bracketright,	XK_braceright,	NoSymbol,	NoSymbol,	/* 65*/
+	XK_bracketright,XK_braceright,	NoSymbol,	NoSymbol,	/* 65*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
-	XK_R7,  	XK_R7,  	XK_KP_7,	XK_Home,	/* 68*/
-	XK_Up,  	XK_R8,  	XK_KP_8,	NoSymbol,	/* 69*/
-	XK_R9,  	XK_R9,  	XK_KP_9,	XK_Prior,	/* 70*/
-	XK_R4,  	XK_R4,  	XK_KP_Subtract,	NoSymbol,	/* 71*/
+	XK_KP_Home,  	XK_KP_7,  	NoSymbol,	NoSymbol,	/* 68*/
+	XK_KP_Up,  	XK_KP_8,  	NoSymbol,	NoSymbol,	/* 69*/
+	XK_KP_Prior,  	XK_KP_9,  	NoSymbol,	NoSymbol,	/* 70*/
+	XK_KP_Subtract,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 71*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 72*/
-	XK_Next,	XK_L6,  	SunXK_Copy,	NoSymbol,	/* 73*/
+	XK_Next,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 73*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 74*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 75*/
 	XK_Control_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
@@ -5167,13 +5167,13 @@ static KeySym US101AKeymap[] = {
 	XK_backslash,	XK_bar, 	NoSymbol,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
-	XK_Left,	XK_R10, 	XK_KP_4,	NoSymbol,	/* 91*/
-	XK_R11, 	XK_R11, 	XK_KP_5,	NoSymbol,	/* 92*/
-	XK_Right,	XK_R12, 	XK_KP_6,	NoSymbol,	/* 93*/
-	XK_Insert,	XK_Insert,	XK_KP_0,	NoSymbol,	/* 94*/
+	XK_KP_Left,	XK_KP_4, 	NoSymbol,	NoSymbol,	/* 91*/
+	NoSymbol, 	XK_KP_5, 	NoSymbol,	NoSymbol,	/* 92*/
+	XK_KP_Right,	XK_KP_6, 	NoSymbol,	NoSymbol,	/* 93*/
+	XK_KP_Insert,	XK_KP_0,	NoSymbol,	NoSymbol,	/* 94*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 95*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 96*/
-	XK_Home,	XK_L2,  	SunXK_Again,	NoSymbol,	/* 97*/
+	XK_Home,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 97*/
 	XK_Num_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 98*/
 	XK_Shift_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 99*/
 	XK_Z,   	NoSymbol,	NoSymbol,	NoSymbol,	/*100*/
@@ -5188,13 +5188,13 @@ static KeySym US101AKeymap[] = {
 	XK_slash,	XK_question,	NoSymbol,	NoSymbol,	/*109*/
 	XK_Shift_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*110*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*111*/
-	XK_R13, 	XK_R13, 	XK_KP_1,	XK_End, 	/*112*/
-	XK_Down,	XK_R14, 	XK_KP_2,	NoSymbol,	/*113*/
-	XK_R15, 	XK_R15, 	XK_KP_3,	XK_Next,	/*114*/
+	XK_KP_End, 	XK_KP_1, 	NoSymbol,	NoSymbol, 	/*112*/
+	XK_KP_Down,	XK_KP_2, 	NoSymbol,	NoSymbol,	/*113*/
+	XK_KP_Next, 	XK_KP_3, 	NoSymbol,	NoSymbol,	/*114*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*115*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*116*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*117*/
-	XK_Delete,	XK_L4,  	SunXK_Undo,	NoSymbol,	/*118*/
+	XK_Delete,	NoSymbol,  	NoSymbol,	NoSymbol,	/*118*/
 	XK_Caps_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/*119*/
 	XK_Alt_L,	NoSymbol,	NoSymbol,	NoSymbol,	/*120*/
 	XK_space,	NoSymbol,	NoSymbol,	NoSymbol,	/*121*/
@@ -5225,17 +5225,17 @@ static SunModmapRec US101AModmap[] = {
 #ifdef US4
 
 static KeySym US4Keymap[] = {
-	SunXK_Stop,  	SunXK_Stop,  	XK_L1,		NoSymbol,	/*  1*/
+	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
-	SunXK_Again,  	SunXK_Again,  	XK_L2,		NoSymbol,	/*  3*/
+	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
 	XK_F3,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  8*/
-	SunXK_F36,	NoSymbol,	NoSymbol,	NoSymbol,	/*  9*/
+	XK_F11,		NoSymbol,	SunXK_F36,	NoSymbol,	/*  9*/
 	XK_F4,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 10*/
-	SunXK_F37,	NoSymbol,	NoSymbol,	NoSymbol,	/* 11*/
+	XK_F12,		NoSymbol,	SunXK_F37,	NoSymbol,	/* 11*/
 	XK_F5,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 12*/
 	SunXK_AltGraph,	NoSymbol,	NoSymbol,	NoSymbol,	/* 13*/
 	XK_F6,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 14*/
@@ -5245,12 +5245,12 @@ static KeySym US4Keymap[] = {
 	XK_F9,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 18*/
 	XK_Alt_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 19*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 20*/
-	XK_Pause,  	XK_Pause,  	XK_R1,		NoSymbol,	/* 21*/
-	XK_Print,  	XK_Print,  	XK_R2,		NoSymbol,	/* 22*/
+	XK_Pause,  	NoSymbol,  	XK_R1,		NoSymbol,	/* 21*/
+	XK_Print,  	NoSymbol,  	XK_R2,		NoSymbol,	/* 22*/
 	XK_Break,  	XK_Scroll_Lock,	XK_R3,		NoSymbol,	/* 23*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 24*/
-	SunXK_Props,  	SunXK_Props,  	XK_L3,		NoSymbol,	/* 25*/
-	SunXK_Undo,  	SunXK_Undo,  	XK_L4,		NoSymbol,	/* 26*/
+	SunXK_Props,  	NoSymbol,  	XK_L3,		NoSymbol,	/* 25*/
+	SunXK_Undo,  	NoSymbol,  	XK_L4,		NoSymbol,	/* 26*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 27*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 28*/
 	XK_Escape,	NoSymbol,	NoSymbol,	NoSymbol,	/* 29*/
@@ -5269,13 +5269,13 @@ static KeySym US4Keymap[] = {
 	XK_quoteleft,	XK_asciitilde,	NoSymbol,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
-	XK_KP_Equal,  	XK_KP_Equal,  	XK_R4,		NoSymbol,	/* 45*/
-	XK_KP_Divide,  	XK_KP_Divide,  	XK_R5,		NoSymbol,	/* 46*/
-	XK_KP_Multiply,	XK_KP_Multiply,	XK_R6,		NoSymbol,	/* 47*/
+	XK_KP_Equal,  	NoSymbol,  	XK_R4,		NoSymbol,	/* 45*/
+	XK_KP_Divide,  	NoSymbol,  	XK_R5,		NoSymbol,	/* 46*/
+	XK_KP_Multiply,	NoSymbol,	XK_R6,		NoSymbol,	/* 47*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
-	SunXK_Front,  	SunXK_Front,  	XK_L5,		NoSymbol,	/* 49*/
-	XK_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
-	SunXK_Copy,  	SunXK_Copy,  	XK_L6,		NoSymbol,	/* 51*/
+	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
+	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
+	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 52*/
 	XK_Tab, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 53*/
 	XK_Q,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 54*/
@@ -5292,12 +5292,12 @@ static KeySym US4Keymap[] = {
 	XK_bracketright,XK_braceright,	NoSymbol,	NoSymbol,	/* 65*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
-	XK_Home,  	XK_KP_7,  	XK_R7,		NoSymbol,	/* 68*/
-	XK_Up,  	XK_KP_8,  	XK_R8,		NoSymbol,	/* 69*/
-	XK_Prior,  	XK_KP_9,  	XK_R9,		NoSymbol,	/* 70*/
-	XK_KP_Subtract,	XK_KP_Subtract,	NoSymbol,	NoSymbol,	/* 71*/
-	SunXK_Open,  	SunXK_Open,  	XK_L7,		NoSymbol,	/* 72*/
-	SunXK_Paste,  	SunXK_Paste,  	XK_L8,		NoSymbol,	/* 73*/
+	XK_KP_Home,  	XK_KP_7,  	XK_R7,		NoSymbol,	/* 68*/
+	XK_KP_Up,  	XK_KP_8,  	XK_R8,		NoSymbol,	/* 69*/
+	XK_KP_Prior,  	XK_KP_9,  	XK_R9,		NoSymbol,	/* 70*/
+	XK_KP_Subtract,	NoSymbol,	NoSymbol,	NoSymbol,	/* 71*/
+	SunXK_Open,  	NoSymbol,  	XK_L7,		NoSymbol,	/* 72*/
+	SunXK_Paste,  	NoSymbol,  	XK_L8,		NoSymbol,	/* 73*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 74*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 75*/
 	XK_Control_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
@@ -5312,16 +5312,16 @@ static KeySym US4Keymap[] = {
 	XK_L,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 85*/
 	XK_semicolon,	XK_colon,	NoSymbol,	NoSymbol,	/* 86*/
 	XK_quoteright,	XK_quotedbl,	NoSymbol,	NoSymbol,	/* 87*/
-	XK_backslash,	XK_bar, 	XK_brokenbar,	NoSymbol,	/* 88*/
+	XK_backslash,	XK_bar, 	NoSymbol,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
-	XK_KP_Enter,	XK_KP_Enter,	NoSymbol,	NoSymbol,	/* 90*/
-	XK_Left,	XK_KP_4, 	XK_R10,		NoSymbol,	/* 91*/
+	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
+	XK_KP_Left,	XK_KP_4, 	XK_R10,		NoSymbol,	/* 91*/
 	NoSymbol, 	XK_KP_5, 	XK_R11,		NoSymbol,	/* 92*/
-	XK_Right,	XK_KP_6, 	XK_R12,		NoSymbol,	/* 93*/
-	XK_Insert,	XK_KP_0,	NoSymbol,	NoSymbol,	/* 94*/
-	SunXK_Find,  	SunXK_Find,  	XK_L9,		NoSymbol,	/* 95*/
+	XK_KP_Right,	XK_KP_6, 	XK_R12,		NoSymbol,	/* 93*/
+	XK_KP_Insert,	XK_KP_0,	NoSymbol,	NoSymbol,	/* 94*/
+	SunXK_Find,  	NoSymbol,  	XK_L9,		NoSymbol,	/* 95*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 96*/
-	SunXK_Cut, 	SunXK_Cut, 	XK_L10,		NoSymbol,	/* 97*/
+	SunXK_Cut, 	NoSymbol, 	XK_L10,		NoSymbol,	/* 97*/
 	XK_Num_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 98*/
 	XK_Shift_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 99*/
 	XK_Z,   	NoSymbol,	NoSymbol,	NoSymbol,	/*100*/
@@ -5336,9 +5336,9 @@ static KeySym US4Keymap[] = {
 	XK_slash,	XK_question,	NoSymbol,	NoSymbol,	/*109*/
 	XK_Shift_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*110*/
 	XK_Linefeed,	NoSymbol,	NoSymbol,	NoSymbol,	/*111*/
-	XK_End, 	XK_KP_1, 	XK_R13,		NoSymbol, 	/*112*/
-	XK_Down,	XK_KP_2, 	XK_R14,		NoSymbol,	/*113*/
-	XK_Next, 	XK_KP_3, 	XK_R15,		NoSymbol,	/*114*/
+	XK_KP_End, 	XK_KP_1, 	XK_R13,		NoSymbol, 	/*112*/
+	XK_KP_Down,	XK_KP_2, 	XK_R14,		NoSymbol,	/*113*/
+	XK_KP_Next, 	XK_KP_3, 	XK_R15,		NoSymbol,	/*114*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*115*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*116*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*117*/
@@ -5349,7 +5349,7 @@ static KeySym US4Keymap[] = {
 	XK_Meta_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*122*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*123*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*124*/
-	XK_KP_Add,	XK_KP_Add,	NoSymbol,	NoSymbol,	/*125*/
+	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
 static SunModmapRec US4Modmap[] = {
@@ -5375,17 +5375,17 @@ static SunModmapRec US4Modmap[] = {
 #ifdef US5
 
 static KeySym US5Keymap[] = {
-	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
+	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
-	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
+	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
 	XK_F3,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  8*/
-	SunXK_F36,	NoSymbol,	NoSymbol,	NoSymbol,	/*  9*/
+	XK_F11,		NoSymbol,	SunXK_F36,	NoSymbol,	/*  9*/
 	XK_F4,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 10*/
-	SunXK_F37,	NoSymbol,	NoSymbol,	NoSymbol,	/* 11*/
+	XK_F12,		NoSymbol,	SunXK_F37,	NoSymbol,	/* 11*/
 	XK_F5,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 12*/
 	SunXK_AltGraph,	NoSymbol,	NoSymbol,	NoSymbol,	/* 13*/
 	XK_F6,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 14*/
@@ -5395,12 +5395,12 @@ static KeySym US5Keymap[] = {
 	XK_F9,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 18*/
 	XK_Alt_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 19*/
 	XK_Up,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 20*/
-	XK_R1,  	XK_R1,  	XK_Pause,	XK_Break,	/* 21*/
-	XK_R2,  	XK_R2,  	XK_Print,	SunXK_Sys_Req,	/* 22*/
-	XK_R3,  	XK_R3,  	XK_Scroll_Lock,	NoSymbol,	/* 23*/
+	XK_Pause,  	NoSymbol,  	XK_Break,	NoSymbol,	/* 21*/
+	XK_Print,  	NoSymbol,  	XK_Sys_Req,	SunXK_Sys_Req,	/* 22*/
+	XK_Scroll_Lock,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 23*/
 	XK_Left,	NoSymbol,	NoSymbol,	NoSymbol,	/* 24*/
-	XK_L3,  	XK_L3,  	SunXK_Props,	NoSymbol,	/* 25*/
-	XK_L4,  	XK_L4,  	SunXK_Undo,	NoSymbol,	/* 26*/
+	SunXK_Props,  	NoSymbol,  	XK_L3,		NoSymbol,	/* 25*/
+	SunXK_Undo,  	NoSymbol,  	XK_L4,		NoSymbol,	/* 26*/
 	XK_Down,	NoSymbol,	NoSymbol,	NoSymbol,	/* 27*/
 	XK_Right,	NoSymbol,	NoSymbol,	NoSymbol,	/* 28*/
 	XK_Escape,	NoSymbol,	NoSymbol,	NoSymbol,	/* 29*/
@@ -5420,12 +5420,12 @@ static KeySym US5Keymap[] = {
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 45*/
-	XK_R5,  	XK_R5,  	XK_KP_Divide,	NoSymbol,	/* 46*/
-	XK_R6,  	XK_R6,  	XK_KP_Multiply,	NoSymbol,	/* 47*/
+	XK_KP_Divide,  	NoSymbol,  	NoSymbol,	NoSymbol,	/* 46*/
+	XK_KP_Multiply,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 47*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
-	XK_L5,  	XK_L5,  	SunXK_Front,	NoSymbol,	/* 49*/
-	XK_Delete,	XK_Delete,	XK_KP_Decimal,	NoSymbol,	/* 50*/
-	XK_L6,  	XK_L6,  	SunXK_Copy,	NoSymbol,	/* 51*/
+	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
+	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
+	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
 	XK_Home,	NoSymbol,	NoSymbol,	NoSymbol,	/* 52*/
 	XK_Tab, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 53*/
 	XK_Q,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 54*/
@@ -5439,15 +5439,15 @@ static KeySym US5Keymap[] = {
 	XK_O,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 62*/
 	XK_P,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 63*/
 	XK_bracketleft,	XK_braceleft,	NoSymbol,	NoSymbol,	/* 64*/
-	XK_bracketright,	XK_braceright,	NoSymbol,	NoSymbol,	/* 65*/
+	XK_bracketright,XK_braceright,	NoSymbol,	NoSymbol,	/* 65*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
-	XK_R7,  	XK_R7,  	XK_KP_7,	XK_Home,	/* 68*/
-	XK_Up,  	XK_R8,  	XK_KP_8,	NoSymbol,	/* 69*/
-	XK_R9,  	XK_R9,  	XK_KP_9,	XK_Prior,	/* 70*/
-	XK_R4,  	XK_R4,  	XK_KP_Subtract,	NoSymbol,	/* 71*/
-	XK_L7,  	XK_L7,  	SunXK_Open,	NoSymbol,	/* 72*/
-	XK_L8,  	XK_L8,  	SunXK_Paste,	NoSymbol,	/* 73*/
+	XK_KP_Home,	XK_KP_7,  	NoSymbol,	NoSymbol,	/* 68*/
+	XK_KP_Up,  	XK_KP_8,  	NoSymbol,	NoSymbol,	/* 69*/
+	XK_KP_Prior,  	XK_KP_9,  	NoSymbol,	NoSymbol,	/* 70*/
+	XK_KP_Subtract,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 71*/
+	SunXK_Open,  	NoSymbol,  	XK_L7,		NoSymbol,	/* 72*/
+	SunXK_Paste,  	NoSymbol,  	XK_L8,		NoSymbol,	/* 73*/
 	XK_End, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 74*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 75*/
 	XK_Control_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
@@ -5462,16 +5462,16 @@ static KeySym US5Keymap[] = {
 	XK_L,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 85*/
 	XK_semicolon,	XK_colon,	NoSymbol,	NoSymbol,	/* 86*/
 	XK_quoteright,	XK_quotedbl,	NoSymbol,	NoSymbol,	/* 87*/
-	XK_backslash,	XK_bar, 	XK_brokenbar,	NoSymbol,	/* 88*/
+	XK_backslash,	XK_bar, 	NoSymbol,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
-	XK_Left,	XK_R10, 	XK_KP_4,	NoSymbol,	/* 91*/
-	XK_R11, 	XK_R11, 	XK_KP_5,	NoSymbol,	/* 92*/
-	XK_Right,	XK_R12, 	XK_KP_6,	NoSymbol,	/* 93*/
-	XK_Insert,	XK_Insert,	XK_KP_0,	NoSymbol,	/* 94*/
-	XK_L9,  	XK_L9,  	SunXK_Find,	NoSymbol,	/* 95*/
+	XK_KP_Left,	XK_KP_4, 	NoSymbol,	NoSymbol,	/* 91*/
+	NoSymbol, 	XK_KP_5, 	NoSymbol,	NoSymbol,	/* 92*/
+	XK_KP_Right,	XK_KP_6, 	NoSymbol,	NoSymbol,	/* 93*/
+	XK_KP_Insert,	XK_KP_0,	NoSymbol,	NoSymbol,	/* 94*/
+	SunXK_Find,  	NoSymbol,  	XK_L9,		NoSymbol,	/* 95*/
 	XK_Prior,	NoSymbol,	NoSymbol,	NoSymbol,	/* 96*/
-	XK_L10, 	XK_L10, 	SunXK_Cut,	NoSymbol,	/* 97*/
+	SunXK_Cut, 	NoSymbol, 	XK_L10,		NoSymbol,	/* 97*/
 	XK_Num_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 98*/
 	XK_Shift_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 99*/
 	XK_Z,   	NoSymbol,	NoSymbol,	NoSymbol,	/*100*/
@@ -5486,9 +5486,9 @@ static KeySym US5Keymap[] = {
 	XK_slash,	XK_question,	NoSymbol,	NoSymbol,	/*109*/
 	XK_Shift_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*110*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*111*/
-	XK_R13, 	XK_R13, 	XK_KP_1,	XK_End, 	/*112*/
-	XK_Down,	XK_R14, 	XK_KP_2,	NoSymbol,	/*113*/
-	XK_R15, 	XK_R15, 	XK_KP_3,	XK_Next,	/*114*/
+	XK_KP_End, 	XK_KP_1, 	NoSymbol,	NoSymbol, 	/*112*/
+	XK_KP_Down,	XK_KP_2, 	NoSymbol,	NoSymbol,	/*113*/
+	XK_KP_Next, 	XK_KP_3, 	NoSymbol,	NoSymbol,	/*114*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*115*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*116*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*117*/
@@ -5525,17 +5525,17 @@ static SunModmapRec US5Modmap[] = {
 #ifdef US_UNIX5
 
 static KeySym US_UNIX5Keymap[] = {
-	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
+	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
-	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
+	SunXK_Again,  	NoSymbol,  	XK_L2,		NoSymbol,	/*  3*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
 	XK_F10, 	NoSymbol,	NoSymbol,	NoSymbol,	/*  7*/
 	XK_F3,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  8*/
-	SunXK_F36,	NoSymbol,	NoSymbol,	NoSymbol,	/*  9*/
+	XK_F11,		NoSymbol,	SunXK_F36,	NoSymbol,	/*  9*/
 	XK_F4,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 10*/
-	SunXK_F37,	NoSymbol,	NoSymbol,	NoSymbol,	/* 11*/
+	XK_F12,		NoSymbol,	SunXK_F37,	NoSymbol,	/* 11*/
 	XK_F5,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 12*/
 	SunXK_AltGraph,	NoSymbol,	NoSymbol,	NoSymbol,	/* 13*/
 	XK_F6,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 14*/
@@ -5545,12 +5545,12 @@ static KeySym US_UNIX5Keymap[] = {
 	XK_F9,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 18*/
 	XK_Alt_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 19*/
 	XK_Up,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 20*/
-	XK_R1,  	XK_R1,  	XK_Pause,	XK_Break,	/* 21*/
-	XK_R2,  	XK_R2,  	XK_Print,	SunXK_Sys_Req,	/* 22*/
-	XK_R3,  	XK_R3,  	XK_Scroll_Lock,	NoSymbol,	/* 23*/
+	XK_Pause,  	NoSymbol,  	XK_Break,	NoSymbol,	/* 21*/
+	XK_Print,  	NoSymbol,  	XK_Sys_Req,	SunXK_Sys_Req,	/* 22*/
+	XK_Scroll_Lock,	NoSymbol,  	NoSymbol,	NoSymbol,	/* 23*/
 	XK_Left,	NoSymbol,	NoSymbol,	NoSymbol,	/* 24*/
-	XK_L3,  	XK_L3,  	SunXK_Props,	NoSymbol,	/* 25*/
-	XK_L4,  	XK_L4,  	SunXK_Undo,	NoSymbol,	/* 26*/
+	SunXK_Props,  	NoSymbol,  	XK_L3,		NoSymbol,	/* 25*/
+	SunXK_Undo,  	NoSymbol,  	XK_L4,		NoSymbol,	/* 26*/
 	XK_Down,	NoSymbol,	NoSymbol,	NoSymbol,	/* 27*/
 	XK_Right,	NoSymbol,	NoSymbol,	NoSymbol,	/* 28*/
 	XK_Escape,	NoSymbol,	NoSymbol,	NoSymbol,	/* 29*/
@@ -5570,12 +5570,12 @@ static KeySym US_UNIX5Keymap[] = {
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 45*/
-	XK_R5,  	XK_R5,  	XK_KP_Divide,	NoSymbol,	/* 46*/
-	XK_R6,  	XK_R6,  	XK_KP_Multiply,	NoSymbol,	/* 47*/
+	XK_KP_Divide,  	NoSymbol,  	NoSymbol,	NoSymbol,	/* 46*/
+	XK_KP_Multiply, NoSymbol,  	NoSymbol,	NoSymbol,	/* 47*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
-	XK_L5,  	XK_L5,  	SunXK_Front,	NoSymbol,	/* 49*/
-	XK_Delete,	XK_Delete,	XK_KP_Decimal,	NoSymbol,	/* 50*/
-	XK_L6,  	XK_L6,  	SunXK_Copy,	NoSymbol,	/* 51*/
+	SunXK_Front,  	NoSymbol,  	XK_L5,		NoSymbol,	/* 49*/
+	XK_KP_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
+	SunXK_Copy,  	NoSymbol,  	XK_L6,		NoSymbol,	/* 51*/
 	XK_Home,	NoSymbol,	NoSymbol,	NoSymbol,	/* 52*/
 	XK_Tab, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 53*/
 	XK_Q,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 54*/
@@ -5589,15 +5589,15 @@ static KeySym US_UNIX5Keymap[] = {
 	XK_O,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 62*/
 	XK_P,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 63*/
 	XK_bracketleft,	XK_braceleft,	NoSymbol,	NoSymbol,	/* 64*/
-	XK_bracketright,	XK_braceright,	NoSymbol,	NoSymbol,	/* 65*/
+	XK_bracketright,XK_braceright,	NoSymbol,	NoSymbol,	/* 65*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
-	XK_R7,  	XK_R7,  	XK_KP_7,	XK_Home,	/* 68*/
-	XK_Up,  	XK_R8,  	XK_KP_8,	NoSymbol,	/* 69*/
-	XK_R9,  	XK_R9,  	XK_KP_9,	XK_Prior,	/* 70*/
-	XK_R4,  	XK_R4,  	XK_KP_Subtract,	NoSymbol,	/* 71*/
-	XK_L7,  	XK_L7,  	SunXK_Open,	NoSymbol,	/* 72*/
-	XK_L8,  	XK_L8,  	SunXK_Paste,	NoSymbol,	/* 73*/
+	XK_KP_Home,  	XK_KP_7,  	NoSymbol,	NoSymbol,	/* 68*/
+	XK_KP_Up,  	XK_KP_8,  	NoSymbol,	NoSymbol,	/* 69*/
+	XK_KP_Prior,  	XK_KP_9,  	NoSymbol,	NoSymbol,	/* 70*/
+	XK_KP_Subtract, NoSymbol,  	NoSymbol,	NoSymbol,	/* 71*/
+	SunXK_Open,  	NoSymbol,  	XK_L7,		NoSymbol,	/* 72*/
+	SunXK_Paste,  	NoSymbol,  	XK_L8,		NoSymbol,	/* 73*/
 	XK_End, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 74*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 75*/
 	XK_Control_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
@@ -5612,16 +5612,16 @@ static KeySym US_UNIX5Keymap[] = {
 	XK_L,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 85*/
 	XK_semicolon,	XK_colon,	NoSymbol,	NoSymbol,	/* 86*/
 	XK_quoteright,	XK_quotedbl,	NoSymbol,	NoSymbol,	/* 87*/
-	XK_backslash,	XK_bar, 	XK_brokenbar,	NoSymbol,	/* 88*/
+	XK_backslash,	XK_bar, 	NoSymbol,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
-	XK_Left,	XK_R10, 	XK_KP_4,	NoSymbol,	/* 91*/
-	XK_R11, 	XK_R11, 	XK_KP_5,	NoSymbol,	/* 92*/
-	XK_Right,	XK_R12, 	XK_KP_6,	NoSymbol,	/* 93*/
-	XK_Insert,	XK_Insert,	XK_KP_0,	NoSymbol,	/* 94*/
-	XK_L9,  	XK_L9,  	SunXK_Find,	NoSymbol,	/* 95*/
+	XK_KP_Left,	XK_KP_4, 	NoSymbol,	NoSymbol,	/* 91*/
+	NoSymbol, 	XK_KP_5, 	NoSymbol,	NoSymbol,	/* 92*/
+	XK_KP_Right,	XK_KP_6, 	NoSymbol,	NoSymbol,	/* 93*/
+	XK_KP_Insert,	XK_KP_0,	NoSymbol,	NoSymbol,	/* 94*/
+	SunXK_Find,  	NoSymbol,  	XK_L9,		NoSymbol,	/* 95*/
 	XK_Prior,	NoSymbol,	NoSymbol,	NoSymbol,	/* 96*/
-	XK_L10, 	XK_L10, 	SunXK_Cut,	NoSymbol,	/* 97*/
+	SunXK_Cut, 	NoSymbol, 	XK_L10,		NoSymbol,	/* 97*/
 	XK_Num_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 98*/
 	XK_Shift_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 99*/
 	XK_Z,   	NoSymbol,	NoSymbol,	NoSymbol,	/*100*/
@@ -5636,9 +5636,9 @@ static KeySym US_UNIX5Keymap[] = {
 	XK_slash,	XK_question,	NoSymbol,	NoSymbol,	/*109*/
 	XK_Shift_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*110*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*111*/
-	XK_R13, 	XK_R13, 	XK_KP_1,	XK_End, 	/*112*/
-	XK_Down,	XK_R14, 	XK_KP_2,	NoSymbol,	/*113*/
-	XK_R15, 	XK_R15, 	XK_KP_3,	XK_Next,	/*114*/
+	XK_KP_End, 	XK_KP_1, 	NoSymbol,	NoSymbol, 	/*112*/
+	XK_KP_Down,	XK_KP_2, 	NoSymbol,	NoSymbol,	/*113*/
+	XK_KP_Next, 	XK_KP_3, 	NoSymbol,	NoSymbol,	/*114*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*115*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*116*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*117*/
@@ -5690,7 +5690,7 @@ KeySym *sunType4KeyMaps[] = {
 	NULL,			/* 0x0f */
 	Korea4Keymap,		/* 0x10 */
 	Taiwan4Keymap,		/* 0x11 */
-	NULL,			/* 0x02 */
+	NULL,			/* 0x12 */
 	US101AKeymap,		/* 0x13 */
 	NULL,			/* 0x14 */
 	NULL,			/* 0x15 */
