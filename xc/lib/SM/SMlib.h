@@ -1,4 +1,4 @@
-/* $XConsortium: SMlib.h,v 1.12 93/12/07 11:05:25 mor Exp $ */
+/* $XConsortium: SMlib.h,v 1.13 93/12/15 17:30:55 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -287,7 +287,6 @@ typedef void (*SmsSetPropertiesProc) (
 #if NeedFunctionPrototypes
     SmsConn		/* smsConn */,
     SmPointer		/* managerData */,
-    unsigned long 	/* sequenceRef */,
     int			/* numProps */,
     SmProp **		/* props */
 #endif
@@ -492,7 +491,6 @@ extern void SmcModifyCallbacks (
 extern void SmcSetProperties (
 #if NeedFunctionPrototypes
     SmcConn		/* smcConn */,
-    unsigned long 	/* sequenceRef */,
     int      	        /* numProps */,
     SmProp **		/* props */
 #endif

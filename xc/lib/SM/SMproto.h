@@ -1,4 +1,4 @@
-/* $XConsortium: SMproto.h,v 1.3 93/12/07 11:05:28 mor Exp $ */
+/* $XConsortium: SMproto.h,v 1.4 93/12/15 17:31:44 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -117,10 +117,8 @@ typedef struct {
 typedef struct {
     CARD8	majorOpcode;
     CARD8	minorOpcode;
-    CARD8	unused1[2];
+    CARD8	unused[2];
     CARD32	length B32;
-    CARD32	sequenceRef B32;
-    CARD8	unused2[4];
     /* a	LISTofPROPERTY	properties */
 } smSetPropertiesMsg;
 
@@ -163,7 +161,7 @@ typedef struct {
 #define sz_smDieMsg 			8
 #define sz_smShutdownCancelledMsg 	8
 #define sz_smCloseConnectionMsg 	8
-#define sz_smSetPropertiesMsg 		16
+#define sz_smSetPropertiesMsg 		8
 #define sz_smDeletePropertiesMsg 	8
 #define sz_smGetPropertiesMsg 		8
 #define sz_smPropertiesReplyMsg 	8
