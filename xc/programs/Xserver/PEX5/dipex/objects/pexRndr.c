@@ -1,4 +1,4 @@
-/* $XConsortium: pexRndr.c,v 5.22 92/12/02 10:31:49 mor Exp $ */
+/* $XConsortium: pexRndr.c,v 5.23 92/12/03 19:56:51 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -387,8 +387,8 @@ pexCreateRendererReq    *strmPtr;
 	   storage and use 
 	*/
 	EXTRACT_CARD32( numpaths, ptr);
-	ppath = (ddPickPath *)Xalloc(numpaths * sizeof(ddPickPath));
-	ppathStart = ppath;
+	ppathStart = (ddPickPath *)Xalloc(numpaths * sizeof(ddPickPath));
+	ppath = ppathStart;
 
 	for (i=0, per = (pexElementRef *)ptr; i<numpaths; i++, per++,
 	  ppath++) {
@@ -402,7 +402,7 @@ pexCreateRendererReq    *strmPtr;
 	err = ValidatePickPath(prend->pickStartPath);
 	if (err != Success) PEX_ERR_EXIT(err,0,cntxtPtr);
 	ptr = (unsigned char *)per;
-	Xfree((pointer)ppath);
+	Xfree((pointer)ppathStart);
     }
 
     if (strmPtr->itemMask & PEXRDBackgroundColour) {
@@ -642,8 +642,8 @@ pexChangeRendererReq 	*strmPtr;
            storage and use 
 	*/
 	EXTRACT_CARD32( numpaths, ptr);
-        ppath = (ddPickPath *)Xalloc(numpaths * sizeof(ddPickPath));
-        ppathStart = ppath;
+        ppathStart = (ddPickPath *)Xalloc(numpaths * sizeof(ddPickPath));
+        ppath = ppathStart;
 
 	for (i=0, per = (pexElementRef *)ptr; i<numpaths; i++, per++,
 	  ppath++) {
@@ -658,7 +658,7 @@ pexChangeRendererReq 	*strmPtr;
 	err = ValidatePickPath(prend->pickStartPath);
 	if (err != Success) PEX_ERR_EXIT(err,0,cntxtPtr);
 	ptr = (unsigned char *)per;
-	Xfree((pointer)ppath);
+	Xfree((pointer)ppathStart);
     }
 
 
