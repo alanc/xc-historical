@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.47 89/02/21 14:44:24 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.48 89/03/16 16:47:16 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif lint
 
@@ -1007,8 +1007,14 @@ static void EventHandler(wid, closure, event)
 		break;
 
 	      case ReparentNotify:
-		  w->shell.client_specified &= ~_XtShellNotReparented;
-		  return;
+		if (event->xreparent.window == XtWindow(w)) {
+		   if (event->xreparent.parent != RootWindowOfScreen(XtScreen(w)))
+		       w->shell.client_specified &= ~_XtShellNotReparented;
+		   else
+		       w->shell.client_specified |= _XtShellNotReparented;
+		   w->shell.client_specified &= ~_XtShellPositionValid;
+	        }
+		return;
 
 	      default:
 		 return;
