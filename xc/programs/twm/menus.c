@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.91 89/07/27 17:41:58 jim Exp $
+ * $XConsortium: menus.c,v 1.92 89/07/28 17:22:44 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.91 89/07/27 17:41:58 jim Exp $";
+"$XConsortium: menus.c,v 1.92 89/07/28 17:22:44 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -461,7 +461,7 @@ NewMenuRoot(name)
     tmp->mapped = NEVER_MAPPED;
     tmp->pull = FALSE;
     tmp->w = NULL;
-    tmp->rshadow = tmp->bshadow = None;
+    tmp->shadow = None;
     tmp->real_menu = FALSE;
 
     if (Scr->MenuList == NULL)
@@ -635,6 +635,10 @@ MenuRoot *mr;
 
 	if (Scr->Shadow)
 	{
+	    /*
+	     * Make sure that you don't draw into the shadow window or else
+	     * the background bits there will get saved
+	     */
 	    valuemask = (CWBackPixel | CWBorderPixel);
 	    attributes.background_pixel = Scr->MenuShadowColor;
 	    attributes.border_pixel = Scr->MenuShadowColor;
@@ -642,13 +646,8 @@ MenuRoot *mr;
 		valuemask |= CWSaveUnder;
 		attributes.save_under = True;
 	    }
-	    mr->rshadow = XCreateWindow (dpy, Scr->Root, 0, 0,
-					 SHADOWWIDTH, mr->height, 0,
-					 CopyFromParent, CopyFromParent,
-					 CopyFromParent,
-					 valuemask, &attributes);
-	    mr->bshadow = XCreateWindow (dpy, Scr->Root, 0, 0,
-					 mr->width, SHADOWWIDTH, 0,
+	    mr->shadow = XCreateWindow (dpy, Scr->Root, 0, 0,
+					mr->width, mr->height, 0,
 					CopyFromParent, CopyFromParent,
 					CopyFromParent,
 					valuemask, &attributes);
@@ -833,8 +832,7 @@ PopUpMenu(menu, x, y)
 	    XDeleteContext(dpy, menu->w, MenuContext);
 	    XDeleteContext(dpy, menu->w, ScreenContext);
 	    if (Scr->Shadow) {
-		XDestroyWindow (dpy, menu->rshadow);
-		XDestroyWindow (dpy, menu->bshadow);
+		XDestroyWindow (dpy, menu->shadow);
 	    }
 	    XDestroyWindow(dpy, menu->w);
 	}
@@ -909,20 +907,17 @@ PopUpMenu(menu, x, y)
 
     XMoveWindow(dpy, menu->w, x, y);
     if (Scr->Shadow) {
-	XMoveWindow (dpy, menu->rshadow, x + menu->width, y + SHADOWWIDTH);
-	XMoveWindow (dpy, menu->bshadow, x + SHADOWWIDTH, y + menu->height);
+	XMoveWindow (dpy, menu->shadow, x + SHADOWWIDTH, y + SHADOWWIDTH);
     }
     XWarpPointer(dpy, None, menu->w, 0, 0, 0, 0, 
 	menu->width - 30, (Scr->MenuFont.height + 4) / 2);
 	/* (menu->width - 10)/2, (Scr->MenuFont.height + 4) / 2);*/
     if (Scr->Shadow) {
-	XRaiseWindow (dpy, menu->rshadow);
-	XRaiseWindow (dpy, menu->bshadow);
+	XRaiseWindow (dpy, menu->shadow);
     }
     XMapRaised(dpy, menu->w);
     if (Scr->Shadow) {
-	XMapWindow (dpy, menu->rshadow);
-	XMapWindow (dpy, menu->bshadow);
+	XMapWindow (dpy, menu->shadow);
     }
     XSync(dpy, 0);
 }
@@ -952,8 +947,7 @@ PopDownMenu()
     for (tmp = ActiveMenu; tmp != NULL; tmp = tmp->prev)
     {
 	if (Scr->Shadow) {
-	    XUnmapWindow (dpy, tmp->rshadow);
-	    XUnmapWindow (dpy, tmp->bshadow);
+	    XUnmapWindow (dpy, tmp->shadow);
 	}
 	XUnmapWindow(dpy, tmp->w);
 	tmp->mapped = UNMAPPED;
@@ -1816,8 +1810,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 		    XDeleteContext(dpy, root->w, MenuContext);
 		    XDeleteContext(dpy, root->w, ScreenContext);
 		    if (Scr->Shadow) {
-			XDestroyWindow (dpy, root->rshadow);
-			XDestroyWindow (dpy, root->bshadow);
+			XDestroyWindow (dpy, root->shadow);
 		    }
 		    XDestroyWindow(dpy, root->w);
 		}
