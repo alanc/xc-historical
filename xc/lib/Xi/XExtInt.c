@@ -1,4 +1,4 @@
-/* $XConsortium: XExtInt.c,v 1.32 94/02/14 17:38:14 rws Exp $ */
+/* $XConsortium: XExtInt.c,v 1.33 94/02/21 11:12:45 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -491,7 +491,7 @@ XInputWireToEvent (dpy, re, event)
 	    stev->window 	= None;
 	    stev->deviceid 	= sev->deviceid & DEVICE_BITS;
 	    stev->time     	= sev->time;
-	    stev->num_classes	= Ones (sev->classes_reported & InputClassBits);
+	    stev->num_classes	= Ones ((Mask)sev->classes_reported & InputClassBits);
  	    data = (char *) &stev->data[0];
 	    if (sev->classes_reported & (1 << KeyClass))
 	        {
