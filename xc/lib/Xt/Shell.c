@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.143 94/01/18 19:47:46 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.144 94/01/19 21:20:20 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -336,7 +336,13 @@ static XtResource wmResources[]=
 	    Offset(wm.wm_hints.icon_mask), XtRPixmap, NULL},
 	{ XtNwindowGroup, XtCWindowGroup, XtRWindow, sizeof(Window),
 	    Offset(wm.wm_hints.window_group),
-	    XtRImmediate, (XtPointer)XtUnspecifiedWindow}
+	    XtRImmediate, (XtPointer)XtUnspecifiedWindow},
+	{ XtNclientLeader, XtCClientLeader, XtRWidget, sizeof(Widget),
+	    Offset(wm.client_leader), XtRWidget, NULL},
+	{ XtNwindowRole, XtCWindowRole, XtRString, sizeof(String),
+	    Offset(wm.window_role), XtRString, (XtPointer) NULL},
+	{ XtNvisible, XtCVisible, XtRBoolean, sizeof(Boolean),
+	    Offset(wm.visible), XtRImmediate, (XtPointer) False}
 };
 
 static void WMInitialize();
