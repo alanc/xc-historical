@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.50 91/07/14 13:49:56 keith Exp $ */
+/* $XConsortium: cfbgc.c,v 5.51 91/07/18 23:36:42 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -784,10 +784,13 @@ cfbValidateGC(pGC, changes, pDrawable)
             else
 	    {
 #if PPW == 4
-		pGC->ops->ImageGlyphBlt = cfbImageGlyphBlt8;
-#else
-                pGC->ops->ImageGlyphBlt = miImageGlyphBlt;
+		if (devPriv->rop == GXcopy &&
+		    pGC->fillStyle == FillSolid &&
+		    (pGC->planemask & PMSK) == PMSK)
+		    pGC->ops->ImageGlyphBlt = cfbImageGlyphBlt8;
+		else
 #endif
+		    pGC->ops->ImageGlyphBlt = miImageGlyphBlt;
 	    }
         }
     }    

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbigblt8.c,v 1.2 91/01/27 13:03:05 keith Exp $
+ * $XConsortium: cfbigblt8.c,v 1.3 91/07/14 13:50:41 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -75,50 +75,23 @@ cfbImageGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     backrect.height = FONTASCENT(pGC->font) + FONTDESCENT(pGC->font);
 
     priv = (cfbPrivGC *) pGC->devPrivates[cfbGCPrivateIndex].ptr;
+
     /* this code cheats by knowing that ValidateGC isn't
      * necessary for PolyFillRect
      */
-    rop = priv->rop;
-    xor = priv->xor;
-    and = priv->and;
-    alu = pGC->alu;
-    fgPixel = pGC->fgPixel;
-    fillStyle = pGC->fillStyle;
 
-    pGC->fillStyle = FillSolid;
+    fgPixel = pGC->fgPixel;
+
     pGC->fgPixel = pGC->bgPixel;
-    pGC->alu = GXcopy;
-    pm = pGC->planemask & PMSK;
-    if (pm == PMSK)
-    {
-	priv->rop = GXcopy;
-	priv->xor = PFILL(pGC->bgPixel);
-	priv->and = 0;
-    }
-    else
-    {
-	priv->rop = cfbReduceRasterOp (GXcopy, pGC->bgPixel, pm,
-				       &priv->and, &priv->xor);
-    }
+    priv->xor = PFILL(pGC->bgPixel);
 
     (*pGC->ops->PolyFillRect) (pDrawable, pGC, 1, &backrect);
 
     pGC->fgPixel = fgPixel;
 
-    if (pm == PMSK)
-	priv->xor = PFILL(pGC->fgPixel);
-    else
-    {
-	priv->rop = cfbReduceRasterOp (GXcopy, pGC->fgPixel, pm,
-				       &priv->and, &priv->xor);
-    }
+    priv->xor = PFILL(pGC->fgPixel);
 
-    cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
+    (*pGC->ops->PolyGlyphBlt) (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
     
-    priv->rop = rop;
-    priv->and = and;
-    priv->xor = xor;
-    pGC->alu = alu;
-    pGC->fillStyle = fillStyle;
 }
 #endif
