@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.14 89/01/19 16:49:33 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.15 89/01/20 11:00:42 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -190,6 +190,15 @@
 #define ConstructMFLAGS		NO	/* build MFLAGS from MAKEFLAGS */
 #endif
 #endif
+
+#ifndef HasSockets
+#if SystemV
+#define HasSockets		NO	/* not yet... */
+#else
+#define HasSockets		YES	/* bsd does have them */
+#endif
+#endif
+
 #ifndef DestDir
 #define DestDir /* as nothing */
 #endif
