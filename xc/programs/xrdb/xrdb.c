@@ -158,19 +158,27 @@ void AppendEntryToBuffer(buffer, entry)
     AppendToBuffer(buffer, "\n", 1);
 }
 
-char *FindFirst(string, dest)
+/*
+ * Return the position of the first unescaped occurrence of dest in string.
+ * If lines is non-null, return the number of newlines skipped over.
+ */
+char *FindFirst(string, dest, lines)
     register char *string;
     register char dest;
+    register int *lines;	/* RETURN */
 {
+    if (lines)
+	*lines = 0;
     for (;;) {
 	if (*string == '\0')
 	    return NULL;
 	if (*string == '\\') {
 	    if (*++string == '\0')
 		return NULL;
-	}
-	else if (*string == dest)
+	} else if (*string == dest)
 	    return string;
+	if (*string == '\n'  &&  lines)
+	    (*lines)++;
 	string++;
     }
 }
@@ -184,11 +192,13 @@ void GetEntries(entries, buff, dosort)
     Entry entry;
     register int length;
     int lineno = 0;
+    int lines_skipped;
 
     str = buff->buff;
     if (!str) return;
-    for (; str < buff->buff + buff->used; str = line + 1) {
-	line = FindFirst(str, '\n');
+    for ( ; str < buff->buff + buff->used;
+	  str = line + 1, lineno += lines_skipped) {
+	line = FindFirst(str, '\n', &lines_skipped);
 	lineno++;
 	if (line == NULL)
 	    break; 
@@ -206,7 +216,7 @@ void GetEntries(entries, buff, dosort)
 	     temp++) ;
 	if (!*temp || *temp == '\n') continue;
 
-	colon = FindFirst(str, ':');
+	colon = FindFirst(str, ':', NULL);
 	if (colon == NULL)
 	    break;
 	if (colon > line) {
