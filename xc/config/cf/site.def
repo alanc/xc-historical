@@ -1,19 +1,26 @@
-XCOMM site:  $XConsortium: site.def,v 1.34 91/07/28 23:58:52 rws Exp $
+XCOMM site:  $XConsortium: site.def,v 1.35 91/07/29 10:44:40 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
  *			   SITE-SPECIFIC DEFINITIONS                         *
  *                                                                           *
- * Override any of the defaults in *.tmpl here.  Use ifndef so that servers  *
- * can override you if necessary:                                            *
+ * This file contains two halves, one included before the vendor-specific    *
+ * configuration file (.cf file), and one included after the .cf file.       *
+ * The before-half should be protected by #ifdef BeforeVendorCF, and the     *
+ * after-half should be protected by #ifdef AfterVendorCF.                   *
  *                                                                           *
- *     #ifndef ABuildParameter                                               *
- *     #define ABuildParameter myvalue                                       *
- *     #endif                                                                *
+ * The before-half should only set things that the .cf file depends on.      *
+ * For the .cf files shipped in this release, the only variables in this     *
+ * category are HasGcc (for multiple .cf files), and UseSunWindowsInServer   *
+ * (sun.cf only).                                                            *
  *                                                                           *
- * Note on using DESTDIR:  If you want to install into a scratch directory   *
- * but will eventually move the tree back to the root, install with          *
- * "make install DESTDIR=directory".  DESTDIR should not affect compiles.    *
+ * The after-half should contain all other definitions.  For example,        *
+ * place your ProjectRoot definition here.  Beware that several of the       *
+ * .cf files supplied by vendors have a ProjectRoot already defined, so      *
+ * you may need to #undef it first.                                          *
+ *                                                                           *
+ * OS Major and Minor version numbers should be changed directly in the .cf  *
+ * file, not overridden in site.def.                                         *
  *                                                                           *
  *****************************************************************************/
 
@@ -23,6 +30,20 @@ XCOMM site:  $XConsortium: site.def,v 1.34 91/07/28 23:58:52 rws Exp $
  *			Use at Your Own Risk				     *
  *                                                                           *
  *****************************************************************************/
+
+#ifdef BeforeVendorCF
+
+#ifdef PegasusArchitecture
+#define HasGcc YES
+#endif
+
+#ifdef SunArchitecture
+#define HasGcc mc68000
+#endif
+
+#endif /* BeforeVendorCF */
+
+#ifdef AfterVendorCF
 
 #define XmanLocalSearchPath /usr/local/man
 #define ManPath XmanLocalSearchPath
@@ -48,3 +69,5 @@ clean::									@@\
 #if defined(ATTArchitecture) || defined(VaxArchitecture) || defined(PegasusArchitecture)
 #define BuildFonts NO
 #endif
+
+#endif /* AfterVendorCF */
