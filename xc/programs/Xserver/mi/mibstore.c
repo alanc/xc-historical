@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 1.27 89/03/23 18:48:54 rws Exp $ */
+/* $XConsortium: mibstore.c,v 1.28 89/03/30 09:27:49 rws Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -833,7 +833,7 @@ miBSDoGetImage (pWin, pPixmap, pRgn, x, y, pGC, planeMask)
 
     /* XXX can't tile the border into the wrong depth pixmap */
 
-    if (pWin->borderWidth > 0 &&
+    if (HasBorder (pWin) &&
 	(pWin->drawable.depth == pPixmap->drawable.depth ||
 	 pWin->borderTile == (PixmapPtr) USE_BORDER_PIXEL))
     {
@@ -2395,8 +2395,10 @@ miInitBackingStore(pWin, SaveAreas, RestoreAreas, SetClipmaskRgn)
 					  -pWin->absCorner.x,
 					  -pWin->absCorner.y);
 #ifdef SHAPE
-	    if (pWin->windowShape)
-		(*pScreen->Intersect) (pSavedRegion, pSavedRegion, pWin->windowShape);
+	    if (pWin->boundingShape)
+		(*pScreen->Intersect) (pSavedRegion, pSavedRegion, pWin->clipShape);
+	    if (pWin->clipShape)
+		(*pScreen->Intersect) (pSavedRegion, pSavedRegion, pWin->clipShape);
 #endif
 	    miTileVirtualBS (pWin);
 	    
@@ -2556,8 +2558,10 @@ miResizeBackingStore(pWin, dx, dy)
     pixbounds.y2 = pWin->clientWinSize.height;
     prgnTmp = (* pScreen->RegionCreate)(&pixbounds, 1);
 #ifdef SHAPE
-    if (pWin->windowShape)
-	(*pScreen->Intersect) (prgnTmp, prgnTmp, pWin->windowShape);
+    if (pWin->boundingShape)
+	(*pScreen->Intersect) (prgnTmp, prgnTmp, pWin->boundingShape);
+    if (pWin->clipShape)
+	(*pScreen->Intersect) (prgnTmp, prgnTmp, pWin->clipShape);
 #endif
     (* pScreen->Intersect)(pBackingStore->pSavedRegion,
 			   pBackingStore->pSavedRegion,
@@ -2632,8 +2636,10 @@ miSaveAreas(pWin)
     winBox.y2 = pWin->clientWinSize.height;
     winSize = (* pScreen->RegionCreate) (&winBox, 1);
 #ifdef SHAPE
-    if (pWin->windowShape)
-	(*pScreen->Intersect) (winSize, winSize, pWin->windowShape);
+    if (pWin->boundingShape)
+	(*pScreen->Intersect) (winSize, winSize, pWin->boundingShape);
+    if (pWin->clipShape)
+	(*pScreen->Intersect) (winSize, winSize, pWin->clipShape);
 #endif
     (* pScreen->Intersect) (prgnDoomed, prgnDoomed, winSize);
     (* pScreen->RegionDestroy) (winSize);
@@ -2823,8 +2829,10 @@ miRestoreAreas(pWin)
 				      -pWin->absCorner.x,
 				      -pWin->absCorner.y);
 #ifdef SHAPE
-	if (pWin->windowShape)
-	    (*pScreen->Intersect) (prgnSaved, prgnSaved, pWin->windowShape);
+	if (pWin->boundingShape)
+	    (*pScreen->Intersect) (prgnSaved, prgnSaved, pWin->boundingShape);
+	if (pWin->clipShape)
+	    (*pScreen->Intersect) (prgnSaved, prgnSaved, pWin->clipShape);
 #endif
 	miTileVirtualBS(pWin);
 
@@ -2891,11 +2899,14 @@ miTranslateBackingStore(pWin, dx, dy, oldClip)
     extents.y2 = pWin->absCorner.y + pWin->clientWinSize.height;
     (* pScreen->Inverse)(newSaved, pWin->clipList, &extents);
 #ifdef SHAPE
-    if (pWin->windowShape) {
+    if (pWin->boundingShape || pWin->clipShape) {
 	(* pScreen->TranslateRegion) (newSaved,
 				    -pWin->absCorner.x,
 				    -pWin->absCorner.y);
-	(* pScreen->Intersect) (newSaved, newSaved, pWin->windowShape);
+	if (pWin->boundingShape)
+	    (* pScreen->Intersect) (newSaved, newSaved, pWin->boundingShape);
+	if (pWin->clipShape)
+	    (* pScreen->Intersect) (newSaved, newSaved, pWin->clipShape);
 	(* pScreen->TranslateRegion) (newSaved,
 				    pWin->absCorner.x,
 				    pWin->absCorner.y);

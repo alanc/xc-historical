@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miexpose.c,v 1.40 89/03/23 18:25:20 rws Exp $ */
+/* $XConsortium: miexpose.c,v 1.41 89/03/24 07:33:29 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -217,13 +217,20 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
 	      (prgnExposed->numRects > RECTLIMIT) &&
 	      (pDstDrawable->type == DRAWABLE_WINDOW);
 #ifdef SHAPE
-    /*
-     * If you try to CopyArea the extents of a shaped window, compacting the
-     * exposed region will undo all our work!
-     */
-    if (extents && pSrcWin && pSrcWin->windowShape &&
-	((*pscr->RectIn)(pSrcWin->windowShape, &srcBox) != rgnIN))
-	    extents = FALSE;
+    {
+	RegionPtr	region;
+    	if (pSrcWin->clipShape)
+    	    region = pSrcWin->clipShape;
+    	else
+    	    region = pSrcWin->boundingShape;
+    	/*
+     	 * If you try to CopyArea the extents of a shaped window, compacting the
+     	 * exposed region will undo all our work!
+     	 */
+    	if (extents && pSrcWin && region &&
+    	    ((*pscr->RectIn)(region, &srcBox) != rgnIN))
+	    	extents = FALSE;
+    }
 #endif
     if (extents)
     {

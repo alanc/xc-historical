@@ -33,7 +33,7 @@
 
 #ifndef lint
 static char rcsid[] =
-"$XConsortium: mivaltree.c,v 1.48 89/03/18 12:55:44 keith Exp $ SPRITE (Berkeley)";
+"$XConsortium: mivaltree.c,v 1.49 89/03/23 18:14:22 rws Exp $ SPRITE (Berkeley)";
 #endif lint
 
 #include    "X.h"
@@ -148,7 +148,7 @@ miComputeClips (pParent, pScreen, universe)
 	(* pScreen->TranslateRegion) (pParent->clipList, dx, dy);
 	pParent->oldAbsCorner = pParent->absCorner;
     } 
-    if (pParent->borderWidth) 
+    if (HasBorder (pParent))
     {
 	/*
 	 * If the window has shrunk, we have to be careful about figuring the
