@@ -1,0 +1,24 @@
+/**/# platform:  $XConsortium$
+
+
+/*
+ * SET VERSION NUMBERS BEFORE MAKING MAKEFILES; also, you'll need to install
+ * util/scripts/bsdinstall.sh before doing a "make install"
+ */
+
+#define SystemV			YES
+
+#define OSName			AT&T Unix System V Release 3.2
+#define OSMajorVersion		3
+#define OSMinorVersion		2
+#define RemoveTargetProgramByMoving YES
+#define BootstrapCFlags		-Datt
+#define StandardDefines		-Datt -DSYSV
+#define StandardCppDefines	-Datt -DSYSV
+#define ExecableScripts		NO
+#define BuildServer		NO
+
+#define SignalReturnProcType void
+
+#define NeedBerklibInXlib	YES
+
