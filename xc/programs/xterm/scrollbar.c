@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: scrollbar.c,v 1.20 89/03/01 20:00:43 jim Exp $
+ *	$XConsortium: scrollbar.c,v 1.21 89/05/14 12:35:31 rws Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,20 +30,22 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <setjmp.h>
-#include <X11/Xlib.h>
 #include <X11/Xatom.h>
-#include <X11/Xutil.h>
+
+#include "ptyx.h"		/* X headers included here. */
+
 #include <X11/StringDefs.h>
-#include "ptyx.h"
-#include "data.h"
-#include <X11/Scroll.h> /* should come from Xaw/Scroll.h at some point */
-#include "error.h"
 #include <X11/Shell.h>
+
+#include <X11/Xaw/Scroll.h>
+
+#include "data.h"
+#include "error.h"
 
 extern void Bcopy();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.20 89/03/01 20:00:43 jim Exp $";
+static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.21 89/05/14 12:35:31 rws Exp $";
 #endif	/* lint */
 
 /* Event handlers */

@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.25 89/03/23 09:56:10 jim Exp $
+ *	$XConsortium: ptyx.h,v 1.26 89/03/23 11:41:35 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,9 +30,8 @@
 /* ptyx.h */
 /* @(#)ptyx.h	X10/6.6	11/10/86 */
 
-#include <X11/Xos.h>
-#include <X11/Xlib.h>
 #include <X11/IntrinsicP.h>
+#include <X11/Xmu/Misc.h>	/* For Max() and Min(). */
 
 /* Extra Xlib definitions */
 #define AllButtonsUp(detail, ignore)  (\
@@ -44,10 +43,6 @@
 				: \
 		  		(((detail)&(Button1Mask|Button2Mask)) == 0)) \
 		)
-
-
-#define Max(i, j)       ((i) > (j) ? (i) : (j))
-#define Min(i, j)       ((i) < (j) ? (i) : (j))
 
 #define MAX_COLS	200
 #define MAX_ROWS	128

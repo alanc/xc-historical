@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.36 89/05/15 13:19:42 jim Exp $
+ *	$XConsortium: misc.c,v 1.37 89/05/15 13:21:32 jim Exp $
  */
 
 
@@ -28,24 +28,25 @@
  * SOFTWARE.
  */
 
-#include <X11/Xos.h>
-#include <X11/Xlib.h>
+#include "ptyx.h"		/* X headers included here. */
+
 #include <stdio.h>
 #include <setjmp.h>
 #include <signal.h>
 #include <ctype.h>
 #include <pwd.h>
-#include <X11/Xutil.h>
+
 #include <X11/Xatom.h>
-#include "ptyx.h"
+#include <X11/cursorfont.h>
+
+#include <X11/Shell.h>
+#include <X11/Xmu/Xmu.h>
+
 #include "data.h"
 #include "error.h"
-#include <X11/cursorfont.h>
 #include "gray.ic"
 #include "wait.ic"
 #include "waitmask.ic"
-#include <X11/Shell.h>
-#include <X11/Xmu.h>
 
 extern char *malloc();
 extern char *mktemp();
@@ -54,7 +55,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: misc.c,v 1.36 89/05/15 13:19:42 jim Exp $";
+static char rcs_id[] = "$XConsortium: misc.c,v 1.37 89/05/15 13:21:32 jim Exp $";
 #endif	/* lint */
 
 xevents()
