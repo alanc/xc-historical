@@ -1,5 +1,5 @@
 /*
-* $XConsortium: LabelP.h,v 1.22 89/03/30 16:05:35 jim Exp $
+* $XConsortium: LabelP.h,v 1.23 89/05/11 01:05:36 kit Exp $
 */
 
 
@@ -72,6 +72,7 @@ typedef struct {
     /* private state */
     GC		normal_GC;
     GC          gray_GC;
+    Pixmap	stipple;
     Position	label_x;
     Position	label_y;
     Dimension	label_width;
