@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: fntchoosr.c,v 1.3 89/11/07 08:29:49 swick Exp $";
+static char Xrcsid[] = "$XConsortium: fntchoosr.c,v 1.4 89/11/07 08:54:53 swick Exp $";
 #endif
 
 /*
@@ -174,8 +174,14 @@ void main(argc, argv)
 
     appCtx = XtWidgetToApplicationContext(topLevel);
     XtGetApplicationResources(topLevel,&AppRes,resources,XtNumber(resources),NZ );
-    if (AppRes.app_defaults_version < MIN_APP_DEFAULTS_VERSION)
+    if (AppRes.app_defaults_version < MIN_APP_DEFAULTS_VERSION) {
+	XrmDatabase rdb = XtDatabase(XtDisplay(topLevel));
 	XtWarning( "app-defaults file not properly installed." );
+	XrmPutLineResource( &rdb,
+"*sampleText*Label:FntChoosr app-defaults file not properly installed;\\n\
+see 'fntchoosr' manual page."
+			  );
+    }
 
     ScheduleWork(GetFontNames, (XtPointer)XtDisplay(topLevel), 0);
 
@@ -266,9 +272,23 @@ struct WorkPiece {
 };
 static WorkPiece workQueue = NULL;
 
+
+/*
+ * ScheduleWork( XtProc *proc, XtPointer closure, int priority )
+ *
+ * Adds a WorkPiece to the workQueue in FIFO order by priority.
+ * Lower numbered priority work is completed before higher numbered
+ * priorities.
+ *
+ * If the workQueue was previously empty, then makes sure that
+ * Xt knows we have (background) work to do.
+ */
+
+
 ScheduleWork( proc, closure, priority )
     XtProc proc;
     XtPointer closure;
+    int priority;
 {
     WorkPiece n;
     WorkPiece piece = XtNew(WorkPieceRec);
@@ -304,6 +324,14 @@ Boolean DoWorkPiece(closure)
     }
     return True;
 }
+
+
+/*
+ * FinishWork()
+ *
+ * Drains foreground tasks from the workQueue.
+ * Foreground == (priority < BACKGROUND)
+ */
 
 void FinishWork()
 {
