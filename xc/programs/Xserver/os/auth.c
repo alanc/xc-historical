@@ -1,7 +1,7 @@
 /*
  * authorization hooks for the server
  *
- * $XConsortium: auth.c,v 1.2 89/01/16 13:58:13 rws Exp $
+ * $XConsortium: auth.c,v 1.3 89/03/24 09:15:59 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -87,6 +87,21 @@ char	*file_name;
     return count;
 }
 
+#ifdef SERVER_XDMCP
+/*
+ * XdmcpInit calls this function to discover all authorization
+ * schemes supported by the display
+ */
+RegisterAuthorizations ()
+{
+    int	    i;
+
+    for (i = 0; i < NUM_AUTHORIZATION; i++)
+	XdmcpRegisterAuthorization (protocols[i].name,
+				    protocols[i].name_length);
+}
+#endif
+
 XID
 CheckAuthorization (name_length, name, data_length, data)
 unsigned short	name_length;
@@ -166,6 +181,25 @@ char	*data;
 	    bcmp (protocols[i].name, name, (int) name_length) == 0)
     	{
 	    return (*protocols[i].Remove) (data_length, data);
+    	}
+    }
+    return 0;
+}
+
+AddAuthorization (name_length, name, data_length, data)
+unsigned short	name_length;
+char	*name;
+unsigned short	data_length;
+char	*data;
+{
+    int	i;
+
+    for (i = 0; i < NUM_AUTHORIZATION; i++) {
+    	if (protocols[i].name_length == name_length &&
+	    bcmp (protocols[i].name, name, (int) name_length) == 0)
+    	{
+	    return (*protocols[i].Add) (data_length, data,
+					++AuthorizationIndex);
     	}
     }
     return 0;

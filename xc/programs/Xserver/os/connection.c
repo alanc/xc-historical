@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.109 89/08/04 08:28:40 rws Exp $ */
+/* $XConsortium: connection.c,v 1.110 89/08/31 13:41:00 keith Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -379,6 +379,7 @@ ResetWellKnownSockets ()
     }
 #endif /* UNIXCONN */
     ResetAuthorization ();
+    ResetHosts(display);
     /*
      * See above in CreateWellKnownSockets about SIGUSR1
      */
@@ -387,6 +388,12 @@ ResetWellKnownSockets ()
 	    kill (ParentProcess, SIGUSR1);
 	}
     }
+    /*
+     * restart XDMCP
+     */
+#ifdef SERVER_XDMCP
+    XdmcpReset ();
+#endif
 }
 
 /*****************************************************************

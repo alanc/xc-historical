@@ -76,15 +76,18 @@ XdmcpOptions(argc, argv, i)
     if (strcmp(argv[i], "-query") == 0) {
 	get_manager_by_name(argc, argv, ++i);
 	XDM_INIT_STATE = XDM_QUERY;
+	AccessUsingXdmcp ();
 	return (i + 1);
     }
     if (strcmp(argv[i], "-broadcast") == 0) {
 	XDM_INIT_STATE = XDM_BROADCAST;
+	AccessUsingXdmcp ();
 	return (i + 1);
     }
     if (strcmp(argv[i], "-indirect") == 0) {
 	get_manager_by_name(argc, argv, ++i);
 	XDM_INIT_STATE = XDM_INDIRECT;
+	AccessUsingXdmcp ();
 	return (i + 1);
     }
     if (strcmp(argv[i], "-port") == 0) {
@@ -258,6 +261,12 @@ XdmcpRegisterConnection (type, address, addrlen)
 
 static ARRAYofARRAY8	AuthorizationNames;
 
+XdmcpRegisterAuthorizations ()
+{
+    XdmcpDisposeARRAYofARRAY8 (&AuthorizationNames);
+    RegisterAuthorizations ();
+}
+
 XdmcpRegisterAuthorization (name, namelen)
     char    *name;
     int	    namelen;
@@ -327,10 +336,26 @@ void
 XdmcpInit()
 {
     state = XDM_INIT_STATE;
-    timeOutRtx = 0;
-    DisplayNumber = (CARD16) atoi(display);
-    get_xdmcp_sock();
-    send_packet();
+    if (state != XDM_OFF)
+    {
+	XdmcpRegisterAuthorizations();
+	AccessUsingXdmcp();
+    	timeOutRtx = 0;
+    	DisplayNumber = (CARD16) atoi(display);
+    	get_xdmcp_sock();
+    	send_packet();
+    }
+}
+
+void
+XdmcpReset ()
+{
+    state = XDM_INIT_STATE;
+    if (state != XDM_OFF)
+    {
+    	timeOutRtx = 0;
+    	send_packet();
+    }
 }
 
 /*
@@ -359,8 +384,6 @@ XdmcpCloseDisplay(sock)
     state = XDM_INIT_STATE;
     dispatchException |= DE_RESET;
     isItTimeToYield = TRUE;
-    timeOutRtx = 0;
-    send_packet();
 }
 
 /*
@@ -416,17 +439,7 @@ XdmcpWakeupHandler(i, LastSelectMask)
 {
     if (state == XDM_OFF)
 	return;
-    if (timeOutTime && GetTimeInMillis() >= timeOutTime)
-    {
-    	if (state == XDM_RUN_SESSION)
-    	{
-	    state = XDM_KEEPALIVE;
-	    send_packet();
-    	}
-    	else
-	    timeout();
-    }
-    else if (i > 0)
+    if (i > 0)
     {
 	if (GETBIT(LastSelectMask, xdmcpSocket))
 	{
@@ -442,6 +455,16 @@ XdmcpWakeupHandler(i, LastSelectMask)
 	}
 	if (ANYSET(AllClients) && state == XDM_RUN_SESSION)
 	    timeOutTime = GetTimeInMillis() +  keepaliveDormancy * 1000;
+    }
+    else if (timeOutTime && GetTimeInMillis() >= timeOutTime)
+    {
+    	if (state == XDM_RUN_SESSION)
+    	{
+	    state = XDM_KEEPALIVE;
+	    send_packet();
+    	}
+    	else
+	    timeout();
     }
 }
 
@@ -507,7 +530,7 @@ receive_packet()
 	recv_willing_msg(&from, fromlen, header.length);
 	break;
     case UNWILLING:
-	XdmcpFatal(&UnwillingMessage);
+	XdmcpFatal("Manager unwilling", &UnwillingMessage);
 	break;
     case ACCEPT:
 	recv_accept_msg(&from, fromlen, header.length);
@@ -798,6 +821,16 @@ recv_accept_msg(from, fromlen, length)
 	    XdmcpCheckAuthentication (&AcceptAuthenticationName,
 				      &AcceptAuthenticationData))
     	{
+	    /* if the authorization specified in the packet fails
+	     * to be acceptable, enable the local addresses
+	     */
+	    if (!AddAuthorization (AcceptAuthorizationName.length,
+				   AcceptAuthorizationName.data,
+				   AcceptAuthorizationData.length,
+				   AcceptAuthorizationData.data))
+	    {
+		AddLocalHosts ();
+	    }
 	    SessionID = AcceptSessionID;
     	    state = XDM_MANAGE;
     	    send_packet();
@@ -830,7 +863,7 @@ recv_decline_msg(from, fromlen, length)
 	    XdmcpCheckAuthentication (&DeclineAuthenticationName,
 				      &DeclineAuthenticationData))
     	{
-	    XdmcpFatal (&Status);
+	    XdmcpFatal ("Session declined", &Status);
     	}
     }
     XdmcpDisposeARRAY8 (&Status);
@@ -896,7 +929,7 @@ recv_failed_msg(from, fromlen, length)
     	if (length == 5 + Status.length &&
 	    SessionID == FailedSessionID)
 	{
-	    XdmcpFatal (&Status);
+	    XdmcpFatal ("Session failed", &Status);
 	}
     }
     XdmcpDisposeARRAY8 (&Status);
@@ -951,13 +984,14 @@ recv_alive_msg (from, fromlen, length)
 }
 
 static 
-XdmcpFatal (status)
+XdmcpFatal (type, status)
+    char	*type;
     ARRAY8Ptr	status;
 {
-    printf("XDMCP fatal error: %*.*s\n",
+    printf("XDMCP fatal error: %s %*.*s\n", type,
 	   status->length, status->length, status->data);
-    state = XDM_INIT_STATE;
-    send_packet();
+    AbortDDX ();
+    exit (1);
 }
 
 static 

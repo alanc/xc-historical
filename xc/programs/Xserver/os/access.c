@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: access.c,v 1.36 89/07/21 14:00:26 keith Exp $ */
+/* $XConsortium: access.c,v 1.37 89/08/31 13:41:05 keith Exp $ */
 
 #include "Xos.h"
 #include "X.h"
@@ -76,7 +76,8 @@ typedef struct _host {
 static HOST *selfhosts = NULL;
 static HOST *validhosts = NULL;
 static int AccessEnabled = DEFAULT_ACCESS_CONTROL;
-static int LocalHostDisabled = 0;
+static int LocalHostEnabled = TRUE;
+static int UsingXdmcp = FALSE;
 
 typedef struct {
     int af, xf;
@@ -101,12 +102,24 @@ static FamilyMap familyMap[] = {
 
 DisableLocalHost ()
 {
-    LocalHostDisabled = 1;
+    LocalHostEnabled = FALSE;
 }
 
 EnableLocalHost ()
 {
-    LocalHostDisabled = 0;
+    if (!UsingXdmcp)
+	LocalHostEnabled = TRUE;
+}
+
+/*
+ * called at init time when XDMCP will be used; xdmcp always
+ * adds local hosts manually when needed
+ */
+
+AccessUsingXdmcp ()
+{
+    UsingXdmcp = TRUE;
+    LocalHostEnabled = FALSE;
 }
 
 #define FAMILIES ((sizeof familyMap)/(sizeof familyMap[0]))
@@ -248,6 +261,14 @@ DefineSelf (fd)
 }
 #endif /* hpux */
 
+AddLocalHosts ()
+{
+    HOST    *self;
+
+    for (self = selfhosts; self; self = self->next)
+	NewHost (self->family, self->addr);
+}
+
 /* Reset access control list to initial hosts */
 ResetHosts (display)
     char *display;
@@ -281,19 +302,8 @@ ResetHosts (display)
         validhosts = host->next;
         xfree (host);
     }
-    if (!LocalHostDisabled)
-    {
-    	for (self = selfhosts; self; self = self->next)
-    	{
-            host = (HOST *) xalloc (sizeof (HOST));
-	    if (host)
-	    {
-		*host = *self;
-		host->next = validhosts;
-		validhosts = host;
-	    }
-    	}
-    }
+    if (LocalHostEnabled)
+	AddLocalHosts ();
     strcpy (fname, "/etc/X");
     strcat (fname, display);
     strcat (fname, ".hosts");
@@ -622,7 +632,7 @@ InvalidHost (saddr, len)
         return (1);
     if (family == 0)
     {
-	if (LocalHostDisabled)
+	if (!LocalHostEnabled)
  	{
 	    /*
 	     * check to see if any local address is enabled.  This 
@@ -637,9 +647,9 @@ InvalidHost (saddr, len)
 			return 0;
 		}
 	    }
+	    return 1;
 	} else
 	    return (0);
-	return 1;
     }
     if (!AccessEnabled)   /* just let them in */
         return(0);    
