@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.41 88/09/06 17:07:34 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.42 88/10/07 11:01:56 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -121,7 +121,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.41 88/09/06 17:07:34 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.42 88/10/07 11:01:56 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -612,8 +612,8 @@ again:
 					FlushLog(screen);
 				if((Tbcnt = read(screen->respond,
 				 Tbptr = Tbuffer, BUF_SIZE)) < 0) {
-					if(errno == EIO && am_slave)
-						exit(0);
+					if(errno == EIO)
+						Cleanup (0);
 					else if(errno != EWOULDBLOCK)
 						Panic(
 				 "Tinput:read returned unexpected error (%d)\n",
