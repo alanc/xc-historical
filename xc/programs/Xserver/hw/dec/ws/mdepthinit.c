@@ -1,4 +1,4 @@
-/* $XConsortium: mdepthinit.c,v 1.4 93/07/10 11:33:51 rws Exp $ */
+/* $XConsortium: mdepthinit.c,v 1.5 93/09/24 12:07:02 rws Exp $ */
 
 /*
 
@@ -35,6 +35,8 @@ extern int defaultColorVisualClass;
 #define BitsPerPixel(d) (\
     (1 << PixmapWidthPaddingInfo[d].padBytesLog2) * 8 / \
     (PixmapWidthPaddingInfo[d].padRoundUp+1))
+
+#ifndef SINGLEDEPTH
 
 Bool
 mcfbCreateGC(pGC)
@@ -116,37 +118,20 @@ mcfbSetupScreen(pScreen, pbits, xsize, ysize, dpix, dpiy, width, bpp, depth)
 {
     extern int		cfbWindowPrivateIndex;
     extern int		cfbGCPrivateIndex;
-    extern int		cfb16WindowPrivateIndex;
-    extern int		cfb16GCPrivateIndex;
-    extern int		cfb32WindowPrivateIndex;
-    extern int		cfb32GCPrivateIndex;
-    int			wpi, gpi;
 
     switch (bpp) {
     case 8:
 	cfbSetupScreen(pScreen, pbits, xsize, ysize, dpix, dpiy, width);
-	wpi = cfbWindowPrivateIndex;
-	gpi = cfbGCPrivateIndex;
 	break;
     case 16:
 	cfb16SetupScreen(pScreen, pbits, xsize, ysize, dpix, dpiy, width);
-	wpi = cfb16WindowPrivateIndex;
-	gpi = cfb16GCPrivateIndex;
 	break;
     case 32:
 	cfb32SetupScreen(pScreen, pbits, xsize, ysize, dpix, dpiy, width);
-	wpi = cfb32WindowPrivateIndex;
-	gpi = cfb32GCPrivateIndex;
 	break;
     default:
 	return FALSE;
     }
-    if (bpp != 8)
-	cfbAllocatePrivates (pScreen, &wpi, &gpi);
-    if (bpp != 16)
-	cfb16AllocatePrivates (pScreen, &wpi, &gpi);
-    if (bpp != 32)
-	cfb32AllocatePrivates (pScreen, &wpi, &gpi);
     pScreen->CreateGC = mcfbCreateGC;
     pScreen->GetImage = mcfbGetImage;
     pScreen->GetSpans = mcfbGetSpans;
@@ -209,6 +194,7 @@ mcfbFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width, bpp, depth
 
 
 /* dts * (inch/dot) * (25.4 mm / inch) = mm */
+
 Bool
 mcfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width, bpp, depth)
     register ScreenPtr pScreen;
@@ -221,3 +207,51 @@ mcfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width, bpp, depth)
 	return FALSE;
     return mcfbFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width, bpp, depth);
 }
+
+void
+mcfbFillInMissingPixmapDepths(bitsPerDepth)
+    int *bitsPerDepth;
+{
+    int i, j;
+
+    j = 0;
+    for (i = 1; i <= 32; i++)
+    {
+	if (bitsPerDepth[i])
+	    j |= 1 << (bitsPerDepth[i] - 1);
+    }
+    if (!(j & (1 << 7)))
+	bitsPerDepth[8] = 8;
+    if (!(j & (1 << 15)))
+	bitsPerDepth[12] = 16;
+    if (!(j & (1 << 31)))
+	bitsPerDepth[24] = 32;
+}
+
+#else /* SINGLEDEPTH */
+
+/* stuff for 8-bit only server */
+
+Bool
+mcfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width, bpp, depth)
+    register ScreenPtr pScreen;
+    pointer pbits;		/* pointer to screen bitmap */
+    int xsize, ysize;		/* in pixels */
+    int dpix, dpiy;		/* dots per inch */
+    int width;			/* pixel width of frame buffer */
+{
+    return cfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy,
+			 width, bpp, depth);
+}
+
+void
+mcfbFillInMissingPixmapDepths(bitsPerDepth)
+    int *bitsPerDepth;
+{
+    /* This does something useful in the multidepth case.  We don't
+     * do anything in the single depth case, but we still have to provide
+     * the function for linking.
+     */
+}
+
+#endif /* SINGLEDEPTH */

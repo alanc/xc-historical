@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: init.c,v 1.6 93/07/10 11:18:20 rws Exp $ */
+/* $XConsortium: init.c,v 1.7 93/09/03 19:45:10 dpw Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -47,7 +47,7 @@ extern int wsMouseProc();
 extern int wsKeybdProc();
 extern void wsClick();
 extern void wsChangePointerControl();
-
+extern void mcfbFillInMissingPixmapDepths();
 
 extern KeybdCtrl defaultKeyboardControl;
 ws_event_queue	*queue;
@@ -189,19 +189,9 @@ InitOutput(screenInfo, argc, argv)
     }
     if (!bitsPerDepth[1])
 	bitsPerDepth[1] = 1;
-#define INCLUDE_ALL_CFB
-#ifdef INCLUDE_ALL_CFB
-    j = 0;
-    for (i = 1; i <= 32; i++)
-	if (bitsPerDepth[i])
-	    j |= 1 << (bitsPerDepth[i] - 1);
-    if (!(j & (1 << 7)))
-	bitsPerDepth[8] = 8;
-    if (!(j & (1 << 15)))
-	bitsPerDepth[12] = 16;
-    if (!(j & (1 << 31)))
-	bitsPerDepth[24] = 32;
-#endif    
+
+    mcfbFillInMissingPixmapDepths(bitsPerDepth);
+
     NumFormats = 0;
     for (i = 1; i <= 32; i++)
     {

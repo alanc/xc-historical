@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.9 93/09/04 19:16:45 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.10 93/10/12 11:25:16 dpw Exp $
 #include <Server.tmpl>
 
 XCOMM
@@ -9,9 +9,9 @@ XCOMM ACC=acc_3d
 ACC=acc_none
 
 SRCS = init.c ws_io.c ws_color.c cfbinit.c ext_device.c $(ACC).c mdepthinit.c
-OFILES = init.o
+OFILES = init.o mdepthinit.o sdepthinit.o
 
-OBJS = ws_io.o ws_color.o cfbinit.o ext_device.o $(ACC).o mdepthinit.o
+OBJS = ws_io.o ws_color.o cfbinit.o ext_device.o $(ACC).o
 INCLUDES = -I../../../mfb -I../../../mi -I../../../include -I$(INCLUDESRC) \
 		-I$(EXTINCSRC) -I$(FONTINCSRC)
 LINTLIBS = ../../../dix/llib-ldix.ln ../../../os/llib-los.ln \
@@ -25,5 +25,8 @@ NormalLintTarget($(SRCS))
 lintlib:
 
 NormalLibraryTarget(dec,$(OBJS))
+
+ObjectFromSpecialSource(sdepthinit,mdepthinit,-DSINGLEDEPTH)
+
 DependTarget()
 InstallManPage(Xdec,$(MANDIR))
