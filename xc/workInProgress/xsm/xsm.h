@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.h,v 1.4 94/04/04 09:55:05 rws Exp $ */
+/* $XConsortium: xsm.h,v 1.5 94/04/17 21:15:20 rws Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -99,6 +99,7 @@ typedef struct _PendingValue {
 typedef struct _AppResources {
     Boolean	verbose;
     Boolean	debug;
+    Boolean	proxy;
 } AppResources;
 
 extern AppResources app_resources;

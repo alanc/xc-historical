@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.34 94/04/14 14:43:25 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.35 94/04/17 21:15:19 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -45,7 +45,9 @@ static XtResource resources [] = {
     {"verbose",  "Verbose",  XtRBoolean, sizeof(Boolean), 
 	 Offset(verbose), XtRImmediate, (XtPointer) False},
     {"debug",  "Debug",  XtRBoolean, sizeof(Boolean), 
-	 Offset(debug), XtRImmediate, (XtPointer) False}
+	 Offset(debug), XtRImmediate, (XtPointer) False},
+    {"proxy",  "Proxy",  XtRBoolean, sizeof(Boolean), 
+	 Offset(proxy), XtRImmediate, (XtPointer) False}
 };
 #undef Offset
 
@@ -53,6 +55,7 @@ static XrmOptionDescRec options[] = {
     {"-verbose",	"*verbose",	XrmoptionNoArg,		"TRUE"},
     {"-quiet",		"*verbose",	XrmoptionNoArg,		"FALSE"},
     {"-debug",		"*debug",	XrmoptionNoArg,		"TRUE"},
+    {"-proxy",		"*proxy",	XrmoptionNoArg,		"TRUE"},
 };
 
 List		*PendingList;
@@ -1004,6 +1007,25 @@ XtPointer 	callData;
 
 
 void
+StartProxy ()
+
+{
+    switch(fork()) {
+	case -1:
+	    perror("fork");
+	    break;
+	case 0:
+	    execlp("proxy", "proxy", (char *)NULL);
+	    perror("proxy");
+	    _exit(255);
+	default:
+	    break;
+    }
+}
+
+
+
+void
 PingXtProc (w, client_data, callData)
 
 Widget		w;
@@ -1573,6 +1595,9 @@ main(argc, argv)
 
     if (app_resources.verbose || app_resources.debug)
 	printf ("setenv %s %s\n", environment_name, networkIds);
+
+    if (app_resources.proxy)
+	StartProxy ();
 
     read_save();
     restart_everything();
