@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pexOCParse.c,v 5.1 91/02/16 09:55:22 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1000,6 +1000,7 @@ OC_PARSER_FUNC_HEADER(SetMCVolume)
 
     for (i = 0; i < count; i++){
       EXTRACT_COORD3D(&ddHS.orig_point, ptr);
+      ddHS.orig_point.w = 0.0; 	/* JSH */
       ddHS.point.w = 0.5; 	/* ? */
       EXTRACT_VECTOR3D(&ddHS.orig_vector, ptr);
 
@@ -1032,6 +1033,7 @@ OC_PARSER_FUNC_HEADER(SetMCVolume2D)
     for (i = 0; i < count; i++){
       EXTRACT_COORD2D(&ddHS.orig_point, ptr);
       ddHS.orig_point.z = 0.0;
+      ddHS.orig_point.w = 0.0;
       ddHS.point.w = 0.5;	/* ? */
       EXTRACT_VECTOR2D(&ddHS.orig_vector, ptr);
       ddHS.orig_vector.z = 0.0;
