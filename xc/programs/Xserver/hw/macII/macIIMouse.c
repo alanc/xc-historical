@@ -285,13 +285,13 @@ macIIMouseProcessEvent(pMouse,me)
 
     xE.u.keyButtonPointer.time = lastEventTime;
 
-    if(KEY_DETAIL(*me) == PSEUDO_MIDDLE) { 
-
+    if (IS_MIDDLE_KEY(*me)) {
 	    static int pseudo_middle_state = ButtonRelease;
 
             xE.u.u.detail = MS_MIDDLE - MS_LEFT + 1;
 	    xE.u.u.type = (KEY_UP(*me) ? ButtonRelease : ButtonPress);
 
+#ifdef OPTION_KEY_MOUSE
 	    /*
 	     * Apple extended keyboard under A/UX produces two release events
 	     * each time the option key is released. The following causes second
@@ -299,6 +299,7 @@ macIIMouseProcessEvent(pMouse,me)
 	     */
 	    if (xE.u.u.type == pseudo_middle_state) return;
 	    else pseudo_middle_state = xE.u.u.type;
+#endif OPTION_KEY_MOUSE
 
 	    /*
 	     * If the mouse has moved, we must update any interested client
@@ -314,7 +315,7 @@ macIIMouseProcessEvent(pMouse,me)
 	    return;
 	
     }
-    if(KEY_DETAIL(*me) == PSEUDO_RIGHT) { 
+    if (IS_RIGHT_KEY(*me)) {
             xE.u.u.detail = MS_RIGHT - MS_LEFT + 1;
 	    xE.u.u.type = (KEY_UP(*me) ? ButtonRelease : ButtonPress);
 	    /*
