@@ -1,8 +1,8 @@
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
-/*    CDEBUGFLAGS = LibaryCDebugFlags */
-    CDEBUGFLAGS = -g LibaryCDebugFlags
+/*    CDEBUGFLAGS = LibraryCDebugFlags */
+    CDEBUGFLAGS = -g LibraryCDebugFlags
         SUBDIRS = clients
        INCLUDES = -I. -I$(XRMSRC) -I$(XLIBSRC) -I$(TOP) -I$(TOP)/X11
 #if BigEndianArchitecture == YES
