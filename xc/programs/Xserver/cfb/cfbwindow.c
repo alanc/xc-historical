@@ -1,4 +1,4 @@
-/* $XConsortium: cfbwindow.c,v 5.13 92/02/11 15:04:25 keith Exp $ */
+/* $XConsortium: cfbwindow.c,v 5.14 92/03/13 16:20:59 eswu Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -145,7 +145,7 @@ cfbCopyWindow(pWin, ptOldOrg, prgnSrc)
 {
     DDXPointPtr pptSrc;
     register DDXPointPtr ppt;
-    RegionPtr prgnDst;
+    RegionRec rgnDst;
     register BoxPtr pbox;
     register int dx, dy;
     register int i, nbox;
@@ -153,17 +153,20 @@ cfbCopyWindow(pWin, ptOldOrg, prgnSrc)
 
     pwinRoot = WindowTable[pWin->drawable.pScreen->myNum];
 
-    prgnDst = (* pWin->drawable.pScreen->RegionCreate)(NULL, 1);
+    (* pWin->drawable.pScreen->RegionInit) (&rgnDst, NullBox, 0);
 
     dx = ptOldOrg.x - pWin->drawable.x;
     dy = ptOldOrg.y - pWin->drawable.y;
     (* pWin->drawable.pScreen->TranslateRegion)(prgnSrc, -dx, -dy);
-    (* pWin->drawable.pScreen->Intersect)(prgnDst, &pWin->borderClip, prgnSrc);
+    (* pWin->drawable.pScreen->Intersect)(&rgnDst, &pWin->borderClip, prgnSrc);
 
-    pbox = REGION_RECTS(prgnDst);
-    nbox = REGION_NUM_RECTS(prgnDst);
-    if(!(pptSrc = (DDXPointPtr )ALLOCATE_LOCAL(nbox * sizeof(DDXPointRec))))
+    pbox = REGION_RECTS(&rgnDst);
+    nbox = REGION_NUM_RECTS(&rgnDst);
+    if(!nbox || !(pptSrc = (DDXPointPtr )ALLOCATE_LOCAL(nbox * sizeof(DDXPointRec))))
+    {
+	(* pWin->drawable.pScreen->RegionUninit) (&rgnDst);
 	return;
+    }
     ppt = pptSrc;
 
     for (i = nbox; --i >= 0; ppt++, pbox++)
@@ -173,9 +176,9 @@ cfbCopyWindow(pWin, ptOldOrg, prgnSrc)
     }
 
     cfbDoBitbltCopy((DrawablePtr)pwinRoot, (DrawablePtr)pwinRoot,
-		GXcopy, prgnDst, pptSrc, ~0L);
+		GXcopy, &rgnDst, pptSrc, ~0L);
     DEALLOCATE_LOCAL(pptSrc);
-    (* pWin->drawable.pScreen->RegionDestroy)(prgnDst);
+    (* pWin->drawable.pScreen->RegionUninit) (&rgnDst);
 }
 
 
