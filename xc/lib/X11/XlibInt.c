@@ -2,7 +2,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
 
 #ifndef lint
-static char rcsid[] = "$Header: XlibInt.c,v 11.68 88/06/08 08:33:08 rws Exp $";
+static char rcsid[] = "$Header: XlibInt.c,v 11.69 88/08/09 15:56:39 jim Exp $";
 #endif
 
 /*
@@ -105,7 +105,8 @@ _XEventsQueued (dpy, mode)
 	len /= SIZEOF(xReply);
 	pend = len * SIZEOF(xReply);
 	_XRead (dpy, buf, (long) pend);
-	for (rep = (xReply *) buf; len > 0; rep++, len--) {
+	/* watch out for word alignment on large architectures.... */
+	for (rep = (xReply *) buf; len > 0; INCPTR(rep,xReply), len--) {
 	    if (rep->generic.type == X_Error)
 		_XError(dpy, (xError *)rep);
 	    else   /* must be an event packet */
@@ -148,7 +149,8 @@ _XReadEvents(dpy)
 	    pend = (pend / SIZEOF(xEvent)) * SIZEOF(xEvent);
 
 	    _XRead (dpy, buf, pend);
-	    for (ev = (xEvent *) buf; pend > 0; ev++, pend -= SIZEOF(xEvent)) {
+	    for (ev = (xEvent *) buf; pend > 0;
+		 INCPTR(ev,xEvent), pend -= SIZEOF(xEvent)) {
 		if (ev->u.u.type == X_Error)
 		    _XError (dpy, (xError *) ev);
 		else  /* it's an event packet; enqueue it */
@@ -195,6 +197,73 @@ _XRead (dpy, data, size)
 		    }
 	    	 }
 }
+
+#ifdef WORD64
+/*
+ * _XRead32 - Read bytes from the socket unpacking each 32 bits
+ *            into a long (64 bits on a CRAY computer).
+ * 
+ */
+_XRead32 (dpy, data, size)
+        register Display *dpy;
+        register long *data;
+        register long size;
+{
+ long *lpack,*lp;
+ long mask32 = 0x00000000ffffffff;
+ long maskw, nwords, i, bits;
+ extern char packbuffer[];
+
+        _XRead(dpy,packbuffer,size);
+
+        lp = data;
+        lpack = (long *) packbuffer;
+        nwords = size >> 2;
+        bits = 32;
+
+        for(i=0;i<nwords;i++){
+            maskw = mask32 << bits;
+           *lp++ = ( *lpack & maskw ) >> bits;
+            bits = bits ^32;
+            if(bits){
+               lpack++;
+            }
+        }
+}
+
+/*
+ * _XRead16 - Read bytes from the socket unpacking each 16 bits
+ *            into a long (64 bits on a CRAY computer).
+ *
+ */
+_XRead16 (dpy, data, size)
+        register Display *dpy;
+        register long *data;
+        register long size;
+{
+	long *lpack,*lp;
+	long mask16 = 0x000000000000ffff;
+	long maskw, nwords, i, bits;
+	extern char packbuffer[];
+
+        _XRead(dpy,packbuffer,size);
+
+        lp = data;
+        lpack = (long *) packbuffer;
+        nwords = size >> 1;  /* number of 16 bit words to be unpacked */
+        bits = 48;
+        for(i=0;i<nwords;i++){
+            maskw = mask16 << bits;
+           *lp++ = ( *lpack & maskw ) >> bits;
+            bits -= 16;
+            if(bits < 0){
+               lpack++;
+               bits = 48;
+            }
+        }
+}
+#endif /* WORD64 */
+
 
 /*
  * _XReadPad - Read bytes from the socket taking into account incomplete
@@ -417,12 +486,14 @@ Status _XReply (dpy, rep, extra, discard)
 		     * Read the extra data into storage immediately following
 		     * the GenericReply structure. 
 		     */
-		    _XRead (dpy, (char *) (rep+1), ((long)extra)<<2);
+		    _XRead (dpy, (char *) NEXTPTR(rep,xReply),
+			    ((long)extra) << 2);
 		    return (1);
 		    }
 		if (extra < rep->generic.length) {
 		    /* Actual reply is longer than "extra" */
-		    _XRead (dpy, (char *) (rep+1), ((long)extra)<<2);
+		    _XRead (dpy, (char *) NEXTPTR(rep,xReply),
+			    ((long)extra) << 2);
 		    if (discard)
 		        _EatData (dpy, rep->generic.length - extra);
 		    return (1);
@@ -432,7 +503,8 @@ Status _XReply (dpy, rep, extra, discard)
 		 * read a reply that's shorter than we expected.  This is an 
 		 * error,  but we still need to figure out how to handle it...
 		 */
-		_XRead (dpy, (char *) (rep+1), (long) (rep->generic.length<<2));
+		_XRead (dpy, (char *) NEXTPTR(rep,xReply),
+			((long) rep->generic.length) << 2);
 		(*_XIOErrorFunction) (dpy);
 		return (0);
 
@@ -1084,6 +1156,98 @@ XFree (data)
 	Xfree (data);
 }
 
+#ifdef WORD64
+/*
+ * Data16 - Place 16 bit data in the buffer.
+ *
+ * "dpy" is a pointer to a Display.
+ * "data" is a pointer to the data.
+ * "len" is the length in bytes of the data.
+ */
+
+char packbuffer[1024];
+Data16(dpy, data, len)
+    register Display *dpy;
+    short *data;
+    unsigned len;
+{
+    long *lp,*lpack;
+    long i, nwords,bits;
+    long mask16 = 0x000000000000ffff;
+
+        lp = (long *)data;
+        lpack = (long *)packbuffer;
+        *lpack = 0;
+
+/*  nwords is the number of 16 bit values to be packed,
+ *  the low order 16 bits of each word will be packed
+ *  into 64 bit words
+ */
+        nwords = len >> 1;
+        bits = 48;
+
+        for(i=0;i<nwords;i++){
+           *lpack ^= (*lp & mask16) << bits;
+           bits -= 16 ;
+           lp++;
+           if(bits < 0){
+               lpack++;
+               *lpack = 0;
+               bits = 48;
+           }
+        }
+        Data(dpy, packbuffer, len);
+}
+
+
+/*
+ * Data32 - Place 32 bit data in the buffer.
+ *
+ * "dpy" is a pointer to a Display.
+ * "data" is a pointer to the data.
+ * "len" is the length in bytes of the data.
+ */
+
+Data32(dpy, data, len)
+    register Display *dpy;
+    long *data;
+    unsigned len;
+{
+    long *lp,*lpack;
+    long i,bits,nwords;
+    long mask32 = 0x00000000ffffffff;
+
+        lpack = (long *) packbuffer;
+        lp = data;
+
+        *lpack = 0;
+
+/*  nwords is the number of 32 bit values to be packed
+ *  the low order 32 bits of each word will be packed
+ *  into 64 bit words
+ */
+        nwords = len >> 2;
+        bits = 32;
+
+        for(i=0;i<nwords;i++){
+           *lpack ^= (*lp & mask32) << bits;
+           bits = bits ^32;
+           lp++;
+           if(bits){
+              lpack++;
+              *lpack = 0;
+           }
+        }
+        Data(dpy, packbuffer, len);
+}
+#endif /* WORD64 */
+
+
+
+
+/*
+ * The following isn't used anymore, but is left in just in case.
+ */
 #ifdef BIGSHORTS
 UnpackShorts(from, to, bytes)
 	ushort_p *from;
@@ -1131,4 +1295,4 @@ PackShorts(from, to, bytes)
 			uto[i>>1].left = from[i-offset];
 	}
 }
-#endif
+#endif /* BIGSHORTS */

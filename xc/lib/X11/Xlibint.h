@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $Header: Xlibint.h,v 11.45 88/03/24 08:48:28 swick Exp $ */
+/* $Header: Xlibint.h,v 11.46 88/08/09 15:56:45 jim Exp $ */
 /* Copyright 1984, 1985, 1987  Massachusetts Institute of Technology */
 
 /*
@@ -8,14 +8,21 @@
  *	support routines (XlibInternal) used by the C subroutine interface
  *	library (Xlib) to the X Window System.
  *
+ *	Warning, there be dragons here....
  */
 #ifndef NEED_EVENTS
 #define _XEVENT_
 #endif
-#ifndef _XLIBINT_SYS_TYPES_		/* for braindamaged include files */
-#define _XLIBINT_SYS_TYPES_
+
+#ifdef CRAY
+#ifndef __TYPES__
+#define __TYPES__
+#include <sys/types.h>			/* forgot to protect it... */
+#endif /* __TYPES__ */
+#else
 #include <sys/types.h>
-#endif
+#endif /* CRAY */
+
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
 #include "Xlibos.h"
@@ -56,9 +63,9 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
  *   a word boundary.
  */
 #ifdef WORD64
-#define WORD64ALIGN if((long)dpy->bufptr>>61){\
+#define WORD64ALIGN if ((long)dpy->bufptr >> 61) {\
            dpy->last_req = dpy->bufptr;\
-           *(dpy->bufptr)   = 127;\
+           *(dpy->bufptr)   = X_NoOperation;\
            *(dpy->bufptr+1) =  0;\
            *(dpy->bufptr+2) =  0;\
            *(dpy->bufptr+3) =  1;\
@@ -78,7 +85,6 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
  * "req" is the name of the request pointer.
  *
  */
-
 
 #if (defined __STDC__) && (!defined UNIXCPP)
 #define GetReq(name, req) \
@@ -228,18 +234,24 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
     ptr = (type) dpy->bufptr; \
     dpy->bufptr += (n);
 
+/*
+ * provide emulation routines for smaller architectures
+ */
 #ifndef WORD64
 #define Data16(dpy, data, len) Data((dpy), (data), (len))
 #define Data32(dpy, data, len) Data((dpy), (data), (len))
 #define _XRead16(dpy, data, len) _XRead((dpy), (data), (len))
 #define _XRead32(dpy, data, len) _XRead((dpy), (data), (len))
 #define Pack16(f, t, n)   bcopy(f, t, n)
-#endif
+#endif /* not WORD64 */
 
+/*
+ * The following isn't used anymore, but it is left in just in case.
+ */
 #ifndef BIGSHORTS
 #define PackData(dpy, data, len) Data(dpy, data, len)
 #define PackShorts(f, t, n)  bcopy(f, t, n)
-#endif
+#endif /* BIGSHORTS */
 
 #define min(a,b) (((a) < (b)) ? (a) : (b))
 #define max(a,b) (((a) > (b)) ? (a) : (b))
@@ -251,9 +263,9 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
 
 
 /*
- * stuff to handle large architecture machines
+ * Stuff to handle large architecture machines; the constants were generated
+ * on a 32-bit machine and must coorespond to the protocol.
  */
-
 #ifdef WORD64
 
 #if (defined __STDC__) && (!defined UNIXCPP)
@@ -261,6 +273,9 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
 #else
 #define SIZEOF(x) sizeof_/**/x
 #endif /* if ANSI C compiler else not */
+
+#define NEXTPTR(p,t) (t *) (((char *) p) + SIZEOF(t))
+#define INCPTR(p,t) p = (t *) (((char *) p) + SIZEOF(t))
 
 #define sizeof_xSegment 8
 #define sizeof_xPoint 4
@@ -415,9 +430,11 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
 #define sizeof_xPropIconSize 24
 #define sizeof_xChangeKeyboardMappingReq 8
 
-#else /* else not WORD64 */
+#else /* else not WORD64, this is used for 32-bit machines */
 
 #define SIZEOF(x) sizeof(x)
+#define NEXTPTR(p,t) p+1
+#define INCPTR(p,t) p++
 
 #endif /* WORD64 - used by CRAY */
 

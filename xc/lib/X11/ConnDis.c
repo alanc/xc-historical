@@ -1,5 +1,5 @@
 #include "copyright.h"
-/* $Header: XConnDis.c,v 11.29 88/08/09 15:56:49 jim Exp $ */
+/* $Header: XConnDis.c,v 11.30 88/08/09 16:28:52 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 #define NEED_EVENTS
 /*
@@ -327,8 +327,7 @@ _XWaitForWritable(dpy)
 
 	    _XRead (dpy, buf, pend);
 	    /* watch out for alignment on large architectures.... */
-	    for (ev = (xEvent *) buf; pend > 0;
-		 ev = (xEvent *) (((char *) ev) + SIZEOF(xEvent)),
+	    for (ev = (xEvent *) buf; pend > 0; INCPTR(ev,xEvent),
 		 pend -= SIZEOF(xEvent)) 
 	    {
 		if (ev->u.u.type == X_Error)

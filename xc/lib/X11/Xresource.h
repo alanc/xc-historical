@@ -1,4 +1,4 @@
-/* $Header: Xresource.h,v 1.9 88/02/24 21:39:14 swick Exp $ */
+/* $Header: Xresource.h,v 1.10 88/02/26 12:57:06 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -45,7 +45,14 @@ SOFTWARE.
  *
  ****************************************************************/
 
-#include	<sys/types.h>
+#ifdef CRAY
+#ifndef __TYPES__
+#define __TYPES__
+#include <sys/types.h>			/* forgot to protect it... */
+#endif /* __TYPES__ */
+#else
+#include <sys/types.h>
+#endif /* CRAY */
 
 #ifndef NULL
 #define NULL 0
