@@ -1,4 +1,4 @@
-/* $XConsortium: xchgkbd.c,v 1.16 92/11/14 11:13:00 rws Exp $ */
+/* $XConsortium: xchgkbd.c,v 1.17 92/11/14 11:14:36 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -146,7 +146,7 @@ ProcXChangeKeyboardDevice (client)
 	for (i=0; i<df->traceSize; i++)
 	    df->trace[i] = xf->trace[i];
 	RegisterOtherDevice (xkbd);
-	RegisterKeyboardDevice (dev);
+	RegisterKeyboardDevice ((DevicePtr)dev);
 
 	ev.type = ChangeDeviceNotify;
 	ev.deviceid = stuff->deviceid;
@@ -181,5 +181,5 @@ SRepXChangeKeyboardDevice (client, size, rep)
 
     swaps(&rep->sequenceNumber, n);
     swapl(&rep->length, n);
-    WriteToClient(client, size, rep);
+    WriteToClient(client, size, (char *)rep);
     }

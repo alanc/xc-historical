@@ -1,4 +1,4 @@
-/* $XConsortium: xchgptr.c,v 1.16 92/11/14 10:47:08 rws Exp $ */
+/* $XConsortium: xchgptr.c,v 1.17 92/11/14 11:13:28 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -135,7 +135,7 @@ ProcXChangePointerDevice (client)
 	if (!dev->ptrfeed)
 	   InitPtrFeedbackClassDeviceStruct(dev, NoopDDA);
 	RegisterOtherDevice (xptr);
-	RegisterPointerDevice (dev);
+	RegisterPointerDevice ((DevicePtr)dev);
 
 	ev.type = ChangeDeviceNotify;
 	ev.deviceid = stuff->deviceid;
@@ -226,5 +226,5 @@ SRepXChangePointerDevice (client, size, rep)
 
     swaps(&rep->sequenceNumber, n);
     swapl(&rep->length, n);
-    WriteToClient(client, size, rep);
+    WriteToClient(client, size, (char *)rep);
     }
