@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xpr_c = "$Header: xpr.c,v 1.20 87/10/06 13:04:46 rws Locked $";
+static char *rcsid_xpr_c = "$Header: xpr.c,v 1.21 87/10/09 11:15:25 rws Exp $";
 #endif
 
 #include <sys/types.h>
@@ -1207,7 +1207,7 @@ enum orientation orientation;
 	    }
 	    if (win->bitmap_bit_order == MSBFirst)
 		_swapbits((char *)buffer, iwb);
-	    ocount = ps_putbuf(buffer,iwb,ocount,flags&F_COMPACT);
+	    ocount = ps_putbuf(buffer,(iw+7)/8,ocount,flags&F_COMPACT);
 	}
     }
     if (flags & F_COMPACT) {
