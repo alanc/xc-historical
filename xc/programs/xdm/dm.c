@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.33 89/12/19 15:30:24 rws Exp $
+ * $XConsortium: dm.c,v 1.34 89/12/19 16:56:09 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -597,6 +597,8 @@ StorePid ()
 	}
 	close(creat(pidFile, 0666));
 	fprintf (pidFilePtr, "%d\n", getpid ());
+	(void) fflush (pidFilePtr);
+	RegisterCloseOnFork (pidFd);
     }
     return 0;
 }
