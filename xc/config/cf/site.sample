@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.sample,v 1.16 94/08/18 22:36:35 matt Exp kaleb $
+XCOMM site:  $XConsortium: site.sample,v 1.17 94/12/04 18:50:43 kaleb Exp gildea $
 
 /***************************************************************************
  *                                                                         *
@@ -70,6 +70,7 @@ XCOMM site:  $XConsortium: site.sample,v 1.16 94/08/18 22:36:35 matt Exp kaleb $
 
 #define ProjectRoot /usr/X11R6
 
+/* Only set HasXdmAuth to YES if you have a Wraphelp.c file. */
 /* #define HasXdmAuth YES */
 
 /* #define BuildXKB YES */
