@@ -1,4 +1,4 @@
-/* $XConsortium: record.c,v 1.10 94/02/04 14:46:30 rws Exp $ */
+/* $XConsortium: record.c,v 1.11 94/02/05 02:24:52 rws Exp $ */
 /***************************************************************************
  * Copyright 1994 Network Computing Devices;
  * Portions Copyright 1988 by Digital Equipment Corporation and the
@@ -903,7 +903,7 @@ sProcRecordChangeConfig(client)
 }
 
 static int
-sProcRecordGetConfig(request,client)
+sProcRecordGetConfig(client)
     ClientPtr client;
 {
     REQUEST(xRecordGetConfigReq);
@@ -916,7 +916,7 @@ sProcRecordGetConfig(request,client)
 }
 
 static int
-sProcRecordEnableConfig(request,client)
+sProcRecordEnableConfig(client)
     ClientPtr client;
 {
     REQUEST(xRecordEnableConfigReq);
@@ -929,7 +929,7 @@ sProcRecordEnableConfig(request,client)
 }
 
 static int
-sProcRecordDisableConfig(request,client)
+sProcRecordDisableConfig(client)
     ClientPtr client;
 {
     REQUEST(xRecordDisableConfigReq);
