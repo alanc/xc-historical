@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: ws_io.c,v 1.4 91/07/08 11:16:33 keith Exp $ */
+/* $XConsortium: ws_io.c,v 1.5 91/10/30 16:27:45 rws Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -71,6 +71,7 @@ char *blackValue, *whiteValue;
 extern	ws_event_queue	*queue;
 int lastEventTime;
 int wsNumButtons = -1;
+static Bool cursorConfined = FALSE;
 
 #define MAX_LED 3	/* only 3 LED's can be set by user; Lock LED
 			   is controlled by server */
@@ -670,20 +671,34 @@ ProcessInputEvents()
    	if(e->screen != rememberedScreen)
 	{
 		ScreenPtr	pScreen;
-		short		x, y;
+		int		x, y;
 
-		/* assumption -- this is a motion event */
-		wsCursorControl(rememberedScreen, CURSOR_OFF);
-		wsCursorControl(e->screen, CURSOR_ON);
-		rememberedScreen = e->screen;
-		pScreen = wsScreens[e->screen];
-		if (currentCursor)
-			wsDisplayCursor (pScreen, currentCursor);
-		x = e->e.key.x;
-		y = e->e.key.y;
 		if (i >= queue->size - 1)   i = queue->head = 0;
 		else			    i = ++queue->head;
-		NewCurrentScreen(pScreen, x, y);
+		if (cursorConfined)
+		{
+		    /* OS doesn't work right -- we have to confine here */
+		    GetSpritePosition (&x, &y);
+		    pScreen = wsScreens[rememberedScreen];
+		    (void) wsSetCursorPosition (pScreen, x, y, FALSE);
+		    wsCursorControl(e->screen, CURSOR_OFF);
+		    wsCursorControl(rememberedScreen, CURSOR_ON);
+		    if (currentCursor)
+			wsDisplayCursor(pScreen, currentCursor);
+		}
+		else
+		{
+		    /* assumption -- this is a motion event */
+		    wsCursorControl(rememberedScreen, CURSOR_OFF);
+		    wsCursorControl(e->screen, CURSOR_ON);
+		    rememberedScreen = e->screen;
+		    pScreen = wsScreens[e->screen];
+		    if (currentCursor)
+			    wsDisplayCursor (pScreen, currentCursor);
+		    x = e->e.key.x;
+		    y = e->e.key.y;
+		    NewCurrentScreen(pScreen, x, y);
+		}
 		i = queue->head;
 		continue;
     	}
@@ -770,6 +785,18 @@ out:
     }
 }
 
+long
+GetTimeInMillis()
+{
+    struct timeval  tp;
+#ifdef VSYNCFIXED
+    if (queue)
+	return queue->time;
+#endif
+    gettimeofday(&tp, 0);
+    return(tp.tv_sec * 1000) + (tp.tv_usec / 1000);
+}
+
 TimeSinceLastInputEvent()
 {
     if (lastEventTime == 0)
@@ -782,7 +809,6 @@ SetTimeSinceLastInputEvent ()
     lastEventTime = CURRENT_TIME;
 }
 
-extern Bool PointerConfinedToScreen();
 /*
  * set the bounds in the device for this particular cursor
  */
@@ -794,6 +820,7 @@ wsConstrainCursor( pScr, pBox)
     ws_pointer_box wsbox;
     wsbox.screen = screenDesc[pScr->myNum].screen;
     wsbox.enable = PointerConfinedToScreen();
+    cursorConfined = wsbox.enable;
     wsbox.device_number = wsinfo.console_pointer;
     wsbox.box.bottom = pBox->y2;
     wsbox.box.right = pBox->x2;
@@ -1200,6 +1227,13 @@ ddxProcessArgument (argc, argv, i)
 		return 0;
 	}
 	else return 0;
+    }
+    else if (strcmp( argv[argind], "-forceDepth") == 0)
+    {
+	if (++argind < argc) {
+	    forceDepth = atoi (argv[argind]);
+	    skip = 2;
+	}
     }
 
 #ifdef XINPUT
