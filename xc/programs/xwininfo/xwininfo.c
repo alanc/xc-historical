@@ -253,6 +253,18 @@ main(argc, argv)
   if (!(tree || bits || events || wm || size))
     stats = 1;
 
+  /*
+   * make sure that the window is valid
+   */
+  {
+    Window root;
+    int x, y;
+    unsigned width, height, bw, depth;
+
+    XGetGeometry (dpy, window, &root, &x, &y, &width, &height, &bw, &depth);
+    XSync (dpy, 0);
+  }
+
   printf("\nxwininfo ==> Window id:");
   Display_Window_Id(window);
   if (tree)
