@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontutil.c,v 1.3 91/05/30 19:08:01 keith Exp $
+ * $XConsortium: fontutil.c,v 1.4 93/08/24 18:49:28 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -29,6 +29,8 @@
 
 /* Define global here...  doesn't hurt the servers, and avoids
    unresolved references in font clients.  */
+
+static int defaultGlyphCachingMode = DEFAULT_GLYPH_CACHING_MODE;
 int glyphCachingMode = DEFAULT_GLYPH_CACHING_MODE;
 
 void
@@ -164,16 +166,38 @@ QueryTextExtents(pFont, count, chars, info)
 }
 
 Bool
-SetGlyphCachingMode(str)
+ParseGlyphCachingMode(str)
     char       *str;
 {
-    if (!strcmp(str, "0")) glyphCachingMode = CACHING_OFF;
-    else if (!strcmp(str, "8")) glyphCachingMode = CACHE_ALL_GLYPHS;
-    else if (!strcmp(str, "16")) glyphCachingMode = CACHE_16_BIT_GLYPHS;
+    if (!strcmp(str, "none")) defaultGlyphCachingMode = CACHING_OFF;
+    else if (!strcmp(str, "all")) defaultGlyphCachingMode = CACHE_ALL_GLYPHS;
+    else if (!strcmp(str, "16")) defaultGlyphCachingMode = CACHE_16_BIT_GLYPHS;
     else return FALSE;
     return TRUE;
 }
 
+void
+InitGlyphCaching()
+{
+    /* Set glyphCachingMode to the mode the server hopes to
+       support.  DDX drivers that do not support the requested level
+       of glyph caching can call SetGlyphCachingMode to lower the
+       level of support.
+     */
+
+    glyphCachingMode = defaultGlyphCachingMode;
+}
+
+/* ddxen can call SetGlyphCachingMode to inform us of what level of glyph
+ * caching they can support.
+ */
+void
+SetGlyphCachingMode(newmode)
+    int newmode;
+{
+    if ( (glyphCachingMode > newmode) && (newmode >= 0) )
+	glyphCachingMode = newmode;
+}
 
 #define range_alloc_granularity 16
 #define mincharp(p) ((p)->min_char_low + ((p)->min_char_high << 8))
