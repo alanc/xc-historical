@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Resources.c,v 1.28 87/12/01 09:25:15 swick Locked $";
+static char rcsid[] = "$Header: Resources.c,v 1.29 87/12/02 16:54:42 swick Locked $";
 #endif lint
 
 /*
@@ -577,7 +577,7 @@ void XtSetValues(w, args, num_args)
     XtFree((char *) requestWidget);
     XtFree((char *) newWidget);
 
-    if (redisplay)
+    if (redisplay && XtIsRealized(w))
        /* repaint background of window, and force a full exposure event */
        XClearArea (XtDisplay(w), XtWindow(w), 0, 0, 0, 0, TRUE);
 
