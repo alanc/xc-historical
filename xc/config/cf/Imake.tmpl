@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.202 93/12/31 14:57:41 kaleb Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.203 94/01/16 16:21:34 gildea Exp $
 XCOMM
 
 /*
@@ -62,6 +62,9 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 #ifndef HasCodeCenter
 #define HasCodeCenter		NO
+#endif
+#ifndef HasSentinel
+#define HasSentinel		NO
 #endif
 #ifndef HasPurify
 #define HasPurify		NO
@@ -671,6 +674,14 @@ _NULLCMD_ = @ echo -n
 #ifndef EqnCmd
 #define EqnCmd eqn
 #endif
+#if HasSentinel
+#ifndef SentinelCmd
+#define SentinelCmd sentinel
+#endif
+#ifndef SentinelOptions
+#define SentinelOptions /**/
+#endif
+#endif
 #if HasPurify
 #ifndef PurifyCmd
 #define PurifyCmd purify
@@ -720,6 +731,13 @@ _NULLCMD_ = @ echo -n
 #endif
 #ifndef ExtraFilesToClean
 #define ExtraFilesToClean /**/
+#endif
+#ifndef SentinelFilesToClean
+#if HasSentinel
+#define SentinelFilesToClean .sentinel
+#else
+#define SentinelFilesToClean /**/
+#endif
 #endif
 #ifndef PureFilesToClean
 #if HasPurify
@@ -808,6 +826,10 @@ _NULLCMD_ = @ echo -n
          MSMACROS = MsMacros
               TBL = TblCmd
               EQN = EqnCmd
+#if HasSentinel
+         SENTINEL = SentinelCmd
+  SENTINELOPTIONS = SentinelOptions
+#endif
 #if HasPurify
            PURIFY = PurifyCmd
     PURIFYOPTIONS = PurifyOptions

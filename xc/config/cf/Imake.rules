@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.182 94/02/06 19:33:29 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.183 94/02/07 11:26:01 kaleb Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -23,6 +23,8 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.182 94/02/06 19:33:29 rws Exp $
  * RemoveFiles			(files)
  * CenterLoadTarget		(target,srclist,libs,defines)
  * CenterProgramTarget		(program,srclist,objlist,locallibs,syslibs)
+ * SentinelLinkTarget		(step,program,linklist)
+ * SentinelProgramTarget	(program,deplist,linklist)
  * PurifyLinkTarget		(step,program,linklist)
  * PurifyProgramTarget		(program,deplist,linklist)
  * ProofLinkTarget		(step,program,linklist)
@@ -263,6 +265,34 @@ CenterLoadTarget(Concat(debug_,program),srclist,$(EXTRA_LDOPTIONS) $(LOCAL_LDFLA
 CenterLoadTarget(Concat(odebug_,program),objlist,$(EXTRA_LDOPTIONS) $(LOCAL_LDFLAGS) $(LDPRELIB) locallibs $(LDLIBS) syslibs,$(ALLDEFINES))
 #endif /* CenterProgramTarget */
 
+#ifndef SentinelLinkTarget
+#if HasSentinel
+#define SentinelLinkTarget(step,program,linklist)			@@\
+ProgramTargetName(step.sentinel):					@@\
+	RemoveTargetProgram($@)						@@\
+	$(CCENVSETUP) $(SENTINEL) $(SENTINELOPTIONS) $(CC) -o program.sentinel $(LDOPTIONS) linklist $(EXTRA_LOAD_FLAGS)
+#else
+#define SentinelLinkTarget(step,program,linklist) /**/
+#endif
+#endif /* SentinelLinkTarget */
+
+/*
+ * SentinelProgramTarget - generate rules to make Sentinel image
+ */
+#ifndef SentinelProgramTarget
+#if HasSentinel
+#define	SentinelProgramTarget(program,deplist,linklist)			@@\
+ProgramTargetName(program.sentinel): deplist				@@\
+	RemoveTargetProgram($@)						@@\
+	$(CCENVSETUP) $(SENTINEL) $(SENTINELOPTIONS) $(CC) -o $@ $(LDOPTIONS) linklist $(EXTRA_LOAD_FLAGS) @@\
+									@@\
+clean clean.sentinel::							@@\
+	RemoveFile(program.sentinel program.sentinel.*)
+#else
+#define	SentinelProgramTarget(program,deplist,linklist) /**/
+#endif
+#endif /* SentinelProgramTarget */
+
 #ifndef PurifyLinkTarget
 #if HasPurify
 #define PurifyLinkTarget(step,program,linklist)				@@\
@@ -397,6 +427,7 @@ ProgramTargetName(program): objects deplibs				@@\
 	RemoveTargetProgram($@)						@@\
 	LinkRule($@,$(LDOPTIONS),objects,locallibs $(LDLIBS) syslibs)	@@\
 									@@\
+SentinelProgramTarget(program,objects deplibs,objects locallibs $(LDLIBS) syslibs) @@\
 PurifyProgramTarget(program,objects deplibs,objects locallibs $(LDLIBS) syslibs) @@\
 ProofProgramTarget(program,objects deplibs,objects locallibs $(LDLIBS) syslibs) @@\
 									@@\
@@ -447,6 +478,7 @@ ProgramTargetName(program): $(objs) $(deplib)				@@\
 	LinkRule($@,$(LDOPTIONS),$(objs),locallib $(LDLIBS) syslib)	@@\
 									@@\
 CenterProgramTarget(program,$(srcs),$(objs),locallib,syslib)		@@\
+SentinelProgramTarget(program,$(objs) $(deplib),$(objs) locallib $(LDLIBS) syslib) @@\
 PurifyProgramTarget(program,$(objs) $(deplib),$(objs) locallib $(LDLIBS) syslib) @@\
 ProofProgramTarget(program,$(objs) $(deplib),$(objs) locallib $(LDLIBS) syslib) @@\
 									@@\
@@ -461,6 +493,7 @@ ProgramTargetName(program): $(objs) $(deplib)				@@\
 	CplusplusLinkRule($@,$(LDOPTIONS),$(objs),locallib $(LDLIBS) syslib) @@\
 									@@\
 CenterProgramTarget(program,$(srcs),$(objs),locallib,syslib)		@@\
+SentinelProgramTarget(program,$(objs) $(deplib),$(objs) locallib $(LDLIBS) syslib) @@\
 PurifyProgramTarget(program,$(objs) $(deplib),$(objs) locallib $(LDLIBS) syslib) @@\
 ProofProgramTarget(program,$(objs) $(deplib),$(objs) locallib $(LDLIBS) syslib) @@\
 									@@\
@@ -602,6 +635,8 @@ Concat(load,server):							@@\
 									@@\
 loadX:: Concat(load,server)						@@\
 									@@\
+SentinelProgramTarget(server,subdirs objects libs,objects libs $(LDLIBS) syslibs) @@\
+SentinelLinkTarget(Concat(load,server),server,objects libs $(LDLIBS) syslibs) @@\
 PurifyProgramTarget(server,subdirs objects libs,objects libs $(LDLIBS) syslibs) @@\
 PurifyLinkTarget(Concat(load,server),server,objects libs $(LDLIBS) syslibs) @@\
 ProofProgramTarget(server,subdirs objects libs,objects libs $(LDLIBS) syslibs) @@\

@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.sample,v 1.2 93/09/30 16:22:56 rws Exp $
+XCOMM site:  $XConsortium: site.sample,v 1.3 93/09/30 18:26:53 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -57,6 +57,10 @@ XCOMM site:  $XConsortium: site.sample,v 1.2 93/09/30 16:22:56 rws Exp $
 #if defined(SunArchitecture) && defined(SparcArchitecture) && !defined(SVR4)
 #define HasPurify	YES
 #endif
+*/
+
+/*
+#define HasSentinel	YES
 */
 
 /*
