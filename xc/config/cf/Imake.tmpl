@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.117 91/05/04 22:23:29 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.118 91/05/06 12:01:02 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate .cf
 XCOMM configuration files.  Site-wide parameters may be set in the file
@@ -393,17 +393,8 @@ XCOMM site-specific configuration parameters - edit site.def to change
 #ifndef DefaultCDebugFlags
 #define DefaultCDebugFlags OptimizedCDebugFlags
 #endif
-#ifndef LibraryCDebugFlags
-#define LibraryCDebugFlags OptimizedCDebugFlags
-#endif
 #ifndef DefaultCCOptions
 #define DefaultCCOptions /* as nothing: this is for floating point, etc. */
-#endif
-#ifndef LibraryCCOptions
-#define LibraryCCOptions DefaultCCOptions
-#endif
-#ifndef ServerCCOptions
-#define ServerCCOptions DefaultCCOptions
 #endif
 #ifndef InstPgmFlags
 #define InstPgmFlags -s
@@ -449,14 +440,8 @@ XCOMM site-specific configuration parameters - edit site.def to change
 #define CcCmd cc
 #endif
 #endif
-#ifndef ServerCcCmd
-#define ServerCcCmd CcCmd
-#endif
-#ifndef LibraryCcCmd
-#define LibraryCcCmd CcCmd
-#endif
 #if HasFortran
-#ifndef FortranCmd			/* for xgks */
+#ifndef FortranCmd
 #define FortranCmd f77
 #endif
 #ifndef FortranFlags
