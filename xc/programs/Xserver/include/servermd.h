@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $XConsortium: servermd.h,v 1.51 90/03/10 15:18:25 keith Exp $ */
+/* $XConsortium: servermd.h,v 1.52 90/05/15 12:22:07 keith Exp $ */
 
 /*
  * The vendor string identifies the vendor responsible for the
@@ -107,6 +107,11 @@ SOFTWARE.
  *	For machines with > 20 registers.  Currently used for
  *	unrolling the text painting code a bit more.  Currently
  *	defined for MIPS.
+ *  SHARED_IDCACHE -
+ *	For non-Harvard RISC machines, those which share the same
+ *	CPU memory bus for instructions and data.  This unrolls some
+ *	solid fill loops which are otherwise best left rolled up.
+ *	Currently defined for SPARC.
  */
 
 #ifdef vax
@@ -133,6 +138,7 @@ SOFTWARE.
 # define AVOID_MEMORY_READ
 # define LARGE_INSTRUCTION_CACHE
 # define FAST_CONSTANT_OFFSET_MODE
+# define SHARED_IDCACHE
 #endif
 
 #ifdef mc68020
