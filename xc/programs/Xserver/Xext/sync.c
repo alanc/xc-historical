@@ -1,4 +1,4 @@
-/* $XConsortium: sync.c,v 1.7 94/02/09 11:26:50 dpw Exp $ */
+/* $XConsortium: sync.c,v 1.8 94/03/25 15:45:47 dpw Exp $ */
 /***********************************************************
 Copyright 1991, 1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 the Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -735,7 +735,8 @@ SyncChangeAlarmAttributes(client, pAlarm, mask, values)
 		client->errorValue = *values;
 		return BadValue;
 	    }
-	    status = SyncEventSelectForAlarm(pAlarm, client, *values++);
+	    status = SyncEventSelectForAlarm(pAlarm, client,
+					     (Bool)(*values++));
 	    if (status != Success)
 		return status;
 	    break;
