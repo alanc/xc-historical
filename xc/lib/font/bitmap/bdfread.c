@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: bdfread.c,v 1.1 91/05/10 14:45:34 keith Exp $ */
+/* $XConsortium: bdfread.c,v 1.2 91/05/10 15:58:19 keith Exp $ */
 
 #include <ctype.h>
 #include "fontfilest.h"
@@ -736,7 +736,7 @@ bdfReadFont(pFont, file, bit, byte, glyph, scan)
     bitmapFont->metrics = 0;
     bitmapFont->ink_metrics = 0;
     bitmapFont->bitmaps = 0;
-        bitmapFont->encoding = 0;
+    bitmapFont->encoding = 0;
     bitmapFont->pDefault = NULL;
     bitmapFont->bitmapExtra = (BitmapExtraPtr) xalloc(sizeof(BitmapExtraRec));
 
