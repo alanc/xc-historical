@@ -61,7 +61,7 @@ Editres.Geometry:			500x600
 
 *fileDialog*value:		
 *fileDialog*allowShellResize:		True
-*fileDialog*Text.Translations:		#override \n\
+*fileDialog*Text.baseTranslations:	#override \n\
 	<Key>Return:		PopdownFileDialog(okay)
 
 ! Resources for the Resource Box.
@@ -107,7 +107,7 @@ Editres.Geometry:			500x600
 ! This gives us an exactly one of many toggle, if toggle is
 ! not set in each group the application will probabally core dump.
 
-*namesAndClasses*Toggle.Translations: #override \n\
+*namesAndClasses*Toggle.baseTranslations: #override \n\
 	<Btn1Down>,<Btn1Up>:   set() notify()
     
 
@@ -115,7 +115,7 @@ Editres.Geometry:			500x600
 
 ! Keyboard Actions for Tree and children of the Tree.
 
-*Tree.Translations:	#override \n\
+*Tree.baseTranslations:	#override \n\
 	:<Key>space:		Select(nothing) \n\
 	:<Key>w:		Select(widget) \n\
 	:<Key>s:		Select(all) \n\
@@ -129,7 +129,7 @@ Editres.Geometry:			500x600
 	:<Key>I:		Relabel(id) \n\
 	:<Key>W:		Relabel(window) 
 
-*Tree.Toggle.Translations:	#override \n\
+*Tree.Toggle.baseTranslations:	#override \n\
 	:<Key>space:		Select(nothing) \n\
 	:<Key>w:		Select(widget) \n\
 	:<Key>s:		Select(all) \n\
@@ -162,13 +162,13 @@ Editres.Geometry:			500x600
 *setValuesPopup*Text*EditType:		Edit
 *setValuesPopup*Text*resize:		Width
 
-*setValuesPopup*resourceText.Translations: #override \
+*setValuesPopup*resourceText.baseTranslations: #override \
   <Key>Return:     	   no-op(RingBell) \n\
    Ctrl<Key>q,<Key>Tab:    insert-char()    \n\
    <Btn1Down>:             select-start() SVActiveEntry(Resource) \n\
    <Key>Tab:               SVActiveEntry(Value)
 
-*setValuesPopup*valueText.Translations: #override \
+*setValuesPopup*valueText.baseTranslations: #override \
    <Key>Return:     	   no-op(RingBell) \n\
    Ctrl<Key>q,<Key>Tab:    insert-char()     \n\
    <Btn1Down>:             select-start() SVActiveEntry(Value)\n\
