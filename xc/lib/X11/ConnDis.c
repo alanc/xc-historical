@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ConnDis.c,v 11.108 94/01/11 12:34:57 mor Exp $
+ * $XConsortium: ConnDis.c,v 11.109 94/01/13 15:11:29 mor Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -39,6 +39,10 @@
 
 #ifndef X_CONNECTION_RETRIES		/* number retries on ECONNREFUSED */
 #define X_CONNECTION_RETRIES 5
+#endif
+
+#ifdef LOCALCONN
+#include <sys/utsname.h>
 #endif
 
 static void GetAuthorization();
@@ -777,8 +781,8 @@ static int k5_clientauth(dpy, sprefix)
     {
 	free(buf);
 	krb5_free_principal(sprinc);
-	fprintf(stderr, "Xlib: krb5_cc_get_principal failed: %s\n",
-		error_message(retval));
+	fprintf(stderr, "Xlib: cannot get Kerberos principal from \"%s\": %s\n",
+		krb5_cc_default_name(), error_message(retval));
 	return -1;
     }
     bzero((char *)&creds, sizeof(creds));
@@ -799,7 +803,7 @@ static int k5_clientauth(dpy, sprefix)
     {
 	free(buf);
 	krb5_free_cred_contents(&creds);
-	fprintf(stderr, "Xlib: krb5_get_credentials failed: %s\n",
+	fprintf(stderr, "Xlib: cannot get Kerberos credentials: %s\n",
 		error_message(retval));
 	return -1;
     }
