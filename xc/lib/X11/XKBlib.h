@@ -1,4 +1,4 @@
-/* $XConsortium: XKBlib.h,v 1.2 93/09/28 19:30:43 rws Exp $ */
+/* $XConsortium: XKBlib.h,v 1.3 93/09/28 19:48:47 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -341,11 +341,19 @@ extern	Bool	XkbSelectEventDetails(
 #endif
 );
 
+extern	Status	XkbGetIndicatorState(
+#if NeedFunctionPrototypes
+    Display *			/* dpy */,
+    unsigned int 		/* deviceSpec */,
+    CARD32 *			/* pStateRtrn */
+#endif
+);
+
 extern	Status	 XkbGetIndicatorMap(
 #if NeedFunctionPrototypes
 	Display *		/* display */,
 	unsigned long		/* which */,
-	XkbDescRec *		/* desc */
+	XkbDescPtr		/* desc */
 #endif
 );
 
@@ -353,7 +361,7 @@ extern	Status	 XkbSetIndicatorMap(
 #if NeedFunctionPrototypes
 	Display *		/* display */,
 	unsigned long 		/* which */,
-	XkbDescRec *		/* desc */
+	XkbDescPtr		/* desc */
 #endif
 );
 
@@ -393,7 +401,7 @@ extern	Status	XkbSetKeyOnlyMods(
 #endif
 );
 
-extern	XkbDescRec *XkbGetMap(
+extern	XkbDescPtr XkbGetMap(
 #if NeedFunctionPrototypes
 	Display *		/* display */,
 	unsigned 		/* which */,
@@ -405,24 +413,15 @@ extern	Status	XkbGetUpdatedMap(
 #if NeedFunctionPrototypes
 	Display *		/* display */,
 	unsigned 		/* which */,
-	XkbDescRec *		/* desc */
+	XkbDescPtr		/* desc */
 #endif
 );
 
 extern	Status	XkbGetMapChanges(
 #if NeedFunctionPrototypes
 	Display *		/* display */,
-	XkbDescRec *		/* desc */,
-	XkbChangesRec *		/* changes */
-#endif
-);
-
-extern	Status	XkbGetColumnMaps(
-#if NeedFunctionPrototypes
-	Display *		/* display */,
-	unsigned 		/* firstMap */,
-	unsigned 		/* nMaps */,
-	XkbDescRec *		/* desc */
+	XkbDescPtr		/* desc */,
+	XkbChangesPtr		/* changes */
 #endif
 );
 
@@ -431,7 +430,7 @@ extern	Status	XkbGetActions(
 	Display *		/* display */,
 	unsigned 		/* firstAction */,
 	unsigned		/* nActions */,
-	XkbDescRec *		/* desc */
+	XkbDescPtr		/* desc */
 #endif
 );
 
@@ -440,7 +439,7 @@ extern	Status	XkbGetRadioGroups(
 	Display *		/* display */,
 	unsigned 		/* firstRadioGroup */,
 	unsigned		/* nRadioGroups */,
-	XkbDescRec*		/* desc */
+	XkbDescPtr		/* desc */
 #endif
 );
 
@@ -449,7 +448,7 @@ extern	Status	XkbGetKeySyms(
 	Display *		/* display */,
 	unsigned 		/* firstKey */,
 	unsigned		/* nKeys */,
-	XkbDescRec *		/* desc */
+	XkbDescPtr		/* desc */
 #endif
 );
 
@@ -458,7 +457,7 @@ extern	Status	XkbGetKeyBehaviors(
 	Display *		/* display */,
 	unsigned 		/* firstKey */,
 	unsigned		/* nKeys */,
-	XkbDescRec *		/* desc */
+	XkbDescPtr		/* desc */
 #endif
 );
 
@@ -467,7 +466,7 @@ extern	Status	XkbGetKeyActions(
 	Display *		/* display */,
 	unsigned 		/* firstKey */,
 	unsigned		/* nKeys */,
-	XkbDescRec *		/* desc */
+	XkbDescPtr		/* desc */
 #endif
 );
 
@@ -475,7 +474,7 @@ extern	Status	XkbGetControls(
 #if NeedFunctionPrototypes
 	Display *		/* display */,
 	unsigned long		/* which */,
-	XkbDescRec *		/* desc */
+	XkbDescPtr		/* desc */
 #endif
 );
 
@@ -483,7 +482,7 @@ extern	Status	XkbSetControls(
 #if NeedFunctionPrototypes
 	Display *		/* display */,
 	unsigned long		/* which */,
-	XkbDescRec *		/* desc */
+	XkbDescPtr		/* desc */
 #endif
 );
 
@@ -491,7 +490,7 @@ extern	Status	XkbGetNames(
 #if NeedFunctionPrototypes
 	Display *		/* display */,
 	unsigned		/* which */,
-	XkbDescRec *		/* desc */
+	XkbDescPtr		/* desc */
 #endif
 );
 
@@ -501,7 +500,7 @@ extern	Status	XkbSetNames(
 	unsigned		/* which */,
 	unsigned		/* firstColMap */,
 	unsigned		/* nColMaps */,
-	XkbDescRec *		/* desc */
+	XkbDescPtr		/* desc */
 #endif
 );
 
@@ -509,7 +508,7 @@ extern	Status	XkbGetState(
 #if NeedFunctionPrototypes
 	Display *		/* display */,
 	unsigned 		/* deviceSpec */,
-	XkbStateRec *		/* rtrnState */
+	XkbStatePtr		/* rtrnState */
 #endif
 );
 
@@ -517,21 +516,21 @@ extern	Status	XkbSetMap(
 #if NeedFunctionPrototypes
 	Display *		/* display */,
 	unsigned		/* which */,
-	XkbDescRec *		/* desc */
+	XkbDescPtr		/* desc */
 #endif
 );
 
 extern	Status	XkbChangeMap(
 #if NeedFunctionPrototypes
 	Display*		/* display */,
-	XkbDescRec *		/* desc */,
+	XkbDescPtr		/* desc */,
 	XkbMapChangesRec *	/* changes */
 #endif
 );
 
 extern	KeySym *XkbEnlargeKeySymbols(
 #if NeedFunctionPrototypes
-	XkbDescRec *		/* desc */,
+	XkbDescPtr		/* desc */,
 	int 			/* forKey */,
 	int 			/* symsNeeded */
 #endif
@@ -539,9 +538,28 @@ extern	KeySym *XkbEnlargeKeySymbols(
 
 extern	XkbAction *XkbEnlargeKeyActions(
 #if NeedFunctionPrototypes
-	XkbDescRec *		/* desc */,
+	XkbDescPtr		/* desc */,
 	int 			/* forKey */,
 	int 			/* actsNeeded */
+#endif
+);
+
+extern	Status XkbChangeTypeOfKey(
+#if NeedFunctionPrototypes
+	XkbDescPtr		/* xkb */,
+	unsigned 		/* key */,
+	unsigned		/* newType */,
+	XkbMapChangesRec *	/* pChanges */
+#endif
+);
+
+extern	Status XkbChangeSymsForKey(
+#if NeedFunctionPrototypes
+	XkbDescPtr		/* xkb */,
+	unsigned 		/* key */,
+	unsigned		/* count */,
+	KeySym *                /* syms */,
+	XkbMapChangesRec *	/* pChanges */
 #endif
 );
 
@@ -553,12 +571,12 @@ extern	XkbKbdGeometryRec	*XkbGetKbdGeometry(
 
 extern	XkbKbdDpyStateRec	*XkbKbdZoom(
 #if NeedFunctionPrototypes
-    XkbKbdGeometryRec *,int w,int h
+    XkbKbdGeometryRec*,int w,int h
 #endif
 );
 extern	XkbKbdKeyRec		*XkbKbdNextKey(
 #if NeedFunctionPrototypes
-    XkbKbdDpyStateRec *pState,
+    XkbKbdDpyStatePtr pState,
     int *left,int *top,
     int *right,int *bottom
 #endif
