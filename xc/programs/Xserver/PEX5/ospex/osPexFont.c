@@ -1,4 +1,4 @@
-/* $XConsortium: osPexFont.c,v 5.5 91/05/06 11:19:32 hersh Exp $ */
+/* $XConsortium: osPexFont.c,v 5.6 91/06/04 16:35:40 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -237,7 +237,7 @@ char    ***names;		/* out - pointer to list of strings */
     char	     entry[100];
     int		     i, head, tail, len, total = 0;
     
-    CopyISOLatin1Lowered(pattern, pPattern, patLen);
+    CopyISOLatin1Lowered((unsigned char*)pattern, pPattern, patLen);
     
     if (!(*names = (char **)Xalloc((unsigned long)(ABSOLUTE_MAX_NAMES * sizeof(char *)))))
 	return 0;
@@ -359,7 +359,8 @@ LoadPEXFontFile(length, fontname, pFont)
     register Property  *propptr = 0;
     register pexFontProp *fpptr = 0;
 
-    CopyISOLatin1Lowered(name_to_match, fontname, length);
+    CopyISOLatin1Lowered((unsigned char *)name_to_match,
+			 (unsigned char *)fontname, length);
 
     /* open up the font directory and look for matching file names */
     if (!(fontdir = opendir(pex_get_font_directory_path())))
