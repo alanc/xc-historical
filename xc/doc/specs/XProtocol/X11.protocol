@@ -6053,11 +6053,11 @@ If rectangles intersect,
 the intersecting pixels are drawn multiple times.
 .LP
 GC components: function, plane-mask, line-width, line-style,
-join-style, fill-style, subwindow-mode, clip-x-origin, clip-y-origin,
-clip-mask
+cap-style, join-style, fill-style, subwindow-mode, clip-x-origin,
+clip-y-origin, clip-mask
 .LP
 GC mode-dependent components: foreground, background, tile, stipple,
-tile-stipple-x-origin, tile-stipple-y-origin, dash-offset, dashes, cap-style
+tile-stipple-x-origin, tile-stipple-y-origin, dash-offset, dashes
 .sp
 .LP
 .\" Start marker code here
