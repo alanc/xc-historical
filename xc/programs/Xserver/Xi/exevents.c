@@ -53,6 +53,7 @@ void 			ActivateKeyboardGrab();
 void 			DeactivateKeyboardGrab();
 void 			ProcessOtherEvent();
 void 			RecalculateDeviceDeliverableEvents();
+static Bool		ShouldFreeInputMasks();
 extern int		DeviceKeyPress;
 extern int		DeviceButtonPress;
 extern int		DeviceValuator;
@@ -600,6 +601,7 @@ SelectForWindow(dev, pWin, client, mask, exclusivemasks, validmasks)
 	    if (SameClient(others, client))
 	        {
 		check = others->mask[mskidx];
+		others->mask[mskidx] = mask;
 		if (mask == 0)
 		    {
 		    for (i=0; i<EMASKSIZE; i++)
@@ -607,12 +609,12 @@ SelectForWindow(dev, pWin, client, mask, exclusivemasks, validmasks)
 			    break;
 		    if (i == EMASKSIZE)
 			{
-		        FreeResource(others->resource, RT_NONE);
+			RecalculateDeviceDeliverableEvents(pWin);
+			if (ShouldFreeInputMasks(pWin), FALSE)
+			    FreeResource(others->resource, RT_NONE);
 		        return Success;
 			}
 		    }
-		else
-		    others->mask[mskidx] = mask;
 		goto maskSet;
 	        }
 	    }
@@ -679,7 +681,7 @@ RecalculateDeviceDeliverableEvents(pWin)
     {
     register InputClientsPtr others;
     struct _OtherInputMasks *inputMasks;   /* default: NULL */
-    register WindowPtr pChild;
+    register WindowPtr pChild, tmp;
     int i;
 
     pChild = pWin;
@@ -691,15 +693,15 @@ RecalculateDeviceDeliverableEvents(pWin)
 		others = others->next)
 		{
 		for (i=0; i<EMASKSIZE; i++)
-		    if (others->mask[i])
-			inputMasks->inputEvents[i] |= others->mask[i];
+		    inputMasks->inputEvents[i] |= others->mask[i];
 		}
 	    for (i=0; i<EMASKSIZE; i++)
 		inputMasks->deliverableEvents[i] = inputMasks->inputEvents[i];
-	    if (pChild->parent && wOtherInputMasks(pChild->parent))
-		for (i=0; i<EMASKSIZE; i++)
-		    inputMasks->deliverableEvents[i] |=
-			(wOtherInputMasks(pChild->parent)->deliverableEvents[i] 
+	    for (tmp = pChild->parent; tmp; tmp=tmp->parent)
+		if (wOtherInputMasks(tmp))
+		    for (i=0; i<EMASKSIZE; i++)
+			inputMasks->deliverableEvents[i] |=
+			(wOtherInputMasks(tmp)->deliverableEvents[i] 
 			& ~inputMasks->dontPropagateMask[i] & PropagateMask[i]);
 	    }
 	if (pChild->firstChild)
@@ -731,17 +733,33 @@ InputClientGone(pWin, id)
 	if (other->resource == id)
 	    {
 	    if (prev)
+		{
 		prev->next = other->next;
-	    else
-	        {
-		if (!(wOtherInputMasks(pWin)->inputClients = other->next))
+		xfree(other);
+		}
+	    else if (!(other->next))
+		{
+	        if (ShouldFreeInputMasks(pWin), TRUE)
 		    {
+		    wOtherInputMasks(pWin)->inputClients = other->next;
 		    xfree(wOtherInputMasks(pWin));
 		    pWin->optional->inputMasks = (OtherInputMasks *) NULL;
 		    CheckWindowOptionalNeed (pWin);
+		    xfree(other);
 		    }
-	        }
-	    xfree(other);
+		else
+		    {
+		    other->resource = FakeClientID(0);
+		    if (!AddResource(other->resource, RT_INPUTCLIENT, 
+			(pointer)pWin))
+			return BadAlloc;
+		    }
+		}
+	    else
+		{
+		wOtherInputMasks(pWin)->inputClients = other->next;
+		xfree(other);
+		}
 	    RecalculateDeviceDeliverableEvents(pWin);
 	    return(Success);
 	    }
@@ -1000,9 +1018,10 @@ DeleteWindowFromAnyExtEvents(pWin, freeResources)
     WindowPtr		pWin;
     Bool		freeResources;
     {
+    int			i;
     DeviceIntPtr	dev;
     InputClientsPtr	ic;
-
+    struct _OtherInputMasks *inputMasks;
 
     for (dev=inputInfo.devices; dev; dev=dev->next)
 	{
@@ -1016,9 +1035,11 @@ DeleteWindowFromAnyExtEvents(pWin, freeResources)
 	DeleteDeviceFromAnyExtEvents(pWin, dev);
 
     if (freeResources)
-	while (wOtherInputMasks(pWin))
+	while (inputMasks = wOtherInputMasks(pWin))
 	    {
-	    ic = wOtherInputMasks(pWin)->inputClients;
+	    ic = inputMasks->inputClients;
+	    for (i=0; i<EMASKSIZE; i++)
+		inputMasks->dontPropagateMask[i] = 0;
 	    FreeResource(ic->resource, RT_NONE);
 	    }
     }
@@ -1185,6 +1206,8 @@ DeviceEventSuppressForWindow(pWin, client, mask, maskndx)
 	Mask mask;
 	int maskndx;
     {
+    struct _OtherInputMasks *inputMasks = wOtherInputMasks (pWin);
+
     if (mask & ~PropagateMask[maskndx])
 	{
 	client->errorValue = mask;
@@ -1193,18 +1216,38 @@ DeviceEventSuppressForWindow(pWin, client, mask, maskndx)
 
     if (mask == 0) 
 	{
-	if (wOtherInputMasks(pWin))
-	    {
-	    wOtherInputMasks(pWin)->dontPropagateMask[maskndx] = mask;
-	    CheckWindowOptionalNeed (pWin);
-	    }
+	if (inputMasks)
+	    inputMasks->dontPropagateMask[maskndx] = mask;
 	} 
     else 
 	{
-	if (!wOtherInputMasks(pWin))
+	if (!inputMasks)
 	    AddExtensionClient (pWin, client, 0, 0);
-	wOtherInputMasks(pWin)->dontPropagateMask[maskndx] = mask;
+	inputMasks = wOtherInputMasks(pWin);
+	inputMasks->dontPropagateMask[maskndx] = mask;
 	}
     RecalculateDeviceDeliverableEvents(pWin);
+    if (ShouldFreeInputMasks(pWin), FALSE)
+        FreeResource(inputMasks->inputClients->resource, RT_NONE);
     return Success;
+    }
+
+static Bool
+ShouldFreeInputMasks (pWin, ignoreSelectedEvents)
+    WindowPtr pWin;
+    Bool ignoreSelectedEvents;
+    {
+    int i;
+    Mask allInputEventMasks = 0;
+    struct _OtherInputMasks *inputMasks = wOtherInputMasks (pWin);
+
+    for (i=0; i<EMASKSIZE; i++)
+	allInputEventMasks |= inputMasks->dontPropagateMask[i];
+    if (!ignoreSelectedEvents)
+	for (i=0; i<EMASKSIZE; i++)
+	    allInputEventMasks |= inputMasks->inputEvents[i];
+    if (allInputEventMasks == 0)
+	return TRUE;
+    else
+	return FALSE;
     }
