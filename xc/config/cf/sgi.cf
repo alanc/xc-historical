@@ -1,10 +1,18 @@
-XCOMM platform:  $XConsortium: sgi.cf,v 1.45 94/12/12 22:43:39 kaleb Exp kaleb $
+XCOMM platform:  $XConsortium: sgi.cf,v 1.46 95/01/16 19:49:35 kaleb Exp kaleb $
 
+#ifndef OSName
 #define OSName			IRIX 5.2
+#endif
 XCOMM operating system:  OSName
+#ifndef OSMajorVersion
 #define OSMajorVersion		5
+#endif
+#ifndef OSMinorVersion
 #define OSMinorVersion		2
+#endif
+#ifndef OSTeenyVersion
 #define OSTeenyVersion          0
+#endif
 
 #if OSMajorVersion < 4
 /* We do not guarantee this will work */
@@ -17,7 +25,6 @@ XCOMM operating system:  OSName
 
 #if OSMajorVersion < 5
 #define SystemV			YES
-#define Malloc0ReturnsNull	YES
 #define XawI18nDefines		-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
 #else
 #define BootstrapCFlags		-DSVR4
@@ -25,9 +32,10 @@ XCOMM operating system:  OSName
 #define SystemV4		YES
 #define HasWChar32              YES
 #define HasVFork		NO
-#define XawI18nDefines		-DHAS_WCTYPE_H
+#define XawI18nDefines		-DHAS_WCTYPE_H -DHAS_ISW_FUNCS
 #endif
 
+#define Malloc0ReturnsNull	YES	/* IRIX 5.x -lmalloc needs this */
 #define HasPutenv		YES
 #define ExecableScripts		YES
 #define HasNdbm			YES
@@ -45,9 +53,15 @@ XCOMM operating system:  OSName
 
 #include <sgiLib.rules>
 
+#if OSMajorVersion < 5
 #define SymbolTables -Wf,-XNp9000,-XNd8000,-XNh2000
 #define PexSymbolTables -Wf,-XNp15000,-XNd15000,-XNh2000
 #define ServerSymbolTables -Wf,-XNp8000,-XNh2000,-XNd8000
+#else
+#define SymbolTables
+#define PexSymbolTables 
+#define ServerSymbolTables
+#endif
 
 /* this is for floating point, ANSI cpp */
 #if OSMajorVersion < 5
@@ -55,7 +69,7 @@ XCOMM operating system:  OSName
 #define ExtraLibraries -lsun -lmalloc -lc_s -lw
 #define sgiCCOptions -xansi -D__STDC__=1 -float
 #else
-#define sgiCCOptions -float
+#define sgiCCOptions
 /* SGI's -lsocket -lnsl is broken, at least in 5.2, so override here */
 #define ExtraLibraries -lw
 #endif

@@ -1,10 +1,18 @@
-XCOMM platform:  $XConsortium: ibm.cf,v 1.51 94/06/03 21:38:45 matt Exp $
+XCOMM platform:  $XConsortium: ibm.cf,v 1.52 94/06/04 16:44:25 rws Exp Kaleb $
 
 #ifdef RsArchitecture
-#define OSName		AIX 3.2.5
-#define OSMajorVersion	3
-#define OSMinorVersion	2
-#define OSTeenyVersion	5
+#ifndef OSName
+#define OSName		AIX 4.1.1
+#endif
+#ifndef OSMajorVersion
+#define OSMajorVersion	4
+#endif
+#ifndef OSMinorVersion
+#define OSMinorVersion	1
+#endif
+#ifndef OSTeenyVersion
+#define OSTeenyVersion	1
+#endif
 #else
 #ifdef RtArchitecture
 #ifdef AIXArchitecture
@@ -29,6 +37,7 @@ XCOMM operating system:  OSName
 
 #if OSMajorVersion > 3 || (OSMajorVersion == 3 && OSMinorVersion >= 2)
 #define HasBSD44Sockets		YES
+#define HasPutenv		YES
 /*
  * If you do not have threads support installed, put
  * #define HasPosixThreads NO
@@ -44,7 +53,6 @@ XCOMM operating system:  OSName
 #endif
 #endif
 
-#define CcCmd xlc
 
 /*
  * For IBM platforms, we must define both the location of the compiler
@@ -89,11 +97,18 @@ baseobj.Osuf:	basedep.CCsuf						@@\
 #define ExecableScripts		YES
 #define Malloc0ReturnsNull	YES
 #define CppCmd			/usr/lpp/X11/Xamples/util/cpp/cpp
-#define StandardDefines         -DSYSV -DAIXV3 -D_ALL_SOURCE
 #define ExpandManNames		YES
 #define ExtensionOSDefines -DXTESTEXT1
+#define StandardDefines         -DSYSV -DAIXV3 -D_ALL_SOURCE
+#if OSMajorVersion >= 4
+#define XawI18nDefines		-DHAS_WCHAR_H -DHAS_ISW_FUNCS
+#define CcCmd c89		/* full conforming ANSI C w/ ANSI headers */
+ _NULLCMD_ = @ echo
+#else
 #define XibmServer 		YES
 #define ibmIncludeSKYWAY	YES
+#define CcCmd xlc
+#endif
 #define OPERATING_SYSTEM 	AIX /* directory name under server/ddx/ibm/ */
 #define InstallCmd              /usr/ucb/install
 #include <ibmLib.rules>
