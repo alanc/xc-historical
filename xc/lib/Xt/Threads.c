@@ -1,4 +1,4 @@
-/* $XConsortium: Threads.c,v 1.5 93/09/03 14:12:08 kaleb Exp $ */
+/* $XConsortium: Threads.c,v 1.6 93/09/06 09:49:52 rws Exp $ */
 
 /************************************************************
 Copyright 1993 by Sun Microsystems, Inc. Mountain View, CA.
@@ -30,7 +30,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include "IntrinsicI.h"
 
-#if defined(XTHREADS)
+#ifdef XTHREADS
 
 #define xmalloc XtMalloc
 #define xfree XtFree
@@ -363,7 +363,7 @@ void XtAppLock(app)
     XtAppContext app;
 #endif
 {
-#if defined(XTHREADS)
+#ifdef XTHREADS
     if(app->lock)
 	(*app->lock)(app);
 #endif
@@ -377,7 +377,7 @@ void XtAppUnlock(app)
     XtAppContext app;
 #endif
 {
-#if defined(XTHREADS)
+#ifdef XTHREADS
     if(app->unlock)
 	(*app->unlock)(app);
 #endif
@@ -385,7 +385,7 @@ void XtAppUnlock(app)
 
 void XtProcessLock()
 {
-#if defined(XTHREADS)
+#ifdef XTHREADS
     if(_XtProcessLock)
 	(*_XtProcessLock)();
 #endif
@@ -393,18 +393,21 @@ void XtProcessLock()
 
 void XtProcessUnlock()
 {
-#if defined(XTHREADS)
+#ifdef XTHREADS
     if(_XtProcessUnlock)
 	(*_XtProcessUnlock)();
 #endif
 }
 
-void XtToolkitThreadInitialize()
+Boolean XtToolkitThreadInitialize()
 {
-#if defined(XTHREADS)
+#ifdef XTHREADS
     InitProcessLock();
     _XtProcessLock = ProcessLock;
     _XtProcessUnlock = ProcessUnlock;
     _XtInitAppLock = InitAppLock;
+    return True;
+#else
+    return False;
 #endif
 }
