@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.126 91/02/14 19:36:23 keith Exp $ */
+/* $XConsortium: connection.c,v 1.127 91/02/18 21:47:48 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -613,10 +613,10 @@ EstablishNewConnections()
 	    }
 	}
 #endif /* TCP_NODELAY */
-#ifdef	hpux
-	/*
-	 * HPUX does not have  FNDELAY
-	 */
+#ifdef O_NONBLOCK
+	(void) fcntl (newconn, F_SETFL, O_NONBLOCK);
+#else
+#ifdef FIOSNBIO
 	{
 	    int	arg;
 	    arg = 1;
@@ -624,7 +624,8 @@ EstablishNewConnections()
 	}
 #else
 	fcntl (newconn, F_SETFL, FNDELAY);
-#endif /* hpux */
+#endif
+#endif
 	oc = (OsCommPtr)xalloc(sizeof(OsCommRec));
 	if (!oc)
 	{
