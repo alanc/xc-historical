@@ -1,0 +1,9 @@
+LOCAL_LIBRARIES = $(XMULIB) $(XLIB)
+  SYS_LIBRARIES = -lm
+#ifdef MacIIArchitecture
+        DEFINES = -DIEEE
+#endif /* MacIIArchitecture */
+           SRCS = xcmap.c
+           OBJS = xcmap.o
+
+ComplexProgramTarget(xcmap)
