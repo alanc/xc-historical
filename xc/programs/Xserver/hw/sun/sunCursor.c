@@ -104,7 +104,7 @@ typedef struct {
     void	(*DrawGuarantee)();
 } WinPrivRec, *WinPrivPtr;
 
-static int	wPrivClass;		/* Resource class for icky private
+static unsigned short wPrivClass;	/* Resource class for icky private
 					 * window structure (WinPrivRec)
 					 * needed to protect the cursor
 					 * from background/border paintings */
@@ -350,7 +350,7 @@ cleanup1:
 	FreeScratchGC(tGC2);
 	goto cleanup4;
     }
-    ValidateGC(pPriv->source, pGC);
+    ValidateGC((DrawablePtr)pPriv->source, pGC);
     (*pGC->PutImage) (pPriv->source, pGC, 1,
 		      0, 0,
 		      pCursor->width, pCursor->height,
@@ -361,7 +361,7 @@ cleanup1:
 
     ValidateGC((DrawablePtr) pScreen->devPrivate, pPriv->srcGC);
 
-    ValidateGC(pPriv->invSource, pGC);
+    ValidateGC((DrawablePtr)pPriv->invSource, pGC);
     (*pGC->PutImage) (pPriv->invSource, pGC, 1,
 		      0, 0,
 		      pCursor->width, pCursor->height,
@@ -590,14 +590,14 @@ sunRecolorCursor (pScreen, pCursor, displayed)
 		    pCursor->foreBlue, &pPriv->fg))
     {
 	ChangeGC (pPriv->srcGC, GCForeground, &pPriv->fg);
-	ValidateGC (pScreen->devPrivate, pPriv->srcGC);
+	ValidateGC ((DrawablePtr)pScreen->devPrivate, pPriv->srcGC);
     }
     
     if (sunGetPixel (pScreen, pCursor->backRed, pCursor->backGreen,
 		     pCursor->backBlue, &pPriv->bg))
     {
 	ChangeGC (pPriv->invSrcGC, GCForeground, &pPriv->bg);
-	ValidateGC (pScreen->devPrivate, pPriv->invSrcGC);
+	ValidateGC ((DrawablePtr)pScreen->devPrivate, pPriv->invSrcGC);
     }
 }
 
@@ -745,7 +745,7 @@ sunPutCursor (pScreen, pPriv, hotX, hotY, direct)
 	 */
 	pGC->stateChanges |= (GCForeground|GCBackground);
 		/* Need to set some bits */
-	ValidateGC(pPixmap, pGC);
+	ValidateGC((DrawablePtr)pPixmap, pGC);
 	(* pGC->CopyArea) (pPriv->screenBits, pPixmap, pGC,
 			   0, 0, pPixmap->width, pPixmap->height,
 			   0, 0);
@@ -926,7 +926,7 @@ sunRestoreCursor()
 	pGC = sunFbs[pScreen->myNum].pGC;
 	pGC->stateChanges |= (GCForeground|GCBackground);	
 		/* Need to set some bits */
-	ValidateGC(screenBits, pGC);
+	ValidateGC((DrawablePtr)screenBits, pGC);
 	(* pGC->CopyArea) ((DrawablePtr)pScreen->devPrivate,
 			   (DrawablePtr)screenBits,
 			   pGC,
@@ -1255,7 +1255,7 @@ sunCreateWindow (pWin)
 	pWin->backStorage->RestoreAreas = sunRestoreAreas;
 	pWin->backStorage->DrawGuarantee = sunDrawGuarantee;
     }
-    return AddResource (pWin->wid, RT_WINDOW, (pointer)pPriv, Xfree,
+    return AddResource (pWin->wid, RT_WINDOW, (pointer)pPriv, (int(*)())Xfree,
 			wPrivClass);
 }
 
