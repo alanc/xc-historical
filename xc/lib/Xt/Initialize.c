@@ -66,7 +66,7 @@ static XrmOptionDescRec opTable[] = {
 {"-font",	"*font",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-foreground",	"*foreground",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-geometry",	".geometry",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-iconic",	".TopLevelShell.iconic",   XrmoptionNoArg,  (caddr_t) "on"},
+{"-iconic",	".iconic",	XrmoptionNoArg,		(caddr_t) "on"},
 {"-name",	".name",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-reverse",	"*reverseVideo", XrmoptionNoArg,	(caddr_t) "on"},
 {"-rv",		"*reverseVideo", XrmoptionNoArg,	(caddr_t) "on"},
@@ -76,7 +76,7 @@ static XrmOptionDescRec opTable[] = {
 {"-title",	".title",	XrmoptionSepArg,	(caddr_t) NULL}
 {"-xrm",	NULL,		XrmoptionResArg,	(caddr_t) NULL},
 #ifdef EQUALGEOMETRY
-{"=",		".TopLevelShell.geometry", XrmoptionIsArg, (caddr_t) NULL},
+{"=",		".geometry",	XrmoptionIsArg,		(caddr_t) NULL},
 #endif
 };
 
