@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: cray.cf,v 1.24 91/02/18 17:35:52 rws Exp $
+XCOMM platform:  $XConsortium: cray.cf,v 1.25 91/02/23 14:54:56 rws Exp $
 
 
 /*
@@ -19,6 +19,7 @@ XCOMM platform:  $XConsortium: cray.cf,v 1.24 91/02/18 17:35:52 rws Exp $
 #define StandardCppDefines	-DSYSV -DUSG
 #define ExecableScripts		NO
 #define BuildServer		NO
+#define BuildPex		NO
 #define CcCmd			scc
 #define ConnectionFlags		-DTCPCONN 
 #define HasShm			NO
