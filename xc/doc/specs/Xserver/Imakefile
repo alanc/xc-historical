@@ -1,17 +1,9 @@
-XCOMM $XConsortium$
-all: ddx.PS r5.PS gdz.PS strat.PS
+XCOMM $XConsortium: Imakefile,v 1.2 91/07/17 16:01:42 gildea Exp $
 
-ddx.PS:
-	$(TBL) ddx.tbl.ms | $(TROFF) $(MSMACROS) 2> index.raw > ddx.PS
+MakeTblDoc(ddx,ddx.tbl.ms)
 
-r5.PS:
-	$(TBL) r5.tbl.ms | $(TROFF) $(MSMACROS) 2> index.raw > r5.PS
+MakeTblDoc(r5,r5.tbl.ms)
 
-gdz.PS:
-	$(TBL) gdz.tbl.ms | $(TROFF) $(MSMACROS) 2> index.raw > gdz.PS
+MakeTblDoc(gdz,gdz.tbl.ms)
 
-strat.PS:
-	$(TROFF) $(MSMACROS) strat.ms 2> index.raw > strat.PS
-
-clean::
-	$(RM) index.raw ddx.PS r5.PS gdz.PS strat.PS
+MakeSimpleDoc(strat,strat.ms)

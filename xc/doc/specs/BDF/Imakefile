@@ -1,10 +1,3 @@
-XCOMM $XConsortium: Imakefile,v 1.4 91/07/17 16:00:43 gildea Exp $
-SRCS = $(XDOCMACROS) bdf.ms
+XCOMM $XConsortium: Imakefile,v 1.5 94/02/10 15:15:39 rws Exp $
 
-all: bdf.PS
-
-bdf.PS:
-	 $(TROFF) $(MSMACROS) $(SRCS) 2> index.raw > bdf.PS
-
-clean::
-	$(RM) index.raw bdf.PS
+MakeSimpleDoc(bdf,bdf.ms)

@@ -1,14 +1,7 @@
-XCOMM $XConsortium: Imakefile,v 1.3 91/07/31 01:08:10 keith Exp $
-all: shape.PS xtest.PS mit-shm.PS
+XCOMM $XConsortium: Imakefile,v 1.4 92/04/17 11:59:34 rws Exp $
 
-shape.PS:
-	$(TROFF) $(MSMACROS) ../util/macros.t shape.ms 2> index.raw > shape.PS
+MakeSimpleDoc(shape,shape.ms)
 
-xtest.PS:
-	$(TROFF) $(MSMACROS) ../util/macros.t xtest.ms 2> index.raw > xtest.PS
+MakeSimpleDoc(xtest,xtest.ms)
 
-mit-shm.PS:
-	$(TROFF) $(MSMACROS) mit-shm.ms > mit-shm.PS
-
-clean::
-	$(RM) index.raw shape.PS xtest.PS mit-shm.PS
+MakeSimpleDoc(mit-shm,mit-shm.ms)
