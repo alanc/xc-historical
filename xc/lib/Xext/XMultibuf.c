@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XMultibuf.c,v 1.21 89/12/08 18:15:49 converse Exp $
+ * $XConsortium: XMultibuf.c,v 1.22 89/12/12 13:49:36 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -186,7 +186,7 @@ static XmbufBufferInfo *read_buffer_info (dpy, nbufs)
     long netbytes = nbufs * SIZEOF(xMbufBufferInfo);
 
     if (netbuf) {
-	_XRead32 (dpy, (long *) netbuf, netbytes);
+	_XRead (dpy, (char *) netbuf, netbytes);
 
 	bufinfo = TALLOC (XmbufBufferInfo, nbufs);
 	if (bufinfo) {
