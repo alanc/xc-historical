@@ -1075,8 +1075,12 @@ window.
 .SH "SEE ALSO"
 resize(1), X(1), pty(4), tty(4)
 .br
-.I ``Xterm Control Sequences''
+.I \fIXterm Control Sequences\fP
 .SH BUGS
+.PP
+The \fIXterm Control Sequences\fP document has yet to be converted from X10.
+.PP
+The class name is \fIXTerm\fP instead of \fIXterm\fP.
 .PP
 \fBXterm will hang forever if you try to paste too much text at one time.\fP
 It is both producer and consumer for the pty and can deadlock.
@@ -1107,7 +1111,7 @@ defining all of the non-standard escape sequences.
 All programs should be written to use X directly; then we could
 eliminate this program.
 .SH COPYRIGHT
-Copyright 1988, Massachusetts Institute of Technology.
+Copyright 1989, Massachusetts Institute of Technology.
 .br
 See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHORS
