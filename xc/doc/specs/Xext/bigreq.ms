@@ -1,5 +1,5 @@
 .\" Use -ms and macros.t
-.\" $XConsortium: bigreq.ms,v 1.8 93/01/07 20:07:54 rws Exp $
+.\" $XConsortium: bigreq.ms,v 1.9 93/01/08 09:26:09 rws Exp $
 .EH ''''
 .OH ''''
 .EF ''''
@@ -13,7 +13,7 @@
 .sp 3
 .ce 3
 Version 2.0
-MIT X Consortium Proposed Standard
+X Consortium Standard
 X Version 11, Release 6
 .sp 6
 .ce 4

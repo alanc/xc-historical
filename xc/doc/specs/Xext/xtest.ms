@@ -1,5 +1,5 @@
 .\" Use -ms and macros.t
-.\" $XConsortium: xtest.ms,v 1.6 92/12/17 14:07:12 rws Exp $
+.\" $XConsortium: xtest.ms,v 1.7 92/12/17 17:29:54 rws Exp $
 .de lP
 .ne 8
 .LP
@@ -17,7 +17,7 @@
 .sp 3
 .ce 3
 Version 2.2
-MIT X Consortium Draft
+X Consortium Standard
 .sp 6
 .ce 4
 \s-1Kieron Drake
