@@ -1384,7 +1384,6 @@
 	     (type stringable name)
 	     (type card16 width height)
 	     (type card16 byte-width line-width line byte-number count)
-	     (type array-index length)
 	     (type (simple-array card8 (*)) data))
     (with-vector (data (simple-array card8 (*)))
       (setq name (string-downcase (string name)))
