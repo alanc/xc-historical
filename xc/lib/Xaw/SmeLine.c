@@ -1,6 +1,4 @@
-#if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: SmeLine.c,v 1.7 89/12/11 15:20:17 kit Exp $";
-#endif 
+/* $XConsortium: SmeLine.c,v 1.8 90/02/08 13:50:13 jim Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -228,7 +226,7 @@ Region region;
 {
     SmeLineObject entry = (SmeLineObject) w;
     int y = entry->rectangle.y + 
-	    (entry->rectangle.height - entry->sme_line.line_width) / 2;
+	    (int)(entry->rectangle.height - entry->sme_line.line_width) / 2;
 
     if (entry->sme_line.stipple != XtUnspecifiedPixmap) 
 	XSetTSOrigin(XtDisplayOfObject(w), entry->sme_line.gc, 0, y);
