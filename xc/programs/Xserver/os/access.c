@@ -1,4 +1,4 @@
-/* $XConsortium: access.c,v 1.62 93/10/12 09:04:03 rws Exp $ */
+/* $XConsortium: access.c,v 1.63 94/01/14 19:07:36 gildea Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -23,7 +23,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include "Xos.h"
+#include <X11/Xtrans.h>
 #include <X11/Xauth.h>
 #include "X.h"
 #include "Xproto.h"
@@ -87,15 +87,6 @@ Bool defeatAccessControl = FALSE;
 			 ((fam) == (host)->family &&\
 			  (length) == (host)->len &&\
 			  !acmp (address, (host)->addr, length))
-
-#ifdef LOCALCONN
-extern int xlocal_getpeername();
-#define	getpeername xlocal_getpeername
-#endif
-
-#ifdef hpux
-#define getpeername(fd, from, fromlen)	hpux_getpeername(fd, from, fromlen)
-#endif
 
 static int ConvertAddr(
 #if NeedFunctionPrototypes
@@ -614,17 +605,19 @@ static Bool
 AuthorizedClient(client)
     ClientPtr client;
 {
-    int    		alen, family;
-    struct sockaddr	from;
+    int    		alen, family, notused;
+    Xtransaddr		*from = NULL;
     pointer		addr;
     register HOST	*host;
 
     if (!client || defeatAccessControl)
 	return TRUE;
-    alen = sizeof (from);
-    if (!getpeername (((OsCommPtr)client->osPrivate)->fd, &from, &alen))
+    if (!_X11TransGetPeerAddr (((OsCommPtr)client->osPrivate)->trans_conn,
+	&notused, &alen, &from))
     {
-	family = ConvertAddr (&from, &alen, (pointer *)&addr);
+	family = ConvertAddr ((struct sockaddr *) from,
+	    &alen, (pointer *)&addr);
+	free ((char *) from);
 	if (family == -1)
 	    return FALSE;
 	if (family == FamilyLocal)
