@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.58 89/01/18 15:19:56 swick Exp $";
+static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.59 89/01/18 17:04:01 swick Exp $";
 /* $oHeader: NextEvent.c,v 1.4 88/09/01 11:43:27 asente Exp $ */
 #endif lint
 
@@ -191,9 +191,13 @@ int _XtwaitForSomething(ignoreTimers, ignoreInputs, ignoreEvents,
 				}
 			    }
 			} else {
-				XtAppErrorMsg(app, "communicationError","select",
-                                        "XtToolkitError","Select failed",
-                                         (String *)NULL, (Cardinal *)NULL);
+			    char Errno[10];
+			    String param = Errno;
+			    Cardinal param_count = 1;
+			    sprintf( Errno, "%d", errno);
+			    XtAppErrorMsg(app, "communicationError","select",
+			       "XtToolkitError","Select failed; error code %s",
+			       &param, &param_count);
 			}
 		} /* timed out or input available */
 		break;
