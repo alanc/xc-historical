@@ -1,5 +1,4 @@
-/* static char rcsid[] =
-	"$XConsortium: StrToShap.c,v 1.1 89/10/03 11:37:03 swick Exp $"; */
+/* $XConsortium: StrToShap.c,v 1.2 90/07/15 16:19:02 rws Exp $ */
 
 /* 
  * Copyright 1988 by the Massachusetts Institute of Technology
@@ -16,8 +15,9 @@
  *
  */
 
-#include	<X11/Intrinsic.h>
-#include	"Xmu.h"
+#include <X11/Intrinsic.h>
+#include "Converters.h"
+#include "CharSet.h"
 
 /* ARGSUSED */
 #define	done(type, value) \
