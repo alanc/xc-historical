@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: parse.c,v 1.30 89/12/02 16:14:20 jim Exp $
+ * $XConsortium: parse.c,v 1.31 89/12/02 16:48:09 jim Exp $
  *
  * parse the .twmrc file
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: parse.c,v 1.30 89/12/02 16:14:20 jim Exp $";
+"$XConsortium: parse.c,v 1.31 89/12/02 16:48:09 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -119,6 +119,10 @@ int ParseTwmrc (filename)
     char *cp;
     char tmpfilename[257];
 
+    /*
+     * If filename given, try it, else try ~/.twmrc.# then ~/.twmrc.  Then
+     * try system.twmrc; finally using built-in defaults.
+     */
     for (twmrc = NULL, i = 0; !twmrc && i < 4; i++) {
 	switch (i) {
 	  case 0:			/* -f filename */
@@ -126,15 +130,16 @@ int ParseTwmrc (filename)
 	    break;
 
 	  case 1:			/* ~/.twmrc.screennum */
-	    home = getenv ("HOME");
-	    if (home) {
-		homelen = strlen (home);
-		cp = tmpfilename;
-		sprintf (tmpfilename, "%s/.twmrc.%d", home, Scr->screen);
-	    } else {
-		continue;
+	    if (!filename) {
+		home = getenv ("HOME");
+		if (home) {
+		    homelen = strlen (home);
+		    cp = tmpfilename;
+		    sprintf (tmpfilename, "%s/.twmrc.%d", home, Scr->screen);
+		    break;
+		}
 	    }
-	    break;
+	    continue;
 
 	  case 2:			/* ~/.twmrc */
 	    if (home) {
@@ -147,20 +152,26 @@ int ParseTwmrc (filename)
 	    break;
 	}
 
-	if (cp) {
-	    twmrc = fopen (cp, "r");
-	    if (i == 0) {
-		fprintf (stderr, "%s:  unable to open twmrc \"%s\"\n",
-			 ProgramName, cp);
-	    }
-	}
+	if (cp) twmrc = fopen (cp, "r");
     }
 
     if (twmrc) {
-	int status = doparse (twmFileInput, "file", cp);
+	int status;
+
+	if (filename && cp != filename) {
+	    fprintf (stderr,
+		     "%s:  unable to open twmrc file %s, using %s instead\n",
+		     ProgramName, filename, cp);
+	}
+	status = doparse (twmFileInput, "file", cp);
 	fclose (twmrc);
 	return status;
     } else {
+	if (filename) {
+	    fprintf (stderr,
+	"%s:  unable to open twmrc file %s, using built-in defaults instead\n",
+		     ProgramName, filename);
+	}
 	return ParseStringList (defTwmrc);
     }
 }
