@@ -1,4 +1,4 @@
-/* $XConsortium: XGetHints.c,v 11.31 91/01/08 14:40:41 gildea Exp $ */
+/* $XConsortium: XGetHints.c,v 11.32 91/02/01 16:34:19 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -168,7 +168,9 @@ Status XGetIconSizes (dpy, w, size_list, count)
 	pp = prop;
 
         if ((actual_type != XA_WM_ICON_SIZE) ||
-	    (nitems < NumPropIconSizeElements) || (actual_format != 32)) {
+	    (nitems < NumPropIconSizeElements) ||
+	    (nitems % NumPropIconSizeElements != 0) ||
+	    (actual_format != 32)) {
 		if (prop != NULL) Xfree ((char *)prop);
                 return(0);
 		}
