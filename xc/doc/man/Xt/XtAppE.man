@@ -6,7 +6,7 @@
 .ds xC Inter-Client Communication Conventions Manual
 .ds Rn 3
 .ds Vn 2.2
-.hw XtMake-Geometry-Request XtQuery-Geometry wid-get
+.hw XtApp-Error XtApp-Set-Error-Handler XtApp-Set-Warning-Handler XtApp-Warning wid-get
 .na
 .de Ds
 .nf
@@ -97,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtAppError 3Xt "Release 3" "X Version 11" "XT FUNCTIONS"
+.TH XtAppError 3Xt "Release 6" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtAppError, XtAppSetErrorHandler, XtAppSetWarningHandler, XtAppWarning \- low-level error handlers
 .SH SYNTAX

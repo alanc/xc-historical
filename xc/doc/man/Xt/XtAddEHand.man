@@ -6,7 +6,7 @@
 .ds xC Inter-Client Communication Conventions Manual
 .ds Rn 3
 .ds Vn 2.2
-.hw XtMake-Geometry-Request XtQuery-Geometry wid-get
+.hw XtAdd-Event-Handler XtAdd-Raw-Event-Handler XtRemove-Event-Handler XtRemove-Raw-Event-Handler XtInsert-Event-Handler XtInsert-Raw-Event-Handler wid-get
 .na
 .de Ds
 .nf
@@ -97,9 +97,9 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtAddEventHandler 3Xt "Release 3" "X Version 11" "XT FUNCTIONS"
+.TH XtAddEventHandler 3Xt "Release 6" "X Version 11" "XT FUNCTIONS"
 .SH NAME
-XtAddEventHandler, XtAddRawEventHandler, XtRemoveEventHandler, XtRemoveRawEventHandler \- add and remove event handlers
+XtAddEventHandler, XtAddRawEventHandler, XtRemoveEventHandler, XtRemoveRawEventHandler, XtInsertEventHandler, XtInsertRawEventHandler \- add and remove event handlers
 .SH SYNTAX
 void XtAddEventHandler(\fIw\fP, \fIevent_mask\fP, \fInonmaskable\fP, \
 \fIproc\fP, \fIclient_data\fP)
@@ -152,6 +152,38 @@ void XtRemoveRawEventHandler(\fIw\fP, \fIevent_mask\fP, \fInonmaskable\fP, \
       XtEventHandler \fIproc\fP;
 .br
       XtPointer \fIclient_data\fP;
+.LP
+void XtInsertEventHandler(\fIw\fP, \fIevent_mask\fP, \fInonmaskable\fP, \
+\fIproc\fP, \fIclient_data\fP, \fIposition\fP)
+.br
+      Widget \fIw\fP;
+.br
+      EventMask \fIevent_mask\fP;
+.br
+      Boolean \fInonmaskable\fP;
+.br
+      XtEventHandler \fIproc\fP;
+.br
+      XtPointer \fIclient_data\fP;
+.br
+      XtListPosition \fIposition\fP;
+.LP
+void XtInsertRawEventHandler(\fIw\fP, \fIevent_mask\fP, \fInonmaskable\fP, \
+\fIproc\fP, \fIclient_data\fP, \fIposition\fP)
+.br
+      Widget \fIw\fP;
+.br
+      EventMask \fIevent_mask\fP;
+.br
+      Boolean \fInonmaskable\fP;
+.br
+      XtEventHandler \fIproc\fP;
+.br
+      XtPointer \fIclient_data\fP;
+.br
+      XtListPosition \fIposition\fP;
+.LP
+typedef enum { XtListHead, XtListTail } XtListPosition;
 .SH ARGUMENTS
 .IP \fIclient_data\fP 1i
 Specifies additional data to be passed to the client's event handler.
@@ -176,6 +208,9 @@ Specifies the procedure that is\*(Pr.
 .ds Wi for which this event handler is being registered
 .IP \fIw\fP 1i
 Specifies the widget \*(Wi.
+.IP \fIposition\fP 1i
+Specifies when the event handler is to be called relative to other
+previously registered handlers.
 .SH DESCRIPTION
 The
 .ZN XtAddEventHandler
@@ -216,6 +251,29 @@ function stops the specified procedure from receiving the specified events.
 Because the procedure is a raw event handler,
 this does not affect the widget's mask and never causes a call on
 .ZN XSelectInput .
+.LP
+.ZN XtInsertEventHandler
+is identical to
+.ZN XtAddEventHandler
+with the additional \fIposition\fP argument. if \fIposition\fP is
+.ZN XtListHead ,
+the event handler is registered to that it will be called before
+any event handlers that were previously registered for the same widget.
+If \fIposition\fP is
+.ZN XtListTail ,
+the event handler is registered to be called after any previously
+registered event handlers. If the procedure is already registered with
+the same \fIclient_data\fP value, the specified mask augments the
+existing mask and the procedure is repositioned in the list.
+.LP
+.ZN XtInsertRawEventHandler
+is similar to
+.ZN XtInsertEventHandler
+except that it does not modify the widget's event mask and never causes an
+.ZN XSelectInput
+for the specified events. If the procedure is already registered with the
+same \fIclient_data\fP value, the specified mask augments the existing
+mask and the procedure is repositioned in the list.
 .SH "SEE ALSO"
 XtAppNextEvent(3Xt),
 XtBuildEventMask(3Xt)
