@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.rules,v 1.14 93/08/18 14:43:21 rws Exp $
+XCOMM platform:  $XConsortium: Win32.rules,v 1.15 93/08/18 19:34:14 rws Exp $
 
 .c.obj:
 	$(CC) -c $*.c @<<
@@ -53,11 +53,12 @@ Avoid.Error srclist:							@@\
 #define LinkFileList(step,list,dir,sub)					@@\
 XVARdef0 = dir								@@\
 XVARdef1 = sub								@@\
+XVARdef2 = list								@@\
 									@@\
-step:: list								@@\
+step:: $(XVARuse2:/=\)							@@\
 	cd $(XVARuse0:/=\)						@@\
 	!RemoveFile($**)						@@\
-	!$(LN) $(XVARuse1:/=\)\$$* .
+	!$(LN) $(XVARuse1:/=\)\$** .
 
 #define LinkRule(program,options,objects,libraries) \
 $(CCLINK) Concat(-Fe,program) options objects libraries $(EXTRA_LOAD_FLAGS)
