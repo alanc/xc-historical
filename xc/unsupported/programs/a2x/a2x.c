@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.115 93/04/12 13:30:51 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.116 93/04/12 20:04:50 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -604,7 +604,7 @@ reset_mapping()
     Window root, w, *children;
     char *name;
     unsigned int nchild, width, height, bwidth, depth;
-    unsigned short metamask;
+    unsigned short modsmask;
     long mask;
     XSizeHints hints;
     unsigned char bmap[256];
@@ -665,8 +665,8 @@ reset_mapping()
     i = XKeysymToKeycode(dpy, XK_Meta_L);
     if (!i)
 	i = XKeysymToKeycode(dpy, XK_Meta_R);
-    metamask = modmask[i];
-    switch (metamask) {
+    modsmask = modmask[i];
+    switch (modsmask) {
     case Mod1Mask:
 	meta = mod1;
 	break;
@@ -700,18 +700,24 @@ reset_mapping()
 		    progname, c);
 	    break;
 	}
+	modifiers[c] = pc_keys[i].modifiers;
+	if (XKeycodeToKeysym(dpy, j, 0) != pc_keys[i].keysym &&
+	    XKeycodeToKeysym(dpy, j, 1) == pc_keys[i].keysym) {
+	    if (modifiers[c] & ShiftMask)
+		continue;
+	    modifiers[c] |= ShiftMask;
+	}
 	pc_keys[i].c = c;
 	keycodes[c] = j;
-	modifiers[c] = pc_keys[i].modifiers;
 	if (modifiers[c] & Meta)
-	    modifiers[c] = (modifiers[c] & ~Meta) | metamask;
+	    modifiers[c] = (modifiers[c] & ~Meta) | modsmask;
 	c++;
     }
 #else
     if (meta) {
 	for (c = 0; c < 128; c++) {
 	    keycodes[c + 128] = keycodes[c];
-	    modifiers[c + 128] = modifiers[c] | metamask;
+	    modifiers[c + 128] = modifiers[c] | modsmask;
 	}
     }
 #endif
@@ -721,7 +727,7 @@ reset_mapping()
     }
     last_sym = 0;
     if (hotkeyname) {
-	hotkey = parse_keysym(hotkeyname);
+	hotkey = parse_keysym(hotkeyname, strlen(hotkeyname), &modsmask);
 	hotwin = None;
 	if (hotkey) {
 	    XQueryTree(dpy, DefaultRootWindow(dpy), &w, &w,
@@ -737,7 +743,7 @@ reset_mapping()
 	    XFree((char *)children);
 	}
 	if (hotwin) {
-	    XGrabKey(dpy, hotkey, 0, DefaultRootWindow(dpy), False,
+	    XGrabKey(dpy, hotkey, modsmask, DefaultRootWindow(dpy), False,
 		     GrabModeAsync, GrabModeAsync);
 	    if (hotwinfocus) {
 		XEvent ev;
@@ -834,9 +840,10 @@ do_char(c)
 }
 
 KeyCode
-parse_keysym(buf, len)
+parse_keysym(buf, len, modsmask)
     char *buf;
     int len;
+    unsigned short *modsmask;
 {
     KeySym sym;
     char *endptr;
@@ -850,6 +857,11 @@ parse_keysym(buf, len)
 	last_sym = sym;
 	last_keycode_for_sym = XKeysymToKeycode(dpy, sym);
     }
+    if (XKeycodeToKeysym(dpy, last_keycode_for_sym, 0) != sym &&
+	XKeycodeToKeysym(dpy, last_keycode_for_sym, 1) == sym)
+	*modsmask = ShiftMask;
+    else
+	*modsmask = None;
     return last_keycode_for_sym;
 }
 
@@ -859,10 +871,11 @@ do_keysym(buf, len)
     int len;
 {
     KeyCode key;
+    unsigned short modsmask;
 
-    key = parse_keysym(buf, len);
+    key = parse_keysym(buf, len, &modsmask);
     if (key)
-	do_key(key, 0);
+	do_key(key, modsmask);
     else
 	XBell(dpy, 0);
 }
@@ -2045,6 +2058,7 @@ undo_stroke()
     char c;
     int i;
     KeyCode key;
+    unsigned short modsmask;
 
     if (!history_end) {
 	in_control_seq = False;
@@ -2098,7 +2112,8 @@ undo_stroke()
 	    if (c == control_char) {
 		if (tempmods && !iscntrl(history[i+1])) {
 		    history[history_end] = '\0';
-		    key = parse_keysym(history+i+1, history_end - i - 1);
+		    key = parse_keysym(history+i+1, history_end - i - 1,
+				       &modsmask);
 		    if (key)
 			tempmods &= ~modmask[key];
 		    history[history_end] = control_end;
