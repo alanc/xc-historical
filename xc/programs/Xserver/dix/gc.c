@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: gc.c,v 1.97 87/10/13 19:19:39 rws Locked $ */
+/* $Header: gc.c,v 1.98 87/10/15 10:37:48 rws Locked $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -859,8 +859,9 @@ register unsigned char *pdash;
 
 
 int
-SetClipRects(pGC, nrects, prects, ordering)
+SetClipRects(pGC, xOrigin, yOrigin, nrects, prects, ordering)
     GCPtr		pGC;
+    int			xOrigin, yOrigin;
     int			nrects;
     xRectangle		*prects;
     int			ordering;
@@ -877,20 +878,22 @@ SetClipRects(pGC, nrects, prects, ordering)
 	  newct = CT_UNSORTED;
 	  break;
       case YSorted:
-	  if(i > 0)
+	  if(nrects > 1)
 	  {
-	      prectP = prects;
-	      prectN = prects + 1;
-	      for(i = 1; i < nrects; i++, prectN++, prectP++)
+	      for(i = 1, prectP = prects, prectN = prects + 1;
+		  i < nrects;
+		  i++, prectP++, prectN++)
 		  if(prectN->y < prectP->y)
 		      return(BadMatch);
 	  }
 	  newct = CT_YSORTED;
 	  break;
       case YXSorted:
-	  if(i > 0)
+	  if(nrects > 1)
 	  {
-	      for(i = 1; i < nrects; i++, prectN++, prectP++)
+	      for(i = 1, prectP = prects, prectN = prects + 1;
+		  i < nrects;
+		  i++, prectP++, prectN++)
 		  if((prectN->y < prectP->y) ||
 		      ( (prectN->y == prectP->y) &&
 		        (prectN->x < prectP->x) ) )
@@ -899,9 +902,11 @@ SetClipRects(pGC, nrects, prects, ordering)
 	  newct = CT_YXSORTED;
 	  break;
       case YXBanded:
-	  if(i > 0)
+	  if(nrects > 1)
 	  {
-	      for(i = 1; i < nrects; i++, prectN++, prectP++)
+	      for(i = 1, prectP = prects, prectN = prects + 1;
+		  i < nrects;
+		  i++, prectP++, prectN++)
 		  if((prectN->y < prectP->y) ||
 		      ( (prectN->y == prectP->y) &&
 		        (  (prectN->x < prectP->x)   ||
@@ -912,6 +917,13 @@ SetClipRects(pGC, nrects, prects, ordering)
 	  break;
     }
 
+    pGC->serialNumber |= GC_CHANGE_SERIAL_BIT;
+    pGC->clipOrg.x = xOrigin;
+    pGC->stateChanges |= GCClipXOrigin;
+		 
+    pGC->clipOrg.y = yOrigin;
+    pGC->stateChanges |= GCClipYOrigin;
+
     size = nrects * sizeof(xRectangle);
     prectsNew = (xRectangle *) Xalloc(size);
     bcopy(prects, prectsNew, size);
@@ -920,8 +932,8 @@ SetClipRects(pGC, nrects, prects, ordering)
     pQInit = (GCInterestPtr) &pGC->pNextGCInterest;
     do
     {
-	if(pQ->ChangeInterestMask & GCClipMask)
-	    (*pQ->ChangeGC)(pGC, pQ, GCClipMask);
+	if(pQ->ChangeInterestMask & (GCClipXOrigin|GCClipYOrigin|GCClipMask))
+	    (*pQ->ChangeGC)(pGC, pQ, (GCClipXOrigin|GCClipYOrigin|GCClipMask));
 	pQ = pQ->pNextGCInterest;
     }
     while(pQ != pQInit);
