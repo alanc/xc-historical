@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.161 93/09/23 16:32:03 rws Exp $ */
+/* $XConsortium: connection.c,v 1.162 93/09/23 16:57:04 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -604,7 +604,7 @@ ClientAuthorized(client, proto_n, auth_proto, string_n, auth_string)
     XID	 auth_id;
 
     auth_id = CheckAuthorization (proto_n, auth_proto,
-				  string_n, auth_string);
+				  string_n, auth_string, client);
 
     priv = (OsCommPtr)client->osPrivate;
     if (auth_id == (XID) ~0L)
