@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.7 89/08/08 17:16:54 rws Exp $ */
+/* $XConsortium: events.c,v 5.8 89/10/03 19:54:20 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -121,7 +121,7 @@ static WindowPtr XYToWindow();
 extern Bool CheckKeyboardGrabs();
 static void DeliverFocusedEvent();
 extern int DeliverDeviceEvents();
-static void DoFocusEvents();
+void DoFocusEvents();
 extern Mask EventMaskForClient();
 extern void WriteEventsToClient();
 static Bool CheckDeviceGrabs();
