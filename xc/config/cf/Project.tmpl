@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.223 94/02/10 19:25:37 matt Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.224 94/02/10 19:33:04 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -867,7 +867,7 @@ UnsharedLibReferences(FONT,font,$(FONTLIBSRC))
 #define FrescoClientDepLibs $(DEPFRESCOLIB) $(DEPXLIB)
 #endif
 #ifndef FrescoClientLibs
-#define FrescoClientLibs $(FRESCOLIB) $(XLIB)
+#define FrescoClientLibs $(FRESCOLIB) $(XLIB) MathLibrary
 #endif
 
 #ifndef NeedDefaultDepLibs
