@@ -21,7 +21,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: icons.c,v 1.16 90/03/12 17:06:17 jim Exp $
+ * $XConsortium: icons.c,v 1.17 90/03/12 17:24:25 jim Exp $
  *
  * Icon releated routines
  *
@@ -164,7 +164,8 @@ IconUp (tmp_win)
      * want to be an option at some point).  Otherwise, try to fit within the
      * icon region.
      */
-    if (tmp_win->wmhints && (tmp_win->wmhints->flags & IconPositionHint))
+    if ((tmp_win->wmhints && (tmp_win->wmhints->flags & IconPositionHint)) ||
+	tmp_win->icon_moved)
       return;
 
     defx = -100;

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.143 90/03/12 16:07:34 jim Exp $
+ * $XConsortium: menus.c,v 1.144 90/03/12 16:20:23 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.143 90/03/12 16:07:34 jim Exp $";
+"$XConsortium: menus.c,v 1.144 90/03/12 16:20:23 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1412,6 +1412,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 		{
 		    MoveOutline(rootw, 0, 0, 0, 0, 0, 0);
 		    done = TRUE;
+		    if (moving_icon) tmp_win->icon_moved = TRUE;
 		    break;
 		}
 	    }
