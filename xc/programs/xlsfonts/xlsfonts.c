@@ -9,7 +9,7 @@ int max_output_line_width = 79;
 int output_line_padding = 3;
 int columns = 0;
 
-int	long_list;
+int	long_list, very_long;
 int	nnames = N_START;
 int	font_cnt;
 int	min_max;
@@ -27,7 +27,9 @@ usage()
 	fprintf (stderr,
 	"    -l                       give long info about each font\n");
 	fprintf (stderr,
-	"    -m                       give min and max bounds\n");
+	"    -L                       give very long list about each font\n");
+	fprintf (stderr,
+	"    -m                       give character min and max bounds\n");
 	fprintf (stderr,
 	"    -C                       force columns\n");
 	fprintf (stderr,
@@ -58,6 +60,9 @@ char **argv;
 			if (argcnt > 0) usage ();
 			for (i=1; argv[0][i]; i++)
 				switch(argv[0][i]) {
+				case 'L':
+					very_long++;
+					break;
 				case 'l':
 					long_list++;
 					break;
@@ -166,6 +171,13 @@ show_fonts()
 
 	/* first sort the output */
 	qsort(font_list, font_cnt, sizeof(FontList), compare);
+
+	if (very_long) {
+	    for (i = 0; i < font_cnt; i++) {
+		do_query_font (dpy, font_list[i].name);
+	    }
+	    return;
+	}
 
 	if (long_list) {
 		XFontStruct	*pfi;
@@ -332,4 +344,144 @@ copy_number(pp1, pp2, n1, n2)
 	p2 += strlen(p2);
 	*pp1 = p1;
 	*pp2 = p2;
+}
+
+
+
+static int IgnoreError(dpy, event)
+    Display *dpy;
+    XErrorEvent *event;
+{
+    return 0;
+}
+
+static char *bounds_metrics_title =
+                      "width   left    right    asc    desc   attr\n";
+static char *char_metrics_fmt = 
+"    0x%04x 0x%04x    %4d    %4d    %4d    %4d    %4d    0x%x\n";
+static char *bounds_metrics_fmt =
+"         %3s         %4d    %4d    %4d    %4d    %4d    0x%x\n";
+
+
+#define PrintBounds(_what,_ptr) \
+{   register XCharStruct *p = (_ptr); \
+    printf (bounds_metrics_fmt, _what, p->width, p->lbearing, \
+	  p->rbearing, p->ascent, p->descent, p->attributes); }
+
+
+static char* stringValued [] = {
+    "FAMILY_NAME",
+    "FOUNDRY",
+    "STYLE",
+    "MONOSPACED",
+    "RELATIVE_WEIGHT",
+    "RELATIVE_SET",
+    "CLASSIFICATION",
+    "CHARSET_REGISTRY",
+    "CHARSET_ENCODING",
+    "QUALITY",
+    "CHARSET_COLLECTIONS",
+    "FULL_NAME",
+    "COPYRIGHT",
+    "WEIGHT_NAME",
+    "SETWIDTH_NAME",
+    "SLANT",
+    "ADD_STYLE_NAME",
+    "FONTNAME_REGISTRY",
+    "FONT",
+    "DEVICE_FONT_NAME",
+     NULL
+    };
+
+static void PrintProperty (prop)
+    XFontProp *prop;
+{
+    char *atom, *value;
+    char nosuch[40];
+    int i;
+    int (*oldhandler)() = NULL /* XSetErrorHandler(IgnoreError) */;
+
+    /* oldhandler = */ XSetErrorHandler(IgnoreError);
+    atom = XGetAtomName(dpy, prop->name);
+    if (!atom) {
+	atom = nosuch;
+	nosuch[0] = '\0';
+	(void)sprintf (atom, "No such atom = %d", prop->name);
+    }
+    printf ("      %s", atom);
+    for (i = strlen(atom); i < 22; i++) printf (" ");
+    for (i = 0; ; i++) {
+	if (stringValued[i] == NULL) {
+	    printf ("%4d\n", prop->card32);
+	    break;
+	}
+	if (strcmp(stringValued[i], atom) == 0) {
+	    value = XGetAtomName(dpy, prop->card32);
+	    if (value == NULL)
+		printf ("%4d (expected string value)\n", prop->card32);
+	    else {
+		printf ("%s\n", value);
+		XFree (value);
+	    }
+	    break;
+	}
+    } 
+    if (atom != nosuch) XFree (atom);
+    XSetErrorHandler (oldhandler);
+}
+
+
+print_character_metrics (info)
+    register XFontStruct *info;
+{
+    register XCharStruct *pc = info->per_char;
+    register int i, j;
+
+    printf ("  character metrics:\n");
+    for (j = info->min_byte1; j <= info->max_byte1; j++) {
+	for (i = info->min_char_or_byte2; i <= info->max_char_or_byte2; i++) {
+	    printf (char_metrics_fmt, j, i, pc->width, pc->lbearing,
+		    pc->rbearing, pc->ascent, pc->descent, pc->attributes);
+	    pc++;
+	}
+    }
+}
+
+do_query_font (dpy, name)
+    Display *dpy;
+    char *name;
+{
+    register int i;
+    register XFontStruct *info = XLoadQueryFont (dpy, name);
+
+    if (!info) {
+	fprintf (stderr, "%s:  unable to get info about font \"%s\"\n",
+		 program_name, name);
+	return;
+    }
+    printf ("name:  %s\n", name ? name : "(nil)");
+    printf ("  direction:\t\t%s\n", ((info->direction == FontLeftToRight)
+				     ? "left to right" : "right to left"));
+    printf ("  char rows:\t\t0x%04x thru 0x%04x (%d thru %d)\n",
+	    info->min_byte1, info->max_byte1,
+	    info->min_byte1, info->max_byte1);
+    printf ("  char columns:\t\t0x%04x thru 0x%04x (%d thru %d)\n",
+	    info->min_char_or_byte2, info->max_char_or_byte2,
+	    info->min_char_or_byte2, info->max_char_or_byte2);
+    printf ("  all chars exist:\t%s\n",
+	(info->all_chars_exist) ? "yes" : "no");
+    printf ("  default char:\t\t0x%04x (%d)\n",
+	    info->default_char, info->default_char);
+    printf ("  ascent:\t\t%d\n", info->ascent);
+    printf ("  descent:\t\t%d\n", info->descent);
+    printf ("  bounds:             %s", bounds_metrics_title);
+    PrintBounds ("min", &info->min_bounds);
+    PrintBounds ("max", &info->max_bounds);
+    if (info->per_char) print_character_metrics (info);
+    printf ("  properties:\t\t%d\n", info->n_properties);
+    for (i = 0; i < info->n_properties; i++)
+	PrintProperty (&info->properties[i]);
+    printf ("\n");
+
+    XFreeFontInfo (NULL, info, 1);
 }
