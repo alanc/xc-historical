@@ -1,4 +1,4 @@
-/* $XConsortium: access.c,v 1.7 93/08/24 18:49:43 gildea Exp $ */
+/* $XConsortium: access.c,v 1.8 93/09/20 18:08:40 hersh Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -107,8 +107,10 @@ CheckClientAuthorization(client, client_auth, accept, index, size, auth_data)
 	    !strcmp(client_auth[i].name, AUTH1_NAME) ||
 	    client_auth[i].namelen == sizeof(AUTH2_NAME) &&
 	    !strcmp(client_auth[i].name, AUTH2_NAME)) break;
-    if (i == *index) i == 0;
-    else i++;
+    if (i == *index)
+	i = 0;
+    else
+	i++;
     *index = i;
     return FSSuccess;
 }
