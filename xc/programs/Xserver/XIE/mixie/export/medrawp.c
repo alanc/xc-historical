@@ -1,4 +1,4 @@
-/* $XConsortium: medrawp.c,v 1.1 93/10/26 09:49:24 rws Exp $ */
+/* $XConsortium: medrawp.c,v 1.2 93/10/31 09:43:36 dpw Exp $ */
 /**** module medrawp.c ****/
 /******************************************************************************
 				NOTICE
@@ -183,7 +183,7 @@ static int ActivateEDrawP(flo,ped,pet)
   xieFloExportDrawablePlane *raw = (xieFloExportDrawablePlane *) ped->elemRaw;
   eDrawPDefPtr	 dix = (eDrawPDefPtr) ped->elemPvt;
   bandPtr	 bnd = &pet->receptor[SRCtag].band[0];
-  BytePixel	*src = GetCurrentSrc(BytePixel,flo,pet,bnd);
+  BytePixel	*src = GetCurrentSrc(BytePixel *,flo,pet,bnd);
   CARD32    pixtype, depth;
 
   if(src) {
@@ -217,7 +217,7 @@ static int ActivateEDrawP(flo,ped,pet)
 				 (char*)src		  /* data buffer */
 				 );
     }
-    while(src = GetSrc(BytePixel,flo,pet,bnd,bnd->maxLocal,KEEP));
+    while(src = GetSrc(BytePixel *,flo,pet,bnd,bnd->maxLocal,KEEP));
 
     /* make sure the scheduler knows how much src we used */
     FreeData(flo,pet,bnd,bnd->current);
@@ -240,7 +240,7 @@ static int ActivateEDrawPTrans(flo,ped,pet)
   int		oldstyle, newstyle = FillSolid;
   XID		gcvals[3];
   
-  src = GetSrc(BytePixel,flo,pet,bnd,bnd->minGlobal,FALSE);
+  src = GetSrc(BytePixel *,flo,pet,bnd,bnd->minGlobal,FALSE);
   if(src) {
     if (!DrawableAndGC(flo,ped,raw->drawable,raw->gc,&dix->pDraw,&dix->pGC))
       return FALSE;
@@ -351,7 +351,7 @@ static int ActivateEDrawPTrans(flo,ped,pet)
 		);
 	    src += bnd->pitch * ny; /* gack */
 	}
-    } while(src = GetSrc(BytePixel,flo,pet,bnd,bnd->maxLocal,FALSE)) ;
+    } while(src = GetSrc(BytePixel *,flo,pet,bnd,bnd->maxLocal,FALSE)) ;
 
     /* make sure the scheduler knows how much src we used */
     FreeData(flo,pet,bnd,bnd->current);
