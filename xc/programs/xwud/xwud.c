@@ -1,7 +1,7 @@
 /* 
- * $Locker: chariot $ 
+ * $Locker: dkk $ 
  */ 
-static char	*rcsid = "$Header: xwud.c,v 1.6 87/06/23 14:41:07 chariot Locked $";
+static char	*rcsid = "$Header: xwud.c,v 1.9 87/08/19 21:04:22 dkk Locked $";
 #include <X11/copyright.h>
 
 /* Copyright 1985, 1986, Massachusetts Institute of Technology */
@@ -32,7 +32,7 @@ static char	*rcsid = "$Header: xwud.c,v 1.6 87/06/23 14:41:07 chariot Locked $";
  */
 
 #ifndef lint
-static char *rcsid_xwud_c = "$Header: xwud.c,v 1.6 87/06/23 14:41:07 chariot Locked $";
+static char *rcsid_xwud_c = "$Header: xwud.c,v 1.9 87/08/19 21:04:22 dkk Locked $";
 #endif
 
 #include <X11/Xlib.h>
@@ -74,7 +74,6 @@ main(argc, argv)
     register int i;
     register int *histbuffer;
     register u_short *wbuffer;
-    Display *dpy;
     XImage *image;
     XImage *XCreateImage();
     XSetWindowAttributes attributes;
@@ -95,7 +94,6 @@ main(argc, argv)
     int win_name_size;
     char *str_index;
     char *file_name;
-    char display[256];
     char *win_name;
     Bool standard_in = True;
     Bool newcolors = False, debug = False, inverse = False;
