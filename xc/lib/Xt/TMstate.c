@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.150 91/05/11 21:05:13 converse Exp $ */
+/* $XConsortium: TMstate.c,v 1.151 91/05/11 21:10:26 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -1569,7 +1569,7 @@ Boolean _XtCvtMergeTranslations(dpy, args, num_args, from, to, closure_ret)
     else {
 	static XtTranslations staticStateTable;
 	staticStateTable = xlations;
-	to->addr= (XtPointer)&staticStateTable;
+	to->addr= (XPointer)&staticStateTable;
 	to->size = sizeof(XtTranslations);
     }
 
@@ -1583,31 +1583,27 @@ static XtTranslations MergeThem(dest, first, second)
     XtTranslations	first, second;
 {
     XtCacheRef 		cache_ref;
-    static XrmQuark 	from_type, to_type;
-    static Boolean 	initialized = FALSE;
+    static XrmQuark 	from_type = NULLQUARK, to_type;
     XrmValue 		from, to;
     TMConvertRec 	convert_rec;
     XtTranslations	newTable;
 
-    
-    if (!initialized) {
+    if (from_type == NULLQUARK) {
 	from_type = XrmPermStringToQuark(_XtRStateTablePair);
 	to_type = XrmPermStringToQuark(XtRTranslationTable);
-	initialized = TRUE;
     }
-    from.addr = (XtPointer)&convert_rec;
+    from.addr = (XPointer)&convert_rec;
     from.size = sizeof(TMConvertRec);
-    to.addr = (XtPointer)&newTable;
+    to.addr = (XPointer)&newTable;
     to.size = sizeof(XtTranslations);
     convert_rec.old = first;
     convert_rec.new = second;
 
     if (! _XtConvert(dest, from_type, &from, to_type, &to, &cache_ref))
-      return(NULL);
-    if (cache_ref != NULL) {
+	return NULL;
+    if (cache_ref)
 	XtAddCallback(dest, XtNdestroyCallback,
-		      XtCallbackReleaseCacheRef, (XtPointer)cache_ref );
-    }
+		      XtCallbackReleaseCacheRef, (XtPointer)cache_ref);
     return newTable;
 }
 
