@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mipex.h,v 5.1 91/02/16 09:54:57 rws Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -189,12 +189,12 @@ typedef enum {
 
 /*
  * MI_ROUND_LISTHEADERCOUNT is used by the clip routines to round up the 
- * header block count by 15 - in other words to allocated headerblocks
- * in increment of 15 and thus reduce calls to Xrealloc.
+ * header block count by 16 - in other words to allocated headerblocks
+ * in increment of 16 and thus reduce calls to Xrealloc.
  * Note that this doesn't work for beans w/ negative numbers (although
  * allocating a negative number of header blocks doesn't work well either!).
  */
-#define MI_ROUND_LISTHEADERCOUNT(val) (((val) & ~15) + 15)
+#define MI_ROUND_LISTHEADERCOUNT(val) (((val) + 15) & ~15)
 
 /* 
  * MI_ALLOCLISTHEADER insures that there are numlists headers in the
