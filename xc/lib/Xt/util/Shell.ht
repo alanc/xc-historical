@@ -1,6 +1,5 @@
-/*
-* $XConsortium: Shell.h,v 1.22 91/01/04 19:11:12 converse Exp $
-*/
+/* $XConsortium: Shell.h,v 1.23 91/05/04 20:59:47 rws Exp $ */
+
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -118,6 +117,14 @@ SOFTWARE.
 #define XtCWmTimeout "WmTimeout"
 #define XtNwaitForWm "waitforwm"
 #define XtCWaitForWm "Waitforwm"
+#define XtNclientLeader "clientLeader"
+#define XtCClientLeader "ClientLeader"
+#define XtNsession "session"
+#define XtCSession "Session"
+#define XtNwindowRole "windowRole"
+#define XtCWindowRole "WindowRole"
+#define XtNvisible "visible"
+#define XtCVisible "Visible"
 #else
 #if __STDC__
 #define _XtConst_ const
@@ -355,6 +362,30 @@ extern _XtConst_ char XtShellStrings[];
 #endif
 #ifndef XtCWaitForWm
 #define XtCWaitForWm ((char*)&XtShellStrings[783])
+#endif
+#ifndef XtNclientLeader
+#define XtNclientLeader ((char*)&XtShellStrings[793])
+#endif
+#ifndef XtCClientLeader
+#define XtCClientLeader ((char*)&XtShellStrings[806])
+#endif
+#ifndef XtNsession
+#define XtNsession ((char*)&XtShellStrings[819])
+#endif
+#ifndef XtCSession
+#define XtCSession ((char*)&XtShellStrings[827])
+#endif
+#ifndef XtNwindowRole
+#define XtNwindowRole ((char*)&XtShellStrings[835])
+#endif
+#ifndef XtCWindowRole
+#define XtCWindowRole ((char*)&XtShellStrings[846])
+#endif
+#ifndef XtNvisible
+#define XtNvisible ((char*)&XtShellStrings[857])
+#endif
+#ifndef XtCVisible
+#define XtCVisible ((char*)&XtShellStrings[865])
 #endif
 #undef _XtConst_
 #endif
