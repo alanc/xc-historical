@@ -137,6 +137,15 @@ Specifies the frequency in seconds at which the load should be redisplayed.
 .TP 8
 .B width (\fPclass\fB Width)
 Specifies the width of the load average graph.
+.SH ENVIRONMENT
+.PP
+.TP 8
+.B DISPLAY
+to get the default host and display number.
+.TP 8
+.B XENVIRONMENT
+to get the name of a resource file that overrides the global resources
+stored in the RESOURCE_MANAGER property.
 .SH SEE ALSO
 X(1), xrdb(1), mem(4), Athena StripChart Widget.
 .SH BUGS
