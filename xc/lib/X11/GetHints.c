@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGetHints.c,v 11.18 87/10/20 16:53:04 jim Locked $ */
+/* $Header: XGetHints.c,v 11.19 88/02/07 11:28:29 jim Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -249,7 +249,7 @@ XGetClassHint(dpy, w, classhint)
 	classhint->res_class = Xmalloc(len_class+1);
 	strcpy(classhint->res_class, data+len_name+1);
 	Xfree( (char *) data);
-	return(Success);
+	return(1);
 	}
     if (data) Xfree( (char *) data);
     return(0);
