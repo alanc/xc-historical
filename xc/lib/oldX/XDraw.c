@@ -1,4 +1,4 @@
-/* $XConsortium: XDraw.c,v 1.6 88/07/26 22:03:37 toddb Exp $ */
+/* $XConsortium: XDraw.c,v 1.7 88/09/06 16:09:31 jim Exp $ */
 #include "copyright.h"
 
 /* Copyright    Massachusetts Institute of Technology    1987	*/
@@ -126,7 +126,8 @@ static int path_coord_list_segs = 0;   /* size of path list (w/coords) buff */
  * THE TABLE OF PSEUDO FLOATING-POINT NUMBERS WHICH MAKE UP THE
  * MULTIPLICATIVE COEFFICIENTS FOR THE CUBIC SPLINE ALGORITHM.
  */
-static short bntable[] = {  0xfc18, 0x7f97, 0x0476, 0xffde,
+static unsigned short bntable[] = {
+			    0xfc18, 0x7f97, 0x0476, 0xffde,
 			    0xf8be, 0x7e5d, 0x0972, 0xff76,
 			    0xf5f4, 0x7c56, 0x0eec, 0xfecc,
 			    0xf3ba, 0x7988, 0x14da, 0xfde6,
@@ -452,7 +453,7 @@ static vertices_converter(pathaddr, pathcount, ppathaddr_new, newpathcnt)
 		/*
 	    	 * generate end-points of sub-segs into which curve is divided
 		 */
-	    	pbntable = bntable; /* initialize the pointer to the Bn table*/
+	    	pbntable = (WORD *) bntable; /* initialize the pointer to the Bn table*/
 	    	for ( ; m > 1; m--)
 		  {
 		    pbntable += increment;
