@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbrrop.c,v 1.5 91/12/11 14:03:14 rws Exp $
+ * $XConsortium: cfbrrop.c,v 1.6 1993/12/13 17:22:27 dpw Exp dpw $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -210,7 +210,7 @@ cfbReduceRasterOp (rop, fg, pm, andp, xorp)
 	rrop = GXxor;
     else if (xor == 0)
 	rrop = GXand;
-    else if (and ^ xor == ~0)
+    else if ( (and ^ xor) == ~0) /* fix XBUG 6541 */
 	rrop = GXor;
     else
 	rrop = GXset;   /* rop not reduced */
