@@ -1,4 +1,4 @@
-/* $XConsortium: sm_client.c,v 1.12 93/09/28 17:08:14 mor Exp $ */
+/* $XConsortium: sm_client.c,v 1.13 93/11/08 11:27:24 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -92,13 +92,13 @@ char 		*errorStringRet;
     }
 
     if ((iceConn = IceOpenConnection (
-	ids, errorLength, errorStringRet)) == NULL)
+	ids, 0, errorLength, errorStringRet)) == NULL)
     {
 	return (NULL);
     }
 
     setupstat = IceProtocolSetup (iceConn,
-	_SmcOpcode, _SmAuthCount, NULL,	&majorVersion, &minorVersion,
+	_SmcOpcode, _SmAuthCount, NULL,	0, &majorVersion, &minorVersion,
 	&vendor, &release, errorLength, errorStringRet);
 
     if (setupstat == IceProtocolSetupFailure)
