@@ -1,4 +1,4 @@
-/* $XConsortium: dixfontstr.h,v 1.8 91/02/14 19:35:52 keith Exp $ */
+/* $XConsortium: dixfontstr.h,v 1.9 91/02/20 19:39:23 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -139,13 +139,6 @@ extern void GetGlyphs();
 extern int  LoadGlyphs();
 extern Bool QueryTextExtents();
 extern int  ListFonts();
-
-#define	GLYPHWIDTHPIXELS(pci) \
-	((pci)->metrics.rightSideBearing - (pci)->metrics.leftSideBearing)
-#define	GLYPHHEIGHTPIXELS(pci) \
- 	((pci)->metrics.ascent + (pci)->metrics.descent)
-#define	GLYPHWIDTHBYTES(pci)	(((GLYPHWIDTHPIXELS(pci))+7) >> 3)
-#define GLYPHWIDTHPADDED(bc)	(((bc)+7) & ~0x7)
 
 #ifndef GLYPHPADBYTES
 #define GLYPHPADBYTES -1
