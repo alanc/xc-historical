@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Selection.c,v 1.24 89/11/28 14:18:04 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Selection.c,v 1.25 89/11/28 16:37:35 swick Exp $";
 /* $oHeader: Selection.c,v 1.8 88/09/01 11:53:42 asente Exp $ */
 #endif /* lint */
 
@@ -472,6 +472,7 @@ int format;
 	incr->offset = 0;
 	incr->prev = NULL;
 	incr->next = ctx->incrList;
+	if (incr->next != NULL) incr->next->prev = incr;
 	ctx->incrList = incr;
  	rec = (PropGone) XtMalloc((unsigned) sizeof(PropGoneRec));
 	rec->ctx = ctx;
@@ -1038,8 +1039,7 @@ unsigned long size;
     incr->offset = 0;
     incr->prev = NULL;
     incr->next = ctx->incrList;
-    if (ctx->incrList != NULL)
-		ctx->incrList->prev = incr;
+    if (incr->next != NULL) incr->next->prev = incr;
     ctx->incrList = incr;
     /* reset the timer */
     info->proc = HandleGetIncrement;
