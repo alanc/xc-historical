@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.76 94/04/07 18:13:51 erik Exp mor $
+XCOMM $XConsortium: Imakefile,v 1.78 94/12/02 16:29:45 mor Exp $
 #include <Server.tmpl>
 
 /*
@@ -127,5 +127,7 @@ SpecialCObjectRule(oscolor,$(ICONFIGFILES),$(DBM_DEFINES))
 #if HasKrb5
 LinkSourceFile(k5encode.c,$(XAUTHSRC))
 #endif
+
+InstallLinkKitLibrary(os,$(LINKKITDIR)/lib)
 
 DependTarget()
