@@ -50,8 +50,10 @@ DebuggedLibraryTarget(Xau,$(OBJS))
 BuildIncludes($(HEADERS),.,.)
 InstallMultiple($(HEADERS),$(INCDIR))
 
+#ifdef HasSaberC
 saber_src:
-	#load $(CFLAGS) $(SRCS)
+	/**/#load $(CFLAGS) $(SRCS)
+#endif
 
 DependTarget()
 
