@@ -1,4 +1,4 @@
-/* $XConsortium: Convert.c,v 1.57 91/04/30 12:26:40 converse Exp $ */
+/* $XConsortium: Convert.c,v 1.58 91/05/10 20:41:01 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -815,10 +815,7 @@ Boolean _XtConvert(widget, from_type, from, to_type, to, cache_ref_return)
 		    *cache_ref_return = NULL;
 		if (tempTo.addr) {
 		    if (to->addr) { /* new-style call */
-			static XrmRepresentation QString = NULLQUARK;
-			if (!QString)
-			    QString = XrmPermStringToQuark(XtRString);
-			if (to_type == QString)
+			if (to_type == _XtQString)
 			    *(String*)(to->addr) = tempTo.addr;
 			else
 			    XtBCopy(tempTo.addr, to->addr, to->size);
