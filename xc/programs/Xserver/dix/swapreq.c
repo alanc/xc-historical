@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $Header: swapreq.c,v 1.21 87/08/01 14:36:50 toddb Locked $ */
+/* $Header: swapreq.c,v 1.22 87/08/01 14:46:28 toddb Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -351,7 +351,7 @@ SProcSendEvent(client)
 	    swaps(&event->u.configureRequest.width, n);
 	    swaps(&event->u.configureRequest.height, n);
 	    swaps(&event->u.configureRequest.borderWidth, n);
-	    swapl(&event->u.configureRequest.valueMask, n);	    
+	    swaps(&event->u.configureRequest.valueMask, n);	    
 	    break;
 	case GravityNotify:
 	    swapl(&event->u.gravity.event, n);
@@ -1215,7 +1215,7 @@ SProcQueryExtension   (client)
     register char n;
     REQUEST(xQueryExtensionReq);
     swaps(&stuff->length, n);
-    swapl(&stuff->nbytes, n);
+    swaps(&stuff->nbytes, n);
     return((* ProcVector[X_QueryExtension])(client));
 }
 
