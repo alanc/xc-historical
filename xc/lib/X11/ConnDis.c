@@ -1,5 +1,5 @@
 #include "copyright.h"
-/* $XConsortium: XConnDis.c,v 11.43 89/03/29 15:34:51 jim Exp $ */
+/* $XConsortium: XConnDis.c,v 11.44 89/05/26 10:02:47 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 #define NEED_EVENTS
 /*
@@ -268,7 +268,7 @@ int _XConnectDisplay (display_name, expanded_name, prop_name, screen_num,
 				long t;
 				bcopy((char *)host_ptr->h_addr,
 				      (char *)&t,
-				      sizeof(inaddr.sin_addr));
+				      sizeof(t));
 				inaddr.sin_addr = t;
 			}
 #else
