@@ -4,7 +4,7 @@
  * xwininfo.c	- MIT Project Athena, X Window system window
  *		  information utility.
  *
- * $XConsortium$
+ * $XConsortium: xwininfo.c,v 1.45 90/12/13 12:06:54 gildea Exp $
  *
  *	This program will report all relevant information
  *	about a specific window.
@@ -54,27 +54,29 @@ usage()
     fprintf (stderr,
 	"    -int                 print window id in decimal\n");
     fprintf (stderr,
-	"    -tree                print out parent and child identifiers\n");
+	"    -children            print parent and child identifiers\n");
     fprintf (stderr,
-	"    -stats               print out window geometry [DEFAULT]\n");
+	"    -tree                print children identifiers recursively\n");
     fprintf (stderr,
-	"    -bits                print out window pixel information\n");
+	"    -stats               print window geometry [DEFAULT]\n");
     fprintf (stderr,
-	"    -events              print out events selected for on window\n");
+	"    -bits                print window pixel information\n");
     fprintf (stderr,
-	"    -size                print out size hints\n");
+	"    -events              print events selected for on window\n");
     fprintf (stderr,
-	"    -wm                  print out window manager hints\n");
+	"    -size                print size hints\n");
     fprintf (stderr,
-	"    -shape               print out shape extents\n");
+	"    -wm                  print window manager hints\n");
+    fprintf (stderr,
+	"    -shape               print shape extents\n");
     fprintf (stderr,
 	"    -frame               don't ignore window manager frames\n");
     fprintf (stderr,
-	"    -english             print out sizes in english units\n");
+	"    -english             print sizes in english units\n");
     fprintf (stderr,
-	"    -metric              print out sizes in metric units\n");
+	"    -metric              print sizes in metric units\n");
     fprintf (stderr,
-	"    -all                 -tree, -stats, -bits, -events, -size, -wm, -shape\n");
+	"    -all                 -tree, -stats, -bits, -events, -wm, -size, -shape\n");
     fprintf (stderr,
 	"\n");
     exit (1);
@@ -206,7 +208,7 @@ main(argc, argv)
 {
   register int i;
   int tree = 0, stats = 0, bits = 0, events = 0, wm = 0, size  = 0, shape = 0;
-  int frame = 0;
+  int frame = 0, children = 0;
 
   INIT_NAME;
 
@@ -222,6 +224,10 @@ main(argc, argv)
       usage();
     if (!strcmp(argv[i], "-int")) {
       window_id_format = " %ld";
+      continue;
+    }
+    if (!strcmp(argv[i], "-children")) {
+      children = 1;
       continue;
     }
     if (!strcmp(argv[i], "-tree")) {
@@ -273,9 +279,10 @@ main(argc, argv)
 
   /* If no window selected on command line, let user pick one the hard way */
   if (!window) {
-	  printf("\nxwininfo ==> Please select the window about which you\n");
-	  printf("         ==> would like information by clicking the\n");
-	  printf("         ==> mouse in that window.\n");
+	  printf("\n");
+	  printf("xwininfo: Please select the window about which you\n");
+	  printf("          would like information by clicking the\n");
+	  printf("          mouse in that window.\n");
 	  window = Select_Window(dpy);
 	  if (window && !frame) {
 	      Window root;
@@ -292,7 +299,7 @@ main(argc, argv)
   /*
    * Do the actual displaying as per parameters
    */
-  if (!(tree || bits || events || wm || size))
+  if (!(children || tree || bits || events || wm || size))
     stats = 1;
 
   /*
@@ -310,10 +317,10 @@ main(argc, argv)
     (void) XSetErrorHandler(old_handler);
   }
 
-  printf("\nxwininfo ==> Window id:");
+  printf("\nxwininfo: Window id:");
   Display_Window_Id(window);
-  if (tree)
-    Display_Tree_Info(window);
+  if (children || tree)
+    Display_Tree_Info(window, tree);
   if (stats)
     Display_Stats_Info(window);
   if (bits)
@@ -327,6 +334,7 @@ main(argc, argv)
   if (shape)
     Display_Window_Shape(window);
   printf("\n");
+  exit(0);
 }
 
 
@@ -368,24 +376,25 @@ binding *table;
 Display_Window_Id(window)
      Window window;
 {
-  char *win_name;
-
-  printf(window_id_format, window);         /* print id # in hex/dec */
-  if (!window) {
-	  printf(" (none)\n");
-	  return;
-  }
-  if (!XFetchName(dpy, window, &win_name)) { /* Get window name if any */
-	  printf(" (has no name)\n");
-	  return;
-  }
-  if (win_name) {
-    printf(" (%s)\n", win_name);
-    XFree(win_name);
-  } else if (window == RootWindow(dpy, screen))
-    printf(" (the root window)\n");
-  else
-    printf(" (has no name)\n");
+    char *win_name;
+    
+    printf(window_id_format, window);         /* print id # in hex/dec */
+    if (!window) {
+	printf(" (none)\n");
+	return;
+    }
+    if (window == RootWindow(dpy, screen)) {
+	printf(" (the root window)");
+    }
+    if (!XFetchName(dpy, window, &win_name)) { /* Get window name if any */
+	printf(" (has no name)\n");
+	return;
+    }
+    if (win_name) {
+	printf(" \"%s\"\n", win_name);
+	XFree(win_name);
+    } else
+	printf(" (has no name)\n");
 }
 
 
@@ -441,19 +450,19 @@ Display_Stats_Info(window)
      Window window;
 {
   XWindowAttributes win_attributes;
+  XSizeHints hints;
   int dw = DisplayWidth (dpy, screen), dh = DisplayHeight (dpy, screen);
   int xright, ybelow, rx, ry;
-  Window dummywin;
+  int junk;
+  Window wmframe;
 
   if (!XGetWindowAttributes(dpy, window, &win_attributes))
     Fatal_Error("Can't get window attributes.");
 
-  rx = win_attributes.x;
-  ry = win_attributes.y;
   (void) XTranslateCoordinates (dpy, window, win_attributes.root, 
 				-win_attributes.border_width,
 				-win_attributes.border_width,
-				&rx, &ry, &dummywin);
+				&rx, &ry, &wmframe);
 				
   xright = (dw - rx - win_attributes.border_width * 2 -
 	    win_attributes.width);
@@ -461,32 +470,69 @@ Display_Stats_Info(window)
 	    win_attributes.height);
 
   printf("\n");
-  printf("         ==> Absolute upper-left X:  %s\n", xscale(rx));
-  printf("         ==> Absolute upper-left Y:  %s\n", yscale(ry));
-  printf("         ==> Relative upper-left X:  %s\n", xscale(win_attributes.x));
-  printf("         ==> Relative upper-left Y:  %s\n", yscale(win_attributes.y));
-  printf("         ==> Width: %s\n", xscale(win_attributes.width));
-  printf("         ==> Height: %s\n", yscale(win_attributes.height));
-  printf("         ==> Depth: %d\n", win_attributes.depth);
-  printf("         ==> Border width: %s\n", bscale(win_attributes.border_width));
-  printf("         ==> Window class: %s\n",
+  printf("  Absolute upper-left X:  %s\n", xscale(rx));
+  printf("  Absolute upper-left Y:  %s\n", yscale(ry));
+  printf("  Relative upper-left X:  %s\n", xscale(win_attributes.x));
+  printf("  Relative upper-left Y:  %s\n", yscale(win_attributes.y));
+  printf("  Width: %s\n", xscale(win_attributes.width));
+  printf("  Height: %s\n", yscale(win_attributes.height));
+  printf("  Depth: %d\n", win_attributes.depth);
+  printf("  Border width: %s\n", bscale(win_attributes.border_width));
+  printf("  Class: %s\n",
   	 Lookup(win_attributes.class, _window_classes));
-  printf("         ==> Colormap: 0x%lx (%sinstalled)\n", 
+  printf("  Colormap: 0x%lx (%sinstalled)\n", 
 	 win_attributes.colormap, win_attributes.map_installed ? "" : "not ");
-  printf("         ==> Window Bit Gravity State: %s\n",
+  printf("  Bit Gravity State: %s\n",
   	 Lookup(win_attributes.bit_gravity, _bit_gravity_states));
-  printf("         ==> Window Window Gravity State: %s\n",
+  printf("  Window Gravity State: %s\n",
   	 Lookup(win_attributes.win_gravity, _window_gravity_states));
-  printf("         ==> Window Backing Store State: %s\n",
+  printf("  Backing Store State: %s\n",
   	 Lookup(win_attributes.backing_store, _backing_store_states));
-  printf("         ==> Window Save Under State: %s\n",
+  printf("  Save Under State: %s\n",
   	 win_attributes.save_under ? "yes" : "no");
-  printf("         ==> Window Map State: %s\n",
+  printf("  Map State: %s\n",
 	 Lookup(win_attributes.map_state, _map_states));
-  printf("         ==> Window Override Redirect State: %s\n",
+  printf("  Override Redirect State: %s\n",
   	 win_attributes.override_redirect ? "yes" : "no");
-  printf("         ==> Corners:  +%d+%d  -%d+%d  -%d-%d  +%d-%d\n",
+  printf("  Corners:  +%d+%d  -%d+%d  -%d-%d  +%d-%d\n",
 	 rx, ry, xright, ry, xright, ybelow, rx, ybelow);
+
+  /* compute geometry string that would recreate window */
+  printf("  -geometry ");
+  XGetWMNormalHints(dpy, window, &hints, &junk);
+  if (hints.flags & PResizeInc && hints.width_inc && hints.height_inc) {
+      if (hints.flags & (PBaseSize|PMinSize)) {
+	  if (hints.flags & PBaseSize) {
+	      win_attributes.width -= hints.base_width;
+	      win_attributes.height -= hints.base_height;
+	  } else {
+	      /* ICCCM says MinSize is default for BaseSize */
+	      win_attributes.width -= hints.min_width;
+	      win_attributes.height -= hints.min_height;
+	  }
+      }
+      printf("%dx%d", win_attributes.width/hints.width_inc,
+	     win_attributes.height/hints.height_inc);
+  } else
+      printf("%dx%d", win_attributes.width, win_attributes.height);
+  if (wmframe != window)
+      /* WM reparented, so compute how much window has been moved */
+      /* Only works for ICCCM-compliant WMs, and then only if the
+	 window has corner gravity. */
+      if (hints.win_gravity != SouthEastGravity) {
+	  XWindowAttributes frame_attr;
+
+	  XGetWindowAttributes(dpy, wmframe, &frame_attr);
+	  if (hints.win_gravity == NorthWestGravity
+	        || hints.win_gravity == NorthGravity
+	        || hints.win_gravity == NorthEastGravity)
+	      ry = frame_attr.y;
+	  if (hints.win_gravity == NorthWestGravity
+	        || hints.win_gravity == WestGravity
+	        || hints.win_gravity == SouthWestGravity)
+	      rx = frame_attr.x;
+      }
+  printf("%+d%+d\n", rx, ry);
 }
 
 
@@ -527,16 +573,17 @@ Display_Bits_Info(window)
   if (!XGetWindowAttributes(dpy, window, &win_attributes))
     Fatal_Error("Can't get window attributes.");
 
-  printf("\n         ==> Bit gravity: %s\n",
+  printf("\n");
+  printf("  Bit gravity: %s\n",
 	 Lookup(win_attributes.bit_gravity, _gravities+1));
-  printf("         ==> Window gravity: %s\n",
+  printf("  Window gravity: %s\n",
 	 Lookup(win_attributes.win_gravity, _gravities));
-  printf("         ==> Backing-store hint: %s\n",
+  printf("  Backing-store hint: %s\n",
 	 Lookup(win_attributes.backing_store, _backing_store_hint));
-  printf("         ==> Backing-planes to be preserved: 0x%x\n",
+  printf("  Backing-planes to be preserved: 0x%x\n",
 	 win_attributes.backing_planes);
-  printf("         ==> Backing pixel: %d\n", win_attributes.backing_pixel);
-  printf("         ==> Save-unders: %s\n",
+  printf("  Backing pixel: %d\n", win_attributes.backing_pixel);
+  printf("  Save-unders: %s\n",
 	 Lookup(win_attributes.save_under, _bool));
 }
 
@@ -579,7 +626,7 @@ Display_Event_Mask(mask)
 
   for (bit=0, bit_mask=1; bit<sizeof(long)*8; bit++, bit_mask <<= 1)
     if (mask & bit_mask)
-      printf("             ==> %s\n",
+      printf("      %s\n",
 	     Lookup(bit_mask, _event_mask_names));
 }
 
@@ -595,13 +642,14 @@ Display_Events_Info(window)
   if (!XGetWindowAttributes(dpy, window, &win_attributes))
     Fatal_Error("Can't get window attributes.");
 
-  printf("\n         ==> Someone wants these events:\n");
+  printf("\n");
+  printf("  Someone wants these events:\n");
   Display_Event_Mask(win_attributes.all_event_masks);
 
-  printf("         ==> Do not propagate these events:\n");
+  printf("  Do not propagate these events:\n");
   Display_Event_Mask(win_attributes.do_not_propagate_mask);
 
-  printf("         ==> Override redirection?: %s\n",
+  printf("  Override redirection?: %s\n",
 	 Lookup(win_attributes.override_redirect, _bool));
 }
 
@@ -612,12 +660,21 @@ Display_Events_Info(window)
 
 
 /*
- * Display root, parent, and children window IDs of window
+ * Display root, parent, and (recursively) children window IDs of window
  */
-Display_Tree_Info(window)
+Display_Tree_Info(window, recurse)
      Window window;
+     int recurse;		/* true if should show children's children */
 {
-  int i;
+    display_tree_info_1(window, recurse, 0);
+}
+
+display_tree_info_1(window, recurse, level)
+     Window window;
+     int recurse;
+     int level;			/* recursion level */
+{
+  int i, j;
   Window root_win, parent_win;
   unsigned int num_children;
   Window *child_list;
@@ -626,16 +683,28 @@ Display_Tree_Info(window)
 		  &num_children))
     Fatal_Error("Can't query window tree.");
 
-  printf("\n         ==> Root window id:");
-  Display_Window_Id(root_win);
-  printf("         ==> Parent window id:");
-  Display_Window_Id(parent_win);
+  if (level == 0) {
+    printf("\n");
+    printf("  Root window id:");
+    Display_Window_Id(root_win);
+    printf("  Parent window id:");
+    Display_Window_Id(parent_win);
+  }
 
-  printf("         ==> Number of children: %d\n", num_children);
+  if (level == 0  ||  num_children > 0) {
+    printf("     ");
+    for (j=0; j<level; j++) printf("   ");
+    printf("%d child%s%s\n", num_children, num_children == 1 ? "" : "ren",
+	   num_children ? ":" : ".");
+  }
 
   for (i = (int)num_children - 1; i >= 0; i--) {
-    printf("             ==> Child window id:"); 
+    printf("     ");
+    for (j=0; j<level; j++) printf("   ");
+    printf("window id:"); 
     Display_Window_Id(child_list[i]);
+    if (recurse)
+	display_tree_info_1(child_list[i], 1, level+1);
   }
 
   if (child_list) XFree((char *)child_list);
@@ -653,68 +722,68 @@ Display_Hints(hints)
 	flags = hints->flags;
 	
 	if (flags & USPosition)
-	  printf("             ==> User supplied location: %s, %s\n",
+	  printf("      User supplied location: %s, %s\n",
 		 xscale(hints->x), yscale(hints->y));
 
 	if (flags & PPosition)
-	  printf("             ==> Program supplied location: %s, %s\n",
+	  printf("      Program supplied location: %s, %s\n",
 		 xscale(hints->x), yscale(hints->y));
 
 	if (flags & USSize) {
-	  printf("             ==> User supplied size: %s by %s\n",
+	  printf("      User supplied size: %s by %s\n",
 		 xscale(hints->width), yscale(hints->height));
 	}
 
 	if (flags & PSize)
-	  printf("             ==> Program supplied size: %s by %s\n",
+	  printf("      Program supplied size: %s by %s\n",
 		 xscale(hints->width), yscale(hints->height));
 
 	if (flags & PMinSize)
-	  printf("             ==> Program supplied minimum size: %s by %s\n",
+	  printf("      Program supplied minimum size: %s by %s\n",
 		 xscale(hints->min_width), yscale(hints->min_height));
 
 	if (flags & PMaxSize)
-	  printf("             ==> Program supplied maximum size: %s by %s\n",
+	  printf("      Program supplied maximum size: %s by %s\n",
 		 xscale(hints->max_width), yscale(hints->max_height));
 
 	if (flags & PBaseSize) {
-	  printf("             ==> Program supplied base size: %s by %s\n",
+	  printf("      Program supplied base size: %s by %s\n",
 		 xscale(hints->base_width), yscale(hints->base_height));
 	}
 
 	if (flags & PResizeInc) {
-	  printf("             ==> Program supplied x resize increment: %s\n",
+	  printf("      Program supplied x resize increment: %s\n",
 		 xscale(hints->width_inc));
-	  printf("             ==> Program supplied y resize increment: %s\n",
+	  printf("      Program supplied y resize increment: %s\n",
 		 yscale(hints->height_inc));
 	  if (hints->width_inc != 0 && hints->height_inc != 0) {
 	      if (flags & USSize)
-		  printf("             ==> User supplied size in resize increments:  %s by %s\n",
+		  printf("      User supplied size in resize increments:  %s by %s\n",
 			 (xscale(hints->width / hints->width_inc)), 
 			 (yscale(hints->height / hints->height_inc)));
 	      if (flags & PSize)
-		  printf("             ==> Program supplied size in resize increments:  %s by %s\n",
+		  printf("      Program supplied size in resize increments:  %s by %s\n",
 			 (xscale(hints->width / hints->width_inc)), 
 			 (yscale(hints->height / hints->height_inc)));
 	      if (flags & PMinSize)
-		  printf("             ==> Program supplied minimum size in resize increments: %s by %s\n",
+		  printf("      Program supplied minimum size in resize increments: %s by %s\n",
 			 xscale(hints->min_width / hints->width_inc), yscale(hints->min_height / hints->height_inc));
 	      if (flags & PBaseSize)
-		  printf("             ==> Program supplied base size in resize increments:  %s by %s\n",
+		  printf("      Program supplied base size in resize increments:  %s by %s\n",
 			 (xscale(hints->base_width / hints->width_inc)), 
 			 (yscale(hints->base_height / hints->height_inc)));
 	  }
         }
 
 	if (flags & PAspect) {
-	  printf("             ==> Program supplied min aspect ratio: %s/%s\n",
+	  printf("      Program supplied min aspect ratio: %s/%s\n",
 		 xscale(hints->min_aspect.x), yscale(hints->min_aspect.y));
-	  printf("             ==> Program supplied max aspect ratio: %s/%s\n",
+	  printf("      Program supplied max aspect ratio: %s/%s\n",
 		 xscale(hints->max_aspect.x), yscale(hints->max_aspect.y));
         }
 
 	if (flags & PWinGravity) {
-	  printf("             ==> Program supplied window gravity: %s\n",
+	  printf("      Program supplied window gravity: %s\n",
 		 Lookup(hints->win_gravity, _gravities));
 	}
 }
@@ -729,20 +798,21 @@ Display_Size_Hints(window)
 	XSizeHints *hints = XAllocSizeHints();
 	long supplied;
 
+	printf("\n");
 	if (!XGetWMNormalHints(dpy, window, hints, &supplied))
-	  printf("\n         ==> No normal window size hints defined\n");
+	    printf("  No normal window size hints defined\n");
 	else {
-		printf("\n         ==> Normal window size hints:\n\n");
-		hints->flags &= supplied;
-		Display_Hints(hints);
+	    printf("  Normal window size hints:\n");
+	    hints->flags &= supplied;
+	    Display_Hints(hints);
 	}
 
 	if (!XGetWMSizeHints(dpy, window, hints, &supplied, XA_WM_ZOOM_HINTS))
-	  printf("\n         ==> No zoom window size hints defined\n");
+	    printf("  No zoom window size hints defined\n");
 	else {
-		printf("\n         ==> Zoom window size hints:\n\n");
-		hints->flags &= supplied;
-		Display_Hints(hints);
+	    printf("  Zoom window size hints:\n");
+	    hints->flags &= supplied;
+	    Display_Hints(hints);
 	}
 	XFree((char *)hints);
 }
@@ -756,19 +826,20 @@ Display_Window_Shape (window)
     if (!XShapeQueryExtension (dpy, &bs, &ws))
 	return;
 
+    printf("\n");
     XShapeQueryExtents (dpy, window, &ws, &xws, &yws, &wws, &hws,
 				     &bs, &xbs, &ybs, &wbs, &hbs);
     if (!ws)
-	  printf("         ==> No window shape defined\n");
+	  printf("  No window shape defined\n");
     else {
-	  printf("         ==> Window shape extents:  %sx%s",
+	  printf("  Window shape extents:  %sx%s",
 		 xscale(wws), yscale(hws));
 	  printf("+%s+%s\n", xscale(xws), yscale(yws));
     }
     if (!bs)
-	  printf("         ==> No border shape defined\n");
+	  printf("  No border shape defined\n");
     else {
-	  printf("         ==> Border shape extents:  %sx%s",
+	  printf("  Border shape extents:  %sx%s",
 		 xscale(wbs), yscale(hbs));
 	  printf("+%s+%s\n", xscale(xbs), yscale(ybs));
     }
@@ -792,28 +863,29 @@ Display_WM_Info(window)
 	long flags;
 
 	wmhints = XGetWMHints(dpy, window);
+	printf("\n");
 	if (!wmhints) {
-		printf("\n         ==> No window manager hints defined\n");
+		printf("  No window manager hints defined\n");
 		return;
 	}
 	flags = wmhints->flags;
 
-	printf("\n         ==> Window manager hints:\n\n");
+	printf("  Window manager hints:\n");
 
 	if (flags & InputHint)
-	  printf("             ==> Client accepts input or input focus: %s\n",
+	  printf("      Client accepts input or input focus: %s\n",
 		 Lookup(wmhints->input, _bool));
 
 	if (flags & IconWindowHint) {
-		printf("             ==> Icon window id:");
+		printf("      Icon window id:");
 		Display_Window_Id(wmhints->icon_window);
 	}
 
 	if (flags & IconPositionHint)
-	  printf("             ==> Initial icon position: %s, %s\n",
+	  printf("      Initial icon position: %s, %s\n",
 		 xscale(wmhints->icon_x), yscale(wmhints->icon_y));
 
 	if (flags & StateHint)
-	  printf("             ==> Initial state is %s\n",
+	  printf("      Initial state is %s\n",
 		 Lookup(wmhints->initial_state, _state_hints));
 }
