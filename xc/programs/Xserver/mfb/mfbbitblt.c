@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbitblt.c,v 5.18 91/01/24 13:56:56 keith Exp $ */
+/* $XConsortium: mfbbitblt.c,v 5.19 91/05/24 16:34:06 keith Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 
@@ -405,12 +405,12 @@ unsigned long plane;
     if (plane != 1)
 	return NULL;
 
-    if (pGC->fgPixel & 1 == 1 && pGC->bgPixel & 1 == 0)
+    if ((pGC->fgPixel & 1) == 1 && (pGC->bgPixel & 1) == 0)
     {
 	prgnExposed = (*pGC->ops->CopyArea)(pSrcDrawable, pDstDrawable,
 			 pGC, srcx, srcy, width, height, dstx, dsty);
     }
-    else if (pGC->fgPixel & 1 == pGC->bgPixel & 1)
+    else if ((pGC->fgPixel & 1) == (pGC->bgPixel & 1))
     {
 	alu = pGC->alu;
 	pGC->alu = mfbReduceRop(pGC->alu, pGC->fgPixel);
