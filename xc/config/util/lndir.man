@@ -1,3 +1,4 @@
+.\" $XConsortium$
 .TH LNDIR 1 "Release 5" "X Version 11"
 .SH NAME
 lndir \- create a shadow directory of symbolic links to another directory tree
@@ -36,10 +37,11 @@ argument may be relative (e.g., ../src) and is relative to
 (not the current directory).
 .PP 
 .ft B
-Note that RCS and SCCS directories are not shadowed.
+.\" CVS.adm is used by the Concurrent Versions System.
+Note that RCS, SCCS, and CVS.adm directories are not shadowed.
 .ft
 .PP
-Note that if you add files, you must run
+If you add files, simply run
 .I lndir
 again.  Deleting files is a more painful problem; the symlinks will
 just point into never never land.
@@ -51,11 +53,11 @@ from a shadow directory anyway.
 .PP
 You need to use something like
 .nf
-	find todir -type l -print | xargs rm
+	find todir \-type l \-print | xargs rm
 .fi
 to clear out all files before you can relink (if fromdir moved, for instance).
 Something like
 .nf
-	 find . \\! -type d -print
+	 find . \\! \-type d \-print
 .fi
 will find all files that are not directories.
