@@ -1,4 +1,4 @@
-/* $XConsortium: window.h,v 1.4 89/07/04 16:09:11 rws Exp $ */
+/* $XConsortium: window.h,v 1.5 93/07/12 09:44:54 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -46,34 +46,6 @@ SOFTWARE.
 typedef struct _BackingStore *BackingStorePtr;
 typedef struct _Window *WindowPtr;
 
-extern Bool CheckSubSaveUnder(
-#if NeedFunctionPrototypes
-    WindowPtr /*pParent*/,
-    WindowPtr /*pFirst*/,
-    RegionPtr /*pRegion*/
-#endif
-);
-
-extern Bool CheckSaveUnder(
-#if NeedFunctionPrototypes
-    WindowPtr /*pWin*/
-#endif
-);
-
-extern Bool ChangeSaveUnder(
-#if NeedFunctionPrototypes
-    WindowPtr /*pWin*/,
-    WindowPtr /*first*/
-#endif
-);
-
-extern void DoChangeSaveUnder(
-#if NeedFunctionPrototypes
-    WindowPtr /*pWin*/,
-    WindowPtr /*pFirst*/
-#endif
-);
-
 typedef int (*VisitWindowProcPtr)(
 #if NeedNestedPrototypes
     WindowPtr /*pWin*/,
@@ -115,7 +87,7 @@ extern void InitRootWindow(
 #endif
 );
 
-extern int ClippedRegionFromBox(
+extern void ClippedRegionFromBox(
 #if NeedFunctionPrototypes
     WindowPtr /*pWin*/,
     RegionPtr /*Rgn*/,
@@ -143,11 +115,11 @@ extern WindowPtr CreateWindow(
     unsigned int /*bw*/,
     unsigned int /*class*/,
     Mask /*vmask*/,
-    XID */*vlist*/,
+    XID* /*vlist*/,
     int /*depth*/,
     ClientPtr /*client*/,
     VisualID /*visual*/,
-    int */*error*/
+    int* /*error*/
 #endif
 );
 
@@ -158,7 +130,7 @@ extern int DeleteWindow(
 #endif
 );
 
-extern int DestroySubwindows(
+extern void DestroySubwindows(
 #if NeedFunctionPrototypes
     WindowPtr /*pWin*/,
     ClientPtr /*client*/
@@ -169,12 +141,12 @@ extern int ChangeWindowAttributes(
 #if NeedFunctionPrototypes
     WindowPtr /*pWin*/,
     Mask /*vmask*/,
-    XID */*vlist*/,
+    XID* /*vlist*/,
     ClientPtr /*client*/
 #endif
 );
 
-extern int GetWindowAttributes(
+extern void GetWindowAttributes(
 #if NeedFunctionPrototypes
     WindowPtr /*pWin*/,
     ClientPtr /*client*/
@@ -196,8 +168,8 @@ extern void GravityTranslate(
     int /*dw*/,
     int /*dh*/,
     unsigned /*gravity*/,
-    int */*destx*/,
-    int */*desty*/
+    int* /*destx*/,
+    int* /*desty*/
 #endif
 );
 
@@ -205,14 +177,8 @@ extern int ConfigureWindow(
 #if NeedFunctionPrototypes
     WindowPtr /*pWin*/,
     Mask /*mask*/,
-    XID */*vlist*/,
+    XID* /*vlist*/,
     ClientPtr /*client*/
-#endif
-);
-
-extern int SetShape(
-#if NeedFunctionPrototypes
-    WindowPtr /*pWin*/
 #endif
 );
 
@@ -241,7 +207,7 @@ extern int MapWindow(
 #endif
 );
 
-extern int MapSubwindows(
+extern void MapSubwindows(
 #if NeedFunctionPrototypes
     WindowPtr /*pParent*/,
     ClientPtr /*client*/
@@ -324,6 +290,35 @@ extern Bool MakeWindowOptional(
 extern void DisposeWindowOptional(
 #if NeedFunctionPrototypes
     WindowPtr /*pWin*/
+#endif
+);
+
+extern WindowPtr MoveWindowInStack(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    WindowPtr /*pNextSib*/
+#endif
+);
+
+void SetWinSize(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/
+#endif
+);
+
+void SetBorderSize(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/
+#endif
+);
+
+void ResizeChildrenWinSize(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    int /*dx*/,
+    int /*dy*/,
+    int /*dw*/,
+    int /*dh*/
 #endif
 );
 
