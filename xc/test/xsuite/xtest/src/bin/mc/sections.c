@@ -13,7 +13,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: sections.c,v 1.11 92/06/11 15:38:23 rws Exp $
  *
  * Author: Steve Ratcliffe, UniSoft Ltd.
  */
@@ -117,7 +117,7 @@ void	(*secsw[][NSEC])() = {
 	},
 };
 
-void	(*hooksw[][NSEC])() = {
+void	(*hooksw[][NHOOK])() = {
 	{
 	mepstart,	/* start */
 	mepend,		/* end */
