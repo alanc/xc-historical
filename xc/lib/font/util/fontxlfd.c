@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontxlfd.c,v 1.5 93/08/24 18:49:29 gildea Exp $
+ * $XConsortium: fontxlfd.c,v 1.6 93/09/04 09:45:05 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -30,6 +30,7 @@
 #include	<math.h>
 #include	<stdlib.h>
 #include	<locale.h>
+#include	<ctype.h>
 
 static char *
 GetInt(ptr, val)
