@@ -1,32 +1,35 @@
+#ifndef lint
+static char rcsid[] = "$Header";
+#endif lint
+
 /*
-*****************************************************************************
-**                                                                          *
-**                         COPYRIGHT (c) 1987 BY                            *
-**             DIGITAL EQUIPMENT CORPORATION, MAYNARD, MASS.                *
-**			   ALL RIGHTS RESERVED                              *
-**                                                                          *
-**  THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY BE USED AND  COPIED  *
-**  ONLY  IN  ACCORDANCE  WITH  THE  TERMS  OF  SUCH  LICENSE AND WITH THE  *
-**  INCLUSION OF THE ABOVE COPYRIGHT NOTICE.  THIS SOFTWARE OR  ANY  OTHER  *
-**  COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE AVAILABLE TO ANY  *
-**  OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE  SOFTWARE  IS  HEREBY  *
-**  TRANSFERRED.                                                            *
-**                                                                          *
-**  THE INFORMATION IN THIS SOFTWARE IS SUBJECT TO CHANGE  WITHOUT  NOTICE  *
-**  AND  SHOULD  NOT  BE  CONSTRUED  AS  A COMMITMENT BY DIGITAL EQUIPMENT  *
-**  CORPORATION.                                                            *
-**                                                                          *
-**  DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF  ITS  *
-**  SOFTWARE ON EQUIPMENT WHICH IS NOT SUPPLIED BY DIGITAL.                 *
-**                                                                          *
-*****************************************************************************
-**/
+ * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
+ * 
+ *                         All Rights Reserved
+ * 
+ * Permission to use, copy, modify, and distribute this software and its 
+ * documentation for any purpose and without fee is hereby granted, 
+ * provided that the above copyright notice appear in all copies and that
+ * both that copyright notice and this permission notice appear in 
+ * supporting documentation, and that the name of Digital Equipment
+ * Corporation not be used in advertising or publicity pertaining to
+ * distribution of the software without specific, written prior permission.  
+ * 
+ * 
+ * DIGITAL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
+ * ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
+ * DIGITAL BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
+ * ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+ * WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+ * SOFTWARE.
+ */
 
 #include <stdio.h>
-#include <string.h>
 #include <ctype.h>
+#include <X/Xos.h>
 #include "Xlibint.h"
-#include "Xresource.h"
+#include <Xresource.h>
 
 #define XOPTIONFILE "/.Xdefaults"  /* name in home directory of options file */
 
@@ -35,8 +38,7 @@ static XrmDatabase InitDefaults (dpy)
 {
     XrmDatabase userdb = NULL;
     XrmDatabase xdb = NULL;
-    int status;
-    char fname[BUFSIZ], *f;             /* longer than any conceivable size */
+    char fname[BUFSIZ];                 /* longer than any conceivable size */
     char *getenv();
     char *home = getenv("HOME");
 
@@ -63,7 +65,7 @@ char *XGetDefault(dpy, prog, name)
 	char *prog;			/* name of program for option	*/
 
 {					/* to get, for example, "font"  */
-	char temp[BUFSIZ], *t;
+	char temp[BUFSIZ];
 	XrmAtom type;
 	XrmValue result;
 
