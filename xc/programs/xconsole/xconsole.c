@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xconsole.c,v 1.18 94/02/05 13:40:15 rws Exp $
+ * $XConsortium: xconsole.c,v 1.19 94/04/17 20:39:48 rws Exp kaleb $
  *
 Copyright (c) 1990  X Consortium
 
@@ -57,7 +57,7 @@ in this Software without prior written authorization from the X Consortium.
 #include <ctype.h>
 
 /* Fix ISC brain damage.  When using gcc fdopen isn't declared in <stdio.h>. */
-#if defined(SYSV) && defined(SYSV386) && defined(__STDC__) && defined(ISC)
+#if defined(ISC) && __STDC__
 extern FILE *fdopen(int, char const *);
 #endif
 
@@ -140,7 +140,7 @@ static char ttydev[64], ptydev[64];
 #endif
 #endif
 
-#if defined(SVR4) || (defined(SYSV) && defined(SYSV386))
+#if defined(SVR4) || (defined(SYSV) && defined(i386))
 #define USE_OSM
 #include <signal.h>
 FILE *osm_pipe();
