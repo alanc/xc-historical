@@ -1,5 +1,5 @@
 /*
- * $XConsortium: extutil.h,v 1.9 89/12/05 09:37:57 rws Exp $
+ * $XConsortium: extutil.h,v 1.11 89/12/09 21:02:02 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -115,8 +115,9 @@ char *proc (dpy, code, codes, buf, n) \
 	char tmp[256]; \
 	sprintf (tmp, "%s.%d", extname, code); \
 	XGetErrorDatabaseText (dpy, "XProtoError", tmp, errl[code], buf, n); \
+	return buf; \
     } \
-    return 1; \
+    return (char *)0; \
 }
 
 #endif
