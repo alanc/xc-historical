@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.79 89/10/08 15:16:32 rws Exp $ */
+/* $XConsortium: resource.c,v 1.80 90/03/27 18:15:33 rws Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -32,20 +32,19 @@ SOFTWARE.
  */
 
 /* 
- *      a resource is a 32 bit quantity.  the upper 12 bits are client id.  
- *      client provides a 19 bit resource id. this is "hashed" by me by
- *      taking the 10 lower bits and xor'ing with the mid 10 bits.
+ *      A resource ID is a 32 bit quantity, the upper 3 bits of which are
+ *	off-limits for client-visible resources.  The next 7 bits are
+ *      used as client ID, and the low 22 bits come from the client.
+ *	A resource ID is "hashed" by extracting and xoring subfields
+ *      (varying with the size of the hash table).
  *
  *      It is sometimes necessary for the server to create an ID that looks
  *      like it belongs to a client.  This ID, however,  must not be one
  *      the client actually can create, or we have the potential for conflict.
  *      The 30th bit of the ID is reserved for the server's use for this
  *      purpose.  By setting CLIENT_ID(id) to the client, the SERVER_BIT to
- *      1, and an otherwise arbitrary ID in the low 20 bits, we can create a
+ *      1, and an otherwise arbitrary ID in the low 22 bits, we can create a
  *      resource "owned" by the client.
- *      
- *      The following IDs are currently reserved for siccing on the client:
- *      1 - allocated color to be freed when the client dies
  */
 
 #include "X.h"
