@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.58 92/08/14 12:04:59 eswu Exp $
+ * $XConsortium: session.c,v 1.59 92/11/20 10:50:03 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -427,6 +427,7 @@ StartClient (verify, d, pidp, name, passwd)
 	    Debug ("getsecretkey returns %d, key length %d\n",
 		    ret, strlen (secretkey));
 	    ret = key_setsecret(secretkey);
+	    bzero(secretkey, strlen(secretkey));
 	    Debug ("key_setsecret returns %d\n", ret);
 	}
 #endif
@@ -459,7 +460,7 @@ StartClient (verify, d, pidp, name, passwd)
 	return 0;
     default:
 	bzero(passwd, strlen(passwd));
-	Debug ("StartSession, fork suceeded %d\n", pid);
+	Debug ("StartSession, fork succeeded %d\n", pid);
 	*pidp = pid;
 	return 1;
     }
