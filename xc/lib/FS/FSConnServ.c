@@ -1,4 +1,4 @@
-/* $XConsortium: FSConnServ.c,v 1.11 91/07/20 13:39:41 rws Exp $ */
+/* $XConsortium: FSConnServ.c,v 1.12 91/07/20 14:01:41 rws Exp $ */
 
 /* @(#)FSConnServ.c	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
@@ -35,6 +35,11 @@
 #ifdef UNIXCONN
 #undef UNIXCONN
 #endif
+
+#ifdef DNETCONN
+#include <netdnet/dn.h>
+#include <netdnet/dnetdb.h>
+#endif /* DNETCONN */
 
 #ifndef hpux
 
@@ -171,7 +176,7 @@ _FSConnectServer(server_name, expanded_name)
 	if (dnaddrp = dnet_addr(serverbuf)) {	/* stolen from xhost */
 	    dnaddr = *dnaddrp;
 	} else {
-	    if ((np = getnodebyname(name)) == NULL) {
+	    if ((np = getnodebyname(serverbuf)) == NULL) {
 		(void) close(fd);
 		if (tmp_svr_num)
 		    FSfree(tmp_svr_num);
@@ -180,7 +185,7 @@ _FSConnectServer(server_name, expanded_name)
 	    dnaddr.a_len = np->n_length;
 	    bcopy(np->n_addr, dnaddr.a_addr, np->n_length);
 	}
-	tmp_server_addrlen = sizeof(struct dn_anaddr);
+	tmp_server_addrlen = sizeof(struct dn_naddr);
 	tmp_server_addr = FSmalloc(tmp_server_addrlen);
 	if (!tmp_server_addr) {
 	    (void) close(fd);
