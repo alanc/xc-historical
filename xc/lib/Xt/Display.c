@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.73 91/05/17 16:54:35 converse Exp $ */
+/* $XConsortium: Display.c,v 1.74 91/05/17 18:37:12 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -122,26 +122,23 @@ Display *XtOpenDisplay(app, displayName, applName, className,
 
 	/* parse the command line for name and display */
 	if (! displayName || !applName)
-	    db = _XtParseNameAndDisplay(&displayName, &applName, urlist,
-					num_urs, argc, argv);
-
+	    db = _XtParseNameAndDisplay(urlist, num_urs, *argc, argv,
+					&applName, &displayName);
 	d = XOpenDisplay(displayName);
 
-	if (! applName) {
-	    if (! (applName = getenv("RESOURCE_NAME"))) {
-		if (*argc > 0 && argv[0]) {
-		    char *ptr = rindex(argv[0], '/');
-		    if (ptr) applName = ++ptr;
-		    else applName = argv[0];
-		} else
-		    applName = "main";
-	    }
+	if (! applName && !(applName = getenv("RESOURCE_NAME"))) {
+	    if (*argc > 0 && argv[0]) {
+		char *ptr = rindex(argv[0], '/');
+		if (ptr) applName = ++ptr;
+		else applName = argv[0];
+	    } else
+		applName = "main";
 	}
 
-	if (d) {
+	if (d)
 	    XtDisplayInitialize(app, d, applName, className,
-		    urlist, num_urs, argc, argv);
-	}
+				urlist, num_urs, argc, argv);
+
 	if (db) XrmDestroyDatabase(db);
 	return d;
 }
