@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.8 92/03/04 14:18:33 hersh Exp $
+XCOMM $XConsortium: Imakefile,v 5.9 93/09/04 17:04:23 rws Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -41,9 +41,7 @@ XCOMM PERFORMANCE OF THIS SOFTWARE.
 		../objects/llib-lobj.ln
 
    PEXSRVINC = ../../include
-  PEXINCLUDE = $(EXTINCSRC)/PEX
-    INCLUDES = -I. -I$(PEXSRVINC) -I$(PEXINCLUDE) -I$(INCLUDESRC) \
-		-I$(SERVERSRC)/include
+    INCLUDES = -I. -I$(PEXSRVINC) -I$(INCLUDESRC) -I$(SERVERSRC)/include
 
 
 SRCS =  convUtil.c cOCprim.c uOCprim.c floatconv.c check.c \

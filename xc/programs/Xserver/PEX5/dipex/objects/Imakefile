@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.5 92/03/04 14:16:00 hersh Exp $
+XCOMM $XConsortium: Imakefile,v 5.6 93/09/04 17:03:49 rws Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -42,9 +42,7 @@ XCOMM PERFORMANCE OF THIS SOFTWARE.
 
 
    PEXSRVINC = ../../include
-  PEXINCLUDE = $(EXTINCSRC)/PEX
-    INCLUDES = -I. -I$(PEXSRVINC) -I$(PEXINCLUDE) -I$(INCLUDESRC) \
-		-I$(SERVERSRC)/include
+    INCLUDES = -I. -I$(PEXSRVINC) -I$(INCLUDESRC) -I$(SERVERSRC)/include
 
 
 SRCS =  pexRndr.c pexFont.c pexLut.c pexNs.c pexStr.c \

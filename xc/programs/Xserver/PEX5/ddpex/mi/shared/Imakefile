@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.5 93/09/04 17:01:39 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.6 93/09/06 15:24:34 rws Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -38,12 +38,10 @@ EXT_DEFINES = ExtensionDefines
 CDEBUGFLAGS = PexDdpexCDebugFlags
 
   PEXSERVINC = ../../../include
-  PEXINCLUDE = $(EXTINCSRC)/PEX
 DDPEXINCLUDE = ../include
 
 INCLUDES = -I. \
 	-I$(DDPEXINCLUDE) \
-	-I$(PEXINCLUDE) \
 	-I$(INCLUDESRC) \
 	-I$(PEXSERVINC) \
 	-I$(SERVERSRC)/include

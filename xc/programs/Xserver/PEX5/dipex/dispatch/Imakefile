@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.4 91/07/24 17:00:06 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.5 93/09/04 17:03:00 rws Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -43,9 +43,7 @@ ST_STUBS = -DSTORE_CMDS
 		../objects/llib-lobj.ln
 
    PEXSRVINC = ../../include
-  PEXINCLUDE = $(EXTINCSRC)/PEX
-    INCLUDES = -I$(PEXSRVINC) -I$(PEXINCLUDE) -I$(INCLUDESRC) \
-		-I$(SERVERSRC)/include
+    INCLUDES = -I$(PEXSRVINC) -I$(INCLUDESRC) -I$(SERVERSRC)/include
 
 
 SRCS = dipexParse.c dipexExt.c pexDump.c pexError.c dipexBuf.c pexUtils.c

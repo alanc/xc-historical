@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.4 92/11/11 12:08:42 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.5 93/09/04 16:59:15 rws Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -36,12 +36,10 @@ XCOMM	DDTEST turns on some fprintf(stderr...)s for debugging
 CDEBUGFLAGS = PexDdpexCDebugFlags
 
   PEXSERVINC = ../../../include
-  PEXINCLUDE = $(EXTINCSRC)/PEX
 DDPEXINCLUDE = ../include
 
 INCLUDES = -I. \
 	-I$(DDPEXINCLUDE) \
-	-I$(PEXINCLUDE) \
 	-I$(INCLUDESRC) \
 	-I$(PEXSERVINC) \
 	-I$(SERVERSRC)/include
