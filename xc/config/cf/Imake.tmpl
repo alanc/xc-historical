@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.88 91/01/08 11:58:37 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.89 91/02/12 21:43:10 keith Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate .cf
 XCOMM configuration files.  Site-wide parameters may be set in the file
@@ -246,6 +246,9 @@ XCOMM site-specific configuration parameters - edit site.def to change
  * defaults for various generic parameters; set in site.def if needed
  */
 
+#ifndef HasSharedLibraries
+#define HasSharedLibraries NO
+#endif
 #ifndef SystemV
 #define SystemV			NO	/* SYSV (R3) */
 #endif
@@ -337,35 +340,6 @@ XCOMM site-specific configuration parameters - edit site.def to change
 #endif
 #ifndef NeedWidePrototypes
 #define NeedWidePrototypes	YES	/* mix and match ANSI-C, non-ANSI */
-#endif
-
-#ifndef HasSunOSSharedLibraries
-#define HasSunOSSharedLibraries NO
-#endif
-
-#ifndef SharedCodeDef
-#if HasSunOSSharedLibraries
-#define SharedCodeDef -DSHAREDCODE
-#else
-#define SharedCodeDef /**/
-#endif
-#endif
-#ifndef SharedLibraryDef
-#if HasSunOSSharedLibraries
-#define SharedLibraryDef -DSUNSHLIB	/* eventually will be SVR4SHLIB... */
-#ifndef HasSharedLibraries
-#define HasSharedLibraries YES
-#endif
-#else
-#define SharedLibraryDef /**/
-#ifndef HasSharedLibraries
-#define HasSharedLibraries NO
-#endif
-#endif
-#else
-#ifndef HasSharedLibraries
-#define HasSharedLibraries NO
-#endif
 #endif
 
 #ifndef StripInstalledPrograms
@@ -714,14 +688,11 @@ XCOMM site-specific configuration parameters - edit site.def to change
 			$(IRULESRC)/Project.tmpl $(IRULESRC)/site.def \
 			$(IRULESRC)/$(MACROFILE) $(EXTRA_ICONFIGFILES)
 
-
 /*
  * get project-specific configuration and rules
  */
 
 #include <Project.tmpl>
-
-
 
 #include <Imake.rules>
 
