@@ -45,6 +45,7 @@ SRCS = \
 	wingdogs \
 	woman \
 	xfd_icon \
+	xlogo11 \
 	xlogo16 \
 	xlogo32 \
 	xlogo64 
