@@ -1,4 +1,4 @@
-/* $XConsortium: FSConnServ.c,v 1.14 91/09/09 18:55:13 rws Exp $ */
+/* $XConsortium: FSConnServ.c,v 1.15 91/11/29 13:47:40 rws Exp $ */
 
 /* @(#)FSConnServ.c	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
@@ -210,7 +210,12 @@ _FSConnectServer(server_name, expanded_name)
 	    (void) strcpy(unaddr.sun_path, X_UNIX_PATH);
 	    strcat(unaddr.sun_path, server_ptr);
 	    addr = (struct sockaddr *) & unaddr;
+#ifdef BSD44SOCKETS
+	    unaddr.sun_len = strlen(unaddr.sun_path);
+	    addrlen = SUN_LEN(&unaddr);
+#else
 	    addrlen = strlen(unaddr.sun_path) + 2;
+#endif
 	    /*
 	     * Open the network connection.
 	     */
@@ -295,6 +300,9 @@ _FSConnectServer(server_name, expanded_name)
 	    }
 	    addr = (struct sockaddr *) & inaddr;
 	    addrlen = sizeof(struct sockaddr_in);
+#ifdef BSD44SOCKETS
+	    inaddr.sin_len = addrlen;
+#endif
 	    inaddr.sin_port = server_num;
 	    inaddr.sin_port = htons(inaddr.sin_port);
 	    /*
