@@ -1,3 +1,4 @@
+# $XConsortium: Exp $
 	.seg	"text"
 	.proc	16
 	.globl	_getStackPointer
