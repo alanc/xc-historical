@@ -134,7 +134,7 @@ NormalLibraryObjectRule()
 # endif
 #endif
 
-#if SharedLibXt
+#if SharedLibXaw
 NormalSharedLibraryTarget(Xaw,$(SOXAWREV),$(OBJS),)
 InstallSharedLibrary(Xaw,$(SOXAWREV),$(USRLIBDIR))
 #endif
