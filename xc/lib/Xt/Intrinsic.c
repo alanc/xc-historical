@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.184 93/10/06 17:31:37 kaleb Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.186 94/01/11 12:18:21 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -128,6 +128,38 @@ Boolean _XtIsSubclassOf(object, widgetClass, superClass, flag)
 	return False;
     }
 } /*_XtIsSubclassOf */
+
+
+#if NeedFunctionPrototypes
+XtPointer XtGetClassExtension(
+    WidgetClass	object_class,
+    Cardinal	byte_offset,
+    XrmQuark	type,
+    long	version,
+    Cardinal	record_size
+    )
+#else
+XtPointer XtGetClassExtension(object_class, byte_offset, type, version,
+			      record_size)
+    WidgetClass	object_class;
+    Cardinal	byte_offset;
+    XrmQuark	type;
+    long        version;
+    Cardinal	record_size;
+#endif
+{
+    ObjectClassExtension ext;
+    LOCK_PROCESS;
+
+    ext = *(ObjectClassExtension *)((char *)object_class + byte_offset);
+    while (ext && (ext->record_type != type || ext->version < version
+		   || ext->record_size < record_size)) {
+	ext = (ObjectClassExtension) ext->next_extension;
+    }
+    
+    UNLOCK_PROCESS;
+    return (XtPointer) ext;
+}
 
 
 static void ComputeWindowAttributes(widget,value_mask,values)
