@@ -1,5 +1,5 @@
 /*
- * $XConsortium: CmapAlloc.c,v 1.3 89/06/14 11:58:06 converse Exp $
+ * $XConsortium: CmapAlloc.c,v 1.4 91/07/19 16:36:50 gildea Exp $
  * 
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
@@ -107,8 +107,8 @@ static void gray_allocation(n, red_max, green_max, blue_max)
  * If a map has less than a minimum number of definable entries, we do not
  * produce an allocation for an RGB_DEFAULT_MAP.  
  *
- * For 24 planes, the default colormap will have 64 reds, 64 greens, and 64
- * blues.  For 8 planes, let n = the number of colormap entries, which may
+ * For 16 planes, the default colormap will have 27 each RGB; for 12 planes,
+ * 12 each.  For 8 planes, let n = the number of colormap entries, which may
  * be 256 or 254.  Then, maximum red value = floor(cube_root(n - 125)) - 1.
  * Maximum green and maximum blue values are identical to maximum red.
  * This leaves at least 125 cells which clients can allocate.
@@ -127,11 +127,10 @@ static int default_allocation(vinfo, red, green, blue)
 
     switch (vinfo->class) {
       case PseudoColor:
-      case DirectColor:
 
-	if (vinfo->colormap_size > 500000)
-	    /* intended for displays with 24 planes */
-	    *red = *green = *blue = (unsigned long) 63;
+	if (vinfo->colormap_size > 65000)
+	    /* intended for displays with 16 planes */
+	    *red = *green = *blue = (unsigned long) 27;
 	else if (vinfo->colormap_size > 4000)
 	    /* intended for displays with 12 planes */
 	    *red = *green = *blue = (unsigned long) 12;
@@ -141,9 +140,14 @@ static int default_allocation(vinfo, red, green, blue)
 		(icbrt(vinfo->colormap_size - 125) - 1);
 	break;
 
+      case DirectColor:
+
+	*red = *green = *blue = vinfo->colormap_size / 2;
+	break;
+
       case GrayScale:
 
-	if (vinfo->colormap_size > 5000000)
+	if (vinfo->colormap_size > 65000)
 	    ngrays = 4096;
 	else if (vinfo->colormap_size > 4000)
 	    ngrays = 512;
