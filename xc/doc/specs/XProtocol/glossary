@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: glossary,v 1.8 94/04/11 18:00:52 rws Exp $
 .ps 11
 .nr PS 11
 \&
@@ -140,11 +140,11 @@ The children of a window are its first-level subwindows.
 .IN "Client" "" "@DEF@"
 .IP
 An application program connects to the window system server by some
-interprocess communication (IPC) path, such as a TCP connection or a
+interprocess communication path, such as a TCP connection or a
 shared memory buffer.
 This program is referred to as a client of the window system server.
 More precisely, 
-the client is the IPC path itself; 
+the client is the communication path itself; 
 a program with multiple paths open to the server is viewed as
 multiple clients by the protocol.
 Resource lifetimes are controlled by connection lifetimes, 
@@ -178,7 +178,8 @@ so that windows associated with those maps display with correct colors.
 \fBConnection\fP
 .IN "Connection" "" "@DEF@"
 .IP
-The IPC path between the server and client program is known as a connection.
+The interprocess communication path between the server and client
+program is known as a connection.
 A client program typically (but not necessarily) has one
 connection to the server over which requests and events are sent.
 .KE
@@ -837,7 +838,7 @@ The protocol does not constrain the semantics.
 .IN "Server" "" "@DEF@"
 .IP
 The server provides the basic windowing mechanism.
-It handles IPC connections from clients, 
+It handles connections from clients, 
 multiplexes graphics requests onto the screens, 
 and demultiplexes input back to the appropriate clients.
 .KE
