@@ -1,5 +1,5 @@
 
-/* $XConsortium: sunFbs.c,v 1.00 93/07/12 16:28:35 kaleb Exp $ */
+/* $XConsortium: sunFbs.c,v 1.1 93/08/08 18:01:27 kaleb Exp $ */
 
 /*
  * Copyright 1990, 1993 Massachusetts Institute of Technology
@@ -218,7 +218,7 @@ Bool sunInitCommon (scrn, pScrn, offset, init1, init2, cr_cm, save, fb_off)
     Bool	(*save)();
     int		fb_off;
 {
-    pointer	fb = sunFbs[scrn].fb;
+    unsigned char*	fb = sunFbs[scrn].fb;
 
     if (!sunScreenAllocate (pScrn))
 	return FALSE;
