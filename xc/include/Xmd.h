@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef XMD_H
 #define XMD_H 1
-/* $XConsortium: Xmd.h,v 1.40 91/03/23 11:16:12 rws Exp $ */
+/* $XConsortium: Xmd.h,v 1.41 91/05/10 10:00:03 jap Exp $ */
 /*
  *  Xmd.h: MACHINE DEPENDENT DECLARATIONS.
  */
@@ -33,7 +33,6 @@ SOFTWARE.
  */
 #ifdef CRAY
 #define WORD64				/* 64-bit architecture */
-#define UNSIGNEDBITFIELDS		/* bit fields do not honor sign */
 #endif
 
 
@@ -75,13 +74,15 @@ SOFTWARE.
 #ifdef WORD64
 #define B32 :32
 #define B16 :16
+typedef signed int     INT32;
+typedef signed int     INT16;
 #else
 #define B32
 #define B16
-#endif
-
 typedef long           INT32;
 typedef short          INT16;
+#endif
+
 #if __STDC__ || defined(sgi) || defined(AIXV3)
 typedef signed char    INT8;
 #else
