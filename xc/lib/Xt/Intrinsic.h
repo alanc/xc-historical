@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.96 89/09/19 09:50:00 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.97 89/09/19 09:57:33 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -617,11 +617,20 @@ extern ArgList XtMergeArgLists(); /* args1, num_args1, args2, num_args2 */
 extern Display *XtDisplay();
     /*	Widget widget;		*/
 
+extern Display *XtDisplayOfObject();
+    /*  Widget object;		*/
+
 extern Screen *XtScreen();
     /*	Widget widget;		*/
 
+extern Screen *XtScreenOfObject();
+    /*  Widget object;		*/
+
 extern Window XtWindow();
     /*	Widget widget;		*/
+
+extern Window XtWindowOfObject();
+    /*  Widget object;		*/
 
 extern String XtName();
     /*	Widget object;		*/
