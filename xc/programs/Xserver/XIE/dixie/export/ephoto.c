@@ -1,4 +1,4 @@
-/* $XConsortium: ephoto.c,v 1.4 94/01/12 19:48:20 rws Exp $ */
+/* $XConsortium: ephoto.c,v 1.5 94/02/03 19:55:11 rws Exp $ */
 /**** module ephoto.c ****/
 /******************************************************************************
 				NOTICE
@@ -365,6 +365,7 @@ Bool BuildDecodeFromEncode(flo,ped)
 	pvt->decodeLen     = sizeof(xieTecDecodeJPEGBaseline);
 	pvt->decodeParms   = (pointer)dtec;
 	dtec->interleave   = etec->interleave;
+	dtec->upSample     = etec->interleave == xieValBandByPixel;
 	dtec->bandOrder    = etec->bandOrder;
       }
       break;
