@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.c,v 1.5 93/07/26 14:48:03 rws Exp $ */
+/* $XConsortium: xieperf.c,v 1.6 93/07/26 17:20:01 rws Exp $ */
 
 int   verbosity_Group_xielib ;
 int   verbosity_Group_xielib_user_level ;
@@ -59,7 +59,6 @@ extern int errno;
 
 #ifndef VMS
 #include <X11/Xatom.h>
-#include <X11/Xos.h>
 #else
 #include <decw$include/Xatom.h>
 #endif
