@@ -982,6 +982,18 @@ the name of a cut buffer into which the text is to be copied.  \fIXterm\fP
 will assert ownership of all the selections named and will copy the text
 into each of the cut buffers.  Upper/lower case is significant.
 .TP 15
+.B select-cursor-start()
+Like \fBselect-start\fP, but uses the text cursor position instead of the 
+pointer position.
+.TP 15
+.B start-cursor-extend()
+Like \fBstart-extend\fP, but uses the text cursor position instead of the 
+pointer position.
+.TP 15
+.B select-cursor-end(\fIname\fP[,\fIname\fP]...\fB)
+Like \fBselect-end\fP, but uses the text cursor position instead of the pointer
+position.
+.TP 15
 .B ignore()
 Quietly discards the key or button event.
 .TP 15

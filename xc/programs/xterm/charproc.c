@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.77 89/03/23 12:00:14 jim Exp $
+ * $XConsortium: charproc.c,v 1.78 89/04/18 15:44:13 jim Exp $
  */
 
 
@@ -140,7 +140,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.77 89/03/23 12:00:14 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.78 89/04/18 15:44:13 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -172,10 +172,10 @@ extern void HandleFocusChange();
 static void HandleKeymapChange();
 extern void HandleModeMenu();
 extern void HandleInsertSelection();
-extern void HandleSelectStart();
+extern void HandleSelectStart(), HandleKeyboardSelectStart();
 extern void HandleSelectExtend();
-extern void HandleSelectEnd();
-extern void HandleStartExtend();
+extern void HandleSelectEnd(), HandleKeyboardSelectEnd();
+extern void HandleStartExtend(), HandleKeyboardStartExtend();
 static void HandleBell();
 static void HandleIgnore();
 extern void HandleSecure();
@@ -202,7 +202,7 @@ static char defaultTranslations[] =
 "\
   Shift <KeyPress> Prior:	scroll-back(1,halfpage) \n\
   Shift <KeyPress> Next:	scroll-forw(1,halfpage) \n\
-  Shift <KeyPress> Select:	select-start() select-end(PRIMARY, CUT_BUFFER0) \n\
+  Shift <KeyPress> Select:	select-cursor-start() select-cursor-end(PRIMARY, CUT_BUFFER0) \n\
   Shift <KeyPress> Insert:	insert-selection(PRIMARY, CUT_BUFFER0) \n\
        ~Meta<KeyPress>: 	insert-seven-bit()	\n\
         Meta<KeyPress>: 	insert-eight-bit()	\n\
@@ -231,7 +231,10 @@ static XtActionsRec actionsList[] = {
     { "select-start",	  HandleSelectStart },
     { "select-extend",	  HandleSelectExtend },
     { "select-end",	  HandleSelectEnd },
+    { "select-cursor-start",	  HandleKeyboardSelectStart },
+    { "select-cursor-end",	  HandleKeyboardSelectEnd },
     { "start-extend",	  HandleStartExtend },
+    { "start-cursor-extend",	  HandleKeyboardStartExtend },
     { "string",		  HandleStringEvent },
     { "scroll-forw",	  HandleScrollForward },
     { "scroll-back",	  HandleScrollBack },

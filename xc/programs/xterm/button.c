@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: button.c,v 1.35 89/03/11 10:01:13 rws Exp $
+ *	$XConsortium: button.c,v 1.36 89/03/22 14:52:33 jim Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.35 89/03/11 10:01:13 rws Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.36 89/03/22 14:52:33 jim Exp $";
 #endif	/* lint */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -191,21 +191,79 @@ XEvent* event;
 
 
 /*ARGSUSED*/
+static void do_select_extend (w, event, params, num_params, use_cursor_loc)
+Widget w;
+XEvent *event;			/* must be XMotionEvent */
+String *params;			/* unused */
+Cardinal *num_params;		/* unused */
+Bool use_cursor_loc;
+{
+	register TScreen *screen = &((XtermWidget)w)->screen;
+	int row, col;
+
+	screen->selection_time = event->xmotion.time;
+	switch (eventMode) {
+		case LEFTEXTENSION :
+		case RIGHTEXTENSION :
+			if (use_cursor_loc) {
+			    row = screen->cursor_row;
+			    col = screen->cursor_col;
+			} else {
+			    PointToRowCol (event->xmotion.y, event->xmotion.x, 
+					   &row, &col);
+			}
+			ExtendExtend (row, col);
+			break;
+		case NORMAL :
+			/* will get here if send_mouse_pos != 0 */
+		        break;
+	}
+}
+
+
 void HandleSelectExtend(w, event, params, num_params)
 Widget w;
 XEvent *event;			/* must be XMotionEvent */
 String *params;			/* unused */
 Cardinal *num_params;		/* unused */
 {
-	((XtermWidget)w)->screen.selection_time = event->xmotion.time;
+	register TScreen *screen = &((XtermWidget)w)->screen;
+	int row, col;
+
+	screen->selection_time = event->xmotion.time;
 	switch (eventMode) {
 		case LEFTEXTENSION :
 		case RIGHTEXTENSION :
-			ExtendExtend(event->xmotion.x, event->xmotion.y);
+			PointToRowCol (event->xmotion.y, event->xmotion.x, 
+				       &row, &col);
+			ExtendExtend (row, col);
 			break;
 		case NORMAL :
 			/* will get here if send_mouse_pos != 0 */
 		        break;
+	}
+}
+
+
+/*ARGSUSED*/
+static void do_select_end (w, event, params, num_params, use_cursor_loc)
+Widget w;
+XEvent *event;			/* must be XButtonEvent */
+String *params;			/* selections */
+Cardinal *num_params;
+Bool use_cursor_loc;
+{
+	register TScreen *screen = &((XtermWidget)w)->screen;
+
+	((XtermWidget)w)->screen.selection_time = event->xbutton.time;
+	switch (eventMode) {
+		case NORMAL :
+		        (void) SendMousePosition(w, event);
+			break;
+		case LEFTEXTENSION :
+		case RIGHTEXTENSION :
+			EndExtend(event, params, *num_params, use_cursor_loc);
+			break;
 	}
 }
 
@@ -217,19 +275,20 @@ XEvent *event;			/* must be XButtonEvent */
 String *params;			/* selections */
 Cardinal *num_params;
 {
-	register TScreen *screen = &((XtermWidget)w)->screen;
-
-	((XtermWidget)w)->screen.selection_time = event->xbutton.time;
-	switch (eventMode) {
-		case NORMAL :
-		        (void) SendMousePosition(w, event);
-			break;
-		case LEFTEXTENSION :
-		case RIGHTEXTENSION :
-			EndExtend(event, params, *num_params);
-			break;
-	}
+	do_select_end (w, event, params, num_params, False);
 }
+
+
+/*ARGSUSED*/
+void HandleKeyboardSelectEnd(w, event, params, num_params)
+Widget w;
+XEvent *event;			/* must be XButtonEvent */
+String *params;			/* selections */
+Cardinal *num_params;
+{
+	do_select_end (w, event, params, num_params, True);
+}
+
 
 
 /*ARGSUSED*/
@@ -370,6 +429,19 @@ SelectUnit defaultUnit;
 	}
 }
 
+static void do_select_start (w, event, startrow, startcol)
+Widget w;
+XEvent *event;			/* must be XButtonEvent* */
+int startrow, startcol;
+{
+	register TScreen *screen = &((XtermWidget)w)->screen;
+
+	if (SendMousePosition(w, event)) return;
+	SetSelectUnit(event->xbutton.time, SELECTCHAR);
+	replyToEmacs = FALSE;
+	StartSelect(startrow, startcol);
+}
+
 /* ARGSUSED */
 HandleSelectStart(w, event, params, num_params)
 Widget w;
@@ -380,13 +452,23 @@ Cardinal *num_params;		/* unused */
 	register TScreen *screen = &((XtermWidget)w)->screen;
 	int startrow, startcol;
 
-	if (SendMousePosition(w, event)) return;
 	firstValidRow = 0;
 	lastValidRow  = screen->max_row;
-	SetSelectUnit(event->xbutton.time, SELECTCHAR);
 	PointToRowCol(event->xbutton.y, event->xbutton.x, &startrow, &startcol);
-	replyToEmacs = FALSE;
-	StartSelect(startrow, startcol);
+	do_select_start (w, event, startrow, startcol);
+}
+
+
+/* ARGSUSED */
+HandleKeyboardSelectStart(w, event, params, num_params)
+Widget w;
+XEvent *event;			/* must be XButtonEvent* */
+String *params;			/* unused */
+Cardinal *num_params;		/* unused */
+{
+	register TScreen *screen = &((XtermWidget)w)->screen;
+
+	do_select_start (w, event, screen->cursor_row, screen->cursor_col);
 }
 
 
@@ -453,19 +535,25 @@ int startrow, startcol;
 
 }
 
-EndExtend(event, params, num_params)
+EndExtend(event, params, num_params, use_cursor_loc)
 XEvent *event;			/* must be XButtonEvent */
 String *params;			/* selections */
 Cardinal num_params;
+Bool use_cursor_loc;
 {
 	int	row, col;
 	TScreen *screen = &term->screen;
 	char line[9];
 
-	ExtendExtend(event->xbutton.x, event->xbutton.y);
+	if (use_cursor_loc) {
+	    row = screen->cursor_row;
+	    col = screen->cursor_col;
+	} else {
+	    PointToRowCol(event->xbutton.y, event->xbutton.x, &row, &col);
+	}
+	ExtendExtend (row, col);
 
 	lastButtonUpTime = event->xbutton.time;
-	PointToRowCol(event->xbutton.y, event->xbutton.x, &row, &col);
 	/* Only do select stuff if non-null select */
 	if (startSRow != endSRow || startSCol != endSCol) {
 		if (replyToEmacs) {
@@ -500,11 +588,12 @@ Cardinal num_params;
 #define Abs(x)		((x) < 0 ? -(x) : (x))
 
 /* ARGSUSED */
-HandleStartExtend(w, event, params, num_params)
+static void do_start_extend (w, event, params, num_params, use_cursor_loc)
 Widget w;
 XEvent *event;			/* must be XButtonEvent* */
 String *params;			/* unused */
 Cardinal *num_params;		/* unused */
+Bool use_cursor_loc;
 {
 	TScreen *screen = &((XtermWidget)w)->screen;
 	int row, col, coord;
@@ -530,7 +619,12 @@ Cardinal *num_params;		/* unused */
 		endECol   = endRCol   = saveEndRCol;
 
 	}
-	PointToRowCol(event->xbutton.y, event->xbutton.x, &row, &col);
+	if (use_cursor_loc) {
+	    row = screen->cursor_row;
+	    col = screen->cursor_col;
+	} else {
+	    PointToRowCol(event->xbutton.y, event->xbutton.x, &row, &col);
+	}
 	coord = Coordinate(row, col);
 
 	if (Abs(coord - Coordinate(startSRow, startSCol))
@@ -549,13 +643,10 @@ Cardinal *num_params;		/* unused */
 	ComputeSelect(startERow, startECol, endERow, endECol);
 }
 
-ExtendExtend(x, y)
-int x, y;
+ExtendExtend (row, col)
+int row, col;
 {
-	int row, col, coord;
-
-	PointToRowCol(y, x, &row, &col);
-	coord = Coordinate(row, col);
+	int coord = Coordinate(row, col);
 	
 	if (eventMode == LEFTEXTENSION 
 	 && (coord + (selectUnit!=SELECTCHAR)) > Coordinate(endSRow, endSCol)) {
@@ -579,6 +670,28 @@ int x, y;
 	}
 	ComputeSelect(startERow, startECol, endERow, endECol);
 }
+
+
+void HandleStartExtend(w, event, params, num_params)
+Widget w;
+XEvent *event;			/* must be XButtonEvent* */
+String *params;			/* unused */
+Cardinal *num_params;		/* unused */
+{
+    do_start_extend (w, event, params, num_params, False);
+}
+
+void HandleKeyboardStartExtend(w, event, params, num_params)
+Widget w;
+XEvent *event;			/* must be XButtonEvent* */
+String *params;			/* unused */
+Cardinal *num_params;		/* unused */
+{
+    do_start_extend (w, event, params, num_params, True);
+}
+
+
+
 
 
 ScrollSelection(screen, amount)
