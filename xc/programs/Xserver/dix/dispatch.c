@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.51 93/09/23 16:18:15 dpw Exp $ */
+/* $XConsortium: dispatch.c,v 5.52 93/09/26 15:41:02 gildea Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -3233,6 +3233,10 @@ void InitClient(client, i, ospriv)
     client->swapped = FALSE;
     client->big_requests = FALSE;
     client->priority = 0;
+#ifdef XKB
+    client->xkbClientFlags = 0;
+    client->mapNotifyMask = 0;
+#endif
 }
 
 /************************
