@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.43 91/11/01 15:52:03 keith Exp $
+ * $XConsortium: miwideline.c,v 1.44 91/11/13 14:53:37 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -2131,21 +2131,18 @@ miWideDash (pDrawable, pGC, mode, npt, pPts)
     {
 	/* not the same as endIsFg computation above */
 	pixel = (dashIndex & 1) ? pGC->bgPixel : pGC->fgPixel;
-	projectLeft = pGC->capStyle == CapProjecting;
-	miWideDashSegment (pDrawable, pGC, spanData, &dashOffset, &dashIndex,
-			    x1, y1, x2, y2,
-			    projectLeft, projectRight, &leftFace, &rightFace);
-	if (pGC->capStyle == CapRound)
-	{
+	switch (pGC->capStyle) {
+	case CapRound:
 	    miLineArc (pDrawable, pGC, pixel, spanData,
-		       &leftFace, (LineFacePtr) NULL,
-		       (double)0.0, (double)0.0,
-		       TRUE);
-	    rightFace.dx = -1;	/* sleezy hack to make it work */
-	    miLineArc (pDrawable, pGC, pixel, spanData,
-		       (LineFacePtr) NULL, &rightFace,
- 		       (double)0.0, (double)0.0,
-		       TRUE);
+		       (LineFacePtr) NULL, (LineFacePtr) NULL,
+		       (double)x1, (double)y1,
+		       FALSE);
+	    break;
+	case CapProjecting:
+	    x2 = pGC->lineWidth;
+	    miFillRectPolyHelper (pDrawable, pGC, pixel, spanData,
+				  x1 - (x2 >> 1), y1 - (x2 >> 1), x2, x2);
+	    break;
 	}
     }
     if (spanData)
