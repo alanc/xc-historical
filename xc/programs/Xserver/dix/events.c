@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 1.159 88/10/03 08:19:36 rws Exp $ */
+/* $XConsortium: events.c,v 1.160 88/10/14 08:34:46 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -224,45 +224,49 @@ SetMaskForEvent(mask, event)
 }
 
 static void
+SyntheticMotion(x, y)
+    int x, y;
+{
+    xEvent xE;
+
+    xE.u.keyButtonPointer.rootX = x;
+    xE.u.keyButtonPointer.rootY = y;
+    xE.u.keyButtonPointer.time = currentTime.milliseconds;
+    xE.u.u.type = MotionNotify;
+    ProcessPointerEvent(&xE, inputInfo.pointer);
+}
+
+static void
 CheckPhysLimits(cursor, generateEvents)
     CursorPtr cursor;
     Bool generateEvents;
 {
-    HotSpot old;
+    HotSpot new;
 
     if (!cursor)
 	return;
-    old = sprite.hot;
+    new = sprite.hot;
     (*currentScreen->CursorLimits) (
 	currentScreen, cursor, &sprite.hotLimits, &sprite.physLimits);
-/*
- * Notice that the following adjustments leave the hot spot not really where
- * it would be if you looked at the screen. This is probably the right thing
- * to do since the user does not want the hot spot to move just because the
- * hardware cannot display the physical sprite where we would like it. The
- * next time the pointer device moves, the hot spot will then "jump" to its
- * visual position.
- */
-    if (sprite.hot.x < sprite.physLimits.x1)
-	sprite.hot.x = sprite.physLimits.x1;
+    if (new.x < sprite.physLimits.x1)
+	new.x = sprite.physLimits.x1;
     else
-	if (sprite.hot.x >= sprite.physLimits.x2)
-	    sprite.hot.x = sprite.physLimits.x2 - 1;
-    if (sprite.hot.y < sprite.physLimits.y1)
-	sprite.hot.y = sprite.physLimits.y1;
+	if (new.x >= sprite.physLimits.x2)
+	    new.x = sprite.physLimits.x2 - 1;
+    if (new.y < sprite.physLimits.y1)
+	new.y = sprite.physLimits.y1;
     else
-	if (sprite.hot.y >= sprite.physLimits.y2)
-	    sprite.hot.y = sprite.physLimits.y2 - 1;
-    if ((old.x != sprite.hot.x) || (old.y != sprite.hot.y))
+	if (new.y >= sprite.physLimits.y2)
+	    new.y = sprite.physLimits.y2 - 1;
+    if ((new.x != sprite.hot.x) || (new.y != sprite.hot.y))
+    {
 	(*currentScreen->SetCursorPosition) (
-	    currentScreen, sprite.hot.x, sprite.hot.y, generateEvents);
+	    currentScreen, new.x, new.y, generateEvents);
+	if (!generateEvents)
+	    SyntheticMotion(new.x, new.y);
+    }
 }
 
-/*
- * XXX this routine probably wants pointer position changes to be noticed,
- * but we don't seem to be in a position to do that.  Any callers that
- * pass in FALSE for generateEvents are suspect.
- */
 static void
 ConfineCursorToWindow(pWin, x, y, generateEvents)
     WindowPtr pWin;
@@ -274,6 +278,9 @@ ConfineCursorToWindow(pWin, x, y, generateEvents)
     sprite.hotLimits = *(* pScreen->RegionExtents)(pWin->borderSize);
     if (currentScreen != pScreen)
     {
+	/* XXX changing the (logical) currentScreen and sprite.hot is wrong;
+	 * the pointer might be frozen.
+	 */
 	currentScreen = pScreen;
 	ROOT = &WindowTable[pScreen->myNum];
 	if (x < sprite.hotLimits.x1)
@@ -284,10 +291,11 @@ ConfineCursorToWindow(pWin, x, y, generateEvents)
 	    y = sprite.hotLimits.y1;
 	else if (y >= sprite.hotLimits.y2)
 	    y = sprite.hotLimits.y2 - 1;
-	sprite.hot.x = x;
-	sprite.hot.y = y;
+	sprite.hot.x = -1; /* cause new sprite win computation */
+	sprite.hot.y = -1;
 	(* pScreen->SetCursorPosition)(pScreen, x, y, generateEvents);
-	(void) CheckMotion(x, y, TRUE);
+	if (!generateEvents)
+	    SyntheticMotion(x, y);
     }
     CheckPhysLimits(sprite.current, generateEvents);
     (* pScreen->ConstrainCursor)(pScreen, &sprite.physLimits);
@@ -1002,7 +1010,6 @@ DeliverEvents(pWin, xE, count, otherParent)
     return deliveries;
 }
 
-/* check root -- this fails in Zaphod mode XXX */
 /* 
  * XYToWindow is only called by CheckMotion after it has determined that
  * the current cache is not accurate.
@@ -1116,11 +1123,20 @@ WindowHasNewCursor(pWin)
     PostNewCursor();
 }
 
+Bool
+PointerConfinedToScreen()
+{
+    register GrabPtr grab = inputInfo.pointer->grab;
+
+    return (grab && grab->confineTo);
+}
+
 void
 NewCurrentScreen(newScreen, x, y)
     ScreenPtr newScreen;
     int x,y;
 {
+    /* XXX need to distinguish logical/physical screens when frozen */
     if (newScreen != currentScreen)
 	ConfineCursorToWindow(&WindowTable[newScreen->myNum], x, y, TRUE);
 }
@@ -1132,7 +1148,6 @@ ProcWarpPointer(client)
     WindowPtr	dest = NULL;
     int		x, y;
     ScreenPtr	newScreen;
-    GrabPtr	grab = inputInfo.pointer->grab;
 
     REQUEST(xWarpPointerReq);
 
@@ -1181,10 +1196,21 @@ ProcWarpPointer(client)
 	y = newScreen->height - 1;
 
     if (newScreen == currentScreen)
+    {
+	if (x < sprite.physLimits.x1)
+	    x = sprite.physLimits.x1;
+	else if (x >= sprite.physLimits.x2)
+	    x = sprite.physLimits.x2 - 1;
+	if (y < sprite.physLimits.y1)
+	    y = sprite.physLimits.y1;
+	else if (y >= sprite.physLimits.y2)
+	    y = sprite.physLimits.y2 - 1;
 	(*newScreen->SetCursorPosition)(newScreen, x, y, TRUE);
-    else if (!grab || !grab->confineTo)
+    }
+    else if (!PointerConfinedToScreen())
+    {
 	NewCurrentScreen(newScreen, x, y);
-
+    }
     return Success;
 }
 
@@ -1489,11 +1515,15 @@ ProcessPointerEvent (xE, mouse)
 	moveIt = TRUE;
     }
     if (moveIt)
+    {
+	/* XXX if playing a queued event, should we move phyiscally? */
 	(*currentScreen->SetCursorPosition)(
 	    currentScreen, xE->u.keyButtonPointer.rootX,
 	    xE->u.keyButtonPointer.rootY, FALSE);
+    }
     if (mouse->sync.frozen)
     {
+	/* XXX need to queue physical screen with event */
 	EnqueueEvent(mouse, xE);
 	return;
     }
