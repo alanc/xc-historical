@@ -1,7 +1,5 @@
-/* $Header$ */
-/* $Header$ */
 #ifndef lint
-static char *sccsid = "@(#)ParseCommand.c	1.2	2/25/87";
+static char rcsid[] = "$Header: ParseCmd.c,v 1.1 87/09/12 12:26:56 swick Locked $";
 #endif lint
 
 /*
@@ -37,6 +35,16 @@ static char *sccsid = "@(#)ParseCommand.c	1.2	2/25/87";
 #include "Quarks.h"
 #include <stdio.h>
 #include <sys/types.h>
+
+
+static void _XReportParseError(arg, msg)
+    XrmOptionDescRec *arg;
+    char *msg;
+{
+    (void) fprintf(stderr, "Error parsing argument \"%s\" (%s); %s\n",
+		   arg->option, arg->resourceName, msg);
+    exit(1);
+}
 
 
 void XrmParseCommand(rdb, table, tableCount, prependName, argc, argv)
@@ -122,6 +130,9 @@ void XrmParseCommand(rdb, table, tableCount, prependName, argc, argv)
 			(*argsave++) = (*argv++);
 		    break;
 
+		default:
+		    _XReportParseError (&table[i], "unknown kind");
+		    break;
 		}
 	    } else foundOption = False;
 
