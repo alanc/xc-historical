@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.16 90/08/02 13:25:52 rws Exp $ */
+/* $XConsortium: miarc.c,v 5.17 90/08/03 16:20:23 rws Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -259,16 +259,14 @@ miFillWideSpecialCircle(pDraw, pGC, parc)
     GCPtr	pGC;
     xArc	*parc;
 {
-    xArc inner, outer;
     int width, half;
     int doinner;
     int x, y, e, ex;
-    int yk, xk, ym, xm, dx, dy, xorg, yorg;
+    int xk, dx, dy, xorg, yorg;
     int slw;
     int inx, iny, ine, inex;
     int inxk, indx, indy, inxorg;
     int inslw;
-    miFillArcRec info, ininfo;
     DDXPointPtr points;
     register DDXPointPtr pts;
     int *widths;
@@ -276,39 +274,54 @@ miFillWideSpecialCircle(pDraw, pGC, parc)
 
     width = pGC->lineWidth;
     half = width >> 1;
-    outer = *parc;
-    outer.x -= half;
-    outer.y -= half;
-    outer.width += width;
-    outer.height += width;
-    points = (DDXPointPtr)ALLOCATE_LOCAL((sizeof(DDXPointRec) * 2) *
-					 outer.height);
+    slw = parc->width + width;
+    points = (DDXPointPtr)ALLOCATE_LOCAL((sizeof(DDXPointRec) * 2) * slw);
     if (!points)
 	return;
-    widths = (int *)ALLOCATE_LOCAL((sizeof(int) * 2) * outer.height);
+    widths = (int *)ALLOCATE_LOCAL((sizeof(int) * 2) * slw);
     if (!widths)
     {
 	DEALLOCATE_LOCAL(points);
 	return;
     }
-    miFillArcSetup(&outer, &info);
-    MIFILLARCSETUP();
-    if (width < parc->width)
+    x = 0;
+    y = slw >> 1;
+    dy = slw & 1;
+    yorg = parc->y - half + y;
+    xorg = parc->x - half + y + dy;
+    dx = 1 - dy;
+    if (slw & 1)
     {
-	inner = *parc;
-	inner.x += half;
-	inner.y += half;
-	inner.width -= width;
-	inner.height -= width;
-	miFillArcSetup(&inner, &ininfo);
+	e = -1;
+	xk = 0;
+    }
+    else
+    {
+	y++;
+	e = - (y << 3);
+	xk = 4;
+    }
+    ex = -xk;
+    inslw = parc->width - width;
+    if (inslw > 0)
+    {
 	inx = 0;
-	iny = ininfo.y;
-	ine = ininfo.e;
-	inex = ininfo.ex;
-	inxk = ininfo.xk;
-	indx = ininfo.dx;
-	indy = ininfo.dy;
-	inxorg = ininfo.xorg;
+	iny = inslw >> 1;
+	indy = inslw & 1;
+	inxorg = parc->x + half + iny + indy;
+	indx = 1 - indy;
+	if (inslw & 1)
+	{
+	    ine = -1;
+	    inxk = 0;
+	}
+	else
+	{
+	    iny++;
+	    ine = - (iny << 3);
+	    inxk = 4;
+	}
+	inex = -inxk;
     }
     doinner = -width;
     if (pGC->miTranslate)
