@@ -10,16 +10,13 @@
 #define HasNdbm			YES
 #define BuildPex		YES
 #define HasVFork		YES
-#define MkdirHasP		YES
 /* At SGI, in 3.2 we have TCP/IP sockets only, 3.3 has unix domain also ! */
 #define HasSockets		YES
 
-#if OSMajorVersion == 3 && OSMinorVersion <= 2
-#define NeedFunctionPrototypes	NO
-#else
+#if OSMajorVersion > 3 || (OSMajorVersion == 3 && OSMinorVersion > 2)
 #define SharedCodeDef -DSHAREDCODE
 #define SharedLibraryDef -DATTSHAREDLIB
-#define NeedFunctionPrototypes	YES
+#define NeedVarargsPrototypes	YES
 #define NeedWidePrototypes	NO
 #endif
 
