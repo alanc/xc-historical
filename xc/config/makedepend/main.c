@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.45 91/03/13 16:35:35 rws Exp $
+ * $XConsortium: main.c,v 1.46 91/03/19 13:43:56 rws Exp $
  */
 #ifdef SVR4
 #define _POSIX_SOURCE
@@ -267,7 +267,7 @@ main(argc, argv)
 		filecontent = getfile(*fp);
 		ip = newinclude(*fp, (char *)NULL);
 
-		find_includes(filecontent, ip, ip, 0);
+		find_includes(filecontent, ip, ip, 0, FALSE);
 		freefile(filecontent);
 		recursive_pr_include(ip, ip->i_file, basename(*fp));
 		inc_clean();

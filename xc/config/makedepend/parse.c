@@ -1,5 +1,5 @@
 /*
- * $XConsortium: parse.c,v 1.15 89/12/12 12:44:22 jim Exp $
+ * $XConsortium: parse.c,v 1.16 91/03/13 17:22:18 rws Exp $
  */
 #include "def.h"
 #include	<sys/signal.h>
@@ -7,10 +7,11 @@
 extern char	*directives[];
 extern struct symtab	deflist[];
 
-find_includes(filep, file, file_red, recursion)
+find_includes(filep, file, file_red, recursion, failOK)
 	struct filepointer	*filep;
 	struct inclist		*file, *file_red;
 	int			recursion;
+	boolean			failOK;
 {
 	register char	*line;
 	register int	type;
@@ -20,7 +21,7 @@ find_includes(filep, file, file_red, recursion)
 		case IF:
 		doif:
 			type = find_includes(filep, file,
-				file_red, recursion+1);
+				file_red, recursion+1, TRUE);
 			while ((type == ELIF) || (type == ELIFFALSE))
 				type = gobble(filep, file, file_red);
 			if (type == ELSE)
@@ -31,7 +32,7 @@ find_includes(filep, file, file_red, recursion)
 			type = gobble(filep, file, file_red);
 			if (type == ELSE)
 			    find_includes(filep, file,
-				file_red, recursion+1);
+				file_red, recursion+1, failOK);
 			else
 			if (type == ELIF)
 			    goto doif;
@@ -48,7 +49,7 @@ find_includes(filep, file, file_red, recursion)
 				    filep->f_line, line,
 				    file->i_file, file_red->i_file, ": doit"));
 				type = find_includes(filep, file,
-					file_red, recursion+1);
+					file_red, recursion+1, failOK);
 				if (type == ELSE)
 					gobble(filep, file, file_red);
 			}
@@ -60,7 +61,7 @@ find_includes(filep, file, file_red, recursion)
 				type = gobble(filep, file, file_red);
 				if (type == ELSE)
 					find_includes(filep, file,
-						file_red, recursion+1);
+						file_red, recursion+1, failOK);
 			}
 			break;
 		case ELSE:
@@ -93,10 +94,10 @@ find_includes(filep, file, file_red, recursion)
 		    }
 			break;
 		case INCLUDE:
-			add_include(file, file_red, line, FALSE);
+			add_include(file, file_red, line, FALSE, failOK);
 			break;
 		case INCLUDEDOT:
-			add_include(file, file_red, line, TRUE);
+			add_include(file, file_red, line, TRUE, failOK);
 			break;
 		case PRAGMA:
 		case ERROR:
