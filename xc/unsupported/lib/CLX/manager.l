@@ -279,7 +279,7 @@
       (when (wm-hints-window-group wm-hints)
 	(setf flags (logior flags window-group-hint)
 	      (aref vector 8) (wm-hints-window-group wm-hints)))
-      (setf (aref vector 0) (LOGIOR flags (LOGANDC2 (wm-hints-flags wm-hints) mask)))
+      (setf (aref vector 0) (logior flags (logandc2 (wm-hints-flags wm-hints) mask)))
       vector)))
 
 ;;-----------------------------------------------------------------------------
