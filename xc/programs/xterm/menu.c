@@ -2,7 +2,7 @@
 static char sccsid[]="@(#)menu.c	1.7 Stellar 87/10/16";
 #endif
 /*
- *	$Header: menu.c,v 1.1 88/02/10 13:08:08 jim Exp $
+ *	$Header: menu.c,v 1.2 88/02/18 16:48:09 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -33,7 +33,7 @@ static char sccsid[]="@(#)menu.c	1.7 Stellar 87/10/16";
 #include <stdio.h>
 #ifdef MODEMENU
 #include <X11/Xlib.h>
-#include <X11/Atoms.h>
+#include <X11/StringDefs.h>
 #include <X11/Intrinsic.h>
 #include <X11/Shell.h>
 #include <X11/Xutil.h>
@@ -45,7 +45,7 @@ static char sccsid[]="@(#)menu.c	1.7 Stellar 87/10/16";
 #include "data.h"
 
 #ifndef lint
-static char rcs_id[] = "$Header: menu.c,v 1.1 88/02/10 13:08:08 jim Exp $";
+static char rcs_id[] = "$Header: menu.c,v 1.2 88/02/18 16:48:09 jim Exp $";
 #endif	lint
 
 #define DEFMENUBORDER	2

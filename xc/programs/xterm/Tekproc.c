@@ -1,5 +1,5 @@
 /*
- * $Header: Tekproc.c,v 1.28 88/02/27 15:27:50 rws Exp $
+ * $Header: Tekproc.c,v 1.29 88/04/12 15:16:53 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -38,7 +38,7 @@
 #include <X11/Intrinsic.h>
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
-#include <X11/Atoms.h>
+#include <X11/StringDefs.h>
 #include <X11/Shell.h>
 #include "ptyx.h"
 #include "Tekparse.h"
@@ -115,7 +115,7 @@ char *curs_color;
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$Header: Tekproc.c,v 1.28 88/02/27 15:27:50 rws Exp $";
+static char rcs_id[] = "$Header: Tekproc.c,v 1.29 88/04/12 15:16:53 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {

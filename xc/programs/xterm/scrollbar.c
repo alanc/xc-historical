@@ -1,5 +1,5 @@
 /*
- *	$Header: scrollbar.c,v 1.9 88/03/31 15:03:33 swick Exp $
+ *	$Header: scrollbar.c,v 1.10 88/04/12 16:43:27 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -32,7 +32,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
-#include <X11/Atoms.h>
+#include <X11/StringDefs.h>
 #include "ptyx.h"
 #include "data.h"
 #include <X11/Scroll.h> /* should come from Xaw/Scroll.h at some point */
@@ -42,7 +42,7 @@
 extern void bcopy();
 
 #ifndef lint
-static char rcs_id[] = "$Header: scrollbar.c,v 1.9 88/03/31 15:03:33 swick Exp $";
+static char rcs_id[] = "$Header: scrollbar.c,v 1.10 88/04/12 16:43:27 jim Exp $";
 #endif	/* lint */
 
 /* Event handlers */

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.41 88/06/13 09:30:03 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.42 88/06/14 17:54:36 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -73,7 +73,7 @@ SOFTWARE.
 #include "data.h"
 #include "error.h"
 #include "main.h"
-#include <X11/Atoms.h>
+#include <X11/StringDefs.h>
 #include <X11/Shell.h>
 
 extern Pixmap make_gray();
