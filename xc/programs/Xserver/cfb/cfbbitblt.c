@@ -271,6 +271,7 @@ while (nbox--) \
         int nstart; \
         int nend; \
         int srcStartOver; \
+	int tmpDst; \
         maskbits(pbox->x1, w, startmask, endmask, nlMiddle) \
         if (startmask) \
 	    nstart = PPW - (pbox->x1 & PIM); \
@@ -293,7 +294,8 @@ while (nbox--) \
 	        if (startmask) \
 	        { \
 		    getbits(psrc, (pptSrc->x & PIM), nstart, tmpSrc) \
-		    tmpSrc = ALU(tmpSrc, *pdst); \
+		    getbits(pdst, (pbox->x1 & PIM), nstart, tmpDst) \
+		    tmpSrc = ALU(tmpSrc, tmpDst); \
 /*XXX*/		    putbits(tmpSrc, (pbox->x1 & PIM), nstart, pdst, -1) \
 		    pdst++; \
 		    if (srcStartOver) \
@@ -347,7 +349,8 @@ while (nbox--) \
 		        --psrc; \
 		    --pdst; \
 		    getbits(psrc, (pptSrc->x & PIM), nstart, tmpSrc) \
-		    tmpSrc = ALU(tmpSrc, *pdst); \
+		    getbits(pdst, (pbox->x1 & PIM), nstart, tmpDst) \
+		    tmpSrc = ALU(tmpSrc, tmpDst); \
 /*XXX*/		    putbits(tmpSrc, (pbox->x1 & PIM), nstart, pdst, -1) \
 	        } \
 	        pdstLine += widthDst; \
