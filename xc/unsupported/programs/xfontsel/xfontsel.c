@@ -1,4 +1,4 @@
-/* $XConsortium: xfontsel.c,v 1.29 91/06/22 15:21:42 rws Exp $
+/* $XConsortium: xfontsel.c,v 1.30 91/06/22 16:54:14 rws Exp $
 
 Copyright 1985, 1986, 1987, 1988, 1989 by the
 Massachusetts Institute of Technology
@@ -556,6 +556,11 @@ void ParseFontNames( closure )
 }
 
 
+/* Add the list of scalable fonts to the match-list of every value instance
+ * for field f.  Must produce sorted order.  Must deal with duplicates
+ * since we need to do this for resolution fields which can be nonzero in
+ * the scalable fonts.
+ */
 void AddScalables(f)
     int f;
 {
@@ -606,6 +611,10 @@ void AddScalables(f)
 }
 
 
+/* Merge in specific scaled sizes (specified in a comma-separated string)
+ * for field f.  Weed out duplicates.  The set of matching fonts is just
+ * the set of scalable fonts.
+ */
 void NewScalables(f, slist)
     int f;
     char *slist;
@@ -649,6 +658,11 @@ void NewScalables(f, slist)
 }
 
 
+/* Find all scalable fonts, defined as the set matching "0" in the pixel
+ * size field (field 6).  Augment the match-lists for all other fields
+ * that are scalable.  Add in new scalable pixel and point sizes given
+ * in resources.
+ */
 /*ARGSUSED*/
 void FixScalables( closure )
     XtPointer closure;
@@ -673,6 +687,7 @@ void FixScalables( closure )
 }
 
 
+/* Order is *, (nil), rest */
 int AlphabeticSort(fval1, fval2)
     FieldValue *fval1, *fval2;
 {
@@ -688,6 +703,7 @@ int AlphabeticSort(fval1, fval2)
 }
 
 
+/* Order is *, (nil), rest */
 int NumericSort(fval1, fval2)
     FieldValue *fval1, *fval2;
 {
@@ -703,6 +719,11 @@ int NumericSort(fval1, fval2)
 }
 
 
+/* Resort each field, to get reasonable menus.  Sort alphabetically or
+ * numerically, depending on the field.  Since the fonts have indexes
+ * into the fields, we need to deal with updating those indexes after the
+ * sort.
+ */
 /*ARGSUSED*/
 void SortFields( closure )
     XtPointer closure;
@@ -1102,6 +1123,12 @@ void SelectField(w, closure, callData)
 }
 
 
+/* When 2 out of 3 y-related scalable fields are set, we need to restrict
+ * the third set to only match on exact matches, that is, ignore the
+ * matching to scalable fonts.  Because choosing a random third value
+ * will almost always produce an illegal font name, and it isn't worth
+ * trying to compute which choices might be legal to the font scaler.
+ */
 void DisableScaled(f, f1, f2)
     int f, f1, f2;
 {
@@ -1146,6 +1173,7 @@ void EnableOtherValues(w, closure, callData)
     }
     if (scaledFonts)
     {
+	/* Check for 2 out of 3 scalable y fields being set */
 	char *str;
 	Bool specificPxl, specificPt, specificY;
 
