@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.25 88/10/18 07:57:20 swick Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.26 88/10/19 20:08:51 swick Exp $";
 #endif lint
 
 
@@ -53,13 +53,11 @@ typedef struct _AsciiSinkData {
 
 static char *buf = NULL;
 
-/* XXX foreground default should be XtDefaultFGPixel. How do i do that?? */
-
 static XtResource SinkResources[] = {
     {XtNfont, XtCFont, XtRFontStruct, sizeof (XFontStruct *),
         XtOffset(AsciiSinkPtr, font), XtRString, "Fixed"},
     {XtNforeground, XtCForeground, XtRPixel, sizeof (int),
-        XtOffset(AsciiSinkPtr, foreground), XtRString, "Black"},    
+        XtOffset(AsciiSinkPtr, foreground), XtRString, "XtDefaultForeground"}, 
 };
 
 /* Utilities */
