@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.159 90/07/06 11:09:21 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.160 90/09/29 15:23:24 rws Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -1683,7 +1683,7 @@ Cardinal count;
   ctx->text.s.right = right;
 
   SrcSetSelection(ctx->text.source, left, right,
-		  (count == 0) ? NULL : selections[0]);
+		  (count == 0) ? None : selections[0]);
 
   if (left < right) {
     Widget w = (Widget) ctx;
