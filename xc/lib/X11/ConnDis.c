@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.87 91/11/26 22:10:00 rws Exp $
+ * $XConsortium: XConnDis.c,v 11.88 91/12/17 17:55:57 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -676,88 +676,6 @@ int _XDisconnectDisplay (server)
     return 0;
 }
 
-
-
-/*
- * This is an OS dependent routine which:
- * 1) returns as soon as the connection can be written on....
- * 2) if the connection can be read, must enqueue events and handle errors,
- * until the connection is writable.
- */
-_XWaitForWritable(dpy)
-    Display *dpy;
-{
-    unsigned long r_mask[MSKCNT];
-    unsigned long w_mask[MSKCNT];
-    int nfound;
-
-    CLEARBITS(r_mask);
-    CLEARBITS(w_mask);
-
-    while (1) {
-	BITSET(r_mask, dpy->fd);
-        BITSET(w_mask, dpy->fd);
-
-	do {
-	    nfound = select (dpy->fd + 1, r_mask, w_mask,
-			     (char *)NULL, (char *)NULL);
-	    if (nfound < 0 && errno != EINTR)
-		_XIOError(dpy);
-	} while (nfound <= 0);
-
-	if (_XANYSET(r_mask)) {
-	    char buf[BUFSIZE];
-	    long pend_not_register;
-	    register long pend;
-	    register xEvent *ev;
-
-	    /* find out how much data can be read */
-	    if (BytesReadable(dpy->fd, (char *) &pend_not_register) < 0)
-		_XIOError(dpy);
-	    pend = pend_not_register;
-
-	    /* must read at least one xEvent; if none is pending, then
-	       we'll just block waiting for it */
-	    if (pend < SIZEOF(xEvent)) pend = SIZEOF(xEvent);
-		
-	    /* but we won't read more than the max buffer size */
-	    if (pend > BUFSIZE) pend = BUFSIZE;
-
-	    /* round down to an integral number of XReps */
-	    pend = (pend / SIZEOF(xEvent)) * SIZEOF(xEvent);
-
-	    _XRead (dpy, buf, pend);
-
-	    /* no space between comma and type or else macro will die */
-	    STARTITERATE (ev,xEvent, buf, (pend > 0),
-			  (pend -= SIZEOF(xEvent))) {
-		if (ev->u.u.type == X_Error)
-		    _XError (dpy, (xError *) ev);
-		else		/* it's an event packet; enqueue it */
-		    _XEnq (dpy, ev);
-	    }
-	    ENDITERATE
-	}
-	if (_XANYSET(w_mask))
-	    return;
-    }
-}
-
-
-_XWaitForReadable(dpy)
-  Display *dpy;
-{
-    unsigned long r_mask[MSKCNT];
-    int result;
-	
-    CLEARBITS(r_mask);
-    do {
-	BITSET(r_mask, dpy->fd);
-	result = select(dpy->fd + 1, r_mask,
-			(char *)NULL, (char *)NULL, (char *)NULL);
-	if (result == -1 && errno != EINTR) _XIOError(dpy);
-    } while (result <= 0);
-}
 
 
 static int padlength[4] = {0, 3, 2, 1};	 /* make sure auth is multiple of 4 */
