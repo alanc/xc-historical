@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: manager.c,v 1.1 93/09/03 13:25:12 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -77,8 +77,11 @@ char 	*release;
     smsConn->proto_minor_version = minorVersion;
     smsConn->vendor = vendor;
     smsConn->release = release;
-    smsConn->client_id_len = 0;
     smsConn->client_id = NULL;
+
+    smsConn->save_yourself_in_progress = False;
+    smsConn->waiting_to_interact = False;
+    smsConn->interact_in_progress = False;
 
     _SmsConnectionObjs[_SmsConnectionCount++] = smsConn;
 
@@ -87,16 +90,15 @@ char 	*release;
      * Now give the session manager the new smsConn
      */
 
-    (*_SmsCallbacks.new_client) (smsConn, &smsConn->call_data);
+    (*_SmsCallbacks.new_client) (smsConn, &smsConn->manager_data);
 }
 
 
 
 void
-SmsRegisterClientReply (smsConn, clientIdLen, clientId)
+SmsRegisterClientReply (smsConn, clientId)
 
 SmsConn smsConn;
-int	clientIdLen;
 char	*clientId;
 
 {
@@ -105,19 +107,18 @@ char	*clientId;
     smRegisterClientReplyMsg 	*pMsg;
     char 			*pData;
 
-    extra = ARRAY8_BYTES (clientIdLen);
+    extra = ARRAY8_BYTES (strlen (clientId));
 
     IceGetHeaderExtra (iceConn, _SmsOpcode, SM_RegisterClientReply,
 	SIZEOF (smRegisterClientReplyMsg), WORD64COUNT (extra),
 	smRegisterClientReplyMsg, pMsg, pData);
 
-    STORE_ARRAY8 (pData, clientIdLen, clientId);
+    STORE_ARRAY8 (pData, strlen (clientId), clientId);
 
     IceFlush (iceConn);
 
-    smsConn->client_id_len = clientIdLen;
-    smsConn->client_id = (char *) malloc (clientIdLen);
-    bcopy (clientId, smsConn->client_id, clientIdLen);
+    smsConn->client_id = (char *) malloc (strlen (clientId) + 1);
+    strcpy (smsConn->client_id, clientId);
 }
 
 
@@ -144,6 +145,8 @@ Bool	fast;
     pMsg->fast = fast;
 
     IceFlush (iceConn);
+
+    smsConn->save_yourself_in_progress = True;
 }
 
 
@@ -158,6 +161,9 @@ SmsConn smsConn;
 
     IceSimpleMessage (iceConn, _SmsOpcode, SM_Interact);
     IceFlush (iceConn);
+
+    smsConn->waiting_to_interact = False;
+    smsConn->interact_in_progress = True;
 }
 
 
@@ -171,6 +177,20 @@ SmsConn smsConn;
     IceConn	iceConn = smsConn->iceConn;
 
     IceSimpleMessage (iceConn, _SmsOpcode, SM_Die);
+    IceFlush (iceConn);
+}
+
+
+
+void
+SmsShutdownCancelled (smsConn)
+
+SmsConn smsConn;
+
+{
+    IceConn	iceConn = smsConn->iceConn;
+
+    IceSimpleMessage (iceConn, _SmsOpcode, SM_ShutdownCancelled);
     IceFlush (iceConn);
 }
 
@@ -227,6 +247,12 @@ SmsConn smsConn;
 	}
 
 	_SmsConnectionCount--;
+
+	if (smsConn->vendor)
+	    free (smsConn->vendor);
+
+	if (smsConn->release)
+	    free (smsConn->release);
 
 	if (smsConn->client_id)
 	    free (smsConn->client_id);
