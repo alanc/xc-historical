@@ -149,13 +149,24 @@ static int tslot;
 #endif	/* !SYSV */
 static jmp_buf env;
 
+static char *icon_geometry;
+static char *title;
+
+static XtResource application_resources[] = {
+    {"name", "Name", XtRString, sizeof(char *),
+	(Cardinal)&xterm_name, XtRString, "xterm"},
+    {"iconGeometry", "IconGeometry", XtRString, sizeof(char *),
+	(Cardinal)&icon_geometry, XtRString, (caddr_t) NULL},
+    {XtNtitle, XtCTitle, XtRString, sizeof(char *),
+	(Cardinal)&title, XtRString, (caddr_t) NULL},
+};
+
 #define	XtNboldFont		"boldFont"
 #define	XtNc132			"c132"
 #define	XtNcurses		"curses"
 #define	XtNcursor		"cursor"
 #define	XtNcursorShape		"cursorShape"
 #define XtNtekGeometry		"tekGeometry"
-#define XtNiconGeometry		"iconGeometry"
 #define	XtNinternalBorder	"internalBorder"
 #define	XtNjumpScroll		"jumpScroll"
 #define	XtNlogFile		"logFile"
@@ -244,9 +255,6 @@ static XtResource resources[] = {
 {XtNtekGeometry,XtCGeometry, XtRString, sizeof(char *),
 	XtOffset(XtermWidget, misc.T_geometry),
 	XtRString, (caddr_t) NULL},
-{XtNiconGeometry,XtCGeometry, XtRString, sizeof(char *),
-	XtOffset(XtermWidget, misc.icon_geom),
-	XtRString, (caddr_t) NULL},
 {XtNinternalBorder,XtCBorderWidth,XtRInt, sizeof(int),
 	XtOffset(XtermWidget, screen.border),
 	XtRInt, (caddr_t) &defaultIntBorder},
@@ -316,7 +324,7 @@ static XrmOptionDescRec optionDescList[] = {
 {"-geometry",	"*vt100.geometry",XrmoptionSepArg,	(caddr_t) NULL},
 {"=",		"*vt100.geometry",XrmoptionIsArg,	(caddr_t) NULL},
 {"%",		"*tekGeometry",	XrmoptionIsArg,		(caddr_t) NULL},
-{"#",		"*iconGeometry",XrmoptionIsArg,		(caddr_t) NULL},
+{"#",		".iconGeometry",XrmoptionIsArg,		(caddr_t) NULL},
 {"-132",	"*c132",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+132",	"*c132",	XrmoptionNoArg,		(caddr_t) "off"},
 {"-T",		"*title",	XrmoptionSepArg,	(caddr_t) NULL},
@@ -336,7 +344,7 @@ static XrmOptionDescRec optionDescList[] = {
 {"-mb",		"*marginBell",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+mb",		"*marginBell",	XrmoptionNoArg,		(caddr_t) "off"},
 {"-ms",		"*mouse",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-n",		"*title",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-n",		"*iconName",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-nb",		"*nMarginBell",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-r",		"*reverseVideo",XrmoptionNoArg,		(caddr_t) "on"},
 {"+r",		"*reverseVideo",XrmoptionNoArg,		(caddr_t) "off"},
@@ -405,6 +413,8 @@ Arg ourTopLevelShellArgs[] = {
 };
 int number_ourTopLevelShellArgs = 2;
 	
+Widget toplevel;
+
 main (argc, argv)
 int argc;
 char **argv;
@@ -415,7 +425,6 @@ char **argv;
 	char *malloc();
 	char *basename();
 	int xerror(), xioerror();
-        Widget toplevel;
 	int fd1 = -1;
 	int fd2 = -1;
 	int fd3 = -1;
@@ -481,8 +490,6 @@ char **argv;
 #endif	/* TIOCLSET */
 #endif	/* !SYSV */
 
-	xterm_name = (XStrCmp(*argv, "-") == 0) ? "xterm" : basename(*argv);
-
 	/* This is ugly.  When running under init, we need to make sure
 	 * Xlib/Xt won't use file descriptors 0/1/2, because we need to
 	 * stomp on them.  This check doesn't guarantee a -L found is
@@ -499,8 +506,29 @@ char **argv;
 	/* Init the Toolkit. */
 	toplevel = XtInitialize("main", "XTerm",
 		optionDescList, XtNumber(optionDescList), &argc, argv);
+
+	XtGetApplicationResources( toplevel, 0, application_resources,
+				   XtNumber(application_resources), NULL, 0 );
+
+	if (strcmp(xterm_name, "-") == 0) xterm_name = "xterm";
+	if (icon_geometry != NULL) {
+	    int scr, junk;
+	    Arg args[2];
+
+	    for(scr = 0;	/* yyuucchh */
+		XtScreen(toplevel) != ScreenOfDisplay(XtDisplay(toplevel),scr);
+		scr++);
+
+	    args[0].name = XtNiconX;
+	    args[1].name = XtNiconY;
+	    XGeometry(XtDisplay(toplevel), scr, icon_geometry, "", 0, 0, 0,
+		      0, 0, &args[0].value, &args[1].value, &junk, &junk);
+	    XtSetValues( toplevel, args, 2);
+	}
+
 	XtSetValues (toplevel, ourTopLevelShellArgs, 
 		     number_ourTopLevelShellArgs);
+
 	/* Now that we are in control again, close any uglies. */
 	if (fd1 >= 0)
 	    (void)close(fd1);
@@ -621,14 +649,42 @@ char **argv;
 
 	term->initflags = term->flags;
 
-#ifdef notyet
-	if(!window_name)
-		window_name = (get_ty ? "login" : (am_slave ? "xterm slave" :
-		 (command_to_exec ? basename(command_to_exec[0]) :
-		 xterm_name)));
-	if (!title_name)
-		title_name = window_name;
-#endif notyet
+	if ((get_ty || command_to_exec) && !title) {
+	    char window_title[1024];
+	    static Arg args[] = {
+		{XtNtitle, NULL},
+		{XtNiconName, NULL},
+	    };
+	    if (get_ty) {
+#ifdef hpux
+		struct utsname name;
+#endif
+
+		strcpy(window_title, "login(");
+
+#ifdef hpux
+		/* Why not use gethostname()?  Well, at least on my system, I've had to
+		 * make an ugly kernel patch to get a name longer than 8 characters, and
+		 * uname() lets me access to the whole string (it smashes release, you
+		 * see), whereas gethostname() kindly truncates it for me.
+		 */
+
+		uname(&name);
+		strcpy(window_title+6, name.nodename);
+#else
+		(void) gethostname(window_title+6, sizeof(window_title)-6);
+#endif /* hpux */
+
+		strcat( window_title, ")" );
+		args[0].value = args[1].value = (XtArgVal)window_title;
+	    }
+	    else if (command_to_exec) {
+		args[0].value = args[1].value =
+		    (XtArgVal)basename(command_to_exec[0]);
+	    }
+	    XtSetValues( toplevel, args, 2 );
+	}
+
 	if(inhibit & I_TEK)
 		screen->TekEmu = FALSE;
 
