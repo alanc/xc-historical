@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.85 88/09/19 13:55:59 jim Exp $
+ * $XConsortium: XlibInt.c,v 11.86 88/09/29 19:08:31 jim Exp $
  */
 
 #include "copyright.h"
@@ -1175,7 +1175,7 @@ _XIOError (dpy)
 
 	if (errno == EPIPE) {
 	    (void) fprintf (stderr,
-	 "      Connection probably broken by server crash or shutdown.\r\n");
+	 "      The connection was probably broken by a server shutdown or KillClient.\r\n");
 	}
 
 	exit (1);
