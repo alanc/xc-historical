@@ -1,4 +1,4 @@
-/* $XConsortium: Alloc.c,v 1.53 93/10/06 16:55:37 kaleb Exp $ */
+/* $XConsortium: Alloc.c,v 1.54 94/04/17 20:13:36 kaleb Exp kaleb $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -87,8 +87,8 @@ char *malloc(), *realloc(), *calloc();
 #define Xfree(ptr) free(ptr)
 
 #ifdef _XNEEDBCOPYFUNC
-void _XtMemmove(dst, src, length)
-    char *dst, *src;
+void _XtBcopy(src, dst, length)
+    char *src, *dst;
     int length;
 {
     if (src < dst) {

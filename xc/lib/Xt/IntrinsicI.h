@@ -1,4 +1,4 @@
-/* $XConsortium: IntrinsicI.h,v 1.57 94/02/10 17:46:49 converse Exp $ */
+/* $XConsortium: IntrinsicI.h,v 1.58 94/04/17 20:14:24 converse Exp kaleb $ */
 
 /***********************************************************
 
@@ -116,7 +116,7 @@ SOFTWARE.
  *
  ****************************************************************/
 
-#define _XBCOPYFUNC _XtMemmove
+#define _XBCOPYFUNC _XtBcopy
 #include <X11/Xfuncs.h>
 
 /* If the alignment characteristics of your machine are right, these may be
