@@ -1,4 +1,4 @@
-/* $XConsortium: xlistdev.c,v 1.14 92/08/11 11:57:33 rws Exp $ */
+/* $XConsortium: xlistdev.c,v 1.15 92/10/20 17:11:59 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -38,6 +38,7 @@ SOFTWARE.
 #include "XI.h"
 #include "XIproto.h"
 
+#define VPC	20			/* Max # valuators per chunk */
 extern InputInfo inputInfo;
 extern	int 	IReqCode;
 extern	int	BadDevice;
@@ -46,7 +47,7 @@ DeviceIntPtr	LookupDeviceIntRec();
 
 void		CopySwapKeyClass ();
 void		CopySwapButtonClass ();
-void		CopySwapValuatorClass ();
+int		CopySwapValuatorClass ();
 void		SizeDeviceInfo ();
 void		ListDeviceInfo ();
 void		AddOtherInputDevices ();
@@ -140,6 +141,8 @@ SizeDeviceInfo (d, namesize, size)
     int *namesize;
     int *size;
     {
+    int chunks;
+
     *namesize += 1;
     if (d->name)
 	*namesize += strlen (d->name);
@@ -148,8 +151,11 @@ SizeDeviceInfo (d, namesize, size)
     if (d->button != NULL)
 	*size += sizeof (xButtonInfo);
     if (d->valuator != NULL)
-	*size += (sizeof(xValuatorInfo) + 
+	{
+	chunks = ((int) d->valuator->numAxes + 19) / VPC;
+	*size += (chunks * sizeof(xValuatorInfo) + 
 		d->valuator->numAxes * sizeof(xAxisInfo));
+	}
     }
 
 /***********************************************************************
@@ -181,8 +187,7 @@ ListDeviceInfo (client, d, dev, devbuf, classbuf, namebuf)
 	}
     if (d->valuator != NULL)
 	{
-	CopySwapValuatorClass(client, d->valuator, classbuf);
-	dev->num_classes++;
+	dev->num_classes += CopySwapValuatorClass(client, d->valuator, classbuf);
 	}
     }
 
@@ -308,50 +313,59 @@ CopySwapButtonClass (client, b, buf)
  *
  * This procedure copies ValuatorClass information, swapping if necessary.
  *
+ * Devices may have up to 255 valuators.  The length of a ValuatorClass is
+ * defined to be sizeof(ValuatorClassInfo) + num_axes * sizeof (xAxisInfo).
+ * The maximum length is therefore (8 + 255 * 12) = 3068.  However, the 
+ * length field is one byte.  If a device has more than 20 valuators, we
+ * must therefore return multiple valuator classes to the client.
+ *
  */
 
-void
+int
 CopySwapValuatorClass (client, v, buf)
     register ClientPtr 	client;
     ValuatorClassPtr 	v;
     char 		**buf;
-    {
-    int			j;
+{
+    int			i, j, axes, t_axes;
     register char 	n;
     xValuatorInfoPtr 	v2;
     AxisInfo 		*a;
     xAxisInfoPtr 	a2;
 
-    v2 = (xValuatorInfoPtr) *buf;
-    v2->class = ValuatorClass;
-    v2->length = sizeof (xValuatorInfo) + v->numAxes *
-	sizeof (xAxisInfo);
-    v2->num_axes  = v->numAxes;
-    v2->mode  = v->mode & DeviceMode;
-    v2->motion_buffer_size  = v->numMotionEvents;
-    if (client->swapped)
-	{
-	swapl(&v2->motion_buffer_size,n);
-	}
-    *buf += sizeof (xValuatorInfo);
-    a = v->axes;
-    a2 = (xAxisInfoPtr) *buf;
-    for (j=0; j<v->numAxes; j++)
-	{
-	a2->min_value = a->min_value;
-	a2->max_value = a->max_value;
-	a2->resolution = a->resolution;
-    	if (client->swapped)
+    for (i=0,axes=v->numAxes; i < ((v->numAxes+19)/VPC);  i++, axes-=VPC) {
+	t_axes = axes < VPC ? axes : VPC;
+	if (t_axes < 0)
+	    t_axes = v->numAxes % VPC;
+	v2 = (xValuatorInfoPtr) *buf;
+	v2->class = ValuatorClass;
+	v2->length = sizeof (xValuatorInfo) + t_axes * sizeof (xAxisInfo);
+	v2->num_axes  = t_axes;
+	v2->mode  = v->mode & DeviceMode;
+	v2->motion_buffer_size  = v->numMotionEvents;
+	if (client->swapped)
 	    {
-	    swapl(&a2->min_value,n);
-	    swapl(&a2->max_value,n);
-	    swapl(&a2->resolution,n);
+	    swapl(&v2->motion_buffer_size,n);
 	    }
-	a2++;
-	a++;
-	*buf += sizeof (xAxisInfo);
+	*buf += sizeof (xValuatorInfo);
+	a = v->axes + (VPC * i);
+	a2 = (xAxisInfoPtr) *buf;
+	for (j=0; j<t_axes; j++) {
+	    a2->min_value = a->min_value;
+	    a2->max_value = a->max_value;
+	    a2->resolution = a->resolution;
+	    if (client->swapped) {
+		swapl(&a2->min_value,n);
+		swapl(&a2->max_value,n);
+		swapl(&a2->resolution,n);
+	    }
+	    a2++;
+	    a++;
+	    *buf += sizeof (xAxisInfo);
 	}
     }
+    return (i);
+}
 
 /***********************************************************************
  *
