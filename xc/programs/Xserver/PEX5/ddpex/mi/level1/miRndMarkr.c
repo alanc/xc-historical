@@ -1,4 +1,4 @@
-/* $XConsortium: miRndMarkr.c,v 5.1 91/02/16 09:55:09 rws Exp $ */
+/* $XConsortium: miRndMarkr.c,v 5.2 91/04/09 19:44:44 rws Exp $ */
 
 
 /***********************************************************
@@ -37,6 +37,7 @@ SOFTWARE.
 #include <stdio.h>
 
 #define FULL_CIRCLE 360*64
+
 
 /*++
  |
@@ -221,7 +222,7 @@ render_marker:
 		if (status = miTransform(pddc, 
 				       input_marker_list, &xformed_marker, 
 				       marker_trans,
-				       NULL,
+				       NULL4x4,
 				       DD_2DS_POINT))
 		  return (status);
 
