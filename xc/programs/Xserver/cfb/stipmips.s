@@ -24,27 +24,25 @@
  */
 
 /*
- * Assembly code for optimized text rendering, MIPS LSB specific
+ * MIPS assembly code for optimized text rendering.
  *
  * Other stippling could be done in assembly, but the payoff is
  * not nearly as large.  Mostly because large areas are heavily
  * optimized already.
  */
 
+#ifdef MIPSEL
+# define BitsR		sll
+# define BitsL		srl
+# define FourBits(dest,bits)	and	dest, bits, 0xf
+#else
+# define BitsR	srl
+# define BitsL	sll
+# define FourBits(dest,bits)	srl	dest, bits, 28
+#endif
+
 /* reordering instructions would be fatal here */
 	.set	noreorder
-/*
- * This macro uses registers:
- *	2	temp
- *	8	switch table base, must contain the address of $label
- *	9	mask value 0xfffffff0
- */
-/* variables */
-
-#define SBase		$8
-#define SMask		$9
-#define STemp		$2
-#define CatComma(a,b)	a, b
 
 #define StippleCases(addr,value,done,do_l1,do_l2,o)	\
 	do_l2			/* 0 */	;\
@@ -127,12 +125,23 @@
 	done				;\
 	nop
 
+/*
+ * This macro uses registers:
+ *	2	temp
+ *	8	switch table base, must contain the address of $label
+ */
+/* variables */
+
+#define SBase		$8
+#define STemp		$2
+#define CatComma(a,b)	a, b
+
 #define Stipple(addr,bits,value,label,done,l1,l2)	\
-	and	STemp, bits, 15		;\
+	FourBits(STemp, bits)		;\
 	sll	STemp, STemp, 4		;\
 	addu	STemp, STemp, SBase	;\
 	j	STemp			;\
-	and	bits, bits, SMask	;\
+	BitsL	bits,4			;\
 $l1:					;\
 	bnez	bits,$l2		;\
 	nop				;\
@@ -140,11 +149,11 @@ $l1:					;\
 	nop				;\
 $l2:					;\
 	addu	addr, addr, 4		;\
-	and	STemp, bits, 0xf0	;\
+	FourBits(STemp, bits)		;\
+	sll	STemp, STemp, 4		;\
 	addu	STemp, STemp, SBase	;\
-	srl	bits, bits, 4		;\
 	j	STemp			;\
-	and	bits, bits, SMask	;\
+	BitsL	bits, 4			;\
 $label:					;\
 	StippleCases(addr,value,done,b $l1,CatComma(bnez bits, $l2),0)
 
@@ -169,7 +178,6 @@ $label:					;\
 stippleone:
 	.frame	$sp, 0, $31
 	la	SBase, $100
-	li	SMask, 0xfffffff0
 	Stipple(addr,bits,value,100,j $31,101,102)
 	j	$31
 	nop
@@ -208,13 +216,12 @@ stippleone:
 stipplestack:
 	.frame	$sp, 0, $31
 	lw	count, Count
-	la	SBase,$201
 	lw	shift, Shift
-	li	SMask,0xfffffff0
+	la	SBase,$201
 $200:
 	lw	bits, 0(stipple)
 	move	atemp, addr
-	sll	bits, bits, shift
+	BitsR	bits, bits, shift
 	Stipple(atemp,bits,value,201,b $204,202,203)
 $204:
 	addu	count, count, -1
@@ -227,12 +234,12 @@ $204:
 
 /*
  * Used when the stipple is > 28 pixels wide to avoid troubles with the
- * shift
+ * shift.  Cannot be used when the shift amount is zero.
  */
 
 /* additional local variables */
 #define tbits	$10
-#define TBase	$3
+#define TBase	$9
 #define mshift	$15
 
 	.globl	stipplestackwide
@@ -243,17 +250,16 @@ stipplestackwide:
 	la	SBase,$251
 	la	TBase, $260
 	lw	shift, Shift
-	li	SMask,0xfffffff0
-	li	mshift, 28
+	li	mshift, 32
 	subu	mshift, mshift, shift
 $250:
 	lw	bits, 0(stipple)
 	move	atemp, addr
-	sll	tbits, bits, shift
+	BitsR	tbits, bits, shift
 	Stipple(atemp,tbits,value,251,b $254,252,253)
 $254:
-	srl	tbits, bits, mshift
-	and	tbits, tbits, 0xf0
+	BitsL	tbits, bits, mshift
+	sll	tbits, tbits, 4
 	addu	STemp, TBase, tbits
 	j	STemp
 	addu	count, count, -1
@@ -308,7 +314,6 @@ stipplespan32:
 
 	lw	nlw,20($sp)
 	la	SBase, $402
-	li	SMask, 0xfffffff0
 
 	/*
  	 * Compute left edge stipple bits and
