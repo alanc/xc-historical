@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.144 92/11/20 13:18:40 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.145 92/12/03 10:15:22 rws Exp $
 /*
  * Server Master Makefile
  */
@@ -409,10 +409,10 @@ IRISLIBS = 	$(DIX) $(OS) \
 		ddx/sgi/sgi/libsgi.a \
 	   	ddx/sgi/gr1/re2/libre2.a \
 	   	ddx/sgi/gr1/libgr1.a \
-		ddx/sgi/IRIX/libirix.a \
 	   	ddx/sgi/rrm/librrm.a \
 		ddx/sgi/nfb/libnfb.a \
-		$(CFB) $(MFB) $(MI) $(FONT) $(EXTENSIONS)
+		$(CFB) $(MFB) $(MI) $(FONT) $(EXTENSIONS) \
+		ddx/sgi/IRIX/libirix.a
 IRISSYSLIBS = $(SYSLIBS)
  
 ServerTarget(Xiris,$(IRISDIRS),$(IRISOBJS),$(IRISLIBS),$(IRISSYSLIBS))
