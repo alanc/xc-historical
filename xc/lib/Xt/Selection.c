@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.62 91/05/01 12:06:52 converse Exp $ */
+/* $XConsortium: Selection.c,v 1.63 91/05/01 20:16:48 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -95,9 +95,12 @@ static PropList GetPropList(dpy)
 	XtPerDisplay pd = _XtGetPerDisplay(dpy);
 	sarray = (PropList) XtMalloc((unsigned) sizeof(PropListRec));
 	sarray->dpy = dpy;
-	sarray->incremental_atom = XInternAtom(dpy, "INCR", FALSE);
+	sarray->incr_atom = XInternAtom(dpy, "INCR", FALSE);
 	sarray->indirect_atom = XInternAtom(dpy, "MULTIPLE", FALSE);
 	sarray->timestamp_atom = XInternAtom(dpy, "TIMESTAMP", FALSE);
+#ifdef DRAFT_ICCCM_COMPATIBILITY
+	sarray->incremental_atom = XInternAtom(dpy, "INCREMENTAL", FALSE);
+#endif
 	sarray->propCount = 1;
 	sarray->list = (SelectionProp)XtMalloc((unsigned) sizeof(SelectionPropRec));
 	sarray->list[0].prop = XInternAtom(dpy, "_XT_SELECTION_0", FALSE);
@@ -495,11 +498,11 @@ int format;
 	AddHandler(req->ctx->dpy, window, widget, 
 			(EventMask) PropertyChangeMask, 
 	       		HandlePropertyGone, (XtPointer)req);
-/* now send client INCREMENT property */
+/* now send client INCR property */
 	size = BYTELENGTH(length,format);
 	value = ((char*)&size) + sizeof(long) - 4;
 	XChangeProperty(req->ctx->dpy, window, req->property,
-			req->ctx->prop_list->incremental_atom,
+			req->ctx->prop_list->incr_atom,
 			32, PropModeReplace, (unsigned char *)value, 1);
 }
 
@@ -837,10 +840,10 @@ static Boolean IsINCRtype(info, window, prop)
     if (prop == None) return False;
 
     (void)XGetWindowProperty(XtDisplay(info->widget), window, prop, 0L, 0L,
-			     False, info->ctx->prop_list->incremental_atom,
+			     False, info->ctx->prop_list->incr_atom,
 			     &type, &format, &length, &bytesafter, &value);
 
-    return (type == info->ctx->prop_list->incremental_atom);
+    return (type == info->ctx->prop_list->incr_atom);
 }
 
 /*ARGSUSED*/
@@ -858,11 +861,15 @@ Boolean *cont;
 
     if (ev->type == SelectionNotify) {
 	XSelectionEvent *event = (XSelectionEvent *) ev;
+#ifdef DRAFT_ICCCM_COMPATIBILITY
+	if (!DRAFT_ICCCM_MATCH_SELECT(event, info)) return;
+#else
 	if (!MATCH_SELECT(event, info)) return; /* not really for us */
+#endif
          XtRemoveEventHandler(widget, (EventMask)0, TRUE,
 			   ReqCleanup, (XtPointer) info );
 	if (IsINCRtype(info, XtWindow(widget), event->property)
-#ifndef NO_DRAFT_ICCCM_COMPATIBILITY
+#ifdef DRAFT_ICCCM_COMPATIBILITY
 	    || event->target == info->ctx->prop_list->incremental_atom
 #endif
 	    ) {
@@ -1035,7 +1042,7 @@ static long IncrPropSize(widget, value, format, length)
 {
     unsigned long size;
     if (format == 32
-#ifndef NO_DRAFT_ICCCM_COMPATIBILITY
+#ifdef DRAFT_ICCCM_COMPATIBILITY
 	/* old code was Endian-dependent; don't bother trying to fix it! */
 	|| (format == 8 && length == 4)
 #endif
@@ -1078,7 +1085,7 @@ Atom selection;
 			      10000000, False, AnyPropertyType,
 			      &type, &format, &length, &bytesafter, &value);
 
-    if (type == info->ctx->prop_list->incremental_atom) {
+    if (type == info->ctx->prop_list->incr_atom) {
 	unsigned long size = IncrPropSize(widget, value, format, length);
 	XFree((char *)value);
 	HandleIncremental(dpy, widget, property, info, size);
@@ -1128,6 +1135,7 @@ unsigned long size;
 #endif 
 }
 
+#ifdef DRAFT_ICCCM_COMPATIBILITY
 static unsigned long GetSizeOfIncr(widget, ctx, property)
      Widget widget;
      Select ctx;
@@ -1149,6 +1157,7 @@ static unsigned long GetSizeOfIncr(widget, ctx, property)
     XFree((char *)value);
     return size;
 }
+#endif
 
 
 /*ARGSUSED*/
@@ -1171,7 +1180,11 @@ Boolean *cont;
     Atom *t;
 
     if (event->type != SelectionNotify) return;
+#ifdef DRAFT_ICCCM_COMPATIBILITY
+    if (!DRAFT_ICCCM_MATCH_SELECT(event, info)) return; /* not really for us */
+#else
     if (!MATCH_SELECT(event, info)) return; /* not really for us */
+#endif
 #ifndef DEBUG_WO_TIMERS
     XtRemoveTimeOut(info->timeout); 
 #endif 
@@ -1189,7 +1202,7 @@ Boolean *cont;
 		HandleNone(widget, info->callback, *c, event->selection);
 		if (p->property != None)
                     FreeSelectionProperty(XtDisplay(widget), p->property);
-#ifndef NO_DRAFT_ICCCM_COMPATIBILITY
+#ifdef DRAFT_ICCCM_COMPATIBILITY
 	    } else if (p->target == ctx->prop_list->incremental_atom) {
 		CallBackInfo newinfo = XtNew(CallBackInfoRec);
 		newinfo->callback = info->callback;
@@ -1224,7 +1237,7 @@ Boolean *cont;
         XtFree((char*)info->req_closure);
         XtFree((char*)info->target); 
         XtFree((char*)info);
-#ifndef NO_DRAFT_ICCCM_COMPATIBILITY
+#ifdef DRAFT_ICCCM_COMPATIBILITY
     } else if (event->target == ctx->prop_list->incremental_atom) {
 	HandleIncremental(dpy, widget, event->property, info, 0);
 #endif
