@@ -30,11 +30,11 @@
 
 /***********************************************************************
  *
- * Button Box Widget
+ * Button Box Widget (subclass of CompositeClass)
  *
  ***********************************************************************/
 
-#define XtNwindow		"window"
+/* Inherited from Core, why document here too? */
 #define XtNx			"x"
 #define XtNy			"y"
 #define XtNwidth		"width"
@@ -42,65 +42,32 @@
 #define XtNborderWidth		"borderWidth"
 #define XtNborder		"border"
 #define XtNbackground		"background"
+
+/* New fields */
 #define XtNhSpace		"hSpace"
 #define XtNvSpace		"vSpace"
-#define XtNindex		"index"
-#define XtNbutton		"button"
 
-extern Window XtButtonBoxCreate(); /* parentWindow, args, argCount */
-    /* Window   parentWindow;   */
-    /* ArgList  args;        */
-    /* int      argCount;       */
+/* New fields for the ButtonBox widget record */
+typedef struct {
+    Dimension   h_space, v_space;
+} ButtonBox;
 
-/*
+/* New fields for the ButtonBox widget class record */
+typedef struct {
+     int mumble;
+    /* No new procedures */
+} ButtonBoxClass;
 
- Parameters
- ==========
+/* Full class record declaration */
+typedef struct {
+    CoreClass       core_class;
+    CompositeClass  composite_class;
+    ButtonBoxClass  button_box_class;
+} ButtonBoxClassData;
 
- Name		Class		RepType		Default Value
- ----		-----		-------		-------------
- window		Window		Window		NONE, required parameter
- index		Int		int		0
+/* Class record constant */
 
-*/
-
-extern XtStatus XtButtonBoxAddButton(); /* dpy, parent, args, argCount */
-    /* Display  *dpy; */
-    /* Window   parent;     */
-    /* ArgList  args;    */
-    /* int      argCount;   */
-
-/*
-
- Parameters
- ==========
-
- Name		Class		RepType		Default Value
- ----		-----		-------		-------------
- window		Window		Window		computed from index (*)
- index		Int		int		computed from window (*)
-
-* - one of Window or Index is required.
-
-*/
-
-extern XtStatus XtButtonBoxDeleteButton(); /* dpy, parent, args, argCount */
-    /* Display	*dpy */
-    /* Window   parent;     */
-    /* ArgList  args;    */
-    /* int      argCount;   */
-
-extern void XtButtonBoxGetValues (); /* dpy, window, args, argCount */
-    /* Display *dpy; */
-    /* Window window; */
-    /* ArgList args; */
-    /* int argCount; */
-
-extern void XtButtonBoxSetValues (); /* dpy, window, args, argCount */
-    /* Display *dpy; */
-    /* Window window; */
-    /* ArgList args; */
-    /* int argCount; */
+extern ButtonBoxClassData buttonBoxClassData;
 
 #endif _XtButtonBox_h
 /* DON'T ADD STUFF AFTER THIS #endif */
