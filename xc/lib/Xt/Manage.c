@@ -1,4 +1,4 @@
-/* $XConsortium: Manage.c,v 1.28 94/01/06 18:15:34 kaleb Exp $ */
+/* $XConsortium: Manage.c,v 1.29 94/01/14 17:56:19 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -342,107 +342,115 @@ void XtSetMappedWhenManaged(widget, mapped_when_managed)
     UNLOCK_APP(app);
 } /* XtSetMappedWhenManaged */
 
-void
+
 #if NeedFunctionPrototypes
-XtChangeManagedSet(
+void XtChangeManagedSet(
     WidgetList unmanage_children,
-    Cardinal num_unmanage_children,
+    Cardinal num_unmanage,
+    XtDoChangeProc do_change_proc,
+    XtPointer client_data,
     WidgetList manage_children,
-    Cardinal num_manage_children,
-    XtCSMHookProc post_unmanage_pre_manage_hook,
-    XtPointer client_data
+    Cardinal num_manage
 )
 #else
-XtChangeManagedSet(unmanage_children, num_unmanage_children, manage_children, num_manage_children, post_unmanage_pre_manage_hook, client_data)
+void XtChangeManagedSet(unmanage_children, num_unmanage, do_change_proc,
+			client_data, manage_children, num_manage)
     WidgetList unmanage_children;
-    Cardinal num_unmanage_children;
-    WidgetList manage_children;
-    Cardinal num_manage_children;
-    XtCSMHookProc post_unmanage_pre_manage_hook;
+    Cardinal num_unmanage;
+    XtDoChangeProc do_change_proc;
     XtPointer client_data;
+    WidgetList manage_children;
+    Cardinal num_manage;
 #endif
 {
-    Widget parent, hookobj;
-    Cardinal num_unique_unm_children;
+    WidgetList childp;
+    Widget parent;
+    int i;
+    Cardinal some_unmanaged;
+    Boolean call_out;
+    CompositeClassExtension ext;
     XtAppContext app;
-    Boolean call_change_managed = (Boolean)False;
+    Widget hookobj;
 
-    if ((num_unmanage_children == 0 && num_manage_children == 0) ||
-	(unmanage_children == (WidgetList)NULL && 
-	manage_children   == (WidgetList)NULL)) {
-	    return;
-    }
-    if (unmanage_children != (WidgetList)NULL &&
-	unmanage_children[0] != (Widget)NULL) {
-	parent = XtParent(unmanage_children[0]);
-    } else if (manage_children != (WidgetList)NULL &&
-	manage_children[0] != (Widget)NULL) {
-	parent = XtParent(manage_children[0]);
-    } else {
-	XtWarningMsg(XtNinvalidChild, XtNxtUnmanageChildren, XtCXtToolkitError,
-		     "Null child found in argument list",
-		     (String *)NULL, (Cardinal *)NULL);
+    if (num_unmanage == 0 && num_manage == 0)
+	return;
+
+    /* specification doesn't state that library will check for NULL in list */
+
+    childp = num_unmanage ? unmanage_children : manage_children;
+    app = XtWidgetToApplicationContext(*childp);
+    LOCK_APP(app);
+
+    parent = XtParent(*childp);
+    childp = unmanage_children;
+    for (i = num_unmanage; --i >= 0 && XtParent(*childp) == parent; childp++);
+    call_out = (i >= 0);
+    childp = manage_children;
+    for (i = num_manage;   --i >= 0 && XtParent(*childp) == parent; childp++);
+    if (call_out || i >= 0) {
+	XtAppWarningMsg(app, "ambiguousParent", XtNxtChangeManagedSet,
+			XtCXtToolkitError, "Not all children have same parent",
+			(String *)NULL, (Cardinal *)NULL);
+	UNLOCK_APP(app);
 	return;
     }
-    app = XtWidgetToApplicationContext(parent);
-    LOCK_APP(app);
+    if (! XtIsComposite(parent)) {
+	UNLOCK_APP(app);
+	XtAppErrorMsg(app, "invalidParent", XtNxtChangeManagedSet,
+		      XtCXtToolkitError,
+		      "Attempt to manage a child when parent is not Composite",
+		      (String *) NULL, (Cardinal *) NULL);
+    }
     if (parent->core.being_destroyed) {
 	UNLOCK_APP(app);
 	return;
     }
-    call_change_managed = 
-	(XtClass(parent)->core_class.version == XtVersionDontCheck ||
-	    XtClass(parent)->core_class.version >= (11 * 1000 + 6));
-    /*
-     * temporarily unmanage the unmanage_children list .....
-     * only call the parent's change_managed() method if there is
-     * no version 2 extension or its has_stateless_change_managed member
-     * is set to False.
-     */
-    UnmanageChildren(unmanage_children, num_unmanage_children, parent, 
-		     &num_unique_unm_children, call_change_managed,
-		     XtNxtChangeManagedSet);
-    hookobj = XtHooksOfDisplay(XtDisplayOfObject(unmanage_children[0]));
+
+    call_out = False;
+    if (do_change_proc) {
+	ext = (CompositeClassExtension)
+	    XtGetClassExtension(parent->core.widget_class,
+				XtOffsetOf(CompositeClassRec,
+					   composite_class.extension),
+				NULLQUARK, XtCompositeExtensionVersion,
+				sizeof(CompositeClassExtensionRec));
+	if (!ext || !ext->allows_change_managed_set)
+	    call_out = True;
+    }
+
+    UnmanageChildren(unmanage_children, num_unmanage, parent, 
+		     &some_unmanaged, call_out, XtNxtChangeManagedSet);
+
+    hookobj = XtHooksOfDisplay(XtDisplay(parent));
     if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
 	XtChangeHookDataRec call_data;
-	int ii;
-
-	call_data.old = (Widget)NULL;
-	call_data.args = (ArgList)NULL;
+	call_data.old = (Widget) NULL;
+	call_data.args = (ArgList) NULL;
 	call_data.num_args = 0;
-	for (ii = 0; ii < num_unmanage_children; ii++) {
-	    call_data.widget = unmanage_children[ii];
-	    XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer)&call_data);
+	childp = unmanage_children;
+	for (i = num_unmanage; --i >= 0; childp++) {
+	    call_data.widget = *childp;
+	    XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer) &call_data);
 	}
     }
-    /*
-     * now call the user supplied hook ... if there is one!
-     * note that the app context is locked at this point.
-     */
-    if (post_unmanage_pre_manage_hook != (XtCSMHookProc)NULL) {
-	(*post_unmanage_pre_manage_hook)(parent, unmanage_children,
-			num_unmanage_children, manage_children,
-			num_manage_children, client_data);
-    }
-    /*
-     * now manage the children on the manage_children list ....
-     * if there are no children to manage, but we have unmanaged some
-     * and not previously called the parent's change_managed() method
-     * force it to be called now ....
-     */
-    ManageChildren(manage_children, num_manage_children, parent,
-		   !call_change_managed && num_unique_unm_children != 0,
+
+    if (do_change_proc) 
+	(*do_change_proc)(parent, unmanage_children, num_unmanage,
+			  manage_children, num_manage, client_data);
+
+    call_out = (some_unmanaged && !call_out);
+    ManageChildren(manage_children, num_manage, parent, call_out,
 		   XtNxtChangeManagedSet);
+
     if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
 	XtChangeHookDataRec call_data;
-	int ii;
-
-	call_data.old = (Widget)NULL;
-	call_data.args = (ArgList)NULL;
+	call_data.old = (Widget) NULL;
+	call_data.args = (ArgList) NULL;
 	call_data.num_args = 0;
-	for (ii = 0; ii < num_manage_children; ii++) {
-	    call_data.widget = manage_children[ii];
-	    XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer)&call_data);
+	childp = manage_children;
+	for (i = num_manage; --i >= 0; childp++) {
+	    call_data.widget = *childp;
+	    XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer) &call_data);
 	}
     }
     UNLOCK_APP(app);
