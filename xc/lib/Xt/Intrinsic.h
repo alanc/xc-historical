@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.168 91/06/11 20:04:41 converse Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.169 91/06/12 13:59:06 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -46,7 +46,7 @@ SOFTWARE.
 #endif /* !X_NOT_STDC_ENV else */
 #endif /* XT_BC else */
 
-#define XtSpecificationRelease 4
+#define XtSpecificationRelease 5
 
 typedef char *String;
 
