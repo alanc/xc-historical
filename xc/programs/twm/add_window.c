@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.61 89/07/03 13:13:08 jim Exp $
+ * $XConsortium: add_window.c,v 1.62 89/07/03 13:15:27 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.61 89/07/03 13:13:08 jim Exp $";
+"$XConsortium: add_window.c,v 1.62 89/07/03 13:15:27 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -1042,7 +1042,7 @@ TwmWindow *tmp_win;
 	XFreeGC (dpy, gcBack);
 
 	/*
-	 * draw the resize button
+	 * draw the resize button, 
 	 */
 	XDrawRectangle (dpy, Scr->resizePm, gc, 2, 2, Scr->TitleHeight - 5, 
 			Scr->TitleHeight - 5);
@@ -1059,18 +1059,20 @@ TwmWindow *tmp_win;
 	XFreeGC(dpy, gc);
     }
 
-    tmp_win->iconify_w = XCreateSimpleWindow(dpy, tmp_win->title_w,
-	0, 0, Scr->TitleHeight, Scr->TitleHeight,
-	0, Scr->Black, tmp_win->title.back);
-    XSelectInput(dpy, tmp_win->iconify_w, ButtonPressMask |
-	ButtonReleaseMask | ExposureMask);
+    attributes.background_pixmap = None;
+    attributes.event_mask = (ButtonPressMask | ButtonReleaseMask |
+			     ExposureMask);
+    tmp_win->iconify_w = XCreateWindow (dpy, tmp_win->title_w, 0, 0, 
+					Scr->TitleHeight, Scr->TitleHeight, 0,
+					0, CopyFromParent, CopyFromParent,
+				       (CWBackPixmap | CWEventMask), 
+					&attributes);
 
-    tmp_win->resize_w = XCreateSimpleWindow(dpy, tmp_win->title_w,
-	0, 0, Scr->TitleHeight, Scr->TitleHeight,
-	0, Scr->Black, tmp_win->title.back);
-    XSelectInput(dpy, tmp_win->resize_w, ButtonPressMask |
-	ButtonReleaseMask | ExposureMask);
-
+    tmp_win->resize_w = XCreateWindow (dpy, tmp_win->title_w, 0, 0, 
+				       Scr->TitleHeight, Scr->TitleHeight, 0,
+				       0, CopyFromParent, CopyFromParent,
+				       (CWBackPixmap | CWEventMask),
+				       &attributes);
     if (tmp_win->titlehighlight) {
 	XGCValues gcv;
 	GC gc;
