@@ -1,6 +1,6 @@
 #include "copyright.h"
 #ifndef lint
-static char *rcsid_xopendisplay_c = "$Header: XOpenDis.c,v 11.59 88/06/20 11:26:17 rws Exp $";
+static char *rcsid_xopendisplay_c = "$Header: XOpenDis.c,v 11.60 88/08/09 15:56:47 jim Exp $";
 #endif
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 
@@ -353,6 +353,18 @@ Display *XOpenDisplay (display)
  */
 
 	Xfree (setup);	/* all finished with setup information */
+
+/*
+ * Make sure default screen is legal.
+ */
+	if (screen_num >= dpy->nscreens) {
+	    _XDisconnectDisplay (dpy->fd);
+	    _XFreeDisplayStructure (dpy);
+	    errno = EINVAL;
+	    UnlockMutex(&lock);
+	    return(NULL);
+	}
+
 /*
  * Set up other stuff clients are always going to use.
  */
