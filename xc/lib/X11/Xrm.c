@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.47 90/12/01 16:08:46 rws Exp $
+ * $XConsortium: Xrm.c,v 1.48 90/12/01 17:53:08 rws Exp $
  */
 
 /***********************************************************
@@ -93,7 +93,16 @@ extern void bzero();
 
 static XrmQuark XrmQString, XrmQANY;
 
-typedef	Bool (*DBEnumProc)();
+typedef	Bool (*DBEnumProc)(
+#if NeedFunctionPrototypes
+    XrmDatabase*	/* db */,
+    XrmBindingList	/* bindings */,
+    XrmQuarkList	/* quarks */,
+    XrmRepresentation*	/* type */,
+    XrmValue*		/* value */,
+    caddr_t		/* closure */
+#endif
+);
 
 typedef struct _VEntry {
     struct _VEntry	*next;		/* next in chain */
@@ -178,6 +187,7 @@ typedef struct _EClosure {
     caddr_t closure;			/* the user closure */
     XrmBindingList bindings;		/* binding list */
     XrmQuarkList quarks;		/* quark list */
+    int mode;				/* XrmEnum<kind> */
 } EClosureRec, *EClosure;
 
 /* predicate to determine when to resize a hash table */
@@ -189,6 +199,22 @@ typedef struct _EClosure {
 
 /* pick a reasonable value for maximum depth of resource database */
 #define MAXDBDEPTH 100
+
+/* macro used in get/search functions */
+
+/* find an entry named ename, with leafness given by leaf */
+#define NFIND(ename) \
+    q = ename; \
+    entry = NodeHash(table, q); \
+    while (entry && entry->name != q) \
+	entry = entry->next; \
+    if (leaf && entry && !entry->leaf) { \
+	entry = entry->next; \
+	if (entry && !entry->leaf) \
+	    entry = entry->next; \
+	if (entry && entry->name != q) \
+	    entry = (NTable)NULL; \
+    }
 
 /* resourceQuarks keeps track of what quarks have been associated with values
  * in all LTables.  If a quark has never been used in an LTable, we don't need
@@ -222,6 +248,19 @@ void XrmInitialize()
 {
     XrmQString = XrmPermStringToQuark("String");
     XrmQANY = XrmPermStringToQuark("?");
+}
+
+XrmDatabase XrmGetDatabase(display)
+    Display *display;
+{
+    return display->db;
+}
+
+void XrmSetDatabase(display, database)
+    Display *display;
+    XrmDatabase database;
+{
+    display->db = database;
 }
 
 #if NeedFunctionPrototypes
@@ -886,7 +925,6 @@ void XrmQPutStringResource(pdb, bindings, quarks, str)
  *	Arguments: db - the database.
  *                 str - a pointer to the string containing the database.
  *                 filename - source filename, if any.
- *	Returns: 0 if failure, 1 if totally sucessful.
  */
 
 /*
@@ -900,7 +938,7 @@ void XrmQPutStringResource(pdb, bindings, quarks, str)
 #define LIST_SIZE 101
 #define BUFFER_SIZE 100
 
-static int GetDatabase(db, str, filename)
+static void GetDatabase(db, str, filename)
     XrmDatabase db;
     register char *str;
     char *filename;
@@ -913,7 +951,7 @@ static int GetDatabase(db, str, filename)
     register XrmQuarkList t_quarks;
     register XrmBindingList t_bindings;
 
-    int alloc_chars = BUFSIZ, return_value = 1;
+    int alloc_chars = BUFSIZ;
     char buffer[BUFSIZ], *value_str;
     XrmQuark quarks[LIST_SIZE];
     XrmBinding bindings[LIST_SIZE];
@@ -921,10 +959,10 @@ static int GetDatabase(db, str, filename)
     static void GetIncludeFile();
 
     if (!db)
-	return 0;
+	return;
 
     if (!(value_str = Xmalloc(sizeof(char) * alloc_chars)))
-	return 0;
+	return;
 
     while (!xrm_is_EOF(bits)) {
 
@@ -1071,7 +1109,6 @@ static int GetDatabase(db, str, filename)
 	     * a new_line can still be escaped with a '\'.
 	     */
 
-	    return_value = 0;
 	    do {
 		old_bits = bits;
 		bits = get_next_char(c, str);
@@ -1217,10 +1254,8 @@ static int GetDatabase(db, str, filename)
 		alloc_chars += BUFSIZ/10;		
 		temp_str = Xrealloc(value_str, sizeof(char) * alloc_chars);
 
-		if (!value_str) {
-		    return_value = 0;
+		if (!value_str)
 		    goto done;
-		}
 
 		ptr = temp_str + (ptr - value_str); /* reset pointer. */
 		value_str = temp_str;
@@ -1245,7 +1280,6 @@ static int GetDatabase(db, str, filename)
  done:
 
     Xfree(value_str);
-    return return_value;
 }
 
 #if NeedFunctionPrototypes
@@ -1283,7 +1317,7 @@ void XrmPutLineResource(pdb, line)
 #endif
 {
     if (!*pdb) *pdb = NewDatabase();
-    (void) GetDatabase(*pdb, line, (char *)NULL);
+    GetDatabase(*pdb, line, (char *)NULL);
 } 
 
 #if NeedFunctionPrototypes
@@ -1297,7 +1331,7 @@ XrmDatabase XrmGetStringDatabase(data)
     XrmDatabase     db;
 
     db = NewDatabase();
-    (void) GetDatabase(db, data, (char *)NULL);
+    GetDatabase(db, data, (char *)NULL);
     return db;
 }
 
@@ -1362,7 +1396,7 @@ GetIncludeFile(db, base, fname, fnamelen)
     }
     if (!(str = ReadInFile(realfname)))
 	return;
-    (void) GetDatabase(db, str, realfname);
+    GetDatabase(db, str, realfname);
     Xfree(str);
 }
 
@@ -1381,42 +1415,49 @@ XrmDatabase XrmGetFileDatabase(filename)
 	return (XrmDatabase)NULL;
 
     db = NewDatabase();
-    (void) GetDatabase(db, str, filename);
+    GetDatabase(db, str, filename);
     Xfree(str);
     return db;
 }
 
 #if NeedFunctionPrototypes
-void XrmCombineFileDatabase(
+Status XrmCombineFileDatabase(
     const char 	    *filename,
     XrmDatabase     *target,
     Bool             override)
 #else
-void XrmCombineFileDatabase(filename, target, override)
+Status XrmCombineFileDatabase(filename, target, override)
     char        *filename;
     XrmDatabase *target;
     Bool         override;
 #endif
 {
+    XrmDatabase db;
     char *str;
 
-    if (!override) {
-	XrmCombineDatabase(XrmGetFileDatabase(filename), target, False);
-	return;
-    }
     if (!(str = ReadInFile(filename)))
-	return;
-    if (!*target)
-	*target = NewDatabase();
-    (void) GetDatabase(*target, str, filename);
+	return 0;
+    if (override) {
+	db = *target;
+	if (!db)
+	    *target = db = NewDatabase();
+    } else
+	db = NewDatabase();
+    GetDatabase(db, str, filename);
     Xfree(str);
+    if (!override)
+	XrmCombineDatabase(db, target, False);
+    return 1;
 }
 
 /* call the user proc for every value in the table, arbitrary order.
  * stop if user proc returns True.  level is current depth in database.
  */
-static Bool EnumValues(table, level, closure)
+/*ARGSUSED*/
+static Bool EnumLTable(table, names, classes, level, closure)
     LTable		table;
+    XrmNameList		names;
+    XrmClassList 	classes;
     register int	level;
     register EClosure	closure;
 {
@@ -1425,14 +1466,20 @@ static Bool EnumValues(table, level, closure)
     register VEntry entry;
     XrmValue value;
     XrmRepresentation type;
+    Bool tightOk;
 
-    if (level >= MAXDBDEPTH)
-	return False;
+    closure->bindings[level] = (table->table.tight ?
+				XrmBindTightly : XrmBindLoosely);
+    closure->quarks[level] = table->table.name;
+    level++;
+    tightOk = !*names;
     closure->quarks[level + 1] = NULLQUARK;
     for (i = table->table.mask, bucket = table->buckets;
 	 i >= 0;
 	 i--, bucket++) {
 	for (entry = *bucket; entry; entry = entry->next) {
+	    if (entry->tight && !tightOk)
+		continue;
 	    closure->bindings[level] = (entry->tight ?
 					XrmBindTightly : XrmBindLoosely);
 	    closure->quarks[level] = entry->name;
@@ -1444,10 +1491,41 @@ static Bool EnumValues(table, level, closure)
 		type = RepType(entry);
 		value.addr = DataValue(entry);
 	    }
-	    if ((*closure->proc)(&closure->db, closure->bindings,
-				 closure->quarks, &type, &value,
+	    if ((*closure->proc)(&closure->db, closure->bindings+1,
+				 closure->quarks+1, &type, &value,
 				 closure->closure))
 		return True;
+	}
+    }
+    return False;
+}
+
+static Bool EnumAllNTable(table, level, closure)
+    NTable		table;
+    register int	level;
+    register EClosure	closure;
+{
+    register NTable *bucket;
+    register int i;
+    register NTable entry;
+    XrmQuark empty = NULLQUARK;
+
+    if (level >= MAXDBDEPTH)
+	return False;
+    for (i = table->mask, bucket = NodeBuckets(table);
+	 i >= 0;
+	 i--, bucket++) {
+	for (entry = *bucket; entry; entry = entry->next) {
+	    if (entry->leaf) {
+		if (EnumLTable((LTable)entry, &empty, &empty, level, closure))
+		    return True;
+	    } else {
+		closure->bindings[level] = (entry->tight ?
+					    XrmBindTightly : XrmBindLoosely);
+		closure->quarks[level] = entry->name;
+		if (EnumAllNTable(entry, level+1, closure))
+		    return True;
+	    }
 	}
     }
     return False;
@@ -1456,46 +1534,147 @@ static Bool EnumValues(table, level, closure)
 /* recurse on every table in the table, arbitrary order.
  * stop if user proc returns True.  level is current depth in database.
  */
-static Bool EnumTables(table, level, closure)
+static Bool EnumNTable(table, names, classes, level, closure)
     NTable		table;
+    XrmNameList		names;
+    XrmClassList 	classes;
     register int	level;
     register EClosure	closure;
 {
-    register NTable *bucket;
-    register int i;
-    register NTable entry;
+    register NTable	entry;
+    register XrmQuark	q;
+    register unsigned int leaf;
+    Bool (*get)();
+    Bool bilevel;
+
+/* find entries named ename, leafness leaf, tight or loose, and call get */
+#define ETIGHTLOOSE(ename) \
+    NFIND(ename); \
+    if (entry) { \
+	if (leaf == entry->leaf) { \
+	    if (!leaf && !entry->tight && entry->next && \
+		entry->next->name == q && entry->next->tight && \
+		(bilevel || entry->next->hasloose) && \
+		EnumLTable((LTable)entry->next, names+1, classes+1, \
+			   level, closure)) \
+		return True; \
+	    if ((*get)(entry, names+1, classes+1, level, closure)) \
+		return True; \
+	    if (entry->tight && (entry = entry->next) && \
+		entry->name == q && leaf == entry->leaf && \
+		(*get)(entry, names+1, classes+1, level, closure)) \
+		return True; \
+	} else if (entry->leaf) { \
+	    if ((bilevel || entry->hasloose) && \
+		EnumLTable((LTable)entry, names+1, classes+1, level, closure))\
+		return True; \
+	    if (entry->tight && (entry = entry->next) && \
+		entry->name == q && (bilevel || entry->hasloose) && \
+		EnumLTable((LTable)entry, names+1, classes+1, level, closure))\
+		return True; \
+	} \
+    }
+
+/* find entries named ename, leafness leaf, loose only, and call get */
+#define ELOOSE(ename) \
+    NFIND(ename); \
+    if (entry && entry->tight && (entry = entry->next) && entry->name != q) \
+	entry = (NTable)NULL; \
+    if (entry) { \
+	if (leaf == entry->leaf) { \
+	    if ((*get)(entry, names+1, classes+1, level, closure)) \
+		return True; \
+	} else if (entry->leaf && (bilevel || entry->hasloose)) { \
+	    if (EnumLTable((LTable)entry, names+1, classes+1, level, closure))\
+		return True; \
+	} \
+    }
 
     if (level >= MAXDBDEPTH)
 	return False;
-    for (i = table->mask, bucket = NodeBuckets(table);
-	 i >= 0;
-	 i--, bucket++) {
-	for (entry = *bucket; entry; entry = entry->next) {
-	    closure->bindings[level] = (entry->tight ?
-					XrmBindTightly : XrmBindLoosely);
-	    closure->quarks[level] = entry->name;
-	    if (entry->leaf) {
-		if (EnumValues((LTable)entry, level + 1, closure))
-		    return True;
-	    } else {
-		if (EnumTables(entry, level + 1, closure))
-		    return True;
+    closure->bindings[level] = (table->tight ?
+				XrmBindTightly : XrmBindLoosely);
+    closure->quarks[level] = table->name;
+    level++;
+    if (!*names) {
+	if (EnumAllNTable(table, level, closure))
+	    return True;
+    } else {
+	if (names[1] || closure->mode == XrmEnumAllLevels) {
+	    get = EnumNTable; /* recurse */
+	    leaf = 0;
+	    bilevel = !names[1];
+	} else {
+	    get = EnumLTable; /* bottom of recursion */
+	    leaf = 1;
+	    bilevel = False;
+	}
+	ETIGHTLOOSE(*names);   /* do name, tight and loose */
+	ETIGHTLOOSE(*classes); /* do class, tight and loose */
+	if (table->hasany) {
+	    ETIGHTLOOSE(XrmQANY); /* do ANY, tight and loose */
+	}
+	if (table->hasloose) {
+	    while (1) {
+		names++;
+		classes++;
+		if (!*names)
+		    break;
+		if (!names[1] && closure->mode != XrmEnumAllLevels) {
+		    get = EnumLTable; /* bottom of recursion */
+		    leaf = 1;
+		}
+		ELOOSE(*names);   /* loose names */
+		ELOOSE(*classes); /* loose classes */
+		if (table->hasany) {
+		    ELOOSE(XrmQANY); /* loose ANY */
+		}
 	    }
+	    names--;
+	    classes--;
 	}
     }
+    /* now look for matching leaf nodes */
+    entry = table->next;
+    if (!entry)
+	return False;
+    if (entry->leaf) {
+	if (entry->tight && !table->tight)
+	    entry = entry->next;
+    } else {
+	entry = entry->next;
+	if (!entry || !entry->tight)
+	    return False;
+    }
+    if (!entry || entry->name != table->name)
+	return False;
+    /* found one */
+    level--;
+    if ((!*names || entry->hasloose) &&
+	EnumLTable((LTable)entry, names, classes, level, closure))
+	return True;
+    if (entry->tight && entry == table->next && (entry = entry->next) &&
+	entry->name == table->name && (!*names || entry->hasloose))
+	return EnumLTable((LTable)entry, names, classes, level, closure);
     return False;
+
+#undef ETIGHTLOOSE
+#undef ELOOSE
 }
 
 /* call the proc for every value in the database, arbitrary order.
  * stop if the proc returns True.
  */
-static Bool EnumerateDatabase(db, proc, closure)
-    XrmDatabase db;
-    caddr_t     closure;
-    DBEnumProc	proc;
+Bool XrmEnumerateDatabase(db, names, classes, mode, proc, closure)
+    XrmDatabase		db;
+    XrmNameList		names;
+    XrmClassList	classes;
+    int			mode;
+    DBEnumProc		proc;
+    caddr_t		closure;
 {
-    XrmBinding  bindings[MAXDBDEPTH+1];
-    XrmQuark	quarks[MAXDBDEPTH+1];
+    XrmBinding  bindings[MAXDBDEPTH+2];
+    XrmQuark	quarks[MAXDBDEPTH+2];
     register NTable table;
     EClosureRec	eclosure;
    
@@ -1504,14 +1683,16 @@ static Bool EnumerateDatabase(db, proc, closure)
     eclosure.closure = closure;
     eclosure.bindings = bindings;
     eclosure.quarks = quarks;
+    eclosure.mode = mode;
     table = db->table;
-    if (table && !table->leaf) {
-	if (EnumTables(table, 0, &eclosure))
-	    return True;
+    if (table && !table->leaf && !*names && mode == XrmEnumOneLevel)
 	table = table->next;
+    if (table) {
+	if (!table->leaf)
+	    return EnumNTable(table, names, classes, 0, &eclosure);
+	else
+	    return EnumLTable((LTable)table, names, classes, 0, &eclosure);
     }
-    if (table)
-	return EnumValues((LTable)table, 0, &eclosure);
     return False;
 }
 
@@ -1588,16 +1769,18 @@ void PrintTable(table, file)
     XrmBinding  bindings[MAXDBDEPTH+1];
     XrmQuark	quarks[MAXDBDEPTH+1];
     EClosureRec closure;
+    XrmQuark	empty = NULLQUARK;
 
     closure.db = (XrmDatabase)NULL;
     closure.proc = DumpEntry;
     closure.closure = (caddr_t)file;
     closure.bindings = bindings;
     closure.quarks = quarks;
+    closure.mode = XrmEnumAllLevels;
     if (table->leaf)
-	EnumValues((LTable)table, 0, &closure);
+	EnumAllNTable((LTable)table, &empty, &empty, 0, &closure);
     else
-	EnumTables(table, 0, &closure);
+	EnumLTable(table, &empty, &empty, 0, &closure);
 }
 
 #endif /* DEBUG */
@@ -1613,45 +1796,40 @@ void XrmPutFileDatabase(db, fileName)
 #endif
 {
     FILE	*file;
+    XrmQuark empty = NULLQUARK;
     
     if (!db) return;
     if (!(file = fopen(fileName, "w"))) return;
-    (void)EnumerateDatabase(db, DumpEntry, (caddr_t) file);
+    (void)XrmEnumerateDatabase(db, &empty, &empty, XrmEnumAllLevels,
+			       DumpEntry, (caddr_t) file);
     fclose(file);
 }
 
 /* macros used in get/search functions */
-
-/* find an entry named ename, with leafness given by leaf */
-#define NFIND(ename) \
-    q = ename; \
-    entry = NodeHash(table, q); \
-    while (entry && entry->name != q) \
-	entry = entry->next; \
-    if (leaf && entry && !entry->leaf) { \
-	entry = entry->next; \
-	if (entry && !entry->leaf) \
-	    entry = entry->next; \
-	if (entry && entry->name != q) \
-	    entry = (NTable)NULL; \
-    }
 
 /* find entries named ename, leafness leaf, tight or loose, and call get */
 #define GTIGHTLOOSE(ename,looseleaf) \
     NFIND(ename); \
     if (entry) { \
 	if (leaf == entry->leaf) { \
+	    if (!leaf && !entry->tight && entry->next && \
+		entry->next->name == q && entry->next->tight && \
+		entry->next->hasloose && \
+		looseleaf((LTable)entry->next, names+1, classes+1, closure)) \
+		return True; \
 	    if ((*get)(entry, names+1, classes+1, closure)) \
 		return True; \
-	    if (entry->tight) { \
-		entry = entry->next; \
-		if (entry && entry->name == q && leaf == entry->leaf) { \
-		    if ((*get)(entry, names+1, classes+1, closure)) \
-			return True; \
-		} \
-	    } \
-	} else if (entry->leaf && entry->hasloose) { \
-	    if (looseleaf((LTable)entry, names+1, classes+1, closure)) \
+	    if (entry->tight && (entry = entry->next) && \
+		entry->name == q && leaf == entry->leaf && \
+		(*get)(entry, names+1, classes+1, closure)) \
+		return True; \
+	} else if (entry->leaf) { \
+	    if (entry->hasloose && \
+		looseleaf((LTable)entry, names+1, classes+1, closure)) \
+		return True; \
+	    if (entry->tight && (entry = entry->next) && \
+		entry->name == q && entry->hasloose && \
+		looseleaf((LTable)entry, names+1, classes+1, closure)) \
 		return True; \
 	} \
     }
@@ -1659,11 +1837,8 @@ void XrmPutFileDatabase(db, fileName)
 /* find entries named ename, leafness leaf, loose only, and call get */
 #define GLOOSE(ename,looseleaf) \
     NFIND(ename); \
-    if (entry && entry->tight) { \
-	entry = entry->next; \
-	if (entry && entry->name != q) \
-	    entry = (NTable)NULL; \
-    } \
+    if (entry && entry->tight && (entry = entry->next) && entry->name != q) \
+	entry = (NTable)NULL; \
     if (entry) { \
 	if (leaf == entry->leaf) { \
 	    if ((*get)(entry, names+1, classes+1, closure)) \
@@ -1755,16 +1930,28 @@ static Bool SearchNEntry(table, names, classes, closure)
 	    }
 	}
     }
-    /* now look for matching leaf node */
+    /* now look for matching leaf nodes */
     entry = table->next;
-    if (entry && !entry->leaf)
-	entry = entry->next;
-    if (entry && entry->tight != table->tight)
-	entry = entry->next;
-    if (!entry || entry->name != table->name || !entry->hasloose)
+    if (!entry)
 	return False;
-    /* found it */
-    return AppendLooseLEntry((LTable)entry, names, classes, closure);
+    if (entry->leaf) {
+	if (entry->tight && !table->tight)
+	    entry = entry->next;
+    } else {
+	entry = entry->next;
+	if (!entry || !entry->tight)
+	    return False;
+    }
+    if (!entry || entry->name != table->name)
+	return False;
+    /* found one */
+    if (entry->hasloose &&
+	AppendLooseLEntry((LTable)entry, names, classes, closure))
+	return True;
+    if (entry->tight && entry == table->next && (entry = entry->next) &&
+	entry->name == table->name && entry->hasloose)
+	return AppendLooseLEntry((LTable)entry, names, classes, closure);
+    return False;
 }
 
 Bool XrmQGetSearchList(db, names, classes, searchList, listLength)
@@ -1827,8 +2014,7 @@ Bool XrmQGetSearchResource(searchList, name, class, pType, pValue)
     if (entry) { \
 	if (!entry->tight) \
 	    break; \
-	entry = entry->next; \
-	if (entry && entry->name == q) \
+	if ((entry = entry->next) && entry->name == q) \
 	    break; \
     }
 
@@ -1938,11 +2124,8 @@ static Bool GetLooseVEntry(table, names, classes, closure)
     entry = LeafHash(table, q); \
     while (entry && entry->name != q) \
 	entry = entry->next; \
-    if (entry && entry->tight) { \
-	entry = entry->next; \
-	if (entry && entry->name != q) \
-	    entry = (VEntry)NULL; \
-    }
+    if (entry && entry->tight && (entry = entry->next) && entry->name != q) \
+	entry = (VEntry)NULL;
 
     /* bump to last component */
     while (names[1]) {
@@ -2010,17 +2193,31 @@ static Bool GetNEntry(table, names, classes, closure)
 	    }
 	}
     }
-    /* look for a matching leaf table */
+    /* look for matching leaf tables */
     otable = table;
     table = table->next;
-    if (table && !table->leaf)
-	table = table->next;
-    if (table && table->tight != otable->tight)
-	table = table->next;
-    if (!table || table->name != otable->name || !table->hasloose)
+    if (!table)
 	return False;
-    /* found */
-    return GetLooseVEntry((LTable)table, names, classes, closure);
+    if (table->leaf) {
+	if (table->tight && !otable->tight)
+	    table = table->next;
+    } else {
+	table = table->next;
+	if (!table || !table->tight)
+	    return False;
+    }
+    if (!table || table->name != otable->name)
+	return False;
+    /* found one */
+    if (table->hasloose &&
+	GetLooseVEntry((LTable)entry, names, classes, closure))
+	return True;
+    if (table->tight && table == otable->next) {
+	table = table->next;
+	if (table && table->name == otable->name && table->hasloose)
+	    return GetLooseVEntry((LTable)table, names, classes, closure);
+    }
+    return False;
 }
 
 Bool XrmQGetResource(db, names, classes, pType, pValue)
@@ -2137,43 +2334,4 @@ void XrmDestroyDatabase(db)
 	}
 	Xfree(db);
     }
-}
-
-typedef struct _GRNData {
-    char *name;
-    XrmRepresentation type;
-    XrmValuePtr value;
-} GRNData;
-
-/*ARGSUSED*/
-static Bool SameValue(db, bindings, quarks, type, value, data)
-    XrmDatabase		*db;
-    XrmBindingList      bindings;
-    XrmQuarkList	quarks;
-    XrmRepresentation   *type;
-    XrmValuePtr		value;
-    GRNData		*data;
-{
-    if ((*type == data->type) && (value->size == data->value->size) &&
-	!strncmp((char *)value->addr, (char *)data->value->addr, value->size))
-    {
-	data->name = XrmQuarkToString(*quarks); /* XXX */
-	return True;
-    }
-    return False;
-}
-
-/* Gross internal hack */
-char *_XrmGetResourceName(rdb, type_str, pValue)
-    XrmDatabase rdb;
-    XrmString type_str;
-    XrmValuePtr pValue;
-{
-    GRNData data;
-    data.name = (char *)NULL;
-    data.type = XrmStringToQuark(type_str);
-    data.value = pValue;
-
-    (void)EnumerateDatabase(rdb, SameValue, (caddr_t)&data);
-    return data.name;
 }
