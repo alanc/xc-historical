@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.114 91/07/23 13:59:18 rws Exp $ */
+/* $XConsortium: Shell.c,v 1.115 91/07/23 16:12:02 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -39,6 +39,14 @@ SOFTWARE.
 #include <X11/Xatom.h>
 #include <X11/Xlocale.h>
 #include <stdio.h>
+
+/***************************************************************************
+ *
+ * Note: per the Xt spec, the Shell geometry management assumes in
+ * several places that there is only one managed child.  This is
+ * *not* a bug.  Any subclass that assumes otherwise is broken.
+ *
+ ***************************************************************************/
 
 #define WM_CONFIGURE_DENIED(w) (((WMShellWidget) (w))->wm.wm_configure_denied)
 #define WM_MOVED(w) (((WMShellWidget) (w))->wm.wm_moved)
@@ -914,7 +922,7 @@ static void Resize(w)
              childwid = sw->composite.children[i];
              XtResizeWidget(childwid, sw->core.width, sw->core.height,
                            childwid->core.border_width);
-	     break;
+	     break;		/* can only be one managed child */
         }
     }
 }
@@ -1497,7 +1505,7 @@ static void ChangeManaged(wid)
     for (i = 0; i < w->composite.num_children; i++) {
 	if (XtIsManaged(w->composite.children[i])) {
 	    child = w->composite.children[i];
-	    break;
+	    break;		/* there can only be one of them! */
 	}
     }
 
