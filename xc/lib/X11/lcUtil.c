@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: lcUtil.c,v 1.1 93/09/17 13:32:05 rws Exp $ */
 /******************************************************************
 
               Copyright 1991, 1992 by TOSHIBA Corp.
@@ -108,8 +108,8 @@ get_word(str, len)
     return str;
 }
 
-#ifndef XLIBI18N_PATH
-#define XLIBI18N_PATH   "/usr/lib/X11/locale"
+#ifndef XLOCALEDIR
+#define XLOCALEDIR "/usr/lib/X11/locale"
 #endif
 
 FILE *
@@ -132,7 +132,7 @@ _XlcOpenLocaleFile(dir, locale, name)
             return fd;
     }
 
-    if (dir = getenv("XLIBI18N_PATH")) {
+    if (dir = getenv("XLOCALEDIR")) {
         sprintf(buf, "%s/%s", dir, locale_file);
         if (fd = fopen(buf, "r"))
             return fd;
@@ -144,7 +144,7 @@ _XlcOpenLocaleFile(dir, locale, name)
             return fd;
     }
 #endif
-    sprintf(buf, "%s/%s", XLIBI18N_PATH, locale_file);
+    sprintf(buf, "%s/%s", XLOCALEDIR, locale_file);
 
     return fopen(buf, "r");
 }
@@ -311,18 +311,18 @@ _XlcResolveI18NPath(name)
 	if (dir = getenv("OPENWINHOME")) {
 		sprintf(path_name,"%s/lib/locale/%s",dir,name);
 #else
-	if (dir = getenv("XLIBI18N_PATH")) {
+	if (dir = getenv("XLOCALEDIR")) {
 		sprintf(path_name,"%s/%s",dir,name);
 #endif
 	} else {
-		sprintf(path_name,"%s/%s",XLIBI18N_PATH,name);
+		sprintf(path_name,"%s/%s",XLOCALEDIR,name);
 	}
 #endif
 
-	if (dir = getenv("XLIBI18N_PATH"))
+	if (dir = getenv("XLOCALEDIR"))
 		sprintf(path_name,"%s/%s",dir,name);
 	else
-		sprintf(path_name,"%s/%s",XLIBI18N_PATH,name);
+		sprintf(path_name,"%s/%s",XLOCALEDIR,name);
 
 	return (path_name);
 }
