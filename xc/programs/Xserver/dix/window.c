@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.201 88/03/16 10:29:24 rws Exp $ */
+/* $Header: window.c,v 1.202 88/04/28 14:37:10 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -851,7 +851,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
     pVlist = vlist;
     while (vmask) 
     {
-	index = (Mask)1 << (ffs(vmask) - 1);
+	index = (Mask) lowbit (vmask);
 	vmask &= ~index;
 	switch (index) 
         {
@@ -2011,7 +2011,7 @@ ConfigureWindow(pWin, mask, vlist, client)
     tmask = mask & ~ChangeMask;
     while (tmask) 
     {
-	index = (Mask)1 << (ffs(tmask) - 1);
+	index = (Mask)lowbit (tmask);
 	tmask &= ~index;
 	switch (index) 
         {

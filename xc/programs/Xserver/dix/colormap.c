@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: colormap.c,v 1.68 88/03/15 17:03:56 rws Exp $ */
+/* $Header: colormap.c,v 1.69 88/05/26 08:00:30 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -1488,7 +1488,7 @@ AllocCP (pmap, pentFirst, count, Free, planes, contig, pixels, pMask)
         ppix = pixels;
         found = 0;
         entries = pmap->pVisual->ColormapEntries - mask;
-        base = 1 << (ffs(mask) - 1);
+        base = lowbit (mask);
         for (pixel = 0; pixel < entries; pixel++)
 	{
 	    if (pixel & mask)
@@ -1547,7 +1547,7 @@ AllocShared (pmap, ppix, c, r, g, b, rmask, gmask, bmask, ppixFirst)
     for(pptr = ppix, npix = c; --npix >= 0; pptr++)
     {
 	bits = 0;
-	base = 1 << (ffs(rmask) - 1);
+	base = lowbit (rmask);
 	while(1)
 	{
 	    pshared = (SHAREDCOLOR *) xalloc (sizeof(SHAREDCOLOR));
@@ -1565,7 +1565,7 @@ AllocShared (pmap, ppix, c, r, g, b, rmask, gmask, bmask, ppixFirst)
 	}
 
 	bits = 0;
-	base = 1 << (ffs(gmask) - 1);
+	base = lowbit (gmask);
 	while(1)
 	{
 	    pshared = (SHAREDCOLOR *) xalloc (sizeof(SHAREDCOLOR));
@@ -1583,7 +1583,7 @@ AllocShared (pmap, ppix, c, r, g, b, rmask, gmask, bmask, ppixFirst)
 	}
 
 	bits = 0;
-	base = 1 << (ffs(bmask) - 1);
+	base = lowbit (bmask);
 	while(1)
 	{
 	    pshared = (SHAREDCOLOR *) xalloc (sizeof(SHAREDCOLOR));
@@ -1663,7 +1663,7 @@ FreeCo (pmap, client, color, npixIn, ppixIn, mask)
         return (errVal);
     bits = 0;
     zapped = 0;
-    base = 1 << (ffs(mask) - 1);
+    base = lowbit (mask);
 
     switch(color)
     {

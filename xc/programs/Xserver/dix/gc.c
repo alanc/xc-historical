@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: gc.c,v 1.105 88/01/17 13:19:37 rws Exp $ */
+/* $Header: gc.c,v 1.106 88/02/02 11:25:01 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -109,7 +109,7 @@ DoChangeGC(pGC, mask, pval, fPointer)
     maskQ = mask;	/* save these for when we walk the GCque */
     while (mask && !error) 
     {
-	index = (BITS32)1 << (ffs(mask) - 1);
+	index = (BITS32) lowbit (mask);
 	mask &= ~index;
 	pGC->stateChanges |= index;
 	switch (index)
@@ -206,9 +206,9 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		    }
 		    else
 		    {
+			pPixmap->refcnt++;
 			(* pGC->pScreen->DestroyPixmap)(pGC->tile);
 			pGC->tile = pPixmap;
-			pPixmap->refcnt++;
 		    }
 		}
 		else
@@ -233,9 +233,9 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		    }
 		    else
 		    {
+			pPixmap->refcnt++;
 			(* pGC->pScreen->DestroyPixmap)(pGC->stipple);
 			pGC->stipple = pPixmap;
-			pPixmap->refcnt++;
 		    }
 		}
 		else
@@ -265,10 +265,10 @@ DoChangeGC(pGC, mask, pval, fPointer)
 
 		if (pFont)
 		{
+		    pFont->refcnt++;
 		    if (pGC->font)
     		        CloseFont( pGC->font);
 		    pGC->font = pFont;
-		    pGC->font->refcnt++;
 		 }
 		else
 		{
@@ -322,7 +322,7 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		else
 		{
 		    if(fPointer)
-			pPixmap = (PixmapPtr) pval;
+			pPixmap = (PixmapPtr) *pval;
 		    else
 		        pPixmap = (PixmapPtr)LookupID(pid, RT_PIXMAP, RC_CORE);
 		    if (pPixmap)
@@ -518,7 +518,7 @@ CopyGC(pgcSrc, pgcDst, mask)
     maskQ = mask;
     while (mask)
     {
-	index = (BITS32)1 << (ffs(mask) - 1);
+	index = (BITS32) lowbit (mask);
 	mask &= ~index;
 	switch (index)
 	{
