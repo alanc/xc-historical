@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.45 90/01/22 17:37:16 swick Exp $
+ * $XConsortium: init.c,v 2.46 90/06/27 14:24:38 swick Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -410,6 +410,9 @@ char **argv;
 
     XtAppAddActions( XtWidgetToApplicationContext(toplevel),
 		    actions, XtNumber(actions));
+    XtRegisterGrabAction(XmhPopupFolderMenu, True, 
+			 ButtonPressMask | ButtonReleaseMask,
+			 GrabModeAsync, GrabModeAsync);
 
     wm_delete_window = XInternAtom(XtDisplay(toplevel), "WM_DELETE_WINDOW",
 				   False);
