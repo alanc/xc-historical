@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.152 91/07/19 10:55:51 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.153 91/07/21 00:08:41 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -174,8 +174,15 @@ _XEventsQueued (dpy, mode)
 	    }
 	}
 #endif /* XCONN_CHECK_FREQ */
-	if ((len = pend) < SIZEOF(xReply))
+	if (!(len = pend))
 	    return(dpy->qlen);	/* _XFlush can enqueue events */
+      /* Force a read if there is not enough data.  Otherwise,
+       * a select() loop at a higher-level will spin undesirably,
+       * and we've seen at least one OS that appears to not update
+       * the result from FIONREAD once it has returned nonzero.
+       */
+	if (len < SIZEOF(xReply))
+	    len = SIZEOF(xReply);
 	else if (len > BUFSIZE)
 	    len = BUFSIZE;
 	len /= SIZEOF(xReply);
