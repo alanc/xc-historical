@@ -1,4 +1,4 @@
-/* $XConsortium: error.c,v 1.2 93/09/05 21:08:41 mor Exp $ */
+/* $XConsortium: error.c,v 1.3 93/09/21 14:16:40 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -297,19 +297,20 @@ int	severity;
  */
 
 void
-_IceDefaultErrorHandler (iceConn, offendingMinorOpcode, offendingSequence,
-    errorClass, severity, data)
+_IceDefaultErrorHandler (iceConn, swap,
+    offendingMinorOpcode, offendingSequence, errorClass, severity, values)
 
 IceConn		iceConn;
+Bool		swap;
 int		offendingMinorOpcode;
 unsigned long	offendingSequence;
 int 		errorClass;
 int		severity;
-IcePointer	data;
+IcePointer	values;
 
 {
     char *str;
-    char *pData = (char *) data;
+    char *pData = (char *) values;
 
     switch (offendingMinorOpcode)
     {
@@ -423,19 +424,19 @@ IcePointer	data;
 
         case IceAuthRejected:
 
-	    EXTRACT_XPCS (pData, str);
+	    EXTRACT_XPCS (pData, swap, str);
 	    fprintf (stderr, "Reason : %s\n", str);
             break;
 
         case IceAuthFailed:
 
-	    EXTRACT_XPCS (pData, str);
+	    EXTRACT_XPCS (pData, swap, str);
 	    fprintf (stderr, "Reason : %s\n", str);
             break;
 
         case IceProtocolDuplicate:
 
-	    EXTRACT_XPCS (pData, str);
+	    EXTRACT_XPCS (pData, swap, str);
 	    fprintf (stderr, "Protocol name : %s\n", str);
             break;
 
@@ -446,7 +447,7 @@ IcePointer	data;
 
         case IceUnknownProtocol:
 
-	    EXTRACT_XPCS (pData, str);
+	    EXTRACT_XPCS (pData, swap, str);
 	    fprintf (stderr, "Protocol name : %s\n", str);
             break;
 
