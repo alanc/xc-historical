@@ -1,4 +1,4 @@
-/* $XConsortium: imRm.c,v 1.3 94/03/26 17:00:43 rws Exp $ */
+/* $XConsortium: imRm.c,v 1.4 94/03/26 19:58:43 rws Exp $ */
 /******************************************************************
 
 	  Copyright 1990, 1991, 1992,1993, 1994 by FUJITSU LIMITED
@@ -2885,13 +2885,13 @@ _XimSetICValueData(ic, top, res_list, list_num, values, mode, flag)
 	    }
 
 	    if(mode & XIM_PREEDIT_ATTR) {
-		if (!_XimEncodeLocalPreeditValue(ic, res, p))
+		if (!_XimEncodeLocalPreeditValue(ic, res, (XPointer)p))
 	    	    return False;
     	    } else if(mode & XIM_STATUS_ATTR) {
-		if (!_XimEncodeLocalStatusValue(ic, res, p))
+		if (!_XimEncodeLocalStatusValue(ic, res, (XPointer)p))
 	    	    return False;
     	    } else {
-		if (!_XimEncodeLocalTopValue(ic, res, p, flag))
+		if (!_XimEncodeLocalTopValue(ic, res, (XPointer)p, flag))
 	    	    return False;
     	    }
 	    if(_XimEncodeLocalICAttr(ic, res, top, p, mode) == False) {

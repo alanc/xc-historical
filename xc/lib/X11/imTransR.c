@@ -1,4 +1,4 @@
-/* $XConsortium: imTransR.c,v 1.4 94/02/03 17:49:55 mor Exp $ */
+/* $XConsortium: imTransR.c,v 1.5 94/03/26 17:01:05 rws Exp $ */
 /******************************************************************
 
               Copyright 1992 by Sun Microsystems, Inc.
@@ -116,7 +116,7 @@ _XimReadData(im, len, buf, buf_size)
     if (hold_buf = im->private.proto.hold_data) {
 	data_len = im->private.proto.hold_data_len;
 	if (data_len >= XIM_HEADER_SIZE) {
-	    packet_size = _CheckProtocolData(im, hold_buf, data_len);
+	    packet_size = _CheckProtocolData(im, hold_buf);
 	    if (packet_size > buf_size) {
 		*len = (INT16)packet_size;
 		return XIM_OVERFLOW;
@@ -161,7 +161,7 @@ _XimReadData(im, len, buf, buf_size)
 	    data_len += ret_len;
 	    buf_size -= ret_len;
 	}
-	packet_size = _CheckProtocolData(im, buf, data_len);
+	packet_size = _CheckProtocolData(im, buf);
     }
 
     if (packet_size > buf_size) {

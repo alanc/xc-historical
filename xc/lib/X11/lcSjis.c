@@ -1,4 +1,4 @@
-/* $XConsortium: lcSjis.c,v 1.10 94/02/10 19:36:09 rws Exp $ */
+/* $XConsortium: lcSjis.c,v 1.11 94/03/26 17:01:15 rws Exp $ */
 /****************************************************************
 
         Copyright 1992, 1993 by FUJITSU LIMITED
@@ -416,7 +416,7 @@ sjis_mbtocs(conv, from, from_left, to, to_left, args, num_args)
 	    *dst++ = *src++; 
 	    if (!VALID_MULTIBYTE((Uchar) *(src-1))) /* check 2nd byte */
 		unconv_num++;
-	    sjis_to_jis(dst-2, dst-1);
+	    sjis_to_jis((Uchar *)(dst-2), (Uchar *)(dst-1));
 	} else
 	    return -1;
     }
@@ -431,7 +431,7 @@ sjis_mbtocs(conv, from, from_left, to, to_left, args, num_args)
 	    *dst++ = *src++; 
 	    if (!VALID_MULTIBYTE((Uchar) *(src-1))) /* check 2nd byte */
 		unconv_num++;
-	    sjis_to_jis(dst-2, dst-1);
+	    sjis_to_jis((Uchar *)(dst-2), (Uchar *)(dst-1));
 	} else
 	    return -1;
     }
@@ -680,7 +680,7 @@ sjis_cstombs(conv, from, from_left, to, to_left, args, num_args)
 		  BIT8ON(*csptr++) : BIT8OFF(*csptr++);
 
 	    if (codeset->length == 2)
-		jis_to_sjis(bufptr-2, bufptr-1);
+		jis_to_sjis((Uchar *)(bufptr-2), (Uchar *)(bufptr-1));
 	}
     }
 
@@ -971,7 +971,7 @@ sjis_mbstocts(conv, from, from_left, to, to_left, args, num_args)
 	} while (--clen); 
 
 	if (charset->length >= 2) {
-	    sjis_to_jis(ctptr-2, ctptr-1);
+	    sjis_to_jis((Uchar *)(ctptr-2), (Uchar *)(ctptr-1));
 	    if (BADCHAR(charset->min_ch, *(ctptr-2)) ||
 		  BADCHAR(charset->min_ch, *(ctptr-1))) {
 		unconv_num++;
@@ -1216,7 +1216,7 @@ sjis_ctstombs(conv, from, from_left, to, to_left, args, num_args)
 	} while (--clen);
 
 	if (length >= 2)
-	    jis_to_sjis(outbufptr-2, outbufptr-1);
+	    jis_to_sjis((Uchar *)(outbufptr-2), (Uchar *)(outbufptr-1));
     }
 
     *to = (XPointer)outbufptr;

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.216 94/03/12 17:55:05 gildea Exp $
+ * $XConsortium: XlibInt.c,v 11.217 94/03/19 19:53:42 gildea Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -2792,7 +2792,7 @@ int _XError (dpy, rep)
 #endif /* XTHREADS */
 	return rtn_val;
     } else {
-	return _XDefaultError(dpy, &event);
+	return _XDefaultError(dpy, (XErrorEvent *)&event);
     }
 }
     

@@ -1,4 +1,4 @@
-/* $XConsortium: imDefIc.c,v 1.5 94/01/20 18:03:56 rws Exp $ */
+/* $XConsortium: imDefIc.c,v 1.6 94/03/26 16:57:41 rws Exp $ */
 /******************************************************************
 
            Copyright 1991, 1992 by Sun Microsystems, Inc.
@@ -1148,7 +1148,7 @@ _XimProtoMbReset(xic)
 	return NULL;
     }
 
-    commit = _XimCommitedMbString(im, ic, &buf_s[2]);
+    commit = _XimCommitedMbString(im, ic, (XPointer)&buf_s[2]);
 
     if(reply != preply)
     	Xfree(preply);
@@ -1272,7 +1272,7 @@ _XimProtoWcReset(xic)
 	return NULL;
     }
 
-    commit = _XimCommitedWcString(im, ic, &buf_s[2]);
+    commit = _XimCommitedWcString(im, ic, (XPointer)&buf_s[2]);
 
     Xfree(preply);
     return commit;
