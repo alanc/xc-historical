@@ -1,4 +1,4 @@
-/* $XConsortium: math.c,v 1.14 91/02/16 19:36:41 converse Exp $ 
+/* $XConsortium: math.c,v 1.15 91/02/16 21:37:20 converse Exp $ 
  *
  *  math.c  -  mathematics functions for a hand calculator under X
  *
@@ -103,7 +103,8 @@ static int memop  =kCLR;
 static int exponent=0;
 static double acc =0.0;
 static double dnum=0.0;
-static double mem[10] = { 0.0 };
+#define XCALC_MEMORY 10
+static double mem[XCALC_MEMORY] = { 0.0 };
 
 /*
  * The following is to deal with the unfortunate assumption that if errno
@@ -808,10 +809,14 @@ oneop(keynum)
 offf()
 {
   /* full reset */
+  int i;
   ResetCalc();
   entered=clrdisp=1;
   lift_enabled = 0;
   dnum=mem[0]=0.0;
+  if (rpn)
+      for (i=1; i < XCALC_MEMORY; i++)
+	  mem[i]=0.0;
   accset=exponent=Dpoint=0;
   DrawDisplay();
 }
