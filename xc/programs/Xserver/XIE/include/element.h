@@ -1,4 +1,4 @@
-/* $XConsortium: element.h,v 1.1 93/10/26 10:03:41 rws Exp $ */
+/* $XConsortium: element.h,v 1.2 93/10/31 09:48:53 dpw Exp $ */
 /* module element.h */
 /*****************************************************************************
 				NOTICE
@@ -420,7 +420,7 @@ typedef struct _elutdef {
 typedef struct _ephotodef {
   CARD32	pvtBytes;
   photomapPtr   map;
-  void		*pvtParms;
+  pointer	pvtParms;
 } ePhotoDefRec, *ePhotoDefPtr;
 #endif /* _XIEC_EPHOTO */
 
