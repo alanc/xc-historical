@@ -18,7 +18,7 @@ CDEBUGFLAGS = -g
 INCLUDES = -I. -I../../include -I../../../include
 
 NormalLibraryObjectRule()
-NormalLibraryTarget(cfb,$(OBJS))
+NormalLibraryTarget(mi,$(OBJS))
 
 DependTarget()
 
