@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: register.c,v 1.1 94/02/04 11:13:47 gildea Exp $
  *
  * Copyright 1994 Massachusetts Institute of Technology
  *
@@ -30,8 +30,10 @@
 FontFileRegisterFpeFunctions()
 {
     BitmapRegisterFontFileFunctions ();
+#ifndef CRAY
     SpeedoRegisterFontFileFunctions ();
     Type1RegisterFontFileFunctions();
+#endif
 
     FontFileRegisterLocalFpeFunctions ();
 }
