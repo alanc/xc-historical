@@ -1,7 +1,5 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: Convert.c,v 1.39 90/04/04 11:27:32 swick Exp $";
-/* $oHeader: Convert.c,v 1.4 88/09/01 11:10:44 asente Exp $ */
-#endif /*lint*/
+/* $XConsortium: Convert.c,v 1.40 90/06/04 15:06:37 kit Exp $ */
+
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -84,6 +82,7 @@ void _XtFreeConverterTable(table)
 	for (i = 0; i < CONVERTHASHSIZE; i++) {
 	    for (p = table[i]; p != NULL;) {
 		register ConverterPtr next = p->next;
+		if (p->num_args) XtFree((char*)p->convert_args);
 		XtFree((char*)p);
 		p = next;
 	    }
