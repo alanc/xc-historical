@@ -1,4 +1,4 @@
-/* $XConsortium: ICEmsg.h,v 1.1 94/03/18 16:02:03 mor Exp $ */
+/* $XConsortium: ICEmsg.h,v 1.2 94/03/30 18:07:31 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -85,74 +85,6 @@ extern void _IceErrorBadValue (
     int			/* offset */,
     int			/* length */,
     IcePointer		/* value */
-#endif
-);
-
-extern void _IceErrorBadMajor (
-#if NeedFunctionPrototypes
-    IceConn		/* iceConn */,
-    int			/* offendingMajor */,
-    int			/* offendingMinor */,
-    int			/* severity */
-#endif
-);
-
-extern void _IceErrorNoAuthentication (
-#if NeedFunctionPrototypes
-    IceConn		/* iceConn */,
-    int			/* offendingMinor */
-#endif
-);
-
-extern void _IceErrorNoVersion (
-#if NeedFunctionPrototypes
-    IceConn		/* iceConn */,
-    int			/* offendingMinor */
-#endif
-);
-
-extern void _IceErrorSetupFailed (
-#if NeedFunctionPrototypes
-    IceConn		/* iceConn */,
-    int			/* offendingMinor */,
-    char *		/* reason */
-#endif
-);
-
-extern void _IceErrorAuthenticationRejected (
-#if NeedFunctionPrototypes
-    IceConn		/* iceConn */,
-    int			/* offendingMinor */,
-    char *		/* reason */
-#endif
-);
-
-extern void _IceErrorAuthenticationFailed (
-#if NeedFunctionPrototypes
-    IceConn		/* iceConn */,
-    int			/* offendingMinor */,
-    char *		/* reason */
-#endif
-);
-
-extern void _IceErrorProtocolDuplicate (
-#if NeedFunctionPrototypes
-    IceConn		/* iceConn */,
-    char *		/* protocolName */
-#endif
-);
-
-extern void _IceErrorMajorOpcodeDuplicate (
-#if NeedFunctionPrototypes
-    IceConn		/* iceConn */,
-    int			/* majorOpcode */
-#endif
-);
-
-extern void _IceErrorUnknownProtocol (
-#if NeedFunctionPrototypes
-    IceConn		/* iceConn */,
-    char *		/* protocolName */
 #endif
 );
 
