@@ -277,14 +277,16 @@
 (defun gcontext-clip-mask (gcontext)
   (declare (type gcontext gcontext))
   (declare (values (or null (member :none) pixmap rect-seq)
-		  (or null (member :unsorted :y-sorted :yx-sorted :yx-banded))))
+		   (or null (member :unsorted :y-sorted :yx-sorted :yx-banded))))
   (access-gcontext (gcontext local-state)
     (compiler-let ((*buffer* '(gcontext-display gcontext)))
-      (let ((clip (gcontext-internal-clip local-state)))
-	(values (or (third clip)
-		    (decode-type (or (member :none) pixmap) (second clip)))
-		(decode-type (or null (member :unsorted :y-sorted :yx-sorted :yx-banded))
-			     (first clip)))))))
+      (multiple-value-bind (clip clip-mask)
+	  (without-interrupts
+	    (values (gcontext-internal-clip local-state)
+		    (gcontext-internal-clip-mask local-state)))
+	(values
+	  (or (second clip-mask) (decode-type (or (member :none) pixmap) (first clip-mask)))
+	  (decode-type (or null (member :unsorted :y-sorted :yx-sorted :yx-banded)) clip))))))
 
 (defsetf gcontext-clip-mask (gcontext &optional ordering) (clip-mask)
   ;; A bit strange, but retains setf form.
@@ -297,46 +299,49 @@
 	   (type (or null (member :unsorted :y-sorted :yx-sorted :yx-banded)) ordering)
 	   (type (or (member :none) pixmap rect-seq) clip-mask))
   (unless clip-mask (x-type-error clip-mask '(or (member :none) pixmap rect-seq)))
-  (modify-gcontext (gcontext local-state)
-    ;; need single setf for atomicity
-    (setf (gcontext-internal-clip local-state)
-	  (cons (encode-type (or null (member :unsorted :y-sorted :yx-sorted :yx-banded))
-			     ordering)
-		(typecase clip-mask
-		  (pixmap
-		   (let ((server-state (gcontext-server-state gcontext)))
-		     ;; write-through clip-mask pixmap, because the
-		     ;; protocol allows the server to copy the pixmap
-		     ;; contents at the time of the store, rather than
-		     ;; continuing to share with the pixmap.
-		     (setf (gcontext-internal-clip-mask server-state) nil))
-		   (list (pixmap-id clip-mask)))
-		  ((member :none) '(0))
-		  (sequence (list nil (copy-seq clip-mask)))
-		  (otherwise (x-type-error clip-mask '(or (member :none) pixmap rect-seq))))))
-    clip-mask))
+  (let ((clip (encode-type (or null (member :unsorted :y-sorted :yx-sorted :yx-banded))
+			   ordering)))
+    (multiple-value-bind (clip-mask decache-p)
+	(typecase clip-mask
+	  (pixmap (values (list (pixmap-id clip-mask)) t))
+	  ((member :none) (values '(0) nil))
+	  (sequence (values (list nil (copy-seq clip-mask)) nil))
+	  (otherwise (x-type-error clip-mask '(or (member :none) pixmap rect-seq))))
+      (modify-gcontext (gcontext local-state)
+	(without-interrupts
+	  (setf (gcontext-internal-clip local-state) clip
+		(gcontext-internal-clip-mask local-state) clip-mask)
+	  (when decache-p
+	    ;; write-through clip-mask pixmap, because the protocol allows the
+	    ;; server to copy the pixmap contents at the time of the store,
+	    ;; rather than continuing to share with the pixmap.
+	    (setf (gcontext-internal-clip-mask (gcontext-server-state gcontext)) nil))))))
+  clip-mask)
 
 (defun gcontext-dashes (gcontext)
   (declare (type gcontext gcontext))
   (declare (values (or null card8 sequence)))
   (access-gcontext (gcontext local-state)
-    (let ((dash (gcontext-internal-dash local-state)))
-      (or (first dash) (second dash)))))
+    (without-interrupts 
+      (or (gcontext-internal-dashes local-state)
+	  (gcontext-internal-dash local-state)))))
 
 (defsetf gcontext-dashes set-gcontext-dashes)
 
 (defun set-gcontext-dashes (gcontext dashes)
   (declare (type gcontext gcontext)
 	   (type (or card8 sequence) dashes))
-  (modify-gcontext (gcontext local-state)
-    ;; need single setf for atomicity
-    (setf (gcontext-internal-dash local-state)
-	  (if (type? dashes 'sequence)
-	      (if (zerop (length dashes))
-		  (x-type-error dashes '(or card8 sequence) "non-empty sequence")
-		(list nil (or (copy-seq dashes) (vector))))
-	      (list (encode-type card8 dashes))))
-    dashes))
+  (multiple-value-bind (dashes dash)
+      (if (type? dashes 'sequence)
+	  (if (zerop (length dashes))
+	      (x-type-error dashes '(or card8 sequence) "non-empty sequence")
+	    (values nil (or (copy-seq dashes) (vector))))
+	(values (encode-type card8 dashes) nil))
+    (modify-gcontext (gcontext local-state)
+      (without-interrupts
+	(setf (gcontext-internal-dashes local-state) dashes
+	      (gcontext-internal-dash local-state) dash))))
+  dashes)
 
 (defun gcontext-font (gcontext &optional metrics-p)
   ;; If the stored font is known, it is returned.  If it is not known and
@@ -362,39 +367,26 @@
 (defun set-gcontext-font (gcontext font)
   (declare (type gcontext gcontext)
 	   (type fontable font))
-    (let ((font-object (if (font-p font) font (open-font (gcontext-display gcontext) font))))
-      ;; XXX need to check font has id (and name?)
-      (modify-gcontext (gcontext local-state)
-	(setf (gcontext-internal-font-obj local-state) font-object)
-	font)))
+  (let* ((font-object (if (font-p font) font (open-font (gcontext-display gcontext) font)))
+	 (font (and font-object (font-id font-object))))
+    ;; XXX need to check font has id (and name?)
+    (modify-gcontext (gcontext local-state)
+      (without-interrupts
+	(setf (gcontext-internal-font-obj local-state) font-object
+	      (gcontext-internal-font local-state) font))))
+  font)
 
 (defun force-gcontext-changes-internal (gcontext)
   ;; Force any delayed changes.
   (declare (type gcontext gcontext))
   (let ((display (gcontext-display gcontext))
 	(server-state (gcontext-server-state gcontext))
-	(local-state (gcontext-local-state gcontext))
-	local-clip local-dash)
+	(local-state (gcontext-local-state gcontext)))
     (declare (type display display)
 	     (type gcontext-state server-state local-state))
     ;; Update server when timestamps don't match
     (unless (= (the fixnum (gcontext-internal-timestamp local-state))
 	       (the fixnum (gcontext-internal-timestamp server-state)))
-      ;; first unpack a few things
-      (setq local-clip (gcontext-internal-clip local-state))
-      (if (setf (gcontext-internal-clip-mask local-state) (second local-clip))
-	  (setf (gcontext-internal-clip server-state) local-clip)
-	(setf (gcontext-internal-clip-mask server-state) nil))
-      (setq local-dash (gcontext-internal-dash local-state))
-      (if (setf (gcontext-internal-dashes local-state) (first local-dash))
-	  (setf (gcontext-internal-dash server-state) local-dash)
-	(setf (gcontext-internal-dashes server-state) nil))
-      (let ((local-font (gcontext-internal-font-obj local-state)))
-	(if local-font
-	    (progn
-	      (setf (gcontext-internal-font local-state) (font-id local-font))
-	      (setf (gcontext-internal-font-obj server-state) local-font))
-	  (setf (gcontext-internal-font server-state) nil)))
 	  
       ;; Because there is no locking on the local state we have to
       ;; assume that state will change and set timestamps up front,
@@ -443,33 +435,42 @@
 	  ((endp extension))
 	(unless (eql (svref server-state i)
 		     (setq local (svref local-state i)))
-	  (funcall (gcontext-extension-set-function (car extension))
-		   gcontext local)
-	  (setf (svref server-state i) local)))
+	  (setf (svref server-state i) local)
+	  (funcall (gcontext-extension-set-function (car extension)) gcontext local)))
 
       ;; Update clipping rectangles
-      (unless (equalp (third local-clip)
-		      (third (gcontext-internal-clip server-state)))
-	(setf (gcontext-internal-clip server-state) local-clip)
-	(with-buffer-request (display *x-setcliprectangles*)
-	  (data (first local-clip))
-	  (gcontext gcontext)
-	  ;; XXX treat nil correctly
-	  (card16 (or (gcontext-internal-clip-x local-state) 0)
-		  (or (gcontext-internal-clip-y local-state) 0))
-	  ;; XXX this has both int16 and card16 values
-	  ((sequence :format int16) (third local-clip))))
+      (multiple-value-bind (local-clip local-clip-mask)
+	  (without-interrupts
+	    (values (gcontext-internal-clip local-state)
+		    (gcontext-internal-clip-mask local-state)))
+	(unless (equalp (second local-clip-mask)
+			(second (gcontext-internal-clip-mask server-state)))
+	  (setf (gcontext-internal-clip server-state) local-clip
+		(gcontext-internal-clip-mask server-state) local-clip-mask)
+	  (with-buffer-request (display *x-setcliprectangles*)
+	    (data local-clip)
+	    (gcontext gcontext)
+	    ;; XXX treat nil correctly
+	    (card16 (or (gcontext-internal-clip-x local-state) 0)
+		    (or (gcontext-internal-clip-y local-state) 0))
+	    ;; XXX this has both int16 and card16 values
+	    ((sequence :format int16) (second local-clip-mask)))))
 
       ;; Update dashes
-      (unless (equalp (second local-dash)
-		      (second (gcontext-internal-dash server-state)))
-	(setf (gcontext-internal-dash server-state) local-dash)
-	(with-buffer-request (display *x-setdashes*)
-	  (gcontext gcontext)
-	  ;; XXX treat nil correctly
-	  (card16 (or (gcontext-internal-dash-offset local-state) 0)
-		  (length (second local-dash)))
-	  ((sequence :format card8) (second local-dash))))))) 
+      (multiple-value-bind (local-dash local-dashes)
+	  (without-interrupts
+	    (values (gcontext-internal-dash local-state)
+		    (gcontext-internal-dashes local-state)))
+	(unless (equalp local-dashes 
+			(gcontext-internal-dashes server-state))
+	  (setf (gcontext-internal-dash server-state) local-dash
+		(gcontext-internal-dashes server-state) local-dashes)
+	  (with-buffer-request (display *x-setdashes*)
+	    (gcontext gcontext)
+	    ;; XXX treat nil correctly
+	    (card16 (or (gcontext-internal-dash-offset local-state) 0)
+		    (length local-dashes))
+	    ((sequence :format card8) local-dashes))))))) 
 
 (defun force-gcontext-changes (gcontext)
   ;; Force any delayed changes.
@@ -757,19 +758,6 @@
     (setf (gcontext-internal-timestamp server-state) 1)
     (setf (gcontext-internal-timestamp local-state) 1)
     
-    (let ((local-clip (gcontext-internal-clip local-state)))
-      (if (setf (gcontext-internal-clip-mask local-state) (second local-clip))
-	  (setf (gcontext-internal-clip server-state) local-clip)
-	  (setf (gcontext-internal-timestamp local-state) 0)))
-    (let ((local-dash (gcontext-internal-dash local-state)))
-      (if (setf (gcontext-internal-dashes local-state) (first local-dash))
-	  (setf (gcontext-internal-dash server-state) local-dash)
-	  (setf (gcontext-internal-timestamp local-state) 0)))
-    (let ((local-font (gcontext-internal-font-obj local-state)))
-      (when local-font
-	(setf (gcontext-internal-font local-state) (font-id local-font))
-	(setf (gcontext-internal-font-obj server-state) local-font)))
-
     (with-buffer-request (display *x-creategc*)
       (resource-id gcontextid)
       (drawable drawable)
