@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.66 89/01/27 14:33:45 jim Exp $";
+static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.67 89/01/30 15:01:40 swick Exp $";
 /* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
 #endif lint
 /*LINTLIBRARY*/
@@ -1114,7 +1114,7 @@ w = w->core.parent;
 	 unbound != 0 && actionList != NULL;
 	 actionList = actionList->next) {
 	unbound = BindAccActions(widget,stateTable, actionList->table,
-                                index, (XtBoundAccActions) accBindings);
+                                index, accTemp);
     }
 /*    if (unbound != 0) ReportUnboundActions(tm, stateTable);*/
     (*accBindings) = accTemp;
