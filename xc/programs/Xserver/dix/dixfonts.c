@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.45 94/02/20 10:39:37 dpw Exp $ */
+/* $XConsortium: dixfonts.c,v 1.46 94/03/08 17:45:05 gildea Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -139,7 +139,7 @@ SetDefaultFont(defaultfontname)
 
 /*
  * note that the font wakeup queue is not refcounted.  this is because
- * an fpe needs to be added when its inited, and removed when its finally
+ * an fpe needs to be added when it's inited, and removed when it's finally
  * freed, in order to handle any data that isn't requested, like FS events.
  *
  * since the only thing that should call these routines is the renderer's
@@ -1620,11 +1620,15 @@ SetFontPathElements(npaths, paths, bad)
 	*bad = 0;
 	return BadAlloc;
     }
+    for (i = 0; i < num_fpe_types; i++) {
+	if (fpe_functions[i].set_path_hook)
+	    (*fpe_functions[i].set_path_hook) ();
+    }
     for (i = 0; i < npaths; i++) {
 	len = (unsigned int) (*cp++);
 
 	if (len) {
-	    /* if its already in our active list, just reset it */
+	    /* if it's already in our active list, just reset it */
 	    /*
 	     * note that this can miss FPE's in limbo -- may be worth catching
 	     * them, though it'd muck up refcounting
@@ -1639,7 +1643,7 @@ SetFontPathElements(npaths, paths, bad)
 		    cp += len;
 		    continue;
 		}
-		/* if error or can't do it, act like its a new one */
+		/* if error or can't do it, act like it's a new one */
 	    }
 	    fpe = (FontPathElementPtr) xalloc(sizeof(FontPathElementRec));
 	    if (!fpe) {
@@ -1665,7 +1669,7 @@ SetFontPathElements(npaths, paths, bad)
 		err = BadValue;
 		goto bail;
 	    }
-	    err = (*fpe_functions[fpe->type].init_fpe) (fpe, FontFormat);
+	    err = (*fpe_functions[fpe->type].init_fpe) (fpe);
 	    if (err != Successful) {
 		xfree(fpe->name);
 		xfree(fpe);
@@ -1895,7 +1899,8 @@ int
 RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
 	   open_func, close_func, list_func, start_lfwi_func, next_lfwi_func,
 		     wakeup_func, client_died, load_glyphs,
-		     start_list_alias_func, next_list_alias_func)
+		     start_list_alias_func, next_list_alias_func,
+		     set_path_func)
     Bool        (*name_func) ();
     int         (*init_func) ();
     int         (*free_func) ();
@@ -1910,6 +1915,7 @@ RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
     int		(*load_glyphs) ();
     int		(*start_list_alias_func) ();
     int		(*next_list_alias_func) ();
+    void	(*set_path_func) ();
 {
     FPEFunctions *new;
 
@@ -1938,6 +1944,7 @@ RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
 	start_list_alias_func;
     fpe_functions[num_fpe_types].list_next_font_or_alias =
 	next_list_alias_func;
+    fpe_functions[num_fpe_types].set_path_hook = set_path_func;
 
     return num_fpe_types++;
 }
