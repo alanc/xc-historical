@@ -41,7 +41,8 @@ SOFTWARE.
 extern cfbXRotatePixmap();
 extern cfbYRotatePixmap();
 #endif
-extern void mfbPushPixels();
+extern void mfbPushPixels(), mfbDestroyClip(), mfbChangeClip(), mfbCopyClip();
+extern void mfbCopyGCDest(), mfbDestroyGC(), mfbValidateGC();
 
 Bool
 cfbCreateGC(pGC)
@@ -210,7 +211,7 @@ cfbDestroyGC(pGC, pQ)
 void
 cfbValidateGC(pGC, pQ, changes, pDrawable)
     register GC *pGC;
-    GCInterestPtr	*pQ;
+    GCInterestPtr	pQ;
     Mask changes;
     DrawablePtr pDrawable;
 {
@@ -699,7 +700,9 @@ cfbChangeClip(pGC, type, pvalue, nrects)
     }
     else if (type != CT_NONE)
     {
-	pGC->clientClip = (pointer) miRectsToRegion(pGC, nrects, pvalue, type);
+	pGC->clientClip = (pointer) miRectsToRegion(pGC, nrects,
+						    (xRectangle *)pvalue,
+						    type);
 	xfree(pvalue);
     }
     pGC->clientClipType = (type != CT_NONE && pGC->clientClip) ? CT_REGION :
@@ -752,7 +755,7 @@ cfbCopyGCDest (pGC, pQ, changes, pGCSrc)
 
     switch (pGC->depth) {
     case 1:
-	mfbCopyGCDest(pGC);
+	mfbCopyGCDest(pGC, pQ, changes, pGCSrc);
 	return;
     case PSZ:
 	break;

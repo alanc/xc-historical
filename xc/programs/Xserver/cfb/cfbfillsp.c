@@ -61,6 +61,8 @@ SOFTWARE.
 #include "cfb.h"
 #include "cfbmskbits.h"
 
+extern void mfbInvertSolidFS(), mfbBlackSolidFS(), mfbWhiteSolidFS();
+
 /* scanline filling for color frame buffer
    written by drewry, oct 1986 modified by smarks
    changes for compatibility with Little-endian systems Jul 1987; MIT:yba.

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miglblt.c,v 1.18 88/09/06 14:49:13 jim Exp $ */
+/* $XConsortium: miglblt.c,v 1.19 89/03/22 10:50:32 rws Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -35,6 +35,7 @@ SOFTWARE.
 #include	"pixmap.h"
 #include	"servermd.h"
 
+extern void QueryGlyphExtents();
 
 /*
     machine-independent glyph blt.
@@ -134,7 +135,7 @@ miPolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 
 
 	if ((pGCtmp->serialNumber) != (pPixmap->drawable.serialNumber))
-	    ValidateGC(pPixmap, pGCtmp);
+	    ValidateGC((DrawablePtr)pPixmap, pGCtmp);
 	(*pGCtmp->PutImage)(pPixmap, pGCtmp, pPixmap->drawable.depth,
 			    0, 0, gWidth, gHeight, 
 			    0, XYBitmap, pbits);
@@ -168,7 +169,7 @@ miImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     unsigned long	oldFG;
     xRectangle backrect;
 
-    QueryGlyphExtents(pGC->font, ppci, nglyph, &info);
+    QueryGlyphExtents(pGC->font, ppci, (unsigned long)nglyph, &info);
 
     backrect.x = x;
     backrect.y = y - pGC->font->pFI->fontAscent;

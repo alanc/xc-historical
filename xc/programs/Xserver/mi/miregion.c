@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miregion.c,v 1.38 88/10/03 14:58:06 jim Exp $ */
+/* $XConsortium: miregion.c,v 1.39 89/03/22 10:51:02 rws Exp $ */
 
 #include "miscstruct.h"
 #include "regionstr.h"
@@ -155,7 +155,7 @@ miRegionCopy(dstrgn, rgn)
         dstrgn->extents.y2 = rgn->extents.y2;
 
 	bcopy((char *)rgn->rects, (char *)dstrgn->rects,
-	      rgn->numRects * sizeof(BOX));   
+	      (int)(rgn->numRects * sizeof(BOX)));
     }
 }
 

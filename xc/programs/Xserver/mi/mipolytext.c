@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ************************************************************************/
-/* $XConsortium: mipolytext.c,v 1.12 88/09/06 14:50:18 jim Exp $ */
+/* $XConsortium: mipolytext.c,v 1.13 88/10/25 13:44:53 keith Exp $ */
 /*
  * mipolytext.c - text routines
  *
@@ -62,11 +62,13 @@ miPolyText(pDraw, pGC, x, y, count, chars, fontEncoding)
     FontEncoding fontEncoding;
 {
     CharInfoPtr *charinfo;
-    unsigned int n, w;
+    unsigned long n;
+    unsigned int w;
 
     if(!(charinfo = (CharInfoPtr *)ALLOCATE_LOCAL(count*sizeof(CharInfoPtr ))))
 	return x ;
-    GetGlyphs(pGC->font, count, chars, fontEncoding, &n, charinfo);
+    GetGlyphs(pGC->font, (unsigned long)count, (unsigned char *)chars,
+	      fontEncoding, &n, charinfo);
     w = miWidth(n, charinfo);
     if (n != 0)
         (*pGC->PolyGlyphBlt)(
@@ -114,13 +116,14 @@ miImageText(pDraw, pGC, x, y, count, chars, fontEncoding)
     FontEncoding fontEncoding;
 {
     CharInfoPtr *charinfo;
-    unsigned int n;
+    unsigned long n;
     FontPtr font = pGC->font;
     unsigned int w;
 
     if(!(charinfo = (CharInfoPtr *)ALLOCATE_LOCAL(count*sizeof(CharInfoPtr))))
 	return x;
-    GetGlyphs(font, count, chars, fontEncoding, &n, charinfo);
+    GetGlyphs(font, (unsigned long)count, (unsigned char *)chars,
+	      fontEncoding, &n, charinfo);
     w = miWidth(n, charinfo);
     if (n !=0 )
         (*pGC->ImageGlyphBlt)(pDraw, pGC, x, y, n, charinfo, font->pGlyphs);

@@ -212,8 +212,8 @@ int dstx, dsty;
     if (((cfbPrivGC *)(pGC->devPriv))->fExpose)
 	prgnExposed = miHandleExposures(pSrcDrawable, pDstDrawable, pGC,
 			  origSource.x, origSource.y,
-			  origSource.width, origSource.height,
-			  origDest.x, origDest.y, 0);
+			  (int)origSource.width, (int)origSource.height,
+			  origDest.x, origDest.y, (unsigned long)0);
 
     (*pGC->pScreen->RegionDestroy)(prgnDst);
     if (realSrcClip)

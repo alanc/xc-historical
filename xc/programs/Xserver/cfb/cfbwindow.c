@@ -29,6 +29,8 @@ SOFTWARE.
 #include "mistruct.h"
 #include "regionstr.h"
 
+extern void miInitBackingStore(), miFreeBackingStore();
+
 extern WindowPtr *WindowTable;
 
 Bool

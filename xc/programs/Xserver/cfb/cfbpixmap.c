@@ -35,6 +35,8 @@ SOFTWARE.
 #include "cfb.h"
 #include "mi.h"
 
+extern void cfbXRotateBitmap();
+
 #if (BITMAP_BIT_ORDER == MSBFirst)
 static int masktab[32] = 
     {
@@ -179,7 +181,7 @@ cfbCopyPixmap(pSrc)
     pDst->refcnt = 1;
 
     size = pDst->height * pDst->devKind;
-    pDstPriv = (int *) Xalloc(size);
+    pDstPriv = (int *) xalloc(size);
     if (!pDstPriv)
     {
 	xfree(pDst);

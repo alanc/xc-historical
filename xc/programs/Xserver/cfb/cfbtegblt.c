@@ -1,4 +1,4 @@
-/* $XConsortium: cfbtegblt.c,v 1.2 88/09/06 15:02:48 jim Exp $ */
+/* $XConsortium: cfbtegblt.c,v 1.3 89/03/21 11:41:38 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -34,6 +34,8 @@ SOFTWARE.
 #include	"regionstr.h"
 #include	"cfb.h"
 #include	"cfbmskbits.h"
+
+extern void miImageGlyphBlt();
 
 /*
     this works for fonts with glyphs <= 32 bits wide.

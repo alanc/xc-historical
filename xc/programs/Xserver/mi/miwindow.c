@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miwindow.c,v 1.16 88/07/20 16:30:54 keith Exp $ */
+/* $XConsortium: miwindow.c,v 1.17 88/09/06 14:49:38 jim Exp $ */
 #include "X.h"
 #include "miscstruct.h"
 #include "region.h"
@@ -30,6 +30,7 @@ SOFTWARE.
 #include "scrnintstr.h"
 #include "pixmapstr.h"
 
+extern void HandleExposures();
 /* 
  * miwindow.c : machine independent window routines 
  *  miClearToBackground

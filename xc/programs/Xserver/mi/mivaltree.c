@@ -33,7 +33,7 @@
 
 #ifndef lint
 static char rcsid[] =
-"$XConsortium: mivaltree.c,v 1.46 88/10/04 11:49:49 keith Exp $ SPRITE (Berkeley)";
+"$XConsortium: mivaltree.c,v 1.48 89/03/18 12:55:44 keith Exp $ SPRITE (Berkeley)";
 #endif lint
 
 #include    "X.h"
@@ -41,6 +41,8 @@ static char rcsid[] =
 #include    "windowstr.h"
 #include    "mi.h"
 #include    "region.h"
+
+extern void SendVisibilityNotify();
 
 static RegionPtr	exposed = NullRegion;
 

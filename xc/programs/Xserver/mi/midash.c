@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: midash.c,v 1.10 88/09/06 14:49:39 jim Exp $ */
+/* $XConsortium: midash.c,v 1.11 89/03/22 10:50:12 rws Exp $ */
 #include "miscstruct.h"
 #include "mistruct.h"
 #include "mifpoly.h"
@@ -234,7 +234,7 @@ int *pnsegMax;			/* size (in segments) of list so far */
 	miDashPtr newppseg;
 
 	*pnsegMax += NSEGDELTA;
-	newppseg = (miDashPtr)Xrealloc(*ppseg,
+	newppseg = (miDashPtr)xrealloc(*ppseg,
 				       (*pnsegMax)*sizeof(miDashRec));
 	if (!newppseg)
 	{

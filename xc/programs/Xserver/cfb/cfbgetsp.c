@@ -36,6 +36,8 @@ SOFTWARE.
 #include "cfb.h"
 #include "cfbmskbits.h"
 
+extern void miBSGetSpans();
+
 /* GetSpans -- for each span, gets bits from drawable starting at ppt[i]
  * and continuing for pwidth[i] bits
  * Each scanline returned will be server scanline padded, i.e., it will come
@@ -106,7 +108,7 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
 	psrcBase = (unsigned int *)(((PixmapPtr)pDrawable)->devPrivate);
 	widthSrc = (int)(((PixmapPtr)pDrawable)->devKind);
     }
-    pdstStart = (unsigned int *)Xalloc(nspans * PixmapBytePad(wMax, PSZ));
+    pdstStart = (unsigned int *)xalloc(nspans * PixmapBytePad(wMax, PSZ));
     if (!pdstStart)
     {
 	DEALLOCATE_LOCAL(pwidthPadded);

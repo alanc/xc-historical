@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miexpose.c,v 1.38 89/03/18 16:25:36 rws Exp $ */
+/* $XConsortium: miexpose.c,v 1.39 89/03/22 10:50:17 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -311,7 +311,7 @@ miSendGraphicsExpose (client, pRgn, drawable, major, minor)
 	    pe->u.graphicsExposure.minorEvent = minor;
 	}
 	TryClientEvents(client, pEvent, (int)pRgn->numRects,
-			    0, NoEventMask, NullGrab);
+			    (Mask)0, NoEventMask, NullGrab);
 	DEALLOCATE_LOCAL(pEvent);
     }
     else
@@ -322,7 +322,7 @@ miSendGraphicsExpose (client, pRgn, drawable, major, minor)
 	event.u.noExposure.majorEvent = major;
 	event.u.noExposure.minorEvent = minor;
 	TryClientEvents(client, &event, 1,
-	    0, NoEventMask, NullGrab);
+	    (Mask)0, NoEventMask, NullGrab);
     }
 }
 
@@ -440,7 +440,7 @@ miWindowExposures(pWin)
 		pe->u.expose.height = pBox->y2 - pBox->y1;
 		pe->u.expose.count = (exposures->numRects - i);
 	    }
-	    DeliverEvents(pWin, pEvent, exposures->numRects, NullWindow);
+	    DeliverEvents(pWin, pEvent, (int)exposures->numRects, NullWindow);
 	    DEALLOCATE_LOCAL(pEvent);
 	    if (exposures != prgn)
 	        (* pWin->drawable.pScreen->RegionDestroy) (exposures);
@@ -488,7 +488,7 @@ GC id;
 
     if (screenContext[i = pGC->pScreen->myNum] == pGC)
 	screenContext[i] = (GCPtr)NULL;
-    FreeGC (pGC);
+    FreeGC (pGC, id);
 }
 
 
@@ -615,7 +615,8 @@ int what;
 	 */
 	if (screenContext[i] == (GCPtr)NULL)
 	{
-	    screenContext[i] = CreateGC(pWin, (BITS32) 0, (XID *) 0, &status);
+	    screenContext[i] = CreateGC((DrawablePtr)pWin, (BITS32) 0,
+					(XID *)NULL, &status);
 	    if (!screenContext[i])
 		return;
 	    if (!AddResource(FakeClientID(0), RT_GC, (pointer)screenContext[i],
@@ -695,7 +696,7 @@ int what;
         DoChangeGC(pGC, gcmask, gcval, 1);
 
     if (pWin->drawable.serialNumber != pGC->serialNumber)
-	ValidateGC(pWin, pGC);
+	ValidateGC((DrawablePtr)pWin, pGC);
 
     pbox = prgn->rects;
     for (i= 0; i < prgn->numRects; i++, pbox++, prect++)

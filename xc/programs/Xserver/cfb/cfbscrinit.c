@@ -172,7 +172,7 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpi)
 	visuals[i].vid = FakeClientID(0);
 	visuals[i].screen = index;
 	if (!AddResource(visuals[i].vid, RT_VISUALID, (pointer)&visuals[i],
-			 NoopDDA, RC_CORE))
+			 (int(*)())NoopDDA, RC_CORE))
 	{
 	    while (--i >= 0)
 		FreeResource(visuals[i].vid, RC_NONE);
