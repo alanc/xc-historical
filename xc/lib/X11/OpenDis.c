@@ -1,6 +1,6 @@
 #include "copyright.h"
 #ifndef lint
-static char *rcsid_xopendisplay_c = "$Header: XOpenDis.c,v 11.64 88/08/24 21:18:26 jim Exp $";
+static char *rcsid_xopendisplay_c = "$Header: XOpenDis.c,v 11.65 88/08/25 14:35:23 jim Exp $";
 #endif
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 
@@ -392,13 +392,29 @@ Display *XOpenDisplay (display)
 	_XHeadOfDisplayList = dpy;
 
 /*
- * get pseudoroot support
+ *				 W A R N I N G
+ *
+ * This is experimental code for implementing pseudo-root windows as specified
+ * by the Inter-Client Communications Conventions Manual.  The structures that
+ * it provides should be considered private to the MIT implementation of Xlib
+ * and are SUBJECT TO CHANGE WITHOUT NOTICE.  They should not be incorporated
+ * into any toolkits or applications.  When they change, no effort will be
+ * made to provide backwards compatibility.
+ *
  */
 	if (prop_name[0] != '\0') {
 	    extern Status _XGetPseudoRoot();
 
-	    if (!_XGetPseudoRoot (dpy, prop_name)) {	/* bad property name */
-		_XDisconectDisplay (dpy);
+	    /*
+	     * If a bad property name is specified we want to fail so that
+	     * the application doesn't get started up in the original root
+	     * or, worse yet, in a messed up one.  Again, the interfaces to
+	     * the pseudo root code are to be considered private to this 
+	     * implementation of Xlib and should not be used in any toolkits
+	     * or applications.
+	     */
+	    if (!_XGetPseudoRoot (dpy, prop_name)) {
+		_XDisconnectDisplay (dpy);
 		_XFreeDisplayStructure (dpy);
 		errno = EINVAL;
 		UnlockMutex(&lock);
@@ -409,7 +425,7 @@ Display *XOpenDisplay (display)
 /*
  * and done mucking with the display
  */
-	UnlockDisplay(dpy);
+	UnlockDisplay(dpy);		/* didn't exist, so didn't lock */
 	UnlockMutex(&lock);
 
 /*
