@@ -1,5 +1,5 @@
 /*
- * $Header: ViewportP.h,v 1.2 88/01/28 09:32:48 swick Exp $
+ * $Header: ViewportP.h,v 1.3 88/02/14 14:04:58 rws Exp $
  * Private declarations for ViewportWidgetClass
  */
 
@@ -7,7 +7,7 @@
 #define _ViewportP_h
 
 #include <X11/Viewport.h>
-#include <X11FormP.h>
+#include <X11/FormP.h>
 
 typedef struct {int empty;} ViewportClassPart;
 
