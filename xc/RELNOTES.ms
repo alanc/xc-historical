@@ -1,4 +1,4 @@
-.\" $XConsortium: RELNOTES.ms,v 1.4 94/04/21 18:00:41 rws Exp $
+.\" $XConsortium: RELNOTES.ms,v 1.5 94/05/14 16:39:36 gildea Exp $
 .\" X11R6 Release Notes.  Use troff -ms macros
 .\"
 .ie t \{
@@ -37,7 +37,7 @@
 
 X Consortium
 .sp 6
-May 15, 1994
+May 16, 1994
 .LP
 .bp
 .sp 8
@@ -133,8 +133,6 @@ these Release Notes.
 This is the 6th release of X Window System software from the X Consortium.
 X is a network-transparent window system which runs
 on a wide range of computing and graphics machines.
-X supports overlapping hierarchical subwindows and text and
-graphics operations, on both monochrome and color displays.
 .LP
 The X Consortium is an independent, not-for-profit corporation,
 the successor to the MIT X Consortium, which was part of the MIT
@@ -1504,7 +1502,8 @@ Sample Implementation.  Most notably Hidden Line, Hidden Surface Removal is
 not implemented.  This is a result of both architectural decisions and the
 fact that it surely would have been replaced by vendors with proprietary
 code.  A contributed implementation which supports some of the HLHSR
-functionality utilizing a Z buffer based technique is in contrib.
+functionality utilizing a Z buffer based technique is available for ftp
+from ftp.x.org in the directory contrib/PEX_HLHSR.
 .LP
 This release does not support monochrome displays, though it does support 8
 bit and 24 bit color. 
