@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dixstruct.h,v 1.20 93/09/05 10:51:41 rws Exp $ */
+/* $XConsortium: dixstruct.h,v 1.21 93/09/18 13:46:43 dpw Exp $ */
 
 #ifndef DIXSTRUCT_H
 #define DIXSTRUCT_H
@@ -32,7 +32,7 @@ SOFTWARE.
 #include "cursor.h"
 #include "gc.h"
 #include "pixmap.h"
-#include "X11/Xmd.h"
+#include <X11/Xmd.h>
 
 /*
  * 	direct-mapped hash table, used by resource manager to store
@@ -40,8 +40,8 @@ SOFTWARE.
  */
 
 typedef struct _TimeStamp {
-    unsigned long months;	/* really ~49.7 days */
-    unsigned long milliseconds;
+    CARD32 months;	/* really ~49.7 days */
+    CARD32 milliseconds;
 }           TimeStamp;
 
 #ifdef DEBUG
@@ -79,7 +79,7 @@ typedef struct _Client {
 		ClientPtr /* pClient */
 #endif
 );
-    unsigned long req_len;		/* length of current request */
+    CARD32	req_len;		/* length of current request */
     Bool	big_requests;		/* supports large requests */
     int		priority;
 
