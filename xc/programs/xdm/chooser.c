@@ -1,5 +1,5 @@
 /*
- * $XConsortium: chooser.c,v 1.5 91/02/14 13:40:12 rws Exp $
+ * $XConsortium: chooser.c,v 1.6 91/02/20 19:07:53 converse Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -35,14 +35,14 @@
  *  |             |      Label       |                 |
  *  |             +------------------+                 |
  *  |    +-+--------------+                            |
- *  |    |^| name-1       |           +----------+     |
- *  |    ||| name-2       |           |  Cancel  |     |
- *  |    |v| name-3       |           +----------+     |
+ *  |    |^| name-1       |                            |
+ *  |    ||| name-2       |                            |
+ *  |    |v| name-3       |                            |
  *  |    | | name-4       |                            |
- *  |    | | name-5       |           +----------+     |
- *  |    | | name-6       |           |  Accept  |     |
- *  |    +----------------+           +----------+     |
- *  |                                                  |
+ *  |    | | name-5       |                            |
+ *  |    | | name-6       |                            |
+ *  |    +----------------+                            |
+ *  |    cancel  accept  ping                          |
  *  +--------------------------------------------------+
  */
 
@@ -736,6 +736,10 @@ static XtActionsRec app_actions[] = {
 main (argc, argv)
     char    **argv;
 {
+    Arg		position[3];
+    Dimension   width, height;
+    Position	x, y;
+
     toplevel = XtInitialize (argv[0], "Chooser", options, XtNumber(options), &argc, argv);
 
     XtAddConverter(XtRString, XtRARRAY8, CvtStringToARRAY8, NULL, 0);
@@ -744,15 +748,34 @@ main (argc, argv)
 			       XtNumber (resources), NULL, (Cardinal) 0);
 
     XtAddActions (app_actions, XtNumber (app_actions));
-    paned = XtCreateManagedWidget ("paned", panedWidgetClass, toplevel, 0, 0);
-    label = XtCreateManagedWidget ("label", labelWidgetClass, paned, 0, 0);
-    viewport = XtCreateManagedWidget ("viewport", viewportWidgetClass, paned, 0, 0);
-    list = XtCreateManagedWidget ("list", listWidgetClass, viewport, 0, 0);
-    box = XtCreateManagedWidget ("box", boxWidgetClass, paned, 0, 0);
-    cancel = XtCreateManagedWidget ("cancel", commandWidgetClass, box, 0, 0);
-    acceptit = XtCreateManagedWidget ("accept", commandWidgetClass, box, 0, 0);
-    ping = XtCreateManagedWidget ("ping", commandWidgetClass, box, 0, 0);
+    paned = XtCreateManagedWidget ("paned", panedWidgetClass, toplevel, NULL, 0);
+    label = XtCreateManagedWidget ("label", labelWidgetClass, paned, NULL, 0);
+    viewport = XtCreateManagedWidget ("viewport", viewportWidgetClass, paned, NULL, 0);
+    list = XtCreateManagedWidget ("list", listWidgetClass, viewport, NULL, 0);
+    box = XtCreateManagedWidget ("box", boxWidgetClass, paned, NULL, 0);
+    cancel = XtCreateManagedWidget ("cancel", commandWidgetClass, box, NULL, 0);
+    acceptit = XtCreateManagedWidget ("accept", commandWidgetClass, box, NULL, 0);
+    ping = XtCreateManagedWidget ("ping", commandWidgetClass, box, NULL, 0);
+
+    /*
+     * center ourselves on the screen
+     */
+    XtSetMappedWhenManaged(toplevel, FALSE);
     XtRealizeWidget (toplevel);
+
+    XtSetArg (position[0], XtNwidth, &width);
+    XtSetArg (position[1], XtNheight, &height);
+    XtGetValues (toplevel, position, (Cardinal) 2);
+    x = (Position)(WidthOfScreen (XtScreen (toplevel)) - width) / 2;
+    y = (Position)(HeightOfScreen (XtScreen (toplevel)) - height) / 3;
+    XtSetArg (position[0], XtNx, x);
+    XtSetArg (position[1], XtNy, y);
+    XtSetValues (toplevel, position, (Cardinal) 2);
+
+    /*
+     * Run
+     */
+    XtMapWidget(toplevel);
     InitXDMCP (argv + 1);
     XtMainLoop ();
 }
