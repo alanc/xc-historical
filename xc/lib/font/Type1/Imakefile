@@ -4,8 +4,6 @@
                     -I$(FONTSRC)/include  \
                     -I$(FONTSRC)/../include \
                     -I$(FONTSRC)/../.
-        DEFINES =  -D_POSIX_SOURCE
-      CCOPTIONS =  -qsource 
            SRCS =          \
 		arith.c         \
 		curves.c        \
