@@ -1,5 +1,5 @@
 /*
-* $Header: Shell.h,v 1.10 87/10/09 13:11:49 chow BL5 $
+* $Header: Shell.h,v 6.5 88/01/26 15:46:11 asente Exp $
 */
 
 /*
@@ -45,34 +45,16 @@
 #define XtCIconMask	"IconMask"
 #define XtNwindowGroup	"windowGroup"
 #define XtCWindowGroup	"WindowGroup"
-
-#define XtNiconifyPixmap	"iconifyPixmap"
-#define XtCIconifyPixmap	"IconifyPixmap"
-#define XtNiconBox		"iconBox"
-#define XtCIconBox		"IconBox"
-#define XtNiconBoxX		"iconBoxX"
-#define XtCIconBoxX		"IconBoxX"
-#define XtNiconBoxY		"iconBoxY"
-#define XtCIconBoxY		"IconBoxY"
-#define XtNtiled		"tiled"
-#define XtCTiled		"Tiled"
-#define XtNsticky		"sticky"
-#define XtCSticky		"Sticky"
-#define XtNnoIconify		"noIconify"
-#define XtCNoIconify		"NoIconify"
-#define XtNnoLower		"noLower"
-#define XtCNoLower		"NoLower"
-#define XtNnoResize		"noResize"
-#define XtCNoResize		"NoResize"
+ 
 #define XtNsaveUnder		"saveUnder"
 #define XtCSaveUnder		"SaveUnder"
 #define XtNtransient		"transient"
 #define XtCTransient		"Transient"
-#define XtNoverrideRedirect		"overrideRedirect"
-#define XtCOverrideRedirect		"OverrideRedirect"
+#define XtNoverrideRedirect	"overrideRedirect"
+#define XtCOverrideRedirect	"OverrideRedirect"
 
-#define XtNallowshellresize	"allowShellResizeRequest"
-#define XtCAllowshellresize	"AllowShellResizeRequest"
+#define XtNallowShellResize	"allowShellResize"
+#define XtCAllowShellResize	"AllowShellResize"
 #define XtNcreatePopupChildProc	"createPopupChildProc"
 #define XtCCreatePopupChildProc	"CreatePopupChildProc"
 
@@ -91,8 +73,8 @@
 #define XtCInput	"Input"
 #define XtNiconic	"iconic"
 #define XtCIconic	"Iconic"
-#define XtNinitial	"initialstate"
-#define XtCInitial	"InitialState"
+#define XtNinitialState	"initialstate"
+#define XtCInitialState	"InitialState"
 #define XtNgeometry	"geometry"
 #define XtCGeometry	"Geometry"
 #define XtNminWidth	"minWidth"
@@ -107,20 +89,36 @@
 #define XtCWidthInc	"WidthInc"
 #define XtNheightInc	"heightInc"
 #define XtCHeightInc	"HeightInc"
-#define XtNminAspectDenom	"minAspectDenom"
-#define XtCMinAspectDenom	"MinAspectDenom"
-#define XtNmaxAspectDenom	"maxAspectDenom"
-#define XtCMaxAspectDenom	"MaxAspectDenom"
-#define XtNminAspectNum		"minAspectNum"
-#define XtCMinAspectNum		"MinAspectNum"
-#define XtNmaxAspectNum		"maxAspectNum"
-#define XtCMaxAspectNum		"MaxAspectNum"
+#define XtNminAspectY	"minAspectY"
+#define XtCMinAspectY	"MinAspectY"
+#define XtNmaxAspectY	"maxAspectY"
+#define XtCMaxAspectY	"MaxAspectY"
+#define XtNminAspectX	"minAspectX"
+#define XtCMinAspectX	"MinAspectX"
+#define XtNmaxAspectX	"maxAspectX"
+#define XtCMaxAspectX	"MaxAspectX"
+#define XtNwmTimeout	"wmTimeout"
+#define XtCWmTimeout	"WmTimeout"
+#define XtNwaitForWm	"waitForWm"
+#define XtCWaitForWm	"WaitForWm"
 
 /* Class record constants */
 
 typedef struct _ShellClassRec *ShellWidgetClass;
+typedef struct _OverrideShellClassRec *OverrideShellWidgetClass;
+typedef struct _WMShellClassRec *WMShellWidgetClass;
+typedef struct _TransientShellClassRec *TransientShellWidgetClass;
+typedef struct _TopLevelShellClassRec *TopLevelShellWidgetClass;
+typedef struct _ApplicationShellClassRec *ApplicationShellWidgetClass;
 
-extern WidgetClass shellWidgetClass;
+#ifndef SHELL
+globalref WidgetClass shellWidgetClass;
+globalref WidgetClass overrideShellWidgetClass;
+globalref WidgetClass wmShellWidgetClass;
+globalref WidgetClass transientShellWidgetClass;
+globalref WidgetClass topLevelShellWidgetClass;
+globalref WidgetClass applicationShellWidgetClass;
+#endif
 
 #endif _XtShell_h
 /* DON'T ADD STUFF AFTER THIS #endif */
