@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.7 89/01/18 09:35:28 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.8 89/01/18 10:08:06 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -384,12 +384,12 @@ SYSLAST_LIBRARIES = SysLastLibraries
 			$(IRULESRC)/Project.tmpl $(IRULESRC)/site.def \
 			$(IRULESRC)/$(MACROFILE)
 
-/**/###########################################################################
-/**/# project configuration parameters - do not change
-#include "Project.tmpl"
 
-/**/###########################################################################
-/**/# definitions common to all Makefiles - do not edit
+/*
+ * get project-specific configuration and rules
+ */
+
+#include "Project.tmpl"
 
 #include "Imake.rules"
 
