@@ -61,28 +61,27 @@
   ;; This macro is for use in a multi-process environment.  It provides
   ;; exclusive access to the local buffer object for request generation and
   ;; reply processing.
-  (if (and (null inline) (macroexpand '(use-closures) env))
-      `(with-buffer-function
-	 ,buffer ,timeout
-	 #'(lambda ()
-	     (macrolet ((with-buffer ((buffer &key timeout) &body body)
-			  ;; Speedup hack for lexically nested with-buffers
-			  `(progn (progn ,buffer ,@(and timeout `(,timeout)) nil)
-				  ,@body)))
-	       ,@body)))
-    (let ((buf (if (or (symbolp buffer) (constantp buffer)) buffer '.buffer.)))
-      `(macrolet ((with-buffer ((buffer &key timeout) &body body)
-		    ;; Speedup hack for lexically nested with-buffers
-		    `(progn (progn ,buffer ,@(and timeout `(,timeout)) nil)
-			    ,@body)))
-	 (let (,@(unless (eq buf buffer) `((,buf ,buffer))))
-	   ,@(unless (eq buf buffer) `((declare (type buffer ,buf))))
-	   ,(declare-bufmac)
-	   (when (buffer-dead ,buf)
-	     (x-error 'closed-display :display ,buf))
-	   (holding-lock ((buffer-lock ,buf) ,buf "CLX Display Lock"
-			  ,@(and timeout `(:timeout ,timeout)))
-	     ,@body))))))
+  (macrolet ((with-buffer ((buffer &key timeout) &body body)
+	       ;; Speedup hack for lexically nested with-buffers
+	       `(progn
+		  (progn ,buffer ,@(and timeout `(,timeout)) nil)
+		  ,@body)))
+    ,(if (and (null inline) (macroexpand '(use-closures) env))
+	 `(flet ((.with-buffer-body. () ,@body))
+	    #+ansi-common-lisp
+	    (declare (dynamic-extent #'.with-buffer-body.))
+	    (with-buffer-function ,buffer ,timeout #'.with-buffer-body.))
+       (let ((buf (if (or (symbolp buffer) (constantp buffer))
+		      buffer
+		    '.buffer.)))
+	 `(let (,@(unless (eq buf buffer) `((,buf ,buffer))))
+	    ,@(unless (eq buf buffer) `((declare (type buffer ,buf))))
+	    ,(declare-bufmac)
+	    (when (buffer-dead ,buf)
+	      (x-error 'closed-display :display ,buf))
+	    (holding-lock ((buffer-lock ,buf) ,buf "CLX Display Lock"
+			   ,@(and timeout `(:timeout ,timeout)))
+	      ,@body))))))
 
 (defun with-buffer-function (buffer timeout function)
   (declare (type display buffer)
@@ -482,13 +481,17 @@
   (declare (type (or null (function (character) t)) transform)
 	   (downward-funarg transform))
   (if transform 
-      (read-sequence-card8
-	reply-buffer result-type nitems
-	#'(lambda (v)
-	    (declare (type card8 v))
-	    (funcall transform (card8->char v)))
-	data start index)
-    (read-sequence-card8 reply-buffer result-type nitems #'card8->char data start index)))
+      (flet ((card8->char->transform (v)
+	       (declare (type card8 v))
+	       (funcall transform (card8->char v))))
+	#+ansi-common-lisp
+	(declare (dynamic-extent #'card8->char->transform))
+	(read-sequence-card8
+	  reply-buffer result-type nitems #'card8->char->transform
+	  data start index))
+    (read-sequence-card8
+      reply-buffer result-type nitems #'card8->char
+      data start index)))
 
 ;;; Reading sequences of card8's
 
@@ -607,13 +610,17 @@
   (declare (type (or null (function (int8) t)) transform)
 	   (downward-funarg transform))
   (if transform 
-      (read-sequence-card8
-	reply-buffer result-type nitems
-	#'(lambda (v)
-	    (declare (type card8 v))
-	    (funcall transform (card8->int8 v)))
-	data start index)
-    (read-sequence-card8 reply-buffer result-type nitems #'card8->int8 data start index)))
+      (flet ((card8->int8->transform (v)
+	       (declare (type card8 v))
+	       (funcall transform (card8->int8 v))))
+	#+ansi-common-lisp
+	(declare (dynamic-extent #'card8->int8->transform))
+	(read-sequence-card8
+	  reply-buffer result-type nitems #'card8->int8->transform
+	  data start index))
+    (read-sequence-card8
+      reply-buffer result-type nitems #'card8->int8
+      data start index)))
 
 ;;; Reading sequences of card16's
 
@@ -747,13 +754,17 @@
   (declare (type (or null (function (int16) t)) transform)
 	   (downward-funarg transform))
   (if transform 
-      (read-sequence-card16
-	reply-buffer result-type nitems
-	#'(lambda (v)
-	    (declare (type card16 v))
-	    (funcall transform (card16->int16 v)))
-	data start index)
-    (read-sequence-card16 reply-buffer result-type nitems #'card16->int16 data start index)))
+      (flet ((card16->int16->transform (v)
+	       (declare (type card16 v))
+	       (funcall transform (card16->int16 v))))
+	#+ansi-common-lisp
+	(declare (dynamic-extent #'card16->int16->transform))
+	(read-sequence-card16
+	  reply-buffer result-type nitems #'card16->int16->transform
+	  data start index))
+    (read-sequence-card16
+      reply-buffer result-type nitems #'card16->int16
+      data start index)))
 
 ;;; Reading sequences of card32's
 
@@ -887,13 +898,17 @@
   (declare (type (or null (function (int32) t)) transform)
 	   (downward-funarg transform))
   (if transform 
-      (read-sequence-card32
-	reply-buffer result-type nitems
-	#'(lambda (v)
-	    (declare (type card32 v))
-	    (funcall transform (card32->int32 v)))
-	data start index)
-    (read-sequence-card32 reply-buffer result-type nitems #'card32->int32 data start index)))
+      (flet ((card32->int32->transform (v)
+	       (declare (type card32 v))
+	       (funcall transform (card32->int32 v))))
+	#+ansi-common-lisp
+	(declare (dynamic-extent #'card32->int32->transform))
+	(read-sequence-card32
+	  reply-buffer result-type nitems #'card32->int32->transform
+	  data start index))
+    (read-sequence-card32
+      reply-buffer result-type nitems #'card32->int32
+      data start index)))
 
 ;;; Writing sequences of chars
 
@@ -905,9 +920,12 @@
   (declare (type (or null (function (t) character)) transform)
 	   (downward-funarg transform))
   (if transform 
-      (write-sequence-card8
-	buffer boffset data start end
-	#'(lambda (x) (char->card8 (the character (funcall transform x)))))
+      (flet ((transform->char->card8 (x)
+	       (char->card8 (the character (funcall transform x)))))
+	#+ansi-common-lisp
+	(declare (dynamic-extent #'transform->char->card8))
+	(write-sequence-card8
+	  buffer boffset data start end #'transform->char->card8))
     (write-sequence-card8 buffer boffset data start end #'char->card8)))
 
 ;;; Writing sequences of card8's
@@ -1035,11 +1053,13 @@
   (declare (type (or null (function (t) int8)) transform)
 	   (downward-funarg transform))
   (if transform 
-      (write-sequence-card8
-	buffer boffset start end
-	#'(lambda (x) (int8->card8 (the int8 (funcall transform x))))
-	data)
-      (write-sequence-card8 buffer boffset start end #'int8->card8)))
+      (flet ((transform->int8->card8 (x)
+	       (int8->card8 (the int8 (funcall transform x)))))
+	#+ansi-common-lisp
+	(declare (dynamic-extent #'transform->int8->card8))
+	(write-sequence-card8
+	  buffer boffset data start end #'transform->int8->card8))
+      (write-sequence-card8 buffer boffset data start end #'int8->card8)))
 
 ;;; Writing sequences of card16's
 
@@ -1465,11 +1485,13 @@
   (declare (type (or null (function (t) int32)) transform)
 	   (downward-funarg transform))
   (if transform 
-      (write-sequence-card32
-	buffer boffset start end
-	#'(lambda (x) (int32->card32 (the int32 (funcall transform x))))
-	data)
-      (write-sequence-card32 buffer boffset start end #'int32->card32)))
+      (flet ((transform->int32->card32 (x)
+	       (int32->card32 (the int32 (funcall transform x)))))
+	#+ansi-common-lisp
+	(declare (dynamic-extent #'transform->int32->card32))
+	(write-sequence-card32
+	  buffer boffset data start end #'transform->int32->card32))
+    (write-sequence-card32 buffer boffset data start end #'int32->card32)))
 
 (defun read-bitvector256 (buffer-bbuf boffset data)
   (declare (type buffer-bytes buffer-bbuf)

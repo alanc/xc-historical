@@ -42,7 +42,7 @@ o Some ansi common lisp stuff.  If you have :ansi-common-lisp on *features*,
 
   - Use declaim instead of proclaim.
 
-  - Use the dynamic-extent declaration for rest args.
+  - Use the dynamic-extent declaration for rest args and closures.
 
 o Code compiled with the R4 and R4.1 CLX will work with the R4.2 CLX, provided
   you don't have :ansi-common-lisp on your features list.  Code compiled with 

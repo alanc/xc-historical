@@ -209,24 +209,24 @@
 (defmacro with-event-queue ((display &key timeout inline)
 			    &body body &environment env)
   ;; exclusive access to event queue
-  (if (and (null inline) (macroexpand '(use-closures) env))
-      `(with-event-queue-function
-	 ,display ,timeout
-	 #'(lambda () 
-	     (macrolet ((with-event-queue ((display &key timeout) &body body)
-			  ;; Speedup hack for lexically nested with-event-queues
-			  `(progn (progn ,display ,@(and timeout `(,timeout)) nil)
-				  ,@body)))
-	       ,@body)))
-    (let ((disp (if (or (symbolp display) (constantp display)) display '.display.)))
-      `(macrolet ((with-event-queue ((display &key timeout) &body body)
-		    ;; Speedup hack for lexically nested with-event-queues
-		    `(progn (progn ,display ,@(and timeout `(,timeout)) nil)
-			    ,@body)))
-	 (let (,@(unless (eq disp display) `((,disp ,display))))
-	   (holding-lock ((display-event-lock ,disp) ,disp "CLX Event Lock"
-			  ,@(and timeout `(:timeout ,timeout)))
-	     ,@body))))))
+  `(macrolet ((with-event-queue ((display &key timeout) &body body)
+		;; Speedup hack for lexically nested with-event-queues
+		`(progn
+		   (progn ,display ,@(and timeout `(,timeout)) nil)
+		   ,@body)))
+     ,(if (and (null inline) (macroexpand '(use-closures) env))
+	  `(flet ((.with-event-queue-body. () ,@body))
+	     #+ansi-common-lisp
+	     (declare (dynamic-extent #'.with-event-queue-body.))
+	     (with-event-queue-function
+	       ,display ,timeout #'.with-event-queue-body.))
+	(let ((disp (if (or (symbolp display) (constantp display))
+			display
+		      '.display.)))
+	  `(let (,@(unless (eq disp display) `((,disp ,display))))
+	     (holding-lock ((display-event-lock ,disp) ,disp "CLX Event Lock"
+			    ,@(and timeout `(:timeout ,timeout)))
+	       ,@body))))))
 
 (defun with-event-queue-function (display timeout function)
   (declare (type display display)

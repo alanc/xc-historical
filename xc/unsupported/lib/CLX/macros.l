@@ -689,14 +689,16 @@
 	   &body type-args &environment env)
   (declare (values request-number))
   (if (and (null inline) (macroexpand '(use-closures) env))
-      `(,(if (eq (car (macroexpand '(with-buffer (buffer)) env)) 'progn)
-	     'with-buffer-request-function-nolock
-	   'with-buffer-request-function)
-	 ,buffer ,gc-force
-	 #'(lambda (.display.)
-	     (declare (type display .display.))
-	     (with-buffer-request-internal (.display. ,opcode ,@options)
-	       ,@type-args)))
+      `(flet ((.request-body. (.display.)
+		(declare (type display .display.))
+		(with-buffer-request-internal (.display. ,opcode ,@options)
+		  ,@type-args)))
+	 #+ansi-common-lisp
+	 (declare (dynamic-extent #'.request-body.))
+	 (,(if (eq (car (macroexpand '(with-buffer (buffer)) env)) 'progn)
+	       'with-buffer-request-function-nolock
+	     'with-buffer-request-function)
+	  ,buffer ,gc-force #'.request-body.))
     `(let ((.display. ,buffer))
        (declare (type display .display.))
        (with-buffer (.display.)
@@ -722,17 +724,19 @@
 		(declare (type array-index ,reply-size))
 		,inner-reply-body))))
     (if (and (null inline) (macroexpand '(use-closures) env))
-	`(with-buffer-request-and-reply-function
-	   ,buffer ,multiple-reply
-	   #'(lambda (.display.)
-	       (declare (type display .display.))
-	       (with-buffer-request-internal (.display. ,opcode)
-		 ,@type-args))
-	   #'(lambda (.display. .reply-buffer.)
-	       (declare (type display .display.)
-			(type reply-buffer .reply-buffer.))
-	       .display. .reply-buffer.
-	       ,reply-body))
+	`(flet ((.request-body. (.display.)
+		  (declare (type display .display.))
+		  (with-buffer-request-internal (.display. ,opcode)
+		    ,@type-args))
+		(.reply-body. (.display. .reply-buffer.)
+		  (declare (type display .display.)
+			   (type reply-buffer .reply-buffer.))
+		  (progn .display. .reply-buffer. nil)
+		  ,reply-body))
+	   #+ansi-common-lisp
+	   (declare (dynamic-extent #'.request-body. #'.reply-body.))
+	   (with-buffer-request-and-reply-function
+	     ,buffer ,multiple-reply #'.request-body. #'.reply-body.))
       `(let ((.display. ,buffer)
 	     (.pending-command. nil)
 	     (.reply-buffer. nil))
