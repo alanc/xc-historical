@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.67 92/04/24 11:57:35 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.68 92/04/30 19:48:33 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -107,7 +107,12 @@ released automatically at next button or non-modifier key.
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 #include <X11/extensions/shape.h>
+#ifndef XTRAP
 #include <X11/extensions/XTest.h>
+#else
+#include <X11/extensions/xtraplib.h>
+#include <X11/extensions/xtraplibp.h>
+#endif
 #include <X11/Xos.h>
 #include <X11/keysym.h>
 #include <X11/Xmu/WinUtil.h>
@@ -208,17 +213,36 @@ Bool in_control_seq = False;
 Bool skip_next_control_char = False;
 TriggerRec trigger;
 JumpRec jump;
+#ifdef XTRAP
+XETC *tc;
+#endif
 
 void process();
 
-/* To generate events another way, change the next four functions. */
+#ifdef XTRAP
+void
+delay_time() /* we have to approximate the delay */
+{
+    struct timeval delay;
+
+    XFlush(dpy);
+    delay.tv_sec = time_delay / 1000;
+    delay.tv_usec = (time_delay % 1000) * 1000;
+    select(0, NULL, NULL, NULL, &delay);
+}
+#endif
 
 void
 generate_key(key, press)
     int key;
     Bool press;
 {
+#ifndef XTRAP
     XTestFakeKeyEvent(dpy, key, press, time_delay);
+#else
+    delay_time();
+    XESimulateXEventRequest(tc, press ? KeyPress : KeyRelease, key, 0, 0, 0);
+#endif
     time_delay = 0;
 }
 
@@ -227,7 +251,13 @@ generate_button(button, press)
     int button;
     Bool press;
 {
+#ifndef XTRAP
     XTestFakeButtonEvent(dpy, button, press, time_delay);
+#else
+    delay_time();
+    XESimulateXEventRequest(tc, press ? ButtonPress : ButtonRelease,
+			    button, 0, 0, 0);
+#endif
     time_delay = 0;
 }
 
@@ -235,7 +265,12 @@ void
 generate_motion(dx, dy)
     int dx, dy;
 {
+#ifndef XTRAP
     XTestFakeRelativeMotionEvent(dpy, dx, dy, time_delay);
+#else
+    delay_time();
+    XWarpPointer(dpy, None, None, 0, 0, 0, 0, dx, dy);
+#endif
     time_delay = 0;
 }
 
@@ -243,11 +278,16 @@ void
 generate_warp(screen, x, y)
     int screen, x, y;
 {
+#ifndef XTRAP
 #ifdef __OSF1__
     XTestFakeMotionEvent(dpy, screen, x, y - 1, time_delay);
     time_delay = 0;
 #endif
     XTestFakeMotionEvent(dpy, screen, x, y, time_delay);
+#else
+    delay_time();
+    XESimulateXEventRequest(tc, MotionNotify, 0, x, y, screen);
+#endif
     time_delay = 0;
 }
 
@@ -1835,13 +1875,49 @@ debug_state()
     in_control_seq = False;
 }
 
-void
-init_display()
+Bool
+init_display(dname)
+    char *dname;
 {
+    Display *ndpy;
+#ifndef XTRAP
+    int eventb, errorb, vmajor, vminor;
+#else
+    XETC *ntc;
+#endif
+
+    ndpy = XOpenDisplay(dname);
+    if (!ndpy) {
+	fprintf(stderr, "%s: unable to open display '%s'\n",
+		progname, XDisplayName(dname));
+	return False;
+    }
+#ifndef XTRAP
+    if (!XTestQueryExtension(ndpy, &eventb, &errorb, &vmajor, &vminor)) {
+	fprintf(stderr, "%s: display '%s' does not support XTEST extension\n",
+		progname, DisplayString(ndpy));
+	return False;
+    }	
+#else
+    if (!(ntc = XECreateTC(ndpy, 0L, NULL)))
+    {
+	fprintf(stderr, "%s: display '%s' does not support XTRAP extension\n",
+		progname, DisplayString(ndpy));
+	return False;
+    }
+    if (tc)
+	XEFreeTC(tc);      
+    (void)XEStartTrapRequest(ntc);
+    tc = ntc;
+#endif
+    if (dpy)
+	XCloseDisplay(dpy);
+    dpy = ndpy;
     reset_mapping();
-    MIT_OBJ_CLASS = XInternAtom(dpy, "_MIT_OBJ_CLASS", False);
-    Xmask = 1 << ConnectionNumber(dpy);
+    MIT_OBJ_CLASS = XInternAtom(ndpy, "_MIT_OBJ_CLASS", False);
+    Xmask = 1 << ConnectionNumber(ndpy);
     maxfd = ConnectionNumber(dpy) + 1;
+    return True;
 }
 
 void
@@ -1858,12 +1934,7 @@ do_display(buf)
 	strcat(name, ":0");
 	buf = name;
     }
-    ndpy = XOpenDisplay(buf);
-    if (!ndpy)
-	return;
-    XCloseDisplay(dpy);
-    dpy = ndpy;
-    init_display();
+    (void)init_display(buf);
 }
 
 void
@@ -2003,7 +2074,6 @@ main(argc, argv)
     char **argv;
 {
     int n, i;
-    int eventb, errorb, vmajor, vminor;
     struct termios term;
     Bool noecho = True;
     char *dname = NULL;
@@ -2062,24 +2132,14 @@ main(argc, argv)
     }
     if (!dname && !*(XDisplayName(dname)))
 	dname = ":0";
-    dpy = XOpenDisplay(dname);
-    if (!dpy) {
-	fprintf(stderr, "%s: unable to open display '%s'\n",
-		progname, XDisplayName(dname));
+    if (!init_display(dname))
 	quit(1);
-    }
-    if (!XTestQueryExtension(dpy, &eventb, &errorb, &vmajor, &vminor)) {
-	fprintf(stderr, "%s: display '%s' does not support XTEST extension\n",
-		progname, DisplayString(dpy));
-	quit(1);
-    }	
     if (!undofile) {
 	strcpy(fbuf, getenv("HOME"));
 	strcat(fbuf, "/.a2x");
 	undofile = fbuf;
     }
     get_undofile();
-    init_display();
     while (1) {
 	if (XPending(dpy)) {
 	    process_events();
