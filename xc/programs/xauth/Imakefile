@@ -1,4 +1,4 @@
-#ifdef HPArchitecture		/* need bcopy, bzero, bcmp stuff */
+#ifdef SYSV
      BUTIL_SRCS = butil.c
      BUTIL_OBJS = butil.o
 #else
