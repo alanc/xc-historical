@@ -120,7 +120,7 @@ leftCursor	Cursor	Cursor		sb_left_arrow
 lowerCursor	Cursor	Cursor		sb_down_arrow
 mappedWhenManaged	MappedWhenManaged	Boolean		True
 numChildren	ReadOnly	Cardinal	R	0
-orientation	Orientation	Orientation		XtOrientVertical
+orientation	Orientation	Orientation		XtorientVertical
 refigureMode	Boolean	Boolean		True
 rightCursor	Cursor	Cursor		sb_right_arrow
 screen	Screen	Pointer	R	Parent's Screen
@@ -211,8 +211,10 @@ grip for some of the panes, use \fBXawPanedGetNumSub\fP to retrieve the
 number of panes.
 .IP \fBorientation\fP 1.5i
 The orientation to stack the panes.  This value can be either
-\fBXtOrientVertical\fP or \fBXtOrientHorizontal\fP.
-.Rs "horizontal \fPand\fB vertical"
+\fBXtorientVertical\fP or \fBXtorientHorizontal\fP.
+.IN "XtorientVertical" ""
+.IN "XtorientHorizontal" ""
+.Rs "vertical \fPand\fB horizontal"
 .IP \fBrefigureMode\fP 1.5i
 This resource allows pane layout to be suspended.  If this value is
 \fBFalse\fP, then no layout actions will be taken.  This may improve

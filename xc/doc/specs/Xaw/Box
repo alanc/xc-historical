@@ -69,7 +69,7 @@ height	Height	Dimension	A	see \fBLayout Semantics\fP
 hSpace	HSpace	Dimension		4
 mappedWhenManaged	MappedWhenManaged	Boolean		True
 numChildren	ReadOnly	Cardinal	R	0
-orientation	Orientation	Orientation		XtOrientVertical
+orientation	Orientation	Orientation		XtorientVertical
 screen	Screen	Pointer	R	Parent's Screen
 sensitive	Sensitive	Boolean		True
 vSpace	VSpace	Dimension		4
@@ -108,13 +108,13 @@ children and the edge of the box.
 .IP \fBorientation\fP 1.5i
 Specifies whether the preferred shape of the box (i.e. the result
 returned by the query_geometry class method) is tall and narrow
-\fBXawOrientVertical\fP or short and wide \fPXawOrientHorizontal\fP.
-.IN "XawOrientVertical" ""
-.IN "XawOrientHorizontal" ""
+\fBXtorientVertical\fP or short and wide \fPXtorientHorizontal\fP.
+.IN "XtorientVertical" ""
+.IN "XtorientHorizontal" ""
 When the Box is a child of a parent which enforces width constraints, it
-is usually better to specify \fBXawOrientVertical\fP (the default).
+is usually better to specify \fBXtorientVertical\fP (the default).
 When the parent enforces height constraints, it is usually better to
-specify \fBXawOrientHorizontal\fP.
+specify \fBXtorientHorizontal\fP.
 .Rs "horizontal \fPand\fB vertical"
 .Sc
 .Se
@@ -128,14 +128,14 @@ Each time a child is managed or unmanaged, the Box widget will attempt
 to reposition the remaining children to compact the box.  Children are
 positioned in order left to right, top to bottom.  The packing
 algorithm used depends on the \fBorientation\fP of the Box.
-.IP \fBXtOrientVertical\fP 1.5i
-.IN "XtOrientVertical" "" @DEF@
+.IP \fBXtorientVertical\fP 1.5i
+.IN "XtorientVertical" "" @DEF@
 When the next child does not fit on the current row, a new row is
 started.  If a child is wider than the width of the box, the box will
 request a larger width from its parent and will begin the layout
 process from the beginning if a new width is granted.
-.IP \fBXtOrientHorizontal\fP 1.5i
-.IN "XtOrientHorizontal" "" @DEF@
+.IP \fBXtorientHorizontal\fP 1.5i
+.IN "XtorientHorizontal" "" @DEF@
 When the next child does not fit in the current column, a new column is
 started.  If a child is taller than the height of the box, the box will
 request a larger height from its parent and will begin the layout

@@ -96,7 +96,7 @@ jumpProc	Callback	Callback		NULL
 length	Length	Dimension		1
 mappedWhenManaged	MappedWhenManaged	Boolean		True
 minimumThumb	MinimumThumb	Dimension		7
-orientation	Orientation	Orientation		XtOrientVertical (vertical)
+orientation	Orientation	Orientation		XtorientVertical (vertical)
 screen	Screen	Pointer	R	Parent's Screen
 scrollDCursor	Cursor	Cursor		XC_sb_down_arrow
 scrollHCursor	Cursor	Cursor		XC_sb_h_double_arrow
@@ -147,9 +147,11 @@ The smallest size, in pixels, to which the thumb can shrink.
 .Mm
 .IP \fBorientation\fP 1.5i
 The orientation is the direction that the thumb will be allowed to move.
-This value can be either \fBXtOrientVertical\fP or
-\fBXtOrientHorizontal\fP.
-.Rs "horizontal \fPand\fB vertical"
+This value can be either \fBXtorientVertical\fP or
+\fBXtorientHorizontal\fP.
+.IN "XtorientVertical" ""
+.IN "XtorientHorizontal" ""
+.Rs "vertical \fPand\fB horizontal"
 .IP \fBscrollDCursor\fP 1.5i
 This cursor is used when scrolling backward in a vertical scrollbar.
 .IP \fBscrollHCursor\fP 1.5i
