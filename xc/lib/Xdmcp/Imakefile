@@ -1,3 +1,4 @@
+XCOMM $XConsortium$
 #define DoNormalLib NormalLibXdmcp
 #define DoSharedLib SharedLibXdmcp
 #define DoDebugLib DebugLibXdmcp
@@ -104,6 +105,9 @@ OBJS = \
 	$(DESOBJS)
 
 LibraryObjectRule()
+
+SpecialLibObjectRule(Fill.o,$(ICONFIGFILES),ConnectionFlags)
+SpecialLibObjectRule(Flush.o,$(ICONFIGFILES),ConnectionFlags)
 
 #if DoNormalLib
 NormalLibraryTarget(Xdmcp,$(OBJS))
