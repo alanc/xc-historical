@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.124 89/12/13 19:01:47 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.125 89/12/13 19:19:51 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -2406,7 +2406,7 @@ extern void XtGrabKey(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
     KeySym 		/* keysym */,
-    unsigned int 	/* modifiers */,
+    Modifiers	 	/* modifiers */,
     Boolean 		/* owner_events */,
     int 		/* pointer_mode */,
     int 		/* keyboard_mode */
@@ -2417,7 +2417,7 @@ extern void XtUngrabKey(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
     KeySym 		/* keysym */,
-    unsigned int 	/* modifiers */
+    Modifiers	 	/* modifiers */
 #endif /* NeedFunctionPrototypes */
 );
 
@@ -2442,11 +2442,11 @@ extern void XtGrabButton(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
     int 		/* button */,
-    unsigned int 	/* modifiers */,
+    Modifiers	 	/* modifiers */,
     Boolean 		/* owner_events */,
+    unsigned int	/* event_mask */,
     int 		/* pointer_mode */,
     int 		/* keyboard_mode */,
-    Mask 		/* event_mask */,
     Window 		/* confine_to */,
     Cursor 		/* cursor */
 #endif /* NeedFunctionPrototypes */
@@ -2455,8 +2455,8 @@ extern void XtGrabButton(
 extern void XtUngrabButton(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
-    int 		/* button */,
-    unsigned int 	/* modifiers */
+    unsigned int	/* button */,
+    Modifiers	 	/* modifiers */
 #endif /* NeedFunctionPrototypes */
 );
 
@@ -2464,9 +2464,9 @@ extern int XtGrabPointer(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
     Boolean 		/* owner_events */,
+    unsigned int	/* event_mask */,
     int 		/* pointer_mode */,
     int 		/* keyboard_mode */,
-    Mask 		/* event_mask */,
     Window 		/* confine_to */,
     Cursor 		/* cursor */,
     Time 		/* time */
