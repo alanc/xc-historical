@@ -1251,17 +1251,22 @@
 	     (color-blue background))
     ))
 
-(defun query-best-cursor (width height display)
+(defun query-best-cursor (width height drawable)
   (declare (type card16 width height)
-	   (type display display))
+	   (type (or drawable display) drawable))	
   (declare (values width height))
-  (with-buffer-request-and-reply (display *x-querybestsize* 12 :sizes 16)
-       ((data 0)
-	(window (screen-root (display-default-screen display)))
-	(card16 width height))
-    (values
-      (card16-get 8)
-      (card16-get 10))))
+  ;; Drawable can be a display for compatibility.
+  (multiple-value-bind (display drawable)
+      (if (type? drawable 'drawable)
+	  (values (drawable-display drawable) drawable)
+	(values drawable (screen-root (display-default-screen drawable))))
+    (with-buffer-request-and-reply (display *x-querybestsize* 12 :sizes 16)
+	 ((data 0)
+	  (window drawable)
+	  (card16 width height))
+      (values
+	(card16-get 8)
+	(card16-get 10)))))
 
 (defun query-best-tile (width height drawable)
   (declare (type card16 width height)
