@@ -1,4 +1,4 @@
-XCOMM $XConsortium: sunLib.tmpl,v 1.30 94/02/02 11:38:04 gildea Exp $
+XCOMM $XConsortium: sunLib.tmpl,v 1.31 94/02/04 21:29:46 rws Exp $
 
 /*
  * SunOS shared library template
@@ -21,4 +21,7 @@ XCOMM $XConsortium: sunLib.tmpl,v 1.30 94/02/02 11:38:04 gildea Exp $
 #endif
 #ifndef SharedXiRev
 #define SharedXiRev 4.10
+#endif
+#if OSMajorVersion > 4
+#include <sv4Lib.tmpl>
 #endif
