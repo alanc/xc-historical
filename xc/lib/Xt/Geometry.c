@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header$";
+static char rcsid[] = "$Header: Geometry.c,v 1.20 88/02/03 10:05:41 swick Exp $";
 #endif lint
 
 /*
@@ -269,7 +269,7 @@ void XtTranslateCoords(w, x, y, rootx, rooty)
     *rootx = x;
     *rooty = y;
 
-    for (; w != NULL && XtClass(w) != shellWidgetClass; w = w->core.parent) {
+    for (; w != NULL && !XtIsSubclass(w,shellWidgetClass); w = w->core.parent) {
 	*rootx += w->core.x + w->core.border_width;
 	*rooty += w->core.y + w->core.border_width;
     }
