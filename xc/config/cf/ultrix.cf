@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ultrix.cf,v 1.57 93/09/21 11:09:44 dpw Exp $
+XCOMM platform:  $XConsortium: ultrix.cf,v 1.58 93/09/21 11:17:15 rws Exp $
 
 #define OSName            Ultrix-32 4.3
 XCOMM operating system:  OSName
@@ -46,7 +46,7 @@ XCOMM operating system:  OSName
  */
 #define NormalLibObjCompile(options) $(RM) $@ $*.os \			@@\
 	&& $(CC) -c options $(CFLAGS) $*.c \				@@\
-	&& $(LD) -x -r $@ -o $*.os \					@@\
+	&& $(LD) $(LDSTRIPFLAGS) -r $@ -o $*.os \			@@\
 	&& $(MV) $*.os $@
 #endif
 #endif

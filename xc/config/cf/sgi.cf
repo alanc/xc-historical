@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sgi.cf,v 1.32 93/09/21 11:09:14 dpw Exp $
+XCOMM platform:  $XConsortium: sgi.cf,v 1.33 93/09/21 11:17:09 rws Exp $
 
 #define OSName			IRIX
 XCOMM operating system:  OSName
@@ -83,7 +83,7 @@ XCOMM operating system:  OSName
  */
 #define	NormalLibObjCompile(options) $(RM) $@ $*.os \			@@\
 	&& $(CC) -c options $(CFLAGS) $*.c \				@@\
-	&& $(LD) -x -r $@ -o $*.os \					@@\
+	&& $(LD) $(LDSTRIPFLAGS) -r $@ -o $*.os \			@@\
 	&& $(MV) $*.os $@
 
 #define	LibObjCompile(dir,options) $(RM) $@ dir/$@ \			@@\

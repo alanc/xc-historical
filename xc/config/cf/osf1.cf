@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: osf1.cf,v 1.21 93/09/21 11:17:20 rws Exp $
+XCOMM platform:  $XConsortium: osf1.cf,v 1.22 93/09/21 17:32:33 kaleb Exp $
 /* only tested with Digital OSF/1 V1.0 */
 
 #define OSName			OSF/1 1.0
@@ -29,7 +29,7 @@ XCOMM operating system:  OSName
 #ifdef MipsArchitecture
 #define UnsharedLibObjCompile(options) $(RM) $@ $*.os unshared/$@ \	@@\
 	&& $(CC) -c options -DXTHREADS SystemMTDefines $(CFLAGS) $*.c \	@@\
-	&& $(LD) -x -r $@ -o $*.os \					@@\
+	&& $(LD) $(LDSTRIPFLAGS) -r $@ -o $*.os \			@@\
 	&& $(MV) $*.os unshared/$@
 /* should not have to do this bit, but make randomly hangs if we use the ld */
 /* trick on both compilations */
@@ -52,6 +52,6 @@ XCOMM operating system:  OSName
 #define PexCCOptions -Xc -Wf,-XNp15000,-XNd15000
 #define NormalLibObjCompile(options) $(RM) $@ $*.os \			@@\
 	&& $(CC) -c options $(CFLAGS) $*.c \				@@\
-	&& $(LD) -x -r $@ -o $*.os \					@@\
+	&& $(LD) $(LDSTRIPFLAGS) -r $@ -o $*.os \			@@\
 	&& $(MV) $*.os $@
 #endif
