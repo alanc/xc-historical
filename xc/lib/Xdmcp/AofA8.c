@@ -1,5 +1,5 @@
 /*
- * $XConsortium: AofA8.c,v 1.1 89/09/14 17:11:06 keith Exp $
+ * $XConsortium: AofA8.c,v 1.2 91/01/23 22:13:07 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -35,7 +35,7 @@ XdmcpAllocARRAYofARRAY8 (array, length)
 {
     ARRAY8Ptr	newData;
 
-    newData = (ARRAY8Ptr) (length * sizeof (ARRAY8));
+    newData = (ARRAY8Ptr) Xalloc (length * sizeof (ARRAY8));
     if (!newData)
 	return FALSE;
     array->length = length;
