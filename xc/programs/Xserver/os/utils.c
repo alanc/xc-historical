@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: utils.c,v 1.50 88/07/25 11:53:15 toddb Exp $ */
+/* $Header: utils.c,v 1.51 88/07/27 15:45:39 matt Exp $ */
 #include <stdio.h>
 #include <sys/time.h>
 #include "misc.h"
@@ -40,6 +40,7 @@ extern char *display;
 extern long defaultScreenSaverTime;	/* for parsing command line */
 extern long defaultScreenSaverInterval;
 extern int defaultScreenSaverBlanking;
+extern int defaultBackingStore;
 #ifndef NOLOGOHACK
 extern int logoScreenSaver;
 #endif
@@ -301,6 +302,8 @@ char	*argv[];
 	    defaultScreenSaverBlanking = PreferBlanking;
 	else if ( strcmp( argv[i], "-v") == 0)
 	    defaultScreenSaverBlanking = DontPreferBlanking;
+	else if ( strcmp( argv[i], "-wm") == 0)
+	    defaultBackingStore = WhenMapped;
 	else if ( strcmp( argv[i], "-x") == 0)
 	{
 	    if(++i >= argc)
