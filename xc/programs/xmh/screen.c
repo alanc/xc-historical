@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: screen.c,v 2.14 88/02/06 10:10:06 swick Exp $";
+static char rcs_id[] = "$Header: screen.c,v 2.15 88/02/14 20:52:56 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -253,7 +253,6 @@ Scrn scrn;
     arglist[0].value = (XtArgVal) NoMailPixmap;
     /* %%% Wrong; should check InitialFolder->mailpending.  */
     XtSetValues(scrn->parent, arglist, XtNumber(arglist));
-    XtSetMappedWhenManaged(scrn->widget, FALSE);
     XtRealizeWidget(scrn->parent);
 
     BBoxLockSize(scrn->folderbuttons);
@@ -269,7 +268,6 @@ Scrn scrn;
     XtPanedGetMinMax((Widget) scrn->tocwidget, &min, &max);
     XtPanedSetMinMax((Widget) scrn->tocwidget, theight, theight);
     XtPanedSetMinMax((Widget) scrn->tocwidget, min, max);
-    XtSetMappedWhenManaged(scrn->widget, TRUE);
 }
 
 
@@ -280,6 +278,8 @@ Scrn scrn;
     scrn->viewwidget = CreateTextSW(scrn, 1, "view", 0 /* %%% wordBreak */);
     scrn->viewbuttons = BBoxCreate(scrn, 2, "viewButtons");
     FillViewButtons(scrn);
+    XtRealizeWidget(scrn->parent);
+    BBoxLockSize(scrn->viewbuttons);
 }
 
 
@@ -290,6 +290,8 @@ Scrn scrn;
     scrn->viewwidget = CreateTextSW(scrn, 1, "comp", 0 /* %%% wordBreak */);
     scrn->viewbuttons = BBoxCreate(scrn, 2, "compButtons");
     FillCompButtons(scrn);
+    XtRealizeWidget(scrn->parent);
+    BBoxLockSize(scrn->viewbuttons);
 }
 
 
@@ -305,6 +307,9 @@ ScrnKind kind;
     Scrn scrn;
     static Arg arglist[] = {
 	{XtNgeometry, NULL},
+    };
+    static Arg scrn_args[] = {
+	{XtNmappedWhenManaged, FALSE},
     };
 
     for (i=0 ; i<numScrns ; i++)
@@ -327,8 +332,9 @@ ScrnKind kind;
     else scrn->parent = XtCreatePopupShell(
 				   progName, shellWidgetClass,
 				   toplevel, arglist, XtNumber(arglist));
-    scrn->widget = XtCreateManagedWidget(progName, vPanedWidgetClass,
-					 scrn->parent, NULL, (Cardinal)0);
+    scrn->widget =
+	XtCreateManagedWidget(progName, vPanedWidgetClass, scrn->parent,
+			      scrn_args, XtNumber(scrn_args));
 
     switch (kind) {
 	case STtocAndView:	MakeTocAndView(scrn);	break;
@@ -336,8 +342,8 @@ ScrnKind kind;
 	case STcomp:		MakeComp(scrn);	break;
     }
 
-    DEBUG("Realizing...")
-    XtRealizeWidget((Widget) scrn->parent);
+    DEBUG("Mapping...")
+    XtSetMappedWhenManaged(scrn->widget, TRUE);
     DEBUG(" done.\n")
     XDefineCursor( theDisplay, XtWindow(scrn->parent),
 		   XtGetCursor( theDisplay, XC_left_ptr ) );
