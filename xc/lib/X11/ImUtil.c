@@ -1,4 +1,4 @@
-/* $XConsortium: XImUtil.c,v 11.53 91/12/18 19:36:01 rws Exp $ */
+/* $XConsortium: XImUtil.c,v 11.54 91/12/21 16:12:19 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -260,6 +260,12 @@ XImage *XCreateImage (dpy, visual, depth, format, offset, data, width, height,
 	register XImage *image;
 	int bits_per_pixel = 1;
 
+	if (depth == 0 || depth > 32 ||
+	    (format != XYBitmap && format != XYPixmap && format != ZPixmap) ||
+	    (format == XYBitmap && depth != 1) ||
+	    (xpad != 8 && xpad != 16 && xpad != 32) ||
+	    offset < 0 || image_bytes_per_line < 0)
+	    return (XImage *) NULL;
 	if ((image = (XImage *) Xcalloc(1, (unsigned) sizeof(XImage))) == NULL)
 	    return (XImage *) NULL;
 
