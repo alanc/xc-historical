@@ -1,4 +1,4 @@
-/* $XConsortium: uconvRep.c,v 5.2 91/03/15 18:54:28 hersh Exp $ */
+/* $XConsortium: uconvRep.c,v 5.3 91/05/04 23:17:44 keith Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -501,7 +501,7 @@ pexGetWksInfoReply  *reply;
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPWDefinedViews) {
 	int len, i;
-	len = (int)(*ptr)*2;			    /* ? */
+	len = *(int *)ptr;			    
 	SWAP_CARD32 ((*((CARD32 *)ptr)));
 	ptr+=sizeof(CARD32);
 	for (i=0; i<len; i++, ptr += sizeof(CARD32)) {
@@ -954,6 +954,7 @@ unsigned char	*where;
 {
     int i;
     unsigned char *ptr = where;
+    CARD32  numFontIDs;
 
     switch (TType) { 
 	case PEXLineBundleLUT:	{
@@ -998,8 +999,12 @@ unsigned char	*where;
 	    break; }
 
 	case PEXTextFontLUT:	{
-	    for ( i=0; i<num; i++, ptr += sizeof(pexFont)) {
-		SWAP_FONT ((*(pexFont *)ptr));
+	    for (i=0; i<num; i++) {
+	      numFontIDs = *(CARD32 *)ptr;
+	      ptr += 4;
+	      for ( i=0; i<numFontIDs; i++, ptr += sizeof(pexFont)) {
+		  SWAP_FONT ((*(pexFont *)ptr));
+	      }
 	    }
 	    break; }
 
@@ -1250,7 +1255,6 @@ pexSwap		    *swapPtr;
 pexEdgeBundleEntry  *p_data;
 {
     unsigned char *ptr = (unsigned char *)p_data;
-    SWAP_CARD16 (p_data->edges);
     SWAP_ENUM_TYPE_INDEX (p_data->edgeType); 
     SWAP_FLOAT (p_data->edgeWidth);
     ptr = SWAP_FUNC_PREFIX(SwapColourSpecifier)(swapPtr, &(p_data->edgeColour));
@@ -1734,6 +1738,7 @@ unsigned char	*pdata;
     int len, i;
 
     if (im & PEXPDPickStatus) {
+	SWAP_CARD16 ((*((CARD16 *)ptr)));
 	ptr += sizeof(CARD32);
     };
 
@@ -1747,6 +1752,7 @@ unsigned char	*pdata;
     };
 
     if (im & PEXPDPickPathOrder) {
+	SWAP_CARD16 ((*((CARD16 *)ptr)));
 	ptr += sizeof(CARD32);
     };
 
@@ -1775,6 +1781,10 @@ unsigned char	*pdata;
     if (im & PEXPDPickEchoVolume) {
 	SwapViewport(swapPtr, (pexViewport *)ptr);
 	ptr += sizeof(pexViewport);	
+    }
+
+    if (im & PEXPDPickEchoSwitch) {
+	SWAP_CARD16 ((*((CARD16 *)ptr)));
     }
 }
 
