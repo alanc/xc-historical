@@ -1,4 +1,4 @@
-/* $XConsortium: font.h,v 1.9 93/07/12 09:37:40 dpw Exp $ */
+/* $XConsortium: font.h,v 1.10 93/08/24 18:49:31 gildea Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -126,5 +126,9 @@ extern void		    EmtpyFontPatternCache ();
 extern void		    CacheFontPattern ();
 extern FontPtr		    FindCachedFontPattern ();
 extern void		    RemoveCachedFontPattern ();
+
+typedef enum {
+    Linear8Bit, TwoD8Bit, Linear16Bit, TwoD16Bit
+}           FontEncoding;
 
 #endif				/* FONT_H */
