@@ -1,6 +1,5 @@
-
 #ifndef lint
-static char rcs_id[] = "$Header: xrdb.c,v 11.10 88/01/26 16:19:32 jim Locked $";
+static char rcs_id[] = "$Header: xrdb.c,v 11.11 88/01/27 11:42:27 jim Locked $";
 #endif
 
 /*
@@ -48,6 +47,7 @@ static char rcs_id[] = "$Header: xrdb.c,v 11.10 88/01/26 16:19:32 jim Locked $";
 
 char *ProgramName;
 
+#define RESOURCE_PROPERTY_NAME "RESOURCE_MANAGER"
 #define BACKUP_SUFFIX ".bak"		/* for editting */
 
 
@@ -404,29 +404,77 @@ cleanup:
 
 void Syntax ()
 {
-    fprintf (stderr, "usage:  %s [-options ...] [filename]\n\n",
+    fprintf (stderr, 
+	     "usage:  %s [-options ...] [filename]\n\n",
 	     ProgramName);
-    fprintf (stderr, "where options include:\n");
-    fprintf (stderr, "    -display host:dpy        which display to use\n");
-    fprintf (stderr, "    -cpp filename            C preprocessor to use\n");
-    fprintf (stderr, "    -nocpp                   do not run through cpp\n");
-    fprintf (stderr, "    -query                   query resources\n");
-    fprintf (stderr, "    -merge                   merge resources\n");
-    fprintf (stderr, "    -edit                    edit resources\n");
-    fprintf (stderr, "    -backup string           backup suffix\n");
-    fprintf (stderr, "    -show                    show defines\n");
-    fprintf (stderr, "    -remove                  remove properties\n");
-    fprintf (stderr, "    -Ddefine=value           passed to cpp\n");
-    fprintf (stderr, "    -Udefine                 passed to cpp\n");
-    fprintf (stderr, "    -Idirectory              passed to cpp\n");
-    fprintf (stderr, "\n");
+    fprintf (stderr, 
+	     "where options include:\n");
+    fprintf (stderr, 
+	     "    -display host:dpy            display to use\n");
+    fprintf (stderr, 
+	     "    -cpp filename                preprocessor to use [%s]\n",
+	     CPP);
+    fprintf (stderr, 
+	     "    -nocpp                       do not use a preprocessor\n");
+    fprintf (stderr, 
+	     "    -query                       query %s\n",
+	     RESOURCE_PROPERTY_NAME);
     fprintf (stderr,
-"A - or no input filename represents stdin.  By default, the program will\n");
+	     "    -load                        load file into %s [default]\n",
+	     RESOURCE_PROPERTY_NAME);
+    fprintf (stderr, 
+	     "    -merge                       merge file into %s\n",
+	     RESOURCE_PROPERTY_NAME);
+    fprintf (stderr, 
+	     "    -edit filename               edit %s into file\n",
+	     RESOURCE_PROPERTY_NAME);
+    fprintf (stderr, 
+	     "    -backup string               backup suffix for -edit [%s]\n",
+	     BACKUP_SUFFIX);
+    fprintf (stderr, 
+	     "    -symbols                     show preprocessor symbols\n");
+    fprintf (stderr, 
+	     "    -remove                      remove %s from its window\n",
+	     RESOURCE_PROPERTY_NAME);
+    fprintf (stderr, 
+	     "    -Dname[=value], -Uname, -Idirectory    %s\n",
+	     "passed to preprocessor");
+    fprintf (stderr, 
+	     "\n");
     fprintf (stderr,
-"use %s as the C preprocessor and \"%s\" as the backup suffix.\n",
-	     CPP, BACKUP_SUFFIX);
+	     "A - or no input filename represents stdin.\n");  
     exit (1);
 }
+
+/*
+ * The following is a hack until XrmParseCommand is ready.  It determines
+ * whether or not the given string is an abbreviation of the arg.
+ */
+
+static Bool isabbreviation (arg, s, minslen)
+    char *arg;
+    char *s;
+    int minslen;
+{
+    int arglen;
+    int slen;
+
+    /* exact match */
+    if (strcmp (arg, s) == 0) return (True);
+
+    arglen = strlen (arg);
+    slen = strlen (s);
+
+    /* too long or too short */
+    if (slen >= arglen || slen < minslen) return (False);
+
+    /* abbreviation */
+    if (strncmp (arg, s, slen) == 0) return (True);
+
+    /* bad */
+    return (False);
+}
+
 
 main (argc, argv)
     int argc;
@@ -445,8 +493,7 @@ main (argc, argv)
     int showDefines = 0;
     int removeProp = 0;
     int merge = 0;
-    int editFile = 0;
-    int usecpp = 1;
+    char *editFile = NULL;
     char *cpp_program = CPP;
     char *backup_suffix = BACKUP_SUFFIX;
 
@@ -456,62 +503,64 @@ main (argc, argv)
     InitEntries(&newDB);
     InitEntries(&oldDB);
     defines[0] = '\0';
+
+    /* needs to be replaced with XrmParseCommand */
+
     for (i = 1; i < argc; i++) {
 	char *arg = argv[i];
 
 	if (arg[0] == '-') {
-	    switch (arg[1]) {
-		case 'h':			/* -help */
-		    Syntax ();
-		    /* doesn't return */
-		case 'd':			/* -display */
-		    if (++i >= argc) Syntax ();
-		    displayname = argv[i];
-		    continue;
-		case 'g':			/* -geometry */
-		    if (++i >= argc) Syntax ();
-		    /* ignore geometry */
-		    continue;
-		case 'c':			/* -cpp */
-		    if (++i >= argc) Syntax ();
-		    cpp_program = argv[i];
-		    continue;
-		case 'n':			/* -nocpp */
-		    usecpp = 0;
-		    continue;
-		case 'q':			/* -query */
-		    printit = 1;
-		    continue;
-		case 'm':			/* -merge */
-		    merge = 1;
-		    continue;
-		case 'e':			/* -edit */
-		    editFile = 1;
-		    continue;
-		case 'b':			/* -backup suffix */
-		    if (++i >= argc) Syntax ();
-		    backup_suffix = argv[i];
-		    continue;
-		case 's':			/* -show */
-		    showDefines = 1;
-		    continue;
-		case 'r':			/* -remove */
-		    removeProp = 1;
-		    continue;
-		case 'I':			/* -I for cpp */
-		case 'U':			/* -U for cpp */
-		case 'D':			/* -D for cpp */
-		    strcat(defines, " \"");
-		    strcat(defines, arg);
-		    strcat(defines, "\"");
-		    continue;
-		case '\0':			/* - */
-		    filename = NULL;
-		    continue;
-		default:
-		    Syntax ();
-		    /* doesn't return */
-	    }						/* end switch */
+	    if (arg[1] == '\0') {
+		filename = NULL;
+		continue;
+	    } else if (isabbreviation ("-help", arg, 2)) {
+		Syntax ();
+		/* doesn't return */
+	    } else if (isabbreviation ("-display", arg, 2)) {
+		if (++i >= argc) Syntax ();
+		displayname = argv[i];
+		continue;
+	    } else if (isabbreviation ("-geometry", arg, 2)) {
+		if (++i >= argc) Syntax ();
+		/* ignore geometry */
+		continue;
+	    } else if (isabbreviation ("-cpp", arg, 2)) {
+		if (++i >= argc) Syntax ();
+		cpp_program = argv[i];
+		continue;
+	    } else if (isabbreviation ("-nocpp", arg, 2)) {
+		cpp_program = NULL;
+		continue;
+	    } else if (isabbreviation ("-query", arg, 2)) {
+		printit = 1;
+		continue;
+	    } else if (isabbreviation ("-load", arg, 2)) {
+		merge = 0;
+		continue;
+	    } else if (isabbreviation ("-merge", arg, 2)) {
+		merge = 1;
+		continue;
+	    } else if (isabbreviation ("-edit", arg, 2)) {
+		if (++i >= argc) Syntax ();
+		editFile = argv[i];
+		continue;
+	    } else if (isabbreviation ("-backup", arg, 2)) {
+		if (++i >= argc) Syntax ();
+		backup_suffix = argv[i];
+		continue;
+	    } else if (isabbreviation ("-symbols", arg, 2)) {
+		showDefines = 1;
+		continue;
+	    } else if (isabbreviation ("-remove", arg, 2)) {
+		removeProp = 1;
+		continue;
+	    } else if (arg[1] == 'I' || arg[1] == 'U' || arg[1] == 'D') {
+		strcat(defines, " \"");
+		strcat(defines, arg);
+		strcat(defines, "\"");
+		continue;
+	    }
+	    Syntax ();
 	} else if (arg[0] == '=') 
 	    continue;
 	else if (index (arg, ':') != NULL)		/* obselete */
@@ -526,28 +575,34 @@ main (argc, argv)
 		 XDisplayName (displayname));
 
     DoDefines(dpy, defines, ProgramName, displayname);
-    if (showDefines)
-	fprintf(stderr, "%s\n", defines);
+    if (showDefines) {
+	printf ("%s\n", defines);
+    }
     if (printit == 1) {
 	/* user wants to print contents */
 	if (dpy->xdefaults)
 	    fputs(dpy->xdefaults, stdout);
-	XCloseDisplay (dpy);
-	exit(0);
 	}
-    else if (removeProp) {
+    if (showDefines || printit) {
+	XCloseDisplay (dpy);
+	exit (0);
+    }
+
+    /* modify property */
+
+    if (removeProp) {
 	if (dpy->xdefaults)
 	    XDeleteProperty(dpy, RootWindow(dpy, 0), XA_RESOURCE_MANAGER);
-	}
-    else if (editFile) {
+    } else if (editFile) {
 	char template[100], old[100];
 
-	if (filename == NULL)
+	if (editFile == NULL)
 	    fatal("%s: must specify file name to be edited.\n", ProgramName);
-	input = fopen(filename, "r");
+	input = fopen(editFile, "r");
 	if (input == NULL)
-	    fatal("%s: can't open file '%s'\n", ProgramName, filename);
-	strcpy(template, filename);
+	    fatal ("%s: can't open file '%s' for reading\n", 
+	    	   ProgramName, editFile);
+	strcpy(template, editFile);
 	strcat(template, "XXXXXX");
 	output = fopen(mktemp(template), "w");
 	if (output == NULL)
@@ -559,18 +614,17 @@ main (argc, argv)
 	EditFile(&newDB, input, output);
 	fclose(input);
 	fclose(output);
-	strcpy(old, filename);
+	strcpy(old, editFile);
 	strcat(old, backup_suffix);
-	rename(filename, old);
-	rename(template, filename);
-	}
-    else {
+	rename(editFile, old);
+	rename(template, editFile);
+    } else {
 	if (filename != NULL) {
 		fp = freopen (filename, "r", stdin);
 		if (fp == NULL)
 		    fatal("%s: can't open file '%s'\n", ProgramName, filename);
-		}
-	if (usecpp) {
+	}
+	if (cpp_program) {
 	    sprintf(cmd, "%s %s", cpp_program, defines);
 	    if ((input = popen(cmd, "r")) == NULL)
 		fatal("%s: cannot run '%s'\n", ProgramName, cmd);
@@ -585,14 +639,14 @@ main (argc, argv)
 	    buffer.buff = dpy->xdefaults;
 	    GetEntries(&oldDB, &buffer);
 	    buffer.buff = saveBuff;
-	}
-	else
+	} else
 	    oldDB.used = 0;
 	buffer.used = 0;
 	MergeEntries(&buffer, newDB, oldDB);
 	XChangeProperty (dpy, RootWindow(dpy, 0), XA_RESOURCE_MANAGER,
 		XA_STRING, 8, PropModeReplace, buffer.buff, buffer.used);
-	}
+    }
+
     XCloseDisplay(dpy);
     exit (0);
 }
