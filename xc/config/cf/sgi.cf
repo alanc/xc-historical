@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sgi.cf,v 1.30 93/09/06 15:21:04 rws Exp $
+XCOMM platform:  $XConsortium: sgi.cf,v 1.31 93/09/18 18:23:24 rws Exp $
 
 #define OSName			IRIX
 XCOMM operating system:  OSName
@@ -88,3 +88,4 @@ XCOMM operating system:  OSName
 	&& $(CC) -c $(CCOPTIONS) $(ALLDEFINES) options $*.c \		@@\
 	&& $(MV) $@ dir/$@
 
+/* only need this for binary compatibility with their ddx */
