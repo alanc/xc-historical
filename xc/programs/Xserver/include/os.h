@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: os.h,v 1.64 95/01/05 19:50:01 kaleb Exp $ */
+/* $XConsortium: os.h,v 1.65 95/03/03 01:54:22 dpw Exp kaleb $ */
 
 #ifndef OS_H
 #define OS_H
@@ -100,8 +100,12 @@ pragma on(alloca);
 #endif /* defined(__HIGHC__) */
 
 
-#if defined(__GNUC__) && !defined(alloca)
+#ifdef __GNUC__
+#ifndef alloca
 #define alloca __builtin_alloca
+#endif /* !alloca */
+#define ALLOCATE_LOCAL(size) alloca((int)(size))
+#define DEALLOCATE_LOCAL(ptr)  /* as nothing */
 #else
 
 /*
