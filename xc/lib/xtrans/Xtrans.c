@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: Xtrans.c,v 1.14 94/02/06 16:03:12 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -796,7 +796,7 @@ XtransConnInfo 	**ciptrs_ret;
 	if (Xtransports[i]->flags&TRANS_ALIAS)
 	    continue;
 
-	sprintf(buffer,"%s/:%s", Xtransports[i]->TransName, port);
+	sprintf(buffer,"%s/:%s", Xtransports[i]->TransName, port ? port : "");
 
 	PRMSG (5,"TRANS(MakeAllCOTSServerListeners) opening %s\n",
 	       buffer, 0, 0);
@@ -873,7 +873,7 @@ XtransConnInfo 	**ciptrs_ret;
 	if (Xtransports[i]->flags&TRANS_ALIAS)
 	    continue;
 
-	sprintf(buffer,"%s/:%s", Xtransports[i]->TransName, port);
+	sprintf(buffer,"%s/:%s", Xtransports[i]->TransName, port ? port : "");
 
 	PRMSG (5,"TRANS(MakeAllCLTSServerListeners) opening %s\n",
 	    buffer, 0, 0);
