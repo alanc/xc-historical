@@ -1,0 +1,13 @@
+.\" $Header: ico.man,v 1.1 87/09/13 20:11:38 toddb Exp $
+.TH PUZZLE "13 June 1987" "X Version 11"
+.UC 4
+.SH NAME
+puzzle \- animate a puzzle
+.SH SYNOPSIS
+.B Puzzle
+[ -r ]
+.SH DESCRIPTION
+.I Puzzle
+displays a puzzle.
+.SH BUGS
+There are no known bugs.  There are lots of lacking features.
