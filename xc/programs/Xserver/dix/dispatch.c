@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.49 93/09/07 16:31:08 dpw Exp $ */
+/* $XConsortium: dispatch.c,v 5.50 93/09/18 13:39:55 dpw Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2931,7 +2931,6 @@ ProcKillClient(client)
     register ClientPtr client;
 {
     REQUEST(xResourceReq);
-    int		myIndex;
     ClientPtr	killclient;
 
     REQUEST_SIZE_MATCH(xResourceReq);
@@ -2943,9 +2942,8 @@ ProcKillClient(client)
 
     if ((killclient = LookupClient(stuff->id)))
     {
-	myIndex = client->index;
 	CloseDownClient(killclient);
-	if (myIndex == killclient->index)
+	if (client == killclient)
 	{
 	    /* force yield and return Success, so that Dispatch()
 	     * doesn't try to touch client
