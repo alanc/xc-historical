@@ -1,6 +1,6 @@
 .\"#! troff -ms $1		-*- Nroff -*-
 .\" "Xterm Control Sequences" document
-.\" $XConsortium: ctlseqs.ms,v 1.12 94/04/17 18:51:41 rws Exp $
+.\" $XConsortium: ctlseqs.ms,v 1.13 94/04/19 14:04:34 gildea Exp $
 .\"
 .\" Copyright 1991, 1994 X Consortium
 .\"
@@ -48,7 +48,7 @@
 .nr PD .3v
 .nr VS 12
 ..
-.rm CH
+.ds CH \" as nothing
 .ds LH Xterm Control Sequences
 .nr s 6*\n(PS/10
 .ds L \s\nsBEL\s0
