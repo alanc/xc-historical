@@ -1,4 +1,4 @@
-/* "$XConsortium: Initialize.c,v 1.165 90/12/19 20:06:15 rws Exp $"; */
+/* "$XConsortium: Initialize.c,v 1.166 90/12/21 16:26:21 rws Exp $"; */
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 
 /***********************************************************
@@ -241,8 +241,8 @@ static void CombineAppUserDefaults(dpy, pdb)
 	} else {
 	    char *path_default = "%s/%%L/%%N%%C:%s/%%l/%%N%%C:%s/%%N%%C:%s/%%N%%C:%s/%%L/%%N:%s/%%l/%%N:%s/%%N:%s/%%N";
 	    if ((
-	      path = ALLOCATE_LOCAL( 8*strlen(old_path)
-				     + strlen(homedir) + strlen(path_default)))
+	      path = ALLOCATE_LOCAL( 6*strlen(old_path) + 2*strlen(homedir)
+				     + strlen(path_default)))
 		== NULL) _XtAllocError(NULL);
 	    sprintf(path, path_default, old_path, old_path, old_path, homedir,
 		    old_path, old_path, old_path, homedir );
