@@ -491,6 +491,7 @@ QueryFont(pFont, pReply, nProtoCCIStructs)
 	i = 0;
 	for (i = 0; i < count && ninfos < nProtoCCIStructs; i++) {
 	    *prCI = *charInfos[i];
+	    prCI++;
 	    ninfos++;
 	}
     }
