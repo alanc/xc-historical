@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: main.c,v 1.126 87/11/27 10:09:17 rws Locked $ */
+/* $Header: main.c,v 1.127 87/12/05 11:10:48 rws Locked $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -53,11 +53,17 @@ extern FontPtr defaultFont;
 
 extern void SetInputCheck();
 extern void AbortServer();
+extern void InitProcVectors();
+extern void InitEvents();
+extern void InitExtensions();
+extern void DefineInitialRootWindow();
+extern void QueryMinMaxKeyCodes();
+extern char *sbrk();
 
 PaddingInfo PixmapWidthPaddingInfo[33];
 int connBlockScreenStart;
 
-unsigned char *minfree;
+unsigned long *minfree;
 
 static int restart = 0;
 
@@ -65,6 +71,7 @@ int
 NotImplemented()
 {
     FatalError("Not implemented");
+    /*NOTREACHED*/
 }
 
 /*
@@ -123,11 +130,11 @@ main(argc, argv)
     char	*argv[];
 {
     int		i, j, k, looping;
-    int		alwaysCheckForInput[2];
+    long	alwaysCheckForInput[2];
 
     /* Notice if we're restart.  Probably this is because we jumped through
      * uninitialized pointer */
-    minfree = (unsigned char *)sbrk(0);               /* FOR DEBUG       XXX */
+    minfree = (unsigned long *)sbrk(0);               /* FOR DEBUG       XXX */
     if (restart)
 	FatalError("server restarted. Jumped through uninitialized pointer?\n");
     else
@@ -156,7 +163,7 @@ main(argc, argv)
 	{
 	    CreateWellKnownSockets();
 	    InitProcVectors();
-	    serverClient = (ClientPtr)Xalloc(sizeof(ClientRec));
+	    serverClient = (ClientPtr)xalloc(sizeof(ClientRec));
             serverClient->sequence = 0;
             serverClient->closeDownMode = RetainPermanent;
             serverClient->clientGone = FALSE;
@@ -169,7 +176,7 @@ main(argc, argv)
 	    serverClient->index = 0;
 	}
         currentMaxClients = 10;
-        clients = (ClientPtr *)Xalloc(currentMaxClients * sizeof(ClientPtr));
+        clients = (ClientPtr *)xalloc(currentMaxClients * sizeof(ClientPtr));
         for (i=1; i<currentMaxClients; i++) 
             clients[i] = NullClient;
         clients[0] = serverClient;
@@ -228,14 +235,14 @@ main(argc, argv)
 	    (* screenInfo.screen[i].CloseScreen)(i, &screenInfo.screen[i]);
 	    screenInfo.numScreens = i;
 	}
-	Xfree(screenInfo.screen);
+	xfree(screenInfo.screen);
 	screenInfo.screen = (ScreenPtr)NULL;
 
         CloseFont(defaultFont);
         defaultFont = (FontPtr)NULL;
 
 	ResetHosts(display);
-        Xfree(clients);
+        xfree(clients);
 
 	looping = 1;
     }
@@ -250,7 +257,8 @@ CreateConnectionBlock()
     xDepth	depth;
     xVisualType visual;
     xPixmapFormat format;
-    int i, j, k, vid, 
+    unsigned long vid;
+    int i, j, k,
         lenofblock=0,
         sizesofar = 0;
     char *pBuf;
@@ -278,7 +286,7 @@ CreateConnectionBlock()
             ((setup.nbytesVendor + 3) & ~3) +
 	    (setup.numFormats * sizeof(xPixmapFormat)) +
             (setup.numRoots * sizeof(xWindowRoot));
-    ConnectionInfo = (char *) Xalloc(lenofblock);
+    ConnectionInfo = (char *) xalloc(lenofblock);
 
     bcopy((char *)&setup, ConnectionInfo, sizeof(xConnSetup));
     sizesofar = sizeof(xConnSetup);
@@ -339,7 +347,7 @@ CreateConnectionBlock()
 	{
 	    lenofblock += sizeof(xDepth) + 
 		    (pDepth->numVids * sizeof(xVisualType));
-            ConnectionInfo = (char *)Xrealloc(ConnectionInfo, lenofblock);
+            ConnectionInfo = (char *)xrealloc(ConnectionInfo, lenofblock);
             pBuf = ConnectionInfo + sizesofar;            
 	    depth.depth = pDepth->depth;
 	    depth.nVisuals = pDepth->numVids;
@@ -379,6 +387,7 @@ FatalError (msg, v0, v1, v2, v3, v4, v5, v6, v7, v8)
     ErrorF(msg, v0, v1, v2, v3, v4, v5, v6, v7, v8);
     ErrorF("\n");
     AbortServer();
+    /*NOTREACHED*/
 }
 
 /*
@@ -404,7 +413,7 @@ AddScreen(pfnInit, argc, argv)
     if (screenInfo.numScreens == screenInfo.arraySize)
     {
 	screenInfo.arraySize += 5;
-	screenInfo.screen = (ScreenPtr)Xrealloc(
+	screenInfo.screen = (ScreenPtr)xrealloc(
 	    screenInfo.screen, 
 	    screenInfo.arraySize * sizeof(ScreenRec));
     }
