@@ -3,7 +3,9 @@
 all:: $(PROGRAMS)
 
 CppScriptTarget(xmkmf,xmkmf.cpp,-DCONFIGDIRSPEC=-I$(CONFIGDIR),$(ICONFIGFILES))
+#if UseCCMakeDepend
 CppScriptTarget(makedepend,mdepend.cpp,-DPREPROC='"'"$(PREPROCESSCMD)"'"',$(ICONFIGFILES))
+#endif
 CppScriptTarget(mergelib,mergelib.cpp,"-DARCMD=$(AR)" "-DRANLIB=$(RANLIB)",$(ICONFIGFILES))
 
 InstallProgram(xmkmf,$(BINDIR))
