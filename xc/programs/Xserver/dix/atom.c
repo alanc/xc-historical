@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: atom.c,v 1.21 87/09/11 07:18:24 rws Locked $ */
+/* $Header: atom.c,v 1.22 87/11/04 20:08:37 rws Locked $ */
 
 #include "X.h"
 #include "Xatom.h"
@@ -81,7 +81,7 @@ MakeAtom(string, len, makeit)
 	(*np)->left = (*np)->right = (NodePtr) NULL;
 	(*np)->fingerPrint = fp;
 	(*np)->a = (++lastAtom);
-	strncpy((*np)->string = Xalloc(len + 1), string, len);
+	strncpy((*np)->string = (char *) Xalloc(len + 1), string, len);
 	(*np)->string[len] = 0;
 	if (lastAtom >= tableLength)
 	{
