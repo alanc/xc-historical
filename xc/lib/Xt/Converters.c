@@ -384,6 +384,7 @@ static void CvtStringToCursor(args, num_args, fromVal, toVal)
 	XtStringConversionWarning(name, "Cursor");
 	cursor = None;		/* absolute fall-back for failed conversion */
 	done(&cursor, Cursor);
+	return;
     }
     (void) strcat( filename, "Mask" );
     if (XReadBitmapFile( DisplayOfScreen(screen), RootWindowOfScreen(screen),
