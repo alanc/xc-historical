@@ -1,5 +1,5 @@
 /*
- * $XConsortium: chooser.c,v 1.0 90/09/27 20:17:35 rws Exp $
+ * $XConsortium: chooser.c,v 1.1 91/01/09 17:36:32 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -132,9 +132,10 @@ static HostName    *hostNamedb;
 
 static int  socketFD;
 
-static int  pingInterval;
+static int  pingTry;
 
 #define PING_INTERVAL	2000
+#define TRIES		3
 
 static XdmcpBuffer	directBuffer, broadcastBuffer;
 static XdmcpBuffer	buffer;
@@ -151,9 +152,8 @@ PingHosts ()
 	else
 	    XdmcpFlush (socketFD, &broadcastBuffer, hosts->addr, hosts->addrlen);
     }
-    XtAddTimeOut (pingInterval, PingHosts, (XtPointer) 0);
-    if (pingInterval < 64000)
-	pingInterval *= 2;
+    if (++pingTry < TRIES)
+	XtAddTimeOut (PING_INTERVAL, PingHosts, (XtPointer) 0);
 }
 
 char	**NameTable;
@@ -169,18 +169,22 @@ HostnameCompare (a, b)
 static void
 RebuildTable (size)
 {
-    char	**newTable;
+    char	**newTable = 0;
     HostName	*names;
     int		i;
 
-    newTable = (char **) malloc (size * sizeof (char *));
-    if (!newTable)
-	return;
-    for (names = hostNamedb, i = 0; names; names = names->next, i++)
-	newTable[i] = names->fullname;
-    qsort (newTable, size, sizeof (char *), HostnameCompare);
+    if (size)
+    {
+	newTable = (char **) malloc (size * sizeof (char *));
+	if (!newTable)
+	    return;
+	for (names = hostNamedb, i = 0; names; names = names->next, i++)
+	    newTable[i] = names->fullname;
+	qsort (newTable, size, sizeof (char *), HostnameCompare);
+    }
     XawListChange (list, newTable, size, 0, TRUE);
-    free ((char *) NameTable);
+    if (NameTable)
+	free ((char *) NameTable);
     NameTable = newTable;
     NameTableSize = size;
 }
@@ -217,7 +221,9 @@ AddHostname (hostname, status, addr, addrlen, willing)
 	    XdmcpARRAY8Equal (&hostAddr, &name->hostaddr))
 	{
 	    if (XdmcpARRAY8Equal (status, &name->status))
+	    {
 		return 0;
+	    }
 	    break;
 	}
     }
@@ -287,6 +293,53 @@ AddHostname (hostname, status, addr, addrlen, willing)
     }
     RebuildTable (NameTableSize);
     return 1;
+}
+
+static
+DisposeHostname (host)
+    HostName	*host;
+{
+    XdmcpDisposeARRAY8 (&host->hostname);
+    XdmcpDisposeARRAY8 (&host->hostaddr);
+    XdmcpDisposeARRAY8 (&host->status);
+    free ((char *) host->fullname);
+    free ((char *) host);
+}
+
+static
+RemoveHostname (host)
+    HostName	*host;
+{
+    HostName	**prev, *hosts;
+
+    prev = &hostNamedb;;
+    for (hosts = hostNamedb; hosts; hosts = hosts->next)
+    {
+	if (hosts == host)
+	    break;
+	prev = &hosts->next;
+    }
+    if (!hosts)
+	return;
+    *prev = host->next;
+    DisposeHostname (host);
+    NameTableSize--;
+    RebuildTable (NameTableSize);
+}
+
+static
+EmptyHostnames ()
+{
+    HostName	*hosts, *next;
+
+    for (hosts = hostNamedb; hosts; hosts = next)
+    {
+	next = hosts->next;
+	DisposeHostname (hosts);
+    }
+    NameTableSize = 0;
+    hostNamedb = 0;
+    RebuildTable (NameTableSize);
 }
 
 static void
@@ -503,16 +556,13 @@ InitXDMCP (argv)
     optlen = sizeof (soopts);
     if (getsockopt (socketFD, SOL_SOCKET, SO_BROADCAST, &soopts, &optlen) < 0)
     {
-	printf ("getsockopt failed\n");
 	return 0;
     }
-    printf ("soopts: %d\n", soopts);
     soopts = -1;
     if (setsockopt (socketFD, SOL_SOCKET, SO_BROADCAST, &soopts, sizeof (soopts)) < 0)
 	return 0;
     optlen = sizeof (soopts);
     getsockopt (socketFD, SOL_SOCKET, SO_BROADCAST, &soopts, &optlen);
-    printf ("soopts: %d\n", soopts);
 #endif
     
     XtAddInput (socketFD, (XtPointer) XtInputReadMask, ReceivePacket,
@@ -522,7 +572,7 @@ InitXDMCP (argv)
 	RegisterHostname (*argv);
 	++argv;
     }
-    pingInterval = PING_INTERVAL;
+    pingTry = 0;
     PingHosts ();
 }
 
@@ -628,7 +678,8 @@ DoCancel ()
 static void
 DoPing ()
 {
-    pingInterval = PING_INTERVAL;
+    EmptyHostnames ();
+    pingTry = 0;
     PingHosts ();
 }
 
@@ -644,7 +695,7 @@ main (argc, argv)
 {
     static void	CvtStringToARRAY8();
 
-    toplevel = XtInitialize (argv[0], "Chooser", options, XtNumber(options), (Cardinal *)&argc, argv);
+    toplevel = XtInitialize (argv[0], "Chooser", options, XtNumber(options), &argc, argv);
 
     XtAddConverter(XtRString, XtRARRAY8, CvtStringToARRAY8, NULL, 0);
 
@@ -698,7 +749,6 @@ CvtStringToARRAY8 (args, num_args, fromVal, toVal)
     dest = (ARRAY8Ptr) XtMalloc (sizeof (ARRAY8));
     len = fromVal->size;
     s = (char *) fromVal->addr;
-    printf ("Convert string to array8 %s\n", s);
     if (!XdmcpAllocARRAY8 (dest, len >> 1))
 	XtStringConversionWarning ((char *) fromVal->addr, XtRARRAY8);
     else
