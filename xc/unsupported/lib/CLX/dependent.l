@@ -755,21 +755,13 @@
   `(progn ,@body))
 
 #+CLX-Genera-New-Scheduler
-(progn
-
-(defun holding-lock-internal (function lock display whostate timeout)
-  (declare (sys:downward-funarg function)
-	   (ignore whostate))
-  (process:with-lock (lock :timeout timeout)
-    (let ((debug-io (buffer-debug-io display)))
-      (scl:let-if debug-io ((*debug-io* debug-io))
-	(funcall function)))))
-
 (defmacro holding-lock ((locator display &optional whostate &key timeout)
 			&body body)
-  `(holding-lock-internal #'(lambda () ,@body) ,locator ,display ,whostate ,timeout))
-
-)
+  (declare (ignore whostate))
+  `(process:with-lock (,locator :timeout ,timeout)
+     (let ((.debug-io. (buffer-debug-io ,display)))
+       (scl:let-if .debug-io. ((*debug-io* .debug-io.))
+	 ,@body))))
 
 #+(and lispm (not CLX-Genera-New-Scheduler))
 (defmacro holding-lock ((locator display &optional whostate &key timeout)
@@ -2075,14 +2067,14 @@
 ;; Whether to use closures for requests or not.
 ;;-----------------------------------------------------------------------------
 
-;;; If this variable is non-NIL, then request code is compiled in a much more
-;;; compact format, as the common code wrapped around each request is shared,
-;;; and the code specific to each request is built into a closure that is
-;;; funcalled by the shared code.  If your compiler makes efficient use of
-;;; closures than you probably want to set this to T, as it makes the code
-;;; more compact.
+;;; If this macro expands to non-NIL, then request and locking code is
+;;; compiled in a much more compact format, as the common code is shared, and
+;;; the specific code is built into a closure that is funcalled by the shared
+;;; code.  If your compiler makes efficient use of closures then you probably
+;;; want to make this expand to T, as it makes the code more compact.
 
-(defconstant *use-closures-for-requests* #+lispm t #-lispm nil)
+(defmacro use-closures ()
+  #+lispm t #-lispm nil)
 
 
 ;;-----------------------------------------------------------------------------
@@ -2116,6 +2108,24 @@
 	    (concatenate 'simple-string ".Xdefaults-"
 			 #+excl (short-site-name)
 			 #-excl (machine-instance)))))))
+
+
+;;-----------------------------------------------------------------------------
+;; GC stuff
+;;-----------------------------------------------------------------------------
+
+#+Genera
+(si:define-gc-cleanup clx-cleanup ("CLX Cleanup")
+  (declare (special *event-free-list*
+		    *pending-command-free-list*
+		    *reply-buffer-free-lists*
+		    *gcontext-local-state-cache*
+		    *temp-gcontext-cache*))
+  (setq *event-free-list* nil)
+  (setq *pending-command-free-list* nil)
+  (fill *reply-buffer-free-lists* nil)
+  (setq *gcontext-local-state-cache* nil)
+  (setq *temp-gcontext-cache* nil))
 
 
 ;;-----------------------------------------------------------------------------
@@ -2423,12 +2433,12 @@
       (declare (type (simple-array pixarray-8-element-type (*)) vector)
 	       (type array-index start y))
       (do* ((end (index+ start width))
-	    (i start (index1+ i))
-	    (x (array-row-major-index array y 0) (index1+ x)))
-	   ((index>= i end))
-	(declare (type array-index end i x))
-	(setf (aref vector x)
-	      (the card8 (aref buffer-bbuf i))))))
+ 	    (i start (index1+ i))
+ 	    (x (array-row-major-index array y 0) (index1+ x)))
+ 	   ((index>= i end))
+ 	(declare (type array-index end i x))
+ 	(setf (aref vector x)
+ 	      (the card8 (aref buffer-bbuf i))))))
   t)
 
 #+lcl3.0
@@ -2937,10 +2947,13 @@
 		(sys:%1d-aref src src-idx)))))
     #+lcl3.0
     (macrolet
-      ((copy (element-type)
-	 `(let ((src (sys:underlying-simple-vector pixarray))
-		(dest (sys:underlying-simple-vector copy)))
-	    (declare (type (simple-array ,element-type (*)) src dest))
+      ((copy (type element-type)
+	 `(let* ((pixarray pixarray)
+		 (copy copy)
+		 (src (sys:underlying-simple-vector pixarray))
+		 (dst (sys:underlying-simple-vector copy)))
+	    (declare (type ,type pixarray copy)
+		     (type (simple-array ,element-type (*)) src dst))
 	    #.(declare-buffun)
 	    (do* ((dst-y 0 (index1+ dst-y))
 		  (src-y y (index1+ src-y)))
@@ -2953,13 +2966,13 @@
 			     (index1+ src-idx)))
 		   ((index>= dst-idx dst-end))
 		(declare (type array-index dst-idx src-idx dst-end))
-		(setf (aref dest dst-idx)
+		(setf (aref dst dst-idx)
 		      (the ,element-type (aref src src-idx))))))))
       (ecase bits-per-pixel
-	(1  (copy pixarray-1-element-type))
-	(4  (copy pixarray-4-element-type))
-	(8  (copy pixarray-8-element-type))
-	(16 (copy pixarray-16-element-type))
-	(24 (copy pixarray-24-element-type))
-	(32 (copy pixarray-32-element-type))))
+	(1  (copy pixarray-1  pixarray-1-element-type))
+	(4  (copy pixarray-4  pixarray-4-element-type))
+	(8  (copy pixarray-8  pixarray-8-element-type))
+	(16 (copy pixarray-16 pixarray-16-element-type))
+	(24 (copy pixarray-24 pixarray-24-element-type))
+	(32 (copy pixarray-32 pixarray-32-element-type))))
     ))

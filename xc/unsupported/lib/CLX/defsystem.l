@@ -284,6 +284,10 @@
 
     (format t ";;; Default paths: ~s ~s~%" source-path binary-path)
 
+    ;; Make sure we're using the lucid production compiler 
+    #+(and lcl3.0 (not clx-debugging))
+    (proclaim '(optimize (speed 3) (compilation-speed 0)))
+
     (flet ((compile-and-load (filename)
 	     (let ((source (merge-pathnames filename source-path))
 		   (binary (merge-pathnames filename binary-path)))
