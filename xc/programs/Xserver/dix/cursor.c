@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $XConsortium: cursor.c,v 1.40 91/02/14 19:35:34 keith Exp $ */
+/* $XConsortium: cursor.c,v 1.41 91/12/23 12:08:35 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -116,7 +116,11 @@ AllocCursor(psrcbits, pmaskbits, cm,
 
     pCurs = (CursorPtr)xalloc(sizeof(CursorRec) + sizeof(CursorBits));
     if (!pCurs)
+    {
+	xfree(psrcbits);
+	xfree(pmaskbits);
 	return (CursorPtr)NULL;
+    }
     bits = (CursorBitsPtr)((char *)pCurs + sizeof(CursorRec));
     bits->source = psrcbits;
     bits->mask = pmaskbits;
@@ -150,6 +154,7 @@ AllocCursor(psrcbits, pmaskbits, cm,
 		pscr = screenInfo.screens[nscr];
 		( *pscr->UnrealizeCursor)( pscr, pCurs);
 	    }
+	    FreeCursorBits(bits);
 	    xfree(pCurs);
 	    return (CursorPtr)NULL;
 	}
