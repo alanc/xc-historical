@@ -67,6 +67,8 @@ IMPORTS2 = \
 	$(AWIDGETSRC)/LogoP.h \
 	$(AWIDGETSRC)/Mailbox.h \
 	$(AWIDGETSRC)/MailboxP.h \
+	$(AWIDGETSRC)/Paned.h \
+	$(AWIDGETSRC)/PanedP.h \
 	$(AWIDGETSRC)/Scroll.h \
 	$(AWIDGETSRC)/ScrollP.h \
 	$(AWIDGETSRC)/Simple.h \
@@ -77,7 +79,6 @@ IMPORTS2 = \
 	$(AWIDGETSRC)/Toggle.h \
 	$(AWIDGETSRC)/ToggleP.h \
 	$(AWIDGETSRC)/VPaned.h \
-	$(AWIDGETSRC)/VPanedP.h \
 	$(AWIDGETSRC)/Viewport.h \
 	$(AWIDGETSRC)/ViewportP.h \
 	$(AWIDGETSRC)/XawMisc.h
