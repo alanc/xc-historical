@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.114 87/11/08 15:06:48 rws Locked $ */
+/* $Header: events.c,v 1.116 87/11/18 09:11:46 rws Locked $ */
 
 #include "X.h"
 #include "misc.h"
@@ -189,7 +189,7 @@ static int filters[128] =
 	StructureAndSubMask,	       /* UnmapNotify */
 	StructureAndSubMask,	       /* MapNotify */
 	SubstructureRedirectMask,      /* MapRequest */
-	SubstructureNotifyMask,	       /* ReparentNotify */
+	StructureAndSubMask,	       /* ReparentNotify */
 	StructureAndSubMask,	       /* ConfigureNotify */
 	SubstructureRedirectMask,      /* ConfigureRequest */
 	StructureAndSubMask,	       /* GravityNotify */
