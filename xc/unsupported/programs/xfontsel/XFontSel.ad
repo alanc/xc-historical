@@ -1,4 +1,4 @@
-! $XConsortium: XFontSel.ad,v 1.8 91/06/22 17:35:28 rws Exp $
+! $XConsortium: XFontSel.ad,v 1.9 91/06/22 19:32:58 rws Exp $
 !
 ! app-defaults for XFontSel
 !
@@ -104,14 +104,15 @@ XFontSel.cursor:	left_ptr
 *fontName*skipAdjust:	true
 
 *sampleText*Label: \
-ABCDEFGHIJKLMNOPQRSTUVWXYZ\n\
-abcdefghijklmnopqrstuvwxyz\n\
-0123456789
+Processing fonts...
 
 *sampleText: \
 ABCDEFGHIJKLMNOPQRSTUVWXYZ\n\
 abcdefghijklmnopqrstuvwxyz\n\
-0123456789
+0123456789\n\
+\340\346\347\353\356\360\361\363\371\375\
+\300\306\307\313\316\320\321\323\331\335
+
 
 *sampleText16: \
 \044\042\044\044\044\046\044\050\044\052\044\053\044\055\044\057\
