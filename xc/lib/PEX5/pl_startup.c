@@ -1,4 +1,4 @@
-/* $XConsortium: pl_startup.c,v 1.18 92/05/07 23:29:19 mor Exp $ */
+/* $XConsortium: pl_startup.c,v 1.1 92/05/08 15:13:55 mor Exp $ */
 
 /************************************************************************
 Copyright 1987,1991,1992 by Digital Equipment Corporation, Maynard,
@@ -65,7 +65,7 @@ INPUT Display	*display;
 
     if ((pExtCodes = XInitExtension (display, "X3D-PEX")) == NULL)
     {
-	return (Failure);
+	return (0);
     }
 
 
@@ -158,7 +158,7 @@ INPUT Display	*display;
     {
         UnlockDisplay (display);
 	PEXSyncHandle (display);
-	return (Failure);              /* return an error */
+	return (0);              /* return an error */
     }
 
 
@@ -168,7 +168,7 @@ INPUT Display	*display;
 
     string = (char *) PEXAllocBuf ((unsigned) (rep.lengthName + 1));
     _XReadPad (display, (char *) string, (long) (rep.lengthName));
-    string[rep.lengthName] = 0;
+    string[rep.lengthName] = '\0';
 
 
     /*
@@ -195,7 +195,7 @@ INPUT Display	*display;
     extInfo->first_event = pExtCodes->first_event;
     extInfo->first_error = pExtCodes->first_error;
 
-    return (Success);
+    return (1);
 }
 
 
@@ -337,7 +337,7 @@ OUTPUT unsigned long		**numReturn;
 	        prepbuf += PADDED_BYTES (sizeof (CARD16) + length);
 	     }
 	 }
-	 else if (itemMask == PEXETBoth)
+	 else if (itemMask == PEXETAll)
 	 {
 	     for (j = 0; j < numDescs; j++)
 	     {
@@ -397,13 +397,13 @@ OUTPUT unsigned long		**numReturn;
 		penum->descriptor = pstring =
 		    (char *) PEXAllocBuf ((unsigned) (length + 1));
 		COPY_AREA ((char *) prepbuf, (char *) pstring, length);
-		pstring[length] = 0;       /* null terminate */
+		pstring[length] = '\0';       /* null terminate */
 
 		prepbuf += (PADDED_BYTES (sizeof (CARD16) + length) - 
 		    sizeof (CARD16));
 	    }
 	}
-	else if (itemMask == PEXETBoth)
+	else if (itemMask == PEXETAll)
 	{
 	    for (j = 0; j < numDescs; j++, penum++)
 	    {
@@ -415,7 +415,7 @@ OUTPUT unsigned long		**numReturn;
 		penum->descriptor = pstring =
 		    (char *) PEXAllocBuf ((unsigned) (length + 1));
 		COPY_AREA ((char *) prepbuf, (char *) pstring, length);
-		pstring[length] = 0;       /* null terminate */
+		pstring[length] = '\0';       /* null terminate */
 
 		prepbuf += PADDED_BYTES (length);
 	    }
@@ -685,12 +685,20 @@ INPUT XExtCodes	*codes;
     PEXRemoveDisplayInfo (display, pexDisplayInfo);
 
     if (pexDisplayInfo == NULL)
-	return (Failure);
+	return (0);
 
     PEXFreeBuf ((char *) (pexDisplayInfo->extInfo->vendor_name));
     PEXFreeBuf ((char *) (pexDisplayInfo->extInfo));
     PEXFreeBuf ((char *) (pexDisplayInfo->fpSupport));
     PEXFreeBuf ((char *) pexDisplayInfo);
 
-    return (Success);
+
+    /*
+     * Free the pick path cache (if it's not in use)
+     */
+
+    if (PickCache && !PickCacheInUse)
+	PEXFreeBuf ((char *) PickCache);
+
+    return (1);
 }
