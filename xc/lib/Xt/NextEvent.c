@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: NextEvent.c,v 1.32 88/02/02 14:48:53 swick Locked $";
+static char rcsid[] = "$Header: NextEvent.c,v 1.34 88/02/02 15:05:46 swick Locked $";
 #endif lint
 
 /*
@@ -71,9 +71,9 @@ static struct  InputEvent *outstanding_queue = NULL;
 
 static struct 
 {
-  	Fd_set rmask;
-	Fd_set wmask;
-	Fd_set emask;
+  	fd_set rmask;
+	fd_set wmask;
+	fd_set emask;
 	int	nfds;
 } composite;
 
@@ -151,8 +151,8 @@ unsigned long *howlong;
 	struct timeval	max_wait_time;
 	static struct timeval  zero_time = { 0 , 0};
 	register struct timeval *wait_time_ptr;
-	Fd_set rmaskfd, wmaskfd, emaskfd;
-	static Fd_set zero = { 0 };
+	fd_set rmaskfd, wmaskfd, emaskfd;
+	static fd_set zero = { 0 };
 	register int     nfound, i;
 	Boolean ret;
 	
@@ -512,7 +512,7 @@ Boolean XtPending()
 XtPeekEvent(event)
 XEvent *event;
 {
-    Fd_set rmaskfd, wmaskfd, emaskfd;
+    fd_set rmaskfd, wmaskfd, emaskfd;
     register int nfound, i;
     struct timeval cur_time, wait_time, *wait_time_ptr;
     struct timezone curzone;
