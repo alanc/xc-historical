@@ -1,0 +1,21 @@
+SRCS = dixutils.c globals.c window.c dispatch.c resource.c main.c \
+	 property.c  gc.c events.c atom.c fonts.c cursor.c glyphcurs.c \
+	 extension.c colormap.c tables.c swapreq.c swaprep.c
+OBJS = dixutils.o main.o globals.o window.o dispatch.o resource.o \
+	 property.o gc.o events.o atom.o fonts.o cursor.o glyphcurs.o \
+	 extension.o colormap.o  initatoms.o tables.o swapreq.o swaprep.o
+CDEBUGFLAGS = -g -DDEBUG
+INCLUDES = -I. -I../include -I../../include
+
+NormalLibraryObjectRule()
+NormalLibraryTarget(dix,$(OBJS))
+
+DependTarget()
+
+lint:
+	lint -Cdix $(INCLUDES) $(SRCS) > lint.out
+
+../../include/Xatom.h initatoms.c:	BuiltInAtoms buildatoms
+	buildatoms
+
+Makefiles:
