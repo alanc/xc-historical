@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontutil.c,v 1.5 93/09/20 15:06:13 dpw Exp $
+ * $XConsortium: fontutil.c,v 1.6 93/09/20 15:56:40 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -66,11 +66,18 @@ QueryGlyphExtents(pFont, charinfo, count, info)
     if (count != 0) {
 
 	pCI = *charinfo++;
-	info->overallAscent = pCI->ascent;
-	info->overallDescent = pCI->descent;
-	info->overallLeft = pCI->leftSideBearing;
-	info->overallRight = pCI->rightSideBearing;
-	info->overallWidth = pCI->characterWidth;
+	/* ignore nonexisting characters when calculating text extents */
+	if ( !((pCI->characterWidth == 0)
+	       && (pCI->rightSideBearing == 0)
+	       && (pCI->leftSideBearing == 0)
+	       && (pCI->ascent == 0)
+	       && (pCI->descent == 0)) ) {
+	    info->overallAscent = pCI->ascent;
+	    info->overallDescent = pCI->descent;
+	    info->overallLeft = pCI->leftSideBearing;
+	    info->overallRight = pCI->rightSideBearing;
+	    info->overallWidth = pCI->characterWidth;
+	}
 
 	if (pFont->info.constantMetrics && pFont->info.noOverlap) {
 	    info->overallWidth *= count;
@@ -79,23 +86,30 @@ QueryGlyphExtents(pFont, charinfo, count, info)
 	} else {
 	    for (i = 1; i < count; i++) {
 		pCI = *charinfo++;
-		info->overallAscent = MAX(
-					  info->overallAscent,
-					  pCI->ascent);
-		info->overallDescent = MAX(
-					   info->overallDescent,
-					   pCI->descent);
-		info->overallLeft = MIN(
-					info->overallLeft,
-				  info->overallWidth + pCI->leftSideBearing);
-		info->overallRight = MAX(
-					 info->overallRight,
-				 info->overallWidth + pCI->rightSideBearing);
-		/*
-		 * yes, this order is correct; overallWidth IS incremented
-		 * last
-		 */
-		info->overallWidth += pCI->characterWidth;
+		/* ignore nonexisting characters when calculating extents */
+		if ( !((pCI->characterWidth == 0)
+		       && (pCI->rightSideBearing == 0)
+		       && (pCI->leftSideBearing == 0)
+		       && (pCI->ascent == 0)
+		       && (pCI->descent == 0)) ) {
+		    info->overallAscent = MAX(
+					      info->overallAscent,
+					      pCI->ascent);
+		    info->overallDescent = MAX(
+					       info->overallDescent,
+					       pCI->descent);
+		    info->overallLeft = MIN(
+					    info->overallLeft,
+					    info->overallWidth + pCI->leftSideBearing);
+		    info->overallRight = MAX(
+					     info->overallRight,
+					     info->overallWidth + pCI->rightSideBearing);
+		    /*
+		     * yes, this order is correct; overallWidth IS incremented
+		     * last
+		     */
+		    info->overallWidth += pCI->characterWidth;
+		}
 	    }
 	}
     } else {
