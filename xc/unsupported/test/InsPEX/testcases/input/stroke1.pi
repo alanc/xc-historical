@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: stroke1.pi,v 5.1 91/02/16 10:03:31 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989, 1990, 1991,1990 by Sun Microsystems, Inc. and the X Consortium.
@@ -47,7 +47,9 @@ ptlst3 = I_Ppoint_list3(2, pts3);
 ipts = IA_Ppoint(2, 0.0,0.0, 0.0,0.0);
 ipts3 = IA_Ppoint3(2, 0.0,0.0,0.0, 0.0,0.0,0.0);
 inqstroke = I_Ppoint_list(2, ipts);
+inqstrokep = IA_Ppoint_list(1, inqstroke);
 inqstroke3 = I_Ppoint_list3(2, ipts3);
+inqstroke3p = IA_Ppoint_list3(1, inqstroke3);
 
 earea = I_Plimit(0.0,300.0, 0.0,300.0);
 evol = I_Plimit3(0.0,300.0, 0.0,300.0, 0.0,1.0);
@@ -59,11 +61,11 @@ pcreate_store(&err,&store3);
 im_ifneq(err,0,"ERROR: %d in preate_store\n",err);
 
 # retrieve default data
-pinq_stroke_st(1,1,PINQ_SET,store,&err,&inqmode,&inqswitch,&inqview,&inqstroke,
+pinq_stroke_st(1,1,PINQ_SET,store,&err,&inqmode,&inqswitch,&inqview,&inqstrokep,
 	&inqpet,&inqearea,&data);
 im_ifneq(err,0,"ERROR: %d in pinq_stroke_st\n",err);
 pinq_stroke_st3(1,1,PINQ_SET,store3,&err,&inqmode,&inqswitch,&inqview,
-	&inqstroke3,&inqpet,&inqevol,&data3);
+	&inqstroke3p,&inqpet,&inqevol,&data3);
 im_ifneq(err,0,"ERROR: %d in pinq_stroke_st3\n",err);
 
 # operation: initialize stroke device
@@ -71,7 +73,7 @@ pinit_stroke( 1, 1, 1, &ptlst, 1, &earea, data);
 
 # verify: inquire stroke states and verify against the expected values
 
-pinq_stroke_st(1,1,PINQ_SET,store,&err,&inqmode,&inqswitch,&inqview,&inqstroke,
+pinq_stroke_st(1,1,PINQ_SET,store,&err,&inqmode,&inqswitch,&inqview,&inqstrokep,
 	&inqpet,&inqearea,&inqdata);
 im_ifneq(err,0,"ERROR: %d in pinq_stroke_st\n",err);
 
@@ -83,7 +85,7 @@ im_ifneq(inqpet,1,
 status = i_compare_Plimit(inqearea,earea);
 im_ifneq(status,1,"failed: stroke init echo area != expected\n",NULL);
 
-status = i_compare_Ppoint_list(inqstroke,ptlst);
+status = i_compare_Ppoint_list(*inqstrokep,ptlst);
 im_ifneq(status,1,"failed: stroke init positions != expected\n",NULL);
 
 # test sample stroke
@@ -102,7 +104,7 @@ pinit_stroke3( 1, 1, 0, &ptlst3, 1, &evol, data3);
 
 # verify: inquire stroke(3) states and verify against the expected values
 pinq_stroke_st3(1,1,PINQ_SET,store3,&err,&inqmode,&inqswitch,&inqview,
-	&inqstroke3,&inqpet,&inqevol,&inqdata);
+	&inqstroke3p,&inqpet,&inqevol,&inqdata);
 im_ifneq(err,0,"ERROR: %d in pinq_stroke_st3\n",err);
 
 im_ifneq(inqview,0,"failed: stroke3 init view idx %d, expected 0\n",inqview);
@@ -111,7 +113,7 @@ im_ifneq(inqpet,1,"failed: stroke3 init prompt and echo type %d, expected 1\n",
 status = i_compare_Plimit3(inqevol,evol);
 im_ifneq(status,1,"failed: stroke3 init echo volume != expected\n",NULL);
 
-status = i_compare_Ppoint_list3(inqstroke3,ptlst3);
+status = i_compare_Ppoint_list3(*inqstroke3p,ptlst3);
 im_ifneq(status,1,"failed: stroke3 init positions != expected\n",NULL);
 
 # test sample stroke3
