@@ -1,4 +1,4 @@
-/* $XConsortium: authutil.c,v 1.6 93/12/06 19:38:23 mor Exp $ */
+/* $XConsortium: authutil.c,v 1.7 93/12/07 11:04:04 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -25,10 +25,18 @@ Author: Ralph Mor, X Consortium
 
 #ifdef X_NOT_STDC_ENV
 extern int errno;
-#endif
-
 extern long time ();
+extern char *getenv();
+#define Time_t long
+#else
+#include <time.h>
+#define Time_t time_t
+#endif
+#ifndef X_NOT_POSIX
+#include <unistd.h>
+#else
 extern unsigned	sleep ();
+#endif
 
 static Status read_short ();
 static Status read_string ();
@@ -108,7 +116,7 @@ long	dead;
 #ifndef WIN32
     char	creat_name[1025], link_name[1025];
     struct stat	statb;
-    long	now;
+    Time_t	now;
     int		creat_fd = -1;
 
     if ((int) strlen (file_name) > 1022)
@@ -121,7 +129,7 @@ long	dead;
 
     if (stat (creat_name, &statb) != -1)
     {
-	now = time ((long *) 0);
+	now = time ((Time_t *) 0);
 
 	/*
 	 * NFS may cause ctime to be before now, special
