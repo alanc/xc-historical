@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: parse.c,v 1.52 91/07/12 09:59:37 dave Exp $
+ * $XConsortium: parse.c,v 1.53 92/05/11 15:05:41 dave Exp $
  *
  * parse the .twmrc file
  *
@@ -99,6 +99,40 @@ static int doparse (ifunc, srctypename, srcname)
 
     yyparse();
 
+    if (Scr->PointerForeground.pixel != Scr->Black ||
+	Scr->PointerBackground.pixel != Scr->White)
+    {
+	XRecolorCursor(dpy, UpperLeftCursor,
+		       &Scr->PointerForeground, &Scr->PointerBackground);
+	XRecolorCursor(dpy, RightButt,
+		       &Scr->PointerForeground, &Scr->PointerBackground);
+	XRecolorCursor(dpy, LeftButt,
+		       &Scr->PointerForeground, &Scr->PointerBackground);
+	XRecolorCursor(dpy, MiddleButt,
+		       &Scr->PointerForeground, &Scr->PointerBackground);
+	XRecolorCursor(dpy, Scr->FrameCursor,
+		       &Scr->PointerForeground, &Scr->PointerBackground);
+	XRecolorCursor(dpy, Scr->TitleCursor,
+		       &Scr->PointerForeground, &Scr->PointerBackground);
+	XRecolorCursor(dpy, Scr->IconCursor,
+		       &Scr->PointerForeground, &Scr->PointerBackground);
+	XRecolorCursor(dpy, Scr->IconMgrCursor,
+		       &Scr->PointerForeground, &Scr->PointerBackground);
+	XRecolorCursor(dpy, Scr->MoveCursor,
+		       &Scr->PointerForeground, &Scr->PointerBackground);
+	XRecolorCursor(dpy, Scr->ResizeCursor,
+		       &Scr->PointerForeground, &Scr->PointerBackground);
+	XRecolorCursor(dpy, Scr->MenuCursor,
+		       &Scr->PointerForeground, &Scr->PointerBackground);
+	XRecolorCursor(dpy, Scr->ButtonCursor,
+		       &Scr->PointerForeground, &Scr->PointerBackground);
+	XRecolorCursor(dpy, Scr->WaitCursor,
+		       &Scr->PointerForeground, &Scr->PointerBackground);
+	XRecolorCursor(dpy, Scr->SelectCursor,
+		       &Scr->PointerForeground, &Scr->PointerBackground);
+	XRecolorCursor(dpy, Scr->DestroyCursor,
+		       &Scr->PointerForeground, &Scr->PointerBackground);
+    }
     if (ParseError) {
 	fprintf (stderr, "%s:  errors found in twm %s",
 		 ProgramName, srctypename);
@@ -350,6 +384,8 @@ typedef struct _TwmKeyword {
 #define kwc_MenuTitleForeground		5
 #define kwc_MenuTitleBackground		6
 #define kwc_MenuShadowColor		7
+#define kwc_PointerForeground		8
+#define kwc_PointerBackground		9
 
 
 /*
@@ -512,6 +548,8 @@ static TwmKeyword keytable[] = {
     { "noversion",		KEYWORD, kw0_NoVersion },
     { "opaquemove",		KEYWORD, kw0_OpaqueMove },
     { "pixmaps",		PIXMAPS, 0 },
+    { "pointerbackground",	CKEYWORD, kwc_PointerBackground },
+    { "pointerforeground",	CKEYWORD, kwc_PointerForeground },
     { "r",			ROOT, 0 },
     { "randomplacement",	KEYWORD, kw0_RandomPlacement },
     { "resize",			RESIZE, 0 },
@@ -893,6 +931,13 @@ int do_color_keyword (keyword, colormode, s)
 	GetColor (colormode, &Scr->MenuShadowColor, s);
 	return 1;
 
+      case kwc_PointerForeground:
+	GetColorValue (colormode, &Scr->PointerForeground, s);
+	return 1;
+
+      case kwc_PointerBackground:
+	GetColorValue (colormode, &Scr->PointerBackground, s);
+	return 1;
     }
 
     return 0;
