@@ -1,4 +1,4 @@
-/* $XConsortium: Xutil.h,v 11.60 90/12/11 22:39:45 rws Exp $ */
+/* $XConsortium: Xutil.h,v 11.62 91/02/03 13:30:35 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -810,9 +810,11 @@ extern char *XFindFile(
     int 		/* num_substitutions */,
     Bool (*)(
 #if NeedNestedPrototypes
-	     char*
+	     char*,
+	     caddr_t
 #endif
-	     )		/* predicate */
+	     )		/* predicate */,
+    caddr_t		/* predicate_data */
 #endif
 );
 
