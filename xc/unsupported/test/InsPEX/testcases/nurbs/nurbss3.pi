@@ -1,5 +1,5 @@
 
-/* $XConsortium$ */
+/* $XConsortium: nurbss3.pi,v 5.1 91/02/16 10:03:51 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989, 1990, 1991,1990 by Sun Microsystems, Inc. and the X Consortium.
@@ -129,7 +129,7 @@ pset_indiv_asf(PASPECT_INT_REFL_EQN,PASF_BUNDLED);
 pset_indiv_asf(PASPECT_INT_SHAD_METH,PASF_BUNDLED);
 pset_indiv_asf(PASPECT_REFL_PROPS,PASF_BUNDLED);
 pset_indiv_asf(PASPECT_BACK_INT_STYLE,PASF_BUNDLED);
-pset_indiv_asf(PASPECT_BACK_INT_COLR_INDEX,PASF_BUNDLED);
+pset_indiv_asf(PASPECT_BACK_INT_COLR,PASF_BUNDLED);
 pset_indiv_asf(PASPECT_BACK_INT_REFL_EQN,PASF_BUNDLED);
 pset_indiv_asf(PASPECT_BACK_INT_SHAD_METH,PASF_BUNDLED);
 pset_indiv_asf(PASPECT_BACK_REFL_PROPS,PASF_BUNDLED);
