@@ -1,5 +1,5 @@
 *TransientShell.allowShellResize:	True
-*font:					-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-iso*-*
+*font:					variable
 *shapeStyle:				oval
 *cursor:				left_ptr
 !*highlight:				magenta
@@ -12,8 +12,7 @@
 *form*left:				ChainLeft
 *form*right:				ChainLeft
 
-*MenuButton.leftBitmap:			menu12
-*form*width:              		144
+*form*width:              		120
 *form*height:             		15
 
 *Toggle.translations:	<EnterWindow>:	highlight(WhenUnset)\n\
@@ -52,13 +51,13 @@
 *Dialog.cancel.label:			Cancel
 *Dialog.retry.label:			Retry
 
-*form.infoButton.width:			48
+*form.infoButton.width:			36
 *form.infoButton.label:			Info
 
 *infoPopup.width:			300
 *infoPopup.height:			100
 
-*form.MenuButton.width:			48
+*form.MenuButton.width:			36
 
 *form.SimpleMenu.width:			0
 *form.SimpleMenu.height:		0
@@ -75,13 +74,13 @@
 
 *SmeBSB.HorizontalMargins:		32
 
-*fileMenu.load.label:			Load...
-*fileMenu.insert.label:			Insert...
+*fileMenu.load.label:			Load
+*fileMenu.insert.label:			Insert
 *fileMenu.save.label:			Save
-*fileMenu.saveAs.label:			Save As...
-*fileMenu.resize.label:			Resize...
-*fileMenu.filename.label:		Filename...
-*fileMenu.basename.label:		Basename...
+*fileMenu.saveAs.label:			Save As
+*fileMenu.resize.label:			Resize
+*fileMenu.filename.label:		Filename
+*fileMenu.basename.label:		Basename
 *fileMenu.quit.label:			Quit
 
 *editMenu.image.label:			Image

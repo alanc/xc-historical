@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.3 90/03/30 06:24:09 dmatic Exp $
+ * $XConsortium: Bitmap.c,v 1.1 90/03/29 15:21:39 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -3174,7 +3174,6 @@ static void Initialize(request, new, argv, argc)
     XGCValues  values;
     XtGCMask   mask;
     char *image_data, *buffer_data;
-    int zero = 0;
 
     new->bitmap.notify = NULL;
     new->bitmap.cardinal = 0;
@@ -3271,7 +3270,7 @@ static void Initialize(request, new, argv, argc)
 					   new->bitmap.width,
 					   new->bitmap.height);
     /* magic command !!! */
-    BWEngageRequest((Widget)new, MarkRequest, True, (caddr_t) &zero, sizeof(int));
+    BWEngageRequest((Widget)new, MarkRequest, True, 0, sizeof(int));
 
     /* Read file */
     {
