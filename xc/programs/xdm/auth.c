@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.29 91/02/04 19:17:42 gildea Exp $
+ * $XConsortium: auth.c,v 1.30 91/02/11 09:05:21 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -132,7 +132,7 @@ char		*name;
 		auth->name_length, auth->name_length,
  		auth->name_length, auth->name);
 	    for (i = 0; i < (int)auth->data_length; i++)
-		Debug (" %02x", auth->data[i]);
+		Debug (" %02x", auth->data[i] & 0xff);
 	    Debug ("\n");
 	}
 	else
