@@ -1,4 +1,4 @@
-/* $XConsortium: save.c,v 1.6 94/08/10 15:09:54 mor Exp mor $ */
+/* $XConsortium: save.c,v 1.7 94/08/11 19:10:40 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -60,6 +60,7 @@ XtPointer 	callData;
 {
     ClientRec	*client;
     XtPointer	ptr;
+    List	*cl;
     int		saveType;
     int		interactStyle;
     Bool	fast = False;
@@ -99,10 +100,9 @@ XtPointer 	callData;
     interactCount = 0;
     phase2RequestCount = 0;
 
-    for (client = ClientList; client; client = client->next)
+    for (cl = ListFirst (RunningList); cl; cl = ListNext (cl))
     {
-	if (!client->running)
-	    continue;
+	client = (ClientRec *) cl->thing;
 
 	client->wantsPhase2 = False;
 
@@ -118,9 +118,11 @@ XtPointer 	callData;
 
     if (!wantShutdown)
     {
-	for (client = ClientList; client; client = client->next)
-	    if (client->running)
-		client->userIssuedCheckpoint = True;
+	for (cl = ListFirst (RunningList); cl; cl = ListNext (cl))
+	{
+	    client = (ClientRec *) cl->thing;
+	    client->userIssuedCheckpoint = True;
+	}
     }
 
     if (verbose) {
@@ -157,10 +159,9 @@ XtPointer 	callData;
 	if (verbose)
 	    printf ("\n");
 
-	for (client = ClientList; client; client = client->next)
+	for (cl = ListFirst (RunningList); cl; cl = ListNext (cl))
 	{
-	    if (!client->running)
-		continue;
+	    client = (ClientRec *) cl->thing;
 
 	    if (shutdownCancelled) {
 		break;
@@ -190,12 +191,16 @@ XtPointer 	callData;
 	while ((saveDoneCount + phase2RequestCount) < numClients)
 	    XtAppProcessEvent (appContext, XtIMAll);
 
-	for (client = ClientList; client; client = client->next)
-	    if (client->running && client->wantsPhase2)
+	for (cl = ListFirst (RunningList); cl; cl = ListNext (cl))
+	{
+	    client = (ClientRec *) cl->thing;
+
+	    if (client->wantsPhase2)
 	    {
 		SmsSaveYourselfPhase2 (client->smsConn);
 		client->wantsPhase2 = False;
 	    }
+	}
     }
 
     while (saveDoneCount < numClients)
@@ -213,10 +218,9 @@ XtPointer 	callData;
 	 * Now execute discard commands
 	 */
 
-	for (client = ClientList; client; client = client->next)
+	for (cl = ListFirst (RunningList); cl; cl = ListNext (cl))
 	{
-	    if (!client->running)
-		continue;
+	    client = (ClientRec *) cl->thing;
 
 	    if (client->discardCommand)
 	    {
@@ -248,10 +252,9 @@ XtPointer 	callData;
     {
 	shutdownInProgress = True;
 
-	for (client = ClientList; client; client = client->next)
+	for (cl = ListFirst (RunningList); cl; cl = ListNext (cl))
 	{
-	    if (!client->running)
-		continue;
+	    client = (ClientRec *) cl->thing;
 
 	    SmsDie (client->smsConn);
 	    if (verbose)
@@ -260,10 +263,9 @@ XtPointer 	callData;
     }
     else
     {
-	for (client = ClientList; client; client = client->next)
+	for (cl = ListFirst (RunningList); cl; cl = ListNext (cl))
 	{
-	    if (!client->running)
-		continue;
+	    client = (ClientRec *) cl->thing;
 
 	    SmsSaveComplete (client->smsConn);
 	    if (verbose)
@@ -535,12 +537,12 @@ XtPointer 	callData;
      * file using the discard command.
      */
 
-    ClientRec *client;
+    List	*cl;
+    ClientRec 	*client;
 
-    for (client = ClientList; client; client = client->next)
+    for (cl = ListFirst (RunningList); cl; cl = ListNext (cl))
     {
-	if (!client->running)
-	    continue;
+	client = (ClientRec *) cl->thing;
 
 	if (!client->restarted &&
 	    !client->userIssuedCheckpoint &&
@@ -554,10 +556,9 @@ XtPointer 	callData;
 
     shutdownInProgress = True;
 
-    for (client = ClientList; client; client = client->next)
+    for (cl = ListFirst (RunningList); cl; cl = ListNext (cl))
     {
-	if (!client->running)
-	    continue;
+	client = (ClientRec *) cl->thing;
 
 	SmsDie (client->smsConn);
 	if (verbose)
