@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.29 91/05/12 21:46:22 rws Exp $
+ * $XConsortium: imakemdep.h,v 1.30 91/05/14 13:24:32 rws Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.  When
  * porting imake, read each of the steps below and add in any necessary
@@ -91,7 +91,7 @@
  *     all colons).  One way to tell if you need this is to see whether or not
  *     your Makefiles have no tabs in them and lots of @@ strings.
  */
-#if defined(sun) || defined(SYSV) || defined(SVR4)
+#if defined(sun) || defined(SYSV) || defined(SVR4) || defined(hcx)
 #define FIXUP_CPP_WHITESPACE
 #endif
 
@@ -301,6 +301,9 @@ struct symtab	predefs[] = {
 #endif
 #ifdef bsd43
 	{"bsd43", "1"},
+#endif
+#ifdef hcx
+	{"hcx", 1},
 #endif
 	/* add any additional symbols before this line */
 	{NULL, NULL}

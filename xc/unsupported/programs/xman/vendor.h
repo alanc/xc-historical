@@ -35,7 +35,11 @@
 #ifdef SVR4
 #  define MANDIR "/usr/share/man"
 #else /* SVR4 */
+#ifdef hcx
+#  define MANDIR "/usr/catman/local_man:/usr/catman/u_man:/usr/catman/a_man:/usr/catman/p_man:/usr/catman/ada_man"
+#else
 #  define MANDIR "/usr/man"
+#endif /* hcx else */
 #endif /* SVR4 else */
 #endif /* macII else */
 
@@ -47,7 +51,7 @@
  * Compression Definitions.
  */
 
-#if defined( macII )
+#if defined( macII ) || defined( hcx )
 #  define COMPRESSION_EXTENSION   "z"
 #  define UNCOMPRESS_FORMAT       "pcat %s > %s"
 #  define NO_COMPRESS		/* mac can't handle using pack as a filter and
@@ -70,7 +74,7 @@
  * The command filters for the manual and apropos searches.
  */
 
-#if ( defined(hpux) || defined(macII) || defined(CRAY) || defined(ultrix) )
+#if ( defined(hpux) || defined(macII) || defined(CRAY) || defined(ultrix) || defined(hcx) )
 #  define NO_MANPATH_SUPPORT
 #endif
 
@@ -92,9 +96,9 @@
 
 #define MAN "man"
 
-#if ( defined(macII) || defined(CRAY) )
+#if ( defined(macII) || defined(CRAY) || defined(hcx) )
 /*
- * The Apple and Cray folks put the preformatted pages in the "man" 
+ * The Apple, Cray, and HCX folks put the preformatted pages in the "man" 
  * directories.
  */
 #  define CAT MAN		

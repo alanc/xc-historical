@@ -1,7 +1,7 @@
 /*
  * get_load - get system load
  *
- * $XConsortium: get_load.c,v 1.20 91/04/08 19:07:42 gildea Exp $
+ * $XConsortium: get_load.c,v 1.21 91/05/10 09:22:20 jap Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -79,6 +79,10 @@ struct lavnum {
     unsigned short low;
 };
 #endif /* macII */
+
+#ifdef hcx
+#include <sys/param.h>
+#endif /* hcx */
 
 #if defined(UTEK) || defined(alliant)
 #define FSCALE	100.0
@@ -262,6 +266,10 @@ void GetLoadPoint( w, closure, call_data )
 #define KERNEL_FILE "/dynix"
 #endif /* sequent */
 
+#ifdef hcx
+#define KERNEL_FILE "/unix"
+#endif /* hcx */
+
 /*
  * provide default for everyone else
  */
@@ -393,7 +401,11 @@ InitLoadPoint()
      * will happen to you.  (I have a hard time believing the value will
      * ever really be zero anyway).   CDP 5/17/89.
      */
+#ifdef hcx
+    if (namelist[LOADAV].n_type == 0 &&
+#else
     if (namelist[LOADAV].n_type == 0 ||
+#endif /* hcx */
 	namelist[LOADAV].n_value == 0) {
 	xload_error("cannot get name list from", KERNEL_FILE);
 	exit(-1);
@@ -426,13 +438,13 @@ void GetLoadPoint( w, closure, call_data )
 	(void) lseek(kmem, loadavg_seek, 0);
 #endif
 
-#if defined(sun) || defined (UTEK) || defined(sequent) || defined(alliant) || defined(SVR4) || defined(sgi)
+#if defined(sun) || defined (UTEK) || defined(sequent) || defined(alliant) || defined(SVR4) || defined(sgi) || defined(hcx)
 	{
 		long temp;
 		(void) read(kmem, (char *)&temp, sizeof(long));
 		*loadavg = (double)temp/FSCALE;
 	}
-#else /* else not sun or UTEK or sequent or alliant */
+#else /* else not sun or UTEK or sequent or alliant or SVR4 or sgi or hcx */
 # ifdef macII
         {
                 read(kmem, vec, 3*sizeof(struct lavnum));
