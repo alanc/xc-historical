@@ -38,6 +38,7 @@ SRCS = \
 	starMask \
 	stipple \
 	target \
+	terminal \
 	tie_fighter \
 	weird_size \
 	wide_weave \
@@ -47,6 +48,7 @@ SRCS = \
 	xlogo16 \
 	xlogo32 \
 	xlogo64 
+
 
 all::
 
