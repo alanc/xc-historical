@@ -13,6 +13,7 @@ EXPORTS = \
 IMPORTS = \
 	$(OLDXMENUSRC)/XMenu.h \
 	$(OLDXLIBSRC)/X10.h \
+	$(XRMSRC)/Quarks.h \
 	$(XRMSRC)/Xresource.h \
 	$(XLIBSRC)/Xlib.h \
 	$(XLIBSRC)/Xutil.h \
@@ -26,11 +27,10 @@ IMPORTS = \
 	$(TOOLKITSRC)/Label.h \
 	$(TOOLKITSRC)/Load.h \
 	$(TOOLKITSRC)/Misc.h \
-	$(TOOLKITSRC)/Quarks.h \
 	$(TOOLKITSRC)/Scroll.h \
+	$(TOOLKITSRC)/Shell.h \
 	$(TOOLKITSRC)/TM.h \
 	$(TOOLKITSRC)/Text.h \
-	$(TOOLKITSRC)/TopLevel.h \
 	$(TOOLKITSRC)/VPane.h
 
 SUBIMPORTS = \
