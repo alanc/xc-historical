@@ -1,4 +1,4 @@
-/* $XConsortium: ShellP.h,v 1.32 94/01/19 21:19:29 converse Exp $ */
+/* $XConsortium: ShellP.h,v 1.33 94/01/21 19:11:33 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -163,7 +163,9 @@ typedef struct {
 	int 	    wm_timeout;
 	Boolean	    wait_for_wm;
 	Boolean	    transient;
-	Atom	    wm_configure_denied,  wm_moved; /* not used */
+	Boolean     visible;
+	Widget      client_leader;
+	String      window_role;
 	struct _OldXSizeHints {	/* pre-R4 Xlib structure */
 	    long flags;
 	    int x, y;
@@ -180,9 +182,6 @@ typedef struct {
 	int base_width, base_height;
 	int win_gravity;
 	Atom title_encoding;
-	Widget client_leader;
-	String window_role;
-	Boolean visible;
 } WMShellPart;
 
 typedef  struct {
@@ -300,14 +299,47 @@ externalref ApplicationShellClassRec applicationShellClassRec;
 
 typedef struct {
 #if defined(__cplusplus) || defined(c_plusplus)
-	char *c_class;
+    char *c_class;
 #else
-	char *class;
+    char *class;
 #endif
-	XrmClass xrm_class;
-	int argc;
-	char **argv;
-	Widget session;
+    XrmClass xrm_class;
+    int argc;
+    char **argv;
+    /* session connection state resources */
+    SmcConn         connection;
+    String          session_id;
+    /* session property resources */
+    String*         restart_command;
+    String*         clone_command;
+    String*         discard_command;
+    String*         resign_command;
+    String*         shutdown_command;
+    String*         environment;
+    String          current_dir;
+    unsigned char   restart_style;
+    /* session client resources */
+    XtCallbackList  save_callbacks;
+    XtCallbackList  interact_callbacks;
+    XtCallbackList  cancel_callbacks;
+    XtCallbackList  die_callbacks;
+    /* private session properties */
+    String	    user_id;
+    String	    program_name;
+    /* private widget state */
+    int             interact_state;
+    int             save_tokens;
+    int             interact_tokens;
+    int             save_type;
+    int             interact_style;
+    Boolean         shutdown;
+    Boolean         fast;
+    Boolean         save_success;
+    Boolean         cancel_shutdown;
+    Boolean         interact_dialog_type;
+    Boolean         checkpointing;
+    XtInputId       input_id;
+    XtPointer       extension;
 } ApplicationShellPart;
 
 typedef  struct {
