@@ -1,6 +1,4 @@
-/*
- * $XConsortium: TextSrc.h,v 1.1 89/09/01 14:28:36 kit Exp $
- */
+/* $XConsortium: tsource.h,v 1.1 89/09/01 17:36:45 kit Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -29,24 +27,15 @@ SOFTWARE.
 #ifndef _tsource_h
 #define _tsource_h
 
-/***********************************************************************
- *
- * TextSrc Widget
- *
- ***********************************************************************/
-
 #include <X11/Xaw/TextSrc.h>
 
-/* Resources:
-
+/* xmh TextSrc widget resources:
  Name		     Class		RepType		Default Value
  ----		     -----		-------		-------------
  toc                 Toc                Pointer         NULL
-
 */
 
 #define XtCToc "Toc"
-
 #define XtNtoc "toc"
 
 /* Class record constants */
@@ -55,6 +44,8 @@ extern WidgetClass tocSourceWidgetClass;
 
 typedef struct _TocSourceClassRec *TocSourceWidgetClass;
 typedef struct _TocSourceRec      *TocSourceWidget;
+
+extern void TSourceInvalid();
 
 #endif /* _XawTextSrc_h */
 /* DON'T ADD STUFF AFTER THIS #endif */
