@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: os.h,v 1.35 89/07/03 18:37:37 rws Exp $ */
+/* $XConsortium: os.h,v 1.36 89/07/20 16:26:31 keith Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -71,7 +71,10 @@ pragma on(alloca);
 #define ALLOCATE_LOCAL(size) alloca((int)(size))
 #define DEALLOCATE_LOCAL(ptr)  /* as nothing */
 #else /* ! __GNUC__ */
-#if defined(vax) || defined(sun) || defined(mips)
+/*
+ * warning: mips alloca is unsuitable in the server, do not use.
+ */
+#if defined(vax) || defined(sun)
 /*
  * Some System V boxes extract alloca.o from /lib/libPW.a; if you
  * decide that you don't want to use alloca, you might want to fix 
@@ -80,7 +83,7 @@ pragma on(alloca);
 char *alloca();
 #define ALLOCATE_LOCAL(size) alloca((int)(size))
 #define DEALLOCATE_LOCAL(ptr)  /* as nothing */
-#endif /* vax or sun or mips */
+#endif /* vax or sun */
 #endif /* __GNUC__ */
 
 #endif /* NO_ALLOCA */
