@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Text.c,v 1.36 88/02/26 14:18:35 swick Exp $";
+static char rcsid[] = "$Header: Text.c,v 1.38 88/02/26 18:13:35 swick Exp $";
 #endif
 
 
@@ -2559,58 +2559,58 @@ XtActionsRec textActionsTable [] = {
 Cardinal textActionsTableCount = XtNumber(textActionsTable); /* for subclasses */
 
 char defaultTextTranslations[] =
-    "Ctrl<Key>F:		forward-character() \n\
-     <Key>0xff53:		forward-character() \n\
-     Ctrl<Key>B:		backward-character() \n\
-     <Key>0xff51:		backward-character() \n\
-     Meta<Key>F:		forward-word() \n\
-     Meta<Key>B:		backward-word() \n\
-     Meta<Key>]:		forward-paragraph() \n\
-     Ctrl<Key>[:		backward-paragraph() \n\
-     Ctrl<Key>A:		beginning-of-line() \n\
-     Ctrl<Key>E:		end-of-line() \n\
-     Ctrl<Key>N:		next-line() \n\
-     <Key>0xff54:		next-line() \n\
-     Ctrl<Key>P:		previous-line() \n\
-     <Key>0xff52:		previous-line() \n\
-     Ctrl<Key>V:		next-page() \n\
-     Meta<Key>V:		previous-page() \n\
-     Meta<Key>\\<:		beginning-of-file() \n\
-     Meta<Key>\\>:		end-of-file() \n\
-     Ctrl<Key>Z:		scroll-one-line-up() \n\
-     Meta<Key>Z:		scroll-one-line-down() \n\
-     Ctrl<Key>D:		delete-next-character() \n\
-     Ctrl<Key>H:		delete-previous-character() \n\
-     <Key>0xff7f:		delete-previous-character() \n\
-     <Key>0xffff:		delete-previous-character() \n\
-     <Key>0xff08:		delete-previous-character() \n\
-     Meta<Key>D:		delete-next-word() \n\
-     Meta<Key>H:		delete-previous-word() \n\
-     Shift Meta<Key>D:		kill-word() \n\
-     Shift Meta<Key>H:		backward-kill-word() \n\
-     Ctrl<Key>W:		kill-selection() \n\
-     Ctrl<Key>K:		kill-to-end-of-line() \n\
-     Meta<Key>K:		kill-to-end-of-paragraph() \n\
-     Ctrl<Key>Y:		unkill() \n\
-     Meta<Key>Y:		stuff() \n\
-     Ctrl<Key>J:		newline-and-indent() \n\
-     <Key>0xff0a:		newline-and-indent() \n\
-     Ctrl<Key>O:		newline-and-backup() \n\
-     Ctrl<Key>M:		newline() \n\
-     <Key>0xff0d:		newline() \n\
-     Ctrl<Key>L:		redraw-display() \n\
-     Meta<Key>I:		insert-file() \n\
-     <FocusIn>:			focus-in() \n\
-     <FocusOut>:		focus-out() \n\
-     <Btn1Down>:		select-start() \n\
-     Button1<PtrMoved>:		extend-adjust() \n\
-     <Btn1Up>:			extend-end() \n\
-     <Btn2Down>:		stuff() \n\
-     <Btn3Down>:		extend-start() \n\
-     Button3<PtrMoved>:		extend-adjust() \n\
-     <Btn3Up>:			extend-end() \n\
-     <Key>:			insert-char() \n\
-     Shift<Key>:		insert-char()";
+    "Ctrl<Key>F:	forward-character() \n\
+     <Key>0xff53:	forward-character() \n\
+     Ctrl<Key>B:	backward-character() \n\
+     <Key>0xff51:	backward-character() \n\
+     Meta<Key>F:	forward-word() \n\
+     Meta<Key>B:	backward-word() \n\
+     Meta<Key>]:	forward-paragraph() \n\
+     Ctrl<Key>[:	backward-paragraph() \n\
+     Ctrl<Key>A:	beginning-of-line() \n\
+     Ctrl<Key>E:	end-of-line() \n\
+     Ctrl<Key>N:	next-line() \n\
+     <Key>0xff54:	next-line() \n\
+     Ctrl<Key>P:	previous-line() \n\
+     <Key>0xff52:	previous-line() \n\
+     Ctrl<Key>V:	next-page() \n\
+     Meta<Key>V:	previous-page() \n\
+     Meta<Key>\\<:	beginning-of-file() \n\
+     Meta<Key>\\>:	end-of-file() \n\
+     Ctrl<Key>Z:	scroll-one-line-up() \n\
+     Meta<Key>Z:	scroll-one-line-down() \n\
+     Ctrl<Key>D:	delete-next-character() \n\
+     Ctrl<Key>H:	delete-previous-character() \n\
+     <Key>0xff7f:	delete-previous-character() \n\
+     <Key>0xffff:	delete-previous-character() \n\
+     <Key>0xff08:	delete-previous-character() \n\
+     Meta<Key>D:	delete-next-word() \n\
+     Meta<Key>H:	delete-previous-word() \n\
+     Shift Meta<Key>D:	kill-word() \n\
+     Shift Meta<Key>H:	backward-kill-word() \n\
+     Ctrl<Key>W:	kill-selection() \n\
+     Ctrl<Key>K:	kill-to-end-of-line() \n\
+     Meta<Key>K:	kill-to-end-of-paragraph() \n\
+     Ctrl<Key>Y:	unkill() \n\
+     Meta<Key>Y:	stuff() \n\
+     Ctrl<Key>J:	newline-and-indent() \n\
+     <Key>0xff0a:	newline-and-indent() \n\
+     Ctrl<Key>O:	newline-and-backup() \n\
+     Ctrl<Key>M:	newline() \n\
+     <Key>0xff0d:	newline() \n\
+     Ctrl<Key>L:	redraw-display() \n\
+     Meta<Key>I:	insert-file() \n\
+     <FocusIn>:		focus-in() \n\
+     <FocusOut>:	focus-out() \n\
+     <Btn1Down>:	select-start() \n\
+     Button1<PtrMoved>:	extend-adjust() \n\
+     <Btn1Up>:		extend-end() \n\
+     <Btn2Down>:	stuff() \n\
+     <Btn3Down>:	extend-start() \n\
+     Button3<PtrMoved>:	extend-adjust() \n\
+     <Btn3Up>:		extend-end() \n\
+     <Key>:		insert-char() \n\
+     Shift<Key>:	insert-char()";
 
 TextClassRec textClassRec = {
   { /* core fields */
