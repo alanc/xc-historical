@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.54 94/01/07 09:41:26 dpw Exp $ */
+/* $XConsortium: dispatch.c,v 5.55 94/01/21 22:00:03 dpw Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -3569,6 +3569,9 @@ SendConnSetup(client, reason)
 	(void)WriteToClient(client, (int)(connSetupPrefix.length << 2),
 			    ConnectionInfo);
     }
+#ifdef XRECORD
+    XRecordNewClient(client);
+#endif
     return (client->noClientException);
 }
 
