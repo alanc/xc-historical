@@ -49,3 +49,4 @@ XClipboard*text.right: 			ChainRight
 XClipboard*text.width:			300
 
 XClipboard.geometry:			300x200
+XClipboard*ShapeStyle:			oval
