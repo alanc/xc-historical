@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.219 94/03/29 10:51:13 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.220 94/03/29 12:12:37 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -1493,7 +1493,8 @@ void _XAllocIDs(dpy, ids, count)
     register xXCMiscGetXIDListReq *greq;
 
     id = dpy->resource_id << dpy->resource_shift;
-    if (id <= dpy->resource_mask &&
+    if (dpy->resource_max <= dpy->resource_mask &&
+	id <= dpy->resource_mask &&
 	(dpy->resource_max - id) > ((count - 1) << dpy->resource_shift)) {
 	id += dpy->resource_base;
 	for (i = 0; i < count; i++) {
