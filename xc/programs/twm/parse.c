@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: parse.c,v 1.23 89/11/27 10:37:24 jim Exp $
+ * $XConsortium: parse.c,v 1.24 89/11/27 16:45:32 jim Exp $
  *
  * parse the .twmrc file
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: parse.c,v 1.23 89/11/27 10:37:24 jim Exp $";
+"$XConsortium: parse.c,v 1.24 89/11/27 16:45:32 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -501,6 +501,7 @@ static TwmKeyword keytable[] = {
     { "usepposition",		SKEYWORD, kws_UsePPosition },
     { "w",			WINDOW, 0 },
     { "wait",			WAIT, 0 },
+    { "warpcursor",		WARP_CURSOR, 0 },
     { "west",			DKEYWORD, D_WEST },
     { "window",			WINDOW, 0 },
     { "windowfunction",		WINDOW_FUNCTION, 0 },
