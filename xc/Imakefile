@@ -5,9 +5,9 @@
 BOOTSTRAPCFLAGS = 
         CHECKFN = $(UTILSRC)/checkfn
 
-#
-# Preserve this order: include comes first, clients, demos, contrib come last.
-#
+/**/#
+/**/# Preserve this order!
+/**/#
   LIBDIRSTOMAKE = \
 		$(INCLUDESRC) \
 		$(LIBSRC) \
@@ -42,32 +42,34 @@ MakeLintSubdirs($(LNINSTALLDIRS),install.ln,install.ln)
 
 MakeLintSubdirs($(LNINSTALLDIRS),external.ln,lintlib)
 
-#
-# before depending, be sure that include has everything in it.
-#
+
+/**/#
+/**/# before depending, be sure that include has everything in it.
+/**/#
 depend::
 	cd $(INCLUDESRC); $(MAKE)
 
 DependSubdirs($(SUBDIRS))
 
-install::
-	-mkdir $(USRLIBDIR)
-	-mkdir $(BINDIR)
-	-mkdir $(LIBDIR)
-	-mkdir $(XAPPLOADDIR)
-	-mkdir $(INCDIR)
-	-mkdir $(UWMDIR)
-	-mkdir $(MANPATH)
-	-mkdir $(MANDIR)
-	-mkdir $(LIBMANDIR)
+
+/**/# 
+/**/# install stuff; create the directories that we're going to need
+/**/# 
+
+#ifdef DirectoriesToBuild
+MakeDirectories(install, DirectoriesToBuild)
+#endif
+
+MakeDirectories(install, $(USRLIBDIR) $(BINDIR) $(LIBDIR) $(XAPPLOADDIR) \
+		 $(INCDIR) $(UWMDIR) $(MANPATH) $(MANDIR) $(LIBMANDIR))
 
 #ifndef ClientSideOnly
-install::
-	-mkdir $(FONTDIR)
+MakeDirectories(install, $(FONTDIR))
 #endif
 
 
 InstallManPage(X,$(MANDIR))
+
 
 /**/# don't name your log file make.log when you run this ...
 World::
