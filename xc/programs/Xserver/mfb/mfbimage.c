@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbimage.c,v 1.36 89/03/23 18:54:18 rws Exp $ */
+/* $XConsortium: mfbimage.c,v 5.0 89/06/09 15:06:39 keith Exp $ */
 
 #include "X.h"
 
@@ -70,7 +70,7 @@ mfbPutImage(dst, pGC, depth, x, y, w, h, leftPad, format, pImage)
     int 	*pImage;
 {
     pointer	pbits;
-    PixmapPtr	pFakePixmap;
+    PixmapRec	FakePixmap;
 
     if (!(pGC->planemask & 1))
 	return;
@@ -81,21 +81,26 @@ mfbPutImage(dst, pGC, depth, x, y, w, h, leftPad, format, pImage)
     if ((w == 0) || (h == 0))
 	return;
 
-    /* mfb is always depth 1 */
-    pFakePixmap = (PixmapPtr)mfbCreatePixmap(dst->pScreen, w+leftPad, h, 1);
-    if (!pFakePixmap)
-	return;
-
-    pbits = pFakePixmap->devPrivate.ptr;
-    pFakePixmap->devPrivate.ptr = (pointer)pImage;
+    FakePixmap.drawable.type = DRAWABLE_PIXMAP;
+    FakePixmap.drawable.class = 0;
+    FakePixmap.drawable.pScreen = dst->pScreen;
+    FakePixmap.drawable.depth = 1;
+    FakePixmap.drawable.bitsPerPixel = 1;
+    FakePixmap.drawable.id = 0;
+    FakePixmap.drawable.serialNumber = NEXT_SERIAL_NUMBER;
+    FakePixmap.drawable.x = 0;
+    FakePixmap.drawable.y = 0;
+    FakePixmap.drawable.width = w+leftPad;
+    FakePixmap.drawable.height = h;
+    FakePixmap.devKind = PixmapBytePad(FakePixmap.drawable.width, 1);
+    FakePixmap.refcnt = 1;
+    FakePixmap.devPrivate.ptr = (pointer)pImage;
     ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->fExpose = FALSE;
     if (format != XYBitmap)
-	(*pGC->ops->CopyArea)(pFakePixmap, dst, pGC, leftPad, 0, w, h, x, y);
+	(*pGC->ops->CopyArea)(&FakePixmap, dst, pGC, leftPad, 0, w, h, x, y);
     else
-	(*pGC->ops->CopyPlane)(pFakePixmap, dst, pGC, leftPad, 0, w, h, x, y, 1);
+	(*pGC->ops->CopyPlane)(&FakePixmap, dst, pGC, leftPad, 0, w, h, x, y, 1);
     ((mfbPrivGC*)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->fExpose = TRUE;
-    pFakePixmap->devPrivate.ptr = pbits;
-    (*dst->pScreen->DestroyPixmap)(pFakePixmap);
 }
 
 
