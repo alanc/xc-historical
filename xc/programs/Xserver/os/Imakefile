@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.60 93/02/06 15:07:09 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.61 93/07/12 09:34:06 dpw Exp $
 #include <Server.tmpl>
 
 #if (SystemV || SystemV4) && !HasSockets
@@ -70,9 +70,11 @@ BOOTSTRAPCFLAGS =
 #endif
     DBM_DEFINES = NdbmDefines
     ADM_DEFINES = -DADMPATH=\"$(ADMDIR)/X\%smsgs\"
+    EXT_DEFINES = ExtensionDefines
+  EXTRA_DEFINES = ServerExtraDefines
         DEFINES = ConnectionFlags $(OS_DEFINES) $(XDMAUTHDEFS) $(RPCDEFS) $(SIGNAL_DEFINES)
        INCLUDES = -I.  -I../include -I$(INCLUDESRC) -I$(TOP)/lib/Xau
- DEPEND_DEFINES = $(DBM_DEFINES)
+ DEPEND_DEFINES = $(DBM_DEFINES) $(EXTRA_DEFINES) $(EXT_DEFINES)
        LINTLIBS = ../dix/llib-ldix.ln
 
 #ifdef NEED_ALLOCA_FROM_LIBPW
@@ -94,14 +96,15 @@ alloca.o:  $(PWLIB)
 	ar x $(PWLIB) alloca.o
 #endif /* NEED_ALLOCA_FROM_LIBPW */
 
-SpecialCObjectRule(access,$(ICONFIGFILES),$(_NOOP_))
-SpecialCObjectRule(auth,$(ICONFIGFILES),$(_NOOP_))
-SpecialCObjectRule(xdmcp,$(ICONFIGFILES),$(SOCK_DEFINES))
-SpecialCObjectRule(connection,$(ICONFIGFILES),$(SOCK_DEFINES))
+SpecialCObjectRule(access,$(ICONFIGFILES),$(EXTRA_DEFINES))
+SpecialCObjectRule(auth,$(ICONFIGFILES),$(EXTRA_DEFINES))
+SpecialCObjectRule(xdmauth,$(ICONFIGFILES),$(EXTRA_DEFINES))
+SpecialCObjectRule(xdmcp,$(ICONFIGFILES),$(SOCK_DEFINES) $(EXTRA_DEFINES))
+SpecialCObjectRule(connection,$(ICONFIGFILES),$(SOCK_DEFINES) $(EXTRA_DEFINES))
 SpecialCObjectRule(osinit,$(ICONFIGFILES),$(ADM_DEFINES))
-SpecialCObjectRule(WaitFor,$(ICONFIGFILES),$(_NOOP_))
-SpecialCObjectRule(io,$(ICONFIGFILES),$(_NOOP_))
-SpecialCObjectRule(utils,$(ICONFIGFILES),$(TIME_DEFINES))
+SpecialCObjectRule(WaitFor,$(ICONFIGFILES),$(EXT_DEFINES))
+SpecialCObjectRule(io,$(ICONFIGFILES),$(EXT_DEFINES))
+SpecialCObjectRule(utils,$(ICONFIGFILES),$(TIME_DEFINES) $(EXTRA_DEFINES))
 #if defined(SparcArchitecture) && HasGcc && !HasGcc2
 oscolor.o: oscolor.c $(ICONFIGFILES)
 	$(RM) $@
