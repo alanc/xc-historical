@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.60 91/07/05 14:42:15 rws Exp $ */
+/* $XConsortium: InitialI.h,v 1.61 91/07/12 12:33:51 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -41,10 +41,12 @@ SOFTWARE.
 #endif
 #ifndef PATH_MAX
 #include <sys/param.h>
+#ifndef PATH_MAX
 #ifdef MAXPATHLEN
 #define PATH_MAX MAXPATHLEN
 #else
 #define PATH_MAX 1024
+#endif
 #endif
 #endif
 
