@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.48 91/04/15 17:30:16 gildea Exp $
+ *	$XConsortium: ptyx.h,v 1.49 91/04/22 13:43:41 gildea Exp $
  */
 
 /*
@@ -262,9 +262,9 @@ typedef struct {
 	Boolean		scrollttyoutput; /* scroll to bottom on tty output */
 	Boolean		scrollkey;	/* scroll to bottom on key	*/
 	
-	ScrnBuf		buf;		/* screen buffer (main)		*/
+	ScrnBuf		buf;		/* ptr to visible screen buf (main) */
 	ScrnBuf		allbuf;		/* screen buffer (may include
-					   lines scrolled off top	*/
+					   lines scrolled off top)	*/
 	char		*sbuf_address;	/* main screen memory address   */
 	ScrnBuf		altbuf;		/* alternate screen buffer	*/
 	char		*abuf_address;	/* alternate screen memory address */
@@ -372,6 +372,7 @@ typedef struct _Misc {
     Boolean log_on;
     Boolean login_shell;
     Boolean re_verse;
+    int resizeGravity;
     Boolean reverseWrap;
     Boolean autoWrap;
     Boolean logInhibit;
