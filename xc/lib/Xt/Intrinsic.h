@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.121 89/12/13 12:57:52 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.122 89/12/13 12:59:07 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -57,6 +57,8 @@ SOFTWARE.
 
 #if defined(__cplusplus) || defined(c_plusplus)
 #define CONST const
+/* make const String do the right thing */
+#define String		char*
 #else
 #define CONST
 #endif /* __cplusplus */
@@ -684,7 +686,7 @@ extern Boolean XtCallConverter(
 
 extern XtTranslations XtParseTranslationTable(
 #if NeedFunctionPrototypes
-    String		/* source */
+    CONST String	/* source */
 #endif
 );
 
@@ -1225,7 +1227,7 @@ extern void XtSetMappedWhenManaged(
 extern Widget XtNameToWidget(
 #if NeedFunctionPrototypes
     Widget 		/* root */,
-    String 		/* name */
+    CONST String	/* name */
 #endif
 );
 
@@ -1385,7 +1387,7 @@ extern void XtRemoveCallback(
 extern void XtAddCallbacks(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
-    String 		/* callback_name */,
+    CONST String	/* callback_name */,
     XtCallbackList 	/* callbacks */
 #endif
 );
@@ -1646,7 +1648,7 @@ extern Widget XtVaAppInitialize(
     Cardinal		/* num_options */,
     Cardinal*		/* argc_in_out */,
     String*		/* argv_in_out */,
-    String*		/* fallback_resources */,
+    CONST String*	/* fallback_resources */,
     ...
 #endif
 );
@@ -2041,26 +2043,26 @@ extern void XtSetWarningHandler(
 extern void XtAppError(
 #if NeedFunctionPrototypes
     XtAppContext 	/* app */,
-    String		/* message */
+    CONST String	/* message */
 #endif
 );
 
 extern void XtError(
 #if NeedFunctionPrototypes
-    String		/* message */
+    CONST String	/* message */
 #endif
 );
 
 extern void XtAppWarning(
 #if NeedFunctionPrototypes
     XtAppContext 	/* app */,
-    String 		/* message */
+    CONST String	/* message */
 #endif
 );
 
 extern void XtWarning(
 #if NeedFunctionPrototypes
-    String 		/* message */
+    CONST String	/* message */
 #endif
 );
 
@@ -2402,6 +2404,9 @@ extern void XtGetSelectionValuesIncremental(
 #undef Position
 #undef XtEnum
 #endif /* NeedWidePrototypes */
+
+#undef String
+#undef CONST
 
 #endif /*_XtIntrinsic_h*/
 /* DON'T ADD STUFF AFTER THIS #endif */
