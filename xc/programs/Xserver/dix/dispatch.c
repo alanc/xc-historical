@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.60 88/08/14 17:31:49 rws Exp $ */
+/* $Header: dispatch.c,v 1.61 88/08/21 20:03:53 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -3184,6 +3184,7 @@ CloseDownClient(client)
     {
         client->clientGone = TRUE;
         CloseDownConnection(client);
+	--nClients;
     }
 }
 
