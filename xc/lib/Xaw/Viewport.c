@@ -1,7 +1,4 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.60 90/04/30 17:06:06 converse Exp $";
-#endif /* lint */
-
+/* $XConsortium: Viewport.c,v 1.61 90/05/08 15:16:02 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -37,6 +34,8 @@ SOFTWARE.
 
 static void ScrollUpDownProc(), ThumbProc();
 static Boolean GetGeometry();
+
+static void ComputeWithForceBars();
 
 #define offset(field) XtOffset(ViewportWidget,viewport.field)
 static XtResource resources[] = {
@@ -230,11 +229,13 @@ static void Initialize(request, new)
     clip_height = w->core.height;
 
     if ( (h_bar != NULL) &&
-	 (w->core.width > h_bar->core.width + h_bar->core.border_width) )
+	 ((int)w->core.width >
+	  (int)(h_bar->core.width + h_bar->core.border_width)) )
         clip_width -= h_bar->core.width + h_bar->core.border_width;
     
     if ( (v_bar != NULL) &&
-	 (w->core.height > v_bar->core.height + v_bar->core.border_width) )
+	 ((int)w->core.height >
+	  (int)(v_bar->core.height + v_bar->core.border_width)) )
         clip_height -= v_bar->core.height + v_bar->core.border_width;
 
     num_args = 0;
@@ -368,7 +369,8 @@ static void SetBar(w, top, length, total)
     Position top;
     Dimension length, total;
 {
-    XawScrollbarSetThumb(w, (float) top / total, (float) length / total );
+    XawScrollbarSetThumb(w, (float)top/(float)total,
+			 (float)length/(float)total);
 }
 
 static void RedrawThumbs(w)
@@ -419,10 +421,10 @@ static void MoveChild(w, x, y)
     register Widget clip = w->viewport.clip;
 
     /* make sure we never move past right/bottom borders */
-    if (-x + clip->core.width > child->core.width)
+    if (-x + (int)clip->core.width > (int)child->core.width)
 	x = -(child->core.width - clip->core.width);
 
-    if (-y + clip->core.height > child->core.height)
+    if (-y + (int)clip->core.height > (int)child->core.height)
 	y = -(child->core.height - clip->core.height);
 
     /* make sure we never move past left/top borders */
@@ -449,7 +451,6 @@ static void ComputeLayout(widget, query, destroy_scrollbars)
     Boolean needshoriz, needsvert;
     int clip_width, clip_height;
     XtWidgetGeometry intended;
-    static void ComputeWithForceBars();
 
     if (child == (Widget) NULL) return;
 
@@ -480,12 +481,12 @@ static void ComputeLayout(widget, query, destroy_scrollbars)
 	if (!w->viewport.allowhoriz) 
 	    intended.request_mode |= CWWidth;
 
-	if (child->core.width < clip_width) 
+	if ((int)child->core.width < clip_width) 
 	    intended.width = clip_width;
 	else
 	    intended.width = child->core.width;
 
-	if (child->core.height < clip_height) 
+	if ((int)child->core.height < clip_height) 
 	    intended.height = clip_height;
 	else
 	    intended.height = child->core.height;
@@ -515,7 +516,8 @@ static void ComputeLayout(widget, query, destroy_scrollbars)
 	     * thus avoiding potential oscillations.
 	     */
 #define CheckHoriz()							  \
-	    if (w->viewport.allowhoriz && preferred.width > clip_width) { \
+	    if ( w->viewport.allowhoriz &&				  \
+		 (int)preferred.width > clip_width) { 			  \
 	        if (!needshoriz) {					  \
 		    Widget bar;					          \
 		    needshoriz = True;				          \
@@ -529,7 +531,7 @@ static void ComputeLayout(widget, query, destroy_scrollbars)
 	    }
 /*enddef*/
 	    CheckHoriz();
-	    if (w->viewport.allowvert && preferred.height > clip_height) {
+	    if (w->viewport.allowvert && (int)preferred.height > clip_height) {
 	        if (!needsvert) {
 		    Widget bar;
 		    needsvert = True;
@@ -541,11 +543,13 @@ static void ComputeLayout(widget, query, destroy_scrollbars)
 		}
 		intended.height = preferred.height;
 	    }
-	    if (!w->viewport.allowhoriz || preferred.width < clip_width) {
+	    if ( !w->viewport.allowhoriz ||
+		 (int)preferred.width < clip_width) {
 	        intended.width = clip_width;
 		intended.request_mode |= CWWidth;
 	    }
-	    if (!w->viewport.allowvert || preferred.height < clip_height) {
+	    if ( !w->viewport.allowvert ||
+		 (int)preferred.height < clip_height) {
 	        intended.height = clip_height;
 		intended.request_mode |= CWHeight;
 	    }
@@ -705,8 +709,10 @@ int *clip_width, *clip_height;
 	    intended->width = child->core.width;
     }
 
-    AssignMax(intended->width, *clip_width);
-    AssignMax(intended->height, *clip_height);
+    if (*clip_width > (int)intended->width)
+	intended->width = *clip_width;
+    if (*clip_height > (int)intended->height)
+	intended->height = *clip_height;
 }
 
 static void Resize(widget)
@@ -835,7 +841,8 @@ static XtGeometryResult GeometryManager(child, request, reply)
 		    allowed.width = w->core.width;
 		    allowed.request_mode |= CWWidth;
 		}
-		if (allowed.width > (bar->core.width + bar->core.border_width))
+		if ( (int)allowed.width >
+		     (int)(bar->core.width + bar->core.border_width) )
 		    allowed.width -= bar->core.width + bar->core.border_width;
 		else
 		    allowed.width = 1;
@@ -965,12 +972,12 @@ XawViewportSetCoordinates (gw, x, y)
     ViewportWidget w = (ViewportWidget) gw;
     Widget child = w->viewport.child;
 
-    if (x > child->core.width) 
+    if (x > (int)child->core.width) 
       x = child->core.width;
     else if (x < 0)
       x = child->core.x;
 
-    if (y > child->core.height)
+    if (y > (int)child->core.height)
       y = child->core.height;
     else if (y < 0)
       y = child->core.y;
