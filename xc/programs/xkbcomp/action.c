@@ -26,7 +26,7 @@
  ********************************************************/
 
 #include "xkbcomp.h"
-#include "xkbio.h"
+#include "xkbfile.h"
 #include "tokens.h"
 #include "expr.h"
 
@@ -393,7 +393,7 @@ int			t2;
 	case F_ClearLocks:
 	case F_LatchToLock:
 	    rtrn= act->flags;
-	    if (CheckLatchLockFlags(action->type,field,value,rtrn)) {
+	    if (CheckLatchLockFlags(action->type,field,value,&rtrn)) {
 		act->flags= rtrn;
 		return True;
 	    }
