@@ -1,4 +1,4 @@
-/* $XConsortium: ReconfWM.c,v 1.5 92/01/09 18:47:05 rws Exp $ */
+/* $XConsortium: ReconfWM.c,v 1.6 92/01/19 15:03:57 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986   */
 
 /*
@@ -99,7 +99,7 @@ Status XReconfigureWMWindow (dpy, w, screen, mask, changes)
 	(void) _XReply (dpy, (xReply *)&rep, 0, xTrue);
     }
 
-    _XDeqErrorHandler(dpy, &async);
+    DeqAsyncHandler(dpy, &async);
     UnlockDisplay(dpy);
     SyncHandle();
 

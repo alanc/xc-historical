@@ -1,4 +1,4 @@
-/* $XConsortium: XFont.c,v 11.40 92/01/09 18:48:20 rws Exp $ */
+/* $XConsortium: XFont.c,v 11.41 92/01/19 15:04:17 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -100,11 +100,11 @@ _XQueryFont (dpy, fid, seq)
     if (!_XReply (dpy, (xReply *) &reply,
        ((SIZEOF(xQueryFontReply) - SIZEOF(xReply)) >> 2), xFalse)) {
 	if (seq)
-	    _XDeqErrorHandler(dpy, &async);
+	    DeqAsyncHandler(dpy, &async);
 	return (XFontStruct *)NULL;
     }
     if (seq)
-	_XDeqErrorHandler(dpy, &async);
+	DeqAsyncHandler(dpy, &async);
     if (! (fs = (XFontStruct *) Xmalloc (sizeof (XFontStruct)))) {
 	_XEatData(dpy, (unsigned long)(reply.nFontProps * SIZEOF(xFontProp) +
 				       reply.nCharInfos * SIZEOF(xCharInfo)));

@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsCmap.c,v 1.12 92/01/09 18:51:21 rws Exp $" */
+/* $XConsortium: XcmsCmap.c,v 1.13 92/01/19 15:04:21 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -183,7 +183,7 @@ CmapRecForColormap(dpy, cmap)
 		GetEmptyReq(GetInputFocus, req);
 		(void) _XReply (dpy, (xReply *)&rep, 0, xTrue);
 	    }
-	    _XDeqErrorHandler(dpy, &async);
+	    DeqAsyncHandler(dpy, &async);
 	    UnlockDisplay(dpy);
 	    SyncHandle();
 	} while (async_state.error_count > 0 && ++j < nVisualsMatched);
