@@ -61,7 +61,7 @@ clicking in the title or highlight region raises the window without moving it.
 .PP
 When new windows are created, \fItwm\fP will honor any size and location
 information requested by the user (usually through \fI-geometry\fP
-command line argument to or resources for the individual applications).  
+command line argument or resources for the individual applications).  
 Otherwise, an outline of the window's default size, its titlebar, and lines 
 dividing the 
 window into a 3x3 grid that track the pointer are displayed.
