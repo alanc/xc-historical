@@ -1,4 +1,4 @@
-/* $XConsortium: CutPaste.c,v 1.4 92/02/03 12:23:29 gildea Exp $
+/* $XConsortium: CutPaste.c,v 1.5 93/01/25 17:45:40 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -26,7 +26,7 @@
 #include <X11/Xmu/StdSel.h>
 #include <X11/Xmu/Atoms.h>
 #include <X11/Xatom.h>
-#include "ScaleP.h"
+#include "ScaleP.h"	/* This file should be part of the Scale widget */
 #include "Scale.h"
 #include <stdio.h>
 
@@ -64,8 +64,9 @@ ConvertSelection(w, selection, target, type, value, length, format)
 	   In addition to the targets provided by XmuConvertStandardSelection,
 	   Xt converts MULTIPLE, and we convert PIXMAP and BITMAP.
 	 */
-	success = XmuConvertStandardSelection(w, 0L, selection, target,
-					      type, value, length, format);
+	success = XmuConvertStandardSelection(w, (Time)0, selection, target,
+					      type, (caddr_t *)value, length,
+					      format);
 	if (success && *target == XA_TARGETS(XtDisplay(w))) {
 	    Atom* tmp;
 	    tmp = (Atom *) XtRealloc(*value, (*length + 3) * sizeof(Atom));
@@ -86,7 +87,7 @@ void SWGrabSelection(w, time)
 }
 
 
-/* ARGSUSED */
+/*ARGSUSED*/
 static void
 SelectionCallback(w, client_data, selection, type, value, length, format)
     Widget w;
