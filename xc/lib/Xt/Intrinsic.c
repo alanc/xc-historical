@@ -459,8 +459,8 @@ typedef struct {
 } CallbackTableRec,*CallbackTable;
 
 static CallbackTable callbackTable = NULL;
-static CallbackType currentIndex = 1;
-static CallbackType maxIndex;
+static XtCallbackType currentIndex = 1;
+static XtCallbackType maxIndex;
 InitializeCallbackTable ()
 {
   callbackTable = (CallbackTable) XtMalloc(TABLESIZE*sizeof(CallbackTableRec));
@@ -476,7 +476,7 @@ static void ExpandTable()
 } 
                                              
 
-CallbackType XtNewCallbackType(widgetClass,offset)
+XtCallbackType XtNewCallbackType(widgetClass,offset)
     WidgetClass widgetClass;
     Cardinal  offset;
 {
@@ -490,7 +490,7 @@ CallbackType XtNewCallbackType(widgetClass,offset)
 
 CallbackList *FetchCallbackList (widget,callbackType)
     Widget  widget;
-    CallbackType  callbackType;
+    XtCallbackType  callbackType;
 {
     if ( callbackType >= listSize ||
        !XtIsSubclass(widget,callbackTable[callbackType].widgetClass) )
@@ -524,7 +524,7 @@ void AddCallback (widget,callbackList,callback,closure)
 
 void XtAddCallback(widget, callbackType,callback,closure)
     Widget    widget;
-    CallbackType callbackType;
+    XtCallbackType callbackType;
     CallbackProc callback;
     caddr_t      closure;
 {
@@ -558,7 +558,7 @@ void RemoveCallback (widget,callbackList, callback, closure)
 
 void XtRemoveCallback (widget, callbackType, callback, closure)
     Widget    widget;
-    CallbackType callbackType;
+    XtCallbackType callbackType;
     CallbackProc callback;
     caddr_t      closure;
 {
@@ -587,7 +587,7 @@ void RemoveAllCallbacks (callbackList)
 
 void XtRemoveAllCallbacks(widget, callbackType)
     Widget widget;
-    CallbackType  callbackType;
+    XtCallbackType  callbackType;
 {
    CallbackList *callbackList;
    callbackList = FetchCallbackList(widget,callbackType);
@@ -612,7 +612,7 @@ void CallCallbacks (callbackList,callData)
 
 void XtCallCallbacks (widget, callbackType, callData)
     Widget   widget;
-    CallbackType callbackType;
+    XtCallbackType callbackType;
     caddr_t  callData;
 {
    CallbackList *callbackList;
