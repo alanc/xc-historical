@@ -21,14 +21,13 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mifpolycon.c,v 1.14 89/03/22 10:50:26 rws Exp $ */
+/* $XConsortium: mifpolycon.c,v 1.15 89/05/10 23:54:23 keith Exp $ */
+#include <math.h>
 #include "X.h"
 #include "gcstruct.h"
 #include "windowstr.h"
 #include "pixmapstr.h"
 #include "mifpoly.h"
-#undef fabs
-#include <math.h>
 
 static int GetFPolyYBounds();
 

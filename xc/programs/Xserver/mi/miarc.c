@@ -21,9 +21,10 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 1.76 89/04/04 16:17:08 keith Exp $ */
+/* $XConsortium: miarc.c,v 1.77 89/05/10 23:54:07 keith Exp $ */
 /* Author: Keith Packard */
 
+#include <math.h>
 #include "X.h"
 #include "Xprotostr.h"
 #include "misc.h"
@@ -33,8 +34,6 @@ SOFTWARE.
 #include "windowstr.h"
 #include "mifpoly.h"
 #include "mi.h"
-#undef fabs
-#include <math.h>
 
 double	miDsin(), miDcos(), miDasin(), miDatan2();
 
@@ -190,11 +189,6 @@ double	a, b;
 {
 	return a < b ? a : b;
 }
-
-#ifdef fabs
-#undef fabs
-#endif
-#define fabs(x)	((x) >= 0.0 ? (x) : -(x))
 
 #endif
 
