@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.117 93/09/18 11:37:45 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.118 93/09/20 20:22:34 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -165,14 +165,6 @@ typedef struct _XSQEvent
 /* Utek leaves kernel macros around in include files (bleah) */
 #ifdef dirty
 #undef dirty
-#endif
-
-#ifdef CRAY
-#define WORD64
-#endif
-
-#ifdef __alpha
-#define LONG64
 #endif
 
 #ifndef X_NOT_STDC_ENV
