@@ -7,6 +7,7 @@
 #endif
     STD_DEFINES = LibraryDefines $(ALIGN_DEFINES)
     APP_DEFINES = -DXAPPLOADDIR=\"$(XAPPLOADDIR)$(PATHSEP)\"
+     DB_DEFINES = -DERRORDB=\"$(LIBDIR)/XtErrorDB\"
     CDEBUGFLAGS = LibraryCDebugFlags
        INCLUDES = -I. -I$(XLIBSRC) -I$(TOP) -I$(TOP)/X11
    INSTALLFLAGS = $(INSTINCFLAGS)
@@ -97,18 +98,22 @@ all::
 
 #if DebugLibXt && ProfileLibXt
 DebuggedAndProfiledLibraryObjectRule()
-SpecialDebuggedAndProfiledObjectRule(Initialize.o,$(IRULESRC)/Imake.tmpl,$(APP_DEFINES))
+SpecialDebuggedAndProfiledObjectRule(Initialize.o,$(ICONFIGFILES),$(APP_DEFINES))
+SpecialDebuggedAndProfiledObjectRule(Error.o,$(ICONFIGFILES),$(DB_DEFINES))
 #else
 # if DebugLibXt
 DebuggedLibraryObjectRule()
-SpecialDebuggedObjectRule(Initialize.o,$(IRULESRC)/Imake.tmpl,$(APP_DEFINES))
+SpecialDebuggedObjectRule(Initialize.o,$(ICONFIGFILES),$(APP_DEFINES))
+SpecialDebuggedObjectRule(Error.o,$(ICONFIGFILES),$(DB_DEFINES))
 # else
 #  if ProfileLibXt
 ProfiledLibraryObjectRule()
-SpecialProfiledObjectRule(Initialize.o,$(IRULESRC)/Imake.tmpl,$(APP_DEFINES))
+SpecialProfiledObjectRule(Initialize.o,$(ICONFIGFILES),$(APP_DEFINES))
+SpecialProfiledObjectRule(Error.o,$(ICONFIGFILES),$(DB_DEFINES))
 #  else
 NormalLibraryObjectRule()
-SpecialObjectRule(Initialize.o,$(IRULESRC)/Imake.tmpl,$(APP_DEFINES))
+SpecialObjectRule(Initialize.o,$(ICONFIGFILES),$(APP_DEFINES))
+SpecialObjectRule(Error.o,$(ICONFIGFILES),$(DB_DEFINES))
 #  endif
 # endif
 #endif
