@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: search.c,v 1.4 89/02/14 16:32:55 kit Exp $
+ * $XConsortium: search.c,v 1.5 89/02/15 16:06:53 kit Exp $
  * $oHeader: search.c,v 4.0 88/08/31 22:13:19 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -310,13 +310,14 @@ ManpageGlobals *man_globals;
 /* search other sections. */
 
   if (e_num == NO_ENTRY) {
-    i = -1;			/* At the exit of the loop i needs to
+    i = 0;			/* At the exit of the loop i needs to
 				   be the one we used. */
-    do {
-      i++;
-      if (i == man_globals->current_directory) i++;
+    while ( (i < sections) && (e_num == NO_ENTRY) ) {
+      if (i == man_globals->current_directory)
+	if (++i >= sections) break;
       e_num = BEntrySearch(string, manual[i].entries, manual[i].nentries);
-    } while ( (i < sections) && (e_num == NO_ENTRY) );
+      i++;
+    }
     if (e_num == NO_ENTRY)
       return(NULL);
 /*
