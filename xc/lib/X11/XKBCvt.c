@@ -1,4 +1,4 @@
-/* "$XConsortium: XKBCvt.c,v 1.11 94/02/03 18:49:22 rws Exp $"; */
+/* "$XConsortium: XKBCvt.c,v 1.9 93/09/29 23:30:59 rws Exp $"; */
 
 /*
  * Copyright 1988, 1989 by the Massachusetts Institute of Technology
@@ -28,7 +28,7 @@
 #define XK_LATIN1
 #define XK_PUBLISHING
 #include <X11/keysym.h>
-#include <X11/extensions/XKBstr.h>
+#include <X11/extensions/XKBproto.h>
 #include "XKBlibint.h"
 #include <X11/Xlocale.h>
 #include <ctype.h>
@@ -156,7 +156,7 @@ static int _XkbHandleSpecialSym(keysym, buffer, nbytes, status)
     Status	*status;
 {
 
-    /* try to convert to Latin-1, handling control */
+    /* try to convert to Latin-1, handling ctrl */
     if (!(((keysym >= XK_BackSpace) && (keysym <= XK_Clear)) ||
 	   (keysym == XK_Return) || (keysym == XK_Escape) ||
 	   (keysym == XK_KP_Space) || (keysym == XK_KP_Tab) ||
@@ -240,18 +240,25 @@ int _XkbKSToKnownSet (priv, keysym, buffer, nbytes, status)
             buffer[0] = (keysym & 0xff);
             break;
         }
-    } else if ((keysymSet != 0) && (isLatin1) && (keysym & 0x80) &&
-               !(latin1[keysym & 0x7f] & (1 << kset))) {
-        if ((keysymSet == sHebrew) && (keysym == XK_multiply))
-            buffer[0] = 0xaa;
-        else if ((keysymSet == sHebrew) && (keysym == XK_division))
-            buffer[0] = 0xba;
-        else if ((keysymSet == sCyrillic) && (keysym == XK_section))
-            buffer[0] = 0xfd;
-        else if ((keysymSet == sX0201) && (keysym == XK_yen))
-            buffer[0] = 0x5c;
-        else
-            count = 0;
+    } else if ((keysymSet != 0) && (isLatin1) && (keysym & 0x80)) {
+	if (latin1[keysym & 0x7f] & (1 << kset)) {
+            /* Most non-latin1 locales use some latin-1 upper half
+               keysyms as defined by bitpatterns in array latin1.
+               Enforce it. */
+            buffer[0] = (keysym & 0xff);
+            count = 1;
+        } else {
+	    if ((keysymSet == sHebrew) && (keysym == XK_multiply))
+		buffer[0] = 0xaa;
+            else if ((keysymSet == sHebrew) && (keysym == XK_division))
+		buffer[0] = 0xba;
+            else if ((keysymSet == sCyrillic) && (keysym == XK_section))
+		buffer[0] = 0xfd;
+            else if ((keysymSet == sX0201) && (keysym == XK_yen))
+		buffer[0] = 0x5c;
+            else
+		count = 0;
+	}
     } else if (isLatin1) {
         if ((keysymSet == sX0201) &&
             ((keysym == XK_backslash) || (keysym == XK_asciitilde)))
@@ -458,13 +465,15 @@ _XkbGetConverters(charset, cvt_rtrn)
 	else *cvt_rtrn = cvt_latin1;
 	return 1;
     }
-    return 0;
+    *cvt_rtrn= cvt_latin1;
+    return 1;
 }
 
 /***====================================================================***/
 
+#ifdef XKB_EXTEND_LOOKUP_STRING
 #define	CHARSET_FILE	"/usr/lib/X11/input/charsets"
-static char *_XkbKnownLanguages = "c=ascii:da,de,en,es,fi,fr,is,it,nl,no,pt,sv=iso8859-1:pl=iso8859-2:ru=iso8859-5:el=iso8859-7:th,th_TH,th_TH.TACTIS:tis620.2533-1";
+static char *_XkbKnownLanguages = "c=ascii:da,de,en,es,fi,fr,is,it,nl,no,pt,sv=iso8859-1:pl,cs=iso8859-2:ru=iso8859-5:el=iso8859-7:th,th_TH,th_TH.TACTIS:tis620.2533-1";
 
 char	*
 _XkbGetCharset(locale)
@@ -551,4 +560,21 @@ _XkbGetCharset(locale)
     Xfree(start);
     return NULL;
 }
+#else
+char	*
+_XkbGetCharset(locale)
+    char *locale;
+{
+char *tmp;
+
+    if ( locale == NULL ) {
+	tmp = getenv( "_XKB_CHARSET" );
+	if ( tmp )
+	    return tmp;
+	else locale = setlocale(LC_CTYPE,NULL);
+    }
+    return NULL;
+}
+#endif
+
 
