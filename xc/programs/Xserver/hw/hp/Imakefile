@@ -1,0 +1,46 @@
+XCOMM $XConsortium: Imakefile,v 1.3 91/07/16 22:51:13 gildea Exp $
+#include <Server.tmpl>
+
+/* "@(#)Imakefile	3.1 88/09/22 09:29:19" */
+#define IHaveSubdirs
+#undef PassCDebugFlags
+#define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
+
+SUBDIRS=ngle input
+ANSI_DEFINES=-Aa -D_HPUX_SOURCE -DANSI_CPP
+
+SRCS = \
+	ddx_info.c \
+	hpCursorUtils.c \
+	hpInit.c
+	
+OBJS = \
+	ddx_info.o \
+	hpCursorUtils.o \
+	hpInit.o \
+    	ngle/ngle.o \
+	input/libhp.a
+
+LOBJS = \
+	ddx_info.ln \
+	hpCursorUtils.ln \
+	hpInit.ln
+
+DEFINES = $(ANSI_DEFINES)
+
+INCLUDES = -I. -I./include -I./input -I../mfb -I../cfb -I../mi \
+	-I../../include -I$(INCLUDESRC) -I../../../extensions/include
+
+LINTLIBS = ../../dix/llib-ldix.ln ../../os/4.2bsd/llib-los.ln \
+	../mfb/llib-lmfb.ln ../mi/llib-lmi.ln ../cfb/llib-lcfb.ln
+
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))
+
+all::
+
+NormalLibraryObjectRule()
+NormalRelocatableTarget(hp,$(OBJS))
+
+DependTarget()
+
