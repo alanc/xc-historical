@@ -11,7 +11,7 @@ xset - user preference utility for X
 [[-]led [\fIinteger\fP]] [led on/off]
 [m[ouse] [\fIaccel_mult\fP[/\fIaccel_div\fP] [\fIthreshold\fP]]] [m[ouse] default]
 [p \fIpixel\fP \fIcolor\fP]
-[[-]r] [r on/off]
+[[-]r [keycode]] [r on/off]
 [s [\fIlength\fP [\fIperiod\fP]]] [s blank/noblank]
 [s expose/noexpose] [s on/off] [s default]
 [q]
@@ -143,6 +143,8 @@ or an error will result.
 The \fBr\fP option controls the autorepeat.
 If a preceding dash or the 'off' flag is used, autorepeat will be disabled.
 If no parameters or the 'on' flag is used, autorepeat will be enabled.
+If a specific keycode is specified as a parameter, autorepeat for that
+keycode is enabled or disabled.
 .PP
 .TP 8
 .B s
