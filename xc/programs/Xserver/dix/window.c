@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 1.240 89/04/19 19:25:46 keith Exp $ */
+/* $XConsortium: window.c,v 1.241 89/04/23 14:35:34 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -3006,9 +3006,8 @@ MarkSiblingsBelowMe(pWin, box)
 }    
 
 static void
-RealizeChildren(pWin, client)
+RealizeChildren(pWin)
     WindowPtr pWin;
-    ClientPtr client;
 {
     WindowPtr pSib;
     Bool (* Realize)();
@@ -3024,7 +3023,7 @@ RealizeChildren(pWin, client)
             pSib->viewable = pSib->class == InputOutput;
             (* Realize)(pSib);
             if (pSib->firstChild) 
-                RealizeChildren(pSib->firstChild, client);
+                RealizeChildren(pSib->firstChild);
 	}
         pSib = pSib->nextSib;
     }
@@ -3087,7 +3086,7 @@ MapWindow(pWin, SendExposures, BitsAvailable, SendNotification, client)
     	/* We SHOULD check for an error value here XXX */
         (* pScreen->RealizeWindow)(pWin);
         if (pWin->firstChild)
-            RealizeChildren(pWin->firstChild, client);    
+            RealizeChildren(pWin->firstChild);
         box = (* pScreen->RegionExtents)(pWin->borderSize);
         (void)MarkSiblingsBelowMe(pWin, box);
 
