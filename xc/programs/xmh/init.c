@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.46 90/06/27 14:24:38 swick Exp $
+ * $XConsortium: init.c,v 2.44 89/12/16 03:33:44 converse Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -33,13 +33,6 @@
 #include <sys/errno.h>
 
 #define MIN_APP_DEFAULTS_VERSION 1
-
-static String FallbackResources[] = {
-"*folderButton.label: Close",
-"*folderButton.borderWidth: 4",
-"*folderButton.translations: #override <Btn1Down>: XmhClose()",
-NULL
-};
 
 static Boolean static_variable;	 /* whose address is not a widget ID */
 
@@ -224,7 +217,6 @@ char **argv;
     FILEPTR fid;
     char str[500], str2[500], *ptr;
     Scrn scrn;
-    XtAppContext app;
     static XtActionsRec actions[] = {
 
 	/* general Xmh action procedures */
@@ -254,7 +246,6 @@ char **argv;
 	{"XmhPackFolder",		XmhPackFolder},
 	{"XmhSortFolder",		XmhSortFolder},
 	{"XmhForceRescan",		XmhForceRescan},
-	{"XmhReloadSeqLists",		XmhReloadSeqLists},
 
 	/* actions upon the currently selected message(s) */
 
@@ -292,7 +283,6 @@ char **argv;
 	{"XmhEditView",			XmhEditView},
 	{"XmhSaveView",			XmhSaveView},
 	{"XmhPrintView",		XmhPrintView},
-	{"XmhViewMarkDelete",		XmhViewMarkDelete},
 
        	/* actions upon a composition, reply, or forward */
 
@@ -320,9 +310,8 @@ char **argv;
     if (ptr) progName = ptr + 1;
     else progName = argv[0];
 
-    toplevel = XtAppInitialize(&app, "Xmh", table, XtNumber(table),
-			       &argc, argv, FallbackResources,
-			       NULL, (Cardinal)0);
+    toplevel = XtInitialize("main", "Xmh", table, XtNumber(table),
+			    &argc, argv);
     if (argc > 1) Syntax(progName);
 
     XSetIOErrorHandler(_IOErrorHandler);
@@ -410,7 +399,8 @@ char **argv;
 
     XtAppAddActions( XtWidgetToApplicationContext(toplevel),
 		    actions, XtNumber(actions));
-    XtRegisterGrabAction(XmhPopupFolderMenu, True, 
+
+    XtRegisterGrabAction(XmhPopupFolderMenu, True,
 			 ButtonPressMask | ButtonReleaseMask,
 			 GrabModeAsync, GrabModeAsync);
 
