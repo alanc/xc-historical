@@ -1,4 +1,4 @@
-/* $XConsortium: XIproto.h,v 1.5 90/05/18 10:57:45 rws Exp $ */
+/* $Header: XIproto.h,v 1.11 90/01/09 13:11:19 gms Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -1156,7 +1156,10 @@ typedef struct
     BYTE        deviceid;
     CARD16 	sequenceNumber B16;
     Time        time B32;
-    Mask        classes_reported B32;
+    CARD8	num_keys;
+    CARD8	num_buttons;
+    CARD8	num_valuators;
+    CARD8       classes_reported;
     CARD8       buttons[4];
     CARD8       keys[4];
     CARD32	valuators[3];
