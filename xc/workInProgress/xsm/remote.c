@@ -1,4 +1,4 @@
-/* $XConsortium: remote.c,v 1.13 94/12/27 17:59:13 mor Exp mor $ */
+/* $XConsortium: remote.c,v 1.14 94/12/30 18:36:32 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -80,7 +80,9 @@ char	*non_local_session_env;
 
     if (pipe (pipefd) < 0)
     {
-	sprintf (msg, "pipe() error during remote start of %s", program);
+	sprintf (msg, "%s: pipe() error during remote start of %s",
+	    Argv[0], program);
+	add_log_text (msg);
 	perror (msg);
     }
     else
@@ -89,7 +91,9 @@ char	*non_local_session_env;
 	{
 	case -1:
 
-	    sprintf (msg, "fork() error during remote start of %s", program);
+	    sprintf (msg, "%s: fork() error during remote start of %s",
+		Argv[0], program);
+	    add_log_text (msg);
 	    perror (msg);
 	    break;
 
@@ -103,9 +107,17 @@ char	*non_local_session_env;
 	    execlp (RSHCMD, restart_machine, "rstartd", (char *) 0);
 
 	    sprintf (msg,
-	        "execlp() of rstartd failed for remote start of %s", program);
+	        "%s: execlp() of rstartd failed for remote start of %s",
+		Argv[0], program);
 	    perror (msg);
-
+	    /*
+	     * TODO : We would like to send this log information to the
+	     * log window in the parent.  This would require using the
+	     * pipe between the parent and child.  The child would
+	     * set close-on-exec.  If the exec succeeds, the pipe will
+	     * be closed.  If it fails, the child can write a message
+	     * to the parent.
+	     */
 	    _exit(255);
 
 	default:		/* parent */

@@ -1,4 +1,4 @@
-/* $XConsortium: saveutil.c,v 1.29 94/12/29 16:27:37 mor Exp mor $ */
+/* $XConsortium: saveutil.c,v 1.30 94/12/30 18:12:36 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -325,7 +325,12 @@ char *sm_id;
 
     if (!f)
     {
-	perror ("Error creating session save file");
+	char msg[256];
+
+	sprintf (msg, "%s: Error creating session save file %s", 
+	    Argv[0], session_save_file);
+	add_log_text (msg);
+	perror (msg);
     }
     else
     {

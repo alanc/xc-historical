@@ -1,4 +1,4 @@
-/* $XConsortium: restart.c,v 1.23 94/12/29 16:28:15 mor Exp mor $ */
+/* $XConsortium: restart.c,v 1.24 94/12/30 18:36:49 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -271,15 +271,26 @@ int flag;
 
 		switch(fork()) {
 		case -1:
-		    sprintf (logtext, "Can't fork() %s", program);
+		    sprintf (logtext,
+			"%s: Can't fork() %s", Argv[0], program);
+		    add_log_text (logtext);
 		    perror (logtext);
 		    break;
 		case 0:		/* kid */
 		    chdir(cwd);
 		    if(env) environ = env;
 		    execvp(program, args);
-		    sprintf (logtext, "Can't execve() %s", program);
+		    sprintf (logtext, "%s: Can't execvp() %s",
+			Argv[0], program);
 		    perror (logtext);
+		    /*
+		     * TODO : We would like to send this log information to the
+		     * log window in the parent.  This would require opening
+		     * a pipe between the parent and child.  The child would
+		     * set close-on-exec.  If the exec succeeds, the pipe will
+		     * be closed.  If it fails, the child can write a message
+		     * to the parent.
+		     */
 		    _exit(255);
 		default:	/* parent */
 		    break;
@@ -453,15 +464,24 @@ Bool useSavedState;
 
 	    switch(fork()) {
 	    case -1:
-		sprintf (msg, "Can't fork() %s", program);
+		sprintf (msg, "%s: Can't fork() %s", Argv[0], program);
+		add_log_text (msg);
 		perror (msg);
 		break;
 	    case 0:		/* kid */
 		chdir(cwd);
 		if(env) environ = env;
 		execvp(program, args);
-		sprintf (msg, "Can't execve() %s", program);
+		sprintf (msg, "%s: Can't execvp() %s", Argv[0], program);
 		perror (msg);
+		/*
+		 * TODO : We would like to send this log information to the
+		 * log window in the parent.  This would require opening
+		 * a pipe between the parent and child.  The child would
+		 * set close-on-exec.  If the exec succeeds, the pipe will
+		 * be closed.  If it fails, the child can write a message
+		 * to the parent.
+		 */
 		_exit(255);
 	    default:	/* parent */
 		break;
