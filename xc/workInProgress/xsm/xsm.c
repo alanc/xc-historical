@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.70 94/12/13 20:45:03 mor Exp mor $ */
+/* $XConsortium: xsm.c,v 1.71 94/12/14 17:03:34 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -47,34 +47,23 @@ in this Software without prior written authorization from the X Consortium.
 #include "saveutil.h"
 #include "lock.h"
 
-#ifdef X_POSIX_C_SOURCE
+#include <X11/Shell.h>
+#include <X11/Xatom.h>
+
+#if defined(X_POSIX_C_SOURCE)
 #define _POSIX_C_SOURCE X_POSIX_C_SOURCE
-#include <signal.h>
+#include <setjmp.h>
 #undef _POSIX_C_SOURCE
-#else
-#if defined(X_NOT_POSIX) || defined(_POSIX_SOURCE)
-#include <signal.h>
+#elif defined(X_NOT_POSIX) || defined(_POSIX_SOURCE)
+#include <setjmp.h>
 #else
 #define _POSIX_SOURCE
-#include <signal.h>
+#include <setjmp.h>
 #undef _POSIX_SOURCE
 #endif
-#endif
 
-#if defined(X_NOT_POSIX) && defined(SIGNALRETURNSINT)
-#define SIGVAL int
-#else
-#define SIGVAL void
-#endif
-
-#if defined(X_NOT_POSIX) && defined(SYSV)
-#define SIGNALS_RESET_WHEN_CAUGHT
-#endif
-
-#include <sys/wait.h>
-
+jmp_buf JumpHere;
 Atom wmStateAtom;
-
 static char *cmd_line_display = NULL;
 
 /*
@@ -85,9 +74,6 @@ Status StartSession ();
 void NewConnectionXtProc ();
 Status NewClientProc ();
 void IoErrorHandler ();
-
-SIGVAL (*Signal ())();
-void sig_child_handler ();
 
 /*
  * Extern declarations
@@ -156,26 +142,14 @@ char **argv;
 	
     wmStateAtom = XInternAtom (XtDisplay (topLevel), "WM_STATE", False);
 
+    register_signals ();
+
 
     /*
      * Set my own IO error handler.
      */
 
     IceSetIOErrorHandler (IoErrorHandler);
-
-
-    /*
-     * Ignore SIGPIPE
-     */
-
-    Signal (SIGPIPE, SIG_IGN);
-
-
-    /*
-     * If child process dies, call our handler
-     */
-
-    Signal (SIGCHLD, sig_child_handler);
 
 
     /*
@@ -324,37 +298,6 @@ char **argv;
 
     setjmp (JumpHere);
     XtAppMainLoop (appContext);
-}
-
-
-
-SIGVAL (*Signal (sig, handler))()
-    int sig;
-    SIGVAL (*handler)();
-{
-#ifndef X_NOT_POSIX
-    struct sigaction sigact, osigact;
-    sigact.sa_handler = handler;
-    sigemptyset(&sigact.sa_mask);
-    sigact.sa_flags = 0;
-    sigaction(sig, &sigact, &osigact);
-    return osigact.sa_handler;
-#else
-    return signal(sig, handler);
-#endif
-}
-
-
-void
-sig_child_handler ()
-
-{
-#ifdef SIGNALS_RESET_WHEN_CAUGHT
-    Signal (SIGCHLD, sig_child_handler);
-#endif
-
-    while (waitpid (-1, NULL, WNOHANG) > 0)
-	;
 }
 
 
@@ -864,7 +807,7 @@ int		dialogType;
 	    printf ("Error in SMlib: should have checked for bad value]\n");
     }
 
-    ListAddLast (WaitForInteractList, client);
+    ListAddLast (WaitForInteractList, (char *) client);
 
     if (OkToEnterInteractPhase ())
     {
@@ -1000,7 +943,7 @@ SmPointer   managerData;
     }
     else
     {
-	ListAddLast (WaitForPhase2List, client);
+	ListAddLast (WaitForPhase2List, (char *) client);
 
 	if (ListCount (WaitForInteractList) > 0 && OkToEnterInteractPhase ())
 	{
@@ -1030,12 +973,12 @@ SaveYourselfDoneProc (smsConn, managerData, success)
 	       client->clientId, success ? "True" : "False");
     }
 
-    if (!ListSearchAndFreeOne (WaitForSaveDoneList, client))
+    if (!ListSearchAndFreeOne (WaitForSaveDoneList, (char *) client))
 	return;
 
     if (!success)
     {
-	ListAddLast (FailedSaveList, client);
+	ListAddLast (FailedSaveList, (char *) client);
     }
 
     if (ListCount (WaitForSaveDoneList) == 0)
@@ -1088,20 +1031,21 @@ ClientRec *client;
 	}
     }
 
-    ListSearchAndFreeOne (RunningList, client);
+    ListSearchAndFreeOne (RunningList, (char *) client);
 
     if (saveInProgress)
     {
-	Status delStatus = ListSearchAndFreeOne (WaitForSaveDoneList, client);
+	Status delStatus = ListSearchAndFreeOne (
+	    WaitForSaveDoneList, (char *) client);
 
 	if (delStatus)
 	{
-	    ListAddLast (FailedSaveList, client);
+	    ListAddLast (FailedSaveList, (char *) client);
 	    client->freeAfterBadSavePopup = True;
 	}
 
-	ListSearchAndFreeOne (WaitForInteractList, client);
-	ListSearchAndFreeOne (WaitForPhase2List, client);
+	ListSearchAndFreeOne (WaitForInteractList, (char *) client);
+	ListSearchAndFreeOne (WaitForPhase2List, (char *) client);
 
 	if (delStatus && ListCount (WaitForSaveDoneList) == 0)
 	{
@@ -1126,11 +1070,11 @@ ClientRec *client;
     {
 	Clone (client, True /* use saved state */);
 
-	ListAddLast (RestartImmedList, client);
+	ListAddLast (RestartImmedList, (char *) client);
     }
     else if (client->restartHint == SmRestartAnyway)
     {
-	ListAddLast (RestartAnywayList, client);
+	ListAddLast (RestartAnywayList, (char *) client);
     }
     else if (!client->freeAfterBadSavePopup)
     {
@@ -1239,7 +1183,7 @@ char 		**failureReasonRet;
     newClient->saveDiscardCommand = NULL;
     newClient->restartHint = SmRestartIfRunning;
 
-    ListAddLast (RunningList, newClient);
+    ListAddLast (RunningList, (char *) newClient);
 
     if (verbose) {
 	printf("On IceConn fd = %d, client set up session mngmt protocol\n\n",
