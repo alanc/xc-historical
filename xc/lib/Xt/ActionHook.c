@@ -1,6 +1,5 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: ActionHook.c,v 1.1 89/09/26 17:57:37 swick Exp $";
-#endif /* lint */
+/* $XConsortium: ActionHook.c,v 1.2 90/04/04 11:27:21 swick Exp $ */
+
 /*LINTLIBRARY*/
 
 /***********************************************************

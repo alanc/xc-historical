@@ -1,7 +1,4 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: Alloc.c,v 1.29 89/11/03 07:58:12 swick Exp $";
-/* $oHeader: Alloc.c,v 1.2 88/08/18 15:33:53 asente Exp $ */
-#endif /* lint */
+/* $XConsortium: Alloc.c,v 1.30 90/04/04 11:27:28 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

@@ -1,7 +1,4 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: ArgList.c,v 1.17 89/06/16 19:33:55 jim Exp $";
-/* $oHeader: ArgList.c,v 1.2 88/08/18 15:34:52 asente Exp $ */
-#endif /* lint */
+/* $XConsortium: ArgList.c,v 1.18 90/04/04 10:32:21 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
