@@ -1,6 +1,6 @@
 
 /*
- * $XConsortium: Xrm.c,v 1.3 90/06/01 15:40:59 kit Exp $
+ * $XConsortium: Xrm.c,v 1.33 90/06/04 14:58:51 kit Exp $
  */
 
 /***********************************************************
@@ -147,31 +147,28 @@ void XrmStringToQuarkList(name, quarks)
     register XrmQuarkList quarks;   /* RETURN */
 #endif
 {
-    register int	i;
-    register char       ch, *tname;
-    register Signature  sig = 0;
+    register unsigned short	bits;
+    register Signature  	sig = 0;
+    register char       	ch, *tname;
 
     if ((tname = name) != NULL) {
-	for (i = 0 ; ((ch = *tname) != '\0') ; tname++) {
-	    if (ch == '.' || ch == '*') {
-		if (i != 0) {
-		    /* Found a complete name */
-		    *quarks++ = _XrmInternalStringToQuark(name, i, sig);
+	if (xrm_is_tight_or_loose (bits = get_next_char(ch, tname)))
+	    name = tname;
+	else
+	    sig = (sig << 1) + ch; /* Compute the signature. */
 
-		    i = 0;
-		    sig = 0;
-		}
-
-		name = tname + 1;
-	    } else {
-		sig = (sig << 1) + ch; /* Compute the signature. */
-	    	i++;
+	while (!xrm_is_EOF(bits = get_next_char(ch, tname))) {
+	    if (xrm_is_tight_or_loose (bits)) {
+		/* Found a complete name */
+		*quarks++ = _XrmInternalStringToQuark(name, 
+						      tname -name -1, sig);
+		sig = 0;
+		name = tname;
 	    }
+	    else 
+		sig = (sig << 1) + ch; /* Compute the signature. */
 	}
-	/* Do last name */
-	if (i != 0) {
-	    *quarks++ = _XrmInternalStringToQuark(name, i, sig);
-	}
+	*quarks++ = _XrmInternalStringToQuark(name, tname - name - 1, sig);
     }
     *quarks = NULLQUARK;
 }
@@ -188,38 +185,41 @@ void XrmStringToBindingQuarkList(name, bindings, quarks)
     register XrmQuarkList   quarks;     /* RETURN */
 #endif
 {
-    register int	i;
-    register XrmBinding binding;
-    register char       ch, *tname;
-    register Signature  sig = 0;
+    register unsigned short	bits;
+    register Signature  	sig = 0;
+    register char       	ch, *tname;
+    register XrmBinding 	binding;
 
     if ((tname = name) != NULL) {
 	binding = XrmBindTightly;
-	for (i = 0 ; ((ch = *tname) != '\0') ; tname++) {
-	    if (ch == '.' || ch == '*') {
-		if (i != 0) {
-		    /* Found a complete name */
-		    *bindings++ = binding;
-		    *quarks++ = _XrmInternalStringToQuark(name, i, sig);
+	if (xrm_is_tight_or_loose (bits = get_next_char(ch, tname))) {
+	    if (xrm_is_loose(bits)) 
+		binding = XrmBindLoosely;
 
-		    i = 0;
-		    sig = 0;
-		    binding = XrmBindTightly;
-		}
-		if (ch == '*') 
+	    name = tname;
+	}
+	else 
+	    sig = (sig << 1) + ch; /* Compute the signature. */
+
+	while (!xrm_is_EOF(bits = get_next_char(ch, tname))) {
+	    if (xrm_is_tight_or_loose (bits)) {
+		/* Found a complete name */
+		*bindings++ = binding;
+		*quarks++ = _XrmInternalStringToQuark(name, 
+							  tname -name -1, sig);
+		sig = 0;
+		if (xrm_is_loose(bits)) 
 		    binding = XrmBindLoosely;
+		else
+		    binding = XrmBindTightly;
 
-		name = tname + 1;
-	    } else {
-		sig = (sig << 1) + ch; /* Compute the signature. */
-	    	i++;
+		name = tname;
 	    }
+	    else 
+		sig = (sig << 1) + ch; /* Compute the signature. */
 	}
-	/* Do last name */
-	if (i != 0) {
-	    *bindings = binding;
-	    *quarks++ = _XrmInternalStringToQuark(name, i, sig);
-	}
+	*bindings = binding;
+	*quarks++ = _XrmInternalStringToQuark(name, tname - name - 1, sig);
     }
     *quarks = NULLQUARK;
 } /* XrmStringToBindingQuarkList */
@@ -454,33 +454,6 @@ static XrmDatabase NewDatabase()
     bucket->hasValues[(int) XrmBindLoosely] = False;
     return(bucket);
 } /* NewDatabase */
-
-static char *getstring(buf, nchars, dp)
-	char *buf;
-	register int nchars;
-	caddr_t dp;		/* is char** source */
-{
-	register char *src = *(char**)dp;
-	register char *dst = buf;
-	register char c;
-
-	if (src == NULL) return NULL;
-	if (*src == '\0') return NULL;
-	while (--nchars > 0) {
-		*dst++ = c = *src++;
-		if (c == '\n') {
-			*(char**)dp = src;
-			return (buf);
-		}
-		if (c == '\0') {
-			*(char**)dp = src-1;
-			return (buf);
-		}
-	}
-	*dst = '\0';
-	*(char**)dp = src;
-	return buf;
-}
 
 static Bool Enum(db, bindings, quarks, count, proc, closure)
     XrmHashBucket   db;

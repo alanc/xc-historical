@@ -42,6 +42,7 @@ static unsigned short _xrmtypes[NUM_CHARS] = {
 #define xrm_is_EOF(bits) 		((bits) & _EOF)
 #define xrm_is_tight(bits)		((bits) & TIGHT)
 #define xrm_is_loose(bits)		((bits) & LOOSE)
+#define xrm_is_tight_or_loose(bits)     ((bits) & (TIGHT|LOOSE))
 #define xrm_is_comment(bits)		((bits) & COMMENT)
 #define xrm_is_odigit(bits)		((bits) & ODIGIT)
 #define xrm_is_separator(bits) 		((bits) & (SEP|SPACE|_EOF|EOL))
