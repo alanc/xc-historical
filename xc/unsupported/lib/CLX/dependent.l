@@ -23,8 +23,9 @@
 #+lcl3.0
 (import '(
 	  lcl:define-condition
-	  lcl:make-condition
 	  lcl:type-error
+	  lucid::type-error-datum
+	  lucid::type-error-expected-type
 	  sys:underlying-simple-vector))
 
 (export '(
@@ -1846,14 +1847,11 @@
 ;; If you want lots of checking, but are concerned about code size,
 ;; this can be made into a macro that ignores some parameters.
 
-#-(or ansi-common-lisp excl lcl3.0)
 (defun x-type-error (object type &optional error-string)
-  (x-error 'type-error :object object :type type :type-string error-string))
-
-#+(or ansi-common-lisp excl lcl3.0) 
-(defun x-type-error (object type &optional error-string)
-  (declare (ignore error-string))
-  (x-error 'type-error :datum object :expected-type type))
+  (x-error 'x-type-error
+	   :datum object
+	   :expected-type type
+	   :error-string error-string))
 
 
 ;;-----------------------------------------------------------------------------
@@ -2031,6 +2029,15 @@
   (let ((make-function (intern (concatenate 'string (string 'make-) (string type))
 			       (symbol-package type))))
     (apply make-function slot-initializations)))
+
+#-(or ansi-common-lisp excl lcl3.0)
+(define-condition type-error (x-error)
+  (datum
+   expected-type)
+  (:report (lambda (condition stream)
+	     (format stream "~s isn't a ~a"
+		     (type-error-datum condition)
+		     (type-error-expected-type condition)))))
 
 
 ;;-----------------------------------------------------------------------------

@@ -24,10 +24,10 @@
 					; running.  (Must be able to make
 					; a process-lock.)
 
-(import '(excl::define-condition
-	  excl::if*
-	  excl::make-condition
-	  excl::type-error))
+(import '(excl::if*
+	  excl::type-error
+	  excl::type-error-datum
+	  excl::type-error-expected-type))
 #+allegro
 (import '(excl::without-interrupts))
 
@@ -39,6 +39,10 @@
 				0 :unsigned-byte)))
 	(pushnew :little-endian *features*)
       (pushnew :big-endian *features*))))
+
+
+(defmacro define-condition (name (parent-type) &optional slots &rest args)
+  `(excl::define-condition ,name (,parent-type) ,slots ,@args))
 
 
 (defmacro correct-case (string)

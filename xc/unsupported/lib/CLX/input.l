@@ -1686,16 +1686,13 @@
 ;;-----------------------------------------------------------------------------
 ;; Internal error conditions signaled by CLX
 
-#-(or ansi-common-lisp excl lcl3.0)
-(define-condition type-error (x-error)
-  (object
-   type
-   type-string)
+(define-condition x-type-error (type-error)
+  (type-string)
   (:report (lambda (condition stream)
-	     (format stream "~s isn't ~@[a ~] ~s"
-		     (type-error-object condition)
-		     (type-error-type-string condition)
-		     (type-error-type condition)))))
+	     (format stream "~s isn't a ~a"
+		     (type-error-datum condition)
+		     (or (x-type-error-type-string condition)
+			 (type-error-expected-type condition))))))
 
 (define-condition closed-display (x-error)
   (display)

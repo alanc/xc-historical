@@ -25,20 +25,25 @@ o Atoms and visuals are now correctly maintained in a separate namespace from
   windows, pixmaps, cursors, fonts, gcontexts, and colormaps.
 
 o I have made an attempt to make socket code work for kcl and ibcl.  I have
-  akcl here, but not kcl and ibcl, so it's only guesswork that that kcl and ibcl 
+  akcl here, but not kcl and ibcl, so it's only guesswork that kcl and ibcl 
   works.
+
+o compile-clx and load-clx do more pathname merging to work around problems
+  in some lisp implementations. *default-pathname-defaults* is never bound 
+  anymore.
 
 o Some ansi common lisp stuff.  If you have :ansi-common-lisp on *features*,
   CLX will:
 
   - Use the common-lisp package instead of the lisp package.
 
-  - Use the common lisp condition system.
+  - Use the common lisp condition system, being careful not to stomp on 
+    define-condition and type-error.
 
   - Use declaim instead of proclaim.
 
   - Use the dynamic-extent declaration for rest args.
 
 o Code compiled with the R4 and R4.1 CLX will work with the R4.2 CLX, provided
-  you don't have :ansi-common-lisp on your features list, but code compiled with 
+  you don't have :ansi-common-lisp on your features list.  Code compiled with 
   the R4.2 CLX will NOT work with the R4 CLX.
