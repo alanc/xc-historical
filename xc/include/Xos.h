@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.10 88/09/06 14:30:21 jim Exp $
+ * $XConsortium: Xos.h,v 1.11 89/01/18 14:05:09 jim Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -100,8 +100,10 @@
  * More BSDisms
  */
 
-#ifndef SIGCHLD
+#ifdef SYSV
+#ifndef macII
 #define SIGCHLD SIGCLD
+#endif
 #endif
 
 
