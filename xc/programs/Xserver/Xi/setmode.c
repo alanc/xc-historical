@@ -1,4 +1,4 @@
-/* $XConsortium: xsetmode.c,v 1.3 89/10/10 16:11:21 gms Exp $ */
+/* $XConsortium: xsetmode.c,v 1.4 89/12/02 15:21:40 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -118,18 +118,4 @@ SRepXSetDeviceMode (client, size, rep)
     swaps(&rep->sequenceNumber, n);
     swapl(&rep->length, n);
     WriteToClient(client, size, rep);
-    }
-
-/****************************************************************************
- *
- * Change the mode of an extension device.
- *
- */
-
-SetDeviceMode (client, id, mode)
-    register	ClientPtr	client;
-    int		id;
-    int		mode;
-    {
-    return Success;
     }
