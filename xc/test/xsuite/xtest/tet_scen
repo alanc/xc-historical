@@ -1,4 +1,4 @@
-# $XConsortium$
+# $XConsortium: tet_scen,v 1.2 92/06/11 19:23:16 rws Exp $
 #
 # This scenario can build or run all tests in sections 2 to 10 of the
 # X11R4 Xlib specifications and touch tests for the X Protocol (version 11).
@@ -649,3 +649,82 @@ all
 	/tset/XPROTO/unmpwdw/Test{all}
 	/tset/XPROTO/unnstllclr/Test{all}
 	/tset/XPROTO/wrppntr/Test{all}
+
+allExt
+#	
+#	 	X Input Device Extension section
+#	
+	/tset/Xi/alldvevnts/Test{all}
+	/tset/Xi/chgdvctl/Test{all}
+	/tset/Xi/chgfctl/Test{all}
+	/tset/Xi/chgprop/Test{all}
+	/tset/Xi/chngdvkmap/Test{all}
+	/tset/Xi/closdev/Test{all}
+	/tset/Xi/dvbell/Test{all}
+	/tset/Xi/getdctl/Test{all}
+	/tset/Xi/getfctl/Test{all}
+	/tset/Xi/getfocus/Test{all}
+	/tset/Xi/getprop/Test{all}
+	/tset/Xi/getvers/Test{all}
+	/tset/Xi/grbdev/Test{all}
+	/tset/Xi/grbdvbtn/Test{all}
+	/tset/Xi/grbdvky/Test{all}
+	/tset/Xi/gtbtnmppn/Test{all}
+	/tset/Xi/gtdvkmap/Test{all}
+	/tset/Xi/gtdvmmap/Test{all}
+	/tset/Xi/gtdvmtnevnts/Test{all}
+	/tset/Xi/gtslctevnt/Test{all}
+	/tset/Xi/listdev/Test{all}
+	/tset/Xi/misc/Test{all}
+	/tset/Xi/opendev/Test{all}
+	/tset/Xi/querydvst/Test{all}
+	/tset/Xi/setdval/Test{all}
+	/tset/Xi/setdvbmap/Test{all}
+	/tset/Xi/setdvfocus/Test{all}
+	/tset/Xi/setdvmmap/Test{all}
+	/tset/Xi/setdvmode/Test{all}
+	/tset/Xi/slextevnt/Test{all}
+	/tset/Xi/sndextevnt/Test{all}
+	/tset/Xi/ungrbdvbtn/Test{all}
+	/tset/Xi/ungrbdvky/Test{all}
+	/tset/Xi/ungrbdv/Test{all}
+	/tset/Xi/chgkbd/Test{all}
+	/tset/Xi/chgptr/Test{all}
+#	
+#	 	X Input Device Extension protocol section
+#	
+	/tset/XiPROTO/alldvevnts/Test{all}
+	/tset/XiPROTO/chgdvctl/Test{all}
+	/tset/XiPROTO/chgdvprop/Test{all}
+	/tset/XiPROTO/chgfctl/Test{all}
+	/tset/XiPROTO/chgkbd/Test{all}
+	/tset/XiPROTO/chgptr/Test{all}
+	/tset/XiPROTO/chngdvkmap/Test{all}
+	/tset/XiPROTO/closdev/Test{all}
+	/tset/XiPROTO/dvbell/Test{all}
+	/tset/XiPROTO/getdvmmap/Test{all}
+	/tset/XiPROTO/getfctl/Test{all}
+	/tset/XiPROTO/getvers/Test{all}
+	/tset/XiPROTO/grbdev/Test{all}
+	/tset/XiPROTO/grbdvbtn/Test{all}
+	/tset/XiPROTO/grbdvky/Test{all}
+	/tset/XiPROTO/gtbtnmppn/Test{all}
+	/tset/XiPROTO/gtdvctl/Test{all}
+	/tset/XiPROTO/gtdvfcs/Test{all}
+	/tset/XiPROTO/gtdvmtnevnts/Test{all}
+	/tset/XiPROTO/gtdvprop/Test{all}
+	/tset/XiPROTO/gtkeymppn/Test{all}
+	/tset/XiPROTO/gtslctexevnt/Test{all}
+	/tset/XiPROTO/listdev/Test{all}
+	/tset/XiPROTO/opendev/Test{all}
+	/tset/XiPROTO/qrydvstat/Test{all}
+	/tset/XiPROTO/setdval/Test{all}
+	/tset/XiPROTO/setdvbmap/Test{all}
+	/tset/XiPROTO/setdvfcs/Test{all}
+	/tset/XiPROTO/setdvmmap/Test{all}
+	/tset/XiPROTO/setdvmode/Test{all}
+	/tset/XiPROTO/slctexevnt/Test{all}
+	/tset/XiPROTO/sndextevnt/Test{all}
+	/tset/XiPROTO/ungrbdev/Test{all}
+	/tset/XiPROTO/ungrbdvbtn/Test{all}
+	/tset/XiPROTO/ungrbdvky/Test{all}
