@@ -102,9 +102,9 @@ ServerTarget(Xsun,$(EXTDIR) $(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(SUNSYSLIBS))
 #
 # HP server
 #
-HPDIRS = dix ddx/mi ddx/hp ddx/hp/mfb ddx/hp/cfb ddx/hp/gbx ddx/hp/mob \
+HPDIRS = dix ddx/mi ddx/hp/hp ddx/hp/mfb ddx/hp/cfb ddx/hp/gbx ddx/hp/mob \
          ddx/hp/topcat ddx/hp/catseye ddx/hp/ren os/hpux
-HPOBJS = ddx/hp/hp/init.o version.o
+HPOBJS = ddx/hp/hp/init.o
 HPLIBS = $(HP) \
           ddx/hp/gbx/libgbx.a \
           ddx/hp/catseye/libcatseye.a \
