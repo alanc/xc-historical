@@ -1,4 +1,4 @@
-/* $XConsortium: save.c,v 1.8 94/07/28 13:30:00 mor Exp $ */
+/* $XConsortium: save.c,v 1.5 94/08/02 20:33:23 gildea Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -147,6 +147,9 @@ XtPointer 	callData;
 
     for (client = ClientList; client; client = client->next)
     {
+	if (!client->running)
+	    continue;
+
 	client->wantsPhase2 = False;
 
 	SmsSaveYourself (client->smsConn,
@@ -162,7 +165,8 @@ XtPointer 	callData;
     if (!wantShutdown)
     {
 	for (client = ClientList; client; client = client->next)
-	    client->userIssuedCheckpoint = True;
+	    if (client->running)
+		client->userIssuedCheckpoint = True;
     }
 
     if (verbose) {
@@ -199,8 +203,11 @@ XtPointer 	callData;
 	if (verbose)
 	    printf ("\n");
 
-	client = ClientList;
-	while (client) {
+	for (client = ClientList; client; client = client->next)
+	{
+	    if (!client->running)
+		continue;
+
 	    if (shutdownCancelled) {
 		break;
 	    }
@@ -214,7 +221,6 @@ XtPointer 	callData;
 		    XtAppProcessEvent (appContext, XtIMAll);
 		}
 	    }
-	    client = client->next;
 	}
 
 	if (verbose) {
@@ -231,7 +237,7 @@ XtPointer 	callData;
 	    XtAppProcessEvent (appContext, XtIMAll);
 
 	for (client = ClientList; client; client = client->next)
-	    if (client->wantsPhase2)
+	    if (client->running && client->wantsPhase2)
 	    {
 		SmsSaveYourselfPhase2 (client->smsConn);
 		client->wantsPhase2 = False;
@@ -255,6 +261,9 @@ XtPointer 	callData;
 
 	for (client = ClientList; client; client = client->next)
 	{
+	    if (!client->running)
+		continue;
+
 	    if (client->discardCommand)
 	    {
 		system (client->discardCommand);
@@ -294,9 +303,11 @@ XtPointer 	callData;
 	     * file using the discard command.
 	     */
 
-	    client = ClientList;
-	    while (client)
+	    for (client = ClientList; client; client = client->next)
 	    {
+		if (!client->running)
+		    continue;
+
 		if (!client->restarted &&
 		    !client->userIssuedCheckpoint &&
 		     client->discardCommand)
@@ -305,31 +316,32 @@ XtPointer 	callData;
 		    XtFree (client->discardCommand);
 		    client->discardCommand = NULL;
 		}
-		client = client->next;
 	    }
 	}
 
 	shutdownInProgress = True;
 
-	client = ClientList;
-	while (client)
+	for (client = ClientList; client; client = client->next)
 	{
+	    if (!client->running)
+		continue;
+
 	    SmsDie (client->smsConn);
 	    if (verbose)
 		printf ("Client Id = %s, sent DIE\n", client->clientId);
-	    client = client->next;
 	}
     }
     else
     {
-	client = ClientList;
-	while (client)
+	for (client = ClientList; client; client = client->next)
 	{
+	    if (!client->running)
+		continue;
+
 	    SmsSaveComplete (client->smsConn);
 	    if (verbose)
 		printf ("Client Id = %s, sent SAVE COMPLETE\n",
 		    client->clientId);
-	    client = client->next;
 	}
     }
 
@@ -360,9 +372,9 @@ XtPointer 	callData;
  * Add toggle button
  */
 
-static Widget
+Widget
 AddToggle (widgetName, parent, state, radioGroup, radioData,
-    fromHoriz, fromVert)
+    fromHoriz, fromVert, top, bottom)
 
 char 		*widgetName;
 Widget 		parent;
@@ -371,6 +383,8 @@ Widget 		radioGroup;
 XtPointer 	radioData;
 Widget 		fromHoriz;
 Widget 		fromVert;
+int		top;
+int		bottom;
 
 {
     Widget toggle;
@@ -382,6 +396,8 @@ Widget 		fromVert;
         XtNradioData, radioData,
         XtNfromHoriz, fromHoriz,
         XtNfromVert, fromVert,
+        XtNtop, top,
+	XtNbottom, bottom,
         NULL);
 
     return (toggle);
@@ -419,7 +435,9 @@ create_save_popup ()
         NULL,					/* radioGroup */
         (XtPointer) &saveTypeData[0],		/* radioData */
         saveTypeLabel,				/* fromHoriz */
-        NULL					/* fromVert */
+        NULL,					/* fromVert */
+	XawRubber,				/* top */
+	XawRubber				/* bottom */
     );
 
     saveTypeLocal = AddToggle (
@@ -429,7 +447,9 @@ create_save_popup ()
         saveTypeNone,				/* radioGroup */
         (XtPointer) &saveTypeData[1],		/* radioData */
         saveTypeNone,				/* fromHoriz */
-        NULL					/* fromVert */
+        NULL,					/* fromVert */
+	XawRubber,				/* top */
+	XawRubber				/* bottom */
     );
 
     saveTypeGlobal = AddToggle (
@@ -439,7 +459,9 @@ create_save_popup ()
         saveTypeNone,				/* radioGroup */
         (XtPointer) &saveTypeData[2],		/* radioData */
         saveTypeLocal,				/* fromHoriz */
-        NULL					/* fromVert */
+        NULL,					/* fromVert */
+	XawRubber,				/* top */
+	XawRubber				/* bottom */
     );
 
     saveTypeBoth = AddToggle (
@@ -449,7 +471,9 @@ create_save_popup ()
         saveTypeNone,				/* radioGroup */
         (XtPointer) &saveTypeData[3],		/* radioData */
         saveTypeGlobal,				/* fromHoriz */
-        NULL					/* fromVert */
+        NULL,					/* fromVert */
+	XawRubber,				/* top */
+	XawRubber				/* bottom */
     );
 
     XtAddCallback (saveTypeNone, XtNcallback, SaveTypeNoneToggleXtProc, 0);
@@ -472,7 +496,9 @@ create_save_popup ()
         NULL,					/* radioGroup */
         (XtPointer) &interactStyleData[0],	/* radioData */
         saveTypeLabel,				/* fromHoriz */
-        saveTypeLabel				/* fromVert */
+        saveTypeLabel,				/* fromVert */
+	XawRubber,				/* top */
+	XawRubber				/* bottom */
     );
 
     interactStyleErrors = AddToggle (
@@ -482,7 +508,9 @@ create_save_popup ()
         interactStyleNone,			/* radioGroup */
         (XtPointer) &interactStyleData[1],	/* radioData */
         interactStyleNone,			/* fromHoriz */
-        saveTypeLabel				/* fromVert */
+        saveTypeLabel,				/* fromVert */
+	XawRubber,				/* top */
+	XawRubber				/* bottom */
     );
 
     interactStyleAny = AddToggle (
@@ -492,7 +520,9 @@ create_save_popup ()
         interactStyleNone,			/* radioGroup */
         (XtPointer) &interactStyleData[2],	/* radioData */
         interactStyleErrors,			/* fromHoriz */
-        saveTypeLabel				/* fromVert */
+        saveTypeLabel,				/* fromVert */
+	XawRubber,				/* top */
+	XawRubber				/* bottom */
     );
 
 
@@ -521,19 +551,11 @@ void
 PopupSaveDialog ()
 
 {
-    static Bool did_first_popup = 0;
+    Position x, y, rootx, rooty;
 
-    if (!did_first_popup)
-    {
-	Position x, y, rootx, rooty;
-
-	XtVaGetValues (mainWindow, XtNx, &x, XtNy, &y, NULL);
-	XtTranslateCoords (mainWindow, x, y, &rootx, &rooty);
-
-	XtMoveWidget (savePopup, rootx + 25, rooty + 100);
-
-	did_first_popup = 1;
-    }
+    XtVaGetValues (mainWindow, XtNx, &x, XtNy, &y, NULL);
+    XtTranslateCoords (mainWindow, x, y, &rootx, &rooty);
+    XtVaSetValues (savePopup, XtNx, rootx + 25, XtNy, rooty + 100, NULL);
 
     XtSetSensitive (mainWindow, 0);
     XtSetSensitive (clientInfoPopup, 0);
