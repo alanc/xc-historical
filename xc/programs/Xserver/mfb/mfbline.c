@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbline.c,v 5.1 89/06/12 16:28:42 keith Exp $ */
+/* $XConsortium: mfbline.c,v 5.2 89/07/09 16:01:17 rws Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"
@@ -696,7 +696,8 @@ mfbDashLine( pDrawable, pGC, mode, npt, pptInit)
     {
 	if (pdash->newLine)
 	{
-	    pt1Orig = pt1 = *pptInit++;
+	    pt1 = *pptInit++;
+	    pt1Orig = pt1;
 	    pt2 = *pptInit;
 	    adx = pt2.x - pt1.x;
 	    ady = pt2.y - pt1.y;
