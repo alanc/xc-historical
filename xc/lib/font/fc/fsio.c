@@ -42,7 +42,9 @@
 #include	"fsio.h"
 
 extern int  errno;
+#ifdef DEBUG
 extern char *sys_errlist[];
+#endif
 
 static int  padlength[4] = {0, 3, 2, 1};
 unsigned long fs_fd_mask[MSKCNT];
@@ -57,7 +59,6 @@ _fs_name_to_address(servername, inaddr)
     char        hostname[256];
     char       *sp;
     unsigned long hostinetaddr;
-    extern struct hostent *gethostbyname();
     struct hostent *hp;
 
     /* XXX - do any service name lookup to get a hostname */
