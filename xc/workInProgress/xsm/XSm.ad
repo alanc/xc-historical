@@ -1,4 +1,4 @@
-! $XConsortium$
+! $XConsortium: XSm.ad,v 1.15 94/08/02 18:41:06 mor Exp mor $
 *chooseSessionPopup*font:		12x24
 *chooseSessionLabel.label:		Session Menu
 *chooseSessionMessageLabel.label:	Press button again to confirm...
@@ -13,9 +13,16 @@
 *nameSessionButton.label:	Name Session...
 
 *clientInfoPopup.title:		Client List
+*clientInfoPopup.iconName:	Client List
 *viewPropButton.label:		View Properties
 *cloneButton.label:		Clone
 *killClientButton.label:	Kill Client
+*restartHintLabel.label:	Restart Style Hint
+*restartIfRunning.label:	If Running
+*restartAnyway.label:		Anyway
+*restartImmediately.label:	Immediately
+*restartNever.label:		Never
+
 *clientInfoDoneButton.label:	Done
 
 *clientPropTextWidget.width:	500
