@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.49 92/10/18 16:29:27 rws Exp $
+ * $XConsortium: Xos.h,v 1.50 93/08/13 16:34:53 rws Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -148,6 +148,7 @@ struct timezone {
 #define _POSIX_SOURCE
 #else
 #ifdef WIN32
+#include <time.h>
 #ifndef _WINSOCKAPI_
 struct timeval {
     long    tv_sec;         /* seconds */
