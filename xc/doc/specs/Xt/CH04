@@ -1,4 +1,4 @@
-.\" $XConsortium: CH04,v 1.13 94/04/19 17:31:48 converse Exp $
+.\" $XConsortium: CH04,v 1.14 94/04/19 17:56:49 rws Exp $
 .\" Copyright \(co 1985, 1986, 1987, 1988, 1991, 1994
 .\" X Consortium
 .\" 
@@ -250,7 +250,12 @@ typedef struct _ShellClassRec {
 	CompositeClassPart composite_class;
 	ShellClassPart shell_class;
 } ShellClassRec;
-
+.De
+.KE
+.KS
+.Ds 0
+.TA .5i 4i
+.ta .5i 4i
 typedef struct {
 	XtPointer next_extension;	See Section 1.6.12
 	XrmQuark record_type;	See Section 1.6.12
@@ -258,7 +263,12 @@ typedef struct {
 	Cardinal record_size;	See Section 1.6.12
 	XtGeometryHandler root_geometry_manager;	See below
 } ShellClassExtensionRec, *ShellClassExtension;
-
+.De
+.KE
+.KS
+.Ds 0
+.TA .5i 4i
+.ta .5i 4i
 typedef struct _OverrideShellClassRec {
 	CoreClassPart core_class;
 	CompositeClassPart composite_class;
@@ -646,7 +656,12 @@ typedef struct {
 	CompositePart composite;
 	ShellPart shell;
 } ShellRec, *ShellWidget;
-
+.De
+.KE
+.KS
+.Ds 0
+.TA .5i 3i
+.ta .5i 3i
 typedef struct {
 	CorePart core;
 	CompositePart composite;
@@ -665,7 +680,12 @@ typedef struct {
 	ShellPart shell;
 	WMShellPart wm;
 } WMShellRec, *WMShellWidget;
-
+.De
+.KE
+.KS
+.Ds 0
+.TA .5i 3i
+.ta .5i 3i
 typedef struct {
 	CorePart core;
 	CompositePart composite;
