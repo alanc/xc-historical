@@ -1,7 +1,7 @@
 /*
  * xrdb - X resource manager database utility
  *
- * $XConsortium: xrdb.c,v 11.71 93/09/12 16:36:17 rws Exp $
+ * $XConsortium: xrdb.c,v 11.72 93/09/13 20:20:04 rws Exp $
  */
 
 /*
@@ -50,10 +50,6 @@
 
 #if NeedVarargsPrototypes
 # include <stdarg.h>
-# define Va_start(a,b) va_start(a,b)
-#else
-# include <varargs.h>
-# define Va_start(a,b) va_start(a)
 #endif
 
 #define SCREEN_RESOURCES "SCREEN_RESOURCES"
@@ -1263,7 +1259,7 @@ fatal(msg, x1, x2, x3, x4, x5, x6)
     if (errno)
 	perror(ProgramName);
 #if NeedVarargsPrototypes
-    Va_start(args, msg);
+    va_start(args, msg);
     vfprintf(stderr, msg, args);
     va_end(args);
 #else
