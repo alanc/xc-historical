@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.2 87/08/14 09:14:57 swick Locked $ */
+/* $Header: dispatch.c,v 1.5 87/08/14 22:02:04 newman Locked $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -59,8 +59,8 @@ extern int connBlockScreenStart;
 
 extern int (* ProcVector[256]) ();
 extern int (* SwappedProcVector[256]) ();
-extern int (* EventSwapVector[128]) ();
-extern int (* ReplySwapVector[256]) ();
+extern void (* EventSwapVector[128]) ();
+extern void (* ReplySwapVector[256]) ();
 
 void KillAllClients();
 
@@ -670,7 +670,7 @@ ProcQueryTree(client)
     WriteReplyToClient(client, sizeof(xQueryTreeReply), &reply);
     if (numChildren)
     {
-	WriteReplyToClient(client, numChildren * sizeof(Window), childIDs);
+	WriteSwappedDataToClient(client, numChildren * sizeof(Window), childIDs);
 	Xfree(childIDs);
     }
 
@@ -720,7 +720,7 @@ ProcGetAtomName(client)
 	reply.sequenceNumber = client->sequence;
 	reply.nameLength = len;
 	WriteReplyToClient(client, sizeof(xGetAtomNameReply), &reply);
-	WriteReplyToClient(client, len, str);
+	WriteToClient(client, len, str);
 	return(client->noClientException);
     }
     else 
@@ -1163,7 +1163,7 @@ ProcListFonts(client)
         bufptr += fpr->length[i];
     }
     WriteReplyToClient(client, sizeof(xListFontsReply), &reply);
-    WriteReplyToClient(client, reply.length << 2, bufferStart);
+    WriteToClient(client, reply.length << 2, bufferStart);
     FreeFontRecord(fpr);
     DEALLOCATE_LOCAL(bufferStart);
     
@@ -1221,7 +1221,7 @@ ProcListFontsWithInfo(client)
         bufptr += fpr->length[i];
     }
     WriteReplyToClient(client, sizeof(xListFontsWithInfoReply), &reply);
-    WriteReplyToClient(client, reply.length << 2, bufferStart);
+    WriteToClient(client, reply.length << 2, bufferStart);
     FreeFontRecord(fpr);
     DEALLOCATE_LOCAL(bufferStart);
 
@@ -1803,8 +1803,8 @@ ProcGetImage(client)
 				     stuff->format,
 				     stuff->planeMask,
 				     pBuf);
-	/* Note that this is NOT a call to WriteReplyToClient, as we do NOT
-	 * byte swap */
+	/* Note that this is NOT a call to WriteSwappedDataToClient,
+           as we do NOT byte swap */
 	WriteToClient(client, nlines * widthBytesLine, pBuf);
 	linesDone += nlines;
 
@@ -1830,7 +1830,6 @@ ProcPolyText(client)
     unsigned char *pNextElt;
     unsigned char *endReq;
     int		itemSize;
-    Bool	swapped16;	/* True iff we are handling swapped Text16 */
     
 #define TextEltHeader 2
 #define FontShiftSize 5
@@ -1845,13 +1844,11 @@ ProcPolyText(client)
     {
 	polyText = pGC->PolyText8;
 	itemSize = 1;
-	swapped16 = FALSE;
     }
     else
     {
 	polyText =  pGC->PolyText16;
 	itemSize = 2;
-	swapped16 = client->swapped;
     }
 
     while (endReq - pElt > TextEltHeader)
@@ -1885,8 +1882,6 @@ ProcPolyText(client)
 	    if ( pNextElt > endReq)
 		return( BadLength);
 	    xorg += *((char *)(pElt + 1));	/* must be signed */
-	    if(swapped16)
-		SwapShorts(*pElt + TextEltHeader, *pElt);
 	    xorg = (* polyText)(pDraw, pGC, xorg, stuff->y, *pElt,
 		pElt + TextEltHeader);
 	    pElt = pNextElt;
@@ -2077,7 +2072,7 @@ ProcListInstalledColormaps(client)
     preply->nColormaps = nummaps;
     preply->length = nummaps;
     WriteReplyToClient(client, sizeof (xListInstalledColormapsReply), preply);
-    WriteReplyToClient(client, nummaps * sizeof(Colormap), &preply[1]);
+    WriteSwappedDataToClient(client, nummaps * sizeof(Colormap), &preply[1]);
     DEALLOCATE_LOCAL(preply);
     return(client->noClientException);
 }
@@ -2206,7 +2201,7 @@ ProcAllocColorCells           (client)
 	accr.nPixels = npixels;
 	accr.nMasks = nmasks;
         WriteReplyToClient(client, sizeof (xAllocColorCellsReply), &accr);
-        WriteReplyToClient(client, (npixels + nmasks) * sizeof (long), ppixels);
+        WriteSwappedDataToClient(client, (npixels + nmasks) * sizeof (long), ppixels);
 	DEALLOCATE_LOCAL(ppixels);
         return (client->noClientException);        
     }
@@ -2252,7 +2247,7 @@ ProcAllocColorPlanes(client)
 	}
 	acpr.length = npixels >> 2;
 	WriteReplyToClient(client, sizeof(xAllocColorPlanesReply), &acpr);
-	WriteReplyToClient(client, npixels, ppixels);
+	WriteSwappedDataToClient(client, npixels, ppixels);
 	DEALLOCATE_LOCAL(ppixels);
         return (client->noClientException);        
     }
@@ -2395,7 +2390,7 @@ ProcQueryColors(client)
 	qcr.sequenceNumber = client->sequence;
 	qcr.nColors = count;
 	WriteReplyToClient(client, sizeof(xQueryColorsReply), &qcr);
-	WriteReplyToClient(client, count * sizeof(xrgb), prgbs);
+	WriteSwappedDataToClient(client, count * sizeof(xrgb), prgbs);
 	DEALLOCATE_LOCAL(prgbs);
 	return(client->noClientException);
 	
@@ -2693,7 +2688,7 @@ extern int GetHosts();
     reply.nHosts = nHosts;
     reply.length = len >> 2;
     WriteReplyToClient(client, sizeof(xListHostsReply), &reply);
-    WriteReplyToClient(client, len, pdata);
+    WriteSwappedDataToClient(client, len, pdata);
     Xfree(pdata);
     return (client->noClientException);
 }
@@ -2784,7 +2779,7 @@ ProcGetFontPath(client)
         bufptr += pFP->length[i];
     }
     WriteReplyToClient(client, sizeof(xGetFontPathReply), &reply);
-    WriteReplyToClient(client, reply.length << 2, bufferStart);
+    WriteToClient(client, reply.length << 2, bufferStart);
     DEALLOCATE_LOCAL(bufferStart);
     return(client->noClientException);
 }
@@ -2835,7 +2830,8 @@ int ProcNoOperation(client)
     return(client->noClientException);
 }
 
-extern int NotImplemented();
+extern void NotImplemented();
+
 void
 InitProcVectors()
 {
@@ -3015,7 +3011,6 @@ SendConnectionSetupInfo(client)
     xWindowRoot *root;
     int i;
 
-    client->pSwapReplyFunc = (void (*) ()) NULL;
     ((xConnSetup *)ConnectionInfo)->ridBase = client->clientAsMask;
     ((xConnSetup *)ConnectionInfo)->ridMask = 0xfffff;
         /* fill in the "currentInputMask" */
@@ -3023,8 +3018,11 @@ SendConnectionSetupInfo(client)
     for (i=0; i<screenInfo.numScreens; root += sizeof(xWindowRoot), i++) 
         root->currentInputMask = WindowTable[i].allEventMasks;
 
-    WriteConnToClient(client, sizeof(xConnSetupPrefix), &connSetupPrefix);
-    WriteConnToClient(client, connSetupPrefix.length << 2, ConnectionInfo);
+    if (client->swapped)
+	WriteSConnSetupPrefix (client, &connSetupPrefix);
+    else
+        WriteToClient(client, sizeof(xConnSetupPrefix), (char *) &connSetupPrefix);
+    WriteSwappedDataToClient(client, connSetupPrefix.length << 2, ConnectionInfo);
 }
 
 /*****************
@@ -3052,7 +3050,7 @@ Oops (client, reqCode, minorCode, status)
     	client, rep.sequenceNumber, rep.errorCode,
 	rep.majorCode, rep.minorCode, rep.resourceID);
 
-    WriteEventToClient (client, 1, (pointer) &rep); 
+    WriteEventsToClient (client, 1, (xEvent *) &rep); 
 }
 
 
