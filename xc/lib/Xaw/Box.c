@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Box.c,v 1.38 89/03/30 16:53:17 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Box.c,v 1.39 89/05/11 01:04:44 kit Exp $";
 #endif /* lint */
 
 
@@ -395,7 +395,18 @@ static Boolean TryNewLayout(bbw)
 	    case XtGeometryAlmost:
 		if (proposed_height >= preferred_height &&
 		    proposed_width >= preferred_width) {
-		    /* punt; parent has its own ideas */
+
+		    /*
+		     * Take it, and assume the parent knows what it is doing.
+		     *
+		     * The parent must accept this since it was returned in
+		     * almost.
+		     *
+		     */
+		    (void) XtMakeResizeRequest( (Widget)bbw,
+				       proposed_width, proposed_height,
+				       &proposed_width, &proposed_height);
+		    return(TRUE);
 		}
 		else if (proposed_width != preferred_width) {
 		    /* recalc bounding box; height might change */

@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Paned.c,v 1.8 89/08/22 14:35:13 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Paned.c,v 1.9 89/08/24 18:46:10 kit Exp $";
 #endif /* lint */
 
 
@@ -290,15 +290,20 @@ Dimension * on_size_ret, * off_size_ret;
     if (result_ret != NULL) {
       request.request_mode |= XtCWQueryOnly;
 
-      if ( (newsize == old_size) ||
-	   ((*result_ret = XtMakeGeometryRequest( (Widget) pw, 
-			   &request, &reply)) != XtGeometryAlmost) ) {
+      *result_ret = XtMakeGeometryRequest( (Widget) pw, &request, &reply );
+
+      if ( (newsize == old_size) || (*result_ret == XtGeometryNo) ) {
+	  *on_size_ret = old_size;
+	  *off_size_ret = off_size;
+	  return;
+      }
+      if (*result_ret == XtGeometryAlmost) {
 	  *on_size_ret = GetRequestInfo( &request, IsVert(pw) );
-      	  *off_size_ret = GetRequestInfo( &request, IsVert(pw) );
+      	  *off_size_ret = GetRequestInfo( &request, !IsVert(pw) );
 	  return;
       }
       *on_size_ret = GetRequestInfo( &reply, IsVert(pw) );
-      *off_size_ret = GetRequestInfo( &reply, IsVert(pw) );
+      *off_size_ret = GetRequestInfo( &reply, !IsVert(pw) );
       return;
     }
 
@@ -1434,6 +1439,8 @@ XtWidgetGeometry *request, *reply;
     old_wpsize = pane->wp_size;
     old_size = pane->size;
 
+    pane->wp_size = pane->size = GetRequestInfo(request, vert);
+
     AdjustPanedSize(pw, PaneSize((Widget) pw, !vert), &result, &on_size,
 		    &off_size);
 
@@ -1442,10 +1449,11 @@ XtWidgetGeometry *request, *reply;
  * a different on_size;
  */
 
-    if (vert) 
-        pw->core.height = on_size;
-    else 
-        pw->core.width = on_size;
+    if (result != XtGeometryNo) 
+	if (vert) 
+	    pw->core.height = on_size;
+	else 
+	    pw->core.width = on_size;
     
     RefigureLocations(pw, PaneIndex(w), AnyPane);
 
@@ -1489,6 +1497,7 @@ XtWidgetGeometry *request, *reply;
 	pane->wp_size = old_wpsize;
 	pane->size = old_size;
 	RefigureLocations(pw, PaneIndex(w), AnyPane);
+	reply->request_mode = CWWidth | CWHeight;
 	if (almost) return XtGeometryAlmost;
     }
     else {
