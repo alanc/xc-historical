@@ -1,4 +1,4 @@
-$XConsortium: README,v 1.1 94/12/16 19:05:19 mor Exp mor $
+$XConsortium: README,v 1.2 94/12/16 19:10:12 mor Exp mor $
 
 README file for the X Session Manager (xsm)
 -------------------------------------------
@@ -66,8 +66,8 @@ make install
 Note that to install rstart, you will need to have root privileges because
 the program must be installed in a system wide default path.
 
-*** rstart should be installed on each machine that you expect to run
-    applications on that will be part of your session ***
+*** rstart and iceauth should be installed on each machine that you expect
+    to run applications on that will be part of your session ***
 
 Also note that twm is the default window manager that xsm starts up.  If you
 would like to use a different window manager, follow the instructions in the
