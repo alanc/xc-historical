@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: resource.c,v 1.11 88/11/23 17:00:17 keith Exp $
+ * $XConsortium: resource.c,v 1.12 88/12/05 15:24:40 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -34,7 +34,6 @@ int	debugLevel;
 char	*errorLogFile;
 int	daemonMode;
 char	*pidFile;
-char	*authGen;
 
 # define DM_STRING	0
 # define DM_INT		1
@@ -100,8 +99,6 @@ struct dmResources {
 				"true",
 "pidFile",	"PidFile",	DM_STRING,	&pidFile,
 				"",
-"authGen",	"AuthGen",	DM_STRING,	&authGen,
-				DEF_XDM_AUTH_GEN,
 };
 
 # define NUM_DM_RESOURCES	(sizeof DmResources / sizeof DmResources[0])
@@ -150,6 +147,8 @@ struct displayResources {
 				DEF_AUTH_FILE,
 "userAuthDir",	"UserAuthDir",	DM_STRING,	boffset(userAuthDir),
 				DEF_AUTH_DIR,
+"authGen",	"AuthGen",	DM_STRING,	boffset(authGen),
+				DEF_XDM_AUTH_GEN,
 };
 
 # define NUM_DISPLAY_RESOURCES	(sizeof DisplayResources/\
