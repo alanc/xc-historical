@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 1.234 89/03/24 07:52:32 keith Exp $ */
+/* $XConsortium: window.c,v 1.235 89/03/24 15:43:54 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -290,20 +290,21 @@ ChangeSaveUnder(pWin, first)
  *-----------------------------------------------------------------------
  */
 void
-DoChangeSaveUnder(pWin)
+DoChangeSaveUnder(pWin, pFirst)
     WindowPtr	  	pWin;
+    WindowPtr		pFirst;
 {
-    register WindowPtr	pSib;
+    register WindowPtr	pChild;
     
-    for (pSib = pWin; pSib != NullWindow; pSib = pSib->nextSib)
+    if (pWin->backingStore & SAVE_UNDER_CHANGE_BIT)
     {
-	if (pSib->backingStore & SAVE_UNDER_CHANGE_BIT)
-	{
-	    pSib->backingStore &= ~SAVE_UNDER_CHANGE_BIT;
-	    (*pSib->drawable.pScreen->ChangeWindowAttributes)(pSib,
-							      CWBackingStore);
-	}
-	DoChangeSaveUnder(pSib->firstChild);
+	pWin->backingStore &= ~SAVE_UNDER_CHANGE_BIT;
+	(*pWin->drawable.pScreen->ChangeWindowAttributes)(pWin,
+							  CWBackingStore);
+    }
+    for (pChild = pFirst; pChild != NullWindow; pChild=pChild->nextSib)
+    {
+	DoChangeSaveUnder(pChild, pChild->firstChild);
     }
 }
 #endif /* DO_SAVE_UNDER */
@@ -1275,7 +1276,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 		 */
 		pWin->saveUnder = val;
 		ChangeSaveUnder(pWin, pWin->nextSib);
-		DoChangeSaveUnder(pWin->nextSib);
+		DoChangeSaveUnder(pWin->parent, pWin->nextSib);
 	    }
 	    else
 	    {
@@ -1672,7 +1673,7 @@ MoveWindow(pWin, x, y, pNextSib)
 #ifdef DO_SAVE_UNDERS
 	if (DO_SAVE_UNDERS(pWin))
 	{
-	    DoChangeSaveUnder(windowToValidate);
+	    DoChangeSaveUnder(pWin->parent, windowToValidate);
 	}
 #endif /* DO_SAVE_UNDERS */
     } 
@@ -2082,7 +2083,7 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 #ifdef DO_SAVE_UNDERS
 	if (DO_SAVE_UNDERS(pWin))
 	{
-	    DoChangeSaveUnder(pFirstChange);
+	    DoChangeSaveUnder(pParent, pFirstChange);
 	}
 #endif /* DO_SAVE_UNDERS */
     }
@@ -2143,7 +2144,7 @@ ChangeBorderWidth(pWin, width)
 #ifdef DO_SAVE_UNDERS
 	if (DO_SAVE_UNDERS(pWin))
 	{
-	    DoChangeSaveUnder(pWin->nextSib);
+	    DoChangeSaveUnder(pParent, pWin->nextSib);
 	}
 #endif /* DO_SAVE_UNDERS */
     }
@@ -2494,7 +2495,7 @@ ReflectStackChange(pWin, pSib)
 #ifdef DO_SAVE_UNDERS
 	if (DO_SAVE_UNDERS(pWin))
 	{
-	    DoChangeSaveUnder(pFirstChange);
+	    DoChangeSaveUnder(pParent, pFirstChange);
 	}
 #endif /* DO_SAVE_UNDERS */
     }
@@ -2804,7 +2805,7 @@ SetShape(pWin)
 #ifdef DO_SAVE_UNDERS
 	if (DO_SAVE_UNDERS(pWin))
 	{
-	    DoChangeSaveUnder(pWin);
+	    DoChangeSaveUnder(pParent, pWin);
 	}
 #endif /* DO_SAVE_UNDERS */
     } 
@@ -3152,7 +3153,7 @@ MapWindow(pWin, SendExposures, BitsAvailable, SendNotification, client)
 #ifdef DO_SAVE_UNDERS
 	if (DO_SAVE_UNDERS(pWin))
 	{
-	    DoChangeSaveUnder(pWin->nextSib);
+	    DoChangeSaveUnder(pParent, pWin->nextSib);
 	}
 #endif /* DO_SAVE_UNDERS */
 	WindowsRestructured ();
@@ -3310,7 +3311,7 @@ UnmapWindow(pWin, SendExposures, SendNotification, fromConfigure)
 	if (pWin->saveUnder && DO_SAVE_UNDERS(pWin))
 	{
 	    ChangeSaveUnder(pWin, pWin->nextSib);
-	    DoChangeSaveUnder(pWin->nextSib);
+	    DoChangeSaveUnder(pParent, pWin->nextSib);
 	}
 	pWin->backingStore &= ~SAVE_UNDER_BIT;
 #endif /* DO_SAVE_UNDERS */
@@ -3400,7 +3401,7 @@ UnmapSubwindows(pWin, sendExposures)
 #ifdef DO_SAVE_UNDERS
 	if (DO_SAVE_UNDERS(pWin))
 	{
-	    DoChangeSaveUnder(pWin->firstChild);
+	    DoChangeSaveUnder(pWin, pWin->firstChild);
 	}
 #endif /* DO_SAVE_UNDERS */
     }
