@@ -1,4 +1,4 @@
-/* $XConsortium: Xtrans.c,v 1.29 95/02/10 17:54:09 mor Exp $ */
+/* $XConsortium: Xtrans.c,v 1.30 95/03/13 20:41:11 mor Exp mor $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -290,12 +290,8 @@ char	**port;
 
     if (strlen(_host) == 0)
     {
-#if defined(UNIXCONN) || defined(LOCALCONN)
-	_host = "local";
-#else
 	TRANS(GetHostname) (hostnamebuf, sizeof (hostnamebuf));
 	_host = hostnamebuf;
-#endif
     }
 
     /* Check for DECnet */
