@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Scale.c,v 1.1 90/06/12 11:43:36 dmatic Exp $
+ * $XConsortium: Scale.c,v 1.1 90/12/06 20:39:51 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -34,9 +34,14 @@
 #include <X11/Xaw/XawInit.h>
 #include "ScaleP.h"
 
+double rint();
+
 #define streq(a,b) (strcmp( (a), (b) ) == 0)
 #define min(x, y) (x > y ? y : x)
 #define max(x, y) (x < y ? y : x)
+#ifdef SYSV
+#define rint(x)                       floor(x + 0.5)
+#endif
 
 #define DefaultBufferSize 1024
 #define DefaultScaleFactor NULL
@@ -146,6 +151,7 @@ ScaleClassRec scaleClassRec = {
  
 WidgetClass scaleWidgetClass = (WidgetClass) &scaleClassRec;
     
+
 
 /*
  * Private Procedures
@@ -155,6 +161,8 @@ WidgetClass scaleWidgetClass = (WidgetClass) &scaleClassRec;
 static void ClassInitialize()
 {
 } 
+
+
 
 void GetGC(sw)
     ScaleWidget sw;
@@ -172,6 +180,8 @@ void GetGC(sw)
 			   &values);
 }
 
+
+
 void Proportional();
 
 void GetInitialScaleValues(sw)
@@ -188,6 +198,8 @@ void GetInitialScaleValues(sw)
     else
 	sw->scale.scale_x = sw->scale.scale_y = 1.0;
 }
+
+
 
 void GetRectangleBuffer(sw, buffer_size)
     ScaleWidget sw;
@@ -207,6 +219,8 @@ void GetRectangleBuffer(sw, buffer_size)
 		  buffer_size * sizeof(XRectangle));
     sw->scale.buffer_size = buffer_size;
 }
+
+
 
 /* ARGSUSED */
 static void Initialize(request, new)
@@ -277,6 +291,8 @@ static void Initialize(request, new)
     }
 }
 
+
+
 void BuildTable(sw)
     ScaleWidget sw;
     /* 
@@ -312,6 +328,8 @@ void BuildTable(sw)
     }
 }
 
+
+
 void FlushRectangles(sw, drawable, gc)
     ScaleWidget sw;
     Drawable drawable;
@@ -322,6 +340,8 @@ void FlushRectangles(sw, drawable, gc)
     
     sw->scale.nrectangles = 0;
 }
+
+
 
 void FillRectangle(sw, drawable, gc, x, y, width, height)
     ScaleWidget sw;
@@ -341,6 +361,8 @@ void FillRectangle(sw, drawable, gc, x, y, width, height)
 
     ++sw->scale.nrectangles;
 }
+
+
 
 void ScaleImage(sw, drawable, img_x, img_y, dst_x, dst_y, img_width,img_height)
     ScaleWidget sw;
@@ -425,6 +447,8 @@ void ScaleImage(sw, drawable, img_x, img_y, dst_x, dst_y, img_width,img_height)
     }
 }
 
+
+
 int FindPixel(sw, x, y, img_x, img_y, img_pixel)
     ScaleWidget sw;
     Position x, y; /* (x,y) == (0,0) where image starts in sw window*/
@@ -460,6 +484,8 @@ int FindPixel(sw, x, y, img_x, img_y, img_pixel)
     return (0);
 }
 
+
+
 int SWGetImagePixel(w, x, y, img_x, img_y, img_pixel)
     Widget w;
     Position x, y;
@@ -476,6 +502,8 @@ int SWGetImagePixel(w, x, y, img_x, img_y, img_pixel)
     
     return FindPixel(sw, x, y, img_x, img_y, img_pixel);
 }
+
+
 
 /* ARGSUSED */
 static void Redisplay(w, event, region)
@@ -528,6 +556,8 @@ static void Redisplay(w, event, region)
     }
 }
 
+
+
 void TryResize(sw)
     ScaleWidget sw;
 {
@@ -551,6 +581,8 @@ while ((result =
     }
 }
 
+
+
 void Precision(sw)
     ScaleWidget sw;
 {
@@ -560,6 +592,8 @@ void Precision(sw)
     sw->scale.scale_y = (sw->scale.scale_y == 1.0) ? sw->scale.scale_y :
 	floor(sw->scale.scale_y / sw->scale.precision) * sw->scale.precision;
 }
+
+
 
 void Proportional(sw)
     ScaleWidget sw;
@@ -596,6 +630,8 @@ void Proportional(sw)
 	XtWarning("can not preserve aspect ratio");
 }
 
+
+
 void GetScaledSize(sw)
     ScaleWidget sw;
 {
@@ -604,6 +640,8 @@ void GetScaledSize(sw)
     sw->scale.height = (Dimension)
 	max(rint(sw->scale.scale_y * sw->scale.image->height), 1);
 }
+
+
 
 void GetScaleValues(sw)
     ScaleWidget sw;
@@ -621,6 +659,8 @@ void GetScaleValues(sw)
 	    / (float) sw->scale.image->height;
 }
 
+
+
 void Unscale(sw)
     ScaleWidget sw;
 {
@@ -630,6 +670,8 @@ void Unscale(sw)
     
     BuildTable(sw);
 }
+
+
 
 void Autoscale(sw)
     ScaleWidget sw;
@@ -644,6 +686,8 @@ void Autoscale(sw)
     
     BuildTable(sw);
 }
+
+
 
 void PositionImage(sw)
     ScaleWidget sw;
@@ -668,6 +712,8 @@ void PositionImage(sw)
 *****/
 }
 
+
+
 static void Resize(w)
     Widget w;
 {
@@ -677,6 +723,8 @@ static void Resize(w)
     
     PositionImage(sw);
 }
+
+
 
 static void Destroy(w)
     Widget w;
@@ -695,6 +743,7 @@ static void Destroy(w)
     XDestroyImage(sw->scale.image);
 }
 
+
 
 /* ARGSUSED */
 static Boolean SetValues(current, request, new, args, num_args)
@@ -840,6 +889,8 @@ static Boolean SetValues(current, request, new, args, num_args)
     return(redisplay);
 }
 
+
+
 void SWUnscale(w)
     Widget w;
 {
@@ -850,6 +901,8 @@ void SWUnscale(w)
     XClearArea(XtDisplay(w), XtWindow(w), 0, 0, 0, 0, True);
 }
 
+
+
 void SWAutoscale(w)
     Widget w;
 {
@@ -859,6 +912,8 @@ void SWAutoscale(w)
     PositionImage(sw);
     XClearArea(XtDisplay(w), XtWindow(w), 0, 0, 0, 0, True);
 }
+
+
 
 void SWInitialSize(w)
     Widget w;
@@ -877,6 +932,8 @@ void SWInitialSize(w)
     XClearArea(XtDisplay(w), XtWindow(w), 0, 0, 0, 0, True);
 }
 
+
+
 void SWSetImage(w, image)
     Widget w;
     XImage *image;
@@ -889,6 +946,8 @@ void SWSetImage(w, image)
     XtSetValues(w, wargs, n);
 }
 
+
+
 extern void SWRequestSelection();
 
 void RequestSelection(w, event)
@@ -898,6 +957,8 @@ void RequestSelection(w, event)
     SWRequestSelection(w, event->xbutton.time);
 }
 
+
+
 extern void SWGrabSelection();
 
 void GrabSelection(w, event)
@@ -906,6 +967,8 @@ void GrabSelection(w, event)
 {
     SWGrabSelection(w, event->xbutton.time);
 }
+
+
 
 Pixmap SWGetPixmap(w)
     Widget w;
