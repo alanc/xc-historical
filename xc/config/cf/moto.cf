@@ -1,8 +1,8 @@
-XCOMM platform:  $XConsortium: moto.cf,v 1.8 91/07/12 17:09:39 rws Exp $
+XCOMM platform:  $XConsortium: moto.cf,v 1.9 91/07/12 18:26:56 rws Exp $
 
 #if defined(MotoR3Architecture)
 
-#define OSName                 Motorola R32V2
+#define OSName                 Motorola R32V2/R3V6.2
 #define OSMajorVersion         3
 #define OSMinorVersion         2
 
@@ -15,6 +15,7 @@ XCOMM platform:  $XConsortium: moto.cf,v 1.8 91/07/12 17:09:39 rws Exp $
 #define BuildServer		NO
 #define MotifBC			YES
 #define UseCCMakeDepend		YES
+#define OptimizedCDebugFlags	/* -O */
 
 #define DefaultUserPath   	:/bin:/usr/bin:$(BINDIR)
 #define DefaultSystemPath 	/etc:/bin:/usr/bin:$(BINDIR)
