@@ -1,4 +1,4 @@
-.\" $XConsortium: xmessage.man,v 1.5 94/07/26 20:44:08 gildea Exp $
+.\" $XConsortium: xmessage.man,v 1.6 94/07/26 20:53:57 gildea Exp $
 .TH XMESSAGE 1 "26 July 1994" "X Version 11"
 .SH NAME
 xmessage \- display a message or query in a window (X-based /bin/echo)
@@ -6,7 +6,8 @@ xmessage \- display a message or query in a window (X-based /bin/echo)
 .B xmessage
 [
 .B \-buttons
-.I label1\fR[\fP:value1\fR]\fP\fB,\fPlabel2\fR[\fP:value2\fR]\fP\fB,\fP\|.\|.\|.
+.I label1\fR[\fP\fB:\fPvalue1\fR]\fP\fB,\fPlabel2\fR[\fP\fB:\fPvalue2\fR]\fP\fB,\fP
+\&\|.\|.\|.
 ] [
 .I options
 ]
@@ -16,7 +17,8 @@ xmessage \- display a message or query in a window (X-based /bin/echo)
 .B xmessage
 [
 .B \-buttons
-.I label1\fR[\fP:value1\fR]\fP\fB,\fPlabel2\fR[\fP:value2\fR]\fP\fB,\fP\|.\|.\|.
+.I label1\fR[\fP\fB:\fPvalue1\fR]\fP\fB,\fPlabel2\fR[\fP\fB:\fPvalue2\fR]\fP\fB,\fP
+\&\|.\|.\|.
 ] [
 .I options
 ]
