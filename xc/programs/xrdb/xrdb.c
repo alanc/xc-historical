@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: xrdb.c,v 11.13 88/02/01 16:34:21 jim Locked $";
+static char rcs_id[] = "$Header: xrdb.c,v 11.14 88/02/01 17:19:59 jim Locked $";
 #endif
 
 /*
@@ -607,9 +607,21 @@ main (argc, argv)
 	if (editFile == NULL)
 	    fatal("%s: must specify file name to be edited.\n", ProgramName);
 	input = fopen(editFile, "r");
-	if (input == NULL)
-	    fatal ("%s: can't open file '%s' for reading\n", 
-	    	   ProgramName, editFile);
+	if (input == NULL) {
+	    input = fopen (editFile, "w");
+	    if (!input) {
+		fatal ("%s:  unable to create file '%s' for editing\n",
+		       ProgramName, editFile);
+		/* doesn't return */
+	    }
+	    (void) fclose (input);
+	    input = fopen (editFile, "r");
+	    if (!input) {
+		fatal ("%s:  unable to open file '%s' for editing\n",
+		       ProgramName, editFile);
+		/* doesn't return */
+	    }
+	}
 	strcpy(template, editFile);
 	strcat(template, "XXXXXX");
 	output = fopen(mktemp(template), "w");
