@@ -50,8 +50,14 @@
 #define	FSAlternateServers(svr)	((svr)->alternate_servers)
 #define	FSNumAlternateServers(svr)	((svr)->num_alternates)
 
+#ifdef QLength
+#undef QLength
+#endif
 #define	QLength(svr)		((svr)->qlen)
 #define	NextRequest(svr)	((svr)->request + 1)
+#ifdef LastKnownRequestProcessed
+#undef LastKnownRequestProcessed
+#endif
 #define LastKnownRequestProcessed(svr)   ((svr)->last_request_read)
 
 #define	FSAllocID(svr)		((*(svr)->resource_alloc)((svr)))
