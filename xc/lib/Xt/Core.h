@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Core.h,v 1.7 88/09/06 16:27:39 jim Exp $
+* $XConsortium: Core.h,v 1.8 89/06/16 18:08:59 jim Exp $
 * $oHeader: Core.h,v 1.2 88/08/18 15:54:32 asente Exp $
 */
 
@@ -30,8 +30,13 @@ SOFTWARE.
 #ifndef _XtCore_h
 #define _XtCore_h
 
+typedef struct _WidgetClassRec *CoreWidgetClass;
+typedef struct _WidgetRec *CoreWidget;
+externalref WidgetClass coreWidgetClass;
+
 #ifndef CORE
 externalref WidgetClass widgetClass;
+
 #endif
 
 #endif /* _XtCore_h */
