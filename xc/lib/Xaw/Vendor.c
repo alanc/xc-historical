@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Vendor.c,v 1.9 89/09/07 17:57:33 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Vendor.c,v 1.10 89/10/09 16:20:46 jim Exp $";
 /* $oHeader: Vendor.c,v 1.3 88/08/19 13:11:01 asente Exp $ */
 #endif /* lint */
 
@@ -121,7 +121,7 @@ static void _VendorShellClassInitialize()
     XtAddConverter("String", "Cursor", XmuCvtStringToCursor,      
 		   screenConvertArg, XtNumber(screenConvertArg));
 
-    XtAddConverter("String", "Pixmap", XmuCvtStringToPixmap,
+    XtAddConverter("String", "Bitmap", XmuCvtStringToBitmap,
 		   screenConvertArg, XtNumber(screenConvertArg));
 }
 

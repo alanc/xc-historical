@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Label.c,v 1.71 89/09/07 17:54:39 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Label.c,v 1.72 89/10/09 16:20:17 jim Exp $";
 #endif /* lint */
 
 
@@ -63,8 +63,8 @@ static XtResource resources[] = {
 	offset(label.internal_width), XtRImmediate, (caddr_t)4},
     {XtNinternalHeight, XtCHeight, XtRDimension, sizeof(Dimension),
 	offset(label.internal_height), XtRImmediate, (caddr_t)2},
-    {XtNbitmap, XtCPixmap, XtRPixmap, sizeof(Pixmap),
-	offset(label.pixmap), XtRPixmap, (caddr_t)None},
+    {XtNbitmap, XtCPixmap, XtRBitmap, sizeof(Pixmap),
+	offset(label.pixmap), XtRImmediate, (caddr_t)None},
     {XtNresize, XtCResize, XtRBoolean, sizeof(Boolean),
 	offset(label.resize), XtRImmediate, (caddr_t)True},
 };
@@ -126,14 +126,14 @@ WidgetClass labelWidgetClass = (WidgetClass)&labelClassRec;
 static void ClassInitialize()
 {
     extern void XmuCvtStringToJustify();
-    extern void XmuCvtStringToPixmap();
+    extern void XmuCvtStringToBitmap();
     static XtConvertArgRec screenConvertArg[] = {
         {XtWidgetBaseOffset, (caddr_t) XtOffset(Widget, core.screen),
 	     sizeof(Screen *)}
     };
     XawInitializeWidgetSet();
     XtAddConverter( XtRString, XtRJustify, XmuCvtStringToJustify, NULL, 0 );
-    XtAddConverter("String", "Pixmap", XmuCvtStringToPixmap,
+    XtAddConverter("String", "Bitmap", XmuCvtStringToBitmap,
 		   screenConvertArg, XtNumber(screenConvertArg));
 } /* ClassInitialize */
 

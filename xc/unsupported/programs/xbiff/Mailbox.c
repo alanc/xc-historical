@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.33 89/10/05 17:53:25 jim Exp $
+ * $XConsortium: Mailbox.c,v 1.34 89/10/09 16:20:41 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -36,7 +36,7 @@
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/MailboxP.h>		/* for implementation mailbox stuff */
 
-#include <X11/Xmu/Converters.h>		/* for StringToPixmap */
+#include <X11/Xmu/Converters.h>		/* for XmuCvtStringToBitmap */
 
 #ifdef SHAPE
 #include <X11/extensions/shape.h>
@@ -90,14 +90,14 @@ static XtResource resources[] = {
 	offset (volume), XtRString, "33"},
     { XtNonceOnly, XtCBoolean, XtRBoolean, sizeof(Boolean),
 	offset (once_only), XtRImmediate, (caddr_t)False },
-    { XtNfullPixmap, XtCPixmap, XtRPixmap, sizeof(Pixmap),
+    { XtNfullPixmap, XtCPixmap, XtRBitmap, sizeof(Pixmap),
 	offset (full.bitmap), XtRString, "flagup" },
-    { XtNfullPixmapMask, XtCPixmapMask, XtRPixmap, sizeof(Pixmap),
+    { XtNfullPixmapMask, XtCPixmapMask, XtRBitmap, sizeof(Pixmap),
 	offset (full.mask), XtRPixmap, (caddr_t) &nopix },
-    { XtNemptyPixmap, XtCPixmap, XtRPixmap, sizeof(Pixmap),
+    { XtNemptyPixmap, XtCPixmap, XtRBitmap, sizeof(Pixmap),
 	offset (empty.bitmap), XtRString, "flagdown" },
-    { XtNemptyPixmapMask, XtCPixmapMask, XtRPixmap, sizeof(Pixmap),
-	offset (empty.mask), XtRPixmap, (caddr_t) &nopix },
+    { XtNemptyPixmapMask, XtCPixmapMask, XtRBitmap, sizeof(Pixmap),
+	offset (empty.mask), XtRBitmap, (caddr_t) &nopix },
     { XtNflip, XtCFlip, XtRBoolean, sizeof(Boolean),
 	offset (flipit), XtRString, "true" },
 #ifdef SHAPE
@@ -165,7 +165,7 @@ static void ClassInitialize ()
     };
 
     XawInitializeWidgetSet();
-    XtAddConverter (XtRString, XtRPixmap, XmuCvtStringToPixmap,
+    XtAddConverter (XtRString, XtRBitmap, XmuCvtStringToBitmap,
 		    screenConvertArg, XtNumber(screenConvertArg));
     return;
 }

@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: LineMenuEn.c,v 1.2 89/10/02 19:12:57 kit Exp $";
+static char Xrcsid[] = "$XConsortium: LineMenuEn.c,v 1.3 89/10/09 16:21:17 jim Exp $";
 #endif 
 
 /***********************************************************
@@ -48,7 +48,7 @@ SOFTWARE.
 static XtResource resources[] = {
   {XtNlineWidth, XtCLineWidth, XtRDimension, sizeof(Dimension),
      offset(line_width), XtRImmediate, (XtPointer) 1},
-  {XtNstipple, XtCStipple, XtRPixmap, sizeof(Pixmap),
+  {XtNstipple, XtCStipple, XtRBitmap, sizeof(Pixmap),
      offset(stipple), XtRImmediate, (XtPointer) XtUnspecifiedPixmap},
   {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
      offset(foreground), XtRString, "XtDefaultForeground"},
@@ -137,7 +137,7 @@ ClassInitialize()
     };
 
     XawInitializeWidgetSet();
-    XtAddConverter(XtRString, XtRPixmap, XmuCvtStringToPixmap,
+    XtAddConverter(XtRString, XtRBitmap, XmuCvtStringToBitmap,
 		   screenConvertArg, XtNumber(screenConvertArg));
 }
 
