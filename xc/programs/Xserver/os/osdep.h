@@ -21,9 +21,11 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: osdep.h,v 1.8 87/08/30 12:26:33 todd Exp $ */
+/* $Header: osdep.h,v 1.8 87/09/01 17:24:02 rws Locked $ */
 
+#ifndef NULL
 #define NULL 0
+#endif
 
 #define BUFSIZE 4096
 #define MAXBUFSIZE (1<<17)
