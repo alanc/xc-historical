@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.113 87/11/05 17:50:36 rws Locked $ */
+/* $Header: events.c,v 1.114 87/11/08 15:06:48 rws Locked $ */
 
 #include "X.h"
 #include "misc.h"
@@ -462,8 +462,8 @@ ActivatePointerGrab(mouse, grab, time, autoGrab)
     if (w = grab->u.ptr.confineTo)
     {
 	NewCursorConfines(
-	    w->absCorner.x, w->absCorner.x + w->clientWinSize.width,
-	    w->absCorner.y, w->absCorner.y + w->clientWinSize.height);
+	    w->absCorner.x, w->absCorner.x + (int)w->clientWinSize.width,
+	    w->absCorner.y, w->absCorner.y + (int)w->clientWinSize.height);
     }
     DoEnterLeaveEvents(sprite.win, grab->window, NotifyGrab);
 }
@@ -952,10 +952,10 @@ XYToWindow(x, y)
     {
 	if ((pWin->mapped) &&
 		(x >= pWin->absCorner.x - pWin->borderWidth) &&
-		(x < pWin->absCorner.x + pWin->clientWinSize.width +
+		(x < pWin->absCorner.x + (int)pWin->clientWinSize.width +
 		    pWin->borderWidth) &&
 		(y >= pWin->absCorner.y - pWin->borderWidth) &&
-		(y < pWin->absCorner.y + pWin->clientWinSize.height +
+		(y < pWin->absCorner.y + (int)pWin->clientWinSize.height +
 		    pWin->borderWidth))
 	{
 	    if (spriteTraceGood >= spriteTraceSize)
@@ -3249,10 +3249,10 @@ ProcGetMotionEvents(client)
 		mouse, coords, start.milliseconds, stop.milliseconds);
 	xmin = pWin->absCorner.x - pWin->borderWidth;
 	xmax =
-	    pWin->absCorner.x + pWin->clientWinSize.width + pWin->borderWidth;
+	    pWin->absCorner.x + (int)pWin->clientWinSize.width + pWin->borderWidth;
 	ymin = pWin->absCorner.y - pWin->borderWidth;
 	ymax =
-	    pWin->absCorner.y + pWin->clientWinSize.height + pWin->borderWidth;
+	    pWin->absCorner.y + (int)pWin->clientWinSize.height + pWin->borderWidth;
 	for (i = 0; i < count; i++)
 	    if ((xmin <= coords[i].x) && (coords[i].x < xmax) &&
 		    (ymin <= coords[i].y) && (coords[i].y < ymax))
