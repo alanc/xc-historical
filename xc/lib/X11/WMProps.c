@@ -1,4 +1,4 @@
-/* $XConsortium: SetWMProps.c,v 1.6 91/01/08 14:40:12 gildea Exp $ */
+/* $XConsortium: WMProps.c,v 1.7 91/04/01 20:18:31 gildea Exp $ */
 
 /***********************************************************
 Copyright 1988 by Wyse Technology, Inc., San Jose, Ca.,
@@ -95,7 +95,7 @@ void XSetWMProperties (dpy, w, windowName, iconName, argv, argc, sizeHints,
 		 * UNIX uses /dir/subdir/.../basename; other operating
 		 * systems will have to change this.
 		 */
-		char *cp = rindex (argv[0], '/');
+		char *cp = strrchr (argv[0], '/');
 		tmp.res_name = (cp ? cp + 1 : argv[0]);
 	    }
 	    tmp.res_class = classHints->res_class;

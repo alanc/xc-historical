@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.76 93/07/05 13:05:51 rws Exp $
+ * $XConsortium: Xrm.c,v 1.77 93/08/14 10:08:41 rws Exp $
  */
 
 /***********************************************************
@@ -1516,7 +1516,7 @@ GetIncludeFile(db, base, fname, fnamelen)
 
     if (fnamelen <= 0 || fnamelen >= BUFSIZ)
 	return;
-    if (*fname != '/' && base && (str = rindex(base, '/'))) {
+    if (*fname != '/' && base && (str = strrchr(base, '/'))) {
 	len = str - base + 1;
 	if (len + fnamelen >= BUFSIZ)
 	    return;

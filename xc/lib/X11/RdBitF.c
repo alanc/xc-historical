@@ -1,4 +1,4 @@
-/* $XConsortium: XRdBitF.c,v 1.15 91/02/01 16:34:46 gildea Exp $ */
+/* $XConsortium: RdBitF.c,v 1.16 92/04/20 15:47:47 rws Exp $ */
 /* Copyright, 1987, Massachusetts Institute of Technology */
 
 /*
@@ -161,7 +161,7 @@ int XReadBitmapFile (display, d, filename, width, height, pixmap, x_hot, y_hot)
 	    RETURN (BitmapFileInvalid);
 	}
 	if (sscanf(line,"#define %s %d",name_and_type,&value) == 2) {
-	    if (!(type = rindex(name_and_type, '_')))
+	    if (!(type = strrchr(name_and_type, '_')))
 	      type = name_and_type;
 	    else
 	      type++;
@@ -190,7 +190,7 @@ int XReadBitmapFile (display, d, filename, width, height, pixmap, x_hot, y_hot)
 	else
 	  continue;
 
-	if (!(type = rindex(name_and_type, '_')))
+	if (!(type = strrchr(name_and_type, '_')))
 	  type = name_and_type;
 	else
 	  type++;

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XGetDflt.c,v 1.29 93/08/16 11:54:40 rws Exp $
+ * $XConsortium: GetDflt.c,v 1.30 93/08/16 16:03:22 rws Exp $
  */
 
 /***********************************************************
@@ -160,9 +160,9 @@ char *XGetDefault(dpy, prog, name)
 	/*
 	 * strip path off of program name (XXX - this is OS specific)
 	 */
-	progname = rindex (prog, '/');
+	progname = strrchr (prog, '/');
 #ifdef WIN32
-	progname2 = rindex (prog, '\\');
+	progname2 = strrchr (prog, '\\');
 	if (progname2 && (!progname || progname < progname2))
 	    progname = progname2;
 #endif

@@ -1,4 +1,4 @@
-/* $XConsortium: XWrBitF.c,v 1.10 91/11/21 19:39:47 rws Exp $ */
+/* $XConsortium: WrBitF.c,v 1.11 93/02/23 16:19:52 rws Exp $ */
 /* Copyright, 1987, Massachusetts Institute of Technology */
 
 /*
@@ -92,7 +92,7 @@ int XWriteBitmapFile(display, filename, bitmap, width, height, x_hot, y_hot)
   FILE *stream;
   char *name;
 
-  if (!(name = rindex(filename, '/')))
+  if (!(name = strrchr(filename, '/')))
     name = (char *)filename;
   else
     name++;
