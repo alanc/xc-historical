@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.6 94/03/27 13:37:34 dpw Exp mor $ */
+/* $XConsortium: dispatch.c,v 1.7 94/12/01 20:47:30 mor Exp $ */
 /*
  * $NCDOr: dispatch.c,v 1.2 1993/11/19 21:28:48 keithp Exp keithp $
  * $NCDId: @(#)dispatch.c,v 1.27 1994/11/18 20:35:09 lemke Exp $
@@ -110,7 +110,6 @@ Dispatch ()
 #endif
 	    isItTimeToYield = FALSE;
  
-            requestingClient = client;
 	    while (!isItTimeToYield)
 	    {
 		/* now, finally, deal with client requests */
@@ -131,9 +130,11 @@ Dispatch ()
 		client->requestLogIndex++;
 #endif
                 LBXSequenceNumber(client)++;
+#ifdef NOTDEF
 		if (result > (MAX_REQUEST_SIZE << 2))
 		    result = BadLength;
 		else
+#endif
 		    result = (* client->requestVector[MAJOROP])(client);
 	    
 #ifdef NOTDEF
