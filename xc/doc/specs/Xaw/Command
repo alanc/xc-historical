@@ -1,7 +1,7 @@
 .NH 2
 Command Widget
 .XS
-\*(SN Command Widget
+	Command Widget
 .XE
 .IN "Command widget" "" "@DEF@"
 .Ds 0

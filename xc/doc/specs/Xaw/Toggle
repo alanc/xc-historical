@@ -1,7 +1,7 @@
 .NH 2
 Toggle Widget
 .XS
-\*(SN Toggle Widget
+	Toggle Widget
 .XE
 .IN "Toggle widget" "" "@DEF@"
 .Ds 0

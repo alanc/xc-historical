@@ -1,7 +1,7 @@
 .NH 2
 StripChart Widget
 .XS
-\*(SN StripChart Widget
+	StripChart Widget
 .XE
 .IN "StripChart widget" "" "@DEF@"
 .Ds 0

@@ -2,7 +2,7 @@
 Scrollbar Widget
 .LP
 .XS
-\*(SN Scrollbar Widget
+	Scrollbar Widget
 .XE
 .IN "Scrollbar widget" "" "@DEF@"
 .Ds 0

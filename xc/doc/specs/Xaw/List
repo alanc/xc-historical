@@ -2,7 +2,7 @@
 List Widget
 .LP
 .XS
-\*(SN List Widget
+	List Widget
 .XE
 .IN "List widget" "" "@DEF@"
 .Ds 0
