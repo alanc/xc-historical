@@ -1,5 +1,5 @@
 /*
-* $XConsortium: AsciiSrcP.h,v 1.5 89/10/04 13:56:02 kit Exp $
+* $XConsortium: AsciiSrcP.h,v 1.6 89/10/05 13:17:39 kit Exp $
 */
 
 
@@ -58,7 +58,11 @@ SOFTWARE.
  *
  ************************************************************/
 
+#ifdef L_tmpnam
+#define TMPSIZ L_tmpnam
+#else
 #define TMPSIZ 32		/* bytes to allocate for tmpnam */
+#endif
 
 #define MAGIC_VALUE ((XawTextPosition) -1) /* Magic value. */
 
