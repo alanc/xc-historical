@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.h,v 1.2 89/03/30 17:26:22 toml Exp $
+ * $XConsortium: add_window.h,v 1.2 89/04/12 18:55:31 jim Exp $
  *
  * AddWindow include file
  *
@@ -51,5 +51,5 @@ extern int AddingY;
 extern int AddingW;
 extern int AddingH;
 
-#endif _ADD_WINDOW_
+#endif /* _ADD_WINDOW_ */
 

@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.h,v 1.11 89/04/12 18:55:56 jim Exp $
+ * $XConsortium: menus.h,v 1.12 89/04/13 10:01:29 jim Exp $
  *
  * twm menus include file
  *
@@ -138,4 +138,4 @@ extern int DeferExecution();
 extern void Execute();
 extern void FocusOnRoot();
 
-#endif _MENUS_
+#endif /* _MENUS_ */

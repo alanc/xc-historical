@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.h,v 1.3 89/03/30 17:26:31 toml Exp $
+ * $XConsortium: events.h,v 1.3 89/04/12 18:55:36 jim Exp $
  *
  * twm event handler include file
  *
@@ -70,4 +70,4 @@ extern int Cancel;
 
 extern XEvent Event;
 
-#endif _EVENTS_
+#endif /* _EVENTS_ */

@@ -1,6 +1,6 @@
 /***********************************************************************
  *
- * $XConsortium: iconmgr.h,v 1.8 89/04/01 09:33:36 toml Exp $
+ * $XConsortium: iconmgr.h,v 1.8 89/04/12 18:55:45 jim Exp $
  *
  * Icon Manager includes
  *
@@ -50,4 +50,4 @@ typedef struct IconMgr
 extern int iconmgr_textx;
 extern WList *DownIconManager;
 
-#endif _ICONMGR_
+#endif /* _ICONMGR_ */

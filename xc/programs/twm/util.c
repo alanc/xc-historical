@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: util.c,v 1.14 89/04/07 11:56:46 toml Exp $
+ * $XConsortium: util.c,v 1.14 89/04/12 18:56:07 jim Exp $
  *
  * utility routines for twm
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: util.c,v 1.14 89/04/07 11:56:46 toml Exp $";
+"$XConsortium: util.c,v 1.14 89/04/12 18:56:07 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -421,7 +421,7 @@ Make1Pixmap(w, gc, data, width, height)
     return (MakeCenteredPixmap(w, gc, NULL, width, height, data,
 	width, height, 1));
 }
-#endif NOT_USED_ANYMORE
+#endif /* NOT_USED_ANYMORE */
 
 /***********************************************************************
  *
@@ -677,4 +677,4 @@ putenv(s)
     
     return 0;
 }
-#endif NOPUTENV
+#endif /* NOPUTENV */

@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.48 89/04/12 18:55:53 jim Exp $
+ * $XConsortium: menus.c,v 1.49 89/04/13 10:01:23 jim Exp $
  *
  * twm menu code
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.48 89/04/12 18:55:53 jim Exp $";
+"$XConsortium: menus.c,v 1.49 89/04/13 10:01:23 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1867,7 +1867,7 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 		if (tmp_win == Scr->Focus)
 		    XMapWindow(tmp_win->hilite_w);
 	    }
-#endif TOM
+#endif /* TOM */
 	    GrabAllButtons();
 	    GrabAllKeys();
 	    FirstScreen = FALSE;

@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: list.h,v 1.8 89/03/30 17:27:06 toml Exp $
+ * $XConsortium: list.h,v 1.8 89/04/12 18:55:52 jim Exp $
  *
  * TWM list handling external definitions
  *
@@ -51,5 +51,5 @@ extern void AddToList();
 extern char* LookInList();
 extern char* LookInNameList();
 
-#endif _LIST_
+#endif /* _LIST_ */
 

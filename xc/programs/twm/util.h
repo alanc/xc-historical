@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: util.h,v 1.5 89/04/05 08:03:41 toml Exp $
+ * $XConsortium: util.h,v 1.5 89/04/12 18:56:08 jim Exp $
  *
  * utility routines header file
  *
@@ -46,4 +46,4 @@ extern int	GetColor();
 
 extern int HotX, HotY;
 
-#endif _UTIL_
+#endif /* _UTIL_ */

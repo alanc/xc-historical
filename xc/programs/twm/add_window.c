@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.34 89/04/12 18:59:54 jim Exp $
+ * $XConsortium: add_window.c,v 1.35 89/04/13 10:00:55 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -36,8 +36,8 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.34 89/04/12 18:59:54 jim Exp $";
-#endif lint
+"$XConsortium: add_window.c,v 1.35 89/04/13 10:00:55 jim Exp $";
+#endif /* lint */
 
 #include <stdio.h>
 #include "twm.h"

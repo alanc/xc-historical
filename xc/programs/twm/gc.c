@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: gc.c,v 1.11 89/04/04 07:32:15 toml Exp $
+ * $XConsortium: gc.c,v 1.11 89/04/12 18:55:38 jim Exp $
  *
  * Open the fonts and create the GCs
  *
@@ -35,8 +35,8 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: gc.c,v 1.11 89/04/04 07:32:15 toml Exp $";
-#endif lint
+"$XConsortium: gc.c,v 1.11 89/04/12 18:55:38 jim Exp $";
+#endif /* lint */
 
 #include <stdio.h>
 #include "twm.h"

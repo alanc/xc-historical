@@ -1,6 +1,6 @@
 /***********************************************************************
  *
- * $XConsortium: screen.h,v 1.22 89/04/12 18:56:05 jim Exp $
+ * $XConsortium: screen.h,v 1.23 89/04/13 10:01:31 jim Exp $
  *
  * twm per-screen data include file
  *
@@ -162,4 +162,4 @@ extern ScreenInfo **ScreenList;
 extern ScreenInfo *Scr;
 extern int FirstScreen;
 
-#endif _SCREEN_
+#endif /* _SCREEN_ */

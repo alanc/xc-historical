@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: parse.h,v 1.2 89/03/30 17:27:28 toml Exp $
+ * $XConsortium: parse.h,v 1.2 89/04/12 18:56:02 jim Exp $
  *
  * .twmrc parsing externs
  *
@@ -41,4 +41,4 @@ extern char TwmInput();
 extern void TwmUnput();
 extern void TwmOutput();
 
-#endif _PARSE_
+#endif /* _PARSE_ */

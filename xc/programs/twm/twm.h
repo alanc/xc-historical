@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.22 89/04/12 19:00:11 jim Exp $
+ * $XConsortium: twm.h,v 1.23 89/04/13 10:01:37 jim Exp $
  *
  * twm include file
  *
@@ -263,4 +263,4 @@ extern void Done();
 extern void Error();
 extern void Other();
 
-#endif _TWM_
+#endif /* _TWM_ */

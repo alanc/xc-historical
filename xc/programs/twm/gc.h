@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: gc.h,v 1.2 89/03/30 17:26:47 toml Exp $
+ * $XConsortium: gc.h,v 1.2 89/04/12 18:55:39 jim Exp $
  *
  * GC related externs
  *
@@ -38,4 +38,4 @@
 
 extern void CreateGCs();
 
-#endif _GC_
+#endif /* _GC_ */

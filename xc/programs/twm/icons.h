@@ -1,6 +1,6 @@
 /**********************************************************************
  *
- * $XConsortium: icons.c,v 1.1 89/04/10 11:46:11 toml Exp $
+ * $XConsortium: icons.h,v 1.1 89/04/12 18:58:29 jim Exp $
  *
  * Icon releated definitions
  *
@@ -29,4 +29,4 @@ typedef struct IconEntry
     short 		used;
 }IconEntry;
 
-#endif ICONS_H
+#endif /* ICONS_H */

@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.36 89/04/12 18:56:05 jim Exp $
+ * $XConsortium: twm.c,v 1.37 89/04/13 10:01:34 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.36 89/04/12 18:56:05 jim Exp $";
+"$XConsortium: twm.c,v 1.37 89/04/13 10:01:34 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -152,7 +152,7 @@ main(argc, argv, environ)
 	fprintf(stderr, "twm: process not locked\n");
     else
 	fprintf(stderr, "twm: process locked\n");
-#endif REAL_TIME
+#endif /* REAL_TIME */
 
     display_name = NULL;
 

@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: version.h,v 1.2 89/03/30 17:28:05 toml Exp $
+ * $XConsortium: version.h,v 1.2 89/04/12 18:56:10 jim Exp $
  *
  * TWM version externs
  *
@@ -39,4 +39,4 @@
 extern char *Revision;
 extern char *Date;
 
-#endif _VERSION_
+#endif /* _VERSION_ */
