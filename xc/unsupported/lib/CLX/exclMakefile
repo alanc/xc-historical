@@ -24,6 +24,8 @@ CFLAGS	= -O -DUNIXCONN
 # CFLAGS = -O -G 0 -I/usr/include/bsd
 # Use this one for DEC Mips based machines
 # CFLAGS = -O -G 0 -DUNIXCONN
+# Use this one for HP machines
+# CFLAGS = -O -DSYSV -DUNIXCONN
 
 
 # Lisp optimization for compiling
