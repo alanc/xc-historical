@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.36 92/04/04 17:39:23 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.37 92/04/05 14:10:32 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -596,6 +596,19 @@ find_closest(dir, mult, rootx, rooty, parent, pwa, input,
 	    ymult = mult;
 	    x = x2;
 	    break;
+	default:
+	    if (x2 < rootx)
+		x = x2;
+	    else if (x1 > rootx)
+		x = x1;
+	    else
+		x = rootx;
+	    if (y2 < rooty)
+		y = y2;
+	    else if (y1 > rooty)
+		y = y1;
+	    else
+		y = rooty;
 	}
 	dist = (xmult * (x - rootx) * (x - rootx) +
 		ymult * (y - rooty) * (y - rooty));
