@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.28 90/10/03 11:57:15 rws Exp $ */
+/* $XConsortium: events.c,v 5.29 90/10/24 15:41:29 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -853,6 +853,8 @@ AllowSome(client, time, thisDev, newState)
 	case NOT_GRABBED:		/* Replay */
 	    if (thisGrabbed && thisDev->sync.state == FROZEN_WITH_EVENT)
 	    {
+		if (thisSynced)
+		    thisDev->sync.other = NullGrab;
 		syncEvents.replayDev = thisDev;
 		syncEvents.replayWin = thisDev->grab->window;
 		(*thisDev->DeactivateGrab)(thisDev);
