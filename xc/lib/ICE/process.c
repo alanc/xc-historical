@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.14 93/09/26 18:12:21 mor Exp $ */
+/* $XConsortium: process.c,v 1.15 93/09/27 11:45:31 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -393,10 +393,12 @@ IceReplyWaitInfo *replyWait;
     int		invokeHandler;
     Bool	errorReturned = False;
     iceErrorMsg *message;
-    char 	*pData;
+    char 	*pData, *pStart;
 
     IceReadCompleteMessage (iceConn, SIZEOF (iceErrorMsg),
-	iceErrorMsg, message, pData);
+	iceErrorMsg, message, pStart);
+
+    pData = pStart;
 
     if (swap)
     {
@@ -591,7 +593,7 @@ IceReplyWaitInfo *replyWait;
 	    message->severity, (IcePointer) pData);
     }
 
-    IceDisposeCompleteMessage (iceConn, pData);
+    IceDisposeCompleteMessage (iceConn, pStart);
 
     return (errorReturned);
 }
@@ -612,13 +614,15 @@ Bool			swap;
     int	 myAuthCount, hisAuthCount;
     int	 found, i, j;
     char *myAuthName, **hisAuthNames;
-    char *pData;
+    char *pData, *pStart;
     char *vendor = NULL;
     char *release = NULL;
     int  accept_setup_now = 0;
 
     IceReadCompleteMessage (iceConn, SIZEOF (iceConnectionSetupMsg),
-	iceConnectionSetupMsg, message, pData);
+	iceConnectionSetupMsg, message, pStart);
+
+    pData = pStart;
 
     EXTRACT_XPCS (pData, swap, vendor);
     EXTRACT_XPCS (pData, swap, release);
@@ -667,7 +671,7 @@ Bool			swap;
 	    free ((char *) hisAuthNames);
 	}
 
-	IceDisposeCompleteMessage (iceConn, pData);
+	IceDisposeCompleteMessage (iceConn, pStart);
 	return;
     }
 
@@ -766,7 +770,7 @@ Bool			swap;
 	free ((char *) hisAuthNames);
     }
 
-    IceDisposeCompleteMessage (iceConn, pData);
+    IceDisposeCompleteMessage (iceConn, pStart);
 }
 
 
@@ -1235,11 +1239,13 @@ IceReplyWaitInfo 	*replyWait;
 
 {
     iceConnectionReplyMsg 	*message;
-    char 			*pData;
+    char 			*pData, *pStart;
     Bool			replyReady;
 
     IceReadCompleteMessage (iceConn, SIZEOF (iceConnectionReplyMsg),
-	iceConnectionReplyMsg, message, pData);
+	iceConnectionReplyMsg, message, pStart);
+
+    pData = pStart;
 
     if (iceConn->connect_to_you)
     {
@@ -1284,7 +1290,7 @@ IceReplyWaitInfo 	*replyWait;
 	replyReady = False;
     }
 
-    IceDisposeCompleteMessage (iceConn, pData);
+    IceDisposeCompleteMessage (iceConn, pStart);
 
     return (replyReady);
 }
@@ -1308,7 +1314,7 @@ Bool			swap;
     int	 	      	found, i, j;
     char	      	*myAuthName, **hisAuthNames;
     char 	      	*protocolName;
-    char 		*pData;
+    char 		*pData, *pStart;
     char 	      	*vendor = NULL;
     char 	      	*release = NULL;
     int  	      	accept_setup_now = 0;
@@ -1325,13 +1331,15 @@ Bool			swap;
     }
 
     IceReadCompleteMessage (iceConn, SIZEOF (iceProtocolSetupMsg),
-	iceProtocolSetupMsg, message, pData);
+	iceProtocolSetupMsg, message, pStart);
+
+    pData = pStart;
 
     if (iceConn->process_msg_info && iceConn->process_msg_info[
 	message->protocolOpcode - iceConn->his_min_opcode].in_use)
     {
 	_IceErrorMajorOpcodeDuplicate (iceConn, message->protocolOpcode);
-	IceDisposeCompleteMessage (iceConn, pData);
+	IceDisposeCompleteMessage (iceConn, pStart);
 	return;
     }
 
@@ -1347,7 +1355,7 @@ Bool			swap;
 	    {
 		_IceErrorProtocolDuplicate (iceConn, protocolName);
 		free (protocolName);
-		IceDisposeCompleteMessage (iceConn, pData);
+		IceDisposeCompleteMessage (iceConn, pStart);
 		return;
 	    }
 	}
@@ -1368,7 +1376,7 @@ Bool			swap;
     {
 	_IceErrorUnknownProtocol (iceConn, protocolName);
 	free (protocolName);
-	IceDisposeCompleteMessage (iceConn, pData);
+	IceDisposeCompleteMessage (iceConn, pStart);
 	return;
     }
 
@@ -1418,7 +1426,7 @@ Bool			swap;
 	    free ((char *) hisAuthNames);
 	}
 
-	IceDisposeCompleteMessage (iceConn, pData);
+	IceDisposeCompleteMessage (iceConn, pStart);
 	return;
     }
 
@@ -1557,7 +1565,7 @@ Bool			swap;
 	free ((char *) hisAuthNames);
     }
 
-    IceDisposeCompleteMessage (iceConn, pData);
+    IceDisposeCompleteMessage (iceConn, pStart);
 }
 
 
@@ -1571,11 +1579,13 @@ IceReplyWaitInfo 	*replyWait;
 
 {
     iceProtocolReplyMsg *message;
-    char		*pData;
+    char		*pData, *pStart;
     Bool		replyReady;
 
     IceReadCompleteMessage (iceConn, SIZEOF (iceProtocolReplyMsg),
-	iceProtocolReplyMsg, message, pData);
+	iceProtocolReplyMsg, message, pStart);
+
+    pData = pStart;
 
     if (iceConn->protosetup_to_you)
     {
@@ -1621,7 +1631,7 @@ IceReplyWaitInfo 	*replyWait;
 	replyReady = False;
     }
 
-    IceDisposeCompleteMessage (iceConn, pData);
+    IceDisposeCompleteMessage (iceConn, pStart);
 
     return (replyReady);
 }
