@@ -333,7 +333,7 @@
   ((index &optional (real-index index) data)
    `(read-bitvector256 buffer-bbuf ,real-index ,data))
   ((index map &optional (real-index index) (buffer *buffer*))
-   `(write-bitvector256 ,buffer ,real-index ,map)))
+   `(write-bitvector256 ,buffer (index+ buffer-boffset ,real-index) ,map)))
    
 (define-accessor string (nil)
   ((length &key buffer)
