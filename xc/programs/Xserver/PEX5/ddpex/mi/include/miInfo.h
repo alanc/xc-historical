@@ -1,4 +1,4 @@
-/* $XConsortium: miInfo.h,v 5.1 91/02/16 09:54:45 rws Exp $ */
+/* $XConsortium: miInfo.h,v 5.3 92/04/23 15:59:20 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -47,7 +47,7 @@ SOFTWARE.
  */
 
 /* card32s */
-#define	SI_NUM_INT_IMPS		21
+#define	SI_NUM_INT_IMPS		22
 
 #define	SI_DITHERING_SUPPORTED		MI_FALSE
 #define	SI_MAX_EDGE_WIDTH		~((unsigned long)0)
@@ -69,7 +69,8 @@ SOFTWARE.
 #define	SI_SUPP_MARKER_SIZES		~((unsigned long)0)	/* number of supported marker sizes */
 #define SI_BEST_COLOUR_APPROX_VALUES	PEXColourApproxAnyValues
 #define	SI_TRANSPARENCY_SUPPORTED	MI_FALSE
-#define	SI_DOUBLE_BUFFERING_SUPPORTED	MI_FALSE
+#define	SI_DOUBLE_BUFFERING_SUPPORTED	MI_TRUE
+#define	SI_MAX_HITS_EVENT_SUPPORTED     MI_TRUE
 
 /* floats */
 #define	SI_NUM_FLOAT_IMPS	12
@@ -152,6 +153,20 @@ SOFTWARE.
 #define	SI_PICK_DEVICE_NUM	2
 #define	SI_PICK_DEVICE_1	"DC_HitBox"
 #define	SI_PICK_DEVICE_2	"NPC_HitVolume"
+
+/* pick one methods */
+#define SI_PICK_ONE_NUM		1
+#define SI_PICK_ONE_LAST	"Last"
+/* others */
+#define SI_PICK_ONE_CLOSEST_Z	 "ClosestZ"
+#define SI_PICK_ONE_VISIBLE_ANY	 "VisibleAny"
+#define SI_PICK_ONE_VISIBLE_CLOSEST	 "VisibleClosest"
+
+/* pick all methods */
+#define SI_PICK_ALL_NUM		1
+#define SI_PICK_ALL_ALL		"All"
+/* others */
+#define SI_PICK_ALL_VISIBLE	"Visible"
 
 /* polyline interpolation method */
 #define	SI_LINE_INTERP_NUM	1
@@ -245,10 +260,11 @@ SOFTWARE.
 #define	SI_HLHSR_NUM		1
 #define SI_HLHSR_1		"Off"
 /* others */
-#define SI_HLHSR_2		"ZBufer"
+#define SI_HLHSR_2		"ZBuffer"
 #define SI_HLHSR_3		"Painters"
 #define SI_HLHSR_4		"Scanline"
 #define SI_HLHSR_5		"HiddenLineOnly"
+#define SI_HLHSR_6		"ZBufferId"
 
 /* prompt echo type */
 #define	SI_PET_NUM		1
@@ -287,6 +303,10 @@ SOFTWARE.
 
 /* gse */
 #define	SI_GSE_NUM		0
+
+/* escape */
+#define SI_ESCAPE_NUM           1
+#define SI_ESCAPE_1             "SetEchoColor"
 
 /* rendering colour model */
 #define	SI_REND_COLOUR_NUM	1

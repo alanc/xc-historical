@@ -1,4 +1,4 @@
-/* $XConsortium: miMisc.c,v 5.3 91/07/10 09:08:10 rws Exp $ */
+/* $XConsortium: miMisc.c,v 5.5 92/04/23 15:54:50 hersh Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -109,7 +109,8 @@ static ddULONG	intImpDeps[MI_MAXDRAWABLES][SI_NUM_INT_IMPS + 1] = {
 	SI_SUPP_MARKER_SIZES,
 	SI_BEST_COLOUR_APPROX_VALUES,
 	SI_TRANSPARENCY_SUPPORTED,
-	SI_DOUBLE_BUFFERING_SUPPORTED
+	SI_DOUBLE_BUFFERING_SUPPORTED,
+	SI_MAX_HITS_EVENT_SUPPORTED
 };
 
 #define	FLOAT_INDEX(n)	 (n) - (SI_NUM_INT_IMPS + 1) 
@@ -249,6 +250,14 @@ miEnumType	miPickDeviceTypeET[MI_MAXDRAWABLES][SI_PICK_DEVICE_NUM] = {
 	 {2, SI_PICK_DEVICE_2}}
 };
 
+miEnumType	miPickOneMethodET[MI_MAXDRAWABLES][SI_PICK_ONE_NUM] = {
+	 {{1, SI_PICK_ONE_LAST}}
+};
+
+miEnumType	miPickAllMethodET[MI_MAXDRAWABLES][SI_PICK_ALL_NUM] = {
+	 {{1, SI_PICK_ALL_ALL}}
+};
+
 miEnumType	miPolylineInterpMethodET[MI_MAXDRAWABLES][SI_LINE_INTERP_NUM] = {
 	{{1, SI_LINE_INTERP_1}}
 };
@@ -347,6 +356,10 @@ miEnumType	miGDP3ET[MI_MAXDRAWABLES][SI_GDP3_NUM + 1] = {
 /* put in a dummy */
 miEnumType	miGSEET[MI_MAXDRAWABLES][SI_GSE_NUM + 1] = {
 	{{0, ""}}
+};
+
+miEnumType	miEscapeET[MI_MAXDRAWABLES][SI_ESCAPE_NUM] = {
+	{{1, SI_ESCAPE_1}}
 };
 
 miEnumType	miRenderingColourModelET[MI_MAXDRAWABLES][SI_REND_COLOUR_NUM] = {
@@ -706,6 +719,24 @@ InquireEnumTypeInfo(pDrawable, itemMask, numEnumTypes, pEnumTypeList, pNumLists,
 	      case PEXETParaSurfCharacteristics:
 		num = SI_P_SURF_CHAR_NUM;
 		pet = miParametricSurfaceCharsET[drawType];
+		DO_ET(num, pet);
+		break;
+
+	      case PEXETEscape:
+		num = SI_ESCAPE_NUM;
+		pet = miEscapeET[drawType];
+		DO_ET(num, pet);
+		break;
+
+	      case PEXETPickOneMethod:
+		num = SI_PICK_ONE_NUM;
+		pet = miPickOneMethodET[drawType];
+		DO_ET(num, pet);
+		break;
+
+	      case PEXETPickAllMethod:
+		num = SI_PICK_ALL_NUM;
+		pet = miPickAllMethodET[drawType];
 		DO_ET(num, pet);
 		break;
 
