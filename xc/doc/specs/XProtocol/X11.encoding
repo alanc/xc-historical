@@ -2827,7 +2827,7 @@ Requests
   TEXTITEM16
 	1	m		number of CHAR2Bs in string (cannot be 255)
 	1	INT8		delta
-	m	STRING16		string
+	2m	STRING16		string
   or
 	1	255		font-shift indicator
 	1			font byte 3 (most-significant)
