@@ -296,7 +296,7 @@ _
 .vs 13
 .nr VS 13
 .IP \fBallowResize\fP 1.5i
-If this value is \fBFalse\fP the the Paned widget will not disallow all
+If this value is \fBFalse\fP the the Paned widget will disallow all
 geometry requests from this child.
 .IP \fBmax\fP 1.5i
 .br
