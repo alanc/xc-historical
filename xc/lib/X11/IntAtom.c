@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XIntAtom.c,v 11.9 87/06/10 23:06:15 jg Exp $ */
+/* $Header: XIntAtom.c,v 11.9 87/09/08 12:27:47 newman Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -9,7 +9,7 @@
 Atom XInternAtom (dpy, name, onlyIfExists)
     register Display *dpy;
     char *name;
-    int onlyIfExists;
+    Bool onlyIfExists;
 {
     register long nbytes;
     xInternAtomReply rep;
