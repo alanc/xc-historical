@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.3 89/06/21 11:23:26 rws Exp $ */
+/* $XConsortium: misprite.c,v 5.4 89/07/03 13:29:33 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -663,8 +663,9 @@ miSpriteSaveDoomedAreas (pWin)
 }
 
 static RegionPtr
-miSpriteRestoreAreas (pWin)
+miSpriteRestoreAreas (pWin, prgnExposed)
     WindowPtr	pWin;
+    RegionPtr	prgnExposed;
 {
     ScreenPtr		pScreen;
     miSpriteScreenPtr   pScreenPriv;
@@ -677,11 +678,11 @@ miSpriteRestoreAreas (pWin)
     pScreenPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
     if (pScreenPriv->isUp)
     {
-	if ((* pScreen->RectIn) (pWin->exposed, &pScreenPriv->saved) != rgnOUT)
+	if ((* pScreen->RectIn) (prgnExposed, &pScreenPriv->saved) != rgnOUT)
 	    miSpriteRemoveCursor (pScreen);
     }
 
-    result = (*pWin->backStorage->funcs->RestoreAreas) (pWin);
+    result = (*pWin->backStorage->funcs->RestoreAreas) (pWin, prgnExposed);
 
     BSTORE_EPILOGUE (pWin);
 
