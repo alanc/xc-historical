@@ -32,7 +32,7 @@ superclasses.
 .TP 8
 .B \-top \fIname\fP
 This option specifies the name of the widget to be treated as the top of the
-hiearchy.  Case is not significant, and the name may match either the class
+hierarchy.  Case is not significant, and the name may match either the class
 variable name or the class name.  The default is ``core''.
 .TP 8
 .B \-format \fIprintf\-string\fP

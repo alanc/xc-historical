@@ -56,7 +56,7 @@ This option indicates that reverse video should be simulated by swapping
 the foreground and background colors.
 .TP 8
 .B \-geometry \fIgeometry\fP
-This option specifies the prefered size and position of the window.
+This option specifies the preferred size and position of the window.
 .TP 8
 .B \-display \fIhost\fP:\fIdisplay\fP
 This option specifies the X server to contact.
@@ -99,7 +99,7 @@ X(1), xrdb(1), ditroff(1)
 .SH BUGS
 .I Xditview
 can be easily confused by attempting to display a DVI file constructed
-for the wrong device.
+for the wrong device.  Support for pic is not yet implemented.
 .SH ORIGIN
 Portions of this program originated in xtroff which was derived
 from suntroff.  
