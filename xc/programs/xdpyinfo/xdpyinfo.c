@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xdpyinfo.c,v 1.17 89/12/10 17:07:24 rws Exp $
+ * $XConsortium: xdpyinfo.c,v 1.18 90/12/19 14:05:22 gildea Exp $
  * 
  * xdpyinfo - print information about X display connecton
  *
@@ -217,7 +217,7 @@ print_screen_info (dpy, scr)
     int nvi;				/* number of elements returned */
     int i;				/* temp variable: iterator */
     char eventbuf[80];			/* want 79 chars per line + nul */
-    static char *yes = "YES", *no = "NO";
+    static char *yes = "YES", *no = "NO", *when = "WHEN MAPPED";
     double xres, yres;
     int ndepths = 0, *depths = NULL;
 
@@ -266,7 +266,8 @@ print_screen_info (dpy, scr)
     printf ("  preallocated pixels:    black %d, white %d\n",
 	    BlackPixel (dpy, scr), WhitePixel (dpy, scr));
     printf ("  options:    backing-store %s, save-unders %s\n",
-	    DoesBackingStore (s) ? yes : no,
+	    (DoesBackingStore (s) == NotUseful) ? no :
+	    ((DoesBackingStore (s) == Always) ? yes : when),
 	    DoesSaveUnders (s) ? yes : no);
     printf ("  current input event mask:    0x%lx\n", EventMaskOfScreen (s));
     (void) print_event_mask (eventbuf, 79, 4, EventMaskOfScreen (s));
