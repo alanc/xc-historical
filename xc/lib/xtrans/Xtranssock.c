@@ -1,4 +1,4 @@
-/* $XConsortium: Xtranssock.c,v 1.34 95/01/12 18:25:25 kaleb Exp mor $ */
+/* $XConsortium: Xtranssock.c,v 1.35 95/03/28 19:49:02 mor Exp mor $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -1474,7 +1474,7 @@ char *port;
      * we know for sure it will fail.
      */
 
-    if (!UnixHostReallyLocal (host))
+    if (strcmp (host, "unix") != 0 && !UnixHostReallyLocal (host))
     {
 	PRMSG (1,
 	   "TRANS(SocketUNIXConnect): Cannot connect to non-local host %s\n",
