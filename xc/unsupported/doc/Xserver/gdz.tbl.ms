@@ -5,7 +5,7 @@
 .de LS
 .KS
 .DS
-.ft L
+.ft C
 ..
 .de LE
 .ft P
@@ -16,6 +16,8 @@
 Godzilla's Guide to Porting the X V11 Sample Server
 .sp
 March 1, 1988
+.sp
+Updated for R4: April 12, 1990
 .AU
 David S. H. Rosenthal
 .AI
@@ -28,6 +30,10 @@ University of California at Berkeley
 edits by Bob Scheifler
 .AI
 Massachusetts Institute of Technology
+.AU
+Updated for R4 by Keith Packard
+.AI
+MIT X Consortium
 .AB
 .LP
 For hackers in a hurry,  here's how to do a quick-and-dirty port of the
@@ -47,13 +53,16 @@ Star Wars,  \fIGeorge Lucas\fP
 .DS C
 Copyright \(co 1987 by Sun Microsystems, Inc.\s-2\u1\d\s0
 .DE
+.DS C
+Copyright \(co 1990 by the Massachusetts Institute of Technology\s-2\u1\d\s0
+.DE
 .FS
-1.  Permission to use,  copy,  modify and distribute
-this document for any purpose and without fee is hereby
-granted,  provided that the above copyright notice and this permission
-notice appear in all copies,  and that the name of Sun Microsystems,  Inc. not be
-used in advertising or publicity pertaining to distribution of the software
-without specific,  written prior permission.  Sun Microsystems,  Inc. makes no
+1.  Permission to use, copy, modify, distribute and sell this document for
+any purpose and without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies, and that
+the names of Sun Microsystems, Inc.  and M.I.T. not be used in advertising
+or publicity pertaining to distribution of the software without specific,
+written prior permission.  Sun Microsystems, Inc. and M.I.T. make no
 representations about the suitability of the software described herein for
 any purpose.  It is provided "as is" without express or implied warranty.
 .FE
@@ -69,13 +78,16 @@ We went on to port the second alpha release to a number of Sun 8-bit
 memory-mapped color displays,  and we contributed this code to the beta
 releases.
 .LP
-Based on this experience,  we present a guide for others attempting to port
-X V11.
-Our goal is to enable them to get the server up and functional
-as expeditiously as possible.
-We address only ``initial'' ports,
-using the \fIserver/ddx/mfb\fP and \fIserver/ddx/mi\fP code to drive a
-dumb memory frame buffer.
+With future releases, the internal structure of the server changed, and
+porting efforts have to be modified as well.  No attempt has been made to
+isolate the porting efforts from the changes between various versions of the
+server.  This document focuses on Release 4 of the MIT Sample Server.
+.LP
+Based on this experience, we present a guide for others attempting to port X
+V11.  Our goal is to enable them to get the server up and functional as
+expeditiously as possible.  We address only ``initial'' ports, using the
+\fIserver/ddx/mfb\fP, \fIserver/ddx/cfb\fP and \fIserver/ddx/mi\fP code to
+drive a dumb memory frame buffer.
 .LP
 It is possible to port X V11 to dumb frame buffers very quickly,
 even without a detailed understanding of the internals of the server.  We
@@ -92,7 +104,8 @@ Supporting input devices other than the mouse and keyboard.
 .Ip
 Performance tuning the system.
 .LP
-This document refers to the first full X V11 distribution from Project Athena.
+This document refers to the fourth full X V11 distribution from the MIT X
+Consortium.
 .NH
 Raw Materials
 .LP
@@ -118,36 +131,31 @@ The ``machine independent'' driver.  This is intended to be a machine
 independent (but slightly incomplete) driver for \fIany\fP frame buffer.
 .IP cfb 8
 The ``color frame buffer'' driver.  This is intended to be a machine
-independent driver for \fIn\fP-bit deep (\fIn\fP <= 32) Z-Format memory mapped displays.
-.IP dec/lk201 8
-Code to deal with DEC's LK201 keyboard and mouse.
-.IP dec/qvss 8
-A driver for DEC's QVSS display.  The QVSS is a 1-bit deep memory mapped
-display for the micro-VAX,  and this driver for it uses parts of \fImfb\fP and parts of
-\fImi\fP,  together with the LK201 keyboard driver.
-.IP sun 8
-Drivers for monochrome and color Suns.
-.IP apollo 8
-Drivers for monochrome Apollos.
-.IP ibm 8
-Drivers for the IBM PC/RT.
+independent driver for \fIn\fP-bit deep (\fIn\fP <= 32) Z-Format memory
+mapped displays.  While much of this code is portable to arbitrary depth
+displays, release 4 provides a fast implementation only for the 8-bit case.
+.IP ...
+There are several directories which are specific to a particular vendor and
+contain minimal code for talking to that hardware.
+In the \fBos\fP directory,  there is at present only the following directory:
 .LP
-In the \fBos\fP directory,  there are at present only the following directories:
+The only subdirectory in the \fBos\fP directory is:
 .IP 4.2bsd 8
 An implementation of the file and interprocess primitives for the server
-using the facilities of 4.2 and 4.3 BSD.
-.IP sysV 8
-You might hope that this would be the same for System V,  but alas,  such
-hopes are premature.
+using the facilities of 4.2 and 4.3 BSD.  This code also works on various
+SYSV-BSD blends (A/UX, HPUX etc) but no attempt has been made to get it
+working in a generic SYSV environment.
 .LP
 The intent is that one should port the sample server to new hardware by
 using the \fImi\fP code,  implementing at first only the lowest level routines
 such as \fBFillSpans(\|)\fP.
-We did not do so for our initial monochrome ports  (the \fImi\fP code was too
-incomplete),  instead we used the \fImfb\fP code.  Our subsequent color
-ports were based on \fImi\fP and we describe both.
+We did not do so for our initial monochrome ports (the \fImi\fP code was too
+incomplete), instead we used the \fImfb\fP code.  Our subsequent color
+ports were based on \fImi\fP and we describe both.  The current release
+relies on \fIcfb\fP heavily as much of \fImi\fP is only interesting from an
+academic viewpoint.
 .LP
-The details of server internals you need to know to do this,  and more
+The details of server internals you need to know to do this, and more
 advanced ports,  are described in a document (the \fIPorting
 Layer\fP) written by the DEC team that developed it.\s-2\u2\d\s0
 .FS
@@ -155,7 +163,9 @@ Layer\fP) written by the DEC team that developed it.\s-2\u2\d\s0
 Raymond Drewry,  Phil Karlton and Todd Newman.  See the file
 \fIdoc/Server/ddx.doc.tbl.ms\fP.
 .FE
-You do not need this document for a simple monochrome port,  but we refer to
+You should read this document even for a simple monochrome or color port, a
+complete understanding isn't important, but a better understanding of the
+basic porting process will result from even a cursory perusal.  We refer to
 it frequently when more details are needed.
 .NH
 Road Map
@@ -176,13 +186,10 @@ and change the image on demand.
 Starting Up & Shutting Down \- you need to initialize and close down the
 connections between the server and your hardware.
 .NH
-Doing the Port (Monochrome)
+Doing the Port (Monochrome and 8-bit color)
 .LP
 Lets suppose you want to port X V11 to the Generic Workstation Company's
-(GWC) hardware.  You can do most of the work in one fell swoop:\s-2\u3\d\s0
-.FS
-3  This script is derived from the one used to create \fIcfb\fP from \fImfb\fP.
-.FE
+(GWC) hardware.  You can do most of the work in one fell swoop:
 .LS
 #!/bin/sh
 cd server/ddx/sun
@@ -192,8 +199,6 @@ for A in *.[hc]
 do
 	sed -e 's/sun/gwc/g' $A >../gwc/gwc`expr $A : 'sun\e(.*\e)'`
 done
-cd ../gwc
-rm gwcCG2M.c
 .LE
 .LP
 You now have a directory in the right place with a first approximation to the
@@ -211,12 +216,17 @@ GWC's workstations are different from Sun's.
 .NH 2
 Painting the Bits
 .LP
-Assuming that you have a monchrome GWC,  which has a simple memory bitmap,
+Assuming that you have a machine  which has a simple memory bitmap,
 all you have to do to ensure that the pixels are painted correctly is to
-deal with the potential differences between simple monochrome memory bitmaps:
+deal with the potential differences between simple memory bitmaps.  The files
+\fIserver/include/servermd.h\fP and \fIfonts/bdftosnf/bdftosnf.h\fP contain
+the definitions for the various CPUs which already support the sample
+server.  You will need to add #ifdef sections after the others
+in each file which contains the following definitions.
 .Ip
-Byte order.  The \fImfb\fP code can handle either byte order.  If you have a
-68000 GWC,  the file \fIserver/include/servermd.h\fP should contain:
+Byte order.  Both the \fImfb\fP and \fIcfb\fP code can handle either byte
+order.  If you have a 68000 CPU (Big Endian), the file
+\fIserver/include/servermd.h\fP should contain:
 .LS
 #define IMAGE_BYTE_ORDER	MSBFirst
 .LE
@@ -225,15 +235,16 @@ If you have a 80386 GWC,  \fIserver/include/servermd.h\fP should contain:
 #define IMAGE_BYTE_ORDER	LSBFirst
 .LE
 .Ip
-Pixel order.  The \fImfb\fP code can handle either the 68000 style,  where
-the most significant bit is to the left on the scan line,  or the 80386 style,
-where the least significant bit is to the left on the scan line.  For the
-68000 GWC,  the file \fIserver/include/servermd.h\fP should contain:
+Pixel order.  Again, both the \fImfb\fP and \fIcfb\fP code can handle either
+the 68000 style, where the most significant bit is to the left on the scan
+line, or the 80386 style, where the least significant bit is to the left on
+the scan line.  For the 68000 GWC, the file \fIserver/include/servermd.h\fP
+should contain:
 .LS
 #define BITMAP_BIT_ORDER	MSBFirst
 .LE
 .IP
-And the file \fIfonts/compiler/fc.h\fP should contain:
+And the file \fIfonts/bdftosnf/bdftosnf.h\fP should contain:
 .LS
 #define	DEFAULTBITORDER	MSBFirst
 .LE
@@ -242,41 +253,44 @@ For the 80386 GWC,  the file \fIserver/include/servermd.h\fP should contain:
 #define BITMAP_BIT_ORDER	LSBFirst
 .LE
 .IP
-And the file \fIfonts/compiler/fc.h\fP should contain:
+And the file \fIfonts/bdftosnf/bdftosnf.h\fP should contain:
 .LS
 #define	DEFAULTBITORDER	LSBFirst
 .LE
 .Ip
 Pixel meaning.
-Earlier GWCs have displays where a 1 bit means black,  and later ones have displays
-where a 1 means white.  Check the manual,  and set the appropriate values in
-the file \fIserver/ddx/gwc/gwcBW2.c\fP.  For the earlier displays,  set:
+Some machines have monochrome displays where a 1 bit means black, while
+others ones have displays where a 1 means white.  Check the manual, and set
+the appropriate values in the file \fIserver/ddx/gwc/gwcBW2.c\fP:
 .LS
-pScreen->whitePixel = 0;
-pScreen->blackPixel = 1;
+pScreen->whitePixel = 0 or 1;
+pScreen->blackPixel = 1 or 0;
 .LE
-and invert the order of the two calls to \fBAllocColor(\|)\fP in
-\fBgwcBW2CreateColormap(\|)\fP.
 .Ip
-Alignment restrictions.  The CPUs that GWC uses vary in the alignment
-restrictions they place on accesses.  For example,  some can do 4-byte
-accesses at every byte address,  and some only at 4-byte boundaries.  In
-general,  the \fImfb\fP code takes the conservative viewpoint that the
-framebuffer and memory bitmaps are accessed only 4 bytes wide at 4-byte
-boundaries.
+Alignment restrictions.
+CPUs vary in the alignment restrictions they place on memory accesses.  For
+example, some can do 4-byte accesses at every byte address, and some only at
+4-byte boundaries.  In general, the \fImfb\fP and \fIcfb\fP code take the
+conservative viewpoint that the framebuffer and memory bitmaps are accessed
+only 4 bytes wide at 4-byte boundaries.
 .IP
-However,  this isn't true of the font code.  For Sun hardware,  we
-decided to extend the same restriction to the font code,  and changed the
-padding rules used for the fonts to avoid those cases in which the \fImfb\fP
-code would use addresses that weren't 4-byte aligned.
-We will cover the padding rules in some detail later;  for the moment all
-you need to do is to include in the file \fIfonts/compiler/fc.h:
+However, this isn't true of the font code.  For Sun hardware, we decided to
+extend the same restriction to the font code, and changed the padding rules
+used for the fonts to avoid those cases in which the \fImfb\fP and \fIcfb\fP
+code would use addresses that weren't 4-byte aligned.  We will cover the
+padding rules in some detail later; for the moment all you need to do is to
+include in the file \fIfonts/bdftosnf/bdftosnf.h\fP:
 .LS
 #define	DEFAULTGLPAD	4
 .LE
+while \fIserver/include/servermd.h\fP should have
+.LS
+#define GLYPHPADBYTES	4
+.LE
+.IP
 .LP
-The \fImfb\fP and \fImi\fP code is now set up for your GWC.  The next steps
-are more work.
+The \fImfb\fP, \fIcfb\fP and \fImi\fP directories are now set up for your
+machine.  The next steps are more work.
 .NH 2
 Pounding the Keys
 .LP
@@ -289,8 +303,9 @@ Obtain the device-specific events from the keyboard and the mouse,  by
 calling through their private descriptor structures to a device-specific
 \fBGetEvents\fP routine.
 .Ip
-In time-stamp order,  hand each event to the appropriate \fBProcessEvents\fP routine,
-again calling through the private descriptor structure for each device.
+In time-stamp order, hand each event to the appropriate \fBProcessEvents\fP
+routine, again calling through the private descriptor structure for each
+device.
 .Ip
 Maintain the time of the last event.
 .Ip
@@ -400,12 +415,11 @@ is that it must be removed from the display before painting operations that
 might affect the pixels it is using.  And,  of course,  put back again at
 some time later.
 .LP
-This code is complex,  and we go into the details later,  but for the moment
-you can use it without modification.  It will work on any display,  but it
-is a little
-slow,  and you will want to use the hardware cursor on GWCs that have it.
-The changes needed to do so are fairly extensive,  so we
-cover them later also.
+Fortunately, a machine-independent software cursor layer is included in
+\fIserver/ddx/mi\fP which is easily connected to the mouse device.  It will
+work on any display, but it is a little slow, and you will want to use the
+hardware cursor on machines that have it.  The changes needed to do so are
+fairly extensive, so we cover them later also.
 .NH 2
 Starting Up & Shutting Down
 .LP
@@ -435,8 +449,7 @@ Output devices are initialized in a two-step process:
 The server calls \fBInitOutput(\|)\fP,  a routine in \fIgwcInit.c\fP which you
 can re-use untouched.  It calls each potentially available display's probe
 routine,  finding the probe routine and the probable file name for it in the
-\fBgwcFbData[\|]\fP array.  Remove the references to \fBgwcCG*\fP from this
-array,  and the corresponding external declarations.
+\fBgwcFbData[\|]\fP array.
 .IP
 The dumb monochrome device,  whose driver is in \fIgwcBW2.c\fP,  has a probe
 routine called \fBgwcBW2Probe(\|)\fP.  This has to attempt to initialize the
@@ -447,29 +460,36 @@ among all Sun framebuffers.  This routine scans the command-line arguments,
 the environment,  and the \fI/dev\fP directory to find a frame-buffer of
 the required type,  opens it,  and returns the file descriptor.
 .IP
-The probe routine then has to map this descriptor into the server's address
-space,  and install a pointer to the pixels in the \fBfbFd\fP structure.
-Note that the Sun code has to deal with two different sizes of monchrome
-framebuffers.  The \fBfbFd\fP structure is the static structure we mentioned
-earlier,
-needed to
-preserve internal driver information across server re-initializations.
-Finally,  it calls \fBAddScreen(\|)\fP,  giving it the address of the
-BW2 initialization routine.
+The dumb color device, whose driver is in \fIgwcCG3.c\fP, is similarly
+structured, the probe is called \fIgwcCG3Probe(\|)\fP.
+.IP
+The probe routines then have to map this descriptor into the server's address
+space, and install a pointer to the pixels in the \fBfbFd\fP structure.
+Note that the Sun monochrome code has to deal with two different sizes of
+monchrome framebuffers.  The \fBfbFd\fP structure is the static structure we
+mentioned earlier, needed to preserve internal driver information across
+server re-initializations.  Finally, it calls \fBAddScreen(\|)\fP, giving it
+the address of the BW2/CG3 initialization routine.
 .Ip
-\fBAddScreen(\|)\fP fills out the screen information,  and calls
-the initialization routine.  First,
-\fBmfbScreenInit(\|)\fP is called to initialize the \fImfb\fP part of the code.
-This fills in the \fBScreen\fP's operations vector with the routines the
+\fBAddScreen(\|)\fP fills out the screen information, and calls the
+initialization routine.  In the monochrome case, \fBmfbScreenInit(\|)\fP is
+called to initialize the \fImfb\fP part of the code.  This fills in the
+\fBScreen\fP's operations vector with the routines the
 \fImfb\fP code supports.  The remaining entries are filled out by the
-initialization routine itself.  This code can be reused unchanged.
+initialization routine itself.  This code can be reused unchanged.  The
+color case simply uses \fBcfbScreenInit(\|)\fP.  Note that in the color case
+the values for whitePixel and blackPixel are left unspecified.  \fIcfb\fP
+will fill in the values 0 for white and 1 for black.  If this is not
+satisfactory, replace them with your own values after calling
+\fBcfbScreenInit\fP and before calling \fBcfbCreateDefColormap\fP.
 .LP
 When the server is shutting down prior to re-initialization,  it will call
 the \fBCloseScreen\fP function in the \fBScreen\fP structure.
 You can also use this routine unchanged.
 .LP
-One other area which needs attention is the \fBgwcBW2SaveScreen(\|)\fP routine.  This
-needs to enable and disable the video for the GWC framebuffer.
+One other area which needs attention are the \fBgwcBW2SaveScreen(\|)\fP and
+\fBgwcCG3SaveScreen(\|\)\fP routines.  These need to enable and disable the
+video for the GWC framebuffer.
 .NH 3
 Input
 .LP
@@ -535,7 +555,7 @@ There are probably some details we've omitted \- we no longer have our GWCs
 so we're writing this from memory.  If you find either the details or the
 hardware,  please let us know.
 .NH
-Doing the Port (Color)
+Additional work needed for doing a Color Port on non 8-bit displays.
 .LP
 After the \fImfb\fP-based monochrome drivers were shipped to MIT,  we went
 on to develop drivers for Sun's color hardware.
@@ -545,7 +565,7 @@ Our initial attempt was based on the
 To get the server functional on color hardware as expeditiously as possible.
 .Ip
 To test the color code in \fIserver/dix\fP,  and as much as possible of the
-code in \fIserver/ddx/mi/fP.
+code in \fIserver/ddx/mi\fP.
 .Ip
 To test the recommended porting strategy,  using \fImi\fP and implementing
 only \fBGetSpans(\|)\fP,  \fBSetSpans(\|)\fP and \fBFillSpans(\|)\fP.
@@ -561,9 +581,9 @@ at 32-bit boundaries.  While these restrictions are fairly onerous,  they
 make the code highly portable in both cases.  In the monochrome case, 
 the DEC team managed to provide relatively good performance.  In the color
 case,  there is \fIn\fP times more work to do,  and we have not attempted
-the optimizations that \fImfb\fP uses.
+all of the optimizations that \fImfb\fP uses.
 .NH 2
-Porting cfb
+Porting cfb to non-8 bit framebuffers
 .LP
 By default,  \fIcfb\fP is set up to drive a framebuffer that is 8 bits deep
 with the pixel order defined by \fBBITMAP_BIT_ORDER\fP.  If your framebuffer
@@ -599,16 +619,17 @@ changing).
 Using cfb
 .LP
 The code in \fIserver/ddx/sun/sunCG4C.c\fP illustrates how to use \fIcfb\fP
-to drive an 8-bit deep memory frambuffer.  You call \fBcfbscrinit(\|)\fP
-to fill out the screen operation vector,  and \fBcfbCreateGC(\|)\fP to
-create a GC.  In both cases,  reading the code will show that most of
-the procedures to be used are from \fImi\fP.
+to drive an 8-bit deep memory frambuffer (the usage on non 8-bit deep frame
+buffers is identcal but no example code exists).  You call
+\fBcfbscrinit(\|)\fP to fill out the screen operation vector, and
+\fBcfbCreateGC(\|)\fP to create a GC.  In both cases, reading the code will
+show that most of the procedures to be used are from \fImi\fP.
 .LP
-Unlike \fImfb\fP,  which effectively supports only a StaticGray visual,
-the \fIcfb\fP code can support both a StaticColor and a PseudoColor
-visual.  If your hardware has writeable color maps,  you will want to support
-the PseudoColor visual.  Otherwise,  (or for testing purposes)  you can
-define \fBSTATIC_COLOR\fP and support a StaticColor visual.
+Unlike \fImfb\fP, which effectively supports only a StaticGray visual, the
+\fIcfb\fP code supports all 6 possible visual types if your hardware has
+writeable color maps.  Otherwise, (or for testing purposes) you can define
+\fBSTATIC_COLOR\fP and support a StaticColor visual (which also limits the
+supported visual types to StaticColor and TrueColor).
 .NH
 Details
 .LP
@@ -625,203 +646,11 @@ section 2.5 of the \fIPorting Layer\fP.
 .NH 3
 Software Cursors
 .LP
-The problem with displays that lack cursor hardware is that the
-cursor actually affects the pixels in the bitmap,  and that these pixels are
-also being affected by painting operations requested by clients.  An
-interlock is required between these two;  the cursor must be removed before
-any painting operation that affects the pixels affected by the cursor.  And,
-of course,  the cursor is more useful if it is made visible again afterwards
-.LP
-We have developed a number of software cursor techniques requiring
-no modification to the DIX layer,  or to non-machine-specific parts of
-DDX,  such as \fImfb\fP or \fIcfb\fP.  We describe them in the order we
-thought of them.
-.NH 4
-Technique 1:  GC Clip Lists
-.LP
-The fundamental observation behind this technique
-is that a graphics context affects only those pixels included in its
-clip.  Thus,  we need only check the cursor against the GC used for each
-painting operation.
-.LP
-After a GC is changed,  and before it is used for a painting operation,  the
-GC is ``validated'' by calling \fBValidateGC(\|)\fP.  Parts of the X server
-can express interest in changes to the GC,  by adding \fBGCInterestRec\fP
-structures to the GC's interest list.  These structures contain pointers to
-routines that should be invoked when \fBValidateGC(\|)\fP discovers certain
-fields of the GC have been changed.
-.LP
-Graphics contexts are created by a DIX routine \fBCreateGC(\|)\fP,  which
-calls the appropriate screen's \fBCreateGC\fP routine.  We arrange
-for a Sun-specific \fBCreateGC\fP.  It calls the \fImfb\fP
-\fBCreateGC\fP routine,  and then expresses interest in \fIall\fP changes to
-the GC,  registering a routine that compares the area of the cursor with
-the clip list in the GC,  and removes the cursor if they overlap.\s-2\u5\d\s0
-.FS
-5.  see section 2.3 of the
-\fIPorting Layer\fP.
-.FE
-Thus,  whenever a GC is validated,  the cursor will be removed if would interfere
-with a painting operation using that GC.
-.LP
-The cursor is
-replaced at the end of \fBProcessInputEvents(\|)\fP,  which is called at
-various times and in particular before the server calls \fBselect(\|)\fP and
-potentially goes to sleep.\s-2\u6\d\s0
-.FS
-6.  See the files \fIserver/ddx/sun/sunIo.c\fP and section 2.4 of the \fIPorting
-Layer\fP
-.FE
-The decision as to when to put the cursor back is tricky;  the sooner it is
-done the less the cursor flickers but the more likely it is that the effort
-of doing so will be wasted.  This compromise seems about right for a first
-cut,  and any other choice would require some hook in the OS layer.
-.LP
-Unfortunately,  this elegant solution is insufficient in a number of
-respects.
-.LP
-There are a number of circumstances in which the server invokes painting
-operations without a specific request from a client.  They are rather
-side-effects of other requests,  such as painting the background and border
-of newly exposed windows.  In these cases,  no GC is used,   and thus there
-is no opportunity to check for collisions with the cursor.  The culprits are
-easily identified:  they are the routines accessed via the \fBWindow\fP
-structure rather than the GC:
-.LS
-typedef struct _Window {
-	..................
-	void (* PaintWindowBackground)();
-	void (* PaintWindowBorder)();
-	void (* CopyWindow)();
-	void (* ClearToBackground)();
-	..................
-} WindowRec;
-.LE
-.LP
-To create a \fBWindow\fP structure the DIX layer calls through the
-corresponding \fBScreen\fP's \fBCreateWindow\fP entry.  This sets up the
-routine pointers,  implementing these operations by calling \fImi\fP and
-\fImfb\fP routines.
-We need to replace these entries in each \fBWindow\fP structure
-with pointers to our own versions that do the cursor check and then invoke
-whatever routine would have been invoked if we weren't in the way.\s-2\u7\d\s0
-.FS
-7.  Devotees of Object-Oriented Programming will recognize what's going on
-here.\|.\|.\|.
-.FE
-.LP
-In \fIsunInit.c\fP, we have arranged for the \fBScreen\fP to point to
-\fBsunCreateWindow(\|)\fP,  which sets the routine pointers for the window
-operations to
-\fBsunPaintWindowBackground(\|)\fP,
-\fBsunPaintWindowBorder(\|)\fP,
-and
-\fBsunCopyWindow(\|)\fP.\s-2\u8\d\s0
-.FS
-8.  See the file \fIserver/ddx/sun/sunCursor.c\fP
-.FE
-We only need to deal with these three,  because the \fImi\fP code
-implements \fBClearTobackground\fP by calling through the \fBWindow\fP
-structure to the \fBPaintWindowBackground\fP function.
-.LP
-Alas,  this isn't enough.  As the client changes such attributes of the
-window as its background and border colors,  the \fImfb\fP code\s-2\u9\d\s0
-.FS
-9.  See the file \fIserver/ddx/mfb/mfbwindow.c\fP.
-.FE
-changes the implementation of these window operations.  This allows for easy
-special cases,  such as all white,  to be detected and implemented using
-specially optimized code.  It does this by overwriting the pointers in the
-\fBWindow\fP structure,  so that although we initialized them to point to
-the \fIsun\fP routines they won't stay that way.  We also have to intercept the
-\fBChangeWindowAttributes\fP call through the \fBScreen\fP structure,  and
-restore any of the pointers that it has overwritten.
-.LP
-Although we have arranged for the DIX layer to call the \fIsun\fP routines,  all we
-want to do is check the cursor and then call whatever routine the \fImbf\fP
-code decided was appropriate.  We need to associate with the window private
-information describing these over-ridden routines.  In the \fBScreen\fP and
-\fBGC\fP structures there is a \fBdevPrivate\fP field we can use to point to this
-kind of information,  and the \fIsun\fP code does so.  The \fBWindow\fP structure has
-one too,  but we can't use it because the \fImfb\fP code got there first.\s-2\u10\d\s0
-.FS
-10.  See \fBCreateWindow(\|)\fP in \fIserver/ddx/sun/mfbwindow.c\fP.
-.FE
-.LP
-We solve this problem instead by using the resource management facilities.\s-2\u11\d\s0
-.FS
-11.  See the file \fIserver/ddx/sun/sunCursor.c\fP.
-.FE
-In \fBsunInitCursor(\|)\fP we define a new resource class, \fBwPrivClass\fP.
-Whenever a new window is created,  we \fBXalloc(\|)\fP a new structure to hold
-the information and use \fBAddResource(\|)\fP to associate it with the
-window's ID in the new class.  Then,  when the operations are invoked,  the
-address of the structure holding the functions that were overridden can be
-looked up using the window's ID and the new resource class.
-.LP
-Since there will be continual conflict over the \fBdevPrivate\fP fields in
-the structures,  this technique will be generally useful.
-.LP
-There is one remaining problem for the software cursor code.
-\fBValidateGC(\|)\fP is an expensive operation,  and it has to be done before
-each painting operation.  But the GC changes relatively infrequently (that is the
-reason for its existence),  and most of these calls are no-ops.
-So a short-cut has been devised to avoid this overhead.  In
-\fIserver/dix/dispatch.c\fP the macros
-.LS
-VALIDATE(pGC, pDraw, rt)
-VALIDATE_DRAWABLE_AND_GC(drawID, pDraw, pGC, client)
-.LE
-use serial numbers that are incremented when the GC and the Drawable are
-changed.  The client remembers the serial numbers of the last validated GC
-and Drawable,  and only calls \fBValidateGC(\|)\fP if they differ from those
-in the GC and Drawable it is using this time.
-.LP
-What this means for the software cursor code is that there are now many
-painting operations not preceded by a call to \fBValidateGC(\|)\fP.  So, every
-time we put the cursor in to the bitmap,  we have to defeat this mechanism
-and ensure that \fBValidateGC(\|)\fP will be called at least once for each
-active GC.  \fBBumpGCSerialNumbers(\|)\fP
-runs through the clients resetting the serial numbers on the GCs they are
-using.
-.LP
-This technique was in the code we shipped for the X V11 alpha release.
-But it wasn't very satisfactory,  so we investigated some improvements, 
-for example,  being
-more intelligent about bumping the serial numbers,  perhaps only
-bumping those which actually overlap the cursor.
-.NH 4
-Technique 2: Shadow GCs
-.LP
-The technique that is in the MIT release is fundamentally different.
-It overrides \fIall\fP the painting functions with alternatives that do the
-cursor check first,  and then invoke the original function.
-It does so by overriding \fBCreateGC(\|)\fP with a routine that creates
-a GC whose operations vector points to the cursor check routines,
-and then invokes the overridden \fBCreateGC(\|)\fP to create \fIanother\fP
-GC (called the ``shadow'').  DIX routines see the real GC;  paint requests
-are made through it,  the cursor is checked,  and the same paint request
-is then made on the shadow GC.
-.LP
-The advantages of this techiquere:
-.Ip
-The underlying code,  perhaps \fImfb\fP,
-is invoked in the same environment as it would have been has the software
-cursor problem never existed.  Thus,  the software cursor implementation is
-totally independent of the details of the DDX layer;  it can be regarded
-as an optional part of DIX.
-.Ip
-The cursor check can be against the actual
-size of the painting request,  rather than against the GC clip,  so the
-cursor is less likely to have to be removed.
-.LP
-The costs of this technique are:
-.Ip
-The size of the GC is effectively doubled,  since for each real GC there
-is a shadow.
-.Ip
-Each GC operation costs an extra call and return,  and some overhead for
-the actual cursor check.
+The Machine Independent software cursor code is very easy to use and it
+provides reasonable performance.  It works by "wrapping" every potential
+drawing operation to the screen and checking for overlap with the cursor
+during these operations.  The \fIPorting Layer\fP describes this
+"wrapping" notion in greater detail.
 .NH 3
 Hardware Cursors
 .LP
@@ -835,19 +664,10 @@ and section 2.5 of the \fIPorting Layer\fP.
 .FE
 and to remove the following code from the \fIserver/ddx/sun\fP files:
 .Ip
-\fIsunCursor.c\fP:  \fBsunPutCursor(\|)\fP,
-the overrides for the window functions,
-\fBsunCreateWindow(\|)\fP,
-\fBsunChangeWindowAttributes(\|)\fP.
+\fIsunInit.c\fP:  the code that calls miDCInitialize
 .Ip
-The whole of \fIsunGC.c\fP.
-.Ip
-\fIsunInit.c\fP:  the code that changes the screen functions in
-\fBsunScreenInit(\|)\fP,  and the code that creates a GC for use with the
-cursor.
-.Ip
-\fIsunIo.c\fP:  the code in \fBProcessInputEvents(\|)\fP that restores the
-cursor.
+\fIsunMouse.c\fP:  the code in \fBsunMouseProcessEvent(\|)\fP that positions
+the software cursor.
 .NH 2
 Fonts & Padding
 .LP
@@ -889,10 +709,26 @@ cases,  there is no real choice.
 Even processors which can access longwords at byte boundaries do so more
 slowly than aligned accesses,  and these accesses are made in a
 performance-critical area (painting characters).
-Check your hardware manual,  or write a small benchmark.
+Check your hardware manual, or write a small benchmark.  Furthermore, the
+font code for big-endian machines is always slower when using non-longword
+padded fonts as it must shift things around.
 .Ip
 On the other hand,  padding the glyphs to longwords wastes a significant
 amount of space.
+.LP
+If you'd like to pack fonts even on machines which can't access longwords on
+non-longword boundaries, then, in the file \fIserver/include/servermd.h\fP,
+choose the alignment restriction (in bytes) for those accesses:
+.LS
+#define GETLEFTBITS_ALIGNMENT	1	/* arbitrary byte alignment */
+#define GETLEFTBITS_ALIGNMENT	2	/* halfword alignment */
+#define GETLEFTBITS_ALIGNMENT	4	/* longword alignment */
+.LE
+.LP
+If you are using GLYPHPADBYTES 4, make sure you set GETLEFTBITS_ALIGNMENT to
+1 even if your CPU can't access longwords on non-longword boundaries.  This
+is because the text code would use extra instructions to check the alignment
+of the accesses even though the fonts are guaranteed to be longword aligned.
 .NH 2
 Shared Event Queue
 .LP
@@ -948,14 +784,13 @@ actively warps it to another screen.
 The \fIwm\fP window manager implements passize Zaphod mode,  clicking on the
 background warps the pointer to the next screen in sequence.
 .LP
-The \fIsun\fP code implements active Zaphod mode.a  In \fBsunMouseProcessEvent()\fP,
-when the pointer gets to the right (left) edge of the current screen,
-it is warped to the next (previous) screen in sequence.  This is done by
-removing the cursor from the current screen,  calling the current screen's
-EnterLeave() procedure with a LEAVE parameter,  changing the Screen
-pointer in the cursor structure,  calling the new screen's EnterLeave()
-procedure with an ENTER paramter,  and then calling DIX's
-NewCurrentScreen.
+The \fIsun\fP code implements active Zaphod mode by using the mi Cursor
+code.  In \fBsunCursorOffScreen(\|)\fP, when the pointer gets to the right
+(left) edge of the current screen, it is warped to the next (previous)
+screen in sequence.  This is done by simply modifying the input paramenters
+and returning the appropriate value.  If you aren't using the mi software
+cursor code, examine it for the details on how to get the cursor to the new
+screen.
 .if 0 \{
 	how do you deal with deciding what pixmap formats are supported,
 and which ones not, in the following three cases:
@@ -1022,9 +857,11 @@ now the result of too many people's work to acknowledge individually.
 However,  Paul Borman of Cray Research did particularly useful work on
 keyboard support.
 .LP
-The \fIcfb\fP driver is the work of Stuart Marks (from a vague idea by
-David Rosenthal),  with help
-from Jack Palevitch (now at Apple) and Bob Leichner of H-P Labs.
+The \fIcfb\fP driver was originally the work of Stuart Marks (from a vague
+idea by David Rosenthal), with help from Jack Palevitch (now at Apple) and
+Bob Leichner of H-P Labs.  The current \fIcfb\fP release was written at the
+MIT X Consortium for release 4 and shares a few file names in common with
+the original code.
 .LP
 The version of the Sun code in the MIT release is the work of 
 Adam de Boor,
