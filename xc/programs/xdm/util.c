@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: util.c,v 1.2 88/12/15 18:32:23 keith Exp $
+ * $XConsortium: util.c,v 1.4 89/03/28 16:51:16 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -111,6 +111,18 @@ setEnv (e, name, value)
 	return new;
 }
 
+freeEnv (env)
+    char    **env;
+{
+    char    **e;
+
+    if (env)
+    {
+    	for (e = env; *e; e++)
+	    free (*e);
+    	free (env);
+    }
+}
 
 # define isblank(c)	((c) == ' ' || c == '\t')
 
