@@ -51,12 +51,12 @@ InstallLintLibrary(oldX,$(LINTLIBDIR))
 
 
 #if ProfileOldLibX
-ProfiledLibraryTarget(oldX,$(V10LIST))
+ProfiledLibraryTarget(oldX,$(OBJS))
 InstallLibrary(oldX_p,$(USRLIBDIR))
 #endif
 
 #if DebugOldLibX
-DebuggedLibraryTarget(oldX,$(V10LIST))
+DebuggedLibraryTarget(oldX,$(OBJS))
 #endif
 
 DependTarget()
