@@ -4,8 +4,8 @@
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
 #include <X11/Xaw/SimpleMenu.h>
-#include <X11/Xaw/BSBMenuEnt.h>
-#include <X11/Xaw/LineMenuEn.h>
+#include <X11/Xaw/SmeBSB.h>
+#include <X11/Xaw/SmeLine.h>
 #include "ptyx.h"
 #include <setjmp.h>			/* for data.h */
 #include "data.h"
@@ -200,8 +200,8 @@ static Widget create_menu (xtw, toplevel, name, entries, nentries)
 	cb[0].callback = (XtCallbackProc) entries->function;
 	entries->widget = XtCreateManagedWidget (entries->name, 
 						 (entries->function ?
-						  bSBMenuEntryObjectClass :
-						  lineMenuEntryObjectClass), m,
+						  smeBSBObjectClass :
+						  smeLineObjectClass), m,
 						 &arg, (Cardinal) 1);
     }
 
