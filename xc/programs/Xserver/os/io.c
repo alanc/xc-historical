@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.66 90/06/06 13:54:00 rws Exp $ */
+/* $XConsortium: io.c,v 1.67 91/03/28 16:58:39 rws Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -44,10 +44,17 @@ SOFTWARE.
 #include "dixstruct.h"
 #include "misc.h"
 
-#ifdef O_NONBLOCK
-#define E_BLOCKED EAGAIN
+/* check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
+ * systems are broken and return EWOULDBLOCK when they should return EAGAIN
+ */
+#if defined(EAGAIN) && defined(EWOULDBLOCK)
+#define ETEST(err) (err == EAGAIN || err == EWOULDBLOCK)
 #else
-#define E_BLOCKED EWOULDBLOCK
+#ifdef EAGAIN
+#define ETEST(err) (err == EAGAIN)
+#else
+#define ETEST(err) (err == EWOULDBLOCK)
+#endif
 #endif
 
 extern void MarkClientException();
@@ -187,7 +194,7 @@ ReadRequestFromClient(client)
 		      oci->size - oci->bufcnt); 
 	if (result <= 0)
 	{
-	    if ((result < 0) && (errno == E_BLOCKED))
+	    if ((result < 0) && ETEST(errno))
 	    {
 		YieldControlNoInput();
 		return 0;
@@ -440,7 +447,7 @@ FlushClient(who, oc, extraBuf, extraCount)
 	    notWritten -= len;
 	    todo = notWritten;
 	}
-	else if ((errno == E_BLOCKED)
+	else if (ETEST(errno)
 #ifdef SUNSYSV /* check for another brain-damaged OS bug */
 		 || (errno == 0)
 #endif

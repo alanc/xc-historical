@@ -1,4 +1,4 @@
-/* $XConsortium: cp_ccom.c,v 5.4 91/02/18 21:50:20 rws Exp $ */
+/* $XConsortium: cp_ccom.c,v 5.5 91/03/28 17:10:21 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -53,10 +53,17 @@ typedef int		waitType;
 typedef union wait	waitType;
 #endif /* USE_POSIX_STYLE_WAIT else */
 
-#ifdef O_NONBLOCK
-#define E_BLOCKED EAGAIN
+/* check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
+ * systems are broken and return EWOULDBLOCK when they should return EAGAIN
+ */
+#if defined(EAGAIN) && defined(EWOULDBLOCK)
+#define ETEST(err) (err == EAGAIN || err == EWOULDBLOCK)
 #else
-#define E_BLOCKED EWOULDBLOCK
+#ifdef EAGAIN
+#define ETEST(err) (err == EAGAIN)
+#else
+#define ETEST(err) (err == EWOULDBLOCK)
+#endif
 #endif
 
 #define CPC_SEND( cph, msg, size) \
@@ -109,7 +116,7 @@ phg_cpxc_send( s, msg, size)
 		    break;
 		}
 	    }
-	} else if ( errno == E_BLOCKED || errno == EINTR) {
+	} else if (ETEST(errno) || errno == EINTR) {
 		continue;
 	} else {
 		perror("phg_cpxc_send(write)");
@@ -156,7 +163,7 @@ phg_cpxc_recv( s, msg, size)
 	if ( (wc = read( s, msg + c, size - c)) > 0) {
 	    c += wc;
 	} else if ( wc < 0) {
-	    if ( errno == E_BLOCKED)
+	    if (ETEST(errno))
 		break;
 	    else if ( errno == EINTR)
 		continue;

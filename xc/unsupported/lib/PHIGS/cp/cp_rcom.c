@@ -1,4 +1,4 @@
-/* $XConsortium: cp_rcom.c,v 5.2 91/02/18 11:11:59 rws Exp $ */
+/* $XConsortium: cp_rcom.c,v 5.3 91/03/28 17:10:37 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -31,10 +31,17 @@ SOFTWARE.
 #include "cp_priv.h"
 #include <memory.h>
 
-#ifdef O_NONBLOCK
-#define E_BLOCKED EAGAIN
+/* check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
+ * systems are broken and return EWOULDBLOCK when they should return EAGAIN
+ */
+#if defined(EAGAIN) && defined(EWOULDBLOCK)
+#define ETEST(err) (err == EAGAIN || err == EWOULDBLOCK)
 #else
-#define E_BLOCKED EWOULDBLOCK
+#ifdef EAGAIN
+#define ETEST(err) (err == EAGAIN)
+#else
+#define ETEST(err) (err == EWOULDBLOCK)
+#endif
 #endif
 
 #ifdef DEBUG
@@ -100,7 +107,7 @@ cpr_fill_buffer( f)
     f->ptr = f->base;
     if ( (f->cnt = recv( f->fd, f->base, f->bufsize, 0)) >= 0) {
 	return f->cnt;
-    } else if ( errno == E_BLOCKED || errno == EINTR) {
+    } else if (ETEST(errno) || errno == EINTR) {
 	return (f->cnt = 0);
     } else {
 	return f->cnt;
@@ -150,7 +157,7 @@ phg_cpr_send( s, msg, size)
 	if ( select( s+1, NULL, wfd, NULL, (struct timeval *)NULL) == 1) {
 	    if ( (wc = write( s, msg + c, size - c)) >= 0) {
 		c += wc;
-	    } else if ( errno == E_BLOCKED || errno == EINTR) {
+	    } else if ( ETEST(errno) || errno == EINTR) {
 		continue;
 	    } else {
 		perror("phg_cpr_send()");

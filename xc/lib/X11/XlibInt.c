@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.139 91/03/28 10:21:55 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.140 91/03/28 11:23:22 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -34,15 +34,16 @@ static void _EatData32();
 int _XReadV(), _XWriteV();
 #endif 
 
-#ifdef O_NONBLOCK
-#define E_BLOCKED EAGAIN
+/* check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
+ * systems are broken and return EWOULDBLOCK when they should return EAGAIN
+ */
+#if defined(EAGAIN) && defined(EWOULDBLOCK)
+#define ETEST(err) (err == EAGAIN || err == EWOULDBLOCK)
 #else
-#if defined(LACHMAN) || (defined(STREAMSCONN) && (!defined(EWOULDBLOCK)) && defined(EAGAIN))
-#define E_BLOCKED EAGAIN
+#ifdef EAGAIN
+#define ETEST(err) (err == EAGAIN)
 #else
-#ifdef EWOULDBLOCK
-#define E_BLOCKED EWOULDBLOCK
-#endif
+#define ETEST(err) (err == EWOULDBLOCK)
 #endif
 #endif
 
@@ -108,10 +109,8 @@ _XFlush (dpy)
 		size -= write_stat;
 		todo = size;
 		bufindex += write_stat;
-#ifdef E_BLOCKED
-	    } else if (errno == E_BLOCKED) {
+	    } else if (ETEST(errno)) {
 		_XWaitForWritable(dpy);
-#endif
 #ifdef SUNSYSV
 	    } else if (errno == 0) {
 		_XWaitForWritable(dpy);
@@ -242,12 +241,10 @@ _XRead (dpy, data, size)
 		    size -= bytes_read;
 		    data += bytes_read;
 		    }
-#ifdef E_BLOCKED
-		else if (errno == E_BLOCKED) {
+		else if (ETEST(errno)) {
 		    _XWaitForReadable(dpy);
 		    errno = 0;
 		}
-#endif		
 #ifdef SUNSYSV
 		else if (errno == 0) {
 		    _XWaitForReadable(dpy);
@@ -426,12 +423,10 @@ _XReadPad (dpy, data, size)
 	    	else
 	    	    iov[0].iov_base += bytes_read;
 	    	}
-#ifdef E_BLOCKED
-	    else if (errno == E_BLOCKED) {
+	    else if (ETEST(errno)) {
 		_XWaitForReadable(dpy);
 		errno = 0;
 	    }
-#endif
 #ifdef SUNSYSV
 	    else if (errno == 0) {
 		_XWaitForReadable(dpy);
@@ -526,10 +521,8 @@ _XSend (dpy, data, size)
 		skip += len;
 		total -= len;
 		todo = total;
-#ifdef E_BLOCKED
-	    } else if (errno == E_BLOCKED) {
+	    } else if (ETEST(errno)) {
 		_XWaitForWritable(dpy);
-#endif
 #ifdef SUNSYSV
 	    } else if (errno == 0) {
 		_XWaitForWritable(dpy);
