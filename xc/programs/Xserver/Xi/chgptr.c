@@ -1,4 +1,4 @@
-/* $XConsortium: xchgptr.c,v 1.17 92/11/14 11:13:28 rws Exp $ */
+/* $XConsortium: xchgptr.c,v 1.18 93/07/08 15:18:17 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -133,7 +133,7 @@ ProcXChangePointerDevice (client)
 	if (!dev->button)
 	    InitButtonClassDeviceStruct (dev, 0, NULL);
 	if (!dev->ptrfeed)
-	   InitPtrFeedbackClassDeviceStruct(dev, NoopDDA);
+	   InitPtrFeedbackClassDeviceStruct(dev, (PtrCtrlProcPtr)NoopDDA);
 	RegisterOtherDevice (xptr);
 	RegisterPointerDevice ((DevicePtr)dev);
 

@@ -1,4 +1,4 @@
-/* $XConsortium: xchgkbd.c,v 1.17 92/11/14 11:14:36 rws Exp $ */
+/* $XConsortium: xchgkbd.c,v 1.18 93/07/08 15:16:05 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -129,7 +129,8 @@ ProcXChangeKeyboardDevice (client)
 	if (!dev->focus)
 	    InitFocusClassDeviceStruct (dev);
 	if (!dev->kbdfeed)
-	   InitKbdFeedbackClassDeviceStruct(dev, NoopDDA, NoopDDA);
+	   InitKbdFeedbackClassDeviceStruct(dev, (BellProcPtr)NoopDDA,
+					    (KbdCtrlProcPtr)NoopDDA);
 	df = dev->focus;
 	df->win = xf->win;
 	df->revert = xf->revert;
