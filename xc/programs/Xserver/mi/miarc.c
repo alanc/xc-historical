@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 1.56 88/10/15 08:45:17 rws Exp $ */
+/* $XConsortium: miarc.c,v 1.60 88/10/21 15:15:39 keith Exp $ */
 /* Author: Keith Packard */
 
 #include "X.h"
@@ -1250,9 +1250,11 @@ FullDcos (a)
 double	a;
 {
 	double	cos ();
+	int	i;
 
 	if (floor (a/90) == a/90) {
-		switch (mod ((int) a/90, 4)) {
+		i = (int) (a/90.0);
+		switch (mod (i, 4)) {
 		case 0: return 1;
 		case 1: return 0;
 		case 2: return -1;
@@ -1267,9 +1269,11 @@ FullDsin (a)
 double	a;
 {
 	double	sin ();
+	int	i;
 
 	if (floor (a/90) == a/90) {
-		switch (mod ((int) a/90, 4)) {
+		i = (int) (a/90.0);
+		switch (mod (i, 4)) {
 		case 0: return 0;
 		case 1: return 1;
 		case 2: return 0;
