@@ -1,3 +1,5 @@
+/* Copyright 1985, Massachusetts Institute of Technology */
+
 /* reads from standard input lines of the form:
 	red green blue name
    where red/green/blue are decimal values, and inserts them in a database.
