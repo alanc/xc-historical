@@ -1,4 +1,4 @@
-/* $XConsortium: EventI.h,v 1.12 90/04/13 20:12:02 swick Exp $ */
+/* $XConsortium: EventI.h,v 1.13 90/07/26 09:58:17 swick Exp $ */
 /* $oHeader: EventI.h,v 1.3 88/08/24 09:21:11 asente Exp $ */
 
 /***********************************************************
@@ -88,6 +88,12 @@ extern Boolean _XtOnGrabList(
 #if NeedFunctionPrototypes
     Widget	/* widget */,
     XtGrabRec*	/* grabList */
+#endif
+);
+
+extern void _XtRemoveAllInputs(
+#if NeedFunctionPrototypes
+    XtAppContext /* app */
 #endif
 );
 
