@@ -1,4 +1,4 @@
-/* $XConsortium: omGeneric.c,v 1.3 93/09/24 14:56:31 rws Exp $ */
+/* $XConsortium: omGeneric.c,v 1.4 94/01/20 18:08:03 rws Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -799,8 +799,11 @@ close_om(om)
 	Xfree(om->core.res_name);
     if (om->core.res_class)
 	Xfree(om->core.res_class);
-    if (om->core.required_charset.charset_list)
+    if (om->core.required_charset.charset_list &&
+	om->core.required_charset.charset_count > 0)
 	XFreeStringList(om->core.required_charset.charset_list);
+    else
+	Xfree((char*)om->core.required_charset.charset_list);
     if (om->core.orientation_list.orient)
 	Xfree(om->core.orientation_list.orient);
 
