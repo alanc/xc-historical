@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: bdfread.c,v 1.18 94/02/03 15:24:38 gildea Exp $ */
+/* $XConsortium: bdfread.c,v 1.19 94/02/07 13:11:40 gildea Exp $ */
 
 #include <ctype.h>
 #include "fntfilst.h"
@@ -868,6 +868,7 @@ bdfUnloadFont(pFont)
     FontPtr     pFont;
 {
     bdfFreeFontBits (pFont);
+    xfree (pFont->devPrivates);
     xfree(pFont);
 }
 

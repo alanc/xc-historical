@@ -1,5 +1,5 @@
 /*
- * $XConsortium: pcfread.c,v 1.14 94/02/03 17:48:11 gildea Exp $
+ * $XConsortium: pcfread.c,v 1.15 94/02/04 12:07:39 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -667,5 +667,6 @@ pcfUnloadFont(pFont)
     xfree(pFont->info.isStringProp);
     xfree(pFont->info.props);
     xfree(bitmapFont);
+    xfree(pFont->devPrivates);
     xfree(pFont);
 }

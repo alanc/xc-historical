@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: snfread.c,v 1.14 93/09/17 18:26:54 gildea Exp $ */
+/* $XConsortium: snfread.c,v 1.15 94/02/04 13:52:08 gildea Exp $ */
 
 #include <ctype.h>
 #include "fntfilst.h"
@@ -434,6 +434,7 @@ snfUnloadFont(pFont)
     bitmapFont = (BitmapFontPtr) pFont->fontPrivate;
     xfree (bitmapFont->bitmaps);
     xfree (bitmapFont);
+    xfree (pFont->devPrivates);
     xfree (pFont);
 }
 

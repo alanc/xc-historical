@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bitscale.c,v 1.19 94/02/04 17:07:12 gildea Exp $
+ * $XConsortium: bitscale.c,v 1.20 94/02/06 16:02:04 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -1517,5 +1517,6 @@ bitmapUnloadScalable (pFont)
     xfree (bitmapFont->ink_metrics);
     xfree (bitmapFont->metrics);
     xfree (pFont->fontPrivate);
+    xfree (pFont->devPrivates);
     xfree (pFont);
 }

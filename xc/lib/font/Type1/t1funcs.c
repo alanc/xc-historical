@@ -1,4 +1,4 @@
-/* $XConsortium: t1funcs.c,v 1.14 94/02/03 18:39:21 gildea Exp $ */
+/* $XConsortium: t1funcs.c,v 1.15 94/02/04 17:07:14 gildea Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -481,6 +481,9 @@ void Type1CloseFont(pFont)
 
        if (pFont->info.isStringProp)
 	   xfree(pFont->info.isStringProp);
+
+       if (pFont->devPrivates)
+	   xfree(pFont->devPrivates);
 
        xfree(pFont);
 }

@@ -1,4 +1,4 @@
-/* $XConsortium: spfont.c,v 1.19 93/08/24 18:48:47 gildea Exp $ */
+/* $XConsortium: spfont.c,v 1.20 94/02/04 17:07:21 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -414,5 +414,6 @@ SpeedoCloseFont(pfont)
     sp_close_font(spf);
     xfree(pfont->info.isStringProp);
     xfree(pfont->info.props);
+    xfree(pfont->devPrivates);
     xfree(pfont);
 }

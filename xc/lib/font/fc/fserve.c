@@ -1,4 +1,4 @@
-/* $XConsortium: fserve.c,v 1.33 94/02/03 10:07:12 gildea Exp $ */
+/* $XConsortium: fserve.c,v 1.34 94/02/07 11:21:09 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -1653,6 +1653,7 @@ fs_close_font(fpe, pfont)
     xfree(fsd);
     xfree(pfont->info.isStringProp);
     xfree(pfont->info.props);
+    xfree(pfont->devPrivates);
     xfree(pfont);
 
 
