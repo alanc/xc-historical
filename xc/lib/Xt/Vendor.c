@@ -1,4 +1,4 @@
-/* $XConsortium: Vendor.c,v 1.40 91/02/05 16:59:31 gildea Exp $ */
+/* $XConsortium: Vendor.c,v 1.41 91/05/03 15:31:07 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -43,10 +43,6 @@ SOFTWARE.
  *
  ***************************************************************************/
 
-static void _VendorShellInitialize();
-static Boolean _VendorShellSetValues();
-static void Realize();
-
 externaldef(vendorshellclassrec) VendorShellClassRec vendorShellClassRec = {
   {
     /* superclass         */    (WidgetClass) &wmShellClassRec,
@@ -55,9 +51,9 @@ externaldef(vendorshellclassrec) VendorShellClassRec vendorShellClassRec = {
     /* Class Initializer  */	NULL,
     /* class_part_initialize*/	NULL,
     /* Class init'ed ?    */	FALSE,
-    /* initialize         */    _VendorShellInitialize,
+    /* initialize         */    NULL,
     /* initialize_notify    */	NULL,		
-    /* realize            */    Realize,
+    /* realize            */    XtInheritRealize,
     /* actions            */    NULL,
     /* num_actions        */    0,
     /* resources          */    NULL,
@@ -70,7 +66,7 @@ externaldef(vendorshellclassrec) VendorShellClassRec vendorShellClassRec = {
     /* destroy            */    NULL,
     /* resize             */    XtInheritResize,
     /* expose             */    NULL,
-    /* set_values         */    _VendorShellSetValues,
+    /* set_values         */    NULL,
     /* set_values_hook      */	NULL,			
     /* set_values_almost    */	XtInheritSetValuesAlmost,  
     /* get_values_hook      */	NULL,
@@ -100,33 +96,3 @@ externaldef(vendorshellclassrec) VendorShellClassRec vendorShellClassRec = {
 externaldef(vendorshellwidgetclass) WidgetClass vendorShellWidgetClass =
 	(WidgetClass) (&vendorShellClassRec);
 #endif
-
-/* ARGSUSED */
-static void _VendorShellInitialize(req, new, args, num_args)
-	Widget req, new;
-	ArgList args;
-	Cardinal *num_args;
-{
-}
-
-/* ARGSUSED */
-static Boolean _VendorShellSetValues(old, ref, new, args, num_args)
-	Widget old, ref, new;
-	ArgList args;
-	Cardinal *num_args;
-{
-	return FALSE;
-}
-
-static void Realize(wid, vmask, attr)
-	Widget wid;
-	Mask *vmask;
-	XSetWindowAttributes *attr;
-{
-	WidgetClass super = wmShellWidgetClass;
-
-	/* Make my superclass do all the dirty work */
-
-	(*super->core_class.realize) (wid, vmask, attr);
-}
-
