@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: acc_none.c,v 1.2 91/07/08 11:16:21 keith Exp $ */
 /***********************************************************
 Copyright 1991 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -41,8 +41,14 @@ SOFTWARE.
 #include "ws.h"
 
 Bool pxInitProc();
+#ifdef XV
+Bool ropInitProc();
+#endif
 
 wsAcceleratorTypes types[] = {
+#ifdef XV
+	{"PMAG-JA ", ropInitProc},
+#endif
 	{"", NULL},
 };
 
