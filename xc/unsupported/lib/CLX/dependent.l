@@ -642,7 +642,8 @@
 
 #+excl
 (defun make-process-lock ()
-  (mp:make-process-lock))
+  (if (excl::scheduler-running-p)
+      (mp::make-process-lock)))
 
 #+imach
 (defun make-process-lock ()
@@ -951,18 +952,18 @@
 		(progn
 		  (mp::mpwatchfor fd)
 		  (if (null timeout)
-		      (mp:process-wait *read-whostate*
+		      (mp::process-wait *read-whostate*
 				       #'listen-fd fd howmany)
 		    ;; Otherwise we have a timeout to wait for.
 		    ;; This doesn't work under 2.0.
 		    #+allegro
-		    (if (eql (mp:process-wait-with-timeout
+		    (if (eql (mp::process-wait-with-timeout
 			      *read-whostate* timeout
 			      #'listen-fd fd howmany)
 			     'mp::with-timeout-internal)
 			(return-from buffer-read-default :timeout))
 		    #-allegro
-		    (mp:process-wait *read-whostate*
+		    (mp::process-wait *read-whostate*
 				     #'listen-fd fd howmany)))
 	     (mp::mpunwatchfor fd))
 	   ;; Now the read will succeed.
