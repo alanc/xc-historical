@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xdpyinfo.c,v 1.16 89/11/17 16:09:24 jim Exp $
+ * $XConsortium: xdpyinfo.c,v 1.17 89/12/10 17:07:24 rws Exp $
  * 
  * xdpyinfo - print information about X display connecton
  *
@@ -43,8 +43,8 @@ main (argc, argv)
     Display *dpy;			/* X connection */
     char *displayname = NULL;		/* server to contact */
     int i;				/* temp variable:  iterator */
-    Bool multibuf = False;
 #ifdef MULTIBUFFER
+    Bool multibuf = False;
     int mbuf_event_base, mbuf_error_base;
 #endif
 
@@ -80,7 +80,11 @@ main (argc, argv)
 
     print_display_info (dpy);
     for (i = 0; i < ScreenCount (dpy); i++) {
-	print_screen_info (dpy, i, multibuf);
+	print_screen_info (dpy, i);
+#ifdef MULTIBUFFER
+	if (multibuf)
+	    print_multibuf_info (dpy, i);
+#endif
     }
 
     XCloseDisplay (dpy);
@@ -95,6 +99,8 @@ print_display_info (dpy)
     int minkeycode, maxkeycode;
     int i, n;
     XPixmapFormatValues *pmf;
+    Window focuswin;
+    int focusrevert;
 
     printf ("name of display:    %s\n", DisplayString (dpy));
     printf ("version number:    %d.%d\n",
@@ -146,6 +152,34 @@ print_display_info (dpy)
     printf ("keycode range:    minimum %d, maximum %d\n",
 	    minkeycode, maxkeycode);
 
+    XGetInputFocus (dpy, &focuswin, &focusrevert);
+    printf ("focus:  ");
+    switch (focuswin) {
+      case PointerRoot:
+	printf ("PointerRoot\n");
+	break;
+      case None:
+	printf ("None\n");
+	break;
+      default:
+	printf("window 0x%lx, revert to ", focuswin);
+	switch (focusrevert) {
+	  case RevertToParent:
+	    printf ("Parent\n");
+	    break;
+	  case RevertToNone:
+	    printf ("None\n");
+	    break;
+	  case RevertToPointerRoot:
+	    printf ("PointerRoot\n");
+	    break;
+	  default:			/* should not happen */
+	    printf ("%d\n", focusrevert);
+	    break;
+	}
+	break;
+    }
+
     print_extension_info (dpy);
 
     printf ("default screen number:    %d\n", DefaultScreen (dpy));
@@ -173,10 +207,9 @@ print_extension_info (dpy)
     return;
 }
 
-print_screen_info (dpy, scr, multibuf)
+print_screen_info (dpy, scr)
     Display *dpy;
     int scr;
-    Bool multibuf;
 {
     Screen *s = ScreenOfDisplay (dpy, scr);  /* opaque structure */
     XVisualInfo viproto;		/* fill in for getting info */
@@ -246,46 +279,49 @@ print_screen_info (dpy, scr, multibuf)
     printf ("  default visual id:  0x%lx\n", 
 	    XVisualIDFromVisual (DefaultVisual (dpy, scr)));
     for (i = 0; i < nvi; i++) {
-	print_visual_info (dpy, vip+i);
+	print_visual_info (vip+i);
     }
     if (vip) XFree ((char *) vip);
-
-#ifdef MULTIBUFFER
-    if (multibuf) {
-	int j;				/* temp variable: iterator */
-	int nmono, nstereo;		/* count */
-	XmbufBufferInfo *mono_info = NULL, *stereo_info = NULL;  /* arrays */
-	static char *fmt = 
-	  "    visual id, max buffers, depth:    0x%lx, %d, %d\n";
-
-	if (!XmbufGetScreenInfo (dpy, RootWindow(dpy, scr), &nmono, &mono_info,
-				 &nstereo, &stereo_info)) {
-	    fprintf (stderr,
-		     "%s:  unable to get multibuffer info for screen %d\n",
-		     ProgramName, scr);
-	} else {
-	    printf ("  number of mono multibuffer types:    %d\n", nmono);
-	    for (j = 0; j < nmono; j++) {
-		printf (fmt, mono_info[j].visualid, mono_info[j].max_buffers,
-			mono_info[j].depth);
-	    }
-	    printf ("  number of stereo multibuffer types:    %d\n", nstereo);
-	    for (j = 0; j < nstereo; j++) {
-		printf (fmt, stereo_info[j].visualid,
-			stereo_info[j].max_buffers, stereo_info[j].depth);
-	    }
-	    if (mono_info) XFree ((char *) mono_info);
-	    if (stereo_info) XFree ((char *) stereo_info);
-	}
-    }
-#endif
 
     return;
 }
 
 
-print_visual_info (dpy, vip)
+#ifdef MULTIBUFFER
+print_multibuf_info(dpy, scr)
     Display *dpy;
+    int scr;
+{
+    int j;			/* temp variable: iterator */
+    int nmono, nstereo;		/* count */
+    XmbufBufferInfo *mono_info = NULL, *stereo_info = NULL; /* arrays */
+    static char *fmt = 
+	"    visual id, max buffers, depth:    0x%lx, %d, %d\n";
+
+    if (!XmbufGetScreenInfo (dpy, RootWindow(dpy, scr), &nmono, &mono_info,
+			     &nstereo, &stereo_info)) {
+	fprintf (stderr,
+		 "%s:  unable to get multibuffer info for screen %d\n",
+		 ProgramName, scr);
+    } else {
+	printf ("  number of mono multibuffer types:    %d\n", nmono);
+	for (j = 0; j < nmono; j++) {
+	    printf (fmt, mono_info[j].visualid, mono_info[j].max_buffers,
+		    mono_info[j].depth);
+	}
+	printf ("  number of stereo multibuffer types:    %d\n", nstereo);
+	for (j = 0; j < nstereo; j++) {
+	    printf (fmt, stereo_info[j].visualid,
+		    stereo_info[j].max_buffers, stereo_info[j].depth);
+	}
+	if (mono_info) XFree ((char *) mono_info);
+	if (stereo_info) XFree ((char *) stereo_info);
+    }
+}
+#endif
+
+
+print_visual_info (vip)
     XVisualInfo *vip;
 {
     char errorbuf[40];			/* for sprintfing into */
