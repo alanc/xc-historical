@@ -1,4 +1,4 @@
-/* $XConsortium: misc.c,v 1.25 94/05/02 11:17:27 mor Exp $ */
+/* $XConsortium: misc.c,v 1.26 94/08/02 18:00:39 mor Exp mor $ */
 /******************************************************************************
 
 
@@ -289,7 +289,7 @@ register char	 *ptr;
 
 		iceConn->io_ok = False;
 
-		if (iceConn->connect_to_you)
+		if (iceConn->connection_status == IceConnectPending)
 		{
 		    /*
 		     * Don't invoke IO error handler if we are in the
@@ -399,7 +399,7 @@ register char	 *ptr;
 
 	    iceConn->io_ok = False;
 
-	    if (iceConn->connect_to_you)
+	    if (iceConn->connection_status == IceConnectPending)
 	    {
 		/*
 		 * Don't invoke IO error handler if we are in the
