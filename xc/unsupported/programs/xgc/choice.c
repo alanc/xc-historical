@@ -23,15 +23,20 @@ extern XStuff X;
 /* create_choice(w,info)
 ** ---------------------
 ** What a choice widget is:  A collection of toggle buttons placed inside
-**   a form widget.  Exactly one of these toggle buttons can be "on" at
-**   any given time;  the rest are "off".  "On" toggle buttons have
-**   the foreground and background colors reversed.
-**   Also, specifically because it comes in handy in xgc, choosing one
-**   of the buttons causes a string associated with it to be printed out
-**   (and interpreted).  Half of the string is global to the whole form
-**   and the other half is local to each button.
-**   There's also a label widget to the left of that mess, with an
-**   incredibly descriptive title.
+** a form widget.  Exactly one of these toggle buttons can be "on" at
+** any given time;  the rest are "off".  "On" toggle buttons have
+** the foreground and background colors reversed.
+** Also, specifically because it comes in handy in xgc, choosing one
+** of the buttons causes a string associated with it to be printed out
+** (and interpreted).  Half of the string is global to the whole form
+** and the other half is local to each button.
+**
+** For example, pressing the "xor" button in the "function" form would
+** cause xgc to interpret the string "function xor", thus changing the
+** function in the GC to xor.
+**
+** There's also a label widget to the left of that mess, with an
+** incredibly descriptive title.
 **
 ** create_choice() makes one.
 **
@@ -40,22 +45,25 @@ extern XStuff X;
 ** as the names of the buttons and their strings (see xgc.h).
 */
 
-ChoiceDesc *create_choice(w,info)
+ChoiceDesc *
+create_choice(w,info)
      Widget w;
      XgcStuff *info;
 {
-  ChoiceDesc *choice;
-  int i;
-  char *text;
-  Boolean samewidth = FALSE;	/* are the toggle widgets supposed
-				   to be the same width? */
+  ChoiceDesc *choice;		/* What we will return.  Contains
+				** Widget ID's of the label and toggles. */
+  int i;			/* Counter */
+  char *text;			/* Text to be interpreted when the
+				** toggle widget is selected. */
 
-  static Arg labelargs[] = {
+  /* ArgList for the label widget */
+  static Arg labelargs[] = {	
     {XtNborderWidth,  (XtArgVal) 0}, 
     {XtNjustify,      (XtArgVal) XtJustifyRight},
-    {XtNvertDistance, (XtArgVal) 0}
+    {XtNvertDistance, (XtArgVal) 4}
   };
 
+  /* ArgList for the toggle widgets */
   static Arg toggleargs[] = {
     {XtNfromHoriz,     (XtArgVal) NULL},
     {XtNfromVert,      (XtArgVal) NULL},
@@ -65,27 +73,26 @@ ChoiceDesc *create_choice(w,info)
     {XtNcallback,      (XtArgVal) NULL}
   };
 
+  /* Callback list for the toggle widgets */
   static XtCallbackRec callbacklist[] = {
     {(XtCallbackProc)  print_text_to_buffer, NULL},
     {NULL,                                   NULL}
   };
 
+  /* Allocate space for the widgets and initialize choice */
   choice = (ChoiceDesc *) XtMalloc(sizeof(ChoiceDesc));
   choice->widgets = (WidgetList) XtMalloc(sizeof(Widget) * 
 					  info->choice.num_toggles);
-
   choice->size = info->choice.num_toggles;
-  
   choice->label = XtCreateManagedWidget(info->choice.name,labelWidgetClass,w,
 					labelargs,XtNumber(labelargs));
 
   /* set up the toggle widgets */
-
+  toggleargs[5].value = (XtArgVal) callbacklist;
   for (i = 0; i < info->choice.num_toggles; ++i) {
-    toggleargs[5].value = (XtArgVal) callbacklist;
     if (i == 0) {
       /* the upper left toggle; put it next to the label
-	 and don't worry about radio groups */
+       and don't worry about radio groups */
       toggleargs[0].value = (XtArgVal) choice->label;
       toggleargs[1].value = (XtArgVal) NULL;
       toggleargs[2].value = (XtArgVal) 10;
@@ -119,6 +126,8 @@ ChoiceDesc *create_choice(w,info)
 	toggleargs[3].value = (XtArgVal) -1;
       }
     }
+
+    /* Put the correct stuff in the text field */
     text = (char *) XtMalloc((unsigned) (strlen(info->choice.text) +
 					 strlen((info->data)[i].text) + 3));
     strcpy(text, info->choice.text);
@@ -127,32 +136,35 @@ ChoiceDesc *create_choice(w,info)
     strcat(text, "\n");
     callbacklist[0].closure = (caddr_t) text;
     
-    choice->widgets[i] = XtCreateManagedWidget((info->data[i]).name,
+    /* Create it finally */
+    choice->widgets[i] = XtCreateManagedWidget((info->data[i]).name, 
 					       toggleWidgetClass,
 					       w,
 					       toggleargs,
 					       XtNumber(toggleargs));
   }
   
-  /* If the toggles are arranged in columns, make them line up */
-  if (info->choice.columns > 0) samewidth = TRUE;
+  /* The toggle widgets have all been created;
+  ** now make the all the same width if that's
+  ** what we want to do.                    */
 
-  if (samewidth) {
-    Dimension maxwidth = 0;
-    Dimension width;
-    static Arg args[] = {
+  if (info->choice.columns > 0) {
+    Dimension maxwidth = 0;	/* maximum width we've found */
+    Dimension width;		/* width of the current widget */
+    static Arg args[] = {	/* for getting and setting the width */
       {XtNwidth,    (XtArgVal) NULL}
     };
 
     args[0].value = (XtArgVal) &width;
 
+    /* Find the maximum width of any toggle widget */
     for (i = 0; i < info->choice.num_toggles; ++i) {
       XtGetValues(choice->widgets[i],args,1);
       maxwidth = max(maxwidth,width);
     }
 
+    /* Now set them all to that width */
     args[0].value = (XtArgVal) maxwidth;
-    
     for (i = 0; i < info->choice.num_toggles; ++i)
       XtSetValues(choice->widgets[i],args,1);
   }
@@ -161,7 +173,18 @@ ChoiceDesc *create_choice(w,info)
   return (choice);
 }
 
-void select_button(choice,togglenum)
+
+
+/* select_button(choice,togglenum)
+** -------------------------------
+** "Selects" the togglenumth toggle widget in the choice layout
+** represented by choice.  It simply turns the widget on, as if the
+** user had selected it, without calling any callbacks.  It's used
+** to give feedback when reading from a script.
+*/
+
+void
+select_button(choice,togglenum)
      ChoiceDesc *choice;
      int togglenum;
 {
@@ -172,13 +195,21 @@ void select_button(choice,togglenum)
   XtSetValues(choice->widgets[togglenum],toggleargs,XtNumber(toggleargs));
 }
 
-void line_up_labels(descs,numdescs)
+/* line_up_labels(descs,numdescs)
+** ------------------------------
+** descs represents a bunch of choice layouts (numdescs is the size of
+** descs).  This function sets each label in descs to the same width,
+** thus making them line up nicely since they're all on the left margin.
+*/
+
+void
+line_up_labels(descs,numdescs)
      ChoiceDesc *descs[];
      int numdescs;
 {
-  int i;
-  Dimension width;
-  Dimension maxwidth = (Dimension) 0;
+  int i;			/* counter */
+  Dimension width;		/* current width */
+  Dimension maxwidth = (Dimension) 0; /* max width found */
 
   static Arg widthargs[] = {
     {XtNwidth,     (XtArgVal) NULL }
@@ -186,28 +217,40 @@ void line_up_labels(descs,numdescs)
 
   widthargs[0].value = (XtArgVal) &width;
 
+  /* Find the maximum width */
   for (i = 0; i < numdescs; ++i) {
     XtGetValues(descs[i]->label, widthargs, XtNumber(widthargs));
     maxwidth = max(maxwidth,width);
   }
 
+  /* Set all labels to that width */
   widthargs[0].value = (XtArgVal) maxwidth;
-
   for (i = 0; i < numdescs; ++i) {
     XtSetValues(descs[i]->label, widthargs, XtNumber(widthargs));
   }
 }
 
+/* choose_defaults(descs,numdescs)
+** -------------------------------
+** descs represents a bunch of choice layouts (numdescs is the size of
+** descs).  This function goes through all of descs and selects the
+** appropriate toggle widget for each one.  This includes calling
+** the callbacks associated with that widget.
+**
+** This function ends up initializing both the screen and the GC, and
+** ensures that they are consistent.
+*/
+
+void
 choose_defaults(descs,numdescs)
      ChoiceDesc *descs[];
      int numdescs;
 {
-  int i,j;
+  int i;			/* which choice layout */
+  int j;			/* which toggle within it */
 
   for (i = 0; i < numdescs; ++i) {
-#ifdef notdef
-    if (i == CFunction) j = 3; else j = 0; /* start with #4 for function */
-#endif
+    /* THIS SHOULD BE CHANGED SO THAT NOT EVERYTHING STARTS AT 0 */
     j = 0;
     select_button(descs[i],j);
     XtCallCallbacks(descs[i]->widgets[j], XtNcallback, (caddr_t) NULL);
@@ -224,7 +267,8 @@ choose_defaults(descs,numdescs)
 */
 
 /*ARGSUSED*/
-static void print_text_to_buffer(w,closure,call_data)
+static void
+print_text_to_buffer(w,closure,call_data)
      Widget  w;
      caddr_t closure;           /* contains the string */
      caddr_t call_data;
