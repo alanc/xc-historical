@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.170 91/06/25 19:51:01 gildea Exp $
+ * $XConsortium: charproc.c,v 1.171 91/07/09 19:56:38 gildea Exp $
  */
 
 /*
@@ -484,6 +484,7 @@ static void VTRealize();
 static void VTExpose();
 static void VTResize();
 static void VTDestroy();
+static Boolean VTSetValues();
 
 static WidgetClassRec xtermClassRec = {
   {
@@ -509,7 +510,7 @@ static WidgetClassRec xtermClassRec = {
     /* destroy		  */	VTDestroy,
     /* resize		  */	VTResize,
     /* expose		  */	VTExpose,
-    /* set_values	  */	NULL,
+    /* set_values	  */	VTSetValues,
     /* set_values_hook    */    NULL,
     /* set_values_almost  */    NULL,
     /* get_values_hook    */    NULL,
@@ -2252,7 +2253,6 @@ Widget w;
     XtFree(((XtermWidget)w)->screen.selection);
 }
 
-
 /*ARGSUSED*/
 static void VTRealize (w, valuemask, values)
     Widget w;
@@ -2423,6 +2423,58 @@ static void VTRealize (w, valuemask, values)
 	}
 	CursorSave (term, &screen->sc);
 	return;
+}
+
+static Boolean VTSetValues (cur, request, new, args, num_args)
+    Widget cur, request, new;
+    ArgList args;
+    Cardinal *num_args;
+{
+    XtermWidget curvt = (XtermWidget) cur;
+    XtermWidget newvt = (XtermWidget) new; 
+    Boolean refresh_needed = FALSE;
+    Boolean fonts_redone = FALSE;
+
+    if(curvt->core.background_pixel != newvt->core.background_pixel
+       || curvt->screen.foreground != newvt->screen.foreground
+       || curvt->screen.menu_font_names[curvt->screen.menu_font_number]
+          != newvt->screen.menu_font_names[newvt->screen.menu_font_number]
+       || curvt->misc.f_n != newvt->misc.f_n) {
+	if(curvt->misc.f_n != newvt->misc.f_n)
+	    newvt->screen.menu_font_names[fontMenu_fontdefault] = newvt->misc.f_n;
+	if (LoadNewFont(&newvt->screen,
+			newvt->screen.menu_font_names[curvt->screen.menu_font_number],
+			newvt->screen.menu_font_names[curvt->screen.menu_font_number],
+			TRUE, newvt->screen.menu_font_number)) {
+	    /* resizing does the redisplay, so don't ask for it here */
+	    refresh_needed = TRUE;
+	    fonts_redone = TRUE;
+	} else
+	    if(curvt->misc.f_n != newvt->misc.f_n)
+		newvt->screen.menu_font_names[fontMenu_fontdefault] = curvt->misc.f_n;
+    }
+    if(!fonts_redone
+       && curvt->screen.cursorcolor != newvt->screen.cursorcolor) {
+	set_cursor_gcs(&newvt->screen);
+	refresh_needed = TRUE;
+    }
+    if(curvt->screen.mousecolor != newvt->screen.mousecolor
+       || curvt->screen.mousecolorback != newvt->screen.mousecolorback) {
+	recolor_cursor (newvt->screen.pointer_cursor, 
+			newvt->screen.mousecolor,
+			newvt->screen.mousecolorback);
+	refresh_needed = TRUE;
+    }
+    if (curvt->misc.scrollbar != newvt->misc.scrollbar) {
+	if (newvt->misc.scrollbar) {
+	    ScrollBarOn (newvt, FALSE, FALSE);
+	} else {
+	    ScrollBarOff (&newvt->screen);
+	}
+	update_scrollbar();
+    }
+
+    return refresh_needed;
 }
 
 /*
