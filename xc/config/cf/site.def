@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.121 94/04/01 17:12:14 matt Exp $
+XCOMM site:  $XConsortium: site.def,v 1.122 94/04/02 10:57:05 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -62,8 +62,12 @@ XCOMM site:  $XConsortium: site.def,v 1.121 94/04/01 17:12:14 matt Exp $
 #define CplusplusDependIncludes -I/opt/SUNWspro/SC3.0/include/CC
 #endif
 #ifdef HasCenterLineCplusplus
+#ifndef	CplusplusCmd
 #define CplusplusCmd /obj/CenterLine/bin/CC
+#endif
+#ifndef	CplusplusDependIncludes
 #define CplusplusDependIncludes -I/obj/CenterLine/clc++/sparc-solaris2/incl
+#endif
 #ifndef DefaultCplusplusOptions
 #define DefaultCplusplusOptions -Xa
 #endif
@@ -81,8 +85,12 @@ XCOMM site:  $XConsortium: site.def,v 1.121 94/04/01 17:12:14 matt Exp $
 #define CplusplusDependIncludes -I/obj/lang/SC2.0.1/include/CC_413
 #endif
 #ifdef HasCenterLineCplusplus
+#ifndef	CplusplusCmd
 #define CplusplusCmd /obj/CenterLine/bin/CC
+#endif
+#ifndef	CplusplusDependIncludes
 #define CplusplusDependIncludes -I/obj/CenterLine/clc++/sparc-sunos4/incl
+#endif
 #ifndef DefaultCplusplusOptions
 #define DefaultCplusplusOptions -Xa
 #endif
@@ -101,8 +109,12 @@ XCOMM site:  $XConsortium: site.def,v 1.121 94/04/01 17:12:14 matt Exp $
 #define HasCplusplus YES
 #endif
 #ifndef CplusplusCmd
+#ifndef	CplusplusCmd
 #define CplusplusCmd /obj/CenterLine/bin/CC
+#endif
+#ifndef	CplusplusDependIncludes
 #define CplusplusDependIncludes -I/obj/CenterLine/clc++/pa-hpux8/incl
+#endif
 #endif
 #ifndef CplusplusStandardDefines
 #define CplusplusStandardDefines -D__ANSI_CPP__
