@@ -1,5 +1,5 @@
 /*
-* $XConsortium: StringDefs.h,v 1.37 88/09/06 09:42:33 swick Exp $
+* $XConsortium: StringDefs.h,v 1.38 88/09/06 16:29:12 jim Exp $
 * $oHeader: StringDefs.h,v 1.3 88/08/19 16:39:44 asente Exp $
 */
 
@@ -129,6 +129,7 @@ SOFTWARE.
 #define XtCHeight		"Height"
 #define XtCHSpace		"HSpace"
 #define XtCIndex		"Index"
+#define XtCInsertPosition	"InsertPosition"
 #define XtCInterval		"Interval"
 #define XtCJustify		"Justify"
 #define XtCKnobIndent		"KnobIndent"
