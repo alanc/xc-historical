@@ -17,7 +17,7 @@
                   ddx/macII ddx/plx
       ALLOSDIRS = os/4.2bsd os/bsdemul
         SUBDIRS = dix $(ALLDDXDIRS) $(ALLOSDIRS)
-           BSD = os/4.2bsd/libos.a
+           BSD = os/4.2bsd/libos.a $(XAULIB)
         BSDEMUL = os/bsdemul/libbsdemul.a
            SYSV = os/sysV/libos.a
             MFB = ddx/mfb/libmfb.a
@@ -31,6 +31,7 @@
              HP = ddx/hp/hp/libhp.a
           MACII = ddx/macII/libmacII.a
             PLX = ddx/plx/libplx.a
+         XAULIB = $(TOP)/lib/Xau/libXau.a
         SYSLIBS = -lm -ldbm
     ALLPOSSIBLE = Xqvss Xqdss Xsun Xibm Xapollo Xhp Xpeg XmacII Xplx
 

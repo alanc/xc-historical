@@ -71,6 +71,10 @@ All of the sample servers accept the following command line options:
 sets pointer acceleration (i.e. the ratio of how much is reported to how much
 the user actually moved the pointer).
 .TP 8
+.B \-auth \fIauthorization-file\fP
+Specifies a file which contains a collection of authorization records used
+to authenticate access.
+.TP 8
 .B \-bs
 disables backing store support on all screens.
 .TP 8
@@ -142,14 +146,26 @@ Many servers also have device-specific command line options.  See the
 manual pages for the individual servers for more details.
 .SH "SECURITY"
 .PP
-The sample server uses an access control list for deciding whether or not
-to accept connections from clients on a particular machine.  This list
-initially consists of the host on which the server is running as well as
-any machines listed in the file \fI/etc/X\fBn\fI.hosts\fR, where \fBn\fP
-is the display number of the server.  Each line of the file should contain
-either an Internet hostname (e.g. expo.lcs.mit.edu) or a DECnet hostname
-in double colon format (e.g. hydra::).  There should be no leading or
-trailing spaces on any lines.  For example:
+The sample server implements a simplistic authorization protocol which uses
+data private to authorized clients and the server.  The authorzation data is
+passed to the server in a private file named with the \fB-auth\fP command
+line option.  If this file contains any authorization records, the local
+host is not automatically allowed access to the server, and only clients
+which send one of the authorization records contained in the file in the
+connection setup information will be allowed access.  The authorization name
+supported is "MIT-MAGIC-COOKIE-1".  See the \fIXau\fP manual page for
+a description of the binary format of this file.  Maintenence of this
+file, and distribution of its contents to remote sites for use there is
+left as an exercise for the reader.
+.PP
+The sample server also uses a host-based access control list for deciding
+whether or not to accept connections from clients on a particular machine.
+This list initially consists of the host on which the server is running as
+well as any machines listed in the file \fI/etc/X\fBn\fI.hosts\fR, where
+\fBn\fP is the display number of the server.  Each line of the file should
+contain either an Internet hostname (e.g. expo.lcs.mit.edu) or a DECnet
+hostname in double colon format (e.g. hydra::).  There should be no leading
+or trailing spaces on any lines.  For example:
 .sp
 .in +8
 .nf 
@@ -185,12 +201,10 @@ bigcpu::
 .PP
 Unlike some window systems, X does not have any notion of window operation
 permissions or place any restrictions on what a client can do; if a program can
-connect to a display, it has full run of the screen.  The core protocol does
-have support for providing authentication information when establishing
-connections, but is not used in the sample implementation.  Sites that have
+connect to a display, it has full run of the screen.  Sites that have better
 authentication and authorization systems (such as Kerberos) might wish to make
 use of the hooks in the libraries and the server to provide additional
-security. 
+security models.
 .SH "SIGNALS"
 The sample server attaches special meaning to the following signals:
 .TP 8
