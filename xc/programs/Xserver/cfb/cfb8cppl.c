@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfb8cppl.c,v 1.2 91/04/10 11:42:09 keith Exp $
+ * $XConsortium: cfb8cppl.c,v 1.3 91/07/05 11:05:07 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -41,8 +41,6 @@
 
 #include "mergerop.h"
 
-unsigned long	cfbCopyPlaneBitPlane;
-
 #if BITMAP_BIT_ORDER == MSBFirst
 #define LeftMost    31
 #define StepBit(bit, inc)  ((bit) -= (inc))
@@ -68,18 +66,18 @@ cfbCopyImagePlane (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
     RegionPtr prgnDst;
     DDXPointPtr pptSrc;
 {
-    cfbCopyPlaneBitPlane = planemask;
     cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
-		      (unsigned long) ~0L);
+		      (unsigned long) ~0L, planemask);
 }
 
-cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
+cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, bitPlane)
     DrawablePtr pSrcDrawable;
     DrawablePtr pDstDrawable;
     int	rop;
     RegionPtr prgnDst;
     DDXPointPtr pptSrc;
     unsigned long planemask;
+    unsigned long   bitPlane;
 {
     int			    srcx, srcy, dstx, dsty, width, height;
     unsigned char	    *psrcBase;
@@ -111,7 +109,7 @@ cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
 
     mfbGetLongWidthAndPointer (pDstDrawable, widthDst, pdstBase)
 
-    bitPos = ffs (cfbCopyPlaneBitPlane) - 1;
+    bitPos = ffs (bitPlane) - 1;
 
     nbox = REGION_NUM_RECTS(prgnDst);
     pbox = REGION_RECTS(prgnDst);
