@@ -1,4 +1,4 @@
-/* $XConsortium: fserve.c,v 1.10 91/07/15 22:41:41 keith Exp $ */
+/* $XConsortium: fserve.c,v 1.11 91/07/16 20:16:07 keith Exp $ */
 /*
  *
  * Copyright 1990 Network Computing Devices
@@ -67,7 +67,7 @@ static int  fs_wakeup();
 static FSFpePtr awaiting_reconnect;
 
 void        _fs_connection_died();
-static void _fs_restart_connection();
+static int  _fs_restart_connection();
 static void _fs_try_reconnect();
 static int  fs_send_query_info();
 static int  fs_send_query_extents();
@@ -134,7 +134,6 @@ fs_send_init_packets(conn)
                 clen,
                 len;
     char       *client_cat = (char *) 0,
-               *catalogues = (char *) 0,
                *cp,
                *sp,
                *end;
@@ -143,7 +142,7 @@ fs_send_init_packets(conn)
     extern fsResolution *GetClientResolutions();
     int         err = Successful;
 
-#define	CATALOGUE_SEP	'+'	/* this is in flux... */
+#define	CATALOGUE_SEP	'+'
 
     res = GetClientResolutions(&num_res);
     if (num_res) {
@@ -153,8 +152,16 @@ fs_send_init_packets(conn)
 			(num_res * sizeof(fsResolution)) + 3) >> 2;
 
 	_fs_add_req_log(conn, FS_SetResolution);
-	_fs_write(conn, (char *) &srreq, sizeof(fsSetResolutionReq));
-	_fs_write_pad(conn, (char *) res, (num_res * sizeof(fsResolution)));
+	if (_fs_write(conn, (char *) &srreq, sizeof(fsSetResolutionReq)) == -1)
+	{
+	    err = BadFontPath;
+	    goto fail;
+	}
+	if (_fs_write_pad(conn, (char *) res, (num_res * sizeof(fsResolution))) == -1)
+	{
+	    err = BadFontPath;
+	    goto fail;
+	}
     }
     sp = rindex(conn->servername, '/');
 
@@ -195,8 +202,16 @@ fs_send_init_packets(conn)
 	screq.length = (sizeof(fsSetCataloguesReq) + clen + 3) >> 2;
 
 	_fs_add_req_log(conn, FS_SetCatalogues);
-	_fs_write(conn, (char *) &screq, sizeof(fsSetCataloguesReq));
-	_fs_write_pad(conn, (char *) catalogues, clen);
+	if (_fs_write(conn, (char *) &screq, sizeof(fsSetCataloguesReq)) == -1)
+	{
+	    err = BadFontPath;
+	    goto fail;
+	}
+	if (_fs_write_pad(conn, (char *) client_cat, clen) == -1)
+	{
+	    err = BadFontPath;
+	    goto fail;
+	}
 
 	/*
 	 * now sync up with the font server, to see if an error was generated
@@ -207,7 +222,11 @@ fs_send_init_packets(conn)
 	lcreq.maxNames = 0;
 	lcreq.nbytes = 0;
 	_fs_add_req_log(conn, FS_SetCatalogues);
-	_fs_write(conn, (char *) &lcreq, sizeof(fsListCataloguesReq));
+	if (_fs_write(conn, (char *) &lcreq, sizeof(fsListCataloguesReq)) == -1)
+	{
+	    err = BadFontPath;
+	    goto fail;
+	}
 
 	/*
 	 * next bit will either by the ListCats reply, or an error followed by
@@ -231,7 +250,6 @@ fs_send_init_packets(conn)
     }
 fail:
     xfree(client_cat);
-    xfree(catalogues);
     return err;
 }
 
@@ -275,6 +293,7 @@ fs_init_fpe(fpe, format)
 	if (init_fs_handlers(fpe, fs_block_handler) != Successful)
 	    return AllocError;
 	_fs_set_bit(fs_fd_mask, conn->fs_fd);
+	conn->attemptReconnect = TRUE;
 
 #ifdef NCD
 	if (configData.ExtendedFontDiags)
@@ -300,7 +319,8 @@ static int
 fs_reset_fpe(fpe)
     FontPathElementPtr fpe;
 {
-    return fs_send_init_packets((FSFpePtr) fpe->private);
+    (void) fs_send_init_packets((FSFpePtr) fpe->private);
+    return Successful;
 }
 
 /*
@@ -904,8 +924,9 @@ void
 _fs_connection_died(conn)
     FSFpePtr    conn;
 {
-    if (conn->fs_fd == -1)
+    if (!conn->attemptReconnect)
 	return;
+    conn->attemptReconnect = FALSE;
     _fs_bit_clear(fs_fd_mask, conn->fs_fd);
     close(conn->fs_fd);
     conn->time_to_try = time((long *) 0) + FS_RECONNECT_WAIT;
@@ -915,7 +936,7 @@ _fs_connection_died(conn)
     awaiting_reconnect = conn;
 }
 
-static void
+static int
 _fs_restart_connection(conn)
     FSFpePtr    conn;
 {
@@ -923,11 +944,13 @@ _fs_restart_connection(conn)
 
     conn->current_seq = 0;
     _fs_set_bit(fs_fd_mask, conn->fs_fd);
-    fs_send_init_packets(conn);
+    if (!fs_send_init_packets(conn))
+	return FALSE;
     while (block = (FSBlockDataPtr) conn->blocked_requests) {
 	ClientSignal(block->client);
 	fs_remove_blockrec(conn, block);
     }
+    return TRUE;
 }
 
 static void
@@ -941,9 +964,9 @@ _fs_try_reconnect()
     now = time((long *) 0);
     while (conn = *prev) {
 	if (now - conn->time_to_try > 0) {
-	    if (_fs_reopen_server(conn)) {
+	    if (_fs_reopen_server(conn) && _fs_restart_connection(conn)) {
+		conn->attemptReconnect = TRUE;
 		*prev = conn->next_reconnect;
-		_fs_restart_connection(conn);
 	    } else {
 		if (conn->reconnect_delay < FS_MAX_RECONNECT_WAIT)
 		    conn->reconnect_delay *= 2;
