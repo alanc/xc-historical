@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.72 89/01/04 15:57:36 rws Exp $ */
+/* $XConsortium: dispatch.c,v 1.73 89/01/05 09:04:17 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -278,9 +278,8 @@ Dispatch()
 		if (result > (MAX_REQUEST_SIZE << 2))
 		    ErrorStatus = BadLength;
 		else
-		    ErrorStatus = (* (client->swapped ? SwappedProcVector :
-							ProcVector)
-				               [request->reqType])(client);
+		    ErrorStatus = (* client->requestVector[request->reqType])
+						(client);
 	    
 		if (ErrorStatus != Success) 
 		{
@@ -3260,6 +3259,7 @@ NextAvailableClient(swapped)
     client->noClientException = Success;
     client->requestLogIndex = 0;
     client->swapped = swapped;
+    client->requestVector = swapped ? SwappedProcVector : ProcVector;
     nClients++;
     InitClientResources(client);
 
