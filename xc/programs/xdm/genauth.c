@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: cryptokey.c,v 1.5 90/09/14 17:51:53 keith Exp $
+ * $XConsortium: cryptokey.c,v 1.6 90/11/19 17:34:48 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -135,7 +135,7 @@ int	len;
 	    auth[i] = 0;
 	    for (bit = 1; bit < 256; bit <<= 1) {
 	    	des_ecb_encrypt (data, data, schedule, 1);
-	    	if (data[0] & 0x01)
+	    	if (data[0] + data[1] & 0x4)
 		    auth[i] |= bit;
 	    }
     	}
