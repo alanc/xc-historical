@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.6 89/03/23 09:31:08 rws Exp $ */
+/* $XConsortium: dixfonts.c,v 1.7 89/04/05 10:57:54 rws Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -362,9 +362,10 @@ QueryGlyphExtents(font, charinfo, count, info)
 	info->overallRight   = (*ci)->metrics.rightSideBearing;
 	info->overallWidth   = (*ci)->metrics.characterWidth;
 
-	if (font->pFI->constantMetrics && info->overallWidth >= 0) {
-	    info->overallRight += info->overallWidth * (count - 1);
+	if (font->pFI->constantMetrics && font->pFI->noOverlap) {
 	    info->overallWidth *= count;
+	    info->overallRight += (info->overallWidth -
+				   (*ci)->metrics.characterWidth);
 	    return;
 	}
 	for (i = count, ci++; --i != 0; ci++) {
@@ -405,22 +406,26 @@ QueryTextExtents(font, count, chars, info)
     CharInfoPtr *charinfo;
     unsigned long n;
     CharInfoPtr	oldCI;
+    Bool oldCM;
 
     charinfo = (CharInfoPtr *)ALLOCATE_LOCAL(count*sizeof(CharInfoPtr));
     if(!charinfo)
 	return FALSE;
     oldCI = font->pCI;
+    /* kludge, temporarily stuff in Ink metrics */
     font->pCI = font->pInkCI;
-    /* temporarily stuff in Ink metrics */
     if (font->pFI->lastRow == 0)
 	GetGlyphs(font, count, chars, Linear16Bit, &n, charinfo);
     else
 	GetGlyphs(font, count, chars, TwoD16Bit, &n, charinfo);
     /* restore real glyph metrics */
     font->pCI = oldCI;
-
+    oldCM = font->pFI->constantMetrics;
+    /* kludge, ignore bitmap metric flag */
+    font->pFI->constantMetrics = FALSE;
     QueryGlyphExtents(font, charinfo, n, info);
-
+    /* restore bitmap metric flag */
+    font->pFI->constantMetrics = oldCM;
     DEALLOCATE_LOCAL(charinfo);
     return TRUE;
 }
