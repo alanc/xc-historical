@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.137 92/11/19 17:24:47 converse Exp $ */
+/* $XConsortium: Event.c,v 1.138 93/06/24 12:58:04 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -999,7 +999,7 @@ static Boolean DecideToDispatch(event)
       case SelectionClear:	time = event->xselectionclear.time; break;
     }
 
-    pd->last_event = event;
+    pd->last_event = *event;
 
     if (time) pd->last_timestamp = time;
 
@@ -1260,17 +1260,15 @@ Time XtLastTimestampProcessed(dpy)
     return _XtGetPerDisplay(dpy)->last_timestamp;
 }
  
-Boolean XtLastEventProcessed(dpy, ev)
+XEvent* XtLastEventProcessed(dpy)
     Display* dpy;
-    XEvent* ev;
 {
-    XEvent* le = _XtGetPerDisplay(dpy)->last_event;
+    XEvent* le = &_XtGetPerDisplay(dpy)->last_event;
 
-    if (le) {
-	(void) bcopy (_XtGetPerDisplay(dpy)->last_event, ev, sizeof (XEvent));
-	return True;
-    } else
-	return False;
+    if (le->xany.serial)
+	return le;
+    else
+	return NULL;
 }
 
 void _XtSendFocusEvent(child, type)
