@@ -60,6 +60,13 @@ extern char *calloc();
 
 extern int errno;
 
+usage()
+{
+    outl("%s: %s [-help][-debug][-rv][input <file>][[host]:vs]\n",
+	 program_name, program_name);
+    exit(1);
+}
+
 main(argc, argv)
     int argc;
     char **argv;
