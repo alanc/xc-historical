@@ -1,5 +1,5 @@
 /*
- * $XConsortium: listres.c,v 1.21 89/10/30 18:51:35 jim Exp $
+ * $XConsortium: listres.c,v 1.22 89/12/10 15:55:50 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -24,14 +24,16 @@
  */
 
 #include <stdio.h>
+#include <X11/Xos.h>
 #include <X11/StringDefs.h>
 #include <X11/IntrinsicP.h>
 #include <X11/Xaw/Cardinals.h>
 #include <X11/Core.h>
-#include "defs.h"
+#include <X11/Xmu/CharSet.h>
+#include <X11/Xmu/WidgetNode.h>
 
-extern WidgetNode widget_list[];
-extern int nwidgets;
+#define widget_list XmuAthenaWidgetArray  /* or motif or ol or ... */
+#define nwidgets XmuAthenaWidgetCount
 
 
 static XrmOptionDescRec Options[] = {
@@ -92,7 +94,7 @@ usage ()
 }
 
 static void print_tree_level (wn, level)
-    register WidgetNode *wn;
+    register XmuWidgetNode *wn;
     register int level;
 {
     register int i;
@@ -102,7 +104,7 @@ static void print_tree_level (wn, level)
     for (i = 0; i < level; i++) {
 	putchar (' '); putchar (' '); 
     }
-    printf ("%d:  %s/%s\n", level, wn->label, WnClassname(wn));
+    printf ("%d:  %s/%s\n", level, wn->label, XmuWnClassname(wn));
     print_tree_level (wn->children, level + 1);
     print_tree_level (wn->siblings, level);
 }
@@ -110,7 +112,7 @@ static void print_tree_level (wn, level)
 static void tree_known_widgets ()
 {
     register int i;
-    register WidgetNode *wn;
+    register XmuWidgetNode *wn;
 
     for (i = 0, wn = widget_list; i < nwidgets; i++, wn++) {
 	if (!wn->superclass) {		/* list all rooted objects */
@@ -122,7 +124,7 @@ static void tree_known_widgets ()
 static void list_known_widgets ()
 {
     int i;
-    WidgetNode *wn;
+    XmuWidgetNode *wn;
     int width = 0;
     char format[20];
 
@@ -139,12 +141,91 @@ static void list_known_widgets ()
 }
 
 
+/*
+ * print_classname - print out the superclass-to-subclass hierchy of names
+ * in the form super\sub\sub....
+ */
+static int print_classname (node, topnode, level, showvar)
+    XmuWidgetNode *node, *topnode;
+    int level;
+    Bool showvar;
+{
+    int retval;
+
+    if (node && node != topnode) {
+	retval = print_classname (node->superclass, topnode, level + 1,
+				  showvar);
+    } else {
+	retval = level - 1;
+    }
+    if (node)
+      printf ("%s%s", showvar ? node->label : XmuWnClassname(node),
+	      level ? "\\" : "");
+
+    return retval;
+}
+
+
+/* ARGSUSED */
+static void print_resources (node, format, topnode, showsuper, showvar)
+    XmuWidgetNode *node;
+    char *format;
+    XmuWidgetNode *topnode;
+    Bool showsuper;
+    Bool showvar;
+{
+    int i;
+    XtResourceList res = node->resources;
+    XmuWidgetNode **wn = node->resourcewn;
+
+    for (i = 0; i < node->nresources; i++, res++, wn++) {
+	if (!showsuper && *wn != node) continue;
+	printf (format, showvar ? (*wn)->label : XmuWnClassname(*wn),
+		res->resource_name, res->resource_class, res->resource_type);
+	putchar ('\n');
+    }
+    return;
+}
+
+
+/*
+ * list_resources - display resources of a widget, identifying class from
+ * which they come
+ */
+static list_resources (node, format, topnode, toplevel, showsuper, showvar)
+    XmuWidgetNode *node;
+    char *format;
+    XmuWidgetNode *topnode;
+    Widget toplevel;
+    Bool showsuper;
+    Bool showvar;
+{
+    static Bool first = True;
+
+    XmuWnFetchResources (node, toplevel, topnode);
+    if (first) {
+	printf (format, showvar ? "Variable" : "WidgetClass",
+		"Instance", "Class", "Type");
+	putchar ('\n');
+	printf (format, showvar ? "--------" : "-----------",
+		"--------", "-----", "----");
+	putchar ('\n');
+	first = False;
+    }
+    printf ("%s:  ", node->label);
+    print_classname (node, topnode, 0, showvar);
+    putchar ('\n');
+    print_resources (node, format, topnode, showsuper, showvar);
+    putchar ('\n');
+}
+
+
 main (argc, argv)
     int argc;
     char **argv;
 {
     int i;
-    WidgetNode *topnode;
+    XmuWidgetNode *topnode;
     Widget toplevel, container;
 
     ProgramName = argv[0];
@@ -155,7 +236,7 @@ main (argc, argv)
 
     XtGetApplicationResources (toplevel, (caddr_t) &Appresources,
 			       Resources, XtNumber(Resources), NULL, ZERO);
-    initialize_nodes (widget_list, nwidgets);
+    XmuWnInitializeNodes (widget_list, nwidgets);
     if (argc == 1) {
 	if (Appresources.show_tree) {
 	    tree_known_widgets();
@@ -165,13 +246,13 @@ main (argc, argv)
 	exit (0);
     }
 
-    topnode = name_to_node (widget_list, nwidgets, Appresources.top_object);
+    topnode = XmuWnNameToNode (widget_list, nwidgets, Appresources.top_object);
     argc--, argv++;			/* skip command */
 
     if (argc > 0 && argv[0][0] == '-') {
 	int len = strlen (argv[0]);
 	if (len >= 2 && strncmp(argv[0], "-all", len) == 0) {
-	    WidgetNode *wn;
+	    XmuWidgetNode *wn;
 	    for (i = 0, wn = widget_list; i < nwidgets; i++, wn++) {
 		list_resources (wn, Appresources.format, topnode, container,
 				(Bool) Appresources.show_superclass,
@@ -181,10 +262,10 @@ main (argc, argv)
 	  usage();
     } else {
 	for (; argc > 0; argc--, argv++) {
-	    WidgetNode *node;
+	    XmuWidgetNode *node;
 
 	    if (argv[0][0] == '-') usage ();
-	    node = name_to_node (widget_list, nwidgets, *argv);
+	    node = XmuWnNameToNode (widget_list, nwidgets, *argv);
 	    if (!node) {
 		fprintf (stderr, "%s:  unable to find widget \"%s\"\n",
 			 ProgramName, *argv);
