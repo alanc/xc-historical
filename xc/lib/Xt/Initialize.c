@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.172 91/01/04 19:55:20 gildea Exp $ */
+/* $XConsortium: Initialize.c,v 1.173 91/01/09 20:11:32 gildea Exp $ */
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 
 /***********************************************************
@@ -41,6 +41,8 @@ SOFTWARE.
 #else
 #define Const /**/
 #endif
+
+extern char *getenv();
 
 extern void _XtConvertInitialize();
 
@@ -170,13 +172,12 @@ static String XtGetRootDirName(buf)
      extern struct passwd *getpwuid();
      extern struct passwd *getpwnam();
 #endif
-     extern char *getenv();
      struct passwd *pw;
      static char *ptr = NULL;
 
      if (ptr == NULL) {
-	if((ptr = getenv("HOME")) == NULL) {
-	    if((ptr = getenv("USER")) != NULL) pw = getpwnam(ptr);
+	if (!(ptr = getenv("HOME"))) {
+	    if (ptr = getenv("USER")) pw = getpwnam(ptr);
 	    else {
 		uid = getuid();
  		pw = getpwuid(uid);
@@ -189,7 +190,7 @@ static String XtGetRootDirName(buf)
 	}
      }
 
-     if (ptr != NULL) 
+     if (ptr)
  	(void) strcpy(buf, ptr);
 
      buf += strlen(buf);
@@ -199,24 +200,6 @@ static String XtGetRootDirName(buf)
      return buf;
 }
 
-static Status CombineAppSystemDefaults(dpy, pdb)
-    Display *dpy;
-    XrmDatabase *pdb;
-{
-    char	*filename;
-    Status	res;
-
-    if ((filename = XtResolvePathname(dpy, "app-defaults",
-				      NULL, NULL, NULL, NULL, 0, NULL))
-	== NULL) {
-	return 0;
-    }
-
-    res = XrmCombineFileDatabase(filename, pdb, False);
-    XtFree(filename);
-    return res;
-}
-
 static void CombineAppUserDefaults(dpy, pdb)
     Display *dpy;
     XrmDatabase *pdb;
@@ -224,25 +207,24 @@ static void CombineAppUserDefaults(dpy, pdb)
     char* filename;
     char* path;
     Boolean deallocate = False;
-    extern char *getenv();
 
-    if ((path = getenv("XUSERFILESEARCHPATH")) == NULL) {
+    if (!(path = getenv("XUSERFILESEARCHPATH"))) {
 	char *old_path;
 	char homedir[PATH_MAX];
 	XtGetRootDirName(homedir);
-	if ((old_path = getenv("XAPPLRESDIR")) == NULL) {
+	if (!(old_path = getenv("XAPPLRESDIR"))) {
 	    char *path_default = "%s/%%L/%%N%%C:%s/%%l/%%N%%C:%s/%%N%%C:%s/%%L/%%N:%s/%%l/%%N:%s/%%N";
-	    if ((
-	      path = ALLOCATE_LOCAL(6*strlen(homedir) + strlen(path_default)))
-		== NULL) _XtAllocError(NULL);
+	    if (!(path =
+		  ALLOCATE_LOCAL(6*strlen(homedir) + strlen(path_default))))
+		_XtAllocError(NULL);
 	    sprintf( path, path_default,
 		    homedir, homedir, homedir, homedir, homedir, homedir );
 	} else {
 	    char *path_default = "%s/%%L/%%N%%C:%s/%%l/%%N%%C:%s/%%N%%C:%s/%%N%%C:%s/%%L/%%N:%s/%%l/%%N:%s/%%N:%s/%%N";
-	    if ((
-	      path = ALLOCATE_LOCAL( 6*strlen(old_path) + 2*strlen(homedir)
-				     + strlen(path_default)))
-		== NULL) _XtAllocError(NULL);
+	    if (!(path =
+		  ALLOCATE_LOCAL( 6*strlen(old_path) + 2*strlen(homedir)
+				 + strlen(path_default))))
+		_XtAllocError(NULL);
 	    sprintf(path, path_default, old_path, old_path, old_path, homedir,
 		    old_path, old_path, old_path, homedir );
 	}
@@ -258,80 +240,180 @@ static void CombineAppUserDefaults(dpy, pdb)
     if (deallocate) DEALLOCATE_LOCAL(path);
 }
 
-static XrmDatabase GetUserDefaults(dpy)
-	Display *dpy;
-{
-	char *dpy_defaults = XResourceManagerString(dpy);
-	XrmDatabase rdb;
-
-	if (dpy_defaults != NULL) {
-	    rdb = XrmGetStringDatabase(dpy_defaults);
-	} else {
-	    char filename[PATH_MAX];
-	    (void) XtGetRootDirName(filename);
-	    (void) strcat(filename, ".Xdefaults");
-	    rdb = XrmGetFileDatabase(filename);
-	}
-
-	return rdb;
-}
-
-static void CombineEnvironmentDefaults(pdb)
+static void CombineUserDefaults(dpy, pdb)
+    Display *dpy;
     XrmDatabase *pdb;
 {
-	extern char *getenv();
+    char *dpy_defaults = XResourceManagerString(dpy);
+
+    if (dpy_defaults) {
+	XrmCombineDatabase(XrmGetStringDatabase(dpy_defaults), pdb, False);
+    } else {
+	char filename[PATH_MAX];
+	(void) XtGetRootDirName(filename);
+	(void) strcat(filename, ".Xdefaults");
+	(void)XrmCombineFileDatabase(filename, pdb, False);
+    }
+}
+
+/*ARGSUSED*/
+static Bool StoreDBEntry(db, bindings, quarks, type, value, data)
+    XrmDatabase		*db;
+    XrmBindingList      bindings;
+    XrmQuarkList	quarks;
+    XrmRepresentation   *type;
+    XrmValuePtr		value;
+    caddr_t		data;
+{
+    XrmQPutResource((XrmDatabase *)data, bindings, quarks, type, value);
+    return False;
+}
+
+static XrmDatabase CopyDB(db)
+    XrmDatabase db;
+{
+    XrmDatabase copy = NULL;
+    XrmQuark empty = NULLQUARK;
+
+    XrmEnumerateDatabase(db, &empty, &empty, XrmEnumAllLevels,
+			 StoreDBEntry, (caddr_t)&copy);
+    return copy;
+}
+
+XrmDatabase _XtScreenDatabase(screen)
+    Screen *screen;
+{
+    Display *dpy;
+    int scrno;
+    Bool doing_def;
+    XrmDatabase db, olddb, user_db;
+    XtPerDisplay pd;
+    Status do_fallback;
+    char *scr_resources;
+
+    dpy = DisplayOfScreen(screen);
+    pd = _XtGetPerDisplay(dpy);
+    scrno = XScreenNumberOfScreen(screen);
+    if (db = pd->per_screen_db[scrno])
+	return db;
+    doing_def = (scrno == DefaultScreen(dpy));
+    scr_resources = XScreenResourceString(screen);
+    if (doing_def) {
+	XrmRepresentation type;
+	XrmValue value;
+	XrmName names[3];
+	XrmClass classes[3];
+
+	if (scr_resources)
+	    pd->def_db_screen_specific = True;
+	user_db = (XrmDatabase)NULL;
+	CombineUserDefaults(dpy, &user_db);
+	names[0] = pd->name;
+	names[1] = XrmPermStringToQuark("xnlLanguage");
+	names[2] = NULLQUARK;
+	classes[0] = pd->class;
+	classes[1] = XrmPermStringToQuark("XnlLanguage");
+	classes[2] = NULLQUARK;
+	if ((!pd->cmd_db ||
+	     !XrmQGetResource(pd->cmd_db, names, classes, &type, &value))
+	    &&
+	    (!user_db ||
+	     !XrmQGetResource(user_db, names, classes, &type, &value))){
+	    if (!(pd->language = getenv("LANG")))
+		pd->language = "";
+	} else {
+	    pd->language = (char *)value.addr;
+	}
+    }
+    if (ScreenCount(dpy) == 1) {
+	db = pd->cmd_db;
+	pd->cmd_db = NULL;
+    } else {
+	if (!scr_resources && !pd->def_db_screen_specific && !doing_def) {
+	    db = pd->per_screen_db[DefaultScreen(dpy)];
+	    pd->per_screen_db[scrno] = db;
+	    return db;
+	}	    
+	db = CopyDB(pd->cmd_db);
+    }
+    {   /* Environment defaults */
 	char	filenamebuf[PATH_MAX];
 	char	*filename;
 
-	if ((filename = getenv("XENVIRONMENT")) == NULL) {
+	if (!(filename = getenv("XENVIRONMENT"))) {
 	    int len;
 	    (void) XtGetRootDirName(filename = filenamebuf);
 	    (void) strcat(filename, ".Xdefaults-");
 	    len = strlen(filename);
 	    (void) _XtGetHostname (filename+len, PATH_MAX-len);
 	}
+	(void)XrmCombineFileDatabase(filename, &db, False);
+    }
+    if (scr_resources)
+    {   /* Screen defaults */
+	XrmCombineDatabase(XrmGetStringDatabase(scr_resources), &db, False);
+	XFree(scr_resources);
+    }
+    {   /* Server or host defaults */
+	if (!doing_def)
+	    CombineUserDefaults(dpy, &db);
+	else if (user_db)
+	    (void)XrmCombineDatabase(user_db, &db, False);
+    }
+    if (!db)
+	db = XrmGetStringDatabase("");
+    pd->per_screen_db[scrno] = db;
+    olddb = XrmGetDatabase(dpy);
+    /* set database now, for XtResolvePathname to use */
+    XrmSetDatabase(dpy, db);
+    CombineAppUserDefaults(dpy, &db);
+    do_fallback = 1;
+    {   /* System app-defaults */
+	char	*filename;
 
-	(void)XrmCombineFileDatabase(filename, pdb, False);
-}
-
-static void CombineFallbackDefaults(dpy, pdb)
-        Display * dpy;
-        XrmDatabase *pdb;
-{
-	XtPerDisplay pd = _XtGetPerDisplay(dpy);
-        XrmDatabase db = NULL;
+	if (filename = XtResolvePathname(dpy, "app-defaults",
+					 NULL, NULL, NULL, NULL, 0, NULL)) {
+	    do_fallback = !XrmCombineFileDatabase(filename, &db, False);
+	    XtFree(filename);
+	}
+    }
+    /* now restore old database, if need be */
+    if (!doing_def)
+	XrmSetDatabase(dpy, olddb);
+    if (do_fallback && pd->appContext->fallback_resources)
+    {   /* Fallback defaults */
+        XrmDatabase fdb = NULL;
 	String *res;
 
-	if ( (res = pd->appContext->fallback_resources) == NULL)
-	    return;
-	
-	for ( ; *res != NULL ; res++) {
-	    XrmPutLineResource(&db, (char*)*res);
-	}
-
-	(void)XrmCombineDatabase(db, pdb, False);
+	for (res = pd->appContext->fallback_resources; *res; res++)
+	    XrmPutLineResource(&fdb, *res);
+	(void)XrmCombineDatabase(fdb, &db, False);
+    }
+    return db;
 }
 
-static XrmDatabase GetInitialResourceDatabase(dpy, cmd_db, user_db)
-	Display *dpy;
-        XrmDatabase cmd_db;
-        XrmDatabase user_db;
+/* if you are inside Xt, call _XtScreenDatabase, to avoid forcing an
+ * unnecessary copy of the database
+ */
+XrmDatabase XtScreenDatabase(screen)
+    Screen *screen;
 {
-	XrmDatabase db = cmd_db;
+    Display *dpy = DisplayOfScreen(screen);
+    XrmDatabase def_db = XrmGetDatabase(dpy);
+    XrmDatabase db;
+    XtPerDisplay pd;
 
-	CombineEnvironmentDefaults(&db);
-	if (user_db)
-	    (void)XrmCombineDatabase(user_db, &db, False);
-	if (!db)
-	    db = XrmGetStringDatabase("");
-	/* set database now, for XtResolvePathname to use */
-	XrmSetDatabase(dpy, db);
-	CombineAppUserDefaults(dpy, &db);
-	if (!CombineAppSystemDefaults(dpy, &db))
-	    CombineFallbackDefaults(dpy, &db);
-	return db;
+    if (screen == DefaultScreenOfDisplay(dpy))
+	return def_db;
+    db = _XtScreenDatabase(screen);
+    if (db == def_db) {
+	/* must treat the databases as distinct */
+	db = CopyDB(db);
+	pd = _XtGetPerDisplay(dpy);
+	pd->per_screen_db[XScreenNumberOfScreen(screen)] = db;
+    }
+    return db;
 }
-
 
 /*
  * Merge two option tables, allowing the second to over-ride the first,
@@ -459,18 +541,14 @@ void _XtDisplayInitialize(dpy, pd, name, class, urlist, num_urs, argc, argv)
 	char *argv[];
 {
 	Boolean tmp_bool;
-	XrmRepresentation type;
 	XrmValue value;
 	XrmOptionDescRec *options;
 	Cardinal num_options;
-	XrmDatabase cmd_db = NULL;
-	XrmDatabase user_db;
 	XrmDatabase db;
-	XrmName name_list[3];
-	XrmClass class_list[3];
+	XrmName name_list[2];
+	XrmClass class_list[2];
 	XrmHashTable* search_list;
 	int search_list_size = SEARCH_LIST_SIZE;
-	extern char *getenv();
 
 	_MergeOptionTables( opTable, XtNumber(opTable), urlist, num_urs,
 			    &options, &num_options );
@@ -479,34 +557,13 @@ void _XtDisplayInitialize(dpy, pd, name, class, urlist, num_urs, argc, argv)
 	   This routine parses the command line arguments and removes them from
 	   argv.
 	 */
-	XrmParseCommand(&cmd_db, options, num_options, name, argc, argv);
+	XrmParseCommand(&pd->cmd_db, options, num_options, name, argc, argv);
 
-	name_list[0] = pd->name;
-	name_list[1] = XrmPermStringToQuark("xnlLanguage");
-	name_list[2] = NULLQUARK;
-	class_list[0] = pd->class;
-	class_list[1] = XrmPermStringToQuark("XnlLanguage");
-	class_list[2] = NULLQUARK;
+	db = _XtScreenDatabase(DefaultScreenOfDisplay(dpy));
 
-	user_db = GetUserDefaults(dpy);
-
-	if ((!cmd_db ||
-	     !XrmQGetResource(cmd_db, name_list, class_list, &type, &value))
-	    &&
-	    (!user_db ||
-	     !XrmQGetResource(user_db, name_list, class_list, &type, &value))){
-	    if (!(pd->language = getenv("LANG")))
-		pd->language = "";
-	} else {
-	    pd->language = (char *)value.addr;
-	}
-
-	db = GetInitialResourceDatabase(dpy, cmd_db, user_db);
-
-	if ((
-	  search_list = (XrmHashTable*)
-	     ALLOCATE_LOCAL( SEARCH_LIST_SIZE*sizeof(XrmHashTable) ))
-	    == NULL) _XtAllocError(NULL);
+	if (!(search_list = (XrmHashTable*)
+		       ALLOCATE_LOCAL( SEARCH_LIST_SIZE*sizeof(XrmHashTable))))
+	    _XtAllocError(NULL);
 	name_list[1] = NULLQUARK;
 	class_list[1] = NULLQUARK;
 
@@ -514,9 +571,8 @@ void _XtDisplayInitialize(dpy, pd, name, class, urlist, num_urs, argc, argv)
 				  search_list, search_list_size)) {
 	    XrmHashTable* old = search_list;
 	    Cardinal size = (search_list_size*=2)*sizeof(XrmHashTable);
-	    if ((
-	      search_list = (XrmHashTable*)ALLOCATE_LOCAL(size))
-		== NULL) _XtAllocError(NULL);
+	    if (!(search_list = (XrmHashTable*)ALLOCATE_LOCAL(size)))
+		_XtAllocError(NULL);
 	    bcopy( (char*)old, (char*)search_list, (size>>1) );
 	    DEALLOCATE_LOCAL(old);
 	}
@@ -656,13 +712,13 @@ ArgList args_in;
 
     app_con = XtCreateApplicationContext();
 
-    if (fallback_resources != NULL) /* save a procedure call */
+    if (fallback_resources) /* save a procedure call */
 	XtAppSetFallbackResources(app_con, fallback_resources);
 
     dpy = XtOpenDisplay(app_con, (String) NULL, NULL, application_class,
 			options, num_options, argc_in_out, argv_in_out);
 
-    if (dpy == NULL)
+    if (!dpy)
 	XtErrorMsg("invalidDisplay","xtInitialize",XtCXtToolkitError,
                    "Can't Open display", (String *) NULL, (Cardinal *)NULL);
 
@@ -676,7 +732,7 @@ ArgList args_in;
     root = XtAppCreateShell(NULL, application_class, 
 			    applicationShellWidgetClass,dpy, merged_args, num);
     
-    if (app_context_return != NULL)
+    if (app_context_return)
 	*app_context_return = app_con;
 
     XtFree((XtPointer)merged_args);
