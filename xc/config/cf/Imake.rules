@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.24 89/05/10 13:45:06 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.25 89/05/10 14:13:53 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -97,6 +97,24 @@
 
 
 /*
+ * SaberProgramTarget - generate rules to make Saber-C read in sources and
+ * objects.
+ */
+#ifndef SaberProgramTarget
+#if HasSaberC
+#define SaberProgramTarget(program,srclist,objlist,locallibs,syslibs)	@@\
+saber_/**/program:							@@\
+	#load $(ALLDEFINES) srclist locallibs $(SYS_LIBRARIES) $(EXTRA_LIBRARIES) syslibs @@\
+									@@\
+osaber_/**/program:							@@\
+	#load $(ALLDEFINES) objlist locallibs $(SYS_LIBRARIES) $(EXTRA_LIBRARIES) syslibs
+
+#else
+#define SaberProgramTarget(program,srclist,objlist,locallibs,syslibs) /**/
+#endif
+#endif
+
+/*
  * SingleProgramTarget - generate rules to compile and link the indicated 
  * program; since it does not use any default object files, it may be used for
  * multiple programs in the same Imakefile.
@@ -150,6 +168,8 @@ relink::								@@\
 	$(RM) $(PROGRAM)						@@\
 	$(MAKE) $(MFLAGS) $(PROGRAM)					@@\
 									@@\
+SaberProgramTarget(program,$(SRCS),$(OBJS),$(LOCAL_LIBRARIES),)		@@\
+									@@\
 InstallProgram(program,$(BINDIR))					@@\
 InstallManPage(program,$(MANDIR))					@@\
 DependTarget()								@@\
@@ -185,6 +205,8 @@ relink::								@@\
 	$(RM) $(PROGRAMS)						@@\
 	$(MAKE) $(MFLAGS) $(PROGRAMS)					@@\
 									@@\
+SaberProgramTarget(program,$(SRCS1),$(OBJS1),locallib,syslib)		@@\
+									@@\
 DependTarget()								@@\
 LintTarget()								@@\
 									@@\
@@ -205,6 +227,8 @@ program: $(OBJS2) locallib						@@\
 	$(RM) $@							@@\
 	$(CC) -o $@ $(OBJS2) locallib $(LDFLAGS) syslib $(EXTRA_LOAD_FLAGS) @@\
 									@@\
+SaberProgramTarget(program,$(SRCS2),$(OBJS2),locallib,syslib)		@@\
+									@@\
 InstallProgram(program,$(BINDIR))					@@\
 InstallManPage(program,$(MANDIR))
 #endif /* ComplexProgramTarget_2 */
@@ -221,6 +245,8 @@ InstallManPage(program,$(MANDIR))
 program: $(OBJS3) locallib						@@\
 	$(RM) $@							@@\
 	$(CC) -o $@ $(OBJS3) locallib $(LDFLAGS) syslib $(EXTRA_LOAD_FLAGS) @@\
+									@@\
+SaberProgramTarget(program,$(SRCS3),$(OBJS3),locallib,syslib)		@@\
 									@@\
 InstallProgram(program,$(BINDIR))					@@\
 InstallManPage(program,$(MANDIR))

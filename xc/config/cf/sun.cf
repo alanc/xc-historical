@@ -17,6 +17,9 @@
 #define OSName            SunOS 3.4
 #define OSMajorVersion    3
 #define OSMinorVersion    4
+#define HasSaberC	  YES		/* for machines that have it */
+
+
 #define SystemV           NO
 #define SignalReturnProcType int
 #define HasPutenv YES
@@ -34,7 +37,7 @@
 /* see below for ServerDefines */
 
 
-/**/# platform:  $XConsortium: sun.cf,v 1.13 89/04/11 14:59:50 jim Exp $
+/**/# platform:  $XConsortium: sun.cf,v 1.14 89/04/18 14:46:02 jim Exp $
 /**/# operating system:  OSName
 
 #if SunOSPlatform

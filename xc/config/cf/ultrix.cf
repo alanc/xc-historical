@@ -14,6 +14,7 @@
 #define XqvssServer Xqvss
 #define XqdssServer Xqdss
 #define UnalignedReferencesAllowed YES	       /* if arbitrary deref is okay */
+#define HasSaberC YES
 #endif
 
 #ifdef MipsArchitecture
@@ -21,5 +22,5 @@
 #define StandardDefines		-Wf,-XNh2000
 #endif
 
-/**/# platform:  $XConsortium: ultrix.cf,v 1.5 89/03/20 13:47:47 jim Exp $
+/**/# platform:  $XConsortium: ultrix.cf,v 1.6 89/04/18 14:46:12 jim Exp $
 /**/# operating system:  OSName

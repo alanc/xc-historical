@@ -9,11 +9,12 @@
 #ifdef VaxArchitecture
 #define XqvssServer Xqvss
 #define XqdssServer Xqdss
+#define HasSaberC YES
 #endif
 
 #define SignalReturnProcType int
 
-/**/# platform:  $XConsortium: bsd.cf,v 1.2 89/03/02 13:28:20 jim Exp $
+/**/# platform:  $XConsortium: bsd.cf,v 1.3 89/03/20 13:47:56 jim Exp $
 /**/# operating system:  OSName
 
 /*****************************************************************************
