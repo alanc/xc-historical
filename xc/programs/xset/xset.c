@@ -1,12 +1,12 @@
 /* 
- * $XConsortium: xset.c,v 1.46 88/10/15 18:35:26 jim Exp $ 
+ * $XConsortium: xset.c,v 1.47 89/01/10 17:49:57 jim Exp $ 
  */
 #include <X11/copyright.h>
 
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$XConsortium: xset.c,v 1.46 88/10/15 18:35:26 jim Exp $";
+static char *rcsid_xset_c = "$XConsortium: xset.c,v 1.47 89/01/10 17:49:57 jim Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -439,7 +439,7 @@ set_font_path(dpy, path, special, before, after)
 		return;
 	    }
 	    XSetFontPath (dpy, currentList, ncurrent);
-	    free ((char *) currentList);
+	    XFreeFontPath (currentList);
 	    return;
 	} 
 	/*
@@ -549,7 +549,7 @@ set_font_path(dpy, path, special, before, after)
     }
 
     if (directoryList) free ((char *) directoryList);
-    if (currentList) free ((char *) currentList);
+    if (currentList) XFreeFontPath (currentList);
 
     return;
 }
