@@ -4,9 +4,8 @@
 fs \- X font server
 .SH SYNOPSIS
 .B "fs"
-[\-s \fIserver_number\fP]
-[-cf \fIconfiguration_file\fP]
-[-p \fItcp_port\fP]
+[-config \fIconfiguration_file\fP]
+[-port \fItcp_port\fP]
 .SH DESCRIPTION
 .PP
 .I Fs
@@ -18,16 +17,17 @@ boot files like \fI/etc/rc.local\fR.  Users may also wish to start
 private font servers for specific sets of fonts.
 .SH "OPTIONS"
 .TP 8
-.B \-s server_number
-Specifies the TCP port (offset from the default 7000) that the
-server will listen for requests.
-.TP 8
-.B \-cf configuration_file
+.B \-config configuration_file
 Specifies the configuration file the font server will use.
 .TP 8
-.B \-p tcp_port
+.B \-ls listen-socket
+Specifies a file descriptor which is already set up to be used as the
+listen socket.  This option is only intended to be used by the font server
+itself when automatically spawning another copy of itself to handle
+additional connections.
+.TP 8
+.B \-port tcp_port
 Specifies the TCP port number on which the server will listen for connections.
-.SH "SIGNALS"
 .SH "SIGNALS"
 .TP 8
 .I SIGTERM
@@ -35,11 +35,16 @@ This causes the font server to exit cleanly.
 .TP 8
 .I SIGUSR1
 This signal is used to cause the server to re-read its configuration file.
+.TP 8
 .I SIGUSR2
 This signal is used to cause the server to flush any cached data it
 may have.
+.TP 8
+.I SIGHUP
+This signal is used to cause the server to reset, closing all active
+connections and re-reading the configuration file.
 .SH "CONFIGURATION"
-The configuration language is a basic keyword value list.
+The configuration language is a list of keyword and value pairs.
 Each keyword is followed by an '=' and then the desired value.
 .PP
 Recognized keywords include:
@@ -109,11 +114,11 @@ alternate-servers = hansen:7001,hansen:7002
 
 # where to look for fonts
 # the first is a set of Speedo outlines, the second is a set of 
-# misc SNF bitmaps and the last is a set of 100dpi PCF bitmaps
+# misc bitmaps and the last is a set of 100dpi bitmaps
 #
-catalogue = speedo:/usr/lib/fonts/speedo,
-	snf:/usr/lib/X11/ncd/fonts/misc,
-	pcf:/usr/lib/X11/ncd/fonts/100dpi/
+catalogue = /usr/lib/fonts/speedo,
+	/usr/lib/X11/ncd/fonts/misc,
+	/usr/lib/X11/ncd/fonts/100dpi/
 
 # in 12 points, decipoints
 default-point-size = 120
@@ -129,6 +134,7 @@ Copyright 1991, Network Computing Devices, Inc
 Copyright 1991, Massachusetts Institute of Technology
 .br
 See \fIX(1)\fP for a full statement of rights and permissions.
-.SH AUTHOR
+.SH AUTHORS
 Dave Lemke, Network Computing Devices, Inc
+.br
 Keith Packard, Massachusetts Institute of Technology
