@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.3 94/03/27 13:25:11 dpw Exp $ */
+/* $XConsortium: io.c,v 1.4 94/04/17 21:17:13 dpw Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -113,14 +113,9 @@ static ConnectionOutputPtr AllocateUncompBuffer();
 ClientPtr   ReadingClient;
 ClientPtr   WritingClient;
 
-#ifdef LBX
 #define get_req_len(req,cli) (((cli)->swapped ? \
 			      lswaps((req)->length) : (req)->length) << 2)
 
-#else
-#define get_req_len(req,cli) ((cli)->swapped ? \
-			      lswaps((req)->length) : (req)->length)
-#endif
 
 unsigned long
 StandardRequestLength(req,client,got,partp)
@@ -252,49 +247,14 @@ StandardReadRequestFromClient(client)
     move_header = FALSE;
 #endif
     gotnow = oci->bufcnt + oci->buffer - oci->bufptr;
-#ifdef LBX
     client->requestBuffer = (pointer)oci->bufptr;
     needed = RequestLength (NULL, client, gotnow, &part);
     client->req_len = needed >> 2;
-#else
-    if (gotnow < sizeof(xReq))
-    {
-	needed = sizeof(xReq);
-	need_header = TRUE;
-    }
-    else
-    {
-	request = (xReq *)oci->bufptr;
-	needed = get_req_len(request, client);
-#ifdef BIGREQS
-	if (!needed && client->big_requests)
-	{
-	    move_header = TRUE;
-	    if (gotnow < sizeof(xBigReq))
-	    {
-		needed = sizeof(xBigReq) >> 2;
-		need_header = TRUE;
-	    }
-	    else
-		needed = get_big_req_len(request, client);
-	}
-#endif
-	client->req_len = needed;
-	needed <<= 2;
-    }
-#endif	/* LBX */
     if (gotnow < needed
-#ifdef LBX
 	|| part
-#endif
     )
     {
-#ifndef LBX
-	oci->lenLastReq = 0;
-	if (needed > MAXBUFSIZE)
-#else
 	if (needed == -1)
-#endif
 	{
 	    YieldControlDeath();
 	    return -1;
@@ -320,14 +280,9 @@ StandardReadRequestFromClient(client)
 	    oci->bufptr = oci->buffer;
 	    oci->bufcnt = gotnow;
 	}
-#ifdef LBX
 	ReadingClient = client;
 	result = (*oc->Read)(fd, oci->buffer + oci->bufcnt, 
 		      oci->size - oci->bufcnt); 
-#else
-	result = read(fd, oci->buffer + oci->bufcnt, 
-		      oci->size - oci->bufcnt); 
-#endif
 	if (result <= 0)
 	{
 	    if ((result < 0) && ETEST(errno))
@@ -354,65 +309,27 @@ StandardReadRequestFromClient(client)
 		oci->bufptr = ibuf + oci->bufcnt - gotnow;
 	    }
 	}
-#ifdef LBX
 	client->requestBuffer = (pointer) oci->bufptr;
-#endif
 	if (
-#ifdef LBX
 	    part &&
-#else
-	    need_header &&
-#endif
 	    gotnow >= needed)
 	{
-#ifdef LBX
 	    needed = RequestLength (NULL, client, gotnow, &part);
 	    client->req_len = needed >> 2;
-#else
-	    request = (xReq *)oci->bufptr;
-	    needed = get_req_len(request, client);
-#ifdef BIGREQS
-	    if (!needed && client->big_requests)
-	    {
-		move_header = TRUE;
-		if (gotnow < sizeof(xBigReq))
-		    needed = sizeof(xBigReq) >> 2;
-		else
-		    needed = get_big_req_len(request, client);
-	    }
-#endif
-	    client->req_len = needed;
-	    needed <<= 2;
-#endif	/* !LBX */
 	}
 	if (gotnow < needed
-#ifdef LBX
 		|| part
-#endif
 	)
 	{
-#ifdef LBX
 	    if (needed == -1)
 	    {
 		YieldControlDeath();
 		return -1;
 	    }
-#endif
 	    YieldControlNoInput();
 	    return 0;
 	}
     }
-#ifndef LBX
-    if (needed == 0)
-    {
-#ifdef BIGREQS
-	if (client->big_requests)
-	    needed = sizeof(xBigReq);
-	else
-#endif
-	    needed = sizeof(xReq);
-    }
-#endif	/* !LBX */
     oci->lenLastReq = needed;
 
     /*
@@ -422,7 +339,6 @@ StandardReadRequestFromClient(client)
      *  can get into the queue.   
      */
 
-#ifdef LBX
     if (gotnow > needed)
     {
 	request = (xReq *)(oci->bufptr + needed);
@@ -432,29 +348,8 @@ StandardReadRequestFromClient(client)
 	else
 	    YieldControlNoInput();
     }
-#else
-    gotnow -= needed;
-    if (gotnow >= sizeof(xReq)) 
-    {
-	request = (xReq *)(oci->bufptr + needed);
-	if (gotnow >= (result = (get_req_len(request, client) << 2))
-#ifdef BIGREQS
-	    && (result ||
-		(client->big_requests &&
-		 (gotnow >= sizeof(xBigReq) &&
-		  gotnow >= (get_big_req_len(request, client) << 2))))
-#endif
-	    )
-	    BITSET(ClientsWithInput, fd);
-	else
-	    YieldControlNoInput();
-    }
-#endif	/* !LBX */
     else
     {
-#ifndef LBX
-	if (!gotnow)
-#endif
 	    AvailableInput = oc;
 	YieldControlNoInput();
     }
@@ -469,9 +364,6 @@ StandardReadRequestFromClient(client)
 	oci->lenLastReq -= (sizeof(xBigReq) - sizeof(xReq));
 	client->req_len -= (sizeof(xBigReq) - sizeof(xReq)) >> 2;
     }
-#endif
-#ifndef LBX
-    client->requestBuffer = (pointer)oci->bufptr;
 #endif
     return needed;
 }
@@ -809,15 +701,12 @@ ResetCurrentRequest(client)
     int fd = oc->fd;
     register xReq *request;
     int gotnow, needed;
-#ifdef LBX
     Bool part;
-#endif
 
     if (AvailableInput == oc)
 	AvailableInput = (OsCommPtr)NULL;
     oci->lenLastReq = 0;
     gotnow = oci->bufcnt + oci->buffer - oci->bufptr;
-#ifdef LBX
     request = (xReq *)oci->bufptr;
     if (gotnow >= RequestLength (request, client, gotnow, &part) && !part)
     {
@@ -826,37 +715,6 @@ ResetCurrentRequest(client)
     }
     else
 	YieldControlNoInput();
-#else
-    if (gotnow < sizeof(xReq))
-    {
-	YieldControlNoInput();
-    }
-    else
-    {
-	request = (xReq *)oci->bufptr;
-	needed = get_req_len(request, client);
-#ifdef BIGREQS
-	if (!needed && client->big_requests)
-	{
-	    oci->bufptr -= sizeof(xBigReq) - sizeof(xReq);
-	    *(xReq *)oci->bufptr = *request;
-	    ((xBigReq *)oci->bufptr)->length = client->req_len;
-	    if (client->swapped)
-	    {
-		char n;
-		swapl(&((xBigReq *)oci->bufptr)->length, n);
-	    }
-	}
-#endif
-	if (gotnow >= (needed << 2))
-	{
-	    BITSET(ClientsWithInput, fd);
-	    YieldControl();
-	}
-	else
-	    YieldControlNoInput();
-    }
-#endif	/* !LBX */
 }
 
     /* lookup table for adding padding bytes to data that is read from

@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osinit.c,v 1.2 94/03/08 20:52:58 dpw Exp $ */
+/* $XConsortium: osinit.c,v 1.3 94/04/17 21:17:14 dpw Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -178,10 +178,5 @@ OsInit()
 #endif
 	been_here = TRUE;
     }
-    TimerInit();
-#ifdef DDXOSINIT
-    OsVendorInit();
-#endif
     OsInitAllocator();
-    OsInitColors();
 }

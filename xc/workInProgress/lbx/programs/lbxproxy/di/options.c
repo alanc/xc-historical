@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: options.c,v 1.1 94/12/01 20:39:01 mor Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -150,6 +150,7 @@ LbxOptParseReply(nopts, preply, replylen)
 	preply += len;
 	replylen -= len;
     }
+    return 0;
 }
 
 struct deltaOpt {
