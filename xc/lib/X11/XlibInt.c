@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.224 94/03/30 16:19:46 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.225 94/03/30 21:17:15 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -1865,7 +1865,7 @@ _XRegisterInternalConnection(dpy, fd, callback, call_data)
     XPointer call_data;
 #endif
 {
-    struct _XConnectionInfo *new_conni;
+    struct _XConnectionInfo *new_conni, **iptr;
     struct _XConnWatchInfo *watchers;
     XPointer *wd;
 
@@ -1880,10 +1880,11 @@ _XRegisterInternalConnection(dpy, fd, callback, call_data)
     new_conni->fd = fd;
     new_conni->read_callback = callback;
     new_conni->call_data = call_data;
-
-    /* link new structure into list */
-    new_conni->next = dpy->im_fd_info;
-    dpy->im_fd_info = new_conni;
+    new_conni->next = NULL;
+    /* link new structure onto end of list */
+    for (iptr = &dpy->im_fd_info; *iptr; iptr = &(*iptr)->next)
+	;
+    *iptr = new_conni;
     dpy->im_fd_length++;
     _XPollfdCacheAdd(dpy, fd);
 
