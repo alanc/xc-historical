@@ -1,5 +1,5 @@
 /*
- *  $XConsortium: globals.h,v 2.33 91/07/02 17:58:58 converse Exp $
+ *  $XConsortium: globals.h,v 2.34 91/07/10 19:35:46 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -68,6 +68,8 @@ ext struct _resources {
     int		mail_waiting_flag;	/* If true, change icon on new mail */
     Pixmap	flag_up;		/* folder has new mail */
     Pixmap	flag_down;		/* folder has no new mail */
+    Pixmap	new_mail_icon;		/* new mail icon for wm hints */
+    Pixmap	no_mail_icon;		/* no mail icon for wm hints */
     Cursor	cursor;			/* application cursor */
     Pixel	pointer_color;		/* application cursor color */
     Boolean	sticky_menu;		/* command menu entries are sticky? */
@@ -94,8 +96,6 @@ ext Widget	LastMenuButtonPressed;	/* to `toggle' menu buttons */
 ext Widget      NullSource;	/* null text widget source */
 ext Dimension	rootwidth;	/* Dimensions of root window.  */
 ext Dimension	rootheight;
-ext Pixmap	NoMailPixmap;	/* Icon pixmap if no new mail. */
-ext Pixmap	NewMailPixmap;	/* Icon pixmap if new mail. */
 ext Pixmap	MenuItemBitmap;	/* Options menu item checkmark */
 ext XtTranslations NoTextSearchAndReplace; /* no-op ^S and ^R in Text */
 
