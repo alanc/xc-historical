@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_util.c,v 1.8 92/07/16 11:19:01 mor Exp $ */
+/* $XConsortium: pl_oc_util.c,v 1.9 92/08/26 13:06:16 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -122,6 +122,7 @@ INPUT char		*data;
 
 {
     PEXDisplayInfo 	*pexDisplayInfo;
+    int			mod4bytes;
 
 
     if (numBytes <= BytesLeftInXBuffer (display))
@@ -138,9 +139,23 @@ INPUT char		*data;
 	/*
 	 * Copying this OC will overflow the transport buffer.  Using
 	 * _XSend will take care of splitting the buffer into chunks
-	 * small enough to fit in the transport buffer.
+	 * small enough to fit in the transport buffer.  _XSend will
+	 * only copy a multiple of 4 bytes, so we must do some extra
+	 * work if numBytes % 4 != 0.
 	 */
 	
+	if (mod4bytes = numBytes % 4)
+	{
+	    if (mod4bytes > BytesLeftInXBuffer (display))
+		_XFlush (display);
+
+	    COPY_SMALL_AREA (data, display->bufptr, mod4bytes);
+	    display->bufptr += mod4bytes;
+
+	    data += mod4bytes;
+	    numBytes -= mod4bytes;
+	}
+
 	_XSend (display, data, numBytes);
 
 
