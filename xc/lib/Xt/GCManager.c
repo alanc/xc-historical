@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: GCManager.c,v 1.11 87/09/11 21:19:10 newman Locked $";
+static char rcsid[] = "$Header: GCManager.c,v 1.23 87/10/27 13:40:57 guarino BL5 $";
 #endif lint
 
 /*
@@ -24,7 +24,9 @@ static char rcsid[] = "$Header: GCManager.c,v 1.11 87/09/11 21:19:10 newman Lock
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
+
 #include "Intrinsic.h"
+
 
 typedef struct _GCrec {
     Display	*dpy;		/* Display for GC */
@@ -37,7 +39,7 @@ typedef struct _GCrec {
     struct _GCrec *next;	/* Next GC for this widgetkind. */
 } GCrec, *GCptr;
 
-
+static Drawable GCparents[256];
 static GCrec *GClist = NULL;
 
 static int Matches(ptr,widget, valueMask, v)
@@ -143,14 +145,18 @@ GC XtGetGC(widget, valueMask, values)
 	    return cur->gc;
 	}
     }
-    cur = (GCptr) XtMalloc((unsigned)sizeof(GCrec));
+    cur = XtNew(GCrec);
     cur->dpy = XtDisplay(widget);
     cur->screen = XtScreen(widget);
     cur->depth = widget->core.depth;
     cur->ref_count = 1;
     if (XtWindow(widget) == NULL)
-	drawable = XCreatePixmap(XtDisplay(widget), XtScreen(widget)->root,
+        if (GCparents[cur->depth] != 0) drawable = GCparents[cur->depth];
+        else{
+	   drawable = XCreatePixmap(XtDisplay(widget), XtScreen(widget)->root,
 			1,1,widget->core.depth);
+           GCparents[cur->depth] = drawable;
+        }
     else drawable = XtWindow(widget);
     cur->gc = XCreateGC(XtDisplay(widget), drawable, valueMask, values);
     cur->valueMask = valueMask;
@@ -160,15 +166,28 @@ GC XtGetGC(widget, valueMask, values)
     return cur->gc;
 }
 
-void  XtDestroyGC(gc)
+void  XtDestroyGC(widget, gc)
+    Widget widget;
     GC gc;
 {
-    GCptr first=GClist;
-    GCptr cur;
+    GCptr cur, last;
     
-    for (cur = first; cur != NULL; cur = cur->next) 
-      if (cur->gc == gc) 
-         if (--(cur->ref_count) == 0) XFreeGC(cur->dpy, gc);     
-    return;
+    for (cur = GClist, last = NULL; cur != NULL; last = cur, cur = cur->next) {
+	if (cur->gc == gc) {
+	    if (--(cur->ref_count) == 0) {
+		if (last) last->next = cur->next;
+		else GClist = cur->next;
+		XFreeGC(XtDisplay(widget), gc);
+		XtFree((char *) cur);
+		break;
+	    }
+	}
+    }
+}
+
+static void InitializeGC()
+{
+ int i;
+ for (i=256;i!=0;--i) GCparents[i-1]=0;
 }
 
