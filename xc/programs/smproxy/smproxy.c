@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: smproxy.c,v 1.1 94/06/06 11:32:01 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -36,8 +36,11 @@ Author:  Ralph Mor, X Consortium
 XtAppContext appContext;
 Display *disp;
 Window root;
+Widget topLevel;
 
+Atom wmProtocolsAtom;
 Atom wmSaveYourselfAtom;
+Atom wmTransientForAtom;
 Atom smClientIdAtom;
 
 typedef struct {
@@ -45,6 +48,7 @@ typedef struct {
     Window window;
     Bool mapped;
     Bool has_save_yourself;
+    Bool waiting_for_update;
     SmcConn smc_conn;
     XtInputId input_id;
     char *client_id;
@@ -88,6 +92,8 @@ Window window;
     return (found);
 }
 
+
+
 Bool
 HasWmCommand (window)
 
@@ -107,6 +113,7 @@ Window window;
 }
 
 
+
 Bool
 HasXSMPsupport (window)
 
@@ -130,25 +137,26 @@ Window window;
 
 
 
-void SaveYourselfCB (smcConn, clientData,
-    saveType, shutdown, interactStyle, fast)
+Bool
+HasTransientFor (window)
 
-SmcConn smcConn;
-SmPointer clientData;
-int saveType;
-Bool shutdown;
-int interactStyle;
-Bool fast;
+Window window;
 
 {
-    WinInfo *winInfo = (WinInfo *) clientData;
+    Window window_ret;
+
+    return (XGetTransientForHint (disp, window, &window_ret) != 0);
+}
+
+
+
+void FinishSaveYourself (winInfo)
+
+WinInfo *winInfo;
+
+{
     char **argv_ret = NULL;
     int argc_ret;
-
-    if (winInfo->has_save_yourself)
-    {
-	/* Send WM_SAVE_YOURSELF */
-    }
 
     if (!XGetCommand (disp, winInfo->window,
 	&argv_ret, &argc_ret) || argc_ret == 0)
@@ -200,7 +208,74 @@ Bool fast;
 }
 
 
-void DieCB (smcConn, clientData)
+
+void
+SaveYourselfCB (smcConn, clientData, saveType, shutdown, interactStyle, fast)
+
+SmcConn smcConn;
+SmPointer clientData;
+int saveType;
+Bool shutdown;
+int interactStyle;
+Bool fast;
+
+{
+    WinInfo *winInfo = (WinInfo *) clientData;
+
+    if (!winInfo->has_save_yourself)
+    {
+	FinishSaveYourself (winInfo);
+    }
+    else
+    {
+	XClientMessageEvent saveYourselfMessage;
+
+
+	/* Look for changes in WM_COMMAND property */
+
+	XSelectInput (disp, winInfo->window, PropertyChangeMask);	
+
+
+	/* Send WM_SAVE_YOURSELF */
+
+	saveYourselfMessage.type = ClientMessage;
+	saveYourselfMessage.window = winInfo->window;
+	saveYourselfMessage.message_type = wmProtocolsAtom;
+	saveYourselfMessage.format = 32;
+	saveYourselfMessage.data.l[0] = wmSaveYourselfAtom;
+#if 1
+	saveYourselfMessage.data.l[1] = CurrentTime;
+#endif
+
+	if (XSendEvent (disp, winInfo->window, False, NoEventMask,
+	    (XEvent *) &saveYourselfMessage))
+	{
+	    winInfo->waiting_for_update = 1;
+
+	    if (debug)
+	    {
+		printf ("Sent SAVE YOURSELF to 0x%x\n", winInfo->window);    
+		printf ("\n");
+	    }
+	}
+	else
+	{
+	    XSelectInput (disp, winInfo->window, NoEventMask);
+
+	    if (debug)
+	    {
+		printf ("Failed to send SAVE YOURSELF to 0x%x\n",
+		    winInfo->window);    
+		printf ("\n");
+	    }
+	}
+    }
+}
+
+
+
+void
+DieCB (smcConn, clientData)
 
 SmcConn smcConn;
 SmPointer clientData;
@@ -214,7 +289,7 @@ SmPointer clientData;
     /* Now tell the client to die */
 
     if (debug)
-	printf ("Trying to kill %x\n", winInfo->window);
+	printf ("Trying to kill 0x%x\n", winInfo->window);
 
     XSync (disp, 0);
     XKillClient (disp, winInfo->window);
@@ -230,7 +305,9 @@ SmPointer clientData;
 }
 
 
-void SaveCompleteCB (smcConn, clientData)
+
+void
+SaveCompleteCB (smcConn, clientData)
 
 SmcConn smcConn;
 SmPointer clientData;
@@ -241,7 +318,9 @@ SmPointer clientData;
 }
 
 
-void ShutdownCancelledCB (smcConn, clientData)
+
+void
+ShutdownCancelledCB (smcConn, clientData)
 
 SmcConn smcConn;
 SmPointer clientData;
@@ -319,7 +398,7 @@ WinInfo *winInfo;
 
     if (debug)
     {
-	printf ("Connected to SM, window = %x\n", winInfo->window);
+	printf ("Connected to SM, window = 0x%x\n", winInfo->window);
 	printf ("\n");
     }
 
@@ -339,11 +418,10 @@ Bool map;
     Window window;
     int i;
 
-    frame = event->window;
-
     for (i = 0; i < win_count; i++)
     {
-	if (win_list[i].frame == frame)
+	if (win_list[i].frame == event->window ||
+	    win_list[i].window == event->window)
 	{
 	    win_list[i].mapped = map;
 	    break;
@@ -352,32 +430,38 @@ Bool map;
 
     if (i >= win_count)
     {
-	Bool has_xsmp_support, has_save_yourself, has_wm_command;
+	Bool has_xsmp_support, has_save_yourself;
+	Bool has_wm_command, has_transient_for;
 
+	frame = event->window;
 	window = XmuClientWindow (disp, frame);
 
 	has_xsmp_support = HasXSMPsupport (window);
 	has_save_yourself = HasSaveYourself (window);
 	has_wm_command = HasWmCommand (window);
+	has_transient_for = HasTransientFor (window);
 
 	win_list[win_count].frame = frame;
 	win_list[win_count].window = window;
 	win_list[win_count].mapped = map;
 	win_list[win_count].has_save_yourself = has_save_yourself;
+	win_list[win_count].waiting_for_update = 0;
 
-	if (!has_xsmp_support && (has_save_yourself || has_wm_command))
-	    ConnectToSM (&win_list[win_count]);
+	if (!has_xsmp_support && !has_transient_for &&
+	    (has_save_yourself || has_wm_command))
+	        ConnectToSM (&win_list[win_count]);
 	else
 	    win_list[win_count].smc_conn = NULL;
 
 	if (debug)
 	{
 	    printf ("Added window\n");
-	    printf ("    frame = %x\n", frame);
-	    printf ("    window = %x\n", window);
+	    printf ("    frame = 0x%x\n", frame);
+	    printf ("    window = 0x%x\n", window);
 	    printf ("    has SM_CLIENT_ID = %d\n", has_xsmp_support);
 	    printf ("    has WM_SAVE_YOURSELF = %d\n", has_save_yourself);
 	    printf ("    has WM_COMMAND = %d\n", has_wm_command);
+	    printf ("    has WM_TRANSIENT_FOR = %d\n", has_transient_for);
 	    printf ("\n");
 	}
 
@@ -386,6 +470,7 @@ Bool map;
 }
 
 
+
 void
 HandleDestroy (event)
 
@@ -409,7 +494,7 @@ XDestroyWindowEvent *event;
 
 	    if (debug)
 	    {
-		printf ("Removed window (frame = %x, window = %x)\n",
+		printf ("Removed window (frame = 0x%x, window = 0x%x)\n",
 		    win_list[i].frame, win_list[i].window);
 		printf ("\n");
 	    }
@@ -425,14 +510,50 @@ XDestroyWindowEvent *event;
 
 
 
+void
+HandleUpdate (event)
+
+XPropertyEvent *event;
+
+{
+    Window window = event->window;
+    int i;
+
+    if (event->atom != XA_WM_COMMAND)
+	return;
+
+    for (i = 0; i < win_count; i++)
+    {
+	if (win_list[i].window == window && win_list[i].waiting_for_update)
+	{
+	    if (debug)
+	    {
+		printf ("Received Prop Notify on 0x%x\n", win_list[i].window);
+		printf ("\n");
+	    }
+
+	    /* We are no longer waiting for the update */
+
+	    win_list[i].waiting_for_update = 0;
+	    XSelectInput (disp, win_list[i].window, NoEventMask);
+
+
+	    /* Finish off the Save Yourself */
+
+	    FinishSaveYourself (&win_list[i]);
+	    break;
+	}
+    }
+}
+
+
+
 main (argc, argv)
 
 int argc;
 char **argv;
 
 {
-    Widget topLevel;
-
     if (argc > 1)
     {
 	debug = (argc == 2 && strcmp (argv[1], "-debug") == 0);
@@ -452,7 +573,9 @@ char **argv;
 
     XSelectInput (disp, root, SubstructureNotifyMask);
 
+    wmProtocolsAtom = XInternAtom (disp, "WM_PROTOCOLS", False);
     wmSaveYourselfAtom = XInternAtom (disp, "WM_SAVE_YOURSELF", False);
+    wmTransientForAtom = XInternAtom (disp, "WM_TRANSIENT_FOR", False);
     smClientIdAtom = XInternAtom (disp, "SM_CLIENT_ID", False);
 
     while (1)
@@ -461,13 +584,27 @@ char **argv;
 
 	XtAppNextEvent (appContext, &event);
 
-	if (event.type == MapNotify)
+	switch (event.type)
+	{
+	case MapNotify:
 	    HandleMap (&event.xmap, 1);
-	else if (event.type == UnmapNotify)
+	    break;
+
+	case UnmapNotify:
 	    HandleMap (&event.xunmap, 0);
-	else if (event.type == DestroyNotify)
+	    break;
+
+	case DestroyNotify:
 	    HandleDestroy (&event.xdestroywindow);
-	else
+	    break;
+
+	case PropertyNotify:
+	    HandleUpdate (&event.xproperty);
+	    break;
+
+	default:
 	    XtDispatchEvent (&event);
+	    break;
+	}
     }
 }
