@@ -1,5 +1,5 @@
 /*
- * $XConsortium: EditResCom.c,v 1.2 90/02/14 14:56:38 kit Exp $
+ * $XConsortium: EditResCom.c,v 1.3 90/03/05 17:51:42 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -732,7 +732,7 @@ Cardinal *end, *bytes;
  *	Returns: none.
  */
 
-#define EXTRA_CHARS 4		/* Space for the static characters. */
+#define EXTRA_CHARS 5		/* Space for the static characters. */
 
 static void
 DumpName(w, parent_name, list, end, bytes)
@@ -740,10 +740,16 @@ Widget w;
 char *parent_name, **list;
 Cardinal *end, *bytes;
 {
-    char * name, *class, *ptr, id[BUFSIZ];
+    char * name, *class, *ptr, id[BUFSIZ], window[BUFSIZ];
     int len, more_mem;
 
-    sprintf(id, "%ld", w);
+    sprintf(id, "%ld", (long) w);
+
+    if (XtIsWidget(w))
+	sprintf(window, "%ld", (long) XtWindow(w));
+    else
+	strcpy(window, "0");
+
     name = XtName(w);
 
     if (XtIsApplicationShell(w)) {
@@ -753,7 +759,9 @@ Cardinal *end, *bytes;
     else
 	class = XtClass(w)->core_class.class_name;
 
-    len = strlen(parent_name) + strlen(class) + strlen(id) + EXTRA_CHARS + 1; 
+    len = strlen(parent_name) + strlen(class) + 
+	  strlen(id) + strlen(window) + EXTRA_CHARS + 1; 
+
     if (name != NULL)
 	len += strlen(name);
 
@@ -765,11 +773,13 @@ Cardinal *end, *bytes;
     ptr = *list + *end;
     
     if (name == NULL)
-	sprintf(ptr, "%s%c%c%s%c%s\n", parent_name, NAME_SEPARATOR, 
-		ID_SEPARATOR, id, CLASS_SEPARATOR, class);
+	sprintf(ptr, "%s%c%c%s%c%s%c%s\n", parent_name, NAME_SEPARATOR, 
+		ID_SEPARATOR, id, CLASS_SEPARATOR, class,
+		WINDOW_SEPARATOR, window);
     else
-	sprintf(ptr, "%s%c%s%c%s%c%s\n", parent_name, NAME_SEPARATOR,
-		name, ID_SEPARATOR, id, CLASS_SEPARATOR, class);
+	sprintf(ptr, "%s%c%s%c%s%c%s%c%s\n", parent_name, NAME_SEPARATOR,
+		name, ID_SEPARATOR, id, CLASS_SEPARATOR, class,
+		WINDOW_SEPARATOR, window);
 
     *end += (len - 1);
 }
