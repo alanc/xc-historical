@@ -1,5 +1,5 @@
 /*
- * $XConsortium: listres.c,v 1.4 89/07/10 18:56:08 jim Exp $
+ * $XConsortium: listres.c,v 1.5 89/07/10 19:03:44 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -35,6 +35,7 @@
 static XrmOptionDescRec listres_options[] = {
   { "-known", "*listKnown", XrmoptionNoArg, (caddr_t) "on" },
   { "-objects", "*showObjects", XrmoptionNoArg, (caddr_t) "on" },
+  { "-format", "*resourceFormat", XrmoptionSepArg, (caddr_t) NULL },
 };
 
 static struct _appresources {
@@ -60,13 +61,15 @@ char *ProgramName;
 
 usage ()
 {
-    fprintf (stderr, "usage:  %s [-options...]\n", ProgramName);
-    fprintf (stderr, "\nwhere options include:\n");
-    fprintf (stderr,
-	     "    -known            list known widget classes\n");
-    fprintf (stderr,
-	     "    -objects          include object prefixes in listings\n");
-    fprintf (stderr, "\n");
+    fprintf(stderr, "usage:  %s [-options...]\n", ProgramName);
+    fprintf(stderr, "\nwhere options include:\n");
+    fprintf(stderr,
+	    "    -known            list known widget classes\n");
+    fprintf(stderr,
+	    "    -objects          include object prefixes in listings\n");
+    fprintf(stderr,
+	    "    -format string    printf format for instance, class, type\n");
+    fprintf(stderr, "\n");
     exit (1);
 }
 
