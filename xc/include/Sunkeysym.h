@@ -1,4 +1,4 @@
-/* $XConsortium: Sunkeysym.h,v 1.0 88/09/06 15:55:54 jim Exp $ */
+/* $XConsortium: Sunkeysym.h,v 1.1 91/06/19 12:03:42 rws Exp $ */
 
 /************************************************************
 Copyright 1991 by Sun Microsystems, Inc. Mountain View, CA.
@@ -35,6 +35,9 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define	SunXK_FA_Grave		0x1005FF00
 #define	SunXK_FA_Circum		0x1005FF01
 #define	SunXK_FA_Tilde		0x1005FF02
+#define	SunXK_FA_Acute		0x1005FF03
+#define	SunXK_FA_Diaeresis	0x1005FF04
+#define	SunXK_FA_Cedilla	0x1005FF05
 
 /*
  * Miscellaneous Functions
