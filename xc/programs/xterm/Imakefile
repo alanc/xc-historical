@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.53 91/09/17 09:43:13 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.54 91/09/22 11:17:56 rws Exp $
 XCOMM
 XCOMM                         Attention xterm porters
 XCOMM
@@ -69,8 +69,12 @@ NormalProgramTarget(xterm,$(OBJS1),$(DEPLIBS1),XawClientLibs,$(TERMCAPLIB) $(PTY
 #if OSMajorVersion > 4 || (OSMajorVersion == 4 && OSMinorVersion >= 1)
 LDOVERRIDE = -L$(DESTDIR)$(USRLIBDIR)
 #else
+#if HasGcc
+LDOVERRIDE = -static -L$(DESTDIR)$(USRLIBDIR)
+#else
 LDOVERRIDE = -Bstatic -L$(DESTDIR)$(USRLIBDIR)
 LDRESUME = -Bdynamic
+#endif
 #endif
 #endif
 install:: xterm
