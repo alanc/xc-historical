@@ -1,4 +1,4 @@
-/* $XConsortium: showfont.c,v 1.8 92/05/19 17:51:51 gildea Exp $ */
+/* $XConsortium: showfont.c,v 1.9 92/05/19 17:55:40 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -36,8 +36,8 @@
 	:(nbytes) == 8 ? ((((bits)+63)>>3)&~7)  /* pad to 8 bytes */ \
 	: 0)
 
-int         byteorder = MSBFirst; /* -L or -M */
-int         bitorder = MSBFirst; /* -l or -m */
+int         byteorder = MSBFirst; /* -LSB or -MSB */
+int         bitorder = MSBFirst; /* -lsb or -msb */
 int         bitmap_pad = 0;	/* -bitmap_pad: ImageRect bitmap format */
 int         scan_pad = 8;	/* -pad: ScanlinePad */
 int         scan_unit = 8;	/* -unit: ScanlineUnit */
@@ -57,7 +57,7 @@ static fsBitmapFormat make_format();
 static void
 usage()
 {
-    printf("%s: [-server servername] [-extents_only] [-noprops] [-l] [-m] [-L] -[M] [-unit #] [-pad #] [-bitmap_pad value] [-start first_char] [-end last_char] -fn fontname\n", cmd);
+    printf("%s: [-server servername] [-extents_only] [-noprops] [-lsb] [-msb] [-LSB] [-MSB] [-unit #] [-pad #] [-bitmap_pad value] [-start first_char] [-end last_char] -fn fontname\n", cmd);
     exit(0);
 }
 
@@ -89,13 +89,13 @@ main(argc, argv)
 	    extents_only = True;
 	} else if (!strncmp(argv[i], "-noprops", 7)) {
 	    no_props = True;
-	} else if (!strncmp(argv[i], "-l", 2)) {
+	} else if (!strncmp(argv[i], "-lsb", 4)) {
 	    bitorder = LSBFirst;
-	} else if (!strncmp(argv[i], "-m", 2)) {
+	} else if (!strncmp(argv[i], "-msb", 4)) {
 	    bitorder = MSBFirst;
-	} else if (!strncmp(argv[i], "-L", 2)) {
+	} else if (!strncmp(argv[i], "-LSB", 4)) {
 	    byteorder = LSBFirst;
-	} else if (!strncmp(argv[i], "-M", 2)) {
+	} else if (!strncmp(argv[i], "-MSB", 4)) {
 	    byteorder = MSBFirst;
 	} else if (!strncmp(argv[i], "-p", 2)) {
 	    if (argv[++i])
