@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: utils.c,v 1.60 88/08/21 10:34:00 rws Exp $ */
+/* $Header: utils.c,v 1.61 88/08/29 15:29:12 jim Exp $ */
 #include <stdio.h>
 #include "Xos.h"
 #include "misc.h"
@@ -51,6 +51,8 @@ pointer minfree = NULL;
 
 int ErrorfOn = 1;
 int MessagefOn = 0;
+
+char *dev_tty_from_init = NULL;		/* since we need to parse it anyway */
 
 /* Force connections to close on SIGHUP from init */
 
@@ -145,7 +147,7 @@ GetTimeInMillis()
 
 void UseMsg()
 {
-    ErrorF("use: X [:<display>] [option] [<tty>]\n");
+    ErrorF("use: X [:<display>] [option]\n");
     ErrorF("-a #                   mouse acceleration (pixels)\n");
     ErrorF("-bp<:screen> color     BlackPixel for screen\n");
     ErrorF("-c                     turns off key-click\n");
@@ -171,6 +173,8 @@ void UseMsg()
     ErrorF("-v                     screen-saver without video blanking\n");
     ErrorF("-wm                    WhenMapped default backing-store\n");
     ErrorF("-wp<:screen> color     WhitePixel for screen\n");
+    ErrorF("-I                     ignore all remaining arguments\n");
+    ErrorF("ttyxx                  server started from init on /dev/ttyxx\n");
     ddxUseMsg();
 }
 
@@ -334,9 +338,19 @@ char	*argv[];
 	     * to do when we see a -x.  Either the extension is linked in or
 	     * it isn't */
 	}
+	else if ( strcmp( argv[i], "-I") == 0)
+	{
+	    /* ignore all remaining arguments */
+	    break;
+	}
+	else if (strncmp (argv[i], "tty", 3) == 0)
+	{
+	    /* just in case any body is interested */
+	    dev_tty_from_init = argv[i];
+	}
 	else {
 	    UseMsg();
-	    exit(1);
+	    exit (1);
         }
     }
 }
