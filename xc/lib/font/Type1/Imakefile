@@ -1,3 +1,5 @@
+XCOMM $XConsortium$
+
 #include <Server.tmpl>
 
 INCLUDES = -I$(FONTSRC)/lib/font/include \

@@ -1,3 +1,4 @@
+/* $XConsortium$ */
  
 #include "ximager5.h"
  

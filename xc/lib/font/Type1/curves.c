@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /* Copyright International Business Machines,Corp. 1991              */
 /* All Rights Reserved                                               */
  
