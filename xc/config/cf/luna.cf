@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: luna.cf,v 1.8 91/04/09 14:40:50 rws Exp $
+XCOMM platform:  $XConsortium: luna.cf,v 1.9 91/04/09 20:28:00 rws Exp $
 #ifdef Mc68000Architecture
 #define OSName            UNIOS-B 4.3BSD UNIX: 1.50
 #define OSMajorVersion    1
@@ -11,13 +11,16 @@ XCOMM platform:  $XConsortium: luna.cf,v 1.8 91/04/09 14:40:50 rws Exp $
 #endif
 XCOMM operating system:  OSName
 
+#ifdef Mc68000Architecture
+/* Is -Dluna really needed, or does the compiler supply it? */
 #define BootstrapCFlags		-Dluna
-#define StandardDefines		-Dluna -DNOSTDHDRS
+#define StandardDefines		-Dluna
+#endif
 #define HasPutenv		NO
 #define HasBsearch		NO
 #define HasSaberC		NO
 #define HasVoidSignalReturn	NO
-#define HasGcc			YES	/* XXX remove in R5 */
+#define HasGcc			YES
 
 #define PrimaryScreenResolution 100
 
@@ -28,6 +31,7 @@ XCOMM operating system:  OSName
 #endif
 
 #ifdef Mc88000Architecture
-#define BuildServer		YES /* XXX remove in R5 */
+#define BuildBdfFonts		NO		/* XXX remove in R5 */
+#define BuildServer		YES		/* XXX remove in R5 */
 #define XnonServer Xnon /* XXX remove in R5 */
 #endif
