@@ -1,4 +1,4 @@
-/* $XConsortium: miSearch.c,v 5.2 91/05/01 14:47:36 hersh Exp $ */
+/* $XConsortium: miSearch.c,v 5.3 91/05/12 16:11:38 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -199,10 +199,11 @@ miSearchPrimitives(pRend, pExecuteOC)
       miMatMult (pDDC->Dynamic->wc_to_cc_xform, 
 		 pDDC->Dynamic->wc_to_npc_xform, buf1_xform);
 
-      /* Get mc_to_cc_xform = (mc_to_npc_xform * buf1_xform) */
+      /* Get mc_to_cc_xform = (mc_to_wc_xform * wc_to_cc_xform) */
 
       miMatMult (pDDC->Dynamic->mc_to_cc_xform, 
-		 pDDC->Dynamic->mc_to_npc_xform, buf1_xform);
+		 pDDC->Dynamic->mc_to_wc_xform,
+		 pDDC->Dynamic->wc_to_cc_xform);
 
       /* Now, call the level 2 rendering function to transform and */
       /* clip the primitive. Note that the level 1 function vector */
