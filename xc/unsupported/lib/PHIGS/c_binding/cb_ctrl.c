@@ -1,4 +1,4 @@
-/* $XConsortium: cb_ctrl.c,v 5.2 91/04/04 17:04:32 hersh Exp $ */
+/* $XConsortium: cb_ctrl.c,v 5.3 91/04/05 16:54:33 gildea Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -30,12 +30,6 @@ SOFTWARE.
 #include "phg_dt.h"
 #include "cp.h"
 #include "cb_priv.h"
-#include "version.h"
-
-#ifndef lint
-/* Force version string to be included. */
-static char **version = &phg_version_string; 
-#endif
 
 #ifndef X_NOT_STDC_ENV
 #include <stdlib.h>

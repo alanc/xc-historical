@@ -1,4 +1,4 @@
-/* $XConsortium: phigsmon.c,v 5.6 91/05/10 19:45:07 hersh Exp $ */
+/* $XConsortium: phigsmon.c,v 5.7 91/05/30 08:59:00 jap Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -38,15 +38,11 @@ SOFTWARE.
 #include <sys/socket.h>
 #include <fcntl.h>
 #include <signal.h>
-#include "version.h"
 #ifdef AIXV3
 #include <sys/ioctl.h>
 #endif
 
 #define CPR_CMD_TIMEOUT		250000
-
-/* force phg_version_string into the .o */
-static char **version = &phg_version_string;
 
 #ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
