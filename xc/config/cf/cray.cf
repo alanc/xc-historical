@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: cray.cf,v 1.35 92/12/23 16:56:52 gildea Exp $
+XCOMM platform:  $XConsortium: cray.cf,v 1.36 92/12/23 17:53:30 gildea Exp $
 
 #define OSName			UNICOS 6.1
 XCOMM operating system:  OSName
@@ -12,7 +12,7 @@ XCOMM operating system:  OSName
 #define ArCmd			bld cr
 #define StandardDefines		-DSYSV -DUSG
 #define ExecableScripts		NO
-#define BuildServer		NO
+#define HasXServer		NO
 #define BuildPex		NO
 #define CcCmd			scc
 #define PostIncDir		/usr/include/stdc
