@@ -1,4 +1,4 @@
-/* $XConsortium: protoflo.c,v 1.1 93/10/26 09:57:41 rws Exp $ */
+/* $XConsortium: protoflo.c,v 1.2 93/10/26 13:13:22 rws Exp $ */
 /**** module protoflo.c ****/
 /****************************************************************************
 				NOTICE
@@ -480,7 +480,7 @@ int ProcPutClientData(client)
     if(stuff->byteCount & 1)
       ValueError(flo,ped,stuff->byteCount, goto egress);
     if (client->swapped) 
-      SwapShorts((CARD16*)&stuff[1],stuff->byteCount>>1);
+      SwapShorts((short*)&stuff[1],stuff->byteCount>>1);
     break;
   case  4:
   case  8:
