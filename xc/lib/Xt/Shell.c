@@ -64,7 +64,7 @@ static int fivesecond = 5000;
  * Shell class record
  *
  ***************************************************************************/
-static Pixmap none = None;
+static Pixmap unspecified = ~0;
 #define Offset(x)	(XtOffset(ShellWidget, x))
 static XtResource shellResources[]=
 {
@@ -81,7 +81,7 @@ static XtResource shellResources[]=
 	{ XtNpopupCallback, XtCCallback, XtRCallback, sizeof(caddr_t),
 	    Offset(shell.popup_callback), XtRCallback, (caddr_t) NULL},
         { XtNbackgroundPixmap, XtCBackground, XtRPixmap, sizeof(Pixmap),
-           XtOffset(Widget,core.background_pixmap), XtRPixmap,(caddr_t)&none},
+           XtOffset(Widget,core.background_pixmap), XtRPixmap, (caddr_t)&unspecified},
 	{ XtNpopdownCallback, XtCCallback, XtRCallback, sizeof(caddr_t),
 	    Offset(shell.popdown_callback), XtRCallback, (caddr_t) NULL},
 	{ XtNoverrideRedirect, XtCOverrideRedirect,
@@ -595,6 +595,37 @@ static void Realize(wid, vmask, attr)
 	ShellWidget w = (ShellWidget) wid;
         Mask mask = *vmask;
 
+	/* I attempt to inherit my child's background to avoid screen flash
+	 * if there is latency between when I get resized and when my child
+	 * is resized.  Background=None is not satisfactory, as I want the
+	 * user to get immediate feedback on the new dimensions.  It is
+	 * especially important to have the server clear any old cruft
+	 * from the display when I am resized larger */
+
+	if (w->composite.num_children > 0) {
+	    Widget child;
+	    if (w->composite.num_mapped_children == 0)
+		child = w->composite.children[0];
+	    else {
+		int i;
+		for (i = 0; i < w->composite.num_children; i++) {
+		    if (XtIsManaged(child = w->composite.children[i]))
+			break;
+		}
+	    }
+	    if (child->core.background_pixmap) {
+		mask &= ~(CWBackPixel);
+		mask |= CWBackPixmap;
+		attr->background_pixmap = child->core.background_pixmap;
+	    } else {
+		attr->background_pixel = child->core.background_pixel;
+	    }
+	}
+	else {
+	    mask |= CWBackPixel;
+	    mask &= ~(CWBackPixmap);
+	    attr->background_pixel = w->core.background_pixel;
+	}
 	if(w->shell.save_under) {
 		mask |= CWSaveUnder;
 		attr->save_under = TRUE;
