@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.38 89/12/09 16:24:11 jim Exp $
+ *	$XConsortium: ptyx.h,v 1.39 89/12/09 17:24:01 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -53,12 +53,6 @@
 */
 
 #ifdef SYSV
-
-#ifdef SIGTSTP
-#define	getpgrp		getpgrp2
-#else	/* !SIGTSTP */
-#define	getpgrp(x)	(x)
-#endif	/* !SIGTSTP */
 
 #define	killpg(x,sig)	kill(-x,sig)
 
