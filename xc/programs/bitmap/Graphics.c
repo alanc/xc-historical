@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Graphics.c,v 1.10 91/01/26 18:10:25 dmatic Exp $
+ * $XConsortium: Graphics.c,v 1.11 91/02/10 17:13:04 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -39,8 +39,8 @@
 
 #define XtStrlen(s)                   ((s) ? strlen(s) : 0)
 #define abs(x)                        (((x) > 0) ? (x) : -(x))
-#define min(x, y)                     (((x) < (y)) ? (x) : (y))
-#define max(x, y)                     (((x) > (y)) ? (x) : (y))
+#define min(x, y)                     (((int)(x) < (int)(y)) ? (x) : (y))
+#define max(x, y)                     (((int)(x) > (int)(y)) ? (x) : (y))
 #ifdef SYSV 
 #define rint(x)                       floor(x + 0.5)
 #endif
