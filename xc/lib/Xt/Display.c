@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Display.c,v 1.29 89/09/21 09:09:13 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Display.c,v 1.30 89/09/22 14:44:40 kit Exp $";
 /* $oHeader: Display.c,v 1.9 88/09/01 11:28:47 asente Exp $ */
 #endif /*lint*/
 
@@ -236,6 +236,7 @@ XtDisplayInitialize(app, dpy, name, classname, urlist, num_urs, argc, argv)
 	pd->rv = False;
 	pd->xa_wm_colormap_windows = None; /* Initialize this to None unless
 					      we need to use it.*/
+	pd->last_timestamp = 0;
 	_XtHeapInit(&pd->heap);
 
 	_XtDisplayInitialize(dpy, pd, name, classname, urlist, 
@@ -325,20 +326,16 @@ XrmDatabase XtDatabase(dpy)
     return (XrmDatabase) dpy -> db;
 }
 
-typedef struct _PerDisplayTable {
-	Display *dpy;
-	XtPerDisplayStruct perDpy;
-	struct _PerDisplayTable *next;
-} PerDisplayTable, *PerDisplayTablePtr;
+PerDisplayTablePtr _XtperDisplayList = NULL;
 
-static PerDisplayTablePtr perDisplayList = NULL;
-
-XtPerDisplay _XtGetPerDisplay(dpy)
+XtPerDisplay _XtSortPerDisplayList(dpy)
 	Display *dpy;
 {
 	register PerDisplayTablePtr pd, opd;
 
-	for (pd = perDisplayList; pd != NULL && pd->dpy != dpy; pd = pd->next){
+	for (pd = _XtperDisplayList;
+	     pd != NULL && pd->dpy != dpy;
+	     pd = pd->next) {
 	    opd = pd;
 	}
 
@@ -348,12 +345,12 @@ XtPerDisplay _XtGetPerDisplay(dpy)
 		    (String *) NULL, (Cardinal *)NULL);
 	}
 
-	if (pd != perDisplayList) {	/* move it to the front */
+	if (pd != _XtperDisplayList) {	/* move it to the front */
 	    /* opd points to the previous one... */
 
 	    opd->next = pd->next;
-	    pd->next = perDisplayList;
-	    perDisplayList = pd;
+	    pd->next = _XtperDisplayList;
+	    _XtperDisplayList = pd;
 	}
 
 	return &(pd->perDpy);
@@ -421,8 +418,8 @@ static XtPerDisplay NewPerDisplay(dpy)
 	pd = XtNew(PerDisplayTable);
 
 	pd->dpy = dpy;
-	pd->next = perDisplayList;
-	perDisplayList = pd;
+	pd->next = _XtperDisplayList;
+	_XtperDisplayList = pd;
 
 	return &(pd->perDpy);
 }
@@ -436,7 +433,9 @@ static void CloseDisplay(dpy)
         register XtPerDisplay xtpd;
 	register PerDisplayTablePtr pd, opd;
 	
-	for (pd = perDisplayList; pd != NULL && pd->dpy != dpy; pd = pd->next){
+	for (pd = _XtperDisplayList;
+	     pd != NULL && pd->dpy != dpy;
+	     pd = pd->next){
 	    opd = pd;
 	}
 
@@ -446,7 +445,7 @@ static void CloseDisplay(dpy)
 		    (String *) NULL, (Cardinal *)NULL);
 	}
 
-	if (pd == perDisplayList) perDisplayList = pd->next;
+	if (pd == _XtperDisplayList) _XtperDisplayList = pd->next;
 	else opd->next = pd->next;
 
 	xtpd = &(pd->perDpy);

@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.18 89/09/21 09:06:15 swick Exp $ */
+/* $XConsortium: InitialI.h,v 1.19 89/09/22 14:43:45 kit Exp $ */
 /* $oHeader: InitializeI.h,v 1.8 88/09/01 11:25:04 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -148,6 +148,7 @@ typedef struct _XtPerDisplayStruct {
     KeySym *modKeysyms;                /* keysym values for modToKeysysm */
     ModToKeysymTable *modsToKeysyms;   /* modifiers to Keysysms index table*/
     Boolean being_destroyed;
+    Boolean rv;			       /* reverse_video resource */
     XrmName name;		       /* resolved app name */
     XrmClass class;		       /* application class */
     Heap heap;
@@ -155,16 +156,36 @@ typedef struct _XtPerDisplayStruct {
     Drawable* drawables;	       /* support for XtGetGC */
     Cardinal drawable_count;	       /* num entries in above list */
     String language;		       /* XPG language string */
-    Boolean rv;			       /* reverse_video resource */
     Atom xa_wm_colormap_windows;       /* the WM_COLORMAP_WINDOWS atom.
 					  this is currently only used in 
 					  XtSetColormapWindows. */
+    Time last_timestamp;	       /* from last event dispatched */
 } XtPerDisplayStruct, *XtPerDisplay;
 
 extern void _XtPerDisplayInitialize();
 
-extern XtPerDisplay _XtGetPerDisplay();
+typedef struct _PerDisplayTable {
+	Display *dpy;
+	XtPerDisplayStruct perDpy;
+	struct _PerDisplayTable *next;
+} PerDisplayTable, *PerDisplayTablePtr;
+
+extern PerDisplayTablePtr _XtperDisplayList;
+
+extern XtPerDisplay _XtSortPerDisplayList();
     /* Display *dpy */
+
+#ifdef DEBUG
+#define _XtGetPerDisplay(display) \
+    ((_XtperDisplayList != NULL && (_XtperDisplayList->dpy == (display))) \
+     ? &_XtperDisplayList->perDpy \
+     : _XtSortPerDisplayList(display))
+#else
+#define _XtGetPerDisplay(display) \
+    ((_XtperDisplayList->dpy == (display)) \
+     ? &_XtperDisplayList->perDpy \
+     : _XtSortPerDisplayList(display))
+#endif /*DEBUG*/
 
 extern XtAppContext XtDisplayToApplicationContext();
     /* Display *dpy */
