@@ -1,4 +1,4 @@
-/* $XConsortium: XExtInt.c,v 1.8 89/12/06 20:31:36 rws Exp $ */
+/* $XConsortium: XExtInt.c,v 1.9 89/12/08 18:17:29 converse Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -46,7 +46,7 @@ static	XExtensionInfo *xinput_info;
 static	/* const */ char *xinput_extension_name = INAME;
 static	int XInputClose();
 static  char *XInputError();
-Bool	XInputWireToEvent();
+static Bool XInputWireToEvent();
 Status	XInputEventToWire();
 static	/* const */ XEvent	emptyevent;
 
@@ -107,11 +107,11 @@ CheckExtInit(dpy, major_version)
 	ext = XGetExtensionVersion (dpy, "XInputExtension");
 	if (ext->major_version < major_version)
 	    {
-	    XFree (ext);
+	    XFree ((char *)ext);
     	    UnlockDisplay(dpy);
 	    return (-1);
 	    }
-	XFree (ext);
+	XFree ((char *)ext);
 	}
     return (0);
     }

@@ -1,4 +1,4 @@
-/* $XConsortium: XListDev.c,v 1.5 89/10/12 17:04:07 gms Exp $ */
+/* $XConsortium: XListDev.c,v 1.6 89/12/06 20:38:44 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -195,7 +195,7 @@ XDeviceInfo
 	    }
 	}
 
-    XFree (slist);
+    XFree ((char *)slist);
     UnlockDisplay(dpy);
     SyncHandle();
     return (sclist);

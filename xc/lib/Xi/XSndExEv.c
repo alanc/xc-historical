@@ -1,4 +1,4 @@
-/* $XConsortium: XSndExEv.c,v 1.3 89/09/25 16:21:20 gms Exp $ */
+/* $XConsortium: XSndExEv.c,v 1.4 89/12/06 20:38:57 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -89,7 +89,7 @@ XSendExtensionEvent (dpy, dev, dest, prop, count, list, event)
 
 	count <<= 2;
 	Data (dpy, (char *) list, count);
-	XFree (ev);
+	XFree ((char *)ev);
 	}
 
     UnlockDisplay(dpy);
