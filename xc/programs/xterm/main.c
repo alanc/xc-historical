@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.86 88/09/13 16:02:47 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.87 88/09/14 13:22:45 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -593,14 +593,11 @@ char **argv;
 			get_ty[strlen(get_ty) - 2];
 		ptydev[strlen(ptydev) - 1] = ttydev[strlen(ttydev) - 1] =
 			get_ty[strlen(get_ty) - 1];
-		(void) close (0);	/* stdin */
 		if ((loginpty = open(ptydev, O_RDWR, 0)) < 0) {
 			consolepr("pty open of \"%s\" failed, ttydev \"%s\", get_ty \"%s\"\n",
 				  ptydev, ttydev, get_ty);
 			exit(ERROR_PTYS);
 		}
-		dup2 (0, 1);		/* stdout */
-		dup2 (0, 2);		/* stderr */
 		chown(ttydev, 0, 0);
 		chmod(ttydev, 0622);
 		continue;
@@ -771,6 +768,9 @@ char **argv;
 #else	/* USE_SYSV_TERMIO */
 		fileno(stderr) = i;
 #endif	/* USE_SYSV_TERMIO */
+
+		/* mark this file as close on exec */
+		(void) fcntl(i, F_SETFD, 1);
 	}
 
 	/* open a terminal for client */
@@ -954,7 +954,6 @@ typedef enum {		/* c == child, p == parent                        */
 	PTY_NOMORE,	/* p->c; no more pty's, terminate                 */
 	UTMP_ADDED,	/* c->p: utmp entry has been added                */
 	UTMP_TTYSLOT,	/* c->p: here is my ttyslot                       */
-	ACK,		/* m->s: thanks for letting me know               */
 } status_t;
 
 typedef struct {
@@ -997,6 +996,7 @@ spawn ()
  *  If slave, the pty named in passedPty is already open for use
  */
 {
+	extern char *SysErrorMsg();
 	register TScreen *screen = &term->screen;
 	int Xsocket = screen->display->fd;
 	handshake_t handshake;
@@ -1238,6 +1238,23 @@ spawn ()
 		close (cp_pipe[0]);
 		close (pc_pipe[1]);
 
+		/* Make sure that our sides of the pipes are not in the
+		 * 0, 1, 2 range so that we don't fight with stdin, out
+		 * or err.
+		 */
+		if (cp_pipe[1] <= 2) {
+			if ((i = fcntl(cp_pipe[1], F_DUPFD, 3)) >= 0) {
+				(void) close(cp_pipe[1]);
+				cp_pipe[1] = i;
+			}
+		}
+		if (pc_pipe[0] <= 2) {
+			if ((i = fcntl(pc_pipe[0], F_DUPFD, 3)) >= 0) {
+				(void) close(pc_pipe[0]);
+				pc_pipe[0] = i;
+			}
+		}
+
 		/* we don't need the socket, or the pty master anymore */
 		close (Xsocket);
 		close (screen->respond);
@@ -1249,6 +1266,24 @@ spawn ()
 		(void) setpgrp();
 #endif	/* USE_SYSV_PGRP */
 		while (1) {
+#ifdef	USE_SYSV_PGRP
+			if (get_ty) {
+				/* It is not our job to open up the
+				 * tty.  We will let getty do it -- that
+				 * is what it expects.  We need to do this
+				 * because of the way that SYSV tty process
+				 * groups work.  Getty closes fd's 0, 1, 2
+				 * and re-opens them to the line passed to
+				 * it.  When the last close is done to the
+				 * line, it seems to break the tty's connection
+				 * to the current process group, and ^C's no
+				 * longer work.  However, our process group
+				 * is still associated with the line to the
+				 * extent that we can use /dev/tty.
+				 */
+				break;
+			}
+#endif	/* USE_SYSV_PGRP */
 			if ((tty = open(ttydev, O_RDWR, 0)) >= 0) {
 #ifdef	USE_SYSV_PGRP
 				/* We need to make sure that we are acutally
@@ -1256,7 +1291,7 @@ spawn ()
 				 * we are, then we should now be able to open
 				 * /dev/tty.
 				 */
-				if ((i = open("/dev/tty", O_RDWR, 0)) > 0) {
+				if ((i = open("/dev/tty", O_RDWR, 0)) >= 0) {
 					/* success! */
 					close(i);
 					break;
@@ -1296,7 +1331,12 @@ spawn ()
 		/* use the same tty name that everyone else will use
 		** (from ttyname)
 		*/
-		if (ptr = ttyname(tty)) {
+#ifdef	USE_SYSV_PGRP
+		if (!get_ty && (ptr = ttyname(tty)))
+#else	/* USE_SYSV_PGRP */
+		if (ptr = ttyname(tty))
+#endif	/* USE_SYSV_PGRP */
+		{
 			/* it may be bigger */
 			ttydev = realloc (ttydev, (unsigned) (strlen(ptr) + 1));
 			(void) strcpy(ttydev, ptr);
@@ -1440,16 +1480,21 @@ spawn ()
 		/* this is the time to go and set up stdin, out, and err
 		 */
 
-		/* dup the tty */
-		for (i = 0; i <= 2; i++)
-		    if (i != tty) {
-			(void) close(i);
-			(void) dup(tty);
-		    }
+#ifdef	USE_SYSV_PGRP
+		if (!get_ty)
+#endif	/* USE_SYSV_PGRP */
+		{
+		    /* dup the tty */
+		    for (i = 0; i <= 2; i++)
+			if (i != tty) {
+			    (void) close(i);
+			    (void) dup(tty);
+			}
 
-		/* and close the tty */
-		if (tty > 2)
-		    (void) close(tty);
+		    /* and close the tty */
+		    if (tty > 2)
+			(void) close(tty);
+		}
 
 #ifndef	USE_SYSV_PGRP
 		ioctl(0, TIOCSPGRP, (char *)&pgrp);
@@ -1515,7 +1560,7 @@ spawn ()
 
 		if (get_ty && !resource.utmpInhibit) {
 		    /* set wtmp entry if wtmp file exists */
-		    if (fd = open("/etc/wtmp", O_WRONLY | O_APPEND)) {
+		    if ((fd = open("/etc/wtmp", O_WRONLY | O_APPEND)) >= 0) {
 			(void) write(fd, &utmp, sizeof(utmp));
 			(void) close(fd);
 		    }
@@ -1567,8 +1612,18 @@ spawn ()
 		}
 #endif /* TIOCCONS */
 
+#ifdef	SYSV
+		/* Getty is runnable only by root, so we can't set our [ug]ids
+		 * before we try to exec it.
+		 */
+		if (!get_ty) {
+		    setgid (screen->gid);
+		    setuid (screen->uid);
+		}
+#else	/* SYSV */
 		setgid (screen->gid);
 		setuid (screen->uid);
+#endif	/* SYSV */
 
 		/* mark the pipes as close on exec */
 		fcntl(cp_pipe[1], F_SETFD, 1);
@@ -1586,7 +1641,17 @@ spawn ()
 		handshake.status = PTY_GOOD;
 		handshake.error = 0;
 		(void) strcpy(handshake.buffer, ttydev);
+#ifdef	USE_SYSV_PGRP
+		/* If this is going to be a getty, let's leave the pipe
+		 * open so that we can pass through a bad exec of getty.
+		 * If the exec succeedes, the pipe will close and our
+		 * parent will assume success.
+		 */
+		if (!get_ty)
+			(void) write(cp_pipe[1], &handshake, sizeof(handshake));
+#else	/* USE_SYSV_PGRP */
 		(void) write(cp_pipe[1], &handshake, sizeof(handshake));
+#endif	/* !USE_SYSV_PGRP */
 
 		if (command_to_exec) {
 			execvp(*command_to_exec, command_to_exec);
@@ -1600,7 +1665,24 @@ spawn ()
 			ioctl (0, TIOCTTY, &zero);
 #endif /* not mips */
 			execlp (getty_program, "getty", get_ty, "Xwindow", 0);
-
+#ifdef	USE_SYSV_PGRP
+			/* The exec of getty failed.  We can't just go on and
+			 * exec a shell (just pop up a root shell -- never!)
+			 * because we never opened up the tty (pty slave).
+			 * For that reason, we also can't dump something to
+			 * the window.
+			 */
+			handshake.status = PTY_FATALERROR;
+			handshake.error = errno;
+			handshake.fatal_error = ERROR_EXEC;
+			strcpy(handshake.buffer, getty_program);
+			(void) write(cp_pipe[1], &handshake, sizeof(handshake));
+			exit(ERROR_EXEC);
+#else	/* USE_SYSV_PGRP */
+			/* now is the time to set our [ug]id's */
+			setgid (screen->gid);
+			setuid (screen->uid);
+#endif	/* USE_SYSV_PGRP */
 #else	/* !SYSV */
 			ioctl (0, TIOCNOTTY, (char *) NULL);
 			execlp (getty_program, "+", "Xwindow", get_ty, 0);
