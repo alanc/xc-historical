@@ -572,7 +572,8 @@ set_colour_approx_table:
     if ( *ncolors )
 	XChangeProperty( dpy, DefaultRootWindow(dpy), pex_map,
 	                 XA_RGB_COLOR_MAP, 32, PropModeReplace,
-	                 (unsigned char *)&std, sizeof(XStandardColormap)/4 );
+	                 (unsigned char *)&std,
+			sizeof(XStandardColormap)/sizeof(long) );
 
     XSetWindowColormap( dpy, ws->drawable_id, std.colormap);
 
