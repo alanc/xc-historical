@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skySGC.c,v 1.2 91/07/16 13:16:29 jap Exp $
+ * $XConsortium: skySGC.c,v 1.3 91/09/09 13:21:50 rws Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -35,7 +35,7 @@
 
 #include "cfb.h"
 
-extern RegionPtr pgcCopyArea();
+extern RegionPtr skyCopyArea();
 
 void
 skyValidateGC(pGC, changes, pDrawable)
@@ -44,6 +44,9 @@ skyValidateGC(pGC, changes, pDrawable)
     DrawablePtr	    pDrawable;
 {
   cfbValidateGC(pGC,changes,pDrawable);
+
+  /* XXX - What if the ops is static? */
+
   if (pGC->depth == 8)
-    pGC->ops->CopyArea = pgcCopyArea ;
+    pGC->ops->CopyArea = skyCopyArea ;
 }
