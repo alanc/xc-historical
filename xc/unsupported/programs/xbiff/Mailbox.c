@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.58 91/06/13 16:50:32 keith Exp $
+ * $XConsortium: Mailbox.c,v 1.59 91/10/16 21:36:10 eswu Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -26,9 +26,15 @@
 #include <X11/StringDefs.h>		/* for useful atom names */
 #include <X11/cursorfont.h>		/* for cursor constants */
 #include <X11/Xosdefs.h>		/* for X_NOT_POSIX def */
+#ifdef WIN32
+#define _X86_ _M_IX86
+#include <stdlib.h>
+#include <X11/Xw32defs.h>
+#else
+#include <pwd.h>			/* for getting username */
+#endif
 #include <sys/stat.h>			/* for stat() ** needs types.h ***/
 #include <stdio.h>			/* for printing error messages */
-#include <pwd.h>			/* for getting username */
 
 #ifndef X_NOT_POSIX
 #ifdef _POSIX_SOURCE
@@ -49,10 +55,16 @@ typedef int		waitType;
 typedef int		waitType;
 # define INTWAITTYPE
 #else
+#ifdef WIN32
+#include <process.h>
+# define INTWAITTYPE
+typedef int		waitType;
+#else
 # include	<sys/wait.h>
 # define waitCode(w)	((w).w_T.w_Retcode)
 # define waitSig(w)	((w).w_T.w_Termsig)
 typedef union wait	waitType;
+#endif /* WIN32 else */
 #endif /* SYSV else */
 #endif /* ! X_NOT_POSIX else */
 
@@ -512,8 +524,15 @@ static void check_mailbox (w, force_redraw, reset)
 static void GetMailFile (w)
     MailboxWidget w;
 {
-    char *getlogin();
     char *username;
+#ifdef WIN32
+    if (!(username = getenv("USERNAME"))) {
+	fprintf (stderr, "%s:  unable to find a username for you.\n",
+		 "Mailbox widget");
+	CloseDown (w, 1);
+    }
+#else
+    char *getlogin();
 
     username = getlogin ();
     if (!username) {
@@ -526,6 +545,7 @@ static void GetMailFile (w)
 	}
 	username = pw->pw_name;
     }
+#endif
     w->mailbox.filename = (String) XtMalloc (strlen (MAILBOX_DIRECTORY) + 1 +
 				   	     strlen (username) + 1);
     strcpy (w->mailbox.filename, MAILBOX_DIRECTORY);
