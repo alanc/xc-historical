@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mizerline.c,v 1.5 88/05/21 14:28:01 rws Exp $ */
+/* $XConsortium: mizerline.c,v 1.6 88/09/06 14:50:26 jim Exp $ */
 #include "X.h"
 
 #include "misc.h"
@@ -30,7 +30,7 @@ SOFTWARE.
 #include "windowstr.h"
 #include "pixmap.h"
 
-int
+void
 miZeroLine(dst, pgc, mode, nptInit, pptInit)
 DrawablePtr dst;
 GCPtr pgc;
