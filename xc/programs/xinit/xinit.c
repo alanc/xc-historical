@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.27 88/09/13 18:29:33 jim Exp $";
+static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.28 88/09/20 20:47:56 jim Exp $";
 #endif /* lint */
 #include <X11/copyright.h>
 
@@ -413,7 +413,7 @@ startServer(server)
 		 * prevent server from getting sighup from vhangup()
 		 * if client is xterm -L
 		 */
-		setpgrp(0,0);
+		setpgrp(0,getpid());
 
 		execvp(server[0], server);
 		Error ("no server \"%s\" in PATH\n", server[0]);
@@ -525,7 +525,7 @@ shutdown(serverpid, clientpid)
 	if (serverpid < 0)
 		return;
 	errno = 0;
-	if (kill(serverpid, SIGTERM) < 0) {
+	if (killpg(serverpid, SIGTERM) < 0) {
 		if (errno == EPERM)
 			Fatal("Can't kill X server\r\n");
 		if (errno == ESRCH)
@@ -541,7 +541,7 @@ shutdown(serverpid, clientpid)
 		program);
 	fflush(stderr);
 	errno = 0;
-	if (kill(serverpid, SIGKILL) < 0) {
+	if (killpg(serverpid, SIGKILL) < 0) {
 		if (errno == ESRCH)
 			return;
 	}
