@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 1.24 89/03/20 18:04:30 keith Exp $ */
+/* $XConsortium: mibstore.c,v 1.25 89/03/22 10:49:50 rws Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2283,7 +2283,7 @@ miBSClearToBackground(pWin, x, y, w, h, generateExposures)
 		    ev->u.expose.height = pBox->y2 - pBox->y1;
 		    ev->u.expose.count = i + offset;
 		}
-		DeliverEvents(pWin, events, pRgn->numRects, NullWindow);
+		DeliverEvents(pWin, events, (int)pRgn->numRects, NullWindow);
 		DEALLOCATE_LOCAL(events);
 	    }
 	}
@@ -2350,7 +2350,7 @@ miInitBackingStore(pWin, SaveAreas, RestoreAreas, SetClipmaskRgn)
 	pBS = (BackingStorePtr) xalloc(sizeof(BackingStoreRec));
 	if (!pBS)
 	{
-	    FreeGC(pBackingStore->pgcBlt);
+	    FreeGC(pBackingStore->pgcBlt, (GContext)0);
 	    (* pScreen->RegionDestroy)(pBackingStore->pSavedRegion);
 	    xfree(pBackingStore);
 	    return;
@@ -2423,7 +2423,8 @@ miInitBackingStore(pWin, SaveAreas, RestoreAreas, SetClipmaskRgn)
 		pe->u.expose.height = pBox->y2 - pBox->y1;
 		pe->u.expose.count = (pSavedRegion->numRects - i);
 	    }
-	    DeliverEvents(pWin, pEvent, pSavedRegion->numRects, NullWindow);
+	    DeliverEvents(pWin, pEvent, (int)pSavedRegion->numRects,
+			  NullWindow);
 	    DEALLOCATE_LOCAL(pEvent);
 	}
     }
@@ -2454,7 +2455,7 @@ miFreeBackingStore(pWin)
 
     if (pBackingStore)
     {
-	FreeGC(pBackingStore->pgcBlt);
+	FreeGC(pBackingStore->pgcBlt, (GContext)0);
 	miDestroyBSPixmap (pWin);
 
 	(* pScreen->RegionDestroy)(pBackingStore->pSavedRegion);
@@ -2965,7 +2966,7 @@ miBSDestroyGC (pGC, pGCI)
 {
     MIBSGCPrivPtr pPriv = (MIBSGCPrivPtr) pGC->devBackingStore;
     
-    FreeGC(pPriv->pBackingGC);
+    FreeGC(pPriv->pBackingGC, (GContext)0);
     xfree(pGC->devBackingStore);
     xfree(pGCI);
 }
@@ -3058,7 +3059,7 @@ miValidateBackingStore(pDrawable, pGC, procChanges)
     MIBackingStorePtr	pBackingStore;
     MIBSGCPrivPtr 	pPriv;
     WindowPtr		pWin;
-    int	    	  	stateChanges;
+    unsigned long	stateChanges;
     register int  	index, mask;
     int			lift_functions;
     RegionPtr		backingCompositeClip = NULL;
