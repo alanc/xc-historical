@@ -1,4 +1,4 @@
-/* $XConsortium: SMlibint.h,v 1.8 93/09/28 10:42:19 mor Exp $ */
+/* $XConsortium: SMlibint.h,v 1.9 93/11/08 16:35:06 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -167,8 +167,9 @@ extern IcePoVersionRec	_SmcVersions[];
 extern IcePaVersionRec	_SmsVersions[];
 
 extern int	        _SmAuthCount;
-extern IcePoAuthRec	_SmcAuthRecs[];
-extern IcePaAuthRec	_SmsAuthRecs[];
+extern char		*_SmAuthNames[];
+extern IcePoAuthProc	_SmcAuthProcs[];
+extern IcePaAuthProc	_SmsAuthProcs[];
 
 extern SmsNewClientProc	_SmsNewClientProc;
 extern SmPointer	_SmsNewClientData;

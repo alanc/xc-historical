@@ -1,4 +1,4 @@
-/* $XConsortium: globals.h,v 1.4 93/09/27 11:47:19 mor Exp $ */
+/* $XConsortium: globals.h,v 1.5 93/11/08 16:35:16 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -42,14 +42,9 @@ IcePaVersionRec _SmsVersions[] = {
 	  	    {SmProtoMajor, SmProtoMinor, _SmsProcessMessage}};
 
 int		_SmAuthCount = 2;
-
-IcePoAuthRec 	_SmcAuthRecs[] = {
-		    {"SM-AUTH-TEST-1", _SmcAuth1proc},
-		    {"SM-AUTH-TEST-2", _SmcAuth2proc}};
-
-IcePaAuthRec 	_SmsAuthRecs[] = {
-		    {"SM-AUTH-TEST-1", _SmsAuth1proc},
-		    {"SM-AUTH-TEST-2", _SmsAuth2proc}};
+char		*_SmAuthNames[] = {"SM-AUTH-TEST-1", "SM-AUTH-TEST-2"};
+IcePoAuthProc 	_SmcAuthProcs[] = {_SmcAuth1proc, _SmcAuth2proc};
+IcePaAuthProc 	_SmsAuthProcs[] = {_SmsAuth1proc, _SmsAuth2proc};
 
 SmsNewClientProc _SmsNewClientProc;
 SmPointer	 _SmsNewClientData;
