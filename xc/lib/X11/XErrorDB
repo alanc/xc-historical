@@ -312,7 +312,18 @@ XRequest.X3D-PEX.90: PEX_QueryFont
 XRequest.X3D-PEX.91: PEX_ListFonts
 XRequest.X3D-PEX.92: PEX_ListFontsWithInfo
 XRequest.X3D-PEX.93: PEX_QueryTextExtents
-XProtoError.X3D-PEX.0: PEXColourTypeError
+XRequest.X3D-PEX.94: PEX_MatchRenderingTargets
+XRequest.X3D-PEX.95: PEX_Escape
+XRequest.X3D-PEX.96: PEX_EscapeWithReply
+XRequest.X3D-PEX.97: PEX_RenderElements
+XRequest.X3D-PEX.98: PEX_AccumulateState
+XRequest.X3D-PEX.99: PEX_BeginPickOne
+XRequest.X3D-PEX.100: PEX_EndPickOne
+XRequest.X3D-PEX.101: PEX_PickOne
+XRequest.X3D-PEX.102: PEX_BeginPickAll
+XRequest.X3D-PEX.103: PEX_EndPickAll
+XRequest.X3D-PEX.104: PEX_PickAll
+XProtoError.X3D-PEX.0: PEXColorTypeError
 XlibMessage.X3D-PEX.0: Color type in failed request 0x%lx
 XProtoError.X3D-PEX.1: PEXRendererStateError
 XlibMessage.X3D-PEX.1: Renderer id in failed request 0x%lx
