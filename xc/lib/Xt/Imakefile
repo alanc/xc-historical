@@ -3,7 +3,7 @@
        INCLUDES = -I. -I$(XRMSRC) -I$(XLIBSRC) -I$(TOP) -I$(TOP)/X11
         DEFINES = -DLIBDIR=\"$(LIBDIR)\"
    INSTALLFLAGS = -m 0644
-       LINTLIBS = ../X/llib-lX.ln
+       LINTLIBS = $(LINTXLIB)
 
 HEADERS = \
 	AsciiText.h \
