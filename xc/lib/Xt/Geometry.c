@@ -1,4 +1,4 @@
-/* $XConsortium: Geometry.c,v 1.53 91/05/02 16:12:29 swick Exp $ */
+/* $XConsortium: Geometry.c,v 1.54 91/09/23 11:09:45 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -68,7 +68,7 @@ _XtMakeGeometryRequest (widget, request, reply, clear_rect_obj)
     XtGeometryResult returnCode;
     Widget parent = widget->core.parent;
     XtGeometryMask	changeMask;
-    Boolean managed, parentRealized;
+    Boolean managed, parentRealized, rgm = False;
     XWindowChanges changes;
 
     *clear_rect_obj = FALSE;
@@ -84,6 +84,7 @@ _XtMakeGeometryRequest (widget, request, reply, clear_rect_obj)
 	    if (  ext->version == XtShellExtensionVersion
 		  && ext->record_size == sizeof(ShellClassExtensionRec)) {
 		manager = ext->root_geometry_manager;
+		rgm = True;
 	    } else {
 		String params[1];
 		Cardinal num_params = 1;
@@ -215,6 +216,9 @@ _XtMakeGeometryRequest (widget, request, reply, clear_rect_obj)
     }
 
     if (XtIsWidget(widget)) {	/* reconfigure the window (if needed) */
+
+	if (rgm) return returnCode;
+
 	if (changes.x != widget->core.x) {
  	    changeMask |= CWX;
  	    changes.x = widget->core.x;
