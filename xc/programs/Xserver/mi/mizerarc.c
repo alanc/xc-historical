@@ -17,7 +17,7 @@ Author:  Bob Scheifler, MIT X Consortium
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.c,v 5.23 89/11/21 09:58:07 rws Exp $ */
+/* $XConsortium: mizerarc.c,v 5.24 89/11/25 12:33:17 rws Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -149,17 +149,17 @@ miZeroArcSetup(arc, info, ok360)
     info->yorg = arc->y;
     info->xorgo = info->xorg + l;
     info->yorgo = info->yorg + arc->height;
-    if (!arc->width && !arc->height)
+    if (!arc->width)
     {
-	info->x = 0;
-	info->y = 0;
-	info->initialMask = 1;
-	info->start = oob;
-	info->end = oob;
-	return FALSE;
-    }
-    if (!arc->width && arc->height)
-    {
+	if (!arc->height)
+	{
+	    info->x = 0;
+	    info->y = 0;
+	    info->initialMask = 1;
+	    info->start = oob;
+	    info->end = oob;
+	    return FALSE;
+	}
 	info->x = 0;
 	info->y = 1;
     }
@@ -170,28 +170,36 @@ miZeroArcSetup(arc, info, ok360)
     }
     angle1 = arc->angle1;
     angle2 = arc->angle2;
-    if (angle2 > FULLCIRCLE)
-	angle2 = FULLCIRCLE;
-    else if (angle2 < -FULLCIRCLE)
-	angle2 = -FULLCIRCLE;
-    if (angle2 < 0)
+    if ((angle1 == 0) && (angle2 == FULLCIRCLE))
     {
-	startAngle = angle1 + angle2;
-	endAngle = angle1;
+	startAngle = 0;
+	endAngle = 0;
     }
     else
     {
-	startAngle = angle1;
-	endAngle = angle1 + angle2;
+	if (angle2 > FULLCIRCLE)
+	    angle2 = FULLCIRCLE;
+	else if (angle2 < -FULLCIRCLE)
+	    angle2 = -FULLCIRCLE;
+	if (angle2 < 0)
+	{
+	    startAngle = angle1 + angle2;
+	    endAngle = angle1;
+	}
+	else
+	{
+	    startAngle = angle1;
+	    endAngle = angle1 + angle2;
+	}
+	if (startAngle < 0)
+	    startAngle = FULLCIRCLE - (-startAngle) % FULLCIRCLE;
+	if (startAngle >= FULLCIRCLE)
+	    startAngle = startAngle % FULLCIRCLE;
+	if (endAngle < 0)
+	    endAngle = FULLCIRCLE - (-endAngle) % FULLCIRCLE;
+	if (endAngle >= FULLCIRCLE)
+	    endAngle = endAngle % FULLCIRCLE;
     }
-    if (startAngle < 0)
-	startAngle = FULLCIRCLE - (-startAngle) % FULLCIRCLE;
-    if (startAngle >= FULLCIRCLE)
-	startAngle = startAngle % FULLCIRCLE;
-    if (endAngle < 0)
-	endAngle = FULLCIRCLE - (-endAngle) % FULLCIRCLE;
-    if (endAngle >= FULLCIRCLE)
-	endAngle = endAngle % FULLCIRCLE;
     info->startAngle = startAngle;
     info->endAngle = endAngle;
     if (ok360 && (startAngle == endAngle) && arc->angle2 &&
@@ -321,6 +329,13 @@ miZeroArcSetup(arc, info, ok360)
     {
 	info->initialMask = info->start.mask;
 	info->start = info->altstart;
+    }
+    if (!arc->width && (arc->height == 1))
+    {
+	/* kludge! */
+	info->initialMask |= info->end.mask;
+	info->initialMask |= info->initialMask << 1;
+	info->end.mask = 0;
     }
     return FALSE;
 }
