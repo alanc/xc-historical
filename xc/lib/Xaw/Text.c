@@ -1,4 +1,4 @@
-/* $XConsortium: Text.c,v 1.170 91/03/10 18:52:07 converse Exp $ */
+/* $XConsortium: Text.c,v 1.171 91/03/11 17:05:25 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1192,7 +1192,7 @@ XtPointer closure, callData; /* closure = TextWidget, callData = percent. */
   move = old_left - new_left;
 
   if (abs(move) < (int)ctx->core.width) {
-    HScroll(w, (XtPointer) ctx, (XtPointer) move);
+    HScroll(w, (XtPointer) ctx, *((XtPointer *) &move));
     return;
   }
   _XawTextPrepareToUpdate(ctx);
