@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: fntchoosr.c,v 1.6 89/11/07 15:31:08 swick Exp $";
+static char Xrcsid[] = "$XConsortium: fntchoosr.c,v 1.7 89/11/08 09:02:41 swick Exp $";
 #endif
 
 /*
@@ -117,7 +117,6 @@ struct FieldValue {
     int count;			/* of fonts */
     int allocated;
     int *font;
-    Boolean nil;
     Boolean enable;
 };
 
@@ -473,10 +472,10 @@ void ParseFontNames( closure )
 	    }
 	    for (i=fieldValues[f]->count,v=fieldValues[f]->value; i;i--,v++) {
 		if (len == 0) {
-		    if (v->nil) break;
+		    if (v->string == NULL) break;
 		}
 		else
-		    if (!v->nil &&
+		    if (v->string &&
 			strncmp( v->string, fieldP, len ) == 0 &&
 			(v->string)[len] == '\0')
 			break;
@@ -492,14 +491,12 @@ void ParseFontNames( closure )
 		}
 		v = &fieldValues[f]->value[count];
 		v->field = f;
-		if (len == 0) {
+		if (len == 0)
 		    v->string = NULL;
-		    v->nil = True;
-		} else {
+		else {
 		    v->string = (String)XtMalloc( len+1 );
 		    strncpy( v->string, fieldP, len );
 		    v->string[len] = '\0';
-		    v->nil = False;
 		}
 		v->font = (int*)XtMalloc( 10*sizeof(int) );
 		v->allocated = 10;
@@ -556,9 +553,9 @@ void MakeFieldMenu(closure)
     }
 
     for (i = values->count; i; i--, val++) {
-	XtSetArg( args[0], XtNlabel, val->nil ? "(nil)" : val->string );
+	XtSetArg( args[0], XtNlabel, val->string ? val->string : "(nil)" );
 	item =
-	    XtCreateManagedWidget(val->nil ? "nil" : val->string,
+	    XtCreateManagedWidget(val->string ? val->string : "nil",
 				  smeBSBObjectClass, menu, args, ONE);
 	XtAddCallback(item, XtNcallback, SelectValue, (XtPointer)val);
 	val->menu_item = item;
@@ -716,8 +713,12 @@ void SetCurrentFont(closure)
 	    currentFontNameString[pos++] = DELIM;
 	    if ((i = currentFont.value_index[f]) != -1) {
 		FieldValue *val = &fieldValues[f]->value[i];
-		str = val->string;
-		len = strlen(str);
+		if (str = val->string)
+		    len = strlen(str);
+		else {
+		    str = "";
+		    len = 0;
+		}
 		MarkInvalidFonts(fontInSet, val);
 	    } else {
 		str = "*";
