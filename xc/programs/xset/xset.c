@@ -1,5 +1,5 @@
 /* 
- * $XConsortium: xset.c,v 1.59 91/07/22 18:32:33 keith Exp $ 
+ * $XConsortium: xset.c,v 1.60 92/06/12 15:09:16 rws Exp $ 
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985	*/
@@ -16,7 +16,7 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
 
-/* $XConsortium: xset.c,v 1.59 91/07/22 18:32:33 keith Exp $ */
+/* $XConsortium: xset.c,v 1.60 92/06/12 15:09:16 rws Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -225,6 +225,10 @@ for (i = 1; i < argc; ) {
   else if (strcmp(arg, "-led") == 0) {         /* Turn off one or all LEDs */
     values.led_mode = OFF;
     values.led = ALL;        /* None specified */
+    if (i >= argc) {
+	set_led(dpy, values.led, values.led_mode);
+	break;
+    }
     arg = nextarg(i, argv);
     if (isnumber(arg, 32) && atoi(arg) > 0) {
       values.led = atoi(arg);
