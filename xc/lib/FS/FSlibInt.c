@@ -1,4 +1,4 @@
-/* $XConsortium: FSlibInt.c,v 1.11 93/08/22 12:27:21 rws Exp $ */
+/* $XConsortium: FSlibInt.c,v 1.12 93/09/22 21:52:44 rws Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -983,8 +983,10 @@ static char *
 _SysErrorMsg(n)
     int         n;
 {
+#ifndef WIN32
     extern char *sys_errlist[];
     extern int  sys_nerr;
+#endif
     char       *s = ((n >= 0 && n < sys_nerr) ? sys_errlist[n] : "unknown error");
 
     return (s ? s : "no such error");
