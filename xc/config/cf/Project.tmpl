@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.38 89/09/19 09:15:07 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.39 89/09/21 17:08:38 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -309,7 +309,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.38 89/09/19 09:15:07 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.39 89/09/21 17:08:38 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -396,19 +396,19 @@ Berklib.c: sysV/Berklib.c					@@\
 #else
 #define dirtouse(a,b) b
 #endif
-#if SharedLibX
-          DEPXLIB = dirtouse($(USRLIBDIR),$(XLIBSRC))/libX11.so.$(SOXLIBREV)
-             XLIB = dirtouse(-lX11,-L$(XLIBSRC) -lX11)
-#else
-          DEPXLIB = dirtouse($(USRLIBDIR),$(XLIBSRC))/libX11.a
-             XLIB = $(DEPXLIB)
-#endif
 #if SharedLibXext
   DEPEXTENSIONLIB = dirtouse($(USRLIBDIR),$(EXTENSIONSRC)/lib)/libXext.so.$(SOXEXTREV)
      EXTENSIONLIB = dirtouse(-lXext,-L$(EXTENSIONSRC) -lXext)
 #else
   DEPEXTENSIONLIB = dirtouse($(USRLIBDIR),$(EXTENSIONSRC)/lib)/libXext.a
      EXTENSIONLIB = $(DEPEXTENSIONLIB)
+#endif
+#if SharedLibX
+          DEPXLIB = $(DEPEXTENSIONLIB) dirtouse($(USRLIBDIR),$(XLIBSRC))/libX11.so.$(SOXLIBREV) 
+             XLIB = $(EXTENSIONLIB) dirtouse(-lX11,-L$(XLIBSRC) -lX11)
+#else
+          DEPXLIB = $(DEPEXTENSIONLIB) dirtouse($(USRLIBDIR),$(XLIBSRC))/libX11.a 
+             XLIB = $(EXTENSIONLIB) $(DEPXLIB)
 #endif
       DEPXAUTHLIB = dirtouse($(USRLIBDIR),$(XAUTHSRC))/libXau.a
          XAUTHLIB = $(DEPXAUTHLIB)
