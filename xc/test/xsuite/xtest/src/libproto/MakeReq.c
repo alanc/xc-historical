@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: MakeReq.c,v 1.17 92/06/11 15:50:48 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -40,11 +40,11 @@
  */
 
 /*
- *	$Header: MakeReq.c 1.23 89/04/17 $
+ *	$Header: MakeReq.c,v 1.17 92/06/11 15:50:48 rws Exp $
  */
 
 #ifndef lint
-static char rcsid[]="$Header: MakeReq.c 1.23 89/04/17 $";
+static char rcsid[]="$Header: MakeReq.c,v 1.17 92/06/11 15:50:48 rws Exp $";
 #endif
 
 #include "DataMove.h"
@@ -705,8 +705,8 @@ int type;
 		((xCopyAreaReq *)rp)->srcDrawable = Get_Default_Window(client);
 		((xCopyAreaReq *)rp)->dstDrawable = Get_Default_Window(client);
 		((xCopyAreaReq *)rp)->gc = Get_Default_GContext(client);
-		((xCopyAreaReq *)rp)->srcX = 0;
-		((xCopyAreaReq *)rp)->srcY = 0;
+		((xCopyAreaReq *)rp)->srcX = -Get_Screen_Width(client)/4;
+		((xCopyAreaReq *)rp)->srcY = -Get_Screen_Height(client)/4;
 		((xCopyAreaReq *)rp)->dstX = 0;
 		((xCopyAreaReq *)rp)->dstY = 0;
 		((xCopyAreaReq *)rp)->width = Get_Screen_Width(client)/4;
@@ -717,8 +717,8 @@ int type;
 		((xCopyPlaneReq *)rp)->srcDrawable = Get_Default_Window(client);
 		((xCopyPlaneReq *)rp)->dstDrawable = Get_Default_Window(client);
 		((xCopyPlaneReq *)rp)->gc = Get_Default_GContext(client);
-		((xCopyPlaneReq *)rp)->srcX = 0;
-		((xCopyPlaneReq *)rp)->srcY = 0;
+		((xCopyPlaneReq *)rp)->srcX = -Get_Screen_Width(client)/4;
+		((xCopyPlaneReq *)rp)->srcY = -Get_Screen_Height(client)/4;
 		((xCopyPlaneReq *)rp)->dstX = 0;
 		((xCopyPlaneReq *)rp)->dstY = 0;
 		((xCopyPlaneReq *)rp)->width = Get_Screen_Width(client)/4;
