@@ -1,4 +1,4 @@
-/* $Header: XIproto.h,v 1.19 90/09/26 16:32:32 gms ic1C-80 $ */
+/* $Header: XIproto.h,v 1.11 91/01/24 16:56:22 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -44,7 +44,6 @@ SOFTWARE.
 #define numInputClasses 7
 
 #define MAXNAMELEN	12
-#define FollowKeyboardWin  ((WindowPtr) FollowKeyboard)
 
 #define IEVENTS		15
 #define IERRORS		4
