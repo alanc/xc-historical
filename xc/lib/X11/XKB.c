@@ -1,4 +1,4 @@
-/* $XConsortium: XKB.c,v 1.1 93/09/28 00:01:37 rws Exp $ */
+/* $XConsortium: XKB.c,v 1.2 93/09/28 19:28:54 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -419,7 +419,7 @@ XkbUseExtension(dpy)
     if ( !xkbi )
 	return False;
 
-    if ( (codes=XInitExtension(dpy,XKBNAME))==NULL ) {
+    if ( (codes=XInitExtension(dpy,XkbName))==NULL ) {
 	LockDisplay(dpy);
 	dpy->flags |= XlibDisplayNoXkb;
 	UnlockDisplay(dpy);
@@ -432,8 +432,8 @@ XkbUseExtension(dpy)
     GetReq(kbUseExtension, req);
     req->reqType = xkbi->codes->major_opcode;
     req->xkbReqType = X_kbUseExtension;
-    req->wantedMajor = XKB_MAJOR_VERSION;
-    req->wantedMinor = XKB_MINOR_VERSION;
+    req->wantedMajor = XkbMajorVersion;
+    req->wantedMinor = XkbMinorVersion;
     if (!_XReply(dpy, (xReply *)&rep, 0, xFalse) || !rep.supported) {
 	/* could theoretically try for an older version here */
 	dpy->flags |= XlibDisplayNoXkb;
@@ -458,16 +458,16 @@ Status XkbLibraryVersion(libMajorRtrn,libMinorRtrn)
 {
 int supported;
 
-    if (*libMajorRtrn != XKB_MAJOR_VERSION)
+    if (*libMajorRtrn != XkbMajorVersion)
 	supported = False;
-#if XKB_MAJOR_VERSION==0
-    else if (*libMinorRtrn != XKB_MINOR_VERSION)
+#if XkbMajorVersion==0
+    else if (*libMinorRtrn != XkbMinorVersion)
 	supported = False;
 #endif
     else supported = True;
 
-    *libMajorRtrn = XKB_MAJOR_VERSION;
-    *libMinorRtrn = XKB_MINOR_VERSION;
+    *libMajorRtrn = XkbMajorVersion;
+    *libMinorRtrn = XkbMinorVersion;
     return supported;
 }
 
@@ -577,7 +577,7 @@ XkbBell(dpy,percent,name)
     Atom name;
 {
     /* class 0 = KbdFeedbackClass (X Input Extension) */
-    return XkbDeviceBell(dpy,XKB_USE_CORE_KBD,0,0,percent,name);
+    return XkbDeviceBell(dpy,XkbUseCoreKbd,0,0,percent,name);
 }
 
 
@@ -919,7 +919,7 @@ XkbServerMapRec *map;
 	map->nActions = 1;
 	map->szActions = 32;
 	map->actions= (XkbAction *)Xmalloc(map->szActions*sizeof(XkbAction));
-	map->actions[0].type = XKB_SA_NO_ACTION;
+	map->actions[0].type = XkbSANoAction;
 
 	map->keyBehaviors= (XkbAction *)&map[1];
 	map->keyActions= (CARD16 *)&map->keyBehaviors[xkb->maxKeyCode];
@@ -984,7 +984,7 @@ XkbAction *newActs;
     }
     xkb->server->szActions+= 32;
     newActs = (XkbAction *)Xmalloc(xkb->server->szActions*sizeof(XkbAction));
-    newActs[0].type = XKB_SA_NO_ACTION;
+    newActs[0].type = XkbSANoAction;
     nActs = 1;
     for (i=xkb->minKeyCode;i<=xkb->maxKeyCode;i++) {
 	if (xkb->server->keyActions[i]!=0) {
@@ -1042,7 +1042,7 @@ XkbKeyTypeRec	*map;
 	    len+= sizeof(xkbKeyTypeWireDesc);
 
 	    if ( (!(desc.flags&xkb_KTHasPreserve)) && map->preserve ) {
-		if (!map->flags&XKB_KT_DONT_FREE_PRESERVE)
+		if (!map->flags&XkbNoFreeKTPreserve)
 		    Xfree(map->preserve);
 		map->preserve= NULL;
 	    }
@@ -1060,7 +1060,7 @@ XkbKeyTypeRec	*map;
 	    if (( desc.flags&xkb_KTHasPreserve) && (!map->preserve))
 		map->preserve = (CARD8 *)Xmalloc(desc.mapWidth);
 
-	    map->flags = XKB_KT_DONT_FREE_MAP;
+	    map->flags = XkbNoFreeKTMap;
 	    map->mask = desc.mask;
 	    map->groupWidth = desc.groupWidth;
 	    _XRead(dpy, (char *)map->map, desc.mapWidth);
@@ -1228,7 +1228,7 @@ XkbGetUpdatedMap(dpy,which,xkb)
 	    SyncHandle();
 	    return False;
 	}
-	if ( xkb->deviceSpec == XKB_USE_CORE_KBD )
+	if ( xkb->deviceSpec == XkbUseCoreKbd )
 	    xkb->deviceSpec = rep.deviceID;
 	xkb->minKeyCode = dpy->min_keycode;
 	xkb->maxKeyCode = dpy->max_keycode;
@@ -1292,7 +1292,7 @@ XkbGetKeyTypes(dpy,first,num,xkb)
     GetReq(kbGetMap, req);
     req->reqType = xkbi->codes->major_opcode;
     req->xkbReqType = X_kbGetMap;
-    req->deviceSpec = XKB_USE_CORE_KBD;
+    req->deviceSpec = XkbUseCoreKbd;
     req->full = 0;
     req->partial = XkbKeyTypesMask;
     req->firstKeyType = first;
@@ -1305,7 +1305,7 @@ XkbGetKeyTypes(dpy,first,num,xkb)
 	SyncHandle();
 	return False;
     }
-    if ( xkb->deviceSpec == XKB_USE_CORE_KBD )
+    if ( xkb->deviceSpec == XkbUseCoreKbd )
 	xkb->deviceSpec = rep.deviceID;
     xkb->minKeyCode = dpy->min_keycode;
     xkb->maxKeyCode = dpy->max_keycode;
@@ -1340,7 +1340,7 @@ XkbGetKeyActions(dpy,first,num,xkb)
     GetReq(kbGetMap, req);
     req->reqType = xkbi->codes->major_opcode;
     req->xkbReqType = X_kbGetMap;
-    req->deviceSpec = XKB_USE_CORE_KBD;
+    req->deviceSpec = XkbUseCoreKbd;
     req->full = 0;
     req->partial = XkbKeyActionsMask;
     req->firstKeyType = req->nKeyTypes = 0;
@@ -1353,7 +1353,7 @@ XkbGetKeyActions(dpy,first,num,xkb)
 	SyncHandle();
 	return False;
     }
-    if ( xkb->deviceSpec == XKB_USE_CORE_KBD )
+    if ( xkb->deviceSpec == XkbUseCoreKbd )
 	xkb->deviceSpec = rep.deviceID;
     xkb->minKeyCode = dpy->min_keycode;
     xkb->maxKeyCode = dpy->max_keycode;
@@ -1390,7 +1390,7 @@ XkbGetKeySyms(dpy,first,num,xkb)
     GetReq(kbGetMap, req);
     req->reqType = xkbi->codes->major_opcode;
     req->xkbReqType = X_kbGetMap;
-    req->deviceSpec = XKB_USE_CORE_KBD;
+    req->deviceSpec = XkbUseCoreKbd;
     req->full = 0;
     req->partial = XkbKeySymsMask;
     req->firstKeyType = req->nKeyTypes = 0;
@@ -1403,7 +1403,7 @@ XkbGetKeySyms(dpy,first,num,xkb)
     }
     req->firstKeyAction = req->nKeyActions = 0;
     req->firstKeyBehavior = req->nKeyBehaviors = 0;
-    if ( xkb->deviceSpec == XKB_USE_CORE_KBD )
+    if ( xkb->deviceSpec == XkbUseCoreKbd )
 	xkb->deviceSpec = rep.deviceID;
     xkb->minKeyCode = dpy->min_keycode;
     xkb->maxKeyCode = dpy->max_keycode;
@@ -1437,7 +1437,7 @@ XkbGetKeyBehaviors(dpy,first,num,xkb)
     GetReq(kbGetMap, req);
     req->reqType = xkbi->codes->major_opcode;
     req->xkbReqType = X_kbGetMap;
-    req->deviceSpec = XKB_USE_CORE_KBD;
+    req->deviceSpec = XkbUseCoreKbd;
     req->full = 0;
     req->partial = XkbKeyBehaviorsMask;
     req->firstKeyType = req->nKeyTypes = 0;
@@ -1450,7 +1450,7 @@ XkbGetKeyBehaviors(dpy,first,num,xkb)
 	SyncHandle();
 	return False;
     }
-    if ( xkb->deviceSpec == XKB_USE_CORE_KBD )
+    if ( xkb->deviceSpec == XkbUseCoreKbd )
 	xkb->deviceSpec = rep.deviceID;
     xkb->minKeyCode = dpy->min_keycode;
     xkb->maxKeyCode = dpy->max_keycode;
@@ -1627,7 +1627,7 @@ _XkbReadGetNamesReply(dpy,rep,pMap)
     int				i,len;
     char		 	*start,*desc;
 
-    if ( pMap->deviceSpec == XKB_USE_CORE_KBD )
+    if ( pMap->deviceSpec == XkbUseCoreKbd )
 	pMap->deviceSpec = rep->deviceID;
 
     if (rep->which&XkbKeycodesNameMask)
@@ -1712,8 +1712,8 @@ _XkbReadGetNamesReply(dpy,rep,pMap)
 	}
     }
     if (rep->which & XkbIndicatorNamesMask) {
-	bcopy(desc,pMap->names->indicators,XKB_NUM_INDICATORS*sizeof(Atom));
-	desc+= XKB_NUM_INDICATORS*sizeof(Atom);
+	bcopy(desc,pMap->names->indicators,XkbNumIndicators*sizeof(Atom));
+	desc+= XkbNumIndicators*sizeof(Atom);
     }
     if ( rep->which&XkbModifierNamesMask ) {
 	bcopy(desc,&pMap->names->modifiers[0],8*sizeof(Atom));
@@ -1906,7 +1906,7 @@ XkbGetState(dpy,deviceSpec,rtrn)
 /***====================================================================***/
 
 static int
-XkbSizeKeyTypes(xkb,firstKeyType,nKeyTypes)
+_XkbSizeKeyTypes(xkb,firstKeyType,nKeyTypes)
     XkbDescRec *xkb;
     unsigned firstKeyType;
     unsigned nKeyTypes;
@@ -1925,7 +1925,7 @@ XkbSizeKeyTypes(xkb,firstKeyType,nKeyTypes)
 }
 
 static void
-XkbWriteKeyTypes(dpy,xkb,firstKeyType,nKeyTypes)
+_XkbWriteKeyTypes(dpy,xkb,firstKeyType,nKeyTypes)
     Display	*dpy;
     XkbDescRec	*xkb;
     unsigned	 firstKeyType;
@@ -1956,7 +1956,7 @@ XkbWriteKeyTypes(dpy,xkb,firstKeyType,nKeyTypes)
 }
 
 static int
-XkbSizeKeySyms(xkb,firstKey,nKeys,nSymsRtrn)
+_XkbSizeKeySyms(xkb,firstKey,nKeys,nSymsRtrn)
     XkbDescRec  *xkb;
     unsigned 	 firstKey;
     unsigned	 nKeys;
@@ -1979,7 +1979,7 @@ XkbSizeKeySyms(xkb,firstKey,nKeys,nSymsRtrn)
 }
 
 static void
-XkbWriteKeySyms(dpy,xkb,firstKeySym,nKeySyms,totalSyms)
+_XkbWriteKeySyms(dpy,xkb,firstKeySym,nKeySyms,totalSyms)
     Display *dpy;
     XkbDescRec *xkb;
     unsigned firstKeySym;
@@ -2009,7 +2009,7 @@ register int	i;
 }
 
 static int
-XkbSizeKeyActions(xkb,firstKey,nKeys,nActsRtrn)
+_XkbSizeKeyActions(xkb,firstKey,nKeys,nActsRtrn)
     XkbDescRec	*xkb;
     unsigned	 firstKey;
     unsigned	 nKeys;
@@ -2028,7 +2028,7 @@ XkbSizeKeyActions(xkb,firstKey,nKeys,nActsRtrn)
 }
 
 static void
-XkbWriteKeyActions(dpy,xkb,firstKey,nKeys,totalActs)
+_XkbWriteKeyActions(dpy,xkb,firstKey,nKeys,totalActs)
     Display *dpy;
     XkbDescRec *xkb;
     unsigned firstKey;
@@ -2067,20 +2067,20 @@ SendSetMap(dpy,xkb,req)
 {
 xkbSetMapReq tmp;
 
-    req->length+= XkbSizeKeyTypes(xkb,req->firstKeyType,req->nKeyTypes)/4;
-    req->length+= XkbSizeKeySyms(xkb,req->firstKeySym,req->nKeySyms,
+    req->length+= _XkbSizeKeyTypes(xkb,req->firstKeyType,req->nKeyTypes)/4;
+    req->length+= _XkbSizeKeySyms(xkb,req->firstKeySym,req->nKeySyms,
 						    &req->totalSyms)/4;
-    req->length+= XkbSizeKeyActions(xkb,req->firstKeyAction,req->nKeyActions,
+    req->length+= _XkbSizeKeyActions(xkb,req->firstKeyAction,req->nKeyActions,
 						    &req->totalActions)/4;
     req->length+= (req->nKeyBehaviors*sizeof(XkbAction))/4;
 
     tmp= *req;
     if ( tmp.nKeyTypes>0 )
-	XkbWriteKeyTypes(dpy,xkb,tmp.firstKeyType,tmp.nKeyTypes);
+	_XkbWriteKeyTypes(dpy,xkb,tmp.firstKeyType,tmp.nKeyTypes);
     if ( tmp.nKeySyms>0 )
-	XkbWriteKeySyms(dpy,xkb,tmp.firstKeySym,tmp.nKeySyms,tmp.totalSyms);
+	_XkbWriteKeySyms(dpy,xkb,tmp.firstKeySym,tmp.nKeySyms,tmp.totalSyms);
     if ( tmp.nKeyActions )
-	XkbWriteKeyActions(dpy,xkb,tmp.firstKeyAction,tmp.nKeyActions,
+	_XkbWriteKeyActions(dpy,xkb,tmp.firstKeyAction,tmp.nKeyActions,
 							     tmp.totalActions);
     if ( tmp.nKeyBehaviors>0 ) {
 	register int sz;
@@ -2339,7 +2339,7 @@ XkbRefreshMap(dpy,xkb,changes)
 	GetReq(kbGetMap, req);
 	req->reqType = xkbi->codes->major_opcode;
 	req->xkbReqType = X_kbGetMap;
-	req->deviceSpec = XKB_USE_CORE_KBD;
+	req->deviceSpec = XkbUseCoreKbd;
 	req->full = 0;
 	req->partial = changes->changed;
 	req->firstKeyType = changes->firstKeyType;
@@ -2355,7 +2355,7 @@ XkbRefreshMap(dpy,xkb,changes)
 	    SyncHandle();
 	    return False;
 	}
-	if ( xkb->deviceSpec == XKB_USE_CORE_KBD )
+	if ( xkb->deviceSpec == XkbUseCoreKbd )
 	    xkb->deviceSpec = rep.deviceID;
 	xkb->minKeyCode = dpy->min_keycode;
 	xkb->maxKeyCode = dpy->max_keycode;

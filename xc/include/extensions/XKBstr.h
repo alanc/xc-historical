@@ -1,4 +1,4 @@
-/* $XConsortium: XKBstr.h,v 1.1 93/09/26 21:12:23 rws Exp $ */
+/* $XConsortium: XKBstr.h,v 1.2 93/09/27 22:49:59 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -61,11 +61,9 @@ typedef struct _XkbKeyType {
 	CARD8		*map;
 	CARD8		*preserve;
 } XkbKeyTypeRec, *XkbKeyTypePtr;
-#define	XKB_KT_FOR_SYMS			(1<<0)
-#define	XKB_KT_FOR_ACTIONS		(1<<1)
-#define	XKB_KT_DONT_FREE_MAP		(1<<5)
-#define	XKB_KT_DONT_FREE_PRESERVE	(1<<6)
-#define	XKB_KT_DONT_FREE_STRUCT		(1<<7)
+#define	XkbNoFreeKTMap		(1<<5)
+#define	XkbNoFreeKTPreserve	(1<<6)
+#define	XkbNoFreeKTStruct		(1<<7)
 #define	XkbKTIndex(cm,s)	((cm)->map[(cm)->mask&(s)])
 #define	XkbKTModsToClear(cm,s)	((cm)->preserve?\
 				 ((cm->mask)&(~(cm)->preserve[(cm)->mask&(s)]))\
@@ -195,7 +193,7 @@ typedef struct _XkbIndicatorRec {
 	CARD8		  	nRealIndicators;
 	CARD8		  	pad1;
 	CARD16		  	pad2;
-	XkbIndicatorMapRec	maps[XKB_NUM_INDICATORS];
+	XkbIndicatorMapRec	maps[XkbNumIndicators];
 } XkbIndicatorRec,*XkbIndicatorPtr;
 
 	/*

@@ -1,4 +1,4 @@
-/* "$XConsortium: XKBCvt.c,v 1.2 93/09/28 10:54:42 rws Exp $"; */
+/* "$XConsortium: XKBCvt.c,v 1.3 93/09/28 19:30:09 rws Exp $"; */
 
 /*
  * Copyright 1988, 1989 by the Massachusetts Institute of Technology
@@ -294,7 +294,7 @@ _XkbKnownSetToKS(priv,buffer,nbytes,status)
 }
 
 static KeySym
-_XkbDefaultToUpper(sym)
+__XkbDefaultToUpper(sym)
     KeySym	sym;
 {
     KeySym	lower,upper;
@@ -307,7 +307,7 @@ _XkbDefaultToUpper(sym)
 
 
 static XkbConverters	cvt_ascii = {
-	_XkbKSToKnownSet,(XPointer)&WantLatin1,_XkbKnownSetToKS,NULL,_XkbDefaultToUpper
+	_XkbKSToKnownSet,(XPointer)&WantLatin1,_XkbKnownSetToKS,NULL,__XkbDefaultToUpper
 };
 
 static XkbConverters	cvt_latin1 = {

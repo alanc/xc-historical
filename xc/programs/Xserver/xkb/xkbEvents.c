@@ -1,4 +1,4 @@
-/* $XConsortium: xkbEvents.c,v 1.2 93/09/28 00:00:25 rws Exp $ */
+/* $XConsortium: xkbEvents.c,v 1.3 93/09/28 19:26:20 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 

@@ -1,4 +1,4 @@
-/* $XConsortium: XKBproto.h,v 1.2 93/09/27 22:49:53 rws Exp $ */
+/* $XConsortium: XKBproto.h,v 1.3 93/09/28 19:25:46 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -31,9 +31,9 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <X11/extensions/XKB.h>
 #include <X11/Xmd.h>
 
-#define	XkbModAction(a)	(((a)->type>=XKB_SA_SET_MODS)&&((a)->type<=XKB_SA_LOCK_MODS))
-#define	XkbGroupAction(a)	(((a)->type>=XKB_SA_SET_GROUP)&&((a)->type<=XKB_SA_LOCK_GROUP))
-#define	XkbPtrAction(a)	(((a)->type>=XKB_SA_MOVE_PTR)&&((a)->type<=XKB_SA_SET_PTR_DFLT))
+#define	XkbModAction(a)	(((a)->type>=XkbSASetMods)&&((a)->type<=XkbSALockMods))
+#define	XkbGroupAction(a)	(((a)->type>=XkbSASetGroup)&&((a)->type<=XkbSALockGroup))
+#define	XkbPtrAction(a)	(((a)->type>=XkbSAMovePtrBtn)&&((a)->type<=XkbSASetPtrDflt))
 
 #define	XkbError2(a,b)		((((unsigned)(a))<<24)|(b))
 #define	XkbError3(a,b,c)	XkbError2(a,(((unsigned)(b))<<16)|(c))
@@ -551,9 +551,9 @@ typedef struct _KeyShape {
     CARD16	height B16;
 } xkbKeyShapeWireDesc;
 
-#define	XKB_MAX_SECTION_NAME_LEN	16
+#define	XkbMaxSectionNameLen	16
 typedef struct _SectionWireDesc {
-    CARD8	name[XKB_MAX_SECTION_NAME_LEN];
+    CARD8	name[XkbMaxSectionNameLen];
     CARD16	angle B16;
     CARD16	x B16;
     CARD16	y B16;
@@ -601,8 +601,8 @@ typedef struct _GetGeometryReply {
 } xkbGetGeometryReply;
 #define sz_xkbGetGeometryReply	32
 
-#define	XKB_GM_BY_NAME		1
-#define	XKB_GM_DESCRIPTION	2
+#define	XkbGMByName		1
+#define	XkbGMDescription	2
 typedef struct _SetGeometry {
     CARD8	reqType;
     CARD8	xkbReqType;	/* always X_KBSetGeometry */

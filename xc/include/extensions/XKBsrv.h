@@ -1,4 +1,4 @@
-/* $XConsortium: XKBsrv.h,v 1.4 93/09/27 22:14:12 rws Exp $ */
+/* $XConsortium: XKBsrv.h,v 1.5 93/09/27 22:49:57 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -51,7 +51,7 @@ typedef struct _XkbRadioGroup {
 	CARD8		nMembers;
 	CARD8		dfltDown;
 	CARD8		currentDown;
-	CARD8		members[XKB_RG_MAX_MEMBERS];
+	CARD8		members[XkbRGMaxMembers];
 } XkbRadioGroupRec, *XkbRadioGroupPtr;
 
 #define	_OFF_TIMER	0
@@ -378,6 +378,6 @@ _XFUNCPROTOEND
 	 * ClientRec structure
 	 */
 #define	XKB_INITIALIZED	(1<<0)
-#define	XKB_IMMEDIATE	(1<<1)
+#define	XkbIMMEDIATE	(1<<1)
 
 #endif /* _XKBSRV_H_ */

@@ -1,4 +1,4 @@
-/* $XConsortium: xkbAccessX.c,v 1.1 93/09/26 21:12:49 rws Exp $ */
+/* $XConsortium: xkbAccessX.c,v 1.2 93/09/28 00:00:21 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 

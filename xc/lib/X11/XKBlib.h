@@ -1,4 +1,4 @@
-/* $XConsortium: XKBlib.h,v 1.1 93/09/28 00:01:44 rws Exp $ */
+/* $XConsortium: XKBlib.h,v 1.2 93/09/28 19:30:43 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -211,7 +211,7 @@ typedef union _XkbEvent {
 	XkbAlternateSymsNotifyEvent altSyms;
 } XkbEvent;
 
-#define	XKB_GEOMETRY_NAME_LENGTH	24
+#define	XkbGeometryNameLength	24
 
 typedef	struct _XkbSimpleKeyShape {
 	unsigned short	width;
@@ -231,7 +231,7 @@ typedef	struct _XkbKbdGroupRec {
 } XkbKbdGroupRec;
 
 typedef struct _XkbKbdSectionRec {
-	char		name[XKB_GEOMETRY_NAME_LENGTH];
+	char		name[XkbGeometryNameLength];
 	unsigned short	left;
 	unsigned short	top;
 	unsigned short	right;
@@ -242,7 +242,7 @@ typedef struct _XkbKbdSectionRec {
 } XkbKbdSectionRec;
 
 typedef struct _XkbKbdGeometryRec {
-	char			 desc[XKB_GEOMETRY_NAME_LENGTH];
+	char			 desc[XkbGeometryNameLength];
 	unsigned short		 widthMM;
 	unsigned short		 heightMM;
 	unsigned short		 nKeys;

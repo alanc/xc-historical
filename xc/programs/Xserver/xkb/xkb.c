@@ -1,4 +1,4 @@
-/* $XConsortium: xkb.c,v 1.1 93/09/26 21:12:46 rws Exp $ */
+/* $XConsortium: xkb.c,v 1.2 93/09/28 00:00:11 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -56,7 +56,7 @@ XkbLookupDevice(id)
 {
 DeviceIntPtr dev = NULL;
 
-   if ( id == XKB_USE_CORE_KBD )
+   if ( id == XkbUseCoreKbd )
 	dev= (DeviceIntPtr)LookupKeyboardDevice();
 #ifdef XINPUT
    else {
@@ -82,10 +82,10 @@ ProcXkbUseExtension(client)
     int	supported;
 
     REQUEST_SIZE_MATCH(xkbUseExtensionReq);
-    if (stuff->wantedMajor != XKB_MAJOR_VERSION)
+    if (stuff->wantedMajor != XkbMajorVersion)
 	supported = 0;
-#if XKB_MAJOR_VERSION==0
-    else if (stuff->wantedMinor != XKB_MINOR_VERSION)
+#if XkbMajorVersion==0
+    else if (stuff->wantedMinor != XkbMinorVersion)
 	supported = 0;
 #endif
     else supported = 1;
@@ -99,20 +99,20 @@ ProcXkbUseExtension(client)
 	client->xkbClientFlags= XKB_INITIALIZED;
 	client->mapNotifyMask= XkbKeyTypesMask|XkbKeySymsMask;
     }
-#if XKB_MAJOR_VERSION==0
+#if XkbMajorVersion==0
     else if (xkbDebugFlags) {
 	ErrorF("Rejecting client %d (0x%x) (wants %d.%02d, have %d.%02d)\n",
 		client->index, client->clientAsMask,
 		stuff->wantedMajor,stuff->wantedMinor,
-		XKB_MAJOR_VERSION,XKB_MINOR_VERSION);
+		XkbMajorVersion,XkbMinorVersion);
     }
 #endif
     rep.type = X_Reply;
     rep.supported = supported;
     rep.length = 0;
     rep.sequenceNumber = client->sequence;
-    rep.serverMajor = XKB_MAJOR_VERSION;
-    rep.serverMinor = XKB_MINOR_VERSION;
+    rep.serverMajor = XkbMajorVersion;
+    rep.serverMinor = XkbMinorVersion;
     if ( client->swapped ) {
 	swaps(&rep.sequenceNumber, n);
 	swapl(&rep.length, n);
@@ -1059,13 +1059,13 @@ CARD8		*map,*preserve;
     if ((req->firstKeyType+req->nKeyTypes)>xkb->map->nKeyTypes) {
 	XkbKeyTypeRec	*pNew;
 	width = req->firstKeyType+req->nKeyTypes;
-	if (xkb->map->keyTypes[0].flags&XKB_KT_DONT_FREE_STRUCT) {
+	if (xkb->map->keyTypes[0].flags&XkbNoFreeKTStruct) {
 	    pNew = (XkbKeyTypeRec *)Xcalloc(width*sizeof(XkbKeyTypeRec));
 	    if (!pNew)
 		return NULL;
 	    memcpy(pNew,xkb->map->keyTypes,
 				req->firstKeyType*sizeof(XkbKeyTypeRec));
-	    pNew->flags&= ~XKB_KT_DONT_FREE_STRUCT;
+	    pNew->flags&= ~XkbNoFreeKTStruct;
 	    xkb->map->nKeyTypes = width;
 	    xkb->map->keyTypes= pNew;
 	}
@@ -1095,9 +1095,9 @@ CARD8		*map,*preserve;
 	     preserve = &map[width];
 	else preserve = NULL;
 
-	if (pOld->flags&XKB_KT_DONT_FREE_MAP)
+	if (pOld->flags&XkbNoFreeKTMap)
 	    pOld->map = NULL;
-	if (pOld->preserve&&(pOld->flags&XKB_KT_DONT_FREE_PRESERVE))
+	if (pOld->preserve&&(pOld->flags&XkbNoFreeKTPreserve))
 	    pOld->preserve = NULL;
 
 	if (!pOld->map)
@@ -1121,7 +1121,7 @@ CARD8		*map,*preserve;
 	    Xfree(pOld->preserve);
 	    pOld->preserve = NULL;
 	}
-	pOld->flags = (i+req->firstKeyType==0?0:XKB_KT_DONT_FREE_MAP);
+	pOld->flags = (i+req->firstKeyType==0?0:XkbNoFreeKTMap);
 	pOld->mask = wire->mask;
 	pOld->groupWidth = wire->groupWidth;
 	wire = (xkbKeyTypeWireDesc *)&map[(((width*(preserve?2:1))+3)/4)*4];
@@ -1546,7 +1546,7 @@ ProcXkbGetIndicatorMap(client)
     leds= xkb->indicators;
 
     nIndicators= 0;
-    for (i=0,bit=1;i<XKB_NUM_INDICATORS;i++,bit<<=1) {
+    for (i=0,bit=1;i<XkbNumIndicators;i++,bit<<=1) {
 	if (stuff->which&bit)
 	    nIndicators++;
     }
@@ -1563,7 +1563,7 @@ ProcXkbGetIndicatorMap(client)
 	to= map= (CARD8 *)ALLOCATE_LOCAL(rep.length);
 	if (map) {
 	    xkbIndicatorMapWireDesc  *wire = (xkbIndicatorMapWireDesc *)to;
-	    for (i=0,bit=1;i<XKB_NUM_INDICATORS;i++,bit<<=1) {
+	    for (i=0,bit=1;i<XkbNumIndicators;i++,bit<<=1) {
 		if (rep.which&bit) {
 		    wire->whichMods= leds->maps[i].whichMods;
 		    wire->mods= leds->maps[i].mods;
@@ -1620,7 +1620,7 @@ ProcXkbSetIndicatorMap(client)
 	return BadValue;
     }
     nIndicators= 0;
-    for (i=0,bit=1;i<XKB_NUM_INDICATORS;i++,bit<<=1) {
+    for (i=0,bit=1;i<XkbNumIndicators;i++,bit<<=1) {
 	if (stuff->which&bit)
 	    nIndicators++;
     }
@@ -1630,7 +1630,7 @@ ProcXkbSetIndicatorMap(client)
     }
 
     from = (xkbIndicatorMapWireDesc *)&stuff[1];
-    for (i=0,bit=1;i<XKB_NUM_INDICATORS;i++,bit<<=1) {
+    for (i=0,bit=1;i<XkbNumIndicators;i++,bit<<=1) {
 	if (stuff->which&bit) {
 	    CARD8 which= (from->whichMods|from->whichGroups);
 
@@ -1640,19 +1640,19 @@ ProcXkbSetIndicatorMap(client)
 	    leds->maps[i].groups = from->groups;
 	    leds->maps[i].controls = from->controls;
 
-	    if (which&XKB_IMUseBase)
+	    if (which&XkbIMUseBase)
 		 xkb->iAccel.usesBase|= bit;
 	    else xkb->iAccel.usesBase&= ~bit;
-	    if (which&XKB_IMUseLatched)
+	    if (which&XkbIMUseLatched)
 		 xkb->iAccel.usesLatched|= bit;
 	    else xkb->iAccel.usesLatched&= ~bit;
-	    if (which&XKB_IMUseLocked)
+	    if (which&XkbIMUseLocked)
 		 xkb->iAccel.usesLocked|= bit;
 	    else xkb->iAccel.usesLocked&= ~bit;
-	    if (which&XKB_IMUseEffective)
+	    if (which&XkbIMUseEffective)
 		 xkb->iAccel.usesEffective|= bit;
 	    else xkb->iAccel.usesEffective&= ~bit;
-	    if (which&XKB_IMUseCompat)
+	    if (which&XkbIMUseCompat)
 		 xkb->iAccel.usesCompat|= bit;
 	    else xkb->iAccel.usesCompat&= ~bit;
 	    if (from->controls)
@@ -1727,7 +1727,7 @@ ProcXkbGetNames(client)
     if (stuff->which&XkbRGNamesMask)
 	 rep.length+= xkb->names->nRadioGroups;
     if (stuff->which&XkbIndicatorNamesMask)
-	rep.length+= XKB_NUM_INDICATORS;
+	rep.length+= XkbNumIndicators;
     if (stuff->which&XkbCharSetsMask)
 	 rep.length+= xkb->names->nCharSets;
     if (stuff->which&XkbModifierNamesMask)
@@ -1792,15 +1792,15 @@ ProcXkbGetNames(client)
 	desc+= rep.nRadioGroups*sizeof(Atom);
     }
     if (stuff->which&XkbIndicatorNamesMask) {
-	memcpy(desc,xkb->names->indicators,XKB_NUM_INDICATORS*sizeof(Atom));
+	memcpy(desc,xkb->names->indicators,XkbNumIndicators*sizeof(Atom));
 	if (client->swapped) {
 	    register int n;
 	    register Atom *atm = (Atom *)desc;
-	    for (i=0;i<XKB_NUM_INDICATORS;i++,atm++) {
+	    for (i=0;i<XkbNumIndicators;i++,atm++) {
 		swapl(atm,n);
 	    }
 	}
-	desc+= XKB_NUM_INDICATORS*sizeof(Atom);
+	desc+= XkbNumIndicators*sizeof(Atom);
     }
     if (stuff->which&XkbModifierNamesMask) {
 	memcpy(desc,(char *)xkb->names->modifiers,8*sizeof(Atom));
@@ -2447,13 +2447,13 @@ XkbExtensionInit()
 {
     ExtensionEntry *extEntry, *AddExtension();
 
-    if (extEntry = AddExtension(XKBNAME, XkbNumberEvents, XkbNumberErrors,
+    if (extEntry = AddExtension(XkbName, XkbNumberEvents, XkbNumberErrors,
 				 ProcXkbDispatch, SProcXkbDispatch,
 				 XkbResetProc, StandardMinorOpcode)) {
 	XkbReqCode = (unsigned char)extEntry->base;
 	XkbEventBase = (unsigned char)extEntry->eventBase;
 	XkbErrorBase = (unsigned char)extEntry->errorBase;
-	XkbKeyboardErrorCode = XkbErrorBase+XKB_Keyboard;
+	XkbKeyboardErrorCode = XkbErrorBase+XkbKeyboard;
 	RT_XKBCLIENT = CreateNewResourceType(XkbClientGone);
     }
     return;

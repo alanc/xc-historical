@@ -1,4 +1,4 @@
-/* $XConsortium: XKBBind.c,v 1.1 93/09/28 00:01:39 rws Exp $ */
+/* $XConsortium: XKBBind.c,v 1.2 93/09/28 19:29:39 rws Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /*
@@ -260,9 +260,9 @@ XRefreshKeyboardMapping(event)
 	fprintf(stderr,"explicit map not implemented yet\n");
 #endif
     }
-    else if (xkbi->flags&XKB_MAP_PENDING) {
+    else if (xkbi->flags&XkbMapPending) {
 
-	xkbi->flags&= ~XKB_MAP_PENDING;
+	xkbi->flags&= ~XkbMapPending;
 	if (!XkbRefreshMap(dpy,xkbi->desc, &xkbi->changes)){
 		fprintf(stderr,"XkbRefreshMap failed\n");
 	}
@@ -300,7 +300,7 @@ _XkbLoadDpy(dpy)
 
     xkbi = dpy->xkb_info;
     query = XkbFullClientInfoMask;
-    desc = XkbGetMap(dpy,query,XKB_USE_CORE_KBD);
+    desc = XkbGetMap(dpy,query,XkbUseCoreKbd);
     LockDisplay(dpy);
     xkbi->desc = desc;
     UnlockDisplay(dpy);

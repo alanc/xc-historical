@@ -1,4 +1,4 @@
-/* $XConsortium: XKBlibint.h,v 1.2 93/09/28 19:31:09 rws Exp $ */
+/* $XConsortium: XKBlibint.h,v 1.3 93/09/28 19:32:53 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -30,7 +30,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include <X11/XKBlib.h>
 
-#define	XKB_MAP_PENDING	(1<<0)
+#define	XkbMapPending	(1<<0)
 
 typedef int	(*XkbKSToMBFunc)(
 #if NeedFunctionPrototypes

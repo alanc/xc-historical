@@ -1,4 +1,4 @@
-/* $XConsortium: XKB.h,v 1.2 93/09/27 22:49:48 rws Exp $ */
+/* $XConsortium: XKB.h,v 1.3 93/09/27 23:58:32 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -87,7 +87,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define	XkbSKReleaseMask		(1L << 3)
 #define	XkbSKAllEventsMask		(0xf)
 
-#define	XKB_Keyboard			0
+#define	XkbKeyboard			0
 #define	XkbNumberErrors			1
 
 #define	XkbModifierStateMask		(1L << 0)
@@ -123,54 +123,54 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define	XkbAllAccessXMask	 (0x00FF)
 #define	XkbAllControlsMask	 (0xF7FF)
 
-#define	XKB_USE_CORE_KBD	0x0100
-#define	XKB_PRIVATE		0x4000
+#define	XkbUseCoreKbd	0x0100
+#define	XkbPrivate		0x4000
 
-#define	XKB_SA_CLEAR_LOCKS	(1L << 0)
-#define	XKB_SA_LATCH_TO_LOCK	(1L << 1)
-#define	XKB_SA_GROUP_ABSOLUTE	(1L << 2)
-#define	XKB_SA_USE_DFLT_BUTTON	0
+#define	XkbSAClearLocks	(1L << 0)
+#define	XkbSALatchToLock	(1L << 1)
+#define	XkbSAGroupAbsolute	(1L << 2)
+#define	XkbSAUseDfltButton	0
 
-#define	XKB_SA_ISO_DFLT_IS_GROUP 	(1L << 7)
-#define	XKB_SA_ISO_NO_AFFECT_MODS	(1L << 6)
-#define	XKB_SA_ISO_NO_AFFECT_GROUP	(1L << 5)
-#define	XKB_SA_ISO_NO_AFFECT_PTR	(1L << 4)
-#define	XKB_SA_ISO_NO_AFFECT_CTRLS	(1L << 3)
+#define	XkbSAISODfltIsGroup 	(1L << 7)
+#define	XkbSAISONoAffectMods	(1L << 6)
+#define	XkbSAISONoAffectGroup	(1L << 5)
+#define	XkbSAISONoAffectPtr	(1L << 4)
+#define	XkbSAISONoAffectCtrls	(1L << 3)
 
-	/* flags values for XKB_SA_SET_PTR_DFLT */
-#define	XKB_SA_SET_DFLT_BTN		1
-#define	XKB_SA_INCR_DFLT_BTN		2
+	/* flags values for XkbSASetPtrDflt */
+#define	XkbSASetDfltBtn		1
+#define	XkbSAIncrDfltBtn		2
 
-#define	XKB_SA_NO_ACTION		0x0000
-#define	XKB_SA_SET_MODS			0x0001
-#define	XKB_SA_LATCH_MODS		0x0002
-#define	XKB_SA_LOCK_MODS		0x0003
-#define	XKB_SA_SET_GROUP		0x0004
-#define	XKB_SA_LATCH_GROUP		0x0005
-#define	XKB_SA_LOCK_GROUP		0x0006
-#define	XKB_SA_MOVE_PTR			0x0007
-#define	XKB_SA_ACCEL_PTR		0x0008
-#define	XKB_SA_PTR_BTN			0x0009
-#define	XKB_SA_CLICK_PTR_BTN		0x000a
-#define	XKB_SA_LOCK_PTR_BTN		0x000b
-#define	XKB_SA_SET_PTR_DFLT		0x000c
-#define	XKB_SA_ISO_LOCK			0x000d
-#define	XKB_SA_TERMINATE		0x000e
-#define	XKB_SA_SWITCH_SCREEN		0x000f
-#define	XKB_SA_SET_CONTROLS		0x0010
-#define	XKB_SA_LOCK_CONTROLS		0x0011
+#define	XkbSANoAction		0x0000
+#define	XkbSASetMods			0x0001
+#define	XkbSALatchMods		0x0002
+#define	XkbSALockMods		0x0003
+#define	XkbSASetGroup		0x0004
+#define	XkbSALatchGroup		0x0005
+#define	XkbSALockGroup		0x0006
+#define	XkbSAMovePtrBtn			0x0007
+#define	XkbSAAccelPtr		0x0008
+#define	XkbSAPtrBtn			0x0009
+#define	XkbSAClickPtrBtn		0x000a
+#define	XkbSALockPtrBtn		0x000b
+#define	XkbSASetPtrDflt		0x000c
+#define	XkbSAISOLock			0x000d
+#define	XkbSATerminate		0x000e
+#define	XkbSASwitchScreen		0x000f
+#define	XkbSASetControls		0x0010
+#define	XkbSALockControls		0x0011
 
-#define	XKB_KB_DEFAULT		0x0000
-#define	XKB_KB_LOCK		0x0001
-#define	XKB_KB_RADIO_GROUP	0x0002
+#define	XkbDefaultKB		0x0000
+#define	XkbLockKB		0x0001
+#define	XkbRadioGroupKB	0x0002
 
-#define	XKB_NUM_INDICATORS	32
-#define	XKB_NUM_KBD_GROUPS	8
-#define	XKB_RG_MAX_MEMBERS	12
+#define	XkbNumIndicators	32
+#define	XkbNumKbdGroups	8
+#define	XkbRGMaxMembers	12
 
-#define	XKBNAME "XKEYBOARD"
-#define	XKB_MAJOR_VERSION	0
-#define	XKB_MINOR_VERSION	21
+#define	XkbName "XKEYBOARD"
+#define	XkbMajorVersion	0
+#define	XkbMinorVersion	21
 
 #define	XkbKeyTypesMask		(1<<0)
 #define	XkbKeySymsMask		(1<<1)
@@ -182,27 +182,27 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define	XkbAllMapComponentsMask	(XkbFullClientInfoMask|XkbFullServerInfoMask)
 #define	XkbResizableInfoMask	(XkbKeyTypesMask)
 
-#define	XKB_SI_NoIndicator	0xff
-#define	XKB_SI_Autorepeat	(1<<0)
-#define	XKB_SI_UpdateGroup	(1<<1)
-#define	XKB_SI_UpdateKeypad	(1<<2)
-#define	XKB_SI_UseModMapMods	(1<<3)
-#define	XKB_SI_UpdateInternal	(1<<4)
-#define	XKB_SI_UpdateIgnoreLocks (1<<5)
+#define	XkbSI_NoIndicator	0xff
+#define	XkbSI_Autorepeat	(1<<0)
+#define	XkbSI_UpdateGroup	(1<<1)
+#define	XkbSI_UpdateKeypad	(1<<2)
+#define	XkbSI_UseModMapMods	(1<<3)
+#define	XkbSI_UpdateInternal	(1<<4)
+#define	XkbSI_UpdateIgnoreLocks (1<<5)
 
-#define	XKB_SI_NoneOf		(0)
-#define	XKB_SI_AnyOfOrNone	(1)
-#define	XKB_SI_AnyOf		(2)
-#define	XKB_SI_AllOf		(3)
-#define	XKB_SI_Exactly		(4)
+#define	XkbSI_NoneOf		(0)
+#define	XkbSI_AnyOfOrNone	(1)
+#define	XkbSI_AnyOf		(2)
+#define	XkbSI_AllOf		(3)
+#define	XkbSI_Exactly		(4)
 
-#define	XKB_IMUseBase		(1L << 0)
-#define	XKB_IMUseLatched	(1L << 1)
-#define	XKB_IMUseLocked		(1L << 2)
-#define	XKB_IMUseEffectiveLocked (1L << 3)
-#define	XKB_IMUseEffective	(1L << 4)
-#define	XKB_IMUseCompat		(1L << 5)
-#define	XKB_IMUseAnyState	(0xF)
+#define	XkbIMUseBase		(1L << 0)
+#define	XkbIMUseLatched	(1L << 1)
+#define	XkbIMUseLocked		(1L << 2)
+#define	XkbIMUseEffectiveLocked (1L << 3)
+#define	XkbIMUseEffective	(1L << 4)
+#define	XkbIMUseCompat		(1L << 5)
+#define	XkbIMUseAnyState	(0xF)
 
 #define	XkbKeycodesNameMask	(1<<0)
 #define	XkbGeometryNameMask	(1<<1)
