@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.21 91/07/22 22:59:34 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.22 91/11/17 17:41:05 rws Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -38,13 +38,8 @@ CDEBUGFLAGS = PexPhigsCDebugFlags
 
 .SUFFIXES: .o
 
-#if HasLargeTmp | SystemV4
-     ARADD = ar ru
-     AREXT = ar x
-#else
-     ARADD = ar rul
-     AREXT = ar xl
-#endif
+     ARADD = ArAddCmd
+     AREXT = ArExtCmd
      LIBDIRS = archive c_binding css cp error input pex util ws ws_type
      SUBDIRS = include $(LIBDIRS) lib
 
