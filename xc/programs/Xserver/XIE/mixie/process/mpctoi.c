@@ -1,4 +1,4 @@
-/* $XConsortium: mpctoi.c,v 1.2 93/10/26 13:37:28 rws Exp $ */
+/* $XConsortium: mpctoi.c,v 1.3 93/10/31 09:48:13 dpw Exp $ */
 /**** module mpctoi.c ****/
 /******************************************************************************
 				NOTICE
@@ -105,7 +105,7 @@ static int ResetCtoIAll();
 static int DestroyCtoI();
 
 static int allocDirect();
-static void *cvt();
+static pointer cvt();
 
 
 /* DDXIE ConvertToIndex entry points
@@ -152,9 +152,9 @@ typedef struct _mpctiall {
   CARD32         shft[xieValMaxBands];     /* crazy-pixel shift counts       */
   float		 coef[xieValMaxBands];     /* scale pixel up to 16 bits      */
   CARD32	 tmpLen[xieValMaxBands];   /* length of tmpLsts...           */
-  void          *tmpLst[xieValMaxBands];   /* lists where we remember stuff  */
+  pointer        tmpLst[xieValMaxBands];   /* lists where we remember stuff  */
   Bool		 tmpSet;		   /* initialize tmpLsts to 0 or ~0  */
-  void		*auxbuf[xieValMaxBands];   /* format-class conversion buffers*/
+  pointer	 auxbuf[xieValMaxBands];   /* format-class conversion buffers*/
   CARD8		 iclass[xieValMaxBands];   /* input format classes	     */
   CARD8		 cclass;		   /* conversion format class	     */
 } ctiAllRec, *ctiAllPtr;
@@ -314,7 +314,7 @@ static int InitializeCtoIAll(flo,ped)
    */
   for(b = 0; b < bands; ++b) {
     if(ift[b].class != ic &&
-       !(ddx->auxbuf[b] = (void*) XieMalloc((ift->width+7)*size)))
+       !(ddx->auxbuf[b] = (pointer) XieMalloc((ift->width+7)*size)))
       AllocError(flo,ped, return(FALSE));
 
     ddx->trim[b] = ift[b].depth > dix->stride ? ift[b].depth - dix->stride : 0;
@@ -372,7 +372,7 @@ static int InitializeCtoIAll(flo,ped)
   /* alloc/init whatever temporary storage we need
    */
   for(b = 0; b < bands; ++b) {
-    if(!(ddx->tmpLst[b] = (void *) XieMalloc(ddx->tmpLen[b])))
+    if(!(ddx->tmpLst[b] = (pointer ) XieMalloc(ddx->tmpLen[b])))
       AllocError(flo,ped, return(FALSE));
     memset((char*)ddx->tmpLst[b],(char)(ddx->tmpSet ? ~0 : 0),ddx->tmpLen[b]);
   }
@@ -393,22 +393,22 @@ static int DoGrayCtoIAll(flo,ped,pet)
   ctiAllPtr ddx = (ctiAllPtr)   pet->private;
   bandPtr iband = &pet->receptor[SRCtag].band[0];
   bandPtr oband = &pet->emitter[0];
-  void   *ivoid, *ovoid;
+  pointer ivoid, ovoid;
   
   if(Resumed(flo,pet) &&
      (flo->runClient->clientGone ||
       ddx->cmap != (ColormapPtr) LookupIDByType(raw->colormap, RT_COLORMAP)))
     ColormapError(flo,ped,raw->colormap, return(FALSE));
 
-  if((ivoid = GetCurrentSrc(void,flo,pet,iband)) &&
-     (ovoid = GetCurrentDst(void,flo,pet,oband)))
+  if((ivoid = GetCurrentSrc(pointer,flo,pet,iband)) &&
+     (ovoid = GetCurrentDst(pointer,flo,pet,oband)))
   do {
     if(ddx->auxbuf[0]) ivoid = cvt(ivoid, ddx, (CARD8)0);
 
     (*ddx->action)(ddx, ovoid, ivoid);
 
-    ivoid = GetNextSrc(void,flo,pet,iband,FLUSH);
-    ovoid = GetNextDst(void,flo,pet,oband,FLUSH);
+    ivoid = GetNextSrc(pointer,flo,pet,iband,FLUSH);
+    ovoid = GetNextDst(pointer,flo,pet,oband,FLUSH);
   } while(ivoid && ovoid);
 
   FreeData(flo,pet,iband,iband->current);
@@ -429,17 +429,17 @@ static int DoRGB1CtoIAll(flo,ped,pet)
   ctiAllPtr ddx = (ctiAllPtr)   pet->private;
   bandPtr iband = &pet->receptor[SRCtag].band[0];
   bandPtr oband = &pet->emitter[0];
-  void *ovoid, *ivoid0, *ivoid1, *ivoid2;
+  pointer ovoid, ivoid0, ivoid1, ivoid2;
   
   if(Resumed(flo,pet) &&
      (flo->runClient->clientGone ||
       ddx->cmap != (ColormapPtr) LookupIDByType(raw->colormap, RT_COLORMAP)))
     ColormapError(flo,ped,raw->colormap, return(FALSE));
 
-  ovoid  = GetCurrentDst(void,flo,pet,oband);
-  ivoid0 = GetCurrentSrc(void,flo,pet,iband); iband++;
-  ivoid1 = GetCurrentSrc(void,flo,pet,iband); iband++;
-  ivoid2 = GetCurrentSrc(void,flo,pet,iband); iband -= 2;
+  ovoid  = GetCurrentDst(pointer,flo,pet,oband);
+  ivoid0 = GetCurrentSrc(pointer,flo,pet,iband); iband++;
+  ivoid1 = GetCurrentSrc(pointer,flo,pet,iband); iband++;
+  ivoid2 = GetCurrentSrc(pointer,flo,pet,iband); iband -= 2;
   
   while(ovoid && ivoid0 && ivoid1 && ivoid2) {
 
@@ -449,10 +449,10 @@ static int DoRGB1CtoIAll(flo,ped,pet)
 
     (*ddx->action)(ddx, ovoid, ivoid0, ivoid1, ivoid2);
 
-    ovoid  = GetNextDst(void,flo,pet,oband,FLUSH);
-    ivoid0 = GetNextSrc(void,flo,pet,iband,FLUSH); iband++;
-    ivoid1 = GetNextSrc(void,flo,pet,iband,FLUSH); iband++;
-    ivoid2 = GetNextSrc(void,flo,pet,iband,FLUSH); iband -= 2;
+    ovoid  = GetNextDst(pointer,flo,pet,oband,FLUSH);
+    ivoid0 = GetNextSrc(pointer,flo,pet,iband,FLUSH); iband++;
+    ivoid1 = GetNextSrc(pointer,flo,pet,iband,FLUSH); iband++;
+    ivoid2 = GetNextSrc(pointer,flo,pet,iband,FLUSH); iband -= 2;
   }
   FreeData(flo,pet,iband,iband->current); iband++;
   FreeData(flo,pet,iband,iband->current); iband++;
@@ -475,14 +475,14 @@ static int DoRGB3CtoIAll(flo,ped,pet)
   
   if(ddx->action) {
     BOOL  final = TRUE;
-    void *ivoid;
+    pointer ivoid;
     int   b;
 
     /* PASS 1: generate per-band usage maps of the colors needed
      */
     for(b = 0; b < xieValMaxBands; b++, iband++) {
-      for(ivoid = GetCurrentSrc(void,flo,pet,iband); ivoid;
-	  ivoid = GetNextSrc(void,flo,pet,iband,KEEP)) {
+      for(ivoid = GetCurrentSrc(pointer,flo,pet,iband); ivoid;
+	  ivoid = GetNextSrc(pointer,flo,pet,iband,KEEP)) {
 
 	if(ddx->auxbuf[b]) ivoid = cvt(ivoid, ddx, (CARD8)b);
 
@@ -507,14 +507,14 @@ static int DoRGB3CtoIAll(flo,ped,pet)
     }
   } else {
     bandPtr oband = &pet->emitter[0];
-    void   *ovoid, *ivoid0, *ivoid1, *ivoid2;
+    pointer ovoid, ivoid0, ivoid1, ivoid2;
     
     /* PASS 2: map src pixesl to allocated colors
      */
-    ivoid0 = GetCurrentSrc(void,flo,pet,iband); iband++;
-    ivoid1 = GetCurrentSrc(void,flo,pet,iband); iband++;
-    ivoid2 = GetCurrentSrc(void,flo,pet,iband); iband -= 2;
-    ovoid  = GetCurrentDst(void,flo,pet,oband);
+    ivoid0 = GetCurrentSrc(pointer,flo,pet,iband); iband++;
+    ivoid1 = GetCurrentSrc(pointer,flo,pet,iband); iband++;
+    ivoid2 = GetCurrentSrc(pointer,flo,pet,iband); iband -= 2;
+    ovoid  = GetCurrentDst(pointer,flo,pet,oband);
     
     while(ovoid && ivoid0 && ivoid1 && ivoid2) {
 
@@ -524,10 +524,10 @@ static int DoRGB3CtoIAll(flo,ped,pet)
 
       (*ddx->action2)(ddx, ovoid, ivoid0, ivoid1, ivoid2);
       
-      ivoid0 = GetNextSrc(void,flo,pet,iband,FLUSH); iband++;
-      ivoid1 = GetNextSrc(void,flo,pet,iband,FLUSH); iband++;
-      ivoid2 = GetNextSrc(void,flo,pet,iband,FLUSH); iband -= 2;
-      ovoid  = GetNextDst(void,flo,pet,oband,FLUSH);
+      ivoid0 = GetNextSrc(pointer,flo,pet,iband,FLUSH); iband++;
+      ivoid1 = GetNextSrc(pointer,flo,pet,iband,FLUSH); iband++;
+      ivoid2 = GetNextSrc(pointer,flo,pet,iband,FLUSH); iband -= 2;
+      ovoid  = GetNextDst(pointer,flo,pet,oband,FLUSH);
     }
     FreeData(flo,pet,iband,iband->current); iband++;
     FreeData(flo,pet,iband,iband->current); iband++;
@@ -574,8 +574,8 @@ static int ResetCtoIAll(flo,ped)
     SendColorAllocEvent(flo, ped, lst->mapID, raw->colorAlloc, ddx->pixCnt);
   
   for(b = 0; b < xieValMaxBands; ++b) {
-    if(ddx->tmpLst[b]) ddx->tmpLst[b] = (void *) XieFree(ddx->tmpLst[b]);
-    if(ddx->auxbuf[b]) ddx->auxbuf[b] = (void *) XieFree(ddx->auxbuf[b]);
+    if(ddx->tmpLst[b]) ddx->tmpLst[b] = (pointer ) XieFree(ddx->tmpLst[b]);
+    if(ddx->auxbuf[b]) ddx->auxbuf[b] = (pointer ) XieFree(ddx->auxbuf[b]);
   }
   ddx->pixLst = NULL;  
   ddx->pixCnt = 0;
@@ -671,8 +671,8 @@ static int allocDirect(flo,ped,pet,ddx)
 /*------------------------------------------------------------------------
 ------------- convert bits to bytes or pairs, or bytes to pairs ----------
 ------------------------------------------------------------------------*/
-static void *cvt(src, ddx, band)
-     void       *src;
+static pointer cvt(src, ddx, band)
+     pointer	 src;
      ctiAllPtr	 ddx;
      CARD8       band;
 {
@@ -707,11 +707,11 @@ static void *cvt(src, ddx, band)
 ------------------------------------------------------------------------*/
 #define DO_GRAY_CtoI_ALL(fn_do,itype,otype)				      \
 static void fn_do(ddx, DST, SRC)  					      \
-  ctiAllPtr ddx; void *DST,*SRC; 					      \
+  ctiAllPtr ddx; pointer DST,SRC; 					      \
 {									      \
   itype *src = (itype *)SRC;						      \
   otype *dst = (otype *)DST;						      \
-  Pixel  px, *pp, *lst = ddx->tmpLst[0];				      \
+  Pixel  px, *pp, *lst = (Pixel *)ddx->tmpLst[0];				      \
   CARD32  w, val, mask = ddx->mask[0], trim = ddx->trim[0];		      \
   CARD16  r, g, b;							      \
   for(w = ddx->width; w--; *dst++ = px) {				      \
@@ -741,7 +741,7 @@ DO_GRAY_CtoI_ALL(CtoIall_1_dLPQ, PairPixel, QuadPixel)
 ------------------------------------------------------------------------*/
 #define DO_RGB31L_CtoI_ALL(fn_do,itype,otype)				      \
 static void fn_do(ddx, DST, SRCR, SRCG, SRCB)				      \
-  ctiAllPtr ddx; void *DST,*SRCR,*SRCG,*SRCB;				      \
+  ctiAllPtr ddx; pointer DST,SRCR,SRCG,SRCB;				      \
 {									      \
   itype  *srcR = (itype*)SRCR, *srcG = (itype*)SRCG, *srcB = (itype*)SRCB;    \
   otype  *dst  = (otype*)DST;						      \
@@ -782,7 +782,7 @@ DO_RGB31L_CtoI_ALL(CtoIall_31dLPP,PairPixel,PairPixel)
 ------------------------------------------------------------------------*/
 #define DO_RGB31H_CtoI_ALL(fn_do,itype,otype)				      \
 static void fn_do(ddx, DST, SRCR, SRCG, SRCB)				      \
-  ctiAllPtr ddx; void *DST,*SRCR,*SRCG,*SRCB;				      \
+  ctiAllPtr ddx; pointer DST,SRCR,SRCG,SRCB;				      \
 {									      \
   itype  *srcR = (itype*)SRCR, *srcG = (itype*)SRCG, *srcB = (itype*)SRCB;    \
   otype  *dst  = (otype*)DST;						      \
@@ -828,7 +828,7 @@ DO_RGB31H_CtoI_ALL(CtoIall_31dHPP,PairPixel,PairPixel)
 ------------------------------------------------------------------------*/
 #define DO_RGB33U_CtoI_ALL(fn_do,itype)					      \
 static void fn_do(ddx, SRC, band)  					      \
-  ctiAllPtr ddx; void *SRC; CARD8 band;					      \
+  ctiAllPtr ddx; pointer SRC; CARD8 band;					      \
 {									      \
   itype   *src = (itype *)SRC;						      \
   CARD32  mask = ddx->mask[band];					      \
@@ -843,7 +843,7 @@ DO_RGB33U_CtoI_ALL(CtoIall_33dUP_, PairPixel)
 
 #define DO_RGB33L_CtoI_ALL(fn_do,itype,otype)				      \
 static void fn_do(ddx, DST, SRCR, SRCG, SRCB) 				      \
-  ctiAllPtr ddx; void *DST,*SRCR,*SRCG,*SRCB;				      \
+  ctiAllPtr ddx; pointer DST,SRCR,SRCG,SRCB;				      \
 {									      \
   itype  *srcR = (itype *)SRCR;						      \
   itype  *srcG = (itype *)SRCG;						      \
