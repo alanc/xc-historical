@@ -1,4 +1,4 @@
-.\" $XConsortium: xdm.man,v 1.25 91/07/31 18:16:03 gildea Exp $
+.\" $XConsortium: xdm.man,v 1.26 91/07/31 18:45:39 gildea Exp $
 .TH XDM 1 "Release 5" "X Version 11"
 .SH NAME
 xdm \- X Display Manager with support for XDMCP
@@ -235,7 +235,7 @@ from the ordinary session:
 .SH OPTIONS
 .PP
 All of these options, except \fB\-config\fP,
-specify values which can also be specified in the configuration file
+specify values that can also be specified in the configuration file
 as resources.
 .IP "\fB\-config\fP \fIconfiguration_file\fP"
 Names the configuration file, which specifies resources to control
@@ -364,7 +364,7 @@ This is the resource which controls whether
 uses file locking to keep multiple display managers from running amok.
 On System V, this
 uses the \fIlockf\fP library call, while on BSD it uses \fIflock.\fP
-.IP "\fBDisplayManager.remoteAuthDir\fP"
+.IP "\fBDisplayManager.authDir\fP"
 This names a directory in which
 .I xdm
 stores authorization files while initializing the session.  The
@@ -402,6 +402,15 @@ either allowed direct access to this machine, or have a list of hosts to
 which queries should be forwarded to.  The format of this file is described
 in the section
 .B "XDMCP Access Control."
+.IP \fBDisplayManager.exportList\fP
+A whitespace-separated list of additional environment variables
+to pass on to the \fIXsetup\fP,
+\fIXstartup\fP, \fIXsession\fP, and \fIXreset\fP programs.
+.IP \fBDisplayManager.randomFile\fP
+A file to checksum to generate the seed of authorization keys.
+This should be a file that changes frequently.
+The default is \fI/dev/mem\fP.
+.\"
 .IP "\fBDisplayManager.DISPLAY.resources\fP"
 This resource specifies the name of the file to be loaded by \fIxrdb\fP
 as the resource database onto the root window of screen 0 of the display.
@@ -553,11 +562,10 @@ kills and restarts the server (if possible) and the session.
 \fBauthorize\fP is a boolean resource which controls whether
 .I xdm
 generates and uses authorization for the local server connections.  If
-authorization is used, \fBauthName\fP specifies the type to use.  Currently,
-.I xdm
-supports only MIT-MAGIC-COOKIE-1 authorization.  XDM-AUTHORIZATION-1
-could be supported as well, but DES is not generally distributable.  XDMCP
-connections specify which authorization types are supported dynamically, so
+authorization is used, \fBauthName\fP is a whitespace-separated list
+of authorization mechanisms to use.
+XDMCP connections dynamically specify which
+authorization mechanisms are supported, so
 \fBauthName\fP is ignored in this case.  When \fBauthorize\fP is set for a
 display and authorization is not available, the user is informed by having a
 different message displayed in the login widget.  By default, \fBauthorize\fP
@@ -569,6 +577,19 @@ to the server, using the \fB\-auth\fP server command line option.
 It should be
 kept in a directory which is not world-writable as it could easily be
 removed, disabling the authorization mechanism in the server.
+.IP "\fBDisplayManager.DISPLAY.authComplain\fP"
+If set to ``false,'' disables the use of the \fBunsecureGreeting\fP
+in the login window.
+See the section \fBAuthentication Widget.\fP
+The default is ``true.''
+.IP "\fBDisplayManager.DISPLAY.resetSignal\fP"
+The number of the signal \fIxdm\fP sends to reset the server.
+See the section \fBControlling the Server.\fP
+The default is 1 (SIGHUP).
+.IP "\fBDisplayManager.DISPLAY.termSignal\fP"
+The number of the signal \fIxdm\fP sends to terminate the server.
+See the section \fBControlling the Server.\fP
+The default is 15 (SIGTERM).
 .IP "\fBDisplayManager.DISPLAY.resetForAuth\fP"
 The original implementation of authorization in the sample server reread the
 authorization file at server reset time, instead of when checking the
@@ -738,6 +759,18 @@ The file is typically a shell script.
 It is run as root, so should be careful about security.
 This is the place to change the root background or bring up other
 windows that should appear on the screen along with the Login widget.
+.PP
+In addition to any specified by \fBDisplayManager.exportList\fP,
+the following environment variables are passed:
+.nf
+.ta .5i 2i
+
+	DISPLAY	the associated display name
+	PATH	the value of \fBDisplayManager.DISPLAY.systemPath\fP
+	SHELL	the value of \fBDisplayManager.DISPLAY.systemShell\fP
+	XAUTHORITY	may be set to an authority file
+.fi
+.PP
 Note that since \fIxdm\fP grabs the keyboard, any other windows will not be
 able to receive keyboard input.  They will be able to interact with
 the mouse, however; beware of potential security holes here.
@@ -874,7 +907,10 @@ It is run as root and should be
 very careful about security.  This is the place to put commands which add
 entries to \fI/etc/utmp,\fP mount users' home directories from file servers,
 display the message of the day, or abort the session if logins are not
-allowed.  Various environment variables are set for the use of this script:
+allowed.
+.PP
+In addition to any specified by \fBDisplayManager.exportList\fP,
+the following environment variables are passed:
 .nf
 .ta .5i 2i
 
@@ -898,8 +934,10 @@ cycle.
 .PP
 The \fIXsession\fP program is the command which is run as the user's session.
 It is run with
-the permissions of the authorized user, and has several environment variables
-specified:
+the permissions of the authorized user.
+.PP
+In addition to any specified by \fBDisplayManager.exportList\fP,
+the following environment variables are passed:
 .nf
 .ta .5i 2i
 
@@ -940,10 +978,10 @@ passed to \fIXreset\fP.
 .I Xdm
 controls local servers using POSIX signals.  SIGHUP is expected to reset the
 server, closing all client connections and performing other cleanup
-duties.  SIGTERM is expected to terminate the server.  If these signals do
-not perform the expected actions,
-.I xdm
-will not perform properly.
+duties.  SIGTERM is expected to terminate the server.
+If these signals do not perform the expected actions,
+the resources \fBDisplayManager.DISPLAY.resetSignal\fP and
+\fBDisplayManager.DISPLAY.termSignal\fP can specify alternate signals.
 .PP
 To control remote terminals not using XDMCP,
 .I xdm
