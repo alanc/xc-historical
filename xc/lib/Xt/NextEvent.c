@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: NextEvent.c,v 1.29 87/12/20 14:47:26 rws Locked $";
+static char rcsid[] = "$Header: NextEvent.c,v 1.30 87/12/20 15:00:58 newman Locked $";
 #endif lint
 
 /*
@@ -538,7 +538,7 @@ Boolean XtPending()
     if(outstanding_queue)
       return TRUE;
     
-    if(IS_AFTER(cur_time, (TimerQueue->timer_value)))
+    if(TimerQueue && IS_AFTER(cur_time, (TimerQueue->timer_value)))
 	return TRUE;
 
     FD_SET(ConnectionNumber(toplevelDisplay),&composite.rmask); /*should be done only once */
@@ -578,7 +578,7 @@ XEvent *event;
 	return(1);
     }
     (void) gettimeofday(&cur_time, &curzone);
-    if(IS_AFTER(cur_time, (TimerQueue->timer_value))) {
+    if(TimerQueue && IS_AFTER(cur_time, (TimerQueue->timer_value))) {
 	ev->type = ClientMessage;
 	ev->display = toplevelDisplay;
 	ev->window =  TimerQueue->widget->core.window;
@@ -592,7 +592,8 @@ XEvent *event;
     FD_SET(ConnectionNumber(toplevelDisplay),&composite.rmask);/* should be done only once */
     if(ConnectionNumber(toplevelDisplay) +1 > composite.nfds) 
       composite.nfds = ConnectionNumber(toplevelDisplay) + 1;
-    TIMEDELTA(wait_time, TimerQueue->timer_value, cur_time);
+    if (TimerQueue)
+       TIMEDELTA(wait_time, TimerQueue->timer_value, cur_time);
     rmask = composite.rmask;
     wmask = composite.wmask;
     emask = composite.emask;
