@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: svgaVT.c,v 1.1 93/09/18 16:08:37 rws Exp $ */
 /*
  * Copyright 1990,91,92,93 by Thomas Roell, Germany.
  * Copyright 1991,92,93    by SGCS (Snitily Graphics Consulting Services), USA.
@@ -63,7 +63,7 @@ svgaScreenSave(
 
   if (!pImage) return FALSE;
 
-  (*pScreen->GetImage)(pPixmap,
+  (*pScreen->GetImage)((DrawablePtr)pPixmap,
                        0, 0, 
                        pScreen->width,
                        pScreen->height,
@@ -155,8 +155,8 @@ svgaVTSwitch()
 
     if (!svgaScreenSave(screenInfo.screens[0])) return;
 
-    DisableDevice(LookupKeyboardDevice());
-    DisableDevice(LookupPointerDevice());
+    DisableDevice((DeviceIntPtr)LookupKeyboardDevice());
+    DisableDevice((DeviceIntPtr)LookupPointerDevice());
       
     if (ioctl(svgaConsoleFd, VT_RELDISP, 1) < 0) {
 
@@ -165,11 +165,11 @@ svgaVTSwitch()
        */
       if (!svgaScreenRestore(screenInfo.screens[0])) {
 	ErrorF("Couldn't restore screen\n");
-	GiveUp();
+	GiveUp(0);
       }
 
-      EnableDevice(LookupKeyboardDevice());
-      EnableDevice(LookupPointerDevice());
+      EnableDevice((DeviceIntPtr)LookupKeyboardDevice());
+      EnableDevice((DeviceIntPtr)LookupPointerDevice());
 
     } else {
 
@@ -192,11 +192,11 @@ svgaVTSwitch()
 
     if (!svgaScreenRestore(screenInfo.screens[0])) {
       ErrorF("Couldn't restore screen\n");
-      GiveUp();
+      GiveUp(0);
     }
 
-    EnableDevice(LookupKeyboardDevice());
-    EnableDevice(LookupPointerDevice());
+    EnableDevice((DeviceIntPtr)LookupKeyboardDevice());
+    EnableDevice((DeviceIntPtr)LookupPointerDevice());
   }
 
   svgaVTRequestsPending = FALSE;

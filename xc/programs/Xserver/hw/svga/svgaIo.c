@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: svgaIo.c,v 1.1 93/09/18 16:08:22 rws Exp $ */
 /*
  * Copyright 1990,91,92,93 by Thomas Roell, Germany.
  * Copyright 1991,92,93    by SGCS (Snitily Graphics Consulting Services), USA.
@@ -251,7 +251,7 @@ XqueRequest(
 	    ((ModifierDown(ControlMask | AltMask)) ||
 	     (ModifierDown(ControlMask | AltLangMask))))
 	  {
-	    GiveUp();
+	    GiveUp(0);
 	    goto skip_event;
 	  }
 
@@ -352,10 +352,11 @@ XqueDisable()
 /* ARGSUSED */
 static int
 XqueGetMotionEvents(
-    CARD32     start,
-    CARD32     stop,
-    xTimecoord *buff,
-    ScreenPtr  pScreen
+    DeviceIntPtr pdev,
+    xTimecoord *coords,
+    unsigned long start,
+    unsigned long stop,
+    ScreenPtr pScreen
 )
 {
   return 0;
@@ -369,7 +370,7 @@ XqueGetMotionEvents(
 
 int
 XquePointerProc(
-    DevicePtr pPointer,
+    DeviceIntPtr pPointer,
     int       what
 )
 {
@@ -379,27 +380,27 @@ XquePointerProc(
 
   case DEVICE_INIT: 
       
-    pPointer->on = FALSE;
+    pPointer->public.on = FALSE;
       
     map[1] = 1;
     map[2] = 2;
     map[3] = 3;
-    InitPointerDeviceStruct(pPointer, 
+    InitPointerDeviceStruct((DevicePtr)pPointer, 
 			    map, 
 			    3, 
 			    XqueGetMotionEvents, 
-			    NoopDDA,
+			    (PtrCtrlProcPtr)NoopDDA,
 			    0);
     break;
       
   case DEVICE_ON:
     XqueLastButtons = 7;
-    pPointer->on = TRUE;
+    pPointer->public.on = TRUE;
     return(XqueEnable());
       
   case DEVICE_CLOSE:
   case DEVICE_OFF:
-    pPointer->on = FALSE;
+    pPointer->public.on = FALSE;
     return(XqueDisable());
   }
   
@@ -416,10 +417,12 @@ XquePointerProc(
 static void
 XqueKeyboardBell(
     int           loudness,         /* Percentage of full volume */
-    DeviceIntPtr  pKeyboard         /* Keyboard to ring */
+    DeviceIntPtr  pKeyboard,        /* Keyboard to ring */
+    pointer	  cntrl,
+    int           thing
 )
 {
-  KeybdCtrl *ctrl = &(((DeviceIntPtr)pKeyboard)->kbdfeed->ctrl);
+  KeybdCtrl *ctrl = (KeybdCtrl *)cntrl;
 
   if (loudness && ctrl->bell_pitch) {
     (void)ioctl(svgaConsoleFd, KDMKTONE,
@@ -437,7 +440,7 @@ XqueKeyboardBell(
 
 int
 XqueKeyboardProc(
-    DevicePtr pKeyboard,
+    DeviceIntPtr pKeyboard,
     int       what
 )
 {
@@ -459,18 +462,18 @@ XqueKeyboardProc(
      * structure and fill in various slots in the device record
      * itself which couldn't be filled in before.
      */
-    pKeyboard->on = FALSE;
+    pKeyboard->public.on = FALSE;
     
-    InitKeyboardDeviceStruct(pKeyboard,
+    InitKeyboardDeviceStruct((DevicePtr)pKeyboard,
                              &keySyms,
                              modMap,
                              XqueKeyboardBell,
-                             NoopDDA);
+                             (KbdCtrlProcPtr)NoopDDA);
     
     break;
     
   case DEVICE_ON:
-    pKeyboard->on = TRUE;
+    pKeyboard->public.on = TRUE;
 
     XqueNumLock = FALSE;
 
@@ -491,7 +494,7 @@ XqueKeyboardProc(
 	if (KeyPressed(i)) {
 	  xE.u.u.detail = i;
 	  xE.u.u.type = KeyRelease;
-	  (*pKeyboard->processInputProc)(&xE, pKeyboard, 1);
+	  (*pKeyboard->public.processInputProc)(&xE, pKeyboard, 1);
 	}
       }
 
@@ -512,7 +515,7 @@ XqueKeyboardProc(
 	    {
 	      xE.u.u.detail = i;
 	      xE.u.u.type = KeyPress;
-	      (*pKeyboard->processInputProc)(&xE, pKeyboard, 1);
+	      (*pKeyboard->public.processInputProc)(&xE, pKeyboard, 1);
 	    }
 	  break;
 
@@ -521,7 +524,7 @@ XqueKeyboardProc(
 	    {
 	      xE.u.u.detail = i;
 	      xE.u.u.type = KeyPress;
-	      (*pKeyboard->processInputProc)(&xE, pKeyboard, 1);
+	      (*pKeyboard->public.processInputProc)(&xE, pKeyboard, 1);
 	      XqueNumLock = TRUE;
 	    }
 	  break;
@@ -531,7 +534,7 @@ XqueKeyboardProc(
     
   case DEVICE_CLOSE:
   case DEVICE_OFF:
-    pKeyboard->on = FALSE;
+    pKeyboard->public.on = FALSE;
     return(XqueDisable());
   }
   
