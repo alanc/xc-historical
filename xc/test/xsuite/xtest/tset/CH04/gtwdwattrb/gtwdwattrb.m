@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: gtwdwattrb.m,v 1.8 92/06/11 16:13:09 rws Exp $
  */
 >>TITLE XGetWindowAttributes CH04
 Status
@@ -38,6 +38,8 @@ to the
 .A window_attributes_return
 structure.
 >>STRATEGY
+Create a colormap.
+Install a colormap.
 Create a window.
 Call xname to obtain the window attributes.
 Verify the window attributes were returned as expected.
@@ -69,7 +71,7 @@ XSetWindowAttributes attributes;
 	visual= vinf->visual;
 	valuemask = CWBitGravity | CWWinGravity | CWBackingStore |
 		CWBackingPlanes | CWBackingPixel | CWSaveUnder | CWColormap |
-		CWOverrideRedirect ;
+		CWOverrideRedirect | CWBorderPixel;
 
 	attributes.bit_gravity = NorthGravity;
 	attributes.win_gravity = SouthGravity;
@@ -77,8 +79,24 @@ XSetWindowAttributes attributes;
 	attributes.backing_planes= 3;
 	attributes.backing_pixel = 1;
 	attributes.save_under = True;
-	attributes.colormap =
-		DefaultColormap(display, DefaultScreen(display)) ;
+
+        /*
+         * Create a colormap of the correct visual type, since there are
+         * no guarantees that the selected visual is the default visual.
+	 * Install the colormap to ensure that we can test the
+	 * map_installed value
+         */
+	attributes.colormap = makecolmap(display, vinf->visual, AllocNone);
+	XInstallColormap( display, attributes.colormap );
+
+        /*
+         * Set the window border pixel also, since it is possible that the
+         * window visual does not match that of it's parent (the root),
+         * causing a BadMatch error since the default border pixmap is
+         * CopyFromParent.
+         */
+        attributes.border_pixel = 0;
+
 	attributes.override_redirect = True;
 
 	w = XCreateWindow(display, parent, x, y, width, height, border_width,
