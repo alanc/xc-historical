@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Display.c,v 1.30 89/09/22 14:44:40 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Display.c,v 1.31 89/09/22 17:50:18 swick Exp $";
 /* $oHeader: Display.c,v 1.9 88/09/01 11:28:47 asente Exp $ */
 #endif /*lint*/
 
@@ -250,6 +250,7 @@ XtAppContext XtCreateApplicationContext()
 	app->process = _XtGetProcessContext();
 	app->next = app->process->appContextList;
 	app->process->appContextList = app;
+	app->destroy_callbacks = NULL;
 	app->list = NULL;
 	app->count = app->max = app->last = 0;
 	app->timerQueue = NULL;
@@ -270,6 +271,7 @@ XtAppContext XtCreateApplicationContext()
 	_XtHeapInit(&app->heap);
 	app->fallback_resources = NULL;
 	_XtPopupInitialize(app);
+	app->action_hook_list = NULL;
 	return app;
 }
 
@@ -285,6 +287,11 @@ static void DestroyAppContext(app)
 	_XtFreeConverterTable(app->converterTable);
 	_XtCacheFlushTag(app, (XtPointer)&app->heap);
 	_XtHeapFree(&app->heap);
+	if (app->destroy_callbacks != NULL) {
+	    XtCallCallbackList((XtCallbackList)app->destroy_callbacks,
+			       (XtPointer)app);
+	    _XtRemoveAllCallbacks(&app->destroy_callbacks);
+	}
 	while (*prev_app != app) prev_app = &(*prev_app)->next;
 	*prev_app = app->next;
 	if (app->process->defaultAppContext == app)
