@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$Header: xwd.c,v 1.15 87/06/16 07:39:00 chariot Locked $";
+static char *rcsid_xwd_c = "$Header: xwd.c,v 1.16 87/06/16 09:25:57 chariot Locked $";
 #endif
 
 /*%
@@ -135,14 +135,11 @@ char *calloc();
 
 #include "XWDFile.h"
 
-#define DONT_KNOW_YET 17
-
 Window_Dump(window, out)
      Window window;
      FILE *out;
 {
     register int i;
-    register char *cbuffer;
 
     XColor *pixcolors;
     unsigned buffer_size;
@@ -151,18 +148,9 @@ Window_Dump(window, out)
     int win_name_size;
     int header_size;
     int ncolors = 0;
-    int depth;
-    int offset;
-    long plane_mask;
     char win_name[100];
-/*%
-    XColor *scolor;
-    XColor *bcolor;
-    XColor *pixcolors;
-%*/
     XWindowAttributes win_info;
     XImage *image;
-/*%    *bcolor = *scolor = DONT_KNOW_YET    %*/
 
     XWDFileHeader header;
 
@@ -176,22 +164,19 @@ Window_Dump(window, out)
      * Get the parameters of the window being dumped.
      */
     if (debug) outl("xwd: Getting target window information.\n");
-
-    if(XGetWindowAttributes(dpy, window, &win_info) == FAILURE) 
-      Fatal_Error("Can't query target window.\n");
+    if(!XGetWindowAttributes(dpy, window, &win_info)) 
+      Fatal_Error("Can't get target window attributes.");
 
     XFetchName(dpy, window, win_name);
     if (!win_name[0])
       strcpy(win_name, "xwdump");
 
-    /*
-     * sizeof(char) is included for the null string terminator.
-     */
+    /* sizeof(char) is included for the null string terminator. */
     win_name_size = strlen(win_name) + sizeof(char);
 
     /*
      * Calculate the virtual x, y, width and height of the window pane image
-     * (this depends on whether or not the borders are included.
+     * (this depends on whether or not the borders are included)
      */
     if (nobdrs) {
 	if (debug) outl("xwd: Image without borders selected.\n");
@@ -209,46 +194,25 @@ Window_Dump(window, out)
     }
 
     /*
-     * Determine the pixmap size.
-     */
-    buffer_size = Pixmap_Size(virt_width, virt_height);
-
-    /*
      * Snarf the pixmap with XGetImage.
      * Color windows get snarfed in Z format first to check the color
      * map allocations before resnarfing if XY format selected.
      */
-    plane_mask = 1;
-
-    /*    XGetImage() calls XCreateImage() internally, and this, in turn
-     *  does the memory allocation so we don't have to.
-     */
 
     image = XGetImage ( dpy, window, 0, 0, virt_width,
-		       virt_height, plane_mask, format);
-
+		       virt_height, ~0, format);
     if (debug) outl("xwd: Getting pixmap.\n");
+
+    /*
+     * Determine the pixmap size.
+     */
+    buffer_size = Image_Size(image);
 
     /*
      * Get XColors of all pixels used in the pixmap
      */
 
-    ncolors = Get_XColors(image->data, &pixcolors, buffer_size);
-
-	/* reread in XY format if necessary */
-/*%
-	if(format == XYPixmap) {
-	    image = XGetImage(dpy, window, 0, 0, virt_width,
-	                      virt_height, plane_mask, format);
-%*/
-
-/*%
- *%    Plane mask must be assigned a value.
-%*/
-
-/*%	}
-   }
-%*/
+    ncolors = Get_XColors(win_info, &pixcolors);
 
     /*
      * Inform the user that the image has been retrieved.
@@ -287,37 +251,40 @@ Window_Dump(window, out)
     /*
      * Write out the color maps, if any
      */
-/*%
-    if (debug) outl(stderr,"xwd: Dumping %d colors.\n",ncolors);
+
+    if (debug) outl("xwd: Dumping %d colors.\n",ncolors);
     (void) fwrite(pixcolors, sizeof(XColor), ncolors, out);
-%*/
 
     /*
      * Write out the buffer.
      */
     if (debug) outl("xwd: Dumping pixmap.  bufsize=%d\n",buffer_size);
 
-/*
- *    This copying of the bit stream (data) to a file is to be replaced
- *  by an X server call which hasn't been written yet.  It is not clear
- *  what other functions of xwd will be taken over by this (as yet)
- *  non-existant X function.
- */
+    /*
+     *    This copying of the bit stream (data) to a file is to be replaced
+     *  by an X server call which hasn't been written yet.  It is not clear
+     *  what other functions of xwd will be taken over by this (as yet)
+     *  non-existant X function.
+     */
     (void) fwrite(image->data, (int) buffer_size, 1, out);
 
     /*
      * free the color buffer.
      */
-/*%
+
     if(debug && ncolors > 0) outl("xwd: Freeing color map.\n");
     if(ncolors > 0) free(pixcolors);
-%*/
 
     /*
      * Free window name string.
      */
     if (debug) outl("xwd: Freeing window name string.\n");
     free(win_name);
+
+    /*
+     * Free image
+     */
+    XDestroyImage(image);
 }
 
 /*
@@ -352,16 +319,28 @@ Error(string)
 /*
  * Determine the pixmap size.
  */
+#ifdef OLD_JUNK
 #define UBPS (sizeof(short)/2) /* useful bytes per short */
 #define BitmapSize(width, height) (((((width) + 15) >> 3) &~ 1) * (height) * UBPS)
 #define XYPixmapSize(width, height, planes) (BitmapSize(width, height) * (planes))
 #define BZPixmapSize(width, height) ((width) * (height))
 #define WZPixmapSize(width, height) (((width) * (height)) << 1)
+#endif
 
-int Pixmap_Size(width, height)
-     int width, height;
+int Image_Size(image)
+     XImage *image;
 {
+    if (format != ZPixmap)
+      return(image->bytes_per_line * image->height * image->depth);
+
+    return(image->bytes_per_line * image->height);
+
+#ifdef OLD_JUNK
 	int buffer_size;
+	int width, height;
+
+	width = image->width;
+	height = image->height;
 
 	if (format == XYBitmap)
 	  buffer_size = BitmapSize(width, height);
@@ -389,12 +368,34 @@ int Pixmap_Size(width, height)
 #endif
 
 	return(buffer_size);
+#endif
 }
 
 
 /*
  * Get the XColors of all pixels in image - returns # of colors
  */
+int Get_XColors(win_info, pixcolors)
+     XWindowAttributes win_info;
+     XColor *pixcolors[];
+{
+    int i, ncolors;
+
+    ncolors = 1 << (win_info.depth);
+
+    if (!(*pixcolors = (XColor *) malloc( sizeof(XColor *) * ncolors )))
+      Fatal_Error("Out of memory!");
+
+    for (i=0; i<ncolors; i++)
+      (*pixcolors)[i].pixel = i;
+
+    XQueryColors(dpy, win_info.colormap, pixcolors, ncolors);
+    
+    return(ncolors);
+}
+
+#ifdef OLD_JUNK
+
 int Get_XColors(buffer, pixcolors, buffer_size)
      char *buffer;
      XColor *pixcolors[];       /* RETURNED */
@@ -470,3 +471,4 @@ int Get_XColors(buffer, pixcolors, buffer_size)
     
     return(ncolors);
 }
+#endif
