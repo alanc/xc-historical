@@ -1,7 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $Header: buttons.c,v 4.0 88/08/31 22:11:26 kit Exp $
+ * $XConsortium$
+ * $oHeader: buttons.c,v 4.0 88/08/31 22:11:26 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -646,7 +647,7 @@ Widget standby_parent,save_parent;
   Widget box, shell, label, button; /* misc. widgets. */
   Arg arglist[10];		/* The arglist. */
   Cardinal num_args;		/* the number of args. */
-  int form_width;		/* The width of the form widget. */
+  Dimension form_width;		/* The width of the form widget. */
   
 /* make the please stand by popup widget. */
 

@@ -1,7 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $Header: search.c,v 4.0 88/08/31 22:13:19 kit Exp $
+ * $XConsortium: search.c,v 1.1 88/08/31 22:52:46 jim Exp $
+ * $oHeader: search.c,v 4.0 88/08/31 22:13:19 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -52,7 +53,8 @@ Widget parent;
   Widget popup_shell;		/* the pop up widget's shell. */
   Arg arglist[SEARCHARGS];	/* The arglist and number of args. */
   Cardinal num_args;
-  int width,height,h_space;	/* The width of the cancel and text button. */
+  Dimension width, height;	/* The width of the cancel and text button. */
+  Dimension h_space;
   XtGeometryResult answer;	/* the answer for the resize request. */
   XtTranslations translations;	/* The translation table to add to the text
 				   widget.*/
@@ -152,16 +154,14 @@ Widget parent;
 
   height = Height(command);
 
-  answer = XtMakeResizeRequest(text, (Cardinal) width, (Cardinal) height,
-			       (Cardinal *) &width, (Cardinal *) &height);
+  answer = XtMakeResizeRequest(text, width, height, &width, &height);
     
     switch(answer) {
     case XtGeometryYes:
     case XtGeometryNo:
       break;
     case XtGeometryAlmost:
-      (void) XtMakeResizeRequest(text, (Cardinal) width, (Cardinal) height,
-				 (Cardinal *) &width, (Cardinal *) &height);
+      (void) XtMakeResizeRequest(text, width, height, &width, &height);
     }
 
   XtManageChild(box);
