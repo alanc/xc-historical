@@ -1,4 +1,4 @@
-/* $Header: Xlib.h,v 11.143 88/06/28 18:19:18 rws Exp $ */
+/* $Header: Xlib.h,v 11.144 88/06/29 11:55:41 jim Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -631,7 +631,7 @@ typedef struct {
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window window;
-	int state;		/* either Obscured or UnObscured */
+	int state;		/* Visibility state */
 } XVisibilityEvent;
 
 typedef struct {
