@@ -1,5 +1,5 @@
 .\" Use -ms
-.\" $XConsortium: a2x.ms,v 1.48 94/10/01 22:08:49 rws Exp rws $
+.\" $XConsortium: a2x.ms,v 1.49 94/10/01 22:13:03 rws Exp rws $
 .de Ds
 .RS
 .nf
@@ -976,6 +976,17 @@ You can generate a {c\-t} with the control sequence:
 or with:
 .Ds
 {c-t}{c-c}t
+.De
+.LP
+You can output to your PC screen the number of keystrokes generated
+using the control sequence:
+.Ds
+{c-t}{c-g}0{c-t}
+.De
+You can output the number of keystrokes and reset the counter using
+the control sequence:
+.Ds
+{c-t}{c-g}1{c-t}
 .De
 .NH 1
 Emacs
