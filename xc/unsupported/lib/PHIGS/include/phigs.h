@@ -1,4 +1,4 @@
-/* $XConsortium: phigs.h,v 5.2 91/03/29 10:43:42 rws Exp $ */
+/* $XConsortium: phigs.h,v 5.3 91/04/04 21:55:02 gildea Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -32,7 +32,7 @@ SOFTWARE.
 #include <X11/Xutil.h>
 #include <X11/Xresource.h>
 #include <stdio.h>
-#include <sys/types.h>
+/* #include <sys/types.h> Xlib.h does this */
 #include "attr.h"
 #include "phigscfunc.h"
 #include "phigsextrn.h"
@@ -2036,8 +2036,19 @@ typedef struct {
 } Pxphigs_info;
 
 /* These are declared here because they return types defined here. */
-extern  Pint		phigs_ws_type_create();
-extern  caddr_t		phigs_ws_type_set();
+extern  Pint		phigs_ws_type_create(
+#if NeedVarargsPrototypes
+    Pint, ...
+#endif
+);
+#if NeedVarargsPrototypes
+typedef struct _Wst *_PxphigsWst;		/* kludge! */
+#endif
+extern  caddr_t		phigs_ws_type_set(
+#if NeedVarargsPrototypes
+    _PxphigsWst, ...
+#endif
+);
 extern  caddr_t		phigs_ws_type_get();
 
 #endif
