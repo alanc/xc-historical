@@ -17,6 +17,7 @@
 #define HasSaberC	  YES		/* for machines that have it */
 #define HasNdbm		  YES
 #define HasShm		  YES
+#define HasSecureRPC	  YES
 #define XsunServer Xsun
 
 /* #define HasGcc YES */	/* VERY USEFUL for server on Sun3 */
@@ -69,7 +70,7 @@
 /* see below for ServerDefines */
 
 
-XCOMM platform:  $XConsortium: sun.cf,v 1.41 90/12/26 11:38:26 rws Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.42 91/01/08 09:29:57 rws Exp $
 XCOMM operating system:  OSName
 
 #if OSMajorVersion == 3 && OSMinorVersion <= 2
