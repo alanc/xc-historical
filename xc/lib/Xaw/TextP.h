@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextP.h,v 1.40 89/09/06 17:30:18 kit Exp $
+* $XConsortium: TextP.h,v 1.41 89/11/11 16:25:40 kit Exp $
 */
 
 
@@ -166,14 +166,18 @@ typedef struct _TextPart {
     XawTextPosition  *updateTo;	    /* Array of end positions for update. */
     int		    numranges;	    /* How many update ranges there are. */
     int		    maxranges;	    /* How many ranges we have space for */
-    Boolean	    showposition;   /* True if we need to show the position. */
     XawTextPosition  lastPos;	    /* Last position of source. */
     GC              gc;
+    Boolean	    showposition;   /* True if we need to show the position. */
     Boolean         hasfocus;       /* TRUE if we currently have input focus.*/
     Boolean	    update_disabled; /* TRUE if display updating turned off */
-    XawTextPosition  old_insert;      /* Last insertPos for batched updates */
-    short           mult;	      /* Multiplier. */
     Boolean         single_char;    /* Single character replaced. */
+    XawTextPosition  old_insert;    /* Last insertPos for batched updates */
+    short           mult;	    /* Multiplier. */
+
+    /* private state, shared w/Source and Sink */
+    Boolean	    redisplay_needed; /* in SetValues */
+
 } TextPart;
 
 /*************************************************************
