@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.39 91/05/24 16:33:25 keith Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.40 91/06/28 12:40:40 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -285,6 +285,30 @@ extern int  cfbDoBitbltCopy();
 extern int  cfbDoBitbltXor();
 extern int  cfbDoBitbltOr();
 extern int  cfbDoBitbltGeneral();
+
+cfbDoBitblt (pSrc, pDst, alu, prgnDst, pptSrc, planemask)
+    DrawablePtr	    pSrc, pDst;
+    int		    alu;
+    RegionPtr	    prgnDst;
+    DDXPointPtr	    pptSrc;
+    unsigned long   planemask;
+{
+    int	(*blt)() = cfbDoBitbltGeneral;
+    if ((planemask & PMSK) == PMSK) {
+	switch (alu) {
+	case GXcopy:
+	    blt = cfbDoBitbltCopy;
+	    break;
+	case GXxor:
+	    blt = cfbDoBitbltXor;
+	    break;
+	case GXor:
+	    blt = cfbDoBitbltOr;
+	    break;
+	}
+    }
+    return (*blt) (pSrc, pDst, alu, prgnDst, pptSrc, planemask);
+}
 
 RegionPtr
 cfbCopyArea(pSrcDrawable, pDstDrawable,
