@@ -1,4 +1,4 @@
-/* $XConsortium: xexevents.c,v 1.45 93/03/29 18:58:35 rws Exp $ */
+/* $XConsortium: exevents.c,v 1.46 93/09/03 13:15:33 dpw Exp $ */
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
 Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -135,23 +135,26 @@ ProcessOtherEvent (xE, other, count)
 		xV->device_state |= k->state;
 	    if (b)
 	        xV->device_state |= b->state;
-	    axisvals = v->axisVal;
-	    switch (xV->num_valuators) {
-		case 6:
-		    *(axisvals+first+5) = xV->valuator5;
-		case 5:
-		    *(axisvals+first+4) = xV->valuator4;
-		case 4:
-		    *(axisvals+first+3) = xV->valuator3;
-		case 3:
-		    *(axisvals+first+2) = xV->valuator2;
-		case 2:
-		    *(axisvals+first+1) = xV->valuator1;
-		case 1:
-		    *(axisvals+first) = xV->valuator0;
-		case 0:
-		default:
-		    break;
+	    if (v && v->axisVal)
+		{
+	        axisvals = v->axisVal;
+	        switch (xV->num_valuators) {
+		    case 6:
+		        *(axisvals+first+5) = xV->valuator5;
+		    case 5:
+		        *(axisvals+first+4) = xV->valuator4;
+		    case 4:
+		        *(axisvals+first+3) = xV->valuator3;
+		    case 3:
+		        *(axisvals+first+2) = xV->valuator2;
+		    case 2:
+		        *(axisvals+first+1) = xV->valuator1;
+		    case 1:
+		        *(axisvals+first) = xV->valuator0;
+		    case 0:
+		    default:
+		        break;
+		    }
 		}
 	    }
     
