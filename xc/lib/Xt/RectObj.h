@@ -1,4 +1,4 @@
-/* $XConsortium: RectObj.h,v 1.4 88/09/06 09:42:04 swick Exp $ */
+/* $XConsortium: RectObj.h,v 1.5 88/09/06 16:28:33 jim Exp $ */
 /* $oHeader: RectObj.h,v 1.2 88/08/18 17:39:17 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -26,6 +26,9 @@ SOFTWARE.
 
 #ifndef _XtRect_h
 #define _XtRect_h
+
+typedef struct _RectObjRec *RectObj;
+typedef struct _RectObjClassRec *RectObjClass;
 
 #ifndef RECTOBJ
 externalref RectObjClass rectObjClass;

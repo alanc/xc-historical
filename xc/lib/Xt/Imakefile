@@ -8,8 +8,6 @@
        LINTLIBS = $(LINTXLIB)
 
 HEADERS = \
-	CompObjP.h \
-	CompObj.h \
 	Composite.h \
 	CompositeP.h \
 	Constraint.h \
@@ -18,19 +16,13 @@ HEADERS = \
 	CoreP.h \
 	Intrinsic.h \
 	IntrinsicP.h \
-	Object.h \
-	ObjectP.h \
 	Quarks.h \
-	RectObj.h \
-	RectObjP.h \
 	Selection.h \
 	Shell.h \
 	ShellP.h \
 	StringDefs.h \
 	Vendor.h \
-	VendorP.h \
-	WindowObj.h \
-	WindowObjP.h
+	VendorP.h
 
 SRCS = \
 	Alloc.c \

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: CoreP.h,v 1.8 88/09/06 09:41:15 swick Exp $
+* $XConsortium: CoreP.h,v 1.9 88/09/06 16:27:41 jim Exp $
 * $oHeader: CoreP.h,v 1.2 88/08/18 15:54:37 asente Exp $
 */
 
@@ -30,15 +30,22 @@ SOFTWARE.
 #ifndef XtCoreP_h
 #define XtCoreP_h
 
+externalref int _XtInheritTranslations;
+
+#define XtInheritTranslations  ((String) &_XtInheritTranslations)
+#define XtInheritRealize ((XtRealizeProc) _XtInherit)
+#define XtInheritResize ((XtWidgetProc) _XtInherit)
+#define XtInheritExpose ((XtExposeProc) _XtInherit)
+#define XtInheritSetValuesAlmost ((XtAlmostProc) _XtInherit)
+#define XtInheritAcceptFocus ((XtAcceptFocusProc) _XtInherit)
+#define XtInheritQueryGeometry ((XtGeometryHandler) _XtInherit)
+#define XtInheritDisplayAccelerator ((XtStringProc) _XtInherit)
 
 /***************************************************************
  * Widget Core Data Structures
  *
  *
  **************************************************************/
-/* NOTE: the order of these fields can not be changed, even for
-         space optimization. The object, rect-object, and rect-window
-         classes depend on these fields being in this order */
 
 typedef struct _CorePart {
     Widget	    self;		/* pointer to widget itself	     */
@@ -48,14 +55,12 @@ typedef struct _CorePart {
     Boolean         being_destroyed;	/* marked for destroy		     */
     XtCallbackList  destroy_callbacks;	/* who to call when widget destroyed */
     caddr_t         constraints;        /* constraint record                 */
-/* end of object class */
     Position        x, y;		/* window position		     */
     Dimension       width, height;	/* window dimensions		     */
     Dimension       border_width;	/* window border width		     */
     Boolean         managed;            /* is widget geometry managed?       */
     Boolean	    sensitive;		/* is widget sensitive to user events*/
     Boolean         ancestor_sensitive;	/* are all ancestors sensitive?      */
-/* end of rect-object class */
     XtEventTable    event_table;	/* private to event dispatcher       */
     XtTMRec	    tm;                 /* translation management            */
     XtTranslations  accelerators;       /* accelerator translations          */
@@ -72,7 +77,6 @@ typedef struct _CorePart {
     Pixmap          background_pixmap;	/* window background pixmap or NULL  */
     Boolean         visible;		/* is window mapped and not occluded?*/
     Boolean	    mapped_when_managed;/* map window if it's managed?       */
-/* end of window-object class */
 } CorePart;
 
 typedef struct _WidgetRec {

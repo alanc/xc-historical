@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Core.c,v 1.20 88/09/06 16:27:32 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Core.c,v 1.21 88/09/26 08:49:32 swick Exp $";
 /* $oHeader: Core.c,v 1.2 88/08/18 15:37:59 asente Exp $ */
 #endif lint
 
@@ -29,6 +29,9 @@ SOFTWARE.
 
 #define CORE
 #include "IntrinsicP.h"
+#include "WindowObj.h"
+#include "WindowObjP.h"
+
 externaldef(widgetclassrec) WidgetClassRec widgetClassRec = {
 {
     /* superclass         */    (WidgetClass)&windowObjClassRec,

@@ -1,4 +1,4 @@
-/* $XConsortium: RectObjP.h,v 1.4 88/09/06 09:42:07 swick Exp $ */
+/* $XConsortium: RectObjP.h,v 1.5 88/09/06 16:28:36 jim Exp $ */
 /* $oHeader: RectObjP.h,v 1.2 88/08/18 15:55:52 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -23,6 +23,11 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+
+#ifndef _Xt_RectObjP_h_
+#define _Xt_RectObjP_h_
+
+#include "ObjectP.h"
 
 /**********************************************************
  * Rectangle Object Instance Data Structures
@@ -96,3 +101,5 @@ typedef struct _RectObjClassRec {
 } RectObjClassRec;
 
 externalref RectObjClassRec rectObjClassRec;
+
+#endif /*_Xt_RectObjP_h_*/

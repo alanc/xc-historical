@@ -1,4 +1,4 @@
-/* $XConsortium: Object.h,v 1.4 88/09/06 09:41:51 swick Exp $ */
+/* $XConsortium: Object.h,v 1.5 88/09/06 16:28:23 jim Exp $ */
 /* $oHeader: Object.h,v 1.2 88/08/18 15:55:32 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -26,6 +26,9 @@ SOFTWARE.
 
 #ifndef _XtObject_h
 #define _XtObject_h
+
+typedef struct _ObjectRec *Object;
+typedef struct _ObjectClassRec *ObjectClass;
 
 #ifndef OBJECT
 externalref ObjectClass objectClass;

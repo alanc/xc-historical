@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.84 88/09/06 09:41:33 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.85 88/09/06 16:28:05 jim Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -50,13 +50,7 @@ SOFTWARE.
 
 typedef char *String;
 typedef struct _WidgetRec *Widget;
-typedef struct _ObjectRec *Object;
-typedef struct _RectObjRec *RectObj;
-typedef struct _WindowObjRec *WindowObj;
 typedef Widget *WidgetList;
-typedef struct _ObjectClassRec *ObjectClass;
-typedef struct _RectObjClassRec *RectObjClass;
-typedef struct _WindowObjClassRec *WindowObjClass;
 typedef struct _WidgetClassRec *WidgetClass;
 typedef struct _CompositeRec *CompositeWidget;
 typedef struct _XtActionsRec *XtActionList;
@@ -98,12 +92,8 @@ typedef ShortCard	Dimension;  /* Size in pixels		        */
  ****************************************************************/
 typedef long XtArgVal;
 
-#include "Object.h"
-#include "RectObj.h"
-#include "WindowObj.h"
 #include "Core.h"
 #include "Composite.h"
-#include "CompObj.h"
 #include "Constraint.h"
 
 /***************************************************************
@@ -459,9 +449,6 @@ extern Boolean XtIsSubclass ();
     /* WidgetClass  widgetClass;    */
 
 #define XtIsComposite(widget)       XtIsSubclass(widget, (WidgetClass) compositeWidgetClass)
-#define XtIsCompositeObject(widget) XtIsSubclass(widget, (WidgetClass) compositeObjectClass)
-#define XtIsWindowObject(widget)    XtIsSubclass(widget, (WidgetClass) windowObjClass)
-#define XtIsRectObject(widget)      XtIsSubclass(widget, (WidgetClass) rectObjClass)
 #define XtIsConstraint(widget)      XtIsSubclass(widget, (WidgetClass) constraintWidgetClass)
 #define XtIsShell(widget)	    XtIsSubclass(widget, (WidgetClass) shellWidgetClass)
 

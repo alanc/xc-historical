@@ -1,5 +1,5 @@
 /*
-* $XConsortium: IntrinsicI.h,v 1.25 88/09/06 09:41:41 swick Exp $
+* $XConsortium: IntrinsicI.h,v 1.26 88/09/06 16:28:11 jim Exp $
 * $oHeader: IntrinsicI.h,v 1.5 88/08/31 16:21:08 asente Exp $
 */
 
@@ -31,6 +31,19 @@ SOFTWARE.
 #define _XtintrinsicI_h
 
 #include "IntrinsicP.h"
+
+#include "Object.h"
+#include "RectObj.h"
+#include "WindowObj.h"
+#include "CompObj.h"
+#include "ObjectP.h"
+#include "RectObjP.h"
+#include "WindowObjP.h"
+#include "CompObjP.h"
+
+#define XtIsCompositeObject(widget) XtIsSubclass(widget, (WidgetClass) compositeObjectClass)
+#define XtIsWindowObject(widget)    XtIsSubclass(widget, (WidgetClass) windowObjClass)
+#define XtIsRectObject(widget)      XtIsSubclass(widget, (WidgetClass) rectObjClass)
 
 #include "TranslateI.h"
 #include "CallbackI.h"

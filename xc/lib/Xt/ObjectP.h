@@ -1,4 +1,4 @@
-/* $XConsortium: ObjectP.h,v 1.4 88/09/06 09:41:56 swick Exp $ */
+/* $XConsortium: ObjectP.h,v 1.5 88/09/06 16:28:25 jim Exp $ */
 /* $oHeader: ObjectP.h,v 1.2 88/08/18 15:55:35 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -23,6 +23,9 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+
+#ifndef _Xt_ObjectP_h_
+#define _Xt_ObjectP_h_
 
 /**********************************************************
  * Object Instance Data Structures
@@ -95,3 +98,5 @@ typedef struct _ObjectClassRec {
 
 
 externalref ObjectClassRec objectClassRec;
+
+#endif /*_Xt_ObjectP_h_*/

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: IntrinsicP.h,v 1.31 88/09/06 09:41:49 swick Exp $
+* $XConsortium: IntrinsicP.h,v 1.32 88/09/06 16:28:14 jim Exp $
 * $oHeader: IntrinsicP.h,v 1.4 88/08/26 14:49:52 asente Exp $
 */
 
@@ -101,12 +101,17 @@ typedef void (*XtStringProc)();
     /* Widget		widget	    */
     /* String		str	    */
 
-#include "ObjectP.h"
-#include "RectObjP.h"
-#include "WindowObjP.h"
+typedef struct _StateRec *StatePtr;
+
+typedef struct _XtTMRec {
+    XtTranslations  translations;	/* private to Translation Manager    */
+    XtBoundActions  proc_table;		/* procedure bindings for actions    */
+    StatePtr        current_state;      /* Translation Manager state ptr     */
+    unsigned long   lastEventTime;
+} XtTMRec, *XtTM;
+
 #include "CoreP.h"
 #include "CompositeP.h"
-#include "CompObjP.h"
 #include "ConstrainP.h"
 
 #define XtDisplay(widget)	((widget)->core.screen->display)
