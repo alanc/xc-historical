@@ -1,4 +1,4 @@
-/* $XConsortium: FSproto.h,v 1.7 92/07/09 17:33:49 gildea Exp $ */
+/* $XConsortium: FSproto.h,v 1.8 92/11/18 21:31:32 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -483,10 +483,10 @@ typedef struct {
     CARD32 	length B32;
     CARD32 	nReplies B32;
     CARD32	font_header_flags B32;
-    CARD8	font_header_char_range_min_char_high;
-    CARD8	font_header_char_range_min_char_low;
-    CARD8	font_header_char_range_max_char_high;
-    CARD8	font_header_char_range_max_char_low;
+    CARD8	font_hdr_char_range_min_char_high;
+    CARD8	font_hdr_char_range_min_char_low;
+    CARD8	font_hdr_char_range_max_char_high;
+    CARD8	font_hdr_char_range_max_char_low;
     CARD8	font_header_draw_direction;
     CARD8	font_header_pad;
     CARD8	font_header_default_char_high;
@@ -526,10 +526,10 @@ typedef struct {
     CARD16 	sequenceNumber B16;
     CARD32 	length B32;
     CARD32	font_header_flags B32;
-    CARD8	font_header_char_range_min_char_high;
-    CARD8	font_header_char_range_min_char_low;
-    CARD8	font_header_char_range_max_char_high;
-    CARD8	font_header_char_range_max_char_low;
+    CARD8	font_hdr_char_range_min_char_high;
+    CARD8	font_hdr_char_range_min_char_low;
+    CARD8	font_hdr_char_range_max_char_high;
+    CARD8	font_hdr_char_range_max_char_low;
     CARD8	font_header_draw_direction;
     CARD8	font_header_pad;
     CARD8	font_header_default_char_high;

@@ -1,4 +1,4 @@
-/* $XConsortium: FSlibint.h,v 1.9 93/09/17 10:58:55 rws Exp $ */
+/* $XConsortium: FSlibint.h,v 1.10 93/10/14 16:46:55 rws Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices;
@@ -322,17 +322,17 @@ extern void Data();
     (structure)->draw_direction = (packet)->font_header_draw_direction; \
  \
     if (serverversion > 1) { \
-	(structure)->char_range.min_char.high = (packet)->font_header_char_range_min_char_high; \
-	(structure)->char_range.min_char.low = (packet)->font_header_char_range_min_char_low; \
-	(structure)->char_range.max_char.high = (packet)->font_header_char_range_max_char_high; \
-	(structure)->char_range.max_char.low = (packet)->font_header_char_range_max_char_low; \
+	(structure)->char_range.min_char.high = (packet)->font_hdr_char_range_min_char_high; \
+	(structure)->char_range.min_char.low = (packet)->font_hdr_char_range_min_char_low; \
+	(structure)->char_range.max_char.high = (packet)->font_hdr_char_range_max_char_high; \
+	(structure)->char_range.max_char.low = (packet)->font_hdr_char_range_max_char_low; \
 	(structure)->default_char.high = (packet)->font_header_default_char_high; \
 	(structure)->default_char.low = (packet)->font_header_default_char_low; \
     } else { \
-	(structure)->char_range.min_char.high = (packet)->font_header_char_range_min_char_low; \
-	(structure)->char_range.min_char.low = (packet)->font_header_char_range_min_char_high; \
-	(structure)->char_range.max_char.high = (packet)->font_header_char_range_max_char_low; \
-	(structure)->char_range.max_char.low = (packet)->font_header_char_range_max_char_high; \
+	(structure)->char_range.min_char.high = (packet)->font_hdr_char_range_min_char_low; \
+	(structure)->char_range.min_char.low = (packet)->font_hdr_char_range_min_char_high; \
+	(structure)->char_range.max_char.high = (packet)->font_hdr_char_range_max_char_low; \
+	(structure)->char_range.max_char.low = (packet)->font_hdr_char_range_max_char_high; \
 	(structure)->default_char.high = (packet)->font_header_default_char_low; \
 	(structure)->default_char.low = (packet)->font_header_default_char_high; \
 	} \

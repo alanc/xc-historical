@@ -1,4 +1,4 @@
-/* $XConsortium: misc.h,v 1.4 92/11/18 21:00:41 gildea Exp $ */
+/* $XConsortium: misc.h,v 1.5 93/02/08 09:51:45 rws Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -141,17 +141,17 @@ extern long GetTimeInMillis();
 	(packet)->font_header_flags |= FontInfoInkInside; \
  \
     if (clientversion > 1) { \
-	(packet)->font_header_char_range_min_char_high = (structure)->firstRow; \
-        (packet)->font_header_char_range_min_char_low = (structure)->firstCol; \
-        (packet)->font_header_char_range_max_char_high = (structure)->lastRow; \
-        (packet)->font_header_char_range_max_char_low = (structure)->lastCol; \
+	(packet)->font_hdr_char_range_min_char_high = (structure)->firstRow; \
+        (packet)->font_hdr_char_range_min_char_low = (structure)->firstCol; \
+        (packet)->font_hdr_char_range_max_char_high = (structure)->lastRow; \
+        (packet)->font_hdr_char_range_max_char_low = (structure)->lastCol; \
         (packet)->font_header_default_char_high = (structure)->defaultCh >> 8; \
         (packet)->font_header_default_char_low = (structure)->defaultCh & 0xff; \
     } else { \
-	(packet)->font_header_char_range_min_char_high = (structure)->firstCol; \
-	(packet)->font_header_char_range_min_char_low = (structure)->firstRow; \
-	(packet)->font_header_char_range_max_char_high = (structure)->lastCol; \
-	(packet)->font_header_char_range_max_char_low = (structure)->lastRow; \
+	(packet)->font_hdr_char_range_min_char_high = (structure)->firstCol; \
+	(packet)->font_hdr_char_range_min_char_low = (structure)->firstRow; \
+	(packet)->font_hdr_char_range_max_char_high = (structure)->lastCol; \
+	(packet)->font_hdr_char_range_max_char_low = (structure)->lastRow; \
 	(packet)->font_header_default_char_high = (structure)->defaultCh & 0xff; \
 	(packet)->font_header_default_char_low = (structure)->defaultCh >> 8; \
     } \

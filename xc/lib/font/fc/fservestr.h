@@ -1,4 +1,4 @@
-/* $XConsortium: fservestr.h,v 1.10 93/02/08 10:46:50 rws Exp $ */
+/* $XConsortium: fservestr.h,v 1.11 93/08/24 18:49:13 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -169,10 +169,10 @@ typedef struct _fs_reconnect {
 	LeftToRight : RightToLeft; \
     (structure)->inkInside = ((packet)->font_header_flags & FontInfoInkInside) != 0; \
  \
-    (structure)->firstRow = (packet)->font_header_char_range_min_char_high; \
-    (structure)->firstCol = (packet)->font_header_char_range_min_char_low; \
-    (structure)->lastRow = (packet)->font_header_char_range_max_char_high; \
-    (structure)->lastCol = (packet)->font_header_char_range_max_char_low; \
+    (structure)->firstRow = (packet)->font_hdr_char_range_min_char_high; \
+    (structure)->firstCol = (packet)->font_hdr_char_range_min_char_low; \
+    (structure)->lastRow = (packet)->font_hdr_char_range_max_char_high; \
+    (structure)->lastCol = (packet)->font_hdr_char_range_max_char_low; \
     (structure)->defaultCh = (packet)->font_header_default_char_low \
                            + ((packet)->font_header_default_char_high << 8); \
  \
