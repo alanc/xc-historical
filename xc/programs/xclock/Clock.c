@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Clock.c,v 1.12 87/09/13 13:11:10 newman Locked $";
+static char rcsid[] = "$Header: Clock.c,v 1.13 87/09/13 16:42:33 swick Locked $";
 #endif lint
 
 /*
@@ -181,9 +181,16 @@ static void Realize (gw, valueMask, attrs)
      XtValueMask valueMask;
      XSetWindowAttributes *attrs;
 {
-     gw->core.window = XCreateWindow (XtDisplay(gw), gw->core.parent->core.window,
-	  gw->core.x, gw->core.y, gw->core.width, gw->core.height, gw->core.border_width,
-          gw->core.depth, InputOutput, /* visualID */ CopyFromParent, valueMask, attrs);
+     valueMask |= CWBitGravity;
+     attrs->bit_gravity = ForgetGravity;
+     gw->core.window = XCreateWindow (XtDisplay(gw),
+				      gw->core.parent->core.window,
+				      gw->core.x, gw->core.y,
+				      gw->core.width, gw->core.height,
+				      gw->core.border_width,
+				      gw->core.depth, InputOutput,
+				      /* visualID */ CopyFromParent,
+				      valueMask, attrs);
      Resize(gw);
 }
 
@@ -594,7 +601,6 @@ ClockWidget w;
 	register int i;
 	register int delta = (w->clock.radius - w->clock.second_hand_length) / 3;
 	
-	XClearWindow(XtDisplay(w), XtWindow(w));
 	w->clock.segbuffptr = w->clock.segbuff;
 	w->clock.numseg = 0;
 	for (i = 0; i < 60; i++)
