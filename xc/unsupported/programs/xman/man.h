@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: man.h,v 1.17 89/10/11 11:40:23 jim Exp $
+ * $XConsortium: man.h,v 1.18 89/12/07 10:46:22 rws Exp $
  * $Athena: man.h,v 4.6 89/01/06 12:17:38 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -47,9 +47,8 @@
 #include <X11/Xaw/Label.h>
 #include <X11/Xaw/List.h>
 #include <X11/Xaw/MenuButton.h>
-#include <X11/Xaw/Scroll.h>
 #include <X11/Xaw/SimpleMenu.h>
-#include <X11/Xaw/VPaned.h>
+#include <X11/Xaw/Paned.h>
 #include <X11/Xaw/Viewport.h>
 
 /* program specific header files. */

@@ -1,8 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: ScrollByL.c,v 1.9 89/11/17 10:50:07 kit Exp $
- * $Header: ScrollByL.c,v 1.9 89/11/17 10:50:07 kit Exp $
+ * $XConsortium: ScrollByL.c,v 1.10 89/12/07 15:49:52 kit Exp $
+ * $Header: ScrollByL.c,v 1.10 89/12/07 15:49:52 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -31,7 +31,7 @@
 #include <sys/stat.h>		/* depends on IntrinsicP.h */
 #include <X11/StringDefs.h>
 
-#include <X11/Xaw/Scroll.h>
+#include <X11/Xaw/Scrollbar.h>
 #include <X11/Xmu/Misc.h>
 
 #include "ScrollByLP.h"
