@@ -226,6 +226,7 @@
   #+(or kcl ibcl) (:shadow rational)
   #+allegro (:import-from excl without-interrupts)
   #+excl (:import-from excl arglist)
+  #+Genera (:import-from lisp char-bit)
   #+Genera (:import-from sys array-register)
   #+Genera (:import-from zwei indentation)
   #+lcl3.0 (:import-from lcl arglist)
