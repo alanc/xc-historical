@@ -24,6 +24,7 @@
 #include "misc.h"
 #include "osdep.h"
 #include "input.h"
+#include "dixstruct.h"
 #include "opaque.h"
 
 #ifdef XDMCP
@@ -1067,7 +1068,8 @@ recv_alive_msg (length)
     	{
 	    /* backoff dormancy period */
 	    state = XDM_RUN_SESSION;
-	    if (TimeSinceLastInputEvent() > keepaliveDormancy * 1000)
+	    if ((GetTimeInMillis() - lastDeviceEventTime.milliseconds) >
+		keepaliveDormancy * 1000)
 	    {
 		keepaliveDormancy <<= 1;
 		if (keepaliveDormancy > XDM_MAX_DORMANCY)
