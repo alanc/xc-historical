@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.17 89/05/10 15:23:43 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.18 89/05/16 18:45:32 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -245,7 +245,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.17 89/05/10 15:23:43 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.18 89/05/16 18:45:32 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -356,6 +356,18 @@ Berklib.c: sysV/Berklib.c					@@\
 #undef dirtouse
 
 /*
+ * the following may be removed in R4{alpha,beta,?}
+ */
+#ifndef NeedDefaultDepLibs
+#define NeedDefaultDepLibs NO
+#endif
+
+#if NeedDefaultDepLibs
+/*
  * Individual libraries should override this
  */
- DEPEND_LIBRARIES = $(XAWLIB) $(XMULIB) (XTOOLLIB) $(EXTENSIONLIB) $(XLIB)
+          DEPLIBS = $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPEXTENSIONLIB) $(DEPXLIB)
+         DEPLIBS1 = $(DEPLIBS)
+         DEPLIBS2 = $(DEPLIBS)
+         DEPLIBS3 = $(DEPLIBS)
+#endif /* NeedDefaultDepLibs */

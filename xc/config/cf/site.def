@@ -1,4 +1,4 @@
-/**/# site:  $XConsortium: site.def,v 1.2 89/02/20 10:25:20 jim Exp $
+/**/# site:  $XConsortium: site.def,v 1.3 89/05/11 18:06:58 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -39,4 +39,8 @@
 #endif
 #ifndef CompatibilityFlags
 #define CompatibilityFlags -DXAW_BC	/* temp hack until Imakefiles fixed */
+#endif
+
+#ifndef NeedDefaultDepLibs
+#define NeedDefaultDepLibs YES
 #endif
