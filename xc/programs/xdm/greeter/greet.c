@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: greet.c,v 1.11 89/05/11 18:22:53 kit Exp $
+ * $XConsortium: greet.c,v 1.12 89/07/16 16:11:41 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -106,6 +106,11 @@ struct display	*d;
 	login = XtCreateManagedWidget ("login", loginWidgetClass, toplevel,
 					arglist, i);
 	XtRealizeWidget (toplevel);
+
+	XWarpPointer(dpy, None, RootWindowOfScreen (scrn),
+			0, 0, 0, 0,
+			WidthOfScreen(scrn) / 2,
+ 			HeightOfScreen(scrn) / 2);
 
 #ifdef DRAWLOGO
 	i = 0;
