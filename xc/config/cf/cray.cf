@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: cray.cf,v 1.17 90/11/30 11:13:50 rws Exp $
+XCOMM platform:  $XConsortium: cray.cf,v 1.18 90/12/26 11:37:36 rws Exp $
 
 
 /*
@@ -20,9 +20,12 @@ XCOMM platform:  $XConsortium: cray.cf,v 1.17 90/11/30 11:13:50 rws Exp $
 #define BuildServer		NO
 #define NeedBerklibInXlib	NO
 #define HasInputExtension	NO
-#if OSMajorVersion >= 5 && OSMinorVersion >= 1
+#if OSMajorVersion >= 6 || OSMajorVersion >= 5 && OSMinorVersion >= 1
 #define CcCmd			scc
 #define CrayUsingSCC		YES
+#if OSMajorVersion >= 6
+#define PreProcessCmd		/lib/pcpp
+#endif
 #else
 #define CcCmd			cc
 #endif
@@ -35,14 +38,14 @@ XCOMM platform:  $XConsortium: cray.cf,v 1.17 90/11/30 11:13:50 rws Exp $
 #else /* CRAY 2 */
 #define Cray2Architecture
 #ifdef CrayUsingSCC
-#define DefaultCCOptions /**/
+#define DefaultCCOptions -hpagelm -hlimitlm
 #else
 #define DefaultCCOptions -hsharelm -hnocache
 #endif
 #endif
 
 
-#if CRAY2 && !UNICOS6
+#if CRAY2 && OSMajorVersion < 6
 #define LoaderLibPrefix -L
 #else			/* XMP, YMP, CRAY2 && UNICOS6 */
 #define LoaderLibPrefix -l
