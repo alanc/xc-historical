@@ -22,9 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-#ifndef lint
-static char rcs_id[] = "$Header: window.c,v 1.162B 87/08/18 20:21:13 swick Exp $";
-#endif lint
+/* $Header: window.c,v 1.160 87/08/20 17:40:23 susan Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -76,6 +74,7 @@ static ScreenSaverStuffRec savedScreenInfo[MAXSCREENS];
 extern WindowRec WindowTable[];
 extern void (* ReplySwapVector[256]) ();
 
+static void ResizeChildrenWinSize();
 
 #define INPUTONLY_LEGAL_MASK (CWWinGravity | CWEventMask | \
 			      CWDontPropagate | CWOverrideRedirect | CWCursor )
@@ -1123,64 +1122,6 @@ GetWindowAttributes(pWin, client)
     WriteReplyToClient(client, sizeof(xGetWindowAttributesReply), &wa);
 }
 
-static void
-fixChildrenWinSize(pWin)
-    WindowPtr pWin;
-{
-    WindowPtr pSib;
-    RegionPtr parentReg;
-    BoxRec box;
-    register short x, y, cwsx, cwsy;
-    ScreenPtr pScreen;
-
-    parentReg = pWin->winSize;
-    pSib = pWin->firstChild;
-    x = pWin->absCorner.x;
-    y = pWin->absCorner.y;
-
-    pScreen = pWin->drawable.pScreen;
-    while (pSib) 
-    {
-	cwsx = pSib->clientWinSize.x;
-	cwsy = pSib->clientWinSize.y;
-	box.x1 = x + cwsx;
-	box.y1 = y + cwsy;
-	box.x2 = box.x1 + pSib->clientWinSize.width;
-	box.y2 = box.y1 + pSib->clientWinSize.height;
-
-        pSib->oldAbsCorner.x = pSib->absCorner.x;
-        pSib->oldAbsCorner.y = pSib->absCorner.y;
-        pSib->absCorner.x = x + cwsx;
-        pSib->absCorner.y = y + cwsy;
-
-	(* pScreen->RegionReset)(pSib->winSize, &box);
-	(* pScreen->Intersect)(pSib->winSize, pSib->winSize, parentReg);
-
-        if (pSib->borderWidth)
-	{
-	    box.x1 -= pSib->borderWidth;
-	    box.y1 -= pSib->borderWidth;
-	    box.x2 += pSib->borderWidth;
-	    box.y2 += pSib->borderWidth;
-	    (* pScreen->RegionReset)(pSib->borderSize, &box);
-	    (* pScreen->Intersect)(pSib->borderSize, pSib->borderSize,
-	                           parentReg);
-	}
-	else
-        {
-	    (* pScreen->RegionCopy)(pSib->borderSize, pSib->winSize);
-	}
-
-        (*pSib->drawable.pScreen->PositionWindow)(pSib,
-					      pSib->absCorner.x,
-					      pSib->absCorner.y);
-        pSib->marked = 1;
-
-	if (pSib->firstChild) 
-            fixChildrenWinSize(pSib);
-        pSib = pSib->nextSib;
-    }
-}
 
 static WindowPtr
 MoveWindowInStack(pWin, pNextSib)
@@ -1200,7 +1141,7 @@ MoveWindowInStack(pWin, pNextSib)
 					  * therefore pWin->nextSib != NULL */
 	        pFirstChange = pWin->nextSib;
 		pWin->nextSib->prevSib = pWin->prevSib;
-	    /* else pFirstChange = pWin; */	/* if you don't believe the proof! */
+	    /* else pFirstChange = pWin; */	
 	    if (pWin->prevSib) 
                 pWin->prevSib->nextSib = pWin->nextSib;
             pParent->lastChild->nextSib = pWin;
@@ -1285,7 +1226,7 @@ MoveWindow(pWin, x, y, pNextSib)
         oldRegion = (* pScreen->RegionCreate)(NULL, 1);
         (* pScreen->RegionCopy)(oldRegion, pWin->borderClip);
         pBox = (* pScreen->RegionExtents)(pWin->borderSize);
-	anyMarked = MarkSiblingsBelowMe(pWin, pBox, TRUE);
+	anyMarked = MarkSiblingsBelowMe(pWin, pBox);
     }
     pWin->clientWinSize.x = x + bw;
     pWin->clientWinSize.y = y + bw;
@@ -1318,42 +1259,25 @@ MoveWindow(pWin, x, y, pNextSib)
 
     windowToValidate = MoveWindowInStack(pWin, pNextSib);
 
-    fixChildrenWinSize(pWin);
+    ResizeChildrenWinSize(pWin, FALSE, 0, 0);
     if (WasMapped) 
     {
-	short wid, hgt;
-	Bool addborder = TRUE;
-        BoxPtr parentBox;
 
-        parentBox = (* pScreen->RegionExtents)(pParent->winSize);
-	x = pWin->absCorner.x;
-	y = pWin->absCorner.y;
-        wid = pWin->clientWinSize.width;
-	hgt = pWin->clientWinSize.height;
-	if (oldx - bw < 0)
-	    addborder = FALSE;
-	else if (oldy - bw < 0)
-	    addborder = FALSE;
-        else if (oldx + wid + bw > parentBox->x2)
-	    addborder = FALSE;
-        else if (oldy + hgt + bw > parentBox->y2)
-	    addborder = FALSE;
-        if (!addborder)
-            (* pScreen->RegionEmpty)(pWin->borderClip); /* force redraw of border */
-
-        anyMarked = MarkSiblingsBelowMe(windowToValidate, pBox, 
-					TRUE) || anyMarked;
+        anyMarked = MarkSiblingsBelowMe(windowToValidate, pBox) || anyMarked;
             
-        (* pScreen->ValidateTree)(pParent, windowToValidate, TRUE, anyMarked);
+        (* pScreen->ValidateTree)(pParent, (WindowPtr)NULL, TRUE, anyMarked);
 	
 	DoObscures(pParent); 
         if (pWin->backgroundTile == (PixmapPtr)ParentRelative)
             (* pScreen->RegionCopy)(pWin->exposed, pWin->clipList);
         else
         {
+	    /*
+	     * Why subtract borderSize from parent's exposures? parent
+	     * exposures aren't supposed to extend into children!
+	     */
        	    (* pWin->CopyWindow)(pWin, oldpt, oldRegion);
-    	    (* pScreen->Subtract)(pParent->exposed, pParent->exposed, 
-				  pWin->borderSize); 
+
 	}
 	(* pScreen->RegionDestroy)(oldRegion);
 	HandleExposures(pParent); 
@@ -1417,7 +1341,7 @@ ResizeChildrenWinSize(pWin, XYSame, dw, dh)
                    cwsx += dw;
 		   cwsy += dh;
 		   break;
-          case StaticGravity:           /* XXX */
+          case StaticGravity:           /*< XXX */
 		   break;
 	  default:
                    break;
@@ -1514,7 +1438,7 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
             (pWin->backgroundTile == (PixmapPtr)ParentRelative))
             oldRegion = NotClippedByChildren(pWin);
         pBox = (* pScreen->RegionExtents)(pWin->borderSize);
-	anyMarked = MarkSiblingsBelowMe(pWin, pBox, TRUE);
+	anyMarked = MarkSiblingsBelowMe(pWin, pBox);
     }
     pWin->clientWinSize.x = x + bw;
     pWin->clientWinSize.y = y + bw;
@@ -1568,10 +1492,10 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
         if ((pWin->bitGravity == ForgetGravity) ||
             (pWin->backgroundTile == (PixmapPtr)ParentRelative))
 	{
-	    (* pScreen->ValidateTree)(pParent, pFirstChange, TRUE, anyMarked);
 	    /* CopyWindow will step on borders, so re-paint them */
 	    (* pScreen->Subtract)(pWin->borderExposed, 
 			 pWin->borderClip, pWin->winSize);
+	    (* pScreen->ValidateTree)(pParent, pFirstChange, TRUE, anyMarked);
 	    TraverseTree(pWin, ExposeAll, pScreen); 
 	    DoObscures(pParent); 
 	    HandleExposures(pParent);
@@ -1636,14 +1560,18 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 	    oldpt.y = oldy - y + pWin->absCorner.y;
 	    (* pWin->CopyWindow)(pWin, oldpt, oldRegion);
 
+
 	    /* Note that oldRegion is *translated* by CopyWindow */
 
+	    /*
+	     * We've taken care of those spots in oldRegion so they needn't
+	     * be re-exposed...
+	     */
 	    (* pScreen->Subtract)(pWin->exposed, pWin->clipList, oldRegion);
-	    (* pScreen->Subtract)(pParent->exposed, pParent->exposed, 
-				  pWin->borderSize);
 	    (* pScreen->RegionDestroy)(pRegion);
-	    /* CopyWindow will step on borders, so re-paint them */
-	    (* pScreen->Subtract)(pWin->borderExposed, 
+	    if (!XYSame && (IS_VALID_PIXMAP(pWin->backgroundTile )))
+			/* tile was "rotated" so redraw entire thing */
+	        (* pScreen->Subtract)(pWin->borderExposed, 
 			 pWin->borderClip, pWin->winSize);
 	    HandleExposures(pParent);
 	    (* pScreen->RegionDestroy)(oldRegion);
@@ -1716,7 +1644,7 @@ ChangeBorderWidth(pWin, width)
             pBox = (* pScreen->RegionExtents)(oldRegion);
         else        
             pBox = (* pScreen->RegionExtents)(pWin->borderSize);
-        anyMarked = MarkSiblingsBelowMe(pWin, pBox, TRUE);
+        anyMarked = MarkSiblingsBelowMe(pWin, pBox);
 
         (* pScreen->ValidateTree)(pParent,(anyMarked ? pWin : (WindowPtr)NULL),
 					     TRUE, anyMarked );  
@@ -2413,10 +2341,8 @@ ReparentWindow(pWin, pParent, x, y, client)
     else
         (* pScreen->RegionCopy)(pWin->borderSize, pWin->winSize);
 
-    (* pScreen->PositionWindow)(pWin,
-					      pWin->absCorner.x,
-					      pWin->absCorner.y);
-    fixChildrenWinSize(pWin);
+    (* pScreen->PositionWindow)(pWin, pWin->absCorner.x, pWin->absCorner.y);
+    ResizeChildrenWinSize(pWin, FALSE, 0, 0);
 
     if (WasMapped)    
     {
@@ -2434,10 +2360,9 @@ ReparentWindow(pWin, pParent, x, y, client)
 }
 
 static int
-MarkChildren(pWin, box, unionParent)
+MarkChildren(pWin, box)
     WindowPtr pWin;
     BoxPtr box;
-    Bool unionParent;
 {
     WindowPtr pChild;
     int anyMarked=0;
@@ -2449,17 +2374,9 @@ MarkChildren(pWin, box, unionParent)
     {
         if (pChild->mapped && ((* pScreen->RectIn)(pChild->borderSize, box)))
         {
-	    if (!pChild->marked)
-	    {
-                (*pScreen->Union)(pWin->clipList, pChild->borderClip,
-	    	   pWin->clipList);
-                if (unionParent)
-	            (*pScreen->Union)(pWin->exposed, 
-				   pWin->exposed, pChild->borderClip);    
-	    }
             anyMarked++;
 	    pChild->marked = 1;
-	    anyMarked += MarkChildren(pChild, box, unionParent);
+	    anyMarked += MarkChildren(pChild, box);
 	}
 	pChild = pChild->nextSib;
     }
@@ -2467,10 +2384,9 @@ MarkChildren(pWin, box, unionParent)
 }
 
 static int
-MarkSiblingsBelowMe(pWin, box, unionParent)
+MarkSiblingsBelowMe(pWin, box)
     WindowPtr pWin;
     BoxPtr box;
-    Bool unionParent;
 {
     WindowPtr pSib, pParent;
     int anyMarked = 0;
@@ -2484,18 +2400,10 @@ MarkSiblingsBelowMe(pWin, box, unionParent)
     {
         if (pSib->mapped && ((* pScreen->RectIn)(pSib->borderSize, box)))
         {
-	    if (pParent && (!pSib->marked))
-	    {
-		(*pScreen->Union)(pParent->clipList,      
-			   pSib->borderClip, pParent->clipList);
-		if (unionParent)
-	            (* pScreen->Union)(pParent->exposed, 
-				   pParent->exposed, pSib->borderClip);    
-	    }
 	    pSib->marked = 1;
 	    anyMarked++;
             if (pSib->firstChild)
-    	        anyMarked += MarkChildren(pSib, box, unionParent);
+    	        anyMarked += MarkChildren(pSib, box);
 	}
 	pSib = pSib->nextSib;
     }
@@ -2580,8 +2488,6 @@ MapWindow(pWin, SendExposures, BitsAvailable, SendNotification, client)
 	}
 
 	pWin->marked = 0;         /* so siblings get mapped correctly */
-
-
         if (!pParent->realized)
             return(Success);
         pWin->realized = TRUE;
@@ -2591,19 +2497,6 @@ MapWindow(pWin, SendExposures, BitsAvailable, SendNotification, client)
             RealizeChildren(pWin->firstChild, client);    
         box = (* pScreen->RegionExtents)(pWin->borderSize);
         anyMarked = MarkSiblingsBelowMe(pWin, box, FALSE);
-
-/* kludge; remove when miregion works! */
-	if (!pParent->parent && 
-	    (box->x1 == pParent->winSize->extents.x1) &&
-	    (box->y1 == pParent->winSize->extents.y1) &&
-	    (box->x2 == pParent->winSize->extents.x2) &&
-	    (box->y2 == pParent->winSize->extents.y2) &&
-	    (pParent->firstChild == pWin)) {
-	       (*pWin->drawable.pScreen->RegionCopy)(pParent->clipList,
-						     pParent->winSize);
-	}
-/* end of kludge */
-
 	(* pScreen->ValidateTree)(pParent, pWin, TRUE, anyMarked);
         if (SendExposures) 
         {
@@ -2615,8 +2508,11 @@ MapWindow(pWin, SendExposures, BitsAvailable, SendNotification, client)
 	    }
 	    else
 	    {
+		/*
+		 * Children shouldn't be in the parent's exposed region...
                 (* pScreen->Subtract)(pParent->exposed, pParent->exposed, 
 				      pWin->borderSize);
+		 */
                 (* pScreen->RegionEmpty)(pWin->exposed);
 		DoObscures(pParent);
 		HandleExposures(pWin);
@@ -2652,6 +2548,7 @@ MapSubwindows(pWin, SendExposures, client)
     while (pChild) 
     {
 	if (!pChild->mapped) 
+	    /* What about backing store? */
             MapWindow(pChild, SendExposures, BITS_DISCARDED, 
 		      SEND_NOTIFICATION, client);
         pChild = pChild->nextSib;
@@ -2717,7 +2614,7 @@ UnmapWindow(pWin, SendExposures, SendNotification, fromConfigure)
     if (wasMapped)
     {
         box = (* pWin->drawable.pScreen->RegionExtents)(pWin->borderSize);
-        anyMarked = MarkSiblingsBelowMe(pWin, box, TRUE);
+        anyMarked = MarkSiblingsBelowMe(pWin, box);
     }
     pWin->mapped = 0;
     pWin->realized = pWin->viewable = FALSE;
@@ -2727,20 +2624,10 @@ UnmapWindow(pWin, SendExposures, SendNotification, fromConfigure)
         DeleteWindowFromAnyEvents(pWin, FALSE);
         if (pWin->firstChild)
             UnrealizeChildren(pWin->firstChild);
-
-	(* pWin->drawable.pScreen->ValidateTree)(pParent, pWin,
+        (* pWin->drawable.pScreen->ValidateTree)(pParent, pWin, 
 						 TRUE, anyMarked);
-
         if (SendExposures)
         {
-            void (* RegionEmpty)();
-
-            RegionEmpty = pWin->drawable.pScreen->RegionEmpty;
-            (* RegionEmpty)(pWin->clipList);   /* to force expsoures later */
-            (* RegionEmpty)(pWin->borderClip);
-            (* RegionEmpty)(pWin->borderExposed);
-            (* RegionEmpty)(pWin->exposed);      
-	    pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
 	    HandleExposures(pParent);
 	}
     }        
@@ -2751,6 +2638,9 @@ UnmapWindow(pWin, SendExposures, SendNotification, fromConfigure)
  * UnmapSubwindows
  *    Performs an UnMapWindow request with the specified mode on all mapped
  *    children of the window, in bottom to top stacking order.
+ *
+ *    XXX: Should use the validation function, not mess with the clip lists
+ *    directly, though this way is faster.
  *****/
 
 UnmapSubwindows(pWin, sendExposures)
@@ -2864,10 +2754,7 @@ NotClippedByChildren(pWin)
 
     pScreen = pWin->drawable.pScreen;
     pReg = (* pScreen->RegionCreate)(NULL, 1);
-    if (pWin->firstChild)
-        (* pScreen->Intersect)(pReg, pWin->winSize, pWin->borderClip);
-    else
-        (* pScreen->RegionCopy)(pReg, pWin->clipList);
+    (* pScreen->Intersect) (pReg, pWin->borderClip, pWin->winSize);
     return(pReg);
 }
 
