@@ -1,4 +1,4 @@
-/* $XConsortium: Xtranssock.c,v 1.24 94/03/31 16:17:07 mor Exp $ */
+/* $XConsortium: Xtranssock.c,v 1.25 94/04/17 20:23:05 mor Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -867,7 +867,8 @@ char *port;
     int			namelen;
     int			oldUmask;
 
-    PRMSG (2, "TRANS(SocketUNIXCreateListener) (%s)\n", port, 0, 0);
+    PRMSG (2, "TRANS(SocketUNIXCreateListener) (%s)\n",
+	port ? port : "NULL", 0, 0);
 
     /* Make sure the directory is created */
 
@@ -1637,48 +1638,48 @@ XtransConnInfo ciptr;
 
 
 #ifdef TCPCONN
-Xtransport	TRANS(SocketINETFuncs) = {
-	/* Socket Interface */
-	"inet",
-	0,
-#ifdef TRANS_CLIENT
-	TRANS(SocketOpenCOTSClient),
-#endif /* TRANS_CLIENT */
-#ifdef TRANS_SERVER
-	TRANS(SocketOpenCOTSServer),
-#endif /* TRANS_SERVER */
-#ifdef TRANS_CLIENT
-	TRANS(SocketOpenCLTSClient),
-#endif /* TRANS_CLIENT */
-#ifdef TRANS_SERVER
-	TRANS(SocketOpenCLTSServer),
-#endif /* TRANS_SERVER */
-#ifdef TRANS_REOPEN
-	TRANS(SocketReopenCOTSServer),
-	TRANS(SocketReopenCLTSServer),
-#endif
-	TRANS(SocketSetOption),
-#ifdef TRANS_SERVER
-	TRANS(SocketINETCreateListener),
-	NULL,		       			/* ResetListener */
-	TRANS(SocketINETAccept),
-#endif /* TRANS_SERVER */
-#ifdef TRANS_CLIENT
-	TRANS(SocketINETConnect),
-#endif /* TRANS_CLIENT */
-	TRANS(SocketBytesReadable),
-	TRANS(SocketRead),
-	TRANS(SocketWrite),
-	TRANS(SocketReadv),
-	TRANS(SocketWritev),
-	TRANS(SocketDisconnect),
-	TRANS(SocketINETClose),
-	TRANS(SocketINETClose),
-	};
-
 Xtransport	TRANS(SocketTCPFuncs) = {
 	/* Socket Interface */
 	"tcp",
+        0,
+#ifdef TRANS_CLIENT
+	TRANS(SocketOpenCOTSClient),
+#endif /* TRANS_CLIENT */
+#ifdef TRANS_SERVER
+	TRANS(SocketOpenCOTSServer),
+#endif /* TRANS_SERVER */
+#ifdef TRANS_CLIENT
+	TRANS(SocketOpenCLTSClient),
+#endif /* TRANS_CLIENT */
+#ifdef TRANS_SERVER
+	TRANS(SocketOpenCLTSServer),
+#endif /* TRANS_SERVER */
+#ifdef TRANS_REOPEN
+	TRANS(SocketReopenCOTSServer),
+	TRANS(SocketReopenCLTSServer),
+#endif
+	TRANS(SocketSetOption),
+#ifdef TRANS_SERVER
+	TRANS(SocketINETCreateListener),
+	NULL,		       			/* ResetListener */
+	TRANS(SocketINETAccept),
+#endif /* TRANS_SERVER */
+#ifdef TRANS_CLIENT
+	TRANS(SocketINETConnect),
+#endif /* TRANS_CLIENT */
+	TRANS(SocketBytesReadable),
+	TRANS(SocketRead),
+	TRANS(SocketWrite),
+	TRANS(SocketReadv),
+	TRANS(SocketWritev),
+	TRANS(SocketDisconnect),
+	TRANS(SocketINETClose),
+	TRANS(SocketINETClose),
+	};
+
+Xtransport	TRANS(SocketINETFuncs) = {
+	/* Socket Interface */
+	"inet",
 	TRANS_ALIAS,
 #ifdef TRANS_CLIENT
 	TRANS(SocketOpenCOTSClient),
@@ -1714,53 +1715,15 @@ Xtransport	TRANS(SocketTCPFuncs) = {
 	TRANS(SocketINETClose),
 	TRANS(SocketINETClose),
 	};
+
 #endif /* TCPCONN */
 
 #ifdef UNIXCONN
-Xtransport	TRANS(SocketUNIXFuncs) = {
-	/* Socket Interface */
-	"unix",
-	0,
-#ifdef TRANS_CLIENT
-	TRANS(SocketOpenCOTSClient),
-#endif /* TRANS_CLIENT */
-#ifdef TRANS_SERVER
-	TRANS(SocketOpenCOTSServer),
-#endif /* TRANS_SERVER */
-#ifdef TRANS_CLIENT
-	TRANS(SocketOpenCLTSClient),
-#endif /* TRANS_CLIENT */
-#ifdef TRANS_SERVER
-	TRANS(SocketOpenCLTSServer),
-#endif /* TRANS_SERVER */
-#ifdef TRANS_REOPEN
-	TRANS(SocketReopenCOTSServer),
-	TRANS(SocketReopenCLTSServer),
-#endif
-	TRANS(SocketSetOption),
-#ifdef TRANS_SERVER
-	TRANS(SocketUNIXCreateListener),
-	TRANS(SocketUNIXResetListener),
-	TRANS(SocketUNIXAccept),
-#endif /* TRANS_SERVER */
-#ifdef TRANS_CLIENT
-	TRANS(SocketUNIXConnect),
-#endif /* TRANS_CLIENT */
-	TRANS(SocketBytesReadable),
-	TRANS(SocketRead),
-	TRANS(SocketWrite),
-	TRANS(SocketReadv),
-	TRANS(SocketWritev),
-	TRANS(SocketDisconnect),
-	TRANS(SocketUNIXClose),
-	TRANS(SocketUNIXCloseForCloning),
-	};
-
-#if !defined(LOCALCON)
+#if !defined(LOCALCONN)
 Xtransport	TRANS(SocketLocalFuncs) = {
 	/* Socket Interface */
 	"local",
-	TRANS_ALIAS,
+	0,
 #ifdef TRANS_CLIENT
 	TRANS(SocketOpenCOTSClient),
 #endif /* TRANS_CLIENT */
@@ -1796,4 +1759,48 @@ Xtransport	TRANS(SocketLocalFuncs) = {
 	TRANS(SocketUNIXCloseForCloning),
 	};
 #endif /* !LOCALCONN */
+
+Xtransport	TRANS(SocketUNIXFuncs) = {
+	/* Socket Interface */
+	"unix",
+#if !defined(LOCALCONN)
+        TRANS_ALIAS,
+#else
+	0,
+#endif
+#ifdef TRANS_CLIENT
+	TRANS(SocketOpenCOTSClient),
+#endif /* TRANS_CLIENT */
+#ifdef TRANS_SERVER
+	TRANS(SocketOpenCOTSServer),
+#endif /* TRANS_SERVER */
+#ifdef TRANS_CLIENT
+	TRANS(SocketOpenCLTSClient),
+#endif /* TRANS_CLIENT */
+#ifdef TRANS_SERVER
+	TRANS(SocketOpenCLTSServer),
+#endif /* TRANS_SERVER */
+#ifdef TRANS_REOPEN
+	TRANS(SocketReopenCOTSServer),
+	TRANS(SocketReopenCLTSServer),
+#endif
+	TRANS(SocketSetOption),
+#ifdef TRANS_SERVER
+	TRANS(SocketUNIXCreateListener),
+	TRANS(SocketUNIXResetListener),
+	TRANS(SocketUNIXAccept),
+#endif /* TRANS_SERVER */
+#ifdef TRANS_CLIENT
+	TRANS(SocketUNIXConnect),
+#endif /* TRANS_CLIENT */
+	TRANS(SocketBytesReadable),
+	TRANS(SocketRead),
+	TRANS(SocketWrite),
+	TRANS(SocketReadv),
+	TRANS(SocketWritev),
+	TRANS(SocketDisconnect),
+	TRANS(SocketUNIXClose),
+	TRANS(SocketUNIXCloseForCloning),
+	};
+
 #endif /* UNIXCONN */
