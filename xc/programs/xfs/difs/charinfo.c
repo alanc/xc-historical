@@ -1,4 +1,4 @@
-/* $XConsortium: charinfo.c,v 1.10 93/09/20 18:10:47 hersh Exp $ */
+/* $XConsortium: charinfo.c,v 1.11 94/02/04 17:07:29 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -338,7 +338,13 @@ packGlyphs (client, pfont, format, flags, num_ranges, range, tsize, num_glyphs,
 	if (inkChars)
 	    inkc = *inkChars++;
     	l->position = size;
-    	if (bitc && bitc->bits) {
+	/*
+	 * Repad even characters with no bits (bitc->bits == NULL).
+	 * When X server requests all characters to be repadded to
+	 * charcell size (because it thinks the font is TE) it assumes
+	 * the FS will do it.
+	 */
+    	if (bitc) {
 	    if (!gdata)
 		gdata = (pointer) bitc->bits;
 	    if ((char *) gdata + size != bitc->bits)
