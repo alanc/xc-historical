@@ -29,6 +29,7 @@ HEADERS = \
 	Misc.h \
 	StdSel.h \
 	StdCmap.h \
+	SysUtil.h \
 	WinUtil.h \
 	Xct.h
 
@@ -50,6 +51,7 @@ SRCS = \
 	DrawLogo.c \
 	DrRndRect.c \
 	FToCback.c \
+	GetHost.c \
 	GrayPixmap.c \
 	Initer.c \
 	LocBitmap.c \
@@ -57,6 +59,7 @@ SRCS = \
 	LookupCmap.c \
 	Lower.c \
 	RdBitF.c \
+	ScrOfWin.c \
 	StdCmap.c \
 	StrToBS.c \
 	StrToBmap.c \
@@ -65,6 +68,7 @@ SRCS = \
 	StrToLong.c \
 	StrToOrnt.c \
 	StrToWidg.c \
+	UpdMapHint.c \
 	VisCmap.c \
 	Xct.c
 
@@ -85,6 +89,7 @@ OBJS = \
 	DrawLogo.o \
 	DrRndRect.o \
 	FToCback.o \
+	GetHost.o \
 	GrayPixmap.o \
 	Initer.o \
 	LocBitmap.o \
@@ -92,6 +97,7 @@ OBJS = \
 	LookupCmap.o \
 	Lower.o \
 	RdBitF.o \
+	ScrOfWin.o \
 	StdCmap.o \
 	StrToBS.o \
 	StrToBmap.o \
@@ -100,6 +106,7 @@ OBJS = \
 	StrToLong.o \
 	StrToOrnt.o \
 	StrToWidg.o \
+	UpdMapHint.o \
 	VisCmap.o \
 	Xct.o
 
