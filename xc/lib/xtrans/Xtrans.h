@@ -1,4 +1,4 @@
-/* $XConsortium: Xtrans.h,v 1.16 94/03/15 13:18:42 mor Exp $ */
+/* $XConsortium: Xtrans.h,v 1.17 94/03/18 10:33:25 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -70,17 +70,17 @@
 
 #ifdef FONT_t
 #if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
-#define TRANS(func) _FONTTrans##func
+#define TRANS(func) _FontTrans##func
 #else
-#define TRANS(func) _FONTTrans/**/func
+#define TRANS(func) _FontTrans/**/func
 #endif
 #endif /* FONT_t */
 
 #ifdef ICE_t
 #if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
-#define TRANS(func) _ICETrans##func
+#define TRANS(func) _IceTrans##func
 #else
-#define TRANS(func) _ICETrans/**/func
+#define TRANS(func) _IceTrans/**/func
 #endif
 #endif /* ICE_t */
 
