@@ -1,4 +1,4 @@
-/* $XConsortium: xinit.c,v 11.52 91/11/29 15:20:35 rws Exp $ */
+/* $XConsortium: xinit.c,v 11.53 91/12/11 10:58:18 rws Exp $ */
 
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
@@ -47,7 +47,9 @@ char **newenviron = NULL;
 #define vfork() fork()
 #endif /* SYSV and not hpux */
 
-#ifndef X_NOT_POSIX
+/* A/UX setpgid incorrectly removes the controlling terminal.
+   Per Posix, only setsid should do that. */
+#if !defined(X_NOT_POSIX) && !defined(macII)
 #define setpgrp setpgid
 #endif
 
