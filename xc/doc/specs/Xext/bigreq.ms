@@ -1,5 +1,5 @@
 .\" Use -ms and macros.t
-.\" $XConsortium: bigreq.ms,v 1.5 92/09/08 15:27:45 rws Exp $
+.\" $XConsortium: bigreq.ms,v 1.6 92/12/30 14:33:44 rws Exp $
 .EH ''''
 .OH ''''
 .EF ''''
@@ -178,8 +178,10 @@ The core Xlib functions
 .PN XDrawLines ,
 .PN XDrawArcs ,
 .PN XFillPolygon ,
+.PN XChangeProperty ,
+.PN XSetClipRectangles ,
 and
-.PN XChangeProperty
+.PN XSetRegion
 are required to use extended-length encodings when necessary, if supported
 by the server.  Use of extended-length encodings in other core Xlib
 functions
