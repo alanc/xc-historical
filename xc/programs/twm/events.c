@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.166 90/12/13 11:43:12 dave Exp $
+ * $XConsortium: events.c,v 1.167 90/12/18 17:20:50 dave Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.166 90/12/13 11:43:12 dave Exp $";
+"$XConsortium: events.c,v 1.167 90/12/18 17:20:50 dave Exp $";
 #endif
 
 #include <stdio.h>
@@ -1972,6 +1972,7 @@ HandleEnterNotify()
 		     *     2.  install frame colormap
 		     *     3.  set frame and highlight window (if any) border
 		     *     4.  focus on client window to forward typing
+		     *     4a. same as 4 but for icon mgr w/with NoTitlebar on.
 		     *     5.  send WM_TAKE_FOCUS if requested
 		     */
 		    if (ewp->window == Tmp_win->frame ||
@@ -1983,6 +1984,9 @@ HandleEnterNotify()
 						    &Scr->TwmRoot);
 			SetBorder (Tmp_win, True);			/* 3 */
 			if (Tmp_win->title_w && Scr->TitleFocus &&	/* 4 */
+			    Tmp_win->wmhints && Tmp_win->wmhints->input)
+			  SetFocus (Tmp_win, ewp->time);
+			if (Scr->NoTitlebar && Scr->TitleFocus &&	/*4a */
 			    Tmp_win->wmhints && Tmp_win->wmhints->input)
 			  SetFocus (Tmp_win, ewp->time);
 			if (Tmp_win->protocols & DoesWmTakeFocus)	/* 5 */
