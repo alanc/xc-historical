@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.79 91/05/04 18:21:53 gildea Exp $
+ *	$XConsortium: misc.c,v 1.79 91/05/04 19:38:37 gildea Exp $
  */
 
 /*
@@ -577,7 +577,6 @@ void logpipe()
 do_osc(func)
 int (*func)();
 {
-	register TScreen *screen = &term->screen;
 	register int mode, c;
 	register char *cp;
 	char buf[512];
@@ -621,9 +620,9 @@ int (*func)();
 		if((cp = malloc((unsigned)strlen(buf) + 1)) == NULL)
 			break;
 		strcpy(cp, buf);
-		if(screen->logfile)
-			free(screen->logfile);
-		screen->logfile = cp;
+		if(term->screen.logfile)
+			free(term->screen.logfile);
+		term->screen.logfile = cp;
 #else
 		Bell();
 		Bell();

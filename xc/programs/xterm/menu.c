@@ -1,4 +1,4 @@
-/* $XConsortium: menu.c,v 1.52 91/04/15 13:53:17 gildea Exp $ */
+/* $XConsortium: menu.c,v 1.53 91/04/26 15:03:51 gildea Exp $ */
 /*
 Copyright 1989 Massachusetts Institute of Technology
 
@@ -251,9 +251,9 @@ void HandlePopupMenu (w, event, params, param_count)
  * create_menu - create a popup shell and stuff the menu into it.
  */
 
-static Widget create_menu (xtw, toplevel, name, entries, nentries)
+static Widget create_menu (xtw, toplevelw, name, entries, nentries)
     XtermWidget xtw;
-    Widget toplevel;
+    Widget toplevelw;
     char *name;
     struct _MenuEntry *entries;
     int nentries;
@@ -270,7 +270,7 @@ static Widget create_menu (xtw, toplevel, name, entries, nentries)
 				 (char *)check_bits, check_width, check_height);
     }
 
-    m = XtCreatePopupShell (name, simpleMenuWidgetClass, toplevel, NULL, 0);
+    m = XtCreatePopupShell (name, simpleMenuWidgetClass, toplevelw, NULL, 0);
 
     for (; nentries > 0; nentries--, entries++) {
 	cb[0].callback = (XtCallbackProc) entries->function;

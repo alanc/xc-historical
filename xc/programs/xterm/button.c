@@ -1,4 +1,4 @@
-/* $XConsortium: button.c,v 1.62 91/04/22 13:43:44 gildea Exp $ */
+/* $XConsortium: button.c,v 1.63 91/05/04 19:55:26 gildea Exp $ */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  *
@@ -246,27 +246,27 @@ String *params;			/* selections in precedence order */
 Cardinal num_params;
 {
     Atom selection;
-    int buffer;
+    int cutbuffer;
 
     XmuInternStrings(XtDisplay(w), params, (Cardinal)1, &selection);
     switch (selection) {
-      case XA_CUT_BUFFER0: buffer = 0; break;
-      case XA_CUT_BUFFER1: buffer = 1; break;
-      case XA_CUT_BUFFER2: buffer = 2; break;
-      case XA_CUT_BUFFER3: buffer = 3; break;
-      case XA_CUT_BUFFER4: buffer = 4; break;
-      case XA_CUT_BUFFER5: buffer = 5; break;
-      case XA_CUT_BUFFER6: buffer = 6; break;
-      case XA_CUT_BUFFER7: buffer = 7; break;
-      default:	       buffer = -1;
+      case XA_CUT_BUFFER0: cutbuffer = 0; break;
+      case XA_CUT_BUFFER1: cutbuffer = 1; break;
+      case XA_CUT_BUFFER2: cutbuffer = 2; break;
+      case XA_CUT_BUFFER3: cutbuffer = 3; break;
+      case XA_CUT_BUFFER4: cutbuffer = 4; break;
+      case XA_CUT_BUFFER5: cutbuffer = 5; break;
+      case XA_CUT_BUFFER6: cutbuffer = 6; break;
+      case XA_CUT_BUFFER7: cutbuffer = 7; break;
+      default:	       cutbuffer = -1;
     }
-    if (buffer >= 0) {
+    if (cutbuffer >= 0) {
 	register TScreen *screen = &((XtermWidget)w)->screen;
 	int inbytes;
 	unsigned long nbytes;
 	int fmt8 = 8;
 	Atom type = XA_STRING;
-	char *line = XFetchBuffer(screen->display, &inbytes, buffer);
+	char *line = XFetchBuffer(screen->display, &inbytes, cutbuffer);
 	nbytes = (unsigned long) inbytes;
 	if (nbytes > 0)
 	    SelectionReceived(w, NULL, &selection, &type, (XtPointer)line,
@@ -1238,86 +1238,87 @@ Atom *selection, *target;
 }
 
 
-static /* void */ _OwnSelection(term, selections, count)
-register XtermWidget term;
-String *selections;
-Cardinal count;
+static /* void */ _OwnSelection(termw, selections, count)
+    register XtermWidget termw;
+    String *selections;
+    Cardinal count;
 {
-    Atom* atoms = term->screen.selection_atoms;
+    Atom* atoms = termw->screen.selection_atoms;
     int i;
     Boolean have_selection = False;
 
-    if (term->screen.selection_length < 0) return;
+    if (termw->screen.selection_length < 0) return;
 
-    if (count > term->screen.sel_atoms_size) {
+    if (count > termw->screen.sel_atoms_size) {
 	XtFree((char*)atoms);
 	atoms = (Atom*)XtMalloc(count*sizeof(Atom));
-	term->screen.selection_atoms = atoms;
-	term->screen.sel_atoms_size = count;
+	termw->screen.selection_atoms = atoms;
+	termw->screen.sel_atoms_size = count;
     }
-    XmuInternStrings( XtDisplay((Widget)term), selections, count, atoms );
+    XmuInternStrings( XtDisplay((Widget)termw), selections, count, atoms );
     for (i = 0; i < count; i++) {
-	int buffer;
+	int cutbuffer;
 	switch (atoms[i]) {
-	  case XA_CUT_BUFFER0: buffer = 0; break;
-	  case XA_CUT_BUFFER1: buffer = 1; break;
-	  case XA_CUT_BUFFER2: buffer = 2; break;
-	  case XA_CUT_BUFFER3: buffer = 3; break;
-	  case XA_CUT_BUFFER4: buffer = 4; break;
-	  case XA_CUT_BUFFER5: buffer = 5; break;
-	  case XA_CUT_BUFFER6: buffer = 6; break;
-	  case XA_CUT_BUFFER7: buffer = 7; break;
-	  default:	       buffer = -1;
+	  case XA_CUT_BUFFER0: cutbuffer = 0; break;
+	  case XA_CUT_BUFFER1: cutbuffer = 1; break;
+	  case XA_CUT_BUFFER2: cutbuffer = 2; break;
+	  case XA_CUT_BUFFER3: cutbuffer = 3; break;
+	  case XA_CUT_BUFFER4: cutbuffer = 4; break;
+	  case XA_CUT_BUFFER5: cutbuffer = 5; break;
+	  case XA_CUT_BUFFER6: cutbuffer = 6; break;
+	  case XA_CUT_BUFFER7: cutbuffer = 7; break;
+	  default:	       cutbuffer = -1;
 	}
-	if (buffer >= 0)
-	    if ( term->screen.selection_length >
-		 4*XMaxRequestSize(XtDisplay((Widget)term))-32)
+	if (cutbuffer >= 0)
+	    if ( termw->screen.selection_length >
+		 4*XMaxRequestSize(XtDisplay((Widget)termw))-32)
 		fprintf(stderr,
 			"%s: selection too big (%d bytes), not storing in CUT_BUFFER%d\n",
-			xterm_name, term->screen.selection_length, buffer);
+			xterm_name, termw->screen.selection_length, cutbuffer);
 	    else
-		XStoreBuffer( XtDisplay((Widget)term), term->screen.selection,
-			      term->screen.selection_length, buffer );
+		XStoreBuffer( XtDisplay((Widget)termw), termw->screen.selection,
+			      termw->screen.selection_length, cutbuffer );
 	else if (!replyToEmacs) {
 	    have_selection |=
-		XtOwnSelection( (Widget)term, atoms[i],
-			    term->screen.selection_time,
+		XtOwnSelection( (Widget)termw, atoms[i],
+			    termw->screen.selection_time,
 			    ConvertSelection, LoseSelection, SelectionDone );
 	}
     }
     if (!replyToEmacs)
-	term->screen.selection_count = count;
+	termw->screen.selection_count = count;
     if (!have_selection)
 	TrackText(0, 0, 0, 0);
 }
 
-/* void */ DisownSelection(term)
-register XtermWidget term;
+/* void */
+DisownSelection(termw)
+    register XtermWidget termw;
 {
-    Atom* atoms = term->screen.selection_atoms;
-    Cardinal count = term->screen.selection_count;
+    Atom* atoms = termw->screen.selection_atoms;
+    Cardinal count = termw->screen.selection_count;
     int i;
 
     for (i = 0; i < count; i++) {
-	int buffer;
+	int cutbuffer;
 	switch (atoms[i]) {
-	  case XA_CUT_BUFFER0: buffer = 0; break;
-	  case XA_CUT_BUFFER1: buffer = 1; break;
-	  case XA_CUT_BUFFER2: buffer = 2; break;
-	  case XA_CUT_BUFFER3: buffer = 3; break;
-	  case XA_CUT_BUFFER4: buffer = 4; break;
-	  case XA_CUT_BUFFER5: buffer = 5; break;
-	  case XA_CUT_BUFFER6: buffer = 6; break;
-	  case XA_CUT_BUFFER7: buffer = 7; break;
-	  default:	       buffer = -1;
+	  case XA_CUT_BUFFER0: cutbuffer = 0; break;
+	  case XA_CUT_BUFFER1: cutbuffer = 1; break;
+	  case XA_CUT_BUFFER2: cutbuffer = 2; break;
+	  case XA_CUT_BUFFER3: cutbuffer = 3; break;
+	  case XA_CUT_BUFFER4: cutbuffer = 4; break;
+	  case XA_CUT_BUFFER5: cutbuffer = 5; break;
+	  case XA_CUT_BUFFER6: cutbuffer = 6; break;
+	  case XA_CUT_BUFFER7: cutbuffer = 7; break;
+	  default:	       cutbuffer = -1;
 	}
-	if (buffer < 0)
-	    XtDisownSelection( (Widget)term, atoms[i],
-			       term->screen.selection_time );
+	if (cutbuffer < 0)
+	    XtDisownSelection( (Widget)termw, atoms[i],
+			       termw->screen.selection_time );
     }
-    term->screen.selection_count = 0;
-    term->screen.startHRow = term->screen.startHCol = 0;
-    term->screen.endHRow = term->screen.endHCol = 0;
+    termw->screen.selection_count = 0;
+    termw->screen.startHRow = termw->screen.startHCol = 0;
+    termw->screen.endHRow = termw->screen.endHCol = 0;
 }
 
 

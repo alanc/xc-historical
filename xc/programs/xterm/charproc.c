@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.157 91/05/05 11:56:06 gildea Exp $
+ * $XConsortium: charproc.c,v 1.158 91/05/06 11:56:25 gildea Exp $
  */
 
 /*
@@ -1447,20 +1447,20 @@ WriteText(screen, str, len, flags)
 /*
  * process ANSI modes set, reset
  */
-ansi_modes(term, func)
-XtermWidget	term;
-int		(*func)();
+ansi_modes(termw, func)
+    XtermWidget	termw;
+    int		(*func)();
 {
 	register int	i;
 
 	for (i=0; i<nparam; ++i) {
 		switch (param[i]) {
 		case 4:			/* IRM				*/
-			(*func)(&term->flags, INSERT);
+			(*func)(&termw->flags, INSERT);
 			break;
 
 		case 20:		/* LNM				*/
-			(*func)(&term->flags, LINEFEED);
+			(*func)(&termw->flags, LINEFEED);
 			update_autolinefeed();
 			break;
 		}
@@ -1470,17 +1470,17 @@ int		(*func)();
 /*
  * process DEC private modes set, reset
  */
-dpmodes(term, func)
-    XtermWidget	term;
+dpmodes(termw, func)
+    XtermWidget	termw;
     void (*func)();
 {
-	register TScreen	*screen	= &term->screen;
+	register TScreen	*screen	= &termw->screen;
 	register int	i, j;
 
 	for (i=0; i<nparam; ++i) {
 		switch (param[i]) {
 		case 1:			/* DECCKM			*/
-			(*func)(&term->keyboard.flags, CURSOR_APL);
+			(*func)(&termw->keyboard.flags, CURSOR_APL);
 			break;
 		case 2:			/* ANSI/VT52 mode		*/
 			if (func == bitset) {
@@ -1495,15 +1495,15 @@ dpmodes(term, func)
 		case 3:			/* DECCOLM			*/
 			if(screen->c132) {
 				ClearScreen(screen);
-				CursorSet(screen, 0, 0, term->flags);
+				CursorSet(screen, 0, 0, termw->flags);
 				if((j = func == bitset ? 132 : 80) !=
-				 ((term->flags & IN132COLUMNS) ? 132 : 80) ||
+				 ((termw->flags & IN132COLUMNS) ? 132 : 80) ||
 				 j != screen->max_col + 1) {
 				        Dimension replyWidth, replyHeight;
 					XtGeometryResult status;
 
 					status = XtMakeResizeRequest (
-					    (Widget) term, 
+					    (Widget) termw, 
 					    (Dimension) FontWidth(screen) * j
 					        + 2*screen->border
 						+ screen->scrollbar,
@@ -1514,13 +1514,13 @@ dpmodes(term, func)
 
 					if (status == XtGeometryYes ||
 					    status == XtGeometryDone) {
-					    ScreenResize (&term->screen,
+					    ScreenResize (&termw->screen,
 							  replyWidth,
 							  replyHeight,
-							  &term->flags);
+							  &termw->flags);
 					}
 				}
-				(*func)(&term->flags, IN132COLUMNS);
+				(*func)(&termw->flags, IN132COLUMNS);
 			}
 			break;
 		case 4:			/* DECSCLM (slow scroll)	*/
@@ -1530,24 +1530,24 @@ dpmodes(term, func)
 					FlushScroll(screen);
 			} else
 				screen->jumpscroll = 1;
-			(*func)(&term->flags, SMOOTHSCROLL);
+			(*func)(&termw->flags, SMOOTHSCROLL);
 			update_jumpscroll();
 			break;
 		case 5:			/* DECSCNM			*/
-			j = term->flags;
-			(*func)(&term->flags, REVERSE_VIDEO);
-			if ((term->flags ^ j) & REVERSE_VIDEO)
-				ReverseVideo(term);
+			j = termw->flags;
+			(*func)(&termw->flags, REVERSE_VIDEO);
+			if ((termw->flags ^ j) & REVERSE_VIDEO)
+				ReverseVideo(termw);
 			/* update_reversevideo done in RevVid */
 			break;
 
 		case 6:			/* DECOM			*/
-			(*func)(&term->flags, ORIGIN);
-			CursorSet(screen, 0, 0, term->flags);
+			(*func)(&termw->flags, ORIGIN);
+			CursorSet(screen, 0, 0, termw->flags);
 			break;
 
 		case 7:			/* DECAWM			*/
-			(*func)(&term->flags, WRAPAROUND);
+			(*func)(&termw->flags, WRAPAROUND);
 			update_autowrap();
 			break;
 		case 8:			/* DECARM			*/
@@ -1583,7 +1583,7 @@ dpmodes(term, func)
 			update_marginbell();
 			break;
 		case 45:		/* reverse wraparound	*/
-			(*func)(&term->flags, REVERSEWRAP);
+			(*func)(&termw->flags, REVERSEWRAP);
 			update_reversewrap();
 			break;
 		case 46:		/* logging		*/
@@ -1602,7 +1602,7 @@ dpmodes(term, func)
 #endif /* ALLOWLOGFILEONOFF */
 			break;
 		case 47:		/* alternate buffer */
-			if (!term->misc.titeInhibit) {
+			if (!termw->misc.titeInhibit) {
 			    if(func == bitset)
 				ToAlternate(screen);
 			    else
@@ -1628,34 +1628,34 @@ dpmodes(term, func)
 /*
  * process xterm private modes save
  */
-savemodes(term)
-XtermWidget term;
+savemodes(termw)
+    XtermWidget termw;
 {
-	register TScreen	*screen	= &term->screen;
+	register TScreen	*screen	= &termw->screen;
 	register int i;
 
 	for (i = 0; i < nparam; i++) {
 		switch (param[i]) {
 		case 1:			/* DECCKM			*/
-			screen->save_modes[0] = term->keyboard.flags &
+			screen->save_modes[0] = termw->keyboard.flags &
 			 CURSOR_APL;
 			break;
 		case 3:			/* DECCOLM			*/
 			if(screen->c132)
-			    screen->save_modes[1] = term->flags & IN132COLUMNS;
+			    screen->save_modes[1] = termw->flags & IN132COLUMNS;
 			break;
 		case 4:			/* DECSCLM (slow scroll)	*/
-			screen->save_modes[2] = term->flags & SMOOTHSCROLL;
+			screen->save_modes[2] = termw->flags & SMOOTHSCROLL;
 			break;
 		case 5:			/* DECSCNM			*/
-			screen->save_modes[3] = term->flags & REVERSE_VIDEO;
+			screen->save_modes[3] = termw->flags & REVERSE_VIDEO;
 			break;
 		case 6:			/* DECOM			*/
-			screen->save_modes[4] = term->flags & ORIGIN;
+			screen->save_modes[4] = termw->flags & ORIGIN;
 			break;
 
 		case 7:			/* DECAWM			*/
-			screen->save_modes[5] = term->flags & WRAPAROUND;
+			screen->save_modes[5] = termw->flags & WRAPAROUND;
 			break;
 		case 8:			/* DECARM			*/
 			/* ignore autorepeat */
@@ -1673,7 +1673,7 @@ XtermWidget term;
 			screen->save_modes[12] = screen->marginbell;
 			break;
 		case 45:		/* reverse wraparound	*/
-			screen->save_modes[13] = term->flags & REVERSEWRAP;
+			screen->save_modes[13] = termw->flags & REVERSEWRAP;
 			break;
 		case 46:		/* logging		*/
 			screen->save_modes[14] = screen->logging;
@@ -1692,31 +1692,31 @@ XtermWidget term;
 /*
  * process xterm private modes restore
  */
-restoremodes(term)
-XtermWidget term;
+restoremodes(termw)
+    XtermWidget termw;
 {
-	register TScreen	*screen	= &term->screen;
+	register TScreen	*screen	= &termw->screen;
 	register int i, j;
 
 	for (i = 0; i < nparam; i++) {
 		switch (param[i]) {
 		case 1:			/* DECCKM			*/
-			term->keyboard.flags &= ~CURSOR_APL;
-			term->keyboard.flags |= screen->save_modes[0] &
+			termw->keyboard.flags &= ~CURSOR_APL;
+			termw->keyboard.flags |= screen->save_modes[0] &
 			 CURSOR_APL;
 			update_appcursor();
 			break;
 		case 3:			/* DECCOLM			*/
 			if(screen->c132) {
 				ClearScreen(screen);
-				CursorSet(screen, 0, 0, term->flags);
+				CursorSet(screen, 0, 0, termw->flags);
 				if((j = (screen->save_modes[1] & IN132COLUMNS)
-				 ? 132 : 80) != ((term->flags & IN132COLUMNS)
+				 ? 132 : 80) != ((termw->flags & IN132COLUMNS)
 				 ? 132 : 80) || j != screen->max_col + 1) {
 				        Dimension replyWidth, replyHeight;
 					XtGeometryResult status;
 					status = XtMakeResizeRequest (
-					    (Widget) term,
+					    (Widget) termw,
 					    (Dimension) FontWidth(screen) * j 
 						+ 2*screen->border
 						+ screen->scrollbar,
@@ -1727,14 +1727,14 @@ XtermWidget term;
 
 					if (status == XtGeometryYes ||
 					    status == XtGeometryDone) {
-					    ScreenResize (&term->screen,
+					    ScreenResize (&termw->screen,
 							  replyWidth,
 							  replyHeight,
-							  &term->flags);
+							  &termw->flags);
 					}
 				}
-				term->flags &= ~IN132COLUMNS;
-				term->flags |= screen->save_modes[1] &
+				termw->flags &= ~IN132COLUMNS;
+				termw->flags |= screen->save_modes[1] &
 				 IN132COLUMNS;
 			}
 			break;
@@ -1745,27 +1745,27 @@ XtermWidget term;
 					FlushScroll(screen);
 			} else
 				screen->jumpscroll = 1;
-			term->flags &= ~SMOOTHSCROLL;
-			term->flags |= screen->save_modes[2] & SMOOTHSCROLL;
+			termw->flags &= ~SMOOTHSCROLL;
+			termw->flags |= screen->save_modes[2] & SMOOTHSCROLL;
 			update_jumpscroll();
 			break;
 		case 5:			/* DECSCNM			*/
-			if((screen->save_modes[3] ^ term->flags) & REVERSE_VIDEO) {
-				term->flags &= ~REVERSE_VIDEO;
-				term->flags |= screen->save_modes[3] & REVERSE_VIDEO;
-				ReverseVideo(term);
+			if((screen->save_modes[3] ^ termw->flags) & REVERSE_VIDEO) {
+				termw->flags &= ~REVERSE_VIDEO;
+				termw->flags |= screen->save_modes[3] & REVERSE_VIDEO;
+				ReverseVideo(termw);
 				/* update_reversevideo done in RevVid */
 			}
 			break;
 		case 6:			/* DECOM			*/
-			term->flags &= ~ORIGIN;
-			term->flags |= screen->save_modes[4] & ORIGIN;
-			CursorSet(screen, 0, 0, term->flags);
+			termw->flags &= ~ORIGIN;
+			termw->flags |= screen->save_modes[4] & ORIGIN;
+			CursorSet(screen, 0, 0, termw->flags);
 			break;
 
 		case 7:			/* DECAWM			*/
-			term->flags &= ~WRAPAROUND;
-			term->flags |= screen->save_modes[5] & WRAPAROUND;
+			termw->flags &= ~WRAPAROUND;
+			termw->flags |= screen->save_modes[5] & WRAPAROUND;
 			update_autowrap();
 			break;
 		case 8:			/* DECARM			*/
@@ -1788,8 +1788,8 @@ XtermWidget term;
 			update_visualbell();
 			break;
 		case 45:		/* reverse wraparound	*/
-			term->flags &= ~REVERSEWRAP;
-			term->flags |= screen->save_modes[13] & REVERSEWRAP;
+			termw->flags &= ~REVERSEWRAP;
+			termw->flags |= screen->save_modes[13] & REVERSEWRAP;
 			update_reversewrap();
 			break;
 		case 46:		/* logging		*/
@@ -1802,7 +1802,7 @@ XtermWidget term;
 			/* update_logging done by StartLog and CloseLog */
 			break;
 		case 47:		/* alternate buffer */
-			if (!term->misc.titeInhibit) {
+			if (!termw->misc.titeInhibit) {
 			    if(screen->save_modes[15])
 				ToAlternate(screen);
 			    else
@@ -1839,7 +1839,8 @@ static void bitclr(p, mask)
 }
 
 unparseseq(ap, fd)
-register ANSI	*ap;
+    register ANSI *ap;
+    int fd;
 {
 	register int	c;
 	register int	i;
@@ -2084,13 +2085,13 @@ extern Atom wm_delete_window;	/* for ICCCM delete window */
 int VTInit ()
 {
     register TScreen *screen = &term->screen;
-    Widget toplevel = term->core.parent;
+    Widget vtparent = term->core.parent;
 
-    XtRealizeWidget (toplevel);
-    XtOverrideTranslations(toplevel, 
+    XtRealizeWidget (vtparent);
+    XtOverrideTranslations(vtparent, 
 			   XtParseTranslationTable
 			    ("<Message>WM_PROTOCOLS: DeleteWindow()"));
-    (void) XSetWMProtocols (XtDisplay(toplevel), XtWindow(toplevel),
+    (void) XSetWMProtocols (XtDisplay(vtparent), XtWindow(vtparent),
 			    &wm_delete_window, 1);
 
     if (screen->allbuf == NULL) VTallocbuf ();
@@ -2237,7 +2238,6 @@ static void VTRealize (w, valuemask, values)
 	register TScreen *screen = &term->screen;
 	int xpos, ypos, pr;
 	XSizeHints		sizehints;
-	extern int		VTgcFontMask;
 	int scrollbar_width;
 
 	TabReset (term->tabs);
@@ -2712,7 +2712,7 @@ static void HandleKeymapChange(w, event, params, param_count)
     Cardinal *param_count;
 {
     static XtTranslations keymap, original;
-    static XtResource resources[] = {
+    static XtResource key_resources[] = {
 	{ XtNtranslations, XtCTranslations, XtRTranslationTable,
 	      sizeof(XtTranslations), 0, XtRTranslationTable, (caddr_t)NULL}
     };
@@ -2731,7 +2731,7 @@ static void HandleKeymapChange(w, event, params, param_count)
     (void) strcpy( mapClass, mapName );
     if (islower(mapClass[0])) mapClass[0] = toupper(mapClass[0]);
     XtGetSubresources( w, (XtPointer)&keymap, mapName, mapClass,
-		       resources, (Cardinal)1, NULL, (Cardinal)0 );
+		       key_resources, (Cardinal)1, NULL, (Cardinal)0 );
     if (keymap != NULL)
 	XtOverrideTranslations(w, keymap);
 }

@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: util.c,v 1.23 91/04/22 13:43:58 gildea Exp $
+ *	$XConsortium: util.c,v 1.24 91/05/04 19:17:18 gildea Exp $
  */
 
 /*
@@ -895,18 +895,18 @@ register XExposeEvent *reply;
 	return (0);
 }
 
-ReverseVideo (term)
-	XtermWidget term;
+ReverseVideo (termw)
+	XtermWidget termw;
 {
-	register TScreen *screen = &term->screen;
+	register TScreen *screen = &termw->screen;
 	GC tmpGC;
 	Window tek = TWindow(screen);
 	unsigned long tmp;
 
-	tmp = term->core.background_pixel;
+	tmp = termw->core.background_pixel;
 	if(screen->cursorcolor == screen->foreground)
 		screen->cursorcolor = tmp;
-	term->core.background_pixel = screen->foreground;
+	termw->core.background_pixel = screen->foreground;
 	screen->foreground = tmp;
 
 	tmp = screen->mousecolorback;
@@ -926,7 +926,7 @@ ReverseVideo (term)
 	recolor_cursor (screen->arrow,
 			screen->mousecolor, screen->mousecolorback);
 
-	term->misc.re_verse = !term->misc.re_verse;
+	termw->misc.re_verse = !termw->misc.re_verse;
 
 	XDefineCursor(screen->display, TextWindow(screen), screen->pointer_cursor);
 	if(tek)
@@ -936,7 +936,7 @@ ReverseVideo (term)
 	if(screen->scrollWidget)
 		ScrollBarReverseVideo(screen->scrollWidget);
 
-	XSetWindowBackground(screen->display, TextWindow(screen), term->core.background_pixel);
+	XSetWindowBackground(screen->display, TextWindow(screen), termw->core.background_pixel);
 	if(tek) {
 	    TekReverseVideo(screen);
 	}

@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.179 91/05/04 18:20:30 gildea Exp $ */
+/* $XConsortium: main.c,v 1.179 91/05/04 19:38:16 gildea Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -1304,9 +1304,6 @@ spawn ()
 	char **envnew;		/* new environment */
 	int envsize;		/* elements in new environment */
 	char buf[64];
-#ifdef HAS_UTMP_UT_HOST
-	char *s;
-#endif
 	char *TermName = NULL;
 	int ldisc = 0;
 #ifdef sun
@@ -2003,8 +2000,11 @@ spawn ()
 #ifdef HAS_UTMP_UT_HOST
 		(void) strncpy(buf, DisplayString(screen->display),
 			       sizeof(buf));
-		if (s = rindex(buf, ':'))
-		    *s = '\0';
+	        {
+		    char *disfin = rindex(buf, ':');
+		    if (disfin)
+			*disfin = '\0';
+		}
 		(void) strncpy(utmp.ut_host, buf, sizeof(utmp.ut_host));
 #endif
 		(void) strncpy(utmp.ut_name, pw->pw_name, 
@@ -2309,6 +2309,9 @@ spawn ()
 			ttydev = malloc((unsigned) strlen(handshake.buffer) + 1);
 			strcpy(ttydev, handshake.buffer);
 			break;
+		default:
+			fprintf(stderr, "%s: unexpected handshake status %d\n",
+			        xterm_name, handshake.status);
 		}
 	    }
 	    /* close our sides of the pipes */

@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: resize.c,v 1.20 91/04/03 17:47:55 gildea Exp $
+ *	$XConsortium: resize.c,v 1.21 91/05/04 20:15:41 gildea Exp $
  */
 
 /*
@@ -168,11 +168,12 @@ char *strindex ();
 
 SIGNAL_T onintr();
 
-main (argc, argv)
-char **argv;
 /*
    resets termcap string to reflect current screen size
  */
+main (argc, argv)
+    int argc;
+    char **argv;
 {
 	register char *ptr, *env;
 	register int emu = VT100;

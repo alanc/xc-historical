@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: screen.c,v 1.26 91/04/24 14:26:49 gildea Exp $
+ *	$XConsortium: screen.c,v 1.27 91/04/24 18:04:08 gildea Exp $
  */
 
 /*
@@ -295,7 +295,6 @@ ScrnDeleteChar (sb, row, col, n, size)
 	register Char *ptr = sb[2 * row];
 	register Char *attrs = sb[2 * row + 1];
 	register nbytes = (size - n - col);
-	register int i;
 	int wrappedbit = attrs[0]&LINEWRAPPED;
 
 	bcopy (ptr + col + n, ptr + col, nbytes);
