@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.38 89/12/12 15:48:40 jim Exp $
+ * $XConsortium: main.c,v 1.39 89/12/13 09:16:54 rws Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -193,6 +193,9 @@ main(argc, argv)
 			warning("ignoring option %s\n", argv[0]);
 		}
 	}
+#ifdef __GNUC__
+	*incp++ = "/usr/local/lib/gcc-include";
+#endif
 	*incp++ = INCLUDEDIR;
 #ifdef CRAY
 	*incp++ = "/usr/include/stdc";
