@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: lcGenConv.c,v 1.1 93/09/17 13:30:22 rws Exp $ */
 /******************************************************************
 
               Copyright 1991, 1992 by TOSHIBA Corp.
@@ -649,7 +649,7 @@ _XlcGenericLoader(name)
 {
     XLCd lcd;
 
-    lcd = _XlcCreateLC(name, _xlcGenericMethods);
+    lcd = _XlcCreateLC(name, _XlcGenericMethods);
     if (lcd == NULL)
 	return lcd;
 

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: lcGeneric.c,v 1.1 93/09/17 13:30:29 rws Exp $ */
 /******************************************************************
 
               Copyright 1991, 1992 by TOSHIBA Corp.
@@ -49,7 +49,7 @@ static XLCdPublicMethodsRec methods = {
     }
 };
 
-XLCdMethods _xlcGenericMethods = (XLCdMethods) &methods;
+XLCdMethods _XlcGenericMethods = (XLCdMethods) &methods;
 
 static XLCd
 create(name, methods)
@@ -425,7 +425,7 @@ static Bool
 initialize(lcd)
     XLCd lcd;
 {
-    XLCdPublicMethods superclass = (XLCdPublicMethods) _xlcPublicMethods;
+    XLCdPublicMethods superclass = (XLCdPublicMethods) _XlcPublicMethods;
 
     XLC_PUBLIC_METHODS(lcd)->superclass = superclass;
 

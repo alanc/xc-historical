@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: lcDefConv.c,v 1.1 93/09/17 13:30:06 rws Exp $ */
 /******************************************************************
 
               Copyright 1991, 1992 by TOSHIBA Corp.
@@ -343,7 +343,7 @@ _XlcDefaultLoader(name)
     if (strcmp(name, "C"))
 	return (XLCd) NULL;
 
-    lcd = _XlcCreateLC(name, _xlcGenericMethods);
+    lcd = _XlcCreateLC(name, _XlcGenericMethods);
 
     _XlcSetConverter(lcd, XlcNMultiByte, lcd, XlcNWideChar, open_strtowcs);
     _XlcSetConverter(lcd, XlcNMultiByte, lcd, XlcNCompoundText, open_strtostr);

@@ -1,4 +1,4 @@
-/* $XConsortium: lcEuc.c,v 1.1 93/09/17 13:30:13 rws Exp $ */
+/* $XConsortium: lcEuc.c,v 1.2 93/09/20 10:50:15 rws Exp $ */
 /******************************************************************
 
         Copyright 1992, 1993 by FUJITSU LIMITED
@@ -1630,7 +1630,7 @@ _XlcEucLoader(name)
 {
     XLCd lcd;
 
-    lcd = _XlcCreateLC(name, _xlcGenericMethods);
+    lcd = _XlcCreateLC(name, _XlcGenericMethods);
     if (lcd == (XLCd) NULL)
 	return lcd;
     

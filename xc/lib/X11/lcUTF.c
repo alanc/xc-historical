@@ -1,4 +1,4 @@
-/* $XConsortium: lcUTF.c,v 1.2 93/09/18 15:18:41 rws Exp $ */
+/* $XConsortium: lcUTF.c,v 1.3 93/09/19 09:19:04 rws Exp $ */
 /******************************************************************
 
               Copyright 1993 by SunSoft, Inc.
@@ -1141,7 +1141,7 @@ _XlcUtfLoader(name)
 {
     XLCd lcd;
 
-    lcd = _XlcCreateLC(name, _xlcGenericMethods);
+    lcd = _XlcCreateLC(name, _XlcGenericMethods);
     if (lcd == (XLCd) NULL)
 	return lcd;
     

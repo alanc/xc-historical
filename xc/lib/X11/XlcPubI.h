@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: XlcPubI.h,v 1.1 93/09/17 13:31:17 rws Exp $ */
 /******************************************************************
 
               Copyright 1991, 1992 by TOSHIBA Corp.
@@ -106,7 +106,7 @@ typedef struct _XLCdPublicRec {
     XLCdPublicPart pub;
 } XLCdPublicRec, *XLCdPublic;
 
-extern XLCdMethods _xlcPublicMethods;
+extern XLCdMethods _XlcPublicMethods;
 
 _XFUNCPROTOBEGIN
 

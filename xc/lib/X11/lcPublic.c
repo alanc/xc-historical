@@ -1,4 +1,4 @@
-/* $XConsortium: lcPublic.c,v 1.1 93/09/17 13:31:03 rws Exp $ */
+/* $XConsortium: lcPublic.c,v 1.2 93/09/17 14:24:14 rws Exp $ */
 /******************************************************************
 
               Copyright 1991, 1992 by TOSHIBA Corp.
@@ -65,7 +65,7 @@ static XLCdPublicMethodsRec publicMethods = {
     }
 };
 
-XLCdMethods _xlcPublicMethods = (XLCdMethods) &publicMethods;
+XLCdMethods _XlcPublicMethods = (XLCdMethods) &publicMethods;
 
 static char *
 default_string(lcd)

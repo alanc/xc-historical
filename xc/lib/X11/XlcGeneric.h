@@ -1,4 +1,4 @@
-/* $XConsortium: XlcGeneric.h,v 1.1 93/09/17 13:30:36 rws Exp $ */
+/* $XConsortium: XlcGeneric.h,v 1.2 93/09/17 14:23:49 rws Exp $ */
 /******************************************************************
 
               Copyright 1991, 1992 by TOSHIBA Corp.
@@ -87,6 +87,6 @@ typedef struct _XLCdGenericRec {
     XLCdGenericPart gen;	
 } XLCdGenericRec, *XLCdGeneric;
 
-extern XLCdMethods _xlcGenericMethods;
+extern XLCdMethods _XlcGenericMethods;
 
 #endif  /* _XLCGENERIC_H_ */
