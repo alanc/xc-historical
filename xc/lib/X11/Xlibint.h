@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.78 89/12/12 11:50:16 jim Exp $ */
+/* $XConsortium: Xlibint.h,v 11.79 89/12/12 12:13:42 jim Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -67,8 +67,26 @@ extern Screen *_XScreenOfWindow ();	/* get Screen pointer for window */
 #ifndef BUFSIZE
 #define BUFSIZE 2048			/* X output buffer size. */
 #endif
-#ifndef EPERBATCH
-#define EPERBATCH 8			/* when batching, how many elements */
+#ifndef PTSPERBATCH
+#define PTSPERBATCH 1024		/* point batching */
+#endif
+#ifndef WLNSPERBATCH
+#define WLNSPERBATCH 50			/* wide line batching */
+#endif
+#ifndef ZLNSPERBATCH
+#define ZLNSPERBATCH 1024		/* thin line batching */
+#endif
+#ifndef WRCTSPERBATCH
+#define WRCTSPERBATCH 10		/* wide line rectangle batching */
+#endif
+#ifndef ZRCTSPERBATCH
+#define ZRCTSPERBATCH 256		/* thin line rectangle batching */
+#endif
+#ifndef FRCTSPERBATCH
+#define FRCTSPERBATCH 256		/* filled rectangle batching */
+#endif
+#ifndef FARCSPERBATCH
+#define FARCSPERBATCH 256		/* filled arc batching */
 #endif
 #ifndef CURSORFONT
 #define CURSORFONT "cursor"		/* standard cursor fonts */
