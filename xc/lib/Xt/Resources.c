@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Resources.c,v 1.34 88/02/02 14:05:56 swick Locked $";
+static char rcsid[] = "$Header: Resources.c,v 1.36 88/02/02 14:40:25 swick Locked $";
 #endif lint
 
 /*
@@ -285,16 +285,10 @@ static void XrmGetResources(widget, base, names, classes, length,
 		if (value.addr) {
 		    if (res->xrm_type == QString) {
 		       *((caddr_t *)(base - res->xrm_offset - 1)) = value.addr;
-/* ||| Why? casts should be handled by string to short, etc. conversions
- *     XtArgVals are, however, always sizeof(caddr_t), and this keeps
- *     things consistent, having conversion procs produce the same size. */
-          	    } else if (res->xrm_size == sizeof(short)) {
-		        *(short *) (base - res->xrm_offset - 1) =
-				(short)*((int *)value.addr);
-          	    } else if (res->xrm_size == sizeof(char)) {
-		        *(char *) (base - res->xrm_offset - 1) =
-				(char)*((int *)value.addr);
 		    } else {
+			/* Cvt procs return pointer to storage of exact size,
+			   e.g. char/short/int/...  thus casts have been
+			   done there and we can do a simple copy here */
 			XtBCopy(value.addr, base - res->xrm_offset - 1,
 			    res->xrm_size);
 		    }
