@@ -17,7 +17,7 @@
 #include "jowindow.h"
 #include "ostuff.h"
 
-#include "bitmaps/gray"
+#include "X11/bitmaps/gray"
 
 usage()
 {
