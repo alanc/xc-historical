@@ -1,4 +1,4 @@
-/* $XConsortium: Atoms.c,v 1.8 90/04/30 16:57:05 converse Exp $
+/* $XConsortium: Atoms.c,v 1.9 90/12/09 17:13:51 rws Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -122,7 +122,7 @@ void XmuInternStrings(d, names, count, atoms)
     register int i;
 
     for (i = 0; i < count; i++) {
-	atoms[i] = XmuInternAtom(d, names[i]);
+	atoms[i] = XInternAtom(d, names[i], False);
     }
     return;
 }
