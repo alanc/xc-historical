@@ -622,7 +622,7 @@ or site.def config files.
 .TS
 center;
 l l .
-TCPCONN		Enables the INET Domain Socket based transport
+TCPCONN	Enables the INET Domain Socket based transport
 UNIXCONN	Enables the UNIX Domain Sokcet based transport
 STREAMSCONN	Enables the TLI based transports
 LOCALCONN	Enables the SYSV Local connection transports
