@@ -371,10 +371,11 @@ Boolean InterfaceDef::generate_extern_stubs(Generator* g) {
 }
 
 Boolean TypeName::generate_extern_stubs(Generator* g) {
+    Boolean (Expr::*func)(Generator*) = &Expr::generate_extern_stubs;
     return (
 	type_ != nil && (
 	    g->emit_extern_stubs(type_) |
-	    generate_list(declarators_, &Expr::generate_extern_stubs, g)
+	    generate_list(declarators_, func, g)
 	)
     );
 }
@@ -384,9 +385,10 @@ Boolean StructDecl::generate_extern_stubs(Generator* g) {
 }
 
 Boolean StructMember::generate_extern_stubs(Generator* g) {
+    Boolean (Expr::*func)(Generator*) = &Expr::generate_extern_stubs;
     return (
 	g->emit_extern_stubs(type_) |
-	generate_list(declarators_, &Expr::generate_extern_stubs, g)
+	generate_list(declarators_, func, g)
     );
 }
 
@@ -403,9 +405,10 @@ Boolean SequenceDecl::generate_extern_stubs(Generator* g) {
 }
 
 Boolean Operation::generate_extern_stubs(Generator* g) {
+    Boolean (Expr::*func)(Generator*) = &Expr::generate_extern_stubs;
     return (
 	g->emit_extern_stubs(type_) |
-	generate_list(params_, &Expr::generate_extern_stubs, g)
+	generate_list(params_, func, g)
     );
 }
 
@@ -488,9 +491,10 @@ Boolean ExprImpl::put_except_list(ExprList* defs, Generator* g) {
 }
 
 Boolean TypeName::generate_types(Generator* g) {
+    Boolean (Expr::*func)(Generator*) = &Expr::generate_types;
     return (
 	type_->generate_types(g) ||
-	generate_list(declarators_, &Expr::generate_types, g)
+	generate_list(declarators_, func, g)
     );
 }
 
@@ -511,9 +515,10 @@ Boolean StructDecl::generate_types(Generator* g) {
 }
 
 Boolean StructMember::generate_types(Generator* g) {
+    Boolean (Expr::*func)(Generator*) = &Expr::generate_types;
     return (
 	type_->generate_types(g) ||
-	generate_list(declarators_, &Expr::generate_types, g)
+	generate_list(declarators_, func, g)
     );
 }
 
@@ -681,9 +686,10 @@ Boolean ExceptDecl::generate_types(Generator* g) {
 }
 
 Boolean Operation::generate_types(Generator* g) {
+    Boolean (Expr::*func)(Generator*) = &Expr::generate_types;
     return (
 	type_->generate_types(g) ||
-	generate_list(params_, &Expr::generate_types, g)
+	generate_list(params_, func, g)
     );
 }
 

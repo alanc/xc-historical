@@ -475,25 +475,26 @@ Boolean Binary::generate(Generator* g) {
 }
 
 Boolean TypeName::generate(Generator* g) {
-    if (seq_) {
+    if (!seq_) {
+	if (g->varying()) {
+	    switch (type_->symbol()->tag()) {
+	    case Symbol::sym_interface:
+	    case Symbol::sym_typedef:
+	    case Symbol::sym_string:
+		g->emit("typedef %E ", nil, type_);
+		break;
+	    default:
+		g->emit("%E;\ntypedef %N ", nil, type_);
+		break;
+	    }
+	} else {
+	    g->emit("typedef %E ", nil, type_);
+	}
+	generate_list(declarators_, &Expr::generate, g, ", ");
+	return true;
+    } else {
 	return type_->generate(g);
     }
-    if (g->varying()) {
-	switch (type_->symbol()->tag()) {
-	case Symbol::sym_interface:
-	case Symbol::sym_typedef:
-	case Symbol::sym_string:
-	    g->emit("typedef %E ", nil, type_);
-	    break;
-	default:
-	    g->emit("%E;\ntypedef %N ", nil, type_);
-	    break;
-	}
-    } else {
-	g->emit("typedef %E ", nil, type_);
-    }
-    generate_list(declarators_, &Expr::generate, g, ", ");
-    return true;
 }
 
 Boolean UnsignedType::generate(Generator* g) {
