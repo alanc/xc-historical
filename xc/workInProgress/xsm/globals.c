@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: globals.c,v 1.1 94/07/08 14:06:50 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -48,6 +48,9 @@ Bool		client_info_visible = 0;
 
 String 		*clientNames = NULL;
 int		numClientNames = 0;
+
+int		sessionNameCount = 0;
+String		*sessionNames = NULL;
 
 XtAppContext	appContext;
 
