@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: technique.c,v 1.1 93/07/19 11:39:32 mor Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -91,8 +91,8 @@ int			encode;
     {
 	BEGIN_TECHNIQUE (xieTecColorAllocMatch, *bufDest, dstParam);
 
-	dstParam->matchLimit = XieConvertToIEEE(srcParam->match_limit);
-	dstParam->grayLimit = XieConvertToIEEE(srcParam->gray_limit);
+	dstParam->matchLimit = _XieConvertToIEEE (srcParam->match_limit);
+	dstParam->grayLimit = _XieConvertToIEEE (srcParam->gray_limit);
 
 	END_TECHNIQUE (xieTecColorAllocMatch, *bufDest, dstParam);
     }
@@ -228,18 +228,19 @@ XieConvolveConstantParam	*srcParam;
 int				encode;
 
 {
-    int length = LENOF (xieTecConvolveConstant);
-    xieTecConvolveConstant *dstParam;
+    xieTecConvolveConstant 	*dstParam;
+    int 			length = LENOF (xieTecConvolveConstant);
 
     if (srcParam == NULL) 
 	return(0);
+
     if (encode)
     {
 	BEGIN_TECHNIQUE (xieTecConvolveConstant, *bufDest, dstParam);
 
-        dstParam->constant0 = XieConvertToIEEE(srcParam->constant[0]);
-        dstParam->constant1 = XieConvertToIEEE(srcParam->constant[1]);
-        dstParam->constant2 = XieConvertToIEEE(srcParam->constant[2]);
+        dstParam->constant0 = _XieConvertToIEEE (srcParam->constant[0]);
+        dstParam->constant1 = _XieConvertToIEEE (srcParam->constant[1]);
+        dstParam->constant2 = _XieConvertToIEEE (srcParam->constant[2]);
 
 	END_TECHNIQUE (xieTecConvolveConstant, *bufDest, dstParam);
     }
@@ -251,24 +252,24 @@ int				encode;
 int
 _XieClipScaleParam (bufDest, srcParam, encode)
 
-char				**bufDest;
-XieClipScaleParam		*srcParam;
-int				encode;
+char			**bufDest;
+XieClipScaleParam	*srcParam;
+int			encode;
 
 {
-    int length = LENOF (xieTecClipScale);
-    xieTecClipScale *dstParam;
+    xieTecClipScale 	*dstParam;
+    int 		length = LENOF (xieTecClipScale);
 
     if (encode)
     {
 	BEGIN_TECHNIQUE (xieTecClipScale, *bufDest, dstParam);
 
-	dstParam->input_low0   = XieConvertToIEEE(srcParam->input_low[0]);
-	dstParam->input_low1   = XieConvertToIEEE(srcParam->input_low[1]);
-	dstParam->input_low2   = XieConvertToIEEE(srcParam->input_low[2]);
-	dstParam->input_high0  = XieConvertToIEEE(srcParam->input_high[0]);
-	dstParam->input_high1  = XieConvertToIEEE(srcParam->input_high[1]);
-	dstParam->input_high2  = XieConvertToIEEE(srcParam->input_high[2]);
+	dstParam->input_low0   = _XieConvertToIEEE (srcParam->input_low[0]);
+	dstParam->input_low1   = _XieConvertToIEEE (srcParam->input_low[1]);
+	dstParam->input_low2   = _XieConvertToIEEE (srcParam->input_low[2]);
+	dstParam->input_high0  = _XieConvertToIEEE (srcParam->input_high[0]);
+	dstParam->input_high1  = _XieConvertToIEEE (srcParam->input_high[1]);
+	dstParam->input_high2  = _XieConvertToIEEE (srcParam->input_high[2]);
 	dstParam->output_low0  = srcParam->output_low[0];
 	dstParam->output_low1  = srcParam->output_low[1];
 	dstParam->output_low2  = srcParam->output_low[2];
@@ -738,11 +739,12 @@ XieGeomNearestNeighborParam	*srcParam;
 int				encode;
 
 {
-    int length = LENOF (xieTecGeomNearestNeighbor);
-    xieTecGeomNearestNeighbor *dstParam;
+    xieTecGeomNearestNeighbor 	*dstParam;
+    int				length = LENOF (xieTecGeomNearestNeighbor);
 
     if (srcParam == NULL) 
 	return(0);
+
     if (encode)
     {
 	BEGIN_TECHNIQUE (xieTecGeomNearestNeighbor, *bufDest, dstParam);
