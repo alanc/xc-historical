@@ -6,7 +6,7 @@
 ** This and planemask.c can/should probably be combined.
 */
 
-#include <X11/Intrinsic.h>
+#include <X11/IntrinsicP.h>
 #include <X11/Form.h>
 #include <X11/Label.h>
 #include <X11/Command.h>
@@ -147,3 +147,34 @@ void change_dashlist(w,closure,call_data)
 }
 
 
+void update_dashlist(w, dashes)
+     Widget w;
+     int dashes;
+{
+  int i;
+  Widget dashwidget;
+  CompositeWidget cw;
+  static Arg dashargs[] = {
+    {XtNforeground, (XtArgVal) NULL},
+    {XtNbackground, (XtArgVal) NULL}
+  };
+
+  dashlist = dashes;
+
+  for (i = 0; i < DASHLENGTH; ++i) {
+    cw = (CompositeWidget) w;
+    dashwidget = cw->composite.children[i+1]; /* the zeroth child
+					         is the label */
+
+    if (dashes & 1<<i) {	/* if it's set, make it look that way */
+      dashargs[0].value = (XtArgVal) X.background;
+      dashargs[1].value = (XtArgVal) X.foreground;
+    }
+    else {
+      dashargs[0].value = (XtArgVal) X.foreground;
+      dashargs[1].value = (XtArgVal) X.background;
+    }
+    
+    XtSetValues(dashwidget,dashargs,XtNumber(dashargs));
+  }
+}
