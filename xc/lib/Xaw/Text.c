@@ -1365,7 +1365,7 @@ void XtTextGetSelectionPos(w, left, right)
 }
 
 
-void XtTextNewSource(w, source, startPos)
+void XtTextSetSource(w, source, startPos)
     Widget w;
     XtTextSource   source;
     XtTextPosition startPos;
