@@ -1,5 +1,5 @@
 /*
- * $XConsortium: WinUtil.h,v 1.3 89/09/22 12:10:20 jim Exp $
+ * $XConsortium: WinUtil.h,v 1.4 90/12/19 18:10:50 converse Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -21,6 +21,8 @@
 
 #ifndef _XMU_WINDOWUTIL_H_
 #define _XMU_WINDOWUTIL_H_
+
+#include <X11/Xutil.h>
 
 #ifdef __cplusplus
 extern "C" {					/* for C++ V2.0 */
