@@ -1,4 +1,4 @@
-/* $XConsortium: xgetfctl.c,v 1.5 89/12/02 15:20:55 rws Exp $ */
+/* $XConsortium: xgetfctl.c,v 1.6 90/05/18 11:34:20 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -112,7 +112,8 @@ ProcXGetFeedbackControl(client)
     if (dev->stringfeed != NULL)
 	{
 	rep.num_feedbacks++;
-	total_length += sizeof(xStringFeedbackState);
+	total_length += sizeof(xStringFeedbackState) + 
+	    (dev->stringfeed->ctrl.num_symbols_supported * sizeof (KeySym));
 	}
     if (dev->intfeed != NULL)
 	{
@@ -268,20 +269,30 @@ CopySwapStringFeedback (client, s, buf)
     StringFeedbackPtr 	s;
     char 		**buf;
     {
+    int i;
     register char 		n;
     xStringFeedbackState	*s2;
+    KeySym			*kptr;
 
     s2 = (xStringFeedbackState *) *buf;
     s2->class = StringFeedbackClass;
-    s2->length = sizeof (xStringFeedbackState);
+    s2->length = sizeof (xStringFeedbackState) + 
+        s->ctrl.num_symbols_supported * sizeof (KeySym);
     s2->max_symbols = s->ctrl.max_symbols;
     s2->num_syms_supported = s->ctrl.num_symbols_supported;
+    *buf += sizeof (xStringFeedbackState);
+    kptr = (KeySym *) (*buf);
+    for (i=0; i<s->ctrl.num_symbols_supported; i++)
+	*kptr++ = *(s->ctrl.symbols_supported+i);
     if (client->swapped)
 	{
 	swaps(&s2->max_symbols,n);
 	swaps(&s2->num_syms_supported,n);
+        kptr = (KeySym *) (*buf);
+	for (i=0; i<s->ctrl.num_symbols_supported; i++,kptr++)
+	    swapl(kptr,n);
 	}
-    *buf += sizeof (xStringFeedbackState);
+    *buf += (s->ctrl.num_symbols_supported * sizeof (KeySym));
     }
 
 /***********************************************************************

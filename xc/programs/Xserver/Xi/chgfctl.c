@@ -1,4 +1,4 @@
-/* $XConsortium: xchgfctl.c,v 1.4 89/10/10 16:04:44 gms Exp $ */
+/* $XConsortium: xchgfctl.c,v 1.5 89/12/02 15:20:28 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -389,8 +389,29 @@ ChangeStringFeedback (client, dev, mask, f)
     register char n;
     register long *p;
     StringFeedbackPtr s = dev->stringfeed;
-    int		i;
-    KeySym	*syms;
+    int		i, j;
+    KeySym	*syms, *sup_syms;
+
+    if (f->num_keysyms > s->ctrl.max_symbols)
+	{
+	SendErrorToClient(client, IReqCode, X_ChangeFeedbackControl, 0, 
+	    BadValue);
+	return Success;
+	}
+    syms = (KeySym *) (f+1);
+    sup_syms = s->ctrl.symbols_supported;
+    for (i=0; i<f->num_keysyms; i++)
+	{
+        for (j=0; j<s->ctrl.num_symbols_supported; j++)
+	    if (*(syms+i) == *(sup_syms+j))
+		break;
+	if (j==s->ctrl.num_symbols_supported)
+	    {
+	    SendErrorToClient(client, IReqCode, X_ChangeFeedbackControl, 0, 
+		BadMatch);
+	    return Success;
+	    }
+	}
 
     if (client->swapped)
 	{
@@ -403,10 +424,9 @@ ChangeStringFeedback (client, dev, mask, f)
 	    }
 	}
 
-    syms = (KeySym *) (f+1);
     s->ctrl.num_symbols_displayed  = f->num_keysyms;
     for (i=0; i<f->num_keysyms; i++)
-	s->ctrl.symbols[i] = *(syms+i);
+	*(s->ctrl.symbols_displayed+i) = *(syms+i);
     (*s->CtrlProc)(dev, &s->ctrl);
     return Success;
     }
