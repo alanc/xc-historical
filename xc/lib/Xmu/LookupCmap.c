@@ -1,4 +1,4 @@
-/* $XConsortium: LookupCmap.c,v 1.1 89/05/19 14:35:54 converse Exp $ 
+/* $XConsortium: LookupCmap.c,v 1.2 89/05/19 14:44:37 converse Exp $ 
  * 
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
@@ -30,6 +30,8 @@
 extern XStandardColormap *XmuStandardColormap();
 extern void XmuDeleteStandardColormap();
 extern Status XmuGetColormapAllocation();
+
+static Status lookup();
 
 /*
  * To create a standard colormap if one does not currently exist, or
@@ -67,15 +69,17 @@ Status XmuLookupStandardColormap(dpy, screen, visualid, depth, property,
     Bool		retain;		/* specifies whether to retain */
 {
     Display		*odpy;		/* original display connection */
-    XStandardColormap	*stdcmaps, *colormap;	
+    XStandardColormap	*colormap;	
     XVisualInfo		vinfo_template, *vinfo;	/* visual */
     long		vinfo_mask;
     unsigned long	r_max, g_max, b_max;	/* allocation */
     int			count;	
     Colormap		cmap;			/* colormap ID */
+    Status		status = 0;
 
 
     /* Match the requested visual */
+
     vinfo_template.visualid = visualid;	
     vinfo_template.screen = screen;
     vinfo_template.depth = depth;
@@ -84,37 +88,29 @@ Status XmuLookupStandardColormap(dpy, screen, visualid, depth, property,
 	NULL)
 	return 0;
 
+    /* Monochrome visuals have no standard maps */
+
     if (vinfo->colormap_size <= 2) {
-	/* Monochrome visuals have no standard maps */
 	XFree((char *) vinfo);
 	return 0;	
     }
 
-    if (XGetRGBColormaps(dpy, RootWindow(dpy, screen), &stdcmaps, &count,
-			 property)) {
-	XFree((char *) stdcmaps);
-	if (replace) {
-	    /* Free old resources first - we may need them, particularly in 
-	     * the default colormap of the screen.  However, because of this,
-	     * it is possible that we will destroy the old resource and fail 
-	     * to create a new one when a lower lever routine returns a 
-	     * failure status.
-	     */
-	    XmuDeleteStandardColormap(dpy, screen, property);
-	}
-	else {
-	    /* If the requested property already exists on this screen, and, 
-	     * if the replace flag has not been set to true, return success.
-	     */
-	    XFree((char *) vinfo);
-	    return 1;
-	}
+    /* If the requested property already exists on this screen, and, 
+     * if the replace flag has not been set to true, return success.
+     * lookup_map will remove a pre-existing map if replace is true.
+     */
+
+    if (lookup(dpy, screen, visualid, property, (XStandardColormap *) NULL,
+	       replace) && !replace) {
+	XFree((char *) vinfo);
+	return 1;
     }
 
     /* Determine the best allocation for this property under the requested
      * visualid and depth, and determine whether or not to use the default
      * colormap of the screen.
      */
+
     if (!XmuGetColormapAllocation(vinfo, property, &r_max, &g_max, &b_max)) {
 	XFree((char *) vinfo);
 	return 0;
@@ -123,8 +119,9 @@ Status XmuLookupStandardColormap(dpy, screen, visualid, depth, property,
     cmap = (property == XA_RGB_DEFAULT_MAP)
 	? DefaultColormap(dpy, screen) : None;
 
+    /* If retaining resources, open a new connection to the same server */
+
     if (retain) {
-	/* Open a new connection to the same display server */
 	odpy = dpy;
 	if ((dpy = XOpenDisplay(XDisplayString(odpy))) == NULL) {
 	    XFree((char *) vinfo);
@@ -133,42 +130,32 @@ Status XmuLookupStandardColormap(dpy, screen, visualid, depth, property,
 	}
     }
 
+    /* Create the standard colormap */
+
     colormap = XmuStandardColormap(dpy, screen, visualid, depth, property,
 				   cmap, r_max, g_max, b_max);
+
+    /* Set the standard colormap property */
+
     if (colormap) {
 	XGrabServer(dpy);
 
-	if (XGetRGBColormaps(dpy, RootWindow(dpy, screen), &stdcmaps, &count,
-			     property)) {
-	    XFree((char *) stdcmaps);
-	    if (replace)  {
-		/* Someone has defined the property since we last looked.
-		 * Release the resources used by that definition, and
-		 * attach our definition of the property to the root window.
-		 */
-		XmuDeleteStandardColormap(dpy, screen, property);
-		XSetRGBColormaps(dpy, RootWindow(dpy, screen), colormap, 1,
-				 property);
-		if (retain)
-		    XSetCloseDownMode(dpy, RetainPermanent);
-	    }
-	    else {
-		/* Someone has defined the property since we last looked.
-		 * Since we will not replace it, release our own resources.
-		 */
-		if (colormap->killid == ReleaseByFreeingColormap)
-		    XFreeColormap(dpy, colormap->colormap);
-	    }
+	if (lookup(dpy, screen, visualid, property, colormap, replace) &&
+	    !replace) {
+	    /* Someone has defined the property since we last looked.
+	     * Since we will not replace it, release our own resources.
+	     * If this is the default map, our allocations will be freed 
+	     * when this connection closes.
+	     */
+	    if (colormap->killid == ReleaseByFreeingColormap)
+		XFreeColormap(dpy, colormap->colormap);
 	}
-	else {
-	    /* The most common case: nothing to free, define the property */
-	    XSetRGBColormaps(dpy, RootWindow(dpy, screen), colormap, 1,
-			     property);
-	    if (retain)
+	else if (retain) {
 		XSetCloseDownMode(dpy, RetainPermanent);
 	}
-
 	XUngrabServer(dpy);
+	XFree((char *) colormap);
+	status = 1;
     }
 
     if (retain) {
@@ -176,5 +163,104 @@ Status XmuLookupStandardColormap(dpy, screen, visualid, depth, property,
 	dpy = odpy;
     }
     XFree((char *) vinfo);
-    return ((colormap) ? 1 : 0);
+    return status;
+}
+
+/***************************************************************************/
+
+/* Lookup a standard colormap property.  If the property is RGB_DEFAULT_MAP,
+ * the visualid is used to determine whether the indicated standard colormap
+ * exists.  If the map exists and replace is true, delete the maps
+ * resources and remove the property.  Return true if the map exists,
+ * or did exist and was deleted, return false if the map was not found.
+ * If new is not NULL, new gives an XStandardColormap structure to be added
+ * to the standard colormap property definition.
+ */
+
+static Status lookup(dpy, screen, visualid, property, new, replace)
+    Display		*dpy;
+    int			screen;
+    VisualID		visualid;
+    Atom		property;
+    XStandardColormap	*new;
+    Bool		replace;
+{
+    register int	i;
+    int			count;
+    XStandardColormap	**stdcmaps = NULL;
+
+    /* The property does not already exist */
+
+    if (! XGetRGBColormaps(dpy, RootWindow(dpy, screen), stdcmaps, &count,
+			   property)) {
+	if (new)
+	    XSetRGBColormaps(dpy, RootWindow(dpy, screen), new, 1, property);
+	return 0;
+    }
+
+    /* The property exists and is not describing the RGB_DEFAULT_MAP */
+
+    if (property != XA_RGB_DEFAULT_MAP) {
+	if (replace) {
+	    XmuDeleteStandardColormap(dpy, screen, property);
+	    if (new)
+		XSetRGBColormaps(dpy, RootWindow(dpy, screen), new, 1,
+				 property);
+	}
+	XFree((char *)stdcmaps);
+	return 1;
+    }
+    
+    /* The property exists and is RGB_DEFAULT_MAP */
+
+    for (i=0; (i < count) && (stdcmaps[i]->visualid != visualid); i++)
+	;
+
+    /* No RGB_DEFAULT_MAP property matches the given visualid */
+
+    if (i == count) {
+	if (new) {
+#define MAX_DEF_MAPS	15
+	    XStandardColormap	*maps[MAX_DEF_MAPS];
+	    for (i=0; i < count && i < (MAX_DEF_MAPS - 1); i++)
+		maps[i] = stdcmaps[i];
+	    maps[i] = new;
+	    XSetRGBColormaps(dpy, RootWindow(dpy, screen), maps[0], i + 1,
+			     property);
+	}
+	XFree((char *) stdcmaps);
+	return 0;
+    }
+
+    /* Found an RGB_DEFAULT_MAP property with a matching visualid */
+
+    if (replace) {
+	/* Free old resources first - we may need them, particularly in 
+	 * the default colormap of the screen.  However, because of this,
+	 * it is possible that we will destroy the old resource and fail 
+	 * to create a new one if XmuStandardColormap() fails.
+	 */
+
+	if (count == 1) {
+	    XmuDeleteStandardColormap(dpy, screen, property);
+	    if (new)
+		XSetRGBColormaps(dpy, RootWindow(dpy, screen), new, 1,
+				 property);
+	}
+	else {
+	    if ((stdcmaps[i]->killid == ReleaseByFreeingColormap)
+		&& (stdcmaps[i]->colormap != None)
+		&& (stdcmaps[i]->colormap != DefaultColormap(dpy, screen)))
+		XFreeColormap(dpy, stdcmaps[i]->colormap);
+	    else if (stdcmaps[i]->killid != None)
+		XKillClient(dpy, stdcmaps[i]->killid);
+
+	    stdcmaps[i] = (new) ? new : stdcmaps[--count];
+
+	    XSetRGBColormaps(dpy, RootWindow(dpy, screen), *stdcmaps, count,
+			     XA_RGB_DEFAULT_MAP);
+	}
+    }
+    XFree((char *) stdcmaps);
+    return 1;
 }

@@ -1,4 +1,4 @@
-/* $XConsortium: VisCmap.c,v 1.5 89/05/09 16:41:34 keith Exp $ 
+/* $XConsortium: VisCmap.c,v 1.6 89/05/19 14:35:05 converse Exp $ 
  * 
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
@@ -146,12 +146,21 @@ Status XmuVisualStandardColormaps(dpy, screen, visualid, depth, replace,
 	break;
 	/* the end for PseudoColor, DirectColor, StaticColor, and TrueColor */
 
-      case StaticGray:
       case GrayScale:
+	status = XmuLookupStandardColormap(dpy, screen, visualid, depth,
+					   XA_RGB_DEFAULT_MAP, replace,
+					   retain);
+	if (! status) break;
+	/* fall through */
+
+      case StaticGray:
 
 	status = XmuLookupStandardColormap(dpy, screen, visualid, depth,
 					   XA_RGB_GRAY_MAP, replace, retain);
-	break;
+	if (! status && vinfo->class == GrayScale) {
+	    XmuDeleteStandardColormap(dpy, screen, XA_RGB_DEFAULT_MAP);
+	    break;
+	}
     }
 
     XFree((char *) vinfo);

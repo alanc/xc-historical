@@ -1,4 +1,4 @@
-/* $XConsortium: StdCmap.c,v 1.6 89/05/09 16:41:50 keith Exp $ 
+/* $XConsortium: StdCmap.c,v 1.7 89/05/19 14:35:08 converse Exp $ 
  * 
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
@@ -27,8 +27,7 @@
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
 
-extern void	free();
-static Status valid_args();		/* argument checks */
+static Status valid_args();		/* argument restrictions */
 
 /*
  * To create any one standard colormap, use XmuStandardColormap().
@@ -60,7 +59,6 @@ XStandardColormap *XmuStandardColormap(dpy, screen, visualid, depth, property,
     XVisualInfo		vinfo_template, *vinfo = NULL;
     long		vinfo_mask;
     int			n;
-    unsigned long	ncolors;
 
     /* Match the required visual information to an actual visual */
     vinfo_template.visualid = visualid;	
@@ -71,18 +69,20 @@ XStandardColormap *XmuStandardColormap(dpy, screen, visualid, depth, property,
 	return 0;
 
     /* Check the validity of the combination of visual characteristics,
-     * allocation, and colormap property.  Create and fill in an
-     * XStandardColormap structure.
+     * allocation, and colormap property.  Create an XStandardColormap
+     * structure.
      */
-    if (! valid_args(vinfo, red_max, green_max, blue_max, property, &ncolors)
+
+    if (! valid_args(vinfo, red_max, green_max, blue_max, property)
 	|| ((stdcmap = XAllocStandardColormap()) == NULL)) {
 	XFree((char *) vinfo);
 	return 0;
     }
 
     /* Fill in the XStandardColormap structure */
-    if (cmap) {
-	/* Allocating out of an existing map, cannot use XFreeColormap() */
+
+    if (cmap == DefaultColormap(dpy, screen)) {
+	/* Allocating out of the default map, cannot use XFreeColormap() */
 	Window win = XCreateWindow(dpy, RootWindow(dpy, screen), 1, 1, 1, 1,
 				   0, 0, InputOnly, vinfo->visual,
 				   (unsigned long) 0,
@@ -95,7 +95,6 @@ XStandardColormap *XmuStandardColormap(dpy, screen, visualid, depth, property,
 	stdcmap->colormap = XCreateColormap(dpy, RootWindow(dpy, screen),
 					    vinfo->visual, AllocNone);
     }
-	
     stdcmap->red_max = red_max;
     stdcmap->green_max = green_max;
     stdcmap->blue_max = blue_max;
@@ -111,39 +110,40 @@ XStandardColormap *XmuStandardColormap(dpy, screen, visualid, depth, property,
     stdcmap->visualid = vinfo->visualid;
 
     /* Make the colormap */
+
     status = XmuCreateColormap(dpy, stdcmap);
 
     /* Clean up */
+
     XFree((char *) vinfo);
     if (!status) {
 
 	/* Free the colormap or the pixmap, if we created one */
-	if (stdcmap->killid == 1 && !cmap)
+	if (stdcmap->killid == ReleaseByFreeingColormap)
 	    XFreeColormap(dpy, stdcmap->colormap);
-	else if (stdcmap->killid > 1)
+	else if (stdcmap->killid != None)
 	    XFreePixmap(dpy, stdcmap->killid);
-
-	free((char *) stdcmap);
+	
+	XFree((char *) stdcmap);
 	return (XStandardColormap *) NULL;
     }
     return stdcmap;
 }
 
 /****************************************************************************/
-static Status valid_args(vinfo, red_max, green_max, blue_max, property,
-			 ncolors)
+static Status valid_args(vinfo, red_max, green_max, blue_max, property)
     XVisualInfo		*vinfo;		/* specifies visual */
     unsigned long	red_max, green_max, blue_max;	/* specifies alloc */
     Atom		property;	/* specifies property name */
-    unsigned long	*ncolors;	/* returns number of colors */
 {
+    unsigned long	ncolors;	/* number of colors requested */
 
     /* Determine that the number of colors requested is <= map size */
 
     if ((vinfo->class == DirectColor) || (vinfo->class == TrueColor)) {
 	unsigned long mask;
 
-	*ncolors = (red_max + 1) * (green_max + 1) * (blue_max + 1);
+	ncolors = (red_max + 1) * (green_max + 1) * (blue_max + 1);
 	mask = vinfo->red_mask;
 	while (!(mask & 1))
 	    mask >>= 1;
@@ -160,12 +160,12 @@ static Status valid_args(vinfo, red_max, green_max, blue_max, property,
 	if (blue_max > mask)
 	    return 0;
     } else if (property == XA_RGB_GRAY_MAP) {
-	*ncolors = red_max + green_max + blue_max + 1;
-	if (*ncolors > vinfo->colormap_size)
+	ncolors = red_max + green_max + blue_max + 1;
+	if (ncolors > vinfo->colormap_size)
 	    return 0;
     } else {
-	*ncolors = (red_max + 1) * (green_max + 1) * (blue_max + 1);
-	if (*ncolors > vinfo->colormap_size)
+	ncolors = (red_max + 1) * (green_max + 1) * (blue_max + 1);
+	if (ncolors > vinfo->colormap_size)
 	    return 0;
     }
     
@@ -175,7 +175,8 @@ static Status valid_args(vinfo, red_max, green_max, blue_max, property,
     {
       case XA_RGB_DEFAULT_MAP:
 	if ((red_max == 0 || green_max == 0 || blue_max == 0) ||
-	    (vinfo->class != PseudoColor && vinfo->class != DirectColor))
+	    (vinfo->class != PseudoColor && vinfo->class != DirectColor &&
+	     vinfo->class != GrayScale))
 	    return 0;
 	break;
       case XA_RGB_RED_MAP:
