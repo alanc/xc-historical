@@ -1,5 +1,5 @@
 /*
- * $XConsortium: figures.cxx,v 1.3 94/04/01 16:47:42 matt Exp $
+ * $XConsortium: figures.cxx,v 1.4 94/04/07 11:29:32 matt Exp matt $
  */
 
 /*
@@ -883,6 +883,8 @@ void FigureStyleImpl::brush_attr(Brush_in b) {
 
 //+ FigureStyleImpl(FigureStyle::brush_attr?)
 BrushRef FigureStyleImpl::brush_attr() {
+    if (is_nil(brush_))
+	brush_ = _tmp(drawing_kit())->simple_brush(0.0);
     return Brush::_duplicate(brush_->_obj());
 }
 
