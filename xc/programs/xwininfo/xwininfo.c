@@ -360,7 +360,7 @@ Display_Window_Id(window)
   }
   if (win_name) {
     printf(" (%s)\n", win_name);
-    free(win_name);
+    XFree(win_name);
   } else if (window == RootWindow(dpy, screen))
     printf(" (the root window)\n");
   else
@@ -606,7 +606,7 @@ Display_Tree_Info(window)
     Display_Window_Id(child_list[i]);
   }
 
-  if (child_list) free(child_list);
+  if (child_list) XFree(child_list);
 }
 
 
@@ -693,34 +693,26 @@ Display_Size_Hints(window)
 }
 
 
-/*
- * Display window/border shape info
- */
-Display_Extents (x, y, w, h)
-{
-    printf("             ==> x, y: %s, %s\n", xscale (x), yscale (y));
-    printf("             ==> width, height: %s, %s\n", xscale (w), yscale (h));
-}
-
 Display_Window_Shape (window)
     Window  window;
 {
     int	    ws, bs, xws, yws, wws, hws, xbs, ybs, wbs, hbs;
 
-    XShapeQuery (dpy, window, &ws, &bs,
-		 &xws, &yws, &wws, &hws,
-		 &xbs, &ybs, &wbs, &hbs);
+    XShapeQueryExtents (dpy, window, &ws, &xws, &yws, &wws, &hws,
+				     &bs, &xbs, &ybs, &wbs, &hbs);
     if (!ws)
-	  printf("\n         ==> No window shape defined\n");
+	  printf("         ==> No window shape defined\n");
     else {
-	  printf("\n         ==> Window shape extents:\n\n");
-	  Display_Extents (xws, yws, wws, hws);
+	  printf("         ==> Window shape extents:  %sx%s",
+		 xscale(wws), yscale(hws));
+	  printf("+%s+%s\n", xscale(xws), yscale(yws));
     }
     if (!bs)
-	  printf("\n         ==> No border shape defined\n");
+	  printf("         ==> No border shape defined\n");
     else {
-	  printf("\n         ==> Border shape extents:\n\n");
-	  Display_Extents (xbs, ybs, wbs, hbs);
+	  printf("         ==> Border shape extents:  %sx%s",
+		 xscale(wbs), yscale(hbs));
+	  printf("+%s+%s\n", xscale(xbs), yscale(ybs));
     }
 }
 
