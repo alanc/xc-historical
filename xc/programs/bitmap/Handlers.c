@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Handlers.c,v 1.11 91/11/18 17:30:53 gildea Exp $
+ * $XConsortium: Handlers.c,v 1.12 93/08/19 09:25:41 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -71,7 +71,7 @@ void DragOnePointHandler(w, client_data, event, cont) /* ARGSUSED */
 	    status->btime = event->xbutton.time;
 	    status->at_x = InBitmapX(BW, event->xbutton.x);
 	    status->at_y = InBitmapY(BW, event->xbutton.y);
-	    status->success = (Boolean) status->draw;
+	    status->success = status->draw ? True : False;
 	    if (status->draw)
 		(*status->draw)(w,
 				status->at_x, status->at_y, status->value);
@@ -84,7 +84,7 @@ void DragOnePointHandler(w, client_data, event, cont) /* ARGSUSED */
 	    status->btime = event->xbutton.time;
 	    status->at_x = InBitmapX(BW, event->xbutton.x);
 	    status->at_y = InBitmapY(BW, event->xbutton.y);
-	    status->success = (Boolean) status->draw;
+	    status->success = status->draw ? True : False;
 	    /* SUPPRESS 701 */
 	    BWTerminateRequest(w, TRUE); 
 	}
@@ -581,7 +581,7 @@ void DragTwoPointsHandler(w, client_data, event, cont) /* ARGSUSED */
 	    status->from_y = InBitmapY(BW, event->xbutton.y);
 	    status->to_x = InBitmapX(BW, event->xbutton.x);
 	    status->to_y = InBitmapY(BW, event->xbutton.y);
-	    status->success = (Boolean) status->draw;
+	    status->success = status->draw ? True : False;
 	    if (status->draw)
 		(*status->draw)(w,
 				status->from_x, status->from_y, 
