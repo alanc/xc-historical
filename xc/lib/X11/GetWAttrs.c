@@ -1,4 +1,4 @@
-/* $XConsortium: XGetWAttrs.c,v 11.22 89/06/14 14:21:58 jim Exp $ */
+/* $XConsortium: XGetWAttrs.c,v 11.23 91/01/06 11:46:21 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -16,57 +16,102 @@ without express or implied warranty.
 #define NEED_REPLIES
 #include "Xlibint.h"
 
+typedef struct _WAttrsState {
+    unsigned long attr_seq;
+    unsigned long geom_seq;
+    XWindowAttributes *attr;
+} _XWAttrsState;
+
+static Bool
+_XWAttrsHandler(dpy, rep, buf, len, data)
+    register Display *dpy;
+    register xReply *rep;
+    char *buf;
+    int len;
+    XPointer data;
+{
+    register _XWAttrsState *state;
+    xGetWindowAttributesReply replbuf;
+    register xGetWindowAttributesReply *repl;
+    register XWindowAttributes *attr;
+
+    state = (_XWAttrsState *)data;
+    if (dpy->last_request_read != state->attr_seq) {
+	if (dpy->last_request_read == state->geom_seq &&
+	    !state->attr &&
+	    rep->generic.type == X_Error &&
+	    rep->error.errorCode == BadDrawable)
+	    return True;
+	return False;
+    }
+    if (rep->generic.type == X_Error) {
+	state->attr = (XWindowAttributes *)NULL;
+	return False;
+    }
+    repl = (xGetWindowAttributesReply *)
+	_XGetAsyncReply(dpy, (char *)&replbuf, rep, buf, len,
+		     (SIZEOF(xGetWindowAttributesReply) - SIZEOF(xReply)) >> 2,
+			True);
+    attr = state->attr;
+    attr->class = repl->class;
+    attr->bit_gravity = repl->bitGravity;
+    attr->win_gravity = repl->winGravity;
+    attr->backing_store = repl->backingStore;
+    attr->backing_planes = repl->backingBitPlanes;
+    attr->backing_pixel = repl->backingPixel;
+    attr->save_under = repl->saveUnder;
+    attr->colormap = repl->colormap;
+    attr->map_installed = repl->mapInstalled;
+    attr->map_state = repl->mapState;
+    attr->all_event_masks = repl->allEventMasks;
+    attr->your_event_mask = repl->yourEventMask;
+    attr->do_not_propagate_mask = repl->doNotPropagateMask;
+    attr->override_redirect = repl->override;
+    attr->visual = _XVIDtoVisual (dpy, repl->visualID);
+    return True;
+}
+
 Status XGetWindowAttributes(dpy, w, attr)
      register Display *dpy;
      Window w;
      XWindowAttributes *attr;
-
 {       
-    xGetWindowAttributesReply rep;
-    xGetGeometryReply rep2;
-    register xResourceReq *req1;
-    register xResourceReq *req2;
+    xGetGeometryReply rep;
+    register xResourceReq *req;
     register int i;
     register Screen *sp;
+    _XAsyncHandler async;
+    _XWAttrsState async_state;
  
     LockDisplay(dpy);
-    GetResReq(GetWindowAttributes, w, req1);
-    if (!_XReply (dpy, (xReply *)&rep,
-       (SIZEOF(xGetWindowAttributesReply) - SIZEOF(xReply)) >> 2, xTrue)) {
-		UnlockDisplay(dpy);
-		SyncHandle();
-      		return (0);
-	}
-    attr->class = rep.class;
-    attr->bit_gravity = rep.bitGravity;
-    attr->win_gravity = rep.winGravity;
-    attr->backing_store = rep.backingStore;
-    attr->backing_planes = rep.backingBitPlanes;
-    attr->backing_pixel = rep.backingPixel;
-    attr->save_under = rep.saveUnder;
-    attr->colormap = rep.colormap;
-    attr->map_installed = rep.mapInstalled;
-    attr->map_state = rep.mapState;
-    attr->all_event_masks = rep.allEventMasks;
-    attr->your_event_mask = rep.yourEventMask;
-    attr->do_not_propagate_mask = rep.doNotPropagateMask;
-    attr->override_redirect = rep.override;
-    attr->visual = _XVIDtoVisual (dpy, rep.visualID);
-    
-    GetResReq(GetGeometry, w, req2);
+    GetResReq(GetWindowAttributes, w, req);
 
-    if (!_XReply (dpy, (xReply *)&rep2, 0, xTrue)) {
+    async_state.attr_seq = dpy->request;
+    async_state.geom_seq = 0;
+    async_state.attr = attr;
+    async.next = dpy->async_handlers;
+    async.handler = _XWAttrsHandler;
+    async.data = (XPointer)&async_state;
+    dpy->async_handlers = &async;
+
+    GetResReq(GetGeometry, w, req);
+
+    async_state.geom_seq = dpy->request;
+
+    if (!_XReply (dpy, (xReply *)&rep, 0, xTrue)) {
+	DeqAsyncHandler(dpy, &async);
 	UnlockDisplay(dpy);
 	SyncHandle();
 	return (0);
 	}
-    attr->x = cvtINT16toInt (rep2.x);
-    attr->y = cvtINT16toInt (rep2.y);
-    attr->width = rep2.width;
-    attr->height = rep2.height;
-    attr->border_width = rep2.borderWidth;
-    attr->depth = rep2.depth;
-    attr->root = rep2.root;
+    DeqAsyncHandler(dpy, &async);
+    attr->x = cvtINT16toInt (rep.x);
+    attr->y = cvtINT16toInt (rep.y);
+    attr->width = rep.width;
+    attr->height = rep.height;
+    attr->border_width = rep.borderWidth;
+    attr->depth = rep.depth;
+    attr->root = rep.root;
     /* find correct screen so that applications find it easier.... */
     for (i = 0; i < dpy->nscreens; i++) {
 	sp = &dpy->screens[i];
