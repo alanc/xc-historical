@@ -42,3 +42,4 @@ ComplexProgramTarget_1(xterm,$(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB),-ltermcap)
 
 SingleProgramTarget(resize,$(OBJS2),,-lc -ltermcap)
 InstallProgramWithFlags(resize, $(BINDIR), )
+InstallManPage(resize,$(MANDIR))
