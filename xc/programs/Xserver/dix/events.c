@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.56 92/04/06 18:01:39 keith Exp $ */
+/* $XConsortium: events.c,v 5.57 92/04/10 18:04:51 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -877,7 +877,7 @@ AllowSome(client, time, thisDev, newState)
 		{
 		    if (dev->grab && SameClient(dev->grab, client))
 			dev->sync.state = THAWED;
-		    else
+		    if (dev->sync.other && SameClient(dev->sync.other, client))
 			dev->sync.other = NullGrab;
 		}
 		ComputeFreezes();
@@ -890,7 +890,7 @@ AllowSome(client, time, thisDev, newState)
 		{
 		    if (dev->grab && SameClient(dev->grab, client))
 			dev->sync.state = FREEZE_BOTH_NEXT_EVENT;
-		    else
+		    if (dev->sync.other && SameClient(dev->sync.other, client))
 			dev->sync.other = NullGrab;
 		}
 		ComputeFreezes();
@@ -916,7 +916,7 @@ AllowSome(client, time, thisDev, newState)
 			continue;
 		    if (dev->grab && SameClient(dev->grab, client))
 			dev->sync.state = THAWED;
-		    else
+		    if (dev->sync.other && SameClient(dev->sync.other, client))
 			dev->sync.other = NullGrab;
 		}
 		ComputeFreezes();
