@@ -1,4 +1,4 @@
-/* $Header: xsetmode.c,v 1.2 90/09/05 12:46:02 gms ic1C-80 $ */
+/* $XConsortium: xsetmode.c,v 1.2 90/09/05 12:46:02 gms ic1C-80 $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -87,15 +87,26 @@ ProcXSetDeviceMode(client)
 	SendErrorToClient (client, IReqCode, X_SetDeviceMode, 0, BadDevice);
 	return Success;
 	}
-
-    rep.status = SetDeviceMode (client, dev, stuff->mode);
-    if (rep.status != Success)
-	SendErrorToClient(client, IReqCode, X_SetDeviceMode, 0, rep.status);
+    if (dev->valuator == NULL)
+	{
+	SendErrorToClient(client, IReqCode, X_SetDeviceValuators, 0, 
+		BadMatch);
+	return Success;
+	}
+    if ((dev->grab) && !SameClient(dev->grab, client))
+	rep.status = AlreadyGrabbed;
     else
 	{
-  	dev->valuator->mode = stuff->mode;
-	WriteReplyToClient (client, sizeof (xSetDeviceModeReply), &rep);
+	rep.status = SetDeviceMode (client, dev, stuff->mode);
+	if (rep.status != Success)
+	    SendErrorToClient(client, IReqCode, X_SetDeviceMode, 0, rep.status);
+	else
+	    {
+  	    dev->valuator->mode = stuff->mode;
+	    WriteReplyToClient (client, sizeof (xSetDeviceModeReply), &rep);
+	    }
 	}
+
 
     return Success;
     }

@@ -1,4 +1,4 @@
-/* $Header: xextinit.c,v 1.5 91/01/18 15:41:59 gms Exp $ */
+/* $XConsortium: xextinit.c,v 1.5 91/01/18 15:41:59 gms Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -138,9 +138,10 @@ void	SReplyIDispatch();
 void	IResetProc();
 void	SEventIDispatch();
 void	NotImplemented();
-static	XExtensionVersion	thisversion = {XI_Present, 
-						XI_Add_XDeviceBell_Major, 
-						XI_Add_XDeviceBell_Minor};
+static	XExtensionVersion	thisversion = 
+					{XI_Present, 
+					 XI_Add_XSetDeviceValuators_Major, 
+					 XI_Add_XSetDeviceValuators_Minor};
 
 /**********************************************************************
  *
@@ -269,6 +270,8 @@ ProcIDispatch (client)
         return(ProcXSendExtensionEvent(client));
     else if (stuff->data == X_DeviceBell)
         return(ProcXDeviceBell(client));
+    else if (stuff->data == X_SetDeviceValuators)
+        return(ProcXSetDeviceValuators(client));
     else
         {
 	SendErrorToClient(client, IReqCode, stuff->data, 0, BadRequest);
@@ -354,6 +357,8 @@ SProcIDispatch(client)
         return(SProcXSendExtensionEvent(client));
     else if (stuff->data == X_DeviceBell)
         return(SProcXDeviceBell(client));
+    else if (stuff->data == X_SetDeviceValuators)
+        return(SProcXSetDeviceValuators(client));
     else
         {
 	SendErrorToClient(client, IReqCode, stuff->data, 0, BadRequest);
@@ -410,6 +415,8 @@ SReplyIDispatch (client, len, rep)
 	SRepXSetDeviceButtonMapping (client, len, rep);
     else if (rep->RepType == X_QueryDeviceState)
 	SRepXQueryDeviceState (client, len, rep);
+    else if (rep->RepType == X_SetDeviceValuators)
+	SRepXSetDeviceValuators (client, len, rep);
     else
 	{
 	SendErrorToClient(client, IReqCode, rep, 0, BadRequest);
@@ -533,7 +540,6 @@ SDeviceStateNotifyEvent (from, to)
     *to = *from;
     swaps(&to->sequenceNumber,n);
     swapl(&to->time, n);
-    swapl(&to->classes_reported, n);
     ip = &to->valuator0;
     for (i=0; i<3; i++)
 	{
