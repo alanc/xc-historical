@@ -1,4 +1,6 @@
+.\" $XConsortium$
 .\" Use tbl, eqn, -ms, and macros.t
+.\" @(#)icccm.ms	1.50	16 Apr 1994	14:13:55
 .EH ''''
 .OH ''''
 .EF ''''
@@ -37,53 +39,70 @@
 .B
 \s+2Inter-Client Communication Conventions Manual\s0
 
-.mc |
 Version 2.0
 
-Public Review Draft
-(with change bars against version 1.1)
+X Consortium Standard
 
-X Consortium Draft Standard
+X Version 11, Release 6
 .R
 .ce 0
-.mc
 .sp 6
 .ce 9999
 \s+1David Rosenthal\s0
 .sp 6p
 \s+1Sun Microsystems, Inc.\s0
-.mc |
 .sp 2
 \s+1Version 2 edited by Stuart W. Marks\s0
 .sp 6p
 \s+1SunSoft, Inc.\s0
 .ce 0
-.mc
 .bp
 \&
 .ps 9
 .nr PS 9
 .sp 8
 .LP
-X Window System is a trademark of M.I.T.
+X Window System is a trademark of X Consortium, Inc.
 .LP             
 .LP
-Copyright \(co 1988, 1991, 1993
-Massachusetts Institute of Technology, 
-Cambridge, MA USA.
+Copyright \(co 1988, 1991, 1993, 1994
+X Consortium
 .LP
-Copyright \(co 1987, 1988, 1989, 1993
-Sun Microsystems, Inc
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+Except as contained in this notice, the name of the X Consortium shall
+not be used in advertising or otherwise to promote the sale, use or
+other dealings in this Software without prior written authorization
+from the X Consortium.
+.LP
+.sp 2
+Copyright \(co 1987, 1988, 1989, 1993, 1994
+Sun Microsystems, Inc.
 .LP 
 Permission to use, copy, modify, and distribute this documentation 
 for any purpose and without fee is hereby granted, provided 
 that the above copyright notice and this permission 
 notice appear in all copies.
-MIT, Sun Microsystems, and the X Cosortium make no representations about the 
+Sun Microsystems makes no representations about the 
 suitability for any purpose of the information in this document. 
 This documentation is provided as is without express or implied warranty. 
-This document is only a draft standard of the X Consortium and is therefore
-subject to change.
 .ps 11
 .nr PS 11
 .af PN i
@@ -97,7 +116,6 @@ subject to change.
 \}
 .cT "Preface to Version 2.0"
 .LP
-.mc |
 The goal of the ICCCM Version 2.0 effort was to add new facilities, to fix
 problems with earlier drafts, and to improve readability and
 understandability, while maintaining compatibility with the earlier
@@ -128,7 +146,6 @@ Stuart W. Marks
 .br
 December 1993
 .br
-.mc
 .bp
 .cT "Preface to Version 1.1"
 .LP
@@ -188,7 +205,7 @@ Errol Crary	Vania Joloboff
 Nancy Cyprych	John Laporta
 John Diamant	Ken Lee
 Clive Feather	Stuart Marks
-Burns Fisher	Allan Mimms
+Burns Fisher	Alan Mimms
 Richard Greco	Colas Nahaboo
 Tim Greenwood	Mark Patrick
 Kee Hinckley	Steve Pitschke
@@ -197,8 +214,8 @@ John Interrante	John Thomas
 .De
 .bp 1
 .af PN 1
-.EH '\fBInter-Client Communication Conventions\fP''\fBPublic Review Draft\fP'
-.OH '\fBInter-Client Communication Conventions\fP''\fBPublic Review Draft\fP'
+.EH '\fBInter-Client Communication Conventions\fP''\fBX11, Release 6\fP'
+.OH '\fBInter-Client Communication Conventions\fP''\fBX11, Release 6\fP'
 .EF ''\fB % \fP''
 .OF ''\fB % \fP''
 .nH 1 Introduction
@@ -291,7 +308,7 @@ the server treats the string as a byte sequence.
 The protocol designers felt that passing these
 sequences of bytes back and forth across the wire would be too costly.
 Further, they thought it important that events 
-as they appear \*Qon the wire\*U have a fixed size (in fact, 32 bytes)
+as they appear on the wire have a fixed size (in fact, 32 bytes)
 and that because some events contain atoms, a fixed-size representation 
 for them was needed.
 .LP
@@ -384,7 +401,6 @@ T}
 _
 .TE
 .nH 3 "Discriminated Names"
-.mc |
 .LP
 Sometimes a protocol requires there to be an arbitrary number of similar
 objects which need unique names (usually because the objects are created
@@ -455,15 +471,12 @@ the other form, thus:
 .DS
     FOO_R12345678_U23
 .DE
-.mc
 .NT Rationale
-.mc |
 Existing protocols will not be changed to use these naming conventions,
 because doing so will cause too much disruption.  However, it is expected
 that future protocols \(em both standard and private \(em will use these
 conventions.
 .NE
-.mc
 .nH 1 "Peer-to-Peer Communication by Means of Selections"
 .LP
 Selections are the primary mechanism that X Version 11 defines 
@@ -486,10 +499,8 @@ The name of a property
 A window
 .bP
 The atom representing the data type required
-.mc |
 .bP
 Optionally, some parameters for the request
-.mc
 .LP
 If the selection is currently owned,
 the owner receives an event and is expected to do the following:
@@ -626,8 +637,6 @@ If the
 request succeeds (not merely appears to succeed),
 the client that issues it is recorded by the server as being the owner 
 of the selection for the time period starting at the specified time.
-.mc *
-.mc
 .nH 2 "Responsibilities of the Selection Owner"
 .LP
 When a requestor wants the value of a selection,
@@ -686,7 +695,6 @@ atom as the property name to be used for the reply.
 Otherwise,
 the owner should use the target to decide the form into which the selection
 should be converted.
-.mc |
 Some targets may be defined such that requestors can pass parameters
 along with the request.  The owner will find these parameters in the
 property named in the selection request.  The type, format, and
@@ -695,7 +703,6 @@ target.  If the target is not defined to have parameters, the owner
 should ignore the property if it is present.
 If the selection cannot be converted
 into a form based on the target (and parameters, if any),
-.mc
 the owner should refuse the 
 .PN Selection\%Request
 as previously described.
@@ -762,14 +769,11 @@ event should be set to the values received in the
 event.
 .NE
 .LP
-.mc |
 If the owner receives more than one
 .PN Selection\%Request
 event with the same requestor, selection, target, and timestamp, it must
 respond to them in the same order in which they were received.
-.mc
 .NT Rationale
-.mc |
 It is possible for a requestor to have multiple outstanding requests that
 use the same requestor window, selection, target, and timestamp, and that
 differ only in the property.  If this occurs, and one of the conversion
@@ -780,7 +784,6 @@ event will have its property argument set to
 This may make it impossible for the requestor to determine which conversion
 request had failed, unless the requests are responded to in order.
 .NE
-.mc
 .LP
 The data stored in the property must eventually be deleted.
 A convention is needed to assign the responsibility for doing so.
@@ -802,14 +805,12 @@ Owners should express interest in
 events for the specified requestor window 
 and wait until the property in the 
 .PN SelectionNotify 
-.mc |
 event has been deleted before assuming that the selection data has been
 transferred.  For the MULTIPLE request, if the different conversions require
 separate confirmation, the selection owner can also watch for the deletion
 of the individual properties named in the property in the
 .PN Selection\%Notify
 event.
-.mc
 .LP
 When some other client acquires a selection,
 the previous owner receives a 
@@ -838,7 +839,6 @@ If an owner loses ownership while it has a transfer in progress (that is,
 before it receives notification that the requestor has received all the data),
 it must continue to service the ongoing transfer until it is complete.
 .LP
-.mc |
 If the selection value completely changes, but the owner happens
 to be the same client (for example, selecting a totally different
 piece of text in the same \fBxterm\fP as before), then the client should
@@ -850,7 +850,6 @@ owner should take no action.
 The division between these two cases is a matter of judgement
 on the part of the software developer.
 .FE
-.mc
 .nH 2 "Giving Up Selection Ownership"
 .LP
 Clients may either give up selection ownership voluntarily 
@@ -934,22 +933,18 @@ to be made.
 .LP
 The requestor should set the property argument to the name of a property 
 that the owner can use to report the value of the selection.
-.mc |
 Requestors should ensure that the named property does not exist
 on the window before issuing the
 .PN Convert\%Selection
 request.\** The exception to this rule is when the requestor intends to pass
 parameters with the request; see below.
-.mc
 .NT Rationale
-.mc |
 It is necessary for requestors to delete the property before issuing the
 request so that the target can later be extended to take parameters without
 introducing an incompatibility.  Also note that the requestor of a selection
 need not know the client that owns the selection nor the window on which
 the selection was acquired.
 .NE
-.mc
 .FS
 This requirement is new in version 2.0, and in general, existing
 clients do not conform to this requirement.  To prevent these clients
@@ -974,7 +969,6 @@ the
 .PN Convert\%Selection
 request.
 .LP
-.mc
 The protocol allows the property field to be set to 
 .PN None ,
 in which case the owner is supposed to choose a property name.
@@ -1161,11 +1155,9 @@ should perform a series of
 requests, each asking for a reasonable amount of data.
 .NE
 .NT "Advice to Implementors"
-.mc |
 Single-threaded servers should take care to avoid locking up during large
 data transfers.
 .NE
-.mc
 .nH 2 "Use of Selection Atoms"
 .LP
 Defining a new atom consumes resources in the server
@@ -1186,8 +1178,6 @@ CLIPBOARD
 .LP
 Other selections may be used freely for private communication among
 related groups of clients.
-.mc *
-.mc
 .nH 4 "The PRIMARY Selection"
 .LP
 The selection named by the atom PRIMARY is used for all commands
@@ -1311,15 +1301,11 @@ ADOBE_PORTABLE_DOCUMENT_FORMAT
 .T&
 lw(1.8i) lw(1i) lw(3i) .
 	STRING	T{
-.mc |
 [1]
-.mc
 T}
 .sp 6p
 APPLE_PICT	APPLE_PICT	T{
-.mc |
 [2]
-.mc
 T}
 BACKGROUND	PIXEL	A list of pixel values
 BITMAP	BITMAP	A list of bitmap IDs
@@ -1328,9 +1314,7 @@ The start and end of the selection in bytes
 T}
 CLASS	TEXT	(see section 4.1.2.5)
 CLIENT_WINDOW	WINDOW	T{
-.mc |
 Any top-level window owned by the selection owner
-.mc
 T}
 COLORMAP	COLORMAP	A list of colormap IDs
 COLUMN_NUMBER	SPAN	T{
@@ -1346,9 +1330,7 @@ ENCAPSULATED_POSTSCRIPT
 .T&
 lw(1.8i) lw(1i) lw(3i) .
 	STRING	T{
-.mc |
 [3], Appendix H\|\**
-.mc
 T}
 .sp 6p
 .T&
@@ -1357,20 +1339,18 @@ ENCAPSULATED_POSTSCRIPT_INTERCHANGE
 .T&
 lw(1.8i) lw(1i) lw(3i) .
 	STRING	T{
-.mc |
 [3], Appendix H
-.mc
 T}
 .sp 6p
 FILE_NAME	TEXT	The full path name of a file
-FOREGROUND	PIXEL	A list of pixmap values
+FOREGROUND	PIXEL	T{
+A list of pixel values
+T}
 HOST_NAME	TEXT	(see section 4.1.2.9)
 INSERT_PROPERTY	NULL	(see section 2.6.3.3)
 INSERT_SELECTION	NULL	(see section 2.6.3.2)
 LENGTH	INTEGER	T{
-.mc |
 The number of bytes in the selection\|\**
-.mc
 T}
 LINE_NUMBER	SPAN	T{
 The start and end line numbers
@@ -1391,11 +1371,13 @@ T}
 OWNER_OS	TEXT	T{
 The operating system of the owner client
 T}
-PIXMAP	DRAWABLE	A list of pixmap IDs
+PIXMAP	T{
+PIXMAP\|\**
+T}	T{
+A list of pixmap IDs
+T}
 POSTSCRIPT	STRING	T{
-.mc |
 [3]
-.mc
 T}
 PROCEDURE	TEXT	T{
 The name of the selected procedure
@@ -1420,10 +1402,28 @@ T}
 .sp 6p
 _
 .TE
-.\" Hack!  There are two footnotes in the table above, which increments
-.\" the footnote counter (number register *) once too many times.  We
-.\" decrement it before the first footnote, and increment it after.
-.nr * \n*-1
+.nr * \n*-3		\" decrement by the number of footnotes in the table
+.if 0 \{\
+HACK!  There are several footnotes in the table above, each marked with the
+construct "\**".  The actual footnote text is here, because I haven't found
+a way to place it within the table itself.  This causes a numbering problem,
+because each \** increments the footnote counter (number register *) and the
+FS macro uses its current value.  To get around this, we decrement the *
+register by the number of footnotes in the table.  Then, before calling each
+FS macro, we increment the register.
+
+Also note that footnotes must appear within the T{ T} construct in tables.
+If they don't, strange numbering problems will result, probably as a result
+of multiple evaluation.
+\}
+.nr * \n*+1
+.FS
+Earlier versions of this document erroneously specified that conversion of
+the PIXMAP target return a property of type DRAWABLE instead of PIXMAP.
+Implementors should be aware of this and may want to support the DRAWABLE
+type as well to allow for compatibility with older clients.
+.FE
+.nr * \n*+1
 .FS
 The targets ENCAPSULATED_POSTSCRIPT and ENCAPSULATED_POSTSCRIPT_INTERCHANGE
 are equivalent to the targets _ADOBE_EPS and _ADOBE_EPSI (respectively) that
@@ -1440,7 +1440,6 @@ result of LENGTH.  Clients are advised that no guarantees can be made about
 the result of a conversion to LENGTH; its use is thus deprecated.
 .FE
 .LP
-.mc |
 References:
 .IP [1] 5
 Adobe Systems, Incorporated.
@@ -1461,7 +1460,6 @@ Adobe Systems, Incorporated.
 PostScript Language Reference Manual.
 .R
 Addison-Wesley, ISBN 0-201-18127-4.
-.mc
 .LP
 It is expected that this table will grow over time.
 .LP
@@ -1502,9 +1500,7 @@ The owner should reply with a
 .PN SelectionNotify 
 only when all the requested conversions have been performed.
 .IP \- 5
-.mc |
 If the owner fails to convert the target named by an atom 
-.mc
 in the MULTIPLE property,
 it should replace that atom in the property with
 .PN None .
@@ -1515,7 +1511,6 @@ they appear in the property.
 For further information,
 see section 2.6.3.
 .NE
-.mc |
 .RS
 .LP
 The requestor should delete each individual property when it has
@@ -1530,7 +1525,6 @@ example, a client may issue a MULTIPLE request with two targets: a data
 target and the DELETE target.  The DELETE target will still be processed
 even if the conversion of the data target fails.
 .RE
-.mc
 .bP
 TIMESTAMP \- To avoid some race conditions,
 it is important that requestors be able to discover the timestamp 
@@ -1540,8 +1534,6 @@ Until and unless the protocol is changed so that a
 request returns the timestamp used to acquire ownership,
 selection owners must support conversion to TIMESTAMP,
 returning the timestamp they used to obtain the selection.
-.mc *
-.mc
 .nH 3 "Selection Targets with Side Effects"
 .LP
 Some targets (for example, DELETE) have side effects.
@@ -1554,9 +1546,7 @@ targets with side effects will return no information,
 that is, they will return a zero-length property of type NULL.
 (Type NULL means the result of
 .PN InternAtom
-.mc |
 on the string \*QNULL\*U, not the value zero.)
-.mc
 In all cases,
 the requested side effect must be performed before the conversion is accepted.
 If the requested side effect cannot be performed,
@@ -1623,12 +1613,9 @@ and these are reviewed in the following sections.
 .LP
 In all cases,
 a request for conversion to a target should return either
-.mc |
 a property of one of the types listed in the previous table for that target
-.mc
 or a property of type INCR and then a property of one of the listed types.
 .LP
-.mc |
 Certain selection properties may contain resource IDs.  The selection owner
 should ensure that the resource is not destroyed and that its contents are
 not changed until after the selection transfer is complete.  Requestors that
@@ -1636,7 +1623,6 @@ rely on the existence or on the proper contents of a resource must operate
 on the resource (for example, by copying the contents of a pixmap) before
 deleting the selection property.
 .LP
-.mc
 The selection owner will return a list of zero or more items
 of the type indicated by the property type.
 In general,
@@ -1646,11 +1632,9 @@ Some targets (for example, side-effect targets) will be of length zero
 irrespective of the number of disjoint selection parts.
 In the case of fixed-size items,
 the requestor may determine the number of items by the property size.
-.mc |
 Selection property types are listed in the table below.
 For variable-length items such as text, 
 the separators are also listed.
-.mc
 .br
 .ne 6
 .TS H
@@ -1665,31 +1649,23 @@ _
 .sp 6p
 .TH
 APPLE_PICT	8	T{
-.mc |
 Self-sizing
-.mc
 T}
 ATOM	32	Fixed-size
 ATOM_PAIR	32	Fixed-size
 BITMAP	32	Fixed-size
 C_STRING	8	T{
-.mc |
 Zero
-.mc
 T}
 COLORMAP	32	T{
-.mc |
 Fixed-size
-.mc
 T}
 COMPOUND_TEXT	8	Zero
 DRAWABLE	32	Fixed-size
 INCR	32	Fixed-size
 INTEGER	32	Fixed-size
 PIXEL	32	T{
-.mc |
 Fixed-size
-.mc
 T}
 PIXMAP	32	Fixed-size
 SPAN	32	Fixed-size
@@ -1736,14 +1712,12 @@ at the present time.
 COMPOUND_TEXT as a type or a target specifies the Compound Text interchange
 format; see the \fICompound Text Encoding\fP.
 .LP
-.mc |
 There are some text objects where the source or intended user, as the
 case may be, does not have a specific character set for the text, but
 instead merely requires a zero-terminated sequence of bytes with no
 other restriction; no element of the selection mechanism may assume that
 any byte value is forbidden or that any two differing sequences are
 equivalent.\**  For these objects, the type C_STRING should be used.
-.mc
 .FS
 Note that this is different from STRING, where many byte values are
 forbidden, and from COMPOUND_TEXT, where, for example, inserting the
@@ -1751,7 +1725,6 @@ sequence 27,\ 40,\ 66 (designate ASCII into GL) at the start does not alter
 the meaning.
 .FE
 .NT Rationale
-.mc |
 An example of the need for C_STRING is to transmit the names of
 files; many operating systems do not interpret filenames as having
 a character set. For example, the same character string uses a
@@ -1760,13 +1733,10 @@ operating systems see these as different filenames, and offer no
 way to treat them as the same. Thus no character-set based
 property type is suitable.
 .NE
-.mc
 .LP
-.mc |
 Type STRING, COMPOUND_TEXT, and C_STRING properties will consist of a list
 of elements separated by null characters; other encodings will need to
 specify an appropriate list format.
-.mc
 .nH 3 "INCR Properties"
 .LP
 Requestors may receive a property of type INCR\**
@@ -1869,7 +1839,6 @@ the span is zero-length and is before the specified position.
 The units are implied by the target atom, 
 such as LINE_NUMBER or CHARACTER_POSITION.
 .nH 2 "Manager Selections"
-.mc |
 .LP
 Certain clients, often called managers, take on responsibility
 for managing shared resources.  A client that manages a shared
@@ -1943,7 +1912,6 @@ event.  This event should be sent using the
 .PN SendEvent
 protocol request with the following arguments:
 .br
-.mc
 .ne 6
 .TS
 l lw(4.5i) .
@@ -1955,7 +1923,6 @@ Argument	Value
 .sp 6p
 _
 .sp 6p
-.mc |
 destination:	T{
 the root window of screen 0, or the root
 window of the appropriate screen if the
@@ -1970,12 +1937,13 @@ event:	T{
 T}
 \h'4n'type:	MANAGER
 \h'4n'format:	32
-\h'4n'data[0]:\**	timestamp
+T{
+\h'4n'data[0]:\|\**
+T}	timestamp
 \h'4n'data[1]:	manager selection atom
 \h'4n'data[2]:	the window owning the selection
 \h'4n'data[3]:	manager-selection-specific data
 \h'4n'data[4]:	manager-selection-specific data
-.mc
 .sp 6p
 _
 .TE
@@ -1987,13 +1955,11 @@ according to the format field.
 The list is indexed from zero.
 .FE
 .LP
-.mc |
 Clients that wish to know when a specific manager has started should
 select for
 .PN Structure\%Notify
 on the appropriate root window, and should watch for the appropriate MANAGER
 .PN Client\%Message .
-.mc
 .nH 1 "Peer-to-Peer Communication by Means of Cut Buffers"
 .LP
 The cut buffer mechanism is much simpler but much less powerful 
@@ -2044,9 +2010,7 @@ To permit window managers to perform their role of mediating the competing
 demands for resources such as screen space,
 the clients being managed must adhere to certain conventions
 and must expect the window managers to do likewise.
-.mc |
 These conventions are covered here from the client's point of view.
-.mc
 .LP
 In general,
 these conventions are somewhat complex
@@ -2108,7 +2072,6 @@ are allocated even if they are not those requested
 .bP
 Being prepared for resource allocations to change at any time
 .nH 3 "Creating a Top-Level Window"
-.mc |
 .LP
 A client's \fItop-level window\fP is a window whose override-redirect
 attribute is
@@ -2118,7 +2081,6 @@ a root window immediately prior to having been reparented by the window
 manager.  If the client reparents the window away from the root, the window
 is no longer a top-level window; but it can become a top-level window again
 if the client reparents it back to the root.
-.mc
 .LP
 A client usually would expect to create its top-level windows
 as children of one or more of the root windows by using some
@@ -2199,23 +2161,19 @@ ensure that the entire content of each property remains valid
 at all times.
 .NE
 .LP
-.mc |
 Some of these properties may contain the IDs of resources, such as
 windows or pixmaps.  Clients should ensure that these resources exist
 for at least as long as the window on which the property resides.
 .LP
-.mc
 If these properties are longer than expected,
 clients should ignore the remainder of the property.
 Extending these properties is reserved to the X Consortium;
 private extensions to them are forbidden.
 Private additional communication between clients and window managers 
 should take place using separate properties.
-.mc |
 The only exception to this rule is the WM_PROTOCOLS property, which may be
 of arbitrary length and which may contain atoms representing private
 protocols; see section 4.1.2.7.
-.mc
 .LP
 The next sections describe each of the properties the clients
 need to set, in turn.
@@ -2271,7 +2229,7 @@ Its contents are as follows:
 .br
 .ne 6
 .TS H
-l l l.
+lw(1i) lw(1i) lw(2i).
 _
 .sp 6p
 .B
@@ -2293,7 +2251,10 @@ min_aspect	(INT32,INT32)
 max_aspect	(INT32,INT32)
 base_width	INT32	If missing, assume min_width
 base_height	INT32	If missing, assume min_height
-win_gravity	INT32	If missing, assume NorthWest
+win_gravity	INT32	T{
+If missing, assume
+.PN NorthWest
+T}
 .sp 6p
 _
 .TE
@@ -2302,7 +2263,7 @@ The WM_SIZE_HINTS.flags bit definitions are as follows:
 .br
 .ne 6
 .TS H
-l n l.
+lw(1i) nw(.5i) lw(3i).
 _
 .sp 6p
 .B
@@ -2312,24 +2273,42 @@ _
 .sp 6p
 .TH
 .R
-USPosition	1	User-specified x, y
-USSize	2	User-specified width, height
-PPosition	4	Program-specified position
-PSize	8	Program-specified size
-PMinSize	16	Program-specified minimum size
-PMaxSize	32	Program-specified maximum size
-PResizeInc	64	Program-specified resize increments
-PAspect	128	Program-specified min and max aspect ratios
-PBaseSize	256	Program-specified base size
-PWinGravity	512	Program-specified window gravity
+T{
+.PN USPosition
+T}	1	User-specified x, y
+T{
+.PN USSize
+T}	2	User-specified width, height
+T{
+.PN PPosition
+T}	4	Program-specified position
+T{
+.PN PSize
+T}	8	Program-specified size
+T{
+.PN PMinSize
+T}	16	Program-specified minimum size
+T{
+.PN PMaxSize
+T}	32	Program-specified maximum size
+T{
+.PN PResizeInc
+T}	64	Program-specified resize increments
+T{
+.PN PAspect
+T}	128	Program-specified min and max aspect ratios
+T{
+.PN PBaseSize
+T}	256	Program-specified base size
+T{
+.PN PWinGravity
+T}	512	Program-specified window gravity
 .sp 6p
 _
 .TE
 .LP
 To indicate that the size and position of the window 
-.mc |
 (when a transition from the Withdrawn state occurs) was specified by the user, 
-.mc
 the client should set the
 .PN USPosition
 and
@@ -2344,16 +2323,12 @@ the client should set
 and 
 .PN PSize .
 .LP
-.mc |
 The size specifiers refer to the width and height of the client's
 window excluding borders.
-.mc
 .LP
-.mc |
 The win_gravity may be any of the values specified for WINGRAVITY in
 the core protocol except for
 .PN Unmap :
-.mc
 .PN NorthWest 
 (1), 
 .PN North 
@@ -2371,12 +2346,9 @@ the core protocol except for
 .PN South
 (8), and 
 .PN SouthEast
-.mc |
 (9).  It specifies how and whether the client window wants to be shifted to
 make room for the window manager frame.
-.mc
 .LP
-.mc |
 If the win_gravity is
 .PN Static ,
 the window manager frame is positioned
@@ -2404,7 +2376,6 @@ window manager frame is placed at the location on the screen where the
 reference point of the client window was when the client requested the
 transition from Withdrawn state.
 .LP
-.mc
 The min_width and min_height elements specify the
 minimum size that the window can be for the client to be useful.
 The max_width and max_height elements specify the maximum size.
@@ -2426,7 +2397,6 @@ instead of width and height in reporting window sizes to users.
 If a base size is not provided, 
 the minimum size is to be used in its place and vice versa.
 .LP
-.mc |
 The min_aspect and max_aspect fields are fractions with the numerator first
 and the denominator second, and they allow a client to specify the range of
 aspect ratios it prefers.  Window managers that honor aspect ratios should
@@ -2436,7 +2406,6 @@ should be subtracted from the window size prior to checking that the aspect
 ratio falls in range.  If a base size is not provided, nothing should be
 subtracted from the window size.  (The minimum size is not to be used in
 place of the base size for this purpose.)
-.mc
 .nH 4 "WM_HINTS Property"
 .LP
 The WM_HINTS property (whose type is WM_HINTS)
@@ -2479,7 +2448,7 @@ The WM_HINTS.flags bit definitions are as follows:
 .br
 .ne 6
 .TS H
-l n l.
+lw(1.5i) nw(.5i) lw(1.5i).
 _
 .sp 6p
 .B
@@ -2489,17 +2458,33 @@ _
 .sp 6p
 .TH
 .R
-InputHint	1	input
-StateHint	2	initial_state
-IconPixmapHint	4	icon_pixmap
-IconWindowHint	8	icon_window
-IconPositionHint	16	icon_x & icon_y
-IconMaskHint	32	icon_mask
-WindowGroupHint	64	window_group
-MessageHint	128	This bit is obsolete
-.mc |
-VisibleHint	256	visibility
-.mc
+T{
+.PN InputHint
+T}	1	input
+T{
+.PN StateHint
+T}	2	initial_state
+T{
+.PN IconPixmapHint
+T}	4	icon_pixmap
+T{
+.PN IconWindowHint
+T}	8	icon_window
+T{
+.PN IconPositionHint
+T}	16	icon_x & icon_y
+T{
+.PN IconMaskHint
+T}	32	icon_mask
+T{
+.PN WindowGroupHint
+T}	64	window_group
+T{
+.PN MessageHint
+T}	128	(this bit is obsolete)
+T{
+.PN UrgencyHint
+T}	256	urgency
 .sp 6p
 _
 .TE
@@ -2549,8 +2534,12 @@ _
 .sp 6p
 .TH
 .R
-NormalState	1	The window is visible
-IconicState	3	The icon is visible
+T{
+.PN NormalState
+T}	1	The window is visible
+T{
+.PN IconicState
+T}	3	The icon is visible
 .sp 6p
 _
 .TE
@@ -2612,14 +2601,35 @@ draft of the ICCCM.
 Windows using it can also be detected because their WM_HINTS properties are
 four bytes longer than expected.
 Window managers are free to support clients using the obsolete protocol
-in a \*Qbackwards compatibility\*U mode.
+in a backwards compatibility mode.
 .FE
 .LP
-.mc |
-The VisibleHint bit, if set in the flags field, indicates that the window
-manager should try to make this window visible to the user.  This hint is
-typically used for alarm dialog boxes.
-.mc
+The
+.PN UrgencyHint
+flag, if set in the flags field, indicates that the client deems the window
+contents to be urgent, requiring the timely response of the user.  The
+window manager must make some effort to draw the user's attention to this
+window while this flag is set.  The window manager must also monitor the
+state of this flag for the entire time the window is in the Normal or Iconic
+state and must take appropriate action when the state of the flag changes.
+The flag is otherwise independent of the window's state; in particular, the
+window manager is not required to deiconify the window if the client sets
+the flag on an Iconic window.  Clients must provide some means by which the
+user can cause the
+.PN UrgencyHint
+flag to be set to zero or the window to be withdrawn.  The user's action can
+either mitigate the actual condition that made the window urgent, or it can
+merely shut off the alarm.
+.NT Rationale
+This mechanism is useful for alarm dialog boxes or reminder windows, in
+cases where mapping the window is not enough (e.g. in the presence of
+multi-workspace or virtual desktop window managers), and where using an
+override-redirect window is too intrusive.  For example, the window manager
+may attract attention to an urgent window by adding an indicator to its
+title bar or its icon.  Window managers may also take additional action
+for a window that is newly urgent, such as by flashing its icon (if the
+window is iconic) or by raising it to the top of the stack.
+.NE
 .nH 4 "WM_CLASS Property"
 .LP
 The WM_CLASS property (of type STRING without control characters)
@@ -2645,9 +2655,7 @@ On POSIX-conformant systems,
 the following conventions are used:
 .RS
 .IP \- 5
-.mc |
 If \*Q\-name NAME\*U is given on the command line,
-.mc
 NAME is used as the instance name.
 .IP \- 5
 Otherwise, if the environment variable RESOURCE_NAME is set,
@@ -2664,9 +2672,7 @@ Resources that are specified by class apply to all applications
 that have the same class name.
 Class names are specified by the application writer.
 Examples of commonly used class names include: 
-.mc |
 \*QEmacs\*U, \*QXTerm\*U, \*QXClock\*U, \*QXLoad\*U, and so on.
-.mc
 .LP
 Note that WM_CLASS strings are null-terminated
 and, thus, differ from the general conventions that STRING properties 
@@ -2748,12 +2754,10 @@ The top-level window is always (implicitly or explicitly) on the watch list.
 For the details of this mechanism,
 see section 4.1.8.
 .nH 4 "WM_CLIENT_MACHINE Property"
-.mc |
 .LP
 The client should set the WM_CLIENT_MACHINE property (of one of the TEXT
 types) to a string that forms the name of the machine running the client as
 seen from the machine running the server.
-.mc
 .nH 3 "Window Manager Properties"
 .LP
 The properties that were described in the previous section are those 
@@ -2761,7 +2765,6 @@ that the client is responsible for maintaining on its top-level windows.
 This section describes the properties that the window manager places on
 client's top-level windows and on the root.
 .nH 4 "WM_STATE Property"
-.mc |
 .LP
 The window manager will place a WM_STATE property (of type WM_STATE) on each
 top-level client window that is not in the Withdrawn state.  Top-level
@@ -2781,7 +2784,6 @@ child-of-root window if one is present beneath the selected location.
 .LP
 The contents of the WM_STATE property are defined as follows:
 .br
-.mc
 .ne 6
 .TS H
 l l l.
@@ -2794,18 +2796,14 @@ Field	Type	Comments
 _
 .sp 6p
 .TH
-.mc |
 state	CARD32	(see the next table)
 icon	WINDOW	ID of icon window
-.mc
 .sp 6p
 _
 .TE
 .LP
-.mc |
 The following table lists the WM_STATE.state values:
 .br
-.mc
 .ne 6
 .TS H
 l n.
@@ -2818,16 +2816,19 @@ State	Value
 _
 .sp 6p
 .TH
-.mc |
-WithdrawnState	0
-NormalState	1
-IconicState	3
-.mc
+T{
+.PN WithdrawnState
+T}	0
+T{
+.PN NormalState
+T}	1
+T{
+.PN IconicState
+T}	3
 .sp 6p
 _
 .TE
 .LP
-.mc |
 Adding other fields to this property is reserved to the X Consortium.
 Values for the state field other than those defined in the above
 table are reserved for use by X Consortium.
@@ -2859,7 +2860,6 @@ icon window that the client may have specified in its WM_HINTS property.
 The WM_STATE icon may be a window that the window manager has supplied and
 that contains the client's icon pixmap, or it may be an ancestor of the
 client's icon window.
-.mc
 .nH 4 "WM_ICON_SIZE Property"
 .LP
 A window manager that wishes to place constraints on the sizes of icon
@@ -2897,44 +2897,32 @@ windows as being in one of three states,
 whose semantics are as follows:
 .bP
 .PN NormalState
-.mc |
 \- The client's top-level window is viewable.
-.mc
 .bP
 .PN IconicState
 \- The client's top-level window is iconic
 (whatever that means for this window manager).
-.mc |
 The client can assume that its top-level window is not viewable,
 its icon_window (if any) will be viewable
 and, failing that, 
 its icon_pixmap (if any) or its WM_ICON_NAME will be displayed.
-.mc
 .bP
 .PN WithdrawnState
-.mc |
 \- Neither the client's top-level window nor its icon is visible.
-.mc
 .LP
 In fact,
 the window manager may implement states with semantics 
 other than those described above.
 For example,
-.mc |
 a window manager might implement a concept of an \*Qinactive\*U state
-.mc
 in which an infrequently used client's window would be represented 
 as a string in a menu.
 But this state is invisible to the client,
-.mc |
 which would see itself merely as being in the Iconic state.
-.mc
 .LP
 Newly created top-level windows are in the Withdrawn state.
 Once the window has been provided with suitable properties,
-.mc |
 the client is free to change its state as follows:
-.mc
 .bP
 Withdrawn \(-> Normal \- The client should map the window with 
 WM_HINTS.initial_state being 
@@ -2944,18 +2932,14 @@ Withdrawn \(-> Iconic \- The client should map the window with
 WM_HINTS.initial_state being 
 .PN IconicState .
 .bP
-.mc |
 Normal \(-> Iconic \- The client should send a
 .PN ClientMessage
 event as described later in this section.
-.mc
 .bP
 Normal \(-> Withdrawn \- The client should unmap the window and follow it 
 with a synthetic 
 .PN UnmapNotify
-.mc |
 event as described later in this section.
-.mc
 .bP
 Iconic \(-> Normal \- The client should map the window.
 The contents of WM_HINTS.initial_state are irrelevant in this case.
@@ -2963,17 +2947,12 @@ The contents of WM_HINTS.initial_state are irrelevant in this case.
 Iconic \(-> Withdrawn \- The client should unmap the window 
 and follow it with a synthetic 
 .PN UnmapNotify
-.mc |
 event as described later in this section.
-.mc
 .LP
-.mc |
 Only the client can effect a transition into or out of the Withdrawn
 state.
 Once a client's window
-.mc
 has left the Withdrawn state,
-.mc |
 the window will be mapped if it is in the Normal state and the window will be
 unmapped if it is in the Iconic state.  Reparenting window managers
 must unmap the client's window when it is in the Iconic state, even if an
@@ -2981,9 +2960,7 @@ ancestor window being unmapped renders the client's window unviewable.
 Conversely, if a reparenting window manager renders the client's window
 unviewable by unmapping an ancestor, the client's window is by definition in
 the Iconic state and must also be unmapped.
-.mc
 .NT "Advice to Implementors"
-.mc |
 Clients can select for
 .PN StructureNotify
 on their
@@ -2994,16 +2971,13 @@ event will indicate a transition to the Normal state, and receipt of an
 .PN UnmapNotify
 event will indicate a transition to the Iconic state.
 .NE
-.mc
 .LP
-.mc |
 When changing the state of the window to Withdrawn, the client must (in
 addition to unmapping the window) send a synthetic
 .PN UnmapNotify
 event by
 using a
 .PN SendEvent
-.mc
 request with the following arguments:
 .br
 .ne 6
@@ -3039,16 +3013,13 @@ T}
 _
 .TE
 .NT Rationale
-.mc |
 The reason for requiring the client to send a synthetic
 .PN UnmapNotify
 event is to ensure that the window manager
 gets some notification of the client's desire to change state,
 even though the window may already be unmapped when the desire is expressed.
 .NE
-.mc
 .NT "Advice to Implementors"
-.mc |
 For compatibility with obsolete clients, 
 window managers should trigger the transition to the Withdrawn state
 on the real 
@@ -3077,7 +3048,6 @@ events to wait for the top-level window to be reparented back to the root
 window.  This is still a valid technique; however, it works only for
 reparenting window managers, and the WM_STATE technique is to be preferred.
 .FE
-.mc
 .LP
 If the transition is from the Normal to the Iconic state,
 the client should send a 
@@ -3091,7 +3061,7 @@ Type\** == the atom WM_CHANGE_STATE
 The type field of the 
 .PN ClientMessage 
 event (called the message_type field by Xlib) should not be confused with
-the \*Qcode\*U field of the event itself,
+the code field of the event itself,
 which will have the value 33 
 .Pn ( ClientMessage ).
 .FE
@@ -3100,7 +3070,6 @@ Format == 32
 .bP
 Data[0] == IconicState
 .NT Rationale
-.mc |
 The format of this 
 .PN ClientMessage 
 event does not match the format of 
@@ -3109,7 +3078,6 @@ in section 4.2.8.
 This is because they are sent by the window manager to clients,
 and this message is sent by clients to the window manager.
 .NE
-.mc
 .LP
 Other values of data[0] are reserved for future extensions to these
 conventions.  The parameters of the 
@@ -3130,7 +3098,6 @@ of time to update) and a
 event when it becomes even partly viewable.
 .NE
 .NT "Advice to Implementors"
-.mc |
 When a window makes a transition from the Normal state to either the Iconic
 or to the Withdrawn state, clients should be aware that the window manager
 may make transients for this window inaccessible.  Clients should not rely
@@ -3138,7 +3105,6 @@ on transient windows being available to the user when the transient owner
 window is not in the Normal state.  When withdrawing a window, clients are
 advised to withdraw transients for the window.
 .NE
-.mc
 .nH 3 "Configuring the Window"
 .LP
 Clients can resize and reposition their top-level windows by using the 
@@ -3170,35 +3136,27 @@ If the window manager decides to respond to a
 .PN ConfigureRequest
 request by:
 .bP
-.mc |
 Not changing the size, location, border width, or stacking order
 of the window at all
-.mc
 .IP
 A client will receive a synthetic 
 .PN ConfigureNotify
-.mc |
 event that describes the (unchanged) geometry of the window.
 The (x,y) coordinates will be in the root coordinate system,
 adjusted for the border width the client requested,
-.mc
 irrespective of any reparenting that has taken place.
 The border_width will be the border width the client requested.
 The client will not receive a real
 .PN ConfigureNotify
 event because no change has actually taken place.
 .bP
-.mc |
 Moving or restacking the window without resizing it or
 changing its border width
-.mc
 .IP
 A client will receive a synthetic 
 .PN ConfigureNotify 
-.mc |
 event following the change that describes the new geometry of the window.
 The event's (x,y) coordinates will be in the root coordinate system adjusted 
-.mc
 for the border width the client requested.
 The border_width will be the border width the client requested.
 The client may not receive a real 
@@ -3208,16 +3166,12 @@ the top-level window.
 If the client does receive a real event,
 the synthetic event will follow the real one.
 .bP
-.mc |
 Resizing the window or changing its border width (regardless of whether the
 window was also moved or restacked)
-.mc
 .IP
 A client that has selected for 
 .PN StructureNotify
-.mc |
 events will receive a real
-.mc
 .PN ConfigureNotify
 event.
 Note that the coordinates in this event are relative to the parent,
@@ -3233,7 +3187,6 @@ The general rule is that coordinates in real
 events are in the parent's space; 
 in synthetic events, they are in the root space.
 .NT "Advice to Implementors"
-.mc |
 Clients cannot distinguish between the case where a top-level window is
 resized and moved from the case where the window is resized but not moved,
 since a real
@@ -3263,7 +3216,6 @@ position is unknown does the client need to use the
 .PN Translate\%Coordinates
 request to find the position of a top-level window.
 .NE
-.mc
 .LP
 Clients should be aware that their borders may not be visible.
 Window managers are free to use reparenting techniques to
@@ -3345,7 +3297,6 @@ T}
 _
 .TE
 .LP
-.mc |
 Window managers are in any case free to position windows in the stack as
 they see fit, and so clients should not rely on receiving the stacking
 order they have requested.  Clients should ignore the above-sibling
@@ -3353,7 +3304,6 @@ field of both real and synthetic
 .PN ConfigureNotify
 events received on their top-level windows because this field may not
 contain useful information.
-.mc
 .nH 3 "Changing Window Attributes"
 .LP
 The attributes that may be supplied when a window is created may be
@@ -3553,12 +3503,15 @@ Windows with the atom WM_TAKE_FOCUS in their WM_PROTOCOLS property
 may receive a 
 .PN ClientMessage 
 event from the window manager (as described in section 4.2.8)
-with WM_TAKE_FOCUS in their data[0] field.
+with WM_TAKE_FOCUS in its data[0] field and a valid timestamp
+(i.e. not
+.PN CurrentTime )
+in its data[1] field.
 If they want the focus,
 they should respond with a 
 .PN SetInputFocus
 request with its window field set to the window of theirs 
-that last had the input focus or to their \*Qdefault input window,\*U
+that last had the input focus or to their default input window,
 and the time field set to the timestamp in the message.
 For further information,
 see section 4.2.7.
@@ -3575,8 +3528,6 @@ For example, a clock or a text editor with no currently open frames
 might not want to take focus even though the window manager generally 
 believes that clients should take the input focus after being deiconified 
 or raised.
-.mc *
-.mc
 .LP
 Clients that set the input focus need to decide a value for the
 revert-to field of the 
@@ -3628,7 +3579,6 @@ Clients should not give up the input focus of their own volition.
 They should ignore input that they receive instead.
 .NE
 .nH 3 "Colormaps"
-.mc |
 .LP
 The window manager is responsible for installing and uninstalling 
 colormaps on behalf of clients with top-level windows that
@@ -3677,9 +3627,7 @@ it to be of higher priority than any window in the list.
 WM_TRANSIENT_FOR windows either can have their own WM_COLORMAP_WINDOWS
 property or can appear in the property of the window they are transient for,
 as appropriate.
-.mc
 .NT Rationale
-.mc |
 An alternative design was considered for how clients should hint to the
 window manager about their colormap requirements.  This alternative design
 specified a list of colormaps instead of a list of windows.  The current
@@ -3691,10 +3639,8 @@ managers to select for
 events on the windows concerned and to ensure that colormaps are only
 installed if the windows that need them are visible.  The alternative design
 allows for neither of these policies.
-.mc
 .NE
 .NT "Advice to Implementors"
-.mc |
 Clients should be aware of the min-installed-maps and max-installed-maps
 fields of the connection setup information, and the effect that the minimum
 value has on the \*Qrequired list\*U defined by the Protocol in the
@@ -3703,10 +3649,8 @@ description of the
 request.  Briefly, the min-installed-maps most recently installed maps are
 guaranteed to be installed.  This value is often one; clients needing
 multiple colormaps should beware.
-.mc
 .NE
 .LP
-.mc |
 Whenever possible, clients should use the mechanisms described above and let
 the window manager handle colormap installation.  However, clients are
 permitted to perform colormap installation on their own while they have the
@@ -3717,7 +3661,6 @@ The client notifies the window manager by issuing a
 .PN Send\%Event
 request with the following arguments:
 .br
-.mc
 .LP
 .ne 6
 .TS
@@ -3730,7 +3673,6 @@ _
 Argument/Value
 .sp 6p
 _
-.mc |
 destination:/T{
 the root window of the screen on
 which the colormap is being installed
@@ -3760,12 +3702,10 @@ T}
 \h'2m'data[2]:/reserved, must be zero
 \h'2m'data[3]:/reserved, must be zero
 \h'2m'data[4]:/reserved, must be zero
-.mc
 .sp 6p
 _
 .TE
 .LP
-.mc |
 This feature was introduced in version 2.0 of this document, and there will
 be a significant period of time before all window managers can be expected
 to implement this feature.  Before using this feature, clients must check
@@ -3791,9 +3731,7 @@ and
 requests, thus uninstalling the client's colormaps.  If this occurs while
 the client still has the pointer grabbed and before the client has issued
 the \*Qfinished\*U message, the client may reinstall the desired colormaps.
-.mc
 .NT "Advice to Implementors"
-.mc |
 Clients are expected to use this mechanism for things such as
 popup windows and for animations that use override-redirect windows.
 .\" Avoid .LP within a .NT, because it resets the margins.  The .NT
@@ -3805,7 +3743,6 @@ may be left in a state where its colormap installation policy is suspended.
 Window manager implementors may want to implement a feature that resets
 colormap installation policy in response to a command from the user.
 .NE
-.mc
 .nH 3 "Icons"
 .LP
 A client can hint to the window manager about the desired appearance 
@@ -3873,9 +3810,7 @@ Clients should not configure their icon windows.
 .IP 7. 5
 Clients should not set override-redirect on their icon windows
 or select for 
-.mc |
 .PN Resize\%Redirect 
-.mc
 events on them.
 .IP 8. 5
 Clients must not depend on being able to receive input events
@@ -3894,10 +3829,8 @@ most will allow the client to receive some subset of the keys and buttons.
 .LP
 Window managers will ignore any WM_NAME, WM_ICON_NAME, WM_NORMAL_HINTS,
 WM_HINTS, WM_CLASS, WM_TRANSIENT_FOR, WM_PROTOCOLS, WM_COLORMAP_WINDOWS,
-.mc |
 WM_COMMAND, or WM_CLIENT_MACHINE
 properties they find on icon windows.
-.mc
 .nH 3 "Pop-up Windows"
 .LP
 Clients that wish to pop up a window can do one of three things:
@@ -3922,7 +3855,6 @@ The window manager will never interfere with these windows,
 which should be used with caution.
 An example of an appropriate use is a pop-up menu.
 .NT "Advice to Implementors"
-.mc |
 The user will not be able to move, resize, restack, or transfer the input
 focus to override-redirect windows, since the window manager is not managing
 them.  If it is necessary for a client to receive keystrokes on an
@@ -3933,7 +3865,6 @@ client may set the focus to the override-redirect window when the other
 window receives a WM_TAKE_FOCUS message or one of the events listed in
 section 4.1.7 in the description of the Globally Active focus model.
 .NE
-.mc
 .LP
 Window managers are free to decide if WM_TRANSIENT_FOR windows
 should be iconified when the window they are transient for is.
@@ -4024,11 +3955,9 @@ events on their top-level window.
 They will receive a 
 .PN ReparentNotify
 event if and when reparenting takes place.
-.mc |
 When a client withdraws a top-level window, the window manager will
 reparent it back to the root window if the window had been reparented
 elsewhere.
-.mc
 .LP
 If the window manager reparents a client's window,
 the reparented window will be placed in the save-set 
@@ -4049,13 +3978,11 @@ or to perform the request on behalf of the client.
 The possibility that a request may be redirected means 
 that a client cannot assume that any redirectable request is actually
 performed when the request is issued or is actually performed at all.
-.mc |
 The requests that may be redirected are
 .PN \%MapWindow ,
 .PN Configure\%Window ,
 and
 .PN Circulate\%Window .
-.mc
 .NT "Advice to Implementors"
 The following is incorrect because the 
 .PN MapWindow
@@ -4087,7 +4014,6 @@ ConfigureWindow width=N height=M
 <output assuming window is N by M>
 .DE
 .LP
-.mc |
 The client should select for
 .PN Structure\%Notify
 on its window and monitor the window's size by tracking
@@ -4126,7 +4052,6 @@ will not be visible.  This will delay the generation of the
 .PN Visibility\%Notify
 event indefinitely.  Clients must be prepared to handle these cases.
 .NE
-.mc
 .LP
 A window with the override-redirect bit set is immune from redirection,
 but the bit should be set on top-level windows only in cases 
@@ -4239,8 +4164,6 @@ They will receive
 .PN ColormapNotify
 events with the new field FALSE when the colormap for that window 
 is installed or uninstalled.
-.mc *
-.mc
 .nH 3 "Input Focus"
 .LP
 Clients can request notification that they have the input focus by selecting
@@ -4369,7 +4292,6 @@ event:	As specified by the protocol
 _
 .TE
 .nH 4 "Window Deletion"
-.mc |
 .LP
 Clients, usually those with multiple top-level windows, whose server
 connection must survive the deletion of some of their top-level windows,
@@ -4379,9 +4301,7 @@ each such window.  They will receive a
 event as described above whose data[0] field is WM_DELETE_WINDOW.
 .LP
 Clients receiving a WM_DELETE_WINDOW message should behave as if the user
-.mc |
 selected \*Qdelete window\*U from a hypothetical menu.
-.mc
 They should perform any confirmation dialog with the user
 and, if they decide to complete the deletion, should do the following:
 .bP
@@ -4409,7 +4329,6 @@ requests on a window that has WM_DELETE_WINDOW in its WM_PROTOCOLS property.
 Clients that choose not to include WM_DELETE_WINDOW in the WM_PROTOCOLS
 property may be disconnected from the server
 if the user asks for one of the client's top-level windows to be deleted.
-.mc
 .nH 3 "Redirecting Requests"
 .LP
 Normal clients can use the redirection mechanism just as window managers do
@@ -4464,7 +4383,6 @@ If a window manager detects that a client is not obeying this convention,
 it is free to take whatever measures it deems appropriate to deal with
 the client.
 .nH 2 "Communication with the Window Manager by Means of Selections"
-.mc |
 .LP
 For each screen they manage, window managers will acquire ownership of a
 selection named WM_S\fIn\fP, where \fIn\fP is the screen number, as
@@ -4475,7 +4393,6 @@ services by issuing conversion requests on this selection.  Window managers
 should support conversion of the following target on their manager
 selection:
 .LP
-.mc
 .br
 .ne 8
 .TS
@@ -4489,18 +4406,15 @@ Atom	Type	Data Received
 _
 .sp 6p
 VERSION	INTEGER	T{
-.mc |
 Two integers, which are the major and minor
 release numbers (respectively) of the ICCCM
 with which the window manager complies.  For
 this version of the ICCCM, the numbers are
 2 and 0.\**
-.mc
 T}
 .sp 6p
 _
 .TE
-.mc
 .FS
 As a special case, clients not wishing to implement a selection
 request may simply issue a
@@ -4542,7 +4456,6 @@ _
 .TE
 .nH 1 "Session Management"
 .LP
-.mc |
 This section contains some conventions for clients that participate in
 session management.  See
 .I
@@ -4551,10 +4464,8 @@ X Session Management Protocol
 for further details.  Clients that do not support this protocol cannot
 expect their window state (e.g. WM_STATE, position, size and stacking order)
 to be preserved across sessions.
-.mc
 .nH 2 "Client Support for Session Management"
 .LP
-.mc |
 Each session participant will obtain a unique client identifier (client-ID)
 from the session manager.  The client must identify one top level window as
 the \*Qclient leader.\*U This window must be created by the client.  It may
@@ -4613,17 +4524,17 @@ be of type STRING;
 be of format 8; and
 .bP
 contain a string restricted to the XPCS characters, encoded in ISO 8859-1.
-.mc
 .nH 2 "Window Manager Support for Session Management"
 .LP
-.mc |
 A window manager supporting session management must register with the
 session manager and obtain its own client-ID.  The window manager should
 save and restore information such as the WM_STATE, the layout of windows on
 the screen, and their stacking order, for every client window that has a
 valid SM_CLIENT_ID property (on itself, or on the window named by
 WM_CLIENT_LEADER) and that can be uniquely identified.
-.mc
+Clients are allowed to change this state during the first phase of the
+session checkpoint process.  Therefore, window managers should request a
+second checkpoint phase and save clients' state only during that phase.
 .nH 1 "Manipulation of Shared Resources"
 .LP
 X Version 11 permits clients to manipulate a number of shared resources,
@@ -4763,11 +4674,9 @@ Placing a requirement on the window manager to provide some mechanism,
 perhaps a \*QQuote\*U key,
 by which the user can send an event from any key or button to the client
 .nH 2 "Colormaps"
-.mc |
 .LP
 Section 4.1.8 prescribes conventions for clients to communicate with the
 window manager about their colormap needs.  If your clients are
-.mc
 .PN DirectColor
 type applications,
 you should consult section 14.3 of \fIXlib \- C Language X Interface\fP
@@ -4963,14 +4872,10 @@ status.
 There is no good solution to the problem of reclaiming assignments
 to the five nonpreassigned modifiers when they are no longer being used.
 .NT Convention
-.mc |
 The user must use
-.mc
 .PN xmodmap
 or some other utility to deassign obsolete modifier mappings by hand.
 .NE
-.mc *
-.mc
 .LP
 When a client succeeds in performing a 
 .PN SetModifierMapping
@@ -5000,18 +4905,16 @@ delim @@
 define oc % "\\fR{\\fP" %
 define cc % "\\fR}\\fP" %
 .EN
-The X protocol provides explicit RGB values
+The X protocol provides explicit RGB values,
 which are used to directly drive a monitor, and color names.  RGB values
 provide a mechanism for accessing the full capabilities of the display
 device, but at the expense of having the color perceived by the user remain
 unknowable through the protocol.  Color names were originally designed to
 provide access to a device-independent color database by having the server
 vendor tune the definitions of the colors in that textual database.
-.mc |
 Unfortunately, this still does not provide the client any way of using
-.mc
 an existing device-independent color, nor for the client to get
-device-independent color information back about colors which it has selected.
+device-independent color information back about colors that it has selected.
 .LP
 Furthermore, the client must be able to discover which set of colors are
 displayable by the device (the device gamut), both to allow colors to be
@@ -5019,7 +4922,7 @@ intelligently modified to fit within the device capabilities (gamut
 compression) and to enable the user interface to display a representation of
 the reachable color space to the user (gamut display).
 .LP
-So, a system is needed which will provide full access to
+Therefore, a system is needed that will provide full access to
 device-independent color spaces for X clients.  This system should use a
 standard mechanism for naming the colors, be able to provide names for
 existing colors, and provide means by which unreachable colors can be
@@ -5029,57 +4932,49 @@ We are fortunate in this area to have a seminal work, the 1931 CIE color
 standard, which is nearly universally agreed upon as adequate for describing
 colors on CRT devices.  This standard uses a tri-stimulus model called CIE
 XYZ in which each perceivable color is specified as a triplet of numbers.
-Other appropriate device independent color models do exist, but most of them
+Other appropriate device-independent color models do exist, but most of them
 are directly traceable back to this original work.
 .LP
 X device color characterization
 provides device-independent color spaces to X clients.  It does this by
-providing the barest possible amount of information to the client which
+providing the barest possible amount of information to the client that
 allows the client to construct a mapping between CIE XYZ and the regular X
 RGB color descriptions.
 .LP
 Device color characterization is defined by
-the name and contents of two window properties which,
+the name and contents of two window properties that,
 together, permit converting between CIE XYZ space and
 linear RGB device space (such as standard CRTs).
 Linear RGB devices require just two
 pieces of information to completely characterize them:
-.RS
-.LP
-.mc |
-A @3 times 3@ matrix @M@ (and its inverse, @M sup -1@) which convert between XYZ
-.mc
-and RGB intensity (@RGB sub intensity@):
+.IP \(bu 5
+A @3 times 3@ matrix @M@ and its inverse @M sup -1@, which convert between
+XYZ and RGB intensity (@RGB sub intensity@):
 .EQ C
-	RGB sub intensity ~ = ~ M ~ times ~ XYZ
+RGB sub intensity ~ = ~ M ~ times ~ XYZ
 .EN
 .EQ C
-	XYZ ~ = ~ M sup -1 ~ times ~ RGB sub intensity
+XYZ ~ = ~ M sup -1 ~ times ~ RGB sub intensity
 .EN
-.LP
+.IP \(bu 5
 A way of mapping between RGB intensity and RGB protocol value.  XDCCC
 supports three mechanisms which will be outlined below.
-.RE
 .LP
 If other device types are eventually necessary, additional
 properties will be required to describe them.
-.nH 2 "XYZ RGB Conversion Matrices"
+.nH 2 "XYZ \*(dA RGB Conversion Matrices"
 .LP
 Because of the limited dynamic range of both XYZ and RGB intensity,
-these matrices will be encoded using a fixed point representation of a
-.mc |
+these matrices will be encoded using a fixed-point representation of a
 32-bit two's complement number scaled by @2 sup 27@, giving a range of @-16@ to
 @16 - epsilon@, where @epsilon ~ = ~ 2 sup -27@.
-.mc
 .LP
-These matrices will be packed into an 18 element list of 32 bit values,
-.mc |
+These matrices will be packed into an 18-element list of 32-bit values,
 XYZ \(-> RGB matrix first, in row major order and stored in the
 XDCCC_LINEAR_RGB_MATRICES properties (format = 32) on the root window of
-.mc
 each screen, using values appropriate for that screen.
 .LP
-This will be encoded as:
+This will be encoded as shown in the following table:
 .br
 .ne 6
 .TS
@@ -5097,9 +4992,7 @@ Field	Type	Comments
 .sp 6p
 _
 .sp 6p
-.mc |
-@M sub 0,0@	INT32	Interpreted as a fixed point number @-16~<=~x~<~16@
-.mc
+@M sub 0,0@	INT32	Interpreted as a fixed-point number @-16~<=~x~<~16@
 @M sub 0,1@	INT32	
 \&.\^.\^.
 @M sub 3,3@	INT32	
@@ -5110,49 +5003,48 @@ _
 .sp 6p
 _
 .TE
-.nH 2 "Intensity \*(dA RGB value Conversion"
+.nH 2 "Intensity \*(dA RGB Value Conversion"
 .LP
 XDCCC provides two representations for describing the conversion
 between RGB intensity and the actual X protocol RGB values:
-.RS
+.DS
+.TA .5i
+.ta .5i
 0	RGB value/RGB intensity level pairs
-.br
 1	RGB intensity ramp
-.RE
+.DE
 .LP
 In both cases, the relevant data will be stored in the
-.mc |
 XDCCC_LINEAR_RGB_CORRECTION properties on the root window of each screen,
-.mc
 using values appropriate for that screen, in whatever format provides
 adequate resolution.  Each property can consist of multiple entries
 concatenated together, if different visuals for the screen require different
-conversion data.  A entry with a VisualID of 0 specifies data for all
+conversion data.  An entry with a VisualID of 0 specifies data for all
 visuals of the screen that are not otherwise explicitly listed.
 .LP
 The first representation is an array of RGB value/intensity level pairs, with
 the RGB values in strictly increasing order.  When converting, the client must
 linearly interpolate between adjacent entries in the table to compute the
-desired value.  This is to allow the server to perform gamma correction
-itself and encode that fact in a short 2 element correction table.  The
+desired value.  This allows the server to perform gamma correction
+itself and encode that fact in a short two-element correction table.  The
 intensity will be encoded as an unsigned number to be interpreted as a value
 between 0 and 1 (inclusive).  The precision of this value will depend on the
-format of the property in which it is stored (8, 16 or 32 bits).  For 16 and
-32 bit formats, the RGB value will simply be the value stored in the
+format of the property in which it is stored (8, 16 or 32 bits).  For 16-bit
+and 32-bit formats, the RGB value will simply be the value stored in the
 property.  When stored in 8-bit format, the RGB value can be computed from
 the value in the property by:
 .EQ C
-	RGB sub value ~ = ~ { Property ~ Value ~ times ~ 65535 } over 255
+RGB sub value ~ = ~ { Property ~ Value ~ times ~ 65535 } over 255
 .EN
 .LP
 Because the three electron guns in the device may not be exactly alike in
 response characteristics, it is necessary to allow for three separate
-tables, one each for red, green and blue.  So, each table will be preceded
-by the number of entries in that table, and the set of tables will be
+tables, one each for red, green, and blue.  Therefore, each table will be
+preceded by the number of entries in that table, and the set of tables will be
 preceded by the number of tables.
-When 3 tables are provided, they will be in red, green, blue order.
+When three tables are provided, they will be in red, green, blue order.
 .LP
-This will be encoded as:
+This will be encoded as shown in the following table:
 .br
 .ne 6
 .TS
@@ -5160,7 +5052,7 @@ center;
 c s s
 c c c
 l l l.
-XDCCC_LINEAR_RGB_CORRECTION property contents for type 0 correction
+XDCCC_LINEAR_RGB_CORRECTION Property Contents for Type 0 Correction
 .sp 6p
 _
 .sp 6p
@@ -5170,21 +5062,30 @@ Field	Type	Comments
 .sp 6p
 _
 .sp 6p
-VisualID0	CARD	Most significant portion of VisualID
-VisualID1	CARD	(exists iff property format is 8)
-VisualID2	CARD	(exists iff property format is 8)
-VisualID3	CARD	Least significant (exists iff property format is 8 or 16)
+VisualID0	CARD	Most-significant portion of VisualID
+VisualID1	CARD	Exists if and only if the property format is 8
+VisualID2	CARD	Exists if and only if the property format is 8
+VisualID3	CARD	T{
+Least-significant portion, exists if and only if the property format
+is 8 or 16
+T}
 type	CARD	0 for this type of correction
-count	CARD	number of tables following (either 1 or 3)
-length	CARD	number of pairs \- 1 following in this table
+count	CARD	Number of tables following (either 1 or 3)
+length	CARD	Number of pairs \- 1 following in this table
 value	CARD	X Protocol RGB value
 intensity	CARD	Interpret as a number @0~<=~intensity~<=~1@
 \&.\^.\^.	.\^.\^.	Total of \fIlength+1\fP pairs of value/intensity values
-lengthg	CARD	number of pairs \- 1 following in this table (iff \fIcount\fP is 3)
+lengthg	CARD	T{
+Number of pairs \- 1 following in this table (if and
+only if \fIcount\fP is 3)
+T}
 value	CARD	X Protocol RGB value
 intensity	CARD	Interpret as a number @0~<=~intensity~<=~1@
 \&.\^.\^.	.\^.\^.	Total of \fIlengthg+1\fP pairs of value/intensity values
-lengthb	CARD	number of pairs \- 1 following in this table (iff \fIcount\fP is 3)
+lengthb	CARD	T{
+Number of pairs \- 1 following in this table (if and
+only if \fIcount\fP is 3)
+T}
 value	CARD	X Protocol RGB value
 intensity	CARD	Interpret as a number @0~<=~intensity~<=~1@
 \&.\^.\^.	.\^.\^.	Total of \fIlengthb+1\fP pairs of value/intensity values
@@ -5192,11 +5093,11 @@ intensity	CARD	Interpret as a number @0~<=~intensity~<=~1@
 _
 .TE
 .LP
-Note that the VisualID is stored in 4, 2, or 1 pieces, depending on whether
+The VisualID is stored in 4, 2, or 1 pieces, depending on whether
 the property format is 8, 16, or 32, respectively.  The VisualID is always
 stored most-significant piece first.
 Note that the length fields are stored as one less than the actual length,
-so that 256 entries can be stored in format 8.
+so 256 entries can be stored in format 8.
 .LP
 The second representation is a simple array of intensities for a linear subset
 of RGB values.  The expected size of this table is the bits-per-rgb-value of
@@ -5204,13 +5105,14 @@ the screen, but it can be any length.  This is similar to the first mechanism,
 except that the RGB value numbers are implicitly defined by the index in the
 array (indices start at 0):
 .EQ C
-	RGB sub value ~ = ~ { Array ~ Index ~ times ~ 65535 } over { Array ~ Size ~ - ~ 1 }
+RGB sub value ~ = ~ { Array ~ Index ~ times ~ 65535 } over
+{ Array ~ Size ~ - ~ 1 }
 .EN
 When converting, the client may linearly interpolate between entries in this
 table.  The intensity values will be encoded just as in the first
 representation.
 .LP
-This will be encoded as:
+This will be encoded as shown in the following table:
 .br
 .ne 6
 .TS
@@ -5218,7 +5120,7 @@ center;
 c s s
 c c c
 l l l.
-XDCCC_LINEAR_RGB_CORRECTION property contents for type 1 correction
+XDCCC_LINEAR_RGB_CORRECTION Property Contents for Type 1 Correction
 .sp 6p
 _
 .sp 6p
@@ -5228,26 +5130,34 @@ Field	Type	Comments
 .sp 6p
 _
 .sp 6p
-VisualID0	CARD	Most significant portion of VisualID
-VisualID1	CARD	(exists iff property format is 8)
-VisualID2	CARD	(exists iff property format is 8)
-VisualID3	CARD	Least significant (exists iff property format is 8 or 16)
+VisualID0	CARD	Most-significant portion of VisualID
+VisualID1	CARD	Exists if and only if the property format is 8
+VisualID2	CARD	Exists if and only if the property format is 8
+VisualID3	CARD	T{
+Least-significant portion, exists if and only if
+the property format is 8 or 16
+T}
 type	CARD	1 for this type of correction
-count	CARD	number of tables following (either 1 or 3)
-length	CARD	number of elements \- 1 following in this table
+count	CARD	Number of tables following (either 1 or 3)
+length	CARD	Number of elements \- 1 following in this table
 intensity	CARD	Interpret as a number @0~<=~intensity~<=~1@
 \&.\^.\^.	.\^.\^.	Total of \fIlength+1\fP intensity elements
-lengthg	CARD	number of elements \- 1 following in this table (iff \fIcount\fP is 3)
+lengthg	CARD	T{
+Number of elements \- 1 following in this table (if and
+only if \fIcount\fP is 3)
+T}
 intensity	CARD	Interpret as a number @0~<=~intensity~<=~1@
 \&.\^.\^.	.\^.\^.	Total of \fIlengthg+1\fP intensity elements
-lengthb	CARD	number of elements \- 1 following in this table (iff \fIcount\fP is 3)
+lengthb	CARD	T{
+Number of elements \- 1 following in this table (if and
+only if \fIcount\fP is 3)
+T}
 intensity	CARD	Interpret as a number @0~<=~intensity~<=~1@
 \&.\^.\^.	.\^.\^.	Total of \fIlengthb+1\fP intensity elements
 .sp 6p
 _
 .TE
 .nH 1 "Conclusion"
-.mc |
 .LP
 This document provides the protocol-level specification of the minimal
 conventions needed to ensure that X Version 11 clients can interoperate
@@ -5263,9 +5173,7 @@ for information on session management, and to
 Inter-Client Exchange Protocol
 .R
 for information on general-purpose communication among clients.
-.mc
 .nH 2 "The X Registry"
-.mc |
 .IN "Registry"
 .IN "X Registry"
 .LP
@@ -5298,7 +5206,6 @@ The registry is published as part of the X software distribution from the X
 Consortium.  All registered items must have the postal address of someone
 responsible for the item, or a reference to a document describing the item
 and the postal address of where to write to obtain the document.
-.mc
 .bp
 .\" Set registers to number the appendixes A.1, B.1, C.1, ...
 .nr H1 0
@@ -5306,10 +5213,8 @@ and the postal address of where to write to obtain the document.
 .cT "Appendix A" no
 .nH 1 "Revision History"
 .LP
-.mc |
 This appendix describes the revision history of this document and
 summarizes the incompatibilities between this and earlier versions.
-.mc
 .nH 2 "The X11R2 Draft"
 .LP
 The February 25, 1988 draft that was distributed as part of X Version 11,
@@ -5467,10 +5372,9 @@ Clients using earlier conventions can be detected by the size of their
 RGB_COLOR_MAP properties,
 and the cases that would have worked will still work.
 .nH 2 "Version 1.1"
-.mc |
 .LP
 Version 1.1 was released with X11R5 in September, 1991.  In addition to some
-minor editorial changes, there were a few semantic changes since version
+minor editorial changes, there were a few semantic changes since Version
 1.0:
 .bP
 The section on Device Color Characterization was added.
@@ -5478,9 +5382,7 @@ The section on Device Color Characterization was added.
 The meaning of the NULL property type was clarified.
 .bP
 Appropriate references to Compound Text were added.
-.mc
 .nH 2 "Public Review Draft, December 1993"
-.mc |
 .LP
 The following changes have been made in preparing the public review draft
 for Version 2.0.
@@ -5555,7 +5457,9 @@ request has been added.
 .bP
 [P62] An ordering requirement on processing selection requests was added.
 .bP
-[P63] The VisibleHint flag was added.
+[P63] The
+.PN VisibleHint
+flag was added.
 .bP
 [P64] The session management section has been updated to align with the new
 session management protocol.  The old session management conventions have
@@ -5568,30 +5472,45 @@ Information on the X Registry and references to the session management and
 ICE documents have been added.
 .bP
 Numerous editorial and typographical improvements have been made.
-.mc
+.nH 2 "Version 2.0, April 1994"
+.LP
+The following changes have been made in preparation for releasing
+the final edition of Version 2.0 with X11R6.
+.bP
+The PIXMAP selection target has been revised to return a property of type
+PIXMAP instead of type DRAWABLE.
+.bP
+The session management section has been revised slightly to correspond with
+the changes to the \fIX Session Management Protocol\fP.
+.bP
+Window managers are now prohibited from placing
+.PN CurrentTime
+in the timestamp field of WM_TAKE_FOCUS messages.
+.bP
+In the WM_HINTS property, the
+.PN VisibleHint
+flag has been renamed to
+.PN UrgencyHint .
+Its semantics have also been defined more thoroughly.
+.bP
+Additional editorial and typographical changes have been made.
 .bp
 .cT "Appendix B" no
 .nH 1 "Suggested Protocol Revisions"
 .LP
 During the development of these conventions,
 a number of inadequacies have been discovered in the
-.mc |
 core X11 protocol.
-.mc
 They are summarized here as input to an eventual protocol revision
 design process.
 .bP
 There is no way for anyone to find out the last-change time of
 a selection.
-.mc |
 The
-.mc
 .PN Get\%Selection\%Owner
 request should be changed to return the last-change time as well as the owner.
 .bP
-.mc |
 There is no way for a client to find out which selection atoms are valid.
-.mc
 .bP
 There would be no need for WM_TAKE_FOCUS if the 
 .PN FocusIn
@@ -5613,24 +5532,19 @@ requests and in the
 .PN Colormap\%Notify
 event.
 The timestamp should be used in a similar way to the last-focus-change
-.mc |
 time for the input focus.  The lack of timestamps in these packets is the
 reason for restricting colormap installation to the window manager.
-.mc
 .bP
 The protocol needs to be changed to provide some way of identifying
 the Visual and the Screen of a colormap.
 .bP
 There should be some way to reclaim assignments to the five non-preassigned
-.mc |
 modifiers when they are no longer needed.  The manual method is unpleasantly
 low-tech.
-.mc
 .bp
 .cT "Appendix C" no
 .nH 1 "Obsolete Session Manager Conventions"
 .LP
-.mc |
 This appendix contains obsolete conventions for session management using X
 properties and messages.  The conventions described here are deprecated, and
 are described only for historical interest.  For further information on
@@ -5638,10 +5552,8 @@ session management, see
 .I
 X Session Management Protocol.
 .R
-.mc
 .nH 2 "Properties"
 .LP
-.mc |
 The client communicates with the session manager by placing two properties
 (WM_COMMAND and WM_CLIENT_MACHINE) on its top-level window.
 If the client has a group of top-level windows,
@@ -5650,10 +5562,8 @@ these properties should be placed on the group leader window.
 The window manager is responsible for placing a WM_STATE property
 on each top-level client window for use by session managers and other clients
 that need to be able to identify top-level client windows and their state.
-.mc
 .nH 3 "WM_COMMAND Property"
 .LP
-.mc |
 The WM_COMMAND property represents the command used to start or restart the
 client.  By updating this property, clients should ensure that it always
 reflects a command that will restart them in their current state.  The
@@ -5682,15 +5592,11 @@ A client with multiple top-level windows should ensure
 that exactly one of them has a WM_COMMAND with nonzero length.
 Zero-length WM_COMMAND properties can be used to reply to WM_SAVE_YOURSELF
 messages on other top-level windows but will otherwise be ignored.
-.mc
 .nH 3 "WM_CLIENT_MACHINE Property"
 .LP
-.mc |
 This property is described in section 4.1.2.9.
-.mc
 .nH 2 "Termination"
 .LP
-.mc |
 Because they communicate by means of unreliable network connections, clients
 must be prepared for their connection to the server to be terminated at any
 time without warning.  They cannot depend on getting notification that
@@ -5702,19 +5608,15 @@ Similarly, clients may terminate at any time without notice to the session
 manager.  When a client terminates itself rather than being terminated by
 the session manager, it is viewed as having resigned from the session in
 question, and it will not be revived if the session is revived.
-.mc
 .nH 2 "Client Responses to Session Manager Actions"
 .LP
-.mc |
 Clients may need to respond to session manager actions in two ways:
 .bP
 Saving their internal state
 .bP
 Deleting a window
-.mc
 .nH 3 "Saving Client State"
 .LP
-.mc |
 Clients that want to be warned when the session manager feels 
 that they should save their internal state (for example,
 when termination impends) should include the atom WM_SAVE_YOURSELF 
@@ -5780,19 +5682,14 @@ if a shutdown facility is judged to be necessary,
 a separate WM_PROTOCOLS protocol will be developed and registered 
 with the X Consortium.
 .FE
-.mc
 .nH 3 "Window Deletion"
 .LP
-.mc |
 Windows are deleted using the WM_DELETE_WINDOW protocol, which
 is described in section 4.2.8.1.
-.mc
 .nH 2 "Summary of Session Manager Property Types"
 .LP
-.mc |
 The session manager properties are listed in the following table:
 .br
-.mc
 .ne 6
 .TS H
 l l n c.
@@ -5805,11 +5702,9 @@ _
 .sp 6p
 .TH
 .R
-.mc |
 WM_CLIENT_MACHINE	TEXT		4.1.2.9
 WM_COMMAND	TEXT		C.1.1
 WM_STATE	WM_STATE	32	4.1.3.1
-.mc
 .sp 6p
 _
 .TE
