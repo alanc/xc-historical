@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.77 89/09/19 20:20:02 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.78 89/09/20 11:36:03 swick Exp $";
 /* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
 #endif /* lint */
 /*LINTLIBRARY*/
@@ -992,16 +992,15 @@ static int BindActions(tm, compiledActionTable,index)
 {
     XtTranslations stateTable=tm->translations;
     int unbound = stateTable->numQuarks;
-    int i;
+    CompiledAction* action;
 
     for ( ; index < stateTable->numQuarks; index++) {
        if (tm->proc_table[index] == NULL) {
            /* attempt to bind it */
            register XrmQuark q = stateTable->quarkTable[index];
-           for (i = 0; compiledActionTable[i].name != NULL; i++) {
-               if (compiledActionTable[i].signature == q) {
-		   tm->proc_table[index] = 
-                     (XtActionProc) compiledActionTable[i].value;
+           for (action = compiledActionTable; action->name != NULL; action++) {
+               if (action->signature == q) {
+		   tm->proc_table[index] = (XtActionProc)action->value;
                    unbound--;
                    break;
                }
@@ -1099,26 +1098,22 @@ void _XtBindAccActions(widget,stateTable,index,accBindings)
     XtBoundAccActions accTemp;
     XtAppContext app;
 
-/* ||| Kludge error that Leo depends upon */
     w = widget;
     if (stateTable == NULL) return;
     accTemp = (XtBoundAccActions) XtCalloc(
                       stateTable->accNumQuarks,
 		      (Cardinal)sizeof(XtBoundAccActionRec));
-do {
-/* ||| */
-    class = w->core.widget_class;
     do {
-        if (class->core_class.actions != NULL)
-         unbound = BindAccActions(widget,
-	    stateTable,(CompiledActionTable)class->core_class.actions,
-                         index,accTemp);
-	class = class->core_class.superclass;
-    } while (unbound != 0 && class != NULL);
-/* ||| Kludge error that Leo depends upon */
-w = w->core.parent;
-} while (unbound != 0 && w != NULL);
-/* ||| */
+	class = w->core.widget_class;
+	do {
+	    if (class->core_class.actions != NULL)
+	     unbound = BindAccActions(widget,
+		stateTable,(CompiledActionTable)class->core_class.actions,
+			     index,accTemp);
+	    class = class->core_class.superclass;
+	} while (unbound != 0 && class != NULL);
+	w = w->core.parent;
+    } while (unbound != 0 && w != NULL);
 
     app = XtWidgetToApplicationContext(widget);
     for (actionList = app->action_table;
@@ -1850,11 +1845,13 @@ static void _XtMenuPopupAction(widget, event, params, num_params)
     Boolean spring_loaded;
     register Widget popup_shell;
 
-    if (*num_params != 1)
-           XtAppErrorMsg(XtWidgetToApplicationContext(widget),
-		    "invalidParameters","xtMenuPopupAction","XtToolkitError",
-           "MenuPopup wants exactly one argument",
-	   (String *)NULL, (Cardinal *)NULL);
+    if (*num_params != 1) {
+	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+		      "invalidParameters","xtMenuPopupAction","XtToolkitError",
+			"MenuPopup wants exactly one argument",
+			(String *)NULL, (Cardinal *)NULL);
+	return;
+    }
 
     if (event->type == ButtonPress) spring_loaded = True;
     else if (event->type == EnterNotify) spring_loaded = False;
@@ -1867,11 +1864,13 @@ static void _XtMenuPopupAction(widget, event, params, num_params)
     }
 
     popup_shell = _XtFindPopup(widget, params[0]);
-    if (popup_shell == NULL)
-            XtAppErrorMsg(XtWidgetToApplicationContext(widget),
-		    "invalidPopup","xtMenuPopup","XtToolkitError",
-                   "Can't find popup in _XtMenuPopup",
-		   (String *)NULL, (Cardinal *)NULL);
+    if (popup_shell == NULL) {
+	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+			"invalidPopup","xtMenuPopup","XtToolkitError",
+			"Can't find popup widget \"%s\" in _XtMenuPopup",
+			params, num_params);
+	return;
+    }
 
     if (spring_loaded) _XtPopup(popup_shell, XtGrabExclusive, TRUE);
     else _XtPopup(popup_shell, XtGrabNonexclusive, FALSE);
@@ -1891,17 +1890,19 @@ static void _XtMenuPopdownAction(widget, event, params, num_params)
 	XtPopdown(widget);
     } else if (*num_params == 1) {
 	popup_shell = _XtFindPopup(widget, params[0]);
-	if (popup_shell == NULL)
-            XtAppErrorMsg(XtWidgetToApplicationContext(widget),
-		    "invalidPopup","xtMenuPopup","XtToolkitError",
-                   "Can't find popup in _XtMenuPopup",
-		   (String *)NULL, (Cardinal *)NULL);
-	    XtPopdown(popup_shell);
+	if (popup_shell == NULL) {
+            XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+			    "invalidPopup","xtMenuPopup","XtToolkitError",
+			    "Can't find popup widget \"%s\" in XtMenuPopup",
+			    params, num_params);
+	    return;
+	}
+	XtPopdown(popup_shell);
     } else {
-	XtAppErrorMsg(XtWidgetToApplicationContext(widget),
-		"invalidParameters","xtmenuPopdown","XtToolkitError",
-               "XtMenuPopdown called with num_params != 0 or 1",
-	       (String *)NULL, (Cardinal *)NULL);
+	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+			"invalidParameters","xtmenuPopdown","XtToolkitError",
+			"XtMenuPopdown called with num_params != 0 or 1",
+			(String *)NULL, (Cardinal *)NULL);
     }
 }
 
@@ -1981,7 +1982,7 @@ void _XtRegisterGrabs(widget,tm)
     if (! XtIsRealized(widget)) return;
 
     /* walk the widget instance action bindings table looking for */
-    /* _XtMenuPopupAction */
+    /* actions registered as grab actions. */
     /* when you find one, do a grab on the triggering event */
 
     if (stateTable == NULL) return;
@@ -2354,3 +2355,67 @@ void XtKeysymToKeycodeList(dpy, keysym, keycodes_return, keycount_return)
     DEALLOCATE_LOCAL(keycodes);
     *keycount_return = ncodes;
 }
+
+
+void XtCallActionProc(widget, action, event, params, num_params)
+    Widget widget;
+    String action;
+    XEvent *event;
+    String *params;
+    Cardinal num_params;
+{
+    CompiledAction* actionP;
+    XrmQuark q = XrmStringToQuark(action);
+    Widget w = widget;
+    XtAppContext app;
+    ActionList actionList;
+
+    XtCheckSubclass(widget, coreWidgetClass,
+	    "XtCallActionProc first argument is not a subclass of Core");
+
+    do {
+	WidgetClass class = XtClass(w);
+	do {
+	    for (actionP = (CompiledActionTable)class->core_class.actions;
+		 actionP->name != NULL; actionP++) {
+
+		if (actionP->signature == q) {
+		    (*(XtActionProc)(actionP->value))
+			(widget, event, params, &num_params);
+		    return;
+		}
+	    }
+	    class = class->core_class.superclass;
+	} while (class != NULL);
+	w = XtParent(w);
+    } while (w != NULL);
+
+    app = XtWidgetToApplicationContext(widget);
+    for (actionList = app->action_table;
+	 actionList != NULL;
+	 actionList = actionList->next) {
+
+	for (actionP = actionList->table; actionP->name != NULL; actionP++) {
+	    if (actionP->signature == q) {
+		(*(XtActionProc)(actionP->value))
+		    (widget, event, params, &num_params);
+		return;
+	    }
+	}
+
+    }
+
+    {
+	String params[2];
+	Cardinal num_params = 2;
+	params[0] = action;
+	params[1] = XtName(widget);
+	XtAppWarningMsg(app,
+	    "noActionProc", "xtCallActionProc", "XtToolkitError",
+	    "No action proc named \"%s\" is registered for widget \"%s\"",
+	    params, &num_params
+			);
+    }
+}
+
+
