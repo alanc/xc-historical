@@ -1,5 +1,5 @@
 /*
- * $XConsortium: vendor.h,v 1.7 91/08/20 14:27:57 gildea Exp $
+ * $XConsortium: vendor.h,v 1.8 91/11/19 08:38:02 rws Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -62,6 +62,9 @@
 #ifdef sgi
 #  define SYSMANPATH "/usr/catman/a_man:/usr/catman/g_man:/usr/catman/p_man:/usr/catman/u_man:/usr/man/p_man:/usr/man/u_man:/usr/man"
 #endif /* sgi */
+#ifdef __bsdi__
+#  define SYSMANPATH "/usr/share/man:/usr/contrib/man:/usr/local/man"
+#endif /* __bsdi__ */
 
 #ifndef SYSMANPATH
 #  define SYSMANPATH "/usr/man"
@@ -79,7 +82,7 @@
 #  define NO_COMPRESS		/* mac can't handle using pack as a filter and
 				   xman needs it to be done that way. */
 #else
-#  if defined ( UTEK )
+#  ifdef UTEK
 #    define COMPRESSION_EXTENSION "C"
 #    define UNCOMPRESS_FORMAT     "ccat < %s > %s"
 #    define COMPRESS              "compact"
@@ -106,17 +109,25 @@
 #  define APROPOS_FORMAT ("man -M %s -k %s | pr -h Apropos > %s")
 #endif
 
-#if defined( ultrix )
+#ifdef ultrix
 #  define FORMAT "| nroff -man"             /* The format command. */
 #else
-#  define FORMAT "| neqn | nroff -man"      /* The format command. */
+#  ifdef __bsdi__
+#    define FORMAT "| eqn | nroff -man"      /* The format command. */
+#  else
+#    define FORMAT "| neqn | nroff -man"      /* The format command. */
+#  endif
 #endif
 
 /*
  * Names of the man and cat dirs.
  */
 
+#ifdef __bsdi__
+#define MAN "cat"
+#else
 #define MAN "man"
+#endif
 
 #if ( defined(macII) || defined(CRAY) || defined(hcx) || (defined(SYSV) && defined(SYSV386)) )
 /*
