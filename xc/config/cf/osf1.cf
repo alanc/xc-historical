@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: osf1.cf,v 1.17 93/09/13 19:15:22 rws Exp $
+XCOMM platform:  $XConsortium: osf1.cf,v 1.18 93/09/13 19:35:12 rws Exp $
 /* only tested with Digital OSF/1 V1.0 */
 
 #define OSName			OSF/1 1.0
@@ -12,6 +12,7 @@ XCOMM operating system:  OSName
 #define HasShm			YES
 #define AvoidNullMakeCommand	YES
 #define HasPosixThreads		YES
+#define SystemMTDefines -D_REENTRANT
 #define HasPoll			YES
 #ifndef ThreadedX
 #define ThreadedX		YES
@@ -25,10 +26,13 @@ XCOMM operating system:  OSName
 #define SeparateSharedCompile	YES
 #define XMTDefines /**/
 #ifdef MipsArchitecture
-#define LibObjCompile(dir,options) $(RM) $@ $*.os dir/$@ \		@@\
-	&& $(CC) -c options $(CFLAGS) $*.c \				@@\
+#define UnsharedLibObjCompile(options) $(RM) $@ $*.os unshared/$@ \	@@\
+	&& $(CC) -c options -DXTHREADS SystemMTDefines $(CFLAGS) $*.c \	@@\
 	&& $(LD) -x -r $@ -o $*.os \					@@\
-	&& $(MV) $*.os dir/$@
+	&& $(MV) $*.os unshared/$@
+/* should not have to do this bit, but make randomly hangs if we use the ld */
+/* trick on both compilations */
+#define NormalSharedLibObjCompile(options) ObjectCompile(options $(SHLIBDEF) $(SHAREDCODEDEF) $(PICFLAGS))
 #else
 #define UnsharedLibObjCompile(options) LibObjCompile(unshared,$(CDEBUGFLAGS) options -DXTHREADS)
 #endif
