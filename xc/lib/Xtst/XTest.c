@@ -1,4 +1,4 @@
-/* $XConsortium: XTest.c,v 1.11 93/02/25 18:04:09 rws Exp $ */
+/* $XConsortium: XTest.c,v 1.12 93/02/25 18:08:33 rws Exp $ */
 /*
 
 Copyright 1990, 1991 by UniSoft Group Limited
@@ -295,13 +295,11 @@ send_axes(dpy, info, req, dev, first_axis, axes, n_axes)
     }
 }
 
-XTestFakeDeviceKeyEvent(dpy, dev, keycode, is_press,
-			first_axis, axes, n_axes, delay)
+XTestFakeDeviceKeyEvent(dpy, dev, keycode, is_press, axes, n_axes, delay)
     Display *dpy;
     XDevice *dev;
     unsigned int keycode;
     Bool is_press;
-    int first_axis;
     int *axes;
     int n_axes;
     unsigned long delay;
@@ -321,19 +319,17 @@ XTestFakeDeviceKeyEvent(dpy, dev, keycode, is_press,
     req->time = delay;
     req->deviceid = dev->device_id;
     if (n_axes)
-	send_axes(dpy, info, req, dev, first_axis, axes, n_axes);
+	send_axes(dpy, info, req, dev, 0, axes, n_axes);
     UnlockDisplay(dpy);
     SyncHandle();
     return 1;
 }
 
-XTestFakeDeviceButtonEvent(dpy, dev, button, is_press,
-			   first_axis, axes, n_axes, delay)
+XTestFakeDeviceButtonEvent(dpy, dev, button, is_press, axes, n_axes, delay)
     Display *dpy;
     XDevice *dev;
     unsigned int button;
     Bool is_press;
-    int first_axis;
     int *axes;
     int n_axes;
     unsigned long delay;
@@ -353,17 +349,16 @@ XTestFakeDeviceButtonEvent(dpy, dev, button, is_press,
     req->time = delay;
     req->deviceid = dev->device_id;
     if (n_axes)
-	send_axes(dpy, info, req, dev, first_axis, axes, n_axes);
+	send_axes(dpy, info, req, dev, 0, axes, n_axes);
     UnlockDisplay(dpy);
     SyncHandle();
     return 1;
 }
 
-XTestFakeProximityEvent(dpy, dev, in_prox, first_axis, axes, n_axes, delay)
+XTestFakeProximityEvent(dpy, dev, in_prox, axes, n_axes, delay)
     Display *dpy;
     XDevice *dev;
     Bool in_prox;
-    int first_axis;
     int *axes;
     int n_axes;
     unsigned long delay;
@@ -382,7 +377,7 @@ XTestFakeProximityEvent(dpy, dev, in_prox, first_axis, axes, n_axes, delay)
     req->time = delay;
     req->deviceid = dev->device_id;
     if (n_axes)
-	send_axes(dpy, info, req, dev, first_axis, axes, n_axes);
+	send_axes(dpy, info, req, dev, 0, axes, n_axes);
     UnlockDisplay(dpy);
     SyncHandle();
     return 1;
