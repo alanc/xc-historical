@@ -1,4 +1,4 @@
-/* $XConsortium: windowstr.h,v 5.16 92/12/18 16:41:02 rws Exp $ */
+/* $XConsortium: windowstr.h,v 5.17 93/07/12 09:44:52 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -175,5 +175,24 @@ typedef struct _ScreenSaverStuff {
 
 extern int screenIsSaved;
 extern ScreenSaverStuffRec savedScreenInfo[MAXSCREENS];
+
+/*
+ * this is the configuration parameter "NO_BACK_SAVE"
+ * it means that any existant backing store should not 
+ * be used to implement save unders.
+ */
+
+#ifndef NO_BACK_SAVE
+#define DO_SAVE_UNDERS(pWin)	((pWin)->drawable.pScreen->saveUnderSupport ==\
+				 USE_DIX_SAVE_UNDERS)
+/*
+ * saveUnderSupport is set to this magic value when using DIXsaveUnders
+ */
+
+#define USE_DIX_SAVE_UNDERS	0x40
+#endif
+
+extern int numSaveUndersViewable;
+extern int deltaSaveUndersViewable;
 
 #endif /* WINDOWSTRUCT_H */
