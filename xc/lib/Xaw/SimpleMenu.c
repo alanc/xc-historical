@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.8 89/05/11 01:06:24 kit Exp $";
+static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.10 89/05/26 16:33:03 kit Exp $";
 #endif 
 
 /***********************************************************
@@ -127,7 +127,7 @@ static void SetEntryInfo(), ChangeEntryInfo(), CreateGCs(), DestroyGCs();
 static Dimension GetMenuWidth(), GetMenuHeight();
 static MenuEntry * GetEventEntry(), * GetMenuEntry();
 static void XawCvtStringToMenuType(), MaybeCopyCallbacks();
-static void AddPositionAction(), PositionMenu();
+static void AddPositionAction(), PositionMenu(), ChangeCursorOnGrab();
 
 static XtActionsRec actionsList[] =
 {
@@ -272,6 +272,12 @@ Widget request, new;
   smw->simple_menu.recursive_set_values = FALSE;
   smw->simple_menu.num_entries = 
                        (Cardinal) ( (smw->simple_menu.label == NULL) ? 0 : 1 );
+
+/*
+ * Add a popup_callback routine for changing the cursor.
+ */
+  
+  XtAddCallback(new, XtNpopupCallback, ChangeCursorOnGrab, NULL);
 }
 
 /*      Function Name: Destroy
@@ -980,6 +986,32 @@ Cardinal num_args;
  * Private Functions.
  *
  ************************************************************/
+
+/*	Function Name: ChangeCursorOnGrab
+ *	Description: Changes the cursor on the active grab to the one
+ *                   specified in out resource list.
+ *	Arguments: w - the widget.
+ *                 junk, garbage - ** NOT USED **.
+ *	Returns: None.
+ */
+
+/* ARGSUSED */
+static void
+ChangeCursorOnGrab(w, junk, garbage)
+Widget w;
+caddr_t junk, garbage;
+{
+  SimpleMenuWidget smw = (SimpleMenuWidget) w;
+
+/*
+ * The event mask here is what is currently in the MIT implementation.
+ * There really needs to be a way to get the value of the mask out
+ * of the toolkit (CDP 5/26/89).
+ */
+
+  XChangeActivePointerGrab(XtDisplay(w), ButtonPressMask|ButtonReleaseMask,
+			   smw->simple_menu.cursor, CurrentTime);
+}
 
 /*      Function Name: CalculateNewSize
  *      Description: Finds the new size for the simple menu widget.
