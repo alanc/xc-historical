@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: defs.h,v 1.19 89/12/07 16:05:32 kit Exp $
+ * $XConsortium: defs.h,v 1.21 90/03/05 17:48:46 kit Exp $
  * $Athena: defs.h,v 4.8 89/01/06 15:56:19 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -160,9 +160,13 @@
 
 #ifdef macII
 #  define MANDIR "/usr/catman/u_man:/usr/catman/a_man"	
-#else
+#else /* macII */
+#ifdef SVR4
+#  define MANDIR "/usr/share/man"
+#else /* SVR4 */
 #  define MANDIR "/usr/man"
-#endif
+#endif /* SVR4 else */
+#endif /* macII else */
 
 #define INDENT 15
 #define TYP20STR "MMMMMMMMMMMMMMMMMMMM"
