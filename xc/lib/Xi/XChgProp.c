@@ -35,8 +35,7 @@ SOFTWARE.
 #include "XIproto.h"
 #include "Xlibint.h"
 #include "XInput.h"
-
-extern int	IReqCode;
+#include "extutil.h"
 
 int
 XChangeDeviceDontPropagateList (dpy, window, count, events, mode)
@@ -48,13 +47,14 @@ XChangeDeviceDontPropagateList (dpy, window, count, events, mode)
     {       
     int			rlen;
     xChangeDeviceDontPropagateListReq 	*req;
+    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return (NoSuchExtension);
 
     GetReq(ChangeDeviceDontPropagateList,req);		
-    req->reqType = IReqCode;
+    req->reqType = info->codes->major_opcode;
     req->ReqType = X_ChangeDeviceDontPropagateList;
     req->window = window;
     req->count = count;

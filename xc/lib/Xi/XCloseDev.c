@@ -34,8 +34,7 @@ SOFTWARE.
 #include "Xlibint.h"
 #include "XI.h"
 #include "XInput.h"
-
-extern	int	IReqCode;
+#include "extutil.h"
 
 int
 XCloseDevice(dpy, dev)
@@ -43,16 +42,18 @@ XCloseDevice(dpy, dev)
     register XDevice	*dev;
     {	
     xCloseDeviceReq 	*req;
+    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return (NoSuchExtension);
 
     GetReq(CloseDevice,req);		
-    req->reqType = IReqCode;
+    req->reqType = info->codes->major_opcode;
     req->ReqType = X_CloseDevice;
     req->deviceid = dev->device_id;
 
+    XFree (dev);
     UnlockDisplay (dpy);
     SyncHandle();
     return (Success);

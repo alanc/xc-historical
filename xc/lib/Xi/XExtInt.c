@@ -1,4 +1,4 @@
-/* $XConsortium: XExtInt.c,v 1.6 89/11/08 17:30:09 rws Exp $ */
+/* $XConsortium: XExtInt.c,v 1.7 89/11/21 11:54:53 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -26,7 +26,7 @@ SOFTWARE.
 
 /***********************************************************************
  *
- * Extension Xlib functions.
+ * Input Extension library internal functions.
  *
  */
 
@@ -37,47 +37,47 @@ SOFTWARE.
 #include "XIproto.h"
 #include "Xlibint.h"
 #include "XInput.h"
+#include "extutil.h"
 
 #define ENQUEUE_EVENT	True
 #define DONT_ENQUEUE	False
 
-extern	long	_xmask[];
+static	XExtensionInfo *xinput_info;
+static	/* const */ char *xinput_extension_name = INAME;
+static	int XInputClose(), XInputError();
+Bool	XInputWireToEvent();
+Status	XInputEventToWire();
+static	/* const */ XEvent	emptyevent;
 
-XExtCodes *connections[MSKCNT << 5];
+#define XInputCheckExtension(dpy,i,val) \
+  XextCheckExtension (dpy, i, xinput_extension_name, val)
 
-int	BadDevice = 0;
-int	BadEvent = 1;
-int	BadMode = 2;
-int	BadClass = 4;
-
-int	IReqCode = 0;
-int	ExtWireToEvent();
-Status	_XExtEventToWire();
-int	_devicevaluator;
-int	_devicekeyPress;
-int	_devicekeyRelease;
-int	_devicebuttonPress;
-int	_devicebuttonRelease;
-int	_devicemotionNotify;
-int	_devicefocusIn;
-int	_devicefocusOut;
-int	_proximityin;
-int	_proximityout;
-int	_devicestateNotify;
-int	_devicemappingNotify;
-int	_changedeviceNotify;
-int	_devicekeystateNotify;
-int	_devicebuttonstateNotify;
-XEvent	save_event, emptyevent;
-
-char *XExtErrorList[] = {
-	/* BadDevice	*/	"BadDevice, invalid or uninitialized input device",
-	/* BadEvent	*/	"BadEvent, invalid event type",
-	/* BadMode	*/	"BadMode, invalid mode parameter",
-	/* BadClass	*/	"BadClass, invalid event class",
+static /* const */ XExtensionHooks xinput_extension_hooks = {
+    NULL,				/* create_gc */
+    NULL,				/* copy_gc */
+    NULL,				/* flush_gc */
+    NULL,				/* free_gc */
+    NULL,				/* create_font */
+    NULL,				/* free_font */
+    XInputClose,			/* close_display */
+    XInputWireToEvent,			/* wire_to_event */
+    XInputEventToWire,			/* event_to_wire */
+    NULL,				/* error */
+    XInputError,			/* error_string */
 };
-int XExtErrorListSize = sizeof(XExtErrorList);
 
+static char *XInputErrorList[] = {
+	"BadDevice, invalid or uninitialized input device", /* BadDevice */
+	"BadEvent, invalid event type",			    /* BadEvent	*/	
+	"BadMode, invalid mode parameter",		    /* BadMode	*/
+	"BadClass, invalid event class",		    /* BadClass	*/	
+};
+
+XEXT_GENERATE_FIND_DISPLAY (XInput_find_display, xinput_info, 
+	xinput_extension_name, &xinput_extension_hooks, IEVENTS, NULL)
+
+static XEXT_GENERATE_ERROR_STRING (XInputError, xinput_extension_name,
+				   IERRORS, XInputErrorList)
 /***********************************************************************
  *
  * Check to see if the input extension is installed in the server.
@@ -89,55 +89,17 @@ CheckExtInit(dpy, major_version)
     register	Display *dpy;
     register	int	major_version;
     {
-    int			i;
     XExtensionVersion 	*ext;
-    XExtCodes		*XInitExtension(), *ret;
-    extern Bool 	_XUnknownWireEvent();
-    char		*XExtError ();
-    int			XExtClose ();
+    XExtDisplayInfo 	*info = XInput_find_display (dpy);
 
-    if (connections[dpy->fd] == 0) 
+    XInputCheckExtension (dpy, info, -1);
+
+    if (info->data == NULL)
 	{
-	ret = XInitExtension( dpy, INAME);
-	if (ret == NULL)
-	    {
-    	    UnlockDisplay(dpy);
+	info->data = (caddr_t) Xmalloc (sizeof (XEvent));
+	if (!info->data)
 	    return (-1);
-	    }
-	connections[dpy->fd] = ret;
-	IReqCode = ret->major_opcode;
-
-	BadDevice = ret->first_error;
-	BadEvent = BadDevice+1;
-	BadMode = BadEvent+1;
-	BadClass = BadClass+1;
-	_devicevaluator  = ret->first_event;
-	_devicekeyPress = _devicevaluator+1;
-	_devicekeyRelease = _devicekeyPress+1;
-	_devicebuttonPress = _devicekeyRelease+1;
-	_devicebuttonRelease = _devicebuttonPress+1;
-	_devicemotionNotify = _devicebuttonRelease+1;
-	_devicefocusIn = _devicemotionNotify+1;
-	_devicefocusOut = _devicefocusIn+1;
-	_proximityin = _devicefocusOut+1;
-	_proximityout = _proximityin+1;
-	_devicestateNotify = _proximityout+1;
-	_devicemappingNotify = _devicestateNotify+1;
-	_changedeviceNotify = _devicemappingNotify+1;
-	_devicekeystateNotify = _changedeviceNotify+1;
-	_devicebuttonstateNotify = _devicekeystateNotify+1;
-	XESetErrorString (dpy, ret->extension, XExtError);
-	XESetCloseDisplay (dpy, ret->extension, XExtClose);
 	}
-    else
-	IReqCode = connections[dpy->fd]->major_opcode;
-
-    if (dpy->event_vec[_devicevaluator] == _XUnknownWireEvent)
-	for (i=0; i<IEVENTS; i++)
-	    {
-	    XESetWireToEvent (dpy, _devicevaluator+i, ExtWireToEvent);
-	    XESetEventToWire (dpy, _devicevaluator+i, _XExtEventToWire);
-	    }
 
     if (major_version > Dont_Check)
 	{
@@ -153,75 +115,23 @@ CheckExtInit(dpy, major_version)
     return (0);
     }
 
-/*****************************************************************************
- *
- * Error handling routine.
- *
- */
-
-char *
-XExtError (dpy, code, codes, buffer, nbytes)
-    Display	*dpy;
-    int		code;
-    XExtCodes	*codes;
-    char	*buffer;
-    int		nbytes;
-    {
-    int	 error = code - codes->first_error;
-    char buf[32];
-    char *defaultp = NULL;
-
-    if (error <= XExtErrorListSize/ sizeof (char *)) 
-	{
-	defaultp =  XExtErrorList[error];
-	XGetErrorDatabaseText(dpy, "XRequestMajor", buf, defaultp, buffer, 
-		nbytes);
-	}
-    }
-
-/*****************************************************************************
+/***********************************************************************
  *
  * Close display routine.
  *
  */
 
-XExtClose (dpy, codes)
-    Display	*dpy;
-    XExtCodes	*codes;
+static int
+XInputClose (dpy, codes)
+    Display *dpy;
+    XExtCodes *codes;
     {
-    connections[dpy->fd] = NULL;
+    XExtDisplayInfo 	*info = XInput_find_display (dpy);
+
+    XFree(info->data);
+    return XextRemoveDisplay (xinput_info, dpy);
     }
 
-/*****************************************************************************
- *
- *
- * We should be using the corresponding routine in XlibInt.c, but they
- * declared it static.  We also need to check for DeviceStateNotify 
- * rather than KeymapNotify.
- *
- */
-static unsigned long
-_ExtSetLastRequestRead(dpy, rep)
-    register Display *dpy;
-    register xGenericReply *rep;
-{
-    register unsigned long	newseq, lastseq;
-
-    newseq = (dpy->last_request_read & ~((unsigned long)0xffff)) |
-	     rep->sequenceNumber;
-    lastseq = dpy->last_request_read;
-    while (newseq < lastseq) {
-	newseq += 0x10000;
-	if (newseq > dpy->request) {
-	    (void) fprintf(stderr, "sequence lost!\n");
-	    newseq -= 0x10000;
-	    break;
-	}
-    }
-
-    dpy->last_request_read = newseq;
-    return(newseq);
-}
 
 int
 Ones(mask)  
@@ -241,34 +151,39 @@ Ones(mask)
  *
  */
 
-ExtWireToEvent (dpy, re, event)
+static Bool
+XInputWireToEvent (dpy, re, event)
     Display	*dpy;
     XEvent	*re;
     xEvent	*event;
     {
-    XEvent	*tmp = &save_event;
     xEvent	nevent;
-    unsigned	int	type;
+    unsigned	int	type, reltype;
     unsigned	int	ret = 1;
     unsigned	int	i;
+    XExtDisplayInfo 	*info = XInput_find_display (dpy);
+    XEvent		*save = (XEvent *) info->data;
 
     type = event->u.u.type & 0x7f;
+    reltype = (type - info->codes->first_event);
 
-    if (type != _devicevaluator && 
-	type != _devicekeystateNotify &&
-	type != _devicebuttonstateNotify)
+    if (reltype != XI_DeviceValuator && 
+	reltype != XI_DeviceKeystateNotify &&
+	reltype != XI_DeviceButtonstateNotify)
 	{
-	*tmp = emptyevent;
-        tmp->type = type;
-        ((XAnyEvent *)tmp)->serial = _ExtSetLastRequestRead(dpy,
+	*save = emptyevent;
+        save->type = type;
+        ((XAnyEvent *)save)->serial = _XSetLastRequestRead(dpy,
 	    (xGenericReply *)event);
-        ((XAnyEvent *)tmp)->send_event = ((event->u.u.type & 0x80) != 0);
-        ((XAnyEvent *)tmp)->display = dpy;
+        ((XAnyEvent *)save)->send_event = ((event->u.u.type & 0x80) != 0);
+        ((XAnyEvent *)save)->display = dpy;
 	}
 	
-    if (type == _devicemotionNotify)
+    switch (reltype)
+	{
+	case XI_DeviceMotionNotify:
 	    {
-	    register XDeviceMotionEvent *ev = (XDeviceMotionEvent*) &save_event;
+	    register XDeviceMotionEvent *ev = (XDeviceMotionEvent*) save;
 	    deviceKeyButtonPointer *ev2 = (deviceKeyButtonPointer *) event;
 
 	    ev->root 		= ev2->root;
@@ -284,10 +199,12 @@ ExtWireToEvent (dpy, re, event)
 	    ev->is_hint 	= ev2->detail;
 	    ev->deviceid	= ev2->deviceid & DEVICE_BITS;
     	    return (DONT_ENQUEUE);
+	    break;
 	    }
-    else if (type == _devicekeyPress || type == _devicekeyRelease)
+	case XI_DeviceKeyPress:
+	case XI_DeviceKeyRelease:
 	    {
-	    register XDeviceKeyEvent *ev = (XDeviceKeyEvent*) &save_event;
+	    register XDeviceKeyEvent *ev = (XDeviceKeyEvent*) save;
 	    deviceKeyButtonPointer *ev2 = (deviceKeyButtonPointer *) event;
 
 	    ev->root 		= ev2->root;
@@ -306,13 +223,15 @@ ExtWireToEvent (dpy, re, event)
 		return (DONT_ENQUEUE);
 	    else
 		{
-		*re = save_event;
+		*re = *save;
 		return (ENQUEUE_EVENT);
 		}
+	    break;
 	    }
-    else if (type == _devicebuttonPress || type == _devicebuttonRelease)
+	case XI_DeviceButtonPress:
+	case XI_DeviceButtonRelease:
 	    {
-	    register XDeviceButtonEvent *ev = (XDeviceButtonEvent*) &save_event;
+	    register XDeviceButtonEvent *ev = (XDeviceButtonEvent*) save;
 	    deviceKeyButtonPointer *ev2 = (deviceKeyButtonPointer *) event;
 
 	    ev->root 		= ev2->root;
@@ -331,14 +250,16 @@ ExtWireToEvent (dpy, re, event)
 		return (DONT_ENQUEUE);
 	    else
 		{
-		*re = save_event;
+		*re = *save;
 		return (ENQUEUE_EVENT);
 		}
+	    break;
 	    }
-    else if (type == _proximityin || type == _proximityout)
+	case XI_ProximityIn:
+	case XI_ProximityOut:
 	    {
 	    register XProximityNotifyEvent *ev = 
-		(XProximityNotifyEvent *) &save_event;
+		(XProximityNotifyEvent *) save;
 	    deviceKeyButtonPointer *ev2 = (deviceKeyButtonPointer *) event;
 
 	    ev->root 		= ev2->root;
@@ -356,18 +277,20 @@ ExtWireToEvent (dpy, re, event)
 		return (DONT_ENQUEUE);
 	    else
 		{
-		*re = save_event;
+		*re = *save;
 		return (ENQUEUE_EVENT);
 		}
-	}
-    else if (type == _devicevaluator)
+	    break;
+	    }
+	case XI_DeviceValuator:
 	    {
 	    deviceValuator *xev = (deviceValuator *) event;
+	    int save_type = save->type - info->codes->first_event;
 
-	    if (save_event.type == _devicekeyPress ||
-	        save_event.type == _devicekeyRelease)
+	    if (save_type == XI_DeviceKeyPress ||
+	        save_type == XI_DeviceKeyRelease)
 		{
-	        XDeviceKeyEvent *kev = (XDeviceKeyEvent*) &save_event;
+	        XDeviceKeyEvent *kev = (XDeviceKeyEvent*) save;
 		kev->device_state = xev->device_state;
 		if (kev->axes_count == 0)
 		    {
@@ -379,10 +302,10 @@ ExtWireToEvent (dpy, re, event)
 		for (i=0; i<xev->num_valuators; i++)
 		    kev->axis_data[xev->first_valuator+i] = xev->valuators[i];
 		}
-	    else if (save_event.type == _devicebuttonPress ||
-	        save_event.type == _devicebuttonRelease)
+	    else if (save_type == XI_DeviceButtonPress ||
+	        save_type == XI_DeviceButtonRelease)
 		{
-	        XDeviceButtonEvent *bev = (XDeviceButtonEvent*) &save_event;
+	        XDeviceButtonEvent *bev = (XDeviceButtonEvent*) save;
 		bev->device_state = xev->device_state;
 		if (bev->axes_count == 0)
 		    {
@@ -396,9 +319,9 @@ ExtWireToEvent (dpy, re, event)
 		for (i=0; i<xev->num_valuators; i++)
 		    bev->axis_data[xev->first_valuator+i] = xev->valuators[i];
 		}
-	    else if (save_event.type == _devicemotionNotify) 
+	    else if (save_type == XI_DeviceMotionNotify) 
 		{
-	        XDeviceMotionEvent *mev = (XDeviceMotionEvent*) &save_event;
+	        XDeviceMotionEvent *mev = (XDeviceMotionEvent*) save;
 		mev->device_state = xev->device_state;
 		if (mev->axes_count == 0)
 		    {
@@ -412,11 +335,11 @@ ExtWireToEvent (dpy, re, event)
 		for (i=0; i<xev->num_valuators; i++)
 		    mev->axis_data[xev->first_valuator+i] = xev->valuators[i];
 		}
-	    else if (save_event.type == _proximityin ||
-	        save_event.type == _proximityout)
+	    else if (save_type == XI_ProximityIn ||
+	        save_type == XI_ProximityOut)
 		{
 	        XProximityNotifyEvent *pev = 
-			(XProximityNotifyEvent*) &save_event;
+			(XProximityNotifyEvent*) save;
 		pev->device_state = xev->device_state;
 		if (pev->axes_count == 0)
 		    {
@@ -428,10 +351,10 @@ ExtWireToEvent (dpy, re, event)
 		for (i=0; i<xev->num_valuators; i++)
 		    pev->axis_data[xev->first_valuator+i] = xev->valuators[i];
 		}
-	    else if (save_event.type == _devicestateNotify)
+	    else if (save_type == XI_DeviceStateNotify)
 		{
 	        XDeviceStateNotifyEvent *sev = 
-			(XDeviceStateNotifyEvent*) &save_event;
+			(XDeviceStateNotifyEvent*) save;
 		XInputClass *any = (XInputClass *) &sev->data[0];
 		XValuatorStatus *v;
 
@@ -449,159 +372,170 @@ ExtWireToEvent (dpy, re, event)
 		return (DONT_ENQUEUE);
 	    else
 		{
-		*re = save_event;
+		*re = *save;
 		return (ENQUEUE_EVENT);
 		}
+	    break;
 	    }
-    else if (type == _devicefocusIn || type == _devicefocusOut)
-	{
-	register XDeviceFocusChangeEvent *ev = (XDeviceFocusChangeEvent *) re;
-	deviceFocus *fev = (deviceFocus *) event;
+	case XI_DeviceFocusIn:
+	case XI_DeviceFocusOut:
+	    {
+	    register XDeviceFocusChangeEvent *ev = 
+		(XDeviceFocusChangeEvent *) re;
+	    deviceFocus *fev = (deviceFocus *) event;
 
-	*ev			= *((XDeviceFocusChangeEvent *) &save_event);
-	ev->window 		= fev->window;
-	ev->time   		= fev->time;
-	ev->mode		= fev->mode;
-	ev->detail		= fev->detail;
-	ev->deviceid 		= fev->deviceid & DEVICE_BITS;
-    	return (ENQUEUE_EVENT);
-	}
-    else if (type == _devicestateNotify)
-	{
-	XDeviceStateNotifyEvent *stev = (XDeviceStateNotifyEvent *) &save_event;
-	deviceStateNotify *sev = (deviceStateNotify *) event;
-	XKeyStatus *kstev;
-	XButtonStatus *bev;
-	XValuatorStatus *vev;
-	char *data;
+	    *ev			= *((XDeviceFocusChangeEvent *) save);
+	    ev->window 		= fev->window;
+	    ev->time   		= fev->time;
+	    ev->mode		= fev->mode;
+	    ev->detail		= fev->detail;
+	    ev->deviceid 		= fev->deviceid & DEVICE_BITS;
+    	    return (ENQUEUE_EVENT);
+	    break;
+	    }
+	case XI_DeviceStateNotify:
+	    {
+	    XDeviceStateNotifyEvent *stev = 
+		(XDeviceStateNotifyEvent *) save;
+	    deviceStateNotify *sev = (deviceStateNotify *) event;
+	    XKeyStatus *kstev;
+	    XButtonStatus *bev;
+	    XValuatorStatus *vev;
+	    char *data;
 
-	stev->window 		= dpy->current;
-	stev->deviceid 		= sev->deviceid & DEVICE_BITS;
-	stev->time     		= sev->time;
-	stev->num_classes	 	= Ones (sev->classes_reported);
- 	data = (char *) &stev->data[0];
-	if (sev->classes_reported & (1 << KeyClass))
-	    {
-	    register XKeyStatus *kstev = (XKeyStatus *) data;
-	    kstev->class = KeyClass;
-	    kstev->length = sizeof (XKeyStatus);
-	    kstev->num_keys = 32;
-	    bcopy ((char *) &sev->keys[0], (char *) &kstev->keys[0], 4);
-	    data += sizeof (XKeyStatus);
+	    stev->window 		= dpy->current;
+	    stev->deviceid 		= sev->deviceid & DEVICE_BITS;
+	    stev->time     		= sev->time;
+	    stev->num_classes	 	= Ones (sev->classes_reported);
+ 	    data = (char *) &stev->data[0];
+	    if (sev->classes_reported & (1 << KeyClass))
+	        {
+	        register XKeyStatus *kstev = (XKeyStatus *) data;
+	        kstev->class = KeyClass;
+	        kstev->length = sizeof (XKeyStatus);
+	        kstev->num_keys = 32;
+	        bcopy ((char *) &sev->keys[0], (char *) &kstev->keys[0], 4);
+	        data += sizeof (XKeyStatus);
+	        }
+	    if (sev->classes_reported & (1 << ButtonClass))
+	        {
+	        register XButtonStatus *bev = (XButtonStatus *) data;
+	        bev->class = ButtonClass;
+	        bev->length = sizeof (XButtonStatus);
+	        bev->num_buttons = 32;
+	        bcopy ((char *) sev->buttons, (char *) bev->buttons, 4);
+	        data += sizeof (XButtonStatus);
+	        }
+	    if (sev->classes_reported & (1 << ValuatorClass))
+	        {
+	        register XValuatorStatus *vev = (XValuatorStatus *) data;
+	        vev->class = ValuatorClass;
+	        vev->length = sizeof (XValuatorStatus);
+	        vev->num_valuators = 3;
+	        for (i=0; i<3; i++)
+		    vev->valuators[i] = sev->valuators[i];
+	        data += sizeof (XValuatorStatus);
+	        }
+    	    if (sev->deviceid & MORE_EVENTS)
+	        return (DONT_ENQUEUE);
+	    else
+	        {
+	        *re = *save;
+	        stev = (XDeviceStateNotifyEvent *) re;
+	        return (ENQUEUE_EVENT);
+	        }
+	    break;
 	    }
-	if (sev->classes_reported & (1 << ButtonClass))
+	case XI_DeviceKeystateNotify:
 	    {
-	    register XButtonStatus *bev = (XButtonStatus *) data;
-	    bev->class = ButtonClass;
-	    bev->length = sizeof (XButtonStatus);
-	    bev->num_buttons = 32;
-	    bcopy ((char *) sev->buttons, (char *) bev->buttons, 4);
-	    data += sizeof (XButtonStatus);
-	    }
-	if (sev->classes_reported & (1 << ValuatorClass))
-	    {
-	    register XValuatorStatus *vev = (XValuatorStatus *) data;
-	    vev->class = ValuatorClass;
-	    vev->length = sizeof (XValuatorStatus);
-	    vev->num_valuators = 3;
-	    for (i=0; i<3; i++)
-		vev->valuators[i] = sev->valuators[i];
-	    data += sizeof (XValuatorStatus);
-	    }
-    	if (sev->deviceid & MORE_EVENTS)
-	    return (DONT_ENQUEUE);
-	else
-	    {
-	    *re = save_event;
-	    stev = (XDeviceStateNotifyEvent *) re;
-	    return (ENQUEUE_EVENT);
-	    }
-	}
-    else if (type == _devicekeystateNotify)
-	{
-	int i;
-	XInputClass *anyclass;
-	register XKeyStatus *kv;
-	deviceKeyStateNotify *ksev = (deviceKeyStateNotify *) event;
-	XDeviceStateNotifyEvent *kstev = 
-		(XDeviceStateNotifyEvent *) &save_event;
+	    int i;
+	    XInputClass *anyclass;
+	    register XKeyStatus *kv;
+	    deviceKeyStateNotify *ksev = (deviceKeyStateNotify *) event;
+	    XDeviceStateNotifyEvent *kstev = 
+		(XDeviceStateNotifyEvent *) save;
 
-	anyclass = (XInputClass *) &kstev->data[0];
-	for (i=0; i<kstev->num_classes; i++)
-	    if (anyclass->class == KeyClass)
-		break;
-	    else 
-		anyclass = (XInputClass *) ((char *) anyclass + 
+	    anyclass = (XInputClass *) &kstev->data[0];
+	    for (i=0; i<kstev->num_classes; i++)
+	        if (anyclass->class == KeyClass)
+		    break;
+	        else 
+		    anyclass = (XInputClass *) ((char *) anyclass + 
 			anyclass->length);
 	
-	kv = (XKeyStatus *) anyclass;
-	kv->num_keys = 256;
-	bcopy ((char *) ksev->keys, (char *) &kv->keys[4], 28);
-    	if (ksev->deviceid & MORE_EVENTS)
-	    return (DONT_ENQUEUE);
-	else
-	    {
-	    *re = save_event;
-	    kstev = (XDeviceStateNotifyEvent *) re;
-	    return (ENQUEUE_EVENT);
+	    kv = (XKeyStatus *) anyclass;
+	    kv->num_keys = 256;
+	    bcopy ((char *) ksev->keys, (char *) &kv->keys[4], 28);
+    	    if (ksev->deviceid & MORE_EVENTS)
+	        return (DONT_ENQUEUE);
+	    else
+	        {
+	        *re = *save;
+	        kstev = (XDeviceStateNotifyEvent *) re;
+	        return (ENQUEUE_EVENT);
+	        }
+	    break;
 	    }
-	}
-    else if (type == _devicebuttonstateNotify)
-	{
-	int i;
-	XInputClass *anyclass;
-	register XButtonStatus *bv;
-	deviceButtonStateNotify *bsev = (deviceButtonStateNotify *) event;
-	XDeviceStateNotifyEvent *bstev = 
-		(XDeviceStateNotifyEvent *) &save_event;
+	case XI_DeviceButtonstateNotify:
+	    {
+	    int i;
+	    XInputClass *anyclass;
+	    register XButtonStatus *bv;
+	    deviceButtonStateNotify *bsev = (deviceButtonStateNotify *) event;
+	    XDeviceStateNotifyEvent *bstev = 
+		(XDeviceStateNotifyEvent *) save;
 
 
-	anyclass = (XInputClass *) &bstev->data[0];
-	for (i=0; i<bstev->num_classes; i++)
-	    if (anyclass->class == ButtonClass)
-		break;
-	    else 
-		anyclass = (XInputClass *) ((char *) anyclass + 
+	    anyclass = (XInputClass *) &bstev->data[0];
+	    for (i=0; i<bstev->num_classes; i++)
+	        if (anyclass->class == ButtonClass)
+		    break;
+	        else 
+		    anyclass = (XInputClass *) ((char *) anyclass + 
 			anyclass->length);
 	
-	bv = (XButtonStatus *) anyclass;
-	bv->num_buttons = 256;
-	bcopy ((char *) bsev->buttons, (char *) &bv->buttons[4], 28);
-    	if (bsev->deviceid & MORE_EVENTS)
-	    return (DONT_ENQUEUE);
-	else
-	    {
-	    *re = save_event;
-	    bstev = (XDeviceStateNotifyEvent *) re;
-	    return (ENQUEUE_EVENT);
+	    bv = (XButtonStatus *) anyclass;
+	    bv->num_buttons = 256;
+	    bcopy ((char *) bsev->buttons, (char *) &bv->buttons[4], 28);
+    	    if (bsev->deviceid & MORE_EVENTS)
+	        return (DONT_ENQUEUE);
+	    else
+	        {
+	        *re = *save;
+	        bstev = (XDeviceStateNotifyEvent *) re;
+	        return (ENQUEUE_EVENT);
+	        }
+	    break;
 	    }
-	}
-    else if (type == _devicemappingNotify)
-	{
-	register XDeviceMappingEvent *ev = (XDeviceMappingEvent *) re;
-	deviceMappingNotify *ev2 = (deviceMappingNotify *) event;
+	case XI_DeviceMappingNotify:
+	    {
+	    register XDeviceMappingEvent *ev = (XDeviceMappingEvent *) re;
+	    deviceMappingNotify *ev2 = (deviceMappingNotify *) event;
 
-	*ev			= *((XDeviceMappingEvent *) &save_event);
-	ev->first_keycode 	= ev2->firstKeyCode;
-	ev->request 		= ev2->request;
-	ev->count 		= ev2->count;
-	ev->time  		= ev2->time;
-	ev->deviceid 		= ev2->deviceid & DEVICE_BITS;
-    	return (ENQUEUE_EVENT);
-	}
-    else if (type == _changedeviceNotify)
-	{
-	register XChangeDeviceNotifyEvent *ev = (XChangeDeviceNotifyEvent *) re;
-	changeDeviceNotify *ev2 = (changeDeviceNotify *) event;
+	    *ev			= *((XDeviceMappingEvent *) save);
+	    ev->first_keycode 	= ev2->firstKeyCode;
+	    ev->request 		= ev2->request;
+	    ev->count 		= ev2->count;
+	    ev->time  		= ev2->time;
+	    ev->deviceid 		= ev2->deviceid & DEVICE_BITS;
+    	    return (ENQUEUE_EVENT);
+	    }
+	case XI_ChangeDeviceNotify:
+	    {
+	    register XChangeDeviceNotifyEvent *ev = 
+		(XChangeDeviceNotifyEvent *) re;
+	    changeDeviceNotify *ev2 = (changeDeviceNotify *) event;
 
-	*ev			= *((XChangeDeviceNotifyEvent *) &save_event);
-	ev->request 		= ev2->request;
-	ev->time  		= ev2->time;
-	ev->deviceid 		= ev2->deviceid & DEVICE_BITS;
-    	return (ENQUEUE_EVENT);
+	    *ev			= *((XChangeDeviceNotifyEvent *) save);
+	    ev->request 		= ev2->request;
+	    ev->time  		= ev2->time;
+	    ev->deviceid 		= ev2->deviceid & DEVICE_BITS;
+    	    return (ENQUEUE_EVENT);
+	    }
+	default:
+	    printf ("XInputWireToEvent: UNKNOWN WIRE EVENT! type=%d\n",type);
+	    break;
 	}
-    else
-	printf ("ExtWireToEvent: UNKNOWN WIRE EVENT! type=%d\n",type);
 
     return (DONT_ENQUEUE);
     }

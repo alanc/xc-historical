@@ -34,8 +34,7 @@ SOFTWARE.
 #include "XIproto.h"
 #include "Xlibint.h"
 #include "XInput.h"
-
-extern int	IReqCode;
+#include "extutil.h"
 
 int
 XChangePointerDevice (dpy, dev, xaxis, yaxis)
@@ -47,13 +46,14 @@ XChangePointerDevice (dpy, dev, xaxis, yaxis)
     int			rlen;
     xChangePointerDeviceReq 	*req;
     xChangePointerDeviceReply 	rep;
+    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return (NoSuchExtension);
 
     GetReq(ChangePointerDevice,req);		
-    req->reqType = IReqCode;
+    req->reqType = info->codes->major_opcode;
     req->ReqType = X_ChangePointerDevice;
     req->deviceid = dev->device_id;
     req->xaxis = xaxis;

@@ -34,8 +34,7 @@ SOFTWARE.
 #include "XIproto.h"
 #include "Xlibint.h"
 #include "XInput.h"
-
-extern	int	IReqCode;
+#include "extutil.h"
 
 int
 XChangeDeviceKeyMapping (dpy, dev, first, syms_per_code, keysyms, count)
@@ -48,13 +47,14 @@ XChangeDeviceKeyMapping (dpy, dev, first, syms_per_code, keysyms, count)
     {
     register long nbytes;
     xChangeDeviceKeyMappingReq *req;
+    XExtDisplayInfo 	*info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return (NoSuchExtension);
 
     GetReq(ChangeDeviceKeyMapping,req);
-    req->reqType = IReqCode;
+    req->reqType = info->codes->major_opcode;
     req->ReqType = X_ChangeDeviceKeyMapping;
     req->deviceid = dev->device_id;
     req->firstKeyCode = first;

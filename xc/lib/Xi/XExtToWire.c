@@ -1,4 +1,4 @@
-/* $XConsortium: XExtToWire.c,v 1.2 89/09/25 16:20:11 gms Exp $ */
+/* $XConsortium: XExtToWire.c,v 1.3 89/11/11 15:18:30 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -28,40 +28,29 @@ SOFTWARE.
  *
  *	XExtToWire.c - reformat an XEvent into a wire event.
  */
+
 #define NEED_EVENTS
 #define NEED_REPLIES
 
 #include "Xlibint.h"
 #include "XInput.h"
 #include "XIproto.h"
-
-extern	int	_devicevaluator;
-extern	int	_devicekeyPress;
-extern	int	_devicekeyRelease;
-extern	int	_devicebuttonPress;
-extern	int	_devicebuttonRelease;
-extern	int	_devicemotionNotify;
-extern	int	_devicefocusIn;
-extern	int	_devicefocusOut;
-extern	int	_proximityin;
-extern	int	_proximityout;
-extern	int	_devicestateNotify;
-extern	int	_devicemappingNotify;
-extern	int	_changedeviceNotify;
-extern	int	_devicekeystateNotify;
-extern	int	_devicebuttonstateNotify;
+#include "extutil.h"
 
 Status
-_XExtEventToWire(dpy, re, event, count)
+XInputEventToWire(dpy, re, event, count)
     register Display *dpy;	/* pointer to display structure */
-    register XEvent *re;	/* pointer to where event should be reformatted */
+    register XEvent *re;	/* pointer to client event */
     register xEvent **event;	/* wire protocol event */
     register int *count;
     {
     int	i;
+    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
-    if (re->type == _devicekeyPress ||
-        re->type == _devicekeyRelease)
+    switch ((re->type & 0x7f) - info->codes->first_event) 
+	{
+	case XI_DeviceKeyPress:
+	case XI_DeviceKeyRelease:
 	    {
 	    register XDeviceKeyEvent *ev = (XDeviceKeyEvent*) re;
 	    register deviceKeyButtonPointer *kev;
@@ -89,7 +78,7 @@ _XExtEventToWire(dpy, re, event, count)
 		{
 		kev->deviceid |= MORE_EVENTS;
 		vev = (deviceValuator *) ++kev;
-		vev->type = _devicevaluator;
+		vev->type = info->codes->first_event + XI_DeviceValuator;
 		vev->deviceid = ev->deviceid;
 		vev->device_state = ev->device_state;
 		vev->first_valuator = 0;
@@ -97,9 +86,10 @@ _XExtEventToWire(dpy, re, event, count)
 		for (i=0; i<vev->num_valuators; i++)
 		    vev->valuators[i] = ev->axis_data[i];
 		}
+	    break;
 	    }
-    else if (re->type == _proximityin ||
-	     re->type == _proximityout)
+	case XI_ProximityIn:
+	case XI_ProximityOut:
 	    {
 	    register XProximityNotifyEvent *ev =  
 		(XProximityNotifyEvent *) re;
@@ -127,7 +117,7 @@ _XExtEventToWire(dpy, re, event, count)
 		{
 		pev->deviceid |= MORE_EVENTS;
 		vev = (deviceValuator *) ++pev;
-		vev->type = _devicevaluator;
+		vev->type = info->codes->first_event + XI_DeviceValuator;
 		vev->deviceid = ev->deviceid;
 		vev->device_state = ev->device_state;
 		vev->first_valuator = 0;
@@ -135,9 +125,10 @@ _XExtEventToWire(dpy, re, event, count)
 		for (i=0; i<vev->num_valuators; i++)
 		    vev->valuators[i] = ev->axis_data[i];
 		}
+	    break;
 	    }
-    else if (re->type == _devicebuttonPress ||
-	     re->type == _devicebuttonRelease)
+	case XI_DeviceButtonPress:
+	case XI_DeviceButtonRelease:
 	    {
 	    register XDeviceButtonEvent *ev =  
 		(XDeviceButtonEvent *) re;
@@ -166,7 +157,7 @@ _XExtEventToWire(dpy, re, event, count)
 		{
 		bev->deviceid |= MORE_EVENTS;
 		vev = (deviceValuator *) ++bev;
-		vev->type = _devicevaluator;
+		vev->type = info->codes->first_event + XI_DeviceValuator;
 		vev->deviceid = ev->deviceid;
 		vev->device_state = ev->device_state;
 		vev->first_valuator = 0;
@@ -174,8 +165,9 @@ _XExtEventToWire(dpy, re, event, count)
 		for (i=0; i<vev->num_valuators; i++)
 		    vev->valuators[i] = ev->axis_data[i];
 		}
+	    break;
 	    }
-    else if (re->type == _devicemotionNotify)
+	case XI_DeviceMotionNotify:
 	    {
 	    register XDeviceMotionEvent *ev =   
 		(XDeviceMotionEvent *)re;
@@ -204,7 +196,7 @@ _XExtEventToWire(dpy, re, event, count)
 		{
 		mev->deviceid |= MORE_EVENTS;
 		vev = (deviceValuator *) ++mev;
-		vev->type = _devicevaluator;
+		vev->type = info->codes->first_event + XI_DeviceValuator;
 		vev->deviceid = ev->deviceid;
 		vev->device_state = ev->device_state;
 		vev->first_valuator = 0;
@@ -212,9 +204,10 @@ _XExtEventToWire(dpy, re, event, count)
 		for (i=0; i<vev->num_valuators; i++)
 		    vev->valuators[i] = ev->axis_data[i];
 		}
+	    break;
 	    }
-    else if (re->type == _devicefocusIn ||
-	     re->type == _devicefocusOut)
+	case XI_DeviceFocusIn:
+	case XI_DeviceFocusOut:
 	    {
 	    register XDeviceFocusChangeEvent *ev = 
 		(XDeviceFocusChangeEvent *) re;
@@ -230,8 +223,9 @@ _XExtEventToWire(dpy, re, event, count)
 	    fev->detail		= ev->detail;
 	    fev->time		= ev->time;
 	    fev->deviceid	= ev->deviceid;
+	    break;
 	    }
-    else if (re->type == _devicemappingNotify)
+	case XI_DeviceMappingNotify:
 	    {
 	    register XDeviceMappingEvent *ev = (XDeviceMappingEvent *) re;
 	    register deviceMappingNotify *mev;
@@ -246,8 +240,9 @@ _XExtEventToWire(dpy, re, event, count)
 	    mev->count		= ev->count;
 	    mev->time		= ev->time;
 	    mev->deviceid	= ev->deviceid;
+	    break;
 	    }
-    else if (re->type == _devicestateNotify)
+	case XI_DeviceStateNotify:
 	    {
 	    register XDeviceStateNotifyEvent *ev = 
 		(XDeviceStateNotifyEvent *) re;
@@ -304,7 +299,8 @@ _XExtEventToWire(dpy, re, event, count)
 		    if (k->num_keys > 32)
 			{
 		        kev = (deviceKeyStateNotify *) tev++;
-		        kev->type = _devicekeystateNotify;
+		        kev->type = info->codes->first_event + 
+				XI_DeviceKeystateNotify;
 		        kev->deviceid = ev->deviceid;
 		        *sav_id |= MORE_EVENTS;
 			sav_id = &(kev->deviceid);
@@ -322,7 +318,8 @@ _XExtEventToWire(dpy, re, event, count)
 		    if (b->num_buttons > 32)
 			{
 		        bev = (deviceButtonStateNotify *) tev++;
-		        bev->type = _devicebuttonstateNotify;
+		        bev->type = info->codes->first_event + 
+				XI_DeviceButtonstateNotify;
 		        bev->deviceid = ev->deviceid;
 		        *sav_id |= MORE_EVENTS;
 			sav_id = &(bev->deviceid);
@@ -342,7 +339,8 @@ _XExtEventToWire(dpy, re, event, count)
 		    if (val->num_valuators > 3)
 			{
 		        vev = (deviceValuator *) tev++;
-		        vev->type = _devicevaluator;
+		        vev->type = info->codes->first_event + 
+				XI_DeviceValuator;
 		        vev->deviceid = ev->deviceid;
 		        vev->first_valuator = 3;
 		        vev->num_valuators = val->num_valuators - 3;
@@ -354,8 +352,9 @@ _XExtEventToWire(dpy, re, event, count)
 		    }
 		any = (XInputClass *) ((char *) any + any->length);
 		}
+	    break;
 	    }
-    else if (re->type == _changedeviceNotify)
+	case XI_ChangeDeviceNotify:
 	    {
 	    register XChangeDeviceNotifyEvent *ev = 
 		(XChangeDeviceNotifyEvent *) re;
@@ -369,8 +368,10 @@ _XExtEventToWire(dpy, re, event, count)
 	    cev->request 	= ev->request;
 	    cev->time		= ev->time;
 	    cev->deviceid	= ev->deviceid;
+	    break;
 	    }
-    else
-	return(_XUnknownNativeEvent(dpy, re, event));
+	default:
+	    return(_XUnknownNativeEvent(dpy, re, event));
+	}
     return(1);
     }

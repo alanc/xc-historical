@@ -34,8 +34,7 @@ SOFTWARE.
 #include "XIproto.h"
 #include "Xlibint.h"
 #include "XInput.h"
-
-extern int	IReqCode;
+#include "extutil.h"
 
 int
 XAllowDeviceEvents (dpy, dev, event_mode, time)
@@ -44,15 +43,16 @@ XAllowDeviceEvents (dpy, dev, event_mode, time)
     int			event_mode;
     Time		time;
     {       
-    int			rlen;
+    int				rlen;
     xAllowDeviceEventsReq 	*req;
+    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return (NoSuchExtension);
 
     GetReq(AllowDeviceEvents,req);		
-    req->reqType = IReqCode;
+    req->reqType = info->codes->major_opcode;
     req->ReqType = X_AllowDeviceEvents;
     req->deviceid = dev->device_id;
     req->mode = event_mode;
