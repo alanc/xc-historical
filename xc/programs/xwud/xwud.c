@@ -1,10 +1,10 @@
 /* 
- * $Locker: dkk $ 
+ * $Locker: chariot $ 
  */ 
-static char	*rcsid = "$Header: xwud.c,v 1.3 87/06/04 17:04:58 dkk Locked $";
+static char	*rcsid = "$Header: xwud.c,v 1.4 87/06/13 06:34:25 chariot Locked $";
 #include <X11/copyright.h>
 
-/* Copyright 1985, 1986, Massachusetts Institute of Technology */
+/* Copyright 1987 Massachusetts Institute of Technology */
 
 /*
  * xwud.c - MIT Project Athena, X Window system window raster image
@@ -32,10 +32,11 @@ static char	*rcsid = "$Header: xwud.c,v 1.3 87/06/04 17:04:58 dkk Locked $";
  */
 
 #ifndef lint
-static char *rcsid_xwud_c = "$Header: xwud.c,v 1.3 87/06/04 17:04:58 dkk Locked $";
+static char *rcsid_xwud_c = "$Header: xwud.c,v 1.4 87/06/13 06:34:25 chariot Locked $";
 #endif
 
 #include <X11/Xlib.h>
+#include <X11/Xutil.h>
 #include <stdio.h>
 #include <strings.h>
 #include <sys/types.h>
@@ -45,7 +46,6 @@ extern char *calloc();
 #include <X11/XWDFile.h>   /*  Note:  XWDFile.h (in xwd now) 
 			        must be moved to include (or linked) %%*/
 
-#define MAX(a, b) (a) > (b) ? (a) : (b)
 #define MIN(a, b) (a) < (b) ? (a) : (b)
 #define ABS(a) (a) < 0 ? -(a) : (a)
 
@@ -60,6 +60,9 @@ extern char *calloc();
 
 extern int errno;
 
+/* Include routines for parsing commands */
+#include "jowindow.h"
+
 main(argc, argv)
     int argc;
     char **argv;
@@ -67,14 +70,12 @@ main(argc, argv)
     register int i;
     register int *histbuffer;
     register u_short *wbuffer;
-    Display *dpy;
     XImage *image;
     XImage *XCreateImage();
     XSetWindowAttributes attributes;
     Visual *visual;
     register char *buffer;
 
-    int screen;
     int j, status;
     int onebufsize;
     int planes;
@@ -89,10 +90,9 @@ main(argc, argv)
     int win_name_size;
     char *str_index;
     char *file_name;
-    char display[256];
     char *win_name;
     Bool standard_in = True;
-    Bool newcolors = False, debug = False, inverse = False;
+    Bool newcolors = False, debug = False;
 
     XColor *pixcolors, *newpixcolors;
     Window image_win;
@@ -108,33 +108,27 @@ main(argc, argv)
 
     FILE *in_file = stdin;
 
+    INIT_NAME;
+
+    Get_X_Options(&argc, argv);
+
     for (i = 1; i < argc; i++) {
-	str_index = (char *)index (argv[i], ':');
-	if(str_index != NULL) {
-	    (void) strncpy(display,argv[i],sizeof(display));
-	    continue;
-        }
-	str_index = (char *) index (argv [i], '-');
-	if (str_index == NULL) Syntax(argv[0]);
-	if (strncmp(argv[i], "-help", 5) == 0) {
-	    Syntax(argv[0]);
-	}
-	if (strncmp(argv[i], "-in", 4) == 0) {
-	    if (++i >= argc) Syntax(argv[0]);
+	if (!strcmp(argv[i], "-help"))
+	  usage();
+	if (!strcmp(argv[i], "-input")) {
+	    if (++i >= argc) usage();
 	    file_name = argv[i];
 	    standard_in = False;
 	    continue;
 	}
-	if(strcmp(argv[i], "-inverse") == 0) {
-	    inverse = True;
-	    continue;
-	}
-	if(strcmp(argv[i], "-debug") == 0) {
+	if(!strcmp(argv[i], "-debug")) {
 	    debug = True;
 	    continue;
 	}
-	Syntax(argv[0]);
+	usage();
     }
+
+    Resolve_X_Options();
     
     if (!standard_in) {
 	/*
@@ -146,15 +140,6 @@ main(argc, argv)
 	}
     }
     
-    /*
-     * Open the display.
-     */
-    if ((dpy = XOpenDisplay(display)) == NULL) {
-        fprintf(stderr, "%s: Can't open display '%s'\n",
-		argv[0], XDisplayName(display));
-	exit(1);
-    }
-
     /*
      * Read in header information.
      */
@@ -192,7 +177,7 @@ main(argc, argv)
      */
     win_name_size = ABS(header.header_size - sizeof(header));
     if((win_name = calloc((unsigned) win_name_size, sizeof(char))) == NULL)
-      Error("Can't calloc window name storage.");
+      Fatal_Error("Can't calloc window name storage.");
 
     /*
      * Read in window name.
@@ -267,7 +252,7 @@ main(argc, argv)
      * Calloc the pixel buffer.
      */
     if((buffer = calloc(total_buffer_size, 1)) == NULL)
-      Error("Can't calloc data buffer.");
+      Fatal_Error("Can't calloc data buffer.");
     bzero(buffer,total_buffer_size);
 
     /*
@@ -412,7 +397,7 @@ main(argc, argv)
 		    if(header.display_planes > 1)
 			planes >>= 1; /* shift down a bit */
 /* (just once:)		    for(i=0; i<xevent->height; i+=100) {  %%*/
-		      if(inverse) {
+		      if(reverse) {
 			tmp = gc_val->foreground;
 /*  Here we reverse video.
 %*/
@@ -453,7 +438,7 @@ main(argc, argv)
 		    if(header.display_planes > 1)
 			planes >>= 1; /* shift down a bit */
 		    for(i=0; i<xevent->height; i+=100)
-		      if(inverse) {
+		      if(reverse) {
 			tmp = gc_val->foreground;
 /*  Here we reverse video.
 %*/
@@ -538,13 +523,10 @@ ColorEqual(color1, color2)
 /*
  * Report the syntax for calling xwud.
  */
-Syntax(call)
-    char *call;
+usage()
 {
-    fprintf( stderr,
-	"xwud: %s [-help][-debug][-inverse][-in <file>][[host]:vs]\n",
-    	call
-    );
+    outl("%s: %s [-help][-debug][-rv][-input <file>][[host]:vs]\n",
+	 program_name, program_name);
     exit(1);
 }
 
@@ -555,11 +537,11 @@ Syntax(call)
 Error(string)
 	char *string;	/* Error description string. */
 {
-	fprintf(stderr, "xwud: Error => %s\n", string);
+	outl("xwud: Error => %s\n", string);
 
 	if (errno != 0) {
 		perror("xwud");
-		fprintf(stderr, "\n");
+		outl("\n");
 	}
 
 	exit(1);
@@ -723,4 +705,14 @@ read_image (file_name, ifstdin, dpy, planeno)
     (void) fclose(in_file);
 }
 
-/* End of xwud.c */
+
+/*
+ * Tempary replace for not implemented Xlib routine.
+ */
+char *XGetDefault(dpy, name, option_name)
+Display *dpy;
+char *name;
+char *option_name;
+{
+	return(NULL);
+}
