@@ -1,4 +1,4 @@
-/* $XConsortium: XSync.c,v 11.14 88/10/15 12:42:34 jim Exp $ */
+/* $XConsortium: XSync.c,v 11.15 91/01/06 11:48:24 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -17,8 +17,6 @@ without express or implied warranty.
 #define NEED_EVENTS
 #include "Xlibint.h"
 
-extern _XQEvent *_qfree;
-
 /* Synchronize with errors and events, optionally discarding pending events */
 
 XSync (dpy, discard)
@@ -33,8 +31,13 @@ XSync (dpy, discard)
     (void) _XReply (dpy, (xReply *)&rep, 0, xTrue);
 
     if (discard && dpy->head) {
-       ((_XQEvent *)dpy->tail)->next = _qfree;
-       _qfree = (_XQEvent *)dpy->head;
+       _XQEvent *qelt;
+
+       for (qelt=dpy->head; qelt; qelt=qelt->next)
+	   qelt->qserial_num = 0;
+
+       ((_XQEvent *)dpy->tail)->next = dpy->qfree;
+       dpy->qfree = (_XQEvent *)dpy->head;
        dpy->head = dpy->tail = NULL;
        dpy->qlen = 0;
     }

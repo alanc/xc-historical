@@ -1,4 +1,4 @@
-/* $XConsortium: XChkIfEv.c,v 11.10 91/01/05 17:16:31 rws Exp $ */
+/* $XConsortium: XChkIfEv.c,v 11.11 91/01/06 11:44:28 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1987	*/
 
 /*
@@ -15,8 +15,6 @@ without express or implied warranty.
 
 #define NEED_EVENTS
 #include "Xlibint.h"
-
-extern _XQEvent *_qfree;
 
 /* 
  * Check existing events in queue to find if any match.  If so, return.
@@ -37,6 +35,7 @@ Bool XCheckIfEvent (dpy, event, predicate, arg)
 	char *arg;
 {
 	register _XQEvent *prev, *qelt;
+	unsigned long qe_serial = 0;
 	int n;			/* time through count */
 
         LockDisplay(dpy);
@@ -45,22 +44,16 @@ Bool XCheckIfEvent (dpy, event, predicate, arg)
 	    for (qelt = prev ? prev->next : dpy->head;
 		 qelt;
 		 prev = qelt, qelt = qelt->next) {
-		if ((*predicate)(dpy, &qelt->event, arg)) {
+		if(qelt->qserial_num > qe_serial
+		   && (*predicate)(dpy, &qelt->event, arg)) {
 		    *event = qelt->event;
-		    if (prev) {
-			if ((prev->next = qelt->next) == NULL)
-			    dpy->tail = prev;
-		    } else {
-			if ((dpy->head = qelt->next) == NULL)
-			dpy->tail = NULL;
-		    }
-		    qelt->next = _qfree;
-		    _qfree = qelt;
-		    dpy->qlen--;
+		    _XDeq(dpy, prev, qelt);
 		    UnlockDisplay(dpy);
 		    return True;
 		}
 	    }
+	    if (prev)
+		qe_serial = prev->qserial_num;
 	    switch (n) {
 	      case 2:
 		_XEventsQueued(dpy, QueuedAfterReading);
@@ -69,6 +62,9 @@ Bool XCheckIfEvent (dpy, event, predicate, arg)
 		_XFlush(dpy);
 		break;
 	    }
+	    if (prev && prev->qserial_num != qe_serial)
+		/* another thread has snatched this event */
+		prev = NULL;
 	}
 	UnlockDisplay(dpy);
 	return False;

@@ -1,4 +1,4 @@
-/* $XConsortium: XPeekEvent.c,v 11.13 88/09/06 16:09:31 jim Exp $ */
+/* $XConsortium: XPeekEvent.c,v 11.14 91/01/06 11:47:14 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -15,8 +15,6 @@ without express or implied warranty.
 
 #define NEED_EVENTS
 #include "Xlibint.h"
-
-extern _XQEvent *_qfree;
 
 /* 
  * Return the next event in the queue,

@@ -1,4 +1,4 @@
-/* $XConsortium: XWinEvent.c,v 11.18 91/01/06 11:48:48 rws Exp $ */
+/* $XConsortium: XWinEvent.c,v 11.19 91/02/20 18:48:57 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 /*
@@ -22,7 +22,6 @@ without express or implied warranty.
 #define Const /**/
 #endif
 
-extern _XQEvent *_qfree;
 extern long Const _Xevent_to_mask[];
 #define AllPointers (PointerMotionMask|PointerMotionHintMask|ButtonMotionMask)
 #define AllButtons (Button1MotionMask|Button2MotionMask|Button3MotionMask|\
@@ -43,6 +42,7 @@ XWindowEvent (dpy, w, mask, event)
 	register XEvent *event;	/* XEvent to be filled in. */
 {
 	register _XQEvent *prev, *qelt;
+	unsigned long qe_serial;
 
         LockDisplay(dpy);
 	prev = NULL;
@@ -57,20 +57,16 @@ XWindowEvent (dpy, w, mask, event)
 		     (mask & AllPointers) ||
 		     (mask & AllButtons & qelt->event.xmotion.state))) {
 		    *event = qelt->event;
-		    if (prev) {
-			if ((prev->next = qelt->next) == NULL)
-			    dpy->tail = prev;
-		    } else {
-			if ((dpy->head = qelt->next) == NULL)
-			dpy->tail = NULL;
-		    }
-		    qelt->next = _qfree;
-		    _qfree = qelt;
-		    dpy->qlen--;
+		    _XDeq(dpy, prev, qelt);
 		    UnlockDisplay(dpy);
 		    return;
 		}
 	    }
+	    if (prev)
+		qe_serial = prev->qserial_num;
 	    _XReadEvents(dpy);
+	    if (prev && prev->qserial_num != qe_serial)
+		/* another thread has snatched this event */
+		prev = NULL;
 	}
 }

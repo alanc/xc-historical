@@ -1,4 +1,4 @@
-/* $XConsortium: XChkWinEv.c,v 11.20 91/02/17 13:50:40 rws Exp $ */
+/* $XConsortium: XChkWinEv.c,v 11.21 91/02/20 18:48:51 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1987	*/
 
 /*
@@ -16,7 +16,6 @@ without express or implied warranty.
 #define NEED_EVENTS
 #include "Xlibint.h"
 
-extern _XQEvent *_qfree;
 #if __STDC__
 #define Const const
 #else
@@ -40,7 +39,8 @@ Bool XCheckWindowEvent (dpy, w, mask, event)
 	register XEvent *event;	/* XEvent to be filled in. */
 {
  	register _XQEvent *prev, *qelt;
-	int n;              /* time through count */
+	unsigned long qe_serial;
+	int n;			/* time through count */
 
         LockDisplay(dpy);
 	prev = NULL;
@@ -55,20 +55,13 @@ Bool XCheckWindowEvent (dpy, w, mask, event)
 		     (mask & AllPointers) ||
 		     (mask & AllButtons & qelt->event.xmotion.state))) {
 		    *event = qelt->event;
-		    if (prev) {
-			if ((prev->next = qelt->next) == NULL)
-			    dpy->tail = prev;
-		    } else {
-			if ((dpy->head = qelt->next) == NULL)
-			dpy->tail = NULL;
-		    }
-		    qelt->next = _qfree;
-		    _qfree = qelt;
-		    dpy->qlen--;
+		    _XDeq(dpy, prev, qelt);
 		    UnlockDisplay(dpy);
 		    return True;
 		}
 	    }
+	    if (prev)
+		qe_serial = prev->qserial_num;
 	    switch (n) {
 	      case 2:
 		_XEventsQueued(dpy, QueuedAfterReading);
@@ -77,6 +70,9 @@ Bool XCheckWindowEvent (dpy, w, mask, event)
 		_XFlush(dpy);
 		break;
 	    }
+	    if (prev && prev->qserial_num != qe_serial)
+		/* another thread has snatched this event */
+		prev = NULL;
 	}
 	UnlockDisplay(dpy);
 	return False;

@@ -1,5 +1,5 @@
 /* Copyright 	Massachusetts Institute of Technology  1986 */
-/* $XConsortium: XPutBEvent.c,v 11.10 89/11/08 17:07:34 converse Exp $ */
+/* $XConsortium: XPutBEvent.c,v 11.11 91/01/06 11:47:23 rws Exp $ */
 
 /*
 Permission to use, copy, modify, distribute, and sell this software and its
@@ -17,8 +17,6 @@ without express or implied warranty.
 #define NEED_EVENTS
 #include "Xlibint.h"
 
-extern _XQEvent *_qfree;
-
 XPutBackEvent (dpy, event)
 	register Display *dpy;
 	register XEvent *event;
@@ -26,15 +24,16 @@ XPutBackEvent (dpy, event)
 	register _XQEvent *qelt;
 
 	LockDisplay(dpy);
-	if (!_qfree) {
-    	    if ((_qfree = (_XQEvent *) Xmalloc (sizeof (_XQEvent))) == NULL) {
+	if (!dpy->qfree) {
+    	    if ((dpy->qfree = (_XQEvent *) Xmalloc (sizeof (_XQEvent))) == NULL) {
 		UnlockDisplay(dpy);
 		return;
 	    }
-	    _qfree->next = NULL;
+	    dpy->qfree->next = NULL;
 	}
-	qelt = _qfree;
-	_qfree = qelt->next;
+	qelt = dpy->qfree;
+	dpy->qfree = qelt->next;
+	qelt->qserial_num = dpy->next_event_serial_num++;
 	qelt->next = dpy->head;
 	qelt->event = *event;
 	dpy->head = qelt;

@@ -1,4 +1,4 @@
-/* $XConsortium: XChkTypEv.c,v 11.7 88/09/06 16:04:40 jim Exp $ */
+/* $XConsortium: XChkTypEv.c,v 11.8 91/01/06 11:44:31 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1987	*/
 
 /*
@@ -16,7 +16,6 @@ without express or implied warranty.
 #define NEED_EVENTS
 #include "Xlibint.h"
 
-extern _XQEvent *_qfree;
 /* 
  * Check existing events in queue to find if any match.  If so, return.
  * If not, flush buffer and see if any more events are readable. If one
@@ -29,7 +28,8 @@ Bool XCheckTypedEvent (dpy, type, event)
 	register XEvent *event;	/* XEvent to be filled in. */
 {
 	register _XQEvent *prev, *qelt;
-	int n;		/* time through count */
+	unsigned long qe_serial;
+	int n;			/* time through count */
 
         LockDisplay(dpy);
 	prev = NULL;
@@ -39,20 +39,13 @@ Bool XCheckTypedEvent (dpy, type, event)
 		 prev = qelt, qelt = qelt->next) {
 		if (qelt->event.type == type) {
 		    *event = qelt->event;
-		    if (prev) {
-			if ((prev->next = qelt->next) == NULL)
-			    dpy->tail = prev;
-		    } else {
-			if ((dpy->head = qelt->next) == NULL)
-			dpy->tail = NULL;
-		    }
-		    qelt->next = _qfree;
-		    _qfree = qelt;
-		    dpy->qlen--;
+		    _XDeq(dpy, prev, qelt);
 		    UnlockDisplay(dpy);
 		    return True;
 		}
 	    }
+	    if (prev)
+		qe_serial = prev->qserial_num;
 	    switch (n) {
 	      case 2:
 		_XEventsQueued(dpy, QueuedAfterReading);
@@ -61,6 +54,9 @@ Bool XCheckTypedEvent (dpy, type, event)
 		_XFlush(dpy);
 		break;
 	    }
+	    if (prev && prev->qserial_num != qe_serial)
+		/* another thread has snatched this event */
+		prev = NULL;
 	}
 	UnlockDisplay(dpy);
 	return False;

@@ -1,4 +1,4 @@
-/* $XConsortium: XPeekIfEv.c,v 11.12 91/01/05 17:16:43 rws Exp $ */
+/* $XConsortium: XPeekIfEv.c,v 11.13 91/01/06 11:47:15 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -15,8 +15,6 @@ without express or implied warranty.
 
 #define NEED_EVENTS
 #include "Xlibint.h"
-
-extern _XQEvent *_qfree;
 
 /*
  * return the next event in the queue that satisfies the predicate.
@@ -37,6 +35,7 @@ XPeekIfEvent (dpy, event, predicate, arg)
 	char *arg;
 {
 	register _XQEvent *prev, *qelt;
+	unsigned long qe_serial = 0;
 
 	LockDisplay(dpy);
 	prev = NULL;
@@ -44,13 +43,19 @@ XPeekIfEvent (dpy, event, predicate, arg)
 	    for (qelt = prev ? prev->next : dpy->head;
 		 qelt;
 		 prev = qelt, qelt = qelt->next) {
-		if ((*predicate)(dpy, &qelt->event, arg)) {
+		if(qelt->qserial_num > qe_serial
+		   && (*predicate)(dpy, &qelt->event, arg)) {
 		    *event = qelt->event;
 		    UnlockDisplay(dpy);
 		    return;
 		}
 	    }
+	    if (prev)
+		qe_serial = prev->qserial_num;
 	    _XReadEvents(dpy);
+	    if (prev && prev->qserial_num != qe_serial)
+		/* another thread has snatched this event */
+		prev = NULL;
 	}
 }
 
