@@ -1,6 +1,7 @@
        INCLUDES = -I$(TOP) -I$(TOP)/X11
-           OBJS = xclock.o
+LOCAL_LIBRARIES = $(XAWLIB) $(XTOOLLIB) $(XLIB)
+  SYS_LIBRARIES = -lm
            SRCS = xclock.c
+           OBJS = xclock.o
 
-SingleProgramTarget(xclock,$(OBJS),$(XAWLIB) $(XTOOLLIB) $(XLIB),-lm)
-DependTarget()
+ComplexProgramTarget(xclock)
