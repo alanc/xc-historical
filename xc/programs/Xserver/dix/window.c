@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.159 87/08/12 08:30:52 swick Exp $ */
+/* $Header: window.c,v 1.2 87/08/14 12:21:44 newman Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -72,7 +72,7 @@ int screenIsSaved = FALSE;
 static ScreenSaverStuffRec savedScreenInfo[MAXSCREENS];
 
 extern WindowRec WindowTable[];
-extern int (* ReplySwapVector[256]) ();
+extern void (* ReplySwapVector[256]) ();
 
 
 #define INPUTONLY_LEGAL_MASK (CWWinGravity | CWEventMask | \
