@@ -1,9 +1,15 @@
 #include "copyright.h"
 
-/* $Header: XWindow.c,v 11.11 87/06/02 14:58:38 jg Exp $ */
+/* $Header: XWindow.c,v 11.11 87/09/11 08:08:31 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
+
+#define AllMaskBits (CWBackPixmap|CWBackPixel|CWBorderPixmap|\
+		     CWBorderPixel|CWBitGravity|CWWinGravity|\
+		     CWBackingStore|CWBackingPlanes|CWBackingPixel|\
+		     CWOverrideRedirect|CWSaveUnder|CWEventMask|\
+		     CWDontPropagate|CWColormap|CWCursor)
 
 Window XCreateWindow(dpy, parent, x, y, width, height, 
                 borderWidth, depth, class, visual, valuemask, attributes)
@@ -35,6 +41,7 @@ Window XCreateWindow(dpy, parent, x, y, width, height,
     else
 	req->visual = visual->visualid;
     wid = req->wid = XAllocID(dpy);
+    valuemask &= AllMaskBits;
     if (req->mask = valuemask) 
         _XProcessWindowAttributes (dpy, (xChangeWindowAttributesReq *)req, 
 			valuemask, attributes);

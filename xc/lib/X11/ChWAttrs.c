@@ -1,9 +1,15 @@
 #include "copyright.h"
 
-/* $Header: XChWAttrs.c,v 11.6 87/06/02 14:58:53 jg Exp $ */
+/* $Header: XChWAttrs.c,v 11.6 87/09/11 08:01:40 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
+
+#define AllMaskBits (CWBackPixmap|CWBackPixel|CWBorderPixmap|\
+		     CWBorderPixel|CWBitGravity|CWWinGravity|\
+		     CWBackingStore|CWBackingPlanes|CWBackingPixel|\
+		     CWOverrideRedirect|CWSaveUnder|CWEventMask|\
+		     CWDontPropagate|CWColormap|CWCursor)
 
 XChangeWindowAttributes (dpy, w, valuemask, attributes)
     register Display *dpy;
@@ -16,6 +22,7 @@ XChangeWindowAttributes (dpy, w, valuemask, attributes)
     LockDisplay(dpy);
     GetReq(ChangeWindowAttributes,req);
     req->window = w;
+    valuemask &= AllMaskBits;
     if (req->valueMask = valuemask) 
         _XProcessWindowAttributes (dpy, req, valuemask, attributes);
     UnlockDisplay(dpy);
