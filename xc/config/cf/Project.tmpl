@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.90 91/02/13 13:31:36 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.91 91/02/13 16:31:29 keith Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -18,6 +18,19 @@ XCOMM $XConsortium: Project.tmpl,v 1.90 91/02/13 13:31:36 rws Exp $
  */
 #ifndef BuildServer
 #define BuildServer		YES	/* go ahead and build server */
+#endif
+#ifndef BuildPex
+#define BuildPex		NO	/* at least not for alpha */	
+#endif
+#ifndef BuildPexClients
+#define BuildPexClients		BuildPex
+#endif
+#ifndef BuildPexExt
+#if BuildServer
+#define BuildPexExt		BuildPex
+#else
+#define BuildPexExt		NO
+#endif
 #endif
 #ifndef BuildExamples
 #define BuildExamples		NO	/* they take a lot of space */
@@ -126,15 +139,25 @@ XCOMM $XConsortium: Project.tmpl,v 1.90 91/02/13 13:31:36 rws Exp $
 #ifndef ExtensionOSDefines
 #define ExtensionOSDefines /**/
 #endif
+#ifndef ExtensionDefines
 #ifndef PexDefines
+#if BuildPexExt
+#define PexDefines -DPEXEXT
+#else
 #define PexDefines /**/
 #endif
-#ifndef ExtensionDefines
-#if HasShm
-#define ExtensionDefines -DSHAPE -DMULTIBUFFER -DMITMISC -DMITSHM PexDefines ExtensionOSDefines
-#else
-#define ExtensionDefines -DSHAPE -DMULTIBUFFER -DMITMISC PexDefines ExtensionOSDefines
 #endif
+#ifndef ShmDefines
+#if HasShm
+#define ShmDefines -DMITSHM
+#else
+#define ShmDefines /**/
+#endif
+#endif
+#ifndef BaseExtensionDefines
+#define BaseExtensionDefines -DSHAPE -DMULTIBUFFER -DMITMISC PexDefines ShmDefines
+#endif
+#define ExtensionDefines BaseExtensionDefines ExtensionOSDefines
 #endif
 #ifndef ServerExtraDefines
 #define ServerExtraDefines -DXDMCP
@@ -320,7 +343,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.90 91/02/13 13:31:36 rws Exp $
 
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System make variables; this need to be coordinated with rules
-XCOMM $XConsortium: Project.tmpl,v 1.90 91/02/13 13:31:36 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.91 91/02/13 16:31:29 keith Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
