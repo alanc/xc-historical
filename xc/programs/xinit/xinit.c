@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.44 91/01/06 12:07:35 rws Exp $";
+static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.45 91/02/08 11:54:34 rws Exp $";
 #endif /* lint */
 
 /* Copyright    Massachusetts Institute of Technology    1986	*/
@@ -44,6 +44,10 @@ char **newenviron = NULL;
 #if defined(SYSV) && !defined(hpux)
 #define vfork() fork()
 #endif /* SYSV and not hpux */
+
+#if defined(SVR4) || defined(_POSIX_SOURCE)
+#define setpgrp setpgid
+#endif
 
 char *bindir = BINDIR;
 char *server_names[] = {
@@ -113,7 +117,13 @@ extern int	errno;
 
 static shutdown();
 
-sigCatch(sig)
+#ifdef SIGNALRETURNSINT
+#define SIGVAL int
+#else
+#define SIGVAL void
+#endif
+
+SIGVAL sigCatch(sig)
 	int	sig;
 {
 	signal(SIGQUIT, SIG_IGN);
@@ -125,7 +135,7 @@ sigCatch(sig)
 	exit(1);
 }
 
-sigAlarm(sig)
+SIGVAL sigAlarm(sig)
 	int sig;
 {
 #ifdef SYSV
@@ -133,7 +143,7 @@ sigAlarm(sig)
 #endif
 }
 
-void
+SIGVAL
 sigUsr1(sig)
 	int sig;
 {
