@@ -8,9 +8,9 @@
 #define OSMajorVersion    1
 #define OSMinorVersion    50
 #else
-#define OSName            Mach 2.5 Vers 0.71
-#define OSMajorVersion    0
-#define OSMinorVersion    71
+#define OSName            Mach 2.5 Vers 1.10
+#define OSMajorVersion    1
+#define OSMinorVersion    10
 #endif
 #define BootstrapCFlags		-Dluna
 #define StandardDefines		-Dluna
@@ -36,5 +36,5 @@
 #endif
 
 
-XCOMM platform:  $XConsortium: luna.cf,v 1.3 90/12/27 10:09:00 rws Exp $
+XCOMM platform:  $XConsortium: luna.cf,v 1.4 91/01/08 10:12:18 rws Exp $
 XCOMM operating system:  OSName
