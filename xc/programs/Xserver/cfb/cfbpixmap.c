@@ -206,7 +206,7 @@ cfbXRotatePixmap(pPix, rw)
 	case PSZ:
 	    break;
 	case 1:
-	    oldmfbXRotatePixmap(pPix, rw);
+	    mfbXRotatePixmap(pPix, rw);
 	    return;
 	default:
 	    ErrorF("cfbXRotatePixmap: unsupported depth %d\n", ((DrawablePtr) pPix)->depth);
@@ -268,7 +268,7 @@ cfbYRotatePixmap(pPix, rh)
 	case PSZ:
 	    break;
 	case 1:
-	    mfbYRotatePixmap(pPix, rh);
+	    YRotatePixmap(pPix, rh);	/* XXX - should be called mfbYRotatePixmap */
 	    return;
 	default:
 	    ErrorF("cfbYRotatePixmap: unsupported depth %d\n", ((DrawablePtr) pPix)->depth);

@@ -489,7 +489,7 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
 #ifdef	notdef
 	    if (pGC->fillStyle == FillSolid)
 		pGC->Polylines = miNotMiter;	/* XXX - doesn't work for
-						 * zero */
+						 * zero. ???miNotMiter??? */
 	    else
 #endif
 		pGC->Polylines = miZeroLine;
@@ -497,11 +497,11 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
 	else {
 	    switch (pGC->joinStyle) {
 	    case JoinMiter:
-		pGC->Polylines = miMiter;
+		pGC->LineHelper = miMiter;
 		break;
 	    case JoinRound:
 	    case JoinBevel:
-		pGC->Polylines = miNotMiter;
+		pGC->LineHelper = miNotMiter;
 		break;
 	    }
 	}

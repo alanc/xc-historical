@@ -60,16 +60,18 @@ cfbSetScanline(y, xOrigin, xStart, xEnd, psrc, alu, pdstBase, widthDst, planemas
 					 * word */
     register int	nstart; 	/* number of bits from first partial */
     register int	nend; 		/* " " last partial word */
+    int			offSrc;
     int		startmask, endmask, nlMiddle, nl;
 
     pdst = pdstBase + (y * widthDst) + (xStart >> PWSH); 
     psrc += (xStart - xOrigin) >> PWSH;
+    offSrc = (xStart - xOrigin) & PIM;
     w = xEnd - xStart;
     dstBit = xStart & PIM;
 
     if (dstBit + w <= PPW) 
     { 
-	getbits(psrc, 0, w, tmpSrc);
+	getbits(psrc, offSrc, w, tmpSrc);
 	putbitsrop(tmpSrc, dstBit, w, pdst, planemask, alu); 
     } 
     else 
@@ -86,21 +88,27 @@ cfbSetScanline(y, xOrigin, xStart, xEnd, psrc, alu, pdstBase, widthDst, planemas
 	    nend = 0; 
 	if (startmask) 
 	{ 
-	    getbits(psrc, 0, nstart, tmpSrc);
+	    getbits(psrc, offSrc, nstart, tmpSrc);
 	    putbitsrop(tmpSrc, dstBit, nstart, pdst, planemask, alu);
 	    pdst++; 
+	    offSrc += nstart;
+	    if (offSrc > PLST)
+	    {
+		psrc++;
+		offSrc -= PPW;
+	    }
 	} 
 	nl = nlMiddle; 
 	while (nl--) 
 	{ 
-	    getbits(psrc, nstart, PPW, tmpSrc);
+	    getbits(psrc, offSrc, PPW, tmpSrc);
 	    putbitsrop(tmpSrc, 0, PPW, pdst, planemask, alu );
 	    pdst++; 
 	    psrc++; 
 	} 
 	if (endmask) 
 	{ 
-	    getbits(psrc, nstart, nend, tmpSrc);
+	    getbits(psrc, offSrc, nend, tmpSrc);
 	    putbitsrop(tmpSrc, 0, nend, pdst, planemask, alu);
 	} 
 	 
@@ -160,7 +168,7 @@ cfbSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
 	yMax = (int)((WindowPtr)pDrawable)->clientWinSize.height +
 		    ((WindowPtr)pDrawable)->absCorner.y;
 
-        /* Translate points */
+/* translation should be done by caller of this routine
         pptT = ppt;
         while(pptT < pptLast)
 	{
@@ -168,6 +176,7 @@ cfbSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
 	    pptT->y += ((WindowPtr)pDrawable)->absCorner.y;
 	    pptT++;
 	}
+*/
     }
     else
     {

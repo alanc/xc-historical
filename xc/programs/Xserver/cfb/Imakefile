@@ -10,25 +10,15 @@ OBJS =   cfbgc.o cfbwindow.o cfbmisc.o \
 	 cfbpntwin.o cfbmaskbits.o cfbpixmap.o cfbbitblt.o \
 	 cfbcmap.o cfboldmfb.o
 
-CDEBUGFLAGS = -g
+#CDEBUGFLAGS = -g
    INCLUDES = -I. -I../../include -I../../../include -I../mfb
+       LINT = lint
      LFLAGS = -buxz
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(cfb,$(OBJS))
 
 DependTarget()
-
-#ifdef VaxArchitecture
-#
-# 4.3bsd and Ultrix cc does not pass -J flag (compile long jumps)
-# to the assembler, as.  cfbbitblt.c needs long jumps to build.
-#
-cfbbitblt.o:
-	$(CC) -S $(CFLAGS) cfbbitblt.c
-	as -o cfbbitblt.o -J cfbbitblt.s
-	rm cfbbitblt.s
-#endif
 
 lint: ${SRCS}
 	@echo 'Expect the following warnings from lint:' >lint.out

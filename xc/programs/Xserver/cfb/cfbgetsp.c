@@ -80,7 +80,8 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
 		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate);
 	widthSrc = (int)
 		   ((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind;
-	/* translate points */
+
+/* translation should be done by caller of this subroutine
 	pptT = ppt;
 	while(pptT < pptLast)
 	{
@@ -88,6 +89,7 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
 	    pptT->y += ((WindowPtr)pDrawable)->absCorner.y;
 	    pptT++;
 	}
+*/
     }
     else
     {
@@ -156,7 +158,6 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
 #endif notdef
 	} 
         ppt++;
-	pwidth++;
     }
     return(pdstStart);
 }

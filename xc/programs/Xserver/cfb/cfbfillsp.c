@@ -515,6 +515,7 @@ int fSorted;
 {
 				/* next three parameters are post-clip */
     int n;			/* number of spans to fill */
+    int xrem; 
     register DDXPointPtr ppt;	/* pointer to list of start points */
     register int *pwidth;	/* pointer to list of n widths */
     int		iline;		/* first line of tile to use */
@@ -623,6 +624,7 @@ int fSorted;
 		 */
 
 		/* width of dest/stipple */
+                xrem = x % stippleWidth;
 	        w = min((stippleWidth - (x % stippleWidth)), width);
 		/* dist to word bound in dest */
 		w = min(w, PPW - (x & PIM));
@@ -633,15 +635,15 @@ int fSorted;
 		tmpSrc = *(pdst + (x >> PWSH));
 		switch ( pGC->fillStyle ) {
 		    case FillOpaqueStippled:
-			getstipplepixels(psrcS + (x>>5), (x&0x1f), w, 0, 
+			getstipplepixels(psrcS + (xrem>>5), (x&0x1f), w, 0, 
 			    &bgfill, &tmpDst1);
-			getstipplepixels(psrcS + (x>>5), (x&0x1f), w, 1,
+			getstipplepixels(psrcS + (xrem>>5), (x&0x1f), w, 1,
 			    &fgfill, &tmpDst2);
 			break;
 		    case FillStippled:
-			getstipplepixels(psrcS + (x>>5), (x&0x1f), w, 0,
+			getstipplepixels(psrcS + (xrem>>5), (x&0x1f), w, 0,
 			    &tmpSrc, &tmpDst1);
-			getstipplepixels(psrcS + (x>>5), (x&0x1f), w, 1,
+			getstipplepixels(psrcS + (xrem>>5), (x&0x1f), w, 1,
 			    &fgfill, &tmpDst2);
 			break;
 		}
