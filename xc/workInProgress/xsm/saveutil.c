@@ -1,4 +1,4 @@
-/* $XConsortium: saveutil.c,v 1.24 94/12/12 20:04:17 mor Exp mor $ */
+/* $XConsortium: saveutil.c,v 1.25 94/12/14 20:01:11 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -144,7 +144,7 @@ char **sm_id;
 		    c->props = ListInit();
 		    if(!c->props) nomem();
 
-		    if(!ListAddLast(PendingList, (void *)c)) nomem();
+		    if(!ListAddLast(PendingList, (char *)c)) nomem();
 
 		    state = 1;
 		    break;
@@ -165,7 +165,7 @@ char **sm_id;
 
 		    prop->type = NULL;
 
-		    if(!ListAddLast(c->props, (void *)prop)) nomem();
+		    if(!ListAddLast(c->props, (char *)prop)) nomem();
 
 		    state = 3;
 		    break;
@@ -201,7 +201,7 @@ char **sm_id;
 		val->value = XtNewString(p);
 	    }
 
-	    if(!ListAddLast(prop->values, (void *)val)) nomem(); 
+	    if(!ListAddLast(prop->values, (char *)val)) nomem(); 
 	}
     }
 
@@ -491,7 +491,7 @@ char *session_name;
 	    }
 	    if (foundDiscard)
 	    {
-		system (p);	/* Discard Command */
+		execute_system_command (p);	/* Discard Command */
 		foundDiscard = 0;
 	    }
 	}
@@ -499,7 +499,7 @@ char *session_name;
 
     fclose(f);
 
-    return ((remove (filename) == -1) ? 0 : 1);
+    return ((unlink (filename) == -1) ? 0 : 1);
 }
 
 
