@@ -1,26 +1,22 @@
 #ifndef PEX_H
 #define PEX_H
 
-/* $XConsortium: PEX.h,v 1.4 92/06/12 10:39:45 mor Exp $ */
+/* $XConsortium: PEX.h,v 1.5 92/07/16 11:13:30 mor Exp $ */
 
 /******************************************************************************/
 /*  Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Mass.      */
 /*                                                                            */
 /*  (c) Copyright Hewlett-Packard Company, 1992,  Fort Collins, Colorado      */
-/*									      */
-/*  Copyright 1992 by the Massachusetts Institute of Technology		      */
 /*                                                                            */
 /*                            All Rights Reserved                             */
 /*                                                                            */
-/*  Permission to use, copy, modify, distribute, and sell this software and   */
-/*  its documentation for any purpose is hereby granted without fee, provided */
-/*  that the above copyright notice appear in all copies and that both that   */
-/*  copyright notice and this permission notice appear in supporting          */
-/*  documentation, and that the name of M.I.T. not be used in advertising or  */
-/*  publicity pertaining to distribution of the software without specific,    */
-/*  written prior permission.  M.I.T. makes no representations about the      */
-/*  suitability of this software for any purpose.  It is provided "as is"     */
-/*  without express or implied warranty.                                      */
+/*  Permission to use, copy, modify, and distribute this software and its     */
+/*  documentation for any purpose and without fee is hereby granted,          */
+/*  provided that the above copyright notices appear in all copies and that   */
+/*  both the copyright notices and this permission notice appear in           */
+/*  supporting documentation, and that the names of Digital or                */
+/*  Hewlett-Packard not be used in advertising or publicity pertaining to     */
+/*  distribution of the software without specific, written prior permission.  */
 /*                                                                            */
 /*  DIGITAL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING  */
 /*  ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL  */

@@ -1,4 +1,4 @@
-/* $XConsortium: pl_util.h,v 1.2 92/07/24 16:39:09 mor Exp $ */
+/* $XConsortium: pl_util.h,v 1.3 92/08/10 17:04:29 mor Exp $ */
 
 /******************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology

@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_struct.c,v 1.3 92/06/12 10:50:14 mor Exp $ */
+/* $XConsortium: pl_oc_struct.c,v 1.4 92/07/16 11:21:44 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -8,13 +8,13 @@ Copyright 1992 by the Massachusetts Institute of Technology
 
 Permission to use, copy, modify, distribute, and sell this software and its
 documentation for any purpose is hereby granted without fee, provided that
-the above copyright notice appear in all copies and that both that
-copyright notice and this permission notice appear in supporting
-documentation, and that the name of M.I.T. not be used in advertising or
-publicity pertaining to distribution of the software without specific,
-written prior permission.  M.I.T. makes no representations about the
-suitability of this software for any purpose.  It is provided "as is"
-without express or implied warranty.
+the above copyright notice appear in all copies and that both that copyright
+notice and this permission notice appear in supporting documentation, and that
+the name of Digital or M.I.T. not be used in advertising or publicity
+pertaining to distribution of the software without specific, written prior
+permission.  Digital and M.I.T. make no representations about the suitability
+of this software for any purpose.  It is provided "as is" without express or
+implied warranty.
 
 DIGITAL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
 ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL

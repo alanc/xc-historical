@@ -1,7 +1,6 @@
-/* $XConsortium: pl_global_def.h,v 1.4 92/07/16 11:04:23 mor Exp $ */
+/* $XConsortium: pl_global_def.h,v 1.5 92/07/24 14:15:25 mor Exp $ */
 
 /******************************************************************************
-Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
 Copyright 1992 by the Massachusetts Institute of Technology
 
                         All Rights Reserved
@@ -15,14 +14,6 @@ publicity pertaining to distribution of the software without specific,
 written prior permission.  M.I.T. makes no representations about the
 suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
-
-DIGITAL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
-ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
-DIGITAL BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
-ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
-WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
-ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
-SOFTWARE.
 ******************************************************************************/
 
 /*
