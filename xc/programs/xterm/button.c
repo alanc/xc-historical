@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: button.c,v 1.13 88/10/06 09:09:27 swick Exp $
+ *	$XConsortium: button.c,v 1.14 88/10/07 08:15:37 swick Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.13 88/10/06 09:09:27 swick Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.14 88/10/07 08:15:37 swick Exp $";
 #endif	/* lint */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -68,12 +68,6 @@ extern char *malloc();
 #define DOWN 0
 #define SHIFTS 8		/* three keys, so eight combinations */
 #define	Coordinate(r,c)		((r) * (term->screen.max_col+1) + (c))
-
-/* STACK_SIZE should be as large as the maximum number of selections
-   we're going to own (i.e. than any reasonable user would put in a
-   translation entry for select-end(), though it's not fatal if it's
-   too small for some instances */
-#define STACK_SIZE 10
 
 char *SaveText();
 extern EditorButton();
@@ -145,10 +139,18 @@ XEvent* event;			/* must be XButtonEvent* */
     
     if (screen->send_mouse_pos == 0) return False;
 
+#define KeyModifiers \
+    (event->xbutton.state & (ShiftMask | LockMask | ControlMask | Mod1Mask | \
+			     Mod2Mask | Mod3Mask | Mod4Mask | Mod5Mask ))
+
+#define ButtonModifiers \
+    (event->xbutton.state & (ShiftMask | LockMask | ControlMask | Mod1Mask | \
+			     Mod2Mask | Mod3Mask | Mod4Mask | Mod5Mask ))
+
     switch (screen->send_mouse_pos) {
       case 1: /* X10 compatibility sequences */
 
-	if (event->type == ButtonPress && event->xbutton.state == 0) {
+	if (event->type == ButtonPress && KeyModifiers == 0) {
 	    EditorButton(event);
 	    return True;
 	}
@@ -156,8 +158,7 @@ XEvent* event;			/* must be XButtonEvent* */
 
       case 2: /* DEC vt200 compatible */
 
-	if (  event->xbutton.state == 0 ||
-	      event->xbutton.state == ControlMask) {
+	if (KeyModifiers == 0 || KeyModifiers == ControlMask) {
 	    EditorButton(event);
 	    return True;
 	}
@@ -165,13 +166,12 @@ XEvent* event;			/* must be XButtonEvent* */
 
       case 3: /* DEC vt200 hilite tracking */
 	if (  event->type == ButtonPress &&
-	      event->xbutton.state == 0 &&
-	      event->xbutton.state == Button1 ) {
+	      KeyModifiers == 0 &&
+	      event->xbutton.button == Button1 ) {
 	    TrackDown(event);
 	    return True;
 	}
-	if (  event->xbutton.state == 0 ||
-	      event->xbutton.state == ControlMask) {
+	if (KeyModifiers == 0 || KeyModifiers == ControlMask) {
 	    EditorButton(event);
 	    return True;
 	}
@@ -180,6 +180,7 @@ XEvent* event;			/* must be XButtonEvent* */
       default:
 	return False;
     }
+#undef KeyModifiers
 }
 
 
@@ -214,10 +215,10 @@ Cardinal *num_params;
 {
 	register TScreen *screen = &((XtermWidget)w)->screen;
 
-	if (SendMousePosition(w, event)) return;
 	((XtermWidget)w)->screen.selection_time = event->xbutton.time;
 	switch (eventMode) {
 		case NORMAL :
+		        (void) SendMousePosition(w, event);
 			break;
 		case LEFTEXTENSION :
 		case RIGHTEXTENSION :
@@ -279,9 +280,12 @@ Cardinal num_params;
 	int fmt8 = 8;
 	Atom type = XA_STRING;
 	char *line = XFetchBuffer(screen->display, &nbytes, buffer);
-	SelectionReceived(w, NULL, &selection, &type, (caddr_t)line,
-			  &nbytes, &fmt8);
-    } else {
+	if (nbytes > 0)
+	    SelectionReceived(w, NULL, &selection, &type, (caddr_t)line,
+			      &nbytes, &fmt8);
+    }
+    /* else */
+    {
 	struct _SelectionList* list;
 	if (--num_params) {
 	    list = XtNew(struct _SelectionList);
@@ -482,7 +486,7 @@ Cardinal num_params;
 		}
 		SaltTextAway(startSRow, startSCol, endSRow, endSCol,
 			     params, num_params);
-	} else _DisownSelection(term, params, num_params);
+	} else DisownSelection(term);
 
 	/* TrackText(0, 0, 0, 0); */
 	eventMode = NORMAL;
@@ -991,12 +995,14 @@ register XtermWidget term;
 String *selections;
 Cardinal count;
 {
-    Atom stack_atoms[STACK_SIZE];
-    Atom* atoms = stack_atoms;
+    Atom* atoms = term->screen.selection_atoms;
     int i;
 
-    if (count > STACK_SIZE) {
-	atoms = (Atom*)XtMalloc(atoms, count*sizeof(Atom));
+    if (count > term->screen.sel_atoms_size) {
+	XtFree((char*)atoms);
+	atoms = (Atom*)XtMalloc(count*sizeof(Atom));
+	term->screen.selection_atoms = atoms;
+	term->screen.sel_atoms_size = count;
     }
     XmuInternStrings( XtDisplay((Widget)term), selections, count, atoms );
     for (i = 0; i < count; i++) {
@@ -1021,22 +1027,16 @@ Cardinal count;
 			    ConvertSelection, LoseSelection, SelectionDone );
 	}
     }
-    if (atoms != stack_atoms) XtFree(atoms);
+    term->screen.selection_count = count;
 }
 
-static /* void */ _DisownSelection(term, selections, count)
+/* void */ DisownSelection(term)
 register XtermWidget term;
-String *selections;
-Cardinal count;
 {
-    Atom stack_atoms[STACK_SIZE];
-    Atom* atoms = stack_atoms;
+    Atom* atoms = term->screen.selection_atoms;
+    Cardinal count = term->screen.selection_count;
     int i;
 
-    if (count > STACK_SIZE) {
-	atoms = (Atom*)XtMalloc(atoms, count*sizeof(Atom));
-    }
-    XmuInternStrings( XtDisplay((Widget)term), selections, count, atoms );
     for (i = 0; i < count; i++) {
 	int buffer;
 	switch (atoms[i]) {
@@ -1054,7 +1054,9 @@ Cardinal count;
 	    XtDisownSelection( (Widget)term, atoms[i],
 			       term->screen.selection_time );
     }
-    if (atoms != stack_atoms) XtFree(atoms);
+    term->screen.selection_count = 0;
+    term->screen.startHRow = term->screen.startHCol = 0;
+    term->screen.endHRow = term->screen.endHCol = 0;
 }
 
 
