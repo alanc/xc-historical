@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.86 90/04/04 11:28:35 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.87 90/04/05 17:07:10 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif /* lint */
 
@@ -1901,7 +1901,7 @@ static Boolean TopLevelSetValues(oldW, refW, newW, args, num_args)
     } else
 	name_changed = False;
 
-    if (XtIsRealized(newW) && !new->shell.override_redirect) {
+    if (XtIsRealized(newW)) {
 	if (new->topLevel.iconic != old->topLevel.iconic) {
 	    if (new->topLevel.iconic)
 		XIconifyWindow(XtDisplay(newW),
@@ -1912,9 +1912,10 @@ static Boolean TopLevelSetValues(oldW, refW, newW, args, num_args)
 		XtPopup(newW, XtGrabNone);
 	}
 
-	if (name_changed ||
-	    (old->topLevel.icon_name_encoding
-	     != new->topLevel.icon_name_encoding)) {
+	if (!new->shell.override_redirect &&
+	    (name_changed ||
+	     (old->topLevel.icon_name_encoding
+	      != new->topLevel.icon_name_encoding))) {
 
 	    XTextProperty icon_name;
 	    icon_name.value = (unsigned char *)new->topLevel.icon_name;
