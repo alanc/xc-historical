@@ -1,5 +1,5 @@
 .\" Use -ms and macros.t
-.\" $XConsortium: bigreq.ms,v 1.4 92/09/08 13:57:02 rws Exp $
+.\" $XConsortium: bigreq.ms,v 1.5 92/09/08 15:27:45 rws Exp $
 .EH ''''
 .OH ''''
 .EF ''''
@@ -12,7 +12,7 @@
 \s+2\fBBig Requests Extension\fP\s-2
 .sp 3
 .ce 3
-Version 1.0
+Version 2.0
 MIT X Consortium Proposed Standard
 X Version 11, Release 6
 .sp 6
@@ -113,53 +113,13 @@ protocol requests, including all extensions.
 .NH 1
 Requests
 .LP
-.PN "BigReqGetVersion"
-.LP
-.IP
-\fIclient-major-version\fP\^: CARD16
-.br
-\fIclient-minor-version\fP\^: CARD16
+.PN "BigReqEnable"
 .LP
    =>
-.IP
-\fIserver-major-version\fP\^: CARD16
-.br
-\fIserver-minor-version\fP\^: CARD16
-.IP
-This request is used to negotiate the version of the extension the
-server will use.  The client must execute this request before
-executing any other requests in the extension, or the version used by
-the server is implementation-dependent.  The client specifies the
-version of the extension that it desires, and the server responds with
-the version of the extension it will support on this connection.  This
-document defines major version one (1), minor version zero (0).
-.LP
-.PN "BigReqControl"
-.IP
-\fIenable\fP\^: BOOL
-.IP
-Errors:
-.PN Value
-.IP
-This request enables
-.Pn ( True )
-or disables
-.Pn ( False )
-extended-length protocol requests for the requesting client.
-.LP
-.PN "BigReqQueryState"
-.LP
-   =>
-.IP
-\fIenabled\fP\^: BOOL
 .IP
 \fImaximum-request-length\fP\^: CARD32
 .IP
-This request returns a flag indicating whether extended-length
-protocol requests are currently enabled
-.Pn ( True )
-or disabled
-.Pn ( False )
+This request enables extended-length protocol requests
 for the requesting client.  It also returns the maximum length of a
 request, in 4-byte units, that can be used in extended-length protocol
 requests.  This value will always be greater than the maximum-request-length
@@ -181,46 +141,9 @@ The name of this extension is ``BIG-REQUESTS''.
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
-.PN BigReqGetVersion
+.PN BigReqEnable
 	1	CARD8		opcode
 	1	0		bigreq opcode
-	2	2		request length
-	2	CARD16		client-major-version
-	2	CARD16		client-minor-version
-.De
-.Ds 0
-.TA .2i .5i 1.5i 2.5i
-.ta .2i .5i 1.5i 2.5i
-.R
- =>
- 	1	1		Reply
-	1			unused
-	2	CARD16		sequence number
-	4	0		length
-	2	CARD16		server-major-version
-	2	CARD16		server-minor-version
-	20			unused
-.De
-.LP
-.Ds 0
-.TA .2i .5i 1.5i 2.5i
-.ta .2i .5i 1.5i 2.5i
-.R
-.PN BigReqControl
-	1	CARD8		opcode
-	1	1		bigreq opcode
-	2	2		request length
-	1	BOOL		enable
-	3			unused
-.De
-.LP
-.Ds 0
-.TA .2i .5i 1.5i 2.5i
-.ta .2i .5i 1.5i 2.5i
-.R
-.PN BigReqQueryState
-	1	CARD8		opcode
-	1	2		bigreq opcode
 	2	1		request length
 .De
 .Ds 0
@@ -229,7 +152,7 @@ The name of this extension is ``BIG-REQUESTS''.
 .R
  =>
  	1	1		Reply
-	1	BOOL		enabled
+	1			unused
 	2	CARD16		sequence number
 	4	0		length
 	4	CARD32		maximum-request-length
@@ -249,8 +172,7 @@ correct sequence number.
 As such,
 .PN XOpenDisplay
 will determine if the extension is supported by the server and, if it is,
-enable extended-length encodings.  (This will require one extra round
-trip to the server, is this acceptable?)
+enable extended-length encodings.
 .LP
 The core Xlib functions
 .PN XDrawLines ,
@@ -283,31 +205,6 @@ Display	*display;
 Returns zero (0) if the specified display does not support this
 extension, otherwise returns the maximum-request-length (in 4-byte
 units) supported by the server through the extended-length encoding.
-.LP
-I propose this separate function because I am worried about the
-consequences of changing the existing
-.PN XMaxRequestSize
-function to return a larger value.  For example, existing extension
-library code might use this function (rather than referencing an
-internal member of the
-.PN Display
-structure) to compute maximum protocol lengths.  The current X Test Suite,
-in one configuration, uses the function for this purpose.  This code would
-break if
-.PN XMaxRequestSize
-were changed to return a larger value.
-.LP
-On the other hand, changing
-.PN XMaxRequestSize
-would eliminate the need to change some client code.
-However, it would have to return the extended maximum-request-length - 1,
-because existing applications can have computations like
-.RS
-((XMaxRequestSize(dpy) << 2) - SIZEOF(xPolyArcReq)) / SIZEOF(xArc)
-.RE
-.LP
-which will not otherwise account for the extra 4 bytes that will be occupied
-by the extended length field.
 .NH 1
 Acknowledgements
 .LP
