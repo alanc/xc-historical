@@ -44,6 +44,7 @@ University of California.
 #include "gcstruct.h"   
 #include "extnsionst.h"
 #include "dixstruct.h"
+#include "opaque.h"
 #define  XTestSERVER_SIDE
 #include "xtestext1.h"
 
@@ -123,7 +124,16 @@ static XID		current_client_id;
 static int	ProcXTestDispatch();
 static int	SProcXTestDispatch();
 static void	XTestResetProc();
-
+static int	ProcTestFakeInput();
+static int	SProcTestFakeInput();
+static int	ProcTestGetInput();
+static int	SProcTestGetInput();
+static int	ProcTestStopInput();
+static int	SProcTestStopInput();
+static int	ProcTestReset();
+static int	SProcTestReset();
+static int	ProcTestQueryInputSize();
+static int	SProcTestQueryInputSize();
 static void	SReplyXTestDispatch();
 static void	SEventXTestDispatch();
 void	NotImplemented();
@@ -135,8 +145,6 @@ void	stop_stealing_input();
 void	flush_input_actions();
 void	parse_fake_input();
 
-void	AddResource();
-void	FreeResource();
 static void	XTestCurrentClientGone();
 
 /*****************************************************************************
