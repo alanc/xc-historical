@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 2.24 91/07/14 13:34:45 converse Exp $
+/* $XConsortium: main.c,v 2.25 91/07/14 19:11:35 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -53,12 +53,13 @@ static void Checkpoint(client_data, id)
     XtPointer client_data;
     XtIntervalId *id;		/* unused */
 {
-    register int i;
+    extern void XmhWMProtocols();
+
     if (!subProcessRunning) {
+	Cardinal n = 1;
+	String params = "wm_save_yourself";
 	DEBUG("(Checkpointing...")
-   	for (i=0; i<numScrns; i++)
-	    if (scrnList[i]->msg) 
-		MsgCheckPoint(scrnList[i]->msg);
+	XmhWMProtocols(NULL, NULL, &params, &n);
         DEBUG(" done)\n")
     }
     (void) XtAppAddTimeOut((XtAppContext)client_data,
