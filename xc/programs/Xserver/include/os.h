@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: os.h,v 1.31 89/03/14 14:02:20 rws Exp $ */
+/* $XConsortium: os.h,v 1.32 89/03/16 14:45:45 jim Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -44,6 +44,7 @@ typedef pointer	FID;
 typedef struct _FontPathRec *FontPathPtr;
 typedef struct _NewClientRec *NewClientPtr;
 
+#ifndef NO_ALLOCA
 /*
  * os-dependent definition of local allocation and deallocation
  * If you need something other than malloc/free for ALLOCATE/DEALLOCATE
@@ -85,6 +86,8 @@ char *alloca();
 #define DEALLOCATE_LOCAL(ptr)  /* as nothing */
 #endif /* vax or sun */
 #endif /* __GNUC__ */
+
+#endif /* NO_ALLOCA */
 
 #ifndef ALLOCATE_LOCAL
 char *malloc();
