@@ -11,4 +11,4 @@ set button [
     	action push_me "pushed"
     ]
 ]
-main button [layout_kit margin button 10.0]
+main button [layout_kit margin [debug button "button"] 10.0]
