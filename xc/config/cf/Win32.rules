@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.rules,v 1.37 94/02/07 11:26:34 kaleb Exp $
+XCOMM platform:  $XConsortium: Win32.rules,v 1.38 94/02/08 15:27:29 rws Exp $
 
 #define HasSharedLibraries YES
 #define NeedLibInsideFlag YES
@@ -396,7 +396,7 @@ install:: srcname							@@\
 	@echo sorry, unable to make srcname
 
 #define	InstallSharedLibrary(libname,rev,dest)				@@\
-InstallTarget(install,LibraryTargetName(libname),$(INSTLIBFLAGS),dest)	@@\
+InstallTarget(install,LibraryTargetName(libname),$(INSTLIBFLAGS),$(USRLIBDIR)) @@\
 InstallTarget(install,libname.dll,$(INSTLIBFLAGS),dest)
 
 #define	InstallSharedLibraryData(libname,rev,dest)
@@ -406,7 +406,7 @@ SharedLibraryLoadFlags -out:libname.dll libname.exp solist		@@\
 <<
 
 #define SharedLibraryTarget(libname,rev,solist,down,up)			@@\
-AllTarget(LibraryTargetName(libname))					@@\
+AllTarget(libname.dll)							@@\
 									@@\
 CppFileTarget(libname.def,libname-def.cpp,-DLIBRARY_VERSION=rev,$(ICONFIGFILES)) @@\
 									@@\
@@ -415,6 +415,10 @@ XVARdef0 = solist							@@\
 LibraryTargetName(libname): $(XVARuse0:.o=.obj) libname.def		@@\
 	RemoveFile($@)							@@\
 	MakeLibrary($@,-def:libname.def $(XVARuse0:.o=.obj))		@@\
+	RemoveFile(libname.dll)						@@\
+	MakeDLL(libname,$(XVARuse0:.o=.obj) $(REQUIREDLIBS) $(EXTRA_LIBRARIES)) @@\
+									@@\
+libname.dll: LibraryTargetName(libname)					@@\
 	RemoveFile(libname.dll)						@@\
 	MakeDLL(libname,$(XVARuse0:.o=.obj) $(REQUIREDLIBS) $(EXTRA_LIBRARIES)) @@\
 									@@\
