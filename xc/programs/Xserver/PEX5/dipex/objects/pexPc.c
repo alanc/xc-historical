@@ -1,4 +1,4 @@
-/* $XConsortium: pexPc.c,v 5.6 92/03/03 16:20:45 hersh Exp $ */
+/* $XConsortium: pexPc.c,v 5.7 92/06/02 18:13:33 mor Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -64,7 +64,7 @@ SOFTWARE.
 	(PTR) = (unsigned char *)(pPEXBuffer->pHead + offset); } \
 }
 
-#define PADDING(n) ( (n)&3 ? (4 - (n)&3) : 0)
+#define PADDING(n) ( (n)&3 ? (4 - ((n)&3)) : 0)
 
 ErrorCode
 UpdatePCRefs (pc, pr, action)

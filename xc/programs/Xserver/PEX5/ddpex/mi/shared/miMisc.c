@@ -1,4 +1,4 @@
-/* $XConsortium: miMisc.c,v 5.6 92/04/23 17:50:59 hersh Exp $ */
+/* $XConsortium: miMisc.c,v 5.7 92/05/27 18:06:20 hersh Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -382,7 +382,7 @@ miEnumType	miParametricSurfaceCharsET[MI_MAXDRAWABLES][SI_P_SURF_CHAR_NUM] = {
 #define PUT_BUF8(buf, value) \
            *(buf).C8++ = (value);
 
-#define PADDING(n) ( (n)&3 ? (4 - (n)&3) : 0)
+#define PADDING(n) ( (n)&3 ? (4 - ((n)&3)) : 0)
 
 /* be sure k is defined before using this */
 /* size is the size of the string

@@ -1,4 +1,4 @@
-/* $XConsortium: miText.c,v 5.4 91/05/12 16:11:12 rws Exp $ */
+/* $XConsortium: miText.c,v 5.5 91/11/15 19:58:25 hersh Exp $ */
 
 
 /***********************************************************
@@ -44,7 +44,7 @@ SOFTWARE.
 #include "gcstruct.h"
 
 #ifndef PADDING
-#define PADDING(n) ( (n)%4 ? (4 - (n)%4) : 0)
+#define PADDING(n) ( (n)%4 ? (4 - ((n)%4)) : 0)
 #endif 
 
 extern ddpex3rtn ComputeMCVolume();

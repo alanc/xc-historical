@@ -1,4 +1,4 @@
-/* $XConsortium: convReq.c,v 5.13 92/06/02 18:27:35 hersh Exp $ */
+/* $XConsortium: convReq.c,v 5.14 92/11/09 18:49:54 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -52,7 +52,7 @@ SOFTWARE.
 
 extern RequestFunction PEXRequest[];
 
-#define PADDING(n) ( (n)&3 ? (4 - (n)&3) : 0)
+#define PADDING(n) ( (n)&3 ? (4 - ((n)&3)) : 0)
 
 
 /****************************************************************

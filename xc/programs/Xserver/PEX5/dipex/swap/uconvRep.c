@@ -1,4 +1,4 @@
-/* $XConsortium: uconvRep.c,v 5.11 92/08/12 15:14:14 hersh Exp $ */
+/* $XConsortium: uconvRep.c,v 5.12 92/11/09 18:50:33 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -54,7 +54,7 @@ SOFTWARE.
 #define LOCAL_FLAG
 #include "uconvRep.h"
 
-#define PADDING(n) ( (n)&3 ? (4 - (n)&3) : 0)
+#define PADDING(n) ( (n)&3 ? (4 - ((n)&3)) : 0)
 
 /*************************************************************
 	Replies
