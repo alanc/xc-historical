@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: policy.c,v 1.1 89/10/12 17:07:43 rws Exp $
+ * $XConsortium: policy.c,v 1.2 89/11/18 12:43:51 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -26,19 +26,67 @@
 
 static ARRAY8 noAuthentication = { (CARD16) 0, (CARD8Ptr) 0 };
 
+typedef struct _XdmAuth {
+    ARRAY8  authentication;
+    ARRAY8  authorization;
+} XdmAuthRec, *XdmAuthPtr;
+
+XdmAuthRec auth[] = {
+#ifdef HASDES
+{ {(CARD16) 20, (CARD8 *) "XDM-AUTHENTICATION-1"},
+  {(CARD16) 19, (CARD8 *) "XDM-AUTHORIZATION-1"},
+},
+#endif
+{ {(CARD16) 0, (CARD8 *) 0},
+  {(CARD16) 0, (CARD8 *) 0},
+}
+};
+
+#define NumAuth	(sizeof auth / sizeof auth[0])
+
 ARRAY8Ptr
 ChooseAuthentication (authenticationNames)
     ARRAYofARRAY8Ptr	authenticationNames;
 {
+    int	i, j;
+
+    for (i = 0; i < authenticationNames->length; i++)
+	for (j = 0; j < NumAuth; j++)
+	    if (XdmcpARRAY8Equal (&authenticationNames->data[i],
+				  &auth[j].authentication))
+		return &authenticationNames->data[i];
     return &noAuthentication;
 }
 
+CheckAuthentication (pdpy, displayID, name, data)
+    struct protoDisplay	*pdpy;
+    ARRAY8Ptr		displayID, name, data;
+{
+#ifdef HASDES
+    if (name->length && !strncmp (name->data, "XDM-AUTHENTICATION-1", 20))
+	return XdmCheckAuthentication (pdpy, displayID, name, data);
+#endif
+    return TRUE;
+}
+
 int
-SelectAuthorizationTypeIndex (authorizationNames)
+SelectAuthorizationTypeIndex (authenticationName, authorizationNames)
+    ARRAY8Ptr		authenticationName;
     ARRAYofARRAY8Ptr	authorizationNames;
 {
-    int	i;
+    int	i, j;
 
+    for (j = 0; j < NumAuth; j++)
+	if (XdmcpARRAY8Equal (authenticationName,
+			      &auth[j].authentication))
+	    break;
+    if (j < NumAuth)
+    {
+    	for (i = 0; i < authorizationNames->length; i++)
+	    if (XdmcpARRAY8Equal (&authorizationNames->data[i],
+				  &auth[j].authorization))
+	    	return i;
+    }
     for (i = 0; i < authorizationNames->length; i++)
 	if (ValidAuthorization (authorizationNames->data[i].length,
 				authorizationNames->data[i].data))
