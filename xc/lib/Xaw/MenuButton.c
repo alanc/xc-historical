@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: MenuButton.c,v 1.3 89/05/08 17:40:13 kit Exp $";
+static char Xrcsid[] = "$XConsortium: MenuButton.c,v 1.4 89/05/11 01:05:58 kit Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -35,7 +35,7 @@ SOFTWARE.
 /*
  * MenuButton.c - Source code for MenuButton widget.
  *
- * This is the private header file for the Athena MenuButton widget.
+ * This is the source code for the Athena MenuButton widget.
  * It is intended to provide an easy method of activating pulldown menus.
  *
  * Date:    May 2, 1989
