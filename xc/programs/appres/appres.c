@@ -1,5 +1,5 @@
 /*
- * $XConsortium: appres.c,v 1.5 89/12/10 15:51:38 rws Exp $
+ * $XConsortium: appres.c,v 1.6 90/05/01 12:09:07 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -47,6 +47,7 @@ main (argc, argv)
     FILE *fp;
     Bool incont, printit;
     int clen, ilen;
+    XtAppContext xtcontext;
 
     ProgramName = argv[0];
     if (argc > 1) {
@@ -73,8 +74,8 @@ main (argc, argv)
 	    argv = newargv;
 	}
     }
-    toplevel = XtInitialize (NULL, cname ? cname : NOCLASS, NULL, 0,
-			     (Cardinal *) &argc, argv);
+    toplevel = XtAppInitialize(&xtcontext, cname ? cname : NOCLASS, NULL, 0,
+			       &argc, argv, NULL, NULL, 0);
     if (argc != 1) usage ();
 
     strcpy (tmpbuf, "/tmp/ar.XXXXXX~");
