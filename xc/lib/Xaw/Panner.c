@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.17 90/02/28 11:51:39 jim Exp $
+ * $XConsortium: Panner.c,v 1.18 90/02/28 12:08:28 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -365,6 +365,7 @@ static Boolean get_event_xy (pw, event, x, y)
 		       pw->panner.shadow_color, pw->core.background_pixel, \
 		       pw->core.depth, NULL, 0, NULL, NULL, NULL, NULL)
     
+#define PIXMAP_OKAY(pm) ((pm) != None && (pm) != XtUnspecifiedPixmap)
 
 
 /*****************************************************************************
@@ -409,21 +410,22 @@ static void Realize (gw, valuemaskp, attr)
 {
     PannerWidget pw = (PannerWidget) gw;
     Pixmap pm = XtUnspecifiedPixmap;
+    Boolean gotpm = FALSE;
 
     if (pw->core.background_pixmap == XtUnspecifiedPixmap) {
 	if (pw->panner.stipple_name) pm = BACKGROUND_STIPPLE (pw);
 
-	if (pm != XtUnspecifiedPixmap) {
+	if (PIXMAP_OKAY(pm)) {
 	    attr->background_pixmap = pm;
 	    *valuemaskp |= CWBackPixmap;
 	    *valuemaskp &= ~CWBackPixel;
+	    gotpm = TRUE;
 	}
     }
     (*gw->core.widget_class->core_class.superclass->core_class.realize)
       (gw, valuemaskp, attr);
 
-    if (pm != None && pm != XtUnspecifiedPixmap)
-      XFreePixmap (XtDisplay(gw), pm);
+    if (gotpm) XFreePixmap (XtDisplay(gw), pm);
 }
 
 
@@ -520,12 +522,12 @@ static Boolean SetValues (gcur, greq, gnew, args, num_args)
 	Pixmap pm = (new->panner.stipple_name ? BACKGROUND_STIPPLE (new)
 		     : XtUnspecifiedPixmap);
 
-	if (pm == XtUnspecifiedPixmap) {
+	if (PIXMAP_OKAY(pm)) {
+	    XSetWindowBackgroundPixmap (XtDisplay (new), XtWindow(new), pm);
+	    XFreePixmap (XtDisplay (new), pm);
+	} else {
 	    XSetWindowBackground (XtDisplay (new), XtWindow(new),
 				  new->core.background_pixel);
-	} else {
-	    XSetWindowBackgroundPixmap (XtDisplay (new), XtWindow(new), pm);
-	    if (pm != None) XFreePixmap (XtDisplay (new), pm);
 	}
 	redisplay = TRUE;
     }
