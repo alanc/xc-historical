@@ -2,7 +2,7 @@
  * mipointer.c
  */
 
-/* $XConsortium: mipointer.c,v 5.3 89/06/21 11:23:16 rws Exp $ */
+/* $XConsortium: mipointer.c,v 5.4 89/07/09 15:55:08 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -136,9 +136,6 @@ miPointerUnrealizeCursor (pScreen, pCursor)
     miPointerScreenPtr   pPriv;
 
     pPriv = (miPointerScreenPtr) pScreen->devPrivates[miPointerScreenIndex].ptr;
-    /* inhibit unrealize if cursor is in use */
-    if (pCursor == pPriv->pPointer->pCursor)
-	return TRUE;
     return (*pPriv->funcs->UnrealizeCursor) (pScreen, pCursor);
 }
 
