@@ -1,5 +1,5 @@
 /*
- * $XConsortium: BitEdit.c,v 1.3 90/03/30 15:26:00 dmatic Exp $
+ * $XConsortium: BitEdit.c,v 1.4 90/03/31 06:40:18 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -820,6 +820,7 @@ void main(argc, argv)
     int i, n;
     Arg wargs[2];
     Widget w;
+    Widget radio_group; caddr_t radio_data;
     
     top_widget = XtInitialize(NULL, "Bitmap", 
 			      options, XtNumber(options), 
@@ -913,6 +914,11 @@ void main(argc, argv)
 		      &buttons[i].id);
 
 	buttons[i].widget = w;
+
+	if (buttons[i].id == Point) {
+	    radio_group = buttons[i].widget;
+	    radio_data  = buttons[i].name;
+	}
     }
     
     bitmap_widget = XtCreateManagedWidget("bitmap", bitmapWidgetClass,
@@ -940,5 +946,9 @@ void main(argc, argv)
     input_dialog = CreateDialog(top_widget, "input", Okay | Cancel);
     error_dialog = CreateDialog(top_widget, "error", Abort | Retry);    
     quit_dialog = CreateDialog(top_widget, "quit", Yes | No | Cancel);
+
+    XawToggleSetCurrent(radio_group, radio_data);
+    BWEngageRequest(bitmap_widget, PointRequest, True, Plain);
+
     XtMainLoop();
 }
