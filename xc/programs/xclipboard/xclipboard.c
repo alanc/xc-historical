@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xclipboard.c,v 1.5 89/10/10 15:10:13 kit Exp $
+ * $XConsortium: xclipboard.c,v 1.6 89/12/08 11:48:54 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -24,7 +24,7 @@
  * Updated for R4:  Chris D. Peterson,  MIT X Consortium.
  */
 
-/* $XConsortium: xclipboard.c,v 1.5 89/10/10 15:10:13 kit Exp $ */
+/* $XConsortium: xclipboard.c,v 1.6 89/12/08 11:48:54 rws Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -102,12 +102,14 @@ static Boolean ConvertSelection(w, selection, target,
     int *format;
 {
     Display* d = XtDisplay(w);
+    XSelectionRequestEvent req =
+	XtGetSelectionRequest(w, *selection, (XtRequestId)NULL);
 
     if (*target == XA_TARGETS(d)) {
 	Atom* targetP;
 	Atom* std_targets;
 	unsigned long std_length;
-	XmuConvertStandardSelection(w, CurrentTime, selection, target, type,
+	XmuConvertStandardSelection(w, req->time, selection, target, type,
 				  (caddr_t*)&std_targets, &std_length, format);
 	*value = XtMalloc(sizeof(Atom)*(std_length /* + 5 */));
 	targetP = *(Atom**)value;
@@ -126,7 +128,7 @@ static Boolean ConvertSelection(w, selection, target,
 	return True;
     }
 
-    if (XmuConvertStandardSelection(w, CurrentTime, selection, target, type,
+    if (XmuConvertStandardSelection(w, req->time, selection, target, type,
 				    value, length, format))
 	return True;
 
