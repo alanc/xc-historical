@@ -13,7 +13,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: misc.m,v 1.3 94/01/29 15:32:00 rws Exp $
+ * $XConsortium: misc.m,v 1.4 94/01/30 11:53:24 rws Exp $
  */
 >>TITLE SelectExtensionEvent XIPROTO
 >>SET startup protostartup
@@ -47,7 +47,6 @@
 
 #define CLIENT 0
 static TestType test_type = SETUP;
-xSelectExtensionEventReq *req;
 extern ExtDeviceInfo Devs;
 extern int MinKeyCode;
 
@@ -55,9 +54,10 @@ static
 void
 tester()
 {
-Display *dpy2;
+Display *dpy2, *opendisplay();
 Window w;
-xSetDeviceFocusReq *req;
+xSetDeviceFocusReq *freq;
+xSelectExtensionEventReq *req;
 XDevice *dev;
 
 	Create_Client(CLIENT);
@@ -96,9 +96,9 @@ XDevice *dev;
 		    dev = Devs.Valuator;
 		    SimulateDeviceMotionEvent (dpy2, dev, True, 1, &axes, 0);
 		    }
-		req = (xSetDeviceFocusReq *) Make_XInput_Req(CLIENT, X_SetDeviceFocus);
-		req->deviceid = dev->device_id;
-		Send_XInput_Req(CLIENT, (xReq *) req);
+		freq = (xSetDeviceFocusReq *) Make_XInput_Req(CLIENT, X_SetDeviceFocus);
+		freq->device = dev->device_id;
+		Send_XInput_Req(CLIENT, (xReq *) freq);
 		XSync(dpy2,0);
 		break;
 	case BAD_LENGTH:
@@ -132,9 +132,6 @@ Generate them if possible.
 	test_type = GOOD;
 	if (noext(0))
 	    return;
-	/*
-	Set_Required_Byte_Sex (SEX_REVERSE);
-	*/
 	if (!Setup_Extension_DeviceInfo(KeyMask))
 	    untested("Can't fully execute %s because required key device not present",TestName);
 	else {
