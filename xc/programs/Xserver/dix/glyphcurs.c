@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $Header: glyphcurs.c,v 1.9 88/01/02 13:51:25 rws Exp $ */
+/* $Header: glyphcurs.c,v 1.10 88/01/02 18:02:56 rws Locked $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -129,7 +129,7 @@ ServerBitsFromGlyph(fontID, pfont, ch, cm, ppbits)
 	(*pGC->PolyText16)(ppix, pGC, cm->xhot, cm->yhot, 1, char2b);
     }
     (*pScreen->GetImage)(ppix, 0, 0, cm->width, cm->height,
-			 ZPixmap, 0xffffffff, pbits);
+			 ZPixmap, 1, pbits);
     *ppbits = pbits;
     FreeScratchGC(pGC);
     (*pScreen->DestroyPixmap)(ppix);
