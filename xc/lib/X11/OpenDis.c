@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.123 91/12/20 16:04:29 rws Exp $
+ * $XConsortium: XOpenDis.c,v 11.124 92/01/09 18:50:17 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -141,7 +141,6 @@ Display *XOpenDisplay (display)
 	dpy->modifiermap	= NULL;
 	dpy->lock_meaning	= NoSymbol;
 	dpy->keysyms_per_keycode = 0;
-	dpy->current		= None;
 	dpy->xdefaults		= (char *)NULL;
 	dpy->scratch_length	= 0L;
 	dpy->scratch_buffer	= NULL;
