@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Selection.c,v 1.21 89/11/28 09:49:02 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Selection.c,v 1.22 89/11/28 10:40:19 swick Exp $";
 /* $oHeader: Selection.c,v 1.8 88/09/01 11:53:42 asente Exp $ */
 #endif /* lint */
 
@@ -334,7 +334,7 @@ XtIntervalId   *id;
     if (rec->notify) 
 	if (ctx->incremental)
 	      (*rec->notify)(rec->widget, &ctx->selection, &rec->target, 
-			     &(XtRequestId)rec->property, ctx->owner_closure);
+			     (XtRequestId*)&rec->property, ctx->owner_closure);
 	else
 	      (*rec->notify)(rec->widget, &ctx->selection, &rec->target);
      RemoveHandler(ctx->dpy, rec->window, rec->widget,
@@ -396,7 +396,7 @@ XEvent *ev;
           if (rec->notify)  
 		if (ctx->incremental)
 		    (*rec->notify)(widget, &ctx->selection, &rec->target,
-				   &(XtRequestId)rec->property,
+				   (XtRequestId*)&rec->property,
 				   ctx->owner_closure);
 		else (*rec->notify)(widget, &ctx->selection, &rec->target);
 	  RemoveHandler(event->display, event->window, widget,
@@ -445,7 +445,8 @@ Atom target;
 Atom property;
 Atom targetType;
 XtPointer value;
-int length, format;
+unsigned long length;
+int format;
 {
     Incremental incr;
     PropGone rec;
@@ -503,7 +504,8 @@ Window window;
 Boolean *incremental;
 {
     XtPointer value;
-    int length, format;
+    unsigned long length;
+    int format;
     Atom targetType;
     PropGone rec;
 
@@ -545,7 +547,7 @@ Boolean *incremental;
         }
 	XChangeProperty(ctx->dpy, window, property, 
 			    targetType, format, PropModeReplace,
-			    (unsigned char *)value, length);
+			    (unsigned char *)value, (int)length);
 	/* free storage for client if no notify proc */
 	if (ctx->notify == NULL) XtFree((char *)value);
 	*incremental = FALSE;
@@ -700,11 +702,11 @@ XtSelectionDoneIncrProc notify;
 XtCancelConvertSelectionProc cancel;
 XtPointer closure;
 {
-    return OwnSelectionIncremental(widget, selection, time, 
-				   (XtConvertSelectionProc)convert, 
-				   (XtLoseSelectionProc)lose,
-				   (XtSelectionDoneProc)notify,
-				   cancel, closure, TRUE);
+    return OwnSelection(widget, selection, time, 
+			(XtConvertSelectionProc)convert, 
+			(XtLoseSelectionProc)lose,
+			(XtSelectionDoneProc)notify,
+			cancel, closure, TRUE);
 }
 
 
