@@ -1,4 +1,4 @@
-/* $XConsortium: picture.c,v 1.5 91/02/18 17:41:07 converse Exp $ */
+/* $XConsortium: picture.c,v 1.6 91/07/18 16:29:01 rws Exp $ */
 /* Puzzle - (C) Copyright 1987, 1988 Don Bennett.
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -12,6 +12,7 @@
 #include <X11/Xos.h>
 #include <X11/X.h>
 #include <X11/Xlib.h>
+#include <errno.h>
 
 extern Display	*dpy;
 extern int	screen;
@@ -57,20 +58,20 @@ int readcount;
 	exit(1);
     }
 
-    read(fd, width, sizeof(*width));
-    read(fd, height, sizeof(*height));
+    read(fd, (char *)width, sizeof(*width));
+    read(fd, (char *)height, sizeof(*height));
     if (*(char *) &swaptest) {
 	swap_long((char *) width, sizeof(*width));
 	swap_long((char *) height, sizeof(*height));
     }
 
-    read(fd, &cmapSizeByte, sizeof(cmapSizeByte));
+    read(fd, (char *)&cmapSizeByte, sizeof(cmapSizeByte));
 
     cmapSize = cmapSizeByte;
     if (cmapSize == 0)
 	cmapSize = 256;
 
-    read(fd, colormapData, 3*cmapSize);
+    read(fd, (char *)colormapData, 3*cmapSize);
     data = (unsigned char *) malloc((*width)*(*height));
     if (!data) {
 	fprintf(stderr,
@@ -78,7 +79,7 @@ int readcount;
 		fname, errno);
 	exit(1);
     }
-    readcount = read(fd, data, (*width)*(*height));
+    readcount = read(fd, (char *)data, (*width)*(*height));
 
     /***********************************/
     /** allocate the colormap entries **/
