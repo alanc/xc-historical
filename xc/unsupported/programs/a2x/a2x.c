@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.117 93/04/12 21:04:11 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.118 93/04/12 21:32:49 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -217,6 +217,7 @@ typedef struct _macro {
 typedef struct _location {
     Window window;
     int x, y;
+    Bool from_right, from_bottom;
 } LocationRec;
 
 #ifdef MSDOS
@@ -699,6 +700,14 @@ reset_mapping()
 	if (!pc_keys[i].keysym ||
 	    ((pc_keys[i].modifiers & Meta) && !meta))
 	    continue;
+	if (pc_keys[i].keysym == XK_Delete && !pc_keys[i].modifiers) {
+	    pc_keys[i].c = '\177';
+	    continue;
+	} else if (pc_keys[i].keysym == XK_at &&
+		   pc_keys[i].modifiers == ControlMask) {
+	    pc_keys[i].c = '\0';
+	    continue;
+	}
 	j = XKeysymToKeycode(dpy, pc_keys[i].keysym);
 	if (!j)
 	    continue;
@@ -2508,10 +2517,12 @@ do_location(buf)
     int n;
     Window root, w;
     unsigned int mask;
-    int screen;
+    int screen, x, y, wx, wy;
+    unsigned int width, height, bwidth, depth;
 
     switch (*buf) {
     case 's':
+    case 'S':
 	if (isdigit(buf[1]) && !buf[2]) {
 	    n = buf[1] - '0';
 	    root = DefaultRootWindow(dpy);
@@ -2533,16 +2544,40 @@ do_location(buf)
 				      locations[n].x, locations[n].y,
 				      &locations[n].x, &locations[n].y, &w);
 	    }
+	    locations[n].from_right = False;
+	    locations[n].from_bottom = False;
+	    if (*buf == 'S' && locations[n].window != root) {
+		XGetGeometry(dpy, locations[n].window, &root, &x, &y,
+			     &width, &height, &bwidth, &depth);
+		if (locations[n].x > (int)width/2) {
+		    locations[n].x -= (int)width;
+		    locations[n].from_right = True;
+		}
+		if (locations[n].y > (int)height/2) {
+		    locations[n].y -= (int)height;
+		    locations[n].from_bottom = True;
+		}
+	    }
 	}
 	break;
     case 'w':
 	if (isdigit(buf[1]) && !buf[2]) {
 	    n = buf[1] - '0';
-	    if (locations[n].window)
-		XWarpPointer(dpy, None, locations[n].window, 0, 0, 0, 0,
-			     locations[n].x, locations[n].y);
-	    else
+	    if (!locations[n].window)
 		XBell(dpy, 0);
+	    else {
+		x = locations[n].x;
+		y = locations[n].y;
+		if (locations[n].from_right || locations[n].from_bottom) {
+		    XGetGeometry(dpy, locations[n].window, &root, &wx, &wy,
+				 &width, &height, &bwidth, &depth);
+		    if (locations[n].from_right)
+			x += (int)width;
+		    if (locations[n].from_bottom)
+			y += (int)height;
+		}
+		XWarpPointer(dpy, None, locations[n].window, 0, 0, 0, 0, x, y);
+	    }
 	}
 	break;
     }
