@@ -1,4 +1,4 @@
-/* $XConsortium: CIELab.c,v 1.8 91/07/25 01:07:05 rws Exp $ */
+/* $XConsortium: CIELab.c,v 1.9 92/06/11 12:07:13 converse Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -57,7 +57,7 @@
 /*
  *	EXTERNS
  */
-extern char	XcmsCIELab_prefix[];
+extern char	_XcmsCIELab_prefix[];
 
 
 /*
@@ -98,7 +98,7 @@ static XcmsConversionProc Fl_CIEXYZ_to_CIELab[] = {
      */
 XcmsColorSpace	XcmsCIELabColorSpace =
     {
-	XcmsCIELab_prefix,	/* prefix */
+	_XcmsCIELab_prefix,	/* prefix */
 	XcmsCIELabFormat,		/* id */
 	CIELab_ParseString,	/* parseString */
 	Fl_CIELab_to_CIEXYZ,	/* to_CIEXYZ */
@@ -151,7 +151,7 @@ CIELab_ParseString(spec, pColor)
     /*
      * Check for proper prefix.
      */
-    if (strncmp(spec, XcmsCIELab_prefix, n) != 0) {
+    if (strncmp(spec, _XcmsCIELab_prefix, n) != 0) {
 	return(XcmsFailure);
     }
 

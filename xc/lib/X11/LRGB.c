@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsLRGB.c,v 1.24 92/06/04 16:25:26 converse Exp $" */
+/* $XConsortium: XcmsLRGB.c,v 1.25 92/06/11 15:23:08 converse Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -54,8 +54,8 @@
  *              that are not already declared in any of the included header
  *		files (external includes or internal includes).
  */
-extern char XcmsRGB_prefix[];
-extern char XcmsRGBi_prefix[];
+extern char _XcmsRGB_prefix[];
+extern char _XcmsRGBi_prefix[];
 extern unsigned long _XcmsGetElement();
 extern void _XcmsFreeIntensityMaps();
 
@@ -169,7 +169,7 @@ static XcmsConversionProc Fl_CIEXYZ_to_RGBi[] = {
      */
 XcmsColorSpace	XcmsRGBiColorSpace =
     {
-	XcmsRGBi_prefix,	/* prefix */
+	_XcmsRGBi_prefix,	/* prefix */
 	XcmsRGBiFormat,		/* id */
 	XcmsLRGB_RGBi_ParseString,	/* parseString */
 	Fl_RGBi_to_CIEXYZ,	/* to_CIEXYZ */
@@ -182,7 +182,7 @@ XcmsColorSpace	XcmsRGBiColorSpace =
      */
 XcmsColorSpace	XcmsRGBColorSpace =
     {
-	XcmsRGB_prefix,		/* prefix */
+	_XcmsRGB_prefix,		/* prefix */
 	XcmsRGBFormat,		/* id */
 	XcmsLRGB_RGB_ParseString,	/* parseString */
 	Fl_RGB_to_CIEXYZ,	/* to_CIEXYZ */
@@ -1323,7 +1323,7 @@ XcmsLRGB_RGB_ParseString(spec, pColor)
 	/*
 	 * Check for proper prefix.
 	 */
-	if (strncmp(spec, XcmsRGB_prefix, n) != 0) {
+	if (strncmp(spec, _XcmsRGB_prefix, n) != 0) {
 	    return(XcmsFailure);
 	}
 
@@ -1400,7 +1400,7 @@ XcmsLRGB_RGBi_ParseString(spec, pColor)
     /*
      * Check for proper prefix.
      */
-    if (strncmp(spec, XcmsRGBi_prefix, n) != 0) {
+    if (strncmp(spec, _XcmsRGBi_prefix, n) != 0) {
 	return(XcmsFailure);
     }
 

@@ -1,4 +1,4 @@
-/* $XConsortium: TekHVC.c,v 1.8 91/07/25 01:07:57 rws Exp $ */
+/* $XConsortium: TekHVC.c,v 1.9 92/06/11 12:09:55 converse Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -93,7 +93,7 @@
  *	EXTERNS
  */
 
-extern char XcmsTekHVC_prefix[];
+extern char _XcmsTekHVC_prefix[];
 
 /*
  *	FORWARD DECLARATIONS
@@ -134,7 +134,7 @@ static XcmsConversionProc Fl_CIEXYZ_to_TekHVC[] = {
      */
 XcmsColorSpace	XcmsTekHVCColorSpace =
     {
-	XcmsTekHVC_prefix,	/* prefix */
+	_XcmsTekHVC_prefix,	/* prefix */
 	XcmsTekHVCFormat,		/* id */
 	TekHVC_ParseString,	/* parseString */
 	Fl_TekHVC_to_CIEXYZ,	/* to_CIEXYZ */
@@ -190,7 +190,7 @@ TekHVC_ParseString(spec, pColor)
     /*
      * Check for proper prefix.
      */
-    if (strncmp(spec, XcmsTekHVC_prefix, n) != 0) {
+    if (strncmp(spec, _XcmsTekHVC_prefix, n) != 0) {
 	return(XcmsFailure);
     }
 

@@ -1,4 +1,4 @@
-/*$XConsortium: XcmsGlobls.c,v 1.7 91/06/27 10:52:29 dave Exp $ */
+/*$XConsortium: XcmsGlobls.c,v 1.8 91/07/25 01:08:47 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -135,26 +135,26 @@ XcmsFunctionSet **_XcmsSCCFuncSets = _XcmsSCCFuncSetsInit;
      * X Consortium Registered Device-Independent Color Spaces
      *	Note that prefix must be in lowercase.
      */
-char	XcmsCIEXYZ_prefix[] = "ciexyz";
-char	XcmsCIEuvY_prefix[] = "cieuvy";
-char	XcmsCIExyY_prefix[] = "ciexyy";
-char	XcmsCIELab_prefix[] = "cielab";
-char 	XcmsCIELuv_prefix[] = "cieluv";
-char	XcmsTekHVC_prefix[] = "tekhvc";
+char	_XcmsCIEXYZ_prefix[] = "ciexyz";
+char	_XcmsCIEuvY_prefix[] = "cieuvy";
+char	_XcmsCIExyY_prefix[] = "ciexyy";
+char	_XcmsCIELab_prefix[] = "cielab";
+char 	_XcmsCIELuv_prefix[] = "cieluv";
+char	_XcmsTekHVC_prefix[] = "tekhvc";
     /*
      * Registered Device-Dependent Color Spaces
      */
-char	XcmsRGBi_prefix[] = "rgbi";
-char	XcmsRGB_prefix[] = "rgb";
+char	_XcmsRGBi_prefix[] = "rgbi";
+char	_XcmsRGB_prefix[] = "rgb";
 
 XcmsRegColorSpaceEntry _XcmsRegColorSpaces[] = {
-    XcmsCIEXYZ_prefix,	XcmsCIEXYZFormat,
-    XcmsCIEuvY_prefix,	XcmsCIEuvYFormat,
-    XcmsCIExyY_prefix,	XcmsCIExyYFormat,
-    XcmsCIELab_prefix,	XcmsCIELabFormat,
-    XcmsCIELuv_prefix,	XcmsCIELuvFormat,
-    XcmsTekHVC_prefix,	XcmsTekHVCFormat,
-    XcmsRGB_prefix,	XcmsRGBFormat,
-    XcmsRGBi_prefix,	XcmsRGBiFormat,
+    _XcmsCIEXYZ_prefix,	XcmsCIEXYZFormat,
+    _XcmsCIEuvY_prefix,	XcmsCIEuvYFormat,
+    _XcmsCIExyY_prefix,	XcmsCIExyYFormat,
+    _XcmsCIELab_prefix,	XcmsCIELabFormat,
+    _XcmsCIELuv_prefix,	XcmsCIELuvFormat,
+    _XcmsTekHVC_prefix,	XcmsTekHVCFormat,
+    _XcmsRGB_prefix,	XcmsRGBFormat,
+    _XcmsRGBi_prefix,	XcmsRGBiFormat,
     NULL, 0
 };

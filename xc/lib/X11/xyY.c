@@ -1,4 +1,4 @@
-/* $XConsortium: CIExyY.c,v 1.7 91/07/25 01:07:54 rws Exp $ */
+/* $XConsortium: CIExyY.c,v 1.8 92/06/11 12:09:49 converse Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -54,7 +54,7 @@
  *	EXTERNS
  */
 
-extern char XcmsCIExyY_prefix[];
+extern char _XcmsCIExyY_prefix[];
 
 /*
  *	FORWARD DECLARATIONS
@@ -94,7 +94,7 @@ static XcmsConversionProc Fl_CIEXYZ_to_CIExyY[] = {
      */
 XcmsColorSpace	XcmsCIExyYColorSpace =
     {
-	XcmsCIExyY_prefix,	/* prefix */
+	_XcmsCIExyY_prefix,	/* prefix */
 	XcmsCIExyYFormat,		/* id */
 	CIExyY_ParseString,	/* parseString */
 	Fl_CIExyY_to_CIEXYZ,	/* to_CIEXYZ */
@@ -148,7 +148,7 @@ CIExyY_ParseString(spec, pColor)
     /*
      * Check for proper prefix.
      */
-    if (strncmp(spec, XcmsCIExyY_prefix, n) != 0) {
+    if (strncmp(spec, _XcmsCIExyY_prefix, n) != 0) {
 	return(XcmsFailure);
     }
 

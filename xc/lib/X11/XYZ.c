@@ -1,4 +1,4 @@
-/* $XConsortium: CIEXYZ.c,v 1.6 91/07/25 01:07:49 rws Exp $ */
+/* $XConsortium: CIEXYZ.c,v 1.7 92/06/11 12:09:21 converse Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -45,7 +45,7 @@
  *              that are not already declared in any of the included header
  *		files (external includes or internal includes).
  */
-extern char XcmsCIEXYZ_prefix[];
+extern char _XcmsCIEXYZ_prefix[];
 
 /*
  *	DEFINES
@@ -85,7 +85,7 @@ static XcmsConversionProc Fl_CIEXYZ_to_CIEXYZ[] = {
      */
 XcmsColorSpace	XcmsCIEXYZColorSpace =
     {
-	XcmsCIEXYZ_prefix,		/* prefix */
+	_XcmsCIEXYZ_prefix,		/* prefix */
 	XcmsCIEXYZFormat,		/* id */
 	CIEXYZ_ParseString,	/* parseString */
 	Fl_CIEXYZ_to_CIEXYZ,	/* to_CIEXYZ */
@@ -137,7 +137,7 @@ CIEXYZ_ParseString(spec, pColor)
     /*
      * Check for proper prefix.
      */
-    if (strncmp(spec, XcmsCIEXYZ_prefix, n) != 0) {
+    if (strncmp(spec, _XcmsCIEXYZ_prefix, n) != 0) {
 	return(XcmsFailure);
     }
 

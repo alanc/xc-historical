@@ -1,4 +1,4 @@
-/* $XConsortium: CIELuv.c,v 1.10 92/03/03 14:15:02 rws Exp $ */
+/* $XConsortium: CIELuv.c,v 1.11 92/06/11 12:08:56 converse Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -47,7 +47,7 @@
  *	EXTERNS
  */
 
-extern char XcmsCIELuv_prefix[];
+extern char _XcmsCIELuv_prefix[];
 
 
 /*
@@ -100,7 +100,7 @@ static XcmsConversionProc Fl_CIEXYZ_to_CIELuv[] = {
      */
 XcmsColorSpace	XcmsCIELuvColorSpace =
     {
-	XcmsCIELuv_prefix,	/* prefix */
+	_XcmsCIELuv_prefix,	/* prefix */
 	XcmsCIELuvFormat,		/* id */
 	CIELuv_ParseString,	/* parseString */
 	Fl_CIELuv_to_CIEXYZ,	/* to_CIEXYZ */
@@ -153,7 +153,7 @@ CIELuv_ParseString(spec, pColor)
     /*
      * Check for proper prefix.
      */
-    if (strncmp(spec, XcmsCIELuv_prefix, n) != 0) {
+    if (strncmp(spec, _XcmsCIELuv_prefix, n) != 0) {
 	return(XcmsFailure);
     }
 
