@@ -240,6 +240,26 @@ OBJS2 =\
 	XlibInt.o \
 	Xrm.o \
 	evtomask.o \
+	GetGCVals.o \
+	GetNrmHint.o \
+	GetRGBCMap.o \
+	GetTxtProp.o \
+	GetWMCMapW.o \
+	GetWMProto.o \
+	Iconify.o \
+	PixFormats.o \
+	PropAlloc.o \
+	ReconfWM.o \
+	SetNrmHint.o \
+	SetRGBCMap.o \
+	SetTxtProp.o \
+	SetWMCMapW.o \
+	SetWMProps.o \
+	SetWMProto.o \
+	StrToText.o \
+	TextToStr.o \
+	WMGeom.o \
+	Withdraw.o \
 	$(AIDOBJS) \
 	$(AUTHOBJS)
 
