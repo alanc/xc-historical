@@ -1,4 +1,4 @@
-/* $XConsortium: nameserver.c,v 1.1 91/07/12 15:54:54 gildea Exp $ */
+/* $XConsortium: nameserver.c,v 1.2 91/07/17 15:07:11 gildea Exp $ */
 /*	nameserver.c - included by Xstreams.c			*/
 /*	Used for System V Release 3.2 networking code ONLY	*/
 
@@ -26,6 +26,8 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
  * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
+
+#ifdef XSTREAMS_COMPILE /* magic symbol to avoid lint problems */
 
 static int svr4plus = 0;
 static char clonedev[MAX_AUTO_BUF_LEN];
@@ -825,3 +827,5 @@ OpenVirtualCircuit(lfd)
 	return(OpenAndBind(NULL, -1, 0,
 		 	Network._net[_XsTypeOfStream[lfd]], _XsTypeOfStream[lfd]));
 }
+
+#endif /* XSTREAMS_COMPILE */

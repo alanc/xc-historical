@@ -1,4 +1,4 @@
-/* $XConsortium: nameaddr.c,v 1.2 91/07/16 16:36:59 gildea Exp $ */
+/* $XConsortium: nameaddr.c,v 1.3 91/07/18 12:14:56 gildea Exp $ */
 /*	nameaddr.c - included by Xstreams.c			*/
 /*	Used for System V Release 4.0 networking code		*/
 
@@ -26,6 +26,8 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
  * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
+
+#ifdef XSTREAMS_COMPILE /* magic symbol to avoid lint problems */
 
 static void   *handlep = NULL;
 static int    family = 0;
@@ -898,3 +900,5 @@ OpenVirtualCircuit(lfd)
 	}
 	return(fd);
 }
+
+#endif /* XSTREAMS_COMPILE */
