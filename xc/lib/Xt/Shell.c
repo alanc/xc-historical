@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.60 89/09/18 07:59:10 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.61 89/09/19 08:37:30 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif /* lint */
 
@@ -521,6 +521,7 @@ static XtResource applicationResources[]=
 	    Offset(application.argv), XtRPointer, (XtPointer) NULL}
 };
 
+static void ApplicationInitialize();
 static void ApplicationDestroy();
 
 externaldef(applicationshellclassrec) ApplicationShellClassRec applicationShellClassRec = {
@@ -531,7 +532,7 @@ externaldef(applicationshellclassrec) ApplicationShellClassRec applicationShellC
     /* Class Initializer  */	NULL,
     /* class_part_initialize*/	NULL,
     /* Class init'ed ?    */	FALSE,
-    /* initialize         */    NULL,
+    /* initialize         */    ApplicationInitialize,
     /* initialize_notify    */	NULL,		
     /* realize            */    XtInheritRealize,
     /* actions            */    NULL,
@@ -726,6 +727,23 @@ static void TopLevelInitialize(req, new)
 	} else {
 	    w->topLevel.icon_name = XtNewString(w->topLevel.icon_name);
 	}
+}
+
+/* ARGSUSED */
+static void ApplicationInitialize(req, new)
+    Widget req, new;
+{
+    ApplicationShellWidget w = (ApplicationShellWidget)new;
+    /* copy the argv if passed */
+    if (w->application.argc > 0) {
+	int i = w->application.argc;
+	char **argv = (char**)XtMalloc( (unsigned)i*sizeof(char*) );
+	char **argp = w->application.argv + i;
+	while (--i >= 0) {
+	    argv[i] = *--argp;
+	}
+	w->application.argv = argv;
+    }
 }
 
 static void Resize(w)
