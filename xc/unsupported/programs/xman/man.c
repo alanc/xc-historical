@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: man.c,v 1.12 89/08/30 18:53:01 kit Exp $
+ * $XConsortium: man.c,v 1.13 89/12/06 20:41:56 jim Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -251,65 +251,67 @@ char * path;
  *	Returns: none.
  */
 
-AddStandardCraySections(list, path)
+AddStandardCraySections(list, path, names)
 SectionList **list;
 char * path **names;
 {
-  sprintf(file, "%s1bsd", MAN);
+  char file[BUFSIZ];
+
+  sprintf(file, "%s1bsd", SEARCHDIR);
   AddNewSection(list, path, file, names[0], TRUE);
-  sprintf(file, "%s1m", MAN);
+  sprintf(file, "%s1m", SEARCHDIR);
   AddNewSection(list, path, file, names[0], TRUE);
-  sprintf(file, "%s1r", MAN);
+  sprintf(file, "%s1r", SEARCHDIR);
   AddNewSection(list, path, file, names[0], TRUE);
-  sprintf(file, "%s1rb", MAN);
+  sprintf(file, "%s1rb", SEARCHDIR);
   AddNewSection(list, path, file, names[0], TRUE);
   
-  sprintf(file, "%s3X11", MAN);
+  sprintf(file, "%s3X11", SEARCHDIR);
   AddNewSection(list, path, file, names[2], TRUE);
-  sprintf(file, "%s3Xt", MAN);
+  sprintf(file, "%s3Xt", SEARCHDIR);
   AddNewSection(list, path, file, names[2], TRUE);
-  sprintf(file, "%s3bsd", MAN);
+  sprintf(file, "%s3bsd", SEARCHDIR);
   AddNewSection(list, path, file, names[2], TRUE);
-  sprintf(file, "%s3c", MAN);
+  sprintf(file, "%s3c", SEARCHDIR);
   AddNewSection(list, path, file, names[2], TRUE);
-  sprintf(file, "%s3db", MAN);
+  sprintf(file, "%s3db", SEARCHDIR);
   AddNewSection(list, path, file, names[2], TRUE);
-  sprintf(file, "%s3f", MAN);
+  sprintf(file, "%s3f", SEARCHDIR);
   AddNewSection(list, path, file, names[2], TRUE);
-  sprintf(file, "%s3io", MAN);
+  sprintf(file, "%s3io", SEARCHDIR);
   AddNewSection(list, path, file, names[2], TRUE);
-  sprintf(file, "%s3m", MAN);
+  sprintf(file, "%s3m", SEARCHDIR);
   AddNewSection(list, path, file, names[2], TRUE);
-  sprintf(file, "%s3mt", MAN);
+  sprintf(file, "%s3mt", SEARCHDIR);
   AddNewSection(list, path, file, names[2], TRUE);
-  sprintf(file, "%s3n", MAN);
+  sprintf(file, "%s3n", SEARCHDIR);
   AddNewSection(list, path, file, names[2], TRUE);
-  sprintf(file, "%s3q", MAN);
+  sprintf(file, "%s3q", SEARCHDIR);
   AddNewSection(list, path, file, names[2], TRUE);
-  sprintf(file, "%s3rpc", MAN);
+  sprintf(file, "%s3rpc", SEARCHDIR);
   AddNewSection(list, path, file, names[2], TRUE);
-  sprintf(file, "%s3s", MAN);
+  sprintf(file, "%s3s", SEARCHDIR);
   AddNewSection(list, path, file, names[2], TRUE);
-  sprintf(file, "%s3sci", MAN);
+  sprintf(file, "%s3sci", SEARCHDIR);
   AddNewSection(list, path, file, names[2], TRUE);
-  sprintf(file, "%s3svc", MAN);
+  sprintf(file, "%s3svc", SEARCHDIR);
   AddNewSection(list, path, file, names[2], TRUE);
-  sprintf(file, "%s3u", MAN);
+  sprintf(file, "%s3u", SEARCHDIR);
   AddNewSection(list, path, file, names[2], TRUE);
-  sprintf(file, "%s3w", MAN);
+  sprintf(file, "%s3w", SEARCHDIR);
   AddNewSection(list, path, file, names[2], TRUE);
-  sprintf(file, "%s3x", MAN);
+  sprintf(file, "%s3x", SEARCHDIR);
   AddNewSection(list, path, file, names[2], TRUE);
-  sprintf(file, "%s3yp", MAN);
+  sprintf(file, "%s3yp", SEARCHDIR);
   AddNewSection(list, path, file, names[2], TRUE);
-  sprintf(file, "%s3z", MAN);
+  sprintf(file, "%s3z", SEARCHDIR);
   AddNewSection(list, path, file, names[2], TRUE);
   
-  sprintf(file, "%s4d", MAN);
+  sprintf(file, "%s4d", SEARCHDIR);
   AddNewSection(list, path, file, names[3], TRUE);
-  sprintf(file, "%s4f", MAN);
+  sprintf(file, "%s4f", SEARCHDIR);
   AddNewSection(list, path, file, names[3], TRUE);
-  sprintf(file, "%s4n", MAN);
+  sprintf(file, "%s4n", SEARCHDIR);
   AddNewSection(list, path, file, names[3], TRUE);
 }
 #endif /* CRAY */
@@ -360,7 +362,7 @@ char * path;
   AddNewSection(list, path, file, names[i], TRUE);
 
 #ifdef CRAY			/* The Cray's sections are all screwed up. */
-  AddCraySections(list, path, names);
+  AddStandardCraySections(list, path, names);
 #endif
 }
 
