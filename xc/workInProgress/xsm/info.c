@@ -1,4 +1,4 @@
-/* $XConsortium: info.c,v 1.8 94/07/26 14:17:54 mor Exp $ */
+/* $XConsortium: info.c,v 1.9 94/07/27 16:04:38 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -28,29 +28,46 @@ in this Software without prior written authorization from the X Consortium.
 #include "xsm.h"
 #include "restart.h"
 
+static String 		*clientListNames = NULL;
+static ClientRec	**clientListRecs = NULL;
+static int		numClientListNames = 0;
+
+static int		longest = 400;
+
+static Bool		client_prop_visible = 0;
+
+static int restartHints[] = {
+	SmRestartIfRunning,
+	SmRestartAnyway,
+	SmRestartImmediately,
+	SmRestartNever
+};
+
 
 
 static void
-GetClientInfoXtProc (w, client_data, callData)
+ShowHint (client)
 
-Widget		w;
-XtPointer 	client_data;
-XtPointer 	callData;
+ClientRec *client;
 
 {
-    ClientRec *client = ClientList;
-    XawListReturnStruct *current;
-    int client_index, i, j;
-    static Bool did_first_popup = 0;
+    int currentHint = client->restartHint;
 
-    current = XawListShowCurrent (clientListWidget);
-    client_index = current->list_index;
+    XawToggleSetCurrent (restartIfRunning /* just 1 of the group */,
+	(XtPointer) &restartHints[currentHint]);
+}
 
-    while (client_index > 0)
-    {
-	client = client->next;
-	client_index--;
-    }
+
+
+static void
+DisplayProps (client, clientName)
+
+ClientRec *client;
+char *clientName;
+
+{
+    Position x, y, rootx, rooty;
+    int i, j;
 
     if (client->numProps > 0)
     {
@@ -85,6 +102,19 @@ XtPointer 	callData;
 		strcat (buffer, "Value 1:	");
 		sprintf (number, "%d", value);
 		strcat (buffer, number);
+
+		if (strcmp (prop->name, SmRestartStyleHint) == 0)
+		{
+		    if (value == SmRestartAnyway)
+			strcat (buffer, " (Restart Anyway)");
+		    else if (value == SmRestartImmediately)
+			strcat (buffer, " (Restart Immediately)");
+		    else if (value == SmRestartNever)
+			strcat (buffer, " (Restart Never)");
+		    else
+			strcat (buffer, " (Restart If Running)");
+		}
+
 		strcat (buffer, "\n");
 	    }
 	    else
@@ -108,25 +138,63 @@ XtPointer 	callData;
 	    XtNstring, buffer,
 	    NULL);
 
-	sprintf (buffer, "SM Properties : %s", current->string);
+	sprintf (buffer, "SM Properties : %s", clientName);
 
 	XtVaSetValues (clientPropPopup,
 	    XtNtitle, buffer,
+	    XtNiconName, buffer,
 	    NULL);
 
-	if (!did_first_popup)
+	if (!client_prop_visible)
 	{
-	    Position x, y, rootx, rooty;
-
 	    XtVaGetValues (mainWindow, XtNx, &x, XtNy, &y, NULL);
 	    XtTranslateCoords (mainWindow, x, y, &rootx, &rooty);
-	    XtMoveWidget (clientPropPopup, rootx + 50, rooty + 150);
-	    did_first_popup = 1;
+	    XtVaSetValues (clientPropPopup,
+	        XtNx, rootx + 50,
+	        XtNy, rooty + 150,
+	        NULL);
+
+	    XtPopup (clientPropPopup, XtGrabNone);
+
+	    client_prop_visible = 1;
 	}
-
-	XtPopup (clientPropPopup, XtGrabNone);
     }
+}
 
+
+
+static void
+ClientListXtProc (w, client_data, callData)
+
+Widget		w;
+XtPointer 	client_data;
+XtPointer 	callData;
+
+{
+    XawListReturnStruct *current = (XawListReturnStruct *) callData;
+    ClientRec *client = clientListRecs[current->list_index];
+    ShowHint (client);
+    if (client_prop_visible)
+	DisplayProps (client, current->string);
+}
+
+
+
+
+static void
+ViewPropXtProc (w, client_data, callData)
+
+Widget		w;
+XtPointer 	client_data;
+XtPointer 	callData;
+
+{
+    ClientRec *client;
+    XawListReturnStruct *current;
+
+    current = XawListShowCurrent (clientListWidget);
+    client = clientListRecs[current->list_index];
+    DisplayProps (client, current->string);
     XtFree ((char *) current);
 }
 
@@ -140,21 +208,15 @@ XtPointer 	client_data;
 XtPointer 	callData;
 
 {
-    ClientRec *client = ClientList;
+    ClientRec *client;
     XawListReturnStruct *current;
-    int client_index;
 
     current = XawListShowCurrent (clientListWidget);
-    client_index = current->list_index;
 
-    while (client_index > 0)
-    {
-	client = client->next;
-	client_index--;
-    }
+    client = clientListRecs[current->list_index];
 
     if (client)
-	Clone (client);
+	Clone (client, False /* don't use saved state */);
 }
 
 
@@ -167,18 +229,12 @@ XtPointer 	client_data;
 XtPointer 	callData;
 
 {
-    ClientRec *client = ClientList;
+    ClientRec *client;
     XawListReturnStruct *current;
-    int client_index;
 
     current = XawListShowCurrent (clientListWidget);
-    client_index = current->list_index;
 
-    while (client_index > 0)
-    {
-	client = client->next;
-	client_index--;
-    }
+    client = clientListRecs[current->list_index];
 
     SmsDie (client->smsConn);
 }
@@ -200,6 +256,59 @@ XtPointer 	callData;
 
 
 static void
+RestartHintXtProc (w, client_data, callData)
+
+Widget		w;
+XtPointer 	client_data;
+XtPointer 	callData;
+
+{
+    XawListReturnStruct *current;
+    ClientRec *client;
+    XtPointer ptr;
+    char hint;
+    int i;
+
+    current = XawListShowCurrent (clientListWidget);
+
+    client = clientListRecs[current->list_index];
+
+    ptr = XawToggleGetCurrent (restartIfRunning /* just 1 of the group */);
+
+    if (!ptr)
+	return;
+
+    hint = *((int *) ptr);
+
+    if (hint == SmRestartIfRunning || hint == SmRestartAnyway ||
+	hint == SmRestartImmediately || hint == SmRestartNever)
+    {
+	SmProp prop;
+	SmPropValue propval;
+
+	client->restartHint = hint;
+
+	for (i = 0; i < client->numProps; i++)
+	    if (strcmp (SmRestartStyleHint, client->props[i]->name) == 0)
+	    {
+		*((char *) (client->props[i]->vals[0].value)) = hint;
+		return;
+	    }
+
+	prop.name = SmRestartStyleHint;
+	prop.type = SmCARD8;
+	prop.num_vals = 1;
+	prop.vals = &propval;
+	propval.value = (SmPointer) &hint;
+	propval.length = 1;
+
+	SetProperty (client, &prop, True /* Malloc for us */);
+    }
+}
+
+
+
+static void
 clientPropDoneXtProc (w, client_data, callData)
 
 Widget		w;
@@ -208,6 +317,7 @@ XtPointer 	callData;
 
 {
     XtPopdown (clientPropPopup);
+    client_prop_visible = 0;
 }
 
 
@@ -245,23 +355,39 @@ UpdateClientList ()
     char *restart_service_prop;
     int i, j, k;
 
-    if (clientNames)
+    if (clientListNames)
     {
 	/*
 	 * Free the previous list of names.  Xaw doesn't make a copy of
 	 * our list, so we need to keep it around.
 	 */
 
-	for (i = 0; i < numClientNames; i++)
-	    XtFree (clientNames[i]);
-	free ((char *) clientNames);
+	for (i = 0; i < numClientListNames; i++)
+	    XtFree (clientListNames[i]);
+
+	free ((char *) clientListNames);
+
+	clientListNames = NULL;
+    }
+
+    if (clientListRecs)
+    {
+	/*
+	 * Free the mapping of client names to client records
+	 */
+
+	free ((char *) clientListRecs);
+	clientListRecs = NULL;
     }
 
     maxlen1 = maxlen2 = 0;
-    client = ClientList;
+    numClientListNames = 0;
 
-    for (i = 0; i < numClients; i++, client = client->next)
+    for (client = ClientList; client; client = client->next)
     {
+	if (!client->running)
+	    continue;
+
 	restart_service_prop = NULL;
 
 	for (j = 0; j < client->numProps; j++)
@@ -293,15 +419,19 @@ UpdateClientList ()
 
 	if (strlen (hostname) > maxlen2)
 	    maxlen2 = strlen (hostname);
+
+	numClientListNames++;
     }
 
-    clientNames = (String *) malloc (numClients * sizeof (String));
-    numClientNames = numClients;
+    clientListNames = (String *) malloc (numClientListNames * sizeof (String));
+    clientListRecs = (ClientRec **) malloc (
+	numClientListNames * sizeof (ClientRec *));
 
-    client = ClientList;
-
-    for (i = 0; i < numClients; i++, client = client->next)
+    for (client = ClientList, i = 0; client; client = client->next)
     {
+	if (!client->running)
+	    continue;
+
 	progName = NULL;
 	restart_service_prop = NULL;
 
@@ -356,11 +486,17 @@ UpdateClientList ()
 		    hostname, extraBuf2);
 	}
 
-	clientNames[i] = clientInfo;
+	clientListRecs[i] = client;
+	clientListNames[i++] = clientInfo;
     }
 
-    XawListChange (clientListWidget, clientNames, numClients, 0, True);
+    XawListChange (clientListWidget,
+	clientListNames, numClientListNames, longest, True);
     XawListHighlight (clientListWidget, 0);
+
+    ShowHint (clientListRecs[0]);
+    if (client_prop_visible)
+	DisplayProps (clientListRecs[0], clientListNames[0]);
 }
 
 
@@ -372,23 +508,18 @@ ClientInfoXtProc (w, client_data, callData)
     XtPointer 	callData;
 
 {
-    static Bool did_first_popup = 0;
+    Position x, y, rootx, rooty;
 
     if (!client_info_visible)
     {
 	UpdateClientList ();
-	XtRealizeWidget (clientInfoPopup);
 
-	if (!did_first_popup)
-	{
-	    Position x, y, rootx, rooty;
-
-	    XtVaGetValues (mainWindow, XtNx, &x, XtNy, &y, NULL);
-	    XtTranslateCoords (mainWindow, x, y, &rootx, &rooty);
-	    XtMoveWidget (clientInfoPopup, rootx + 100, rooty + 50);
-	    did_first_popup = 1;
-	}
-
+	XtVaGetValues (mainWindow, XtNx, &x, XtNy, &y, NULL);
+	XtTranslateCoords (mainWindow, x, y, &rootx, &rooty);
+	XtVaSetValues (clientInfoPopup,
+	    XtNx, rootx + 100,
+	    XtNy, rooty + 50,
+	    NULL);
 	XtPopup (clientInfoPopup, XtGrabNone);
 
 	client_info_visible = 1;
@@ -401,12 +532,15 @@ void
 create_client_info_popup ()
 
 {
+    extern Widget AddToggle ();
+
+
     /*
      * Pop up for List Clients button.
      */
 
     clientInfoPopup = XtVaCreatePopupShell (
-	"clientInfoPopup", transientShellWidgetClass, topLevel,
+	"clientInfoPopup", topLevelShellWidgetClass, topLevel,
 	XtNallowShellResize, True,
 	NULL);
     
@@ -419,15 +553,19 @@ create_client_info_popup ()
 	"viewPropButton", commandWidgetClass, clientInfoForm,
         XtNfromHoriz, NULL,
         XtNfromVert, NULL,
+	XtNtop, XawChainTop,
+	XtNbottom, XawChainTop,
         NULL);
     
-    XtAddCallback (viewPropButton, XtNcallback, GetClientInfoXtProc, 0);
+    XtAddCallback (viewPropButton, XtNcallback, ViewPropXtProc, 0);
 
 
     cloneButton = XtVaCreateManagedWidget (
 	"cloneButton", commandWidgetClass, clientInfoForm,
         XtNfromHoriz, viewPropButton,
         XtNfromVert, NULL,
+	XtNtop, XawChainTop,
+	XtNbottom, XawChainTop,
         NULL);
     
     XtAddCallback (cloneButton, XtNcallback, CloneXtProc, 0);
@@ -437,6 +575,8 @@ create_client_info_popup ()
 	"killClientButton", commandWidgetClass, clientInfoForm,
         XtNfromHoriz, cloneButton,
         XtNfromVert, NULL,
+	XtNtop, XawChainTop,
+	XtNbottom, XawChainTop,
         NULL);
     
     XtAddCallback (killClientButton, XtNcallback, KillClientXtProc, 0);
@@ -446,6 +586,8 @@ create_client_info_popup ()
 	"clientInfoDoneButton", commandWidgetClass, clientInfoForm,
         XtNfromHoriz, killClientButton,
         XtNfromVert, NULL,
+	XtNtop, XawChainTop,
+	XtNbottom, XawChainTop,
         NULL);
 
     XtAddCallback (clientInfoDoneButton, XtNcallback, listDoneXtProc, 0);
@@ -458,7 +600,74 @@ create_client_info_popup ()
         XtNfromHoriz, NULL,
         XtNfromVert, viewPropButton,
 	XtNresizable, True,
+	XtNtop, XawChainTop,
+	XtNbottom, XawChainBottom,
 	NULL);
+
+    XtAddCallback (clientListWidget, XtNcallback, ClientListXtProc, 0);
+
+
+    restartHintLabel = XtVaCreateManagedWidget (
+	"restartHintLabel", labelWidgetClass, clientInfoForm,
+        XtNfromHoriz, NULL,
+        XtNfromVert, clientListWidget,
+        XtNborderWidth, 0,
+	XtNtop, XawChainBottom,
+	XtNbottom, XawChainBottom,
+	NULL);
+
+    restartIfRunning = AddToggle (
+	"restartIfRunning", 			/* widgetName */
+	clientInfoForm,				/* parent */
+	1,					/* state */
+        NULL,					/* radioGroup */
+        (XtPointer) &restartHints[0],		/* radioData */
+        restartHintLabel,			/* fromHoriz */
+        clientListWidget,			/* fromVert */
+	XawChainBottom,				/* top */
+	XawChainBottom				/* bottom */
+    );
+
+    restartAnyway = AddToggle (
+	"restartAnyway", 			/* widgetName */
+	clientInfoForm,				/* parent */
+	0,					/* state */
+        restartIfRunning,			/* radioGroup */
+        (XtPointer) &restartHints[1],		/* radioData */
+        restartIfRunning,			/* fromHoriz */
+        clientListWidget,			/* fromVert */
+	XawChainBottom,				/* top */
+	XawChainBottom				/* bottom */
+    );
+
+    restartImmediately = AddToggle (
+	"restartImmediately", 			/* widgetName */
+	clientInfoForm,				/* parent */
+	0,					/* state */
+        restartIfRunning,			/* radioGroup */
+        (XtPointer) &restartHints[2],		/* radioData */
+        restartAnyway,				/* fromHoriz */
+        clientListWidget,			/* fromVert */
+	XawChainBottom,				/* top */
+	XawChainBottom				/* bottom */
+    );
+
+    restartNever = AddToggle (
+	"restartNever", 			/* widgetName */
+	clientInfoForm,				/* parent */
+	0,					/* state */
+        restartIfRunning,			/* radioGroup */
+        (XtPointer) &restartHints[3],		/* radioData */
+        restartImmediately,			/* fromHoriz */
+        clientListWidget,			/* fromVert */
+	XawChainBottom,				/* top */
+	XawChainBottom				/* bottom */
+    );
+
+    XtAddCallback (restartIfRunning, XtNcallback, RestartHintXtProc, 0);
+    XtAddCallback (restartAnyway, XtNcallback, RestartHintXtProc, 0);
+    XtAddCallback (restartImmediately, XtNcallback, RestartHintXtProc, 0);
+    XtAddCallback (restartNever, XtNcallback, RestartHintXtProc, 0);
 
 
     /*
@@ -466,7 +675,7 @@ create_client_info_popup ()
      */
 
     clientPropPopup = XtVaCreatePopupShell (
-	"clientPropPopup", transientShellWidgetClass, topLevel,
+	"clientPropPopup", topLevelShellWidgetClass, topLevel,
 	XtNallowShellResize, True,
 	NULL);
     
@@ -480,6 +689,8 @@ create_client_info_popup ()
         XtNfromHoriz, NULL,
         XtNfromVert, NULL,
 	XtNresizable, True,
+	XtNtop, XawChainTop,
+	XtNbottom, XawChainTop,
         NULL);
 
     XtAddCallback (clientPropDoneButton, XtNcallback, clientPropDoneXtProc, 0);
@@ -494,5 +705,7 @@ create_client_info_popup ()
 	XtNscrollVertical, XawtextScrollWhenNeeded,
 	XtNscrollHorizontal, XawtextScrollWhenNeeded,
 	XtNresizable, True,
+	XtNtop, XawChainTop,
+	XtNbottom, XawChainBottom,
 	NULL);
 }
