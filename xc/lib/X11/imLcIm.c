@@ -1,4 +1,4 @@
-/* $XConsortium: imLcIm.c,v 1.7 94/03/30 09:09:55 rws Exp $ */
+/* $XConsortium: imLcIm.c,v 1.8 94/07/06 14:46:57 kaleb Exp kaleb $ */
 /******************************************************************
 
           Copyright 1992, 1993, 1994 by FUJITSU LIMITED
@@ -58,8 +58,10 @@ _XimCheckIfLocalProcessing(im)
 	if (name != (char *)NULL) {
 	    fp = fopen(name, "r");
 	    Xfree(name);
-	    if (fp != (FILE *)NULL)
+	    if (fp != (FILE *)NULL) {
+		fclose(fp);
 		return(True);
+	    }
 	}
 	return(False);
     } else if(strcmp(im->core.im_name, "local") == 0 ||
