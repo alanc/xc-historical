@@ -1,4 +1,4 @@
-/* $XConsortium: keysymdef.h,v 1.12 89/09/18 10:15:37 rws Exp $ */
+/* $XConsortium: keysymdef.h,v 1.13 89/12/12 16:23:30 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -190,8 +190,8 @@ SOFTWARE.
 #define XK_R11			0xFFDC
 #define XK_F32			0xFFDD
 #define XK_R12			0xFFDD
-#define XK_R13			0xFFDE
 #define XK_F33			0xFFDE
+#define XK_R13			0xFFDE
 #define XK_F34			0xFFDF
 #define XK_R14			0xFFDF
 #define XK_F35			0xFFE0
