@@ -1,7 +1,10 @@
 /*
- * $Header: main.c,v 1.6 87/08/14 17:59:51 rws Locked $
+ * $Header: main.c,v 1.7 87/12/16 16:55:04 rws Exp $
  *
  * $Log:	main.c,v $
+ * Revision 1.7  87/12/16  16:55:04  rws
+ * HP lossage
+ * 
  * Revision 1.6  87/08/14  17:59:51  toddb
  * Added call to inc_clean() after traversing graph.
  * 
@@ -54,6 +57,19 @@ char	*directives[] = {
 	NULL
 };
 
+struct symtab	predefs[] = {
+#ifdef sun
+	{"sun", NULL},
+#endif
+#ifdef hpux
+	{"hpux", NULL},
+#endif
+#ifdef VMS
+	{"VMS", NULL},
+#endif VMS
+	{NULL, NULL}
+};
+
 struct symtab	deflist[ MAXDEFINES ];
 struct	inclist inclist[ MAXFILES ],
 		*inclistp = inclist;
@@ -94,7 +110,10 @@ main(argc, argv)
 	register struct inclist	*ip;
 	char	*makefile = NULL;
 	struct filepointer	*filecontent;
+	struct symtab *psymp = predefs;
 
+	while (psymp->s_name)
+	    *symp++ = *psymp++;
 	for(argc--, argv++; argc; argc--, argv++) {
 		if (**argv != '-') {
 			*fp++ = argv[0];
