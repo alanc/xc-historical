@@ -1,5 +1,5 @@
 /*
- *	rcs_id[] = "$Header: globals.h,v 1.9 87/12/24 10:15:25 swick Locked $";
+ *	rcs_id[] = "$Header: globals.h,v 2.9 87/12/24 10:15:25 swick Locked $";
  */
 
 /*
@@ -62,6 +62,7 @@ ext int		defBreakSendLineWidth;	/* Minimum length of a line before
 ext char	*defPrintCommand; /* Printing command. */
 
 ext int		defTocWidth;	/* How many characters wide to use in tocs */
+ext int		mailWaitingFlag;	/* If true, change icon on new mail */
 
 ext Boolean	SkipDeleted;		/* If true, skip over deleted msgs. */
 ext Boolean	SkipMoved;		/* If true, skip over moved msgs. */
