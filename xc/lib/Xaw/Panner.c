@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.3 90/02/12 11:55:59 jim Exp $
+ * $XConsortium: Panner.c,v 1.4 90/02/12 14:58:02 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -37,7 +37,7 @@ static char defaultTranslations[] =
    <Btn1Motion>:  move() \n\
    <Btn1Up>:      notify() stop() \n\
    <Btn2Down>:    abort() \n\
-   <Key>KP_Enter: set(dynamic,toggle) ";
+   <Key>KP_Enter: set(rubberband,toggle) ";
 
 static void ActionStart(), ActionStop(), ActionAbort(), ActionMove();
 static void ActionNotify(), ActionSet();
@@ -63,8 +63,8 @@ static XtResource resources[] = {
 	poff(callbacks), XtRCallback, (XtPointer) NULL },
     { XtNdefaultScale, XtCDefaultScale, XtRDimension, sizeof(Dimension),
 	poff(default_scale), XtRImmediate, (XtPointer) PANNER_DEFAULT_SCALE },
-    { XtNdynamic, XtCDynamic, XtRBoolean, sizeof(Boolean),
-	poff(dynamic), XtRImmediate, (XtPointer) FALSE },
+    { XtNrubberBand, XtCRubberBand, XtRBoolean, sizeof(Boolean),
+	poff(rubber_band), XtRImmediate, (XtPointer) TRUE },
     { XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel), 
 	poff(foreground), XtRImmediate, (XtPointer) "XtDefaultForeground" },
     { XtNlineWidth, XtCLineWidth, XtRDimension, sizeof(Dimension),
@@ -186,9 +186,7 @@ static void reset_xor_gc (pw)		/* used when resources change */
 {
     if (pw->panner.xor_gc) XtReleaseGC ((Widget) pw, pw->panner.xor_gc);
 
-    if (pw->panner.dynamic) {
-	pw->panner.xor_gc = NULL;
-    } else {
+    if (pw->panner.rubber_band) {
 	XtGCMask valuemask = (GCForeground | GCFunction);
 	XGCValues values;
 
@@ -200,6 +198,8 @@ static void reset_xor_gc (pw)		/* used when resources change */
 	    values.line_width = pw->panner.line_width;
 	}
 	pw->panner.xor_gc = XtGetGC ((Widget) pw, valuemask, &values);
+    } else {
+	pw->panner.xor_gc = NULL;
     }
 }
 
@@ -396,8 +396,16 @@ static void Redisplay (gw, event, region)
     Display *dpy = XtDisplay(gw);
     Window w = XtWindow(gw);
 
-    XClearArea (dpy, w, 0, 0, 0, 0, False);
     pw->panner.tmp.showing = FALSE;
+    XClearArea (XtDisplay(pw), XtWindow(pw), 
+		pw->panner.last_x - pw->panner.line_width, 
+		pw->panner.last_y - pw->panner.line_width, 
+		pw->panner.knob_width + 2 + pw->panner.line_width * 2, 
+		pw->panner.knob_height + 2 + pw->panner.line_width * 2, 
+		False);
+    pw->panner.last_x = pw->panner.knob_x;
+    pw->panner.last_y = pw->panner.knob_y;
+
     XFillRectangle (dpy, w, pw->panner.slider_gc,
 		    pw->panner.knob_x, pw->panner.knob_y,
 		    pw->panner.knob_width - 1, pw->panner.knob_height - 1);
@@ -410,7 +418,7 @@ static void Redisplay (gw, event, region)
 	XFillRectangles (dpy, w, pw->panner.shadow_gc,
 			 pw->panner.shadow_rects, 2);
     }
-    if (pw->panner.tmp.doing && !pw->panner.dynamic) DRAW_TMP (pw);
+    if (pw->panner.tmp.doing && pw->panner.rubber_band) DRAW_TMP (pw);
 }
 
 
@@ -442,7 +450,7 @@ static Boolean SetValues (gcur, greq, gnew, args, num_args)
 	move_shadow (new);
 	redisplay = TRUE;
     }
-    if (cur->panner.dynamic != new->panner.dynamic) {
+    if (cur->panner.rubber_band != new->panner.rubber_band) {
 	reset_xor_gc (new);
 	if (new->panner.tmp.doing) redisplay = TRUE;
     }
@@ -516,8 +524,7 @@ static void ActionStart (gw, event, params, num_params)
     pw->panner.tmp.dy = (((Position) y) - pw->panner.knob_y);
     pw->panner.tmp.x = pw->panner.knob_x;
     pw->panner.tmp.y = pw->panner.knob_y;
-    pw->panner.last_x = pw->panner.last_y = PANNER_OUTOFRANGE;
-    if (!pw->panner.dynamic) DRAW_TMP (pw);
+    if (pw->panner.rubber_band) DRAW_TMP (pw);
 }
 
 static void ActionStop (gw, event, params, num_params)
@@ -534,7 +541,7 @@ static void ActionStop (gw, event, params, num_params)
 	pw->panner.tmp.y = ((Position) y) - pw->panner.tmp.dy;
 	if (!pw->panner.allow_off) check_knob (pw, FALSE);
     }
-    if (!pw->panner.dynamic) UNDRAW_TMP (pw);
+    if (pw->panner.rubber_band) UNDRAW_TMP (pw);
     pw->panner.tmp.doing = FALSE;
 }
 
@@ -548,12 +555,12 @@ static void ActionAbort (gw, event, params, num_params)
 
     if (!pw->panner.tmp.doing) return;
 
-    if (pw->panner.dynamic) {		/* restore old position */
+    if (pw->panner.rubber_band) UNDRAW_TMP (pw);
+
+    if (!pw->panner.rubber_band) {		/* restore old position */
 	pw->panner.tmp.x = pw->panner.tmp.startx;
 	pw->panner.tmp.y = pw->panner.tmp.starty;
 	ActionNotify (gw, event, params, num_params);
-    } else {
-	UNDRAW_TMP (pw);
     }
     pw->panner.tmp.doing = FALSE;
 }
@@ -576,12 +583,11 @@ static void ActionMove (gw, event, params, num_params)
 	return;
     }
 
-    if (!pw->panner.dynamic) UNDRAW_TMP (pw);
-
+    if (pw->panner.rubber_band) UNDRAW_TMP (pw);
     pw->panner.tmp.x = ((Position) x) - pw->panner.tmp.dx;
     pw->panner.tmp.y = ((Position) y) - pw->panner.tmp.dy;
 
-    if (pw->panner.dynamic) {
+    if (!pw->panner.rubber_band) {
 	ActionNotify (gw, event, params, num_params);  /* does a check */
     } else {
 	if (!pw->panner.allow_off) check_knob (pw, FALSE);
@@ -604,16 +610,14 @@ static void ActionNotify (gw, event, params, num_params)
     pw->panner.knob_y = pw->panner.tmp.y;
     if (pw->panner.shadow) move_shadow (pw);
 
-    pw->panner.last_x = pw->panner.slider_x;
-    pw->panner.last_y = pw->panner.slider_y;
     pw->panner.slider_x = (Position) (((float) pw->panner.knob_x) /
 				      pw->panner.haspect);
     pw->panner.slider_y = (Position) (((float) pw->panner.knob_y) /
 				      pw->panner.vaspect);
 
-    if (pw->panner.last_x != pw->panner.slider_x ||
-	pw->panner.last_y != pw->panner.slider_y) {
-	Redisplay (gw);
+    if (pw->panner.last_x != pw->panner.knob_x ||
+	pw->panner.last_y != pw->panner.knob_y) {
+	Redisplay (gw, (XEvent*) NULL, (Region) NULL);
 	/* call callback */
     }
 }
@@ -625,27 +629,28 @@ static void ActionSet (gw, event, params, num_params)
     Cardinal *num_params;		/* unused */
 {
     PannerWidget pw = (PannerWidget) gw;
-    Boolean dyn;
+    Boolean rb;
 
-    if (*num_params < 2 || XmuCompareISOLatin1 (params[0], "dynamic") != 0) {
+    if (*num_params < 2 ||
+	XmuCompareISOLatin1 (params[0], "rubberband") != 0) {
 	XBell (XtDisplay(gw), 0);
 	return;
     }
 
     if (XmuCompareISOLatin1 (params[1], "on") == 0) {
-	dyn = TRUE;
+	rb = TRUE;
     } else if (XmuCompareISOLatin1 (params[1], "off") == 0) {
-	dyn = FALSE;
+	rb = FALSE;
     } else if (XmuCompareISOLatin1 (params[1], "toggle") == 0) {
-	dyn = !pw->panner.dynamic;
+	rb = !pw->panner.rubber_band;
     } else {
 	XBell (XtDisplay(gw), 0);
 	return;
     }
 
-    if (dyn != pw->panner.dynamic) {
+    if (rb != pw->panner.rubber_band) {
 	Arg args[1];
-	XtSetArg (args[0], XtNdynamic, dyn);
+	XtSetArg (args[0], XtNrubberBand, rb);
 	XtSetValues (gw, args, (Cardinal) 1);
     }
 }

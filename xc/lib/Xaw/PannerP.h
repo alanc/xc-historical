@@ -1,5 +1,5 @@
 /*
- * $XConsortium: PannerP.h,v 1.3 90/02/12 11:56:03 jim Exp $
+ * $XConsortium: PannerP.h,v 1.4 90/02/12 14:58:07 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -59,7 +59,7 @@ typedef struct {			/* new fields in widget */
     GC shadow_gc;			/* edge of slider and shadow */
     GC xor_gc;				/* for doing XOR tmp graphics */
     float haspect, vaspect;		/* aspect ratio of core to canvas */
-    Boolean dynamic;			/* true if slider should move */
+    Boolean rubber_band;		/* true = rubber band, false = move */
     struct {
 	Boolean doing;			/* tmp graphics in progress */
 	Boolean showing;		/* true if tmp graphics displayed */
@@ -71,7 +71,7 @@ typedef struct {			/* new fields in widget */
     Dimension knob_width, knob_height;	/* real size of knob in canvas */
     Boolean shadow_valid;		/* true if rects are valid */
     XRectangle shadow_rects[2];		/* location of shadows */
-    Position last_x, last_y;		/* previous location of slider */
+    Position last_x, last_y;		/* previous location of knob */
 } PannerPart;
 
 typedef struct _PannerRec {

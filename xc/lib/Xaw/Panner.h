@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.h,v 1.3 90/02/12 11:56:02 jim Exp $
+ * $XConsortium: Panner.h,v 1.4 90/02/12 14:58:05 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -43,9 +43,9 @@
  *  canvasWidth		CanvasWidth	Dimension	0
  *  canvasHeight	CanvasHeight	Dimension	0
  *  defaultScale	DefaultScale	Dimension	10 (percent)
- *  dynamic		Dynamic		Boolean		FALSE
  *  foreground		Foreground	Pixel		XtDefaultForeground
  *  lineWidth		LineWidth	Dimension	0
+ *  rubberBand		RubberBand	Boolean		TRUE
  *  shadow		Shadow		Boolean		TRUE
  *  sliderColor		Background	Pixel		XtDefaultBackground
  *  sliderX		SliderX		Position	0
@@ -64,10 +64,10 @@
 #define XtCCanvasWidth "CanvasWidth"
 #define XtNcanvasHeight "canvasHeight"
 #define XtCCanvasHeight "CanvasHeight"
-#define XtNdynamic "dynamic"
-#define XtCDynamic "Dynamic"
 #define XtNlineWidth "lineWidth"
 #define XtCLineWidth "LineWidth"
+#define XtNrubberBand "rubberBand"
+#define XtCRubberBand "RubberBand"
 #define XtNshadow "shadow"
 #define XtCShadow "Shadow"
 #define XtNsliderColor "sliderColor"
