@@ -1,4 +1,4 @@
-/* $XConsortium: miSC.c,v 5.1 91/02/16 09:56:02 rws Exp $ */
+/* $XConsortium: miSC.c,v 5.2 92/11/17 17:34:36 hersh Exp $ */
 
 
 /***********************************************************
@@ -143,7 +143,7 @@ SearchNetwork(pSC, pNumRefs, pBuffer)
 		return( BadAlloc );
 	}
 
-	rend.immediateMode = 0;
+	rend.immediateMode = FALSE;
 	/* InitRenderer does some stuff not needed for Searching
 	 * and since some of that stuff uses a drawable (and searching
 	 * doesn't have one), a work-aroundis put in around the drawable

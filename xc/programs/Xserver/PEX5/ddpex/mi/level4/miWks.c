@@ -1,4 +1,4 @@
-/* $XConsortium: miWks.c,v 5.8 92/10/14 15:05:58 hersh Exp $ */
+/* $XConsortium: miWks.c,v 5.9 92/10/15 16:13:50 hersh Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -403,7 +403,7 @@ CreatePhigsWks(pInitInfo, pWKS)
 	prend->tablesChanges = 0;
 	prend->namesetsChanges = 0;
 	prend->attrsChanges = 0;
-	prend->immediateMode = MI_FALSE;
+	prend->immediateMode = FALSE;
 
 	prend->pDDContext = NULL;
 
