@@ -133,7 +133,7 @@ static void ClearLocalMessageBuffer();
 static void MoveLocalMessagesToGlobalBuffer();
 static void FreeMessagePool();
 static void FreeMessageBuffer();
-static void BufferMessageForClient();
+void BufferMessageForClient();
 static void WriteMessagesToSocket();
 static void DeliverMessagesToClient();
 static void CreateClientOutputThread();
@@ -1235,7 +1235,6 @@ WriteEventsToClient(client, count, events)
     }
 }
 
-static
 void
 BufferMessageForClient(client, message)
 ClientPtr client;
