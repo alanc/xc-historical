@@ -1,0 +1,29 @@
+XCOMM $XConsortium: Imakefile,v 1.14 91/07/12 17:06:55 rws Exp $
+
+   LOCLIBS = $(XONLYLIB)
+   DEPLIBS = $(DEPXONLYLIB)
+   XTLOCLIBS = $(XTOOLLIB) $(XONLYLIB)
+   XTDEPLIBS = $(DEPXTOOLLIB) $(DEPXONLYLIB)
+   SRCS = xkbver.c xkbev.c xkbshow.c xkblock.c xkbctrl.c xkbsetmasks.c \
+	  xkbwatch.c symcvt.c kstokc.c xkbdebug.c xkbleds.c xkbbell.c \
+	  xkbrefresh.c xkbleds.c
+
+all: xkbver xkbev xkbshow xkblock xkbctrl xkbsetmasks xkbwatch symcvt kstokc \
+	xkbdebug xkbleds xkbbell xkbrefresh xkbleds
+
+NormalProgramTarget(xkbver,xkbver.o,$(DEPLIBS),$(LOCLIBS),NullParameter)
+NormalProgramTarget(xkbev,xkbev.o,$(DEPLIBS),$(LOCLIBS),NullParameter)
+NormalProgramTarget(xkbshow,xkbshow.o,$(DEPLIBS),$(LOCLIBS),NullParameter)
+NormalProgramTarget(xkblock,xkblock.o,$(DEPLIBS),$(LOCLIBS),NullParameter)
+NormalProgramTarget(xkbctrl,xkbctrl.o,$(DEPLIBS),$(LOCLIBS),NullParameter)
+NormalProgramTarget(xkbsetmasks,xkbsetmasks.o,$(DEPLIBS),$(LOCLIBS),NullParameter)
+NormalProgramTarget(xkbwatch,xkbwatch.o,$(DEPLIBS),$(LOCLIBS),NullParameter)
+NormalProgramTarget(symcvt,symcvt.o,$(DEPLIBS),$(LOCLIBS),NullParameter)
+NormalProgramTarget(kstokc,kstokc.o,$(DEPLIBS),$(LOCLIBS),NullParameter)
+NormalProgramTarget(xkbdebug,xkbdebug.o,$(DEPLIBS),$(LOCLIBS),NullParameter)
+NormalProgramTarget(xkbleds,xkbleds.o,$(DEPLIBS),$(LOCLIBS),NullParameter)
+NormalProgramTarget(xkbbell,xkbbell.o,$(DEPLIBS),$(LOCLIBS),NullParameter)
+NormalProgramTarget(xkbrefresh,xkbrefresh.o,$(DEPLIBS),$(LOCLIBS),NullParameter)
+NormalProgramTarget(xkbleds,xkbleds.o,$(DEPLIBS),$(LOCLIBS),NullParameter)
+
+DependTarget()
