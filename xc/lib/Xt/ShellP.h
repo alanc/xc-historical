@@ -1,4 +1,4 @@
-/* $XConsortium: ShellP.h,v 1.36 94/03/20 18:18:54 converse Exp $ */
+/* $XConsortium: ShellP.h,v 1.37 94/03/21 16:21:26 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -364,9 +364,21 @@ typedef struct {
     XtCallbackList  save_callbacks;
     XtCallbackList  interact_callbacks;
     XtCallbackList  cancel_callbacks;
+    XtCallbackList  save_complete_callbacks;
     XtCallbackList  die_callbacks;
     XtSaveYourself  save;
     XtInputId       input_id;
+    XtPointer       ses20;
+    XtPointer       ses19;
+    XtPointer       ses18;
+    XtPointer       ses17;
+    XtPointer       ses16;
+    XtPointer       ses15;
+    XtPointer       ses14;
+    XtPointer       ses13;
+    XtPointer       ses12;
+    XtPointer       ses11;
+    XtPointer       ses10;
     XtPointer       ses9;
     XtPointer       ses8;
     XtPointer       ses7;
@@ -376,7 +388,6 @@ typedef struct {
     XtPointer       ses3;
     XtPointer       ses2;
     XtPointer       ses1;
-    XtPointer       ses0;
 } SessionShellPart;
 
 typedef  struct {
