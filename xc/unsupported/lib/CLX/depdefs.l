@@ -593,6 +593,7 @@
 
 #-(or ansi-common-lisp Genera)
 (defun print-unreadable-object-function (object stream type identity function)
+  (declare (downward-funarg function))
   (princ "#<" stream)
   (when type
     (let ((type (type-of object))
