@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.108 90/03/15 17:14:31 jim Exp $
+ * $XConsortium: twm.c,v 1.109 90/03/15 17:26:47 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.108 90/03/15 17:14:31 jim Exp $";
+"$XConsortium: twm.c,v 1.109 90/03/15 17:26:47 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -263,7 +263,7 @@ main(argc, argv, environ)
 	XSelectInput(dpy, RootWindow (dpy, scrnum),
 	    ColormapChangeMask | EnterWindowMask | PropertyChangeMask | 
 	    SubstructureRedirectMask | KeyPressMask |
-	    ButtonPressMask | ButtonReleaseMask | ExposureMask);
+	    ButtonPressMask | ButtonReleaseMask);
 	XSync(dpy, 0);
 	XSetErrorHandler(TwmErrorHandler);
 

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.146 90/03/22 14:35:41 jim Exp $
+ * $XConsortium: events.c,v 1.147 90/03/22 18:44:35 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.146 90/03/22 14:35:41 jim Exp $";
+"$XConsortium: events.c,v 1.147 90/03/22 18:44:35 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -963,8 +963,6 @@ HandleExpose()
 {
     MenuRoot *tmp;
     static void flush_expose();
-
-    if (Scr && Event.xexpose.window == Scr->Root) return;
 
     if (XFindContext(dpy, Event.xany.window, MenuContext, (caddr_t *)&tmp) == 0)
     {
