@@ -264,7 +264,8 @@ show_fonts()
 				max_width = width;
 		}
 		if (max_width == 0)
-			Fatal_Error("Max width of font names is 0!");
+			Fatal_Error("all %d fontnames listed are zero length",
+				    font_cnt);
 
 		if (columns == 0) {
 		    if ((max_width * 2) + output_line_padding >
