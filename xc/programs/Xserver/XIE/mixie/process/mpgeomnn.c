@@ -1,4 +1,4 @@
-/* $XConsortium: mpgeomnn.c,v 1.4 93/11/06 15:40:59 rws Exp $ */
+/* $XConsortium: mpgeomnn.c,v 1.5 94/01/12 20:22:45 rws Exp $ */
 /**** module mpgeomnn.c ****/
 /******************************************************************************
 				NOTICE
@@ -479,7 +479,7 @@ static int ActivateGeomNN(flo,ped)
 	    hi_in = pvtband->first_ihigh;
 			
 	    /* rest of output image is off input image */
-	    if ( (hi_in < 0) || (lo_in > pvtband->in_height))
+	    if ( (hi_in < 0) || (lo_in > pvtband->hi_src_available) )
 		(*pvtband->fillfunc)(outp,width,pvtband);
 	    else
 		/* Compute output pixels for this line */
