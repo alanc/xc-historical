@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.39 90/12/31 17:18:16 gildea Exp $
+ * $XConsortium: Panner.c,v 1.40 91/02/17 15:38:24 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -78,7 +78,7 @@ static XtResource resources[] = {
     { XtNrubberBand, XtCRubberBand, XtRBoolean, sizeof(Boolean),
 	poff(rubber_band), XtRImmediate, (XtPointer) FALSE },
     { XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel), 
-	poff(foreground), XtRString, (XtPointer) "XtDefaultBackground" },
+	poff(foreground), XtRString, (XtPointer) XtDefaultBackground },
     { XtNinternalSpace, XtCInternalSpace, XtRDimension, sizeof(Dimension),
 	poff(internal_border), XtRImmediate, (XtPointer) 4 },
     { XtNlineWidth, XtCLineWidth, XtRDimension, sizeof(Dimension),
@@ -96,7 +96,7 @@ static XtResource resources[] = {
     { XtNsliderHeight, XtCSliderHeight, XtRDimension, sizeof(Dimension),
 	poff(slider_height), XtRImmediate, (XtPointer) 0 },
     { XtNshadowColor, XtCShadowColor, XtRPixel, sizeof(Pixel),
-	poff(shadow_color), XtRString, (XtPointer) "XtDefaultForeground" },
+	poff(shadow_color), XtRString, (XtPointer) XtDefaultForeground },
     { XtNshadowThickness, XtCShadowThickness, XtRDimension, sizeof(Dimension),
 	poff(shadow_thickness), XtRImmediate, (XtPointer) 2 },
     { XtNbackgroundStipple, XtCBackgroundStipple, XtRString, sizeof(String),
