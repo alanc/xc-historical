@@ -1,0 +1,55 @@
+XCOMM $XConsortium: Imakefile,v 1.3 94/02/10 20:09:29 dpw Exp $
+
+#if HasXdmAuth
+XDMAUTH_DEFINES = -DHASXDMAUTH -DXDMCP
+XDMAUTH_INCLUDES= -I$(XDMCPLIBSRC)
+XDMAUTH_SRCS    = xdmauth.c xdmcp.c 
+XDMAUTH_OBJS    = xdmauth.o xdmcp.o 
+#endif
+ 
+#if HasSecureRPC
+RPC_DEFINES     = -DSECURE_RPC
+RPC_SRCS        = rpcauth.c
+RPC_OBJS        = rpcauth.o
+RPCLIB          = -lrpcsvc
+#endif
+  
+#if HasKrb5
+KRB5_DEFINES    = Krb5Defines
+KRB5_INCLUDES   = Krb5Includes
+KRB5_SRCS       = k5auth.c k5encode.c
+KRB5_OBJS       = k5auth.o k5encode.o
+#endif
+
+EXTRA_DEFINES = -DLBX ConnectionFlags $(XDMAUTH_DEFINES) $(RPC_DEFINES) \
+                $(KRB5_DEFINES)  AllocateLocalDefines
+INCLUDES = -I$(TOP)/include -I$(SERVERSRC)/include -I$(EXTINCSRC) \
+           -I$(LIBSRC)/Xau $(KRB5_INCLUDES) $(XDMAUTH_INCLUDES)
+    SRCS = connection.c io.c WaitFor.c osinit.c access.c auth.c \
+           $(XDMAUTH_SRCS) $(RPC_SRCS) $(KRB5_SRCS)
+
+    OBJS = connection.o io.o WaitFor.o osinit.o access.o auth.o \
+           $(XDMAUTH_OBJS) $(RPC_OBJS) $(KRB5_OBJS)
+ 
+NormalLibraryObjectRule()
+NormalLibraryTarget(os,$(OBJS))
+LintLibraryTarget(os,$(SRCS))
+NormalLintTarget($(SRCS))
+
+DependTarget()
+
+#if HasXdmAuth
+LinkSourceFile(xdmauth.c, $(SERVERSRC)/os)
+LinkSourceFile(xdmcp.c,   $(SERVERSRC)/os)
+LinkSourceFile(auth.c,    $(SERVERSRC)/os)
+LinkSourceFile(access.c,  $(SERVERSRC)/os)
+#endif
+
+#if HasSecureRPC
+LinkSourceFile(rpcauth.c, $(SERVERSRC)/os)
+#endif
+
+#if HasKrb5
+LinkSourceFile(k5auth.c,  $(SERVERSRC)/os)
+LinkSourceFile(k5encode.c,$(SERVERSRC)/os)
+#endif
