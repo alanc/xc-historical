@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.70 93/08/17 22:10:09 rws Exp $
+ * $XConsortium: main.c,v 1.71 93/08/18 10:15:55 rws Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -334,13 +334,13 @@ struct filepointer *getfile(file)
 	content = (struct filepointer *)malloc(sizeof(struct filepointer));
 	if ((fd = open(file, O_RDONLY)) < 0) {
 		warning("cannot open \"%s\"\n", file);
-		content->f_p = content->f_base = content->f_end = malloc(1);
+		content->f_p = content->f_base = content->f_end = (char *)malloc(1);
 		*content->f_p = '\0';
 		return(content);
 	}
 	fstat(fd, &st);
 	content->f_len = st.st_size+1;
-	content->f_base = malloc(content->f_len);
+	content->f_base = (char *)malloc(content->f_len);
 	if (content->f_base == NULL)
 		fatalerr("cannot allocate mem\n");
 	if (read(fd, content->f_base, st.st_size) < 0)
@@ -363,7 +363,7 @@ freefile(fp)
 char *copy(str)
 	register char	*str;
 {
-	register char	*p = malloc(strlen(str) + 1);
+	register char	*p = (char *)malloc(strlen(str) + 1);
 
 	strcpy(p, str);
 	return(p);
