@@ -226,7 +226,7 @@ sunGetPixel (pScreen, r, g, b)
     unsigned short  b;	    /* Blue value to use */
 {
     ColormapPtr cmap = (ColormapPtr) LookupID(pScreen->defColormap, RT_COLORMAP, RC_CORE);
-    Pixel       pix;
+    Pixel       pix = 0;
 
     if (!cmap || AllocColor(cmap, &r, &g, &b, &pix, 0)) {
 	ErrorF("sunGetPixel: Can't alloc pixel (%d,%d,%d) in map 0x%x\n",
