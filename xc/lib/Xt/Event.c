@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Event.c,v 1.102 89/10/04 09:14:11 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Event.c,v 1.103 89/10/11 13:18:41 swick Exp $";
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 #endif /* lint */
 
@@ -1314,6 +1314,8 @@ static void HandleFocus(widget, client_data, event, continue_to_dispatch)
 		add = (event->type == EnterNotify);
 		break;
       case FocusIn:
+		if (event->xfocus.detail == NotifyPointer) return;
+		/* fall through */
       case FocusOut:
 		if ((event->xfocus.mode != NotifyNormal &&
 		     event->xfocus.mode != NotifyWhileGrabbed) ||
@@ -1434,11 +1436,11 @@ void XtSetKeyboardFocus(widget, descendant)
 	return;
     }
 
-    /* shells are always occluded by their children */
-    mask = FocusChangeMask;
-    if (widget != XtParent(descendant) || !XtIsShell(widget)) {
-	mask |= EnterWindowMask | LeaveWindowMask;
-    }
+    /* shells are occluded by their children, so crossings don't matter */
+    if (widget != XtParent(descendant) || !XtIsShell(widget))
+	mask = FocusChangeMask | EnterWindowMask | LeaveWindowMask;
+    else
+	mask = FocusChangeMask;
 
     AddEventHandler(widget, mask, False, HandleFocus, (XtPointer)descendant,
 		    XtListHead, FALSE, FALSE, FALSE);
