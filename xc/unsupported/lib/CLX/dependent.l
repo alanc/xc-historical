@@ -2260,6 +2260,7 @@
 ;;; pixel.
 
 (defmacro write-image-load-byte (position integer integer-size)
+  integer-size
   `(the card8
 	(#-Genera ldb #+Genera sys:%logldb
 	  (byte 8 ,(if *image-byte-lsb-first-p*
