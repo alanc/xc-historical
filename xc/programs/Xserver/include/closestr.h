@@ -29,25 +29,31 @@ typedef struct _LFclosure {
     FontPathElementPtr	*fpe_list;
     FontNamesPtr	names;
     char		*pattern;
-    int			maxnames;
+    int			max_names;
     int			patlen;
     Bool		slept;
 }           LFclosureRec;
 
+typedef struct _LFWIstate {
+    char	*pattern;
+    int		patlen;
+    int		current_fpe;
+    int		max_names;
+    Bool	list_started;
+    pointer	private;
+} LFWIstateRec, *LFWIstatePtr;
+
 typedef struct _LFWIclosure {
     ClientPtr		client;
-    FontNamesPtr	names;
-    int			current_name;
-    short		current_fpe;
-    short		num_fpes;
+    int			num_fpes;
     FontPathElementPtr	*fpe_list;
     xListFontsWithInfoReply *reply;
     int			length;
-    char		*name;
-    int			namelen;
-    Bool		list_started;
+    LFWIstateRec	current;
+    LFWIstateRec	saved;
+    int			savedNumFonts;
+    Bool		haveSaved;
     Bool		slept;
-    pointer		private;
-}           LFWIclosureRec;
-
+    char		*savedName;
+} LFWIclosureRec;
 #endif				/* CLOSESTR_H */
