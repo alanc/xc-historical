@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.47 88/04/30 12:03:26 rws Exp $ */
+/* $Header: dispatch.c,v 1.48 88/05/05 09:17:30 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -3142,13 +3142,8 @@ CloseDownClient(client)
         client->clientGone = TRUE;  /* so events aren't sent to client */
         CloseDownConnection(client);
         FreeClientResources(client);
-        for (i=0; i<currentMaxClients; i++)
-            if (clients[i] == client)
-	    {
-		nextFreeClientID = i;
-                clients[nextFreeClientID] = NullClient;
-		break;
-	    }
+	nextFreeClientID = client->index;
+	clients[client->index] = NullClient;
         xfree(client);
 	if(--nClients == 0)
 	    nClients = -1;
@@ -3157,13 +3152,8 @@ CloseDownClient(client)
     else if (client->clientGone)
     {
         FreeClientResources(client);
-        for (i=0; i<currentMaxClients; i++)
-            if (clients[i] == client)
-	    {
-		nextFreeClientID = i;
-                clients[nextFreeClientID] = NullClient;
-		break;
-	    }
+	nextFreeClientID = client->index;
+	clients[client->index] = NullClient;
         xfree(client);
 	--nClients;
     }
@@ -3179,7 +3169,7 @@ KillAllClients()
 {
     int i;
     for (i=1; i<currentMaxClients; i++)
-        if (clients[i] && !clients[i]->clientGone)
+        if (clients[i])
             CloseDownClient(clients[i]);     
 }
 
@@ -3228,36 +3218,35 @@ CloseDownRetainedResources()
  * int NextAvailableClientID()
  *
  * OS depedent portion can't assign client id's because of CloseDownModes.
- * Returns -1 if the there are no free clients.
+ * Returns NULL if the there are no free clients.
  *************************/
 
 ClientPtr
 NextAvailableClient()
 {
-    int i;
-    ClientPtr client;
+    register int i;
+    register ClientPtr client;
 
-    if (nextFreeClientID >= currentMaxClients)
-        nextFreeClientID = 1;
-    if (!clients[nextFreeClientID])
+    i = nextFreeClientID;
+    while (clients[i])
     {
-	i = nextFreeClientID;
-	nextFreeClientID++;
+	i++;
+	if (i >= currentMaxClients)
+	    i = 1;
+	if (i != nextFreeClientID)
+	    continue;
+	if (currentMaxClients == MAXCLIENTS)
+	    return (ClientPtr) NULL;
+	i = currentMaxClients;
+	currentMaxClients++;
+	clients = (ClientPtr *)xrealloc(clients,
+					currentMaxClients * sizeof(ClientPtr));
+	break;
     }
-    else
-    {
-	i = 1;
-	while ((i<currentMaxClients) && (clients[i]))
-            i++;
-        if (i < currentMaxClients)
-	    nextFreeClientID = i;
-	else
-        {
-	    clients = (ClientPtr *)xrealloc(clients,
-					    i * sizeof(ClientRec));
-	    currentMaxClients++;
-	}
-    }
+    nextFreeClientID = i + 1;
+    if (nextFreeClientID == currentMaxClients)
+	nextFreeClientID = 1;
+
     clients[i] = client =  (ClientPtr)xalloc(sizeof(ClientRec));
     client->index = i;
     client->sequence = 0; 
@@ -3318,8 +3307,6 @@ Oops (client, reqCode, minorCode, status)
     rep.minorCode = minorCode;
     rep.resourceID = client->errorValue;
 
-    for (i=0; i<currentMaxClients; i++)
-        if (clients[i] == client) break;
 #ifdef notdef
     ErrorF(  "OOPS! => client: %x, seq: %d, err: %d, maj:%d, min: %d resID: %x\n",
     	client->index, rep.sequenceNumber, rep.errorCode,
