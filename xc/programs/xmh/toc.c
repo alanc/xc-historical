@@ -1,5 +1,5 @@
 /*
- * $XConsortium: toc.c,v 2.33 89/11/25 21:06:17 converse Exp $
+ * $XConsortium: toc.c,v 2.34 89/12/14 21:14:13 converse Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -249,7 +249,7 @@ void TocCheckForNewMail()
 			if (app_resources.mail_waiting_flag
 			    && toc == InitialFolder) {
 			    arglist[0].value = (XtArgVal)
-				hasmail ? NewMailPixmap : NoMailPixmap;
+				(hasmail ? NewMailPixmap : NoMailPixmap);
 			    XtSetValues(scrn->parent,
 					arglist, XtNumber(arglist));
 			} 
