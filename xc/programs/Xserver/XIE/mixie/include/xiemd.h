@@ -1,4 +1,4 @@
-/* $XConsortium: xiemd.h,v 1.1 93/10/26 09:51:23 rws Exp $ */
+/* $XConsortium: xiemd.h,v 1.2 93/10/31 09:46:20 dpw Exp $ */
 /**** module xiemd.h ****/
 /******************************************************************************
 				NOTICE
@@ -53,6 +53,7 @@ terms and conditions:
 
 #include <X.h>
 #include <servermd.h>
+#include "misc.h" /* for pointer */
 
 #ifndef _XIEC_MPBITFUN
 extern unsigned char _ByteReverseTable[];
@@ -138,7 +139,7 @@ typedef unsigned char		LogByte;
 **	bitexpand() - expand a bunch of bits to fg,bg bytes.
 */
 
-void *bitexpand();
+pointer bitexpand();
 void  bitshrink();
 void  action_clear();
 void  action_set();
