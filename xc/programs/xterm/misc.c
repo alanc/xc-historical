@@ -1,5 +1,5 @@
 /*
- *	$Header: misc.c,v 1.5 88/02/16 17:39:03 jim Exp $
+ *	$Header: misc.c,v 1.6 88/02/17 11:27:58 jim Exp $
  */
 
 
@@ -52,7 +52,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$Header: misc.c,v 1.5 88/02/16 17:39:03 jim Exp $";
+static char rcs_id[] = "$Header: misc.c,v 1.6 88/02/17 11:27:58 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -238,7 +238,7 @@ register TScreen *screen;
 	    &mask)) {
 		if(win && 
                  ((win == term->core.parent->core.window) ||
-                 (tekWidget && (win == tekWidget->core.parent->core.window))))
+                 (tekWidget && (win == tekWidget->core.window))))
 			selectwindow(screen, INWINDOW);
 		else	unselectwindow(screen, INWINDOW);
 	}

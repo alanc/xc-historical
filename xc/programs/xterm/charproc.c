@@ -1,6 +1,5 @@
 /*
- * $Source: /usr/expo/X/src/clients/xterm.new/RCS/charproc.c,v $
- * $Header: charproc.c,v 1.14 88/02/16 19:32:19 jim Exp $
+ * $Header: charproc.c,v 1.15 88/02/17 11:27:48 jim Exp $
  */
 
 
@@ -58,7 +57,7 @@ extern void exit(), bcopy();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$Header: charproc.c,v 1.14 88/02/16 19:32:19 jim Exp $";
+static char rcs_id[] = "$Header: charproc.c,v 1.15 88/02/17 11:27:48 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -1473,6 +1472,7 @@ VTRun()
 	HideCursor();
 	screen->cursor_set = OFF;
 	VTUnselect();
+	reselectwindow (screen);
 }
 
 /*ARGSUSED*/
@@ -1980,14 +1980,19 @@ HideCursor()
 VTSelect()
 {
         register Widget shell = term->core.parent;
-	XSetWindowBorder(XtDisplay(shell), shell->core.window, term->core.border_pixel);
+
+	if (shell->core.window)
+	  XSetWindowBorder (XtDisplay(shell), shell->core.window,
+			    term->core.border_pixel);
 }
 
 VTUnselect()
 {
 	register Widget shell = term->core.parent;
-	XSetWindowBorderPixmap(XtDisplay(shell), shell->core.window, 
-	  term->screen.graybordertile);
+
+	if (shell->core.window)
+	  XSetWindowBorderPixmap (XtDisplay(shell), shell->core.window, 
+				  term->screen.graybordertile);
 }
 
 VTReset(full)

@@ -1,9 +1,7 @@
 /*
- * $Source: /usr/expo/X/src/clients/xterm.new/RCS/Tekproc.c,v $
- * $Header: Tekproc.c,v 1.10 88/02/16 19:32:13 jim Exp $
+ * $Header: Tekproc.c,v 1.12 88/02/17 11:27:41 jim Exp $
  *
- * Warning, there be crufty dragons here.  This is a good example of how to add
- * a trash bag on the side of a widget.  
+ * Warning, there be crufty dragons here.
  */
 
 
@@ -117,7 +115,7 @@ char *curs_color;
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$Header: Tekproc.c,v 1.10 88/02/16 19:32:13 jim Exp $";
+static char rcs_id[] = "$Header: Tekproc.c,v 1.12 88/02/17 11:27:41 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -245,6 +243,8 @@ static void TekInitialize (request, new)
 {
     if (request->core.width < 0) new->core.width = 1;
     if (request->core.height < 0) new->core.height = 1;
+    new->core.border_pixel = term->core.border_pixel;
+    new->core.background_pixel = term->core.background_pixel;
     return;
 }
 
@@ -1033,6 +1033,7 @@ TekRun()
 	}
 	screen->TekEmu = FALSE;
 	TekUnselect();
+	reselectwindow (screen);
 }
 
 #define DOTTED_LENGTH 2
@@ -1100,7 +1101,7 @@ static void TekRealize (gw, valuemaskp, values)
 
     screen->xorplane = 1;
 
-    screen->Tbackground = term->core.background_pixel;
+    screen->Tbackground = tw->core.background_pixel;
     screen->Tforeground = screen->foreground;
     screen->Tcursorcolor = screen->foreground;
 
@@ -1201,6 +1202,7 @@ static void TekRealize (gw, valuemaskp, values)
       sizehints.flags |= USSize;
     else sizehints.flags |= PSize;
 
+    *valuemaskp &= ~CWBorderPixel;
     values->border_pixmap = screen->graybordertile;
     values->win_gravity = NorthWestGravity;
     values->background_pixel = screen->Tbackground;
@@ -1401,6 +1403,8 @@ int toggle;
 	register int c, x, y;
 	register T_fontsize *Tf;
 
+	if (!screen->Tshow) return;
+
 	c = screen->cur.fontsize;
 	Tf = &Tfontsize[c];
 
@@ -1438,14 +1442,18 @@ TekSelect()
 {
 	register TScreen *screen = &term->screen;
 
-	XSetWindowBorder(screen->display, TWindow(screen), tekWidget->core.border_pixel);
+	if (TWindow (screen))
+	  XSetWindowBorder (screen->display, TWindow(screen),
+			    tekWidget->core.border_pixel);
 }
 
 TekUnselect()
 {
 	register TScreen *screen = &term->screen;
 
-	XSetWindowBorderPixmap(screen->display, TWindow(screen), screen->graybordertile);
+	if (TWindow (screen))
+	  XSetWindowBorderPixmap (screen->display, TWindow(screen),
+				  screen->graybordertile);
 }
 
 TekCopy()
