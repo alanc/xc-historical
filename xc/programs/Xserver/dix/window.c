@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.170 87/09/07 18:56:00 drewry Locked $ */
+/* $Header: window.c,v 1.171 87/09/10 19:33:58 rws Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -557,11 +557,6 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
     box.y1 = pWin->absCorner.y;
     box.x2 = box.x1 + w;
     box.y2 = box.y1 + h;
-    /* deal with overflow from adding unsigned w,h to signed x, y */
-    if (box.x2 < box.x1)
-	box.x2 = MAXSHORT;
-    if (box.y2 < box.y1)
-	box.y2 = MAXSHORT;
     pWin->winSize = (* pScreen->RegionCreate)(&box, 1);
     (* pScreen->Intersect)(pWin->winSize, pWin->winSize,  pParent->winSize);
     if (bw)
@@ -570,11 +565,6 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
 	box.y1 -= bw;
 	box.x2 += bw;
 	box.y2 += bw;
-        /* deal with overflow from adding unsigned w,h to signed x, y */
-        if (box.x2 < box.x1)
-	    box.x2 = MAXSHORT;
-        if (box.y2 < box.y1)
-	    box.y2 = MAXSHORT;
         pWin->borderSize = (* pScreen->RegionCreate)(&box, 1);
         (* pScreen->Intersect)(pWin->borderSize, pWin->borderSize, 
 			       pParent->winSize);
@@ -1258,11 +1248,6 @@ MoveWindow(pWin, x, y, pNextSib)
     box.y1 = pWin->absCorner.y;
     box.x2 = box.x1 + pWin->clientWinSize.width;
     box.y2 = box.y1+ pWin->clientWinSize.height;
-    /* deal with overflow from adding unsigned w,h to signed x, y */
-    if (box.x2 < box.x1)
-	box.x2 = MAXSHORT;
-    if (box.y2 < box.y1)
-	box.y2 = MAXSHORT;
     (* pScreen->RegionReset)(pWin->winSize, &box);
     (* pScreen->Intersect)(pWin->winSize, pWin->winSize, pParent->winSize); 
 
@@ -1272,11 +1257,6 @@ MoveWindow(pWin, x, y, pNextSib)
 	box.y1 -= bw;
 	box.x2 += bw;
 	box.y2 += bw;
-        /* deal with overflow from adding unsigned w,h to signed x, y */
-        if (box.x2 < box.x1)
-	    box.x2 = MAXSHORT;
-        if (box.y2 < box.y1)
-	    box.y2 = MAXSHORT;
 	(* pScreen->RegionReset)(pWin->borderSize, &box);
         (* pScreen->Intersect)(pWin->borderSize, pWin->borderSize, 
 			       pParent->winSize);
@@ -1393,11 +1373,6 @@ ResizeChildrenWinSize(pWin, XYSame, dw, dh, useGravity)
 	box.y1 = y + cwsy;
 	box.x2 = box.x1 + pSib->clientWinSize.width;
 	box.y2 = box.y1 + pSib->clientWinSize.height;
-        /* deal with overflow from adding unsigned w,h to signed x, y */
-        if (box.x2 < box.x1)
-	    box.x2 = MAXSHORT;
-        if (box.y2 < box.y1)
-	    box.y2 = MAXSHORT;
 
 	pSib->oldAbsCorner.x = pSib->absCorner.x;
 	pSib->oldAbsCorner.y = pSib->absCorner.y;
@@ -1414,11 +1389,6 @@ ResizeChildrenWinSize(pWin, XYSame, dw, dh, useGravity)
 	    box.y1 -= pSib->borderWidth;
 	    box.x2 += pSib->borderWidth;
 	    box.y2 += pSib->borderWidth;
-            /* deal with overflow from adding unsigned w,h to signed x, y */
-            if (box.x2 < box.x1)
-	        box.x2 = MAXSHORT;
-            if (box.y2 < box.y1)
-	        box.y2 = MAXSHORT;
 	    (* pScreen->RegionReset)(pSib->borderSize, &box);
 	    (* pScreen->Intersect)(pSib->borderSize, 
 					 pSib->borderSize, parentReg);
@@ -1511,11 +1481,6 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
     box.y1 = pWin->absCorner.y;
     box.x2 = pWin->absCorner.x + w;
     box.y2 = pWin->absCorner.y + h;
-    /* deal with overflow from adding unsigned w,h to signed x, y */
-    if (box.x2 < box.x1)
-	box.x2 = MAXSHORT;
-    if (box.y2 < box.y1)
-	box.y2 = MAXSHORT;
     (* pScreen->RegionReset)(pWin->winSize, &box);
     (* pScreen->Intersect)(pWin->winSize, pWin->winSize, pParent->winSize);
 
@@ -1525,11 +1490,6 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 	box.y1 -= bw;
 	box.x2 += bw;
 	box.y2 += bw;
-        /* deal with overflow from adding unsigned w,h to signed x, y */
-        if (box.x2 < box.x1)
-	    box.x2 = MAXSHORT;
-        if (box.y2 < box.y1)
-	    box.y2 = MAXSHORT;
 	(* pScreen->RegionReset)(pWin->borderSize, &box);
         (* pScreen->Intersect)(pWin->borderSize, pWin->borderSize, 
 				     pParent->winSize);
@@ -1695,11 +1655,6 @@ ChangeBorderWidth(pWin, width)
 	box.y1 -= width;
 	box.x2 += width;
 	box.y2 += width;
-        /* deal with overflow from adding unsigned w,h to signed x, y */
-        if (box.x2 < box.x1)
-	    box.x2 = MAXSHORT;
-        if (box.y2 < box.y1)
-	    box.y2 = MAXSHORT;
 	(* pScreen->RegionReset)(pWin->borderSize, &box);
         (* pScreen->Intersect)(pWin->borderSize, pWin->borderSize, 
 			       pParent->winSize);
@@ -1871,11 +1826,6 @@ WhereDoIGoInTheStack(pWin, pSib, x, y, w, h, smode)
     box.y1 = y;
     box.x2= x + w;
     box.y2 = y + h;
-    /* deal with overflow from adding unsigned w,h to signed x, y */
-    if (box.x2 < box.x1)
-	box.x2 = MAXSHORT;
-    if (box.y2 < box.y1)
-	box.y2 = MAXSHORT;
     switch (smode)
     {
       case Above:
@@ -2396,11 +2346,6 @@ ReparentWindow(pWin, pParent, x, y, client)
     box.y1 = y + pParent->absCorner.y;
     box.x2 = box.x1 + pWin->clientWinSize.width;
     box.y2 = box.y1+ pWin->clientWinSize.height;
-    /* deal with overflow from adding unsigned w,h to signed x, y */
-    if (box.x2 < box.x1)
-	box.x2 = MAXSHORT;
-    if (box.y2 < box.y1)
-	box.y2 = MAXSHORT;
     (* pScreen->RegionReset)(pWin->winSize, &box);
     (* pScreen->Intersect)(pWin->winSize, pWin->winSize, 
 					  pParent->winSize); 
@@ -2418,11 +2363,6 @@ ReparentWindow(pWin, pParent, x, y, client)
 	box.y1 -= bw;
 	box.x2 += bw;
 	box.y2 += bw;
-        /* deal with overflow from adding unsigned w,h to signed x, y */
-        if (box.x2 < box.x1)
-	    box.x2 = MAXSHORT;
-        if (box.y2 < box.y1)
-	    box.y2 = MAXSHORT;
 	(* pScreen->RegionReset)(pWin->borderSize, &box);
         (* pScreen->Intersect)(pWin->borderSize, pWin->borderSize, 
 			       pParent->winSize);
@@ -2838,7 +2778,7 @@ PointInWindowIsVisible(pWin, x, y)
 
     if (!pWin->realized)
 	return (FALSE);
-    if ((* pWin->drawable.pScreen->PointInRegion)(pWin->clipList, x, y, &box))
+    if ((* pWin->drawable.pScreen->PointInRegion)(pWin->borderClip, x, y, &box))
         return(TRUE);
     return(FALSE);
 }
