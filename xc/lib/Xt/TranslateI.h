@@ -1,4 +1,4 @@
-/* $XConsortium: TranslateI.h,v 1.6 88/09/06 14:06:16 swick Exp $ */
+/* $XConsortium: TranslateI.h,v 1.7 88/09/06 16:29:26 jim Exp $ */
 /* $oHeader: TranslateI.h,v 1.2 88/08/18 15:56:37 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -100,7 +100,6 @@ typedef struct _TranslationData {
     unsigned int	numEvents;
     unsigned int	eventTblSize;
     EventObjPtr		eventObjTbl;
-    unsigned long	clickTime;
     unsigned long	lastEventTime;
     unsigned int        numQuarks;   /* # of entries in quarkTable */
     unsigned int        quarkTblSize; /*total size of quarkTable */
@@ -152,6 +151,13 @@ typedef struct {
     XrmQuark	signature;
     Value	value;
 } NameValueRec, *NameValueTable;
+
+typedef struct _ActionHookRec {
+    struct _ActionHookRec* next; /* must remain first */
+    XtAppContext app;
+    XtActionHookProc proc;
+    XtPointer closure;
+} ActionHookRec, *ActionHook;
 
 extern Boolean _XtLookupModifier(); /*name,lookupStyle,valueP */
 extern Boolean _XtMatchUsingStandardMods();
