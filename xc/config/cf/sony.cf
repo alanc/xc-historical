@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sony.cf,v 1.48 94/01/01 18:33:04 rws Exp $
+XCOMM platform:  $XConsortium: sony.cf,v 1.49 94/01/23 16:37:01 kaleb Exp $
 
 #ifdef SonyBsdArchitecture
 
@@ -52,7 +52,6 @@ XCOMM platform:  $XConsortium: sony.cf,v 1.48 94/01/01 18:33:04 rws Exp $
 #define PositionIndependentCFlags -K PIC -Wx,-G 0
 #define SharedXmuReqs $(LDPRELIB) $(XTOOLLIB)
 #define FixupLibReferences() /**/
-#define ExtraLibraries		-lsocket -lnsl -lw
 #include <sv4Lib.rules>
 #else
 #define DefaultCCOptions	-Wf,-XNp9000,-XNd6000

@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: osf1.cf,v 1.26 94/02/06 18:27:53 rws Exp $
+XCOMM platform:  $XConsortium: ncr.cf,v 1.5 94/02/06 20:01:39 rws Exp $
 #define OSName			NCR Unix System V Release 4/MP-RAS
 XCOMM operating system:  OSName
 #define OSMajorVersion		4
@@ -43,7 +43,6 @@ XCOMM #define ExtensionOSDefines	-DXTESTEXT1
  * socket interface instead of the streams interface.
  */
 #define ExtraLoadFlags -lc -L/usr/ucblib -lucb -lm -lgen -lcmd
-#define ExtraLibraries		-lsocket -lnsl -lw
 
 
 /* Setup proper ownership of installed files */
