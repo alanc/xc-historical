@@ -1,4 +1,4 @@
-/* $XConsortium: spfont.c,v 1.6 91/05/30 19:08:46 keith Exp $ */
+/* $XConsortium: spfont.c,v 1.7 91/06/21 18:16:09 keith Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -22,6 +22,8 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  * Author: Dave Lemke, Network Computing Devices Inc
+ *
+ * $NCDId: @(#)spfont.c,v 4.9 1991/07/02 17:01:30 lemke Exp $
  *
  */
 
@@ -279,11 +281,9 @@ pack_sp_glyphs(pfont, format, flags, num_ranges, range, tsize, num_glyphs,
 	for (ch = start; ch <= end; ch++) {
 	    CharInfoPtr ci = &spf->encoding[ch - firstChar];
 	    xCharInfo  *cim;
-	    int         src_bitoffset;
 	    int         srcbpr;
 	    pointer     gstart;
-	    int         r,
-	                xoff = 0;
+	    int         xoff = 0;
 	    int		h;
 	    typedef unsigned char   access_type;
 	    access_type	*psrcLine, *pdstLine, *psrc, *pdst;
@@ -299,7 +299,6 @@ pack_sp_glyphs(pfont, format, flags, num_ranges, range, tsize, num_glyphs,
 	    if (!ci)		/* ignore missing chars */
 		continue;
 
-	    src_bitoffset = (int) ci->bits;
 	    cim = &ci->metrics;
 
 	    /* sanity check */
@@ -576,7 +575,6 @@ get_sp_metrics(pFont, count, chars, charEncoding, glyphCount, glyphs)
 {
     int         ret;
     SpeedoFontPtr spf;
-    int         i;
     CharInfoPtr	oldDefault;
 
     spf = (SpeedoFontPtr) pFont->fontPrivate;
@@ -588,6 +586,36 @@ get_sp_metrics(pFont, count, chars, charEncoding, glyphCount, glyphs)
     spf->pDefault = oldDefault;
     return ret;
 }
+
+void
+fixup_vals(vals)
+    FontScalablePtr vals;
+{
+    fsResolution *res;
+    int         x_res = 75;
+    int         y_res = 75;
+    int         pointsize = 120;
+    int         num_res;
+
+    if (!vals->x || !vals->y || (!vals->point && !vals->pixel)) {
+	res = (fsResolution *) GetClientResolutions(&num_res);
+	if (num_res) {
+	    if (res->x_resolution)
+		x_res = res->x_resolution;
+	    if (res->y_resolution)
+		y_res = res->y_resolution;
+	    if (res->point_size)
+		pointsize = res->point_size;
+	}
+	if (!vals->x)
+	    vals->x = x_res;
+	if (!vals->y)
+	    vals->y = y_res;
+	if (!vals->point)
+	    vals->point = pointsize;
+    }
+}
+
 
 int
 open_sp_font(fontname, filename, entry, format, fmask, flags, spfont)
@@ -603,14 +631,10 @@ open_sp_font(fontname, filename, entry, format, fmask, flags, spfont)
     SpeedoMasterFontPtr spmf;
     FontPtr     mpfont;
     int         ret;
-    fsResolution *res;
-    int         num_res;
     char        tmpname[MAXFONTNAMELEN];
     specs_t     specs;
     FontScalableRec vals;
     double      pointsize;
-    int         x_res,
-                y_res;
 
     /* make a master if we don't have one */
     if (entry) {
@@ -645,48 +669,33 @@ open_sp_font(fontname, filename, entry, format, fmask, flags, spfont)
     spmf->refcount++;
     sp_reset_master(spmf);
 
-    /* set default values */
-    res = (fsResolution *) GetClientResolutions(&num_res);
-    if (num_res) {
-	x_res = res->x_resolution;
-	y_res = res->y_resolution;
-	pointsize = res->point_size;
-    } else {
-	x_res = 75;
-	y_res = 75;
-	pointsize = 12;
-    }
-
     /* tear apart name to get sizes */
     strcpy(tmpname, fontname);
     if (!FontParseXLFDName(tmpname, &vals, FONT_XLFD_REPLACE_NONE))
 	return BadFontName;
 
-    if (vals.x > 0)
-	x_res = vals.x;
-    if (vals.y > 0)
-	y_res = vals.y;
+    fixup_vals(&vals);
     if (vals.point > 0)
 	pointsize = vals.point;
     else if (vals.pixel > 0) {
 	/* make sure we don't caculate it to 0 */
-	pointsize = (vals.pixel * 722.70)/y_res;
+	pointsize = (vals.pixel * 722.70)/vals.y;
     }
     spf->vals.point = pointsize;
-    spf->vals.x = x_res;
-    spf->vals.y = y_res;
-    spf->vals.pixel = ((pointsize * y_res) / 722.7) + 0.5;	/* round it */
+    spf->vals.x = vals.x;
+    spf->vals.y = vals.y;
+    spf->vals.pixel = ((pointsize * vals.y) / 722.7) + 0.5;	/* round it */
 
     /* set up specs */
 
     specs.pfont = &spmf->font;
     /* XXX beware of overflow */
     /* Note that point size is in decipoints */
-    specs.xxmult = (int) (pointsize * x_res / 720 * (1 << 16));
+    specs.xxmult = (int) (pointsize * vals.x / 720 * (1 << 16));
     specs.xymult = 0L << 16;
     specs.xoffset = 0L << 16;
     specs.yxmult = 0L << 16;
-    specs.yymult = (int) (pointsize * y_res / 720 * (1 << 16));
+    specs.yymult = (int) (pointsize * vals.y / 720 * (1 << 16));
     specs.yoffset = 0L << 16;
     specs.flags = MODE_SCREEN;
     specs.out_info = NULL;
@@ -719,6 +728,7 @@ load_sp_font(fontname, filename, entry, format, fmask, pfont, flags)
     ret = open_sp_font(fontname, filename, entry, format, fmask, flags, &spf);
 
     spmf = spf->master;
+    sp_reset_master(spmf);
     esize = sizeof(CharInfoRec) * (spmf->max_id - spmf->first_char_id + 1);
 
     spf->encoding = (CharInfoPtr) xalloc(esize);
@@ -757,6 +767,8 @@ load_sp_font(fontname, filename, entry, format, fmask, pfont, flags)
     pfont->refcnt = 0;
     pfont->maxPrivate = -1;
     pfont->devPrivates = (pointer *) 0;
+
+    close_master_file(spmf);
 
     return ret;
 }
