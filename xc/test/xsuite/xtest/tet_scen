@@ -1,4 +1,4 @@
-# $XConsortium: tet_scen,v 1.2 92/06/11 19:23:16 rws Exp $
+# $XConsortium: tet_scen,v 1.3 94/01/29 14:52:45 rws Exp $
 #
 # This scenario can build or run all tests in sections 2 to 10 of the
 # X11R4 Xlib specifications and touch tests for the X Protocol (version 11).
@@ -728,3 +728,45 @@ allExt
 	/tset/XiPROTO/ungrbdev/Test{all}
 	/tset/XiPROTO/ungrbdvbtn/Test{all}
 	/tset/XiPROTO/ungrbdvky/Test{all}
+#	
+#	 	XIM section
+#	
+	/tset/LC/bsfntnmlst/bsfntnmlst{all}
+	/tset/LC/cntxtdpndn/cntxtdpndn{all}
+	/tset/LC/crtfntst/crtfntst{all}
+	/tset/LC/extntsoffn/extntsoffn{all}
+	/tset/LC/fntsoffnts/fntsoffnts{all}
+	/tset/LC/frfntst/frfntst{all}
+	/tset/LC/lcloffntst/lcloffntst{all}
+	/tset/LC/mbdrwimgst/mbdrwimgst{all}
+	/tset/LC/mbdrwstr/mbdrwstr{all}
+	/tset/LC/mbdrwtxt/mbdrwtxt{all}
+	/tset/LC/mbtxtescpm/mbtxtescpm{all}
+	/tset/LC/mbtxtextnt/mbtxtextnt{all}
+	/tset/LC/mbtxtprchr/mbtxtprchr{all}
+	/tset/LC/rmgtdtbs/rmgtdtbs{all}
+	/tset/LC/rmlclofdtb/rmlclofdtb{all}
+	/tset/LC/rmstdtbs/rmstdtbs{all}
+	/tset/LC/scrnrsrcst/scrnrsrcst{all}
+	/tset/LC/spprtslcl/spprtslcl{all}
+	/tset/LC/stlclmdfrs/stlclmdfrs{all}
+	/tset/LC/wcdrwimgst/wcdrwimgst{all}
+	/tset/LC/wcdrwstr/wcdrwstr{all}
+	/tset/LC/wcdrwtxt/wcdrwtxt{all}
+	/tset/LC/wctxtescpm/wctxtescpm{all}
+	/tset/LC/wctxtextnt/wctxtextnt{all}
+	/tset/LC/wctxtprchr/wctxtprchr{all}
+	/tset/IM/clsim/clsim{all}
+	/tset/IM/crtic/crtic{all}
+	/tset/IM/dsplyofim/dsplyofim{all}
+	/tset/IM/dstryic/dstryic{all}
+	/tset/IM/fltrevnt/fltrevnt{all}
+	/tset/IM/gticvls/gticvls{all}
+	/tset/IM/gtimvls/gtimvls{all}
+	/tset/IM/imofic/imofic{all}
+	/tset/IM/lclofim/lclofim{all}
+	/tset/IM/mblkpstr/mblkpstr{all}
+	/tset/IM/opnim/opnim{all}
+	/tset/IM/sticvls/sticvls{all}
+	/tset/IM/vcrtnstdls/vcrtnstdls{all}
+	/tset/IM/wclkpstr/wclkpstr{all}
