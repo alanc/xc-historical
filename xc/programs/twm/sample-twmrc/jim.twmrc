@@ -42,18 +42,18 @@ Color
 {
     DefaultForeground "white"
     DefaultBackground "blue"
-    BorderColor "#bcc"
-    TitleBackground "#b36"
-    TitleForeground "#dee"
-    MenuBackground "#b36"
-    MenuForeground "#dee"
-    MenuTitleBackground "#bcc"
-    MenuTitleForeground "#b36"
-    IconBackground "#b36"
-    IconForeground "#dee"
-    IconBorderColor "#dee"
-    IconManagerBackground "#b36"
-    IconManagerForeground "#dee"
+    BorderColor "gray70"
+    TitleBackground "maroon"
+    TitleForeground "gray85"
+    MenuBackground "maroon"
+    MenuForeground "gray85"
+    MenuTitleBackground "gray70"
+    MenuTitleForeground "maroon"
+    IconBackground "maroon"
+    IconForeground "gray85"
+    IconBorderColor "gray85"
+    IconManagerBackground "maroon"
+    IconManagerForeground "gray85"
 }
 
 Monochrome
@@ -89,7 +89,7 @@ Button2 = m    : window                   : f.resize
 Button2 =      : icon                     : f.iconify
 Button2 = m    : icon                     : f.iconify
 Button3 =      : root                     : f.menu "apps"
-Button3 =      : title                    : f.zoom
+Button3 =      : title                    : f.menu "windowops"
 Button3 = m    : window|icon|frame|title  : f.function "move-or-raise"
 #"F20"   =      : all                      : f.warptoscreen "next"
 
@@ -102,6 +102,8 @@ Button3 = m    : window|icon|frame|title  : f.function "move-or-raise"
 "Right" = m    : all                      : f.forwiconmgr
 "Up"    = m    : all                      : f.upiconmgr
 "Down"  = m    : all                      : f.downiconmgr
+
+TitleButton "bar7" = f.menu "windowops"
 
 ###############################################################################
 #                                                                             #
@@ -161,8 +163,7 @@ menu "twmops"
 menu "windowops"
 {
 "Windows"		f.title
-"Kill"			f.destroy
-"Delete"		f.delete
+"Kill"			f.menu "kill"
 "Save"			f.saveyourself
 "Refresh"		f.refresh
 ""			f.nop
@@ -171,7 +172,7 @@ menu "windowops"
 "Move"			f.move
 "Raise"			f.raise
 "Lower"			f.lower
-"Identify"		f.identify
+"Info"			f.identify
 "Focus"			f.focus
 "Unfocus"		f.unfocus
 }
@@ -183,4 +184,11 @@ menu "apps"
 "xterm -e /bin/sh"	!"xterm -e /bin/sh &"
 "xhost +"		!"xhost + >/dev/null"
 "xhost -"		!"xhost - >/dev/null"
+}
+
+menu "kill"
+{
+    "Kill"		f.title
+    "Kill Window"	f.destroy
+    "Send Delete"	f.delete
 }
