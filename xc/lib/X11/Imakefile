@@ -1,7 +1,4 @@
-#if HasSunOSSharedLibraries && SharedXlib
-         SOOPTS = -pic
-#endif
-      CCOPTIONS = LibraryCCOptions $(SOOPTS)
+      CCOPTIONS = LibraryCCOptions
     STD_DEFINES = LibraryDefines
     CDEBUGFLAGS = LibraryCDebugFlags
        INCLUDES = -I. -I$(TOP) -I$(INCLUDESRC)
@@ -272,16 +269,67 @@ OBJS =\
 	$(OBJS1) $(OBJS2)
 
 
-/*
- * Support for SunOS 4.0 shared libraries.  Version numbers are ugly.
- */
-#if HasSunOSSharedLibraries && SharedXlib
-NormalSharedLibraryTarget(X11,$(SOXLIBREV),$(OBJS))
-InstallSharedLibrary(X11,$(SOXLIBREV),$(USRLIBDIR))
+#if SharedLibX
+# if DebugLibX
+SharedAndDebuggedLibraryObjectRule()
+SpecialSharedAndDebuggedObjectRule(XErrDes.o,$(ICONFIGFILES),$(DB_DEFINES))
+SpecialSharedAndDebuggedObjectRule(XConnDis.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialSharedAndDebuggedObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialSharedAndDebuggedObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialSharedAndDebuggedObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
+# else
+SharedLibraryObjectRule()
+SpecialSharedObjectRule(XErrDes.o,$(ICONFIGFILES),$(DB_DEFINES))
+SpecialSharedObjectRule(XConnDis.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialSharedObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialSharedObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialSharedObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
+# endif
 #else
+# if DebugLibX && ProfileLibX
+DebuggedAndProfiledLibraryObjectRule()
+SpecialDebuggedAndProfiledObjectRule(XErrDes.o,$(ICONFIGFILES),$(DB_DEFINES))
+SpecialDebuggedAndProfiledObjectRule(XConnDis.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialDebuggedAndProfiledObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialDebuggedAndProfiledObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialDebuggedAndProfiledObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
+# else
+#  if DebugLibX
+DebuggedLibraryObjectRule()
+SpecialDebuggedObjectRule(XErrDes.o,$(ICONFIGFILES),$(DB_DEFINES))
+SpecialDebuggedObjectRule(XConnDis.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialDebuggedObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialDebuggedObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialDebuggedObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
+#  else
+#   if ProfileLibX
+ProfiledLibraryObjectRule()
+SpecialProfiledObjectRule(XErrDes.o,$(ICONFIGFILES),$(DB_DEFINES))
+SpecialProfiledObjectRule(XConnDis.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialProfiledObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialProfiledObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialProfiledObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
+#   else
+NormalLibraryObjectRule()
+SpecialObjectRule(XErrDes.o,$(ICONFIGFILES),$(DB_DEFINES))
+SpecialObjectRule(XConnDis.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
+#   endif
+#  endif
+# endif
+#endif
+
+/*
+ * always generate unshared library too
+ */
+#if SharedLibX
+NormalSharedLibraryTarget(X11,$(SOXLIBREV),$(OBJS),)
+InstallSharedLibrary(X11,$(SOXLIBREV),$(USRLIBDIR))
+#endif
 NormalLibraryTarget2(X11,$(OBJS1),$(OBJS2))
 InstallLibrary(X11,$(USRLIBDIR))
-#endif
 
 
 LintLibraryTarget(X11,*.c)
@@ -299,39 +347,6 @@ InstallNonExec(XErrorDB,$(LIBDIR))
  */
 InstallLintLibrary(X11,$(LINTLIBDIR))
 
-#if DebugLibX && ProfileLibX
-DebuggedAndProfiledLibraryObjectRule()
-SpecialDebuggedAndProfiledObjectRule(XErrDes.o,$(ICONFIGFILES),$(DB_DEFINES))
-SpecialDebuggedAndProfiledObjectRule(XConnDis.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialDebuggedAndProfiledObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialDebuggedAndProfiledObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialDebuggedAndProfiledObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
-#else
-# if DebugLibX
-DebuggedLibraryObjectRule()
-SpecialDebuggedObjectRule(XErrDes.o,$(ICONFIGFILES),$(DB_DEFINES))
-SpecialDebuggedObjectRule(XConnDis.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialDebuggedObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialDebuggedObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialDebuggedObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
-# else
-#  if ProfileLibX
-ProfiledLibraryObjectRule()
-SpecialProfiledObjectRule(XErrDes.o,$(ICONFIGFILES),$(DB_DEFINES))
-SpecialProfiledObjectRule(XConnDis.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialProfiledObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialProfiledObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialProfiledObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
-#  else
-NormalLibraryObjectRule()
-SpecialObjectRule(XErrDes.o,$(ICONFIGFILES),$(DB_DEFINES))
-SpecialObjectRule(XConnDis.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
-#  endif
-# endif
-#endif
 
 #if ProfileLibX && ProfileLibXArchive
 ProfiledLibraryTarget(X11,$(OBJS))
