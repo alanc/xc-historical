@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Scrollbar.c,v 1.60 90/04/11 17:33:49 jim Exp $";
+    "$XConsortium: Scrollbar.c,v 1.61 90/04/20 18:15:00 kit Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -113,7 +113,6 @@ static XtActionsRec actions[] = {
 	{"NotifyThumb",		NotifyThumb},
 	{"NotifyScroll",	NotifyScroll},
 	{"EndScroll",		EndScroll},
-	{NULL,NULL}
 };
 
 

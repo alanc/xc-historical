@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER))
-  static char Xrcs_id[] = "$XConsortium: List.c,v 1.25 89/12/08 12:36:02 swick Exp $";
+  static char Xrcs_id[] = "$XConsortium: List.c,v 1.26 89/12/11 15:08:31 kit Exp $";
 #endif
 
 /*
@@ -113,7 +113,6 @@ static XtActionsRec actions[] = {
       {"Notify",         Notify},
       {"Set",            Set},
       {"Unset",          Unset},
-      {NULL,NULL}
 };
 
 ListClassRec listClassRec = {
