@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: access.c,v 1.31 89/04/09 16:03:25 rws Exp $ */
+/* $XConsortium: access.c,v 1.32 89/05/03 12:32:44 jim Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -63,6 +63,8 @@ SOFTWARE.
 extern char	*index();
 
 static int XFamily(), UnixFamily();
+static int ConvertAddr(), CheckFamily();
+static void NewHost();
 
 typedef struct _host {
 	short		family;
@@ -409,6 +411,7 @@ AddHost (client, family, length, pAddr)
 
 /* Add a host to the access control list. This is the internal interface 
  * called when starting or resetting the server */
+static void
 NewHost (family, addr)
     short	family;
     pointer	addr;
@@ -535,6 +538,7 @@ GetHosts (data, pnHosts, pLen, pEnabled)
  * Return address length.
  */
 
+static int
 CheckFamily (connection, family)
     int			connection;
     int			family;
@@ -590,7 +594,7 @@ InvalidHost (saddr, len)
     int 			family;
     pointer			addr;
     register HOST 		*selfhost, *host;
-    if ((family = ConvertAddr (saddr, len ? &len : 0, &addr)) < 0)
+    if ((family = ConvertAddr (saddr, &len, &addr)) < 0)
         return (1);
     if (family == 0)
     {
@@ -623,12 +627,13 @@ InvalidHost (saddr, len)
     return (1);
 }
 
+static int
 ConvertAddr (saddr, len, addr)
     register struct sockaddr	*saddr;
     int				*len;
     pointer			*addr;
 {
-    if (len == 0)
+    if (*len == 0)
         return (0);
     switch (saddr->sa_family)
     {
