@@ -1,4 +1,4 @@
-/* $XConsortium: Converters.c,v 1.77 91/06/10 10:26:45 rws Exp $ */
+/* $XConsortium: Converters.c,v 1.78 91/06/26 18:12:09 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -300,7 +300,7 @@ Boolean XtCvtStringToBoolean(dpy, args, num_args, fromVal, toVal, closure_ret)
 	|| (CompareISOLatin1(str, "off") == 0)
 	|| (CompareISOLatin1(str, "0") == 0))	done( Boolean, False );
 
-    XtDisplayStringConversionWarning(dpy, str, "Boolean");
+    XtDisplayStringConversionWarning(dpy, str, XtRBoolean);
     return False;
 }
 
@@ -350,7 +350,7 @@ Boolean XtCvtStringToBool(dpy, args, num_args, fromVal, toVal, closure_ret)
 	|| (CompareISOLatin1(str, "off") == 0)
 	|| (CompareISOLatin1(str, "0") == 0))	done( Bool, False );
 
-    XtDisplayStringConversionWarning(dpy, (char *) fromVal->addr, "Bool");
+    XtDisplayStringConversionWarning(dpy, (char *) fromVal->addr, XtRBool);
     return False;
 }
 
@@ -644,7 +644,7 @@ Boolean XtCvtStringToCursor(dpy, args, num_args, fromVal, toVal, closure_ret)
 	    done(Cursor, cursor);
 	}
     }
-    XtDisplayStringConversionWarning(dpy, name, "Cursor");
+    XtDisplayStringConversionWarning(dpy, name, XtRCursor);
     return False;
 }
 
@@ -691,7 +691,7 @@ Boolean XtCvtStringToDisplay(dpy, args, num_args, fromVal, toVal, closure_ret)
     if (d != NULL)
 	done(Display*, d);
 
-    XtDisplayStringConversionWarning(dpy, (char *) fromVal->addr, "Display");
+    XtDisplayStringConversionWarning(dpy, (char *) fromVal->addr, XtRDisplay);
     return False;
 }
 
@@ -717,7 +717,7 @@ Boolean XtCvtStringToFile(dpy, args, num_args, fromVal, toVal, closure_ret)
     if (f != NULL)
 	done(FILE*, f);
 
-    XtDisplayStringConversionWarning(dpy, (char *) fromVal->addr, "File");
+    XtDisplayStringConversionWarning(dpy, (char *) fromVal->addr, XtRFile);
     return False;
 }
 
@@ -787,7 +787,7 @@ Boolean XtCvtStringToFont(dpy, args, num_args, fromVal, toVal, closure_ret)
 	if (f != 0) {
   Done:	    done( Font, f );
 	}
-	XtDisplayStringConversionWarning(dpy, (char *) fromVal->addr, "Font");
+	XtDisplayStringConversionWarning(dpy, (char *) fromVal->addr, XtRFont);
     }
     /* try and get the default font */
 
@@ -807,10 +807,9 @@ Boolean XtCvtStringToFont(dpy, args, num_args, fromVal, toVal, closure_ret)
 		f = XLoadFont(display, (char *)value.addr);
 		if (f != 0)
 		    goto Done;
-		else {
-		    XtDisplayStringConversionWarning( dpy, (char *)value.addr,
-						      "Font" );
-		}
+		else
+		    XtDisplayStringConversionWarning(dpy, (char *)value.addr,
+						     XtRFont);
 	    } else if (rep_type == XtQFont) {
 		f = *(Font*)value.addr;
 		goto Done;
@@ -910,7 +909,7 @@ Boolean XtCvtStringToFontSet(dpy, args, num_args, fromVal, toVal, closure_ret)
       if (f != NULL) {
   Done:           done( XFontSet, f );
       }
-      XtDisplayStringConversionWarning(dpy, (char *) fromVal->addr, "FontSet");
+      XtDisplayStringConversionWarning(dpy, (char *)fromVal->addr, XtRFontSet);
     }
     /* try and get the default fontset */
 
@@ -941,10 +940,9 @@ Boolean XtCvtStringToFontSet(dpy, args, num_args, fromVal, toVal, closure_ret)
               }
               if (f != NULL)
                   goto Done;
-              else {
-                  XtDisplayStringConversionWarning( dpy, (char *)value.addr,
-                                                    "FontSet" );
-              }
+              else
+                  XtDisplayStringConversionWarning(dpy, (char *)value.addr,
+                                                   XtRFontSet);
           } else if (rep_type == XtQFontSet) {
               f = *(XFontSet*)value.addr;
               goto Done;
@@ -1044,8 +1042,8 @@ XtCvtStringToFontStruct(dpy, args, num_args, fromVal, toVal, closure_ret)
   Done:	    done( XFontStruct*, f);
 	}
 
-	XtDisplayStringConversionWarning( dpy, (char*)fromVal->addr,
-					  "FontStruct" );
+	XtDisplayStringConversionWarning(dpy, (char*)fromVal->addr,
+					 XtRFontStruct);
     }
 
     /* try and get the default font */
@@ -1066,10 +1064,9 @@ XtCvtStringToFontStruct(dpy, args, num_args, fromVal, toVal, closure_ret)
 		f = XLoadQueryFont(display, (char*)value.addr);
 		if (f != NULL)
 		    goto Done;
-		else {
-		    XtDisplayStringConversionWarning( dpy, (char*)value.addr,
-						      "FontStruct" );
-		}
+		else
+		    XtDisplayStringConversionWarning(dpy, (char*)value.addr,
+						     XtRFontStruct);
 	    } else if (rep_type == XtQFont) {
 		f = XQueryFont(display, *(Font*)value.addr );
 		if (f != NULL) goto Done;
@@ -1132,7 +1129,7 @@ Boolean XtCvtStringToInt(dpy, args, num_args, fromVal, toVal, closure_ret)
     if (IsInteger((String)fromVal->addr, &i))
 	done(int, i);
 
-    XtDisplayStringConversionWarning(dpy, (char *) fromVal->addr, "Integer");
+    XtDisplayStringConversionWarning(dpy, (char *) fromVal->addr, XtRInt);
     return False;
 }
 
@@ -1155,7 +1152,7 @@ Boolean XtCvtStringToShort(dpy, args, num_args, fromVal, toVal, closure_ret)
     if (IsInteger((String)fromVal->addr, &i))
         done(short, (short)i);
 
-    XtDisplayStringConversionWarning(dpy, (char *) fromVal->addr, "Short");
+    XtDisplayStringConversionWarning(dpy, (char *) fromVal->addr, XtRShort);
     return False;
 }
 
@@ -1178,10 +1175,11 @@ Boolean XtCvtStringToUnsignedChar(dpy, args, num_args, fromVal, toVal, closure_r
     if (IsInteger((String)fromVal->addr, &i)) {
         if ( i < 0 || i > 255 )
             XtDisplayStringConversionWarning(dpy, (char*)fromVal->addr,
-					 "Unsigned Char");
+					     XtRUnsignedChar);
         done(unsigned char, i);
     }
-    XtDisplayStringConversionWarning(dpy, (char*)fromVal->addr, "Unsigned Char");
+    XtDisplayStringConversionWarning(dpy, (char*)fromVal->addr,
+				     XtRUnsignedChar);
     return False;
 }
 
@@ -1432,8 +1430,8 @@ _XtAddDefaultConverters(table)
 
     Add(XtQColor, XtQPixel,       XtCvtColorToPixel,   NULL, 0, XtCacheNone);
 
-    Add(XtQInt,   XtQBoolean,     XtCvtIntToBoolean,   NULL, 0, XtCacheNone);
     Add(XtQInt,   XtQBool,	  XtCvtIntToBool,      NULL, 0, XtCacheNone);
+    Add(XtQInt,   XtQBoolean,     XtCvtIntToBoolean,   NULL, 0, XtCacheNone);
     Add(XtQInt,   XtQColor,	  XtCvtIntToColor,
 	colorConvertArgs, XtNumber(colorConvertArgs), XtCacheByDisplay);
     Add(XtQInt,   XtQDimension,   XtCvtIntToShort,     NULL, 0, XtCacheNone);
@@ -1448,8 +1446,8 @@ _XtAddDefaultConverters(table)
 
     Add(_XtQString, XtQAtom,      XtCvtStringToAtom,
 	displayConvertArg, XtNumber(displayConvertArg), XtCacheNone);
-    Add(_XtQString, XtQBoolean,   XtCvtStringToBoolean, NULL, 0, XtCacheNone);
     Add(_XtQString, XtQBool,      XtCvtStringToBool,    NULL, 0, XtCacheNone);
+    Add(_XtQString, XtQBoolean,   XtCvtStringToBoolean, NULL, 0, XtCacheNone);
    Add2(_XtQString, XtQCursor,    XtCvtStringToCursor,
 	displayConvertArg, XtNumber(displayConvertArg),
 	XtCacheByDisplay, FreeCursor);
@@ -1473,9 +1471,9 @@ _XtAddDefaultConverters(table)
     Add(_XtQString, XtQGeometry,  CvtStringToGeometry, NULL, 0, XtCacheNone);
 #endif
 
-    Add(_XtQString, XtQInt,	     XtCvtStringToInt,    NULL, 0, XtCacheAll);
     Add(_XtQString, XtQInitialState, XtCvtStringToInitialState, NULL, 0,
 	XtCacheNone);
+    Add(_XtQString, XtQInt,	     XtCvtStringToInt,    NULL, 0, XtCacheAll);
    Add2(_XtQString, XtQPixel,        XtCvtStringToPixel,
 	colorConvertArgs, XtNumber(colorConvertArgs),
 	XtCacheByDisplay, FreePixel);
