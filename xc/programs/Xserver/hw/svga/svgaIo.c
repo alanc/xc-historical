@@ -1,4 +1,4 @@
-/* $XConsortium: svgaIo.c,v 1.5 93/09/29 11:47:29 rws Exp $ */
+/* $XConsortium: svgaIo.c,v 1.6 93/10/12 11:26:15 dpw Exp $ */
 /*
  * Copyright 1990,91,92,93 by Thomas Roell, Germany.
  * Copyright 1991,92,93    by SGCS (Snitily Graphics Consulting Services), USA.
@@ -441,7 +441,10 @@ XqueKeyboardProc(
 {
   KeySymsRec  keySyms;
   CARD8       modMap[MAP_LENGTH];
-  unchar      leds, i;
+#ifndef XKB
+  unchar      leds;
+#endif
+  unchar      i;
   xEvent      xE;
   KeyClassRec *keyc = ((DeviceIntPtr)pKeyboard)->key;
   KeySym      *map = keyc->curKeySyms.map;
@@ -493,11 +496,11 @@ XqueKeyboardProc(
 	}
       }
 
+#ifndef XKB
     /*
      * Get also the initial led settings
      */
     (void)ioctl(svgaConsoleFd, KDGETLED, &leds);
-#ifndef XKB
     for (i = keyc->curKeySyms.minKeyCode;
 	 i < keyc->curKeySyms.maxKeyCode;
 	 i++, map += keyc->curKeySyms.mapWidth)
