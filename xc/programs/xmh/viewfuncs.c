@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: viewfuncs.c,v 1.7 87/10/09 14:02:03 swick Locked $";
+static char rcs_id[] = "$Header: viewfuncs.c,v 2.7 87/10/09 14:02:03 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -98,8 +98,8 @@ void ExecSaveView(scrn)
 Scrn scrn;
 {
     if (scrn->msg == NULL) return;
-    MsgSaveChanges(scrn->msg);
-    MsgClearEditable(scrn->msg);
+    if (MsgSaveChanges(scrn->msg))
+	MsgClearEditable(scrn->msg);
 }
     
 

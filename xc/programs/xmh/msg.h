@@ -1,4 +1,4 @@
-/* $Header: msg.h,v 1.2 88/01/25 15:45:50 swick Locked $ */
+/* $Header: msg.h,v 2.2 88/01/25 15:45:50 swick Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -28,7 +28,7 @@
 #define _msg_h
 
 extern char *MsgFileName();
-extern void MsgSaveChanges();
+extern int MsgSaveChanges();
 extern int MsgSetScrn();
 extern int MsgSetScrnForComp();
 extern void MsgSetScrnForce();

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: compfuncs.c,v 1.7 87/10/09 14:01:31 swick Locked $";
+static char rcs_id[] = "$Header: compfuncs.c,v 2.7 87/10/09 14:01:31 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -71,8 +71,8 @@ Scrn scrn;
 {
     if (scrn->msg == NULL) return;
     MsgSetPermanent(scrn->msg);
-    MsgSaveChanges(scrn->msg);
-    MsgClearReapable(scrn->msg);
+    if (MsgSaveChanges(scrn->msg))
+	MsgClearReapable(scrn->msg);
 }
 
 
