@@ -1,4 +1,4 @@
-/* "$XConsortium: Converters.c,v 1.59 90/12/11 12:01:58 rws Exp $"; */
+/* "$XConsortium: Converters.c,v 1.60 90/12/12 14:50:48 rws Exp $"; */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -61,6 +61,8 @@ static Const String XtNconversionError = "conversionError";
 	    return True;					\
 	}
 
+static Boolean CvtStringToBoolean();
+
 #if NeedFunctionPrototypes
 void XtDisplayStringConversionWarning(
     Display* dpy,
@@ -77,7 +79,6 @@ void XtDisplayStringConversionWarning(dpy, from, toType)
 
     if (report_it == Check) {
 	XrmDatabase rdb = XtDatabase(dpy);
-	static Boolean CvtStringToBoolean();
 	XrmName xrm_name[2];
 	XrmClass xrm_class[2];
 	XrmRepresentation rep_type;
@@ -147,7 +148,6 @@ static Boolean CvtIntToFont();
 static Boolean CvtIntOrPixelToXColor();
 static Boolean CvtIntToPixel();
 
-static Boolean CvtStringToBoolean();
 static Boolean CvtStringToBool();
 static Boolean CvtStringToCursor();
 static Boolean CvtStringToDisplay();
