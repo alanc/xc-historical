@@ -1,11 +1,14 @@
-XCOMM $XConsortium: Imakefile,v 1.2 91/07/17 16:03:11 gildea Exp $
-all: shape.PS mit-shm.PS
+XCOMM $XConsortium: Imakefile,v 1.3 91/07/31 01:08:10 keith Exp $
+all: shape.PS xtest.PS mit-shm.PS
 
 shape.PS:
 	$(TROFF) $(MSMACROS) ../util/macros.t shape.ms 2> index.raw > shape.PS
+
+xtest.PS:
+	$(TROFF) $(MSMACROS) ../util/macros.t xtest.ms 2> index.raw > xtest.PS
 
 mit-shm.PS:
 	$(TROFF) $(MSMACROS) mit-shm.ms > mit-shm.PS
 
 clean::
-	$(RM) index.raw shape.PS mit-shm.PS
+	$(RM) index.raw shape.PS xtest.PS mit-shm.PS
