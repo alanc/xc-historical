@@ -1,24 +1,28 @@
-#if (COLOR)
-bitmap*background: medium blue
-bitmap*foreground: cyan
-bitmap*borderColor: plum
-bitmap*framing: deep sky blue
-bitmap*highlight: magenta
-bitmap*Command.background: purple
-bitmap*Toggle.background: purple
-bitmap*MenuButton.background: purple
-bitmap*Command.foreground: white
-bitmap*Toggle.foreground: white
-bitmap*MenuButton.foreground: white
-bitmap*status.foreground: green
-bitmap*Dialog.icon.foreground: pale green
-#else
+
+! The App-defaults file for Bitmap.
+
+! resources for a color workstation.
+!
+
+! bitmap*background: medium blue
+! bitmap*foreground: cyan
+! bitmap*borderColor: plum
+! bitmap*framing: deep sky blue
+! bitmap*highlight: magenta
+! bitmap*Command.background: purple
+! bitmap*Toggle.background: purple
+! bitmap*MenuButton.background: purple
+! bitmap*Command.foreground: white
+! bitmap*Toggle.foreground: white
+! bitmap*MenuButton.foreground: white
+! bitmap*status.foreground: green
+! bitmap*Dialog.icon.foreground: pale green
+
 bitmap*background: black
 bitmap*foreground: white
 bitmap*borderColor: white
 bitmap*framing: white
 bitmap*highlight: white
-#endif
 
 *TransientShell.allowShellResize:	True
 *font:			-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-iso*-*
@@ -53,11 +57,11 @@ bitmap*highlight: white
 *bitmap.dashed:				on
 *bitmap.cursor:           		tcross
 *bitmap.stipple:			Stipple
-#if (COLOR)
-bitmap*bitmap.stippled:                 off
-#else
+
+! more color resources
+! bitmap*bitmap.stippled:                 off
+
 bitmap*bitmap.stippled:                 on
-#endif
 
 *info*label.font:-adobe-helvetica-bold-r-normal--*-100-*-*-p-*-iso8859-1
 *info*icon:				xlogo64

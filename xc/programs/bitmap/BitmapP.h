@@ -1,5 +1,5 @@
 /*
- * $XConsortium: BitmapP.h,v 1.5 90/04/25 08:30:51 dmatic Exp $
+ * $XConsortium: BitmapP.h,v 1.6 90/06/09 20:19:47 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -50,7 +50,7 @@ typedef struct _BitmapClassRec {
 extern BitmapClassRec bitmapClassRec;
 
 /**********/
-typedef struct _BWRequestRec {
+struct _BWRequestRec {
   char       *name;
   int         status_size;
   void      (*engage)();
@@ -59,7 +59,7 @@ typedef struct _BWRequestRec {
   caddr_t     terminate_client_data;
   void      (*remove)();
   caddr_t     remove_client_data;
-};
+} ;
 
 typedef struct {
   Position from_x, from_y,

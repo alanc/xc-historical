@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.13 90/09/14 13:38:46 dmatic Exp $
+ * $XConsortium: Bitmap.c,v 1.14 90/10/30 17:38:35 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -402,7 +402,7 @@ void DestroyBitmapImage(image)
 	if (*image) {
 	    if ((*image)->data)
 		XtFree((*image)->data);
-	    XtFree(*image);
+	    XtFree((char *)*image);
 	}
 	*image = NULL;
     }

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: BitEdit.c,v 1.8 90/09/14 13:38:38 dmatic Exp $
+ * $XConsortium: BitEdit.c,v 1.9 90/10/30 17:38:05 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -431,7 +431,6 @@ void DoQuit()
 
 static int zero = 0;
 #define Plain  &zero,sizeof(int)
-
 void TheCallback(w, id)
      Widget w;
      int   *id;
@@ -878,7 +877,7 @@ void main(argc, argv)
     
     top_widget = XtInitialize(NULL, "Bitmap", 
 			      options, XtNumber(options), 
-			      &argc, argv);
+			      (Cardinal *)&argc, argv);
 
     if (argc > 1) {
 	fprintf(stderr, usage);

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Graphics.c,v 1.1 90/06/09 20:20:29 dmatic Exp $
+ * $XConsortium: Graphics.c,v 1.2 90/09/14 13:38:59 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -1566,10 +1566,10 @@ XImage *ScaleBitmapImage(BW, src, scale_x, scale_y)
 					table.y[y] + h);
 	    }
 
-	XtFree(table.x);
-	XtFree(table.y);
-	XtFree(table.width);
-	XtFree(table.height);
+	XtFree((char *)table.x);
+	XtFree((char *)table.y);
+	XtFree((char *)table.width);
+	XtFree((char *)table.height);
     }
     
     return (dst);

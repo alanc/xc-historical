@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.11 90/04/25 08:30:41 dmatic Exp $
+ * $XConsortium: ReqMach.c,v 1.1 90/06/09 20:20:41 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -84,7 +84,7 @@ Boolean BWAddRequest(w, name, trap, call_data, call_data_size)
 	  fprintf(stderr, "Adding... Cardinal: %d\n", BW->bitmap.cardinal + 1);
 
 	BW->bitmap.request_stack = (BWRequestStack *)
-	    XtRealloc(BW->bitmap.request_stack,
+	    XtRealloc((char *)BW->bitmap.request_stack,
 		      (++BW->bitmap.cardinal + 1) * sizeof(BWRequestStack));
 	
 	BW->bitmap.request_stack[BW->bitmap.cardinal].request = request;
@@ -230,7 +230,7 @@ Boolean BWRemoveRequest(w)
 	XtFree(BW->bitmap.request_stack[BW->bitmap.cardinal].status);
 	XtFree(BW->bitmap.request_stack[BW->bitmap.cardinal].call_data);
 	BW->bitmap.request_stack = (BWRequestStack *)
-	    XtRealloc(BW->bitmap.request_stack,
+	    XtRealloc((char *)BW->bitmap.request_stack,
 		      (--BW->bitmap.cardinal + 1) * sizeof(BWRequestStack));
 	
 	return True;
