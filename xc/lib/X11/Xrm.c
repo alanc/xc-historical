@@ -1,8 +1,4 @@
-/* $Header: Xrm.c,v 1.2 87/11/19 14:13:47 swick Locked $ */
-/* $Header: Xrm.c,v 1.2 87/11/19 14:13:47 swick Locked $ */
-#ifndef lint
-static char *sccsid = "@(#)Xrm.c	1.11	3/20/87";
-#endif lint
+/* $Header: Xrm.c,v 1.3 87/11/19 14:27:42 swick Locked $ */
 
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -28,8 +24,7 @@ static char *sccsid = "@(#)Xrm.c	1.11	3/20/87";
  */
 
 
-#include	"Xlib.h"
-#include	"Xlibos.h"
+#include	"Xlibint.h"
 #include	"Xresource.h"
 #include	"XrmConvert.h"
 #include	"Quarks.h"
@@ -181,6 +176,11 @@ static void PutEntry(db, quarks, type, val)
 	if (*db == NULL) {
 	    MakeNewDb(db, quarks, type, &val);
 	    return;
+	}
+	if ((*db)->hashTable == NULL) {
+	    (*db)->hashTable =
+		(XrmHashTable)Xmalloc(sizeof(XrmHashBucket) * HASHSIZE);
+	    bzero((char *) (*db)->hashTable, sizeof(XrmHashBucket) * HASHSIZE);
 	}
 	if (! FindName(*quarks, (*db)->hashTable, &pBucket)) {
 	    AddNameToLevel(quarks, pBucket, type, &val);
@@ -378,6 +378,30 @@ static char *getstring(buf, nchars, dp)
 	return buf;
 }
 
+#define PUTRESOURCE(s)					\
+	if (s == NULL) break;				\
+	for (; isspace(s[0]); s++) ;			\
+	if ((s[0] == '\0') || (s[0] == '#')) continue;	\
+	i = strlen(s);					\
+	if (s[i-1] == '\n') s[i-1] = '\0';		\
+	for (i=0 ; ; i++) {				\
+	    if (s[i] == '\0') {				\
+		valStr = "";				\
+		break;					\
+		}					\
+	    if ((s[i] == ':') || isspace(s[i])) {	\
+		valStr = &s[i+1];			\
+		for (; isspace(valStr[0]); valStr++) ;	\
+		s[i] = '\0';				\
+		break;					\
+		}					\
+		}					\
+	XrmStringToQuarkList(s, nl);			\
+	val.size = strlen(valStr)+1;			\
+	val.addr = (caddr_t) valStr;			\
+	XrmPutResource(&db, &nl[0], XrmQString, &val);
+
+
 XrmResourceDataBase XrmLoadDataBase(data)
     char 		*data;
 {
@@ -394,27 +418,7 @@ XrmResourceDataBase XrmLoadDataBase(data)
 
     for (;;) {
 	s = getstring(buf, sizeof(buf), &dp);
-	if (s == NULL) break;
-	for (; isspace(s[0]); s++) ;
-	if ((s[0] == '\0') || (s[0] == '#')) continue;
-	i = strlen(s);
-	if (s[i-1] == '\n') s[i-1] = '\0';
-	for (i=0 ; ; i++) {
-	    if (s[i] == '\0') {
-		valStr = "";
-		break;
-	    }
-	    if ((s[i] == ':') || isspace(s[i])) {
-		valStr = &s[i+1];
-		for (; isspace(valStr[0]); valStr++) ;
-		s[i] = '\0';
-		break;
-	    }
-	}
-	XrmStringToQuarkList(s, nl);
-	val.size = strlen(valStr)+1;
-	val.addr = (caddr_t) valStr;
-	XrmPutResource(&db, &nl[0], XrmQString, &val);
+	PUTRESOURCE(s);
     }
     return db;
 }
@@ -430,7 +434,7 @@ XrmResourceDataBase XrmGetDataBase(magicCookie)
     FILE		*magicCookieFile;
     XrmResourceDataBase	db = NULL;
 
-    if (magicCookie == NULL)
+    if (magicCookie == NULL || magicCookie[0] == '\0')
     	return NULL;
 
     if((magicCookieFile = fopen(magicCookie, "r")) == NULL){
@@ -438,31 +442,12 @@ XrmResourceDataBase XrmGetDataBase(magicCookie)
     }
     for (;;) {
 	s = fgets(buf, sizeof(buf), magicCookieFile);
-	if (s == NULL) break;
-	for (; isspace(s[0]); s++) ;
-	if ((s[0] == '\0') || (s[0] == '#')) continue;
-	i = strlen(s);
-	if (s[i-1] == '\n') s[i-1] = '\0';
-	for (i=0 ; ; i++) {
-	    if (s[i] == '\0') {
-		valStr = "";
-		break;
-	    }
-	    if ((s[i] == ':') || isspace(s[i])) {
-		valStr = &s[i+1];
-		for (; isspace(valStr[0]); valStr++) ;
-		s[i] = '\0';
-		break;
-	    }
-	}
-	XrmStringToQuarkList(s, nl);
-	val.size = strlen(valStr)+1;
-	val.addr = (caddr_t) valStr;
-	XrmPutResource(&db, &nl[0], XrmQString, &val);
+	PUTRESOURCE(s);
     }
     fclose(magicCookieFile);
     return db;
 }
+#undef PUTRESOURCE
 
 static void Enum(db, quarks, count, cd, proc)
     XrmResourceDataBase db;
@@ -487,7 +472,7 @@ static void Enum(db, quarks, count, cd, proc)
 	}
     }
     quarks[count] = NULLQUARK;
-    if (db->val.addr != NULL) proc(cd, quarks, db->type, db->val);
+    if (db->val.addr != NULL) (*proc)(cd, quarks, db->type, db->val);
     }
 
 static void EnumerateDataBase(db, cd, proc)
@@ -548,6 +533,7 @@ void XrmPutDataBase(db, magicCookie)
     
     if((magicCookieFile = fopen(magicCookie, "w")) == NULL) return;
     EnumerateDataBase(db, (unspecified) magicCookieFile, DumpEntry);
+    fclose(magicCookieFile);
 }
 
 void XrmMergeDataBases(new, into)
