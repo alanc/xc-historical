@@ -1,4 +1,4 @@
-.\" $XConsortium: CH01,v 1.6 91/08/26 13:25:48 swick Exp $
+.\" $XConsortium: CH01,v 1.7 91/08/27 09:59:12 swick Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -70,7 +70,7 @@ The remainder of this
 specification refers uniformly to \fIwidgets\fP and \fICore\fP
 as if they were the
 base class for all \*(xI operations.  The argument descriptions
-for each Intrinsica procedure and Chapter 12 describe which operations
+for each Intrinsics procedure and Chapter 12 describe which operations
 are defined for the nonwidget superclasses of Core.  The reader may
 determine by context whether a specific reference to \fIwidget\fP
 actually means \fIwidget or object\fP.
