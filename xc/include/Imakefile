@@ -1,3 +1,8 @@
+#define IHaveSubdirs
+#define PassCDebugFlags /* as nothing */
+
+SUBDIRS = bitmaps
+
 EXPORTS = \
 	X.h \
 	XWDFile.h \
@@ -82,8 +87,6 @@ SUBIMPORTS = \
 	$(EXTENSIONSRC)/include/plxvideo.h \
 	$(EXTENSIONSRC)/include/xtestext1.h
    
-SUBDIRS = bitmaps
-
 INSTALLFLAGS = $(INSTINCFLAGS)
 
 all:: $(IMPORTS1) $(IMPORTS2) $(SUBIMPORTS) extensions
@@ -102,6 +105,8 @@ MakeDirectories(extensions,extensions)
 
 MakeDirectories(install, $(INCDIR))
 
+MakeSubdirs($(SUBDIRS))
+
 InstallMultiple($(EXPORTS),$(INCDIR))
 
 clean::
@@ -110,21 +115,6 @@ clean::
 	@-(if [ -d extensions ]; then \
 		list=`echo $(SUBIMPORTS) | sed -e 's/[^ ]*\///g'`; \
 		set -x; cd extensions; $(RM) $$list; else exit 0; fi)
-
-install::
-	-cd $(INCDIR); mkdir $(SUBDIRS)
-	@for i in $(SUBDIRS); do \
-		( \
-			set -x; \
-			cd $$i ; \
-			for f in * ; do \
-			  if [ ! -d $$f ]; then \
-			    $(RM) $(INCDIR)/$$i/$$f; \
-			    $(INSTALL) -c $(INSTALLFLAGS) $$f $(INCDIR)/$$i; \
-			  else /bin/true; fi; \
-			done; \
-		); \
-	done
 
 depend:
 	@echo "skipping make depend in ./X11"
