@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.11 89/10/04 22:50:25 rws Exp $ */
+/* $XConsortium: events.c,v 5.12 89/10/09 15:52:22 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -3224,6 +3224,9 @@ DeleteWindowFromAnyEvents(pWin, freeResources)
 	while (passive = wPassiveGrabs(pWin))
 	    FreeResource(passive->resource, RT_NONE);
      }
+#ifdef XINPUT
+    DeleteWindowFromAnyExtEvents(pWin, freeResources);
+#endif
 }
 
 /* Call this whenever some window at or below pWin has changed geometry */
