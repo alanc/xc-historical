@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.181 90/12/09 16:21:40 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.182 90/12/11 11:02:25 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -44,6 +44,17 @@
 #else
 #define NeedFunctionPrototypes 0
 #endif /* __STDC__ */
+#endif /* NeedFunctionPrototypes */
+
+#ifdef NeedFunctionPrototypes
+#if __STDC__ || defined(__cplusplus) || defined(c_plusplus)
+#define _Xconst const
+#ifndef NeedNestedPrototypes
+#define NeedNestedPrototypes 1
+#endif
+#else
+#define _Xconst
+#endif
 #endif /* NeedFunctionPrototypes */
 
 #ifndef NeedWidePrototypes
@@ -1040,7 +1051,7 @@ typedef union { Display *display;
 extern XFontStruct *XLoadQueryFont(
 #if NeedFunctionPrototypes
     Display*		/* display */,
-    const char*		/* name */
+    _Xconst char*	/* name */
 #endif
 );
 
@@ -1146,7 +1157,7 @@ extern XImage *XGetSubImage(
  */
 extern Display *XOpenDisplay(
 #if NeedFunctionPrototypes
-    const char*		/* display_name */
+    _Xconst char*	/* display_name */
 #endif
 );
 
@@ -1178,13 +1189,13 @@ extern char *XGetAtomName(
 extern char *XGetDefault(
 #if NeedFunctionPrototypes
     Display*		/* display */,
-    const char*		/* program */,
-    const char*		/* option */		  
+    _Xconst char*	/* program */,
+    _Xconst char*	/* option */		  
 #endif
 );
 extern char *XDisplayName(
 #if NeedFunctionPrototypes
-    const char*		/* string */
+    _Xconst char*	/* string */
 #endif
 );
 extern char *XKeysymToString(
@@ -1202,14 +1213,17 @@ extern int (*XSynchronize(
 extern int (*XSetAfterFunction(
 #if NeedFunctionPrototypes
     Display*		/* display */,
-    int (*) ( Display*			/* display */
+    int (*) (
+#if NeedNestedPrototypes
+	     Display*	/* display */
+#endif
             )		/* procedure */
 #endif
 ))();
 extern Atom XInternAtom(
 #if NeedFunctionPrototypes
     Display*		/* display */,
-    const char*		/* atom_name */,
+    _Xconst char*	/* atom_name */,
     Bool		/* only_if_exists */		 
 #endif
 );
@@ -1258,7 +1272,7 @@ extern Cursor XCreateFontCursor(
 extern Font XLoadFont(
 #if NeedFunctionPrototypes
     Display*		/* display */,
-    const char*		/* name */
+    _Xconst char*	/* name */
 #endif
 );
 extern GC XCreateGC(
@@ -1287,7 +1301,7 @@ extern Pixmap XCreateBitmapFromData(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Drawable		/* d */,
-    const char*		/* data */,
+    _Xconst char*	/* data */,
     unsigned int	/* width */,
     unsigned int	/* height */
 #endif
@@ -1349,7 +1363,7 @@ extern Colormap *XListInstalledColormaps(
 extern char **XListFonts(
 #if NeedFunctionPrototypes
     Display*		/* display */,
-    const char*		/* pattern */,
+    _Xconst char*	/* pattern */,
     int			/* maxnames */,
     int*		/* actual_count_return */
 #endif
@@ -1357,7 +1371,7 @@ extern char **XListFonts(
 extern char **XListFontsWithInfo(
 #if NeedFunctionPrototypes
     Display*		/* display */,
-    const char*		/* pattern */,
+    _Xconst char*	/* pattern */,
     int			/* maxnames */,
     int*		/* count_return */,
     XFontStruct**	/* info_return */
@@ -1420,7 +1434,7 @@ extern KeySym *XGetKeyboardMapping(
 );
 extern KeySym XStringToKeysym(
 #if NeedFunctionPrototypes
-    const char*		/* string */
+    _Xconst char*	/* string */
 #endif
 );
 extern long XMaxRequestSize(
@@ -1449,7 +1463,7 @@ extern VisualID XVisualIDFromVisual(
 extern XExtCodes *XInitExtension(
 #if NeedFunctionPrototypes
     Display*		/* display */,
-    const char*		/* name */
+    _Xconst char*	/* name */
 #endif
 );
 
@@ -1792,7 +1806,7 @@ extern Status XAllocNamedColor(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Colormap		/* colormap */,
-    const char*		/* color_name */,
+    _Xconst char*	/* color_name */,
     XColor*		/* screen_def_return */,
     XColor*		/* exact_def_return */
 #endif
@@ -1904,7 +1918,7 @@ extern XChangeProperty(
     Atom		/* type */,
     int			/* format */,
     int			/* mode */,
-    const unsigned char*	/* data */,
+    _Xconst unsigned char*	/* data */,
     int			/* nelements */
 #endif
 );
@@ -1930,9 +1944,12 @@ extern Bool XCheckIfEvent(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     XEvent*		/* event_return */,
-    Bool (*) ( Display*			/* display */,
+    Bool (*) (
+#if NeedNestedPrototypes
+	       Display*			/* display */,
                XEvent*			/* event */,
                char*			/* arg */
+#endif
              )		/* predicate */,
     char*		/* arg */
 #endif
@@ -2234,7 +2251,7 @@ extern XDrawImageString(
     GC			/* gc */,
     int			/* x */,
     int			/* y */,
-    const char*		/* string */,
+    _Xconst char*	/* string */,
     int			/* length */
 #endif
 );
@@ -2246,7 +2263,7 @@ extern XDrawImageString16(
     GC			/* gc */,
     int			/* x */,
     int			/* y */,
-    const XChar2b*	/* string */,
+    _Xconst XChar2b*	/* string */,
     int			/* length */
 #endif
 );
@@ -2334,7 +2351,7 @@ extern XDrawString(
     GC			/* gc */,
     int			/* x */,
     int			/* y */,
-    const char*		/* string */,
+    _Xconst char*	/* string */,
     int			/* length */
 #endif
 );
@@ -2346,7 +2363,7 @@ extern XDrawString16(
     GC			/* gc */,
     int			/* x */,
     int			/* y */,
-    const XChar2b*	/* string */,
+    _Xconst XChar2b*	/* string */,
     int			/* length */
 #endif
 );
@@ -2554,8 +2571,8 @@ extern int XGeometry(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     int			/* screen */,
-    const char*		/* position */,
-    const char*		/* default_position */,
+    _Xconst char*	/* position */,
+    _Xconst char*	/* default_position */,
     unsigned int	/* bwidth */,
     unsigned int	/* fwidth */,
     unsigned int	/* fheight */,
@@ -2571,9 +2588,9 @@ extern int XGeometry(
 extern XGetErrorDatabaseText(
 #if NeedFunctionPrototypes
     Display*		/* display */,
-    const char*		/* name */,
-    const char*		/* message */,
-    const char*		/* default_string */,
+    _Xconst char*	/* name */,
+    _Xconst char*	/* message */,
+    _Xconst char*	/* default_string */,
     char*		/* buffer_return */,
     int			/* length */
 #endif
@@ -2776,9 +2793,12 @@ extern XIfEvent(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     XEvent*		/* event_return */,
-    Bool (*) ( Display*			/* display */,
+    Bool (*) (
+#if NeedNestedPrototypes
+	       Display*			/* display */,
                XEvent*			/* event */,
                char*			/* arg */
+#endif
              )		/* predicate */,
     char*		/* arg */
 #endif
@@ -2821,7 +2841,7 @@ extern Status XLookupColor(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Colormap		/* colormap */,
-    const char*		/* color_name */,
+    _Xconst char*	/* color_name */,
     XColor*		/* exact_def_return */,
     XColor*		/* screen_def_return */
 #endif
@@ -2912,14 +2932,14 @@ extern Status XParseColor(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Colormap		/* colormap */,
-    const char*		/* spec */,
+    _Xconst char*	/* spec */,
     XColor*		/* exact_def_return */
 #endif
 );
 
 extern int XParseGeometry(
 #if NeedFunctionPrototypes
-    const char*		/* parsestring */,
+    _Xconst char*	/* parsestring */,
     int*		/* x_return */,
     int*		/* y_return */,
     unsigned int*	/* width_return */,
@@ -2938,9 +2958,12 @@ extern XPeekIfEvent(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     XEvent*		/* event_return */,
-    Bool (*) ( Display*		/* display */,
+    Bool (*) (
+#if NeedNestedPrototypes
+	       Display*		/* display */,
                XEvent*		/* event */,
                char*		/* arg */
+#endif
              )		/* predicate */,
     char*		/* arg */
 #endif
@@ -3065,7 +3088,7 @@ extern XQueryColors(
 extern Bool XQueryExtension(
 #if NeedFunctionPrototypes
     Display*		/* display */,
-    const char*		/* name */,
+    _Xconst char*	/* name */,
     int*		/* major_opcode_return */,
     int*		/* first_event_return */,
     int*		/* first_error_return */
@@ -3097,7 +3120,7 @@ extern XQueryTextExtents(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     XID			/* font_ID */,
-    const char*		/* string */,
+    _Xconst char*	/* string */,
     int			/* nchars */,
     int*		/* direction_return */,
     int*		/* font_ascent_return */,
@@ -3110,7 +3133,7 @@ extern XQueryTextExtents16(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     XID			/* font_ID */,
-    const XChar2b*	/* string */,
+    _Xconst XChar2b*	/* string */,
     int			/* nchars */,
     int*		/* direction_return */,
     int*		/* font_ascent_return */,
@@ -3141,7 +3164,7 @@ extern int XReadBitmapFile(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Drawable 		/* d */,
-    const char*		/* filename */,
+    _Xconst char*	/* filename */,
     unsigned int*	/* width_return */,
     unsigned int*	/* height_return */,
     Pixmap*		/* bitmap_return */,
@@ -3156,7 +3179,7 @@ extern XRebindKeysym(
     KeySym		/* keysym */,
     KeySym*		/* list */,
     int			/* mod_count */,
-    const unsigned char*	/* string */,
+    _Xconst unsigned char*	/* string */,
     int			/* bytes_string */
 #endif
 );
@@ -3345,7 +3368,7 @@ extern XSetDashes(
     Display*		/* display */,
     GC			/* gc */,
     int			/* dash_offset */,
-    const char*		/* dash_list */,
+    _Xconst char*	/* dash_list */,
     int			/* n */
 #endif
 );
@@ -3410,7 +3433,7 @@ extern XSetIconName(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Window		/* w */,
-    const char*		/* icon_name */
+    _Xconst char*	/* icon_name */
 #endif
 );
 
@@ -3452,7 +3475,7 @@ extern XSetPlaneMask(
 extern int XSetPointerMapping(
 #if NeedFunctionPrototypes
     Display*		/* display */,
-    const unsigned char*	/* map */,
+    _Xconst unsigned char*	/* map */,
     int			/* nmap */
 #endif
 );
@@ -3571,7 +3594,7 @@ extern XSetWindowColormap(
 extern XStoreBuffer(
 #if NeedFunctionPrototypes
     Display*		/* display */,
-    const char*		/* bytes */,
+    _Xconst char*	/* bytes */,
     int			/* nbytes */,
     int			/* buffer */
 #endif
@@ -3580,7 +3603,7 @@ extern XStoreBuffer(
 extern XStoreBytes(
 #if NeedFunctionPrototypes
     Display*		/* display */,
-    const char*		/* bytes */,
+    _Xconst char*	/* bytes */,
     int			/* nbytes */
 #endif
 );
@@ -3606,7 +3629,7 @@ extern XStoreName(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Window		/* w */,
-    const char*		/* window_name */
+    _Xconst char*	/* window_name */
 #endif
 );
 
@@ -3614,7 +3637,7 @@ extern XStoreNamedColor(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Colormap		/* colormap */,
-    const char*		/* color */,
+    _Xconst char*	/* color */,
     unsigned long	/* pixel */,
     int			/* flags */
 #endif
@@ -3630,7 +3653,7 @@ extern XSync(
 extern XTextExtents(
 #if NeedFunctionPrototypes
     XFontStruct*	/* font_struct */,
-    const char*		/* string */,
+    _Xconst char*	/* string */,
     int			/* nchars */,
     int*		/* direction_return */,
     int*		/* font_ascent_return */,
@@ -3642,7 +3665,7 @@ extern XTextExtents(
 extern XTextExtents16(
 #if NeedFunctionPrototypes
     XFontStruct*	/* font_struct */,
-    const XChar2b*	/* string */,
+    _Xconst XChar2b*	/* string */,
     int			/* nchars */,
     int*		/* direction_return */,
     int*		/* font_ascent_return */,
@@ -3654,7 +3677,7 @@ extern XTextExtents16(
 extern int XTextWidth(
 #if NeedFunctionPrototypes
     XFontStruct*	/* font_struct */,
-    const char*		/* string */,
+    _Xconst char*	/* string */,
     int			/* count */
 #endif
 );
@@ -3662,7 +3685,7 @@ extern int XTextWidth(
 extern int XTextWidth16(
 #if NeedFunctionPrototypes
     XFontStruct*	/* font_struct */,
-    const XChar2b*	/* string */,
+    _Xconst XChar2b*	/* string */,
     int			/* count */
 #endif
 );
@@ -3797,7 +3820,7 @@ extern XWindowEvent(
 extern int XWriteBitmapFile(
 #if NeedFunctionPrototypes
     Display*		/* display */,
-    const char*		/* filename */,
+    _Xconst char*	/* filename */,
     Pixmap		/* bitmap */,
     unsigned int	/* width */,
     unsigned int	/* height */,

@@ -1,4 +1,4 @@
-/* $XConsortium: Xutil.h,v 11.58 89/12/12 20:15:40 jim Exp $ */
+/* $XConsortium: Xutil.h,v 11.59 90/12/11 11:02:56 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -37,6 +37,14 @@ extern "C" {					/* for C++ V2.0 */
 #else
 #define NeedFunctionPrototypes 0
 #endif /* __STDC__ */
+#endif /* NeedFunctionPrototypes */
+
+#if defined(NeedFunctionPrototypes) && !defined(_Xconst)
+#if __STDC__ || defined(__cplusplus) || defined(c_plusplus)
+#define _Xconst const
+#else
+#define _Xconst
+#endif
 #endif /* NeedFunctionPrototypes */
 
 /* 
@@ -300,7 +308,7 @@ extern int XSaveContext(
     Display*		/* display */,
     Window		/* w */,
     XContext		/* context */,
-    const void*		/* data */
+    _Xconst void*	/* data */
 #endif
 );
 
@@ -693,8 +701,8 @@ extern XSetStandardProperties(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Window		/* w */,
-    const char*		/* window_name */,
-    const char*		/* icon_name */,
+    _Xconst char*	/* window_name */,
+    _Xconst char*	/* icon_name */,
     Pixmap		/* icon_pixmap */,
     char**		/* argv */,
     int			/* argc */,
@@ -771,8 +779,8 @@ extern int XWMGeometry(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     int			/* screen_number */,
-    const char*		/* user_geometry */,
-    const char*		/* default_geometry */,
+    _Xconst char*	/* user_geometry */,
+    _Xconst char*	/* default_geometry */,
     unsigned int	/* border_width */,
     XSizeHints*		/* hints */,
     int*		/* x_return */,

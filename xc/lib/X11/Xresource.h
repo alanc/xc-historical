@@ -1,4 +1,4 @@
-/* $XConsortium: Xresource.h,v 1.29 90/12/02 17:47:05 rws Exp $ */
+/* $XConsortium: Xresource.h,v 1.30 90/12/11 11:02:52 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -66,6 +66,17 @@ extern "C" {					/* for C++ V2.0 */
 #endif /* __STDC__ */
 #endif /* NeedFunctionPrototypes */
 
+#if defined(NeedFunctionPrototypes) && !defined(_Xconst)
+#if __STDC__ || defined(__cplusplus) || defined(c_plusplus)
+#define _Xconst const
+#ifndef NeedNestedPrototypes
+#define NeedNestedPrototypes 1
+#endif
+#else
+#define _Xconst
+#endif
+#endif /* NeedFunctionPrototypes */
+
 #ifndef NULL
 #define NULL 0
 #endif
@@ -97,13 +108,13 @@ typedef char *XrmString;
 /* find quark for string, create new quark if none already exists */
 extern XrmQuark XrmStringToQuark(
 #if NeedFunctionPrototypes
-    const char* 	/* string */
+    _Xconst char* 	/* string */
 #endif
 );
 
 extern XrmQuark XrmPermStringToQuark(
 #if NeedFunctionPrototypes
-    const char* 	/* string */
+    _Xconst char* 	/* string */
 #endif
 );
 
@@ -133,14 +144,14 @@ typedef enum {XrmBindTightly, XrmBindLoosely} XrmBinding, *XrmBindingList;
 
 extern void XrmStringToQuarkList(
 #if NeedFunctionPrototypes
-    const char*		/* string */,
+    _Xconst char*	/* string */,
     XrmQuarkList	/* quarks_return */
 #endif
 );
 
 extern void XrmStringToBindingQuarkList(
 #if NeedFunctionPrototypes
-    const char*		/* string */,
+    _Xconst char*	/* string */,
     XrmBindingList	/* bindings_return */,
     XrmQuarkList	/* quarks_return */
 #endif
@@ -213,8 +224,8 @@ extern void XrmQPutResource(
 extern void XrmPutResource(
 #if NeedFunctionPrototypes
     XrmDatabase*	/* database */,
-    const char*		/* specifier */,
-    const char*		/* type */,
+    _Xconst char*	/* specifier */,
+    _Xconst char*	/* type */,
     XrmValue*		/* value */
 #endif
 );
@@ -224,22 +235,22 @@ extern void XrmQPutStringResource(
     XrmDatabase*	/* database */,
     XrmBindingList      /* bindings */,
     XrmQuarkList	/* quarks */,
-    const char*		/* value */
+    _Xconst char*	/* value */
 #endif
 );
 
 extern void XrmPutStringResource(
 #if NeedFunctionPrototypes
     XrmDatabase*	/* database */,
-    const char*		/* specifier */,
-    const char*		/* value */
+    _Xconst char*	/* specifier */,
+    _Xconst char*	/* value */
 #endif
 );
 
 extern void XrmPutLineResource(
 #if NeedFunctionPrototypes
     XrmDatabase*	/* database */,
-    const char*		/* line */
+    _Xconst char*	/* line */
 #endif
 );
 
@@ -256,8 +267,8 @@ extern  XrmQGetResource(
 extern Bool XrmGetResource(
 #if NeedFunctionPrototypes
     XrmDatabase		/* database */,
-    const char*		/* str_name */,
-    const char*		/* str_class */,
+    _Xconst char*	/* str_name */,
+    _Xconst char*	/* str_class */,
     char**		/* str_type_return */,
     XrmValue*		/* value_return */
 #endif
@@ -304,13 +315,13 @@ extern XrmDatabase XrmGetDatabase(
 
 extern XrmDatabase XrmGetFileDatabase(
 #if NeedFunctionPrototypes
-    const char*		/* filename */
+    _Xconst char*	/* filename */
 #endif
 );
 
 extern Status XrmCombineFileDatabase(
 #if NeedFunctionPrototypes
-    const char* 	/* filename */,
+    _Xconst char* 	/* filename */,
     XrmDatabase*	/* target */,
     Bool		/* override */
 #endif
@@ -318,14 +329,14 @@ extern Status XrmCombineFileDatabase(
 
 extern XrmDatabase XrmGetStringDatabase(
 #if NeedFunctionPrototypes
-    const char*		/* data */  /*  null terminated string */
+    _Xconst char*	/* data */  /*  null terminated string */
 #endif
 );
 
 extern void XrmPutFileDatabase(
 #if NeedFunctionPrototypes
     XrmDatabase		/* database */,
-    const char*		/* filename */
+    _Xconst char*	/* filename */
 #endif
 );
 
@@ -353,12 +364,15 @@ extern Bool XrmEnumerateDatabase(
     XrmNameList		/* name_prefix */,
     XrmClassList	/* class_prefix */,
     int			/* mode */,
-    Bool (*)(XrmDatabase*	/* db */,
+    Bool (*)(
+#if NeedNestedPrototypes
+	     XrmDatabase*	/* db */,
 	     XrmBindingList	/* bindings */,
 	     XrmQuarkList	/* quarks */,
 	     XrmRepresentation*	/* type */,
 	     XrmValue*		/* value */,
 	     caddr_t		/* closure */
+#endif
 	     )		/* proc */,
     caddr_t		/* closure */
 #endif
@@ -396,7 +410,7 @@ extern void XrmParseCommand(
     XrmDatabase*	/* database */,
     XrmOptionDescList	/* table */,
     int			/* table_count */,
-    const char*		/* name */,
+    _Xconst char*	/* name */,
     int*		/* argc_in_out */,
     char**		/* argv_in_out */		     
 #endif
