@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: util.c,v 2.27 89/07/20 21:15:53 converse Exp $";
+    "$XConsortium: util.c,v 2.28 89/07/21 18:56:18 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -368,18 +368,15 @@ char *str;
 
 
 
-Widget CreateTextSW(scrn, name, options)
+Widget CreateTextSW(scrn, name)
 Scrn scrn;
 char *name;
-int options;
 {
     static Arg arglist[] = {
-        {XtNtextOptions, NULL},
         {XtNfile, (XtArgVal)"/dev/null"}
     };
-
-    arglist[0].value = (XtArgVal) (scrollVertical | options);
-
+    
+    /* text widget options are set in the application defaults file */
     return XtCreateManagedWidget( name, asciiDiskWidgetClass, scrn->widget,
 				  arglist, XtNumber(arglist) );
 }
