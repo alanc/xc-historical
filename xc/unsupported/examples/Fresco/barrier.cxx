@@ -17,6 +17,10 @@
 #include <X11/Fresco/OS/thread.h>
 #include <stdio.h>
 
+#if defined(AIXV3)
+#include <sys/select.h>
+#endif
+
 #ifdef sgi
 
 extern "C" int sginap(long);

@@ -7,6 +7,10 @@
 #include <X11/Fresco/Impls/glyphs.h>
 #include <X11/Fresco/OS/thread.h>
 
+#if defined(AIXV3)
+#include <sys/select.h>
+#endif
+
 #ifdef sgi
 
 extern "C" {
