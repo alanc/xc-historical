@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextP.h,v 1.31 89/05/11 01:06:57 kit Exp $
+* $XConsortium: TextP.h,v 1.32 89/05/11 14:20:35 kit Exp $
 */
 
 
@@ -117,14 +117,7 @@ typedef struct _TextPart {
     int		    maxranges;	    /* How many ranges we have space for */
     Boolean	    showposition;   /* True if we need to show the position. */
     XawTextPosition  lastPos;	    /* Last position of source. */
-    struct _dialog {
-	TextWidget  text;	    /* the dialog's parent */
-	Widget      widget;	    /* the dialog widget */
-	Widget	    doit;	    /* the confirm button */
-	Widget	    message;	    /* the (occasional) error message */
-	Boolean	    mapped;	    /* True if this dialog is in-use */
-	struct _dialog *next;	    /* a list of dialogs */
-    } *dialog;			    /* InsertFile pop-up widget */
+    Widget          file_insert;    /* The file insert popup widget. */
     GC              gc;
     Boolean         hasfocus;       /* TRUE if we currently have input focus.*/
     Boolean	    update_disabled; /* TRUE if display updating turned off */

@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.91 89/07/06 16:00:38 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.92 89/07/07 14:28:43 kit Exp $";
 #endif /* lint && SABER */
 
 
@@ -55,9 +55,10 @@ extern char* sys_errlist[];
 #define zeroPosition ((XawTextPosition) 0)
 #define BIGNUM ((Dimension)32023)
 
-static void BuildLineTable ();
-static void ScrollUpDownProc();
-static void ThumbProc();
+#define INSERT_FILE ("Enter Filename:")
+
+static void BuildLineTable (), ScrollUpDownProc(), ThumbProc();
+static void CenterWidgetOnPoint();
 static int LineAndXYForPosition(), _XawTextSetNewSelection();
 static ClearWindow();
 
@@ -92,10 +93,6 @@ static XtResource resources[] = {
         offset(core.height), XtRDimension, (caddr_t)&defHeight},
     {XtNtextOptions, XtCTextOptions, XtRInt, sizeof (int),
         offset(text.options), XtRImmediate, (caddr_t)0},
-    {XtNdialogHOffset, XtCMargin, XtRInt, sizeof(int),
-	 offset(text.dialog_horiz_offset), XtRImmediate, (caddr_t)0},
-    {XtNdialogVOffset, XtCMargin, XtRInt, sizeof(int),
-	 offset(text.dialog_vert_offset), XtRImmediate, (caddr_t)0},
     {XtNdisplayPosition, XtCTextPosition, XtRInt,
 	 sizeof (XawTextPosition), offset(text.lt.top), XtRImmediate, (caddr_t)0},
     {XtNinsertPosition, XtCTextPosition, XtRInt,
@@ -221,7 +218,7 @@ static void Initialize(request, new)
     ctx->text.time = 0; /* ||| correct? */
     ctx->text.showposition = TRUE;
     ctx->text.lastPos = ctx->text.source ? GETLASTPOS : 0;
-    ctx->text.dialog = NULL;
+    ctx->text.file_insert = NULL;
     ctx->text.updateFrom = (XawTextPosition *) XtMalloc((unsigned)1);
     ctx->text.updateTo = (XawTextPosition *) XtMalloc((unsigned)1);
     ctx->text.numranges = ctx->text.maxranges = 0;
@@ -1632,13 +1629,10 @@ static void TextDestroy(w)
     Widget w;
 {
     TextWidget ctx = (TextWidget)w;
-    register struct _dialog *dialog, *next;
 
-    for (dialog = ctx->text.dialog; dialog; dialog = next) {
-	/* no need to destroy the widgets here; they should go automatically */
-	next = dialog->next;
-	XtFree( dialog );
-    }
+    if (ctx->text.file_insert != NULL)
+      XtDestroyWidget(ctx->text.file_insert);
+
     if (ctx->text.outer)
 	(void) XtDestroyWidget(ctx->text.outer);
     if (ctx->text.sbar)
@@ -2083,6 +2077,27 @@ void XawTextDisplayCaret (w, display_caret)
 	ctx->text.display_caret = display_caret;
 }
 
+/*	Function Name: XawTextSearch(w, dir, text).
+ *	Description: searches for the given text block.
+ *	Arguments: w - The text widget.
+ *                 dir - The direction to search. 
+ *                 text - The text block containing info about the string
+ *                        to search for.
+ *	Returns: The position of the text found, or XawTextSearchError on 
+ *               an error.
+ */
+
+XawTextPosition
+XawTextSearch(w, dir, text) 
+Widget w;
+XawTextScanDirection dir;
+XawTextBlock * text;
+{
+  TextWidget ctx = (TextWidget) w;
+  return( (*ctx->text.source->Search)(ctx->text.source, 
+				      ctx->text.insertPos, dir, text) );
+}
+  
 /* The following used to be a separate file, Textacts.c, but
    is included here because textActionsTable can't be external
    to the file declaring textClassRec */
@@ -2859,9 +2874,9 @@ static void ExtendAdjust(ctx, event, params, num_params)
    String *params;		/* unused */
    Cardinal *num_params;	/* unused */
 {
-   StartAction(ctx, event);
-    AlterSelection(ctx, XawsmTextExtend, XawactionAdjust, NULL, ZERO);
-   EndAction(ctx);
+  StartAction(ctx, event);
+  AlterSelection(ctx, XawsmTextExtend, XawactionAdjust, NULL, ZERO);
+  EndAction(ctx);
 }
 
 static void ExtendEnd(ctx, event, params, num_params)
@@ -2870,9 +2885,9 @@ static void ExtendEnd(ctx, event, params, num_params)
    String *params;
    Cardinal *num_params;
 {
-   StartAction(ctx, event);
-    AlterSelection(ctx, XawsmTextExtend, XawactionEnd, params, num_params);
-   EndAction(ctx);
+  StartAction(ctx, event);
+  AlterSelection(ctx, XawsmTextExtend, XawactionEnd, params, num_params);
+  EndAction(ctx);
 }
 
 
@@ -2880,100 +2895,231 @@ static void RedrawDisplay(ctx, event)
   TextWidget ctx;
    XEvent *event;
 {
-   StartAction(ctx, event);
-    ForceBuildLineTable(ctx);
-    DisplayTextWindow((Widget)ctx);
-   EndAction(ctx);
+  StartAction(ctx, event);
+  ForceBuildLineTable(ctx);
+  DisplayTextWindow((Widget)ctx);
+  EndAction(ctx);
 }
 
+/* 
+ * File Insertion Actions.
+ */
 
 /* ARGSUSED */
-void _XawTextAbortDialog(w, closure, call_data)
-     Widget w;			/* unused */
-     caddr_t closure;		/* dialog */
-     caddr_t call_data;		/* unused */
+static void 
+PopDownFileInsert(w, closure, call_data)
+Widget w;			/* The Dialog Button Pressed. */
+caddr_t closure;		/* Text Widget. */
+caddr_t call_data;		/* unused */
 {
-   struct _dialog *dialog = (struct _dialog*)closure;
-   Widget popup = dialog->widget->core.parent;
-   TextWidget ctx = dialog->text; 
+  TextWidget ctx = (TextWidget) closure;
+  Widget dialog = XtParent(w);
+  Arg args[1];
 
-   StartAction(ctx, (XEvent*)NULL);
-     XtPopdown(popup);
-     dialog->mapped = False;
-     if (dialog->message)
-	 XtUnmanageChild( dialog->message );
-   EndAction(ctx);
+  XtPopdown( ctx->text.file_insert );
+  XtSetArg( args[0], XtNlabel, INSERT_FILE );
+  XtSetValues( dialog, args, ONE );
 }
 
+/* 
+ * Insert a file of the given name into the text.  Returns TRUE if
+ * file found, False if it wasn't.
+ */
 
-/* Insert a file of the given name into the text.  Returns 0 if file found, 
-   -1 if not. */
-
-static int InsertFileNamed(ctx, str)
-  TextWidget ctx;
-  char *str;
+static Boolean
+InsertFileNamed(ctx, str)
+TextWidget ctx;
+char *str;
 {
-    int fid;
-    XawTextBlock text;
-    char    buf[1000];
-    XawTextPosition position;
+  int fid;
+  XawTextBlock text;
+  char    buf[BUFSIZ];
+  XawTextPosition * pos = &(ctx->text.insertPos);
 
-    if (str == NULL || strlen(str) == 0) return -1;
-    fid = open(str, O_RDONLY);
-    if (fid <= 0) return -1;
-    _XawTextPrepareToUpdate(ctx);
-    position = ctx->text.insertPos;
-    text.firstPos = 0;
-    while ((text.length = read(fid, buf, 512)) > 0) {
-	text.ptr = buf;
-	(void) ReplaceText(ctx, position, position, &text);
-	position = (*ctx->text.source->Scan)(ctx->text.source, position, 
-		XawstPositions, XawsdRight, text.length, TRUE);
-    }
-    (void) close(fid);
-    ctx->text.insertPos = position;
-    _XawTextExecuteUpdate(ctx);
-    return 0;
+  if ( (str == NULL) || (strlen(str) == 0) || 
+       ((fid = open(str, O_RDONLY)) <= 0))
+    return(FALSE);
+
+  _XawTextPrepareToUpdate(ctx);
+  text.firstPos = 0;
+  text.format = FMT8BIT;
+  while ((text.length = read(fid, buf, BUFSIZ)) > 0) {
+    text.ptr = buf;
+    (void) ReplaceText(ctx, *pos, *pos, &text);
+    *pos = (*ctx->text.source->Scan)(ctx->text.source, *pos, XawstPositions,
+				     XawsdRight, text.length, TRUE);
+  }
+  (void) close(fid);
+  _XawTextExecuteUpdate(ctx);
+  return(TRUE);
 }
 
 /* ARGSUSED */
-static void DoInsert(w, closure, call_data)
-     Widget w;			/* unused */
-     caddr_t closure;		/* text widget */
-     caddr_t call_data;		/* unused */
+static void 
+DoInsert(w, closure, call_data)
+Widget w;			/* The Dialog Button Pressed. */
+caddr_t closure;		/* Text Widget */
+caddr_t call_data;		/* unused */
 {
-    struct _dialog *dialog = (struct _dialog*)closure;
+  TextWidget ctx = (TextWidget) closure;
+  Widget dialog = XtParent(w);
+  
+  if ( !InsertFileNamed(ctx, XawDialogGetValueString(dialog)) ) {
+    char msg[BUFSIZ];
+    static Arg args[1];
 
-    if (InsertFileNamed( dialog->text,
-			 XawDialogGetValueString(dialog->widget) )) {
-	char msg[128];
-	static Arg args[] = {
-	    {XtNlabel, NULL},
-	    {XtNfromVert, NULL},
-	    {XtNleft, (XtArgVal)XtChainLeft},
-	    {XtNright, (XtArgVal)XtChainRight},
-	    {XtNborderWidth, 0},
-	};
-	sprintf( msg, "*** Error: %s ***",
-		 (errno > 0 && errno < sys_nerr) ?
-			sys_errlist[errno] : "Can't open file" );
-	args[0].value = (XtArgVal)msg;
-	if (dialog->message) {
-	    XtSetValues( dialog->message, args, ONE );
-	    XtManageChild( dialog->message );
-	}
-	else {
-	    args[1].value = (XtArgVal)dialog->doit;
-	    dialog->message =
-		XtCreateManagedWidget( "message", labelWidgetClass,
-				       dialog->widget, args, XtNumber(args) );
-	}
-/*	XBell(XtDisplay(w), 50); */
-    }
-    else {
-	_XawTextAbortDialog(w, closure, NULL);
-    }
+    sprintf( msg, "*** Error: %s ***",
+	    (errno > 0 && errno < sys_nerr) ?
+	    sys_errlist[errno] : "Can't open file" );
+
+    XtSetArg(args[0], XtNlabel, msg);
+    XtSetValues( dialog, args, ONE );
+    XBell(XtDisplay(w), 0);
+  }
+  else 
+    PopDownFileInsert(w, closure, call_data);
 }
+
+/* ARGSUSED */
+static void 
+InsertFileFromDialog(w, event, params, num_params)
+Widget w;
+XEvent *event;
+String * params;
+Cardinal num_params;
+{
+  DoInsert(w, (caddr_t) XtParent(XtParent(XtParent(w))), NULL);
+}
+
+static void InsertFile(w, event)
+    Widget w;
+    XEvent *event;
+{
+  TextWidget ctx = (TextWidget)w;
+  Position x, y;
+  static Widget CreateFileDialog();
+  
+  if (ctx->text.source->edit_mode != XawtextEdit) {
+    XBell(XtDisplay(w), 0);
+    return;
+  }
+  
+  StartAction(ctx, event);
+  
+  XtTranslateCoords(w, ctx->text.ev_x, ctx->text.ev_y, &x, &y);
+  
+  if (!ctx->text.file_insert) {
+    ctx->text.file_insert = CreateFileDialog(w);
+    XtRealizeWidget(ctx->text.file_insert);
+  }
+
+  CenterWidgetOnPoint(ctx->text.file_insert, x, y);
+  XtPopup(ctx->text.file_insert, XtGrabNone);
+  
+  EndAction(ctx);
+}
+
+/*
+ * This function moves the widget so that its center is on
+ * the point passed.  This function assumes that widget's width
+ * and height are fixed, thus this should be called after the widget
+ * is realized.
+ */
+
+static void
+CenterWidgetOnPoint(w, x, y)
+Widget w;
+Position x, y;
+{
+  Arg args[3];
+  Cardinal num_args;
+  Dimension width, height, b_width;
+  Position max_x, max_y;
+
+  num_args = 0;
+  XtSetArg(args[num_args], XtNwidth, &width); num_args++;
+  XtSetArg(args[num_args], XtNheight, &height); num_args++;
+  XtSetArg(args[num_args], XtNborderWidth, &b_width); num_args++;
+  XtGetValues(w, args, num_args);
+
+  width += 2 * b_width;
+  height += 2 * b_width;
+
+  x -= ( (Position) width/2 );
+  if (x < 0) x = 0;
+  if ( x > (max_x = (Position) (XtScreen(w)->width - width)) ) x = max_x;
+
+  y -= ( (Position) height/2 );
+  if (y < 0) y = 0;
+  if ( y > (max_y = (Position) (XtScreen(w)->height - height)) ) y = max_y;
+  
+  num_args = 0;
+  XtSetArg(args[num_args], XtNx, x); num_args++;
+  XtSetArg(args[num_args], XtNy, y); num_args++;
+  XtSetValues(w, args, num_args);
+}
+
+static Widget
+CreateFileDialog(w)
+Widget w;
+{
+  TextWidget ctx = (TextWidget) w;
+  char *ptr;
+  Widget popup, dialog, value, label, button;
+  Arg args[3];
+  Cardinal num_args;
+
+  if (ctx->text.s.left < ctx->text.s.right) 
+    ptr = _XawTextGetText(ctx, ctx->text.s.left, ctx->text.s.right);
+  else 
+    ptr = "";
+
+  num_args = 0;
+  XtSetArg(args[num_args], XtNiconName, "insertFile"); num_args++;
+  XtSetArg(args[num_args], XtNgeometry, NULL); num_args++;
+  XtSetArg(args[num_args], XtNallowShellResize, TRUE); num_args++;
+  popup = XtCreatePopupShell("insertFile", transientShellWidgetClass, w,
+			     args, XtNumber(args) );
+  
+  num_args = 0;
+  XtSetArg( args[num_args], XtNlabel, INSERT_FILE ); num_args++;
+  XtSetArg( args[num_args], XtNvalue, ptr ); num_args++;
+  dialog = XtCreateManagedWidget("insertFile", dialogWidgetClass, popup,
+				 args, num_args);
+
+/*
+ * Allow the label to resize our window when the label changes.
+ */
+
+  if ( (label = XtNameToWidget(dialog, "label")) != NULL ) {
+    XtSetArg( args[0], XtNresizable, TRUE );  
+    XtSetValues( label, args, ONE);
+  }
+
+/*
+ * Bind <CR> to insert file.
+ */
+
+  if ( (value = XtNameToWidget(dialog, "value")) != NULL ) {
+    XtTranslations trans;
+    trans = XtParseTranslationTable("<Key>0xFF0D: InsertFileFromDialog()");
+    XtOverrideTranslations(value, trans);
+  }
+
+  XtSetArg( args[0], XtNlabel, "Cancel" );
+  button = XtCreateManagedWidget("cancel", commandWidgetClass, dialog,
+				 args, ONE);
+  XtAddCallback(button, XtNcallback, PopDownFileInsert, (caddr_t) w);
+
+  XtSetArg( args[0], XtNlabel, "Insert File" );
+  button = XtCreateManagedWidget("insert", commandWidgetClass, dialog,
+				 args, ONE);
+  XtAddCallback(button, XtNcallback, DoInsert, (caddr_t) w);
+
+  return(popup);
+}
+
+/* End of File Insert Actions */
 
 /*ARGSUSED*/
 static void TextFocusIn (ctx, event)
@@ -2987,18 +3133,16 @@ static void TextFocusOut(ctx, event)
    XEvent *event;
 { ctx->text.hasfocus = FALSE; }
 
-#define STRBUFSIZE 100
-
 static XComposeStatus compose_status = {NULL, 0};
 static void InsertChar(ctx, event)
   TextWidget ctx;
    XEvent *event;
 {
-   char strbuf[STRBUFSIZE];
+   char strbuf[BUFSIZ];
    int     keycode;
    XawTextBlock text;
-   text.length = XLookupString (event, strbuf, STRBUFSIZE,
-                &keycode, &compose_status);
+   text.length = XLookupString (event, strbuf, BUFSIZ,
+				&keycode, &compose_status);
    if (text.length==0) return;
    StartAction(ctx, event);
    text.ptr = &strbuf[0];
@@ -3012,122 +3156,6 @@ static void InsertChar(ctx, event)
 	(*ctx->text.source->Scan)(ctx->text.source, ctx->text.insertPos,
 			    XawstPositions, XawsdRight, text.length, TRUE);
    XawTextUnsetSelection((Widget)ctx);
-
-   EndAction(ctx);
-}
-
-static void InsertFile(w, event)
-    Widget w;
-    XEvent *event;
-{
-    TextWidget ctx = (TextWidget)w;
-    register struct _dialog *dialog, *prev;
-    char *ptr;
-    static char *dialog_label = "Insert File:";
-#ifdef notdef
-    XawTextBlock text;
-#endif
-    register Widget popup;
-    static Arg popup_args[] = {
-	{XtNx, NULL},
-	{XtNy, NULL},
-	{XtNiconName, NULL},
-	{XtNgeometry, NULL},
-	{XtNallowShellResize, True},
-	{XtNsaveUnder, True},
-    };
-    Arg args[2];
-    int x, y;
-    Window j;
-
-   StartAction(ctx, event);
-    if (ctx->text.source->edit_mode != XawtextEdit) {
-	XBell(XtDisplay(w), 50);
-	EndAction(ctx);
-	return;
-    }
-    if (ctx->text.s.left < ctx->text.s.right) {
-	ptr = _XawTextGetText(ctx, ctx->text.s.left, ctx->text.s.right);
-	DeleteCurrentSelection(ctx, (XEvent*)NULL);
-#ifdef notdef
-	if (InsertFileNamed(ctx, ptr)) {
-	    XBell( XtDisplay(w), 50);
-	    text.ptr = ptr;
-	    text.length = strlen(ptr);
-	    text.firstPos = 0;
-	    (void) ReplaceText(ctx, ctx->text.insertPos, ctx->text.insertPos, &text);
-	    ctx->text.s.left = ctx->text.insertPos;
-	    ctx->text.s.right = ctx->text.insertPos = 
-	      (*ctx->text.source->Scan)(ctx->text.source, ctx->text.insertPos, 
-		  XawstPositions, XawsdRight, text.length, TRUE);
-	}
-	XtFree(ptr);
-	EndAction(ctx);
-	return;
-#endif
-    }
-    else {
-	ptr = "";
-    }
-    XTranslateCoordinates( XtDisplay(w), XtWindow(w),
-			   RootWindowOfScreen(XtScreen(w)), 0, 0, &x, &y, &j );
-    x += ctx->text.dialog_horiz_offset;
-    y += ctx->text.dialog_vert_offset;
-    if (ctx->text.sbar)
-	x += ctx->text.sbar->core.width + ctx->text.sbar->core.border_width;
-    prev = NULL;
-    for (dialog = ctx->text.dialog; dialog; dialog = dialog->next) {
-	if (!dialog->mapped)
-	    break;
-	x += ctx->text.dialog_horiz_offset;
-	y += ctx->text.dialog_vert_offset;
-	prev = dialog;
-    }
-    if (dialog) {
-	_XawTextAbortDialog(w, (caddr_t)dialog, NULL);
-	XtMoveWidget(popup = dialog->widget->core.parent, x, y);
-    }
-    else {
-	XtCallbackRec callbacks[2];
-	dialog = XtNew(struct _dialog);
-	if (prev)
-	    prev->next = dialog; /* add to end of list to make visual */
-	else			 /* placement easier next time 'round */
-	    ctx->text.dialog = dialog;
-	dialog->text = ctx;
-	dialog->message = (Widget)NULL;
-	dialog->next = NULL;
-	popup_args[0].value = (XtArgVal)x;
-	popup_args[1].value = (XtArgVal)y;
-	popup_args[2].value = (XtArgVal)dialog_label;
-	popup = XtCreatePopupShell( "insertFile", transientShellWidgetClass, w,
-				    popup_args, XtNumber(popup_args) );
-
-	XtSetArg( args[0], XtNlabel, dialog_label );
-	XtSetArg( args[1], XtNvalue, ptr ); 
-	dialog->widget =
-	    XtCreateManagedWidget("fileInsert", dialogWidgetClass, popup,
-				  args, TWO);
-
-	XtSetKeyboardFocus( dialog->widget,
-			    XtNameToWidget( dialog->widget, "value" ));
-	callbacks[0].callback = _XawTextAbortDialog;
-	callbacks[0].closure = (caddr_t)dialog;
-	callbacks[1].callback = (XtCallbackProc)NULL;
-	callbacks[1].closure = (caddr_t)NULL;
-	XtSetArg( args[0], XtNcallback, callbacks );
-	XtCreateManagedWidget( "Cancel", commandWidgetClass, dialog->widget,
-			       args, ONE );
-
-	callbacks[0].callback = DoInsert;
-	dialog->doit =
-	    XtCreateManagedWidget( "DoIt", commandWidgetClass, dialog->widget,
-				   args, ONE );
-
-	XtRealizeWidget( popup );
-    }
-    XtPopup(popup, XtGrabNone);
-    dialog->mapped = True;
 
    EndAction(ctx);
 }
@@ -3269,6 +3297,8 @@ XtActionsRec textActionsTable [] = {
   {"focus-in", 	 	        TextFocusIn},
   {"focus-out", 		TextFocusOut},
   {"display-caret",		DisplayCaret},
+/* Action to bind <CR> to insert file in Enter file Dialog. */
+  {"InsertFileFromDialog",      InsertFileFromDialog},
 };
 
 Cardinal textActionsTableCount = XtNumber(textActionsTable); /* for subclasses */
