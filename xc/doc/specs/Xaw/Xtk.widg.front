@@ -12,7 +12,9 @@
 
 \s+1\fBX Window System\fP\s-1
 
-\s+1\fBX Version 11, Release 3\fP\s-1
+\s+1\fBX Version 11, Release 3+\fP\s-1
+
+\s+1\fBDRAFT - not for Redistribution\fP\s-1
 .sp 6
 .ce 4
 \s-1Ralph R. Swick
@@ -104,7 +106,7 @@ External Research Group
 MIT Project Athena
 .De
 .bp 1
-.EH '\fBX Toolkit Athena Widgets\fP''\fBX11, Release 3\fP'
-.OH '\fBX Toolkit Athena Widgets\fP''\fBX11, Release 3\fP'
+.EH '\fBX Toolkit Athena Widgets\fP''\fBX11, Release 3+ DRAFT\fP'
+.OH '\fBX Toolkit Athena Widgets\fP''\fBX11, Release 3+ DRAFT\fP'
 .EF ''\fB % \fP''
 .OF ''\fB % \fP''
