@@ -1782,7 +1782,7 @@ Servers capable of supporting multiple hardware colormaps may use this
 information, and window managers may use it for
 .PN InstallColormap
 requests.
-The colormap must have the same visual type as the window (or a 
+The colormap must have the same visual type and root as the window (or a 
 .PN Match
 error results).
 If 
