@@ -1,4 +1,4 @@
-/* $XConsortium: resource.h,v 1.19 94/03/18 17:20:06 dpw Exp $ */
+/* $XConsortium: resource.h,v 1.18 94/02/23 15:47:39 dpw Exp $ */
 /***********************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.

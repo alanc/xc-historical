@@ -1,4 +1,4 @@
-/* $XConsortium: dixfont.h,v 1.18 94/03/18 17:20:06 dpw Exp $ */
+/* $XConsortium: dixfont.h,v 1.17 94/03/16 11:24:00 gildea Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.

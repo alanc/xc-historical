@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: gc.h,v 1.57 94/03/18 17:20:06 dpw Exp $ */
+/* $XConsortium: gc.h,v 1.56 94/01/17 23:55:43 rob Exp $ */
 
 #ifndef GC_H
 #define GC_H 

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: os.h,v 1.59 94/03/18 17:20:06 dpw Exp $ */
+/* $XConsortium: os.h,v 1.58 94/02/23 15:47:34 dpw Exp $ */
 
 #ifndef OS_H
 #define OS_H

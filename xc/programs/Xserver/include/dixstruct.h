@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dixstruct.h,v 1.31 94/03/18 17:20:06 dpw Exp $ */
+/* $XConsortium: dixstruct.h,v 1.30 94/02/20 10:38:44 dpw Exp $ */
 
 #ifndef DIXSTRUCT_H
 #define DIXSTRUCT_H

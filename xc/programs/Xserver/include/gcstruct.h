@@ -1,4 +1,4 @@
-/* $XConsortium: gcstruct.h,v 5.8 94/03/18 17:20:06 dpw Exp $ */
+/* $XConsortium: gcstruct.h,v 5.7 94/01/11 23:17:50 rob Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.

@@ -1,4 +1,4 @@
-/* $XConsortium: opaque.h,v 1.16 94/03/18 17:20:06 dpw Exp $ */
+/* $XConsortium: opaque.h,v 1.15 94/01/11 23:17:54 rob Exp $ */
 
 #ifndef OPAQUE_H
 #define OPAQUE_H
