@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Display.c,v 1.17 89/03/14 12:03:58 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Display.c,v 1.1 89/06/01 14:34:02 swick Exp $";
 /* $oHeader: Display.c,v 1.9 88/09/01 11:28:47 asente Exp $ */
 #endif lint
 
@@ -35,6 +35,11 @@ SOFTWARE.
 
 #include <X11/Xlib.h>
 #include "IntrinsicI.h"
+
+#define HEAP_SEGMENT_SIZE 8180
+
+static void _XtHeapInit();
+static void _XtHeapFree();
 
 ProcessContext _XtGetProcessContext()
 {
@@ -193,8 +198,8 @@ Display *XtOpenDisplay(app, displayName, applName, className,
 	return d;
 }
 
-void XtDisplayInitialize(app, dpy, name, classname, 
-		urlist, num_urs, argc, argv)
+void
+XtDisplayInitialize(app, dpy, name, classname, urlist, num_urs, argc, argv)
 	XtAppContext app;
 	Display *dpy;
 	String name, classname;
@@ -214,10 +219,13 @@ void XtDisplayInitialize(app, dpy, name, classname,
         pd->defaultCaseConverter = _XtConvertCase;
         pd->defaultKeycodeTranslator = XtTranslateKey;
         pd->keysyms = NULL;
-        pd ->modsToKeysyms = NULL;
+	pd->modKeysyms = NULL;
+        pd->modsToKeysyms = NULL;
 	pd->appContext = app;
 	pd->name = XrmStringToName(name);
 	pd->class = XrmStringToClass(classname);
+	pd->being_destroyed = False;
+	_XtHeapInit(&pd->heap);
 
 	_XtDisplayInitialize(dpy, app, name, classname, urlist, 
 		num_urs, argc, argv);
@@ -247,6 +255,7 @@ XtAppContext XtCreateApplicationContext()
 	FD_ZERO(&app->fds.rmask);
 	FD_ZERO(&app->fds.wmask);
 	FD_ZERO(&app->fds.emask);
+	_XtHeapInit(&app->heap);
 	return app;
 }
 
@@ -257,9 +266,11 @@ static void DestroyAppContext(app)
 	XtAppContext app;
 {
 	XtAppContext* prev_app = &app->process->appContextList;
-	while (app->count-- > 0) XCloseDisplay(app->list[app->count]);
+	while (app->count-- > 0) XtCloseDisplay(app->list[app->count]);
 	if (app->list != NULL) XtFree((char *)app->list);
 	_XtFreeConverterTable(app->converterTable);
+	_XtCacheFlushTag((caddr_t)&app->heap);
+	_XtHeapFree(&app->heap);
 	while (*prev_app != app) prev_app = &(*prev_app)->next;
 	*prev_app = app->next;
 	if (app->process->defaultAppContext == app)
@@ -309,10 +320,6 @@ typedef struct _PerDisplayTable {
 
 static PerDisplayTablePtr perDisplayList = NULL;
 
-void _XtPerDisplayInitialize()
-{
-}
-
 XtPerDisplay _XtGetPerDisplay(dpy)
 	Display *dpy;
 {
@@ -339,11 +346,50 @@ XtPerDisplay _XtGetPerDisplay(dpy)
 	return &(pd->perDpy);
 }
 
-XtAppContext _XtDisplayToApplicationContext(dpy)
+XtAppContext XtDisplayToApplicationContext(dpy)
 	Display *dpy;
 {
 	XtPerDisplay pd = _XtGetPerDisplay(dpy);
 	return pd->appContext;
+}
+
+static void _XtHeapInit(heap)
+    Heap*	heap;
+{
+    heap->start = NULL;
+    heap->bytes_remaining = 0;
+}
+
+char* _XtHeapAlloc(heap, bytes)
+    Heap*	heap;
+    int		bytes;
+{
+    register char* heap_loc;
+    if (heap == NULL) return XtMalloc(bytes);
+    if (heap->bytes_remaining < bytes) {
+	heap_loc = XtMalloc(HEAP_SEGMENT_SIZE);
+	*(char**)heap_loc = heap->start;
+	heap->start = heap_loc;
+	heap->current = heap_loc + sizeof(char*);
+	heap->bytes_remaining = HEAP_SEGMENT_SIZE - sizeof(char*);
+    }
+    heap_loc = heap->current;
+    heap->current += bytes;
+    heap->bytes_remaining -= bytes;
+    return heap_loc;
+}
+
+static void _XtHeapFree(heap)
+    Heap*	heap;
+{
+    char* segment = heap->start;
+    while (segment != NULL) {
+	char* next_segment = *(char**)segment;
+	XtFree(segment);
+	segment = next_segment;
+    }
+    heap->start = NULL;
+    heap->bytes_remaining = 0;
 }
 
 static XtPerDisplay NewPerDisplay(dpy)
@@ -394,8 +440,13 @@ static void CloseDisplay(dpy)
             xtpd->keysyms = NULL;
             xtpd->modKeysyms = NULL;
             xtpd->modsToKeysyms = NULL;
+	    XDestroyRegion(xtpd->region);
+	    _XtCacheFlushTag((caddr_t)&xtpd->heap);
+	    _XtHeapFree(&xtpd->heap);
         }
 	XtFree(pd);
+	XrmDestroyDatabase(dpy->db);
+	dpy->db = NULL;
 	XCloseDisplay(dpy);
 }
 
