@@ -56,6 +56,7 @@ install::
 	-mkdir $(XAPPLOADDIR)
 	-mkdir $(INCDIR)
 	-mkdir $(UWMDIR)
+	-mkdir $(MANPATH)
 	-mkdir $(MANDIR)
 
 #ifdef ClientSideOnly
