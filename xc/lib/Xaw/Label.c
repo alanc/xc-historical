@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Label.c,v 1.40 88/02/14 12:04:47 rws Exp $";
+static char rcsid[] = "$Header: Label.c,v 1.41 88/02/14 13:59:31 rws Exp $";
 #endif lint
 
 /*
@@ -232,7 +232,7 @@ static void Initialize(request, new)
     if (lw->core.height == 0)
         lw->core.height = lw->label.label_height + 2*lw->label.internal_height;
 
-    Resize((Widget)lw);
+    (*XtClass(new)->core_class.resize) ((Widget)lw);
 
 } /* Initialize */
 
@@ -352,6 +352,17 @@ static Boolean SetValues(current, request, new)
 	newlw->core.height =
 	    newlw->label.label_height + 2*newlw->label.internal_height;
 
+    /* we have to know if the size change is going to take
+       before calling Resize() */
+    if ((curlw->core.width != newlw->core.width ||
+	 curlw->core.height != newlw->core.height) &&
+	(XtMakeResizeRequest(current, newlw->core.width, newlw->core.height,
+			     &newlw->core.width, &newlw->core.height)
+	 == XtGeometryNo)) {
+	newlw->core.width = curlw->core.width;
+	newlw->core.height = curlw->core.height;
+    }
+
     if (curlw->label.foreground != newlw->label.foreground
 	|| curlw->label.font->fid != newlw->label.font->fid) {
 
@@ -364,7 +375,7 @@ static Boolean SetValues(current, request, new)
     if ((curlw->label.internal_width != newlw->label.internal_width)
         || (curlw->label.internal_height != newlw->label.internal_height)
 	|| was_resized) {
-	Resize((Widget)newlw);
+	(*XtClass(new)->core_class.resize) ((Widget)newlw);
     }
 
     return( was_resized );
