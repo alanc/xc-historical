@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: SMproto.h,v 1.1 93/09/03 13:25:07 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -88,6 +88,13 @@ typedef struct {
     CARD8	minorOpcode;
     CARD8	unused[2];
     CARD32	length B32;
+} smShutdownCancelledMsg;
+
+typedef struct {
+    CARD8	majorOpcode;
+    CARD8	minorOpcode;
+    CARD8	unused[2];
+    CARD32	length B32;
     /* a	ARRAY8		locale */
     /* b	LISTofARRAY8	reasons */
 } smCloseConnectionMsg;
@@ -117,13 +124,6 @@ typedef struct {
     /* a	LISTofPROPERTY	properties */
 } smPropertiesReplyMsg;
 
-typedef struct {
-    CARD8	majorOpcode;
-    CARD8	minorOpcode;
-    CARD8	unused[2];
-    CARD32	length B32;
-} smShutdownCancelledMsg;
-
 
 /*
  * SIZEOF values.  These better be multiples of 8.
@@ -137,10 +137,10 @@ typedef struct {
 #define sz_smInteractDoneMsg 		8
 #define sz_smSaveYourselfDoneMsg 	8
 #define sz_smDieMsg 			8
+#define sz_smShutdownCancelledMsg 	8
 #define sz_smCloseConnectionMsg 	8
 #define sz_smSetPropertiesMsg 		16
 #define sz_smGetPropertiesMsg 		8
 #define sz_smPropertiesReplyMsg 	8
-#define sz_smShutdownCancelledMsg 	8
 
 #endif /* SMPROTO_H */
