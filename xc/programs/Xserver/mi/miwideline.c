@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.1 89/10/25 15:15:59 keith Exp $
+ * $XConsortium: miwideline.c,v 1.2 89/10/28 16:55:07 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -83,7 +83,10 @@ miFillPolyHelper (pDrawable, pGC, pixel, y, overall_height,
 
     oldPixel = pGC->fgPixel;
     if (pixel != oldPixel)
+    {
 	DoChangeGC (pGC, GCForeground, (XID *)&pixel, FALSE);
+	ValidateGC (pDrawable, pGC);
+    }
 
     if (pGC->miTranslate)
     {
@@ -123,7 +126,10 @@ miFillPolyHelper (pDrawable, pGC, pixel, y, overall_height,
     DEALLOCATE_LOCAL (pwidthInit);
     DEALLOCATE_LOCAL (pptInit);
     if (pixel != oldPixel)
+    {
 	DoChangeGC (pGC, GCForeground, (XID *)&oldPixel, FALSE);
+	ValidateGC (pDrawable, pGC);
+    }
 }
 
 int
@@ -454,7 +460,10 @@ miLineRoundCapJoin (pDraw, pGC, pixel, xorg, yorg)
     wids = widths;
     oldPixel = pGC->fgPixel;
     if (pixel != oldPixel)
+    {
 	DoChangeGC(pGC, GCForeground, (XID *)&pixel, FALSE);
+	ValidateGC (pDraw, pGC);
+    }
     if (pGC->miTranslate)
     {
 	xorg += pDraw->x;
@@ -495,7 +504,10 @@ miLineRoundCapJoin (pDraw, pGC, pixel, xorg, yorg)
     DEALLOCATE_LOCAL(widths);
     DEALLOCATE_LOCAL(points);
     if (pixel != oldPixel)
+    {
 	DoChangeGC(pGC, GCForeground, (XID *)&oldPixel, FALSE);
+	ValidateGC (pDraw, pGC);
+    }
 }
 
 miLineCapRound (pDraw, pGC, pixel, face, left)
