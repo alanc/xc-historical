@@ -33,6 +33,7 @@ SRCS = \
 	mailfull \
 	mailfullmsk \
 	mensetmanus \
+	menu6 \
 	menu8 \
 	menu10 \
 	menu12 \
