@@ -1093,6 +1093,37 @@
 	(setf (display-new-events display) (reply-next event))))
     (values event nil)))
 
+(defvar *event-loop-version* 0)
+
+(defun dequeue-event (display event)
+  (declare (type display display)
+	   (type reply-buffer event)
+	   (values next))
+  ;; Remove the current event from the event queue
+  (with-event-queue-internal (display)
+    (let ((next (reply-next event))
+	  (head (display-event-queue-head display)))
+      (declare (type (or null reply-buffer) next head))
+      (when (eq event (display-new-events display))
+	(setf (display-new-events display) next))
+      (cond ((eq event head)
+	     (threaded-dequeue (display-event-queue-head display)
+			       (display-event-queue-tail display)
+			       reply-next reply-buffer))
+	    ((null head)
+	     (setq next nil))
+	    (t
+	     (do* ((previous head current)
+		   (current (reply-next previous) (reply-next previous)))
+		  ((or (null current) (eq event current))
+		   (when (eq event current)
+		     (when (eq current (display-event-queue-tail display))
+		       (setf (display-event-queue-tail display) previous))
+		     (setf (reply-next previous) next)))
+	       (declare (type reply-buffer previous)
+			(type (or null reply-buffer) current)))))
+      next)))
+
 (defun event-loop-step-after
        (display event discard-p current-event-symbol current-event-discarded-p-symbol
 	&optional aborted)
@@ -1104,15 +1135,23 @@
 	     (not aborted)
 	     (not (symbol-value current-event-discarded-p-symbol)))
     (discard-current-event display))
-  (setf (symbol-value current-event-symbol) (reply-next event))
-  (when (symbol-value current-event-discarded-p-symbol)
-    (setf (symbol-value current-event-discarded-p-symbol) nil)
-    (deallocate-event event)))
+  (let ((next (reply-next event)))
+    (declare (type (or null reply-buffer) next))
+    (when (symbol-value current-event-discarded-p-symbol)
+      (setf (symbol-value current-event-discarded-p-symbol) nil)
+      (ecase *event-loop-version*
+	;; in version 0 discard-current-event dequeues the event.
+	(0 )
+	;; in version 1 event-loop-step-after dequeues the event.
+	(1 (setq next (dequeue-event display event))))
+      (deallocate-event event))
+    (setf (symbol-value current-event-symbol) next)))
 
 (defmacro event-loop ((display event timeout force-output-p discard-p) &body body)
   ;; Bind EVENT to the events for DISPLAY.
   ;; This is the "GUTS" of process-event and event-case.
-  `(let ((.display. ,display)
+  `(let ((*event-loop-version* 1)
+	 (.display. ,display)
 	 (.timeout. ,timeout)
 	 (.force-output-p. ,force-output-p)
 	 (.discard-p. ,discard-p))
@@ -1163,28 +1202,12 @@
     (declare (type list symbols)
 	     (type (or null reply-buffer) event))
     (unless (null event)
-      ;; Remove the current event from the event queue
-      (with-event-queue-internal (display)
-	(let ((next (reply-next (the reply-buffer event))))
-	  (declare (type (or null reply-buffer) next))
-	  (when (eq event (display-new-events display))
-	    (setf (display-new-events display) next))
-	  (cond ((eq event (display-event-queue-head display))
-		 (threaded-dequeue (display-event-queue-head display)
-				   (display-event-queue-tail display)
-				   reply-next reply-buffer))
-		((null (display-event-queue-head display))
-		 (setf (reply-next (the reply-buffer event)) nil))
-		(t
-		 (do* ((previous (display-event-queue-head display) current)
-		       (current (reply-next previous) (reply-next previous)))
-		      ((or (null current) (eq event current))
-		       (when (eq event current)
-			 (when (eq current (display-event-queue-tail display))
-			   (setf (display-event-queue-tail display) previous))
-			 (setf (reply-next previous) next)))
-		   (declare (type reply-buffer previous)
-			    (type (or null reply-buffer) current)))))))
+      (ecase *event-loop-version*
+	;; in version 0 discard-current-event dequeues the event.
+	(0 (setf (reply-next (the reply-buffer event))
+		 (dequeue-event display event)))
+	;; in version 1 event-loop-step-after dequeues the event.
+	(1 ))
       ;; Set the discarded-p flag
       (let ((current-event-discarded-p-symbol (second symbols)))
 	(declare (type symbol current-event-discarded-p-symbol))
