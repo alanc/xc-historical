@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XMisc.c,v 1.0 88/02/01 13:15:12 rws Exp $ */
+/* $Header: XMisc.c,v 1.1 88/06/28 18:17:49 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1988	*/
 
 #include "Xlibint.h"
@@ -16,8 +16,6 @@ char *XResourceManagerString(dpy)
 {
     return dpy->xdefaults;
 }
-
-/* XXX change Display.motion_buffer to unsigned long */
 
 unsigned long XDisplayMotionBufferSize(dpy)
     Display *dpy;
