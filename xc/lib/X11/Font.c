@@ -1,4 +1,4 @@
-/* $XConsortium: XFont.c,v 11.36 91/01/05 14:55:48 rws Exp $ */
+/* $XConsortium: XFont.c,v 11.37 91/01/06 11:45:39 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -81,14 +81,14 @@ XFreeFont(dpy, fs)
 	ext = ext->next;
 	}    
     GetResReq (CloseFont, fs->fid, req);
+    UnlockDisplay(dpy);
+    SyncHandle();
     _XFreeExtData(fs->ext_data);
     if (fs->per_char)
        Xfree ((char *) fs->per_char);
     if (fs->properties)
        Xfree ((char *) fs->properties);
     Xfree ((char *) fs);
-    UnlockDisplay(dpy);
-    SyncHandle();
 }
 
 /*
