@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.136 91/06/29 16:12:49 keith Exp $ */
+/* $XConsortium: connection.c,v 1.137 91/06/29 16:19:21 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -437,7 +437,7 @@ void
 ResetWellKnownSockets ()
 {
     ResetOsBuffers();
-#ifdef UNIXCONN
+#if defined(UNIXCONN) && !defined(SVR4)
     if (unixDomainConnection != -1)
     {
 	/*
