@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.121 91/05/08 11:42:05 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.122 91/05/09 14:23:30 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate .cf
 XCOMM configuration files.  Site-wide parameters may be set in the file
@@ -214,6 +214,14 @@ XCOMM
 #define MacroFile x386.cf
 #define i386Architecture
 #endif /* SYSV386 */
+
+#ifdef DGUX
+#define MacroIncludeFile <DGUX.cf>
+#define MacroFile DGUX.cf
+#undef DGUX
+#define DguxArchitecture
+#endif
+
 
 #ifndef MacroIncludeFile
 XCOMM WARNING:  Imake.tmpl not configured; guessing at definitions!!!
