@@ -1,4 +1,4 @@
-.\" $XConsortium: X11.protocol,v 1.32 94/04/11 18:06:07 rws Exp $
+.\" $XConsortium: X11.protocol,v 1.33 94/04/11 19:15:01 rws Exp $
 .EH ''''
 .OH ''''
 .EF ''''
@@ -27,7 +27,7 @@ Laboratory for Computer Science\s+1
 .LP
 X Window System is a trademark of M.I.T.
 .LP
-Copyright \(co 1986, 1987, 1988 
+Copyright \(co 1986, 1987, 1988, 1994 
 Massachusetts Institute of Technology
 .LP
 Permission to use, copy, modify, and distribute this document 
