@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[]=
-    "$XConsortium: popup.c,v 2.15 89/08/23 19:20:44 converse Exp $";
+    "$XConsortium: popup.c,v 2.16 89/08/31 19:10:26 converse Exp $";
 #endif
 
 /*
@@ -364,7 +364,7 @@ static void DestroyPopupError(widget, closure, call_data)
 void PopupError(message)
     String	message;
 {
-    Arg		args[1];
+    Arg		args[3];
     Widget	dialog;
     Position	x, y;
     static XtCallbackRec callbacks[] = {

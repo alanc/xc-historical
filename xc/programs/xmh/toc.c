@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] = 
-    "$XConsortium: toc.c,v 2.26 89/09/01 17:36:24 kit Exp $";
+    "$XConsortium: toc.c,v 2.27 89/09/01 19:34:31 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -556,6 +556,9 @@ Toc toc;
 char *name;
 {
     int i;
+    if (name == NULL)
+	return (Sequence) NULL;
+
     for (i=0 ; i<toc->numsequences ; i++)
 	if (strcmp(toc->seqlist[i]->name, name) == 0)
 	    return toc->seqlist[i];
