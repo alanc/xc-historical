@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.7 94/02/10 14:39:29 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.8 94/02/10 16:54:45 rws Exp $
 XCOMM
 XCOMM Copyright (c) 1993 Quarterdeck Office Systems
 XCOMM
@@ -22,8 +22,6 @@ XCOMM PROFITS, EVEN IF ADVISED OF THE POSSIBILITY THEREOF, AND REGARDLESS
 XCOMM OF WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT
 XCOMM OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-XCOMM $XConsortium: Imakefile,v 1.7 94/02/10 14:39:29 rws Exp $
-
 XCOMM Having had to change the name once, I don't want it to be tough
 XCOMM the next time...
 SERVERNAME=rstartd
@@ -32,10 +30,7 @@ MYLIBDIR=$(LIBDIR)/rstart
 ENVPREFIX=RSTART
 PACKAGEname=rstart
 
-#ifndef UsrBin
-#define	UsrBin /usr/bin
-#endif
-USRBIN=UsrBin
+USRBIN=DefaultUsrBin
 
 #ifndef RshCmd
 # if	SystemV
