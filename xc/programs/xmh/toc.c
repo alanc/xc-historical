@@ -1,5 +1,5 @@
 /*
- * $XConsortium: toc.c,v 2.37 91/01/09 09:04:58 swick Exp $
+ * $XConsortium: toc.c,v 2.38 91/01/09 09:15:44 swick Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -540,7 +540,10 @@ void TocForceRescan(toc)
 {
     register int i;
 
-    toc->viewedseq = toc->seqlist[0];
+    if (toc->seqlist)
+	toc->viewedseq = toc->seqlist[0];
+    else
+	TULoadSeqLists(toc);
     for (i=0 ; i<toc->num_scrns ; i++)
 	TUResetTocLabel(toc->scrn[i]);
     TUScanFileForToc(toc);
