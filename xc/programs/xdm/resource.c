@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: resource.c,v 1.10 88/11/17 17:05:01 keith Exp $
+ * $XConsortium: resource.c,v 1.11 88/11/23 17:00:17 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -144,6 +144,8 @@ struct displayResources {
 				DEF_FAILSAFE_CLIENT,
 "grabTimeout",	"GrabTimeout",	DM_INT,		boffset(grabTimeout),
 				"3",
+"authorize",	"Authorize",	DM_BOOL,	boffset(authorize),
+				"true",
 "authFile",	"AuthFile",	DM_STRING,	boffset(authFile),
 				DEF_AUTH_FILE,
 "userAuthDir",	"UserAuthDir",	DM_STRING,	boffset(userAuthDir),
