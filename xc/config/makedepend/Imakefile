@@ -1,15 +1,15 @@
-#
-# If you have source for cpp...
-#
+/*
+ * If you have source for cpp... (this is no longer tested or supported)
+ */
 #if CppSourcesPresent
     SRCS = include.c main.c parse.c pr.c cppsetup.c cpp.c cpy.y
     OBJS = include.o main.o parse.o pr.o cppsetup.o cpp.o cpy.o
  CPPDEFS = -DCPP
   CPPSRC = CppSources
 #else
-#
-# But if you do not have cpp source...
-#
+/*
+ * But if you do not have cpp source...
+ */
     SRCS = include.c main.c parse.c pr.c cppsetup.c
     OBJS = include.o main.o parse.o pr.o cppsetup.o
 #endif
