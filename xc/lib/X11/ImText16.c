@@ -1,4 +1,4 @@
-/* $XConsortium: XImText16.c,v 11.16 90/12/12 09:18:16 rws Exp $ */
+/* $XConsortium: XImText16.c,v 11.17 91/01/06 11:46:32 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -61,12 +61,19 @@ XDrawImageString16(dpy, d, gc, x, y, string, length)
             
 	    UnlockDisplay(dpy);
 	
+	    overall.width = 0;
 	    FontStruct = XQueryFont(dpy, gc->gid);
 
-  	    XTextExtents16(FontStruct, CharacterOffset - 255, 255,
-		&direction, &ascent, &descent, &overall);
+	    if (FontStruct) {
+		XTextExtents16(FontStruct, CharacterOffset - 255, 255,
+		    &direction, &ascent, &descent, &overall);
 
-	    Xfree(FontStruct);
+		if (FontStruct->per_char)
+		    Xfree ((char *) FontStruct->per_char);
+		if (FontStruct->properties)
+		    Xfree ((char *) FontStruct->properties);
+		Xfree((char *)FontStruct);
+	    }
 
 	    LockDisplay(dpy);
 
