@@ -355,13 +355,6 @@ IBMALLOCLIB = ddx/ibm/common/libibmalloc.a
 IBMALLOCLIB = 
 #endif
 
-ddx/ibm/common/ibmDate.o: AlwaysForce
-	(cd ddx/ibm/common; $(MAKE) ibmDate.o)
-
-AlwaysForce:
-
-loadXibm: ddx/ibm/common/ibmDate.o
-
 #define need_dix
 #define need_ddx_snf
 #define need_ddx_mi
