@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.160 93/10/13 19:07:33 kaleb Exp $ */
+/* $XConsortium: Event.c,v 1.161 93/12/23 16:17:37 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1542,21 +1542,9 @@ void XtAppMainLoop(app)
 
 void _XtEventInitialize()
 {
-    static Boolean initialized = FALSE;
-/* VARIABLES PROTECTED BY _XtLock::mutex: initialized */
-
-    LOCK_PROCESS;
-    if (initialized) {
-	UNLOCK_PROCESS;
-	return;
-    }
-    initialized = TRUE;
-
 #ifndef __lock_lint
     nullRegion = XCreateRegion();
 #endif
-
-    UNLOCK_PROCESS;
 }
 
 void XtAddExposureToRegion(event, region)
