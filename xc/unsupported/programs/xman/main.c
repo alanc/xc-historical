@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: main.c,v 1.12 90/10/28 18:00:12 dave Exp $
+ * $XConsortium: main.c,v 1.13 91/01/09 17:31:27 rws Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -19,16 +19,12 @@
  * Created:   October 22, 1987
  */
 
-#if ( !defined(lint) && !defined(SABER))
-  static char rcs_version[] = "$Athena: main.c,v 4.5 88/12/19 13:47:28 kit Exp $";
-#endif
-
 #include "globals.h"
 #ifndef ZERO
 #include <X11/Xaw/Cardinals.h>
 #endif /* ZERO */
 
-#if ( !defined(lint) && !defined(SABER)) /* Version can be retrieve */
+#if ( !defined(lint) && !defined(SABER)) /* Version can be retrieved */
   static char version[] = XMAN_VERSION;  /* via strings. */
 #endif
 
@@ -119,9 +115,8 @@ int argc;
 {
   XtAppContext app_con;
 
-  initial_widget = XtAppInitialize(&app_con, "Xman", 
-				   xman_options, XtNumber(xman_options),
-				   (Cardinal *) &argc, argv,
+  initial_widget = XtAppInitialize(&app_con, "Xman", xman_options,
+				   XtNumber(xman_options), &argc, argv,
 				   fallback_resources, NULL, ZERO);
 
   manglobals_context = XStringToContext(MANNAME);
