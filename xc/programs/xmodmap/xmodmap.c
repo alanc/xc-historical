@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: xmodmap.c,v 1.19 91/07/17 21:14:14 rws Exp $
+ * $XConsortium: xmodmap.c,v 1.20 91/07/17 22:26:21 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -49,6 +49,7 @@ static char *help_message[] = {
 "    -e expression                execute string",
 "    -pm                          print modifier map",
 "    -pk                          print keymap table",
+"    -pke                         print keymap table as expressions",
 "    -pp                          print pointer map",
 "    -grammar                     print out short help on allowable input",
 "    -                            read standard input",
@@ -112,6 +113,7 @@ main (argc, argv)
     int status;
     Bool printMap = False;
     Bool printKeyTable = False;
+    Bool printKeyTableExprs = False;
     Bool printPointerMap = False;
     Bool didAnything = False;
 
@@ -173,8 +175,17 @@ main (argc, argv)
 		  case 'm':		/* -pm */
 		    printMap = True;
 		    break;
-		  case 'k':		/* -pk */
-		    printKeyTable = True;
+		  case 'k':		/* -pk, -pke */
+		    switch (arg[3]) {
+		    case '\0':
+			printKeyTable = True;
+			break;
+		    case 'e':
+			printKeyTableExprs = True;
+			break;
+		    default:
+			usage ();
+		    }
 		    break;
 		  case 'p':		/* -pp */
 		    printPointerMap = True;
@@ -303,7 +314,11 @@ main (argc, argv)
     }
 
     if (printKeyTable) {
-	print_key_table ();
+	print_key_table (False);
+    }
+
+    if (printKeyTableExprs) {
+	print_key_table (True);
     }
 
     if (printPointerMap) {

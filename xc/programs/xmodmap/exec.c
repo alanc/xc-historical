@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: exec.c,v 1.10 88/10/08 16:21:16 jim Exp $
+ * $XConsortium: exec.c,v 1.11 89/12/07 20:36:06 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  * Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
@@ -219,7 +219,8 @@ PrintModifierMapping (map, fp)
 }
 
 
-PrintKeyTable (fp)
+PrintKeyTable (exprs, fp)
+    Bool exprs;
     FILE *fp;
 {
     int         i;
@@ -236,17 +237,21 @@ PrintKeyTable (fp)
 		 ProgramName);
 	return;
     }
-    fprintf (fp, 
-	 "There are %d KeySyms per KeyCode; KeyCodes range from %d to %d.\n\n", 
-	    keysyms_per_keycode, min_keycode, max_keycode);
-    fprintf (fp, "    KeyCode\tKeysym (Keysym)\t...\n");
-    fprintf (fp, "    Value  \tValue   (Name) \t...\n\n");
-
+    if (!exprs) {
+	fprintf (fp, 
+		 "There are %d KeySyms per KeyCode; KeyCodes range from %d to %d.\n\n", 
+		 keysyms_per_keycode, min_keycode, max_keycode);
+	fprintf (fp, "    KeyCode\tKeysym (Keysym)\t...\n");
+	fprintf (fp, "    Value  \tValue   (Name) \t...\n\n");
+    }
     keymap = origkeymap;
     for (i = min_keycode; i <= max_keycode; i++) {
 	int  j, max;
 
-	printf("    %3d    \t", i);
+	if (exprs)
+	    fprintf(fp, "keycode %3d =", i);
+	else
+	    fprintf(fp, "    %3d    \t", i);
 	max = keysyms_per_keycode - 1;
 	while ((max >= 0) && (keymap[max] == NoSymbol))
 	    max--;
@@ -257,7 +262,12 @@ PrintKeyTable (fp)
 		s = XKeysymToString (ks);
 	    else
 		s = "NoSymbol";
-	    fprintf (fp, "0x%04x (%s)\t", ks, s ? s : "no name");
+	    if (!exprs)
+		fprintf (fp, "0x%04x (%s)\t", ks, s ? s : "no name");
+	    else if (s)
+		fprintf (fp, " %s", s);
+	    else
+		fprintf (fp, " 0x%04x", ks);
 	}
 	keymap += keysyms_per_keycode;
 	fprintf (fp, "\n");

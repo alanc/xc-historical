@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: handle.c,v 1.23 91/07/17 22:26:34 rws Exp $
+ * $XConsortium: handle.c,v 1.24 91/07/17 23:35:01 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -1274,9 +1274,10 @@ void print_modifier_map ()
     return;
 }
 
-void print_key_table ()
+void print_key_table (exprs)
+    Bool exprs;
 {
-    PrintKeyTable (stdout);
+    PrintKeyTable (exprs, stdout);
     return;
 }
 
