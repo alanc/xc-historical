@@ -1,4 +1,4 @@
-/* $XConsortium: XSync.c,v 1.5 94/02/09 11:27:56 dpw Exp $ */
+/* $XConsortium: XSync.c,v 1.6 94/03/25 15:48:41 dpw Exp $ */
 /***********************************************************
 Copyright 1991,1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 the Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -275,7 +275,7 @@ XSyncListSystemCounters(dpy, n_counters_return)
 	    goto bail;
 	}
 
-	_XReadPad(dpy, pWireSysCounter, replylen);
+	_XReadPad(dpy, (char *)pWireSysCounter, replylen);
 
 	counter = pWireSysCounter->counter;
 	for (i = 0; i < rep.nCounters; i++)
