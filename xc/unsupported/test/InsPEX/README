@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: README,v 5.2 91/02/16 10:04:52 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -39,7 +39,10 @@ resulting images are either verified automatically, or
 compared against saved images.  An X-based tool, Inspector,
 is supplied for comparing images against saved reference
 images, and saving the new images as acceptable images if
-desired.
+desired. 
+
+YOU MUST HAVE A VALID X3D-PEX SERVER RUNNING BEFORE YOU 
+START THE InsPEX TEST SUITE. IT WILL NOT START A SERVER FOR YOU!!!
 
 This file contains:
 
@@ -213,6 +216,36 @@ is a sample log file, sample.log, and an automatically-generated
 summary of all the current tests, test_descrip.  See
 the README for a description of how that file was
 generated.
+
+
+Running the InsPEX Test Suite
+-----------------------------------------
+
+1) MAKE SURE YOU HAVE AN X3D-PEX SERVER RUNNING
+
+2) Go to INSPEXHOME. Set the DISPLAY environment variable and the PEXAPIDIR
+environment variable to the proper values. It is also helpful to set MAXFAIL 
+to some reasonable value, otherwise InsPEX will stop after test failures.
+Also use the VERBOSITY variable to get more clues. See the Using InsPEX 
+section of the PEX-SI User Guide.
+
+
+3) Type run_InsPEX. If you have not changed the relative locations of the
+X and PEX directories wrt to the root tree as it appeared on your tape
+then InsPEX will go off on its merry way (hopefully) performing a make or two, 
+executing interpreted test scripts, compiling and executing some c language 
+test programs and reporting the results. If you have moved things around you 
+can use these shell scripts:
+
+run_InsPEX
+inspex.sh
+startpex
+
+as a guide to making versions that will work on your system. Remeber to
+try to finesse all environment variables to absolute pathnames as relative
+pathnames will make your life hell. Don't curse me I didn't write these scripts
+Good Luck.
+
 	  -----------------------------------------
 
 Unix is a trademark of AT&T.
