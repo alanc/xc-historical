@@ -194,10 +194,6 @@ cfbDestroyGC(pGC, pQ)
     xfree(pQ);
 }
 
-#define WINMOVED(pWin, pGC) \
-((pWin->absCorner.x != pGC->lastWinOrg.x) || \
- (pWin->absCorner.y != pGC->lastWinOrg.y))
-
 /* Clipping conventions
 	if the drawable is a window
 	    CT_REGION ==> pCompositeClip really is the composite
@@ -226,6 +222,7 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
     /* flags for changing the proc vector */
     cfbPrivGCPtr devPriv;
     unsigned long procChanges = 0;
+    DDXPointRec	oldOrg;		/* origin of thing GC was last used with */
 
     switch (pGC->depth) {
     case PSZ:
@@ -240,10 +237,19 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
 	ErrorF("cfbCreateGC: unsupported depth: %d\n", pGC->depth);
 	return;
     }
+    oldOrg = pGC->lastWinOrg;
     if (pDrawable->type == DRAWABLE_WINDOW)
+    {
 	pWin = (WindowPtr) pDrawable;
+	pGC->lastWinOrg.x = pWin->absCorner.x;
+	pGC->lastWinOrg.y = pWin->absCorner.y;
+    }
     else
+    {
 	pWin = (WindowPtr) NULL;
+	pGC->lastWinOrg.x = 0;
+	pGC->lastWinOrg.y = 0;
+    }
 
     devPriv = ((cfbPrivGCPtr) (pGC->devPriv));
 
@@ -265,27 +271,18 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
 	 */
 	if ((pGC->clientClipType == CT_REGION) &&
 	    ((changes & (GCClipXOrigin | GCClipYOrigin | GCClipMask)) ||
-	     (pWin && WINMOVED(pWin, pGC))
+	     (oldOrg.x != pGC->lastWinOrg.x) || (oldOrg.y != pGC->lastWinOrg.y)
 	     )
-	    ) {
+	    )
+	{
 	    /* retranslate client clip */
 	    (*pGC->pScreen->RegionCopy) (devPriv->pAbsClientRegion,
 					 pGC->clientClip);
 
-	    if (pWin) {
-		pGC->lastWinOrg.x = pWin->absCorner.x;
-		pGC->lastWinOrg.y = pWin->absCorner.y;
-		(*pGC->pScreen->TranslateRegion) (
-					       devPriv->pAbsClientRegion,
-				      pGC->lastWinOrg.x + pGC->clipOrg.x,
-				     pGC->lastWinOrg.y + pGC->clipOrg.y);
-	    }
-	    else {
-		pGC->lastWinOrg.x = 0;
-		pGC->lastWinOrg.y = 0;
-		(*pGC->pScreen->TranslateRegion) (
-						  devPriv->pAbsClientRegion, pGC->clipOrg.x, pGC->clipOrg.y);
-	    }
+	    (*pGC->pScreen->TranslateRegion) (
+				devPriv->pAbsClientRegion,
+				pGC->lastWinOrg.x + pGC->clipOrg.x,
+				pGC->lastWinOrg.y + pGC->clipOrg.y);
 	}
 
 	if (pWin) {
