@@ -17,7 +17,7 @@ without any express or implied warranty.
 
 /* EXPERIMENTAL! THIS HAS NO OFFICIAL X CONSORTIUM BLESSING */
 
-/* $XConsortium: shm.c,v 1.6 89/12/02 16:13:57 rws Exp $ */
+/* $XConsortium: shm.c,v 1.7 91/05/12 17:13:30 rws Exp $ */
 
 #include <sys/types.h>
 #include <sys/ipc.h>
@@ -49,7 +49,7 @@ typedef struct _ShmDesc {
     unsigned long size;
 } ShmDescRec, *ShmDescPtr;
 
-#if NeedFunctionPrototypes
+#if NeedFunctionPrototypes && !defined(ultrix)
 void *shmat(int, void*, int);
 #else
 char *shmat();
