@@ -1,4 +1,5 @@
 STARTFONT 2.1
+COMMENT $XConsortium$
 COMMENT 
 COMMENT  Copyright 1984, 1987 Adobe Systems, Inc.
 COMMENT  Portions Copyright 1988 Digital Equipment Corporation
@@ -55,7 +56,7 @@ FONT_DESCENT 5
 FONT_ASCENT 19
 CAP_HEIGHT 18
 X_HEIGHT 12
-FULL_NAME "Symbol"
+FACE_NAME "Symbol"
 COPYRIGHT "Copyright (c) 1987 Adobe Systems, Inc., Portions Copyright 1988 Digital Equipment Corp."
 COMMENT ***** end of inserted font properties
 ENDPROPERTIES 

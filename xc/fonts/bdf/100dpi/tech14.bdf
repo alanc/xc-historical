@@ -1,4 +1,5 @@
 STARTFONT 2.1
+COMMENT $XConsortium$
 COMMENT 
 COMMENT  Copyright 1988 Digital Equipment Corporation
 COMMENT 
@@ -51,7 +52,7 @@ AVERAGE_WIDTH 110
 CHARSET_REGISTRY "DEC"
 CHARSET_ENCODING "DECtech"
 CHARSET_COLLECTIONS "ASCII ISO8859-1"
-FULL_NAME "Terminal"
+FACE_NAME "Terminal"
 COPYRIGHT "Copyright (c) 1988 Bitstream, Inc., Portions Copyright 1988 Digital Equipment Corp."
 CAP_HEIGHT 11
 X_HEIGHT 9
