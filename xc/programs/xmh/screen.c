@@ -1,5 +1,5 @@
 /*
- * $XConsortium: screen.c,v 2.58 91/07/10 19:50:45 converse Exp $
+ * $XConsortium: screen.c,v 2.59 91/07/14 18:53:40 converse Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -195,7 +195,6 @@ Scrn scrn;
     XmhMenuButtonDesc	mbd;
     ButtonBox		buttonbox;
     char		*name;
-    static XtTranslations WMProtocolsTranslations;
     static XawTextSelectType sarray[] = {XawselectLine,
 					XawselectPosition,
 					XawselectAll,
@@ -251,22 +250,11 @@ Scrn scrn;
 	    BBoxAddButton(scrn->miscbuttons, name, commandWidgetClass, True);
 	}
     }
-
-    if (! WMProtocolsTranslations)
-	WMProtocolsTranslations = 
-	    XtParseTranslationTable("<Message>WM_PROTOCOLS: XmhClose()\n");
-    XtOverrideTranslations(scrn->parent, WMProtocolsTranslations);
 }
-
-static XtTranslations ViewWMProtocols;
-static String XmhSviewWMProtocols = "<Message>WM_PROTOCOLS: XmhCloseView()\n";
 
 static void MakeView(scrn)
 Scrn scrn;
 {
-    if (! ViewWMProtocols)
-	ViewWMProtocols = XtParseTranslationTable(XmhSviewWMProtocols);
-    XtOverrideTranslations(scrn->parent, ViewWMProtocols);
     scrn->viewlabel = CreateTitleBar(scrn, "viewTitlebar");
     scrn->viewwidget = CreateTextSW(scrn, "view", (ArgList)NULL, (Cardinal)0);
     scrn->viewbuttons = BBoxCreate(scrn, "viewButtons");
@@ -277,9 +265,6 @@ Scrn scrn;
 static void MakeComp(scrn)
 Scrn scrn;
 {
-    if (! ViewWMProtocols)
-	ViewWMProtocols = XtParseTranslationTable(XmhSviewWMProtocols);
-    XtOverrideTranslations(scrn->parent, ViewWMProtocols);
     scrn->viewlabel = CreateTitleBar(scrn, "composeTitlebar");
     scrn->viewwidget = CreateTextSW(scrn, "comp", (ArgList)NULL, (Cardinal)0);
     scrn->viewbuttons = BBoxCreate(scrn, "compButtons");
@@ -323,6 +308,8 @@ ScrnKind kind;
     else scrn->parent = XtCreatePopupShell(
 				   progName, topLevelShellWidgetClass,
 				   toplevel, arglist, XtNumber(arglist));
+    XtAugmentTranslations(scrn->parent,
+			  app_resources.wm_protocols_translations);
     scrn->widget =
 	XtCreateManagedWidget(progName, panedWidgetClass, scrn->parent,
 			      (ArgList) NULL, (Cardinal) 0);
@@ -381,8 +368,8 @@ ScrnKind kind;
 	InitBusyCursor(scrn);
 	XDefineCursor(XtDisplay(scrn->parent), XtWindow(scrn->parent),
 		      app_resources.cursor);
-	XSetWMProtocols(XtDisplay(toplevel), XtWindow(scrn->parent),
-			&wm_delete_window, 1);
+	(void) XSetWMProtocols(XtDisplay(scrn->parent), XtWindow(scrn->parent),
+			       protocolList, XtNumber(protocolList));
     }
     scrn->mapped = (numScrns == 1);
     return scrn;
