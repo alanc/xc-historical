@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.103 93/11/19 15:27:14 gildea Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.104 93/12/06 16:39:21 kaleb Exp $
 
 #ifdef SVR4
 #define OSName            SunOS 5.3
@@ -40,7 +40,7 @@ XCOMM operating system:  OSName
 #endif
 #if OSMinorVersion == 2 || OSMinorVersion == 3
 /* over-ride for broken thread stubs in libc -- fixed in 2.4 ??? */
-#define ExtraLibraries    -lsocket -lnsl $(TOPDIR)/util/misc/thr_stubs.a
+#define ExtraLibraries    -lsocket -lnsl $(TOPDIR)/util/misc/thr_stubs.o
 #endif
 #define ArCmdBase	  /usr/ccs/bin/ar
 #define AsCmd		  /usr/ccs/bin/as
