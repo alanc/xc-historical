@@ -1,5 +1,5 @@
 /*
-* $Header$
+* $Header: TextP.h,v 1.4 87/10/09 13:12:00 chow BL5 $
 */
 
 /*
@@ -144,20 +144,20 @@ typedef struct {
     SelectionArray  sarray;         /* Array to cycle for selections. */
     Dimension       leftmargin;     /* Width of left margin. */
     int             options;        /* wordbreak, scroll, etc. */
-    unsigned short  lasttime;       /* timestamp of last processed action */
-    unsigned short  time;           /* timestamp of last key or button action */ 
+    Time            lasttime;       /* timestamp of last processed action */
+    Time            time;           /* time of last key or button action */ 
     Position        ev_x, ev_y;     /* x, y coords for key or button action */
     Widget          sbar;           /* The vertical scroll bar (none = 0).  */
     Widget          outer;          /* Parent of scrollbar & text (if any) */
     XtTextPosition  *updateFrom;    /* Array of start positions for update. */
     XtTextPosition  *updateTo;      /* Array of end positions for update. */
     int             numranges;      /* How many update ranges there are. */
-    int             maxranges;      /* How many update ranges we've space for */
+    int             maxranges;      /* How many ranges we have space for */
     Boolean         showposition;   /* True if we need to show the position. */
     XtTextPosition  lastPos;        /* Last position of source. */
     Widget          dialog;         /* Window containing dialog, if any. */
     GC              gc;
-    Boolean         hasfocus;   /* TRUE if we currently have input focus. */
+    Boolean         hasfocus;       /* TRUE if we currently have input focus.*/
 } TextPart;
 
 /****************************************************************
