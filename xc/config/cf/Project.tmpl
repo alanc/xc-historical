@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.129 91/07/21 18:40:36 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.130 91/07/23 14:53:44 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -139,6 +139,9 @@ XCOMM $XConsortium: Project.tmpl,v 1.129 91/07/21 18:40:36 rws Exp $
 #endif
 #ifndef LibManSuffix
 #define LibManSuffix	3		/* use just one tab or cpp will die */
+#endif
+#ifndef HasXdmAuth
+#define HasXdmAuth		NO	/* if you can not use XDM-AUTH* */
 #endif
 #ifndef BDFTOSNFFILT
 #define BDFTOSNFFILT -DBDFTOSNFFILT=\"$(BINDIR)/bdftosnf\"
