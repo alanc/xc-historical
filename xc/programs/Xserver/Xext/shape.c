@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shape.c,v 5.14 91/03/13 09:48:50 rws Exp $ */
+/* $XConsortium: shape.c,v 5.15 91/06/01 12:09:11 rws Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -46,6 +46,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 static int ShapeFreeClient(), ShapeFreeEvents();
 static void SendShapeNotify();
+static int ProcShapeDispatch(), SProcShapeDispatch();
+static void ShapeResetProc(), SShapeNotifyEvent();
 
 static unsigned char ShapeReqCode = 0;
 static int ShapeEventBase = 0;
@@ -80,8 +82,6 @@ void
 ShapeExtensionInit()
 {
     ExtensionEntry *extEntry, *AddExtension();
-    static int ProcShapeDispatch(), SProcShapeDispatch();
-    static void  ShapeResetProc(), SShapeNotifyEvent();
 
     ClientType = CreateNewResourceType(ShapeFreeClient);
     EventType = CreateNewResourceType(ShapeFreeEvents);

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bitscale.c,v 1.3 91/05/29 15:26:53 keith Exp $
+ * $XConsortium: bitscale.c,v 1.4 91/06/12 14:35:19 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -360,6 +360,8 @@ ComputeScaledProperties(sourceFontInfo, name, vals, dx, dy, pProps)
     return n;
 }
 
+static void ScaleBitmap();
+
 /*
  *  ScaleFont
  *  returns a pointer to the new scaled font, or NULL (due to AllocError).
@@ -386,7 +388,6 @@ ScaleFont(opf, widthMult, heightMult, props, propCount)
     unsigned    bytestoalloc;
     int        *scratch;
     xCharInfo  *pink;
-    static void ScaleBitmap();
     int         i;
     int         glyph;
 

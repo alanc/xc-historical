@@ -17,7 +17,7 @@ without any express or implied warranty.
 
 /* RANDOM CRUFT! THIS HAS NO OFFICIAL X CONSORTIUM BLESSING */
 
-/* $XConsortium: mitmisc.c,v 1.2 90/05/15 18:47:25 keith Exp $ */
+/* $XConsortium: mitmisc.c,v 1.3 90/05/15 18:50:05 keith Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -31,13 +31,13 @@ without any express or implied warranty.
 extern Bool permitOldBugs;
 
 static unsigned char MITReqCode;
+static int ProcMITDispatch(), SProcMITDispatch();
+static void MITResetProc();
 
 void
 MITMiscExtensionInit()
 {
     ExtensionEntry *extEntry, *AddExtension();
-    static int ProcMITDispatch(), SProcMITDispatch();
-    static void MITResetProc();
 
     if (extEntry = AddExtension(MITMISCNAME, 0, 0,
 				 ProcMITDispatch, SProcMITDispatch,
