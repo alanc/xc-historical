@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Command.c,v 1.44 88/10/18 12:37:46 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Command.c,v 1.45 88/10/19 09:39:35 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -257,7 +257,7 @@ static void Highlight(w,event,params,num_params)
   CommandWidget cbw = (CommandWidget)w;
   if (!ComWhighlighted) {
       ComWhighlighted = TRUE;
-      Redisplay(w, event, HighlightRegion());
+      Redisplay(w, event, HighlightRegion(cbw));
   }
 }
 
@@ -271,7 +271,7 @@ static void Unhighlight(w,event,params,num_params)
   CommandWidget cbw = (CommandWidget)w;
   if (ComWhighlighted) {
       ComWhighlighted = FALSE;
-      Redisplay(w, event, HighlightRegion());
+      Redisplay(w, event, HighlightRegion(cbw));
   }
 }
 
