@@ -612,7 +612,7 @@ AuthorizedClient(client)
 
     if (!client || defeatAccessControl)
 	return TRUE;
-    if (!_X11TransGetPeerAddr (((OsCommPtr)client->osPrivate)->trans_conn,
+    if (!_XSERVTransGetPeerAddr (((OsCommPtr)client->osPrivate)->trans_conn,
 	&notused, &alen, &from))
     {
 	family = ConvertAddr ((struct sockaddr *) from,

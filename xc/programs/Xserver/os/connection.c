@@ -81,6 +81,14 @@ extern int errno;
 #include "opaque.h"
 #include "dixstruct.h"
 
+#ifdef LBX
+#ifndef X_NOT_POSIX
+#include <unistd.h>
+#else
+extern int read(), writev();
+#endif
+#endif /* LBX */
+
 #ifdef DNETCONN
 #include <netdnet/dn.h>
 #endif /* DNETCONN */
@@ -217,7 +225,7 @@ CreateWellKnownSockets()
 
     sprintf (port, "%d", atoi (display));
 
-    if ((_X11TransMakeAllCOTSServerListeners (port, &partial,
+    if ((_XSERVTransMakeAllCOTSServerListeners (port, &partial,
 	&ListenTransCount, &ListenTransConns) >= 0) &&
 	(ListenTransCount >= 1))
     {
@@ -231,12 +239,12 @@ CreateWellKnownSockets()
 
 	    for (i = 0; i < ListenTransCount; i++)
 	    {
-		int fd = _X11TransGetConnectionNumber (ListenTransConns[i]);
+		int fd = _XSERVTransGetConnectionNumber (ListenTransConns[i]);
 		
 		ListenTransFds[i] = fd;
 		WellKnownConnections |= (1L << fd);
 
-		if (!_X11TransIsLocal (ListenTransConns[i]))
+		if (!_XSERVTransIsLocal (ListenTransConns[i]))
 		{
 		    DefineSelf (fd);
 		}
@@ -290,7 +298,7 @@ ResetWellKnownSockets ()
 
     for (i = 0; i < ListenTransCount; i++)
     {
-	int status = _X11TransResetListener (ListenTransConns[i]);
+	int status = _XSERVTransResetListener (ListenTransConns[i]);
 
 	if (status != TRANS_RESET_NOOP)
 	{
@@ -313,7 +321,7 @@ ResetWellKnownSockets ()
 		 * A new file descriptor was allocated (the old one was closed)
 		 */
 
-		int newfd = _X11TransGetConnectionNumber (ListenTransConns[i]);
+		int newfd = _XSERVTransGetConnectionNumber (ListenTransConns[i]);
 
 		WellKnownConnections &= ~(1L << ListenTransFds[i]);
 		ListenTransFds[i] = newfd;
@@ -423,7 +431,7 @@ ClientAuthorized(client, proto_n, auth_proto, string_n, auth_string)
     priv = (OsCommPtr)client->osPrivate;
     if (auth_id == (XID) ~0L)
     {
-	if (_X11TransGetPeerAddr (priv->trans_conn,
+	if (_XSERVTransGetPeerAddr (priv->trans_conn,
 	    &family, &fromlen, &from) != -1)
 	{
 	    if (InvalidHost ((struct sockaddr *) from, fromlen))
@@ -446,7 +454,7 @@ ClientAuthorized(client, proto_n, auth_proto, string_n, auth_string)
     }
     else if (auditTrailLevel > 1)
     {
-	if (_X11TransGetPeerAddr (priv->trans_conn,
+	if (_XSERVTransGetPeerAddr (priv->trans_conn,
 	    &family, &fromlen, &from) != -1)
 	{
 	    AuthAudit(client->index, TRUE, (struct sockaddr *) from, fromlen,
@@ -623,12 +631,12 @@ EstablishNewConnections(clientUnused, closure)
 	if ((trans_conn = lookup_trans_conn (curconn)) == NULL)
 	    continue;
 
-	if ((new_trans_conn = _X11TransAccept (trans_conn)) == NULL)
+	if ((new_trans_conn = _XSERVTransAccept (trans_conn)) == NULL)
 	    continue;
 
-	newconn = _X11TransGetConnectionNumber (new_trans_conn);
+	newconn = _XSERVTransGetConnectionNumber (new_trans_conn);
 
-	_X11TransSetOption(new_trans_conn, TRANS_NONBLOCKING, 1);
+	_XSERVTransSetOption(new_trans_conn, TRANS_NONBLOCKING, 1);
 
 #ifdef LBX
 	client = AllocNewConnection (new_trans_conn, newconn,
@@ -636,7 +644,7 @@ EstablishNewConnections(clientUnused, closure)
 	if (!client)
 	{
 	    ErrorConnMax(new_trans_conn);
-	    _X11TransClose(new_trans_conn);
+	    _XSERVTransClose(new_trans_conn);
 	    continue;
 	}
 #else
@@ -644,7 +652,7 @@ EstablishNewConnections(clientUnused, closure)
 	if (!oc)
 	{
 	    ErrorConnMax(new_trans_conn);
-	    _X11TransClose(new_trans_conn);
+	    _XSERVTransClose(new_trans_conn);
 	    continue;
 	}
 	if (GrabInProgress)
@@ -688,7 +696,7 @@ static void
 ErrorConnMax(trans_conn)
 XtransConnInfo trans_conn;
 {
-    register int fd = _X11TransGetConnectionNumber (trans_conn);
+    register int fd = _XSERVTransGetConnectionNumber (trans_conn);
     xConnSetupPrefix csp;
     char pad[3];
     struct iovec iov[3];
@@ -705,7 +713,7 @@ XtransConnInfo trans_conn;
     BITSET(mask, fd);
     (void)select(fd + 1, (int *) mask, (int *) NULL, (int *) NULL, &waittime);
     /* try to read the byte-order of the connection */
-    (void)_X11TransRead(trans_conn, &byteOrder, 1);
+    (void)_XSERVTransRead(trans_conn, &byteOrder, 1);
     if ((byteOrder == 'l') || (byteOrder == 'B'))
     {
 	csp.success = xFalse;
@@ -726,7 +734,7 @@ XtransConnInfo trans_conn;
 	iov[1].iov_base = NOROOM;
 	iov[2].iov_len = (4 - (csp.lengthReason & 3)) & 3;
 	iov[2].iov_base = pad;
-	(void)_X11TransWritev(trans_conn, iov, 3);
+	(void)_XSERVTransWritev(trans_conn, iov, 3);
     }
 }
 
@@ -751,7 +759,7 @@ CloseDownFileDescriptor(oc)
     int connection = oc->fd;
 
     if (oc->trans_conn)
-	_X11TransClose(oc->trans_conn);
+	_XSERVTransClose(oc->trans_conn);
 #ifdef LBX
     ConnectionTranslation[connection] = 0;
     ConnectionOutputTranslation[connection] = 0;

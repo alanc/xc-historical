@@ -317,7 +317,7 @@ ReadRequestFromClient(client)
 	result = (*oc->Read)(fd, oci->buffer + oci->bufcnt, 
 		      oci->size - oci->bufcnt); 
 #else
-	result = _X11TransRead(trans_conn, oci->buffer + oci->bufcnt, 
+	result = _XSERVTransRead(trans_conn, oci->buffer + oci->bufcnt, 
 		      oci->size - oci->bufcnt); 
 #endif
 	if (result <= 0)
@@ -951,7 +951,7 @@ FlushClient(who, oc, extraBuf, extraCount)
 	WritingClient = who;
 	if ((len = (*oc->Writev) (connection, iov, i)) >= 0)
 #else
-	if ((len = _X11TransWritev(trans_conn, iov, i)) >= 0)
+	if ((len = _XSERVTransWritev(trans_conn, iov, i)) >= 0)
 #endif
 	{
 	    written += len;
@@ -998,7 +998,7 @@ FlushClient(who, oc, extraBuf, extraCount)
 						 notWritten + BUFSIZE);
 		if (!obuf)
 		{
-		    _X11TransClose(oc->trans_conn);
+		    _XSERVTransClose(oc->trans_conn);
 		    oc->trans_conn = NULL;
 		    MarkClientException(who);
 		    oco->count = 0;
@@ -1027,7 +1027,7 @@ FlushClient(who, oc, extraBuf, extraCount)
 #endif
 	else
 	{
-	    _X11TransClose(oc->trans_conn);
+	    _XSERVTransClose(oc->trans_conn);
 	    oc->trans_conn = NULL;
 	    MarkClientException(who);
 	    oco->count = 0;
@@ -1109,7 +1109,7 @@ LbxFlushClient(who, oc, extraBuf, extraCount)
 	int newlen = oco->count + extraCount + padlength[extraCount & 3];
 	oco = oc->olast;
 	if (ExpandOutputBuffer(oco, newlen) < 0) {
-	    _X11TransClose(oc->trans_conn);
+	    _XSERVTransClose(oc->trans_conn);
 	    oc->trans_conn = NULL;
 	    MarkClientException(who);
 	    return(-1);
@@ -1229,7 +1229,7 @@ WriteToClient (who, count, buf)
 	}
 	else if (!(oco = AllocateOutputBuffer()))
 	{
-	    _X11TransClose(oc->trans_conn);
+	    _XSERVTransClose(oc->trans_conn);
 	    oc->trans_conn = NULL;
 	    MarkClientException(who);
 	    return -1;
@@ -1291,7 +1291,7 @@ UncompressWriteToClient (who, count, buf)
 
     if (!oco) {
 	if (!(oco = AllocateUncompBuffer(paddedLen))) {
-	    _X11TransClose(oc->trans_conn);
+	    _XSERVTransClose(oc->trans_conn);
 	    oc->trans_conn = NULL;
 	    MarkClientException(who);
 	    return -1;
