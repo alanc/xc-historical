@@ -24,7 +24,10 @@
  */
 /*
  * HISTORY
- * $Log: atest.c,v $
+ * $Log:	synctest.c,v $
+ * Revision 1.2  93/09/03  13:26:04  dpw
+ * overhaul from Pete's version
+ * 
  * Revision 1.1.1.2  1993/05/05  17:37:50  Pete_Snider
  * 	initial rcs submit
  *
@@ -143,6 +146,9 @@ Display *dpy;
 	    break;
 	}
     }
+    if (counter == None)
+	report_error("couldn't find SERVERTIME system counter");
+
     XSyncFreeSystemCounterList(sys_counter_list);
     return counter;
 }
