@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $XConsortium: servermd.h,v 1.56 91/02/05 16:23:04 rws Exp $ */
+/* $XConsortium: servermd.h,v 1.57 91/02/10 17:29:39 keith Exp $ */
 
 /*
  * Machine dependent values:
@@ -141,6 +141,15 @@ SOFTWARE.
 #define GETLEFTBITS_ALIGNMENT	4
 
 #endif /* apollo */
+
+#if defined(AIXV3)
+
+#define IMAGE_BYTE_ORDER        MSBFirst        /* Values for the RISC/6000 */
+#define BITMAP_BIT_ORDER        MSBFirst
+#define GLYPHPADBYTES           4
+#define GETLEFTBITS_ALIGNMENT   1
+
+#endif /* AIXV3 */
 
 #if defined(ibm032) || defined (ibm)
 
