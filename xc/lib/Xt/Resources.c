@@ -1,4 +1,4 @@
-/* $XConsortium: Resources.c,v 1.107 91/06/13 19:03:09 converse Exp $ */
+/* $XConsortium: Resources.c,v 1.108 93/05/21 13:57:29 converse Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -236,7 +236,8 @@ void _XtCompileResourceList(resources, num_resources)
 #if defined(CRAY1) && !defined(__STDC__)
 	xrmres->xrm_offset = -(resources->resource_offset * sizeof(long) + 1);
 #else
-        xrmres->xrm_offset	 = -resources->resource_offset - 1;
+        xrmres->xrm_offset	 = (Cardinal)
+		(-(int)resources->resource_offset - 1);
 #endif
     	xrmres->xrm_default_type = PSToQ(resources->default_type);
     }
@@ -260,7 +261,8 @@ static void  XrmCompileResourceListEphem(resources, num_resources)
 #if defined(CRAY1) && !defined(__STDC__)
 	xrmres->xrm_offset = -(resources->resource_offset * sizeof(long) + 1);
 #else
-        xrmres->xrm_offset	 = -resources->resource_offset - 1;
+        xrmres->xrm_offset	 = (Cardinal)
+		(-(int)resources->resource_offset - 1);
 #endif
     	xrmres->xrm_default_type = StringToQuark(resources->default_type);
     }

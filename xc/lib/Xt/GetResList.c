@@ -1,4 +1,4 @@
-/* $XConsortium: GetResList.c,v 1.1 89/09/29 14:01:19 swick Exp $ */
+/* $XConsortium: GetResList.c,v 1.2 91/01/06 13:32:20 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -63,7 +63,9 @@ void XtGetResourceList(widget_class, resources, num_resources)
 		dlist[dest].resource_type = (String)
 			XrmQuarkToString((XrmQuark) list[i]->resource_type);
 		dlist[dest].resource_size = list[i]->resource_size;
-		dlist[dest].resource_offset = -(list[i]->resource_offset + 1);
+		/* trust that resource_offset isn't that big */
+		dlist[dest].resource_offset = (Cardinal)
+			-((int)(list[i]->resource_offset + 1));
 		dlist[dest].default_type = (String)
 			XrmQuarkToString((XrmQuark) list[i]->default_type);
 		dlist[dest].default_addr = list[i]->default_addr;
@@ -129,7 +131,9 @@ void XtGetConstraintResourceList(widget_class, resources, num_resources)
 		dlist[dest].resource_type = (String)
 			XrmQuarkToString((XrmQuark) list[i]->resource_type);
 		dlist[dest].resource_size = list[i]->resource_size;
-		dlist[dest].resource_offset = -(list[i]->resource_offset + 1);
+		/* trust that resource_offset isn't that big */
+		dlist[dest].resource_offset = (Cardinal)
+			-((int)(list[i]->resource_offset + 1));
 		dlist[dest].default_type = (String)
 			XrmQuarkToString((XrmQuark) list[i]->default_type);
 		dlist[dest].default_addr = list[i]->default_addr;
