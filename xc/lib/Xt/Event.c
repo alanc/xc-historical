@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Event.c,v 1.66 88/03/25 10:42:56 swick Exp $";
+static char rcsid[] = "$Header: Event.c,v 1.67 88/03/25 15:32:13 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -715,15 +715,17 @@ static void RemoveGrab(widget, keyboard_focus)
     Widget widget;
     Boolean keyboard_focus;
 {
-    register GrabList gl, prev, next;
+    register GrabList gl;
+    register GrabList* prev;
     Widget focus_widget;
 
     OnlyKeyboardGrabs = True;
-    for (prev = NULL, gl = grabList; gl != NULL; prev = gl, gl = gl->next) {
+    for (prev = &grabList, gl = grabList; gl != NULL; gl = gl->next) {
 	if (gl->widget == widget)
-	    if (!keyboard_focus || gl->keyboard_focus != NULL)
+	    if (keyboard_focus == (gl->keyboard_focus != NULL))
 		break;
 	if (gl->keyboard_focus == (Widget)NULL) OnlyKeyboardGrabs = False;
+	prev = &gl->next;
     }
 
     if (gl == NULL) {
@@ -732,29 +734,30 @@ static void RemoveGrab(widget, keyboard_focus)
 	return;
     }
 
-    focus_widget = gl->keyboard_focus;
-    while (gl) {
-	if (gl->widget == widget) {
-	    if (prev)
-		prev->next = next = gl->next;
+    if (!keyboard_focus) {	/* remove all non-kbd grabs up to this'n */
+	Boolean done;
+	OnlyKeyboardGrabs = True;
+	for (prev = &grabList, gl = grabList, done = False; !done; gl = *prev){
+	    if (gl->keyboard_focus == (Widget)NULL) {
+		*prev = gl->next;
+		gl->next = freeGrabs;
+		freeGrabs = gl;
+		if (gl->widget == widget) done = True;
+	    }
 	    else
-		grabList = next = gl->next;
-	    gl->next = freeGrabs;
-	    freeGrabs = gl;
-	    gl = next;
+		prev = &gl->next;
 	}
-	else {
-	    prev = gl;
-	    gl = gl->next;
-	}
-	if (keyboard_focus) break; /* don't remove all grabs (yet) */
-	if (gl->keyboard_focus == (Widget)NULL) OnlyKeyboardGrabs = False;
     }
-    while (gl) {
-	if (gl->keyboard_focus == (Widget)NULL) {
+    else /* if keyboard_focus */ {
+	focus_widget = gl->keyboard_focus;
+	*prev = gl->next;
+	gl->next = freeGrabs;
+	freeGrabs = gl;
+	gl = *prev;
+    }
+    while (gl && OnlyKeyboardGrabs) {
+	if (gl->keyboard_focus == (Widget)NULL)
 	    OnlyKeyboardGrabs = False;
-	    break;
-	}
 	gl = gl->next;
     }
     XtRemoveCallback(
