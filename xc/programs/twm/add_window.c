@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.77 89/07/14 11:06:19 jim Exp $
+ * $XConsortium: add_window.c,v 1.78 89/07/14 11:10:28 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.77 89/07/14 11:06:19 jim Exp $";
+"$XConsortium: add_window.c,v 1.78 89/07/14 11:10:28 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -1009,8 +1009,8 @@ TwmWindow *tmp_win;
 	return;
     }
 
-    h = (Scr->TitleHeight - (Scr->FramePadding * 2) - Scr->ButtonIndent * 2 -
-	 TITLEBUTTON_BORDERWIDTH);
+    h = (Scr->TitleHeight - 2 *
+	 (Scr->FramePadding + Scr->ButtonIndent + TITLEBUTTON_BORDERWIDTH));
 
     if (Scr->iconifyPm == NULL)
     {
@@ -1077,7 +1077,7 @@ TwmWindow *tmp_win;
     attributes.border_pixel = tmp_win->title.fore;
     attributes.event_mask = (ButtonPressMask | ButtonReleaseMask);
     valuemask = (CWWinGravity | CWBackPixmap | CWBorderPixel | CWEventMask);
-    x = y = Scr->FramePadding + Scr->ButtonIndent - TITLEBUTTON_BORDERWIDTH;
+    x = y = (Scr->FramePadding + Scr->ButtonIndent);
     tmp_win->iconify_w = XCreateWindow (dpy, tmp_win->title_w, x, y,
 					h, h, TITLEBUTTON_BORDERWIDTH, 0, 
 					CopyFromParent, CopyFromParent,
@@ -1095,7 +1095,9 @@ TwmWindow *tmp_win;
     XFreePixmap (dpy, resizePM);
 
 
-    h += Scr->ButtonIndent * 2 + TITLEBUTTON_BORDERWIDTH * 2;
+
+    h = (Scr->TitleHeight - 2 * Scr->FramePadding);
+
     if (tmp_win->titlehighlight) {
 	Pixmap pm = None;
 
