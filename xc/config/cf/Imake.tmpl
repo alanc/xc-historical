@@ -1,6 +1,6 @@
 /**/###########################################################################
-/**/# X Window System Makefile generated from template file Imake.tmpl
-/**/# $XConsortium: Imake.tmpl,v 1.1 89/01/10 18:15:16 jim Exp $
+/**/# X Window System Makefile generated from template file X.itmpl
+/**/# $XConsortium: X.itmpl,v 1.2 89/01/11 14:58:14 jim Exp $
 /**/#
 /**/# Do not change the body of the imake template file.  Server-specific
 /**/# parameters may be set in the appropriate .macros file; site-specific
@@ -123,7 +123,7 @@
 #endif /* mips */
 
 #ifndef MacroIncludeFile
-/**/# WARNING:  Imake.tmpl not configured; guessing at definitions!!!
+/**/# WARNING:  X.itmpl not configured; guessing at definitions!!!
 /**/# This might mean that BOOTSTRAPCFLAGS wasn't set when building imake.
 #define MacroIncludeFile "generic.cf"
 #define MacroFile generic.cf
@@ -264,11 +264,11 @@ SYSLAST_LIBRARIES = SysLastLibraries
           LINTXAW = $(AWIDGETSRC)/llib-lXaw.ln
          INCLUDES = -I$(TOP)
         MACROFILE = MacroFile
-     ICONFIGFILES = $(IRULESRC)/Imake.tmpl \
+     ICONFIGFILES = $(IRULESRC)/X.itmpl \
 			$(IRULESRC)/$(MACROFILE) \
 			$(IRULESRC)/site.def $(IRULESRC)/global.def
     IMAKE_DEFINES = /* leave blank, for command line use only */
-        IMAKE_CMD = $(NEWTOP)$(IMAKE) -TImake.tmpl -I$(NEWTOP)$(IRULESRC) \
+        IMAKE_CMD = $(NEWTOP)$(IMAKE) -TX.itmpl -I$(NEWTOP)$(IRULESRC) \
 			-s Makefile $(IMAKE_DEFINES)
            RM_CMD = $(RM) *.CKP *.ln *.BAK *.bak *.o core errs ,* *~ *.a \
 			.emacs_* tags TAGS make.log MakeOut
@@ -280,7 +280,7 @@ SYSLAST_LIBRARIES = SysLastLibraries
 #include INCLUDE_IMAKEFILE
 
 /**/###########################################################################
-/**/# Imake.tmpl common rules for all Makefiles - do not edit
+/**/# common rules for all Makefiles - do not edit
 /*
  * These need to be here so that rules in Imakefile occur first;  the blank
  * all is to make sure that an empty Imakefile doesn't default to make clean.
