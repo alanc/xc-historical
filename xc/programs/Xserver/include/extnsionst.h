@@ -1,4 +1,4 @@
-/* $Header: extnsionst.h,v 1.2 87/07/16 14:03:19 toddb Locked $ */
+/* $Header: extnsionst.h,v 1.3 87/07/22 16:37:06 toddb Locked $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -27,14 +27,27 @@ SOFTWARE.
 #include "extension.h"
 typedef struct _ExtensionEntry {
     int index;
+    void (* CloseDown)();	/* called at server shutdown */
     char *name;               /* extension name */
     int base;                 /* base request number */
     int eventBase;            
     int eventLast;
     int errorBase;
     int errorLast;
+    pointer extPrivate;
 } ExtensionEntry;
 
+typedef void (* ExtensionLookupProc)();
+
+typedef struct _ProcEntry {
+    char *name;
+    ExtensionLookupProc proc;
+} ProcEntryRec, *ProcEntryPtr;
+
+typedef struct _ScreenProcEntry {
+    int num;
+    ProcEntryPtr procList;
+} ScreenProcEntry;
 
 #define    InsertGCI(pGC, pGCI, order, pPrevGCI)    \
 	   order(pGC,pGCI,pPrevGCI)
@@ -73,9 +86,6 @@ typedef struct _ExtensionEntry {
     pGC->VectorElement = NewRoutineAddress;
 
 #define    GetGCValue(pGC, GCElement)    (pGC->GCElement)
-
-typedef void (* ExtensionLookupProc)();
-
 
 extern void InitExtensions();
 extern int ProcQueryExtension();
