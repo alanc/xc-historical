@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.51 88/07/18 17:40:20 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.52 88/07/18 18:11:41 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -156,15 +156,6 @@ char *ProgramName;
 static char *icon_geometry;
 static char *title;
 
-#ifdef CLOSE_FILE_DESCRIPTORS
-/*
- * This ugly code is used to close off all file descriptors that it can.  
- * Unfortunately, it doesn't work with the new YP stuff which passes the 
- * YP server connection on fd 4.
- */
-static Boolean closefds = TRUE;
-#endif /* CLOSE_FILE_DESCRIPTORS */
-
 static Boolean utmpInhibit = FALSE;
 
 /* used by VT (charproc.c) */
@@ -178,10 +169,6 @@ static XtResource application_resources[] = {
 	(Cardinal)&title, XtRString, (caddr_t) NULL},
     {"utmpInhibit", "UtmpInhibit", XtRBoolean, sizeof (Boolean),
 	(Cardinal)&utmpInhibit, XtRString, "false"},
-#ifdef CLOSE_FILE_DESCRIPTORS
-    {"closeFileDescriptors", "CloseFileDescriptors", XtRBoolean, 
-     sizeof (Boolean), (Cardinal) &closefds, XtRString, "true"},
-#endif /* CLOSE_FILE_DESCRIPTORS */
 };
 
 /* Command line options table.  Only resources are entered here...there is a
@@ -197,10 +184,6 @@ static XrmOptionDescRec optionDescList[] = {
 {"-cb",		"*cutToBeginningOfLine", XrmoptionNoArg, (caddr_t) "off"},
 {"+cb",		"*cutToBeginningOfLine", XrmoptionNoArg, (caddr_t) "on"},
 {"-cc",		"*charClass",	XrmoptionSepArg,	(caddr_t) NULL},
-#ifdef CLOSE_FILE_DESCRIPTORS
-{"-cf",		"*closeFileDescriptors", XrmoptionNoArg,(caddr_t) "off"},
-{"+cf",		"*closeFileDescriptors", XrmoptionNoArg,(caddr_t) "on"},
-#endif /* CLOSE_FILE_DESCRIPTORS */
 {"-cn",		"*cutNewline",	XrmoptionNoArg,		(caddr_t) "off"},
 {"+cn",		"*cutNewline",	XrmoptionNoArg,		(caddr_t) "on"},
 {"-cr",		"*cursorColor",	XrmoptionSepArg,	(caddr_t) NULL},
@@ -1334,17 +1317,6 @@ spawn ()
 
 		setgid (screen->gid);
 		setuid (screen->uid);
-
-#ifdef CLOSE_FILE_DESCRIPTORS
-		if (closefds) {
-		    /*
-		     * close off any stray file descriptors, including X and YP
-		     */
-		    for (i = 3; i < NOFILE; i++) {    /* start above stderr */
-			(void) close (i);
-		    }
-		}
-#endif /* CLOSE_FILE_DESCRIPTORS */
 
 		if (command_to_exec) {
 			execvp(*command_to_exec, command_to_exec);
