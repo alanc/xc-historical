@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.c,v 1.39 90/09/25 18:18:17 converse Exp $
+ * $XConsortium: Tree.c,v 1.40 91/01/02 11:48:36 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -65,19 +65,19 @@ static void             layout_tree();
  */
 static XtResource resources[] = {
     { XtNautoReconfigure, XtCAutoReconfigure, XtRBoolean, sizeof (Boolean),
-	XtOffset(TreeWidget, tree.auto_reconfigure), XtRImmediate,
+	XtOffsetOf(TreeRec, tree.auto_reconfigure), XtRImmediate,
 	(caddr_t) FALSE },
     { XtNhSpace, XtCHSpace, XtRDimension, sizeof (Dimension),
-	XtOffset(TreeWidget, tree.hpad), XtRString, "0" },
+	XtOffsetOf(TreeRec, tree.hpad), XtRString, "0" },
     { XtNvSpace, XtCVSpace, XtRDimension, sizeof (Dimension),
-	XtOffset(TreeWidget, tree.vpad), XtRString, "0" },
+	XtOffsetOf(TreeRec, tree.vpad), XtRString, "0" },
     { XtNforeground, XtCForeground, XtRPixel, sizeof (Pixel),
-	XtOffset(TreeWidget, tree.foreground), XtRString,
+	XtOffsetOf(TreeRec, tree.foreground), XtRString,
 	"XtDefaultForeground"},
     { XtNlineWidth, XtCLineWidth, XtRDimension, sizeof (Dimension),
-	XtOffset(TreeWidget, tree.line_width), XtRString, "0" },
+	XtOffsetOf(TreeRec, tree.line_width), XtRString, "0" },
     { XtNgravity, XtCGravity, XtRGravity, sizeof (XtGravity),
-	XtOffset(TreeWidget, tree.gravity), XtRImmediate,
+	XtOffsetOf(TreeRec, tree.gravity), XtRImmediate,
 	(XtPointer) WestGravity },
 };
 
@@ -87,9 +87,9 @@ static XtResource resources[] = {
  */
 static XtResource treeConstraintResources[] = {
     { XtNtreeParent, XtCTreeParent, XtRWidget, sizeof (Widget),
-	XtOffset(TreeConstraints, tree.parent), XtRImmediate, NULL },
+	XtOffsetOf(TreeConstraintsRec, tree.parent), XtRImmediate, NULL },
     { XtNtreeGC, XtCTreeGC, XtRGC, sizeof(GC),
-	XtOffset(TreeConstraints, tree.gc), XtRImmediate, NULL },
+	XtOffsetOf(TreeConstraintsRec, tree.gc), XtRImmediate, NULL },
 };
 
 
