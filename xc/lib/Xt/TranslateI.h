@@ -1,4 +1,4 @@
-/* $XConsortium: TranslateI.h,v 1.29 91/01/10 14:12:36 converse Exp $ */
+/* $XConsortium: TranslateI.h,v 1.30 91/01/21 09:13:23 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -452,7 +452,8 @@ extern void _XtGrabInitialize(
 extern XtPointer _XtInitializeActionData(
 #if NeedFunctionPrototypes
     struct _XtActionsRec *	/* actions */,
-    Cardinal 			/* count */
+    Cardinal 			/* count */,
+    Boolean			/* inPlace */
 #endif
 );
 

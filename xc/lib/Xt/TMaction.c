@@ -1,4 +1,4 @@
-/* $XConsortium: TMaction.c,v 1.4 91/01/30 19:48:13 converse Exp $ */
+/* $XConsortium: TMaction.c,v 1.5 91/01/30 21:12:30 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -181,7 +181,7 @@ typedef struct _TMBindCacheRec{
 #ifdef TRACE_TM
     WidgetClass		widgetClass;
 #endif /* TRACE_TM */
-    XtActionProc	procs[1];
+    XtActionProc	procs[1];	/* variable length */
 }TMBindCacheRec, *TMBindCache;
 
 typedef struct _TMClassCacheRec {
@@ -270,7 +270,7 @@ static XtActionProc  *TryBindCache(widget, stateTree)
 	  WidgetClass	wc = XtClass(widget);
 
 	  wc->core_class.actions = (XtActionList)
-	    _XtInitializeActionData(NULL, 0);
+	    _XtInitializeActionData(NULL, 0, True);
       }
     else 
       {
@@ -295,14 +295,15 @@ static XtActionProc  *TryBindCache(widget, stateTree)
  * The class record actions field will point to the bind cache header
  * after this call is made out of coreClassPartInit.
  */
-XtPointer _XtInitializeActionData(actions, count)
+XtPointer _XtInitializeActionData(actions, count, inPlace)
     register struct _XtActionsRec *actions;
     register Cardinal count;
+    Boolean inPlace;
 {
     TMClassCache	classCache;
 
     classCache = XtNew(TMClassCacheRec);
-    classCache->actions = CompileActionTable(actions, count, True, True);
+    classCache->actions = CompileActionTable(actions, count, inPlace, True);
     classCache->bindCache = NULL;
     return (XtPointer)classCache;
 }

@@ -1,4 +1,4 @@
-/* $XConsortium: Core.c,v 1.47 91/01/30 09:16:46 rws Exp $ */
+/* $XConsortium: Core.c,v 1.48 91/02/04 16:18:28 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -194,9 +194,16 @@ static void CoreClassPartInitialize(wc)
     }
 
     if (wc->core_class.actions != NULL) {
+	Boolean inPlace;
+
+	if (wc->core_class.version == XtVersionDontCheck)
+	    inPlace = True;
+	else  
+	    inPlace = (wc->core_class.version < XtVersion) ? False : True;
+
 	/* Compile the action table into a more efficient form */
         wc->core_class.actions = (XtActionList) _XtInitializeActionData(
-	    wc->core_class.actions, wc->core_class.num_actions);
+	    wc->core_class.actions, wc->core_class.num_actions, inPlace);
     }
 }
 /* ARGSUSED */
