@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.34 89/10/09 16:20:41 jim Exp $
+ * $XConsortium: Mailbox.c,v 1.35 89/10/09 16:51:44 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -93,7 +93,7 @@ static XtResource resources[] = {
     { XtNfullPixmap, XtCPixmap, XtRBitmap, sizeof(Pixmap),
 	offset (full.bitmap), XtRString, "flagup" },
     { XtNfullPixmapMask, XtCPixmapMask, XtRBitmap, sizeof(Pixmap),
-	offset (full.mask), XtRPixmap, (caddr_t) &nopix },
+	offset (full.mask), XtRBitmap, (caddr_t) &nopix },
     { XtNemptyPixmap, XtCPixmap, XtRBitmap, sizeof(Pixmap),
 	offset (empty.bitmap), XtRString, "flagdown" },
     { XtNemptyPixmapMask, XtCPixmapMask, XtRBitmap, sizeof(Pixmap),
