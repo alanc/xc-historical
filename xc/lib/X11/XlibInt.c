@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: XlibInt.c,v 11.85 88/09/19 13:55:59 jim Exp $
  */
 
 #include "copyright.h"
@@ -1149,6 +1149,16 @@ register xEvent *event;	/* wire protocol event */
 }
 
 
+static char *_SysErrorMsg (n)
+    int n;
+{
+    extern char *sys_errlist[];
+    extern int sys_nerr;
+    char *s = ((n >= 0 && n < sys_nerr) ? sys_errlist[n] : "unknown error");
+
+    return (s ? s : "no such error");
+}
+
 /*
  * _XIOError - Default fatal system error reporting routine.  Called when
  * an X internal system error is encountered.
@@ -1156,12 +1166,19 @@ register xEvent *event;	/* wire protocol event */
 _XIOError (dpy)
 	Display *dpy;
 {
-  	if (errno == EPIPE) {
-	    (void) fprintf (stderr, 
-			"Connection # %d to server broken.\n", dpy->fd);
-	  }
-	perror("XIO");
-	exit(1);
+	(void) fprintf (stderr, 
+	 "XIO:  fatal IO error %d (%s) on X server \"%s\"\r\n",
+			errno, _SysErrorMsg (errno), DisplayString (dpy));
+	(void) fprintf (stderr, 
+	 "      after %ld requests; last known request processed was %lu.\r\n",
+			NextRequest(dpy) - 1, LastKnownRequestProcessed(dpy));
+
+	if (errno == EPIPE) {
+	    (void) fprintf (stderr,
+	 "      Connection probably broken by server crash or shutdown.\r\n");
+	}
+
+	exit (1);
 }
 
 /*
