@@ -54,8 +54,7 @@ mfbSaveAreas(pPixmap, prgnSave, xorg, yorg)
     register DDXPointPtr pPt;
     DDXPointPtr		pPtsInit;
     register BoxPtr	pBox;
-    register int	i;
-    int			numRects;
+    register int	numRects;
     
     numRects = REGION_NUM_RECTS(prgnSave);
     pPtsInit = (DDXPointPtr)ALLOCATE_LOCAL(numRects * sizeof(DDXPointRec));
@@ -64,8 +63,13 @@ mfbSaveAreas(pPixmap, prgnSave, xorg, yorg)
     
     pBox = REGION_RECTS(prgnSave);
     pPt = pPtsInit;
-    i = numRects;
-    Duff(i, pPt->x = pBox->x1 + xorg; pPt->y = pBox->y1 + yorg; pPt++; pBox++);
+    while (numRects--)
+    {
+	pPt->x = pBox->x1 + xorg;
+ 	pPt->y = pBox->y1 + yorg;
+ 	pPt++;
+ 	pBox++;
+    }
 
     mfbDoBitblt((DrawablePtr)pPixmap->drawable.pScreen->devPrivate,
 		(DrawablePtr)pPixmap,
@@ -106,8 +110,7 @@ mfbRestoreAreas(pPixmap, prgnRestore, xorg, yorg)
     register DDXPointPtr pPt;
     DDXPointPtr		pPtsInit;
     register BoxPtr	pBox;
-    register int	i;
-    int			numRects;
+    register int	numRects;
     
     numRects = REGION_NUM_RECTS(prgnRestore);
     pPtsInit = (DDXPointPtr)ALLOCATE_LOCAL(numRects*sizeof(DDXPointRec));
@@ -116,8 +119,13 @@ mfbRestoreAreas(pPixmap, prgnRestore, xorg, yorg)
     
     pBox = REGION_RECTS(prgnRestore);
     pPt = pPtsInit;
-    i = numRects;
-    Duff(i, pPt->x = pBox->x1 - xorg; pPt->y = pBox->y1 - yorg; pPt++; pBox++);
+    while (numRects--)
+    {
+	pPt->x = pBox->x1 - xorg;
+ 	pPt->y = pBox->y1 - yorg;
+ 	pPt++;
+ 	pBox++;
+    }
 
     mfbDoBitblt((DrawablePtr)pPixmap,
 		(DrawablePtr)pPixmap->drawable.pScreen->devPrivate,
