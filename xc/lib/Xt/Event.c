@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.163 94/03/31 18:46:18 converse Exp $ */
+/* $XConsortium: Event.c,v 1.164 94/03/31 20:24:47 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1019,7 +1019,7 @@ XEvent * event;
 	return;
     }
 
-    if (comp_expose_type & XtExposeGraphicsExposeMerged) {
+    if (comp_expose & XtExposeGraphicsExposeMerged) {
 	info.type1 = Expose;
 	info.type2 = GraphicsExpose;
     }
