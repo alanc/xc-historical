@@ -1,7 +1,7 @@
 /*
  * get_load - get system load
  *
- * $XConsortium: get_load.c,v 1.11 90/12/21 11:41:46 gildea Exp $
+ * $XConsortium: get_load.c,v 1.12 91/01/02 19:06:08 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -265,7 +265,7 @@ void GetLoadPoint( w, closure, call_data )
 
 #ifndef KERNEL_LOAD_VARIABLE
 #    ifdef alliant
-#        define KERNEL_LOAD_VARIABLE "_Loadave"
+#        define KERNEL_LOAD_VARIABLE "_Loadavg"
 #    endif /* alliant */
 
 #    ifdef CRAY
