@@ -1,4 +1,4 @@
-/* $XConsortium: cfbpolypnt.c,v 5.16 94/03/16 16:53:04 dpw Exp $ */
+/* $XConsortium: xkbDflts.h,v 1.3 94/04/12 17:35:00 dpw Exp $ */
 /* THIS FILE GENERATED AUTOMATICALLY BY XKBCOMP */
 #ifndef DFLT_H
 #define DFLT_H 1
@@ -35,16 +35,17 @@ static XkbKTPreserveRec preserve_TWO_LEVEL[2]= {
 };
 static Atom lnames_TWO_LEVEL[2];
 
-static XkbKTMapEntryRec map_KEYPAD[2]= {
+static XkbKTMapEntryRec map_KEYPAD[3]= {
     { 1,       ShiftMask,      1,       ShiftMask,               0 },
-    { 0,       ShiftMask,      1,       ShiftMask, vmod_NumLockMask }
+    { 1,       ShiftMask,      1,               0, vmod_NumLockMask },
+    { 1,       ShiftMask,      1,       ShiftMask, vmod_NumLockMask }
 };
 static Atom lnames_KEYPAD[2];
 
 static XkbKTMapEntryRec map_THREE_LEVEL[3]= {
     { 1,       ShiftMask,      1,       ShiftMask,               0 },
-    { 0,               0,      2,               0, vmod_LevelThreeMask },
-    { 0,       ShiftMask,      2,       ShiftMask, vmod_LevelThreeMask }
+    { 1,               0,      2,               0, vmod_LevelThreeMask },
+    { 1,       ShiftMask,      2,       ShiftMask, vmod_LevelThreeMask }
 };
 static Atom lnames_THREE_LEVEL[3];
 
@@ -82,7 +83,7 @@ static XkbKeyTypeRec dflt_types[]= {
 	ShiftMask,
 	ShiftMask,	vmod_NumLockMask,
 	2, XkbNoFreeKTStruct|XkbNoFreeKTMap|XkbNoFreeKTLevelNames,
-	2,	map_KEYPAD,	NULL,
+	3,	map_KEYPAD,	NULL,
 	None,	lnames_KEYPAD
     },
     {
