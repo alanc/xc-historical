@@ -2,8 +2,8 @@
 LOCAL_LIBRARIES = $(XLIB)
         DEFINES = -DNOINLINE
 
-           SRCS = xpr.c x2pmp.c
-           OBJS = xpr.o x2pmp.o
+           SRCS = xpr.c x2pmp.c x2jet.c
+           OBJS = xpr.o x2pmp.o x2jet.o
 
 ComplexProgramTarget(xpr)
 InstallScript(xdpr,$(BINDIR))
