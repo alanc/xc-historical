@@ -1,4 +1,4 @@
-/* $XConsortium: Resources.c,v 1.115 93/10/06 17:36:04 kaleb Exp $ */
+/* $XConsortium: Resources.c,v 1.116 94/02/08 15:36:11 kaleb Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -279,7 +279,18 @@ static void CopyToArg(src, dst, size)
 
 #endif
 
-static Cardinal GetNamesAndClasses(w, names, classes)
+static Cardinal CountTreeDepth(w)
+    Widget w;
+{
+    Cardinal count;
+
+    for (count = 1; w != NULL; w = (Widget) w->core.parent) 
+	count++;
+
+    return count;
+}
+
+static void GetNamesAndClasses(w, names, classes)
     register Widget	  w;
     register XrmNameList  names;
     register XrmClassList classes;
@@ -314,7 +325,6 @@ static Cardinal GetNamesAndClasses(w, names, classes)
     }
     names[length] = NULLQUARK;
     classes[length] = NULLQUARK;
-    return length;
 } /* GetNamesAndClasses */
 
 
@@ -987,18 +997,24 @@ XtCacheRef *_XtGetResources(w, args, num_args, typed_args, num_typed_args)
 		XtTypedArgList	typed_args;
 		Cardinal*	num_typed_args;
 {
-    XrmName	    names[100];
-    XrmClass	    classes[100];
+    XrmName	    *names;
+    XrmClass	    *classes;
     XrmQuark	    quark_cache[100];
     XrmQuarkList    quark_args;
     WidgetClass     wc;
     ConstraintWidgetClass   cwc;
     XtCacheRef	    *cache_refs;
+    Cardinal	    count;
 
     wc = XtClass(w);
 
+    count = CountTreeDepth(w);
+    names = (XrmName*) ALLOCATE_LOCAL (count * sizeof(XrmName));
+    classes = (XrmClass*) ALLOCATE_LOCAL (count * sizeof(XrmClass));
+    if (names == NULL || classes == NULL) _XtAllocError(NULL);
+
     /* Get names, classes for widget and ancestors */
-    (void) GetNamesAndClasses(w, names, classes);
+    GetNamesAndClasses(w, names, classes);
    
     /* Compile arg list into quarks */
     CacheArgs(args, num_args, typed_args, *num_typed_args, quark_cache,
@@ -1020,6 +1036,8 @@ XtCacheRef *_XtGetResources(w, args, num_args, typed_args, num_typed_args)
     }
     FreeCache(quark_cache, quark_args);
     UNLOCK_PROCESS;
+    DEALLOCATE_LOCAL(names);
+    DEALLOCATE_LOCAL(classes);
     return cache_refs;
 } /* _XtGetResources */
 
@@ -1048,25 +1066,30 @@ void XtGetSubresources (w, base, name, class, resources, num_resources,
     Cardinal	  num_args;
 #endif
 {
-    XrmName	  names[100];
-    XrmClass	  classes[100];
-    register Cardinal	  length;
+    XrmName	  *names;
+    XrmClass	  *classes;
     XrmQuark	  quark_cache[100];
     XrmQuarkList  quark_args;
     XrmResourceList* table;
-    Cardinal	  null_typed_args = 0;
+    Cardinal	  count, null_typed_args = 0;
     WIDGET_TO_APPCON(w);
 
     if (num_resources == 0) return;
 
     LOCK_APP(app);
+    count = CountTreeDepth(w);
+    count++;	/* make sure there's enough room for name and class */
+    names = (XrmName*) ALLOCATE_LOCAL(count * sizeof(XrmName));
+    classes = (XrmClass*) ALLOCATE_LOCAL(count * sizeof(XrmClass));
+    if (names == NULL || classes == NULL) _XtAllocError(NULL);
+
     /* Get full name, class of subobject */
-    length = GetNamesAndClasses(w, names, classes);
-    names[length] = StringToName(name);
-    classes[length] = StringToClass(class);
-    length++;
-    names[length] = NULLQUARK;
-    classes[length] = NULLQUARK;
+    GetNamesAndClasses(w, names, classes);
+    names[count] = StringToName(name);
+    classes[count] = StringToClass(class);
+    count++;
+    names[count] = NULLQUARK;
+    classes[count] = NULLQUARK;
 
     /* Compile arg list into quarks */
     CacheArgs(args, num_args, (XtTypedArgList)NULL, (Cardinal)0,
@@ -1082,6 +1105,8 @@ void XtGetSubresources (w, base, name, class, resources, num_resources,
 			(XtTypedArgList)NULL, &null_typed_args, False);
     FreeCache(quark_cache, quark_args);
     XtFree((char *)table);
+    DEALLOCATE_LOCAL(names);
+    DEALLOCATE_LOCAL(classes);
     UNLOCK_APP(app);
 }
 
@@ -1095,28 +1120,37 @@ void XtGetApplicationResources
     ArgList	    args;	  /* arg list to override resources */
     Cardinal	    num_args;
 {
-    XrmName	    names[100];
-    XrmClass	    classes[100];
+    XrmName	    *names, _names[2];
+    XrmClass	    *classes, _classes[2];
     XrmQuark	    quark_cache[100];
     XrmQuarkList    quark_args;
     XrmResourceList* table;
-    Cardinal	  null_typed_args = 0;
-    WIDGET_TO_APPCON(w);
+    Cardinal        count, null_typed_args = 0;
+    XtAppContext    app;
 
     if (num_resources == 0) return;
+
+    if (w == NULL) app = _XtDefaultAppContext();
+    else app = XtWidgetToApplicationContext(w);
 
     LOCK_APP(app);
     /* Get full name, class of application */
     if (w == NULL) {
 	/* hack for R2 compatibility */
 	XtPerDisplay pd = _XtGetPerDisplay(_XtDefaultAppContext()->list[0]);
+	names = _names;
+	classes = _classes;
 	names[0] = pd->name;
 	names[1] = NULLQUARK;
 	classes[0] = pd->class;
 	classes[1] = NULLQUARK;
     }
     else {
-	(void) GetNamesAndClasses(w, names, classes);
+	count = CountTreeDepth(w);
+        names = (XrmName*) ALLOCATE_LOCAL(count * sizeof(XrmName));
+        classes = (XrmClass*) ALLOCATE_LOCAL(count * sizeof(XrmClass));
+	if (names == NULL || classes == NULL) _XtAllocError(NULL);
+	GetNamesAndClasses(w, names, classes);
     }
 
     /* Compile arg list into quarks */
@@ -1142,6 +1176,10 @@ void XtGetApplicationResources
 			(XtTypedArgList)NULL, &null_typed_args, False);
     FreeCache(quark_cache, quark_args);
     XtFree((char *)table);
+    if (w != NULL) {
+	DEALLOCATE_LOCAL(names);
+	DEALLOCATE_LOCAL(classes);
+    }
     UNLOCK_APP(app);
 }
 
