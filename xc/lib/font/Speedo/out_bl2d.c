@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: out_bl2d.c,v 1.3 91/05/11 09:51:53 rws Exp $ */
 
 /*
 
@@ -87,7 +87,7 @@ point_t Pmax;
 {
 #if DEBUG
 printf("BEGIN_CHAR__2d(%3.1f, %3.1f, %3.1f, %3.1f, %3.1f, %3.1f\n", 
-                    (real)Psw.x / (real)sp_globals.one_pix, (real)Psw.y / (real)sp_globals.onepix,
+                    (real)Psw.x / (real)sp_globals.onepix, (real)Psw.y / (real)sp_globals.onepix,
                     (real)Pmin.x / (real)sp_globals.onepix, (real)Pmin.y / (real)sp_globals.onepix,
                     (real)Pmax.x / (real)sp_globals.onepix, (real)Pmax.y / (real)sp_globals.onepix);
 #endif
