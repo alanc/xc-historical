@@ -1,4 +1,4 @@
-/* $XConsortium: Xcmsint.h,v 1.12 91/06/27 10:52:43 dave Exp $ */
+/* $XConsortium: Xcmsint.h,v 1.13 91/07/09 16:31:56 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -85,6 +85,34 @@ typedef struct _XcmsCmapRec {
     struct _XcmsCmapRec *pNext;
 } XcmsCmapRec;
 
+    /*
+     * Intensity Record (i.e., value / intensity tuple)
+     */
+typedef struct _IntensityRec {
+    unsigned short value;
+    XcmsFloat intensity;
+} IntensityRec;
+
+    /*
+     * Intensity Table
+     */
+typedef struct _IntensityTbl {
+    IntensityRec *pBase;
+    unsigned int nEntries;
+} IntensityTbl;
+
+    /*
+     * Structure for storing per-Visual Intensity Tables (aka gamma maps).
+     */
+typedef struct _XcmsIntensityMap {
+    VisualID visualID;
+    XPointer	screenData;	/* pointer to corresponding Screen Color*/
+				/*	Characterization Data		*/
+    void (*pFreeScreenData)();	/* Function that frees a Screen		*/
+				/*   structure.				*/
+    struct _XcmsIntensityMap *pNext;
+} XcmsIntensityMap;
+
 
     /*
      * Structure for storing "registered" color space prefix/ID
@@ -114,20 +142,6 @@ typedef struct _XcmsPerDpyInfo {
  */
 
 #define XDCCC_NUMBER	0x8000000L	/* 2**27 per XDCCC */
-
-typedef struct _IntensityRec {
-    unsigned short value;
-    XcmsFloat intensity;
-} IntensityRec;
-
-typedef struct _IntensityTbl {
-    IntensityRec *pBase;
-    unsigned int nEntries;
-} IntensityTbl;
-
-/*
- *	DEFINES
- */
 
 #ifdef GRAY
 #define XDCCC_SCREENWHITEPT_ATOM_NAME	"XDCCC_GRAY_SCREENWHITEPOINT"
@@ -202,5 +216,13 @@ double _XcmsPolynomial();
 double _XcmsSine();
 double _XcmsSquareRoot();
 #endif
+
+/*
+ *  DEFINES FOR GAMUT COMPRESSION AND QUERY ROUTINES
+ */
+#define XCMS_CIEUSTAROFHUE(h, l, c)	((XCMS_COS(radians((h))) * (c)) / (l))
+#define XCMS_CIEVSTAROFHUE(h, l, c)	((XCMS_SIN(radians((h))) * (c)) / (l))
+#define XCMS_CIELUV_PMETRIC_HUE(u, v)	XCMS_ATAN( (v) / (u))
+#define XCMS_CIELUV_PMETRIC_CHROMA(u,v)	XCMS_SQRT(((u)*(u)) + ((v)*(v)))
 
 #endif /* _XCMSINT_H_ */
