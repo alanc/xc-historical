@@ -1,4 +1,4 @@
-/* $XConsortium: imCallbk.c,v 1.8 94/09/01 18:44:49 kaleb Exp kaleb $ */
+/* $XConsortium: imCallbk.c,v 1.9 94/10/10 18:31:09 kaleb Exp kaleb $ */
 /***********************************************************************
 Copyright 1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 Copyright 1994 by FUJITSU LIMITED
@@ -405,7 +405,6 @@ _XimStrConversionCallback(im, ic, proto, len)
 	CARD8	*buf;
 	INT16	 buf_len;
 	int	 p, length_in_bytes, i;
-	void	*tmp;
 
 	/* Assumption:
 	 * `cbrec.text->length' means the string length in characters
@@ -524,7 +523,6 @@ _XimPreeditDoneCallback(im, ic, proto, len)
 #endif
 {
     XIMCallback* cb = &ic->core.preedit_attr.done_callback;
-    int ret;
 
     /* invoke the callback
      */
@@ -612,7 +610,7 @@ _read_text_from_packet(im, buf, text)
 
 	i = (int)*(CARD16*)buf; buf += sz_CARD16;
 	buf += sz_CARD16; /* skip `unused' */
-	text->feedback = (XIMFeedback*)Xmalloc(i);
+	text->feedback = (XIMFeedback*)Xmalloc(i*(sizeof(XIMFeedback)/sizeof(CARD32)));
 	j = 0;
 	while (i > 0) {
 	    text->feedback[j] = (XIMFeedback)*(CARD32*)buf;
