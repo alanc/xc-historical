@@ -1,4 +1,4 @@
-/* $XConsortium: fontfcn.c,v 1.6 92/03/20 14:36:00 keith Exp $ */
+/* $XConsortium: fontfcn.c,v 1.7 92/03/26 16:42:13 eswu Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -80,7 +80,7 @@ int cnt;
 
   if (!(vm_init(cnt))) return(FALSE);
   vm_base = vm_next_byte();
-  if (!(Init_StdEnc())) return(FALSE);
+  if (!(Init_BuiltInEncoding())) return(FALSE);
   strcpy(CurFontName, "");    /* iniitialize to none */
   FontP = &TheCurrentFont;
   FontP->vm_start = vm_next_byte();

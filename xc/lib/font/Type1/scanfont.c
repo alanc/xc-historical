@@ -1,4 +1,4 @@
-/* $XConsortium: scanfont.c,v 1.4 92/03/20 16:04:03 eswu Exp $ */
+/* $XConsortium: scanfont.c,v 1.5 92/03/26 16:39:30 eswu Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -48,16 +48,18 @@ static psobj *inputP;
  
  
 /**********************************************************************/
-/*   Init_StdEnc()                                                    */
+/*   Init_BuiltInEncoding()                                           */
 /*                                                                    */
-/*          Initializes the Standard Encoding vector.                 */
+/*     Initializes the StandardEncoding and ISOLatin1Encoding vector. */
 /*                                                                    */
 /**********************************************************************/
-static struct {              /* Builtin Standard Encoding */
+typedef struct				/* Builtin Standard Encoding */
+{
    int  index;
    char *name;
-} StdEnc[] = {
-     0 , ".notdef",
+} EncodingTable;
+
+static EncodingTable StdEnc[] = {
    040 , "space",
    041 , "exclam",
    042 , "quotedbl",
@@ -209,30 +211,268 @@ static struct {              /* Builtin Standard Encoding */
   0373 , "germandbls",
     0,      0
 };
-static psobj *StdEncArrayP = NULL;
+
+static EncodingTable ISO8859Enc[] = {
+  32, "space",
+  33, "exclam",
+  34, "quotedbl",
+  35, "numbersign",
+  36, "dollar",
+  37, "percent",
+  38, "ampersand",
+  39, "quoteright",
+  40, "parenleft",
+  41, "parenright",
+  42, "asterisk",
+  43, "plus",
+  44, "comma",
+  45, "minus",
+  46, "period",
+  47, "slash",
+  48, "zero",
+  49, "one",
+  50, "two",
+  51, "three",
+  52, "four",
+  53, "five",
+  54, "six",
+  55, "seven",
+  56, "eight",
+  57, "nine",
+  58, "colon",
+  59, "semicolon",
+  60, "less",
+  61, "equal",
+  62, "greater",
+  63, "question",
+  64, "at",
+  65, "A",
+  66, "B",
+  67, "C",
+  68, "D",
+  69, "E",
+  70, "F",
+  71, "G",
+  72, "H",
+  73, "I",
+  74, "J",
+  75, "K",
+  76, "L",
+  77, "M",
+  78, "N",
+  79, "O",
+  80, "P",
+  81, "Q",
+  82, "R",
+  83, "S",
+  84, "T",
+  85, "U",
+  86, "V",
+  87, "W",
+  88, "X",
+  89, "Y",
+  90, "Z",
+  91, "bracketleft",
+  92, "backslash",
+  93, "bracketright",
+  94, "asciicircum",
+  95, "underscore",
+  96, "quoteleft",
+  97, "a",
+  98, "b",
+  99, "c",
+ 100, "d",
+ 101, "e",
+ 102, "f",
+ 103, "g",
+ 104, "h",
+ 105, "i",
+ 106, "j",
+ 107, "k",
+ 108, "l",
+ 109, "m",
+ 110, "n",
+ 111, "o",
+ 112, "p",
+ 113, "q",
+ 114, "r",
+ 115, "s",
+ 116, "t",
+ 117, "u",
+ 118, "v",
+ 119, "w",
+ 120, "x",
+ 121, "y",
+ 122, "z",
+ 123, "braceleft",
+ 124, "bar",
+ 125, "braceright",
+ 126, "asciitilde",
+ 127, NULL,
+ 128, NULL,
+ 129, NULL,
+ 130, NULL,
+ 131, NULL,
+ 132, NULL,
+ 133, NULL,
+ 134, NULL,
+ 135, NULL,
+ 136, NULL,
+ 137, NULL,
+ 138, NULL,
+ 139, NULL,
+ 140, NULL,
+ 141, NULL,
+ 142, NULL,
+ 143, NULL,
+ 144, NULL,
+ 145, NULL,
+ 146, NULL,
+ 147, NULL,
+ 148, NULL,
+ 149, NULL,
+ 150, NULL,
+ 151, NULL,
+ 152, NULL,
+ 153, NULL,
+ 154, NULL,
+ 155, NULL,
+ 156, NULL,
+ 157, NULL,
+ 158, NULL,
+ 159, NULL,
+ 160, NULL,
+ 161, "exclamdown",
+ 162, "cent",
+ 163, "sterling",
+ 164, "currency",
+ 165, "yen",
+ 166, "brokenbar",
+ 167, "section",
+ 168, "dieresis",
+ 169, "copyright",
+ 170, "ordfeminine",
+ 171, "guillemotleft",
+ 172, "logicalnot",
+ 173, "hyphen",
+ 174, "registered",
+ 175, "macron",
+ 176, "degree",
+ 177, "plusminus",
+ 178, "twosuperior",
+ 179, "threesuperior",
+ 180, "acute",
+ 181, "mu",
+ 182, "paragraph",
+ 183, "periodcentered",
+ 184, "cedilla",
+ 185, "onesuperior",
+ 186, "ordmasculine",
+ 187, "guillemotright",
+ 188, "onequarter",
+ 189, "onehalf",
+ 190, "threequarters",
+ 191, "questiondown",
+ 192, "Agrave",
+ 193, "Aacute",
+ 194, "Acircumflex",
+ 195, "Atilde",
+ 196, "Adieresis",
+ 197, "Aring",
+ 198, "AE",
+ 199, "Ccedilla",
+ 200, "Egrave",
+ 201, "Eacute",
+ 202, "Ecircumflex",
+ 203, "Edieresis",
+ 204, "Igrave",
+ 205, "Iacute",
+ 206, "Icircumflex",
+ 207, "Idieresis",
+ 208, "Eth",
+ 209, "Ntilde",
+ 210, "Ograve",
+ 211, "Oacute",
+ 212, "Ocircumflex",
+ 213, "Otilde",
+ 214, "Odieresis",
+ 215, "multiply",
+ 216, "Oslash",
+ 217, "Ugrave",
+ 218, "Uacute",
+ 219, "Ucircumflex",
+ 220, "Udieresis",
+ 221, "Yacute",
+ 222, "Thorn",
+ 223, "germandbls",
+ 224, "agrave",
+ 225, "aacute",
+ 226, "acircumflex",
+ 227, "atilde",
+ 228, "adieresis",
+ 229, "aring",
+ 230, "ae",
+ 231, "ccedilla",
+ 232, "egrave",
+ 233, "eacute",
+ 234, "ecircumflex",
+ 235, "edieresis",
+ 236, "igrave",
+ 237, "iacute",
+ 238, "icircumflex",
+ 239, "idieresis",
+ 240, "eth",
+ 241, "ntilde",
+ 242, "ograve",
+ 243, "oacute",
+ 244, "ocircumflex",
+ 245, "otilde",
+ 246, "odieresis",
+ 247, "divide",
+ 248, "oslash",
+ 249, "ugrave",
+ 250, "uacute",
+ 251, "ucircumflex",
+ 252, "udieresis",
+ 253, "yacute",
+ 254, "thorn",
+ 255, "ydieresis",
+    0,      0
+};
+
+psobj *StdEncArrayP = NULL;
+psobj *ISOLatin1EncArrayP = NULL; 
  
-boolean Init_StdEnc()
+psobj *MakeEncodingArrayP(encodingTable)
+    EncodingTable *encodingTable;
 {
   int i;
+  psobj *encodingArrayP;
  
-  StdEncArrayP = (psobj *)vm_alloc(256*(sizeof(psobj)));
-  if (StdEncArrayP) {
-    for (i=0; i<256;i++) {
-      /* initialize everything to .notdef */
-      objFormatName(&(StdEncArrayP[i]),strlen(StdEnc[0].name),
-                                          StdEnc[0].name);
-    }
-    for (i=0; StdEnc[i].name; i++) {
-      objFormatName(&(StdEncArrayP[StdEnc[i].index]),
-                   strlen(StdEnc[i].name),
-                   StdEnc[i].name);
-    }
-    return(TRUE);
+  encodingArrayP = (psobj *)vm_alloc(256*(sizeof(psobj)));
+  if (!encodingArrayP)
+      return NULL;
+
+  /* initialize everything to .notdef */
+  for (i=0; i<256;i++)
+      objFormatName(&(encodingArrayP[i]),7, ".notdef");
+
+  for (i=0; encodingTable[i].name; i++)
+  {
+      objFormatName(&(encodingArrayP[encodingTable[i].index]),
+		    strlen(encodingTable[i].name),
+		    encodingTable[i].name);
   }
-  return(FALSE);
+
+  return(encodingArrayP);
 }
  
- 
+boolean Init_BuiltInEncoding()
+{
+    StdEncArrayP = MakeEncodingArrayP(StdEnc);
+    ISOLatin1EncArrayP = MakeEncodingArrayP(ISO8859Enc);
+    return (StdEncArrayP && ISOLatin1EncArrayP);
+}
  
 /********************************************************************/
 /***================================================================***/
@@ -271,13 +511,18 @@ psobj *arrayP;
 {
 
   scan_token(inputP);
-  if ((tokenType == TOKEN_NAME) &&
-      (tokenLength == 16) &&
-      (0 == strncmp(tokenStartP,"StandardEncoding",16)))
+  if ((tokenType == TOKEN_NAME)
+                &&
+     (((tokenLength==16) && (!strncmp(tokenStartP,"StandardEncoding",16))) ||
+      (((tokenLength==17) && (!strncmp(tokenStartP,"ISOLatin1Encoding",17))))))
   {
       /* Adobe Standard Encoding */
 
-      arrayP->data.valueP = (char *) StdEncArrayP;
+      if (tokenLength == 16)
+	  arrayP->data.valueP = (char *) StdEncArrayP;
+      else
+	  arrayP->data.valueP = (char *) ISOLatin1EncArrayP;
+
       arrayP->len = 256;
       return(SCAN_OK);
   }
