@@ -1,12 +1,21 @@
+/* $XConsortium$ */
 /* Copyright 1985, Massachusetts Institute of Technology */
+/*
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of M.I.T. not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission.  M.I.T. makes no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ */
 
 /* reads from standard input lines of the form:
 	red green blue name
    where red/green/blue are decimal values, and inserts them in a database.
  */
-#ifndef lint
-static char *rcsid_rgb_c = "$XConsortium: rgb.c,v 11.16 93/09/20 17:58:25 hersh Exp $";
-#endif
 
 #ifdef NDBM
 #include <ndbm.h>
