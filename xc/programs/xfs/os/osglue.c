@@ -1,4 +1,4 @@
-/* $XConsortium: osglue.c,v 1.2 91/05/13 16:51:09 gildea Exp $ */
+/* $XConsortium: osglue.c,v 1.3 91/07/16 20:22:39 keith Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -31,7 +31,8 @@
  * Catalogue support, alternate servers, and cloneing
  */
 
-#include	"osstruct.h"
+#include "osstruct.h"
+#include <stdio.h>
 #define  XK_LATIN1
 #include <X11/keysymdef.h>
 
