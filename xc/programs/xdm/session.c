@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.68 94/02/10 19:04:50 gildea Exp $
+ * $XConsortium: session.c,v 1.69 94/03/31 22:34:51 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -444,6 +444,27 @@ SessionExit (d, status, removeAuth)
 #endif
 	setuid (verify.uid);
 	RemoveUserAuthorization (d, &verify);
+#ifdef K5AUTH
+	/* do like "kdestroy" program */
+        {
+	    krb5_error_code code;
+	    krb5_ccache ccache;
+
+	    code = Krb5DisplayCCache(d->name, &ccache);
+	    if (code)
+		LogError("%s while getting Krb5 ccache to destroy\n",
+			 error_message(code));
+	    else {
+		code = krb5_cc_destroy(ccache);
+		if (code)
+		    LogError("%s while destroying Krb5 credentials cache\n",
+			     error_message(code));
+		else
+		    Debug ("Kerberos ccache destroyed\n");
+		krb5_cc_close(ccache);
+	    }
+	}
+#endif /* K5AUTH */
     }
     Debug ("Display %s exiting with status %d\n", d->name, status);
     exit (status);
@@ -580,9 +601,15 @@ StartClient (verify, d, pidp, name, passwd)
 	{
 	    int i, j;
 	    int result;
+	    extern char *Krb5CCacheName();
 
-	    result = Krb5Init(name, passwd);
-	    if (result != 0) {
+	    result = Krb5Init(name, passwd, d);
+	    if (result == 0) {
+		/* point session clients at the Kerberos credentials cache */
+		verify->userEnviron =
+		    setEnv(verify->userEnviron,
+			   "KRB5CCNAME", Krb5CCacheName(d->name));
+	    } else {
 		for (i = 0; i < d->authNum; i++)
 		{
 		    if (d->authorizations[i]->name_length == 14 &&
