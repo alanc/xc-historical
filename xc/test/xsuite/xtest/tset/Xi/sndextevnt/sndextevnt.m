@@ -14,7 +14,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: sndextevnt.m,v 1.19 94/01/30 11:10:07 rws Exp $
+ * $XConsortium: sndextevnt.m,v 1.20 94/01/30 12:11:43 rws Exp $
  */
 >>TITLE XSendExtensionEvent XINPUT
 Status
@@ -517,7 +517,6 @@ int	return_value;
 XID dbp, noextensionevent;
 XEventClass dbpc, noextensioneventclass;
 
-/* Create client2. */
 	if (!Setup_Extension_DeviceInfo(BtnMask))
 	    {
 	    untested("%s: No input extension button device.\n", TestName);
@@ -526,10 +525,16 @@ XEventClass dbpc, noextensioneventclass;
 	device = Devs.Button;
 	NoExtensionEvent(device, noextensionevent, noextensioneventclass);
 	DeviceButtonPress(Devs.Button, dbp, dbpc);
-	/* must avoid resource registration, so can not use opendisplay() */
-	client2 = XOpenDisplay(config.display);
+/* Create client2. */
+
+	/* We must disable resource registration here to prevent attempted
+	   deallocation of closed connections and deleted resources. */
+	regdisable(); 
+
+	client2 = opendisplay();
 	if (client2 == (Display *) NULL) {
 		delete("Can not open display");
+		regenable();
 		return;
 	}
 	else
@@ -540,6 +545,10 @@ XEventClass dbpc, noextensioneventclass;
 	w = mkwin(client2, (XVisualInfo *) NULL, (struct area *) NULL, False);
 /* Call XCloseDisplay for client2. */
 	XCloseDisplay(client2);
+
+	/* re-enable resource registration */
+	regenable();
+
 /* Select ALLEVENTS on window. */
 	XSelectExtensionEvent(display, w, classes, nclass);
 /* Call XSendExtensionEvent to send event to window. */

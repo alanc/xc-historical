@@ -14,7 +14,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: gtdvmmap.m,v 1.9 94/01/29 15:23:56 rws Exp $
+ * $XConsortium: gtdvmmap.m,v 1.10 94/01/30 12:10:31 rws Exp $
  */
 >>TITLE XGetDeviceModifierMapping EXTENSIONS
 XModifierKeymap	*
@@ -87,8 +87,14 @@ Window win;
 int ret;
 Display *client1;
 
-	if ((client1 = XOpenDisplay("")) == 0) {
-		delete("Could not open display");
+/* Create client1, without causing resource registration. */
+	if (config.display == (char *) NULL) {
+		delete("config.display not set");
+		return;
+	}
+	client1 = XOpenDisplay(config.display);
+	if (client1 == (Display *) NULL) {
+		delete("Couldn't create client1.");
 		return;
 	}
 	ret = XGrabDevice(client1, dev, win, True, 0, NULL,

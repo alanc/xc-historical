@@ -14,7 +14,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: getfocus.m,v 1.4 94/01/29 15:20:28 rws Exp $
+ * $XConsortium: getfocus.m,v 1.5 94/01/30 12:09:43 rws Exp $
  */
 >>TITLE XGetDeviceFocus XINPUT
 void
@@ -23,10 +23,11 @@ Display	*display = Dsp;
 XDevice *device;
 Window	*focus = &fwin;
 int	*revert_to = &revert;
-int	*time = &focus_time;
+Time	*time = &focus_time;
 >>EXTERN
 Window fwin;
-int revert, focus_time;
+int revert;
+Time focus_time;
 XID baddevice;
 extern ExtDeviceInfo Devs;
 

@@ -14,7 +14,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: misc.m,v 1.4 94/01/29 15:23:41 rws Exp $
+ * $XConsortium: misc.m,v 1.5 94/01/30 12:10:53 rws Exp $
  */
 >>TITLE Miscellaneous XINPUT
 void
@@ -114,8 +114,8 @@ XButtonStatus *b;
 	defsetevent(dsgood, dpy, ds);
 	dsgood.window = None;
 	dsgood.deviceid = dev->device_id;
-	dsgood.num_classes = 
-	    ((keys && valuators) || (buttons && valuators)) ? 2 : 1;
+	dsgood.num_classes = ((keys && valuators) || (buttons && valuators) || 
+	    (keys && buttons)) ? 2 : 1;
 	data = dsgood.data;
 	if (buttons)
 	    {

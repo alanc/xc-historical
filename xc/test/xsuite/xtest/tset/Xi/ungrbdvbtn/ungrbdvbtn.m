@@ -14,7 +14,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: ungrbdvbtn.m,v 1.6 94/01/30 11:11:35 rws Exp $
+ * $XConsortium: ungrbdvbtn.m,v 1.7 94/01/30 12:11:56 rws Exp $
  */
 >>TITLE XUngrabDeviceButton XINPUT
 void
@@ -122,13 +122,19 @@ static Bool dgrabbed(dev, win)
 	int ret;
 	Display *client1;
 
-	if ((client1 = XOpenDisplay("")) == 0) {
-		delete("Could not open display");
+/* Create client1, without causing resource registration. */
+	if (config.display == (char *) NULL) {
+		delete("config.display not set");
+		return;
+	}
+	client1 = XOpenDisplay(config.display);
+	if (client1 == (Display *) NULL) {
+		delete("Couldn't create client1.");
 		return;
 	}
 
 	ret = XGrabDevice (client1, dev, win, False, 0, NULL, GrabModeAsync, GrabModeAsync, CurrentTime);
-	XSync(display,0);
+	XSync(client1,0);
 	if (ret == AlreadyGrabbed)
 	    {
 	    XCloseDisplay(client1);

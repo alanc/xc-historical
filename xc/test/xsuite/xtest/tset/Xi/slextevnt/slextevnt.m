@@ -14,7 +14,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: slextevnt.m,v 1.13 94/01/30 11:05:48 rws Exp $
+ * $XConsortium: slextevnt.m,v 1.14 94/01/30 12:11:36 rws Exp $
  */
 >>TITLE XSelectExtensionEvent XINPUT
 void
@@ -38,7 +38,7 @@ XDeviceInfo *list;
 XDevice *device;
 int major, first, err;
 
-	fdisplay = XOpenDisplay("");
+	fdisplay = opendisplay();
 	if (!XQueryExtension (fdisplay, INAME, &major, &first, &err)) {
 	    untested("%s: Input extension not supported.\n", TestName);
 	    return;
@@ -187,6 +187,7 @@ XEventClass noextensionevent, devicefocusin;
 
 
 /* Create window with no events selected. */
+	getfocusdevice();
 	if (!focusdevice) {
 	    report("%s: Required input devices not present\n",TestName);
 	    UNTESTED;
@@ -465,7 +466,7 @@ XID dkp;
 	    untested("%s: No input extension key device.\n", TestName);
 	    return;
 	    }
-	if (noext(0))
+	if (noext(1))
 	    return;
 	DeviceKeyPress(Devs.Key, dkp, dkpclass);
 /* Create client1. */
