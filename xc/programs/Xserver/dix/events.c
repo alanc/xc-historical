@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.133 88/01/02 13:21:47 rws Exp $ */
+/* $Header: events.c,v 1.134 88/01/02 18:11:28 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1056,10 +1056,10 @@ DefineInitialRootWindow(win)
     ROOT = win;
     (*currentScreen->CursorLimits) (
 	currentScreen, win->cursor, &sprite.hotLimits, &sprite.physLimits);
-    (*currentScreen->SetCursorPosition) (
-	currentScreen, sprite.hot.x, sprite.hot.y, FALSE);
     (*currentScreen->ConstrainCursor) (
 	currentScreen, &sprite.physLimits);
+    (*currentScreen->SetCursorPosition) (
+	currentScreen, sprite.hot.x, sprite.hot.y, FALSE);
     (*currentScreen->DisplayCursor) (currentScreen, c);
 }
 
