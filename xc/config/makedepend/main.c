@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.64 92/08/22 14:36:58 rws Exp $
+ * $XConsortium: main.c,v 1.65 92/08/24 16:31:41 gildea Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -520,7 +520,7 @@ redirect(line, makefile)
 	    }
 	}
 	fflush(fdout);
-#ifdef USGISH
+#if defined(USGISH) || defined(_SEQUENT_)
 	chmod(makefile, st.st_mode);
 #else
         fchmod(fileno(fdout), st.st_mode);
