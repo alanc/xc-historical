@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.70 90/04/13 13:27:10 jim Exp $
+ * $XConsortium: resize.c,v 1.71 90/04/24 09:29:03 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.70 90/04/13 13:27:10 jim Exp $";
+"$XConsortium: resize.c,v 1.71 90/04/24 09:29:03 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -557,22 +557,24 @@ ConstrainSize (tmp_win, widthp, heightp)
 #define maxAspectY tmp_win->hints.max_aspect.y
 #define minAspectX tmp_win->hints.min_aspect.x
 #define minAspectY tmp_win->hints.min_aspect.y
+    /*
+     * The math looks like this:
+     *
+     * minAspectX    dwidth     maxAspectX
+     * ---------- <= ------- <= ----------
+     * minAspectY    dheight    maxAspectY
+     *
+     * If that is multiplied out, then the width and height are
+     * invalid in the following situations:
+     *
+     * minAspectX * dheight > minAspectY * dwidth
+     * maxAspectX * dheight < maxAspectY * dwidth
+     * 
+     */
+    
     if (tmp_win->hints.flags & PAspect)
     {
-        if (dwidth * maxAspectX > dheight * maxAspectY)
-        {
-            delta = makemult(dwidth * maxAspectY / maxAspectX - dheight,
-                             yinc);
-            if (dheight + delta <= maxHeight) dheight += delta;
-            else
-            {
-                delta = makemult(dwidth - maxAspectX*dheight/maxAspectY,
-                                 xinc);
-                if (dwidth - delta >= minWidth) dwidth -= delta;
-            }
-        }
-
-        if (dwidth * minAspectX < dheight * minAspectY)
+        if (minAspectX * dheight > minAspectY * dwidth)
         {
             delta = makemult(minAspectX * dheight / minAspectY - dwidth,
                              xinc);
@@ -582,6 +584,19 @@ ConstrainSize (tmp_win, widthp, heightp)
                 delta = makemult(dheight - dwidth*minAspectY/minAspectX,
                                  yinc);
                 if (dheight - delta >= minHeight) dheight -= delta;
+            }
+        }
+
+        if (maxAspectX * dheight < maxAspectY * dwidth)
+        {
+            delta = makemult(dwidth * maxAspectY / maxAspectX - dheight,
+                             yinc);
+            if (dheight + delta <= maxHeight) dheight += delta;
+            else
+            {
+                delta = makemult(dwidth - maxAspectX*dheight/maxAspectY,
+                                 xinc);
+                if (dwidth - delta >= minWidth) dwidth -= delta;
             }
         }
     }
