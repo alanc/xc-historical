@@ -72,10 +72,16 @@ SOFTWARE.
 #define XtNshapeStyle "shapeStyle"
 #define XtCShapeStyle "ShapeStyle"
 #define XtRShapeStyle "ShapeStyle"
+#define XtNcornerWidth "cornerWidth"
+#define XtCCornerWidth "CornerWidth"
+#define XtNcornerHeight "cornerHeight"
+#define XtCCornerHeight "CornerHeight"
 
-#define XawShapeRectangular 1
-#define XawShapeOval 2
-#define XawShapeEllipse 3
+
+#define XawShapeRectangle XmuShapeRectangle
+#define XawShapeOval XmuShapeOval
+#define XawShapeEllipse XmuShapeEllipse
+#define XawShapeRoundedRectangle XmuShapeRoundedRectangle
 
 extern WidgetClass     commandWidgetClass;
 
