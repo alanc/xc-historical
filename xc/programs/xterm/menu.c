@@ -2,7 +2,7 @@
 static char sccsid[]="@(#)menu.c	1.7 Stellar 87/10/16";
 #endif
 /*
- *	$XConsortium: menu.c,v 1.12 89/03/11 10:02:16 rws Exp $
+ *	$XConsortium: menu.c,v 1.13 89/03/27 15:08:30 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -45,7 +45,7 @@ static char sccsid[]="@(#)menu.c	1.7 Stellar 87/10/16";
 #include "data.h"
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: menu.c,v 1.12 89/03/11 10:02:16 rws Exp $";
+static char rcs_id[] = "$XConsortium: menu.c,v 1.13 89/03/27 15:08:30 jim Exp $";
 #endif	lint
 
 #define DEFMENUBORDER	2
@@ -120,11 +120,6 @@ register char *name;
 	Pixel background = xw->core.background_pixel;
 	Pixel foreground = xw->screen.foreground;
 
-	/*
-	 * If the gray tile hasn't been set up, do it now.
-	 */
-	if(!Gray_Tile) 
-		Gray_Tile = XtGrayPixmap(XtScreen(xw));
 	if (!Check_Tile) {
 	        Check_Normal_Tile = Make_tile(checkMarkWidth, checkMarkHeight,
 		  Check_MarkBits, foreground, background,
