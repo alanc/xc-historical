@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbzerarc.c,v 5.9 89/09/15 13:13:35 rws Exp $ */
+/* $XConsortium: cfbzerarc.c,v 5.10 89/09/17 16:53:54 rws Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -187,8 +187,6 @@ cfbZeroArcSS8Copy(pDraw, pGC, arc)
 	    }
 	    if ((x == info.startx) || (y == info.starty))
 		mask = info.startMask;
-	    if ((x == info.endx) || (y == info.endy))
-		mask = info.endMask;
 	    if (mask & 1)
 		*(yorgb + yoffset + info.xorg + x) = pixel;
 	    if (mask & 2)
@@ -197,6 +195,8 @@ cfbZeroArcSS8Copy(pDraw, pGC, arc)
 		*(yorgob - yoffset + info.xorgo - x) = pixel;
 	    if (mask & 8)
 		*(yorgob - yoffset + info.xorg + x) = pixel;
+	    if ((x == info.endx) || (y == info.endy))
+		mask = info.endMask;
 	    b -= k1;
 	    if (d < 0)
 	    {
@@ -216,10 +216,10 @@ cfbZeroArcSS8Copy(pDraw, pGC, arc)
 	    }
 	}
     }
-    if ((x == info.endx) || (y == info.endy))
-	mask = info.endMask;
     for (; x <= info.w; x++)
     {
+	if ((x == info.startx) || (y == info.starty))
+	    mask = info.startMask;
 	if (mask & 1)
 	    *(yorgb + yoffset + info.xorg + x) = pixel;
 	if (mask & 4)
@@ -231,6 +231,8 @@ cfbZeroArcSS8Copy(pDraw, pGC, arc)
 	    if (mask & 8)
 		*(yorgob - yoffset + info.xorg + x) = pixel;
 	}
+	if (x == info.endx)
+	    mask = info.endMask;
     }
 }
 
