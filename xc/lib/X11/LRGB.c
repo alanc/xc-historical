@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsLRGB.c,v 1.14 91/07/22 16:40:56 rws Exp $" */
+/* $XConsortium: XcmsLRGB.c,v 1.15 91/07/22 16:50:22 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -681,7 +681,7 @@ LINEAR_RGB_InitSCCData(dpy, screenNumber, pPerScrnInfo)
 	    pNewMap->pFreeScreenData = LINEAR_RGB_FreeSCCData;
 	    pNewMap->pNext =
 		    (XcmsIntensityMap *)dpy->cms.perVisualIntensityMaps;
-	    (XcmsIntensityMap *)dpy->cms.perVisualIntensityMaps = pNewMap;
+	    dpy->cms.perVisualIntensityMaps = (XPointer)pNewMap;
 	    dpy->free_funcs->intensityMaps = _XcmsFreeIntensityMaps;
 	}
 
