@@ -1,4 +1,4 @@
-/* $XConsortium: Manage.c,v 1.32 94/04/14 17:32:01 converse Exp $ */
+/* $XConsortium: Manage.c,v 1.33 94/04/17 20:14:28 converse Exp converse $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -283,6 +283,7 @@ void XtManageChildren(children, num_children)
     Widget parent, hookobj;
     XtAppContext app;
 
+    if (num_children == 0) return;
     if (children[0] == NULL) {
 	XtWarningMsg(XtNinvalidChild, XtNxtManageChildren, XtCXtToolkitError,
 		     "null child passed to XtManageChildren",
