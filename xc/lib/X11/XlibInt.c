@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.131 91/01/06 11:48:52 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.132 91/01/08 20:36:19 gildea Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -1444,6 +1444,23 @@ XFree (data)
 {
 	Xfree (data);
 }
+
+#ifdef _XNEEDBCOPYFUNC
+void _Xbcopy(b1, b2, length)
+    register char *b1, *b2;
+    register length;
+{
+    if (b1 < b2) {
+	b2 += length;
+	b1 += length;
+	while (length--)
+	    *--b2 = *--b1;
+    } else {
+	while (length--)
+	    *b2++ = *b1++;
+    }
+}
+#endif
 
 #ifdef DataRoutineIsProcedure
 void Data (dpy, data, len)
