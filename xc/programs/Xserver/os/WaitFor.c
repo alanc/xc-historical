@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: WaitFor.c,v 1.59 93/08/07 11:31:48 rws Exp $ */
+/* $XConsortium: WaitFor.c,v 1.60 93/09/03 13:22:34 dpw Exp $ */
 
 /*****************************************************************
  * OS Depedent input routines:
@@ -262,7 +262,7 @@ WaitForSomething(pClientsReady)
 
 		curclient = ffs (clientsReadable[i]) - 1;
 		client_index = ConnectionTranslation[curclient + (i << 5)];
-#ifdef SYNC
+#ifdef XSYNC
 		/*  We implement "strict" priorities.
 		 *  Only the highest priority client is returned to
 		 *  dix.  If multiple clients at the same priority are
