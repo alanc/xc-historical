@@ -1,5 +1,5 @@
 /*
-* $XConsortium: IntrinsicI.h,v 1.34 89/09/13 15:12:42 swick Exp $
+* $XConsortium: IntrinsicI.h,v 1.35 89/09/13 16:27:26 swick Exp $
 * $oHeader: IntrinsicI.h,v 1.5 88/08/31 16:21:08 asente Exp $
 */
 
@@ -52,6 +52,32 @@ SOFTWARE.
 #define ShellClassFlag		0x20
 #define WMShellClassFlag	0x40
 #define TopLevelClassFlag	0x80
+
+/*
+ * The following macros, though very handy, are not suitable for
+ * IntrinsicP.h as they violate the rule that arguments are to
+ * be evaluated exactly once.
+ */
+
+#define XtDisplayOfObject(object) \
+    ((XtIsWidget(object) ? (object) : _XtWindowedAncestor(object)) \
+     ->core.screen->display)
+
+#define XtScreenOfObject(object) \
+    ((XtIsWidget(object) ? (object) : _XtWindowedAncestor(object)) \
+     ->core.screen)
+
+#define XtWindowOfObject(object) \
+    ((XtIsWidget(object) ? (object) : _XtWindowedAncestor(object)) \
+     ->core.window)
+
+#define XtIsManaged(object) \
+    (XtIsRectObj(object) ? (object)->core.managed : False)
+
+#define XtIsSensitive(object) \
+    (XtIsRectObj(object) ? ((object)->core.sensitive && \
+			    (object)->core.ancestor_sensitive) : False)
+
 
 /****************************************************************
  *
