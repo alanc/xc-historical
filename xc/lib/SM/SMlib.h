@@ -1,4 +1,4 @@
-/* $XConsortium: SMlib.h,v 1.1 93/09/03 13:24:47 mor Exp $ */
+/* $XConsortium: SMlib.h,v 1.2 93/09/03 17:08:36 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -41,18 +41,19 @@ typedef struct _SmsConn *SmsConn;
  */
 
 typedef struct {
-    int		length;
-    SmPointer   value;
+    int		length;		/* length (in bytes) of the value */
+    SmPointer   value;		/* the value */
 } SmPropValue;
 
 typedef struct {
-    char	*name;
-    char	*type;
-    int		num_vals;
-    SmPropValue *vals;
+    char	*name;		/* name of property */
+    char	*type;		/* type of property */
+    int		num_vals;	/* number of values in property */
+    SmPropValue *vals;		/* the values */
 } SmProp;
 
 
+
 /*
  * Client callbacks
  */
@@ -60,7 +61,7 @@ typedef struct {
 typedef void (*SmcSaveYourselfCB) (
 #if NeedFunctionPrototypes
     SmcConn		/* smcConn */,
-    SmPointer		/* callData */,
+    SmPointer		/* clientData */,
     int  		/* saveType */,
     Bool		/* shutdown */,
     int			/* interactStyle */,
@@ -71,28 +72,28 @@ typedef void (*SmcSaveYourselfCB) (
 typedef void (*SmcInteractCB) (
 #if NeedFunctionPrototypes
     SmcConn		/* smcConn */,
-    SmPointer		/* callData */
+    SmPointer		/* clientData */
 #endif
 );
 
 typedef void (*SmcDieCB) (
 #if NeedFunctionPrototypes
     SmcConn		/* smcConn */,
-    SmPointer		/* callData */
+    SmPointer		/* clientData */
 #endif
 );
 
 typedef void (*SmcShutdownCancelledCB) (
 #if NeedFunctionPrototypes
     SmcConn		/* smcConn */,
-    SmPointer		/* callData */
+    SmPointer		/* clientData */
 #endif
 );
 
 typedef void (*SmcPropReplyCB) (
 #if NeedFunctionPrototypes
     SmcConn		/* smcConn */,
-    SmPointer		/* callData */,
+    SmPointer		/* clientData */,
     int			/* numProps */,
     SmProp *		/* props */
 #endif
@@ -100,7 +101,7 @@ typedef void (*SmcPropReplyCB) (
 
 
 /*
- * Callbacks setup at SmcInitialize time
+ * Callbacks set up at SmcInitialize time
  */
 
 typedef struct {
@@ -108,25 +109,6 @@ typedef struct {
     SmcDieCB			die;
     SmcShutdownCancelledCB	shutdown_cancelled;
 } SmcCallbacks;
-
-
-/*
- * Client replies not processed by callbacks (we block for them).
- */
-
-#define SMC_ERROR_REPLY			1
-#define SMC_REGISTER_CLIENT_REPLY	2
-
-typedef struct {
-    int		  	type;
-    int			client_id_len;
-    char		*client_id;
-} SmcRegisterClientReply;
-
-typedef union {
-    int				type;
-    SmcRegisterClientReply	register_client_reply;
-} SmcReply;
 
 
 /*
@@ -145,26 +127,63 @@ typedef struct _SmcPropReplyWait {
  */
 
 struct _SmcConn {
+
+    /*
+     * We use ICE to esablish a connection with the SM.
+     */
+
     IceConn		iceConn;
+
+
+    /*
+     * Major and minor versions of the XSMP.
+     */
+
     int			proto_major_version;
     int			proto_minor_version;
+
+
+    /*
+     * The session manager vendor and release number.
+     */
+
     char		*vendor;
     char		*release;
-    int			client_id_len;
+
+
+    /*
+     * The Client Id uniquely identifies this client to the session manager.
+     */
+
     char		*client_id;
-    SmPointer		call_data;
+
+
+    /*
+     * Client data specified in SmcOpenConnection.  This pointer is passed
+     * to each Smc callback.
+     */
+
+    SmPointer		client_data;
+
+
+    /*
+     * Callback to be invoked when Interact message arrives.
+     */
 
     SmcInteractCB	interact_cb;
 
+
     /*
      * We keep track of all Get Properties sent by the client.  When the
-     * Properties Reply arrives, we remove it from the list.
+     * Properties Reply arrives, we remove it from the list (a FIFO list
+     * is maintained).
      */
 
     _SmcPropReplyWait	*prop_reply_waits;
 };
 
 
+
 /*
  * Session manager callbacks
  */
@@ -172,15 +191,14 @@ struct _SmcConn {
 typedef void (*SmsNewClientCB) (
 #if NeedFunctionPrototypes
     SmsConn 		/* smsConn */,
-    SmPointer *		/* callDataRet */
+    SmPointer *		/* managerDataRet */
 #endif
 );
 
 typedef void (*SmsRegisterClientCB) (
 #if NeedFunctionPrototypes
     SmsConn 		/* smsConn */,
-    SmPointer		/* callData */,
-    int			/* previousIdLen */,
+    SmPointer		/* managerData */,
     char *		/* previousId */				     
 #endif
 );
@@ -188,7 +206,7 @@ typedef void (*SmsRegisterClientCB) (
 typedef void (*SmsInteractRequestCB) (
 #if NeedFunctionPrototypes
     SmsConn		/* smsConn */,
-    SmPointer		/* callData */,
+    SmPointer		/* managerData */,
     int			/* dialogType */
 #endif
 );
@@ -196,7 +214,7 @@ typedef void (*SmsInteractRequestCB) (
 typedef void (*SmsInteractDoneCB) (
 #if NeedFunctionPrototypes
     SmsConn		/* smsConn */,
-    SmPointer		/* callData */,
+    SmPointer		/* managerData */,
     Bool		/* cancelShutdown */
 #endif
 );
@@ -204,7 +222,7 @@ typedef void (*SmsInteractDoneCB) (
 typedef void (*SmsSaveYourselfDoneCB) (
 #if NeedFunctionPrototypes
     SmsConn		/* smsConn */,
-    SmPointer		/* callData */,
+    SmPointer		/* managerData */,
     Bool		/* success */
 #endif
 );
@@ -212,7 +230,7 @@ typedef void (*SmsSaveYourselfDoneCB) (
 typedef void (*SmsCloseConnectionCB) (
 #if NeedFunctionPrototypes
     SmsConn		/* smsConn */,
-    SmPointer		/* callData */,
+    SmPointer		/* managerData */,
     char *		/* locale */,
     int			/* count */,
     char **		/* reasonMsgs */
@@ -222,7 +240,7 @@ typedef void (*SmsCloseConnectionCB) (
 typedef void (*SmsSetPropertiesCB) (
 #if NeedFunctionPrototypes
     SmsConn		/* smsConn */,
-    SmPointer		/* callData */,
+    SmPointer		/* managerData */,
     unsigned long 	/* sequenceRef */,
     int			/* numProps */,
     SmProp *		/* props */
@@ -232,13 +250,13 @@ typedef void (*SmsSetPropertiesCB) (
 typedef void (*SmsGetPropertiesCB) (
 #if NeedFunctionPrototypes
     SmsConn		/* smsConn */,
-    SmPointer		/* callData */
+    SmPointer		/* managerData */
 #endif
 );
 
 
 /*
- * Callbacks setup at SmsInitialize time
+ * Callbacks set up at SmsInitialize time
  */
 
 typedef struct {
@@ -258,17 +276,56 @@ typedef struct {
  */
 
 struct _SmsConn {
+
+    /*
+     * We use ICE to esablish a connection with the client.
+     */
+
     IceConn		iceConn;
+
+
+    /*
+     * Major and minor versions of the XSMP.
+     */
+
     int			proto_major_version;
     int			proto_minor_version;
+
+
+    /*
+     * The vendor and release number of the SMlib used by the client.
+     */
+
     char		*vendor;
     char		*release;
-    int			client_id_len;
+
+
+    /*
+     * The Client Id uniquely identifies this client to the session manager.
+     */
+
     char		*client_id;
-    SmPointer		call_data;
+
+
+    /*
+     * Manager data specified when the SmsNewClientCB callback is invoked.
+     * This pointer is passed to all of the other Sms callbacks.
+     */
+
+    SmPointer		manager_data;
+
+
+    /*
+     * Some state.
+     */
+
+    Bool		save_yourself_in_progress;
+    Bool		waiting_to_interact;
+    Bool		interact_in_progress;
 };
 
 
+
 /*
  * Error handlers
  */
@@ -296,21 +353,213 @@ typedef void (*SmsErrorHandler) (
 );
 
 
+
 /*
  * Function Prototypes
  */
 
-extern SmcConn
-SmcOpenConnection (
+extern Status SmcInitialize (
+#if NeedFunctionPrototypes
+    SmcCallbacks *	/* callbacks */
+#endif
+);
+
+extern SmcConn SmcOpenConnection (
 #if NeedFunctionPrototypes
     char *		/* networkIdsList */,
-    SmPointer		/* callData */,
-    int			/* previousIdLen */,
+    SmPointer		/* clientData */,
     char *		/* previousId */,
-    int *		/* clientIdLenRet */,
     char **		/* clientIdRet */,
     int			/* errorLength */,
     char *		/* errorStringRet */
+#endif
+);
+
+extern void SmcCloseConnection (
+#if NeedFunctionPrototypes
+    SmcConn		/* smcConn */,
+    char *		/* locale */,
+    int			/* count */,
+    char **		/* reasonMsgs */
+#endif
+);
+
+extern void SmcSetProperties (
+#if NeedFunctionPrototypes
+    SmcConn		/* smcConn */,
+    unsigned long 	/* sequenceRef */,
+    int      	        /* numProps */,
+    SmProp *		/* props */
+#endif
+);
+
+extern void SmcGetProperties (
+#if NeedFunctionPrototypes
+    SmcConn		/* smcConn */,
+    SmcPropReplyCB	/* propReplyCB */
+#endif
+);
+
+extern void SmcInteractRequest (
+#if NeedFunctionPrototypes
+    SmcConn		/* smcConn */,
+    int			/* dialogType */,
+    SmcInteractCB	/* interactCB */
+#endif
+);
+
+extern void SmcInteractDone (
+#if NeedFunctionPrototypes
+    SmcConn		/* smcConn */,
+    Bool 		/* cancelShutdown */
+#endif
+);
+
+extern void SmcSaveYourselfDone (
+#if NeedFunctionPrototypes
+    SmcConn		/* smcConn */,
+    Bool		/* success */
+#endif
+);
+
+extern int SmcProtocolVersion (
+#if NeedFunctionPrototypes
+    SmcConn		/* smcConn */
+#endif
+);
+
+extern int SmcProtocolRevision (
+#if NeedFunctionPrototypes
+    SmcConn		/* smcConn */
+#endif
+);
+
+extern char *SmcVendor (
+#if NeedFunctionPrototypes
+    SmcConn		/* smcConn */
+#endif
+);
+
+extern char *SmcRelease (
+#if NeedFunctionPrototypes
+    SmcConn		/* smcConn */
+#endif
+);
+
+extern char *SmcClientID (
+#if NeedFunctionPrototypes
+    SmcConn		/* smcConn */
+#endif
+);
+
+extern IceConn SmcGetIceConnection (
+#if NeedFunctionPrototypes
+    SmcConn		/* smcConn */
+#endif
+);
+
+extern Status SmsInitialize (
+#if NeedFunctionPrototypes
+    char *		/* vendor */,
+    char *		/* release */,
+    SmsCallbacks * 	/* callbacks */
+#endif
+);
+
+extern void SmsRegisterClientReply (
+#if NeedFunctionPrototypes
+    SmsConn		/* smsConn */,
+    char *		/* clientId */
+#endif
+);
+
+extern void SmsSaveYourself (
+#if NeedFunctionPrototypes
+    SmsConn		/* smsConn */,
+    int			/* saveType */,
+    Bool 		/* shutdown */,
+    int			/* interactStyle */,
+    Bool		/* fast */
+#endif
+);
+
+extern void SmsInteract (
+#if NeedFunctionPrototypes
+    SmsConn		/* smsConn */
+#endif
+);
+
+extern void SmsDie (
+#if NeedFunctionPrototypes
+    SmsConn		/* smsConn */
+#endif
+);
+
+extern void SmsShutdownCancelled (
+#if NeedFunctionPrototypes
+    SmsConn		/* smsConn */
+#endif
+);
+
+extern void SmsReturnProperties (
+#if NeedFunctionPrototypes
+    SmsConn		/* smsConn */,
+    int			/* numProps */,
+    SmProp *		/* props */
+#endif
+);
+
+extern void SmsCleanUp (
+#if NeedFunctionPrototypes
+    SmsConn		/* smsConn */
+#endif
+);
+
+extern int SmsProtocolVersion (
+#if NeedFunctionPrototypes
+    SmsConn		/* smsConn */
+#endif
+);
+
+extern int SmsProtocolRevision (
+#if NeedFunctionPrototypes
+    SmsConn		/* smsConn */
+#endif
+);
+
+extern char *SmsVendor (
+#if NeedFunctionPrototypes
+    SmsConn		/* smsConn */
+#endif
+);
+
+extern char *SmsRelease (
+#if NeedFunctionPrototypes
+    SmsConn		/* smsConn */
+#endif
+);
+
+extern char *SmsClientID (
+#if NeedFunctionPrototypes
+    SmsConn		/* smsConn */
+#endif
+);
+
+extern IceConn SmsGetIceConnection (
+#if NeedFunctionPrototypes
+    SmsConn		/* smsConn */
+#endif
+);
+
+extern SmcErrorHandler SmcSetErrorHandler (
+#if NeedFunctionPrototypes
+    SmcErrorHandler 	/* handler */
+#endif
+);
+
+extern SmsErrorHandler SmsSetErrorHandler (
+#if NeedFunctionPrototypes
+    SmsErrorHandler 	/* handler */
 #endif
 );
 
