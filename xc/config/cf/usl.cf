@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: usl.cf,v 1.22 93/09/18 18:34:05 rws Exp $
+XCOMM platform:  $XConsortium: usl.cf,v 1.23 93/09/19 09:49:57 rws Exp $
 
 #define OSName			UNIX System V/386 Release 4.2 Version 1
 XCOMM operating system:  OSName
@@ -17,7 +17,7 @@ XCOMM operating system:  OSName
 #define NeedWidePrototypes	NO	/* experimental */
 #define PatheticCpp		YES
 #define DefaultCCOptions	-Xc
-#define ServerOSDefines		-DSYSV386 -DSVGA -D__USLC__
+#define ServerOSDefines		-DSYSV386 -DXSVGA -D__USLC__
 #define ServerExtraDefines	-DDDXTIME -DDDXOSINIT
 #define XsvgaServer		YES
 #include <sv4Lib.rules>
