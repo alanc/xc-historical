@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.19 90/02/05 22:24:18 jim Exp $
+ * $XConsortium: viewres.c,v 1.20 90/02/05 22:59:02 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -187,17 +187,19 @@ static void initialize_widgetnode_list (listp, sizep, n)
 
 
 static int copydown (start)
-    int start;
+    register int start;
 {
-    WidgetNode **src = &selected_list.elements[start];
-    WidgetNode **dst = src;
-    int skips = 0;
+    register WidgetNode **src = &selected_list.elements[start];
+    register WidgetNode **dst = src;
+    register int cur;
 
-    for (; start < selected_list.n_elements; start++, src++) {
-	if (*src) *dst++ = *src;
-	else skips++;
+    for (cur = start; start < selected_list.n_elements; start++, src++) {
+	if (*src) {
+	    (*src)->selection_index = cur++;
+	    *dst++ = *src;
+	}
     }
-    return skips;
+    return (start - cur);
 }
 
 static void add_to_selected_list (node, updatewidget)
@@ -335,11 +337,12 @@ main (argc, argv)
     int argc;
     char **argv;
 {
-    Widget toplevel, pane, box, viewport;
+    Widget toplevel, pane, box, viewport, dummy;
     XtAppContext app_con;
-    Arg args[1];
+    Arg args[2];
     static XtCallbackRec callback_rec[2] = {{ NULL, NULL }, { NULL, NULL }};
     XtOrientation orient;
+    int i;
 
     ProgramName = argv[0];
 
@@ -358,6 +361,14 @@ main (argc, argv)
     initialize_nodes (widget_list, nwidgets);
 
     topnode = name_to_node (widget_list, nwidgets, Appresources.top_object);
+/*
+    XtSetArg (args[0], XtNwidth, 1);
+    XtSetArg (args[1], XtNheight, 1);
+    dummy = XtCreateWidget ("dummy", widgetClass, toplevel, args, TWO);
+    for (i = 0; i < nwidgets; i++) {
+	initialize_resources (&widget_list[i], dummy, topnode);
+    }
+*/
 
     pane = XtCreateManagedWidget ("pane", panedWidgetClass, toplevel,
 				  NULL, ZERO);
