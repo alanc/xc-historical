@@ -14,8 +14,8 @@ BOOTSTRAPCFLAGS =
 #if BuildServer
 SERVERDIRSTOMAKE = server fonts rgb
 #endif
-        SUBDIRS = include lib extensions $(SERVERDIRSTOMAKE) clients demos \
-			examples util doc
+        SUBDIRS = config include lib extensions $(SERVERDIRSTOMAKE) \
+			clients demos examples util doc
   LNINSTALLDIRS = $(EXTENSIONSRC) $(LIBSRC)
 
 MakeSubdirs($(SUBDIRS))
@@ -116,21 +116,6 @@ CHANGES.ALL::
 	echo "==========================================================="; \
 	done) >$@
 
-
-
-/*
- * special rule for config Makefile
- */
-Makefiles::
-	$(MAKE) config.Makefile NEWTOP=../ MAKEFILE_SUBDIR=config 
-
-config.Makefile:
-	$(RM) $(MAKEFILE_SUBDIR)/Makefile.bak
-	-@if [ -f $(MAKEFILE_SUBDIR)/Makefile ]; then \
-	echo "	$(MV) $(MAKEFILE_SUBDIR)/Makefile $(MAKEFILE_SUBDIR)/Makefile.bak"; \
-	$(MV) $(MAKEFILE_SUBDIR)/Makefile $(MAKEFILE_SUBDIR)/Makefile.bak; \
-	else exit 0; fi
-	cd $(MAKEFILE_SUBDIR); $(IMAKE_CMD) -DTOPDIR=.. -DCURDIR=./config -fImake.file
 
 InstallSubdirs(config)
 
