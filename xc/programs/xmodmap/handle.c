@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: handle.c,v 1.21 89/12/10 19:48:04 jim Exp $
+ * $XConsortium: handle.c,v 1.22 91/01/23 12:20:41 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -66,6 +66,7 @@ char *copy_to_scratch (s, len)
 static badheader ()
 {
     fprintf (stderr, "%s:  %s:%d:  bad ", ProgramName, inputFilename, lineno);
+    parse_errors++;
 }
 
 #define badmsg(what,arg) { badheader(); fprintf (stderr, what, arg); \
@@ -79,15 +80,16 @@ void initialize_map ()
     return;
 }
 
-static int do_keycode(), do_keysym(), finish_keycode(), get_keysym_list();
-static int do_add(), do_remove(), do_clear(), do_pointer();
+static void do_keycode(), do_keysym(), finish_keycode();
+static void do_add(), do_remove(), do_clear(), do_pointer();
+static int get_keysym_list();
 
 int skip_word(), skip_space(), skip_chars();
 
 static struct dt {
     char *command;			/* name of input command */
     int length;				/* length of command */
-    int (*proc)();			/* handler */
+    void (*proc)();			/* handler */
 } dispatch_table[] = {
     { "keycode", 7, do_keycode },
     { "keysym", 6, do_keysym },
@@ -102,18 +104,17 @@ static struct dt {
  * and trailing whitespace removed) and builds up the work queue.
  */
 
-int handle_line (line, len)
+void handle_line (line, len)
     char *line;				/* string to parse */
     int len;				/* length of line */
 {
     int n;
     struct dt *dtp;
-    int status;
 
     n = skip_chars (line, len);
     if (n < 0) {
 	badmsg ("input line '%s'", line);
-	return (-1);
+	return;
     }
 
     for (dtp = dispatch_table; dtp->command != NULL; dtp++) {
@@ -123,14 +124,14 @@ int handle_line (line, len)
 	    n += skip_space (line+n, len-n);
 	    line += n, len -= n;
 
-	    status = (*(dtp->proc)) (line, len);
-	    return (status);
+	    (*(dtp->proc)) (line, len);
+	    return;
 	}
     }
 
     fprintf (stderr, "%s:  unknown command on line %s:%d\n",
 	     ProgramName, inputFilename, lineno);
-    return (-1);
+    parse_errors++;
 }
 
 /*
@@ -303,7 +304,7 @@ static Bool parse_keysym (line, n, name, keysym)
  * listed.
  */
 
-static int do_keycode (line, len)
+static void do_keycode (line, len)
     char *line;
     int len;
 {
@@ -313,7 +314,7 @@ static int do_keycode (line, len)
 
     if (len < 3 || !line || *line == '\0') {  /* 5=a minimum */
 	badmsg ("keycode input line", NULL);
-	return (-1);
+	return;
     }
 
     if (*line == '0') line++, len--, fmt = "%o";
@@ -322,15 +323,15 @@ static int do_keycode (line, len)
     dummy = 0;
     if (sscanf (line, fmt, &dummy) != 1 || dummy == 0) {
 	badmsg ("keycode value", NULL);
-	return (-1);
+	return;
     }
     keycode = (KeyCode) dummy;
     if ((int)keycode < min_keycode || (int)keycode > max_keycode) {
 	badmsg ("keycode value (out of range)", NULL);
-	return (-1);
+	return;
     }
 
-    return (finish_keycode (line, len, keycode));
+    finish_keycode (line, len, keycode);
 }
 
 
@@ -343,7 +344,7 @@ static int do_keycode (line, len)
  * The left keysyms has to be checked for validity and evaluated.
  */
 
-static int do_keysym (line, len)
+static void do_keysym (line, len)
     char *line;
     int len;
 {
@@ -354,17 +355,17 @@ static int do_keysym (line, len)
 
     if (len < 3 || !line || *line == '\0') {  /* a=b minimum */
 	badmsg ("keysym input line", NULL);
-	return (-1);
+	return;
     }
 
     n = skip_chars (line, len);
     if (n < 1) {
 	badmsg ("target keysym name", NULL);
-	return (-1);
+	return;
     }
     if (!parse_keysym(line, n, &tmpname, &keysym)) {
 	badmsg ("keysym target key symbol '%s'", tmpname);
-	return (-1);
+	return;
     }
 
     keycode = XKeysymToKeycode (dpy, keysym);
@@ -378,13 +379,13 @@ static int do_keysym (line, len)
 		    tmpname, (long) keysym, keycode);
 	}
 	badmsg ("keysym target keysym '%s', out of range", tmpname);
-	return (-1);
+	return;
     }
 
-    return (finish_keycode (line, len, keycode));
+    finish_keycode (line, len, keycode);
 }
 
-static int finish_keycode (line, len, keycode)
+static void finish_keycode (line, len, keycode)
     char *line;
     int len;
     KeyCode keycode;
@@ -399,7 +400,7 @@ static int finish_keycode (line, len, keycode)
     
     if (len < 1 || *line != '=') {	/* = minimum */
 	badmsg ("keycode command (missing keysym list),", NULL);
-	return (-1);
+	return;
     }
     line++, len--;			/* skip past the = */
 
@@ -407,16 +408,14 @@ static int finish_keycode (line, len, keycode)
     line += n, len -= n;
 
     /* allow empty list */
-    if (get_keysym_list (line, len, &n, &kslist) < 0 || n < 0) {
-	badmsg ("keycode keysym list", NULL);
-	return (-1);
-    }
+    if (get_keysym_list (line, len, &n, &kslist) < 0)
+	return;
 
     uop = AllocStruct (union op);
     if (!uop) {
 	badmsg ("attempt to allocate a %ld byte keycode opcode",
 		(long) sizeof (struct op_keycode));
-	return (-1);
+	return;
     }
     opk = &uop->keycode;
 
@@ -431,8 +430,6 @@ static int finish_keycode (line, len, keycode)
     /* make sure we handle any special keys */
     check_special_keys (keycode, n, kslist);
 #endif
-
-    return (0);
 }
 
 
@@ -481,7 +478,7 @@ static int parse_modifier (line, n)
  * is not important.  There should also be an alias Ctrl for control.
  */
 
-static int do_add (line, len)
+static void do_add (line, len)
     char *line;
     int len;
 {
@@ -493,42 +490,44 @@ static int do_add (line, len)
 
     if (len < 6 || !line || *line == '\0') {  /* Lock=a minimum */
 	badmsg ("add modifier input line", NULL);
-	return (-1);
+	return;
     }
 
     n = skip_chars (line, len);
     if (n < 1) {
 	badmsg ("add modifier name %s", line);
-	return (-1);
+	return;
     }
 
     modifier = parse_modifier (line, n);
     if (modifier < 0) {
 	badmsgn ("add modifier name '%s', not allowed", line, n);
-	return (-1);
+	return;
     }
 
     line += n, len -= n;
     n = skip_until_char (line, len, '=');
     if (n < 0) {
 	badmsg ("add modifier = keysym", NULL);
-	return (-1);
+	return;
     }
 
     n++;				/* skip = */
     n += skip_space (line+n, len-n);
     line += n, len -= n;
 
-    if (get_keysym_list (line, len, &n, &kslist) < 0 || n <= 0) {
-	badmsg ("add modifier keysym list", NULL);
-	return (-1);
+    if (get_keysym_list (line, len, &n, &kslist) < 0)
+	return;
+    if (n == 0) {
+	badmsg ("add modifier keysym list (empty)", NULL);
+	return;
     }
 
     uop = AllocStruct (union op);
     if (!uop) {
 	badmsg ("attempt to allocate %ld byte addmodifier opcode",
 		(long) sizeof (struct op_addmodifier));
-	return (-1);
+	return;
     }
     opam = &uop->addmodifier;
 
@@ -538,8 +537,6 @@ static int do_add (line, len)
     opam->keysyms = kslist;
 
     add_to_work_queue (uop);
-    
-    return (0);
 }
 
 #ifdef AUTO_ADD_REMOVE
@@ -587,7 +584,7 @@ static void make_add (modifier, keysym)
  * is not important.  There should also be an alias Ctrl for control.
  */
 
-static int do_remove (line, len)
+static void do_remove (line, len)
     char *line;
     int len;
 {
@@ -602,35 +599,37 @@ static int do_remove (line, len)
 
     if (len < 6 || !line || *line == '\0') {  /* Lock=a minimum */
 	badmsg ("remove modifier input line", NULL);
-	return (-1);
+	return;
     }
 
     n = skip_chars (line, len);
     if (n < 1) {
 	badmsg ("remove modifier name %s", line);
-	return (-1);
+	return;
     }
 
     modifier = parse_modifier (line, n);
     if (modifier < 0) {
 	badmsgn ("remove modifier name '%s', not allowed", line, n);
-	return (-1);
+	return;
     }
 
     line += n, len -= n;
     n = skip_until_char (line, len, '=');
     if (n < 0) {
 	badmsg ("remove modifier = keysym", NULL);
-	return (-1);
+	return;
     }
 
     n++;
     n += skip_space (line+n, len-n);
     line += n, len -= n;
 
-    if (get_keysym_list (line, len, &n, &kslist) < 0 || n <= 0) {
-	badmsg ("remove modifier keysym list", NULL);
-	return (-1);
+    if (get_keysym_list (line, len, &n, &kslist) < 0)
+	return;
+    if (n == 0) {
+	badmsg ("remove modifier keysym list (empty)", NULL);
+	return;
     }
 
     /*
@@ -642,7 +641,7 @@ static int do_remove (line, len)
 	badmsg ("attempt to allocate %ld byte keycode list",
 		(long) (n * sizeof (KeyCode)));
 	free ((char *) kslist);
-	return (-1);
+	return;
     }
 
     nc = 0;
@@ -672,7 +671,7 @@ static int do_remove (line, len)
     if (!uop) {
 	badmsg ("attempt to allocate %ld byte removemodifier opcode",
 		(long) sizeof (struct op_removemodifier));
-	return (-1);
+	return;
     }
     oprm = &uop->removemodifier;
 
@@ -682,8 +681,6 @@ static int do_remove (line, len)
     oprm->keycodes = kclist;
 
     add_to_work_queue (uop);
-    
-    return (0);
 }
 
 #ifdef AUTO_ADD_REMOVE
@@ -730,7 +727,7 @@ static void make_remove (modifier, keycode)
  *                       ^
  */
 
-static int do_clear (line, len)
+static void do_clear (line, len)
     char *line;
     int len;
 {
@@ -741,7 +738,7 @@ static int do_clear (line, len)
 
     if (len < 4 || !line || *line == '\0') {  /* Lock minimum */
 	badmsg ("clear modifier input line", NULL);
-	return (-1);
+	return;
     }
 
     n = skip_chars (line, len);
@@ -749,7 +746,7 @@ static int do_clear (line, len)
     modifier = parse_modifier (line, n);
     if (modifier < 0) {
 	badmsgn ("clear modifier name '%s'", line, n);
-	return (-1);
+	return;
     }
     n += skip_space (line+n, len-n);
     if (n != len) {
@@ -761,7 +758,7 @@ static int do_clear (line, len)
     if (!uop) {
 	badmsg ("attempt to allocate %d byte clearmodifier opcode",
 		(long) sizeof (struct op_clearmodifier));
-	return (-1);
+	return;
     }
     opcm = &uop->clearmodifier;
 
@@ -769,8 +766,6 @@ static int do_clear (line, len)
     opcm->modifier = modifier;
 
     add_to_work_queue (uop);
-
-    return (0);
 }
 
 static int strncmp_nocase (a, b, n)
@@ -801,7 +796,7 @@ static int strncmp_nocase (a, b, n)
  *                         ^
  */
 
-static int do_pointer (line, len)
+static void do_pointer (line, len)
     char *line;
     int len;
 {
@@ -817,7 +812,7 @@ static int do_pointer (line, len)
 
     if (len < 2 || !line || *line == '\0') {  /* =1 minimum */
 	badmsg ("buttons input line", NULL);
-	return (-1);
+	return;
     }
 
     nbuttons = XGetPointerMapping (dpy, buttons, MAXBUTTONCODES);
@@ -827,7 +822,7 @@ static int do_pointer (line, len)
 
     if (line[0] != '=') {
 	badmsg ("buttons pointer code list, missing equal sign", NULL);
-	return (-1);
+	return;
     }
 
     line++, len--;			/* skip = */
@@ -843,13 +838,13 @@ static int do_pointer (line, len)
 	    n = skip_word (line, len);
 	    if (n < 1) {
 		badmsg ("skip of word in buttons line:  %s", line);
-		return (-1);
+		return;
 	    }
 	    strval = copy_to_scratch(line, n);
 	    ok = parse_number (strval, &val);
 	    if (!ok || val >= MAXBUTTONCODES) {
 		badmsg ("value %s given for buttons list", strval);
-		return (-1);
+		return;
 	    }
 	    buttons[i++] = (unsigned char) val;
 	    line += n, len -= n;
@@ -860,14 +855,14 @@ static int do_pointer (line, len)
 	badheader ();
 	fprintf (stderr, "number of buttons, must have %d instead of %d\n",
 		 nbuttons, i);
-	return (-1);
+	return;
     }
 
     uop = AllocStruct (union op);
     if (!uop) {
 	badmsg ("attempt to allocate a %ld byte pointer opcode",
 		(long) sizeof (struct op_pointer));
-	return (-1);
+	return;
     }
     opp = &uop->pointer;
 
@@ -878,8 +873,6 @@ static int do_pointer (line, len)
     }
 
     add_to_work_queue (uop);
-
-    return (0);
 }
 
 

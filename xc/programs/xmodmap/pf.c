@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: pf.c,v 1.2 88/09/06 17:33:39 jim Exp $
+ * $XConsortium: pf.c,v 1.3 91/07/17 21:14:23 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -28,13 +28,11 @@
 char *inputFilename = NOTINFILEFILENAME;
 int lineno = 0;
 
-int process_file (filename, errorsp)
+void process_file (filename)
     char *filename;			/* NULL means use stdin */
-    int *errorsp;
 {
     FILE *fp;
     char buffer[BUFSIZ];
-    int status;
 
     /* open the file, eventually we'll want to pipe through cpp */
 
@@ -46,8 +44,8 @@ int process_file (filename, errorsp)
 	if (!fp) {
 	    fprintf (stderr, "%s:  unable to open file '%s' for reading\n",
 		     ProgramName, filename);
-	    *errorsp += 1;
-	    return (-1);
+	    parse_errors++;
+	    return;
 	}
 	inputFilename = filename;
     }
@@ -59,27 +57,21 @@ int process_file (filename, errorsp)
 	printf ("! %s:\n", inputFilename);
     }
 
-    status = 0;
     for (lineno = 0; ; lineno++) {
 	buffer[0] = '\0';
 	if (fgets (buffer, BUFSIZ, fp) == NULL)
 	  break;
 
-	if (process_line (buffer) < 0) {
-	  *errorsp += 1;
-	  status = -1;
-      }
+	process_line (buffer);
     }
 
     inputFilename = NOTINFILEFILENAME;
     lineno = 0;
     (void) fclose (fp);
-
-    return (status);
 }
 
 
-int process_line (buffer)
+void process_line (buffer)
     char *buffer;
 {
     int len;
@@ -92,11 +84,11 @@ int process_line (buffer)
 	register char c = buffer[i];
 	if (!(isspace(c) || c == '\n')) break;
     }
-    if (i == len) return (0);
+    if (i == len) return;
 
     cp = &buffer[i];
 
-    if (*cp == '!') return (0);		/* look for comments */
+    if (*cp == '!') return;		/* look for comments */
     len -= (cp - buffer);		/* adjust len by how much we skipped */
 
 					/* pipe through cpp */
@@ -113,6 +105,5 @@ int process_line (buffer)
     }
 
     /* handle input */
-    return (handle_line (cp, len));
+    handle_line (cp, len);
 }
-

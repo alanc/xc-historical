@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: xmodmap.h,v 1.5 88/10/08 14:18:12 jim Exp $
+ * $XConsortium: xmodmap.h,v 1.6 88/10/08 15:14:54 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -25,11 +25,12 @@ extern Bool verbose;
 extern Bool dontExecute;
 extern char *inputFilename;
 extern int lineno;
+extern int parse_errors;
 
 extern void initialize_map ();
-extern int process_file ();
-extern int process_line ();
-extern int handle_line ();
+extern void process_file ();
+extern void process_line ();
+extern void handle_line ();
 extern void print_opcode ();
 extern void print_work_queue ();
 extern int execute_work_queue ();

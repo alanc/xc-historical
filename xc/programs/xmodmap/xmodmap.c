@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: xmodmap.c,v 1.18 89/12/10 19:48:08 jim Exp $
+ * $XConsortium: xmodmap.c,v 1.19 91/07/17 21:14:14 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -101,13 +101,15 @@ void grammar_usage ()
     Exit (0);
 }
 
+int parse_errors = 0;
+
 main (argc, argv)
     int argc;
     char **argv;
 {
     int i;
     char *displayname = NULL;
-    int status, errors;
+    int status;
     Bool printMap = False;
     Bool printKeyTable = False;
     Bool printPointerMap = False;
@@ -143,7 +145,6 @@ main (argc, argv)
      */
 
     status = 0;
-    errors = 0;
     for (i = 1; i < argc; i++) {
 	char *arg = argv[i];
 
@@ -164,7 +165,7 @@ main (argc, argv)
 	      case 'e':			/* -e expression */
 		didAnything = True;
 		if (++i >= argc) usage ();
-		if (process_line (argv[i]) != 0) errors++;
+		process_line (argv[i]);
 		continue;
 	      case 'p':			/* -p... */
 		switch (arg[2]) {
@@ -189,7 +190,7 @@ main (argc, argv)
 		/*NOTREACHED*/
 	      case '\0':		/* - (use standard input) */
 		didAnything = True;
-		process_file (NULL, &errors);
+		process_file (NULL);
 		continue;
 
 	      /*
@@ -197,15 +198,15 @@ main (argc, argv)
 	       */
 	      case 'S':
 		didAnything = True;
-		if (process_line ("clear shift") != 0) errors++;
+		process_line ("clear shift");
 		continue;
 	      case 'L':
 		didAnything = True;
-		if (process_line ("clear lock") != 0) errors++;
+		process_line ("clear lock");
 		continue;
 	      case 'C':
 		didAnything = True;
-		if (process_line ("clear control") != 0) errors++;
+		process_line ("clear control");
 		continue;
 	      case '1':
 	      case '2':
@@ -214,7 +215,7 @@ main (argc, argv)
 	      case '5': {
 		  char *cmd = "clear modX";
 		  cmd[9] = arg[1];
-		  if (process_line (cmd) != 0) errors++;
+		  process_line (cmd);
 		  continue;
 	      }
 	      case 's':
@@ -227,7 +228,7 @@ main (argc, argv)
 				  ((arg[1] == 's') ? "shift" :
 				   ((arg[1] == 'l') ? "lock" :
 				    "control")), argv[i]);
-		  if (process_line (cmd) != 0) errors++;
+		  process_line (cmd);
 		  continue;
 	      }
 	      default:
@@ -246,7 +247,7 @@ main (argc, argv)
 		  if (++i >= argc) usage ();
 
 		  (void) sprintf (cmd, "add mod%c = %s", arg[1], argv[i]);
-		  if (process_line (cmd) != 0) errors++;
+		  process_line (cmd);
 		  continue;
 	      }
 	      case 'S':
@@ -264,7 +265,7 @@ main (argc, argv)
 				  ((arg[1] == 's') ? "shift" :
 				   ((arg[1] == 'l') ? "lock" :
 				    "control")), argv[i]);
-		  if (process_line (cmd) != 0) errors++;
+		  process_line (cmd);
 		  continue;
 	      }
 	      default:
@@ -272,7 +273,7 @@ main (argc, argv)
 	    }
 	} else {
 	    didAnything = True;
-	    process_file (arg, &errors);
+	    process_file (arg);
 	    continue;
 	}
     }					/* end for loop */
@@ -290,9 +291,9 @@ main (argc, argv)
 	Exit (0);
     }
 
-    if (errors != 0) {
+    if (parse_errors != 0) {
 	fprintf (stderr, "%s:  %d errors encountered, aborting.\n",
-		 ProgramName, errors);
+		 ProgramName, parse_errors);
     } else {
 	status = execute_work_queue ();
     }
