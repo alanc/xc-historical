@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.73 90/07/11 17:20:37 rws Exp $
+ * $XConsortium: resize.c,v 1.74 90/07/16 11:58:05 rws Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.73 90/07/11 17:20:37 rws Exp $";
+"$XConsortium: resize.c,v 1.74 90/07/16 11:58:05 rws Exp $";
 #endif
 
 #include <stdio.h>
@@ -448,7 +448,7 @@ EndResize()
 
     UninstallRootColormap();
 
-    ResizeWindow = NULL;
+    ResizeWindow = None;
 }
 
 /***********************************************************************
