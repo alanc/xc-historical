@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.70 91/02/01 16:33:36 gildea Exp $
+ * $XConsortium: XConnDis.c,v 11.71 91/02/02 17:19:37 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -421,15 +421,6 @@ static int MakeDECnetConnection (phostname, idisplay, retries,
 
 #ifdef UNIXCONN
 #include <sys/un.h>
-
-#ifndef X_UNIX_PATH
-#ifdef hpux
-#define X_UNIX_PATH "/usr/spool/sockets/X11/"
-#define OLD_UNIX_PATH "/tmp/.X11-unix/X"
-#else
-#define X_UNIX_PATH "/tmp/.X11-unix/X"
-#endif
-#endif /* X_UNIX_PATH */
 
 static int MakeUNIXSocketConnection (phostname, idisplay, retries,
 				     familyp, saddrlenp, saddrp)
