@@ -11,7 +11,7 @@
 .if n .sp 1
 .if t .sp .5
 ..
-.TH XMODMAP 1 "1 March 1988" "X Version 11"
+.TH XMODMAP 1 "25 October 1988" "X Version 11"
 .SH NAME
 xmodmap - utility for modifying keymaps in X
 .SH SYNOPSIS
@@ -127,7 +127,7 @@ code of 1, button 2 generates a 2, etc.).
 This sets to pointer map to contain the indicated button codes.  The list
 always starts with the first physical button.
 .PP
-Lines that begin with an exclamation mark (!) are taken as comments.
+Lines that begin with an exclamation point (!) are taken as comments.
 .PP
 If you want to change the binding of a modifier key, you must also remove it
 from the appropriate modifier map.
@@ -245,10 +245,10 @@ mess up your mappings.
 .SH COPYRIGHT
 Copyright 1988, Massachusetts Institute of Technology.
 .br
-Copyright 1987 Sun Microsystems,  Inc.
+Copyright 1987 Sun Microsystems, Inc.
 .br
 See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHOR
 Jim Fulton, MIT X Consortium, rewritten from an original by 
-David Rosenthal of Sun Microsystems
+David Rosenthal of Sun Microsystems.
 
