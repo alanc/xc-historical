@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: hp.cf,v 1.57 93/02/06 14:54:07 rws Exp $
+XCOMM platform:  $XConsortium: hp.cf,v 1.58 93/08/07 18:28:44 rws Exp $
 
 #define OSName                 HP-UX 9.1
 XCOMM operating system:  OSName
@@ -33,6 +33,7 @@ XCOMM operating system:  OSName
 #define ExecableScripts        YES
 #define HasSockets             YES
 #define HasVFork               YES
+#define HasPoll                YES
 #define RemoveTargetProgramByMoving YES
 #define ExpandManNames         YES
 #define HasPutenv              YES
