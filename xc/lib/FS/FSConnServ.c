@@ -1,4 +1,4 @@
-/* $XConsortium: FSConnServ.c,v 1.18 93/08/20 16:28:53 rws Exp $ */
+/* $XConsortium: FSConnServ.c,v 1.19 93/08/22 12:04:13 rws Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices;
@@ -33,6 +33,7 @@
 #include	<fcntl.h>
 #endif
 #ifdef WIN32
+#define ioctl ioctlsocket
 #define EPROTOTYPE WSAEPROTOTYPE
 #define ECHECK(err) (WSAGetLastError() == err)
 #define ESET(val) WSASetLastError(val)
