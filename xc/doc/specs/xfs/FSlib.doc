@@ -1,3 +1,5 @@
+$XConsortium$
+
 Protocol requests
 
 These functions make protocol requests corresponding to their names.
@@ -46,7 +48,12 @@ FSListFonts(svr, pattern, maxNames, actualCount)
 
 Returns the full names of the fonts matching pattern.  Up to maxNames
 names will be returned.  The actual value number be placed in
-actualCount.
+actualCount.  The return value should be freed with FSFreeFontNames.
+
+FSFreeFontNames(list)
+    char    **list
+
+Frees the list of font names returned by FSListFonts.
 
 char      **
 FSListWithXInfo(svr, pattern, maxNames, actualCount, info, pprops, offsets,
