@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.100 89/10/17 18:40:07 jim Exp $
+ * $XConsortium: charproc.c,v 1.101 89/10/17 18:49:47 jim Exp $
  */
 
 
@@ -140,7 +140,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.100 89/10/17 18:40:07 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.101 89/10/17 18:49:47 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -1955,29 +1955,10 @@ static void VTInitialize (request, new)
    new->misc.titeInhibit = request->misc.titeInhibit;
 
     /*
-     * set the colors if reverse video; this is somewhat tricky since
-     * there are 5 colors:
-     *
-     *     background - paper		white
-     *     foreground - text		black
-     *     border - border			black (foreground)
-     *     textcursor - block		black (foreground)
-     *     mousecursor - mouse		black (foreground)
-     *
+     * The definition of -rv now is that it changes the definition of 
+     * XtDefaultForeground and XtDefaultBackground.  So, we no longer
+     * need to do anything special.
      */
-    if (new->misc.re_verse) {
-	unsigned long fg = new->screen.foreground;
-	unsigned long bg = new->core.background_pixel;
-	unsigned long tmp = new->screen.mousecolor;
-
-	if (new->screen.cursorcolor == fg) new->screen.cursorcolor = bg;
-	if (new->core.border_pixel == fg) new->core.border_pixel = bg;
-	new->screen.foreground = bg;
-	new->core.background_pixel = fg;
-	new->screen.mousecolor = new->screen.mousecolorback;
-	new->screen.mousecolorback = tmp;
-    }	
-
    new->keyboard.flags = 0;
    new->screen.display = new->core.screen->display;
    new->core.height = new->core.width = 1;
@@ -2139,9 +2120,6 @@ XSetWindowAttributes *values;
         screen->fullVwin.width = width - i;
         screen->fullVwin.height = height - j;
 
-	if (term->misc.re_verse && (term->core.border_pixel == term->core.background_pixel))
-		values->border_pixel = term->core.border_pixel = term->screen.foreground;
-	
 	values->bit_gravity = NorthWestGravity;
 	term->screen.fullVwin.window = term->core.window =
 	  XCreateWindow(XtDisplay(term), XtWindow(term->core.parent),
