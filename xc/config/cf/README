@@ -143,7 +143,7 @@ Project.tmpl provides defaults for the following variables:
 	InstallLibManPages	boolean for installing library man pages
 	InstallXdmConfig	boolean for installing xdm config files
 	InstallXinitConfig	boolean for installing xinit config files
-	LibDir			directory in which to install X11 data files
+	LibDir			directory in which to install X11 support files
 	LibManSuffix		man suffix for library pages
 	LibmanDir		directory in which to install library man pages
 	LintlibDir		directory in which to install lint libs
