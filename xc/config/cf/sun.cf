@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.106 93/12/13 15:15:13 kaleb Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.107 93/12/28 14:39:56 kaleb Exp $
 
 #ifdef SVR4
 #define OSName            SunOS 5.3
@@ -53,6 +53,7 @@ XCOMM operating system:  OSName
 #define HasLdRunPath      YES
 #define HasVFork          NO
 #define InstKmemFlags	  -g sys -m 2755
+#define ShLibIncludeFile <sunLib.tmpl>
 #include <sv4Lib.rules>
 #else
 #define InstKmemFlags	  -g kmem -m 2755
