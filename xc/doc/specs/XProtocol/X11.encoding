@@ -502,7 +502,7 @@ SETofEVENT
 	#x00400000	PropertyChange
 	#x00800000	ColormapChange
 	#x01000000	OwnerGrabButton
-	#xfe000000	unused but must be zero
+	#xFE000000	unused but must be zero
 .De
 .LP
 .Ds 0
@@ -511,7 +511,7 @@ SETofEVENT
 .R
 SETofPOINTEREVENT
 	encodings are the same as for SETofEVENT, except with
-	#xffff8003	unused but must be zero
+	#xFFFF8003	unused but must be zero
 .De
 .LP
 .Ds 0
@@ -520,7 +520,7 @@ SETofPOINTEREVENT
 .R
 SETofDEVICEEVENT
 	encodings are the same as for SETofEVENT, except with
-	#xffffc0b0	unused but must be zero
+	#xFFFFC0B0	unused but must be zero
 .De
 KEYSYM: CARD32
 .LP
@@ -546,7 +546,7 @@ SETofKEYBUTMASK
 	#x0400	Button3
 	#x0800	Button4
 	#x1000	Button5
-	#xe000	unused but must be zero
+	#xE000	unused but must be zero
 .De
 .LP
 .Ds 0
@@ -555,7 +555,7 @@ SETofKEYBUTMASK
 .R
 SETofKEYMASK
 	encodings are the same as for SETofKEYBUTMASK, except with
-	#xff00		unused but must be zero
+	#xFF00		unused but must be zero
 .De
 .LP
 STRING8: LISTofCARD8
@@ -3113,7 +3113,7 @@ Requests
 		#x01	do-red (1 is True, 0 is False)
 		#x02	do-green (1 is True, 0 is False)
 		#x04	do-blue (1 is True, 0 is False)
-		#xf8	unused
+		#xF8	unused
 	1			unused
 .De
 .LP
@@ -3127,7 +3127,7 @@ Requests
 		#x01	do-red (1 is True, 0 is False)
 		#x02	do-green (1 is True, 0 is False)
 		#x04	do-blue (1 is True, 0 is False)
-		#xf8	unused
+		#xF8	unused
 	2	4+(n+p)/4		request length
 	4	COLORMAP		cmap
 	4	CARD32		pixel
@@ -3924,7 +3924,7 @@ Events
 	1			same-screen, focus
 		#x01	focus (1 is True, 0 is False)
 		#x02	same-screen (1 is True, 0 is False)
-		#xfc	unused
+		#xFC	unused
 .De
 .LP
 .Ds 0
@@ -3957,7 +3957,7 @@ Events
 	1			same-screen, focus
 		#x01	focus (1 is True, 0 is False)
 		#x02	same-screen (1 is True, 0 is False)
-		#xfc	unused
+		#xFC	unused
 .De
 .LP
 .Ds 0
