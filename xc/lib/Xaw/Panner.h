@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.h,v 1.18 90/03/08 10:52:40 jim Exp $
+ * $XConsortium: Panner.h,v 1.19 90/03/09 14:13:28 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -44,7 +44,7 @@
  *  backgroundStipple	BackgroundStipple	String	NULL
  *  canvasWidth		CanvasWidth	Dimension	0
  *  canvasHeight	CanvasHeight	Dimension	0
- *  defaultScale	DefaultScale	Dimension	5 percent
+ *  defaultScale	DefaultScale	Dimension	8 percent
  *  foreground		Foreground	Pixel		XtDefaultBackground
  *  internalSpace	InternalSpace	Dimension	4
  *  lineWidth		LineWidth	Dimension	0
