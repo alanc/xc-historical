@@ -12,64 +12,76 @@
 #define ERROR -1
 #define INTERRUPT -2
 
+#define min(x,y) (((x) > (y)) ? (y) : (x))
+
 extern int errno;
 
 
-int c_check_bytes(fd, how_many)
-    int fd, how_many;
+int c_howmany_bytes(fd)
+    int fd;
 {
     int numavail;
 
     if (ioctl(fd, FIONREAD, (char *)&numavail) < 0) {
-	perror("c_check_bytes");
 	return (ERROR);
     }
 
-    if (numavail >= how_many)
-	return (1);
-    else
-	return (0);
+    return (numavail);
 }
 
 	   
 /*
- * Tries to read (end-start) characters into array at position start.
- * This routine may only be called when enough data is available on the socket,
- * otherwise we will block, which will prevent lisp from ever getting
- * control again.  Return ERROR on eof or error.
+ * Tries to read length characters into array at position start.  Note that
+ * this function never blocks.  Return ERROR on eof or error.
  */
-
-int c_read_bytes(fd, array, start, end)
-    int fd, start, end;
-    unsigned char *array;
+int c_read_bytes(fd, array, start, length)
+    register int fd, start, length;
+    register unsigned char *array;
 
 {
-    int numwanted;
+    register int numread, numavail, totread = 0;
 
-    numwanted = end - start;
-    if (read(fd, (char *)&array[start], numwanted) < numwanted)
+    numavail = c_howmany_bytes(fd);
+
+    if (numavail <= 0) {
+	return (numavail);
+    } else {
+	while (numavail > 0) {
+	    numread = read(fd, (char *)&array[start], min(numavail, length));
+	    if (numread <= 0) {
 	return (ERROR);
-    else
-	return (numwanted);
+	    } else {
+		totread += numread;
+		length -= numread;
+		start += numread;
+	    }
+	    if (length == 0) {
+		return (totread);
+	    } else {
+		numavail = c_howmany_bytes(fd);
+	    }
+}
+    }
+    return (totread);
 }
 
 
 /*
  * This is somewhat gross.  When the scheduler is not running we must provide
  * a way for the user to interrupt the read from the X socket from lisp.  So
- * we provide a separate reading function.
+ * we provide a separate reading function.  Don't return until the
+ * full number of bytes have been read.
  */
-
-int c_read_bytes_interruptible(fd, array, start, end)
-    int fd, start, end;
+int c_read_bytes_interruptible(fd, array, start, length)
+    int fd, start, length;
     unsigned char *array;
 
 {
-    int numwanted, i, readfds;
+    int numwanted, i, readfds, numread;
 
     readfds = 1 << fd;
-    numwanted = end - start;
 
+    while (length > 0) {
     i = select(32, &readfds, (int *)0, (int *)0, (struct timeval *)0);
     if (i < 0)
 	/* error condition */
@@ -78,10 +90,15 @@ int c_read_bytes_interruptible(fd, array, start, end)
 	else
 	    return (ERROR);
 
-    if (read(fd, (char *)&array[start], numwanted) < numwanted)
+	numread = read(fd, (char *)&array[start], length);
+	if (numread <= 0)
 	return (ERROR);
-    else
-	return (numwanted);
+	else {
+	    length -= numread;
+	    start += numread;
+	}
+    }
+    return (0);
 }
 
 
@@ -90,6 +107,7 @@ int c_read_bytes_interruptible(fd, array, start, end)
 
 static unsigned char output_buffer[OBSIZE];
 static int obcount = 0;
+
 
 /*
  * The inverse of above, which is simpler because there's no timeout. 
@@ -117,6 +135,7 @@ int c_write_bytes(fd, array, start, end)
 
     return (numwanted);
 }
+
 
 int c_flush_bytes(fd)
     int fd;

@@ -20,7 +20,7 @@ CFLAGS	= -O -DUNIXCONN
 
 # Lisp optimization for compiling
 SPEED	= 3
-SAFETY	= 1
+SAFETY	= 0
 
 
 C_SRC	= excldep.c socket.c

@@ -276,7 +276,10 @@
 		   (:copier nil))
   ;; Lock for multi-processing systems
   (lock (make-process-lock))
+#-excl
   (output-stream nil :type (or null stream))
+#+excl
+  (output-stream -1 :type fixnum)
   ;; Buffer size
   (size 0 :type array-index)
   ;; Buffer size minus request size
@@ -300,7 +303,10 @@
   ;; Holding buffer for 16-bit text
   (tbuf16 (make-sequence 'buffer-text16 *buffer-text16-size* :initial-element 0))
   ;; Probably EQ to Output-Stream
+#-excl
   (input-stream nil :type (or null stream))
+#+excl
+  (input-stream -1 :type fixnum)
   ;; Buffer for replies
   (reply-buffer nil :type (or null reply-buffer))
   ;; T when the host connection has gotten errors

@@ -878,20 +878,16 @@
       (error "Cannot connect to server: ~A:~D" host display))))
 
 #+excl
+;;
+;; Note that since we don't use the CL i/o facilities to do i/o, the display
+;; input and output "stream" is really a file descriptor (fixnum).
+;;
 (defun open-x-stream (host display protocol)
   (declare (ignore protocol));; unused
-  (let ((fd (connect-to-server host display))
-	stm)
+  (let ((fd (connect-to-server (string host) display)))
     (when (minusp fd)
       (error "Failed to connect to server: ~A ~D" host display))
-    (setf stm (excl::make-vanilla-stream))
-    (excl::set-stream-fields
-     stm
-     excl::_sm_type :X-socket-stream
-     excl::_sm_flags #.(+ (comp:mdparam 'comp::md-stream-flag-input-p)
-			  (comp:mdparam 'comp::md-stream-flag-output-p))
-     excl::_sm_fio-name fd)
-    stm))
+    fd))
 
 ;;; buffer-read-default - read data from the X stream
 
@@ -924,69 +920,105 @@
 (defparameter *read-whostate* "blocked on read from X server")
 
 #+excl
-(defun listen-fd (fd howmany)
-  (declare (type fixnum fd howmany))
+(defun listen-fd (fd)
+  "nil if no bytes available, t on bytes available or error"
+  (declare (type fixnum fd))
   (declare-buffun)
-  (case (c-check-bytes fd howmany)
-    (0 nil)
-    (1 t)
-    ;; Error -- let it be detected by the read.
-    (-1 t)))
+  (not (zerop (the fixnum (c-howmany-bytes fd)))))
 
 #+excl
+(defmacro with-interrupt-checking-on (&body body)
+  `(locally (declare (optimize (safety 1)))
+     ,@body))
+
+#+excl
+;;
+;; Changed 10/10/88 to not wait for all characters to be available before
+;; going out to C to do the read.  This is because the X server *does* try
+;; to write out the full request at once, but the kernel (on the sun4/4.0, at
+;; least) apparently doesn't guarantee writing at least 4096 bytes to the
+;; socket. (In my test case it wrote 3987 bytes, a very strange number indeed).
+;;
 (defun buffer-read-default (display vector start end timeout)
   (declare (type display display)
 	   (type buffer-bytes vector)
 	   (type array-index start end)
 	   (type (or null number) timeout))
   (declare-buffun)
-  (let ((howmany (- end start))
-	(fd (excl::_sm_fio-name (display-input-stream display))))
     
-    ;; If there are enough available just read them.
-    (cond ((listen-fd fd howmany)
-	   (minusp (c-read-bytes fd vector start end)))
+  (let* ((howmany (- end start))
+	 (fd (display-input-stream display))
+	 (numread (c-read-bytes fd vector start howmany)))
+    (declare (fixnum howmany fd numread))
 	  
+    (cond ((minusp numread)
+	   t)					;; error
+	  ((eql numread howmany)
+	   nil)					;; success
+	  (t
+	   ;; We were able to read some or none of the request.
+	   (when (> numread 0)
+	     (decf howmany numread)
+	     (incf start numread))
+	   
+	   (cond ((and timeout (zerop timeout))
  	  ;; If there aren't enough and timeout == 0, timeout.
-	  ((and timeout (zerop timeout))
 	   :timeout)
 	  
- 	  ;; Otherwise if the scheduler is running let it handle timeouts
+		 ;; Otherwise if the scheduler is running let it do timeouts.
 	  ((excl::scheduler-running-p)
 	   (unwind-protect
 		(progn
 		  (mp::mpwatchfor fd)
+			 (do ()
+			     ((zerop howmany) nil)
 		  (if (null timeout)
 		      (mp::process-wait *read-whostate*
-				       #'listen-fd fd howmany)
+						 #'listen-fd fd)
 		    ;; Otherwise we have a timeout to wait for.
 		    ;; This doesn't work under 2.0.
 		    #+allegro
 		    (if (eql (mp::process-wait-with-timeout
 			      *read-whostate* timeout
-			      #'listen-fd fd howmany)
+				       #'listen-fd fd)
 			     'mp::with-timeout-internal)
 			(return-from buffer-read-default :timeout))
 		    #-allegro
 		    (mp::process-wait *read-whostate*
-				     #'listen-fd fd howmany)))
-	     (mp::mpunwatchfor fd))
-	   ;; Now the read will succeed.
-	   (minusp (c-read-bytes fd vector start end)))
+					       #'listen-fd fd))
+			   ;; Now there are more characters available.
+			   (setq numread
+			     (c-read-bytes fd vector start howmany))
+			   (if (minusp numread)
+			       (return-from buffer-read-default t))   ;; error
+			   (decf howmany numread)
+			   (incf start numread)))
+		    (mp::mpunwatchfor fd)))
 	  
-	  ;; Otherwise we have to handle timeouts by hand, and call a special
- 	  ;; c read function that will return on interrupt.
+		 ;; Otherwise we have to handle timeouts by hand, and call a
+		 ;; special c read function that will return on interrupt.
 	  (t
+		  (with-interrupt-checking-on 
 	   (if (null timeout)
-	       (do ((status (c-read-bytes-interruptible fd vector start end)
-			    (c-read-bytes-interruptible fd vector start end)))
-		   ((null (eql status -2)) (minusp status)))
+			(do ()
+			    ((zerop howmany) nil)
+			  (setq numread (c-read-bytes-interruptible
+					 fd vector start howmany))
+			  (excl:if* (plusp numread)
+			     then (decf howmany numread)
+				  (incf start numread)
+			   elseif (eql numread -1)
+			     then (return-from buffer-read-default t))) ; error
+		    
+		      ;; Otherwise there is a timed timeout. This is a hack. XX
 	     (dotimes (i (round timeout) :timeout)
-	       (if (null (listen-fd fd howmany))
+			(declare (fixnum i))
+			(if (null (listen-fd fd))
 		   (sleep 1)
 		 (return-from buffer-read-default
-		   (minusp
-		     (c-read-bytes fd vector start end))))))))))
+			    (minusp (the fixnum
+					 (c-read-bytes fd vector start howmany)
+					 )))))))))))))
 
 ;;; WARNING:
 ;;;	CLX performance will suffer if your lisp uses read-byte for
@@ -1053,8 +1085,8 @@
 	   (type display display)
 	   (type array-index start end))
   (declare-buffun)
-  (if (minusp (c-write-bytes (excl::_sm_fio-name (display-output-stream display))
-			     vector start end))
+  (if (minusp (the fixnum (c-write-bytes (display-output-stream display)
+					 vector start end)))
       (error "X write failed:  socket dead!")))
 
 ;;; WARNING:
@@ -1084,8 +1116,7 @@
 (defun buffer-force-output-default (display)
   ;; The default buffer force-output function for use with common-lisp streams
   (declare (type display display))
-  (if (minusp
-	(c-flush-bytes (excl::_sm_fio-name (display-output-stream display))))
+  (if (minusp (the fixnum (c-flush-bytes (display-output-stream display))))
       (error "X write failed:  socket dead!")))
 
 #-excl
@@ -1102,10 +1133,7 @@
   ;; The default buffer close function for use with common-lisp streams
   (declare (type display display))
   (declare-buffun)
-  (let ((stream (display-output-stream display)))
-    (excl::filesys-checking-close (excl::_sm_fio-name stream))
-    (setf (excl::sm_flags stream) (logior (excl::sm_flags stream) #.(comp::mdparam 'comp::md-stream-flag-closed)))
-    (excl::st-close-down-stream stream)))
+  (excl::filesys-checking-close (display-output-stream display)))
 
 #-excl
 (defun buffer-close-default (display &key abort)
