@@ -1,4 +1,4 @@
-/* $XConsortium: VarCreate.c,v 1.29 94/03/30 20:30:56 converse Exp $ */
+/* $XConsortium: VarCreate.c,v 1.30 94/04/17 20:15:01 converse Exp $ */
 
 /*
 
@@ -467,7 +467,7 @@ Widget XtVaOpenApplication(app_context_return, application_class, options,
 {
     va_list	var;
 
-    Va_start(var, fallback_resources);    
+    Va_start(var, widget_class);    
     return _XtVaOpenApplication(app_context_return, (String)application_class,
 				options, num_options, argc_in_out, argv_in_out,
 				fallback_resources, widget_class, var);
