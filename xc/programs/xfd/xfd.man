@@ -3,66 +3,8 @@
 xfd - X window system font displayer
 .SH SYNOPSIS
 .B xfd
-[ -geometry \fIgeometry\fP ] [ -display \fIhost\fP:\fInumber\fP ] 
-[ options ] [ fontname ]
-.SH DESCRIPTION
-.I Xfd
-creates a window which displays the characters in the named font.  The
-characters are displayed in increasing order from left to right and top to
-bottom.  The first character displayed at the top left will be character
-number 0 unless the -start option has been supplied in which case the
-character with the number given in the -start option will be used.
-.PP
-The characters are displayed in a grid of boxes, each large enough to hold any
-character of the font.
-If the -gray option has been supplied, the characters will be displayed using
-XDrawImageString using the foreground and background colors on a
-gray background.  This permits determining exactly how XDrawImageString will
-draw any given character.  If -gray has not been supplied, the characters will
-simply be drawn using the foreground color on the background color.
-.PP
-All the characters in the font may not fit in the window at once.
-To see additional characters, click the right mouse button on the window.
-This will cause the next window full of characters to be displayed.
-Clicking the left mouse button on the window will cause the previous
-window full of characters to be displayed.
-.I Xfd
-will beep if an attempt is made to go back past the 0th character.
-.PP
-Note that if the font is a 8 bit font, the characters 256-511 (0x100-0x1ff),
-512-767 (0x200-0x2ff), ... 
-will display exactly the same as the characters 0-255 (0x00-0xff).
-.I Xfd
-by default creates a window of size sufficient to display the first 256
-characters using a 16 by 16 grid.  In this case, there is no need to scroll
-forward or backward window fulls in order to see the entire contents of a 8 bit
-font.  Of course, this window may very well not fit on the screen...
-.PP
-Clicking the middle button on a character will cause that character's
-number to be displayed in both decimal and hexidecimal at the bottom of the
-window.  If verbose mode is selected, additional information about that
-particular character will be displayed as well.  The displayed information
-includes the width of the character, its left bearing, right bearing, ascent,
-and its descent.  If verbose mode is selected, typing '<' or '>' into the
-window will display the minimum or maximum values respectively 
-taken on by each of these fields over the entire font.
-.PP
-The font name is interpreted by the X server.
-To obtain a list of all the fonts available, use xlsfonts.
-On a VAX, if the name
-does not begin with ``/'', the X server adds the suffix ``.snf'' to it and
-looks up the font file in the directory \fI/usr/new/lib/X/font/\fP.  If
-the name does begin with ``/'', the X server treats it as an absolute
-pathname of a file containing a font.
-.PP
-If no font name is given on the command line, 
-.I Xfd
-displays the font ``fixed''.
-.PP
-The window stays around until the xfd process is killed
-or one of 'q', 'Q', ' ', or ctrl-c is typed into the
-.I Xfd
-window.
+[-geometry \fIgeometry\fP] [-display \fIhost\fP:\fInumber\fP] 
+[-options ...] [fontname]
 .SH "OPTIONS"
 .PP
 .TP 8
@@ -140,6 +82,64 @@ displayed.
 .B \-geometry \fIgeometry\fP
 .I Xfd
 will also take a standard geometry specification (see X(1)).
+.SH DESCRIPTION
+.I Xfd
+creates a window which displays the characters in the named font.  The
+characters are displayed in increasing order from left to right and top to
+bottom.  The first character displayed at the top left will be character
+number 0 unless the -start option has been supplied in which case the
+character with the number given in the -start option will be used.
+.PP
+The characters are displayed in a grid of boxes, each large enough to hold any
+character of the font.
+If the -gray option has been supplied, the characters will be displayed using
+XDrawImageString using the foreground and background colors on a
+gray background.  This permits determining exactly how XDrawImageString will
+draw any given character.  If -gray has not been supplied, the characters will
+simply be drawn using the foreground color on the background color.
+.PP
+All the characters in the font may not fit in the window at once.
+To see additional characters, click the right mouse button on the window.
+This will cause the next window full of characters to be displayed.
+Clicking the left mouse button on the window will cause the previous
+window full of characters to be displayed.
+.I Xfd
+will beep if an attempt is made to go back past the 0th character.
+.PP
+Note that if the font is a 8 bit font, the characters 256-511 (0x100-0x1ff),
+512-767 (0x200-0x2ff), ... 
+will display exactly the same as the characters 0-255 (0x00-0xff).
+.I Xfd
+by default creates a window of size sufficient to display the first 256
+characters using a 16 by 16 grid.  In this case, there is no need to scroll
+forward or backward window fulls in order to see the entire contents of a 8 bit
+font.  Of course, this window may very well not fit on the screen...
+.PP
+Clicking the middle button on a character will cause that character's
+number to be displayed in both decimal and hexidecimal at the bottom of the
+window.  If verbose mode is selected, additional information about that
+particular character will be displayed as well.  The displayed information
+includes the width of the character, its left bearing, right bearing, ascent,
+and its descent.  If verbose mode is selected, typing '<' or '>' into the
+window will display the minimum or maximum values respectively 
+taken on by each of these fields over the entire font.
+.PP
+The font name is interpreted by the X server.
+To obtain a list of all the fonts available, use xlsfonts.
+On a VAX, if the name
+does not begin with ``/'', the X server adds the suffix ``.snf'' to it and
+looks up the font file in the directory \fI/usr/new/lib/X/font/\fP.  If
+the name does begin with ``/'', the X server treats it as an absolute
+pathname of a file containing a font.
+.PP
+If no font name is given on the command line, 
+.I Xfd
+displays the font ``fixed''.
+.PP
+The window stays around until the xfd process is killed
+or one of 'q', 'Q', ' ', or ctrl-c is typed into the
+.I Xfd
+window.
 .SH "X DEFAULTS"
 .I Xfd
 uses the 
@@ -168,10 +168,6 @@ Set the foreground color.
 Set the background color.
 .PP
 .TP 8
-.B Border
-Set the color of the border.
-.PP
-.TP 8
 .B BodyFont
 Set the font to be used in the body of the window.  (I.e., for messages, etc.)
 This is not the font that \fIXfd\fP displays, just the font it uses
@@ -197,13 +193,13 @@ X(1), X(8C), xterm(1), xlsfonts(1), xrdb(1)
 to get the default host and display to use.
 .TP 8
 .B XENVIRONMENT
-to get the name of a resource fiel that overrides the global resources stored
+to get the name of a resource file that overrides the global resources stored
 in the RESOURCE_MANGER property.
 .SH BUGS
 It should display the name of the font somewhere.
 .PP
 It should be rewritten to use the X toolkit.
 .SH AUTHOR
-Copyright (c) 1987 by Massachusetts Institute of Technology.
+Copyright 1988 by Massachusetts Institute of Technology.
 .br
 Mark Lillibridge, MIT Project Athena
