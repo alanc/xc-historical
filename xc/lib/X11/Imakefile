@@ -344,7 +344,6 @@ OBJS3 = \
 	XwcWrap.o \
 	XFilterEv.o \
 	XRegstFlt.o \
-	XSetLocale.o \
 	$(LCOBJS)
 
 #if BuildXsi
@@ -377,6 +376,7 @@ LCSRCS = \
 	XInitCT.c \
 	XOpenIM.c \
 	XParseCT.c \
+	XSetLocale.c \
 	XlcAccess.c \
 	XlcDefLd.c \
 	XlcLoad.c \
@@ -408,6 +408,7 @@ LCOBJS = \
 	XInitCT.o \
 	XOpenIM.o \
 	XParseCT.o \
+	XSetLocale.o \
 	XlcAccess.o \
 	XlcDefLd.o \
 	XlcLoad.o \
@@ -448,6 +449,7 @@ LinkSourceFile(XIMQueue.c,Xsi)						@@\
 LinkSourceFile(XInitCT.c,Xsi)						@@\
 LinkSourceFile(XOpenIM.c,Xsi)						@@\
 LinkSourceFile(XParseCT.c,Xsi)						@@\
+LinkSourceFile(XSetLocale.c,Xsi)					@@\
 LinkSourceFile(XlcAccess.c,Xsi)						@@\
 LinkSourceFile(XlcDefLd.c,Xsi)						@@\
 LinkSourceFile(XlcLoad.c,Xsi)						@@\
