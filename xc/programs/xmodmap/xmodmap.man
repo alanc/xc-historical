@@ -98,6 +98,11 @@ running the
 .I xev 
 program in the examples directory).
 .TP 8
+.B keycode any = \fIKEYSYMNAME ...\fP
+If no existing key has the specified list of keysyms assigned to it,
+a spare key on the keyboard is selected and the keysyms are assigned to it.
+The list of keysyms may be specified in decimal, hex or octal.
+.TP 8
 .B keysym \fIKEYSYMNAME\fP = \fIKEYSYMNAME ...\fP
 The \fIKEYSYMNAME\fP on the left hand side is translated into matching keycodes
 used to perform the corresponding set of \fBkeycode\fP expressions.

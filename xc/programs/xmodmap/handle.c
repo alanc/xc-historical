@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: handle.c,v 1.24 91/07/17 23:35:01 rws Exp $
+ * $XConsortium: handle.c,v 1.25 91/07/18 10:26:00 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -342,18 +342,23 @@ static void do_keycode (line, len)
 	return;
     }
 
-    if (*line == '0') line++, len--, fmt = "%o";
-    if (*line == 'x' || *line == 'X') line++, len--, fmt = "%x";
+    if (!strncmp("any", line, 3)) {
+	keycode = 0;
+	len += 3;
+    } else {
+	if (*line == '0') line++, len--, fmt = "%o";
+	if (*line == 'x' || *line == 'X') line++, len--, fmt = "%x";
 
-    dummy = 0;
-    if (sscanf (line, fmt, &dummy) != 1 || dummy == 0) {
-	badmsg ("keycode value", NULL);
-	return;
-    }
-    keycode = (KeyCode) dummy;
-    if ((int)keycode < min_keycode || (int)keycode > max_keycode) {
-	badmsg ("keycode value (out of range)", NULL);
-	return;
+	dummy = 0;
+	if (sscanf (line, fmt, &dummy) != 1 || dummy == 0) {
+	    badmsg ("keycode value", NULL);
+	    return;
+	}
+	keycode = (KeyCode) dummy;
+	if ((int)keycode < min_keycode || (int)keycode > max_keycode) {
+	    badmsg ("keycode value (out of range)", NULL);
+	    return;
+	}
     }
 
     finish_keycodes (line, len, &keycode, 1);
@@ -1092,7 +1097,10 @@ void print_opcode (op)
     printf ("        ");
     switch (op->generic.type) {
       case doKeycode:
-	printf ("keycode 0x%lx =", (long) op->keycode.target_keycode);
+	if (op->keycode.target_keycode)
+	    printf ("keycode 0x%lx =", (long) op->keycode.target_keycode);
+	else
+	    printf ("keycode any =");
 	for (i = 0; i < op->keycode.count; i++) {
 	    char *name = XKeysymToString (op->keycode.keysyms[i]);
 
@@ -1139,7 +1147,7 @@ int execute_work_queue ()
     union op *op;
     int errors;
     Bool update_map = False;
-    enum opcode lastop;
+    int dosync;
 
     if (verbose) {
 	printf ("!\n");
@@ -1148,13 +1156,16 @@ int execute_work_queue ()
     }
 
     errors = 0;
-    lastop = doClearModifier;				/* fake it for op test */
+    dosync = 0;
 
     for (op = work_queue.head; op; op = op->generic.next) {
 	if (verbose) print_opcode (op);
 
 	/* check to see if we have to update the keyboard mapping */
-	if (lastop == doKeycode && op->generic.type != doKeycode) {
+	if (dosync &&
+	    (dosync < 0 ||
+	     op->generic.type != doKeycode ||
+	     !op->keycode.target_keycode)) {
 	    XSync (dpy, 0);
 	    while (XEventsQueued (dpy, QueuedAlready) > 0) {
 		XEvent event;
@@ -1169,10 +1180,14 @@ int execute_work_queue ()
 		}
 	    }
 	}
-
+	dosync = 0;
 	switch (op->generic.type) {
 	  case doKeycode:
 	    if (exec_keycode (op) < 0) errors++;
+	    if (op->keycode.target_keycode)
+		dosync = 1;
+	    else
+		dosync = -1;
 	    break;
 	  case doAddModifier:
 	    if (exec_add (op) < 0) errors++;
@@ -1194,8 +1209,6 @@ int execute_work_queue ()
 		     ProgramName, op->generic.type);
 	    break;
 	}
-	lastop = op->generic.type;
-
     }
 
     if (update_map) {
@@ -1208,7 +1221,35 @@ int execute_work_queue ()
 static int exec_keycode (opk)
     struct op_keycode *opk;
 {
-    if (opk->count == 0) {
+    if (!opk->target_keycode) {
+	int i, j;
+	KeyCode free;
+	if (!opk->count)
+	    return (0);
+	free = 0;
+	for (i = min_keycode; i <= max_keycode; i++) {
+	    for (j = 0; j < opk->count; j++) {
+		if (XKeycodeToKeysym(dpy, (KeyCode) i, j) != opk->keysyms[j])
+		    break;
+	    }
+	    if (j >= opk->count)
+		return (0);
+	    if (free)
+		continue;
+	    for (j = 0; j < 8; j++) {
+		if (XKeycodeToKeysym(dpy, (KeyCode) i, j) != None)
+		    break;
+	    }
+	    if (j >= 8)
+		free = i;
+	}
+	if (!free) {
+	    fprintf(stderr, "%s: no available keycode for assignment\n",
+		    ProgramName);
+	    return (-1);
+	}
+	XChangeKeyboardMapping (dpy, free, opk->count, opk->keysyms, 1);
+    } else if (opk->count == 0) {
 	KeySym dummy = NoSymbol;
 	XChangeKeyboardMapping (dpy, opk->target_keycode, 1,
 				&dummy, 1);
