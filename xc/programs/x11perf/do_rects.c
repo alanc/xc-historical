@@ -4,6 +4,13 @@ static XRectangle *rects;
 static GC whitegc, blackgc;
 static Window w;
 
+static unsigned char bitmap[] = {
+    0xCC, 0x66, 0x33, 0x99, 0xCC, 0x66, 0x33, 0x99
+/*
+    0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA
+*/
+};
+
 void InitRects(d, p)
     Display *d;
     Parms p;
@@ -22,12 +29,22 @@ void InitRects(d, p)
     for (x=0; x < cols; x++)
         for (y = 0; y < p->objects/cols; y++) {
 	    rects[i].x = x*(width + 1);
-            rects[i].y = y*(width+ 1);
+            rects[i].y = y*(width + 1);
             rects[i].width = rects[i].height = width;
 	    i++;
 	}
     CreatePerfStuff(d, 1, WIDTH, HEIGHT, &w, &whitegc, &blackgc);
+    if (p->stipple) {
+	Pixmap  stipple;
+	XGCValues gcv;
 
+	stipple = XCreateBitmapFromData(d, w, bitmap, 8, 8);
+	gcv.stipple = stipple;
+	gcv.fill_style = FillStippled;
+	XChangeGC(d, blackgc, GCFillStyle | GCStipple, &gcv);
+	XChangeGC(d, whitegc, GCFillStyle | GCStipple, &gcv);
+	XFreePixmap(d, stipple);
+    }
 }
 
 void DoRects(d, p)
