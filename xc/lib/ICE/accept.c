@@ -1,4 +1,4 @@
-/* $XConsortium: accept.c,v 1.4 93/08/26 17:53:02 rws Exp $ */
+/* $XConsortium: accept.c,v 1.5 93/09/03 16:31:01 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -79,7 +79,7 @@ static int open_unix_socket ();
 
 
 Status
-IceWatchConnections (countRet, descripsRet, networkIdsRet,
+IceListenForConnections (countRet, descripsRet, networkIdsRet,
     errorLength, errorStringRet)
 
 int  *countRet;
