@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.7 93/09/10 14:12:54 mor Exp $ */
+/* $XConsortium: process.c,v 1.8 93/09/13 20:30:34 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -73,7 +73,7 @@ IceReplyWaitInfo *replyWait;
     Bool		replyReady = False;
     IceReplyWaitInfo	*useThisReplyWait = NULL;
     
-    if (!_IceRead (iceConn, SIZEOF (iceMsg), iceConn->inbuf))
+    if (!_IceRead (iceConn, (unsigned long) SIZEOF (iceMsg), iceConn->inbuf))
     {
 	/*
 	 * If we previously sent a WantToClose and now we detected
@@ -105,13 +105,13 @@ IceReplyWaitInfo *replyWait;
 	{
 	    if (header->majorOpcode != 0)
 	    {
-		_IceErrorBadMajor (iceConn,
-		    header->majorOpcode, header->minorOpcode);
+		_IceErrorBadMajor (iceConn, header->majorOpcode,
+		    header->minorOpcode, IceFatalToConnection);
 	    }
 	    else
 	    {
 		_IceErrorBadState (iceConn,
-		    header->minorOpcode, IceFatalToProtocol);
+		    header->minorOpcode, IceFatalToConnection);
 	    }
 
 	    iceConn->connection_status = IceConnectRejected;
@@ -155,11 +155,11 @@ IceReplyWaitInfo *replyWait;
 	 * ICE protocol
 	 */
 
-	_IceProcessCoreMsgCB processIce =
-	    _IceVersions[iceConn->my_ice_version_index].process_core_msg_cb;
+	_IceProcessCoreMsgProc processIce =
+	    _IceVersions[iceConn->my_ice_version_index].process_core_msg_proc;
 
 	replyReady = (*processIce) (iceConn, header->minorOpcode,
-	    iceConn->swap, useThisReplyWait);
+	    header->length, iceConn->swap, useThisReplyWait);
     }
     else
     {
@@ -176,8 +176,10 @@ IceReplyWaitInfo *replyWait;
 	     * The protocol of the message we just read is not supported.
 	     */
 
-	    _IceErrorBadMajor (iceConn,
-		header->majorOpcode, header->minorOpcode);
+	    _IceErrorBadMajor (iceConn, header->majorOpcode,
+		header->minorOpcode, IceCanContinue);
+
+	    _IceReadSkip (iceConn, header->length << 3);
 	}
 	else
 	{
@@ -186,18 +188,18 @@ IceReplyWaitInfo *replyWait;
 
 	    if (processMsgInfo->accept_flag)
 	    {
-		IceACLprocessMsgCB processCB =
-		    processMsgInfo->process_msg_cb.accept_client;
+		IceACLprocessMsgProc processProc =
+		    processMsgInfo->process_msg_proc.accept_client;
 
-		(*processCB) (iceConn, header->minorOpcode,
+		(*processProc) (iceConn, header->minorOpcode,
 		    header->length, iceConn->swap);
 	    }
 	    else
 	    {
-		IceOCLprocessMsgCB processCB =
-		    processMsgInfo->process_msg_cb.orig_client;
+		IceOCLprocessMsgProc processProc =
+		    processMsgInfo->process_msg_proc.orig_client;
 
-		replyReady = (*processCB) (iceConn, header->minorOpcode,
+		replyReady = (*processProc) (iceConn, header->minorOpcode,
 		    header->length, iceConn->swap, useThisReplyWait);
 	    }
 	}
@@ -997,11 +999,11 @@ Bool		swap;
 	}
 	else if (status == IceACLauthAccepted)
 	{
-	    IceACLprocessMsgCB		processMsgCB;
-	    IceProtocolSetupNotifyCB	protocolSetupNotifyCB;
+	    IceACLprocessMsgProc	processMsgProc;
+	    IceProtocolSetupNotifyProc	protocolSetupNotifyProc;
 
-	    processMsgCB = myProtocol->version_recs[
-	        iceConn->protosetup_to_me->my_version_index].process_msg_cb;
+	    processMsgProc = myProtocol->version_recs[
+	        iceConn->protosetup_to_me->my_version_index].process_msg_proc;
 
 	    AcceptProtocol (iceConn,
 	        iceConn->protosetup_to_me->his_opcode,
@@ -1013,12 +1015,12 @@ Bool		swap;
 	        iceConn->his_min_opcode].accept_flag = 1;
 
 	    iceConn->process_msg_info[iceConn->protosetup_to_me->his_opcode -
-	        iceConn->his_min_opcode].process_msg_cb.
-                accept_client = processMsgCB;
+	        iceConn->his_min_opcode].process_msg_proc.
+                accept_client = processMsgProc;
 
-	    protocolSetupNotifyCB = myProtocol->protocol_setup_notify_cb;
+	    protocolSetupNotifyProc = myProtocol->protocol_setup_notify_proc;
 
-	    if (protocolSetupNotifyCB)
+	    if (protocolSetupNotifyProc)
 	    {
 		/*
 		 * Increase the reference count for the number
@@ -1032,7 +1034,7 @@ Bool		swap;
 		 * Notify the client of the Protocol Setup.
 		 */
 
-		(*protocolSetupNotifyCB) (iceConn,
+		(*protocolSetupNotifyProc) (iceConn,
 		    myProtocol->version_recs[iceConn->protosetup_to_me->
 		        my_version_index].major_version,
 		    myProtocol->version_recs[iceConn->protosetup_to_me->
@@ -1042,7 +1044,8 @@ Bool		swap;
 
 		/*
 		 * Set vendor and release pointers to NULL, so it won't
-		 * get freed below.  The ProtocolSetupNotifyCB should free it.
+		 * get freed below.  The ProtocolSetupNotifyProc should
+		 * free it.
 		 */
 
 		iceConn->protosetup_to_me->his_vendor = NULL;
@@ -1464,11 +1467,11 @@ Bool			swap;
 
     if (accept_setup_now)
     {
-	IceACLprocessMsgCB		processMsgCB;
-	IceProtocolSetupNotifyCB	protocolSetupNotifyCB;
+	IceACLprocessMsgProc		processMsgProc;
+	IceProtocolSetupNotifyProc	protocolSetupNotifyProc;
 
-	processMsgCB = myProtocol->version_recs[
-	    myVersionIndex].process_msg_cb;
+	processMsgProc = myProtocol->version_recs[
+	    myVersionIndex].process_msg_proc;
 
 	AcceptProtocol (iceConn, hisOpcode, myOpcode, hisVersionIndex,
 	    myProtocol->vendor, myProtocol->release);
@@ -1477,12 +1480,12 @@ Bool			swap;
 	    iceConn->his_min_opcode].accept_flag = 1;
 
 	iceConn->process_msg_info[hisOpcode -
-	    iceConn->his_min_opcode].process_msg_cb.
-	    accept_client = processMsgCB;
+	    iceConn->his_min_opcode].process_msg_proc.
+	    accept_client = processMsgProc;
 
-	protocolSetupNotifyCB = myProtocol->protocol_setup_notify_cb;
+	protocolSetupNotifyProc = myProtocol->protocol_setup_notify_proc;
 
-	if (protocolSetupNotifyCB)
+	if (protocolSetupNotifyProc)
 	{
 	    /*
 	     * Increase the reference count for the number of active protocols.
@@ -1495,7 +1498,7 @@ Bool			swap;
 	     * Notify the client of the Protocol Setup.
 	     */
 
-	    (*protocolSetupNotifyCB) (iceConn,
+	    (*protocolSetupNotifyProc) (iceConn,
 		myProtocol->version_recs[myVersionIndex].major_version,
 		myProtocol->version_recs[myVersionIndex].minor_version,
 	        vendor, release);
@@ -1591,7 +1594,7 @@ IceConn iceConn;
     {
 	_IcePingWait *next = iceConn->ping_waits->next;
 	
-	(*iceConn->ping_waits->ping_reply_cb) (iceConn,
+	(*iceConn->ping_waits->ping_reply_proc) (iceConn,
 	    iceConn->ping_waits->client_data);
 
 	free ((char *) iceConn->ping_waits);
@@ -1678,10 +1681,11 @@ IceConn iceConn;
 
 
 Bool
-_IceProcessCoreMessage (iceConn, opcode, swap, replyWait)
+_IceProcessCoreMessage (iceConn, opcode, length, swap, replyWait)
 
 IceConn 	 iceConn;
 int     	 opcode;
+unsigned long	 length;
 Bool    	 swap;
 IceReplyWaitInfo *replyWait;
 
@@ -1753,6 +1757,7 @@ IceReplyWaitInfo *replyWait;
     default:
 
 	_IceErrorBadMinor (iceConn, opcode, IceCanContinue);
+	_IceReadSkip (iceConn, length << 3);
 	break;
     }
 
