@@ -175,7 +175,7 @@ NormalSharedLibraryDataTarget(Xt,$(SOXTREV),$(UNSHAREDOBJS))
 InstallSharedLibrary(Xt,$(SOXTREV),$(USRLIBDIR))
 InstallSharedLibraryData(Xt,$(SOXTREV),$(USRLIBDIR))
 #endif
-NormalLibraryTarget(Xt,$(OBJS) $(UNSHAREDOBJS))
+NormalLibraryTarget(Xt,$(OBJS))
 InstallLibrary(Xt,$(USRLIBDIR))
 
 LintLibraryTarget(Xt,$(SRCS))
