@@ -1,4 +1,4 @@
-/* $XConsortium: mfbwindow.c,v 1.15 89/03/24 16:21:31 rws Exp $ */
+/* $XConsortium: mfbwindow.c,v 1.16 89/03/29 18:57:10 rws Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -273,7 +273,7 @@ mfbChangeWindowAttributes(pWin, mask)
 		  if (pPrivWin->pRotatedBackground)
 		  {
 		      pPrivWin->fastBackground = 1;
-		      mfbPadPixmap(pPrivWin->pRotatedBackground);
+		      (void)mfbPadPixmap(pPrivWin->pRotatedBackground);
 		      mfbXRotatePixmap(pPrivWin->pRotatedBackground,
 				       pWin->absCorner.x);
 		      mfbYRotatePixmap(pPrivWin->pRotatedBackground,
@@ -312,7 +312,7 @@ mfbChangeWindowAttributes(pWin, mask)
 		      pPrivWin->fastBorder = 1;
 		      pPrivWin->oldRotate.x = pWin->absCorner.x;
 		      pPrivWin->oldRotate.y = pWin->absCorner.y;
-		      mfbPadPixmap(pPrivWin->pRotatedBorder);
+		      (void)mfbPadPixmap(pPrivWin->pRotatedBorder);
 		      mfbXRotatePixmap(pPrivWin->pRotatedBorder,
 				       pWin->absCorner.x);
 		      mfbYRotatePixmap(pPrivWin->pRotatedBorder,

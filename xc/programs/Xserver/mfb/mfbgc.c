@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 1.127 89/03/24 07:53:55 rws Exp $ */
+/* $XConsortium: mfbgc.c,v 1.128 89/03/29 18:55:48 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -624,14 +624,14 @@ mfbValidateGC(pGC, pQ, changes, pDrawable)
 	{
 	    devPriv->pRotatedTile = mfbCopyPixmap(pGC->tile);
 	    if (devPriv->pRotatedTile)
-		mfbPadPixmap(devPriv->pRotatedTile);
+		(void)mfbPadPixmap(devPriv->pRotatedTile);
 	}
 	if (pGC->stipple && (pGC->stipple->width <= 32) &&
 	    !(pGC->stipple->width & (pGC->stipple->width - 1)))
 	{
 	    devPriv->pRotatedStipple = mfbCopyPixmap(pGC->stipple);
 	    if (devPriv->pRotatedStipple)
-		mfbPadPixmap(devPriv->pRotatedStipple);
+		(void)mfbPadPixmap(devPriv->pRotatedStipple);
 	}
 	if (xrot)
 	{
