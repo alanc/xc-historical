@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.cf,v 1.5 93/08/11 10:13:06 rws Exp $
+XCOMM platform:  $XConsortium: Win32.cf,v 1.6 93/08/13 16:38:51 rws Exp $
 
 #define OSName			Microsoft Windows NT 3.1beta
 XCOMM operating system:  OSName
@@ -6,7 +6,8 @@ XCOMM operating system:  OSName
 #define OSMinorVersion		1
 
 #define BootstrapCFlags		-DWIN32
-#define StandardDefines		-DWIN32
+/* brain-damaged windows headers will not compile with -Za */
+#define StandardDefines		-DWIN32 -D__STDC__
 #define CpCmd copy
 #define LnCmd copy
 #define MvCmd ren
@@ -15,7 +16,7 @@ XCOMM operating system:  OSName
 #define ArCmdBase lib32
 #define ArCmd ArCmdBase
 #define MkdirHierCmd mkdir
-#define DefaultCCOptions -nologo -batch -Za
+#define DefaultCCOptions -nologo -batch
 #define ExtraLibraries libc.lib kernel32.lib
 #define MakeCmd nmake
 #define LdCmd link32
