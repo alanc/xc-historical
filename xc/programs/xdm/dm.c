@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.55 91/04/01 10:27:34 rws Exp $
+ * $XConsortium: dm.c,v 1.56 91/04/02 11:53:47 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -39,7 +39,14 @@
 
 # include	<sys/stat.h>
 # include	<errno.h>
-# include	<varargs.h>
+# include	<X11/Xfuncproto.h>
+#if NeedVarargsPrototypes
+# include <stdarg.h>
+# define Va_start(a,b) va_start(a,b)
+#else
+# include <varargs.h>
+# define Va_start(a,b) va_start(a)
+#endif
 
 #ifndef F_TLOCK
 #ifndef X_NOT_POSIX
@@ -710,9 +717,14 @@ UnlockPidFile ()
     fclose (pidFilePtr);
 }
 
+#if NeedVarargsPrototypes
+SetTitle (char *name, ...)
+#else
 /*VARARGS*/
-SetTitle (va_alist)
+SetTitle (name, va_alist)
+char *name;
 va_dcl
+#endif
 {
 #ifndef NOXDMTITLE
     char	*p = Title;
@@ -720,17 +732,18 @@ va_dcl
     char	*s;
     va_list	args;
 
-    va_start(args);
+    Va_start(args,name);
     *p++ = '-';
     --left;
-    /* SUPPRESS 558 */ /* SUPPRESS 560 */
-    while (s = va_arg (args, char *))
+    s = name;
+    while (s)
     {
 	while (*s && left > 0)
 	{
 	    *p++ = *s++;
 	    left--;
 	}
+	s = va_arg (args, char *);
     }
     while (left > 0)
     {
