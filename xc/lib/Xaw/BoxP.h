@@ -1,5 +1,6 @@
 /*
-* $XConsortium: BoxP.h,v 1.10 88/02/25 12:22:25 swick Exp $
+* $XConsortium: BoxP.h,v 1.11 88/09/04 12:30:44 swick Exp $
+* $Header: BoxP.h,v 1.11 88/09/04 12:30:44 swick Exp $
 */
 
 

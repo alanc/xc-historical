@@ -1,5 +1,6 @@
 /*
-* $XConsortium: GripP.h,v 1.8 88/08/30 10:05:17 swick Exp $
+* $XConsortium: GripP.h,v 1.9 88/09/04 12:32:19 swick Exp $
+* $Header: GripP.h,v 1.9 88/09/04 12:32:19 swick Exp $
 */
 
 

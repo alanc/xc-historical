@@ -1,6 +1,7 @@
 /* LINTLIBRARY */
 #ifndef lint
-static char rcsid[] = "$XConsortium: RectObj.c,v 1.2 88/08/18 15:51:21 asente Exp $";
+static char Xrcsid[] = "$XConsortium: RectObj.c,v 1.3 88/09/04 12:21:18 swick Exp $";
+static char rcsid[] = "$Header: RectObj.c,v 1.3 88/09/04 12:21:18 swick Exp $";
 /* $oHeader: RectObj.c,v 1.2 88/08/18 15:51:21 asente Exp $ */
 #endif lint
 

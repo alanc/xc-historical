@@ -1,5 +1,6 @@
 /*
-* $XConsortium: Label.h,v 1.13 88/09/04 12:32:25 swick Exp $
+* $XConsortium: Label.h,v 1.14 88/09/05 18:29:12 rws Exp $
+* $Header: Label.h,v 1.14 88/09/05 18:29:12 rws Exp $
 */
 
 

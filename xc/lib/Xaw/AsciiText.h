@@ -1,6 +1,7 @@
 #include <X11/copyright.h>
 
-/* $XConsortium: AsciiText.h,v 1.6 88/02/25 12:12:17 swick Exp $ */
+/* $XConsortium: AsciiText.h,v 1.7 88/09/04 12:30:23 swick Exp $ */
+/* $Header: AsciiText.h,v 1.7 88/09/04 12:30:23 swick Exp $ */
 
 
 /***********************************************************
