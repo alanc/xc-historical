@@ -5,7 +5,7 @@
    where red/green/blue are decimal values, and inserts them in a database.
  */
 #ifndef lint
-static char *rcsid_rgb_c = "$XConsortium: rgb.c,v 11.13 89/12/13 09:01:45 jim Exp $";
+static char *rcsid_rgb_c = "$XConsortium: rgb.c,v 11.14 91/06/30 16:38:56 rws Exp $";
 #endif
 
 #ifdef NDBM
@@ -89,7 +89,7 @@ main(argc, argv)
     }
     (void) close (fd);
 
-    rgb_dbm = dbm_open (dbname, O_RDWR, 0666);
+    rgb_dbm = dbm_open (dbname, O_RDWR|O_CREAT, 0666);
     if (!rgb_dbm) {
 	fprintf (stderr,
 		 "%s:  unable to open dbm database \"%s\" (error %d, %s)\n",
