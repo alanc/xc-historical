@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Knob.c,v 1.5 87/12/02 15:58:04 swick Locked $";
+static char rcsid[] = "$Header: Knob.c,v 1.6 87/12/17 16:41:08 swick Locked $";
 #endif lint
 
 /*
@@ -35,11 +35,9 @@ static char rcsid[] = "$Header: Knob.c,v 1.5 87/12/02 15:58:04 swick Locked $";
  */
 
 
-#include <X11/Xlib.h>
-#include <X11/cursorfont.h>
-#include <X11/Intrinsic.h>
-#include <X11/Atoms.h>
-#include <X11/Knob.h>
+#include <X/Intrinsic.h>
+#include <X/Atoms.h>
+#include <X/Knob.h>
 #include "KnobP.h"
 
 static char *defaultTranslation[] = {
@@ -48,6 +46,10 @@ static char *defaultTranslation[] = {
 static caddr_t defaultTranslations = (caddr_t)defaultTranslation;
 
 static XtResource resources[] = {
+   {XtNwidth, XtCWidth, XrmRInt, sizeof(int),
+      XtOffset(KnobWidget, core.width), XtRString, "8" },
+   {XtNheight, XtCHeight, XrmRInt, sizeof(int),
+      XtOffset(KnobWidget, core.height), XtRString, "8" },
    {XtNbackground, XtCBackground, XrmRPixel, sizeof(Pixel),
       XtOffset(KnobWidget, core.background_pixel), XtRString, "Black"},
    {XtNborderWidth, XtCBorderWidth, XrmRInt, sizeof(int),
