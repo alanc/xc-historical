@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: os.h,v 1.22 88/01/01 16:07:42 rws Locked $ */
+/* $Header: os.h,v 1.23 88/01/04 08:34:02 rws Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -75,24 +75,34 @@ char *malloc();
 #define xrealloc(ptr, size) Xrealloc((pointer)(ptr), (unsigned long)(size))
 #define xfree(ptr) Xfree((pointer)(ptr))
 
-char *ReadRequestFromClient();   /* should be xReq but then include Xproto.h */
-Bool CloseDownConnection();
-void CreateWellKnownSockets();
-void SetDefaultFontPath();
-void FreeFontRecord();
-void SetFontPath();
-FontPathPtr GetFontPath();
-FontPathPtr ExpandFontNamePattern();
-FID FiOpenForRead();
-void AbortServer();
-void ErrorF();
-unsigned long *Xalloc();
-unsigned long *Xrealloc();
-void Xfree();
-
-char *strcat();
-char *strncat();
-char *strcpy();
-char *strncpy();
+/*
+ * The declaration for ReadRequestFromClient should be a xReq *, but
+ * then other files must also include Xproto.h and (boo hoo) that
+ * would introduce many, many more symbols which would break the less
+ * intelligent strain of compilers available today.
+ */
+char		*ReadRequestFromClient();
+char		*strcat();
+char		*strncat();
+char		*strcpy();
+char		*strncpy();
+Bool		CloseDownConnection();
+FontPathPtr	GetFontPath();
+FontPathPtr	ExpandFontNamePattern();
+FID		FiOpenForRead();
+void		CreateWellKnownSockets();
+void		SetDefaultFontPath();
+void		FreeFontRecord();
+void		SetFontPath();
+void		ErrorF();
+void		Error();
+void		FatalError();
+void		ProcessCommandLine();
+void		Xfree();
+void		FlushAllOutput();
+void		FlushIfCriticalOutputPending();
+unsigned long	*Xalloc();
+unsigned long	*Xrealloc();
+long		GetTimeInMillis();
 
 #endif /* OS_H */
