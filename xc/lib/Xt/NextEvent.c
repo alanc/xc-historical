@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: NextEvent.c,v 1.43 88/05/24 10:13:57 swick Exp $";
+static char rcsid[] = "$Header: NextEvent.c,v 1.44 88/05/24 15:55:55 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -443,7 +443,8 @@ XEvent *event;
     }
 
     for (;;) {
-	if (Claims_X_is_pending || XPending (toplevelDisplay) ) {
+	if (Claims_X_is_pending ||
+	    XEventsQueued (toplevelDisplay, QueuedAfterFlush) ) {
 		XNextEvent (toplevelDisplay, event);
 		return;
 	}
@@ -461,7 +462,8 @@ XEvent *event;
 		    TeCallProc(te_ptr);
 		    XtFree((char*)te_ptr);
 	}
-	if (! (Claims_X_is_pending = (XPending (toplevelDisplay) > 0)))
+	if (! (Claims_X_is_pending =
+	       (XEventsQueued(toplevelDisplay, QueuedAfterFlush) > 0)))
 	    Claims_X_is_pending = _XtwaitForSomething(
 		    FALSE, FALSE, TRUE, (unsigned long *)NULL);
     }
