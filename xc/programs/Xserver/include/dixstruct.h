@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dixstruct.h,v 1.14 89/07/03 16:37:22 rws Exp $ */
+/* $XConsortium: dixstruct.h,v 1.15 91/02/14 19:35:59 keith Exp $ */
 
 #ifndef DIXSTRUCT_H
 #define DIXSTRUCT_H
@@ -83,6 +83,7 @@ typedef struct _WorkQueue {
 }           WorkQueueRec;
 
 extern TimeStamp currentTime;
+extern TimeStamp lastDeviceEventTime;
 extern void CloseDownClient();
 
 extern TimeStamp ClientTimeToServerTime();
