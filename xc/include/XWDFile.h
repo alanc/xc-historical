@@ -2,7 +2,7 @@
 
 /* Copyright 1985, 1986, Massachusetts Institute of Technology */
 
-/* $XConsortium: XWDFile.h,v 1.10 89/04/11 14:31:22 jim Exp $ */
+/* $XConsortium: XWDFile.h,v 1.11 89/10/08 16:24:45 rws Exp $ */
 /*
  * XWDFile.h	MIT Project Athena, X Window system window raster
  *		image dumper, dump file format header file.
@@ -38,7 +38,11 @@
 #include <X11/Xmd.h>
 
 #define XWD_FILE_VERSION 7
+#ifdef WORD64
+#define sz_XWDheader 104
+#else
 #define sz_XWDheader 100
+#endif
 #define sz_XWDColor 12
 
 typedef CARD32 xwdval;		/* for old broken programs */
