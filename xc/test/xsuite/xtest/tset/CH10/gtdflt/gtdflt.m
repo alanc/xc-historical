@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: gtdflt.m,v 1.15 92/06/11 17:34:49 rws Exp $
+ * $XConsortium: gtdflt.m,v 1.16 92/06/30 20:06:22 rws Exp $
  */
 >>#
 >># I have assumed POSIX here in all assertions which make reference to
@@ -33,7 +33,7 @@ AUXCLEAN=Test3 Test4 Test5 Test3.o Test4.o Test5.o .Xdefaults\
 
 all: Test
 
-.Xdefaults : Xdefaults HostXdefaults
+.Xdefaults : Xdefaults HstXdefaults
 	$(RM) .Xdefaults ./.Xdefaults-$(XTESTHOST)
 	$(CP) Xdefaults .Xdefaults
 	$(CP) HstXdefaults ./.Xdefaults-$(XTESTHOST)
