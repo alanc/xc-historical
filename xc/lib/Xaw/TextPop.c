@@ -1,4 +1,4 @@
-/* $XConsortium: TextPop.c,v 1.17 91/03/25 12:18:28 converse Exp $ */
+/* $XConsortium: TextPop.c,v 1.18 91/05/16 14:57:11 swick Exp $ */
 
 /***********************************************************
 Copyright 1989 by the Massachusetts Institute of Technology,
@@ -66,7 +66,10 @@ extern char* sys_errlist[];
 
 #define SEARCH_LABEL_1  ("Use <Tab> to change fields.")
 #define SEARCH_LABEL_2  ("Use ^q<Tab> for <Tab>.")
+#define DISMISS_NAME  ("cancel")
+#define DISMISS_NAME_LEN 6
 #define FORM_NAME     ("form")
+#define FORM_NAME_LEN 4
 #define LABEL_NAME    ("label")
 #define TEXT_NAME     ("text")
 
@@ -76,6 +79,7 @@ static void CenterWidgetOnPoint(), PopdownSearch(), DoInsert(), _SetField();
 static void InitializeSearchWidget(), SetResource(), SetSearchLabels();
 static void DoReplaceOne(), DoReplaceAll();
 static Widget CreateDialog(), GetShell();
+static void SetWMProtocolTranslations();
 static Boolean DoSearch(), SetResourceByName(), Replace();
 static String GetString();
 
@@ -173,6 +177,7 @@ Cardinal * num_params;
     ctx->text.file_insert = CreateDialog(w, ptr, "insertFile",
 					 AddInsertFileChildren);
     XtRealizeWidget(ctx->text.file_insert);
+    SetWMProtocolTranslations(ctx->text.file_insert);
   }
 
   CenterWidgetOnPoint(ctx->text.file_insert, event);
@@ -339,7 +344,7 @@ char * ptr;
   XtSetArg(args[num_args], XtNfromHoriz, insert); num_args++;
   XtSetArg(args[num_args], XtNleft, XtChainLeft); num_args++;
   XtSetArg(args[num_args], XtNright, XtChainLeft); num_args++;
-  cancel = XtCreateManagedWidget("cancel", commandWidgetClass, form,
+  cancel = XtCreateManagedWidget(DISMISS_NAME, commandWidgetClass, form,
 				 args, num_args);
 
   XtAddCallback(cancel, XtNcallback, PopdownFileInsert, (XtPointer) tw);
@@ -529,6 +534,7 @@ Cardinal * num_params;
     ctx->text.search->search_popup = CreateDialog(w, ptr, "search",
 						  AddSearchChildren);
     XtRealizeWidget(ctx->text.search->search_popup);
+    SetWMProtocolTranslations(ctx->text.search->search_popup);
   }
 
   XtSetArg(args[0], XtNeditType,&edit_mode);
@@ -720,7 +726,7 @@ char * ptr;
   XtSetArg(args[num_args], XtNfromHoriz, search->rep_all); num_args++;
   XtSetArg(args[num_args], XtNleft, XtChainLeft); num_args++;
   XtSetArg(args[num_args], XtNright, XtChainLeft); num_args++;
-  cancel = XtCreateManagedWidget("cancel", commandWidgetClass, form,
+  cancel = XtCreateManagedWidget(DISMISS_NAME, commandWidgetClass, form,
 				 args, num_args);
 
   XtAddCallback(search_button, XtNcallback, SearchButton, (XtPointer) search);
@@ -1263,4 +1269,44 @@ Widget w;
 	w = XtParent(w);
     
     return (w);
+}
+
+/*ARGSUSED*/
+static void WMProtocols(w, event, params, num_params)
+    Widget w;		/* popup shell */
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
+{
+    Atom wm_delete_window;
+    Widget cancel;
+    char descendant[FORM_NAME_LEN + DISMISS_NAME_LEN + 3];
+
+    wm_delete_window = XInternAtom(XtDisplay(w), "WM_DELETE_WINDOW", True);
+    if (event->type == ClientMessage &&
+	event->xclient.data.l[0] != wm_delete_window) {
+	XBell(XtDisplay(w), 0);	/* unsupported WM Protocol */
+	return;
+    }
+    sprintf(descendant, "*%s.%s", FORM_NAME, DISMISS_NAME);
+    cancel = XtNameToWidget(w, descendant);
+    if (cancel) XtCallCallbacks(cancel, XtNcallback, (XtPointer)NULL);
+}
+
+static void SetWMProtocolTranslations(w)
+    Widget	w;	/* realized popup shell */
+{
+    Atom wm_delete_window;
+    XtActionsRec actions[1];
+    static XtTranslations compiled_table = NULL;
+
+    wm_delete_window = XInternAtom(XtDisplay(w), "WM_DELETE_WINDOW", False);
+    if (XSetWMProtocols(XtDisplay(w), XtWindow(w), &wm_delete_window, 1)) {
+	actions[0].string = "XawTextWMProtocols";
+	actions[0].proc = WMProtocols;
+	XtAppAddActions(XtWidgetToApplicationContext(w), actions, 1);
+	if (! compiled_table) compiled_table = XtParseTranslationTable
+	    ("<Message>WM_PROTOCOLS: XawTextWMProtocols()\n");
+	XtOverrideTranslations(w, compiled_table);
+    }
 }
