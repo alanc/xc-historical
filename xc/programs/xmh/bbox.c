@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: bbox.c,v 1.13 88/01/19 14:20:56 swick Exp $";
+static char rcs_id[] = "$Header: bbox.c,v 1.14 88/01/22 14:59:22 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -72,7 +72,7 @@ ButtonBox BBoxRadioCreate(scrn, position, name, radio)
 	XtCreateManagedWidget(name, viewportWidgetClass, scrn->widget,
 			      arglist, XtNumber(arglist));
     buttonbox->inner =
-	XtCreateManagedWidget(name, buttonBoxWidgetClass, buttonbox->outer,
+	XtCreateManagedWidget(name, boxWidgetClass, buttonbox->outer,
 			      NULL, (Cardinal)0);
     buttonbox->numbuttons = 0;
     buttonbox->button = (Button *) XtMalloc((unsigned) 1);
