@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ConnDis.c,v 11.117 94/03/23 20:08:46 gildea Exp $
+ * $XConsortium: ConnDis.c,v 11.118 94/03/28 14:14:53 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -629,7 +629,7 @@ auth_ezencode(servername, window, cred_out, len)
         AUTH           *a;
         XDR             xdr;
 
-        a = authdes_create(servername, window, NULL, NULL);
+        a = (AUTH *)authdes_create(servername, window, NULL, NULL);
         if (a == (AUTH *)NULL) {
                 perror("auth_create");
                 return 0;
