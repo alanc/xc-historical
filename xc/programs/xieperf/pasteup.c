@@ -1,4 +1,4 @@
-/* $XConsortium: pasteup.c,v 1.2 93/10/26 10:06:42 rws Exp $ */
+/* $XConsortium: pasteup.c,v 1.3 93/10/27 21:52:37 rws Exp $ */
 
 /**** module pasteup.c ****/
 /******************************************************************************
@@ -79,7 +79,6 @@ int InitPasteUp(xp, p, reps)
     int     reps;
 {	
 	XIEimage *image;
-	int	i;
 
 	parms = ( XieClipScaleParam * ) NULL;
         flograph = ( XiePhotoElement * ) NULL;
@@ -173,7 +172,6 @@ int	split;
 int	width;
 int	height;
 {
-	XiePhotomap *pp;
 	int	xoff, yoff;
 	int     flo_elements;
 	XiePhotoElement *flograph;
@@ -277,7 +275,7 @@ int	split;
 int	width;
 int	height;
 {
-	int	i, j, flo_elements;
+	int	i, flo_elements;
 	int	tile_width, tile_height;
 
 	tile_width = width / split;
@@ -469,8 +467,6 @@ FreePasteUpStuff( xp, p )
 XParms	xp;
 Parms	p;
 {
-	int	i;
-
 	XieFreePasteUpTiles(&flograph[ pasteUpIdx ] );
 
 	if ( parms )
