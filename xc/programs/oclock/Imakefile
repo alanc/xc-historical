@@ -5,8 +5,8 @@
 DEFINES = ExtensionDefines
 INCLUDES = -I$(TOP) -I$(TOP)/X11
 SYS_LIBRARIES = -lm
-DEPLIBS = XawClientDepLibs
-LOCAL_LIBRARIES = XawClientLibs
+DEPLIBS = $(DEPXTOOLLIB) $(DEPXMULIB) $(DEPEXTENSIONLIB) $(DEPXLIB)
+LOCAL_LIBRARIES = $(XTOOLLIB) $(XMULIB) $(EXTENSIONLIB) $(XLIB)
 
 SRCS = oclock.c Clock.c transform.c
 OBJS = oclock.o Clock.o transform.o
