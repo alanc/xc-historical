@@ -21,13 +21,6 @@ SOFTWARE.
 
 ******************************************************************************/
 
-#include <stdio.h>
-#ifndef VMS
-#include <X11/Xatom.h>
-#include <X11/Xos.h>
-#else
-#include <decw$include/Xatom.h>
-#endif
 #include "x11perf.h"
 
 extern void DoGetAtom();
@@ -135,13 +128,14 @@ extern void DoScroll();
 extern void MidScroll();
 extern void EndScroll();
 
-extern Bool InitCopyArea();
-extern void DoCopyArea();
-extern void EndCopyArea();
-
+extern Bool InitCopyWin();
 extern Bool InitCopyPix();
+extern void DoCopyWinWin();
+extern void DoCopyPixWin();
+extern void DoCopyWinPix();
+extern void DoCopyPixPix();
 extern void MidCopyPix();
-extern void DoCopyPix();
+extern void EndCopyWin();
 extern void EndCopyPix();
 
 extern Bool InitGetImage();
@@ -192,7 +186,7 @@ Test test[] = {
   {"-rect100",  "100x100 rectangle",
 		InitRectangles, DoRectangles, NullProc, EndRectangles,
 		XOR,     0,
-		{30, 100, NULL, NULL, FillSolid}},
+		{36, 100, NULL, NULL, FillSolid}},
   {"-rect500",  "500x500 rectangle",
 		InitRectangles, DoRectangles, NullProc, EndRectangles,
 		XOR,     0,
@@ -208,7 +202,7 @@ Test test[] = {
   {"-srect100", "100x100 stippled rectangle",
 		InitRectangles, DoRectangles, NullProc, EndRectangles,
 		XOR,     0,
-		{30, 100, NULL, NULL, FillStippled}},
+		{36, 100, NULL, NULL, FillStippled}},
   {"-srect500", "500x500 stippled rectangle",
 		InitRectangles, DoRectangles, NullProc, EndRectangles,
 		XOR,     0,
@@ -224,7 +218,7 @@ Test test[] = {
   {"-osrect100", "100x100 opaque stippled rectangle",
 		InitRectangles, DoRectangles, NullProc, EndRectangles,
 		XOR,     0,
-		{30, 100, NULL, NULL, FillOpaqueStippled}},
+		{36, 100, NULL, NULL, FillOpaqueStippled}},
   {"-osrect500", "500x500 opaque stippled rectangle",
 		InitRectangles, DoRectangles, NullProc, EndRectangles,
 		XOR,     0,
@@ -240,7 +234,7 @@ Test test[] = {
   {"-tilerect100", "100x100 4x4 tiled rectangle",
 		InitRectangles, DoRectangles, NullProc, EndRectangles,
 		XOR,     0,
-		{30, 100, NULL, NULL, FillTiled}},
+		{36, 100, NULL, NULL, FillTiled}},
   {"-tilerect500", "500x500 4x4 tiled rectangle",
 		InitRectangles, DoRectangles, NullProc, EndRectangles,
 		XOR,     0,
@@ -256,7 +250,7 @@ Test test[] = {
   {"-bigtilerect100", "100x100 161x145 tiled rectangle",
 		InitRectangles, DoRectangles, NullProc, EndRectangles,
 		XOR,     0,
-		{30, 100, "big", NULL, FillTiled}},
+		{36, 100, "big", NULL, FillTiled}},
   {"-bigtilerect500", "500x500 161x145 tiled rectangle",
 		InitRectangles, DoRectangles, NullProc, EndRectangles,
 		XOR,     0,
@@ -521,30 +515,6 @@ Test test[] = {
 		InitTriangles, DoTriangles, NullProc, EndTriangles,
 		XOR,     0,
 		{100, 100}},
-  {"-striangle10", "Fill 10-pixel/side stippled triangle",
-		InitTriangles, DoTriangles, NullProc, EndTriangles,
-		XOR,     0,
-		{POLY, 10, NULL, NULL, FillStippled}},
-  {"-striangle100", "Fill 100-pixel/side stippled triangle",
-		InitTriangles, DoTriangles, NullProc, EndTriangles,
-		XOR,     0,
-		{100, 100, NULL, NULL, FillStippled}},
-  {"-ostriangle10", "Fill 10-pixel/side opaque stippled triangle",
-		InitTriangles, DoTriangles, NullProc, EndTriangles,
-		XOR,     0,
-		{POLY, 10, NULL, NULL, FillOpaqueStippled}},
-  {"-ostriangle100", "Fill 100-pixel/side opaque stippled triangle",
-		InitTriangles, DoTriangles, NullProc, EndTriangles,
-		XOR,     0,
-		{100, 100, NULL, NULL, FillOpaqueStippled}},
-  {"-tiletriangle10", "Fill 10-pixel/side tiled triangle",
-		InitTriangles, DoTriangles, NullProc, EndTriangles,
-		XOR,     0,
-		{POLY, 10, NULL, NULL, FillTiled}},
-  {"-tiletriangle100", "Fill 100-pixel/side tiled triangle",
-		InitTriangles, DoTriangles, NullProc, EndTriangles,
-		XOR,     0,
-		{100, 100, NULL, NULL, FillTiled}},
   {"-trap10", "Fill 10x10 trapezoid",
 		InitTrapezoids, DoTrapezoids, NullProc, EndTrapezoids,
 		XOR,     0,
@@ -553,6 +523,30 @@ Test test[] = {
 		InitTrapezoids, DoTrapezoids, NullProc, EndTrapezoids,
 		XOR,     0,
 		{POLY/10, 100}},
+  {"-strap10", "Fill 10x10 stippled trapezoid",
+		InitTrapezoids, DoTrapezoids, NullProc, EndTrapezoids,
+		XOR,     0,
+		{POLY, 10, NULL, NULL, FillStippled}},
+  {"-strap100", "Fill 100x100 stippled trapezoid",
+		InitTrapezoids, DoTrapezoids, NullProc, EndTrapezoids,
+		XOR,     0,
+		{100, 100, NULL, NULL, FillStippled}},
+  {"-ostrap10", "Fill 10x10 opaque stippled trapezoid",
+		InitTrapezoids, DoTrapezoids, NullProc, EndTrapezoids,
+		XOR,     0,
+		{POLY, 10, NULL, NULL, FillOpaqueStippled}},
+  {"-ostrap100", "Fill 100x100 opaque stippled trapezoid",
+		InitTrapezoids, DoTrapezoids, NullProc, EndTrapezoids,
+		XOR,     0,
+		{100, 100, NULL, NULL, FillOpaqueStippled}},
+  {"-tiletrap10", "Fill 10x10 tiled trapezoid",
+		InitTrapezoids, DoTrapezoids, NullProc, EndTrapezoids,
+		XOR,     0,
+		{POLY, 10, NULL, NULL, FillTiled}},
+  {"-tiletrap100", "Fill 100x100 tiled trapezoid",
+		InitTrapezoids, DoTrapezoids, NullProc, EndTrapezoids,
+		XOR,     0,
+		{100, 100, NULL, NULL, FillTiled}},
   {"-complex10", "Fill 10-pixel/side complex polygon",
 		InitComplexPoly, DoComplexPoly, NullProc, EndComplexPoly,
 		XOR,     0,
@@ -610,28 +604,52 @@ Test test[] = {
 		InitScroll, DoScroll, MidScroll, EndScroll,
 		XOR,     0,
 		{1, 500}},
-  {"-copyarea10", "Copy 10x10 square",
-		InitCopyArea, DoCopyArea, MidScroll, EndCopyArea,
+  {"-copywinwin10", "Copy 10x10 from window to window",
+		InitCopyWin, DoCopyWinWin, MidScroll, EndCopyWin,
 		XOR,     0,
 		{4, 10}},
-  {"-copyarea100", "Copy 100x100 square",
-		InitCopyArea, DoCopyArea, MidScroll, EndCopyArea,
+  {"-copywinwin100", "Copy 100x100 from window to window",
+		InitCopyWin, DoCopyWinWin, MidScroll, EndCopyWin,
 		XOR,     0,
 		{4, 100}},
-  {"-copyarea500", "Copy 500x500 square",
-		InitCopyArea, DoCopyArea, MidScroll, EndCopyArea,
+  {"-copywinwin500", "Copy 500x500 from window to window",
+		InitCopyWin, DoCopyWinWin, MidScroll, EndCopyWin,
 		XOR,     0,
 		{4, 500}},
-  {"-copypix10", "Copy 10x10 square from pixmap",
-		InitCopyPix, DoCopyPix, MidCopyPix, EndCopyPix,
+  {"-copypixwin10", "Copy 10x10 from pixmap to window",
+		InitCopyPix, DoCopyPixWin, MidCopyPix, EndCopyPix,
 		XOR,     0,
 		{4, 10}},
-  {"-copypix100", "Copy 100x100 square from pixmap",
-		InitCopyPix, DoCopyPix, MidCopyPix, EndCopyPix, 
+  {"-copypixwin100", "Copy 100x100 from pixmap to window",
+		InitCopyPix, DoCopyPixWin, MidCopyPix, EndCopyPix, 
 		XOR,     0,
 		{4, 100}},
-  {"-copypix500", "Copy 500x500 square from pixmap",
-		InitCopyPix, DoCopyPix, MidCopyPix, EndCopyPix,
+  {"-copypixwin500", "Copy 500x500 from pixmap to window",
+		InitCopyPix, DoCopyPixWin, MidCopyPix, EndCopyPix,
+		XOR,     0,
+		{4, 500}},
+  {"-copywinpix10", "Copy 10x10 from window to pixmap",
+		InitCopyPix, DoCopyWinPix, MidScroll, EndCopyPix,
+		XOR,     0,
+		{4, 10}},
+  {"-copywinpix100", "Copy 100x100 from window to pixmap",
+		InitCopyPix, DoCopyWinPix, MidScroll, EndCopyPix, 
+		XOR,     0,
+		{4, 100}},
+  {"-copywinpix500", "Copy 500x500 from window to pixmap",
+		InitCopyPix, DoCopyWinPix, MidScroll, EndCopyPix,
+		XOR,     0,
+		{4, 500}},
+  {"-copypixpix10", "Copy 10x10 from pixmap to pixmap",
+		InitCopyPix, DoCopyPixPix, NullProc, EndCopyPix,
+		XOR,     0,
+		{4, 10}},
+  {"-copypixpix100", "Copy 100x100 from pixmap to pixmap",
+		InitCopyPix, DoCopyPixPix, NullProc, EndCopyPix, 
+		XOR,     0,
+		{4, 100}},
+  {"-copypixpix500", "Copy 500x500 from pixmap to pixmap",
+		InitCopyPix, DoCopyPixPix, NullProc, EndCopyPix,
 		XOR,     0,
 		{4, 500}},
   {"-copyplane10", "Copy 10x10 1-bit deep plane",
