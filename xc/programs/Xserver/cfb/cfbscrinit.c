@@ -95,16 +95,6 @@ miBSFuncRec cfbBSFuncRec = {
     (PixmapPtr (*)()) 0,
 };
 
-/*ARGSUSED*/
-static Bool
-cfbCloseScreen (index, pScreen)
-    int		index;
-    ScreenPtr	pScreen;
-{
-    xfree (pScreen->devPrivate);
-    return TRUE;
-}
-
 /* dts * (inch/dot) * (25.4 mm / inch) = mm */
 Bool
 cfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
@@ -114,7 +104,6 @@ cfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     int dpix, dpiy;		/* dots per inch */
     int width;			/* pixel width of frame buffer */
 {
-    register PixmapPtr pPixmap;
     int	i;
 
     if (cfbGeneration != serverGeneration)
@@ -133,110 +122,6 @@ cfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 			       sizeof(cfbPrivWin)) ||
 	!AllocateGCPrivate(pScreen, cfbGCPrivateIndex, sizeof(cfbPrivGC)))
 	return FALSE;
-    pScreen->width = xsize;
-    pScreen->height = ysize;
-    pScreen->mmWidth = (xsize * 254) / (dpix * 10);
-    pScreen->mmHeight = (ysize * 254) / (dpiy * 10);
-    pScreen->numDepths = NUMDEPTHS;
-    pScreen->allowedDepths = depths;
-
-    pScreen->rootDepth = 8;
-    pScreen->minInstalledCmaps = 1;
-    pScreen->maxInstalledCmaps = 1;
-    pScreen->backingStoreSupport = Always;
-    pScreen->saveUnderSupport = NotUseful;
-    /* let CreateDefColormap do whatever it wants */ 
-    pScreen->blackPixel = pScreen->whitePixel = (Pixel) 0;
-
-    /* cursmin and cursmax are device specific */
-
-    pScreen->numVisuals = NUMVISUALS;
-    pScreen->visuals = visuals;
-
-    pPixmap = (PixmapPtr ) xalloc(sizeof(PixmapRec));
-    if (!pPixmap)
-	return FALSE;
-    pPixmap->drawable.type = DRAWABLE_PIXMAP;
-    pPixmap->drawable.depth = 8;
-    pPixmap->drawable.pScreen = pScreen;
-    pPixmap->drawable.serialNumber = 0;
-    pPixmap->drawable.x = 0;
-    pPixmap->drawable.y = 0;
-    pPixmap->drawable.width = xsize;
-    pPixmap->drawable.height = ysize;
-    pPixmap->refcnt = 1;
-    pPixmap->devPrivate.ptr = pbits;
-    pPixmap->devKind = PixmapBytePad(width, 8);
-    pScreen->devPrivate = (pointer)pPixmap;
-
-    /* anything that cfb doesn't know about is assumed to be done
-       elsewhere.  (we put in no-op only for things that we KNOW
-       are really no-op.
-    */
-    pScreen->CreateWindow = cfbCreateWindow;
-    pScreen->DestroyWindow = cfbDestroyWindow;
-    pScreen->PositionWindow = cfbPositionWindow;
-    pScreen->ChangeWindowAttributes = cfbChangeWindowAttributes;
-    pScreen->RealizeWindow = cfbMapWindow;
-    pScreen->UnrealizeWindow = cfbUnmapWindow;
-
-    pScreen->RealizeFont = mfbRealizeFont;
-    pScreen->UnrealizeFont = mfbUnrealizeFont;
-    pScreen->CloseScreen = cfbCloseScreen;
-    pScreen->QueryBestSize = mfbQueryBestSize;
-    pScreen->GetImage = cfbGetImage;
-    pScreen->GetSpans = cfbGetSpans;
-    pScreen->SourceValidate = (void (*)()) 0;
-    pScreen->CreateGC = cfbCreateGC;
-    pScreen->CreatePixmap = cfbCreatePixmap;
-    pScreen->DestroyPixmap = cfbDestroyPixmap;
-    pScreen->ValidateTree = miValidateTree;
-
-#ifdef	STATIC_COLOR
-    pScreen->InstallColormap = cfbInstallColormap;
-    pScreen->UninstallColormap = cfbUninstallColormap;
-    pScreen->ListInstalledColormaps = cfbListInstalledColormaps;
-    pScreen->StoreColors = NoopDDA;
-#endif
-    pScreen->ResolveColor = cfbResolveColor;
-
-    pScreen->RegionCreate = miRegionCreate;
-    pScreen->RegionInit = miRegionInit;
-    pScreen->RegionCopy = miRegionCopy;
-    pScreen->RegionDestroy = miRegionDestroy;
-    pScreen->RegionUninit = miRegionUninit;
-    pScreen->Intersect = miIntersect;
-    pScreen->Inverse = miInverse;
-    pScreen->Union = miUnion;
-    pScreen->Subtract = miSubtract;
-    pScreen->RegionReset = miRegionReset;
-    pScreen->TranslateRegion = miTranslateRegion;
-    pScreen->RectIn = miRectIn;
-    pScreen->PointInRegion = miPointInRegion;
-    pScreen->WindowExposures = miWindowExposures;
-    pScreen->PaintWindowBackground = cfbPaintWindow;
-    pScreen->PaintWindowBorder = cfbPaintWindow;
-    pScreen->CopyWindow = cfbCopyWindow;
-    pScreen->ClearToBackground = miClearToBackground;
-
-    pScreen->RegionNotEmpty = miRegionNotEmpty;
-    pScreen->RegionEmpty = miRegionEmpty;
-    pScreen->RegionExtents = miRegionExtents;
-    pScreen->RegionAppend = miRegionAppend;
-    pScreen->RegionValidate = miRegionValidate;
-    pScreen->BitmapToRegion = mfbPixmapToRegion;
-    pScreen->RectsToRegion = miRectsToRegion;
-    pScreen->SendGraphicsExpose = miSendGraphicsExpose;
-
-    pScreen->BlockHandler = NoopDDA;
-    pScreen->WakeupHandler = NoopDDA;
-    pScreen->blockData = (pointer)0;
-    pScreen->wakeupData = (pointer)0;
-
-    pScreen->CreateColormap = cfbInitializeColormap;
-    pScreen->DestroyColormap = NoopDDA;
-
-    pScreen->defColormap = FakeClientID(0);
     if (defaultColorVisualClass < 0)
     {
 	i = 0;
@@ -250,11 +135,42 @@ cfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 	if (i >= NUMVISUALS)
 	    i = 0;
     }
-    pScreen->rootVisual = visuals[i].vid;
-    miInitializeBackingStore (pScreen, &cfbBSFuncRec);
-    mfbRegisterCopyPlaneProc (pScreen, cfbCopyPlane);
-#ifdef MITSHM
-    ShmRegisterFbFuncs(pScreen);
+    if (!miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
+		      8, NUMDEPTHS, depths,
+		      visuals[i].vid, NUMVISUALS, visuals,
+		      &cfbBSFuncRec))
+	return FALSE;
+    pScreen->defColormap = FakeClientID(0);
+    /* let CreateDefColormap do whatever it wants for pixels */ 
+    pScreen->blackPixel = pScreen->whitePixel = (Pixel) 0;
+    pScreen->QueryBestSize = mfbQueryBestSize;
+    /* SaveScreen */
+    pScreen->GetImage = cfbGetImage;
+    pScreen->GetSpans = cfbGetSpans;
+    pScreen->CreateWindow = cfbCreateWindow;
+    pScreen->DestroyWindow = cfbDestroyWindow;
+    pScreen->PositionWindow = cfbPositionWindow;
+    pScreen->ChangeWindowAttributes = cfbChangeWindowAttributes;
+    pScreen->RealizeWindow = cfbMapWindow;
+    pScreen->UnrealizeWindow = cfbUnmapWindow;
+    pScreen->PaintWindowBackground = cfbPaintWindow;
+    pScreen->PaintWindowBorder = cfbPaintWindow;
+    pScreen->CopyWindow = cfbCopyWindow;
+    pScreen->CreatePixmap = cfbCreatePixmap;
+    pScreen->DestroyPixmap = cfbDestroyPixmap;
+    pScreen->RealizeFont = mfbRealizeFont;
+    pScreen->UnrealizeFont = mfbUnrealizeFont;
+    pScreen->CreateGC = cfbCreateGC;
+    pScreen->CreateColormap = cfbInitializeColormap;
+    pScreen->DestroyColormap = NoopDDA;
+#ifdef	STATIC_COLOR
+    pScreen->InstallColormap = cfbInstallColormap;
+    pScreen->UninstallColormap = cfbUninstallColormap;
+    pScreen->ListInstalledColormaps = cfbListInstalledColormaps;
+    pScreen->StoreColors = NoopDDA;
 #endif
+    pScreen->ResolveColor = cfbResolveColor;
+    pScreen->BitmapToRegion = mfbPixmapToRegion;
+    mfbRegisterCopyPlaneProc (pScreen, cfbCopyPlane);
     return TRUE;
 }

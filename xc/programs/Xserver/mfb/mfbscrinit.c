@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbscrinit.c,v 5.9 89/09/12 14:25:48 keith Exp $ */
+/* $XConsortium: mfbscrinit.c,v 5.10 90/01/23 15:39:27 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"	/* for xColorItem */
@@ -94,114 +94,38 @@ mfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     int dpix, dpiy;		/* dots per inch */
     int width;			/* pixel width of frame buffer */
 {
-    register PixmapPtr pPixmap;
-
     if 	(!mfbAllocatePrivates(pScreen, (int *)NULL, (int *)NULL))
 	return FALSE;
-    pPixmap = (PixmapPtr)xalloc(sizeof(PixmapRec));
-    if (!pPixmap)
+    if (!miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
+		      1, 1, &depth, VID, 1, &visual, &mfbBSFuncRec))
 	return FALSE;
-
-    pScreen->width = xsize;
-    pScreen->height = ysize;
-    pScreen->mmWidth = (xsize * 254) / (dpix * 10);
-    pScreen->mmHeight = (ysize * 254) / (dpiy * 10);
-    pScreen->numDepths = 1;
-    pScreen->allowedDepths = &depth;
-
-    pScreen->rootDepth = 1;
-    pScreen->rootVisual = VID;
     pScreen->defColormap = (Colormap) FakeClientID(0);
-    pScreen->minInstalledCmaps = 1;
-    pScreen->maxInstalledCmaps = 1;
-    pScreen->backingStoreSupport = Always;
-    pScreen->saveUnderSupport = NotUseful;
-
-    /* cursmin and cursmax are device specific */
-
-    pScreen->numVisuals = 1;
-    pScreen->visuals = &visual;
-
-    pPixmap->drawable.type = DRAWABLE_PIXMAP;
-    pPixmap->drawable.depth = 1;
-    pPixmap->drawable.pScreen = pScreen;
-    pPixmap->drawable.serialNumber = 0;
-    pPixmap->drawable.x = 0;
-    pPixmap->drawable.y = 0;
-    pPixmap->drawable.width = xsize;
-    pPixmap->drawable.height = ysize;
-    pPixmap->refcnt = 1;
-    pPixmap->devPrivate.ptr = pbits;
-    pPixmap->devKind = PixmapBytePad(width, 1);
-    pScreen->devPrivate = (pointer)pPixmap;
-
-    /* anything that mfb doesn't know about is assumed to be done
-       elsewhere.  (we put in no-op only for things that we KNOW
-       are really no-op.
-    */
+    /* whitePixel, blackPixel */
+    pScreen->QueryBestSize = mfbQueryBestSize;
+    /* SaveScreen */
+    pScreen->GetImage = mfbGetImage;
+    pScreen->GetSpans = mfbGetSpans;
     pScreen->CreateWindow = mfbCreateWindow;
     pScreen->DestroyWindow = mfbDestroyWindow;
     pScreen->PositionWindow = mfbPositionWindow;
     pScreen->ChangeWindowAttributes = mfbChangeWindowAttributes;
     pScreen->RealizeWindow = mfbMapWindow;
     pScreen->UnrealizeWindow = mfbUnmapWindow;
-
-    pScreen->RealizeFont = mfbRealizeFont;
-    pScreen->UnrealizeFont = mfbUnrealizeFont;
-    pScreen->CloseScreen = mfbCloseScreen;
-    pScreen->QueryBestSize = mfbQueryBestSize;
-    pScreen->GetImage = mfbGetImage;
-    pScreen->GetSpans = mfbGetSpans;
-    pScreen->SourceValidate = (void (*)()) 0;
-    pScreen->CreateGC = mfbCreateGC;
+    pScreen->PaintWindowBackground = mfbPaintWindow;
+    pScreen->PaintWindowBorder = mfbPaintWindow;
+    pScreen->CopyWindow = mfbCopyWindow;
     pScreen->CreatePixmap = mfbCreatePixmap;
     pScreen->DestroyPixmap = mfbDestroyPixmap;
-    pScreen->ValidateTree = miValidateTree;
-
+    pScreen->RealizeFont = mfbRealizeFont;
+    pScreen->UnrealizeFont = mfbUnrealizeFont;
+    pScreen->CreateGC = mfbCreateGC;
+    pScreen->CreateColormap = mfbCreateColormap;
+    pScreen->DestroyColormap = mfbDestroyColormap;
     pScreen->InstallColormap = mfbInstallColormap;
     pScreen->UninstallColormap = mfbUninstallColormap;
     pScreen->ListInstalledColormaps = mfbListInstalledColormaps;
     pScreen->StoreColors = NoopDDA;
     pScreen->ResolveColor = mfbResolveColor;
-    pScreen->CreateColormap = mfbCreateColormap;
-    pScreen->DestroyColormap = mfbDestroyColormap;
-
-    pScreen->RegionCreate = miRegionCreate;
-    pScreen->RegionInit = miRegionInit;
-    pScreen->RegionCopy = miRegionCopy;
-    pScreen->RegionDestroy = miRegionDestroy;
-    pScreen->RegionUninit = miRegionUninit;
-    pScreen->Intersect = miIntersect;
-    pScreen->Inverse = miInverse;
-    pScreen->Union = miUnion;
-    pScreen->Subtract = miSubtract;
-    pScreen->RegionReset = miRegionReset;
-    pScreen->TranslateRegion = miTranslateRegion;
-    pScreen->RectIn = miRectIn;
-    pScreen->PointInRegion = miPointInRegion;
-    pScreen->WindowExposures = miWindowExposures;
-    pScreen->PaintWindowBackground = mfbPaintWindow;
-    pScreen->PaintWindowBorder = mfbPaintWindow;
-    pScreen->CopyWindow = mfbCopyWindow;
-    pScreen->ClearToBackground = miClearToBackground;
-
-    pScreen->RegionNotEmpty = miRegionNotEmpty;
-    pScreen->RegionEmpty = miRegionEmpty;
-    pScreen->RegionExtents = miRegionExtents;
-    pScreen->RegionAppend = miRegionAppend;
-    pScreen->RegionValidate = miRegionValidate;
     pScreen->BitmapToRegion = mfbPixmapToRegion;
-    pScreen->RectsToRegion = miRectsToRegion;
-    pScreen->SendGraphicsExpose = miSendGraphicsExpose;
-
-    pScreen->BlockHandler = NoopDDA;
-    pScreen->WakeupHandler = NoopDDA;
-    pScreen->blockData = (pointer)NULL;
-    pScreen->wakeupData = (pointer)NULL;
-
-    miInitializeBackingStore (pScreen, &mfbBSFuncRec);
-#ifdef MITSHM
-    ShmRegisterFbFuncs(pScreen);
-#endif
     return TRUE;
 }
