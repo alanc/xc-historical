@@ -1,6 +1,6 @@
-/* $XConsortium: lbxstr.h,v 1.6 94/09/13 17:29:50 mor Exp mor $ */
+/* $XConsortium: lbxstr.h,v 1.7 94/11/08 19:50:28 mor Exp $ */
 /*
- * $NCDId: @(#)lbxstr.h,v 1.19 1994/03/22 18:22:47 lemke Exp $
+ * $NCDId: @(#)lbxstr.h,v 1.25 1994/11/18 20:29:52 lemke Exp $
  *
  * Copyright 1992 Network Computing Devices
  *
@@ -32,7 +32,7 @@
 #define LBXNAME "LBX"
 
 #define LBX_MAJOR_VERSION	0	/* current version numbers */
-#define LBX_MINOR_VERSION	0
+#define LBX_MINOR_VERSION	1
 
 typedef struct {
     CARD8	byteOrder;
@@ -78,11 +78,8 @@ typedef struct _LbxStartProxy {
     CARD8	reqType;	/* always LbxReqCode */
     CARD8	lbxReqType;	/* always X_LbxStartProxy */
     CARD16	length B16;
-    CARD16	deltaN B16;	/* size of delta cache */
-    CARD16	deltaMaxLen B16;/* max length of messages in delta cache */
-    CARD32	comptype B32;	/* LbxCompressNone etc */
 } xLbxStartProxyReq;
-#define sz_xLbxStartProxyReq	    12
+#define sz_xLbxStartProxyReq	    4
 
 typedef struct _LbxStopProxy {
     CARD8	reqType;	/* always LbxReqCode */
@@ -324,44 +321,6 @@ typedef struct _LbxInvalidateTag {
 } xLbxInvalidateTagReq;
 #define	sz_xLbxInvalidateTagReq	8
 
-/* Following used for LbxPolyPoint, LbxPolyLine, LbxPolySegment,
-   LbxPolyRectangle, LbxPolyArc, LbxPolyFillRectangle and LbxPolyFillArc */
-
-typedef struct _LbxPolyPoint {
-    CARD8	reqType;	/* always LbxReqCode */
-    CARD8	lbxReqType;
-    CARD16	length B16;
-    Drawable	drawable B32;
-    GContext	gc B32;
-    CARD8	padBytes;
-} xLbxPolyPointReq;
-#define sz_xLbxPolyPointReq	13
-
-typedef xLbxPolyPointReq xLbxPolyLineReq;
-typedef xLbxPolyPointReq xLbxPolySegmentReq;
-typedef xLbxPolyPointReq xLbxPolyRectangleReq;
-typedef xLbxPolyPointReq xLbxPolyArcReq;
-typedef xLbxPolyPointReq xLbxPolyFillRectangleReq;
-typedef xLbxPolyPointReq xLbxPolyFillArcReq;
-
-#define sz_xLbxPolyLineReq		13
-#define sz_xLbxPolySegmentReq		13
-#define sz_xLbxPolyRectangleReq		13
-#define sz_xLbxPolyArcReq		13
-#define sz_xLbxPolyFillRectangleReq	13
-#define sz_xLbxPolyFillArc		13
-
-typedef struct _LbxFillPoly {
-    CARD8	reqType;	/* always LbxReqCode */
-    CARD8	lbxReqType;
-    CARD16	length B16;
-    Drawable	drawable B32;
-    GContext	gc B32;
-    BYTE	shape;
-    CARD8	padBytes;
-} xLbxFillPolyReq;
-#define sz_xLbxFillPolyReq	14
-
 typedef struct _LbxPutImage {
     CARD8	reqType;	/* always LbxReqCode */
     CARD8	lbxReqType;	/* always X_LbxPutImage */
@@ -410,6 +369,107 @@ typedef struct {
 } xLbxGetImageReply;
 
 #define sz_xLbxGetImageReply 32
+  
+/* Following used for LbxPolyPoint, LbxPolyLine, LbxPolySegment,
+   LbxPolyRectangle, LbxPolyArc, LbxPolyFillRectangle and LbxPolyFillArc */
+
+#define GFX_CACHE_SIZE  15
+
+#define GFXdCacheEnt(e)	    ((e) & 0xf)
+#define GFXgCacheEnt(e)	    (((e) >> 4) & 0xf)
+#define GFXCacheEnts(d,g)   (((d) & 0xf) | (((g) & 0xf) << 4))
+
+#define GFXCacheNone   0xf
+
+typedef struct _LbxPolyPoint {
+    CARD8	reqType;	/* always LbxReqCode */
+    CARD8	lbxReqType;
+    CARD16	length B16;
+    CARD8	cacheEnts;
+    CARD8	padBytes;
+} xLbxPolyPointReq;
+
+#define sz_xLbxPolyPointReq	6
+
+typedef xLbxPolyPointReq xLbxPolyLineReq;
+typedef xLbxPolyPointReq xLbxPolySegmentReq;
+typedef xLbxPolyPointReq xLbxPolyRectangleReq;
+typedef xLbxPolyPointReq xLbxPolyArcReq;
+typedef xLbxPolyPointReq xLbxPolyFillRectangleReq;
+typedef xLbxPolyPointReq xLbxPolyFillArcReq;
+
+#define sz_xLbxPolyLineReq		sz_xLbxPolyPointReq
+#define sz_xLbxPolySegmentReq		sz_xLbxPolyPointReq
+#define sz_xLbxPolyRectangleReq		sz_xLbxPolyPointReq
+#define sz_xLbxPolyArcReq		sz_xLbxPolyPointReq
+#define sz_xLbxPolyFillRectangleReq	sz_xLbxPolyPointReq
+#define sz_xLbxPolyFillArc		sz_xLbxPolyPointReq
+
+typedef struct _LbxFillPoly {
+    CARD8	reqType;	/* always LbxReqCode */
+    CARD8	lbxReqType;
+    CARD16	length B16;
+    CARD8	cacheEnts;
+    BYTE	shape;
+    CARD8	padBytes;
+} xLbxFillPolyReq;
+#define sz_xLbxFillPolyReq	7
+
+typedef struct _LbxCopyArea {
+    CARD8	reqType;	/* always LbxReqCode */
+    CARD8	lbxReqType;
+    CARD16	length B16;
+    CARD8	srcCache;	/* source drawable */
+    CARD8	cacheEnts;	/* dest drawable and gc */
+    /* followed by encoded src x, src y, dst x, dst y, width, height */
+} xLbxCopyAreaReq;
+    
+#define sz_xLbxCopyAreaReq  6
+
+typedef struct _LbxCopyPlane {
+    CARD8	reqType;	/* always LbxReqCode */
+    CARD8	lbxReqType;
+    CARD16	length B16;
+    CARD32	bitPlane B32;
+    CARD8	srcCache;	/* source drawable */
+    CARD8	cacheEnts;	/* dest drawable and gc */
+    /* followed by encoded src x, src y, dst x, dst y, width, height */
+} xLbxCopyPlaneReq;
+    
+#define sz_xLbxCopyPlaneReq  10
+
+typedef struct _LbxPolyText {
+    CARD8	reqType;	/* always LbxReqCode */
+    CARD8	lbxReqType;
+    CARD16	length B16;
+    CARD8	cacheEnts;
+    /* followed by encoded src x, src y coordinates and text elts */
+} xLbxPolyTextReq;
+
+#define sz_xLbxPolyTextReq  5
+
+typedef xLbxPolyTextReq xLbxPolyText8Req;
+typedef xLbxPolyTextReq xLbxPolyText16Req;
+    
+#define sz_xLbxPolyTextReq	5
+#define sz_xLbxPolyText8Req	5
+#define sz_xLbxPolyText16Req	5
+
+typedef struct _LbxImageText {
+    CARD8	reqType;	/* always LbxReqCode */
+    CARD8	lbxReqType;
+    CARD16	length B16;
+    CARD8	cacheEnts;
+    CARD8	nChars;
+    /* followed by encoded src x, src y coordinates and string */
+} xLbxImageTextReq;
+    
+typedef xLbxImageTextReq xLbxImageText8Req;
+typedef xLbxImageTextReq xLbxImageText16Req;
+    
+#define sz_xLbxImageTextReq	6
+#define sz_xLbxImageText8Req	6
+#define sz_xLbxImageText16Req	6
 
 typedef struct {
     CARD8       offset;
@@ -417,21 +477,48 @@ typedef struct {
 } xLbxDiffItem;
 #define sz_xLbxDiffItem    2
 
-
 typedef struct {
     BYTE	type;		/* X_Reply */
-    CARD8	unused;
+    CARD8	nOpts;
     CARD16	sequenceNumber B16;
-    CARD32	length B32;	/* addition scheme-specific data follows */
-    CARD16	deltaN B16;	/* delta cache size */
-    CARD16	deltaMaxLen B16;/* max. length of messages in delta cache */
-    CARD32	comptype B32;	/* LbxCompressNone etc */
+    CARD32	length B32;
+    CARD32	optDataStart B32;
     CARD32	pad0 B32;
     CARD32	pad1 B32;
     CARD32	pad2 B32;
     CARD32	pad3 B32;
+    CARD32	pad4 B32;
+    CARD32	pad5 B32;
 } xLbxStartReply;
 #define sz_xLbxStartReply	32
+#define sz_xLbxStartReplyHdr	8
+
+typedef struct _LbxQueryExtension {
+    CARD8	reqType;	/* always LbxReqCode */
+    CARD8	lbxReqType;	/* always X_LbxQueryExtension */
+    CARD16	length B16;
+    CARD32	nbytes B32;
+} xLbxQueryExtensionReq;
+#define	sz_xLbxQueryExtensionReq	8
+
+typedef struct {
+    BYTE	type;			/* X_Reply */
+    CARD8	numReqs;
+    CARD16	sequenceNumber B16;
+    CARD32	length B32;
+    BOOL	present;
+    CARD8	major_opcode;
+    CARD8	first_event;
+    CARD8	first_error;
+    CARD32	pad0 B32;
+    CARD32	pad1 B32;
+    CARD32	pad2 B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
+
+    /* reply & event generating requests */
+} xLbxQueryExtensionReply;
+#define sz_xLbxQueryExtensionReply	32
 
 typedef struct _LbxEvent {
     BYTE	type;		/* always eventBase + LbxEvent */
@@ -446,6 +533,39 @@ typedef struct _LbxEvent {
     CARD32	pad4 B32;
 } xLbxEvent;
 #define sz_xLbxEventEvent	32
+
+/* squished X event sizes.  If these change, be sure to update lbxquish.c
+ * and unsquish.c appropriately
+ */
+
+#define	lbxsz_KeyButtonEvent		32
+#define	lbxsz_EnterLeaveEvent		32
+#define	lbxsz_FocusEvent		12
+#define	lbxsz_KeymapEvent		32
+#define	lbxsz_ExposeEvent		20
+#define	lbxsz_GfxExposeEvent		24
+#define	lbxsz_NoExposeEvent		12
+#define	lbxsz_VisibilityEvent		12
+#define	lbxsz_CreateNotifyEvent		24
+#define	lbxsz_DestroyNotifyEvent	12
+#define	lbxsz_UnmapNotifyEvent		16
+#define	lbxsz_MapNotifyEvent		16
+#define	lbxsz_MapRequestEvent		12
+#define	lbxsz_ReparentEvent		24
+#define	lbxsz_ConfigureNotifyEvent	28
+#define	lbxsz_ConfigureRequestEvent	28
+#define	lbxsz_GravityEvent		16
+#define	lbxsz_ResizeRequestEvent	12
+#define	lbxsz_CirculateEvent		20
+#define	lbxsz_PropertyEvent		20
+#define	lbxsz_SelectionClearEvent	20
+#define	lbxsz_SelectionRequestEvent	28
+#define	lbxsz_SelectionNotifyEvent	24
+#define	lbxsz_ColormapEvent		16
+#define	lbxsz_MappingNotifyEvent	8
+#define	lbxsz_ClientMessageEvent	32
+
+#define	lbxsz_UnknownEvent		32
 
 #ifndef NDEBUG
 

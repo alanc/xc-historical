@@ -26,6 +26,9 @@
 #ifndef _LZW_H_
 #define _LZW_H_
 
+#define LZW_STRCOMP_OPT		"lzw"
+#define LZW_STRCOMP_OPT_LEN	3
+
 #define LZW_PACKET_HDRLEN	2
 #define LZW_MAX_DATALEN		0xfff
 #define LZW_MAX_PLAIN		270

@@ -1,6 +1,6 @@
-/* $XConsortium: XLbx.h,v 1.6 94/09/13 17:28:45 mor Exp mor $ */
+/* $XConsortium: XLbx.h,v 1.7 94/11/08 19:49:53 mor Exp $ */
 /*
- * $NCDId: @(#)XLbx.h,v 1.17 1994/03/24 01:26:07 dct Exp $
+ * $NCDId: @(#)XLbx.h,v 1.21 1994/11/18 20:29:53 lemke Exp $
  *
  * Copyright 1992 Network Computing Devices
  *
@@ -55,8 +55,17 @@
 #define	X_LbxChangeProperty		23
 #define	X_LbxGetProperty		24
 #define	X_LbxTagData			25
-#define X_LbxPutImage			26
-#define X_LbxGetImage			27
+
+#define X_LbxCopyArea			26
+#define X_LbxCopyPlane			27
+#define X_LbxPolyText8			28
+#define X_LbxPolyText16			29
+#define X_LbxImageText8			30
+#define X_LbxImageText16		31
+
+#define X_LbxQueryExtension		32
+#define X_LbxPutImage			33
+#define X_LbxGetImage			34
 
 #define LbxEvent			0
 #define LbxNumberEvents			(LbxEvent + 1)
