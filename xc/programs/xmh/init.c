@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcs_id[] =
-    "$XConsortium: init.c,v 2.23 88/09/03 11:07:01 swick Exp $";
+    "$XConsortium: init.c,v 2.24 89/06/30 15:19:17 kit Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -30,6 +30,7 @@ static char rcs_id[] =
 /* Init.c - Handle start-up initialization. */
 
 #include "xmh.h"
+#include <sys/errno.h>
 
 extern char* _XLowerCase();
 
@@ -135,6 +136,24 @@ int defwidth, defheight;
 }
 
 
+static _IOErrorHandler(dpy)
+    Display *dpy;
+{
+    extern char* SysErrMsg();
+    fprintf (stderr,
+	     "%s:\tfatal IO error after %lu requests (%lu known processed)\n",
+		    progName,
+		    NextRequest(dpy) - 1, LastKnownRequestProcessed(dpy));
+    fprintf (stderr, "\t%d unprocessed events remaining.\r\n", QLength(dpy));
+
+    if (errno == EPIPE) {
+	(void) fprintf (stderr,
+     "\tThe connection was probably broken by a server shutdown or KillClient.\r\n");
+    }
+
+    Punt("Cannot continue from server error.");
+}
+
 /* All the start-up initialization goes here. */
 
 InitializeWorld(argc, argv)
@@ -160,6 +179,8 @@ char **argv;
     toplevel = XtInitialize("main", "Xmh", table, XtNumber(table),
 			    &argc, argv);
     if (argc > 1) Syntax(progName);
+
+    XSetIOErrorHandler(_IOErrorHandler);
 
     XtSetValues(toplevel, shell_args, XtNumber(shell_args));
 
