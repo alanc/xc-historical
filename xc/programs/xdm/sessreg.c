@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sessreg.c,v 1.13 94/10/28 20:41:37 gildea Exp gildea $
+ * $XConsortium: sessreg.c,v 1.14 94/10/28 21:20:07 gildea Exp gildea $
  *
  * Copyright (c) 1990  X Consortium
  * 
@@ -118,7 +118,11 @@ char	*program_name;
 usage (x)
 {
 	if (x) {
-		fprintf (stderr, "%s: usage %s {-a -d} [-w wtmp-file] [-u utmp-file] [-L lastlog-file]\n", program_name, program_name);
+		fprintf (stderr, "%s: usage %s {-a -d} [-w wtmp-file] [-u utmp-file]", program_name, program_name);
+#ifndef NO_LASTLOG
+		fprintf (stderr, " [-L lastlog-file]");
+#endif
+		fprintf (stderr, "\n");
 		fprintf (stderr, "             [-t ttys-file] [-l line-name] [-h host-name]\n");
 		fprintf (stderr, "             [-s slot-number] [-x servers-file] user-name\n");
 		exit (1);
@@ -189,11 +193,13 @@ char	**argv;
 			if (!strcmp (utmp_file, "none"))
 				utmp_none = 1;
 			break;
+#ifndef NO_LASTLOG
 		case 'L':
 			llog_file = getstring (&argv, &Lflag);
 			if (!strcmp (llog_file, "none"))
 				llog_none = 1;
 			break;
+#endif
 		case 't':
 			ttys_file = getstring (&argv, &tflag);
 			break;
