@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.54 90/12/27 15:02:46 rws Exp $
+ * $XConsortium: Xrm.c,v 1.55 91/02/03 18:14:14 rws Exp $
  */
 
 /***********************************************************
@@ -2236,8 +2236,13 @@ Bool XrmQGetResource(db, names, classes, pType, pValue)
 	closure.value = pValue;
 	table = db->table;
 	if (names[1]) {
-	    if (table && !table->leaf &&
-		GetNEntry(table, names, classes, &closure))
+	    if (table && !table->leaf) {
+		if (GetNEntry(table, names, classes, &closure))
+		    return True;
+		table = table->next;
+	    }
+	    if (table && table->hasloose &&
+		GetLooseVEntry((LTable)table, names, classes, &closure))
 		return True;
 	} else {
 	    if (table && !table->leaf)
