@@ -1,4 +1,4 @@
-/* $XConsortium: smproxy.c,v 1.4 94/06/16 13:17:00 mor Exp $ */
+/* $XConsortium: smproxy.c,v 1.5 94/06/16 16:34:08 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -643,6 +643,7 @@ SmPointer clientData;
     WinInfo *winInfo = (WinInfo *) clientData;
 
     SmcCloseConnection (winInfo->smc_conn, 0, NULL);
+    winInfo->smc_conn = NULL;
     XtRemoveInput (winInfo->input_id);
 
     /* Now tell the client to die */
