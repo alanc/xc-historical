@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: MenuButton.c,v 1.5 89/06/29 16:22:41 kit Exp $";
+static char Xrcsid[] = "$XConsortium: MButton.c,v 1.6 89/07/06 16:52:59 kit Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -81,6 +81,13 @@ static XtActionsRec actionsList[] =
 {
   {"PopupMenu",	PopupMenu}
 };
+
+/* %%% Export the actions list as a hack until an Intrinsics interface 
+ * allows applications to call action procedures.  Used in xmh: button.c
+ * Donna Converse, 7 July, 1989.  To be removed before R4 public release.
+ */
+XtActionList xaw_mbutton_actions_list = actionsList;
+/* End of the hack */
 
 MenuButtonClassRec menuButtonClassRec = {
   {
