@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Popup.c,v 1.10 87/11/01 13:23:07 swick Locked $";
+static char rcsid[] = "$Header: Popup.c,v 6.8 88/01/29 12:24:05 asente Exp $";
 #endif lint
 
 /*
@@ -24,93 +24,113 @@ static char rcsid[] = "$Header: Popup.c,v 1.10 87/11/01 13:23:07 swick Locked $"
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-
-#include "Intrinsic.h"
-#include "Atoms.h"
+#include "IntrinsicI.h"
 #include "Shell.h"
 #include "ShellP.h"
-#include "Popup.h"
-#include "PopupP.h"
+#include "Atoms.h"
+#include "Resource.h"
+void _XtPopup(widget, grab_kind, spring_loaded)
+    Widget      widget;
+    XtGrabKind  grab_kind;
+    Boolean     spring_loaded;
+{
+    register ShellWidget shell_widget = (ShellWidget) widget;
 
-#define Offset(x)	(XtOffset(PopupWidget, x))
+    if (! XtIsSubclass(widget,shellWidgetClass)) {
+	XtError("XtPopup requires a subclass of shellWidgetClass");
+    }
 
-static XtResource resourcesTransient[] = {
-	{ XtNsaveUnder, XtCSaveUnder, XrmRBoolean, sizeof(Boolean),
-	    Offset(shell.save_under), XrmRString, "TRUE"},
-	{ XtNtransient, XtCTransient, XrmRBoolean, sizeof(Boolean),
-	    Offset(shell.transient), XrmRString, "TRUE"},
-};
+    if (! shell_widget->shell.popped_up) {
+	XtCallCallbacks(widget, XtNpopupCallback, (Opaque)NULL);
+	shell_widget->shell.popped_up = TRUE;
+	shell_widget->shell.grab_kind = grab_kind;
+	shell_widget->shell.spring_loaded = spring_loaded;
+	if (shell_widget->shell.create_popup_child_proc != NULL) {
+	    (*(shell_widget->shell.create_popup_child_proc))(widget);
+	}
+	if (grab_kind == XtGrabExclusive) {
+	    XtAddGrab(widget, TRUE, spring_loaded);
+	} else if (grab_kind == XtGrabNonexclusive) {
+	    XtAddGrab(widget, FALSE, spring_loaded);
+	}
+	XtRealizeWidget(widget);
+	XMapRaised(XtDisplay(widget), XtWindow(widget));
+    }
+} /* _XtPopup */
+
+void XtPopup (widget, grab_kind)
+    Widget  widget;
+    XtGrabKind grab_kind;
+{
+    _XtPopup(widget, grab_kind, FALSE);
+} /* XtPopup */
+
+/* ARGSUSED */
+void XtCallbackNone(widget, closure, call_data)
+    Widget  widget;
+    caddr_t closure;
+    caddr_t call_data;
+{
+    XtSetSensitive(widget, FALSE);
+    _XtPopup((Widget) closure, XtGrabNone, FALSE);
+} /* XtCallbackNone */
+
+/* ARGSUSED */
+void XtCallbackNonexclusive(widget, closure, call_data)
+    Widget  widget;
+    caddr_t closure;
+    caddr_t call_data;
+{
+
+    XtSetSensitive(widget, FALSE);
+    _XtPopup((Widget) closure, XtGrabNonexclusive, FALSE);
+} /* XtCallbackNonexclusive */
+
+/* ARGSUSED */
+void XtCallbackExclusive(widget, closure, call_data)
+    Widget  widget;
+    caddr_t closure;
+    caddr_t call_data;
+{
+    XtSetSensitive(widget, FALSE);
+    _XtPopup((Widget) closure, XtGrabExclusive, FALSE);
+} /* XtCallbackExclusive */
 
 
-static XtResource resourcesOverride[] = {
-	{ XtNsaveUnder, XtCSaveUnder, XrmRBoolean, sizeof(Boolean),
-	    Offset(shell.save_under), XrmRString, "TRUE"},
-	{ XtNoverrideRedirect, XtCOverrideRedirect, XrmRBoolean,
-	    sizeof(Boolean),
-	    Offset(shell.override_redirect), XrmRString, "TRUE"},
-};
+void XtPopdown(widget)
+    Widget  widget;
+{
+    /* Unmap a shell widget if it is mapped, and remove from grab list */
+
+    register ShellWidget shell_widget = (ShellWidget) widget;
+
+    if (! XtIsSubclass(widget, shellWidgetClass)) {
+	XtError("XtPopdown requires a subclass of shellWidgetClass");
+    }
+
+    if (shell_widget->shell.popped_up) {
+	XtUnmapWidget(widget);
+	if (shell_widget->shell.grab_kind != XtGrabNone) {
+	    XtRemoveGrab(widget);
+	}
+	shell_widget->shell.popped_up = FALSE;
+	XtCallCallbacks(widget, XtNpopdownCallback, (Opaque)NULL);
+    }
+} /* XtPopdown */
+
+/* ARGSUSED */
+void XtCallbackPopdown(widget, closure, call_data)
+    Widget  widget;
+    caddr_t closure;
+    caddr_t call_data;
+{
+    register XtPopdownID id = (XtPopdownID) closure;
+
+    XtPopdown(id->shell_widget);
+    if (id->enable_widget != NULL) {
+	XtSetSensitive(id->enable_widget, TRUE);
+    }
+} /* XtCallbackPopdown */
 
 
-PopupClassRec TransientClassRec = {
-    /* superclass         */    (WidgetClass) &shellClassRec,
-    /* class_name         */    "Popup",
-    /* size               */    sizeof(PopupRec),
-    /* Class Initializer  */	NULL,
-    /* Class init'ed ?    */	FALSE,
-    /* initialize         */    NULL,
-    /* realize            */    XtInheritRealize,
-    /* actions            */    NULL,
-    /* num_actions        */    0,
-    /* resources          */    resourcesTransient,
-    /* resource_count     */	XtNumber(resourcesTransient),
-    /* xrm_class          */    NULLQUARK,
-    /* compress_motion    */    FALSE,
-    /* compress_exposure  */    TRUE,
-    /* visible_interest   */    FALSE,
-    /* destroy            */    NULL,
-    /* resize             */    XtInheritResize,
-    /* expose             */    XtInheritExpose,
-    /* set_values         */    NULL,
-    /* accept_focus       */    XtInheritAcceptFocus,
-    /* callback offset    */    NULL,
-    /* reserved           */    NULL,
-    /* geometry_manager   */    XtInheritGeometryManager,
-    /* change_managed     */    XtInheritChangeManaged,
-    /* insert_child	  */	XtInheritInsertChild,
-    /* delete_child	  */	XtInheritDeleteChild,
-    /* move_focus_to_next */    XtInheritMoveFocusToNext,
-    /* move_focus_to_prev */    XtInheritMoveFocusToPrev
-};
 
-PopupClassRec OverrideClassRec = {
-    /* superclass         */    (WidgetClass) &shellClassRec,
-    /* class_name         */    "Popup",
-    /* size               */    sizeof(PopupRec),
-    /* Class Initializer  */	NULL,
-    /* Class init'ed ?    */	FALSE,
-    /* initialize         */    NULL,
-    /* realize            */    XtInheritRealize,
-    /* actions            */    NULL,
-    /* num_actions        */    0,
-    /* resources          */    resourcesOverride,
-    /* resource_count     */	XtNumber(resourcesOverride),
-    /* xrm_class          */    NULLQUARK,
-    /* compress_motion    */    FALSE,
-    /* compress_exposure  */    TRUE,
-    /* visible_interest   */    FALSE,
-    /* destroy            */    NULL,
-    /* resize             */    XtInheritResize,
-    /* expose             */    XtInheritExpose,
-    /* set_values         */    NULL,
-    /* accept_focus       */    XtInheritAcceptFocus,
-    /* callback offset    */    NULL,
-    /* reserved           */    NULL,
-    /* geometry_manager   */    XtInheritGeometryManager,
-    /* change_managed     */    XtInheritChangeManaged,
-    /* insert_child	  */	XtInheritInsertChild,
-    /* delete_child	  */	XtInheritDeleteChild,
-    /* move_focus_to_next */    XtInheritMoveFocusToNext,
-    /* move_focus_to_prev */    XtInheritMoveFocusToPrev
-};
-
-WidgetClass popupWidgetClass = (WidgetClass) (&TransientClassRec);
