@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: luna.cf,v 1.10 91/04/13 11:45:24 rws Exp $
+XCOMM platform:  $XConsortium: luna.cf,v 1.11 91/04/13 14:28:17 rws Exp $
 #ifdef Mc68000Architecture
 #define OSName            UNIOS-B 4.3BSD UNIX: 1.50
 #define OSMajorVersion    1
@@ -34,7 +34,7 @@ XCOMM operating system:  OSName
 #endif
 
 #ifdef Mc88000Architecture
-#define BuildBdfFonts		NO		/* XXX remove in R5 */
+#define BuildFonts		NO		/* XXX remove in R5 */
 #define BuildServer		YES		/* XXX remove in R5 */
 #define XnonServer Xnon /* XXX remove in R5 */
 #endif

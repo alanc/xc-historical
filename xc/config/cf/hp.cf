@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: hp.cf,v 1.38 91/05/06 22:27:31 rws Exp $
+XCOMM platform:  $XConsortium: hp.cf,v 1.39 91/05/07 15:18:24 rws Exp $
 
 #define OSName                 HP-UX 7.0
 XCOMM operating system:  OSName
@@ -20,7 +20,7 @@ XCOMM operating system:  OSName
 #define HasVFork               YES
 #define RemoveTargetProgramByMoving YES
 
-#define BuildBdfFonts		NO		/* XXX remove in R5 */
+#define BuildFonts		NO		/* XXX remove in R5 */
 /* This defines the server you want */
 #define BuildServer            YES
 #define XnonServer              Xnon		/* XXX fix in R5 */

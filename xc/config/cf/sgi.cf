@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sgi.cf,v 1.13 91/04/13 18:05:42 rws Exp $
+XCOMM platform:  $XConsortium: sgi.cf,v 1.14 91/05/06 19:57:28 rws Exp $
 
 #define OSName			IRIX
 XCOMM operating system:  OSName
@@ -62,7 +62,7 @@ XCOMM operating system:  OSName
 #define DefaultSystemPath /usr/sbin:/usr/bsd:/bin:/etc:/usr/bin:/usr/etc:/usr/bin/X11
 
 #define BuildServer             YES /* XXX change to NO in R5 */
-#define BuildBdfFonts NO		/* XXX remove in R5 */
+#define BuildFonts		 NO /* XXX remove in R5 */
 #define XnonServer Xnon /* XXX remove in R5 */
 
 /* Changed to a single shell command for pmake/smake */
