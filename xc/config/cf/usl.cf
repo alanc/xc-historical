@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: att.cf,v 1.9 91/01/08 19:43:37 rws Exp $
+XCOMM platform:  $XConsortium: att.cf,v 1.10 91/03/12 14:52:21 rws Exp $
 
 
 /*
@@ -14,3 +14,4 @@ XCOMM platform:  $XConsortium: att.cf,v 1.9 91/01/08 19:43:37 rws Exp $
 #define NeedWidePrototypes	NO	/* experimental */
 #define DefaultCCOptions	-Xc
 #define BuildServer		NO
+#include <sv4Lib.rules>
