@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.64 89/10/17 12:41:35 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.65 89/11/14 20:19:25 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -168,7 +168,7 @@ clean::									@@\
  */
 #ifndef SingleProgramTarget
 #define	SingleProgramTarget(program,objects,locallibs,syslibs)		@@\
-NormalProgramTarget(program,objects,,locallibs,syslibs)
+NormalProgramTarget(program,objects, /**/,locallibs,syslibs)
 #endif /* SingleProgramTarget */
 
 /*
@@ -202,7 +202,7 @@ program: $(OBJS) $(DEPLIBS)						@@\
 	RemoveTargetProgram($@)						@@\
 	$(CC) -o $@ $(OBJS) $(LDOPTIONS) $(LOCAL_LIBRARIES) $(LDLIBS) $(EXTRA_LOAD_FLAGS) @@\
 									@@\
-SaberProgramTarget(program,$(SRCS),$(OBJS),$(LOCAL_LIBRARIES),)		@@\
+SaberProgramTarget(program,$(SRCS),$(OBJS),$(LOCAL_LIBRARIES), /**/)	@@\
 									@@\
 InstallProgram(program,$(BINDIR))					@@\
 InstallManPage(program,$(MANDIR))					@@\
@@ -415,7 +415,7 @@ install:: program							@@\
  */
 #ifndef InstallProgram
 #define	InstallProgram(program,dest)					@@\
-InstallProgramWithFlags(program,dest,/**/)
+InstallProgramWithFlags(program,dest, /**/)
 #endif /* InstallProgram */
 
 
@@ -616,7 +616,7 @@ Makefile:: 								@@\
  */
 #ifndef MakefileTarget
 #define MakefileTarget()						@@\
-BuildMakefileTarget(Imakefile,/**/)
+BuildMakefileTarget(Imakefile, /**/)
 #endif /* MakefileTarget */
 
 
@@ -1123,7 +1123,7 @@ NamedMakeSubdirs(all,dirs)
  */
 #ifndef DependSubdirs
 #define DependSubdirs(dirs) \
-NamedTargetSubdirs(depend,dirs,"depending",/**/,depend)
+NamedTargetSubdirs(depend,dirs,"depending", /**/,depend)
 #endif /* DependSubdirs */
 
 
@@ -1150,7 +1150,7 @@ NamedTargetSubdirs(install.man,dirs,"installing man pages",DESTDIR='$(DESTDIR)',
  */
 #ifndef IncludesSubdirs
 #define IncludesSubdirs(dirs) \
-NamedTargetSubdirs(includes,dirs,including,/**/,includes)
+NamedTargetSubdirs(includes,dirs,including, /**/,includes)
 #endif
 
 
@@ -1328,7 +1328,7 @@ dst::  src deplist							@@\
  */
 #ifndef MakeScriptFromCpp
 #define MakeScriptFromCpp(name,defs)					@@\
-CppScriptTarget(name,name.cpp,defs,)
+CppScriptTarget(name,name.cpp,defs, /**/)
 #endif /* MakeScriptFromCpp */
 
 
