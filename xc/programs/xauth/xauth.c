@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xauth.c,v 1.15 89/01/03 11:40:02 jim Exp $
+ * $XConsortium: xauth.c,v 1.16 89/01/03 11:56:39 jim Exp $
  *
  * xauth - manipulate authorization file
  *
@@ -41,7 +41,6 @@ Bool break_locks = False;		/* for error recovery */
  */
 
 static char *authfilename = NULL;	/* filename of cookie file */
-static int do_script ();		/* for reading scripts */
 static char *defcmds[] = { "source", "-", NULL };  /* default command */
 static int ndefcmds = 2;
 static char *defsource = "(stdin)";
