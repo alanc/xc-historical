@@ -1,4 +1,4 @@
-/* $XConsortium: auth.c,v 1.6 94/07/08 14:06:17 mor Exp mor $ */
+/* $XConsortium: auth.c,v 1.7 94/08/17 17:43:05 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -91,7 +91,10 @@ IceAuthDataEntry	**authDataEntries;
 {
     FILE	*addfp;
     FILE	*removefp;
+    int		original_umask;
     int		i;
+
+    original_umask = umask (0077);	/* disallow non-owner access */
 
     if (!(addfp = fopen (".xsm-add-auth", "w")))
 	return (0);
@@ -132,6 +135,8 @@ IceAuthDataEntry	**authDataEntries;
 
     fclose (addfp);
     fclose (removefp);
+
+    umask (original_umask);
 
     system ("iceauth source .xsm-add-auth");
 
