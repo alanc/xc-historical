@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.124 94/04/02 16:20:13 matt Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.125 94/04/02 17:45:59 matt Exp $
 
 #ifdef SVR4
 #ifdef i386Architecture
@@ -178,12 +178,18 @@ XCOMM operating system:  OSName
 #define SetTtyGroup	  YES
 #define HasPutenv	  YES
 #ifndef i386Architecture
-#define Xsun24Server	  YES
-#define XsunServer	  YES		/* has color and mono support */
-#define XsunMonoServer	  YES		/* monochrome only */
+#ifndef Xsun24Server
+#define Xsun24Server	  NO		/* color, mono, multiple depths */
 #endif
+#ifndef XsunServer
+#define XsunServer	  YES		/* color and mono, 8 bit only */
+#endif
+#ifndef XsunMonoServer
+#define XsunMonoServer	  NO		/* monochrome only */
+#endif
+#endif /* not i386Architecture */
 #ifndef BuildPexExt
-#define BuildPexExt	  XsunServer
+#define BuildPexExt	  (XsunServer || Xsun24Server)
 #endif
 #define	BuildXKB	  YES
 
