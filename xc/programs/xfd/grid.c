@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontgrid.c,v 1.19 90/10/29 11:30:02 dave Exp $
+ * $XConsortium: fontgrid.c,v 1.20 91/02/17 15:59:30 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *

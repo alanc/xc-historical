@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xfd.c,v 1.24 91/01/10 21:53:53 gildea Exp $
+ * $XConsortium: xfd.c,v 1.25 91/02/17 15:59:20 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
