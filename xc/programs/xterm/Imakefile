@@ -5,7 +5,8 @@
 /**/#                                                                         #
 /**/# Xterm assumes that bcopy can handle overlapping arguments.  If your     #
 /**/# bcopy (or memcpy) can't, write a routine called Bcopy that can and      #
-/**/# the -DBcopy argument from the DEFINES list given below.                 #
+/**/# the -DBcopy argument from the DEFINES list given below.  If possible,   #
+/**/# try to avoid extra procedure calls as this routine is used a lot.       #
 /**/#                                                                         #
 /**/###########################################################################
 
