@@ -21,7 +21,9 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: tables.c,v 1.18 87/09/18 16:53:09 newman Exp $ */
+/* $XConsortium: tables.c,v 1.19 88/09/06 15:41:32 jim Exp $ */
+
+extern int    ProcInitialConnection(), ProcEstablishConnection();
 
 extern int    ProcBadRequest(), ProcCreateWindow(),
     ProcChangeWindowAttributes(), ProcGetWindowAttributes(),
@@ -131,6 +133,13 @@ extern void
     SGetPointerControlReply(), SGetScreenSaverReply(), 
     SListHostsReply(), SGetPointerMappingReply(),
     SGetModifierMappingReply(), SGenericReply();
+
+int (* InitialVector[3]) () =
+{
+    0,
+    ProcInitialConnection,
+    ProcEstablishConnection
+};
 
 int (* ProcVector[256]) () =
 {
