@@ -1,5 +1,5 @@
 
-/* $XConsortium: sun.h,v 5.38 94/03/28 14:35:05 kaleb Exp dpw $ */
+/* $XConsortium: sun.h,v 5.39 94/08/16 13:45:30 dpw Exp kaleb $ */
 
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
@@ -340,6 +340,7 @@ extern Bool sunInitCommon(
 extern Firm_event* sunKbdGetEvents(
 #if NeedFunctionPrototypes
     int /* fd */,
+    Bool /* on */,
     int* /* pNumEvents */,
     Bool* /* pAgain */
 #endif
@@ -348,6 +349,7 @@ extern Firm_event* sunKbdGetEvents(
 extern Firm_event* sunMouseGetEvents(
 #if NeedFunctionPrototypes
     int /* fd */,
+    Bool /* on */,
     int* /* pNumEvents */,
     Bool* /* pAgain */
 #endif

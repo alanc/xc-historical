@@ -1,4 +1,4 @@
-/* $XConsortium: sunIo.c,v 5.25 94/04/17 20:29:40 rws Exp $ */
+/* $XConsortium: sunIo.c,v 5.26 94/05/02 17:24:53 mor Exp kaleb $ */
 /*-
  * sunIo.c --
  *	Functions to handle input from the keyboard and mouse.
@@ -121,11 +121,13 @@ void sunEnqueueEvents (
 	 * in pE and kE
 	 */
 	if ((numPtrEvents == 0) && PtrAgain) {
-	    ptrEvents = sunMouseGetEvents (ptrPriv->fd, &nPE, &PtrAgain);
+	    ptrEvents = sunMouseGetEvents (ptrPriv->fd, pPointer->public.on, 
+					   &nPE, &PtrAgain);
 	    numPtrEvents = nPE;
 	}
 	if ((numKbdEvents == 0) && KbdAgain) {
-	    kbdEvents = sunKbdGetEvents (kbdPriv->fd, &nKE, &KbdAgain);
+	    kbdEvents = sunKbdGetEvents (kbdPriv->fd, pKeyboard->public.on,
+					 &nKE, &KbdAgain);
 	    numKbdEvents = nKE;
 	}
 	if ((numPtrEvents == 0) && (numKbdEvents == 0))

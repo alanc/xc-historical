@@ -1,4 +1,4 @@
-/* $XConsortium: sunMouse.c,v 5.20 94/03/16 16:46:15 kaleb Exp $ */
+/* $XConsortium: sunMouse.c,v 5.21 94/04/17 20:29:47 kaleb Exp kaleb $ */
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
  *
@@ -194,11 +194,13 @@ int sunMouseProc (device, what)
 #if NeedFunctionPrototypes
 Firm_event* sunMouseGetEvents (
     int		fd,
+    Bool	on,
     int*	pNumEvents,
     Bool*	pAgain)
 #else
-Firm_event* sunMouseGetEvents (fd, pNumEvents, pAgain)
+Firm_event* sunMouseGetEvents (fd, on, pNumEvents, pAgain)
     int		fd;
+    Bool	on;
     int*	pNumEvents;
     Bool*	pAgain;
 #endif
@@ -215,8 +217,13 @@ Firm_event* sunMouseGetEvents (fd, pNumEvents, pAgain)
 	    FatalError ("Could not read from mouse");
 	}
     } else {
-	*pNumEvents = nBytes / sizeof (Firm_event);
-	*pAgain = (nBytes == sizeof (evBuf));
+	if (on) {
+	    *pNumEvents = nBytes / sizeof (Firm_event);
+	    *pAgain = (nBytes == sizeof (evBuf));
+	} else {
+	    *pNumEvents = 0;
+	    *pAgain = FALSE;
+	}
     }
     return evBuf;
 }
