@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.49 91/07/17 00:46:03 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.50 91/07/27 13:55:09 rws Exp $
 XCOMM
 XCOMM                         Attention xterm porters
 XCOMM
@@ -59,12 +59,11 @@ SpecialObjectRule(misc.o,NullParameter,$(MISC_DEFINES))
 SpecialObjectRule(charproc.o,NullParameter,$(MISC_DEFINES))
 
 #if InstallXtermSetUID
-#define ProgramTarget SetUIDProgramTarget
+SetUIDProgramTarget(xterm,$(OBJS1),$(DEPLIBS1),XawClientLibs,$(TERMCAPLIB) $(PTYLIB))
 #else
-#define ProgramTarget NormalProgramTarget
+NormalProgramTarget(xterm,$(OBJS1),$(DEPLIBS1),XawClientLibs,$(TERMCAPLIB) $(PTYLIB))
 #endif
 
-ProgramTarget(xterm,$(OBJS1),$(DEPLIBS1),XawClientLibs,$(TERMCAPLIB) $(PTYLIB))
 #if InstallXtermSetUID && defined(SunArchitecture) && HasSharedLibraries
 #if AlternateUsrLibDir
 LDOVERRIDE =  -Bstatic -L$(USRLIBDIR)
