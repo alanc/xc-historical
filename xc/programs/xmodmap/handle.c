@@ -2,7 +2,7 @@
  * xmodmap - program for loading keymap definitions into server
  *
  * $Source: /usr/expo/X/src/clients/xmodmap/RCS/handle.c,v $
- * $Header: handle.c,v 1.3 88/02/14 16:59:10 jim Exp $
+ * $Header: handle.c,v 1.4 88/07/11 14:29:42 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -796,11 +796,10 @@ static int get_keysym_list (line, len, np, kslistp)
 	    continue;
 	}
 
-	if (XKeysymToKeycode (dpy, keysym) == 0) {
-	    badmsgn ("keysym name; '%s' not in keyboard map", line-n, n);
-	    /* do NOT return here, look for others */
-	    continue;
-	}
+	/*
+	 * Do NOT test to see if the keysym translates to a keycode or you
+	 * won't be able to assign new ones....
+	 */
 
 	/* grow the list bigger if necessary */
 	if (havesofar >= maxcanhave) {
