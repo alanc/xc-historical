@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.116 93/09/17 10:49:26 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.117 93/09/18 11:37:45 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -169,6 +169,10 @@ typedef struct _XSQEvent
 
 #ifdef CRAY
 #define WORD64
+#endif
+
+#ifdef __alpha
+#define LONG64
 #endif
 
 #ifndef X_NOT_STDC_ENV
@@ -527,15 +531,19 @@ extern int errno;			/* Internal system error number. */
     ptr = (type) dpy->bufptr; \
     dpy->bufptr += (n);
 
-/*
- * provide emulation routines for smaller architectures
- */
-#ifndef WORD64
+#ifdef WORD64
+#define Data16(dpy, data, len) _XData16(dpy, (short *)data, len)
+#define Data32(dpy, data, len) _XData32(dpy, (long *)data, len)
+#else
 #define Data16(dpy, data, len) Data((dpy), (char *)(data), (len))
-#define Data32(dpy, data, len) Data((dpy), (char *)(data), (len))
 #define _XRead16Pad(dpy, data, len) _XReadPad((dpy), (char *)(data), (len))
 #define _XRead16(dpy, data, len) _XRead((dpy), (char *)(data), (len))
+#ifdef LONG64
+#define Data32(dpy, data, len) _XData32(dpy, (long *)data, len)
+#else
+#define Data32(dpy, data, len) Data((dpy), (char *)(data), (len))
 #define _XRead32(dpy, data, len) _XRead((dpy), (char *)(data), (len))
+#endif
 #endif /* not WORD64 */
 
 #define PackData16(dpy,data,len) Data16 (dpy, data, len)
