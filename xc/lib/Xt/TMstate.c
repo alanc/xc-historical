@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.7 91/05/11 20:39:59 converse Exp $ */
+/* $XConsortium: TMstate.c,v 1.149 91/05/11 20:51:47 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -2134,22 +2134,6 @@ static _XtTranslateOp _XtGetTMOperation(xlations)
     return ((xlations->hasBindings)
 	    ? ((ATranslations)xlations)->xlations->operation
 	    : xlations->operation);
-}
-
-void _XtSetTMOperation(xlations, op)
-    XtTranslations	xlations;
-    _XtTranslateOp	op;
-{
-    switch(op)
-      {
-	case XtTableReplace:
-	case XtTableAugment:
-	case XtTableOverride:
-	  xlations->operation = op;
-	  break;
-	default:
-	  XtWarning("invalid tm operation");
-      }
 }
 
 void XtAugmentTranslations(widget, new)
