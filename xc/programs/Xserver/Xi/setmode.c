@@ -1,4 +1,4 @@
-/* $XConsortium: xsetmode.c,v 1.8 91/02/22 15:33:34 rws Exp $ */
+/* $XConsortium: xsetmode.c,v 1.9 92/11/14 10:53:54 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -89,8 +89,7 @@ ProcXSetDeviceMode(client)
 	}
     if (dev->valuator == NULL)
 	{
-	SendErrorToClient(client, IReqCode, X_SetDeviceValuators, 0, 
-		BadMatch);
+	SendErrorToClient(client, IReqCode, X_SetDeviceMode, 0, BadMatch);
 	return Success;
 	}
     if ((dev->grab) && !SameClient(dev->grab, client))
