@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.143 93/08/13 13:59:06 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.144 93/08/14 16:20:43 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -18,7 +18,7 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.143 93/08/13 13:59:06 rws Exp $
  * _Use				(a,b)
  * _UseCat			(a,b,c)
  * ProgramTargetName		(target)
- * DotProgramTargetName		(target)
+ * RunProgram			(progvar,options)
  * RemoveFile			(file)
  * RemoveFiles			(files)
  * SaberLoadTarget		(target,srclist,libs,defines)
@@ -43,7 +43,6 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.143 93/08/13 13:59:06 rws Exp $
  * RanLibrary			(args)
  * LibraryTargetName		(libname)
  * LibraryTargetNameSuffix	(libname,suffix)
- * LibraryTargetNameDir		(dir,libname)
  * InstallLibrary		(libname,dest)
  * MergeIntoInstalledLibrary	(tolib,fromlib)
  * InstallLibraryAlias		(libname,alias,dest)
@@ -219,8 +218,8 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.143 93/08/13 13:59:06 rws Exp $
 #define ProgramTargetName(target) target
 #endif
 
-#ifndef DotProgramTargetName
-#define DotProgramTargetName(target) ./target
+#ifndef RunProgram
+#define RunProgram(progvar,options) $(progvar) options
 #endif
 
 #ifndef RemoveFile
@@ -486,10 +485,6 @@ PurifyLinkTarget(Concat(load,server),server,$(CDEBUGFLAGS) $(CCOPTIONS) objects 
 #define LibraryTargetNameSuffix(libname,suffix) Concat3(lib,libname,suffix.a)
 #endif
 
-#ifndef LibraryTargetNameDir
-#define LibraryTargetNameDir(dir,libname) Concat(dir/lib,libname.a)
-#endif
-
 /*
  * InstallLibrary - generate rules to install the indicated library.
  */
@@ -498,7 +493,7 @@ PurifyLinkTarget(Concat(load,server),server,$(CDEBUGFLAGS) $(CCOPTIONS) objects 
 install:: LibraryTargetName(libname)					@@\
 	MakeDir($(DESTDIR)dest)						@@\
 	$(INSTALL) -c $(INSTLIBFLAGS) LibraryTargetName(libname) $(DESTDIR)dest @@\
-	RanLibrary($(RANLIBINSTFLAGS) LibraryTargetNameDir($(DESTDIR)dest,libname))
+	RanLibrary($(RANLIBINSTFLAGS) $(DESTDIR)dest/LibraryTargetName(libname))
 #endif /* InstallLibrary */
 
 /*
