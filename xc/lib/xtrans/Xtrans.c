@@ -1,4 +1,4 @@
-/* $XConsortium: Xtrans.c,v 1.26 94/10/18 15:57:42 mor Exp mor $ */
+/* $XConsortium: Xtrans.c,v 1.27 94/10/18 17:23:34 mor Exp kaleb $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -1283,7 +1283,7 @@ int 		iovcnt;
 
 #endif /* CRAY */
 
-#if (defined(SYSV) && defined(SYSV386)) || defined(WIN32) || defined(__sxg__) || defined(SCO)
+#if (defined(SYSV) && defined(i386)) || defined(WIN32) || defined(__sxg__) || defined(SCO)
 
 /*
  * emulate readv
