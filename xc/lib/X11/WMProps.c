@@ -1,4 +1,4 @@
-/* $XConsortium: SetWMProps.c,v 1.5 91/01/06 11:43:53 rws Exp $ */
+/* $XConsortium: SetWMProps.c,v 1.6 91/01/08 14:40:12 gildea Exp $ */
 
 /***********************************************************
 Copyright 1988 by Wyse Technology, Inc., San Jose, Ca.,
@@ -31,8 +31,9 @@ SOFTWARE.
 #include <X11/Xutil.h>
 #include <X11/Xos.h>
 
+#ifdef X_NOT_STDC_ENV
 extern char *getenv();
-
+#endif
 
 /* 
  * XSetWMProperties sets the following properties:

@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsLkCol.c,v 1.5 91/02/12 16:13:17 dave Exp $ */
+/* $XConsortium: XcmsLkCol.c,v 1.6 91/02/20 09:02:39 rws Exp $ */
 
 /*
  * (c) Copyright 1989 1990 1991 Tektronix Inc.
@@ -40,7 +40,10 @@
  */
 extern void _XColor_to_XcmsRGB();
 extern void _XcmsRGB_to_XColor();
+
+#ifdef X_NOT_STDC_ENV
 extern char *getenv();
+#endif
 
 
 /*
