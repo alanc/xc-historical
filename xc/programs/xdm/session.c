@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.55 91/09/19 16:25:56 keith Exp $
+ * $XConsortium: session.c,v 1.56 91/12/17 19:42:21 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -35,6 +35,9 @@
 #endif
 
 extern int  errno;
+extern char **setEnv();
+
+static Bool StartClient();
 
 static int			clientPid;
 static struct greet_info	greet;
@@ -357,11 +360,12 @@ SessionExit (d, status, removeAuth)
     exit (status);
 }
 
+static Bool
 StartClient (verify, d, pidp, passwd)
-struct verify_info	*verify;
-struct display		*d;
-int			*pidp;
-char			*passwd;
+    struct verify_info	*verify;
+    struct display	*d;
+    int			*pidp;
+    char		*passwd;
 {
     char	**f, *home, *getEnv ();
     char	*failsafeArgv[2];
@@ -411,11 +415,12 @@ char			*passwd;
 	SetUserAuthorization (d, verify);
 	home = getEnv (verify->userEnviron, "HOME");
 	if (home)
-		if (chdir (home) == -1) {
-			LogError ("No home directory %s for user %s, using /\n",
-				  home, getEnv (verify->userEnviron, "USER"));
-			chdir ("/");
-		}
+	    if (chdir (home) == -1) {
+		LogError ("user \"%s\": no home directory \"%s\", using \"/\"\n",
+			  getEnv (verify->userEnviron, "USER"), home);
+		chdir ("/");
+		verify->userEnviron = setEnv(verify->userEnviron, "HOME", "/");
+	    }
 	if (verify->argv) {
 		Debug ("executing session %s\n", verify->argv[0]);
 		execute (verify->argv, verify->userEnviron);
