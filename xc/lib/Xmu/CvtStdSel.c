@@ -1,4 +1,4 @@
-/* $XConsortium: CvtStdSel.c,v 1.19 90/12/26 16:50:05 rws Exp $
+/* $XConsortium: CvtStdSel.c,v 1.20 91/02/14 13:26:05 rws Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -29,7 +29,7 @@
 
 #ifdef SYSVNET
 #include <interlan/il_types.h>
-#define __TYPES__		/* prevent #including <sys/types.h> in Xlib.h */
+#define __TYPES__		/* prevent #include <sys/types.h> in Xlib.h */
 #include <interlan/netdb.h>
 #include <interlan/socket.h>
 #endif /* SYSVNET */
@@ -49,6 +49,7 @@
 #include "StdSel.h"
 #include "SysUtil.h"
 #include <X11/Xfuncs.h>
+#include <X11/Xos.h>
 
 #if defined(SUNSHLIB) && defined(SHAREDCODE)
 /*

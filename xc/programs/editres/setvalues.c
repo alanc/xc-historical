@@ -1,5 +1,5 @@
 /*
- * $XConsortium: setvalues.c,v 1.2 91/01/09 17:01:49 rws Exp $
+ * $XConsortium: setvalues.c,v 1.3 91/01/09 17:46:00 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,14 +23,16 @@
  * Author:  Chris D. Peterson, MIT X Consortium
  */
 
-#include <stdio.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 #include <X11/Xresource.h>
 
+#include <stdio.h>
+
 #include <X11/Xaw/AsciiText.h>
 #include <X11/Xaw/Cardinals.h>	
 #include <X11/Xfuncs.h>
+#include <X11/Xos.h>
 #include "editresP.h"
 
 extern WNode * FindNode();
