@@ -1,4 +1,4 @@
-/* $XConsortium: misc.c,v 1.9 93/11/22 16:33:40 mor Exp $ */
+/* $XConsortium: misc.c,v 1.10 93/11/22 17:41:19 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -110,7 +110,8 @@ IceConn iceConn;
 {
     char *string = (char *) malloc (strlen (iceConn->vendor) + 1);
 
-    strcpy (string, iceConn->vendor);
+    if (string)
+	strcpy (string, iceConn->vendor);
 
     return (string);
 }
@@ -124,7 +125,8 @@ IceConn iceConn;
 {
     char *string = (char *) malloc (strlen (iceConn->release) + 1);
 
-    strcpy (string, iceConn->release);
+    if (string)
+	strcpy (string, iceConn->release);
 
     return (string);
 }
@@ -171,7 +173,8 @@ IceConn iceConn;
 	char *string = (char *) malloc (
 	    strlen (iceConn->connection_string) + 1);
 
-	strcpy (string, iceConn->connection_string);
+	if (string)
+	    strcpy (string, iceConn->connection_string);
 
 	return (string);
     }
@@ -494,7 +497,7 @@ IceConn iceConn;
     int	fromlen = sizeof (from);
 
 #ifdef UNIXCONN
-    if (iceConn->iceConn_type == ICE_CONN_FROM_LOCAL_ACCEPT)
+    if (iceConn->listen_obj->unix_domain)
     {
 	name = (char *) malloc (6);
 	strcpy (name, "local");
