@@ -1,4 +1,4 @@
-/* $XConsortium: miInquire.c,v 5.3 91/12/26 18:00:51 hersh Exp $ */
+/* $XConsortium: miInquire.c,v 5.4 92/06/02 19:40:07 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -960,11 +960,11 @@ OC_INQ_FUNC_HEADER(SOFAS)
     COPY_PTR(ptr);
 
     GET_INQ_STORAGE( pFill, pexSOFAS, ddFill, miSOFASStruct);
-    ptr = (ddPointer)(((pexElementInfo *)pFill)+1);
-    PACK_CARD16(ddFill->shape, ptr);
+    pFill->shape = ddFill->shape;
     pFill->edgeAttributes = ddFill->edgeAttribs;
-    PACK_CARD8(ddFill->contourHint, ptr);
-    pFill->numFAS = ddFill->pFacets.numFacets;
+    pFill->contourHint = ddFill->contourHint;
+    pFill->contourCountsFlag = ddFill->contourCountsFlag;
+    pFill->numFAS = ddFill->numFAS;
     pFill->numVertices = ddFill->points.ddList->numPoints;
     pFill->numEdges = ddFill->numEdges;
     pFill->numContours = ddFill->connects.numListLists;
@@ -1166,7 +1166,7 @@ OC_INQ_FUNC_HEADER(ExtCellArray)
     COPY_PTR(ptr);
 
     GET_INQ_STORAGE( pCell, pexExtCellArray, ddCell, miCellArrayStruct);
-    ptr = (ddPointer)&(pCell->point1);
+    ptr = (ddPointer)&(pCell->colourType);
 
     PACK_CARD16(ddCell->colours.colourType, ptr);
     SKIP_PADDING(ptr, 2);
