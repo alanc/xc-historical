@@ -1,4 +1,4 @@
-/* $XConsortium: MultiSrc.c,v 1.6 94/04/17 20:12:25 kaleb Exp kaleb $ */
+/* $XConsortium: MultiSrc.c,v 1.7 95/01/16 20:10:20 kaleb Exp kaleb $ */
 
 /*
  * Copyright 1991 by OMRON Corporation
@@ -62,9 +62,6 @@ in this Software without prior written authorization from the X Consortium.
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
-#include <stdio.h>
-#include <ctype.h>
-#include <errno.h>
 #include <X11/Xfuncs.h>
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/MultiSrcP.h>
@@ -73,6 +70,9 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xmu/CharSet.h>
 #include "XawI18n.h"
 #include <X11/Xos.h>
+#include <stdio.h>
+#include <ctype.h>
+#include <errno.h>
 
 /****************************************************************
  *
