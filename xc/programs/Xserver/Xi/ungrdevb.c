@@ -1,4 +1,4 @@
-/* $XConsortium: xungrdevb.c,v 1.4 89/10/10 16:11:28 gms Exp $ */
+/* $Header: xungrdevb.c,v 1.2 90/07/26 08:48:33 gms ic1C-80 $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -78,8 +78,6 @@ ProcXUngrabDeviceButton(client)
     DeviceIntPtr	mdev;
     WindowPtr		pWin;
     GrabRec		temporaryGrab;
-    ButtonClassPtr	b;
-    KeyClassPtr		mk;
 
     REQUEST(xUngrabDeviceButtonReq);
     REQUEST_SIZE_MATCH(xUngrabDeviceButtonReq);
@@ -91,28 +89,31 @@ ProcXUngrabDeviceButton(client)
 	    BadDevice);
 	return Success;
 	}
-    b = dev->button;
-    if (b == NULL)
+    if (dev->button == NULL)
 	{
 	SendErrorToClient(client, IReqCode, X_UngrabDeviceButton, 0, 
 		BadMatch);
 	return Success;
 	}
 
-    mdev = LookupDeviceIntRec (stuff->modifier_device);
-    if (mdev == NULL)
+    if (stuff->modifier_device)
 	{
-	SendErrorToClient(client, IReqCode, X_UngrabDeviceButton, 0, 
-	    BadDevice);
-	return Success;
-	}
-    mk = mdev->key;
-    if (mk == NULL)
-	{
-	SendErrorToClient(client, IReqCode, X_UngrabDeviceButton, 0, 
+	mdev = LookupDeviceIntRec (stuff->modifier_device);
+	if (mdev == NULL)
+	    {
+	    SendErrorToClient(client, IReqCode, X_UngrabDeviceButton, 0, 
+	        BadDevice);
+	    return Success;
+	    }
+	if (mdev->key == NULL)
+	    {
+	    SendErrorToClient(client, IReqCode, X_UngrabDeviceButton, 0, 
 		BadMatch);
-	return Success;
+	    return Success;
+	    }
 	}
+    else
+	mdev = (DeviceIntPtr) LookupKeyboardDevice();
 
     pWin = LookupWindow(stuff->grabWindow, client);
     if (!pWin)
@@ -126,6 +127,7 @@ ProcXUngrabDeviceButton(client)
     temporaryGrab.device = dev;
     temporaryGrab.window = pWin;
     temporaryGrab.type = DeviceButtonPress;
+    temporaryGrab.modifierDevice = mdev;
     temporaryGrab.modifiersDetail.exact = stuff->modifiers;
     temporaryGrab.modifiersDetail.pMask = NULL;
     temporaryGrab.detail.exact = stuff->button;

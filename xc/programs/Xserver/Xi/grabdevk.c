@@ -1,4 +1,4 @@
-/* $XConsortium: xgrabdevk.c,v 1.5 89/12/02 15:21:15 rws Exp $ */
+/* $Header: xgrabdevk.c,v 1.2 90/07/26 08:51:16 gms ic1C-80 $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -107,13 +107,24 @@ ProcXGrabDeviceKey(client)
 	return Success;
 	}
 
-    mdev = LookupDeviceIntRec (stuff->modifier_device);
-    if (mdev == NULL)
+    if (stuff->modifier_device)
 	{
-	SendErrorToClient(client, IReqCode, X_GrabDeviceKey, 0, 
-	    BadDevice);
-	return Success;
+	mdev = LookupDeviceIntRec (stuff->modifier_device);
+	if (mdev == NULL)
+	    {
+	    SendErrorToClient(client, IReqCode, X_GrabDeviceKey, 0, 
+	        BadDevice);
+	    return Success;
+	    }
+	if (mdev->key == NULL)
+	    {
+	    SendErrorToClient(client, IReqCode, X_GrabDeviceKey, 0, 
+		BadMatch);
+	    return Success;
+	    }
 	}
+    else
+	mdev = (DeviceIntPtr) LookupKeyboardDevice();
 
     class = (XEventClass *) (&stuff[1]);	/* first word of values */
 

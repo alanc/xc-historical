@@ -1,4 +1,4 @@
-/* $XConsortium: xstubs.c,v 1.3 89/12/02 15:21:42 rws Exp $ */
+/* $XConsortium: xstubs.c,v 1.2 89/11/10 11:58:20 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -43,6 +43,7 @@ ChangeKeyboardDevice (old_dev, new_dev)
     DeviceIntPtr	old_dev;
     DeviceIntPtr	new_dev;
     {
+    return Success;
     }
 
 
@@ -54,10 +55,12 @@ ChangeKeyboardDevice (old_dev, new_dev)
  */
 
 int
-ChangePointerDevice (old_dev, new_dev)
+ChangePointerDevice (old_dev, new_dev, xaxis, yaxis)
     DeviceIntPtr	old_dev;
     DeviceIntPtr	new_dev;
+    unsigned char	xaxis, yaxis;
     {
+    return Success;
     }
 
 /***********************************************************************
@@ -68,6 +71,7 @@ ChangePointerDevice (old_dev, new_dev)
  *
  */
 
+void
 CloseInputDevice (d, client)
     DeviceIntPtr d;
     ClientPtr client;
@@ -91,14 +95,12 @@ AddOtherInputDevices ()
     DeviceProc deviceProc;
     pointer private;
 
-/*
-     for each uninitialized device, do something like: 
+    /*  for each uninitialized device, do something like: */
 
     dev = (DeviceIntPtr) AddInputDevice(deviceProc, TRUE);
     dev->public.devicePrivate = private;
     RegisterOtherDevice(dev);
     dev->inited = ((*dev->deviceProc)(dev, DEVICE_INIT) == Success);
-*/
 
     }
 
@@ -123,10 +125,11 @@ OpenInputDevice (dev, client, status)
  *
  */
 
+int
 SetDeviceMode (client, id, mode)
     register	ClientPtr	client;
     int		id;
     int		mode;
     {
-    return BadDevice;
+    return BadMatch;
     }

@@ -1,4 +1,4 @@
-/* $XConsortium: xextinit.c,v 1.9 90/05/18 15:26:00 rws Exp $ */
+/* $Header: xextinit.c,v 1.4 90/09/27 10:46:19 gms ic1C-80 $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -50,7 +50,7 @@ struct  dev_type
     {
     Atom	type;
     char	*name;
-    }dev_type [] = {{0,"KEYBOARD"},
+    }dev_type [] = {{0,XI_KEYBOARD},
 	    {0,XI_MOUSE},
 	    {0,XI_TABLET},
 	    {0,XI_TOUCHSCREEN},
@@ -138,6 +138,9 @@ void	SReplyIDispatch();
 void	IResetProc();
 void	SEventIDispatch();
 void	NotImplemented();
+static	XExtensionVersion	thisversion = {XI_Present, 
+						XI_Add_XDeviceBell_Major, 
+						XI_Add_XDeviceBell_Minor};
 
 /**********************************************************************
  *
@@ -162,9 +165,7 @@ XInputExtensionInit()
     if (extEntry)
         {
 	IReqCode = extEntry->base;
-	AllExtensionVersions[IReqCode-128].major_version = 1;
-	AllExtensionVersions[IReqCode-128].minor_version = 0;
-	AllExtensionVersions[IReqCode-128].present = TRUE;
+	AllExtensionVersions[IReqCode-128] = thisversion;
 	(void)MakeAtom(INAME, 11, TRUE);
 	MakeDeviceTypeAtoms ();
 	RT_INPUTCLIENT = CreateNewResourceType(InputClientGone);
@@ -266,6 +267,8 @@ ProcIDispatch (client)
         return(ProcXQueryDeviceState(client));
     else if (stuff->data == X_SendExtensionEvent)
         return(ProcXSendExtensionEvent(client));
+    else if (stuff->data == X_DeviceBell)
+        return(ProcXDeviceBell(client));
     else
         {
 	SendErrorToClient(client, IReqCode, stuff->data, 0, BadRequest);
@@ -349,6 +352,8 @@ SProcIDispatch(client)
         return(SProcXQueryDeviceState(client));
     else if (stuff->data == X_SendExtensionEvent)
         return(SProcXSendExtensionEvent(client));
+    else if (stuff->data == X_DeviceBell)
+        return(SProcXDeviceBell(client));
     else
         {
 	SendErrorToClient(client, IReqCode, stuff->data, 0, BadRequest);
@@ -502,7 +507,7 @@ SDeviceStateNotifyEvent (from, to)
     {
     register int	i;
     register char	n;
-    CARD32 *ip B32;
+    INT32 *ip B32;
 
     *to = *from;
     swaps(&to->sequenceNumber,n);

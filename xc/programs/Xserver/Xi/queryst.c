@@ -1,4 +1,4 @@
-/* $XConsortium: xqueryst.c,v 1.4 89/12/02 15:21:26 rws Exp $ */
+/* $Header: xqueryst.c,v 1.3 90/11/07 16:52:49 gms Exp $ */
 
 /***********************************************************************
  *
@@ -60,7 +60,7 @@ ProcXQueryDeviceState(client)
     xValuatorState		*tv;
     xQueryDeviceStateReply	rep;
     DeviceIntPtr		dev;
-    unsigned short		*values;
+    unsigned int		*values;
 
     REQUEST(xQueryDeviceStateReq);
     REQUEST_SIZE_MATCH(xQueryDeviceStateReq);
@@ -97,7 +97,7 @@ ProcXQueryDeviceState(client)
     if (v != NULL)
 	{
 	total_length += (sizeof(xValuatorState) + 
-			(v->numAxes * sizeof(unsigned short)));
+			(v->numAxes * sizeof(unsigned int)));
 	num_classes++;
 	}
     buf = (char *) Xalloc (total_length);
@@ -114,9 +114,7 @@ ProcXQueryDeviceState(client)
 	tk = (xKeyState *) buf;
 	tk->class = KeyClass;
 	tk->length = sizeof (xKeyState);
-	/*
-	tk->num_keys = k->num_keys;
-	*/
+	tk->num_keys = k->curKeySyms.maxKeyCode - k->curKeySyms.minKeyCode + 1;
 	for (i = 0; i<32; i++)
 	    tk->keys[i] = k->down[i];
 	buf += sizeof (xKeyState);
@@ -143,12 +141,12 @@ ProcXQueryDeviceState(client)
 	buf += sizeof(xValuatorState);
 	for (i=0, values=v->axisVal; i<v->numAxes; i++)
 	    {
-	    *((unsigned short *) buf) = *values++;
+	    *((unsigned int *) buf) = *values++;
 	    if (client->swapped)
 		{
-		swaps ((unsigned short *) buf, n);
-		buf += sizeof(unsigned short);
+		swapl ((unsigned int *) buf, n);/* macro - braces needed */
 		}
+	    buf += sizeof(unsigned int);
 	    }
 	}
 

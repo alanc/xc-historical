@@ -1,4 +1,4 @@
-/* $XConsortium: xlistdev.c,v 1.9 90/05/18 10:54:47 rws Exp $ */
+/* $Header: xlistdev.c,v 1.2 90/12/31 16:15:19 gms Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -51,9 +51,6 @@ void		SizeDeviceInfo ();
 void		ListDeviceInfo ();
 void		AddOtherInputDevices ();
 
-void		CopyDeviceName ();
-void		CopySwapDevice ();
-
 /***********************************************************************
  *
  * This procedure lists the input devices available to the server.
@@ -82,7 +79,7 @@ ProcXListInputDevices (client)
     {
     xListInputDevicesReply	rep;
     int			numdevs;
-    int 		namesize = 0;
+    int 		namesize = 1;	/* need 1 extra byte for strcpy */
     int 		size = 0;
     int 		total_length;
     char		*devbuf;
@@ -91,6 +88,8 @@ ProcXListInputDevices (client)
     char		*savbuf;
     xDeviceInfo 	*dev;
     DeviceIntPtr 	d;
+    void CopyDeviceName ();
+    void CopySwapDevice ();
 
     REQUEST(xListInputDevicesReq);
     REQUEST_SIZE_MATCH(xListInputDevicesReq);
@@ -188,6 +187,10 @@ ListDeviceInfo (client, d, dev, devbuf, classbuf, namebuf)
 /***********************************************************************
  *
  * This procedure copies data to the DeviceInfo struct, swapping if necessary.
+ *
+ * We need the extra byte in the allocated buffer, because the trailing null
+ * hammers one extra byte, which is overwritten by the next name except for
+ * the last name copied.
  *
  */
 
