@@ -1,5 +1,5 @@
 /*
-* $Header: IntrinsicP.h,v 6.23 88/02/09 14:27:05 swick Exp $
+* $Header: IntrinsicP.h,v 6.24 88/02/14 14:53:48 rws Exp $
 */
 
 /*
@@ -32,8 +32,8 @@
 
 typedef unsigned long XtVersionType;
 
-#define XT_VERSION 6
-#define XT_REVISION 3
+#define XT_VERSION 2
+#define XT_REVISION 1
 #define XtVersion (XT_VERSION * 1000 + XT_REVISION)
 
 extern void _XtInherit();

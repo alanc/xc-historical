@@ -1,5 +1,5 @@
 /*
-* $Header: IntrinsicI.h,v 6.16 88/02/02 19:20:41 swick Exp $
+* $Header: IntrinsicI.h,v 6.17 88/02/14 11:59:57 rws Exp $
 */
 
 /*
