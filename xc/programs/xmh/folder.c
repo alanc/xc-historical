@@ -1,5 +1,5 @@
 /*
- * $XConsortium: folder.c,v 2.23 89/11/20 21:05:02 converse Exp $
+ * $XConsortium: folder.c,v 2.24 89/11/21 15:34:02 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -484,7 +484,7 @@ void DoDeleteFolder(w, client_data, call_data)
      * TestAndSet returns true if there is a delete pending on this folder.
      */
     if (TocTestAndSetDeletePending(toc))	{
-	ErrorPopup("There is a delete pending on this folder.");
+	PopupError("There is a delete pending on this folder.");
 	return;
     }
 
