@@ -1,4 +1,4 @@
-/* $XConsortium: TranslateI.h,v 1.45 92/12/22 17:17:33 converse Exp $ */
+/* $XConsortium: TranslateI.h,v 1.46 93/08/18 11:26:41 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -607,6 +607,12 @@ extern void _XtTraverseStateTree(
 extern void _XtTranslateInitialize(
 #if NeedFunctionPrototypes
     void
+#endif
+);
+
+extern void _XtAddTMConverters(
+#if NeedFunctionPrototypes
+    ConverterTable	/* table */
 #endif
 );
 
