@@ -1,4 +1,4 @@
-/* $XConsortium: restart.c,v 1.18 94/11/14 15:31:32 mor Exp mor $ */
+/* $XConsortium: restart.c,v 1.19 94/12/12 19:58:14 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -557,11 +557,16 @@ StartDefaultApps ()
 
     while (getline(&buf, &buflen, f))
     {
+	char logtext[256];
+
 	if (buf[0] == '!')
 	    continue;		/* a comment */
 
 	if (p = strchr (buf, '\n'))
 	    *p = '\0';
+
+	sprintf (logtext, "Starting locally : %s\n", buf);
+	add_log_text (logtext);
 
 	len = strlen (buf);
 
