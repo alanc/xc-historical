@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: screen.c,v 1.23 91/01/30 16:16:39 gildea Exp $
+ *	$XConsortium: screen.c,v 1.24 91/01/30 17:48:12 gildea Exp $
  */
 
 /*
@@ -27,7 +27,9 @@
 
 /* screen.c */
 
-#include <X11/Xlib.h>
+#include "ptyx.h"
+#include "error.h"
+
 #include <stdio.h>
 #include <signal.h>
 #ifdef SVR4
@@ -36,10 +38,7 @@
 #include <sys/ioctl.h>
 #endif
 
-#include "ptyx.h"
-#include "error.h"
-
-#ifdef	att
+#ifdef att
 #include <sys/termio.h>
 #include <sys/stream.h>			/* get typedef used in ptem.h */
 #include <sys/ptem.h>
@@ -158,6 +157,7 @@ register int length;		/* length of string */
 	col = screen->buf[avail = 2 * screen->cur_row] + screen->cur_col;
 	attrs = screen->buf[avail + 1] + screen->cur_col;
 	flags &= ATTRIBUTES;
+	flags |= CHARDRAWN;
 	bcopy(str, col, length);
 	while(length-- > 0)
 		*attrs++ = flags;
@@ -235,43 +235,54 @@ int where;
 
 
 ScrnInsertChar (sb, row, col, n, size)
-/*
-   Inserts n blanks in sb at row, col.  Size is the size of each row.
- */
-ScrnBuf sb;
-int row, size;
-register int col, n;
+    /*
+      Inserts n blanks in sb at row, col.  Size is the size of each row.
+      */
+    ScrnBuf sb;
+    int row, size;
+    register int col, n;
 {
 	register int i, j;
 	register Char *ptr = sb [2 * row];
 	register Char *attrs = sb [2 * row + 1];
+	int wrappedbit = attrs[0]&LINEWRAPPED;
 
+	attrs[0] &= ~LINEWRAPPED; /* make sure the bit isn't moved */
 	for (i = size - 1; i >= col + n; i--) {
 		ptr[i] = ptr[j = i - n];
 		attrs[i] = attrs[j];
 	}
 
-	bzero (ptr + col, n);
-	bzero (attrs + col, n);
+	for (i=col; i<col+n; i++)
+	    ptr[i] = ' ';
+	for (i=col; i<col+n; i++)
+	    attrs[i] = CHARDRAWN;
+
+	if (wrappedbit)
+	    attrs[0] |= LINEWRAPPED;
 }
 
 
 ScrnDeleteChar (sb, row, col, n, size)
-/*
-   Deletes n characters in sb at row, col. Size is the size of each row.
- */
-ScrnBuf sb;
-register int row, size;
-register int n, col;
+    /*
+      Deletes n characters in sb at row, col. Size is the size of each row.
+      */
+    ScrnBuf sb;
+    register int row, size;
+    register int n, col;
 {
 	register Char *ptr = sb[2 * row];
 	register Char *attrs = sb[2 * row + 1];
 	register nbytes = (size - n - col);
+	register int i;
+	int wrappedbit = attrs[0]&LINEWRAPPED;
 
 	bcopy (ptr + col + n, ptr + col, nbytes);
 	bcopy (attrs + col + n, attrs + col, nbytes);
 	bzero (ptr + size - n, n);
 	bzero (attrs + size - n, n);
+	if (wrappedbit)
+	    attrs[0] |= LINEWRAPPED;
 }
 
 
