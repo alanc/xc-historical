@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.24 92/01/27 11:20:39 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.25 92/03/13 14:19:24 keith Exp $
 
 #if BuildXInputLib
 #define IHaveSubdirs
@@ -33,7 +33,7 @@ NormalProgramTarget(shapetest,$(SHAPEOBJS),$(DEPXLIB),$(XLIB),NullParameter)
 #if HasShm
 NormalProgramTarget(shmtest,$(SHMOBJS),$(DEPXLIB),$(XLIB),NullParameter)
 #endif
-NormalProgramTarget(xtesttest,$(XTESTOBJS),$(DEPXTESTLIB) $(DEPXLIB),$(XTESTLIB) $(XLIB),NullParameter)
+NormalProgramTarget(xtesttest,$(XTESTOBJS),$(DEPXILIB) $(DEPXTESTLIB) $(DEPXLIB),$(XILIB) $(XTESTLIB) $(XLIB),NullParameter)
 NormalProgramTarget(savertest,$(SAVEROBJS),$(DEPXLIB),$(XLIB),NullParameter)
 
 DependTarget()
