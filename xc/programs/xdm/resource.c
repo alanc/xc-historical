@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: resource.c,v 1.18 89/04/06 13:39:24 keith Exp $
+ * $XConsortium: resource.c,v 1.19 89/07/16 16:07:42 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -316,7 +316,7 @@ struct display	*d;
 	int	i;
 	char	name[1024], class[1024];
 	char	nocolon[512];
-	char	*colon, *dot;
+	char	*colon, *dot, *className;
 
 	colon = d->name;
 	dot = nocolon;
@@ -331,11 +331,14 @@ struct display	*d;
 		++colon;
 	}
 	*dot = '\0';
+	className = d->class;
+	if (!d->class)
+		className = nocolon;
 	for (i = 0; i < NUM_DISPLAY_RESOURCES; i++) {
 		sprintf (name, "DisplayManager.%s.%s", 
 			nocolon, DisplayResources[i].name);
 		sprintf (class, "DisplayManager.%s.%s",
-			nocolon, DisplayResources[i].class);
+			className, DisplayResources[i].class);
 		GetResource (name, class, DisplayResources[i].type,
 			      (char **) (((char *) d) + DisplayResources[i].offset),
 			      DisplayResources[i].default_value);

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.15 89/06/21 10:45:25 rws Exp $
+ * $XConsortium: dm.c,v 1.16 89/07/18 19:43:00 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -44,43 +44,49 @@ int	argc;
 char	**argv;
 {
 #ifndef SYSV
-	void	ChildNotify ();
+    void	ChildNotify ();
 #endif
 
 #ifndef NOXDMTITLE
-	Title = argv[0];
-	TitleLen = (argv[argc - 1] + strlen(argv[argc - 1])) - Title;
+    Title = argv[0];
+    TitleLen = (argv[argc - 1] + strlen(argv[argc - 1])) - Title;
 #endif
 
-	/*
-	 * Step 1 - load configuration parameters
-	 */
-	InitResources (argc, argv);
-	LoadDMResources ();
-	if (debugLevel == 0 && daemonMode)
-		BecomeDaemon ();
-	InitErrorLog ();
-	StorePid ();
-	(void) signal (SIGTERM, TerminateAll);
-	(void) signal (SIGINT, TerminateAll);
-	/*
-	 * Step 2 - Read /etc/Xservers and set up
-	 *	    the socket.
-	 *
-	 *	    Keep a sub-daemon running
-	 *	    for each entry
-	 */
-	ScanServers ();
-	(void) signal (SIGHUP, RescanNotify);
+    /*
+     * Step 1 - load configuration parameters
+     */
+    InitResources (argc, argv);
+    LoadDMResources ();
+    if (debugLevel == 0 && daemonMode)
+	    BecomeDaemon ();
+    CreateWellKnownSockets ();
+    InitErrorLog ();
+    StorePid ();
+    (void) signal (SIGTERM, TerminateAll);
+    (void) signal (SIGINT, TerminateAll);
+    /*
+     * Step 2 - Read /etc/Xservers and set up
+     *	    the socket.
+     *
+     *	    Keep a sub-daemon running
+     *	    for each entry
+     */
+    ScanServers ();
+    (void) signal (SIGHUP, RescanNotify);
 #ifndef SYSV
-	(void) signal (SIGCHLD, ChildNotify);
+    (void) signal (SIGCHLD, ChildNotify);
 #endif
-	while (AnyDisplaysLeft ()) {
-		if (Rescan)
-			RescanServers ();
-		WaitForChild ();
-	}
-	Debug ("Nothing left to do, exiting\n");
+    while (AnyWellKnownSockets() || AnyDisplaysLeft ())
+    {
+	if (Rescan)
+	    RescanServers ();
+#ifdef SYSV
+	WaitForChild ();
+#else
+	WaitForSomething ();
+#endif
+    }
+    Debug ("Nothing left to do, exiting\n");
 }
 
 static void
@@ -100,12 +106,12 @@ ScanServers ()
 	struct buffer	*serversFile;
 	int		fd;
 	static DisplayType	acceptableTypes[] =
-		{ { Local, Permanent, Secure },
-		  { Local, Transient, Secure },
-		  { Local, Permanent, Insecure },
-		  { Local, Transient, Insecure },
-		  { Foreign, Permanent, Secure },
-		  { Foreign, Transient, Secure },
+		{ { Local, Permanent, FromFile },
+		  { Local, Transient, FromFile },
+		  { Local, Permanent, FromFile },
+		  { Local, Transient, FromFile },
+		  { Foreign, Permanent, FromFile },
+		  { Foreign, Transient, FromFile },
 		};
 
 	if (servers[0] == '/') {
@@ -165,70 +171,70 @@ TerminateAll ()
  * sub-daemon started
  */
 
-#ifndef SYSV
-static int	ChildReady;
+int	ChildReady;
 
 void
 ChildNotify ()
 {
-	ChildReady = 1;
+    ChildReady = 1;
 }
-#endif
 
 WaitForChild ()
 {
-	int		pid;
-	struct display	*d;
-	waitType	status;
+    int		pid;
+    struct display	*d;
+    waitType	status;
 
 #ifdef SYSV
-	/* XXX classic sysV signal race condition here with RescanNotify */
-	if ((pid = wait (&status)) != -1)
+    /* XXX classic sysV signal race condition here with RescanNotify */
+    if ((pid = wait (&status)) != -1)
 #else
-	sigblock (sigmask (SIGCHLD) | sigmask (SIGHUP));
-	if (!ChildReady && !Rescan)
-		sigpause (0);
-	else
-		sigblock (0);
-	ChildReady = 0;
-	while ((pid = wait3 (&status, WNOHANG, (struct rusage *) 0)) > 0)
+    sigblock (sigmask (SIGCHLD) | sigmask (SIGHUP));
+    if (!ChildReady && !Rescan)
+	sigpause (0);
+    else
+	sigblock (0);
+    ChildReady = 0;
+    while ((pid = wait3 (&status, WNOHANG, (struct rusage *) 0)) > 0)
 #endif
-	{
-		Debug ("pid: %d\n", pid);
-		d = FindDisplayByPid (pid);
-		if (d) {
-			d->status = notRunning;
-			switch (waitVal (status)) {
-			case UNMANAGE_DISPLAY:
-				Debug ("Display exited with UNMANAGE_DISPLAY\n");
-				RemoveDisplay (d);
-				break;
-			case OBEYSESS_DISPLAY:
-				Debug ("Display exited with OBEYSESS_DISPLAY\n");
-				if (d->displayType.lifetime == Permanent)
-					StartDisplay (d);
-				else
-					RemoveDisplay (d);
-				break;
-			default:
-				Debug ("Display exited with unknown status %d\n", waitVal(status));
-				StartDisplay (d);
-				break;
-			case REMANAGE_DISPLAY:
-				Debug ("Display exited with REMANAGE_DISPLAY\n");
-				StartDisplay (d);
-				break;
-			}
-		}
+    {
+	Debug ("pid: %d\n", pid);
+	d = FindDisplayByPid (pid);
+	if (d) {
+	    d->status = notRunning;
+	    switch (waitVal (status)) {
+	    case UNMANAGE_DISPLAY:
+		Debug ("Display exited with UNMANAGE_DISPLAY\n");
+		RemoveDisplay (d);
+		break;
+	    case OBEYSESS_DISPLAY:
+		Debug ("Display exited with OBEYSESS_DISPLAY\n");
+		if (d->displayType.lifetime == Permanent)
+		    StartDisplay (d);
+		else
+		    RemoveDisplay (d);
+		break;
+	    default:
+		Debug ("Display exited with unknown status %d\n", waitVal(status));
+		StartDisplay (d);
+		break;
+	    case REMANAGE_DISPLAY:
+		Debug ("Display exited with REMANAGE_DISPLAY\n");
+		StartDisplay (d);
+		break;
+	    }
 	}
+    }
 }
 
 static void
 CheckDisplayStatus (d)
 struct display	*d;
 {
-	void	TerminateDisplay ();
+    void	TerminateDisplay ();
 
+    if (d->displayType.origin == FromFile)
+    {
 	switch (d->state) {
 	case MissingEntry:
 		TerminateDisplay (d);
@@ -239,49 +245,51 @@ struct display	*d;
 	case OldEntry:
 		break;
 	}
+    }
 }
 
 StartDisplays ()
 {
-	ForEachDisplay (CheckDisplayStatus);
+    ForEachDisplay (CheckDisplayStatus);
 }
 
 StartDisplay (d)
 struct display	*d;
 {
-	int	pid;
+    int	pid;
 
-	Debug ("StartDisplay %s\n", d->name);
-	switch (pid = fork ()) {
-	case 0:
-		CleanUpChild ();
-		ManageDisplay (d);
-		exit (REMANAGE_DISPLAY);
-	case -1:
-		break;
-	default:
-		Debug ("pid: %d\n", pid);
-		d->pid = pid;
-		d->status = running;
-		break;
-	}
+    Debug ("StartDisplay %s\n", d->name);
+    switch (pid = fork ())
+    {
+    case 0:
+	CleanUpChild ();
+	ManageDisplay (d);
+	exit (REMANAGE_DISPLAY);
+    case -1:
+	break;
+    default:
+	Debug ("pid: %d\n", pid);
+	d->pid = pid;
+	d->status = running;
+	break;
+    }
 }
 
 void
 TerminateDisplay (d)
 struct display	*d;
 {
-	DisplayStatus	status;
-	int		pid;
+    DisplayStatus	status;
+    int		pid;
 
-	status = d->status;
-	pid = d->pid;
-	RemoveDisplay (d);
-	if (status == running) {
-		if (pid < 2)
-			abort ();
-		kill (pid, SIGTERM);
-	}
+    status = d->status;
+    pid = d->pid;
+    RemoveDisplay (d);
+    if (status == running) {
+	if (pid < 2)
+	    abort ();
+	kill (pid, SIGTERM);
+    }
 }
 
 static FD_TYPE	CloseMask;

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: displaylist.c,v 1.8 88/12/15 18:32:13 keith Exp $
+ * $XConsortium: dpylist.c,v 1.9 89/01/16 17:11:26 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -68,6 +68,36 @@ int	pid;
 	return 0;
 }
 
+struct display *
+FindDisplayBySessionID (sessionID)
+    CARD32  sessionID;
+{
+    struct display	*d;
+
+    for (d = displays; d; d = d->next)
+	if (sessionID == d->sessionID)
+	    return d;
+    return 0;
+}
+
+struct display *
+FindDisplayByAddress (addr, addrlen, displayNumber)
+    struct sockaddr *addr;
+    int		    addrlen;
+    CARD16	    displayNumber;
+{
+    struct display  *d;
+
+    for (d = displays; d; d = d->next)
+	if (d->displayType.origin == FromXDMCP &&
+	    d->displayNumber == displayNumber &&
+	    addressEqual (d->from, d->fromlen, addr, addrlen))
+	{
+	    return d;
+	}
+    return 0;
+}
+
 RemoveDisplay (old)
 struct display	*old;
 {
@@ -88,8 +118,9 @@ struct display	*old;
 }
 
 struct display *
-NewDisplay (name)
-char	*name;
+NewDisplay (name, class)
+char		*name;
+char		*class;
 {
 	struct display	*d;
 
@@ -106,10 +137,27 @@ char	*name;
 		return 0;
 	}
 	strcpy (d->name, name);
+	if (class)
+	{
+		d->class = malloc ((unsigned) (strlen (class) + 1));
+		if (!d->class) {
+			LogOutOfMem ("NewDisplay");
+			free (d->name);
+			free ((char *) d);
+			return 0;
+		}
+		strcpy (d->class, class);
+	}
+	else
+	{
+		d->class = (char *) 0;
+	}
 	d->argv = 0;
 	d->status = notRunning;
 	d->pid = -1;
 	d->authorization = 0;
+	d->from = 0;
+	d->fromlen = 0;
 	displays = d;
 	LoadDisplayResources (d);
 	return d;

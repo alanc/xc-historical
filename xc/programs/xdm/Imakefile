@@ -10,13 +10,15 @@
    XDMCONFIGDIR = XdmConfigurationSubdirectory
         SUBDIRS = $(XDMCONFIGDIR)
 
-DEPLIBS = $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB) $(TOP)/lib/Xau/libXau.a
-LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB) $(TOP)/lib/Xau/libXau.a
+DEPLIBS = $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB) \
+	  $(TOP)/lib/Xau/libXau.a $(TOP)/lib/Xdmcp/libXdmcp.a
+LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB) \
+		  $(TOP)/lib/Xau/libXau.a $(TOP)/lib/Xdmcp/libXdmcp.a
           SRCS1 = auth.c buf.c daemon.c display.c dpylist.c dm.c error.c \
-		  file.c greet.c reset.c resource.c \
+		  file.c greet.c reset.c resource.c protodpy.c policy.c \
 		  session.c socket.c util.c verify.c Login.c
           OBJS1 = auth.o buf.o daemon.o display.o dpylist.o dm.o error.o \
-		  file.o greet.o reset.o resource.o \
+		  file.o greet.o reset.o resource.o protodpy.o policy.o \
 		  session.o socket.o util.o verify.o Login.o
           SRCS2 = xdmshell.c 
           OBJS2 = xdmshell.o 

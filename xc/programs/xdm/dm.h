@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.13 88/12/14 17:35:48 keith Exp $
+ * $XConsortium: dm.h,v 1.14 89/04/27 19:12:07 kit Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -25,7 +25,9 @@
  */
 
 # include	<X11/Xos.h>
+# include	<X11/Xmd.h>
 # include	<X11/Xauth.h>
+# include	<X11/Xdmcp/Xdmcp.h>
 
 # include	<sys/param.h>	/* for NGROUPS */
 
@@ -69,14 +71,14 @@ typedef	struct	my_fd_set { int fds_bits[1]; } my_fd_set;
  * foreign   - server runs on remote host
  * permanent - session restarted when it exits
  * transient - session not restarted when it exits
- * secure    - cannot be disabled
- * insecure  - can be disabled
+ * fromFile  - started via entry in servers file
+ * fromXDMCP - started with XDMCP
  */
 
 typedef struct displayType {
 	unsigned int	location:1;
 	unsigned int	lifetime:1;
-	unsigned int	mutable:1;
+	unsigned int	origin:1;
 } DisplayType;
 
 # define Local		1
@@ -85,8 +87,8 @@ typedef struct displayType {
 # define Permanent	1
 # define Transient	0
 
-# define Secure		1
-# define Insecure	0
+# define FromFile	1
+# define FromXDMCP	0
 
 extern DisplayType parseDisplayType ();
 
@@ -95,6 +97,7 @@ typedef enum fileState { NewEntry, OldEntry, MissingEntry } FileState;
 struct display {
 	struct display	*next;
 	char		*name;		/* DISPLAY name */
+	char		*class;		/* display class (may be NULL) */
 	char		**argv;		/* program name and arguments */
 	DisplayStatus	status;		/* current status */
 	int		pid;		/* process id of child */
@@ -121,9 +124,23 @@ struct display {
 	int		terminateServer;/* restart for each session */
 	int		grabTimeout;	/* time to wait for grab */
 	DisplayType	displayType;	/* method to handle with */
-#ifdef UDP_SOCKET
-	struct sockaddr_in	addr;	/* address used in connection */
-#endif
+	CARD32		sessionID;	/* ID of active session */
+	struct sockaddr	*from;		/* XDMCP port of display */
+	int		fromlen;
+	CARD16		displayNumber;
+};
+
+struct protoDisplay {
+	struct protoDisplay	*next;
+	struct sockaddr		*address;
+	int			addrlen;
+	CARD16			displayNumber;
+	CARD16			connectionType;
+	ARRAY8			connectionAddress;
+	CARD32			sessionID;
+    /*
+     * add authentication data to this record here
+     */
 };
 
 struct greet_info {
@@ -166,8 +183,13 @@ extern int	daemonMode;
 extern char	*pidFile;
 
 extern struct display	*FindDisplayByName (),
+			*FindDisplayBySessionID (),
+			*FindDisplayByAddress (),
 			*FindDisplayByPid (),
 			*NewDisplay ();
+
+extern struct protoDisplay	*FindProtoDisplay (),
+				*NewProtoDisplay ();
 
 /*
  * CloseOnFork flags
@@ -177,14 +199,3 @@ extern struct display	*FindDisplayByName (),
 # define LEAVE_FOR_DISPLAY  1
 
 extern char	*malloc (), *realloc (), *strcpy ();
-
-#ifdef UDP_SOCKET
-
-# define START		"START"
-# define TERMINATE	"TERMINATE"
-# define RESTART	"RESTART"
-
-# define POLL_PROVIDERS "POLL"
-# define ADVERTISE	"ADVERTISE"
-
-#endif

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: file.c,v 1.7 88/12/15 18:32:11 keith Exp $
+ * $XConsortium: file.c,v 1.8 89/01/16 17:11:07 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -33,7 +33,7 @@ DisplayType	d1, d2;
 {
 	return d1.location == d2.location &&
 	       d1.lifetime == d2.lifetime &&
-	       d1.mutable == d2.mutable;
+	       d1.origin == d2.origin;
 }
 
 ReadDisplay (file, acceptableTypes, numAcceptable)
@@ -70,7 +70,7 @@ int		numAcceptable;
 			c = bufc (file);
 		return c;
 acceptable:;
-		d = NewDisplay (word);
+		d = NewDisplay (word, (char *) 0);
 		if (!d) {
 			LogOutOfMem ("ReadDisplay");
 			goto skipLine;
@@ -156,14 +156,11 @@ static struct displayMatch {
 	char		*name;
 	DisplayType	type;
 } displayTypes[] = {
-	"local",		{ Local, Permanent, Secure },
-	"secure",		{ Local,  Permanent, Secure },
-	"insecure",		{ Local,  Permanent, Insecure },
-	"foreign",		{ Foreign, Permanent, Secure },
-	"transient",		{ Foreign, Transient, Secure },
-	"localTransient",	{ Local,  Transient, Secure },
-	"foreignInsecure",	{ Foreign, Permanent, Insecure },
-	0,			{ Local, Permanent, Secure },
+	"local",		{ Local, Permanent, FromFile },
+	"foreign",		{ Foreign, Permanent, FromFile },
+	"transient",		{ Foreign, Transient, FromFile },
+	"localTransient",	{ Local,  Transient, FromFile },
+	0,			{ Local, Permanent, FromFile },
 };
 
 DisplayType
