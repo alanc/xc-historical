@@ -1,4 +1,4 @@
-/* $XConsortium: tests.c,v 1.4 93/07/26 14:38:15 rws Exp $ */
+/* $XConsortium: tests.c,v 1.5 93/08/19 09:41:50 rws Exp $ */
 
 /**** module do_tests.c ****/
 /******************************************************************************
@@ -251,9 +251,9 @@ static BlendParms BlendParmVec[] = {
 		{ { 0.0, 0.0, 0.0 }, 250.0, 7 }
 				   };
 static ConstrainParms ConstrainParmVec[] = { 
-				     { xieValConstrainHardClip, NULL }, 
+				     { xieValConstrainHardClip, 0 }, 
 				     { xieValConstrainClipScale, ClampInputs }, 
-				     { xieValConstrainClipScale, NULL } 
+				     { xieValConstrainClipScale, 0 } 
 				           };
 static DitherParms DitherParmVec[] = { 
 				     { xieValDitherErrorDiffusion, Drawable }, 
@@ -356,7 +356,7 @@ static QueryParms QueryParmVec[] = {
 					{ 0, 0, xieValGeometry },
 					{ 0, 0, xieValHistogram },
 					{ 0, 0, xieValWhiteAdjust },
-					{ 256, 256, NULL }
+					{ 256, 256, 0 }
 				   };
 
 Test test[] = {
@@ -479,7 +479,7 @@ Test test[] = {
   {"-PurgeColorList","XiePurgeColorList",
 		InitPurgeColorList, DoPurgeColorList, NullProc, 
 		EndPurgeColorList, VALL, 0, 0,
-		{1, SUBSET_FULL, NULL, NULL, 
+		{1, SUBSET_FULL, 0, NULL, 
 		 { NULL, NULL, NULL }, ( XPointer ) NULL } },
   {"-Abort","XieAbort",
 		InitAbort, DoAbort, NullProc, 
@@ -1376,7 +1376,7 @@ Test test[] = {
 		{1, SUBSET_FULL | CAPA_COLOR_8, 2048, NULL, 
 		 { &ImageInfo[ 3 ], NULL, NULL }, 
 		( XPointer ) &CvtToIndexParmVec[ 0 ] } }, 
-  {NULL,NULL, NULL, NULL, NULL, NULL, NULL, 0, 0,
-		{1, NULL, 0, NULL, { NULL, NULL, NULL }, 
+  {NULL,NULL, NULL, NULL, NULL, NULL, 0, 0, 0,
+		{1, 0, 0, NULL, { NULL, NULL, NULL }, 
 		 NULL } },
 };
