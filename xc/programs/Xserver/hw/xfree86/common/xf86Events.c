@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: xf86Events.c,v 1.1 94/03/28 21:23:04 dpw Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -958,7 +958,7 @@ xf86Wakeup(blockData, err, pReadmask)
         (xf86Info.mseEvents)(1);
 
 #else
-    MASKANDSETBITS(devicesWithInput, ((char *)pReadmask), EnabledDevices);
+    MASKANDSETBITS(devicesWithInput, ((FdMask *)pReadmask), EnabledDevices);
     if (ANYSET(devicesWithInput))
       {
 	(xf86Info.kbdEvents)();
