@@ -78,6 +78,7 @@ X Consortium Standard
 X Version 11, Release 6
 
 
+
 .AU
 Robert Scheifler
 .AI
@@ -86,6 +87,9 @@ X Consortium, Inc.
 Jordan Brown
 .AI
 Quarterdeck Office Systems
+
+
+
 .AB
 .LP
 There are numerous possible protocols that can be used for communication
