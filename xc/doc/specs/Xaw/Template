@@ -1,11 +1,11 @@
-.\" $XConsortium: Template,v 1.12 91/09/30 13:26:59 converse Exp $
+.\" $XConsortium: Template,v 1.13 94/04/17 20:05:16 converse Exp $
 All Athena widgets have three separate files associated with them:
 .LP
 .IP \(bu 3
-A "public" header file containing declarations needed by
+A \*Qpublic\*U header file containing declarations needed by
 applications programmers
 .IP \(bu 3
-A "private" header file containing additional declarations needed by the
+A \*Qprivate\*U header file containing additional declarations needed by the
 widget and any subclasses
 .IP \(bu 3
 A source code file containing the implementation of the widget
@@ -13,7 +13,7 @@ A source code file containing the implementation of the widget
 This separation of functions into three files is suggested for all
 widgets, but nothing in the Toolkit actually requires this format.  In
 particular, a private widget created for a single application may easily
-combine the "public" and "private" header files into a single file, or
+combine the \*Qpublic\*U and \*Qprivate\*U header files into a single file, or
 merge the contents into another application header file.  Similarly, the
 widget implementation can be merged into other application code.
 .LP
@@ -24,12 +24,12 @@ the private header file
 .Pn < X11/Xaw/TemplateP.h >
 and the source code file
 .Pn < X11/Xaw/Template.c >
-will be modified to produce the "WindowWidget" described above.
+will be modified to produce the \*QWindowWidget\*U described above.
 In each case, the files have been designed so that a global string
 replacement of ``Template'' and ``template''
 with the name of your new widget, using
 the appropriate case, can be done.
-.NH 3
+.NH 2
 Public Header File
 .LP
 The public header file contains declarations that will be required by any
@@ -43,24 +43,22 @@ The contents of the Template public header file,
 are:
 .de CB
 .sp
-.ps 9
-.nr PS 9
-.vs 10
 .Ds 0
+.SM
+.vs 10
 .in +.25i
 .TA .25i 1.4i 2.4i 2.75i 3.5i
 .ta .25i 1.4i 2.4i 2.75i 3.5i
 ..
 .de CE
+.NL
+.vs 13
 .De
 .\".in -.25i
-.ps 11
-.nr PS 11
-.vs 13
 ..
 .CB
 .\".so ../../lib/Xaw/Template.h
-/* $XConsortium: Template,v 1.12 91/09/30 13:26:59 converse Exp $ */
+/* XConsortium: Template.h,v 1.2 88/10/25 17:22:09 swick Exp $ */
 /* Copyright (c) X Consortium 1987, 1988 */
 
 #ifndef _Template_h
@@ -113,7 +111,7 @@ parts are the last 8 lines where macros for any private resource names
 and classes are defined and where the widget class datatypes and class
 record pointer are declared.
 .LP
-For the "WindowWidget", we want 2 drawing colors, a callback list for
+For the \*QWindowWidget\*U, we want 2 drawing colors, a callback list for
 user input and an
 \fBexposeCallback\fP callback list, and we will declare three
 convenience procedures, so we need to add
@@ -144,7 +142,7 @@ name, \fBcallback\fP, rather than a specific name.  If widgets that define
 a single user-input action all choose the same resource name then there
 is greater possibility for an application to switch between widgets of
 different types.
-.NH 3
+.NH 2
 Private Header File
 .LP
 The private header file contains the complete declaration of the class
@@ -160,7 +158,7 @@ The contents of the Template private header file,
 are:
 .CB
 .\".so ../../lib/Xaw/TemplateP.h
-/* $XConsortium: Template,v 1.12 91/09/30 13:26:59 converse Exp $ */
+/* XConsortium: TemplateP.h,v 1.2 88/10/25 17:31:47 swick Exp $ */
 
 /* Copyright (c) X Consortium 1987, 1988
  */
@@ -208,7 +206,7 @@ It may not always be advantageous to do this; your own project
 development style will dictate the appropriate level of detail to expose
 in each module.
 .LP
-The "WindowWidget" needs to declare two fields in its instance structure to
+The \*QWindowWidget\*U needs to declare two fields in its instance structure to
 hold the drawing colors, a resource field for the font and a field for the
 expose and user input callback lists:
 .CB
@@ -223,7 +221,7 @@ typedef struct {
 	/* (none) */
 } WindowPart;
 .CE
-.NH 3
+.NH 2
 Widget Source File
 .LP
 The source code file implements the widget class itself.  The unique
@@ -236,7 +234,7 @@ The contents of the Template implementation file,
 are:
 .CB
 .\".so ../../lib/Xaw/Template.c
-/* $XConsortium: Template,v 1.12 91/09/30 13:26:59 converse Exp $ */
+/* XConsortium: Template.c,v 1.2 88/10/25 17:40:25 swick Exp $ */
 
 /* Copyright (c) X Consortium 1987, 1988
  */
@@ -308,7 +306,7 @@ TemplateClassRec templateClassRec = {
 WidgetClass templateWidgetClass = (WidgetClass)&templateClassRec;
 
 .CE
-The resource list for the "WindowWidget" might look like the following:
+The resource list for the \*QWindowWidget\*U might look like the following:
 .CB
 static XtResource resources[] = {
 #define offset(field) XtOffsetOf(WindowWidgetRec, window.field)
@@ -380,7 +378,7 @@ WindowClassRec windowClassRec = {
 .CE
 .LP
 .sp
-The "WindowWidget" will also declare three public procedures to return the
+The \*QWindowWidget\*U will also declare three public procedures to return the
 drawing colors and the font id, saving the application the effort of
 constructing an argument list for a call to
 .PN XtGetValues :
@@ -405,17 +403,24 @@ Font WindowFont(w)
 }
 .CE
 .LP
-The "WindowWidget" is now complete.  The application can retrieve the two
+The \*QWindowWidget\*U is now complete.  The application can retrieve the two
 drawing colors from the widget instance by calling either
 .PN XtGetValues ,
 or the \fBWindowColor\fP functions.  The actual window created for the
-"WindowWidget" is available by calling the
+\*QWindowWidget\*U is available by calling the
 .PN XtWindow
 function.
 .ds LH
 .ds CH
 .ds RH
-.bp
-.ds CF
-.tm .pn \n%
+.nr PN +1
+.XS
+Index
+.XE
+.tm .pn \n(PN
+.nr PN -1
+.\" print Table of Contents
+.if o .bp \" blank page to make count even
+.bp 3
+.af PN i
 .PX

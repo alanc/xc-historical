@@ -1,3 +1,4 @@
+.\" $XConsortium$
 .NH 2
 Ascii Source Object and Multi Source Object
 .LP
@@ -89,10 +90,6 @@ When creating an AsciiSrc object instance, the following resources are
 retrieved from the argument list or from the resource database:
 .LP
 .IN "AsciiSrc object" "resources"
-.ps 9
-.nr PS 9
-.vs 11
-.nr VS 11
 .TS H
 lw(1i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
@@ -116,10 +113,6 @@ useStringInPlace	UseStringInPlace	Boolean		False
 .sp 3p
 _
 .TE
-.ps 11
-.nr PS 11
-.vs 13
-.nr VS 13
 .Oc Bold
 .Dc
 .Od Bold
