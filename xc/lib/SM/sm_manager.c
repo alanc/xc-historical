@@ -1,4 +1,4 @@
-/* $XConsortium: sm_manager.c,v 1.11 93/12/06 19:57:24 mor Exp $ */
+/* $XConsortium: sm_manager.c,v 1.12 93/12/07 11:05:31 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -78,13 +78,13 @@ Status
 SmsInitialize (vendor, release, newClientProc, managerData,
     hostBasedAuthProc, errorLength, errorStringRet)
 
-char 		 *vendor;
-char 		 *release;
-SmsNewClientProc newClientProc;
-SmPointer	 managerData;
+char 		 		*vendor;
+char 		 		*release;
+SmsNewClientProc 		newClientProc;
+SmPointer	 		managerData;
 IceHostBasedAuthProc		hostBasedAuthProc;
-int  		 errorLength;
-char 		 *errorStringRet;
+int  		 		errorLength;
+char 		 		*errorStringRet;
 
 {
     if (errorStringRet && errorLength > 0)
