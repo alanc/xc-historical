@@ -82,7 +82,8 @@ IMPORTSXAW = \
 	$(AWIDGETSRC)/Toggle.h \
 	$(AWIDGETSRC)/ToggleP.h \
 	$(AWIDGETSRC)/Viewport.h \
-	$(AWIDGETSRC)/ViewportP.h 
+	$(AWIDGETSRC)/ViewportP.h \
+	$(AWIDGETSRC)/VPaned.h
 
 IMPORTSXMU = \
 	$(XMUSRC)/Xmu.h \
