@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: hp.cf,v 1.36 91/05/06 18:43:37 rws Exp $
+XCOMM platform:  $XConsortium: hp.cf,v 1.37 91/05/06 19:46:01 rws Exp $
 
 #define OSName                 HP-UX 7.0
 XCOMM operating system:  OSName
@@ -9,7 +9,7 @@ XCOMM operating system:  OSName
 #ifdef hp9000s800
 #define OptimizedCDebugFlags   +O1
 #else
-#define DefaultCCOptions       -Wc,-Nd4000,-Ns3600,-Ne700,-Np200
+#define DefaultCCOptions       -Wc,-Nd4000,-Ns4100,-Ne700,-Np200
 #define PexCCOptions           -Wp,-H150000 -Wc,-Nd4000,-Ns8000,-Ne700,-Np200
 #define LintOpts               -ax -Nd4000 -Ns8000 -Ne700 -Np200 -Na25000
 #endif
