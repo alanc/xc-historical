@@ -38,30 +38,30 @@ void _XtError (message)
     exit(1);
 }
 
-void (*errorFunction)() = _XtError;
-
-void XtError(message)
+void _XtWarning (message)
     String message;
-{
-    (*errorFunction)(message);
-}
+{ (void) fprintf(stderr, "X Toolkit Warning: %s\n", message); }
 
-void XtWarning(message)
-    String message;
-{
-/* ||| Should be separate warning proc */
-    (*errorFunction)(message);
-}
+static void (*errorFunction)() = _XtError;
+static void (*warningFunction)() = _XtWarning;
+
+void XtError(message) String message; { (*errorFunction)(message); }
+
+void XtWarning(message) String message; { (*warningFunction)(message); }
 
 void XtSetErrorHandler(handler)
     register void (*handler)();
 {
-    if (handler != NULL) {
-	errorFunction = handler;
-    }
-    else {
-	errorFunction = _XtError;
-    }
+    if (handler != NULL) errorFunction = handler;
+    else errorFunction = _XtError;
+}
+
+
+void XtSetWarningHandler(handler)
+    register void (*handler)();
+{
+    if (handler != NULL) warningFunction = handler;
+    else warningFunction = _XtWarning;
 }
 
 
