@@ -354,10 +354,10 @@ cursor font.  It also has font name aliases for the commonly used fonts
 \fBfixed\fP and \fBvariable\fP.
 .TP 8
 .I /usr/lib/X11/fonts/75dpi
-This directory contains fonts contributed by Adobe Systems, Digital Equipment
-Corporation, and Bitstream for 75 dots per inch displays.  It contains
-the following font families:  Times, Helvetica, Courier, Symbol, New Century
-Schoolbook, Terminal, Dutch, Swiss, and Charter.
+This directory contains fonts contributed by Adobe Systems and
+Digital Equipment Corporation for 75 dots per inch displays.  A variety of
+sizes and faces for the following font families are provided:
+Times, Helvetica, Courier, Symbol, New Century Schoolbook, and Terminal.
 .TP 8
 .I /usr/lib/X11/fonts/100dpi
 This directory contains 100 dots per inch versions of the fonts in the 
