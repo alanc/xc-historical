@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.85 90/03/27 11:15:51 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.86 90/04/04 11:28:35 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif /* lint */
 
@@ -1593,26 +1593,30 @@ static _wait_for_response(w, event, request_num)
 }
 
 /*ARGSUSED*/
-static XtGeometryResult RootGeometryManager(w, request, reply)
-    Widget w;
+static XtGeometryResult RootGeometryManager(gw, request, reply)
+    Widget gw;
     XtWidgetGeometry *request, *reply;
 {
+    register ShellWidget w = (ShellWidget)gw;
     XWindowChanges values;
     unsigned int mask = request->request_mode;
-    WMShellWidget wmshell = (WMShellWidget)w;
     XEvent event;
-    Boolean wm = XtIsWMShell(w);
+    Boolean wm;
     register struct _OldXSizeHints *hintp;
     int oldx, oldy, oldwidth, oldheight, oldborder_width, request_num;
 
-    if (wm) {
-	hintp = &wmshell->wm.size_hints;
-	oldx = w->core.x;
-	oldy = w->core.y;
-	oldwidth = w->core.width;
-	oldheight = w->core.height;
-	oldborder_width = w->core.border_width;
-    }
+    if (XtIsWMShell(gw)) {
+	wm = True;
+	hintp = &((WMShellWidget)w)->wm.size_hints;
+    } else
+	wm = False;
+    
+
+    oldx = w->core.x;
+    oldy = w->core.y;
+    oldwidth = w->core.width;
+    oldheight = w->core.height;
+    oldborder_width = w->core.border_width;
 
 #define PutBackGeometry() \
 	{ w->core.x = oldx; \
@@ -1679,24 +1683,24 @@ static XtGeometryResult RootGeometryManager(w, request, reply)
 	    values.sibling = XtWindow(request->sibling);
     }
 
-    if (!XtIsRealized(w)) return XtGeometryYes;
+    if (!XtIsRealized((Widget)w)) return XtGeometryYes;
 
-    if (wm && !wmshell->shell.override_redirect
+    if (wm && !w->shell.override_redirect
 	&& mask & (CWX | CWY | CWWidth | CWHeight | CWBorderWidth)) {
-	_SetWMSizeHints(wmshell);
+	_SetWMSizeHints((WMShellWidget)w);
     }
 
     request_num = NextRequest(XtDisplay(w));
-    XConfigureWindow(XtDisplay(w), XtWindow(w), mask, &values);
+    XConfigureWindow(XtDisplay((Widget)w), XtWindow((Widget)w), mask, &values);
 
-    if (wmshell->shell.override_redirect) return XtGeometryDone;
+    if (w->shell.override_redirect) return XtGeometryDone;
 
     /* If no non-stacking bits are set, there's no way to tell whether
        or not this worked, so assume it did */
 
     if (!(mask & ~(CWStackMode | CWSibling))) return XtGeometryDone;
 
-    if (wmshell->wm.wait_for_wm == FALSE) {
+    if (wm && ((WMShellWidget)w)->wm.wait_for_wm == FALSE) {
 	    /* the window manager is sick
 	     * so I will do the work and 
 	     * say no so if a new WM starts up,
@@ -1706,7 +1710,7 @@ static XtGeometryResult RootGeometryManager(w, request, reply)
 	    return XtGeometryNo;
     }
 
-    if (_wait_for_response((ShellWidget)w, &event, request_num)) {
+    if (_wait_for_response(w, &event, request_num)) {
 	/* got an event */
 	if (event.type == ConfigureNotify) {
 
@@ -1733,13 +1737,13 @@ static XtGeometryResult RootGeometryManager(w, request, reply)
 		w->core.height = event.xconfigure.height;
 		w->core.border_width = event.xconfigure.border_width;
 		if (event.xany.send_event || /* ICCCM compliant synth */
-		    wmshell->shell.client_specified & _XtShellNotReparented) {
+		    w->shell.client_specified & _XtShellNotReparented) {
 
 		    w->core.x = event.xconfigure.x;
 		    w->core.y = event.xconfigure.y;
-		    wmshell->shell.client_specified |= _XtShellPositionValid;
+		    w->shell.client_specified |= _XtShellPositionValid;
 		}
-		else wmshell->shell.client_specified &= ~_XtShellPositionValid;
+		else w->shell.client_specified &= ~_XtShellPositionValid;
 		return XtGeometryDone;
 	    }
 	} else if (!wm ||
@@ -1751,14 +1755,14 @@ static XtGeometryResult RootGeometryManager(w, request, reply)
 		    event.xclient.message_type == WM_MOVED(w)) {
 	    w->core.x = event.xclient.data.s[0];
 	    w->core.y = event.xclient.data.s[1];
-	    wmshell->shell.client_specified |= _XtShellPositionValid;
+	    w->shell.client_specified |= _XtShellPositionValid;
 	    return XtGeometryDone;
 	} else XtAppWarningMsg(XtWidgetToApplicationContext((Widget)w),
 			       "internalError", "shell", XtCXtToolkitError,
 			       "Shell's window manager interaction is broken",
 			       (String *)NULL, (Cardinal *)NULL);
-    } else /* no event */ {
-	wmshell->wm.wait_for_wm = FALSE; /* timed out; must be broken */
+    } else if (wm) { /* no event */ 
+	((WMShellWidget)w)->wm.wait_for_wm = FALSE; /* timed out; must be broken */
     }
 #undef PutBackGeometry
     return XtGeometryNo;
