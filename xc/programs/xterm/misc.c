@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.35 89/05/05 16:43:37 jim Exp $
+ *	$XConsortium: misc.c,v 1.36 89/05/15 13:19:42 jim Exp $
  */
 
 
@@ -54,7 +54,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: misc.c,v 1.35 89/05/05 16:43:37 jim Exp $";
+static char rcs_id[] = "$XConsortium: misc.c,v 1.36 89/05/15 13:19:42 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -826,21 +826,10 @@ static void withdraw_window (dpy, w, scr)
 {
     static XSizeHints *shp = NULL;
     long supp;
-    int dstx, dsty;
-    Window dw;
-    int di;
-    unsigned int dui, width, height;
 
     if (!shp) shp = XAllocSizeHints();
 
-    if (shp && XGetWMNormalHints (dpy, w, shp, supp) &&
-	XTranslateCoordinates (dpy, w, RootWindow(dpy,scr), 0, 0, 
-			       &dstx, &dsty, &dw) &&
-	XGetGeometry (dpy, w, &dw, &di, &di, &width, &height, &dui, &dui)) {
-	shp->x = dstx;				/* for old window managers */
-	shp->y = dsty;
-	shp->width = width;
-	shp->height = height;
+    if (shp && XGetWMNormalHints (dpy, w, shp, supp)) {
 	shp->flags &= ~(PPosition|PSize);	/* tell it user pref */
 	shp->flags |= (USPosition|USSize);
 				   
