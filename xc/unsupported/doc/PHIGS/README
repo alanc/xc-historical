@@ -1,10 +1,10 @@
-/* $XConsortium$ */
+/* $XConsortium: README,v 5.2 91/02/16 09:45:13 rws Exp $ */
 
 		PEX-SI Graphics Library Manual Pages
 
 The PEX-SI Graphics Library Manual Pages is a document made up of the 
 Application Programmer's Interface functions.  Most of the functions are
-PHIGS functions.  The new ISO DIS C bindings have been incorporated.  
+PHIGS functions.  The new ISO IS C bindings have been incorporated.  
 
 NOTE:  In order to make the PHIGS documentation portable to the majority 
 of users we have shortened the names of the files containing the PHIGS 
