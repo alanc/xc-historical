@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XErrDes.c,v 11.32 89/02/01 16:34:25 rws Exp $
+ * $XConsortium: XErrDes.c,v 11.33 89/05/08 16:48:15 jim Exp $
  */
 
 /***********************************************************
@@ -40,24 +40,24 @@ SOFTWARE.
  */
 
 static char *_XErrorList[] = {
-	/* No error	*/	"",
-	/* BadRequest	*/	"BadRequest, invalid request code or no such operation",
-	/* BadValue	*/	"BadValue, integer parameter out of range for operation",
-	/* BadWindow	*/	"BadWindow, invalid Window parameter",
-	/* BadPixmap	*/	"BadPixmap, invalid Pixmap parameter",
-	/* BadAtom	*/	"BadAtom, invalid Atom parameter",
-	/* BadCursor	*/	"BadCursor, invalid Cursor parameter",
-	/* BadFont	*/	"BadFont, invalid Font parameter",
-	/* BadMatch	*/	"BadMatch, invalid parameter attributes",
-	/* BadDrawable	*/	"BadDrawable, invalid Pixmap or Window parameter",
-	/* BadAccess	*/	"BadAccess, attempt to access private resource denied", 
-	/* BadAlloc	*/	"BadAlloc, insufficient resources for operation",
-    	/* BadColor   	*/  	"BadColor, invalid Colormap parameter",
-    	/* BadGC   	*/  	"BadGC, invalid GC parameter",
-	/* BadIDChoice  */	"BadIDChoice, invalid resource ID chosen for this connection",
-	/* BadName	*/	"BadName, named color or font does not exist",
-	/* BadLength	*/	"BadLength, poly request too large or internal Xlib length error",
-	/* BadImplementation */	"BadImplementation, server does not implement operation",
+/* No error	*/	"",
+/* BadRequest	*/	"BadRequest (invalid request code or no such operation)",
+/* BadValue	*/	"BadValue (integer parameter out of range for operation)",
+/* BadWindow	*/	"BadWindow (invalid Window parameter)",
+/* BadPixmap	*/	"BadPixmap (invalid Pixmap parameter)",
+/* BadAtom	*/	"BadAtom (invalid Atom parameter)",
+/* BadCursor	*/	"BadCursor (invalid Cursor parameter)",
+/* BadFont	*/	"BadFont (invalid Font parameter)",
+/* BadMatch	*/	"BadMatch (invalid parameter attributes)",
+/* BadDrawable	*/	"BadDrawable (invalid Pixmap or Window parameter)",
+/* BadAccess	*/	"BadAccess (attempt to access private resource denied)",
+/* BadAlloc	*/	"BadAlloc (insufficient resources for operation)",
+/* BadColor   	*/  	"BadColor (invalid Colormap parameter)",
+/* BadGC   	*/  	"BadGC (invalid GC parameter)",
+/* BadIDChoice  */	"BadIDChoice (invalid resource ID chosen for this connection)",
+/* BadName	*/	"BadName (named color or font does not exist)",
+/* BadLength	*/	"BadLength (poly request too large or internal Xlib length error)",
+/* BadImplementation */	"BadImplementation (server does not implement operation)",
 };
 static int _XErrorListSize = sizeof(_XErrorList);
 
