@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.89 93/08/23 09:51:17 rws Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.90 93/08/23 15:18:09 gildea Exp $
 
 #ifdef SVR4
 #define OSName            SunOS 5.2
@@ -104,14 +104,4 @@ XCOMM operating system:  OSName
 #define LibraryCCOptions /* don't want special floating point */
 #endif
 
-#ifndef UseSunWindowsInServer
-#define UseSunWindowsInServer	NO	/* link in SunWindows support? */
-#endif
-
-#if UseSunWindowsInServer
-#define SunWindowsDefines -DSUN_WINDOWS
-#else
-#define SunWindowsDefines /* as nothing */
-#endif
-
-#define ServerOSDefines SunWindowsDefines AllocateLocalDefines
+#define ServerOSDefines AllocateLocalDefines
