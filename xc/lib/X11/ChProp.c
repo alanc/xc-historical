@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XChProp.c,v 11.16 88/09/06 16:04:34 jim Exp $ */
+/* $XConsortium: XChProp.c,v 11.17 89/05/30 10:14:13 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -28,7 +28,7 @@ XChangeProperty (dpy, w, property, type, format, mode, data, nelements)
     
     switch (format) {
       case 8:
-	len = req->length + ((long)nelements + 3)>>2;
+	len = req->length + (((long)nelements + 3)>>2);
 	if (len <= 65535) {
 	    req->length = len;
 	    Data (dpy, (char *)data, nelements);
@@ -36,7 +36,7 @@ XChangeProperty (dpy, w, property, type, format, mode, data, nelements)
         break;
  
       case 16:
-	len = req->length + ((long)nelements + 1)>>1;
+	len = req->length + (((long)nelements + 1)>>1);
 	if (len <= 65535) {
 	    req->length = len;
 	    len = (long)nelements << 1;
