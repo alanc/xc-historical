@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: luna.cf,v 1.27 94/01/21 15:06:14 kaleb Exp $
+XCOMM platform:  $XConsortium: luna.cf,v 1.28 94/03/26 17:10:03 kaleb Exp $
 /*
  *	Please set the values for OSMajorVerion and OSMinorVersion
  *	before making makefiles.	 
@@ -32,6 +32,7 @@ XCOMM operating system:  OSName
 #define ThreadsLibraries -lthreads -lmach
 
 #define PrimaryScreenResolution 100
+#define	BuildXKB	YES
 
 #ifdef Mc68000Architecture
 #ifdef	luna2

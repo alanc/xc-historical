@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.118 94/03/30 20:52:50 matt Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.119 94/04/01 17:05:11 matt Exp $
 
 #ifdef SVR4
 #ifdef i386Architecture
@@ -172,6 +172,7 @@ XCOMM operating system:  OSName
 #ifndef BuildPexExt
 #define BuildPexExt	  XsunServer
 #endif
+#define	BuildXKB	  YES
 
 #if HasGcc
 #if HasGcc2
