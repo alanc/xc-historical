@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $Header: glyphcurs.c,v 1.10 88/01/02 18:02:56 rws Locked $ */
+/* $Header: glyphcurs.c,v 1.11 88/01/18 17:29:26 rws Locked $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -88,6 +88,8 @@ ServerBitsFromGlyph(fontID, pfont, ch, cm, ppbits)
     pbits = (unsigned char *)xalloc(nby);
     if (!pbits)
 	return BadAlloc;
+    /* zeroing the (pad) bits seems to help some ddx cursor handling */
+    bzero((char *)pbits, nby);
 
     ppix = (PixmapPtr)(*pScreen->CreatePixmap)(pScreen, cm->width,
 					       cm->height, 1);
