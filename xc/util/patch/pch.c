@@ -1,6 +1,6 @@
-/* $Header: pch.c,v 2.0.1.7 88/06/03 15:13:28 lwall Locked $
+/* oldHeader: pch.c,v 2.0.1.7 88/06/03 15:13:28 lwall Locked $
+/* $XConsortium: pch.c,v 3.1 94/09/09 20:04:28 gildea Exp $
  *
- * $Log:	pch.c,v $
  * Revision 2.0.2.0  90/05/01  22:17:51  davison
  * patch12u: unidiff support added
  *

@@ -1,6 +1,6 @@
-/* $Header: pch.h,v 2.0.1.1 87/01/30 22:47:16 lwall Exp $
+/* oldHeader: pch.h,v 2.0.1.1 87/01/30 22:47:16 lwall Exp $
+ * $XConsortium: pch.h,v 3.1 94/09/09 20:04:28 gildea Exp $
  *
- * $Log:	pch.h,v $
  * Revision 2.0.1.1  87/01/30  22:47:16  lwall
  * Added do_ed_script().
  * 
