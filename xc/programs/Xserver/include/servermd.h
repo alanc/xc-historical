@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $XConsortium: servermd.h,v 1.50 90/03/05 11:42:43 keith Exp $ */
+/* $XConsortium: servermd.h,v 1.51 90/03/10 15:18:25 keith Exp $ */
 
 /*
  * The vendor string identifies the vendor responsible for the
@@ -231,6 +231,22 @@ SOFTWARE.
 #define random rand
 
 #endif /* stellar */
+
+#ifdef luna
+
+#define IMAGE_BYTE_ORDER        MSBFirst   	/* Values for the OMRON only*/
+#define BITMAP_BIT_ORDER	MSBFirst
+#define	GLYPHPADBYTES		4
+#define GETLEFTBITS_ALIGNMENT	1
+
+#ifndef mc68000
+#define FAST_CONSTANT_OFFSET_MODE
+#define AVOID_MEMORY_READ
+#define LARGE_INSTRUCTION_CACHE
+#define PLENTIFUL_REGISTERS
+#endif
+
+#endif /* luna */
 
 /* size of buffer to use with GetImage, measured in bytes. There's obviously
  * a trade-off between the amount of stack (or whatever ALLOCATE_LOCAL gives
