@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: atom.c,v 1.26 89/03/11 16:54:22 rws Exp $ */
+/* $XConsortium: atom.c,v 1.27 89/03/23 08:49:16 rws Exp $ */
 
 #include "X.h"
 #include "Xatom.h"
@@ -84,10 +84,19 @@ MakeAtom(string, len, makeit)
 	nd = (NodePtr) xalloc(sizeof(NodeRec));
 	if (!nd)
 	    return BAD_RESOURCE;
-	nd->string = (char *) xalloc(len + 1);
-	if (!nd->string) {
-	    xfree(nd);
-	    return BAD_RESOURCE;
+	if (lastAtom < XA_LAST_PREDEFINED)
+	{
+	    nd->string = string;
+	}
+	else
+	{
+	    nd->string = (char *) xalloc(len + 1);
+	    if (!nd->string) {
+		xfree(nd);
+		return BAD_RESOURCE;
+	    }
+	    strncpy(nd->string, string, (int)len);
+	    nd->string[len] = 0;
 	}
 	if ((lastAtom + 1) >= tableLength) {
 	    NodePtr *table;
@@ -95,7 +104,8 @@ MakeAtom(string, len, makeit)
 	    table = (NodePtr *) xrealloc(nodeTable,
 					 tableLength * (2 * sizeof(NodePtr)));
 	    if (!table) {
-		xfree(nd->string);
+		if (nd->string != string)
+		    xfree(nd->string);
 		xfree(nd);
 		return BAD_RESOURCE;
 	    }
@@ -106,8 +116,6 @@ MakeAtom(string, len, makeit)
 	nd->left = nd->right = (NodePtr) NULL;
 	nd->fingerPrint = fp;
 	nd->a = (++lastAtom);
-	strncpy(nd->string, string, (int)len);
-	nd->string[len] = 0;
 	*(nodeTable+lastAtom) = nd;
 	return nd->a;
     }
@@ -167,7 +175,8 @@ FreeAtom(patom)
 	FreeAtom(patom->left);
     if(patom->right)
 	FreeAtom(patom->right);
-    xfree(patom->string);
+    if (patom->a > XA_LAST_PREDEFINED)
+	xfree(patom->string);
     xfree(patom);
 }
     
