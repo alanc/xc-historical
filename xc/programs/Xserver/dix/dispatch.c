@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.12 87/09/03 18:30:54 rws Locked $ */
+/* $Header: dispatch.c,v 1.13 87/09/07 11:40:50 rws Locked $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -38,6 +38,7 @@ SOFTWARE.
 #include "scrnintstr.h"
 #include "opaque.h"
 #include "input.h"
+#include "servermd.h"
 
 extern WindowRec WindowTable[];
 extern xConnSetupPrefix connSetupPrefix;
