@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xpr_c = "$XConsortium: xpr.c,v 1.37 89/07/21 13:41:04 jim Exp $";
+static char *rcsid_xpr_c = "$XConsortium: xpr.c,v 1.38 89/07/21 14:19:12 jim Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -71,6 +71,7 @@ enum device {LN01, LN03, LA100, PS, PP};
 #define F_COMPACT 128
 #define F_INVERT 256
 #define F_GRAY 512
+#define F_PSFIG 1024
 
 char *infilename = NULL, *whoami;
 
@@ -232,6 +233,7 @@ usage()
     fprintf(stderr, "    -left <inches>  -top <inches>\n");
     fprintf(stderr, "    -nosixopt\n");
     fprintf(stderr, "    -plane <n>\n");
+    fprintf(stderr, "    -psfig\n");
     fprintf(stderr, "    -report\n");
     fprintf(stderr, "    -rv\n");
     fprintf(stderr, "    -scale <scale>\n");
@@ -392,6 +394,8 @@ int *plane;
 		argc--; argv++;
 		if (argc == 0) usage();
 		*plane = atoi(*argv);
+	    } else if (!bcmp(*argv, "-psfig", len)) {
+		*flags |= F_PSFIG;
 	    } else
 		usage();
 	    break;
@@ -1159,6 +1163,8 @@ char *name;
     int lm, bm; /* left (bottom) margin (paper in portrait orientation) */
 
     printf ("%%!%s\n", COMMENTVERSION);
+    printf ("%%%%BoundingBox: 0 0 %d %d\n",
+	    (iw * scale * 72)/300, (ih * scale * 72)/300);
     pswd = getpwuid (getuid ());
     (void) gethostname (hostname, sizeof hostname);
     printf ("%%%%Creator: %s:%s (%s)\n", hostname,
@@ -1196,7 +1202,8 @@ char *name;
 	/* set resolution to device units (300/inch) */
 	printf("72 300 div dup scale\n");
 	/* move to lower left corner of image */
-	printf("%d %d translate\n",lm,bm);
+	if (!(flags & F_PSFIG))
+	    printf("%d %d translate\n",lm,bm);
 	/* dump the bitmap */
 	printf("%d %d %d bitdump\n",iw,ih,scale);
     } else { /* orientation == LANDSCAPE */
@@ -1230,7 +1237,8 @@ char *name;
 	/* set resolution to device units (300/inch) */
 	printf("72 300 div dup scale\n");
 	/* move to lower left corner of image */
-	printf("%d %d translate\n",lm,bm);
+	if (!(flags & F_PSFIG))
+	    printf("%d %d translate\n",lm,bm);
 	/* dump the bitmap */
 	printf("%d %d %d bitdump\n",ih,iw,scale);
     }
