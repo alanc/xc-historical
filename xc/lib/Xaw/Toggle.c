@@ -1,4 +1,4 @@
-/* $XConsortium: Toggle.c,v 1.19 90/11/01 17:57:43 converse Exp $ */
+/* $XConsortium: Toggle.c,v 1.20 91/01/06 16:08:43 rws Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -64,15 +64,15 @@ static char defaultTranslations[] =
      <LeaveWindow>:	    unhighlight()	\n\
      <Btn1Down>,<Btn1Up>:   toggle() notify()";
 
-#define offset(field) XtOffset(ToggleWidget, field)
+#define offset(field) XtOffsetOf(ToggleRec, field)
 
 static XtResource resources[] = { 
    {XtNstate, XtCState, XtRBoolean, sizeof(Boolean), 
       offset(command.set), XtRString, "off"},
    {XtNradioGroup, XtCWidget, XtRWidget, sizeof(Widget), 
       offset(toggle.widget), XtRWidget, (caddr_t) NULL },
-   {XtNradioData, XtCRadioData, XtRPointer, sizeof(caddr_t), 
-      offset(toggle.radio_data), XtRPointer, (caddr_t) NULL },
+   {XtNradioData, XtCRadioData, XtRPointer, sizeof(XtPointer), 
+      offset(toggle.radio_data), XtRPointer, (XtPointer) NULL },
 };
 
 #undef offset
@@ -212,7 +212,7 @@ static void Initialize(request, new)
     tw->toggle.radio_group = NULL;
 
     if (tw->toggle.radio_data == NULL) 
-      tw->toggle.radio_data = (caddr_t) new->core.name;
+      tw->toggle.radio_data = (XtPointer) new->core.name;
 
     if (tw->toggle.widget != NULL) {
       if ( GetRadioGroup(tw->toggle.widget) == NULL) 
@@ -324,7 +324,7 @@ Widget current, request, new;
 static void
 ToggleDestroy(w, junk, garbage)
 Widget w;
-caddr_t junk, garbage;
+XtPointer junk, garbage;
 {
   RemoveFromRadioGroup(w);
 }
@@ -508,7 +508,7 @@ Widget w, radio_group;
  *	Returns: The XtNradioData associated with the toggle widget.
  */
 
-caddr_t
+XtPointer
 #if NeedFunctionPrototypes
 XawToggleGetCurrent(Widget w)
 #else
@@ -540,11 +540,11 @@ Widget w;
 
 void
 #if NeedFunctionPrototypes
-XawToggleSetCurrent(Widget radio_group, caddr_t radio_data)
+XawToggleSetCurrent(Widget radio_group, XtPointer radio_data)
 #else
 XawToggleSetCurrent(radio_group, radio_data)
 Widget radio_group;
-caddr_t radio_data;
+XtPointer radio_data;
 #endif
 {
   RadioGroup * group;
