@@ -125,3 +125,4 @@ o ANGLEP type check sped up for excl.  Arc drawing should be lots faster.
 
 o RATIONAL type definition for kcl now takes the correct optional args.
 
+o (SETF FONT-PATH) changed to return the value
