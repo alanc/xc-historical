@@ -1,26 +1,27 @@
-.TH X 1 "10 September 1987"  "X Version 11"
+.TH X 1 "1 March 1988"  "X Version 11"
 .SH NAME
 X - A network transparent window system for Unix
 .SH DESCRIPTION
 .PP
 X is a network transparent windowing system developed at MIT which
-runs under Ultrix-32 Version 1.2 (and higher), 4.3BSD Unix,
-SunOS 3.2 (and higher) and
-DOMAIN/IX.  Ports are expected to System V Unix.
+runs under a wide variety of operating systems.  The version available
+from MIT works on Ultrix-32 Version 1.2 (and higher), 4.3BSD Unix,
+SunOS 3.2 (and higher), HP-UX, and DOMAIN/IX.  In addition, many vendors
+support the X Window System under other operating systems.
 .PP
-X display servers run on computers with bitmap terminals.
+X window system servers run on computers with bitmap displays.
 The server
 distributes user input to, and accepts output requests from various
 client programs located either on the same machine or elsewhere in the
-Internet.
-While
-a client normally runs on the same machine as the X server it is talking
-to, this need not be the case.
+network.  Although the most common case is for the client programs to be
+running on the same machine as the server, it is just as easy to have
+them running on separate machines (of differing architectures as well).
 .PP
 X supports overlapping windows, fully recursive subwindows, text and
 graphics operations within windows.
-For a full explanation of functions, see
-``Xlib - C Language X Interface'' document and the X Protocol Definition.
+For a full explanation of functions, see the
+``Xlib - C Language X Interface'' manual, the X Protocol Definition,
+and various toolkit documents.
 .PP
 When you first log in on a display running X, you are
 using the \fIxterm(1)\fP terminal emulator program.
@@ -28,35 +29,194 @@ You need not learn anything extra to use a display running X as
 a terminal beyond moving the mouse cursor into the login window to
 log in normally.
 .PP
-X attempts to provide hooks for your favorite style of user interface;
-feel free to write your own if you don't like the style provided by
-existing window managers (see \fIwm(1)\fP or \fIuwm(1)\fP).
+X provides mechanism, not policy.  It tries not to espouse any particular
+user interface paradigm, instead providing hooks for a wide variety.
+If you don't like the ones that are provided (see
+\fIwm(1)\fP and \fIuwm(1)\fP), write your own.
 These programs are used to manipulate existing top level windows,
 including  moving, resizing, and iconifying existing windows.
 You should start your favorite window manager when you log in
 on a display running X.
 .PP
-Current client programs of X include a terminal emulator (\fIxterm(1)\fP),
+Current client programs of X include: a terminal emulator (\fIxterm(1)\fP),
 window managers (\fIwm(1)\fP and \fIuwm(1)\fP), 
 bitmap editor (\fIbitmap(1)\fP),
 access control program (\fIxhost(1)\fP),
-user preference setting program (\fIxset(1)\fP),
+user preference setting programs (\fIxset(1)\fP, \fIxsetroot(1)\fP,
+and \fIxmodmap(1)\fP),
 load monitor (\fIxload(1)\fP), clock (\fIxclock(1)\fP),
-font displayer (\fIxfd(1)\fP) and demos (\fIico(1)\fP, \fImuncher(1)\fP, etc.)
+font displayer (\fIxfd(1)\fP),
+a protocol translator for running X10 programs (\fIx10tox11(1)\fP),
+and demos (\fIico(1)\fP, \fImuncher(1)\fP, etc.).
 On some systems, mail notification has been integrated (\fIbiff(1)\fP).
 .SH DISPLAY SPECIFICATION
 .PP
-When you first log in, the environment variable ``DISPLAY'' will be
-set to a string ``machine:display'' (for example, ``mit-athena:0'') which
-will determine which display an X application will talk to by default.
+When you first log in, the environment variable DISPLAY will be
+set to a string that gives the name of the machine on which the server is
+running, as well as a number indicating which of possibly several servers
+to use.  The convention is to have servers numbered from zero.  The format
+of the DISPLAY string depends on the type of communications channel used
+to contact the server.
+
+The sample server and 
+.I Xlib
+support the following connection protocols:
+.TP 8
+.B TCP\/IP
+.br
+DISPLAY should be set to \fIhostname\fP:\fInumber\fP where \fIhostname\fP
+is the symbolic name of the machine (e.g. \fIexpo\fP).  Note that Internet
+domain names (e.g. \fIexpo\.lcs\.mit\.edu\fP) are allowed.
+.TP 8
+.B "Unix domain"
+.br
+DISPLAY should be set to \fIunix\fP:\fInumber\fP.
+.TP 8
+.B DECnet
+.br
+DISPLAY should be set to \fInodename\fP::\fInumber\fP where \fInodename\fP
+is the symbolic name of the machine.
 .PP
-Most applications will also interpret an argument with a ``:'' in it
-to be the display to use.
+Most programs accept a command line argument of the form 
+``-display host:number'' that can be used to override DISPLAY.
 .PP
-When using DECnet, the format ``node::display'' should be used.
+.SH GEOMETRY SPECIFICATION
+One of the strengths of window systems is that they make it possible for
+the area which application uses on the screen (a window) to have a variety
+of different sizes.  Although the layout of windows on a screen is controlled
+by the window manager that the user is running, most applications accept
+a command line argument of the form ``-geometry WxH+X+Y''.  This is 
+interpreted to mean that the window should have a width of W, a height of H,
+and the upper left corner at (X,Y).  The X and Y values may be negative to
+position the window off the screen.  In addition, if minus signs are used
+instead of plus signs (e.g. WxH-X-Y), then (X,Y) is taken to be the location
+of the lower right hand corner.  By combining the two, you can place a window
+relative to any of the four corners of the screen.
+.PP
+.SH COMMAND LINE ARGUMENTS
+Most X programs attempt to use a common set of names for their command line
+arguments.  As was mentioned above, an attempt has been made to insure that
+all programs in the main release accept \fB\-display\fP and \fB\-geometry\fP.
+To make this job easier, programs can use the X Toolkit, which automatically
+handles the following arguments:
+.TP 8
+.B \-bg \fIcolor\fP, \fB\-background \fIcolor\fP
+Specifies the color to use for the window background.
+.TP 8
+.B \-bd \fIcolor\fP, \fB\-bordercolor \fIcolor\fP
+Specifies the color to use for the window border.
+.TP 8
+.B \-bw \fInumber\fP, \fB\-borderwidth \fInumber\fP
+Specifies the width in pixels of the window border.
+.TP 8
+.B \-display \fIhost\fP:\fIdpy\fP
+Specifies the name of the X server to use.
+.TP 8
+.B \-fg \fIcolor\fP, \fB\-foreground \fIcolor\fP
+Specifies the color to use for text or graphics.
+.TP 8
+.B \-fn \fIfont\fP, \fB-font \fIfont\fP
+Specifies the font to use for displaying text.
+.TP 8
+.B \-geometry \fIgeom\fP
+Specifies the initial size and location of the window.
+.TP 8
+.B \-iconic
+.br
+Indicates that application should start out in an iconic state.  Note that how
+this state is represented is controlled by the window manager that the user
+is running.
+.TP 8
+.B \-rv\fP, \fB\-reverse\fP
+Indicates that the program should simulate reverse video if possible.  Not all
+programs honor this or implement it correctly.  Frequently it means to swap
+the foreground and background colors.  This is usually only used on 
+monochrome displays.
+.TP 8
+.B \+rv
+.br
+Indicates that the program should not simulate reverse video.  This is used to
+override any defaults since reverse video doesn't always work properly.
+.TP 8
+.B \-synchronous
+Indicates that requests to the X server should be sent synchronously, instead
+of asynchronously.  Since 
+.I Xlib
+normally buffers requests to the server, errors do not necessarily get reported
+immediately after they occur.  This option turns off the buffering so that
+the application can be debugged.  It should never be used with a working 
+program.
+.TP 8
+.B \-title \fIstring\fP
+Specifies the title to be used for this window.  This information is sometimes
+used by a window manager to provide some sort of header identifying the window.
+.TP 8
+.B \-xrm \fIresourcestring\fP
+Specifies a resource name and value to override any defaults.  It is also
+very useful for setting resources that don't have explicity command line
+arguments.
+.SH "RESOURCES"
+To make tailoring of applications to personal preferences easier, X supports
+several mechanisms for storing default values for program resources (e.g.
+background color, window title, etc.)  When a client starts up, it can 
+use these defaults so that the user doesn't have to specify them more
+than once.
+.PP
+Resources are specified as strings of the form 
+\fI``name*subname*subsubname: value''\fP (see the
+.I Xlib
+manual section \fIUsing the Resource Manager\fP) that are loaded into
+client when it starts up.  The X Toolkit and the \fIXlib\fP routine
+.I XGetDefault
+get resources from the following sources:
+.TP 8
+.B RESOURCE_MANAGER
+Any resources that have been stored in the RESOURCE_MANAGER property on the
+root window using the \fIxrdb\fP program are loaded in.  This allows for
+defaults that are available to clients running on any machine.
+.TP 8
+.B "application-specific directory"
+Any files in the resource tree (whose location is controlled by
+the XAPPLOADDIR configuration parameter) that match the class name for
+a resourced used by the application are loaded in.
+.TP 8
+.B XENVIRONMENT
+If the environment variable XENVIRONMENT is set it is treated as the name of
+a file containing the user's preferences on this machine.
+.TP 8
+.B \-xrm \fIresourcestring\fP
+Applications that use the X Toolkit can resources specified from the command
+line.  The \fIresourcestring\fP is a single resource name and value as
+shown above.  Any number of \fB\-xrm\fP arguments may be given on a command
+line.
+.PP
+Program resources are organized into classes, so that groups of of
+individual or ``instance'' resources 
+can be set all at once.  By convention, the instance name of a resource
+begins with a lowercase letter and class name with an upper case letter.
+Multiple word resources are concatentated with the first letter of the 
+succeeding words capitalized.  Applications written with the X Toolkit
+will have at least the following resources which may be tailored:
+.PP
+.TP 8
+.B background (class Background)
+Specifies the color to use for the window background.
+.PP
+.TP 8
+.B borderWidth (class BorderWidth)
+Specifies the width in pixels of the window border.
+.PP
+.TP 8
+.B borderColor (class BorderColor)
+Specifies the color to use for the window border.
+.PP
+The common command line arguments cause particular resources to be set.  See
+the X Toolkit documentation for more details.
 .SH "SEE ALSO"
 .PP
-X(8c), xterm(1), bitmap(1), xwm(1), xhost(1), xclock(1), xload(1), xset(1), keycomp(1), biff(1), init(8), ttys(5), uwm(1),
+Xserver(8c), xterm(1), bitmap(1), xwm(1), xhost(1), xclock(1), xload(1), 
+xset(1), xsetroot(1), xmodmap(1),
+keycomp(1), biff(1), init(8), ttys(5), uwm(1), 
 xrefresh(1), xwininfo(1), xdvi(1), xwd(1), xwud(1), 
 xinit(1), Xqvss(8c), Xsun(8c), Xapollo(8c), Xapa16(8c)
 .br
@@ -67,7 +227,8 @@ It is no longer feasible to list all people who have contributed
 something to X; see the Protocol Specification and Xlib Manual
 for lists of contributors.
 .sp 2
-Copyright (c) 1984, 1985, 1986, 1987 by Massachusetts Institute of Technology.
+Copyright (c) 1984, 1985, 1986, 1987, 1988 by the Massachusetts Institute of 
+Technology.
 .sp
 Permission to use, copy, modify, and distribute this
 software and its documentation for any purpose and without
