@@ -1,4 +1,4 @@
-/* $Header: XExtInt.c,v 1.14 91/01/24 16:01:28 rws Exp $ */
+/* $Header: XExtInt.c,v 1.15 91/01/26 13:37:39 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -46,7 +46,7 @@ static	XExtensionInfo *xinput_info;
 static	/* const */ char *xinput_extension_name = INAME;
 static	int XInputClose();
 static	char *XInputError();
-Bool	XInputWireToEvent();
+static Bool XInputWireToEvent();
 Status	XInputEventToWire();
 static	/* const */ XEvent	emptyevent;
 

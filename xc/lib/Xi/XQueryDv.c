@@ -1,4 +1,4 @@
-/* $Header: XQueryDv.c,v 1.8 91/01/24 16:08:23 rws Exp $ */
+/* $Header: XQueryDv.c,v 1.9 91/01/26 13:36:14 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -80,7 +80,7 @@ XDeviceState
 	    }
 	_XRead (dpy, data, rlen);
 
-	for (i=0, any=(XInputClass *) data; i<rep.num_classes; i++)
+	for (i=0, any=(XInputClass *) data; i<(int)rep.num_classes; i++)
 	    {
 	    switch (any->class)
 		{
@@ -112,7 +112,7 @@ XDeviceState
 	state->data = (XInputClass *) (state + 1);
 
 	Any = state->data; 
-	for (i=0, any=(XInputClass *) data; i<rep.num_classes; i++)
+	for (i=0, any=(XInputClass *) data; i<(int)rep.num_classes; i++)
 	    {
 	    switch (any->class)
 		{
@@ -150,7 +150,7 @@ XDeviceState
 		    V->mode = v->mode;
 		    Any = (XInputClass *) (V+1);
 		    V->valuators = (int *) Any;
-		    for (j=0; j<V->num_valuators; j++)
+		    for (j=0; j<(int)V->num_valuators; j++)
 			*(V->valuators + j) = *valuators++;
 		    Any = (XInputClass *)((char *) Any + 
 			V->num_valuators * sizeof (int));

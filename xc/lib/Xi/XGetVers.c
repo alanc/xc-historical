@@ -1,4 +1,4 @@
-/* $XConsortium: XGetVers.c,v 1.5 89/12/06 20:38:30 rws Exp $ */
+/* $XConsortium: XGetVers.c,v 1.6 90/05/18 11:23:33 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -54,7 +54,7 @@ XExtensionVersion
     req->reqType = info->codes->major_opcode;
     req->ReqType = X_GetExtensionVersion;
     req->nbytes = name ? strlen(name) : 0;
-    req->length += (req->nbytes+3)>>2;
+    req->length += (unsigned)(req->nbytes+3)>>2;
     _XSend(dpy, name, (long)req->nbytes);
 
     if (! _XReply (dpy, (xReply *) &rep, 0, xTrue)) 

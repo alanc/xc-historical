@@ -1,4 +1,4 @@
-/* $Header: XListDev.c,v 1.14 91/01/24 16:07:38 rws Exp $ */
+/* $Header: XListDev.c,v 1.15 91/01/26 13:35:47 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -93,7 +93,7 @@ XDeviceInfo
 	sav_any = any;
 	for (i=0; i<*ndevices; i++, list++) 
 	    {
-	    for (j=0; j<list->num_classes; j++)
+	    for (j=0; j<(int)list->num_classes; j++)
 		{
 		switch (any->class)
 		    {
@@ -144,7 +144,7 @@ XDeviceInfo
 	    clist->use = list->use;
 	    clist->num_classes = list->num_classes;
 	    clist->inputclassinfo = Any;
-	    for (j=0; j<list->num_classes; j++)
+	    for (j=0; j<(int)list->num_classes; j++)
 		{
 		switch (any->class)
 		    {
@@ -185,7 +185,7 @@ XDeviceInfo
 			V->axes = A;
 			a = (xAxisInfoPtr) ((char *) any + 
 				sizeof (xValuatorInfo)); 
-			for (k=0; k<v->num_axes; k++,a++,A++) 
+			for (k=0; k<(int)v->num_axes; k++,a++,A++) 
 			    {
 			    A->min_value = a->min_value;
 			    A->max_value = a->max_value;

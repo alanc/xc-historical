@@ -1,4 +1,4 @@
-/* $XConsortium: XChgFCtl.c,v 1.5 90/05/18 11:43:44 rws Exp $ */
+/* $XConsortium: XChgFCtl.c,v 1.6 90/05/18 15:21:46 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -76,7 +76,7 @@ XChangeFeedbackControl (dpy, dev, mask, f)
 	k.led_values = K->led_value;
 	k.key = K->key;
 	k.auto_repeat_mode = K->auto_repeat_mode;
-	length = ((k.length + 3) >> 2);
+	length = ((unsigned)(k.length + 3) >> 2);
 	req->length += length;
 	length <<= 2;
 	Data (dpy, (char *) &k, length);
@@ -93,7 +93,7 @@ XChangeFeedbackControl (dpy, dev, mask, f)
 	p.num = P->accelNum;
 	p.denom = P->accelDenom;
 	p.thresh = P->threshold;
-	length = ((p.length + 3) >> 2);
+	length = ((unsigned)(p.length + 3) >> 2);
 	req->length += length;
 	length <<= 2;
 	Data (dpy, (char *) &p, length);
@@ -108,7 +108,7 @@ XChangeFeedbackControl (dpy, dev, mask, f)
 	i.length = sizeof (xIntegerFeedbackCtl);
 	i.id = I->id;
 	i.int_to_display = I->int_to_display;
-	length = ((i.length + 3) >> 2);
+	length = ((unsigned)(i.length + 3) >> 2);
 	req->length += length;
 	length <<= 2;
 	Data (dpy, (char *) &i, length);
@@ -124,7 +124,7 @@ XChangeFeedbackControl (dpy, dev, mask, f)
 		(S->num_keysyms * sizeof (KeySym));
 	s.id = S->id;
 	s.num_keysyms = S->num_keysyms;
-	req->length += ((s.length + 3) >> 2);
+	req->length += ((unsigned)(s.length + 3) >> 2);
 	length = sizeof (xStringFeedbackCtl);
 	Data (dpy, (char *) &s, length);
 	length = (s.num_keysyms * sizeof (KeySym));
@@ -142,7 +142,7 @@ XChangeFeedbackControl (dpy, dev, mask, f)
 	b.percent = B->percent;
 	b.pitch = B->pitch;
 	b.duration = B->duration;
-	length = ((b.length + 3) >> 2);
+	length = ((unsigned)(b.length + 3) >> 2);
 	req->length += length;
 	length <<= 2;
 	Data (dpy, (char *) &b, length);
@@ -158,7 +158,7 @@ XChangeFeedbackControl (dpy, dev, mask, f)
 	l.id = L->id;
 	l.led_mask = L->led_mask;
 	l.led_values = L->led_values;
-	length = ((l.length + 3) >> 2);
+	length = ((unsigned)(l.length + 3) >> 2);
 	req->length += length;
 	length <<= 2;
 	Data (dpy, (char *) &l, length);
@@ -170,7 +170,7 @@ XChangeFeedbackControl (dpy, dev, mask, f)
 	u.class = f->class;
 	u.length = f->length - sizeof (int);
 	u.id = f->id;
-	length = ((u.length + 3) >> 2);
+	length = ((unsigned)(u.length + 3) >> 2);
 	req->length += length;
 	length <<= 2;
 	Data (dpy, (char *) &u, length);

@@ -1,4 +1,4 @@
-/*      $Header: XExtToWire.c,v 1.2 90/08/14 16:58:43 gms ic1C-80 $ */
+/*      $Header: XExtToWire.c,v 1.8 91/01/24 16:02:46 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -87,7 +87,7 @@ XInputEventToWire(dpy, re, event, count)
 		vev->first_valuator = 0;
 		vev->num_valuators = ev->axes_count;
 		ip = &vev->valuator0;
-		for (i=0; i<vev->num_valuators; i++)
+		for (i=0; i<(int)vev->num_valuators; i++)
 		    *(ip+i) = ev->axis_data[i];
 		}
 	    break;
@@ -130,7 +130,7 @@ XInputEventToWire(dpy, re, event, count)
 		vev->first_valuator = 0;
 		vev->num_valuators = ev->axes_count;
 	        ip = &vev->valuator0;
-		for (i=0; i<vev->num_valuators; i++)
+		for (i=0; i<(int)vev->num_valuators; i++)
 		    *(ip+i) = ev->axis_data[i];
 		}
 	    break;
@@ -174,7 +174,7 @@ XInputEventToWire(dpy, re, event, count)
 		vev->first_valuator = 0;
 		vev->num_valuators = ev->axes_count;
 	        ip = &vev->valuator0;
-		for (i=0; i<vev->num_valuators; i++)
+		for (i=0; i<(int)vev->num_valuators; i++)
 		    *(ip+i) = ev->axis_data[i];
 		}
 	    break;
@@ -217,7 +217,7 @@ XInputEventToWire(dpy, re, event, count)
 		vev->first_valuator = 0;
 		vev->num_valuators = ev->axes_count;
 	        ip = &vev->valuator0;
-		for (i=0; i<vev->num_valuators; i++)
+		for (i=0; i<(int)vev->num_valuators; i++)
 		    *(ip+i) = ev->axis_data[i];
 		}
 	    break;
@@ -362,7 +362,7 @@ XInputEventToWire(dpy, re, event, count)
 		    sev->num_valuators = val->num_valuators < 3 ?
 					 val->num_valuators : 3;
 	            ip = (INT32 *) &sev->valuator0;
-		    for (j=0; j<val->num_valuators && j<3; j++)
+		    for (j=0; j<(int)val->num_valuators && j<3; j++)
 			*(ip+j) = val->valuators[j];
 		    if (val->num_valuators > 3)
 			{
@@ -375,7 +375,7 @@ XInputEventToWire(dpy, re, event, count)
 		        *sav_id |= MORE_EVENTS;
 			sav_id = &(vev->deviceid);
 	                ip = &vev->valuator0;
-			for (j=3; j<val->num_valuators; j++)
+			for (j=3; j<(int)val->num_valuators; j++)
 			    *(ip+j-3) = val->valuators[j];
 		        }
 		    }
