@@ -1,4 +1,4 @@
-/* $XConsortium: cpx_clnt.c,v 5.5 91/06/26 17:03:35 hersh Exp $ */
+/* $XConsortium: cpx_clnt.c,v 5.6 91/07/12 20:35:01 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1026,8 +1026,11 @@ phg_cpxc_change_struct_id( cph, cp_args )
     ret.err = 0;
     CPX_FOR_ALL_SERVERS(cph,css_srvr) {
 	(*css_srvr->inq_wss_posted_to)( cph, &d_cp_args, &ret, css_srvr );
-	if ( ret.err != 0 )
-	    return;
+	if ( ret.err != 0 ) 
+	    if (ret.err == ERR201)
+		ret.data.int_list.num_ints = 0;
+	    else 
+		return;
 	if ( ret.data.int_list.num_ints > 0 ) {
 	    cp_args->data.change_struct.posted = 1;
 	    break; /* out of loop on all servers, we now know it's posted */
