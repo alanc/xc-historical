@@ -1,4 +1,4 @@
-/* $XConsortium: ddpex.h,v 5.8 92/04/23 16:12:50 hersh Exp $ */
+/* $XConsortium: ddpex.h,v 5.9 92/08/13 18:45:56 hersh Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -254,6 +254,12 @@ typedef struct {
 } ddPickPath;
 
 typedef struct {
+    ddULONG		sid;
+    ddULONG             offset;
+    ddULONG             pickid;
+} ddPickElementRef;
+
+typedef struct {
       ddUSHORT        pickType;
       union {
 	  ddDC_HitBox        DC_HitBox;
@@ -397,7 +403,8 @@ typedef enum {
         DD_DEVICE_RECT=7,
 	DD_NAME=8,
 	DD_INDEX=9,
-        DD_NUM_TYPES=10
+        DD_LIST_OF_LIST=10,
+	DD_NUM_TYPES=11
 } ddListType;
 
 typedef struct {
@@ -552,11 +559,13 @@ typedef struct {
 	ddSHORT           pick_method;
 	ddBOOL            send_event;
 	ddULONG           max_hits;
+	ddULONG           more_hits;
 	ClientPtr         client;       /* need to send the event */
         diStructHandle    strHandle;	/* struct handle for PickOne */
         diStructHandle    fakeStr;	/* fake struct handle for BeginPick */
 	ddULONG           sid;          /* structure id for BeginPick */
 	diPMHandle	  pseudoPM;      /* fake PM for Renderer Pick */
+	listofObj	  *list;	/* list of list for pick all */
 } ddRdrPickStr, *ddRdrPickPtr;       /* need to send the event */ 
 
 typedef struct {
