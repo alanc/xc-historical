@@ -1,4 +1,4 @@
-/* $XConsortium: session.c,v 1.73 94/10/07 19:45:28 converse Exp $ */
+/* $XConsortium: session.c,v 1.74 94/10/17 18:26:13 converse Exp gildea $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -169,7 +169,7 @@ AbortClient (pid)
     int pid;
 {
     int	sig = SIGTERM;
-#if __STDC__
+#ifdef __STDC__
     volatile int	i;
 #else
     int	i;

@@ -1,4 +1,4 @@
-/* $XConsortium: LRGB.c,v 1.30 94/06/03 17:51:49 rws Exp converse $" */
+/* $XConsortium: LRGB.c,v 1.31 95/05/31 20:47:35 converse Exp gildea $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -42,7 +42,7 @@
 #include "Xlibint.h"
 #include "Xcmsint.h"
 
-#if __STDC__
+#ifdef __STDC__
 #define Const const
 #else
 #define Const /**/

@@ -1,4 +1,4 @@
-/* $XConsortium: Clock.c,v 1.72 94/01/17 19:06:17 rws Exp $ */
+/* $XConsortium: Clock.c,v 1.73 94/04/17 20:23:50 rws Exp gildea $ */
 
 /***********************************************************
 
@@ -54,7 +54,7 @@ SOFTWARE.
 #include "ClockP.h"
 #include <X11/Xosdefs.h>
 
-#if __STDC__ && !defined(AIXV3) /* AIX is broken */
+#if defined(__STDC__) && !defined(AIXV3) /* AIX is broken */
 #define Const const
 #else
 #define Const /**/

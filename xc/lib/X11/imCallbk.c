@@ -1,4 +1,4 @@
-/* $XConsortium: imCallbk.c,v 1.11 95/05/22 19:18:11 kaleb Exp kaleb $ */
+/* $XConsortium: imCallbk.c,v 1.12 95/05/22 19:38:09 kaleb Exp gildea $ */
 /***********************************************************************
 Copyright 1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 Copyright 1994 by FUJITSU LIMITED
@@ -116,12 +116,12 @@ Private XimCbStatus _XimStatusDrawCallback();
 Private XimCbStatus _XimPreeditStateNotifyCallback();
 #endif /* NeedFunctionPrototypes */
 
-#if __STDC__
+#ifdef __STDC__
 #define Const const
 #else
 #define Const /**/
 #endif
-#if __STDC__ && ((defined(sun) && defined(SVR4)) || defined(WIN32))
+#if defined(__STDC__) && ((defined(sun) && defined(SVR4)) || defined(WIN32))
 #define RConst /**/
 #else
 #define RConst Const

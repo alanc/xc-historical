@@ -1,4 +1,4 @@
-/* "$XConsortium: XKBCvt.c,v 1.13 94/04/02 17:26:19 erik Exp $"; */
+/* "$XConsortium: XKBCvt.c,v 1.14 94/04/17 20:21:35 erik Exp gildea $"; */
 /*
 
 Copyright (c) 1988, 1989  X Consortium
@@ -52,12 +52,12 @@ from the X Consortium.
 extern char *getenv();
 #endif
 
-#if __STDC__
+#ifdef __STDC__
 #define Const const
 #else
 #define Const /**/
 #endif
-#if __STDC__ && !defined(NORCONST)
+#if defined(__STDC__) && !defined(NORCONST)
 #define RConst const
 #else
 #define RConst /**/

@@ -1,4 +1,4 @@
-/* $XConsortium: cmsColNm.c,v 1.28 94/03/31 21:50:05 rws Exp converse $" */
+/* $XConsortium: cmsColNm.c,v 1.29 95/03/31 18:18:54 converse Exp gildea $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -251,7 +251,7 @@ _XcmsParseColorString(ccc, color_string, pColor)
  */
 static int
 FirstCmp(p1, p2)
-#if __STDC__
+#ifdef __STDC__
     const void *p1, *p2;
 #else
     XcmsPair *p1, *p2;

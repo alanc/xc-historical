@@ -1,4 +1,4 @@
-/* $XConsortium: miInquire.c,v 5.8 93/09/03 15:06:07 hersh Exp $ */
+/* $XConsortium: miInquire.c,v 5.9 94/04/17 20:37:06 hersh Exp gildea $ */
 
 /***********************************************************
 
@@ -69,7 +69,7 @@ SOFTWARE.
     a corresponding modification to the level function tables (miTables.c)
  */
 
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define CAT(a,b)    a##b
 #else
 #define CAT(a,b)    a/**/b

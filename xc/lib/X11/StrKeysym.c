@@ -1,4 +1,4 @@
-/* $XConsortium: StrKeysym.c,v 11.15 91/06/07 18:20:55 rws Exp $ */
+/* $XConsortium: StrKeysym.c,v 11.16 94/04/17 20:21:13 rws Exp gildea $ */
 /*
 
 Copyright (c) 1985, 1987, 1990  X Consortium
@@ -35,7 +35,7 @@ extern char *getenv();
 
 extern XrmQuark _XrmInternalStringToQuark();
 
-#if __STDC__
+#ifdef __STDC__
 #define Const const
 #else
 #define Const /**/

@@ -1,4 +1,4 @@
-/* $XConsortium: FilterEv.c,v 1.8 91/06/05 09:15:44 rws Exp $ */
+/* $XConsortium: FilterEv.c,v 1.9 94/04/17 20:19:21 rws Exp gildea $ */
 
  /*
   * Copyright 1990, 1991 by OMRON Corporation
@@ -60,7 +60,7 @@ from the X Consortium.
 #include "Xlibint.h"
 #include "Xlcint.h"
 
-#if __STDC__
+#ifdef __STDC__
 #define Const const
 #else
 #define Const /**/

@@ -1,4 +1,4 @@
-/* $XConsortium: Atoms.c,v 1.17 93/09/22 16:01:29 kaleb Exp $ */
+/* $XConsortium: Atoms.c,v 1.18 94/04/17 20:15:49 kaleb Exp gildea $ */
  
 /* 
 
@@ -60,7 +60,7 @@ struct _AtomRec {
 #define STATIC static
 #endif
 
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define DeclareAtom(atom,text) \
 STATIC struct _AtomRec __##atom = { text, NULL }; \
 AtomPtr _##atom = &__##atom;

@@ -1,4 +1,4 @@
-/* $XConsortium: ChkWinEv.c,v 11.22 93/01/28 13:16:51 gildea Exp $ */
+/* $XConsortium: ChkWinEv.c,v 11.23 94/04/17 20:18:48 gildea Exp gildea $ */
 /*
 
 Copyright (c) 1985, 1987  X Consortium
@@ -29,7 +29,7 @@ in this Software without prior written authorization from the X Consortium.
 #define NEED_EVENTS
 #include "Xlibint.h"
 
-#if __STDC__
+#ifdef __STDC__
 #define Const const
 #else
 #define Const /**/

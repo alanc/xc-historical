@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.170 95/02/21 19:45:06 converse Exp converse $ */
+/* $XConsortium: Event.c,v 1.171 95/02/21 21:32:57 converse Exp gildea $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -64,7 +64,7 @@ in this Software without prior written authorization from the X Consortium.
 #include "Shell.h"
 #include "StringDefs.h"
 
-#if __STDC__
+#ifdef __STDC__
 #define Const const
 #else
 #define Const /**/

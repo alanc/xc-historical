@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsXRGB.c,v 1.4 91/05/13 23:30:24 rws Exp $" */
+/* $XConsortium: XRGB.c,v 1.5 91/07/22 15:53:56 rws Exp gildea $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -37,7 +37,7 @@
 #include "Xlibint.h"
 #include "Xcmsint.h"
 
-#if __STDC__
+#ifdef __STDC__
 #define Const const
 #else
 #define Const /**/

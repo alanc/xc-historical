@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbmap.h,v 1.9 94/04/17 20:28:54 dpw Exp dpw $
+ * $XConsortium: cfbmap.h,v 1.10 94/09/22 21:12:06 dpw Exp gildea $
  *
 Copyright (c) 1991  X Consortium
 
@@ -35,7 +35,7 @@ in this Software without prior written authorization from the X Consortium.
 
 #if PSZ != 8
 #if PSZ == 32
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define NAME(subname) cfb32##subname
 #else
 #define NAME(subname) cfb32/**/subname
@@ -43,7 +43,7 @@ in this Software without prior written authorization from the X Consortium.
 #endif
 
 #if PSZ == 16
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define NAME(subname) cfb16##subname
 #else
 #define NAME(subname) cfb16/**/subname
@@ -51,7 +51,7 @@ in this Software without prior written authorization from the X Consortium.
 #endif
 
 #if PSZ == 4
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define NAME(subname) cfb4##subname
 #else
 #define NAME(subname) cfb4/**/subname
@@ -62,7 +62,7 @@ in this Software without prior written authorization from the X Consortium.
 cfb can not hack PSZ yet
 #endif
 
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define CATNAME(prefix,subname) prefix##subname
 #else
 #define CATNAME(prefix,subname) prefix/**/subname

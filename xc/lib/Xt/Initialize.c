@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.221 94/11/30 16:23:20 kaleb Exp kaleb $ */
+/* $XConsortium: Initialize.c,v 1.222 94/12/12 18:59:11 kaleb Exp gildea $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -72,7 +72,7 @@ in this Software without prior written authorization from the X Consortium.
 #include <stdio.h>
 #include <X11/Xlocale.h>
 
-#if __STDC__
+#ifdef __STDC__
 #define Const const
 #else
 #define Const /**/

@@ -1,4 +1,4 @@
-/* $XConsortium: lcWrap.c,v 11.21 94/09/01 18:40:04 kaleb Exp kaleb $ */
+/* $XConsortium: lcWrap.c,v 11.22 95/05/11 22:16:09 kaleb Exp gildea $ */
 /*
 
 Copyright (c) 1991  X Consortium
@@ -65,7 +65,7 @@ from the X Consortium.
 #endif
 #include <X11/Xutil.h>
 
-#if __STDC__
+#ifdef __STDC__
 #define Const const
 #else
 #define Const /**/

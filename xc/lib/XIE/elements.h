@@ -1,4 +1,4 @@
-/* $XConsortium: elements.h,v 1.3 94/03/18 10:29:55 mor Exp $ */
+/* $XConsortium: elements.h,v 1.4 94/04/17 20:18:22 mor Exp gildea $ */
 
 /*
 
@@ -33,7 +33,7 @@ from the X Consortium.
 #ifndef _ELEMENTS_H_
 #define _ELEMENTS_H_
 
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define ELEM_NAME(_name_) xieFlo##_name_
 #define ELEM_SIZE(_name_) sz_xieFlo##_name_
 #else

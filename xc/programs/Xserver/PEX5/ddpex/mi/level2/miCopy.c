@@ -1,4 +1,4 @@
-/* $XConsortium: miCopy.c,v 5.7 93/09/03 15:06:04 hersh Exp $ */
+/* $XConsortium: miCopy.c,v 5.8 94/04/17 20:37:04 hersh Exp gildea $ */
 
 /***********************************************************
 
@@ -71,7 +71,7 @@ SOFTWARE.
     happen during freeing of storage.
  */
 
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define CAT(a,b)    a##b
 #else
 #define CAT(a,b)    a/**/b

@@ -1,4 +1,4 @@
-/* $XConsortium: Xtrans.h,v 1.27 94/06/02 10:49:08 mor Exp mor $ */
+/* $XConsortium: Xtrans.h,v 1.28 94/10/18 15:57:42 mor Exp gildea $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -64,7 +64,7 @@ from the X Consortium.
  */
 
 #ifdef X11_t
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define TRANS(func) _X11Trans##func
 #else
 #define TRANS(func) _X11Trans/**/func
@@ -72,7 +72,7 @@ from the X Consortium.
 #endif /* X11_t */
 
 #ifdef XSERV_t
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define TRANS(func) _XSERVTrans##func
 #else
 #define TRANS(func) _XSERVTrans/**/func
@@ -81,7 +81,7 @@ from the X Consortium.
 #endif /* X11_t */
 
 #ifdef XIM_t
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define TRANS(func) _XimXTrans##func
 #else
 #define TRANS(func) _XimXTrans/**/func
@@ -89,7 +89,7 @@ from the X Consortium.
 #endif /* XIM_t */
 
 #ifdef FS_t
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define TRANS(func) _FSTrans##func
 #else
 #define TRANS(func) _FSTrans/**/func
@@ -97,7 +97,7 @@ from the X Consortium.
 #endif /* FS_t */
 
 #ifdef FONT_t
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define TRANS(func) _FontTrans##func
 #else
 #define TRANS(func) _FontTrans/**/func
@@ -105,7 +105,7 @@ from the X Consortium.
 #endif /* FONT_t */
 
 #ifdef ICE_t
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define TRANS(func) _IceTrans##func
 #else
 #define TRANS(func) _IceTrans/**/func
@@ -113,7 +113,7 @@ from the X Consortium.
 #endif /* ICE_t */
 
 #ifdef TEST_t
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define TRANS(func) _TESTTrans##func
 #else
 #define TRANS(func) _TESTTrans/**/func
@@ -121,7 +121,7 @@ from the X Consortium.
 #endif /* TEST_t */
 
 #if !defined(TRANS)
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define TRANS(func) _XTrans##func
 #else
 #define TRANS(func) _XTrans/**/func

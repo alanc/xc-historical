@@ -1,4 +1,4 @@
-/* $XConsortium: KeysymStr.c,v 11.8 93/08/14 18:33:20 rws Exp $ */
+/* $XConsortium: KeysymStr.c,v 11.9 94/04/17 20:20:03 rws Exp gildea $ */
 
 /*
 
@@ -31,7 +31,7 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xresource.h>
 #include <X11/keysymdef.h>
 
-#if __STDC__
+#ifdef __STDC__
 #define Const const
 #else
 #define Const /**/

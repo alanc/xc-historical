@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.198 94/04/02 11:40:57 converse Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.199 94/04/17 20:14:22 converse Exp gildea $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -751,7 +751,7 @@ extern void XtDisplayStringConversionWarning(
 #endif
 );
 
-#if __STDC__
+#ifdef __STDC__
 externalref XtConvertArgRec const colorConvertArgs[];
 externalref XtConvertArgRec const screenConvertArg[];
 #else

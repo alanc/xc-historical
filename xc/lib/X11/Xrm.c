@@ -1,4 +1,4 @@
-/* $XConsortium: Xrm.c,v 1.87 94/04/01 12:25:54 rws Exp $ */
+/* $XConsortium: Xrm.c,v 1.88 94/04/17 20:21:54 rws Exp gildea $ */
 
 /***********************************************************
 Copyright 1987, 1988, 1990 by Digital Equipment Corporation, Maynard
@@ -63,12 +63,12 @@ from the X Consortium.
 #include 	"XrmI.h"
 #include	<X11/Xos.h>
 
-#if __STDC__
+#ifdef __STDC__
 #define Const const
 #else
 #define Const /**/
 #endif
-#if __STDC__ && !defined(NORCONST)
+#if defined(__STDC__) && !defined(NORCONST)
 #define RConst const
 #else
 #define RConst /**/
