@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XErrDes.c,v 11.15 87/06/14 18:00:13 jg Exp $ */
+/* $Header: XErrDes.c,v 11.15 87/06/14 18:00:13 swick Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include <stdio.h>
@@ -72,7 +72,8 @@ XGetErrorDatabaseText(dpy, name, type, defaultp, buffer, nbytes)
     char temp[BUFSIZ];
 
     if (initialized == False) {
-	_XInitErrorHandling (&db);
+        XrmInitialize();
+	db = XrmGetDataBase(ErrorDataBase);
 	initialized = True;
     }
     sprintf(temp, "%s.%s", name, type);
@@ -86,15 +87,3 @@ XGetErrorDatabaseText(dpy, name, type, defaultp, buffer, nbytes)
 	if (result.size < nbytes) buffer[result.size] = 0;
     } else (void) strncpy(buffer, defaultp, nbytes);
 }
-
-
-_XInitErrorHandling (db)
-    XrmResourceDataBase *db;
-    {
-    XrmResourceDataBase errordb;
-
-    XrmInitialize();
-
-    errordb = XrmGetDataBase(ErrorDataBase);
-    XrmMergeDataBases(errordb, db);
-    }
