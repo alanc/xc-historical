@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.99 93/09/08 08:24:39 kaleb Exp $ */
+/* $XConsortium: Display.c,v 1.100 93/09/09 10:14:38 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -35,7 +35,7 @@ extern char* getenv();
 #ifdef XTHREADS
 void (*_XtProcessLock)() = NULL;
 void (*_XtProcessUnlock)() = NULL;
-ThreadAppProc _XtInitAppLock = NULL;
+void (*_XtInitAppLock)() = NULL;
 #endif
 
 static String XtNnoPerDisplay = "noPerDisplay";
@@ -322,6 +322,8 @@ XtAppContext XtCreateApplicationContext()
 {
 	XtAppContext app = XtNew(XtAppStruct);
 #ifdef XTHREADS
+	app->lock_info = NULL;
+	app->stack  = NULL;
 	app->lock = NULL;
 	app->unlock = NULL;
 	app->restore_lock = NULL;
