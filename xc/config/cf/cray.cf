@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: cray.cf,v 1.18 90/12/26 11:37:36 rws Exp $
+XCOMM platform:  $XConsortium: cray.cf,v 1.19 90/12/27 20:15:02 rws Exp $
 
 
 /*
@@ -23,9 +23,6 @@ XCOMM platform:  $XConsortium: cray.cf,v 1.18 90/12/26 11:37:36 rws Exp $
 #if OSMajorVersion >= 6 || OSMajorVersion >= 5 && OSMinorVersion >= 1
 #define CcCmd			scc
 #define CrayUsingSCC		YES
-#if OSMajorVersion >= 6
-#define PreProcessCmd		/lib/pcpp
-#endif
 #else
 #define CcCmd			cc
 #endif
