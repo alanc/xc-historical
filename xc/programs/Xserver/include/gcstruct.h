@@ -1,4 +1,4 @@
-/* $XConsortium: gcstruct.h,v 1.7 89/06/09 14:52:52 keith Exp $ */
+/* $XConsortium: gcstruct.h,v 5.0 89/06/09 15:00:31 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -96,6 +96,7 @@ typedef struct _GC {
     unsigned int	graphicsExposures : 1;
     unsigned int	clientClipType : 2; /* CT_<kind> */
     unsigned int	miTranslate:1; /* should mi things translate? */
+    unsigned int	tileIsPixel:1; /* tile is solid pixel */
     unsigned long	planemask;
     unsigned long	fgPixel;
     unsigned long	bgPixel;
@@ -103,7 +104,7 @@ typedef struct _GC {
      * alas -- both tile and stipple must be here as they
      * are independently specifiable
      */
-    PixmapPtr		tile;
+    PixUnion		tile;
     PixmapPtr		stipple;
     DDXPointRec		patOrg;		/* origin for (tile, stipple) */
     FontPtr		font;
