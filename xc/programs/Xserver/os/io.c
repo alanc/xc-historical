@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: io.c,v 1.42 88/07/21 10:59:32 toddb Exp $ */
+/* $Header: io.c,v 1.43 88/07/25 10:49:24 toddb Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -415,6 +415,7 @@ FlushClient(who, oc, extraBuf, extraCount)
 		close(connection);
 		MarkClientException(who);
 		oc->count = 0;
+		oc->bufsize = 0;
 		return(-1);
 	    }
 	}

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: connection.c,v 1.75 88/07/20 17:21:07 toddb Exp $ */
+/* $Header: connection.c,v 1.76 88/07/22 20:17:39 jim Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -635,7 +635,9 @@ CloseDownFileDescriptor(connection)
     BITCLEAR(AllSockets, connection);
     BITCLEAR(AllClients, connection);
     BITCLEAR(ClientsWithInput, connection);
-
+    BITCLEAR(ClientsWriteBlocked, connection);
+    if (!ANYSET(ClientsWriteBlocked))
+    	AnyClientsWriteBlocked = FALSE;
 }
 
 /*****************
