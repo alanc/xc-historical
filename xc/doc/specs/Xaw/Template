@@ -1,3 +1,4 @@
+.\" $XConsortium$
 All Athena widgets have three separate files associated with them:
 .LP
 .IP \(bu 3
@@ -415,10 +416,10 @@ or the \fBWindowColor\fP functions.  The actual window created for the
 "WindowWidget" is available by calling the
 .PN XtWindow
 function.
-.EH ''''
-.OH ''''
-.EF ''''
-.OF ''''
+.ds LH
+.ds CH
+.ds RH
 .bp
+.ds CF
 .tm .pn \n%
 .PX
