@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: util.c,v 2.12 88/01/29 16:38:15 swick Locked $";
+static char rcs_id[] = "$Header: util.c,v 2.14 88/02/06 10:23:07 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -408,11 +408,14 @@ int length;
 }
 
 
-void StoreName(scrn, str)
+void StoreWindowName(scrn, str)
 Scrn scrn;
 char *str;
 {
-    static Arg arglist[] = {XtNiconName, (XtArgVal) NULL};
-    arglist[0].value = (XtArgVal) str;
+    static Arg arglist[] = {
+	{XtNiconName, (XtArgVal) NULL},
+	{XtNtitle, (XtArgVal) NULL},
+    };
+    arglist[0].value = arglist[1].value = (XtArgVal) str;
     XtSetValues(scrn->parent, arglist, XtNumber(arglist));
 }
