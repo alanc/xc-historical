@@ -1,5 +1,5 @@
 /*
- * $XConsortium: AsciiTextP.h,v 1.13 89/06/29 13:43:11 kit Exp $ 
+ * $XConsortium: AsciiTextP.h,v 1.14 89/07/06 16:00:37 kit Exp $ 
  */
 
 /***********************************************************
@@ -51,9 +51,6 @@ SOFTWARE.
 #include <X11/Xaw/TextP.h>
 #include <X11/Xaw/AsciiSrc.h> /* no need to get private header. */
 #include <X11/Xaw/AsciiText.h>
-
-extern XtActionsRec textActionsTable[];
-extern Cardinal textActionsTableCount;
 
 typedef struct {int empty;} AsciiClassPart;
 
