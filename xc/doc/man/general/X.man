@@ -63,18 +63,17 @@ user preference setting programs (\fIxrdb\fP, \fIxcmsdb\fP,
 a load monitor (\fIxload\fP), clocks (\fIxclock\fP and \fIoclock\fP),
 a font displayer (\fIxfd\fP),
 utilities for listing information about fonts, windows, and displays
-(\fIxlsfonts\fP, \fIxfontsel\fP, \fIxwininfo\fP,
-\fIxlsclients\fP, \fIxdpyinfo\fP, and \fIxprop\fP),
-a diagnostic for seeing what events are generated and when (\fIxev\fP),
-screen image manipulation utilities (\fIxwd\fP, \fIxwud\fP, \fIxpr\fP, 
-and \fIxmag\fP),
-and various demos (\fIxeyes\fP, \fIico\fP, \fIxgc\fP, \fIx11perf\fP, etc.).
+(\fIxlsfonts\fP, \fIxfontsel\fP, \fIxwininfo\fP, \fIxlsclients\fP,
+\fIxdpyinfo\fP, and \fIxprop\fP), a diagnostic for seeing what events
+are generated and when (\fIxev\fP), screen image manipulation utilities
+(\fIxwd\fP, \fIxwud\fP, \fIxpr\fP, and \fIxmag\fP), and various demos
+(\fIxeyes\fP, \fIico\fP, \fIxgc\fP, \fIx11perf\fP, etc.).
 .PP
 Many other utilities, window managers, games, toolkits, etc. are included
 as user-contributed software in the MIT distribution, or are
 available using anonymous ftp on the Internet.
 See your site administrator for details.
-.SH STARTING UP
+.SH "STARTING UP"
 .PP 
 There are two main ways of getting the X server and an initial set of
 client applications started.  The particular method used depends on what
@@ -151,12 +150,12 @@ by the \fIxterm\fP terminal emulator.  However, when you log into another
 machine on a network, you'll need to set DISPLAY by hand to point to your
 display.  For example,
 .sp
-.in +8
 .nf
-% setenv DISPLAY myws:0
-$ DISPLAY=myws:0; export DISPLAY
+    % setenv DISPLAY myws:0
+    $ DISPLAY=myws:0; export DISPLAY
 .fi
-.in -8
+The \fIxon\fP script can be used to start an X program on a remote machine;
+it automatically sets the DISPLAY variable correctly.
 .PP
 Finally, most X programs accept a command line option of 
 \fB-display \fIdisplayname\fR to temporarily override the contents of
@@ -164,19 +163,17 @@ DISPLAY.  This is most commonly used to pop windows on another person's
 screen or as part of a "remote shell" command to start an xterm pointing back 
 to your display.  For example,
 .sp
-.in +8
 .nf
-% xeyes -display joesws:0 -geometry 1000x1000+0+0
-% rsh big xterm -display myws:0 -ls </dev/null &
+    % xeyes -display joesws:0 -geometry 1000x1000+0+0
+    % rsh big xterm -display myws:0 -ls </dev/null &
 .fi
-.in -8
 .PP
 X servers listen for connections on a variety of different 
 communications channels (network byte streams, shared memory, etc.).
 Since there can be more than one way of contacting a given server,
 The \fIhostname\fP part of the display name is used to determine the
 type of channel 
-(also called a transport layer) to be used.  The sample servers from MIT
+(also called a transport layer) to be used.  X servers generally
 support the following types of connections:
 .TP 8
 .I "local"
@@ -199,36 +196,52 @@ nodename followed by two colons instead of one.
 For example:  \fImyws::0\fP, \fIbig::1\fP, and \fIhydra::0.1\fP.
 .PP
 .SH "ACCESS CONTROL"
-The sample server provides two types of access control:  an authorization
-protocol which provides a list of ``magic cookies'' clients can send to
-request access, and a list of hosts from which connections are always
-accepted.  \fIXdm\fP initializes magic cookies in the server, and also places
-them in a file accessible to the user.  Normally, the list of hosts from
+An X server can use several types of access control.  Mechanisms provided
+in Release 5 are:
+.nf
+.br
+.ta 3.4i
+    Host Access	Simple host-based access control.
+    MIT-MAGIC-COOKIE-1	Shared plain-text "cookies".
+    XDM-AUTHORIZATION-1	Secure DES based private-keys.
+    SUN-DES-1	Based on Sun's secure rpc system.
+.fi
+.PP
+\fIXdm\fP initializes access control for the server, and also places
+authorization information in a file accessible to the user.
+Normally, the list of hosts from
 which connections are always accepted should be empty, so that only clients
 with are explicitly authorized can connect to the display.  When you add
 entries to the host list (with \fIxhost\fP), the server no longer performs any
 authorization on connections from those machines.  Be careful with this.
 .PP
-The file for authorization which both \fIxdm\fP and \fIXlib\fP use can be
+The file from which \fIXlib\fP extracts authorization data can be
 specified with the environment variable \fBXAUTHORITY\fP, and defaults to
 the file \fB.Xauthority\fP in the home directory.  \fIXdm\fP uses
 \fB$HOME/.Xauthority\fP and will create it or merge in authorization records
 if it already exists when a user logs in.
 .PP
-To manage a collection of authorization files containing a collection of
-authorization records use \fIxauth\fP.  This program allows you to extract
+If you use several machines, and share a common home directory
+across all of the machines by means of a network file system,
+then you never really have to worry about authorization files,
+the system should work correctly by default.
+Otherwise, as the authorization files are machine-independent,
+you can simply copy the files to share them.
+To manage authorization files, use \fIxauth\fP.
+This program allows you to extract
 records and insert them into other files.  Using this, you can send
-authorization to remote machines when you login.  As the files are
-machine-independent, you can also simply copy the files or use NFS to share
-them.  If you use several machines, and share a common home directory with
-NFS, then you never really have to worry about authorization files, the
-system should work correctly by default.  Note that magic cookies transmitted
-``in the clear'' over NFS or using \fIftp\fP or \fIrcp\fP can be ``stolen''
+authorization to remote machines when you login,
+if the remote machine does not share a common home directory with
+your local machine.
+Note that authorization information transmitted
+``in the clear'' through a network file system or
+using \fIftp\fP or \fIrcp\fP can be ``stolen''
 by a network eavesdropper, and as such may enable unauthorized access.
 In many environments this level of security is not a concern, but if it is,
-you need to know the exact semantics of the particular magic cookie to know
-if this is actually a problem.
+you need to know the exact semantics of the particular authorization
+data to know if this is actually a problem.
 .PP
+For more information on access control, see the \fIXsecurity\fP manual page.
 .SH "GEOMETRY SPECIFICATIONS"
 One of the advantages of using window systems instead of
 hardwired terminals is that 
@@ -296,13 +309,13 @@ a load average monitor, mailbox, and clock will be placed in the upper right
 hand corner:
 .sp
 .nf
-        xterm -fn 6x10 -geometry 80x24+30+200 &
-        xclock -geometry 48x48-0+0 &
-        xload -geometry 48x48-96+0 &
-        xbiff -geometry 48x48-48+0 &
+    xterm -fn 6x10 -geometry 80x24+30+200 &
+    xclock -geometry 48x48-0+0 &
+    xload -geometry 48x48-96+0 &
+    xbiff -geometry 48x48-48+0 &
 .fi
 .PP
-.SH WINDOW MANAGERS
+.SH "WINDOW MANAGERS"
 The layout of windows on the screen is controlled by special programs called
 \fIwindow managers\fP.  Although many window managers will honor geometry
 specifications as given, others may choose to ignore them (requiring the user
@@ -335,8 +348,8 @@ directories in the font path, the font path can be changed at any time
 with the \fIxset\fP program.
 However, it is important to remember that the directory names are
 on the \fBserver\fP's machine, not on the application's.
-The default font path for
-the sample server contains four directories:
+The most common fonts use by X servers and font servers can be found
+in four directories:
 .TP 8
 .I /usr/lib/X11/fonts/misc
 This directory contains many miscellaneous bitmap fonts that are useful on all
@@ -378,31 +391,33 @@ font database, reset the font path with the \fIxset\fP program.  For example,
 to add a font to a private directory, the following commands could be used:
 .sp
 .nf
-        %  cp newfont.pcf ~/myfonts
-        %  mkfontdir ~/myfonts
-        %  xset fp rehash 
+    % cp newfont.pcf ~/myfonts
+    % mkfontdir ~/myfonts
+    % xset fp rehash 
 .fi
 .PP
 The \fIxlsfonts\fP program can be used to list all of the fonts that are
 found in font databases in the current font path.  
 The \fIxfontsel\fP program can be used to browse through the fonts.
 Font names tend to be fairly long as they contain all of the information
-needed to uniquely identify individual fonts.  However, the sample server
+needed to uniquely identify individual fonts.  However, the X server
 supports wildcarding of font names, so the full specification
 .sp
-.ce 1
-\fI-adobe-courier-medium-r-normal--10-100-75-75-m-60-iso8859-1\fP
+.nf
+    \fI-adobe-courier-medium-r-normal--10-100-75-75-m-60-iso8859-1\fP
+.fi
 .sp
 might be abbreviated as:
 .sp
-.ce 1
-\fI-*-courier-medium-r-normal--*-100-*-*-*-*-iso8859-1\fP
+.nf
+    \fI-*-courier-medium-r-normal--*-100-*-*-*-*-iso8859-1\fP
+.fi
 .PP
 Because the shell also has special meanings for \fI*\fP and \fI?\fP,
 wildcarded font names should be quoted:
 .sp
 .nf
-        %  xlsfonts -fn '-*-courier-medium-r-normal--*-100-*-*-*-*-*-*'
+    % xlsfonts -fn '-*-courier-medium-r-normal--*-100-*-*-*-*-*-*'
 .fi
 .PP
 If more than one font in a given directory in the font path matches a
@@ -411,54 +426,123 @@ to the server.
 .SH "COLOR NAMES"
 Most applications provide ways of tailoring (usually through resources or
 command line arguments) the colors of various elements
-in the text and graphics they display.  Although black and white displays
-don't provide much of a choice, color displays frequently allow anywhere
-between 16 and 16 million different colors.  
+in the text and graphics they display.
+A color can be specified either by an abstract color name,
+or by a numerical color specification.
+The numerical specification can identify a color in either
+device-dependent (RGB) or device-independent terms.
+Color strings are case-insensitive.
 .PP
-Colors are often specified by their commonly-used names
-(for example, \fIred\fP, \fIwhite\fP, or \fImedium slate blue\fP).
-The server translates these names into appropriate screen colors using
-a color database that can usually be found in \fI/usr/lib/X11/rgb.txt\fP.
-Color names are case-insensitive, meaning that \fIred\fP, \fIRed\fP, 
-and \fIRED\fP all refer to the same color.  
+X supports the use of abstract color names, for example, "red", "blue".
+A value for this abstract name is obtained by searching one or more color
+name databases.
+\fIXlib\fP first searches zero or more client-side databases;
+the number, location, and content of these databases is
+implementation dependent.
+If the name is not found, the color is looked up in the
+X server's database.
+The text form of this database is commonly stored in the file
+\fI/usr/lib/X11/rgb.txt\fP.
 .PP
-Many applications also accept color specifications of the following form:
+A numerical color specification
+consists of a color space name and a set of values in the following syntax:
 .sp
-.ce 4
-#rgb
-#rrggbb
-#rrrgggbbb
-#rrrrggggbbbb
-.sp
-where \fIr\fP, \fIg\fP, and \fIb\fP are hexadecimal numbers indicating how
-much \fIred\fP, \fIgreen\fP, and \fIblue\fP should be displayed (zero being
-none and ffff being on full).  Each field
-in the specification must have the same number of digits (e.g., #rrgb or
-#gbb are not allowed).  Fields that have fewer than four digits (e.g. #rgb)
-are padded out with zero's following each digit (e.g. #r000g000b000).  The
-eight primary colors can be represented as:
-.sp
-.ta 1.25in
-.in +8
 .nf
-black	#000000000000 (no color at all)
-red	#ffff00000000
-green	#0000ffff0000
-blue	#00000000ffff
-yellow	#ffffffff0000 (full red and green, no blue)
-magenta	#ffff0000ffff
-cyan	#0000ffffffff
-white	#ffffffffffff (full red, green, and blue)
+    \fI<color_space_name>\fP:\fI<value>/.../<value>\fP
 .fi
-.in -8
 .PP
-Unfortunately, RGB color specifications are highly unportable since different
-monitors produce different shades when given the same inputs.  Similarly,
-color names aren't portable because there is no standard naming scheme and 
-because the color database needs to be tuned for each monitor.
+An RGB Device specification is identified by
+the prefix "rgb:" and has the following syntax:
+.sp
+.nf
+    rgb:\fI<red>/<green>/<blue>\fP
+
+        \fI<red>\fP, \fI<green>\fP, \fI<blue>\fP := \fIh\fP | \fIhh\fP | \fIhhh\fP | \fIhhhh\fP
+        \fIh\fP := single hexadecimal digits
+.fi
+Note that \fIh\fP indicates the value scaled in 4 bits, 
+\fIhh\fP the value scaled in 8 bits,
+\fIhhh\fP the value scaled in 12 bits,
+and \fIhhhh\fP the value scaled in 16 bits, respectively.
+These values are passed directly to the X server,
+and are assumed to be gamma corrected.
 .PP
-Application developers should take care to make their colors tailorable.
-.SH "KEYS"
+The eight primary colors can be represented as:
+.sp
+.ta 2i
+.nf
+    black	rgb:0/0/0
+    red	rgb:ffff/0/0
+    green	rgb:0/ffff/0
+    blue	rgb:0/0/ffff
+    yellow	rgb:ffff/ffff/0
+    magenta	rgb:ffff/0/ffff
+    cyan	rgb:0/ffff/ffff
+    white	rgb:ffff/ffff/ffff
+.fi
+.PP
+For backward compatibility, an older syntax for RGB Device is
+supported, but its continued use is not encouraged.
+The syntax is an initial sharp sign character followed by
+a numeric specification, in one of the following formats:
+.sp
+.ta 3i
+.nf
+    #RGB	(4 bits each)
+    #RRGGBB	(8 bits each)
+    #RRRGGGBBB	(12 bits each)
+    #RRRRGGGGBBBB	(16 bits each)
+.fi
+.PP
+The R, G, and B represent single hexadecimal digits.
+When fewer than 16 bits each are specified, 
+they represent the most-significant bits of the value
+(unlike the "rgb:" syntax, in which values are scaled).
+For example, #3a7 is the same as #3000a0007000.
+.PP
+An RGB intensity specification is identified
+by the prefix "rgbi:" and has the following syntax:
+.sp
+.nf
+    rgbi:\fI<red>/<green>/<blue>\fP
+.fi
+.PP
+The red, green, and blue are floating point values
+between 0.0 and 1.0, inclusive.
+They represent linear intensity values, with
+1.0 indicating full intensity, 0.5 half intensity, and so on.
+These values will be gamma corrected by \fIXlib\fP
+before being sent to the X server.
+The input format for these values is an optional sign,
+a string of numbers possibly containing a decimal point,
+and an optional exponent field containing an E or e 
+followed by a possibly signed integer string.
+.PP
+The standard device-independent string specifications have
+the following syntax:
+.sp
+.ta 2i
+.nf
+    CIEXYZ:\fI<X>/<Y>/<Z>\fP	(\fInone\fP, 1, \fInone\fP)
+    CIEuvY:\fI<u>/<v>/<Y>\fP	(~.6, ~.6, 1)
+    CIExyY:\fI<x>/<y>/<Y>\fP	(~.75, ~.85, 1)
+    CIELab:\fI<L>/<a>/<b>\fP	(100, \fInone\fP, \fInone\fP)
+    CIELuv:\fI<L>/<u>/<v>\fP	(100, \fInone\fP, \fInone\fP)
+    TekHVC:\fI<H>/<V>/<C>\fP	(360, 100, 100)
+.fi
+.PP
+All of the values (C, H, V, X, Y, Z, a, b, u, v, y, x) are
+floating point values.  Some of the values are constrained to
+be between zero and some upper bound; the upper bounds are
+given in parentheses above.
+The syntax for these values is an optional '+' or '-' sign,
+a string of digits possibly containing a decimal point,
+and an optional exponent field consisting of an 'E' or 'e'
+followed by an optional '+' or '-' followed by a string of digits.
+.PP
+For more information on device independent color,
+see the \fIXlib\fP reference manual.
+.SH KEYBOARDS
 .PP
 The X keyboard model is broken into two layers:  server-specific codes
 (called \fIkeycodes\fP) which represent the physical keys, and 
@@ -469,7 +553,7 @@ Two tables are kept in the server for converting keycodes to keysyms:
 .I "modifier list"
 Some keys (such as Shift, Control, and Caps Lock) are known as \fImodifier\fP
 and are used to select different symbols that are attached to a single key
-(such as Shift-a generates a capital A, and Control-l generates a formfeed
+(such as Shift-a generates a capital A, and Control-l generates a control
 character ^L).  The server keeps a list of keycodes corresponding to the
 various modifier keys.  Whenever a key is pressed or released, the server 
 generates an \fIevent\fP that contains the keycode of the indicated key as 
@@ -481,13 +565,39 @@ the various shift, control, and shift lock keys on the keyboard.
 Applications translate event keycodes and modifier masks into keysyms
 using a \fIkeysym table\fP which contains one row for each keycode and one
 column for various modifier states.  This table is initialized by the server
-to correspond to normal typewriter conventions, but is only used by
-client programs.  
+to correspond to normal typewriter conventions.  The exact semantics of
+how the table is interpreted to produce keysyms depends on the particular
+program, libraries, and language input method used, but the following
+conventions for the first four keysyms in each row are generally adhered to:
 .PP
-Although most programs deal with keysyms directly (such as those written with
-the X Toolkit Intrinsics), most programming libraries provide routines for
-converting keysyms into the appropriate type of string (such as ISO Latin-1).
-.SH "OPTIONS"
+The first four elements of the list are split into two groups of keysyms.
+Group 1 contains the first and second keysyms;
+Group 2 contains the third and fourth keysyms.
+Within each group,
+if the first element is alphabetic and the
+the second element is the special keysym \fINoSymbol\fP,
+then the group is treated as equivalent to a group in which
+the first element is the lowercase letter and the second element
+is the uppercase letter.
+.PP
+Switching between groups is controlled by the keysym named MODE SWITCH,
+by attaching that keysym to some key and attaching
+that key to any one of the modifiers Mod1 through Mod5.
+This modifier is called the ``group modifier.''
+Group 1 is used when the group modifier is off,
+and Group 2 is used when the group modifier is on.
+.PP
+Within a group,
+the modifier state determines which keysym to use.
+The first keysym is used when the Shift and Lock modifiers are off.
+The second keysym is used when the Shift modifier is on,
+when the Lock modifier is on and the second keysym is uppercase alphabetic,
+or when the Lock modifier is on and is interpreted as ShiftLock.
+Otherwise, when the Lock modifier is on and is interpreted as CapsLock,
+the state of the Shift modifier is applied first to select a keysym;
+but if that keysym is lowercase alphabetic,
+then the corresponding uppercase keysym is used instead.
+.SH OPTIONS
 Most X programs attempt to use the same names for command line options and
 arguments.  All applications written with the X Toolkit Intrinsics
 automatically accept the following options:
@@ -566,23 +676,24 @@ resolving resource and other filenames.
 This option specifies a resource name and value to override any defaults.  It 
 is also very useful for setting resources that don't have explicit command 
 line arguments.
-.SH "RESOURCES"
+.SH RESOURCES
 To make the tailoring of applications to personal preferences easier, X 
-supports several mechanisms for storing default values for program resources 
+provides a mechanism for storing default values for program resources
 (e.g. background color, window title, etc.)
-Resources are specified as strings of the form 
-.sp
-.ce 1
-\fIappname*subname*subsubname...: value\fP
-.sp
-that are read in from various places when an application is run.  By
-convention, the application name is the same as the program name, but with 
-the first letter capitalized (e.g. \fIBitmap\fP or \fIEmacs\fP) although
-some programs that begin with the letter ``x'' also capitalize the second
-letter for historical reasons.  The precise syntax for resources is:
+Resources are specified as strings
+that are read in from various places when an application is run.
+Program components are named in a hierarchical fashion,
+with each node in the hierarchy identified by a class and an instance name.
+At the top level is the class and instance name of the application itself.
+By convention, the class name of the application is the same as the program
+name, but with  the first letter capitalized (e.g. \fIBitmap\fP or \fIEmacs\fP)
+although some programs that begin with the letter ``x'' also capitalize the
+second letter for historical reasons.
+.PP
+The precise syntax for resources is:
 .PP
 .nf
-.ta 1.5i 1.75i
+.ta 1.8i 2.0i
 ResourceLine	=	Comment | IncludeFile | ResourceSpec | <empty line>
 Comment	=	"!" {<any character except null or newline>}
 IncludeFile	=	"#" WhiteSpace "include" WhiteSpace FileName WhiteSpace
@@ -640,6 +751,44 @@ is recognized and replaced with a single byte that contains
 the octal value specified by the sequence.
 Finally, the two-character sequence ``\\\\'' is recognized
 and replaced with a single backslash.
+.PP
+When an application looks for the value of a resource, it specifies
+a complete path in the hierarchy, with both class and instance names.
+However, resource values are usually given with only partially specified
+names and classes, using pattern matching constructs.
+An asterisk (*) is a loose binding and is used to represent any number
+of intervening components, including none.
+A period (.) is a tight binding and is used to separate immediately
+adjacent components.
+A question mark (?) is used to match any single component name or class.
+A database entry cannot end in a loose binding;
+the final component (which cannot be "?") must be specified.
+The lookup algorithm searches the resource database for the entry that most
+closely matches (is most specific for) the full name and class being queried.
+When more than one database entry matches the full name and class,
+precedence rules are used to select just one.
+.LP
+The full name and class are scanned from left to right (from highest
+level in the hierarchy to lowest), one component at a time.
+At each level, the corresponding component and/or binding of each
+matching entry is determined, and these matching components and
+bindings are compared according to precedence rules.
+Each of the rules is applied at each level,
+before moving to the next level,
+until a rule selects a single entry over all others.
+The rules (in order of precedence) are:
+.IP 1. 5
+An entry that contains a matching component (whether name, class, or "?")
+takes precedence over entries that elide the level (that is, entries
+that match the level in a loose binding).
+.IP 2. 5
+An entry with a matching name takes precedence over both
+entries with a matching class and entries that match using "?".
+An entry with a matching class takes precedence over
+entries that match using "?".
+.IP 3. 5
+An entry preceded by a tight binding takes precedence over entries
+preceded by a loose binding.
 .PP
 Programs based on the X Tookit Intrinsics
 obtain resources from the following sources
@@ -720,33 +869,33 @@ Specific color instances such as text cursors can then be overridden
 without having to define all of the related resources.  For example,
 .sp
 .nf
-        bitmap*Dashed:  off
-        XTerm*cursorColor:  gold
-        XTerm*multiScroll:  on
-        XTerm*jumpScroll:  on
-        XTerm*reverseWrap:  on
-        XTerm*curses:  on
-        XTerm*Font:  6x10
-        XTerm*scrollBar: on
-        XTerm*scrollbar*thickness: 5
-        XTerm*multiClickTime: 500
-        XTerm*charClass:  33:48,37:48,45-47:48,64:48
-        XTerm*cutNewline: off
-        XTerm*cutToBeginningOfLine: off
-        XTerm*titeInhibit:  on
-        XTerm*ttyModes:  intr ^c erase ^? kill ^u
-        XLoad*Background: gold
-        XLoad*Foreground: red
-        XLoad*highlight: black
-        XLoad*borderWidth: 0
-        emacs*Geometry:  80x65-0-0
-        emacs*Background:  #5b7686
-        emacs*Foreground:  white
-        emacs*Cursor:  white
-        emacs*BorderColor:  white
-        emacs*Font:  6x10
-        xmag*geometry: -0-0
-        xmag*borderColor:  white
+    bitmap*Dashed:  off
+    XTerm*cursorColor:  gold
+    XTerm*multiScroll:  on
+    XTerm*jumpScroll:  on
+    XTerm*reverseWrap:  on
+    XTerm*curses:  on
+    XTerm*Font:  6x10
+    XTerm*scrollBar: on
+    XTerm*scrollbar*thickness: 5
+    XTerm*multiClickTime: 500
+    XTerm*charClass:  33:48,37:48,45-47:48,64:48
+    XTerm*cutNewline: off
+    XTerm*cutToBeginningOfLine: off
+    XTerm*titeInhibit:  on
+    XTerm*ttyModes:  intr ^c erase ^? kill ^u
+    XLoad*Background: gold
+    XLoad*Foreground: red
+    XLoad*highlight: black
+    XLoad*borderWidth: 0
+    emacs*Geometry:  80x65-0-0
+    emacs*Background:  rgb:5b/76/86
+    emacs*Foreground:  white
+    emacs*Cursor:  white
+    emacs*BorderColor:  white
+    emacs*Font:  6x10
+    xmag*geometry: -0-0
+    xmag*borderColor:  white
 .fi
 .PP
 If these resources were stored in a file called \fI.Xresources\fP in your home
@@ -754,7 +903,7 @@ directory, they could be added to any existing resources in the server with
 the following command:
 .sp
 .nf
-        %  xrdb -merge $HOME/.Xresources
+    % xrdb -merge $HOME/.Xresources
 .fi
 .sp
 This is frequently how user-friendly startup scripts merge user-specific 
@@ -762,35 +911,36 @@ defaults
 into any site-wide defaults.  All sites are encouraged to set up convenient
 ways of automatically loading resources. See the \fIXlib\fP 
 manual section \fIResource Manager Functions\fP for more information.
-.SH "EXAMPLES"
+.SH EXAMPLES
 The following is a collection of sample command lines for some of the 
 more frequently used commands.  For more information on a particular command,
 please refer to that command's manual page.
 .sp
 .nf
-        %  xrdb -load $HOME/.Xresources
-        %  xmodmap -e "keysym BackSpace = Delete"
-        %  mkfontdir /usr/local/lib/X11/otherfonts
-        %  xset fp+ /usr/local/lib/X11/otherfonts
-        %  xmodmap $HOME/.keymap.km
-        %  xsetroot -solid '#888' 
-        %  xset b 100 400 c 50 s 1800 r on
-        %  xset q
-        %  twm
-        %  xmag
-        %  xclock -geometry 48x48-0+0 -bg blue -fg white
-        %  xeyes -geometry 48x48-48+0
-        %  xbiff -update 20 
-        %  xlsfonts '*helvetica*'
-        %  xlswins -l
-        %  xwininfo -root
-        %  xdpyinfo -display joesworkstation:0
-        %  xhost -joesworkstation
-        %  xrefresh
-        %  xwd | xwud
-        %  bitmap companylogo.bm 32x32
-        %  xcalc -bg blue -fg magenta
-        %  xterm -geometry 80x66-0-0 -name myxterm $*
+    %  xrdb $HOME/.Xresources
+    %  xmodmap -e "keysym BackSpace = Delete"
+    %  mkfontdir /usr/local/lib/X11/otherfonts
+    %  xset fp+ /usr/local/lib/X11/otherfonts
+    %  xmodmap $HOME/.keymap.km
+    %  xsetroot -solid 'rgbi:.8/.8/.8' 
+    %  xset b 100 400 c 50 s 1800 r on
+    %  xset q
+    %  twm
+    %  xmag
+    %  xclock -geometry 48x48-0+0 -bg blue -fg white
+    %  xeyes -geometry 48x48-48+0
+    %  xbiff -update 20 
+    %  xlsfonts '*helvetica*'
+    %  xlswins -l
+    %  xwininfo -root
+    %  xdpyinfo -display joesworkstation:0
+    %  xhost -joesworkstation
+    %  xrefresh
+    %  xwd | xwud
+    %  bitmap companylogo.bm 32x32
+    %  xcalc -bg blue -fg magenta
+    %  xterm -geometry 80x66-0-0 -name myxterm $*
+    %  xon filesysmachine xload
 .fi
 .SH DIAGNOSTICS
 A wide variety of error messages are generated from various programs.
@@ -816,14 +966,14 @@ using the \fIxrdb\fP program (frequently called \fI.Xresources\fP
 or \fI.Xres\fP in the user's home directory):
 .sp
 .nf
-        *StringConversionWarnings: on
+    *StringConversionWarnings: on
 .fi
 .sp
 To have conversion messages printed for just a particular application,
 the appropriate instance name can be placed before the asterisk:
 .sp
 .nf
-        xterm*StringConversionWarnings: on
+    xterm*StringConversionWarnings: on
 .fi
 .SH "SEE ALSO"
 .PP
@@ -839,7 +989,7 @@ xauth(1), xbiff(1), xcalc(1), xclipboard(1), xclock(1), xcmsdb(1), xconsole(1),
 xditview(1), xdm(1), xdpyinfo(1), xedit(1), xev(1), xeyes(1), xfd(1),
 xfontsel(1), xgas(1), xgc(1), xhost(1), xinit(1), xkill(1), xload(1),
 xlogo(1), xlsatoms(1), xlsclients(1), xlsfonts(1), xmag(1),
-xman(1), xmh(1), xmodmap(1), xpr(1), xprop(1), xrdb(1), xrefresh(1),
+xman(1), xmh(1), xmodmap(1), xon(1), xpr(1), xprop(1), xrdb(1), xrefresh(1),
 xset(1), xsetroot(1), xstdcmap(1), xterm(1), xwd(1), xwininfo(1), xwud(1),
 Xserver(1), Xdec(1), Xibm(1), XmacII(1), Xmips(1),
 Xqdss(1), Xqvss(1), Xsun(1), Xtek(1), X386(1)
