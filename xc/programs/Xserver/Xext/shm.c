@@ -17,7 +17,7 @@ without any express or implied warranty.
 
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
 
-/* $XConsortium: shm.c,v 1.20 94/01/21 22:09:58 dpw Exp $ */
+/* $XConsortium: shm.c,v 1.21 94/03/21 16:26:09 dpw Exp $ */
 
 #include <sys/types.h>
 #include <sys/ipc.h>
@@ -54,7 +54,7 @@ typedef struct _ShmDesc {
 #if defined(SVR4)
 void *shmat(int, void*, int);
 #else
-#if !defined(sgi) && !defined(hpux) && !defined(__alpha)
+#if !defined(sgi) && !defined(hpux) && !defined(__alpha) && !defined(__FreeBSD__) && !defined(__386BSD__) && !defined(__NetBSD__)
 char *shmat(int, char*, int);
 #endif
 #endif
