@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.h,v 5.3 89/09/10 16:00:02 rws Exp $ */
+/* $XConsortium: mizerarc.h,v 5.4 89/09/15 13:13:08 rws Exp $ */
 
 #define FULLCIRCLE (360 * 64)
 #define OCTANT (45 * 64)
@@ -35,7 +35,8 @@ typedef struct {
     int xorgo, yorgo;
     int w, h;
     int initialMask, startMask, endMask;
-    int startx, endx, starty, endy;
+    int startx, starty, endx, endy;
+    int firstx, firsty;
     int startAngle, endAngle;
 } miZeroArcRec;
 
