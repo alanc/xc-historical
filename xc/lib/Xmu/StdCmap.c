@@ -1,4 +1,4 @@
-/* $XConsortium: StdCmap.c,v 1.11 89/10/08 15:04:52 rws Exp $ 
+/* $XConsortium: StdCmap.c,v 1.12 92/11/23 18:02:57 rws Exp $ 
  * 
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
@@ -27,6 +27,8 @@
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
 #include <X11/Xmu/StdCmap.h>
+
+#define lowbit(x) ((x) & (~(x) + 1))
 
 static Status valid_args();		/* argument restrictions */
 
@@ -101,7 +103,11 @@ XStandardColormap *XmuStandardColormap(dpy, screen, visualid, depth, property,
     stdcmap->blue_max = blue_max;
     if (property == XA_RGB_GRAY_MAP) 
 	stdcmap->red_mult = stdcmap->green_mult = stdcmap->blue_mult = 1;
-    else {
+    else if (vinfo->class == TrueColor || vinfo->class == DirectColor) {
+	stdcmap->red_mult = lowbit(vinfo->red_mask);
+	stdcmap->green_mult = lowbit(vinfo->green_mask);
+	stdcmap->blue_mult = lowbit(vinfo->blue_mask);
+    } else {
 	stdcmap->red_mult = (red_max > 0)
 	    ? (green_max + 1) * (blue_max + 1) : 0;
 	stdcmap->green_mult = (green_max > 0) ? blue_max + 1 : 0;
