@@ -1,5 +1,5 @@
 .\" Use -ms
-.\" $XConsortium: a2x.ms,v 1.42 93/08/05 19:05:10 rws Exp $
+.\" $XConsortium: a2x.ms,v 1.43 93/08/05 19:18:14 rws Exp $
 .de Ds
 .RS
 .nf
@@ -87,12 +87,17 @@ and the ones you don't want to NO.  To see which extensions are supported by
 your X server, use \fBxdpyinfo\fP.  Your server must have at least one of
 "XTEST", "DEC-XTRAP", or "XTestExtension1" in order to use \fBa2x\fP.
 .LP
+The Imakefile also comes configured by default to assume that DragonDictate
+version 1.01 is being used, although the actual version can be overridden
+on the \fBa2x\fP command line.  If you normally use DragonDictate 1.01a
+or 2.0, then change the #define for OldDragonDictate to NO before building.
+.LP
 The documentation provided here is for using DragonDictate and \fBa2x\fP solely
 for work under X; the assumption is that you do not use DragonDictate with
 programs on the PC.  If you use DragonDictate with programs on the PC, you may
 need to create dcom files for switching between PC and X use.
 .LP
-A small mailing list of \fBa2x\fP users exists, to keep people abreast of
+A mailing list of \fBa2x\fP users exists, to keep people abreast of
 any new developments.  The mailing list is a2x-users@expo.lcs.mit.edu;
 send requests to join to a2x-users-request@expo.lcs.mit.edu.
 .LP
@@ -153,7 +158,9 @@ This document uses the notation {c\-\fI<char>\fP} to represent a control
 character, the character you get by holding down the Ctrl (Control) key and
 typing the character \fI<char>\fP.  For example, {c\-t} represents what you get
 by holding Ctrl and typing 't'.  This syntax is the same as what you will see
-in DragonDictate menus if you enter control characters into macros.
+in DragonDictate 1.01 menus if you enter control characters into macros.
+In DragonDictate 2.0, the syntax has changed to {Ctrl\+\fI<char>\fP}, so
+keep this difference in mind so that you don't get confused.
 .LP
 \fBa2x\fP interprets the character {c\-t} specially; it introduces a control
 sequence for special \fBa2x\fP operations.  The character {c\-t} was chosen
@@ -501,9 +508,14 @@ each line is of the form:
 .LP
 The \fI<dd-sequence>\fP is the sequence that is being undone; the
 \fI<undo-sequence>\fP is the sequence that \fBa2x\fP should generate to "undo"
-that sequence.  Each sequence is specified as a string of characters.  Control
-characters are specified as '^' followed by a single character, e.g., "^T" for
-{c-t}.  Comments can be inserted in the file as lines beginning with '!'.
+that sequence.  Each sequence is specified as a string of characters.  Although
+control characters can appear directly in the file, it is usually easier to
+specify them with '^' followed by a single character; the usual convention
+is followed of using the character you get by adding 0x100 to the control
+character.  For example, "^T" for {c-t}, "^@" for null, "^I" for tab, "^J" for
+linefeed, "^M" for carriage return, "^[" for escape.  The Delete character
+can be represented as "^?".  Comments can be inserted in the file as lines
+beginning with '!'.
 .LP
 When \fBa2x\fP receives backspaces, it searches the undo file for the longest
 \fI<dd-sequence>\fP that generates that many backspaces, and then processes
@@ -533,6 +545,13 @@ For example:
 .Ds
 add-word /t "[reload undo]" "{c-t}{c-u}" invisible
 .De
+.LP
+Different versions of DragonDictate generate different numbers of backspaces
+you make corrections, and \fBa2x\fP needs to know this to have undo
+processing work correctly.  If you always use \fBa2x\fP with just one
+version of DragonDictate, make sure you compile it with the correct setting
+to indicate that version.  If you use more than one version, then use the
+"-v" command line option to specify the version.
 .NH 1
 Moving Between Windows
 .LP
@@ -1210,13 +1229,6 @@ Telnet) transmits characters very slowly unless \fBa2x\fP echoes something
 back each time it receives characters.  This option causes \fBa2x\fP to send
 back a rubout character each time it reads characters.
 .LP
-.B \-p
-.IP
-Some versions of the XTestExtension1 do not handle relative pointer motion
-correctly; if you physically move the mouse and then try to move the mouse
-with \fBa2x\fP, the pointer will move to the wrong position.  Use this option
-to work around this problem.
-.LP
 .B \-f
 .IP
 Specifies that the DOS window should not receive synthetic focus.
@@ -1229,6 +1241,13 @@ Specifies the geometry of the DOS window when using DESQview/X.
 .IP
 Specifies the hotkey for use with DESQview/X.
 .LP
+.B \-p
+.IP
+Some versions of the XTestExtension1 do not handle relative pointer motion
+correctly; if you physically move the mouse and then try to move the mouse
+with \fBa2x\fP, the pointer will move to the wrong position.  Use this option
+to work around this problem.
+.LP
 .B \-u \fI<undo-file>\fP
 .IP
 Specifies the filename of the undo file.
@@ -1240,6 +1259,13 @@ will be passed through as a normal character.  This option really only
 exists for people using \fBa2x\fP to attach an alternative keyboard to X
 (not using DragonDictate).  You will probably also want to enable the
 \fB\-b\fP option.
+.LP
+.B \-v \fI<version>\fP
+.IP
+Specifies the version of DragonDictate being used, for example,
+"1.01", "1.01a", or "2.0".  Different versions of DragonDictate generate
+backspaces differently when you make corrections, and \fBa2x\fP needs
+to know this to have undo processing work correctly.
 .LP
 .B \-w \fI<DOS-window-name>\fP
 .IP
