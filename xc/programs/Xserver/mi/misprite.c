@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.16 89/08/03 17:24:49 rws Exp $ */
+/* $XConsortium: misprite.c,v 5.17 89/08/24 17:55:52 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -1477,6 +1477,8 @@ miSpriteTextOverlap (pDraw, font, x, y, n, charinfo, imageblt, w, cursorBox)
     {
 	if (extents.overallWidth > extents.overallRight)
 	    extents.overallRight = extents.overallWidth;
+	if (extents.overallWidth < extents.overallLeft)
+	    extents.overallLeft = extents.overallWidth;
 	if (extents.overallLeft > 0)
 	    extents.overallLeft = 0;
 	if (extents.fontAscent > extents.overallAscent)
