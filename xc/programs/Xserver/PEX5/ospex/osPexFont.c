@@ -1,4 +1,4 @@
-/* $XConsortium: osPexFont.c,v 5.1 91/02/16 09:57:59 rws Exp $ */
+/* $XConsortium: osPexFont.c,v 5.2 91/02/18 09:06:20 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -25,13 +25,35 @@ SOFTWARE.
 ******************************************************************/
 
 #include <stdio.h>
-#include "Xos.h"
-#include <sys/dir.h>
+#include <X11/Xos.h>
 #include "mipex.h"
 #include "miFont.h"
 #include "PEXErr.h"
 #define XK_LATIN1
 #include "keysymdef.h"
+#ifdef SYSV
+#include <dirent.h>
+#else
+#ifdef SVR4
+#include <dirent.h>
+#else
+#ifdef USG
+#include <dirent.h>
+#else
+#ifdef _POSIX_SOURCE
+#include <dirent.h>
+#else
+#include <sys/dir.h>
+#ifndef dirent
+#define dirent direct
+#endif
+#endif
+#endif
+#endif
+#endif
+
+/* A convenient shorthand. */
+typedef struct dirent	 ENTRY;
 
 extern void CopyISOLatin1Lowered();
 extern int get_lowered_truncated_entry();
@@ -203,7 +225,7 @@ ddULONG   *numNames;		/* out - number of names found */
 char    ***names;		/* out - pointer to list of strings */
 {
     DIR		    *fontdir;
-    struct direct   *dir_entry;
+    ENTRY           *dir_entry;
     char	     pattern[100];
     char	     entry[100];
     int		     i, head, tail, len, total = 0;
@@ -323,7 +345,7 @@ LoadPEXFontFile(length, fontname, pFont)
     char		name_to_match[100];
     char		lowered_entry[100];
     DIR		       *fontdir;
-    struct direct      *dir_entry;
+    ENTRY              *dir_entry;
     register int        i;
     register Ch_stroke_data **ch_font, *ch_stroke = 0;
     register Dispatch  *tblptr = 0;
