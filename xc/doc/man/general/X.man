@@ -1,4 +1,4 @@
-.\" $XConsortium: X.man,v 1.65 94/04/15 18:13:53 dpw Exp $
+.\" $XConsortium: X.man,v 1.66 94/04/15 23:01:55 rws Exp converse $
 .\" Copyright (c) 1994  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining a
@@ -141,7 +141,7 @@ script, this gives substantial flexibility at the expense of a
 nice interface.  For this reason, \fIxinit\fP is not intended for end users.
 .SH "DISPLAY NAMES"
 .PP
-From the user's prospective, every X server has a \fIdisplay name\fP of the
+From the user's perspective, every X server has a \fIdisplay name\fP of the
 form:
 .sp
 .ce 1
