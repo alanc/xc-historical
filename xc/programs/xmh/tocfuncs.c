@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocfuncs.c,v 2.32 91/07/06 15:51:15 converse Exp $
+ * $XConsortium: tocfuncs.c,v 2.33 91/07/07 16:34:14 converse Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -662,6 +662,46 @@ void DoForceRescan(w, client_data, call_data)
 }
 
 
+/* Check to see which folders have new mail, and highlight their
+   folderbuttons appropriately. */
+
+/*ARGSUSED*/
+void XmhCheckForNewMail(w, e, p, n)
+    Widget w;
+    XEvent *e;
+    String *p;
+    Cardinal *n;
+{
+    Toc toc;
+    Scrn scrn;
+    int i, j, hasmail;
+    static Arg arglist[] = {XtNiconPixmap, (XtArgVal) None};
+
+    for (i=0 ; i<numFolders ; i++) {
+	toc = folderList[i];
+	if (TocCanIncorporate(toc)) {
+	    hasmail = TocCheckForNewMail(toc);
+	    for (j=0 ; j<numScrns ; j++) {
+		scrn = scrnList[j];
+		if (scrn->kind == STtocAndView) {
+
+		    if (app_resources.mail_waiting_flag
+			&& toc == InitialFolder) {
+			arglist[0].value = (XtArgVal)
+			    (hasmail ? NewMailPixmap : NoMailPixmap);
+			XtSetValues(scrn->parent,
+				    arglist, XtNumber(arglist));
+		    } 
+		    /* give visual indication of new mail waiting */
+		    BBoxMailFlag(scrn->folderbuttons, TocName(toc),
+				 hasmail);
+		}
+	    }
+	}
+    }
+}
+
+
 /* Incorporate new mail. */
 
 /*ARGSUSED*/
@@ -688,7 +728,8 @@ void DoIncorporateNewMail(w, client_data, call_data)
     Scrn scrn = (Scrn) client_data;
     if (scrn->toc == NULL) return;
     TocIncorporate(scrn->toc);
-    TocCheckForNewMail();
+    if (app_resources.new_mail_check)
+	XmhCheckForNewMail(NULL, NULL, NULL, NULL);
 }
 
 
