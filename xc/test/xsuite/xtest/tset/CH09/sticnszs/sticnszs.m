@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: sticnszs.m,v 1.5 92/06/11 17:30:14 rws Exp $
  */
 >>TITLE XSetIconSizes CH09
 
@@ -51,8 +51,8 @@ XVisualInfo	*vp;
 unsigned long	leftover, nitems, len;
 int		actual_format;
 Atom		actual_type;
-XIconSize	*rsizelist = (XIconSize *) NULL, *sp;
-XIconSize	sizelist[7];
+long		*rsizelist = (long *) NULL, *rsp;
+XIconSize	sizelist[7], *sp;
 int		cnt = 7;
 int		i, v;
 
@@ -101,7 +101,7 @@ int		i, v;
 	} else
 		CHECK;
 
-	if( rsizelist == (XIconSize *) NULL) {
+	if( rsizelist == (long *) NULL) {
 		report("No value was obtained for the WM_ICON_SIZES property.");
 		FAIL;
 	} else {
@@ -114,40 +114,40 @@ int		i, v;
 			if(actual_format == 32) {
 
 				CHECK;
-				for(i=0, sp=rsizelist, v=0; i<cnt; i++, sp++) {
+				for(i=0, rsp=rsizelist, v=0; i<cnt; i++) {
 				
-					if(sp->min_width != v++) {
-						report("The min_width component of the XIconSize structure %d was %d instead of %d.", i, sp->min_width, v-1);
+					if(*rsp++ != v++) {
+						report("The min_width component of the XIconSize structure %d was %d instead of %d.", i, rsp[-1], v-1);
 						FAIL;
 					} else
 						CHECK;
 				
-					if(sp->min_height != v++) {
-						report("The min_height component of the XIconSize structure %d was %d instead of %d.", i, sp->min_height, v-1);
+					if(*rsp++ != v++) {
+						report("The min_height component of the XIconSize structure %d was %d instead of %d.", i, rsp[-1], v-1);
 						FAIL;
 					} else
 						CHECK;
 				
-					if(sp-> max_width != v++) {
-						report("The max_width component of the XIconSize structure %d was %d instead of %d.", i, sp-> max_width, v-1);
+					if(*rsp++ != v++) {
+						report("The max_width component of the XIconSize structure %d was %d instead of %d.", i, rsp[-1], v-1);
 						FAIL;
 					} else
 						CHECK;
 				
-					if(sp->max_height != v++) {
-						report("The max_height component of the XIconSize structure %d was %d instead of %d.", i, sp->max_height, v-1);
+					if(*rsp++ != v++) {
+						report("The max_height component of the XIconSize structure %d was %d instead of %d.", i, rsp[-1], v-1);
 						FAIL;
 					} else
 						CHECK;
 				
-					if(sp->width_inc != v++) {
-						report("The width_inc component of the XIconSize structure %d was %d instead of %d.", i, sp->width_inc, v-1);
+					if(*rsp++ != v++) {
+						report("The width_inc component of the XIconSize structure %d was %d instead of %d.", i, rsp[-1], v-1);
 						FAIL;
 					} else
 						CHECK;
 				
-					if(sp-> height_inc != v++) {
-						report("The height_inc component of the XIconSize structure %d was %d instead of %d.", i, sp->height_inc, v-1);
+					if(*rsp++ != v++) {
+						report("The height_inc component of the XIconSize structure %d was %d instead of %d.", i, rsp[-1], v-1);
 						FAIL;
 					} else
 						CHECK;
