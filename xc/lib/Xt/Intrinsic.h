@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.192 94/02/04 21:38:38 converse Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.193 94/02/08 20:20:28 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -2515,6 +2515,64 @@ extern void XtGetSelectionValuesIncremental(
     XtSelectionCallbackProc /* callback */,
     XtPointer*		/* client_data */,
     Time 		/* time */
+#endif
+);
+
+extern void XtSetSelectionParameters(
+#if NeedFunctionPrototypes
+    Widget		/* requestor */,
+    Atom		/* selection */,
+    Atom		/* type */,
+    XtPointer		/* value */,
+    unsigned long	/* length */,
+    int			/* format */
+#endif
+);
+
+extern void XtGetSelectionParameters(
+#if NeedFunctionPrototypes
+    Widget		/* owner */,
+    Atom		/* selection */,
+    XtRequestId		/* request_id */,
+    Atom*		/* type_return */,
+    XtPointer*		/* value_return */,
+    unsigned long*	/* length_return */,
+    int*		/* format_return */
+#endif
+);
+
+extern void XtCreateSelectionRequest(
+#if NeedFunctionPrototypes
+    Widget		/* requestor */,
+    Atom		/* selection */
+#endif
+);
+
+extern void XtSendSelectionRequest(
+#if NeedFunctionPrototypes
+    Widget		/* requestor */,
+    Atom		/* selection */,
+    Time		/* time */
+#endif
+);
+
+extern void XtCancelSelectionRequest(
+#if NeedFunctionPrototypes
+    Widget		/* requestor */,
+    Atom		/* selection */
+#endif
+);
+
+extern Atom XtReservePropertyAtom(
+#if NeedFunctionPrototypes
+    Widget		/* widget */
+#endif
+);
+
+extern void XtReleasePropertyAtom(
+#if NeedFunctionPrototypes
+    Widget		/* widget */,
+    Atom		/* selection */
 #endif
 );
 
