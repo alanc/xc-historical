@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.45 92/03/03 13:52:26 converse Exp $
+ * $XConsortium: Panner.c,v 1.46 93/08/19 09:56:12 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -45,12 +45,18 @@ static char defaultTranslations[] =
    <Key>KP_Enter: set(rubberband,toggle) \n\
    <Key>space:    page(+1p,+1p) \n\
    <Key>Delete:   page(-1p,-1p) \n\
-   <Key>BackSpace:  page(-1p,-1p) \n\
+   <Key>KP_Delete: page(-1p,-1p) \n\
+   <Key>BackSpace: page(-1p,-1p) \n\
    <Key>Left:     page(-.5p,+0) \n\
+   <Key>KP_Left:  page(-.5p,+0) \n\
    <Key>Right:    page(+.5p,+0) \n\
+   <Key>KP_Right: page(+.5p,+0) \n\
    <Key>Up:       page(+0,-.5p) \n\
+   <Key>KP_Up:    page(+0,-.5p) \n\
    <Key>Down:     page(+0,+.5p) \n\
-   <Key>Home:     page(0,0) ";
+   <Key>KP_Down:  page(+0,+.5p) \n\
+   <Key>Home:     page(0,0) \n\
+   <Key>KP_Home:  page(0,0) ";
 
 
 static void ActionStart(), ActionStop(), ActionAbort(), ActionMove();
