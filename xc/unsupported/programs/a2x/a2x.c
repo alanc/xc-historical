@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.71 92/05/04 10:26:10 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.72 92/06/27 20:05:24 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -30,6 +30,11 @@ Syntax of magic values in the input stream:
 ^T^C			set Control key for next character
 ^T^D<dx> <dy>^T		move mouse by (<dx>, <dy>) pixels
 ^T^E			exit the program
+^T^F<options>^T
+	a		abort recording of macro
+	r		start recording macro
+	s<digit>	save recording as macro <digit>
+	e<digit>	execute macro <digit>
 ^T^J<options>[ <mult>]^T
 			jump to next closest top-level window
 	Z		no-op letter to soak up uppercase from prev word 
@@ -181,6 +186,11 @@ typedef struct _undo {
     int undo_len;
 } UndoRec;
 
+typedef struct _macro {
+    char *macro;
+    int len;
+} MacroRec;
+
 char *progname;
 Display *dpy;
 Atom MIT_OBJ_CLASS;
@@ -209,8 +219,9 @@ unsigned short last_mods = 0;
 unsigned long time_delay;
 int (*olderror)();
 int (*oldioerror)();
-char history[4096];
+char history[8192];
 int history_end = 0;
+int macro_start = -1;
 char *undofile = NULL;
 #define UNDO_SIZE 256
 UndoRec *undos[UNDO_SIZE];
@@ -219,6 +230,7 @@ Bool in_control_seq = False;
 Bool skip_next_control_char = False;
 TriggerRec trigger;
 JumpRec jump;
+MacroRec macros[10];
 #ifdef XTRAP
 XETC *tc;
 #endif
@@ -1596,6 +1608,11 @@ trim_history()
     else {
 	bcopy(history + (sizeof(history)/2), history, history_end);
 	history_end -= sizeof(history)/2;
+	if (macro_start >= 0) {
+	    macro_start -= sizeof(history)/2;
+	    if (macro_start < 0)
+		fprintf(stderr, "macro definition overflowed\n");
+	}
     }
     bzero(history + history_end, sizeof(history) - history_end);
 }
@@ -1974,6 +1991,46 @@ do_display(buf)
 }
 
 void
+do_macro(buf)
+    char *buf;
+{
+    int n, i;
+    char *macro;
+
+    switch (*buf) {
+    case 'a':
+	macro_start = -1;
+	break;
+    case 'r':
+	if (!buf[1])
+	    macro_start = history_end + 4;
+	break;
+    case 's':
+	if (isdigit(buf[1]) && !buf[2] && macro_start >= 0) {
+	    n = buf[1] - '0';
+	    i = history_end - macro_start;
+	    macro = malloc(i);
+	    if (macros[n].macro)
+		free(macros[n].macro);
+	    macros[n].len = i;
+	    macros[n].macro = macro;
+	    bcopy(history + macro_start, macro, i);
+	    for (; --i >= 0; macro++)
+		if (*macro == control_end)
+		    *macro = control_char;
+	}
+	macro_start = -1;
+	break;
+    case 'e':
+	if (isdigit(buf[1]) && !buf[2]) {
+	    n = buf[1] - '0';
+	    process(macros[n].macro, macros[n].len, 0);
+	}
+	break;
+    }
+}
+
+void
 process(buf, n, len)
     char *buf;
     int n;
@@ -2077,6 +2134,9 @@ process(buf, n, len)
 		break;
 	    case '\004': /* control d */
 		do_motion(buf + i + 1);
+		break;
+	    case '\006': /* control f */
+		do_macro(buf + i + 1);
 		break;
 	    case '\012': /* control j */
 	    	do_jump(buf + i + 1);
