@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.c,v 1.19 90/02/07 11:09:47 jim Exp $
+ * $XConsortium: Tree.c,v 1.20 90/02/07 15:26:22 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -611,6 +611,9 @@ static void compute_bounding_box_subtree (tree, w, depth)
     }
 #endif
 
+    tc->tree.bbsubwidth = newwidth;
+    tc->tree.bbsubheight = newheight;
+
     /*
      * Now fit parent onto side (or top) of bounding box and correct for
      * extra padding.  Be careful of unsigned arithmetic.
@@ -641,6 +644,7 @@ static void arrange_subtree (tree, w, depth, x, y)
     Widget child = NULL;
     Dimension tmp;
     Dimension bw2 = w->core.border_width * 2;
+    Bool relayout = True;
 
 #ifdef padparallelsubtrees
     if (tc->tree.n_children > 1) {
@@ -652,11 +656,26 @@ static void arrange_subtree (tree, w, depth, x, y)
     }
 #endif
 
+
     /*
      * If no children, then just lay out where requested.
      */
     tc->tree.x = x;
     tc->tree.y = y;
+
+    if (horiz) {
+	int myh = (w->core.height + bw2);
+	if (myh > tc->tree.bbsubheight) {
+	    y += (myh - tc->tree.bbsubheight) / 2;
+	    relayout = False;
+	}
+    } else {
+	int myw = (w->core.width + bw2);
+	if (myw > tc->tree.bbsubwidth) {
+	    x += (myw - tc->tree.bbsubwidth) / 2;
+	    relayout = False;
+	}
+    }
 
     if ((tmp = ((Dimension) x) + tc->tree.bbwidth) > tree->tree.maxwidth)
       tree->tree.maxwidth = tmp;
@@ -697,18 +716,22 @@ static void arrange_subtree (tree, w, depth, x, y)
     /*
      * now layout parent between first and last children
      */
-    firstcc = TREE_CONSTRAINT (tc->tree.children[0]);
-    lastcc = TREE_CONSTRAINT (child);
-	
-    if (horiz) {
-	tc->tree.x = x;
-	tc->tree.y = (firstcc->tree.y +
-		      ((lastcc->tree.y - firstcc->tree.y) / 2));
-    } else {
-	tc->tree.x = firstcc->tree.x + ((lastcc->tree.x + child->core.width -
-					 firstcc->tree.x - w->core.width + 1)
-					/ 2);
-	tc->tree.y = y;
+    if (relayout) {
+	firstcc = TREE_CONSTRAINT (tc->tree.children[0]);
+	lastcc = TREE_CONSTRAINT (child);
+
+	if (horiz) {
+	    tc->tree.x = x;
+	    tc->tree.y = (firstcc->tree.y +
+			  ((lastcc->tree.y - firstcc->tree.y) / 2));
+	} else {
+	    tc->tree.x = firstcc->tree.x + ((lastcc->tree.x +
+					     child->core.width -
+					     firstcc->tree.x -
+					     w->core.width + 1)
+					    / 2);
+	    tc->tree.y = y;
+	}
     }
 }
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: TreeP.h,v 1.9 90/02/05 11:51:16 jim Exp $
+ * $XConsortium: TreeP.h,v 1.10 90/02/07 11:09:52 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -83,7 +83,8 @@ typedef struct _TreeConstraintsPart {
     Widget *children;
     int n_children;
     int max_children;
-    Dimension bbwidth, bbheight;
+    Dimension bbsubwidth, bbsubheight;	/* bounding box of sub tree */
+    Dimension bbwidth, bbheight;	/* bounding box including node */
     Position x, y;
 } TreeConstraintsPart;
 
