@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.9 92/11/23 16:51:41 mor Exp $
+XCOMM $XConsortium: Imakefile,v 1.9 92/10/22 21:33:30 mor Exp $
 XCOMM
 XCOMM Copyright 1992 by the Massachusetts Institute of Technology
 XCOMM 
@@ -40,7 +40,8 @@ HEADERS = PEXlib.h \
 	  PEXproto.h \
 	  PEXprotost.h
 
-SRCS =  pl_escape.c \
+SRCS =  pl_convert.c \
+	pl_escape.c \
 	pl_font.c \
 	pl_free.c\
 	pl_lut.c \
@@ -60,7 +61,8 @@ SRCS =  pl_escape.c \
 	pl_util.c \
 	pl_wks.c
 	
-OBJS =  pl_escape.o \
+OBJS =  pl_convert.o \
+	pl_escape.o \
 	pl_font.o \
 	pl_free.o\
 	pl_lut.o \
