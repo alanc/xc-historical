@@ -32,7 +32,7 @@
 #define	BUFWATERMARK	8192
 #define	MAXBUFSIZE	(1 << 18)
 
-#if (NOFILE <= 128)		/* 128 is value of MAXCLIENTS */
+#if NOFILE <= 128		/* 128 is value of MAXCLIENTS */
 #define	MAXSOCKS	(NOFILE - 1)
 #else
 #define	MAXSOCKS	128
@@ -139,8 +139,12 @@
 		      { int cri;			\
 		      for (cri=0; cri<mskcnt; cri++)	\
 		          dst[cri] &= ~b1[cri];  }
+#if (mskcnt==8)
+#define ANYSET(src) (src[0] || src[1] || src[2] || src[3] || \
+		     src[4] || src[5] || src[6] || src[7])
+#endif
 /*
- * If mskcnt>4, then ANYSET is a routine defined in WaitFor.c.
+ * If mskcnt>4 and not 8, then ANYSET is a routine defined in WaitFor.c.
  *
  * #define ANYSET(src) (src[0] || src[1] || src[2] || src[3] || src[4] ...)
  */
