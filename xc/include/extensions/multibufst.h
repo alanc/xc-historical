@@ -1,5 +1,5 @@
 /*
- * $XConsortium: multibufst.h,v 1.4 89/10/04 15:45:50 jim Exp $
+ * $XConsortium: multibufst.h,v 1.5 89/10/04 16:11:48 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -19,8 +19,6 @@
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
- * Author:  Keith Packard, MIT X Consortium
  */
 
 #ifndef _MULTIBUFST_H_
@@ -263,22 +261,6 @@ typedef struct {
 } xMbufCreateStereoWindowReq;		/* followed by value list */
 #define sz_xMbufCreateStereoWindowReq 44
 
-
-typedef struct {
-    CARD8	reqType;	/* always codes->major_opcode */
-    CARD8	mbufReqType;	/* always X_MbufClearBuffer */
-    CARD16	length B16;
-    Multibuffer	buffer B32;
-    INT16	x B16;
-    INT16	y B16;
-    CARD16	width B16;
-    CARD16	height B16;
-    CARD8	exposures;
-    CARD8	unused0;
-    CARD8	unused1;
-    CARD8	unused2;
-} xMbufClearBufferReq;
-#define sz_xMbufClearBufferReq 20
 
 #undef Multibuffer
 

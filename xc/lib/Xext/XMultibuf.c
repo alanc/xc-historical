@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XMultibuf.c,v 1.17 89/10/08 17:11:13 jim Exp $
+ * $XConsortium: XMultibuf.c,v 1.18 89/10/08 19:23:53 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -525,41 +525,6 @@ void XmbufChangeBufferAttributes (dpy, b, valuemask, attr)
 	nvalues <<= 2;			/* watch out for macros... */
 	Data32 (dpy, (long *) values, (long)nvalues);
     }
-    UnlockDisplay (dpy);
-    SyncHandle();
-    return;
-}
-
-
-/*
- * XmbufClearBuffer -
- * 	Paints the specified rectangle of the buffer with the corresponding
- * 	area from the background (if not-None) of the window associated with 
- * 	the buffer.  If width is zero, it is replaced by the width of the
- * 	buffer minus x.  If height is zero, it is replaced by the height of
- * 	the buffer minus y.  If exposures is True, an exposure event is 
- * 	generated for the rectangle.
- */
-void XmbufClearBuffer (dpy, b, x, y, width, height, exposures)
-    Display *dpy;
-    Multibuffer b;
-    int x, y;
-    unsigned int width, height;
-    Bool exposures;
-{
-    XExtDisplayInfo *info = find_display (dpy);
-    register xMbufClearBufferReq *req;
-
-    MbufCheckExtension (dpy, info, /**/);
-
-    LockDisplay (dpy);
-    MbufGetReq (MbufClearBuffer, req, info);
-    req->buffer = b;
-    req->x = x;
-    req->y = y;
-    req->width = width;
-    req->height = height;
-    req->exposures = exposures;
     UnlockDisplay (dpy);
     SyncHandle();
     return;
