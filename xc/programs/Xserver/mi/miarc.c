@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.29 91/06/14 18:09:57 rws Exp $ */
+/* $XConsortium: miarc.c,v 5.30 91/06/15 10:35:20 rws Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -485,7 +485,7 @@ miComputeWideEllipse(lw, parc, mustFree)
     register int k;
     double Hs, Hf, WH, K, Vk, Nk, Fk, Vr, N, Nc, Z, rs;
     double A, T, b, d, x, y, t, inx, outx, hepp, hepm;
-    int flip;
+    int flip, solution;
     arcCacheRec fakeent;
 
     if (!lw)
@@ -588,8 +588,34 @@ miComputeWideEllipse(lw, parc, mustFree)
 	A = sqrt((Z + Z) - Nk);
 	T = (Fk - Z) * K / A;
 	inx = 0.0;
+	solution = FALSE;
+	b = -A + K;
+	d = b * b - 4 * (Z + T);
+	if (d >= 0) {
+	    d = sqrt(d);
+	    y = (b + d) / 2;
+	    if ((y >= 0.0) && (y < hepp)) {
+		solution = TRUE;
+		if (y > hepm)
+		    y = h;
+		t = y / h;
+		x = w * sqrt(1 - (t * t));
+		t = K - y;
+		t = sqrt(rs - (t * t));
+		if (flip == 2)
+		    inx = x - t;
+		else
+		    outx = x + t;
+	    }
+	}
 	b = A + K;
 	d = b * b - 4 * (Z - T);
+	/* Because of the large magnitudes involved, we lose enough precision
+	 * that sometimes we end up with a negative value near the axis, when
+	 * it should be positive.  This is a workaround.
+	 */
+	if (d < 0 && !solution)
+	    d = 0.0;
 	if (d >= 0) {
 	    d = sqrt(d);
 	    y = (b + d) / 2;
@@ -610,24 +636,6 @@ miComputeWideEllipse(lw, parc, mustFree)
 		t = K - y;
 		t = sqrt(rs - (t * t));
 		if (flip == 1)
-		    inx = x - t;
-		else
-		    outx = x + t;
-	    }
-	}
-	b = -A + K;
-	d = b * b - 4 * (Z + T);
-	if (d >= 0) {
-	    d = sqrt(d);
-	    y = (b + d) / 2;
-	    if ((y >= 0.0) && (y < hepp)) {
-		if (y > hepm)
-		    y = h;
-		t = y / h;
-		x = w * sqrt(1 - (t * t));
-		t = K - y;
-		t = sqrt(rs - (t * t));
-		if (flip == 2)
 		    inx = x - t;
 		else
 		    outx = x + t;
