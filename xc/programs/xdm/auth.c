@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.20 90/03/05 18:57:55 keith Exp $
+ * $XConsortium: auth.c,v 1.21 90/09/13 18:28:41 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -288,7 +288,6 @@ SetLocalAuthorization (d)
 {
     Xauth	*auth, **auths;
     int		i, j;
-    char	**authName;
 
     if (d->authorizations)
     {
@@ -303,6 +302,7 @@ SetLocalAuthorization (d)
     if (!d->authNameNum)
     {
 	for (i = 0; d->authNames[i]; i++)
+	    /*SUPPRESS 530*/
 	    ;
 	d->authNameNum = i;
     }
@@ -712,7 +712,8 @@ setAuthNumber (auth, name)
     colon = rindex (name, ':');
     if (colon) {
 	++colon;
-	if (dot = index (colon, '.'))
+	dot = index (colon, '.');
+	if (dot)
 	    auth->number_length = dot - colon;
 	else
 	    auth->number_length = strlen (colon);
@@ -819,7 +820,8 @@ struct verify_info	*verify;
     int		magicCookie;
 
     Debug ("SetUserAuthorization\n");
-    if (auths = d->authorizations) {
+    auths = d->authorizations;
+    if (auths) {
 	home = getEnv (verify->userEnviron, "HOME");
 	lockStatus = LOCK_ERROR;
 	if (home) {
@@ -874,7 +876,7 @@ struct verify_info	*verify;
 	for (i = 0; i < d->authNum; i++)
 	{
 	    if (auths[i]->name_length == 18 &&
-		!strncmp (auths[i]->name, "MIT-MAGIC-COOKIE-1"))
+		!strncmp (auths[i]->name, "MIT-MAGIC-COOKIE-1", 18))
 	    {
 		magicCookie = i;
 	    	if (d->displayType.location == Local)
@@ -897,6 +899,7 @@ struct verify_info	*verify;
 	if (old) {
 	    if (fstat (fileno (old), &statb) != -1)
 		chmod (new_name, (int) (statb.st_mode & 0777));
+	    /*SUPPRESS 560*/
 	    while (entry = XauReadAuth (old)) {
 		if (!checkAddr (entry->family,
 			       entry->address_length, entry->address,
@@ -984,6 +987,7 @@ RemoveUserAuthorization (d, verify)
 	if (old) {
 	    if (fstat (fileno (old), &statb) != -1)
 		chmod (new_name, (int) (statb.st_mode & 0777));
+	    /*SUPPRESS 560*/
 	    while (entry = XauReadAuth (old)) {
 		if (!checkAddr (entry->family,
 			       entry->address_length, entry->address,
