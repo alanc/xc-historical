@@ -1725,7 +1725,7 @@
   ;; Timeout and interval are in seconds, will be rounded to minutes.
   (declare (type display display)
 	   (type (or (member :default) int16) timeout interval)
-	   (type (member :yes :no :default) blanking exposures)))
+	   (type (member :on :off :default) blanking exposures)))
 
 (defun screen-saver (display)
   ;; Returns timeout and interval in seconds.
