@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.125 89/11/27 18:28:03 jim Exp $
+ * $XConsortium: menus.c,v 1.126 89/11/28 11:33:03 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.125 89/11/27 18:28:03 jim Exp $";
+"$XConsortium: menus.c,v 1.126 89/11/28 11:33:03 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -2621,7 +2621,7 @@ void WarpAlongRing (ev, forward)
     XButtonEvent *ev;
     Bool forward;
 {
-    TwmWindow *r = NULL, *head;
+    TwmWindow *r, *head;
 
     if (Scr->RingLeader)
       head = Scr->RingLeader;
