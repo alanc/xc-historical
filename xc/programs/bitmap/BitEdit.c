@@ -1,5 +1,5 @@
 /*
- * $XConsortium: BitEdit.c,v 1.24 91/10/31 09:20:43 rws Exp $
+ * $XConsortium: BitEdit.c,v 1.25 93/08/19 09:12:50 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -218,7 +218,7 @@ static Boolean image_visible = False;
 static Pixmap check_mark;
 static Dialog input_dialog, error_dialog, qsave_dialog;
 static Time btime;
-static String filename = NULL, basename = NULL, format;
+static String filename = NULL, base_name = NULL, format;
 static char message[80];
 
 
@@ -927,10 +927,10 @@ void DoFilename()
 
 void DoBasename()
 {  
-  BWGetBasename(bitmap_widget, &basename);
+  BWGetBasename(bitmap_widget, &base_name);
   if (PopupDialog(input_dialog, "Change basename:",
-		  basename, &basename, XtGrabExclusive) == Okay) {
-    BWChangeBasename(bitmap_widget, basename);
+		  base_name, &base_name, XtGrabExclusive) == Okay) {
+    BWChangeBasename(bitmap_widget, base_name);
     FixStatus();
   }
 }
