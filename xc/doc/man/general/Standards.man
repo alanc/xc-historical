@@ -54,7 +54,7 @@ changes if implementation efforts uncover significant problems.
 .nf
 
 PEX Protocol Specification
-Version 4.0
+Version 4.0P
 Randi J. Rost (editor)
 
 Extending X for Double-Buffering, Multi-Buffering, and Stereo
