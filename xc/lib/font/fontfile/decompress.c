@@ -332,9 +332,13 @@ BufCompressedSkip (f, bytes)
     int		bytes;
 {
     int		    c;
-    while (bytes-- && ((c = BufFileGet(f)) != BUFFILEEOF))
-	    ;
-    return c;
+    while (bytes--) 
+    {
+	c = BufFileGet(f);
+	if (c == BUFFILEEOF)
+	    return BUFFILEEOF;
+    }
+    return 0;
 }
 
 #ifdef TEST
