@@ -1,4 +1,4 @@
-/* $XConsortium: Destroy.c,v 1.27 90/06/25 12:10:55 swick Exp $ */
+/* $XConsortium: Destroy.c,v 1.28 90/08/23 14:47:24 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -189,10 +189,25 @@ void _XtDoPhase2Destroy(app, dispatch_level)
     XtAppContext app;
     int dispatch_level;
 {
-    while (app->destroy_count &&
-	   app->destroy_list[app->destroy_count-1].dispatch_level >=
-		dispatch_level) {
-	XtPhase2Destroy(app->destroy_list[--app->destroy_count].widget);
+    /* Phase 2 must occur in fifo order.  List is not necessarily
+     * contiguous in dispatch_level.
+     */
+
+    int i = 0;
+    DestroyRec* dr = app->destroy_list;
+    while (i < app->destroy_count) {
+	if (dr->dispatch_level >= dispatch_level)  {
+	    Widget w = dr->widget;
+	    if (--app->destroy_count)
+		bcopy( (char*)(dr+1), (char*)dr,
+		       app->destroy_count*sizeof(DestroyRec)
+		      );
+	    XtPhase2Destroy(w);
+	}
+	else {
+	    i++;
+	    dr++;
+	}
     }
 }
 
