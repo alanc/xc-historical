@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Manage.c,v 6.4 88/02/01 19:50:52 swick Locked $";
+static char rcsid[] = "$Header: Manage.c,v 6.5 88/02/03 13:09:59 swick Locked $";
 #endif lint
 
 /*
@@ -136,7 +136,9 @@ void XtManageChildren(children, num_children)
 	    continue;
 	}
 	parent = child->core.parent;
-	if (! child->core.managed || parent->core.being_destroyed)
+	if ( child->core.managed ||
+	     child->core.being_destroyed ||
+	     parent->core.being_destroyed )
 	    continue;
 	if (parent != *parentP) {
 	    register Widget *pP = parentP;
