@@ -1,4 +1,4 @@
-/* $Header: Xlib.h,v 11.138 88/02/14 09:25:33 jim Exp $ */
+/* $Header: Xlib.h,v 11.139 88/02/20 20:19:23 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -390,7 +390,7 @@ typedef struct {
 
 typedef struct {
         Time time;
-	unsigned short x, y;
+	short x, y;
 } XTimeCoord;
 
 /* Data structure for X{Set,Get}ModifierMapping */
@@ -831,7 +831,7 @@ typedef struct {
 	union {
 		char b[20];
 		short s[10];
-		int l[5];
+		long l[5];
 		} data;
 } XClientMessageEvent;
 
@@ -852,9 +852,9 @@ typedef struct {
 	Display *display;	/* Display the event was read from */
 	XID resourceid;		/* resource id */
 	unsigned long serial;	/* serial number of failed request */
-	char error_code;	/* error code of failed request */
-	char request_code;	/* Major op-code of failed request */
-	char minor_code;	/* Minor op-code of failed request */
+	unsigned char error_code;	/* error code of failed request */
+	unsigned char request_code;	/* Major op-code of failed request */
+	unsigned char minor_code;	/* Minor op-code of failed request */
 } XErrorEvent;
 
 typedef struct {
@@ -949,7 +949,7 @@ typedef struct {
     int         n_properties;   /* how many properties there are */
     XFontProp	*properties;	/* pointer to array of additional properties*/
     XCharStruct	min_bounds;	/* minimum bounds over all existing char*/
-    XCharStruct	max_bounds;	/* minimum bounds over all existing char*/
+    XCharStruct	max_bounds;	/* maximum bounds over all existing char*/
     XCharStruct	*per_char;	/* first_char to last_char information */
     int		ascent;		/* log. extent above baseline for spacing */
     int		descent;	/* log. descent below baseline for spacing */
