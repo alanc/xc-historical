@@ -1,4 +1,4 @@
-/* $XConsortium: VarCreate.c,v 1.22 91/07/12 13:45:33 rws Exp $ */
+/* $XConsortium: VarCreate.c,v 1.23 91/07/23 12:21:39 rws Exp $ */
 
 /*
 
@@ -346,7 +346,7 @@ Widget _XtVaAppInitialize(app_context_return, application_class, options,
     return(root);
 }
 
-#if !(defined(SUNSHLIB) && defined(SHAREDCODE))
+#if !((defined(SUNSHLIB) || defined(AIXSHLIB)) && defined(SHAREDCODE))
 
 /*
  * If not used as a shared library, we still need a front end to 
@@ -386,5 +386,5 @@ Widget XtVaAppInitialize(app_context_return, application_class, options,
 			      fallback_resources, var);
 }
 
-#endif /* !(SUNSHLIB && SHAREDCODE) */
+#endif /* !((SUNSHLIB || AIXSHLIB) && SHAREDCODE) */
 
