@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: buffer.c,v 1.2 89/09/21 11:08:24 keith Exp $ */
+/* $XConsortium: buffer.c,v 1.3 89/09/21 20:00:26 keith Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -1079,6 +1079,7 @@ QueueDisplayRequest (client, activateTime)
     	swaps (&stuff->minDelay, n);
     	swaps (&stuff->maxDelay, n);
     }
+    client->sequence--;
     ResetCurrentRequest (client);
     IgnoreClient (client);
     return TRUE;
