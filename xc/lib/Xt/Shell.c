@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.40 88/09/06 16:29:02 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.41 88/09/14 07:44:16 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif lint
 
@@ -738,6 +738,12 @@ static void Realize(wid, vmask, attr)
 	if(w->shell.override_redirect) {
 		mask |= CWOverrideRedirect;
 		attr->override_redirect = TRUE;
+	}
+	if (wid->core.width == 0 || wid->core.height == 0) {
+	    Cardinal count = 1;
+	    XtErrorMsg("invalidDimension", "shellRealize", "XtToolkitError",
+		       "Shell widget %s has zero width and/or height",
+		       &wid->core.name, &count);
 	}
 	wid->core.window = XCreateWindow(XtDisplay(wid),
 		wid->core.screen->root, (int)wid->core.x, (int)wid->core.y,

@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.120 88/09/06 15:06:59 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.121 88/09/06 16:28:02 jim Exp $";
 /* $oHeader: Intrinsic.c,v 1.4 88/08/18 15:40:35 asente Exp $ */
 #endif lint
 
@@ -332,15 +332,21 @@ void XtCreateWindow(widget, window_class, visual, value_mask, attributes)
     XSetWindowAttributes *attributes;
 {
     if (widget->core.window == None) {
+	if (widget->core.width == 0 || widget->core.height == 0) {
+	    Cardinal count = 1;
+	    XtErrorMsg("invalidDimension", "xtCreateWindow", "XtToolkitError",
+		       "Widget %s has zero width and/or height",
+		       &widget->core.name, &count);
+	}
 	widget->core.window =
 	    XCreateWindow (
 		XtDisplay (widget),
 		(widget->core.parent ?
 		    widget->core.parent->core.window :
 		    widget->core.screen->root),
-		widget->core.x, widget->core.y,
-		widget->core.width, widget->core.height,
-		widget->core.border_width, (int) widget->core.depth,
+		(int)widget->core.x, (int)widget->core.y,
+		(unsigned)widget->core.width, (unsigned)widget->core.height,
+		(unsigned)widget->core.border_width, (int) widget->core.depth,
 		window_class, visual, value_mask, attributes);
     }
 } /* XtCreateWindow */
