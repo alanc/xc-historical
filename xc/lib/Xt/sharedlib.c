@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sharedlib.c,v 1.11 91/06/29 12:41:31 rws Exp $
+ * $XConsortium: sharedlib.c,v 1.12 91/07/23 12:22:07 rws Exp $
  * 
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -60,6 +60,17 @@ void XtToolkitInitialize()
     _XtToolkitInitialize();
 }
 
+#if NeedFunctionPrototypes
+Widget 
+XtInitialize(
+_Xconst char* name,
+_Xconst char* classname,
+XrmOptionDescRec *options,
+Cardinal num_options,
+int *argc,
+String *argv
+)
+#else
 Widget 
 XtInitialize(name, classname, options, num_options, argc, argv)
 String name, classname;
@@ -67,12 +78,27 @@ XrmOptionDescRec *options;
 Cardinal num_options;
 String *argv;
 int *argc;
+#endif
 {
     extern Widget _XtInitialize();
     VENDORINIT
     return _XtInitialize (name, classname, options, num_options, argc, argv);
 }
 
+#if NeedFunctionPrototypes
+Widget
+XtAppInitialize(
+XtAppContext * app_context_return,
+_Xconst char* application_class,
+XrmOptionDescRec *options,
+Cardinal num_options,
+int *argc_in_out,
+String *argv_in_out,
+String *fallback_resources,
+ArgList args_in,
+Cardinal num_args_in
+)
+#else
 Widget
 XtAppInitialize(app_context_return, application_class, options, num_options,
 		argc_in_out, argv_in_out, fallback_resources, 
@@ -84,6 +110,7 @@ Cardinal num_options, num_args_in;
 int *argc_in_out;
 String *argv_in_out, * fallback_resources;     
 ArgList args_in;
+#endif
 {
     extern Widget _XtAppInitialize();
     VENDORINIT
@@ -94,10 +121,15 @@ ArgList args_in;
 
 #if NeedFunctionPrototypes
 Widget
-XtVaAppInitialize(XtAppContext *app_context_return, String application_class,
-		  XrmOptionDescList options, Cardinal num_options,
-		  int *argc_in_out, String *argv_in_out,
-		  String *fallback_resources, ...)
+XtVaAppInitialize(
+    XtAppContext *app_context_return,
+    _Xconst char* application_class,
+    XrmOptionDescList options,
+    Cardinal num_options,
+    int *argc_in_out,
+    String *argv_in_out,
+    String *fallback_resources,
+    ...)
 #else
 Widget XtVaAppInitialize(app_context_return, application_class, options,
 			 num_options, argc_in_out, argv_in_out,
