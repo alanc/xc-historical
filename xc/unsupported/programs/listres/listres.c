@@ -1,5 +1,5 @@
 /*
- * $XConsortium: listres.c,v 1.12 89/07/12 11:06:43 jim Exp $
+ * $XConsortium: listres.c,v 1.13 89/07/12 11:15:39 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -91,9 +91,16 @@ static void list_known_widgets ()
 {
     int i;
     WidgetNode *wn;
+    int width = 0;
+    char format[20];
 
     for (i = 0, wn = widget_list; i < nwidgets; i++, wn++) {
-	printf ("%-24s ", wn->label);
+	int l = strlen (wn->label);
+	if (l > width) width = l;
+    }
+    sprintf (format, "%%-%ds  ", width);
+    for (i = 0, wn = widget_list; i < nwidgets; i++, wn++) {
+	printf (format, wn->label);
 	print_classname (wn, NULL, 0, False);
 	putchar ('\n');
     }
