@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: xmodmap.c,v 1.11 88/09/06 17:33:44 jim Exp $
+ * $XConsortium: xmodmap.c,v 1.12 88/10/08 13:28:40 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -47,8 +47,9 @@ static char *help_message[] = {
 "    -verbose, -quiet             turn logging on or off",
 "    -n                           don't execute changes, just show like make",
 "    -e expression                execute string",
-"    -p                           print modifier map",
-"    -k                           print keymap table",
+"    -pm                          print modifier map",
+"    -pk                          print keymap table",
+"    -pp                          print pointer map",
 "    -grammar                     print out short help on allowable input",
 "    -                            read standard input",
 "",
@@ -113,6 +114,7 @@ main (argc, argv)
     int status, errors;
     Bool printMap = False;
     Bool printKeyTable = False;
+    Bool printPointerMap = False;
     Bool didAnything = False;
 
     ProgramName = argv[0];
@@ -168,12 +170,23 @@ main (argc, argv)
 		if (++i >= argc) usage ();
 		if (process_line (argv[i]) != 0) errors++;
 		continue;
-	      case 'p':			/* -p */
-		printMap = True;
-		continue;
-	      case 'k':			/* -k */
+	      case 'p':			/* -p... */
+		switch (arg[2]) {
+		  case '\0':
+		  case 'm':		/* -pm */
+		    printMap = True;
+		    break;
+		  case 'k':		/* -pk */
+		    printKeyTable = True;
+		    break;
+		  case 'p':		/* -pp */
+		    printPointerMap = True;
+		    break;
+		  default:
+		    usage ();
+		    /* NOTREACHED */
+		}
 		didAnything = True;
-		printKeyTable = True;
 		continue;
 	      case 'g':			/* -grammar */
 		grammar_usage ();
@@ -294,6 +307,10 @@ main (argc, argv)
 
     if (printKeyTable) {
 	print_key_table ();
+    }
+
+    if (printPointerMap) {
+	print_pointer_map ();
     }
 
     Exit (status < 0 ? 1 : 0);

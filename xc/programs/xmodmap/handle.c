@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: handle.c,v 1.7 88/09/06 17:33:30 jim Exp $
+ * $XConsortium: handle.c,v 1.8 88/10/08 13:28:46 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -1073,4 +1073,11 @@ void print_key_table ()
     PrintKeyTable (stdout);
     return;
 }
+
+void print_pointer_map ()
+{
+    PrintPointerMap (stdout);
+    return;
+}
+
 

@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: exec.c,v 1.5 88/09/30 13:28:30 jim Exp $
+ * $XConsortium: exec.c,v 1.6 88/10/08 13:28:49 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  * Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
@@ -203,25 +203,48 @@ PrintKeyTable (fp)
 	return;
     }
     fprintf (fp, 
-	   "There are %d KeySyms per KeyCode; KeyCodes range from %d to %d.\n", 
+	 "There are %d KeySyms per KeyCode; KeyCodes range from %d to %d.\n\n", 
 	    keysyms_per_keycode, min_keycode, max_keycode);
-    fprintf (fp, "KeyCode\tKeysym\tKeysym\t...\n");
-    fprintf (fp, "Value  \tValue \tName  \t...\n\n");
+    fprintf (fp, "    KeyCode\tKeysym (Keysym)\t...\n");
+    fprintf (fp, "    Value  \tValue   (Name) \t...\n\n");
 
     keymap = origkeymap;
     for (i = min_keycode; i <= max_keycode; i++) {
 	int         j;
 
-	printf("%-3d\t", i);
+	printf("    %3d    \t", i);
 	for (j = 0; j < keysyms_per_keycode; j++) {
 	    register KeySym ks = *keymap++;
-	    if (ks != NoSymbol)
-		fprintf (fp, "0x%x\t%s\t", ks, XKeysymToString(ks));
+	    if (ks != NoSymbol) {
+		char *s = XKeysymToString (ks);
+		fprintf (fp, "0x%04x (%s)\t", ks, s ? s : "no name");
+	    }
 	}
 	fprintf (fp, "\n");
     }
 
     XFree ((char *) origkeymap);
+    return;
+}
+
+
+PrintPointerMap (fp)
+    FILE *fp;
+{
+    unsigned char pmap[256];		/* there are 8 bits of buttons */
+    int count, i;
+
+    count = XGetPointerMapping (dpy, pmap, 256);
+
+    fprintf (fp, "There are %d pointer buttons defined.\n\n");
+    fprintf (fp, "    Physical        Button\n");
+    fprintf (fp, "     Button          Code\n");
+/*               "      ###            ###\n"               */
+    for (i = 0; i < count; i++) {
+	fprintf (fp, "      %3u            %3u\n", 
+		 i+1, (unsigned int) pmap[i]);
+    }
+    fprintf (fp, "\n");
     return;
 }
 
