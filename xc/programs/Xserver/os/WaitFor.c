@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: WaitFor.c,v 1.24 87/09/11 17:54:30 sun Locked $ */
+/* $Header: WaitFor.c,v 1.25 87/09/13 20:31:42 sun Exp $ */
 
 /*****************************************************************
  * OS Depedent input routines:
@@ -77,7 +77,7 @@ int isItTimeToYield = 1;
  *     file descriptor.)  
  *****************/
 
-static int intervalCount = 0;
+static int timeTilFrob = 0;	/* while screen saving */
 
 WaitForSomething(pClientsReady, nready, pNewClients, nnew)
     ClientPtr *pClientsReady;
@@ -104,28 +104,35 @@ WaitForSomething(pClientsReady, nready, pNewClients, nnew)
             if (ScreenSaverTime)
 	    {
                 timeout = ScreenSaverTime - TimeSinceLastInputEvent();
-	        if (timeout < 0) /* may be forced by AutoResetServer() */
+	        if (timeout <= 0) /* may be forced by AutoResetServer() */
 	        {
+		    int	timeSinceSave;
+
 		    if (clientsDoomed)
 		    {
 		        *nnew = *nready = 0;
 			break;
 		    }
-	            if (timeout < intervalCount)
+		    timeSinceSave = -timeout;
+	            if (timeSinceSave >= timeTilFrob)
                     {
 		        SaveScreens(SCREEN_SAVER_ON, ScreenSaverActive);
-		        if (intervalCount)
-    		            intervalCount -= ScreenSaverInterval;
-                        else
-                            intervalCount = 
-					-(ScreenSaverInterval + ScreenSaverTime);
+			/* round up to the next ScreenSaverInterval */
+			timeTilFrob = ScreenSaverInterval *
+ 				((timeSinceSave + ScreenSaverInterval) /
+	 				ScreenSaverInterval);
 		    }
-    	            timeout -= intervalCount;
+    	            timeout = timeTilFrob - timeSinceSave;
     	        }
-                else
-	            intervalCount = 0;
+ 		else
+ 		{
+		    if (timeout > ScreenSaverTime)
+		        timeout = ScreenSaverTime;
+	            timeTilFrob = 0;
+		}
                 waittime.tv_sec = timeout / MILLI_PER_SECOND;
-	        waittime.tv_usec = 0;
+	        waittime.tv_usec = (timeout % MILLI_PER_SECOND) *
+ 					(1000000 / MILLI_PER_SECOND);
 		wt = &waittime;
 	    }
             else
