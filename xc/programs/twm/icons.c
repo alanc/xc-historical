@@ -21,7 +21,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: icons.c,v 1.18 90/03/13 11:46:50 jim Exp $
+ * $XConsortium: icons.c,v 1.19 90/03/13 15:28:58 jim Exp $
  *
  * Icon releated routines
  *
@@ -158,21 +158,39 @@ IconUp (tmp_win)
 {
     int		x, y;
     int		defx, defy;
+    struct IconRegion *ir;
 
     /*
      * If the client specified a particular location, let's use it (this might
      * want to be an option at some point).  Otherwise, try to fit within the
      * icon region.
      */
-    if ((tmp_win->wmhints && (tmp_win->wmhints->flags & IconPositionHint)) ||
-	tmp_win->icon_moved)
+    if (tmp_win->wmhints && (tmp_win->wmhints->flags & IconPositionHint))
       return;
+
+    if (tmp_win->icon_moved) {
+	if (!XGetGeometry (dpy, tmp_win->icon_w, &JunkRoot, &defx, &defy,
+			   &JunkWidth, &JunkHeight, &JunkBW, &JunkDepth))
+	  return;
+
+	x = defx + ((int) JunkWidth) / 2;
+	y = defy + ((int) JunkHeight) / 2;
+
+	for (ir = Scr->FirstRegion; ir; ir = ir->next) {
+	    if (x >= ir->x && x < (ir->x + ir->w) &&
+		y >= ir->y && y < (ir->y + ir->h))
+	      break;
+	}
+	if (!ir) return;		/* outside icon regions, leave alone */
+    }
 
     defx = -100;
     defy = -100;
     PlaceIcon(tmp_win, defx, defy, &x, &y);
-    if (x != defx || y != defy)
+    if (x != defx || y != defy) {
 	XMoveWindow (dpy, tmp_win->icon_w, x, y);
+	tmp_win->icon_moved = FALSE;	/* since we've restored it */
+    }
 }
 
 static IconEntry *
