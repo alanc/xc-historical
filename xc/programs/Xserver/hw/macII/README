@@ -16,7 +16,7 @@ Build the system by:
 2)	In the top-level directory, type:
 
 	alias make "make SHELL=/bin/sh"
-	make -k World >>& MakeLog
+	make BOOTSTRAPCFLAGS=-DmacII -k World >>& MakeLog
 
 	This takes several hours.
 
