@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: xclock.c,v 1.28 89/12/11 15:51:32 kit Exp $";
+static char rcsid[] = "$XConsortium: xclock.c,v 1.29 90/05/01 18:21:49 converse Exp $";
 #endif /* lint */
 
 /*
@@ -106,7 +106,7 @@ void main(argc, argv)
     if (icon_pixmap == None) {
 	arg.value = (XtArgVal)XCreateBitmapFromData(XtDisplay(toplevel),
 				       XtScreen(toplevel)->root,
-				       clock_bits, clock_width, clock_height);
+				       (char *)clock_bits, clock_width, clock_height);
 	XtSetValues (toplevel, &arg, ONE);
     }
     XtSetArg(arg, XtNiconMask, &icon_pixmap);
@@ -114,7 +114,7 @@ void main(argc, argv)
     if (icon_pixmap == None) {
 	arg.value = (XtArgVal)XCreateBitmapFromData(XtDisplay(toplevel),
 				       XtScreen(toplevel)->root,
-				       clock_mask_bits, clock_mask_width, 
+				       (char *)clock_mask_bits, clock_mask_width, 
 				       clock_mask_height);
 	XtSetValues (toplevel, &arg, ONE);
     }
