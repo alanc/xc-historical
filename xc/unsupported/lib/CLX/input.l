@@ -77,7 +77,6 @@
 	  connection-failure
 	  reply-length-error
 	  reply-timeout
-	  server-disconnect
 	  sequence-error
 	  unexpected-reply
 	  missing-parameter
@@ -598,7 +597,7 @@
 			  (declare (type pending-command pending-command))
 			  (not (null (pending-command-reply-buffer pending-command))))
 		      pending-command)
-      (x-error 'server-disconnect :display display))
+      (x-error 'closed-display :display display))
     (let ((reply-buffer
 	    (with-event-queue-internal (display)
 	      (threaded-pop (pending-command-reply-buffer pending-command)
@@ -1701,12 +1700,6 @@
 	     (format stream "Timeout after waiting ~d seconds for a reply for display ~s"
 		     (reply-timeout-timeout condition)
 		     (reply-timeout-display condition)))))  
-
-(define-condition server-disconnect (x-error)
-  (display)
-  (:report (lambda (condition stream)
-	     (format stream "Server disconnect for display ~s"
-		     (server-disconnect-display condition)))))
 
 (define-condition sequence-error (x-error)
   (display
