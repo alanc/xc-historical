@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.156 93/09/19 20:07:46 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.157 93/09/26 15:40:53 gildea Exp $
 #define DoNormalLib NormalLibX
 #define DoSharedLib SharedLibX
 #define DoDebugLib DebugLibX
@@ -24,6 +24,11 @@ XBSDLIB = /**/
         XDMAUTHDEFS = -DHASXDMAUTH
         XDMAUTHOBJS = Wrap.o Wraphelp.o
         XDMAUTHSRCS = Wrap.c Wraphelp.c
+#endif
+#if BuildXKBlib
+    XKB_DEFINES = -DXKB
+        XKBSRCS = XKB.c XKBBind.c XKBCvt.c XKBGeometry.c
+        XKBOBJS = XKB.o XKBBind.o XKBCvt.o XKBGeometry.o
 #endif
 #if HasSecureRPC
         RPCDEFS = -DSECURE_RPC
@@ -61,7 +66,7 @@ XBSDLIB = /**/
        AUTHSRCS = AuDispose.c AuGetBest.c AuFileName.c AuRead.c
            SRCS = $(SRCS1) $(SRCS2) $(SRCS3) /* try *.c if you have trouble */
         HEADERS = Xlib.h Xresource.h Xutil.h cursorfont.h Xlibint.h \
-			Xcms.h Xlocale.h
+			Xcms.h Xlocale.h XKBlib.h
        LINTLIBS =
 
 SRCS1 = \
@@ -649,7 +654,7 @@ SRCS3 = \
 	RegstFlt.c \
 	locking.c \
 	LockDis.c \
-	$(LCSRCS)
+	$(XKBSRCS) $(LCSRCS)
 
 OBJS3 = \
 	Lab.o \
@@ -726,7 +731,7 @@ OBJS3 = \
 	RegstFlt.o \
 	locking.o \
 	LockDis.o \
-	$(LCOBJS)
+	$(XKBOBJS) $(LCOBJS)
 
 #ifdef RsArchitecture
 LCDEPSYMSRCS = aixlcLoad.c
@@ -890,6 +895,9 @@ SpecialCLibObjectRule(imTrDnet,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialCLibObjectRule(imTrSrm,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialCLibObjectRule(imTrTcp,$(ICONFIGFILES),$(CONN_DEFINES) $(SOCK_DEFINES))
 SpecialCLibObjectRule(lcUtil,$(ICONFIGFILES),$(XLC_DEFINES))
+#if BuildXKBlib
+SpecialCLibObjectRule(KeyBind,$(ICONFIGFILES),$(XKB_DEFINES))
+#endif
 
 #if InstallXcmsTxt
 InstallNonExecFile(Xcms.txt,$(LIBDIR))
