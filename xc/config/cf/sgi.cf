@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sgi.cf,v 1.9 91/03/27 09:13:23 rws Exp $
+XCOMM platform:  $XConsortium: sgi.cf,v 1.10 91/03/30 09:43:16 rws Exp $
 
 #define OSName			IRIX
 XCOMM operating system:  OSName
@@ -58,9 +58,6 @@ XCOMM operating system:  OSName
 /* for xdm or anyone else to use */
 #define DefaultUserPath :/usr/sbin:/usr/bsd:/usr/bin:/bin:/usr/bin/X11:/etc:/usr/etc
 #define DefaultSystemPath /usr/sbin:/usr/bsd:/bin:/etc:/usr/bin:/usr/etc:/usr/bin/X11
-
-/* General Parameters Affecting Clients And The Server */
-#define StandardDefines -DSYSV -D_WCHAR_T_
 
 #define BuildServer             YES /* XXX change to NO in R5 */
 #define XnonServer Xnon /* XXX remove in R5 */
