@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: iconmgr.c,v 1.25 89/07/18 17:15:54 jim Exp $
+ * $XConsortium: iconmgr.c,v 1.26 89/07/21 18:30:25 jim Exp $
  *
  * Icon Manager routines
  *
@@ -454,7 +454,7 @@ TwmWindow *tmp_win;
 
     tmp_win->list = NULL;
 
-    if (tmp_win->iconmgr || Scr->NoIconManagers)
+    if (tmp_win->iconmgr || tmp_win->transient || Scr->NoIconManagers)
 	return NULL;
 
     if (LookInList(Scr->IconMgrNoShow, tmp_win->full_name, &tmp_win->class))

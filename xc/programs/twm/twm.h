@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.34 89/07/18 17:16:19 jim Exp $
+ * $XConsortium: twm.h,v 1.35 89/07/26 11:02:56 jim Exp $
  *
  * twm include file
  *
@@ -196,6 +196,7 @@ typedef struct TwmWindow
     short highlight;		/* should highlight this window */
     short iconify_by_unmapping;	/* unmap window to iconify it */
     short iconmgr;		/* this is an icon manager window */
+    short transient;		/* this is a transient window */
     short titlehighlight;	/* should I highlight the title bar */
     struct IconMgr *iconmgrp;	/* pointer to it if this is an icon manager */
     int save_frame_x;		/* x position of frame */

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.89 89/07/26 12:47:33 jim Exp $
+ * $XConsortium: menus.c,v 1.90 89/07/27 15:28:16 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.89 89/07/26 12:47:33 jim Exp $";
+"$XConsortium: menus.c,v 1.90 89/07/27 15:28:16 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -2141,7 +2141,7 @@ int def_x, def_y;
     XWindowAttributes winattrs;
     unsigned long eventMask;
 
-    iconify = !tmp_win->iconify_by_unmapping;
+    iconify = ((!tmp_win->iconify_by_unmapping) || tmp_win->transient);
     if (iconify)
     {
 	if (tmp_win->icon_w == NULL)

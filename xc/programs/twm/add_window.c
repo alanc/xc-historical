@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.85 89/07/26 11:02:15 jim Exp $
+ * $XConsortium: add_window.c,v 1.86 89/07/26 15:04:32 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.85 89/07/26 11:02:15 jim Exp $";
+"$XConsortium: add_window.c,v 1.86 89/07/26 15:04:32 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -147,7 +147,6 @@ IconMgr *iconp;
     XGCValues	    gcv;
     unsigned long   gcm, mask;
     XWindowAttributes gattr;
-    int trans;
     long supplied;
     int gravx, gravy;			/* gravity signs for positioning */
 
@@ -186,8 +185,8 @@ IconMgr *iconp;
      * fields in the WM_NORMAL_HINTS property.
      */
 
-    trans = Transient(tmp_win->w);
-    if ((tmp_win->hints.flags & USPosition) || trans)
+    tmp_win->transient = Transient(tmp_win->w);
+    if ((tmp_win->hints.flags & USPosition) || tmp_win->transient)
     {
 #ifdef DEBUG
 	fprintf(stderr, "	user-specified hints\n");
@@ -252,7 +251,7 @@ IconMgr *iconp;
         tmp_win->title_height = 0;
 
     /* if it is a transient window, don't put a title on it */
-    if (trans && !Scr->DecorateTransients)
+    if (tmp_win->transient && !Scr->DecorateTransients)
 	tmp_win->title_height = 0;
 
     if (LookInList(Scr->StartIconified, tmp_win->full_name, &tmp_win->class))
