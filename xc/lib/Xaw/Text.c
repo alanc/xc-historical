@@ -1,4 +1,4 @@
-/* $XConsortium: Text.c,v 1.173 91/03/22 18:15:09 converse Exp $ */
+/* $XConsortium: Text.c,v 1.174 91/03/26 15:24:25 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -70,7 +70,7 @@ unsigned long FMT8BIT = 0L;
 /*
  * Defined in Text.c
  */
-
+static void UnrealizeScrollbars();
 static void VScroll(), VJump(), HScroll(), HJump(), ClearWindow(); 
 static void DisplayTextWindow(), ModifySelection(), PushCopyQueue();
 static void UpdateTextInLine(), UpdateTextInRectangle(), PopCopyQueue();
@@ -106,7 +106,6 @@ static XtResource resources[] = {
      offset(simple.cursor), XtRString, "xterm"},
   {XtNheight, XtCHeight, XtRDimension, sizeof(Dimension),
      offset(core.height), XtRDimension, (XtPointer)&defHeight},
-
   {XtNdisplayPosition, XtCTextPosition, XtRInt, sizeof(XawTextPosition), 
      offset(text.lt.top), XtRImmediate, (XtPointer)0},
   {XtNinsertPosition, XtCTextPosition, XtRInt, sizeof(XawTextPosition),
@@ -138,6 +137,8 @@ static XtResource resources[] = {
      offset(text.resize), XtRImmediate, (XtPointer) XawtextResizeNever},
   {XtNautoFill, XtCAutoFill, XtRBoolean, sizeof(Boolean),
      offset(text.auto_fill), XtRImmediate, (XtPointer) FALSE},
+  {XtNunrealizeCallback, XtCCallback, XtRCallback, sizeof(XtPointer),
+     offset(text.unrealize_callbacks), XtRCallback, (XtPointer) NULL}
 };
 #undef offset
 
@@ -344,6 +345,9 @@ TextWidget ctx;
     XtCreateWidget("vScrollbar", scrollbarWidgetClass, (Widget)ctx, NULL, ZERO);
   XtAddCallback( vbar, XtNscrollProc, VScroll, (XtPointer)ctx );
   XtAddCallback( vbar, XtNjumpProc, VJump, (XtPointer)ctx );
+  if (ctx->text.hbar == NULL)
+      XtAddCallback((Widget) ctx, XtNunrealizeCallback, UnrealizeScrollbars,
+		    (XtPointer) NULL);
 
   ctx->text.r_margin.left += vbar->core.width + vbar->core.border_width;
   ctx->text.margin.left = ctx->text.r_margin.left;
@@ -373,6 +377,9 @@ TextWidget ctx;
 
   ctx->text.r_margin.left -= vbar->core.width + vbar->core.border_width;
   ctx->text.margin.left = ctx->text.r_margin.left;
+  if (ctx->text.hbar == NULL)
+      XtRemoveCallback((Widget) ctx, XtNunrealizeCallback, UnrealizeScrollbars,
+		       (XtPointer) NULL);
   XtDestroyWidget(vbar);
   ctx->text.vbar = NULL;
   PositionHScrollBar(ctx);
@@ -392,6 +399,9 @@ TextWidget ctx;
     XtCreateWidget("hScrollbar", scrollbarWidgetClass, (Widget)ctx, args, ONE);
   XtAddCallback( hbar, XtNscrollProc, HScroll, (XtPointer)ctx );
   XtAddCallback( hbar, XtNjumpProc, HJump, (XtPointer)ctx );
+  if (ctx->text.vbar == NULL)
+      XtAddCallback((Widget) ctx, XtNunrealizeCallback, UnrealizeScrollbars,
+		    (XtPointer) NULL);
 
   PositionHScrollBar(ctx);
   if (XtIsRealized((Widget)ctx)) {
@@ -418,7 +428,9 @@ TextWidget ctx;
   ctx->text.r_margin.bottom -= hbar->core.height + hbar->core.border_width;
   ctx->text.margin.bottom = ctx->text.r_margin.bottom;
 */
-
+  if (ctx->text.vbar == NULL)
+      XtRemoveCallback((Widget) ctx, XtNunrealizeCallback, UnrealizeScrollbars,
+		       (XtPointer) NULL);
   XtDestroyWidget(hbar);
   ctx->text.hbar = NULL;
 }
@@ -521,6 +533,20 @@ XSetWindowAttributes *attributes;
   _XawTextBuildLineTable(ctx, ctx->text.lt.top, TRUE);
   _XawTextSetScrollBars(ctx);
   _XawTextCheckResize(ctx);
+}
+
+/*ARGSUSED*/
+static void UnrealizeScrollbars(widget, client, call)
+Widget		widget;		/* Text widget */
+XtPointer	client;		/* unused */
+XtPointer	call; 		/* unused */
+{
+    TextWidget ctx = (TextWidget) widget;
+    
+    if (ctx->text.hbar)
+	XtUnrealizeWidget(ctx->text.hbar);
+    if (ctx->text.vbar)
+	XtUnrealizeWidget(ctx->text.vbar);
 }
 
 /* Utility routines for support of Text */

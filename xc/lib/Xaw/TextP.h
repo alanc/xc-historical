@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextP.h,v 1.45 90/11/03 17:57:50 converse Exp $
+* $XConsortium: TextP.h,v 1.46 90/12/01 13:02:19 rws Exp $
 */
 
 
@@ -162,6 +162,7 @@ typedef struct _TextPart {
     XawTextWrapMode     wrap;            /* The type of wrapping. */
     XawTextResizeMode   resize;	             /* what to resize */
     XawTextMargin       r_margin;            /* The real margins. */
+    XtCallbackList	unrealize_callbacks; /* used for scrollbars */
     
     /* private state */
 
