@@ -1,4 +1,4 @@
-/* $XConsortium: Xtrans.h,v 1.22 94/03/31 15:35:40 mor Exp $ */
+/* $XConsortium: Xtrans.h,v 1.23 94/04/17 20:23:00 mor Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -454,18 +454,14 @@ int TRANS(ConvertAddress)(
 char *
 TRANS(GetMyNetworkId)(
 #if NeedFunctionPrototypes
-    int,		/* family */
-    int,		/* addrlen */
-    Xtransaddr *	/* addr */
+    XtransConnInfo	/* ciptr */
 #endif
 );
 
 char *
 TRANS(GetPeerNetworkId)(
 #if NeedFunctionPrototypes
-    int,		/* family */
-    int,		/* addrlen */
-    Xtransaddr *	/* addr */
+    XtransConnInfo	/* ciptr */
 #endif
 );
 
