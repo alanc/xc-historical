@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbblt.c,v 1.2 90/03/01 16:38:40 keith Exp $ */
+/* $XConsortium: cfbblt.c,v 1.3 90/03/05 11:40:24 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -68,7 +68,7 @@ MROP_NAME(cfbDoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
     register unsigned int *psrc;/* pointer to current src longword */
     register unsigned int *pdst;/* pointer to current dst longword */
 
-    MROP_DECLARE(register)
+    MROP_DECLARE_REG()
 
 				/* following used for looping through a line */
     unsigned int startmask, endmask;	/* masks for writing ends of dst */

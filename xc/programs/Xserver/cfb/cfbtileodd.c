@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbtileodd.c,v 1.7 90/03/01 16:35:18 keith Exp $ */
+/* $XConsortium: cfbtileodd.c,v 1.8 90/03/10 15:49:44 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -99,7 +99,7 @@ MROP_NAME(cfbFillBoxTileOdd) (pDrawable, nBox, pBox, tile, xrot, yrot, alu, plan
     int xoffDst, xoffSrc;
     int leftShift, rightShift;
 
-    MROP_DECLARE (register)
+    MROP_DECLARE_REG()
 
     unsigned long *pDstBase;	/* pointer to start of dest */
     unsigned long *pDstLine;	/* poitner to start of dest box */
@@ -385,7 +385,7 @@ MROP_NAME(cfbFillUnnaturalTileFS) (pDrawable, n, ppt, pwidth, tile, xrot, yrot, 
     int xoffDst, xoffSrc;
     int leftShift, rightShift;
 
-    MROP_DECLARE (register)
+    MROP_DECLARE_REG()
 
     unsigned long *pDstBase;	/* pointer to start of dest */
     unsigned long *pDstLine;	/* poitner to start of dest box */
