@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: scrollbar.c,v 1.17 88/11/23 13:56:05 rws Exp $
+ *	$XConsortium: scrollbar.c,v 1.18 89/01/06 15:58:19 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -43,7 +43,7 @@
 extern void Bcopy();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.17 88/11/23 13:56:05 rws Exp $";
+static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.18 89/01/06 15:58:19 jim Exp $";
 #endif	/* lint */
 
 /* Event handlers */
@@ -443,7 +443,6 @@ static int params_to_pixels (screen, params, n)
 {
     register mult;
     register char *s;
-    int divby2 = 0;
 
     switch (n > 2 ? 2 : n) {
       case 2:
@@ -451,16 +450,11 @@ static int params_to_pixels (screen, params, n)
 	if (specialcmplowerwiths (s, "page")) {
 	    mult = (screen->max_row + 1) * FontHeight(screen);
 	} else if (specialcmplowerwiths (s, "halfpage")) {
-	    mult = (screen->max_row + 1) * FontHeight(screen);
-	    divby2 = 1;
-	} else if (specialcmplowerwiths (s, "halfline")) {
-	    mult = FontHeight(screen);
-	    divby2 = 1;
+	    mult = ((screen->max_row + 1) * FontHeight(screen)) >> 1;
 	} else if (specialcmplowerwiths (s, "pixel")) {
 	    mult = 1;
 	} /* else assume that it is Line */
 	mult *= atoi (params[0]);
-	if (divby2) mult >>= 1;
 	break;
       case 1:
 	mult = atoi (params[0]) * FontHeight(screen);	/* lines */

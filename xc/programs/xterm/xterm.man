@@ -978,7 +978,7 @@ Rings the bell at the specified volume increment above/below the base volume.
 .TP 15
 .B scroll-back(\fP[\fInumber\fP,[\fIunits\fP]])
 Scrolls the window backwards the indicated number of units (\fIpages\fP,
-\fIhalfpages\fP, \fIlines\fP, \fIhalflines\fP, or \fIpixels\fP).  If 
+\fIhalfpages\fP, \fIlines\fP, or \fIpixels\fP).  If 
 \fIunits\fP are not specified, \fIlines\fP are assumed.  If no \fInumber\fP
 is specified, the value of the \fIscrollLines\fP resource (which defaults to 1)
 is used.
