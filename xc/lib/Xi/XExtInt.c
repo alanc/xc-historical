@@ -1,4 +1,4 @@
-/* $XConsortium: XExtInt.c,v 1.29 93/09/08 10:23:27 rws Exp $ */
+/* $XConsortium: XExtInt.c,v 1.30 94/02/07 23:47:55 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -200,8 +200,10 @@ XInputClose (dpy, codes)
     {
     XExtDisplayInfo 	*info = XInput_find_display (dpy);
 
-    XFree((char *)((XInputData *) info->data)->vers);
-    XFree((char *)info->data);
+    if(info->data != NULL) {
+	XFree((char *)((XInputData *) info->data)->vers);
+	XFree((char *)info->data);
+    }
     return XextRemoveDisplay (xinput_info, dpy);
     }
 
