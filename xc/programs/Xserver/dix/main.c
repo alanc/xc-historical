@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: main.c,v 1.132 88/02/20 08:42:10 rws Exp $ */
+/* $Header: main.c,v 1.133 88/03/15 15:12:38 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -291,13 +291,9 @@ CreateConnectionBlock()
     sizesofar += setup.nbytesVendor;
     pBuf += setup.nbytesVendor;
     i = padlength[setup.nbytesVendor & 3];
-    if (i)
-    {
-        char pad[4];
-        bcopy(pad, pBuf, i);
-        pBuf += i;
-	sizesofar += i;
-    }    
+    sizesofar += i;
+    while (--i >= 0)
+        *pBuf++ = 0;
     
     for (i=0; i<screenInfo.numPixmapFormats; i++)
     {
