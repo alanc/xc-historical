@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.25 89/11/18 12:44:22 rws Exp $
+ * $XConsortium: session.c,v 1.26 89/12/06 19:33:37 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -223,6 +223,11 @@ Display		*dpy;
     alarm (0);
     signal (SIGALRM, SIG_DFL);
     pseudoReset (dpy);
+    if (!d->grabServer)
+    {
+	XUngrabServer (dpy);
+	XSync (dpy, 0);
+    }
     Debug ("done secure %s\n", d->name);
 }
 
@@ -231,7 +236,8 @@ struct display	*d;
 Display		*dpy;
 {
     Debug ("Unsecure display %s\n", d->name);
-    XUngrabServer (dpy);
+    if (d->grabServer)
+	XUngrabServer (dpy);
     XSync (dpy, 0);
 }
 
