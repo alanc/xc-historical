@@ -1,5 +1,5 @@
 /*
- * $XConsortium: aixMouse.c,v 1.3 91/07/16 13:00:48 jap Exp $
+ * $XConsortium: aixMouse.c,v 1.4 91/11/22 17:05:04 eswu Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -49,9 +49,10 @@ extern  char    *getenv();
 /***================================================================***/
 
 static int
-rtGetMotionEvents(buff, start, stop, pScr)
-    CARD32 start, stop;
+rtGetMotionEvents(pDevice, buff, start, stop, pScr)
+    DeviceIntPtr pDevice;
     xTimecoord *buff;
+    CARD32 start, stop;
     ScreenPtr pScr;
 {
     TRACE(("rtGetMotionEvents( buff= 0x%x, start= %d, stop= %d )\n",
