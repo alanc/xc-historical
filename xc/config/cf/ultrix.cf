@@ -27,7 +27,12 @@
 #define StandardDefines
 #define DefaultCCOptions -Wf,-XNh2000 -Olimit 2000
 #define ServerDefines StandardDefines ExtensionDefines -DXDMCP
+
+/*
+ * XXX - temporary hack for Keith since he has a wimpy disk.
+ */
+#define BuildExamples NO
 #endif
 
-/**/# platform:  $XConsortium: ultrix.cf,v 1.15 89/10/10 14:27:23 jim Exp $
+/**/# platform:  $XConsortium: ultrix.cf,v 1.16 89/10/11 18:54:54 jim Exp $
 /**/# operating system:  OSName
