@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.87 89/08/15 14:20:06 jim Exp $
+ * $XConsortium: events.c,v 1.88 89/08/21 19:07:56 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.87 89/08/15 14:20:06 jim Exp $";
+"$XConsortium: events.c,v 1.88 89/08/21 19:07:56 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -482,6 +482,7 @@ HandlePropertyNotify()
     unsigned long valuemask;		/* mask for create windows */
     XSetWindowAttributes attributes;	/* attributes for create windows */
     Pixmap pm;
+    unsigned long supplied;
 
 #ifdef DEBUG_EVENTS
     fprintf(stderr, "PropertyNotify = %d\n", Event.xproperty.atom);
@@ -577,7 +578,7 @@ HandlePropertyNotify()
 	break;
 
     case XA_WM_NORMAL_HINTS:
-	XGetNormalHints(dpy, Tmp_win->w, &Tmp_win->hints);
+	(void) XGetWMNormalHints (dpy, Tmp_win->w, &Tmp_win->hints, &supplied);
 	break;
 
     default:
