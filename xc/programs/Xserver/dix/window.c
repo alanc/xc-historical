@@ -1112,7 +1112,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 		goto PatchUp;
 	    }
 #ifdef DO_SAVE_UNDERS
-	    if ((pWin->saveUnder != val) && (pWin->viewable) &&
+	    if (pWin->parent && (pWin->saveUnder != val) && (pWin->viewable) &&
 		DO_SAVE_UNDERS(pWin))
 	    {
 		/*
@@ -1124,13 +1124,29 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 		else
 		    deltaSaveUndersViewable++;
 		pWin->saveUnder = val;
- 		pLayerWin = (*pScreen->GetLayerWindow)(pWin);
- 		if ((*pScreen->ChangeSaveUnder)(pLayerWin->parent,
-						pWin->nextSib))
- 		    (*pScreen->PostChangeSaveUnder)(pLayerWin, pWin->nextSib);
+
+		if (pWin->firstChild)
+		{
+                    pLayerWin = (*pScreen->GetLayerWindow)(pWin);
+                   if ((*pScreen->ChangeSaveUnder)(pLayerWin->parent, pWin->nextSib))
+                       (*pScreen->PostChangeSaveUnder)(pLayerWin->parent,
+                                                       pWin->nextSib);
+               }
+               else
+               {
+                   if ((*pScreen->ChangeSaveUnder)(pWin, pWin->nextSib))
+                       (*pScreen->PostChangeSaveUnder)(pWin,
+                                                       pWin->nextSib);
+               }                                   
 	    }
 	    else
 	    {
+		/*  If we're changing the saveUnder attribute of the root 
+		 *  window, all we do is set pWin->saveUnder so that
+		 *  GetWindowAttributes returns the right value.  We don't
+		 *  do the "normal" save-under processing (as above).
+		 *  Hope that doesn't cause any problems.
+		 */
 		pWin->saveUnder = val;
 	    }
 #else
@@ -2598,7 +2614,7 @@ MapSubwindows(pParent, client)
 #ifdef DO_SAVE_UNDERS
     Bool	dosave = FALSE;
 #endif
-/*    WindowPtr		pLayerWin;  XXX still not using it */
+    WindowPtr		pLayerWin;
 
     pScreen = pParent->drawable.pScreen;
     parentRedirect = RedirectSend(pParent);
@@ -2640,9 +2656,7 @@ MapSubwindows(pParent, client)
 #ifdef DO_SAVE_UNDERS
 		    if (DO_SAVE_UNDERS(pWin))
 		    {
-			dosave |= (*pScreen->ChangeSaveUnder)(pWin, pWin->nextSib);
-			if (dosave && !pFirstSaveUndered)
-			    pFirstSaveUndered = pWin;
+			dosave = TRUE;
 		    }
 #endif /* DO_SAVE_UNDERS */
 		}
@@ -2652,19 +2666,51 @@ MapSubwindows(pParent, client)
 
     if (pFirstMapped)
     {
-	if (anyMarked)
-	{
-	    (*pScreen->ValidateTree)(pParent, pFirstMapped, VTMap);
-	    (*pScreen->HandleExposures)(pParent);
+	pLayerWin = (*pScreen->GetLayerWindow)(pParent);
+	if (pLayerWin->parent != pParent) {
+	    anyMarked |= (*pScreen->MarkOverlappedWindows)(pLayerWin,
+							   pLayerWin,
+							   (WindowPtr *)NULL);
+	    pFirstMapped = pLayerWin;
+	}
+        if (anyMarked)
+        {
+#ifdef DO_SAVE_UNDERS
+	    if (pLayerWin->parent != pParent)
+	    {
+		if (dosave || (DO_SAVE_UNDERS(pLayerWin)))
+		{
+		    dosave = (*pScreen->ChangeSaveUnder)(pLayerWin,
+							 pLayerWin);
+		}
+	    }
+	    else if (dosave)
+	    {
+		dosave = FALSE;
+		for (pWin = pParent->firstChild; pWin; pWin = pWin->nextSib)
+		{
+		    if (DO_SAVE_UNDERS(pWin))
+		    {
+			dosave |= (*pScreen->ChangeSaveUnder)(pWin,
+							      pWin->nextSib);
+			if (dosave && !pFirstSaveUndered)
+			    pFirstSaveUndered = pWin;
+		    }
+		}
+            }
+#endif /* DO_SAVE_UNDERS */
+	    (*pScreen->ValidateTree)(pLayerWin->parent, pFirstMapped, VTMap);
+	    (*pScreen->HandleExposures)(pLayerWin->parent);
 	}
 #ifdef DO_SAVE_UNDERS
-	if (dosave)
-	    (*pScreen->PostChangeSaveUnder)(pFirstSaveUndered,
+        if (dosave)
+	    (*pScreen->PostChangeSaveUnder)(pLayerWin,
 					    pFirstSaveUndered->nextSib);
 #endif /* DO_SAVE_UNDERS */
-	if (anyMarked && pScreen->PostValidateTree)
-	    (*pScreen->PostValidateTree)(pParent, pFirstMapped, VTMap);
-	WindowsRestructured ();
+        if (anyMarked && pScreen->PostValidateTree)
+	    (*pScreen->PostValidateTree)(pLayerWin->parent, pFirstMapped,
+					 VTMap);
+        WindowsRestructured ();
     }
 }
 
@@ -2842,10 +2888,20 @@ UnmapSubwindows(pWin)
 		(*pScreen->MarkWindow)(pWin);
 	    else
 	    {
-		(*pScreen->MarkOverlappedWindows)(pWin, pLayerWin,
-						   (WindowPtr *)NULL);
-		(*pScreen->MarkWindow)(pWin);
-		pHead = pWin->firstChild;
+		WindowPtr ptmp;
+                (*pScreen->MarkOverlappedWindows)(pWin, pLayerWin,
+						  (WindowPtr *)NULL);
+		(*pScreen->MarkWindow)(pLayerWin->parent);
+		
+		/* Windows between pWin and pLayerWin may not have been marked */
+		ptmp = pWin;
+ 
+		while (ptmp != pLayerWin->parent)
+		{
+		    (*pScreen->MarkWindow)(ptmp);
+		    ptmp = ptmp->parent;
+		}
+                pHead = pWin->firstChild;
 	    }
 	    (*pScreen->ValidateTree)(pLayerWin->parent, pHead, VTUnmap);
 	    (*pScreen->HandleExposures)(pLayerWin->parent);
