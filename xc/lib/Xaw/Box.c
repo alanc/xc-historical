@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: ButtonBox.c,v 1.16 87/12/08 08:19:31 swick Locked $";
+static char rcsid[] = "$Header: ButtonBox.c,v 1.17 87/12/14 09:14:21 swick Locked $";
 #endif lint
 
 /*
@@ -34,11 +34,11 @@ static char rcsid[] = "$Header: ButtonBox.c,v 1.16 87/12/08 08:19:31 swick Locke
  *
  */
 
-#include	"Intrinsic.h"
-#include	"ButtonBox.h"
+#include	<X11/Intrinsic.h>
+#include	<X11/Atoms.h>
+#include	<X11/Misc.h>
+#include	<X11/ButtonBox.h>
 #include	"ButtonBoxP.h"
-#include	"Atoms.h"
-#include	"Misc.h"
 
 /****************************************************************
  *
@@ -212,12 +212,13 @@ static Boolean PreferredSize(bbw, width, height, replyWidth, replyHeight)
  *
  */
 
-static void Resize(bbw)
-    ButtonBoxWidget	bbw;
+static void Resize(w)
+    Widget	w;
 {
     Dimension junk;
 
-    DoLayout(bbw, bbw->core.width, bbw->core.height, &junk, &junk, TRUE);
+    DoLayout((ButtonBoxWidget)w, w->core.width, w->core.height,
+	     &junk, &junk, TRUE);
 } /* Resize */
 
 /*
@@ -272,7 +273,7 @@ static XtGeometryResult GeometryManager(w, request, reply)
     XtWidgetGeometry	*reply;	/* RETURN */
 
 {
-    Dimension	width, height, borderWidth, junk;
+    Dimension	width, height, borderWidth;
     ButtonBoxWidget bbw;
 
     /* Position request always denied */
@@ -313,7 +314,7 @@ static XtGeometryResult GeometryManager(w, request, reply)
  */
 	if (TryNewLayout(bbw)) {
 	    /* Fits in existing or new space, relayout */
-	    Resize(bbw);
+	    Resize((Widget)bbw);
 	    return (XtGeometryYes);
 	} else {
 	    /* Cannot satisfy request, change back to original geometry */
@@ -328,28 +329,31 @@ static XtGeometryResult GeometryManager(w, request, reply)
     return (XtGeometryYes);
 }
 
-static void ChangeManaged(bbw)
-    ButtonBoxWidget bbw;
+static void ChangeManaged(w)
+    Widget w;
 {
     /* Reconfigure the button box */
-    (void) TryNewLayout(bbw);
-    Resize(bbw);
+    (void) TryNewLayout((ButtonBoxWidget)w);
+    Resize(w);
 }
 
+/* ARGSUSED */
 static void Initialize(request, new, args, num_args)
-    ButtonBoxWidget request, new;
+    Widget request, new;
     ArgList args;
     Cardinal *num_args;
 {
+    ButtonBoxWidget newbbw = (ButtonBoxWidget)new;
+
 /* ||| What are consequences of letting height, width be 0? If okay, then
        Initialize can be NULL */
 
-    if (new->core.width == 0)
-        new->core.width =
-	    ((new->button_box.h_space != 0) ? new->button_box.h_space : 10);
-    if (new->core.height == 0)
-	new->core.height = 
-	    ((new->button_box.v_space != 0) ? new->button_box.v_space : 10);
+    if (newbbw->core.width == 0)
+        newbbw->core.width = ((newbbw->button_box.h_space != 0)
+			      ? newbbw->button_box.h_space : 10);
+    if (newbbw->core.height == 0)
+	newbbw->core.height = ((newbbw->button_box.v_space != 0)
+			       ? newbbw->button_box.v_space : 10);
 } /* Initialize */
 
 /* ||| Should Realize just return a modified mask and attributes?  Or will some
@@ -362,7 +366,7 @@ static void Realize(w, valueMask, attributes)
     attributes->bit_gravity = NorthWestGravity;
     *valueMask |= CWBitGravity;
 
-    XtCreateWindow( w, InputOutput, (Visual *)CopyFromParent,
+    XtCreateWindow( w, (unsigned)InputOutput, (Visual *)CopyFromParent,
 		    *valueMask, attributes);
 } /* Realize */
 
@@ -372,6 +376,7 @@ static void Realize(w, valueMask, attributes)
  *
  */
 
+/* ARGSUSED */
 static Boolean SetValues (current, request, new, last)
     Widget current, request, new;
     Boolean last;
