@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.168 93/10/12 09:03:35 rws Exp $ */
+/* $XConsortium: connection.c,v 1.169 93/10/12 09:13:44 rws Exp $ */
 /***********************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -64,8 +64,8 @@ SOFTWARE.
 
 #include "X.h"
 #include "Xproto.h"
-#include <sys/param.h>
 #include "Xos.h"			/* for strings, file, time */
+#include <sys/param.h>
 #include <errno.h>
 #ifdef X_NOT_STDC_ENV
 extern int errno;

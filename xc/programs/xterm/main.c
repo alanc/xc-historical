@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.206 93/02/25 17:04:02 gildea Exp $";
+static char *rid="$XConsortium: main.c,v 1.207 93/09/20 17:42:05 hersh Exp $";
 #endif /* lint */
 
 /*
@@ -55,10 +55,6 @@ SOFTWARE.
 #include <X11/Xaw/SimpleMenu.h>
 #include <pwd.h>
 #include <ctype.h>
-
-#if defined(sun) && defined(SVR4)
-#undef sun
-#endif
 
 #ifdef att
 #define ATT
@@ -1528,7 +1524,7 @@ spawn ()
 	char buf[64];
 	char *TermName = NULL;
 	int ldisc = 0;
-#ifdef sun
+#if defined(sun) && !defined(SVR4)
 #ifdef TIOCSSIZE
 	struct ttysize ts;
 #endif	/* TIOCSSIZE */
@@ -1734,7 +1730,7 @@ spawn ()
 	    }
 	}
 
-#ifdef sun
+#if defined(sun) && !defined(SVR4)
 #ifdef TIOCSSIZE
 	/* tell tty how big window is */
 	if(screen->TekEmu) {
@@ -2378,7 +2374,7 @@ spawn ()
 		    if(handshake.rows > 0 && handshake.cols > 0) {
 			screen->max_row = handshake.rows;
 			screen->max_col = handshake.cols;
-#ifdef sun
+#if defined(sun) && !defined(SVR4)
 #ifdef TIOCSSIZE
 			ts.ts_lines = screen->max_row + 1;
 			ts.ts_cols = screen->max_col + 1;
@@ -2434,7 +2430,7 @@ spawn ()
 
 
 		/* need to reset after all the ioctl bashing we did above */
-#ifdef sun
+#if defined(sun) && !defined(SVR4)
 #ifdef TIOCSSIZE
 		ioctl  (0, TIOCSSIZE, &ts);
 #endif	/* TIOCSSIZE */

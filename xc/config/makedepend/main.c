@@ -1,17 +1,24 @@
 /*
- * $XConsortium: main.c,v 1.77 93/09/13 21:01:25 rws Exp $
+ * $XConsortium: main.c,v 1.78 93/09/17 13:49:32 rws Exp $
  */
 #include "def.h"
 #ifdef hpux
 #define sigvec sigvector
 #endif /* hpux */
 
-#ifndef X_NOT_POSIX
-#ifndef _POSIX_SOURCE
-#define _POSIX_SOURCE
-#endif
-#endif
+#ifdef X_POSIX_C_SOURCE
+#define _POSIX_C_SOURCE X_POSIX_C_SOURCE
 #include <signal.h>
+#undef _POSIX_C_SOURCE
+#else
+#if defined(X_NOT_POSIX) || defined(_POSIX_SOURCE)
+#include <signal.h>
+#else
+#define _POSIX_SOURCE
+#include <signal.h>
+#undef _POSIX_SOURCE
+#endif
+#endif
 
 #if NeedVarargsPrototypes
 #include <stdarg.h>

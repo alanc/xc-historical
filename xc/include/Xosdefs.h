@@ -1,7 +1,7 @@
 /*
  * O/S-dependent (mis)feature macro definitions
  *
- * $XConsortium: Xosdefs.h,v 1.8 92/10/18 16:29:57 rws Exp $
+ * $XConsortium: Xosdefs.h,v 1.9 93/08/13 16:34:21 rws Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -85,6 +85,13 @@
 #ifdef MOTOROLA
 #ifdef SYSV
 #define X_NOT_STDC_ENV
+#endif
+#endif
+
+#ifdef sun
+#ifdef SVR4
+/* define this to whatever it needs to be */
+#define X_POSIX_C_SOURCE 199300L
 #endif
 #endif
 

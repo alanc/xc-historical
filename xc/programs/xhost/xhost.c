@@ -1,4 +1,4 @@
-/* $XConsortium: xhost.c,v 11.55 93/09/30 11:34:49 gildea Exp $ */
+/* $XConsortium: xhost.c,v 11.56 93/09/30 11:42:22 gildea Exp $ */
  
 /*
 
@@ -81,8 +81,12 @@ extern char _XsTypeOfStream[];
 #ifdef SECURE_RPC
 #include <pwd.h>
 #include <rpc/rpc.h>
-#ifndef X_NOT_POSIX
-#ifdef _POSIX_SOURCE
+#ifdef X_POSIX_C_SOURCE
+#define _POSIX_C_SOURCE X_POSIX_C_SOURCE
+#include <limits.h>
+#undef _POSIX_C_SOURCE
+#else
+#if defined(X_NOT_POSIX) || defined(_POSIX_SOURCE)
 #include <limits.h>
 #else
 #define _POSIX_SOURCE

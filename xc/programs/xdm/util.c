@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: util.c,v 1.13 91/04/17 10:06:32 rws Exp $
+ * $XConsortium: util.c,v 1.14 92/01/21 15:38:28 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -25,12 +25,18 @@
  */
 
 # include   "dm.h"
+#ifdef X_POSIX_C_SOURCE
+#define _POSIX_C_SOURCE X_POSIX_C_SOURCE
+#include <signal.h>
+#undef _POSIX_C_SOURCE
+#else
 #if defined(X_NOT_POSIX) || defined(_POSIX_SOURCE)
-# include   <signal.h>
+#include <signal.h>
 #else
 #define _POSIX_SOURCE
-# include   <signal.h>
+#include <signal.h>
 #undef _POSIX_SOURCE
+#endif
 #endif
 
 printEnv (e)

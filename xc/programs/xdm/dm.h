@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.54 93/09/13 19:08:41 rws Exp $
+ * $XConsortium: dm.h,v 1.55 93/09/18 11:43:09 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -29,12 +29,19 @@
 # include	<X11/Xmd.h>
 # include	<X11/Xauth.h>
 
-#if !defined(X_NOT_POSIX) && !defined(_POSIX_SOURCE)
-#define _POSIX_SOURCE
-# include	<setjmp.h>
-#undef _POSIX_SOURCE
+#if defined(X_POSIX_C_SOURCE)
+#define _POSIX_C_SOURCE X_POSIX_C_SOURCE
+#include <setjmp.h>
+#include <limits.h>
+#undef _POSIX_C_SOURCE
+#elif defined(X_NOT_POSIX) || defined(_POSIX_SOURCE)
+#include <setjmp.h>
+#include <limits.h>
 #else
-# include	<setjmp.h>
+#define _POSIX_SOURCE
+#include <setjmp.h>
+#include <limits.h>
+#undef _POSIX_SOURCE
 #endif
 
 /* If XDMCP symbol defined, compile to run XDMCP protocol */
@@ -45,22 +52,9 @@
 # include	<X11/Xdmcp.h>
 #endif
 
-#ifndef X_NOT_POSIX
-#ifdef _POSIX_SOURCE
-# include	<limits.h>
-#else
-#define _POSIX_SOURCE
-# include	<limits.h>
-#undef _POSIX_SOURCE
-#endif
-#endif
 #ifndef NGROUPS_MAX
-# include	<sys/param.h>
-#ifndef NGROUPS_MAX
-#ifdef NGROUPS
+#include <sys/param.h>
 #define NGROUPS_MAX NGROUPS
-#endif
-#endif
 #endif
 
 #ifdef pegasus

@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.c,v 1.12 93/11/06 13:28:08 rws Exp $ */
+/* $XConsortium: xieperf.c,v 1.23 93/11/06 15:11:01 rws Exp $ */
 
 int   verbosity_Group_xielib ;
 int   verbosity_Group_xielib_user_level ;
@@ -51,6 +51,8 @@ terms and conditions:
 	Syd Logan -- AGE Logic, Inc. July, 1993 - MIT Alpha release
   
 *****************************************************************************/
+
+#include <X11/Xos.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <signal.h>

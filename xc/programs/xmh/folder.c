@@ -1,5 +1,5 @@
 /*
- * $XConsortium: folder.c,v 2.40 91/07/20 20:46:08 converse Exp $
+ * $XConsortium: folder.c,v 2.41 93/09/20 17:51:47 hersh Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -562,7 +562,11 @@ static int IsFolder(name)
 
     (void) sprintf(filename + flen, "/%s", name);
     if (stat(filename, &buf) /* failed */) return False;
+#ifdef S_ISDIR
+    return S_ISDIR(buf.st_mode);
+#else
     return (buf.st_mode & S_IFMT) == S_IFDIR;
+#endif
 }
 
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: GetDflt.c,v 1.30 93/08/16 16:03:22 rws Exp $
+ * $XConsortium: GetDflt.c,v 1.31 93/09/07 20:03:14 rws Exp $
  */
 
 /***********************************************************
@@ -66,6 +66,10 @@ static char *GetHomeDir (dest, destlen)
 	extern struct passwd *getpwuid(), *getpwnam();
 #endif
 #endif
+#if defined(sun) && defined(SVR4) && defined(XTHREADS)
+	struct passwd pws;
+	char pwbuf[512];	/* ought to use MAX_INPUT */
+#endif
 	struct passwd *pw;
 	register char *ptr;
 
@@ -74,10 +78,18 @@ static char *GetHomeDir (dest, destlen)
 
 	} else {
 		if (ptr = getenv("USER")) {
+#if defined(sun) && defined(SVR4) && defined(XTHREADS)
+			pw = getpwnam_r(ptr, &pws, pwbuf, sizeof pwbuf);
+#else
 			pw = getpwnam(ptr);
+#endif
 		} else {
 			uid = getuid();
+#if defined(sun) && defined(SVR4) && defined(XTHREADS)
+			pw = getpwuid_r(uid, &pws, pwbuf, sizeof pwbuf);
+#else
 			pw = getpwuid(uid);
+#endif
 		}
 		if (pw) {
 			(void) strcpy(dest, pw->pw_dir);

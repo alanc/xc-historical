@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.210 93/09/25 10:39:00 rws Exp $ */
+/* $XConsortium: Initialize.c,v 1.211 93/10/06 17:31:35 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -207,16 +207,29 @@ static String XtGetRootDirName(buf, slash)
      extern struct passwd *getpwuid(), *getpwnam();
 #endif
 #endif
+#if defined(sun) && defined(SVR4) && defined(XTHREADS)
+     struct passwd pws;
+     char pwbuf[512];	/* ought to use MAX_INPUT */
+#endif
      struct passwd *pw;
      static char *ptr = NULL;
 
      LOCK_PROCESS;
      if (ptr == NULL) {
 	if (!(ptr = getenv("HOME"))) {
-	    if (ptr = getenv("USER")) pw = getpwnam(ptr);
-	    else {
+	    if (ptr = getenv("USER")) {
+#if defined(sun) && defined(SVR4) && defined(XTHREADS)
+		pw = getpwnam_r(ptr, &pws, pwbuf, sizeof pwbuf);
+#else
+		pw = getpwnam(ptr);
+#endif
+	    } else {
 		uid = getuid();
+#if defined(sun) && defined(SVR4) && defined(XTHREADS)
+		pw = getpwuid_r(uid, &pws, pwbuf, sizeof pwbuf);
+#else
  		pw = getpwuid(uid);
+#endif
 	    }
 	    if (pw) ptr = pw->pw_dir;
 	    else {

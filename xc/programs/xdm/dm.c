@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.65 92/08/24 13:16:04 gildea Exp $
+ * $XConsortium: dm.c,v 1.66 93/09/20 18:02:51 hersh Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -25,12 +25,18 @@
 # include	"dm.h"
 
 # include	<stdio.h>
+#ifdef X_POSIX_C_SOURCE
+#define _POSIX_C_SOURCE X_POSIX_C_SOURCE
+#include <signal.h>
+#undef _POSIX_C_SOURCE
+#else
 #if defined(X_NOT_POSIX) || defined(_POSIX_SOURCE)
-# include	<signal.h>
+#include <signal.h>
 #else
 #define _POSIX_SOURCE
-# include	<signal.h>
+#include <signal.h>
 #undef _POSIX_SOURCE
+#endif
 #endif
 
 #ifndef sigmask
@@ -704,6 +710,22 @@ StorePid ()
 	fseek (pidFilePtr, 0l, 0);
 	if (lockPidFile)
 	{
+#ifdef F_SETLK
+#ifndef SEEK_SET
+#define SEEK_SET 0
+#endif
+	    struct flock lock_data;
+	    lock_data.l_type = F_WRLCK;
+	    lock_data.l_whence = SEEK_SET;
+	    lock_data.l_start = lock_data.l_len = 0;
+	    if (fcntl(pidFd, F_SETLK, &lock_data) == -1)
+	    {
+		if (errno == EAGAIN)
+		    return oldpid;
+		else
+		    return -1;
+	    }
+#else
 #ifdef LOCK_EX
 	    if (flock (pidFd, LOCK_EX|LOCK_NB) == -1)
 	    {
@@ -721,6 +743,7 @@ StorePid ()
 		    return -1;
 	    }
 #endif
+#endif
 	}
 	fprintf (pidFilePtr, "%5d\n", getpid ());
 	(void) fflush (pidFilePtr);
@@ -732,10 +755,20 @@ StorePid ()
 UnlockPidFile ()
 {
     if (lockPidFile)
+#ifdef F_SETLK
+    {
+	struct flock lock_data;
+	lock_data.l_type = F_UNLCK;
+	lock_data.l_whence = SEEK_SET;
+	lock_data.l_start = lock_data.l_len = 0;
+	(void) fcntl(pidFd, F_SETLK, &lock_data);
+    }
+#else
 #ifdef F_ULOCK
 	lockf (pidFd, F_ULOCK, 0);
 #else
 	flock (pidFd, LOCK_UN);
+#endif
 #endif
     close (pidFd);
     fclose (pidFilePtr);

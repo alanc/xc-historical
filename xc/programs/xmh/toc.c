@@ -1,4 +1,4 @@
-/* $XConsortium: toc.c,v 2.55 91/07/23 16:25:56 converse Exp $
+/* $XConsortium: toc.c,v 2.56 93/09/20 17:52:02 hersh Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -41,7 +41,11 @@ char *name;
 	return FALSE;
     (void) sprintf(str, "%s/%s", app_resources.mail_path, name);
     if (stat(str, &buf) /* failed */) return False;
+#ifdef S_ISDIR
+    return S_ISDIR(buf.st_mode);
+#else
     return (buf.st_mode & S_IFMT) == S_IFDIR;
+#endif
 }
 
 
@@ -88,8 +92,11 @@ static void MakeSureSubfolderExists(namelistptr, numfoldersptr, name)
 	if (stat(subfolder_path, &buf) /* failed */)
 	    Punt("Can't create new xmh subfolder!");
     }
-
+#ifdef S_ISDIR
+    if (!S_ISDIR(buf.st_mode))
+#else
     if ((buf.st_mode & S_IFMT) != S_IFDIR)
+#endif
 	Punt("Can't create new xmh subfolder!");
 }
 
@@ -103,7 +110,11 @@ int TocFolderExists(toc)
 	toc->path = XtNewString(str);
     }
     return ((stat(toc->path, &buf) == 0) &&
+#ifdef S_ISDIR
+	    (S_ISDIR(buf.st_mode)));
+#else
 	    ((buf.st_mode & S_IFMT) == S_IFDIR));
+#endif
 }
 
 static void LoadCheckFiles()
