@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.64 91/05/09 18:03:58 rws Exp $ */
+/* $XConsortium: window.c,v 5.65 91/05/31 15:13:29 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -1500,7 +1500,8 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 		client->errorValue = cmap;
 		goto PatchUp;
 	    }
-	    if (pCmap->pVisual->vid != wVisual (pWin))
+	    if (pCmap->pVisual->vid != wVisual (pWin) ||
+		pCmap->pScreen != pScreen)
 	    {
 		error = BadMatch;
 		goto PatchUp;
