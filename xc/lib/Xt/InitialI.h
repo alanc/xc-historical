@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.51 91/04/08 14:44:40 converse Exp $ */
+/* $XConsortium: InitialI.h,v 1.52 91/04/17 09:52:54 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -227,10 +227,18 @@ extern int _XtwaitForSomething(
 #endif
 );
 
+typedef struct _CaseConverterRec *CaseConverterPtr;
+typedef struct _CaseConverterRec {
+    KeySym		start;		/* first KeySym valid in converter */
+    KeySym		stop;		/* last KeySym valid in converter */
+    XtCaseProc		proc;		/* case converter function */
+    CaseConverterPtr	next;		/* next converter record */
+} CaseConverterRec;
+
 typedef struct _XtPerDisplayStruct {
     InternalCallbackList destroy_callbacks;
     Region region;
-    XtCaseProc defaultCaseConverter;
+    CaseConverterPtr case_cvt;		/* list of case converters */ 
     XtKeyProc defaultKeycodeTranslator;
     XtAppContext appContext;
     KeySym *keysyms;                   /* keycode to keysym table */
