@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.78 92/07/03 12:35:03 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.79 92/07/21 10:22:43 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -44,6 +44,7 @@ Syntax of magic values in the input stream:
 	L		top-level window going left
 	R		top-level window going right
 	U		top-level window going up
+	O		skip overlapping top-level windows
 	c		closest widget
 	d		top-level widget going down
 	l		top-level widget going left
