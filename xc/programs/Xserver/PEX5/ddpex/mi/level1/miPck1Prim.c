@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miPck1Prim.c,v 5.1 91/02/16 09:55:10 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -251,7 +251,7 @@ CheckFAreaPick1 (in_list)
 
 	pt_list.ptr = poly_list->pts.ptr;
 
-	for (j=0; j<in_list->ddList->numPoints; j++) { /* Do for all edges */
+	for (j=0; j<in_list->ddList->numPoints-1; j++) { /* Do for all edges */
 
 	    /* Get the first vertex of current edge */
 
