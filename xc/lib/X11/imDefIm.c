@@ -1,4 +1,4 @@
-/* $XConsortium: imDefIm.c,v 1.3 93/09/24 10:29:54 rws Exp $ */
+/* $XConsortium: imDefIm.c,v 1.4 94/01/20 18:04:02 rws Exp $ */
 /******************************************************************
 
          Copyright 1990, 1991, 1992 by Sun Microsystems, Inc.
@@ -185,6 +185,8 @@ _XimCheckTransport(address, address_len, transport, len, trans_addr)
     pp = &address[category_len];
 
     for(;;) {
+	*trans_addr = pp;
+
 	for(p = pp; (*p != '/') && (*p != ',') && (*p); p++);
 	if(*p == ',') {
 	    pp = p + 1;
@@ -201,8 +203,8 @@ _XimCheckTransport(address, address_len, transport, len, trans_addr)
     }
     pp = p + 1;
     for(p = pp; (*p != ',') && (*p); p++);
-    *p = '\0';
-    *trans_addr = pp;
+    if (*p)
+	*p = '\0';
     return True;
 }
 
