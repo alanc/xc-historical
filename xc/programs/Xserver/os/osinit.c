@@ -21,17 +21,29 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osinit.c,v 1.33 91/06/29 16:52:40 rws Exp $ */
+/* $XConsortium: osinit.c,v 1.34 91/06/29 16:59:22 rws Exp $ */
 #include "os.h"
 #undef NULL
 #include <stdio.h>
 #include "Xos.h"
-#ifndef MAXPATHLEN
-/*
- * just to get MAXPATHLEN.  Define it elsewhere if you need to
- * avoid these files.
- */
+
+#ifndef X_NOT_POSIX
+#ifdef _POSIX_SOURCE
+#include <limits.h>
+#else
+#define _POSIX_SOURCE
+#include <limits.h>
+#undef _POSIX_SOURCE
+#endif
+#endif
+#ifndef PATH_MAX
 #include <sys/param.h>
+#ifdef MAXPATHLEN
+#define PATH_MAX MAXPATHLEN
+#endif
+#endif
+#ifndef PATH_MAX
+#define PATH_MAX 1024
 #endif
 
 #ifndef SYSV
@@ -51,7 +63,7 @@ int limitStackSpace = -1;
 OsInit()
 {
     static Bool been_here = FALSE;
-    char fname[MAXPATHLEN];
+    char fname[PATH_MAX];
 
 #ifdef macII
     set42sig();
