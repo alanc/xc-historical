@@ -1,4 +1,4 @@
-/* $XConsortium: pl_pick.c,v 1.8 93/02/23 14:41:02 mor Exp $ */
+/* $XConsortium: pl_pick.c,v 1.9 93/09/23 14:39:56 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -40,11 +40,6 @@ SOFTWARE.
  */ 
 
 #define NEED_EVENTS
-
-#include <X11/Xlib.h>      /* for XEvent */
-#include <X11/Xproto.h>    /* for xEvent */
-
-#undef NEED_EVENTS
 
 #include "PEXlib.h"
 #include "PEXlibint.h"
