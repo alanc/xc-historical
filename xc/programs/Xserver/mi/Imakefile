@@ -4,7 +4,7 @@ SRCS =  mivaltree.c mipolyseg.c mipolyrect.c \
 	miwindow.c micursor.c miregion.c \
 	mipolytext.c mibitblt.c mipolypnt.c mipushpxl.c\
 	miexpose.c miglblt.c mizerline.c mifpolycon.c \
-	midash.c miwidedash.c mibstore.c
+	midash.c miwidedash.c mibstore.c miinitext.c
 
 OBJS =	mivaltree.o mipolyseg.o mipolyrect.o \
 	mipoly.o mipolycon.o mipolygen.o mipolyutil.o \
@@ -12,7 +12,7 @@ OBJS =	mivaltree.o mipolyseg.o mipolyrect.o \
 	miwindow.o micursor.o miregion.o \
 	mipolytext.o mibitblt.o mipolypnt.o mipushpxl.o\
 	miexpose.o miglblt.o mizerline.o mifpolycon.o \
-	midash.o miwidedash.o mibstore.o
+	midash.o miwidedash.o mibstore.o miinitext.o
 
 STD_DEFINES = ServerDefines
 CDEBUGFLAGS = ServerCDebugFlags
