@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.120 89/11/13 11:53:33 rws Exp $ */
+/* $XConsortium: connection.c,v 1.121 90/03/19 19:03:36 keith Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -115,7 +115,6 @@ long ClientsWithInput[mskcnt];	/* clients with FULL requests in buffer */
 long ClientsWriteBlocked[mskcnt];/* clients who cannot receive output */
 long OutputPending[mskcnt];	/* clients with reply/event data ready to go */
 long MaxClients = MAXSOCKS ;
-long OutputBufferSize = BUFSIZ; /* output buffer size (must be > 0) */
 long NConnBitArrays = mskcnt;
 Bool NewOutputPending;		/* not yet attempted to write some new output */
 Bool AnyClientsWriteBlocked;	/* true if some client blocked on write */
