@@ -1,4 +1,4 @@
-/* $XConsortium: x11perf.c,v 2.46 94/01/17 16:39:18 kaleb Exp $ */
+/* $XConsortium: x11perf.c,v 2.47 94/01/17 18:59:32 rws Exp $ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -91,7 +91,7 @@ static char *ddbackground = NULL;
 static int clips = 0;
 
 static int numSubWindows = 7;
-static int subWindows[] = {4, 16, 25, 50, 75, 100, 200, 0};
+static unsigned long subWindows[] = {4, 16, 25, 50, 75, 100, 200, 0};
 
 static int  fixedReps = 0;
 
@@ -1260,7 +1260,7 @@ int GetNumbers (argi, argc, argv, intsp, nump)
     int     argi;
     int     argc;
     char    **argv;
-    int     *intsp;
+    unsigned long *intsp;
     int     *nump;
 {
     char    *words[256];
