@@ -68,36 +68,62 @@ unsigned int XtAppGetSelectionTimeout(app)
 
 static XContext selectPropertyContext = 0;
 
+/*ARGSUSED*/
+static void FreePropList(w, closure, callData)
+ Widget w;			/* unused */
+ XtPointer closure;
+ XtPointer callData;		/* unused */
+{
+    PropList sarray = (PropList)closure;
+    XDeleteContext(sarray->dpy, DefaultRootWindow(sarray->dpy),
+		   selectPropertyContext);
+    XtFree((XtPointer)sarray->list);
+    XtFree(closure);
+}
+
+
+static PropList GetPropList(dpy)
+    Display *dpy;
+{
+    PropList sarray;
+    if (selectPropertyContext == 0)
+	selectPropertyContext = XUniqueContext();
+    if (XFindContext(dpy, DefaultRootWindow(dpy), selectPropertyContext,
+		     (caddr_t *)&sarray)) {
+	XtPerDisplay pd = _XtGetPerDisplay(dpy);
+	sarray = (PropList) XtMalloc((unsigned) sizeof(PropListRec));
+	sarray->dpy = dpy;
+	sarray->incremental_atom = XInternAtom(dpy, "INCR", FALSE);
+	sarray->indirect_atom = XInternAtom(dpy, "MULTIPLE", FALSE);
+	sarray->propCount = 1;
+	sarray->list = (SelectionProp)XtMalloc((unsigned) sizeof(SelectionPropRec));
+	sarray->list[0].prop = XInternAtom(dpy, "_XT_SELECTION_0", FALSE);
+	sarray->list[0].avail = TRUE;
+	(void) XSaveContext(dpy, DefaultRootWindow(dpy), selectPropertyContext, 
+			    (caddr_t) sarray);
+	_XtAddCallback( (Widget)NULL, &pd->destroy_callbacks,
+			FreePropList, (XtPointer)sarray );
+    }
+    return sarray;
+}
+
+
 static Atom GetSelectionProperty(dpy)
 Display *dpy;
 {
  SelectionProp p;
+ int propCount;
  char propname[80];
- int propCount; 
- PropList sarray;
+ PropList sarray = GetPropList(dpy);
 
- if (selectPropertyContext == 0)
-   selectPropertyContext = XUniqueContext();
- if (XFindContext(dpy, DefaultRootWindow(dpy), selectPropertyContext,
-    (caddr_t *)&sarray)) {
-   sarray = (PropList) XtMalloc((unsigned) sizeof(PropListRec));
-   sarray->propCount = 1;
-   sarray->list = (SelectionProp)XtMalloc((unsigned) sizeof(SelectionPropRec));
-   sarray->list[0].prop = XInternAtom(dpy, "_XT_SELECTION_0", FALSE);
-   sarray->list[0].avail = FALSE;
-   (void) XSaveContext(
-	    dpy, DefaultRootWindow(dpy), selectPropertyContext, 
-	    (caddr_t) sarray);
-   return(sarray->list[0].prop);
- }
  for (p = sarray->list, propCount=sarray->propCount;
-	propCount; 
+	propCount;
 	p++, propCount--) {
    if (p->avail) {
       p->avail = FALSE;
       return(p->prop);
-      }
-    }
+   }
+ }
  propCount = sarray->propCount++;
  sarray->list = (SelectionProp) XtRealloc((XtPointer)sarray->list, 
   		(unsigned) ((propCount+1)*sizeof(SelectionPropRec)));
@@ -179,31 +205,20 @@ static Select FindCtx(dpy, selection)
 Display *dpy;
 Atom selection;
 {
-    static XContext selectContext = NULL;
     Select ctx;
+    static XContext selectContext = 0;
 
-    if (selectContext == NULL)
+    if (selectContext == 0)
 	selectContext = XUniqueContext();
     if (XFindContext(dpy, (Window)selection, selectContext, (caddr_t *)&ctx)) {
-	static XContext selectionAtomContext = NULL;
-	SelectionAtomRec* atoms;
-	if (selectionAtomContext == NULL)
-	    selectionAtomContext = XUniqueContext();
-	if (XFindContext(dpy, DefaultRootWindow(dpy), selectionAtomContext,
-			 (caddr_t *)&atoms)) {
-	    atoms = XtNew(SelectionAtomRec);
-	    atoms->incremental_atom = XInternAtom(dpy, "INCR", FALSE);
-	    atoms->indirect_atom = XInternAtom(dpy, "MULTIPLE", FALSE);
-	    (void)XSaveContext(dpy, (Window)selection, selectionAtomContext,
-			       (caddr_t)atoms);
-	}
+	PropList sarray = GetPropList(dpy);
 	ctx = XtNew(SelectRec);
 	ctx->dpy = dpy;
 	ctx->selection = selection;
 	ctx->widget = NULL;
  	ctx->refcount = 0;
-	ctx->incremental_atom = atoms->incremental_atom;
-	ctx->indirect_atom = atoms->indirect_atom;
+	ctx->incremental_atom = sarray->incremental_atom;
+	ctx->indirect_atom = sarray->indirect_atom;
 	(void)XSaveContext(dpy, (Window)selection, selectContext, (caddr_t)ctx);
     }
     return ctx;
@@ -271,11 +286,11 @@ XtPointer closure;
 	if (XFindContext(dpy, window, selectWindowContext,
 			 (caddr_t *)&requestWindow)) {
 	    requestWindow = XtNew(RequestWindowRec);
-	    requestWindow->count = 0;
+	    requestWindow->active_transfer_count = 0;
 	    (void)XSaveContext(dpy, window, selectWindowContext,
 			       (caddr_t)requestWindow);
 	}
-	if (requestWindow->count++ == 0) {
+	if (requestWindow->active_transfer_count++ == 0) {
 	    _XtRegisterWindow(window, widget);
 	    XSelectInput(dpy, window, mask);
 	}
@@ -298,7 +313,7 @@ XtPointer closure;
 	XtRemoveRawEventHandler(widget, mask, TRUE, proc, closure);
 	(void)XFindContext(dpy, window, selectWindowContext,
 			   (caddr_t *)&requestWindow);
-	if (--requestWindow->count == 0) {
+	if (--requestWindow->active_transfer_count == 0) {
 	    _XtUnregisterWindow(window, widget);
 	    XSelectInput(dpy, window, 0L);
 	    (void)XDeleteContext(dpy, window, selectWindowContext);
