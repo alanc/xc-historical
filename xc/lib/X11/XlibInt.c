@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.121 90/03/28 11:37:13 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.122 90/06/15 09:39:11 rws Exp $
  */
 
 #include "copyright.h"
@@ -1224,7 +1224,7 @@ _XDefaultIOError (dpy)
 }
 
 
-int _XPrintDefaultError (dpy, event, fp)
+static int _XPrintDefaultError (dpy, event, fp)
     Display *dpy;
     XErrorEvent *event;
     FILE *fp;
