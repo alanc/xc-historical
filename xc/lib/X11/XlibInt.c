@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.142 91/04/02 09:54:19 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.143 91/04/04 18:57:25 gildea Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -1610,20 +1610,8 @@ void _XFreeQ ()
 }
 
 
-#ifdef _POSIX_SOURCE				/* stupid makedepend [need if] */
+#if defined(_POSIX_SOURCE) || defined(hpux) || defined(USG) || defined(SVR4)
 #define NEED_UTSNAME
-#endif
-#ifdef hpux
-#define NEED_UTSNAME
-#endif
-#ifdef USG
-#define NEED_UTSNAME
-#endif
-#ifdef SVR4
-#define NEED_UTSNAME
-#endif
-
-#ifdef NEED_UTSNAME
 #include <sys/utsname.h>
 #endif
 
