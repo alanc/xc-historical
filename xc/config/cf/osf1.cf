@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: osf1.cf,v 1.14 93/09/05 13:39:36 rws Exp $
+XCOMM platform:  $XConsortium: osf1.cf,v 1.15 93/09/06 09:58:37 rws Exp $
 /* only tested with Digital OSF/1 V1.0 */
 
 #define OSName			OSF/1 1.0
@@ -23,7 +23,14 @@ XCOMM operating system:  OSName
 #define ForceNormalLib		YES
 #define SeparateSharedCompile	YES
 #define XMTDefines /**/
+#ifdef MipsArchitecture
+#define LibObjCompile(dir,options) $(RM) $@ $*.os dir/$@ \		@@\
+	&& $(CC) -c options $(CFLAGS) $*.c \				@@\
+	&& $(LD) -x -r $@ -o $*.os \					@@\
+	&& $(MV) $*.os dir/$@
+#else
 #define UnsharedLibObjCompile(options) LibObjCompile(unshared,$(CDEBUGFLAGS) options -DXTHREADS)
+#endif
 #define ThreadsLibraries -lpthreads -lc_r -lpthreads -lmach -lbsd
 #define ThreadsLoadFlags -non_shared
 #endif
@@ -37,4 +44,8 @@ XCOMM operating system:  OSName
 #define DefaultCCOptions	-Xc
 #define XdecServer YES
 #define PexCCOptions -Xc -Wf,-XNp15000,-XNd15000
+#define NormalLibObjCompile(options) $(RM) $@ $*.os \			@@\
+	&& $(CC) -c options $(CFLAGS) $*.c \				@@\
+	&& $(LD) -x -r $@ -o $*.os \					@@\
+	&& $(MV) $*.os $@
 #endif
