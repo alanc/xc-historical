@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XPolyTxt.c,v 11.11 87/07/27 15:51:04 ham Exp $ */
+/* $Header: XPolyTxt.c,v 11.13 87/08/30 22:31:52 jg Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -92,9 +92,9 @@ XDrawText(dpy, d, gc, x, y, items, nitems)
 
 	    while((PartialDelta < -128) || (PartialDelta > 127))
             {
-	    	int nbytes = sizeof (xTextElt);
+	    	int nb = sizeof (xTextElt);
 
-	    	BufAlloc (xTextElt *, elt, nbytes); 
+	    	BufAlloc (xTextElt *, elt, nb); 
 	    	elt->len = 0;
 	    	if (PartialDelta > 0 ) 
 		{
