@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XSetLocale.c,v 1.30 91/04/10 10:42:49 rws Exp $
+ * $XConsortium: XSetLocale.c,v 1.31 91/05/02 10:55:38 rws Exp $
  */
 
 /*
@@ -79,7 +79,7 @@ _Xsetlocale(category, name)
     if (!name || !*name)
 	name = "C";
     old_name = xsl_name;
-    xsl_name = name;
+    xsl_name = (char *)name;
     methods = _XrmInitParseInfo(&state);
     xsl_name = old_name;
     if (!methods)
