@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Event.c,v 1.50 88/02/03 10:01:02 swick Locked $";
+static char rcsid[] = "$Header: Event.c,v 1.51 88/02/03 23:13:09 rws Locked $";
 #endif lint
 
 /*
@@ -313,41 +313,6 @@ static void InitializeHash()
 
     table->size = 1024;
     table->count = 0;
-}
-
-
-/* %%% the following typedefs are lifted from X/lib/X/region.h;
- * that file is too big to be included here.  XRectToRegion should
- * become a standard part of Xlib anyway...
- */
-
-typedef struct {
-    short x1, x2, y1, y2;
-} BOX, Box;
-
-typedef struct _XRegion {
-    short size;
-    short numRects;
-    BOX *rects;
-    BOX extents;
-} REGION;
-
-
-XUnionRectWithRegion(rect, source, dest)
-    register XRectangle *rect;
-    Region source, dest;
-{
-    REGION region;
-
-    region.rects = &region.extents;
-    region.numRects = 1;
-    region.extents.x1 = rect->x;
-    region.extents.y1 = rect->y;
-    region.extents.x2 = rect->x + rect->width;
-    region.extents.y2 = rect->y + rect->height;
-    region.size = 1;
-
-    XUnionRegion(&region, source, dest);
 }
 
 
