@@ -513,6 +513,8 @@ static XtGeometryResult GeometryManager(child, request, reply)
     XtWidgetGeometry *request, *reply;
 {
     ViewportWidget w = (ViewportWidget)child->core.parent;
+    Boolean rWidth = request->request_mode & CWWidth;
+    Boolean rHeight = request->request_mode & CWHeight;
     XtWidgetGeometry allowed, myrequest;
     XtGeometryResult result;
     Boolean resized;
@@ -527,24 +529,42 @@ static XtGeometryResult GeometryManager(child, request, reply)
     result = XtGeometryYes;
     resized = False;
 
-    if ((!(w->viewport.allowhoriz) && request->width != child->core.width) ||
-	(!(w->viewport.allowvert) && request->height != child->core.height)) {
-	myrequest = *request;
-	if (w->viewport.allowhoriz) myrequest.request_mode &= ~CWWidth;
-	if (w->viewport.allowvert)  myrequest.request_mode &= ~CWHeight;
-	result = XtMakeGeometryRequest((Widget)w, &myrequest, reply);
-	if (result == XtGeometryYes)
-	    resized = True;
-	else if (result == XtGeometryAlmost)
-	    reply->request_mode = request->request_mode;
+    if ((!w->viewport.allowhoriz && rWidth) ||
+	(!w->viewport.allowvert && rHeight)) {
+	myrequest.request_mode = CWWidth | CWHeight;
+	myrequest.width =
+	    (w->viewport.allowhoriz || !rWidth)
+		? w->core.width : request->width;
+	myrequest.height =
+	    (w->viewport.allowvert || !rHeight)
+		? w->core.height : request->height;
+	if (w->core.width != myrequest.width ||
+	    w->core.height != myrequest.height) {
+	    result = XtMakeGeometryRequest((Widget)w, &myrequest, &allowed);
+	    if (result == XtGeometryYes)
+		resized = True;
+	    else if (result == XtGeometryNo) {
+		if (w->viewport.allowhoriz)
+		    allowed.width = request->width;
+		else
+		    allowed.width = w->core.width;
+		if (w->viewport.allowvert)
+		    allowed.height = request->height;
+		else
+		    allowed.height = w->core.height;
+		if ((rWidth && allowed.width != request->width) ||
+		    (rHeight && allowed.height != request->height)) {
+		    result = XtGeometryAlmost;
+		    *reply = allowed;
+		}
+	    }
+	}
     }
 
     if (result == XtGeometryYes) {
 	Boolean needs_horiz = False, needs_vert = False;
-	if (request->request_mode & CWWidth)
-	    child->core.width = request->width;
-	if (request->request_mode & CWHeight)
-	    child->core.height = request->height;
+	if (rWidth)  child->core.width = request->width;
+	if (rHeight) child->core.height = request->height;
 	myrequest.request_mode = 0;
 	if (child->core.width > w->core.width) needs_horiz = True;
 	if (child->core.height > w->core.height) needs_vert = True;
