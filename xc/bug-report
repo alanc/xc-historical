@@ -1,4 +1,4 @@
-To: xbugs@expo.lcs.mit.edu
+To: xbugs@x.org
 Subject: [area]: [synopsis]   [replace with actual area and short description]
 
 VERSION:
@@ -51,4 +51,4 @@ SAMPLE FIX:
 [PLEASE make your Subject: line as descriptive as possible.
  Subjects like "xterm bug" or "bug report" are not helpful!]
 [Remove all the explanatory text in brackets before mailing.]
-[Send to xbugs@expo.lcs.mit.edu]
+[Send to xbugs@x.org]
