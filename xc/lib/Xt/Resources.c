@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Resources.c,v 1.30 87/12/03 15:25:08 swick Locked $";
+static char rcsid[] = "$Header: Resources.c,v 1.31 87/12/08 14:20:07 swick Locked $";
 #endif lint
 
 /*
@@ -339,7 +339,7 @@ static void GetConstraintResources(widgetClass, w, names, classes, length, args,
     Cardinal	  num_args;
 {
     /* First get resources for superclasses */
-    if ((ConstraintWidgetClass)widgetClass != constraintWidgetClass) {
+    if (widgetClass != constraintWidgetClass) {
         GetConstraintResources(widgetClass->core_class.superclass,
 	    w, names, classes, length, args, num_args);
     }
