@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.56 92/08/10 17:46:46 eswu Exp $
+XCOMM $XConsortium: Imakefile,v 1.57 92/09/07 12:08:05 rws Exp $
 #include <Server.tmpl>
 
 #if (SystemV || SystemV4) && !HasSockets
@@ -78,7 +78,6 @@ BOOTSTRAPCFLAGS =
     ADM_DEFINES = -DADMPATH=\"$(ADMDIR)/X\%smsgs\"
         DEFINES = ConnectionFlags $(OS_DEFINES) $(XDMAUTHDEFS) $(RPCDEFS) $(SIGNAL_DEFINES)
        INCLUDES = -I.  -I../include -I$(INCLUDESRC) -I$(TOP)/lib/Xau
-    EXT_DEFINES = ExtensionDefines
  DEPEND_DEFINES = $(DBM_DEFINES)
        LINTLIBS = ../dix/llib-ldix.ln
 
@@ -142,8 +141,8 @@ alloca.o:  $(PWLIB)
 SpecialCObjectRule(xdmcp,$(ICONFIGFILES),$(SOCK_DEFINES))
 SpecialCObjectRule(connection,$(ICONFIGFILES),$(SOCK_DEFINES))
 SpecialCObjectRule(osinit,$(ICONFIGFILES),$(ADM_DEFINES))
-SpecialCObjectRule(WaitFor,$(ICONFIGFILES),$(EXT_DEFINES))
-SpecialCObjectRule(io,$(ICONFIGFILES),$(EXT_DEFINES))
+SpecialCObjectRule(WaitFor,$(ICONFIGFILES),$(_NOOP_))
+SpecialCObjectRule(io,$(ICONFIGFILES),$(_NOOP_))
 SpecialCObjectRule(fonttype,$(ICONFIGFILES),$(FONT_DEFINES))
 SpecialCObjectRule(utils,$(ICONFIGFILES),$(TIME_DEFINES))
 #if defined(SparcArchitecture) && HasGcc && !HasGcc2
