@@ -25,7 +25,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XConsortium: cfbscrinit.c,v 5.22 91/12/27 18:41:16 rws Exp $ */
+/* $XConsortium: cfbscrinit.c,v 5.23 91/12/30 09:35:27 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -151,14 +151,17 @@ cfbFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     if (! miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
 			rootdepth, ndepths, depths,
 			defaultVisual, nvisuals, visuals,
-			&cfbBSFuncRec))
+			(miBSFuncPtr) 0))
 	return FALSE;
+    /* overwrite miCloseScreen with our own */
+    pScreen->CloseScreen = cfbCloseScreen;
+    /* init backing store here so we can overwrite CloseScreen without stepping
+     * on the backing store wrapped version */
+    miInitializeBackingStore (pScreen, &cfbBSFuncRec);
 #ifdef CFB_NEED_SCREEN_PRIVATE
     pScreen->devPrivates[cfbScreenPrivateIndex].ptr = pScreen->devPrivate;
     pScreen->devPrivate = oldDevPrivate;
 #endif
-    /* smash miScreenClose */
-    pScreen->CloseScreen = cfbCloseScreen;
     return TRUE;
 }
 
