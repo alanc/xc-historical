@@ -17,7 +17,7 @@ without any express or implied warranty.
 
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
 
-/* $XConsortium: shm.c,v 1.17 93/06/24 11:16:32 dpw Exp $ */
+/* $XConsortium: shm.c,v 1.18 93/07/08 14:11:33 dpw Exp $ */
 
 #include <sys/types.h>
 #include <sys/ipc.h>
@@ -345,10 +345,10 @@ fbShmPutImage(dst, pGC, depth, format, w, h, sx, sy, sw, sh, dx, dy, data)
 	if (!pPixmap)
 	    return;
 	if (format == XYBitmap)
-	    (void)(*pGC->ops->CopyPlane)(pPixmap, dst, pGC,
+	    (void)(*pGC->ops->CopyPlane)((DrawablePtr)pPixmap, dst, pGC,
 					 sx, sy, sw, sh, dx, dy, 1L);
 	else
-	    (void)(*pGC->ops->CopyArea)(pPixmap, dst, pGC,
+	    (void)(*pGC->ops->CopyArea)((DrawablePtr)pPixmap, dst, pGC,
 					sx, sy, sw, sh, dx, dy);
 	FreeScratchPixmapHeader(pPixmap);
     }
