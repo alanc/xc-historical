@@ -1,4 +1,4 @@
-/* $XConsortium: cp_ccom.c,v 5.17 91/07/25 18:46:29 rws Exp $ */
+/* $XConsortium: cp_ccom.c,v 5.18 91/07/26 20:11:11 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1336,7 +1336,12 @@ static int socketpair(domain, s_type, protocol, sv)
     }
     tmpnam(name.sun_path);
     name.sun_family = AF_UNIX;
+#ifdef BSD44SOCKETS /* unlikely */
+    name.sun_len = strlen(name.sun_path);
+    socket_size = SUN_LEN(&name);
+#else
     socket_size = sizeof(name.sun_family) + strlen(name.sun_path) + 1;
+#endif
     if (bind(fd, &name, socket_size) < 0 ||
 	listen(fd, 1) < 0 ||
 	connect(sv[0], &name, socket_size) < 0 ||
@@ -1374,6 +1379,9 @@ static int socketpair(domain, s_type, protocol, sv)
 
     /* Port number of 6100 is arbitrary, (100 above the X server port). */
     bzero ((char *)&insock, sizeof (insock));
+#ifdef BSD44SOCKETS /* unlikely */
+    insock.sin_len = sizeof(insock);
+#endif
     insock.sin_family = AF_INET;
     port_num = 6100;
     insock.sin_port = htons((unsigned short)(port_num));
@@ -1414,10 +1422,27 @@ fork_monitor( cph, argv )
 #endif
 
 #ifdef DEBUG
+
+#ifdef BSD44SOCKETS
 #define Connect(fd,addr) {\
     struct sockaddr_un	un_addr; \
 \
     strcpy (un_addr.sun_path, addr);\
+    un_addr.sun_len = strlen(un_addr.sun_path);\
+    un_addr.sun_family = AF_UNIX;\
+    fd = socket (AF_UNIX, SOCK_STREAM, 0);\
+    if (connect (fd, &un_addr, SUN_LEN(&un_addr)))\
+    {\
+	perror ("phigsmon connect");\
+	abort ();\
+    }\
+}
+#else /* !BSD44SOCKETS */
+#define Connect(fd,addr) {\
+    struct sockaddr_un	un_addr; \
+\
+    strcpy (un_addr.sun_path, addr);\
+    un_addr.sun_family = AF_UNIX;\
     fd = socket (AF_UNIX, SOCK_STREAM, 0);\
     if (connect (fd, &un_addr, sizeof (short) + strlen (addr)))\
     {\
@@ -1425,6 +1450,8 @@ fork_monitor( cph, argv )
 	abort ();\
     }\
 }
+#endif /* !BSD44SOCKETS */
+
     Connect (cph->data.client.sfd, DEBUG_PHIGSMON_SOCKET_COMMAND);
     Connect (cph->erh->data.client.sfd, DEBUG_PHIGSMON_SOCKET_ERROR);
     if (read (cph->data.client.sfd, &pid, sizeof (pid)) != sizeof (pid))

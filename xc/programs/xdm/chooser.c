@@ -1,5 +1,5 @@
 /*
- * $XConsortium: chooser.c,v 1.12 91/10/31 09:55:18 rws Exp $
+ * $XConsortium: chooser.c,v 1.13 92/04/21 18:42:13 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -503,6 +503,9 @@ RegisterHostname (name)
 #endif
 	    in_addr = *((struct sockaddr_in *) &broad_addr);
 	    in_addr.sin_port = htons (XDM_UDP_PORT);
+#ifdef BSD44SOCKETS
+	    in_addr.sin_len = sizeof(in_addr);
+#endif
 	    RegisterHostaddr ((struct sockaddr *)&in_addr, sizeof (in_addr),
 			      BROADCAST_QUERY);
 	}
@@ -530,6 +533,9 @@ RegisterHostname (name)
 	    bcopy (hostent->h_addr, &in_addr.sin_addr, 4);
 	}
 	in_addr.sin_port = htons (XDM_UDP_PORT);
+#ifdef BSD44SOCKETS
+	in_addr.sin_len = sizeof(in_addr);
+#endif
 	RegisterHostaddr ((struct sockaddr *)&in_addr, sizeof (in_addr),
 			  QUERY);
     }
@@ -613,6 +619,9 @@ Choose (h)
 	family = (xdm[0] << 8) + xdm[1];
 	switch (family) {
 	case AF_INET:
+#ifdef BSD44SOCKETS
+	    in_addr.sin_len = sizeof(in_addr);
+#endif
 	    in_addr.sin_family = family;
 	    bcopy (xdm + 2, &in_addr.sin_port, 2);
 	    bcopy (xdm + 4, &in_addr.sin_addr.s_addr, 4);

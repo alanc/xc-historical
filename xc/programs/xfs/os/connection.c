@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.18 92/05/15 10:41:39 gildea Exp $ */
+/* $XConsortium: connection.c,v 1.19 92/05/18 13:51:29 gildea Exp $ */
 /*
  * handles connections
  */
@@ -124,6 +124,9 @@ open_tcp_socket()
 #endif				/* SO_REUSEADDR */
 
     bzero((char *) &insock, sizeof(insock));
+#ifdef BSD44SOCKETS
+    insock.sin_len = sizeof(insock);
+#endif
     insock.sin_family = AF_INET;
     insock.sin_port = htons((unsigned short) (ListenPort));
     insock.sin_addr.s_addr = htonl(INADDR_ANY);

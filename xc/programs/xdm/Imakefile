@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.59 92/04/15 10:44:36 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.60 92/05/28 12:15:56 rws Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
@@ -22,6 +22,10 @@ PWD_DEFINES = -DUSESHADOW
 #if SystemV
 SYS_LIBRARIES = -lsec
 #endif
+#endif
+
+#if HasBSD44Sockets
+SOCK_DEFINES = -DBSD44SOCKETS
 #endif
 
    XDMCONFIGDIR = XdmConfigurationSubdirectory
@@ -91,6 +95,7 @@ ComplexProgramTarget_1(xdm,$(LOCAL_LIBRARIES),NullParameter)
 SingleProgramTarget(xdmshell,$(OBJS2),NullParameter,NullParameter)
 SingleProgramTarget(sessreg,$(OBJS4),NullParameter,NullParameter)
 #if BuildChooser
+SpecialCObjectRule(chooser, $(ICONFIGFILES), $(SOCK_DEFINES))
 NormalProgramTarget(chooser,$(OBJS3),$(DEPLIBS3),$(LIBS3),NullParameter)
 SaberProgramTarget(chooser,$(SRCS3),$(OBJS3),$(LIBS3),NullParameter)
 InstallProgram(chooser,$(XDMDIR))
@@ -98,6 +103,8 @@ InstallAppDefaults(Chooser)
 #endif
 
 SpecialCObjectRule(resource, $(ICONFIGFILES), $(RES_DEFINES))
+SpecialCObjectRule(socket, $(ICONFIGFILES), $(SOCK_DEFINES))
+SpecialCObjectRule(xdmcp, $(ICONFIGFILES), $(SOCK_DEFINES))
 
 XCOMM these files depend on HASXDMAUTH
 auth.o policy.o: $(ICONFIGFILES)

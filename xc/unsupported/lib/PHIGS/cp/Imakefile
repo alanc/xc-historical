@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.14 91/07/22 22:27:21 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.15 91/07/22 23:09:04 rws Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -28,6 +28,11 @@ XCOMM PERFORMANCE OF THIS SOFTWARE.
 #ifndef PexPhigsCDebugFlags
 #define PexPhigsCDebugFlags LibraryCDebugFlags
 #endif
+
+#if HasBSD44Sockets
+   SOCK_DEFINES = -DBSD44SOCKETS
+#endif
+
 
   CCOPTIONS = PexCCOptions
 CDEBUGFLAGS = PexPhigsCDebugFlags
@@ -69,5 +74,8 @@ LintLibraryTarget(cp,$(CSRCS))
 #ifdef HPArchitecture
 SpecialObjectRule(hpext.o, $(IRULESRC)/$(MACROFILE), $(EXT_DEFINES))
 #endif
+
+SpecialCLibObjectRule(cp_ccom,$(ICONFIGFILES),$(SOCK_DEFINES))
+SpecialCLibObjectRule(phigsmon,$(ICONFIGFILES),$(SOCK_DEFINES))
 
 DependTarget()

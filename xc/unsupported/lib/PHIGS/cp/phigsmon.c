@@ -1,4 +1,4 @@
-/* $XConsortium: phigsmon.c,v 5.7 91/05/30 08:59:00 jap Exp $ */
+/* $XConsortium: phigsmon.c,v 5.8 91/06/19 10:46:34 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -380,11 +380,29 @@ main(argc, argv)
     
 
 #ifdef DEBUG
+#ifdef BSD44SOCKETS
 #define Make(rendezvous,addr) {\
 	struct sockaddr_un	un_addr; \
  \
 	unlink (addr); \
 	strcpy (un_addr.sun_path, addr); \
+	un_addr.sun_len = strlen(un_addr.sun_path); \
+	un_addr.sun_family = AF_UNIX; \
+	rendezvous = socket (AF_UNIX, SOCK_STREAM, 0); \
+	if (bind (rendezvous, &un_addr, SUN_LEN(&un_addr)) == -1) \
+	{ \
+	    perror ("phigs debug bind"); \
+	    abort (); \
+	} \
+	listen (rendezvous, 5); \
+}
+#else
+#define Make(rendezvous,addr) {\
+	struct sockaddr_un	un_addr; \
+ \
+	unlink (addr); \
+	strcpy (un_addr.sun_path, addr); \
+	un_addr.sun_family = AF_UNIX; \
 	rendezvous = socket (AF_UNIX, SOCK_STREAM, 0); \
 	if (bind (rendezvous, &un_addr, sizeof (short) + strlen (addr)) == -1) \
 	{ \
@@ -393,6 +411,7 @@ main(argc, argv)
 	} \
 	listen (rendezvous, 5); \
 }
+#endif
 
 #define Get(fd,rendezvous) { \
 	struct sockaddr_un	un_addr; \

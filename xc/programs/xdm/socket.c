@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: socket.c,v 1.28 91/07/16 22:19:45 gildea Exp $
+ * $XConsortium: socket.c,v 1.29 91/08/25 10:47:56 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -56,6 +56,9 @@ CreateWellKnownSockets ()
     RegisterCloseOnFork (xdmcpFd);
     /* zero out the entire structure; this avoids 4.4 incompatibilities */
     bzero ((char *) &sock_addr, sizeof (sock_addr));
+#ifdef BSD44SOCKETS
+    sock_addr.sin_len = sizeof(sock_addr);
+#endif
     sock_addr.sin_family = AF_INET;
     sock_addr.sin_port = htons ((short) request_port);
     sock_addr.sin_addr.s_addr = htonl (INADDR_ANY);
