@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.69 91/05/10 20:28:17 swick Exp $ */
+/* $XConsortium: Selection.c,v 1.70 91/05/12 09:51:05 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -91,7 +91,7 @@ static PropList GetPropList(dpy)
     if (selectPropertyContext == 0)
 	selectPropertyContext = XUniqueContext();
     if (XFindContext(dpy, DefaultRootWindow(dpy), selectPropertyContext,
-		     (caddr_t *)&sarray)) {
+		     (XPointer *)&sarray)) {
 	XtPerDisplay pd = _XtGetPerDisplay(dpy);
 	sarray = (PropList) XtMalloc((unsigned) sizeof(PropListRec));
 	sarray->dpy = dpy;
@@ -110,8 +110,8 @@ static PropList GetPropList(dpy)
 	sarray->list = (SelectionProp)XtMalloc((unsigned) sizeof(SelectionPropRec));
 	sarray->list[0].prop = XInternAtom(dpy, "_XT_SELECTION_0", FALSE);
 	sarray->list[0].avail = TRUE;
-	(void) XSaveContext(dpy, DefaultRootWindow(dpy), selectPropertyContext, 
-			    (caddr_t) sarray);
+	(void) XSaveContext(dpy, DefaultRootWindow(dpy), selectPropertyContext,
+			    (char *) sarray);
 	_XtAddCallback( &pd->destroy_callbacks,
 			FreePropList, (XtPointer)sarray );
     }
@@ -152,7 +152,7 @@ Atom prop;
  PropList sarray;
  if (prop == None) return;
  if (XFindContext(dpy, DefaultRootWindow(dpy), selectPropertyContext,
-    (caddr_t *)&sarray)) 
+		  (XPointer *)&sarray)) 
     XtAppErrorMsg(XtDisplayToApplicationContext(dpy),
 	    "noSelectionProperties", "freeSelectionProperty", XtCXtToolkitError,
 		"internal error: no selection property context for display",
@@ -221,7 +221,7 @@ Atom selection;
     ctx->ref_count = 0;
     ctx->free_when_done = FALSE;
     ctx->was_disowned = FALSE;
-    (void)XSaveContext(dpy, (Window)selection, selectContext, (caddr_t)ctx);
+    (void)XSaveContext(dpy, (Window)selection, selectContext, (char *)ctx);
     return ctx;
 }
 
@@ -233,7 +233,7 @@ Atom selection;
 
     if (selectContext == 0)
 	selectContext = XUniqueContext();
-    if (XFindContext(dpy, (Window)selection, selectContext, (caddr_t *)&ctx))
+    if (XFindContext(dpy, (Window)selection, selectContext, (XPointer *)&ctx))
 	ctx = NewContext(dpy, selection);
 
     return ctx;
@@ -357,11 +357,11 @@ XtPointer closure;
 	if (selectWindowContext == 0)
 	    selectWindowContext = XUniqueContext();
 	if (XFindContext(dpy, window, selectWindowContext,
-			 (caddr_t *)&requestWindowRec)) {
+			 (XPointer *)&requestWindowRec)) {
 	    requestWindowRec = XtNew(RequestWindowRec);
 	    requestWindowRec->active_transfer_count = 0;
 	    (void)XSaveContext(dpy, window, selectWindowContext,
-			       (caddr_t)requestWindowRec);
+			       (char *)requestWindowRec);
 	}
 	if (requestWindowRec->active_transfer_count++ == 0) {
 	    _XtRegisterWindow(window, widget);
@@ -387,7 +387,7 @@ XtPointer closure;
 	RequestWindowRec* requestWindowRec;
 	XtRemoveRawEventHandler(widget, mask, TRUE, proc, closure);
 	(void)XFindContext(dpy, window, selectWindowContext,
-			   (caddr_t *)&requestWindowRec);
+			   (XPointer *)&requestWindowRec);
 	if (--requestWindowRec->active_transfer_count == 0) {
 	    _XtUnregisterWindow(window, widget);
 	    StartProtectedSection(dpy, window);
