@@ -1,4 +1,4 @@
-/* $Header: XPolyReg.c,v 11.10 87/07/20 12:34:13 ham Exp $ */
+/* $Header: XPolyReg.c,v 11.10 87/07/20 12:34:13 toddb Locked $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -28,6 +28,8 @@ SOFTWARE.
 
 #include "region.h"
 #include "poly.h"
+#include "Xlib.h"
+#include "Xutil.h"
 
 /*
  *     InsertEdgeInET
