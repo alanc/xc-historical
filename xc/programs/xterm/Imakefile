@@ -13,17 +13,17 @@
 #include BandAidCompiler
 #endif
 
+/*
+ * add -DWTMP and -DLASTLOG if you want them; make sure that bcopy can
+ * handle overlapping copies before using it.
+ */
 #ifdef SetTtyGroup
 #define TtyDef -DUSE_TTY_GROUP
 #else
 #define TtyDef /**/
 #endif
+   MAIN_DEFINES = -DUTMP TtyDef
 
-/*
- * add -DWTMP and -DLASTLOG if you want them; make sure that bcopy can
- * handle overlapping copies before using it.
- */
-        DEFINES = -DUTMP TtyDef
           SRCS1 = button.c charproc.c cursor.c data.c input.c \
 		  main.c menu.c misc.c screen.c scrollbar.c tabs.c \
 		  TekPrsTbl.c Tekproc.c util.c VTPrsTbl.c
@@ -38,6 +38,7 @@
        DEPLIBS2 = 
 
 ComplexProgramTarget_1(xterm,$(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB),-ltermcap)
+SpecialObjectRule(main.o,,$(MAIN_DEFINES))
 
 SingleProgramTarget(resize,$(OBJS2),,-ltermcap)
 InstallProgramWithFlags(resize, $(BINDIR), )
