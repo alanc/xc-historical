@@ -1,0 +1,100 @@
+.de EX		\"Begin example
+.ne 5
+.if n .sp 1
+.if t .sp .5
+.nf
+.in +.5i
+..
+.de EE
+.fi
+.in -.5i
+.if n .sp 1
+.if t .sp .5
+..
+.TH fntchoosr 1 "5 November 1989" "X Version 11"
+.SH NAME
+.PP
+fntchoosr - point & click interface for selecting X11 font names
+.PP
+.SH SYNTAX
+.PP
+\fBfntchoosr\fP [-\fItoolkitoption\fP ...]
+[\fB-print\fP]
+[\fB-sample \fItext\fP]
+.PP
+.SH DESCRIPTION
+.PP
+The \fIfntchoosr\fP application provides a simple way to display
+the fonts known to your X server, examine samples of each, and
+retrieve the X Logical Font Description ("XLFD") full name for a font.
+.PP
+If \fB-print\fP is specified on the command line, the selected
+font specifier will be written to standard output when the \fIquit\fP
+button is activated.  Regardless of whether or not \fB-print\fP was
+specified, the font specifier may be made the PRIMARY (text)
+selection by activating the \fIselect\fP button.
+.PP
+The \fB-sample\fP option specifies the sample text to be used to
+display the selected font, over-riding the default.
+.PP
+.SH INTERACTIONS
+.PP
+Clicking any pointer button in one of the XLFD field names will pop up
+a menu of the currently-known possibilities for that field.  If
+previous choices of other fields were made, only values
+for fonts which matched the previously selected fields will be
+selectable; to make other values selectable, you must deselect
+some other field(s) by choosing the ``*'' entry in that field.
+.PP
+Clicking the left pointer button in the \fIselect\fP widget will
+cause the currently selected font name to become the PRIMARY text
+selection.  This then allows you to paste the string into other
+applications, for example.  The \fBselect\fP button remains
+highlighted to remind you of this fact, and de-highlights when
+some other application takes the PRIMARY selection away.
+.PP
+.SH RESOURCES
+.PP
+The application class is \fBFntChoosr\fP.  Most of the user-interface
+is configured in the app-defaults file; if this file is missing,
+a warning message will be printed to standard output and the
+resulting window will be nearly incomprehensible.
+.PP
+Most of the widget hierarchy is documented in the app-defaults
+file (normally /usr/lib/X11/app-defaults/FntChoosr).
+.PP
+Application specific resources:
+.PP
+.TP 8
+.B "cursor (\fPclass\fB Cursor)"
+Specifies the cursor for the application window.
+.TP 8
+.B "printOnQuit (\fPclass\fP PrintOnQuit)"
+If \fITrue\fP the currently selected font name is printed
+to standard output when the quit button is activated.
+Equivalent to the \fB-print\fP option.
+.PP
+.SH FILES
+.PP
+ $XFILESEARCHPATH/FntChoosr
+.PP
+.SH SEE ALSO
+xrdb(1)
+.PP
+.SH BUGS
+.PP
+Should be able to return a FONT for the PRIMARY selection, not
+just a STRING.
+.PP
+\fPselect\fP also owns the PRIMARY_FONT selection.  This is for
+future work.
+.PP
+.SH COPYRIGHT
+Copyright 1988 by Massachusetts Institute of Technology
+.br
+See \fIX(1)\fP for a full statement of rights and permissions.
+.SH AUTHOR
+.PP
+Ralph R. Swick, Digital Equipment Corporation/MIT Project Athena
+
+
