@@ -2,7 +2,7 @@ XTerm*SimpleMenu*BackingStore: NotUseful
 XTerm*SimpleMenu*menuLabel.font: -adobe-helvetica-bold-r-normal--*-120-*-*-*-*-iso*-*
 XTerm*SimpleMenu*menuLabel.vertSpace: 	100
 XTerm*SimpleMenu*HorizontalMargins: 16
-XTerm*SimpleMenu*MenuEntry*height:	16
+XTerm*SimpleMenu*Sme.height:	16
 
 XTerm*SimpleMenu*Cursor: left_ptr
 XTerm*mainMenu.Label:  Main Options
