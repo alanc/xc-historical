@@ -1,5 +1,5 @@
 /*
-* $XConsortium: BoxP.h,v 1.15 89/05/11 01:04:48 kit Exp $
+* $XConsortium: BoxP.h,v 1.16 89/11/06 10:51:28 swick Exp $
 */
 
 
@@ -42,7 +42,6 @@ SOFTWARE.
  ***********************************************************************/
 
 #include <X11/Xaw/Box.h>
-#include <X11/CompositeP.h>
 #include <X11/Xmu/Converters.h>
 
 /* New fields for the Box widget class record */

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: LabelP.h,v 1.26 90/02/05 16:16:22 jim Exp $
+* $XConsortium: LabelP.h,v 1.27 91/06/22 19:34:58 rws Exp $
 */
 
 
@@ -62,6 +62,7 @@ typedef struct {
     /* resources */
     Pixel	foreground;
     XFontStruct	*font;
+    XFontSet 	fontset;
     char	*label;
     XtJustify	justify;
     Dimension	internal_width;

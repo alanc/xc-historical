@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Porthole.c,v 1.13 91/02/17 15:46:51 converse Exp $
+ * $XConsortium: Porthole.c,v 1.14 91/03/14 16:48:01 converse Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -26,7 +26,7 @@
  * panner or scrollbar to navigate.
  */
 
-#include <X11/IntrinsicP.h>		/* get basic toolkit stuff */
+#include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>		/* get XtN and XtC defines */
 #include <X11/Xaw/XawInit.h>		/* get Xaw initialize stuff */
 #include <X11/Xaw/PortholeP.h>		/* get porthole structs */
@@ -110,10 +110,10 @@ WidgetClass portholeWidgetClass = (WidgetClass) &portholeClassRec;
  *****************************************************************************/
 
 static Widget find_child (pw)
-    register PortholeWidget pw;
+    PortholeWidget pw;
 {
-    register Widget *children;
-    register int i;
+    Widget *children;
+    int i;
 
     /*
      * Find the managed child on which we should operate.  Ignore multiple
@@ -200,7 +200,7 @@ static void layout_child (pw, child, geomp, xp, yp, widthp, heightp)
 
 
 static void Realize (gw, valueMask, attributes)
-    register Widget gw;
+    Widget gw;
     Mask *valueMask;
     XSetWindowAttributes *attributes;
 {
@@ -228,7 +228,8 @@ static void Resize (gw)
 	Position x, y;
 	Dimension width, height;
 
-	layout_child (pw, child, NULL, &x, &y, &width, &height);
+	layout_child (pw, child, (XtWidgetGeometry *)NULL, 
+		      &x, &y, &width, &height);
 	XtConfigureWidget (child, x, y, width, height, (Dimension) 0);
     }
 
@@ -240,7 +241,7 @@ static XtGeometryResult QueryGeometry (gw, intended, preferred)
     Widget gw;
     XtWidgetGeometry *intended, *preferred;
 {
-    register PortholeWidget pw = (PortholeWidget) gw;
+    PortholeWidget pw = (PortholeWidget) gw;
     Widget child = find_child (pw);
 
     if (child) {
@@ -348,9 +349,8 @@ static void ChangeManaged (gw)
 		geom.request_mode |= CWHeight;
 	    }
 	    if (geom.request_mode &&
-		XtMakeGeometryRequest (gw, &geom, &retgeom) ==
-		XtGeometryAlmost) {
-	        (void) XtMakeGeometryRequest (gw, &retgeom, NULL);
+		XtMakeGeometryRequest (gw, &geom, &retgeom) == XtGeometryAlmost) {
+	        (void) XtMakeGeometryRequest (gw, &retgeom, (XtWidgetGeometry *)NULL);
 	    }
 	}
 	

@@ -1,4 +1,4 @@
-/* $XConsortium: Command.c,v 1.76 91/05/04 19:29:00 converse Exp $ */
+/* $XConsortium: Command.c,v 1.77 91/10/16 21:32:53 eswu Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -35,6 +35,7 @@ SOFTWARE.
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/CommandP.h>
 #include <X11/Xmu/Converters.h>
+#include <X11/extensions/shape.h>
 
 #define DEFAULT_HIGHLIGHT_THICKNESS 2
 #define DEFAULT_SHAPE_HIGHLIGHT 32767
@@ -64,7 +65,7 @@ static XtResource resources[] = {
       offset(command.shape_style), XtRImmediate, (XtPointer)XawShapeRectangle},
    {XtNcornerRoundPercent, XtCCornerRoundPercent, 
 	XtRDimension, sizeof(Dimension),
-	offset(command.corner_round), XtRImmediate, (XtPointer) 25},
+	offset(command.corner_round), XtRImmediate, (XtPointer) 25}
 };
 #undef offset
 
@@ -158,7 +159,12 @@ Pixel fg, bg;
   else 
     values.line_width   = 0;
   
-  return XtGetGC((Widget)cbw,
+  if ( cbw->simple.international == True )
+      return XtAllocateGC((Widget)cbw, 0, 
+		 (GCForeground|GCBackground|GCLineWidth|GCCapStyle),
+		 &values, GCFont, 0 );
+  else
+      return XtGetGC((Widget)cbw,
 		 (GCForeground|GCBackground|GCFont|GCLineWidth|GCCapStyle),
 		 &values);
 }
@@ -248,7 +254,7 @@ Cardinal *num_params;	/* unused */
 
   cbw->command.set= TRUE;
   if (XtIsRealized(w))
-    PaintCommandWidget(w, (Region) NULL, TRUE);
+    PaintCommandWidget(w, event, (Region) NULL, TRUE);
 }
 
 /* ARGSUSED */
@@ -267,7 +273,7 @@ Cardinal *num_params;
   cbw->command.set = FALSE;
   if (XtIsRealized(w)) {
     XClearWindow(XtDisplay(w), XtWindow(w));
-    PaintCommandWidget(w, (Region) NULL, TRUE);
+    PaintCommandWidget(w, event, (Region) NULL, TRUE);
   }
 }
 
@@ -284,8 +290,7 @@ Cardinal *num_params;   /* unused */
   if (cbw->command.set) {
     cbw->command.highlighted = HighlightNone;
     Unset(w, event, params, num_params);
-  }
-  else
+  } else
     Unhighlight(w, event, params, num_params);
 }
 
@@ -316,7 +321,7 @@ Cardinal *num_params;
   }
 
   if (XtIsRealized(w))
-    PaintCommandWidget(w, HighlightRegion(cbw), TRUE);
+    PaintCommandWidget(w, event, HighlightRegion(cbw), TRUE);
 }
 
 /* ARGSUSED */
@@ -331,7 +336,7 @@ Cardinal *num_params;	/* unused */
 
   cbw->command.highlighted = HighlightNone;
   if (XtIsRealized(w))
-    PaintCommandWidget(w, HighlightRegion(cbw), TRUE);
+    PaintCommandWidget(w, event, HighlightRegion(cbw), TRUE);
 }
 
 /* ARGSUSED */
@@ -349,7 +354,7 @@ Cardinal *num_params;	/* unused */
      bindings.
   */
   if (cbw->command.set)
-    XtCallCallbackList(w, cbw->command.callbacks, NULL);
+    XtCallCallbackList(w, cbw->command.callbacks, (XtPointer) NULL);
 }
 
 /*
@@ -369,7 +374,7 @@ Widget w;
 XEvent *event;
 Region region;
 {
-  PaintCommandWidget(w, region, FALSE);
+  PaintCommandWidget(w, event, region, FALSE);
 }
 
 /*	Function Name: PaintCommandWidget
@@ -381,12 +386,14 @@ Region region;
  */
 
 static void 
-PaintCommandWidget(w, region, change)
+PaintCommandWidget(w, event, region, change)
 Widget w;
+XEvent *event;
 Region region;
 Boolean change;
 {
   CommandWidget cbw = (CommandWidget) w;
+  CommandWidgetClass cwclass = (CommandWidgetClass) XtClass (w);
   Boolean very_thick;
   GC norm_gc, rev_gc;
    
@@ -400,11 +407,11 @@ Boolean change;
     region = NULL;		/* Force label to repaint text. */
   }
   else
-      cbw->label.normal_GC = cbw->command.normal_GC;
+    cbw->label.normal_GC = cbw->command.normal_GC;
 
   if (cbw->command.highlight_thickness <= 0)
   {
-    (*SuperClass->core_class.expose) (w, (XEvent *) NULL, region);
+    (*SuperClass->core_class.expose) (w, event, region);
     return;
   }
 
@@ -437,7 +444,7 @@ Boolean change;
 		     cbw->core.height - cbw->command.highlight_thickness);
     }
   }
-  (*SuperClass->core_class.expose) (w, (XEvent *) NULL, region);
+  (*SuperClass->core_class.expose) (w, event, region);
 }
 
 static void 
@@ -513,7 +520,7 @@ static void ClassInitialize()
 {
     XawInitializeWidgetSet();
     XtSetTypeConverter( XtRString, XtRShapeStyle, XmuCvtStringToShapeStyle,
-		        NULL, 0, XtCacheNone, NULL );
+		        (XtConvertArgList)NULL, 0, XtCacheNone, (XtDestructor)NULL );
 }
 
 

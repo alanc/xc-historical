@@ -1,4 +1,4 @@
-/* $XConsortium: MenuButton.c,v 1.17 91/02/17 15:25:29 converse Exp $ */
+/* $XConsortium: MenuButton.c,v 1.18 91/06/22 18:03:46 rws Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -126,7 +126,7 @@ MenuButtonClassRec menuButtonClassRec = {
   },  /* CommandClass fields initialization */
   {
     0,                                     /* field not used    */
-  },  /* MenuButtonClass fields initialization */
+  }  /* MenuButtonClass fields initialization */
 };
 
   /* for public consumption */
@@ -141,7 +141,8 @@ WidgetClass menuButtonWidgetClass = (WidgetClass) &menuButtonClassRec;
 static void ClassInitialize()
 {
     XawInitializeWidgetSet();
-    XtRegisterGrabAction(PopupMenu, True, ButtonPressMask | ButtonReleaseMask,
+    XtRegisterGrabAction(PopupMenu, True, 
+			 (unsigned int)(ButtonPressMask | ButtonReleaseMask),
 			 GrabModeAsync, GrabModeAsync);
 }
 
@@ -171,7 +172,7 @@ Cardinal * num_params;
 
   if (menu == NULL) {
     char error_buf[BUFSIZ];
-    sprintf(error_buf, "MenuButton: %s %s.",
+    (void) sprintf(error_buf, "MenuButton: %s %s.",
 	    "Could not find menu widget named", mbw->menu_button.menu_name);
     XtAppWarning(XtWidgetToApplicationContext(w), error_buf);
     return;

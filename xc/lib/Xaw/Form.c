@@ -174,6 +174,7 @@ static void _CvtStringToEdgeType(args, num_args, fromVal, toVal)
     if (q == XtQChainTop) {
 	edgeType = XtChainTop;
 	done(&edgeType, XtEdgeType);
+	/* NOTREACHED */
     }
     if (q == XtQChainBottom) {
 	edgeType = XtChainBottom;
@@ -201,17 +202,18 @@ static void ClassInitialize()
     XtQChainBottom = XrmPermStringToQuark("chainbottom");
     XtQRubber      = XrmPermStringToQuark("rubber");
 
-    XtAddConverter( XtRString, XtREdgeType, _CvtStringToEdgeType, NULL, 0 );
+    XtAddConverter( XtRString, XtREdgeType, _CvtStringToEdgeType, 
+		    (XtConvertArgList)NULL, 0 );
     XtSetTypeConverter (XtRString, XtRWidget, XmuNewCvtStringToWidget,
 			parentCvtArgs, XtNumber(parentCvtArgs), XtCacheNone,
-			NULL);
+			(XtDestructor)NULL);
 }
 
 static void ClassPartInitialize(class)
     WidgetClass class;
 {
-    register FormWidgetClass c = (FormWidgetClass)class;
-    register FormWidgetClass super = (FormWidgetClass) 
+    FormWidgetClass c = (FormWidgetClass)class;
+    FormWidgetClass super = (FormWidgetClass) 
 	c->core_class.superclass;
 
     if (c->form_class.layout == XtInheritLayout)
@@ -326,8 +328,8 @@ static Boolean Layout(fw, width, height, force_relayout)
     maxx = maxy = 1;
     for (childP = children; childP - children < num_children; childP++) {
 	if (XtIsManaged(*childP)) {
-	    register FormConstraints form;
-	    register Position x, y;
+	    FormConstraints form;
+	    Position x, y;
 
 	    form = (FormConstraints)(*childP)->core.constraints;
 
@@ -351,8 +353,9 @@ static Boolean Layout(fw, width, height, force_relayout)
     if (fw->form.resize_in_layout) {
 	Boolean always_resize_children;
 
-	always_resize_children = ChangeFormGeometry( (Widget) fw, FALSE,
-						    maxx, maxy, NULL, NULL);
+	always_resize_children = 
+	    ChangeFormGeometry( (Widget) fw, FALSE, maxx, maxy, 
+				(Dimension *)NULL, (Dimension *)NULL);
 
 	fw->form.old_width  = fw->core.width;
 	fw->form.old_height = fw->core.height;
@@ -462,7 +465,7 @@ static void LayoutChild(w)
 
 
 static Position TransformCoord(loc, old, new, type)
-    register Position loc;
+    Position loc;
     Dimension old, new;
     XtEdgeType type;
 {
@@ -688,8 +691,8 @@ static Boolean ConstraintSetValues(current, request, new, args, num_args)
     ArgList args;
     Cardinal *num_args;
 {
-  register FormConstraints cfc = (FormConstraints) current->core.constraints;
-  register FormConstraints nfc = (FormConstraints) new->core.constraints;
+  FormConstraints cfc = (FormConstraints) current->core.constraints;
+  FormConstraints nfc = (FormConstraints) new->core.constraints;
   
   if (cfc->form.top          != nfc->form.top         ||
       cfc->form.bottom       != nfc->form.bottom      ||
@@ -802,16 +805,16 @@ Widget w;
 Boolean doit;
 #endif
 {
-    register Widget *childP;
-    register FormWidget fw = (FormWidget)w;
-    register int num_children = fw->composite.num_children;
-    register WidgetList children = fw->composite.children;
+    Widget *childP;
+    FormWidget fw = (FormWidget)w;
+    int num_children = fw->composite.num_children;
+    WidgetList children = fw->composite.children;
 
     if ( ((fw->form.no_refigure = !doit) == TRUE) || !XtIsRealized(w) )
 	return;
 
     for (childP = children; childP - children < num_children; childP++) {
-	register Widget w = *childP;
+	Widget w = *childP;
 	if (XtIsManaged(w)) {
 	    FormConstraints form = (FormConstraints)w->core.constraints;
 

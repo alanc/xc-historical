@@ -1,4 +1,4 @@
-/* $XConsortium: Paned.c,v 1.23 91/07/21 18:56:15 gildea Exp $ */
+/* $XConsortium: Paned.c,v 1.24 91/10/16 21:36:16 eswu Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -46,6 +46,9 @@ SOFTWARE.
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/Grip.h>
 #include <X11/Xaw/PanedP.h>
+
+/* I don't know why Paned.c calls _XawImCallVendorShellExtResize, but... */
+#include <X11/Xaw/XawImP.h> 
 
 #include <ctype.h>
 
@@ -289,6 +292,7 @@ Dimension * on_size_ret, * off_size_ret;
       request.request_mode |= XtCWQueryOnly;
 
       *result_ret = XtMakeGeometryRequest( (Widget) pw, &request, &reply );
+      _XawImCallVendorShellExtResize( (Widget) pw );
 
       if ( (newsize == old_size) || (*result_ret == XtGeometryNo) ) {
 	  *on_size_ret = old_size;
@@ -390,8 +394,10 @@ Boolean shrink;
 					   backwards. */
     }
     childP = pw->composite.children + _index;
+
+    /* CONSTCOND */
     while(TRUE) {
-        register Pane pane = PaneInfo(*childP);
+        Pane pane = PaneInfo(*childP);
         
         if ( (rules < 3 || SatisfiesRule3(pane, shrink)) &&
 	     (rules < 2 || SatisfiesRule2(pane))         &&
@@ -419,6 +425,7 @@ Boolean shrink;
 	    childP = pw->composite.children + _index;
 	}
     }
+    return( NULL );
 }
 
 /*	Function Name: StatisfiesRule1
@@ -566,7 +573,7 @@ PanedWidget pw;
 int paneindex;
 Direction dir;
 {
-    register Widget *childP;
+    Widget *childP;
     int pane_size = (int) PaneSize( (Widget) pw, IsVert(pw) );
     int sizeused = 0;
     Position loc = 0;
@@ -578,7 +585,7 @@ Direction dir;
  */
 
     ForAllPanes(pw, childP) {
-        register Pane pane = PaneInfo(*childP);
+        Pane pane = PaneInfo(*childP);
 	AssignMax(pane->size, (int) pane->min);
 	AssignMin(pane->size, (int) pane->max);
 	sizeused += (int) pane->size + (int) pw->paned.internal_bw;
@@ -627,14 +634,14 @@ static void
 CommitNewLocations(pw)
 PanedWidget pw;
 {
-    register Widget *childP;
+    Widget *childP;
     XWindowChanges changes;
 
     changes.stack_mode = Above;
 
     ForAllPanes(pw, childP) {
-	register Pane pane = PaneInfo(*childP);
-	register Widget grip = pane->grip; /* may be NULL. */
+	Pane pane = PaneInfo(*childP);
+	Widget grip = pane->grip; /* may be NULL. */
 
 	if (IsVert(pw)) {
 	    XtMoveWidget(*childP, (Position) 0, pane->delta);
@@ -1397,7 +1404,7 @@ ClassInitialize()
 {
     XawInitializeWidgetSet();
     XtAddConverter( XtRString, XtROrientation, XmuCvtStringToOrientation,
-		    NULL, (Cardinal)0 );
+		    (XtConvertArgList)NULL, (Cardinal)0 );
 }
 
 /* The Geometry Manager only allows changes after Realize if
@@ -1422,7 +1429,7 @@ XtWidgetGeometry *request, *reply;
     XtGeometryMask mask = request->request_mode;
     Dimension old_size, old_wpsize, old_paned_size;
     Pane pane = PaneInfo(w);
-    register Boolean vert = IsVert(pw);
+    Boolean vert = IsVert(pw);
     Dimension on_size, off_size;
     XtGeometryResult result;
     Boolean almost = FALSE;
@@ -1499,7 +1506,7 @@ XtWidgetGeometry *request, *reply;
 	    request->height = w->core.height;
 
     almost = GetRequestInfo(request, !vert) != GetRequestInfo(reply, !vert);
-    almost |= GetRequestInfo(request, vert) != GetRequestInfo(reply, vert);
+    almost |= (GetRequestInfo(request, vert) != GetRequestInfo(reply, vert));
 
     if ( (mask & XtCWQueryOnly) || almost ) {
 	pane->wp_size = old_wpsize;
@@ -1509,7 +1516,9 @@ XtWidgetGeometry *request, *reply;
 	if (almost) return XtGeometryAlmost;
     }
     else {
-        AdjustPanedSize(pw, PaneSize((Widget) pw, !vert), NULL, NULL, NULL);
+        AdjustPanedSize(pw, PaneSize((Widget) pw, !vert), 
+			(XtGeometryResult *)NULL, 
+			(Dimension *)NULL, (Dimension *)NULL);
 	CommitNewLocations( pw );	/* layout already refigured. */
     }
     return XtGeometryDone;
@@ -1564,7 +1573,7 @@ static void
 ReleaseGCs(w)
 Widget w;
 {
-    register PanedWidget pw = (PanedWidget)w;
+    PanedWidget pw = (PanedWidget)w;
 
     XtReleaseGC( w, pw->paned.normgc );
     XtReleaseGC( w, pw->paned.invgc );
@@ -1572,7 +1581,7 @@ Widget w;
 } 
 
 static void InsertChild(w)
-register Widget w;
+Widget w;
 {
    Pane pane = PaneInfo(w);
 
@@ -1619,7 +1628,7 @@ static void ChangeManaged(w)
    PanedWidget pw = (PanedWidget)w;
    Boolean vert = IsVert(pw);
    Dimension size;
-   register Widget *childP;
+   Widget *childP;
 
    if (pw->paned.recursively_called++) return;
 
@@ -1658,7 +1667,8 @@ static void ChangeManaged(w)
  */
 
    if ( PaneSize((Widget) pw, vert) == 0 ) 
-       AdjustPanedSize(pw, size, NULL, NULL, NULL);
+       AdjustPanedSize(pw, size, (XtGeometryResult *)NULL, 
+			(Dimension *)NULL, (Dimension *)NULL);
 
    if (XtIsRealized( (Widget) pw)) 
        RefigureLocationsAndCommit( (Widget) pw); 
@@ -1737,7 +1747,8 @@ Cardinal *num_args;
 
     if (old_pw->paned.internal_bw != new_pw->paned.internal_bw) {
         AdjustPanedSize( new_pw, PaneSize(new, !IsVert(old_pw)),
-			 NULL, NULL, NULL);
+			 (XtGeometryResult *)NULL, 
+			 (Dimension *)NULL, (Dimension *)NULL);
         RefigureLocationsAndCommit(new);
 	return(TRUE);		/* We have done a full configuration, return.*/
     }

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Paned.h,v 1.12 90/12/01 13:01:45 rws Exp $
+* $XConsortium: Paned.h,v 1.13 91/02/17 13:16:15 rws Exp $
 */
 
 
@@ -44,7 +44,6 @@ SOFTWARE.
 
 #include <X11/Constraint.h>
 #include <X11/Xmu/Converters.h>
-#include <X11/Xfuncproto.h>
 
 /****************************************************************
  *
@@ -231,4 +230,3 @@ extern void XawPanedAllowResize(
 _XFUNCPROTOEND
 
 #endif /* _XawPaned_h */
-/* DON'T ADD STUFF AFTER THIS #endif */

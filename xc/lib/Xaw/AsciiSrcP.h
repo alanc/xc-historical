@@ -1,5 +1,5 @@
 /*
-* $XConsortium: AsciiSrcP.h,v 1.7 90/11/27 08:23:07 swick Exp $
+* $XConsortium: AsciiSrcP.h,v 1.8 91/02/20 17:58:15 converse Exp $
 */
 
 
@@ -136,4 +136,4 @@ typedef struct _AsciiSrcRec {
   AsciiSrcPart	ascii_src;
 } AsciiSrcRec;
 
-#endif /* _XawAsciiSrcP_h  --- Don't add anything after this line. */
+#endif /* _XawAsciiSrcP_h */ 

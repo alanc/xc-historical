@@ -1,4 +1,4 @@
-/* $XConsortium: Form.h,v 1.27 91/02/17 13:13:56 rws Exp $ */
+/* $XConsortium: Form.h,v 1.28 91/05/04 18:59:10 rws Exp $ */
 
 
 /***********************************************************
@@ -29,7 +29,6 @@ SOFTWARE.
 #define _XawForm_h
 
 #include <X11/Constraint.h>
-#include <X11/Xfuncproto.h>
 
 /***********************************************************************
  *

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: AsciiSinkP.h,v 1.1 89/09/06 17:29:51 kit Exp $
+* $XConsortium: AsciiSinkP.h,v 1.2 89/10/04 13:56:34 kit Exp $
 */
 
 
@@ -67,6 +67,7 @@ extern AsciiSinkClassRec asciiSinkClassRec;
 /* New fields for the AsciiSink object record */
 typedef struct {
     /* public resources */
+    XFontStruct *font;          /* Font to draw in. */
     Boolean echo;
     Boolean display_nonprinting;
 

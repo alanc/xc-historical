@@ -1,4 +1,4 @@
-/* $XConsortium: Grip.c,v 1.30 91/02/20 20:01:22 converse Exp $ */
+/* $XConsortium: Grip.c,v 1.31 91/07/21 18:53:29 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -97,6 +97,10 @@ GripClassRec gripClassRec = {
 /* Simple class fields initialization */
    {
     /* change_sensitive   */   XtInheritChangeSensitive
+   },
+/* Grip class fields initialization */
+   {
+    /* not used		  */   0
    }
 };
 

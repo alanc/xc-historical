@@ -1,4 +1,4 @@
-/* $XConsortium: List.h,v 1.19 91/02/17 13:15:17 rws Exp $
+/* $XConsortium: List.h,v 1.20 91/07/26 20:07:51 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -40,7 +40,6 @@
  ***********************************************************************/
 
 #include <X11/Xaw/Simple.h>
-#include <X11/Xfuncproto.h>
 
 /* Resources:
 
@@ -131,6 +130,14 @@
 #define XtNrowSpacing "rowSpacing"
 #define XtNverticalList "verticalList"
  
+#ifndef XtNfontSet
+#define XtNfontSet "fontSet"
+#endif
+
+#ifndef XtCFontSet
+#define XtCFontSet "FontSet"
+#endif
+
 /* Class record constants */
 
 extern WidgetClass listWidgetClass;
@@ -223,4 +230,3 @@ extern XawListReturnStruct * XawListShowCurrent(
 _XFUNCPROTOEND
 
 #endif /* _XawList_h */
-/* DON'T ADD STUFF AFTER THIS #endif */

@@ -1,4 +1,4 @@
-/* $XConsortium: Command.h,v 1.26 89/10/03 14:51:22 kit Exp $ */
+/* $XConsortium: Command.h,v 1.27 91/07/28 18:51:35 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -92,4 +92,3 @@ typedef struct _CommandClassRec   *CommandWidgetClass;
 typedef struct _CommandRec        *CommandWidget;
 
 #endif /* _XawCommand_h */
-/* DON'T ADD STUFF AFTER THIS */

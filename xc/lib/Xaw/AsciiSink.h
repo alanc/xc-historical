@@ -1,5 +1,5 @@
 /*
- * $XConsortium: AsciiSink.h,v 1.6 90/05/08 15:21:40 converse Exp $
+ * $XConsortium: AsciiSink.h,v 1.7 90/12/01 13:01:31 rws Exp $
  */
 
 /***********************************************************
@@ -65,4 +65,3 @@ typedef struct _AsciiSinkRec      *AsciiSinkObject;
  ************************************************************/
 
 #endif /* _XawAsciiSrc_h */
-/* DON'T ADD STUFF AFTER THIS #endif */

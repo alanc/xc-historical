@@ -1,4 +1,4 @@
-/* $XConsortium: FormP.h,v 1.19 90/01/24 18:14:08 kit Exp $ */
+/* $XConsortium: FormP.h,v 1.20 91/05/02 16:20:29 swick Exp $ */
 /* Copyright	Massachusetts Institute of Technology	1987 */
 
 
@@ -32,7 +32,6 @@ SOFTWARE.
 #define _XawFormP_h
 
 #include <X11/Xaw/Form.h>
-#include <X11/ConstrainP.h>
 
 #define XtREdgeType "EdgeType"
 

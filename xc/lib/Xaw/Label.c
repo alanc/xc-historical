@@ -1,4 +1,4 @@
-/* $XConsortium: Label.c,v 1.94 93/09/18 18:11:19 kaleb Exp $ */
+/* $XConsortium: Label.c,v 1.93 91/10/16 21:34:35 eswu Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -39,6 +39,13 @@ SOFTWARE.
 #include <stdio.h>
 #include <ctype.h>
 
+/* needed for abs() */
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+int abs();
+#endif
+
 #define streq(a,b) (strcmp( (a), (b) ) == 0)
 
 #define MULTI_LINE_LABEL 32767
@@ -61,6 +68,8 @@ static XtResource resources[] = {
 	offset(label.foreground), XtRString, XtDefaultForeground},
     {XtNfont,  XtCFont, XtRFontStruct, sizeof(XFontStruct *),
 	offset(label.font),XtRString, XtDefaultFont},
+    {XtNfontSet,  XtCFontSet, XtRFontSet, sizeof(XFontSet ),
+        offset(label.fontset),XtRString, XtDefaultFontSet},
     {XtNlabel,  XtCLabel, XtRString, sizeof(String),
 	offset(label.label), XtRString, NULL},
     {XtNencoding, XtCEncoding, XtRUnsignedChar, sizeof(unsigned char),
@@ -91,8 +100,7 @@ static XtGeometryResult QueryGeometry();
 LabelClassRec labelClassRec = {
   {
 /* core_class fields */	
-#define superclass		(&simpleClassRec)
-    /* superclass	  	*/	(WidgetClass) superclass,
+    /* superclass	  	*/	(WidgetClass) &simpleClassRec,
     /* class_name	  	*/	"Label",
     /* widget_size	  	*/	sizeof(LabelRec),
     /* class_initialize   	*/	ClassInitialize,
@@ -128,6 +136,10 @@ LabelClassRec labelClassRec = {
 /* Simple class fields initialization */
   {
     /* change_sensitive		*/	XtInheritChangeSensitive
+  },
+/* Label class fields initialization */
+  {
+    /* ignore 			*/	0
   }
 };
 WidgetClass labelWidgetClass = (WidgetClass)&labelClassRec;
@@ -140,7 +152,8 @@ WidgetClass labelWidgetClass = (WidgetClass)&labelClassRec;
 static void ClassInitialize()
 {
     XawInitializeWidgetSet();
-    XtAddConverter( XtRString, XtRJustify, XmuCvtStringToJustify, NULL, 0 );
+    XtAddConverter( XtRString, XtRJustify, XmuCvtStringToJustify, 
+		    (XtConvertArgList)NULL, 0 );
 }
 
 #ifndef WORD64
@@ -207,7 +220,8 @@ _XawLabelDraw16(dpy, d, gc, x, y, str, n)
 static void SetTextWidthAndHeight(lw)
     LabelWidget lw;
 {
-    register XFontStruct	*fs = lw->label.font;
+    XFontStruct	*fs = lw->label.font;
+
     char *nl;
 
     if (lw->label.pixmap != None) {
@@ -222,49 +236,88 @@ static void SetTextWidthAndHeight(lw)
 	    return;
 	}
     }
+    if ( lw->simple.international == True ) {
 
-    lw->label.label_height = fs->max_bounds.ascent + fs->max_bounds.descent;
-    if (lw->label.label == NULL) {
-	lw->label.label_len = 0;
-	lw->label.label_width = 0;
-    }
-    else if ((nl = strchr(lw->label.label, '\n')) != NULL) {
-	char *label;
-	lw->label.label_len = MULTI_LINE_LABEL;
-	lw->label.label_width = 0;
-	for (label = lw->label.label; nl != NULL; nl = strchr(label, '\n')) {
-	    int width;
+      XFontSet	fset = lw->label.fontset;
+      XFontSetExtents *ext = XExtentsOfFontSet(fset);
 
-	    if (lw->label.encoding)
-		width = XTextWidth16(fs, (TXT16*)label, (int)(nl - label)/2);
-	    else
-		width = XTextWidth(fs, label, (int)(nl - label));
-	    if (width > (int)lw->label.label_width)
-		lw->label.label_width = width;
-	    label = nl + 1;
-	    if (*label)
-		lw->label.label_height +=
-		    fs->max_bounds.ascent + fs->max_bounds.descent;
-	}
-	if (*label) {
-	    int width = XTextWidth(fs, label, strlen(label));
+      lw->label.label_height = ext->max_ink_extent.height;
+      if (lw->label.label == NULL) {
+	  lw->label.label_len = 0;
+	  lw->label.label_width = 0;
+      }
+      else if ((nl = index(lw->label.label, '\n')) != NULL) {
+	  char *label;
+	  lw->label.label_len = MULTI_LINE_LABEL;
+	  lw->label.label_width = 0;
+	  for (label = lw->label.label; nl != NULL; nl = index(label, '\n')) {
+	      int width = XmbTextEscapement(fset, label, (int)(nl - label));
 
-	    if (lw->label.encoding)
-		width = XTextWidth16(fs, (TXT16*)label, (int)strlen(label)/2);
-	    else
-		width = XTextWidth(fs, label, strlen(label));
-	    if (width > (int) lw->label.label_width)
-		lw->label.label_width = width;
-	}
+	      if (width > (int)lw->label.label_width)
+		  lw->label.label_width = width;
+	      label = nl + 1;
+	      if (*label)
+		  lw->label.label_height +=
+		      ext->max_ink_extent.height;
+	  }
+	  if (*label) {
+	      int width = XmbTextEscapement(fset, label, strlen(label));
+
+	      if (width > (int) lw->label.label_width)
+		  lw->label.label_width = width;
+	  }
+      } else {
+	  lw->label.label_len = strlen(lw->label.label);
+	  lw->label.label_width =
+	      XmbTextEscapement(fset, lw->label.label, (int) lw->label.label_len);
+      }
+
     } else {
-	lw->label.label_len = strlen(lw->label.label);
-	if (lw->label.encoding)
-	    lw->label.label_width =
-		XTextWidth16(fs, (TXT16*)lw->label.label,
-			     (int) lw->label.label_len/2);
-	else
-	    lw->label.label_width =
-		XTextWidth(fs, lw->label.label, (int) lw->label.label_len);
+
+        lw->label.label_height = fs->max_bounds.ascent + fs->max_bounds.descent;
+        if (lw->label.label == NULL) {
+            lw->label.label_len = 0;
+            lw->label.label_width = 0;
+        }
+        else if ((nl = index(lw->label.label, '\n')) != NULL) {
+	    char *label;
+            lw->label.label_len = MULTI_LINE_LABEL;
+            lw->label.label_width = 0;
+            for (label = lw->label.label; nl != NULL; nl = index(label, '\n')) {
+	        int width;
+
+	        if (lw->label.encoding)
+		    width = XTextWidth16(fs, (TXT16*)label, (int)(nl - label)/2);
+	        else
+		    width = XTextWidth(fs, label, (int)(nl - label));
+	        if (width > (int)lw->label.label_width)
+		    lw->label.label_width = width;
+	        label = nl + 1;
+	        if (*label)
+		    lw->label.label_height +=
+		        fs->max_bounds.ascent + fs->max_bounds.descent;
+	    }
+	    if (*label) {
+	        int width = XTextWidth(fs, label, strlen(label));
+
+	        if (lw->label.encoding)
+		    width = XTextWidth16(fs, (TXT16*)label, (int)strlen(label)/2);
+	        else
+		    width = XTextWidth(fs, label, strlen(label));
+	        if (width > (int) lw->label.label_width)
+		    lw->label.label_width = width;
+	    }
+        } else {
+	    lw->label.label_len = strlen(lw->label.label);
+	    if (lw->label.encoding)
+	        lw->label.label_width =
+		    XTextWidth16(fs, (TXT16*)lw->label.label,
+			         (int) lw->label.label_len/2);
+	    else
+	        lw->label.label_width =
+		    XTextWidth(fs, lw->label.label, (int) lw->label.label_len);
+        }
+
     }
 }
 
@@ -278,7 +331,14 @@ static void GetnormalGC(lw)
     values.font		= lw->label.font->fid;
     values.graphics_exposures = False;
 
-    lw->label.normal_GC = XtGetGC(
+    if ( lw->simple.international == True )
+        /* Since Xmb/wcDrawString eats the font, I must use XtAllocateGC. */
+        lw->label.normal_GC = XtAllocateGC(
+                (Widget)lw, 0,
+	(unsigned) GCForeground | GCBackground | GCGraphicsExposures,
+	&values, GCFont, 0 );
+    else
+        lw->label.normal_GC = XtGetGC(
 	(Widget)lw,
 	(unsigned) GCForeground | GCBackground | GCFont | GCGraphicsExposures,
 	&values);
@@ -300,7 +360,15 @@ static void GetgrayGC(lw)
     values.graphics_exposures = False;
 
     lw->label.stipple = values.tile;
-    lw->label.gray_GC = XtGetGC((Widget)lw, 
+    if ( lw->simple.international == True )
+        /* Since Xmb/wcDrawString eats the font, I must use XtAllocateGC. */
+        lw->label.gray_GC = XtAllocateGC((Widget)lw,  0,
+				(unsigned) GCForeground | GCBackground |
+					   GCTile | GCFillStyle |
+					   GCGraphicsExposures,
+				&values, GCFont, 0);
+    else
+        lw->label.gray_GC = XtGetGC((Widget)lw, 
 				(unsigned) GCForeground | GCBackground |
 					   GCFont | GCTile | GCFillStyle |
 					   GCGraphicsExposures,
@@ -311,12 +379,13 @@ static void compute_bitmap_offsets (lw)
     LabelWidget lw;
 {
     /*
-     * label will be displayed at (internal_width, internal_height + lbm_y)
+     * bitmap will be eventually be displayed at 
+     * (internal_width, internal_height + lbm_y)
      */
     if (lw->label.lbm_height != 0) {
-	lw->label.lbm_y = (((int) lw->core.height) -
-			   ((int) lw->label.internal_height * 2) -
-			   ((int) lw->label.lbm_height)) / 2;
+	lw->label.lbm_y = (lw->core.height -
+			  (lw->label.internal_height * 2 + 
+			   lw->label.lbm_height)) / 2;
     } else {
 	lw->label.lbm_y = 0;
     }
@@ -361,13 +430,15 @@ static void Initialize(request, new, args, num_args)
     SetTextWidthAndHeight(lw);
 
     if (lw->core.height == 0)
-        lw->core.height = lw->label.label_height + 2*lw->label.internal_height;
+        lw->core.height = lw->label.label_height +
+			    2 * lw->label.internal_height;
 
     set_bitmap_info (lw);		/* need core.height */
 
     if (lw->core.width == 0)		/* need label.lbm_width */
-        lw->core.width = (lw->label.label_width + 2 * lw->label.internal_width
-			  + LEFT_OFFSET(lw));
+        lw->core.width = (lw->label.label_width +
+			    2 * lw->label.internal_width +
+			    LEFT_OFFSET(lw));
 
     lw->label.label_x = lw->label.label_y = 0;
     (*XtClass(new)->core_class.resize) ((Widget)lw);
@@ -379,83 +450,120 @@ static void Initialize(request, new, args, num_args)
  */
 
 /* ARGSUSED */
-static void Redisplay(w, event, region)
-    Widget w;
+static void Redisplay(gw, event, region)
+    Widget gw;
     XEvent *event;
     Region region;
 {
-   LabelWidget lw = (LabelWidget) w;
-   GC gc;
+    extern WidgetClass commandWidgetClass;
+    LabelWidget w = (LabelWidget) gw;
+    LabelWidgetClass lwclass = (LabelWidgetClass) XtClass (gw);
+    GC gc;
 
-   if (region != NULL) {
-       int x = lw->label.label_x;
-       unsigned int width = lw->label.label_width;
-       if (lw->label.lbm_width) {
-	   if (lw->label.label_x > (x = lw->label.internal_width))
-	       width += lw->label.label_x - x;
-       }
-       if (XRectInRegion(region, x, lw->label.label_y,
-			 width, lw->label.label_height) == RectangleOut)
-	   return;
-   }
+    /*
+     * now we'll see if we need to draw the rest of the label
+     */
+    if (region != NULL) {
+	int x = w->label.label_x;
+	unsigned int width = w->label.label_width;
+	if (w->label.lbm_width) {
+	    if (w->label.label_x > (x = w->label.internal_width))
+		width += w->label.label_x - x;
+	}
+	if (XRectInRegion(region, x, w->label.label_y,
+			 width, w->label.label_height) == RectangleOut){
+	    return;
+	}
+    }
 
-   gc = XtIsSensitive((Widget)lw) ? lw->label.normal_GC : lw->label.gray_GC;
+    gc = XtIsSensitive(gw) ? w->label.normal_GC : w->label.gray_GC;
 #ifdef notdef
-   if (region != NULL) XSetRegion(XtDisplay(w), gc, region);
+    if (region != NULL)
+	XSetRegion(XtDisplay(gw), gc, region);
 #endif /*notdef*/
-   if (lw->label.pixmap == None) {
-       int len = lw->label.label_len;
-       char *label = lw->label.label;
-       Position y = lw->label.label_y + lw->label.font->max_bounds.ascent;
 
-       /* display left bitmap */
-       if (lw->label.left_bitmap && lw->label.lbm_width != 0) {
-	   XCopyPlane (XtDisplay(w), lw->label.left_bitmap, XtWindow(w), gc,
-		       0, 0, lw->label.lbm_width, lw->label.lbm_height,
-		       (int) lw->label.internal_width, 
-		       (int) lw->label.internal_height + lw->label.lbm_y, 
+    if (w->label.pixmap == None) {
+	int len = w->label.label_len;
+	char *label = w->label.label;
+	Position y = w->label.label_y + w->label.font->max_bounds.ascent;
+        Position ksy = w->label.label_y;
+
+	/* display left bitmap */
+	if (w->label.left_bitmap && w->label.lbm_width != 0) {
+	    XCopyPlane (XtDisplay(gw), w->label.left_bitmap, XtWindow(gw), gc,
+		       0, 0, w->label.lbm_width, w->label.lbm_height,
+		       (int) w->label.internal_width,
+		       (int) w->label.internal_height + w->label.lbm_y, 
 		       (unsigned long) 1L);
-       }
+	}
 
-       if (len == MULTI_LINE_LABEL) {
-	   char *nl;
-	   while ((nl = strchr(label, '\n')) != NULL) {
-	       if (lw->label.encoding)
-		   XDrawString16(XtDisplay(w), XtWindow(w), gc,
-				 lw->label.label_x, y,
-				 (TXT16*)label, (int)(nl - label)/2);
-	       else
-		   XDrawString(XtDisplay(w), XtWindow(w), gc,
-			       lw->label.label_x, y, label, (int)(nl - label));
-	       y += lw->label.font->max_bounds.ascent + lw->label.font->max_bounds.descent;
-	       label = nl + 1;
-	   }
-	   len = strlen(label);
-       }
-       if (len) {
-	   if (lw->label.encoding)
-	       XDrawString16(XtDisplay(w), XtWindow(w), gc,
-			     lw->label.label_x, y, (TXT16*)label, len/2);
-	   else
-	       XDrawString(XtDisplay(w), XtWindow(w), gc,
-			   lw->label.label_x, y, label, len);
-       }
-   } else if (lw->label.label_len == 1) { /* depth */
-       XCopyPlane(XtDisplay(w), lw->label.pixmap, XtWindow(w), gc,
-		  0, 0, lw->label.label_width, lw->label.label_height,
-		  lw->label.label_x, lw->label.label_y, 1L);
-   } else {
-       XCopyArea(XtDisplay(w), lw->label.pixmap, XtWindow(w), gc,
-		 0, 0, lw->label.label_width, lw->label.label_height,
-		 lw->label.label_x, lw->label.label_y);
-   }
+        if ( w->simple.international == True ) {
+
+	    XFontSetExtents *ext = XExtentsOfFontSet(w->label.fontset);
+
+	    ksy += abs(ext->max_ink_extent.y);
+
+            if (len == MULTI_LINE_LABEL) {
+	        char *nl;
+	        while ((nl = index(label, '\n')) != NULL) {
+	            XmbDrawString(XtDisplay(w), XtWindow(w), w->label.fontset, gc,
+	  		        w->label.label_x, ksy, label, (int)(nl - label));
+	            ksy += ext->max_ink_extent.height;
+	            label = nl + 1;
+	        }
+	        len = strlen(label);
+            }
+            if (len)
+	        XmbDrawString(XtDisplay(w), XtWindow(w), w->label.fontset, gc,
+			      w->label.label_x, ksy, label, len);
+
+        } else { /*international false, so use R5 routine */
+
+	    if (len == MULTI_LINE_LABEL) {
+	        char *nl;
+	        while ((nl = index(label, '\n')) != NULL) {
+		    if (w->label.encoding)
+		        XDrawString16(XtDisplay(gw), XtWindow(gw), gc,
+				 		w->label.label_x, y,
+				 		(TXT16*)label, (int)(nl - label)/2);
+		    else
+		        XDrawString(XtDisplay(gw), XtWindow(gw), gc,
+			       		w->label.label_x, y, label, (int)(nl - label));
+		    y += w->label.font->max_bounds.ascent + 
+		                        w->label.font->max_bounds.descent;
+		    label = nl + 1;
+	        }
+	        len = strlen(label);
+	    }
+	    if (len) {
+	        if (w->label.encoding)
+		    XDrawString16(XtDisplay(gw), XtWindow(gw), gc,
+			     w->label.label_x, y, (TXT16*)label, len/2);
+	        else
+		    XDrawString(XtDisplay(gw), XtWindow(gw), gc,
+			   w->label.label_x, y, label, len);
+	    }
+
+        } /*endif international*/
+
+    } else if (w->label.label_len == 1) { /* depth */
+	XCopyPlane(XtDisplay(gw), w->label.pixmap, XtWindow(gw), gc,
+				0, 0, w->label.label_width, w->label.label_height,
+				w->label.label_x, w->label.label_y, 1L);
+    } else {
+	XCopyArea(XtDisplay(gw), w->label.pixmap, XtWindow(gw), gc,
+				0, 0, w->label.label_width, w->label.label_height,
+				w->label.label_x, w->label.label_y);
+    }
+
 #ifdef notdef
-   if (region != NULL) XSetClipMask(XtDisplay(w), gc, (Pixmap)None);
+    if (region != NULL)
+	XSetClipMask(XtDisplay(gw), gc, (Pixmap)None);
 #endif /* notdef */
 }
 
 static void _Reposition(lw, width, height, dx, dy)
-    register LabelWidget lw;
+    LabelWidget lw;
     Dimension width, height;
     Position *dx, *dy;
 {
@@ -493,6 +601,7 @@ static void Resize(w)
 {
     LabelWidget lw = (LabelWidget)w;
     Position dx, dy;
+
     _Reposition(lw, w->core.width, w->core.height, &dx, &dy);
     compute_bitmap_offsets (lw);
 }
@@ -543,6 +652,10 @@ static Boolean SetValues(current, request, new, args, num_args)
     if (curlw->label.encoding != newlw->label.encoding)
 	was_resized = True;
 
+    if ( (curlw->label.fontset != newlw->label.fontset) &&
+					 curlw->simple.international ){
+	was_resized = True;
+    }
     if (curlw->label.label != newlw->label.label) {
         if (curlw->label.label != curlw->core.name)
 	    XtFree( (char *)curlw->label.label );
@@ -563,20 +676,22 @@ static Boolean SetValues(current, request, new, args, num_args)
     /* recalculate the window size if something has changed. */
     if (newlw->label.resize && was_resized) {
 	if ((curlw->core.height == reqlw->core.height) && !checks[HEIGHT])
-	    newlw->core.height = (newlw->label.label_height + 
-				  2 * newlw->label.internal_height);
+	    newlw->core.height = (newlw->label.label_height +
+				    2 * newlw->label.internal_height);
 
 	set_bitmap_info (newlw);
 
 	if ((curlw->core.width == reqlw->core.width) && !checks[WIDTH])
 	    newlw->core.width = (newlw->label.label_width +
-				 LEFT_OFFSET(newlw) +
-				 2 * newlw->label.internal_width);
+				    LEFT_OFFSET(newlw) +
+				    2 * newlw->label.internal_width);
     }
 
-    if (curlw->label.foreground != newlw->label.foreground
+    if (curlw->label.foreground		!= newlw->label.foreground
 	|| curlw->core.background_pixel != newlw->core.background_pixel
-	|| curlw->label.font->fid != newlw->label.font->fid) {
+	|| curlw->label.font->fid	!= newlw->label.font->fid	  ) {
+
+        /* The Fontset is not in the GC - don't make a new GC if FS changes! */
 
 	XtReleaseGC(new, curlw->label.normal_GC);
 	XtReleaseGC(new, curlw->label.gray_GC);
@@ -615,12 +730,14 @@ static XtGeometryResult QueryGeometry(w, intended, preferred)
     Widget w;
     XtWidgetGeometry *intended, *preferred;
 {
-    register LabelWidget lw = (LabelWidget)w;
+    LabelWidget lw = (LabelWidget)w;
 
     preferred->request_mode = CWWidth | CWHeight;
-    preferred->width = (lw->label.label_width + 2 * lw->label.internal_width +
-			LEFT_OFFSET(lw));
-    preferred->height = lw->label.label_height + 2*lw->label.internal_height;
+    preferred->width = (lw->label.label_width + 
+			    2 * lw->label.internal_width +
+			    LEFT_OFFSET(lw));
+    preferred->height = lw->label.label_height + 
+			    2 * lw->label.internal_height;
     if (  ((intended->request_mode & (CWWidth | CWHeight))
 	   	== (CWWidth | CWHeight)) &&
 	  intended->width == preferred->width &&

@@ -1,4 +1,4 @@
-/* $XConsortium: Dialog.h,v 1.25 91/07/22 18:36:42 converse Exp $ */
+/* $XConsortium: Dialog.h,v 1.26 91/07/22 19:05:10 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -28,7 +28,6 @@ SOFTWARE.
 #define _XawDialog_h
 
 #include <X11/Xaw/Form.h>
-#include <X11/Xfuncproto.h>
 
 /***********************************************************************
  *
@@ -84,4 +83,3 @@ extern char *XawDialogGetValueString(
 _XFUNCPROTOEND
 
 #endif /* _XawDialog_h */
-/* DON'T ADD STUFF AFTER THIS #endif */

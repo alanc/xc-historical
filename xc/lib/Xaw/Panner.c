@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.46 93/08/19 09:56:12 rws Exp $
+ * $XConsortium: Panner.c,v 1.45 92/03/03 13:52:26 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,15 +23,18 @@
  * Author:  Jim Fulton, MIT X Consortium
  */
 
-#include <X11/IntrinsicP.h>		/* for toolkit routines */
+#include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>		/* for XtN and XtC defines */
 #include <X11/Xmu/CharSet.h>		/* for XmuCompareISOLatin1() */
 #include <X11/Xaw/XawInit.h>		/* for XawInitializeWidgetSet */
 #include <X11/Xaw/PannerP.h>		/* us */
-#include <X11/Xmu/Misc.h>		/* for Min */
 #include <X11/Xos.h>
+#include <X11/Xmu/Misc.h>		/* for Min */
+#include <X11/Xmu/Drawing.h>
 #include <ctype.h>			/* for isascii() etc. */
 #include <math.h>			/* for atof() */
+
+extern Bool XmuDistinguishablePixels(); /* not defined in any Xmu headers */
 
 #if defined(ISC) && defined(SYSV) && defined(SYSV386) && __STDC__
 extern double atof(char *);
@@ -42,21 +45,21 @@ static char defaultTranslations[] =
    <Btn1Motion>:  move() \n\
    <Btn1Up>:      notify() stop() \n\
    <Btn2Down>:    abort() \n\
-   <Key>KP_Enter: set(rubberband,toggle) \n\
+   :<Key>KP_Enter: set(rubberband,toggle) \n\
    <Key>space:    page(+1p,+1p) \n\
    <Key>Delete:   page(-1p,-1p) \n\
-   <Key>KP_Delete: page(-1p,-1p) \n\
+   :<Key>KP_Delete: page(-1p,-1p) \n\
    <Key>BackSpace: page(-1p,-1p) \n\
    <Key>Left:     page(-.5p,+0) \n\
-   <Key>KP_Left:  page(-.5p,+0) \n\
+   :<Key>KP_Left:  page(-.5p,+0) \n\
    <Key>Right:    page(+.5p,+0) \n\
-   <Key>KP_Right: page(+.5p,+0) \n\
+   :<Key>KP_Right: page(+.5p,+0) \n\
    <Key>Up:       page(+0,-.5p) \n\
-   <Key>KP_Up:    page(+0,-.5p) \n\
+   :<Key>KP_Up:    page(+0,-.5p) \n\
    <Key>Down:     page(+0,+.5p) \n\
-   <Key>KP_Down:  page(+0,+.5p) \n\
+   :<Key>KP_Down:  page(+0,+.5p) \n\
    <Key>Home:     page(0,0) \n\
-   <Key>KP_Home:  page(0,0) ";
+   :<Key>KP_Home:  page(0,0)";
 
 
 static void ActionStart(), ActionStop(), ActionAbort(), ActionMove();
@@ -261,7 +264,7 @@ static void reset_xor_gc (pw)		/* used when resources change */
 
 
 static void check_knob (pw, knob)
-    register PannerWidget pw;
+    PannerWidget pw;
     Boolean knob;
 {
     Position pad = pw->panner.internal_border * 2;
@@ -293,14 +296,14 @@ static void check_knob (pw, knob)
 
 
 static void move_shadow (pw)
-    register PannerWidget pw;
+    PannerWidget pw;
 {
     if (pw->panner.shadow_thickness > 0) {
 	int lw = pw->panner.shadow_thickness + pw->panner.line_width * 2;
 	int pad = pw->panner.internal_border;
 
 	if ((int)pw->panner.knob_height > lw && (int)pw->panner.knob_width > lw) {
-	    register XRectangle *r = pw->panner.shadow_rects;
+	    XRectangle *r = pw->panner.shadow_rects;
 	    r->x = (short) (pw->panner.knob_x + pad + pw->panner.knob_width);
 	    r->y = (short) (pw->panner.knob_y + pad + lw);
 	    r->width = pw->panner.shadow_thickness;
@@ -412,7 +415,7 @@ static Boolean get_event_xy (pw, event, x, y)
 }
 
 static int parse_page_string (s, pagesize, canvassize, relative)
-    register char *s;
+    char *s;
     int pagesize, canvassize;
     Boolean *relative;
 {
@@ -490,6 +493,7 @@ static int parse_page_string (s, pagesize, canvassize, relative)
  *****************************************************************************/
 
 
+/*ARGSUSED*/
 static void Initialize (greq, gnew, args, num_args)
     Widget greq, gnew;
     ArgList args;

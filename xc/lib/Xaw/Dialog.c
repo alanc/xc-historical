@@ -1,4 +1,4 @@
-/* $XConsortium: Dialog.c,v 1.45 91/03/21 14:38:27 dave Exp $ */
+/* $XConsortium: Dialog.c,v 1.46 91/10/16 21:33:56 eswu Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -29,9 +29,8 @@ SOFTWARE.
    than just directly making your own form. */
 
 
-#include <X11/Xlib.h>
-#include <X11/Xos.h>
 #include <X11/IntrinsicP.h>
+#include <X11/Xos.h>
 #include <X11/StringDefs.h>
 #include <X11/Xmu/Misc.h>
 
@@ -313,7 +312,7 @@ Cardinal * num_args;
   Arg a[1];
   String s;
   DialogWidget src = (DialogWidget) w;
-  register int i;
+  int i;
   
   for (i=0; i < *num_args; i++)
     if (streq(args[i].name, XtNvalue)) {
@@ -352,8 +351,8 @@ Widget w;
     XtSetArg(arglist[num_args], XtNleft, XtChainLeft);            num_args++;
     XtSetArg(arglist[num_args], XtNright, XtChainRight);          num_args++;
 
-    dw->dialog.valueW = XtCreateWidget("value",asciiTextWidgetClass,
-				       w, arglist, num_args);
+    dw->dialog.valueW = XtCreateWidget("value", asciiTextWidgetClass,
+				     w, arglist, num_args);
 
     /* if the value widget is being added after buttons,
      * then the buttons need new layout constraints.
@@ -401,7 +400,7 @@ XtPointer param;
     Widget button;
 
     button = XtCreateManagedWidget( name, commandWidgetClass, dialog, 
-				    NULL, (Cardinal) 0 );
+				    (ArgList)NULL, (Cardinal)0 );
 
     if (function != NULL)	/* don't add NULL callback func. */
         XtAddCallback(button, XtNcallback, function, param);

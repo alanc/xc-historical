@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: MenuButton.h,v 1.7 89/12/11 14:57:44 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -83,4 +83,4 @@ extern WidgetClass     menuButtonWidgetClass;
 typedef struct _MenuButtonClassRec   *MenuButtonWidgetClass;
 typedef struct _MenuButtonRec        *MenuButtonWidget;
 
-#endif /* _XawMenuButton_h --  DON'T ADD STUFF AFTER THIS */
+#endif /* _XawMenuButton_h */

@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: ListP.h,v 1.12 89/12/11 15:09:04 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -27,10 +27,8 @@
 /* 
  * ListP.h - Private definitions for List widget
  * 
- * This is the List widget, it is useful to display a list, without the
- * overhead of having a widget for each item in the list.  It allows 
- * the user to select an item in a list and notifies the application through
- * a callback function.
+ * This is a List widget.  It allows the user to select an item in a list and
+ * notifies the application through a callback function.
  *
  *	Created: 	8/13/88
  *	By:		Chris D. Peterson
@@ -70,31 +68,33 @@ extern ListClassRec listClassRec;
 typedef struct {
     /* resources */
     Pixel	foreground;
-    Dimension	internal_width,
+    Dimension	internal_width, /* if not 3d, user sets directly. */
         	internal_height,
-                column_space,
-                row_space;
+                column_space,	/* half of *_space is add on top/bot/left of*/
+                row_space;	/* each item's text bounding box. half added to longest for right */
     int         default_cols;
     Boolean     force_cols,
                 paste,
                 vertical_cols;
-    int         longest;
+    int         longest;	/* in pixels */
     int         nitems;		/* number of items in the list. */
     XFontStruct	*font;
-    String *    list;
-    XtCallbackList  callback;
+    XFontSet 	fontset;	/* Sheeran, Omron KK, 93/03/05 */
+    String *    list;		/* for i18n, always in multibyte format */
+    XtCallbackList callback;
 
     /* private state */
-
     int         is_highlighted,	/* set to the item currently highlighted. */
-                highlight,	/*set to the item that should be highlighted.*/
+                highlight,	/* set to the item that should be highlighted.*/
                 col_width,	/* width of each column. */
                 row_height,	/* height of each row. */
                 nrows,		/* number of rows in the list. */
                 ncols;		/* number of columns in the list. */
-    GC		normgc,		/* a couple o' GC's. */
+    GC		normgc,		/* a couple of GC's. */
                 revgc,
                 graygc;		/* used when inactive. */
+
+    int         freedoms;       /* flags for resizing height and width */
 
 } ListPart;
 

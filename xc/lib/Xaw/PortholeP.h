@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: PortholeP.h,v 1.1 90/02/28 18:07:32 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -26,9 +26,7 @@
 #ifndef _XawPortholeP_h
 #define _XawPortholeP_h
 
-#include <X11/CompositeP.h>
 #include <X11/Xaw/Porthole.h>
-
 
 typedef struct {			/* new fields in widget class */
     int dummy;
