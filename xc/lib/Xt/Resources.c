@@ -1,4 +1,4 @@
-/* $XConsortium: Resources.c,v 1.95 91/01/30 09:16:16 rws Exp $ */
+/* $XConsortium: Resources.c,v 1.96 91/02/01 09:52:25 rws Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -477,12 +477,12 @@ static XtCacheRef *GetResources(widget, base, names, classes,
     int		    typed[400];
     XtCacheRef	    cache_ref[400];
     int		    cache_ref_size = 0;
-    Display	    *dpy;
     Boolean	    persistent_resources = True;
     Boolean	    found_persistence = False;
     int		    num_typed_args = *pNumTypedArgs;
     XrmDatabase     db;
     Boolean	    do_tm_hack = False;
+    XrmDatabase     _XtScreenDatabase();
 
     if ((args == NULL) && (num_args != 0)) {
     	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
@@ -505,8 +505,6 @@ static XtCacheRef *GetResources(widget, base, names, classes,
     bzero((char *) found, (int) (num_resources * sizeof(Boolean)));
     bzero((char *) typed, (int) (num_resources * sizeof(int)));
 
-    dpy = XtDisplayOfObject(widget);
-    
     /* Copy the args into the resources, mark each as found */
     {
 	register ArgList	    arg;
@@ -564,7 +562,7 @@ static XtCacheRef *GetResources(widget, base, names, classes,
     /* Ask resource manager for a list of database levels that we can
        do a single-level search on each resource */
 
-    db = XrmGetDatabase(dpy);
+    db = _XtScreenDatabase(XtScreenOfObject(widget));
     status = XrmQGetSearchList(db, names, classes,
 			       searchList, searchListSize);
 
