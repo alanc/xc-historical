@@ -1,4 +1,4 @@
-/* $XConsortium: TekCMS_LT.c,v 1.5 91/05/14 15:02:53 dave Exp $ */
+/* $XConsortium: TekCMS_LT.c,v 1.6 91/05/14 15:27:14 rws Exp $ */
 
 /*
  * (c) Copyright 1990, Tektronix Inc.
@@ -46,7 +46,6 @@
  *              program using this package.
  */
 #include "LibTest.h"
-#include <X11/Xlib.h>
 
 
 /*
