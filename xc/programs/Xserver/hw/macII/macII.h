@@ -12,7 +12,7 @@
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- *	"$Header: macII.h,v 1.3 88/02/29 18:24:14 x Locked $ SPRITE (Berkeley)"
+ *	"$Header: macII.h,v 1.4 88/03/07 12:54:22 x Locked $ SPRITE (Berkeley)"
  */
 #ifndef _MACII_H_
 #define _MACII_H_
@@ -270,7 +270,6 @@ extern int	  isItTimeToYield;
 extern int  	  macIICheckInput;    /* Non-zero if input is available */
 
 extern fbFd 	  macIIFbs[];
-extern Bool	  screenSaved;		/* True is screen is being saved */
 
 extern int  	  lastEventTime;    /* Time (in ms.) of last event */
 extern void 	  SetTimeSinceLastInputEvent();
