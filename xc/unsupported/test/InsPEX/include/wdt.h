@@ -1,5 +1,5 @@
 
-/* $XConsortium: wdt.h,v 5.3 91/07/15 12:19:22 hersh Exp $ */
+/* $XConsortium: wdt.h,v 5.4 91/07/24 18:44:18 hersh Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -557,8 +557,8 @@ Pws_st_tables ws_tbl_lengths  =  { 20, 20, 20, 20, 20, 0, 256, 6 };
 
 Pint  num_locator_dev = 3;
 Pint  num_stroke_dev = 1;
-Pint  num_valuator_dev = 1;
-Pint  num_choice_dev = 1;
+Pint  num_valuator_dev = 12;
+Pint  num_choice_dev = 3;
 Pint  num_pick_dev = 1;
 Pint  num_string_dev = 1;
 
