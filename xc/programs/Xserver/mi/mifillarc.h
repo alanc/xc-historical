@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mifillarc.h,v 5.1 89/10/26 20:00:56 rws Exp $ */
+/* $XConsortium: mifillarc.h,v 5.2 89/11/05 15:16:21 rws Exp $ */
 
 #define FULLCIRCLE (360 * 64)
 
@@ -123,3 +123,40 @@ typedef struct _miArcSlice {
 	xl = slice.edge1.x; \
     if (!slice.edge2_top && (slice.edge2.x < xr)) \
 	xr = slice.edge2.x;
+
+#define MIWIDEARCSETUP(x,y,dy,slw,e,xk,ex) \
+    x = 0; \
+    y = slw >> 1; \
+    if (dy) \
+    { \
+	if (slw & 1) \
+	    e = -1; \
+	else \
+	    e = -(y << 2) - 2; \
+	xk = 0; \
+    } \
+    else \
+    { \
+	y++; \
+	if (slw & 1) \
+	    e = -(y << 2) - 3; \
+	else \
+	    e = - (y << 3); \
+	xk = 4; \
+    } \
+    ex = -xk
+
+#define MIFILLINCIRCSTEP(slw) \
+    ine += (iny << 3) - inxk; \
+    while (ine >= 0) \
+    { \
+	inx++; \
+	ine += (inex = -((inx << 3) + inxk)); \
+    } \
+    iny--; \
+    slw = (inx << 1) + dx; \
+    if ((ine == inex) && (slw > 1)) \
+	slw--
+
+#define miFillInArcLower(slw) (((iny + dy) != 0) && \
+			       ((slw > 1) || (ine != inex)))
