@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.130 91/01/10 17:16:28 converse Exp $ */
+/* $XConsortium: TMstate.c,v 1.131 91/01/23 09:44:25 rws Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -1422,9 +1422,10 @@ void _XtAddEventSeqToStateTree(eventSeq, stateTree)
      */
     
     /*
-     * Check for optimized case. Assume that the eventSeq has actions.
+     * Check for optimized case. Don't assume that the eventSeq has actions.
      */
     if (!eventSeq->next && 
+	 eventSeq->actions && 
 	!eventSeq->actions->next && 
 	!eventSeq->actions->num_params)
       {
