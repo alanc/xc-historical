@@ -1,3 +1,4 @@
+XCOMM $XConsortium$
 XCOMM
 XCOMM Xservers file, workstation prototype
 XCOMM

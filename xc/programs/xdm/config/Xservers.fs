@@ -1,3 +1,4 @@
+# $XConsortium$
 #
 # Xservers file, fileserver prototype (any machine without a display)
 #

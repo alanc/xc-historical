@@ -1,5 +1,6 @@
 #!/bin/sh
 # Assign ownership of the console to the invoking user
+# $XConsortium$
 #
 # By convention, both xconsole and xterm -C check that the
 # console is owned by the invoking user and is readable before attaching

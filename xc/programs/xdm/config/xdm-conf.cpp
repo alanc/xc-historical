@@ -1,3 +1,4 @@
+! $XConsortium$
 DisplayManager.errorLogFile:	XDMDIR/xdm-errors
 DisplayManager.pidFile:		XDMDIR/xdm-pid
 DisplayManager.keyFile:		XDMDIR/xdm-keys
