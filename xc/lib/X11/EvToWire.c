@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: XEvToWire.c,v 11.17 88/09/19 13:55:52 jim Exp $
  */
 
 #include "copyright.h"
@@ -17,7 +17,6 @@
 /*
  * reformat a wire event into an XEvent structure of the right type.
  */
-/*ARGSUSED*/
 Status
 _XEventToWire(dpy, re, event)
 register Display *dpy;	/* pointer to display structure */
