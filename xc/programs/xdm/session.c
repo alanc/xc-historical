@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.16 89/06/21 10:14:28 jim Exp $
+ * $XConsortium: session.c,v 1.17 89/06/21 10:45:58 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -50,7 +50,7 @@ struct display	*d;
 	Display			*dpy, *InitGreet ();
 
 	Debug ("ManageSession %s\n", d->name);
-	SetTitle(d->name, "s");
+	SetTitle(d->name, " session", (char *) 0);
 	/*
 	 * Step 5: Load system default Resources
 	 */
