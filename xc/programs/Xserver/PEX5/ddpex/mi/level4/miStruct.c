@@ -1,4 +1,4 @@
-/* $XConsortium: miStruct.c,v 5.9 92/05/07 17:08:09 hersh Exp $ */
+/* $XConsortium: miStruct.c,v 5.10 92/10/05 18:43:33 hersh Exp $ */
 
 
 /***********************************************************
@@ -2431,9 +2431,6 @@ ValidateStructurePath(pPath)
 
 	for (i = pPath->numObj; i > 0; i--, pPickPath++) {
 
-	    /* dont' check what the last element is */
-	    if (i == 1) break;
-
 	    pStruct = pPickPath->structure;
 	    if (pNextStruct != pStruct) return (PEXERR(PEXPathError));
 
@@ -2455,6 +2452,9 @@ ValidateStructurePath(pPath)
 	    }
 
 	    if (pickId != pPickPath->pickid) return (PEXERR(PEXPathError));
+
+	    /* dont' check what the last element is */
+	    if (i == 1) break;
 
 	    if (MISTR_EL_TYPE(p_element) != PEXOCExecuteStructure)
 		return (PEXERR(PEXPathError));
