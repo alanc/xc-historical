@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: XScrnSaver.c,v 1.1 92/02/13 16:08:14 keith Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -73,14 +73,14 @@ static Bool wire_to_event (dpy, re, event)
     xEvent  *event;
 {
     XExtDisplayInfo *info = find_display (dpy);
-    XScreenSaverEvent		*se;
+    XScreenSaverNotifyEvent	*se;
     xScreenSaverNotifyEvent	*sevent;
 
     ScreenSaverCheckExtension (dpy, info, False);
 
     switch ((event->u.u.type & 0x7f) - info->codes->first_event) {
     case ScreenSaverNotify:
-    	se = (XScreenSaverEvent *) re;
+    	se = (XScreenSaverNotifyEvent *) re;
 	sevent = (xScreenSaverNotifyEvent *) event;
     	se->type = sevent->type & 0x7f;
     	se->serial = _XSetLastRequestRead(dpy,(xGenericReply *) event);
@@ -89,7 +89,7 @@ static Bool wire_to_event (dpy, re, event)
     	se->window = sevent->window;
     	se->window = sevent->root;
     	se->state = sevent->state;
-	se->saverType = sevent->saverType;
+	se->kind = sevent->kind;
 	se->forced = True;
 	if (sevent->forced == xFalse)
 	    se->forced = False;
@@ -105,21 +105,21 @@ static Status event_to_wire (dpy, re, event)
     xEvent  *event;
 {
     XExtDisplayInfo *info = find_display (dpy);
-    XScreenSaverEvent		*se;
+    XScreenSaverNotifyEvent	*se;
     xScreenSaverNotifyEvent	*sevent;
 
     ScreenSaverCheckExtension (dpy, info, 0);
 
     switch ((re->type & 0x7f) - info->codes->first_event) {
     case ScreenSaverNotify:
-    	se = (XScreenSaverEvent *) re;
+    	se = (XScreenSaverNotifyEvent *) re;
 	sevent = (xScreenSaverNotifyEvent *) event;
     	sevent->type = se->type | (se->send_event ? 0x80 : 0);
     	sevent->sequenceNumber = se->serial & 0xffff;
     	sevent->root = se->root;
     	sevent->window = se->window;
     	sevent->state = se->state;
-	sevent->saverType = se->saverType;
+	sevent->kind = se->kind;
 	sevent->forced = xFalse;
 	if (se->forced == True)
 	    sevent->forced = xTrue;
@@ -128,7 +128,6 @@ static Status event_to_wire (dpy, re, event)
     }
     return 0;
 }
-
 
 /****************************************************************************
  *                                                                          *
@@ -211,9 +210,9 @@ Status XScreenSaverQueryInfo (dpy, drawable, saver_info)
     SyncHandle ();
     saver_info->window = rep.window;
     saver_info->state = rep.state;
-    saver_info->type = rep.saverType;
-    saver_info->tilOrSince = rep.tilOrSince;
-    saver_info->tilCycle = rep.cycle;
+    saver_info->kind = rep.kind;
+    saver_info->til_or_since = rep.tilOrSince;
+    saver_info->idle = rep.idle;
     saver_info->eventMask = rep.eventMask;
     return 1;
 }
@@ -302,3 +301,74 @@ void XScreenSaverUnsetAttributes (dpy, drawable)
     SyncHandle ();
 }
 
+
+Status XScreenSaverRegister (dpy, screen, xid, type)
+    Display *dpy;
+    int screen;
+    XID xid;
+    Atom type;
+{
+    Atom prop;
+    unsigned long ul;
+
+    prop = XInternAtom (dpy, ScreenSaverPropertyName, False);
+    if (!prop)
+	return 0;
+
+    ul = (unsigned long) xid;
+    XChangeProperty (dpy, RootWindow(dpy,screen), prop, type, 32, 
+		     PropModeReplace, (unsigned char *) &ul, 1);
+    return 1;
+}
+
+
+
+Status XScreenSaverUnregister (dpy, screen)
+    Display *dpy;
+    int screen;
+{
+    Atom prop;
+
+    prop = XInternAtom (dpy, ScreenSaverPropertyName, False);
+    if (!prop)
+	return 0;
+
+    XDeleteProperty (dpy, RootWindow(dpy,screen), prop);
+    return 1;
+}
+
+
+
+Status XScreenSaverGetRegistered (dpy, screen, xid, type)
+    Display *dpy;
+    int screen;
+    XID *xid;
+    Atom *type;
+{
+    Atom actual_type = None;
+    int actual_format;
+    unsigned long nitems, bytesafter;
+    unsigned long *ulp = (unsigned long *) 0;
+    Atom prop;
+    int retval = 0;
+
+    prop = XInternAtom (dpy, ScreenSaverPropertyName, False);
+    if (!prop)
+	return retval;
+
+    if (XGetWindowProperty (dpy, RootWindow(dpy,screen), prop, 0L, 1L, False,
+			    AnyPropertyType, &actual_type,  &actual_format,
+			    &nitems, &bytesafter, (unsigned char **) &ulp)
+	!= Success)
+	return retval;
+
+    if (ulp) {
+	if (actual_format == 32) {
+	    *xid = (XID) ulp[0];
+	    *type = actual_type;
+	    retval = 1;
+	}
+	XFree ((char *) ulp);
+    }
+    return retval;
+}	
