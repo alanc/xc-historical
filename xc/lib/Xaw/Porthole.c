@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Porthole.c,v 1.8 90/03/07 15:36:06 jim Exp $
+ * $XConsortium: Porthole.c,v 1.9 90/03/07 16:05:34 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -30,6 +30,7 @@
 #include <X11/StringDefs.h>		/* get XtN and XtC defines */
 #include <X11/Xaw/XawInit.h>		/* get Xaw initialize stuff */
 #include <X11/Xaw/PortholeP.h>		/* get porthole structs */
+#include <X11/Xmu/Misc.h>		/* for MAX */
 
 
 /*
@@ -333,8 +334,6 @@ static void ChangeManaged (gw)
     Widget child = find_child (pw);	/* ignore extra children */
 
     if (child) {
-	child->core.border_width = 0;
-
 	if (!XtIsRealized (gw)) {
 	    XtWidgetGeometry geom, retgeom;
 
@@ -353,6 +352,10 @@ static void ChangeManaged (gw)
 	        (void) XtMakeGeometryRequest (gw, &retgeom, NULL);
 	    }
 	}
+	
+	XtResizeWidget (child, Max (child->core.width, pw->core.width),
+			Max (child->core.height, pw->core.height), 0);
+
 	SendReport (pw, XawPRAll);
     }
 }
