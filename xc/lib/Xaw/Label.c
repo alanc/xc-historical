@@ -1,4 +1,4 @@
-ifndef lint
+#ifndef lint
 static char *sccsid = "@(#)Label.c	1.15	2/25/87";
 #endif lint
 
