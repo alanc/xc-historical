@@ -16,10 +16,10 @@ of the window on the output page.
 .PP
 .TP
 .B -P\fIprinter\fP
-The printer argument for the lpr command can be set in the usual way.
+This option specifies the name of the printer to be used.
 .TP
 .B \-display \fIhost\fP:\fIdisplay\fP
-The host/display number can also be specified in the usual way.
+This option specifies the X server to contact.
 .PP
 Any other arguments 
 will be passed as arguments to the 
