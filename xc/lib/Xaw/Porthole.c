@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Porthole.c,v 1.7 90/03/07 15:25:49 jim Exp $
+ * $XConsortium: Porthole.c,v 1.8 90/03/07 15:36:06 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -353,6 +353,6 @@ static void ChangeManaged (gw)
 	        (void) XtMakeGeometryRequest (gw, &retgeom, NULL);
 	    }
 	}
-	SendReport (pw);
+	SendReport (pw, XawPRAll);
     }
 }
