@@ -40,14 +40,14 @@ static char rcsid[] = "$Header: Scroll.c,v 1.15 88/01/07 14:21:20 swick Locked $
 
 static char *defaultTranslationTable[] = {
     "<Btn1Down>:   StartScroll(Forward)",
-    "<Btn2Down>:   StartScroll(Continuous) DoThumb()",
+    "<Btn2Down>:   StartScroll(Continuous) MoveThumb() NotifyThumb()",
     "<Btn3Down>:   StartScroll(Backward)",
-    "<Btn2Motion>: DoThumb()",
-    "Any<BtnUp>:   DoScroll(Proportional) EndScroll()", /* ||| 'Any' should default */
+    "<Btn2Motion>: MoveThumb() NotifyThumb()",
+    "Any<BtnUp>:   NotifyScroll(Proportional) EndScroll()", /* ||| 'Any' should default */
 #ifdef bogusScrollKeys
     /* examples */
-    "<KeyPress>f:  StartScroll(Forward) DoScroll(FullLength) EndScroll()",
-    "<KeyPress>b:  StartScroll(Backward) DoScroll(FullLength) EndScroll()",
+    "<KeyPress>f:  StartScroll(Forward) NotifyScroll(FullLength) EndScroll()",
+    "<KeyPress>b:  StartScroll(Backward) NotifyScroll(FullLength) EndScroll()",
 #endif
     NULL
 };
@@ -107,14 +107,16 @@ static void Redisplay();
 static Boolean SetValues();
 
 static void StartScroll();
-static void DoThumb();
-static void DoScroll();
+static void MoveThumb();
+static void NotifyThumb();
+static void NotifyScroll();
 static void EndScroll();
 
 static XtActionsRec actions[] = {
 	{"StartScroll",		StartScroll},
-	{"DoThumb",		DoThumb},
-	{"DoScroll",		DoScroll},
+	{"MoveThumb",		MoveThumb},
+	{"NotifyThumb",		NotifyThumb},
+	{"NotifyScroll",	NotifyScroll},
 	{"EndScroll",		EndScroll},
 	{NULL,NULL}
 };
@@ -467,7 +469,7 @@ static void StartScroll( gw, event, params, num_params )
 }
 
 
-static void DoScroll( gw, event, params, num_params   )
+static void NotifyScroll( gw, event, params, num_params   )
    Widget gw;
    XEvent *event;
    String *params;		/* style: Proportional|FullLength */
@@ -502,7 +504,7 @@ static void DoScroll( gw, event, params, num_params   )
 	             break;
 
         case 'C':
-	case 'c':    /* DoThumb has already called the thumbProc(s) */
+	case 'c':    /* NotifyThumb has already called the thumbProc(s) */
 		     break;
     }
 }
@@ -524,7 +526,7 @@ static void EndScroll(gw, event, params, num_params )
 
 
 /* ARGSUSED */
-static void DoThumb( gw, event, params, num_params )
+static void MoveThumb( gw, event, params, num_params )
    Widget gw;
    XEvent *event;
    String *params;		/* unused */
@@ -537,6 +539,19 @@ static void DoThumb( gw, event, params, num_params )
     w->scrollbar.top = FractionLoc(w, event->xmotion.x, event->xmotion.y);
     PaintThumb(w);
     XFlush(XtDisplay(w));
+}
+
+
+/* ARGSUSED */
+static void NotifyThumb( gw, event, params, num_params )
+   Widget gw;
+   XEvent *event;
+   String *params;		/* unused */
+   Cardinal num_params;		/* unused */
+{
+    register ScrollbarWidget w = (ScrollbarWidget) gw;
+
+    if (w->scrollbar.direction == 0) return; /* if no StartScroll */
 
     XtCallCallbacks( gw, XtNthumbProc, w->scrollbar.top);
 }
