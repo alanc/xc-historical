@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.87 90/04/05 17:07:10 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.88 90/04/18 13:37:27 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif /* lint */
 
@@ -1534,14 +1534,13 @@ static Bool isMine(dpy, event, arg)
 		    q->done = TRUE;
 		    return TRUE;
 		}
-	    return FALSE;
 	}
 	else if (event->type == ConfigureNotify ||
 		 (event->type == ClientMessage &&
 		  (event->xclient.message_type == WM_CONFIGURE_DENIED(w) ||
 		   event->xclient.message_type == WM_MOVED(w))))
 	    return TRUE;	/* flush old events */
-	else if (event->type == ReparentNotify
+	if (event->type == ReparentNotify
 		 && event->xreparent.window == XtWindow(w)) {
 	    /* we might get ahead of this event, so just in case someone
 	     * asks for coordinates before this event is dispatched...
