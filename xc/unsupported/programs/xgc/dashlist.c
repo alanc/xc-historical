@@ -16,7 +16,11 @@
 #include <X11/Xaw/Toggle.h>
 #include "xgc.h"
 
-static void change_dashlist();
+static void change_dashlist(
+#if NeedFunctionPrototypes
+     Widget, caddr_t, caddr_t
+#endif
+);
 extern void interpret();
 
 extern XStuff X;

@@ -15,7 +15,11 @@
 
 #include "xgc.h"
 
-static void print_text_to_buffer();
+static void print_text_to_buffer(
+#if NeedFunctionPrototypes
+     Widget, caddr_t, caddr_t
+#endif
+);
 extern void interpret();
 
 extern XStuff X;

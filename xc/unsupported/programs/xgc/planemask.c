@@ -16,7 +16,11 @@
 #include <X11/Xaw/Toggle.h>
 #include "xgc.h"
 
-static void choose_plane();
+static void choose_plane(
+#if NeedFunctionPrototypes
+     Widget, caddr_t, caddr_t
+#endif
+);
 extern void interpret();
 
 extern XStuff X;
