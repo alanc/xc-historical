@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mipolyrect.c,v 5.3 90/11/27 22:42:26 keith Exp $ */
+/* $XConsortium: mipolyrect.c,v 5.4 91/02/22 18:27:00 keith Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 #include "miscstruct.h"
@@ -72,6 +72,14 @@ miPolyRectangle(pDraw, pGC, nrects, pRects)
 		rect[1].y = y;
 		(*pGC->ops->Polylines)(pDraw, pGC, CoordModeOrigin, 2, rect);
 	    }
+	    else if (height < offset2 || width < offset1)
+	    {
+		t->x = x - offset1;
+		t->y = y - offset1;
+		t->width = width + offset2;
+		t->height = height + offset2;
+		t++;
+	    }
 	    else
 	    {
 	    	t->x = x - offset1;
@@ -96,7 +104,7 @@ miPolyRectangle(pDraw, pGC, nrects, pRects)
 	    	t++;
 	    }
 	}
-	(*pGC->ops->PolyFillRect) (pDraw, pGC, ntmp, tmp);
+	(*pGC->ops->PolyFillRect) (pDraw, pGC, t - tmp, tmp);
 	DEALLOCATE_LOCAL ((pointer) tmp);
     }
     else
