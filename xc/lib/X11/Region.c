@@ -1,4 +1,4 @@
-/* $XConsortium: XRegion.c,v 11.28 90/12/26 16:24:42 rws Exp $ */
+/* $XConsortium: XRegion.c,v 11.29 91/01/09 15:16:08 rws Exp $ */
 /************************************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -48,7 +48,7 @@ SOFTWARE.
  * the y-x-banding that's so nice to have...
  */
 
-#include "Xlib.h"
+#include "Xlibint.h"
 #include "Xutil.h"
 #include "region.h"
 #include "poly.h"
