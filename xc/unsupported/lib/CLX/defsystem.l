@@ -16,7 +16,7 @@
 ;;; express or implied warranty.
 ;;;
 
-(in-package 'xlib :use '(lisp))
+(lisp:in-package 'xlib :use '(lisp))
 
 (export '(
 	  compile-clx
