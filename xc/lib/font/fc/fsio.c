@@ -1,6 +1,5 @@
-/* $XConsortium: fsio.c,v 1.20 91/07/19 16:37:48 rws Exp $ */
+/* $XConsortium: fsio.c,v 1.21 91/07/19 20:55:30 rws Exp $ */
 /*
- *
  * Copyright 1990 Network Computing Devices
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
@@ -23,8 +22,6 @@
  * OR PERFORMANCE OF THIS SOFTWARE.
  *
  * Author:  	Dave Lemke, Network Computing Devices, Inc
- *
- * $NCDId: @(#)fsio.c,v 1.7 1991/07/02 13:13:43 lemke Exp $
  */
 /*
  * font server i/o routines
@@ -213,8 +210,6 @@ _fs_setup_connection(conn, servername, timeout)
     conn->fs_fd = _fs_connect(servername, 5);
     if (conn->fs_fd < 0)
 	return FALSE;
-    conn->servername = (char *) xalloc(strlen(servername) + 1);
-    strcpy(conn->servername, servername);
 
     conn->generation = ++generationCount;
 
@@ -237,6 +232,10 @@ _fs_setup_connection(conn, servername, timeout)
 
     /* read setup info */
     if (_fs_read(conn, (char *) &rep, sizeof(fsConnSetup)) == -1)
+	return FALSE;
+
+    conn->fsMajorVersion = rep.major_version;
+    if (rep.major_version > FS_PROTOCOL)
 	return FALSE;
 
     alts = 0;
@@ -307,6 +306,11 @@ _fs_setup_connection(conn, servername, timeout)
     }
     xfree(auth_data);
     xfree(vendor_string);
+
+    conn->servername = (char *) xalloc(strlen(servername) + 1);
+    if (conn->servername == NULL)
+	return FALSE;
+    strcpy(conn->servername, servername);
 
     return TRUE;
 }
