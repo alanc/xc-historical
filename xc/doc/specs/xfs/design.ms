@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: design.ms,v 1.4 91/08/15 12:17:40 rws Exp $
 .\" roff -ms
 .de Ip
 .IP \(bu 3
@@ -12,7 +12,7 @@
 .de LS
 .KS
 .LD
-.ft CW
+.ft CB
 .ta .6i 1.2i 1.8i 2.4i 3i 3.6i 4.2i
 ..
 .de LE
