@@ -1,5 +1,5 @@
 .\" Use eqn, tbl, and -ms
-.\" $XConsortium: xdmcp.ms,v 1.16 89/09/06 13:25:41 keith Exp $
+.\" $XConsortium: xdmcp.ms,v 1.17 89/12/13 18:43:11 keith Exp $
 .EQ
 delim @@
 define oc % "\\fR{\\fP" %
@@ -18,9 +18,11 @@ define cc % "\\fR}\\fP" %
 .TL
 \s+2\fBX Display Manager Control Protocol\fP\s-2
 .sp
+Version 1.0
+.sp
 MIT X Consortium Standard
 .sp
-Version 1.0
+X Version 11, Release 5
 .AU
 Keith Packard
 .AI

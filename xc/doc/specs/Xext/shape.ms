@@ -1,5 +1,5 @@
 .\" Use -ms and macros.t
-.\" $XConsortium: shape.ms,v 1.11 89/12/20 12:08:30 keith Exp $
+.\" $XConsortium: shape.ms,v 1.12 91/06/17 14:45:08 rws Exp $
 .EH ''''
 .OH ''''
 .EF ''''
@@ -11,9 +11,10 @@
 .ce 1
 \s+2\fBX11 NONRECTANGULAR WINDOW SHAPE EXTENSION\fP\s-2
 .sp 3
-.ce 2
-MIT X Consortium Standard
+.ce 3
 Version 1.0
+MIT X Consortium Standard
+X Version 11, Release 5
 .sp 6
 .ce 4
 \s-1Keith Packard
