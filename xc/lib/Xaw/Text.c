@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.106 89/08/17 19:10:51 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.107 89/08/17 19:18:25 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -1606,7 +1606,7 @@ XawTextBlock *text;
   if (delta != 0) {
     XawTextLineTableEntry *lineP;
     i = LineForPosition(ctx, pos1) + 1;
-    for (lineP = ctx->text.lt.info + i; i < ctx->text.lt.lines; i++, lineP++)
+    for (lineP = ctx->text.lt.info + i; i <= ctx->text.lt.lines; i++, lineP++)
       lineP->position += delta;
   }
   
