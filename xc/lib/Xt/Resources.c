@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Resources.c,v 1.76 89/11/08 17:45:05 swick Exp $";
+    "$XConsortium: Resources.c,v 1.77 89/11/10 17:39:56 swick Exp $";
 /* $oHeader: Resources.c,v 1.6 88/09/01 13:39:14 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -461,7 +461,7 @@ static XtCacheRef *GetResources(widget, base, names, classes,
     unsigned int    searchListSize = SEARCHLISTLEN;
     Bool            status;
     Boolean	    found[400];
-    Boolean	    typed[400];
+    int		    typed[400];
     XtCacheRef	    cache_ref[400];
     int		    cache_ref_size = 0;
     Display	    *dpy;
@@ -487,7 +487,7 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 
     /* Mark each resource as not found on arg list */
     bzero((char *) found, (int) (num_resources * sizeof(Boolean)));
-    bzero((char *) typed, (int) (num_resources * sizeof(Boolean)));
+    bzero((char *) typed, (int) (num_resources * sizeof(int)));
 
     dpy = XtDisplayOfObject(widget);
     
@@ -531,7 +531,7 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 		rx = *res;
 		if (argName == rx->xrm_name) {
 		    if (typed_arg->type != NULL) {
-			typed[j] = TRUE;
+			typed[j] = i + 1;
 		    } else {
 			_XtCopyFromArg(
 				       typed_arg->value,
@@ -600,29 +600,23 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 	    rx = *res;
 	    xrm_type = rx->xrm_type;
 	    if (typed[j]) {
+		register XtTypedArg* arg = typed_args + typed[j] - 1;
+
 		/*
                  * This resource value has been specified as a typed arg and 
 		 * has to be converted. Typed arg conversions are done here 
 		 * to correctly interpose them with normal resource conversions.
                  */
-                register int        i;                  
 		XrmQuark	    from_type;
 		XrmValue            from_val, to_val;
 		Boolean		    converted;
                  
-                for (i = 0; i < num_typed_args; i++) { 
-                    if (quark_args[i] == rx->xrm_name) 
-                        break; 
-                }                         
-
-		from_type = StringToQuark((typed_args+i)->type);
-    		from_val.size = (typed_args+i)->size;
-		if ((from_type == QString) ||
-			((typed_args+i)->size > sizeof(XtArgVal))) {
-        	    from_val.addr = (caddr_t)(typed_args+i)->value;
-    		} else {
-            	    from_val.addr = (caddr_t)&(typed_args+i)->value;
-    		}
+		from_type = StringToQuark(arg->type);
+    		from_val.size = arg->size;
+		if ((from_type == QString) || (arg->size > sizeof(XtArgVal)))
+        	    from_val.addr = (caddr_t)arg->value;
+	        else
+            	    from_val.addr = (caddr_t)&arg->value;
 		to_val.size = rx->xrm_size;
 		to_val.addr = base - rx->xrm_offset - 1;
 		converted = _XtConvert(widget, from_type, &from_val,
@@ -648,11 +642,10 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 		     */
 
 		    if(rx->xrm_size > sizeof(XtArgVal)) {
-			(typed_args+i)->value =
-			    (XtArgVal)(vp = XtMalloc(rx->xrm_size));
-			(typed_args+i)->size = -(typed_args+i)->size;
+			arg->value = (XtArgVal)(vp = XtMalloc(rx->xrm_size));
+			arg->size = -(arg->size);
 		    } else { /* will fit - copy directly into value field */
-			vp = (char *)&((typed_args+i)->value);
+			vp = (char *)&arg->value;
 		    }
 
 		    XtBCopy((char *)(base - rx->xrm_offset - 1), vp, rx->xrm_size);
@@ -671,7 +664,6 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 	    if (!found[j]) {
 		Boolean	already_copied = False;
 		Boolean have_value = False;
-		register int	i;
 
 		if (XrmQGetSearchResource(searchList,
 			rx->xrm_name, rx->xrm_class, &rawType, &value)) {
@@ -758,22 +750,19 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 		}
 
 		if (typed[j]) {
+		    register XtTypedArg* arg = typed_args + typed[j] - 1;
 		    /*
 		     * This resource value was specified as a typed arg. 
 		     * However, the default value is being used here since the 
 		     * type conversion failed.
 		     */
-		     for (i = 0; i < num_typed_args; i++) {
-			if (quark_args[i] == rx->xrm_name)
-			    break;
-		     }
-		    if(rx->xrm_size >= (sizeof((typed_args+i)->value))) {
-			XtBCopy(base - rx->xrm_offset - 1, &((typed_args+i)->value),
-			    (sizeof((typed_args+i)->value)));
+		    if(rx->xrm_size >= sizeof(arg->value)) {
+			XtBCopy(base - rx->xrm_offset - 1, &arg->value,
+			    sizeof(arg->value));
 			}
 		    else {
-			XtBCopy(base - rx->xrm_offset - 1, 
-			    &((typed_args+i)->value), rx->xrm_size);
+			XtBCopy(base - rx->xrm_offset - 1,
+			    &arg->value, rx->xrm_size);
 		    }
 		}
 	    } 
