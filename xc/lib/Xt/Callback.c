@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Callback.c,v 1.11 88/10/18 10:42:18 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Callback.c,v 1.12 88/10/18 11:59:35 swick Exp $";
 /* $oHeader: Callback.c,v 1.4 88/09/01 11:08:37 asente Exp $ */
 #endif lint
 
@@ -348,7 +348,7 @@ XtCallbackList _XtGetCallbackList(list)
     char*	list;		/* is CallbackStruct** */
 {
     CallbackStruct *callbackstruct = *(CallbackStruct**)list;
-    int	callback_count;
+    int	callback_count = 0;
     register CallbackRec* callback;
     register XtCallbackRec* rec;
 
