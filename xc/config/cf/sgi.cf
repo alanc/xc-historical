@@ -1,6 +1,6 @@
-XCOMM platform:  $XConsortium: sgi.cf,v 1.33 93/09/21 11:17:09 rws Exp $
+XCOMM platform:  $XConsortium: sgi.cf,v 1.34 93/09/21 18:12:15 rws Exp $
 
-#define OSName			IRIX
+#define OSName			IRIX 4.0.1
 XCOMM operating system:  OSName
 #define OSMajorVersion		4
 #define OSMinorVersion		0

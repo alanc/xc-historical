@@ -1,6 +1,6 @@
-XCOMM platform:  $XConsortium: bsdi.cf,v 1.3 93/07/29 12:14:52 rws Exp $
+XCOMM platform:  $XConsortium: bsdi.cf,v 1.4 93/07/29 13:43:57 rws Exp $
 
-#define OSName            BSD/386
+#define OSName            BSD/386 1.0
 XCOMM operating system:  OSName
 #define OSMajorVersion    1
 #define OSMinorVersion    0
