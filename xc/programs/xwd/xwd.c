@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$XConsortium: xwd.c,v 1.48 89/05/16 14:13:58 kit Exp $";
+static char *rcsid_xwd_c = "$XConsortium: xwd.c,v 1.49 89/07/16 15:33:01 jim Exp $";
 #endif
 
 /*%
@@ -52,6 +52,7 @@ static char *rcsid_xwd_c = "$XConsortium: xwd.c,v 1.48 89/05/16 14:13:58 kit Exp
 #include <X11/Xutil.h>
 
 #include <X11/Xmu/WinUtil.h>
+typedef unsigned long Pixel;
 
 #define FEEP_VOLUME 0
 
