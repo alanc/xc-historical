@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.161 92/01/27 09:29:07 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.162 92/07/23 19:18:37 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -1484,25 +1484,20 @@ static int _XPrintDefaultError (dpy, event, fp)
 	else
 	    buffer[0] = '\0';
     }
-    (void) fprintf(fp, " (%s)\n  ", buffer);
+    (void) fprintf(fp, " (%s)\n", buffer);
     if (event->request_code >= 128) {
 	XGetErrorDatabaseText(dpy, mtype, "MinorCode", "Request Minor code %d",
 			      mesg, BUFSIZ);
+	fputs("  ", fp);
 	(void) fprintf(fp, mesg, event->minor_code);
 	if (ext) {
 	    sprintf(mesg, "%s.%d", ext->name, event->minor_code);
 	    XGetErrorDatabaseText(dpy, "XRequest", mesg, "", buffer, BUFSIZ);
 	    (void) fprintf(fp, " (%s)", buffer);
 	}
-	fputs("\n  ", fp);
+	fputs("\n", fp);
     }
     if (event->error_code >= 128) {
-	/* let extensions try to print the values */
-	for (ext = dpy->ext_procs; ext; ext = ext->next) {
-	    if (ext->error_values)
-		(*ext->error_values)(dpy, event, fp);
-	}
-	/* the rest is a fallback, providing a simple default */
 	/* kludge, try to find the extension that caused it */
 	buffer[0] = '\0';
 	for (ext = dpy->ext_procs; ext; ext = ext->next) {
@@ -1518,17 +1513,21 @@ static int _XPrintDefaultError (dpy, event, fp)
 		(!bext || ext->codes.first_error > bext->codes.first_error))
 		bext = ext;
 	}    
-	mesg[0] = '\0';
-	if (bext) {
+	if (bext)
 	    sprintf(buffer, "%s.%d", bext->name,
 		    event->error_code - bext->codes.first_error);
-	    XGetErrorDatabaseText(dpy, mtype, buffer, "", mesg, BUFSIZ);
-	}
-	if (!mesg[0])
-	    XGetErrorDatabaseText(dpy, mtype, "Value", "", mesg, BUFSIZ);
+	else
+	    strcpy(buffer, "Value");
+	XGetErrorDatabaseText(dpy, mtype, buffer, "", mesg, BUFSIZ);
 	if (mesg[0]) {
+	    fputs("  ", fp);
 	    (void) fprintf(fp, mesg, event->resourceid);
-	    fputs("\n  ", fp);
+	    fputs("\n", fp);
+	}
+	/* let extensions try to print the values */
+	for (ext = dpy->ext_procs; ext; ext = ext->next) {
+	    if (ext->error_values)
+		(*ext->error_values)(dpy, event, fp);
 	}
     } else if ((event->error_code == BadWindow) ||
 	       (event->error_code == BadPixmap) ||
@@ -1549,15 +1548,17 @@ static int _XPrintDefaultError (dpy, event, fp)
 	else
 	    XGetErrorDatabaseText(dpy, mtype, "ResourceID", "ResourceID 0x%x",
 				  mesg, BUFSIZ);
+	fputs("  ", fp);
 	(void) fprintf(fp, mesg, event->resourceid);
-	fputs("\n  ", fp);
+	fputs("\n", fp);
     }
     XGetErrorDatabaseText(dpy, mtype, "ErrorSerial", "Error Serial #%d", 
-	mesg, BUFSIZ);
+			  mesg, BUFSIZ);
+    fputs("  ", fp);
     (void) fprintf(fp, mesg, event->serial);
-    fputs("\n  ", fp);
     XGetErrorDatabaseText(dpy, mtype, "CurrentSerial", "Current Serial #%d",
-	mesg, BUFSIZ);
+			  mesg, BUFSIZ);
+    fputs("\n  ", fp);
     (void) fprintf(fp, mesg, dpy->request);
     fputs("\n", fp);
     if (event->error_code == BadImplementation) return 0;
