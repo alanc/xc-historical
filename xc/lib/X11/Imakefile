@@ -2,7 +2,9 @@
        INCLUDES = -I. -I$(TOP) -I$(INCLUDESRC)
         DEFINES = ConnectionFlags
    INSTALLFLAGS = -m 0644
-           SRCS = *.c
+        AIDSRCS = BandAidLibrarySources
+        AIDOBJS = BandAidLibraryObjects
+           SRCS = *.c $(AIDSRCS)
         HEADERS = Xlib.h Xutil.h
        LINTLIBS = -lc
 
@@ -223,7 +225,8 @@ OBJS =\
 	XWindow.o \
 	XWrBitF.o \
 	XlibInt.o \
-	evtomask.o
+	evtomask.o \
+	$(AIDOBJS)
 
 #if DebugLibX && ProfileLibX
 DebuggedAndProfiledLibraryObjectRule()
@@ -264,6 +267,10 @@ AliasedLibraryTarget(X_d,X11_d)
 depend:: ks_names.h
 
 DependTarget()
+
+#if BandAidLibraries
+BandAidLibraryMake()
+#endif
 
 ks_names.h: $(INCLUDESRC)/keysymdef.h
 	@echo "generating $@"; \
