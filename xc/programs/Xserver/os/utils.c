@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.77 89/05/03 09:47:37 rws Exp $ */
+/* $XConsortium: utils.c,v 1.78 89/05/04 18:25:41 rws Exp $ */
 #include <stdio.h>
 #include "Xos.h"
 #include "misc.h"
@@ -440,6 +440,54 @@ char	*argv[];
 #define FIRSTMAGIC 0x11aaaa11
 #define SECONDMAGIC 0x22aaaa22
 #define FREEDMAGIC  0x33aaaa33
+
+typedef struct _MallocHeader	*MallocHeaderPtr;
+
+typedef struct _MallocHeader {
+	unsigned long	magic;
+	unsigned long	amount;
+	unsigned long	time;
+	MallocHeaderPtr	prev;
+	MallocHeaderPtr	next;
+} MallocHeaderRec;
+
+typedef struct _MallocTrailer {
+	unsigned long	magic;
+} MallocTrailerRec, *MallocTrailerPtr;
+
+unsigned long	MemoryAllocTime;
+unsigned long	MemoryAllocBreakpoint = ~0;
+unsigned long	MemoryActive = 0;
+
+MallocHeaderPtr	MemoryInUse;
+
+#define request(amount)	((amount) + sizeof (MallocHeaderRec) + sizeof (MallocTrailerRec))
+#define Header(ptr)	((MallocHeaderPtr) (((char *) ptr) - sizeof (MallocHeaderRec)))
+#define Trailer(ptr)	((MallocTrailerPtr) (((char *) ptr) + Header(ptr)->amount))
+
+static unsigned long *
+SetupBlock(ptr, amount)
+    unsigned long   *ptr;
+{
+    MallocHeaderPtr	head = (MallocHeaderPtr) ptr;
+    MallocTrailerPtr	tail = (MallocTrailerPtr) (((char *) ptr) + amount + sizeof (MallocHeaderRec));
+
+    MemoryActive += amount;
+    head->magic = FIRSTMAGIC;
+    head->amount = amount;
+    if (MemoryAllocTime == MemoryAllocBreakpoint)
+	head->amount = amount;
+    head->time = MemoryAllocTime++;
+    head->next = MemoryInUse;
+    head->prev = 0;
+    if (MemoryInUse)
+	MemoryInUse->prev = head;
+    MemoryInUse = head;
+
+    tail->magic = SECONDMAGIC;
+    
+    return (unsigned long *)(((char *) ptr) + sizeof (MallocHeaderRec));
+}
 #endif
 
 /* XALLOC -- X's internal memory allocator.  Why does it return unsigned
@@ -469,13 +517,8 @@ Xalloc (amount)
     if (!Must_have_memory && Memory_fail &&
 	((random() % MEM_FAIL_SCALE) < Memory_fail))
 	return (unsigned long *)NULL;
-    if (ptr = (pointer)malloc(amount + 12))
-    {
-        *(unsigned long *)ptr = FIRSTMAGIC;
-        *((unsigned long *)(ptr + 4)) = amount;
-        *((unsigned long *)(ptr + 8 + amount)) = SECONDMAGIC;
-	return (unsigned long *)(ptr + 8);
-    }
+    if (ptr = (pointer)malloc(request(amount)))
+	return SetupBlock (ptr, amount);
 #else
     if (ptr = (pointer)malloc(amount))
 	return (unsigned long *)ptr;
@@ -494,6 +537,7 @@ Xrealloc (ptr, amount)
     register pointer ptr;
     unsigned long amount;
 {
+    register pointer	oldptr = ptr;
     char *malloc();
     char *realloc();
 
@@ -510,17 +554,12 @@ Xrealloc (ptr, amount)
     if (ptr)
     {
 	CheckNode(ptr);
-	ptr = (pointer)realloc((ptr - 8), amount + 12);
+	ptr = (pointer)realloc((char *) Header (ptr), request(amount));
     }
     else
-	ptr = (pointer)malloc(amount + 12);
+	ptr = (pointer)malloc(request(amount));
     if (ptr)
-    {
-        *(unsigned long *)ptr = FIRSTMAGIC;
-	*((unsigned long *)(ptr + 4)) = amount;
-	*((unsigned long *)(ptr + 8 + amount)) = SECONDMAGIC;
-	return (unsigned long *) (ptr + 8);
-    }
+	return SetupBlock (ptr, amount);
 #else
     if (!amount)
     {
@@ -553,9 +592,12 @@ Xfree(ptr)
 #ifdef MEMBUG
     if (ptr)
     {
+	MallocHeaderPtr	head;
+
 	CheckNode(ptr);
-        *(unsigned long *)(ptr - 8) = FREEDMAGIC;
-	free(ptr - 8); 
+	head = Header(ptr);
+	head->magic = FREEDMAGIC;
+	free ((char *) head);
     }
 #else
     if (ptr)
@@ -568,19 +610,49 @@ static void
 CheckNode(ptr)
     pointer ptr;
 {
-    unsigned long    amount;
+    MallocHeaderPtr	head;
+    MallocHeaderPtr	f, prev;
 
     if (ptr < minfree)
 	FatalError("Trying to free static storage");
-    ptr -= 8;
-    if (ptr < minfree)
+    head = Header(ptr);
+    if (((pointer) head) < minfree)
 	FatalError("Trying to free static storage");
-    amount = *((unsigned long *)(ptr + 4));
-    if (*((unsigned long *) ptr) == FREEDMAGIC)
+    if (head->magic == FREEDMAGIC)
 	FatalError("Freeing something already freed");
-    if( *((unsigned long *) ptr) != FIRSTMAGIC ||
-        *((unsigned long *) (ptr + amount + 8)) != SECONDMAGIC)
+    if(head->magic != FIRSTMAGIC || Trailer(ptr)->magic != SECONDMAGIC)
 	FatalError("Freeing a garbage object");
+    if(head->prev)
+	head->prev->next = head->next;
+    else
+	MemoryInUse = head->next;
+    if (head->next)
+	head->next->prev = head->prev;
+    MemoryActive -= head->amount;
+}
+
+DumpMemoryInUse (time)
+    unsigned long   time;
+{
+    MallocHeaderPtr	head;
+
+    for (head = MemoryInUse; head; head = head->next)
+	if (head->time >= time)
+	    printf ("0x%08x %5d %6d\n", head,
+					head->amount,
+					head->time);
+}
+
+static unsigned long	MarkedTime;
+
+MarkMemoryTime ()
+{
+    MarkedTime = MemoryAllocTime;
+}
+
+DumpMemorySince ()
+{
+    DumpMemoryInUse (MarkedTime);
 }
 #endif
 #endif /* SPECIAL_MALLOC */
