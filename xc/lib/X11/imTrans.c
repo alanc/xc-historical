@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: imTrans.c,v 1.1 94/02/03 18:04:04 mor Exp $ */
 /******************************************************************
 
            Copyright 1992 by Sun Microsystems, Inc.
@@ -32,6 +32,7 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <stdio.h>
 #include <X11/Xatom.h>
 #include <X11/Xmd.h>
+#define NEED_EVENTS
 #include "Xlibint.h"
 #include "Xlibnet.h"
 #include <X11/Xtrans.h>
