@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.80 89/07/17 15:19:33 jim Exp $
+ * $XConsortium: events.c,v 1.81 89/07/18 17:15:43 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.80 89/07/17 15:19:33 jim Exp $";
+"$XConsortium: events.c,v 1.81 89/07/18 17:15:43 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -69,9 +69,11 @@ int DragX;
 int DragY;
 int DragWidth;
 int DragHeight;
+
+#ifdef TWM_EVENT_HACK
 static int enter_flag;
-static Atom wmChangeStateAtom;
 static Atom twmRaisingWindowAtom;
+#endif
 
 ScreenInfo *FindScreenInfo();
 int ButtonPressed = -1;
@@ -97,12 +99,13 @@ InitEvents()
 {
     int i;
 
-    wmChangeStateAtom = XInternAtom(dpy, "WM_CHANGE_STATE", False);
-    twmRaisingWindowAtom = XInternAtom(dpy, "TWM_RAISING_WINDOW", False);
 
     ResizeWindow = NULL;
     DragWindow = NULL;
+#ifdef TWM_EVENT_HACK
     enter_flag = FALSE;
+    twmRaisingWindowAtom = XInternAtom(dpy, "TWM_RAISING_WINDOW", False);
+#endif
 
     for (i = 0; i < MAX_X_EVENT; i++)
 	EventHandler[i] = HandleUnknown;
@@ -131,6 +134,42 @@ InitEvents()
 }
 
 
+Time lastTimestamp = CurrentTime;	/* until Xlib does this for us */
+
+Bool StashEventTime (ev)
+    register XEvent *ev;
+{
+    switch (ev->type) {
+      case KeyPress:
+      case KeyRelease:
+	lastTimestamp = ev->xkey.time;
+	return True;
+      case ButtonPress:
+      case ButtonRelease:
+	lastTimestamp = ev->xbutton.time;
+	return True;
+      case MotionNotify:
+	lastTimestamp = ev->xmotion.time;
+	return True;
+      case EnterNotify:
+      case LeaveNotify:
+	lastTimestamp = ev->xcrossing.time;
+	return True;
+      case PropertyNotify:
+	lastTimestamp = ev->xproperty.time;
+	return True;
+      case SelectionClear:
+	lastTimestamp = ev->xselectionclear.time;
+	return True;
+      case SelectionRequest:
+	lastTimestamp = ev->xselectionrequest.time;
+	return True;
+      case SelectionNotify:
+	lastTimestamp = ev->xselection.time;
+	return True;
+    }
+    return False;
+}
 
 /***********************************************************************
  *
@@ -141,6 +180,8 @@ InitEvents()
  */
 Bool DispatchEvent ()
 {
+    StashEventTime (&Event);
+
     if (XFindContext (dpy, Event.xany.window,
 		      TwmContext, &Tmp_win) == XCNOENT)
       Tmp_win = NULL;
@@ -626,14 +667,16 @@ HandleClientMessage()
     fprintf(stderr, "ClientMessage = 0x%x\n", Event.xclient.message_type);
 #endif
 
+#ifdef TWM_EVENT_HACK
     if (Event.xclient.message_type == twmRaisingWindowAtom)
     {
 #ifdef DEBUG_EVENTS
 	fprintf(stderr, "TWM_RAISING_WINDOW message client received.\n");
 #endif
 	enter_flag = FALSE;
-    }
-    else if (Event.xclient.message_type == wmChangeStateAtom)
+    } else
+#endif
+    if (Event.xclient.message_type == _XA_WM_CHANGE_STATE)
     {
 #ifdef DEBUG_EVENTS
 	fprintf(stderr, "WM_CHANGE_STATE client message received.\n");
@@ -1146,12 +1189,14 @@ HandleButtonRelease()
 	DragWindow = NULL;
 	ConstMove = FALSE;
 
+#ifdef TWM_EVENT_HACK
 	enter_flag = TRUE;
 	client_event.type = ClientMessage;
 	client_event.xclient.window = Tmp_win->frame;
 	client_event.xclient.message_type = twmRaisingWindowAtom;
 	client_event.xclient.format = 32;
 	XSendEvent(dpy, Tmp_win->frame, False, 0, &client_event);
+#endif
     }
 
     if (ResizeWindow != NULL)
@@ -1490,6 +1535,7 @@ HandleEnterNotify()
 		XInstallColormap(dpy, Tmp_win->attr.colormap);
 	    }
 	}
+#ifdef TWM_EVENT_HACK
 	if (enter_flag == FALSE && Tmp_win->auto_raise)
 	{
 	    XEvent client_event;
@@ -1502,6 +1548,7 @@ HandleEnterNotify()
 	    client_event.xclient.format = 32;
 	    XSendEvent(dpy, Tmp_win->frame, False, 0, &client_event);
 	}
+#endif
 	return;
     }
 

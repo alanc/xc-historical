@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.h,v 1.5 89/07/13 11:51:20 jim Exp $
+ * $XConsortium: events.h,v 1.6 89/07/18 17:15:48 jim Exp $
  *
  * twm event handler include file
  *
@@ -41,6 +41,9 @@
 
 typedef void (*event_proc)();
 
+extern Bool StashEventTime();
+extern Time lastTimestamp;
+#define LastTimestamp() lastTimestamp
 extern Bool DispatchEvent();
 extern void HandleEvents();
 extern void HandleExpose();

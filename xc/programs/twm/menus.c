@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.86 89/07/21 18:30:29 jim Exp $
+ * $XConsortium: menus.c,v 1.87 89/07/24 14:11:42 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.86 89/07/21 18:30:29 jim Exp $";
+"$XConsortium: menus.c,v 1.87 89/07/24 14:11:42 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1116,12 +1116,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
     case F_HIDELIST:
 	if (Scr->NoIconManagers)
 	    break;
-	SetMapStateProp (Scr->iconmgr.twm_win, WithdrawnState);
-	XUnmapWindow(dpy, Scr->iconmgr.twm_win->frame);
-	if (Scr->iconmgr.twm_win->icon_w)
-	    XUnmapWindow(dpy, Scr->iconmgr.twm_win->icon_w);
-	Scr->iconmgr.twm_win->mapped = FALSE;
-	Scr->iconmgr.twm_win->icon = TRUE;
+	HideIconManager ();
 	break;
 
     case F_SORTICONMGR:
@@ -1622,6 +1617,20 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	    XBell(dpy, 0);
 	else
 	    XKillClient(dpy, tmp_win->w);
+	break;
+
+    case F_DELETE:
+	if (DeferExecution(context, func, Scr->DestroyCursor))
+	    return TRUE;
+
+	DeleteWindow (tmp_win);
+	break;
+
+    case F_SAVEYOURSELF:
+	if (DeferExecution (context, func, Scr->SelectCursor))
+	  return TRUE;
+
+	SaveYourself (tmp_win);
 	break;
 
     case F_CIRCLEUP:
@@ -2289,8 +2298,6 @@ TwmWindow *t;
 
 }
 
-static Atom wmStateAtom = None;
-
 SetMapStateProp(tmp_win, state)
 TwmWindow *tmp_win;
 int state;
@@ -2301,10 +2308,7 @@ int state;
     data[1] = (unsigned long) (tmp_win->iconify_by_unmapping ? None : 
 			   tmp_win->icon_w);
 
-    if (wmStateAtom == None) 
-      wmStateAtom = XInternAtom (dpy, "WM_STATE", False);
-
-    XChangeProperty (dpy, tmp_win->w, wmStateAtom, wmStateAtom, 32, 
+    XChangeProperty (dpy, tmp_win->w, _XA_WM_STATE, _XA_WM_STATE, 32, 
 		 PropModeReplace, (unsigned char *) data, 2);
 }
 
@@ -2318,11 +2322,7 @@ Bool GetWMState (w, statep, iwp)
     unsigned long *datap = NULL;
     Bool retval = False;
 
-    if (wmStateAtom == None &&
-        (wmStateAtom = XInternAtom (dpy, "WM_STATE", False)) == None)
-      return False;
-
-    if (XGetWindowProperty (dpy, w, wmStateAtom, 0, 2, False, wmStateAtom,
+    if (XGetWindowProperty (dpy, w, _XA_WM_STATE, 0, 2, False, _XA_WM_STATE,
 			    &actual_type, &actual_format, &nitems, &bytesafter,
 			    (unsigned char **) &datap) != Success || !datap)
       return False;
@@ -2373,4 +2373,56 @@ WarpToScreen (n, inc)
 
     XWarpPointer (dpy, None, newscr->Root, 0, 0, 0, 0, x, y);
     return;
+}
+
+
+HideIconManager ()
+{
+    SetMapStateProp (Scr->iconmgr.twm_win, WithdrawnState);
+    XUnmapWindow(dpy, Scr->iconmgr.twm_win->frame);
+    if (Scr->iconmgr.twm_win->icon_w)
+      XUnmapWindow (dpy, Scr->iconmgr.twm_win->icon_w);
+    Scr->iconmgr.twm_win->mapped = FALSE;
+    Scr->iconmgr.twm_win->icon = TRUE;
+}
+
+
+SetupWmProtocolsClientMessage (w, ev, a)
+    Window w;
+    XClientMessageEvent *ev;
+    Atom a;
+{
+    ev->type = ClientMessage;
+    ev->window = w;
+    ev->message_type = _XA_WM_PROTOCOLS;
+    ev->format = 32;
+    ev->data.l[0] = a;
+    ev->data.l[1] = LastTimestamp();
+}
+
+
+DeleteWindow (tmp)
+    TwmWindow *tmp;
+{
+    if (tmp->iconmgr) {
+	HideIconManager ();
+    } else if (tmp->protocols & DoesWmDeleteWindow) {
+	XClientMessageEvent ev;
+	SetupWmProtocolsClientMessage (tmp->w, &ev, _XA_WM_DELETE_WINDOW);
+	XSendEvent (dpy, tmp->w, False, 0, &ev);
+    } else {
+	XBell (dpy, 0);
+    }
+}
+
+SaveYourself (tmp)
+    TwmWindow *tmp;
+{
+    if (tmp->protocols & DoesWmSaveYourself) {
+	XClientMessageEvent ev;
+	SetupWmProtocolsClientMessage (tmp->w, &ev, _XA_WM_SAVE_YOURSELF);
+	XSendEvent (dpy, tmp->w, False, 0, &ev);
+    } else {
+	XBell (dpy, 0);
+    }
 }

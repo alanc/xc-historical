@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.61 89/07/18 17:16:17 jim Exp $
+ * $XConsortium: twm.c,v 1.62 89/07/21 18:30:37 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.61 89/07/18 17:16:17 jim Exp $";
+"$XConsortium: twm.c,v 1.62 89/07/21 18:30:37 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -226,6 +226,9 @@ main(argc, argv, environ)
     MenuContext = XUniqueContext();
     IconManagerContext = XUniqueContext();
     ScreenContext = XUniqueContext();
+
+    InternUsefulAtoms ();
+
 
     /* Set up the per-screen global information. */
 
@@ -769,4 +772,24 @@ int Other(dpy, event)
     LastErrorEvent = *event;
     ErrorOccurred = True;
     return 0;
+}
+
+
+Atom _XA_WM_CHANGE_STATE;
+Atom _XA_WM_STATE;
+Atom _XA_WM_COLORMAP_WINDOWS;
+Atom _XA_WM_PROTOCOLS;
+Atom _XA_WM_TAKE_FOCUS;
+Atom _XA_WM_SAVE_YOURSELF;
+Atom _XA_WM_DELETE_WINDOW;
+
+InternUsefulAtoms ()
+{
+    _XA_WM_CHANGE_STATE = XInternAtom (dpy, "WM_CHANGE_STATE", False);
+    _XA_WM_STATE = XInternAtom (dpy, "WM_STATE", False);
+    _XA_WM_COLORMAP_WINDOWS = XInternAtom (dpy, "WM_COLORMAP_WINDOWS", False);
+    _XA_WM_PROTOCOLS = XInternAtom (dpy, "WM_PROTOCOLS", False);
+    _XA_WM_TAKE_FOCUS = XInternAtom (dpy, "WM_TAKE_FOCUS", False);
+    _XA_WM_SAVE_YOURSELF = XInternAtom (dpy, "WM_SAVE_YOURSELF", False);
+    _XA_WM_DELETE_WINDOW = XInternAtom (dpy, "WM_DELETE_WINDOW", False);
 }

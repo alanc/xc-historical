@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.83 89/07/17 15:21:14 jim Exp $
+ * $XConsortium: add_window.c,v 1.84 89/07/18 17:15:37 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.83 89/07/17 15:21:14 jim Exp $";
+"$XConsortium: add_window.c,v 1.84 89/07/18 17:15:37 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -167,6 +167,7 @@ IconMgr *iconp;
     XFetchName(dpy, tmp_win->w, &tmp_win->name);
     tmp_win->class = NoClass;
     XGetClassHint(dpy, tmp_win->w, &tmp_win->class);
+    FetchWmProtocols (tmp_win);
 
 #ifdef DEBUG
     fprintf(stderr, "  name = \"%s\"\n", tmp_win->name);
@@ -1166,4 +1167,26 @@ SetHighlightPixmap (filename)
 	Scr->hilite_pm_width = JunkWidth;
 	Scr->hilite_pm_height = JunkHeight;
     }
+}
+
+
+FetchWmProtocols (tmp)
+    TwmWindow *tmp;
+{
+    unsigned long flags = 0L;
+    Atom *protocols = NULL;
+    int n;
+
+    if (XGetWMProtocols (dpy, tmp->w, &protocols, &n)) {
+	register int i;
+	register Atom *ap;
+
+	for (i = 0, ap = protocols; i < n; i++, ap++) {
+	    if (*ap == _XA_WM_TAKE_FOCUS) flags |= DoesWmTakeFocus;
+	    if (*ap == _XA_WM_SAVE_YOURSELF) flags |= DoesWmSaveYourself;
+	    if (*ap == _XA_WM_DELETE_WINDOW) flags |= DoesWmDeleteWindow;
+	}
+	if (protocols) XFree ((char *) protocols);
+    }
+    tmp->protocols = flags;
 }

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: lex.l,v 1.43 89/07/18 14:20:32 jim Exp $
+ * $XConsortium: lex.l,v 1.44 89/07/18 17:15:59 jim Exp $
  *
  * .twmrc lex file
  *
@@ -37,7 +37,7 @@
  ***********************************************************************/
 
 static char RCSinfo[]=
-"$XConsortium: lex.l,v 1.43 89/07/18 14:20:32 jim Exp $";
+"$XConsortium: lex.l,v 1.44 89/07/18 17:15:59 jim Exp $";
 
 /* #include <stdio.h> */		/* lex already includes stdio.h */
 #include "gram.h"
@@ -125,6 +125,8 @@ f.raise				{ return F_RAISE; }
 f.raiselower			{ return F_RAISELOWER; }
 f.lower				{ return F_LOWER; }
 f.destroy			{ return F_DESTROY; }
+f.delete			{ return F_DELETE; }
+f.saveyourself			{ return F_SAVEYOURSELF; }
 f.zoom				{ return F_ZOOM; }
 f.fullzoom			{ return F_FULLZOOM; }
 f.horizoom			{ return F_HORIZOOM; }

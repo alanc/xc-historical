@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.54 89/07/18 17:15:52 jim Exp $
+ * $XConsortium: gram.y,v 1.55 89/07/21 19:57:17 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -38,7 +38,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.54 89/07/18 17:15:52 jim Exp $";
+"$XConsortium: gram.y,v 1.55 89/07/21 19:57:17 jim Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -82,6 +82,7 @@ extern int yylineno;
 %token <num> F_CUTFILE F_MOVE F_ICONIFY F_FOCUS F_RESIZE F_RAISE F_LOWER
 %token <num> F_POPUP F_DEICONIFY F_FORCEMOVE WINDOW_FUNCTION MOVE_DELTA
 %token <num> F_DESTROY F_WINREFRESH F_BEEP DONT_MOVE_OFF ZOOM ICONMGRS
+%token <num> F_DELETE F_SAVEYOURSELF
 %token <num> F_SHOWLIST F_HIDELIST NO_BACKINGSTORE NO_SAVEUNDER
 %token <num> F_ZOOM F_FULLZOOM F_UPICONMGR F_DOWNICONMGR F_HORIZOOM
 %token <num> F_RIGHTZOOM F_LEFTZOOM F_TOPZOOM F_BOTTOMZOOM F_RESTART 
@@ -649,6 +650,8 @@ action		: F_NOP			{ $$ = F_NOP; }
 		| F_RAISELOWER		{ $$ = F_RAISELOWER; }
 		| F_LOWER		{ $$ = F_LOWER; }
 		| F_DESTROY		{ $$ = F_DESTROY; }
+		| F_DELETE		{ $$ = F_DELETE; }
+		| F_SAVEYOURSELF	{ $$ = F_SAVEYOURSELF; }
 		| F_TWMRC		{ $$ = F_TWMRC; }
 		| F_VERSION		{ $$ = F_VERSION; }
 		| F_TITLE		{ $$ = F_TITLE; }

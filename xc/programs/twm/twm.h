@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.33 89/07/18 15:43:15 jim Exp $
+ * $XConsortium: twm.h,v 1.34 89/07/18 17:16:19 jim Exp $
  *
  * twm include file
  *
@@ -207,7 +207,13 @@ typedef struct TwmWindow
     short wShaped;		/* this window has a bounding shape */
     short fShaped;		/* regions of the frame have been shaped */
 #endif
+    unsigned long protocols;	/* which protocols this window handles */
 } TwmWindow;
+
+#define DoesWmTakeFocus		(1L << 0)
+#define DoesWmSaveYourself	(1L << 1)
+#define DoesWmDeleteWindow	(1L << 2)
+
 
 extern Display *dpy;
 extern Window ResizeWindow;	/* the window we are resizing */
@@ -266,5 +272,13 @@ extern XErrorEvent LastErrorEvent;
 
 extern Bool RestartPreviousState;
 extern Bool GetWMState();
+
+extern Atom _XA_WM_CHANGE_STATE;
+extern Atom _XA_WM_STATE;
+extern Atom _XA_WM_COLORMAP_WINDOWS;
+extern Atom _XA_WM_PROTOCOLS;
+extern Atom _XA_WM_TAKE_FOCUS;
+extern Atom _XA_WM_SAVE_YOURSELF;
+extern Atom _XA_WM_DELETE_WINDOW;
 
 #endif /* _TWM_ */
