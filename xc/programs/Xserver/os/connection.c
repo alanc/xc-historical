@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: connection.c,v 1.78 88/08/16 20:17:30 jim Exp $ */
+/* $Header: connection.c,v 1.79 88/08/16 20:41:59 jim Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -48,10 +48,6 @@ SOFTWARE.
 #include "Xos.h"			/* for strings, file, time */
 #include <sys/socket.h>
 
-#ifdef hpux
-#include <sys/utsname.h>
-#endif
-
 #include <signal.h>
 #include <fcntl.h>
 #include <setjmp.h>
@@ -68,6 +64,9 @@ SOFTWARE.
 #endif
 
 #ifdef UNIXCONN
+/*
+ * sites should be careful to have separate /tmp directories for diskless nodes
+ */
 #include <sys/un.h>
 #endif
 
@@ -86,11 +85,7 @@ typedef long CCID;      /* mask of indices into client socket table */
 
 #ifndef X_UNIX_PATH
 #define X_UNIX_DIR	"/tmp/.X11-unix"
-#ifdef hpux
-#define X_UNIX_PATH	"/tmp/.X11-unix/"
-#else
 #define X_UNIX_PATH	"/tmp/.X11-unix/X"
-#endif
 #endif
 
 char *display;			/* The display number */
@@ -248,19 +243,6 @@ CreateWellKnownSockets()
     mkdir (X_UNIX_DIR, 0777);
 #endif
     strcpy (unsock.sun_path, X_UNIX_PATH);
-#ifdef hpux
-    /*********
-      Got to get a unique name to create the UNIX domain socket
-      under since there can be more than one system on the same file
-      system
-    *********/
-    {
-      struct utsname systemName;
-
-      uname(&systemName);
-      strcat(unsock.sun_path, systemName.nodename);
-    }
-#endif /* hpux */
     strcat (unsock.sun_path, display);
     unlink (unsock.sun_path);
     if ((request = socket (AF_UNIX, SOCK_STREAM, 0)) < 0) 
