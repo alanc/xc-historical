@@ -13,5 +13,9 @@ INCLUDES = -I.  -I../../include -I../../../include
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(os,$(OBJS))
+LintLibraryTarget(os,$(SRCS))
 
 DependTarget()
+
+lint:
+	lint -Cos $(INCLUDES) $(SRCS) > lint.out
