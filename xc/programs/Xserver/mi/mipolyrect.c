@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mipolyrect.c,v 5.4 91/02/22 18:27:00 keith Exp $ */
+/* $XConsortium: mipolyrect.c,v 5.5 91/02/23 17:28:00 keith Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 #include "miscstruct.h"
@@ -38,6 +38,22 @@ miPolyRectangle(pDraw, pGC, nrects, pRects)
     int i;
     xRectangle *pR = pRects;
     DDXPointRec rect[5];
+    int	    bound_tmp;
+
+#define MINBOUND(dst,eqn)	bound_tmp = eqn; \
+				if (bound_tmp < -32768) \
+				    bound_tmp = -32768; \
+				dst = bound_tmp;
+
+#define MAXBOUND(dst,eqn)	bound_tmp = eqn; \
+				if (bound_tmp > 32767) \
+				    bound_tmp = 32767; \
+				dst = bound_tmp;
+
+#define MAXUBOUND(dst,eqn)	bound_tmp = eqn; \
+				if (bound_tmp > 65535) \
+				    bound_tmp = 65535; \
+				dst = bound_tmp;
 
     if (pGC->lineStyle == LineSolid && pGC->joinStyle == JoinMiter &&
 	pGC->lineWidth != 0)
@@ -49,8 +65,6 @@ miPolyRectangle(pDraw, pGC, nrects, pRects)
 
 	ntmp = (nrects << 2);
 	offset2 = pGC->lineWidth;
-	if (offset2 == 0)
-	    offset2 = 1;
 	offset1 = offset2 >> 1;
 	offset3 = offset2 - offset1;
 	tmp = (xRectangle *) ALLOCATE_LOCAL(ntmp * sizeof (xRectangle));
@@ -74,32 +88,32 @@ miPolyRectangle(pDraw, pGC, nrects, pRects)
 	    }
 	    else if (height < offset2 || width < offset1)
 	    {
-		t->x = x - offset1;
-		t->y = y - offset1;
-		t->width = width + offset2;
-		t->height = height + offset2;
+		MINBOUND (t->x, x - offset1)
+		MINBOUND (t->y, y - offset1)
+		MAXUBOUND (t->width, width + offset2)
+		MAXUBOUND (t->height, height + offset2)
 		t++;
 	    }
 	    else
 	    {
-	    	t->x = x - offset1;
-	    	t->y = y - offset1;
-	    	t->width = width + offset2;
+		MINBOUND(t->x, x - offset1)
+		MINBOUND(t->y, y - offset1)
+		MAXUBOUND(t->width, width + offset2)
 	    	t->height = offset2;
 	    	t++;
-	    	t->x = x - offset1;
-	    	t->y = y + offset3;
+	    	MINBOUND(t->x, x - offset1)
+	    	MAXBOUND(t->y, y + offset3);
 	    	t->width = offset2;
 	    	t->height = height - offset2;
 	    	t++;
-	    	t->x = x + width - offset1;
-	    	t->y = y + offset3;
+	    	MAXBOUND(t->x, x + width - offset1);
+	    	MAXBOUND(t->y, y + offset3)
 	    	t->width = offset2;
 	    	t->height = height - offset2;
 	    	t++;
-	    	t->x = x - offset1;
-	    	t->y = y + height - offset1;
-	    	t->width = width + offset2;
+	    	MINBOUND(t->x, x - offset1)
+	    	MAXBOUND(t->y, y + height - offset1)
+	    	MAXUBOUND(t->width, width + offset2)
 	    	t->height = offset2;
 	    	t++;
 	    }
@@ -115,17 +129,17 @@ miPolyRectangle(pDraw, pGC, nrects, pRects)
 	    rect[0].x = pR->x;
 	    rect[0].y = pR->y;
     
-	    rect[1].x = pR->x + (int) pR->width;
+	    MAXBOUND(rect[1].x, pR->x + (int) pR->width)
 	    rect[1].y = rect[0].y;
     
 	    rect[2].x = rect[1].x;
-	    rect[2].y = pR->y + (int) pR->height;
+	    MAXBOUND(rect[2].y, pR->y + (int) pR->height);
     
 	    rect[3].x = rect[0].x;
 	    rect[3].y = rect[2].y;
     
 	    rect[4].x = rect[0].x;
-	    rect[4].y = rect[1].y;
+	    rect[4].y = rect[0].y;
     
             (*pGC->ops->Polylines)(pDraw, pGC, CoordModeOrigin, 5, rect);
 	    pR++;
