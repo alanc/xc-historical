@@ -1,55 +1,28 @@
-/* 
- * $Locker: jim $ 
- */ 
-static char	*rcsid = "$XConsortium: xwud.c,v 1.21 88/09/06 17:37:18 jim Exp $";
+/* Copyright 1985, 1986, 1988 Massachusetts Institute of Technology */
 #include <X11/copyright.h>
 
-/* Copyright 1985, 1986, Massachusetts Institute of Technology */
-
-/*
- * xwud.c - MIT Project Athena, X Window system window raster image
- *	    undumper.
- *
- * This program will read a raster image of a window from stdin or a file
- * and display it on an X display.
- *
- *  Author:	Tony Della Fera, DEC
- *
- *  Modified 11/14/86 by William F. Wyatt,
- *                        Smithsonian Astrophysical Observatory
- *    allows writing of monochrome XYFormat window dump files on a color
- *    display, using default WhitePixel for 1's and BlackPixel for 0's.
- *
- *  Modified 11/20/86 WFW
- *    VERSION 6 - same as V5 for monochrome, but expects color map info
- *    in the file for color images. Checks to see if the requested
- *    colors are already in the display's map (e.g. if the window dump
- *    and undump are contemporaneous to the same display). If so,
- *    undump immediately. If not, request new colors, alter the 
- *    pixels to the new values, then write the pixmap. Note that
- *    multi-plane XY format undumps don't work if the pixel values
- *    corresponding to the requested colors have to be changed.
- */
+/* xwud - marginally useful raster image undumper */
 
 #ifndef lint
-static char *rcsid_xwud_c = "$XConsortium: xwud.c,v 1.21 88/09/06 17:37:18 jim Exp $";
+static char *rcsid = "$XConsortium: xwud.c,v 1.22 88/10/20 17:39:59 jim Exp $";
 #endif
 
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <stdio.h>
-extern char *calloc();
-#include "dsimple.h"
-
 #include <X11/XWDFile.h>
 
 extern int errno;
+extern char *malloc();
+unsigned Image_Size();
+
+char *progname;
 
 usage()
 {
-    outl("usage: %s [-display host:dpy] [-help] [-debug] [-inverse] [-in <file>]\n",
-	 program_name);
+    fprintf(stderr, "usage: %s [-in <file>] [-geometry <geom>] [-display <display>] [-new] [-raw]\n", progname);
+    fprintf(stderr, "            [-help] [-rv] [-plane <number>] [-fg <color>] [-bg <color>]\n");
     exit(1);
 }
 
@@ -57,75 +30,109 @@ main(argc, argv)
     int argc;
     char **argv;
 {
+    Display *dpy;
+    int screen;
     register int i;
-    XImage image;
+    XImage in_image, *out_image;
     XSetWindowAttributes attributes;
     XVisualInfo vinfo, *vinfos;
-    Visual *visual = NULL;
     register char *buffer;
-
     unsigned long swaptest = 1;
-    int j, status;
+    int count;
     unsigned buffer_size;
     int win_name_size;
     int ncolors;
-    char *str_index;
-    char *file_name;
+    char *file_name = NULL;
     char *win_name;
-    Bool standard_in = True;
-    Bool debug = False, inverse = False;
-
-    XColor *colors;
+    Bool inverse = False, defvis = False, newmap = False;
+    int plane = -1;
+    char *display_name = NULL;
+    char *fgname = NULL;
+    char *bgname = NULL;
+    char *geom = NULL;
+    int gbits = 0;
+    XSizeHints hints;
+    XColor *colors, color;
     Window image_win;
-    int win_depth;
     Colormap colormap;
     XEvent event;
     register XExposeEvent *expose = (XExposeEvent *)&event;
-
     GC gc;
     XGCValues gc_val;
-
     XWDFileHeader header;
-
     FILE *in_file = stdin;
 
-    INIT_NAME;
-
-    Setup_Display_And_Screen(&argc, argv);
+    progname = argv[0];
 
     for (i = 1; i < argc; i++) {
-	str_index = (char *) index (argv [i], '-');
-	if (str_index == NULL) usage();
-	if (strncmp(argv[i], "-help", 5) == 0) {
-	    usage();
-	}
-	if (strncmp(argv[i], "-in", 4) == 0) {
+	if (strcmp(argv[i], "-bg") == 0) {
 	    if (++i >= argc) usage();
-	    file_name = argv[i];
-	    standard_in = False;
+	    bgname = argv[i];
 	    continue;
 	}
-	if(strcmp(argv[i], "-inverse") == 0) {
+	if (strcmp(argv[i], "-display") == 0) {
+	    if (++i >= argc) usage();
+	    display_name = argv[i];
+	    continue;
+	}
+	if (strcmp(argv[i], "-fg") == 0) {
+	    if (++i >= argc) usage();
+	    fgname = argv[i];
+	    continue;
+	}
+	if (strcmp(argv[i], "-geometry") == 0) {
+	    if (++i >= argc) usage();
+	    geom = argv[i];
+	    continue;
+	}
+	if (strcmp(argv[i], "-help") == 0) {
+	    usage();
+	}
+	if (strcmp(argv[i], "-in") == 0) {
+	    if (++i >= argc) usage();
+	    file_name = argv[i];
+	    continue;
+	}
+	if (strcmp(argv[i], "-inverse") == 0) { /* for compatibility */
 	    inverse = True;
 	    continue;
 	}
-	if(strcmp(argv[i], "-debug") == 0) {
-	    debug = True;
+	if (strcmp(argv[i], "-new") == 0) {
+	    newmap = True;
+	    if (defvis) usage();
+	    continue;
+	}
+	if (strcmp(argv[i], "-plane") == 0) {
+	    if (++i >= argc) usage();
+	    plane = atoi(argv[i]);
+	    continue;
+	}
+	if (strcmp(argv[i], "-raw") == 0) {
+	    defvis = True;
+	    if (newmap) usage();
+	    continue;
+	}
+	if (strcmp(argv[i], "-rv") == 0) {
+	    inverse = True;
 	    continue;
 	}
 	usage();
     }
     
-    if (!standard_in) {
-	/*
-	 * Open the output file.
-	 */
+    if (file_name) {
 	in_file = fopen(file_name, "r");
-	if (in_file == NULL) {
+	if (in_file == NULL)
 	    Error("Can't open output file as specified.");
-	}
     }
     
+    dpy = XOpenDisplay(display_name);
+    if (dpy == NULL) {
+	fprintf(stderr, "%s:  unable to open display \"%s\"\n",
+		progname, XDisplayName(display_name));
+	exit(1);
+    }
+    screen = DefaultScreen(dpy);
+
     /*
      * Read in header information.
      */
@@ -135,9 +142,7 @@ main(argc, argv)
     if (*(char *) &swaptest)
 	_swaplong((char *) &header, sizeof(header));
 
-    /*
-     * check to see if the dump file is in the proper format.
-     */
+    /* check to see if the dump file is in the proper format */
     if (header.file_version != XWD_FILE_VERSION) {
 	fprintf(stderr,"xwud: XWD file format version mismatch.");
 	Error("exiting.");
@@ -147,47 +152,40 @@ main(argc, argv)
 	Error("exiting.");
     }
 
-    /*
-     * Calloc window name.
-     */
+    /* alloc window name */
     win_name_size = (header.header_size - sizeof(header));
-    if((win_name = calloc((unsigned) win_name_size, sizeof(char))) == NULL)
-      Error("Can't calloc window name storage.");
+    if((win_name = malloc((unsigned) win_name_size)) == NULL)
+      Error("Can't malloc window name storage.");
 
-    /*
-     * Read in window name.
-     */
+     /* read in window name */
     if(fread(win_name, sizeof(char), win_name_size, in_file) != win_name_size)
       Error("Unable to read window name from dump file.");
 
-    image.width = (int) header.pixmap_width;
-    image.height = (int) header.pixmap_height;
-    image.xoffset = (int) header.xoffset;
-    image.format = (int) header.pixmap_format;
-    image.byte_order = (int) header.byte_order;
-    image.bitmap_unit = (int) header.bitmap_unit;
-    image.bitmap_bit_order = (int) header.bitmap_bit_order;
-    image.bitmap_pad = (int) header.bitmap_pad;
-    image.depth = (int) header.pixmap_depth;
-    image.bits_per_pixel = (int) header.bits_per_pixel;
-    image.bytes_per_line = (int) header.bytes_per_line;
-    image.red_mask = header.red_mask;
-    image.green_mask = header.green_mask;
-    image.blue_mask = header.blue_mask;
-    image.obdata = NULL;
-    _XInitImageFuncPtrs(&image);
+    /* initialize the input image */
+    in_image.width = (int) header.pixmap_width;
+    in_image.height = (int) header.pixmap_height;
+    in_image.xoffset = (int) header.xoffset;
+    in_image.format = (int) header.pixmap_format;
+    in_image.byte_order = (int) header.byte_order;
+    in_image.bitmap_unit = (int) header.bitmap_unit;
+    in_image.bitmap_bit_order = (int) header.bitmap_bit_order;
+    in_image.bitmap_pad = (int) header.bitmap_pad;
+    in_image.depth = (int) header.pixmap_depth;
+    in_image.bits_per_pixel = (int) header.bits_per_pixel;
+    in_image.bytes_per_line = (int) header.bytes_per_line;
+    in_image.red_mask = header.red_mask;
+    in_image.green_mask = header.green_mask;
+    in_image.blue_mask = header.blue_mask;
+    in_image.obdata = NULL;
+    _XInitImageFuncPtrs(&in_image);
 
-
-    /* Calloc the color map buffer.
-     * Read it in, copy it and use the copy to query for the
-     * existing colors at those pixel values.
-     */
+    /* read in the color map buffer */
     if(ncolors = header.ncolors) {
-	colors = (XColor *)calloc(ncolors,sizeof(XColor));
+	colors = (XColor *)malloc((unsigned) ncolors * sizeof(XColor));
+	if (!colors)
+	    Error("Can't malloc color table");
 	if(fread((char *) colors, sizeof(XColor), ncolors, in_file) != ncolors)
 	  Error("Unable to read color map from dump file.");
-	if(debug)
-	  fprintf(stderr,"Read %d colors\n", ncolors);
 	if (*(char *) &swaptest) {
 	    for (i = 0; i < ncolors; i++) {
 		_swaplong((char *) &colors[i].pixel, sizeof(long));
@@ -196,281 +194,293 @@ main(argc, argv)
 	}
     }
 
-    /*
-     * Calloc the pixel buffer.
-     */
-    buffer_size = Image_Size(&image);
-    if((buffer = calloc(buffer_size, 1)) == NULL)
-      Error("Can't calloc data buffer.");
-    image.data = buffer;
+    /* alloc the pixel buffer */
+    buffer_size = Image_Size(&in_image);
+    if((buffer = malloc(buffer_size)) == NULL)
+      Error("Can't malloc data buffer.");
 
-    /*
-     * Read in the pixmap buffer.
-     */
-    if((status = fread(buffer, sizeof(char), (int)buffer_size, in_file))
-       != buffer_size){
-	/*  Add elaboration on error here. %%*/
+    /* read in the image data */
+    count = fread(buffer, sizeof(char), (int)buffer_size, in_file);
+    if (count != buffer_size)
         Error("Unable to read pixmap from dump file.");
-    }
-    /*
-     * Close the input file.
-     */
+
+     /* close the input file */
     (void) fclose(in_file);
 
+    if ((in_image.format == XYPixmap) && (plane >= 0)) {
+	if (plane >= in_image.depth)
+	    Error("plane number exceeds image depth");
+	buffer += in_image.bytes_per_line * in_image.height *
+		  (in_image.depth - (plane + 1));
+	in_image.depth = 1;
+    }
+    if (in_image.depth == 1) {
+	in_image.format = XYBitmap;
+	newmap = False;
+	defvis = True;
+    }
+    in_image.data = buffer;
+
+    /* find the desired visual */
     vinfo.screen = screen;
-    vinfo.depth = (int) header.pixmap_depth;
-    vinfo.class = (int) header.visual_class;
-    vinfo.red_mask = header.red_mask;
-    vinfo.green_mask = header.green_mask;
-    vinfo.blue_mask = header.blue_mask;
-    vinfo.colormap_size = (int) header.colormap_entries;
-    vinfo.bits_per_rgb = (int) header.bits_per_rgb;
-
-    vinfos = (XVisualInfo *)
-	     XGetVisualInfo(dpy,
-			    /* XXX ignoring rgb mask differences */
-			    VisualScreenMask|VisualDepthMask|VisualClassMask|
-			    VisualColormapSizeMask|VisualBitsPerRGBMask,
-			    &vinfo,
-			    &j);
-    if (j > 0) {
-        visual = vinfos[0].visual;
-	win_depth = vinfo.depth;
-    } else if (header.pixmap_depth == 1) {
-        visual = DefaultVisual(dpy, screen);
-	win_depth = DefaultDepth(dpy, screen);
-	image.format = XYBitmap;
+    if (in_image.depth == 1) {
+	vinfo.visualid = XVisualIDFromVisual(DefaultVisual(dpy, screen));
+	vinfos = (XVisualInfo *)
+		    XGetVisualInfo(dpy, VisualScreenMask|VisualIDMask,
+				   &vinfo, &count);
+	vinfo = vinfos[0];
+    } else if (defvis) {
+	vinfo.depth = in_image.depth;
+	vinfos = (XVisualInfo *)
+		    XGetVisualInfo(dpy, VisualScreenMask|VisualDepthMask,
+				   &vinfo, &count);
+	if (!count)
+	    Error("No visual matches the image depth");
+	vinfo = vinfos[0];
     } else {
-	fprintf(stderr, "xwud: could not find matching visual.\n");
-	Error("exiting.");
+	vinfo.colormap_size = 0;
+	vinfo.depth = 0;
+	vinfos = (XVisualInfo *)
+		    XGetVisualInfo(dpy, VisualScreenMask, &vinfo, &count);
+	/* get the visual with the most entries, preferring matching depth  */
+	for (i = 0; i < count; i++) {
+	    if (((vinfos[i].depth == in_image.depth) &&
+		 (vinfos[i].colormap_size >= ncolors)) ||
+		((vinfos[i].colormap_size > vinfo.colormap_size) &&
+		 (vinfo.depth != in_image.depth)))
+		vinfo = vinfos[i];
+	}
+	if ((vinfo.class == DirectColor) &&
+	    (vinfo.class == header.visual_class) &&
+	    (vinfo.depth == in_image.depth) &&
+	    (vinfo.red_mask == header.red_mask) &&
+	    (vinfo.green_mask == header.green_mask) &&
+	    (vinfo.blue_mask == header.blue_mask)) {
+	    defvis = True;
+	    newmap = False;
+	}
     }
-    
-    /* XXX */
-    if (visual == DefaultVisual(dpy, screen))
-        colormap = DefaultColormap(dpy, screen);
-	/* XXX */
-#ifdef notdef
-	colormap = ModifyColors(image, visual, colormap, colors, ncolors);
-#endif
-    else {
-	colormap = XCreateColormap(dpy, RootWindow(dpy, screen), visual,
-				   visual->class & 1);
-	if (visual->class & 1)
-	    XStoreColors(dpy, colormap, colors, ncolors);
-	/* XXX colors may not be accurate for static maps */
+
+    /* get the appropriate colormap */
+    if (newmap && (vinfo.class & 1) &&
+	(vinfo.depth == in_image.depth) &&
+	(vinfo.class == header.visual_class) &&
+	(vinfo.colormap_size >= ncolors) &&
+	(vinfo.red_mask == header.red_mask) &&
+	(vinfo.green_mask == header.green_mask) &&
+	(vinfo.blue_mask == header.blue_mask)) {
+	colormap = XCreateColormap(dpy, RootWindow(dpy, screen), vinfo.visual,
+				   AllocAll);
+	XStoreColors(dpy, colormap, colors, ncolors);
+    } else {
+	if (!newmap && (vinfo.visual == DefaultVisual(dpy, screen)))
+	    colormap = DefaultColormap(dpy, screen);
+	else
+	    colormap = XCreateColormap(dpy, RootWindow(dpy, screen),
+				       vinfo.visual, AllocNone);
+	newmap = False;
     }
 
+    /* create the output image */
+    if (defvis || newmap) {
+	out_image = &in_image;
+    } else {
+	out_image = XCreateImage(dpy, vinfo.visual, vinfo.depth,
+				 (vinfo.depth == 1) ? XYBitmap :
+						      in_image.format,
+				 in_image.xoffset, NULL,
+				 in_image.width, in_image.height,
+				 XBitmapPad(dpy), 0);
+	out_image->data = malloc(Image_Size(out_image));
+	if ((header.visual_class == TrueColor) ||
+	    (header.visual_class == DirectColor))
+	    Do_Direct(dpy, &header, &colormap, ncolors, colors,
+		      &in_image, out_image);
+	else
+	    Do_Pseudo(dpy, &colormap, ncolors, colors, &in_image, out_image);
+    }
 
-    if (colormap != DefaultColormap(dpy, screen))
-	XInstallColormap(dpy, colormap); /* XXX */
+    if (out_image->depth == 1) {
+	gc_val.foreground = BlackPixel (dpy, screen);
+	gc_val.background = WhitePixel (dpy, screen); 
+	if (fgname &&
+	    XParseColor(dpy, colormap, fgname, &color) &&
+	    XAllocColor(dpy, colormap, &color))
+	    gc_val.foreground = color.pixel;
+	if (bgname &&
+	    XParseColor(dpy, colormap, bgname, &color) &&
+	    XAllocColor(dpy, colormap, &color))
+	    gc_val.background = color.pixel;
+	if (inverse) {
+	    unsigned long tmp;
+	    tmp = gc_val.foreground;
+	    gc_val.foreground = gc_val.background;
+	    gc_val.background = tmp;
+	}
+    } else {
+	gc_val.background = XGetPixel(out_image, 0, 0);
+	gc_val.foreground = 0;
+    }
 
-    /*
-     * Create the image window.
-     */
-
-    attributes.override_redirect = True;
-    attributes.background_pixel = BlackPixel(dpy, screen); /* XXX */
+    attributes.background_pixel = gc_val.background;
     attributes.bit_gravity = NorthWestGravity;
-    /*
-     * Select mouse ButtonPressed on the window, this is how we determine
-     * when to stop displaying the window.
-     */
-    attributes.event_mask = ButtonPressMask | ExposureMask;
+    attributes.event_mask = ButtonPressMask|ButtonReleaseMask|ExposureMask;
     attributes.colormap = colormap;
 
-    image_win = XCreateWindow(dpy,
-	RootWindow(dpy, screen),
-	header.window_x, header.window_y,
-	header.pixmap_width, header.pixmap_height,
-	0, win_depth, InputOutput, visual,
-	CWBackPixel|CWColormap|CWEventMask|CWBitGravity,
-	&attributes);
+    hints.x = header.window_x;
+    hints.y = header.window_y;
+    hints.width = out_image->width;
+    hints.height = out_image->height;
+    if (geom)
+	gbits = XParseGeometry(geom, &hints.x, &hints.y,
+			       &hints.width, &hints.height);
+    hints.max_width = (hints.width > out_image->width) ? hints.width :
+							 out_image->width;
+    hints.max_height = (hints.height > out_image->height) ? hints.height :
+							    out_image->height;
+    hints.flags = PMaxSize |
+		  ((gbits & (XValue|YValue)) ? USPosition : 0) |
+		  ((gbits & (HeightValue|WidthValue)) ? USSize : PSize);
 
-    if (!image_win) Error("Can't create image window.");
+    /* create the image window */
+    image_win = XCreateWindow(dpy, RootWindow(dpy, screen),
+			      hints.x, hints.y, hints.width, hints.height,
+			      0, vinfo.depth, InputOutput, vinfo.visual,
+			      CWBackPixel|CWColormap|CWEventMask|CWBitGravity,
+			      &attributes);
      
-    /*
-     * Store the window name string.
-     */
+     /* store the window name string */
     XStoreName(dpy, image_win, win_name);
     
-    /*
-     * Map the image window.
-     */
+    /* store size hints */
+    XSetNormalHints(dpy, image_win, &hints);
+
+    /* map the image window */
     XMapWindow(dpy, image_win);
 
-    /* XXX */
-    if (inverse) {
-	gc_val.foreground = (unsigned long) WhitePixel (dpy, screen); 
-	gc_val.background = (unsigned long) BlackPixel (dpy, screen); 
-    } else {
-	gc_val.foreground = (unsigned long) BlackPixel (dpy, screen);
-	gc_val.background = (unsigned long) WhitePixel (dpy, screen); 
-    }
     gc = XCreateGC (dpy, image_win, GCForeground|GCBackground, &gc_val);
 
-    /*
-     * Set up a while loop to maintain the image.
-     */
-
-    while (True) {
-	/*
-	 * Wait on mouse input event to terminate.
-	 */
+    while (1) {
+	/* wait on mouse input event to terminate */
 	XNextEvent(dpy, &event);
-	if (event.type == ButtonPress) break;
-
-	switch((int)event.type) {
+	switch(event.type) {
+	  case ButtonPress:
+	    break;
+	  case ButtonRelease:
+	    XCloseDisplay(dpy);
+	    exit(0);
 	  case Expose:
-	      if (expose->x < image.width &&
-		  expose->y < image.height) {
-		  if ((image.width - expose->x) < expose->width)
-		      expose->width = image.width - expose->x;
-		  if ((image.height - expose->y) < expose->height)
-		      expose->height = image.height - expose->y;
-		  XPutImage(dpy, image_win, gc, &image,
-			    expose->x, expose->y, expose->x, expose->y,
-			    expose->width, expose->height);
-	      }
+	    if ((expose->x < out_image->width) &&
+		(expose->y < out_image->height)) {
+		if ((out_image->width - expose->x) < expose->width)
+		    expose->width = out_image->width - expose->x;
+		if ((out_image->height - expose->y) < expose->height)
+		    expose->height = out_image->height - expose->y;
+		XPutImage(dpy, image_win, gc, out_image,
+			  expose->x, expose->y, expose->x, expose->y,
+			  expose->width, expose->height);
+	    }
 	}
     }
-
-    /*
-     * Destroy the image window.
-     */
-    XDestroyWindow(dpy, image_win);
-    
-    /*
-     * Free the pixmap buffer.
-     */
-    free(buffer);
-
-    /*
-     * Free window name string.
-     */
-    free(win_name);
-    exit(0);
 }
 
-#ifdef notdef
-Colormap
-ModifyColors(image, visual, colormap, colors, ncolors)
-	XImage *image;
-	Visual *visual;
-	Colormap colormap;
-	XColor *colors;
-	int ncolors;
+Do_Pseudo(dpy, colormap, ncolors, colors, in_image, out_image)
+    Display *dpy;
+    Colormap *colormap;
+    int ncolors;
+    XColor *colors;
+    XImage *in_image, *out_image;
 {
-    unsigned long *cplanes, *cpixels;
-    XColor *copycolors;
-    register int *histbuffer;
-    register u_short *wbuffer;
-	
-    /*
-     * If necessary, get and store the new colors, convert the pixels to the
-     * new colors appropriately.
-     */
-    if(ncolors) {
-	copycolors = (XColor *)calloc(ncolors,sizeof(XColor));
-	bcopy(colors, copycolors, sizeof(XColor)*ncolors);
-	if(XQueryColors(dpy, colormap, copycolors, ncolors) == 0)
-	  Error("Can't query the color map?");
-	for(i=0; i<ncolors; i++)
-	  if(!ColorEqual(&colors[i], &copycolors[i])) {
-	      copycolors = True;
-	      break;
-	  }
-	if(debug) {
-	    if(copycolors)  fprintf(stderr,"New colors needed\n");
-	    else fprintf(stderr,"Old colors match!\n");
-	}
-	cpixels = (unsigned long *)calloc(ncolors+1,sizeof(int));
-	if(XAllocColorCells(dpy, colormap, 0, cplanes, 0, cpixels, 
-	     (unsigned int) ncolors) == 0)
+    register int i, x, y;
+    register XColor *color;
 
-/*  Old arguments (for XGetColorCells() in X10) were: 
-               0, ncolors, 0, &cplanes, cpixels %%*/
-
-	  Error("Can't allocate colors.");
-	for(i=0; i<ncolors; i++) {
-	    copycolors[i].pixel = cpixels[i];
-	    copycolors[i].red   = colors[i].red;
-	    copycolors[i].green = colors[i].green;
-	    copycolors[i].blue  = colors[i].blue;
-	    if(debug) 
-	      fprintf(stderr,"Pixel %4d, r = %5d  g = %5d  b = %5d\n",
-		      copycolors[i].pixel, copycolors[i].red,
-		      copycolors[i].green, copycolors[i].blue);
-	}
-	XStoreColors(ncolors, copycolors);
-
-	/* now, make a lookup table to convert old pixels into the new ones*/
-	if(header.pixmap_format == ZPixmap) {
-	    if(header.display_planes < 9) {
-		histbuffer = (int *)calloc(256, sizeof(int));
-		bzero(histbuffer, 256*sizeof(int));
-		for(i=0; i<ncolors; i++)
-		  histbuffer[colors[i].pixel] = copycolors[i].pixel;
-		for(i=0; i<buffer_size; i++)
-		  buffer[i] = histbuffer[buffer[i]];
+    for (i = 0; i < ncolors; i++)
+	colors[i].flags = 0;
+    for (y = 0; y < in_image->height; y++) {
+	for (x = 0; x < in_image->width; x++) {
+	    color = &colors[XGetPixel(in_image, x, y)];
+	    if (!color->flags) {
+		color->flags = DoRed | DoGreen | DoBlue;
+		if (!XAllocColor(dpy, *colormap, color)) {
+		    *colormap = XCopyColormapAndFree(dpy, *colormap);
+		    XAllocColor(dpy, *colormap, color);
+		}
 	    }
-	    else if(header.display_planes < 17) {
-		histbuffer = (int *)calloc(65536, sizeof(int));
-		bzero(histbuffer, 65536*sizeof(int));
-		for(i=0; i<ncolors; i++)
-		  histbuffer[colors[i].pixel] = copycolors[i].pixel;
-		wbuffer = (u_short *)buffer;
-		for(i=0; i<(buffer_size/sizeof(u_short)); i++)
-		  wbuffer[i] = histbuffer[wbuffer[i]];
-	    } 
-	    else if(header.display_planes > 16) {
-		Error("Unable to handle more than 16 planes at this time");
-	    }
-	    free(histbuffer);
+	    XPutPixel(out_image, x, y, color->pixel);
 	}
-	free(cpixels);
-	bcopy(copycolors, colors, sizeof(XColor)*ncolors);
-	free(copycolors);
     }
-    return colormap;
 }
 
-/*
- * test two color map entries for equality
- */
-ColorEqual(color1, color2)
-     register XColor *color1, *color2;
+Do_Direct(dpy, header, colormap, ncolors, colors, in_image, out_image)
+    Display *dpy;
+    XWDFileHeader *header;
+    Colormap *colormap;
+    int ncolors;
+    XColor *colors;
+    XImage *in_image, *out_image;
 {
-    return(color1->pixel == color2->pixel &&
-	   color1->red   == color2->red &&
-	   color1->green == color2->green &&
-	   color1->blue  == color2->blue);
+    register int x, y;
+    XColor color;
+    int direct = 0;
+    unsigned long rmask, gmask, bmask;
+    int rshift = 0, gshift = 0, bshift = 0;
+
+    rmask = header->red_mask;
+    while (!(rmask & 1)) {
+	rmask >>= 1;
+	rshift++;
+    }
+    gmask = header->green_mask;
+    while (!(gmask & 1)) {
+	gmask >>= 1;
+	gshift++;
+    }
+    bmask = header->blue_mask;
+    while (!(bmask & 1)) {
+	bmask >>= 1;
+	bshift++;
+    }
+    if ((ncolors == 0) || (header->visual_class = DirectColor))
+	direct = 1;
+    color.flags = DoRed | DoGreen | DoBlue;
+    for (y = 0; y < in_image->height; y++) {
+	for (x = 0; x < in_image->width; x++) {
+	    color.pixel = XGetPixel(in_image, x, y);
+	    color.red = (color.pixel >> rshift) & rmask;
+	    color.green = (color.pixel >> gshift) & gmask;
+	    color.blue = (color.pixel >> bshift) & bmask;
+	    if (!direct) {
+		color.red = colors[color.red].red;
+		color.green = colors[color.green].green;
+		color.blue = colors[color.blue].blue;
+	    }
+	    /* XXX - very slow - needs work */
+	    if (!XAllocColor(dpy, *colormap, &color)) {
+		*colormap = XCopyColormapAndFree(dpy, *colormap);
+		XAllocColor(dpy, *colormap, &color);
+	    }
+	    XPutPixel(out_image, x, y, color.pixel);
+	}
+    }
 }
 
-#endif
-
-int Image_Size(image)
+unsigned Image_Size(image)
      XImage *image;
 {
     if (image->format != ZPixmap)
       return(image->bytes_per_line * image->height * image->depth);
 
-    return(image->bytes_per_line * image->height);
-
+    return((unsigned)image->bytes_per_line * image->height);
 }
 
-/*
- * Error - Fatal xwud error.
- */
 Error(string)
-	char *string;	/* Error description string. */
+	char *string;
 {
 	fprintf(stderr, "xwud: Error => %s\n", string);
-
 	if (errno != 0) {
 		perror("xwud");
 		fprintf(stderr, "\n");
 	}
-
 	exit(1);
 }
 
@@ -509,5 +519,3 @@ _swaplong (bp, n)
 	bp += 2;
     }
 }
-
-/* End of xwud.c */
