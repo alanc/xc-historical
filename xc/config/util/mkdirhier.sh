@@ -1,5 +1,5 @@
 #!/bin/sh
-# $XConsortium$
+# $XConsortium: mkdirhier.sh,v 1.6 91/08/13 18:13:04 rws Exp $
 # Courtesy of Paul Eggert
 
 newline='
@@ -32,6 +32,12 @@ do
 
 	IFS=/
 	set x $directory
+	case $2 in
+	    */*)	# IFS parsing is broken
+		IFS=' '
+		set x `echo $directory | tr / ' '`
+		;;
+	esac
 	IFS=$newline
 	shift
 
