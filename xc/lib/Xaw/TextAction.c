@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.32 90/06/01 17:33:09 converse Exp $";
+static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.33 90/06/18 14:20:39 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -114,58 +114,6 @@ TextWidget ctx;
   ctx->text.mult = 1;
 }
 
-
-#ifdef XAW_BC
-
-/*
- * These functions are superceeded by insert-selection.
- */
-
-static void
-StuffFromBuffer(ctx, buffer)
-TextWidget ctx;
-int buffer;
-{
-  extern char *XFetchBuffer();
-  XawTextBlock text;
-  text.ptr = XFetchBuffer(XtDisplay(ctx), &(text.length), buffer);
-  text.firstPos = 0;
-  if (_XawTextReplace(ctx, ctx->text.insertPos, ctx->text.insertPos, &text)) {
-    XBell(XtDisplay(ctx), 0);
-    return;
-  }
-  ctx->text.insertPos = SrcScan(ctx->text.source, ctx->text.insertPos,
-				XawstPositions, XawsdRight, text.length, TRUE);
-  XtFree(text.ptr);
-}
-
-/*ARGSUSED*/
-static void 
-UnKill(ctx, event, p, n)
-TextWidget ctx;
-XEvent *event;
-String *p;
-Cardinal *n;
-{
-  StartAction(ctx, event);
-  StuffFromBuffer(ctx, 1);
-  EndAction(ctx);
-}
-
-/*ARGSUSED*/
-static void
-Stuff(ctx, event, p, n)
-TextWidget ctx;
-XEvent *event;
-String *p;
-Cardinal *n;
-{
-  StartAction(ctx, event);
-  StuffFromBuffer(ctx, 0);
-  EndAction(ctx);
-}
-
-#endif	/* XAW_BC */
 
 struct _SelectionList {
     String *params;
@@ -1576,11 +1524,6 @@ XtActionsRec textActionsTable[] = {
   {"kill-selection", 		KillCurrentSelection},
   {"kill-to-end-of-line", 	KillToEndOfLine},
   {"kill-to-end-of-paragraph", 	KillToEndOfParagraph},
-#ifdef XAW_BC
-/* unkill bindings */
-  {"unkill", 			UnKill},
-  {"stuff", 			Stuff},
-#endif /* XAW_BC */
 /* new line stuff */
   {"newline-and-indent", 	InsertNewLineAndIndent},
   {"newline-and-backup", 	InsertNewLineAndBackup},

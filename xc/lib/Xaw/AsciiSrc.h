@@ -1,5 +1,5 @@
 /*
- * $XConsortium: AsciiSrc.h,v 1.6 90/04/30 17:46:03 converse Exp $
+ * $XConsortium: AsciiSrc.h,v 1.7 90/05/08 15:23:07 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -144,82 +144,6 @@ extern Boolean XawAsciiSourceChanged(
 #ifdef __cplusplus
 }						/* for C++ V2.0 */
 #endif
-
-#ifdef XAW_BC
-/*************************************************************
- *
- * These functions are only preserved for compatability.     
- */
-
-#define ASCII_STRING		/* Turn on R3 AsciiDisk and AsciiString */
-#define ASCII_DISK		/* Emulation modes. */
-
-#ifdef ASCII_STRING
-#define XawStringSourceDestroy XtDestroyWidget
-#endif
-
-#ifdef ASCII_DISK
-#define XawDiskSourceDestroy XtDestroyWidget
-#endif
-
-#ifdef ASCII_STRING
-
-#ifdef __cplusplus
-extern "C" {					/* for C++ V2.0 */
-#endif
-
-/*	Function Name: AsciiStringSourceCreate
- *	Description: Creates a string source.
- *	Arguments: parent - the widget that will own this source.
- *                 args, num_args - the argument list.
- *	Returns: a pointer to the new text source.
- */
-
-extern Widget XawStringSourceCreate(
-#if NeedFunctionPrototypes
-    Widget		/* parent */,
-    ArgList		/* args */,
-    Cardinal		/* num_args */
-#endif
-);
-
-#ifdef __cplusplus
-}						/* for C++ V2.0 */
-#endif
-
-#endif /* ASCII_STRING */
-
-#ifdef ASCII_DISK
-
-#ifdef __cplusplus
-extern "C" {					/* for C++ V2.0 */
-#endif
-
-/*	Function Name: AsciiDiskSourceCreate
- *	Description: Creates a disk source.
- *	Arguments: parent - the widget that will own this source.
- *                 args, num_args - the argument list.
- *	Returns: a pointer to the new text source.
- */
-
-extern Widget XawDiskSourceCreate(
-#if NeedFunctionPrototypes
-    Widget		/* parent */,
-    ArgList		/* args */,
-    Cardinal 		/* num_args */
-#endif
-);
-
-#ifdef __cplusplus
-}						/* for C++ V2.0 */
-#endif
-
-#endif /* ASCII_DISK */
-#endif /* XAW_BC */
-/*
- * End of Compatability stuff.
- *  
- ***************************************************/
 
 #endif /* _XawAsciiSrc_h  - Don't add anything after this line. */
 

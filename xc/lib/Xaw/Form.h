@@ -1,4 +1,4 @@
-/* $XConsortium: Form.h,v 1.24 90/04/30 17:05:36 converse Exp $ */
+/* $XConsortium: Form.h,v 1.25 90/05/08 15:18:32 converse Exp $ */
 
 
 /***********************************************************
@@ -124,15 +124,6 @@ typedef struct _FormClassRec	*FormWidgetClass;
 typedef struct _FormRec		*FormWidget;
 
 extern WidgetClass formWidgetClass;
-
-#ifdef XAW_BC
-/*************************************************************
- * For Compatibility only.                                   */
-
-#define XtFormDoLayout                XawFormDoLayout
-
-/*************************************************************/
-#endif /* XAW_BC */
 
 #ifdef __cplusplus
 extern "C" {					/* for C++ V2.0 */

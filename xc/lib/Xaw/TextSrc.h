@@ -1,5 +1,5 @@
 /*
- * $XConsortium: TextSrc.h,v 1.5 90/04/30 17:46:11 converse Exp $
+ * $XConsortium: TextSrc.h,v 1.6 90/05/08 15:17:36 converse Exp $
  */
 
 /***********************************************************
@@ -212,41 +212,6 @@ extern void XawTextSourceSetSelection(
 #ifdef __cplusplus
 }						/* for C++ V2.0 */
 #endif
-
-#ifdef XAW_BC
-/*************************************************************
- * For Compatibility only.                                   */
-
-#define _XtTextSink        _XawTextSink
-#define _XtTextSource      _XawTextSource
-
-#define XtisOn             XawisOn
-#define XtisOff            XawisOff
-
-#define XtsmTextSelect     XawsmTextSelect
-#define XtsmTextExtend     XawsmTextExtend
-
-#define XtactionStart      XawactionStart
-#define XtactionAdjust     XawactionAdjust
-#define XtactionEnd        XawactionEnd
-
-#define XtsdLeft           XawsdLeft
-#define XtsdRight          XawsdRight
-
-#define XtstPositions      XawstPositions
-#define XtstWhiteSpace     XawstWhiteSpace
-#define XtstEOL            XawstEOL
-#define XtstParagraph      XawstParagraph
-#define XtstAll            XawstAll
-
-#define XtTextSelectionAction XawTextSelectionAction
-#define XtTextSelection       XawTextSelection
-#define XtTextScanDirection   XawTextScanDirection
-#define XtTextScanType        XawTextScanType
-
-
-/*************************************************************/
-#endif /* XAW_BC */
 
 #endif /* _XawTextSrc_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

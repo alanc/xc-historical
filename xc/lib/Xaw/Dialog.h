@@ -1,4 +1,4 @@
-/* $XConsortium: Dialog.h,v 1.21 90/04/30 17:05:45 converse Exp $ */
+/* $XConsortium: Dialog.h,v 1.22 90/05/08 15:22:30 converse Exp $ */
 
 
 /***********************************************************
@@ -87,16 +87,6 @@ extern char *XawDialogGetValueString(
 #ifdef __cplusplus
 }						/* for C++ V2.0 */
 #endif
-
-#ifdef XAW_BC
-/*************************************************************
- * For Compatibility only.                                   */
-
-#define XtDialogGetValueString           XawDialogGetValueString
-#define XtDialogAddButton                XawDialogAddButton
-
-/*************************************************************/
-#endif /* XAW_BC */
 
 #endif /* _Dialog_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: List.h,v 1.16 90/04/30 17:03:41 converse Exp $
+ * $XConsortium: List.h,v 1.17 90/05/08 15:18:37 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -141,21 +141,6 @@ typedef struct _XawListReturnStruct {
   String string;
   int list_index;
 } XawListReturnStruct;
-#ifdef XAW_BC
-/*************************************************************
- * For Compatibility only.                                   */
-
-#define XtListReturnStruct   XawListReturnStruct
-
-#define XT_LIST_NONE         XAW_LIST_NONE 
-
-#define XtListChange         XawListChange
-#define XtListUnhighlight    XawListUnhighlight
-#define XtListHighlight      XawListHighlight
-#define XtListShowCurrent    XawListShowCurrent
-
-/*************************************************************/
-#endif /* XAW_BC */
 
 /******************************************************************
  *

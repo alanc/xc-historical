@@ -193,13 +193,6 @@ MakeDirectories(install,$(INCDIR)/Xmu)
 
 InstallMultiple($(HEADERS),$(INCDIR)/Xmu)
 
-#if InstallOldHeaderFiles
-/* Make links for old programs that need to be converted. */ 
-LinkFileList(install,Xmu.h,$(INCDIR),Xmu)
-
-install::
-	cd $(INCDIR); $(LN) Xmu/Misc.h XawMisc.h
-#endif
 DependTarget()
 
 NormalLintTarget($(SRCS))

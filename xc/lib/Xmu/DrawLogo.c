@@ -1,4 +1,4 @@
-/* static char Xrcsid[] = "$XConsortium: DrawLogo.c,v 1.1 89/05/11 14:01:55 kit Exp $"; */
+/* static char Xrcsid[] = "$XConsortium: DrawLogo.c,v 1.2 90/07/15 16:18:23 rws Exp $"; */
 
 #include <X11/Xlib.h>  
 
@@ -128,23 +128,3 @@ XmuDrawLogo(dpy, drawable, gcFore, gcBack, x, y, width, height)
     poly[3].x = x + d11 + d21;        poly[3].y = y + size;
     XFillPolygon(dpy, drawable, gcBack, poly, 4, Convex, CoordModeOrigin);
 }
-
-#ifdef XAW_BC
-
-/*
- * For Compatability Only.
- */
-
-XDrawLogo(dpy, drawable, gcFore, gcBack, x, y, width, height)
-    Display *dpy;
-    Drawable drawable;
-    GC gcFore, gcBack;
-    int x, y;
-    unsigned int width, height;
-{
-  XmuDrawLogo(dpy, drawable, gcFore, gcBack, x, y, width, height);
-}
-
-#endif /* XAW_BC */
-
-

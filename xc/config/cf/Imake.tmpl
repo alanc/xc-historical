@@ -5,7 +5,7 @@
 #define XCOMM #
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.81 90/07/11 08:27:41 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.82 90/11/30 11:15:57 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate .cf
 XCOMM configuration files.  Site-wide parameters may be set in the file
@@ -562,9 +562,6 @@ XCOMM site-specific configuration parameters - edit site.def to change
 #ifndef LdCombineFlags
 #define LdCombineFlags -X -r
 #endif
-#ifndef CompatibilityFlags
-#define CompatibilityFlags /**/
-#endif
 #ifndef TagsCmd
 #define TagsCmd ctags
 #endif
@@ -663,7 +660,6 @@ XCOMM site-specific configuration parameters - edit site.def to change
 #endif
       CDEBUGFLAGS = DefaultCDebugFlags
         CCOPTIONS = DefaultCCOptions	/* to distinguish from param flags */
-      COMPATFLAGS = CompatibilityFlags
 /*
  * STD_INCLUDES contains system-specific includes
  * TOP_INCLUDES specifies how to get to /usr/include or its build substitute
@@ -672,7 +668,7 @@ XCOMM site-specific configuration parameters - edit site.def to change
  * LOCAL_LDFLAGS contains client-specific ld flags flags set in Imakefile
  */
       ALLINCLUDES = $(STD_INCLUDES) $(TOP_INCLUDES) $(INCLUDES) $(EXTRA_INCLUDES) 
-       ALLDEFINES = $(ALLINCLUDES) $(STD_DEFINES) $(PROTO_DEFINES) $(DEFINES) $(COMPATFLAGS)
+       ALLDEFINES = $(ALLINCLUDES) $(STD_DEFINES) $(PROTO_DEFINES) $(DEFINES)
            CFLAGS = $(CDEBUGFLAGS) $(CCOPTIONS) $(ALLDEFINES)
         LINTFLAGS = $(LINTOPTS) -DLINT $(ALLDEFINES)
            LDLIBS = $(SYS_LIBRARIES) $(EXTRA_LIBRARIES)

@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.161 90/11/29 18:41:13 converse Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.162 90/11/30 18:30:16 rws Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -142,14 +142,6 @@ static XtResource resources[] = {
      offset(text.resize), XtRImmediate, (caddr_t) XawtextResizeNever},
   {XtNautoFill, XtCAutoFill, XtRBoolean, sizeof(Boolean),
      offset(text.auto_fill), XtRImmediate, (caddr_t) FALSE},
-
-#ifdef XAW_BC
-/*
- * This resource is obsolete. 
- */
-  {XtNtextOptions, XtCTextOptions, XtRInt, sizeof (int),
-     offset(text.options), XtRImmediate, (caddr_t)0},
-#endif
 };
 #undef offset
 
@@ -469,15 +461,6 @@ Cardinal *num_args;		/* unused */
   ctx->text.mult = 1;
   ctx->text.single_char = FALSE;
   ctx->text.copy_area_offsets = NULL;
-
-#ifdef XAW_BC
-/*******************************
- * For Compatability.          */
-
-  if (ctx->text.options != 0)
-    XawTextChangeOptions((Widget) ctx, ctx->text.options);
-/*******************************/
-#endif /* XAW_BC */  
 
   if (ctx->core.height == DEFAULT_TEXT_HEIGHT) {
     ctx->core.height = VMargins(ctx);
@@ -2670,15 +2653,6 @@ Cardinal *num_args;
   Boolean    display_caret = newtw->text.display_caret;
 
 
-#ifdef XAW_BC
-/*******************************
- * For Compatability.          */
-
-  if (newtw->text.options != oldtw->text.options)
-    XawTextChangeOptions((Widget) newtw, newtw->text.options);
-/*******************************/
-#endif /* XAW_BC */  
-
   newtw->text.display_caret = oldtw->text.display_caret;
   _XawTextPrepareToUpdate(newtw);
   newtw->text.display_caret = display_caret;
@@ -3079,50 +3053,6 @@ Widget w;
     }
   }
 }
-
-#ifdef XAW_BC
-void 
-XawTextChangeOptions(w, options)
-Widget w;
-int options;
-{
-  TextWidget ctx = (TextWidget) w;
-
-  ctx->text.options = options;
-
-  if (ctx->text.options & scrollVertical)
-    ctx->text.scroll_vert = XawtextScrollAlways;
-  else 
-    ctx->text.scroll_vert = XawtextScrollNever;
-
-  if (ctx->text.options & scrollHorizontal)
-    ctx->text.scroll_horiz = XawtextScrollAlways;
-  else 
-    ctx->text.scroll_horiz = XawtextScrollNever;
-
-  if (ctx->text.options & resizeWidth) /* Set up resize options. */
-    if (ctx->text.options & resizeHeight)
-      ctx->text.resize = XawtextResizeBoth;
-    else
-      ctx->text.resize = XawtextResizeWidth;
-  else if (ctx->text.options & resizeHeight)
-    ctx->text.resize = XawtextResizeHeight;
-  else
-    ctx->text.resize = XawtextResizeNever;
-
-  if (ctx->text.options & wordBreak)
-    ctx->text.wrap = XawtextWrapWord;
-  else
-    ctx->text.wrap = XawtextWrapNever;
-}
-
-int 
-XawTextGetOptions(w)
-Widget w;
-{
-  return(((TextWidget) w)->text.options);
-}
-#endif /* XAW_BC */
 
 void
 #if NeedFunctionPrototypes

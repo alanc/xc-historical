@@ -13,15 +13,6 @@
 
 #define BuildServer YES
 
-/************************************************************
- *                                                          *
- * No compatability functions avaliable at all.             */
-
-#define InstallOldHeaderFiles   NO	/* Testing... */
-#define CompatibilityFlags
-
-/************************************************************/
-
 #define BootstrapCFlags    -DM4310 -DUTEK
 #define StandardDefines    -DM4310 -DUTEK -Dpegasus 
 #define StandardCppDefines -DM4310 -DUTEK -Dpegasus
@@ -32,7 +23,7 @@
 #define XtekServer Xtek
 
 
-XCOMM platform:  $XConsortium: pegasus.cf,v 1.13 89/12/26 10:16:48 rws Exp $
+XCOMM platform:  $XConsortium: pegasus.cf,v 1.14 90/11/30 11:14:28 rws Exp $
 XCOMM operating system:  OSName
 
 /*

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Scrollbar.h,v 1.3 90/05/08 15:18:35 converse Exp $
+* $XConsortium: Scrollbar.h,v 1.4 90/10/22 14:37:41 converse Exp $
 */
 
 
@@ -106,14 +106,5 @@ extern void XawScrollbarSetThumb(
 #ifdef __cplusplus
 }						/* for C++ V2.0 */
 #endif
-
-#ifdef XAW_BC
-/*************************************************************
- * For Compatibility only.                                   */
-
-#define XtScrollBarSetThumb      XawScrollbarSetThumb
-
-/*************************************************************/
-#endif /* XAW_BC */
 
 #endif /* _Scrollbar_h */

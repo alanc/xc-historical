@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Paned.h,v 1.10 90/04/30 17:05:51 converse Exp $
+* $XConsortium: Paned.h,v 1.11 90/05/08 15:18:29 converse Exp $
 */
 
 
@@ -137,10 +137,6 @@ CONSTRAINT RESOURCES:
 /* Class record constant */
 extern WidgetClass panedWidgetClass;
 
-#ifdef XAW_BC			/* for compatability only. */
-  extern WidgetClass vPanedWidgetClass;
-#endif
-
 typedef struct _PanedClassRec	*PanedWidgetClass;
 typedef struct _PanedRec	*PanedWidget;
 
@@ -237,18 +233,5 @@ extern void XawPanedAllowResize(
 }						/* for C++ V2.0 */
 #endif
 
-#ifdef XAW_BC
-/*************************************************************
- * For Compatibility only.                                   */
-
-#define XtPanedSetMinMax        XawPanedSetMinMax
-#define XtPanedGetMinMax        XawPanedGetMinMax
-#define XtPanedGetNumSub        XawPanedGetNumSub
-#define XtPanedAllowResize      XawPanedAllowResize
-#define XtPanedSetRefigureMode  XawPanedSetRefigureMode
-
-/*************************************************************/
-#endif /* XAW_BC */
-  
 #endif /* _XawPaned_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

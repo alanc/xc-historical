@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Text.h,v 1.34 90/04/30 17:46:22 converse Exp $
+* $XConsortium: Text.h,v 1.35 90/05/08 15:18:22 converse Exp $
 */
 
 
@@ -123,108 +123,6 @@ extern WidgetClass textWidgetClass;
 
 typedef struct _TextClassRec *TextWidgetClass;
 typedef struct _TextRec      *TextWidget;
-
-#ifdef XAW_BC
-/************************************************************
- *
- * This Stuff is only for compatibility, and will go away in 
- * future releases.                                         */
-
-/* preserved for Back Compatability only. */
-
-#define XawTextSource Widget
-#define XtTextSource  Widget
-
-#define wordBreak		0x01
-#define scrollVertical		0x02
-#define scrollHorizontal	0x04
-#define scrollOnOverflow	0x08
-#define resizeWidth		0x10
-#define resizeHeight		0x20
-#define editable		0x40
-
-typedef long XtTextPosition;
-
-#define XtTextBlock                XawTextBlock
-#define XtTextBlockPtr             XawTextBlockPtr
-
-#define EditDone	           XawEditDone
-#define EditError	           XawEditError
-#define PositionError	           XawPositionError
-
-#define XtEditDone	           XawEditDone
-#define XtEditError	           XawEditError
-#define XtPositionError	           XawPositionError
-
-#define XttextRead                 XawtextRead
-#define XttextAppend               XawtextAppend
-#define XttextEdit                 XawtextEdit
-#define XtTextEditType             XawTextEditType
-#define XtselectNull               XawselectNull
-
-#define XtselectPosition           XawselectPosition
-#define XtselectChar               XawselectChar
-#define XtselectWord               XawselectWord
-#define XtselectLine               XawselectLine
-#define XtselectParagraph          XawselectParagraph
-#define XtselectAll                XawselectAll
-#define XtTextSelectType           XawTextSelectType
-
-#define XtTextDisableRedisplay     XawTextDisableRedisplay
-#define XtTextEnableRedisplay      XawTextEnableRedisplay
-#define XtTextGetSource            XawTextGetSource
-
-#define XtTextDisplay              XawTextDisplay
-#define XtTextDisplayCaret         XawTextDisplayCaret
-#define XtTextSetSelectionArray    XawTextSetSelectionArray
-#define XtTextSetLastPos           XawTextSetLastPos
-#define XtTextGetSelectionPos      XawTextGetSelectionPos
-#define XtTextSetSource            XawTextSetSource
-#define XtTextReplace              XawTextReplace
-#define XtTextTopPosition          XawTextTopPosition
-#define XtTextSetInsertionPoint    XawTextSetInsertionPoint
-#define XtTextGetInsertionPoint    XawTextGetInsertionPoint
-#define XtTextUnsetSelection       XawTextUnsetSelection
-#define XtTextChangeOptions        XawTextChangeOptions
-#define XtTextGetOptions           XawTextGetOptions
-#define XtTextSetSelection         XawTextSetSelection
-#define XtTextInvalidate           XawTextInvalidate
-
-#define XtDiskSourceCreate         XawDiskSourceCreate
-#define XtDiskSourceDestroy        XawDiskSourceDestroy
-#define XtStringSourceCreate       XawStringSourceCreate
-#define XtStringSourceDestroy      XawStringSourceDestroy
-
-#ifdef __cplusplus
-extern "C" {					/* for C++ V2.0 */
-#endif
-
-extern void XawTextChangeOptions(
-#if NeedFunctionPrototypes
-    Widget		/* w */,
-    int			/* options */
-#endif
-);
-
-extern int XawTextGetOptions(
-#if NeedFunctionPrototypes
-    Widget		/* w */
-#endif
-);
-
-extern void XawTextSetLastPos(
-#if NeedFunctionPrototypes
-    Widget		/* w */,
-    XawTextPosition	/* lastPos */
-#endif
-);
-
-#ifdef __cplusplus
-extern "C" {					/* for C++ V2.0 */
-#endif
-
-/*************************************************************/
-#endif /* XAW_BC */
 
 #ifdef __cplusplus
 extern "C" {					/* for C++ V2.0 */

@@ -1,4 +1,4 @@
-/* static char Xrcsid[] = "$XConsortium: GrayPixmap.c,v 1.4 89/12/10 10:29:25 rws Exp $"; */
+/* static char Xrcsid[] = "$XConsortium: GrayPixmap.c,v 1.5 90/07/15 16:18:37 rws Exp $"; */
 
 
 /***********************************************************
@@ -109,31 +109,3 @@ void XmuReleaseStippledPixmap(screen, pixmap)
 	cachePtr = *prevP;
     }
 }
-
-#ifdef XAW_BC
-
-/*************************************************************
- *
- * For Compatability only
- *
- *************************************************************/
-
-Pixmap XtGrayPixmap (screen)
-
-     Screen *screen;
-{
-    return XmuCreateStippledPixmap(screen, BlackPixelOfScreen(screen),
-					   WhitePixelOfScreen(screen),
-				   DefaultDepthOfScreen(screen));
-}
-
-
-Pixmap XtSimpleStippledPixmap (screen, fore, back)
-    Screen *screen;
-    Pixel fore, back;
-{
-    return XmuCreateStippledPixmap(screen, fore, back,
-				   DefaultDepthOfScreen(screen));
-}
-
-#endif /* XAW_BC */

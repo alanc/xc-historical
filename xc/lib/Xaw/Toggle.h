@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Toggle.h,v 1.8 90/04/30 17:04:06 converse Exp $
+ * $XConsortium: Toggle.h,v 1.9 90/05/08 15:22:13 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -171,18 +171,6 @@ extern void XawToggleUnsetCurrent(
 #ifdef __cplusplus
 }						/* for C++ V2.0 */
 #endif
-
-#ifdef XAW_BC
-/*************************************************************
- * For Compatibility only.                                   */
-
-#define XtToggleChangeRadioGroup       XawToggleChangeRadioGroup
-#define XtToggleSetCurrent             XawToggleSetCurrent
-#define XtToggleUnsetCurrent           XawToggleUnsetCurrent
-#define XtToggleGetCurrent             XawToggleGetCurrent
-
-/*************************************************************/
-#endif /* XAW_BC */
 
 #endif /* _XawToggle_h */
 /* DON'T ADD STUFF AFTER THIS */

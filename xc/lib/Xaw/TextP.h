@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextP.h,v 1.44 90/04/26 15:22:53 kit Exp $
+* $XConsortium: TextP.h,v 1.45 90/11/03 17:57:50 converse Exp $
 */
 
 
@@ -215,17 +215,5 @@ typedef struct _TextRec {
     SimplePart	simple;
     TextPart	text;
 } TextRec;
-
-#ifdef XAW_BC
-/*************************************************************
- * For Compatibility only.                                   */
-
-#define XtTextLineTable                 XawTextLineTable
-#define XtTextLineTablePtr              XawTextLineTablePtr
-#define XtTextLineTableEntry            XawTextLineTableEntry
-#define XtTextLineTableEntryPtr         XawTextLineTableEntryPtr
-
-/*************************************************************/
-#endif /* XAW_BC */
 
 #endif /* _XawTextP_h */

@@ -199,7 +199,6 @@ Project.tmpl provides defaults for the following variables:
 	BuildIncRoot		relative path to location of headers in build
 	BuildIncTop		path from build includes directory to top
 	BuildServer		boolean controlling make of server stuff
-	BuildXawBC		boolean controlling R3 compatibility in Xaw
 	ConfigDir		install directory for config files
 	ConnectionFlags		-D's for supported transports
 	ContribDir		location of user-contributed sources
@@ -227,7 +226,6 @@ Project.tmpl provides defaults for the following variables:
 	HasInputExtension	boolean for systems that want XInput extension
 	IncRoot			parent directory of installed header files
 	InstallAppDefFiles	boolean for installing new app defaults files
-	InstallOldHeaderFiles	boolean for installing R3-compatible headers
 	InstallXdmConfig	boolean for installing xdm config files
 	InstallXinitConfig	boolean for installing xinit files
 	LibDir			directory in which to install X11 data files
