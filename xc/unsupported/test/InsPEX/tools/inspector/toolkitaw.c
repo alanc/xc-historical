@@ -1,5 +1,5 @@
 
-/* $XConsortium: toolkitaw.c,v 5.4 91/05/29 19:27:06 converse Exp $ */
+/* $XConsortium: toolkitaw.c,v 5.5 91/05/29 21:42:44 converse Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -50,7 +50,8 @@ SOFTWARE.
  * Static variables for Athena implementation
  */
 
-static Widget toplevel;		/* Shell Widget returned by XtInitialize */
+static Widget toplevel;
+static XtAppContext appContext;
 
 /* for keeping track of control widget layout.  We make an assumption
  * that widgets in a control window (form widget) are created in order,
@@ -59,28 +60,30 @@ static Widget toplevel;		/* Shell Widget returned by XtInitialize */
  */
 static Widget lastwidget=NULL;  	/* last one created */
 static Widget lastleftwidget=NULL; 	/* last one beginning a row */
-static Widget widgetAbove = NULL;	/* the first one in the previous row */
-
+static Widget widgetAbove = NULL;	/* first one in the previous row */
 /*
- * array of string pointers for list, first one null
+ * Assume one list, items indexed beginning at 0, and monotonically added.
  */
-static char list_strings[1024] = {NULL};
+static String *list = NULL;
+static int listCount = 0;
+static Cardinal listSize = 0;
 
 
 /*
  * tk_init(argc,argv) - initialize the toolkit.  The toolkit may
  * look for toolkit-specific arguments in the command-line input.
  */
-void tk_init(argc,argv)
-int argc;
-char *argv[];
+void tk_init(argc, argv)
+    int argc;
+    char *argv[];
 {
     /* 
      * Easier to create the toplevel shell widget now,
      * and keep it around for the tk_create_main_window call.
      * result kept in the static variable toplevel.
      */
-    toplevel = XtInitialize(NULL, "Inspector", NULL, 0, &argc, argv);
+    toplevel = XtAppInitialize(&appContext, "Inspector", NULL, 0,
+			       &argc, argv, NULL, NULL, 0);
 }
 
 
@@ -169,8 +172,8 @@ TK_Control_Window tk_create_control_window(parent, x, y, height, width)
  * Create an X window as a subwindow of the supplied parent window,
  * returning its id.  *display_return is set to the current default display. 
  */
-Drawable tk_create_X_drawable_window(parent,height,width,
-				     repaint_proc,display_return)
+Drawable tk_create_X_drawable_window(parent, height, width,
+				     repaint_proc, display_return)
     TK_Main_Window parent;
     int height,width,(*repaint_proc)();
     Display **display_return;
@@ -253,10 +256,7 @@ TK_Button tk_create_button(control_win, row, col, label, proc, active_status)
 }
 
 
-/*
- * tk_activate_button(button) - sets the active status of the button
- * to TK_BUTTON_ACTIVE
- */
+/* Set the active status of the button to be active */
 void tk_activate_button(button)
     TK_Button button;
 {
@@ -264,10 +264,7 @@ void tk_activate_button(button)
 }
 
 
-/*
- * tk_deactivate_button(button) - sets the active status of the button
- * to TK_BUTTON_INACTIVE
- */
+/* Set the active status of the button to be inactive */
 void tk_deactivate_button(button)
     TK_Button button;
 {
@@ -275,10 +272,7 @@ void tk_deactivate_button(button)
 }
 
 
-/*
- * tk_set_button_label(button,label) - sets the button label to
- * the label given.
- */
+/* Set the button label */
 void tk_set_button_label(button,label)
     TK_Button button;
     char *label;
@@ -290,8 +284,7 @@ void tk_set_button_label(button,label)
 
 
 /*
- * TK_Message_Item
- * create a text output item  in the given control window, 
+ * Create a text output item in the given control window, 
  * at designated row & col, with the initial contents init_string.
  */
 TK_Message_Item tk_create_message_item(control_win, row, col, label)
@@ -341,10 +334,7 @@ TK_Message_Item tk_create_message_item(control_win, row, col, label)
 }
 
 
-/*
- * tk_set_message(msg_item, text) - sets the text tring displayed
- * in msg_item to "text".
- */
+/* Set the text displayed in msg_item to "text" */
 void tk_set_message(msg_item, text)
     TK_Message_Item msg_item;
     char *text;
@@ -355,13 +345,10 @@ void tk_set_message(msg_item, text)
 }
 
 
-/* 
- * TK_List
- * tk_create_list(control_win, row, col, notify_proc)
- */
-TK_List tk_create_list(control_win,row,col,notify_proc)
+TK_List tk_create_list(control_win, row, col, notify_proc)
     TK_Control_Window control_win;
-    int row,col, (*notify_proc)();
+    int row, col;
+    int (*notify_proc)();
 {
     Arg args[4];
     Cardinal i=0;
@@ -403,124 +390,127 @@ TK_List tk_create_list(control_win,row,col,notify_proc)
  * string of the currently selected list item, and set index_return
  * to that element's index.  If no list item is selected, return NULL.
  */
-char * tk_get_selected_list_item(list, index_return)
-    TK_List list;
+char * tk_get_selected_list_item(w, index_return)
+    TK_List w;
     int *index_return;
 {
-    char *string;
-    int i, nrows;
-    int sel=0;
-#if 0
-    nrows = (int)xv_get(list, PANEL_LIST_NROWS);
-    for (i=0; 
-	i<nrows,!(sel=(int)xv_get(list,PANEL_LIST_SELECTED,i));  i++);
-    if (sel) {
-	*index_return = i;
-	return ((char *)xv_get(list,PANEL_LIST_STRING,i));
-    } else {
-	return (NULL);
+    XawListReturnStruct *selectedItem;
+
+    selectedItem = XawListShowCurrent(w);
+    if (selectedItem->list_index == XAW_LIST_NONE)
+	return (char *) NULL;
+    *index_return = selectedItem->list_index;
+    return selectedItem->string;
+}
+
+
+/* Return a pointer to the string of the list item specified by index */
+char * tk_get_list_item(w, indx)
+    TK_List w;
+    int indx;
+{
+    if (indx >= listCount)
+	fatal("toolkitaw: tk_get_list_item: illegal list reference\n");
+    return list[indx];
+}
+
+
+/* Return the number of rows in the list */
+int tk_get_list_length(w)
+    TK_List w;
+{
+    return listCount;
+}
+
+
+/* Set the indexed list item to have value "string".  
+ * Note that this function is only for changing the value; 
+ * tk_insert_list_item should be used to create the item.
+ */
+void tk_set_list_item(w, indx, value)
+    TK_List w;
+    int indx;
+    char *value;
+{
+    Cardinal n;
+    Arg args[3];
+
+    if (indx >= listCount)
+	fatal("toolkitaw: tk_set_list_item: illegal insertion\n");
+
+    list[indx] = value;
+    n = 0;
+    XtSetArg(args[n], XtNnumberStrings, listCount);	n++;
+    XtSetArg(args[n], XtNlongest, 0);			n++;
+    XtSetArg(args[n], XtNlist, list);			n++;
+    XtSetValues(w, args, n);
+    printf("tk_set_list_item(list,%d,%s)\n", indx, value);
+}
+
+
+void tk_insert_list_item(w, indx, value)
+    TK_List w;
+    int indx;
+    char *value;
+{
+    Cardinal n;
+    Arg args[3];
+
+    printf("tk_insert_list_item(list,%d,%s)\n", indx, value);
+    if (indx != listCount)
+	fatal("toolkitaw: tk_insert_list: nonmonotonic insertion\n");
+
+    if (listCount >= listSize) {
+	listSize += 100;
+	list = (String *) XtRealloc((char *)list, listSize * sizeof(String));
     }
-#endif
-    printf("tk_get_selected_list_item(): returning selected\n");
-    return ("selected");
+    list[listCount++] = value;	/* assume copying is unnecessary */
+    n = 0;
+    XtSetArg(args[n], XtNnumberStrings, listCount);	n++;
+    XtSetArg(args[n], XtNlongest, 0);			n++;
+    XtSetArg(args[n], XtNlist, list);			n++;
+    XtSetValues(w, args, n);
 }
 
 
-/*
- * char *
- * tk_get_list_item(list,index) - return a pointer to the string of
- * of the list item specified by index.
+/* Delete the list item indexed by index; if there is an item after it,
+ * make that the selected item.
  */
-char * tk_get_list_item(list,index)
-    TK_List list;
-    int index;
+void tk_delete_list_item(w, indx)
+    TK_List w;
+    int indx;
 {
-#if 0
-    return ((char*)xv_get(list, PANEL_LIST_STRING, index));
-#endif
-    printf("tk_get_list_item(): returning hello\n");
-    return("hello");
+    String * newList;
+    Cardinal n;
+    Arg args[3];
+
+    printf("tk_delete_list_item(list,%d)\n", indx);
+    if (indx >= listCount) return;
+    listCount--;
+    newList = (String *) XtMalloc(listSize * sizeof(String));
+    if (indx > 0) bcopy(list, newList, indx * sizeof(String));
+    if (indx < listCount) bcopy(list[indx+1], newList[indx],
+				(listCount - indx) * sizeof(String));
+    n = 0;
+    XtSetArg(args[n], XtNnumberStrings, listCount);	n++;
+    XtSetArg(args[n], XtNlongest, 0);			n++;
+    XtSetArg(args[n], XtNlist, newList);		n++;
+    XtSetValues(w, args, n);
+    XtFree((char *)list);
+    list = newList;
+
+    if (indx < listCount) XawListHighlight(w, indx);
 }
 
 
-/*
- * int
- * tk_get_list_length(list) - return the number of rows in the list
- */
-int tk_get_list_length(list)
-    TK_List list;
-{
-#if 0
-    return ((int)xv_get(list, PANEL_LIST_NROWS));
-#endif
-    printf("tk_get_list_length() called\n");
-    return (1);
-}
-
-
-/*
- * tk_set_list_item(list,index,string): set the indexed list item to
- * have value "string".  Note that this function is only for changing
- * the value; tk_insert_list_item should be used to create the item.
- */
-void tk_set_list_item(list,index,string)
-    TK_List list;
-    int index;
-    char *string;
-{
-#if 0
-    xv_set(list, PANEL_LIST_STRING,index,string,
-	    0);
-#endif
-    printf("tk_set_list_item(list,%d,%s)\n", index, string);
-}
-
-void tk_insert_list_item(list,index,string)
-    TK_List list;
-    int index;
-    char *string;
-{
-#if 0
-    xv_set(list, PANEL_LIST_INSERT,index,
-	    0);
-    xv_set(list, PANEL_LIST_STRING,index,string,
-	    0);
-#endif
-    printf("tk_insert_list_item(list,%d,%s)\n", index, string);
-}
-
-
-/*
- * tk_delete_list_item: delete the list item indexed by index; if there
- * is an item after it, make that the selected item.
- */
-void tk_delete_list_item(list,index)
-    TK_List list;
-    int index;
-{
-#if 0
-    xv_set(list, PANEL_LIST_DELETE,index,
-	    0);
-    if ((int)xv_get(list,PANEL_LIST_NROWS) > index) {
-	xv_set(list, PANEL_LIST_SELECT, index, TRUE,
-	    0);
-    } 
-#endif
-    printf("tk_delete_list_item(list,%d)\n", index);
-}
-
-
-/*
- * tk_main_loop() - start the main event-handling loop
- */
 void tk_main_loop(main_win)
     TK_Main_Window main_win;
 {
-    XtMainLoop();
+    XtAppMainLoop(appContext);
 }
 
 
-static fatal(s)	/* this function is not used */
+static fatal(s)	/* bleh */
     char *s;
 {
     fprintf(stderr, "%s\n",s);
