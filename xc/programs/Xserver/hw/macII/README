@@ -1,5 +1,8 @@
-These Apple X11 drivers support 1 and 8 bit deep screens on Macintosh hardware 
-running A/UX. Multiple screens of any size and both depths are accomodated.
+These Apple X11 drivers support 1, 8, and 24 bit deep screens on the Macintosh
+hardware running A/UX. Multiple screens of any size and both depths are 
+accomodated. The 24 bit default visual is DirectColor, and there is
+significant color flash when shifting between TrueColor and DirectColor
+visuals in 24 bit mode.
 
 To run X you'll need a "network" kernel. Either the B-NET or the NFS kernel
 described in the A/UX Release Notes is sufficient. As a check, you must
@@ -14,36 +17,32 @@ allocations.
 
 Build the system by:
 
-1)	As super-user, run the script R4setup.sh located in this directory.
-	Now leave super-user mode.  This should only ever be done once on a
-	machine.  
-
-2)	In the top-level directory, type:
+1)	In the top-level directory, type:
 
 	alias make "make SHELL=/bin/sh"
-	make BOOTSTRAPCFLAGS=-DmacII -k World >>& MakeLog
+	make BOOTSTRAPCFLAGS=-DmacII -k World >>& world.log
 
 	This takes several hours.  Many files will generate warnings about
 	"enumeration type clashes".  This is a misfeature in the C compiler 
 	and can safely be ignored.
 
-3)	As super-user, in the top-level directory, type:
+2)	As super-user, in the top-level directory, type:
 
 	make -k install
 
-4)	Copy the file /usr/lib/X11/.x11start to your home directory 
+3)	Copy the file /usr/lib/X11/.x11start to your home directory 
 	(.x11start invokes the initial clients and determines their
 	positions on the screen.) .x11start attempts to use the "twm"
 	window manager. You may choose to run another window manager by 
 	simply adjusting .x11start.
 
-5)	On the console put /usr/bin/X11, (or whatever else you may have
-	chosen for BINDIR in Imake.tmpl) in your search path, and then
+4)	On the console put /usr/bin/X11, $X11BINDIR, (or whatever else you may
+	have chosen for BINDIR in Imake.tmpl) in your search path, and then
 	start the server:
 
-	    X11R4
+	    X11R6 (or X11)
 
-6)	X11R4 should start up an xterm window named "console" that acts as a
+5)	X11R6 should start up an xterm window named "console" that acts as a
 	console.  When this xterm terminates, the xinit will kill the server.  
 	You can also start up client programs from a terminal or rlogin, 
 	but be sure the DISPLAY environment variable is set:
@@ -62,4 +61,5 @@ Meta, Control, and Shift are often used in combination with other keystrokes
 or mouse clicks. For example, the terminal emulator xterm pops up menus in
 response to control-left and control-middle. The original function of the
 arrow keys may be obtained by holding down the Option key while pressing
-one of the arrow keys.
+one of the arrow keys. This Option key behavior can be reversed by the
+-optionmouse command line option. See the man page for XmacII.
