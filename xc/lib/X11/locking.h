@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.h,v 1.4 93/07/11 14:53:20 rws Exp $
+ * $XConsortium: locking.h,v 1.5 93/07/12 09:37:39 rws Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -97,7 +97,7 @@ struct _XLockInfo {
 	condition_t cv;		/* wait if another thread has XLockDisplay */
 };
 
-#ifdef XTHREADS_WARN
+#if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
 #define ConditionWait(d,c) if ((d)->lock_fns) \
 	(*(d)->lock_fns->condition_wait)((c)->cv, (d)->lock->mutex,__FILE__,__LINE__)
 #define ConditionSignal(d,c) if ((d)->lock_fns) \

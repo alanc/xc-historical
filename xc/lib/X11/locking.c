@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.c,v 1.6 93/07/11 14:53:52 rws Exp $
+ * $XConsortium: locking.c,v 1.7 93/07/12 09:25:29 rws Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -25,9 +25,10 @@
  * locking.c - multi-thread locking routines implemented in C Threads
  */
 
+#include "Xlibint.h"
+
 #ifdef XTHREADS
 
-#include "Xlibint.h"
 #include "locking.h"
 #ifdef XTHREADS_WARN
 #include <stdio.h>		/* for warn/debug stuff */
@@ -72,7 +73,7 @@ static struct {
 int lock_hist_loc = 0;		/* next slot to fill */
 #endif /* XTHREADS_WARN */
 
-#ifdef XTHREADS_WARN
+#if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
 void _XLockDisplay(dpy,file,line)
     Display *dpy;
     char *file;			/* source file, from macro */
@@ -132,7 +133,7 @@ void _XLockDisplay(dpy)
 #endif /* XTHREADS_WARN */
 }
 
-#ifdef XTHREADS_WARN
+#if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
 static void _XUnlockDisplay(dpy,file,line)
     Display *dpy;
     char *file;
@@ -226,7 +227,7 @@ static void _XPopReader(dpy, list, tail)
     }
 }
 
-#ifdef XTHREADS_WARN
+#if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
 static void _XConditionWait(cv, mutex,file,line)
     condition_t cv;
     mutex_t mutex;
@@ -277,7 +278,7 @@ static void _XConditionWait(cv, mutex)
 #endif /* XTHREADS_WARN */
 }
 
-#ifdef XTHREADS_WARN
+#if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
 static void _XConditionSignal(cv,file,line)
     condition_t cv;
     char *file;
@@ -287,8 +288,10 @@ static void _XConditionSignal(cv)
     condition_t cv;
 #endif
 {
+#ifdef XTHREADS_WARN
 #ifdef XTHREADS_DEBUG
     printf("line %d thread %x is signalling\n", line, xthread_self());
+#endif
 #endif
     condition_signal(cv);
 }
@@ -376,7 +379,7 @@ static void _XDisplayLockWait(dpy)
  * version of display locking function to use when
  * a user-level lock might be active.
  */
-#ifdef XTHREADS_WARN
+#if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
 static void _XFancyLockDisplay(dpy, file, line)
     Display *dpy;
     char *file;			/* source file, from macro */
@@ -386,7 +389,7 @@ static void _XFancyLockDisplay(dpy)
     Display *dpy;
 #endif
 {
-#ifdef XTHREADS_WARN
+#if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
     _XLockDisplay(dpy, file, line);
 #else
     _XLockDisplay(dpy);
@@ -444,8 +447,10 @@ Status XInitThreads()
     _XInitDisplayLock_fn = _XInitDisplayLock;
     _XFreeDisplayLock_fn = _XFreeDisplayLock;
 
+#ifdef XTHREADS_WARN
 #ifdef XTHREADS_DEBUG
     setlinebuf(stdout);		/* for debugging messages */
+#endif
 #endif
 
     return 1;
