@@ -1,6 +1,5 @@
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
-       INCLUDES = -I$(TOP) -I$(TOP)/X11
         XDVISRC = libXdvi
         XDVILIB = $(XDVISRC)/libXdvi.a
      DEPXDVILIB = $(XDVILIB)
