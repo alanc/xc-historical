@@ -1,4 +1,4 @@
-.\" $XConsortium: X11.keysyms,v 1.15 94/04/11 18:00:20 rws Exp $
+.\" $XConsortium: X11.keysyms,v 1.16 94/04/11 20:20:08 rws Exp $
 \&
 .sp 1
 .ps 11
@@ -23,10 +23,14 @@ Byte 3 is the next most-significant 8 bits
 .IP \(bu 5
 Byte 4 is the least-significant 8 bits
 .LP
-There are two special KEYSYM values: NoSymbol and VoidSymbol.
+There are two special KEYSYM values: 
+.PN NoSymbol 
+and 
+.PN VoidSymbol .
 They are used to indicate the absence of symbols (see section 5).
 .TS
-l l l l l.
+l l l l lw(1i)
+n n n n lw(1i).
 _
 .sp 6p
 .B
@@ -35,8 +39,12 @@ Byte 1	Byte 2	Byte 3	Byte 4	Name
 _
 .sp 6p
 .R
-0	0	0	0	NoSymbol
-0	255	255	255	VoidSymbol
+0	0	0	0	T{
+.PN NoSymbol
+T}
+0	255	255	255	T{
+.PN VoidSymbol
+T}
 .sp 6p
 _
 .TE
@@ -44,7 +52,8 @@ All other standard KEYSYM values have zero values for bytes 1 and 2.
 Byte 3 indicates a character code set,
 and byte 4 indicates a particular character within that set.
 .TS
-l l.
+l l
+n l.
 _
 .sp 6p
 .B
@@ -53,10 +62,10 @@ Byte 3	Byte 4
 _
 .sp 6p
 .R
-0	Latin 1
-1	Latin 2
-2	Latin 3
-3	Latin 4
+0	Latin-1
+1	Latin-2
+2	Latin-3
+3	Latin-4
 4	Kana
 5	Arabic
 6	Cyrillic

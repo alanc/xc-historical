@@ -1,4 +1,4 @@
-.\" $XConsortium: X11.encoding,v 1.17 94/04/11 17:59:38 rws Exp $
+.\" $XConsortium: X11.encoding,v 1.18 94/04/12 14:51:32 rws Exp $
 \&
 .sp 1
 .ps 11
@@ -104,8 +104,12 @@ N	value	name
 .LP
 The value is always interpreted as an N-byte unsigned integer.
 For example, 
-the first two bytes of a Window error are always zero (indicating an
-error in general) and three (indicating the Window error in particular):
+the first two bytes of a
+.PN Window 
+error are always zero (indicating an
+error in general) and three (indicating the
+.PN Window 
+error in particular):
 .LP
 .ps 9
 .nr PS 9
@@ -215,7 +219,8 @@ For example:
 .nr PS 9
 .LP
 destination: WINDOW or 
-.PN PointerWindow or 
+.PN PointerWindow 
+or 
 .PN InputFocus
 .RE
 .ps 11
