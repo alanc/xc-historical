@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: folder.c,v 2.12 89/07/12 16:23:30 converse Exp $";
+    "$XConsortium: folder.c,v 2.14 89/07/20 21:15:17 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -173,8 +173,7 @@ void CreateNewFolder(name)
 	    break;
     for (i = 0; i < numScrns; i++)
 	if (scrnList[i]->folderbuttons)
-	    BBoxAddButton(scrnList[i]->folderbuttons, name,
-			  NoOp, position, TRUE);
+	    BBoxAddButton(scrnList[i]->folderbuttons, name, position, TRUE);
 }
 
 

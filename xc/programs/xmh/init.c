@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: init.c,v 2.28 89/07/12 16:23:43 converse Exp $";
+    "$XConsortium: init.c,v 2.29 89/07/20 21:15:46 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -167,6 +167,8 @@ AddToSequence(),RemoveFromSequence(),DeleteSequence(),PickMessages(),
 PrintMessages(),Pack(),Sort(),ForceRescan(),CloseView(),ViewReply(),
 ViewForward(),ViewUseAsComposition(),EditView(),SaveView(),PrintView(),
 CompReset(),SaveDraft(),SendDraft(),MsgInsertAssoc();
+
+extern void FolderMenu(), FolderButton(), Leave();
 
 
 /* All the start-up initialization goes here. */

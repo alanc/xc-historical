@@ -1,6 +1,7 @@
-#ifndef lint
-static char rcs_id[] = "$XConsortium: command.c,v 2.24 89/06/29 16:30:06 swick Exp $";
-#endif lint
+#if !defined(lint) && !defined(SABER)
+static char rcs_id[] =
+    "$XConsortium: command.c,v 2.25 89/06/30 15:22:34 swick Exp $";
+#endif
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -12,18 +13,18 @@ static char rcs_id[] = "$XConsortium: command.c,v 2.24 89/06/29 16:30:06 swick E
  * DIGITAL MAKES NO REPRESENTATIONS ABOUT THE SUITABILITY OF THIS SOFTWARE FOR
  * ANY PURPOSE.  IT IS SUPPLIED "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY.
  *
- * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT RIGHTS,
- * APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN ADDITION TO THAT
- * SET FORTH ABOVE.
+ * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT
+ * RIGHTS, APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN
+ * ADDITION TO THAT SET FORTH ABOVE.
  *
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted, provided
  * that the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting documentation,
- * and that the name of Digital Equipment Corporation not be used in advertising
- * or publicity pertaining to distribution of the software without specific,
- * written prior permission.
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Digital Equipment Corporation not be
+ * used in advertising or publicity pertaining to distribution of the software
+ * without specific, written prior permission.
  */
 
 /* command.c -- interface to exec mh commands. */
@@ -55,7 +56,7 @@ static char rcs_id[] = "$XConsortium: command.c,v 2.24 89/06/29 16:30:06 swick E
 #define FD_CLR(n, p)    ((p)->fds_bits[(n)/NFDBITS] &= ~(1 << ((n) % NFDBITS)))
 #define FD_ISSET(n, p)  ((p)->fds_bits[(n)/NFDBITS] & (1 << ((n) % NFDBITS)))
 #define FD_ZERO(p)      bzero((char *)(p), sizeof(*(p)))
-#endif FD_SET
+#endif /* FD_SET */
 
 
 typedef struct _CommandStatus {
@@ -98,20 +99,22 @@ static char *FullPathOfCommand(str)
 }
 
 
+/*ARGSUSED*/
 static void ReadStdout(closure, fd, id)
     caddr_t closure;
     int *fd;
-    XtInputId *id;
+    XtInputId *id;	/* unused */
 {
     register CommandStatus status = (CommandStatus)closure;
     CheckReadFromPipe(*fd, &status->output_buffer, &status->output_buf_size);
 }
 
 
+/*ARGSUSED*/
 static void ReadStderr(closure, fd, id)
     caddr_t closure;
     int *fd;
-    XtInputId *id;
+    XtInputId *id;	/* unused */
 {
     register CommandStatus status = (CommandStatus)closure;
     CheckReadFromPipe(*fd, &status->error_buffer, &status->error_buf_size);
@@ -385,8 +388,8 @@ CheckReadFromPipe( fd, bufP, lenP )
 	    nread -= BUFSIZ;
 	    old_end += BUFSIZ;
 	}
-	read( fd, buf, nread );
-	bcopy( buf, *bufP+old_end, nread );
+	read( fd, buf, (int) nread );
+	bcopy( buf, *bufP+old_end, (int) nread );
 	(*bufP)[old_end+nread] = '\0';
     }
 }
@@ -434,7 +437,8 @@ DoCommand(argv, inputfile, outputfile)
     else
 	fd_out = -1;
 
-    status = _DoCommandToFileOrPipe( argv, fd_in, fd_out, NULL, NULL );
+    status = _DoCommandToFileOrPipe( argv, fd_in, fd_out, (char **) NULL,
+				    (int *) NULL );
     if (fd_in != -1) close(fd_in);
     if (fd_out != -1) close(fd_out);
     return status;
@@ -468,7 +472,7 @@ char *DoCommandToFile(argv)
     file = FOpenAndCheck(name, "w");
     fd = dup(fileno(file));
     myfclose(file);
-    _DoCommandToFileOrPipe(argv, -1, fd, NULL, NULL);
+    _DoCommandToFileOrPipe(argv, -1, fd, (char **) NULL, (int *) NULL);
     close(fd);
     return name;
 }

@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: pick.c,v 2.29 89/06/13 10:35:28 converse Exp $";
+    "$XConsortium: pick.c,v 2.30 89/07/11 16:18:30 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -13,18 +13,18 @@ static char rcs_id[] =
  * DIGITAL MAKES NO REPRESENTATIONS ABOUT THE SUITABILITY OF THIS SOFTWARE FOR
  * ANY PURPOSE.  IT IS SUPPLIED "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY.
  *
- * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT RIGHTS,
- * APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN ADDITION TO THAT
- * SET FORTH ABOVE.
+ * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT
+ * RIGHTS, APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN
+ * ADDITION TO THAT SET FORTH ABOVE.
  *
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted, provided
  * that the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting documentation,
- * and that the name of Digital Equipment Corporation not be used in advertising
- * or publicity pertaining to distribution of the software without specific, 
- * written prior permission.
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Digital Equipment Corporation not be
+ * used in advertising or publicity pertaining to distribution of the software
+ * without specific, written prior permission.
  */
 
 /* pick.c -- handle a pick subwidget. */
@@ -271,7 +271,7 @@ static AppendArgv(ptr)
 {
     argvsize++;
     argv = ResizeArgv(argv, argvsize);
-    argv[argvsize - 1] = MallocACopy(ptr);
+    argv[argvsize - 1] = XtNewString(ptr);
 }
 
 static EraseLast()
@@ -374,6 +374,7 @@ Pick pick;
 char *str;
 {
     Arg args[1];
+    void CenterWidget();
 
     DestroyErrorWidget((Widget)NULL, (caddr_t)pick, (caddr_t)NULL);
     XtSetArg( args[0], XtNlabel, str );
@@ -572,11 +573,10 @@ static RowList AddRow(group, type)
     group->rlist = (RowList *)
 	XtRealloc((char *) group->rlist,
 		  (unsigned) group->numrows * sizeof(RowList));
-    group->rlist[group->numrows - 1] = row =
-	(RowList) XtMalloc(sizeof(RowListRec));
+    group->rlist[group->numrows - 1] = row = XtNew(RowListRec);
     row->type = type;
     row->numwidgets = 0;
-    row->wlist = (FormEntry *) XtMalloc(1);
+    row->wlist = (FormEntry *) XtMalloc((Cardinal) 1);
     row->group = group;
     if (group->numrows > 1)
 	arglist[1].value = (XtArgVal)group->rlist[group->numrows - 2]->widget;
@@ -760,8 +760,7 @@ AddPick(scrn, toc, fromseq, toseq)
     char str[100];
 #ifdef notdef
     int height;
-#endif notdef
-    extern void StoreWindowName();
+#endif /* notdef */
 
     if (scrn->pick) {
 	pick = scrn->pick;
@@ -791,7 +790,7 @@ AddPick(scrn, toc, fromseq, toseq)
 	    height += XtScrollMgrGetThickness(general->outer);
 	XawPanedSetMinMax(scrn->widget, general->outer, height, height);
 	XawPanedSetMinMax(scrn->widget, general->outer, 10, 10000);
-#endif notdef
+#endif /* notdef */
 	XawPanedSetRefigureMode(scrn->widget, True);
     }
     pick->toc = toc;

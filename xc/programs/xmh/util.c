@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: util.c,v 2.26 89/07/11 16:18:36 converse Exp $";
+    "$XConsortium: util.c,v 2.27 89/07/20 21:15:53 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -36,7 +36,7 @@ static char rcs_id[] =
 
 #define abs(x)		((x) < 0 ? (-(x)) : (x))
 
-char *SysErrorMsg (n)
+static char *SysErrorMsg (n)
     int n;
 {
     extern char *sys_errlist[];
@@ -48,7 +48,7 @@ char *SysErrorMsg (n)
 
 /* Something went wrong; panic and quit. */
 
-Punt(str)
+void Punt(str)
   char *str;
 {
     extern void abort();
@@ -66,8 +66,6 @@ Punt(str)
     }
 }
 
-
-void NoOp() {}
 
 int myopen(path, flags, mode)
 char *path;
@@ -211,7 +209,7 @@ char *ReadLineWithCR(fid)
 
 /* Delete a file, and Punt if it fails. */
 
-DeleteFileAndCheck(name)
+void DeleteFileAndCheck(name)
   char *name;
 {
     if (strcmp(name, "/dev/null") != 0 && unlink(name) == -1) {
@@ -222,7 +220,7 @@ DeleteFileAndCheck(name)
     }
 }
 
-CopyFileAndCheck(from, to)
+void CopyFileAndCheck(from, to)
   char *from, *to;
 {
     int fromfid, tofid, n;
@@ -243,7 +241,7 @@ CopyFileAndCheck(from, to)
 }
 
 
-RenameAndCheck(from, to)
+void RenameAndCheck(from, to)
   char *from, *to;
 {
     if (rename(from, to) == -1) {
@@ -257,14 +255,6 @@ RenameAndCheck(from, to)
 	DeleteFileAndCheck(from);
     }
 }
-
-
-char *MallocACopy(str)	/* made OBSOLETE by XtNewString */
-  char *str;
-{
-    return strcpy(XtMalloc((unsigned) strlen(str)+1),str);
-}
-
 
 
 char *CreateGeometry(gbits, x, y, width, height)
@@ -333,7 +323,7 @@ Boolean	IsSubFolder(foldername)
 }
 
 
-char	*MakeParentFolderName(foldername)
+char *MakeParentFolderName(foldername)
     char	*foldername;
 {
     char	temp[500];
@@ -345,7 +335,7 @@ char	*MakeParentFolderName(foldername)
 }
 
 
-char	*MakeSubFolderName(foldername)
+char *MakeSubFolderName(foldername)
     char	*foldername;
 {
     char	temp[500];
@@ -366,7 +356,7 @@ void SetCurrentFolderName(scrn, foldername)
 }
 
 
-ChangeLabel(widget, str)
+void ChangeLabel(widget, str)
 Widget widget;
 char *str;
 {
@@ -415,7 +405,7 @@ char *name;
 
 
 
-Feep()
+void Feep()
 {
     XBell(theDisplay, 50);
 }

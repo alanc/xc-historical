@@ -1,7 +1,7 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: tocutil.c,v 2.24 89/06/28 15:26:59 converse Exp $";
-#endif lint
+    "$XConsortium: tocutil.c,v 2.25 89/06/30 15:19:31 kit Exp $";
+#endif
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -13,18 +13,18 @@ static char rcs_id[] =
  * DIGITAL MAKES NO REPRESENTATIONS ABOUT THE SUITABILITY OF THIS SOFTWARE FOR
  * ANY PURPOSE.  IT IS SUPPLIED "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY.
  *
- * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT RIGHTS,
- * APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN ADDITION TO THAT
- * SET FORTH ABOVE.
+ * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT
+ * RIGHTS, APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN
+ * ADDITION TO THAT SET FORTH ABOVE.
  *
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted, provided
  * that the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting documentation,
- * and that the name of Digital Equipment Corporation not be used in advertising
- * or publicity pertaining to distribution of the software without specific,
- * written prior permission.
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Digital Equipment Corporation not be
+ * used in advertising or publicity pertaining to distribution of the software
+ * without specific, written prior permission.
  */
 
 /* tocutil.c -- internal routines for toc stuff. */
@@ -84,7 +84,7 @@ Toc toc;
 		BBoxDeleteButton(BBoxButtonNumber(scrn->seqbuttons, 1));
 	    for (i = (numinbox ? 1 : 0); i < toc->numsequences; i++)
 		BBoxAddButton(scrn->seqbuttons, toc->seqlist[i]->name,
-			      NoOp, 999, TRUE);
+			      999, TRUE);
 	}
 	if (scrn->seqbuttons) 
 	    BBoxSetRadio(BBoxFindButtonNamed(scrn->seqbuttons,
@@ -236,7 +236,7 @@ void TULoadSeqLists(toc)
 					  (Cardinal) sizeof(Sequence));
     seq = toc->seqlist[0] = XtNew(SequenceRec);
     bzero((char *) seq, sizeof(SequenceRec));
-    seq->name = MallocACopy("all");
+    seq->name = XtNewString("all");
     seq->mlist = NULL;
     toc->viewedseq = seq;
     (void) sprintf(str, "%s/.mh_sequences", toc->path);
@@ -256,7 +256,7 @@ void TULoadSeqLists(toc)
 		    seq = toc->seqlist[toc->numsequences - 1] =
 			XtNew(SequenceRec);
 		    bzero((char *) seq, sizeof(SequenceRec));
-		    seq->name = MallocACopy(ptr);
+		    seq->name = XtNewString(ptr);
 		    seq->mlist = StringToMsgList(toc, ptr2 + 1);
 		    if (strcmp(seq->name, viewed) == 0) {
 			toc->viewedseq = seq;
@@ -357,7 +357,7 @@ void TULoadTocFile(toc)
 	msg->toc = toc;
 	msg->position = position;
 	msg->length = l;
-	msg->buf = MallocACopy(ptr);
+	msg->buf = XtNewString(ptr);
 	msg->msgid = atoi(ptr);
 	if (msg->msgid == origcurmsgid)
 	    curmsg = msg;
@@ -505,21 +505,9 @@ void TUGetFullFolderInfo(toc)
     char str[500];
     if (toc->path == NULL) {
 	(void) sprintf(str, "%s/%s", app_resources.mailDir, toc->foldername);
-	toc->path = MallocACopy(str);
+	toc->path = XtNewString(str);
 	(void) sprintf(str, "%s/.xmhcache", toc->path);
-	toc->scanfile = MallocACopy(str);
-	if (app_resources.debug) {
-	    /* Sometimes, app_resources.mailDir is duplicated in the string.
-	     * I don't know why; nor can I get the problem to repeat.
-	     */
-	    DEBUG1("TuGetFullFolderInfo: toc->scanfile = %s.\n",
-		   toc->scanfile);
-	    DEBUG1("TuGetFullFolderInfo: app_resources.mailDir = %s.\n",
-		  app_resources.mailDir);
-	    DEBUG1("TuGetFullFolderInfo: toc->foldername = %s.\n",
-		  toc->foldername);
-	    DEBUG1("TuGetFullFolderInfo: toc->path = %s.\n", toc->path);
-	}
+	toc->scanfile = XtNewString(str);
 	toc->lastreaddate = LastModifyDate(toc->scanfile);
 	if (TUScanFileOutOfDate(toc))
 	    toc->validity = invalid;
@@ -555,7 +543,7 @@ Msg TUAppendToc(toc, ptr)
     toc->msgs[toc->nummsgs - 1] = msg = XtNew(MsgRec);
     bzero((char *) msg, (int) sizeof(MsgRec));
     msg->toc = toc;
-    msg->buf = MallocACopy(ptr);
+    msg->buf = XtNewString(ptr);
     (void)sprintf(str, "%4d", msgid);
     for (i=0; i<4 ; i++) msg->buf[i] = str[i];
     msg->buf[MARKPOS] = ' ';

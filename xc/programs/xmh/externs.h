@@ -1,5 +1,5 @@
 /*
- * $XConsortium: externs.h,v 2.14 89/07/09 16:21:11 converse Exp $
+ * $XConsortium: externs.h,v 2.16 89/07/20 21:15:06 converse Exp $
  */
 
 /*
@@ -28,63 +28,71 @@
  */
 
 extern int errno;
-
 extern char *getenv();
 
-extern XawTextSource XawCreateEDiskSource();
+	/* from command.c */
 
-extern char *DoCommandToFile();
-extern char *DoCommandToString();
+extern char *	DoCommandToFile();
+extern char *	DoCommandToString();
 
-extern void NoOp();
-extern int myopen();
-extern FILE *myfopen();
-extern int myclose();
-extern int myfclose();
-extern char *MakeNewTempFileName();
-extern char **MakeArgv();
-extern char **ResizeArgv();
-extern FILEPTR FOpenAndCheck();
-extern char *ReadLine();
-extern char *ReadLineWithCR();
-extern char *MallocACopy();
-extern int DenyGeoRequest();
-extern char *CreateGeometry();
-extern char *MakeFileName();
-extern Widget CreateTextSW();
-extern Widget CreateTitleBar();
-extern MsgList CurMsgListOrCurMsg();
-extern Toc SelectedToc();
+	/* from icon.c */
 
-extern Scrn CreateNewScrn();
-extern Scrn NewViewScrn();
-extern Scrn NewCompScrn();
-extern void MapScrn();
-extern void DestroyScrn();
-extern void EnableProperButtons();
-extern Scrn ScrnFromWidget();
+extern void	IconInit();
 
-extern Scrn LastButtonScreen();
-
-extern char *Version();
-
-extern XawTextSource TSourceCreate();
-extern XawTextSource CreateFileSource();
-
-extern void IconInit();
-
-extern void FolderMenu();
-extern void FolderButton();
-extern void Leave();
+	/* from popup.c */
 
 extern void	PopupPrompt();
 extern void	PopupConfirm();
 extern void	PopupNotice();
 
-extern int GetWidth();
-extern int GetHeight();
+	/* from screen.c */
 
-extern void 	SetCurrentFolderName();
+extern void	EnableProperButtons();
+extern Scrn	CreateNewScrn();
+extern Scrn	NewViewScrn();
+extern Scrn	NewCompScrn();
+extern void	ScreenSetAssocMsg();
+extern void	DestroyScrn();
+extern void	MapScrn();
+extern Scrn	ScrnFromWidget();
+
+	/* from tsource.c */
+
+extern XawTextSource TSourceCreate();
+extern XawTextSource CreateFileSource();
+
+	/* from util.c */
+
+extern void	Punt();
+extern int	myopen();
+extern FILE *	myfopen();
+extern int	myclose();
+extern int	myfclose();
+extern char *	MakeNewTempFileName();
+extern char **	MakeArgv();
+extern char **	ResizeArgv();
+extern FILEPTR	FOpenAndCheck();
+extern char *	ReadLine();
+extern char *	ReadLineWithCR();
+extern void	DeleteFileAndCheck();
+extern void	CopyFileAndCheck();
+extern void	RenameAndCheck();
+extern char *	CreateGeometry();
 extern Boolean	IsSubFolder();
 extern char *	MakeParentFolderName();
 extern char *	MakeSubFolderName();
+extern void 	SetCurrentFolderName();
+extern void	ChangeLabel();
+extern Widget	CreateTextSW();
+extern Widget	CreateTitleBar();
+extern void	Feep();
+extern MsgList	CurMsgListOrCurMsg();
+extern int	GetWidth();
+extern int	GetHeight();
+extern Toc	SelectedToc();
+extern int	strncmpIgnoringCase();
+extern void 	StoreWindowName();
+
+	/* from version.c */
+
+extern char *	Version();
