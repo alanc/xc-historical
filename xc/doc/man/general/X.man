@@ -7,20 +7,19 @@ X is a network transparent window system developed at MIT which runs on a wide
 range of computing and graphics machines.  The core distribution from MIT
 has both client and server support for the following operating systems:
 .sp
-.in +8
-.nf
-4.3BSD
+.ce 6
+4.3bsd
 A/UX 1.0
 DOMAIN/IX 9.7
 HP-UX 6.01
 SunOS 3.2
 Ultrix-32 Version 1.2
-.fi
-.in -8
 .sp
-Many vendors also support X on other platforms.
-.SH "THE OFFICIAL NAMES"
-The official names for this software are:
+Commercial implementations are also available for a much wider range
+of platforms.
+.PP
+The X Consortium requests that the following names be used in
+refering to this software:
 .sp
 .ce 5
 X
@@ -32,14 +31,9 @@ X Version 11
 X Window System, Version 11
 .br
 X11
-.sp
-Note that the phrases X.11, X-11, X Windows or any permutation thereof, are
-explicity excluded from this list and should not be used to describe the
-X Window System.  Remember, it is a Window System named X, not a System named
-X Window.
 .PP
-\fIX Window System\fP is a trademark of the
-Massachusetts Institute of Technology.
+.I "X Window System"
+is a trademark of the Massachusetts Institute of Technology.
 .SH DESCRIPTION
 X window system servers run on computers with bitmap displays.
 The server
@@ -54,19 +48,10 @@ operating systems) as well.
 X supports overlapping hierarchical subwindows and text and
 graphics operations, on both monochrome and color
 displays.
-For a full explanation of the functions that are available, see the
-\fIXlib - C Language X Interface\fP manual, the
-\fIX Window System Protocol\fP specification,
+For a full explanation of the functions that are available, see
+the \fIXlib - C Language X Interface\fP manual, 
+the \fIX Window System Protocol\fP specification,
 and various toolkit documents.
-.PP
-The core \fIX\fP protocol provides mechanism, not policy.  
-Windows are manipulated (including
-moving, resizing and iconifying) not by the server itself, but 
-by a separate program called a ``window manager'' of your choosing.
-This program is
-simply another client and requires no special privileges.  If you
-don't like the ones that are supplied (see \fIuwm(1)\fP and \fIwm(1)\fP),
-you can write your own.
 .PP
 The number of programs that use \fIX\fP is growing rapidly.  Of particular
 interest are:
@@ -82,18 +67,18 @@ and \fIxmodmap\fP),
 a load monitor (\fIxload\fP), clock (\fIxclock\fP),
 a font displayer (\fIxfd\fP),
 utilities for listing information about fonts, windows, and displays
-(\fIxlsfonts\fP, \fIxlswins\fP, \fIxwininfo\fP, and \fIxdpyinfo\fP,
-\fIxprop\fP),
+(\fIxlsfonts\fP, \fIxlswins\fP, \fIxwininfo\fP, \fIxdpyinfo\fP, 
+and \fIxprop\fP),
 a protocol translator for running X10 programs (\fIx10tox11\fP),
 a diagnostic for seeing what when events are generated (\fIxev\fP),
-screen image manipulation utilities (\fIxwd\fP, \fIxwud\fP, \fIxpr\fP, and
-\fIxmag\fP),
+screen image manipulation utilities (\fIxwd\fP, \fIxwud\fP, \fIxpr\fP, 
+and \fIxmag\fP),
 and various demos (\fIxeyes\fP, \fIico\fP, \fImuncher\fP, \fIpuzzle\fP, etc.).
 .PP
 Many additional utilities, window managers, games, toolkits, etc. are also
 distributed with the core software.  See you site administrator for details
 about what additional programs are available.
-.SH GETTING STARTED
+.SH STARTING UP
 .PP 
 There are currently 3 ways of getting the X server and an initial set of
 client applications started.  The particular method used depends on what
@@ -138,7 +123,7 @@ runs another to start up any desired clients, and then waits for either to
 finish.  Since either or both of the user-specified programs may be a shell 
 script, this gives substantial flexibility at the expense of a human 
 nice interface.  For this reason, \fIxinit\fP is not intended for end users.
-.SH "SPECIFYING A DISPLAY NAME"
+.SH "DISPLAY NAMES"
 .PP
 From the user's prospective, every X server has a \fIdisplay name\fP of the
 form:
@@ -172,7 +157,7 @@ Since each monitor has its own set of windows, each screen is assigned a
 \fIscreen number\fP (starting with 0) when the X server for that display is
 started.  If the screen number is not given, then screen 0 will be used.
 .PP
-On Unix systems, the default display name for X programs to use is stored 
+On UNIX systems, the default display name for X programs to use is stored 
 in your DISPLAY environment variable.  This variable is set automatically
 by the \fIxterm\fP terminal emulator.  However, when you log into another
 machine on a network, you'll need to set DISPLAY by hand to point to your
@@ -213,7 +198,7 @@ abbreviated names (e.g., expo), and IP addresses (e.g., 18.30.0.212)
 are allowed.  For example:  \fImyworkstation:0\fP, \fIbigmachine:1\fP, and 
 \fIhydra:0.1\fP.
 .TP 8
-.B "Unix domain sockets"
+.B "UNIX domain sockets"
 .br
 The hostname part of the display name should be the string "unix" (in lower
 case letters).  For example:  \fIunix:0\fP, \fIunix:1\fP, and \fIunix:0.1\fP.
@@ -224,12 +209,14 @@ The hostname part of the display name should be the server machine's
 nodename followed by a colon.  For example:  \fImyws::0\fP, \fIbig::1\fP,
 and \fIhydra::0.1\fP.
 .PP
-.SH "SPECIFYING WINDOW GEOMETRY"
-One of the advantages of using window systems over hardwired terminals is that 
+.SH "GEOMETRY SPECIFICATIONS"
+One of the advantages of using window systems instead of
+hardwired terminals is that 
 applications don't have to be restricted to a particular size or location
 on the screen.
 Although the layout of windows on a display is controlled
-by the window manager that the user is running, most X programs accept
+by the window manager that the user is running (see below), 
+most X programs accept
 a command line argument of the form \fB-geometry \fIWIDTHxHEIGHT+XOFF+YOFF\fR
 for specifying a prefered size and location for this application's main
 window.
@@ -295,6 +282,44 @@ all of the specification.  Some window managers, such as \fIuwm\fP will
 assume default values for any information that isn't given; others might
 require that the user provide the information interactively (by drawing
 out a region on the screen with the pointer, for example).
+.SH WINDOW MANAGERS
+The core X protocol provides mechanism, not policy.  This means that
+the exact way in which the user the moves or resizes a window is not
+built into the window system.  Instead, X provides programming interfaces
+for constructing special applications called \fIwindow managers\fP which 
+provide the desired user interface (for example, 
+point-to-type vs. click-to-type,
+whether or not to display title bars, moving and resizing with special key
+combinations vs. dragging parts of the window frame).
+.PP
+The core distribution provides two window managers:
+.TP 8
+.B uwm
+This window manager does not display title bars, uses many combinations of
+special keys and pointer buttons, and is generally used in a click-to-type
+fashion.  It tries to stay out of the way as much as possible, but can be
+somewhat difficult to master.
+.TP 8
+.B wm
+This window manager provides title bars as well as resize and moving boxes.
+It is primarily a prototype for other, friendlier window managers and is 
+rarely used.
+.PP
+The user-contributed distribution provides several more window managers:
+.TP 8
+.B awm
+This window manager is descended from \fIuwm\fP but provides optional title
+bars whose layout can be specified by the user.
+.TP 8
+.B twm
+This window manager provides title bars, resize boxes, and reposition boxes.
+It is known for its small size and simplicity.
+.TP 8
+.B rtl
+This window manager enforces a tiled layout of application windows.
+.PP
+People who find that none of these window managers are acceptable are 
+encouraged to write their own.
 .SH "COMMAND LINE ARGUMENTS"
 Most X programs attempt to use a common set of names for their command line
 arguments.
@@ -382,13 +407,16 @@ obtain resources from the following sources:
 .B "RESOURCE_MANAGER root window property"
 Any global resources that should be available to clients on all machines 
 should be stored in the RESOURCE_MANAGER property on the
-root window using the \fIxrdb(1)\fP program.
+root window using the \fIxrdb\fP program.
 .TP 8
-.B "application-specific directory"
+.B "application-specific files"
 Any application- or machine-specific resources can be stored in
 the class resource files located in the XAPPLOADDIR directory (this is a 
 configuration parameter that is /usr/lib/X11/app-defaults in the 
-standard distribution).
+standard distribution).  Programs that use the X Toolkit
+will also look in the user's
+home directory for files named \fI.Class\fP where \fIClass\fP is the class
+name of the particular application.
 .TP 8
 .B XENVIRONMENT
 Any user- and machine-specific resources may be specified by setting
@@ -407,7 +435,7 @@ Any number of \fB\-xrm\fP arguments may be given on the
 command line.
 .PP
 Program resources are organized into groups called ``classes,'' so that 
-collections of individual ``instance'' resources 
+collections of individual resources (each of which are called ``instances'')
 can be set all at once.  By convention, the instance name of a resource
 begins with a lowercase letter and class name with an upper case letter.
 Multiple word resources are concatentated with the first letter of the 
@@ -481,7 +509,8 @@ directory, they could be loaded into the server using the following command:
 .sp
 This adds these resources to any that have already been loaded.  This is 
 frequently how user-friendly startup scripts merge user-specific defaults
-into any site-wide defaults.
+into any site-wide defaults.  All sites are encouraged to set up convenient
+ways of automatically loading defaults.
 .SH "FONT NAMES"
 Collections of characters for displaying text and symbols in X are known as
 \fIfonts\fP.  A font typically contains images that share a common appearance
@@ -524,11 +553,24 @@ Schoolbook, Terminal, Dutch, Swiss, and Charter.
 This directory contains versions of the fonts in the \fI75dpi\fP directory
 for 100 dots per inch displays.
 .PP
+Font databases are created by running the \fImkfontdir\fP program in the
+directory containing the compiled versions of the fonts (the \fI.snf\fP files).
+Whenever fonts are added to a directory, \fImkfontdir\fP should be rerun
+so that the server can find the new fonts.  To make the server reread the
+font database, reset the font path with the \fIxset\fP program.  For example,
+to add a font to a private directory, the following commands could be used:
+.sp
+.nf
+        %  cp newfont.snf ~/myfonts
+        %  mkfontdir ~/myfonts
+        %  xset fp rehash 
+.fi
+.PP
 The \fIxlsfonts\fP program can be used to list all of the fonts that are
 found in font databases in the current font path.  
 Font names tend to be fairly long as they contain all of the information
-needed to uniquely identify individual fonts.  Fortunately, the sample server
-supports wildcarding of font names, so the font 
+needed to uniquely identify individual fonts.  However, the sample server
+supports wildcarding of font names, so the full specification
 .sp
 .ce 1
 \fI-adobe-courier-medium-r-normal--10-100-75-75-m-60-iso8859-1\fP
@@ -543,27 +585,80 @@ wildcarded font name, the choice of which particular font to return is left
 to the server.  However, if fonts from more than one directory match a name,
 the returned font will always be from the first such directory in the font
 path.  The example given above will match fonts in both the \fI75dpi\fP and
-\fI100dpi\fP directories.  If the \fI75dpi\fP directory is ahead of the
+\fI100dpi\fP directories; if the \fI75dpi\fP directory is ahead of the
 \fI100dpi\fP directory in the font path, the smaller version of the font will 
 be used.  
-.SH EXAMPLES
-Here are examples of some commonly used programs.  See the
-particular manual pages for details:
+.SH "COLOR NAMES"
+Most applications provide ways of tailoring (usually through resources or
+command line arguments) the colors of various elements
+in the text and graphics they display.  Although black and white displays
+don't provide much of a choice, color displays frequently allow anywhere
+between 16 and 16 million different colors.  
+.PP
+Colors are usually specified by their commonly-used names
+(for example, \fIred\fP, \fIwhite\fP, or \fImedium slate blue\fP).
+The server translates these names into appropriate screen colors using
+a color database that can usually be found in \fI/usr/lib/X11/rgb.txt\fP.
+Color names are case-insensative, meaning that \fIred\fP, \fIRed\fP, 
+and \fIRED\fP all refer to the same color.  
+.PP
+Many applications also accept color specifications of the following forms:
+.sp
+.ce 4
+#rgb
+#rrggbb
+#rrrgggbbb
+#rrrrggggbbbb
+.sp
+where \fIr\fP, \fIg\fP, and \fIb\fP are hexidecimal numbers indicating how
+much \fIred\fP, \fIgreen\fP, and \fIblue\fP should be displayed (zero being
+none and ffff being on full).  Each field
+in the specification must have the same number of digits (e.g., #rrgb or
+#gbb are not allowed).  Fields that have fewer than four digits (e.g. #rgb)
+are padded out with zero's following each digit (e.g. #r000g000b000).  The
+eight primary colors can be represented as:
+.sp
+.ta 1.25in
+.in +8
+.nf
+black	#000000000000 (no color at all)
+red	#ffff00000000
+green	#0000ffff0000
+blue	#00000000ffff
+yellow	#ffffffff0000 (full red and green, no blue)
+magenta	#ffff0000ffff
+cyan	#0000ffffffff
+white	#ffffffffffff (full red, green, and blue)
+.fi
+.in -8
+.PP
+Unfortunately, RGB color specifications are highly unportable since different
+monitors produce different shades when given the same inputs.  Similarly,
+color names aren't portable because there is no standard naming scheme and 
+because the color database needs to be tuned for each monitor.
+.PP
+Application developers should take care to make their colors tailorable.
+.SH "COMMONLY USED PROGRAMS"
+The following is a collection of sample command lines for some of the 
+more frequently used commands.  For more information on a particular command,
+please refer to that command's manual page.
 .sp
 .nf
         %  xrdb -load $HOME/.Xresources
+        %  mkfontdir /usr/local/lib/X11/otherfonts
         %  xset fp+ /usr/local/lib/X11/otherfonts
         %  xmodmap $HOME/.keymap.km
         %  xsetroot -solid '#888' 
         %  xset b 100 400 c 50 s 1800 r on
         %  xset q
         %  uwm 
+        %  xmag
         %  xclock -geometry 48x48-0+0 -bg blue -fg white
         %  xeyes -geometry 48x48-48+0
+        %  xbiff -update 20 
         %  xlsfonts '*helvetica*'
         %  xlswins -l
         %  xwininfo -root
-        %  xset fp+ /usr/lib/X11/fonts/localfonts
         %  xdpyinfo -display joesworkstation:0
         %  xhost -joesworkstation
         %  xrefresh
@@ -573,39 +668,49 @@ particular manual pages for details:
         %  xterm -geometry 80x66-0-0 -name myxterm $*
 .fi
 .SH DIAGNOSTICS
-When a named resource is unavailable (for example, a color named
-chartrusse or a font named teeneyweeney), normally no error message
-will be printed; whether or not useful results ensue is dependent
-on the particular application.  If you wish to see error messages
-(for example, if an application is failing for an unknown reason),
-you may specify the value \fIon\fP for the resource named
-\fIStringConversionWarnings\fP.  To see always see these error messages,
-make sure that the following declaration is part of the resources that you
-load using \fIxrdb\fP:
+A wide variety of error messages are generated from various programs.  Various
+toolkits are encouraged to provide a common mechanism for locating error 
+text so that applications can be tailored easily.  Programs written directly
+to the \fIXlib\fP C language library are expected to do their own error
+checking.
+.PP
+The default error handler in \fIXlib\fP (also used by many toolkits) uses
+standard resources to construct diagnostic messages when errors occur.  The
+defaults for these messages are usually stored in \fI/usr/lib/X11/XErrorDB\fP.
+If this file is not present, error messages will be rather terse and cryptic.
+.PP
+When the X Toolkit encounters errors converting resource strings to the
+appropriate internal format, no error messages are usually printed.  This is
+convenient when it is desirable to have one set of resources across a variety
+of displays (e.g. color vs. monochrome, lots of fonts vs. very few, etc.),
+although can pose problems for trying to determine why an application might
+be failing.  This behavior can be overrided by the setting 
+\fIStringConversionsWarning\fP resource.
+.PP
+To force the Toolkit to always print string conversion error messages,
+the following resource should be placed at the top of the file that gets
+loaded onto the RESOURCE_MANAGER property
+using the \fIxrdb\fP program (frequently called \fI.Xresources\fP
+or \fI.Xres\fP in the user's home directory):
 .sp
 .nf
         *StringConversionWarnings: on
 .fi
 .sp
-If you want warnings only for a single, puts its name before the asterisk:
+To have conversion messages printed for just a particular application,
+the appropriate instance name can be placed before the asterisk:
 .sp
 .nf
         xterm*StringConversionWarnings: on
 .fi
-.PP
-The default error handler uses the Resource Manager to build diagnostic
-messages when error conditions arise.  The default error database is
-stored in the file \fIXErrorDB\fP in the directory specified by the LIBDIR
-configuration parameter (\fI/usr/lib/X11\fP in the standard distribution).  If
-this file is not installed, error messages will tend to be somewhat cryptic.
 .SH BUGS
 If you encounter a \fBrepeatable\fP bug, please contact your site 
-administrator for instructions on how to submit a X Bug Report.
+administrator for instructions on how to submit an X Bug Report.
 .SH "SEE ALSO"
 .PP
 Xserver(1),
 mkfontdir(1),
-bitmap(1), pseudoroot(1), uwm(1), x10tox11(1), xbiff(1), xcalc(1), xclock(1),
+bitmap(1), uwm(1), x10tox11(1), xbiff(1), xcalc(1), xclock(1),
 xdpyinfo(1), xedit(1), xev(1), xfd(1), xhost(1), xinit(1), xkill(1), xload(1),
 xlogo(1), xlsfonts(1), xlswins(1), xmag(1), xman(1), xmh(1), xmodmap(1),
 xdpr(1), xpr(1), xprop(1), xrdb(1), xrefresh(1), xset(1), xsetroot(1),
