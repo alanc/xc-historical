@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium$";
+static char Xrcsid[] = "$XConsortium: Keyboard.c,v 1.1 89/12/13 20:02:29 swick Exp $";
 #endif
 
 /********************************************************
@@ -37,10 +37,6 @@ SOFTWARE.
 #define _GetWindowedAncestor(w) (XtIsWidget(w) ? w : _XtWindowedAncestor(w))
 extern void _XtFillAncestorList();
 extern void _XtSendCrossingEvent();
-
-#ifndef NOTR3MOTIF
-int _XtFocusMode;
-#endif /* NOTR3MOTIF */
 
 static XtServerGrabPtr CheckServerGrabs(event, trace,
 					traceDepth, pdi)
@@ -566,33 +562,18 @@ void _XtHandleFocus(widget, client_data, event)
 	  else
 	    return;
 
-#ifndef NOTR3MOTIF
-#define R3MOTIFHACK(focalPoint) \
-	  {\
-	  if ((focalPoint == XtMySelf) ||\
-	      (focalPoint == XtMyDescendant))\
-	    _XtFocusMode = FocusInActivated;\
-	  else\
-	    _XtFocusMode = NotCurrentlyActivated;}
-#else
-#define R3MOTIFHACK(focalPoint)
-#endif /* NOTR3MOTIF */
-
 	  if (descendant)
 	    {
 		if (add)
 		  {
-		      R3MOTIFHACK(pwi->focalPoint)
 		      _XtSendCrossingEvent(descendant, FocusIn, pdi);
 		  }
 		else
 		  {
 		      _XtSendCrossingEvent(descendant, FocusOut, pdi);
-		      R3MOTIFHACK(pwi->focalPoint)
 		  }
 	    }
       }
-#undef R3MOTIFHACK
 }
 
 /* ARGSUSED */
