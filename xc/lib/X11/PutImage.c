@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XPutImage.c,v 11.34 87/09/11 15:46:16 rws Exp $ */
+/* $Header: XPutImage.c,v 11.35 87/10/10 18:38:54 rws Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include <stdio.h>
@@ -108,9 +108,9 @@ static PutImageRequest(dpy, d, gc, image, req_xoffset,req_yoffset, x, y, req_wid
 		       for (i = 0; i < req_height; 
 			    	i++, row_addr += image->bytes_per_line,p+=nbytes) {
 			   bcopy (row_addr, p, (int)nbytes);
-			   if (image->bitmap_bit_order
-			     != dpy->bitmap_bit_order) _swapbits (
-				(unsigned char *)p, image->bytes_per_line);
+			   if (image->bitmap_bit_order != dpy->bitmap_bit_order)
+				_swapbits ((unsigned char *)p,
+					   (long)image->bytes_per_line);
 #ifdef notdef
 			   if ((image->byte_order != image->bitmap_bit_order) ||
 			       (dpy->byte_order != dpy->bitmap_bit_order))
@@ -179,9 +179,8 @@ static PutImageRequest(dpy, d, gc, image, req_xoffset,req_yoffset, x, y, req_wid
 			   for (i = 0; i < req_height; 
 				    i++, row_addr += image->bytes_per_line,p+=nbytes) {
 			       bcopy (row_addr, p, (int)nbytes);
-			       if (image->bitmap_bit_order
-				 != dpy->bitmap_bit_order) _swapbits (
-				    (unsigned char *)p, nbytes);
+			       if (image->bitmap_bit_order != dpy->bitmap_bit_order)
+				   _swapbits ((unsigned char *)p, nbytes);
 #ifdef notdef
 			       if ((image->byte_order != image->bitmap_bit_order) ||
 				   (dpy->byte_order != dpy->bitmap_bit_order))
@@ -218,13 +217,13 @@ static PutImageRequest(dpy, d, gc, image, req_xoffset,req_yoffset, x, y, req_wid
 		     */
 		    long nbytes;
 		    unsigned char *row = (unsigned char *) (image->data + req_yoffset * image->bytes_per_line);
-		    unsigned char *tempbuf, *p;
+		    char *tempbuf, *p;
 		    int bit_xoffset, pseudoLeftPad, byte_xoffset;
 
 		    nbytes = length = ROUNDUP(req_width * image->bits_per_pixel, dpy->bitmap_pad) >> 3;
     
 		    length *= req_height;
-		    tempbuf = p = (unsigned char *)_XAllocScratch(dpy, (unsigned long)length);
+		    tempbuf = p = _XAllocScratch(dpy, (unsigned long)length);
 
 		    req->length += length >> 2;
 
@@ -241,7 +240,7 @@ static PutImageRequest(dpy, d, gc, image, req_xoffset,req_yoffset, x, y, req_wid
 
 			if (pseudoLeftPad != 0)
 			{
-			    register unsigned char *pp = p;
+			    register unsigned char *pp = (unsigned char *)p;
 			    register unsigned char *rp = row + byte_xoffset;
 			    register unsigned char *endp = pp + nbytes;
 			    register int pseudoRightPad = 8 - pseudoLeftPad;
@@ -255,8 +254,18 @@ static PutImageRequest(dpy, d, gc, image, req_xoffset,req_yoffset, x, y, req_wid
 					  *(rp+1) << pseudoRightPad;
 			}
 			else
-			    bcopy (row + byte_xoffset, p, (int)nbytes);
-			if (image->byte_order != dpy->byte_order) {
+			    bcopy ((char *) (row + byte_xoffset), p, (int)nbytes);
+			if (image->bits_per_pixel == 1) {
+			    if (image->bitmap_bit_order != dpy->bitmap_bit_order)
+				_swapbits ((unsigned char *)p, nbytes);
+#ifdef notdef
+			   if ((image->byte_order != image->bitmap_bit_order) ||
+			       (dpy->byte_order != dpy->bitmap_bit_order))
+			   {
+			     /* XXX swapping missing XXX */
+			   }
+#endif
+			} else if (image->byte_order != dpy->byte_order) {
 			  if(image->bits_per_pixel == 32) _swaplong(p, nbytes);
 			  else if (image->bits_per_pixel == 24)
 			      _swapthree (p, nbytes);
@@ -463,7 +472,7 @@ PutSubImage (dpy, d, gc, image, req_xoffset,req_yoffset, x, y, req_width,
 	    if (SubImageHeight < 1) SubImageHeight = 1;
 
 	    PutSubImage(dpy, d, gc, image, req_xoffset, req_yoffset, x, y, 
-		req_width, SubImageHeight);
+		req_width, (unsigned int) SubImageHeight);
 
 	    PutSubImage(dpy, d, gc, image, req_xoffset, 
 		req_yoffset + SubImageHeight, x, y + SubImageHeight, req_width,
@@ -475,7 +484,7 @@ PutSubImage (dpy, d, gc, image, req_xoffset,req_yoffset, x, y, req_width,
 		dpy->bitmap_pad) * dpy->bitmap_pad - left_pad;
 
 	    PutSubImage(dpy, d, gc, image, req_xoffset, req_yoffset, x, y, 
-		SubImageWidth, req_height);
+		(unsigned int) SubImageWidth, req_height);
 
 	    PutSubImage(dpy, d, gc, image, req_xoffset + SubImageWidth, 
 		req_yoffset, x + SubImageWidth, y, req_width - SubImageWidth, 
