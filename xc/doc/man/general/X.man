@@ -99,15 +99,6 @@ your initial clients (such as terminal emulators, clocks, a window manager,
 user settings for things like the background, the speed of the pointer, etc.).
 Your site administrator can provide details.
 .TP 8
-.B "\fIxterm \-L\fP (started from \fI/etc/init\fP)"
-Some versions of UNIX that are derived from 4.3bsd support starting the window
-system and an initial \fIxterm\fP window from the system terminal line
-configuration file \fI/etc/ttys\fP.  As with \fIxdm\fP, there will be a 
-window requesting your username and password.  However, this window will become
-your primary window and is not configurable on a per-user basis.
-Sites using this method should switch to \fIxdm\fP as \fIxterm -L\fP may not be
-supported in future releases.
-.TP 8
 .B "\fIxinit\fP (run manually from the shell)"
 Sites that support more than one window system might choose to use the
 \fIxinit\fP program for starting X manually.  If this is true for your 
