@@ -22,7 +22,7 @@
  * $NCDId: @(#)lbxfuncs.c,v 1.43 1995/03/09 00:54:06 lemke Exp $
  */
 
-/* $XConsortium: lbxfuncs.c,v 1.9 95/05/02 19:33:09 mor Exp mor $ */
+/* $XConsortium: lbxfuncs.c,v 1.10 95/05/03 21:12:38 mor Exp mor $ */
 
 /*
  * top level LBX request & reply handling
@@ -1673,10 +1673,7 @@ patchup_error(client, err, nr)
 				 * have an error, so eat it */
 	break;
     }
-    if (client->swapped) {
-	swaps(&minor_code, n);
-    }
-    err->majorCode = minor_code;
+    err->majorCode = minor_code;    /* err->majorCode is CARD8, don't swap */
     err->minorCode = 0;
     return retval;
 }
@@ -1739,10 +1736,19 @@ DoLBXReply(client, data, len)
 		get_tagged_setup_reply(client, (char *) reply);
 		return FALSE;
 	    } else {
+		CARD16 majorVer = prefix->majorVersion,
+		       minorVer = prefix->minorVersion;
+
 		if (client->swapped) {
 		    SwapConnectionInfo((xConnSetup *) & prefix[1]);
+		    swaps (&majorVer, n);
+		    swaps (&minorVer, n);
 		}
-		GetConnectionInfo(client, (xConnSetup *) & prefix[1], NULL);
+
+		FinishSetupReply (client, reply->length << 2,
+		    &prefix[1], NULL, majorVer, minorVer);
+
+		return FALSE;
 	    }
 	}
 	return TRUE;
