@@ -115,7 +115,7 @@ sets pointer acceleration threshold in pixels (i.e. after how many pixels
 pointer acceleration should take effect).
 .TP 8
 .B \-to \fIseconds\fP
-sets default screensaver timeout in seconds.
+sets default connection timeout in seconds.
 .TP 8
 .B v
 sets video-on screen-saver preference.
