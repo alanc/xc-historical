@@ -6,9 +6,9 @@
 #define DEFAULT_LENGTH	11
 #define Y_MAX_PELS	inch2pel(DEFAULT_LENGTH)
 
-#define INTENSITY(color) (30L*(color)->red + \
-			  59L*(color)->green + \
-			  11L*(color)->blue)
+#define INTENSITY(color) (30L*(int)(color)->red + \
+			  59L*(int)(color)->green + \
+			  11L*(int)(color)->blue)
 
 #define INTENSITYPER(per) (((1<<16)-1)*((long)per))
 #define HALFINTENSITY INTENSITYPER(50)
