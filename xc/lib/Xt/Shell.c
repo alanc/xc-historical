@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Shell.c,v 1.1 88/02/02 14:03:11 swick Exp $";
+static char rcsid[] = "$Header: Shell.c,v 1.1 88/02/02 14:03:11 swick Locked $";
 #endif lint
 
 /*
@@ -501,11 +501,11 @@ static void Initialize(req, new)
 			       &w->core.width, &w->core.height);
 		
 		if(flag & XNegative) 
-			w->core.x =
-			  w->core.screen->width - w->core.width + w->core.x;
+		    w->core.x += WidthOfScreen(XtScreen(w))
+				 - w->core.width - (w->core.border_width<<1);
 		if(flag & YNegative) 
-			w->core.y = 
-			 w->core.screen->height - w->core.height + w->core.y;
+		    w->core.y += HeightOfScreen(XtScreen(w))
+				 - w->core.height - (w->core.border_width<<1);
 	} else 	w->shell.client_specified = FALSE;
 
 	if(w->core.width != 0 && w->core.height != 0) {
