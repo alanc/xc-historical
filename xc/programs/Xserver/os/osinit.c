@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osinit.c,v 1.38 91/07/06 13:05:44 rws Exp $ */
+/* $XConsortium: osinit.c,v 1.39 91/10/30 15:27:39 rws Exp $ */
 #include "X.h"
 #include "os.h"
 #include "osdep.h"
@@ -95,7 +95,8 @@ OsInit()
 	}
 
 #ifndef X_NOT_POSIX
-	setsid();
+	if (getpgrp () == 0)
+	    setpgid (0, 0);
 #else
 #ifndef SYSV
 	if (getpgrp (0) == 0)
