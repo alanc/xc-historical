@@ -1,5 +1,5 @@
 /* 
- * $Header: xset.c,v 1.11 87/06/18 07:43:05 dkk Locked $ 
+ * $Header: xset.c,v 1.12 87/06/23 14:42:05 dkk Locked $ 
  * $Locker: dkk $ 
  */
 #include <X11/copyright.h>
@@ -7,13 +7,12 @@
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$Header: xset.c,v 1.11 87/06/18 07:43:05 dkk Locked $";
+static char *rcsid_xset_c = "$Header: xset.c,v 1.12 87/06/23 14:42:05 dkk Locked $";
 #endif
 
 #include <X11/X.h>      /*  Should be transplanted to X11/Xlibwm.h     %*/
 #include <X11/Xlib.h>
 /*  #include <X11/Xlibwm.h>  [Doesn't exist yet  5-14-87]  %*/
-/*  #include <sys/types.h>  /*  Unnecessary.  Aready exists in X11/Xlib.h  %*/
 #include <stdio.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -22,6 +21,8 @@ static char *rcsid_xset_c = "$Header: xset.c,v 1.11 87/06/18 07:43:05 dkk Locked
 
 #define TRUE 1
 #define FALSE 0
+#define ON 1
+#define OFF 0
 
 XKeyboardControl values;
 unsigned long  value_mask;
@@ -46,9 +47,6 @@ char **argv;
 	int prefer_blank, allow_exp, timeout, interval;
 	int repeat = -1;
 	int dosaver = FALSE;
-/*	int blank, expose;    %%*/
-	int *dummy1, *dummy2;
-	int discard = FALSE;
 	int pixels[512];
 	caddr_t colors[512];
 /*
@@ -127,23 +125,18 @@ char **argv;
 			}
 		} 
 		else if (strcmp(arg, "-led") == 0) {
-			values.led = (~0 >> 1);
-			values.led_mode = 0;
+			values.led_mode = OFF;
 			value_mask |= KBLedMode;
 
 		        arg = nextarg(i, argv);
-			if (atoi(arg) == 0)
-			         i++;
-			else if (isnumber(arg, 32) == 0) {
+			if (isnumber(arg, 32) == 0 && atoi(arg) > 0) {
 			         values.led = atoi(arg);
 				 value_mask |= KBLed;
 				 i++;
 			}
 		} 
-
 		else if (strcmp(arg, "led") == 0) {
-		        values.led = 0;
-			values.led_mode = ~0L;
+			values.led_mode = ON;
 			value_mask |= KBLedMode;
 
 			arg = nextarg(i, argv);
@@ -151,11 +144,13 @@ char **argv;
 				i++;
 			} 
 			else if (strcmp(arg, "off") == 0) {
-				values.led_mode = 0;
+				values.led_mode = OFF;
 				i++;
 			}
-			else if (isnumber(arg, 32) == 0) {
+			else if (isnumber(arg, 32) == 0 && atoi(arg) > 0) {
 			        values.led = atoi(arg);
+				value_mask |= KBLed;
+/* %%*/				printf("value_mask: %d\n", value_mask);
 			        i++;
 			}
 		}
@@ -271,6 +266,7 @@ char **argv;
 		else
 			usage(argv[0]);
 	}
+
 	if (!value_mask && !status && !dosaver && !do_acc && !newpixels 
 	    && (repeat < 0))
 		usage(argv[0]);
@@ -332,7 +328,6 @@ char **argv;
 	if (dosaver) XSetScreenSaver(dpy, timeout, interval, 
 				     prefer_blank, allow_exp);
 
-/*	screen = DefaultScreen(dpy);  %%*/
 	if (newpixels && DisplayCells(dpy, screen = DefaultScreen(dpy)) >= 2) {
 		while (--numpixels >= 0) {
 			def.pixel = pixels[numpixels];
@@ -343,7 +338,7 @@ char **argv;
 		}
 	}
 
-	XSync(dpy, discard);
+	XSync(dpy, 0);
 	exit(0);
 }
 
