@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.163 93/09/18 16:13:31 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.164 93/09/19 09:54:00 rws Exp $
 /*
  * Server Master Makefile
  */
@@ -51,7 +51,7 @@ XCOMM $XConsortium: Imakefile,v 1.163 93/09/18 16:13:31 rws Exp $
          XAULIB = $(XAUTHSRC)/libXau.a
        XDMCPLIB = $(XDMCPLIBSRC)/libXdmcp.a
              OS = os/libos.a $(XAULIB) $(XDMCPLIB)
-        BSDEMUL = $(LIBSRC)/Berk/Berklib.o
+        BSDEMUL = $(DEPXBSDLIB)
             MFB = mfb/libmfb.a
             CFB = cfb/libcfb.a cfb16/libcfb.a cfb32/libcfb.a
             CFB8 = cfb/libcfb.a
