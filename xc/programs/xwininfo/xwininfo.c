@@ -34,8 +34,8 @@ extern char *window_id_format;
 usage()
 {
     fprintf(stderr, "\n");
-    fprintf(stderr, "Usage: %s [-help] [-id <id>] [-int] [-root] ",
-	    program_name);
+    fprintf(stderr, "Usage: %s [-help] %s [-int] ",
+	    program_name, SELECT_USAGE);
     fprintf(stderr, "[host:vs] [-tree] [-stats] [-bits] [-events] [-size] [-wm]\n\n");
     exit(0);
 }
@@ -46,8 +46,6 @@ main(argc, argv)
      char **argv;
 {
   register int i;
-  char *id = NULL;
-  int root_switch = FALSE;
   int tree, stats, bits, events, wm, size  = 0;
 
   INIT_NAME;
@@ -55,20 +53,15 @@ main(argc, argv)
   /* Open display, handle command line arguments */
   Setup_Display_And_Screen(&argc, argv);
 
+  /* Get window selected on command line, if any */
+  window = Select_Window_Args(&argc, &argv);
+
+  /* Handle our command line arguments */
   for (i = 1; i < argc; i++) {
     if (!strcmp(argv[i], "-help"))
       usage();
-    if (!strcmp(argv[i], "-id")) {
-      if (++i >= argc) usage();
-      id = argv[i];
-      continue;
-    }
     if (!strcmp(argv[i], "-int")) {
       window_id_format = " %d";
-      continue;
-    }
-    if (!strcmp(argv[i], "-root")) {
-      root_switch = TRUE;
       continue;
     }
     if (!strcmp(argv[i], "-tree")) {
@@ -97,29 +90,14 @@ main(argc, argv)
     }
     usage();
   }
-    
-  /* Get target window # */
-  if (root_switch)
-    window = RootWindow(dpy, screen);
-  else {
-    if (id) {
-      window = 0;
-      (void) sscanf(id, "0x%x", &window);
-      if (!window) {
-	(void) sscanf(id, "%d", &window);
-	if (!window)
-	  Fatal_Error("Invalid window id format.");
-      }
-    }
-    else {
-	    printf("\nxwininfo ==> Please select the window you wish\n");
-	    printf("         ==> information on by clicking the\n");
-	    printf("         ==> mouse in that window.\n");
 
-	    window= Select_Window(dpy);
-    }
+  /* If no window selected on command line, let user pick one the hard way */
+  if (!window) {
+	  printf("\nxwininfo ==> Please select the window you wish\n");
+	  printf("         ==> information on by clicking the\n");
+	  printf("         ==> mouse in that window.\n");
+	  window = Select_Window(dpy);
   }
-    
 
   /*
    * Do the actual displaying as per parameters
