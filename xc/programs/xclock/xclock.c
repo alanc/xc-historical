@@ -2,7 +2,7 @@
  *  Hacked from Tony Della Fera's much hacked clock program.
  */
 #ifndef lint
-static char rcsid[] = "$XConsortium: xclock.c,v 1.23 89/05/11 18:13:09 kit Exp $";
+static char rcsid[] = "$XConsortium: xclock.c,v 1.24 89/06/19 13:55:24 jim Exp $";
 #endif /* lint */
 
 #include <X11/Xatom.h>
@@ -48,17 +48,6 @@ Syntax(call)
 	(void) printf ("       [-geometry geom]\n\n");
 	exit(1);
 }
-
-#ifndef lint
-/* this silliness causes the linker to include the VendorShell
- * module from Xaw, rather than the one from Xt.
- */
-static Junk()
-{
-#include <X11/Vendor.h>
-WidgetClass junk = vendorShellWidgetClass;
-}
-#endif
 
 void main(argc, argv)
     int argc;
