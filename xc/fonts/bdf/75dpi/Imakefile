@@ -1,11 +1,11 @@
 SRCS = \
-	courR10.bdf courR12.bdf courR14.bdf courR18.bdf courR24.bdf 
+	courR10.bdf courR12.bdf courR14.bdf courR18.bdf courR24.bdf \
 	courR8.bdf \
 	courB10.bdf courB12.bdf courB14.bdf courB18.bdf courB24.bdf \
 	courB8.bdf courBO10.bdf courBO12.bdf courBO14.bdf courBO18.bdf \
 	courBO24.bdf courBO8.bdf courO10.bdf courO12.bdf courO14.bdf \
 	courO18.bdf courO24.bdf courO8.bdf \
-	helvR10.bdf helvR12.bdf helvR14.bdf helvR18.bdf helvR24.bdf 
+	helvR10.bdf helvR12.bdf helvR14.bdf helvR18.bdf helvR24.bdf \
 	helvR8.bdf \
 	helvB10.bdf helvB12.bdf helvB14.bdf helvB18.bdf helvB24.bdf \
 	helvB8.bdf helvBO10.bdf helvBO12.bdf helvBO14.bdf helvBO18.bdf \
@@ -22,13 +22,13 @@ SRCS = \
 	timI8.bdf timR10.bdf timR12.bdf timR14.bdf timR18.bdf timR24.bdf \
 	timR8.bdf
 OBJS = \
-	courR10.snf courR12.snf courR14.snf courR18.snf courR24.snf 
+	courR10.snf courR12.snf courR14.snf courR18.snf courR24.snf \
 	courR8.snf \
 	courB10.snf courB12.snf courB14.snf courB18.snf courB24.snf \
 	courB8.snf courBO10.snf courBO12.snf courBO14.snf courBO18.snf \
 	courBO24.snf courBO8.snf courO10.snf courO12.snf courO14.snf \
 	courO18.snf courO24.snf courO8.snf \
-	helvR10.snf helvR12.snf helvR14.snf helvR18.snf helvR24.snf 
+	helvR10.snf helvR12.snf helvR14.snf helvR18.snf helvR24.snf \
 	helvR8.snf \
 	helvB10.snf helvB12.snf helvB14.snf helvB18.snf helvB24.snf \
 	helvB8.snf helvBO10.snf helvBO12.snf helvBO14.snf helvBO18.snf \
