@@ -51,7 +51,7 @@ Xtransaddr	*addrp;
 #ifdef OLDTCP
 	int len = sizeof(saddr.sin_addr);
 #else
-	len = SIZEOF_in_addr;
+	int len = SIZEOF_in_addr;
 #endif /* OLDTCP */
 	char *cp = (char *) &saddr.sin_addr;
 #else /* else not CRAY */
@@ -70,11 +70,7 @@ Xtransaddr	*addrp;
 	{
 	    *familyp=FamilyInternet;
 	    *addrlenp=len;
-#if defined(CRAY) && defined(OLDTCP)
 	    memcpy(addrp,&saddr.sin_addr,len);
-#else
-	    memcpy(addrp,&saddr.sin_addr.s_addr,len);
-#endif
 	}
 	break;
     }
