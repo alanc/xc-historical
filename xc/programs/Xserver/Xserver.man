@@ -112,8 +112,9 @@ sets default cursor font.
 .B \-fn \fIfont\fP
 sets the default font.
 .TP 8
-.B \-fp \fIfontPath
-sets the search path for fonts.
+.B \-fp \fIfontPath\fP
+sets the search path for fonts.  This path is a comma seperated list of
+directories which the sample server searches for font databases.
 .TP 8
 .B \-help
 prints a usage message.
