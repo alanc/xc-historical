@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 5.16 91/12/17 19:44:15 keith Exp $
+XCOMM $XConsortium: Imakefile,v 5.17 92/01/25 16:34:06 rws Exp $
 #include <Server.tmpl>
 
 #if BuildXInputExt || BuildPexExt || BuildPexClients
@@ -23,9 +23,9 @@ XCOMM $XConsortium: Imakefile,v 5.16 91/12/17 19:44:15 keith Exp $
   SHMOBJS = shm.o
 #endif
        SRCS = shape.c $(SHMSRCS) multibuf.c mitmisc.c xtest.c \
-		xtest1di.c xtest1dd.c
+		xtest1di.c xtest1dd.c sleepuntil.c
        OBJS = shape.o $(SHMOBJS) multibuf.o mitmisc.o xtest.o \
-		xtest1di.o xtest1dd.o
+		xtest1di.o xtest1dd.o sleepuntil.o
    INCLUDES = -I../include -I$(INCLUDESRC) -I$(SERVERSRC)/include
    LINTLIBS = ../../server/dix/llib-ldix.ln ../../server/os/4.2bsd/llib-los.ln
         SUBDIRS = $(XINPUTDIRS) $(PEXDIRS) $(XTRAPDIRS)
