@@ -185,20 +185,19 @@ flush_cache(cache, needed)
                *prev;
 
     while ((cache->cursize + needed) > cache->maxsize) {
-	*oldprev = *prev = NullCacheEntryPtr;
-	cp = oldest = *cache->entries;
-	for (cp = cp->next; cp; cp = cp->next) {
+	oldprev = cache->entries;
+	oldest = *oldprev;
+	for (prev = &oldest->next; cp = *prev; prev = &cp->next) {
 	    if (cp->timestamp < oldest->timestamp) {
 		oldest = cp;
 		oldprev = prev;
 	    }
-	    *prev = cp;
 	}
-	(*oldprev)->next = cp->next;
+	*oldprev = oldest->next;
 	cache->elements--;
-	cache->cursize -= cp->size;
-	(*cp->free_func) (cp->id, cp->data, CacheEntryOld);
-	fsfree(cp);
+	cache->cursize -= oldest->size;
+	(*oldest->free_func) (oldest->id, oldest->data, CacheEntryOld);
+	fsfree(oldest);
     }
 }
 
@@ -253,8 +252,8 @@ CacheFetchMemory(cid, update)
     CacheEntryPtr cp,
                *head;
 
-    *head = cp = cache->entries[hash(cid)];
-    for (; cp; cp = cp->next) {
+    head = &cache->entries[hash(cid)];
+    for (cp = *head; cp; cp = cp->next) {
 	if (cp->id == cid) {
 	    if (update) {
 		cp->timestamp = GetTimeInMillis();
