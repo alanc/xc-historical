@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.103 91/04/01 09:18:30 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.104 91/04/09 15:23:56 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -117,6 +117,8 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.103 91/04/01 09:18:30 rws Exp $
  * and EXTRA comes with syslibs from the LDLIBS
  */
 
+#define NullParameter
+
 /* if [ -d ] or [ ! -d ] causes make to fail, define this as - */
 #ifndef DirFailPrefix
 #define DirFailPrefix
@@ -186,7 +188,7 @@ clean::									@@\
  */
 #ifndef SingleProgramTarget
 #define	SingleProgramTarget(program,objects,locallibs,syslibs)		@@\
-NormalProgramTarget(program,objects, /**/,locallibs,syslibs)
+NormalProgramTarget(program,objects,NullParameter,locallibs,syslibs)
 #endif /* SingleProgramTarget */
 
 /*
@@ -220,7 +222,7 @@ program: $(OBJS) $(DEPLIBS)						@@\
 	RemoveTargetProgram($@)						@@\
 	$(CC) -o $@ $(OBJS) $(LDOPTIONS) $(LOCAL_LIBRARIES) $(LDLIBS) $(EXTRA_LOAD_FLAGS) @@\
 									@@\
-SaberProgramTarget(program,$(SRCS),$(OBJS),$(LOCAL_LIBRARIES), /**/)	@@\
+SaberProgramTarget(program,$(SRCS),$(OBJS),$(LOCAL_LIBRARIES),NullParameter) @@\
 									@@\
 InstallProgram(program,$(BINDIR))					@@\
 InstallManPage(program,$(MANDIR))					@@\
@@ -442,7 +444,7 @@ install:: program							@@\
  */
 #ifndef InstallProgram
 #define	InstallProgram(program,dest)					@@\
-InstallProgramWithFlags(program,dest, /**/)
+InstallProgramWithFlags(program,dest,NullParameter)
 #endif /* InstallProgram */
 
 
@@ -673,7 +675,7 @@ Makefile:: 								@@\
  */
 #ifndef MakefileTarget
 #define MakefileTarget()						@@\
-BuildMakefileTarget(Imakefile, /**/)
+BuildMakefileTarget(Imakefile,NullParameter)
 #endif /* MakefileTarget */
 
 
@@ -1037,7 +1039,7 @@ NamedMakeSubdirs(all,dirs)
  */
 #ifndef DependSubdirs
 #define DependSubdirs(dirs) \
-NamedTargetSubdirs(depend,dirs,"depending", /**/,depend)
+NamedTargetSubdirs(depend,dirs,"depending",NullParameter,depend)
 #endif /* DependSubdirs */
 
 
@@ -1064,7 +1066,7 @@ NamedTargetSubdirs(install.man,dirs,"installing man pages",DESTDIR='$(DESTDIR)',
  */
 #ifndef IncludesSubdirs
 #define IncludesSubdirs(dirs) \
-NamedTargetSubdirs(includes,dirs,including, /**/,includes)
+NamedTargetSubdirs(includes,dirs,including,NullParameter,includes)
 #endif
 
 
@@ -1238,7 +1240,7 @@ dst::  src deplist							@@\
  */
 #ifndef MakeScriptFromCpp
 #define MakeScriptFromCpp(name,defs)					@@\
-CppScriptTarget(name,name.cpp,defs, /**/)
+CppScriptTarget(name,name.cpp,defs,NullParameter)
 #endif /* MakeScriptFromCpp */
 
 
