@@ -1,8 +1,9 @@
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
+    STD_DEFINES = LibraryDefines
 /*    CDEBUGFLAGS = LibraryCDebugFlags */
-    CDEBUGFLAGS = -g LibraryCDebugFlags
+    CDEBUGFLAGS = -g
         SUBDIRS = clients
        INCLUDES = -I. -I$(XRMSRC) -I$(XLIBSRC) -I$(TOP) -I$(TOP)/X11
 #if BigEndianArchitecture == YES
@@ -11,6 +12,7 @@
         DEFINES = -DLIBDIR=\"$(LIBDIR)\"
 #endif
    INSTALLFLAGS = -m 0644
+       LINTLIBS = ../X/llib-lX.ln
 
 HEADERS = \
 	AsciiText.h \
@@ -141,8 +143,4 @@ InstallMultiple($(HEADERS),$(INCDIR))
 
 DependTarget()
 
-lint:
-	$(LINT) -buz ${INCLUDES} \
-		-DLIBDIR=\"${LIBDIR}\" \
-		${SRCS} \
-		$(XLIBSRC)/llib-lX.ln
+NormalLintTarget($(SRCS))
