@@ -1,0 +1,5 @@
+           SRCS = xauth.c
+           OBJS = xauth.o 
+
+ComplexProgramTarget(xauth)
+
