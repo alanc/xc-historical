@@ -260,7 +260,7 @@ main(argc,argv)                                               /* main module */
       state = 0 ;
       break;
     }
-    state = ++state ;
+    ++state;
   pop:
     if (restart) {
       restart = 0 ;

@@ -1,4 +1,4 @@
-/* $XConsortium: math.c,v 1.5 89/12/15 22:00:50 converse Exp $ 
+/* $XConsortium: math.c,v 1.6 89/12/18 15:46:57 rws Exp $ 
  *
  *  math.c  -  mathematics functions for a hand calculator under X
  *
@@ -615,7 +615,7 @@ drgf()
   }
                          
   flagINV=0;
-  drgmode = ++drgmode % 3;
+  drgmode = (drgmode + 1) % 3;
   switch (drgmode) {
   case DEG:  drg2rad=PI / 180.0;
 	     rad2drg=180.0 / PI;
