@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.33 91/05/08 14:12:42 dave Exp $
+ * $XConsortium: Bitmap.c,v 1.34 91/05/22 17:32:17 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -48,7 +48,7 @@
 Boolean DEBUG;
 
 #define DefaultGridTolerance 8
-#define DefaultBitmapSize    "32x32"
+#define DefaultBitmapSize    "16x16"
 #define FallbackBitmapWidth  16
 #define FallbackBitmapHeight 16
 #define DefaultGrid          TRUE

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: BitEdit.c,v 1.20 91/07/10 17:20:17 dave Exp $
+ * $XConsortium: BitEdit.c,v 1.21 91/07/18 15:40:58 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -42,7 +42,7 @@
 
 #include <X11/bitmaps/xlogo16>
 
-static char *usage = "[-options ...] filename basename\n\
+static char *usage = "[-options ...] filename\n\
 \n\
 where options include all standard toolkit options plus:\n\
      -size WIDTHxHEIGHT\n\
@@ -54,6 +54,7 @@ where options include all standard toolkit options plus:\n\
      -dashed, +dashed\n\
      -stippled, +stippled\n\
      -proportional, +proportional\n\
+     -basename basename\n\
      -dashes filename\n\
      -stipple filename\n\
      -hl color\n\
@@ -62,96 +63,25 @@ where options include all standard toolkit options plus:\n\
 The default WIDTHxHEIGHT is 16x16.\n";
 
 static XrmOptionDescRec options[] = {
-  {
-    "-size",
-    "*bitmap.size",
-    XrmoptionSepArg,
-    NULL},
-  {
-    "-sw",
-    "*bitmap.squareWidth",
-    XrmoptionSepArg,
-    NULL},
-  {
-    "-sh",
-    "*bitmap.squareHeight",
-    XrmoptionSepArg,
-    NULL},
-  {
-    "-gt",
-    "*bitmap.gridTolerance",
-    XrmoptionSepArg,
-    NULL},
-  {
-    "-grid",
-    "*bitmap.grid",
-    XrmoptionNoArg,
-    "True"},
-  {
-    "+grid",
-    "*bitmap.grid",
-    XrmoptionNoArg,
-    "False"},
-  {
-    "-axes",
-    "*bitmap.axes",
-    XrmoptionNoArg,
-    "True"},
-  {
-    "+axes",
-    "*bitmap.axes",
-    XrmoptionNoArg,
-    "False"},
-  {
-    "-dashed",
-    "*bitmap.dashed",
-    XrmoptionNoArg,
-    "True"},
-  {
-    "+dashed",
-    "*bitmap.dashed",
-    XrmoptionNoArg,
-    "False"},
-  {
-    "-dashes",
-    "*bitmap.dashes",
-    XrmoptionSepArg,
-    NULL},
-  {
-    "-stippled",
-    "*bitmap.stippled",
-    XrmoptionNoArg,
-    "True"},
-  {
-    "+stippled",
-    "*bitmap.stippled",
-    XrmoptionNoArg,
-    "False"},
-  {
-    "-stipple",
-    "*bitmap.stipple",
-    XrmoptionSepArg,
-    NULL},
-  {
-    "-proportional",
-    "*bitmap.proportional",
-    XrmoptionNoArg,
-    "True"},
-  {
-    "+proportional",
-    "*bitmap.proportional",
-    XrmoptionNoArg,
-    "False"},
-  {
-    "-hl", 
-    "*bitmap.highlight", 
-    XrmoptionSepArg, 
-    NULL},
-  {
-    "-fr", 
-    "*bitmap.frame", 
-    XrmoptionSepArg, 
-    NULL}
+  { "-axes",	    "*bitmap.axes",	    XrmoptionNoArg,	"True"},
+  { "+axes",	    "*bitmap.axes",	    XrmoptionNoArg,	"False"},
+  { "-basename",    "*bitmap.basename",	    XrmoptionSepArg,	NULL},
+  { "-dashed",	    "*bitmap.dashed",	    XrmoptionNoArg,	"True"},
+  { "+dashed",	    "*bitmap.dashed",	    XrmoptionNoArg,	"False"},
+  { "-dashes",	    "*bitmap.dashes",	    XrmoptionSepArg,	NULL},
+  { "-fr",	    "*bitmap.frame",	    XrmoptionSepArg,	NULL},
+  { "-gt",	    "*bitmap.gridTolerance",XrmoptionSepArg,	NULL},
+  { "-grid",	    "*bitmap.grid",	    XrmoptionNoArg,	"True"},
+  { "+grid",	    "*bitmap.grid",	    XrmoptionNoArg,	"False"},
+  { "-hl",	    "*bitmap.highlight",    XrmoptionSepArg,	NULL},
+  { "-proportional","*bitmap.proportional", XrmoptionNoArg,	"True"},
+  { "+proportional","*bitmap.proportional", XrmoptionNoArg,	"False"},
+  { "-size",	    "*bitmap.size",	    XrmoptionSepArg,	NULL},
+  { "-sh",	    "*bitmap.squareHeight", XrmoptionSepArg,	NULL},
+  { "-sw",	    "*bitmap.squareWidth",  XrmoptionSepArg,	NULL},
+  { "-stipple",	    "*bitmap.stipple",	    XrmoptionSepArg,	NULL},
+  { "-stippled",    "*bitmap.stippled",	    XrmoptionNoArg,	"True"},
+  { "+stippled",    "*bitmap.stippled",	    XrmoptionNoArg,	"False"},
 };
 
 typedef struct {
@@ -1041,7 +971,7 @@ void main(argc, argv)
     top_widget = XtInitialize(NULL, "Bitmap", 
 			      options, XtNumber(options), &argc, argv);
 
-    if (argc != 3) {
+    if (argc > 2) {
 	fprintf(stderr, usage);
 	exit (0);
     }
@@ -1136,8 +1066,6 @@ void main(argc, argv)
     XtRealizeWidget(top_widget);
     if (argc > 1)
       if (BWReadFile(bitmap_widget, argv[1], NULL)) 
-	if (argc > 2)
-	  BWChangeBasename(bitmap_widget, argv[2]);
 
     wm_delete_window = XInternAtom(XtDisplay(top_widget), "WM_DELETE_WINDOW",
 				   False);
