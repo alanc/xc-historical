@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xfd.c,v 1.22 90/10/26 16:42:48 dave Exp $
+ * $XConsortium: xfd.c,v 1.23 90/11/10 11:28:08 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -52,6 +52,7 @@ static XrmOptionDescRec xfd_options[] = {
 static void do_quit(), do_next(), do_prev();
 static void change_page (), set_button_state ();
 static char *get_font_name();
+static void SelectChar();
 
 static XtActionsRec xfd_actions[] = {
   { "Quit", do_quit },
@@ -124,22 +125,22 @@ main (argc, argv)
     int argc;
     char **argv;
 {
+    XtAppContext xtcontext;
     Widget toplevel, pane, toplabel, box, form;
     char buf[256];
     Arg av[10];
     Cardinal i;
-    static void SelectChar();
     static XtCallbackRec cb[2] = { { SelectChar, NULL }, { NULL, NULL } };
     XFontStruct *fs;
     char *fontname;
 
     ProgramName = argv[0];
 
-    toplevel = XtInitialize (NULL, "Xfd", xfd_options, XtNumber(xfd_options),
-			     (Cardinal *) &argc, argv);
+    toplevel = XtAppInitialize (&xtcontext, "Xfd",
+				xfd_options, XtNumber(xfd_options),
+				&argc, argv, NULL, NULL, 0);
     if (argc != 1) usage ();
-    XtAppAddActions (XtWidgetToApplicationContext (toplevel),
-                     xfd_actions, XtNumber (xfd_actions));
+    XtAppAddActions (xtcontext, xfd_actions, XtNumber (xfd_actions));
     XtOverrideTranslations
         (toplevel, XtParseTranslationTable ("<Message>WM_PROTOCOLS: Quit()"));
 
@@ -223,7 +224,7 @@ main (argc, argv)
                             &wm_delete_window, 1);
 
     change_page (0);
-    XtMainLoop ();
+    XtAppMainLoop (xtcontext);
 }
 
 
