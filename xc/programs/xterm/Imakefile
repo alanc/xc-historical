@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.54 91/09/22 11:17:56 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.55 91/09/22 11:40:47 rws Exp $
 XCOMM
 XCOMM                         Attention xterm porters
 XCOMM
@@ -20,7 +20,12 @@ XCOMM
          PTYLIB = -lpucc
 #endif
 
-   MAIN_DEFINES = -DUTMP $(TTYGROUPDEF) $(PUCCPTYDDEF)
+ OSMAJORVERSION = OSMajorVersion
+ OSMINORVERSION = OSMinorVersion
+
+   MAIN_DEFINES = -DUTMP $(TTYGROUPDEF) $(PUCCPTYDDEF) \
+		  -DOSMAJORVERSION=$(OSMAJORVERSION) \
+		  -DOSMINORVERSION=$(OSMINORVERSION)
    MISC_DEFINES = /* -DALLOWLOGFILEEXEC */
 
           SRCS1 = button.c charproc.c cursor.c data.c input.c \
