@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.64 89/11/14 16:21:03 converse Exp $
+ * $XConsortium: XConnDis.c,v 11.65 89/12/09 19:10:20 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -217,7 +217,13 @@ int _XConnectDisplay (display_name, fullnamep, dpynump, screenp,
      * transport connection function set above.
      */
     if (!phostname) {
+    }
+    if (!phostname) {
+#ifdef apollo
+	;   /* Unix domain sockets are *really* bad on apollos */
+#else
 	connfunc = MakeUNIXSocketConnection;
+#endif
     }
     else if (strcmp (phostname, "unix") == 0) {
 	connfunc = MakeUNIXSocketConnection;
