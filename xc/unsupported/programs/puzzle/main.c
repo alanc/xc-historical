@@ -69,9 +69,9 @@ Colormap	PuzzleColormap;
 typedef struct {
     Window	root;
     int		x,y;
-    u_int	width, height;
-    u_int	border_width;
-    u_int	depth;
+    unsigned int	width, height;
+    unsigned int	border_width;
+    unsigned int	depth;
 } WindowGeom;
 
 WindowGeom	PuzzleWinInfo;
@@ -165,8 +165,8 @@ WindowGeom *frame;
 RectSet(W,x,y,w,h,pixel)
 Window W;
 int x,y;
-u_int w,h;
-u_long pixel;
+unsigned int w,h;
+unsigned long pixel;
 {
     XSetForeground(dpy, rect_gc, pixel);
     XFillRectangle(dpy, W, rect_gc, x, y, w, h);
@@ -175,7 +175,7 @@ u_long pixel;
 MoveArea(W,src_x,src_y,dst_x,dst_y,w,h)
 Window W;
 int src_x, src_y, dst_x, dst_y;
-u_int w, h;
+unsigned int w, h;
 {
     XCopyArea(dpy,W,W,gc,src_x,src_y,w,h,dst_x,dst_y);
 }
@@ -218,7 +218,7 @@ int method;
     else {
 	/** method == TITLE_ANIMATED **/
 
-	u_char *colorVal;
+	unsigned char *colorVal;
 	int *xLoc, *yLoc, *permute;
 	int tilesHigh, tilesWide, numTiles, counter, swapWith, tmp;
 
@@ -226,7 +226,7 @@ int method;
 	tilesWide = (Twidth+tinyBoxSize-1)/tinyBoxSize;
 	numTiles = tilesHigh * tilesWide;
 
-	colorVal = (u_char *) malloc(numTiles);
+	colorVal = (unsigned char *) malloc(numTiles);
 	xLoc = (int *) malloc(numTiles * sizeof(int));
 	yLoc = (int *) malloc(numTiles * sizeof(int));
 	permute = (int *) malloc(numTiles * sizeof(int));

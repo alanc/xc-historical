@@ -42,11 +42,11 @@ long *width, *height; /* RETURNS */
 int readcount;
 
     int fd, i, cmapSize;
-    u_char cmapSizeByte;
-    u_char colormapData[256][3];
+    unsigned char cmapSizeByte;
+    unsigned char colormapData[256][3];
     XColor colorMap[256];
     Pixmap PicturePixmap;
-    u_char *data;
+    unsigned char *data;
     unsigned long swaptest = 1;
     
     fd = open(fname, O_RDONLY);
@@ -70,7 +70,7 @@ int readcount;
 	cmapSize = 256;
 
     read(fd, colormapData, 3*cmapSize);
-    data = (u_char *) malloc((*width)*(*height));
+    data = (unsigned char *) malloc((*width)*(*height));
     if (!data) {
 	/** error **/
     }

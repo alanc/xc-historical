@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: puzzle.c,v 1.5 89/04/11 11:41:18 jim Exp $
+ *	$XConsortium: puzzle.c,v 1.6 89/04/11 11:56:54 jim Exp $
  */
 
 /* Puzzle - (C) Copyright 1987, 1988 Don Bennett.
@@ -12,7 +12,7 @@
  */
 
 #ifndef lint
-static char *rcsid_puzzle_c = "$XConsortium: puzzle.c,v 1.5 89/04/11 11:41:18 jim Exp $";
+static char *rcsid_puzzle_c = "$XConsortium: puzzle.c,v 1.6 89/04/11 11:56:54 jim Exp $";
 #endif	/* lint */
 
 /**
@@ -419,6 +419,18 @@ int dir,dist;
    if (OutputLogging)
      LogMoveSpace(first_x,first_y,last_x,last_y,shift_dir);
 }
+
+#ifdef USG
+int gettimeofday (tvp, tzp)
+    struct timeval *tvp;
+    struct timezone *tzp;
+{
+    time (&tvp->tv_sec);
+    tvp->tv_usec = 0L;
+
+    /* ignore tzp for now since this file doesn't use it */
+}
+#endif
 
 initialize()
 {
