@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbitblt.c,v 5.16 90/03/01 16:33:54 keith Exp $ */
+/* $XConsortium: mfbbitblt.c,v 5.17 90/03/10 15:47:45 keith Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 
@@ -336,9 +336,8 @@ int dstx, dsty;
 }
 
 /*
- * Allow devices which use mfb for 1-bit pixmap support
- * to register a function for n-to-1 copy operations, instead
- * of falling back to miCopyPlane
+ * Devices which use mfb for 1-bit pixmap support
+ * must register a function for n-to-1 copy operations
  */
 
 static unsigned long	copyPlaneGeneration;
@@ -396,10 +395,12 @@ unsigned long plane;
 	{
 	    return (*copyPlane) (pSrcDrawable, pDstDrawable,
 			   pGC, srcx, srcy, width, height, dstx, dsty, plane);
-	}
+	}  
 	else
-	    return miCopyPlane(pSrcDrawable, pDstDrawable,
-			   pGC, srcx, srcy, width, height, dstx, dsty, plane);
+	{
+	    FatalError ("No copyPlane proc registered for depth %d\n",
+			pSrcDrawable->depth);
+	}
     }
     if (plane != 1)
 	return NULL;
