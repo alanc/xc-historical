@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Varargs.c,v 1.15 90/03/05 11:43:24 swick Exp $";
+    "$XConsortium: Varargs.c,v 1.16 90/03/13 18:24:15 kit Exp $";
 #endif
 /*
 
@@ -401,7 +401,7 @@ Cardinal * number;
 				    &num_constraint);
 
 	cons_top = constraint;
-	*res_list = (XtResourceList) XtRealloc(*res_list, 
+	*res_list = (XtResourceList) XtRealloc((char*)*res_list, 
 					       ((*number + num_constraint) * 
 						sizeof(XtResource)));
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.79 90/01/23 10:50:41 swick Exp $";
+static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.80 90/01/23 11:44:47 swick Exp $";
 /* $oHeader: NextEvent.c,v 1.4 88/09/01 11:43:27 asente Exp $ */
 #endif /* lint */
 
@@ -330,7 +330,7 @@ static void IeCallProc(ptr)
 {
     while (ptr != NULL) {
 	InputEvent *next = ptr->ie_next;
-	(* (ptr->ie_proc))( ptr->ie_closure, &ptr->ie_source, &ptr);
+	(*ptr->ie_proc)(ptr->ie_closure, &ptr->ie_source, (XtInputId*)&ptr);
 	ptr = next;
     }
 }

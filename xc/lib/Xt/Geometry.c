@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Geometry.c,v 1.41 89/12/16 16:59:52 rws Exp $";
+static char Xrcsid[] = "$XConsortium: Geometry.c,v 1.42 90/02/26 16:25:01 kit Exp $";
 /* $oHeader: Geometry.c,v 1.3 88/08/23 11:37:50 asente Exp $ */
 #endif /* lint */
 
@@ -310,7 +310,7 @@ void XtResizeWindow(w)
 
 void XtResizeWidget(w, width, height, borderWidth)
     Widget w;
-    Dimension height, width, borderWidth;
+    Dimension width, height, borderWidth;
 {
     XWindowChanges changes;
     Dimension old_width, old_height, old_borderWidth;
@@ -340,8 +340,8 @@ void XtResizeWidget(w, width, height, borderWidth)
 		XConfigureWindow(XtDisplay(w), XtWindow(w), mask, &changes);
 	    else {
 		Widget pw = _XtWindowedAncestor(w);
-		Dimension big_width = old_width + (old_borderWidth << 1);
-		Dimension big_height = old_height + (old_borderWidth << 1);
+		unsigned big_width = old_width + (old_borderWidth << 1);
+		unsigned big_height = old_height + (old_borderWidth << 1);
 		if ((width + (borderWidth << 1)) > big_width)
 		    big_width = width + (borderWidth << 1);
 		if ((height + (borderWidth << 1)) > big_height)
@@ -360,7 +360,7 @@ void XtResizeWidget(w, width, height, borderWidth)
 void XtConfigureWidget(w, x, y, width, height, borderWidth)
     Widget w;
     Position x, y;
-    Dimension height, width, borderWidth;
+    Dimension width, height, borderWidth;
 {
     XWindowChanges changes, old;
     Cardinal mask = 0;

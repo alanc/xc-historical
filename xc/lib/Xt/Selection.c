@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Selection.c,v 1.44 90/02/01 15:08:37 keith Exp $";
+    "$XConsortium: Selection.c,v 1.45 90/02/16 11:45:54 kit Exp $";
 #endif
 
 /***********************************************************
@@ -254,7 +254,8 @@ Time time;
 	/* now inform widget */
 	if (ctx->loses) { 
 	    if (ctx->incremental)  
-	       (*ctx->loses)(widget, &ctx->selection, ctx->owner_closure);
+	       (*(XtLoseSelectionIncrProc)ctx->loses)
+		   (widget, &ctx->selection, ctx->owner_closure);
 	    else  (*ctx->loses)(widget, &ctx->selection);
 	}
 	return(TRUE);
@@ -342,7 +343,8 @@ XtIntervalId   *id;
 	     * the owner needs to free the value.
 	     */
 	    if (ctx->incremental)
-		(*ctx->notify)(ctx->widget, &ctx->selection, &req->target, 
+		(*(XtSelectionDoneIncrProc)ctx->notify)
+			      (ctx->widget, &ctx->selection, &req->target, 
 			       (XtRequestId*)&req, ctx->owner_closure);
 	    else
 		(*ctx->notify)(ctx->widget, &ctx->selection, &req->target);
@@ -403,7 +405,8 @@ XEvent *ev;
     if (req->allSent) { 
 	if (ctx->notify)  
 	    if (ctx->incremental) {
-		(*ctx->notify)(ctx->widget, &ctx->selection, &req->target,
+		(*(XtSelectionDoneIncrProc)ctx->notify)
+			      (ctx->widget, &ctx->selection, &req->target,
 			       (XtRequestId*)&req, ctx->owner_closure);
 	    }
 	    else (*ctx->notify)(ctx->widget, &ctx->selection, &req->target);
@@ -417,7 +420,8 @@ XEvent *ev;
 	     else {
 		unsigned long size = MAX_SELECTION_INCR(ctx->dpy);
     		SendIncrement(req);
-		(*ctx->convert)(ctx->widget, &ctx->selection, &req->target, 
+		(*(XtConvertSelectionIncrProc)ctx->convert)
+			   (ctx->widget, &ctx->selection, &req->target, 
 			    &req->type, &req->value, 
 			    &req->bytelength, &req->format,
 			    &size, ctx->owner_closure, (XtRequestId*)&req);
@@ -516,7 +520,8 @@ Boolean *incremental;
     else {
 	if (ctx->incremental == TRUE) {
 	     unsigned long size = MAX_SELECTION_INCR(ctx->dpy);
-	     if ((*ctx->convert)(ctx->widget, &event->selection, &target,
+	     if ((*(XtConvertSelectionIncrProc)ctx->convert)
+			       (ctx->widget, &event->selection, &target,
 				&targetType, &value, &length, &format,
 				&size, ctx->owner_closure, (XtRequestId*)&req)
 		     == FALSE) {
@@ -835,7 +840,7 @@ XtPointer closure;
 XtIntervalId   *id;
 {
     XtPointer value = NULL;
-    int length = 0;
+    unsigned long length = 0;
     int format = 8;
     Atom resulttype = XT_CONVERT_FAIL;
     CallBackInfo info = (CallBackInfo)closure;
@@ -903,10 +908,11 @@ XEvent *ev;
     XtRemoveTimeOut(info->timeout); 
 #endif 
     if (length == 0) {
+       unsigned long u_offset = info->offset;
        (*info->callback)(widget, *info->req_closure, &ctx->selection, 
 			  &info->type, 
 			  (info->offset == 0 ? value : info->value), 
-			  &info->offset, &info->format);
+			  &u_offset, &info->format);
        if (info->offset) XFree(value);
        XtRemoveEventHandler(widget, (EventMask) PropertyChangeMask, FALSE, 
 		HandleGetIncrement, (XtPointer) info);
@@ -1017,14 +1023,14 @@ Atom selection;
 
     XDeleteProperty(dpy, XtWindow(widget), property);
     (*info->callback)(widget, closure, &selection, 
-			  &type, value, &length, &format);
+			  &type, (XtPointer)value, &length, &format);
 
     if (info->incremental) {
 	/* let requestor know the whole thing has been received */
 	value = (unsigned char*)XtMalloc((unsigned)1);
 	length = 0;
 	(*info->callback)(widget, closure, &selection,
-			  &type, value, &length, &format);
+			  &type, (XtPointer)value, &length, &format);
     }
     return TRUE;
 }
@@ -1179,16 +1185,17 @@ Boolean incremental;
 {
     Select ctx = req->ctx;
     XtPointer value = NULL, temp, total = NULL;
-    unsigned int length;
+    unsigned long length;
     int format;
     Atom resulttype;
-    int totallength = 0;
+    unsigned long totallength = 0;
 
 	req->event.target = target;
 
 	if (ctx->incremental) {
 	   unsigned long size = MAX_SELECTION_INCR(ctx->dpy);
-	   if (!(*ctx->convert)(ctx->widget, &selection, &target,
+	   if (!(*(XtConvertSelectionIncrProc)ctx->convert)
+			   (ctx->widget, &selection, &target,
 			    &resulttype, &value, &length, &format,
 			    &size, ctx->owner_closure, (XtRequestId*)&req)) {
 	       HandleNone(widget, callback, closure, selection);
@@ -1214,7 +1221,8 @@ Boolean incremental;
 			 /* should owner be notified on end-of-piece?
 			  * Spec is unclear, but non-local transfers don't.
 			  */
-			 (*ctx->convert)(ctx->widget, &selection, &target,
+			 (*(XtConvertSelectionIncrProc)ctx->convert)
+					(ctx->widget, &selection, &target,
 					 &resulttype, &value, &length, &format,
 					 &size, ctx->owner_closure,
 					 (XtRequestId*)&req);
@@ -1227,7 +1235,8 @@ Boolean incremental;
 		    total = XtRealloc(total, 
 			    (unsigned) (totallength += bytelength));
 		    bcopy(value, &total[totallength-bytelength], bytelength);
-		    (*ctx->convert)(ctx->widget, &selection, &target, 
+		    (*(XtConvertSelectionIncrProc)ctx->convert)
+			   (ctx->widget, &selection, &target, 
 			    &resulttype, &value, &length, &format,
 			    &size, ctx->owner_closure, (XtRequestId*)&req);
 		  }
@@ -1237,7 +1246,8 @@ Boolean incremental;
 		    total,  &totallength, &format);
 	      }
 	      if (ctx->notify) 
-		  (*ctx->notify)(ctx->widget, &selection, &target, 
+		  (*(XtSelectionDoneIncrProc)ctx->notify)
+				(ctx->widget, &selection, &target, 
 				 (XtRequestId*)&req, ctx->owner_closure);
 	      else XtFree(value);
 	  }

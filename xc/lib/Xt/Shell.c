@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.82 89/12/15 12:02:11 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.83 89/12/15 19:11:16 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif /* lint */
 
@@ -1286,8 +1286,8 @@ static void EventHandler(wid, closure, event, continue_to_dispatch)
 	 } 
 
 	 if (sizechanged && 
-                 XtClass(w)->core_class.resize != (XtWidgetProc) NULL)
-                    (*(XtClass(w)->core_class.resize))(w);
+                 XtClass(wid)->core_class.resize != (XtWidgetProc) NULL)
+                    (*(XtClass(wid)->core_class.resize))(wid);
 
 }
 

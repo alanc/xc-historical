@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Manage.c,v 1.19 89/09/11 17:42:58 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Manage.c,v 1.20 89/09/14 10:34:44 swick Exp $";
 /* $oHeader: Manage.c,v 1.3 88/09/01 11:41:51 asente Exp $ */
 #endif /* lint */
 
@@ -93,7 +93,7 @@ void XtUnmanageChildren(children, num_children)
         }
     }
     if (num_unique_children != 0 && change_managed != NULL && parent_realized) {
-	(*change_managed) (parent);
+	(*change_managed) ((Widget)parent);
     }
 } /* XtUnmanageChildren */
 
@@ -181,7 +181,7 @@ void XtManageChildren(children, num_children)
 
     if (num_unique_children != 0 && parent_realized) {
 	/* Compute geometry of new managed set of children. */
-	if (change_managed != NULL) (*change_managed) (parent);
+	if (change_managed != NULL) (*change_managed) ((Widget)parent);
 
 	/* Realize each child if necessary, then map if necessary */
 	for (i = 0; i < num_unique_children; i++) {
