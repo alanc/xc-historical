@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: extension.c,v 1.44 89/03/11 16:48:14 rws Exp $ */
+/* $XConsortium: extension.c,v 1.45 89/03/23 09:14:02 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -317,7 +317,8 @@ RegisterScreenProc(name, pScreen, proc)
 
  SendErrorToClient (client, reqCode, minorCode, resId, status)
      ClientPtr client;
-     char reqCode, minorCode, status;
+     unsigned char reqCode, status;
+     unsigned short minorCode;
      XID resId;
  {
      xError rep;
