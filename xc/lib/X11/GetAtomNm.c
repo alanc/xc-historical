@@ -1,4 +1,4 @@
-/* $XConsortium: XGetAtomNm.c,v 11.17 93/08/31 19:24:23 rws Exp $ */
+/* $XConsortium: XGetAtomNm.c,v 11.17 93/08/31 19:26:30 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -34,6 +34,8 @@ typedef struct _XDisplayAtoms {
 } AtomTable;
 
 #define HASH(sig) ((sig) & (TABLESIZE-1))
+#define REHASHVAL(sig) ((((sig) % (TABLESIZE-3)) + 2) | 1)
+#define REHASH(idx,rehash) ((idx + rehash) & (TABLESIZE-1))
 
 char *XGetAtomName(dpy, atom)
 register Display *dpy;
@@ -44,10 +46,10 @@ Atom atom;
     char *storage;
     register Entry *table;
     register int idx;
+    int firstidx, rehash;
     register Entry e;
     register char *s1, c;
     register unsigned long sig;
-    Entry oe;
 
     LockDisplay(dpy);
     /* look in the cache first */
@@ -82,14 +84,20 @@ Atom atom;
 	    sig = 0;
 	    for (s1 = storage; c = *s1++; )
 		sig = (sig << 1) + c;
-	    idx = HASH(sig);
+	    firstidx = idx = HASH(sig);
+	    if (table[idx]) {
+		rehash = REHASHVAL(sig);
+		do
+		    idx = REHASH(idx, rehash);
+		while (idx != firstidx && table[idx]);
+	    }
 	    e = (Entry)Xmalloc(sizeof(EntryRec) + rep.nameLength + 1);
 	    if (e) {
 		e->sig = sig;
 		e->atom = atom;
 		strcpy(EntryName(e), storage);
-		if (oe = table[idx])
-		    Xfree((char *)oe);
+		if (table[idx])
+		    Xfree((char *)table[idx]);
 		table[idx] = e;
 	    }
 	}
