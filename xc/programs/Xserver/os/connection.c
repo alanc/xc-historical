@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.94 89/01/17 08:32:29 rws Exp $ */
+/* $XConsortium: connection.c,v 1.95 89/03/14 08:34:47 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -521,8 +521,8 @@ EstablishNewConnections()
  ************/
 
 static void
-ErrorConnMax(oc)
-    register OsCommPtr oc;
+ErrorConnMax(fd)
+    register int fd;
 {
     xConnSetupPrefix csp;
     char pad[3];
@@ -537,11 +537,10 @@ ErrorConnMax(oc)
     waittime.tv_usec = (BOTIMEOUT % MILLI_PER_SECOND) *
 		       (1000000 / MILLI_PER_SECOND);
     CLEARBITS(mask);
-    BITSET(mask, oc->fd);
-    (void)select(oc->fd + 1, (int *) mask, (int *) NULL, (int *) NULL,
-		 &waittime);
+    BITSET(mask, fd);
+    (void)select(fd + 1, (int *) mask, (int *) NULL, (int *) NULL, &waittime);
     /* try to read the byte-order of the connection */
-    (void)read(oc->fd, &byteOrder, 1);
+    (void)read(fd, &byteOrder, 1);
     if ((byteOrder == 'l') || (byteOrder == 'B'))
     {
 	csp.success = xFalse;
@@ -562,7 +561,7 @@ ErrorConnMax(oc)
 	iov[1].iov_base = NOROOM;
 	iov[2].iov_len = (4 - (csp.lengthReason & 3)) & 3;
 	iov[2].iov_base = pad;
-	(void)writev(oc->fd, iov, 3);
+	(void)writev(fd, iov, 3);
     }
 }
 
