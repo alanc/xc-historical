@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.74 91/03/28 16:28:53 gildea Exp $
+ *	$XConsortium: misc.c,v 1.75 91/04/01 12:03:10 gildea Exp $
  */
 
 /*
@@ -27,8 +27,8 @@
 
 #include "ptyx.h"		/* X headers included here. */
 
-#include <stdio.h>
 #include <X11/Xos.h>
+#include <stdio.h>
 #include <setjmp.h>
 #include <signal.h>
 #include <ctype.h>
@@ -49,11 +49,12 @@
 extern jmp_buf Tekend;
 extern jmp_buf VTend;
 
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
 extern char *malloc();
-extern char *mktemp();
-extern void exit();
-extern void perror();
-extern void abort();
+extern char *getenv();
+#endif
 
 static void DoSpecialEnterNotify();
 static void DoSpecialLeaveNotify();
@@ -384,7 +385,6 @@ register TScreen *screen;
 	register char *cp;
 	register int i;
 	static char *log_default;
-	char *malloc();
 #ifdef ALLOWLOGFILEEXEC
 	void logpipe();
 #ifdef SYSV
@@ -401,7 +401,8 @@ register TScreen *screen;
 		if(screen->logfile)
 			free(screen->logfile);
 		if(log_default == NULL)
-			mktemp(log_default = log_def_name);
+			log_default = log_def_name;
+			mktemp(log_default);
 		if((screen->logfile = malloc((unsigned)strlen(log_default) + 1)) == NULL)
 			return;
 		strcpy(screen->logfile, log_default);
@@ -436,7 +437,6 @@ register TScreen *screen;
 			close(screen->respond);
 			if(!shell) {
 				register struct passwd *pw;
-				char *getenv(), *malloc();
 				struct passwd *getpwuid();
 
 				if(((cp = getenv("SHELL")) == NULL || *cp == 0)
@@ -532,7 +532,6 @@ int (*func)();
 	register char *cp;
 	char buf[512];
 	char *bufend = &buf[(sizeof buf) - 1];	/* leave room for null */
-	extern char *malloc();
 	Bool okay = True;
 
 	/* 
