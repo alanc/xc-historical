@@ -1,4 +1,4 @@
-/* $XConsortium: ICE.h,v 1.3 93/12/28 11:40:49 mor Exp $ */
+/* $XConsortium: ICE.h,v 1.4 94/03/18 10:23:54 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -82,10 +82,11 @@ Author: Ralph Mor, X Consortium
 #define IceBadMajor			0
 #define IceNoAuth			1
 #define IceNoVersion			2
-#define IceAuthRejected			3
-#define IceAuthFailed			4
-#define IceProtocolDuplicate		5
-#define IceMajorOpcodeDuplicate		6
-#define IceUnknownProtocol		7
+#define IceSetupFailed			3
+#define IceAuthRejected			4
+#define IceAuthFailed			5
+#define IceProtocolDuplicate		6
+#define IceMajorOpcodeDuplicate		7
+#define IceUnknownProtocol		8
 
 #endif /* _ICE_H_ */
