@@ -69,30 +69,31 @@ the volume to the nearest value that the hardware can support.
 .PP
 .TP 8
 .B fp= \fIpath,...\fP
-The \fBfp=\fP sets the font path to the directories given in the path argument.
-The directories are interpreted by the server, not by the client, and are
-server-dependent.  Directories that do not contain font databases created by
-\fImkfontdir\fP will be ignored by the server.
+The \fBfp=\fP sets the font path to the entries given in the path argument.
+The entries are interpreted by the server, not by the client.
+Typically they are directory names or font server names, but the
+interpretation is server-dependent.
 .TP 8
 .B fp \fBdefault\fP
 The \fBdefault\fP argument causes the font path to be reset to the server's
 default.
 .TP 8
 .B fp \fBrehash\fP
-The \fBrehash\fP argument causes the server to reread the font databases in
+The \fBrehash\fP argument resets the font path to its current value,
+causing the server to reread the font databases in
 the current font path.  This is generally only used when adding new fonts to
 a font directory (after running \fImkfontdir\fP to recreate the font database).
 .PP
 .TP 8
 .B "\-fp \fRor\fP fp\-"
 The \fB\-fp\fP and \fBfp\-\fP options remove elements from the current
-font path.  They must be followed by a comma-separated list of directories.
+font path.  They must be followed by a comma-separated list of entries.
 .PP
 .TP 8
 .B "\+fp \fRor\fP fp\+"
 This \fB\+fp\fP and \fBfp\+\fP options prepend and append elements to the 
 current font path, respectively.  They must be followed by a comma-separated 
-list of directories.
+list of entries.
 .PP
 .TP 8
 .B led
