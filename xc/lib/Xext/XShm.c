@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XShm.c,v 1.13 91/05/05 19:41:29 rws Exp $
+ * $XConsortium: XShm.c,v 1.14 91/07/12 09:54:02 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -339,6 +339,7 @@ Status XShmPutImage (dpy, d, gc, image, src_x, src_y, dst_x, dst_y,
     if (!shminfo) return 0;
 
     LockDisplay(dpy);
+    FlushGC(dpy, gc);
     GetReq(ShmPutImage, req);
     req->reqType = info->codes->major_opcode;
     req->shmReqType = X_ShmPutImage;
