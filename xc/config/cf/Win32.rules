@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.rules,v 1.26 93/09/12 17:48:12 rws Exp $
+XCOMM platform:  $XConsortium: Win32.rules,v 1.27 93/09/17 11:32:14 rws Exp $
 
 .c.obj:
 	$(CC) -c $*.c @<<
@@ -326,6 +326,16 @@ clean::									@@\
 #define CppScriptTarget(dst,src,defs,deplist)				@@\
 dst::									@@\
 	@echo sorry, unable to make $@
+
+#define CppFileTarget(dst,src,defs,deplist)				@@\
+dst::  src deplist							@@\
+	RemoveFile($@)							@@\
+	$(PREPROCESSCMD) src @<< >$@					@@\
+	defs -DXCOMM="#"						@@\
+<<									@@\
+									@@\
+clean::									@@\
+	RemoveFiles(dst)
 
 #define InstallNamedTarget(step,srcname,flags,dest,dstname)		@@\
 XVARdef0 = $(DESTDIR)dest/						@@\
