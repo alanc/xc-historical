@@ -21,6 +21,14 @@
 #include <sys/select.h>
 #endif
 
+#if defined(sony)
+extern "C" {
+    /* Sony has select in libsocket, but no prototype in /usr/include */
+    int select(int, fd_set*, fd_set*, fd_set*, struct timeval*);
+}
+#endif
+
+
 #ifdef sgi
 
 extern "C" int sginap(long);
