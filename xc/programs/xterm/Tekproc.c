@@ -1,5 +1,5 @@
 /*
- * $Header: Tekproc.c,v 1.34 88/07/28 17:28:00 jim Exp $
+ * $Header: Tekproc.c,v 1.35 88/07/28 19:18:31 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -113,7 +113,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$Header: Tekproc.c,v 1.34 88/07/28 17:28:00 jim Exp $";
+static char rcs_id[] = "$Header: Tekproc.c,v 1.35 88/07/28 19:18:31 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -1499,7 +1499,7 @@ register Menu **menu;
 
 	curmodes = screen->cur;
 	if (*menu == NULL) {
-		if ((*menu = NewMenu("Tektronix", term->misc.re_verse)) == NULL)
+		if ((*menu = NewMenu("Tektronix")) == NULL)
 			return(NULL);
 		for(cp = Ttext ; *cp ; cp++)
 			AddMenuItem(*menu, *cp);

@@ -1,5 +1,5 @@
 /*
- * $XHeader: charproc.c,v 1.42 88/07/28 17:52:33 jim Exp $
+ * $XHeader: charproc.c,v 1.43 88/07/28 20:00:44 jim Exp $
  */
 
 
@@ -122,7 +122,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XHeader: charproc.c,v 1.42 88/07/28 17:52:33 jim Exp $";
+static char rcs_id[] = "$XHeader: charproc.c,v 1.43 88/07/28 20:00:44 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -2434,7 +2434,7 @@ register Menu **menu;
 	register int kflags = term->keyboard.flags;
 
 	if (*menu == NULL) {
-		if ((*menu = NewMenu("Modes", term->misc.re_verse)) == NULL)
+		if ((*menu = NewMenu("Modes")) == NULL)
 			return(NULL);
 		for(cp = vtext ; *cp ; cp++)
 			AddMenuItem(*menu, *cp);
