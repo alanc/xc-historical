@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: server.c,v 1.7 90/02/12 17:56:38 keith Exp $
+ * $XConsortium: server.c,v 1.8 90/03/05 11:50:06 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -262,6 +262,7 @@ WaitForServer (d)
 	    	if (d->displayType.location == Foreign)
 		    GetRemoteAddress (d, ConnectionNumber (dpy));
 	    	RegisterCloseOnFork (ConnectionNumber (dpy));
+		(void) fcntl (ConnectionNumber (dpy), F_SETFD, 0);
 	    	return 1;
 	    } else {
 	    	Debug ("OpenDisplay failed %d (%s) on \"%s\"\n",
