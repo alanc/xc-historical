@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.112 94/01/11 18:44:10 kaleb Exp $ */
+/* $XConsortium: Display.c,v 1.113 94/01/14 17:56:09 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -100,9 +100,6 @@ static void AddToAppContext(d, app)
 	}
 #else
 	app->fds.nfds++;
-	app->fds.fdlist = (struct pollfd *)
-	    XtRealloc ((char *) app->fds.fdlist,
-		       app->fds.nfds * sizeof (struct pollfd));
 #endif
 #undef DISPLAYS_TO_ADD
 }
@@ -120,6 +117,7 @@ static void XtDeleteFromAppContext(d, app)
 	    for (i++; i < app->count; i++) app->list[i-1] = app->list[i];
 	    app->count--;
 	}
+	app->fds.nfds--;
 }
 
 static XtPerDisplay NewPerDisplay(dpy)
@@ -390,15 +388,13 @@ XtAppContext XtCreateApplicationContext()
 	_XtSetDefaultConverterTable(&app->converterTable);
 	app->sync = app->being_destroyed = app->error_inited = FALSE;
 	app->in_phase2_destroy = NULL;
-	app->fds.nfds = app->fds.count = 0;
 #ifndef USE_POLL
 	FD_ZERO(&app->fds.rmask);
 	FD_ZERO(&app->fds.wmask);
 	FD_ZERO(&app->fds.emask);
-#else
-	app->fds.fdlist = NULL;
 #endif
-	app->input_max = 0;
+	app->fds.nfds = 0;
+	app->input_count = app->input_max = 0;
 	_XtHeapInit(&app->heap);
 	app->fallback_resources = NULL;
 	_XtPopupInitialize(app);
@@ -474,9 +470,6 @@ static void DestroyAppContext(app)
 	*prev_app = app->next;
 	if (app->process->defaultAppContext == app)
 	    app->process->defaultAppContext = NULL;
-#ifdef USE_POLL
-	XtFree((char *)app->fds.fdlist);
-#endif
 	if (app->free_bindings) _XtDoFreeBindings (app);
 	FREE_APP_LOCK(app);
 	XtFree((char *)app);
