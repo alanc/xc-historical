@@ -1,4 +1,4 @@
-.\" $XConsortium: Xsun.man,v 1.16 93/08/31 18:19:43 kaleb Exp $
+.\" $XConsortium: Xsun.man,v 1.17 93/11/03 17:21:43 kaleb Exp $
 .TH XSUN 1 "Release 5" "X Version 11"
 .SH NAME
 Xsun, XsunMono \- Sun server for X Version 11
@@ -82,8 +82,7 @@ CapsLock LEDs respectively. Pressing the key once turns the corresponding
 LED on and may send a KeyPress event to any client which has the keyboard
 focus. Pressing the key again turns the LED off and may send a KeyRelease
 event. Turning an LED on or off with e.g. 'xset [-]led [1234]' is equivalent 
-to pressing the corresponding key, and a KeyPress or KeyRelease event may 
-be sent.
+to pressing the corresponding key.
 .SH OPTIONS
 .PP
 In addition to the normal server options described in the \fIXserver(1)\fP
