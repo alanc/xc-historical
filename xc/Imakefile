@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.106 93/08/17 11:14:17 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.107 93/08/17 11:22:35 rws Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags
 
@@ -107,11 +107,6 @@ flushlinks::
 	find . \( \! \( -type d -o -name Makefile \) \) -print
 
 #else
-clean::
-	rmdir -s X11
-
-includes::
-	rmdir -s X11
 
 XCOMM
 XCOMM before depending, be sure to have run make includes
