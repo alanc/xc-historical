@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 1.161 88/10/14 14:14:34 rws Exp $ */
+/* $XConsortium: events.c,v 1.162 88/11/17 16:51:15 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1739,6 +1739,8 @@ EventSuppressForWindow(pWin, client, mask)
 	ClientPtr client;
 	Mask mask;
 {
+    if (mask & ~PropagateMask)
+	return BadValue;
     pWin->dontPropagateMask = mask;
     RecalculateDeliverableEvents(pWin);
     return Success;
