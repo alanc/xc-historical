@@ -1,23 +1,17 @@
      This file contains instructions on how to make CLX work with Franz
 Common Lisp.  CLX should work on any machine that supports Allegro Common
-Lisp version 3.0.1.  It also works under ExCL version 2.0 on the Vax.
-However, it has only been tested extensively using version 3.0.1 on Sun3's
-and Sun4's.
-
+Lisp version 3.0.1 or greater.  It also works under ExCL version 2.0.10.
+However it has been tested extensively with only Allegro CL versions 3.0
+and 3.1.
 
      There are three steps to compile and install CLX.  The first is simply
-moving files around.
-
-In this directory, execute (assuming you using csh):
+moving files around.  In this directory, execute (assuming you using csh):
 
 % mkdir MIT
 % mv defsystem.cl MIT
 % mv excldefsys.cl defsystem.cl
 % mv exclMakefile Makefile
-
-This next is only necessary if you are using ExCL 2.0 on the Vax:
-
-% foreach i (*.lisp)
+% foreach i (*.l)
 ? mv $i $i:r.cl
 ? end
 
@@ -44,26 +38,20 @@ Now you can just start up Lisp and type:
 <cl> (load "clx")
 
 to load in CLX.  You may want to dump a lisp at this point since CLX is a large
-package and can take some time to load into Lisp.
+package and can take some time to load into Lisp.  You probably also want to
+set the :generation-spread to 1 while loading CLX.  Please see your Allegro CL
+User Guide for more information on :generation-spread.
 
 
      Sophisticated users may wish to peruse the Makefile and defsystem.cl
-and note how things are set up.  For example we
-hardwire the compiler interrupt check switch on, so that CL can still be 
-interrupted while it is reading from the X11 socket.  Please see chapter 7
-of the CL User's guide for more information on compiler switches and their
-effects.
-
-     Also, if you make changes to parts of the CLX package and want to rebuild
-the CLX binary, you should either (1) remove all the .fasl files from the clx
-directory and rebuild the binary from scratch or (2) compile the changed
-modules using the CLX binary and then use "make" to create a new CLX.fasl file,
-which should then be moved to the library directory.
+and note how things are set up.  For example we hardwire the compiler
+interrupt check switch on, so that CL can still be interrupted while it
+is reading from the X11 socket.  Please see chapter 7 of the CL User's
+guide for more information on compiler switches and their effects.
 
 
 Please report Franz specific CLX bugs to:
 
 	ucbvax!franz!bugs
-		or
-	bugs%franz.UUCP@ucbarpa.Berkeley.EDU
-
+	       or
+	 bugs@Franz.COM
