@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.19 92/03/23 20:12:02 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.20 92/03/23 21:02:51 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -96,6 +96,8 @@ int curbscount = 0;
 Bool in_control_seq = False;
 Bool need_bs = False;
 
+void process();
+
 void
 usage()
 {
@@ -146,9 +148,9 @@ void
 reset_mapping()
 {
     int minkey, maxkey;
-    register int i, j;
+    int i, j;
     KeySym sym;
-    register int c;
+    int c;
     XModifierKeymap *mmap;
     unsigned char bmap[256];
     
@@ -475,6 +477,13 @@ save_unit(buf, i, j)
     history_end += j;
 }
 
+Bool
+has_bs(c)
+    char c;
+{
+    return (c != control_end) && (!iscntrl(c) || isspace(c));
+}
+
 void
 undo_backspaces()
 {
@@ -484,20 +493,23 @@ undo_backspaces()
 	c = history[history_end-1];
 	if (!in_control_seq &&
 	    ((c == control_end) ||
-	     (history_end && (history[history_end-2] == control_char))))
+	     (history_end && (history[history_end-2] == control_char)))) {
 	    in_control_seq = True;
-	if (c == control_char) {
+	    need_bs = False;
+	}
+	if (c == control_char && in_control_seq) {
 	    if (need_bs && !iscntrl(history[history_end]))
 		do_char('\b');
 	    in_control_seq = False;
-	    need_bs = False;
 	    if (!curbscount &&
-		(history_end < 3 || history[history_end-3] != control_char)) {
+		(history_end < 3 ||
+		 has_bs(history[history_end-2]) ||
+		 history[history_end-3] != control_char)) {
 		history_end--;
 		return;
 	    }
 	}
-	else if (c != control_end && (!iscntrl(c) || isspace(c))) {
+	else if (has_bs(c)) {
 	    if (!curbscount)
 		return;
 	    curbscount--;
@@ -512,7 +524,7 @@ undo_backspaces()
 	do_char('\b');
 }
 
-undo *
+void
 do_backspace(c)
     char c;
 {
@@ -526,32 +538,30 @@ do_backspace(c)
 	    if (curbscount < u->bscount)
 		partial = True;
 	    else {
-		/* do it */
 		history_end -= u->seq_len;
 		curbscount -= u->bscount;
-		if (!u->undo_len)
-		    return NULL;
-		return u;
+		process(u->undo, u->undo_len, 0);
+		return;
 	    }
 	}
     }
     if (!partial)
 	undo_backspaces();
-    return NULL;
 }
 
 char *
-parse_string(buf, ip, lenp)
+parse_string(buf, ip, lenp, term)
     char *buf;
     int *ip;
     int *lenp;
+    char term;
 {
     int i, j;
     char c;
     char *seq;
 
     j = 0;
-    for (i = *ip; (c = buf[i]) && (c != ':'); i++) {
+    for (i = *ip; (c = buf[i]) && (c != term); i++) {
 	if (c == '^') {
 	    c = buf[++i];
 	    if (c == '?')
@@ -566,7 +576,7 @@ parse_string(buf, ip, lenp)
 	else
 	    buf[j++] = c;
     }
-    if (c != ':')
+    if (c != term)
 	return NULL;
     *ip = i + 1;
     *lenp = j;
@@ -574,6 +584,22 @@ parse_string(buf, ip, lenp)
     bcopy(buf, seq, j);
     seq[j] = '\0';
     return seq;
+}
+
+int
+bscount(s, len)
+    char *s;
+    int len;
+{
+    int n = 0;
+    char c;
+
+    while (--len >= 0) {
+	c = *s++;
+	if (has_bs(c))
+	    n++;
+    }
+    return n;
 }
 
 void
@@ -592,36 +618,135 @@ get_undofile(undofile)
     up = (undo *)malloc(sizeof(undo));
     idx = 0;
     while (fgets(buf, sizeof(buf), fp)) {
-	up = (undo *)realloc((char *)up, (idx + 2) * sizeof(undo));
 	i = 0;
-	if (!(up[idx].seq = parse_string(buf, &i, &up[idx].seq_len)))
-	    break;
-	if (!(up[idx].undo = parse_string(buf, &i, &up[idx].undo_len)))
-	    break;
-	up[idx].bscount = atoi(buf+i);
+	if (!(up[idx].seq = parse_string(buf, &i, &up[idx].seq_len, ':')) ||
+	    !(up[idx].undo = parse_string(buf, &i, &up[idx].undo_len, '\n'))) {
+	    fprintf(stderr, "bad key sequence on line %d\n", idx + 1);
+	    continue;
+	}
+	up[idx].bscount = bscount(up[idx].seq, up[idx].seq_len);
 	idx++;
+	up = (undo *)realloc((char *)up, (idx + 1) * sizeof(undo));
     }
     up[idx].bscount = 0;
     fclose(fp);
     undos = up;
 }
 
+void
+process(buf, n, len)
+    char *buf;
+    int n;
+    int len;
+{
+    int i, j;
+    KeySym sym;
+    char *endptr;
+
+    for (i = 0; i < n; i++) {
+	if (len) {
+	    if (buf[i] == '\b') {
+		do_backspace(buf[i]);
+		continue;
+	    } else if (curbscount)
+		undo_backspaces();
+	}
+	if (buf[i] != control_char) {
+	    if (len) {
+		if (history_end == sizeof(history))
+		    trim_history();
+		history[history_end++] = buf[i];
+	    }
+	    do_char(((unsigned char *)buf)[i]);
+	    continue;
+	}
+	i++;
+	for (j = i; 1; j++) {
+	    if (j == n) {
+		if (!len)
+		    return;
+		if (n == len)
+		    break;
+		n = read(0, buf+j, len-j);
+		if (n < 0)
+		    quit(0);
+		n += j;
+	    }
+	    if (buf[j] != control_char) {
+		if (j != i)
+		    continue;
+		switch (buf[j]) {
+		case '\003': /* control c */
+		    do_key(control, 0);
+		    break;
+		case '\004': /* control d */
+		    slow_down();
+		    break;
+		case '\007':
+		    start_moving();
+		    break;
+		case '\015': /* control m */
+		    do_key(meta, 0);
+		    break;
+		case '\021': /* control q */
+		    stop_moving();
+		    break;
+		case '\023': /* control s */
+		    do_key(shift, 0);
+		    break;
+		default:
+		    continue;
+		}
+		if (len)
+		    save_unit(buf, i - 1, j);
+		break;
+	    }
+	    buf[j] = '\0';
+	    if (j == i)
+		do_char(control_char);
+	    else if (buf[i] == '\002') /* control b */
+		do_button(atoi(buf+i+1));
+	    else if (buf[i] == '\027') { /* control w */
+		int screen = strtol(buf+i+1, &endptr, 10);
+		int x;
+		if (*endptr) {
+		    x = strtol(endptr + 1, &endptr, 10);
+		    if (*endptr)
+			do_warp(screen, x, atoi(endptr + 1));
+		}
+	    } else if (buf[i] == '\030') /* control x */
+		do_x(atoi(buf+i+1));
+	    else if (buf[i] == '\031') /* control y */
+		do_y(atoi(buf+i+1));
+	    else if (!strcmp(buf+i, "exit"))
+		quit(0);
+	    else if ((sym = strtoul(buf+i, &endptr, 16)) && !*endptr)
+		do_keysym(sym);
+	    else if (sym = XStringToKeysym(buf+i))
+		do_keysym(sym);
+	    if (len) {
+		buf[j] = control_char;
+		save_unit(buf, i - 1, j);
+	    }
+	    i = j;
+	    break;
+	}
+    }
+}
+
 main(argc, argv)
     int argc;
     char **argv;
 {
-    register int n, i, j;
+    int n, i, j;
     int eventb, errorb, vmajor, vminor;
     struct termios term;
     Bool noecho = True;
     char *dname = NULL;
     char buf[1024];
     XEvent ev;
-    KeySym sym;
-    char *endptr;
     int mask[10];
     struct timeval timeout;
-    undo *u;
     char *undofile = NULL;
 
     timeout.tv_sec = 0;
@@ -694,6 +819,7 @@ main(argc, argv)
     }
     reset_mapping(dpy);
     while (1) {
+	XFlush(dpy);
 	mask[0] = 1 | (1 << ConnectionNumber(dpy));
 	i = select(ConnectionNumber(dpy)+1, mask, NULL, NULL,
 		   ((moving_x | moving_y) ? &timeout : NULL));
@@ -707,109 +833,20 @@ main(argc, argv)
 	    continue;
 	}
 	if (mask[0] & (1 << ConnectionNumber(dpy))) {
-	    if (i = XEventsQueued(dpy, QueuedAfterReading)) {
-		while (--i >= 0) {
-		    XNextEvent(dpy, &ev);
-		    if (ev.type == MappingNotify) {
-			XRefreshKeyboardMapping(&ev.xmapping);
-			reset_mapping(dpy);
-		    }
+	    for (i = XEventsQueued(dpy, QueuedAfterReading); --i >= 0; ) {
+		XNextEvent(dpy, &ev);
+		if (ev.type == MappingNotify) {
+		    XRefreshKeyboardMapping(&ev.xmapping);
+		    reset_mapping(dpy);
 		}
 	    }
 	}
 	if (!(mask[0] & 1))
 	    continue;
-	n = read(0, buf, sizeof(buf));
+	n = read(0, buf, 1 /* sizeof(buf) */);
 	if (n <= 0)
 	    quit(0);
-	for (i = 0; i < n; i++) {
-	    if (buf[i] == '\b') {
-		if (!(u = do_backspace(buf[i])))
-		    continue;
-		if (i < u->undo_len) {
-		    bcopy(buf+i, buf+u->undo_len, n - i);
-		    n += (u->undo_len - i);
-		    i = u->undo_len;
-		}
-		i -= u->undo_len;
-		bcopy(u->undo, buf+i, u->undo_len);
-	    } else if (curbscount)
-		undo_backspaces();
-	    if (buf[i] != control_char) {
-		if (history_end == sizeof(history))
-		    trim_history();
-		history[history_end++] = buf[i];
-		do_char(((unsigned char *)buf)[i]);
-		continue;
-	    }
-	    i++;
-	    for (j = i; 1; j++) {
-		if (j == n) {
-		    if (n == sizeof(buf))
-			break;
-		    n = read(0, buf+j, sizeof(buf)-j);
-		    if (n < 0)
-			quit(0);
-		    n += j;
-		}
-		if (buf[j] != control_char) {
-		    if (j != i)
-			continue;
-		    switch (buf[j]) {
-		    case '\003': /* control c */
-			do_key(control, 0);
-			break;
-		    case '\004': /* control d */
-			slow_down();
-			break;
-		    case '\007':
-			start_moving();
-			break;
-		    case '\015': /* control m */
-			do_key(meta, 0);
-			break;
-		    case '\021': /* control q */
-			stop_moving();
-			break;
-		    case '\023': /* control s */
-			do_key(shift, 0);
-			break;
-		    default:
-			continue;
-		    }
-		    save_unit(buf, i - 1, j);
-		    break;
-		}
-		buf[j] = '\0';
-		if (j == i)
-		    do_char(control_char);
-		else if (buf[i] == '\002') /* control b */
-		    do_button(atoi(buf+i+1));
-		else if (buf[i] == '\027') { /* control w */
-		    int screen = strtol(buf+i+1, &endptr, 10);
-		    int x;
-		    if (*endptr) {
-			x = strtol(endptr + 1, &endptr, 10);
-			if (*endptr)
-			    do_warp(screen, x, atoi(endptr + 1));
-		    }
-		} else if (buf[i] == '\030') /* control x */
-		    do_x(atoi(buf+i+1));
-		else if (buf[i] == '\031') /* control y */
-		    do_y(atoi(buf+i+1));
-		else if (!strcmp(buf+i, "exit"))
-		    quit(0);
-		else if ((sym = strtoul(buf+i, &endptr, 16)) && !*endptr)
-		    do_keysym(sym);
-		else if (sym = XStringToKeysym(buf+i))
-		    do_keysym(sym);
-		buf[j] = control_char;
-		save_unit(buf, i - 1, j);
-		i = j;
-		break;
-	    }
-	}
+	process(buf, n, sizeof(buf));
 	quiesce();
-	XFlush(dpy);
     }
 }
