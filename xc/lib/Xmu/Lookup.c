@@ -1,5 +1,5 @@
 static char rcsid[] =
-	"$XConsortium: Lookup.c,v 1.7 89/05/06 11:27:37 rws Exp $";
+	"$XConsortium: Lookup.c,v 1.8 89/05/25 17:19:20 rws Exp $";
 
 /* 
  * Copyright 1988, 1989 by the Massachusetts Institute of Technology
@@ -97,6 +97,18 @@ static unsigned char greek[128] =
     0xf0, 0xf1, 0xf3, 0xf2, 0xf4, 0xf5, 0xf6, 0xf7, /* 15 */
     0xf8, 0xf9, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
+#define sLatin1		0
+#define sLatin2		1
+#define sLatin3		2
+#define sLatin4		3
+#define sKana		4
+#define sX0201		0x01000004
+#define sArabic		5
+#define sCyrillic	6
+#define sGreek		7
+#define sAPL		11
+#define sHebrew		12
+
 int XmuLookupString (event, buffer, nbytes, keysym, status, keysymSet)
     register XKeyEvent *event;
     char *buffer;
@@ -107,18 +119,25 @@ int XmuLookupString (event, buffer, nbytes, keysym, status, keysymSet)
 {
     int count;
     KeySym symbol;
+    unsigned long kset;
 
+    kset = keysymSet & 0xffffff;
     count = XLookupString(event, buffer, nbytes, &symbol, status);
     if (keysym) *keysym = symbol;
     if ((nbytes == 0) || (symbol == NoSymbol)) {
 	/* nothing */
-    } else if ((count == 0) && ((symbol >> 8) == keysymSet)) {
+    } else if ((count == 0) && ((symbol >> 8) == kset)) {
 	count = 1;
 	switch (keysymSet) {
-	case 6:
+	case sKana:
+	    buffer[0] = (symbol & 0xff);
+	    if (buffer[0] == 0x7e)
+		count = 0;
+	    break;
+	case sCyrillic:
 	    buffer[0] = cyrillic[symbol & 0x7f];
 	    break;
-	case 7:
+	case sGreek:
 	    buffer[0] = greek[symbol & 0x7f];
 	    if (!buffer[0])
 		count = 0;
@@ -130,23 +149,23 @@ int XmuLookupString (event, buffer, nbytes, keysym, status, keysymSet)
     } else if ((keysymSet != 0) && (count == 1) &&
 	       (((unsigned char *)buffer)[0] == symbol) &&
 	       (symbol & 0x80) &&
-	       !(latin1[symbol & 0x7f] & (1 << keysymSet))) {
-	if ((keysymSet == 12) && (symbol == XK_multiply))
+	       !(latin1[symbol & 0x7f] & (1 << kset))) {
+	if ((keysymSet == sHebrew) && (symbol == XK_multiply))
 	    buffer[0] = 0xaa;
-	else if ((keysymSet == 12) && (symbol == XK_division))
+	else if ((keysymSet == sHebrew) && (symbol == XK_division))
 	    buffer[0] = 0xba;
-	else if ((keysymSet == 6) && (symbol == XK_section))
+	else if ((keysymSet == sCyrillic) && (symbol == XK_section))
 	    buffer[0] = 0xfe;
-	else if ((keysymSet == 4) && (symbol == XK_yen))
+	else if ((keysymSet == sX0201) && (symbol == XK_yen))
 	    buffer[0] = 0x5c;
 	else
 	    count = 0;
     } else if (count != 0) {
-	if ((keysymSet == 4) &&
+	if ((keysymSet == sX0201) &&
 	    ((symbol == XK_backslash) || (symbol == XK_asciitilde)))
 	    count = 0;
-    } else if (((symbol >> 8) == 1) &&
-	       (symbol & 0x80) && (latin2[symbol & 0x7f] & (1 << keysymSet))) {
+    } else if (((symbol >> 8) == sLatin2) &&
+	       (symbol & 0x80) && (latin2[symbol & 0x7f] & (1 << kset))) {
 	buffer[0] = (symbol & 0xff);
 	count = 1;
     }
@@ -172,7 +191,7 @@ int XmuLookupLatin2 (event, buffer, nbytes, keysym, status)
     KeySym *keysym;
     XComposeStatus *status;
 {
-    return XmuLookupString(event, buffer, nbytes, keysym, status, 1);
+    return XmuLookupString(event, buffer, nbytes, keysym, status, sLatin2);
 }
 
 /* produces ISO 8859-3 encoding plus ASCII control */
@@ -183,7 +202,7 @@ int XmuLookupLatin3 (event, buffer, nbytes, keysym, status)
     KeySym *keysym;
     XComposeStatus *status;
 {
-    return XmuLookupString(event, buffer, nbytes, keysym, status, 2);
+    return XmuLookupString(event, buffer, nbytes, keysym, status, sLatin3);
 }
 
 /* produces ISO 8859-4 encoding plus ASCII control */
@@ -194,10 +213,10 @@ int XmuLookupLatin4 (event, buffer, nbytes, keysym, status)
     KeySym *keysym;
     XComposeStatus *status;
 {
-    return XmuLookupString(event, buffer, nbytes, keysym, status, 3);
+    return XmuLookupString(event, buffer, nbytes, keysym, status, sLatin4);
 }
 
-/* produces JIS X0201-1976 (8-bit) */
+/* produces ISO 8859-1 GL plus Katakana plus ASCII control */
 int XmuLookupKana (event, buffer, nbytes, keysym, status)
     register XKeyEvent *event;
     char *buffer;
@@ -205,7 +224,18 @@ int XmuLookupKana (event, buffer, nbytes, keysym, status)
     KeySym *keysym;
     XComposeStatus *status;
 {
-    return XmuLookupString(event, buffer, nbytes, keysym, status, 4);
+    return XmuLookupString(event, buffer, nbytes, keysym, status, sKana);
+}
+
+/* produces JIS X0201-1976 (8-bit) */
+int XmuLookupJISX0201 (event, buffer, nbytes, keysym, status)
+    register XKeyEvent *event;
+    char *buffer;
+    int nbytes;
+    KeySym *keysym;
+    XComposeStatus *status;
+{
+    return XmuLookupString(event, buffer, nbytes, keysym, status, sX0201);
 }
 
 /* produces ISO 8859-6 encoding plus ASCII control */
@@ -216,7 +246,7 @@ int XmuLookupArabic (event, buffer, nbytes, keysym, status)
     KeySym *keysym;
     XComposeStatus *status;
 {
-    return XmuLookupString(event, buffer, nbytes, keysym, status, 5);
+    return XmuLookupString(event, buffer, nbytes, keysym, status, sArabic);
 }
 
 /* produces ISO/IEC 8859-5 encoding plus ASCII control */
@@ -227,7 +257,7 @@ int XmuLookupCyrillic (event, buffer, nbytes, keysym, status)
     KeySym *keysym;
     XComposeStatus *status;
 {
-    return XmuLookupString(event, buffer, nbytes, keysym, status, 6);
+    return XmuLookupString(event, buffer, nbytes, keysym, status, sCyrillic);
 }
 
 /* produces ISO 8859-7 encoding plus ASCII control */
@@ -238,7 +268,7 @@ int XmuLookupGreek (event, buffer, nbytes, keysym, status)
     KeySym *keysym;
     XComposeStatus *status;
 {
-    return XmuLookupString(event, buffer, nbytes, keysym, status, 7);
+    return XmuLookupString(event, buffer, nbytes, keysym, status, sGreek);
 }
 
 /* XXX this character set needs work */
@@ -250,7 +280,7 @@ int XmuLookupAPL (event, buffer, nbytes, keysym, status)
     KeySym *keysym;
     XComposeStatus *status;
 {
-    return XmuLookupString(event, buffer, nbytes, keysym, status, 11);
+    return XmuLookupString(event, buffer, nbytes, keysym, status, sAPL);
 }
 
 /* produces ISO 8859-8 encoding plus ASCII control */
@@ -261,5 +291,5 @@ int XmuLookupHebrew (event, buffer, nbytes, keysym, status)
     KeySym *keysym;
     XComposeStatus *status;
 {
-    return XmuLookupString(event, buffer, nbytes, keysym, status, 12);
+    return XmuLookupString(event, buffer, nbytes, keysym, status, sHebrew);
 }
