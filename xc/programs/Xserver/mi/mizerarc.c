@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.c,v 5.3 89/09/04 13:33:46 rws Exp $ */
+/* $XConsortium: mizerarc.c,v 5.4 89/09/04 16:03:48 rws Exp $ */
 
 #include <math.h>
 #include "X.h"
@@ -83,6 +83,8 @@ miZeroCircleSetup(arc, info)
 	endAngle = FULLCIRCLE - (-endAngle) % FULLCIRCLE;
     if (endAngle >= FULLCIRCLE)
 	endAngle = endAngle % FULLCIRCLE;
+    info->startAngle = startAngle;
+    info->endAngle = endAngle;
     if (startAngle == endAngle)
     {
 	info->startx = -1;
@@ -239,6 +241,122 @@ miZeroCirclePts(arc, pts)
     return pts;
 }
 
+#define DoPix(idx, xval, yval) \
+    if (mask & (1 << idx)) \
+    { \
+	circPts[idx]->x = xval; \
+	circPts[idx]->y = yval; \
+	circPts[idx]++; \
+    }
+
+static void
+miZeroCircleDashPts(pGC, arc, points, evenPts, oddPts)
+    GCPtr pGC;
+    register xArc *arc;
+    register DDXPointPtr points, *evenPts, *oddPts;
+{
+    register int x, y, d, dn, dp;
+    register int mask;
+    miZeroCircleRec info;
+    unsigned char *pDash;
+    int numInDashList, dashIndex, dashOffset, dashRemaining;
+    DDXPointPtr circPts[8];
+    DDXPointPtr pt, lastPt, *pts;
+    int i, delta, ptsdelta, seg;
+
+    miZeroCircleSetup(arc, &info);
+    for (i = 0; i < 8; i++)
+	circPts[i] = points + (i * arc->width);
+    y = info.y;
+    d = info.d;
+    dn = info.dn;
+    dp = info.dp;
+    mask = info.initialMask;
+    for (x = info.x; x <= y; x++)
+    {
+	if (x == info.startx)
+	    mask = info.startMask;
+	DoPix(0, info.xorg + y, info.yorgo - x);
+	DoPix(2, info.xorgo - x, info.yorgo - y);
+	DoPix(4, info.xorgo - y, info.yorg + x);
+	DoPix(6, info.xorg + x, info.yorg + y);
+	if (x == y)
+	    break;
+	if (x)
+	{
+	    DoPix(1, info.xorg + x, info.yorgo - y);
+	    DoPix(3, info.xorgo - y, info.yorgo - x);
+	    DoPix(5, info.xorgo - x, info.yorg + y);
+	    DoPix(7, info.xorg + y, info.yorg + x);
+	}
+	if (x == info.endx)
+	    mask = info.endMask;
+	if (d < 0)
+	{
+	    d += (x << 2) + dn;
+	}
+	else
+	{
+	    d += ((x - y) << 2) + dp;
+	    y--;
+	}
+    }
+    pDash = (unsigned char *) pGC->dash;
+    numInDashList = pGC->numInDashList;
+    dashIndex = 0;
+    dashOffset = 0;
+    miStepDash(pGC->dashOffset, &dashIndex, pDash,
+	       numInDashList, &dashOffset);
+    dashRemaining = pDash[dashIndex] - dashOffset;
+    if (dashIndex & 1)
+    {
+	pts = oddPts;
+	ptsdelta = -1;
+    }
+    else
+    {
+	pts = evenPts;
+	ptsdelta = 1;
+    }
+    for (i = 0; i < 8; i++)
+    {
+	seg = ((info.startAngle / EIGHTH) + i) & 7;
+	if (seg & 1)
+	{
+	    lastPt = points + (seg * arc->width) - 1;
+	    pt = circPts[seg] - 1;
+	    delta = -1;
+	}
+	else
+	{
+	    pt = points + (seg * arc->width);
+	    lastPt = circPts[seg];
+	    delta = 1;
+	}
+	for (; pt != lastPt; pt += delta)
+	{
+	    **pts = *pt;
+	    *pts += ptsdelta;
+	    if (!--dashRemaining)
+	    {
+		if (++dashIndex == numInDashList)
+		    dashIndex = 0;
+		dashRemaining = pDash[dashIndex];
+		if (dashIndex & 1)
+		{
+		    pts = oddPts;
+		    ptsdelta = -1;
+		}
+		else
+		{
+		    pts = evenPts;
+		    ptsdelta = 1;
+		}
+	    }
+	}
+    }
+}
+
 void
 miZeroPolyArc(pDraw, pGC, narcs, parcs)
     DrawablePtr	pDraw;
@@ -250,8 +368,9 @@ miZeroPolyArc(pDraw, pGC, narcs, parcs)
     int n;
     register xArc *arc;
     register int i;
-    DDXPointPtr points, pts;
+    DDXPointPtr points, pts, oddPts;
     register DDXPointPtr pt;
+    int numPts;
     Bool dospans;
     int *widths;
 
@@ -264,25 +383,38 @@ miZeroPolyArc(pDraw, pGC, narcs, parcs)
     }
     if (!max)
 	return;
-    points = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * max * 8);
-    if (!points)
-	return;
+    numPts = max << 3;
     dospans = (pGC->lineStyle != LineSolid) || (pGC->fillStyle != FillSolid);
     if (dospans)
     {
-	widths = (int *)ALLOCATE_LOCAL(sizeof(int) * max * 8);
+	widths = (int *)ALLOCATE_LOCAL(sizeof(int) * numPts);
 	if (!widths)
-	{
-	    DEALLOCATE_LOCAL(points);
 	    return;
-	}
 	max = 0;
+    }
+    if (pGC->lineStyle != LineSolid)
+	numPts <<= 1;
+    points = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * numPts);
+    if (!points)
+    {
+	if (dospans)
+	{
+	    DEALLOCATE_LOCAL(widths);
+	}
+	return;
     }
     for (arc = parcs, i = narcs; --i >= 0; arc++)
     {
 	if (arc->width == arc->height)
 	{
-	    pts = miZeroCirclePts(arc, points);
+	    if (pGC->lineStyle == LineSolid)
+		pts = miZeroCirclePts(arc, points);
+	    else
+	    {
+		pts = points;
+		oddPts = &points[numPts >> 1];
+		miZeroCircleDashPts(pGC, arc, oddPts, &pts, &oddPts);
+	    }
 	    n = pts - points;
 	    if (!dospans)
 		(*pGC->ops->PolyPoint)(pDraw, pGC, CoordModeOrigin, n, points);
@@ -311,3 +443,4 @@ miZeroPolyArc(pDraw, pGC, narcs, parcs)
     }
     DEALLOCATE_LOCAL(points);
 }
+
