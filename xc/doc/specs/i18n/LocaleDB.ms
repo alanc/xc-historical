@@ -1,4 +1,4 @@
-.\" $XConsortium: LocaleDB.ms,v 1.2 94/04/17 20:06:00 rws Exp $
+.\" $XConsortium: LocaleDB.ms,v 1.3 94/04/18 15:50:42 rws Exp $
 .\" To print this out, type tbl macros.t ThisFile | troff -ms
 .EH ''''
 .OH ''''
@@ -20,7 +20,7 @@ IBM Japan
 \&
 .ps 9
 .nr PS 9
-.sp 10
+.sp 2
 .LP
 Copyright \(co IBM Corporation 1994
 .LP
@@ -400,7 +400,7 @@ The following is sample X Locale Database file.
 .sp
 .RS
 .nf
-#  $XConsortium: LocaleDB.ms,v 1.2 94/04/17 20:06:00 rws Exp $
+#  $XConsortium: LocaleDB.ms,v 1.3 94/04/18 15:50:42 rws Exp $
 #  XLocale Database Sample for ja_JP.euc 
 # 
 
