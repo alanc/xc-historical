@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.56 93/09/26 11:03:19 rws Exp $
+ * $XConsortium: Xos.h,v 1.57 94/02/04 22:12:15 rws Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -106,7 +106,7 @@
 #endif /* X_NOT_POSIX else */
 
 /*
- * Get struct timeval
+ * Get struct timeval and define X_GETTIMEOFDAY macro
  */
 
 #ifdef SYSV
@@ -138,6 +138,8 @@ struct timezone {
 };
 #endif /* _SEQUENT_ */
 
+#define X_GETTIMEOFDAY(t) gettimeofday(t, (char*)0)
+
 #else /* not SYSV */
 
 #if defined(_POSIX_SOURCE) && defined(SVR4)
@@ -145,7 +147,7 @@ struct timezone {
 #undef _POSIX_SOURCE
 #include <sys/time.h>
 #define _POSIX_SOURCE
-#else
+#else /* defined(_POSIX_SOURCE) && defined(SVR4) */
 #ifdef WIN32
 #include <time.h>
 #if !defined(_WINSOCKAPI_) && !defined(_WILLWINSOCK_)
@@ -155,21 +157,28 @@ struct timeval {
 };
 #endif
 #include <sys/timeb.h>
-#define gettimeofday(t) \
+#define X_GETTIMEOFDAY(t) \
 { \
     struct _timeb _gtodtmp; \
     _ftime (&_gtodtmp); \
     (t)->tv_sec = _gtodtmp.time; \
     (t)->tv_usec = _gtodtmp.millitm * 1000; \
 }
-#else
+#else /* WIN32 */
 #ifdef _SEQUENT_
 #include <time.h>
-#else
+#else /* _SEQUENT_ */
 #include <sys/time.h>
+#endif /* _SEQUENT_ */
+
+#if defined(SVR4) || defined(VMS)
+#define X_GETTIMEOFDAY(t) gettimeofday(t)
+#else
+#define X_GETTIMEOFDAY(t) gettimeofday(t, (char*)0)
 #endif
-#endif
-#endif
+
+#endif /* WIN32 else */
+#endif /* defined(_POSIX_SOURCE) && defined(SVR4) */
 
 #endif /* SYSV */
 
