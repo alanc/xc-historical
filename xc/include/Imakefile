@@ -82,7 +82,7 @@ all: $(IMPORTS) $(SUBIMPORTS) extensions
 	@-(list=`echo $(SUBIMPORTS) | sed -e 's/[^ ]*\///g'`; \
 		set -x; cd extensions; $(RM) $$list)
 	@for i in $(SUBIMPORTS); do \
-		(set -x; $(LN) ../$$i extensions); \
+		(set -x; cd extensions; $(LN) ../$$i .); \
 	done
 
 extensions:
