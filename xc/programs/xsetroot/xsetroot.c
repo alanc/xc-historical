@@ -394,14 +394,17 @@ unsigned long NameToPixel(name, pixel)
     char *name;
     unsigned long pixel;
 {
-    XColor scolor, ecolor;
+    XColor ecolor;
 
     if (!name || !*name)
 	return pixel;
-    if (!XAllocNamedColor(dpy, DefaultColormap(dpy, screen), name,
-			  &scolor, &ecolor)) {
-	fprintf(stderr, "%s: unknown color, or allocation failure: %s\n",
-			program_name, name);
+    if (!XParseColor(dpy,DefaultColormap(dpy,screen),name,&ecolor)) {
+	fprintf(stderr,"%s: unknown color %d\n",program_name,name);
+	exit(1);
+	/*NOTREACHED*/
+    }
+    if (!XAllocColor(dpy, DefaultColormap(dpy, screen),&ecolor)) {
+	fprintf(stderr, "%s: allocation failure: %s\n",program_name, name);
 	exit(1);
 	/*NOTREACHED*/
     }
