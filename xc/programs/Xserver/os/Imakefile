@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.69 93/09/29 18:58:16 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.70 93/09/30 15:49:52 gildea Exp $
 #include <Server.tmpl>
 
 #if (SystemV || SystemV4) && !HasSockets
@@ -59,10 +59,13 @@ KRB5SRCS = k5auth.c k5encode.c
 BOOTSTRAPCFLAGS = 
            SRCS = WaitFor.c access.c connection.c io.c oscolor.c \
                   osinit.c utils.c auth.c mitauth.c $(XDMAUTHSRCS) \
- 		  $(RPCSRCS) $(KRB5SRCS) xdmcp.c decompress.c OtherSources
+ 		  $(RPCSRCS) $(KRB5SRCS) xdmcp.c decompress.c OtherSources \
+ 		  transport.c
            OBJS = WaitFor.o access.o connection.o io.o oscolor.o \
                   osinit.o utils.o auth.o mitauth.o $(XDMAUTHOBJS) \
- 		  $(RPCOBJS) $(KRB5OBJS) xdmcp.o decompress.o OtherObjects
+ 		  $(RPCOBJS) $(KRB5OBJS) xdmcp.o decompress.o OtherObjects \
+ 		  transport.o
+
 #if SpecialMalloc
      MEM_DEFINES = -DSPECIAL_MALLOC
 #endif /* SpecialMalloc */
@@ -72,9 +75,9 @@ BOOTSTRAPCFLAGS =
   XDMCP_DEFINES = ServerXdmcpDefines
      OS_DEFINES = ServerOSDefines
    KRB5_DEFINES = Krb5Defines
-        DEFINES = ConnectionFlags $(MEM_DEFINES) $(XDMAUTHDEFS) $(RPCDEFS) $(SIGNAL_DEFINES) $(OS_DEFINES) $(KRB5_DEFINES)
+        DEFINES = -DX11_t ConnectionFlags $(MEM_DEFINES) $(XDMAUTHDEFS) $(RPCDEFS) $(SIGNAL_DEFINES) $(OS_DEFINES) $(KRB5_DEFINES)
        INCLUDES = -I.  -I../include -I$(INCLUDESRC) -I$(TOP)/lib/Xau Krb5Includes
- DEPEND_DEFINES = $(DBM_DEFINES) $(XDMCP_DEFINES) $(EXT_DEFINES)
+ DEPEND_DEFINES = $(DBM_DEFINES) $(XDMCP_DEFINES) $(EXT_DEFINES) $(TRANS_INCLUDES) ConnectionFlags
        LINTLIBS = ../dix/llib-ldix.ln
 
 #ifdef NEED_ALLOCA_FROM_LIBPW
@@ -101,6 +104,8 @@ SpecialCObjectRule(auth,$(ICONFIGFILES),$(XDMCP_DEFINES))
 SpecialCObjectRule(xdmauth,$(ICONFIGFILES),$(XDMCP_DEFINES))
 SpecialCObjectRule(xdmcp,$(ICONFIGFILES),$(SOCK_DEFINES) $(XDMCP_DEFINES))
 SpecialCObjectRule(connection,$(ICONFIGFILES),$(SOCK_DEFINES) $(XDMCP_DEFINES))
+SpecialCObjectRule(transport,$(ICONFIGFILES),$(TRANS_INCLUDES) $(CONN_DEFINES) $(SOCK_DEFINES))
+LinkSourceFile(transport.c,$(TRANSCOMMSRC))
 SpecialCObjectRule(osinit,$(ICONFIGFILES),$(ADM_DEFINES))
 SpecialCObjectRule(WaitFor,$(ICONFIGFILES),$(EXT_DEFINES))
 SpecialCObjectRule(io,$(ICONFIGFILES),$(EXT_DEFINES))

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.75 93/09/22 20:01:02 rws Exp $ */
+/* $XConsortium: io.c,v 1.76 93/09/23 10:51:17 dpw Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -31,7 +31,7 @@ SOFTWARE.
  *****************************************************************/
 
 #include <stdio.h>
-#include "Xos.h"
+#include <X11/Xtrans.h>
 #ifdef X_NOT_STDC_ENV
 extern int errno;
 #endif
@@ -141,6 +141,7 @@ ReadRequestFromClient(client)
     OsCommPtr oc = (OsCommPtr)client->osPrivate;
     register ConnectionInputPtr oci = oc->input;
     int fd = oc->fd;
+    XtransConnInfo trans_conn = oc->trans_conn;
     register int gotnow, needed;
     int result;
     register xReq *request;
@@ -242,7 +243,7 @@ ReadRequestFromClient(client)
 	    oci->bufptr = oci->buffer;
 	    oci->bufcnt = gotnow;
 	}
-	result = read(fd, oci->buffer + oci->bufcnt, 
+	result = _X11TransRead(trans_conn, oci->buffer + oci->bufcnt, 
 		      oci->size - oci->bufcnt); 
 	if (result <= 0)
 	{
@@ -501,6 +502,7 @@ FlushClient(who, oc, extraBuf, extraCount)
 {
     register ConnectionOutputPtr oco = oc->output;
     int connection = oc->fd;
+    XtransConnInfo trans_conn = oc->trans_conn;
     struct iovec iov[3];
     static char padBuffer[3];
     long written;
@@ -552,7 +554,7 @@ FlushClient(who, oc, extraBuf, extraCount)
 	InsertIOV (padBuffer, padsize)
 
 	errno = 0;
-	if ((len = writev(connection, iov, i)) >= 0)
+	if ((len = _X11TransWritev(trans_conn, iov, i)) >= 0)
 	{
 	    written += len;
 	    notWritten -= len;
@@ -598,7 +600,7 @@ FlushClient(who, oc, extraBuf, extraCount)
 						 notWritten + BUFSIZE);
 		if (!obuf)
 		{
-		    close(connection);
+		    _X11TransClose(trans_conn);
 		    MarkClientException(who);
 		    oco->count = 0;
 		    return(-1);
@@ -626,7 +628,7 @@ FlushClient(who, oc, extraBuf, extraCount)
 #endif
 	else
 	{
-	    close(connection);
+	    _X11TransClose(trans_conn);
 	    MarkClientException(who);
 	    oco->count = 0;
 	    return(-1);
@@ -755,7 +757,7 @@ WriteToClient (who, count, buf)
 	}
 	else if (!(oco = AllocateOutputBuffer()))
 	{
-	    close(oc->fd);
+	    _X11TransClose(oc->trans_conn);
 	    MarkClientException(who);
 	    return -1;
 	}
