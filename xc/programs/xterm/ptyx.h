@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.45 91/01/09 16:51:38 rws Exp $
+ *	$XConsortium: ptyx.h,v 1.46 91/01/30 16:15:45 gildea Exp $
  */
 
 /*
@@ -31,6 +31,7 @@
 #include <X11/IntrinsicP.h>
 #include <X11/Xmu/Misc.h>	/* For Max() and Min(). */
 #include <X11/Xfuncs.h>
+#include <X11/Xosdefs.h>
 
 /* Extra Xlib definitions */
 #define AllButtonsUp(detail, ignore)  (\
@@ -51,15 +52,13 @@
 */
 
 #ifdef SYSV
-
-#define	killpg(x,sig)	kill(-x,sig)
-
+#ifdef X_NOT_POSIX
 #ifndef CRAY
 #define	dup2(fd1,fd2)	((fd1 == fd2) ? fd1 : \
 				(close(fd2), fcntl(fd1, F_DUPFD, fd2)))
 #endif
-
-#endif	/* !SYSV */
+#endif
+#endif /* SYSV */
 
 /*
 ** allow for mobility of the pty master/slave directories
