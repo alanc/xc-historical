@@ -26,7 +26,7 @@ case $DISPLAY in
 		DISPLAY=$DISPLAY
 		rcmd="sh -c"
 	else
-		DISPLAY=$hostname$DISPLAY
+		DISPLAY=$fullname$DISPLAY
 	fi
 	;;
 esac
@@ -93,7 +93,7 @@ case x$XAUTHORITY in
 x)
 	;;
 x*)
-	xauth='"'"XAUTHORITY=$XAUTHORITY "'"'
+	xauth="XAUTHORITY=$XAUTHORITY "
 	;;
 esac
 vars="$xpath$xauth"DISPLAY="$DISPLAY"
