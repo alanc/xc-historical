@@ -1,4 +1,4 @@
-/* $XConsortium: Alloc.c,v 1.35 90/12/30 12:05:43 rws Exp $ */
+/* $XConsortium: Alloc.c,v 1.36 90/12/30 15:04:38 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -275,12 +275,29 @@ char *XtCalloc(num, size)
     return _XtCalloc(num, size, (char *)NULL, 0);
 }
 
+Boolean _XtIsValidPointer(ptr)
+    char *ptr;
+{
+    register StatsPtr mem;
+    register StatsPtr stp = ToStats(ptr);
+
+    for (mem = XtMemory; mem; mem = mem->next) {
+	if (mem == stp)
+	    return True;
+    }
+    return False;
+}
+
+Boolean _XtValidateMemory = False;
+
 void _XtFree(ptr)
     char *ptr;
 {
    register StatsPtr stp;
 
    if (ptr) {
+       if (_XtValidateMemory && !_XtIsValidPointer(ptr))
+	   abort();
        stp = ToStats(ptr);
        if (stp->file)
 	   ActiveXtMemory -= stp->size;
