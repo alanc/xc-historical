@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.61 89/10/12 13:20:03 rws Exp $
+ * $XConsortium: XConnDis.c,v 11.62 89/11/11 16:40:39 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -199,6 +199,8 @@ int _XConnectDisplay (display_name, fullnamep, dpynump, screenp,
 #else
 #ifdef STREAMSCONN
       connfunc = _XMakeStreamsConnection;
+#else
+      connfunc = NULL;
 #endif
 #endif
 
@@ -221,6 +223,8 @@ int _XConnectDisplay (display_name, fullnamep, dpynump, screenp,
 	connfunc = MakeUNIXSocketConnection;
     }
 #endif
+    if (!connfunc)
+	goto bad;
 
 
 #ifdef UNIXCONN
