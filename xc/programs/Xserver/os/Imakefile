@@ -62,7 +62,7 @@ BOOTSTRAPCFLAGS =
 #endif /* SpecialMalloc */
     DBM_DEFINES = NdbmDefines
  OSINIT_DEFINES = -DADMPATH=\"$(ADMDIR)/X\%smsgs\" $(DBM_DEFINES)
-        DEFINES = ConnectionFlags $(OS_DEFINES) $(DESDEFS) $(RPCDEFS)
+        DEFINES = ConnectionFlags $(OS_DEFINES) $(DESDEFS) $(RPCDEFS) $(SIGNAL_DEFINES)
        INCLUDES = -I.  -I../../include -I$(INCLUDESRC) -I$(TOP)/lib/Xau
     EXT_DEFINES = ExtensionDefines
        LINTLIBS = ../../dix/llib-ldix.ln
