@@ -506,11 +506,10 @@ static void Initialize(req, new)
 		if(flag & YNegative) 
 		    w->core.y += HeightOfScreen(XtScreen(w))
 				 - w->core.height - (w->core.border_width<<1);
-	} else 	w->shell.client_specified = FALSE;
-
+	}
 	if(w->core.width != 0 && w->core.height != 0) {
 	  	w->shell.client_specified = TRUE;
-        }
+        } else	w->shell.client_specified = FALSE;
 
 	XtAddEventHandler(new, (EventMask) StructureNotifyMask,
 		FALSE, EventHandler, (Opaque) NULL);
@@ -876,11 +875,12 @@ static void ChangeManaged(wid)
 	if (w->composite.children[i]->core.managed) {
 	    childwid = w->composite.children[i];
 	    if (!XtIsRealized ((Widget) wid)) {
-		if ((w->core.width == 0	&& w->core.height == 0) ||
-		    ! w->shell.client_specified) {
-	            /* we inherit our child's attributes */
-		    w->core.width = childwid->core.width;
-		    w->core.height = childwid->core.height;
+		/* we inherit our child's width or height if either is 0 */
+		if (w->core.width == 0	&& w->core.height == 0) {
+		    if (w->core.width == 0)
+			w->core.width = childwid->core.width;
+		    if (w->core.height == 0)
+			w->core.height = childwid->core.height;
 		    if (XtIsSubclass(wid, wmShellWidgetClass)) {
 			WMShellWidget wmshell = (WMShellWidget) wid;
 			wmshell->wm.size_hints.flags |= PSize;
