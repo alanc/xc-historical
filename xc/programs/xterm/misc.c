@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.40 89/05/25 15:12:17 jim Exp $
+ *	$XConsortium: misc.c,v 1.41 89/05/30 19:01:16 jim Exp $
  */
 
 
@@ -55,7 +55,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: misc.c,v 1.40 89/05/25 15:12:17 jim Exp $";
+static char rcs_id[] = "$XConsortium: misc.c,v 1.41 89/05/30 19:01:16 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -568,16 +568,23 @@ int (*func)();
 	register char *cp;
 	char buf[512];
 	extern char *malloc();
+	Bool okay = True;
 
+	/* 
+	 * lines should be of the form <ESC> ] number ; string <BEL>
+	 *
+	 * where number is one of 0, 1, 2, or 46
+	 */
 	mode = 0;
 	while(isdigit(c = (*func)()))
 		mode = 10 * mode + (c - '0');
-	/* eat semicolon */
+	if (c != ';') okay = False;
 	cp = buf;
 	while(isprint(c = (*func)()))
 		*cp++ = c;
+	if (c != 7) okay = False;
 	*cp = 0;
-	switch(mode) {
+	if (okay) switch(mode) {
 	 case 0:	/* new icon name and title*/
 		Changename(buf);
 		Changetitle(buf);
