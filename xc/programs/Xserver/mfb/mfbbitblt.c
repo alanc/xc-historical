@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbitblt.c,v 5.9 89/09/12 14:25:50 keith Exp $ */
+/* $XConsortium: mfbbitblt.c,v 5.10 89/09/13 18:57:45 rws Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 
@@ -515,19 +515,14 @@ DDXPointPtr pptSrc;
     /* special case copy */
     if (alu == GXcopy)
     {
-    register int nl;		/* temp copy of nlMiddle */
-    register unsigned int tmp, bits;
+	register int nl;		/* temp copy of nlMiddle */
+	register unsigned int tmp, bits;
 #ifdef FAST_CONSTANT_OFFSET_MODE
-    register unsigned int bits1;
+	register unsigned int bits1;
 #endif
+	int xoffSrc, xoffDst;
+	int	leftShift, rightShift;
 
-    int xoffSrc, xoffDst;
-    int	leftShift, rightShift;
-
-    int nstart;			/* number of ragged bits at start of dst */
-    int nend;			/* number of ragged bits at end of dst */
-    int srcStartOver;		/* pulling nstart bits from src
-				   overflows into the next word? */
 	while(nbox--)
 	{
 	    w = pbox->x2 - pbox->x1;
@@ -569,8 +564,6 @@ DDXPointPtr pptSrc;
 		    {
 	    	    	while (h--)
 	    	    	{
-			    int	dec;
-
 		    	    psrc = psrcLine;
 		    	    pdst = pdstLine;
 		    	    pdstLine += widthDst;

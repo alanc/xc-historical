@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbimage.c,v 5.1 89/07/26 15:50:51 rws Exp $ */
+/* $XConsortium: mfbimage.c,v 5.2 89/08/20 16:30:15 rws Exp $ */
 
 #include "X.h"
 
@@ -69,7 +69,6 @@ mfbPutImage(dst, pGC, depth, x, y, w, h, leftPad, format, pImage)
     unsigned int format;
     int 	*pImage;
 {
-    pointer	pbits;
     PixmapRec	FakePixmap;
 
     if (!(pGC->planemask & 1))

@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.c,v 5.11 89/09/10 16:00:26 rws Exp $ */
+/* $XConsortium: mizerarc.c,v 5.12 89/09/10 16:23:25 rws Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -37,7 +37,7 @@ miZeroArcSetup(arc, info)
     register xArc *arc;
     register miZeroArcRec *info;
 {
-    int l, h;
+    int l;
     int angle1, angle2;
     int startseg, endseg;
     int startAngle, endAngle;
@@ -428,7 +428,7 @@ miZeroArcDashPts(pGC, arc, points, maxPts, evenPts, oddPts)
     numInDashList = pGC->numInDashList;
     dashIndex = 0;
     dashOffset = 0;
-    miStepDash(pGC->dashOffset, &dashIndex, pDash,
+    miStepDash((int)pGC->dashOffset, &dashIndex, pDash,
 	       numInDashList, &dashOffset);
     dashRemaining = pDash[dashIndex] - dashOffset;
     oldPt = circPts[startseg];

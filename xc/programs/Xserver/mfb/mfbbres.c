@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbres.c,v 1.1 89/09/02 13:00:58 keith Exp $ */
+/* $XConsortium: mfbbres.c,v 1.14 89/09/05 20:13:00 keith Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "mfb.h"
@@ -35,7 +35,7 @@ SOFTWARE.
 
 mfbBresS(rop, addrl, nlwidth, signdx, signdy, axis, x1, y1, e, e1, e2, len)
 int rop;		/* a reduced rasterop */
-unsigned int *addrl;		/* pointer to base of bitmap */
+int *addrl;		/* pointer to base of bitmap */
 int nlwidth;		/* width in longwords of bitmap */
 int signdx, signdy;	/* signs of directions */
 int axis;		/* major axis (Y_AXIS or X_AXIS) */
@@ -43,7 +43,7 @@ int x1, y1;		/* initial point */
 register int e;		/* error accumulator */
 register int e1;	/* bresenham increments */
 int e2;
-unsigned int len;	/* length of line */
+int len;		/* length of line */
 {
     register int yinc;	/* increment to next scanline, in bytes */
     register unsigned char *addrb;		/* bitmask long pointer 

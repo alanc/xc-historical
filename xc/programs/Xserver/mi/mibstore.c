@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.21 89/07/26 12:16:45 rws Exp $ */
+/* $XConsortium: mibstore.c,v 5.22 89/08/24 17:56:23 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -480,7 +480,6 @@ miBSGetSpans (pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
     unsigned int *pdstStart;
 {
     ScreenPtr		    pScreen = pDrawable->pScreen;
-    unsigned int	    *ret;
     BoxRec		    bounds;
     int			    i;
     WindowPtr		    pWin;

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.7 89/08/17 16:56:47 keith Exp $ */
+/* $XConsortium: miarc.c,v 5.8 89/09/05 20:39:50 rws Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -1677,7 +1677,7 @@ drawZeroArc (pDraw, pGC, tarc, left, right)
 	double	x0, y0, x1, y1, w, h, x, y;
 	double	xmax, ymax, xmin, ymin;
 	int	a0, a1;
-	double	a, startAngle, endAngle, da0, da1;
+	double	a, startAngle, endAngle;
 	double	l;
 
 	l = pGC->lineWidth;
@@ -1754,7 +1754,7 @@ drawZeroArc (pDraw, pGC, tarc, left, right)
 		ymax = l;
 	}
 	if (xmax != xmin && ymax != ymin) {
-		int	minx, maxx, miny, maxy, t;
+		int	minx, maxx, miny, maxy;
 		xRectangle  rect;
 
 		minx = ICEIL (xmin + w) + tarc.x;

@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgetsp.c,v 5.3 89/07/26 12:12:15 rws Exp $ */
+/* $XConsortium: mfbgetsp.c,v 5.4 89/09/13 18:58:05 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 
@@ -43,6 +43,7 @@ SOFTWARE.
  * Each scanline returned will be server scanline padded, i.e., it will come
  * out to an integral number of words.
  */
+/*ARGSUSED*/
 void
 mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
     DrawablePtr		pDrawable;	/* drawable from which to get bits */

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpushpxl.c,v 5.0 89/06/09 15:07:01 keith Exp $ */
+/* $XConsortium: mfbpushpxl.c,v 5.1 89/07/28 08:27:49 rws Exp $ */
 
 #include "X.h"
 #include "gcstruct.h"
@@ -76,7 +76,7 @@ mfbSolidPP(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
     DrawablePtr pDrawable;
     int		dx, dy, xOrg, yOrg;
 {
-    int alu;
+    unsigned char alu;
     RegionRec rgnDst;
     DDXPointPtr pptSrc;
     BoxRec srcBox;
@@ -115,7 +115,7 @@ mfbSolidPP(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
 		ppt->x = pbox->x1 - xOrg;
 		ppt->y = pbox->y1 - yOrg;
 	    }
-	    mfbDoBitblt(pBitMap, pDrawable, alu, &rgnDst, pptSrc);
+	    mfbDoBitblt((DrawablePtr)pBitMap, pDrawable, alu, &rgnDst, pptSrc);
 	    DEALLOCATE_LOCAL(pptSrc);
 	}
     }

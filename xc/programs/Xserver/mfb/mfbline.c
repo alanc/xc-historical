@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbline.c,v 5.4 89/09/05 20:12:53 keith Exp $ */
+/* $XConsortium: mfbline.c,v 5.5 89/09/13 18:58:16 rws Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"
@@ -91,7 +91,7 @@ actual clipping.
 }
 
 #define SWAPPT(i, j) \
-{  register DDXPointRec _t; \
+{  DDXPointRec _t; \
    _t = i; \
    i = j; \
    j = _t; \
@@ -119,7 +119,6 @@ mfbLineSS (pDrawable, pGC, mode, npt, pptInit)
     BoxPtr pboxInit;
     register BoxPtr pbox;
 #ifndef POLYSEGMENT
-    int nptTmp;
     DDXPointPtr ppt;		/* pointer to list of translated points */
 #endif
 
@@ -139,7 +138,6 @@ mfbLineSS (pDrawable, pGC, mode, npt, pptInit)
     int axis;			/* major axis */
 
 				/* a bunch of temporaries */
-    int tmp;
     int x1, x2, y1, y2;
     RegionPtr cclip;
     int		    alu;
@@ -273,6 +271,8 @@ mfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 	    /* try to draw the line, if we haven't gone beyond it */
 	    if ((nbox) && (pbox->y1 <= y1))
 	    {
+		int tmp;
+
 		/* when we leave this band, we're done */
 		tmp = pbox->y1;
 		while((nbox) && (pbox->y1 == tmp))
@@ -513,12 +513,8 @@ mfbLineSD( pDrawable, pGC, mode, npt, pptInit)
     BoxPtr pboxInit;
     register BoxPtr pbox;
 #ifndef POLYSEGMENT
-    int nptTmp;
     DDXPointPtr ppt;		/* pointer to list of translated points */
 #endif
-
-    DDXPointRec pt1;
-    DDXPointRec pt2;
 
     unsigned int oc1;		/* outcode of point 1 */
     unsigned int oc2;		/* outcode of point 2 */
@@ -534,22 +530,9 @@ mfbLineSD( pDrawable, pGC, mode, npt, pptInit)
     int e, e1, e2;		/* bresenham error and increments */
     int len;			/* length of segment */
     int axis;			/* major axis */
-
-    int clipDone;		/* flag for clipping loop */
-    DDXPointRec pt1Orig;	/* unclipped start point */
-    DDXPointRec pt2Orig;	/* unclipped end point */
-    int err;			/* modified bresenham error term */
-    int clip1, clip2;		/* clippedness of the endpoints */
-
-    int clipdx, clipdy;		/* difference between clipped and
-				   unclipped start point */
-
-				/* a bunch of temporaries */
-    int tmp;
     int x1, x2, y1, y2;
     RegionPtr cclip;
     int		    fgrop, bgrop;
-    int		    isDoubleDashed;
     unsigned char   *pDash;
     int		    dashOffset;
     int		    numInDashList;
@@ -557,7 +540,6 @@ mfbLineSD( pDrawable, pGC, mode, npt, pptInit)
     int		    isDoubleDash;
     int		    dashIndexTmp, dashOffsetTmp;
     int		    unclippedlen;
-    int		    flipped;
 
     cclip = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip;
     fgrop = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->rop;
@@ -584,7 +566,7 @@ mfbLineSD( pDrawable, pGC, mode, npt, pptInit)
     isDoubleDash = (pGC->lineStyle == LineDoubleDash);
     dashIndex = 0;
     dashOffset = 0;
-    miStepDash (pGC->dashOffset, &dashIndex, pDash,
+    miStepDash ((int)pGC->dashOffset, &dashIndex, pDash,
 		numInDashList, &dashOffset);
 
     if (isDoubleDash)
@@ -826,10 +808,9 @@ register int signdx, signdy;
 int axis;
 int *pclip1, *pclip2;
 {
-    DDXPointRec pt1Orig, pt1, pt2, ptTmp;
+    DDXPointRec pt1Orig, pt1, pt2;
     int swapped = 0;
     int clipDone = 0;
-    int tmp;
     register unsigned long utmp;
     int oc1, oc2;
     int clip1, clip2;

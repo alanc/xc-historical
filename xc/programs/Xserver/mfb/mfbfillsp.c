@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbfillsp.c,v 5.2 89/07/28 11:58:00 rws Exp $ */
+/* $XConsortium: mfbfillsp.c,v 5.3 89/09/13 18:57:57 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "gcstruct.h"
@@ -753,7 +753,7 @@ int fSorted;
     PixmapPtr	pTile;		/* pointer to tile we want to fill with */
     int		w, width, x, xSrc, ySrc, srcStartOver, nstart, nend;
     int 	tlwidth, rem, tileWidth, tileHeight, endinc, rop;
-    unsigned int      tmpSrc, endmask, *psrcT;
+    unsigned int      endmask, *psrcT;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
 
@@ -919,7 +919,7 @@ int fSorted;
     register int startmask;
     register int nlMiddle;
     PixmapPtr	pTile;		/* pointer to tile we want to fill with */
-    int		w, width,  x, xSrc, ySrc, tmpSrc, srcStartOver, nstart, nend;
+    int		w, width,  x, xSrc, ySrc, srcStartOver, nstart, nend;
     int 	endmask, tlwidth, rem, tileWidth, *psrcT, endinc, rop;
     int		tileHeight;
     int *pwidthFree;		/* copies of the pointers to free */
