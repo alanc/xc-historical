@@ -1,4 +1,4 @@
-/* $XConsortium: imThaiFlt.c,v 1.3 93/09/23 12:26:30 rws Exp $ */
+/* $XConsortium: imThaiFlt.c,v 1.4 93/09/27 17:59:44 rws Exp $ */
 /***********************************************************
 Copyright 1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -484,8 +484,8 @@ Output parameters:
     switch (chtype)
     {
         case DEAD:
-            for (i = 0; *instr != '\0', THAI_isdead(*instr); 
-                i++, instr++);
+            for (i = 0; *instr != '\0' && THAI_isdead(*instr); i++, instr++)
+		;
             if (*instr != '\0') position = i; 
             break;
         default:
