@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.176 92/03/13 18:00:30 gildea Exp $
+ * $XConsortium: charproc.c,v 1.177 92/09/15 15:28:42 gildea Exp $
  */
 
 /*
@@ -100,9 +100,11 @@ static void bitset(), bitclr();
 #define XtNtekGeometry "tekGeometry"
 #define XtNinternalBorder "internalBorder"
 #define XtNjumpScroll "jumpScroll"
+#ifdef ALLOWLOGGING
 #define XtNlogFile "logFile"
 #define XtNlogging "logging"
 #define XtNlogInhibit "logInhibit"
+#endif
 #define XtNloginShell "loginShell"
 #define XtNmarginBell "marginBell"
 #define XtNpointerColor "pointerColor"
@@ -143,9 +145,11 @@ static void bitset(), bitclr();
 #define XtCEightBitOutput "EightBitOutput"
 #define XtCGeometry "Geometry"
 #define XtCJumpScroll "JumpScroll"
+#ifdef ALLOWLOGGING
 #define XtCLogfile "Logfile"
 #define XtCLogging "Logging"
 #define XtCLogInhibit "LogInhibit"
+#endif
 #define XtCLoginShell "LoginShell"
 #define XtCMarginBell "MarginBell"
 #define XtCMultiClickTime "MultiClickTime"
@@ -288,7 +292,9 @@ static XtActionsRec actionsList[] = {
     /* menu actions */
     { "allow-send-events",	HandleAllowSends },
     { "set-visual-bell",	HandleSetVisualBell },
+#ifdef ALLOWLOGGING
     { "set-logging",		HandleLogging },
+#endif
     { "redraw",			HandleRedraw },
     { "send-signal",		HandleSendSignal },
     { "quit",			HandleQuit },
@@ -382,6 +388,7 @@ static XtResource resources[] = {
 {XtNjumpScroll, XtCJumpScroll, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, screen.jumpscroll),
 	XtRBoolean, (XtPointer) &defaultTRUE},
+#ifdef ALLOWLOGGING
 {XtNlogFile, XtCLogfile, XtRString, sizeof(char *),
 	XtOffsetOf(XtermWidgetRec, screen.logfile),
 	XtRString, (XtPointer) NULL},
@@ -391,6 +398,7 @@ static XtResource resources[] = {
 {XtNlogInhibit, XtCLogInhibit, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, misc.logInhibit),
 	XtRBoolean, (XtPointer) &defaultFALSE},
+#endif
 {XtNloginShell, XtCLoginShell, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, misc.login_shell),
 	XtRBoolean, (XtPointer) &defaultFALSE},
@@ -1142,10 +1150,12 @@ v_write(f, d, len)
 		v_bufend = v_buffer + len;
 	}
 #ifdef DEBUG
-	fprintf(stderr, "v_write called with %d bytes (%d left over)",
-		len, v_bufptr - v_bufstr);
-	if (len > 1  &&  len < 10) fprintf(stderr, " \"%.*s\"", len, d);
-	fprintf(stderr, "\n");
+	if (debug) {
+	    fprintf(stderr, "v_write called with %d bytes (%d left over)",
+		    len, v_bufptr - v_bufstr);
+	    if (len > 1  &&  len < 10) fprintf(stderr, " \"%.*s\"", len, d);
+	    fprintf(stderr, "\n");
+	}
 #endif
 
 	if ((1 << f) != pty_mask)
@@ -1166,8 +1176,9 @@ v_write(f, d, len)
 		    /* there is unused space, move everything down */
 		    /* possibly overlapping bcopy here */
 #ifdef DEBUG
-		    fprintf(stderr, "moving data down %d\n",
-			    v_bufstr - v_buffer);
+		    if (debug)
+			fprintf(stderr, "moving data down %d\n",
+				v_bufstr - v_buffer);
 #endif
 		    bcopy(v_bufstr, v_buffer, v_bufptr - v_bufstr);
 		    v_bufptr -= v_bufstr - v_buffer;
@@ -1180,8 +1191,9 @@ v_write(f, d, len)
 		    v_buffer = realloc(v_buffer, size + len);
 		    if (v_buffer) {
 #ifdef DEBUG
-			fprintf(stderr, "expanded buffer to %d\n",
-				size + len);
+			if (debug)
+			    fprintf(stderr, "expanded buffer to %d\n",
+				    size + len);
 #endif
 			v_bufstr = v_buffer;
 			v_bufptr = v_buffer + size;
@@ -1224,15 +1236,16 @@ v_write(f, d, len)
 			  	       v_bufptr - v_bufstr : MAX_PTY_WRITE);
 	    if (riten < 0) {
 #ifdef DEBUG
-		perror("write");
+		if (debug) perror("write");
 #endif
 		riten = 0;
 	    }
 #ifdef DEBUG
-	    fprintf(stderr, "write called with %d, wrote %d\n",
-		    v_bufptr - v_bufstr <= MAX_PTY_WRITE ?
-		    v_bufptr - v_bufstr : MAX_PTY_WRITE,
-		    riten);
+	    if (debug)
+		fprintf(stderr, "write called with %d, wrote %d\n",
+			v_bufptr - v_bufstr <= MAX_PTY_WRITE ?
+			v_bufptr - v_bufstr : MAX_PTY_WRITE,
+			riten);
 #endif
 	    v_bufstr += riten;
 	    if (v_bufstr >= v_bufptr) /* we wrote it all */
@@ -1254,7 +1267,8 @@ v_write(f, d, len)
 		v_bufptr = v_buffer + size;
 		v_bufend = v_buffer + allocsize;
 #ifdef DEBUG
-		fprintf(stderr, "shrunk buffer to %d\n", allocsize);
+		if (debug)
+		    fprintf(stderr, "shrunk buffer to %d\n", allocsize);
 #endif
 	    } else {
 		/* should we print a warning if couldn't return memory? */
@@ -1276,8 +1290,10 @@ in_put()
 
     for( ; ; ) {
 	if (select_mask & pty_mask && eventMode == NORMAL) {
+#ifdef ALLOWLOGGING
 	    if (screen->logging)
 		FlushLog(screen);
+#endif
 	    bcnt = read(screen->respond, (char *)(bptr = buffer), BUF_SIZE);
 	    if (bcnt < 0) {
 		if (errno == EIO)
@@ -1614,10 +1630,12 @@ dpmodes(termw, func)
 			break;
 		case 38:		/* DECTEK			*/
 			if(func == bitset && !(screen->inhibit & I_TEK)) {
+#ifdef ALLOWLOGGING
 				if(screen->logging) {
 					FlushLog(screen);
 					screen->logstart = Tbuffer;
 				}
+#endif
 				screen->TekEmu = TRUE;
 			}
 			break;
@@ -1639,6 +1657,7 @@ dpmodes(termw, func)
 			(*func)(&termw->flags, REVERSEWRAP);
 			update_reversewrap();
 			break;
+#ifdef ALLOWLOGGING
 		case 46:		/* logging		*/
 #ifdef ALLOWLOGFILEONOFF
 			/*
@@ -1654,6 +1673,7 @@ dpmodes(termw, func)
 			Bell();
 #endif /* ALLOWLOGFILEONOFF */
 			break;
+#endif
 		case 47:		/* alternate buffer */
 			if (!termw->misc.titeInhibit) {
 			    if(func == bitset)
@@ -1728,9 +1748,11 @@ savemodes(termw)
 		case 45:		/* reverse wraparound	*/
 			screen->save_modes[13] = termw->flags & REVERSEWRAP;
 			break;
+#ifdef ALLOWLOGGING
 		case 46:		/* logging		*/
 			screen->save_modes[14] = screen->logging;
 			break;
+#endif
 		case 47:		/* alternate buffer		*/
 			screen->save_modes[15] = screen->alternate;
 			break;
@@ -1845,6 +1867,7 @@ restoremodes(termw)
 			termw->flags |= screen->save_modes[13] & REVERSEWRAP;
 			update_reversewrap();
 			break;
+#ifdef ALLOWLOGGING
 		case 46:		/* logging		*/
 #ifdef ALLOWLOGFILEONOFF
 			if(screen->save_modes[14])
@@ -1854,6 +1877,7 @@ restoremodes(termw)
 #endif /* ALLOWLOGFILEONOFF */
 			/* update_logging done by StartLog and CloseLog */
 			break;
+#endif
 		case 47:		/* alternate buffer */
 			if (!termw->misc.titeInhibit) {
 			    if(screen->save_modes[15])
@@ -2197,7 +2221,9 @@ static void VTInitialize (wrequest, wnew, args, num_args)
    new->screen.cursorcolor = request->screen.cursorcolor;
    new->screen.border = request->screen.border;
    new->screen.jumpscroll = request->screen.jumpscroll;
+#ifdef ALLOWLOGGING
    new->screen.logfile = request->screen.logfile;
+#endif
    new->screen.marginbell = request->screen.marginbell;
    new->screen.mousecolor = request->screen.mousecolor;
    new->screen.mousecolorback = request->screen.mousecolorback;
