@@ -1,6 +1,6 @@
 
 /*
- * $XConsortium: Xrm.c,v 1.33 90/06/04 14:58:51 kit Exp $
+ * $XConsortium: Xrm.c,v 1.34 90/06/05 13:55:36 kit Exp $
  */
 
 /***********************************************************
@@ -109,10 +109,10 @@ static int     maxResourceQuark = -1;
 
 #define CHUNK_SIZE 5100
 
+#ifdef TESTLOCALMALLOC
 static char * global_ptr;
 static unsigned int space_left = 0;
 
-#ifdef TEST
 char *
 LocalMalloc(size)
 unsigned int size;
@@ -151,7 +151,7 @@ void XrmStringToQuarkList(name, quarks)
     register Signature  	sig = 0;
     register char       	ch, *tname;
 
-    if ((tname = name) != NULL) {
+    if ((tname = (char *)name) != NULL) {
 	if (xrm_is_tight_or_loose (bits = get_next_char(ch, tname)))
 	    name = tname;
 	else
@@ -190,7 +190,7 @@ void XrmStringToBindingQuarkList(name, bindings, quarks)
     register char       	ch, *tname;
     register XrmBinding 	binding;
 
-    if ((tname = name) != NULL) {
+    if ((tname = (char *)name) != NULL) {
 	binding = XrmBindTightly;
 	if (xrm_is_tight_or_loose (bits = get_next_char(ch, tname))) {
 	    if (xrm_is_loose(bits)) 
