@@ -1,16 +1,17 @@
+/* Combined Purdue/PurduePlus patches, level 2.1, 1/24/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
 
                         All Rights Reserved
 
-Permission to use, copy, modify, and distribute this software and its 
-documentation for any purpose and without fee is hereby granted, 
+Permission to use, copy, modify, and distribute this software and its
+documentation for any purpose and without fee is hereby granted,
 provided that the above copyright notice appear in all copies and that
-both that copyright notice and this permission notice appear in 
+both that copyright notice and this permission notice appear in
 supporting documentation, and that the names of Digital or MIT not be
 used in advertising or publicity pertaining to distribution of the
-software without specific, written prior permission.  
+software without specific, written prior permission.
 
 DIGITAL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
 ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
@@ -21,15 +22,19 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: maskbits.h,v 1.12 88/10/03 08:26:42 rws Exp $ */
+/* $XConsortium: maskbits.h,v 1.13 88/11/11 10:36:11 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "servermd.h"
 
 extern int starttab[];
 extern int endtab[];
+#ifndef PURDUE
 extern int startpartial[];
 extern int endpartial[];
+#else  /* PURDUE */
+extern unsigned partmasks[32][32];
+#endif  /* PURDUE */
 extern int rmask[];
 extern int mask[];
 
@@ -39,7 +44,7 @@ SCREEN LEFT				SCREEN RIGHT
 in this file and maskbits.c, left and right refer to screen coordinates,
 NOT bit numbering in registers.
 
-starttab[n] 
+starttab[n]
 	bits[0,n-1] = 0	bits[n,31] = 1
 endtab[n] =
 	bits[0,n-1] = 1	bits[n,31] = 0
@@ -152,7 +157,7 @@ putbitsrop(src, x, w, pdst, ROP)
 	DoRop)
 
 putbitsrrop(src, x, w, pdst, ROP)
-	like putbits but calls DoRRop with the reduced rasterop ROP 
+	like putbits but calls DoRRop with the reduced rasterop ROP
 	(see mfb.h for DoRRop)
 
 -----------------------------------------------------------------------
@@ -206,13 +211,20 @@ getshiftedleftbits(psrc, offset, w, dst)
     else \
 	nlw = (w) >> 5;
 
+#ifndef PURDUE
 #define maskpartialbits(x, w, mask) \
     mask = startpartial[(x) & 0x1f] & endpartial[((x) + (w)) & 0x1f];
+#else  /* PURDUE */
+#define maskpartialbits(x, w, mask) \
+    mask = partmasks[(x)&0x1f][(w)&0x1f];
+#endif  /* PURDUE */
 
 #define mask32bits(x, w, startmask, endmask) \
     startmask = starttab[(x)&0x1f]; \
     endmask = endtab[((x)+(w)) & 0x1f];
 
+
+#ifndef PURDUE
 
 #define getbits(psrc, x, w, dst) \
 if ( ((x) + (w)) <= 32) \
@@ -270,6 +282,7 @@ else \
     *((pdst)+1) = (*((pdst)+1) & starttab[n]) | (t2 & endtab[n]); \
 }
 
+
 #define putbitsrrop(src, x, w, pdst, rop) \
 if ( ((x)+(w)) <= 32) \
 { \
@@ -295,8 +308,203 @@ else \
     *((pdst)+1) = (*((pdst)+1) & starttab[n]) | (t2 & endtab[n]); \
 }
 
+#else  /* PURDUE */
+
+
+#ifdef __GNUC__
+#ifdef vax
+#define FASTGETBITS(psrc,x,w,dst) \
+    asm ("extzv %1,%2,%3,%0" \
+	 : "g" (dst) \
+	 : "g" (x), "g" (w), "m" (*(char *)(psrc)))
+#define getbits(psrc,x,w,dst) FASTGETBITS(psrc,x,w,dst)
+
+#define FASTPUTBITS(src, x, w, pdst) \
+    asm ("insv %3,%1,%2,%0" \
+	 : "m" (*(char *)(pdst)) \
+	 : "g" (x), "g" (w), "g" (src))
+#define putbits(src, x, w, pdst) FASTPUTBITS(src, x, w, pdst)
+#endif vax
+#ifdef mc68020
+#define FASTGETBITS(psrc, x, w, dst) \
+    asm ("bfextu %3{%1:%2},%0" \
+    : "=d" (dst) : "di" (x), "di" (w), "o" (*(char *)(psrc)))
+
+#define getbits(psrc,x,w,dst) \
+{ \
+    FASTGETBITS(psrc, x, w, dst);\
+    dst <<= (32-(w)); \
+}
+
+#define FASTPUTBITS(src, x, w, pdst) \
+    asm ("bfins %3,%0{%1:%2}" \
+	 : "=o" (*(char *)(pdst)) \
+	 : "di" (x), "di" (w), "d" (src), "0" (*(char *) (pdst)))
+
+#define putbits(src, x, w, pdst) FASTPUTBITS(((src) >> (32-(w))), x, w, pdst) 
+
+#endif mc68020
+#endif __GNUC__
+
+/*  The following flag is used to override a bugfix for sun 3/60+CG4 machines,
+ */
+
+/*  We don't need to be careful about this unless we're dealing with sun3's 
+ *  We will default its usage for those who do not know anything, but will
+ *  override its effect if the machine doesn't look like a sun3 
+ */
+#if !defined(mc68020) || !defined(sun)
+#define NO_3_60_CG4
+#endif
+
+/* This is gross.  We want to #define u_putbits as something which can be used
+ * in the case of the 3/60+CG4, but if we use /bin/cc or are on another
+ * machine type, we want nothing to do with u_putbits.  What a hastle.  Here
+ * I used slo_putbits as something which either u_putbits or putbits could be
+ * defined as.
+ *
+ * putbits gets it iff it is not already defined with FASTPUTBITS above.
+ * u_putbits gets it if we have FASTPUTBITS (putbits) from above and have not
+ * 	overridden the NO_3_60_CG4 flag.
+ */
+
+#define slo_putbits(src, x, w, pdst) \
+{ \
+    register int n = (x)+(w)-32; \
+    \
+    if (n <= 0) \
+    { \
+	register int tmpmask; \
+	maskpartialbits((x), (w), tmpmask); \
+	*(pdst) = (*(pdst) & ~tmpmask) | \
+		(SCRRIGHT((unsigned) src, x) & tmpmask); \
+    } \
+    else \
+    { \
+	register unsigned int *ptmp_ = (unsigned *) (pdst)+1; \
+	*(pdst) = (*(pdst) & endtab[x]) | (SCRRIGHT((unsigned) (src), x)); \
+	*ptmp_ = (*ptmp_ & starttab[n]) | \
+		(SCRLEFT((unsigned) src, 32-(x)) & endtab[n]); \
+    } \
+}
+
+#if defined(putbits) && !defined(NO_3_60_CG4)
+#define u_putbits(src, x, w, pdst) slo_putbits(src, x, w, pdst)
+#else
+#define u_putbits(src, x, w, pdst) putbits(src, x, w, pdst)
+#endif
+
+#if !defined(putbits) 
+#define putbits(src, x, w, pdst) slo_putbits(src, x, w, pdst)
+#endif
+
+/* Now if we have not gotten any really good bitfield macros, try some
+ * moderately fast macros.  Alas, I don't know how to do asm instructions
+ * without gcc.
+ */
+
+#ifndef getbits
+#define getbits(psrc, x, w, dst) \
+{ \
+    dst = SCRLEFT((unsigned) *(psrc), (x)); \
+    if ( ((x) + (w)) > 32) \
+	dst |= (SCRRIGHT((unsigned) *((psrc)+1), 32-(x))); \
+}
+#endif
+
+/*  We have to special-case putbitsrop because of 3/60+CG4 combos
+ */
+
+#define u_putbitsrop(src, x, w, pdst, rop) \
+{\
+	register int t1, t2; \
+	register int n = (x)+(w)-32; \
+	\
+	t1 = SCRRIGHT((src), (x)); \
+	DoRop(t2, rop, t1, *(pdst)); \
+	\
+    if (n <= 0) \
+    { \
+	register int tmpmask; \
+	\
+	maskpartialbits((x), (w), tmpmask); \
+	*(pdst) = (*(pdst) & ~tmpmask) | (t2 & tmpmask); \
+    } \
+    else \
+    { \
+	int m = 32-(x); \
+	register unsigned int *ptmp_ = (unsigned *) (pdst)+1; \
+	*(pdst) = (*(pdst) & endtab[x]) | (t2 & starttab[x]); \
+	t1 = SCRLEFT((src), m); \
+	DoRop(t2, rop, t1, *ptmp_); \
+	*ptmp_ = (*ptmp_ & starttab[n]) | (t2 & endtab[n]); \
+    } \
+}
+
+/* If our getbits and putbits are FAST enough,
+ * do this brute force, it's faster
+ */
+
+#if defined(FASTPUTBITS) && defined(FASTGETBITS) && defined(NO_3_60_CG4)
+#define putbitsrop(src, x, w, pdst, rop) \
+{ \
+  register int _tmp, _tmp2; \
+  FASTGETBITS(pdst, x, w, _tmp); \
+  _tmp2 = SCRRIGHT(src, 32-(w)); \
+  DoRop(_tmp, rop, _tmp2, _tmp) \
+  FASTPUTBITS(_tmp, x, w, pdst); \
+}
+#define putbitsrrop(src, x, w, pdst, rop) \
+{ \
+  register int _tmp, _tmp2; \
+ \
+  FASTGETBITS(pdst, x, w, _tmp); \
+  _tmp2 = SCRRIGHT(src, 32-(w)); \
+  _tmp= DoRRop(rop, _tmp2, _tmp); \
+  FASTPUTBITS(_tmp, x, w, pdst); \
+}
+#undef u_putbitsrop
+#endif
+
+#ifndef putbitsrop
+#define putbitsrop(src, x, w, pdst, rop)  u_putbitsrop(src, x, w, pdst, rop)
+#endif 
+
+#ifndef putbitsrrop
+#define putbitsrrop(src, x, w, pdst, rop) \
+{\
+	register int t1, t2; \
+	register int n = (x)+(w)-32; \
+	\
+	t1 = SCRRIGHT((src), (x)); \
+	t2 = DoRRop(rop, t1, *(pdst)); \
+	\
+    if (n <= 0) \
+    { \
+	register int tmpmask; \
+	\
+	maskpartialbits((x), (w), tmpmask); \
+	*(pdst) = (*(pdst) & ~tmpmask) | (t2 & tmpmask); \
+    } \
+    else \
+    { \
+	int m = 32-(x); \
+	register unsigned int *ptmp_ = (unsigned *) (pdst)+1; \
+	*(pdst) = (*(pdst) & endtab[x]) | (t2 & starttab[x]); \
+	t1 = SCRLEFT((src), m); \
+	t2 = DoRRop(rop, t1, *ptmp_); \
+	*ptmp_ = (*ptmp_ & starttab[n]) | (t2 & endtab[n]); \
+    } \
+}
+#endif
+#endif  /* PURDUE */
+
 #if GETLEFTBITS_ALIGNMENT == 1
+#ifndef PURDUE
 #define getleftbits(psrc, w, dst)	getbits((unsigned int *)psrc, 0, w, dst)
+#else  /* PURDUE */
+#define getleftbits(psrc, w, dst)	dst = *((unsigned int *) psrc)
+#endif
 #endif /* GETLEFTBITS_ALIGNMENT == 1 */
 
 #if GETLEFTBITS_ALIGNMENT == 2
@@ -326,4 +534,128 @@ else \
 	getleftbits((psrc), (w), (dst)); \
 	dst = SCRLEFT((dst), (offset));
 
+#ifdef PURDUE
+/* FASTGETBITS and FASTPUTBITS are not necessarily correct implementations of
+ * getbits and putbits, but they work if used together.
+ *
+ * On a MSBFirst machine, a cpu bitfield extract instruction (like bfextu)
+ * could normally assign its result to a long word register in the screen
+ * right position.  This saves canceling register shifts by not fighting the
+ * natural cpu byte order.
+ *
+ * Unfortunately, these fail on a 3/60+CG4 and cannot be used unmodified. Sigh.
+ */
+#if defined(FASTGETBITS) && defined(FASTPUTBITS)
+#ifdef NO_3_60_CG4
+#define u_FASTPUT(aa, bb, cc, dd)  FASTPUTBITS(aa, bb, cc, dd)
+#else
+#define u_FASTPUT(aa, bb, cc, dd)  u_putbits(SCRLEFT(aa, 32-(cc)), bb, cc, dd)
+#endif
 
+#define getandputbits(psrc, srcbit, dstbit, width, pdst) \
+{ \
+    register unsigned int _tmpbits; \
+    FASTGETBITS(psrc, srcbit, width, _tmpbits); \
+    u_FASTPUT(_tmpbits, dstbit, width, pdst); \
+}
+
+#define getandputrop(psrc, srcbit, dstbit, width, pdst, rop) \
+{ \
+  register unsigned int _tmpsrc, _tmpdst; \
+  FASTGETBITS(pdst, dstbit, width, _tmpdst); \
+  FASTGETBITS(psrc, srcbit, width, _tmpsrc); \
+  DoRop(_tmpdst, rop, _tmpsrc, _tmpdst); \
+  u_FASTPUT(_tmpdst, dstbit, width, pdst); \
+}
+
+#define getandputrrop(psrc, srcbit, dstbit, width, pdst, rop) \
+{ \
+  register unsigned int _tmpsrc, _tmpdst; \
+  FASTGETBITS(pdst, dstbit, width, _tmpdst); \
+  FASTGETBITS(psrc, srcbit, width, _tmpsrc); \
+  _tmpdst = DoRRop(rop, _tmpsrc, _tmpdst); \
+  u_FASTPUT(_tmpdst, dstbit, width, pdst); \
+}
+
+#define getandputbits0(psrc, srcbit, width, pdst) \
+	getandputbits(psrc, srcbit, 0, width, pdst)
+
+#define getandputrop0(psrc, srcbit, width, pdst, rop) \
+    	getandputrop(psrc, srcbit, 0, width, pdst, rop)
+
+#define getandputrrop0(psrc, srcbit, width, pdst, rop) \
+    	getandputrrop(psrc, srcbit, 0, width, pdst, rop)
+
+
+#else /* Slow poke */
+
+/* pairs of getbits/putbits happen frequently. Some of the code can
+ * be shared or avoided in a few specific instances.  It gets us a
+ * small advantage, so we do it.  The getandput...0 macros are the only ones
+ * which speed things here.  The others are here for compatibility w/the above
+ * FAST ones
+ */
+
+#define getandputbits(psrc, srcbit, dstbit, width, pdst) \
+{ \
+    register unsigned int _tmpbits; \
+    getbits(psrc, srcbit, width, _tmpbits); \
+    putbits(_tmpbits, dstbit, width, pdst); \
+}
+
+#define getandputrop(psrc, srcbit, dstbit, width, pdst, rop) \
+{ \
+    register unsigned int _tmpbits; \
+    getbits(psrc, srcbit, width, _tmpbits) \
+    putbitsrop(_tmpbits, dstbit, width, pdst, rop) \
+}
+
+#define getandputrrop(psrc, srcbit, dstbit, width, pdst, rop) \
+{ \
+    register unsigned int _tmpbits; \
+    getbits(psrc, srcbit, width, _tmpbits) \
+    putbitsrrop(_tmpbits, dstbit, width, pdst, rop) \
+}
+
+
+#define getandputbits0(psrc, sbindex, width, pdst) \
+{			/* unroll the whole damn thing to see how it * behaves */ \
+    register int          _flag = 32 - (sbindex); \
+    register unsigned int _src; \
+ \
+    _src = SCRLEFT (*(psrc), (sbindex)); \
+    if ((width) > _flag) \
+	_src |=  SCRRIGHT (*((psrc) + 1), _flag); \
+ \
+    *(pdst) = (*(pdst) & starttab[(width)]) | (_src & endtab[(width)]); \
+}
+
+
+#define getandputrop0(psrc, sbindex, width, pdst, rop) \
+{			\
+    register int          _flag = 32 - (sbindex); \
+    register unsigned int _src; \
+ \
+    _src = SCRLEFT (*(psrc), (sbindex)); \
+    if ((width) > _flag) \
+	_src |=  SCRRIGHT (*((psrc) + 1), _flag); \
+    DoRop(_src, rop, _src, *(pdst)); \
+ \
+    *(pdst) = (*(pdst) & starttab[(width)]) | (_src & endtab[(width)]); \
+}
+
+#define getandputrrop0(psrc, sbindex, width, pdst, rop) \
+{ \
+    int             _flag = 32 - (sbindex); \
+    register unsigned int _src; \
+ \
+    _src = SCRLEFT (*(psrc), (sbindex)); \
+    if ((width) > _flag) \
+	_src |=  SCRRIGHT (*((psrc) + 1), _flag); \
+    _src = DoRRop(rop, _src, *(pdst)); \
+ \
+    *(pdst) = (*(pdst) & starttab[(width)]) | (_src & endtab[(width)]); \
+}
+
+#endif  /* FASTGETBITS && FASTPUTBITS */
+#endif  /* PURDUE */

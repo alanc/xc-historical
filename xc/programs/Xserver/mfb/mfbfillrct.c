@@ -1,3 +1,4 @@
+/* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -21,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbfillrct.c,v 1.36 88/05/19 09:40:35 rws Exp $ */
+/* $XConsortium: mfbfillrct.c,v 1.37 88/09/06 14:53:57 jim Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 #include "pixmapstr.h"
@@ -81,12 +82,16 @@ mfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	yorg = ((WindowPtr)pDrawable)->absCorner.y;
         prect = prectInit;
 	n = nrectFill;
+#ifndef PURDUE
         while(n--)
         {
 	    prect->x += xorg;
 	    prect->y += yorg;
 	    prect++;
         }
+#else
+	Duff (n, prect->x += xorg; prect->y += yorg; prect++);
+#endif
     }
 
     prect = prectInit;

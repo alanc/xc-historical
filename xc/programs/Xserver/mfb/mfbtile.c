@@ -1,3 +1,4 @@
+/* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -21,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbtile.c,v 1.5 87/09/11 07:48:49 toddb Exp $ */
+/* $XConsortium: mfbtile.c,v 1.6 88/09/06 14:53:52 jim Exp $ */
 #include "X.h"
 
 #include "windowstr.h"
@@ -108,8 +109,16 @@ mfbTileArea32(pDraw, nbox, pbox, alu, ptile)
 	    {
 		srcpix = psrc[iy];
 		iy = ++iy < tileHeight ? iy : 0;
+#ifndef PURDUE
 		*p = (*p & ~startmask) |
 		     (DoRop(alu, srcpix, *p) & startmask);
+#else  /* PURDUE */
+		{
+		    unsigned _p;
+		    DoRop(_p, alu, srcpix, *p);
+		    *p = (*p & ~startmask) | (_p & startmask);
+		}
+#endif  /* PURDUE */
 		p += nlwExtra;
 	    }
 	}
@@ -126,9 +135,18 @@ mfbTileArea32(pDraw, nbox, pbox, alu, ptile)
 		    srcpix = psrc[iy];
 		    iy = ++iy < tileHeight ? iy : 0;
 		    nlw = nlwMiddle;
+#ifndef PURDUE
 		    *p = (*p & ~startmask) | 
 			 (DoRop(alu, srcpix, *p) & startmask);
+#else  /* PURDUE */
+		    {
+			unsigned _p;
+			DoRop(_p, alu, srcpix, *p);
+			*p = (*p & ~startmask) | (_p & startmask);
+		    }
+#endif  /* PURDUE */
 		    p++;
+#ifndef PURDUE
 		    while (nlw--)
 		    {
 			*p = DoRop(alu, srcpix, *p);
@@ -136,6 +154,19 @@ mfbTileArea32(pDraw, nbox, pbox, alu, ptile)
 		    }
 		    *p = (*p & ~endmask) |
 		         (DoRop(alu, srcpix, *p) & endmask);
+#else  /* PURDUE */
+		    while (nlw--)
+		    {
+			DoRop(*p, alu, srcpix, *p);
+			p++;
+		    }
+
+		    {
+			unsigned _p;
+			DoRop(_p, alu, srcpix, *p);
+			*p = (*p & ~endmask) | (_p & endmask);
+		    }
+#endif  /* PURDUE */
 		    p += nlwExtra;
 		}
 	    }
@@ -147,12 +178,24 @@ mfbTileArea32(pDraw, nbox, pbox, alu, ptile)
 		    srcpix = psrc[iy];
 		    iy = ++iy < tileHeight ? iy : 0;
 		    nlw = nlwMiddle;
+#ifndef PURDUE
 		    *p = (*p & ~startmask) | 
 			 (DoRop(alu, srcpix, *p) & startmask);
+#else  /* PURDUE */
+		    {
+			unsigned _p;
+			DoRop(_p, alu, srcpix, *p);
+			*p = (*p & ~startmask) | (_p & startmask);
+		    }
+#endif  /* PURDUE */
 		    p++;
 		    while (nlw--)
 		    {
+#ifndef PURDUE
 			*p = DoRop(alu, srcpix, *p);
+#else  /* PURDUE */
+		        DoRop(*p, alu, srcpix, *p); 
+#endif  /* PURDUE */
 			p++;
 		    }
 		    p += nlwExtra;
@@ -165,6 +208,7 @@ mfbTileArea32(pDraw, nbox, pbox, alu, ptile)
 		    srcpix = psrc[iy];
 		    iy = ++iy < tileHeight ? iy : 0;
 		    nlw = nlwMiddle;
+#ifndef PURDUE
 		    while (nlw--)
 		    {
 			*p = DoRop(alu, srcpix, *p);
@@ -172,6 +216,19 @@ mfbTileArea32(pDraw, nbox, pbox, alu, ptile)
 		    }
 		    *p = (*p & ~endmask) |
 		         (DoRop(alu, srcpix, *p) & endmask);
+#else  /* PURDUE */
+		    while (nlw--)
+		    {
+			DoRop(*p, alu, srcpix, *p);
+			p++;
+		    }
+
+		    {
+			unsigned _p;
+			DoRop(_p, alu, srcpix, *p);
+			*p = (*p & ~endmask) | (_p & endmask);
+		    }
+#endif  /* PURDUE */
 		    p += nlwExtra;
 		}
 	    }
@@ -184,7 +241,11 @@ mfbTileArea32(pDraw, nbox, pbox, alu, ptile)
 		    nlw = nlwMiddle;
 		    while (nlw--)
 		    {
+#ifndef PURDUE
 			*p = DoRop(alu, srcpix, *p);
+#else  /* PURDUE */
+			DoRop(*p, alu, srcpix, *p);
+#endif  /* PURDUE */
 			p++;
 		    }
 		    p += nlwExtra;

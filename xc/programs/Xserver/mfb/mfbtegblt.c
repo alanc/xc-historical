@@ -1,4 +1,5 @@
-/* $XConsortium: mfbtegblt.c,v 1.1 87/09/11 07:48:45 toddb Exp $ */
+/* $XConsortium: mfbtegblt.c,v 1.2 88/09/06 14:53:48 jim Exp $ */
+/* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -159,17 +160,38 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    hTmp = h;
 	    pdst = pdstBase;
 
+#ifdef PURDUE
+#if defined(NO_3_60_CG4) && defined(FASTPUTBITS) && defined(FASTGETBITS)
+#define FASTCHARS
+#endif
+#endif
+
+#ifndef FASTCHARS
 	    if ( (xpos+w) < 32)
 	    {
 	        maskpartialbits(xpos, w, startmask);
+#endif /* FASTCHARS */
 	        while(hTmp--)
 	        {
+#ifndef FASTCHARS
 		    getleftbits(pglyph, w, tmpSrc);
 		    *pdst = (*pdst & ~startmask) |
 			    (OP(SCRRIGHT(tmpSrc, xpos)) & startmask);
+#else
+		    FASTGETBITS(pglyph, 0, w, tmpSrc);
+		    FASTPUTBITS(OP(tmpSrc), xpos, w, pdst);
+#endif  /* FASTCHARS */
 		    pdst += widthDst;
 		    pglyph += widthGlyph;
 	        }
+#ifdef FASTCHARS
+	        xpos += w;
+		if (xpos >= 32)
+		{
+		    xpos &= 0x1f;
+	            pdstBase++;
+		}
+#else
 	        xpos += w;
 	    }
 	    else
@@ -190,6 +212,7 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	        xpos &= 0x1f;
 	        pdstBase++;
 	    }
+#endif /* FASTCHARS */
         }
 	break;
     }

@@ -1,3 +1,4 @@
+/* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -21,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfb.h,v 1.8 88/08/30 17:06:08 keith Exp $ */
+/* $XConsortium: mfb.h,v 1.9 88/09/06 14:53:21 jim Exp $ */
 /* Monochrome Frame Buffer definitions 
    written by drewry, september 1986
 */
@@ -249,6 +250,7 @@ than a switch on the rop per item (span or rectangle.)
 #define fnNAND(src, dst)	(~(src & dst))
 #define fnSET(src, dst)		(~0)
 
+#ifndef PURDUE
 /* Binary search to figure out what to do for the raster op.  It may
  * do 5 comparisons, but at least it does no function calls 
  * Special cases copy because it's so frequent 
@@ -270,6 +272,75 @@ than a switch on the rop per item (span or rectangle.)
        (((alu) >= GXandReverse) ? \
 	 (((alu) == GXandReverse) ? ((src) & ~(dst)) : (src)) : \
 	 (((alu) == GXand) ? ((src) & (dst)) : 0)))  ) )
+#else  /* PURDUE */
+/*  Using a "switch" statement is much faster in most cases
+ *  since the compiler can do a look-up table or multi-way branch
+ *  instruction, depending on the architecture.  The result on
+ *  A Sun 3/50 is at least 2.5 times faster, assuming a uniform
+ *  distribution of RasterOp operation types.
+ *
+ *  However, doing some profiling on a running system reveals
+ *  GXcopy is the operation over 99.5% of the time and
+ *  GXcopy is the next most frequent (about .4%), so we make special
+ *  checks for those first.
+ *
+ *  Note that this requires a change to the "calling sequence"
+ *  since we can't engineer a "switch" statement to have an lvalue.
+ */
+#define DoRop(result, alu, src, dst) \
+{ \
+    if (alu == GXcopy) \
+	result = fnCOPY (src, dst); \
+    else if (alu == GXxor) \
+        result = fnXOR (src, dst); \
+    else \
+	switch (alu) \
+	{ \
+	  case GXclear: \
+	    result = fnCLEAR (src, dst); \
+	    break; \
+	  case GXand: \
+	    result = fnAND (src, dst); \
+	    break; \
+	  case GXandReverse: \
+	    result = fnANDREVERSE (src, dst); \
+	    break; \
+	  case GXandInverted: \
+	    result = fnANDINVERTED (src, dst); \
+	    break; \
+	  case GXnoop: \
+	    result = fnNOOP (src, dst); \
+	    break; \
+	  case GXor: \
+	    result = fnOR (src, dst); \
+	    break; \
+	  case GXnor: \
+	    result = fnNOR (src, dst); \
+	    break; \
+	  case GXequiv: \
+	    result = fnEQUIV (src, dst); \
+	    break; \
+	  case GXinvert: \
+	    result = fnINVERT (src, dst); \
+	    break; \
+	  case GXorReverse: \
+	    result = fnORREVERSE (src, dst); \
+	    break; \
+	  case GXcopyInverted: \
+	    result = fnCOPYINVERTED (src, dst); \
+	    break; \
+	  case GXorInverted: \
+	    result = fnORINVERTED (src, dst); \
+	    break; \
+	  case GXnand: \
+	    result = fnNAND (src, dst); \
+	    break; \
+	  case GXset: \
+	    result = fnSET (src, dst); \
+	    break; \
+	} \
+}
+#endif  /* PURDUE */
 
 
 #define DoRRop(alu, src, dst) \
@@ -277,3 +348,23 @@ than a switch on the rop per item (span or rectangle.)
  ((alu) == RROP_WHITE) ? ((dst) | (src)) : \
  ((alu) == RROP_INVERT) ? ((dst) ^ (src)) : \
   (dst))
+
+#ifdef PURDUE
+/* A generalized form of a x4 Duff's Device */
+#define Duff(counter, block) { \
+  while (counter >= 4) {\
+     { block; } \
+     { block; } \
+     { block; } \
+     { block; } \
+     counter -= 4; \
+  } \
+     switch (counter & 3) { \
+     case 3:	{ block; } \
+     case 2:	{ block; } \
+     case 1:	{ block; } \
+     case 0: \
+     counter = 0; \
+   } \
+}
+#endif  /* PURDUE */

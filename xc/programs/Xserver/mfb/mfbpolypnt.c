@@ -1,3 +1,4 @@
+/* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -21,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpolypnt.c,v 1.13 87/09/11 07:48:39 toddb Exp $ */
+/* $XConsortium: mfbpolypnt.c,v 1.14 88/09/06 14:53:42 jim Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -102,23 +103,31 @@ mfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
     nptTmp = npt;
     if (mode == CoordModeOrigin)
     {
+#ifndef PURDUE
 	while(nptTmp--)
 	{
 	    ppt->x += xorg;
 	    ppt++->y += yorg;
 	}
+#else
+	Duff(nptTmp, ppt->x += xorg; ppt++->y += yorg );
+#endif
     }
     else
     {
 	ppt->x += xorg;
 	ppt->y += yorg;
 	nptTmp--;
+#ifndef PURDUE
 	while(nptTmp--)
 	{
 	    ppt++;
 	    ppt->x += (ppt-1)->x;
 	    ppt->y += (ppt-1)->y;
 	}
+#else
+	Duff(nptTmp, ppt++; ppt->x += (ppt-1)->x; ppt->y += (ppt-1)->y);
+#endif
     }
 
     ppt = pptInit;

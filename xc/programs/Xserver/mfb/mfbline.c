@@ -1,3 +1,4 @@
+/* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -21,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbline.c,v 1.37 88/02/08 20:11:01 rws Exp $ */
+/* $XConsortium: mfbline.c,v 1.38 88/09/06 14:53:23 jim Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"
@@ -110,7 +111,11 @@ edges) instead of pbox (the standard no-right-or-lower-edge one)?
 #define round(dividend, divisor) \
 ( (((dividend)<<1) + (divisor)) / ((divisor)<<1) )
 
+#ifndef PURDUE
 #define ceiling(m,n) ( ((m) + (n) -1)/(n) )
+#else
+#define ceiling(m,n)  (((m)-1)/(n) + 1)
+#endif  /* PURDUE */
 
 #define SignTimes(sign, n) ((sign) * ((int)(n)))
 
@@ -119,6 +124,7 @@ edges) instead of pbox (the standard no-right-or-lower-edge one)?
     ( ((sign)<0) ? -(n) : (n) )
 */
 
+#ifndef PURDUE
 #define SWAPPT(p1, p2, pttmp) \
 pttmp = p1; \
 p1 = p2; \
@@ -128,6 +134,22 @@ p2 = pttmp;
 t = i; \
 i = j; \
 j = t;
+
+#else
+#define SWAPINT(i, j) \
+{  register int _t = i; \
+   i = j; \
+   j = _t; \
+}
+
+#define SWAPPT(i, j) \
+{  register DDXPointRec _t; \
+   _t = i; \
+   i = j; \
+   j = _t; \
+}
+#endif  /* PURDUE */
+   
 
 void
 mfbLineSS(pDrawable, pGC, mode, npt, pptInit)
@@ -200,23 +222,31 @@ mfbLineSS(pDrawable, pGC, mode, npt, pptInit)
     nptTmp = npt;
     if (mode == CoordModeOrigin)
     {
+#ifndef PURDUE
 	while(nptTmp--)
 	{
 	    ppt->x += xorg;
 	    ppt++->y += yorg;
 	}
+#else
+	Duff(nptTmp, ppt->x += xorg; ppt++->y += yorg);
+#endif  /* PURDUE */
     }
     else
     {
 	ppt->x += xorg;
 	ppt->y += yorg;
 	nptTmp--;
+#ifndef PURDUE
 	while(nptTmp--)
 	{
 	    ppt++;
 	    ppt->x += (ppt-1)->x;
 	    ppt->y += (ppt-1)->y;
 	}
+#else
+	Duff(nptTmp, ppt++; ppt->x += (ppt-1)->x; ppt->y += (ppt-1)->y);
+#endif  /* PURDUE */
     }
 
     ppt = pptInit;
@@ -235,6 +265,9 @@ mfbLineSS(pDrawable, pGC, mode, npt, pptInit)
 	    */
 	    if (pt1.y > pt2.y)
 	    {
+#ifdef PURDUE
+		register int tmp;
+#endif
 		tmp = pt2.y;
 		pt2.y = pt1.y + 1;
 		pt1.y = tmp + 1;
@@ -277,6 +310,9 @@ mfbLineSS(pDrawable, pGC, mode, npt, pptInit)
 	    */
 	    if (pt1.x > pt2.x)
 	    {
+#ifdef PURDUE
+		register int tmp;
+#endif
 		tmp = pt2.x;
 		pt2.x = pt1.x + 1;
 		pt1.x = tmp + 1;
@@ -308,7 +344,11 @@ mfbLineSS(pDrawable, pGC, mode, npt, pptInit)
 		    if (pbox->x1 >= pt2.x)
 		    {
 			nbox = 0;
+#ifndef PURDUE
 			continue;
+#else
+			break;
+#endif  /* PURDUE */
 		    }
 
 		    x1 = max(pt1.x, pbox->x1);
@@ -440,6 +480,7 @@ mfbLineSS(pDrawable, pGC, mode, npt, pptInit)
 	 (ppt->y != pptInit->y) ||
 	 (ppt == pptInit + 1)))
     {
+#ifndef PURDUE
 	pt1 = *ppt;
 
 	nbox = nboxInit;
@@ -469,6 +510,45 @@ mfbLineSS(pDrawable, pGC, mode, npt, pptInit)
 	    else
 		pbox++;
 	}
+#else
+	unsigned int _mask;
+	int _incr,  _rop = ((mfbPrivGC *)(pGC->devPriv))->rop;
+
+	pt1 = *ppt;
+	if (_rop == RROP_BLACK)
+		_mask = rmask[pt1.x & 0x1f];
+	else
+		_mask = mask[pt1.x & 0x1f];
+	_incr = (pt1.y * nlwidth) + (pt1.x >> 5);
+
+	nbox = nboxInit;
+	pbox = pboxInit;
+	while (nbox--)
+	{
+	    if ((pt1.x >= pbox->x1) &&
+		(pt1.y >= pbox->y1) &&
+		(pt1.x <  pbox->x2) &&
+		(pt1.y <  pbox->y2))
+	    {
+		addrl += _incr;
+		switch(_rop)
+		{
+		    case RROP_BLACK:
+		        *addrl &= _mask;
+			break;
+		    case RROP_WHITE:
+		        *addrl |= _mask;
+			break;
+		    case RROP_INVERT:
+		        *addrl ^= _mask;
+			break;
+		}
+		break;
+	    }
+	    else
+		pbox++;
+	}
+#endif  /* PURDUE */
     }
 }
 
@@ -570,23 +650,31 @@ mfbDashLine( pDrawable, pGC, mode, npt, pptInit)
     nptTmp = npt;
     if (mode == CoordModeOrigin)
     {
+#ifndef PURDUE
 	while(nptTmp--)
 	{
 	    ppt->x += xorg;
 	    ppt++->y += yorg;
 	}
+#else
+	Duff(nptTmp, ppt->x += xorg; ppt++->y += yorg );
+#endif  /* PURDUE */
     }
     else
     {
 	ppt->x += xorg;
 	ppt->y += yorg;
 	nptTmp--;
+#ifndef PURDUE
 	while(nptTmp--)
 	{
 	    ppt++;
 	    ppt->x += (ppt-1)->x;
 	    ppt->y += (ppt-1)->y;
 	}
+#else
+	Duff (nptTmp, ppt++; ppt->x += (ppt-1)->x; ppt->y += (ppt-1)->y);
+#endif
     }
 
 
@@ -766,9 +854,15 @@ int *pclip1, *pclip2;
 	    clipDone = 1;
 	    if (swapped)
 	    {
+#ifndef PURDUE
 	        SWAPPT(pt1, pt2, ptTmp);
 	        SWAPINT(oc1, oc2, tmp);
 	        SWAPINT(clip1, clip2, tmp);
+#else
+	        SWAPPT(pt1, pt2);
+	        SWAPINT(oc1, oc2);
+	        SWAPINT(clip1, clip2);
+#endif  /* PURDUE */
 	    }
         }
         else /* have to clip */
@@ -776,9 +870,15 @@ int *pclip1, *pclip2;
 	    /* only clip one point at a time */
 	    if (!oc1)
 	    {
+#ifndef PURDUE
 	        SWAPPT(pt1, pt2, ptTmp);
 	        SWAPINT(oc1, oc2, tmp);
 	        SWAPINT(clip1, clip2, tmp);
+#else
+	        SWAPPT(pt1, pt2);
+	        SWAPINT(oc1, oc2);
+	        SWAPINT(clip1, clip2);
+#endif  /* PURDUE */
 	        swapped = !swapped;
 	    }
     

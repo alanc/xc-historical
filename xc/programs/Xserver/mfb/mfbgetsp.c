@@ -1,3 +1,4 @@
+/* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -21,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgetsp.c,v 1.19 88/08/14 16:57:55 rws Exp $ */
+/* $XConsortium: mfbgetsp.c,v 1.20 88/09/06 14:53:35 jim Exp $ */
 #include "X.h"
 #include "Xmd.h"
 
@@ -110,8 +111,12 @@ mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
 
 	if (srcBit + w <= 32) 
 	{ 
+#ifndef PURDUE
 	    getbits(psrc, srcBit, w, tmpSrc);
 	    putbits(tmpSrc, 0, w, pdst); 
+#else
+	    getandputbits0(psrc, srcBit, w, pdst);
+#endif  /* PURDUE */
 	    pdst++;
 	} 
 	else 
@@ -127,12 +132,19 @@ mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
 	    srcStartOver = srcBit + nstart > 31;
 	    if (startmask) 
 	    { 
+#ifndef PURDUE
 		getbits(psrc, srcBit, nstart, tmpSrc);
 		putbits(tmpSrc, 0, nstart, pdst);
+#else
+		getandputbits0(psrc, srcBit, nstart, pdst);
+#endif  /* PURDUE */
 		if(srcStartOver)
 		    psrc++;
 	    } 
 	    nl = nlMiddle; 
+#if defined(PURDUE) && defined(FASTPUTBITS)
+	    Duff(nl, putbits(*psrc, nstart, 32, pdst); psrc++; pdst++;);
+#else
 	    while (nl--) 
 	    { 
 		tmpSrc = *psrc;
@@ -140,10 +152,15 @@ mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
 		psrc++;
 		pdst++;
 	    } 
+#endif
 	    if (endmask) 
 	    { 
+#ifndef PURDUE
 		getbits(psrc, 0, nend, tmpSrc);
 		putbits(tmpSrc, nstart, nend, pdst);
+#else
+		putbits(*psrc, nstart, nend, pdst);
+#endif  /* PURDUE */
 		if(nstart + nend > 32)
 		    pdst++;
 	    } 

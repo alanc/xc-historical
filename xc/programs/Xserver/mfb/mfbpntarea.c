@@ -1,3 +1,4 @@
+/* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -21,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpntarea.c,v 1.5 87/09/11 07:48:36 toddb Exp $ */
+/* $XConsortium: mfbpntarea.c,v 1.6 88/09/06 14:53:40 jim Exp $ */
 #include "X.h"
 
 #include "windowstr.h"
@@ -99,11 +100,15 @@ MFBSOLIDFILLAREA(pDraw, nbox, pbox, alu, nop)
 	{
 	    maskpartialbits(pbox->x1, w, startmask);
 	    nlwExtra = nlwidth;
+#ifndef PURDUE
 	    while (h--)
 	    {
 		*p OPEQ startmask;
 		p += nlwExtra;
 	    }
+#else
+	    Duff(h, *p OPEQ startmask; p += nlwExtra);
+#endif
 	}
 	else
 	{
@@ -118,8 +123,12 @@ MFBSOLIDFILLAREA(pDraw, nbox, pbox, alu, nop)
 		    nlw = nlwMiddle;
 		    *p OPEQ startmask;
 		    p++;
+#ifndef PURDUE
 		    while (nlw--)
 			*p++ EQWHOLEWORD;
+#else
+		    Duff(nlw, *p++ EQWHOLEWORD);
+#endif  /* PURDUE */
 		    *p OPEQ endmask;
 		    p += nlwExtra;
 		}
@@ -132,8 +141,12 @@ MFBSOLIDFILLAREA(pDraw, nbox, pbox, alu, nop)
 		    nlw = nlwMiddle;
 		    *p OPEQ startmask;
 		    p++;
+#ifndef PURDUE
 		    while (nlw--)
 			*p++ EQWHOLEWORD;
+#else
+		    Duff(nlw, *p++ EQWHOLEWORD);
+#endif  /* PURDUE */
 		    p += nlwExtra;
 		}
 	    }
@@ -142,8 +155,12 @@ MFBSOLIDFILLAREA(pDraw, nbox, pbox, alu, nop)
 		while (h--)
 		{
 		    nlw = nlwMiddle;
+#ifndef PURDUE
 		    while (nlw--)
 			*p++ EQWHOLEWORD;
+#else
+		Duff(nlw, *p++ EQWHOLEWORD);
+#endif  /* PURDUE */
 		    *p OPEQ endmask;
 		    p += nlwExtra;
 		}
@@ -153,8 +170,12 @@ MFBSOLIDFILLAREA(pDraw, nbox, pbox, alu, nop)
 		while (h--)
 		{
 		    nlw = nlwMiddle;
+#ifndef PURDUE
 		    while (nlw--)
 			*p++ EQWHOLEWORD;
+#else
+		Duff(nlw, *p++ EQWHOLEWORD);
+#endif  /* PURDUE */
 		    p += nlwExtra;
 		}
 	    }
@@ -257,11 +278,15 @@ MFBSTIPPLEFILLAREA(pDraw, nbox, pbox, alu, pstipple)
 		    nlw = nlwMiddle;
 		    *p OPEQ (srcpix & startmask);
 		    p++;
+#ifndef PURDUE
 		    while (nlw--)
 		    {
 			*p OPEQ srcpix;
 			p++;
 		    }
+#else
+		    Duff (nlw, *p++ OPEQ srcpix);
+#endif  /* PURDUE */
 		    *p OPEQ (srcpix & endmask);
 		    p += nlwExtra;
 		}
@@ -276,11 +301,15 @@ MFBSTIPPLEFILLAREA(pDraw, nbox, pbox, alu, pstipple)
 		    nlw = nlwMiddle;
 		    *p OPEQ (srcpix & startmask);
 		    p++;
+#ifndef PURDUE
 		    while (nlw--)
 		    {
 			*p OPEQ srcpix;
 			p++;
 		    }
+#else
+		    Duff(nlw, *p++ OPEQ srcpix);
+#endif  /* PURDUE */
 		    p += nlwExtra;
 		}
 	    }
@@ -291,11 +320,15 @@ MFBSTIPPLEFILLAREA(pDraw, nbox, pbox, alu, pstipple)
 		    srcpix = psrc[iy];
 		    iy = ++iy < tileHeight ? iy : 0;
 		    nlw = nlwMiddle;
+#ifndef PURDUE
 		    while (nlw--)
 		    {
 			*p OPEQ srcpix;
 			p++;
 		    }
+#else
+		    Duff(nlw, *p++ OPEQ srcpix);
+#endif  /* PURDUE */
 		    *p OPEQ (srcpix & endmask);
 		    p += nlwExtra;
 		}
@@ -307,11 +340,15 @@ MFBSTIPPLEFILLAREA(pDraw, nbox, pbox, alu, pstipple)
 		    srcpix = psrc[iy];
 		    iy = ++iy < tileHeight ? iy : 0;
 		    nlw = nlwMiddle;
+#ifndef PURDUE
 		    while (nlw--)
 		    {
 			*p OPEQ srcpix;
 			p++;
 		    }
+#else
+		    Duff(nlw, *p++ OPEQ srcpix);
+#endif  /* PURDUE */
 		    p += nlwExtra;
 		}
 	    }

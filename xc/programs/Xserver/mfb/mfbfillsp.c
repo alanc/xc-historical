@@ -1,3 +1,4 @@
+/* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -21,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbfillsp.c,v 1.32 88/08/07 14:13:46 rws Exp $ */
+/* $XConsortium: mfbfillsp.c,v 1.33 88/09/06 14:53:59 jim Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "gcstruct.h"
@@ -123,8 +124,12 @@ void mfbBlackSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		maskbits(ppt->x, *pwidth, startmask, endmask, nlmiddle);
 		if (startmask)
 		    *addrl++ &= ~startmask;
+#ifndef PURDUE
 		while (nlmiddle--)
 		    *addrl++ = 0x0;
+#else
+		Duff (nlmiddle, *addrl++ = 0x0);
+#endif
 		if (endmask)
 		    *addrl &= ~endmask;
 	    }
@@ -207,8 +212,12 @@ void mfbWhiteSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		maskbits(ppt->x, *pwidth, startmask, endmask, nlmiddle);
 		if (startmask)
 		    *addrl++ |= startmask;
+#ifndef PURDUE
 		while (nlmiddle--)
 		    *addrl++ = 0xffffffff;
+#else
+		Duff (nlmiddle, *addrl++ = 0xffffffff);
+#endif
 		if (endmask)
 		    *addrl |= endmask;
 	    }
@@ -291,8 +300,12 @@ void mfbInvertSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		maskbits(ppt->x, *pwidth, startmask, endmask, nlmiddle);
 		if (startmask)
 		    *addrl++ ^= startmask;
+#ifndef PURDUE
 		while (nlmiddle--)
 		    *addrl++ ^= 0xffffffff;
+#else
+		Duff (nlmiddle, *addrl++ ^= 0xffffffff);
+#endif  /* PURDUE */
 		if (endmask)
 		    *addrl ^= endmask;
 	    }
@@ -382,8 +395,12 @@ int fSorted;
 	    maskbits(ppt->x, *pwidth, startmask, endmask, nlmiddle);
 	    if (startmask)
 		*addrl++ |= (src & startmask);
+#ifndef PURDUE
 	    while (nlmiddle--)
 		*addrl++ |= src;
+#else
+	    Duff (nlmiddle, *addrl++ |= src);
+#endif  /* PURDUE */
 	    if (endmask)
 		*addrl |= (src & endmask);
         }
@@ -472,8 +489,12 @@ int fSorted;
 	    maskbits(ppt->x, *pwidth, startmask, endmask, nlmiddle);
 	    if (startmask)
 		*addrl++ &= ~(src & startmask);
+#ifndef PURDUE
 	    while (nlmiddle--)
 		*addrl++ &= ~src;
+#else
+	    Duff (nlmiddle, *addrl++ &= ~src);
+#endif  /* PURDUE */
 	    if (endmask)
 		*addrl &= ~(src & endmask);
         }
@@ -562,8 +583,12 @@ int fSorted;
 	    maskbits(ppt->x, *pwidth, startmask, endmask, nlmiddle);
 	    if (startmask)
 		*addrl++ ^= (src & startmask);
+#ifndef PURDUE
 	    while (nlmiddle--)
 		*addrl++ ^= src;
+#else
+	    Duff(nlmiddle, *addrl++ ^= src);
+#endif  /* PURDUE */
 	    if (endmask)
 		*addrl ^= (src & endmask);
         }
@@ -852,16 +877,24 @@ int fSorted;
 		    */
 		    w = min(min(tileWidth - rem, width), BITMAP_SCANLINE_UNIT);
 		    endinc = rem / BITMAP_SCANLINE_UNIT;
+#ifndef PURDUE
 		    getbits(psrc + endinc, rem & 0x1f, w, tmpSrc);
 		    putbitsrop(tmpSrc, (x & 0x1f), w, pdst, rop);
+#else
+		    getandputrop((psrc+endinc), (rem&0x1f), (x & 0x1f), w, pdst, rop);
+#endif
 		    if((x & 0x1f) + w >= 0x20)
 			pdst++;
 		}
 		else if(((x & 0x1f) + w) < 32)
 		{
 		    /* doing < 32 bits is easy, and worth special-casing */
+#ifndef PURDUE
 		    getbits(psrc, 0, w, tmpSrc);
 		    putbitsrop(tmpSrc, x & 0x1f, w, pdst, rop);
+#else
+		    putbitsrop(*psrc, x & 0x1f, w, pdst, rop);
+#endif
 		}
 		else
 		{
@@ -883,8 +916,12 @@ int fSorted;
 
 		    if(startmask)
 		    {
+#ifndef PURDUE
 			getbits(psrc, 0, nstart, tmpSrc);
 			putbitsrop(tmpSrc, (x & 0x1f), nstart, pdst, rop);
+#else
+			putbitsrop(*psrc, (x & 0x1f), nstart, pdst, rop);
+#endif  /* PURDUE */
 			pdst++;
 			if(srcStartOver)
 			    psrc++;
@@ -892,15 +929,23 @@ int fSorted;
 		     
 		    while(nlMiddle--)
 		    {
+#ifndef PURDUE
 			    getbits(psrc, nstart, 32, tmpSrc);
 			    *pdst = DoRop(rop, tmpSrc, *pdst);
+#else  /* PURDUE */
+			    getandputrop0(psrc, nstart, 32, pdst, rop);
+#endif  /* PURDUE */
 			    pdst++;
 			    psrc++;
 		    }
 		    if(endmask)
 		    {
+#ifndef PURDUE
 			getbits(psrc, nstart, nend, tmpSrc);
 			putbitsrop(tmpSrc, 0, nend, pdst, rop);
+#else
+			getandputrop0(psrc, nstart, nend, pdst, rop);
+#endif  /* PURDUE */
 		    }
 		 }
 		 x += w;
@@ -1013,8 +1058,13 @@ int fSorted;
 		    */
 		    w = min(min(tileWidth - rem, width), BITMAP_SCANLINE_UNIT);
 		    endinc = rem / BITMAP_SCANLINE_UNIT;
+#ifndef PURDUE
 		    getbits(psrc + endinc, rem & 0x1f, w, tmpSrc);
-		    putbitsrrop(tmpSrc, (x & 0x1f), w, pdst, rop);
+		    putbitsrop(tmpSrc, (x & 0x1f), w, pdst, rop);
+#else
+		    getandputrop((psrc + endinc), (rem & 0x1f), (x & 0x1f),
+				 w, pdst, rop)
+#endif
 		    if((x & 0x1f) + w >= 0x20)
 			pdst++;
 		}
@@ -1022,8 +1072,12 @@ int fSorted;
 		else if(((x & 0x1f) + w) < 32)
 		{
 		    /* doing < 32 bits is easy, and worth special-casing */
+#ifndef PURDUE
 		    getbits(psrc, 0, w, tmpSrc);
 		    putbitsrrop(tmpSrc, x & 0x1f, w, pdst, rop);
+#else
+		    putbitsrrop(*psrc, x & 0x1f, w, pdst, rop);
+#endif  /* PURDUE */
 		}
 		else
 		{
@@ -1045,8 +1099,12 @@ int fSorted;
 
 		    if(startmask)
 		    {
+#ifndef PURDUE
 			getbits(psrc, 0, nstart, tmpSrc);
 			putbitsrrop(tmpSrc, (x & 0x1f), nstart, pdst, rop);
+#else
+			putbitsrrop(*psrc, (x & 0x1f), nstart, pdst, rop);
+#endif
 			pdst++;
 			if(srcStartOver)
 			    psrc++;
@@ -1054,15 +1112,23 @@ int fSorted;
 		     
 		    while(nlMiddle--)
 		    {
+#ifndef PURDUE
 			    getbits(psrc, nstart, 32, tmpSrc);
 			    *pdst = DoRRop(rop, tmpSrc, *pdst);
+#else
+			    getandputrrop0(psrc, nstart, 32, pdst, rop);
+#endif
 			    pdst++;
 			    psrc++;
 		    }
 		    if(endmask)
 		    {
+#ifndef PURDUE
 			getbits(psrc, nstart, nend, tmpSrc);
 			putbitsrrop(tmpSrc, 0, nend, pdst, rop);
+#else
+			getandputrrop0(psrc, nstart, nend, pdst, rop);
+#endif  /* PURDUE */
 		    }
 		 }
 		 x += w;

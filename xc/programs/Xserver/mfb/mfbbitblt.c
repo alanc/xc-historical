@@ -1,3 +1,4 @@
+/* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -21,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbitblt.c,v 1.55 88/10/15 10:47:28 rws Exp $ */
+/* $XConsortium: mfbbitblt.c,v 1.56 88/10/15 17:26:25 rws Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 
@@ -51,7 +52,25 @@ destination.  this is a simple translation.
     go do the multiple rectangle copies
     do graphics exposures
 */
-
+/*  #ifdef PURDUE!!!!
+ ** Optimized for drawing pixmaps into windows, especially when drawing into
+ ** unobscured windows.  Calls to the general-purpose region code were
+ ** replaced with rectangle-to-rectangle clipping comparisions.  This is
+ ** possible, since the pixmap is a single rectangle.  In an unobscured
+ ** window, the destination clip is also a single rectangle, and region
+ ** code can be avoided entirely.  This is a big savings, since the region
+ ** code uses XAlloc() and makes many function calls.
+ **
+ ** In addition, if source is a pixmap, there is no need to call the
+ ** expensive miHandleExposures() routine.  Instead, we simply return NULL.
+ **
+ ** Previously, drawing a pixmap into an unobscured window executed at least
+ ** 8 XAlloc()'s, 30 function calls, and hundreds of lines of code.
+ **
+ ** Now, the same operation requires no XAlloc()'s, no region function calls,
+ ** and much less overhead.  Nice for drawing lots of small pixmaps.
+ */
+ 
 RegionPtr
 mfbCopyArea(pSrcDrawable, pDstDrawable,
 	    pGC, srcx, srcy, width, height, dstx, dsty)
@@ -62,7 +81,9 @@ int srcx, srcy;
 int width, height;
 int dstx, dsty;
 {
+#ifndef PURDUE
     BoxRec srcBox;
+#endif PURDUE
     RegionPtr prgnSrcClip;	/* may be a new region, or just a copy */
     int realSrcClip = 0;	/* non-0 if we've created a src clip */
 
@@ -75,6 +96,13 @@ int dstx, dsty;
     register int dy;
     xRectangle origSource;
     DDXPointRec origDest;
+
+#ifdef PURDUE
+    RegionRec fastRegion;	/* special region for clipping to 1 box */
+    BoxRec fastBox;
+    int fastClip = 0;		/* for fast clipping with pixmap source */
+    int fastExpose = 0;		/* for fast exposures with pixmap source */
+#endif PURDUE
 
     origSource.x = srcx;
     origSource.y = srcy;
@@ -93,6 +121,7 @@ int dstx, dsty;
 	    prgnSrcClip = ((mfbPrivGC *)(pGC->devPriv))->pCompositeClip;
 	}
 	else
+#ifndef PURDUE
 	{
 	    BoxRec box;
 
@@ -104,6 +133,31 @@ int dstx, dsty;
 	    prgnSrcClip = (*pGC->pScreen->RegionCreate)(&box, 1);
 	    realSrcClip = 1;
 	}
+#else PURDUE
+	{
+	    /* Pixmap sources generate simple exposure events */
+	    fastExpose = 1;
+
+	    /* Pixmap is just one clipping rectangle so we can avoid
+	       allocating a full-blown region. */
+	    fastClip = 1;
+
+	    fastBox.x1 = srcx;
+	    fastBox.y1 = srcy;
+	    fastBox.x2 = srcx + width;
+	    fastBox.y2 = srcy + height;
+	    
+	    /* Left and top are already clipped, so clip right and bottom */
+	    if (fastBox.x2 > ((PixmapPtr)pSrcDrawable)->width)
+	      fastBox.x2 = ((PixmapPtr)pSrcDrawable)->width;
+	    if (fastBox.y2 > ((PixmapPtr)pSrcDrawable)->height)
+	      fastBox.y2 = ((PixmapPtr)pSrcDrawable)->height;
+
+	    /* Initialize the fast region */
+	    fastRegion.numRects = 1;
+	    fastRegion.rects = &fastBox;
+	}
+#endif PURDUE
     }
     else
     {
@@ -128,19 +182,30 @@ int dstx, dsty;
 	}
     }
 
-    srcBox.x1 = srcx;
-    srcBox.y1 = srcy;
-    srcBox.x2 = srcx + width;
-    srcBox.y2 = srcy + height;
+#ifdef PURDUE
+    /* Don't create a source region if we are doing a fast clip */
+    if (!fastClip)
+#endif PURDUE
+    {
+	BoxRec srcBox;
 
-    prgnDst = (*pGC->pScreen->RegionCreate)(&srcBox, 1);
-    (*pGC->pScreen->Intersect)(prgnDst, prgnDst, prgnSrcClip);
-
+	srcBox.x1 = srcx;
+	srcBox.y1 = srcy;
+	srcBox.x2 = srcx + width;
+	srcBox.y2 = srcy + height;
+	
+	prgnDst = (*pGC->pScreen->RegionCreate)(&srcBox, 1);
+	(*pGC->pScreen->Intersect)(prgnDst, prgnDst, prgnSrcClip);
+    }
+    
     if (pDstDrawable->type == DRAWABLE_WINDOW)
     {
 	if (!((WindowPtr)pDstDrawable)->realized)
 	{
-	    (*pGC->pScreen->RegionDestroy)(prgnDst);
+#ifdef PURDUE
+	    if (!fastClip)
+#endif
+		(*pGC->pScreen->RegionDestroy)(prgnDst);
 	    if (realSrcClip)
 		(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
 	    return NULL;
@@ -152,18 +217,76 @@ int dstx, dsty;
     dx = srcx - dstx;
     dy = srcy - dsty;
 
+#ifndef PURDUE
     /* clip the shape of the dst to the destination composite clip */
     (*pGC->pScreen->TranslateRegion)(prgnDst, -dx, -dy);
     (*pGC->pScreen->Intersect)(prgnDst,
-		prgnDst,
-		((mfbPrivGC *)(pGC->devPriv))->pCompositeClip);
+			       prgnDst,
+			       ((mfbPrivGC *)(pGC->devPriv))->pCompositeClip);
 
+#else PURDUE
+    /* Translate and clip the dst to the destination composite clip */
+    if (fastClip)
+    {
+        /* Translate the region directly */
+        fastBox.x1 -= dx;
+        fastBox.x2 -= dx;
+        fastBox.y1 -= dy;
+        fastBox.y2 -= dy;
+
+	/* If the destination composite clip is one rectangle we can
+	   do the clip directly.  Otherwise we have to create a full
+	   blown region and call intersect */
+        if (((mfbPrivGC *)(pGC->devPriv))->pCompositeClip->numRects == 1)
+        {
+	    BoxPtr pBox = ((mfbPrivGC *)(pGC->devPriv))->pCompositeClip->rects;
+	  
+	    if (fastBox.x1 < pBox->x1) fastBox.x1 = pBox->x1;
+	    if (fastBox.x2 > pBox->x2) fastBox.x2 = pBox->x2;
+	    if (fastBox.y1 < pBox->y1) fastBox.y1 = pBox->y1;
+	    if (fastBox.y2 > pBox->y2) fastBox.y2 = pBox->y2;
+
+	    /* Check to see if the region is empty */
+	    if (fastBox.x1 >= fastBox.x2 || fastBox.y1 >= fastBox.y2)
+	        fastRegion.numRects = 0;
+
+	    /* Use the fast region for all future computation.
+	       The following code insures that RegionDestroy is not
+	       called on it. */
+	    prgnDst = &fastRegion;
+	}
+        else
+	{
+	    /* We must turn off fastClip now, since we must create
+	       a full blown region.  It is intersected with the
+	       composite clip below. */
+	    fastClip = 0;
+	    prgnDst = (*pGC->pScreen->RegionCreate)(&fastBox,1);
+	}
+    }
+    else
+    {
+        (*pGC->pScreen->TranslateRegion)(prgnDst, -dx, -dy);
+    }
+
+    if (!fastClip)
+    {
+	(*pGC->pScreen->Intersect)(prgnDst,
+				   prgnDst,
+				 ((mfbPrivGC *)(pGC->devPriv))->pCompositeClip);
+    }
+#endif PURDUE
+
+    /* Do bit blitting */
     if (prgnDst->numRects)
     {
 	if(!(pptSrc = (DDXPointPtr)ALLOCATE_LOCAL( prgnDst->numRects *
 						   sizeof(DDXPointRec))))
 	{
-	    (*pGC->pScreen->RegionDestroy)(prgnDst);
+#ifdef PURDUE
+	    if (!fastClip)
+#endif PURDUE
+		(*pGC->pScreen->RegionDestroy)(prgnDst);
 	    if (realSrcClip)
 		(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
 	    return NULL;
@@ -182,14 +305,23 @@ int dstx, dsty;
     }
 
     prgnExposed = NULL;
-    if (((mfbPrivGC *)(pGC->devPriv))->fExpose)
-        prgnExposed =
- 	  miHandleExposures(pSrcDrawable, pDstDrawable, pGC,
-		            origSource.x, origSource.y,
-		            origSource.width, origSource.height,
-		            origDest.x, origDest.y, 0);
-		
-    (*pGC->pScreen->RegionDestroy)(prgnDst);
+    if (((mfbPrivGC *)(pGC->devPriv))->fExpose) {
+#ifdef PURDUE
+        /* Pixmap sources generate a NoExposed (we return NULL to do this) */
+        if (!fastExpose)
+#endif PURDUE
+	    prgnExposed =
+		miHandleExposures(pSrcDrawable, pDstDrawable, pGC,
+				  origSource.x, origSource.y,
+				  origSource.width, origSource.height,
+				  origDest.x, origDest.y, 0);
+	}
+#ifdef PURDUE
+    
+    /* Destroy any created regions */
+    if (!fastClip)
+#endif PURDUE
+	(*pGC->pScreen->RegionDestroy)(prgnDst);
     if (realSrcClip)
 	(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
     return prgnExposed;
@@ -243,6 +375,8 @@ translated.
     } \
 }
 
+#ifndef PURDUE
+
 #define longRop(alu,from,to,count)    \
 { \
     switch (count & 7) { \
@@ -267,7 +401,6 @@ translated.
     } \
 }
 
-
 #define getunalignedword(psrc, x, dst) \
 { \
     int m; \
@@ -275,6 +408,29 @@ translated.
     (dst) = (SCRLEFT(*(psrc), (x)) & endtab[m]) | \
         (SCRRIGHT(*((psrc)+1), m) & starttab[m]); \
 }
+
+#else  /* PURDUE */
+#define longRop(alu,from,to,count) \
+    while (count--) \
+	{ \
+	    DoRop(*to, alu, *from++, *to); to++; \
+	}
+
+#ifdef FASTGETBITS
+#define getunalignedword(psrc, x, dst) { \
+	register int _tmp; \
+	FASTGETBITS(psrc, x, 32, _tmp); \
+	dst = _tmp; \
+}
+#else
+#define getunalignedword(psrc, x, dst) \
+{ \
+    dst = (SCRLEFT((unsigned) *(psrc), (x))) | \
+	  (SCRRIGHT((unsigned) *((psrc)+1), 32-(x))); \
+}
+#endif  /* FASTGETBITS */
+
+#endif  /* PURDUE */
 
 mfbDoBitblt(pSrcDrawable, pDstDrawable, alu, prgnDst, pptSrc)
 DrawablePtr pSrcDrawable;
@@ -491,8 +647,12 @@ DDXPointPtr pptSrc;
 
 	        while(h--)
 	        {
+#ifndef PURDUE
 		    getbits(psrc, srcBit, w, tmpSrc)
 		    putbits(tmpSrc, dstBit, w, pdst)
+#else
+		    getandputbits(psrc, srcBit, dstBit, w, pdst)
+#endif /* PURDUE */
 		    pdst += widthDst;
 		    psrc += widthSrc;
 	        }
@@ -524,8 +684,13 @@ DDXPointPtr pptSrc;
 
 		        if (startmask)
 		        {
+#ifndef PURDUE
 			    getbits(psrc, (pptSrc->x & 0x1f), nstart, tmpSrc)
 			    putbits(tmpSrc, (pbox->x1 & 0x1f), nstart, pdst)
+#else
+			    getandputbits(psrc, (pptSrc->x & 0x1f),
+					  (pbox->x1 & 0x1f), nstart, pdst)
+#endif /* PURDUE */
 			    pdst++;
 			    if (srcStartOver)
 			        psrc++;
@@ -552,8 +717,12 @@ DDXPointPtr pptSrc;
 
 		        if (endmask)
 		        {
+#ifndef PURDUE
 			    getbits(psrc, xoffSrc, nend, tmpSrc)
 			    putbits(tmpSrc, 0, nend, pdst)
+#else
+			    getandputbits0(psrc, xoffSrc, nend, pdst);
+#endif  /* PURDUE */
 		        }
 
 		        pdstLine += widthDst;
@@ -577,12 +746,21 @@ DDXPointPtr pptSrc;
 
 		        if (endmask)
 		        {
+#ifndef PURDUE
 			    getbits(psrc, xoffSrc, nend, tmpSrc)
 			    putbits(tmpSrc, 0, nend, pdst)
+#else
+			    getandputbits0(psrc, xoffSrc, nend, pdst);
+#endif
 		        }
 
+#ifndef PURDUE
 		        nl = nlMiddle + 1;
 		        while (--nl)
+#else
+			nl = nlMiddle;
+			while (nl--)
+#endif  /* PURDUE */
 		        {
 			    --psrc;
 			    getunalignedword (psrc, xoffSrc, *--pdst)
@@ -593,8 +771,12 @@ DDXPointPtr pptSrc;
 			    if (srcStartOver)
 			        --psrc;
 			    --pdst;
+#ifndef PURDUE
 			    getbits(psrc, (pptSrc->x & 0x1f), nstart, tmpSrc)
 			    putbits(tmpSrc, (pbox->x1 & 0x1f), nstart, pdst)
+#else
+			    getandputbits(psrc, (pptSrc->x & 0x1f), (pbox->x1 & 0x1f), nstart, pdst)
+#endif /* PURDUE */
 		        }
 
 		        pdstLine += widthDst;
@@ -639,8 +821,12 @@ DDXPointPtr pptSrc;
 
 	        while(h--)
 	        {
+#ifndef PURDUE
 		    getbits(psrc, srcBit, w, tmpSrc)
 		    putbitsrop(tmpSrc, dstBit, w, pdst, alu)
+#else
+		    getandputrop(psrc, srcBit, dstBit, w, pdst, alu)
+#endif  /* PURDUE */
 		    pdst += widthDst;
 		    psrc += widthSrc;
 	        }
@@ -672,9 +858,14 @@ DDXPointPtr pptSrc;
 
 		        if (startmask)
 		        {
+#ifndef PURDUE
 			    getbits(psrc, (pptSrc->x & 0x1f), nstart, tmpSrc)
 			    putbitsrop(tmpSrc, (pbox->x1 & 0x1f), nstart, pdst,
 				       alu)
+#else
+			    getandputrop(psrc, (pptSrc->x & 0x1f), 
+					 (pbox->x1 & 0x1f), nstart, pdst, alu)
+#endif /* PURDUE */
 			    pdst++;
 			    if (srcStartOver)
 			        psrc++;
@@ -694,15 +885,24 @@ DDXPointPtr pptSrc;
 			    while (--nl)
 		            {
 				getunalignedword (psrc, xoffSrc, tmpSrc)
+#ifndef PURDUE
 				*pdst++ = DoRop (alu, tmpSrc, *pdst);
+#else
+				DoRop (*pdst, alu, tmpSrc, *pdst);
+				pdst++;
+#endif
 				psrc++;
 			    }
 			}
 
 		        if (endmask)
 		        {
+#ifndef PURDUE
 			    getbits(psrc, xoffSrc, nend, tmpSrc)
 			    putbitsrop(tmpSrc, 0, nend, pdst, alu)
+#else
+			    getandputrop0(psrc, xoffSrc, nend, pdst, alu);
+#endif  /* PURDUE */
 		        }
 
 		        pdstLine += widthDst;
@@ -726,8 +926,12 @@ DDXPointPtr pptSrc;
 
 		        if (endmask)
 		        {
+#ifndef PURDUE
 			    getbits(psrc, xoffSrc, nend, tmpSrc)
 			    putbitsrop(tmpSrc, 0, nend, pdst, alu)
+#else
+			    getandputrop0(psrc, xoffSrc, nend, pdst, alu);
+#endif  /* PURDUE */
 		        }
 
 		        nl = nlMiddle + 1;
@@ -736,7 +940,11 @@ DDXPointPtr pptSrc;
 			    --psrc;
 			    --pdst;
 			    getunalignedword(psrc, xoffSrc, tmpSrc)
+#ifndef PURDUE
 			    *pdst = DoRop(alu, tmpSrc, *pdst);
+#else
+			    DoRop(*pdst, alu, tmpSrc, *pdst);
+#endif  /* PURDUE */
 		        }
 
 		        if (startmask)
@@ -744,9 +952,14 @@ DDXPointPtr pptSrc;
 			    if (srcStartOver)
 			        --psrc;
 			    --pdst;
+#ifndef PURDUE
 			    getbits(psrc, (pptSrc->x & 0x1f), nstart, tmpSrc)
 			    putbitsrop(tmpSrc, (pbox->x1 & 0x1f), nstart, pdst,
 				       alu)
+#else
+			    getandputrop(psrc, (pptSrc->x & 0x1f), 
+					 (pbox->x1 & 0x1f), nstart, pdst, alu)
+#endif /* PURDUE */
 		        }
 
 		        pdstLine += widthDst;

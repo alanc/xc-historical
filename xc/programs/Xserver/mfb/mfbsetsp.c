@@ -1,3 +1,4 @@
+/* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -21,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbsetsp.c,v 1.21 87/09/07 19:08:09 toddb Exp $ */
+/* $XConsortium: mfbsetsp.c,v 1.22 88/09/06 14:53:37 jim Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -73,8 +74,12 @@ mfbSetScanline(y, xOrigin, xStart, xEnd, psrc, alu, pdstBase, widthDst)
 
     if (dstBit + w <= 32) 
     { 
+#ifndef PURDUE
 	getbits(psrc, offSrc, w, tmpSrc);
-	putbitsrop(tmpSrc, dstBit, w, pdst, alu); 
+	putbitsrop(tmpSrc, dstBit, w, pdst, alu);
+#else
+	getandputrop(psrc, offSrc, dstBit, w, pdst, alu)
+#endif  /* PURDUE */
     } 
     else 
     { 
@@ -90,8 +95,12 @@ mfbSetScanline(y, xOrigin, xStart, xEnd, psrc, alu, pdstBase, widthDst)
 	    nend = 0; 
 	if (startmask) 
 	{ 
+#ifndef PURDUE
 	    getbits(psrc, offSrc, nstart, tmpSrc);
 	    putbitsrop(tmpSrc, dstBit, nstart, pdst, alu);
+#else
+	    getandputrop(psrc, offSrc, dstBit, nstart, pdst, alu)
+#endif  /* PURDUE */	    
 	    pdst++; 
 	    offSrc += nstart;
 	    if (offSrc > 31)
@@ -104,14 +113,22 @@ mfbSetScanline(y, xOrigin, xStart, xEnd, psrc, alu, pdstBase, widthDst)
 	while (nl--) 
 	{ 
 	    getbits(psrc, offSrc, 32, tmpSrc);
+#ifndef PURDUE
 	    *pdst = DoRop(alu, tmpSrc, *pdst); 
+#else  /* PURDUE */
+	    DoRop(*pdst, alu, tmpSrc, *pdst); 
+#endif  /* PURDUE */
 	    pdst++; 
 	    psrc++; 
 	} 
 	if (endmask) 
 	{ 
+#ifndef PURDUE
 	    getbits(psrc, offSrc, nend, tmpSrc);
 	    putbitsrop(tmpSrc, 0, nend, pdst, alu);
+#else
+	    getandputrop0(psrc, offSrc, nend, pdst, alu);
+#endif  /* PURDUE */
 	} 
 	 
     } 

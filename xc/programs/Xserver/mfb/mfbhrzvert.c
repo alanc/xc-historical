@@ -1,3 +1,4 @@
+/* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -21,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbhrzvert.c,v 1.8 87/09/11 07:48:42 toddb Exp $ */
+/* $XConsortium: mfbhrzvert.c,v 1.9 88/09/06 14:53:43 jim Exp $ */
 #include "X.h"
 
 #include "gc.h"
@@ -84,8 +85,12 @@ int len;		/* length of line */
         {
 	    if (startmask)
 		*addrl++ &= ~startmask;
+#ifndef PURDUE
 	    while (nlmiddle--)
 		*addrl++ = 0x0;
+#else
+	    Duff (nlmiddle, *addrl++ = 0x0);
+#endif  /* PURDUE */
 	    if (endmask)
 		*addrl &= ~endmask;
         }
@@ -93,8 +98,12 @@ int len;		/* length of line */
         {
 	    if (startmask)
 		*addrl++ |= startmask;
+#ifndef PURDUE
 	    while (nlmiddle--)
 		*addrl++ = 0xffffffff;
+#else
+	    Duff (nlmiddle, *addrl++ = 0xffffffff);
+#endif  /* PURDUE */
 	    if (endmask)
 		*addrl |= endmask;
         }
@@ -102,8 +111,12 @@ int len;		/* length of line */
         {
 	    if (startmask)
 		*addrl++ ^= startmask;
+#ifndef PURDUE
 	    while (nlmiddle--)
 		*addrl++ ^= 0xffffffff;
+#else
+	    Duff (nlmiddle, *addrl++ ^= 0xffffffff);
+#endif  /* PURDUE */
 	    if (endmask)
 		*addrl ^= endmask;
         }
@@ -136,32 +149,44 @@ register int len;	/* length of line */
     if (rop == RROP_BLACK)
     {
 	bitmask = rmask[x1&0x1f];
+#ifndef PURDUE
 	do
 	{
 	    *addrl &= bitmask;
 	    addrl += nlwidth;
 	}
 	while (--len);
+#else
+        Duff(len, *addrl &= bitmask; addrl += nlwidth );
+#endif  /* PURDUE */
     }
     else if (rop == RROP_WHITE)
     {
 	bitmask = mask[x1&0x1f];
+#ifndef PURDUE
 	do
 	{
 	    *addrl |= bitmask;
 	    addrl += nlwidth;
 	}
 	while (--len);
+#else
+        Duff(len, *addrl |= bitmask; addrl += nlwidth );
+#endif  /* PURDUE */
     }
     else if (rop == RROP_INVERT)
     {
 	bitmask = mask[x1&0x1f];
+#ifndef PURDUE
 	do
 	{
 	    *addrl ^= bitmask;
 	    addrl += nlwidth;
 	}
 	while (--len);
+#else
+        Duff(len, *addrl ^= bitmask; addrl += nlwidth );
+#endif  /* PURDUE */
     }
 }
 

@@ -1,3 +1,4 @@
+/* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
 Copyright 1987 by the Regents of the University of California
@@ -60,12 +61,17 @@ mfbSaveAreas(pPixmap, prgnSave, xorg, yorg)
     
     pBox = prgnSave->rects;
     pPt = pPtsInit;
+#ifndef PURDUE
     for (i = prgnSave->numRects; i > 0; i--) {
 	pPt->x = pBox->x1 + xorg;
 	pPt->y = pBox->y1 + yorg;
 	pPt++;
 	pBox++;
     }
+#else
+    i = prgnSave->numRects;
+    Duff(i, pPt->x = pBox->x1 + xorg; pPt->y = pBox->y1 + yorg; pPt++; pBox++);
+#endif  /* PURDUE */
 
 
     mfbDoBitblt((DrawablePtr)pPixmap->drawable.pScreen->devPrivate,
@@ -112,12 +118,17 @@ mfbRestoreAreas(pPixmap, prgnRestore, xorg, yorg)
     
     pBox = prgnRestore->rects;
     pPt = pPtsInit;
+#ifndef PURDUE
     for (i = prgnRestore->numRects; i > 0; i--) {
 	pPt->x = pBox->x1 - xorg;
 	pPt->y = pBox->y1 - yorg;
 	pPt++;
 	pBox++;
     }
+#else
+    i = prgnRestore->numRects;
+    Duff(i, pPt->x = pBox->x1 - xorg; pPt->y = pBox->y1 - yorg; pPt++; pBox++);
+#endif  /* PURDUE */
 
 
     mfbDoBitblt(pPixmap,
