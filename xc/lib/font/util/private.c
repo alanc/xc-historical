@@ -1,5 +1,5 @@
 /*
- * $XConsortium: private.c,v 1.1 91/05/29 15:27:02 keith Exp $
+ * $XConsortium: private.c,v 1.2 94/02/06 16:47:19 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -53,8 +53,10 @@ _FontSetNewPrivate (pFont, n, ptr)
 	new = (pointer *) xrealloc (pFont->devPrivates, (n + 1) * sizeof (pointer));
 	if (!new)
 	    return FALSE;
-	pFont->maxPrivate = n;
 	pFont->devPrivates = new;
+	/* zero out new, uninitialized privates */
+	while(++pFont->maxPrivate < n)
+	    pFont->devPrivates[pFont->maxPrivate] = (pointer)0;
     }
     pFont->devPrivates[n] = ptr;
     return TRUE;
