@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XPutImage.c,v 11.41 88/01/04 08:59:27 jim Locked $ */
+/* $Header: XPutImage.c,v 11.42 88/02/06 15:41:01 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include <stdio.h>
@@ -513,11 +513,12 @@ SendZImage(dpy, req, image, req_xoffset, req_yoffset,
     unsigned char *src, *dest;
 
     req->leftPad = 0;
-    bytes_per_src = ((long)req->width * image->bits_per_pixel) >> 3;
+    bytes_per_src = ROUNDUP((long)req->width * image->bits_per_pixel, 8) >> 3;
     bytes_per_dest = ROUNDUP((long)req->width * dest_bits_per_pixel,
 			     dest_scanline_pad) >> 3;
     length = bytes_per_dest * req->height;
     req->length += (length + 3) >> 2;
+    /* XXX this won't work when bits_per_pixel is 4 and req_xoffset is odd */
     src = (unsigned char *)image->data +
 	  (req_yoffset * image->bytes_per_line) +
 	  ((req_xoffset * image->bits_per_pixel) >> 3);
