@@ -22,7 +22,9 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.161 87/08/14 22:42:42 swick Locked $ */
+#ifndef lint
+static char rcs_id[] = "$Header: window.c,v 1.162B 87/08/18 20:21:13 swick Exp $";
+#endif lint
 
 #include "X.h"
 #define NEED_REPLIES
@@ -2589,6 +2591,19 @@ MapWindow(pWin, SendExposures, BitsAvailable, SendNotification, client)
             RealizeChildren(pWin->firstChild, client);    
         box = (* pScreen->RegionExtents)(pWin->borderSize);
         anyMarked = MarkSiblingsBelowMe(pWin, box, FALSE);
+
+/* kludge; remove when miregion works! */
+	if (!pParent->parent && 
+	    (box->x1 == pParent->winSize->extents.x1) &&
+	    (box->y1 == pParent->winSize->extents.y1) &&
+	    (box->x2 == pParent->winSize->extents.x2) &&
+	    (box->y2 == pParent->winSize->extents.y2) &&
+	    (pParent->firstChild == pWin)) {
+	       (*pWin->drawable.pScreen->RegionCopy)(pParent->clipList,
+						     pParent->winSize);
+	}
+/* end of kludge */
+
 	(* pScreen->ValidateTree)(pParent, pWin, TRUE, anyMarked);
         if (SendExposures) 
         {
@@ -2712,8 +2727,10 @@ UnmapWindow(pWin, SendExposures, SendNotification, fromConfigure)
         DeleteWindowFromAnyEvents(pWin, FALSE);
         if (pWin->firstChild)
             UnrealizeChildren(pWin->firstChild);
-        (* pWin->drawable.pScreen->ValidateTree)(pParent, pWin, 
+
+	(* pWin->drawable.pScreen->ValidateTree)(pParent, pWin,
 						 TRUE, anyMarked);
+
         if (SendExposures)
         {
             void (* RegionEmpty)();
