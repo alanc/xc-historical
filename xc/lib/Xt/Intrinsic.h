@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.186 93/09/28 17:54:04 kaleb Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.187 94/01/07 15:09:38 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1363,6 +1363,16 @@ extern Widget XtWindowToWidget(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Window 		/* window */
+#endif
+);
+
+extern XtPointer XtGetClassExtension(
+#if NeedFunctionPrototypes
+    WidgetClass		/* object_class */,
+    Cardinal		/* byte_offset */,
+    XrmQuark		/* type */,
+    long		/* version */,
+    Cardinal		/* record_size */
 #endif
 );
 
