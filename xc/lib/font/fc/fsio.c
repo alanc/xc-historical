@@ -1,4 +1,4 @@
-/* $XConsortium: fsio.c,v 1.19 91/07/15 22:42:43 keith Exp $ */
+/* $XConsortium: fsio.c,v 1.20 91/07/19 16:37:48 rws Exp $ */
 /*
  *
  * Copyright 1990 Network Computing Devices
@@ -79,7 +79,6 @@ _fs_name_to_address(servername, inaddr)
     char        hostname[256];
     char       *sp;
     unsigned long hostinetaddr;
-    extern struct hostent *gethostbyname();
     struct hostent *hp;
 
     /* XXX - do any service name lookup to get a hostname */
@@ -582,7 +581,7 @@ _fs_drain_bytes(conn, len)
 #endif
 
     while (len > 0) {
-	if (_fs_read(conn, buf, MIN(len, 128)) < 0)
+	if (_fs_read(conn, buf, (len < 128) ? len : 128) < 0)
 	    return -1;
 	len -= 128;
     }
