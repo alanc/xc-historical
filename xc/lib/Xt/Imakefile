@@ -48,7 +48,6 @@ SRCS = \
 	Event.c \
 	GCManager.c \
 	Geometry.c \
-	Inherit.c \
 	Initialize.c \
 	Intrinsic.c \
 	Manage.c \
@@ -62,7 +61,8 @@ SRCS = \
 	TMparse.c \
 	TMstate.c \
 	Vendor.c \
-	WindowObj.c
+	WindowObj.c \
+	sharedlib.c
 
 OBJS = \
 	Alloc.o \
@@ -96,7 +96,7 @@ OBJS = \
 	Vendor.o \
 	WindowObj.o
 
-UNSHAREDOBJS = Inherit.o
+UNSHAREDOBJS = sharedlib.o
 
 #if SharedLibXt 
 # if DebugLibXt

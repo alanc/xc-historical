@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.133 89/06/19 13:37:12 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.134 89/06/19 14:02:34 jim Exp $";
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 #endif /* lint */
 
@@ -118,11 +118,33 @@ int _XtGetHostname (buf, maxlen)
 }
 
 
+#ifdef SUNSHLIB
+#define _XtInherit __XtInherit
+#endif
+
+void _XtInherit()
+{
+#ifdef SUNSHLIB
+#undef _XtInherit
+#endif
+
+    XtErrorMsg("invalidProcedure","inheritanceProc","XtToolkitError",
+            "Unresolved inheritance operation",
+              (String *)NULL, (Cardinal *)NULL);
+}
+
+
+#ifdef SUNSHLIB
+#define XtToolkitInitialize _XtToolkitInitialize
+#endif
 
 void XtToolkitInitialize()
 {
-
     extern void _XtResourceListInitialize();
+
+#ifdef SUNSHLIB
+#undef XtToolkitInitialize
+#endif
 
     /* Resource management initialization */
     XrmInitialize();
@@ -133,6 +155,7 @@ void XtToolkitInitialize()
     _XtEventInitialize();
     _XtTranslateInitialize();
 }
+
 
 static String XtGetRootDirName(buf)
      String buf;
@@ -443,6 +466,9 @@ void _XtDisplayInitialize(dpy, app, name, classname, urlist, num_urs, argc, argv
  * This routine creates the desired widget and does the "Right Thing" for
  * the toolkit and for window managers.
  */
+#ifdef SUNSHLIB
+#define XtInitialize _XtInitialize
+#endif
 
 Widget XtInitialize(name, classname, urlist, num_urs, argc, argv)
 	char *name;		/* unused in R3 */
@@ -460,6 +486,10 @@ Widget XtInitialize(name, classname, urlist, num_urs, argc, argv)
 	int i;
 	Arg   args[8];
 	Cardinal num_args = 0;
+
+#ifdef SUNSHLIB
+#undef XtInitialize
+#endif
 
 	XtToolkitInitialize();
 
@@ -488,5 +518,4 @@ Widget XtInitialize(name, classname, urlist, num_urs, argc, argv)
 
 	return root;
 }
-
 
