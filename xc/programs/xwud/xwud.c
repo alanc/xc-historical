@@ -1,7 +1,7 @@
 /* 
  * $Locker: dkk $ 
  */ 
-static char	*rcsid = "$Header: xwud.c,v 1.9 87/08/19 21:04:22 dkk Locked $";
+static char	*rcsid = "$Header: xwud.c,v 1.10 87/08/29 21:07:36 dkk Locked $";
 #include <X11/copyright.h>
 
 /* Copyright 1985, 1986, Massachusetts Institute of Technology */
@@ -32,7 +32,7 @@ static char	*rcsid = "$Header: xwud.c,v 1.9 87/08/19 21:04:22 dkk Locked $";
  */
 
 #ifndef lint
-static char *rcsid_xwud_c = "$Header: xwud.c,v 1.9 87/08/19 21:04:22 dkk Locked $";
+static char *rcsid_xwud_c = "$Header: xwud.c,v 1.10 87/08/29 21:07:36 dkk Locked $";
 #endif
 
 #include <X11/Xlib.h>
@@ -50,7 +50,7 @@ extern char *calloc();
 #define ABS(a) (a) < 0 ? -(a) : (a)
 
 #define UBPS (sizeof(short)/2) /* useful bytes per short */
-#define BitmapSize(width, height) (((((width) + 15) >> 3) &~ 1) * (height) * UBPS)
+#define BitmapSize(width, height) (((((width) + 32) >> 3) &~ 1) * (height) * UBPS)
 #define XYPixmapSize(width, height, planes) (BitmapSize(width, height) * (planes))
 #define BZPixmapSize(width, height) ((width) * (height))
 #define WZPixmapSize(width, height) (((width) * (height)) << 1)
