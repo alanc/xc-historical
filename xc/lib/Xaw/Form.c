@@ -1,4 +1,4 @@
-/* $XConsortium: Form.c,v 1.43 91/02/17 15:01:51 converse Exp $ */
+/* $XConsortium: Form.c,v 1.44 91/03/23 17:25:27 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -210,9 +210,11 @@ static void ClassPartInitialize(class)
     WidgetClass class;
 {
     register FormWidgetClass c = (FormWidgetClass)class;
+    register FormWidgetClass super = (FormWidgetClass) 
+	c->core_class.superclass;
 
     if (c->form_class.layout == XtInheritLayout)
-	c->form_class.layout = Layout;
+	c->form_class.layout = super->form_class.layout;
 }
 
 /* ARGSUSED */
