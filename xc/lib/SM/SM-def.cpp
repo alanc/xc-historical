@@ -15,6 +15,8 @@ EXPORTS
  SmcProtocolRevision
  SmcProtocolVersion
  SmcRelease
+ SmcRequestSaveYourself
+ SmcRequestSaveYourselfPhase2
  SmcSaveYourselfDone
  SmcSetErrorHandler
  SmcSetProperties
@@ -30,9 +32,9 @@ EXPORTS
  SmsProtocolRevision
  SmsProtocolVersion
  SmsRegisterClientReply
- SmsRelease
  SmsReturnProperties
+ SmsSaveComplete
  SmsSaveYourself
+ SmsSaveYourselfPhase2
  SmsSetErrorHandler
  SmsShutdownCancelled
- SmsVendor
