@@ -1,7 +1,24 @@
-/* $XConsortium: miscfuncs.c,v 1.1 91/02/07 14:45:16 rws Exp $ */
+/* $XConsortium: miscfuncs.c,v 1.2 91/02/07 16:31:20 rws Exp $ */
 
 #include <X11/Xos.h>
+#ifdef SYSV
 #include <dirent.h>
+#else
+#ifdef SVR4
+#include <dirent.h>
+#else
+#ifdef USG
+#include <dirent.h>
+#else
+#ifdef _POSIX_SOURCE
+#include <dirent.h>
+#else
+#include <sys/dir.h>
+#define dirent direct
+#endif
+#endif
+#endif
+#endif
 char *malloc();
 char *realloc();
 
