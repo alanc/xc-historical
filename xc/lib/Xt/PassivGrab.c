@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: PassivGrab.c,v 1.9 90/01/25 09:44:18 swick Exp $";
+static char Xrcsid[] = "$XConsortium: PassivGrab.c,v 1.10 90/03/14 17:10:30 swick Exp $";
 #endif
 
 /********************************************************
@@ -571,11 +571,11 @@ XtServerGrabPtr _XtCheckServerGrabsOnWidget (event, widget, isKeyboard, pdi)
  */
 
 /*ARGSUSED*/
-static void  ActiveHandler (widget, pdi, event)
+static void  ActiveHandler (widget, pdi, event, cont)
     Widget 		widget;
-    XtPerDisplayInput	pdi;
+    XtPointer		pdi;
     XEvent 		*event;
-
+    Boolean		*cont;
 {
     
 }
@@ -660,15 +660,14 @@ static void MakeGrabs(passiveListPtr, isKeyboard, pdi)
  */
 
 /*ARGSUSED*/
-static void  RealizeHandler (widget, pwi, event)
+static void  RealizeHandler (widget, closure, event, cont)
     Widget 		widget;
-    XtPerWidgetInput	pwi;
+    XtPointer		closure;
     XEvent 		*event;	/* unused */
-
+    Boolean		*cont;	/* unused */
 {
-    XtPerDisplayInput	pdi;
-    
-    pdi = _XtGetPerDisplayInput(XtDisplay(widget));
+    XtPerWidgetInput	pwi = (XtPerWidgetInput)closure;
+    XtPerDisplayInput	pdi = _XtGetPerDisplayInput(XtDisplay(widget));
     
     MakeGrabs(&pwi->keyList, KEYBOARD, pdi);
     MakeGrabs(&pwi->ptrList, POINTER, pdi);
