@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.43 91/05/12 17:02:53 rws Exp $
+ * $XConsortium: Xos.h,v 1.44 91/05/13 20:48:30 rws Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -79,9 +79,12 @@
 #include <fcntl.h>
 #ifdef CRAY
 #include <unistd.h>
-#endif
+#endif /* CRAY */
+#ifdef SYSV386
+#include <unistd.h>
+#endif /* SYSV386 */
 #include <sys/file.h>
-#else
+#else /* X_NOT_POSIX */
 #if !defined(_POSIX_SOURCE) && defined(macII)
 #define _POSIX_SOURCE
 #include <fcntl.h>
@@ -90,7 +93,7 @@
 #include <fcntl.h>
 #endif
 #include <unistd.h>
-#endif
+#endif /* X_NOT_POSIX else */
 
 /*
  * Get struct timeval
@@ -130,6 +133,10 @@ struct timezone {
 /* use POSIX name for signal */
 #if defined(X_NOT_POSIX) && defined(SYSV) && !defined(SIGCHLD)
 #define SIGCHLD SIGCLD
+#endif
+
+#ifdef ISC
+#include <sys/bsdtypes.h>
 #endif
 
 #endif /* _XOS_H_ */
