@@ -1,5 +1,5 @@
 /*
- * $XConsortium: WidgetNode.h,v 1.4 90/03/06 18:55:09 jim Exp $
+ * $XConsortium: WidgetNode.h,v 1.5 90/04/25 15:54:56 converse Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -51,38 +51,46 @@ typedef struct _XmuWidgetNode {
 #define XmuWnClassname(wn) (XmuWnClass(wn)->core_class.class_name)
 #define XmuWnSuperclass(wn) ((XmuWnClass(wn))->core_class.superclass)
 
+#ifdef __cplusplus
+extern "C" {					/* for C++ V2.0 */
+#endif
+
 					/* external interfaces */
 
 extern void XmuWnInitializeNodes (
 #if NeedFunctionPrototypes
-    XmuWidgetNode * /* nodearray */,
-    int /* nnodes */
+    XmuWidgetNode *	/* nodearray */,
+    int			/* nnodes */
 #endif
 );
 
 extern void XmuWnFetchResources (
 #if NeedFunctionPrototypes
-    XmuWidgetNode * /* node */,
-    Widget /* toplevel */,
-    XmuWidgetNode * /* topnode */
+    XmuWidgetNode *	/* node */,
+    Widget		/* toplevel */,
+    XmuWidgetNode *	/* topnode */
 #endif
 );
 
 extern int XmuWnCountOwnedResources (
 #if NeedFunctionPrototypes
-    XmuWidgetNode * /* node */,
-    XmuWidgetNode * /* ownernode */,
-    Bool /* constraints */
+    XmuWidgetNode *	/* node */,
+    XmuWidgetNode *	/* ownernode */,
+    Bool		/* constraints */
 #endif
 );
 
 extern XmuWidgetNode *XmuWnNameToNode (
 #if NeedFunctionPrototypes
-    XmuWidgetNode * /* nodelist */,
-    int /* nnodes */,
-    char * /* name */
+    XmuWidgetNode *	/* nodelist */,
+    int			/* nnodes */,
+    _Xconst char *	/* name */
 #endif
 );
+
+#ifdef __cplusplus
+}						/* for C++ V2.0 */
+#endif
 
 #endif /* _XmuWidgetNode_h */
 
