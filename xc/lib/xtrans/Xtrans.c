@@ -719,9 +719,10 @@ XtransConnInfo	ciptr;
  */
 
 int
-TRANS(MakeAllCOTSServerListeners) (port, count_ret, ciptrs_ret)
+TRANS(MakeAllCOTSServerListeners) (port, max_ret, count_ret, ciptrs_ret)
 
 char		*port;
+int		*max_ret;
 int		*count_ret;
 XtransConnInfo 	**ciptrs_ret;
 
@@ -734,14 +735,20 @@ XtransConnInfo 	**ciptrs_ret;
 	   port, ciptrs_ret, 0);
 
     *count_ret = 0;
+    *max_ret = 0;
 
     for (i = 0; i < NUMTRANS; i++)
     {
 	if (Xtransports[i]->flags&TRANS_ALIAS)
 	    continue;
+
+	(*max_ret)++;
+
 	sprintf(buffer,"%s/:%s", Xtransports[i]->TransName, port);
+
 	PRMSG (5,"TRANS(MakeAllCOTSServerListeners) opening %s\n",
 	       buffer, 0, 0);
+
 	if ((ciptr = TRANS(OpenCOTSServer(buffer))) == NULL)
 	{
 	    PRMSG (1,
@@ -749,6 +756,7 @@ XtransConnInfo 	**ciptrs_ret;
 		  Xtransports[i]->TransName, 0, 0);
 	    continue;
 	}
+
 	if (TRANS(CreateListener (ciptr, port)) < 0)
 	{
 	    PRMSG (1,
@@ -756,6 +764,7 @@ XtransConnInfo 	**ciptrs_ret;
 		  Xtransports[i]->TransName, 0, 0);
 	    continue;
 	}
+
 	PRMSG (5,
 	      "TRANS(MakeAllCOTSServerListeners) opened listener for %s, %d\n",
 	      Xtransports[i]->TransName, ciptr->fd, 0);
@@ -784,9 +793,10 @@ XtransConnInfo 	**ciptrs_ret;
 }
 
 int
-TRANS(MakeAllCLTSServerListeners) (port, count_ret, ciptrs_ret)
+TRANS(MakeAllCLTSServerListeners) (port, max_ret, count_ret, ciptrs_ret)
 
 char		*port;
+int		*max_ret;
 int		*count_ret;
 XtransConnInfo 	**ciptrs_ret;
 
@@ -799,14 +809,20 @@ XtransConnInfo 	**ciptrs_ret;
 	port, ciptrs_ret, 0);
 
     *count_ret = 0;
+    *max_ret = 0;
 
     for (i = 0; i < NUMTRANS; i++)
     {
 	if (Xtransports[i]->flags&TRANS_ALIAS)
 	    continue;
+
+	(*max_ret)++;
+
 	sprintf(buffer,"%s/:%s", Xtransports[i]->TransName, port);
+
 	PRMSG (5,"TRANS(MakeAllCLTSServerListeners) opening %s\n",
 	    buffer, 0, 0);
+
 	if ((ciptr = TRANS(OpenCLTSServer (buffer))) == NULL)
 	{
 	    PRMSG (1,
@@ -814,6 +830,7 @@ XtransConnInfo 	**ciptrs_ret;
 		  Xtransports[i]->TransName, 0, 0);
 	    continue;
 	}
+
 	if (TRANS(CreateListener (ciptr, port)) < 0)
 	{
 	    PRMSG (1,
@@ -821,6 +838,7 @@ XtransConnInfo 	**ciptrs_ret;
 		  Xtransports[i]->TransName, 0, 0);
 	    continue;
 	}
+
 	PRMSG (5,
 	"TRANS(MakeAllCLTSServerListeners) opened listener for %s, %d\n",
 	      Xtransports[i]->TransName, ciptr->fd, 0);
