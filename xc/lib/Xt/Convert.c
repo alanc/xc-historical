@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Convert.c,v 1.17 88/10/21 15:59:02 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Convert.c,v 1.18 89/02/23 18:57:47 swick Exp $";
 /* $oHeader: Convert.c,v 1.4 88/09/01 11:10:44 asente Exp $ */
 #endif lint
 /*LINTLIBRARY*/
@@ -31,8 +31,9 @@ SOFTWARE.
 #include	"IntrinsicI.h"
 #include	"Quarks.h"
 
-/* ||| */
+#ifdef DEBUG
 #include	<stdio.h>
+#endif
 
 /* Conversion procedure hash table */
 
@@ -63,7 +64,7 @@ void _XtSetDefaultConverterTable(table)
 	ConverterPtr rec;
 	int i;
 	for (i = CONVERTHASHSIZE; i; i--, globalConverterTable++) {
-	    for (rec = *globalConverterTable; rec; rec = rec->next)
+	    for (rec = *globalConverterTable; rec != NULL; rec = rec->next)
 	       _XtTableAddConverter(*table, rec->from, rec->to, rec->converter,
 				    rec->convert_args, rec->num_args);
   	}
@@ -117,12 +118,17 @@ void _XtTableAddConverter(table,from_type, to_type, converter, convert_args, num
     register ConverterPtr	p;
 
     pHashEntry= &table[ProcHash(from_type, to_type) & CONVERTHASHMASK];
-    /* ||| Check for existing entry, overwrite if exists */
-    p		    = (ConverterPtr) XtMalloc(sizeof(ConverterRec));
-    p->next	    = *pHashEntry;
-    *pHashEntry     = p;
-    p->from	    = from_type;
-    p->to	    = to_type;
+    for (p = *pHashEntry; p != NULL; p = p->next) {
+	if (p->from == from_type && p->to == to_type) break;
+    }
+
+    if (p == NULL) {
+	p = (ConverterPtr) XtMalloc(sizeof(ConverterRec));
+	p->next	    = *pHashEntry;
+	*pHashEntry     = p;
+	p->from	    = from_type;
+	p->to	    = to_type;
+    }
     p->converter    = converter;
     p->convert_args = convert_args;
     p->num_args     = num_args;
@@ -208,6 +214,7 @@ static void CacheEnter(converter, args, num_args, from, to, hash)
 }
 
 
+#ifdef DEBUG
 void CacheStats()
 {
     register Cardinal i;
@@ -231,6 +238,7 @@ void CacheStats()
 	}
     }
 }
+#endif /*DEBUG*/
 
 static Boolean ResourceQuarkToOffset(widget_class, name, offset)
     WidgetClass widget_class;
