@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbgc.c,v 1.121 88/06/06 17:28:12 keith Exp $ */
+/* $Header: mfbgc.c,v 1.122 88/07/29 11:43:40 keith Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -543,7 +543,7 @@ mfbValidateGC(pGC, pQ, changes, pDrawable)
     {
 	if ((pGC->font) &&
 	    (pGC->font->pFI->maxbounds.metrics.rightSideBearing -
-	     pGC->font->pFI->maxbounds.metrics.leftSideBearing) > 32)
+	     pGC->font->pFI->minbounds.metrics.leftSideBearing) > 32)
 	{
 	    pGC->PolyGlyphBlt = miPolyGlyphBlt;
 	    pGC->ImageGlyphBlt = miImageGlyphBlt;

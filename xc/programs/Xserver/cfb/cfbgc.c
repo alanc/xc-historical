@@ -538,7 +538,7 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
     if (new_text && (pGC->font))
     {
         if ((pGC->font->pFI->maxbounds.metrics.rightSideBearing -
-             pGC->font->pFI->maxbounds.metrics.leftSideBearing) > 32)
+             pGC->font->pFI->minbounds.metrics.leftSideBearing) > 32)
         {
             pGC->PolyGlyphBlt = miPolyGlyphBlt;
             pGC->ImageGlyphBlt = miImageGlyphBlt;
