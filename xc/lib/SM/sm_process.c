@@ -1,4 +1,4 @@
-/* $XConsortium: sm_process.c,v 1.13 93/09/27 21:11:50 mor Exp $ */
+/* $XConsortium: sm_process.c,v 1.14 93/09/28 10:39:00 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -432,11 +432,11 @@ Bool		 swap;
 	for (i = 0; i < count; i++)
 	    EXTRACT_ARRAY8_AS_STRING (pData, swap, reasonMsgs[i]);
 
+	IceDisposeCompleteMessage (iceConn, pData);
+
 	(*smsConn->callbacks.close_connection.callback) (smsConn,
 	    smsConn->callbacks.close_connection.manager_data,
 	     locale, count, reasonMsgs);
-
-	IceDisposeCompleteMessage (iceConn, pData);
 	break;
     }
 
