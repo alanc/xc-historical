@@ -74,7 +74,7 @@ The height and width of this widget in pixels.
 ..
 .de Mm \"mappedWhenManaged
 .IP mappedWhenManaged 1.5i
-If this resource is \fBTrue\fP then the widget's window will
+If this resource is \fBTrue\fP, then the widget's window will
 automatically be mapped by the Toolkit when it is realized and managed.
 ..
 .de Sc \"screen
@@ -84,7 +84,7 @@ resource.
 ..
 .de Se \"sensitive
 .IP sensitive 1.5i
-Whether or not the toolkit will pass user events to this widget.  The
+Whether or not the toolkit should pass user events to this widget.  The
 widget will not get input events if either \fBancestorSensitive\fP or
 \fBsensitive\fP is \fBFalse\fP.
 ..
@@ -365,7 +365,7 @@ displayed in the upper left hand corner of the text display.
 .de Ti \" Text InsertPosition
 .ie 'Bold'\\$1' .IP \fBinsertPosition\fP 1.5i
 .el.IP insertPosition 1.5i
-This is the location of the insert cursor.  It is expressed in
+This is the location of the insert point.  It is expressed in
 characters from the beginning of the file.  The cursor will always be
 forced to be on the screen.  This resource may therefore be used to
 scroll the text display to a certain character position.
@@ -373,10 +373,10 @@ scroll the text display to a certain character position.
 .de Tz \"Text Resize
 .ie 'Bold'\\$1' .IP \fBresize\fP 1.5i 
 .el .IP resize 1.5i
-Controls whether the text widget attempts to resize itself when it is
-no longer able to display the full text buffer in the window it
-currently has.  This attempt is subject to the geometry manager of the
-text widget's parent, of course.  The values \fBXawtextResizeNever\fP,
+Controls whether or not the Text widget attempts to resize itself when it is
+no longer able to display the full text buffer in the associated window.
+Any attempt by the Text widget to resize itself is always subjec to
+the consraints imposed by its parent.  The values \fBXawtextResizeNever\fP,
 \fBXawtextResizeWidth\fP, \fBXawtextResizeHeight\fP, and
 \fBXawtextResizeBoth\fP are all acceptable for this resource.  
 .Rs "height, width, \fPand\fB both"
@@ -389,11 +389,11 @@ text widget's parent, of course.  The values \fBXawtextResizeNever\fP,
 .ie 'Bold'\\$1' .IP \fBscrollVertical\fP 1.5i
 .el .IP scrollVertical 1.5i
 These resources control the placement of scrollbars on the left and
-bottom edge of the text widget.  These resources accept
+bottom edge of the text widget.  These resources accept the
 values \fBXawtextScrollAlways\fP, \fBXawtextScrollWhenNeeded\fP, and
 \fBXawtextScrollNever\fP.  
 .Rs "always, never, \fPand\fB whenNeeded"
-If \fBXawtextScrollWhenNeeded\fP is specified the appropriate
+If \fBXawtextScrollWhenNeeded\fP is specified, the appropriate
 scrollbar will only appear when there is text in the buffer that is
 not able to fit within the bounds of the current window.  The
 scrollbar will disappear when the text once again fits within the window.
@@ -415,8 +415,7 @@ the resource manager.
 .ns
 .ie 'Bold'\\$1' .IP \fBtextSource\fP 1.5i
 .el .IP textSource 1.5i
-The widget pointer to the TextSink or TextSource object that this widget is
-currently using.  
+These are the TextSink or TextSource objects used by this widget.
 .ie 'Bold'\\$1' When using the Text widget these MUST be set by the \
 applicat programmer
 .el The AsciiText widget initializes these resources to point \
@@ -429,13 +428,13 @@ When the text in any one line is wider than the window there are several
 possible actions.  This resource allows the user to decide what will
 happen.  The accepted values for this resource are
 \fBXawtextWrapNever\fP, \fBXawtextWrapLine\fP, and
-\fBXawtextWrapWord\fP.  With \fBXawtextWrapLine\fP is enabled all text
-that is too long to fit on a line will be dropped onto the next line.
-The break will occur at the window edge.  With \fBXawtextWrapWord\fP the
-same action occurs but the text is broken at a word boundary if at all
-possible.  If no wrapping is enabled then the text will just extend off
+\fBXawtextWrapWord\fP.  With \fBXawtextWrapLine\fP all text
+that is beyond the right edge of the window will be displayed on the
+next line.  With \fBXawtextWrapWord\fP the
+same action occurs but the text is broken at a word boundary if 
+possible.  If no wrapping is enabled then the text will extend off
 the edge of the window, and a small rectangle will be painted in the
-right margin to alert the user to the fact that the line is too long.  
+right margin to alert the user that this line is too long.
 .Rs "never, word, \fPand\fB line"
 ..
 
@@ -444,8 +443,8 @@ right margin to alert the user to the fact that the line is too long.
 .de Sf \" Sink Font
 .ie 'Bold'\\$1' .IP \fBfont\fP 1.5i
 .el .IP font 1.5i
-The font for rendering all text.  This font must be a character cell
-font.  
+This is font for rendering all text and must be a character cell
+font (see the X Logical Font Desctiption).  
 .Sk \\$1
 ..
 
@@ -456,19 +455,20 @@ The foreground color of all text displayed in this widget.
 .Sk \\$1
 ..
 
-.de Se \" Sink Echo
+.de Sh \" Sink Echo
 .ie 'Bold'\\$1' .IP \fBecho\fP 1.5i
 .el .IP echo 1.5i
-Whether or not to echo characters to the screen.  You can still edit
-the buffer, but nothing is displayed.  This mode can be useful for
+Whether or not to echo characters to the screen.  The buffer can still
+be edited, but nothing is displayed.  This mode can be useful for
 entering passwords and other sensitive information.  
 .Sk \\$1
 ..
 .de Sd \" Sink Display Non-Printing
 .ie 'Bold'\\$1' .IP \fBdisplayNonprinting\fP 1.5i
 .el .IP displayNonprinting 1.5i
-If \fBTrue\fP the text widget will display all non-printable
-characters as the string \fI^@\fP.  If \fBFalse\fP the text widget
+If this resources is \fBTrue\fP, the Text widget will display all
+non-printable characters as the string \fI^@\fP.  If \fBFalse\fP, the
+Text widget 
 will just leave a blank space where a non-printable character exists
 in the text buffer.  
 .Sk \\$1
@@ -479,14 +479,15 @@ in the text buffer.
 .de Ou \" Source UseStringInPlace
 .ie 'Bold'\\$1' .IP \fBuseStringInPlace\fP 1.5i
 .el .IP useStringInPlace 1.5i
-While having the widget automatically perform dynamic memory management
-makes the programmer's job much easier, and is very helpful for most
-tasks, there are times when it just gets in the way.  For these cases,
-setting this resource to \fBTrue\fP will force the widget to
-use the \fBstring\fP in place.  Be sure to set the \fBtype\fP resource
-to the size of the buffer allocated by the application.  If the
-\fBstring\fP is used in place then it must exist for the lifetime of the
-text widget, or until it has been reset.  
+Setting this resource to \fBTrue\fP will disable the memory managment 
+provided by the Text widget, updating the string passed to the Text widget
+in the \fBstring\fP resource in place.  Using the string in place can
+be much more efficient for text widgets that display static data, or
+where the programmer whishes to impose strict constraint on the
+contents of the \fBstring\fP.  When using the string in place be sure that:
+the length of the string is specified by setting the \fBlength\fP resource,
+the \fBtype\fP of the text widget is be \fBXawAsciiString\fP, and that
+the \fBstring\fP exists for the lifetime of the text widget, or until it has been reset.
 .So \\$1
 ..
 .de Ot \" Source Type
@@ -494,7 +495,7 @@ text widget, or until it has been reset.
 .el .IP type 1.5i
 This resource may be either \fBXawAsciiString\fP or
 \fBXawAsciiFile\fP.  The value of this resource determines whether the
-\fBstring\fP contains the name of a file to be opened or a buffer to
+\fBstring\fP resource contains the name of a file to be opened or a buffer to
 be displayed by the text widget.  A converter has been registered for
 this resource and accepts the values \fBstring\fP and \fBfile\fP.
 .So \\$1
@@ -513,8 +514,8 @@ internal memory, but may be used in place by setting the
 .de Op \" Source Piece Size
 .ie 'Bold'\\$1' .IP \fBpieceSize\fP 1.5i
 .el .IP pieceSize 1.5i
-This is the size of the internal chunks that the text is broken down
-into for memory management.  The larger this value the less segmented
+This is the size of the internal chunks into which the text buffer is
+broken down for memory management.  The larger this value the less segmented
 your memory will be, but the slower your editing will be.  The text
 widgets will always allocate a chunk of memory this size to stuff the
 \fBstring\fP into, so when using small strings, having this buffer
@@ -535,7 +536,7 @@ in the \fBstring\fP resource.
 .ie 'Bold'\\$1' .IP \fBeditType\fP 1.5i
 .el .IP editType 1.5i
 This is the type of editing that will be allowed in this text widget.
-Acceptable values are \fBXawtextRead\fP, \fBXawtextEdit\fP, and
+Legal values are \fBXawtextRead\fP, \fBXawtextEdit\fP, and
 \fBXawtextAppend\fP.  
 .Rs "read, edit, \fPand\fB append"
 .So \\$1
@@ -545,7 +546,7 @@ Acceptable values are \fBXawtextRead\fP, \fBXawtextEdit\fP, and
 .el .IP dataCompression 1.5i
 The AsciiSource uses an algorithm that may cause the text buffer to grow
 to about twice the size of the actual text over time, as the text is
-edited.  On systems where time is cheaper than memory, it is helpful to
+edited.  On systems where CPU cycles is cheaper than memory, it is helpful to
 spend some extra time to compress this buffer back to its minimum size.
 If this resource is \fBTrue\fP, the AsciiSource will compress its data
 to the minimum size required every time the text string is saved, or the

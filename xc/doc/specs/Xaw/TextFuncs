@@ -1,15 +1,14 @@
 .NH 2
 Text Functions
 .LP
-These functions are provided as convenience routines and are available
-to all text widgets.  Many of these actions can be performed through
-resources but these are used often enough, or are
-sufficiently more efficient, that having a special routine is useful.
+The following functions are provided as convenience routines for use with
+the Text widget.  Although many of these actions can be performed by
+modifing resources, the interfaces are frequently more efficient
 .NH 3
 Selecting Text
 .LP
-To enable an application to select a piece of text, use 
-.PN XawTextSetSelection .
+To select a piece of text, use 
+.PN XawTextSetSelection :
 .IN "XawTextSetSelection" "" "@DEF@"
 .FD 0
 void XawTextSetSelection(\fIw\fP, \fIleft\fP, \fIright\fP)
@@ -33,7 +32,7 @@ effect on \fBCUT_BUFFER0\fP.
 Unhighlighting Text
 .LP
 To unhighlight previously highlighted text in a widget, use
-\fBXawTextUnsetSelection\fP.
+\fBXawTextUnsetSelection\fP:
 .IN "XawTextUnsetSelection" "" "@DEF@"
 .FD 0
 void XawTextUnsetSelection(\fIw\fP)
@@ -45,8 +44,8 @@ Specifies the Text widget.
 .NH 3
 Getting Current Text Selection
 .LP
-To enable the application to retrieve the text that has been selected by this
-text widget use \fBXawTextGetSelectionPos\fP.
+To retrieve the text that has been selected by this
+text widget use \fBXawTextGetSelectionPos\fP:
 .IN "XawTextGetSelectionPos" "" "@DEF@"
 .FD 0
 void XawTextGetSelectionPos(\fIw\fP, \fIbegin_return\fP, \fIend_return\fP)
@@ -67,7 +66,7 @@ If the returned values are equal, no text is currently selected.
 .NH 3
 Replacing Text
 .LP
-To enable an application to replace text, use \fBXawTextReplace\fP.
+To modify the text in an editable Text widget use \fBXawTextReplace\fP:
 .IN "XawTextReplace" "" "@DEF@"
 .FD 0
 int XawTextReplace(\fIw\fP, \fIstart\fP, \fIend\fP, \fItext\fP)
@@ -89,7 +88,7 @@ Specifies the text to be inserted into the file.  This function will not
 be able to replace text in Read-only text widgets.  It will also only
 be able to append text to an Append-only text widget.
 .LP
-This function has a number of return values.  They are:
+This function may return the following values:
 .IP \fBXawEditDone\fP 1.25i
 The text replacement was successful.
 .IP \fBXawPositionError\fP 1.25i
@@ -119,7 +118,7 @@ typedef struct {
 The starting point to use within the ptr field.
 The value is usually zero.  
 .IP \fIlength\fP 1.0i
-The number of characters that are transferred from the
+The number of characters that to be transferred from the
 ptr field.  The number of characters transferred is usually the number
 of characters in ptr.
 .IP \fIptr\fP 1.0i
@@ -139,8 +138,8 @@ text is inserted after \fIstart\fP.
 .NH 3
 Searching for Text
 .LP
-To search for a string in the text widget use
-\fBXawTextSearch\fP. 
+To search for a string in the Text widget, use
+\fBXawTextSearch\fP:
 .IN "XawTextSearch" "" "@DEF@"
 .FD 0
 XawTextPosition XawTextSearch(\fIw\fP, \fIdir\fP, \fItext\fP)
@@ -160,7 +159,8 @@ Specifies the direction to search in.  Acceptable values are
 Specifies a text block structure (see \fBXawTextReplace\fP for the
 definition) that contains the text to search for.
 .LP
-The function will begin at the insert point location and search in the
+The \fBXawTextSearch\fP function will begin at the insert point
+location and search in the 
 direction specified for a string that matches the one passed in 
 \fItext\fP.  If the string is found the location of the first
 character in the string is returned.  If the string could not be
@@ -168,7 +168,7 @@ found then the value \fBXawTextSearchError\fP is returned.
 .NH 3
 Redisplaying Text
 .LP
-To redisplay a range of characters, use \fBXawTextInvalidate\fP.
+To redisplay a range of characters, use \fBXawTextInvalidate\fP:
 .IN "XawTextInvalidate" "" "@DEF@"
 .FD 0
 void XawTextInvalidate(\fIw\fP, \fIfrom\fP, \fIto\fP)
@@ -190,7 +190,7 @@ immediately if redisplay is enabled or the next time that redisplay is
 enabled.
 .LP
 .sp 1
-To enable redisplay, use \fBXawTextEnableRedisplay\fP.
+To enable redisplay, use \fBXawTextEnableRedisplay\fP:
 .IN "XawTextEnableRedisplay" "" "@DEF@"
 .FD 0
 void XawTextEnableRedisplay(\fIw\fP)
@@ -217,11 +217,11 @@ void XawTextDisableRedisplay(\fIw\fP)
 Specifies the Text widget.
 .LP
 The \fBXawTextDisableRedisplay\fP function causes all changes to be
-batched until \fBXawTextDisplay\fP or \fBXawTextEnableRedisplay\fP
+batched until either \fBXawTextDisplay\fP or \fBXawTextEnableRedisplay\fP
 is called.
 .LP
 .sp 1
-To display batched updates, use \fBXawTextDisplay\fP.
+To display batched updates, use \fBXawTextDisplay\fP:
 .IN "XawTextDisplay" "" "@DEF@" 
 .FD 0
 void XawTextDisplay(\fIw\fP)
@@ -237,7 +237,7 @@ displayed.
 Resources Convenience Routines
 .LP
 To obtain the character position of the left-most character on the
-first line displayed in the widget (that is, the value of the
+first line displayed in the widget (the value of the
 \fBdisplayPosition\fP resource), use \fBXawTextTopPosition\fP.
 .IN "XawTextTopPosition" "" @DEF@"
 .FD 0
@@ -250,10 +250,10 @@ Specifies the Text widget.
 .LP
 .sp 1
 To assign a new selection array to a text widget use
-\fBXawTextSetSelectionArray\fP. 
+\fBXawTextSetSelectionArray\fP:
 .IN "XawTextGetInsertionPoint" "" "@DEF@"
 .FD 0
-XawTextPosition XawTextSetSelectionArray(\fIw\fP, \fIsarray\fP)
+void XawTextSetSelectionArray(\fIw\fP, \fIsarray\fP)
 .br
       Widget \fIw\fP;
 .br
@@ -265,12 +265,12 @@ Specifies the Text widget.
 Specifies a selection array as defined in the section called \fBText
 Selections for Application Programmers\fP.
 .LP
-The result is equivalent to setting the value of the
-\fBXtNselectionTypes\fP resource. 
+Calling this function is equivalent to setting the value of the
+\fBselectionTypes\fP resource. 
 .LP
 .sp 1
 To move the insert point to the specified source position, use
-\fBXawTextSetInsertionPoint\fP 
+\fBXawTextSetInsertionPoint\fP:
 .IN "XawTextSetInsertionPoint" "" "@DEF@"
 .FD 0
 void XawTextSetInsertionPoint(\fIw\fP, \fIposition\fP)
@@ -285,12 +285,12 @@ Specifies the Text widget.
 Specifies the new position for the insert point.
 .LP
 The text will be scrolled vertically if necessary to make the line
-containing the insert point visible.
-The result is equivalent to setting the \fBXtNinsertPosition\fP resource.
+containing the insert point visible.  Calling this function is
+equivalent to setting the \fBinsertPosition\fP resource. 
 .LP
 .sp 1
 To obtain the current position of the insert point, use
-\fBXawTextGetInsertionPoint\fP. 
+\fBXawTextGetInsertionPoint\fP:
 .IN "XawTextGetInsertionPoint" "" "@DEF@"
 .FD 0
 XawTextPosition XawTextGetInsertionPoint(\fIw\fP)
@@ -301,10 +301,11 @@ XawTextPosition XawTextGetInsertionPoint(\fIw\fP)
 Specifies the Text widget.
 .LP
 The result is equivalent to retrieving the value of the
-\fBXtNinsertPosition\fP resource. 
+\fBinsertPosition\fP resource. 
 .LP
 .sp 1
-To replace the text source in the specified widget, use \fBXawTextSetSource\fP.
+To replace the text source in the specified widget, use
+\fBXawTextSetSource\fP:
 .IN "XawTextSetSource" "" "@DEF@"
 .FD 0
 void XawTextSetSource(\fIw\fP, \fIsource\fP, \fIposition\fP)
@@ -327,7 +328,7 @@ A display update will be performed if redisplay is enabled.
 .LP
 .sp 1
 To obtain the current text source for the specified widget, use
-\fBXawTextGetSource\fP.
+\fBXawTextGetSource\fP:
 .IN "XawTextGetSource" "" "@DEF@"
 .FD 0
 Widget XawTextGetSource(\fIw\fP)
@@ -342,7 +343,7 @@ using.
 .LP
 .sp
 To enable and disable the insert point, use
-\fBXawTextDisplayCaret\fP. 
+\fBXawTextDisplayCaret\fP:
 .IN "XawTextDisplayCaret" "" "@DEF@"
 .FD 0
 void XawTextDisplayCaret(\fIw\fP, \fIvisible\fP)

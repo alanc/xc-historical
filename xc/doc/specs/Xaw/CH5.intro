@@ -129,7 +129,7 @@ string within the current text widget.  The popup can be activated by
 typing either \fIControl-r\fP or \fIControl-s\fP.  If \fIControl-s\fP is
 used the search will be forward in the file from the current insert point
 location; if \fIControl-r\fP is used the search will be backward.  The
-activated popup is placed under the mouse pointer.  The search popup has
+activated popup is placed under the pointer.  The search popup has
 a number of buttons that allow both text searches and text replacements
 to be performed.
 .LP
@@ -218,26 +218,26 @@ makes a selection.
 .LP
 To modify a currently active selection, click pointer Button 3 near
 either the end or the beginning of the selection that you want to
-adjust.  This end of the selection may be moved while holding down mouse
-button 3.  When the proper area has been highlighted release the mouse
+adjust.  This end of the selection may be moved while holding down pointer
+button 3.  When the proper area has been highlighted release the pointer
 button to activate the selection.
 .LP
-To paste text that some other application or text widget has
-put into the \fBPRIMARY\fP selection into this text widget
-use mouse button 2.  First place the insert point at the location
-to insert the text, then click and release mouse button 2.  The text
-in the current selection will be placed into the text widget.
+To paste text that some other application or Text widget has
+put into the \fBPRIMARY\fP selection use pointer button 2.  
+First place the insert point where you would like the text to be inserted,
+then click and release pointer button 2.  The text
+that is in the \fBPRIMARY\fP selection will be placed into the Text widget.
 .LP
-Clicking rapidly in succession with mouse button 1 will select the
-following text.
+Rapidly clicking pointer button 1 thhe following number of times will adjust
+the selection as described.
 .IP \fBTwo\fP 1.0i
-Select the word under the mouse pointer.  A word boundary is defined by the
+Select the word under the pointer.  A word boundary is defined by the
 text widget to be a Space, Tab, or Carriage Return.  The string
 \fIfoo-bar\fP is considered one word.
 .IP \fBThree\fP 1.0i
-Select the line under the mouse pointer.
+Select the line under the pointer.
 .IP \fBFour\fP 1.0i
-Select the paragraph under the mouse pointer.  A paragraph boundary is
+Select the paragraph under the pointer.  A paragraph boundary is
 defined by the text widget as two Carriage Returns in a row with only
 Spaces or Tabs between them. 
 .IP \fBFive\fP 1.0i
