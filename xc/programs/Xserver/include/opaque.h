@@ -1,11 +1,19 @@
-/* $XConsortium: opaque.h,v 1.6 89/01/16 13:45:36 rws Exp $ */
+/* $XConsortium: opaque.h,v 1.7 89/03/11 13:21:38 rws Exp $ */
+
+#ifndef OPAQUE_H
+#define OPAQUE_H
 
 extern char *defaultFontPath;
 extern char *defaultTextFont;
 extern char *defaultCursorFont;
 extern char *rgbPath;
 extern long MaxClients;
-extern int isItTimeToYield;
+extern char isItTimeToYield;
+extern char dispatchException;
+
+/* bit values for dispatchException */
+#define DE_RESET     1
+#define DE_TERMINATE 2
 
 extern int CloseFont();
 extern unsigned long *Xalloc();
@@ -21,3 +29,5 @@ extern int  ScreenSaverBlanking;
 extern int  ScreenSaverAllowExposures;
 extern int argcGlobal;
 extern char **argvGlobal;
+
+#endif /* OPAQUE_H */
