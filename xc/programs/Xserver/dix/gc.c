@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: gc.c,v 1.86 87/08/25 08:33:38 susan Exp $ */
+/* $Header: gc.c,v 1.86 87/08/25 08:33:38 toddb Locked $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -72,7 +72,7 @@ ChangeGC(pGC, mask, pval)
     register BITS32	mask;
     CARD32		*pval;
 {
-    DoChangeGC(pGC, mask, pval, 0);
+    return (DoChangeGC(pGC, mask, pval, 0));
 }
 /* DoChangeGC(pGC, mask, pval, fPointer)
    mask is a set of bits indicating which values to change.
