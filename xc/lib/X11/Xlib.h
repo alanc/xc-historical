@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.215 91/07/22 15:42:38 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.216 92/01/09 18:42:15 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987, 1991 by the Massachusetts Institute of Technology
  *
@@ -511,7 +511,7 @@ typedef struct _XDisplay {
 	struct _XKeytrans *key_bindings; /* for XLookupString */
 	Font cursor_font;	   /* for XCreateFontCursor */
 	struct _XDisplayAtoms *atoms; /* for XInternAtom */
-	struct _XInternalError *async_handlers; /* for internal errors */
+	struct _XInternalAsync *async_handlers; /* for internal async */
 	unsigned long flags;	   /* internal connection flags */
 	unsigned int mode_switch;  /* keyboard group modifiers */
 	struct _XContextDB *context_db; /* context database */
