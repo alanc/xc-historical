@@ -1,4 +1,4 @@
-/* $XConsortium: imRmAttr.c,v 1.3 93/09/18 11:01:00 rws Exp $ */
+/* $XConsortium: imRmAttr.c,v 1.4 93/09/18 13:44:27 rws Exp $ */
 /******************************************************************
 
            Copyright 1992, 1993 by FUJITSU LIMITED
@@ -120,7 +120,7 @@ _XimAttributeToValue(ic, res, buf, value, mode)
     case XimType_CARD16:
     case XimType_CARD32:
     case XimType_Window:
-	value = 0;
+	/* value = 0; */
 	_XCopyToArg((XPointer)&buf[2], (XPointer *)&value, buf[1]);
 	break;
 
@@ -696,7 +696,7 @@ _XimEncodePreeditValue(ic, res, p, valid)
 	for(i = 0, len = 0; i < list_ret; i++) {
 	     len += (strlen(name_list[i]) + sizeof(char));
 	}
-	if(!(tmp = Xmalloc(len)))
+	if(!(tmp = Xmalloc(len+1)))
 	     return False;
 
 	tmp[0] = '\0';
@@ -794,7 +794,7 @@ _XimEncodeStatusValue(ic, res, p, valid)
 	for(i = 0, len = 0; i < list_ret; i++) {
 	     len += (strlen(name_list[i]) + sizeof(char));
 	}
-	if(!(tmp = Xmalloc(len)))
+	if(!(tmp = Xmalloc(len+1)))
 	     return False;
 
 	tmp[0] = '\0';
@@ -1019,7 +1019,7 @@ _XimGetAttributeID(im, buf)
     _XIMCompileResourceList(res, n);
     im->core.im_resources     = res;
     im->core.im_num_resources = n;
-    im->private.proto.im_attribute_name = names - names_len;
+    XFree( names - names_len );
 
     /*
      * IC attribute ID
@@ -1063,7 +1063,7 @@ _XimGetAttributeID(im, buf)
     _XIMCompileResourceList(res, n);
     im->core.ic_resources     = res;
     im->core.ic_num_resources = n;
-    im->private.proto.ic_attribute_name = names - names_len;
+    XFree( names - names_len );
 
     return True;
 }
