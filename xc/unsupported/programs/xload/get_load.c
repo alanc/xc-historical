@@ -1,7 +1,7 @@
 /*
  * get_load - get system load
  *
- * $XConsortium: get_load.c,v 1.13 91/02/02 18:02:18 rws Exp $
+ * $XConsortium: get_load.c,v 1.14 91/02/02 18:04:02 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -254,11 +254,15 @@ void GetLoadPoint( w, closure, call_data )
  * provide default for everyone else
  */
 #ifndef KERNEL_FILE
+#ifdef SVR4
+#define KERNEL_FILE "/stand/unix"
+#else
 #ifdef SYSV
 #define KERNEL_FILE "/unix"
 #else
 #define KERNEL_FILE "/vmunix"
 #endif /* SYSV */
+#endif /* SVR4 */
 #endif /* KERNEL_FILE */
 #endif /* KERNEL_FILE */
 
