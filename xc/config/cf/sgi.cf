@@ -1,14 +1,24 @@
-XCOMM platform:  $XConsortium: sgi.cf,v 1.18 91/07/21 21:34:29 rws Exp $
+XCOMM platform:  $XConsortium: sgi.cf,v 1.19 91/07/28 22:39:45 rws Exp $
 
 #define OSName			IRIX
 XCOMM operating system:  OSName
 #define OSMajorVersion		4
 #define OSMinorVersion		0
 
+#if OSMajorVersion < 4
+/* We do not guarantee this will work */
+#define BootstrapCFlags   -DX_WCHAR -DX_LOCALE -DX_USEBFUNCS -DSYSV
+#define StandardDefines   -DX_WCHAR -DX_LOCALE -DX_USEBFUNCS -DSYSV
+#endif
+
 #define SystemV			YES
 #define HasPutenv		YES
 #define ExecableScripts		YES
+#if OSMajorVersion > 3
 #define SetTtyGroup		YES
+#else
+#define SetTtyGroup		NO
+#endif
 #define HasNdbm			YES
 #define HasVFork		YES
 #define Malloc0ReturnsNull	YES
@@ -28,13 +38,11 @@ XCOMM operating system:  OSName
 
 /* #include <sgiLib.rules> */
 
-#define CCPreprocessorFlags /* As Nothing For the Standard "cpp" */
+#define CCPreprocessorFlags /* as nothing */
+/* #define CCPreprocessorFlags -acpp -D__EXTENSIONS__ SymbolTables -cckr */
 
 #define SymbolTables -Wf,-XNh2000
 #define PexSymbolTables -Wf,-XNp15000,-XNd15000,-XNh2000
-
-/* NOTE: the SGI cc driver invoking the ANSI cpp does NOT define __STDC__ */
-/* #define CCPreprocessorFlags -acpp -D__STDC__ -D__EXTENSIONS__ SymbolTables */
 
 /* this is for floating point, ANSI cpp */
 #define DefaultCCOptions -prototypes -float CCPreprocessorFlags SymbolTables
