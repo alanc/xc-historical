@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsSetCCC.c,v 1.1 91/05/13 22:37:30 rws Exp $ */
+/* $XConsortium: XcmsSetCCC.c,v 1.2 91/06/07 09:56:53 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -65,7 +65,15 @@ XcmsSetWhitePoint(ccc, pColor)
  *
  */
 {
-    bcopy((char *)pColor, (char *)&ccc->clientWhitePt, sizeof(XcmsColor));
+    if (pColor == NULL || pColor->format == XcmsUndefinedFormat) {
+	ccc->clientWhitePt.format = XcmsUndefinedFormat;
+    } else if (pColor->format != XcmsCIEXYZFormat &&
+	    pColor->format != XcmsCIEuvYFormat &&
+	    pColor->format != XcmsCIExyYFormat) {
+	return(XcmsFailure);
+    } else {
+	bcopy((char *)pColor, (char *)&ccc->clientWhitePt, sizeof(XcmsColor));
+    }
     return(XcmsSuccess);
 }
 
