@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsLRGB.c,v 1.20 91/08/20 13:51:23 keith Exp $" */
+/* $XConsortium: XcmsLRGB.c,v 1.21 91/10/15 17:00:49 eswu Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -637,7 +637,6 @@ LINEAR_RGB_InitSCCData(dpy, screenNumber, pPerScrnInfo)
 	  default:
 	    XFree (property_return);
 	    goto FreeSCCData;
-	    break;
 	}
 
 	/*
@@ -848,7 +847,7 @@ LINEAR_RGB_FreeSCCData(pScreenDataTemp)
 {
     LINEAR_RGB_SCCData *pScreenData = (LINEAR_RGB_SCCData *) pScreenDataTemp;
 
-    if (pScreenData) {
+    if (pScreenData && pScreenData != &Default_RGB_SCCData) {
 	if (pScreenData->pRedTbl) {
 	    if (pScreenData->pGreenTbl) {
 		if (pScreenData->pRedTbl->pBase != 
