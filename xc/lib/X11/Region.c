@@ -1,4 +1,4 @@
-/* $XConsortium: XRegion.c,v 11.34 92/04/20 15:50:21 rws Exp $ */
+/* $XConsortium: XRegion.c,v 11.35 92/04/20 15:59:19 rws Exp $ */
 /************************************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1347,7 +1347,8 @@ miSubtractO (pReg, r1, r1End, r2, r2End, y1, y2)
 		 * reset left fence to edge of new minuend.
 		 */
 		r1++;
-		x1 = r1->x1;
+		if (r1 != r1End)
+		    x1 = r1->x1;
 	    }
 	    else
 	    {
@@ -1382,7 +1383,8 @@ miSubtractO (pReg, r1, r1End, r2, r2End, y1, y2)
 		 * Minuend used up: advance to new...
 		 */
 		r1++;
-		x1 = r1->x1;
+		if (r1 != r1End)
+		    x1 = r1->x1;
 	    }
 	    else
 	    {
