@@ -1,5 +1,5 @@
 /*
- * $XConsortium: showrgb.c,v 1.5 89/12/13 08:39:31 jim Exp $
+ * $XConsortium: showrgb.c,v 1.6 89/12/13 09:01:47 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -38,6 +38,7 @@
 #include <X11/Xos.h>
 #include "rgb.h"			/* off in server/include/ */
 #include "site.h"
+#include <X11/Xfuncs.h>
 
 char *ProgramName;
 
