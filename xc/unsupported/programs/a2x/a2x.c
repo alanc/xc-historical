@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.3 92/03/11 12:11:46 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.4 92/03/11 15:29:06 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -30,11 +30,12 @@ KeyCode keycodes[256];
 unsigned short modmask[256];
 unsigned short curmods = 0;
 unsigned short tempmods = 0;
-KeyCode shift, control, lock, mod1, mod2, mod3, mod4, mod5;
+KeyCode shift, control, mod1, mod2, mod3, mod4, mod5, meta;
 KeySym last_sym = 0;
 KeyCode last_keycode = 0;
 struct termios oldterm;
 int istty = 0;
+char buttons[5];
 
 usage()
 {
@@ -140,6 +141,26 @@ reset_mapping()
     for (i = 0; i < mmap->max_keypermod; i++, j++)
 	if (mmap->modifiermap[j]) modmask[mmap->modifiermap[j]] = Mod5Mask;
     XFreeModifiermap(mmap);
+    i = XKeysymToKeycode(dpy, XK_Meta_L);
+    if (!i)
+	i = XKeysymToKeycode(dpy, XK_Meta_R);
+    switch (modmask[i]) {
+    case Mod1Mask:
+	meta = mod1;
+	break;
+    case Mod2Mask:
+	meta = mod2;
+	break;
+    case Mod3Mask:
+	meta = mod3;
+	break;
+    case Mod4Mask:
+	meta = mod4;
+	break;
+    case Mod5Mask:
+	meta = mod5;
+	break;
+    }
     last_sym = 0;
 }
 
@@ -151,51 +172,45 @@ do_key(key, mods)
     if (!key)
 	return;
     if (modmask[key]) {
-	if (!(tempmods & modmask[key])) {
-	    switch (modmask[key])
-	    {
-	    case ShiftMask:
-		XTestFakeKeyEvent(dpy, shift, True, 0);
-		break;
-	    case ControlMask:
-		XTestFakeKeyEvent(dpy, control, True, 0);
-		break;
-	    case Mod1Mask:
-		XTestFakeKeyEvent(dpy, mod1, True, 0);
-		break;
-	    case Mod2Mask:
-		XTestFakeKeyEvent(dpy, mod2, True, 0);
-		break;
-	    case Mod3Mask:
-		XTestFakeKeyEvent(dpy, mod3, True, 0);
-		break;
-	    case Mod4Mask:
-		XTestFakeKeyEvent(dpy, mod4, True, 0);
-		break;
-	    case Mod5Mask:
-		XTestFakeKeyEvent(dpy, mod5, True, 0);
-		break;
-	    }
-	}
-	curmods |= modmask[key];
 	tempmods |= modmask[key];
 	return;
     }
-    if ((mods & ShiftMask) && !(curmods & ShiftMask)) {
-	XTestFakeKeyEvent(dpy, shift, True, 0);
-	curmods |= ShiftMask;
-    } else if (!(mods & ShiftMask) && (curmods & ShiftMask)) {
-	XTestFakeKeyEvent(dpy, shift, False, 0);
-	curmods &= ~ShiftMask;
-	tempmods &= ~ShiftMask;
+    if (tempmods) {
+	if (tempmods & ShiftMask)
+	    XTestFakeKeyEvent(dpy, shift, True, 0);
+	if (tempmods & ControlMask)
+	    XTestFakeKeyEvent(dpy, control, True, 0);
+	if (tempmods & Mod1Mask)
+	    XTestFakeKeyEvent(dpy, mod1, True, 0);
+	if (tempmods & Mod2Mask)
+	    XTestFakeKeyEvent(dpy, mod2, True, 0);
+	if (tempmods & Mod3Mask)
+	    XTestFakeKeyEvent(dpy, mod3, True, 0);
+	if (tempmods & Mod4Mask)
+	    XTestFakeKeyEvent(dpy, mod4, True, 0);
+	if (tempmods & Mod5Mask)
+	    XTestFakeKeyEvent(dpy, mod5, True, 0);
+	curmods |= tempmods;
     }
-    if ((mods & ControlMask) && !(curmods & ControlMask)) {
-	XTestFakeKeyEvent(dpy, control, True, 0);
-	curmods |= ControlMask;
-    } else if (!(mods & ControlMask) && (curmods & ControlMask)) {
-	XTestFakeKeyEvent(dpy, control, False, 0);
-	curmods &= ~ControlMask;
-	tempmods &= ~ControlMask;
+    if (!(tempmods & ShiftMask)) {
+	if ((mods & ShiftMask) && !(curmods & ShiftMask)) {
+	    XTestFakeKeyEvent(dpy, shift, True, 0);
+	    curmods |= ShiftMask;
+	} else if (!(mods & ShiftMask) && (curmods & ShiftMask)) {
+	    XTestFakeKeyEvent(dpy, shift, False, 0);
+	    curmods &= ~ShiftMask;
+	    tempmods &= ~ShiftMask;
+	}
+    }
+    if (!(tempmods & ControlMask)) {
+	if ((mods & ControlMask) && !(curmods & ControlMask)) {
+	    XTestFakeKeyEvent(dpy, control, True, 0);
+	    curmods |= ControlMask;
+	} else if (!(mods & ControlMask) && (curmods & ControlMask)) {
+	    XTestFakeKeyEvent(dpy, control, False, 0);
+	    curmods &= ~ControlMask;
+	    tempmods &= ~ControlMask;
+	}
     }
     XTestFakeKeyEvent(dpy, key, True, 0);
     XTestFakeKeyEvent(dpy, key, False, 0);
@@ -223,6 +238,33 @@ dochar(c)
     int c;
 {
     do_key(keycodes[c], modifiers[c]);
+}
+
+do_button(button)
+    int button;
+{
+    Window root, child;
+    int rx, ry, x, y;
+    unsigned int state;
+
+    if (button < 1 || button > 5)
+	return;
+    XQueryPointer(dpy, DefaultRootWindow(dpy), &root, &child, &rx, &ry,
+		  &x, &y, &state);
+    XTestFakeButtonEvent(dpy, button,
+			 (state & (Button1Mask << (button - 1))) == 0, 0);
+}
+
+do_x(delta)
+    int delta;
+{
+    XWarpPointer(dpy, None, None, 0, 0, 0, 0, delta, 0);
+}
+
+do_y(delta)
+    int delta;
+{
+    XWarpPointer(dpy, None, None, 0, 0, 0, 0, 0, delta);
 }
 
 do_keysym(sym)
@@ -257,12 +299,12 @@ main(argc, argv)
     XEvent ev;
     char keysym_char = '\024'; /* control T */
     KeySym sym;
+    char *endptr;
 
     for (argc--, argv++; argc > 0; argc--, argv++) {
 	if (argv[0][0] != '-')
 	    usage();
-	switch (argv[0][1])
-	{
+	switch (argv[0][1]) {
 	case 'd':
 	    argc--; argv++;
 	    if (!argc)
@@ -329,14 +371,36 @@ main(argc, argv)
 			quit(0);
 		    n += j;
 		}
-		if (buf[j] != keysym_char)
-		    continue;
+		if (buf[j] != keysym_char) {
+		    if (j != i)
+			continue;
+		    switch (buf[j]) {
+		    case '\003': /* control c */
+			do_key(control, 0);
+			break;
+		    case '\015': /* control m */
+			do_key(meta, 0);
+			break;
+		    case '\023': /* control s */
+			do_key(shift, 0);
+			break;
+		    default:
+			continue;
+		    }
+		    break;
+		}
 		buf[j] = '\0';
 		if (j == i)
 		    dochar(keysym_char);
+		else if (buf[i] == '\002') /* control b */
+		    do_button(atoi(buf+i+1));
+		else if (buf[i] == '\030') /* control x */
+		    do_x(atoi(buf+i+1));
+		else if (buf[i] == '\031') /* control y */
+		    do_y(atoi(buf+i+1));
 		else if (!strcmp(buf+i, "exit"))
 		    quit(0);
-		else if (sym = strtoul(buf+i, NULL, 16))
+		else if ((sym = strtoul(buf+i, &endptr, 16)) && !*endptr)
 		    do_keysym(sym);
 		else if (sym = XStringToKeysym(buf+i))
 		    do_keysym(sym);
