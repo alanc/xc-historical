@@ -919,8 +919,6 @@
       (princ " " stream)
       (prin1 (font-id font) stream))))
 
-(proclaim '(inline font-font-info font-char-infos make-font))
-
 (defun font-id (font)
   ;; Get font-id, opening font if needed
   (or (font-id-internal font)
@@ -997,7 +995,7 @@
 		   (dpy (xintern type '-display)))
 	       (if (member type *clx-cached-types*)
 		   `(within-definition (,type make-mumble-equal)
-		      (proclaim '(inline ,predicate))
+		      (declaim (inline ,predicate))
 		      (defun ,predicate (a b) (eq a b)))
 		   `(within-definition (,type make-mumble-equal)
 		      (defun ,predicate (a b)
