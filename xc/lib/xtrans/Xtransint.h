@@ -1,4 +1,4 @@
-/* $XConsortium: Xtransint.h,v 1.16 94/03/29 14:27:14 mor Exp $ */
+/* $XConsortium: Xtransint.h,v 1.17 94/03/31 11:11:03 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -140,6 +140,8 @@ typedef struct _Xtransport {
     char	*TransName;
     int		flags;
 
+#ifdef TRANS_CLIENT
+
     XtransConnInfo (*OpenCOTSClient)(
 #if NeedNestedPrototypes
 	struct _Xtransport *,	/* transport */
@@ -148,6 +150,10 @@ typedef struct _Xtransport {
 	char *			/* port */
 #endif
     );
+
+#endif /* TRANS_CLIENT */
+
+#ifdef TRANS_SERVER
 
     XtransConnInfo (*OpenCOTSServer)(
 #if NeedNestedPrototypes
@@ -158,6 +164,10 @@ typedef struct _Xtransport {
 #endif
     );
 
+#endif /* TRANS_SERVER */
+
+#ifdef TRANS_CLIENT
+
     XtransConnInfo (*OpenCLTSClient)(
 #if NeedNestedPrototypes
 	struct _Xtransport *,	/* transport */
@@ -167,6 +177,10 @@ typedef struct _Xtransport {
 #endif
     );
 
+#endif /* TRANS_CLIENT */
+
+#ifdef TRANS_SERVER
+
     XtransConnInfo (*OpenCLTSServer)(
 #if NeedNestedPrototypes
 	struct _Xtransport *,	/* transport */
@@ -175,6 +189,8 @@ typedef struct _Xtransport {
 	char *			/* port */
 #endif
     );
+
+#endif /* TRANS_SERVER */
 
 
 #ifdef TRANS_REOPEN
@@ -206,6 +222,8 @@ typedef struct _Xtransport {
 #endif
     );
 
+#ifdef TRANS_SERVER
+
     int	(*CreateListener)(
 #if NeedNestedPrototypes
 	XtransConnInfo,		/* connection */
@@ -226,6 +244,10 @@ typedef struct _Xtransport {
 #endif
     );
 
+#endif /* TRANS_SERVER */
+
+#ifdef TRANS_CLIENT
+
     int	(*Connect)(
 #if NeedNestedPrototypes
 	XtransConnInfo,		/* connection */
@@ -233,6 +255,8 @@ typedef struct _Xtransport {
 	char *			/* port */
 #endif
     );
+
+#endif /* TRANS_CLIENT */
 
     int	(*BytesReadable)(
 #if NeedNestedPrototypes
