@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: fsconvert.c,v 1.3 91/05/13 16:42:13 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -307,7 +307,7 @@ _fs_get_glyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
     return Successful;
 }
 
-CharInfoRec junkDefault;
+static CharInfoRec junkDefault;
 
 static int
 _fs_get_metrics(pFont, count, chars, charEncoding, glyphCount, glyphs)

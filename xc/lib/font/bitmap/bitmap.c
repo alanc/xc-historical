@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: bitmap.c,v 1.1 91/05/10 14:45:37 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -120,7 +120,7 @@ bitmapGetGlyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
     return Successful;
 }
 
-CharInfoRec junkDefault;
+static CharInfoRec junkDefault;
 
 int
 bitmapGetMetrics(pFont, count, chars, charEncoding, glyphCount, glyphs)
