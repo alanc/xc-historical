@@ -1,4 +1,4 @@
-/* $XConsortium: choose.c,v 1.9 94/07/21 14:59:07 mor Exp $ */
+/* $XConsortium: choose.c,v 1.10 94/07/25 13:32:01 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -66,7 +66,7 @@ String **names_ret;
 
     while ((entry = readdir (dir)) != NULL)
     {
-	if (strncmp (entry->d_name, ".XSM-", 4) == 0)
+	if (strncmp (entry->d_name, ".XSM-", 5) == 0)
 	    count++;
     }
 
@@ -81,8 +81,8 @@ String **names_ret;
 
     while ((entry = readdir (dir)) != NULL && *count_ret < count)
     {
-	if (strncmp (entry->d_name, ".XSM-", 4) == 0)
-	    (*names_ret)[(*count_ret)++] = XtNewString (entry->d_name + 4);
+	if (strncmp (entry->d_name, ".XSM-", 5) == 0)
+	    (*names_ret)[(*count_ret)++] = XtNewString (entry->d_name + 5);
     }
 
     closedir (dir);
