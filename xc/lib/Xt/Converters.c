@@ -1,4 +1,4 @@
-/* $XConsortium: Converters.c,v 1.66 91/04/08 18:59:46 converse Exp $ */
+/* $XConsortium: Converters.c,v 1.67 91/04/08 19:12:00 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -761,7 +761,7 @@ static Boolean CvtStringToFont(dpy, args, num_args, fromVal, toVal, closure_ret)
 	xrm_name[1] = 0;
 	xrm_class[0] = XrmPermStringToQuark ("XtDefaultFont");
 	xrm_class[1] = 0;
-	if (XrmQGetResource(XtDatabase(dpy), xrm_name, xrm_class, 
+	if (XrmQGetResource(XtDatabase(display), xrm_name, xrm_class, 
 			    &rep_type, &value)) {
 	    if (rep_type == XtQString) {
 		f = XLoadFont(display, (char *)value.addr);
@@ -781,7 +781,7 @@ static Boolean CvtStringToFont(dpy, args, num_args, fromVal, toVal, closure_ret)
 	}
     }
     /* Should really do XListFonts, but most servers support this */
-    f = XLoadFont(dpy,"-*-*-*-R-*-*-*-120-*-*-*-*-ISO8859-1");
+    f = XLoadFont(display, "-*-*-*-R-*-*-*-120-*-*-*-*-ISO8859-1");
     if (f != 0)
 	goto Done;
 
@@ -881,7 +881,7 @@ CvtStringToFontSet( dpy, args, num_args, fromVal, toVal, closure_ret )
       xrm_name[1] = 0;
       xrm_class[0] = XrmPermStringToQuark ("XtDefaultFontSet");
       xrm_class[1] = 0;
-      if (XrmQGetResource(XtDatabase(dpy), xrm_name, xrm_class, 
+      if (XrmQGetResource(XtDatabase(display), xrm_name, xrm_class, 
                           &rep_type, &value)) {
           if (rep_type == XtQString) {
               f = XCreateFontSet(display, (char *)value.addr,
@@ -1013,7 +1013,7 @@ CvtStringToFontStruct(dpy, args, num_args, fromVal, toVal, closure_ret)
 	xrm_name[1] = 0;
 	xrm_class[0] = XrmPermStringToQuark ("XtDefaultFont");
 	xrm_class[1] = 0;
-	if (XrmQGetResource(XtDatabase(dpy), xrm_name, xrm_class, 
+	if (XrmQGetResource(XtDatabase(display), xrm_name, xrm_class, 
 			    &rep_type, &value)) {
 	    if (rep_type == XtQString) {
 		f = XLoadQueryFont(display, (char*)value.addr);
@@ -1024,7 +1024,7 @@ CvtStringToFontStruct(dpy, args, num_args, fromVal, toVal, closure_ret)
 						      "FontStruct" );
 		}
 	    } else if (rep_type == XtQFont) {
-		f = XQueryFont(dpy, *(Font*)value.addr );
+		f = XQueryFont(display, *(Font*)value.addr );
 		if (f != NULL) goto Done;
 	    } else if (rep_type == XtQFontStruct) {
 		f = (XFontStruct*)value.addr;
@@ -1033,7 +1033,7 @@ CvtStringToFontStruct(dpy, args, num_args, fromVal, toVal, closure_ret)
 	}
     }
     /* Should really do XListFonts, but most servers support this */
-    f = XLoadQueryFont(dpy,"-*-*-*-R-*-*-*-120-*-*-*-*-ISO8859-1");
+    f = XLoadQueryFont(display, "-*-*-*-R-*-*-*-120-*-*-*-*-ISO8859-1");
     if (f != NULL)
 	goto Done;
 
@@ -1303,7 +1303,7 @@ CvtStringToVisual(dpy, args, num_args, fromVal, toVal, closure_ret)
 	return False;
     }
 
-    if (XMatchVisualInfo( dpy,
+    if (XMatchVisualInfo( XDisplayOfScreen((Screen*)*(Screen**)args[0].addr),
 		     XScreenNumberOfScreen((Screen*)*(Screen**)args[0].addr),
 		     (int)*(int*)args[1].addr,
 		     vc,
@@ -1314,7 +1314,8 @@ CvtStringToVisual(dpy, args, num_args, fromVal, toVal, closure_ret)
 	String params[2];
 	Cardinal num_params = 2;
 	params[0] = str;
-	params[1] = DisplayString(dpy);
+	params[1] = 
+	    DisplayString(XDisplayOfScreen((Screen*)*(Screen**)args[0].addr));
 	XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
 		  XtNconversionError, "stringToVisual", XtCXtToolkitError,
                   "Cannot find Visual of class %s for display %s",
