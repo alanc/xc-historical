@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: maskbits.h,v 1.14 89/03/16 14:46:34 jim Exp $ */
+/* $XConsortium: maskbits.h,v 1.15 89/07/13 13:49:28 keith Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "servermd.h"
@@ -194,12 +194,20 @@ getshiftedleftbits(psrc, offset, w, dst)
 	psrc is declared (unsigned char *).
 */
 
+#ifdef STRICT_ANSI_SHIFT
+#define SHL(x,y)    ((y) >= 32 ? 0 : ((x) << (y)))
+#define SHR(x,y)    ((y) >= 32 ? 0 : ((x) >> (y)))
+#else
+#define SHL(x,y)    ((x) << (y))
+#define SHR(x,y)    ((x) >> (y))
+#endif
+
 #if (BITMAP_BIT_ORDER == MSBFirst)	/* pc/rt, 680x0 */
-#define SCRLEFT(lw, n)	((unsigned int)(lw) << (n))
-#define SCRRIGHT(lw, n)	((unsigned int)(lw) >> (n))
+#define SCRLEFT(lw, n)	SHL((unsigned int)(lw),(n))
+#define SCRRIGHT(lw, n)	SHR((unsigned int)(lw),(n))
 #else					/* vax, intel */
-#define SCRLEFT(lw, n)	((lw) >> (n))
-#define SCRRIGHT(lw, n)	((lw) << (n))
+#define SCRLEFT(lw, n)	SHR((lw),(n))
+#define SCRRIGHT(lw, n)	SHL((lw),(n))
 #endif
 
 
@@ -333,7 +341,7 @@ else \
 #define getbits(psrc,x,w,dst) \
 { \
     FASTGETBITS(psrc, x, w, dst);\
-    dst <<= (32-(w)); \
+    dst = SHL(dst,(32-(w))); \
 }
 
 #define FASTPUTBITS(src, x, w, pdst) \
@@ -341,7 +349,7 @@ else \
 	 : "=o" (*(char *)(pdst)) \
 	 : "di" (x), "di" (w), "d" (src), "0" (*(char *) (pdst)))
 
-#define putbits(src, x, w, pdst) FASTPUTBITS(((src) >> (32-(w))), x, w, pdst) 
+#define putbits(src, x, w, pdst) FASTPUTBITS(SHR((src),32-(w)), x, w, pdst)
 
 #endif mc68020
 #endif __GNUC__
