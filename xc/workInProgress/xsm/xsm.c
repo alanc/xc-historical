@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.30 94/02/22 15:44:01 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.31 94/03/16 15:18:34 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -113,11 +113,10 @@ Widget			    shutdownCancelButton;
 
 void FreeClientInfo ();
 
-extern Status XtInitializeICE ();
+extern Status InitWatchProcs ();
 extern void restart_everything ();
 extern void read_save ();
 extern void write_save ();
-extern void remote_start ();
 extern Bool HostBasedProc ();
 extern Status set_auth ();
 extern void free_auth ();
@@ -322,6 +321,25 @@ InteractDoneProc (smsConn, managerData, cancelShutdown)
 
 
 void
+SaveYourselfReqProc (smsConn, managerData, saveType,
+    shutdown, interactStyle, fast, global)
+
+SmsConn     smsConn;
+SmPointer   managerData;
+int	    saveType;
+Bool	    shutdown;
+int         interactStyle;
+Bool        fast;
+Bool        global;
+
+{
+    if (app_resources.verbose) 
+	printf("SAVE YOURSELF REQUEST not supported!\n");
+}
+
+
+
+void
 SaveYourselfDoneProc (smsConn, managerData, success)
     SmsConn     smsConn;
     SmPointer 	managerData;
@@ -433,6 +451,29 @@ SmProp		*prop;
 }
 
 
+
+void
+DeleteProperty(client, propname)
+ClientRec	*client;
+char		*propname;
+{
+    int	j;
+
+    for (j = 0; j < client->numProps; j++)
+	if (strcmp (propname, client->props[j]->name) == 0)
+	{
+	    SmFreeProperty (client->props[j]);
+
+	    if (j < client->numProps - 1)
+		client->props[j] = client->props[client->numProps - 1];
+
+	    client->numProps--;
+	    break;
+	}
+}
+
+
+
 void
 SetPropertiesProc (smsConn, managerData, numProps, props)
 
@@ -443,7 +484,7 @@ SmProp 		**props;
 
 {
     ClientRec	*client = (ClientRec *) managerData;
-    int		i, j;
+    int		i;
 
     if (app_resources.verbose) {
 	printf ("Client Id = %s, received SET PROPERTIES ", client->clientId);
@@ -461,6 +502,35 @@ SmProp 		**props;
 
 
 void
+DeletePropertiesProc (smsConn, managerData, numProps, propNames)
+
+SmsConn 	smsConn;
+SmPointer 	managerData;
+int		numProps;
+char **		propNames;
+
+{
+    ClientRec	*client = (ClientRec *) managerData;
+    int		i;
+
+    if (app_resources.verbose) {
+	printf ("Client Id = %s, received DELETE PROPERTIES ",
+	    client->clientId);
+	printf ("[Num props = %d]\n", numProps);
+    }
+
+    for (i = 0; i < numProps; i++) {
+	if(app_resources.verbose)
+	    printf ("   Name:	%s\n", propNames[i]);
+	DeleteProperty(client, propNames[i]);
+	free (propNames[i]);
+    }
+    free ((char *) propNames);
+}
+
+
+
+void
 GetPropertiesProc (smsConn, managerData)
 
 SmsConn 	smsConn;
@@ -468,7 +538,7 @@ SmPointer 	managerData;
 
 {
     ClientRec	*client = (ClientRec *) managerData;
-    int		i, j;
+    int		i;
 
     if (app_resources.verbose) {
 	printf ("Client Id = %s, received GET PROPERTIES\n", client->clientId);
@@ -504,17 +574,28 @@ IcePointer	client_data;
 
 
 
-void
-NewClientProc (smsConn, managerData, callbacksRet)
+Status
+NewClientProc (smsConn, managerData, maskRet, callbacksRet, failureReasonRet)
 
 SmsConn		smsConn;
 SmPointer  	managerData;
+unsigned long	*maskRet;
 SmsCallbacks	*callbacksRet;
+char 		**failureReasonRet;
 
 {
     ClientRec *newClient = (ClientRec *) malloc (sizeof (ClientRec));
+    *maskRet = 0;
 
-    if(!newClient) nomem();
+    if (!newClient)
+    {
+	char *str = "Memory allocation failed";
+
+	if ((*failureReasonRet = (char *) malloc (strlen (str) + 1)) != NULL)
+	    strcpy (*failureReasonRet, str);
+
+	return (0);
+    }
 
     newClient->smsConn = smsConn;
     newClient->ice_conn = SmsGetIceConnection (smsConn);
@@ -536,26 +617,43 @@ SmsCallbacks	*callbacksRet;
      * Set up session manager callbacks.
      */
 
+    *maskRet |= SmsRegisterClientProcMask;
     callbacksRet->register_client.callback 	= RegisterClientProc;
     callbacksRet->register_client.manager_data  = (SmPointer) newClient;
 
+    *maskRet |= SmsInteractRequestProcMask;
     callbacksRet->interact_request.callback 	= InteractRequestProc;
     callbacksRet->interact_request.manager_data = (SmPointer) newClient;
 
+    *maskRet |= SmsInteractDoneProcMask;
     callbacksRet->interact_done.callback	= InteractDoneProc;
     callbacksRet->interact_done.manager_data    = (SmPointer) newClient;
 
+    *maskRet |= SmsSaveYourselfRequestProcMask;
+    callbacksRet->save_yourself_request.callback     = SaveYourselfReqProc;
+    callbacksRet->save_yourself_request.manager_data = (SmPointer) newClient;
+
+    *maskRet |= SmsSaveYourselfDoneProcMask;
     callbacksRet->save_yourself_done.callback 	   = SaveYourselfDoneProc;
     callbacksRet->save_yourself_done.manager_data  = (SmPointer) newClient;
 
+    *maskRet |= SmsCloseConnectionProcMask;
     callbacksRet->close_connection.callback 	 = CloseConnectionProc;
     callbacksRet->close_connection.manager_data  = (SmPointer) newClient;
 
+    *maskRet |= SmsSetPropertiesProcMask;
     callbacksRet->set_properties.callback 	= SetPropertiesProc;
     callbacksRet->set_properties.manager_data   = (SmPointer) newClient;
 
+    *maskRet |= SmsDeletePropertiesProcMask;
+    callbacksRet->delete_properties.callback	= DeletePropertiesProc;
+    callbacksRet->delete_properties.manager_data   = (SmPointer) newClient;
+
+    *maskRet |= SmsGetPropertiesProcMask;
     callbacksRet->get_properties.callback	= GetPropertiesProc;
     callbacksRet->get_properties.manager_data   = (SmPointer) newClient;
+
+    return (1);
 }
 
 
@@ -849,7 +947,7 @@ XtPointer 	callData;
 	    printf("Client Id = %s, no properties are set\n",
 		   client->clientId);
 	} else {
-	    int i, j;
+	    int i;
 
 	    printf ("Client Id = %s, the following properties are set:\n",
 		    client->clientId);
@@ -977,7 +1075,8 @@ IceConn 	ice_conn;
 	 * became valid.  Example: ICE authentication failed.
 	 */
 
-	;
+	IceSetShutdownNegotiation (ice_conn, False);
+	IceCloseConnection (ice_conn);
     }
     else
     {
@@ -1175,7 +1274,7 @@ main(argc, argv)
 	exit (1);
     }
 
-    XtInitializeICE (appContext);
+    InitWatchProcs (appContext);
 
     mainWindow = XtCreateManagedWidget (
 	"mainWindow", boxWidgetClass, topLevel, NULL, 0);
