@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XChProp.c,v 11.15 88/08/11 14:54:54 jim Exp $ */
+/* $XConsortium: XChProp.c,v 11.16 88/09/06 16:04:34 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -15,7 +15,7 @@ XChangeProperty (dpy, w, property, type, format, mode, data, nelements)
     int nelements;
     {
     register xChangePropertyReq *req;
-    register long nbytes = nelements;
+    register long len;
 
     LockDisplay(dpy);
     GetReq (ChangeProperty, req);
@@ -28,24 +28,33 @@ XChangeProperty (dpy, w, property, type, format, mode, data, nelements)
     
     switch (format) {
       case 8:
-	req->length += (nelements + 3)>>2;
-	Data (dpy, (char *)data, nbytes);
+	len = req->length + ((long)nelements + 3)>>2;
+	if (len <= 65535) {
+	    req->length = len;
+	    Data (dpy, (char *)data, nelements);
+	} /* else force BadLength */
         break;
  
       case 16:
-	req->length += (nelements + 1)>>1;
-	nbytes <<= 1;
-	Data16 (dpy, (short *) data, nbytes);
+	len = req->length + ((long)nelements + 1)>>1;
+	if (len <= 65535) {
+	    req->length = len;
+	    len = (long)nelements << 1;
+	    Data16 (dpy, (short *) data, len);
+	} /* else force BadLength */
 	break;
 
       case 32:
-	req->length += nelements;
-	nbytes <<= 2;
-	Data32 (dpy, (long *) data, nbytes);
+	len = req->length + (long)nelements;
+	if (len <= 65535) {
+	    req->length = len;
+	    len = (long)nelements << 2;
+	    Data32 (dpy, (long *) data, len);
+	} /* else force BadLength */
 	break;
 
       default:
-        /* XXX this is an error! */ ;
+        /* BadValue will be generated */ ;
       }
 
     UnlockDisplay(dpy);
