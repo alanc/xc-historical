@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: main.c,v 1.121 87/09/03 13:38:01 swick Locked $ */
+/* $Header: main.c,v 1.122 87/09/07 12:49:15 rws Locked $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -138,7 +138,6 @@ main(argc, argv)
      * can't be passed argc, argv as parameters */
     argcGlobal = argc;
     argvGlobal = argv;
-    ErrorF(  "Hello, this is the X server\n");
     display = "0";
     ProcessCommandLine(argc, argv);
 
@@ -217,7 +216,6 @@ main(argc, argv)
 	    CreateConnectionBlock();
 	}
 
-	ErrorF(  "Now I call dispatch\n");
 	Dispatch();
 
 	/* Now free up whatever must be freed */
@@ -369,8 +367,6 @@ CreateConnectionBlock()
     connSetupPrefix.length = lenofblock/4;
     connSetupPrefix.majorVersion = X_PROTOCOL;
     connSetupPrefix.minorVersion = X_PROTOCOL_REVISION;
-    ErrorF(  "Connection Prefix: len == %d\n",
-	    connSetupPrefix.length);
 }
 
 
