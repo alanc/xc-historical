@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.145 88/05/05 21:14:15 rws Exp $ */
+/* $Header: events.c,v 1.146 88/06/07 18:13:13 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -3301,7 +3301,7 @@ ProcChangePointerControl(client)
     {
 	if (stuff->threshold == -1)
 	    ctrl.threshold = defaultPointerControl.threshold;
-	else if (stuff->threshold <= 0)
+	else if (stuff->threshold < 0)
 	{
 	    client->errorValue = stuff->threshold;
 	    return BadValue;
