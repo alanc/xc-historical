@@ -24,7 +24,7 @@ SOFTWARE.
 #include <stdio.h>
 #ifndef VMS
 #include <X11/Xatom.h>
-#include <sys/time.h>
+#include <X11/Xos.h>
 #else
 #include <decw$include/Xatom.h>
 #endif
@@ -255,7 +255,7 @@ void usage()
 "    -sync			do the tests in synchronous mode",
 "    -repeat <n>		do tests <n> times (default = 5)",
 "    -time <s>			do tests for <s> seconds each (default = 5)",
-"    -draw			draw after each test -- pmax only",
+/*"    -draw			draw after each test -- pmax only",*/
 "    -all			do all tests",
 "    -fg			the foreground color to use",
 "    -bg		        the background color to use",
@@ -336,7 +336,7 @@ static Window CreatePerfWindow(xp, x, y, width, height)
     Window w;
 
     xswa.override_redirect = True;
-    w = XCreateSimpleWindow (xp->d, RootWindow (xp->d, 0),
+    w = XCreateSimpleWindow (xp->d, DefaultRootWindow (xp->d),
 	x, y, width, height, 1, xp->foreground, xp->background);
     XChangeWindowAttributes (xp->d, w, CWOverrideRedirect, &xswa);
     XMapWindow (xp->d, w);
@@ -435,7 +435,8 @@ Bool CalibrateTest(xp, test, seconds, usecperobj)
 	DestroyClipWindows(xp, test->clips);
 
 	if (reps != test->parms.reps) {
-	    /* The test can't do the number of reps as we asked for.  Give up */
+	    /* The test can't do the number of reps as we asked for.  
+	       Give up */
 	    *usecperobj = 
 		usecs / (double)(test->parms.reps * test->parms.objects);
 	    return True;
@@ -537,17 +538,19 @@ main(argc, argv)
     char **argv;
 
 {
-    int     i, j;
-    int     numTests;       /* Even though the linker knows, we don't. */
-    char    hostname[100];
-    char   *displayName;
+    int		i, j;
+    int		numTests;       /* Even though the linker knows, we don't. */
+    char	hostname[100];
+    char	*displayName;
     XParmRec    xparms;
-    int     repeat = 5;
-    int     seconds = 5;
-    Bool    foundOne = False;
-    Bool    synchronous = False;
-    Window  status;
-    GC      tgc;	    
+    int		repeat = 5;
+    int		seconds = 5;
+    Bool	foundOne = False;
+    Bool	synchronous = False;
+    Window      status;
+    GC		tgc;	    
+    XGCValues	tgcv;
+    int		screen;
 
     /* ScreenSaver state */
     int ssTimeout, ssInterval, ssPreferBlanking, ssAllowExposures;
@@ -612,6 +615,7 @@ main(argc, argv)
     if (!foundOne)
 	usage ();
     xparms.d = Open_Display (displayName);
+    printf("x11perf - X11 performance program, version 1.0\n");
 #ifndef VMS
     gethostname (hostname, 100);
     printf ("%s server on %s from %s\n",
@@ -620,38 +624,43 @@ main(argc, argv)
     printf ("%s server on %s\n",
 	    ServerVendor (xparms.d), DisplayString (xparms.d));
 #endif
+    screen = DefaultScreen (xparms.d);
     PrintTime ();
 
     /* Force screen out of screen-saver mode, grab current data, and set
-       time to blank to a suitable large number, like 3 hours. */
+       time to blank to 8 hours.  This finesses various problems if you
+       try to turn it off completely.  As long as the tests run to 
+       completion, the old screen-saver values are restored. */
     XForceScreenSaver(xparms.d, ScreenSaverReset);
     XGetScreenSaver(xparms.d, &ssTimeout, &ssInterval, &ssPreferBlanking,
 	&ssAllowExposures);
-    XSetScreenSaver(xparms.d, 3 * 3600, ssInterval, ssPreferBlanking,
+    XSetScreenSaver(xparms.d, 8 * 3600, ssInterval, ssPreferBlanking,
 	ssAllowExposures);
 
     if (drawToFakeServer) {
         tileToQuery =
-	    XCreatePixmap(xparms.d, RootWindow (xparms.d, 0), 32, 32, 1);
+	    XCreatePixmap(xparms.d, DefaultRootWindow (xparms.d), 32, 32, 1);
     }
 
 
     xparms.foreground =
-	AllocateColor(xparms.d, foreground, BlackPixel(xparms.d, 0));
+	AllocateColor(xparms.d, foreground, BlackPixel(xparms.d, screen));
     xparms.background =
-	AllocateColor(xparms.d, background, WhitePixel(xparms.d, 0));
+	AllocateColor(xparms.d, background, WhitePixel(xparms.d, screen));
     xparms.w = CreatePerfWindow(&xparms, 2, 2, WIDTH, HEIGHT);
     status = CreatePerfWindow(&xparms, 2, HEIGHT+5, WIDTH, 20);
-    tgc = XCreateGC(xparms.d, status, 0, NULL);
-    
+    tgcv.foreground = BlackPixel(xparms.d, screen);
+    tgcv.background = WhitePixel(xparms.d, screen);
+    tgc = XCreateGC(xparms.d, status, GCForeground | GCBackground, &tgcv);
+   
 
     if (synchronous)
 	XSynchronize (xparms.d, True);
 
     /* Get mouse pointer out of the way of the performance window.  On
        software cursor machines it will slow graphics performance.  On
-       all MIT-derived servers it will slow window creation/configuration
-       performance. */
+       all current MIT-derived servers it will slow window 
+       creation/configuration performance. */
     XWarpPointer(xparms.d, None, status, 0, 0, 0, 0, WIDTH, 20);
 
     /* Figure out how long to call HardwareSync, so we can adjust for that
