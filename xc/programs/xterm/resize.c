@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: resize.c,v 1.30 94/11/21 18:24:54 kaleb Exp kaleb $
+ *	$XConsortium: resize.c,v 1.31 94/11/30 23:51:18 kaleb Exp kaleb $
  */
 
 /*
@@ -34,6 +34,11 @@
 
 #if defined(att) || (defined(SYSV) && defined(i386))
 #define ATT
+#endif
+
+#if defined(sgi) && defined(SVR4)
+#undef SVR4
+#define SYSV
 #endif
 
 #ifdef SVR4
