@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.38 91/12/16 19:34:35 gildea Exp $
+ * $XConsortium: process.c,v 1.39 92/01/22 17:34:28 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -88,7 +88,7 @@ static int do_list(), do_merge(), do_extract(), do_add(), do_remove();
 static int do_help(), do_source(), do_info(), do_exit();
 static int do_quit(), do_questionmark();
 
-CommandTable command_table[] = {	/* table of known commands */
+static CommandTable command_table[] = {	/* table of known commands */
     { "add",      2, 3, do_add,
 	"add dpyname protoname hexkey   add entry" },
     { "exit",     3, 4, do_exit,
@@ -192,11 +192,10 @@ static void badcommandline (cmd)
 static char *skip_space (s)
     register char *s;
 {
-    register char c;
-
     if (!s) return NULL;
 
-    for (; (c = *s) && isascii(c) && isspace(c); s++) ;
+    for ( ; *s && isascii(*s) && isspace(*s); s++)
+	;
     return s;
 }
 
@@ -204,12 +203,11 @@ static char *skip_space (s)
 static char *skip_nonspace (s)
     register char *s;
 {
-    register char c;
-
     if (!s) return NULL;
 
     /* put quoting into loop if need be */
-    for (; (c = *s) && isascii(c) && !isspace(c); s++) ;
+    for ( ; *s && isascii(*s) && !isspace(*s); s++)
+	;
     return s;
 }
 
@@ -591,6 +589,7 @@ static Bool dieing = False;
 #define _signal_t void
 #endif
 
+/* ARGSUSED */
 static _signal_t die (sig)
     int sig;
 {
@@ -845,7 +844,7 @@ int process_command (inputfilename, lineno, argc, argv)
 
 static void fprintfhex (fp, len, cp)
     register FILE *fp;
-    int len;
+    unsigned int len;
     char *cp;
 {
     unsigned char *ucp = (unsigned char *) cp;
@@ -875,6 +874,7 @@ dump_numeric (fp, auth)
     return;
 }
 
+/* ARGSUSED */
 static int dump_entry (inputfilename, lineno, auth, data)
     char *inputfilename;
     int lineno;
@@ -1003,7 +1003,7 @@ static int merge_entries (firstp, second, nnewp, nreplp)
 	AuthList *next = b->next;	/* in case we free it */
 
 	a = first;
-	while (1) {
+	for (;;) {
 	    if (match_auth (a->auth, b->auth)) {  /* found a duplicate */
 		AuthList tmp;		/* swap it in for old one */
 		tmp = *a;
@@ -1092,6 +1092,7 @@ static int iterdpy (inputfilename, lineno, start,
     return errors;
 }
 
+/* ARGSUSED */
 static int remove_entry (inputfilename, lineno, auth, data)
     char *inputfilename;
     int lineno;
@@ -1183,6 +1184,7 @@ static int do_help (inputfilename, lineno, argc, argv)
 /*
  * questionmark
  */
+/* ARGSUSED */
 static int do_questionmark (inputfilename, lineno, argc, argv)
     char *inputfilename;
     int lineno;
@@ -1528,6 +1530,7 @@ static int do_info (inputfilename, lineno, argc, argv)
  */
 static Bool alldone = False;
 
+/* ARGSUSED */
 static int do_exit (inputfilename, lineno, argc, argv)
     char *inputfilename;
     int lineno;
@@ -1542,6 +1545,7 @@ static int do_exit (inputfilename, lineno, argc, argv)
 /*
  * quit
  */
+/* ARGSUSED */
 static int do_quit (inputfilename, lineno, argc, argv)
     char *inputfilename;
     int lineno;
