@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: mkfontdir.c,v 1.5 91/07/16 20:33:41 keith Exp $ */
+/* $XConsortium: mkfontdir.c,v 1.6 91/12/09 16:51:28 converse Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/Xfuncs.h>
@@ -151,7 +151,7 @@ FontNameExists (table, font_name)
 
     name.name = font_name;
     name.length = strlen (font_name);
-    name.ndashes = CountDashes (name.name, name.length);
+    name.ndashes = FontFileCountDashes (name.name, name.length);
     entry = FontFileFindNameInDir (table, &name);
     if (entry)
 	return entry->u.bitmap.fileName;
@@ -166,9 +166,9 @@ AddEntry (table, fontName, fileName)
 
     prototype.name.name = fontName;
     prototype.name.length = strlen (fontName);
-    prototype.name.ndashes = CountDashes (fontName, prototype.name.length);
+    prototype.name.ndashes = FontFileCountDashes (fontName, prototype.name.length);
     prototype.type = FONT_ENTRY_BITMAP;
-    prototype.u.bitmap.fileName = SaveString (fileName);
+    prototype.u.bitmap.fileName = FontFileSaveString (fileName);
     return FontFileAddEntry (table, &prototype) != 0;
 }
 
