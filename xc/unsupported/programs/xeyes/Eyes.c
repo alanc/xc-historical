@@ -165,14 +165,9 @@ static void Initialize (greq, gnew)
     w->eyes.centerGC = XtGetGC(gnew, valuemask, &myXGCV);
 
     w->eyes.update = 0;
+    /* wait for Realize to add the timeout */
+    w->eyes.interval_id = 0;
 
-    /*
-     * Note that the second argument is a GCid -- QueryFont accepts a GCid and
-     * returns the curently contained font.
-     */
-
-    w->eyes.interval_id =
-	    XtAddTimeOut(delays[w->eyes.update], draw_it, (caddr_t)gnew);
     w->eyes.pupil[0].x = w->eyes.pupil[1].x = -1;
     w->eyes.pupil[0].y = w->eyes.pupil[1].y = -1;
 }
@@ -185,12 +180,14 @@ static void Realize (gw, valueMask, attrs)
 {
      EyesWidget	w = (EyesWidget)gw;
 
-     if (w->eyes.backing_store != Always + WhenMapped + NotUseful) {
+    if (w->eyes.backing_store != Always + WhenMapped + NotUseful) {
      	attrs->backing_store = w->eyes.backing_store;
 	*valueMask |= CWBackingStore;
-     }
-     XtCreateWindow( gw, (unsigned)InputOutput, (Visual *)CopyFromParent,
+    }
+    XtCreateWindow( gw, (unsigned)InputOutput, (Visual *)CopyFromParent,
 		     *valueMask, attrs );
+    w->eyes.interval_id =
+	    XtAddTimeOut(delays[w->eyes.update], draw_it, (caddr_t)gw);
 }
 
 static void Destroy (gw)
@@ -222,6 +219,10 @@ static void Redisplay(gw, event, region)
 	myXGCV.line_width = w->eyes.thickness;
 	XChangeGC (dpy, w->eyes.outGC, GCLineWidth, &myXGCV);
     }
+    w->eyes.pupil[0].x = -1;
+    w->eyes.pupil[0].y = -1;
+    w->eyes.pupil[1].x = -1;
+    w->eyes.pupil[1].y = -1;
     (void) repaint_window ((EyesWidget)gw);
 }
 
@@ -294,14 +295,16 @@ static int draw_it(client_data, id)
 			if (newpupil[0].x != w->eyes.pupil[0].x ||
 			    newpupil[0].y != w->eyes.pupil[0].y)
 			{
-			    eyeBall (w, w->eyes.centerGC, 0);
+			    if (w->eyes.pupil[0].x != -1 || w->eyes.pupil[0].y != -1)
+				eyeBall (w, w->eyes.centerGC, 0);
 			    w->eyes.pupil[0] = newpupil[0];
 			    eyeBall (w, w->eyes.pupGC, 0, dx, dy);
 			}
 			if (newpupil[1].x != w->eyes.pupil[1].x ||
 			    newpupil[1].y != w->eyes.pupil[1].y)
 			{
-			    eyeBall (w, w->eyes.centerGC, 1);
+			    if (w->eyes.pupil[1].x != -1 || w->eyes.pupil[1].y != -1)
+				eyeBall (w, w->eyes.centerGC, 1);
 			    w->eyes.pupil[1] = newpupil[1];
 			    eyeBall (w, w->eyes.pupGC, 1, dx, dy);
 			}
