@@ -239,8 +239,6 @@
 		  :element-type 'overlap32
 		  :displaced-to byte-input))))
 
-(proclaim '(inline buffer-new-request-number))
-
 (defun buffer-ensure-size (buffer size)
   (declare (type buffer buffer)
 	   (type array-index size))
@@ -271,6 +269,8 @@
     (incf (buffer-boffset buffer) pad)
     (unless (index-zerop (index-mod (buffer-boffset buffer) 4))
       (buffer-flush buffer))))
+
+(declaim (inline buffer-new-request-number))
 
 (defun buffer-new-request-number (buffer)
   (declare (type buffer buffer))
