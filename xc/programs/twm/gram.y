@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.40 89/06/09 13:36:59 jim Exp $
+ * $XConsortium: gram.y,v 1.41 89/06/09 13:42:13 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -35,7 +35,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.40 89/06/09 13:36:59 jim Exp $";
+"$XConsortium: gram.y,v 1.41 89/06/09 13:42:13 jim Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -893,8 +893,11 @@ static Bool CheckWarpScreenArg (s)
     register char *s;
 {
     XmuCopyISOLatin1Lowered (s, s);
-    if (strcmp (s, "forw") == 0 || strcmp (s, "back") == 0 ||
-	strcmp (s, "prev") == 0) return True;
+
+    if (strcmp (s,  WARPSCREEN_NEXT) == 0 ||
+	strcmp (s,  WARPSCREEN_PREV) == 0 ||
+	strcmp (s,  WARPSCREEN_BACK) == 0)
+      return True;
 
     for (; *s && isascii(*s) && isdigit(*s); s++) ;
     return (*s ? False : True);

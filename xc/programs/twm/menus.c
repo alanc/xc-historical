@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.62 89/06/09 13:37:10 jim Exp $
+ * $XConsortium: menus.c,v 1.63 89/06/09 13:42:18 jim Exp $
  *
  * twm menu code
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.62 89/06/09 13:37:10 jim Exp $";
+"$XConsortium: menus.c,v 1.63 89/06/09 13:42:18 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1726,11 +1726,11 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 
     case F_WARPSCREEN:
 	{
-	    if (strcmp (action, "forw") == 0) {
+	    if (strcmp (action, WARPSCREEN_NEXT) == 0) {
 		WarpToScreen (Scr->screen + 1, 1);
-	    } else if (strcmp (action, "back") == 0) {
+	    } else if (strcmp (action, WARPSCREEN_PREV) == 0) {
 		WarpToScreen (Scr->screen - 1, -1);
-	    } else if (strcmp (action, "prev") == 0) {
+	    } else if (strcmp (action, WARPSCREEN_FORW) == 0) {
 		WarpToScreen (PreviousScreen, 0);
 	    } else {
 		WarpToScreen (atoi (action), 0);

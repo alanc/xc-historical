@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.h,v 1.13 89/04/13 15:48:36 jim Exp $
+ * $XConsortium: menus.h,v 1.14 89/05/04 15:51:43 jim Exp $
  *
  * twm menus include file
  *
@@ -126,6 +126,10 @@ extern int StartingX, StartingY, RestorePointer;
 #define MOVE_NONE	0	/* modes of constrained move */
 #define MOVE_VERT	1
 #define MOVE_HORIZ	2
+
+#define WARPSCREEN_NEXT "next"
+#define WARPSCREEN_PREV "prev"
+#define WARPSCREEN_BACK "back"
 
 extern void InitMenus();
 extern MenuRoot *NewMenuRoot();
