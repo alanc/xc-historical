@@ -1,5 +1,5 @@
 .\" Use tbl and -ms and macros.t
-.\" $XConsortium: xlfd.tbl.ms,v 1.8 91/06/19 20:06:58 rws Exp $
+.\" $XConsortium: xlfd.tbl.ms,v 1.9 91/06/30 17:50:47 rws Exp $
 .EH ''''
 .OH ''''
 .EF ''''
@@ -590,7 +590,7 @@ that is considered part of the font design.
 (Note, however, that this value is not necessarily equivalent to the height 
 of the font bounding box.)
 PIXEL_SIZE is in the range zero to a very large number.
-Zero is used in conjunction with scalable fonts; see section 4.
+Zero is used to indicate a scalable font; see section 4.
 .LP
 PIXEL_SIZE usually is used by X client applications that need to 
 query fonts according to device-dependent size, 
@@ -612,7 +612,7 @@ of the font bounding box.)
 POINT_SIZE is expressed in decipoints (where points are as defined 
 in the X protocol or 72.27 points equal 1 inch) in the range zero to a 
 very large number.
-Zero is used in conjunction with scalable fonts; see section 4.
+Zero is used to indicate a scalable font; see section 4.
 .LP
 POINT_SIZE and RESOLUTION_Y are used by X clients to query fonts 
 according to device-independent size to maintain constant text 
@@ -711,7 +711,7 @@ that gives the unweighted arithmetic mean width of all glyphs in the font
 For monospaced and character cell fonts, 
 this is the width of all glyphs in the font.
 AVERAGE_WIDTH is in the range zero to a very large number.
-Zero is used in conjunction with scalable fonts; see section 4.
+Zero is used to indicate a scalable font; see section 4.
 .NH 4
 CHARSET_REGISTRY and CHARSET_ENCODING Fields
 .XS
@@ -1965,7 +1965,7 @@ restrictions on the total number of names returned.
 .sp
 .LP
 The global list consists of font names derived from font sources.  If a single
-font source can be used to generate multiple character sets (specified
+font source can support multiple character sets (specified
 in the CHARSET_REGISTRY and CHARSET_ENCODING fields), each such character
 set should be used to form a separate font name in the list.
 For a nonscalable font source, the simple font name
