@@ -107,6 +107,11 @@ extern void cfbResolveColor();
 extern Bool cfbInitializeColormap();
 extern Bool cfbCreateDefColormap();
 
+extern void cfbCopyRotatePixmap();
+extern void cfbYRotatePixmap();
+extern void cfbXRotatePixmap();
+extern void cfbPadPixmap();
+
 /*
    private filed of pixmap
    pixmap.devPrivate = (unsigned int *)pointer_to_bits
@@ -123,8 +128,7 @@ typedef struct {
     unsigned char       ropFillArea;    /*  == alu, rop, or ropOpStip */
     unsigned		fExpose:1;	/* callexposure handling ? */
     unsigned		freeCompClip:1;
-    PixmapPtr		pRotatedTile;
-    PixmapPtr		pRotatedStipple;
+    PixmapPtr		pRotatedPixmap;
     RegionPtr		pCompositeClip; /* FREE_CC or REPLACE_CC */
     } cfbPrivGC;
 
