@@ -1,18 +1,18 @@
-XCOMM $XConsortium: Imakefile,v 1.5 93/08/17 21:21:54 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.6 93/10/26 15:32:12 rws Exp $
 
-   SRCS = xieperf.c tests.c flo.c flomap.c \
-	  constrain.c dither.c point.c import.c \
-	  importcl.c logical.c creatdstry.c \
-	  query.c modify.c redefine.c purgecolst.c \
-	  abort.c await.c exportcl.c uconstrain.c \
-	  blend.c pasteup.c geometry.c cvttoindex.c
+   SRCS = abort.c arith.c await.c band.c blend.c cache.c compare.c \
+	  constrain.c convolve.c creatdstry.c cvttoindex.c dither.c \
+	  encode.c errors.c events.c exportcl.c funcode.c geometry.c \
+	  getnext.c import.c importcl.c logical.c math.c modify.c \
+	  mtchhist.c pasteup.c point.c purgecolst.c query.c redefine.c \
+	  rgb.c tests.c uconstrain.c xieperf.c
 
-   OBJS = xieperf.o tests.o flo.o flomap.o \
-	  constrain.o dither.o point.o import.o \
-	  importcl.o logical.o creatdstry.o \
-	  query.o modify.o redefine.o purgecolst.o \
-	  abort.o await.o exportcl.o uconstrain.o \
-	  blend.o pasteup.o geometry.o cvttoindex.o
+   OBJS = abort.o arith.o await.o band.o blend.o cache.o compare.o \
+	  constrain.o convolve.o creatdstry.o cvttoindex.o dither.o \
+	  encode.o errors.o events.o exportcl.o funcode.o geometry.o \
+	  getnext.o import.o importcl.o logical.o math.o modify.o \
+	  mtchhist.o pasteup.o point.o purgecolst.o query.o redefine.o \
+	  rgb.o tests.o uconstrain.o xieperf.o
 
    LOCAL_LIBRARIES = $(XIELIB) $(XMULIB) $(XLIB)
            DEPLIBS = $(DEPXIELIB) $(DEPXMULIB) $(DEPXLIB)
