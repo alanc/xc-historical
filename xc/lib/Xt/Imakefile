@@ -140,7 +140,7 @@ all::
 SharedAndDebuggedLibraryObjectRule()
 SpecialSharedAndDebuggedObjectRule(Initialize.o,$(ICONFIGFILES),$(APP_DEFINES))
 SpecialSharedAndDebuggedObjectRule(Intrinsic.o,$(ICONFIGFILES),$(SRCH_DEFINES))
-SpecialSharedDebuggedObjectRule(Error.o,$(ICONFIGFILES),$(DB_DEFINES))
+SpecialSharedAndDebuggedObjectRule(Error.o,$(ICONFIGFILES),$(DB_DEFINES))
 # else
 SharedLibraryObjectRule()
 SpecialSharedObjectRule(Initialize.o,$(ICONFIGFILES),$(APP_DEFINES))
