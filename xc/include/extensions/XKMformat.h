@@ -1,4 +1,4 @@
-/* $XConsortium: XKMformat.h,v 1.1 94/04/02 17:01:01 erik Exp $ */
+/* $XConsortium: xkmformat.h,v 1.4 93/09/28 20:16:45 rws Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -32,6 +32,14 @@
 
 #define	XkmMSB(s)	((((xkmSectionInfo *)(s))->format)&MSBFirst)
 
+typedef	struct _xkmFileInfo {
+	CARD8		type;
+	CARD8		min_kc;
+	CARD8		max_kc;
+	CARD8		num_toc;
+} xkmFileInfo;
+#define	sz_xkmFileInfo	4
+
 typedef	struct _xkmSectionInfo {
 	CARD16		type B16;
 	CARD16		format B16;
@@ -49,7 +57,7 @@ typedef struct _xkmKeyTypeDesc {
 	CARD8		preserve;
 	CARD8		pad;
 } xkmKeyTypeDesc;
-#define	sz_xkmKeyTypeDesc	16
+#define	sz_xkmKeyTypeDesc	8
 
 typedef struct _xkmKTMapEntryDesc {
 	CARD8		level;
