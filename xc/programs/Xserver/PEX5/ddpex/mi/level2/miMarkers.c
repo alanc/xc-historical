@@ -1,4 +1,4 @@
-/* $XConsortium: miMarkers.c,v 5.2 91/05/01 14:40:12 hersh Exp $ */
+/* $XConsortium: miMarkers.c,v 5.3 91/11/15 19:58:34 hersh Exp $ */
 
 
 /***********************************************************
@@ -77,7 +77,7 @@ miPolyMarker(pRend, pExecuteOC)
 
     /* Check for Model clipping */
 
-    if (pddc->Dynamic->pPCAttr->modelClip == PEXOn) {
+    if (pddc->Dynamic->pPCAttr->modelClip == PEXClip) {
 
       ComputeMCVolume(pRend, pddc);      /* Compute  modelling coord version
                                    		of clipping volume */

@@ -1,4 +1,4 @@
-/* $XConsortium: miTriStrip.c,v 5.7 92/05/06 16:35:39 hersh Exp $ */
+/* $XConsortium: miTriStrip.c,v 5.8 92/12/07 17:06:13 mor Exp $ */
 
 
 /***********************************************************
@@ -137,7 +137,7 @@ miTriangleStrip(pRend, pExecuteOC)
 
       /* Check for Model clipping */
 
-      if (pddc->Dynamic->pPCAttr->modelClip == PEXOn) {
+      if (pddc->Dynamic->pPCAttr->modelClip == PEXClip) {
 
 	/* Compute  modelling coord version of clipping volume */ 
 	ComputeMCVolume(pRend, pddc);

@@ -1,4 +1,4 @@
-/* $XConsortium: miPolyLine.c,v 5.2 91/05/01 14:36:03 hersh Exp $ */
+/* $XConsortium: miPolyLine.c,v 5.3 91/11/15 19:58:36 hersh Exp $ */
 
 
 /***********************************************************
@@ -94,7 +94,7 @@ miPolyLines(pRend, pExecuteOC)
 
     /* Check for Model clipping */
 
-    if (pddc->Dynamic->pPCAttr->modelClip == PEXOn) {
+    if (pddc->Dynamic->pPCAttr->modelClip == PEXClip) {
 
       ComputeMCVolume(pRend, pddc);	/*  Compute  modelling coord version
                                    	    of clipping volume */

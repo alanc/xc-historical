@@ -1,4 +1,4 @@
-/* $XConsortium: miPickPrim.c,v 5.4 91/07/01 08:44:39 rws Exp $ */
+/* $XConsortium: miPickPrim.c,v 5.5 92/12/21 13:10:35 mor Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -392,7 +392,7 @@ miPickAnnoText2D(pRend, pExecuteOC)
     MC_Origin.z = 0.0;
     MC_Origin.w = 1.0;
 
-    if (pDDC->Dynamic->pPCAttr->modelClip == PEXOn) {
+    if (pDDC->Dynamic->pPCAttr->modelClip == PEXClip) {
 
       ComputeMCVolume(pRend, pddc);	/*  Compute  modelling coord version
 					    of clipping volume */
@@ -763,7 +763,7 @@ miPickAnnoText3D(pRend, pExecuteOC)
     MC_Origin.z = pOrigin->z;
     MC_Origin.w = 1.0;
 
-    if (pDDC->Dynamic->pPCAttr->modelClip == PEXOn) {
+    if (pDDC->Dynamic->pPCAttr->modelClip == PEXClip) {
 
       ComputeMCVolume(pRend, pddc);	/*  Compute  modelling coord version
 					    of clipping volume */

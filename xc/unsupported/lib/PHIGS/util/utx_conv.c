@@ -1,4 +1,4 @@
-/* $XConsortium: utx_conv.c,v 5.8 91/10/01 02:57:59 hersh Exp $ */
+/* $XConsortium: utx_conv.c,v 5.10 92/08/20 16:36:07 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -2424,7 +2424,8 @@ phg_utx_el_data_from_pex( oc, buf, ed )
 		PEX_CONV_TO_Pcullmode(RHEADER(CullingMode)->cullMode);
 	    break;
 	case PEXOCModelClip:
-	    ed->clip_ind = PEX_CONV_TO_Pclip(RHEADER(ModelClip)->onoff);
+	    ed->clip_ind = (RHEADER(ModelClip)->onoff == PEXClip) ?
+		PIND_CLIP : PIND_NO_CLIP;
 	    break;
 
 	/* All these contain just a colour. */
@@ -3977,7 +3978,8 @@ phg_utx_build_pex_oc( erh, el_type, ed, scratch, pex_oc )
 		= PEX_CONV_FROM_Pcullmode((Pcull_mode)ed->cullmode);
 	    break;
 	case PELEM_MODEL_CLIP_IND:
-	    HEADER(ModelClip)->onoff = PEX_CONV_FROM_Pclip(ed->clip_ind);
+	    HEADER(ModelClip)->onoff = (ed->clip_ind == PIND_CLIP) ?
+		PEXClip : PEXNoClip;
 	    break;
 	case PELEM_EDGE_FLAG:
 	    HEADER(SurfaceEdgeFlag)->onoff = PEX_CONV_FROM_Pedgef(ed->edgef);

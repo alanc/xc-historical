@@ -1,4 +1,4 @@
-/* $XConsortium: miText.c,v 5.8 92/12/02 09:28:19 mor Exp $ */
+/* $XConsortium: miText.c,v 5.9 92/12/21 13:09:22 mor Exp $ */
 
 
 /***********************************************************
@@ -852,7 +852,7 @@ miText3D(pRend, pExecuteOC)
 
     /* Check for modelling clip and set up the volume if required */
 
-    if (pddc->Dynamic->pPCAttr->modelClip == PEXOn) {
+    if (pddc->Dynamic->pPCAttr->modelClip == PEXClip) {
 	ComputeMCVolume(pRend, pddc);    /* Get the current model clip volume */
     }
 
@@ -918,7 +918,7 @@ miText3D(pRend, pExecuteOC)
 
       /* Check to see if modelling clip is required. If so, apply it */
 
-      if (pddc->Dynamic->pPCAttr->modelClip == PEXOn) {
+      if (pddc->Dynamic->pPCAttr->modelClip == PEXClip) {
 
 	  /* Buffer the tc_to_mc_xform first */
 
@@ -971,7 +971,7 @@ miText3D(pRend, pExecuteOC)
 
       /* Transform and clip the paths corresponding to current character */
 
-      if (pddc->Dynamic->pPCAttr->modelClip == PEXOn) {
+      if (pddc->Dynamic->pPCAttr->modelClip == PEXClip) {
 
 	  /* Note that we are already in Model space here */
 
@@ -1131,7 +1131,7 @@ miText2D(pRend, pExecuteOC)
 
     /* Check for modelling clip and set up the volume if required */
 
-    if (pddc->Dynamic->pPCAttr->modelClip == PEXOn) {
+    if (pddc->Dynamic->pPCAttr->modelClip == PEXClip) {
 	ComputeMCVolume(pRend, pddc);    /* Get the current model clip volume */
     }
 
@@ -1197,7 +1197,7 @@ miText2D(pRend, pExecuteOC)
 
       /* Check to see if modelling clip is required. If so, apply it */
 
-      if (pddc->Dynamic->pPCAttr->modelClip == PEXOn) {
+      if (pddc->Dynamic->pPCAttr->modelClip == PEXClip) {
 
 	  /* Buffer the tc_to_mc_xform first */
 
@@ -1249,7 +1249,7 @@ miText2D(pRend, pExecuteOC)
 
       /* Transform and clip the paths corresponding to current character */
 
-      if (pddc->Dynamic->pPCAttr->modelClip == PEXOn) {
+      if (pddc->Dynamic->pPCAttr->modelClip == PEXClip) {
 
 	  /* Note that we are already in Model space here */
 
@@ -1381,7 +1381,7 @@ miAnnoText3D(pRend, pExecuteOC)
     MC_Origin.z = pOrigin->z;
     MC_Origin.w = 1.0;
 
-    if (pddc->Dynamic->pPCAttr->modelClip == PEXOn) {
+    if (pddc->Dynamic->pPCAttr->modelClip == PEXClip) {
 
       ComputeMCVolume(pRend, pddc);      /* Compute  modelling coord version
                                    of clipping volume */
@@ -1553,7 +1553,7 @@ miAnnoText3D(pRend, pExecuteOC)
 
       /* Check to see if modelling clip is required. If so, apply it */
 
-      if (pddc->Dynamic->pPCAttr->modelClip == PEXOn) {
+      if (pddc->Dynamic->pPCAttr->modelClip == PEXClip) {
 
 	  /* Buffer the tc_to_mc_xform first */
 
@@ -1605,7 +1605,7 @@ miAnnoText3D(pRend, pExecuteOC)
 
       /* Transform and clip the paths corresponding to current character */
 
-      if (pddc->Dynamic->pPCAttr->modelClip == PEXOn) {
+      if (pddc->Dynamic->pPCAttr->modelClip == PEXClip) {
 
 	  /* Note that we are already in Model space here */
 
@@ -1800,7 +1800,7 @@ miAnnoText2D(pRend, pExecuteOC)
     MC_Origin.z = 0.0;
     MC_Origin.w = 1.0;
 
-    if (pddc->Dynamic->pPCAttr->modelClip == PEXOn) {
+    if (pddc->Dynamic->pPCAttr->modelClip == PEXClip) {
 
       ComputeMCVolume(pRend, pddc);	/*  Compute  modelling coord version
 					    of clipping volume */
@@ -1974,7 +1974,7 @@ miAnnoText2D(pRend, pExecuteOC)
 
       /* Check to see if modelling clip is required. If so, apply it */
 
-      if (pddc->Dynamic->pPCAttr->modelClip == PEXOn) {
+      if (pddc->Dynamic->pPCAttr->modelClip == PEXClip) {
 
 	  /* Buffer the tc_to_mc_xform first */
 
@@ -2026,7 +2026,7 @@ miAnnoText2D(pRend, pExecuteOC)
 
       /* Transform and clip the paths corresponding to current character */
 
-      if (pddc->Dynamic->pPCAttr->modelClip == PEXOn) {
+      if (pddc->Dynamic->pPCAttr->modelClip == PEXClip) {
 
 	  /* Note that we are already in Model space here */
 

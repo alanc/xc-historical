@@ -1,4 +1,4 @@
-/* $XConsortium: miRender.c,v 5.15 92/11/19 15:15:44 hersh Exp $ */
+/* $XConsortium: miRender.c,v 5.16 92/12/03 19:37:01 hersh Exp $ */
 
 
 /***********************************************************
@@ -243,7 +243,7 @@ DefaultPC(pPC)
     pPC->edgeIndex = 1;
     bcopy((char *) ident4x4, (char *) pPC->localMat, 16 * sizeof(ddFLOAT));
     bcopy((char *) ident4x4, (char *) pPC->globalMat, 16 * sizeof(ddFLOAT));
-    pPC->modelClip = PEXOff;
+    pPC->modelClip = PEXNoClip;
     pPC->modelClipVolume = puCreateList(DD_HALF_SPACE);
     pPC->viewIndex = 0;
     pPC->lightState = puCreateList(DD_INDEX);

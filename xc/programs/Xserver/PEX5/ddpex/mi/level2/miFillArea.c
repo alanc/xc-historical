@@ -1,4 +1,4 @@
-/* $XConsortium: miFillArea.c,v 5.6 91/07/18 18:20:07 hersh Exp $ */
+/* $XConsortium: miFillArea.c,v 5.7 91/11/15 19:56:56 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -130,7 +130,7 @@ miFillArea(pRend, pExecuteOC)
 
       /* Check for Model clipping */
  
-      if (pddc->Dynamic->pPCAttr->modelClip == PEXOn) {
+      if (pddc->Dynamic->pPCAttr->modelClip == PEXClip) {
 	/* Compute  modelling coord version of clipping volume */ 
         ComputeMCVolume(pRend, pddc);      
         clip_mode = MI_MCLIP;
