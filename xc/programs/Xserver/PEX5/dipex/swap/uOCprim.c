@@ -1,4 +1,4 @@
-/* $XConsortium: uOCprim.c,v 5.5 91/07/01 16:29:35 hersh Exp $ */
+/* $XConsortium: uOCprim.c,v 5.6 92/03/04 14:18:45 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -747,12 +747,12 @@ pexParaSurfCharacteristics *strmPtr;
 	case PEXPSCMcLevelCurves:
 	case PEXPSCWcLevelCurves: {
 	    pexPSC_LevelCurves *ptr = (pexPSC_LevelCurves *)(strmPtr+1);
-	    pexCoord3D *pc = (pexCoord3D *)(ptr+1);
+	    PEXFLOAT *pc = (PEXFLOAT *)(ptr+1);
 	    CARD16 i;
 	    SWAP_COORD3D (ptr->origin);
 	    SWAP_VECTOR3D (ptr->direction);
 	    for (i=0; i<ptr->numberIntersections; i++, pc++) {
-		SWAP_COORD3D(*pc);
+		SWAP_FLOAT(*pc);
 	    }
 	    SWAP_CARD16 (ptr->numberIntersections);
 	    break;
