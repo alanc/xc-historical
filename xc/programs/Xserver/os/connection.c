@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.177 94/02/05 16:18:04 rws Exp $ */
+/* $XConsortium: connection.c,v 1.178 94/02/08 14:55:06 gildea Exp $ */
 /***********************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -486,6 +486,16 @@ ClientAuthorized(client, proto_n, auth_proto, string_n, auth_string)
 
 #ifdef LBX
 
+XtransConnInfo
+ClientTransportObject(client)
+    ClientPtr	client;
+{
+    OsCommPtr oc = (OsCommPtr) client->osPrivate;
+
+    return oc->trans_conn;
+}
+
+int
 ClientConnectionNumber (client)
     ClientPtr	client;
 {
