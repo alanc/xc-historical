@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.56 91/06/06 14:12:55 rws Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.57 91/06/11 10:18:18 rws Exp $
 
 #define OSName            SunOS 4.1.1
 XCOMM operating system:  OSName
@@ -70,4 +70,6 @@ XCOMM operating system:  OSName
 
 #if HasGcc
 #define ServerCDebugFlags -O -g		/* XXX remove this in R5 */
+#define PexDipexCDebugFlags -O		/* XXX remove this in R5 */
+#define PexDdpexCDebugFlags -O		/* XXX remove this in R5 */
 #endif
