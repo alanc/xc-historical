@@ -1,4 +1,4 @@
-/* $XConsortium: Keyboard.c,v 1.15 90/07/26 07:37:59 swick Exp $ */
+/* $XConsortium: Keyboard.c,v 1.16 90/07/26 10:10:09 swick Exp $ */
 
 /********************************************************
 
@@ -157,7 +157,7 @@ static Boolean IsOutside(e, w)
     XKeyEvent	*e;
     Widget	w;
 {
-    int left, right, top, bottom;
+    Position left, right, top, bottom;
     
     /*
      * if the pointer is outside the shell or inside
