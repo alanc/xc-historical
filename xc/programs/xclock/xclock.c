@@ -2,7 +2,7 @@
  *  Hacked from Tony Della Fera's much hacked clock program.
  */
 #ifndef lint
-static char rcsid[] = "$Header: xclock.c,v 1.12 88/02/14 15:22:47 jim Exp $";
+static char rcsid[] = "$Header: xclock.c,v 1.13 88/02/14 15:41:29 jim Exp $";
 #endif  lint
 
 #include <X11/Xatom.h>
@@ -55,7 +55,7 @@ void main(argc, argv)
     Widget toplevel;
     Arg arg;
 
-    toplevel = XtInitialize(NULL, "XClock", options, XtNumber(options), &argc, argv);
+    toplevel = XtInitialize("main", "XClock", options, XtNumber(options), &argc, argv);
     if (argc != 1) Syntax(argv[0]);
 
     arg.name = XtNiconPixmap;
