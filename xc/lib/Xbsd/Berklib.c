@@ -159,7 +159,7 @@ int seed;
 #ifdef hpux
 
 /** on hpux 5.n, readv/writev don't work on sockets;
-/** Even on 6.0, we'll keep these routines around for doing
+ ** Even on 6.0, we'll keep these routines around for doing
  ** extra large writes; (> 4000); (this caused the Bezier
  ** demo to blow up.)
  **/
