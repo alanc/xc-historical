@@ -1,4 +1,4 @@
-/* $XConsortium: Scale.c,v 1.18 94/04/17 20:24:57 gildea Exp kaleb $ */
+/* $XConsortium: Scale.c,v 1.19 94/11/30 16:36:25 kaleb Exp kaleb $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -50,7 +50,7 @@ from the X Consortium.
 #include <stdlib.h>
 #endif
 
-#if defined(ISC) && __STDC__
+#if defined(ISC) && __STDC__ && !defined(ISC30)
 extern double atof(char *);
 #endif
 

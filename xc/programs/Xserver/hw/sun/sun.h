@@ -1,5 +1,5 @@
 
-/* $XConsortium: sun.h,v 5.39 94/08/16 13:45:30 dpw Exp kaleb $ */
+/* $XConsortium: sun.h,v 5.40 94/10/17 14:16:02 kaleb Exp kaleb $ */
 
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
@@ -48,10 +48,12 @@ extern char *getenv();
 #endif
 #endif
 #include <fcntl.h>
+#ifndef __NetBSD__
 #ifndef i386
 # include <poll.h>
 #else
 # include <sys/poll.h>
+#endif
 #endif
 #include <errno.h>
 #include <memory.h>
@@ -76,17 +78,24 @@ extern int errno;
 # include <stropts.h>
 # define usleep(usec) poll((struct pollfd *) 0, (size_t) 0, usec / 1000)
 #else
-# include <sun/fbio.h>
-# include <sundev/kbd.h>
-# include <sundev/kbio.h>
-# include <sundev/msio.h>
-# include <sundev/vuid_event.h>
-# include <pixrect/pixrect.h>
-# include <pixrect/memreg.h>
+# ifndef __NetBSD__
+#  include <sun/fbio.h>
+#  include <sundev/kbd.h>
+#  include <sundev/kbio.h>
+#  include <sundev/msio.h>
+#  include <sundev/vuid_event.h>
+#  include <pixrect/pixrect.h>
+#  include <pixrect/memreg.h>
 extern int ioctl();
 extern int getrlimit();
 extern int setrlimit();
 extern int getpagesize();
+# else
+# include <machine/fbio.h>
+# include <machine/kbd.h>
+# include <machine/kbio.h>
+# include <machine/vuid_event.h>
+# endif
 #endif
 extern int gettimeofday();
 
@@ -276,7 +285,7 @@ extern int sunChangeKbdTranslation(
 
 extern void sunNonBlockConsoleOff(
 #if NeedFunctionPrototypes
-#ifdef SVR4
+#if defined(SVR4) || defined(__NetBSD__)
     void
 #else
     char* /* arg */
