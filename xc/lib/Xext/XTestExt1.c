@@ -521,8 +521,8 @@ register Display	*dpy;
  *	Handle XTest extension events.
  *	Reformat a wire event into an XEvent structure of the right type.
  */
-static int
-XTestWireToEvent(dpy, re, event)
+static Bool
+XTestWireToEvent(dpy, reTemp, eventTemp)
 /*
  * the connection to the X server
  */
@@ -531,12 +531,15 @@ Display	*dpy;
  * a pointer to where a host formatted event should be stored
  * with the information copied to it
  */
-XTestInputActionEvent	*re;
+XEvent	*reTemp;
 /*
  * a pointer to the wire event
  */
-xTestInputActionEvent	*event;
+xEvent	*eventTemp;
 {
+	XTestInputActionEvent *re    = (XTestInputActionEvent *) reTemp;
+	xTestInputActionEvent *event = (xTestInputActionEvent *) eventTemp;
+
 	/*
 	 * loop index
 	 */
