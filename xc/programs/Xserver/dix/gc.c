@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 1.120 89/03/22 14:03:07 rws Exp $ */
+/* $XConsortium: gc.c,v 1.121 89/04/05 10:57:59 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -485,6 +485,8 @@ CreateGC(pDrawable, mask, pval, pStatus)
     pGC->dash[0] = 4;
     pGC->dash[1] = 4;
     pGC->dashOffset = 0;
+    pGC->lastWinOrg.x = 0;
+    pGC->lastWinOrg.y = 0;
 
     /* if the client hasn't provided a tile, build one and fill it with
        the foreground pixel
@@ -829,6 +831,8 @@ CreateScratchGC(pScreen, depth)
     pGC->numInDashList = 2;
     pGC->dash[0] = 4;
     pGC->dash[1] = 4;
+    pGC->lastWinOrg.x = 0;
+    pGC->lastWinOrg.y = 0;
 
     pGC->stateChanges = (1 << GCLastBit+1) - 1;
     if (!(*pScreen->CreateGC)(pGC))
