@@ -1,4 +1,4 @@
-/* $XConsortium: GCOps.c,v 1.5 93/09/20 20:18:46 dpw Exp $ */
+/* $XConsortium: GCOps.c,v 1.6 94/01/07 09:52:44 dpw Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -313,7 +313,7 @@ int xnestPolyText8(pDrawable, pGC, x, y, count, string)
   
   width = XTextWidth(xnestFontStruct(pGC->font), string, count);
   
-  return width;
+  return width + x;
 }
 
 int xnestPolyText16(pDrawable, pGC, x, y, count, string)
@@ -330,7 +330,7 @@ int xnestPolyText16(pDrawable, pGC, x, y, count, string)
 
   width = XTextWidth16(xnestFontStruct(pGC->font), string, count);
 
-  return width;
+  return width + x;
 }
 
 void xnestImageText8(pDrawable, pGC, x, y, count, string)
