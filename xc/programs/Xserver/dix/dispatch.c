@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.40 92/02/27 18:14:04 eswu Exp $ */
+/* $XConsortium: dispatch.c,v 5.41 92/08/21 19:22:51 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -41,6 +41,14 @@ SOFTWARE.
 #include "servermd.h"
 #include "extnsionst.h"
 
+#define mskcnt ((MAXCLIENTS + 31) / 32)
+#define BITMASK(i) (1 << ((i) & 31))
+#define MASKIDX(i) ((i) >> 5)
+#define MASKWORD(buf, i) buf[MASKIDX(i)]
+#define BITSET(buf, i) MASKWORD(buf, i) |= BITMASK(i)
+#define BITCLEAR(buf, i) MASKWORD(buf, i) &= ~BITMASK(i)
+#define GETBIT(buf, i) (MASKWORD(buf, i) & BITMASK(i))
+
 extern WindowPtr *WindowTable;
 extern xConnSetupPrefix connSetupPrefix;
 extern char *ConnectionInfo;
@@ -66,8 +74,12 @@ extern long defaultScreenSaverTime;
 extern long defaultScreenSaverInterval;
 extern int  defaultScreenSaverBlanking;
 extern int  defaultScreenSaverAllowExposures;
-static ClientPtr onlyClient;
-static Bool grabbingClient = FALSE;
+static ClientPtr grabClient;
+#define GrabNone 0
+#define GrabActive 1
+#define GrabKickout 2
+static int grabState = GrabNone;
+static long grabWaiters[mskcnt];
 long	*checkForInput[2];
 extern int connBlockScreenStart;
 
@@ -222,8 +234,11 @@ Dispatch()
 		continue;
 	    }
 	    /* GrabServer activation can cause this to be true */
-	    if (grabbingClient && (client != onlyClient))
+	    if (grabState == GrabKickout)
+	    {
+		grabState = GrabActive;
 		break;
+	    }
 	    isItTimeToYield = FALSE;
  
             requestingClient = client;
@@ -938,10 +953,37 @@ ProcGrabServer(client)
 {
     REQUEST(xReq);
     REQUEST_SIZE_MATCH(xReq);
+    if (grabState != GrabNone && client != grabClient)
+    {
+	ResetCurrentRequest(client);
+	client->sequence--;
+	BITSET(grabWaiters, client->index);
+	IgnoreClient(client);
+	return(client->noClientException);
+    }
     OnlyListenToOneClient(client);
-    grabbingClient = TRUE;
-    onlyClient = client;
+    grabState = GrabKickout;
+    grabClient = client;
     return(client->noClientException);
+}
+
+static void
+UngrabServer()
+{
+    int i;
+
+    grabState = GrabNone;
+    ListenToAllClients();
+    for (i = mskcnt; --i >= 0 && !grabWaiters[i]; )
+	;
+    if (i >= 0)
+    {
+	i <<= 5;
+	while (!GETBIT(grabWaiters, i))
+	    i++;
+	BITCLEAR(grabWaiters, i);
+	AttendClient(clients[i]);
+    }
 }
 
 int
@@ -950,8 +992,7 @@ ProcUngrabServer(client)
 {
     REQUEST(xReq);
     REQUEST_SIZE_MATCH(xReq);
-    grabbingClient = FALSE;
-    ListenToAllClients();
+    UngrabServer();
     return(client->noClientException);
 }
 
@@ -3098,11 +3139,9 @@ CloseDownClient(client)
     if (!client->clientGone)
     {
 	/* ungrab server if grabbing client dies */
-	if (grabbingClient &&  (onlyClient == client))
-	{
-	    grabbingClient = FALSE;
-	    ListenToAllClients();
-	}
+	if (grabState != GrabNone && grabClient == client)
+	    UngrabServer();
+	BITCLEAR(grabWaiters, client->index);
 	DeleteClientFromAnySelections(client);
 	ReleaseActiveGrabs(client);
 	DeleteClientFontStuff(client);
