@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.32 89/07/21 11:31:22 jim Exp $
+ * $XConsortium: main.c,v 1.33 89/07/21 11:35:21 jim Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -34,54 +34,9 @@ char	*directives[] = {
 	NULL
 };
 
-struct symtab	predefs[] = {
-#ifdef apollo
-	{"apollo", NULL},
-#endif
-#ifdef ibm032
-	{"ibm032", NULL},
-#endif
-#ifdef sun
-	{"sun", NULL},
-#endif
-#ifdef hpux
-	{"hpux", NULL},
-#endif
-#ifdef vax
-	{"vax", NULL},
-#endif
-#ifdef VMS
-	{"VMS", NULL},
-#endif
-#ifdef cray
-	{"cray", NULL},
-#endif
-#ifdef CRAY
-	{"CRAY", NULL},
-#endif
-#ifdef att
-	{"att", NULL},
-#endif
-#ifdef mips
-	{"mips", NULL},
-#endif
-#ifdef ultrix
-	{"ultrix", NULL},
-#endif
-#ifdef mc68000
-	{"mc68000", NULL},
-#endif
-#ifdef mc68020
-	{"mc68020", NULL},
-#endif
-#ifdef __GNUC__
-	{"__GNUC__", NULL},
-#endif
-#ifdef __STDC__
-	{"__STDC__", NULL},
-#endif
-	{NULL, NULL}
-};
+#define MAKEDEPEND
+#include "imakemdep.h"	/* from config sources */
+#undef MAKEDEPEND
 
 struct symtab	deflist[ MAXDEFINES ];
 struct	inclist inclist[ MAXFILES ],
