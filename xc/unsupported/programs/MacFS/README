@@ -1,3 +1,7 @@
+NOTE: The referenced files "TrueType", "TrueType Fonts", and "Font_DA_Mover"
+have been removed from the distribution.  We regret any inconvenience.
+---
+
 The files in this directory implement a *prototype* font server for
 Apple Macintosh computers running the A/UX operating system. The font
 server, MacFS, runs only under the Macintosh Toolbox environment
