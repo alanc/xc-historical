@@ -1,4 +1,4 @@
-/* $XConsortium: svgaInit.c,v 1.6 93/09/25 17:38:00 rws Exp $ */
+/* $XConsortium: svgaInit.c,v 1.7 93/09/26 11:18:13 rws Exp $ */
 /*
  * Copyright 1990,91,92,93 by Thomas Roell, Germany.
  * Copyright 1991,92,93    by SGCS (Snitily Graphics Consulting Services), USA.
@@ -248,16 +248,11 @@ InitInput(
 )
 {
   DevicePtr pKeyboard, pPointer;
-  struct sigaction s;
 
   svgaVTRequestsPending = FALSE;
 
-  s.sa_handler = XqueRequest;
-  sigemptyset(&s.sa_mask);
-  s.sa_flags = 0;
-  sigaction(SIGUSR1, &s, NULL);
-  s.sa_handler = svgaVTRequest;
-  sigaction(SIGUSR2, &s, NULL);
+  (void) OsSignal(SIGUSR1, XqueRequest);
+  (void) OsSignal(SIGUSR2, svgaVTRequest);
   
   pKeyboard = AddInputDevice(XqueKeyboardProc, TRUE); 
   pPointer  = AddInputDevice(XquePointerProc, TRUE);
