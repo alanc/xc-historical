@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.52 92/04/12 17:04:38 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.53 92/04/13 09:18:47 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -1128,7 +1128,7 @@ do_trigger(buf)
     type = 0;
     match = MatchNone;
     wait = False;
-    trigger.time.tv_sec = 5;
+    trigger.time.tv_sec = 10;
     trigger.time.tv_usec = 0;
     for (; *buf; buf++) {
 	switch (*buf) {
