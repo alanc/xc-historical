@@ -1,4 +1,4 @@
-XCOMM $XConsortium: ibmLib.tmpl,v 1.9 93/07/14 10:59:46 rws Exp $
+XCOMM $XConsortium: ibmLib.tmpl,v 1.10 93/08/20 10:41:36 mor Exp $
 
 /*
  * AIX shared library template
@@ -13,6 +13,7 @@ XCOMM $XConsortium: ibmLib.tmpl,v 1.9 93/07/14 10:59:46 rws Exp $
 #define SharedXTestReqs $(XLIB)
 #define SharedPexReqs $(XLIBONLY)
 #define SharedXieReqs $(XLIBONLY)
+#define SharedSMReqs $(ICELIB)
 
 #ifndef FixupLibReferences
 #define FixupLibReferences()						@@\
