@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Command.c,v 1.49 89/03/30 16:53:29 jim Exp $";
+static char Xrcsid[] = "$XConsortium: MenuButton.c,v 1.1 89/04/20 16:23:44 kit Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -26,27 +26,39 @@ SOFTWARE.
 
 ******************************************************************/
 
-/*
- * Command.c - Command button widget
+/***********************************************************************
  *
+ * MenuButton Widget
+ *
+ ***********************************************************************/
+
+/*
+ * MenuButton.c - Source code for MenuButton widget.
+ *
+ * This is the private header file for the Athena MenuButton widget.
+ * It is intended to provide an easy method of activating pulldown menus.
+ *
+ * Date:    May 2, 1989
+ *
+ * By:      Chris D. Peterson
+ *          MIT X Consortium 
+ *          kit@expo.lcs.mit.edu
  */
 
+#include <stdio.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
-#include <stdio.h>
-#include <X11/XawMisc.h>
 #include <X11/MenuButtonP.h>
 
-static void Initialize();
-static Boolean SetValues();
-static void PositionMenu();
+static void Realize();
+static void PopupMenu();
 
 #define superclass ((CommandWidgetClass)&commandClassRec)
 
-#define TRANS_TEMPLATE ("\
-     <EnterWindow>:     highlight()             \n\
+static char defaultTranslations[] = 
+    "<EnterWindow>:     highlight()             \n\
      <LeaveWindow>:     reset()                 \n\
-     <BtnDown>:         PositionMenu() MenuPopup(%s)")
+     <BtnDown>:         reset() PopupMenu()     ";
 
 /****************************************************************
  *
@@ -66,7 +78,7 @@ static XtResource resources[] = {
 
 static XtActionsRec actionsList[] =
 {
-  {"PositionMenu",	PositionMenu}
+  {"PopupMenu",	PopupMenu}
 };
 
 MenuButtonClassRec menuButtonClassRec = {
@@ -77,9 +89,9 @@ MenuButtonClassRec menuButtonClassRec = {
     NULL,				/* class_initialize	  */
     NULL,				/* class_part_initialize  */
     FALSE,				/* class_inited		  */
-    Initialize,				/* initialize		  */
+    NULL,				/* initialize		  */
     NULL,				/* initialize_hook	  */
-    XtInheritRealize, 			/* realize		  */
+    Realize,         			/* realize		  */
     actionsList,			/* actions		  */
     XtNumber(actionsList),		/* num_actions		  */
     resources,				/* resources		  */
@@ -92,14 +104,14 @@ MenuButtonClassRec menuButtonClassRec = {
     NULL,				/* destroy		  */
     XtInheritResize,			/* resize		  */
     XtInheritExpose,			/* expose		  */
-    SetValues,				/* set_values		  */
+    NULL,				/* set_values		  */
     NULL,				/* set_values_hook	  */
     XtInheritSetValuesAlmost,		/* set_values_almost	  */
     NULL,				/* get_values_hook	  */
     NULL,				/* accept_focus		  */
     XtVersion,				/* version		  */
     NULL,				/* callback_private	  */
-    NULL,                        	/* tm_table		  */
+    defaultTranslations,               	/* tm_table		  */
     XtInheritQueryGeometry,		/* query_geometry	  */
     XtInheritDisplayAccelerator,	/* display_accelerator	  */
     NULL				/* extension		  */
@@ -126,56 +138,48 @@ WidgetClass menuButtonWidgetClass = (WidgetClass) &menuButtonClassRec;
 
 /* ARGSUSED */
 static void 
-Initialize(req, new)
-Widget req, new;
+Realize(w, mask, attrs)
+Widget w;
+Mask *mask;
+XSetWindowAttributes *attrs;
 {
-  MenuButtonWidget mbw = (MenuButtonWidget) new;
-  char trans_buffer[BUFSIZ];
-  Arg arglist[1];
+  (*superclass->core_class.realize) (w, mask, attrs);
 
-  if (new->core.tm.translations == NULL) {
-    sprintf(trans_buffer, TRANS_TEMPLATE, mbw->menu_button.menu_name);
-    XtSetArg(arglist[0], XtNtranslations, 
-	     XtParseTranslationTable(trans_buffer));
-    XtSetValues(new, arglist, (Cardinal) 1);
-  }
+  /* We have a window now. Register a grab. */
+
+  XGrabButton( XtDisplay(w), AnyButton, AnyModifier, XtWindow(w),
+	       TRUE, ButtonPressMask|ButtonReleaseMask,
+	       GrabModeAsync, GrabModeAsync, None, None );
 } 
-
-/* ARGSUSED */
-static Boolean 
-SetValues(current, request, new)
-{
-  MenuButtonWidget old_mbw = (MenuButtonWidget) current;
-  MenuButtonWidget new_mbw = (MenuButtonWidget) new;
-  
-  if (old_mbw->menu_button.menu_name != new_mbw->menu_button.menu_name)
-    XtAppWarning(XtWidgetToApplicationContext(new), 
-	      "Changing the menu is not supported by the MenuButton Widget.");
-
-  return(FALSE);
-}
   
 /* ARGSUSED */
 static void
-PositionMenu(w, event, params, num_params)
+PopupMenu(w, event, params, num_params)
 Widget w;
 XEvent * event;
 String * params;
 Cardinal * num_params;
 {
   MenuButtonWidget mbw = (MenuButtonWidget) w;
-  Widget menu;
+  Widget menu, temp;
   Arg arglist[2];
   Cardinal num_args;
   int menu_x, menu_y, menu_width, menu_height, button_width;
   Position button_x, button_y;
 
-  menu = XtNameToWidget(w, mbw->menu_button.menu_name);
+  temp = w;
+  while(temp != NULL) {
+    menu = XtNameToWidget(temp, mbw->menu_button.menu_name);
+    if (menu == NULL) 
+      temp = XtParent(temp);
+    else
+      break;
+  }
+
   if (menu == NULL) {
     char error_buf[BUFSIZ];
-    sprintf(error_buf, "MenuButton: %s %s.  %s",
-	    "Could not find menu widget named", mbw->menu_button.menu_name,
-	    "Is it popup child of its menu button?");
+    sprintf(error_buf, "MenuButton: %s %s.",
+	    "Could not find menu widget named", mbw->menu_button.menu_name);
     XtAppWarning(XtWidgetToApplicationContext(w), error_buf);
     return;
   }
@@ -211,5 +215,27 @@ Cardinal * num_params;
   XtSetArg(arglist[num_args], XtNx, menu_x); num_args++;
   XtSetArg(arglist[num_args], XtNy, menu_y); num_args++;
   XtSetValues(menu, arglist, num_args);
+
+  /* Menu is positioned pop it up. */
+
+  XtAddGrab(menu, TRUE, TRUE);	/* We want spring_loaded so 
+				   that we always get events. */
+
+/*
+ *  What a crock *** CDP 5/2/89 ... 
+ *
+ * But it is the only way that I can get menu popup to work well
+ * with menu popdown.
+ */
+
+  {
+#   include <X11/ShellP.h>
+    ShellWidget shell_widget = (ShellWidget) menu;
+    shell_widget->shell.popped_up = TRUE;
+    shell_widget->shell.grab_kind = XtGrabExclusive;
+    shell_widget->shell.spring_loaded = TRUE;
+  }
+
+  XtMapWidget(menu);
 }
 

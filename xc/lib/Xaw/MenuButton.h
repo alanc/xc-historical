@@ -1,7 +1,6 @@
 /*
-* $XConsortium: MenuButton.h,v 1.19 89/03/30 16:05:24 jim Exp $
+* $XConsortium: MenuButton.h,v 1.1 89/04/20 16:24:01 kit Exp $
 */
-
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -36,7 +35,20 @@ SOFTWARE.
  *
  ***********************************************************************/
 
-#include <X11/Label.h>
+/*
+ * MenuButton.h - Public Header file for MenuButton widget.
+ *
+ * This is the public header file for the Athena MenuButton widget.
+ * It is intended to provide an easy method of activating pulldown menus.
+ *
+ * Date:    May 2, 1989
+ *
+ * By:      Chris D. Peterson
+ *          MIT X Consortium 
+ *          kit@expo.lcs.mit.edu
+ */
+
+#include <X11/Command.h>
 
 /* Resources:
 
@@ -59,6 +71,7 @@ SOFTWARE.
  justify	     Justify		XtJustify	XtJustifyCenter
  label		     Label		String		NULL
  mappedWhenManaged   MappedWhenManaged	Boolean		True
+ menuName            MenuName           String          "menu"
  resize		     Resize		Boolean		True
  sensitive	     Sensitive		Boolean		True
  width		     Width		Dimension	text width
@@ -75,6 +88,4 @@ extern WidgetClass     menuButtonWidgetClass;
 typedef struct _MenuButtonClassRec   *MenuButtonWidgetClass;
 typedef struct _MenuButtonRec        *MenuButtonWidget;
 
-
-#endif /* _XtMenuButton_h */
-/* DON'T ADD STUFF AFTER THIS */
+#endif /* _XtMenuButton_h --  DON'T ADD STUFF AFTER THIS */

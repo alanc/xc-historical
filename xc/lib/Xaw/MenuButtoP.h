@@ -1,5 +1,5 @@
 /*
-* $XConsortium: MenuButtonP.h,v 1.24 89/03/30 16:05:25 jim Exp $
+* $XConsortium: MenuButtonP.h,v 1.1 89/04/20 16:24:17 kit Exp $
 */
 
 
@@ -27,9 +27,23 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* 
- * MenuButtonP.h - Private definitions for MenuButton widget
- * 
+/***********************************************************************
+ *
+ * MenuButton Widget
+ *
+ ***********************************************************************/
+
+/*
+ * MenuButtonP.h - Private Header file for MenuButton widget.
+ *
+ * This is the private header file for the Athena MenuButton widget.
+ * It is intended to provide an easy method of activating pulldown menus.
+ *
+ * Date:    May 2, 1989
+ *
+ * By:      Chris D. Peterson
+ *          MIT X Consortium 
+ *          kit@expo.lcs.mit.edu
  */
 
 #ifndef _XtMenuButtonP_h
