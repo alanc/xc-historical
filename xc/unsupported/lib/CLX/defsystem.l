@@ -383,7 +383,7 @@
 		      (obj  (merge-pathnames o-filename binary-path))
 		      (args (list "-c" (namestring src)
 				  "-o" (namestring obj)
-				  #+mips "-G 0"
+				  #+mips "-G" #+mips "0"
 				  #+(or hp sysv) "-DSYSV"
 				  #+(and mips (not dec)) "-I/usr/include/bsd"
 				  #-(and mips (not dec)) "-DUNIXCONN")))
