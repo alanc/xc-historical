@@ -1,4 +1,4 @@
-/* $XConsortium: XSynchro.c,v 11.8 91/01/06 11:48:25 rws Exp $ */
+/* $XConsortium: XSynchro.c,v 11.9 91/01/24 11:10:12 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -23,9 +23,13 @@ register Display *dpy;
 	return 0;
 }
 
+#if NeedFunctionPrototypes
+int (*XSynchronize(Display *dpy, int onoff))()
+#else
 int (*XSynchronize(dpy,onoff))()
      register Display *dpy;
      int onoff;
+#endif
 {
         int (*temp)();
 
@@ -37,6 +41,16 @@ int (*XSynchronize(dpy,onoff))()
 	return (temp);
 }
 
+#if NeedFunctionPrototypes
+int (*XSetAfterFunction(
+     Display *dpy,
+     int (*func)(
+#if NeedNestedPrototypes
+		 Display*
+#endif
+		 )
+))()
+#else
 int (*XSetAfterFunction(dpy,func))()
      register Display *dpy;
      int (*func)(
@@ -44,6 +58,7 @@ int (*XSetAfterFunction(dpy,func))()
 		 Display*
 #endif
 		 );
+#endif
 {
         int (*temp)();
 

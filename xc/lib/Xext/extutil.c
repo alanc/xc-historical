@@ -1,5 +1,5 @@
 /*
- * $XConsortium: extutil.c,v 1.9 91/05/04 12:09:58 rws Exp $
+ * $XConsortium: extutil.c,v 1.10 91/07/12 10:28:36 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -229,8 +229,20 @@ static int _default_exterror (dpy, ext_name, reason)
 
 extern int (*_XExtensionErrorFunction)();
 
+#if NeedFunctionPrototypes
+int (*XSetExtensionErrorHandler(
+    int (*handler)(
+#if NeedNestedPrototypes
+		   Display*,
+		   char *,
+		   char *
+#endif
+		   )
+))()
+#else
 int (*XSetExtensionErrorHandler(handler))()
     int (*handler)();
+#endif
 {
     int (*oldhandler)() = _XExtensionErrorFunction;
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xext.h,v 1.1 89/10/12 17:19:17 rws Exp $
+ * $XConsortium: Xext.h,v 1.2 91/07/12 10:28:17 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -28,11 +28,17 @@
 
 _XFUNCPROTOBEGIN
 
-extern int (*XSetExtensionErrorHandler())(
+extern int (*XSetExtensionErrorHandler(
 #if NeedFunctionPrototypes
-    int (*handler)()
+    int (*handler)(
+#if NeedNestedPrototypes
+		   Display *,
+		   char *,
+		   char *
 #endif
-);
+		   )
+#endif
+))();
 
 extern int XMissingExtension(
 #if NeedFunctionPrototypes

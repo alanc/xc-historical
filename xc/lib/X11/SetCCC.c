@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsSetCCC.c,v 1.2 91/06/07 09:56:53 rws Exp $ */
+/* $XConsortium: XcmsSetCCC.c,v 1.3 91/07/09 14:18:07 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -86,10 +86,17 @@ XcmsSetWhitePoint(ccc, pColor)
  */
 
 XcmsCompressionProc
+#if NeedFunctionPrototypes
+XcmsSetCompressionProc(
+    XcmsCCC ccc,
+    XcmsCompressionProc compression_proc,
+    XPointer client_data)
+#else
 XcmsSetCompressionProc(ccc, compression_proc, client_data)
     XcmsCCC ccc;
     XcmsCompressionProc compression_proc;
     XPointer client_data;
+#endif
 /*
  *	DESCRIPTION
  *		Set the specified CCC's compression function and client data.
@@ -115,10 +122,17 @@ XcmsSetCompressionProc(ccc, compression_proc, client_data)
  */
 
 XcmsWhiteAdjustProc
+#if NeedFunctionPrototypes
+XcmsSetWhiteAdjustProc(
+    XcmsCCC ccc,
+    XcmsWhiteAdjustProc white_adjust_proc,
+    XPointer client_data )
+#else
 XcmsSetWhiteAdjustProc(ccc, white_adjust_proc, client_data)
     XcmsCCC ccc;
     XcmsWhiteAdjustProc white_adjust_proc;
     XPointer client_data;
+#endif
 /*
  *	DESCRIPTION
  *		Set the specified CCC's white_adjust function and client data.

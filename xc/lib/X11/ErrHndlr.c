@@ -1,4 +1,4 @@
-/* $XConsortium: XErrHndlr.c,v 11.14 91/01/06 11:45:23 rws Exp $ */
+/* $XConsortium: XErrHndlr.c,v 11.15 91/01/24 11:10:03 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -23,8 +23,12 @@ extern int _XDefaultIOError();
  * the original error handler is restored.
  */
  
+#if NeedFunctionPrototypes
+XErrorHandler XSetErrorHandler(XErrorHandler handler)
+#else
 XErrorHandler XSetErrorHandler(handler)
     register XErrorHandler handler;
+#endif
 {
     int (*oldhandler)() = _XErrorFunction;
 
@@ -48,8 +52,12 @@ XErrorHandler XSetErrorHandler(handler)
  */
  
 extern int _XIOError();
+#if NeedFunctionPrototypes
+XIOErrorHandler XSetIOErrorHandler(XIOErrorHandler handler)
+#else
 XIOErrorHandler XSetIOErrorHandler(handler)
     register XIOErrorHandler handler;
+#endif
 {
     int (*oldhandler)() = _XIOErrorFunction;
 
