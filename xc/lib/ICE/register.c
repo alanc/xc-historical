@@ -1,4 +1,4 @@
-/* $XConsortium: register.c,v 1.5 93/09/27 11:45:33 mor Exp $ */
+/* $XConsortium: register.c,v 1.6 93/11/08 16:34:17 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -19,7 +19,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 
 int
 IceRegisterForProtocolSetup (protocolName, vendor, release,
-    versionCount, versionRecs, authCount, authRecs, IOErrorProc)
+    versionCount, versionRecs, authCount, authNames, authProcs, IOErrorProc)
 
 char			*protocolName;
 char			*vendor;
@@ -27,7 +27,8 @@ char			*release;
 int			versionCount;
 IcePoVersionRec		*versionRecs;
 int			authCount;
-IcePoAuthRec		*authRecs;
+char		        **authNames;
+IcePoAuthProc		*authProcs;
 IceIOErrorProc		IOErrorProc;
 
 {
@@ -93,21 +94,25 @@ IceIOErrorProc		IOErrorProc;
 
     if ((p->auth_count = authCount) > 0)
     {
-	p->auth_recs = (IcePoAuthRec *) malloc (
-	    authCount * sizeof (IcePoAuthRec));
+	p->auth_names = (char **) malloc (
+	    authCount * sizeof (char *));
+
+	p->auth_procs = (IcePoAuthProc *) malloc (
+	    authCount * sizeof (IcePoAuthProc));
 
 	for (i = 0; i < authCount; i++)
 	{
-	    p->auth_recs[i].auth_name =
-	        (char *) malloc (strlen (authRecs[i].auth_name) + 1);
-	    strcpy (p->auth_recs[i].auth_name, authRecs[i].auth_name);
+	    p->auth_names[i] =
+	        (char *) malloc (strlen (authNames[i]) + 1);
+	    strcpy (p->auth_names[i], authNames[i]);
 
-	    p->auth_recs[i].auth_proc = authRecs[i].auth_proc;
+	    p->auth_procs[i] = authProcs[i];
 	}
     }
     else
     {
-	p->auth_recs = NULL;
+	p->auth_names = NULL;
+	p->auth_procs = NULL;
     }
 
     p->io_error_proc = IOErrorProc;
@@ -118,9 +123,13 @@ IceIOErrorProc		IOErrorProc;
 
 
 int
-IceRegisterForProtocolReply (protocolName, vendor, release,
-    versionCount, versionRecs, protocolSetupNotifyProc,
-    authCount, authRecs, IOErrorProc)
+IceRegisterForProtocolReply (
+    protocolName, vendor, release,
+    versionCount, versionRecs,
+    protocolSetupNotifyProc,
+    authCount, authNames, authProcs,
+    hostBasedAuthProc, hostBasedAuthProcClientData,
+    IOErrorProc)
 
 char				*protocolName;
 char				*vendor;
@@ -129,7 +138,10 @@ int				versionCount;
 IcePaVersionRec			*versionRecs;
 IceProtocolSetupNotifyProc	protocolSetupNotifyProc;
 int				authCount;
-IcePaAuthRec			*authRecs;
+char				**authNames;
+IcePaAuthProc			*authProcs;
+IceHostBasedAuthProc		hostBasedAuthProc;
+IcePointer			hostBasedAuthProcClientData;
 IceIOErrorProc			IOErrorProc;
 
 {
@@ -198,22 +210,29 @@ IceIOErrorProc			IOErrorProc;
 
     if ((p->auth_count = authCount) > 0)
     {
-	p->auth_recs = (IcePaAuthRec *) malloc (
-	    authCount * sizeof (IcePaAuthRec));
+	p->auth_names = (char **) malloc (
+	    authCount * sizeof (char *));
+
+	p->auth_procs = (IcePaAuthProc *) malloc (
+	    authCount * sizeof (IcePaAuthProc));
 
 	for (i = 0; i < authCount; i++)
 	{
-	    p->auth_recs[i].auth_name =
-	        (char *) malloc (strlen (authRecs[i].auth_name) + 1);
-	    strcpy (p->auth_recs[i].auth_name, authRecs[i].auth_name);
+	    p->auth_names[i] =
+	        (char *) malloc (strlen (authNames[i]) + 1);
+	    strcpy (p->auth_names[i], authNames[i]);
 
-	    p->auth_recs[i].auth_proc = authRecs[i].auth_proc;
+	    p->auth_procs[i] = authProcs[i];
 	}
     }
     else
     {
-	p->auth_recs = NULL;
+	p->auth_names = NULL;
+	p->auth_procs = NULL;
     }
+
+    p->host_based_auth_proc = hostBasedAuthProc;
+    p->host_based_auth_proc_client_data = hostBasedAuthProcClientData;
 
     p->io_error_proc = IOErrorProc;
 
