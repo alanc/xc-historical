@@ -1,4 +1,4 @@
-/* $XConsortium: Form.c,v 1.44 91/03/23 17:25:27 converse Exp $ */
+/* $XConsortium: Form.c,v 1.45 91/03/26 12:26:32 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -297,7 +297,7 @@ Dimension *ret_width, *ret_height;
  *	Arguments: fw - the Form widget.
  *                 width, height - ** UNUSED **.
  *                 force_relayout - will force the children to be
- *                                 moved, event if some go past the edge
+ *                                 moved, even if some go past the edge
  *                                 of the form.
  *	Returns: True if the children are allowed to move from their
  *               current locations to the new ones.
@@ -366,6 +366,7 @@ static Boolean Layout(fw, width, height, force_relayout)
     else
 	ret_val = False;
 
+    fw->form.needs_relayout = False;
     return ret_val;
 }
 
@@ -539,8 +540,17 @@ static XtGeometryResult GeometryManager(w, request, reply)
     XtGeometryResult ret_val;
 
     if ((request->request_mode & ~(XtCWQueryOnly | CWWidth | CWHeight)) ||
-	!form->form.allow_resize)
+	!form->form.allow_resize) {
+
+	/* If GeometryManager is invoked during a SetValues call on a child
+         * then it is necessary to compute a new layout if ConstraintSetValues
+         * allowed any constraint changes. */
+
+	if (fw->form.needs_relayout) 
+	    (*((FormWidgetClass)fw->core.widget_class)->form_class.layout)
+		(fw, 0, 0, True);
 	return(XtGeometryNo);
+    }
 
     if (request->request_mode & CWWidth)
 	allowed.width = request->width;
@@ -552,8 +562,17 @@ static XtGeometryResult GeometryManager(w, request, reply)
     else
 	allowed.height = w->core.height;
 
-    if (allowed.width == w->core.width && allowed.height == w->core.height)
+    if (allowed.width == w->core.width && allowed.height == w->core.height) {
+
+	/* If GeometryManager is invoked during a SetValues call on a child
+         * then it is necessary to compute a new layout if ConstraintSetValues
+         * allowed any constraint changes. */
+
+	if (fw->form.needs_relayout) 
+	    (*((FormWidgetClass)fw->core.widget_class)->form_class.layout)
+		(fw, 0, 0, True);
 	return(XtGeometryNo);
+    }
 
     /*
      * Remember the old size, and then set the size to the requested size.
@@ -653,11 +672,40 @@ static void ConstraintInitialize(request, new)
         form->form.dy = fw->form.default_spacing;
 }
 
-/* ARGSUSED */
-static Boolean ConstraintSetValues(current, request, new)
+/*ARGSUSED*/
+static Boolean ConstraintSetValues(current, request, new, args, num_args)
     Widget current, request, new;
+    ArgList args;
+    Cardinal *num_args;
 {
-    return( FALSE );
+  register FormConstraints cfc = (FormConstraints) current->core.constraints;
+  register FormConstraints nfc = (FormConstraints) new->core.constraints;
+  
+  if (cfc->form.top          != nfc->form.top         ||
+      cfc->form.bottom       != nfc->form.bottom      ||
+      cfc->form.left         != nfc->form.left        ||
+      cfc->form.right        != nfc->form.right       ||
+      cfc->form.dx           != nfc->form.dx          ||
+      cfc->form.dy           != nfc->form.dy          ||
+      cfc->form.horiz_base   != nfc->form.horiz_base  ||
+      cfc->form.vert_base    != nfc->form.vert_base) {
+
+      FormWidget fp = (FormWidget) XtParent(new);
+
+    /* If there are no subclass ConstraintSetValues procedures remaining
+     * to be invoked, and if there is no geometry request about to be
+     * made, then invoke the new layout now; else defer it. */
+
+    if (XtClass(XtParent(new))  == formWidgetClass	&&
+	current->core.x		== new->core.x		&&
+	current->core.y		== new->core.y		&&
+	current->core.width	== new->core.width	&&
+	current->core.height	== new->core.height	&&
+	current->core.border_width == new->core.border_width)
+	Layout(fp, 0, 0, True);
+    else fp->form.needs_relayout = True;
+  }
+  return( FALSE );
 }
 
 static void ChangeManaged(w)
