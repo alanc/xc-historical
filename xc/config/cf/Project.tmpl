@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.62 89/12/16 16:36:27 rws Exp $
+/**/# $XConsortium: Project.tmpl,v 1.63 89/12/18 16:46:44 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -336,7 +336,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.62 89/12/16 16:36:27 rws Exp $
+/**/# $XConsortium: Project.tmpl,v 1.63 89/12/18 16:46:44 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -491,7 +491,7 @@ Berklib.c: sysV/Berklib.c					@@\
 #endif
 #if HasXcuWidget
         XCULIBSRC = $(CONTRIBSRC)/toolkits/Xcu
-        DEPXCULIB = _Use($(USELIBDIR),$(XWLIBSRC))/libXcu.a
+        DEPXCULIB = _Use($(USRLIBDIR),$(XCULIBSRC))/libXcu.a
         XCULIB = LoaderLibPrefix _Use(-lXcu,$(DEPXCULIB))
 #endif
 
