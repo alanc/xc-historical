@@ -1,4 +1,4 @@
-/* $XConsortium: SimpleMenu.c,v 1.36 90/12/31 17:32:14 gildea Exp $ */
+/* $XConsortium: SimpleMenu.c,v 1.37 91/02/17 16:04:18 converse Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -127,7 +127,7 @@ static XtActionsRec actionsList[] =
   {"unhighlight",       Unhighlight},
 };
  
-CompositeClassExtensionRec extension_rec = {
+static CompositeClassExtensionRec extension_rec = {
     /* next_extension */  NULL,
     /* record_type */     NULLQUARK,
     /* version */         XtCompositeExtensionVersion,
