@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontscale.c,v 1.5 91/07/17 14:29:58 keith Exp $
+ * $XConsortium: fontscale.c,v 1.6 91/07/18 22:37:59 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -173,6 +173,8 @@ MatchScalable (a, b)
 	    (a->pixel == b->pixel || a->point == b->point);
 }
 
+#define IsAnamorphic(s)	((s)->pFont && (s)->pFont->info.anamorphic)
+
 FontScaledPtr
 FontFileFindScaledInstance (entry, vals, noSpecificSize)
     FontEntryPtr	entry;
@@ -195,7 +197,8 @@ FontFileFindScaledInstance (entry, vals, noSpecificSize)
 	for (i = 1; i < extra->numScaled; i++)
 	{
 	    mvals = &extra->scaled[i].vals;
-	    if (mvals->x == vals->x && mvals->y == vals->y)
+	    if (!IsAnamorphic(&extra->scaled[i]) &&
+		mvals->x == vals->x && mvals->y == vals->y)
 	    {
 		dist = mvals->point - vals->point;
 		if (dist < 0)
@@ -214,7 +217,8 @@ FontFileFindScaledInstance (entry, vals, noSpecificSize)
     	/* See if we've scaled to this value yet */
     	for (i = 0; i < extra->numScaled; i++)
     	{
-	    if (MatchScalable (&extra->scaled[i].vals, vals))
+	    if (MatchScalable (&extra->scaled[i].vals, vals) &&
+		(vals->width || !IsAnamorphic(&extra->scaled[i])))
 	    	return &extra->scaled[i];
     	}
     }
