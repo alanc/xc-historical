@@ -1,4 +1,4 @@
-/* $XConsortium: SimpleMenu.c,v 1.35 90/09/10 14:34:23 converse Exp $ */
+/* $XConsortium: SimpleMenu.c,v 1.36 90/12/31 17:32:14 gildea Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -45,7 +45,7 @@
 
 #define streq(a, b)        ( strcmp((a), (b)) == 0 )
 
-#define offset(field) XtOffset(SimpleMenuWidget, simple_menu.field)
+#define offset(field) XtOffsetOf(SimpleMenuRec, simple_menu.field)
 
 static XtResource resources[] = { 
 
@@ -56,35 +56,35 @@ static XtResource resources[] = {
   {XtNlabel,  XtCLabel, XtRString, sizeof(String),
      offset(label_string), XtRString, NULL},
   {XtNlabelClass,  XtCLabelClass, XtRPointer, sizeof(WidgetClass),
-     offset(label_class), XtRImmediate, (caddr_t) NULL},
+     offset(label_class), XtRImmediate, (XtPointer) NULL},
 
 /*
  * Layout Resources.
  */
 
   {XtNrowHeight,  XtCRowHeight, XtRDimension, sizeof(Dimension),
-     offset(row_height), XtRImmediate, (caddr_t) 0},
+     offset(row_height), XtRImmediate, (XtPointer) 0},
   {XtNtopMargin,  XtCVerticalMargins, XtRDimension, sizeof(Dimension),
-     offset(top_margin), XtRImmediate, (caddr_t) 0},
+     offset(top_margin), XtRImmediate, (XtPointer) 0},
   {XtNbottomMargin,  XtCVerticalMargins, XtRDimension, sizeof(Dimension),
-     offset(bottom_margin), XtRImmediate, (caddr_t) 0},
+     offset(bottom_margin), XtRImmediate, (XtPointer) 0},
 
 /*
  * Misc. Resources
  */
 
   { XtNallowShellResize, XtCAllowShellResize, XtRBoolean, sizeof(Boolean),
-      XtOffset(SimpleMenuWidget, shell.allow_shell_resize),
+      XtOffsetOf(SimpleMenuRec, shell.allow_shell_resize),
       XtRImmediate, (XtPointer) TRUE },
   {XtNcursor, XtCCursor, XtRCursor, sizeof(Cursor),
-      offset(cursor), XtRImmediate, (caddr_t) None},
+      offset(cursor), XtRImmediate, (XtPointer) None},
   {XtNmenuOnScreen,  XtCMenuOnScreen, XtRBoolean, sizeof(Boolean),
-      offset(menu_on_screen), XtRImmediate, (caddr_t) TRUE},
+      offset(menu_on_screen), XtRImmediate, (XtPointer) TRUE},
   {XtNpopupOnEntry,  XtCPopupOnEntry, XtRWidget, sizeof(Widget),
       offset(popup_entry), XtRWidget, NULL},
   {XtNbackingStore, XtCBackingStore, XtRBackingStore, sizeof (int),
       offset(backing_store), 
-      XtRImmediate, (caddr_t) (Always + WhenMapped + NotUseful)},
+      XtRImmediate, (XtPointer) (Always + WhenMapped + NotUseful)},
 };  
 #undef offset
 
@@ -228,7 +228,7 @@ WidgetClass wc;
  */
 
     extension_rec.next_extension = smwc->composite_class.extension;
-    smwc->composite_class.extension = (caddr_t) &extension_rec;
+    smwc->composite_class.extension = (XtPointer) &extension_rec;
 }
 
 /*      Function Name: Initialize
@@ -1092,7 +1092,7 @@ Position x, y;
 static void
 ChangeCursorOnGrab(w, junk, garbage)
 Widget w;
-caddr_t junk, garbage;
+XtPointer junk, garbage;
 {
     SimpleMenuWidget smw = (SimpleMenuWidget) w;
     

@@ -1,4 +1,4 @@
-/* $XConsortium: Simple.c,v 1.27 90/03/05 17:47:30 kit Exp $ */
+/* $XConsortium: Simple.c,v 1.28 91/01/06 16:08:38 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -30,13 +30,13 @@ SOFTWARE.
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/SimpleP.h>
 
-#define offset(field) XtOffset(SimpleWidget, simple.field)
+#define offset(field) XtOffsetOf(SimpleRec, simple.field)
 
 static XtResource resources[] = {
   {XtNcursor, XtCCursor, XtRCursor, sizeof(Cursor),
-     offset(cursor), XtRImmediate, (caddr_t) None},
+     offset(cursor), XtRImmediate, (XtPointer) None},
   {XtNinsensitiveBorder, XtCInsensitive, XtRPixmap, sizeof(Pixmap),
-     offset(insensitive_border), XtRImmediate, (caddr_t) NULL},
+     offset(insensitive_border), XtRImmediate, (XtPointer) NULL},
   {XtNpointerColor, XtCForeground, XtRPixel, sizeof(Pixel),
      offset(pointer_fg), XtRString, XtDefaultForeground},
   {XtNpointerColorBackground, XtCBackground, XtRPixel, sizeof(Pixel),
@@ -94,12 +94,12 @@ WidgetClass simpleWidgetClass = (WidgetClass)&simpleClassRec;
 static void ClassInitialize()
 {
     static XtConvertArgRec convertArg[] = {
-        {XtWidgetBaseOffset, (caddr_t) XtOffset(Widget, core.screen),
+        {XtWidgetBaseOffset, (XtPointer) XtOffsetOf(WidgetRec, core.screen),
 	     sizeof(Screen *)},
         {XtResourceString, (XtPointer) XtNpointerColor, sizeof(Pixel)},
         {XtResourceString, (XtPointer) XtNpointerColorBackground, 
 	     sizeof(Pixel)},
-        {XtWidgetBaseOffset, (caddr_t) XtOffset(Widget, core.colormap),
+        {XtWidgetBaseOffset, (XtPointer) XtOffsetOf(WidgetRec, core.colormap),
 	     sizeof(Colormap)}
     };
 
