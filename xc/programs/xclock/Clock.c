@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Clock.c,v 1.34 88/07/11 13:27:33 jim Exp $";
+static char rcsid[] = "$Header: Clock.c,v 1.35 88/08/14 10:42:13 keith Exp $";
 #endif lint
 
 
@@ -62,18 +62,20 @@ static void clock_tic(), DrawHand(), DrawSecond(), SetSeg(), DrawClockFace();
 #define goffset(field) XtOffset(Widget,core.field)
 
 static XtResource resources[] = {
-    {XtNwidth, XtCWidth, XtRInt, sizeof(int),
+    {XtNwidth, XtCWidth, XtRDimension, sizeof(Dimension),
 	goffset(width), XtRString, "0"},
-    {XtNheight, XtCHeight, XtRInt, sizeof(int),
+    {XtNheight, XtCHeight, XtRDimension, sizeof(Dimension),
 	goffset(height), XtRString, "0"},
+    {XtNbackground, XtCBackground, XtRPixel, sizeof(Pixel),
+	goffset(background_pixel), XtRString, "white"},
     {XtNupdate, XtCInterval, XtRInt, sizeof(int), 
         offset(update), XtRString, "60" },
     {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
-        offset(fgpixel), XtRString, "Black"},
+        offset(fgpixel), XtRString, "black"},
     {XtNhand, XtCForeground, XtRPixel, sizeof(Pixel),
-        offset(Hdpixel), XtRString, "Black"},
+        offset(Hdpixel), XtRString, "black"},
     {XtNhighlight, XtCForeground, XtRPixel, sizeof(Pixel),
-        offset(Hipixel), XtRString, "Black"},
+        offset(Hipixel), XtRString, "black"},
     {XtNanalog, XtCBoolean, XtRBoolean, sizeof(Boolean),
         offset(analog), XtRString, "TRUE"},
     {XtNchime, XtCBoolean, XtRBoolean, sizeof(Boolean),
@@ -126,6 +128,8 @@ ClockClassRec clockClassRec = {
     /* callback_private		*/	NULL,
     /* tm_table			*/	NULL,
     /* query_geometry           */	XtInheritQueryGeometry,
+    /* display_accelerator      */	XtInheritDisplayAccelerator,
+    /* extension                */	NULL
     }
 };
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Dialog.c,v 1.11 88/03/03 14:40:58 swick Exp $";
+static char rcsid[] = "$Header: Dialog.c,v 1.15 88/08/12 13:10:23 swick Exp $";
 #endif lint
 
 
@@ -86,15 +86,16 @@ DialogClassRec dialogClassRec = {
     /* version            */    XtVersion,
     /* callback_private   */    NULL,
     /* tm_table           */    NULL,
-    /* query_geometry     */	XtInheritQueryGeometry
+    /* query_geometry     */	XtInheritQueryGeometry,
+    /* display_accelerator*/	XtInheritDisplayAccelerator,
+    /* extension          */	NULL
   },
   { /* composite_class fields */
     /* geometry_manager   */   XtInheritGeometryManager,
     /* change_managed     */   XtInheritChangeManaged,
     /* insert_child       */   XtInheritInsertChild,
     /* delete_child       */   XtInheritDeleteChild,
-    /* move_focus_to_next */   NULL,
-    /* move_focus_to_prev */   NULL
+    /* extension          */   NULL
   },
   { /* constraint_class fields */
     /* subresourses       */   NULL,
@@ -102,7 +103,8 @@ DialogClassRec dialogClassRec = {
     /* constraint_size    */   sizeof(DialogConstraintsRec),
     /* initialize         */   ConstraintInitialize,
     /* destroy            */   NULL,
-    /* set_values         */   NULL
+    /* set_values         */   NULL,
+    /* extension          */   NULL
   },
   { /* form_class fields */
     /* empty              */   0
@@ -194,7 +196,7 @@ Widget request, new;
 				 ? dw->dialog.valueW
 				 : dw->dialog.labelW;
 
-    if (dw->composite.num_mapped_children > 1) {
+    if (dw->composite.num_children > 1) {
         for (childP = children + dw->composite.num_children - 1;
 	     childP >= children; childP-- ) {
 	    if (*childP == dw->dialog.labelW || *childP == dw->dialog.valueW)
@@ -227,7 +229,6 @@ caddr_t param;
     static XtCallbackRec callback[] = { {NULL, NULL}, {NULL, NULL} };
     static Arg arglist[] = {
 	{XtNcallback, (XtArgVal) callback},
-	{XtNfromHoriz, (XtArgVal) NULL},
 	{XtNfromVert, (XtArgVal) NULL},
 	{XtNleft, (XtArgVal) XtChainLeft},
 	{XtNright, (XtArgVal) XtChainLeft}
@@ -236,18 +237,10 @@ caddr_t param;
     callback[0].callback = function;
     callback[0].closure =  param;
 
-    if ((parent->composite.num_mapped_children > 2)
-	|| (!parent->dialog.value
-	    && (parent->composite.num_mapped_children > 1)))
-       arglist[1].value = (XtArgVal)parent->
-	 composite.children[parent->composite.num_mapped_children - 1];
-    else
-       arglist[1].value = (XtArgVal)NULL;
-
     if (parent->dialog.value)
-       arglist[2].value = (XtArgVal) parent->dialog.value;
+       arglist[1].value = (XtArgVal) parent->dialog.value;
     else
-       arglist[2].value = (XtArgVal) parent->dialog.label;
+       arglist[1].value = (XtArgVal) parent->dialog.label;
 
     XtCreateManagedWidget( name, commandWidgetClass, dialog, 
 			   arglist, XtNumber(arglist) );

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Form.c,v 1.14 88/02/26 11:58:27 swick Exp $";
+static char rcsid[] = "$Header: Form.c,v 1.17 88/08/12 12:20:42 swick Locked $";
 #endif lint
 
 
@@ -109,14 +109,15 @@ FormClassRec formClassRec = {
     /* callback_private   */    NULL,
     /* tm_table           */    NULL,
     /* query_geometry     */	XtInheritQueryGeometry,	/* %%% fix this! */
+    /* display_accelerator*/	XtInheritDisplayAccelerator,
+    /* extension          */	NULL
   },
   { /* composite_class fields */
     /* geometry_manager   */   GeometryManager,
     /* change_managed     */   ChangeManaged,
     /* insert_child       */   XtInheritInsertChild,
     /* delete_child       */   XtInheritDeleteChild,
-    /* move_focus_to_next */   NULL,
-    /* move_focus_to_prev */   NULL
+    /* extension          */   NULL
   },
   { /* constraint_class fields */
     /* subresourses       */   formConstraintResources,
@@ -124,7 +125,8 @@ FormClassRec formClassRec = {
     /* constraint_size    */   sizeof(FormConstraintsRec),
     /* initialize         */   ConstraintInitialize,
     /* destroy            */   NULL,
-    /* set_values         */   ConstraintSetValues
+    /* set_values         */   ConstraintSetValues,
+    /* extension          */   NULL
   },
   { /* form_class fields */
     /* empty              */   0

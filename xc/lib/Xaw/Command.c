@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Command.c,v 1.34 88/02/26 10:34:47 swick Exp $";
+static char rcsid[] = "$Header: Command.c,v 1.39 88/08/25 15:27:34 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -61,17 +61,15 @@ static char defaultTranslations[] =
      <EnterWindow>:	highlight() \n\
      <LeaveWindow>:	unset(NoRedisplay) unhighlight()";
 
-static int defHighlight = 2;
+static Dimension defHighlight = 2;
 
 #define offset(field) XtOffset(CommandWidget, field)
 static XtResource resources[] = { 
 
    {XtNcallback, XtCCallback, XtRCallback, sizeof(caddr_t), 
       offset(command.callbacks), XtRCallback, (caddr_t)NULL},
-   {XtNcursor, XtCCursor, XtRCursor, sizeof(Cursor),
-      offset(simple.cursor), XtRString, "opendot"},
-   {XtNhighlightThickness, XtCThickness, XtRInt, sizeof(Dimension),
-      offset(command.highlight_thickness), XtRInt, (caddr_t)&defHighlight},
+   {XtNhighlightThickness, XtCThickness, XtRDimension, sizeof(Dimension),
+      offset(command.highlight_thickness), XtRDimension, (caddr_t)&defHighlight},
 };
 #undef offset
 
@@ -120,6 +118,8 @@ CommandClassRec commandClassRec = {
     NULL,				/* callback_private	  */
     defaultTranslations,		/* tm_table		  */
     XtInheritQueryGeometry,		/* query_geometry	  */
+    XtInheritDisplayAccelerator,	/* display_accelerator	  */
+    NULL				/* extension		  */
   },  /* CoreClass fields initialization */
   {
     0,                                     /* field not used    */
