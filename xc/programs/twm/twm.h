@@ -55,7 +55,7 @@ from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.78 94/07/06 16:17:28 mor Exp $
+ * $XConsortium: twm.h,v 1.79 94/07/21 16:05:40 mor Exp $
  *
  * twm include file
  *
@@ -289,6 +289,7 @@ typedef struct TwmWindow
     short iconify_by_unmapping;	/* unmap window to iconify it */
     short iconmgr;		/* this is an icon manager window */
     short transient;		/* this is a transient window */
+    short nameChanged;		/* did WM_NAME ever change? */
     Window transientfor;	/* window contained in XA_XM_TRANSIENT_FOR */
     short titlehighlight;	/* should I highlight the title bar */
     struct IconMgr *iconmgrp;	/* pointer to it if this is an icon manager */
