@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.73 92/07/01 21:22:44 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.74 92/07/02 12:20:23 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -35,6 +35,7 @@ Syntax of magic values in the input stream:
 	a		abort recording of macro
 	s<digit>	save recording as macro <digit>
 	e<digit>	execute macro <digit>
+	d<digit>	delete macro <digit>
 ^T^J<options>[ <mult>]^T
 			jump to next closest top-level window
 	Z		no-op letter to soak up uppercase from prev word 
@@ -2001,6 +2002,21 @@ do_macro(buf)
     case 'a':
 	macro_start = -1;
 	break;
+    case 'd':
+	if (isdigit(buf[1]) && !buf[2]) {
+	    n = buf[1] - '0';
+	    if (macros[n].macro)
+		free(macros[n].macro);
+	    macros[n].len = 0;
+	    macros[n].macro = NULL;
+	}
+	break;
+    case 'e':
+	if (isdigit(buf[1]) && !buf[2]) {
+	    n = buf[1] - '0';
+	    process(macros[n].macro, macros[n].len, 0);
+	}
+	break;
     case 'r':
 	if (!buf[1])
 	    macro_start = history_end + 4;
@@ -2020,12 +2036,6 @@ do_macro(buf)
 		    *macro = control_char;
 	}
 	macro_start = -1;
-	break;
-    case 'e':
-	if (isdigit(buf[1]) && !buf[2]) {
-	    n = buf[1] - '0';
-	    process(macros[n].macro, macros[n].len, 0);
-	}
 	break;
     }
 }
