@@ -1,4 +1,4 @@
-/* $XConsortium: sunMouse.c,v 5.21 94/04/17 20:29:47 kaleb Exp kaleb $ */
+/* $XConsortium: sunMouse.c,v 5.22 94/10/17 14:16:02 kaleb Exp kaleb $ */
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
  *
@@ -164,6 +164,7 @@ int sunMouseProc (device, what)
 	    break;
 
 	case DEVICE_CLOSE:
+	    pMouse->on = FALSE;
 	    if (ioctl (sunPtrPriv.fd, VUIDSFORMAT, &oformat) == -1)
 		Error ("sunMouseProc ioctl VUIDSFORMAT");
 	    break;
