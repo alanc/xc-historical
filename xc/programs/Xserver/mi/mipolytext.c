@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ************************************************************************/
-/* $XConsortium: mipolytext.c,v 1.15 89/03/24 07:32:45 rws Exp $ */
+/* $XConsortium: mipolytext.c,v 1.16 89/05/01 15:27:30 rws Exp $ */
 /*
  * mipolytext.c - text routines
  *
@@ -185,7 +185,7 @@ miImageText16(pDraw, pGC, x, y, count, chars)
     if(!(charinfo = (CharInfoPtr *)ALLOCATE_LOCAL(count*sizeof(CharInfoPtr))))
 	return;
     GetGlyphs(font, (unsigned long)count, (unsigned char *)chars,
-	      (pGC->font->pFI->lastRow == 0) ? Linear8Bit : TwoD16Bit,
+	      (pGC->font->pFI->lastRow == 0) ? Linear16Bit : TwoD16Bit,
 	      &n, charinfo);
     if (n !=0 )
         (*pGC->ImageGlyphBlt)(pDraw, pGC, x, y, n, charinfo, font->pGlyphs);
