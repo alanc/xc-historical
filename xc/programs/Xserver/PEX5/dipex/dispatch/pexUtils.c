@@ -1,4 +1,4 @@
-/* $XConsortium: pexUtils.c,v 5.5 91/05/06 18:15:36 rws Exp $ */
+/* $XConsortium: pexUtils.c,v 5.6 92/10/05 17:01:54 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -422,7 +422,8 @@ puAddToList( pitem, numItems, plist )
 		PU_GROW_LIST( plist, plist->numObj + numItems );
 
 	pi2 = &(plist->pList[ obj_struct_sizes[(int)(plist->type)] * plist->numObj ]);
-	bcopy( (char *)pitem, (char *)pi2, (int)(numItems * obj_struct_sizes[(int)(plist->type)]) );
+	/* JSH - assuming copy may overlap */
+	memmove( (char *)pi2, (char *)pitem, (int)(numItems * obj_struct_sizes[(int)(plist->type)]) );
 
 	plist->numObj += numItems;
 
@@ -550,8 +551,9 @@ puRemoveFromList( pitem, plist )
 }	/* puRemoveFromList */
 
 /* this macro assumes that pldest has enough memory */
+/* JSH - assuming copy may overlap */
 #define	PU_COPY_LIST_ELEMENTS( plsrc, pldest, bytes )	\
-	bcopy( (char *)(plsrc), (char *)(pldest), (int)(bytes) )
+	memmove( (char *)(pldest), (char *)(plsrc), (int)(bytes) )
 
 short
 puCopyList( psrc, pdest )
