@@ -4,7 +4,7 @@
  * mi sprite structures
  */
 
-/* $XConsortium: mispritest.h,v 5.1 89/06/16 17:02:03 keith Exp $ */
+/* $XConsortium: mispritest.h,v 5.2 89/06/21 11:17:02 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -32,6 +32,7 @@ typedef struct {
     unsigned int    *(*GetSpans)();
     Bool	    (*CreateGC)();
     Bool	    (*CreateWindow)();
+    Bool	    (*DestroyWindow)();
     Bool	    (*ChangeWindowAttributes)();
     void	    (*BlockHandler)();
     void	    (*InstallColormap)();
