@@ -184,16 +184,6 @@ typedef struct _Xtransport {
 	XtransConnInfo		/* connection */
     );
 
-    int	(*NameToAddr)(
-	XtransConnInfo		/* connection */
-	/* What else ??? */
-    );
-
-    int	(*AddrToName)(
-	XtransConnInfo		/* connection */
-	/* What else ??? */
-    );
-
 } Xtransport;
 
 .fi
@@ -380,16 +370,6 @@ int TRANS(Close)(XtransConnInfo connection)
 This function closes the transport, unbinds it, and frees all resources that
 was associated with the transport. If a TRANS(Disconnect) call was not made
 on the connection, a disorderly disconnect may occur.
-.LI
-int TRANS(NameToAddr)(XtransConnInfo connection /* ???what else??? */ )
-.P
-This function performs a name resolution in a transport dependent way.
-The parameters of this function have not been finalized yet.
-.LI
-int TRANS(AddrToName)(XtransConnInfo connection /* ???what else??? */ )
-.P
-This function performs a reverse name lookup in a transport dependent way.
-The parameters of this function have not been finalized yet.
 .LI
 int TRANS(IsLocal)(XtransConnInfo connection)
 .P
@@ -607,16 +587,6 @@ call to this function will have no affect.
 int Close(struct _Xtransport *thistrans)
 .P
 This function will break the connection, and close the endpoint.
-.LI
-int NameToAddr(struct _Xtransport *thistrans)
-.P
-This function performs name resolution in a transport dependent way. Actual
-use of this function is still being determined.
-.LI
-int AddrToName(struct _Xtransport *thistrans)
-.P
-This function performs reverse name resolution in a transport dependent way.
-Actual use of this function is still being determined.
 .LE
 .H 1 "Configuration"
 .P
