@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.20 89/05/17 13:55:43 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.21 89/05/26 11:26:25 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -74,6 +74,9 @@
 #endif
 #ifndef NeedBerklibInXlib
 #define NeedBerklibInXlib       NO
+#endif
+#ifndef NeedStreamsInXlib
+#define NeedStreamsInXlib	NO
 #endif
 #ifndef ManDirectoryRoot
 #define ManDirectoryRoot /usr/man		/* if not set in .macros */
@@ -232,7 +235,22 @@
 #define SharedXlibRev 4.0
 #endif
 
-#if NeedBerklibInXlib
+#if NeedStreamsInXlib
+#define BandAidLibraryNeeded		YES
+#define BandAidLibrarySources Xstreams.c Berklib.c
+#define BandAidLibraryObjects Xstreams.o Berklib.o
+#define BandAidLibraryMake()					@@\
+Xstreams.c: sysV/Xstreams.c					@@\
+	-$(RM) Xstreams.c					@@\
+	-$(LN) sysV/Xstreams.c .				@@\
+								@@\
+Berklib.c: sysV/Berklib.c					@@\
+	-$(RM) Berklib.c					@@\
+	-$(LN) sysV/Berklib.c .
+
+#else /* else do not need streams */
+
+#if NeedBerklibInXlib		/* what about regular Berklib */
 #define BandAidLibraryNeeded		YES
 #define BandAidLibrarySources		Berklib.c
 #define BandAidLibraryObjects		Berklib.o
@@ -240,7 +258,9 @@
 Berklib.c: sysV/Berklib.c					@@\
 	-$(RM) Berklib.c					@@\
 	-$(LN) sysV/Berklib.c .
-#endif
+#endif /* NeedBerklibInXlib */
+#endif /* NeedStreamsInXlib */
+
 
 #ifndef BandAidLibraryNeeded
 #define BandAidLibraryNeeded NO		/* for getting right stuff into Xlib */
@@ -248,7 +268,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.20 89/05/17 13:55:43 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.21 89/05/26 11:26:25 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level

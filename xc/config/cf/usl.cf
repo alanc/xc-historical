@@ -1,4 +1,4 @@
-/**/# platform:  $XConsortium: att.cf,v 1.1 89/06/13 18:41:56 jim Exp $
+/**/# platform:  $XConsortium: att.cf,v 1.2 89/06/13 18:49:33 jim Exp $
 
 
 /*
@@ -18,7 +18,10 @@
 #define ExecableScripts		NO
 #define BuildServer		NO
 
+#define ExtraLoadFlags -lpt -lnsl_s
+
 #define SignalReturnProcType void
 
-#define NeedBerklibInXlib	YES
+#define NeedStreamsInXlib	YES
 
+#define ConnectionFlags -DSTREAMSCONN
