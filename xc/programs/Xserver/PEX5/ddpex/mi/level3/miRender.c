@@ -1,4 +1,4 @@
-/* $XConsortium: miRender.c,v 5.13 92/11/18 19:06:38 hersh Exp $ */
+/* $XConsortium: miRender.c,v 5.14 92/11/18 19:52:44 hersh Exp $ */
 
 
 /***********************************************************
@@ -613,17 +613,13 @@ RenderElements(pRend, pStr, range)
 	   must be allocated
 	*/
 
-        fakeStrID = FakeClientID(pRend->pickstr.client->index);
         REfakeStr = (diStructHandle)Xalloc((unsigned long)
                                               sizeof(ddStructResource));
         if (!REfakeStr) return (BadAlloc);
-        REfakeStr->id = fakeStrID;
+        REfakeStr->id = -666;
         err = CreateStructure(REfakeStr);
         if (err != Success) {
             Xfree((pointer)(REfakeStr));
-            return (err);
-        }
-        if (!AddResource( fakeStrID, PEXStructType, (pointer)REfakeStr)) {
             return (err);
         }
 
@@ -1247,17 +1243,13 @@ BeginStructure(pRend, sId)
 	curpp[(pRend->pickstr.fakeStrlist)->numObj-1].offset++;
 
 	/* allocate a new fake structure and add to both lists */
-	fakeStrID = FakeClientID(pRend->pickstr.client->index);
 	fakeStr = (diStructHandle)Xalloc((unsigned long)
 					      sizeof(ddStructResource));
 	if (!fakeStr) return (BadAlloc);
-	fakeStr->id = fakeStrID;
+	fakeStr->id = -666;
 	err = CreateStructure(fakeStr);
 	if (err != Success) {
 	    Xfree((pointer)(fakeStr));
-	    return (err);
-	}
-	if (!AddResource( fakeStrID, PEXStructType, (pointer)fakeStr)) {
 	    return (err);
 	}
 
@@ -1638,22 +1630,24 @@ EndPicking(pRend)
     ErrorF( " EndPicking\n");
 #endif
 
-    /*  empty listoflist for Pick All
-       this assumes the individual pick paths lists that this
-       pointed to have already been deleted by the EndPickAll routine 
-    */
-    PU_EMPTY_LIST(pRend->pickstr.list);
+    if (pRend->immediateMode == TRUE) {
+	/*  empty listoflist for Pick All
+	   this assumes the individual pick paths lists that this
+	   pointed to have already been deleted by the EndPickAll routine 
+	*/
+	PU_EMPTY_LIST(pRend->pickstr.list);
 
-    /* free all but the first the fake structure
-       it should always be there to support ROCs  
-    */
-    strpp = (ddPickPath *)(pRend->pickstr.sIDlist)->pList;
-    for (i = 1; i < (pRend->pickstr.sIDlist)->numObj; i++) {
-	sh = strpp[i].structure;
-	FreeResource(sh->id, RT_NONE);
+	/* free all but the first the fake structure
+	   it should always be there to support ROCs  
+	*/
+	strpp = (ddPickPath *)(pRend->pickstr.sIDlist)->pList;
+	for (i = 1; i < (pRend->pickstr.sIDlist)->numObj; i++) {
+	    sh = strpp[i].structure;
+	    DeleteStructure(sh, sh->id);    
+	}
+
+	(pRend->pickstr.sIDlist)->numObj = 1;
     }
-
-    (pRend->pickstr.sIDlist)->numObj = 1;
 
     pRend->state = PEXIdle;
 
