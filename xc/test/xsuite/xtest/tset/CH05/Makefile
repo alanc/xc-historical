@@ -1,0 +1,174 @@
+#
+# Copyright 1990, 1991 by the Massachusetts Institute of Technology and
+# UniSoft Group Limited.
+# 
+# Permission to use, copy, modify, distribute, and sell this software and
+# its documentation for any purpose is hereby granted without fee,
+# provided that the above copyright notice appear in all copies and that
+# both that copyright notice and this permission notice appear in
+# supporting documentation, and that the names of MIT and UniSoft not be
+# used in advertising or publicity pertaining to distribution of the
+# software without specific, written prior permission.  MIT and UniSoft
+# make no representations about the suitability of this software for any
+# purpose.  It is provided "as is" without express or implied warranty.
+#
+# $XConsortium$
+#
+
+#
+# This Makefile can be used to compile all the tests in this 
+# section of the X test suite in such a way that they are all links to 
+# a single executable file. This normally allows a considerable 
+# reduction in the disc space requirements for the X test suite 
+# when fully built.
+#
+# There are two ways this can be done:
+# 1) Using the TET. Execute the command:
+#     tcc -b -s link_exec xtest linkbuild
+# in the directory $TET_ROOT/xtest.
+# This will execute the TET build tool (which is normally pmake) 
+# in the top level directory of each section of the test suite 
+# (including this directory).
+#
+# 2) Directly without using the TET. Execute the command:
+#     pmake 
+# in this directory.
+#
+# For more details, refer to the User Guide
+#
+
+CAT=cat
+
+ALLTESTS=Tests
+
+TESTOFILES=\
+allcclr.o \
+allcclrcll.o \
+allcclrpln.o \
+allcnmdclr.o \
+chnggc.o \
+cpyclrmpan.o \
+cpygc.o \
+crtclrmp.o \
+crtgc.o \
+crtpxmp.o \
+frclrmp.o \
+frclrs.o \
+frgc.o \
+frpxmp.o \
+gcntxtfrmg.o \
+gtgcvls.o \
+lkpclr.o \
+qrybststpp.o \
+qrybstsz.o \
+qrybsttl.o \
+qryclr.o \
+qryclrs.o \
+starcmd.o \
+stbg.o \
+stclpmsk.o \
+stclporgn.o \
+stclprctng.o \
+stdshs.o \
+stfllrl.o \
+stfllstyl.o \
+stfnctn.o \
+stfnt.o \
+stfrgrnd.o \
+stgrphcsex.o \
+stlnattrbt.o \
+stplnmsk.o \
+strclr.o \
+strclrs.o \
+strnmdclr.o \
+stsbwmd.o \
+ststppl.o \
+ststt.o \
+sttl.o \
+sttsorgn.o \
+stwdwclrmp.o
+
+LINKOFILE=linktbl.o
+OFILES = $(TESTOFILES) $(LINKOFILE)
+
+DIRLIST=\
+allcclr \
+allcclrcll \
+allcclrpln \
+allcnmdclr \
+chnggc \
+cpyclrmpan \
+cpygc \
+crtclrmp \
+crtgc \
+crtpxmp \
+frclrmp \
+frclrs \
+frgc \
+frpxmp \
+gcntxtfrmg \
+gtgcvls \
+lkpclr \
+qrybststpp \
+qrybstsz \
+qrybsttl \
+qryclr \
+qryclrs \
+starcmd \
+stbg \
+stclpmsk \
+stclporgn \
+stclprctng \
+stdshs \
+stfllrl \
+stfllstyl \
+stfnctn \
+stfnt \
+stfrgrnd \
+stgrphcsex \
+stlnattrbt \
+stplnmsk \
+strclr \
+strclrs \
+strnmdclr \
+stsbwmd \
+ststppl \
+ststt \
+sttl \
+sttsorgn \
+stwdwclrmp
+
+all: subdirs test
+
+test:$P $(OFILES) $(LIBS) $(TCM)
+	$(CC) $(LDFLAGS) -o $@ $(OFILES) $(TCM) $(LIBS) $(SYSLIBS)
+	$(CAT) test > $(ALLTESTS)
+	$(RM) test
+
+subdirs:
+	if [ ! -f $(ALLTESTS) ]; then $(CAT) /dev/null > $(ALLTESTS); \
+	chmod a+x $(ALLTESTS); else : ; fi
+	for i in $(DIRLIST); do \
+		if [ -d $$i ]; then \
+			(cd $$i; echo Compiling in $$i; $(TET_BUILD_TOOL) linkexec); \
+		fi; \
+	done
+
+# The xtestlib is made if it doesn't exist
+$(XTESTLIB):
+	cd $(XTESTROOT)/src/lib; $(TET_BUILD_TOOL) install
+
+# The fontlib is made if it doesn't exist
+$(XTESTFONTLIB):
+	cd $(XTESTROOT)/fonts; $(TET_BUILD_TOOL) install
+
+clean:	cletests clesubdirs
+
+cletests:
+	$(RM) test $(OFILES) $(ALLTESTS) core
+
+clesubdirs:
+	for i in $(DIRLIST); do \
+		if [ -d $$i ]; then (cd $$i; $(TET_CLEAN_TOOL) ); fi; done
+
+clobber: clean

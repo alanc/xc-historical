@@ -1,0 +1,196 @@
+#
+# Copyright 1990, 1991 by the Massachusetts Institute of Technology and
+# UniSoft Group Limited.
+# 
+# Permission to use, copy, modify, distribute, and sell this software and
+# its documentation for any purpose is hereby granted without fee,
+# provided that the above copyright notice appear in all copies and that
+# both that copyright notice and this permission notice appear in
+# supporting documentation, and that the names of MIT and UniSoft not be
+# used in advertising or publicity pertaining to distribution of the
+# software without specific, written prior permission.  MIT and UniSoft
+# make no representations about the suitability of this software for any
+# purpose.  It is provided "as is" without express or implied warranty.
+#
+# $XConsortium$
+#
+
+#
+# This Makefile can be used to compile all the tests in this 
+# section of the X test suite in such a way that they are all links to 
+# a single executable file. This normally allows a considerable 
+# reduction in the disc space requirements for the X test suite 
+# when fully built.
+#
+# There are two ways this can be done:
+# 1) Using the TET. Execute the command:
+#     tcc -b -s link_exec xtest linkbuild
+# in the directory $TET_ROOT/xtest.
+# This will execute the TET build tool (which is normally pmake) 
+# in the top level directory of each section of the test suite 
+# (including this directory).
+#
+# 2) Directly without using the TET. Execute the command:
+#     pmake 
+# in this directory.
+#
+# For more details, refer to the User Guide
+#
+
+CAT=cat
+
+ALLTESTS=Tests
+
+TESTOFILES=\
+actvtscrns.o \
+addhst.o \
+addhsts.o \
+addtsvst.o \
+allwevnts.o \
+atrptoff.o \
+atrpton.o \
+bll.o \
+chngactvpn.o \
+chngkybrdc.o \
+chngkybrdm.o \
+chngpntrcn.o \
+chngsvst.o \
+dltmdfrmpe.o \
+dsblaccssc.o \
+dsplykycds.o \
+enblaccssc.o \
+frcscrnsvr.o \
+frmdfrmp.o \
+grbbttn.o \
+grbky.o \
+grbkybrd.o \
+grbpntr.o \
+grbsrvr.o \
+gtinptfcs.o \
+gtkybrdcnt.o \
+gtkybrdmpp.o \
+gtmdfrmppn.o \
+gtpntrcntr.o \
+gtpntrmppn.o \
+gtscrnsvr.o \
+insrtmdfrm.o \
+instllclrm.o \
+kllclnt.o \
+lsthsts.o \
+lstinstlld.o \
+nwmdfrmp.o \
+qrykymp.o \
+rmvfrmsvst.o \
+rmvhst.o \
+rmvhsts.o \
+rprntwdw.o \
+rstscrnsvr.o \
+staccsscnt.o \
+stclsdwnmd.o \
+stinptfcs.o \
+stmdfrmppn.o \
+stpntrmppn.o \
+stscrnsvr.o \
+ungrbbttn.o \
+ungrbky.o \
+ungrbkybrd.o \
+ungrbpntr.o \
+ungrbsrvr.o \
+unnstllclr.o \
+wrppntr.o
+
+LINKOFILE=linktbl.o
+OFILES = $(TESTOFILES) $(LINKOFILE)
+
+DIRLIST=\
+actvtscrns \
+addhst \
+addhsts \
+addtsvst \
+allwevnts \
+atrptoff \
+atrpton \
+bll \
+chngactvpn \
+chngkybrdc \
+chngkybrdm \
+chngpntrcn \
+chngsvst \
+dltmdfrmpe \
+dsblaccssc \
+dsplykycds \
+enblaccssc \
+frcscrnsvr \
+frmdfrmp \
+grbbttn \
+grbky \
+grbkybrd \
+grbpntr \
+grbsrvr \
+gtinptfcs \
+gtkybrdcnt \
+gtkybrdmpp \
+gtmdfrmppn \
+gtpntrcntr \
+gtpntrmppn \
+gtscrnsvr \
+insrtmdfrm \
+instllclrm \
+kllclnt \
+lsthsts \
+lstinstlld \
+nwmdfrmp \
+qrykymp \
+rmvfrmsvst \
+rmvhst \
+rmvhsts \
+rprntwdw \
+rstscrnsvr \
+staccsscnt \
+stclsdwnmd \
+stinptfcs \
+stmdfrmppn \
+stpntrmppn \
+stscrnsvr \
+ungrbbttn \
+ungrbky \
+ungrbkybrd \
+ungrbpntr \
+ungrbsrvr \
+unnstllclr \
+wrppntr
+
+all: subdirs test
+
+test:$P $(OFILES) $(LIBS) $(TCM)
+	$(CC) $(LDFLAGS) -o $@ $(OFILES) $(TCM) $(LIBS) $(SYSLIBS)
+	$(CAT) test > $(ALLTESTS)
+	$(RM) test
+
+subdirs:
+	if [ ! -f $(ALLTESTS) ]; then $(CAT) /dev/null > $(ALLTESTS); \
+	chmod a+x $(ALLTESTS); else : ; fi
+	for i in $(DIRLIST); do \
+		if [ -d $$i ]; then \
+			(cd $$i; echo Compiling in $$i; $(TET_BUILD_TOOL) linkexec); \
+		fi; \
+	done
+
+# The xtestlib is made if it doesn't exist
+$(XTESTLIB):
+	cd $(XTESTROOT)/src/lib; $(TET_BUILD_TOOL) install
+
+# The fontlib is made if it doesn't exist
+$(XTESTFONTLIB):
+	cd $(XTESTROOT)/fonts; $(TET_BUILD_TOOL) install
+
+clean:	cletests clesubdirs
+
+cletests:
+	$(RM) test $(OFILES) $(ALLTESTS) core
+
+clesubdirs:
+	for i in $(DIRLIST); do \
+		if [ -d $$i ]; then (cd $$i; $(TET_CLEAN_TOOL) ); fi; done
+
+clobber: clean

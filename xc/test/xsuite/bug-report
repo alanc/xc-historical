@@ -1,0 +1,29 @@
+			  X Test Suite Bug Report
+			xtest-bugs@expo.lcs.mit.edu
+
+TEST SUITE VERSION:
+    release 1.1
+
+CLIENT MACHINE and OPERATING SYSTEM:
+    [e.g. Sun 3/50 running SunOS 4.1, DECstation 3100 running Ultrix 4.0, ...]
+
+DISPLAY:
+    [e.g. Digital QVSS, Sun CG4, HP Topcat, IBM APA16, Apollo 4 plane, ...]
+
+AREA:
+    [e.g. tset/CH06, src/lib ]
+
+SPECIFIC TEST SET AND TEST PURPOSE:
+    [e.g. drwarcs 21 ]
+
+SYNOPSIS:
+    [brief description of the problem and where it is located]
+
+DESCRIPTION:
+    [detailed description]
+
+REPEAT BY:
+    [what you did to get the error; include configuration files if appropriate]
+
+SAMPLE FIX:
+    [preferred, but not necessary.  Please send context diffs (diff -c -b)]

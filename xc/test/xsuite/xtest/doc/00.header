@@ -1,0 +1,89 @@
+.de TP
+.sp 1
+.tl \\*(}t
+.if e 'tl \\*(}e
+.if o 'tl \\*(}o
+.sp 1
+..
+.VM 0 3
+.de )k
+..
+.PH "''''"
+.PF "''''"
+.ds HP +2 +2 +2
+.ds rC "UniSoft Group Limited
+.ds xW "X\ Window System
+.ds xT "X\ Test Suite
+.ds cH "0"
+.nr Hs 4
+.S 18
+.B
+.DS 2
+Xlib and X Protocol test suite
+
+\*(dD
+\*(dN
+.DE
+.R
+.S 14
+.DS 2
+
+
+
+
+
+
+
+
+Prepared by
+
+UniSoft Group Limited
+
+
+May 1992
+.DE
+.SP 3
+.TS
+box center;
+c.
+
+Printed: May 15, 1992
+
+.TE
+.SP 2
+.S 10
+.TS
+expand;
+l l.
+UniSoft Group Limited,			Tel: +44 71 729 3773
+Spa House,				Fax: +44 71 729 3273
+Chapel Place,
+Rivington Street,
+LONDON EC2A 3DQ
+.TE
+Copyright \(co 1991, 1992 by the Massachusetts Institute of Technology and
+UniSoft Group Limited
+.P
+Permission to use, copy, modify, distribute, and sell this software and
+its documentation for any purpose is hereby granted without fee,
+provided that the above copyright notice appear in all copies and that
+both that copyright notice and this permission notice appear in
+supporting documentation, and that the names of MIT and UniSoft not be
+used in advertising or publicity pertaining to distribution of the
+software without specific, written prior permission.  MIT and UniSoft
+make no representations about the suitability of this software for any
+purpose.  It is provided "as is" without express or implied warranty.
+.S 11
+.pn 1
+.PH "'\s14Xlib and X Protocol test suite''\*(dN'"
+.EH "'\*(dD '''"
+.OH "'\*(dD '''"
+.SK
+.PF "\s12'May 15, 1992''Page %'"
+.OF "\s12''\*(rC''"
+.EF "\s12''\*(rC''"
+.S 16
+.B 
+\*(dD
+.R
+.S 12
