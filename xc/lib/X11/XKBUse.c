@@ -1,4 +1,4 @@
-/* $XConsortium: XKBUse.c,v 1.1 94/02/04 21:23:36 rws Exp $ */
+/* $XConsortium: XKBUse.c,v 1.3 94/04/02 10:46:21 erik Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -592,8 +592,8 @@ XkbUseExtension(dpy)
     dpy->xkb_info = xkbi;
     dpy->free_funcs->xkb = _XkbFreeInfo;
     ev_base = codes->first_event;
-    XESetWireToEvent(dpy,ev_base+XkbEventCode,wire_to_event);
     UnlockDisplay(dpy);
+    XESetWireToEvent(dpy,ev_base+XkbEventCode,wire_to_event);
     SyncHandle();
     return True;
 }
