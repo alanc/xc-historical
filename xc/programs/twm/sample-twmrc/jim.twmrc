@@ -6,6 +6,7 @@
 
 NoVersion
 NoHighlight
+AutoRelativeResize
 RestartPreviousState
 ClientBorderWidth
 NoGrabServer
@@ -17,7 +18,7 @@ BorderWidth	2
 TitleFont	"-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
 MenuFont	"-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
 IconFont	"-adobe-helvetica-bold-r-normal--*-80-*-*-*-*-*-*"
-ResizeFont	"6x10"
+ResizeFont	"fixed"
 NoSaveUnders
 
 # interlaced screens look really awful with striped lines
@@ -58,6 +59,7 @@ Color
 Monochrome
 {
     IconManagerHighlight  "white"
+    BorderColor "white"
 }
 
 
