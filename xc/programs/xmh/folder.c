@@ -1,5 +1,5 @@
 /*
- * $XConsortium: folder.c,v 2.37 91/07/09 11:59:56 converse Exp $
+ * $XConsortium: folder.c,v 2.38 91/07/17 21:37:03 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -947,7 +947,7 @@ void XmhWMProtocols(w, event, params, num_params)
 	    XChangeProperty(XtDisplay(toplevel), XtWindow(toplevel),
 			    XInternAtom(XtDisplay(toplevel),"WM_COMMAND", 0),
 			    XInternAtom(XtDisplay(toplevel), "STRING", 0),
-			    8, PropModeAppend, (unsigned char *)NULL, 0);
+			    8, PropModeAppend, (unsigned char *)"", 0);
     }
     if (dw && w) {
 	Scrn scrn;
