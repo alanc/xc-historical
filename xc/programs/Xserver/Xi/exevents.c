@@ -629,7 +629,7 @@ SelectForWindow(dev, pWin, client, mask, exclusivemasks, validmasks)
 		    if (i == EMASKSIZE)
 			{
 			RecalculateDeviceDeliverableEvents(pWin);
-			if (ShouldFreeInputMasks(pWin), FALSE)
+			if (ShouldFreeInputMasks(pWin, FALSE))
 			    FreeResource(others->resource, RT_NONE);
 		        return Success;
 			}
@@ -756,7 +756,7 @@ InputClientGone(pWin, id)
 		}
 	    else if (!(other->next))
 		{
-	        if (ShouldFreeInputMasks(pWin), TRUE)
+	        if (ShouldFreeInputMasks(pWin, TRUE))
 		    {
 		    wOtherInputMasks(pWin)->inputClients = other->next;
 		    xfree(wOtherInputMasks(pWin));
@@ -1246,7 +1246,7 @@ DeviceEventSuppressForWindow(pWin, client, mask, maskndx)
 	inputMasks->dontPropagateMask[maskndx] = mask;
 	}
     RecalculateDeviceDeliverableEvents(pWin);
-    if (ShouldFreeInputMasks(pWin), FALSE)
+    if (ShouldFreeInputMasks(pWin, FALSE))
         FreeResource(inputMasks->inputClients->resource, RT_NONE);
     return Success;
     }
