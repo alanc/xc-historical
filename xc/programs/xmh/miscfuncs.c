@@ -1,16 +1,14 @@
-/* $XConsortium: miscfuncs.c,v 1.3 91/02/08 10:48:11 rws Exp $ */
+/* $XConsortium: miscfuncs.c,v 1.4 91/02/09 14:29:48 rws Exp $ */
 
 #include <X11/Xos.h>
+
+#ifndef X_NOT_POSIX
+#include <dirent.h>
+#else
 #ifdef SYSV
 #include <dirent.h>
 #else
-#ifdef SVR4
-#include <dirent.h>
-#else
 #ifdef USG
-#include <dirent.h>
-#else
-#ifdef _POSIX_SOURCE
 #include <dirent.h>
 #else
 #include <sys/dir.h>
@@ -20,7 +18,7 @@
 #endif
 #endif
 #endif
-#endif
+
 char *malloc();
 char *realloc();
 

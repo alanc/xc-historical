@@ -1,7 +1,7 @@
 /*
  * xman - X Window System manual page display program.
  *
- * $XConsortium: man.c,v 1.20 91/02/17 17:04:14 rws Exp $
+ * $XConsortium: man.c,v 1.21 91/02/17 20:24:58 converse Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -22,23 +22,21 @@
 #include "globals.h"
 #include "vendor.h"		/* vendor-specific defines and data */
 
-#ifdef _POSIX_SOURCE
-#define DIRENT_STRUCT
-#endif
-#ifdef USG
-#define DIRENT_STRUCT
-#endif
-#ifdef SVR4
-#define DIRENT_STRUCT
-#endif
+#ifndef X_NOT_POSIX
+#include <dirent.h>
+#else
 #ifdef SYSV
-#define DIRENT_STRUCT
-#endif
-
-#ifdef DIRENT_STRUCT
+#include <dirent.h>
+#else
+#ifdef USG
 #include <dirent.h>
 #else
 #include <sys/dir.h>
+#ifndef dirent
+#define dirent direct
+#endif
+#endif
+#endif
 #endif
 
 #ifdef DEBUG
@@ -346,11 +344,7 @@ char * path;
 {
   DIR * dir;
 
-#ifdef DIRENT_STRUCT
   register struct dirent *dp;
-#else
-  register struct direct *dp;
-#endif
 
   register int nentries;
   register int nalloc;
