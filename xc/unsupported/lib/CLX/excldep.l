@@ -41,6 +41,20 @@
   `(excl::define-condition ,name (,parent-type) ,slots ,@args))
 
 
+(defmacro correct-case (string)
+  ;; This macro converts the given string to the 
+  ;; current preferred case, or leaves it alone in a case-sensitive mode.
+  (let ((str (gensym)))
+    `(let ((,str ,string))
+       (case excl::*current-case-mode*
+	 (:case-insensitive-lower
+	  (string-downcase ,str))
+	 (:case-insensitive-upper
+	  (string-upcase ,str))
+	 ((:case-sensitive-lower :case-sensitive-upper)
+	  ,str)))))
+
+
 (defconstant type-pred-alist
   '(
     (card8  . card8p)
@@ -310,7 +324,7 @@
 ;; restrictions of Restricted Rights for Commercial Software developed
 ;; at private expense as specified in DOD FAR 52.227-7013 (c) (1) (ii).
 
-;; $Header: excldep.l,v 1.7 89/10/14 02:06:52 cjl Exp $
+;; $Header: excldep.l,v 1.8 89/11/02 16:32:03 cjl Exp $
 
 (in-package 'patch :use '(lisp excl))
 

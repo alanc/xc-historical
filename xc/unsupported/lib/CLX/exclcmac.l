@@ -228,24 +228,19 @@
 ;; Miscellaneous
 ;;
 (defcmacro current-process ()
-  `(and mp::*scheduler-stack-group*
-	mp::*current-process*))
+  `(the (or mp::process null) (and mp::*scheduler-stack-group*
+				  mp::*current-process*)))
 
-#+notyet
 (defcmacro process-wakeup (process)
   (let ((proc (gensym)))
     `(let ((.pw-curproc. mp::*current-process*)
 	   (,proc ,process))
-       (declare (optimize (speed 0) (safety 3)))
        (when (and .pw-curproc. ,proc)
-	 (unless (mp::process-p .pw-curproc.)
-	   (error "~s is not a process" .pw-curproc.))
-	 (unless (mp::process-p ,proc)
-	   (error "~s is not a process" ,proc))
 	 (if (> (mp::process-priority ,proc)
 		(mp::process-priority .pw-curproc.))
 	     (mp::process-allow-schedule ,proc))))))
 
+#+notyet
 (defcmacro buffer-replace (target-sequence source-sequence target-start
 					   target-end &optional (source-start 0))
   (let ((tv (gensym)) (sv (gensym)) (ts (gensym)) (te (gensym)) (ss (gensym)))

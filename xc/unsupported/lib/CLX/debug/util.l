@@ -20,7 +20,7 @@
 
 ;;; Created 04/09/87 14:30:41 by LaMott G. OREN
 
-(in-package "XLIB" :use '("LISP"))
+(in-package 'xlib :use '(lisp))
 
 (export '(display-root
 	  display-black
@@ -46,10 +46,12 @@
 
 (defun describe-window (window)
   (macrolet ((da (attribute &key (transform 'progn) (format "~s"))
-	       (let ((func (intern (concatenate 'string "WINDOW-" (string attribute)) 'xlib)))
+	       (let ((func (intern (concatenate 'string (string 'window-)
+						(string attribute)) 'xlib)))
 		 `(format t "~%~22a ~?" ',attribute ,format (list (,transform (,func window))))))
 	     (dg (attribute &key (transform 'progn) (format "~s"))
-	       (let ((func (intern (concatenate 'string "DRAWABLE-" (string attribute)) 'xlib)))
+	       (let ((func (intern (concatenate 'string (string 'drawable-)
+						(string attribute)) 'xlib)))
 		 `(format t "~%~22a ~?" ',attribute ,format (list (,transform (,func window)))))))
     (with-state (window)
       (when (window-p window)
@@ -81,7 +83,8 @@
       
 (defun describe-gc (gc)
   (macrolet ((dgc (name &key (transform 'progn) (format "~s"))
-	       (let ((func (intern (concatenate 'string "GCONTEXT-" (string name)) 'xlib)))
+	       (let ((func (intern (concatenate 'string (string 'gcontext-)
+						(string name)) 'xlib)))
 		 `(format t "~%~22a ~?" ',name ,format (list (,transform (,func gc)))))))
     (dgc function)
     (dgc plane-mask)

@@ -602,7 +602,7 @@
 	   (type (or null (function (list t) boolean))
                  test test-not))
   (declare (values resource-database))
-  (let ((string (get-property window :resource_manager :type :string
+  (let ((string (get-property window :RESOURCE_MANAGER :type :STRING
 			      :result-type 'string :transform #'xlib::card8->char)))
     (when string
       (with-input-from-string (stream string)
@@ -620,7 +620,7 @@
 	   (type (or null (function (list t) boolean))
                  test test-not))
   (xlib::set-string-property
-    window :resource_manager
+    window :RESOURCE_MANAGER
     (with-output-to-string (stream)
       (write-resources database stream :write write
 		       :test test :test-not test-not))))
@@ -681,7 +681,7 @@
 	(rootwin (screen-root (car (display-roots display)))))
     ;; First read the server defaults if present, otherwise from the default
     ;; resource file
-    (if (get-property rootwin :resource_manager)
+    (if (get-property rootwin :RESOURCE_MANAGER)
 	(xlib:wm-resources rdb rootwin)
       (let ((path (default-resources-pathname)))
 	(when (and path (probe-file path))

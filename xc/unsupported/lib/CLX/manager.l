@@ -87,42 +87,42 @@
 (defun wm-name (window)
   (declare (type window window))
   (declare (values string))
-  (get-property window :wm_name :type :string :result-type 'string :transform #'card8->char))
+  (get-property window :WM_NAME :type :STRING :result-type 'string :transform #'card8->char))
 
 (defsetf wm-name (window) (name)
   (declare (type window window))
   (declare (values string))
-  `(set-string-property ,window :wm_name ,name))
+  `(set-string-property ,window :WM_NAME ,name))
 
 (defun set-string-property (window property string)
   (declare (type window window)
 	   (type keyword property)
 	   (type stringable string))
-  (change-property window property (string string) :string 8 :transform #'char->card8)
+  (change-property window property (string string) :STRING 8 :transform #'char->card8)
   string)
 
 (defun wm-icon-name (window)
   (declare (type window window))
   (declare (values string))
-  (get-property window :wm_icon_name :type :string
+  (get-property window :WM_ICON_NAME :type :STRING
 		:result-type 'string :transform #'card8->char))
 
 (defsetf wm-icon-name (window) (name)
-  `(set-string-property ,window :wm_icon_name ,name))
+  `(set-string-property ,window :WM_ICON_NAME ,name))
 
 (defun wm-client-machine (window)
   (declare (type window window))
   (declare (values string))
-  (get-property window :wm_client_machine :type :string
+  (get-property window :WM_CLIENT_MACHINE :type :STRING
 		:result-type 'string :transform #'card8->char))
 
 (defsetf wm-client-machine (window) (name)
-  `(set-string-property ,window :wm_client_machine ,name))
+  `(set-string-property ,window :WM_CLIENT_MACHINE ,name))
 
 (defun get-wm-class (window)
   (declare (type window window))
   (declare (values (or null name-string) (or null class-string)))
-  (let ((value (get-property window :wm_class :type :string
+  (let ((value (get-property window :WM_CLASS :type :STRING
 			     :result-type 'string :transform #'card8->char)))
     (declare (type (or null string) value))
     (when value
@@ -135,7 +135,7 @@
 (defun set-wm-class (window resource-name resource-class)
   (declare (type window window)
 	   (type (or null stringable) resource-name resource-class))
-  (set-string-property window :wm_class
+  (set-string-property window :WM_CLASS
 		       (concatenate 'string
 				    (string (or resource-name ""))
 				    #.(make-string 1 :initial-element (int-char 0))
@@ -148,7 +148,7 @@
   ;; whose cdr is the list of arguments
   (declare (type window window))
   (declare (values list))
-  (do* ((command-string (get-property window :wm_command :type :string
+  (do* ((command-string (get-property window :WM_COMMAND :type :STRING
 				      :result-type 'string :transform #'card8->char))
 	(command nil)
 	(start 0 (1+ end))
@@ -168,7 +168,7 @@
   ;; to recover a lisp command.
   (declare (type window window)
 	   (type list command))
-  (set-string-property window :wm_command
+  (set-string-property window :WM_COMMAND
 		       (with-output-to-string (stream)
 			 (let ((*print-length* nil)
 			       (*print-level* nil)
@@ -201,7 +201,7 @@
 (defun wm-hints (window)
   (declare (type window window))
   (declare (values wm-hints))
-  (let ((prop (get-property window :wm_hints :type :wm_hints :result-type 'vector)))
+  (let ((prop (get-property window :WM_HINTS :type :WM_HINTS :result-type 'vector)))
     (when prop
       (decode-wm-hints prop (window-display window)))))
 
@@ -210,7 +210,7 @@
   (declare (type window window)
 	   (type wm-hints wm-hints))
   (declare (values wm-hints))
-  (change-property window :wm_hints (encode-wm-hints wm-hints) :wm_hints 32)
+  (change-property window :WM_HINTS (encode-wm-hints wm-hints) :WM_HINTS 32)
   wm-hints)
 
 (defun decode-wm-hints (vector display)
@@ -320,21 +320,21 @@
 (defun wm-normal-hints (window)
   (declare (type window window))
   (declare (values wm-size-hints))
-  (decode-wm-size-hints (get-property window :wm_normal_hints :type :wm_size_hints :result-type 'vector)))
+  (decode-wm-size-hints (get-property window :WM_NORMAL_HINTS :type :WM_SIZE_HINTS :result-type 'vector)))
 
 (defsetf wm-normal-hints set-wm-normal-hints)
 (defun set-wm-normal-hints (window hints)
   (declare (type window window)
 	   (type wm-size-hints hints))
   (declare (values wm-size-hints))
-  (change-property window :wm_normal_hints (encode-wm-size-hints hints) :wm_size_hints 32)
+  (change-property window :WM_NORMAL_HINTS (encode-wm-size-hints hints) :WM_SIZE_HINTS 32)
   hints)
 
 ;;; OBSOLETE
 (defun wm-zoom-hints (window)
   (declare (type window window))
   (declare (values wm-size-hints))
-  (decode-wm-size-hints (get-property window :wm_zoom_hints :type :wm_size_hints :result-type 'vector)))
+  (decode-wm-size-hints (get-property window :WM_ZOOM_HINTS :type :WM_SIZE_HINTS :result-type 'vector)))
 
 ;;; OBSOLETE
 (defsetf wm-zoom-hints set-wm-zoom-hints)
@@ -343,7 +343,7 @@
   (declare (type window window)
 	   (type wm-size-hints hints))
   (declare (values wm-size-hints))
-  (change-property window :wm_zoom_hints (encode-wm-size-hints hints) :wm_size_hints 32)
+  (change-property window :WM_ZOOM_HINTS (encode-wm-size-hints hints) :WM_SIZE_HINTS 32)
   hints)
 
 (defun decode-wm-size-hints (vector)
@@ -468,7 +468,7 @@
 (defun icon-sizes (window)
   (declare (type window window))
   (declare (values wm-size-hints))
-  (let ((vector (get-property window :wm_icon_size :type :wm_icon_size :result-type 'vector)))
+  (let ((vector (get-property window :WM_ICON_SIZE :type :WM_ICON_SIZE :result-type 'vector)))
     (declare (type (or null (simple-vector 6)) vector))
     (when vector
       (make-wm-size-hints
@@ -489,7 +489,7 @@
 			(wm-size-hints-max-height wm-size-hints)
 			(wm-size-hints-width-inc wm-size-hints)
 			(wm-size-hints-height-inc wm-size-hints))))
-    (change-property window :wm_icon_size vector :wm_icon_size 32)
+    (change-property window :WM_ICON_SIZE vector :WM_ICON_SIZE 32)
     wm-size-hints))
 
 ;;-----------------------------------------------------------------------------
@@ -497,27 +497,27 @@
 
 (defun wm-protocols (window)
   (map 'list #'(lambda (id) (atom-name (window-display window) id))
-       (get-property window :wm_protocols :type :atom)))
+       (get-property window :WM_PROTOCOLS :type :ATOM)))
 
 (defsetf wm-protocols set-wm-protocols)
 (defun set-wm-protocols (window protocols)
-  (change-property window :wm_protocols
+  (change-property window :WM_PROTOCOLS
 		   (map 'list #'(lambda (atom) (intern-atom (window-display window) atom))
 			protocols)
-		   :atom 32)
+		   :ATOM 32)
   protocols)
 
 ;;-----------------------------------------------------------------------------
 ;; WM-Colormap-windows
 
 (defun wm-colormap-windows (window)
-  (values (get-property window :wm_colormap_windows :type :window
+  (values (get-property window :WM_COLORMAP_WINDOWS :type :WINDOW
 			:transform #'(lambda (id)
 				       (lookup-window (window-display window) id)))))
 
 (defsetf wm-colormap-windows set-wm-colormap-windows)
 (defun set-wm-colormap-windows (window colormap-windows)
-  (change-property window :wm_colormap_windows colormap-windows :window 32
+  (change-property window :WM_COLORMAP_WINDOWS colormap-windows :WINDOW 32
 		   :transform #'window-id)
   colormap-windows)
 
@@ -525,13 +525,13 @@
 ;; Transient-For
 
 (defun transient-for (window)
-  (let ((prop (get-property window :wm_transient_for :type :window :result-type 'list)))
+  (let ((prop (get-property window :WM_TRANSIENT_FOR :type :WINDOW :result-type 'list)))
     (and prop (lookup-window (window-display window) (car prop)))))
 
 (defsetf transient-for set-transient-for)
 (defun set-transient-for (window transient)
   (declare (type window window transient))
-  (change-property window :wm_transient_for (list (window-id transient)) :window 32)
+  (change-property window :WM_TRANSIENT_FOR (list (window-id transient)) :WINDOW 32)
   transient)
 
 ;;-----------------------------------------------------------------------------
@@ -644,7 +644,7 @@
   (let ((root (screen-root screen)))
     (declare (type window root))
     (send-event root :client-message '(:substructure-redirect :substructure-notify)
-		:window window :format 32 :type :wm_change_state :data (list 3))))
+		:window window :format 32 :type :WM_CHANGE_STATE :data (list 3))))
 
 (defun withdraw-window (window screen)
   (declare (type window window)
@@ -670,9 +670,9 @@
 
 (defun rgb-colormaps (window property)
   (declare (type window window)
-	   (type (member :rgb_default_map :rgb_best_map :rgb_red_map
-			 :rgb_green_map :rgb_blue_map) property))
-  (let ((prop (get-property window property :type :rgb_color_map :result-type 'vector)))
+	   (type (member :RGB_DEFAULT_MAP :RGB_BEST_MAP :RGB_RED_MAP
+			 :RGB_GREEN_MAP :RGB_BLUE_MAP) property))
+  (let ((prop (get-property window property :type :RGB_COLOR_MAP :result-type 'vector)))
     (declare (type (or null simple-vector) prop))
     (when prop
       (list (make-standard-colormap
@@ -695,8 +695,8 @@
 (defsetf rgb-colormaps set-rgb-colormaps)
 (defun set-rgb-colormaps (window property maps)
   (declare (type window window)
-	   (type (member :rgb_default_map :rgb_best_map :rgb_red_map
-			 :rgb_green_map :rgb_blue_map) property)
+	   (type (member :RGB_DEFAULT_MAP :RGB_BEST_MAP :RGB_RED_MAP
+			 :RGB_GREEN_MAP :RGB_BLUE_MAP) property)
 	   (type list maps))
   (let ((prop (make-array (* 10 (length maps)) :element-type 'card32))
 	(index -1))
@@ -731,15 +731,15 @@
 		(cursor (cursor-id kill))
 		(colormap (colormap-id kill))
 		(font (font-id kill))))))
-    (change-property window property prop :rgb_color_map 32)))
+    (change-property window property prop :RGB_COLOR_MAP 32)))
 
 ;;; OBSOLETE
 (defun get-standard-colormap (window property)
   (declare (type window window)
-	   (type (member :rgb_default_map :rgb_best_map :rgb_red_map
-			 :rgb_green_map :rgb_blue_map) property))
+	   (type (member :RGB_DEFAULT_MAP :RGB_BEST_MAP :RGB_RED_MAP
+			 :RGB_GREEN_MAP :RGB_BLUE_MAP) property))
   (declare (values colormap base-pixel max-color mult-color))
-  (let ((prop (get-property window property :type :rgb_color_map :result-type 'vector)))
+  (let ((prop (get-property window property :type :RGB_COLOR_MAP :result-type 'vector)))
     (declare (type (or null simple-vector) prop))
     (when prop
       (values (lookup-colormap (window-display window) (aref prop 0))
@@ -754,8 +754,8 @@
 ;;; OBSOLETE
 (defun set-standard-colormap (window property colormap base-pixel max-color mult-color)
   (declare (type window window)
-	   (type (member :rgb_default_map :rgb_best_map :rgb_red_map
-			 :rgb_green_map :rgb_blue_map) property)
+	   (type (member :RGB_DEFAULT_MAP :RGB_BEST_MAP :RGB_RED_MAP
+			 :RGB_GREEN_MAP :RGB_BLUE_MAP) property)
 	   (type colormap colormap)
 	   (type pixel base-pixel)
 	   (type color max-color mult-color))
@@ -767,12 +767,12 @@
 		     (encode-type rgb-val (color-blue max-color))
 		     (encode-type rgb-val (color-blue mult-color))
 		     base-pixel)))
-    (change-property window property prop :rgb_color_map 32)))
+    (change-property window property prop :RGB_COLOR_MAP 32)))
 
 ;;-----------------------------------------------------------------------------
 ;; Cut-Buffers
 
-(defun cut-buffer (display &key (buffer 0) (type :string) (result-type 'string)
+(defun cut-buffer (display &key (buffer 0) (type :STRING) (result-type 'string)
 		   (transform #'card8->char) (start 0) end)
   ;; Return the contents of cut-buffer BUFFER
   (declare (type display display)
@@ -784,8 +784,8 @@
 	   (type (or null (function (integer) t)) transform))
   (declare (values sequence type format bytes-after))
   (let* ((root (screen-root (first (display-roots display))))
-	 (property (aref '#(:cut_buffer0 :cut_buffer1 :cut_buffer2 :cut_buffer3
-			    :cut_buffer4 :cut_buffer5 :cut_buffer6 :cut_buffer7)
+	 (property (aref '#(:CUT_BUFFER0 :CUT_BUFFER1 :CUT_BUFFER2 :CUT_BUFFER3
+			    :CUT_BUFFER4 :CUT_BUFFER5 :CUT_BUFFER6 :CUT_BUFFER7)
 			 buffer)))
     (get-property root property :type type :result-type result-type
 		  :start start :end end :transform transform)))
@@ -816,7 +816,7 @@
       (push (cadr option) values)
       (setf (cadr option) x))))
 
-(defun set-cut-buffer (data display &key (buffer 0) (type :string) (format 8)
+(defun set-cut-buffer (data display &key (buffer 0) (type :STRING) (format 8)
 		       (start 0) end (transform #'char->card8))
   (declare (type sequence data)
 	   (type display display)
@@ -827,8 +827,8 @@
 	   (type (or null array-index) end)
 	   (type (or null (function (integer) t)) transform))
   (let* ((root (screen-root (first (display-roots display))))
-	 (property (aref '#(:cut_buffer0 :cut_buffer1 :cut_buffer2 :cut_buffer3
-			    :cut_buffer4 :cut_buffer5 :cut_buffer6 :cut_buffer7)
+	 (property (aref '#(:CUT_BUFFER0 :CUT_BUFFER1 :CUT_BUFFER2 :CUT_BUFFER3
+			    :CUT_BUFFER4 :CUT_BUFFER5 :CUT_BUFFER6 :CUT_BUFFER7)
 			 buffer)))
     (change-property root property data type format :transform transform :start start :end end)
     data))

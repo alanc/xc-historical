@@ -47,6 +47,7 @@ L_SRC	= defsystem.cl depdefs.cl clx.cl dependent.cl exclcmac.cl \
 
 all : $(C_OBJS) compile-CLX cat
 
+clos:	$(C_OBJS) compile-closified-CLX cat
 
 CLX : $(C_OBJS) compile-CLX load-CLX
 
@@ -58,14 +59,37 @@ lisp:	compile-CLX
 
 
 compile-CLX : $(C_OBJS)
-	$(ECHO)	 "(proclaim '(optimize (speed $(SPEED)) (safety $(SAFETY))))" \
-		 "(setq comp::*dynamic-extent* t)" \
-		 '(compile-file-if-needed "excldep")' \
-		 '(compile-file-if-needed "defsystem")' \
-		 '(load "defsystem")' \
-		 "#+allegro (compile-system :clx)" \
-		 "#-allegro (xlib::compile-clx)" \
-		 '(exit)' | $(CL) $(CLOPTS) -batch
+	$(ECHO) " \
+		(proclaim '(optimize (speed $(SPEED)) (safety $(SAFETY)))) \
+		(setq comp::*dynamic-extent* t) \
+		(compile-file-if-needed \"excldep\") \
+		(compile-file-if-needed \"defsystem\") \
+		(load \"defsystem\") \
+		#+allegro (compile-system :clx) \
+		#-allegro (xlib::compile-clx) \
+		#+allegro (compile-system :clx-debug)" \
+		| $(CL) $(CLOPTS) -batch
+
+
+compile-closified-CLX:	$(C_OBJS)
+	$(ECHO) " \
+		(proclaim '(optimize (speed $(SPEED)) (safety $(SAFETY)))) \
+		(setq comp::*dynamic-extent* t) \
+		(setq excl::*print-nickname* t) \
+		(unless (or (find-package 'clos) (find-package 'pcl)) \
+		  (let ((spread (sys:gsgc-parameter :generation-spread))) \
+		    (setf (sys:gsgc-parameter :generation-spread) 1) \
+		    (require :pcl) \
+		    (provide :pcl) \
+		    (gc) (gc) \
+		    (setf (sys:gsgc-parameter :generation-spread) spread))) \
+		(compile-file-if-needed \"excldep\") \
+		(compile-file-if-needed \"defsystem\") \
+		(load \"defsystem\") \
+		#+allegro (compile-system :clx) \
+		#-allegro (xlib::compile-clx) \
+		#+allegro (compile-system :clx-debug)" \
+		| $(CL) $(CLOPTS) -batch
 
 
 cat:
