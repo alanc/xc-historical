@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.23 93/09/04 15:55:39 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.24 93/09/10 12:11:26 rws Exp $
 
 #ifdef LocalConfigFiles
 LOCALFILES = LocalConfigFiles
@@ -44,6 +44,7 @@ ibm.cf \
 luna.cf \
 macII.cf \
 moto.cf \
+ncr.cf \
 osf1.cf \
 pegasus.cf \
 rtcchack.bac \
