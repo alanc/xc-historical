@@ -1,11 +1,18 @@
-! $XConsortium: XSm.ad,v 1.20 94/08/25 17:36:52 mor Exp mor $
+! $XConsortium: XSm.ad,v 1.21 94/11/14 15:32:21 mor Exp mor $
 *chooseSessionPopup*font:		12x24
 *chooseSessionLabel.label:		Session Menu
 *chooseSessionMessageLabel.label:	Press button again to confirm...
 *chooseSessionLoadButton.label:		Load Session
 *chooseSessionDeleteButton.label:	Delete Session
-*chooseSessionFailSafeButton.label:	Default/Fail Safe
+*chooseSessionForceShutdownButton.label: Force Shutdown
+*chooseSessionFailSafeButton.label:	Default/Fail Safe Session
 *chooseSessionCancelButton.label:	Cancel
+
+*chooseSessionLoadButton.background:	light steel blue
+*chooseSessionDeleteButton.background:	light steel blue
+*chooseSessionForceShutdownButton.background: light steel blue
+*chooseSessionFailSafeButton.background:light steel blue
+*chooseSessionCancelButton.background:	light steel blue
 
 *clientInfoButton.label:	Client List
 *nameSessionButton.label:	Rename Session...
@@ -45,13 +52,20 @@
 
 *saveCancelButton.label:	Cancel
 
+*badSavePopup.title:		Save Failure
+*badSaveLabel.label:		The following applications did not report\n\
+a successful save of their state:
+*badSaveOkButton.label:		OK
+*badSaveCancelButton.label:	Cancel Shutdown
+
 *nameSessionPopup.title:		Rename Session
 *nameSessionPopup*font:			10x20
 *nameSessionCancelButton.label:		Cancel
 
 *chooseSessionListWidget.Translations: #override\n\
 	<Key>Up:	ChooseSessionUp()\n\
-	<Key>Down:	ChooseSessionDown()\n
+	<Key>Down:	ChooseSessionDown()\n\
+	<Btn1Down>:	Set() ChooseSessionBtn1Down()\n
 
 *chooseSessionLoadButton.Accelerators: #override\n\
 	<Btn1Down>(2+):	set() notify() unset()\n\
