@@ -1,4 +1,4 @@
-/* $XConsortium: Threads.c,v 1.3 93/09/02 08:50:17 kaleb Exp $ */
+/* $XConsortium: Threads.c,v 1.4 93/09/03 09:57:19 kaleb Exp $ */
 
 /************************************************************
 Copyright 1993 by Sun Microsystems, Inc. Mountain View, CA.
@@ -105,7 +105,7 @@ ProcessLock()
 static void 
 ProcessUnlock()
 {
-    xmutex_unlock(process_lock->mutex);
+    xmutex_lock(process_lock->mutex);
     assert(xthread_equal(process_lock->holder, ThrSelf()));
     if (process_lock->recursion != 0) {
 	process_lock->recursion--;
