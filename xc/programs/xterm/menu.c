@@ -1,6 +1,7 @@
-/* Copyright 1989 Massachusetts Institute of Technology */
-
+/* $XConsortium$ */
 /*
+Copyright 1989 Massachusetts Institute of Technology
+
 Permission to use, copy, modify, distribute, and sell this software and its
 documentation for any purpose is hereby granted without fee, provided that
 the above copyright notice appear in all copies and that both that
@@ -116,7 +117,7 @@ extern Widget toplevel;
  */
 #define check_width 9
 #define check_height 8
-static char check_bits[] = {
+static unsigned char check_bits[] = {
    0x00, 0x01, 0x80, 0x01, 0xc0, 0x00, 0x60, 0x00,
    0x31, 0x00, 0x1b, 0x00, 0x0e, 0x00, 0x04, 0x00
 };
@@ -264,7 +265,7 @@ static Widget create_menu (xtw, toplevel, name, entries, nentries)
 	screen->menu_item_bitmap =
 	  XCreateBitmapFromData (XtDisplay(xtw),
 				 RootWindowOfScreen(XtScreen(xtw)),
-				 check_bits, check_width, check_height);
+				 (char *)check_bits, check_width, check_height);
     }
 
     m = XtCreatePopupShell (name, simpleMenuWidgetClass, toplevel, NULL, 0);
@@ -289,7 +290,7 @@ static void handle_send_signal (gw, sig)
 {
     register TScreen *screen = &term->screen;
 
-    if (screen->pid > 1) killpg (screen->pid, sig);
+    if (screen->pid > 1) kill_process_group (screen->pid, sig);
 }
 
 

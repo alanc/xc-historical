@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: resize.c,v 1.14 91/01/07 15:21:47 gildea Exp $
+ *	$XConsortium: resize.c,v 1.14 91/01/07 15:22:35 gildea Exp $
  */
 
 /*
@@ -33,7 +33,11 @@
 #include <ctype.h>
 #include <sys/ioctl.h>
 
-#ifdef att
+#ifdef SVR4
+#define SYSV
+#endif
+
+#ifdef SYSV
 #include <sys/stream.h>
 #include <sys/ptem.h>
 #endif

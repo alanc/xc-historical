@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.68 90/11/08 15:27:51 dave Exp $
+ *	$XConsortium: misc.c,v 1.69 91/01/06 12:48:17 rws Exp $
  */
 
 /*
@@ -669,7 +669,7 @@ int code;
 
 	screen = &term->screen;
 	if (screen->pid > 1) {
-	    (void) killpg (screen->pid, SIGHUP);
+	    (void) kill_process_group (screen->pid, SIGHUP);
 	}
 	Exit (code);
 }

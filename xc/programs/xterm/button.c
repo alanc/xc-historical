@@ -1,6 +1,6 @@
-/* $XConsortium: button.c,v 1.52 90/06/08 14:28:51 jim Exp $ */
+/* $XConsortium: button.c,v 1.53 91/01/06 12:14:51 rws Exp $ */
 /*
- *	$XConsortium: button.c,v 1.52 90/06/08 14:28:51 jim Exp $
+ *	$XConsortium: button.c,v 1.53 91/01/06 12:14:51 rws Exp $
  */
 
 
@@ -69,7 +69,9 @@ extern EditorButton();
 extern char *xterm_name;
 extern Bogus();
 
-static PointToRowCol();
+static void PointToRowCol();
+static void SelectionReceived();
+static void TrackDown();
 
 extern XtermWidget term;
 
@@ -112,7 +114,6 @@ Widget w;
 XEvent* event;
 {
     register TScreen *screen = &((XtermWidget)w)->screen;
-    static TrackDown();
     
     if (screen->send_mouse_pos == 0) return False;
 
@@ -246,7 +247,6 @@ Time time;
 String *params;			/* selections in precedence order */
 Cardinal num_params;
 {
-    static void SelectionReceived();
     Atom selection;
     int buffer;
 
@@ -396,8 +396,9 @@ Cardinal *num_params;		/* unused */
 }
 
 
-static TrackDown(event)
-register XButtonEvent *event;
+static void
+TrackDown(event)
+    register XButtonEvent *event;
 {
 	int startrow, startcol;
 
@@ -717,9 +718,10 @@ ResizeSelection (screen, rows, cols)
     if (rawCol > cols) rawCol = cols;
 }
 
-static PointToRowCol(y, x, r, c)
-register int y, x;
-int *r, *c;
+static void
+PointToRowCol(y, x, r, c)
+    register int y, x;
+    int *r, *c;
 /* Convert pixel coordinates to character coordinates.
    Rows are clipped between firstValidRow and lastValidRow.
    Columns are clipped between to be 0 or greater, but are not clipped to some
@@ -1024,6 +1026,8 @@ register int frow, fcol, trow, tcol;
 	}
 }
 
+static _OwnSelection();
+
 SaltTextAway(crow, ccol, row, col, params, num_params)
 /*register*/ int crow, ccol, row, col;
 String *params;			/* selections */
@@ -1035,7 +1039,6 @@ Cardinal num_params;
 	register int i, j = 0;
 	int eol;
 	char *line, *lp;
-	static _OwnSelection();
 
 	if (crow == row && ccol > col) {
 	    int tmp = ccol;
@@ -1091,7 +1094,7 @@ static Boolean ConvertSelection(w, selection, target,
 				type, value, length, format)
 Widget w;
 Atom *selection, *target, *type;
-caddr_t *value;
+XtPointer *value;
 unsigned long *length;
 int *format;
 {
@@ -1162,7 +1165,8 @@ int *format;
 	return True;
     }
     if (XmuConvertStandardSelection(w, xterm->screen.selection_time, selection,
-				    target, type, value, length, format))
+				    target, type,
+				    (caddr_t *)value, length, format))
 	return True;
 
     /* else */

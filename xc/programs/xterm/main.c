@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.161 91/01/08 21:19:58 rws Exp $ */
+/* $XConsortium: main.c,v 1.162 91/01/09 16:52:17 rws Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -45,11 +45,13 @@ SOFTWARE.
 #include <pwd.h>
 #include <ctype.h>
 
-#ifdef att
-#define USE_USG_PTYS
+#ifdef SVR4			/* SVR4 is (approx) a superset of SVR3 */
+#define SYSV
 #endif
 
-#ifndef att
+#ifdef SYSV /* was att */
+#define USE_USG_PTYS
+#else
 #define USE_HANDSHAKE
 #endif
 
@@ -58,6 +60,9 @@ SOFTWARE.
 
 #ifdef SYSV
 #include <sys/termio.h>
+#ifdef SVR4
+#undef TIOCSLTC				/* defined, but not useable */
+#endif /* SVR4 */
 #ifdef USE_USG_PTYS			/* AT&T SYSV has no ptyio.h */
 #include <sys/stream.h>			/* get typedef used in ptem.h */
 #include <sys/ptem.h>			/* get struct winsize */
@@ -98,6 +103,13 @@ SOFTWARE.
 #define HAS_UTMP_UT_HOST
 #define HAS_BSD_GROUPS
 #endif	/* !SYSV */
+
+#ifdef _POSIX_SOURCE
+#define USE_POSIX_WAIT
+#endif
+#ifdef SVR4
+#define USE_POSIX_WAIT
+#endif
 
 #include <stdio.h>
 #include <errno.h>
@@ -163,6 +175,21 @@ int	Ptyfd;
 #endif
 
 SIGNAL_T Exit();
+
+#ifdef _POSIX_SOURCE
+#define _X_HAVE_UNISTD
+#endif
+#ifdef SVR4
+#define _X_HAVE_UNISTD
+#endif
+
+#ifdef _X_HAVE_UNISTD
+#include <unistd.h>
+#else
+extern long lseek();
+extern void sleep();
+#endif
+
 extern char *malloc();
 extern char *calloc();
 extern char *realloc();
@@ -170,8 +197,11 @@ extern char *ttyname();
 extern char *getenv();
 extern char *strindex ();
 extern void exit();
-extern void sleep();
-extern long lseek();
+
+#ifdef SYSV
+extern char *ptsname();
+#endif
+
 extern void HandlePopupMenu();
 
 int switchfb[] = {0, 2, 1, 3};
@@ -212,7 +242,8 @@ static long int d_lmode = LCRTBS|LCRTERA|LCRTKIL|LCTLECH;
 
 static int parse_tty_modes ();
 /*
- * SYSV has the termio.c_cc[V] and ltchars; BSD has tchars and ltchars
+ * SYSV has the termio.c_cc[V] and ltchars; BSD has tchars and ltchars;
+ * SVR4 has only termio.c_cc, but it includes everything from ltchars.
  */
 static int override_tty_modes = 0;
 struct _xttymodes {
@@ -241,17 +272,17 @@ struct _xttymodes {
 #define XTTYMODE_stop 8
 { "brk", 3, 0, '\0' },			/* tchars.t_brkc */
 #define XTTYMODE_brk 9
-{ "susp", 4, 0, '\0' },			/* ltchars.t_suspc */
+{ "susp", 4, 0, '\0' },			/* ltchars.t_suspc ; VSUSP */
 #define XTTYMODE_susp 10
-{ "dsusp", 5, 0, '\0' },		/* ltchars.t_dsuspc */
+{ "dsusp", 5, 0, '\0' },		/* ltchars.t_dsuspc ; VDSUSP */
 #define XTTYMODE_dsusp 11
-{ "rprnt", 5, 0, '\0' },		/* ltchars.t_rprntc */
+{ "rprnt", 5, 0, '\0' },		/* ltchars.t_rprntc ; VREPRINT */
 #define XTTYMODE_rprnt 12
-{ "flush", 5, 0, '\0' },		/* ltchars.t_flushc */
+{ "flush", 5, 0, '\0' },		/* ltchars.t_flushc ; VDISCARD */
 #define XTTYMODE_flush 13
-{ "weras", 5, 0, '\0' },		/* ltchars.t_werasc */
+{ "weras", 5, 0, '\0' },		/* ltchars.t_werasc ; VWERASE */
 #define XTTYMODE_weras 14
-{ "lnext", 5, 0, '\0' },		/* ltchars.t_lnextc */
+{ "lnext", 5, 0, '\0' },		/* ltchars.t_lnextc ; VLNEXT */
 #define XTTYMODE_lnext 15
 { NULL, 0, 0, '\0' },			/* end of data */
 };
@@ -322,7 +353,7 @@ static struct _resource {
 
 /* used by VT (charproc.c) */
 
-#define offset(field)	XtOffset(struct _resource *, field)
+#define offset(field)	XtOffsetOf(struct _resource, field)
 
 static XtResource application_resources[] = {
     {"name", "Name", XtRString, sizeof(char *),
@@ -420,7 +451,7 @@ static XrmOptionDescRec optionDescList[] = {
 {"-wf",		"*waitForMap",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+wf",		"*waitForMap",	XrmoptionNoArg,		(caddr_t) "off"},
 /* bogus old compatibility stuff for which there are
-   standard XtInitialize options now */
+   standard XtAppInitialize options now */
 {"%",		"*tekGeometry",	XrmoptionStickyArg,	(caddr_t) NULL},
 {"#",		".iconGeometry",XrmoptionStickyArg,	(caddr_t) NULL},
 {"-T",		"*title",	XrmoptionSepArg,	(caddr_t) NULL},
@@ -616,7 +647,7 @@ char **argv;
 	** of the various terminal structures (which may change from
 	** implementation to implementation).
 	*/
-#if defined(macII) || defined(att)
+#if defined(macII) || defined(SYSV)
 	d_tio.c_iflag = ICRNL|IXON;
 	d_tio.c_oflag = OPOST|ONLCR|TAB3;
     	d_tio.c_cflag = B9600|CS8|CREAD|PARENB|HUPCL;
@@ -633,6 +664,14 @@ char **argv;
 	d_tio.c_cc[VEOL2] = CNUL;
 	d_tio.c_cc[VSWTCH] = CNUL;
 
+#ifdef SVR4
+	d_tio.c_cc[VSUSP] = CSUSP;
+	d_tio.c_cc[VDSUSP] = CDSUSP;
+	d_tio.c_cc[VREPRINT] = CNUL;
+	d_tio.c_cc[VDISCARD] = CNUL;
+	d_tio.c_cc[VWERASE] = CNUL;
+	d_tio.c_cc[VLNEXT] = CNUL;
+#endif
 #ifdef TIOCSLTC
         d_ltc.t_suspc = CSUSP;		/* t_suspc */
         d_ltc.t_dsuspc = CDSUSP;	/* t_dsuspc */
@@ -688,6 +727,14 @@ char **argv;
         d_ltc.t_werasc = '\377';
         d_ltc.t_lnextc = '\377';
 #endif	/* TIOCSLTC */
+#ifdef SVR4
+	d_tio.c_cc[VSUSP] = '\000';
+	d_tio.c_cc[VDSUSP] = '\000';
+	d_tio.c_cc[VREPRINT] = '\377';
+	d_tio.c_cc[VDISCARD] = '\377';
+	d_tio.c_cc[VWERASE] = '\377';
+	d_tio.c_cc[VLNEXT] = '\377';
+#endif
 #ifdef TIOCLSET
 	d_lmode = 0;
 #endif	/* TIOCLSET */
@@ -697,8 +744,7 @@ char **argv;
 	/* Init the Toolkit. */
 	toplevel = XtAppInitialize (&app_con, "XTerm", 
 				    optionDescList, XtNumber(optionDescList), 
-				    (Cardinal *) &argc, argv,
-				    fallback_resources, NULL, 0);
+				    &argc, argv, fallback_resources, NULL, 0);
 
 	XtGetApplicationResources( toplevel, (XtPointer) &resource,
 				  application_resources,
@@ -870,7 +916,7 @@ char **argv;
 		 0666);
 #endif	/* DEBUG */
 	if(i >= 0) {
-#ifdef USE_SYSV_TERMIO
+#if defined(USE_SYSV_TERMIO) && !defined(SVR4)
 		/* SYSV has another pointer which should be part of the
 		** FILE structure but is actually a seperate array.
 		*/
@@ -961,12 +1007,15 @@ char *name;
 get_pty (pty)
 int *pty;
 {
-#ifdef att
+#ifdef SYSV
 	if ((*pty = open ("/dev/ptmx", O_RDWR)) < 0) {
 	    return 1;
 	}
+#ifdef SVR4			/* from Sony */
+	strcpy(ttydev, ptsname(*pty));
+#endif
 	return 0;
-#else /* !att, need lots of code */
+#else /* !SYSV, need lots of code */
 #ifdef USE_GET_PSEUDOTTY
 	return ((*pty = getpseudotty (&ttydev, &ptydev)) >= 0 ? 0 : 1);
 #else
@@ -1028,7 +1077,7 @@ int *pty;
 	return(1);
 #endif /* umips && SYSTYPE_SYSV */
 #endif /* USE_GET_PSEUDOTTY */
-#endif /* att */
+#endif /* SYSV */
 }
 
 get_terminal ()
@@ -1120,7 +1169,7 @@ int error;
 	handshake.error = errno;
 	handshake.fatal_error = error;
 	strcpy(handshake.buffer, ttydev);
-	write(pf, &handshake, sizeof(handshake));
+	write(pf, (char *) &handshake, sizeof(handshake));
 	exit(error);
 }
 
@@ -1430,7 +1479,11 @@ spawn ()
 		 * now in child process
 		 */
 		extern char **environ;
+#if defined(_POSIX_SOURCE) || defined(SVR4) || defined(__convex__)
+		int pgrp = setsid();
+#else
 		int pgrp = getpid();
+#endif
 #ifdef USE_SYSV_TERMIO
 		char numbuf[12];
 #endif	/* USE_SYSV_TERMIO */
@@ -1447,12 +1500,19 @@ spawn ()
 		if (ioctl (ptyfd, I_PUSH, "ptem") < 0) {
 		    SysError (2);
 		}
+#ifndef SVR4			/* from Sony */
 		if (!getenv("CONSEM") && ioctl (ptyfd, I_PUSH, "consem") < 0) {
 		    SysError (3);
 		}
+#endif
 		if (ioctl (ptyfd, I_PUSH, "ldterm") < 0) {
 		    SysError (4);
 		}
+#ifdef SVR4			/* from Sony */
+		if (ioctl (ptyfd, I_PUSH, "ttcompat") < 0) {
+		    SysError (5);
+		}
+#endif	/* SVR4 */
 		tty = ptyfd;
 		close (screen->respond);
 #ifdef TIOCSWINSZ
@@ -1725,7 +1785,7 @@ spawn ()
 		}
 
 		signal (SIGCHLD, SIG_DFL);
-#ifdef att
+#ifdef SYSV
 		/* watch out for extra shells (I don't understand either) */
 		signal (SIGHUP, SIG_DFL);
 #else
@@ -1773,7 +1833,7 @@ spawn ()
 			    (void) dup(tty);
 			}
 
-#ifndef att
+#ifndef SYSV
 		    /* and close the tty */
 		    if (tty > 2)
 			(void) close(tty);
@@ -1912,7 +1972,7 @@ spawn ()
 		handshake.status = UTMP_ADDED;
 		handshake.error = 0;
 		strcpy(handshake.buffer, ttydev);
-		(void) write(cp_pipe[1], &handshake, sizeof(handshake));
+		(void)write(cp_pipe[1], (char *)&handshake, sizeof(handshake));
 #endif /* USE_HANDSHAKE */
 #endif/* UTMP */
 
@@ -1934,8 +1994,8 @@ spawn ()
 		 */
 		handshake.status = PTY_GOOD;
 		handshake.error = 0;
-		(void) strcpy(handshake.buffer, ttydev);
-		(void) write(cp_pipe[1], &handshake, sizeof(handshake));
+		(void)strcpy(handshake.buffer, ttydev);
+		(void)write(cp_pipe[1], (char *)&handshake, sizeof(handshake));
 
 		if (waiting_for_initial_map) {
 		    i = read (pc_pipe[0], (char *) &handshake,
@@ -2010,7 +2070,7 @@ spawn ()
 			 *command_to_exec);
 		} 
 
-#ifdef att
+#ifdef SYSV
 		/* fix pts sh hanging around */
 		signal (SIGHUP, SIG_DFL);
 #endif
@@ -2061,7 +2121,7 @@ spawn ()
 	    close (pc_pipe[0]);
 
 	    for (done = 0; !done; ) {
-		if (read(cp_pipe[0], &handshake, sizeof(handshake)) <= 0) {
+		if (read(cp_pipe[0], (char *) &handshake, sizeof(handshake)) <= 0) {
 			/* Our child is done talking to us.  If it terminated
 			 * due to an error, we will catch the death of child
 			 * and clean up.
@@ -2087,12 +2147,12 @@ spawn ()
 			    (void) fprintf(stderr,
 				   "%s: no available ptys\n", xterm_name);
 			    handshake.status = PTY_NOMORE;
-			    write(pc_pipe[1], &handshake, sizeof(handshake));
+			    write(pc_pipe[1], (char *) &handshake, sizeof(handshake));
 			    exit (ERROR_PTYS);
 			}
 			handshake.status = PTY_NEW;
 			(void) strcpy(handshake.buffer, ttydev);
-			write(pc_pipe[1], &handshake, sizeof(handshake));
+			write(pc_pipe[1], (char *) &handshake, sizeof(handshake));
 			break;
 
 		case PTY_FATALERROR:
@@ -2127,7 +2187,7 @@ spawn ()
 	 * still in parent (xterm process)
 	 */
 
-#ifdef att
+#ifdef SYSV
 	/* hung sh problem? */
 	signal (SIGHUP, SIG_DFL);
 #else
@@ -2144,7 +2204,7 @@ spawn ()
 #if defined(USE_SYSV_SIGNALS) && !defined(SIGTSTP)
 	signal (SIGINT, SIG_IGN);
 
-#ifndef att
+#ifndef SYSV
 	/* hung shell problem */
 	signal (SIGQUIT, SIG_IGN);
 #endif
@@ -2302,8 +2362,21 @@ register char *oldtc, *newtc;
 #endif /* USE_SYSV_ENVVARS */
 }
 
-static SIGNAL_T reapchild ()
+/* ARGSUSED */
+static SIGNAL_T reapchild (n)
+    int n;
 {
+#ifdef USE_POSIX_WAIT
+        pid_t pid;
+
+	pid = waitpid(-1, NULL, WNOHANG);
+	if (pid <= 0) {
+#ifdef USE_SYSV_SIGNALS
+		(void) signal(SIGCHLD, reapchild);
+#endif /* USE_SYSV_SIGNALS */
+		SIGNAL_RETURN;
+	}
+#else /* USE_POSIX_WAIT */
 #if defined(USE_SYSV_SIGNALS) && !defined(SIGTSTP)
 	int status, pid;
 
@@ -2326,7 +2399,8 @@ static SIGNAL_T reapchild ()
 #endif /* USE_SYSV_SIGNALS */
 		SIGNAL_RETURN;
 	}
-#endif	/* defined(USE_SYSV_SIGNALS) && !defined(SIGTSTP) */
+#endif /* defined(USE_SYSV_SIGNALS) && !defined(SIGTSTP) */
+#endif /* USE_POSIX_WAIT else */
 
 #ifdef PUCC_PTYD
 		closepty(ttydev, ptydev, (resource.utmpInhibit ?  OPTY_NOP : OPTY_LOGIN), Ptyfd);
@@ -2348,7 +2422,7 @@ static SIGNAL_T reapchild ()
 	 * operating systems seem to do very nasty things with that.
 	 */
 	if (pid > 1) {
-	    killpg (pid, SIGHUP);
+	    kill_process_group (pid, SIGHUP);
 	}
 	Exit (0);
 	SIGNAL_RETURN;
@@ -2459,5 +2533,20 @@ int GetBytesAvailable (fd)
     pollfds[0].fd = fd;
     pollfds[0].events = POLLIN;
     return poll (pollfds, 1, 0);
+#endif
+}
+
+/* Utility function to try to hide system differences from
+   everybody who used to call killpg() */
+
+int
+kill_process_group(pid, sig)
+    int pid;
+    int sig;
+{
+#if defined(_POSIX_SOURCE) || defined(SVR4)
+    return kill (-pid, sig);
+#else
+    return killpg (pid, sig);
 #endif
 }
