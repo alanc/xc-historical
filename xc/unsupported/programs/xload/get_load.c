@@ -1,7 +1,7 @@
 /*
  * get_load - get system load
  *
- * $XConsortium: get_load.c,v 1.28 91/10/30 15:59:29 rws Exp $
+ * $XConsortium: get_load.c,v 1.29 92/03/11 17:49:35 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -449,7 +449,7 @@ void GetLoadPoint( w, closure, call_data )
 #    endif /* CRAY */
 
 #    ifdef hpux
-#        ifdef hp9000s800
+#        ifdef __hp9000s800
 #            define KERNEL_LOAD_VARIABLE "avenrun"
 #        endif /* hp9000s800 */
 #    endif /* hpux */
