@@ -1,5 +1,5 @@
 /*
- * $XHeader: xdpyinfo.c,v 1.4 88/07/07 10:32:47 jim Exp $
+ * $XHeader: xdpyinfo.c,v 1.5 88/07/07 13:18:51 jim Exp $
  * 
  * xdpyinfo - print information about X display connecton
  *
@@ -25,6 +25,8 @@
 
 char *ProgramName;
 
+#ifdef PRINT_PIXMAP_FORMATS
+#ifdef PROTOTYPE_PIXMAP_FORMAT_ROUTINES
 /*
  * Until the following are in Xlib; note this means this program may
  * not be portable to all systems.
@@ -58,7 +60,8 @@ int XDisplayPixmapScanlinePad (dpy, i)
 {
     return dpy->pixmap_format[i].scanline_pad;
 }
-
+#endif /* PROTOTYPE_PIXMAP_FORMAT_ROUTINES */
+#endif /* PRINT_PIXMAP_FORMATS */
 
 static void usage ()
 {
@@ -148,6 +151,7 @@ print_display_info (dpy)
     }
     printf ("image byte order:    %s\n", cp);
 
+#ifdef PRINT_PIXMAP_FORMATS
     n = XDisplayPixmapFormatCount (dpy);
     printf ("number of supported pixmap formats:    %d\n", n);
     printf ("supported pixmap formats:  ");
@@ -157,6 +161,7 @@ print_display_info (dpy)
 		XDisplayPixmapScanlinePad (dpy, i));
     }
     printf ("\n");	
+#endif /* PRINT_PIXMAP_FORMATS */
 
     XDisplayKeycodes (dpy, &minkeycode, &maxkeycode);
     printf ("keycode range:    minimum %d, maximum %d\n",
