@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: spaces.h,v 1.3 91/10/10 11:19:22 rws Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991
@@ -111,8 +111,8 @@ struct doublematrix {
 struct XYspace {
        XOBJ_COMMON           /* xobject common data define 3-26-91 PNM       */
 			     /* type = SPACETYPE			     */
-       int (*convert)();     /* calculate "fractpoint" X,Y from float X,Y    */
-       int (*iconvert)();    /* calculate "fractpoint" X,Y from int X,Y      */
+       void (*convert)();     /* calculate "fractpoint" X,Y from float X,Y   */
+       void (*iconvert)();    /* calculate "fractpoint" X,Y from int X,Y     */
        fractpel (*xconvert)();  /* subroutine of convert                     */
        fractpel (*yconvert)();  /* subroutine of convert                     */
        fractpel (*ixconvert)();  /* subroutine of iconvert                   */

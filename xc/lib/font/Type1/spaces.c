@@ -1,4 +1,4 @@
-/* $XConsortium: spaces.c,v 1.5 92/07/07 17:14:50 gildea Exp $ */
+/* $XConsortium: spaces.c,v 1.6 92/09/17 14:24:15 gildea Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991
@@ -360,7 +360,7 @@ These secondary routines come in many flavors to handle different
 special cases as quickly as possible.
 */
  
-static int FXYConvert(pt, S, x, y)
+static void FXYConvert(pt, S, x, y)
        register struct fractpoint *pt;  /* point to set                      */
        register struct XYspace *S;  /* relevant coordinate space             */
        register double x,y;  /* user's coordinates of point                  */
@@ -369,7 +369,7 @@ static int FXYConvert(pt, S, x, y)
        pt->y = (*S->yconvert)(S->tofract.normal[0][1], S->tofract.normal[1][1], x, y);
 }
  
-static int IXYConvert(pt, S, x, y)
+static void IXYConvert(pt, S, x, y)
        register struct fractpoint *pt;  /* point to set                      */
        register struct XYspace *S;  /* relevant coordinate space             */
        register long x,y;    /* user's coordinates of point                  */
@@ -385,7 +385,7 @@ precision in the answer with fixed point arithmetic.  So, we force the
 integers to floats, and do the arithmetic all with floats:
 */
  
-static int ForceFloat(pt, S, x, y)
+static void ForceFloat(pt, S, x, y)
        register struct fractpoint *pt;  /* point to set                      */
        register struct XYspace *S;  /* relevant coordinate space             */
        register long x,y;    /* user's coordinates of point                  */
