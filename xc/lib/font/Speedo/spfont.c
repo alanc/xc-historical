@@ -1,4 +1,4 @@
-/* $XConsortium: spfont.c,v 1.3 91/05/11 09:58:01 rws Exp $ */
+/* $XConsortium: spfont.c,v 1.4 91/05/11 13:36:45 rws Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -708,6 +708,8 @@ load_sp_font(fontname, filename, entry, format, fmask, pfont, flags)
     pfont->get_extents = get_sp_extents;
     pfont->unload_font = SpeedoCloseFont;
     pfont->refcnt = 0;
+    pfont->maxPrivate = -1;
+    pfont->devPrivates = (pointer *) 0;
 
     return ret;
 }

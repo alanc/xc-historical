@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: fserve.c,v 1.4 91/05/11 13:35:34 rws Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -644,6 +644,8 @@ lowmem:
 	goto lowmem;
     }
     newfont->refcnt = 0;
+    newfont->maxPrivate = -1;
+    newfont->devPrivates = (pointer *) 0;
     newfont->format = format;
     newfont->fpe = fpe;
     newfont->fpePrivate = (pointer) fsd;

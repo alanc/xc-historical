@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bitscale.c,v 1.1 91/05/10 14:45:41 keith Exp $
+ * $XConsortium: bitscale.c,v 1.2 91/05/10 15:58:25 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -387,6 +387,8 @@ ScaleFont(opf, widthMult, heightMult, props, propCount)
     if (!pf)
 	goto bail;
     pf->refcnt = 0;
+    pf->maxPrivate = -1;
+    pf->devPrivates = (pointer *) 0;
     pf->bit = opf->bit;
     pf->byte = opf->byte;
     pf->glyph = opf->glyph;

@@ -1,4 +1,4 @@
-/* $Header: fontstruct.h,v 1.3 91/05/10 11:39:44 keith Exp $ */
+/* $Header: fontstruct.h,v 1.4 91/05/10 19:43:00 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -122,7 +122,19 @@ typedef struct _Font {
     pointer     svrPrivate;
     pointer     fontPrivate;
     pointer     fpePrivate;
+    int		maxPrivate;
+    pointer	*devPrivates;
 }           FontRec;
+
+extern Bool	_FontSetNewPrivate (/* pFont, n, ptr */);
+extern int	AllocateFontPrivateIndex ();
+
+#define FontGetPrivate(pFont,n) ((n) > (pFont)->maxPrivate ? (pointer) 0 : \
+			     (pFont)->devPrivates[n])
+
+#define FontSetPrivate(pFont,n,ptr) ((n) > (pFont)->maxPrivate ? \
+			_FontSetNewPrivate (pFont, n, ptr) : \
+			((((pFont)->devPrivates[n] = (ptr)) != 0) || TRUE))
 
 typedef struct _FontNames {
     int         nnames;

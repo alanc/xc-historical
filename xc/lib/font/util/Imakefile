@@ -6,10 +6,10 @@
      FORMAT_DEFS = FontFormatDefines
 #endif
             SRCS = bitmaputil.c fontnames.c fontutil.c fontxlfd.c format.c \
-		   fontaccel.c atom.c miscutil.c
+		   fontaccel.c atom.c miscutil.c private.c
 
             OBJS = bitmaputil.o fontnames.o fontutil.o fontxlfd.o format.o \
-		   fontaccel.o atom.o miscutil.o
+		   fontaccel.o atom.o miscutil.o private.o
 
 NormalLibraryObjectRule()
 all:: $(OBJS)

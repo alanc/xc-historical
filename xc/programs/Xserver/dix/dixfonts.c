@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.19 91/05/11 10:26:16 keith Exp $ */
+/* $XConsortium: dixfonts.c,v 1.20 91/05/27 12:48:37 rws Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -1094,6 +1094,7 @@ FreeFPE(fpe)
 
 InitFonts ()
 {
+    ResetFontPrivateIndex ();
     FontFileRegisterFpeFunctions ();
 /*    SpeedoRegisterFpeFunctions (); */
     fs_register_fpe_functions ();

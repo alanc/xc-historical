@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: bitmapfuncs.c,v 1.1 91/05/10 14:45:39 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -88,12 +88,15 @@ BitmapOpenBitmap (fpe, ppFont, flags, entry, fileName, format, fmask)
 	fclose(file);
 	return AllocError;
     }
-    pFont->refcnt = 0;
-
     /* set up default values */
     FontDefaultFormat(&bit, &byte, &glyph, &scan);
     /* get any changes made from above */
     ret = CheckFSFormat(format, fmask, &bit, &byte, &scan, &glyph, &image);
+
+    /* Fill in font record. Data format filled in by reader. */
+    pFont->refcnt = 0;
+    pFont->maxPrivate = -1;
+    pFont->devPrivates = (pointer *) 0;
 
     ret = (*readers[i].ReadFont) (pFont, file, bit, byte, glyph, scan);
 
