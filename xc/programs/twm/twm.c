@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.86 89/11/20 16:42:47 jim Exp $
+ * $XConsortium: twm.c,v 1.87 89/11/20 16:44:21 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.86 89/11/20 16:42:47 jim Exp $";
+"$XConsortium: twm.c,v 1.87 89/11/20 16:44:21 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -195,21 +195,18 @@ main(argc, argv, environ)
     NoClass.res_name = NoName;
     NoClass.res_class = NoName;
 
-    if ((dpy = XOpenDisplay(display_name)) == NULL)
-    {
-	if (display_name == NULL)
-	    fprintf(stderr, "twm: can't open NULL display\n");
-	else
-	    fprintf(stderr, "twm: can't open display \"%s\"\n",
-		display_name);
-	exit(1);
+    if (!(dpy = XOpenDisplay(display_name))) {
+	fprintf (stderr, "%s:  unable to open display \"%s\"\n",
+		 ProgramName, XDisplayName(display_name));
+	exit (1);
     }
 
 
-    if (fcntl(ConnectionNumber(dpy), F_SETFD, 1) == -1)
-    {
-	fprintf(stderr, "twm: child cannot disinherit TCP fd\n");
-	exit(1);
+    if (fcntl(ConnectionNumber(dpy), F_SETFD, 1) == -1) {
+	fprintf (stderr, 
+		 "%s:  unable to mark display connection as close-on-exec\n",
+		 ProgramName);
+	exit (1);
     }
 
 #ifdef SHAPE
@@ -259,7 +256,8 @@ main(argc, argv, environ)
 
 	if (RedirectError)
 	{
-	    fprintf(stderr, "twm:  Are you running another window manager");
+	    fprintf (stderr, "%s:  another window manager is already running",
+		     ProgramName);
 	    if (MultiScreen && NumScreens > 0)
 		fprintf(stderr, " on screen %d?\n", scrnum);
 	    else
@@ -480,10 +478,10 @@ main(argc, argv, environ)
     	Scr->FirstTime = FALSE;
     } /* for */
 
-    if (numManaged == 0)
-    {
+    if (numManaged == 0) {
 	if (MultiScreen && NumScreens > 0)
-	    fprintf(stderr, "twm:  No unmanaged screens -- exiting.\n");
+	  fprintf (stderr, "%s:  unable to find any unmanaged screens\n",
+		   ProgramName);
 	exit (1);
     }
 
