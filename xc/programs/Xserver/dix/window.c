@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.39 89/10/08 17:43:58 rws Exp $ */
+/* $XConsortium: window.c,v 5.40 89/10/10 09:50:20 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -653,6 +653,9 @@ CreateRootWindow(pScreen)
 #ifdef SHAPE
     pWin->optional->boundingShape = NULL;
     pWin->optional->clipShape = NULL;
+#endif
+#ifdef XINPUT
+    pWin->optional->inputMasks = NULL;
 #endif
     pWin->optional->colormap = pScreen->defColormap;
     pWin->optional->visual = pScreen->rootVisual;
