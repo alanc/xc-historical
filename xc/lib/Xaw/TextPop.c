@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextPop.c,v 1.9 89/11/08 13:44:39 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextPop.c,v 1.10 90/02/01 16:21:22 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -777,7 +777,7 @@ struct SearchAndReplace * search;
   text.firstPos = 0;
   text.format = FMT8BIT;
   
-  dir = (XawTextScanDirection) (XawToggleGetCurrent(search->left_toggle) -
+  dir = (XawTextScanDirection)(int) (XawToggleGetCurrent(search->left_toggle) -
 				R_OFFSET);
   
   pos = XawTextSearch( tw, dir, &text);
@@ -907,7 +907,7 @@ Boolean once_only, show_current;
   replace.firstPos = 0;
   replace.format = FMT8BIT;
     
-  dir = (XawTextScanDirection) (XawToggleGetCurrent(search->left_toggle) -
+  dir = (XawTextScanDirection)(int) (XawToggleGetCurrent(search->left_toggle) -
 				R_OFFSET);
 
   while (TRUE) {
