@@ -15,6 +15,7 @@ SRCS = \
 	gray \
 	gray1 \
 	gray3 \
+	hlines2 \
 	icon \
 	left_ptr \
 	left_ptrmsk \
@@ -40,6 +41,7 @@ SRCS = \
 	target \
 	terminal \
 	tie_fighter \
+	vlines2 \
 	weird_size \
 	wide_weave \
 	wingdogs \
