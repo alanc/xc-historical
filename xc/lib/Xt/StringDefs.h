@@ -1,5 +1,5 @@
 /*
-* $Header$
+* $Header: Atoms.h,v 1.18 87/10/29 00:04:08 joel BL5 $
 */
 
 /*
@@ -27,22 +27,24 @@
 #ifndef _XtAtom_h_
 #define _XtAtom_h_
 
+#ifndef VMS
 #include <X11/Xresource.h>
+#else
+#include Xresource
+#endif
 
 /* Resource names */
 
 #define XtNallowHoriz		"allowHoriz"
 #define XtNallowVert		"allowVert"
+#define XtNancestorSensitive	"ancestorSensitive"
 #define XtNbackground		"background"
 #define XtNborder		"border"
 #define XtNborderWidth		"borderWidth"
-#define XtNchildWindow		"childWindow"
+#define XtNcallback		"callback"
 #define XtNdepth		"depth"
-#define XtNdialogButtons	"dialogButtons"
-#define XtNdialogButtonCount	"dialogButtonCount"
-#define XtNdialogValue		"dialogValue"
+#define XtNdestroyCallback      "destroyCallback"
 #define XtNeditType		"editType"
-#define XtNeventBindings	"eventBindings"
 #define XtNfont			"font"
 #define XtNforceBars		"forceBars"
 #define XtNforeground		"foreground"
@@ -91,6 +93,7 @@
 #define XtNthumb		"thumb"
 #define XtNthumbProc		"thumbProc"
 #define XtNtop			"top"
+#define XtNtranslations		"translations"
 #define XtNuseBottom		"useBottom"
 #define XtNuseRight		"useRight"
 
@@ -105,10 +108,12 @@
 /* Class types */ 
 
 #define XtCBackground		"Background"
+#define XtCBackground		"Background"
 #define XtCBitmap		"Bitmap"
 #define XtCBoolean		"Boolean"
 #define XtCBorderColor		"BorderColor"
 #define XtCBorderWidth		"BorderWidth"
+#define XtCCallback             "Callback"
 #define XtCColor		"Color"
 #define XtCCursor		"Cursor"
 #define XtCDepth		"Depth"
@@ -163,6 +168,7 @@
 #define XtCThickness		"Thickness"
 #define XtCThumb		"Thumb"
 #define XtCToggle		"Toggle"
+#define XtCTranslations		"Translations"
 #define XtCUnhighlight		"Unhighlight"
 #define XtCValue		"Value"
 #define XtCVSpace		"VSpace"
@@ -175,7 +181,11 @@
 /* Representation types */
 #define XtRBoolean		XrmRBoolean
 #define XtRColor		XrmRColor
+#ifdef XrmRCursor /* VMS */
 #define XtRCursor		XrmRCursor
+#else
+#define XtRCursor		"Cursor"
+#endif
 #define XtRDims			XrmRDims
 #define XtRDisplay		XrmRDisplay
 #define XtREditMode		"EditMode"
@@ -195,6 +205,7 @@
 #define XtRString               XrmRString
 #define XtRStringTable		"StringTable"
 #define XtRTextPosition 	"XtTextPosition"
+#define XtRTranslationTable     "TranslationTable"
 #define XtRWindow		XrmRWindow
 
 /* Orientation enumeration constants */
