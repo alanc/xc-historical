@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: screen.c,v 1.11 88/01/19 14:40:59 swick Exp $";
+static char rcs_id[] = "$Header: screen.c,v 1.12 88/01/20 08:25:12 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -296,35 +296,20 @@ ScrnKind kind;
     Position x, y;
     Dimension width, height;
     Scrn scrn;
-    char *geometry;
     static Arg arglist[] = {
-	{XtNx, NULL},
-	{XtNy, NULL},
-	{XtNwidth, NULL},
-	{XtNheight, NULL},
+	{XtNgeometry, NULL},
     };
-    int bits;
 
     for (i=0 ; i<numScrns ; i++)
 	if (scrnList[i]->kind == kind && !scrnList[i]->mapped)
 	    return scrnList[i];
     switch (kind) {
-	case STtocAndView:	geometry = defTocGeometry;	break;
-	case STview:		geometry = defViewGeometry;	break;
-	case STcomp:		geometry = defCompGeometry;	break;
-	case STpick:		geometry = defPickGeometry;	break;
+       case STtocAndView: arglist[0].value = (XtArgVal)defTocGeometry;	break;
+       case STview:	  arglist[0].value = (XtArgVal)defViewGeometry;	break;
+       case STcomp:	  arglist[0].value = (XtArgVal)defCompGeometry;	break;
+       case STpick:	  arglist[0].value = (XtArgVal)defPickGeometry;	break;
     }
 
-    bits = XParseGeometry(geometry, &x, &y, &width, &height);
-    if (!(bits & XValue)) x = 0;
-    else if (bits & XNegative) x = rootwidth - abs(x) - width;
-    if (!(bits & YValue)) y = 0;
-    else if (bits & YNegative) y = rootheight - abs(y) - height;
-
-    arglist[0].value = (XtArgVal)x;
-    arglist[1].value = (XtArgVal)y;
-    arglist[2].value = (XtArgVal)width;
-    arglist[3].value = (XtArgVal)height;
     numScrns++;
     scrnList = (Scrn *)
 	XtRealloc((char *) scrnList, (unsigned) numScrns*sizeof(Scrn));
@@ -332,17 +317,18 @@ ScrnKind kind;
     bzero((char *)scrn, sizeof(ScrnRec));
     scrn->kind = kind;
     if (numScrns == 1) scrn->parent = toplevel;
-    else scrn->parent = XtCreatePopupShell(progName, shellWidgetClass,
-					   toplevel, NULL, (Cardinal) 0);
-    scrn->widget = XtCreateWidget(progName, vPanedWidgetClass, scrn->parent,
-				  arglist, XtNumber(arglist));
+    else scrn->parent = XtCreatePopupShell(
+				   progName, shellWidgetClass,
+				   toplevel, arglist, XtNumber(arglist));
+    scrn->widget = XtCreateManagedWidget(progName, vPanedWidgetClass,
+					 scrn->parent, NULL, (Cardinal)0);
 
     switch (kind) {
 	case STtocAndView:	MakeTocAndView(scrn);	break;
 	case STview:		MakeView(scrn);	break;
 	case STcomp:		MakeComp(scrn);	break;
     }
-    XtManageChild( (Widget)scrn->widget );
+
     DEBUG("Realizing...")
     XtRealizeWidget((Widget) scrn->parent);
     DEBUG(" done.\n")
