@@ -1,4 +1,4 @@
-/* $XConsortium: xexevents.c,v 1.2 89/11/07 19:40:48 rws Exp $ */
+/* $XConsortium: xexevents.c,v 1.3 89/11/08 18:58:53 rws Exp $ */
 #ifdef XINPUT
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -54,8 +54,8 @@ void 			ProcessOtherEvent();
 void 			RecalculateDeviceDeliverableEvents();
 extern int		DeviceKeyPress;
 extern int		DeviceButtonPress;
-extern int  		DevicePointerMotionMask;
-extern int  		DeviceMappingNotifyMask;
+extern Mask 		DevicePointerMotionMask;
+extern Mask 		DeviceMappingNotifyMask;
 extern WindowPtr 	GetSpriteWindow();
 extern InputInfo	inputInfo;
 #define DMotion_Filter(state,id) (DevicePointerMotionMask)
@@ -79,7 +79,7 @@ RegisterOtherDevice (device)
 /*ARGSUSED*/
 void
 ProcessOtherEvent (xE, other, count)
-    xEvent *xE;
+    deviceKeyButtonPointer *xE;
     register DeviceIntPtr other;
     int count;
     {
@@ -99,22 +99,22 @@ ProcessOtherEvent (xE, other, count)
     KeyClassPtr		k = other->key;
     void		NoticeEventTime();
 
-    key = xE->u.u.detail;
+    key = xE->detail;
     NoticeEventTime(xE);
-    xE->u.keyButtonPointer.state = k->state | b->state;
+    xE->state = k->state | b->state;
     bit = 1 << (key & 7);
     modifiers = other->key->modifierMap[key];
     
-    if (xE->u.u.type == DeviceKeyPress)
+    if (xE->type == DeviceKeyPress)
 	{
         kptr = &k->down[key >> 3];
 	if (*kptr & bit) /* allow ddx to generate multiple downs */
 	    {   
 	    if (!modifiers)
 		{
-		xE->u.u.type = DeviceKeyRelease;
+		xE->type = DeviceKeyRelease;
 		ProcessOtherEvent(xE, other, count);
-		xE->u.u.type = DeviceKeyPress;
+		xE->type = DeviceKeyPress;
 		/* release can have side effects, don't fall through */
 		ProcessOtherEvent(xE, other, count);
 		}
@@ -134,7 +134,7 @@ ProcessOtherEvent (xE, other, count)
 	if (!grab && CheckDeviceGrabs(other, xE, 0, count))
 	    return;
 	}
-    else if (xE->u.u.type == DeviceKeyRelease)
+    else if (xE->type == DeviceKeyRelease)
 	{
         kptr = &k->down[key >> 3];
 	if (!(*kptr & bit)) /* guard against duplicates */
@@ -164,37 +164,29 @@ ProcessOtherEvent (xE, other, count)
 	     other->grab->detail.exact == AnyKey))
 	    deactivateDeviceGrab = TRUE;
 	}
-    else if (xE->u.u.type == DeviceButtonPress)
+    else if (xE->type == DeviceButtonPress)
 	{
         kptr = &b->down[key >> 3];
 	b->buttonsDown++;
-	xE->u.u.detail = b->map[key];
-	if (xE->u.u.detail <= 5)
-	    b->state |= k->modifierMap[xE->u.u.detail];
+	xE->detail = b->map[key];
+	if (xE->detail <= 5)
+	    b->state |= k->modifierMap[xE->detail];
 	SetMaskForEvent(DMotion_Filter(b->state, other->id),DeviceMotionNotify);
 	if (!grab)
 	    if (CheckDeviceGrabs(other, xE, 0, count))
 		return;
 	}
-    else if (xE->u.u.type == DeviceButtonRelease)
+    else if (xE->type == DeviceButtonRelease)
 	{
         kptr = &b->down[key >> 3];
 	b->buttonsDown--;
-	xE->u.u.detail = b->map[key];
-	if (xE->u.u.detail <= 5)
-	    b->state &= ~k->modifierMap[xE->u.u.detail];
+	xE->detail = b->map[key];
+	if (xE->detail <= 5)
+	    b->state &= ~k->modifierMap[xE->detail];
 	SetMaskForEvent(DMotion_Filter(b->state, other->id),DeviceMotionNotify);
 	if ((!(b->state & AllButtonsMask)) &&
 	    (other->fromPassiveGrab))
 	    deactivateDeviceGrab = TRUE;
-	}
-    else if (xE->u.u.type == DeviceMotionNotify)
-	{
-	/*
-	if (!CheckMotion(xE->u.keyButtonPointer.rootX,
-	     xE->u.keyButtonPointer.rootY, FALSE))
-            return;
-	    */
 	}
 
     if (grab)
