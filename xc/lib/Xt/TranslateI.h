@@ -1,4 +1,4 @@
-/* $XConsortium: TranslateI.h,v 1.4 91/05/11 20:40:21 converse Exp $ */
+/* $XConsortium: TranslateI.h,v 1.39 91/05/11 20:53:25 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -27,7 +27,9 @@ SOFTWARE.
 /* 
  * TranslateI.h - Header file private to translation management
  * 
- * Author:	Charles Haynes
+ * Author:	Gabe Beged-Dov, HP
+ *
+ * Former Author:	Charles Haynes
  * 		Digital Equipment Corporation
  * 		Western Research Laboratory
  * Date:	Sat Aug 29 1987
@@ -88,7 +90,7 @@ typedef struct _StateRec {
 typedef unsigned int _XtTranslateOp;
 
 /*
- * New Definitions for TMLite
+ * New Definitions
  */
 typedef struct _TMModifierMatchRec{
     TMLongCard	 modifiers;
@@ -129,7 +131,7 @@ typedef struct _TMSimpleStateTreeRec{
 }TMSimpleStateTreeRec, *TMSimpleStateTree;    
 
 /* NOTE: elements of this structure must match those of
- * TMSimpleStateTreeRec and TMSimpleStateTreeRec.
+ * TMSimpleStateTreeRec and TMParseStateTreeRec.
  */
 typedef struct _TMComplexStateTreeRec{
     unsigned int	isSimple:1;
@@ -183,17 +185,15 @@ typedef struct _TMComplexBindProcsRec {
     XtActionProc	*procs;
 }TMComplexBindProcsRec, *TMComplexBindProcs;
 
-/* NOTE: elements of this structure must match those of TMComplexBindDataRec */
 typedef struct _TMSimpleBindDataRec {
-    unsigned int		isComplex:1;
-    TMSimpleBindProcsRec	bindTbl[1]; /* WARNING, variable length */
+    unsigned int		isComplex:1;	/* must be first */
+    TMSimpleBindProcsRec	bindTbl[1];	/* variable length */
 }TMSimpleBindDataRec, *TMSimpleBindData;
 
-/* NOTE: elements of this structure must match those of TMSimpleBindDataRec */
 typedef struct _TMComplexBindDataRec {
-    unsigned int		isComplex:1;
+    unsigned int		isComplex:1;	/* must be first */
     struct _ATranslationData	*getValuesAXlations;	
-    TMComplexBindProcsRec	bindTbl[1]; /* WARNING, variable length */
+    TMComplexBindProcsRec	bindTbl[1]; 	/* variable length */
 }TMComplexBindDataRec, *TMComplexBindData;
 
 typedef union _TMBindDataRec{
@@ -207,7 +207,7 @@ typedef struct _TranslationData{
     TMShortCard			numStateTrees;
     struct _TranslationData    	*composers[2];
     EventMask			eventMask;
-    TMStateTree			stateTreeTbl[1]; /* WARNING, variable length */
+    TMStateTree			stateTreeTbl[1]; /* variable length */
 }TranslationData;
 
 /*
@@ -599,13 +599,6 @@ extern void _XtTraverseStateTree(
     TMStateTree		/* tree */,
     _XtTraversalProc	/* func */,				 
     XtPointer		/* data */
-#endif
-);
-
-extern void _XtSetTMOperation(
-#if NeedFunctionPrototypes
-    XtTranslations	/* xlations */,
-    _XtTranslateOp	/* operation */
 #endif
 );
 
