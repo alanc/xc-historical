@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.54 92/03/19 11:30:46 rws Exp $ */
+/* $XConsortium: events.c,v 5.55 92/03/23 19:28:26 keith Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -114,6 +114,7 @@ typedef struct {
 static  struct {
     CursorPtr	current;
     BoxRec	hotLimits;	/* logical constraints of hot spot */
+    Bool	confined;	/* confined to screen */
 #ifdef SHAPE
     RegionPtr	hotShape;	/* additional logical shape constraint */
 #endif
@@ -274,9 +275,10 @@ ConfineToShape(shape, px, py)
 #endif
 
 static void
-CheckPhysLimits(cursor, generateEvents, pScreen)
+CheckPhysLimits(cursor, generateEvents, confineToScreen, pScreen)
     CursorPtr cursor;
     Bool generateEvents;
+    Bool confineToScreen;
     ScreenPtr pScreen;
 {
     HotSpot new;
@@ -290,6 +292,7 @@ CheckPhysLimits(cursor, generateEvents, pScreen)
 	pScreen = new.pScreen;
     (*pScreen->CursorLimits) (pScreen, cursor, &sprite.hotLimits,
 			      &sprite.physLimits);
+    sprite.confined = confineToScreen;
     (* pScreen->ConstrainCursor)(pScreen, &sprite.physLimits);
     if (new.x < sprite.physLimits.x1)
 	new.x = sprite.physLimits.x1;
@@ -363,9 +366,10 @@ CheckVirtualMotion(qe, pWin)
 }
 
 static void
-ConfineCursorToWindow(pWin, generateEvents)
+ConfineCursorToWindow(pWin, generateEvents, confineToScreen)
     WindowPtr pWin;
     Bool generateEvents;
+    Bool confineToScreen;
 {
     ScreenPtr pScreen = pWin->drawable.pScreen;
 
@@ -381,16 +385,15 @@ ConfineCursorToWindow(pWin, generateEvents)
 	sprite.hotShape = wBoundingShape(pWin) ? &pWin->borderSize
 					       : NullRegion;
 #endif
-	CheckPhysLimits(sprite.current, generateEvents, pScreen);
+	CheckPhysLimits(sprite.current, generateEvents, confineToScreen,
+			pScreen);
     }
 }
 
 Bool
 PointerConfinedToScreen()
 {
-    register GrabPtr grab = inputInfo.pointer->grab;
-
-    return (grab && grab->confineTo);
+    return sprite.confined;
 }
 
 static void
@@ -401,7 +404,8 @@ ChangeToCursor(cursor)
     {
 	if ((sprite.current->bits->xhot != cursor->bits->xhot) ||
 		(sprite.current->bits->yhot != cursor->bits->yhot))
-	    CheckPhysLimits(cursor, FALSE, (ScreenPtr)NULL);
+	    CheckPhysLimits(cursor, FALSE, PointerConfinedToScreen(),
+			    (ScreenPtr)NULL);
 	(*sprite.hotPhys.pScreen->DisplayCursor) (sprite.hotPhys.pScreen,
 						  cursor);
 	sprite.current = cursor;
@@ -652,11 +656,11 @@ playmore:
     {
 	if (grab->confineTo->drawable.pScreen != sprite.hotPhys.pScreen)
 	    sprite.hotPhys.x = sprite.hotPhys.y = 0;
-	ConfineCursorToWindow(grab->confineTo, TRUE);
+	ConfineCursorToWindow(grab->confineTo, TRUE, TRUE);
     }
     else
 	ConfineCursorToWindow(WindowTable[sprite.hotPhys.pScreen->myNum],
-			      TRUE);
+			      TRUE, FALSE);
     PostNewCursor();
 }
 
@@ -710,7 +714,7 @@ ActivatePointerGrab(mouse, grab, time, autoGrab)
     {
 	if (grab->confineTo->drawable.pScreen != sprite.hotPhys.pScreen)
 	    sprite.hotPhys.x = sprite.hotPhys.y = 0;
-	ConfineCursorToWindow(grab->confineTo, FALSE);
+	ConfineCursorToWindow(grab->confineTo, FALSE, TRUE);
     }
     DoEnterLeaveEvents(oldWin, grab->window, NotifyGrab);
     mouse->valuator->motionHintWindow = NullWindow;
@@ -746,7 +750,7 @@ DeactivatePointerGrab(mouse)
     }
     DoEnterLeaveEvents(grab->window, sprite.win, NotifyUngrab);
     if (grab->confineTo)
-	ConfineCursorToWindow(ROOT, FALSE);
+	ConfineCursorToWindow(ROOT, FALSE, FALSE);
     PostNewCursor();
     if (grab->cursor)
 	FreeCursor(grab->cursor, (Cursor)0);
@@ -1491,6 +1495,7 @@ DefineInitialRootWindow(win)
     ROOT = win;
     (*pScreen->CursorLimits) (
 	pScreen, sprite.current, &sprite.hotLimits, &sprite.physLimits);
+    sprite.confined = FALSE;
     (*pScreen->ConstrainCursor) (pScreen, &sprite.physLimits);
     (*pScreen->SetCursorPosition) (pScreen, sprite.hot.x, sprite.hot.y, FALSE);
     (*pScreen->DisplayCursor) (pScreen, sprite.current);
@@ -1519,7 +1524,7 @@ NewCurrentScreen(newScreen, x, y)
     sprite.hotPhys.x = x;
     sprite.hotPhys.y = y;
     if (newScreen != sprite.hotPhys.pScreen)
-	ConfineCursorToWindow(WindowTable[newScreen->myNum], TRUE);
+	ConfineCursorToWindow(WindowTable[newScreen->myNum], TRUE, FALSE);
 }
 
 int
@@ -2698,7 +2703,7 @@ ProcGrabPointer(client)
 	if (grab)
  	{
 	    if (grab->confineTo && !confineTo)
-		ConfineCursorToWindow(ROOT, FALSE);
+		ConfineCursorToWindow(ROOT, FALSE, FALSE);
 	    oldCursor = grab->cursor;
 	}
 	tempGrab.cursor = cursor;
@@ -2965,6 +2970,7 @@ InitEvents()
     sprite.hotLimits.y1 = 0;
     sprite.hotLimits.x2 = 0;
     sprite.hotLimits.y2 = 0;
+    sprite.confined = FALSE;
     syncEvents.replayDev = (DeviceIntPtr)NULL;
     syncEvents.replayWin = NullWindow;
     while (syncEvents.pending)
@@ -3384,7 +3390,7 @@ CheckCursorConfinement(pWin)
 			(&confineTo->borderSize))
 	    (*inputInfo.pointer->DeactivateGrab)(inputInfo.pointer);
 	else if ((pWin == confineTo) || IsParent(pWin, confineTo))
-	    ConfineCursorToWindow(confineTo, TRUE);
+	    ConfineCursorToWindow(confineTo, TRUE, TRUE);
     }
 }
 
