@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: miregion.c,v 1.34 88/07/29 12:05:26 keith Exp $ */
+/* $Header: miregion.c,v 1.35 88/07/29 17:16:17 keith Exp $ */
 
 #include "miscstruct.h"
 #include "regionstr.h"
@@ -74,6 +74,7 @@ typedef BoxRec BOX;	/* this is to cut down on some gratuitous edits */
 
 static BoxRec EmptyBox = {0, 0, 0, 0};
 
+#ifdef DEBUG
 void
 miprintRects(rgn)
     RegionPtr rgn;
@@ -88,6 +89,7 @@ miprintRects(rgn)
 	      rgn->rects[i].x2,rgn->rects[i].y2);
     ErrorF(  "\n");
 }
+#endif /* DEBUG */
 
 /*****************************************************************
  *   RegionCreate(rect, size)
