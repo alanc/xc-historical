@@ -1,7 +1,4 @@
-#ifndef lint
-static char Xrcsid[] =
-    "$XConsortium: VarCreate.c,v 1.15 90/12/19 20:06:24 rws Exp $";
-#endif
+/* $XConsortium: VarCreate.c,v 1.16 90/12/20 10:41:24 converse Exp $ */
 
 /*
 

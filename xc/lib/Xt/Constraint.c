@@ -1,7 +1,4 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: Constraint.c,v 1.10 89/06/16 19:34:04 jim Exp $";
-/* $oHeader: Constraint.c,v 1.2 88/08/18 15:35:57 asente Exp $ */
-#endif /* lint */
+/* $XConsortium: Constraint.c,v 1.11 89/06/16 19:48:17 jim Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

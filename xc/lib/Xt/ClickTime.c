@@ -1,7 +1,4 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.79 89/09/22 17:57:49 swick Exp $";
-#endif /* lint */
-/*LINTLIBRARY*/
+/* $XConsortium: ClickTime.c,v 1.1 89/09/26 17:58:10 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

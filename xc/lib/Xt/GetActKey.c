@@ -1,7 +1,4 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: GetActKey.c,v 1.1 89/09/28 13:15:19 swick Exp $";
-#endif /* lint */
-/*LINTLIBRARY*/
+/* $XConsortium: GetActKey.c,v 1.2 89/09/29 12:12:29 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

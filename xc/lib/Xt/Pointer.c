@@ -1,6 +1,4 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: Pointer.c,v 1.1 89/12/14 14:56:54 swick Exp $";
-#endif
+/* $XConsortium: Pointer.c,v 1.2 90/07/26 10:20:40 swick Exp $ */
 
 /********************************************************
 

@@ -1,6 +1,4 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: GCManager.c,v 1.38 90/06/25 09:32:19 swick Exp $";
-#endif /* lint */
+/* $XConsortium: GCManager.c,v 1.39 90/10/20 14:14:59 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988, 1990 by Digital Equipment Corporation, Maynard,

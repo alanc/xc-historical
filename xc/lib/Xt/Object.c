@@ -1,8 +1,4 @@
-/* LINTLIBRARY */
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: Object.c,v 1.14 90/12/30 16:29:14 rws Exp $";
-/* $oHeader: Object.c,v 1.2 88/08/18 15:51:09 asente Exp $ */
-#endif /* lint */
+/* $XConsortium: Object.c,v 1.15 90/12/31 16:57:18 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

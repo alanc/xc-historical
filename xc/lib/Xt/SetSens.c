@@ -1,6 +1,4 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: SetSens.c,v 1.1 89/09/29 14:01:38 swick Exp $";
-#endif /* lint */
+/* $XConsortium: SetSens.c,v 1.2 90/12/12 14:53:11 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

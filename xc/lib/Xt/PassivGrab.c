@@ -1,6 +1,4 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: PassivGrab.c,v 1.15 90/12/12 14:52:51 rws Exp $";
-#endif
+/* $XConsortium: PassivGrab.c,v 1.16 90/12/31 13:11:44 rws Exp $ */
 
 /********************************************************
 
