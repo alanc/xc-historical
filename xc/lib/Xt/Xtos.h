@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Xtos.h,v 1.1 89/09/19 20:11:27 swick Exp $
+* $XConsortium: Xtos.h,v 1.2 89/09/20 09:29:22 swick Exp $
 */
 
 /***********************************************************
@@ -42,6 +42,7 @@ SOFTWARE.
 
 #ifdef CRAY
 #define WORD64
+#define MAXPATHLEN PATH_MAX
 #endif
 
 /* stolen from server/include/os.h */
