@@ -1,4 +1,4 @@
-/* $XConsortium: events.c,v 1.8 94/01/29 11:08:11 rws Exp $ */
+/* $XConsortium: events.c,v 1.9 94/02/13 12:02:51 rws Exp $ */
 /**** module events.c ****/
 /******************************************************************************
 				NOTICE
@@ -141,7 +141,7 @@ int
 WaitForXIEEvent( xp, which, flo_id, tag, verbose )
 XParms	xp;
 int	which;
-int	flo_id;
+XiePhotoflo flo_id;
 XiePhototag tag;
 Bool	verbose;
 {

@@ -1,4 +1,4 @@
-/* $XConsortium: errors.c,v 1.8 94/01/29 11:08:08 rws Exp $ */
+/* $XConsortium: errors.c,v 1.9 94/02/13 12:02:46 rws Exp $ */
 /**** module errors.c ****/
 /******************************************************************************
 				NOTICE
@@ -248,7 +248,7 @@ int	reps;
 	case BadIDChoice:
 		break;
 	case BadValue:
-		InitBadValue( xp, p );
+		InitBadValue( xp, p, reps );
 		break;
 	default:
 		reps = 0;

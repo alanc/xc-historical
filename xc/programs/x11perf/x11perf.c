@@ -1,4 +1,4 @@
-/* $XConsortium: x11perf.c,v 2.49 94/02/28 21:57:25 dpw Exp $ */
+/* $XConsortium: x11perf.c,v 2.50 94/03/17 20:25:49 dpw Exp $ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -756,10 +756,10 @@ void DestroyPerfGCs(xp)
     XFreeGC(xp->d, xp->bggc);
 }
 
-int AllocateColor(display, name, pixel)
+unsigned long AllocateColor(display, name, pixel)
     Display     *display;
     char	*name;
-    int		pixel;
+    unsigned long pixel;
 {
     XColor      color;
 
@@ -1282,7 +1282,7 @@ main(argc, argv)
 	        case NONROP:
 		    /* Simplest...just run it once */
 		    strcpy (label, LABELP(i));
-		    ProcessTest(&xparms, &test[i], GXcopy, ~0, label);
+		    ProcessTest(&xparms, &test[i], GXcopy, ~0L, label);
 		    break;
 
 		case ROP:
@@ -1330,7 +1330,7 @@ main(argc, argv)
 			test[i].parms.objects = subWindows[child];
 			sprintf(label, "%s (%d kids)",
 			    LABELP(i), test[i].parms.objects);
-			ProcessTest(&xparms, &test[i], GXcopy, ~0, label);
+			ProcessTest(&xparms, &test[i], GXcopy, ~0L, label);
 		    }
 		    break;
 	    } /* switch */
@@ -1391,7 +1391,7 @@ int GetNumbers (argi, argc, argv, intsp, nump)
     int     argi;
     int     argc;
     char    **argv;
-    long    *intsp;
+    unsigned long    *intsp;
     int     *nump;
 {
     char    *words[256];
