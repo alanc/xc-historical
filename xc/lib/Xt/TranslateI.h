@@ -77,7 +77,6 @@ typedef struct _EventObjRec {
 } EventObjRec;
 typedef struct _ActionsRec *ActionPtr;
 typedef struct _ActionsRec {
-    char * token;		/* string token for procedure name */
     int index;                 /* index into quarkTable to find proc */
     String *params;		/* pointer to array of params */
     unsigned long num_params;	/* number of params */
@@ -96,17 +95,17 @@ typedef struct _StateRec {
 typedef enum {XtTableReplace,XtTableAugment,XtTableOverride} _XtTranslateOp;
 
 typedef struct _TranslationData {
-    _XtTranslateOp       operation; /*replace,augment,override*/
+    _XtTranslateOp	operation; /*replace,augment,override*/
     unsigned int	numEvents;
     unsigned int	eventTblSize;
     EventObjPtr		eventObjTbl;
     unsigned long	lastEventTime;
-    unsigned int        numQuarks;   /* # of entries in quarkTable */
-    unsigned int        quarkTblSize; /*total size of quarkTable */
-    XrmQuark*           quarkTable;  /* table of quarkified rhs*/
-    unsigned int        accNumQuarks;
-    unsigned int        accQuarkTblSize;
-    XrmQuark*           accQuarkTable;
+    unsigned int	numQuarks;   /* # of entries in quarkTable */
+    unsigned int	quarkTblSize; /*total size of quarkTable */
+    XrmQuark*		quarkTable;  /* table of quarkified rhs*/
+    unsigned int	accNumQuarks;
+    unsigned int	accQuarkTblSize;
+    XrmQuark*		accQuarkTable;
     struct _XtBoundAccActionRec* accProcTbl;
     StatePtr		head;	/* head of list of all states */
     
