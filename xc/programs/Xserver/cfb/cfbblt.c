@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbblt.c,v 1.5 91/01/27 13:03:02 keith Exp $ */
+/* $XConsortium: cfbblt.c,v 1.6 91/04/10 11:42:08 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -34,8 +34,10 @@ Author: Keith Packard
 #include	"fastblt.h"
 #include	"mergerop.h"
 
+#ifdef notdef /* XXX fails right now, walks off end of pixmaps */
 #if defined (FAST_UNALIGNED_READS) && (PPW == 4)
 #define DO_UNALIGNED_BITBLT
+#endif
 #endif
 
 MROP_NAME(cfbDoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
