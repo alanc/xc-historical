@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.6 90/02/02 14:03:43 jim Exp $
+ * $XConsortium: viewres.c,v 1.7 90/02/02 14:40:40 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -63,9 +63,12 @@ static XtResource Resources[] = {
 char *ProgramName;
 
 static char *fallback_resources[] = {
-    "Viewres*Viewport.allowHoriz: true",
-    "Viewres*Viewport.allowVert: true",
-    "Viewres*allowShellResize: true",
+    "*Viewport.allowHoriz: true",
+    "*Viewport.allowVert: true",
+    "*allowShellResize: true",
+    "*Tree*Command*Font: variable",
+    "*Tree*Command*ShapeStyle: rectangle",
+    "*Tree*Command*BorderWidth: 0",
     NULL
 };
 
