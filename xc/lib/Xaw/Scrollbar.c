@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Scroll.c,v 1.57 89/12/09 21:58:40 rws Exp $";
+    "$XConsortium: Scrollbar.c,v 1.58 89/12/15 11:36:58 kit Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -421,7 +421,7 @@ Widget current,		/* what I am */
 	    (w->core.background_pixel != dw->core.background_pixel) ||
 	    (w->scrollbar.thumb != dw->scrollbar.thumb) ) 
 	{
-	    XtReleaseGC(w, w->scrollbar.thumb);
+	    XtReleaseGC((Widget)dw, w->scrollbar.gc);
 	    CreateGC( (Widget) dw);
 	    redraw = TRUE;
 	}
@@ -699,8 +699,11 @@ static void NotifyThumb( gw, event, params, num_params )
 
     if (LookAhead(gw, event)) return;
 
-    XtCallCallbacks( gw, XtNthumbProc, w->scrollbar.top);
-    XtCallCallbacks( gw, XtNjumpProc, &w->scrollbar.top);
+    /* thumbProc is not pretty, but is necessary for backwards
+       compatibility on those architectures for which it work{s,ed};
+       the intent is to pass a (truncated) float by value. */
+    XtCallCallbacks( gw, XtNthumbProc, *(XtPointer*)&w->scrollbar.top);
+    XtCallCallbacks( gw, XtNjumpProc, (XtPointer)&w->scrollbar.top);
 }
 
 
