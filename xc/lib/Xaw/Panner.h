@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.h,v 1.14 90/02/28 11:51:37 jim Exp $
+ * $XConsortium: Panner.h,v 1.15 90/02/28 14:27:24 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -46,7 +46,7 @@
  *  canvasHeight	CanvasHeight	Dimension	0
  *  defaultScale	DefaultScale	Dimension	10 (percent)
  *  foreground		Foreground	Pixel		XtDefaultBackground
- *  internalBorderWidth	BorderWidth	Dimension	4
+ *  internalSpace	InternalSpace	Dimension	4
  *  lineWidth		LineWidth	Dimension	0
  *  reportCallback	ReportCallback	XtCallbackList	NULL
  *  resize		Boolean		Boolean		TRUE
@@ -71,7 +71,8 @@
 #define XtCCanvasWidth "CanvasWidth"
 #define XtNcanvasHeight "canvasHeight"
 #define XtCCanvasHeight "CanvasHeight"
-#define XtNinternalBorderWidth "internalBorderWidth"
+#define XtNinternalSpace "internalSpace"
+#define XtCInternalSpace "InternalSpace"
 #define XtNlineWidth "lineWidth"
 #define XtCLineWidth "LineWidth"
 #define XtNresize "resize"

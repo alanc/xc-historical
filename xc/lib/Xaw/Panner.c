@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.23 90/03/01 14:13:52 jim Exp $
+ * $XConsortium: Panner.c,v 1.24 90/03/01 16:13:44 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -81,7 +81,7 @@ static XtResource resources[] = {
 	poff(rubber_band), XtRImmediate, (XtPointer) FALSE },
     { XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel), 
 	poff(foreground), XtRString, (XtPointer) "XtDefaultBackground" },
-    { XtNinternalBorderWidth, XtCBorderWidth, XtRDimension, sizeof(Dimension),
+    { XtNinternalSpace, XtCInternalSpace, XtRDimension, sizeof(Dimension),
 	poff(internal_border), XtRImmediate, (XtPointer) 4 },
     { XtNlineWidth, XtCLineWidth, XtRDimension, sizeof(Dimension),
 	poff(line_width), XtRImmediate, (XtPointer) 0 },
