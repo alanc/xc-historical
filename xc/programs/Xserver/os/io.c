@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: io.c,v 1.41 88/07/20 17:21:17 toddb Exp $ */
+/* $Header: io.c,v 1.42 88/07/21 10:59:32 toddb Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -279,6 +279,7 @@ ReadRequestFromClient(who, status, oldbuf)
     return((char *)pBuff->bufptr);
 
 #undef YieldControlAndReturnNull
+#undef YieldControlNoInput
 #undef YieldControl
 }
 
