@@ -541,7 +541,6 @@ EXPORTS
  XcmsVisualOfCCC
  XkbAllocClientMap
  XkbAllocCompatMap
- XkbAllocKeyType
  XkbAllocNames
  XkbAllocServerMap
  XkbBell
