@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Event.c,v 1.87 88/10/18 09:53:46 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Event.c,v 1.88 88/10/18 10:09:47 swick Exp $";
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 #endif lint
 
@@ -32,7 +32,7 @@ SOFTWARE.
 #include "StringDefs.h"
 
 static XtAsyncHandler asyncHandler = NULL;
-static Opaque asyncClosure = NULL;
+static caddr_t asyncClosure = NULL;
 
 static GrabList grabList;	/* %%% should this be in the AppContext? */
 static GrabList focusList;	/* %%% should this be in the AppContext? */
@@ -1018,7 +1018,7 @@ static void ForwardEvent(widget, client_data, event)
 
     if (XtIsSensitive(widget)) {
 	ConvertTypeToMask(event->xany.type, &mask, &grabType);
-	DispatchEvent(event, FindKeyboardFocus((Widget)client_data), mask);
+	DispatchEvent(event, FindFocusWidget((Widget)client_data), mask);
     }
 }
 
