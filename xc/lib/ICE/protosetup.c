@@ -1,4 +1,4 @@
-/* $XConsortium: protosetup.c,v 1.12 93/12/06 19:16:06 mor Exp $ */
+/* $XConsortium: protosetup.c,v 1.13 93/12/07 11:04:14 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -118,13 +118,13 @@ char 	*errorStringRet;
 	authIndices = NULL;
     }
 
-    extra = XPCS_BYTES (myProtocol->protocol_name) +
-            XPCS_BYTES (myProtocol->orig_client->vendor) +
-            XPCS_BYTES (myProtocol->orig_client->release);
+    extra = STRING_BYTES (myProtocol->protocol_name) +
+            STRING_BYTES (myProtocol->orig_client->vendor) +
+            STRING_BYTES (myProtocol->orig_client->release);
 
     for (i = 0; i < authCount; i++)
     {
-	extra += XPCS_BYTES (myProtocol->orig_client->auth_names[
+	extra += STRING_BYTES (myProtocol->orig_client->auth_names[
 	    authIndices[i]]);
     }
 
@@ -141,13 +141,13 @@ char 	*errorStringRet;
     pMsg->authCount = authCount;
     pMsg->mustAuthenticate = mustAuthenticate;
 
-    STORE_XPCS (pData, myProtocol->protocol_name);
-    STORE_XPCS (pData, myProtocol->orig_client->vendor);
-    STORE_XPCS (pData, myProtocol->orig_client->release);
+    STORE_STRING (pData, myProtocol->protocol_name);
+    STORE_STRING (pData, myProtocol->orig_client->vendor);
+    STORE_STRING (pData, myProtocol->orig_client->release);
 
     for (i = 0; i < authCount; i++)
     {
-	STORE_XPCS (pData, myProtocol->orig_client->auth_names[
+	STORE_STRING (pData, myProtocol->orig_client->auth_names[
 	    authIndices[i]]);
     }
 

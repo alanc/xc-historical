@@ -1,4 +1,4 @@
-/* $XConsortium: error.c,v 1.6 93/09/27 21:07:02 mor Exp $ */
+/* $XConsortium: error.c,v 1.7 93/12/07 11:04:07 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -161,7 +161,7 @@ char	*reason;
 
 {
     char *pBuf, *pStart;
-    int bytes = XPCS_BYTES (reason);
+    int bytes = STRING_BYTES (reason);
 
     IceErrorHeader (iceConn,
 	0, offendingMinor,
@@ -171,7 +171,7 @@ char	*reason;
 	WORD64COUNT (bytes));
 
     pBuf = pStart = IceAllocScratch (iceConn, PADDED_BYTES64 (bytes));
-    STORE_XPCS (pBuf, reason);
+    STORE_STRING (pBuf, reason);
 
     IceWriteData (iceConn, PADDED_BYTES64 (bytes), pStart);
     IceFlush (iceConn);
@@ -187,7 +187,7 @@ char	*reason;
 
 {
     char *pBuf, *pStart;
-    int bytes = XPCS_BYTES (reason);
+    int bytes = STRING_BYTES (reason);
 
     IceErrorHeader (iceConn,
 	0, offendingMinor,
@@ -197,7 +197,7 @@ char	*reason;
 	WORD64COUNT (bytes));
 
     pBuf = pStart = IceAllocScratch (iceConn, PADDED_BYTES64 (bytes));
-    STORE_XPCS (pBuf, reason);
+    STORE_STRING (pBuf, reason);
 
     IceWriteData (iceConn, PADDED_BYTES64 (bytes), pStart);
     IceFlush (iceConn);
@@ -212,7 +212,7 @@ char	*protocolName;
 
 {
     char *pBuf, *pStart;
-    int bytes = XPCS_BYTES (protocolName);
+    int bytes = STRING_BYTES (protocolName);
 
     IceErrorHeader (iceConn,
 	0, ICE_ProtocolSetup,
@@ -222,7 +222,7 @@ char	*protocolName;
 	WORD64COUNT (bytes));
 
     pBuf = pStart = IceAllocScratch (iceConn, PADDED_BYTES64 (bytes));
-    STORE_XPCS (pBuf, protocolName);
+    STORE_STRING (pBuf, protocolName);
 
     IceWriteData (iceConn, PADDED_BYTES64 (bytes), pStart);
     IceFlush (iceConn);
@@ -258,7 +258,7 @@ char	*protocolName;
 
 {
     char *pBuf, *pStart;
-    int bytes = XPCS_BYTES (protocolName);
+    int bytes = STRING_BYTES (protocolName);
 
     IceErrorHeader (iceConn,
 	0, ICE_ProtocolSetup,
@@ -268,7 +268,7 @@ char	*protocolName;
 	WORD64COUNT (bytes));
 
     pBuf = pStart = IceAllocScratch (iceConn, PADDED_BYTES64 (bytes));
-    STORE_XPCS (pBuf, protocolName);
+    STORE_STRING (pBuf, protocolName);
 
     IceWriteData (iceConn, PADDED_BYTES64 (bytes), pStart);
     IceFlush (iceConn);
@@ -433,19 +433,19 @@ IcePointer	values;
 
         case IceAuthRejected:
 
-	    EXTRACT_XPCS (pData, swap, str);
+	    EXTRACT_STRING (pData, swap, str);
 	    fprintf (stderr, "Reason : %s\n", str);
             break;
 
         case IceAuthFailed:
 
-	    EXTRACT_XPCS (pData, swap, str);
+	    EXTRACT_STRING (pData, swap, str);
 	    fprintf (stderr, "Reason : %s\n", str);
             break;
 
         case IceProtocolDuplicate:
 
-	    EXTRACT_XPCS (pData, swap, str);
+	    EXTRACT_STRING (pData, swap, str);
 	    fprintf (stderr, "Protocol name : %s\n", str);
             break;
 
@@ -456,7 +456,7 @@ IcePointer	values;
 
         case IceUnknownProtocol:
 
-	    EXTRACT_XPCS (pData, swap, str);
+	    EXTRACT_STRING (pData, swap, str);
 	    fprintf (stderr, "Protocol name : %s\n", str);
             break;
 

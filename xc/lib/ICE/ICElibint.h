@@ -1,4 +1,4 @@
-/* $XConsortium: ICElibint.h,v 1.25 93/12/07 11:04:02 mor Exp $ */
+/* $XConsortium: ICElibint.h,v 1.26 93/12/07 16:39:51 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -80,10 +80,10 @@ char *malloc();
 
 
 /*
- * Given a string, compute the number of bytes for the XPCS representation
+ * Given a string, compute the number of bytes for the STRING representation
  */
 
-#define XPCS_BYTES(_string) \
+#define STRING_BYTES(_string) \
     (2 + strlen (_string) + PAD32 (2 + strlen (_string)))
 
 
@@ -368,7 +368,7 @@ typedef struct {
 
 #endif /* WORD64 */
 
-#define STORE_XPCS(_pBuf, _string) \
+#define STORE_STRING(_pBuf, _string) \
 { \
     CARD16 _len = strlen (_string); \
     STORE_CARD16 (_pBuf, _len); \
@@ -435,7 +435,7 @@ typedef struct {
 
 #endif /* WORD64 */
 
-#define EXTRACT_XPCS(_pBuf, _swap, _string) \
+#define EXTRACT_STRING(_pBuf, _swap, _string) \
 { \
     CARD16 _len; \
     EXTRACT_CARD16 (_pBuf, _swap, _len); \
@@ -447,11 +447,11 @@ typedef struct {
         _pBuf += PAD32 (2 + _len); \
 }
 
-#define EXTRACT_LISTOF_XPCS(_pBuf, _swap, _count, _strings) \
+#define EXTRACT_LISTOF_STRING(_pBuf, _swap, _count, _strings) \
 { \
     int _i; \
     for (_i = 0; _i < _count; _i++) \
-        EXTRACT_XPCS (_pBuf, _swap, _strings[_i]); \
+        EXTRACT_STRING (_pBuf, _swap, _strings[_i]); \
 }
 
 
