@@ -28,7 +28,7 @@ XTerm*vtMenu*autolinefeed*Label:  Enable Auto Linefeed
 XTerm*vtMenu*appcursor*Label:  Enable Application Cursor Keys
 XTerm*vtMenu*appkeypad*Label:  Enable Application Keypad
 XTerm*vtMenu*scrollkey*Label:  Scroll to Bottom on Key Press
-XTerm*vtMenu*scrollinput*Label:  Scroll to Bottom on Tty Output
+XTerm*vtMenu*scrollttyoutput*Label:  Scroll to Bottom on Tty Output
 XTerm*vtMenu*allow132*Label:  Allow 80/132 switching
 XTerm*vtMenu*cursesemul*Label:  Enable Curses Emulation
 XTerm*vtMenu*visualbell*Label:  Enable Visual Bell
@@ -56,3 +56,7 @@ XTerm*tek4014*fontLarge: 9x15
 XTerm*tek4014*font2: 8x13
 XTerm*tek4014*font3: 6x13
 XTerm*tek4014*fontSmall: 6x10
+
+! the following for compatibility
+XTerm*vtMenu*scrollinput*Label:  Scroll to Bottom on Tty Output
+

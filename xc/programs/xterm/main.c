@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.127 89/10/03 12:41:27 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.128 89/10/09 16:49:31 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -344,8 +344,8 @@ static XrmOptionDescRec optionDescList[] = {
 {"+sb",		"*scrollBar",	XrmoptionNoArg,		(caddr_t) "off"},
 {"-sf",		"*sunFunctionKeys", XrmoptionNoArg,	(caddr_t) "on"},
 {"+sf",		"*sunFunctionKeys", XrmoptionNoArg,	(caddr_t) "off"},
-{"-si",		"*scrollInput",	XrmoptionNoArg,		(caddr_t) "off"},
-{"+si",		"*scrollInput",	XrmoptionNoArg,		(caddr_t) "on"},
+{"-si",		"*scrollTtyOutput",	XrmoptionNoArg,		(caddr_t) "off"},
+{"+si",		"*scrollTtyOutput",	XrmoptionNoArg,		(caddr_t) "on"},
 {"-sk",		"*scrollKey",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+sk",		"*scrollKey",	XrmoptionNoArg,		(caddr_t) "off"},
 {"-sl",		"*saveLines",	XrmoptionSepArg,	(caddr_t) NULL},
@@ -410,7 +410,7 @@ static struct _options {
 { "-/+s",                  "turn on/off multiscroll" },
 { "-/+sb",                 "turn on/off scrollbar" },
 { "-/+sf",                 "turn on/off Sun Function Key escape codes" },
-{ "-/+si",                 "turn on/off scroll-on-input inhibit" },
+{ "-/+si",                 "turn on/off scroll-on-tty-output inhibit" },
 { "-/+sk",                 "turn on/off scroll-on-keypress" },
 { "-sl number",            "number of scrolled lines to save" },
 { "-/+t",                  "turn on/off Tek emulation window" },

@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.32 89/07/21 16:11:45 jim Exp $
+ *	$XConsortium: ptyx.h,v 1.33 89/10/03 12:41:40 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -263,7 +263,7 @@ typedef struct {
 	int		savedlines;     /* number of lines that've been saved */
 	int		savelines;	/* number of lines off top to save */
 	int		scrolllines;	/* number of lines to button scroll */
-	Boolean		scrollinput;	/* scroll to bottom on input	*/
+	Boolean		scrollttyoutput; /* scroll to bottom on tty output */
 	Boolean		scrollkey;	/* scroll to bottom on key	*/
 	
 	ScrnBuf		buf;		/* screen buffer (main)		*/
