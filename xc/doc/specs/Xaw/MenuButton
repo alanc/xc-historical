@@ -11,17 +11,16 @@ MenuButton Widget
 Header file	MenuButton.h
 Class		menuButtonWidgetClass
 Class Name	MenuButton
-SuperClass	Command
+Superclass	Command
 .De
 .LP
 .sp
-The MenuButton widget is an area of the display, often rectangular,
-that contains a text label or bitmap image.  When the mouse pointer
-is on the button, the button becomes highlighted by drawing a
-rectangle around its perimeter.  This highlighting indicates that the button
-is ready for selection.  When a mouse button is pressed the menu button
-widget will pop up the menu that has been named in its \fBmenuName\fP
-resource.  
+The MenuButton widget is an area, often rectangular, that contains a
+text label or bitmap image.  When the mouse pointer is on the button,
+the button becomes highlighted by drawing a rectangle around its
+perimeter.  This highlighting indicates that the button is ready for
+selection.  When a mouse button is pressed, the menu button widget will
+pop up the menu that has been named in its \fBmenuName\fP resource.
 .LP
 When creating a MenuButton widget instance, 
 the following resources are retrieved from the argument list
@@ -90,7 +89,7 @@ insensitive if either it or any of its ancestors is insensitive.
 This resource should not be changed with \fBXtSetValues\fP.  It may,
 however, be queried.
 .IP background 1.5i
-An index into this widget's colormap specifing the background color of the
+An index into this widget's colormap specifying the background color of the
 widget's window.
 .IP backgroundPixmap 1.5i
 The background pixmap of this widget.  If this resource is set to
@@ -107,7 +106,7 @@ deep then the 1's will be rendered in the foreground color, and the
 pixmap directly into the window with \fBXCopyArea\fP if \fBbitmap\fP
 has a depth greater than 1.
 .IP borderColor 1.5i
-An index into this widget's colormap specifing the border color of the
+An index into this widget's colormap specifying the border color of the
 widget's window.
 .IP borderPixmap 1.5i
 The border pixmap of this widget.  If this resource is set to
@@ -121,8 +120,8 @@ A list of routines to be called when the notify action is invoked.
 The colormap that this widget wants for its window.
 .IP cornerRoundPercent 1.5i
 When a \fBShapeStyle\fP of \fBroundedRectangle\fP is used this
-resource controls the radius of the rounded corder.  The radius of the
-rounded corders is specified as a percentage of the length of the
+resource controls the radius of the rounded corner.  The radius of the
+rounded corners is specified as a percentage of the length of the
 shortest side of the widget.  This must be a positive value.
 .IP cursor 1.5i
 The cursor that will be displayed as the mouse pointer, whenever the mouse
@@ -169,7 +168,7 @@ mapped by the Toolkit when it is realized and managed.
 .IP \fBmenuName\fP 1.5i
 Specifies the name of a popup shell to popup as a menu.  The MenuButton
 will search for this name using \fBXtNameToWidget\fP starting with itself
-as the reference widget.  If it is unsucessful it will run up the widget
+as the reference widget.  If it is unsuccessful it will run up the widget
 tree using each of its ancestors as the reference widget.  If it is still
 unsuccessful it will print a warning message and give up.  Once the
 menu is found it will pop it up exclusive and spring_loaded.
@@ -186,7 +185,7 @@ rectangular buttons may only be used on a server that supports the
 \fBShape Extension\fP.  The MenuButton widget currently supports the following 
 shapes: \fBXmuShapeRectangle\fP,
 \fBXmuShapeOval\fP, \fBXmuShapeEllipse\fP, and \fBXmuShapeRoundedRectangle\fP.
-A resource conveter is registered to convert the following string
+A resource converter is registered to convert the following string
 values to shape styles: \fBrectangle\fP, \fBoval\fP, \fPellipse\fP,
 \fBroundedRectangle\fP. 
 .IP screen 1.5i
@@ -201,7 +200,7 @@ The event bindings associated with this widget.
 .br
 .ns
 .IP y 1.5i
-The location of the upper lefthand corner of this widget in its parent.
+The location of the upper left corner of this widget in its parent.
 .NH 3
 MenuButton Actions
 The MenuButton widget supports the following actions:
@@ -244,7 +243,7 @@ or \fBbackground\fP ) that matches the interior color of the
 MenuButton widget.  
 .IP \fBset\fP(\|) 1.5i
 Enters the \fIset\fP state, in which \fBnotify\fP is possible.  This
-action causes the botton to display its interior in the
+action causes the button to display its interior in the
 \fBforeground\fP color.  The label or bitmap is displayed in the
 \fBbackground\fP color. 
 .IP \fBunset\fP(\|) 1.5i
