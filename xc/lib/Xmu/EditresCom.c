@@ -1,5 +1,5 @@
 /*
- * $XConsortium: EditresCom.c,v 1.30 93/08/16 14:36:16 rws Exp $
+ * $XConsortium: EditresCom.c,v 1.31 93/09/22 16:01:58 kaleb Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -33,6 +33,7 @@
 #include <X11/Xos.h>		/* for strcpy declaration */
 #include <X11/Xaw/Cardinals.h>
 #include <X11/Xmu/EditresP.h>
+#include <X11/Xmd.h>
 
 #include <stdio.h>
 
@@ -109,6 +110,9 @@ typedef struct _Globals {
     SVErrorInfo error_info;
     ProtocolStream stream;
     ProtocolStream * command_stream; /* command stream. */
+#if defined(LONG64) || defined(WORD64)
+    unsigned long base_address;
+#endif
 } Globals;
 
 #define CURRENT_PROTOCOL_VERSION 5L
@@ -451,6 +455,9 @@ EditresEvent * event;
 
     switch(event->any_event.type) {
     case SendWidgetTree:
+#if defined(LONG64) || defined(WORD64)
+	globals.base_address = (unsigned long)w & 0xFFFFFFFF00000000;
+#endif
 	func = DumpWidgets;
 	break;
     case SetValues:
@@ -1724,6 +1731,9 @@ WidgetInfo * info;
 	    info->ids = NULL;
 	    return(FALSE);
 	}
+#if defined(LONG64) || defined(WORD64)
+	info->ids[i] |= globals.base_address;
+#endif
     }
     return(TRUE);
 }
