@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_prim.c,v 1.16 92/05/08 14:29:09 mor Exp $ */
+/* $XConsortium: pl_oc_prim.c,v 1.1 92/05/08 15:13:22 mor Exp $ */
 
 /************************************************************************
 Copyright 1987,1991,1992 by Digital Equipment Corporation, Maynard,
@@ -563,7 +563,7 @@ INPUT PEXListOfVertex	*polylines;
 	    *pData = polylines[i].count;  
 
 	PEXCopyWordsToOC (display, polylines[i].count * lenofVertex, 
-	    (char *) polylines[i].vertex.no_data);
+	    (char *) polylines[i].vertices.no_data);
     }
 
     PEXFinishOC (display);
@@ -630,7 +630,7 @@ INPUT double		tmax;
      */
 
     PEXCopyWordsToOC (display, lenofKnotList, (char *) knots);
-    PEXCopyWordsToOC (display, lenofVertexList, (char *) points.point );
+    PEXCopyWordsToOC (display, lenofVertexList, (char *) points.point);
 
     PEXFinishOC (display);
 }
@@ -865,7 +865,7 @@ INPUT PEXListOfCoord	*vertices;
 	    *pData = vertices[i].count;
 
 	PEXCopyWordsToOC (display, vertices[i].count * LENOF (PEXCoord), 
-	    (char *) vertices[i].point);
+	    (char *) vertices[i].points);
     }
 
     PEXFinishOC (display);
@@ -932,7 +932,7 @@ INPUT PEXListOfCoord2D	*vertices;
     	    *pData = vertices[i].count;  
 
 	PEXCopyWordsToOC (display, vertices[i].count * LENOF (PEXCoord2D), 
-	   (char *) vertices[i].point);
+	   (char *) vertices[i].points);
     }
 
     PEXFinishOC (display);
@@ -1025,7 +1025,7 @@ INPUT PEXListOfVertex	*vertices;
 	    *pData = vertices[j].count; 
 
 	PEXCopyWordsToOC (display, vertices[j].count * lenofVertex,
-	    (char *) vertices[j].vertex.no_data );
+	    (char *) vertices[j].vertices.no_data);
     }
 
     PEXFinishOC (display);
@@ -1363,7 +1363,7 @@ INPUT PEXListOfTrimCurve 	*trimLoops;
 	while (count--)
 	{
 	    lenofTrimData += (LENOF (pexTrimCurve) +
-		ptrimCurve->count + ptrimCurve->curve_order +  	/* knot list */
+		ptrimCurve->count + ptrimCurve->order +     /* knot list */
 		ptrimCurve->count *
 		(ptrimCurve->rationality == PEXRational ?
 		    LENOF (pexCoord3D) : LENOF (pexCoord2D)));
@@ -1425,13 +1425,13 @@ INPUT PEXListOfTrimCurve 	*trimLoops;
 	     * Add the trim curve header data.
 	     */
 
-	    thisLength = ptrimCurve->curve_order + ptrimCurve->count;
+	    thisLength = ptrimCurve->order + ptrimCurve->count;
 
 	    if (pTCHead = (pexTrimCurve *)
 		PEXGetOCAddr (display, sizeof (pexTrimCurve)))
 	    {
 		pTCHead->visibility = (pexSwitch) ptrimCurve->visibility;
-		pTCHead->order = (CARD16) ptrimCurve->curve_order;
+		pTCHead->order = (CARD16) ptrimCurve->order;
 		pTCHead->type = (pexCoordType) ptrimCurve->rationality;
 		pTCHead->approxMethod = (INT16) ptrimCurve->approx_method;
 		pTCHead->tolerance = (float) ptrimCurve->tolerance;
