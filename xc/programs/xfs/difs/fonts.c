@@ -1,4 +1,4 @@
-/* $XConsortium: fonts.c,v 1.7 91/07/16 20:23:29 keith Exp $ */
+/* $XConsortium: fonts.c,v 1.8 91/07/18 22:36:11 keith Exp $ */
 /*
  * font control
  */
@@ -705,7 +705,7 @@ do_list_fonts(client, c)
     ClientPtr   client;
     LFclosurePtr c;
 {
-    int         err;
+    int         err = Successful;
     fsListFontsReply reply;
     FontNamesPtr names;
     FontPathElementPtr fpe;
@@ -839,9 +839,6 @@ ListFonts(client, length, pattern, maxnames)
     unsigned int maxnames;
 {
     LFclosurePtr c;
-
-    if (!num_fpes)
-	return FSSuccess;
 
     c = make_list_fonts_closure(client, pattern, length, maxnames);
     if (!c)
