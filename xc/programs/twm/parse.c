@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: parse.c,v 1.4 89/04/12 18:56:01 jim Exp $
+ * $XConsortium: parse.c,v 1.5 89/07/18 17:16:08 jim Exp $
  *
  * parse the .twmrc file
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: parse.c,v 1.4 89/04/12 18:56:01 jim Exp $";
+"$XConsortium: parse.c,v 1.5 89/07/18 17:16:08 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -54,8 +54,16 @@ static FILE *twmrc;
 static int ptr = 0;
 static int len = 0;
 static char buff[BUF_LEN+1];
+static char *stringSource, *currentString;
 extern int yylineno;
 extern int mods;
+
+static int twmFileInput(), twmStringInput();
+static void twmFileUnput(), twmStringUnput();
+int (*twmInputFunc)();
+void (*twmUnputFunc)();
+
+
 
 /***********************************************************************
  *
@@ -68,16 +76,15 @@ extern int mods;
  ***********************************************************************
  */
 
-void
-ParseTwmrc(filename)
-char *filename;
+int ParseTwmrc(filename)
+    char *filename;
 {
     char *home;
     char init_file[200];
 
     mods = 0;
 
-    InitMenus();
+/*     InitMenus(); */
 
     if (filename == NULL)
     {
@@ -101,13 +108,15 @@ char *filename;
     if ((twmrc = fopen(init_file, "r")) == NULL)
     {
 	fprintf(stderr, "twm: couldn't open \"%s\"\n", init_file);
-    	return;
+    	return False;
     }
 
     ptr = 0;
     len = 0;
     yylineno = 0;
     ParseError = FALSE;
+    twmInputFunc = twmFileInput;
+    twmUnputFunc = twmFileUnput;
 
     yyparse();
 
@@ -117,14 +126,34 @@ char *filename;
     {
 	fprintf(stderr, "twm: errors found in \"%s\", twm aborting\n",
 	    init_file);
-	Done();
+/*	Done(); */
+	return False;
     }
+    return True;
 }
+
+
+int ParseString (s)
+    char *s;
+{
+    mods = 0;
+    ptr = 0;
+    len = 0;
+    yylineno = 0;
+    ParseError = FALSE;
+    twmInputFunc = twmStringInput;
+    twmUnputFunc = twmStringUnput;
+    stringSource = currentString = s;
+    
+    yyparse();
+    return (ParseError ? True : False);
+}
+
 
 /***********************************************************************
  *
  *  Procedure:
- *	TwmInput - redefinition of the lex input routine
+ *	twmFileInput - redefinition of the lex input routine for file input
  *
  *  Returned Value:
  *	the next input character
@@ -132,8 +161,7 @@ char *filename;
  ***********************************************************************
  */
 
-int
-TwmInput()
+static int twmFileInput()
 {
     while (ptr == len)
     {
@@ -148,10 +176,16 @@ TwmInput()
     return ((int)buff[ptr++]);
 }
 
+static int twmStringInput()
+{
+    return (*stringSource ? *stringSource++ : *stringSource);
+}
+
+
 /***********************************************************************
  *
  *  Procedure:
- *	TwmUnput - redefinition of the lex unput routine
+ *	twmFileUnput - redefinition of the lex unput routine
  *
  *  Inputs:
  *	c	- the character to push back onto the input stream
@@ -159,10 +193,17 @@ TwmInput()
  ***********************************************************************
  */
 
-void
-TwmUnput(c)
+static void twmFileUnput(c)
+    int c;
 {
-    buff[--ptr] = c;
+    buff[--ptr] = (char) c;
+}
+
+static void twmStringUnput(c)
+    int c;
+{
+    if (stringSource > currentString)
+      *--stringSource = (char) c;
 }
 
 /***********************************************************************
