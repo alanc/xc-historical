@@ -1,4 +1,4 @@
-/* $XConsortium: lndir.c,v 1.10 93/12/06 15:16:53 kaleb Exp $ */
+/* $XConsortium: lndir.c,v 1.11 94/01/18 21:02:22 rws Exp $ */
 /* Create shadow link tree (after X11R4 script of the same name)
    Mark Reinhold (mbr@lcs.mit.edu)/3 January 1990 */
 
@@ -66,6 +66,9 @@ extern int errno;
 #endif
 int silent;
 
+char *rcurdir;
+char *curdir;
+
 void
 quit (
 #if NeedVarargsPrototypes
@@ -89,7 +92,7 @@ quit (
 
 void
 quiterr (code, s)
-char *s;
+    char *s;
 {
     perror (s);
     exit (code);
@@ -106,6 +109,12 @@ msg (
 {
 #if NeedVarargsPrototypes
     va_list args;
+#endif
+    if (curdir) {
+	fprintf (stderr, "%s:\n", curdir);
+	curdir = 0;
+    }
+#if NeedVarargsPrototypes
     va_start(args, fmt);
     vfprintf (stderr, fmt, args);
     va_end(args);
@@ -113,6 +122,33 @@ msg (
     fprintf (stderr, fmt, a1, a2, a3);
 #endif
     putc ('\n', stderr);
+}
+
+void
+mperror (s)
+    char *s;
+{
+    if (curdir) {
+	fprintf (stderr, "%s:\n", curdir);
+	curdir = 0;
+    }
+    perror (s);
+}
+
+
+int equivalent(lname, rname)
+    char *lname;
+    char *rname;
+{
+    char *s;
+
+    if (!strcmp(lname, rname))
+	return 1;
+    for (s = lname; *s && (s = strchr(s, '/')); s++) {
+	while (s[1] == '/')
+	    strcpy(s+1, s+2);
+    }
+    return !strcmp(lname, rname);
 }
 
 
@@ -131,6 +167,8 @@ int rel;			/* if true, prepend "../" to fn before using */
     char symbuf[MAXPATHLEN + 1];
     struct stat sb, sc;
     int n_dirs;
+    int symlen;
+    char *ocurdir;
 
     if ((fs->st_dev == ts->st_dev) && (fs->st_ino == ts->st_ino)) {
 	msg ("%s: From and to directories are identical!", fn);
@@ -158,7 +196,7 @@ int rel;			/* if true, prepend "../" to fn before using */
 
 	if (n_dirs > 0) {
 	    if (stat (buf, &sb) < 0) {
-		perror (buf);
+		mperror (buf);
 		continue;
 	    }
 
@@ -180,41 +218,45 @@ int rel;			/* if true, prepend "../" to fn before using */
 		    continue;
 		if (!strcmp (dp->d_name, "CVS.adm"))
 		    continue;
+		ocurdir = rcurdir;
+		rcurdir = buf;
+		curdir = silent ? buf : (char *)0;
 		if (!silent)
 		    printf ("%s:\n", buf);
 		if ((stat (dp->d_name, &sc) < 0) && (errno == ENOENT)) {
 		    if (mkdir (dp->d_name, 0777) < 0 ||
 			stat (dp->d_name, &sc) < 0) {
-			perror (dp->d_name);
+			mperror (dp->d_name);
+			curdir = rcurdir = ocurdir;
 			continue;
 		    }
 		}
 		if (readlink (dp->d_name, symbuf, sizeof(symbuf) - 1) >= 0) {
-		    msg ("%s: is a link instead of a directory\n", dp->d_name);
+		    msg ("%s: is a link instead of a directory", dp->d_name);
+		    curdir = rcurdir = ocurdir;
 		    continue;
 		}
 		if (chdir (dp->d_name) < 0) {
-		    perror (dp->d_name);
+		    mperror (dp->d_name);
+		    curdir = rcurdir = ocurdir;
 		    continue;
 		}
 		dodir (buf, &sb, &sc, (buf[0] != '/'));
 		if (chdir ("..") < 0)
 		    quiterr (1, "..");
+		curdir = rcurdir = ocurdir;
 		continue;
 	    }
 	}
 
 	/* non-directory */
-	if (symlink (buf, dp->d_name) < 0) {
-	    int saverrno = errno;
-	    int symlen;
-	    symlen = readlink(dp->d_name, symbuf, sizeof(symbuf) - 1);
-	    errno = saverrno;
-	    if (symlen > 0)
-		symbuf[symlen] = '\0';
-	    if (symlen < 0 || strcmp(symbuf, buf))
-		perror (dp->d_name);
-	}
+	symlen = readlink (dp->d_name, symbuf, sizeof(symbuf) - 1);
+	if (symlen >= 0) {
+	    symbuf[symlen] = '\0';
+	    if (!equivalent (symbuf, buf))
+		msg ("%s: %s", dp->d_name, symbuf);
+	} else if (symlink (buf, dp->d_name) < 0)
+	    mperror (dp->d_name);
     }
 
     closedir (df);
