@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sony.cf,v 1.14 91/02/23 18:44:57 rws Exp $
+XCOMM platform:  $XConsortium: sony.cf,v 1.15 91/03/12 13:19:06 rws Exp $
 XCOMM operating system:  OSName
 
 /*
@@ -22,7 +22,6 @@ XCOMM operating system:  OSName
 #define SystemV4		YES
 #define BootstrapCFlags		-Dsony
 #define CcCmd                   /usr/bin/cc
-#define ExtraLibraries		-lsocket -lnsl
 #define HasSockets		YES
 #if BuildPex
 #define DefaultCCOptions        -Wf,-XNp15000,-XNd15000
