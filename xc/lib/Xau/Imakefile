@@ -49,6 +49,9 @@ DebuggedLibraryTarget(Xau,$(OBJS))
 
 InstallMultiple($(HEADERS),$(INCDIR))
 
+saber_src:
+	#load $(CFLAGS) $(SRCS)
+
 DependTarget()
 
 NormalLintTarget($(SRCS))
