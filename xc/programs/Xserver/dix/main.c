@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: main.c,v 1.120 87/09/01 17:12:18 toddb Locked $ */
+/* $Header: main.c,v 1.121 87/09/03 13:38:01 swick Locked $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -38,6 +38,11 @@ SOFTWARE.
 #include "cursorstr.h"
 #include "opaque.h"
 #include "vendor.h"
+
+extern long defaultScreenSaverTime;
+extern long defaultScreenSaverInterval;
+extern int defaultScreenSaverBlanking;
+extern int defaultScreenSaverAllowExposures;
 
 extern char *display;
 char *ConnectionInfo;
@@ -142,6 +147,11 @@ main(argc, argv)
     looping = 0;
     while(1)
     {
+        ScreenSaverTime = defaultScreenSaverTime;
+	ScreenSaverInterval = defaultScreenSaverInterval;
+	ScreenSaverBlanking = defaultScreenSaverBlanking;
+	ScreenSaverAllowExposures = defaultScreenSaverAllowExposures;
+
 	/* Perform any operating system dependent initializations you'd like */
 	OsInit();		
 	if(!looping)

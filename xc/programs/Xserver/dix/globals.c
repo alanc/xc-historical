@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $Header: globals.c,v 1.36 87/08/30 14:22:20 todd Exp $ */
+/* $Header: globals.c,v 1.36 87/09/01 17:09:36 swick Locked $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -74,12 +74,16 @@ WindowRec WindowTable[MAXSCREENS];
 
 unsigned long globalSerialNumber = 0;
 
-/* these next two are initialized in main.c */
+/* these next four are initialized in main.c */
+long ScreenSaverTime;
+long ScreenSaverInterval;
+int  ScreenSaverBlanking;
+int  ScreenSaverAllowExposures;
 
-long ScreenSaverTime = DEFAULT_SCREEN_SAVER_TIME;
-long ScreenSaverInterval = DEFAULT_SCREEN_SAVER_TIME;
-int  ScreenSaverBlanking = DefaultBlanking;
-int  ScreenSaverAllowExposures = DefaultExposures;
+long defaultScreenSaverTime = DEFAULT_SCREEN_SAVER_TIME;
+long defaultScreenSaverInterval = DEFAULT_SCREEN_SAVER_TIME;
+int  defaultScreenSaverBlanking = DefaultBlanking;
+int  defaultScreenSaverAllowExposures = DefaultExposures;
 
 char *defaultFontPath = COMPILEDDEFAULTFONTPATH;
 char *defaultTextFont = COMPILEDDEFAULTFONT;
