@@ -204,6 +204,8 @@ XRequest.XInputExtension.30:X_QueryDeviceState
 XRequest.XInputExtension.31:X_SendExtensionEvent
 XRequest.XInputExtension.32:X_DeviceBell
 XRequest.XInputExtension.33:X_SetDeviceValuators
+XRequest.XInputExtension.34:X_GetDeviceControl
+XRequest.XInputExtension.35:X_ChangeDeviceControl
 ! MIT-SHM extension, experimental, not an X Consortium standard
 XRequest.MIT-SHM.0: X_ShmQueryVersion
 XRequest.MIT-SHM.1: X_ShmAttach
