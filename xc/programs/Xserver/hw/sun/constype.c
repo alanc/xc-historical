@@ -1,4 +1,24 @@
 /*
+ * $xHeader$
+ * 
+ * consoletype - utility to print out string identifying Sun console type
+ *
+ * Copyright 1988 SRI 
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted, provided
+ * that the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of SRI not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission.  SRI makes no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * Author:  Doug Moran, SRI
+ */
+
+/*
 SUN-SPOTS DIGEST         Thursday, 17 March 1988       Volume 6 : Issue 31
 
 Date:    Wed, 2 Mar 88 14:50:26 PST
