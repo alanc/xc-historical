@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.46 91/03/11 14:58:00 keith Exp $ */
+/* $XConsortium: cfbgc.c,v 5.47 91/04/10 11:41:26 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -211,7 +211,8 @@ matchCommon (pGC, devPriv)
 	return 0;
     if (pGC->font &&
 	FONTMAXBOUNDS(pGC->font,rightSideBearing) -
-        FONTMINBOUNDS(pGC->font,leftSideBearing) <= 32)
+        FONTMINBOUNDS(pGC->font,leftSideBearing) <= 32 &&
+	FONTMINBOUNDS(pGC->font,characterWidth) >= 0)
     {
 	if (TERMINALFONT(pGC->font)
 #if PPW == 4
@@ -756,7 +757,8 @@ cfbValidateGC(pGC, changes, pDrawable)
     if (new_text && (pGC->font))
     {
         if (FONTMAXBOUNDS(pGC->font,rightSideBearing) -
-            FONTMINBOUNDS(pGC->font,leftSideBearing) > 32)
+            FONTMINBOUNDS(pGC->font,leftSideBearing) > 32 ||
+	    FONTMINBOUNDS(pGC->font,characterWidth) < 0)
         {
             pGC->ops->PolyGlyphBlt = miPolyGlyphBlt;
             pGC->ops->ImageGlyphBlt = miImageGlyphBlt;

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 5.20 90/05/15 18:38:25 keith Exp $ */
+/* $XConsortium: mfbgc.c,v 5.21 91/01/27 13:02:16 keith Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -355,7 +355,8 @@ matchCommon (pGC)
 	return 0;
     if (!pGC->font ||
         FONTMAXBOUNDS(pGC->font,rightSideBearing) -
-	FONTMINBOUNDS(pGC->font,leftSideBearing) > 32)
+	FONTMINBOUNDS(pGC->font,leftSideBearing) > 32 ||
+	FONTMINBOUNDS(pGC->font,characterWidth) < 0)
 	return 0;
     priv = (mfbPrivGC *) pGC->devPrivates[mfbGCPrivateIndex].ptr;
     for (i = 0; i < numberCommonOps; i++) {
@@ -900,7 +901,8 @@ mfbValidateGC(pGC, changes, pDrawable)
     {
 	if ((pGC->font) &&
 	    (FONTMAXBOUNDS(pGC->font,rightSideBearing) -
-	     FONTMINBOUNDS(pGC->font,leftSideBearing)) > 32)
+	     FONTMINBOUNDS(pGC->font,leftSideBearing)) > 32 ||
+	     FONTMINBOUNDS(pGC->font,characterWidth) < 0)
 	{
 	    pGC->ops->PolyGlyphBlt = miPolyGlyphBlt;
 	    pGC->ops->ImageGlyphBlt = miImageGlyphBlt;
