@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.82 89/05/25 15:11:42 jim Exp $
+ * $XConsortium: charproc.c,v 1.83 89/05/26 11:38:39 jim Exp $
  */
 
 
@@ -139,7 +139,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.82 89/05/25 15:11:42 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.83 89/05/26 11:38:39 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -1901,6 +1901,7 @@ static void VTallocbuf ()
 static void VTInitialize (request, new)
    XtermWidget request, new;
 {
+   int i;
    /* Zero out the entire "screen" component of "new" widget,
       then do field-by-field assigment of "screen" fields
       that are named in the resource list. */

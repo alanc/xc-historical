@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.1 89/05/24 18:11:54 jim Exp $
+ *	$XConsortium: ptyx.h,v 1.29 89/05/25 15:12:21 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -163,7 +163,12 @@ typedef struct {
 	char		gsets[4];
 } SavedCursor;
 
-#define	TEKNUMFONTS	4
+#define TEK_FONT_LARGE 0
+#define TEK_FONT_2 1
+#define TEK_FONT_3 2
+#define TEK_FONT_SMALL 3
+#define	TEKNUMFONTS 4
+
 /* Actually there are 5 types of lines, but four are non-solid lines */
 #define	TEKNUMLINES	4
 
@@ -316,9 +321,6 @@ typedef struct {
 	XPoint		**Tbox;		/* draw unselected cursor	*/
 	int		xorplane;	/* z plane for inverts		*/
 	GC		linepat[TEKNUMLINES]; /* line patterns		*/
-	XFontStruct 	*Tfont[TEKNUMFONTS]; /* Tek fonts		*/
-	int		tobaseline[TEKNUMFONTS]; /* top to baseline for
-							each font	*/
 	Boolean		TekEmu;		/* true if Tektronix emulation	*/
 	int		cur_X;		/* current x			*/
 	int		cur_Y;		/* current y			*/
@@ -345,6 +347,14 @@ typedef struct {
 	Pixmap		menu_item_bitmap;	/* mask for checking items */
 	Widget		mainMenu, vtMenu, tekMenu;
 } TScreen;
+
+typedef struct _TekPart {
+    XFontStruct *Tfont[TEKNUMFONTS];
+    int		tobaseline[TEKNUMFONTS]; /* top to baseline for each font */
+    char	*initial_font;		/* large, 2, 3, small */
+} TekPart;
+
+
 
 /* meaning of bits in screen.select flag */
 #define	INWINDOW	01	/* the mouse is in one of the windows */
@@ -410,6 +420,7 @@ typedef struct _XtermWidgetRec {
 
 typedef struct _TekWidgetRec {
     CorePart core;
+    TekPart tek;
 } TekWidgetRec, *TekWidget;
 
 #define BUF_SIZE 4096

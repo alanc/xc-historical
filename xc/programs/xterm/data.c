@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: data.c,v 1.1 89/05/24 18:11:46 jim Exp $
+ *	$XConsortium: data.c,v 1.7 89/05/25 15:12:01 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -34,7 +34,7 @@
 #include "data.h"
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: data.c,v 1.1 89/05/24 18:11:46 jim Exp $";
+static char rcs_id[] = "$XConsortium: data.c,v 1.7 89/05/25 15:12:01 jim Exp $";
 #endif	/* lint */
 
 XPoint T_boxlarge[NBOX] = {
@@ -84,13 +84,6 @@ XPoint VTbox[NBOX] = {
 	{0, 0},
 	{0, 0},
 };
-T_fontsize Tfontsize[TEKNUMFONTS] = {
-	{9, 15},	/* large */
-	{8, 13},	/* #2 */
-	{6, 13},	/* #3 */
-	{6, 10},	/* small */
-};
-
 
 #ifdef DEBUG
 int debug = 0; 		/* true causes error messages to be displayed */

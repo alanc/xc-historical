@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.4 89/05/25 15:09:49 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.56 89/05/25 15:11:26 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -79,8 +79,6 @@ extern long time();
 #define	DOTTEDLINE	1
 #define	EAST		01
 #define	ETX		03
-#define	LARGEFONT	0
-#define	LARGEFONTNAME	"9x15"
 #define	LINEMASK	07
 #define	LONGDASHEDLINE	4
 #define	MARGIN1		0
@@ -92,8 +90,6 @@ extern long time();
 #define	PENDOWN		1
 #define	PENUP		0
 #define	SHORTDASHEDLINE	3
-#define	SMALLFONT	3
-#define	SMALLFONTNAME	"6x10"
 #define	SOLIDLINE	0
 #define	SOUTH		010
 #define	TEKBOTTOMPAD	23
@@ -107,10 +103,6 @@ extern long time();
 #define	TEKTOPPAD	34
 #define	TEKWIDTH	4096
 #define	TEXT_BUF_SIZE	256
-#define	THREEFONT	2
-#define	THREEFONTNAME	"6x13"
-#define	TWOFONT		1
-#define	TWOFONTNAME	"8x13"
 #define	WEST		02
 
 #define	TekMove(x,y)	screen->cur_X = x; screen->cur_Y = y
@@ -118,7 +110,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.4 89/05/25 15:09:49 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.56 89/05/25 15:11:26 jim Exp $";
 #endif	/* lint */
 
 extern Widget toplevel;
@@ -199,6 +191,21 @@ static XtResource resources[] = {
 	 XtOffset(Widget, core.width), XtRDimension, (caddr_t)&defOne},
     {XtNheight, XtCHeight, XtRDimension, sizeof(Dimension),
 	 XtOffset(Widget, core.height), XtRDimension, (caddr_t)&defOne},
+    {"fontLarge", XtCFont, XtRFontStruct, sizeof(XFontStruct *),
+       XtOffset(TekWidget, tek.Tfont[TEK_FONT_LARGE]),
+       XtRString, "9x15"},
+    {"font2", XtCFont, XtRFontStruct, sizeof(XFontStruct *),
+       XtOffset(TekWidget, tek.Tfont[TEK_FONT_2]),
+       XtRString, "6x13"},
+    {"font3", XtCFont, XtRFontStruct, sizeof(XFontStruct *),
+       XtOffset(TekWidget, tek.Tfont[TEK_FONT_3]),
+       XtRString, "8x13"},
+    {"fontSmall", XtCFont, XtRFontStruct, sizeof(XFontStruct *),
+       XtOffset(TekWidget, tek.Tfont[TEK_FONT_SMALL]),
+       XtRString, "6x10"},
+    {"initialFont", "InitialFont", XtRString, sizeof(char *),
+       XtOffset(TekWidget, tek.initial_font),
+       XtRString, "large"},
 };
 
 static void TekInitialize(), TekRealize(), TekConfigure();
@@ -255,12 +262,7 @@ TekWidget CreateTekWidget ()
     tekshellwidget = XtCreatePopupShell ("tektronix", topLevelShellWidgetClass,
 					 toplevel, ourTopLevelShellArgs, 
 					 number_ourTopLevelShellArgs);
-/*				 
-    tekshellwidget = XtCreateApplicationShell ("tektronix",
-					       topLevelShellWidgetClass,
-					       ourTopLevelShellArgs, 
-					       number_ourTopLevelShellArgs);
- */
+
     /* this causes the Realize method to be called */
     tekWidget = (TekWidget) XtCreateManagedWidget ("tek4014", tekWidgetClass,
 						   tekshellwidget, NULL, 0);
@@ -580,10 +582,10 @@ Tekparse()
 }			
 
 TekSetGCFont (size)
-    int size;  /* one of SMALLFONT, TWOFONT, THREEFONT, or LARGEFONT */
+    int size;  /* TEK_FONT_{LARGE,2,3,SMALL} */
     {
     register TScreen *screen = &term->screen;
-    Font fid = screen->Tfont[size]->fid;
+    Font fid = tekWidget->tek.Tfont[size]->fid;
     if (fid == DefaultGCID) 
        /* we didn't succeed in opening a real font
 	  for this size.  Instead, use server default. */
@@ -1087,6 +1089,8 @@ static unsigned char *dashes[TEKNUMLINES] = {
 static void TekInitialize(request, new)
     Widget request, new;
 {
+    TekWidget r = (TekWidget) request, n = (TekWidget) new;
+
    /* look for focus related events on the shell, because we need
     * to care about the shell's border being part of our focus.
     */
@@ -1126,12 +1130,12 @@ static void TekRealize (gw, valuemaskp, values)
 
     tw->core.border_pixel = term->core.border_pixel;
 
-    if (!(screen->Tfont[SMALLFONT] = XLoadQueryFont (screen->display,
-						     SMALLFONTNAME))) {
-	fprintf(stderr, "%s: Could not get font %s; using server default\n",
-		xterm_name, SMALLFONTNAME);
-	screen->Tfont[SMALLFONT] = XQueryFont (screen->display, DefaultGCID);
+    for (i = 0; i < TEKNUMFONTS; i++) {
+	if (!tw->tek.Tfont[i]) 
+	  tw->tek.Tfont[i] = XQueryFont (screen->display, DefaultGCID);
+	tw->tek.tobaseline[i] = tw->tek.Tfont[i]->ascent;
     }
+
     if((Tbuffer = (Char *)malloc(BUF_SIZE)) == NULL ||
        (Tpushb = (Char *)malloc(10)) == NULL ||
        (Tline = (XSegment *)malloc(MAX_VTX * sizeof(XSegment))) == NULL) {
@@ -1219,7 +1223,6 @@ static void TekRealize (gw, valuemaskp, values)
       mallocfailed:
 	if(Tpushb) free((char *)Tpushb);
 	if(Tbuffer) free((char *)Tbuffer);
-	XFreeFont(screen->display, screen->Tfont[SMALLFONT]);
 	Tfailed = TRUE;
 	return;
     }
@@ -1235,27 +1238,24 @@ static void TekRealize (gw, valuemaskp, values)
 				       TEKBOTTOMPAD)) < TekScale(screen))
       TekScale(screen) = d;
     
-    screen->tobaseline[SMALLFONT] = screen->Tfont[SMALLFONT]->ascent;
 
-    if (!(screen->Tfont[THREEFONT] = XLoadQueryFont(screen->display,
-						    THREEFONTNAME)))
-      screen->Tfont[THREEFONT] = screen->Tfont[SMALLFONT];
-    screen->tobaseline[THREEFONT] = screen->Tfont[THREEFONT]->ascent;
+    screen->cur.fontsize = TEK_FONT_LARGE;
+    if (tw->tek.initial_font) {
+	char *s = tw->tek.initial_font;
 
-    if (!(screen->Tfont[TWOFONT] = XLoadQueryFont(screen->display,
-						  TWOFONTNAME)))
-      screen->Tfont[TWOFONT] = screen->Tfont[THREEFONT];
-    screen->tobaseline[TWOFONT] = screen->Tfont[TWOFONT]->ascent;
-
-    if (!(screen->Tfont[LARGEFONT] = XLoadQueryFont(screen->display,
-						    LARGEFONTNAME)))
-      screen->Tfont[LARGEFONT] = screen->Tfont[TWOFONT];
-    screen->tobaseline[LARGEFONT] = screen->Tfont[LARGEFONT]->ascent;
-
-    screen->cur.fontsize = LARGEFONT;	/* set large font	*/
+	XmuCopyISOLatin1Lowered (s, s);
+	if (strcmp (s, "large") == 0)
+	  screen->cur.fontsize = TEK_FONT_LARGE;
+	else if (strcmp (s, "2") == 0 || strcmp (s, "two") == 0)
+	  screen->cur.fontsize = TEK_FONT_2;
+	else if (strcmp (s, "3") == 0 || strcmp (s, "three") == 0)
+	  screen->cur.fontsize = TEK_FONT_3;
+	else if (strcmp (s, "small") == 0)
+	  screen->cur.fontsize = TEK_FONT_SMALL;
+    }
 
     gcv.graphics_exposures = TRUE;	/* default */
-    gcv.font = screen->Tfont[screen->cur.fontsize]->fid;
+    gcv.font = tw->tek.Tfont[screen->cur.fontsize]->fid;
     gcv.foreground = screen->Tforeground;
     gcv.background = screen->Tbackground;
     
@@ -1324,6 +1324,7 @@ static void TekRealize (gw, valuemaskp, values)
     line_pt = Tline;
     Ttoggled = TRUE;
     set_tekfont_menu_item (screen->cur.fontsize, TRUE);
+    screen->page = screen->cur;
     return;
 }
 
@@ -1336,10 +1337,12 @@ void TekSetFontSize (gw, newitem)
     int newsize = MI2FS(newitem);
     
     if (oldsize == newsize) return;
+    if (!Ttoggled) TCursorToggle(TOGGLE);
     set_tekfont_menu_item (oldsize, FALSE);
     TekSetGCFont (newsize);
     screen->cur.fontsize = newsize;
     set_tekfont_menu_item (newsize, TRUE);
+    if (!Ttoggled) TCursorToggle(TOGGLE);
 }
 
 TekReverseVideo(screen)
@@ -1399,22 +1402,23 @@ int toggle;
 {
 	register TScreen *screen = &term->screen;
 	register int c, x, y;
-	register T_fontsize *Tf;
+	unsigned int cellwidth, cellheight;
 
 	if (!screen->Tshow) return;
 
 	c = screen->cur.fontsize;
-	Tf = &Tfontsize[c];
+	cellwidth = (unsigned) tekWidget->tek.Tfont[c]->max_bounds.width;
+	cellheight = (unsigned) (tekWidget->tek.Tfont[c]->ascent + 
+				 tekWidget->tek.Tfont[c]->descent);
 
 	x = (screen->cur_X * TekScale(screen)) + screen->border;
 	y = ((TEKHEIGHT + TEKTOPPAD - screen->cur_Y) * TekScale(screen)) +
-	 screen->border - screen->tobaseline[c];
+	 screen->border - tekWidget->tek.tobaseline[c];
 	if (toggle) {
 	   if (screen->select || screen->always_highlight) 
 		XFillRectangle(
 		    screen->display, TWindow(screen), screen->TcursorGC,
-		    x, y,
-		    (unsigned) Tf->Twidth, (unsigned) Tf->Theight);
+		    x, y, cellwidth, cellheight);
 	  else { /* fix to use different GC! */
 		  screen->Tbox[c]->x = x;
 		  screen->Tbox[c]->y = y ;
@@ -1425,7 +1429,7 @@ int toggle;
 	} else {
 	   if (screen->select || screen->always_highlight) 
 		XClearArea(screen->display, TWindow(screen), x, y,
-		    (unsigned) Tf->Twidth, (unsigned) Tf->Theight, FALSE);
+			   cellwidth, cellheight, FALSE);
 	   else { 
 		  screen->Tbox[c]->x = x;
 		  screen->Tbox[c]->y = y ;

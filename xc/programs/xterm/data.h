@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: data.h,v 1.1 89/05/24 18:11:47 jim Exp $
+ *	$XConsortium: data.h,v 1.6 89/05/25 15:12:02 jim Exp $
  */
 
 
@@ -38,7 +38,6 @@ extern XPoint T_box3[];
 extern XPoint T_boxlarge[];
 extern XPoint T_boxsmall[];
 extern XPoint VTbox[];
-extern T_fontsize Tfontsize[];
 extern Char *Tbptr;
 extern Char *Tbuffer;
 extern Char *Tpushb;
