@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.112 91/04/28 18:05:32 converse Exp $ */
+/* $XConsortium: TMparse.c,v 1.113 91/05/05 19:57:53 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1591,8 +1591,11 @@ static String ParseString(str, strP)
 	prev_len = 0;
 
 	while (*str != '"' && *str != '\0') {
-	    /* allow \\ to produce \ and allow \" to produce " */
-	    if (*str == '\\' && (*(str+1) == '\\' || *(str+1) == '"')) {
+	    /* \"  produces double quote embedded in a quoted parameter
+	     * \\" produces backslash as last character of a quoted parameter
+	     */
+	    if (*str == '\\' && 
+		(*(str+1) == '"' || (*(str+1) == '\\' && *(str+2) == '"'))) {
 		len = prev_len + (str-start+2);
 		*strP = XtRealloc(*strP, len);
 		bcopy(start, *strP + prev_len, str-start);
