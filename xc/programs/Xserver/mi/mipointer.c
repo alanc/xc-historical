@@ -2,7 +2,7 @@
  * mipointer.c
  */
 
-/* $XConsortium: mipointer.c,v 5.13 91/07/12 19:59:51 keith Exp $ */
+/* $XConsortium: mipointer.c,v 5.14 91/07/19 23:20:14 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -226,6 +226,7 @@ miPointerSetCursorPosition(pScreen, x, y, generateEvent)
     	(*miPointer.pPointer->processInputProc) (&e, miPointer.pPointer, 1);
     }
     miPointerUpdate ();
+    return TRUE;
 }
 
 /* Once signals are ignored, the WarpCursor function can call this */
