@@ -1,4 +1,4 @@
-/* $XConsortium: info.c,v 1.20 94/12/12 20:02:32 mor Exp mor $ */
+/* $XConsortium: info.c,v 1.21 94/12/14 20:00:15 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -27,6 +27,15 @@ in this Software without prior written authorization from the X Consortium.
 
 #include "xsm.h"
 #include "restart.h"
+
+#include <X11/Shell.h>
+#include <X11/Xaw/Form.h>
+#include <X11/Xaw/List.h>
+#include <X11/Xaw/Command.h>
+#include <X11/Xaw/SimpleMenu.h>
+#include <X11/Xaw/MenuButton.h>
+#include <X11/Xaw/SmeBSB.h>
+#include <X11/Xaw/AsciiText.h>
 
 static Pixmap checkBitmap;
 

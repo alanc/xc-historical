@@ -1,4 +1,4 @@
-/* $XConsortium: mainwin.c,v 1.5 94/11/30 17:57:12 mor Exp mor $ */
+/* $XConsortium: mainwin.c,v 1.6 94/12/12 19:55:19 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -29,6 +29,13 @@ in this Software without prior written authorization from the X Consortium.
 #include "info.h"
 #include "save.h"
 #include "log.h"
+
+#include <X11/Shell.h>
+#include <X11/Xaw/Form.h>
+#include <X11/Xaw/Command.h>
+#include <X11/Xaw/SimpleMenu.h>
+#include <X11/Xaw/MenuButton.h>
+#include <X11/Xaw/SmeBSB.h>
 
 Widget mainWindow;
 Widget   clientInfoButton;

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: log.c,v 1.1 94/12/12 20:09:36 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -27,6 +27,11 @@ in this Software without prior written authorization from the X Consortium.
 
 #include "xsm.h"
 #include "save.h"
+
+#include <X11/Shell.h>
+#include <X11/Xaw/Form.h>
+#include <X11/Xaw/Command.h>
+#include <X11/Xaw/AsciiText.h>
 
 Widget logPopup;
 Widget   logForm;
