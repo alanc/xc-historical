@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: resize.c,v 1.25 91/07/09 18:02:37 gildea Exp $
+ *	$XConsortium: resize.c,v 1.26 91/07/15 12:10:27 rws Exp $
  */
 
 /*
@@ -32,7 +32,7 @@
 #include <stdio.h>
 #include <ctype.h>
 
-#ifdef att
+#if defined(att) || (defined(SYSV) && defined(SYSV386))
 #define ATT
 #endif
 
