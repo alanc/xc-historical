@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Command.c,v 1.51 89/05/18 16:18:16 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Command.c,v 1.52 89/06/07 17:20:22 swick Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -200,7 +200,8 @@ CommandWidget cbw;
   static Region outerRegion = NULL, innerRegion, emptyRegion;
   XRectangle rect;
 
-  if (cbw->command.highlight_thickness > Min(cbw->core.width,
+  if (cbw->command.highlight_thickness == 0 ||
+      cbw->command.highlight_thickness > Min(cbw->core.width,
 					     cbw->core.height)/2)
     return(NULL);
 
@@ -395,7 +396,10 @@ Boolean change;
       cbw->label.normal_GC = cbw->command.normal_GC;
 
   if (cbw->command.highlight_thickness <= 0)
+  {
     (*SuperClass->core_class.expose) (w, (XEvent *) NULL, region);
+    return;
+  }
 
 /*
  * If we are set then use the same colors as if we are not highlighted. 
