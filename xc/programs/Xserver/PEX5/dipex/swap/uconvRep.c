@@ -1,4 +1,4 @@
-/* $XConsortium: uconvRep.c,v 5.12 92/11/09 18:50:33 hersh Exp $ */
+/* $XConsortium: uconvRep.c,v 5.13 92/11/16 13:31:38 mor Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -976,13 +976,14 @@ pexQueryTextExtentsReq	    *strmPtr;
 pexQueryTextExtentsReply    *reply;
 {
     pexSwap *swapPtr = cntxtPtr->swap;
-    CARD32 numInfo, *ptr = (CARD32 *)(reply+1);
+    CARD32 numInfo;
+
+    numInfo = reply->length / 6;
 
     SWAP_CARD16 (reply->sequenceNumber);
     SWAP_CARD32 (reply->length);	/* not 0 */
 
-    numInfo = *ptr++ / 6;
-    SwapExtentInfo (swapPtr, numInfo, (pexExtentInfo *)ptr);
+    SwapExtentInfo (swapPtr, numInfo, (pexExtentInfo *) (reply + 1));
 }
 
 void
