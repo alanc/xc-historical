@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: Login.c,v 1.20 89/12/10 16:21:46 rws Exp $
+ * $XConsortium: Login.c,v 1.21 89/12/12 13:58:52 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -244,9 +244,9 @@ EraseCursor (w)
 }
 
 /*ARGSUSED*/
-failTimeout (client_data, id)
-    caddr_t	client_data;
-    XtIntervalId	id;
+void failTimeout (client_data, id)
+    XtPointer	client_data;
+    XtIntervalId *	id;
 {
     LoginWidget	w = (LoginWidget)client_data;
 
@@ -267,9 +267,9 @@ DrawFail (ctx)
     RedrawFail (w);
     if (w->login.failTimeout > 0) {
 	Debug ("failTimeout: %d\n", w->login.failTimeout);
-	XtAppAddTimeOut(XtWidgetToApplicationContext (w),
+	XtAppAddTimeOut(XtWidgetToApplicationContext ((Widget)w),
 			w->login.failTimeout * 1000,
-		        failTimeout, (caddr_t) w);
+		        failTimeout, (XtPointer) w);
     }
 }
 
