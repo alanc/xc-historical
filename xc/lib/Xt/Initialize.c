@@ -37,6 +37,7 @@ static char *sccsid = "@(#)Initialize.c	1.0	8/2787";
  /* things like Window, Display, XEvent are defined herein */
 #include "Intrinsic.h"
 #include "Atoms.h"
+#include "TopLevel.h"
 /*
  This is a set of default records describing the command line arguments that
  Xlib will parse and set into the resource data base.
@@ -52,16 +53,8 @@ static char *sccsid = "@(#)Initialize.c	1.0	8/2787";
 #define XtCIconic	"Iconic"
 #define XtNinitial	"initialstate"
 #define XtCInitial	"InitialState"
-#define XtNiconName	"iconName"
-#define XtCIconName	"IconName"
-#define XtNiconPixmap	"iconPixmap"
-#define XtCIconPixmap	"IconPixmap"
-#define XtNallowtopresize	"allowTopResizeRequest"
-#define XtCAllowtopresize	"AllowTopResizeRequest"
 #define XtNgeometry	"geometry"
 #define XtCGeometry	"Geometry"
-#define XtNtitle	"title"
-#define XtCTitle	"Title"
 
 static XrmOptionDescRec opTable[] = {
 {"=",		XtNgeometry,	XrmoptionIsArg,		(caddr_t) NULL},
@@ -91,6 +84,7 @@ typedef struct {
 	char	   *icon_name;
 	char	   *title;
 	Pixmap	    icon_pixmap;
+	Window	    icon_window;
 	Boolean	    iconic;
 	Boolean	    input;
 	Boolean	    resizeable;
@@ -118,6 +112,9 @@ static Resource resources[]=
 	{ XtNiconPixmap, XtCIconPixmap, XrmRPixmap, sizeof(caddr_t),
 	    Offset(TopLevelWidget, top.icon_pixmap), XrmRPixmap, 
 	    (caddr_t) NULL},
+	{ XtNiconWindow, XtCIconWindow, XrmRWindow, sizeof(caddr_t),
+	    Offset(TopLevelWidget, top.icon_window), XrmRWindow, 
+	    (caddr_t) NULL},
 	{ XtNallowtopresize, XtCAllowtopresize, XrmRBoolean, sizeof(Boolean),
 	    Offset(TopLevelWidget, top.resizeable), XrmRString, "FALSE"},
 	{ XtNgeometry, XtCGeometry, XrmRString, sizeof(caddr_t), 
@@ -139,10 +136,13 @@ static void ChangeManaged(); /* XXX */
 static XtGeometryReturnCode GeometryManager();
 static void EventHandler();
 
-static struct {
+typedef struct _TopLevelWidgetClassData {
   	CoreClass coreclass;
 	CompositeClass compositeclass;
-} TopLevelWidgetClassData = {
+} *TopLevelWidgetClass;
+
+
+TopLevelWidgetClassData topLevelWidgetClassData = {
     /* superclass         */    (WidgetClass) &compositeWidgetClassData,
     /* class_name         */    "TopLevel",
     /* size               */    sizeof(TopLevelWidgetData),
@@ -207,11 +207,11 @@ XXX */
 
  */
 static XrmResourceDataBase *
-XGetUsersDataBase(dpy, name, userResources )
+XGetUsersDataBase(dpy, name)
 Display dpy;
 char *name;
-XrmResourceDataBase *userResources;
 {
+	XrmResourceDataBase userResources;
 	XrmResourceDataBase resources;
 	int uid;
 	extern struct passwd *getpwuid();
@@ -224,9 +224,9 @@ XrmResourceDataBase *userResources;
 		f = fopen(name, "r");
 		if (f) {
 			XrmGetCurrentDataBase(&resources);
-			XrmGetDataBase(f, userResources);
-			XrmMergeDataBases(*userResources, &resources);
-			XrmSetCurrentDataBase(*userResources);
+			XrmGetDataBase(f, &userResources);
+			XrmMergeDataBases(userResources, &resources);
+			XrmSetCurrentDataBase(userResources);
 			(void) fclose(f);
 		}
 	} 
@@ -246,9 +246,9 @@ XrmResourceDataBase *userResources;
 			f = fopen(filename, "r");
 			if (f) {
 				XrmGetCurrentDataBase(&resources);
-				XrmGetDataBase(f, userResources);
-				XrmMergeDataBases(*userResources, &resources);
-				XrmSetCurrentDataBase(*userResources);
+				XrmGetDataBase(f, &userResources);
+				XrmMergeDataBases(userResources, &resources);
+				XrmSetCurrentDataBase(userResources);
 				(void) fclose(f);
 			}
 		}
@@ -298,7 +298,7 @@ XSetWindowAttributes *attr;
 {
 	TopLevelWidget w = (TopLevelWidget) wid;
 	Window win;
-	Display *dpy = w->core.screen->display;
+	Display *dpy = XtDisplay(w);
 	char hostname[1024];
 	XWMHints wmhints;
 
@@ -317,8 +317,6 @@ XSetWindowAttributes *attr;
 
 /* now hide everything needed to set the properties until realize is called */
 	wmhints.flags = 0;
-	/* tell the window manager that I am interested in input */
-	/* output only application should set this to false */
 	wmhints.flags |= InputHint ;
 	if(w->top.input)
 	  wmhints.input = TRUE;
@@ -329,6 +327,14 @@ XSetWindowAttributes *attr;
 	wmhints.initial_state = w->top.initial;
 	if(w->top.iconic)
 	  wmhints.initial_state = IconicState;
+	if(w->top.icon_pixmap != NULL) {
+		wmhints.flags |=  IconPixmapHint;
+		wmhints.icon_pixmap = w->top.icon_pixmap;
+	}
+	if(w->top.icon_window != NULL) {
+		wmhints.flags |=  IconWindowHint;
+		wmhints.icon_window = w->top.icon_window;
+	}
 	XSetWMHints( dpy, win, &wmhints);
 	XSetHostName(dpy, win, hostname);
 	XSetClass(dpy, win, w->top.classname);/* And w->core.name XXX*/
@@ -454,8 +460,8 @@ WidgetGeometry *reply;
 		return(XtgeometryYes);
 	}
 	values = *(XWindowChanges *) (&(request->x));
-	XGrabServer(w->core.screen->display);
-	XGetNormalHints(w->core.screen->display, w->core.window, &oldhints);
+	XGrabServer(XtDisplay(w));
+	XGetNormalHints(XtDisplay(w), w->core.window, &oldhints);
         if(request->request_mode & CWWidth) {
                 oldhints.flags &= ~USSize;
                 oldhints.flags |= PSize;
@@ -466,17 +472,67 @@ WidgetGeometry *reply;
                 oldhints.flags |= PSize;
                 oldhints.height = request->height;
         }
-        XSetNormalHints(w->core.screen->display, w->core.window, &oldhints);
-	XConfigureWindow(w->core.screen->display, w->core.window,
+        XSetNormalHints(XtDisplay(w), w->core.window, &oldhints);
+	XConfigureWindow(XtDisplay(w), w->core.window,
 		 (XWindowChanges *)&(request->x), request->request_mode);
-	XUngrabServer(w->core.screen->display);
+	XUngrabServer(XtDisplay(w));
 	return(XtgeometryNo);
 }
 
 Setvalues(old,new)
 Widget *old, *new;
 {
+	XWMHints wmhints, *oldhints;
+	TopLevelWidget nw = (TopLevelWidget) new;
+	TopLevelWidget ow = (TopLevelWidget) old;
+	Boolean name = FALSE;
+	Boolean pixmap = FALSE;
+	Boolean window = FALSE;
+	Boolean title = FALSE;
+	
+	ow-> top.resizeable =  nw -> top.resizeable;
+	if(ow ->top.icon_name != nw->top.icon_name) {
+		ow ->top.icon_name = nw->top.icon_name;
+		name = TRUE;
+	}
+/*XXX Leak allert  These should be copied and freed but I am lazy */
+	if(ow ->top.icon_pixmap != nw->top.icon_pixmap) {
+		ow ->top.icon_pixmap = nw->top.icon_pixmap;
+		pixmap = TRUE;
+	}
+	if(ow ->top.icon_window != nw->top.icon_window) {
+		ow ->top.icon_window = nw->top.icon_window;
+		window = TRUE;
+	}
+	if(ow ->top.title != nw->top.title) {
+		ow ->top.title = nw->top.title;
+		name = TRUE;
+	}
+	if((name || pixmap || window || title) && IsRealized(ow)) {
+		if(name) {
+			XSetIconName(XtDisplay(ow), ow->core.window, ow->top.icon_name);
+		}
+		if( title ) {
+			XStoreName(XtDisplay(ow), ow->core.window, ow->top.title);
+		}
+		if(pixmap || window) {
+			oldhints = XGetWMHints(XtDisplay(ow), ow->core.window);
+			wmhints = *oldhints;
+			XtFree(oldhints);
+			if(pixmap) {
+				wmhints.flags |= IconPixmapHint;
+				wmhints.icon_pixmap = ow->top.icon_pixmap;
+			}
+			if(window) {
+				wmhints.flags |= IconWindowHint;
+				wmhints.icon_window = ow->top.icon_window;
+			}
+			XSetWMHints( XtDisplay(ow), ow->core.window, &wmhints);
+		}
+	}
+
 /* I don't let people play with my values */
+	
 }
 
 /*
@@ -485,14 +541,13 @@ Widget *old, *new;
  */
 
 Display *
-XtInitialize(urlist, urlistCount, argc, argv, name, classname, prdb, root)
+XtInitialize(urlist, urlistCount, argc, argv, name, classname, root)
 Resource *urlist;
 int	urlistCount;
 Cardinal  *argc;
 char *argv[];
 char *name;
 char *classname;
-XrmResourceDataBase *prdb;
 Widget root;
 {
 	char  displayName[256];
@@ -505,11 +560,16 @@ Widget root;
 	char **saved_argv;
 	int    saved_argc = *argc;
 	Display *dpy;
+	char *ptr, *rindex();
 	TopLevelWidget w;
 
 
 	if( name == NULL) {
-		name = argv[0];
+	  	ptr = rindex(argv[0], '/');
+		if(ptr)
+		  name = ++ ptr;
+		else
+		  name = argv[0];
 	}
 
 	/* save away argv and argc so I can set the properties latter */
@@ -559,7 +619,7 @@ Widget root;
 	strcat(filename, classname);
 
 	/*set up resource database */
-	XGetUsersDataBase(dpy, filename, prdb);
+	XGetUsersDataBase(dpy, filename);
 
 	/*
 	   This routine parses the command line arguments and removes them from
@@ -577,7 +637,7 @@ Widget root;
 	/*
 	     Create the top level widget.
 	 */
-	root = XtWidgetCreate(name, &TopLevelWidgetClassData, NULL,
+	root = XtWidgetCreate(name, topLevelWidgetClass, NULL,
 			       args, argCount);
 
 	w = (TopLevelWidget) root;
