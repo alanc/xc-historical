@@ -1,4 +1,4 @@
-/* $XConsortium: Alloc.c,v 1.47 92/02/21 13:11:23 converse Exp $ */
+/* $XConsortium: Alloc.c,v 1.48 93/08/27 16:26:58 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -168,13 +168,7 @@ char* _XtHeapAlloc(heap, bytes)
 	heap->current = heap_loc + sizeof(char*);
 	heap->bytes_remaining = HEAP_SEGMENT_SIZE - sizeof(char*);
     }
-#ifdef WORD64
-    /* round to nearest 8-byte boundary */
-    bytes = (bytes + 7) & (~7);
-#else
-    /* round to nearest 4-byte boundary */
-    bytes = (bytes + 3) & (~3);
-#endif /* WORD64 */
+    bytes = (bytes + (sizeof(long) - 1)) & (~(sizeof(long) - 1));
     heap_loc = heap->current;
     heap->current += bytes;
     heap->bytes_remaining -= bytes; /* can be negative, if rounded */
