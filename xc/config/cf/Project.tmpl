@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.161 93/07/14 10:55:30 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.162 93/07/14 11:43:14 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -194,26 +194,6 @@ XCOMM $XConsortium: Project.tmpl,v 1.161 93/07/14 10:55:30 rws Exp $
 #define ThreadedX		NO
 #endif
 #endif
-#ifndef ManDirectoryRoot
-#ifdef ProjectRoot
-#define ManDirectoryRoot Concat(ProjectRoot,/man)
-#ifndef XmanLocalSearchPath
-#define XmanLocalSearchPath ManDirectoryRoot
-#endif
-#else
-#if SystemV4
-#define ManDirectoryRoot /usr/share/man
-#else
-#define ManDirectoryRoot /usr/man
-#endif
-#endif
-#endif
-#ifndef ManSuffix
-#define ManSuffix	n		/* use just one tab or cpp will die */
-#endif
-#ifndef LibManSuffix
-#define LibManSuffix	3		/* use just one tab or cpp will die */
-#endif
 #ifndef HasXdmAuth
 #define HasXdmAuth		NO	/* if you can not use XDM-AUTH* */
 #endif
@@ -396,9 +376,6 @@ XCOMM $XConsortium: Project.tmpl,v 1.161 93/07/14 10:55:30 rws Exp $
 #ifndef ConfigDir
 #define ConfigDir $(LIBDIR)/config
 #endif
-#ifndef LintlibDir
-#define LintlibDir $(USRLIBDIR)/lint
-#endif
 #ifndef FontDir
 #define FontDir $(LIBDIR)/fonts
 #endif
@@ -416,18 +393,6 @@ XCOMM $XConsortium: Project.tmpl,v 1.161 93/07/14 10:55:30 rws Exp $
 #endif
 #ifndef TwmDir
 #define TwmDir $(LIBDIR)/twm
-#endif
-#ifndef ManPath
-#define ManPath ManDirectoryRoot
-#endif
-#ifndef ManSourcePath
-#define ManSourcePath $(MANPATH)/man
-#endif
-#ifndef ManDir
-#define ManDir $(MANSOURCEPATH)$(MANSUFFIX)
-#endif
-#ifndef LibmanDir
-#define LibmanDir $(MANSOURCEPATH)$(LIBMANSUFFIX)
 #endif
 #ifndef NlsDir
 #define NlsDir $(LIBDIR)/nls
@@ -471,24 +436,8 @@ XCOMM $XConsortium: Project.tmpl,v 1.161 93/07/14 10:55:30 rws Exp $
 #ifndef DefaultSystemShell		/* for xdm to set in SHELL */
 #define DefaultSystemShell BourneShell
 #endif
-#ifndef UseCCMakeDepend			/* use slow cc -E script */
-#define UseCCMakeDepend NO
-#endif
-#ifndef DependDir
-#if UseCCMakeDepend
-#define DependDir $(SCRIPTSRC)
-#else
-#define DependDir $(UTILSRC)/makedepend
-#endif
-#endif
 #ifndef ContribDir
 #define ContribDir $(TOP)/../contrib	/* contrib is outside core tree */
-#endif
-#ifndef DependCmd
-#define DependCmd $(DEPENDSRC)/makedepend
-#endif
-#ifndef RemoveTargetProgramByMoving
-#define RemoveTargetProgramByMoving NO
 #endif
 #ifndef AllocateLocalDefines
 #define AllocateLocalDefines /**/
@@ -594,30 +543,18 @@ XCOMM X Window System make variables; this need to be coordinated with rules
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
  * Makefile.
  */
-          PATHSEP = /			/* for building filenames */
-        USRLIBDIR = UsrLibDir		/* nonshared libraries */
-         SHLIBDIR = ShLibDir            /* shared libraries */
            BINDIR = BinDir		/* programs */
-          INCROOT = IncRoot		/* base of where to put header files */
      BUILDINCROOT = BuildIncRoot	/* base of build loc */
       BUILDINCDIR = $(BUILDINCROOT)/X11
       BUILDINCTOP = BuildIncTop		/* top relative to BUILDINCDIR */
            INCDIR = $(INCROOT)/X11	/* header files, must end in X11 */
            ADMDIR = AdmDir		/* server log files */
            LIBDIR = LibDir		/* rgb, XErrorDB, etc. */
-        CONFIGDIR = ConfigDir		/* build configuration information */
-       LINTLIBDIR = LintlibDir		/* lint libraries */
 
           FONTDIR = FontDir		/* font directories */
          XINITDIR = XinitDir		/* xinit config files */
            XDMDIR = XdmDir		/* xdm config files */
            TWMDIR = TwmDir		/* twm config files */
-          MANPATH = ManPath		/* top of manual page tree */
-    MANSOURCEPATH = ManSourcePath	/* prefix for man page sources */
-        MANSUFFIX = ManSuffix		/* suffix for man pages */
-     LIBMANSUFFIX = LibManSuffix	/* suffix for library man pages */
-           MANDIR = ManDir		/* man pages for commands */
-        LIBMANDIR = LibmanDir		/* man pages for library routines */
            NLSDIR = NlsDir		/* nls files */
         PEXAPIDIR = PexApiDir		/* PEX support files */
       XAPPLOADDIR = XAppLoadDir		/* application default resource dir */
@@ -626,8 +563,6 @@ XCOMM X Window System make variables; this need to be coordinated with rules
      INSTAPPFLAGS = $(INSTDATFLAGS)	/* XXX - this should go away - XXX */
 
 #ifdef UseInstalled
-            IMAKE = imake		/* assume BINDIR in path */
-           DEPEND = makedepend		/* assume BINDIR in path */
               RGB = rgb			/* assume BINDIR in path */
 #ifdef SnfFonts
             FONTC = bdftosnf		/* assume BINDIR in path */
@@ -635,10 +570,7 @@ XCOMM X Window System make variables; this need to be coordinated with rules
             FONTC = bdftopcf		/* assume BINDIR in path */
 #endif
         MKFONTDIR = mkfontdir		/* assume BINDIR in path */
-        MKDIRHIER = BourneShell $(BINDIR)/mkdirhier
 #else
-            IMAKE = $(IMAKESRC)/imake
-           DEPEND = DependCmd
               RGB = $(RGBSRC)/rgb
 #ifdef SnfFonts
             FONTC = $(BDFTOSNFSRC)/bdftosnf
@@ -646,10 +578,8 @@ XCOMM X Window System make variables; this need to be coordinated with rules
             FONTC = $(BDFTOPCFSRC)/bdftopcf
 #endif
         MKFONTDIR = $(MKFONTDIRSRC)/mkfontdir
-        MKDIRHIER = BourneShell $(SCRIPTSRC)/mkdirhier.sh
 #endif
 
-        CONFIGSRC = $(TOP)/config
        DOCUTILSRC = $(TOP)/doc/util
         CLIENTSRC = $(TOP)/clients
           DEMOSRC = $(TOP)/demos
@@ -657,14 +587,10 @@ XCOMM X Window System make variables; this need to be coordinated with rules
           FONTSRC = $(TOP)/fonts
        INCLUDESRC = $(TOP)/X11
         SERVERSRC = $(TOP)/server
-          UTILSRC = $(TOP)/util
-        SCRIPTSRC = $(UTILSRC)/scripts
        EXAMPLESRC = $(TOP)/examples
        CONTRIBSRC = ContribDir
            DOCSRC = $(TOP)/doc
            RGBSRC = $(TOP)/rgb
-        DEPENDSRC = DependDir
-         IMAKESRC = $(CONFIGSRC)
          XAUTHSRC = $(LIBSRC)/Xau
           XLIBSRC = $(LIBSRC)/X
            XMUSRC = $(LIBSRC)/Xmu
