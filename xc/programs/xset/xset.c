@@ -1,5 +1,5 @@
 /* 
- * $XConsortium: xset.c,v 1.55 90/07/21 14:07:37 rws Exp $ 
+ * $XConsortium: xset.c,v 1.56 91/01/06 12:13:55 rws Exp $ 
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985	*/
@@ -16,12 +16,13 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
 
-/* $XConsortium: xset.c,v 1.55 90/07/21 14:07:37 rws Exp $ */
+/* $XConsortium: xset.c,v 1.56 91/01/06 12:13:55 rws Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
 
 #include <X11/Xos.h>
+#include <X11/Xfuncs.h>
 #include <X11/Xlib.h>
 /*  #include <X11/Xlibwm.h>  [Doesn't exist yet  5-14-87]  %*/
 #include <X11/keysym.h>

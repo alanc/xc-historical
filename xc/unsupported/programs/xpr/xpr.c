@@ -1,3 +1,5 @@
+/* $XConsortium: xpr.c,v 1.48 91/01/06 12:11:03 rws Exp $ */
+
 /*
  * XPR - process xwd(1) files for the LN03 or LA100 printer
  *
@@ -42,11 +44,8 @@
  *
  */
 
-#ifndef lint
-static char *rcsid_xpr_c = "$XConsortium: xpr.c,v 1.47 90/07/20 06:49:11 rws Exp $";
-#endif
-
 #include <X11/Xos.h>
+#include <X11/Xfuncs.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <stdio.h>

@@ -1,4 +1,4 @@
-/* $XConsortium: xprop.c,v 1.31 90/08/13 11:09:57 converse Exp $*/
+/* $XConsortium: xprop.c,v 1.32 91/01/08 12:02:51 converse Exp $*/
 /*
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -22,6 +22,7 @@
  */
 	
 #include <X11/Xos.h>
+#include <X11/Xfuncs.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <stdio.h>

@@ -1,9 +1,9 @@
 /*
- *	$XConsortium: x2pmp.c,v 1.7 89/07/21 14:19:22 jim Exp $
+ *	$XConsortium: x2pmp.c,v 1.8 89/10/08 12:23:11 rws Exp $
  */
 
 #ifndef lint
-static char *rcsid_x2pmp_c = "$XConsortium: x2pmp.c,v 1.7 89/07/21 14:19:22 jim Exp $";
+static char *rcsid_x2pmp_c = "$XConsortium: x2pmp.c,v 1.8 89/10/08 12:23:11 rws Exp $";
 #endif /* lint */
 
 /* x2pmp.c: Translate xwd window dump format into PMP format for the
