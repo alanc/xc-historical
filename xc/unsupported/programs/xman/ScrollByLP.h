@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: ScrollByLP.h,v 1.6 89/12/07 15:47:15 kit Exp $
+ * $XConsortium: ScrollByLP.h,v 1.7 91/06/08 18:15:21 rws Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -53,9 +53,10 @@ typedef struct _ScrollByLinePart {
     use_right;			/* put scroll bar on right side of window. */
   FILE * file;			/* The file to display. */
   Dimension indent;		/* amount to indent the file. */
-  XFontStruct * bold_font,	/* The three fonts. */
+  XFontStruct * bold_font,	/* The four fonts. */
     * normal_font,
-    * italic_font;
+    * italic_font,
+    * symbol_font;
   
 /* variables not in resource list. */
 
@@ -65,7 +66,7 @@ typedef struct _ScrollByLinePart {
 				   of the window being displayed. */
   Dimension offset;		/* Drawing offset because of scrollbar. */
   GC move_gc;			/* GC to use when moving the text. */
-  GC bold_gc, normal_gc, italic_gc; /* gc for drawing. */
+  GC bold_gc, normal_gc, italic_gc, symbol_gc; /* gc for drawing. */
 
   char ** top_line;		/* The top line of the file. */
   int lines;			/* number of line in the file. */
