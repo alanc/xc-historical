@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Convert.c,v 1.33 89/10/09 14:04:37 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Convert.c,v 1.34 89/11/15 10:37:31 swick Exp $";
 /* $oHeader: Convert.c,v 1.4 88/09/01 11:10:44 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -456,6 +456,11 @@ static void ComputeArgs(widget, convert_args, num_args, args)
 	    args[i].addr = (XtPointer) &(convert_args[i].address_id);
 	    break;
 
+	case XtProcedureArg:
+	    (*(XtConvertArgProc)convert_args[i].address_id)
+		(widget, &convert_args[i].size, &args[i]);
+	    break;
+
 	case XtResourceString:
 	    /* Convert in place for next usage */
 	    convert_args[i].address_mode = XtResourceQuark;
@@ -480,6 +485,14 @@ static void ComputeArgs(widget, convert_args, num_args, args)
 	    args[i].addr = (XtPointer)widget + offset;
 #endif
 	    break;
+	default:
+	    params[0] = XtName(widget);
+	    XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+		"invalidAddressMode", "computeArgs", "XtToolkitError",
+		"Conversion arguments for widget '%s' contain an unsupported address mode",
+			params,&num_params);
+	    args[i].addr = NULL;
+	    args[i].size = 0;
 	} /* switch */
     } /* for */
 } /* ComputeArgs */
