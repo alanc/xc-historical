@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: authstr.h,v 1.2 91/05/13 16:47:55 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -29,7 +29,7 @@
 #define _AUTHSTR_H_
 #include	"auth.h"
 
-struct _authcontext {
+typedef struct _authcontext {
     char       *authname;
     char       *authdata;
     FSID        acid;
