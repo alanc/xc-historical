@@ -1,5 +1,4 @@
-/* $XConsortium: TranslateI.h,v 1.5 88/09/06 09:42:37 swick Exp $ */
-/* $Header: TranslateI.h,v 1.5 88/09/06 09:42:37 swick Exp $ */
+/* $XConsortium: TranslateI.h,v 1.6 88/09/06 14:06:16 swick Exp $ */
 /* $oHeader: TranslateI.h,v 1.2 88/08/18 15:56:37 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

@@ -1,5 +1,4 @@
-/* $XConsortium: ConvertI.h,v 1.3 88/09/04 14:06:30 swick Exp $ */
-/* $Header: ConvertI.h,v 1.3 88/09/04 14:06:30 swick Exp $ */
+/* $XConsortium: ConvertI.h,v 1.4 88/09/06 09:41:03 swick Exp $ */
 /* $oHeader: ConvertI.h,v 1.3 88/08/31 16:11:04 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

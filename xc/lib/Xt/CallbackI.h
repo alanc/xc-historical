@@ -1,5 +1,4 @@
-/* $XConsortium: CallbackI.h,v 1.3 88/09/04 15:42:03 swick Exp $ */
-/* $Header: CallbackI.h,v 1.3 88/09/04 15:42:03 swick Exp $ */
+/* $XConsortium: CallbackI.h,v 1.4 88/09/06 09:40:33 swick Exp $ */
 /* $oHeader: CallbackI.h,v 1.2 88/08/18 15:53:53 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

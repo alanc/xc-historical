@@ -1,5 +1,4 @@
-/* $XConsortium: SelectionI.h,v 1.3 88/09/04 15:53:07 swick Exp $ */
-/* $Header: SelectionI.h,v 1.3 88/09/04 15:53:07 swick Exp $ */
+/* $XConsortium: SelectionI.h,v 1.4 88/09/06 09:42:20 swick Exp $ */
 /* $oHeader: SelectionI.h,v 1.3 88/08/19 14:02:44 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

@@ -1,5 +1,4 @@
-/* $XConsortium: EventI.h,v 1.5 88/09/05 10:26:11 swick Exp $ */
-/* $Header: EventI.h,v 1.5 88/09/05 10:26:11 swick Exp $ */
+/* $XConsortium: EventI.h,v 1.6 88/09/06 09:41:20 swick Exp $ */
 /* $oHeader: EventI.h,v 1.3 88/08/24 09:21:11 asente Exp $ */
 
 /***********************************************************

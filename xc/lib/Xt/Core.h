@@ -1,6 +1,5 @@
 /*
-* $XConsortium: Core.h,v 1.5 88/09/04 12:17:50 swick Exp $
-* $Header: Core.h,v 1.5 88/09/04 12:17:50 swick Exp $
+* $XConsortium: Core.h,v 1.6 88/09/06 09:41:10 swick Exp $
 * $oHeader: Core.h,v 1.2 88/08/18 15:54:32 asente Exp $
 */
 

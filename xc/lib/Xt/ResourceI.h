@@ -1,5 +1,4 @@
-/* $XConsortium: ResourceI.h,v 1.3 88/09/04 15:52:32 swick Exp $ */
-/* $Header: ResourceI.h,v 1.3 88/09/04 15:52:32 swick Exp $ */
+/* $XConsortium: ResourceI.h,v 1.4 88/09/06 09:42:11 swick Exp $ */
 /* $oHeader: ResourceI.h,v 1.2 88/08/18 15:56:00 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

@@ -1,6 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.83 88/09/05 13:43:28 swick Exp $
-* $Header: Intrinsic.h,v 1.83 88/09/05 13:43:28 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.84 88/09/06 09:41:33 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 

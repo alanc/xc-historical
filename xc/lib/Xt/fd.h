@@ -1,6 +1,5 @@
 /*
-* $XConsortium: fd.h,v 1.9 88/09/04 12:22:56 swick Exp $
-* $Header: fd.h,v 1.9 88/09/04 12:22:56 swick Exp $
+* $XConsortium: fd.h,v 1.10 88/09/06 09:42:58 swick Exp $
 * $oHeader: fd.h,v 1.4 88/08/26 14:49:54 asente Exp $
 */
 
