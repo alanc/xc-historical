@@ -137,8 +137,7 @@ _
 .Bw
 .Cm
 .Cu
-.Pn
-.Pn
+.Cn
 .Dp
 .Dc
 .IP \fBforeground\fP 1.5i

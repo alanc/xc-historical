@@ -121,7 +121,7 @@ the area representing the canvas.
 The size of the canvas.
 .Cm
 .Cu
-.Pn
+.Cn
 .IP \fBdefaultScale\fP 1.5i
 The percentage size that the Panner widget should have relative
 to the size of the canvas.

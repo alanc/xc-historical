@@ -92,7 +92,7 @@ _
 .Bw
 .Cm
 .Cu
-.Pn
+.Cn
 .Dp
 .Dc
 .IP \fBforeground\fP 1.5i

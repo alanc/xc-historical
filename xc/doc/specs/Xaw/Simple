@@ -86,7 +86,7 @@ _
 .Bw
 .Cm
 .Cu Bold
-.Pn Bold
+.Cn Bold
 .Dp
 .Dc
 .Hw

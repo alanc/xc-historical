@@ -110,7 +110,7 @@ _
 .Cm
 .Cr
 .Cu
-.Pn
+.Cn
 .IP \fBdecay\fP 1.5i
 The number of milliseconds that should be subtracted from each succeeding 
 interval while the Repeater button is being held down until the interval

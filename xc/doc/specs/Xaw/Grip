@@ -93,7 +93,7 @@ information passed to the action routine.  A more thorough description
 is given below in the \fBGrip Actions\fP section.
 .Cm
 .Cu
-.Pn
+.Cn
 .Dp
 .Dc
 .IP \fBforeground\fP 1.5i
