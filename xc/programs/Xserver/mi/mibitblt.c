@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mibitblt.c,v 1.70 88/10/15 10:34:08 rws Exp $ */
+/* $XConsortium: mibitblt.c,v 1.71 89/03/22 10:49:44 rws Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -789,6 +789,8 @@ miPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
     unsigned long	oldPlanemask;
     unsigned long	i;
 
+    if (!w || !h)
+	return;
     switch(format)
     {
       case XYBitmap:
