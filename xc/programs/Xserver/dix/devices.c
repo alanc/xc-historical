@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.13 91/01/24 17:28:37 rws Exp $ */
+/* $XConsortium: devices.c,v 5.14 91/05/04 23:08:38 keith Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -528,30 +528,18 @@ InitPtrFeedbackClassDeviceStruct(dev, controlProc)
 
 
 LedCtrl defaultLedControl = {
-	DEFAULT_LEDS};
+	DEFAULT_LEDS, DEFAULT_LEDS_MASK};
 
 BellCtrl defaultBellControl = {
 	DEFAULT_BELL,
 	DEFAULT_BELL_PITCH,
 	DEFAULT_BELL_DURATION};
 
-#define DEFAULT_RESOLUTION		0
-#define DEFAULT_MIN_VALUE		0
-#define DEFAULT_MAX_VALUE		0
-#define DEFAULT_INTEGER_DISPLAYED	0
-
 IntegerCtrl defaultIntegerControl = {
-	1000,
-	DEFAULT_MIN_VALUE,
-	100,
-	DEFAULT_INTEGER_DISPLAYED};
-/*
-IntegerCtrl defaultIntegerControl = {
-	DEFAULT_RESOLUTION,
-	DEFAULT_MIN_VALUE,
-	DEFAULT_MAX_VALUE,
-	DEFAULT_INTEGER_DISPLAYED};
-	*/
+	DEFAULT_INT_RESOLUTION,
+	DEFAULT_INT_MIN_VALUE,
+	DEFAULT_INT_MAX_VALUE,
+	DEFAULT_INT_DISPLAYED};
 
 Bool
 InitStringFeedbackClassDeviceStruct (dev, controlProc, max_symbols,
