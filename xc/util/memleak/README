@@ -27,10 +27,13 @@ exits (by registering with atexit(3)/on_exit(3)).  You can call it whenever
 you want; the X server calls it after each reset when os/utils.c is compiled
 -DMEMBUG.
 
+To include this in your application, simply place libmemleak.a before the
+end of the link line; it will then override the C library allocator.
+
 To port this system to a new machine, you must provide two values, one
 indicating the lowest data address in a program and one indicating the
 highest stack address.  In addition, to get return stack traces (which are
 almost essential for debugging), you must provide the function
 getReturnStack.  Samples for MIPS and SPARC are included already.
 
--keit
+-keith
