@@ -30,17 +30,10 @@ MakeSubdirs($(DIRSTOMAKE) $(RGBSRC) $(XMANSRC))
 MakeLintLibSubdirs($(LINTLIBDIRS))
 
 #
-# before doing the depend, be sure that makedepend exists, and that
-# the include directory has everything in it.
+# before depending, be sure that include has everything in it.
 #
 depend::
 	cd include; $(MAKE)
-
-depend:: $(DEPEND)
-
-$(DEPEND):
-	@echo "making $(DEPENDSRC)"; \
-	cd $(DEPENDSRC); $(MAKE)
 
 DependSubdirs($(SUBDIRS))
 
@@ -51,17 +44,6 @@ install::
 	-mkdir $(INCDIR)
 	-mkdir $(FONTDIR)
 	-mkdir $(MANDIR)
-
-#
-# before making the makefiles, be sure that imake exists.
-#
-Makefiles:: $(IMAKE)
-
-Makefile:: $(IMAKE)
-
-$(IMAKE):
-	@echo "making $(IMAKESRC)"; \
-	cd $(IMAKESRC); $(MAKE)
 
 # don't name your log file make.log when you run this ...
 World: $(IMAKE)
