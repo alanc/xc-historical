@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: main.c,v 1.128 88/01/02 14:09:23 rws Locked $ */
+/* $Header: main.c,v 1.129 88/01/02 15:38:50 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -377,10 +377,10 @@ CreateConnectionBlock()
 }
 
 
-/* VARARGS */
+/*VARARGS1*/
 FatalError (msg, v0, v1, v2, v3, v4, v5, v6, v7, v8)
     char *msg;
-    int v0, v1, v2, v3, v4, v5, v6, v7, v8;
+    char *v0, *v1, *v2, *v3, *v4, *v5, *v6, *v7, *v8;
 {
     ErrorF("\nFatal server bug!\n");
     ErrorF(msg, v0, v1, v2, v3, v4, v5, v6, v7, v8);

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: utils.c,v 1.34 87/09/14 02:09:06 toddb Exp $ */
+/* $Header: utils.c,v 1.35 88/01/01 15:07:55 rws Locked $ */
 #include <stdio.h>
 #include <sys/time.h>
 #include "misc.h"
@@ -63,6 +63,7 @@ GiveUp()
 }
 
 
+/*VARARGS1*/
 void
 ErrorF( f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
     char *	f;
