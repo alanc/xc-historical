@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.179 91/05/04 19:38:16 gildea Exp $ */
+/* $XConsortium: main.c,v 1.180 91/05/06 17:11:59 gildea Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -1650,15 +1650,19 @@ spawn ()
 #else
 		(void) setpgrp();
 #endif
-#endif	/* USE_SYSV_PGRP */
+#endif /* USE_SYSV_PGRP */
 		while (1) {
 #ifdef TIOCNOTTY
 			if (!no_dev_tty && (tty = open ("/dev/tty", O_RDWR)) >= 0) {
 				ioctl (tty, TIOCNOTTY, (char *) NULL);
 				close (tty);
 			}
-#endif	/* TIOCNOTTY */
+#endif /* TIOCNOTTY */
 			if ((tty = open(ttydev, O_RDWR, 0)) >= 0) {
+#if defined(CRAY) && defined(TCSETCTTY)
+			    /* make /dev/tty work */
+			    ioctl(tty, TCSETCTTY, 0);
+#endif
 #ifdef	USE_SYSV_PGRP
 				/* We need to make sure that we are acutally
 				 * the process group leader for the pty.  If
