@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.27 91/01/26 18:10:06 dmatic Exp $
+ * $XConsortium: Bitmap.c,v 1.28 91/02/08 18:12:54 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -163,64 +163,64 @@ static XtActionsRec actions[] =
 
 static char translations[] =
 "\
- Shift<Btn1Down>:  mark()\n\
- Shift<Btn2Down>:  mark-all()\n\
- Shift<Btn3Down>:  unmark()\n\
- Ctrl<BtnDown>:    paste()\n\
- Ctrl<Key>l:       redraw()\n\
- <Key>d:           bw-debug()\n\
- <Key>a:           abort()\n\
- <Key>Up:          store-to-buffer()\
-                   up()\
-                   change-notify()\
-                   set-changed()\n\
- <Key>Down:        store-to-buffer()\
-                   down()\
-                   change-notify()\
-                   set-changed()\n\
- <Key>Left:        store-to-buffer()\
-                   left()\
-                   change-notify()\
-                   set-changed()\n\
- <Key>Right:       store-to-buffer()\
-                   right()\
-                   change-notify()\
-                   set-changed()\n\
- <Key>f:           store-to-buffer()\
-                   fold()\
-                   change-notify()\
-                   set-changed()\n\
- <Key>h:           store-to-buffer()\
-                   flip-horiz()\
-                   change-notify()\
-                   set-changed()\n\
- <Key>v:           store-to-buffer()\
-                   flip-vert()\
-                   change-notify()\
-                   set-changed()\n\
- <Key>r:           store-to-buffer()\
-                   rotate-right()\
-                   change-notify()\
-                   set-changed()\n\
- <Key>l:           store-to-buffer()\
-                   rotate-left()\
-                   change-notify()\
-                   set-changed()\n\
- <Key>s:           store-to-buffer()\
-                   set()\
-                   change-notify()\
-                   set-changed()\n\
- <Key>c:           store-to-buffer()\
-                   clear()\
-                   change-notify()\
-                   set-changed()\n\
- <Key>i:           store-to-buffer()\
-                   invert()\
-                   change-notify()\
-                   set-changed()\n\
- <Key>u:           undo()\
-                   change-notify()\
-                   set-changed()\n\
+Shift<Btn1Down>: mark()\n\
+Shift<Btn2Down>: mark-all()\n\
+Shift<Btn3Down>: unmark()\n\
+Ctrl<BtnDown>:   paste()\n\
+Ctrl<Key>l: redraw()\n\
+<Key>d:     bw-debug()\n\
+<Key>a:     abort()\n\
+<Key>Up:    store-to-buffer()\
+            up()\
+            change-notify()\
+            set-changed()\n\
+<Key>Down:  store-to-buffer()\
+            down()\
+            change-notify()\
+            set-changed()\n\
+<Key>Left:  store-to-buffer()\
+            left()\
+            change-notify()\
+            set-changed()\n\
+<Key>Right: store-to-buffer()\
+            right()\
+            change-notify()\
+            set-changed()\n\
+<Key>f:     store-to-buffer()\
+            fold()\
+            change-notify()\
+            set-changed()\n\
+<Key>h:     store-to-buffer()\
+            flip-horiz()\
+            change-notify()\
+            set-changed()\n\
+<Key>v:     store-to-buffer()\
+            flip-vert()\
+            change-notify()\
+            set-changed()\n\
+<Key>r:     store-to-buffer()\
+            rotate-right()\
+            change-notify()\
+            set-changed()\n\
+<Key>l:     store-to-buffer()\
+            rotate-left()\
+            change-notify()\
+            set-changed()\n\
+<Key>s:     store-to-buffer()\
+            set()\
+            change-notify()\
+            set-changed()\n\
+<Key>c:     store-to-buffer()\
+            clear()\
+            change-notify()\
+            set-changed()\n\
+<Key>i:     store-to-buffer()\
+            invert()\
+            change-notify()\
+            set-changed()\n\
+<Key>u:     undo()\
+            change-notify()\
+            set-changed()\n\
 ";
 
 Atom targets[] = {
@@ -1498,14 +1498,20 @@ static void Redisplay(BW, event, region)
 	      event->xexpose.width, event->xexpose.height);
 }
 
-void BWClip(w, from_x, from_y, to_x, to_y)
+void BWClip(w, x, y, width, height)
     Widget  w;
+    Position x, y;
+    Dimension width, height;
+{
     Position      from_x, from_y,
                   to_x, to_y;
-{
     BitmapWidget BW = (BitmapWidget) w;
     XRectangle rectangle;
   
+    from_x = InBitmapX(BW, x);
+    from_y = InBitmapY(BW, y);
+    to_x = InBitmapX(BW, x + width);
+    to_y = InBitmapY(BW, y + height);
     QuerySwap(from_x, to_x);
     QuerySwap(from_y, to_y);
     from_x = max(0, from_x);
@@ -1602,17 +1608,11 @@ void Refresh(BW, x, y, width, height)
 		   InWindowX(BW, BW->bitmap.width) - InWindowX(BW, 0) + 1, 
 		   InWindowY(BW, BW->bitmap.height) - InWindowY(BW, 0) + 1);
 
-    BWClip((Widget) BW,
-	   InBitmapX(BW, x),InBitmapY(BW, y),
-	   InBitmapX(BW, x + width), InBitmapY(BW, y + height));
+    BWClip((Widget) BW, x, y, width, height);
 
-    BWRedrawGrid((Widget) BW,
-		 InBitmapX(BW, x), InBitmapY(BW, y),
-		 InBitmapX(BW, x + width), InBitmapY(BW, y + height));
+    BWRedrawGrid((Widget) BW, x, y, width, height);
 
-    BWRedrawSquares((Widget) BW,
-		    InBitmapX(BW, x), InBitmapY(BW, y),
-		    InBitmapX(BW, x + width), InBitmapY(BW, y + height));
+    BWRedrawSquares((Widget) BW, x, y, width, height);
 
     BWRedrawMark((Widget) BW);
     BWRedrawHotSpot((Widget) BW);
@@ -1662,10 +1662,7 @@ void BWSwitchDashed(w)
     BitmapWidget BW = (BitmapWidget) w;
     XRectangle rectangle;
 
-    BWRedrawGrid(w,
-		 0, 0,
-		 (Position) BW->bitmap.width - 1, 
-		 (Position) BW->bitmap.height - 1);
+    BWRedrawGrid(w, 0, 0, BW->bitmap.width - 1, BW->bitmap.height - 1);
 
     rectangle.x = 0;
     rectangle.y = 0;
@@ -1696,10 +1693,7 @@ void BWSwitchDashed(w)
 
     BWUnclip(w);
    
-    BWRedrawGrid(w,
-		 0, 0,
-		 (Position) BW->bitmap.width - 1, 
-		 (Position) BW->bitmap.height - 1);
+    BWRedrawGrid(w, 0, 0, BW->bitmap.width - 1, BW->bitmap.height - 1);
 }
 
 void BWDashed(w, _switch)
