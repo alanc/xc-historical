@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shape.c,v 1.10 89/04/18 13:23:14 rws Exp $ */
+/* $XConsortium: shape.c,v 1.11 89/04/22 12:04:20 rws Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -267,6 +267,7 @@ ProcShapeRectangles (client)
     RegionPtr		(*createDefault)();
 
     REQUEST_AT_LEAST_SIZE (xShapeRectanglesReq);
+    UpdateCurrentTime();
     pWin = LookupWindow (stuff->dest, client);
     if (!pWin)
 	return BadWindow;
@@ -320,6 +321,7 @@ ProcShapeMask (client)
     RegionPtr		(*createDefault)();
 
     REQUEST_SIZE_MATCH (xShapeMaskReq);
+    UpdateCurrentTime();
     pWin = LookupWindow (stuff->dest, client);
     if (!pWin)
 	return BadWindow;
@@ -370,6 +372,7 @@ ProcShapeCombine (client)
     RegionPtr		tmp;
 
     REQUEST_SIZE_MATCH (xShapeCombineReq);
+    UpdateCurrentTime();
     pDestWin = LookupWindow (stuff->dest, client);
     if (!pDestWin)
 	return BadWindow;
@@ -433,6 +436,7 @@ ProcShapeOffset (client)
     RegionPtr		srcRgn;
 
     REQUEST_SIZE_MATCH (xShapeOffsetReq);
+    UpdateCurrentTime();
     pWin = LookupWindow (stuff->dest, client);
     if (!pWin)
 	return BadWindow;
