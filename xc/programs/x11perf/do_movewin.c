@@ -25,6 +25,7 @@ SOFTWARE.
 
 static Window *children;
 static XPoint *positions;
+static Window cover;
 static int rows;
 static x_offset, y_offset;  /* Private global data for DoMoveWins */
 static int xmax, ymax;
@@ -146,3 +147,63 @@ void EndCircWins(xp, p)
     free(children);
 }
 
+
+Bool InitMoveTree(xp, p)
+    XParms  xp;
+    Parms   p;
+{
+    int     i = 0;
+
+    rows = (p->objects + MAXCOLS - 1) / MAXCOLS;
+    
+    x_offset = 0;
+    y_offset = 0;
+    delta1   = 1;
+
+    children = (Window *) malloc (p->objects*sizeof (Window));
+    positions = (XPoint *) malloc(p->objects*sizeof(XPoint));
+
+    xmax = (CHILDSIZE+CHILDSPACE) * (rows > 1 ? MAXCOLS : p->objects);
+    ymax = rows * (CHILDSIZE+CHILDSPACE);
+
+    cover = XCreateSimpleWindow(xp->d, xp->w,
+				0, 0, xmax, ymax, 0,
+				xp->background, xp->background);
+				
+    for (i = 0; i != p->objects; i++) {
+	positions[i].x = (CHILDSIZE+CHILDSPACE) * (i/rows) + CHILDSPACE/2;
+	positions[i].y = (CHILDSIZE+CHILDSPACE) * (i%rows) + CHILDSPACE/2;
+	children[i] = XCreateSimpleWindow(xp->d, cover,
+	    positions[i].x, positions[i].y,
+	    CHILDSIZE, CHILDSIZE, 0, xp->foreground, xp->foreground);
+    }
+    XMapSubwindows (xp->d, cover);
+    XMapWindow (xp->d, cover);
+    return True;
+}
+
+void DoMoveTree(xp, p)
+    XParms  xp;
+    Parms p;
+{
+    int     i, j;
+
+    for (i = 0; i != p->reps; i++) {
+	x_offset += 1;
+	y_offset += 3;
+	if (y_offset + ymax > HEIGHT)
+	    y_offset = 0;
+	if (x_offset + xmax > WIDTH)
+	    x_offset = 0;
+	XMoveWindow(xp->d, cover, x_offset, y_offset);
+    }
+}
+
+void EndMoveTree(xp, p)
+    XParms  xp;
+    Parms   p;
+{
+    XDestroyWindow(xp->d, cover);
+    free(children);
+    free(positions);
+}
