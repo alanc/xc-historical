@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.152 90/06/08 14:06:46 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.153 90/06/08 14:19:24 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -763,6 +763,8 @@ char **argv;
             /* this causes the initialize method to be called */
 
         screen = &term->screen;
+
+	if (screen->savelines < 0) screen->savelines = 0;
 
 	term->flags = 0;
 	if (!screen->jumpscroll) {
@@ -2368,14 +2370,14 @@ static int parse_tty_modes (s, modelist)
     struct _xttymodes *modelist;
 {
     struct _xttymodes *mp;
-    int c, i;
+    int c;
     int count = 0;
 
     while (1) {
 	while (*s && isascii(*s) && isspace(*s)) s++;
 	if (!*s) return count;
 
-	for (mp = modelist, i = 0; mp->name; mp++, i++) {
+	for (mp = modelist; mp->name; mp++) {
 	    if (strncmp (s, mp->name, mp->len) == 0) break;
 	}
 	if (!mp->name) return -1;
