@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: waitfor.c,v 1.5 91/05/13 16:51:40 gildea Exp $ */
 /*
  * waits for input
  */
@@ -24,7 +24,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * @(#)waitfor.c	4.3	5/6/91
+ * $NCDId: @(#)waitfor.c,v 4.4 1991/05/29 17:34:30 lemke Exp $
  *
  */
 
@@ -104,7 +104,7 @@ WaitForSomething(pClientsReady)
 	    ReapAnyOldClients();
 	    LastReapTime = current_time;
 	    timeout = ReapClientTime;
-	} 
+	}
 	timeout = ReapClientTime - timeout;
 	waittime.tv_sec = timeout / MILLI_PER_SECOND;
 	waittime.tv_usec = (timeout % MILLI_PER_SECOND) *
@@ -135,6 +135,12 @@ WaitForSomething(pClientsReady)
 		    CheckConnections();
 		} else if (selecterr != EINTR) {
 		    ErrorF("WaitForSomething: select(): errno %d\n", selecterr);
+		} else {
+		    /*
+		     * must have been broken by a signal.  go deal with any
+		     * exception flags
+		     */
+		    return 0;
 		}
 	    } else {		/* must have timed out */
 		ReapAnyOldClients();
@@ -159,16 +165,20 @@ WaitForSomething(pClientsReady)
     nready = 0;
 
     if (ANYSET(clientsReadable)) {
-	ClientPtr	client;
+	ClientPtr   client;
+	int         conn;
+
 	for (i = 0; i < mskcnt; i++) {
 	    while (clientsReadable[i]) {
 		curclient = ffs(clientsReadable[i]) - 1;
-		pClientsReady[nready] =
-		    ConnectionTranslation[curclient + (i << 5)];
-		client = clients[pClientsReady[nready++]];
+		conn = ConnectionTranslation[curclient + (i << 5)];
+		clientsReadable[i] &= ~(1 << curclient);
+		client = clients[conn];
+		if (!client)
+		    continue;
+		pClientsReady[nready++] = conn;
 		client->last_request_time = current_time;
 		client->clientGone = CLIENT_ALIVE;
-		clientsReadable[i] &= ~(1 << curclient);
 	    }
 	}
     }
@@ -178,15 +188,16 @@ WaitForSomething(pClientsReady)
 #ifndef ANYSET
 /*
  * This is not always a macro
- */
+  */
 ANYSET(src)
-    long	*src;
+    long       *src;
 {
-    int i;
+    int         i;
 
-    for (i=0; i<MSKCNT; i++)
-	if (src[ i ])
+    for (i = 0; i < MSKCNT; i++)
+	if (src[i])
 	    return (1);
     return (0);
 }
+
 #endif
