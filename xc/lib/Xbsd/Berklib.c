@@ -1,4 +1,4 @@
-/* $XConsortium: Berklib.c,v 1.8 91/01/10 20:21:56 rws Exp $ */
+/* $XConsortium: Berklib.c,v 1.9 91/01/11 09:16:20 rws Exp $ */
 
 /*
  * These are routines found in BSD but not on all other systems.  The core
@@ -20,13 +20,71 @@
 #define WANT_RANDOM
 #endif
 
+#ifdef SVR4
+#define WANT_BFUNCS
+#define WANT_FFS
+#define WANT_RANDOM
+#endif
 
+/* you should use Xfuncs.h in code instead of relying on Berklib */
 #ifdef WANT_BFUNCS
 
-/* you should use Xfuncs.h instead of this in most cases */
-bcopy (b1, b2, length)
+#if __STDC__ && !defined(NOSTDHDRS)
+
+#include <string.h>
+
+void bcopy (b1, b2, length)
     register char *b1, *b2;
-    register length;
+    register int length;
+{
+    memmove((void *)b2, (void *)b1, (size_t)length);
+}
+
+int bcmp (b1, b2, length)
+    register char *b1, *b2;
+    register int length;
+{
+    return memcmp((void *)b1, (void *)b2, (size_t)length);
+}
+
+void bzero (b, length)
+    register char *b;
+    register int length;
+{
+    memset((void *)b, 0, (size_t)length);
+}
+
+#else
+#if defined(SVR4) || defined(hpux)
+
+#include <string.h>
+
+void bcopy (b1, b2, length)
+    register char *b1, *b2;
+    register int length;
+{
+    memmove(b2, b1, length);
+}
+
+int bcmp (b1, b2, length)
+    register char *b1, *b2;
+    register int length;
+{
+    return memcmp(b1, b2, length);
+}
+
+bzero (b, length)
+    register char *b;
+    register int length;
+{
+    memset(b, 0, length);
+}
+
+#else
+
+void bcopy (b1, b2, length)
+    register char *b1, *b2;
+    register int length;
 {
     if (b1 < b2) {
 	b2 += length;
@@ -39,37 +97,48 @@ bcopy (b1, b2, length)
     }
 }
 
-/* you should use Xfuncs.h instead of this in most cases */
-bcmp (b1, b2, length)
+#if defined(SYSV)
+
+#include <memory.h>
+
+int bcmp (b1, b2, length)
     register char *b1, *b2;
-    register length;
+    register int length;
+{
+    return memcmp(b1, b2, length);
+}
+
+bzero (b, length)
+    register char *b;
+    register int length;
+{
+    memset(b, 0, length);
+}
+
+#else
+
+int bcmp (b1, b2, length)
+    register char *b1, *b2;
+    register int length;
 {
     while (length--) {
 	if (*b1++ != *b2++) return 1;
     }
     return 0;
 }
-#endif
 
-/* you should use Xfuncs.h instead of this in most cases */
-bzero (b, length)
+void bzero (b, length)
     register char *b;
-    register length;
+    register int length;
 {
     while (length--)
 	*b++ = '\0';
 }
 
+#endif
+#endif
+#endif
 #endif /* WANT_BFUNCS */
-
-/* Find the first set bit
- * i.e. least signifigant 1 bit:
- * 0 => 0
- * 1 => 1
- * 2 => 2
- * 3 => 1
- * 4 => 3
- */
 
 #ifdef WANT_FFS
 int
@@ -87,6 +156,38 @@ unsigned int	mask;
     return i;
 }
 #endif
+
+#ifdef WANT_RANDOM
+#if defined(SYSV) || defined(SVR4)
+
+long lrand48();
+
+long random()
+{
+   return (lrand48());
+}
+
+void srandom(seed)
+    int seed;
+{
+   srand48(seed);
+}
+
+#else
+
+long random()
+{
+   return (rand());
+}
+
+void srandom(seed)
+    int seed;
+{
+   srand(seed);
+}
+
+#endif
+#endif /* WANT_RANDOM */
 
 /*
  * insque, remque - insert/remove element from a queue
@@ -133,33 +234,6 @@ register struct qelem *elem;
     /* insert unlocking code here */
 }
 #endif /* WANT_QUE */
-
-/*
- * Berkeley random()
- *
- * We simulate via System V's rand()
- */
-
-#ifdef WANT_RANDOM
-int
-random()
-{
-   return (rand());
-}
-
-/*
- * Berkeley srandom()
- *
- * We simulate via System V's rand()
- */
-
-int
-srandom(seed)
-int seed;
-{
-   return (srand(seed));
-}
-#endif /* WANT_RANDOM */
 
 /*
  * gettimeofday emulation
