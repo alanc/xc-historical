@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: sunInit.c,v 5.24 91/08/23 16:14:53 keith Exp $ */
 /*-
  * sunInit.c --
  *	Initialization functions for screen/keyboard/mouse, etc.
@@ -43,10 +43,6 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-
-#ifndef	lint
-static char sccsid[] = "%W %G Copyright 1987 Sun Micro";
-#endif
 
 #include    "sun.h"
 #include    <servermd.h>
@@ -728,7 +724,7 @@ badfb:
 #else
 	ErrorF("Not configured to run inside SunWindows\n");
 	fd = -1;
-#endif	SUN_WINDOWS
+#endif /* SUN_WINDOWS */
     } else if (name) {
 	fd = open(name, O_RDWR, 0);
         if (fd < 0) {

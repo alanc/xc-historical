@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: sunMouse.c,v 5.11 91/11/14 13:35:56 keith Exp $ */
 /*-
  * sunMouse.c --
  *	Functions for playing cat and mouse... sorry.
@@ -43,10 +43,6 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-
-#ifndef	lint
-static char sccsid[] = "%W %G Copyright 1987 Sun Micro";
-#endif
 
 #define NEED_EVENTS
 #include    "sun.h"
@@ -507,4 +503,4 @@ sunMouseEnqueueEventSunWin(pMouse,se)
 	    break;
     }
 }
-#endif SUN_WINDOWS
+#endif /* SUN_WINDOWS */

@@ -1,3 +1,4 @@
+/* $XConsortium: sunCursor.c,v 5.9 91/11/14 13:57:03 keith Exp $ */
 /*-
  * sunKbd.c --
  *	Functions for retrieving data from a keyboard.
@@ -41,11 +42,6 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-
-#ifndef	lint
-static char sccsid[] = "%W %G Copyright 1987 Sun Micro";
-#endif
-
 
 #define NEED_EVENTS
 #include "sun.h"
@@ -122,7 +118,7 @@ sunKbdProc (pKeyboard, what)
 #ifdef	SUN_WINDOWS
 #define	TR_UNDEFINED (TR_NONE-1)
     static int	  deviceOffKbdState = TR_UNDEFINED;
-#endif	SUN_WINDOWS
+#endif /* SUN_WINDOWS */
 
     switch (what) {
 	case DEVICE_INIT:
@@ -239,7 +235,7 @@ sunKbdProc (pKeyboard, what)
 		    }
 		}
 		AddEnabledDevice(windowFd);
-#endif SUN_WINDOWS
+#endif /* SUN_WINDOWS */
 	    }
 	    else {
 		pPriv = (KbPrivPtr)pKeyboard->devicePrivate;
@@ -288,7 +284,7 @@ badkbd:
 		}
 
 		RemoveEnabledDevice(windowFd);
-#endif SUN_WINDOWS
+#endif /* SUN_WINDOWS */
 	    }
 	    else {
 		pPriv = (KbPrivPtr)pKeyboard->devicePrivate;
@@ -817,7 +813,7 @@ sunSetUpKbdSunWin(windowFd, onoff)
     return (TRUE);
 }
 
-#endif SUN_WINDOWS
+#endif /* SUN_WINDOWS */
 
 
 #ifdef SUN_WINDOWS
@@ -850,7 +846,7 @@ sunKbdEnqueueEventSunWin(pKeyboard,se)
 
     sunKbdEnqueueEvent (pKeyboard, &fe);
 }
-#endif SUN_WINDOWS
+#endif /* SUN_WINDOWS */
 
 /*ARGSUSED*/
 Bool

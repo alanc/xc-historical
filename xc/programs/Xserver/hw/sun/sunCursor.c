@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: sunCursor.c,v 5.9 91/11/14 13:57:03 keith Exp $ */
 /*-
  * sunCursor.c --
  *	Functions for maintaining the Sun software cursor...
@@ -272,7 +272,7 @@ struct cursor {
     short       vert_hair_length;	/* height           */
     short       vert_hair_gap;		/* gap              */
 };
-#endif SUN_WINDOWS
+#endif /* SUN_WINDOWS */
 
 void
 sunInitCursor ()
@@ -290,7 +290,7 @@ sunInitCursor ()
 	cs.cur_shape = &pr;
 	pr.pr_size.x = pr.pr_size.y = 0;
 	win_setcursor( windowFd, &cs );
-#endif SUN_WINDOWS
+#endif /* SUN_WINDOWS */
     }
 }
 

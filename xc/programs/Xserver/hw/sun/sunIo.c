@@ -1,3 +1,4 @@
+/* $XConsortium: sunCursor.c,v 5.9 91/11/14 13:57:03 keith Exp $ */
 /*-
  * sunIo.c --
  *	Functions to handle input from the keyboard and mouse.
@@ -43,10 +44,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-#ifndef	lint
-static char sccsid[] = "%W %G Copyright 1987 Sun Micro";
-#endif
-
 #include    "sun.h"
 #include    "opaque.h"
 
@@ -58,7 +55,7 @@ extern void	SaveScreens();
 int	windowFd = 0;
 int	sunIgnoreEvent = TRUE;
 #define	INPBUFSIZE	128
-#endif SUN_WINDOWS
+#endif /* SUN_WINDOWS */
 
 /*-
  *-----------------------------------------------------------------------
@@ -143,7 +140,7 @@ sunEnqueueEvents ()
     struct inputevent sunevents[INPBUFSIZE];
     register struct inputevent *se = sunevents, *seL;
     int         n;
-#endif SUN_WINDOWS
+#endif /* SUN_WINDOWS */
 
     pPointer = LookupPointerDevice();
     pKeyboard = LookupKeyboardDevice();
@@ -208,7 +205,7 @@ sunEnqueueEvents ()
 		    break;
 	    }
 	}
-#endif SUN_WINDOWS
+#endif /* SUN_WINDOWS */
     } 
     else {
 	ptrPriv = (PtrPrivPtr)pPointer->devicePrivate;
