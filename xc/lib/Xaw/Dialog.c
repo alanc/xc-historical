@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Dialog.c,v 1.3 87/12/23 07:41:03 swick Locked $";
+static char rcsid[] = "$Header: Dialog.c,v 1.4 87/12/23 16:31:10 swick Locked $";
 #endif lint
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -111,7 +111,7 @@ WidgetClass dialogWidgetClass = (WidgetClass)&dialogClassRec;
 static void Initialize(request, new, args, num_args)
 Widget request, new;
 ArgList args;
-Cardinal num_args;
+Cardinal *num_args;
 {
     DialogWidget dw = (DialogWidget)new;
     static Arg label_args[] = {
@@ -175,7 +175,7 @@ Cardinal num_args;
 static void ConstraintInitialize(request, new, args, num_args)
 Widget request, new;
 ArgList args;
-Cardinal num_args;
+Cardinal *num_args;
 {
     DialogWidget dw = (DialogWidget)new->core.parent;
     WidgetList children = dw->composite.children;
@@ -215,46 +215,41 @@ Boolean last;
 }
 
 
-#ifdef notdef
-void XtDialogAddButton(dpy, window, name, function, param)
-Display *dpy;
-Window window;
+void XtDialogAddButton(dialog, name, function, param)
+Widget dialog;
 char *name;
 void (*function)();
 caddr_t param;
 {
-    WidgetData data;
-    static Arg arglist1[] = {
-	{XtNname, (XtArgVal) NULL},
-	{XtNfunction, (XtArgVal) NULL},
-	{XtNparameter, (XtArgVal) NULL}
-    };
-    static Arg arglist2[] = {
+    DialogWidget parent = (DialogWidget)dialog;
+    static XtCallbackRec callback[] = { {NULL, NULL}, {NULL, NULL} };
+    static Arg arglist[] = {
+	{XtNcallback, (XtArgVal) callback},
 	{XtNfromHoriz, (XtArgVal) NULL},
 	{XtNfromVert, (XtArgVal) NULL},
 	{XtNleft, (XtArgVal) XtChainLeft},
 	{XtNright, (XtArgVal) XtChainLeft}
     };
-    data = DataFromWindow(dpy, window);
-    if (data == NULL) return;
-    arglist1[0].value = (XtArgVal) name;
-    arglist1[1].value = (XtArgVal) function;
-    arglist1[2].value = (XtArgVal) param;
-    data->button = (Window *)
-	XtRealloc((char *)data->button,
-		  (unsigned) ++data->numbuttons * sizeof(Window));
-    data->button[data->numbuttons - 1] =
-	XtCommandCreate(data->dpy, window, arglist1, XtNumber(arglist1));
-    if (data->numbuttons > 1)
-	arglist2[0].value = (XtArgVal) data->button[data->numbuttons - 2];
+
+    callback[0].callback = function;
+    callback[0].closure =  param;
+
+    if ((parent->composite.num_mapped_children > 2)
+	|| (!parent->dialog.value
+	    && (parent->composite.num_mapped_children > 1)))
+       arglist[1].value = (XtArgVal)parent->
+	 composite.children[parent->composite.num_mapped_children - 1];
     else
-	arglist2[0].value = (XtArgVal) NULL;
-    if (data->value) arglist2[1].value = (XtArgVal) data->value;
-    else arglist2[1].value = (XtArgVal) data->label;
-    XtFormAddWidget(data->dpy, data->mywin, data->button[data->numbuttons - 1],
-		    arglist2, XtNumber(arglist2));
+       arglist[1].value = (XtArgVal)NULL;
+
+    if (parent->dialog.value)
+       arglist[2].value = (XtArgVal) parent->dialog.value;
+    else
+       arglist[2].value = (XtArgVal) parent->dialog.label;
+
+    XtCreateManagedWidget( name, commandWidgetClass, dialog, 
+			   arglist, XtNumber(arglist) );
 }
-#endif
 
 
 char *XtDialogGetValueString(w)
