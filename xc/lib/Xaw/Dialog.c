@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.29 89/05/31 08:59:06 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.30 89/05/31 09:01:08 swick Exp $";
 #endif /* lint */
 
 
@@ -359,22 +359,11 @@ Widget w;
     }
     XtManageChild(dw->dialog.valueW);
 
-#ifdef notdef
-    static int grabfocus;
-    static Resource resources[] = {
-        {XtNgrabFocus, XtCGrabFocus, XtRBoolean, sizeof(int),
-	   (caddr_t)&grabfocus, (caddr_t)NULL}
-    };
-    XrmNameList names;
-    XrmClassList classes;
-    grabfocus = FALSE;
-    XtGetResources(dpy, resources, XtNumber(resources), args, argCount,
-		   parent, "dialog", "Dialog", &names, &classes);
-    XrmFreeNameList(names);
-    XrmFreeClassList(classes);
-    if (grabfocus) XSetInputFocus(dpy, data->value, RevertToParent,
-				  CurrentTime); /* !!! Hackish. |||*/
-#endif /* notdef */
+/* 
+ * Value widget gets the keyboard focus.
+ */
+
+   XtSetKeyboardFocus(w, dw->dialog.valueW);
 }
 
 
