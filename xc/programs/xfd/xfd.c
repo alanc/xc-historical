@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xfd.c,v 1.15 89/08/07 19:38:56 jim Exp $
+ * $XConsortium: xfd.c,v 1.16 89/08/07 19:45:50 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -46,7 +46,6 @@ static XrmOptionDescRec xfd_options[] = {
 {"-center",	"*grid.centerChars", XrmoptionNoArg,	(caddr_t) "on" },
 {"-rows",	"*grid.cellRows", XrmoptionSepArg,	(caddr_t) NULL },
 {"-columns",	"*grid.cellColumns", XrmoptionSepArg,	(caddr_t) NULL },
-{"-cols",	"*grid.cellColumns", XrmoptionSepArg,	(caddr_t) NULL },
 };
 
 static void do_quit(), do_next(), do_prev();
