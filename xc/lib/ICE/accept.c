@@ -1,4 +1,4 @@
-/* $XConsortium: accept.c,v 1.15 93/11/25 14:24:45 mor Exp $ */
+/* $XConsortium: accept.c,v 1.16 93/12/07 11:04:03 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -132,9 +132,9 @@ IceListenObj listenObj;
 
     endian = 1;
     if (*(char *) &endian)
-	pMsg->byteOrder = IceLittleEndian;
+	pMsg->byteOrder = IceLSBfirst;
     else
-	pMsg->byteOrder = IceBigEndian;
+	pMsg->byteOrder = IceMSBfirst;
 
     IceFlush (iceConn);
 
