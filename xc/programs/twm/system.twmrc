@@ -1,5 +1,5 @@
 #
-# $XConsortium$
+# $XConsortium: system.twmrc,v 1.4 89/11/02 18:43:33 jim Exp $
 # 
 # Default twm configuration file; needs to be kept small to conserve string
 # space in systems whose compilers don't handle medium-sized strings.
@@ -13,10 +13,10 @@
 NoGrabServer
 DecorateTransients
 TitleFont "-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
+ResizeFont "-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
 MenuFont "-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
 IconFont "-adobe-helvetica-bold-r-normal--*-100-*-*-*-*-*-*"
 IconManagerFont "-adobe-helvetica-bold-r-normal--*-100-*-*-*"
-ResizeFont "fixed"
 
 #
 # Define some useful functions for motion-based actions.
