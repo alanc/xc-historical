@@ -291,7 +291,7 @@ Widget XtCreateWidget(name,widgetClass,parent,args,num_args)
     /* ||| gross kludge! fix this!!! */
 	widget->core.depth = widget->core.parent->core.depth;
     DefineTranslation(widget);
-    widgetClass->core_class.initialize(widget);
+    widgetClass->core_class.initialize(widget, args, num_args);
 
     ((CompositeWidgetClass)(widget->core.parent->core.widget_class))
     	->composite_class.insert_child(widget, args, num_args);
