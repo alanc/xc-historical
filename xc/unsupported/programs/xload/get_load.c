@@ -1,7 +1,7 @@
 /*
  * get_load - get system load
  *
- * $XConsortium: get_load.c,v 1.26 91/07/25 14:20:25 rws Exp $
+ * $XConsortium: get_load.c,v 1.27 91/10/28 19:55:26 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -108,7 +108,7 @@ struct lavnum {
 #endif
 #endif
 
-#ifdef __osf__
+#ifdef __OSF1__
 /*
  * Use the table(2) interface; it doesn't require setuid root.
  *
@@ -343,7 +343,7 @@ void GetLoadPoint( w, closure, call_data )
 
 #else /* not LOADSTUB */
 
-#ifdef __osf__
+#ifdef __OSF1__
 
 void InitLoadPoint()
 {
@@ -365,7 +365,7 @@ void GetLoadPoint( w, closure, call_data )
 	load_data.tl_avenrun.l[WHICH_AVG] / (double)load_data.tl_lscale;
 }
 
-#else /* not __osf__ */
+#else /* not __OSF1__ */
 
 #ifndef KMEM_FILE
 #define KMEM_FILE "/dev/kmem"
@@ -745,7 +745,7 @@ void GetLoadPoint( w, closure, call_data )
 #endif /* sun else */
 	return;
 }
-#endif /* __osf__ else */
+#endif /* __OSF1__ else */
 #endif /* LOADSTUB else */
 #endif /* KVM_ROUTINES else */
 #endif /* SYSV && SYSV386 else */
