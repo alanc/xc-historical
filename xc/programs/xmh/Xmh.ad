@@ -47,6 +47,7 @@ Xmh.ReplyInsertFilter:		cat
 *save.Label:			Save Message
 *send.Label:			Send
 *reset.Label:			New Headers
+*insert.Label:			Insert
 *optionMenu*reverse.Label:	Read in Reverse
 
 Xmh.notice.Dialog.Text.BorderWidth: 0
