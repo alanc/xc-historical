@@ -1280,6 +1280,8 @@ _XtTextShowPosition(ctx)
 _XtTextExecuteUpdate(ctx)
   TextWidget ctx;
 {
+    if (ctx->text.update_disabled) return;
+
     if (oldinsert >= 0) {
 	if (oldinsert != ctx->text.insertPos || ctx->text.showposition)
 	    _XtTextShowPosition(ctx);
@@ -1563,13 +1565,30 @@ void XtTextDisableRedisplay(w, d)
     Widget w;
     int d;
 {
-    _XtTextPrepareToUpdate(w);
+    register TextWidget ctx = (TextWidget)w;
+
+    ctx->text.update_disabled = True;
+    _XtTextPrepareToUpdate(ctx);
 }
 
 void XtTextEnableRedisplay(w)
     Widget w;
 {
-    _XtTextExecuteUpdate(w);
+    register TextWidget ctx = (TextWidget)w;
+    register Position lastPos;
+
+    if (!ctx->text.update_disabled) return;
+
+    ctx->text.update_disabled = False;
+    lastPos = ctx->text.lastPos = GETLASTPOS;
+    if (ctx->text.lt.top > lastPos)    ctx->text.lt.top = ctx->text.lastPos;
+    if (ctx->text.insertPos > lastPos) ctx->text.insertPos = ctx->text.lastPos;
+    if (ctx->text.s.left > lastPos ||
+	ctx->text.s.right > lastPos)  ctx->text.s.left = ctx->text.s.right = 0;
+
+    ForceBuildLineTable(ctx);
+    DisplayTextWindow(w);
+    _XtTextExecuteUpdate(ctx);
 }
 
 XtTextSource XtTextGetSource(w)
