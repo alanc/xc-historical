@@ -1,4 +1,4 @@
-/* $XConsortium: choose.c,v 1.13 94/08/25 17:37:40 mor Exp mor $ */
+/* $XConsortium: choose.c,v 1.14 94/09/14 16:12:01 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -204,15 +204,14 @@ ChooseSession ()
 	XtNforeground, save_message_background,
 	NULL);
 
-    XtPopup (chooseSessionPopup, XtGrabNone);
-
-
     /*
      * Wait for a map notify on the popup, then set input focus.
      */
 
     XtAddEventHandler (chooseSessionPopup, StructureNotifyMask, False,
 	ChooseWindowStructureNotifyXtHandler, NULL);
+
+    XtPopup (chooseSessionPopup, XtGrabNone);
 }
 
 
