@@ -144,7 +144,7 @@ $(EXTDIR) $(SUBDIRS): FRC
 	$(MAKE) $(MFLAGS) PassCDebugFlags all
 
 install:: $(ALL)
-	@for i in $?; do \
+	@for i in $(ALL); do \
 		$(INSTALL) -c $(INSTALLFLAGS) $$i $(BINDIR)
 	done
 
