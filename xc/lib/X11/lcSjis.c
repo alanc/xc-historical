@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: lcSjis.c,v 1.8 94/01/20 18:07:24 rws Exp $ */
 /****************************************************************
 
         Copyright 1992, 1993 by FUJITSU LIMITED
@@ -1138,7 +1138,7 @@ create_conv(lcd, methods)
 
 
 enum { MBSTOCS, WCSTOCS, MBTOCS, CSTOMBS, CSTOWCS, MBSTOWCS, WCSTOMBS,
-       WCSTOCTS, MBSTOCTS, CTSTOMBS, CTSTOWCS } convs;
+       WCSTOCTS, MBSTOCTS, CTSTOMBS, CTSTOWCS };
 
 static XlcConvMethodsRec conv_methods[] = {
     {close_converter, sjis_mbstocs,  NULL },
