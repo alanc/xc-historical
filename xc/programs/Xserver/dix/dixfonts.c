@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.34 92/03/31 17:48:46 keith Exp $ */
+/* $XConsortium: dixfonts.c,v 1.36 92/09/29 18:48:53 gildea Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -339,6 +339,8 @@ OpenFont(client, fid, flags, lenfname, pfontname)
     int         i;
     FontPtr     cached;
 
+    if (!lenfname)
+	return BadName;
     if (patternCache)
     {
 	cached = FindCachedFontPattern(patternCache, pfontname, lenfname);
