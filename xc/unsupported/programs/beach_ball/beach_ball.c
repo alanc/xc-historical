@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: beach_ball.c,v 5.1 91/02/16 09:32:48 rws Exp $ */
 /***********************************************************
 Copyright 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
 
@@ -36,6 +36,7 @@ SOFTWARE.
 #include <X11/Xatom.h>
 #endif /*PEX_SI_PHIGS*/
 #include <phigs/phigs.h>
+#include <X11/Xfuncs.h>
 
 #ifdef USE_X_DRAWABLE
 extern void init_window();
@@ -106,7 +107,7 @@ static void
 random_velocity(v)
 Pvec3 *v;
 {
-    extern int  random();
+    extern int  rand();
 
     int	    Xr, Yr;
     Pfloat  Xv, Yv, Zv, XYv, V2;
@@ -114,12 +115,12 @@ Pvec3 *v;
     Xv = Yv = Zv = 0.0;
     V2 = VELOCITY * VELOCITY;
 
-    Xr = random();
+    Xr = rand();
     Xv = ((float)Xr/(float)MAX_RAND) * (VELOCITY/sqrt(3.0));
     if ( Xr % 2 )
     Xv = - Xv;
 
-    Yr = random();
+    Yr = rand();
     Yv = ((float)Yr/(float)MAX_RAND) * sqrt(V2 - Xv * Xv);
     if ( Yr % 2 )
     Yv = - Yv;
@@ -127,7 +128,7 @@ Pvec3 *v;
     XYv = sqrt(Xv * Xv + Yv * Yv);
     if ( XYv < VELOCITY ) {
     Zv = sqrt(V2 - XYv * XYv);
-    if ( random() % 2 )
+    if ( rand() % 2 )
 	Zv = - Zv;
     }
 
@@ -143,7 +144,7 @@ add_sphere()
 
     if (sphere_count < MAX_SPHERES) {
     data = &sphere_data[sphere_count++];
-    memcpy(data->position, identity, sizeof(Pmatrix3));
+    bcopy(identity, data->position, sizeof(Pmatrix3));
     random_velocity(&data->velocity );
 
     pset_edit_mode(PEDIT_INSERT);
