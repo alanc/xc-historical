@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.93 89/11/01 10:22:30 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.94 89/12/03 13:36:44 jim Exp $";
 /* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
 #endif /* lint */
 /*LINTLIBRARY*/
@@ -2600,7 +2600,7 @@ void _XtBuildKeysymTables(dpy,pd)
 	    pd->lock_meaning = XK_Shift_Lock;
 	}
     }
-    XFree(modKeymap);
+    XFree((char *)modKeymap);
 }
 
 void XtTranslateKeycode (dpy, keycode, modifiers,
