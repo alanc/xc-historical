@@ -1,4 +1,4 @@
-/* $XConsortium: grabs.c,v 1.11 89/06/09 14:56:04 keith Exp $ */
+/* $XConsortium: grabs.c,v 5.0 89/06/09 14:59:23 keith Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -254,14 +254,17 @@ AddPassiveGrabToList(pGrab)
 	}
     }
 
-    pGrab->next = wPassiveGrabs (pGrab->window);
-    if (!pGrab->window->optional)
-	MakeWindowOptional (pGrab->window);
+    if (!pGrab->window->optional && !MakeWindowOptional (pGrab->window))
+    {
+	FreeGrab(pGrab);
+	return BadAlloc;
+    }
+    pGrab->next = pGrab->window->optional->passiveGrabs;
     pGrab->window->optional->passiveGrabs = pGrab;
     if (AddResource(pGrab->resource, RT_FAKE, (pointer)pGrab,
 		    DeletePassiveGrab, RC_CORE))
 	return Success;
-    return BadAccess;
+    return BadAlloc;
 }
 
 /* the following is kinda complicated, because we need to be able to back out
@@ -340,7 +343,10 @@ DeletePassiveGrabFromList(pMinuendGrab)
 		ok = FALSE;
 	    else if (!(pNewGrab->modifiersDetail.pMask =
 		       DeleteDetailFromMask(grab->modifiersDetail.pMask,
-					 pMinuendGrab->modifiersDetail.exact)))
+					 pMinuendGrab->modifiersDetail.exact))
+		     ||
+		     (!pNewGrab->window->optional &&
+		      !MakeWindowOptional(pNewGrab->window)))
 	    {
 		FreeGrab(pNewGrab);
 		ok = FALSE;
@@ -377,9 +383,7 @@ DeletePassiveGrabFromList(pMinuendGrab)
 	for (i = 0; i < nadds; i++)
 	{
 	    grab = adds[i];
-	    grab->next = wPassiveGrabs(grab->window);
-	    if (!grab->window->optional)
-		MakeWindowOptional (grab->window);
+	    grab->next = grab->window->optional->passiveGrabs;
 	    grab->window->optional->passiveGrabs = grab;
 	}
 	for (i = 0; i < nups; i++)

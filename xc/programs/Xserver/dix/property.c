@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: property.c,v 1.69 89/06/09 14:56:10 keith Exp $ */
+/* $XConsortium: property.c,v 5.0 89/06/09 14:59:27 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -201,6 +201,8 @@ ProcChangeProperty(client)
     }
     if (!pProp)   /* just add to list */
     {
+	if (!pWin->optional && !MakeWindowOptional (pWin))
+	    return(BadAlloc);
         pProp = (PropertyPtr)xalloc(sizeof(PropertyRec));
 	if (!pProp)
 	    return(BadAlloc);
@@ -217,9 +219,7 @@ ProcChangeProperty(client)
 	if (len)
 	    bcopy((char *)&stuff[1], (char *)data, (int)(len * sizeInBytes));
 	pProp->size = len;
-        pProp->next = wUserProps (pWin);
-	if (!pWin->optional)
-	    MakeWindowOptional (pWin);
+        pProp->next = pWin->optional->userProps;
         pWin->optional->userProps = pProp;
     }
     else
