@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.37 89/06/02 09:19:20 rws Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.38 89/06/13 18:44:45 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -99,6 +99,13 @@
 #undef apollo
 #define ApolloArchitecture
 #endif /* apollo */
+
+#ifdef sony
+#define MacroIncludeFile "sony.cf"
+#define MacroFile sony.cf
+#undef sony
+#define SonyArchitecture
+#endif /* sony */
 
 #ifdef M4310
 #define MacroIncludeFile "pegasus.cf"
