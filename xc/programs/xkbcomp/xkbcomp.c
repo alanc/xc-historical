@@ -1,4 +1,4 @@
-/* $XConsortium: xkbcomp.c,v 1.4 93/09/28 20:16:45 rws Exp $ */
+/* $XConsortium: xkbcomp.c,v 1.1 94/04/02 17:08:15 erik Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -27,11 +27,7 @@
 
 #include <stdio.h>
 #include <ctype.h>
-#include <string.h>
-#include <stdlib.h>
-#include <X11/Xlib.h>
 #include <X11/keysym.h>
-#include <X11/XKBlib.h>
 
 #if defined(sgi)
 #include <malloc.h>
@@ -40,6 +36,9 @@
 #define	DEBUG_VAR_NOT_LOCAL
 #define	DEBUG_VAR debugFlags
 #include "xkbcomp.h"
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#endif
 #include "xkbio.h"
 #include "tokens.h"
 
@@ -236,7 +235,7 @@ XkbFileResult 	result;
 	setScanState(inputFile,1);
 	if (XKBParseFile(file,&rtrn)&&(rtrn!=NULL)) {
 	    fclose(file);
-	    bzero(&result,sizeof(result));
+	    bzero((char *)&result,sizeof(result));
 	    switch (rtrn->type) {
 		case XkmSemanticsFile:
 		case XkmLayoutFile:

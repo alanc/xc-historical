@@ -1,12 +1,12 @@
 #ifndef HASH_H
 #define	HASH_H 1
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <X11/Xfuncproto.h>
+
+_XFUNCPROTOBEGIN
 
   /*\
-   * $XConsortium: xkmformat.h,v 1.4 93/09/28 20:16:45 rws Exp $
+   * $XConsortium: hash.h,v 1.1 94/04/02 17:10:37 erik Exp $
    *
    *		              COPYRIGHT 1990
    *		        DIGITAL EQUIPMENT CORPORATION
@@ -150,9 +150,6 @@ extern void htEndIterator(
 #define	htIterator(t,k,d,s)	\
 	if (_htInitIter((t),&(s))) \
 	    while (_htIterNext((t),(Opaque)(s),(GenKey *)&(k),(GenData *)&(d))) 
-
-#ifdef __cplusplus
-}
-#endif
+_XFUNCPROTOEND
 
 #endif /* HASH_H */

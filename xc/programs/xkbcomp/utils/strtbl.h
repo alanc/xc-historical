@@ -1,12 +1,12 @@
 #ifndef STRTBL_H
 #define	STRTBL_H 1
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <X11/Xfuncproto.h>
+
+_XFUNCPROTOBEGIN
 
   /*\
-   * $XConsortium: xkmformat.h,v 1.4 93/09/28 20:16:45 rws Exp $
+   * $XConsortium: strtbl.h,v 1.1 94/04/02 17:11:54 erik Exp $
    *
    *		              COPYRIGHT 1990
    *		        DIGITAL EQUIPMENT CORPORATION
@@ -37,12 +37,12 @@ typedef	unsigned long StringToken;
 #define	NullStringToken	((StringToken)0)
 
 extern	char *stText(
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
     StringToken 	/* token */
 #endif
 );
 extern	Boolean stInit(
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
     unsigned 	/* nStr */, 
     unsigned 	/* avgSize */, 
     Boolean 	/* needPriv */,
@@ -50,54 +50,54 @@ extern	Boolean stInit(
 #endif
 );
 extern	void stClose(
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
     void
 #endif
 );
 
 extern	StringToken stGetToken(
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
     char *	/* str */
 #endif
 );
 extern	Boolean	 stGetTokenIfExists(
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
     char *		/* str */,
     StringToken *	/* pToken */
 #endif
 );
 
 extern	char *stGetString(
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
     StringToken 	/* token */
 #endif
 );
 extern	Boolean	stRemove(
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
     StringToken 	/* token */
 #endif
 );
 
 extern	Opaque	stGetPriv(
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
     StringToken 	/* token */
 #endif
 );
 extern	Boolean	stSetPriv(
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
     StringToken 	/* token */, 
     Opaque 		/* priv */
 #endif
 );
 
 extern	Comparison _stCompare(
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
     StringToken /* token1 */,
     StringToken /* token2 */
 #endif
 );
 extern	Comparison _stCaseCompare(
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
     StringToken /* token1 */,
     StringToken /* token2 */
 #endif
@@ -111,8 +111,6 @@ extern	Comparison _stCaseCompare(
 #define	stCaseCompare(t1,t2) \
 	((t1)==(t2)?Equal:_stCaseCompare(t1,t2))
 
-#ifdef __cplusplus
-}
-#endif
+_XFUNCPROTOEND
 
 #endif /* STRTBL_H */

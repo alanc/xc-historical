@@ -1,12 +1,12 @@
 #ifndef STORAGESTR_H
 #define	STORAGESTR_H	1
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <X11/Xfuncproto.h>
+
+_XFUNCPROTOBEGIN
 
   /*\
-   * $XConsortium: xkmformat.h,v 1.4 93/09/28 20:16:45 rws Exp $
+   * $XConsortium: storagestr.h,v 1.1 94/04/02 17:11:27 erik Exp $
    *
    *		              COPYRIGHT 1990
    *		        DIGITAL EQUIPMENT CORPORATION
@@ -104,8 +104,6 @@ typedef	struct	_GenDataDescRec {
 #define	_genRemoveData(pdt,d)	((pdt)->remove?(*(pdt)->remove)((d)):(d))
 #define	_genNullData(pdt)	((pdt)->null)
 
-#ifdef __cplusplus
-}
-#endif
+_XFUNCPROTOEND
 
 #endif

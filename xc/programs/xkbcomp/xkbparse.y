@@ -1,4 +1,4 @@
-/* $XConsortium: xkbparse.y,v 1.4 93/09/28 20:16:45 rws Exp $ */
+/* $XConsortium: xkbparse.y,v 1.1 94/04/02 17:09:31 erik Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -861,11 +861,11 @@ LookupKeysym(str,sym_rtrn)
 {
 KeySym sym;
 
-    if ((!str)||(strcasecmp(str,"any")==0)||(strcasecmp(str,"nosymbol")==0)) {
+    if ((!str)||(uStrCaseCmp(str,"any")==0)||(uStrCaseCmp(str,"nosymbol")==0)) {
 	*sym_rtrn= NoSymbol;
 	return 1;
     }
-    else if ((strcasecmp(str,"none")==0)||(strcasecmp(str,"voidsymbol")==0)) {
+    else if ((uStrCaseCmp(str,"none")==0)||(uStrCaseCmp(str,"voidsymbol")==0)) {
 	*sym_rtrn= XK_VoidSymbol;
 	return 1;
     }

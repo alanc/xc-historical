@@ -1,6 +1,6 @@
 
   /*\
-   * $XConsortium: xkmformat.h,v 1.4 93/09/28 20:16:45 rws Exp $
+   * $XConsortium: storage.c,v 1.1 94/04/02 17:10:50 erik Exp $
    *
    *		              COPYRIGHT 1990
    *		        DIGITAL EQUIPMENT CORPORATION
@@ -42,9 +42,9 @@ int	total;
     uENTRY1("genHashString(%s)\n",key);
 
     total= *key++;
-    if (*key)	total|= ((*key++)<<16)&0x00ff0000;
-    if (*key)	total|=	((*key++)<<8)&0x0000ff00;
-    if (*key)	total|=	((*key++)<<24)&0xff000000;
+    if (*key)	total|= (((int)(*key++))<<16)&0x00ff0000;
+    if (*key)	total|=	(((int)(*key++))<<8)&0x0000ff00;
+    if (*key)	total|=	(((int)(*key++))<<24)&0xff000000;
     uRETURN(total);
 }
 

@@ -1,4 +1,4 @@
-/* $XConsortium: interp.c,v 1.4 93/09/28 20:16:45 rws Exp $ */
+/* $XConsortium: compat.c,v 1.1 94/04/02 17:05:17 erik Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -111,7 +111,7 @@ ModCompatInfo *mc,*next;
 
     if (info->interps)
 	uFree(info->interps);
-    bzero(info,sizeof(CompatInfo));
+    bzero((char *)info,sizeof(CompatInfo));
     for (mc=info->modCompat;mc!=NULL;mc=next) {
 	next= mc->next;
 	uFree(mc);
@@ -133,7 +133,7 @@ NextInterp(info)
 	if (info->interps==NULL)
 	    return NULL;
     }
-    bzero(&info->interps[info->nInterps],sizeof(XkbSymInterpretRec));
+    bzero((char *)&info->interps[info->nInterps],sizeof(XkbSymInterpretRec));
     return &info->interps[info->nInterps++];
 }
 
@@ -262,15 +262,15 @@ ExprResult	result;
     *pred_rtrn= XkbSI_Exactly;
     if (expr->op==ExprActionDecl) {
 	char *pred_txt= stGetString(expr->value.action.name);
-	if (strcasecmp(pred_txt,"noneof")==0)
+	if (uStrCaseCmp(pred_txt,"noneof")==0)
 	     *pred_rtrn= XkbSI_NoneOf;
-	else if (strcasecmp(pred_txt,"anyofornone")==0)
+	else if (uStrCaseCmp(pred_txt,"anyofornone")==0)
 	     *pred_rtrn= XkbSI_AnyOfOrNone;
-	else if (strcasecmp(pred_txt,"anyof")==0)
+	else if (uStrCaseCmp(pred_txt,"anyof")==0)
 	     *pred_rtrn= XkbSI_AnyOf;
-	else if (strcasecmp(pred_txt,"allof")==0)
+	else if (uStrCaseCmp(pred_txt,"allof")==0)
 	     *pred_rtrn= XkbSI_AllOf;
-	else if (strcasecmp(pred_txt,"exactly")==0)
+	else if (uStrCaseCmp(pred_txt,"exactly")==0)
 	     *pred_rtrn= XkbSI_Exactly;
 	else {
 	     uError("Illegal modifier predicate \"%s\"\n",pred_txt);
@@ -281,7 +281,7 @@ ExprResult	result;
     }
     else if (expr->op==ExprIdent) {
 	char *pred_txt= stGetString(expr->value.str);
-	if ((pred_txt)&&(strcasecmp(pred_txt,"any")==0)) {
+	if ((pred_txt)&&(uStrCaseCmp(pred_txt,"any")==0)) {
 	    *pred_rtrn= XkbSI_AnyOf;
 	    *mods_rtrn= 0xff;
 	    return True;
@@ -367,30 +367,30 @@ SetInterpField(interp,xkb,field,arrayNdx,value,merge,info)
 int 		ok= 1;
 ExprResult	tmp;
 
-    if (strcasecmp(field,"action")==0) {
+    if (uStrCaseCmp(field,"action")==0) {
 	ok= HandleActionDef(value,xkb,&interp->act,merge,info->act);
     }
-    else if (strcasecmp(field,"virtualmodifier")==0) {
+    else if (uStrCaseCmp(field,"virtualmodifier")==0) {
 	ok= ResolveVirtualModifier(value,&tmp,&info->vmods);
 	if (ok)
 	    interp->virtual_mod= tmp.uval;
     }
-    else if (strcasecmp(field,"repeat")==0) {
+    else if (uStrCaseCmp(field,"repeat")==0) {
 	ok= ExprResolveBoolean(value,&tmp,NULL,NULL);
 	if (ok) {
 	    if (tmp.uval)	interp->flags|= XkbSI_Autorepeat;
 	    else		interp->flags&= ~XkbSI_Autorepeat;
 	}
     }
-    else if (strcasecmp(field,"locking")==0) {
+    else if (uStrCaseCmp(field,"locking")==0) {
 	ok= ExprResolveBoolean(value,&tmp,NULL,NULL);
 	if (ok) {
 	    if (tmp.uval)	interp->flags|= XkbSI_LockingKey;
 	    else		interp->flags&= ~XkbSI_LockingKey;
 	}
     }
-    else if ((strcasecmp(field,"usemodmap")==0)||
-	 	(strcasecmp(field,"usemodmapmods")==0)) {
+    else if ((uStrCaseCmp(field,"usemodmap")==0)||
+	 	(uStrCaseCmp(field,"usemodmapmods")==0)) {
 	ok= ExprResolveEnum(value,&tmp,useModMapValues);
 	if (ok) {
 	    if (tmp.uval)	interp->match|= XkbSI_LevelOneOnly;
@@ -417,11 +417,11 @@ ExprDef *	arrayNdx;
 
     if (ExprResolveLhs(stmt->name,&elem,&field,&arrayNdx)==0) 
 	return 0; /* internal error, already reported */
-    if (elem.str&&(strcasecmp(elem.str,"interpret")==0)) {
+    if (elem.str&&(uStrCaseCmp(elem.str,"interpret")==0)) {
 	return SetInterpField(&info->dflt,xkb,field.str,arrayNdx,stmt->value,
 							     mergeMode,info);	
     }
-    if (elem.str&&(strcasecmp(elem.str,"indicator")==0)) {
+    if (elem.str&&(uStrCaseCmp(elem.str,"indicator")==0)) {
 	uInternalError("Don't know how to set indicator map fields yet\n");
 	uAction("Default setting for %s ignored\n",field.str);
 	return True;
@@ -549,7 +549,7 @@ ModCompatInfo	tmp;
 	    uInternalError("Empty field in modifier compatibility map\n");
 	    continue;
 	}
-	if (strcasecmp(field.str,"groups")==0) {
+	if (uStrCaseCmp(field.str,"groups")==0) {
 	    if (arrayNdx!=NULL) {
 		uError("Index for groups field of a mod compat map\n");
 		uAction("Illegal array index ignored\n");
@@ -563,8 +563,8 @@ ModCompatInfo	tmp;
 	    }
 	    tmp.groups= elem.uval;
 	}
-	else if ((strcasecmp(field.str,"mods")==0)||
-		 (strcasecmp(field.str,"modifiers")==0)) {
+	else if ((uStrCaseCmp(field.str,"mods")==0)||
+		 (uStrCaseCmp(field.str,"modifiers")==0)) {
 	    if (arrayNdx!=NULL) {
 		uError("Index for groups field of a mod compat map\n");
 		uAction("Illegal array index ignored\n");

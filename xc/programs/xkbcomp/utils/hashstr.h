@@ -1,12 +1,12 @@
 #ifndef HASHSTR_H
 #define	HASHSTR_H	1
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <X11/Xfuncproto.h>
+
+_XFUNCPROTOBEGIN
 
   /*\
-   * $XConsortium: xkmformat.h,v 1.4 93/09/28 20:16:45 rws Exp $
+   * $XConsortium: hashstr.h,v 1.1 94/04/02 17:10:45 erik Exp $
    *
    *		              COPYRIGHT 1990
    *		        DIGITAL EQUIPMENT CORPORATION
@@ -50,8 +50,6 @@ typedef struct _HashTableRec {
 	GenDataDescPtr		 dataType;
 } HashTableRec;
 
-#ifdef __cplusplus
-}
-#endif
+_XFUNCPROTOEND
 
 #endif

@@ -1,6 +1,6 @@
 
   /*\
-   * $XConsortium: xkmformat.h,v 1.4 93/09/28 20:16:45 rws Exp $
+   * $XConsortium: utils.c,v 1.1 94/04/02 17:12:03 erik Exp $
    *
    *		              COPYRIGHT 1990
    *		        DIGITAL EQUIPMENT CORPORATION
@@ -27,8 +27,11 @@
   \*/
 
 #include 	"utils.h"
-#ifdef sgi
-#include	<malloc.h>
+#include	<ctype.h>
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+char *malloc();
 #endif
 
 /***====================================================================***/
@@ -312,8 +315,26 @@ char *rtrn;
 
     if (str==NULL)
 	return NULL;
-    rtrn= uAlloc(strlen(str)+1);
+    rtrn= (char *)uAlloc(strlen(str)+1);
     strcpy(rtrn,str);
     return rtrn;
+}
+#endif
+
+#ifndef HAVE_STRCASECMP
+int
+uStrCaseCmp(str1, str2)
+    char *str1, *str2;
+{
+    char str[512];
+    char c, *s;
+
+    for (s = str; c = *str1++; ) {
+	if (isupper(c))
+	    c = tolower(c);
+	*s++ = c;
+    }
+    *s = '\0';
+    return (strcmp(str, str2));
 }
 #endif

@@ -1,4 +1,4 @@
-/* $XConsortium: xkbout.c,v 1.4 93/09/28 20:16:45 rws Exp $ */
+/* $XConsortium: xkbout.c,v 1.1 94/04/02 17:09:00 erik Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -25,14 +25,13 @@
 
  ********************************************************/
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <X11/Xlib.h>
 
 #define	DEBUG_VAR_NOT_LOCAL
 #define	DEBUG_VAR debugFlags
 #include "xkbcomp.h"
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#endif
 #include "misc.h"
 #include "tokens.h"
 

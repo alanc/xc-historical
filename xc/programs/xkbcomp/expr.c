@@ -1,4 +1,4 @@
-/* $XConsortium: expr.c,v 1.4 93/09/28 20:16:45 rws Exp $ */
+/* $XConsortium: expr.c,v 1.1 94/04/02 17:05:44 erik Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -171,7 +171,7 @@ register char *	str;
     }
     str= stGetString(field);
     for (entry=(LookupEntry *)priv;(entry!=NULL)&&(entry->name!=NULL);entry++) {
-	if (strcasecmp(str,entry->name)==0) {
+	if (uStrCaseCmp(str,entry->name)==0) {
 	    val_rtrn->uval= entry->result;
 	    return True;
 	}
@@ -197,7 +197,7 @@ register char *	str;
     while (tbl) {
 	if (((str==NULL)&&(tbl->element==NULL))||
 	    ((str!=NULL)&&(tbl->element!=NULL)&&
-			  (strcasecmp(str,tbl->element)==0))) {
+			  (uStrCaseCmp(str,tbl->element)==0))) {
 	    break;
 	}
 	tbl= tbl->nextElement;
@@ -230,7 +230,7 @@ LookupModIndex(priv,elem,field,type,val_rtrn)
     unsigned		type;
     ExprResult *	val_rtrn;
 {
-    return SimpleLookup((XPointer *)&modIndexNames,elem,field,type,val_rtrn);
+    return SimpleLookup((XPointer *)modIndexNames,elem,field,type,val_rtrn);
 }
 
 int
@@ -248,9 +248,9 @@ char *str;
     str= stGetString(field);
     if (str==NULL)
 	 return False;
-    if (strcasecmp(str,"all")==0)
+    if (uStrCaseCmp(str,"all")==0)
 	 val_rtrn->uval= 0xff;
-    else if (strcasecmp(str,"none")==0)
+    else if (uStrCaseCmp(str,"none")==0)
 	 val_rtrn->uval= 0;
     else if (LookupModIndex(priv,elem,field,type,val_rtrn))
 	 val_rtrn->uval= (1<<val_rtrn->uval);
@@ -368,15 +368,15 @@ char *	bogus= NULL;
 	case ExprIdent:
 	    bogus= stGetString(expr->value.str);
 	    if (bogus) {
-		if ((strcasecmp(bogus,"true")==0)||
-				(strcasecmp(bogus,"yes")==0)||
-				(strcasecmp(bogus,"on")==0)) {
+		if ((uStrCaseCmp(bogus,"true")==0)||
+				(uStrCaseCmp(bogus,"yes")==0)||
+				(uStrCaseCmp(bogus,"on")==0)) {
 		    val_rtrn->uval= 1;
 		    return True;
 		}
-		else if ((strcasecmp(bogus,"false")==0)||
-				(strcasecmp(bogus,"no")==0)||
-				(strcasecmp(bogus,"off")==0)) {
+		else if ((uStrCaseCmp(bogus,"false")==0)||
+				(uStrCaseCmp(bogus,"no")==0)||
+				(uStrCaseCmp(bogus,"off")==0)) {
 		    val_rtrn->uval= 0;
 		    return True;
 		}

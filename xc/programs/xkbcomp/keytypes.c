@@ -1,4 +1,4 @@
-/* $XConsortium: interp.c,v 1.4 93/09/28 20:16:45 rws Exp $ */
+/* $XConsortium: keytypes.c,v 1.1 94/04/02 17:07:09 erik Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -178,7 +178,7 @@ NextKeyType(info)
 	if (info->types==NULL)
 	    return NULL;
     }
-    bzero(&info->types[info->nTypes],sizeof(KeyTypeInfo));
+    bzero((char *)&info->types[info->nTypes],sizeof(KeyTypeInfo));
     return &info->types[info->nTypes++];
 }
 
@@ -769,7 +769,7 @@ SetKeyTypeField(type,xkb,field,arrayNdx,value,merge,info)
 int 		ok= 1;
 ExprResult	tmp;
 
-    if (strcasecmp(field,"modifiers")==0) {
+    if (uStrCaseCmp(field,"modifiers")==0) {
 	unsigned mods,vmods;
 	if (arrayNdx!=NULL) {
 	    uWarning("The modifiers field of a is not an array\n");
@@ -795,14 +795,14 @@ ExprResult	tmp;
 	type->vmask= vmods;
 	return True;
     }
-    else if (strcasecmp(field,"map")==0)
+    else if (uStrCaseCmp(field,"map")==0)
 	return SetMapEntry(type,xkb,arrayNdx,value,merge,True);
-    else if (strcasecmp(field,"preserve")==0)
+    else if (uStrCaseCmp(field,"preserve")==0)
 	return SetPreserve(type,xkb,arrayNdx,value,merge,True);
-    else if ((strcasecmp(field,"levelname")==0)||
-	     (strcasecmp(field,"level_name")==0))
+    else if ((uStrCaseCmp(field,"levelname")==0)||
+	     (uStrCaseCmp(field,"level_name")==0))
 	return SetLevelName(type,arrayNdx,value,merge,True);
-    else if (strcasecmp(field,"groupswrap")==0) {
+    else if (uStrCaseCmp(field,"groupswrap")==0) {
 	if (!ExprResolveBoolean(value,&tmp,NULL,NULL)) {
 	    uError("Non-boolean value for groupsWrap in key type %s\n",
 							stText(type->name));
@@ -828,7 +828,7 @@ ExprDef *	arrayNdx;
 
     if (!ExprResolveLhs(stmt->name,&elem,&field,&arrayNdx)) 
 	return False; /* internal error, already reported */
-    if (elem.str&&(strcasecmp(elem.str,"type")==0))
+    if (elem.str&&(uStrCaseCmp(elem.str,"type")==0))
 	return SetKeyTypeField(&info->dflt,xkb,field.str,arrayNdx,stmt->value,
 							     merge,info);	
     if (elem.str!=NULL) {

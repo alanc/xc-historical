@@ -1,4 +1,4 @@
-/* $XConsortium: keycodes.c,v 1.4 93/09/28 20:16:45 rws Exp $ */
+/* $XConsortium: keycodes.c,v 1.1 94/04/02 17:06:07 erik Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -196,8 +196,8 @@ ClearKeyNamesInfo(info)
     info->computedMin= 256;
     info->effectiveMin= 8;
     info->effectiveMax= 255;
-    bzero(&info->hash,sizeof(info->hash));
-    bzero(info->names,sizeof(info->names));
+    bzero((char *)&info->hash,sizeof(info->hash));
+    bzero((char *)info->names,sizeof(info->names));
     return;
 }
 
@@ -381,8 +381,8 @@ int		which;
 	uAction("Default for field %s ignored\n",field.str);
 	return 0;
     }
-    if (strcasecmp(field.str,"minimum")==0)	 which= MIN_KEYCODE_DEF;
-    else if (strcasecmp(field.str,"maximum")==0) which= MAX_KEYCODE_DEF;
+    if (uStrCaseCmp(field.str,"minimum")==0)	 which= MIN_KEYCODE_DEF;
+    else if (uStrCaseCmp(field.str,"maximum")==0) which= MAX_KEYCODE_DEF;
     else {
 	uError("Unknown field encountered\n");
 	uAction("Assigment to field %s ignored\n",field.str);

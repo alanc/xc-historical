@@ -1,4 +1,4 @@
-/* $XConsortium: interp.c,v 1.4 93/09/28 20:16:45 rws Exp $ */
+/* $XConsortium: symbols.c,v 1.1 94/04/02 17:07:36 erik Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -46,7 +46,7 @@ extern StringToken	tok_KEYPAD;
 
 #define	RepeatYes	1
 #define	RepeatNo	0
-#define	RepeatUndefined	-1
+#define	RepeatUndefined	~((unsigned)0)
 
 typedef struct _KeyInfo {
     unsigned		fileID;
@@ -248,7 +248,7 @@ ModMapEntry *	mm,*next;
 	next= mm->next;
 	uFree(mm);
     }
-    bzero(info,sizeof(SymbolsInfo));
+    bzero((char *)info,sizeof(SymbolsInfo));
     return;
 }
 
@@ -771,7 +771,7 @@ SetSymbolsField(key,xkb,field,arrayNdx,value,clobber,info)
 Bool 		ok= True;
 ExprResult	tmp;
 
-    if (strcasecmp(field,"type")==0) {
+    if (uStrCaseCmp(field,"type")==0) {
 	if (arrayNdx!=NULL) {
 	    uWarning("The type field of a key symbol map is not an array\n");
 	    uAction("Illegal subscript ignored\n");
@@ -782,20 +782,20 @@ ExprResult	tmp;
 	}
 	key->type= stGetToken(tmp.str);
     }
-    else if (strcasecmp(field,"symbols")==0)
+    else if (uStrCaseCmp(field,"symbols")==0)
 	return AddSymbolsToKey(key,xkb,field,arrayNdx,value,clobber,info);
-    else if (strcasecmp(field,"actions")==0)
+    else if (uStrCaseCmp(field,"actions")==0)
 	return AddActionsToKey(key,xkb,field,arrayNdx,value,clobber,info);
-    else if ((strcasecmp(field,"locking")==0)||(strcasecmp(field,"lock")==0)||
-   	     (strcasecmp(field,"locks")==0)) {
+    else if ((uStrCaseCmp(field,"locking")==0)||(uStrCaseCmp(field,"lock")==0)||
+   	     (uStrCaseCmp(field,"locks")==0)) {
 	ok= ExprResolveEnum(value,&tmp,lockingEntries);
 	if (ok)
 	    key->behavior.type= tmp.uval;
     }
-    else if ((strcasecmp(field,"radiogroup")==0)||
-	     (strcasecmp(field,"permanentradiogroup")==0)) {
+    else if ((uStrCaseCmp(field,"radiogroup")==0)||
+	     (uStrCaseCmp(field,"permanentradiogroup")==0)) {
 	Bool permanent= False;
-	if (strcasecmp(field,"permanentradiogroup")==0)
+	if (uStrCaseCmp(field,"permanentradiogroup")==0)
 	    permanent= True;
 	ok= ExprResolveInteger(value,&tmp,SimpleLookup,rgEntries);
 	if (!ok) {
@@ -818,8 +818,8 @@ ExprResult	tmp;
 	key->behavior.type= XkbKB_RadioGroup|(permanent?XkbKB_Permanent:0);
 	key->behavior.data= tmp.uval-1;
     }
-    else if ((strcasecmp(field,"repeating")==0)||
-	     (strcasecmp(field,"repeats")==0)||(strcasecmp(field,"repeat")==0)){
+    else if ((uStrCaseCmp(field,"repeating")==0)||
+	     (uStrCaseCmp(field,"repeats")==0)||(uStrCaseCmp(field,"repeat")==0)){
 	ok= ExprResolveEnum(value,&tmp,repeatEntries);
 	if (!ok) {
 	    uError("Illegal repeat setting for <%s>\n",longText(key->name));
@@ -848,7 +848,7 @@ ExprDef *	arrayNdx;
 
     if (ExprResolveLhs(stmt->name,&elem,&field,&arrayNdx)==0) 
 	return 0; /* internal error, already reported */
-    if (elem.str&&(strcasecmp(elem.str,"key")==0)) {
+    if (elem.str&&(uStrCaseCmp(elem.str,"key")==0)) {
 	return SetSymbolsField(&info->dflt,xkb,field.str,arrayNdx,stmt->value,
 							     clobber,info);	
     }

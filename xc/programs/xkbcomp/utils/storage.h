@@ -1,12 +1,12 @@
 #ifndef STORAGE_H
 #define	STORAGE_H 1
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <X11/Xfuncproto.h>
+
+_XFUNCPROTOBEGIN
 
   /*\
-   * $XConsortium: xkmformat.h,v 1.4 93/09/28 20:16:45 rws Exp $
+   * $XConsortium: storage.h,v 1.1 94/04/02 17:11:18 erik Exp $
    *
    *		              COPYRIGHT 1990
    *		        DIGITAL EQUIPMENT CORPORATION
@@ -106,8 +106,6 @@ extern	GenDataDescPtr	genIntegerDataType;
 extern	GenDataDescPtr	genXResourceDataType;
 extern	GenDataDescPtr	genDefaultDataType;
 
-#ifdef __cplusplus
-}
-#endif
+_XFUNCPROTOEND
 
 #endif /* ifndef STORAGE_H */

@@ -1,4 +1,4 @@
-/* $XConsortium: xkbscan.c,v 1.4 93/09/28 20:16:45 rws Exp $ */
+/* $XConsortium: xkbscan.c,v 1.1 94/04/02 17:09:37 erik Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -27,7 +27,7 @@
 
 #include <stdio.h>
 #include <ctype.h>
-#include <string.h>
+#include <X11/Xos.h>
 #include <X11/X.h>
 #include <X11/extensions/XKB.h>
 
@@ -298,7 +298,7 @@ int	rtrn;
     found= 0;
 
     for (i=0;(!found)&&(i<numKeywords);i++) {
-	if (strcasecmp(buf,keywords[i].keyword)==0) {
+	if (uStrCaseCmp(buf,keywords[i].keyword)==0) {
 	    rtrn= keywords[i].token;
 	    found= 1;
 	}

@@ -1,4 +1,4 @@
-/* $XConsortium: vmod.c,v 1.4 93/09/28 20:16:45 rws Exp $ */
+/* $XConsortium: vmod.c,v 1.1 94/04/02 17:07:57 erik Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -27,7 +27,6 @@
 #define	DEBUG_VAR_NOT_LOCAL
 #define	DEBUG_VAR debugFlags
 #include <stdio.h>
-#include <string.h>
 #include "xkbcomp.h"
 #include "xkbio.h"
 #include "tokens.h"
@@ -148,7 +147,7 @@ XkbNamesPtr	names;
     
     srv= info->xkb->server;
     names= info->xkb->names;
-    for (i=0,bit=1,nextFree=-1;i<XkbNumVirtualMods;i++,bit<<=1) {
+    for (i=0,bit=1,nextFree= -1;i<XkbNumVirtualMods;i++,bit<<=1) {
 	if (info->defined&bit) {
 	    if (names->vmods[i]==(stmt->name)) {	/* already defined */
 		info->available|= bit;
@@ -223,7 +222,7 @@ XkbDescPtr	xkb;
 	return False;
     for (i=0;i<XkbNumVirtualMods;i++) {
 	modStr= stGetString(xkb->names->vmods[i]);
-	if ((modStr!=NULL)&&(strcasecmp(fieldStr,modStr)==0)) {
+	if ((modStr!=NULL)&&(uStrCaseCmp(fieldStr,modStr)==0)) {
 	    val_rtrn->uval= i;
 	    return True;
 	}

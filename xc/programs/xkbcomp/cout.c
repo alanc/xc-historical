@@ -1,4 +1,4 @@
-/* $XConsortium: cout.c,v 1.4 93/09/28 20:16:45 rws Exp $ */
+/* $XConsortium: cout.c,v 1.1 94/04/02 17:05:22 erik Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -130,7 +130,7 @@ char buf[8],buf2[8];
 	 fprintf(file,"/* keycodes name is \"%s\" */\n",stText(kcName));
     fprintf(file,"static XkbKeyNameRec	keyNames[NUM_KEYS]= {\n");
     for (i=0;i<=xkb->max_key_code;i++) {
-	memcpy(&buf,xkb->names->keys[i].name,4);
+	memcpy(buf,xkb->names->keys[i].name,4);
 	sprintf(buf2,"\"%s\"",buf);
 	if (i!=xkb->max_key_code)  {
 	    fprintf(file,"    {  %6s  },",buf2);

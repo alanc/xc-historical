@@ -1,6 +1,6 @@
 
   /*\
-   * $XConsortium: xkmformat.h,v 1.4 93/09/28 20:16:45 rws Exp $
+   * $XConsortium: strtbl.c,v 1.1 94/04/02 17:11:33 erik Exp $
    *
    *		              COPYRIGHT 1990
    *		        DIGITAL EQUIPMENT CORPORATION
@@ -81,12 +81,21 @@ static char *it=  "<IllegalToken>";
 
 /***====================================================================***/
 
+#if NeedFunctionPrototypes
+Boolean
+stInit(
+    unsigned	nStr,
+    unsigned	avgSize,
+    Boolean	needPriv,
+    Opaque	privDflt)
+#else
 Boolean
 stInit(nStr,avgSize,needPriv,privDflt)
     unsigned	nStr;
     unsigned	avgSize;
     Boolean	needPriv;
     Opaque	privDflt;
+#endif
 {
 register int	i;
 
@@ -356,7 +365,7 @@ _stCaseCompare(token1,token2)
 	uRETURN(Equal);
     }
     /* some kind of consistency check here? */
-    uRETURN(uStringCaseCompare(stringTable[stTokenIndex(token1)].string,
-			   stringTable[stTokenIndex(token2)].string));
+    uRETURN(uStrCaseCmp(stringTable[stTokenIndex(token1)].string,
+			stringTable[stTokenIndex(token2)].string));
 }
 

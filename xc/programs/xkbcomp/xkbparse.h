@@ -1,4 +1,4 @@
-/* $XConsortium: xkbparse.h,v 1.4 93/09/28 20:16:45 rws Exp $ */
+/* $XConsortium: xkbparse.h,v 1.1 94/04/02 17:09:16 erik Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -32,8 +32,6 @@
 #define	DEBUG_VAR	parseDebug
 #endif
 
-#include <stdio.h>
-#include <string.h>
 #include "xkbcomp.h"
 
 extern	char	*scanStr;

@@ -1,4 +1,4 @@
-/* $XConsortium: action.c,v 1.1 94/04/02 17:04:49 erik Exp $ */
+/* $XConsortium: action.c,v 1.2 94/04/04 10:15:00 rws Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -47,47 +47,47 @@ stringToAction(str,type_rtrn)
     if (str==NULL)
 	return False;
 
-    if (strcasecmp(str,"noaction")==0)	 	*type_rtrn= XkbSA_NoAction;
-    else if (strcasecmp(str,"setmods")==0)	*type_rtrn= XkbSA_SetMods;
-    else if (strcasecmp(str,"latchmods")==0)	*type_rtrn= XkbSA_LatchMods;
-    else if (strcasecmp(str,"lockmods")==0)	*type_rtrn= XkbSA_LockMods;
-    else if (strcasecmp(str,"setgroup")==0)	*type_rtrn= XkbSA_SetGroup;
-    else if (strcasecmp(str,"latchgroup")==0)	*type_rtrn= XkbSA_LatchGroup;
-    else if (strcasecmp(str,"lockgroup")==0)	*type_rtrn= XkbSA_LockGroup;
-    else if (strcasecmp(str,"moveptr")==0)	*type_rtrn= XkbSA_MovePtr;
-    else if (strcasecmp(str,"accelptr")==0)	*type_rtrn= XkbSA_AccelPtr;
-    else if (strcasecmp(str,"accelpointer")==0)	*type_rtrn= XkbSA_AccelPtr;
-    else if (strcasecmp(str,"ptrbtn")==0)	*type_rtrn= XkbSA_PtrBtn;
-    else if (strcasecmp(str,"pointerbutton")==0)
+    if (uStrCaseCmp(str,"noaction")==0)	 	*type_rtrn= XkbSA_NoAction;
+    else if (uStrCaseCmp(str,"setmods")==0)	*type_rtrn= XkbSA_SetMods;
+    else if (uStrCaseCmp(str,"latchmods")==0)	*type_rtrn= XkbSA_LatchMods;
+    else if (uStrCaseCmp(str,"lockmods")==0)	*type_rtrn= XkbSA_LockMods;
+    else if (uStrCaseCmp(str,"setgroup")==0)	*type_rtrn= XkbSA_SetGroup;
+    else if (uStrCaseCmp(str,"latchgroup")==0)	*type_rtrn= XkbSA_LatchGroup;
+    else if (uStrCaseCmp(str,"lockgroup")==0)	*type_rtrn= XkbSA_LockGroup;
+    else if (uStrCaseCmp(str,"moveptr")==0)	*type_rtrn= XkbSA_MovePtr;
+    else if (uStrCaseCmp(str,"accelptr")==0)	*type_rtrn= XkbSA_AccelPtr;
+    else if (uStrCaseCmp(str,"accelpointer")==0)*type_rtrn= XkbSA_AccelPtr;
+    else if (uStrCaseCmp(str,"ptrbtn")==0)	*type_rtrn= XkbSA_PtrBtn;
+    else if (uStrCaseCmp(str,"pointerbutton")==0)
 						*type_rtrn= XkbSA_PtrBtn;
-    else if (strcasecmp(str,"clickptrbtn")==0)	*type_rtrn= XkbSA_ClickPtrBtn;
-    else if (strcasecmp(str,"clickpointerbutton")==0)
+    else if (uStrCaseCmp(str,"clickptrbtn")==0)	*type_rtrn= XkbSA_ClickPtrBtn;
+    else if (uStrCaseCmp(str,"clickpointerbutton")==0)
 						*type_rtrn= XkbSA_ClickPtrBtn;
-    else if (strcasecmp(str,"clickptrbutton")==0)
+    else if (uStrCaseCmp(str,"clickptrbutton")==0)
 						*type_rtrn= XkbSA_ClickPtrBtn;
-    else if (strcasecmp(str,"clickpointerbtn")==0)
+    else if (uStrCaseCmp(str,"clickpointerbtn")==0)
 						*type_rtrn= XkbSA_ClickPtrBtn;
-    else if (strcasecmp(str,"lockptrbtn")==0)	*type_rtrn= XkbSA_LockPtrBtn;
-    else if (strcasecmp(str,"lockpointerbutton")==0)	
+    else if (uStrCaseCmp(str,"lockptrbtn")==0)	*type_rtrn= XkbSA_LockPtrBtn;
+    else if (uStrCaseCmp(str,"lockpointerbutton")==0)	
 						*type_rtrn= XkbSA_LockPtrBtn;
-    else if (strcasecmp(str,"lockptrbutton")==0)	
+    else if (uStrCaseCmp(str,"lockptrbutton")==0)	
 						*type_rtrn= XkbSA_LockPtrBtn;
-    else if (strcasecmp(str,"lockpointerbtn")==0)	
+    else if (uStrCaseCmp(str,"lockpointerbtn")==0)	
 						*type_rtrn= XkbSA_LockPtrBtn;
-    else if (strcasecmp(str,"setptrdflt")==0)	*type_rtrn= XkbSA_SetPtrDflt;
-    else if (strcasecmp(str,"setpointerdefault")==0)	
+    else if (uStrCaseCmp(str,"setptrdflt")==0)	*type_rtrn= XkbSA_SetPtrDflt;
+    else if (uStrCaseCmp(str,"setpointerdefault")==0)	
 						*type_rtrn= XkbSA_SetPtrDflt;
-    else if (strcasecmp(str,"isolock")==0)	*type_rtrn= XkbSA_ISOLock;
-    else if (strcasecmp(str,"terminate")==0)	*type_rtrn= XkbSA_Terminate;
-    else if (strcasecmp(str,"terminateserver")==0)
+    else if (uStrCaseCmp(str,"isolock")==0)	*type_rtrn= XkbSA_ISOLock;
+    else if (uStrCaseCmp(str,"terminate")==0)	*type_rtrn= XkbSA_Terminate;
+    else if (uStrCaseCmp(str,"terminateserver")==0)
 						*type_rtrn= XkbSA_Terminate;
-    else if (strcasecmp(str,"switchscreen")==0)	*type_rtrn= XkbSA_SwitchScreen;
-    else if (strcasecmp(str,"setcontrols")==0)	*type_rtrn= XkbSA_SetControls;
-    else if (strcasecmp(str,"lockcontrols")==0)	*type_rtrn= XkbSA_LockControls;
-    else if (strcasecmp(str,"actionmessage")==0)*type_rtrn= XkbSA_ActionMessage;
-    else if (strcasecmp(str,"messageaction")==0)*type_rtrn= XkbSA_ActionMessage;
-    else if (strcasecmp(str,"message")==0)	*type_rtrn= XkbSA_ActionMessage;
-    else if (strcasecmp(str,"private")==0)	*type_rtrn= PrivateAction;
+    else if (uStrCaseCmp(str,"switchscreen")==0)*type_rtrn= XkbSA_SwitchScreen;
+    else if (uStrCaseCmp(str,"setcontrols")==0)	*type_rtrn= XkbSA_SetControls;
+    else if (uStrCaseCmp(str,"lockcontrols")==0)*type_rtrn= XkbSA_LockControls;
+    else if (uStrCaseCmp(str,"actionmessage")==0)*type_rtrn= XkbSA_ActionMessage;
+    else if (uStrCaseCmp(str,"messageaction")==0)*type_rtrn= XkbSA_ActionMessage;
+    else if (uStrCaseCmp(str,"message")==0)	*type_rtrn= XkbSA_ActionMessage;
+    else if (uStrCaseCmp(str,"private")==0)	*type_rtrn= PrivateAction;
     else return False;
     return True;
 }
@@ -101,29 +101,29 @@ stringToField(str,field_rtrn)
     if (str==NULL)
 	return False;
 
-    if (strcasecmp(str,"clearlocks")==0)	*field_rtrn= F_ClearLocks;
-    else if (strcasecmp(str,"latchtolock")==0)	*field_rtrn= F_LatchToLock;
-    else if (strcasecmp(str,"genkeyevent")==0)	*field_rtrn= F_GenKeyEvent;
-    else if (strcasecmp(str,"generatekeyevent")==0)	
+    if (uStrCaseCmp(str,"clearlocks")==0)	*field_rtrn= F_ClearLocks;
+    else if (uStrCaseCmp(str,"latchtolock")==0)	*field_rtrn= F_LatchToLock;
+    else if (uStrCaseCmp(str,"genkeyevent")==0)	*field_rtrn= F_GenKeyEvent;
+    else if (uStrCaseCmp(str,"generatekeyevent")==0)	
 						*field_rtrn= F_GenKeyEvent;
-    else if (strcasecmp(str,"report")==0)	*field_rtrn= F_Report;
-    else if (strcasecmp(str,"default")==0)	*field_rtrn= F_Default;
-    else if (strcasecmp(str,"affect")==0)	*field_rtrn= F_Affect;
-    else if (strcasecmp(str,"increment")==0)	*field_rtrn= F_Increment;
-    else if (strcasecmp(str,"mods")==0)		*field_rtrn= F_Modifiers;
-    else if (strcasecmp(str,"modifiers")==0)	*field_rtrn= F_Modifiers;
-    else if (strcasecmp(str,"group")==0)	*field_rtrn= F_Group;
-    else if (strcasecmp(str,"x")==0)		*field_rtrn= F_X;
-    else if (strcasecmp(str,"y")==0)		*field_rtrn= F_Y;
-    else if (strcasecmp(str,"button")==0)	*field_rtrn= F_Button;
-    else if (strcasecmp(str,"value")==0)	*field_rtrn= F_Value;
-    else if (strcasecmp(str,"controls")==0)	*field_rtrn= F_Controls;
-    else if (strcasecmp(str,"type")==0)		*field_rtrn= F_Type;
-    else if (strcasecmp(str,"count")==0)	*field_rtrn= F_Count;
-    else if (strcasecmp(str,"screen")==0)	*field_rtrn= F_Screen;
-    else if (strcasecmp(str,"same")==0)		*field_rtrn= F_Same;
-    else if (strcasecmp(str,"sameserver")==0)	*field_rtrn= F_Same;
-    else if (strcasecmp(str,"data")==0)		*field_rtrn= F_Data;
+    else if (uStrCaseCmp(str,"report")==0)	*field_rtrn= F_Report;
+    else if (uStrCaseCmp(str,"default")==0)	*field_rtrn= F_Default;
+    else if (uStrCaseCmp(str,"affect")==0)	*field_rtrn= F_Affect;
+    else if (uStrCaseCmp(str,"increment")==0)	*field_rtrn= F_Increment;
+    else if (uStrCaseCmp(str,"mods")==0)	*field_rtrn= F_Modifiers;
+    else if (uStrCaseCmp(str,"modifiers")==0)	*field_rtrn= F_Modifiers;
+    else if (uStrCaseCmp(str,"group")==0)	*field_rtrn= F_Group;
+    else if (uStrCaseCmp(str,"x")==0)		*field_rtrn= F_X;
+    else if (uStrCaseCmp(str,"y")==0)		*field_rtrn= F_Y;
+    else if (uStrCaseCmp(str,"button")==0)	*field_rtrn= F_Button;
+    else if (uStrCaseCmp(str,"value")==0)	*field_rtrn= F_Value;
+    else if (uStrCaseCmp(str,"controls")==0)	*field_rtrn= F_Controls;
+    else if (uStrCaseCmp(str,"type")==0)	*field_rtrn= F_Type;
+    else if (uStrCaseCmp(str,"count")==0)	*field_rtrn= F_Count;
+    else if (uStrCaseCmp(str,"screen")==0)	*field_rtrn= F_Screen;
+    else if (uStrCaseCmp(str,"same")==0)	*field_rtrn= F_Same;
+    else if (uStrCaseCmp(str,"sameserver")==0)	*field_rtrn= F_Same;
+    else if (uStrCaseCmp(str,"data")==0)	*field_rtrn= F_Data;
     else return False;
     return True;
 }
@@ -236,8 +236,8 @@ ExprResult	rtrn;
     if (value->op==ExprIdent) {
 	register char *valStr;
 	valStr= stGetString(value->value.str);
-	if (valStr&&((strcasecmp(valStr,"usemodmapmods")==0)||
-		     (strcasecmp(valStr,"modmapmods")==0))) {
+	if (valStr&&((uStrCaseCmp(valStr,"usemodmapmods")==0)||
+		     (uStrCaseCmp(valStr,"modmapmods")==0))) {
 	
 	    *mods_rtrn= 0;
 	    *flags_inout|= XkbSA_UseModMapMods;
@@ -355,7 +355,7 @@ ExprResult 	rtrn;
 	spec= value;
     }
 
-    if (!ExprResolveInteger(spec,&rtrn,SimpleLookup,(XPointer)&groupNames))
+    if (!ExprResolveInteger(spec,&rtrn,SimpleLookup,(XPointer)groupNames))
 	return ReportMismatch(action,F_Group,"integer (range 1..8)");
     if ((rtrn.ival<1)||(rtrn.ival>8)) {
 	uError("Illegal group %d (must be in the range 1..8)\n",rtrn.ival);
@@ -491,7 +491,7 @@ XkbPtrBtnAction	*	act;
     if (field==F_Button) {
 	if (array_ndx!=NULL)
 	    return ReportNotArray(action->type,field);
-	if (!ExprResolveInteger(value,&rtrn,SimpleLookup,(XPointer)&btnNames))
+	if (!ExprResolveInteger(value,&rtrn,SimpleLookup,(XPointer)btnNames))
 	    return ReportMismatch(action->type,field,"integer (range 1..5)");
 	if ((rtrn.ival<0)||(rtrn.ival>5)) {
 	    uError("Button must specify default or be in the range 1..5\n");
@@ -504,7 +504,7 @@ XkbPtrBtnAction	*	act;
     else if ((action->type==XkbSA_ClickPtrBtn)&&(field==F_Count)) {
 	if (array_ndx!=NULL)
 	    return ReportNotArray(action->type,field);
-	if (!ExprResolveInteger(value,&rtrn,SimpleLookup,(XPointer)&btnNames))
+	if (!ExprResolveInteger(value,&rtrn,SimpleLookup,(XPointer)btnNames))
 	    return ReportMismatch(action->type,field,"integer");
 	if ((rtrn.ival<1)||(rtrn.ival>255)) {
 	    uError("The count field must have a value in the range 1..255\n");
@@ -586,7 +586,7 @@ static LookupEntry	isoNames[] = {
 	{	"pointer",	XkbSA_ISONoAffectPtr	},
 	{	"ctrls",	XkbSA_ISONoAffectCtrls	},
 	{	"controls",	XkbSA_ISONoAffectCtrls	},
-	{	"all",		~0			},
+	{	"all",		~((unsigned)0)		},
 	{	"none",		0			},
 	{	NULL,		0			},
 };
@@ -946,7 +946,7 @@ unsigned 		tmp,hndlrType;
 	uInternalError("Missing name in action definition!!\n");
 	return False;
     }
-    if (stringToAction(str,&tmp)==NULL) {
+    if (!stringToAction(str,&tmp)) {
 	uError("Unknown action %s\n",str);
 	return False;
     }
@@ -1024,7 +1024,7 @@ ActionInfo *new,*old;
 	uInternalError("Couldn't allocate space for action default\n");
 	return False;
     }
-    if (strcasecmp(elem,"action")==0)
+    if (uStrCaseCmp(elem,"action")==0)
 	new->action= XkbSA_NoAction;
     else {
 	if (!stringToAction(elem,&new->action))
@@ -1055,8 +1055,8 @@ void
 ActionsInit()
 {
     if (!actionsInitialized) {
-	bzero(&constTrue,sizeof(constTrue));
-	bzero(&constFalse,sizeof(constFalse));
+	bzero((char *)&constTrue,sizeof(constTrue));
+	bzero((char *)&constFalse,sizeof(constFalse));
 	constTrue.common.stmtType= StmtExpr;
 	constTrue.common.next= NULL;
 	constTrue.op= ExprIdent;

@@ -1,4 +1,4 @@
-/* $XConsortium: keycodes.h,v 1.4 93/09/28 20:16:45 rws Exp $ */
+/* $XConsortium: keycodes.h,v 1.1 94/04/02 17:06:16 erik Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -28,7 +28,7 @@
 #ifndef KEYCODES_H
 #define KEYCODES_H 1
 
-#define	KeyNameToLong(n)	((n[0]<<24)|(n[1]<<16)|(n[2]<<8)|n[3])
+#define	KeyNameToLong(n)	((((unsigned long)n[0])<<24)|(((unsigned long)n[1])<<16)|(((unsigned long)n[2])<<8)|n[3])
 
 extern char * longText(
 #if NeedFunctionPrototypes

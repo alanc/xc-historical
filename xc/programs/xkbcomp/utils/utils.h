@@ -1,12 +1,8 @@
 #ifndef UTILS_H
 #define	UTILS_H 1
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
   /*\
-   * $XConsortium: xkmformat.h,v 1.4 93/09/28 20:16:45 rws Exp $
+   * $XConsortium: utils.h,v 1.1 94/04/02 17:12:17 erik Exp $
    *
    *		              COPYRIGHT 1990
    *		        DIGITAL EQUIPMENT CORPORATION
@@ -35,7 +31,11 @@ extern "C" {
 /***====================================================================***/
 
 #include 	<stdio.h>
-#include	<string.h>
+#include	<X11/Xos.h>
+#include	<X11/Xfuncproto.h>
+#include	<X11/Xfuncs.h>
+
+_XFUNCPROTOBEGIN
 
 #ifndef	NULL
 #define	NULL	0
@@ -148,7 +148,16 @@ extern	void	uInternalError();
 #define	uStringEqual(s1,s2)	(uStringCompare(s1,s2)==Equal)
 #define	uStringPrefix(p,s)	(strncmp(p,s,strlen(p))==0)
 #define	uStringCompare(s1,s2)	(strcmp(s1,s2))
-#define	uStringCaseCompare(s1,s2)	(strcasecmp(s1,s2))
+#ifdef HAVE_STRCASECMP
+#define	uStrCaseCmp(s1,s2)	(strcasecmp(s1,s2))
+#else
+extern	int uStrCaseCmp(
+#if NeedFunctionPrototypes
+	char *	/* s1 */,
+	char *	/* s2 */
+#endif
+);
+#endif
 #ifdef HAVE_STRDUP
 #define	uStringDup(s1)		(strdup(s1))
 #else
@@ -181,7 +190,11 @@ unsigned	int	DEBUG_VAR;
 
 extern	void	uDebug();
 extern	void	uDebugNOI();	/* no indent */
-extern	Boolean	uSetDebugFile(char *name);
+extern	Boolean	uSetDebugFile(
+#if NeedFunctionPrototypes
+    char *name
+#endif
+);
 extern	FILE	*uDebugFile;
 extern	int	uDebugIndentLevel;
 extern	int	uDebugIndentSize;
@@ -215,9 +228,17 @@ extern	int	uDebugIndentSize;
 #define	uDEBUG_NOI5(f,s,a,b,c,d,e)
 #endif
 
-extern	Boolean	uSetEntryFile(char *name);
+extern	Boolean	uSetEntryFile(
+#if NeedFunctionPrototypes
+    char *name
+#endif
+);
 extern	void	uEntry();
-extern	void	uExit(int l,char *rtVal);
+extern	void	uExit(
+#if NeedFunctionPrototypes
+    int l,char *rtVal
+#endif
+);
 #ifdef ENTRY_TRACKING_ON
 #define	ENTRY_BIT	0x10
 #define	LOW_ENTRY_BIT	0x1000
@@ -271,9 +292,8 @@ extern	int	uEntryLevel;
 #define	uFLAG_VOIDRETURN		{ return; }
 #endif 
 
-#ifdef __cplusplus
-}
-#endif
+_XFUNCPROTOEND
+
 #endif /* UTILS_H */
 
 

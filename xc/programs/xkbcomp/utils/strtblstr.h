@@ -1,12 +1,12 @@
 #ifndef	STRTBLSTR_H
 #define	STRTBLSTR_H	1
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <X11/Xfuncproto.h>
+
+_XFUNCPROTOBEGIN
 
   /*\
-   * $XConsortium: xkmformat.h,v 1.4 93/09/28 20:16:45 rws Exp $
+   * $XConsortium: strtblstr.h,v 1.1 94/04/02 17:11:59 erik Exp $
    *
    *		              COPYRIGHT 1990
    *		        DIGITAL EQUIPMENT CORPORATION
@@ -43,8 +43,6 @@ typedef union _STRTBLENTRY {
 #define	stTokenIndex(tok)      (((unsigned)(tok))&0xffffff)
 #define	stTokenChar(tok)       ((((unsigned)(tok))>>24)&0xff)
 
-#ifdef __cplusplus
-}
-#endif
+_XFUNCPROTOEND
 
 #endif /* STRTBLSTR_H */

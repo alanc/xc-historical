@@ -1,4 +1,4 @@
-/* $XConsortium: XKBio.c,v 1.4 93/09/28 20:16:45 rws Exp $ */
+/* $XConsortium: xkbio.c,v 1.1 94/04/02 17:08:45 erik Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -25,14 +25,14 @@
 
  ********************************************************/
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include <X11/Xlib.h>
 
 #define	DEBUG_VAR_NOT_LOCAL
 #define	DEBUG_VAR debugFlags
 #include "utils.h"
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#endif
 
 #ifndef DFLT_XKB_CONFIG_ROOT
 #define DFLT_XKB_CONFIG_ROOT	"/usr/lib/X11/xkb"

@@ -1,4 +1,4 @@
-/* $XConsortium: xkmout.c,v 1.1 94/04/02 17:09:46 erik Exp $ */
+/* $XConsortium: xkmout.c,v 1.2 94/04/02 17:33:32 erik Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -25,14 +25,12 @@
 
  ********************************************************/
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <X11/Xlib.h>
-
 #define	DEBUG_VAR_NOT_LOCAL
 #define	DEBUG_VAR debugFlags
 #include "xkbcomp.h"
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#endif
 #include "tokens.h"
 
 #include <X11/extensions/XKB.h>
@@ -665,7 +663,7 @@ xkmSectionInfo		toc[MAX_TOC];
     }
     xkb= &result->xkb;
 
-    bzero(&info,sizeof(XkmInfo));
+    bzero((char *)&info,sizeof(XkmInfo));
     size_toc= (*getTOC)(result,&info,MAX_TOC,toc);
     if (size_toc<1) {
 	uInternalError("Nothing to compile in WriteCompiledKbdDesc!!\n");
