@@ -1,4 +1,4 @@
-/* $XConsortium: TranslateI.h,v 1.37 91/05/04 13:24:46 converse Exp $ */
+/* $XConsortium: TranslateI.h,v 1.4 91/05/11 20:40:21 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -192,6 +192,7 @@ typedef struct _TMSimpleBindDataRec {
 /* NOTE: elements of this structure must match those of TMSimpleBindDataRec */
 typedef struct _TMComplexBindDataRec {
     unsigned int		isComplex:1;
+    struct _ATranslationData	*getValuesAXlations;	
     TMComplexBindProcsRec	bindTbl[1]; /* WARNING, variable length */
 }TMComplexBindDataRec, *TMComplexBindData;
 
@@ -201,12 +202,28 @@ typedef union _TMBindDataRec{
 }*TMBindData;
 
 typedef struct _TranslationData{
+    unsigned char		hasBindings;	/* must be first */
     unsigned char		operation; /*replace,augment,override*/
     TMShortCard			numStateTrees;
     struct _TranslationData    	*composers[2];
     EventMask			eventMask;
     TMStateTree			stateTreeTbl[1]; /* WARNING, variable length */
 }TranslationData;
+
+/*
+ * ATranslations is returned by GetValues for translations that contain 
+ * accelerators.  The TM can differentiate between this and TranslationData
+ * (that don't have a bindTbl) by looking at the first field (hasBindings)
+ * of either structure.  All ATranslationData structures associated with a 
+ * widget are chained off the BindData record of the widget. 
+ */
+typedef struct _ATranslationData{ 
+    unsigned char		hasBindings;	/* must be first */
+    unsigned char		operation;
+    struct _TranslationData	*xlations;  /* actual translations */
+    struct _ATranslationData	*next;      /* chain the contexts together */
+    TMComplexBindProcsRec	bindTbl[1]; /* accelerator bindings */
+}ATranslationData, *ATranslations;
 
 typedef struct _TMConvertRec {
     XtTranslations	old; /* table to merge into */
@@ -497,6 +514,12 @@ extern TMShortCard _XtGetQuarkIndex(
 #if NeedFunctionPrototypes
     TMParseStateTree	/* stateTreePtr */,
     XrmQuark		/* quark */
+#endif
+);
+
+extern XtTranslations _XtGetTranslationValue(
+#if NeedFunctionPrototypes
+    Widget		/* widget */
 #endif
 );
 
