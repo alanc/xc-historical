@@ -1,4 +1,4 @@
-/* $XConsortium: xwud.c,v 1.55 94/02/07 23:34:14 rws Exp $ */
+/* $XConsortium: xwud.c,v 1.56 94/02/07 23:36:39 rws Exp $ */
 /* Copyright 1985, 1986, 1988 Massachusetts Institute of Technology */
 
 /*
@@ -641,9 +641,10 @@ putImage (dpy, image_win, gc, out_image, x, y, w, h)
     }
 }
 
-Latin1Upper(str)
-    unsigned char *str;
+Latin1Upper(s)
+    char *s;
 {
+    unsigned char *str = (unsigned char *)s;
     unsigned char c;
 
     for (; c = *str; str++)
