@@ -1920,7 +1920,7 @@
 ;;-------------------------------------------------------------------------------
 
 #+(or allegro lcl3.0)
-(eval-when (eval compile)
+(eval-when (eval compile load)
   (pushnew :clx-cl-error *features*))
 
 (defun default-error-handler (display error-key &rest key-vals
