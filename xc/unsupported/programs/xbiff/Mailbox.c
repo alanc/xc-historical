@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.26 89/05/11 01:05:53 kit Exp $
+ * $XConsortium: Mailbox.c,v 1.27 89/06/05 15:03:14 swick Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -168,6 +168,21 @@ static void ClassInitialize ()
     return;
 }
 
+static GC get_mailbox_gc (w)
+    MailboxWidget w;
+{
+    XtGCMask valuemask;
+    XGCValues xgcv;
+
+    valuemask = GCForeground | GCBackground | GCFunction | GCGraphicsExposures;
+    xgcv.foreground = w->mailbox.foreground_pixel;
+    xgcv.background = w->core.background_pixel;
+    xgcv.function = GXcopy;
+    xgcv.graphics_exposures = False;	/* this is Bool, not Boolean */
+    return (XtGetGC ((Widget) w, valuemask, &xgcv));
+}
+
+
 /* ARGSUSED */
 static void Initialize (request, new)
     Widget request, new;
@@ -191,6 +206,8 @@ static void Initialize (request, new)
     if (w->mailbox.shapeit && !XShapeQueryExtension (XtDisplay (w)))
       w->mailbox.shapeit = False;
 #endif
+
+    w->mailbox.gc = get_mailbox_gc (w);
 
     return;
 }
@@ -307,21 +324,6 @@ static Pixmap make_pixmap (dpy, w, bitmap, depth, flip, widthp, heightp)
 				      width, height, depth, fore, back);
 }
 
-static GC get_mailbox_gc (w)
-    MailboxWidget w;
-{
-    XtGCMask valuemask;
-    XGCValues xgcv;
-
-    valuemask = GCForeground | GCBackground | GCFunction | GCGraphicsExposures;
-    xgcv.foreground = w->mailbox.foreground_pixel;
-    xgcv.background = w->core.background_pixel;
-    xgcv.function = GXcopy;
-    xgcv.graphics_exposures = False;	/* this is Bool, not Boolean */
-    return (XtGetGC ((Widget) w, valuemask, &xgcv));
-}
-
-
 static void Realize (gw, valuemaskp, attr)
     Widget gw;
     XtValueMask *valuemaskp;
@@ -366,8 +368,6 @@ static void Realize (gw, valuemaskp, attr)
       w->mailbox.shapeit = False;
 #endif
 
-    w->mailbox.gc = get_mailbox_gc (w);
-
     w->mailbox.interval_id = XtAddTimeOut (w->mailbox.update * 1000,
 					   clock_tic, (caddr_t) w);
 
@@ -383,10 +383,22 @@ static void Destroy (gw)
     Widget gw;
 {
     MailboxWidget w = (MailboxWidget) gw;
+    Display *dpy = XtDisplay (gw);
 
     XtFree (w->mailbox.filename);
-    XtRemoveTimeOut (w->mailbox.interval_id);
+    if (w->mailbox.interval_id) XtRemoveTimeOut (w->mailbox.interval_id);
     XtDestroyGC (w->mailbox.gc);
+#define freepix(p) if (p) XFreePixmap (dpy, p)
+    freepix (w->mailbox.full.bitmap);
+    freepix (w->mailbox.full.mask);
+    freepix (w->mailbox.full.pixmap);
+    freepix (w->mailbox.empty.bitmap);
+    freepix (w->mailbox.empty.mask);
+    freepix (w->mailbox.empty.pixmap);
+#ifdef SHAPE
+    freepix (w->mailbox.shape_cache.mask);
+#endif
+#undef freepix
     return;
 }
 
@@ -510,7 +522,8 @@ static Boolean SetValues (gcurrent, grequest, gnew)
     Boolean redisplay = FALSE;
 
     if (current->mailbox.update != new->mailbox.update) {
-	XtRemoveTimeOut (current->mailbox.interval_id);
+	if (current->mailbox.interval_id) 
+	  XtRemoveTimeOut (current->mailbox.interval_id);
 	new->mailbox.interval_id = XtAddTimeOut (new->mailbox.update * 1000,
 						 clock_tic,
 						 (caddr_t) gnew);
