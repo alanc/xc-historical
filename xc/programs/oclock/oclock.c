@@ -10,6 +10,7 @@ static char rcsid[] = "$XConsortium: Exp $";
 #include <stdio.h> 
 
 #include "clock.bit"
+#include "clock_mask.bit"
 
 extern void exit();
 
@@ -40,6 +41,7 @@ static XrmOptionDescRec options[] = {
 {"-jewel",	"*clock.jewel",		XrmoptionSepArg,	NULL},
 {"-backing",	"*clock.backingStore",	XrmoptionSepArg,	NULL},
 {"-shape",	"*clock.shapeWindow",	XrmoptionNoArg,		"TRUE"},
+{"-noshape",	"*clock.shapeWindow",	XrmoptionNoArg,		"FALSE"},
 };
 
 void main(argc, argv)
@@ -49,23 +51,28 @@ void main(argc, argv)
     char host[256];
     Widget toplevel;
     Widget clock;
-    Arg arg;
-    char *labelname = NULL;
+    Arg arg[2];
+    int	i;
     
     toplevel = XtInitialize("main", "Clock", options, XtNumber (options),
 				    &argc, argv);
       
     if (argc != 1) usage();
 
-    XtSetArg (arg, XtNiconPixmap, 
+    i = 0;
+    XtSetArg (arg[i], XtNiconPixmap, 
 	      XCreateBitmapFromData (XtDisplay(toplevel),
 				     XtScreen(toplevel)->root,
 				     clock_bits, clock_width, clock_height));
-    XtSetValues (toplevel, &arg, 1);
+    i++;
+    XtSetArg (arg[i], XtNiconMask,
+	      XCreateBitmapFromData (XtDisplay(toplevel),
+				     XtScreen(toplevel)->root,
+				     clock_mask_bits, clock_mask_width, clock_mask_height));
+    i++;
+    XtSetValues (toplevel, arg, i);
 
-    XtSetArg (arg, XtNlabel, &labelname);
     clock = XtCreateManagedWidget ("clock", clockWidgetClass, toplevel, NULL, 0);
-    XtGetValues(clock, &arg, 1);
     XtRealizeWidget (toplevel);
     XtMainLoop();
 }

@@ -29,6 +29,7 @@ typedef struct {
 	Boolean		shape_window;	/* use SetWindowShapeMask */
 	XtIntervalId	interval_id;
 	Transform	t;
+	Transform	maskt;
 	Pixmap		shape_mask;	/* window shape */
 	int		shape_width;	/* window width when shape last made */
 	int		shape_height;	/* window height when shape last made */

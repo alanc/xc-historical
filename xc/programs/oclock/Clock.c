@@ -11,6 +11,7 @@
 # include <X11/Xmu.h>
 # include "ClockP.h"
 # include <math.h>
+# include <X11/extensions/shape.h>
 
 #define offset(field) XtOffset(ClockWidget,clock.field)
 #define goffset(field) XtOffset(Widget,core.field)
@@ -33,7 +34,7 @@ static XtResource resources[] = {
     {XtNbackingStore, XtCBackingStore, XtRBackingStore, sizeof (int),
     	offset (backing_store), XtRString, "default"},
     {XtNshapeWindow, XtCShapeWindow, XtRBoolean, sizeof (Boolean),
-	offset (shape_window), XtRString, "FALSE"},
+	offset (shape_window), XtRString, "TRUE"},
 };
 
 #undef offset
@@ -44,14 +45,16 @@ static Boolean SetValues();
 static int repaint_window();
 static int draw_it ();
 
-# define FACE_WIDTH	(0.1)
-# define MINUTE_WIDTH	(FACE_WIDTH / 2.0)
-# define HOUR_WIDTH	(FACE_WIDTH / 2.0)
-# define JEWEL_SIZE	(FACE_WIDTH * 0.75)
+# define BORDER_WIDTH	(0.1)
+# define WINDOW_WIDTH	(2.0 - BORDER_WIDTH*2)
+# define WINDOW_HEIGHT	(2.0 - BORDER_WIDTH*2)
+# define MINUTE_WIDTH	(BORDER_WIDTH / 2.0)
+# define HOUR_WIDTH	(BORDER_WIDTH / 2.0)
+# define JEWEL_SIZE	(BORDER_WIDTH * 0.75)
 # define MINUTE_LENGTH	(0.8)
 # define HOUR_LENGTH	(0.5)
 # define JEWEL_X	(0.0)
-# define JEWEL_Y	(1.0 - (FACE_WIDTH + JEWEL_SIZE))
+# define JEWEL_Y	(1.0 - (BORDER_WIDTH + JEWEL_SIZE))
 
 static void ClassInitialize();
 
@@ -167,55 +170,125 @@ static void Shape (w)
 {
     XGCValues	xgcv;
     int		mask, first;
-    Window	win, root, parent, *childp, nchild;
-    XWindowAttributes	xwa;
+    Widget	parent, child;
     XWindowChanges	xwc;
+    int		face_width, face_height;
+    int		x, y;
+    int		border_width;
 
     if (w->core.width == w->clock.shape_width &&
         w->core.height == w->clock.shape_height)
 	return;
-    w->clock.shape_mask = XCreatePixmap (XtDisplay (w), XtWindow (w),
-	    w->core.width, w->core.height, 1);
-    if (!w->clock.shapeGC)
-        w->clock.shapeGC = XCreateGC (XtDisplay (w), w->clock.shape_mask, 0, &xgcv);
-    XSetForeground (XtDisplay (w), w->clock.shapeGC, 0);
-    XFillRectangle (XtDisplay (w), w->clock.shape_mask, w->clock.shapeGC, 0, 0,
-	w->core.width, w->core.height);
-    XSetForeground (XtDisplay (w), w->clock.shapeGC, 1);
-    paint_face (w, w->clock.shape_mask, (GC) 0, w->clock.shapeGC);
-    first = 1;
-    win = XtWindow (w);
-    for (;;) {
-	if (first) {
-	    XGetWindowAttributes (XtDisplay (w), win, &xwa);
-	    xwc.x = xwa.x + xwa.border_width - 1;
-	    xwc.y = xwa.y + xwa.border_width - 1;
-	    xwc.border_width = 1;
-	    XConfigureWindow (XtDisplay (w), win, CWX|CWY|CWBorderWidth, &xwc);
-            XSetWindowShapeMask (XtDisplay (w), win, 0, 0, w->clock.shape_mask);
-	    paint_face (w, w->clock.shape_mask, w->clock.shapeGC, (GC) 0);
-	    XSetWindowBorder (XtDisplay (w), win, w->clock.face);
-	    XSetBorderShapeMask (XtDisplay (w), win, 0, 0, w->clock.shape_mask);
-	    first = 0;
-	} else {
-	    XSetWindowBorderWidth (XtDisplay (w), win, 0);
-            XSetWindowShapeMask (XtDisplay (w), win,
-		xwa.x + xwa.border_width,
-		xwa.y + xwa.border_width,
-		w->clock.shape_mask);
+
+    /*
+     * reconfigure the widget to split the availible
+     * space between the window and the border
+     */
+
+    SetTransform (&w->clock.t,
+	0, w->core.width,
+ 	w->core.height, 0,
+	-1.0, 1.0,
+	-1.0, 1.0);
+
+    face_width = abs (Xwidth (BORDER_WIDTH, BORDER_WIDTH, &w->clock.t));
+    face_height = abs (Xheight (BORDER_WIDTH, BORDER_WIDTH, &w->clock.t));
+    if (face_width > face_height)
+	face_width = face_height;
+    xwc.width = w->core.width - face_width * 2;
+    xwc.height = w->core.height - face_width * 2;
+    xwc.border_width = face_width;
+    XConfigureWindow (XtDisplay (w), XtWindow (w),
+			CWWidth|CWHeight|CWBorderWidth,
+			&xwc);
+
+    SetTransform (&w->clock.t,
+	0, xwc.width,
+	xwc.height, 0,
+	-WINDOW_WIDTH/2, WINDOW_WIDTH/2,
+	-WINDOW_HEIGHT/2, WINDOW_HEIGHT/2);
+
+    /*
+     *  shape the windows and borders
+     */
+
+    if (w->clock.shape_window) {
+
+	/*
+	 * allocate a pixmap to draw shapes in
+	 */
+
+    	w->clock.shape_mask = XCreatePixmap (XtDisplay (w), XtWindow (w),
+	    	w->core.width, w->core.height, 1);
+    	if (!w->clock.shapeGC)
+            w->clock.shapeGC = XCreateGC (XtDisplay (w),
+		w->clock.shape_mask, 0, &xgcv);
+
+	/*
+	 * build a transform for this new pixmap
+	 */
+
+	SetTransform (&w->clock.maskt,
+			0, w->core.width,
+			w->core.height, 0,
+			-1.0, 1.0,
+ 			-1.0, 1.0);
+
+    	XSetForeground (XtDisplay (w), w->clock.shapeGC, 0);
+    	XFillRectangle (XtDisplay (w), w->clock.shape_mask, w->clock.shapeGC,
+			0, 0, w->core.width, w->core.height);
+    	XSetForeground (XtDisplay (w), w->clock.shapeGC, 1);
+
+	/*
+	 * draw the window shape
+	 */
+
+	TFillArc (XtDisplay (w), w->clock.shape_mask,
+			w->clock.shapeGC, &w->clock.maskt,
+			-WINDOW_WIDTH/2, -WINDOW_HEIGHT/2,
+			WINDOW_WIDTH, WINDOW_HEIGHT,
+			0, 360 * 64);
+
+	XShapeMask (XtDisplay (w), XtWindow (w), ShapeWindow, 
+		    w->clock.shape_mask, ShapeSet,
+		    -face_width, -face_width);
+
+	/*
+	 * draw the border shape
+	 */
+
+	TFillArc (XtDisplay (w), w->clock.shape_mask,
+			w->clock.shapeGC, &w->clock.maskt,
+			-1.0, -1.0,
+			2.0, 2.0,
+			0, 360 * 64);
+
+	XShapeMask (XtDisplay (w), XtWindow (w), ShapeBorder,
+		w->clock.shape_mask, ShapeSet,
+		-face_width, -face_width);
+
+	XFreePixmap (XtDisplay (w), w->clock.shape_mask);
+	w->clock.shape_mask = 0;
+
+	/*
+	 * copy the border shape to any enclosing windows
+	 */
+
+	child = (Widget) w;
+	border_width = face_width;
+	while (parent = XtParent (child)) {
+	    XShapeCombine (XtDisplay (parent), XtWindow (parent), ShapeWindow,
+			    XtWindow (child), ShapeBorder, ShapeSet,
+			    child->core.x + border_width,
+			    child->core.y + border_width);
+	    XShapeCombine (XtDisplay (parent), XtWindow (parent), ShapeBorder,
+			    XtWindow (child), ShapeBorder, ShapeSet,
+			    child->core.x + border_width,
+			    child->core.y + border_width);
+	    child = parent;
+	    border_width = child->core.border_width;
 	}
-	XQueryTree (XtDisplay (w), win, &root, &parent, &childp, &nchild);
-	if (nchild)
-	    XFree (childp);
-	if (parent == root)
-	    break;
-	XGetWindowAttributes (XtDisplay (w), win, &xwa);
-	win = parent;
     }
-    XFreePixmap (XtDisplay (w), w->clock.shape_mask);
-    if (w->clock.shape_window && !XQueryShapeExtension (XtDisplay (w)))
-	w->clock.shape_window = False;
-    w->clock.shape_mask = 0;
     w->clock.shape_width = w->core.width;
     w->clock.shape_height = w->core.height;
 }
@@ -226,15 +299,17 @@ static void Realize (gw, valueMask, attrs)
      XSetWindowAttributes *attrs;
 {
      ClockWidget	w = (ClockWidget)gw;
+     static int		new_time();
 
     if (w->clock.backing_store != Always + WhenMapped + NotUseful) {
      	attrs->backing_store = w->clock.backing_store;
 	*valueMask |= CWBackingStore;
     }
+    *valueMask |= CWBorderPixel;
+    attrs->border_pixel = w->clock.face;
     XtCreateWindow( gw, (unsigned)InputOutput, (Visual *)CopyFromParent,
 		     *valueMask, attrs );
-    SetTransform (&w->clock.t, 0, w->core.width, w->core.height, 0,
-		  -1.0, 1.0, -1.0, 1.0);
+    Shape (gw);
     new_time ((caddr_t) gw, 0);
 }
 
@@ -262,10 +337,7 @@ static void Redisplay(gw, event, region)
     Display	*dpy;
 
     w = (ClockWidget) gw;
-    SetTransform (&w->clock.t, 0, w->core.width, w->core.height, 0,
-		  -1.0, 1.0, -1.0, 1.0);
-    if (w->clock.shape_window)
-        Shape (w);
+    Shape (w);
     (void) repaint_window ((ClockWidget)gw);
 }
 
@@ -414,29 +486,11 @@ GC		minute_gc, hour_gc;
 	paint_hand (w, d, minute_gc, w->clock.minute_poly);
 }
 
-paint_face (w, d, draw_gc, erase_gc)
-ClockWidget	w;
-Drawable	d;
-GC		draw_gc, erase_gc;
-{
-	if (draw_gc)
-		TFillArc (XtDisplay (w), d, draw_gc, &w->clock.t,
-				-1.0, -1.0, 2.0, 2.0,
-				0, 360 * 64);
-	if (erase_gc)
-		TFillArc (XtDisplay (w), d, erase_gc, &w->clock.t,
-				-1.0 + FACE_WIDTH, -1.0 + FACE_WIDTH,
-				2.0 - 2.0*FACE_WIDTH, 2.0 - 2.0*FACE_WIDTH,
-				0, 360 * 64);
-}
-
 static
 repaint_window (w)
     ClockWidget	w;
 {
 	if (XtIsRealized ((Widget) w)) {
-		if (!w->clock.shape_window)
-			paint_face (w, XtWindow (w), w->clock.faceGC, w->clock.eraseGC);
 		paint_jewel (w, XtWindow (w), w->clock.jewelGC);
 		if (w->clock.polys_valid)
 			paint_hands (w, XtWindow (w), w->clock.minuteGC, w->clock.hourGC);
@@ -451,4 +505,3 @@ static Boolean SetValues (current, request, new)
     ClockWidget w = (ClockWidget)new;
     return( FALSE );
 }
-
