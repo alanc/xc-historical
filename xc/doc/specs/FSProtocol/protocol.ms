@@ -1,4 +1,4 @@
-.\" $XConsortium: protocol.ms,v 1.15 94/04/28 17:30:08 gildea Exp $
+.\" $XConsortium: protocol.ms,v 1.16 94/05/02 09:25:10 gildea Exp $
 .\" Use tbl, -ms, and macros.t
 .EH ''''
 .OH ''''
@@ -3109,7 +3109,7 @@ QueryXInfo
 2@CARD16@sequence-number
 4@2+f/4@length
 f@XFONTINFO@font info
-p@@unused, p=pad(f)
+p@@unused, p=pad(f\^)
 .TE
 .sp 12p
 .TS
