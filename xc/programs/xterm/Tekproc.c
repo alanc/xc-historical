@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.46 89/01/04 11:48:37 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.47 89/01/04 12:01:34 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -43,13 +43,13 @@
 #include "ptyx.h"
 #include "Tekparse.h"
 #include <stdio.h>
-#ifdef mips			/* !defined(mips) || !defined(SYSTYPE_SYSV) */
+#ifdef umips
 # ifndef SYSTYPE_SYSV
 # include <sgtty.h>
 # endif /* not SYSTYPE_SYSV */
 #else
 # include <sgtty.h>
-#endif /* mips */
+#endif /* umips */
 #include <ctype.h>
 #include <errno.h>
 #include <setjmp.h>
@@ -121,7 +121,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.46 89/01/04 11:48:37 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.47 89/01/04 12:01:34 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {

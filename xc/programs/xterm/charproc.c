@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.64 89/01/04 13:37:50 jim Exp $
+ * $XConsortium: charproc.c,v 1.65 89/01/06 15:58:03 jim Exp $
  */
 
 
@@ -33,13 +33,13 @@
 /* charproc.c */
 
 #include <stdio.h>
-#ifdef mips			/* !defined(mips) || !defined(SYSTYPE_SYSV) */
-# ifndef SYSTYPE_SYSV
-# include <sgtty.h>
-# endif /* not SYSTYPE_SYSV */
+#ifdef umips
+#ifndef SYSTYPE_SYSV
+#include <sgtty.h>			/* umips bsd */
+#endif /* not SYSTYPE_SYSV */
 #else
-# include <sgtty.h>
-#endif /* mips */
+#include <sgtty.h>			/* everything else */
+#endif
 #include <ctype.h>
 #include <errno.h>
 #include <setjmp.h>
@@ -136,7 +136,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.64 89/01/04 13:37:50 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.65 89/01/06 15:58:03 jim Exp $";
 #endif	/* lint */
 
 static long arg;
