@@ -1,4 +1,4 @@
-/* $XConsortium: ico.c,v 1.38 93/09/26 18:10:02 gildea Exp $ */
+/* $XConsortium: ico.c,v 1.39 93/09/26 20:17:32 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -69,8 +69,12 @@ Polyinfo polygons[] = {
  int polysize = sizeof(polygons)/sizeof(polygons[0]);
 
 extern long time();
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
 extern long rand();
-extern char *malloc();
+char *malloc();
+#endif
 
 void *do_ico_window();		/* function to create and run an ico window */
 Polyinfo *findpoly();
