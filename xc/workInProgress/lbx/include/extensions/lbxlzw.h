@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*
  * $NCDId: @(#)lzw.h,v 1.2 1994/01/17 20:59:50 dct Exp $
  *

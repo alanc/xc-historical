@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*
  * Copyright 1988-1993 Network Computing Devices, Inc.  All rights reserved.
  * An unpublished work.

@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*
  * $NCDId: @(#)lbxdeltastr.h,v 1.1 1993/12/22 22:23:09 dct Exp $
  *
