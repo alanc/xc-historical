@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.74 88/08/29 23:04:12 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.75 88/08/30 11:40:23 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -513,7 +513,7 @@ char **argv;
 	    }
 	}
 	/* Init the Toolkit. */
-	toplevel = XtInitialize("main", "XTerm",
+	toplevel = XtInitialize("xterm", "XTerm",
 		optionDescList, XtNumber(optionDescList), &argc, argv);
 
 	XtGetApplicationResources( toplevel, &resource, application_resources,
