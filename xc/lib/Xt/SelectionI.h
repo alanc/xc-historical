@@ -1,4 +1,4 @@
-/* $XConsortium: SelectionI.h,v 1.34 93/01/26 16:25:31 converse Exp $ */
+/* $XConsortium: SelectionI.h,v 1.35 93/09/22 10:47:05 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -79,8 +79,34 @@ typedef struct _SelectRec {
     unsigned int was_disowned:1;
 } SelectRec;
 
-typedef struct {
+typedef struct _ParamRec {
+    Atom selection;
+    Atom param;
+} ParamRec, *Param;
+
+typedef struct _ParamInfoRec {
+    unsigned int count;
+    Param paramlist;
+} ParamInfoRec, *ParamInfo;	
+
+typedef struct _QueuedRequestRec {
+    Atom selection;
+    Atom target;
+    Atom param;
     XtSelectionCallbackProc callback;
+    XtPointer closure;
+    Time time;
+    Boolean incremental;
+} QueuedRequestRec, *QueuedRequest;
+
+typedef struct _QueuedRequestInfoRec {
+    int count;
+    Atom *selections;
+    QueuedRequest *requests;
+} QueuedRequestInfoRec, *QueuedRequestInfo;
+
+typedef struct {
+    XtSelectionCallbackProc *callbacks;
     XtPointer *req_closure;
     Atom property;
     Atom *target;
@@ -94,7 +120,8 @@ typedef struct {
     Widget widget;
     Time time;
     Select ctx;
-    Boolean incremental;
+    Boolean *incremental;
+    int current;
 } CallBackInfoRec, *CallBackInfo;
 
 typedef struct {
