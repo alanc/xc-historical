@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: TMstate.c,v 1.45 88/02/14 11:57:01 rws Exp $";
+static char rcsid[] = "$Header: TMstate.c,v 1.46 88/02/14 14:54:08 rws Exp $";
 #endif lint
 /*LINTLIBRARY*/
 
@@ -608,7 +608,7 @@ void _XtInstallTranslations(widget, stateTable)
 	unsigned long modifiers = eventObj->event.modifiers;
 
 	if ((eventObj->event.eventType == MotionNotify)
-	    && !(modifiers & ~AnyButtonModifier)) {
+	    && (modifiers & AnyButtonModifier)) {
 	    /* optimize traffic when PointerMotion only with button down */
 	    if (modifiers == AnyButtonModifier)
 	        mask = ButtonMotionMask;
