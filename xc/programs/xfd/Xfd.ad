@@ -13,3 +13,9 @@ Xfd*next.Translations:  #override \
 		<Btn1Up>: Next() unset()
 Xfd*prev.Translations:  #override \
 		<Btn1Up>: Prev() unset()
+
+Xfd*Translations: #override \n\
+<Key>q: Quit()\n\
+Ctrl <Key>n: Next()\n\
+Ctrl <Key>p: Prev()
+
