@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.25 91/04/15 18:00:14 rws Exp $
+ * $XConsortium: imakemdep.h,v 1.26 91/05/01 22:45:54 keith Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.  When
  * porting imake, read each of the steps below and add in any necessary
@@ -165,6 +165,9 @@ char *cpp_argv[ARGUMENTS] = {
 #ifdef luna
 	"-Dluna",	/* OMRON luna 68K and 88K */
 	"-DXCOMM=\\#",
+#endif
+#ifdef CRAY		/* Cray */
+	"-Ucray",
 #endif
 #ifdef Mips
 	"-DMips",	/* Define and use Mips for Mips Co. OS/mach. */
