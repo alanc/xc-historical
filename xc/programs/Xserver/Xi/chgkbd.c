@@ -119,6 +119,7 @@ ProcXChangeKeyboardDevice (client)
 	rep.status = GrabFrozen;
 
     ChangeKeyboardDevice (inputInfo.keyboard, dev);
+    dev->focus->win = inputInfo.keyboard->focus->win;
     inputInfo.keyboard = dev;
 
     ev.type = ChangeDeviceNotify;
