@@ -1,5 +1,4 @@
-/* "$XConsortium: Converters.c,v 1.54 90/04/03 10:30:18 swick Exp $"; */
-/* $oHeader: Converters.c,v 1.6 88/09/01 09:26:23 asente Exp $ */
+/* "$XConsortium: Converters.c,v 1.55 90/06/15 18:29:21 rws Exp $"; */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -387,7 +386,16 @@ static Boolean CvtStringToPixel(dpy, args, num_args, fromVal, toVal, closure_ret
         status = XParseColor(DisplayOfScreen(screen), colormap,
 			     (char*)str, &screenColor);
 
-        if (status != 0)
+        if (status == 0) {
+	    params[0] = str;
+	    XtAppWarningMsg(pd->appContext, "badFormat", "cvtStringToPixel",
+			    XtCXtToolkitError,
+		  "RGB color specification \"%s\" has invalid format",
+		  params, &num_params);
+	    *closure_ret = False;
+	    return False;
+	}
+	else
            status = XAllocColor(DisplayOfScreen(screen), colormap,
                                 &screenColor);
     } else  /* some color name */
@@ -395,11 +403,23 @@ static Boolean CvtStringToPixel(dpy, args, num_args, fromVal, toVal, closure_ret
         status = XAllocNamedColor(DisplayOfScreen(screen), colormap,
                                   (char*)str, &screenColor, &exactColor);
     if (status == 0) {
+	String msg, type;
 	params[0] = str;
-	XtAppWarningMsg(pd->appContext, "noColormap", "cvtStringToPixel",
-			XtCXtToolkitError,
-                 "Cannot allocate colormap entry for \"%s\"",
-                  params,&num_params);
+	/* Server returns a specific error code but Xlib discards it.  Ugh */
+	if (*str == '#' ||
+	    XLookupColor(DisplayOfScreen(screen), colormap, (char*)str,
+			 &exactColor, &screenColor)) {
+	    type = "noColormap";
+	    msg = "Cannot allocate colormap entry for \"%s\"";
+	}
+	else {
+	    type = "badValue";
+	    msg = "Color name \"%s\" is not defined in server database";
+	}
+
+	XtAppWarningMsg(pd->appContext, type, "cvtStringToPixel",
+			XtCXtToolkitError, msg, params, &num_params);
+	*closure_ret = False;
 	return False;
     } else {
 	*closure_ret = (char*)True;
