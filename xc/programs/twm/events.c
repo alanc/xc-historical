@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.150 90/04/13 11:29:10 jim Exp $
+ * $XConsortium: events.c,v 1.151 90/04/13 13:27:23 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.150 90/04/13 11:29:10 jim Exp $";
+"$XConsortium: events.c,v 1.151 90/04/13 13:27:23 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -2128,7 +2128,7 @@ HandleConfigureRequest()
      * Instead, we'll read the current geometry.  Therefore, we should respond
      * to configuration requests for windows which have never been mapped.
      */
-    if (!Tmp_win) {
+    if (!Tmp_win || Tmp_win->icon_w == cre->window) {
 	xwcm = cre->value_mask & 
 	    (CWX | CWY | CWWidth | CWHeight | CWBorderWidth);
 	xwc.x = cre->x;
