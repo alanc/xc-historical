@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.2 93/09/03 17:09:30 mor Exp $ */
+/* $XConsortium: sm_process.c,v 1.3 93/09/08 20:23:34 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -135,6 +135,7 @@ IceReplyWaitInfo *replyWait;
 
     case SM_Die:
 
+	IceSkipShutdownNegotiation (smcConn->iceConn);
 	(*_SmcCallbacks.die) (smcConn, smcConn->client_data);
 	break;
 
@@ -342,7 +343,6 @@ Bool		 swap;
 	(*_SmsCallbacks.close_connection) (smsConn,
 	    smsConn->manager_data, locale, count, reasonMsgs);
 
-	SmsCleanUp (smsConn);
 	break;
     }
 
