@@ -2,7 +2,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
 
 #ifndef lint
-static char rcsid[] = "$Header: XlibInt.c,v 11.65 88/05/13 10:17:17 jim Exp $";
+static char rcsid[] = "$Header: XlibInt.c,v 11.66 88/05/24 14:34:09 swick Exp $";
 #endif
 
 /*
@@ -352,9 +352,10 @@ _SetLastRequestRead(dpy, rep)
 
     /*
      * KeymapNotify has no sequence number, but is always guaranteed
-     * to immediately follow another event.
+     * to immediately follow another event, except when generated via
+     * SendEvent (hmmm).
      */
-    if (rep->type == KeymapNotify)
+    if ((rep->type & 0x7f) == KeymapNotify)
 	return(dpy->last_request_read);
 
     newseq = (dpy->last_request_read & ~((unsigned long)0xffff)) |
