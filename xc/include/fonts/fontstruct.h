@@ -1,4 +1,4 @@
-/* $Header: fontstruct.h,v 1.7 91/07/16 17:58:23 keith Exp $ */
+/* $Header: fontstruct.h,v 1.8 91/07/17 15:58:15 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -169,7 +169,6 @@ typedef struct _FPEFunctions {
 					         info, num, data */ );
     int         (*wakeup_fpe) ( /* fpe, mask */ );
     int		(*client_died) ( /* client, fpe */ );
-    FontNamesPtr renderer_names;
 }           FPEFunctionsRec, FPEFunctions;
 
 extern int  InitFPETypes();
