@@ -140,7 +140,7 @@ IBMALLOCLIB =
 IBMDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/ibm os/4.2bsd
 IBMOBJS = ddx/ibm/rt/rt.o
 IBMLIBS = ddx/ibm/libibm.a $(IBMALLOCLIB) \
-		$(DIX) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
+		$(DIX)  $(SNF) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
 IBMSYSLIBS = $(SYSLIBS)
 XibmDIRS = $(IBMDIRS)
 
