@@ -1,8 +1,7 @@
 /*
- * $XConsortium: parse.c,v 1.16 91/03/13 17:22:18 rws Exp $
+ * $XConsortium: parse.c,v 1.17 91/03/19 14:20:14 rws Exp $
  */
 #include "def.h"
-#include	<sys/signal.h>
 
 extern char	*directives[];
 extern struct symtab	deflist[];
