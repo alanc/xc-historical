@@ -1,6 +1,6 @@
 #ifndef HILDEF_H
 #define HILDEF_H
-/* $Header: hildef.h,v 1.2 94/12/15 08:50:48 gms Exp $ */
+/* $XConsortium: hildef.h,v 8.35 95/01/24 02:43:17 dpw Exp gildea $ */
 /*
 
 Copyright (c) 1988  X Consortium
