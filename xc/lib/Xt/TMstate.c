@@ -1,4 +1,4 @@
-/* "$XConsortium: TMstate.c,v 1.106 90/07/03 17:27:49 swick Exp $"; */
+/* "$XConsortium: TMstate.c,v 1.107 90/07/05 16:01:39 swick Exp $"; */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -59,8 +59,6 @@ typedef struct _GrabActionRec {
 } GrabActionRec;
 
 static GrabActionRec *grabActionList = NULL;
-
-#define StringToAction(string)	((XtAction) StringToQuark(string))
 
 #define STR_THRESHOLD 25
 #define STR_INCAMOUNT 100
@@ -625,11 +623,9 @@ static int MatchEvent(translations, eventSeq)
  * order"
  */
     for (i=0; i < translations->numEvents; i++) {
-        if (eventTbl[i].event.eventType ==
-                (eventSeq->event.eventType /* & 0x7f */)
+        if (eventTbl[i].event.eventType == eventSeq->event.eventType
             && (eventTbl[i].event.matchEvent != NULL) 
-            && ((*eventTbl[i].event.matchEvent)(
-                       &eventTbl[i].event,eventSeq)))
+            && ((*eventTbl[i].event.matchEvent)(&eventTbl[i].event, eventSeq)))
                     return i;
             
     }    
@@ -1006,8 +1002,11 @@ static StatePtr NewState(index, stateTable)
     return state;
 }
 
-typedef NameValueRec CompiledAction;
-typedef NameValueTable CompiledActionTable;
+typedef struct {
+    String	 name;
+    XrmQuark	 signature;
+    XtActionProc proc;
+} CompiledAction, *CompiledActionTable;
 
 #ifdef lint
 Opaque _CompileActionTable(actions, count)
@@ -1025,13 +1024,13 @@ CompiledActionTable _CompileActionTable(actions, count)
 
     for (i=0; i<count; i++) {
 	compiledActionTable[i].name = actions[i].string;
-	compiledActionTable[i].signature = StringToAction(actions[i].string);
-	compiledActionTable[i].value = (Value) actions[i].proc;
+	compiledActionTable[i].signature = StringToQuark(actions[i].string);
+	compiledActionTable[i].proc = actions[i].proc;
     }
 
     compiledActionTable[count].name = NULL;
     compiledActionTable[count].signature = NULL;
-    compiledActionTable[count].value = NULL;
+    compiledActionTable[count].proc = NULL;
 
 #ifdef lint
     return (Opaque) compiledActionTable;
@@ -1298,7 +1297,7 @@ static int BindActions(tm, compiledActionTable, indexP)
 	   Boolean found = False;
            for (action = compiledActionTable; action->name != NULL; action++) {
                if (action->signature == q) {
-		   tm->proc_table[index] = (XtActionProc)action->value;
+		   tm->proc_table[index] = action->proc;
                    unbound--;
 		   found = True;
                    break;
@@ -1338,9 +1337,8 @@ static int BindAccActions(widget, stateTable, compiledActionTable,
 	   Boolean found = False;
            for (i = 0; compiledActionTable[i].name != NULL; i++) {
                if (compiledActionTable[i].signature == q) {
-                   accBindings[index].widget =widget;
-		   accBindings[index].proc=
-                     (XtActionProc) compiledActionTable[i].value;
+                   accBindings[index].widget = widget;
+		   accBindings[index].proc = compiledActionTable[i].proc;
                    unbound--;
 		   found = True;
                    break;
@@ -3039,8 +3037,7 @@ void XtCallActionProc(widget, action, event, params, num_params)
 				     );
 			hook= hook->next;
 		    }
-		    (*(XtActionProc)(actionP->value))
-			(widget, event, params, &num_params);
+		    (*actionP->proc)(widget, event, params, &num_params);
 		    return;
 		}
 	    }
@@ -3066,8 +3063,7 @@ void XtCallActionProc(widget, action, event, params, num_params)
 				 );
 		    hook= hook->next;
 		}
-		(*(XtActionProc)(actionP->value))
-		    (widget, event, params, &num_params);
+		(*actionP->proc)(widget, event, params, &num_params);
 		return;
 	    }
 	}
