@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: button.c,v 1.16 88/10/07 15:09:45 swick Exp $
+ *	$XConsortium: button.c,v 1.17 88/10/10 11:01:23 swick Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.16 88/10/07 15:09:45 swick Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.17 88/10/10 11:01:23 swick Exp $";
 #endif	/* lint */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -71,7 +71,6 @@ extern char *malloc();
 
 char *SaveText();
 extern EditorButton();
-extern TrackDown();
 
 extern ModeMenu();
 extern char *xterm_name;
@@ -335,7 +334,7 @@ int *format;
 	v_write(pty, lag, end - lag);
 
     XtFree(client_data);
-    XtFree(*value);
+    XtFree(value);
 }
 
 
@@ -386,7 +385,7 @@ Cardinal *num_params;		/* unused */
 }
 
 
-TrackDown(event)
+static TrackDown(event)
 register XButtonEvent *event;
 {
 	int startrow, startcol;
@@ -483,6 +482,7 @@ Cardinal num_params;
 				line[8] = ' ' + row + 1;
 				v_write(screen->respond, line, 9);
 			}
+			TrackText(0, 0, 0, 0);
 		}
 		SaltTextAway(startSRow, startSCol, endSRow, endSCol,
 			     params, num_params);
@@ -1054,13 +1054,14 @@ Cardinal count;
 	if (buffer >= 0)
 	    XStoreBytes( XtDisplay((Widget)term), term->screen.selection,
 			 term->screen.selection_length, buffer );
-	else {
+	else if (!replyToEmacs) {
 	    XtOwnSelection( (Widget)term, atoms[i],
 			    term->screen.selection_time,
 			    ConvertSelection, LoseSelection, SelectionDone );
 	}
     }
-    term->screen.selection_count = count;
+    if (!replyToEmacs)
+	term->screen.selection_count = count;
 }
 
 /* void */ DisownSelection(term)
