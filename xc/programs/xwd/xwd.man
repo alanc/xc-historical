@@ -4,7 +4,7 @@ xwd - dump an image of an X window
 .SH SYNOPSIS
 .B "xwd"
 [-debug] [-help] [-nobdrs] [-out \fIfile\fP] [-xy] [-frame] [-add \fIvalue\fP]
-[-root | -id \fIid\fP | -name \fIname\fP ] [-screen]
+[-root | -id \fIid\fP | -name \fIname\fP ] [-icmap] [-screen]
 [-display \fIdisplay\fP]
 .SH DESCRIPTION
 .PP
@@ -69,6 +69,12 @@ select a window with the pointer.
 This option indicates that the window with the specified WM_NAME property
 should be selected for the window dump, without requiring the user to
 select a window with the pointer.
+.PP
+.TP 8
+.B "-icmap"
+Normally the colormap of the chosen window is used to obtain RGB values.
+This option forces the first installed colormap of the screen to be used
+instead.
 .PP
 .TP 8
 .B "-screen"
