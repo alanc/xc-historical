@@ -16,6 +16,7 @@ OBJS =	mivaltree.o mipolyseg.o mipolyrect.o \
 
 STD_DEFINES = ServerDefines
 CDEBUGFLAGS = ServerCDebugFlags
+EXT_DEFINES = ExtensionDefines
 INCLUDES = -I. -I../../include -I$(INCLUDESRC)
 LINTLIBS = ../../dix/llib-ldix.ln ../../os/4.2bsd/llib-los.ln
 
