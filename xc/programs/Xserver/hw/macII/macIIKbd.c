@@ -72,12 +72,10 @@ static KeybdCtrl  sysKbCtrl;
 
 static KbPrivRec  	sysKbPriv = {
     -1,				/* Type of keyboard */
-    -1,				/* Descriptor open to device */
     macIIKbdProcessEvent,	/* Function to process an event */
     macIIKbdDoneEvents,		/* Function called when all events */
 				/* have been handled. */
     (pointer) NULL,		/* Private to keyboard device */
-    (Bool)0,			/* Mapped queue */
     0,				/* offset for device keycodes */
     &sysKbCtrl,                 /* Initial full duration = .20 sec. */
 };
@@ -246,49 +244,44 @@ macIIKbdSetUp(fd, openClose)
     } else {
 	iarg = 0;
 	if (ioctl(fd, FIONBIO, &iarg) < 0) {
-		FatalError("Could not ioctl FIONBIO. \n");
+		ErrorF("Could not ioctl FIONBIO. \n");
 		return (!Success);
 	}
 
 #ifdef notdef
 	iarg = 0;
 	if (ioctl(fd, FIOASYNC, &iarg) < 0) {
-		FatalError("Could not ioctl FIOASYNC. \n");
+		ErrorF("Could not ioctl FIOASYNC. \n");
 		return (!Success);
 	}
 #endif
 
-	if(ioctl(fd, I_POP, 0) < 0) {
-		FatalError("Failed to ioctl I_POP.\n");
-		return (!Success);
-	}
-
 	if (ioctl(fd, I_FLUSH, FLUSHRW) < 0) {
-		FatalError("Failed to ioctl I_FLUSH FLUSHRW.\n");
+		ErrorF("Failed to ioctl I_FLUSH FLUSHRW.\n");
 		return (!Success);
 	}
     
 	ctl.ic_len = 0;
 	ctl.ic_cmd = VIDEO_NOMOUSE;
 	if (ioctl(fd, I_STR, &ctl) < 0) {
-		FatalError("Failed to ioctl I_STR VIDEO_NOMOUSE.\n");
+		ErrorF("Failed to ioctl I_STR VIDEO_NOMOUSE.\n");
 		return(!Success);
 	}
 
 	ctl.ic_len = 0;
 	ctl.ic_cmd = VIDEO_ASCII;
 	if (ioctl(fd, I_STR, &ctl) < 0) {
-		FatalError("Failed to ioctl I_STR VIDEO_ASCII.\n");
+		ErrorF("Failed to ioctl I_STR VIDEO_ASCII.\n");
 		return(!Success);
 	}
 
 	if(ioctl(fd, I_PUSH, "line") < 0) {
-		FatalError("Failed to ioctl I_PUSH.\n");
+		ErrorF("Failed to ioctl I_PUSH.\n");
 		return (!Success);
 	}
 
 	if (ioctl(fd, TCSETA, &save_tio) < 0) {
-		FatalError("Failed to ioctl TCSETA.\n");
+		ErrorF("Failed to ioctl TCSETA.\n");
 		return (!Success);
 	}
     }
