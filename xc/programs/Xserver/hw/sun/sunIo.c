@@ -1,4 +1,4 @@
-/* $XConsortium: sunIo.c,v 5.14 93/08/31 18:18:00 kaleb Exp $ */
+/* $XConsortium: sunIo.c,v 5.15 93/09/26 12:27:43 rws Exp $ */
 /*-
  * sunIo.c --
  *	Functions to handle input from the keyboard and mouse.
@@ -209,11 +209,15 @@ ddxProcessArgument (argc, argv, i)
     if (strcmp (argv[i], "-ar1") == 0) {	/* -ar1 int */
 	if (++i >= argc) UseMsg ();
 	sunAutoRepeatInitiate = 1000 * (long)atoi(argv[i]);
+	if (sunAutoRepeatInitiate > 1000000)
+	    sunAutoRepeatInitiate =  999000;
 	return 2;
     }
     if (strcmp (argv[i], "-ar2") == 0) {	/* -ar2 int */
 	if (++i >= argc) UseMsg ();
 	sunAutoRepeatDelay = 1000 * (long)atoi(argv[i]);
+	if (sunAutoRepeatDelay > 1000000)
+	    sunAutoRepeatDelay =  999000;
 	return 2;
     }
     if (strcmp (argv[i], "-swapLkeys") == 0) {	/* -swapLkeys */
