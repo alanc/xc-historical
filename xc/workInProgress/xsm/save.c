@@ -1,4 +1,4 @@
-/* $XConsortium: save.c,v 1.12 94/12/06 14:35:12 mor Exp $ */
+/* $XConsortium: save.c,v 1.13 94/12/13 21:05:10 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -88,7 +88,6 @@ Bool name_changed;
 
 {
     char title[256];
-    ClientRec *client;
     List *cl;
 
     if (session_name)
