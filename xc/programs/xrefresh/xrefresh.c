@@ -23,8 +23,8 @@ SOFTWARE.
 ******************************************************************/
 
 /*
- * $Source$
- * $Header$
+ * $Source: /u1/X11/clients/xrefresh/RCS/xrefresh.c,v $
+ * $Header: xrefresh.c,v 1.4 88/01/22 17:20:56 jim Locked $
  *
  * Kitchen sink version, useful for clearing small areas and flashing the 
  * screen.
@@ -53,16 +53,16 @@ void Syntax ()
     fprintf (stderr, "    -black                  use BlackPixel\n");
     fprintf (stderr, "    -white                  use WhitePixel\n");
     fprintf (stderr, "    -solid colorname        use the color indicated\n");
-    fprintf (stderr, "    -none                   don't use a color\n");
     fprintf (stderr, "    -background             use the root background\n");
+    fprintf (stderr, 
+"    -none                   no background (smooth refresh)\n");
     fprintf (stderr, "where geometry may be specified as:\n");
     fprintf (stderr, "    =WxH+X+Y                old style geometry spec\n");
-    fprintf (stderr, "    -g WxH+X+Y              geometry spec\n");
+    fprintf (stderr, "    -geometry WxH+X+Y       or -g spec\n");
     fprintf (stderr, "and display may be specified as:\n");
     fprintf (stderr, "    host:dpy                obselete, use -display\n");
     fprintf (stderr, "    -display host:dpy       or -d\n");
-    fprintf (stderr, 
-"\nThe default is to refresh the whole screen with the background tile.\n\n");
+    fprintf (stderr, "\nThe default is:  %s -none\n", ProgramName);
     exit (1);
 }
 
