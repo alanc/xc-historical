@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: moto.cf,v 1.11 92/12/22 17:45:14 gildea Exp $
+XCOMM platform:  $XConsortium: moto.cf,v 1.12 93/10/13 15:31:35 rws Exp $
 
 #if defined(MotoR3Architecture)
 
@@ -23,9 +23,9 @@ XCOMM platform:  $XConsortium: moto.cf,v 1.11 92/12/22 17:45:14 gildea Exp $
 
 #if defined(MotoR4Architecture)
 
-#define OSName			Motorola R40V1 
+#define OSName			Motorola R40V4
 #define OSMajorVersion		4
-#define OSMinorVersion		1
+#define OSMinorVersion		4
 
 #define SystemV4		YES
 #define BootstrapCFlags		-DSVR4 -DMOTOROLA
@@ -38,8 +38,8 @@ XCOMM platform:  $XConsortium: moto.cf,v 1.11 92/12/22 17:45:14 gildea Exp $
 #define LexCmd                  /usr/ccs/bin/lex
 #define MakeCmd                 /usr/ccs/bin/make
 #define YaccCmd                 /usr/ccs/bin/yacc
-#define CcCmd                   /bin/cc          /* a front-end to gcc/CI5 */
-#define DefaultCCOptions        -Xc
+#define CcCmd                   /bin/cc     /* a front-end to gcc/CI5 */
+#define DefaultCCOptions                    /* -Xc  no longer needed */
 
 #include <sv4Lib.rules>
 
