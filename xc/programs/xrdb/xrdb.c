@@ -1,7 +1,7 @@
 /*
  * xrdb - X resource manager database utility
  *
- * $XConsortium: xrdb.c,v 11.40 91/02/05 19:34:17 rws Exp $
+ * $XConsortium: xrdb.c,v 11.41 91/02/05 21:37:13 rws Exp $
  */
 
 /*
@@ -40,10 +40,10 @@
  * Modified A Bunch More: Bob Scheifler, February, 1991
  */
 
-#include <stdio.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/Xos.h>
+#include <stdio.h>
 #include <ctype.h>
 
 #define SCREEN_RESOURCES "SCREEN_RESOURCES"
@@ -58,12 +58,8 @@ static Bool quiet = False;
 #define RESOURCE_PROPERTY_NAME "RESOURCE_MANAGER"
 #define BACKUP_SUFFIX ".bak"		/* for editting */
 
+#ifndef sgi
 extern FILE *popen();
-
-#if defined(FUNCPROTO) || defined(__STDC__) || defined(_cplusplus) || defined (c_plusplus)
-extern char *mktemp(char *);	/* must match system .h decl */
-#else
-extern char *mktemp();
 #endif
 
 typedef struct _Entry {
@@ -737,7 +733,8 @@ main (argc, argv)
 	(oper == OPLOAD || oper == OPMERGE) &&
 	(whichResources == RALL || whichResources == RSCREENS)) {
 	strcpy(tmpname, "/tmp/xrdb_XXXXXX");
-	filename = mktemp(tmpname);
+	(void) mktemp(tmpname);
+	filename = tmpname;
 	fp = fopen(filename, "w");
 	if (!fp)
 	    fatal("%s: Failed to open temp file: %s\n", ProgramName,
@@ -864,7 +861,8 @@ Process(scrno, doScreen, execute)
 	}
 	strcpy(template, editFile);
 	strcat(template, "XXXXXX");
-	output = fopen(mktemp(template), "w");
+	(void) mktemp(template);
+	output = fopen(template, "w");
 	if (!output)
 	    fatal("%s: can't open temporary file '%s'\n", ProgramName, template);
 	saveBuff = buffer.buff;
