@@ -110,12 +110,14 @@ The event bindings associated with this widget.
 .ie 'Bold'\\$1' .IP \fBcursor\fP 1.5i
 .el .IP cursor 1.5i
 The image that will be displayed as the pointer cursor whenever it is in
-this widget.
+this widget.  The use of this resource is deprecated in favor
+of \fBcursorName\fP.
 ..
 .de Pn \" Simple cursorName
 .ie 'Bold'\\$1' .IP\fBcursorName\fP 1.5i
 .el .IP cursorName 1.5i
-The name of the symbol to use to represent the pointer cursor.
+The name of the symbol to use to represent the pointer cursor.  This resource
+will override the \fBcursor\fP resource if both are specified. (See 2.4.1)
 ..
 .de Ib \" Simple insensitiveBorder
 .ie 'Bold'\\$1' .IP \fBinsensitiveBorder\fP 1.5i
@@ -127,13 +129,13 @@ insensitive.
 .ie 'Bold'\\$1' .IP\fBpointerColor\fP 1.5i
 .el .IP pointerColor 1.5i
 A pixel value which indexes the widget's colormap to derive the foreground
-color of the pointer symbol.
+color of the pointer symbol specified by the \fBcursorName\fP resource.
 ..
 .de Pb \" Simple pointerColorBackground
-.ie 'Bold'\\$1' .IP\fBpointerColorBackground\fP 1.5i
-.el .IP pointerColorBackground 1.5i
+.ie 'Bold'\\$1' .IP\fBpointerColorBackground\fP 1.75i
+.el .IP pointerColorBackground 1.75i
 A pixel value which indexes the widget's colormap to derive the background
-color of the pointer symbol.
+color of the pointer symbol specified by the \fBcursorName\fP resource.
 ..
 
 \" Label Widget Resource Definitions
