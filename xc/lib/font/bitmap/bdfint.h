@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bdfint.h,v 1.2 91/02/22 17:10:09 rws Exp $
+ * $XConsortium: bdfint.h,v 1.1 91/05/10 14:45:33 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -42,13 +42,16 @@ typedef struct BDFSTAT {
     char       *fileName;
     char        fontName[MAXFONTNAMELEN];
     float       pointSize;
-    int         resolution;
+    int         resolution_x;
+    int         resolution_y;
     int         digitCount;
     int         digitWidths;
     int         exHeight;
 
     FontPropPtr fontProp;
     FontPropPtr pointSizeProp;
+    FontPropPtr resolutionXProp;
+    FontPropPtr resolutionYProp;
     FontPropPtr resolutionProp;
     FontPropPtr xHeightProp;
     FontPropPtr weightProp;
