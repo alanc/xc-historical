@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.113 89/11/21 16:41:19 jim Exp $
+ * $XConsortium: events.c,v 1.114 89/11/22 16:07:22 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.113 89/11/21 16:41:19 jim Exp $";
+"$XConsortium: events.c,v 1.114 89/11/22 16:07:22 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -189,6 +189,58 @@ Bool StashEventTime (ev)
     return False;
 }
 
+
+/*
+ * WindowOfEvent - return the window about which this event is concerned; this
+ * window may not be the same as XEvent.xany.window (the first window listed
+ * in the structure).
+ */
+Window WindowOfEvent (e)
+    XEvent *e;
+{
+    /*
+     * Each window subfield is marked with whether or not it is the same as
+     * XEvent.xany.window or is different (which is the case for some of the
+     * notify events).
+     */
+    switch (e->type) {
+      case KeyPress:
+      case KeyRelease:  return e->xkey.window;			     /* same */
+      case ButtonPress:
+      case ButtonRelease:  return e->xbutton.window;		     /* same */
+      case MotionNotify:  return e->xmotion.window;		     /* same */
+      case EnterNotify:
+      case LeaveNotify:  return e->xcrossing.window;		     /* same */
+      case FocusIn:
+      case FocusOut:  return e->xfocus.window;			     /* same */
+      case KeymapNotify:  return e->xkeymap.window;		     /* same */
+      case Expose:  return e->xexpose.window;			     /* same */
+      case GraphicsExpose:  return e->xgraphicsexpose.drawable;	     /* same */
+      case NoExpose:  return e->xnoexpose.drawable;		     /* same */
+      case VisibilityNotify:  return e->xvisibility.window;	     /* same */
+      case CreateNotify:  return e->xcreatewindow.window;	     /* DIFF */
+      case DestroyNotify:  return e->xdestroywindow.window;	     /* DIFF */
+      case UnmapNotify:  return e->xunmap.window;		     /* DIFF */
+      case MapNotify:  return e->xmap.window;			     /* DIFF */
+      case MapRequest:  return e->xmaprequest.window;		     /* DIFF */
+      case ReparentNotify:  return e->xreparent.window;		     /* DIFF */
+      case ConfigureNotify:  return e->xconfigure.window;	     /* DIFF */
+      case ConfigureRequest:  return e->xconfigurerequest.window;    /* DIFF */
+      case GravityNotify:  return e->xgravity.window;		     /* DIFF */
+      case ResizeRequest:  return e->xresizerequest.window;	     /* same */
+      case CirculateNotify:  return e->xcirculate.window;	     /* DIFF */
+      case CirculateRequest:  return e->xcirculaterequest.window;    /* DIFF */
+      case PropertyNotify:  return e->xproperty.window;		     /* same */
+      case SelectionClear:  return e->xselectionclear.window;	     /* same */
+      case SelectionRequest: return e->xselectionrequest.requestor;  /* DIFF */
+      case SelectionNotify:  return e->xselection.requestor;	     /* same */
+      case ColormapNotify:  return e->xcolormap.window;		     /* same */
+      case ClientMessage:  return e->xclient.window;		     /* same */
+      case MappingNotify:  return None;
+    }
+    return None;
+}
+
 /***********************************************************************
  *
  *  Procedure:
@@ -198,20 +250,21 @@ Bool StashEventTime (ev)
  */
 Bool DispatchEvent ()
 {
+    Window w = Event.xany.window;
     StashEventTime (&Event);
 
-    if (XFindContext (dpy, Event.xany.window,
-		      TwmContext, &Tmp_win) == XCNOENT)
+    if (XFindContext (dpy, w, TwmContext, &Tmp_win) == XCNOENT)
       Tmp_win = NULL;
 
-    if (XFindContext (dpy, Event.xany.window,
-		      ScreenContext, &Scr) == XCNOENT)
-      Scr = FindScreenInfo(Event.xany.window);
+    if (XFindContext (dpy, w, ScreenContext, &Scr) == XCNOENT) {
+	Scr = FindScreenInfo (WindowOfEvent (&Event));
+    }
 
-    if (Scr == NULL) return False;
+    if (!Scr) return False;
 
-    if (Event.type >= 0 && Event.type < MAX_X_EVENT)
-      (*EventHandler[Event.type])();
+    if (Event.type >= 0 && Event.type < MAX_X_EVENT) {
+	(*EventHandler[Event.type])();
+    }
 
     return True;
 }
@@ -941,6 +994,8 @@ HandleCreateNotify()
     XSync(dpy, 0);
 #endif
 }
+
+
 /***********************************************************************
  *
  *  Procedure:
@@ -1018,6 +1073,14 @@ HandleMapRequest()
 	SetRaiseWindow (Tmp_win);
     }
 }
+
+void SimulateMapRequest (w)
+    Window w;
+{
+    Event.xmaprequest.window = w;
+    HandleMapRequest ();
+}
+
 
 /***********************************************************************
  *
@@ -1112,17 +1175,18 @@ HandleUnmapNotify()
      * that we've received a DestroyNotify).
      */
 
+    XGrabServer (dpy);
     if (XTranslateCoordinates (dpy, Event.xunmap.window, Tmp_win->attr.root,
 			       0, 0, &dstx, &dsty, &dumwin)) {
-	SetMapStateProp(Tmp_win, WithdrawnState);
-	XUnmapWindow (dpy, Event.xunmap.window);
+	SetMapStateProp (Tmp_win, WithdrawnState);
 	XReparentWindow (dpy, Event.xunmap.window, Tmp_win->attr.root,
 			 dstx, dsty);
 	RestoreWithdrawnLocation (Tmp_win);
 	XRemoveFromSaveSet (dpy, Event.xunmap.window);
-	/* do not need to mash the event */
-	HandleDestroyNotify();
+	HandleDestroyNotify ();		/* do not need to mash event before */
     }
+    XUngrabServer (dpy);
+    XFlush (dpy);
 }
 
 /***********************************************************************
@@ -1905,3 +1969,53 @@ InstallAColormap (dpy, cmap)
     XInstallColormap (dpy, cmap);
 }
 
+
+#ifdef TRACE
+dumpevent (e)
+    XEvent *e;
+{
+    char *name = NULL;
+
+    switch (e->type) {
+      case KeyPress:  name = "KeyPress"; break;
+      case KeyRelease:  name = "KeyRelease"; break;
+      case ButtonPress:  name = "ButtonPress"; break;
+      case ButtonRelease:  name = "ButtonRelease"; break;
+      case MotionNotify:  name = "MotionNotify"; break;
+      case EnterNotify:  name = "EnterNotify"; break;
+      case LeaveNotify:  name = "LeaveNotify"; break;
+      case FocusIn:  name = "FocusIn"; break;
+      case FocusOut:  name = "FocusOut"; break;
+      case KeymapNotify:  name = "KeymapNotify"; break;
+      case Expose:  name = "Expose"; break;
+      case GraphicsExpose:  name = "GraphicsExpose"; break;
+      case NoExpose:  name = "NoExpose"; break;
+      case VisibilityNotify:  name = "VisibilityNotify"; break;
+      case CreateNotify:  name = "CreateNotify"; break;
+      case DestroyNotify:  name = "DestroyNotify"; break;
+      case UnmapNotify:  name = "UnmapNotify"; break;
+      case MapNotify:  name = "MapNotify"; break;
+      case MapRequest:  name = "MapRequest"; break;
+      case ReparentNotify:  name = "ReparentNotify"; break;
+      case ConfigureNotify:  name = "ConfigureNotify"; break;
+      case ConfigureRequest:  name = "ConfigureRequest"; break;
+      case GravityNotify:  name = "GravityNotify"; break;
+      case ResizeRequest:  name = "ResizeRequest"; break;
+      case CirculateNotify:  name = "CirculateNotify"; break;
+      case CirculateRequest:  name = "CirculateRequest"; break;
+      case PropertyNotify:  name = "PropertyNotify"; break;
+      case SelectionClear:  name = "SelectionClear"; break;
+      case SelectionRequest:  name = "SelectionRequest"; break;
+      case SelectionNotify:  name = "SelectionNotify"; break;
+      case ColormapNotify:  name = "ColormapNotify"; break;
+      case ClientMessage:  name = "ClientMessage"; break;
+      case MappingNotify:  name = "MappingNotify"; break;
+    }
+
+    if (name) {
+	printf ("event:  %s, %d remaining\n", name, QLength(dpy));
+    } else {
+	printf ("unknown event %d, %d remaining\n", e->type, QLength(dpy));
+    }
+}
+#endif /* TRACE */
