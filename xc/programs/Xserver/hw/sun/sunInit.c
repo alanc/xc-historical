@@ -57,11 +57,13 @@ static char sccsid[] = "%W %G Copyright 1987 Sun Micro";
 extern int sunMouseProc();
 extern int sunKbdProc();
 extern Bool sunBW2Probe(), sunBW2Create();
+#ifndef MONO_ONLY
 extern Bool sunCG2CProbe(), sunCG2CCreate();
 extern Bool sunCG3CProbe(), sunCG3CCreate();
 extern Bool sunCG4CProbe(), sunCG4CCreate();
 #ifdef FBTYPE_SUNFAST_COLOR /* doesn't exist in sunos3.x */
 extern Bool sunCG6CProbe(), sunCG6CCreate();
+#endif
 #endif
 extern void ProcessInputEvents();
 
@@ -105,15 +107,27 @@ SigIOHandler(sig, code, scp)
 }
 
 sunFbDataRec sunFbData[] = {
+#ifndef MONO_ONLY
     sunBW2Probe,  	"/dev/bwtwo0",	    sunBW2Create,
+#ifdef m68000
     sunCG2CProbe,  	"/dev/cgtwo0",	    sunCG2CCreate,
+    sunCG4CProbe,  	"/dev/cgfour0",	    sunCG4CCreate,
+#endif
     sunCG3CProbe,  	"/dev/cgthree0",    sunCG3CCreate,
-#ifdef FBTYPE_SUNFAST_COLOR
+#ifdef sparc
     sunCG6CProbe,	"/dev/cgsix0",	    sunCG6CCreate,
 #endif
-    sunCG4CProbe,  	"/dev/cgfour0",	    sunCG4CCreate,
+#endif
     sunBW2Probe,  	"/dev/bwtwo0",	    sunBW2Create,
 };
+
+#ifdef MONO_ONLY
+#define DEV_START   0
+#define DEV_END	    0
+#else
+#define DEV_START   1
+#define DEV_END	    1
+#endif
 
 /*
  * NUMSCREENS is the number of supported frame buffers (i.e. the number of
@@ -178,7 +192,7 @@ InitOutput(pScreenInfo, argc, argv)
     int     	  i, n, dev;
     int		  nonBlockConsole = 0;
     static int	  setup_on_exit = 0;
-    int		  devStart = 1;
+    int		  devStart = DEV_START;
     extern Bool	  RunFromSmartParent;
 
     if (!monitorResolution)
@@ -224,7 +238,7 @@ InitOutput(pScreenInfo, argc, argv)
     if (!sunDevsProbed)
     {
 	n = 0;
-	for (i = NUMSCREENS, dev = devStart; --i > 0; dev++) {
+	for (i = NUMSCREENS, dev = devStart; --i >= DEV_END; dev++) {
 	    if ((*sunFbData[dev].probeProc)(pScreenInfo, n, dev, argc, argv))
 		n++;
 	    else
@@ -236,7 +250,7 @@ InitOutput(pScreenInfo, argc, argv)
     }
     if (!sunSupportsDepth8)
 	pScreenInfo->numPixmapFormats--;
-    for (i = NUMSCREENS, dev = devStart; --i > 0; dev++) {
+    for (i = NUMSCREENS, dev = devStart; --i >= DEV_END; dev++) {
 	if (sunFbData[dev].createProc)
 	    (*sunFbData[dev].createProc)(pScreenInfo, argc, argv);
     }
