@@ -1,4 +1,4 @@
-/* $XConsortium: ICElib.h,v 1.17 93/11/22 17:44:20 mor Exp $ */
+/* $XConsortium: ICElib.h,v 1.18 93/11/25 14:51:52 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -137,8 +137,7 @@ typedef IcePaAuthStatus (*IcePaAuthProc) (
 
 typedef Bool (*IceHostBasedAuthProc) (
 #if NeedFunctionPrototypes
-    char *		/* hostName */,
-    IcePointer		/* clientData */
+    char *		/* hostName */
 #endif
 );
 
@@ -266,7 +265,6 @@ typedef struct {
     char			**auth_names;
     IcePaAuthProc		*auth_procs;
     IceHostBasedAuthProc	host_based_auth_proc;
-    IcePointer			host_based_auth_proc_client_data;
     IceIOErrorProc		io_error_proc;
 } _IcePaProtocol;
 
@@ -336,8 +334,6 @@ struct _IceListenObj {
     int				auth_data_entry_count;
     IceAuthDataEntry		*auth_data_entries;
     IceHostBasedAuthProc 	host_based_auth_proc;
-    IcePointer	     		host_based_auth_proc_client_data;
-
 };
 
 /*
@@ -492,12 +488,11 @@ extern int IceRegisterForProtocolReply (
     char *			/* release */,
     int				/* versionCount */,
     IcePaVersionRec *		/* versionRecs */,
-    IceProtocolSetupNotifyProc	/* protocolSetupNotifyProc */,
     int				/* authCount */,
     char **			/* authNames */,
     IcePaAuthProc *		/* authProcs */,
     IceHostBasedAuthProc	/* hostBasedAuthProc */,
-    IcePointer			/* hostBasedAuthProcClientData */,
+    IceProtocolSetupNotifyProc	/* protocolSetupNotifyProc */,
     IceIOErrorProc		/* IOErrorProc */
 #endif
 );
@@ -542,6 +537,29 @@ extern char *IceComposeNetworkIdList (
 extern void IceFreeListenObj (
 #if NeedFunctionPrototypes
     IceListenObj	/* listenObj */
+#endif
+);
+
+extern void IceSetAuthenticationData (
+#if NeedFunctionPrototypes
+    IceListenObj	/* listenObj */,
+    int			/* numEntries */,
+    IceAuthDataEntry *	/* entries */
+#endif
+);
+
+extern IceAuthDataEntry *IceGetAuthenticationData (
+#if NeedFunctionPrototypes
+    IceListenObj	/* listenObj */,
+    char *		/* protocol_name */,
+    char *		/* auth_name */
+#endif
+);
+
+extern void IceSetHostBasedAuthProc (
+#if NeedFunctionPrototypes
+    IceListenObj		/* listenObj */,
+    IceHostBasedAuthProc   	/* hostBasedAuthProc */
 #endif
 );
 
@@ -741,30 +759,6 @@ extern IceAuthFileEntry *IceGetAuthFileEntry (
     char *		/* protocol_name */,
     char *		/* address */,
     char *		/* auth_name */
-#endif
-);
-
-extern void IceSetAuthenticationData (
-#if NeedFunctionPrototypes
-    IceListenObj	/* listenObj */,
-    int			/* numEntries */,
-    IceAuthDataEntry *	/* entries */
-#endif
-);
-
-extern IceAuthDataEntry *IceGetAuthDataEntry (
-#if NeedFunctionPrototypes
-    IceListenObj	/* listenObj */,
-    char *		/* protocol_name */,
-    char *		/* auth_name */
-#endif
-);
-
-extern void IceSetHostBasedAuthProc (
-#if NeedFunctionPrototypes
-    IceListenObj		/* listenObj */,
-    IceHostBasedAuthProc   	/* hostBasedAuthProc */,
-    IcePointer		   	/* clientData */
 #endif
 );
 
