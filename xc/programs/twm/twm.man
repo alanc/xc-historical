@@ -202,6 +202,10 @@ The various color variables may be found in this section of the manual
 page.  There is also a \fBMonochrome\fP list of colors that may be specified.
 This enables you to use the same initialization file on a color or
 monochrome display.
+.IP "\fBConstrainedMoveTime\fP \fImilliseconds\fP" 8
+This variable specifies the length of time between button clicks when beginning
+a constrained move operation.  This value should be set to 0 to disable
+constrained moves.  The default is 400 milliseconds.
 .IP "\fBCursors\fP { \fIcursors\fP }" 8
 This variable is a list of cursors that define the appearance of the
 pointer cursor while it is in the various \fItwm\fP windows.  Each cursor

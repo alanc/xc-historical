@@ -6,6 +6,7 @@
 
 NoVersion
 NoHighlight
+OpaqueMove
 AutoRelativeResize
 RestartPreviousState
 ClientBorderWidth
@@ -13,6 +14,7 @@ BorderWidth 2
 NoGrabServer
 NoRaiseOnMove
 NoRaiseOnResize
+#NoTitleFocus
 DecorateTransients
 TitleFont "-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
 MenuFont "-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
@@ -21,6 +23,7 @@ IconManagerFont "-adobe-helvetica-bold-r-normal--*-100-*-*-*"
 ResizeFont "fixed"
 NoSaveUnders
 XORvalue 1
+ConstrainedMoveTime 0
 
 
 ###############################################################################
@@ -83,7 +86,6 @@ Button2 =      : root                     : f.menu "windowops"
 Button2 = m    : window                   : f.resize
 Button2 =      : icon                     : f.iconify
 Button2 = m    : icon                     : f.iconify
-Button3 =      : iconmgr                  : f.hideiconmgr
 Button3 =      : root                     : f.menu "apps"
 Button3 =      : title                    : f.zoom
 Button3 = m    : window|icon|frame|title  : f.function "move-or-raiselower"
@@ -156,7 +158,7 @@ Icons
 
 menu "twmops"
 {
-"System"		f.title
+"twm"			f.title
 "Restart"		f.restart
 "Exit"			f.quit
 }
