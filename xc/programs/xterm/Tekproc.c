@@ -1,5 +1,5 @@
 /*
- * $Header: Tekproc.c,v 1.31 88/07/11 16:52:16 jim Exp $
+ * $Header: Tekproc.c,v 1.32 88/07/12 16:42:53 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -50,6 +50,11 @@
 #include <pwd.h>
 #include "data.h"
 #include "error.h"
+
+#ifdef macII
+#include <sys/ioctl.h>				/* to get FIONREAD */
+#endif /* macII */
+
 #ifdef MODEMENU
 #include "menu.h"
 #endif	/* MODEMENU */
@@ -115,7 +120,7 @@ char *curs_color;
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$Header: Tekproc.c,v 1.31 88/07/11 16:52:16 jim Exp $";
+static char rcs_id[] = "$Header: Tekproc.c,v 1.32 88/07/12 16:42:53 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
