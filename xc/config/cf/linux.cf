@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: linux.cf,v 1.7 95/01/11 18:31:24 kaleb Exp kaleb $
+XCOMM platform:  $XConsortium: linux.cf,v 1.8 95/01/11 21:29:31 kaleb Exp kaleb $
 
 #define OSName			Linux
 #define OSVendor		/**/
@@ -57,7 +57,7 @@ XCOMM platform:  $XConsortium: linux.cf,v 1.7 95/01/11 18:31:24 kaleb Exp kaleb 
 #define StandardCppDefines	-traditional StandardDefines
 #define ServerOSDefines		XFree86ServerOSDefines -DDDXTIME
 #define ExtensionOSDefines	-DXTESTEXT1
-#define ServerExtraDefines	-DGCCUSESGAS -DXDMCP -DSTATIC_COLOR -DAVOID_GLYPHBLT
+#define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
 #define ConnectionFlags		-DUNIXCONN -DTCPCONN
 #define InstUidFlags		-s -m 4755
 

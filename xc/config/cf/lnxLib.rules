@@ -1,7 +1,7 @@
-XCOMM $XConsortium: lnxLib.rules,v 1.3 94/11/21 17:13:14 kaleb Exp kaleb $
+XCOMM $XConsortium: lnxLib.rules,v 1.4 95/01/05 19:40:24 kaleb Exp kaleb $
 
 /*
- * Linux shared library rules (DLL version & ELF versions)
+ * Linux shared library rules (DLL & ELF versions)
  */
 #ifndef HasSharedLibraries
 #define HasSharedLibraries YES
@@ -109,7 +109,7 @@ clean::									@@\
 #define SharedLibraryLoadFlags /**/
 #endif
 #ifndef PositionIndependentCFlags
-#define PositionIndependentCFlags -B/usr/dll/jump/
+#define PositionIndependentCFlags -B/usr/dll/jump
 #endif
 
 /*
