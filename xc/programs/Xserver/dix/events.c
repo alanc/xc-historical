@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.48 91/11/22 12:19:11 rws Exp $ */
+/* $XConsortium: events.c,v 5.49 91/12/17 19:41:32 keith Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -466,9 +466,25 @@ GetSpriteCursor()
     return sprite.current;
 }
 
+#define TIMESLOP (5 * 60 * 1000) /* 5 minutes */
+
+static void
+MonthChangedOrBadTime(xE)
+    register xEvent *xE;
+{
+    /* If the ddx/OS is careless about not processing timestamped events from
+     * different sources in sorted order, then it's possible for time to go
+     * backwards when it should not.  Here we ensure a decent time.
+     */
+    if ((currentTime.milliseconds - xE->u.keyButtonPointer.time) > TIMESLOP)
+	currentTime.months++;
+    else
+	xE->u.keyButtonPointer.time = currentTime.milliseconds;
+}
+
 #define NoticeTime(xE) { \
     if ((xE)->u.keyButtonPointer.time < currentTime.milliseconds) \
-	currentTime.months++; \
+	MonthChangedOrBadTime(xE); \
     currentTime.milliseconds = (xE)->u.keyButtonPointer.time; }
 
 void
