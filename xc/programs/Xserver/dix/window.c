@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.84 92/02/13 21:24:16 keith Exp $ */
+/* $XConsortium: window.c,v 5.85 92/03/13 15:58:31 eswu Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -3976,6 +3976,8 @@ SaveScreens(on, mode)
 
     if (on == SCREEN_SAVER_FORCER)
     {
+	UpdateCurrentTimeIf();
+	lastDeviceEventTime = currentTime;
         if (mode == ScreenSaverReset)
             what = SCREEN_SAVER_OFF;
         else
