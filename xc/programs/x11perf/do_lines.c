@@ -31,6 +31,23 @@ void InitLines(d, p)
     
 }
 
+void InitDashedLines(d, p)
+    Display *d;
+    Parms   p;
+{
+    XGCValues gcv;
+    char dashes[2];
+
+    InitLines(d, p);
+
+    /* Modify GCs to draw dashed */
+    XSetLineAttributes(d, whitegc, 0, LineOnOffDash, CapButt, JoinMiter);
+    XSetLineAttributes(d, blackgc, 0, LineOnOffDash, CapButt, JoinMiter);
+    dashes[0] = 1;   dashes[1] = 3;
+    XSetDashes(d, blackgc, 0, dashes, 2);
+    XSetDashes(d, whitegc, 0, dashes, 2);
+}
+
 void DoLines(d, p)
     Display *d;
     Parms p;

@@ -21,6 +21,7 @@ extern void DoValGC();
 extern void EndValGC();
 
 extern void InitLines();
+extern void InitDashedLines();
 extern void DoLines();
 extern void EndLines();
 
@@ -94,6 +95,9 @@ Test test[] = {
   {"-lines3", "Line (3 occluding windows)",
 		InitLines, DoLines, NullProc, EndLines, False, False,
 		{10, POLY, 3}},
+  {"-dlines", "Dashed line",
+		InitDashedLines, DoLines, NullProc, EndLines, False, False,
+		{10, 20, 0}},
   {"-dots", "Dot",
 		InitDots, DoDots, NullProc, EndDots, False, False,
 		{100, POLY}},
