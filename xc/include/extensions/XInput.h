@@ -1,4 +1,4 @@
-/* $Header: XInput.h,v 1.11 91/01/24 16:55:58 rws Exp $ */
+/* $Header: XInput.h,v 1.12 91/06/06 10:24:26 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -723,6 +723,7 @@ typedef struct {
 /*******************************************************************
  *
  * Device state structure.
+ * This is returned by the XQueryDeviceState request.
  *
  */
 
@@ -731,6 +732,17 @@ typedef struct {
         int		num_classes;
         XInputClass	*data;
 } XDeviceState;
+
+/*******************************************************************
+ *
+ * Note that the mode field is a bitfield that reports the Proximity
+ * status of the device as well as the mode.  The mode field should
+ * be OR'd with the mask DeviceMode and compared with the values
+ * Absolute and Relative to determine the mode, and should be OR'd
+ * with the mask ProximityState and compared with the values InProximity
+ * and OutOfProximity to determine the proximity state.
+ *
+ */
 
 typedef struct {
 #if defined(__cplusplus) || defined(c_plusplus)
