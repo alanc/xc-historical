@@ -1,4 +1,4 @@
-/* $XConsortium: imake.c,v 1.69 92/06/05 18:18:58 rws Exp $ */
+/* $XConsortium: imake.c,v 1.70 92/09/03 19:55:35 rws Exp $ */
 
 /*****************************************************************************
  *                                                                           *
@@ -207,6 +207,7 @@ typedef	unsigned char	boolean;
 char *cpp = NULL;
 
 char	*tmpMakefile    = "/tmp/Imf.XXXXXX";
+char	*tmpImakefile    = "/tmp/IIf.XXXXXX";
 char	*make_argv[ ARGUMENTS ] = { "make" };
 
 int	make_argindex;
@@ -216,9 +217,12 @@ char	*Imakefile = NULL;
 char	*Makefile = "Makefile";
 char	*Template = "Imake.tmpl";
 char	*ImakefileC = "Imakefile.c";
+boolean haveImakefileC = FALSE;
+char	*cleanedImakefile = NULL;
 char	*program;
 char	*FindImakefile();
 char	*ReadLine();
+char	*CleanCppInput();
 char	*Strdup();
 char	*Emalloc();
 
@@ -255,7 +259,8 @@ main(argc, argv)
 	if ((tmpfd = fopen(tmpMakefile, "w+")) == NULL)
 		LogFatal("Cannot create temporary file %s.", tmpMakefile);
 
-	cppit(Imakefile, Template, ImakefileC, tmpfd, tmpMakefile);
+	cleanedImakefile = CleanCppInput(Imakefile);
+	cppit(cleanedImakefile, Template, ImakefileC, tmpfd, tmpMakefile);
 
 	if (show) {
 		if (Makefile == NULL)
@@ -274,15 +279,19 @@ showit(fd)
 
 	fseek(fd, 0, 0);
 	while ((red = fread(buf, 1, BUFSIZ, fd)) > 0)
-		fwrite(buf, red, 1, stdout);
+		writetmpfile(stdout, buf, red, "stdout");
 	if (red < 0)
-		LogFatal("Cannot write stdout.", "");
+	    LogFatal("Cannot read %s.", tmpMakefile);
 }
 
 wrapup()
 {
 	if (tmpMakefile != Makefile)
 		unlink(tmpMakefile);
+	if (cleanedImakefile && cleanedImakefile != Imakefile)
+	    unlink(cleanedImakefile);
+	if (haveImakefileC)
+	    unlink(ImakefileC);
 }
 
 #ifdef SIGNALRETURNSINT
@@ -502,7 +511,7 @@ CheckImakefileC(masterc)
 	if (access(masterc, F_OK) == 0) {
 		inFile = fopen(masterc, "r");
 		if (inFile == NULL)
-			LogFatalI("Refuse to overwrite: %s", masterc);
+			LogFatal("Refuse to overwrite: %s", masterc);
 		if ((fgets(mkcbuf, sizeof(mkcbuf), inFile) &&
 		     strncmp(mkcbuf, TmplDef, sizeof(TmplDef)-1)) ||
 		    (fgets(mkcbuf, sizeof(mkcbuf), inFile) &&
@@ -512,14 +521,14 @@ CheckImakefileC(masterc)
 		    fgets(mkcbuf, sizeof(mkcbuf), inFile))
 		{
 			fclose(inFile);
-			LogFatalI("Refuse to overwrite: %s", masterc);
+			LogFatal("Refuse to overwrite: %s", masterc);
 		}
 		fclose(inFile);
 	}
 }
 
-cppit(Imakefile, template, masterc, outfd, outfname)
-	char	*Imakefile;
+cppit(imakefile, template, masterc, outfd, outfname)
+	char	*imakefile;
 	char	*template;
 	char	*masterc;
 	FILE	*outfd;
@@ -529,13 +538,15 @@ cppit(Imakefile, template, masterc, outfd, outfname)
 	int	pid;
 	waitType	status;
 
+	haveImakefileC = TRUE;
 	inFile = fopen(masterc, "w");
 	if (inFile == NULL)
-		LogFatalI("Cannot open %s for output.", masterc);
-	fprintf(inFile, "%s \"%s\"\n", TmplDef, template);
-	fprintf(inFile, "%s <%s>\n", ImakeDef, Imakefile);
-	fprintf(inFile, "%s\n", TmplInc);
-	fclose(inFile);
+		LogFatal("Cannot open %s for output.", masterc);
+	if (fprintf(inFile, "%s \"%s\"\n", TmplDef, template) < 0 ||
+	    fprintf(inFile, "%s <%s>\n", ImakeDef, imakefile) < 0 ||
+	    fprintf(inFile, "%s\n", TmplInc) < 0 ||
+	    fclose(inFile))
+	    LogFatal("Cannot write to %s.", masterc);
 	/*
 	 * Fork and exec cpp
 	 */
@@ -546,17 +557,10 @@ cppit(Imakefile, template, masterc, outfd, outfname)
 		while (wait(&status) > 0) {
 			errno = 0;
 			if (WIFSIGNALED(status))
-			{
-				unlink(masterc);
 				LogFatalI("Signal %d.", waitSig(status));
-			}
 			if (WIFEXITED(status) && waitCode(status))
-			{
-				unlink(masterc);
 				LogFatalI("Exit code %d.", waitCode(status));
-			}
 		}
-		unlink(masterc);
 		CleanCppOutput(outfd, outfname);
 	} else {	/* child... dup and exec cpp */
 		if (verbose)
@@ -594,6 +598,86 @@ makeit()
 	}
 }
 
+char *CleanCppInput(imakefile)
+	char	*imakefile;
+{
+	FILE	*outFile = NULL;
+	int	infd;
+	char	*buf,		/* buffer for file content */
+		*pbuf,		/* walking pointer to buf */
+		*punwritten,	/* pointer to unwritten portion of buf */
+		*ptoken,	/* pointer to # token */
+		*pend,		/* pointer to end of # token */
+		savec;		/* temporary character holder */
+	struct stat	st;
+
+	/*
+	 * grab the entire file.
+	 */
+	if ((infd = open(imakefile, O_RDONLY)) < 0)
+		LogFatal("Cannot open %s for input.", imakefile);
+	fstat(infd, &st);
+	buf = Emalloc(st.st_size+3);
+	if (read(infd, buf + 2, st.st_size) != st.st_size)
+		LogFatal("Cannot read all of %s:", imakefile);
+	close(infd);
+	buf[0] = '\n';
+	buf[1] = '\n';
+	buf[st.st_size + 2] = '\0';
+
+	punwritten = pbuf = buf + 2;
+	while (*pbuf) {
+	    /* for compatibility, replace make comments for cpp */
+	    if (*pbuf == '#' && pbuf[-1] == '\n' && pbuf[-2] != '\\') {
+		ptoken = pbuf+1;
+		while (*ptoken == ' ' || *ptoken == '\t')
+			ptoken++;
+		pend = ptoken;
+		while (*pend && *pend != ' ' && *pend != '\t' && *pend != '\n')
+			pend++;
+		savec = *pend;
+		*pend = '\0';
+		if (strcmp(ptoken, "define") &&
+		    strcmp(ptoken, "if") &&
+		    strcmp(ptoken, "ifdef") &&
+		    strcmp(ptoken, "ifndef") &&
+		    strcmp(ptoken, "include") &&
+		    strcmp(ptoken, "line") &&
+		    strcmp(ptoken, "else") &&
+		    strcmp(ptoken, "elif") &&
+		    strcmp(ptoken, "endif") &&
+		    strcmp(ptoken, "error") &&
+		    strcmp(ptoken, "pragma") &&
+		    strcmp(ptoken, "undef")) {
+		    if (outFile == NULL) {
+			tmpImakefile = Strdup(tmpImakefile);
+			(void) mktemp(tmpImakefile);
+			outFile = fopen(tmpImakefile, "w");
+			if (outFile == NULL)
+			    LogFatal("Cannot open %s for write.\n",
+				tmpImakefile);
+		    }
+		    writetmpfile(outFile, punwritten, pbuf-punwritten,
+				 tmpImakefile);
+		    if (ptoken > pbuf + 1)
+			writetmpfile(outFile, "XCOMM", 5, tmpImakefile);
+		    else
+			writetmpfile(outFile, "XCOMM ", 6, tmpImakefile);
+		    punwritten = pbuf + 1;
+		}
+		*pend = savec;
+	    }
+	    pbuf++;
+	}
+	if (outFile) {
+	    writetmpfile(outFile, punwritten, pbuf-punwritten, tmpImakefile);
+	    fclose(outFile);
+	    return tmpImakefile;
+	}
+
+	return(imakefile);
+}
+
 CleanCppOutput(tmpfd, tmpfname)
 	FILE	*tmpfd;
 	char	*tmpfname;
@@ -609,9 +693,9 @@ CleanCppOutput(tmpfd, tmpfname)
 		} else {
 			blankline = 0;
 			KludgeOutputLine(&input);
-			fputs(input, tmpfd);
+			writetmpfile(tmpfd, input, strlen(input), tmpfname);
 		}
-		putc('\n', tmpfd);
+		writetmpfile(tmpfd, "\n", 1, tmpfname);
 	}
 	fflush(tmpfd);
 #ifdef NFS_STDOUT_BUG
@@ -708,7 +792,7 @@ char *ReadLine(tmpfd, tmpfname)
 		initialized = TRUE;
 	    fprintf (tmpfd, "# Makefile generated by imake - do not edit!\n");
 	    fprintf (tmpfd, "# %s\n",
-		"$XConsortium: imake.c,v 1.69 92/06/05 18:18:58 rws Exp $");
+		"$XConsortium: imake.c,v 1.70 92/09/03 19:55:35 rws Exp $");
 
 #ifdef FIXUP_CPP_WHITESPACE
 	    {
@@ -748,14 +832,14 @@ NULL };
 	return(p2);
 }
 
-writetmpfile(fd, buf, cnt)
+writetmpfile(fd, buf, cnt, fname)
 	FILE	*fd;
 	int	cnt;
 	char	*buf;
+	char	*fname;
 {
-	errno = 0;
-	if (fwrite(buf, cnt, 1, fd) != 1)
-		LogFatal("Cannot write to %s.", tmpMakefile);
+	if (fwrite(buf, sizeof(char), cnt, fd) != cnt)
+		LogFatal("Cannot write to %s.", fname);
 }
 
 char *Emalloc(size)
