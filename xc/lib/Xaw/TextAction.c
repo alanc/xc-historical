@@ -1,4 +1,4 @@
-/* $XConsortium: TextAction.c,v 1.38 91/03/07 15:14:51 converse Exp $ */
+/* $XConsortium: TextAction.c,v 1.39 91/05/03 19:51:50 converse Exp $ */
 
 /***********************************************************
 Copyright 1989 by the Massachusetts Institute of Technology,
@@ -36,13 +36,13 @@ SOFTWARE.
  *						MIT X Consortium 
  */
 
-#include <stdio.h>
-#include <ctype.h>
-#include <X11/Xatom.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
+#include <X11/Xatom.h>
 #include <X11/Xmu/Misc.h>
 #include <X11/Xaw/TextP.h>
+#include <stdio.h>
+#include <ctype.h>
 
 #define SrcScan                XawTextSourceScan
 #define FindDist               XawTextSinkFindDistance
@@ -230,7 +230,6 @@ XawTextScanDirection dir;
 XawTextScanType type;
 Boolean include;
 {
-  XawTextPosition old_pos = ctx->text.insertPos;
   StartAction(ctx, event);
   ctx->text.insertPos = SrcScan(ctx->text.source, ctx->text.insertPos,
 				type, dir, ctx->text.mult, include);
@@ -1506,7 +1505,7 @@ Cardinal *num_params;
 	
 /* Action Table */
 
-XtActionsRec textActionsTable[] = {
+XtActionsRec _XawTextActionsTable[] = {
 /* motion bindings */
   {"forward-character", 	MoveForwardChar},
   {"backward-character", 	MoveBackwardChar},
@@ -1572,4 +1571,4 @@ XtActionsRec textActionsTable[] = {
   {"PopdownSearchAction",       _XawTextPopdownSearchAction},
 };
 
-Cardinal textActionsTableCount = XtNumber(textActionsTable);
+Cardinal _XawTextActionsTableCount = XtNumber(_XawTextActionsTable);

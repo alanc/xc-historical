@@ -1,4 +1,4 @@
-/* $XConsortium: Text.c,v 1.177 91/05/03 19:49:35 converse Exp $ */
+/* $XConsortium: Text.c,v 1.178 91/05/04 10:06:53 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -24,11 +24,11 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include <stdio.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
 #include <X11/Xatom.h>
+#include <stdio.h>
 
 #include <X11/Xmu/Atoms.h>
 #include <X11/Xmu/CharSet.h>
@@ -274,7 +274,7 @@ ClassInitialize()
  * Set the number of actions.
  */
 
-  textClassRec.core_class.num_actions = textActionsTableCount;
+  textClassRec.core_class.num_actions = _XawTextActionsTableCount;
   
   strcpy (cp, _XawDefaultTextTranslations1); cp += len1;
   strcpy (cp, _XawDefaultTextTranslations2); cp += len2;
@@ -3255,7 +3255,7 @@ TextClassRec textClassRec = {
     /* initialize       */      Initialize,
     /* initialize_hook  */	NULL,
     /* realize          */      Realize,
-    /* actions          */      textActionsTable,
+    /* actions          */      _XawTextActionsTable,
     /* num_actions      */      0,                /* Set in ClassInitialize. */
     /* resources        */      resources,
     /* num_ resource    */      XtNumber(resources),

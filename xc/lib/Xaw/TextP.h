@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextP.h,v 1.47 91/03/27 14:28:02 converse Exp $
+* $XConsortium: TextP.h,v 1.48 91/04/16 09:08:33 rws Exp $
 */
 
 
@@ -49,8 +49,8 @@ SOFTWARE.
 
 #define zeroPosition ((XawTextPosition) 0)
 
-extern XtActionsRec textActionsTable[];
-extern Cardinal textActionsTableCount;
+extern XtActionsRec _XawTextActionsTable[];
+extern Cardinal _XawTextActionsTableCount;
 
 #define XawLF	0x0a
 #define XawCR	0x0d
