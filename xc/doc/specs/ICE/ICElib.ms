@@ -48,6 +48,18 @@ implied warranty.
 .EF ''- % -''
 .OF ''- % -''
 .NH 1
+Acknowledgements
+.XS
+\*(SN Acknowledgements
+.XE
+.LP
+I would like to thank Bob Scheifler for his thoughtful input on the design
+of the ICE library.  I would also like to thank the following people for their
+participation in the ICE protocol design: Jordan Brown, Larry Cable,
+Clive Feather, Vania Joloboff, Kaleb Keithley, Stuart Marks, Hiro Miyamoto,
+Bob Scheifler, Jim VanGilder, and Mike Wexler.
+.LP
+.NH 1
 Overview of ICE
 .XS
 \*(SN Overview of ICE
@@ -80,28 +92,10 @@ Clients are responsible for notifying the ICE library when a protocol is no
 longer active on an ICE connection (although ICE does not define how each
 sub-protocol triggers a protocol shutdown).
 .LP
-The ICE library utilizes callbacks to process incoming messages.  There are
-two main reasons for this:
-.LP
-.IP 1)
-If we generate a message and want to wait for a reply, since there may
-be several protocols enabled, messages from other protocols might arrive
-before the reply we're really waiting for.  The library could buffer up
-such messages, but utilizing callbacks is a much cleaner solution.  By
-doing so, we can invoke the callback for the message received, then
-continue waiting for our reply.
-.LP
-.IP 2)
-By using callbacks, protocol setups and authentication happen "behind
-the scenes."  For example, if the ICE library receives a \fIProtocol Setup\fP\^
-and it requires authentication, it invokes a callback to get the
-authentication data, and automatically sends an \fIAuthenticationRequired\fP\^
-message to the other client.  Likewise, upon receiving the
-\fIAuthenticationRequired\fP\^ message, a callback is invoked which provides
-the reply data, and an \fIAuthenticationReply\fP\^ message is automatically
-generated.  Furthermore, if a message totally unrelated to this
-authentication arrives in the middle of the authentication, it can
-be quietly processed by it's callback as if nothing happened.
+The ICE library utilizes callbacks to process incoming messages.  Using
+callbacks allows \fIProtocol Setups\fP\^ and authentication to happen
+"behind the scenes."  An additional benefit is that messages never need
+to be buffered up when the client "blocks" waiting for a particular message.
 .LP
 .NH 1
 Intended Audience
@@ -142,12 +136,13 @@ initiates a \fIProtocol Setup\fP\^ and a client which responds with a
 \fIProtocol Reply\fP\^.  The following prefixes are used by the library
 functions and data structures to distinguish between the two:
 .LP
-.PN IcePO
+.PN IcePo
 - \fIIce Protocol Originator\fP\^
 .LP
-.PN IcePA
+.PN IcePa
 - \fIIce Protocol Acceptor\fP\^
 .LP
+.bp
 .NH 1
 Protocol Registration
 .XS
@@ -186,9 +181,9 @@ typedef struct {
 .br
 	int minor_version;
 .br
-	IcePOprocessMsgProc process_msg_proc;
+	IcePoProcessMsgProc process_msg_proc;
 .br
-} IcePOversionRec;
+} IcePoVersionRec;
 .LP
 .eM
 .sp 0.5
@@ -202,9 +197,9 @@ typedef struct {
 .br
 	int minor_version;
 .br
-	IcePAprocessMsgProc process_msg_proc;
+	IcePaProcessMsgProc process_msg_proc;
 .br
-} IcePAversionRec;
+} IcePaVersionRec;
 .LP
 .eM
 .sp 0.5
@@ -214,17 +209,17 @@ unpack the message and take the appropriate action.
 .LP
 If the message arrives at the client which initiated the \fIProtocol Setup\fP\^,
 the
-.PN IcePOprocessMsgProc
+.PN IcePoProcessMsgProc
 callback is invoked.  If the message arrives at the client which accepted
 a \fIProtocol Setup\fP\^, the
-.PN IcePAprocessMsgProc
+.PN IcePaProcessMsgProc
 callback is invoked.
 .LP
 .sp 0.5
 .sM
-typedef Bool (*IcePOprocessMsgProc)();
+typedef Bool (*IcePoProcessMsgProc)();
 .FD 0
-Bool POprocessMsgProc\^(\^\fIice_conn\fP, \fIopcode\fP\^, \fIlength\fP\^, \fIswap\fP\^, \fIreply_wait\fP\^)
+Bool PoProcessMsgProc\^(\^\fIice_conn\fP, \fIopcode\fP\^, \fIlength\fP\^, \fIswap\fP\^, \fIreply_wait\fP\^)
 .br
     IceConn \fIice_conn\fP\^;
 .br
@@ -234,7 +229,7 @@ Bool POprocessMsgProc\^(\^\fIice_conn\fP, \fIopcode\fP\^, \fIlength\fP\^, \fIswa
 .br
     Bool \fIswap\fP\^;
 .br
-    IceReplyWaitInfo \fIreply_wait\fP\^;
+    IceReplyWaitInfo *\fIreply_wait\fP\^;
 .FN
 .IP \fIice_conn\fP 1i
 The ICE connection object.
@@ -249,9 +244,9 @@ Indicates if the client is waiting for a reply.
 .LP
 .eM
 .sM
-typedef void (*IcePAprocessMsgProc)();
+typedef void (*IcePaProcessMsgProc)();
 .FD 0
-void PAprocessMsgProc\^(\^\fIice_conn\fP, \fIopcode\fP\^, \fIlength\fP\^, \fIswap\fP\^)
+void PaProcessMsgProc\^(\^\fIice_conn\fP, \fIopcode\fP\^, \fIlength\fP\^, \fIswap\fP\^)
 .br
     IceConn \fIice_conn\fP\^;
 .br
@@ -272,7 +267,7 @@ A flag which indicates if byte swapping is necessary.
 .LP
 .eM
 The
-.PN IcePOprocessMsgProc
+.PN IcePoProcessMsgProc
 callback needs to check the \fIreply_wait\fP\^ argument.
 If \fIreply_wait\fP\^ is
 .PN NULL ,
@@ -322,28 +317,28 @@ It is the responsibility of the client receiving the reply to
 free up any memory allocated on it's behalf.
 .LP
 The return value of
-.PN IcePOprocessMsgProc
+.PN IcePoProcessMsgProc
 is a boolean set to
 .PN True
 if a reply or error has been returned (as opposed to a callback
 having been invoked).  Note that an error should only be returned
 if it corresponds to the reply being waited for.  Otherwise, the
-.PN IcePOprocessMsgProc
+.PN IcePoProcessMsgProc
 should either handle the error internally, or invoke an error handler
 for it's library.
 .LP
 .sp 0.5       
 The
-.PN IcePAprocessMsgProc
+.PN IcePaProcessMsgProc
 callback, on the other hand, should always pass
 the message to the client via a callback.  For example, if this is a Session
 Management \fIInteract Request\fP\^ message, this function should notify the
 client of the \fIInteract Request\fP\^ via a callback.
 .LP
 The reason the
-.PN IcePAprocessMsgProc
+.PN IcePaProcessMsgProc
 callback does not have a \fIreply_wait\fP\^ like
-.PN IcePOprocessMsgProc
+.PN IcePoProcessMsgProc
 does, is because a process that is acting as
 a "server" should never block for a reply (infinite blocking can
 occur if the connecting client does not act properly).
@@ -385,9 +380,9 @@ typedef struct {
 .br
 	char *auth_name;
 .br
-	IcePOauthProc auth_proc;
+	IcePoAuthProc auth_proc;
 .brn
-} IcePOauthRec;
+} IcePoAuthRec;
 .LP
 .eM
 .sp 0.5
@@ -399,22 +394,22 @@ typedef struct {
 .br
 	char *auth_name;
 .br
-	IcePAauthProc auth_proc;
+	IcePaAuthProc auth_proc;
 .br
-} IcePAauthRec;
+} IcePaAuthRec;
 .LP
 .eM
 .sp 0.5
-.PN IcePOauthProc
+.PN IcePoAuthProc
 is the callback invoked for the client that initiated
 the \fIProtocol Setup\fP\^ and needs to respond to an
 \fIAuthentication Required\fP\^ or
 \fIAuthentication Next Phase\fP\^ message from the other client.
 .LP
 .sM
-typedef IcePOauthStatus (*IcePOauthProc)();
+typedef IcePoAuthStatus (*IcePoAuthProc)();
 .FD 0
-IcePOauthStatus POauthProc\^(\^\fIauth_state_ptr\fP, \fIclean_up\fP\^, \fIswap\fP\^,
+IcePoAuthStatus PoAuthProc\^(\^\fIauth_state_ptr\fP, \fIclean_up\fP\^, \fIswap\fP\^,
 .br
                     \fIauth_datalen\fP\^, \fIauth_data\fP\^, \fIreply_datalen_ret\fP\^, \fIreply_data_ret\fP\^, \fIerror_string_ret\fP\^)
 .br
@@ -472,46 +467,46 @@ responsible for freeing this string.
 .LP
 .eM
 The
-.PN IcePOauthProc
+.PN IcePoAuthProc
 should return one of four values:
 .TS
 lw(2i) lw(5i).
 T{
-.PN IcePOauthHaveReply
+.PN IcePoAuthHaveReply
 T}	T{
 A reply is available
 T}
 .sp 4p
 T{
-.PN IcePOauthRejected
+.PN IcePoAuthRejected
 T}	T{
 Authentication rejected
 T}
 .sp 4p
 T{
-.PN IcePOauthFailed
+.PN IcePoAuthFailed
 T}	T{
 Authentication failed
 T}
 .sp 4p
 T{
-.PN IcePOauthDoneCleanup
+.PN IcePoAuthDoneCleanup
 T}	T{
 Done cleaning up
 T}
 .TE
 .LP
 .sp 0.5
-.PN IcePAauthProc
+.PN IcePaAuthProc
 is the callback invoked for the client that received a
 \fIProtocol Setup\fP\^ and needs to initiate an
 \fIAuthentication Required\fP\^ message or respond to an
 \fIAuthentication Reply\fP\^.
 .LP
 .sM
-typedef IcePAauthStatus (*IcePAauthProc) ();
+typedef IcePaAuthStatus (*IcePaAuthProc) ();
 .FD 0
-IcePAauthStatus PAauthProc\^(\^\fIauth_state_ptr\fP, \fIswap\fP\^,
+IcePaAuthStatus PaAuthProc\^(\^\fIauth_state_ptr\fP, \fIswap\fP\^,
 .br
                     \fIreply_datalen\fP\^, \fIreply_data\fP\^, \fIauth_datalen_ret\fP\^, \fIauth_data_ret\fP\^, \fIerror_string_ret\fP\^)
 .br
@@ -562,30 +557,30 @@ responsible for freeing this string.
 .LP
 .eM
 The
-.PN IcePAauthProc
+.PN IcePaAuthProc
 should return one of four values:
 .TS
 lw(2i) lw(5i).
 T{
-.PN IcePAauthContinue
+.PN IcePaAuthContinue
 T}	T{
 Continue authentication
 T}
 .sp 4p
 T{
-.PN IcePAauthAccepted
+.PN IcePaAuthAccepted
 T}	T{
 Authentication accepted
 T}
 .sp 4p
 T{
-.PN IcePAauthRejected
+.PN IcePaAuthRejected
 T}	T{
 Authentication rejected
 T}
 .sp 4p
 T{
-.PN IcePAauthFailed
+.PN IcePaAuthFailed
 T}	T{
 Authentication failed
 T}
@@ -616,11 +611,11 @@ int IceRegisterForProtocolSetup\^(\^\fIprotocol_name\fP, \fIvendor\fP\^, \fIrele
 .br
      int \fIversion_count\fP\^;
 .br
-     IcePOversionRec *\fIversion_recs\fP\^;
+     IcePoVersionRec *\fIversion_recs\fP\^;
 .br
      int \fIauth_count\fP\^;
 .br
-     IcePOauthRec *\fIauth_recs\fP\^;
+     IcePoAuthRec *\fIauth_recs\fP\^;
 .br
      IceIOErrorProc \fIio_error_proc\fP\^;
 .FN
@@ -672,13 +667,13 @@ int IceRegisterForProtocolReply\^(\^\fIprotocol_name\fP, \fIvendor\fP\^, \fIrele
 .br
      int \fIversion_count\fP\^;
 .br
-     IcePAversionRec *\fIversion_recs\fP\^;
+     IcePaVersionRec *\fIversion_recs\fP\^;
 .br
      IceProtocolSetupNotifyProc \fIprotocol_setup_notify_proc\fP\^;
 .br
      int \fIauth_count\fP\^;
 .br
-     IcePAauthRec *\fIauth_recs\fP\^;
+     IcePaAuthRec *\fIauth_recs\fP\^;
 .br
      IceIOErrorProc \fIio_error_proc\fP\^;
 .FN
@@ -716,9 +711,9 @@ See the section titled \fIError Handling\fP\^ for more details.
 .PN IceRegisterForProtocolReply
 returns the major opcode reserved, or -1 if an error occurred.
 .LP
-Since \fIProtocol Setups\fP\^ happen "behind the scenes," the protocol library
-needs some way of being notified when the \fIProtocol Setup\fP\^ has
-successfully completed.  The
+Since \fIProtocol Setups\fP\^ and authentication happen "behind the scenes,"
+the protocol library needs some way of being notified when the
+\fIProtocol Setup\fP\^ has successfully completed.  The
 .PN IceProtocolSetupNotifyProc
 callback serves this purpose.
 .LP
@@ -905,21 +900,21 @@ the ICE connection is used to send and receive messages...
 .sp 0.5
 .vs 10
 .nf
-	newIceConn = IceAcceptConnection (listen_fd);
+	new_ice_conn = IceAcceptConnection (listen_fd);
 	status = IceConnectPending;
-	timeStart = timeNow;
+	time_start = time_now;
 
 	do
 	{
-		select() on {newIceConn, all open connections}
+		select() on {new_ice_conn, all open connections}
 
-		for each ice_conn in the list of open connections
+		for (each ice_conn in the list of open connections)
 		{
 			if (data ready on ice_conn)
 				IceProcessMessage (ice_conn, NULL);
 		}
 
-		if (data ready on newIceConn)
+		if (data ready on new_ice_conn)
 		{
 			/*
 			 * IceProcessMessage is called until the connection
@@ -927,12 +922,12 @@ the ICE connection is used to send and receive messages...
 			 * setup request and any authentication requirements.
 			 */
 
-			IceProcessMessage (newIceConn, NULL);
-			status = IceConnectionStatus (newIceConn);
+			IceProcessMessage (new_ice_conn, NULL);
+			status = IceConnectionStatus (new_ice_conn);
 		}
 		else
 		{
-			if (timeNow - timeStart > MAX_WAIT_TIME)
+			if (time_now - time_start > MAX_WAIT_TIME)
 				status = IceConnectRejected;
 		}
 	}
@@ -940,7 +935,7 @@ the ICE connection is used to send and receive messages...
 
 	if (status == IceConnectAccepted)
 	{
-		Add newIceConn to the list of open connections
+		Add new_ice_conn to the list of open connections
 	}
 	else if (status == IceConnectRejected)
 	{
@@ -1113,7 +1108,7 @@ connections might be shared, the watch procedure is called only if
 .PN IceCloseConnection
 physically closes the connection.
 .LP
-The watch procedures are very useful for Xt based applications, which
+The watch procedures are very useful for Xt based applications which
 need to call
 .PN XtAppAddInput
 when new connections are created, and
@@ -1161,15 +1156,16 @@ If opening is
 the client should set the *\fIwatch_data\fP\^
 pointer to any data it may need to save.  For example,
 .PN XtAppAddInput
-might be called, and you need to save the
-.PN XtInputId .
+might be called, and the
+.PN XtInputId 
+needs to be saved.
 .LP
 If opening is
 .PN False ,
-you can use the *\fIwatch_data\fP\^ pointer.
+the *\fIwatch_data\fP\^ pointer can be used.
 For example, *\fIwatch_data\fP\^ might point to the
 .PN XtInputId
-which you need to call
+which is needed to call
 .PN XtRemoveInput .
 .LP
 .sp 0.5
@@ -1207,7 +1203,7 @@ function.
 .LP
 .sM
 .FD 0
-IceProtocolSetupStatus IceProtocolSetup\^(\^\fIice_conn\fP, \fImy_opcode\fP\^, a\fIauth_count\fP\^, \fIauth_indices\fP\^,
+IceProtocolSetupStatus IceProtocolSetup\^(\^\fIice_conn\fP, \fImy_opcode\fP\^, \fIauth_count\fP\^, \fIauth_indices\fP\^,
 .br
                     \fImajor_version_ret\fP\^, \fIminor_version_ret\fP\^, \fIvendor_ret\fP\^, \fIrelease_ret\fP\^, \fIerror_length\fP\^, \fIerror_string_ret\fP\^)
 .br
@@ -1297,7 +1293,7 @@ T}
 T{
 .PN IceProtocolSetupFailure :
 T}	T{
-Check error_string_ret for failure reason.  \fImajor_version_ret\fP\^, \fIminor_version_ret\fP\^, \fIvendor_ret\fP\^, \fIrelease_ret\fP\^ are NOT set.
+Check \fIerror_string_ret\fP\^ for failure reason.  \fImajor_version_ret\fP\^, \fIminor_version_ret\fP\^, \fIvendor_ret\fP\^, \fIrelease_ret\fP\^ are NOT set.
 T}
 .sp 4p
 T{
@@ -1546,14 +1542,13 @@ char *IceConnectionString\^(\^\fIice_conn\fP\^)
 For ICE connections created with
 .PN IceOpenConnection ,
 this function returns the network ID of the client which
-accepted this connection.
+accepted this connection.  The string should be freed with a call to
+free() when no longer needed.
 .br
 For ICE connections created with
 .PN IceAcceptConnection ,
 this function will return
 .PN NULL .
-.br
-The string should be freed with a call to free() when no longer needed.
 .LP
 .sp 0.5
 .sM
@@ -1606,7 +1601,7 @@ All messages must have the following ICE header:
 .br
 	CARD8	data[2];
 .br
-	CARD32	length B32;
+	CARD32	length B32;		/* in 8 byte units */
 .LP
 The 3rd and 4th bytes of the message can be used as needed.
 The field names \fImajor_opcode\fP\^, \fIminor_opcode\fP\^, and
@@ -1704,8 +1699,8 @@ to this macro is the major opcode of the protocol for the client
 sending the error.
 .LP
 Generic errors which are common to all protocols have classes
-in the range 0x8000..0xFFFF.  See the ICE protocol specification
-document for more details.
+in the range 0x8000..0xFFFF.  See the \fIICE Protocol Specification\fP\^
+for more details.
 .TS
 lw(1i) lw(1i).
 T{
@@ -2111,7 +2106,7 @@ handlers invoked.  This handler is set up in the protocol registration
 functions (see
 .PN IceRegisterForProtocolSetup
 and 
-.PN IceRegisterForProtocolReply ,
+.PN IceRegisterForProtocolReply ),
 and could be used to clean up
 state specific to the protocol.
 .LP
@@ -2142,6 +2137,8 @@ Utility Functions
 To allocate scratch space for the client, use
 .PN IceAllocScratch .
 The client should \fInot\fP\^ free this memory!
+Only one scratch area is provided per ICE connection, so be careful
+using this function.
 .LP
 .sM
 .FD 0
