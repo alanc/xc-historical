@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Drawing.h,v 1.5 90/03/28 15:17:43 swick Exp $
+ * $XConsortium: Drawing.h,v 1.6 90/03/28 15:36:28 swick Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -24,7 +24,7 @@
 
 #if NeedFunctionPrototypes
 #include <stdio.h>
-#ifndef _XtIntrinsic_h
+#if ! defined(_XtIntrinsic_h) && ! defined(PIXEL_ALREADY_TYPEDEFED)
 typedef unsigned long Pixel;
 #endif
 #endif
