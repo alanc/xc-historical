@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.39 92/05/11 14:57:10 rws Exp $ */
+/* $XConsortium: miarc.c,v 5.40 92/05/15 15:32:30 rws Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -40,7 +40,7 @@ SOFTWARE.
 #if defined(SVR4) && __STDC__
 extern double hypot(double, double);
 #endif
-double	miDsin(), miDcos(), miDasin(), miDatan2();
+static double miDsin(), miDcos(), miDasin(), miDatan2();
 double	cbrt(
 #if NeedFunctionPrototypes
 	     double
@@ -138,8 +138,8 @@ static XID gcvals[6];
 
 extern void miFillSppPoly();
 static void fillSpans(), span(), drawArc(), drawQuadrant(), drawZeroArc();
-static void miFreeArcs();
-static int computeAngleFromPath();
+static void miFreeArcs(), miArcJoin(), miArcCap(), miRoundCap();
+static int computeAngleFromPath(), miGetArcPts();
 static miPolyArcPtr miComputeArcs ();
 
 #undef max
@@ -1077,6 +1077,7 @@ double		fx, fy;
 	b->counterClock.y -= y + fy;
 }
 
+static void
 miArcJoin (pDraw, pGC, pLeft, pRight,
 	   xOrgLeft, yOrgLeft, xFtransLeft, yFtransLeft,
 	   xOrgRight, yOrgRight, xFtransRight, yFtransRight)
@@ -1191,6 +1192,7 @@ miArcJoin (pDraw, pGC, pLeft, pRight,
 }
 
 /*ARGSUSED*/
+static void
 miArcCap (pDraw, pGC, pFace, end, xOrg, yOrg, xFtrans, yFtrans)
 	DrawablePtr	pDraw;
 	GCPtr		pGC;
@@ -1241,7 +1243,7 @@ miArcCap (pDraw, pGC, pFace, end, xOrg, yOrg, xFtrans, yFtrans)
  * NOTE:  pOtherCorner must be counter-clockwise from pCorner.
  */
 /*ARGSUSED*/
-void
+static void
 miRoundCap(pDraw, pGC, pCenter, pEnd, pCorner, pOtherCorner, fLineEnd,
      xOrg, yOrg, xFtrans, yFtrans)
     DrawablePtr	pDraw;
@@ -1298,7 +1300,7 @@ miRoundCap(pDraw, pGC, pCenter, pEnd, pCorner, pOtherCorner, fLineEnd,
 # define Dcos(d)	((d) == 0.0 ? 1.0 : ((d) == 90.0 ? 0.0 : cos(d*M_PI/180.0)))
 # define mod(a,b)	((a) >= 0 ? (a) % (b) : (b) - (-a) % (b))
 
-double
+static double
 miDcos (a)
 double	a;
 {
@@ -1316,7 +1318,7 @@ double	a;
 	return cos (a * M_PI / 180.0);
 }
 
-double
+static double
 miDsin (a)
 double	a;
 {
@@ -1334,7 +1336,7 @@ double	a;
 	return sin (a * M_PI / 180.0);
 }
 
-double
+static double
 miDasin (v)
 double	v;
 {
@@ -1347,7 +1349,7 @@ double	v;
     return asin(v) * (180.0 / M_PI);
 }
 
-double
+static double
 miDatan2 (dy, dx)
 double	dy, dx;
 {
@@ -1389,7 +1391,7 @@ double	dy, dx;
  * If there isn't an array already, we just pass in a null pointer and 
  * count on Xrealloc() to handle the null pointer correctly.
  */
-int
+static int
 miGetArcPts(parc, cpt, ppPts)
     SppArcPtr	parc;	/* points to an arc */
     int		cpt;	/* number of points already in arc list */
