@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: file.c,v 1.3 88/09/23 14:21:25 keith Exp $
+ * $XConsortium: file.c,v 1.4 88/10/15 19:11:54 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -43,9 +43,9 @@ char		*sockaddr;
 	int		c;
 	char		**args;
 	struct display	*d;
-	DisplayMessage	message;
+	DisplayType	type;
 	char		word[1024];
-	char		messageText[1024];
+	char		typeText[1024];
 	int		i;
 
 	c = readWord (file, word, sizeof (word));
@@ -54,58 +54,46 @@ char		*sockaddr;
 			LogError ("missing display type for display %s", word);
 			return c;
 		}
-		c = readWord (file, messageText, sizeof (messageText));
-		Debug ("read display %s message %s\n", word, messageText);
-		message = parseDisplayMessage (messageText);
-		switch (message.message) {
-		case MessageUnknown:
-			break;
-		case MessageRemove:
-			if (d = FindDisplayByName (word))
-				if (d->displayType.mutable == Insecure) {
-					Debug ("removing display %s\n", d->name);
-					TerminateDisplay (d);
-				}
-			Debug ("not removing display %s\n", word);
-			break;
-		case MessageManageDisplay:
-			Debug ("MessageManageDisplay\n");
+		if (d = FindDisplayByName (word)) {
+			d->state = OldEntry;
+		} else {
+			c = readWord (file, typeText, sizeof (typeText));
+			Debug ("read display %s type %s\n", word, typeText);
+			type = parseDisplayType (typeText);
 			while (numAcceptable--)
-				if (DisplayTypeMatch (*acceptableTypes++, message.type))
+				if (DisplayTypeMatch (*acceptableTypes++, type))
 					goto acceptable;
-			LogError ("unacceptable display type %s for display %s\n", messageText, word);
-			return c;
-acceptable:;
-			if (d = FindDisplayByName (word)) {
-				LogError ("Attempt to start running display %s\n",
-					word);
-				break;
-			}
-			d = NewDisplay (word);
-			Debug ("new display %s\n", d->name);
-			d->displayType = message.type;
-#ifdef UDP_SOCKET
-			if (sockaddr)
-				d->addr = *(struct sockaddr_in *) sockaddr;
-			else
-				bzero (d->addr, sizeof (d->addr));
-#endif
-			i = 0;
-			args = (char **) malloc (sizeof (char *));
-			if (!args)
-				LogPanic ("out of memory\n");
-			while (c != EOB && c != '\n') {
-				c = readWord (file, word, sizeof (word));
-				if (word[0] != '\0') {
-					args[i] = strcpy (malloc (strlen (word) + 1), word);
-					i++;
-					args = (char **) 
-					    realloc ((char *) args, (i+1) * sizeof (char **));
-				}
-			}
-			args[i] = 0;
-			d->argv = args;
+			LogError ("unacceptable display type %s for display %s\n", typeText, word);
 		}
+		while (c != EOB && c != '\n')
+			c = bufc (file);
+		return c;
+acceptable:;
+		d = NewDisplay (word);
+		Debug ("new display %s\n", d->name);
+		d->displayType = type;
+		d->state = NewEntry;
+#ifdef UDP_SOCKET
+		if (sockaddr)
+			d->addr = *(struct sockaddr_in *) sockaddr;
+		else
+			bzero (d->addr, sizeof (d->addr));
+#endif
+		i = 0;
+		args = (char **) malloc (sizeof (char *));
+		if (!args)
+			LogPanic ("out of memory\n");
+		while (c != EOB && c != '\n') {
+			c = readWord (file, word, sizeof (word));
+			if (word[0] != '\0') {
+				args[i] = strcpy (malloc (strlen (word) + 1), word);
+				i++;
+				args = (char **) 
+				    realloc ((char *) args, (i+1) * sizeof (char **));
+			}
+		}
+		args[i] = 0;
+		d->argv = args;
 		while (c != EOB && c != '\n')
 			c = readWord (file, word, sizeof (word));
 	}
@@ -144,26 +132,25 @@ int	len;
 
 static struct displayMatch {
 	char		*name;
-	DisplayMessage	message;
+	DisplayType	type;
 } displayTypes[] = {
-	"secure",		{ MessageManageDisplay, { Local,  Permanent, Secure }},
-	"insecure",		{ MessageManageDisplay, { Local,  Permanent, Insecure }},
-	"foreign",		{ MessageManageDisplay, { Foreign, Permanent, Secure }},
-	"transient",		{ MessageManageDisplay, { Foreign, Transient, Secure }},
-	"localTransient",	{ MessageManageDisplay, { Local,  Transient, Secure }},
-	"foreignInsecure",	{ MessageManageDisplay, { Foreign, Permanent, Insecure }},
-	"remove",		{ MessageRemove },
-	0,			{ MessageUnknown },
+	"secure",		{ Local,  Permanent, Secure },
+	"insecure",		{ Local,  Permanent, Insecure },
+	"foreign",		{ Foreign, Permanent, Secure },
+	"transient",		{ Foreign, Transient, Secure },
+	"localTransient",	{ Local,  Transient, Secure },
+	"foreignInsecure",	{ Foreign, Permanent, Insecure },
+	0,			{ Local, Permanent, Secure },
 };
 
-DisplayMessage
-parseDisplayMessage (string)
+DisplayType
+parseDisplayType (string)
 	char	*string;
 {
 	struct displayMatch	*d;
 
 	for (d = displayTypes; d->name; d++)
 		if (!strcmp (d->name, string))
-			return d->message;
-	return d->message;
+			return d->type;
+	return d->type;
 }

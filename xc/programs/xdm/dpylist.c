@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: displaylist.c,v 1.3 88/09/23 14:21:18 keith Exp $
+ * $XConsortium: displaylist.c,v 1.4 88/10/15 19:08:15 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -25,15 +25,6 @@
 # include "dm.h"
 
 struct display	*displays;
-
-StartDisplays ()
-{
-	struct display	*d;
-
-	for (d = displays; d; d = d->next)
-		if (d->status == notRunning)
-			StartDisplay (d);
-}
 
 AnyDisplaysLeft ()
 {

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: $
+ * $XConsortium: dm.h,v 1.6 88/10/15 19:09:33 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -48,12 +48,24 @@ typedef union wait	waitType;
 
 typedef enum displayStatus { running, notRunning } DisplayStatus;
 
+#ifndef FD_ZERO
+typedef	struct	my_fd_set { int fds_bits[1]; } my_fd_set;
+# define FD_ZERO(fdp)	bzero ((fdp), sizeof (*(fdp)))
+# define FD_SET(f,fdp)	((fdp)->fds_bits[(f) / (sizeof (int) * 8)] |=  (1 << ((f) % (sizeof (int) * 8))))
+# define FD_CLR(f,fdp)	((fdp)->fds_bits[(f) / (sizeof (int) * 8)] &= ~(1 << ((f) % (sizeof (int) * 8))))
+# define FD_ISSET(f,fdp)	((fdp)->fds_bits[(f) / (sizeof (int) * 8)] & (1 << ((f) % (sizeof (int) * 8))))
+# define FD_TYPE	my_fd_set
+#else
+# define FD_TYPE	fd_set
+#endif
+
 /*
  * local     - server runs on local host
  * foreign   - server runs on remote host
- * removable - 'remove' message can delete entry
  * permanent - session restarted when it exits
  * transient - session not restarted when it exits
+ * secure    - cannot be disabled
+ * insecure  - can be disabled
  */
 
 typedef struct displayType {
@@ -71,13 +83,9 @@ typedef struct displayType {
 # define Secure		1
 # define Insecure	0
 
-typedef struct displayMessage {
-	enum { MessageManageDisplay, MessageRemove, MessageUnknown }
- 			message;
-	DisplayType	type;
-} DisplayMessage;
+extern DisplayType parseDisplayType ();
 
-extern DisplayMessage parseDisplayMessage ();
+typedef enum fileState { NewEntry, OldEntry, MissingEntry } FileState;
 
 struct display {
 	struct display	*next;
@@ -85,12 +93,16 @@ struct display {
 	char		**argv;		/* program name and arguments */
 	DisplayStatus	status;		/* current status */
 	int		pid;		/* process id of child */
+	FileState	state;		/* state during HUP processing */
 	char		*resources;	/* resource file */
 	char		*xrdb;		/* xrdb program */
 	char		*startup;	/* Xstartup program */
 	char		*reset;		/* Xreset program */
 	char		*session;	/* Xsession program */
-	char		*unixPath;	/* unix path */
+	char		*userPath;	/* path set for session */
+	char		*systemPath;	/* path set for startup/reset */
+	char		*systemShell;	/* interpreter for startup/reset */
+	char		*failsafeClient;/* a client to start when the session fails */
 	int		openDelay;	/* open delay time */
 	int		openRepeat;	/* open attempts to make */
 	int		terminateServer;/* restart for each session */
@@ -115,7 +127,8 @@ struct verify_info {
 	int		gid;		/* group id */
 #endif
 	char		**argv;		/* arguments to session */
-	char		**environ;	/* environment for session */
+	char		**userEnviron;	/* environment for session */
+	char		**systemEnviron;/* environment for startup/reset */
 };
 
 /* session exit status definitions. */
@@ -135,7 +148,7 @@ extern char	*servers;
 extern int	request_port;
 extern int	debugLevel;
 extern char	*errorLogFile;
-extern char	*validProgramsFile;
+extern int	daemonMode;
 
 extern struct display	*FindDisplayByName (),
 			*FindDisplayByPid (),

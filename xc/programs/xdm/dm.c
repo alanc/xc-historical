@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.6 88/09/23 14:21:20 keith Exp $
+ * $XConsortium: dm.c,v 1.7 88/10/15 19:08:58 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -31,17 +31,18 @@ main (argc, argv)
 int	argc;
 char	**argv;
 {
-	int	CleanChildren (), TerminateAll ();
+	int	CleanChildren (), TerminateAll (), RescanServers ();
 
 	/*
 	 * Step 1 - load configuration parameters
 	 */
 	InitResources (argc, argv);
 	LoadDMResources ();
-	if (debugLevel == 0)
+	if (debugLevel == 0 && daemonMode)
 		BecomeDaemon ();
 	InitErrorLog ();
 	signal (SIGTERM, TerminateAll);
+	signal (SIGINT, TerminateAll);
 	/*
 	 * Step 2 - Read /etc/Xservers and set up
 	 *	    the socket.
@@ -50,6 +51,7 @@ char	**argv;
 	 *	    for each entry
 	 */
 	ScanServers ();
+	signal (SIGHUP, RescanServers);
 #ifdef UDP_SOCKET
 	CreateWellKnownSockets ();
 	signal (SIGCHLD, CleanChildren);
@@ -62,6 +64,7 @@ char	**argv;
 	while (AnyDisplaysLeft ())
 		WaitForChild ();
 #endif
+	Debug ("Nothing left to do, exiting\n");
 }
 
 
@@ -98,7 +101,24 @@ ScanServers ()
 	StartDisplays ();
 	bufClose (serversFile);
 	if (fd != -1)
-		close (servers);
+		close (fd);
+}
+
+static
+MarkDisplay (d)
+struct display	*d;
+{
+	d->state = MissingEntry;
+}
+
+RescanServers ()
+{
+	Debug ("Caught SIGHUP, rescanning servers\n");
+	ForEachDisplay (MarkDisplay);
+	ScanServers ();
+#ifdef SYSV
+	signal (SIGHUP, RescanServers);
+#endif
 }
 
 /*
@@ -161,6 +181,27 @@ WaitForChild ()
 	}
 }
 
+static
+CheckDisplayStatus (d)
+struct display	*d;
+{
+	switch (d->state) {
+	case MissingEntry:
+		TerminateDisplay (d);
+		break;
+	case NewEntry:
+		StartDisplay (d);
+		break;
+	case OldEntry:
+		break;
+	}
+}
+
+StartDisplays ()
+{
+	ForEachDisplay (CheckDisplayStatus);
+}
+
 StartDisplay (d)
 struct display	*d;
 {
@@ -170,6 +211,9 @@ struct display	*d;
 	switch (pid = fork ()) {
 	case 0:
 		signal (SIGCHLD, SIG_DFL);
+		signal (SIGTERM, SIG_IGN);
+		signal (SIGHUP, SIG_DFL);
+		CloseOnFork ();
 		ManageDisplay (d);
 		exit (REMANAGE_DISPLAY);
 	case -1:
@@ -192,6 +236,43 @@ struct display	*d;
 	status = d->status;
 	pid = d->pid;
 	RemoveDisplay (d);
-	if (status == running)
+	if (status == running) {
+		if (pid < 2)
+			abort ();
 		kill (pid, SIGTERM);
+	}
+}
+
+static FD_TYPE	CloseMask;
+static int	max;
+
+RegisterCloseOnFork (fd)
+int	fd;
+{
+	FD_SET (fd, &CloseMask);
+	if (fd > max)
+		max = fd;
+}
+
+ClearCloseOnFork (fd)
+int	fd;
+{
+	FD_CLR (fd, &CloseMask);
+	if (fd == max) {
+		while (--fd >= 0)
+			if (FD_ISSET (fd, &CloseMask))
+				break;
+		max = fd;
+	}
+}
+
+CloseOnFork ()
+{
+	int	fd;
+
+	for (fd = 0; fd < max; fd++)
+		if (FD_ISSET (fd, &CloseMask))
+			close (fd);
+	FD_ZERO (&CloseMask);
+	max = 0;
 }
