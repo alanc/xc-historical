@@ -1,4 +1,4 @@
-/* $XConsortium: CvtStdSel.c,v 1.14 90/09/29 13:18:57 rws Exp $
+/* $XConsortium: CvtStdSel.c,v 1.15 90/12/19 19:01:16 converse Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -33,17 +33,20 @@
 #include <interlan/netdb.h>
 #include <interlan/socket.h>
 #endif /* att */
+
 #include <X11/IntrinsicP.h>
 #include <X11/Xatom.h>
 #include <X11/Shell.h>
 #include <X11/ShellP.h>
 #include <stdio.h>
+
 #ifndef att
 #include <netdb.h>
 #include <sys/socket.h>
 #endif
-#include "Xmu.h"
 
+#include "StdSel.h"
+#include "SysUtil.h"
 
 #if defined(SUNSHLIB) && defined(SHAREDCODE)
 /*

@@ -1,5 +1,4 @@
-/* static char rcsid[] =
-	"$XConsortium: ShapeWidg.c,v 1.3 90/01/20 15:16:56 rws Exp $"; */
+/* $XConsortium: ShapeWidg.c,v 1.4 90/07/15 16:18:49 rws Exp $ */
 
 /* 
  * Copyright 1988 by the Massachusetts Institute of Technology
@@ -16,9 +15,10 @@
  *
  */
 
-#include	<X11/IntrinsicP.h>
-#include	<X11/extensions/shape.h>
-#include	"Xmu.h"
+#include <X11/IntrinsicP.h>
+#include <X11/extensions/shape.h>
+#include "Converters.h"
+#include "Drawing.h"
 
 static ShapeError();
 static  ShapeRectangle(), ShapeOval(), ShapeEllipseOrRoundedRectangle();
