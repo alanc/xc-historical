@@ -1,7 +1,7 @@
 #ifndef PEX_H
 #define PEX_H
 
-/* $XConsortium: PEX.h,v 1.1 92/05/08 15:11:48 mor Exp $ */
+/* $XConsortium: PEX.h,v 1.3 92/05/20 21:19:50 mor Exp $ */
 
 /******************************************************************************/
 /*  Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Mass.      */
@@ -393,7 +393,7 @@
 #define PEXPickAllVisible               1
 
 /* pick all method mnemonics */
-#define PEXETMPickAll                   "All"
+#define PEXETMPickAllAll                "All"
 #define PEXETMPickAllVisible            "Visible"
 
 
@@ -1050,7 +1050,7 @@
 #define PEXOCFacetCullingMode           44
 #define PEXOCFacetDistinguishFlag       45
 #define PEXOCPatternSize                46
-#define PEXOCPatternRefPoint            47
+#define PEXOCPatternAttributes2D        47
 #define PEXOCPatternAttributes          48
 #define PEXOCInteriorBundleIndex        49
 #define PEXOCSurfaceEdgeFlag            50
@@ -1201,8 +1201,8 @@
 #define PEXRCFreePickMeasure            85
 #define PEXRCGetPickMeasure             86
 #define PEXRCUpdatePickMeasure          87
-#define PEXRCOpenFont                   88
-#define PEXRCCloseFont                  89
+#define PEXRCLoadFont                   88
+#define PEXRCUnloadFont                 89
 #define PEXRCQueryFont                  90
 #define PEXRCListFonts                  91
 #define PEXRCListFontsWithInfo          92
