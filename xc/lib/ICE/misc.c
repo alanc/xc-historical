@@ -1,4 +1,4 @@
-/* $XConsortium: misc.c,v 1.1 93/08/19 18:25:27 mor Exp $ */
+/* $XConsortium: misc.c,v 1.2 93/08/20 15:36:59 rws Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -19,6 +19,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include <stdio.h>
 
 #ifdef WIN32
+#include <errno.h>
 #undef close
 #define close closesocket
 #endif
@@ -148,9 +149,11 @@ IceConn iceConn;
 /*
  * Read "n" bytes from a descriptor.
  * Use in place of read() when fd is a stream socket.
+ *
+ * Return Status 0 if we detected an EXPECTED closed connection.
  */
 
-void
+Status
 _IceRead (iceConn, nbytes, ptr)
 
 register IceConn iceConn;
@@ -173,13 +176,41 @@ register char	 *ptr;
 #ifdef WIN32
 	    errno = WSAGetLastError();
 #endif
-	    (*_IceIOErrorHandler) (iceConn);
-	    exit (1);
+	    if (iceConn->want_to_close)
+	    {
+		/*
+		 * We sent a WantToClose message and now we detected that
+		 * the other side closed the connection.
+		 */
+
+		_IceFreeConnection (iceConn, False);
+
+		return (0);
+	    }
+	    else 
+	    {
+		/*
+		 * Fatal IO error, invoke the IO error handler.
+		 */
+
+		(*_IceIOErrorHandler) (iceConn);
+
+
+		/*
+		 * All IO error handlers must either exit() or do
+		 * a long jump.  If we reached this point, we have
+		 * no choice but to exit().
+		 */
+
+		exit (1);
+	    }
 	}
 
 	nleft -= nread;
 	ptr   += nread;
     }
+
+    return (1);
 }
 
 
@@ -213,8 +244,34 @@ register char	 *ptr;
 #ifdef WIN32
 	    errno = WSAGetLastError();
 #endif
-	    (*_IceIOErrorHandler) (iceConn);
-	    exit (1);
+	    if (iceConn->want_to_close)
+	    {
+		/*
+		 * We were about to send a WantToClose message and now we
+		 * detected that the other side closed the connection,
+		 * so we just close our side.
+		 */
+
+		_IceFreeConnection (iceConn, False);
+		break;
+	    }
+	    else
+	    {
+		/*
+		 * Fatal IO error, invoke the IO error handler.
+		 */
+
+		(*_IceIOErrorHandler) (iceConn);
+
+
+		/*
+		 * All IO error handlers must either exit() or do
+		 * a long jump.  If we reached this point, we have
+		 * no choice but to exit().
+		 */
+
+		exit (1);
+	    }
 	}
 
 	nleft -= nwritten;
@@ -302,54 +359,4 @@ int 	myOpcode;
 
     iceConn->process_msg_info[hisOpcode -
 	iceConn->his_min_opcode].protocol = &_IceProtocols[myOpcode - 1];
-}
-
-
-
-void
-_IceFreeConnection (iceConn)
-
-IceConn iceConn;
-
-{
-    if (iceConn)
-    {
-	if (iceConn->fd >= 0)
-	    close (iceConn->fd);
-
-	if (iceConn->connection_string)
-	    free (iceConn->connection_string);
-
-	if (iceConn->vendor)
-	    free (iceConn->vendor);
-
-	if (iceConn->release)
-	    free (iceConn->release);
-
-	if (iceConn->inbuf)
-	    free (iceConn->inbuf);
-
-	if (iceConn->outbuf)
-	    free (iceConn->outbuf);
-
-	if (iceConn->scratch)
-	    free (iceConn->scratch);
-
-	if (iceConn->process_msg_info)
-	    free ((char *) iceConn->process_msg_info);
-
-	if (iceConn->connect_to_you)
-	    free ((char *) iceConn->connect_to_you);
-
-	if (iceConn->protosetup_to_you)
-	    free ((char *) iceConn->protosetup_to_you);
-
-	if (iceConn->connect_to_me)
-	    free ((char *) iceConn->connect_to_me);
-
-	if (iceConn->protosetup_to_me)
-	    free ((char *) iceConn->protosetup_to_me);
-
-	free ((char *) iceConn);
-    }
 }
