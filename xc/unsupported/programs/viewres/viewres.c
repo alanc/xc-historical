@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.31 90/02/08 09:33:01 jim Exp $
+ * $XConsortium: viewres.c,v 1.32 90/02/08 09:39:29 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -45,6 +45,9 @@
 #include <X11/Xmu/CharSet.h>
 #include "defs.h"
 
+#define IsShowing(node) ((node)->resource_lw && \
+			 XtIsManaged((node)->resource_lw))
+
 #define INSERT_NODE(node,i) \
   selected_list.elements[(node)->selection_index = (i)] = (node)
 
@@ -53,6 +56,8 @@
   node->selection_index = (-1)
 
 char *ProgramName;
+static int NumberShowing = 0;
+static int TotalWithResources = 0;
 
 extern WidgetNode widget_list[];
 extern int nwidgets;
@@ -124,7 +129,9 @@ static XtActionsRec viewres_actions[] = {
 #define SELECT_ALL 4
 #define SELECT_WITH_RESOURCES 5
 #define SELECT_WITHOUT_RESOURCES 6
-#define SELECT_number 7
+#define SELECT_SHOWN_RESOURCES 7
+#define SELECT_HIDDEN_RESOURCES 8
+#define SELECT_number 9
 
 static struct _nametable {
     char *name;
@@ -137,6 +144,8 @@ static struct _nametable {
     { "all", SELECT_ALL },
     { "resources", SELECT_WITH_RESOURCES },
     { "noresources", SELECT_WITHOUT_RESOURCES },
+    { "shown", SELECT_SHOWN_RESOURCES },
+    { "hidden", SELECT_HIDDEN_RESOURCES },
 }, boolean_nametable[] = {
     { "off", 0 },
     { "false", 0 },
@@ -237,7 +246,7 @@ static void update_selection_items ()
 	 * then may be hidden.
 	 */
 	if (node->nnewresources > 0) {
-	    if (node->resource_lw && XtIsManaged(node->resource_lw)) {
+	    if (IsShowing(node)) {
 		hide = TRUE;
 	    } else {
 		show = TRUE;
@@ -257,6 +266,10 @@ static void update_selection_items ()
     XtSetValues (select_widgets[SELECT_PARENTS], args, ONE);
     args[0].value = (XtArgVal) children;
     XtSetValues (select_widgets[SELECT_CHILDREN], args, ONE);
+    args[0].value = (XtArgVal) ((Boolean) (NumberShowing > 0));
+    XtSetValues (select_widgets[SELECT_SHOWN_RESOURCES], args, ONE);
+    args[0].value = (XtArgVal) ((Boolean)(NumberShowing < TotalWithResources));
+    XtSetValues (select_widgets[SELECT_HIDDEN_RESOURCES], args, ONE);
 }
 
 
@@ -277,12 +290,22 @@ static void show_resources_callback (gw, closure, data)
 	WidgetNode *node = selected_list.elements[i];
 
 	if (show) {
-	    if (node->resource_lw)
-	      XtManageChild (node->resource_lw);
-	    else if (!create_resource_lw (node))
-	      continue;
+	    if (node->resource_lw) {		/* if already created */
+		if (!XtIsManaged(node->resource_lw)) {
+		    NumberShowing++;
+		    XtManageChild (node->resource_lw);
+		}				/* else ignore it */
+	    } else if (create_resource_lw (node))	/* create it */
+	      NumberShowing++;
+	    else
+	      continue;				/* error, ignore it */
 	} else {
-	    if (node->resource_lw) XtUnmanageChild (node->resource_lw);
+	    if (node->resource_lw) {		/* if already created */
+		if (XtIsManaged (node->resource_lw)) {
+		    NumberShowing--;
+		    XtUnmanageChild (node->resource_lw);
+		}				/* else ignore it */
+	    }
 	}
     }
     XawTreeForceLayout (treeWidget);
@@ -456,6 +479,19 @@ static void select_callback (gw, closure, data)
 	}
 	break;
 
+      case SELECT_SHOWN_RESOURCES:
+	for (i = 0, node = widget_list; i < nwidgets; i++, node++) {
+	    if (IsShowing(node)) add_to_selected_list (node, TRUE);
+	}
+	break;
+
+      case SELECT_HIDDEN_RESOURCES:
+	for (i = 0, node = widget_list; i < nwidgets; i++, node++) {
+	    if (node->nnewresources > 0 && !IsShowing(node))
+	      add_to_selected_list (node, TRUE);
+	}
+	break;
+
       default:				/* error!!! */
 	XBell (XtDisplay(gw), 0);
 	return;
@@ -481,6 +517,18 @@ static void toggle_callback (gw, closure, data)
 
     update_selection_items ();
 }
+
+static int count_with_resources (node)
+    WidgetNode *node;
+{
+    int i = ((node->nnewresources > 0) ? 1 : 0);
+
+    for (node = node->children; node; node = node->siblings) {
+	i += count_with_resources (node);
+    }
+    return i;
+}
+
 
 main (argc, argv)
     int argc;
@@ -528,6 +576,8 @@ main (argc, argv)
 	node->nnewresources = count_owned_resources (node, node);
     }
     XtDestroyWidget (dummy);
+
+    TotalWithResources = count_with_resources (topnode);
 
     pane = XtCreateManagedWidget ("pane", panedWidgetClass, toplevel,
 				  NULL, ZERO);
@@ -591,6 +641,8 @@ main (argc, argv)
     MAKE_SELECT (SELECT_ALL, "selectAll");
     MAKE_SELECT (SELECT_WITH_RESOURCES, "selectWithResources");
     MAKE_SELECT (SELECT_WITHOUT_RESOURCES, "selectWithoutResources");
+    MAKE_SELECT (SELECT_SHOWN_RESOURCES, "selectShownResources");
+    MAKE_SELECT (SELECT_HIDDEN_RESOURCES, "selectHiddenResources");
 #undef MAKE_SELECT
 
 
