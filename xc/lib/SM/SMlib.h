@@ -1,4 +1,4 @@
-/* $XConsortium: SMlib.h,v 1.7 93/09/24 15:56:56 mor Exp $ */
+/* $XConsortium: SMlib.h,v 1.8 93/09/27 21:07:39 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -95,7 +95,7 @@ typedef void (*SmcPropReplyProc) (
     SmcConn		/* smcConn */,
     SmPointer		/* clientData */,
     int			/* numProps */,
-    SmProp *		/* props */
+    SmProp **		/* props */
 #endif
 );
 
@@ -270,7 +270,7 @@ typedef void (*SmsSetPropertiesProc) (
     SmPointer		/* managerData */,
     unsigned long 	/* sequenceRef */,
     int			/* numProps */,
-    SmProp *		/* props */
+    SmProp **		/* props */
 #endif
 );
 
@@ -449,7 +449,7 @@ extern void SmcSetProperties (
     SmcConn		/* smcConn */,
     unsigned long 	/* sequenceRef */,
     int      	        /* numProps */,
-    SmProp *		/* props */
+    SmProp **		/* props */
 #endif
 );
 
@@ -570,7 +570,7 @@ extern void SmsReturnProperties (
 #if NeedFunctionPrototypes
     SmsConn		/* smsConn */,
     int			/* numProps */,
-    SmProp *		/* props */
+    SmProp **		/* props */
 #endif
 );
 
@@ -625,6 +625,19 @@ extern SmcErrorHandler SmcSetErrorHandler (
 extern SmsErrorHandler SmsSetErrorHandler (
 #if NeedFunctionPrototypes
     SmsErrorHandler 	/* handler */
+#endif
+);
+
+extern void SmFreeProperty (
+#if NeedFunctionPrototypes
+    SmProp *		/* prop */
+#endif
+);
+
+extern void SmFreeReasons (
+#if NeedFunctionPrototypes
+    int			/* count */,
+    char **		/* reasonMsgs */
 #endif
 );
 
