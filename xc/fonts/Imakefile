@@ -11,7 +11,19 @@ $(SUBDIRS): FRC
 	cd $@; echo building $@ ; make $(MFLAGS) all
 
 InstallMultiple($(HEADERS),$(INCDIR))
-InstallMultiple(snf/?*.snf,$(LIBDIR)/fonts)
+
+#
+# Yuk and XXX!  install puts these files in $(LIBDIR)/fonts/snf not
+# in $(LIBDIR)/fonts!
+#
+# InstallMultiple(snf/?*.snf,$(LIBDIR)/fonts)
+#
+install:: snf/?*.snf
+	@case '${MFLAGS}' in *[i]*) set +e;; esac; \
+	cd snf; \
+	for i in *.snf; do \
+		(set -x; $(INSTALL) -c $(INSTALLFLAGS) $$i $(LIBDIR)/fonts); \
+	done
 
 # Gruesome hackery suggested by Bill Sommerfeld.
 # The following rule finds all the BDF files, creates a new makefile to
