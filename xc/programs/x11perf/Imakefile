@@ -1,11 +1,13 @@
        PROGRAMS = x11perf
            SRCS = x11perf.c do_tests.c \
-		  do_simple.c do_rects.c do_valgc.c do_lines.c do_segs.c \
+		  do_simple.c do_rects.c do_valgc.c \
+		  do_wlines.c do_lines.c do_segs.c \
 		  do_dots.c do_windows.c do_movewin.c do_text.c \
 		  do_copyarea.c do_arcs.c \
 		  do_triangles.c do_complex.c do_traps.c
            OBJS = x11perf.o do_tests.o \
-		  do_simple.o do_rects.o do_valgc.o do_lines.o do_segs.o \
+		  do_simple.o do_rects.o do_valgc.o \
+		  do_wlines.c do_lines.o do_segs.o \
 		  do_dots.o do_windows.o do_movewin.o do_text.o \
 		  do_copyarea.o do_arcs.o \
 		  do_triangles.o do_complex.o do_traps.o

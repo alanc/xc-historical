@@ -55,6 +55,10 @@ extern Bool InitDashedLines();
 extern void DoLines();
 extern void EndLines();
 
+extern Bool InitWideLines();
+extern void DoWideLines();
+extern void EndWideLines();
+
 extern Bool InitCircles();
 extern Bool InitEllipses();
 extern void DoArcs();
@@ -240,6 +244,15 @@ Test test[] = {
   {"-dline100", "100-pixel dashed line",
 		InitDashedLines, DoLines, NullProc, EndLines, False, 0,
 		{10, POLY, 100}},
+  {"-wline10",   "10x1 wide line",
+		InitWideLines, DoWideLines, NullProc, EndWideLines, False, 0,
+		{200, 100, 10}},
+  {"-wline100",  "100x10 wide line",
+		InitWideLines, DoWideLines, NullProc, EndWideLines, False, 0,
+		{100, 100, 100}},
+  {"-wline500", "500x50 wide line",
+		InitWideLines, DoWideLines, NullProc, EndWideLines, False, 0,
+		{20, 50, 500}},
   {"-circle1",  "1-pixel diameter circle",
 		InitCircles, DoArcs, NullProc, EndArcs, False, 0,
 		{20, POLY, 1}},
