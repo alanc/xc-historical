@@ -1,4 +1,4 @@
-/* $XConsortium: miscstruct.h,v 1.2 87/09/10 00:18:49 toddb Exp $ */
+/* $XConsortium: miscstruct.h,v 1.3 88/09/06 15:49:14 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -35,4 +35,11 @@ typedef struct _DDXPoint {
 typedef struct _Box {
     short x1, y1, x2, y2;
 } BoxRec;
+
+typedef union _DevUnion {
+    pointer		ptr;
+    long		val;
+    unsigned long	uval;
+} DevUnion;
+
 #endif /* MISCSTRUCT_H */

@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.93 89/03/31 13:19:14 keith Exp $ */
+/* $XConsortium: dispatch.c,v 1.94 89/05/19 08:55:12 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -472,7 +472,7 @@ ProcChangeSaveSet(client)
     pWin = (WindowPtr)LookupWindow(stuff->window, client);
     if (!pWin)
         return(BadWindow);
-    if (client->clientAsMask == (CLIENT_BITS(pWin->wid)))
+    if (client->clientAsMask == (CLIENT_BITS(pWin->drawable.id)))
         return BadMatch;
     if ((stuff->mode == SetModeInsert) || (stuff->mode == SetModeDelete))
     {
@@ -506,7 +506,7 @@ ProcReparentWindow(client)
         return(BadWindow);
     if (SAME_SCREENS(pWin->drawable, pParent->drawable))
     {
-        if ((pWin->backgroundTile == (PixmapPtr)ParentRelative) &&
+        if ((pWin->backgroundState == ParentRelative) &&
             (pParent->drawable.depth != pWin->drawable.depth))
             return BadMatch;
         result =  ReparentWindow(pWin, pParent, 
@@ -646,25 +646,21 @@ ProcGetGeometry(client)
     rep.type = X_Reply;
     rep.length = 0;
     rep.sequenceNumber = client->sequence;
-    rep.root = WindowTable[pDraw->pScreen->myNum]->wid;
+    rep.root = WindowTable[pDraw->pScreen->myNum]->drawable.id;
     rep.depth = pDraw->depth;
 
+    rep.width = pDraw->width;
+    rep.height = pDraw->height;
     if (pDraw->type == DRAWABLE_PIXMAP)
     {
-	PixmapPtr pPixmap = (PixmapPtr)pDraw;
-
 	rep.x = rep.y = rep.borderWidth = 0;
-	rep.width = pPixmap->width;
-	rep.height = pPixmap->height;
     }
     else
     {
         register WindowPtr pWin = (WindowPtr)pDraw;
-	rep.x = pWin->clientWinSize.x - pWin->borderWidth;
-	rep.y = pWin->clientWinSize.y - pWin->borderWidth;
+	rep.x = pWin->origin.x - wBorderWidth (pWin);
+	rep.y = pWin->origin.y - wBorderWidth (pWin);
 	rep.borderWidth = pWin->borderWidth;
-	rep.width = pWin->clientWinSize.width;
-	rep.height = pWin->clientWinSize.height;
     }
     WriteReplyToClient(client, sizeof(xGetGeometryReply), &rep);
     return(client->noClientException);
@@ -686,10 +682,10 @@ ProcQueryTree(client)
     if (!pWin)
         return(BadWindow);
     reply.type = X_Reply;
-    reply.root = WindowTable[pWin->drawable.pScreen->myNum]->wid;
+    reply.root = WindowTable[pWin->drawable.pScreen->myNum]->drawable.id;
     reply.sequenceNumber = client->sequence;
     if (pWin->parent)
-	reply.parent = pWin->parent->wid;
+	reply.parent = pWin->parent->drawable.id;
     else
         reply.parent = (Window)None;
 
@@ -704,7 +700,7 @@ ProcQueryTree(client)
 	if (!childIDs)
 	    return BadAlloc;
 	for (pChild = pWin->lastChild; pChild != pHead; pChild = pChild->prevSib)
-	    childIDs[curChild++] = pChild->wid;
+	    childIDs[curChild++] = pChild->drawable.id;
     }
     
     reply.nChildren = numChildren;
@@ -1037,8 +1033,8 @@ ProcTranslateCoords(client)
 	rep.sameScreen = xTrue;
 	rep.child = None;
 	/* computing absolute coordinates -- adjust to destination later */
-	x = pWin->absCorner.x + stuff->srcX;
-	y = pWin->absCorner.y + stuff->srcY;
+	x = pWin->drawable.x + stuff->srcX;
+	y = pWin->drawable.y + stuff->srcY;
 	pWin = pDst->firstChild;
 	while (pWin)
 	{
@@ -1046,32 +1042,32 @@ ProcTranslateCoords(client)
 	    BoxRec  box;
 #endif
 	    if ((pWin->mapped) &&
-		(x >= pWin->absCorner.x - pWin->borderWidth) &&
-		(x < pWin->absCorner.x + (int)pWin->clientWinSize.width +
-		 pWin->borderWidth) &&
-		(y >= pWin->absCorner.y - pWin->borderWidth) &&
-		(y < pWin->absCorner.y + (int)pWin->clientWinSize.height +
-		 pWin->borderWidth)
+		(x >= pWin->drawable.x - wBorderWidth (pWin)) &&
+		(x < pWin->drawable.x + (int)pWin->drawable.width +
+		 wBorderWidth (pWin)) &&
+		(y >= pWin->drawable.y - wBorderWidth (pWin)) &&
+		(y < pWin->drawable.y + (int)pWin->drawable.height +
+		 wBorderWidth (pWin))
 #ifdef SHAPE
 		/* When a window is shaped, a further check
 		 * is made to see if the point is inside
 		 * borderSize
 		 */
-		&& (!pWin->boundingShape ||
+		&& (wBoundingShape(pWin) ||
 		    (*pWin->drawable.pScreen->PointInRegion)
 			    (pWin->borderSize, x, y, &box))
 #endif
 		)
             {
-		rep.child = pWin->wid;
+		rep.child = pWin->drawable.id;
 		pWin = (WindowPtr) NULL;
 	    }
 	    else
 		pWin = pWin->nextSib;
 	}
 	/* adjust to destination coordinates */
-	rep.dstX = x - pDst->absCorner.x;
-	rep.dstY = y - pDst->absCorner.y;
+	rep.dstX = x - pDst->drawable.x;
+	rep.dstY = y - pDst->drawable.y;
     }
     WriteReplyToClient(client, sizeof(xTranslateCoordsReply), &rep);
     return(client->noClientException);
@@ -1379,6 +1375,7 @@ CreatePmap:
     if (pMap)
     {
 	pMap->drawable.serialNumber = NEXT_SERIAL_NUMBER;
+	pMap->drawable.id = stuff->pid;
 	if (AddResource(stuff->pid, RT_PIXMAP, (pointer)pMap,
 			dixDestroyPixmap, RC_CORE))
 	    return(client->noClientException);
@@ -1568,7 +1565,7 @@ ProcClearToBackground(client)
     pWin = (WindowPtr)LookupWindow( stuff->window, client);
     if (!pWin)
         return(BadWindow);
-    if (pWin->class == InputOnly)
+    if (pWin->drawable.class == InputOnly)
     {
 	client->errorValue = stuff->window;
 	return (BadWindow);
@@ -1578,7 +1575,7 @@ ProcClearToBackground(client)
 	client->errorValue = stuff->exposures;
         return(BadValue);
     }
-    (*pWin->ClearToBackground)(pWin, stuff->x, stuff->y,
+    (*pWin->funcs->ClearToBackground)(pWin, stuff->x, stuff->y,
 			       stuff->width, stuff->height,
 			       (Bool)stuff->exposures);
     return(client->noClientException);
@@ -1612,7 +1609,7 @@ ProcCopyArea(client)
     }
     else
         pSrc = pDst;
-    pRgn = (*pGC->CopyArea)(pSrc, pDst, pGC, stuff->srcX, stuff->srcY,
+    pRgn = (*pGC->ops->CopyArea)(pSrc, pDst, pGC, stuff->srcX, stuff->srcY,
 				 stuff->width, stuff->height, 
 				 stuff->dstX, stuff->dstY);
     if (pGC->graphicsExposures)
@@ -1662,7 +1659,7 @@ ProcCopyPlane(client)
        return(BadValue);
     }
 
-    pRgn = (*pGC->CopyPlane)(psrcDraw, pdstDraw, pGC, stuff->srcX, stuff->srcY,
+    pRgn = (*pGC->ops->CopyPlane)(psrcDraw, pdstDraw, pGC, stuff->srcX, stuff->srcY,
 				 stuff->width, stuff->height, 
 				 stuff->dstX, stuff->dstY, stuff->bitPlane);
     if (pGC->graphicsExposures)
@@ -1694,7 +1691,7 @@ ProcPolyPoint(client)
     VALIDATE_DRAWABLE_AND_GC(stuff->drawable, pDraw, pGC, client); 
     npoint = ((stuff->length << 2) - sizeof(xPolyPointReq)) >> 2;
     if (npoint)
-        (*pGC->PolyPoint)(pDraw, pGC, stuff->coordMode, npoint,
+        (*pGC->ops->PolyPoint)(pDraw, pGC, stuff->coordMode, npoint,
 			  (xPoint *) &stuff[1]);
     return (client->noClientException);
 }
@@ -1718,7 +1715,7 @@ ProcPolyLine(client)
     VALIDATE_DRAWABLE_AND_GC(stuff->drawable, pDraw, pGC, client);
     npoint = ((stuff->length << 2) - sizeof(xPolyLineReq)) >> 2;
     if (npoint)
-	(*pGC->Polylines)(pDraw, pGC, stuff->coordMode, npoint, 
+	(*pGC->ops->Polylines)(pDraw, pGC, stuff->coordMode, npoint, 
 			      (xPoint *) &stuff[1]);
     return(client->noClientException);
 }
@@ -1739,7 +1736,7 @@ ProcPolySegment(client)
 	return(BadLength);
     nsegs >>= 3;
     if (nsegs)
-        (*pGC->PolySegment)(pDraw, pGC, nsegs, (xSegment *) &stuff[1]);
+        (*pGC->ops->PolySegment)(pDraw, pGC, nsegs, (xSegment *) &stuff[1]);
     return (client->noClientException);
 }
 
@@ -1759,7 +1756,7 @@ ProcPolyRectangle (client)
 	return(BadLength);
     nrects >>= 3;
     if (nrects)
-        (*pGC->PolyRectangle)(pDraw, pGC, 
+        (*pGC->ops->PolyRectangle)(pDraw, pGC, 
 		    nrects, (xRectangle *) &stuff[1]);
     return(client->noClientException);
 }
@@ -1780,7 +1777,7 @@ ProcPolyArc(client)
 	return(BadLength);
     narcs /= sizeof(xArc);
     if (narcs)
-        (*pGC->PolyArc)(pDraw, pGC, narcs, (xArc *) &stuff[1]);
+        (*pGC->ops->PolyArc)(pDraw, pGC, narcs, (xArc *) &stuff[1]);
     return (client->noClientException);
 }
 
@@ -1810,7 +1807,7 @@ ProcFillPoly(client)
     VALIDATE_DRAWABLE_AND_GC(stuff->drawable, pDraw, pGC, client);
     things = ((stuff->length << 2) - sizeof(xFillPolyReq)) >> 2;
     if (things)
-        (*pGC->FillPolygon) (pDraw, pGC, stuff->shape,
+        (*pGC->ops->FillPolygon) (pDraw, pGC, stuff->shape,
 			 stuff->coordMode, things,
 			 (DDXPointPtr) &stuff[1]);
     return(client->noClientException);
@@ -1832,7 +1829,7 @@ ProcPolyFillRectangle(client)
 	return(BadLength);
     things >>= 3;
     if (things)
-        (*pGC->PolyFillRect) (pDraw, pGC, things,
+        (*pGC->ops->PolyFillRect) (pDraw, pGC, things,
 		      (xRectangle *) &stuff[1]);
     return (client->noClientException);
 }
@@ -1853,7 +1850,7 @@ ProcPolyFillArc               (client)
 	return(BadLength);
     narcs /= sizeof(xArc);
     if (narcs)
-        (*pGC->PolyFillArc) (pDraw, pGC, narcs, (xArc *) &stuff[1]);
+        (*pGC->ops->PolyFillArc) (pDraw, pGC, narcs, (xArc *) &stuff[1]);
     return (client->noClientException);
 }
 
@@ -1897,7 +1894,7 @@ ProcPutImage(client)
     length *= stuff->height;
     if ((((length + 3) >> 2) + (sizeof(xPutImageReq) >> 2)) != stuff->length)
 	return BadLength;
-    (*pGC->PutImage) (pDraw, pGC, stuff->depth, stuff->dstX, stuff->dstY,
+    (*pGC->ops->PutImage) (pDraw, pGC, stuff->depth, stuff->dstX, stuff->dstY,
 		  stuff->width, stuff->height, 
 		  stuff->leftPad, stuff->format, 
 		  (char *) &stuff[1]);
@@ -1935,31 +1932,27 @@ ProcGetImage(client)
       if( /* check for being viewable */
 	 !((WindowPtr) pDraw)->realized ||
 	  /* check for being on screen */
-         ((WindowPtr) pDraw)->absCorner.x + stuff->x < 0 ||
-         ((WindowPtr) pDraw)->absCorner.x + stuff->x + (int)stuff->width >
-             pDraw->pScreen->width ||
-         ((WindowPtr) pDraw)->absCorner.y + stuff->y < 0 ||
-         ((WindowPtr) pDraw)->absCorner.y + stuff->y + height >
-             pDraw->pScreen->height ||
+         pDraw->x + stuff->x < 0 ||
+ 	 pDraw->x + stuff->x + (int)stuff->width > pDraw->pScreen->width ||
+         pDraw->y + stuff->y < 0 ||
+         pDraw->y + stuff->y + height > pDraw->pScreen->height ||
           /* check for being inside of border */
-         stuff->x < -((WindowPtr)pDraw)->borderWidth ||
+         stuff->x < - wBorderWidth((WindowPtr)pDraw) ||
          stuff->x + (int)stuff->width >
-              ((WindowPtr)pDraw)->borderWidth +
-              (int)((WindowPtr)pDraw)->clientWinSize.width ||
-         stuff->y < -((WindowPtr)pDraw)->borderWidth ||
+		wBorderWidth((WindowPtr)pDraw) + (int)pDraw->width ||
+         stuff->y < -wBorderWidth((WindowPtr)pDraw) ||
          stuff->y + height >
-              ((WindowPtr)pDraw)->borderWidth +
-              (int)((WindowPtr)pDraw)->clientWinSize.height
+		wBorderWidth ((WindowPtr)pDraw) + (int)pDraw->height
         )
 	    return(BadMatch);
-	xgi.visual = ((WindowPtr) pDraw)->visual;
+	xgi.visual = wVisual (((WindowPtr) pDraw));
     }
     else
     {
-      if((stuff->x < 0) ||
-         (stuff->x+(int)stuff->width > ((PixmapPtr) pDraw)->width) ||
-         (stuff->y < 0) ||
-         (stuff->y+height > ((PixmapPtr) pDraw)->height)
+      if(stuff->x < 0 ||
+         stuff->x+(int)stuff->width > pDraw->width ||
+         stuff->y < 0 ||
+         stuff->y+height > pDraw->height
         )
 	    return(BadMatch);
 	xgi.visual = None;
@@ -2094,12 +2087,12 @@ ProcPolyText(client)
     xorg = stuff->x;
     if (stuff->reqType == X_PolyText8)
     {
-	polyText = pGC->PolyText8;
+	polyText = pGC->ops->PolyText8;
 	itemSize = 1;
     }
     else
     {
-	polyText =  pGC->PolyText16;
+	polyText =  pGC->ops->PolyText16;
 	itemSize = 2;
     }
 
@@ -2156,7 +2149,7 @@ ProcImageText8(client)
     REQUEST_FIXED_SIZE(xImageTextReq, stuff->nChars);
     VALIDATE_DRAWABLE_AND_GC(stuff->drawable, pDraw, pGC, client);
 
-    (*pGC->ImageText8)(pDraw, pGC, stuff->x, stuff->y,
+    (*pGC->ops->ImageText8)(pDraw, pGC, stuff->x, stuff->y,
 		       stuff->nChars, &stuff[1]);
     return (client->noClientException);
 }
@@ -2173,7 +2166,7 @@ ProcImageText16(client)
     REQUEST_FIXED_SIZE(xImageTextReq, stuff->nChars << 1);
     VALIDATE_DRAWABLE_AND_GC(stuff->drawable, pDraw, pGC, client);
 
-    (*pGC->ImageText16)(pDraw, pGC, stuff->x, stuff->y,
+    (*pGC->ops->ImageText16)(pDraw, pGC, stuff->x, stuff->y,
 			stuff->nChars, &stuff[1]);
     return (client->noClientException);
 }
@@ -2771,14 +2764,14 @@ ProcCreateCursor( client)
 	    return (BadPixmap);
 	}
     }
-    else if (  src->width != msk->width
-	    || src->height != msk->height
+    else if (  src->drawable.width != msk->drawable.width
+	    || src->drawable.height != msk->drawable.height
 	    || src->drawable.depth != 1
 	    || msk->drawable.depth != 1)
 	return (BadMatch);
 
-    width = src->width;
-    height = src->height;
+    width = src->drawable.width;
+    height = src->drawable.height;
 
     if ( stuff->x > width 
       || stuff->y > height )
@@ -3499,7 +3492,8 @@ ProcEstablishConnection(client)
 	register int j;
 	register xDepth *pDepth;
 
-        root->currentInputMask = WindowTable[i]->allEventMasks;
+        root->currentInputMask = WindowTable[i]->eventMask |
+			         wOtherEventMasks (WindowTable[i]);
 	pDepth = (xDepth *)(root + 1);
 	for (j = 0; j < root->nDepths; j++)
 	{

@@ -1,4 +1,4 @@
-/* $XConsortium: gcstruct.h,v 1.5 88/08/30 17:11:09 keith Exp $ */
+/* $XConsortium: gcstruct.h,v 1.6 88/09/06 15:47:40 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -34,81 +34,87 @@ SOFTWARE.
 #include "screenint.h"
 #include "dixfont.h"
 
-typedef struct _GCInterest {
-    struct _GCInterest	*pNextGCInterest;
-    struct _GCInterest	*pLastGCInterest;
-    int			length;		
-    ATOM		owner;		/* extension id of owning extension */
-    unsigned long	ValInterestMask;
-    void		(* ValidateGC) ();
-    unsigned long	ChangeInterestMask;
-    int			(* ChangeGC) ();
-    void		(* CopyGCSource) ();
-    void		(* CopyGCDest) ();
-    void		(* DestroyGC) ();
-    pointer		extPriv;	/* pointer extension private data */
-} GCInterestRec;
+/*
+ * functions which modify the state of the GC
+ */
 
-typedef struct _GC{
-    ScreenPtr	pScreen;		
-    pointer	devPriv;		/* private to the device */
-    pointer	devBackingStore;	/* private to backing store */
-    int         depth;    
-    unsigned long        serialNumber;
-    GCInterestPtr	pNextGCInterest;
-    GCInterestPtr	pLastGCInterest;
-    int		alu;
+typedef struct _GCFuncs {
+    void	(* ValidateGC)();   /* pGC, pDrawable */
+    void	(* ChangeGC)();	    /* pGC, mask */
+    void	(* CopyGC)();	    /* pGCSrc, mask, pGCDst */
+    void	(* DestroyGC)();    /* pGC */
+    void	(* ChangeClip)();   /* pGC, clipType, pointer, nrects */
+    void	(* DestroyClip)();  /* pGC */
+    void	(* CopyClip)();	    /* pgcDst, pgcSrc */
+    DevUnion	devPrivate;
+} GCFuncs;
+
+/*
+ * graphics operations invoked through a GC
+ */
+
+typedef struct _GCOps {
+    void	(* FillSpans)();
+    void	(* SetSpans)();
+    void	(* PutImage)();
+    RegionPtr	(* CopyArea)();
+    RegionPtr	(* CopyPlane)();
+    void	(* PolyPoint)();
+    void	(* Polylines)();
+    void	(* PolySegment)();
+    void	(* PolyRectangle)();
+    void	(* PolyArc)();
+    void	(* FillPolygon)();
+    void	(* PolyFillRect)();
+    void	(* PolyFillArc)();
+    int		(* PolyText8)();
+    int		(* PolyText16)();
+    void	(* ImageText8)();
+    void	(* ImageText16)();
+    void	(* ImageGlyphBlt)();
+    void	(* PolyGlyphBlt)();
+    void	(* PushPixels)();
+    void	(* LineHelper)();
+    DevUnion	devPrivate;
+} GCOps;
+
+typedef struct _GC {
+    ScreenPtr		pScreen;		
+    unsigned char	depth;    
+    unsigned char	alu;
+    unsigned short	lineWidth;          
+    unsigned short	dashOffset;
+    unsigned short	numInDashList;
+    unsigned char	*dash;
+    unsigned int	lineStyle : 2;
+    unsigned int	capStyle : 2;
+    unsigned int	joinStyle : 2;
+    unsigned int	fillStyle : 2;
+    unsigned int	fillRule : 1;
+    unsigned int 	arcMode : 1;
+    unsigned int	subWindowMode : 1;
+    unsigned int	graphicsExposures : 1;
+    unsigned int	clientClipType : 2; /* CT_<kind> */
+    unsigned int	miTranslate:1; /* should mi things translate? */
     unsigned long	planemask;
-    unsigned long	fgPixel, bgPixel;
-    int		lineWidth;          
-    int		lineStyle;
-    int		capStyle;
-    int		joinStyle;
-    int		fillStyle;
-    int		fillRule;
-    int		arcMode;
-    PixmapPtr	tile;
-    PixmapPtr	stipple;
-    DDXPointRec	patOrg;			/* origin for (tile, stipple) */
-    FontPtr	font;
-    int		subWindowMode;
-    Bool	graphicsExposures;
-    DDXPointRec	clipOrg;
-    pointer	clientClip;
-    int		clientClipType;		/* pixmap, region, or none */
-    int		dashOffset;
-    int		numInDashList;		/* num elements in dash linst */
-    unsigned char *dash;		/* dash pattern */
-
-    unsigned long	stateChanges;	/* masked with GC_* */
-    DDXPointRec	lastWinOrg;		/* origin of last window */
-    int		miTranslate:1;		/* should mi things translate? */
-
-    void (* FillSpans)();
-    void (* SetSpans)();
-
-    void (* PutImage)();
-    RegionPtr (* CopyArea)();
-    RegionPtr (* CopyPlane)();
-    void (* PolyPoint)();
-    void (* Polylines)();
-    void (* PolySegment)();
-    void (* PolyRectangle)();
-    void (* PolyArc)();
-    void (* FillPolygon)();
-    void (* PolyFillRect)();
-    void (* PolyFillArc)();
-    int (* PolyText8)();
-    int (* PolyText16)();
-    void (* ImageText8)();
-    void (* ImageText16)();
-    void (* ImageGlyphBlt)();
-    void (* PolyGlyphBlt)();
-    void (* PushPixels)();
-    void (* LineHelper)();
-    void (* ChangeClip) ();
-    void (* DestroyClip) ();
-    void (* CopyClip)();
+    unsigned long	fgPixel;
+    unsigned long	bgPixel;
+    /*
+     * alas -- both tile and stipple must be here as they
+     * are independently specifiable
+     */
+    PixmapPtr		tile;
+    PixmapPtr		stipple;
+    DDXPointRec		patOrg;		/* origin for (tile, stipple) */
+    FontPtr		font;
+    DDXPointRec		clipOrg;
+    DDXPointRec		lastWinOrg;	/* position of window last validated */
+    pointer		clientClip;
+    unsigned long	stateChanges;	/* masked with GC_<kind> */
+    unsigned long       serialNumber;
+    GCFuncs		*funcs;
+    GCOps		*ops;
+    DevUnion		*devPrivates;
 } GC;
 
 #endif /* GCSTRUCT_H */

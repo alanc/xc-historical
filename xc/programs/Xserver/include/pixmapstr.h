@@ -1,4 +1,4 @@
-/* $XConsortium: pixmapstr.h,v 1.1 87/09/11 07:50:20 toddb Exp $ */
+/* $XConsortium: pixmapstr.h,v 1.2 88/09/06 15:48:38 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -27,24 +27,31 @@ SOFTWARE.
 #define PIXMAPSTRUCT_H
 #include "pixmap.h"
 #include "screenint.h"
-#include "misc.h"
+#include "miscstruct.h"
 
-/* first element of any drawable */
-typedef struct _DrawInfo {
-    short	type;
-    ScreenPtr	pScreen;     
-    int         depth;          /* alias bitsPerPixel, numPlanes */
-    unsigned long        serialNumber;
+typedef struct _Drawable {
+    unsigned char	type;	/* DRAWABLE_<type> */
+    unsigned char	class;	/* specific to type */
+    unsigned char	depth;
+    unsigned char	bitsPerPixel;
+    unsigned long	id;	/* resource id */
+    short		x;	/* window: screen absolute, pixmap: 0 */
+    short		y;	/* window: screen absolute, pixmap: 0 */
+    unsigned short	width;
+    unsigned short	height;
+    ScreenPtr		pScreen;
+    unsigned long	serialNumber;
 } DrawableRec;
+
 /*
  * PIXMAP -- device dependent 
  */
 
 typedef struct _Pixmap {
-    DrawableRec drawable;
-    int width, height;
-    int refcnt;
-    int devKind;		/* probably flags or something */
-    pointer devPrivate;		/* probably a pointer */
-    } PixmapRec;
+    DrawableRec		drawable;
+    int			refcnt;
+    int			devKind;
+    DevUnion		devPrivate;
+} PixmapRec;
+
 #endif /* PIXMAPSTRUCT_H */

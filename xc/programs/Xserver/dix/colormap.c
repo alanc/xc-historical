@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 1.85 89/04/07 11:32:16 rws Exp $ */
+/* $XConsortium: colormap.c,v 1.86 89/05/02 15:06:51 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -296,16 +296,19 @@ TellNoMap (pwin, pmid)
     Colormap 	*pmid;
 {
     xEvent 	xE;
-    if (pwin->colormap == *pmid)
+    if (wColormap(pwin) == *pmid)
     {
 	/* This should be call to DeliverEvent */
 	xE.u.u.type = ColormapNotify;
-	xE.u.colormap.window = pwin->wid;
+	xE.u.colormap.window = pwin->drawable.id;
 	xE.u.colormap.colormap = None;
 	xE.u.colormap.new = TRUE;
 	xE.u.colormap.state = ColormapUninstalled;
 	DeliverEvents(pwin, &xE, 1, (WindowPtr)NULL);
-        pwin->colormap = None;
+	if (pwin->optional) {
+	    pwin->optional->colormap = None;
+	    CheckWindowOptionalNeed (pwin);
+	}
     }
 
     return (WT_WALKCHILDREN);
@@ -318,11 +321,11 @@ TellLostMap (pwin, pmid)
     Colormap 	*pmid;
 {
     xEvent 	xE;
-    if (pwin->colormap == *pmid)
+    if (wColormap(pwin) == *pmid)
     {
 	/* This should be call to DeliverEvent */
 	xE.u.u.type = ColormapNotify;
-	xE.u.colormap.window = pwin->wid;
+	xE.u.colormap.window = pwin->drawable.id;
 	xE.u.colormap.colormap = *pmid;
 	xE.u.colormap.new = FALSE;
 	xE.u.colormap.state = ColormapUninstalled;
@@ -339,11 +342,11 @@ TellGainedMap (pwin, pmid)
     Colormap 	*pmid;
 {
     xEvent 	xE;
-    if (pwin->colormap == *pmid)
+    if (wColormap (pwin) == *pmid)
     {
 	/* This should be call to DeliverEvent */
 	xE.u.u.type = ColormapNotify;
-	xE.u.colormap.window = pwin->wid;
+	xE.u.colormap.window = pwin->drawable.id;
 	xE.u.colormap.colormap = *pmid;
 	xE.u.colormap.new = FALSE;
 	xE.u.colormap.state = ColormapInstalled;

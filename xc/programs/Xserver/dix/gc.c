@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 1.123 89/04/17 10:44:18 rws Exp $ */
+/* $XConsortium: gc.c,v 1.124 89/04/22 11:54:07 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -50,18 +50,7 @@ ValidateGC(pDraw, pGC)
     DrawablePtr	pDraw;
     GC		*pGC;
 {
-    GCInterestPtr	pQ, pQInit;
-
-    pQ = pGC->pNextGCInterest;
-    pQInit = (GCInterestPtr) &pGC->pNextGCInterest;
-    if (pGC->serialNumber != pDraw->serialNumber)
-        pGC->stateChanges |= GC_CALL_VALIDATE_BIT;
-    while(pQ != pQInit)
-    {
-	if (pQ->ValInterestMask & pGC->stateChanges)
-	    (* pQ->ValidateGC) (pGC, pQ, pGC->stateChanges, pDraw);
-	pQ = pQ->pNextGCInterest;
-    }
+    (*pGC->funcs->ValidateGC) (pGC, pGC->stateChanges, pDraw);
     pGC->stateChanges = 0;
     pGC->serialNumber = pDraw->serialNumber;
 }
@@ -102,7 +91,6 @@ DoChangeGC(pGC, mask, pval, fPointer)
     register int 	error = 0;
     PixmapPtr 		pPixmap;
     BITS32		maskQ;
-    GCInterestPtr	pQ, pQInit;
 
     pGC->serialNumber |= GC_CHANGE_SERIAL_BIT;
 
@@ -347,7 +335,7 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		pval++;
 		if(error == Success)
 		{
-		    (*pGC->ChangeClip)(pGC, clipType, pPixmap, 0);
+		    (*pGC->funcs->ChangeClip)(pGC, clipType, pPixmap, 0);
 		}
 		break;
 	      }
@@ -397,16 +385,7 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		break;
 	}
     }
-    pQ = pGC->pNextGCInterest;
-    pQInit = (GCInterestPtr) &pGC->pNextGCInterest;
-    while(pQ != pQInit)
-    {
-	/* I assume that if you've set a change interest mask, you've set a
-	 * changeGC function */
-	if(pQ->ChangeInterestMask & maskQ)
-	    (*pQ->ChangeGC)(pGC, pQ, maskQ);
-	pQ = pQ->pNextGCInterest;
-    }
+    (*pGC->funcs->ChangeGC)(pGC, maskQ);
     return error;
 }
 
@@ -419,6 +398,14 @@ BUG:
    should check for failure to create default tile
 
 */
+
+static int  gcPrivateCount;
+
+int
+AllocateGCPrivateIndex ()
+{
+    return gcPrivateCount++;
+}
 
 GCPtr
 CreateGC(pDrawable, mask, pval, pStatus)
@@ -440,9 +427,12 @@ CreateGC(pDrawable, mask, pval, pStatus)
 	return (GCPtr)NULL;
     }
     pGC->dash = (unsigned char *)xalloc(2 * sizeof(unsigned char));
-    if (!pGC->dash)
+    pGC->devPrivates = (DevUnion *)xalloc(gcPrivateCount * sizeof (DevUnion));
+    if (!pGC->dash || !pGC->devPrivates)
     {
 	xfree(pGC);
+	xfree(pGC->dash);
+	xfree(pGC->devPrivates);
 	*pStatus = BadAlloc;
 	return (GCPtr)NULL;
     }
@@ -459,8 +449,7 @@ CreateGC(pDrawable, mask, pval, pStatus)
     pGC->alu = GXcopy; /* dst <- src */
     pGC->planemask = ~0;
     pGC->serialNumber = GC_CHANGE_SERIAL_BIT;
-    pGC->pNextGCInterest = (GCInterestPtr)&pGC->pNextGCInterest;
-    pGC->pLastGCInterest = (GCInterestPtr)&pGC->pNextGCInterest;
+    pGC->funcs = 0;
 
     pGC->fgPixel = 0;
     pGC->bgPixel = 1;
@@ -530,7 +519,7 @@ CreateGC(pDrawable, mask, pval, pStatus)
 	rect.y = 0;
 	rect.width = w;
 	rect.height = h;
-	(*pgcScratch->PolyFillRect)(pTile, pgcScratch, 1, &rect);
+	(*pgcScratch->ops->PolyFillRect)(pTile, pgcScratch, 1, &rect);
 	/* Always remember to free the scratch graphics context after use. */
 	FreeScratchGC(pgcScratch);
 
@@ -567,7 +556,6 @@ CopyGC(pgcSrc, pgcDst, mask)
 {
     register BITS32	index;
     BITS32		maskQ;
-    GCInterestPtr	pQ, pQInit;
     int i;
     int 		error = 0;
 
@@ -659,7 +647,7 @@ CopyGC(pgcSrc, pgcDst, mask)
 		pgcDst->clipOrg.y = pgcSrc->clipOrg.y;
 		break;
 	    case GCClipMask:
-		(* pgcDst->CopyClip)(pgcDst, pgcSrc);
+		(* pgcDst->funcs->CopyClip)(pgcDst, pgcSrc);
 		break;
 	    case GCDashOffset:
 		pgcDst->dashOffset = pgcSrc->dashOffset;
@@ -691,22 +679,7 @@ CopyGC(pgcSrc, pgcDst, mask)
 		break;
 	}
     }
-    pQ = pgcSrc->pNextGCInterest;
-    pQInit = (GCInterestPtr) &pgcSrc->pNextGCInterest;
-    while(pQ != pQInit)
-    {
-	if(pQ->CopyGCSource)
-	    (*pQ->CopyGCSource)(pgcSrc, pQ, maskQ, pgcDst);
-	pQ = pQ->pNextGCInterest;
-    }
-    pQ = pgcDst->pNextGCInterest;
-    pQInit = (GCInterestPtr) &pgcDst->pNextGCInterest;
-    while(pQ != pQInit)
-    {
-	if(pQ->CopyGCDest)
-	    (*pQ->CopyGCDest)(pgcDst, pQ, maskQ, pgcSrc);
-	pQ = pQ->pNextGCInterest;
-    }
+    (*pgcDst->funcs->CopyGC) (pgcSrc, maskQ, pgcDst);
     return error;
 }
 
@@ -721,23 +694,13 @@ FreeGC(pGC, gid)
     GCPtr pGC;
     GContext gid;
 {
-    GCInterestPtr	pQ, pQInit, pQnext;
-
     CloseFont(pGC->font, (Font)0);
-    (* pGC->DestroyClip)(pGC);
+    (* pGC->funcs->DestroyClip)(pGC);
 
     (* pGC->pScreen->DestroyPixmap)(pGC->tile);
     (* pGC->pScreen->DestroyPixmap)(pGC->stipple);
 
-    pQ = pGC->pNextGCInterest;
-    pQInit = (GCInterestPtr) &pGC->pNextGCInterest;
-    while (pQ != pQInit)
-    {
-        pQnext = pQ->pNextGCInterest;
-	if(pQ->DestroyGC)
-	    (*pQ->DestroyGC) (pGC, pQ);
-	pQ = pQnext;
-    }
+    (*pGC->funcs->DestroyGC) (pGC);
     xfree(pGC->dash);
     xfree(pGC);
     return(Success);
@@ -785,9 +748,12 @@ CreateScratchGC(pScreen, depth)
     if (!pGC)
 	return (GCPtr)NULL;
     pGC->dash = (unsigned char *)xalloc(2 * sizeof(unsigned char));
-    if (!pGC->dash)
+    pGC->devPrivates = (DevUnion *)xalloc(gcPrivateCount * sizeof (DevUnion));
+    if (!pGC->dash || !pGC->devPrivates)
     {
 	xfree(pGC);
+	xfree (pGC->dash);
+	xfree (pGC->devPrivates);
 	return (GCPtr)NULL;
     }
 
@@ -803,8 +769,6 @@ CreateScratchGC(pScreen, depth)
     pGC->alu = GXcopy; /* dst <- src */
     pGC->planemask = ~0;
     pGC->serialNumber = 0;
-    pGC->pNextGCInterest = (GCInterestPtr)&pGC->pNextGCInterest;
-    pGC->pLastGCInterest = (GCInterestPtr)&pGC->pNextGCInterest;
 
     pGC->fgPixel = 0;
     pGC->bgPixel = 1;
@@ -923,7 +887,7 @@ CreateDefaultStipple(screenNum)
     rect.y = 0;
     rect.width = w;
     rect.height = h;
-    (*pgcScratch->PolyFillRect)(pScreen->PixmapPerDepth[0], 
+    (*pgcScratch->ops->PolyFillRect)(pScreen->PixmapPerDepth[0], 
 				pgcScratch, 1, &rect);
     FreeScratchGC(pgcScratch);
     return TRUE;
@@ -945,7 +909,6 @@ register unsigned char *pdash;
 {
     register long i;
     register unsigned char *p;
-    GCInterestPtr	pQ, pQInit;
     BITS32 maskQ = 0;
 
     i = ndash;
@@ -980,14 +943,8 @@ register unsigned char *pdash;
     pGC->stateChanges |= GCDashList;
     maskQ |= GCDashList;
 
-    pQ = pGC->pNextGCInterest;
-    pQInit = (GCInterestPtr) &pGC->pNextGCInterest;
-    while(pQ != pQInit)
-    {
-	if(pQ->ChangeInterestMask & maskQ)
-	    (*pQ->ChangeGC)(pGC, pQ, maskQ);
-	pQ = pQ->pNextGCInterest;
-    }
+    if (pGC->funcs->ChangeGC)
+	(*pGC->funcs->ChangeGC) (pGC, maskQ);
     return Success;
 }
 
@@ -1053,7 +1010,6 @@ SetClipRects(pGC, xOrigin, yOrigin, nrects, prects, ordering)
 {
     int			newct, size;
     xRectangle 		*prectsNew;
-    GCInterestPtr	pQ, pQInit;
 
     newct = VerifyRectOrder(nrects, prects, ordering);
     if (newct < 0)
@@ -1072,17 +1028,10 @@ SetClipRects(pGC, xOrigin, yOrigin, nrects, prects, ordering)
 
     if (size)
 	bcopy((char *)prects, (char *)prectsNew, size);
-    (*pGC->ChangeClip)(pGC, newct, prectsNew, nrects);
-    pQ = pGC->pNextGCInterest;
-    pQInit = (GCInterestPtr) &pGC->pNextGCInterest;
-    while(pQ != pQInit)
-    {
-	if(pQ->ChangeInterestMask & (GCClipXOrigin|GCClipYOrigin|GCClipMask))
-	    (*pQ->ChangeGC)(pGC, pQ, (GCClipXOrigin|GCClipYOrigin|GCClipMask));
-	pQ = pQ->pNextGCInterest;
-    }
+    (*pGC->funcs->ChangeClip)(pGC, newct, prectsNew, nrects);
+    if (pGC->funcs->ChangeGC)
+	(*pGC->funcs->ChangeGC) (pGC, GCClipXOrigin|GCClipYOrigin|GCClipMask);
     return Success;
-
 }
 
 
@@ -1159,5 +1108,3 @@ FreeScratchGC(pGC)
     }
     (void)FreeGC(pGC, (GContext)0);
 }
-
-

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 1.157 89/04/17 10:39:57 rws Exp $ */
+/* $XConsortium: main.c,v 1.158 89/05/10 11:33:48 jim Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -339,7 +339,7 @@ CreateConnectionBlock()
 	VisualPtr	pVisual;
 
 	pScreen = screenInfo.screens[i];
-	root.windowId = WindowTable[i]->wid;
+	root.windowId = WindowTable[i]->drawable.id;
 	root.defaultColormap = pScreen->defColormap;
 	root.whitePixel = pScreen->whitePixel;
 	root.blackPixel = pScreen->blackPixel;
@@ -402,6 +402,37 @@ CreateConnectionBlock()
 }
 
 /*
+ * allocate a private piece of per-screen data.  Reallocs
+ * all existing screens devPrivate arrays.  Returns -1 on
+ * failure, else a valid index into the per-screen private array
+ */
+
+static int  screenPrivateCount;
+
+int
+AllocateScreenPrivateIndex ()
+{
+    int		ret;
+    int		i;
+    ScreenPtr	pScreen;
+    DevUnion	*new;
+
+    ret = screenPrivateCount++;
+    
+    for (i = 0; i < screenInfo.numScreens; i++)
+    {
+	pScreen = screenInfo.screens[i];
+	
+	new = (DevUnion *) xrealloc (pScreen->devPrivates,
+				     screenPrivateCount * sizeof (DevUnion));
+	if (!new)
+	    return -1;
+	pScreen->devPrivates = new;
+    }
+    return ret;
+}
+
+/*
 	grow the array of screenRecs if necessary.
 	call the device-supplied initialization procedure 
 with its screen number, a pointer to its ScreenRec, argc, and argv.
@@ -431,6 +462,18 @@ AddScreen(pfnInit, argc, argv)
     if (!pScreen)
 	return -1;
 
+    if (screenPrivateCount == 0)
+	pScreen->devPrivates = NULL;
+    else
+    {
+    	pScreen->devPrivates = (DevUnion *) xalloc (screenPrivateCount * sizeof (DevUnion));
+    	if (!pScreen->devPrivates)
+    	{
+	    xfree (pScreen);
+	    return -1;
+    	}
+    }
+    
 #ifdef DEBUG
     for (jNI = &pScreen->QueryBestSize; 
 	 jNI < (void (**) ()) &pScreen->SendGraphicsExpose;
@@ -483,7 +526,7 @@ AddScreen(pfnInit, argc, argv)
 		return screenInfo.numScreens;
 	    FreeGCperDepth(i);
 	}
-	FreeResource(WindowTable[i]->wid, RC_NONE);
+	FreeResource(WindowTable[i]->drawable.id, RC_NONE);
     }
     xfree(pScreen);
     screenInfo.numScreens--;

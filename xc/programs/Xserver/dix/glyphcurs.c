@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: glyphcurs.c,v 1.15 89/03/17 16:37:46 rws Exp $ */
+/* $XConsortium: glyphcurs.c,v 1.16 89/03/18 16:24:02 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -116,7 +116,7 @@ ServerBitsFromGlyph(fontID, pfont, ch, cm, ppbits)
 	gcval[1] = 1;
 	DoChangeGC(pGC, GCFunction | GCForeground, gcval, 0);
 	ValidateGC((DrawablePtr)ppix, pGC);
-	(*pGC->PolyFillRect)(ppix, pGC, 1, &rect);
+	(*pGC->ops->PolyFillRect)(ppix, pGC, 1, &rect);
     }
     else
     {
@@ -126,13 +126,13 @@ ServerBitsFromGlyph(fontID, pfont, ch, cm, ppbits)
 	gcval[2] = fontID;
 	DoChangeGC(pGC, GCFunction | GCForeground | GCFont, gcval, 0);
 	ValidateGC((DrawablePtr)ppix, pGC);
-	(*pGC->PolyFillRect)(ppix, pGC, 1, &rect);
+	(*pGC->ops->PolyFillRect)(ppix, pGC, 1, &rect);
 
 	/* draw the glyph */
 	gcval[0] = 1;
 	DoChangeGC(pGC, GCForeground, gcval, 0);
 	ValidateGC((DrawablePtr)ppix, pGC);
-	(*pGC->PolyText16)(ppix, pGC, cm->xhot, cm->yhot, 1, char2b);
+	(*pGC->ops->PolyText16)(ppix, pGC, cm->xhot, cm->yhot, 1, char2b);
     }
     (*pScreen->GetImage)(ppix, 0, 0, cm->width, cm->height,
 			 ZPixmap, 1, pbits);

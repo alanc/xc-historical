@@ -1,4 +1,4 @@
-/* $XConsortium: scrnintstr.h,v 1.4 88/09/06 15:49:03 jim Exp $ */
+/* $XConsortium: scrnintstr.h,v 1.5 89/03/18 16:18:44 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -26,7 +26,7 @@ SOFTWARE.
 #define SCREENINTSTRUCT_H
 
 #include "screenint.h"
-#include "misc.h"
+#include "miscstruct.h"
 #include "region.h"
 #include "pixmap.h"
 #include "gc.h"
@@ -163,6 +163,9 @@ typedef struct _Screen {
     void (* WakeupHandler)();		/* data: pointer */
     pointer blockData;
     pointer wakeupData;
+
+    /* anybody can get a piece of this array */
+    DevUnion	*devPrivates;
 } ScreenRec;
 
 typedef struct _ScreenInfo {

@@ -1,4 +1,4 @@
-/* $XConsortium: pixmap.h,v 1.2 88/07/06 11:14:48 rws Exp $ */
+/* $XConsortium: pixmap.h,v 1.3 88/09/06 15:48:15 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -28,7 +28,7 @@ SOFTWARE.
 /* types for Drawable */
 #define DRAWABLE_WINDOW 0
 #define DRAWABLE_PIXMAP 1
-#define UNDRAWABLE_WINDOW -1
+#define UNDRAWABLE_WINDOW 2
 
 /* flags to PaintWindow() */
 #define PW_BACKGROUND 0
@@ -40,6 +40,6 @@ SOFTWARE.
 	&& (pPixmap != (PixmapPtr)USE_BORDER_PIXEL) \
 	&& (pPixmap != (PixmapPtr)ParentRelative))? TRUE : FALSE)
 
-typedef struct _DrawInfo *DrawablePtr;	
+typedef struct _Drawable *DrawablePtr;	
 typedef struct _Pixmap *PixmapPtr;
 #endif /* PIXMAP_H */

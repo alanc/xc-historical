@@ -1,4 +1,4 @@
-/* $XConsortium: windowstr.h,v 1.12 89/03/18 16:18:19 rws Exp $ */
+/* $XConsortium: windowstr.h,v 1.13 89/03/30 16:55:37 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -39,107 +39,164 @@ SOFTWARE.
 #define GuaranteeNothing	0
 #define GuaranteeVisBack	1
 
+typedef struct _BackingStoreFuncs {
+    void	(* SaveDoomedAreas)();
+    RegionPtr	(* RestoreAreas)();
+    void	(* ExposeCopy)();
+    void	(* TranslateBackingStore)();
+    void	(* ClearToBackground)();
+    void	(* DrawGuarantee)();
+    DevUnion	devPrivate;
+} BackingStoreFuncs;
+
 typedef struct _BackingStore {
-    RegionPtr obscured;
-    DDXPointRec oldAbsCorner;	    /* Screen origin of obscured region */
-    void (* SaveDoomedAreas)();
-    RegionPtr  (* RestoreAreas)();
-    void (* ExposeCopy)();  	    /* To handle GraphicsExpose */
-    void (* TranslateBackingStore)(); /* to make bit gravity and backing
-					store work together */
-    void (* ClearToBackground)();
-    void (* DrawGuarantee)();
+    RegionPtr		obscured;
+    DDXPointRec		oldAbsCorner;    /* Screen origin of obscured region */
+    BackingStoreFuncs	*funcs;
+    DevUnion		devPrivate;
 } BackingStoreRec;
 
-/* 
- * A window -- device independent
- * 
+/*
+ * this structure is currently unused 
  */
 
-typedef struct _Window {
+typedef struct _Validate {
+    RegionPtr		exposed;	/* exposed regions, translated */
+    RegionPtr		borderExposed;
+    RegionPtr		borderVisible;
+    DDXPointRec		oldAbsCorner;
+} ValidateRec;
 
-	DrawableRec drawable;		/* screen and type */
+typedef union _PixUnion {
+    PixmapPtr		pixmap;
+    unsigned long	pixel;
+} PixUnion;
 
-	VisualID visual;
+#define SamePixUnion(a,b,isPixel)\
+    ((isPixel) ? (a).pixel == (b).pixel : (a).pixmap == (b).pixmap)
 
-	struct _Window *parent;	        /* Other windows it contains */
-	struct _Window *nextSib;	        /* Other windows it contains */
-	struct _Window *prevSib;	        /* (linked two ways) */
-	struct _Window *firstChild;	/* top-most window this contains */
-	struct _Window *lastChild;	/* bottom-most window it contains */
+#define SameBackground(as, a, bs, b)				\
+    ((as) == (bs) && ((as) == None ||				\
+		      (as) == ParentRelative ||			\
+ 		      SamePixUnion(a,b,as == BackgroundPixel)))
 
-	CursorPtr cursor;                 /* cursor information */
+#define SameBorder(as, a, bs, b)				\
+    ((as) == (bs) && (SamePixUnion (a, b, as)))
 
-	ClientPtr client;		/* client object for creator */
-	Window wid;                        /* client's name for this window */
+typedef struct _WindowFuncs {
+    void	(* PaintWindowBackground)();
+    void	(* PaintWindowBorder)();
+    void	(* CopyWindow)();
+    void	(* ClearToBackground)();
+    DevUnion	devPrivate;
+} WindowFuncs;
 
-	RegionPtr clipList;               /* clipping rectangle for output*/
-	RegionPtr winSize;                /* inside window dimensions, 
-					  clipped to parent */
-	RegionPtr borderClip;             /* NotClippedByChildren clip + border*/
-	RegionPtr borderSize;             /* window + border, clip to parent */
-        RegionPtr exposed;                /* list of exposed regions, 
-					  translated.  After ValidateTree,
-					  draw background in exposed and 
-					  send translated regions to client */
-	
-	RegionPtr borderExposed;
-	xRectangle clientWinSize;       /* x,y, w,h of unobscured window 
-					  relative to parent */
-	DDXPointRec  absCorner;
-	DDXPointRec  oldAbsCorner;      /* used in ValidateTree */
-	int class;                    /* InputOutput, InputOnly */
-	Mask eventMask;
-	Mask dontPropagateMask;
-	Mask allEventMasks;
-	Mask deliverableEvents;
-	pointer otherClients;		/* defined in input.h */
-	pointer passiveGrabs;		/* define in input.h */
+typedef struct _WindowOpt   *WindowOptPtr;
 
-	PropertyPtr userProps;            /* client's property list */
-
-	XID nolongerused; /* XXX still here for ddx binary compatibility */
-	PixmapPtr backgroundTile;
-	unsigned long backgroundPixel;
-	PixmapPtr borderTile;
-	unsigned long borderPixel;
-	int borderWidth;
-        void (* PaintWindowBackground)();
-        void (* PaintWindowBorder)();
-	void (* CopyWindow)();
-	void (* ClearToBackground)();
-
-	unsigned long backingBitPlanes;
-	unsigned long backingPixel;
-	int  backingStore;           /* no, whenMapped, always */
-	BackingStorePtr backStorage;
-
-	char  bitGravity;
-        char  winGravity;
-	Colormap colormap;
-		
-            /* bits for accelerator information */            
-                     
-	Bool	saveUnder:1;
-        unsigned  visibility:2;		      
-	unsigned mapped:1;
-	unsigned realized:1;            /* ancestors are all mapped */
-	unsigned viewable:1;            /* realized && InputOutput */
-	unsigned overrideRedirect:1;
-	unsigned marked:1;
-
-	pointer devBackingStore;		/* optional */
-	pointer devPrivate;			/* dix never looks at this */
+typedef struct _WindowOpt {
+    VisualID		visual;		   /* default: same as parent */
+    CursorPtr		cursor;		   /* default: window.cursorNone */
+    Colormap		colormap;	   /* default: same as parent */
+    Mask		dontPropagateMask; /* default: 0 */
+    Mask		otherEventMasks;   /* default: 0 */
+    struct _OtherClients *otherClients;	   /* default: NULL */
+    struct _GrabRec	*passiveGrabs;	   /* default: NULL */
+    PropertyPtr		userProps;	   /* default: NULL */
+    unsigned long	backingBitPlanes;  /* default: ~0L */
+    unsigned long	backingPixel;	   /* default: 0 */
 #ifdef SHAPE
-	RegionPtr boundingShape;	/* window relative bounding shape */
-	RegionPtr clipShape;		/* window relative inner shape */
+    RegionPtr		boundingShape;	   /* default: NULL */
+    RegionPtr		clipShape;	   /* default: NULL */
 #endif
+} WindowOptRec;
+
+#define BackgroundPixel	    2L
+#define BackgroundPixmap    3L
+
+typedef struct _Window {
+    DrawableRec		drawable;
+    WindowPtr		parent;		/* ancestor chain */
+    WindowPtr		nextSib;	/* next lower sibling */
+    WindowPtr		prevSib;	/* next higher sibling */
+    WindowPtr		firstChild;	/* top-most child */
+    WindowPtr		lastChild;	/* bottom-most child */
+    RegionPtr		clipList;	/* clipping rectangle for output */
+    RegionPtr		borderClip;	/* NotClippedByChildren + border */
+
+    /*
+     * these will eventually change
+     */
+#ifdef NOTDEF
+    ValidateRec		*valdata;
+#else
+    RegionPtr		winSize;
+    RegionPtr		borderSize;
+    RegionPtr		exposed;
+    RegionPtr		borderExposed;
+    DDXPointRec		oldAbsCorner;
+#endif
+
+    DDXPointRec		origin;		/* position relative to parent */
+    unsigned short	borderWidth;
+    unsigned short	deliverableEvents;
+    Mask		eventMask;
+    PixUnion		background;
+    PixUnion		border;
+    WindowFuncs		*funcs;
+    BackingStorePtr	backStorage;
+    WindowOptPtr	optional;
+    unsigned		backgroundState:2; /* None, Relative, Pixel, Pixmap */
+    unsigned		borderIsPixel:1;
+    unsigned		cursorIsNone:1;	/* else same as parent */
+    unsigned		backingStore:2;
+    unsigned		saveUnder:1;
+    unsigned		DIXsaveUnder:1;
+    unsigned		bitGravity:4;
+    unsigned		winGravity:4;
+    unsigned		overrideRedirect:1;
+    unsigned		visibility:2;
+    unsigned		mapped:1;
+    unsigned		realized:1;	/* ancestors are all mapped */
+    unsigned		viewable:1;	/* realized && InputOutput */
+    unsigned		marked:1;
+    DevUnion		*devPrivates;
 } WindowRec;
+
+/*
+ * Ok, a bunch of macros for accessing the optional record
+ * fields (or filling the appropriate default value)
+ */
+
+extern WindowPtr    FindWindowWithOptional();
+
+#define wTrackParent(w,field)	((w)->optional ? \
+				    w->optional->field \
+ 				 : FindWindowWithOptional(w)->optional->field)
+#define wUseDefault(w,field,def)	((w)->optional ? \
+				    w->optional->field \
+				 : def)
+
+#define wVisual(w)		wTrackParent(w, visual)
+#define wCursor(w)		((w)->cursorIsNone ? None : wTrackParent(w, cursor))
+#define wColormap(w)		wTrackParent(w, colormap)
+#define wDontPropagateMask(w)	wUseDefault(w, dontPropagateMask, 0)
+#define wOtherEventMasks(w)	wUseDefault(w, otherEventMasks, 0)
+#define wOtherClients(w)	wUseDefault(w, otherClients, NULL)
+#define wPassiveGrabs(w)	wUseDefault(w, passiveGrabs, NULL)
+#define wUserProps(w)		wUseDefault(w, userProps, NULL)
+#define wBackingBitPlanes(w)	wUseDefault(w, backingBitPlanes, ~0L)
+#define wBackingPixel(w)	wUseDefault(w, backingPixel, 0)
+#ifdef SHAPE
+#define wBoundingShape(w)	wUseDefault(w, boundingShape, NULL)
+#define wClipShape(w)		wUseDefault(w, clipShape, NULL)
+#endif
+#define wClient(w)		(clients[CLIENT_ID((w)->drawable.id)])
+#define wBorderWidth(w)		((int) (w)->borderWidth)
 
 /* true when w needs a border drawn. */
 
 #ifdef SHAPE
-#define HasBorder(w)	((w)->borderWidth || (w)->clipShape)
+#define HasBorder(w)	((w)->borderWidth || wClipShape(w))
 #else
 #define HasBorder(w)	((w)->borderWidth)
 #endif
@@ -160,6 +217,7 @@ extern int MapSubwindow();
 extern int UnmapWindow();
 extern int UnmapSubwindow();
 extern RegionPtr NotClippedByChildren();
+extern void SendVisibilityNotify();
 
 #endif /* WINDOWSTRUCT_H */
 

@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 1.190 89/05/01 18:33:15 rws Exp $ */
+/* $XConsortium: events.c,v 1.191 89/05/19 08:55:50 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -73,7 +73,7 @@ extern void SetCriticalOutputPending();
 		(AllButtonsMask & state) | buttonMotionMask)
 
 
-#define WID(w) ((w) ? ((w)->wid) : 0)
+#define WID(w) ((w) ? ((w)->drawable.id) : 0)
 
 #define IsOn(ptr, bit) \
 	(((BYTE *) (ptr))[(bit)>>3] & (1 << ((bit) & 7)))
@@ -366,7 +366,7 @@ CheckVirtualMotion(qe, pWin)
 	else if (sprite.hot.y >= lims.y2)
 	    sprite.hot.y = lims.y2 - 1;
 #ifdef SHAPE
-	if (pWin->boundingShape)
+	if (wBoundingShape(pWin))
 	    ConfineToShape(pWin->borderSize, &sprite.hot.x, &sprite.hot.y);
 #endif
 	if (qe)
@@ -395,7 +395,7 @@ ConfineCursorToWindow(pWin, generateEvents)
     {
 	sprite.hotLimits = *(* pScreen->RegionExtents)(pWin->borderSize);
 #ifdef SHAPE
-	sprite.hotShape = pWin->boundingShape ? pWin->borderSize : NullRegion;
+	sprite.hotShape = wBoundingShape(pWin) ? pWin->borderSize : NullRegion;
 #endif
 	CheckPhysLimits(sprite.current, generateEvents, pScreen);
 	(* pScreen->ConstrainCursor)(pScreen, &sprite.physLimits);
@@ -458,9 +458,9 @@ PostNewCursor()
     else
 	win = sprite.win;
     for (; win; win = win->parent)
-	if (win->cursor != NullCursor)
+	if (win->optional && win->optional->cursor != NullCursor)
 	{
-	    ChangeToCursor(win->cursor);
+	    ChangeToCursor(win->optional->cursor);
 	    return;
 	}
 }
@@ -964,21 +964,22 @@ DeliverEventsToWindow(pWin, pEvents, count, filter, grab)
 		              this mask is the mask of the grab. */
 
 /* if nobody ever wants to see this event, skip some work */
-    if ((filter != CantBeFiltered) && !(pWin->allEventMasks & filter))
+    if (filter != CantBeFiltered &&
+	!((wOtherEventMasks(pWin)|pWin->eventMask) & filter))
 	return 0;
     if (attempt = TryClientEvents(
-	pWin->client, pEvents, count, pWin->eventMask, filter, grab))
+	wClient(pWin), pEvents, count, pWin->eventMask, filter, grab))
     {
 	if (attempt > 0)
 	{
 	    deliveries++;
-	    client = pWin->client;
+	    client = wClient(pWin);
 	    deliveryMask = pWin->eventMask;
 	} else
 	    nondeliveries--;
     }
     if (filter != CantBeFiltered) /* CantBeFiltered means only window owner gets the event */
-	for (other = OTHERCLIENTS(pWin); other; other = other->next)
+	for (other = wOtherClients(pWin); other; other = other->next)
 	{
 	    if (attempt = TryClientEvents(
 		  other->client, pEvents, count, other->mask, filter, grab))
@@ -1030,12 +1031,12 @@ MaybeDeliverEventsToClient(pWin, pEvents, count, filter, dontDeliverToMe)
 
     if (pWin->eventMask & filter)
     {
-        if (pWin->client == dontDeliverToMe)
+        if (wClient (pWin) == dontDeliverToMe)
 		return 0;
 	return TryClientEvents(
-	    pWin->client, pEvents, count, pWin->eventMask, filter, NullGrab);
+	    wClient(pWin), pEvents, count, pWin->eventMask, filter, NullGrab);
     }
-    for (other = OTHERCLIENTS(pWin); other; other = other->next)
+    for (other = wOtherClients(pWin); other; other = other->next)
 	if (other->mask & filter)
 	{
             if (other->client == dontDeliverToMe)
@@ -1075,22 +1076,22 @@ FixUpEventFromWindow(xE, pWin, child, calcChild)
 	    
 	    if (w->parent == pWin)
 	    {
-		child = w->wid;
+		child = w->drawable.id;
 		break;
             }
  	    w = w->parent;
         } 	    
     }
-    xE->u.keyButtonPointer.root = ROOT->wid;
-    xE->u.keyButtonPointer.event = pWin->wid;
+    xE->u.keyButtonPointer.root = ROOT->drawable.id;
+    xE->u.keyButtonPointer.event = pWin->drawable.id;
     if (sprite.hot.pScreen == pWin->drawable.pScreen)
     {
 	xE->u.keyButtonPointer.sameScreen = xTrue;
 	xE->u.keyButtonPointer.child = child;
 	xE->u.keyButtonPointer.eventX =
-	    xE->u.keyButtonPointer.rootX - pWin->absCorner.x;
+	    xE->u.keyButtonPointer.rootX - pWin->drawable.x;
 	xE->u.keyButtonPointer.eventY =
-	    xE->u.keyButtonPointer.rootY - pWin->absCorner.y;
+	    xE->u.keyButtonPointer.rootY - pWin->drawable.y;
     }
     else
     {
@@ -1118,7 +1119,7 @@ DeliverDeviceEvents(pWin, xE, grab, stopAt)
     deliveries = 0;
     while (pWin)
     {
-	if (pWin->allEventMasks & filter)
+	if ((wOtherEventMasks(pWin)|pWin->eventMask) & filter)
 	{
 	    FixUpEventFromWindow(xE, pWin, child, FALSE);
 	    deliveries = DeliverEventsToWindow(pWin, xE, 1, filter, grab);
@@ -1127,9 +1128,9 @@ DeliverDeviceEvents(pWin, xE, grab, stopAt)
 	}
 	if ((deliveries < 0) ||
 	    (pWin == stopAt) ||
-	    (filter & pWin->dontPropagateMask))
+	    (filter & wDontPropagateMask(pWin)))
 	    return 0;
-	child = pWin->wid;
+	child = pWin->drawable.id;
 	pWin = pWin->parent;
     }
     return 0;
@@ -1149,19 +1150,19 @@ DeliverEvents(pWin, xE, count, otherParent)
 	return 0;
     filter = filters[xE->u.u.type];
     if ((filter & SubstructureNotifyMask) && (xE->u.u.type != CreateNotify))
-	xE->u.destroyNotify.event = pWin->wid;
+	xE->u.destroyNotify.event = pWin->drawable.id;
     if (filter != StructureAndSubMask)
 	return DeliverEventsToWindow(pWin, xE, count, filter, NullGrab);
     deliveries = DeliverEventsToWindow(
 	    pWin, xE, count, StructureNotifyMask, NullGrab);
     if (pWin->parent)
     {
-	xE->u.destroyNotify.event = pWin->parent->wid;
+	xE->u.destroyNotify.event = pWin->parent->drawable.id;
 	deliveries += DeliverEventsToWindow(
 		pWin->parent, xE, count, SubstructureNotifyMask, NullGrab);
 	if (xE->u.u.type == ReparentNotify)
 	{
-	    xE->u.destroyNotify.event = otherParent->wid;
+	    xE->u.destroyNotify.event = otherParent->drawable.id;
 	    deliveries += DeliverEventsToWindow(
 		    otherParent, xE, count, SubstructureNotifyMask, NullGrab);
 	}
@@ -1183,18 +1184,18 @@ XYToWindow(x, y)
     while (pWin)
     {
 	if ((pWin->mapped) &&
-		(x >= pWin->absCorner.x - pWin->borderWidth) &&
-		(x < pWin->absCorner.x + (int)pWin->clientWinSize.width +
-		    pWin->borderWidth) &&
-		(y >= pWin->absCorner.y - pWin->borderWidth) &&
-		(y < pWin->absCorner.y + (int)pWin->clientWinSize.height +
-		    pWin->borderWidth)
+		(x >= pWin->drawable.x - wBorderWidth (pWin)) &&
+		(x < pWin->drawable.x + (int)pWin->drawable.width +
+		    wBorderWidth(pWin)) &&
+		(y >= pWin->drawable.y - wBorderWidth (pWin)) &&
+		(y < pWin->drawable.y + (int)pWin->drawable.height +
+		    wBorderWidth (pWin))
 #ifdef SHAPE
 		/* When a window is shaped, a further check
 		 * is made to see if the point is inside
 		 * borderSize
 		 */
-		&& (!pWin->boundingShape ||
+		&& (!wBoundingShape(pWin) ||
 		    (*pWin->drawable.pScreen->PointInRegion)
 			    (pWin->borderSize, x, y, &box))
 #endif
@@ -1208,8 +1209,8 @@ XYToWindow(x, y)
 		if (!spriteTrace)
 		    FatalError("could not realloc spriteTrace"); /* XXX */
 	    }
-	    spriteTrace[spriteTraceGood] = pWin;
-	    pWin = spriteTrace[spriteTraceGood++]->firstChild;
+	    spriteTrace[spriteTraceGood++] = pWin;
+	    pWin = pWin->firstChild;
 	}
 	else
 	    pWin = pWin->nextSib;
@@ -1293,14 +1294,14 @@ DefineInitialRootWindow(win)
     sprite.hotLimits.x2 = pScreen->width;
     sprite.hotLimits.y2 = pScreen->height;
     sprite.win = win;
-    sprite.current = win->cursor;
+    sprite.current = wCursor (win);
     spriteTraceGood = 1;
     ROOT = win;
     (*pScreen->CursorLimits) (
-	pScreen, win->cursor, &sprite.hotLimits, &sprite.physLimits);
+	pScreen, sprite.current, &sprite.hotLimits, &sprite.physLimits);
     (*pScreen->ConstrainCursor) (pScreen, &sprite.physLimits);
     (*pScreen->SetCursorPosition) (pScreen, sprite.hot.x, sprite.hot.y, FALSE);
-    (*pScreen->DisplayCursor) (pScreen, win->cursor);
+    (*pScreen->DisplayCursor) (pScreen, sprite.current);
 }
 
 /*
@@ -1354,8 +1355,8 @@ ProcWarpPointer(client)
         WindowPtr source = LookupWindow(stuff->srcWid, client);
 	if (!source)
 	    return BadWindow;
-	winX = source->absCorner.x;
-	winY = source->absCorner.y;
+	winX = source->drawable.x;
+	winY = source->drawable.y;
 	if ((x < (winX + stuff->srcX)) ||
 	    (y < (winY + stuff->srcY)) ||
 	    ((stuff->srcWidth != 0) &&
@@ -1367,8 +1368,8 @@ ProcWarpPointer(client)
     }
     if (dest)
     {
-	x = dest->absCorner.x;
-	y = dest->absCorner.y;
+	x = dest->drawable.x;
+	y = dest->drawable.y;
 	newScreen = dest->drawable.pScreen;
     }
     else
@@ -1428,7 +1429,7 @@ CheckPassiveGrabsOnWindow(pWin, device, xE, isKeyboard)
 					    & AllModifiersMask;
     temporaryGrab.modifiersDetail.pMask = NULL;
 
-    for (grab = PASSIVEGRABS(pWin); grab; grab = grab->next)
+    for (grab = wPassiveGrabs(pWin); grab; grab = grab->next)
     {
 	if (GrabMatchesSecond(&temporaryGrab, grab))
 	{
@@ -1756,17 +1757,20 @@ RecalculateDeliverableEvents(pWin)
     OtherClients * others;
     WindowPtr child;
 
-    pWin->allEventMasks = pWin->eventMask;
-    for (others = OTHERCLIENTS(pWin); others; others = others->next)
+    for (others = wOtherClients(pWin); others; others = others->next)
     {
-	pWin->allEventMasks |= others->mask;
+	if (others->mask) {
+	    if (!pWin->optional)
+		MakeWindowOptional (pWin);
+	    pWin->optional->otherEventMasks |= others->mask;
+	}
     }
     if (pWin->parent)
-	pWin->deliverableEvents = pWin->allEventMasks |
-	    (pWin->parent->deliverableEvents & ~pWin->dontPropagateMask &
+	pWin->deliverableEvents = (pWin->eventMask|wOtherEventMasks(pWin)) |
+	    (pWin->parent->deliverableEvents & ~wDontPropagateMask(pWin) &
 	     PropagateMask);
     else
-	pWin->deliverableEvents = pWin->allEventMasks;
+	pWin->deliverableEvents = pWin->eventMask|wOtherEventMasks(pWin);
     for (child = pWin->firstChild; child; child = child->nextSib)
 	RecalculateDeliverableEvents(child);
 }
@@ -1776,19 +1780,25 @@ OtherClientGone(pWin, id)
     WindowPtr pWin;
     XID   id;
 {
-    register OtherClientsPtr *next;
-    register OtherClientsPtr other;
+    register OtherClientsPtr other, prev;
 
-    for (next = (OtherClientsPtr *)&(pWin->otherClients);
-	 *next; next = &((*next)->next))
+    prev = 0;
+    for (other = wOtherClients(pWin); other; other = other->next)
     {
-	if ((other = *next)->resource == id)
+	if (other->resource == id)
 	{
-	    *next = other->next;
+	    if (prev)
+		prev->next = other->next;
+	    else
+	    {
+		if (!(pWin->optional->otherClients = other->next))
+		    CheckWindowOptionalNeed (pWin);
+	    }
 	    xfree(other);
 	    RecalculateDeliverableEvents(pWin);
 	    return(Success);
 	}
+	prev = other;
     }
     FatalError("client not on event list");
     /*NOTREACHED*/
@@ -1809,29 +1819,29 @@ EventSelectForWindow(pWin, client, mask)
 	return BadValue;
     }
     check = (mask & AtMostOneClient);
-    if (check & pWin->allEventMasks)
+    if (check & (pWin->eventMask|wOtherEventMasks(pWin)))
     {				       /* It is illegal for two different
 				          clients to select on any of the
 				          events for AtMostOneClient. However,
 				          it is OK, for some client to
 				          continue selecting on one of those
 				          events.  */
-	if ((pWin->client != client) && (check & pWin->eventMask))
+	if ((wClient(pWin) != client) && (check & pWin->eventMask))
 	    return BadAccess;
-	for (others = OTHERCLIENTS(pWin); others; others = others->next)
+	for (others = wOtherClients (pWin); others; others = others->next)
 	{
 	    if ((others->client != client) && (check & others->mask))
 		return BadAccess;
 	}
     }
-    if (pWin->client == client)
+    if (wClient (pWin) == client)
     {
 	check = pWin->eventMask;
 	pWin->eventMask = mask;
     }
     else
     {
-	for (others = OTHERCLIENTS(pWin); others; others = others->next)
+	for (others = wOtherClients (pWin); others; others = others->next)
 	{
 	    if (others->client == client)
 	    {
@@ -1853,8 +1863,10 @@ EventSelectForWindow(pWin, client, mask)
 	others->client = client;
 	others->mask = mask;
 	others->resource = FakeClientID(client->index);
-	others->next = OTHERCLIENTS(pWin);
-	pWin->otherClients = (pointer)others;
+	others->next = wOtherClients (pWin);
+	if (!pWin->optional)
+	    MakeWindowOptional (pWin);
+	pWin->optional->otherClients = others;
 	if (!AddResource(others->resource, RT_FAKE, (pointer)pWin,
 			 OtherClientGone, RC_CORE))
 	    return BadAlloc;
@@ -1881,7 +1893,16 @@ EventSuppressForWindow(pWin, client, mask)
 	client->errorValue = mask;
 	return BadValue;
     }
-    pWin->dontPropagateMask = mask;
+    if (mask == 0) {
+	if (pWin->optional) {
+	    pWin->optional->dontPropagateMask = mask;
+	    CheckWindowOptionalNeed (pWin);
+	}
+    } else {
+	if (!pWin->optional)
+	    MakeWindowOptional (pWin);
+        pWin->optional->dontPropagateMask = mask;
+    }
     RecalculateDeliverableEvents(pWin);
     return Success;
 }
@@ -1916,7 +1937,7 @@ EnterLeaveEvent(type, mode, detail, pWin)
     }
     else
     {
-	mask = pWin->allEventMasks;
+	mask = pWin->eventMask | wOtherEventMasks(pWin);
     }
     if (mask & filters[type])
     {
@@ -2037,9 +2058,9 @@ FocusEvent(type, mode, detail, pWin)
     event.u.focus.mode = mode;
     event.u.u.type = type;
     event.u.u.detail = detail;
-    event.u.focus.window = pWin->wid;
+    event.u.focus.window = pWin->drawable.id;
     (void)DeliverEventsToWindow(pWin, &event, 1, filters[type], NullGrab);
-    if ((type == FocusIn) && (pWin->allEventMasks & KeymapStateMask))
+    if ((type == FocusIn) && ((pWin->eventMask | wOtherEventMasks(pWin)) & KeymapStateMask))
     {
 	xKeymapEvent ke;
 	ke.type = KeymapNotify;
@@ -2290,7 +2311,7 @@ ProcGetInputFocus(client)
 	rep.focus = None;
     else if (focus->win == PointerRootWin)
 	rep.focus = PointerRoot;
-    else rep.focus = focus->win->wid;
+    else rep.focus = focus->win->drawable.id;
     rep.revertTo = focus->revert;
     WriteReplyToClient(client, sizeof(xGetInputFocusReply), &rep);
     return Success;
@@ -3686,18 +3707,18 @@ ProcGetMotionEvents(client)
 	/* XXX this needs a screen arg */
 	count = (*mouse->u.ptr.GetMotionProc) (
 		mouse, coords, start.milliseconds, stop.milliseconds);
-	xmin = pWin->absCorner.x - pWin->borderWidth;
-	xmax = pWin->absCorner.x + (int)pWin->clientWinSize.width +
-		pWin->borderWidth;
-	ymin = pWin->absCorner.y - pWin->borderWidth;
-	ymax = pWin->absCorner.y + (int)pWin->clientWinSize.height +
-		pWin->borderWidth;
+	xmin = pWin->drawable.x - wBorderWidth (pWin);
+	xmax = pWin->drawable.x + (int)pWin->drawable.width +
+		wBorderWidth (pWin);
+	ymin = pWin->drawable.y - wBorderWidth (pWin);
+	ymax = pWin->drawable.y + (int)pWin->drawable.height +
+		wBorderWidth (pWin);
 	for (i = 0; i < count; i++)
 	    if ((xmin <= coords[i].x) && (coords[i].x < xmax) &&
 		    (ymin <= coords[i].y) && (coords[i].y < ymax))
 	    {
-		coords[nEvents].x = coords[i].x - pWin->absCorner.x;
-		coords[nEvents].y = coords[i].y - pWin->absCorner.y;
+		coords[nEvents].x = coords[i].x - pWin->drawable.x;
+		coords[nEvents].y = coords[i].y - pWin->drawable.y;
 		nEvents++;
 	    }
     }
@@ -3732,19 +3753,19 @@ ProcQueryPointer(client)
     rep.sequenceNumber = client->sequence;
     rep.mask = keyButtonState;
     rep.length = 0;
-    rep.root = (ROOT)->wid;
+    rep.root = (ROOT)->drawable.id;
     rep.rootX = sprite.hot.x;
     rep.rootY = sprite.hot.y;
     rep.child = None;
     if (sprite.hot.pScreen == pWin->drawable.pScreen)
     {
 	rep.sameScreen = xTrue;
-	rep.winX = sprite.hot.x - pWin->absCorner.x;
-	rep.winY = sprite.hot.y - pWin->absCorner.y;
+	rep.winX = sprite.hot.x - pWin->drawable.x;
+	rep.winY = sprite.hot.y - pWin->drawable.y;
 	for (t = sprite.win; t; t = t->parent)
 	    if (t->parent == pWin)
 	    {
-		rep.child = t->wid;
+		rep.child = t->drawable.id;
 		break;
 	    }
     }
@@ -3847,7 +3868,7 @@ ProcSendEvent(client)
 		return Success;
 	    if (pWin == effectiveFocus)
 		return Success;
-	    stuff->eventMask &= ~pWin->dontPropagateMask;
+	    stuff->eventMask &= ~wDontPropagateMask(pWin);
 	}
     }
     else
@@ -4108,9 +4129,9 @@ DeleteWindowFromAnyEvents(pWin, freeResources)
 
     if (freeResources)
     {
-	while (oc = OTHERCLIENTS(pWin))
+	while (oc = wOtherClients(pWin))
 	    FreeResource(oc->resource, RC_NONE);
-	while (passive = PASSIVEGRABS(pWin))
+	while (passive = wPassiveGrabs(pWin))
 	    FreeResource(passive->resource, RC_NONE);
      }
 }
@@ -4136,15 +4157,15 @@ CheckCursorConfinement(pWin)
 }
 
 Mask
-EventMaskForClient(win, client)
-    WindowPtr		win;
+EventMaskForClient(pWin, client)
+    WindowPtr		pWin;
     ClientPtr		client;
 {
     register OtherClientsPtr	other;
 
-    if (win->client == client)
-	return win->eventMask;
-    for (other = OTHERCLIENTS(win); other; other = other->next)
+    if (wClient (pWin) == client)
+	return pWin->eventMask;
+    for (other = wOtherClients(pWin); other; other = other->next)
     {
 	if (other->client == client)
 	    return other->mask;

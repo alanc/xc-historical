@@ -1,4 +1,4 @@
-/* $XConsortium: grabs.c,v 1.9 89/03/16 15:42:21 rws Exp $ */
+/* $XConsortium: grabs.c,v 1.10 89/03/16 20:19:28 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -97,18 +97,22 @@ DeletePassiveGrab(pGrab, id)
     GrabPtr pGrab;
     XID   id;
 {
-    register GrabPtr *next;
+    register GrabPtr g, prev;
 
     /* it is OK if the grab isn't found */
-    for (next = (GrabPtr *)&(pGrab->window->passiveGrabs);
-	 *next;
-	 next = &((*next)->next))
+    prev = 0;
+    for (g = (wPassiveGrabs (pGrab->window)); g; g = g->next)
     {
-	if (pGrab == *next)
+	if (pGrab == g)
 	{
-	    *next = pGrab->next;
+	    if (prev)
+		prev->next = g->next;
+	    else
+		if (!(pGrab->window->optional->passiveGrabs = g->next))
+		    CheckWindowOptionalNeed (pGrab->window);
 	    break;
 	}
+	prev = g;
     }
     FreeGrab(pGrab);
 }
@@ -238,7 +242,7 @@ AddPassiveGrabToList(pGrab)
 {
     GrabPtr grab;
 
-    for (grab = PASSIVEGRABS(pGrab->window); grab; grab = grab->next)
+    for (grab = wPassiveGrabs(pGrab->window); grab; grab = grab->next)
     {
 	if (GrabMatchesSecond(pGrab, grab))
 	{
@@ -250,8 +254,10 @@ AddPassiveGrabToList(pGrab)
 	}
     }
 
-    pGrab->next = PASSIVEGRABS(pGrab->window);
-    pGrab->window->passiveGrabs = (pointer)pGrab;
+    pGrab->next = wPassiveGrabs (pGrab->window);
+    if (!pGrab->window->optional)
+	MakeWindowOptional (pGrab->window);
+    pGrab->window->optional->passiveGrabs = pGrab;
     if (AddResource(pGrab->resource, RT_FAKE, (pointer)pGrab,
 		    DeletePassiveGrab, RC_CORE))
 	return Success;
@@ -279,7 +285,7 @@ DeletePassiveGrabFromList(pMinuendGrab)
 	  updates[nups++] = &(mask)
 
     i = 0;
-    for (grab = PASSIVEGRABS(pMinuendGrab->window); grab; grab = grab->next)
+    for (grab = wPassiveGrabs(pMinuendGrab->window); grab; grab = grab->next)
 	i++;
     deletes = (GrabPtr *)ALLOCATE_LOCAL(i * sizeof(GrabPtr));
     adds = (GrabPtr *)ALLOCATE_LOCAL(i * sizeof(GrabPtr));
@@ -295,7 +301,7 @@ DeletePassiveGrabFromList(pMinuendGrab)
     }
     ndels = nadds = nups = 0;
     ok = TRUE;
-    for (grab = PASSIVEGRABS(pMinuendGrab->window);
+    for (grab = wPassiveGrabs(pMinuendGrab->window);
 	 grab && ok;
 	 grab = grab->next)
     {
@@ -371,8 +377,10 @@ DeletePassiveGrabFromList(pMinuendGrab)
 	for (i = 0; i < nadds; i++)
 	{
 	    grab = adds[i];
-	    grab->next = PASSIVEGRABS(grab->window);
-	    grab->window->passiveGrabs = (pointer)grab;
+	    grab->next = wPassiveGrabs(grab->window);
+	    if (!grab->window->optional)
+		MakeWindowOptional (grab->window);
+	    grab->window->optional->passiveGrabs = grab;
 	}
 	for (i = 0; i < nups; i++)
 	{

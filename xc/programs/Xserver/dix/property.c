@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: property.c,v 1.67 89/03/23 09:23:30 rws Exp $ */
+/* $XConsortium: property.c,v 1.68 89/05/19 08:56:24 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -104,7 +104,7 @@ ProcRotateProperties(client)
                 DEALLOCATE_LOCAL(props);
                 return BadMatch;
             }
-        pProp = pWin->userProps;
+        pProp = wUserProps (pWin);
         while (pProp)
         {
             if (pProp->propertyName == atoms[i])
@@ -131,7 +131,7 @@ found:
 		is changed in the order in which they appear in the request. */
  
  	    event.u.u.type = PropertyNotify;
-            event.u.property.window = pWin->wid;
+            event.u.property.window = pWin->drawable.id;
     	    event.u.property.state = PropertyNewValue;
 	    event.u.property.atom = props[i]->propertyName;	
 	    event.u.property.time = currentTime.milliseconds;
@@ -192,7 +192,7 @@ ProcChangeProperty(client)
 
     /* first see if property already exists */
 
-    pProp = pWin->userProps;
+    pProp = wUserProps (pWin);
     while (pProp)
     {
 	if (pProp->propertyName ==stuff->property) 
@@ -217,8 +217,10 @@ ProcChangeProperty(client)
 	if (len)
 	    bcopy((char *)&stuff[1], (char *)data, (int)(len * sizeInBytes));
 	pProp->size = len;
-        pProp->next = pWin->userProps;
-        pWin->userProps = pProp;
+        pProp->next = wUserProps (pWin);
+	if (!pWin->optional)
+	    MakeWindowOptional (pWin);
+        pWin->optional->userProps = pProp;
     }
     else
     {
@@ -275,7 +277,7 @@ ProcChangeProperty(client)
 	}
     }
     event.u.u.type = PropertyNotify;
-    event.u.property.window = pWin->wid;
+    event.u.property.window = pWin->drawable.id;
     event.u.property.state = PropertyNewValue;
     event.u.property.atom = pProp->propertyName;
     event.u.property.time = currentTime.milliseconds;
@@ -291,7 +293,7 @@ DeleteProperty(pWin, propName)
     PropertyPtr pProp, prevProp;
     xEvent event;
 
-    if (!(pProp = pWin->userProps))
+    if (!(pProp = wUserProps (pWin)))
 	return(Success);
     prevProp = (PropertyPtr)NULL;
     while (pProp)
@@ -305,7 +307,8 @@ DeleteProperty(pWin, propName)
     {		    
         if (prevProp == (PropertyPtr)NULL)      /* takes care of head */
         {
-            pWin->userProps = pProp->next;
+            if (!(pWin->optional->userProps = pProp->next))
+		CheckWindowOptionalNeed (pWin);
         }
 	else
         {
@@ -315,7 +318,7 @@ DeleteProperty(pWin, propName)
         xfree(pProp);
 
 	event.u.u.type = PropertyNotify;
-	event.u.property.window = pWin->wid;
+	event.u.property.window = pWin->drawable.id;
 	event.u.property.state = PropertyDelete;
         event.u.property.atom = pProp->propertyName;
 	event.u.property.time = currentTime.milliseconds;
@@ -330,11 +333,11 @@ DeleteAllWindowProperties(pWin)
     PropertyPtr pProp, pNextProp;
     xEvent event;
 
-    pProp = pWin->userProps;
+    pProp = wUserProps (pWin);
     while (pProp)
     {
 	event.u.u.type = PropertyNotify;
-	event.u.property.window = pWin->wid;
+	event.u.property.window = pWin->drawable.id;
 	event.u.property.state = PropertyDelete;
 	event.u.property.atom = pProp->propertyName;
 	event.u.property.time = currentTime.milliseconds;
@@ -384,7 +387,7 @@ ProcGetProperty(client)
 	}
 	if ((stuff->type == AnyPropertyType) || ValidAtom(stuff->type))
 	{
-	    pProp = pWin->userProps;
+	    pProp = wUserProps (pWin);
             prevProp = (PropertyPtr)NULL;
             while (pProp)
             {
@@ -451,13 +454,16 @@ ProcGetProperty(client)
 		    xEvent event;
 		
                     if (prevProp == (PropertyPtr)NULL) /* takes care of head */
-                        pWin->userProps = pProp->next;
+		    {
+                        if (!(pWin->optional->userProps = pProp->next))
+			    CheckWindowOptionalNeed (pWin);
+		    }
 	            else
                         prevProp->next = pProp->next;
 		    xfree(pProp->data);
                     xfree(pProp);
 		    event.u.u.type = PropertyNotify;
-		    event.u.property.window = pWin->wid;
+		    event.u.property.window = pWin->drawable.id;
 		    event.u.property.state = PropertyDelete;
 		    event.u.property.atom = pProp->propertyName;
 		    event.u.property.time = currentTime.milliseconds;
@@ -502,7 +508,7 @@ ProcListProperties(client)
     if (!pWin)
         return(BadWindow);
 
-    pProp = pWin->userProps;
+    pProp = wUserProps (pWin);
     while (pProp)
     {        
         pProp = pProp->next;
@@ -516,7 +522,7 @@ ProcListProperties(client)
     xlpr.nProperties = numProps;
     xlpr.length = (numProps * sizeof(Atom)) >> 2;
     xlpr.sequenceNumber = client->sequence;
-    pProp = pWin->userProps;
+    pProp = wUserProps (pWin);
     temppAtoms = pAtoms;
     while (pProp)
     {
