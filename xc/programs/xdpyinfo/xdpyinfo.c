@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xdpyinfo.c,v 1.27 94/01/22 18:01:06 rws Exp $
+ * $XConsortium: xdpyinfo.c,v 1.28 94/04/17 20:25:18 rws Exp $
  * 
  * xdpyinfo - print information about X display connecton
  *
@@ -37,11 +37,11 @@ in this Software without prior written authorization from the X Consortium.
 #include <stdio.h>
 
 char *ProgramName;
-
+Bool queryExtensions = False;
 
 static void usage ()
 {
-    fprintf (stderr, "usage:  %s [-display displayname]\n",
+    fprintf (stderr, "usage:  %s [-display displayname] [-queryExtensions]\n",
 	     ProgramName);
     exit (1);
 }
@@ -60,18 +60,15 @@ main (argc, argv)
 
     for (i = 1; i < argc; i++) {
 	char *arg = argv[i];
-
-	if (arg[0] == '-') {
-	    switch (arg[1]) {
-	      case 'd':
-		if (++i >= argc) usage ();
-		displayname = argv[i];
-		continue;
-	      default:
-		usage ();
-	    }
+	int len = strlen(arg);
+	
+	if (!strncmp("-display", arg, len)) {
+	    if (++i >= argc) usage ();
+	    displayname = argv[i];
+	} else if (!strncmp("-queryExtensions", arg, len)) {
+	    queryExtensions = True;
 	} else
-	  usage ();
+	    usage ();
     }
 
     dpy = XOpenDisplay (displayname);
@@ -211,6 +208,10 @@ print_extension_info (dpy)
 
 	qsort(extlist, n, sizeof(char *), StrCmp);
 	for (i = 0; i < n; i++) {
+	    if (!queryExtensions) {
+		printf ("    %s\n", extlist[i]);
+		continue;
+	    }
 	    XQueryExtension(dpy, extlist[i], &opcode, &event, &error);
 	    printf ("    %s  (opcode: %d", extlist[i], opcode);
 	    if (event)
