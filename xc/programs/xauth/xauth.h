@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.11 88/12/11 18:05:09 jim Exp $
+ * $XConsortium: xauth.h,v 1.8 88/12/11 19:12:21 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -38,7 +38,7 @@ extern char *ProgramName;
 extern char *copystring(), *malloc(), *realloc();
 int process_command(), auth_initialize(), auth_finalize();
 extern void print_help();
-extern Bool verbose;
+extern int verbose;
 extern Bool ignore_locks;
 extern Bool break_locks;
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.11 88/12/11 18:05:09 jim Exp $
+ * $XConsortium: xauth.c,v 1.12 88/12/11 19:12:33 jim Exp $
  *
  * xauth - manipulate authorization file
  *
@@ -32,7 +32,7 @@
  * global data
  */
 char *ProgramName;			/* argv[0], set at top of main() */
-Bool verbose = True;			/* print certain messages */
+int verbose = -1;			/* print certain messages */
 Bool ignore_locks = False;		/* for error recovery */
 Bool break_locks = False;		/* for error recovery */
 
@@ -56,7 +56,8 @@ void print_help (printall)
 "",
 "where options include:",
 "    -f authfilename           name of authority file to use",
-"    -q                        print no unsolicited messages",
+"    -v                        turn on extra messages",
+"    -q                        turn off extra messages",
 "    -i                        ignore locks on authority file",
 "    -b                        break locks on authority file",
 "",
@@ -123,17 +124,20 @@ main (argc, argv)
 
 	    for (flag = (arg + 1); *flag; flag++) {
 		switch (*flag) {
-		  case 'f':			/* -f authfilename */
+		  case 'f':		/* -f authfilename */
 		    if (++i >= argc) usage ();
 		    authfilename = argv[i];
 		    continue;
-		  case 'q':			/* -q */
-		    verbose = False;
+		  case 'v':		/* -v */
+		    verbose = 1;
 		    continue;
-		  case 'b':			/* -b */
+		  case 'q':		/* -q */
+		    verbose = 0;
+		    continue;
+		  case 'b':		/* -b */
 		    break_locks = True;
 		    continue;
-		  case 'i':			/* -i */
+		  case 'i':		/* -i */
 		    ignore_locks = True;
 		    continue;
 		  default:
@@ -144,8 +148,13 @@ main (argc, argv)
 	    sourcename = "(argv)";
 	    nargs = argc - i;
 	    arglist = argv + i;
+	    if (verbose == -1) verbose = 0;
 	    break;
 	}
+    }
+
+    if (verbose == -1) {		/* set default, don't junk stdout */
+	verbose = (isatty(fileno(stdout)) != 0);
     }
 
     if (!authfilename) {
