@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: Xproto.h,v 1.80 88/09/15 18:15:38 jim Exp $
+ *	$XConsortium: Xproto.h,v 1.81 88/10/22 10:15:49 jim Exp $
  */
 
 /* Definitions for the X window system used by server and c bindings */
@@ -297,7 +297,11 @@ typedef struct {
 
 typedef struct {
     VisualID visualID B32;
+#if defined(__cplusplus) || defined(c_plusplus)
+    CARD8 c_class;
+#else
     CARD8 class;
+#endif
     CARD8 bitsPerRGB;
     CARD16 colormapEntries B16;
     CARD32 redMask B32, greenMask B32, blueMask B32;
@@ -408,7 +412,11 @@ typedef struct {
     CARD16 sequenceNumber B16;
     CARD32 length B32;	/* NOT 0; this is an extra-large reply */
     VisualID visualID B32;
+#if defined(__cplusplus) || defined(c_plusplus)
+    CARD16 c_class B16;
+#else
     CARD16 class B16;
+#endif
     CARD8 bitGravity;
     CARD8 winGravity;
     CARD32 backingBitPlanes B32;
@@ -1139,7 +1147,11 @@ typedef struct {
             CARD32 pad00 B32;
 	    Window window B32;
 	    Colormap colormap B32;
-	    BOOL new;		
+#if defined(__cplusplus) || defined(c_plusplus)
+	    BOOL c_new;
+#else
+	    BOOL new;
+#endif
 	    BYTE state;			/* Installed or UnInstalled */
 	    BYTE pad1, pad2;
 	} colormap;
@@ -1286,7 +1298,11 @@ typedef struct {
     Window wid B32, parent B32;
     INT16 x B16, y B16;
     CARD16 width B16, height B16, borderWidth B16;  
+#if defined(__cplusplus) || defined(c_plusplus)
+    CARD16 c_class B16;
+#else
     CARD16 class B16;
+#endif
     VisualID visual B32;
     CARD32 mask B32;
 } xCreateWindowReq;
@@ -1359,7 +1375,11 @@ typedef struct {
 
 typedef struct {
     CARD8 reqType;
+#if defined(__cplusplus) || defined(c_plusplus)
+    BOOL c_delete;
+#else
     BOOL delete;
+#endif
     CARD16 length B16;
     Window window B32;
     Atom property B32, type B32;
@@ -1845,7 +1865,11 @@ typedef struct {
 
 typedef struct {
     CARD8 reqType;
+#if defined(__cplusplus) || defined(c_plusplus)
+    CARD8 c_class;
+#else
     CARD8 class;
+#endif
     CARD16 length B16;
     Drawable drawable B32;
     CARD16 width B16, height B16;
