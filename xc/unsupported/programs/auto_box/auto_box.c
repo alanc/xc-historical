@@ -1,4 +1,4 @@
-/* $XConsortium: auto_box.c,v 5.1 91/02/16 09:32:45 rws Exp $ */
+/* $XConsortium: auto_box.c,v 5.2 91/04/01 17:26:32 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -29,7 +29,7 @@ SOFTWARE.
 #include <math.h>
 
 #ifndef M_PI
-#define M_PI  4 * atan( 1.0);
+#define M_PI  3.14159265358979323846
 #endif /* M_PI */
 
 
