@@ -181,7 +181,11 @@
 (define-accessor font (32)
   ((index &optional (buffer *buffer*))
    `(lookup-font ,buffer (read-card29 ,index)))
-  ((index thing) `(write-card29 ,index (font-id ,thing))))
+  ;; The FONT-ID accessor may make a OpenFont request.  Since we don't support recursive
+  ;; with-buffer-request, issue a compile time error, rather than barf at run-time.
+  ((index thing)
+   (declare (ignore index thing))
+   (error "FONT-ID must be called OUTSIDE with-buffer-request.  Use RESOURCE-ID instead.")))
 
 ;; Needed to get and put xatom's in events
 (define-accessor keyword (32)
@@ -217,11 +221,15 @@
 	(and (< ,value ,(length keywords))
 	     (svref ',(apply #'vector keywords) ,value)))))
   ((index thing &rest keywords)
-   `(write-card8 ,index (position ,thing (the simple-vector ',(apply #'vector keywords))
+   `(write-card8 ,index (position ,thing
+				  #+lispm ',keywords ;; Lispm's prefer lists
+				  #-lispm (the simple-vector ',(apply #'vector keywords))
 				  :test #'eq)))
   ((index thing &rest keywords)
    (let ((value (gensym)))
-     `(let ((,value (position ,thing (the simple-vector ',(apply #'vector keywords))
+     `(let ((,value (position ,thing
+			      #+lispm ',keywords
+			      #-lispm (the simple-vector ',(apply #'vector keywords))
 			      :test #'eq)))
 	(and ,value (write-card8 ,index ,value))))))
 
@@ -232,11 +240,15 @@
 	(and (< ,value ,(length keywords))
 	     (svref ',(apply #'vector keywords) ,value)))))
   ((index thing &rest keywords)
-   `(write-card16 ,index (position ,thing (the simple-vector ',(apply #'vector keywords))
+   `(write-card16 ,index (position ,thing
+				   #+lispm ',keywords ;; Lispm's prefer lists
+				   #-lispm (the simple-vector ',(apply #'vector keywords))
 				   :test #'eq)))
   ((index thing &rest keywords)
    (let ((value (gensym)))
-     `(let ((,value (position ,thing (the simple-vector ',(apply #'vector keywords))
+     `(let ((,value (position ,thing
+			      #+lispm ',keywords
+			      #-lispm (the simple-vector ',(apply #'vector keywords))
 			      :test #'eq)))
 	(and ,value (write-card16 ,index ,value))))))
 
@@ -247,12 +259,16 @@
 	(and (< ,value ,(length keywords))
 	     (svref ',(apply #'vector keywords) ,value)))))
   ((index thing &rest keywords)
-   `(write-card29 ,index (position ,thing (the simple-vector ',(apply #'vector keywords))
+   `(write-card29 ,index (position ,thing
+				   #+lispm ',keywords ;; Lispm's prefer lists
+				   #-lispm (the simple-vector ',(apply #'vector keywords))
 				   :test #'eq)))
   ((index thing &rest keywords)
    (if (cdr keywords) ;; IF more than one
        (let ((value (gensym)))
-	 `(let ((,value (position ,thing (the simple-vector ',(apply #'vector keywords))
+	 `(let ((,value (position ,thing
+				   #+lispm ',keywords
+				   #-lispm (the simple-vector ',(apply #'vector keywords))
 				  :test #'eq)))
 	    (and ,value (write-card29 ,index ,value))))
      `(and (eq ,thing ,(car keywords)) (write-card29 ,index 0)))))
@@ -314,8 +330,8 @@
   ;; REAL-INDEX parameter provided so the default index can be over-ridden.
   ;; This is needed for the :keymap-notify event where the keymap overlaps
   ;; the window id.
-  ((index &optional (real-index index) (buffer *buffer*))
-   `(read-bitvector256 ,buffer ,real-index))
+  ((index &optional (real-index index) data)
+   `(read-bitvector256 buffer-bbuf ,real-index ,data))
   ((index map &optional (real-index index) (buffer *buffer*))
    `(write-bitvector256 ,buffer ,real-index ,map)))
    
