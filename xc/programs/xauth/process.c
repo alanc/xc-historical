@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.15 88/12/12 14:36:02 jim Exp $
+ * $XConsortium: process.c,v 1.16 88/12/12 14:59:08 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -1215,7 +1215,7 @@ static int do_merge (inputfilename, lineno, argc, argv)
      */
     if (listhead) {
 	nentries = merge_entries (&xauth_head, listhead);
-	printf ("%d new entries read in.\n", nentries);
+	if (verbose) printf ("%d new entries read in.\n", nentries);
 	if (nentries > 0) xauth_modified = True;
     }
 
@@ -1250,10 +1250,14 @@ static int do_extract (inputfilename, lineno, argc, argv)
 		      extract_entry, NULL, (char *) &ed);
 
     if (!ed.fp) {
-	printf ("No matches found, authority file \"%s\" not written.\n",
-		ed.filename);
+	fprintf (stderr, 
+		 "No matches found, authority file \"%s\" not written.\n",
+		 ed.filename);
     } else {
-	printf ("%d entries written to \"%s\"\n", ed.nwritten, ed.filename);
+	if (verbose) {
+	    printf ("%d entries written to \"%s\"\n", 
+		    ed.nwritten, ed.filename);
+	}
 	if (!ed.used_stdout) {
 	    (void) fclose (ed.fp);
 	}
@@ -1384,7 +1388,7 @@ static int do_remove (inputfilename, lineno, argc, argv)
 
     errors = iterdpy (inputfilename, lineno, 1, argc, argv,
 		      remove_entry, NULL, (char *) &nremoved);
-    printf ("%d entries removed.\n", nremoved);
+    if (verbose) printf ("%d entries removed.\n", nremoved);
     return errors;
 }
 
@@ -1474,7 +1478,7 @@ static int do_source (inputfilename, lineno, argc, argv)
 	return 1;
     }
 
-    if (verbose && isatty (fileno (fp))) prompt = True;
+    if (verbose && used_stdin && isatty (fileno (fp))) prompt = True;
 
     while (!alldone) {
 	buf[0] = '\0';
@@ -1494,7 +1498,7 @@ static int do_source (inputfilename, lineno, argc, argv)
 	}
 	buf[--len] = '\0';		/* remove new line */
 	subargv = split_into_words (buf, &subargc);
-	if (argv) {
+	if (subargv) {
 	    status = process_command (script, sublineno, subargc, subargv);
 	    free ((char *) subargv);
 	    errors += status;
