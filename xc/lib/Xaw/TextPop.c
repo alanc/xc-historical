@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextPop.c,v 1.1 89/07/12 14:55:51 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextPop.c,v 1.2 89/07/16 16:21:25 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -143,7 +143,6 @@ String * params;
 Cardinal * num_params;
 {
   TextWidget ctx = (TextWidget)w;
-  Position x, y;
   char * ptr;
   static void AddInsertFileChildren();
 
@@ -152,25 +151,19 @@ Cardinal * num_params;
     return;
   }
 
-  _XawTextStartAction(ctx, event);
-  
   if (*num_params == 0) 
     ptr = "";
   else 
     ptr = params[0];
     
-  XtTranslateCoords(w, ctx->text.ev_x, ctx->text.ev_y, &x, &y);
-  
   if (!ctx->text.file_insert) {
     ctx->text.file_insert = CreateDialog(w, ptr, "insertFile",
 					 AddInsertFileChildren);
     XtRealizeWidget(ctx->text.file_insert);
   }
 
-  CenterWidgetOnPoint(ctx->text.file_insert, x, y);
+  CenterWidgetOnPoint(ctx->text.file_insert, event);
   XtPopup(ctx->text.file_insert, XtGrabNone);
-
-  _XawTextEndAction(ctx);
 }
 
 /*	Function Name: PopdownFileInsert
@@ -214,20 +207,28 @@ caddr_t call_data;		/* unused */
 {
   TextWidget ctx = (TextWidget) closure;
   static Boolean InsertFileNamed();
+  char buf[BUFSIZ], msg[BUFSIZ];
+  Widget temp_widget;
 
-  if ( !InsertFileNamed( (Widget) ctx, GetString(ctx->text.file_insert)) ) {
-    char msg[BUFSIZ];
-
-    sprintf( msg, "*** Error: %s ***",
-	    (errno > 0 && errno < sys_nerr) ?
-	    sys_errlist[errno] : "Can't open file" );
-
-    (void)SetResourceByName(ctx->text.file_insert, 
-			    LABEL_NAME, XtNlabel, (XtArgVal) msg);
-    XBell(XtDisplay(w), 0);
+  sprintf(buf, "%s.%s", FORM_NAME, TEXT_NAME);
+  if ( (temp_widget = XtNameToWidget(ctx->text.file_insert, buf)) == NULL ) {
+    strcpy(msg, 
+	   "*** Error: Could not get text widget from file insert popup");
   }
   else 
-    PopdownFileInsert(w, closure, call_data);
+    if (InsertFileNamed( (Widget) ctx, GetString( temp_widget ))) {
+      PopdownFileInsert(w, closure, call_data);
+      return;
+    }
+    else
+      sprintf( msg, "*** Error: %s ***",
+	      (errno > 0 && errno < sys_nerr) ?
+	      sys_errlist[errno] : "Can't open file" );
+  
+
+  (void)SetResourceByName(ctx->text.file_insert, 
+			  LABEL_NAME, XtNlabel, (XtArgVal) msg);
+  XBell(XtDisplay(w), 0);
 }
 
 /*	Function Name: InsertFileNamed
@@ -452,7 +453,6 @@ String * params;
 Cardinal * num_params;
 {
   TextWidget ctx = (TextWidget)w;
-  Position x, y;
   XawTextScanDirection dir;
   char * ptr, buf[BUFSIZ];
   static void AddSearchChildren();
@@ -494,14 +494,8 @@ Cardinal * num_params;
   InitializeSearchWidget(ctx->text.search, dir, 
 			 (ctx->text.source->edit_mode == XawtextEdit) );
 
-  _XawTextStartAction(ctx, event);
-
-  XtTranslateCoords(w, ctx->text.ev_x, ctx->text.ev_y, &x, &y);
-  CenterWidgetOnPoint(ctx->text.search->search_popup, x, y);
-
+  CenterWidgetOnPoint(ctx->text.search->search_popup, event);
   XtPopup(ctx->text.search->search_popup, XtGrabNone);
-
-  _XawTextEndAction(ctx);
 }
 
 /*	Function Name: InitializeSearchWidget
@@ -1099,22 +1093,39 @@ Widget text;
  *	Description: Centers a shell widget on a point relative to
  *                   the root window.
  *	Arguments: w - the shell widget.
- *                 x, y - the location of the point.
+ *                 event - event containing the location of the point
  *	Returns: none.
  *
  * NOTE: The widget is not allowed to go off the screen.
  */
 
 static void
-CenterWidgetOnPoint(w, x, y)
+CenterWidgetOnPoint(w, event)
 Widget w;
-Position x, y;
+XEvent *event;
 {
   Arg args[3];
   Cardinal num_args;
   Dimension width, height, b_width;
-  Position max_x, max_y;
-
+  Position x, y, max_x, max_y;
+  
+  if (event != NULL) {
+    switch (event->type) {
+    case ButtonPress:
+    case ButtonRelease:
+      x = event->xbutton.x_root;
+      y = event->xbutton.y_root;
+      break;
+    case KeyPress:
+    case KeyRelease:
+      x = event->xkey.x_root;
+      y = event->xkey.y_root;
+      break;
+    default:
+      return;
+    }
+  }
+  
   num_args = 0;
   XtSetArg(args[num_args], XtNwidth, &width); num_args++;
   XtSetArg(args[num_args], XtNheight, &height); num_args++;

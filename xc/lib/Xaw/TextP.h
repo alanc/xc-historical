@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextP.h,v 1.32 89/05/11 14:20:35 kit Exp $
+* $XConsortium: TextP.h,v 1.34 89/07/16 16:24:10 kit Exp $
 */
 
 
@@ -40,6 +40,9 @@ SOFTWARE.
  *
  ****************************************************************/
 #define MAXCUT	30000	/* Maximum number of characters that can be cut. */
+
+extern XtActionsRec textActionsTable[];
+extern Cardinal textActionsTableCount;
 
 #define LF	0x0a
 #define CR	0x0d
