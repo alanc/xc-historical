@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: resize.c,v 1.15 91/01/24 19:32:31 gildea Exp $
+ *	$XConsortium: resize.c,v 1.16 91/01/29 15:06:51 rws Exp $
  */
 
 /*
@@ -396,22 +396,30 @@ char **argv;
 	strcat (termcap, ptr);
 #endif /* USE_TERMCAP */
 
-	if(SHELL_BOURNE == shell_type)
+	if(SHELL_BOURNE == shell_type) {
+
 #ifdef USE_TERMCAP
 		printf ("%sTERMCAP='%s'\n",
 		 setname, termcap);
 #else /* else not USE_TERMCAP */
+#ifndef TIOCGWINSZ		/* don't set env on SVR4 */
 		printf ("%sCOLUMNS=%d;\nLINES=%d;\nexport COLUMNS LINES;\n",
-		 setname, cols, rows);
+			setname, cols, rows);
+#endif /* !TIOCGWINSZ */
 #endif	/* USE_SYSV_TERMCAP */
-	else
+
+	} else {		/* not Bourne shell */
+
 #ifdef USE_TERMCAP
 		printf ("set noglob;\n%ssetenv TERMCAP '%s';\nunset noglob;\n",
 		 setname, termcap);
 #else /* else not USE_TERMCAP */
+#ifndef TIOCGWINSZ		/* don't set env on SVR4 */
 		printf ("set noglob;\n%ssetenv COLUMNS '%d';\nsetenv LINES '%d';\nunset noglob;\n",
-		 setname, cols, rows);
+			setname, cols, rows);
+#endif /* !TIOCGWINSZ */
 #endif	/* USE_TERMCAP */
+	}
 	exit(0);
 }
 
