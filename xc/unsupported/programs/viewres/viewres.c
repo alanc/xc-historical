@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.41 90/02/23 16:48:41 jim Exp $
+ * $XConsortium: viewres.c,v 1.42 90/02/23 16:54:26 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -44,23 +44,35 @@
 #include <X11/Xaw/Tree.h>
 #include <X11/Xmu/Converters.h>
 #include <X11/Xmu/CharSet.h>
-#include "defs.h"
+#include <X11/Xmu/WidgetNode.h>
+#include <X11/Xaw/AllWidgets.h>
 
-#define IsShowing(node) ((node)->resource_lw && \
-			 XtIsManaged((node)->resource_lw))
+#define widget_list XawWidgetArray  /* or motif or ol or ... */
+#define nwidgets XawWidgetCount
+
+typedef struct {
+    char **resource_labels;		/* names of res added by widget */
+    Cardinal nnewresources;		/* number res added by widget */
+    Widget instance;			/* Label widget in box in tree */
+    Widget resource_lw;			/* List widget showing resources */
+    int selection_index;		/* -1 or index into selection_list */
+} ViewresData;
+
+#define VData(node) ((ViewresData *) (node)->data)
+
+
+#define IsShowing(node) (VData(node)->resource_lw && \
+			 XtIsManaged(VData(node)->resource_lw))
 
 #define INSERT_NODE(node,i) \
-  selected_list.elements[(node)->selection_index = (i)] = (node)
+  selected_list.elements[VData(node)->selection_index = (i)] = (node)
 
 #define REMOVE_NODE(node) \
-  selected_list.elements[node->selection_index] = NULL; \
-  node->selection_index = (-1)
+  selected_list.elements[VData(node)->selection_index] = NULL; \
+  VData(node)->selection_index = (-1)
 
 char *ProgramName;
 static int NumberShowing = 0;
-
-extern WidgetNode widget_list[];
-extern int nwidgets;
 
 static char *help_message[] = {
     "-lbw number      label border width in pixels",
@@ -167,7 +179,7 @@ static Widget treeWidget, viewportWidget, pannerWidget;
 static Widget quitButton, viewButton, viewMenu, selectButton, selectMenu;
 static Widget view_widgets[VIEW_number];
 static Widget select_widgets[SELECT_number];
-static WidgetNode *topnode;
+static XmuWidgetNode *topnode;
 
 static Arg false_args[1] = {{ XtNstate, (XtArgVal) FALSE }};
 static Arg true_args[1] = {{ XtNstate, (XtArgVal) TRUE }};
@@ -175,7 +187,7 @@ static Arg true_args[1] = {{ XtNstate, (XtArgVal) TRUE }};
 struct {
     int n_elements;
     int max_elements;
-    WidgetNode **elements;
+    XmuWidgetNode **elements;
 } selected_list = { 0, 0, NULL };
 
 
@@ -195,34 +207,36 @@ static void usage ()
 }
 
 
-static WidgetNode *widget_to_node (w)
+static XmuWidgetNode *widget_to_node (w)
     Widget w;
 {
     int i;
-    WidgetNode *node;
+    XmuWidgetNode *node;
 
     for (i = 0, node = widget_list; i < nwidgets; i++, node++) {
-	if (node->instance == w) return node;
+	ViewresData *d = VData(node);
+	if (d->instance == w) return node;
     }
     return NULL;
 }
 
 
 static void initialize_widgetnode_list (listp, sizep, n)
-    WidgetNode ***listp;
+    XmuWidgetNode ***listp;
     int *sizep;
     int n;
 {
     register int i;
-    register WidgetNode **l;
+    register XmuWidgetNode **l;
 
     if (!*listp) {
-        *listp = (WidgetNode **) XtCalloc (n, sizeof(WidgetNode **));
+        *listp = (XmuWidgetNode **) XtCalloc (n, sizeof(XmuWidgetNode **));
         *sizep = ((*listp) ? n : 0);
         return;
     }
     if (n > *sizep) {
-        *listp = (WidgetNode **) XtRealloc (*listp, n * sizeof(WidgetNode **));
+        *listp = (XmuWidgetNode **) XtRealloc (*listp,
+					       n * sizeof(XmuWidgetNode **));
         *sizep = ((*listp) ? n : 0);
         if (!*listp) return;
     }
@@ -231,16 +245,58 @@ static void initialize_widgetnode_list (listp, sizep, n)
 }
 
 
+static Boolean set_resource_labels (node)
+    XmuWidgetNode *node;
+{
+    int i;
+    XtResourceList res = node->resources;
+    XmuWidgetNode **wn = node->resourcewn;
+    ViewresData *d = VData(node);
+    char **cur;
+
+    if (!d->resource_labels) {
+	d->resource_labels =
+	  (char **) calloc (d->nnewresources * 3, sizeof (char *));
+	if (!d->resource_labels) return FALSE;
+    }
+
+    cur = d->resource_labels;
+    for (i = 0; i < node->nresources; i++, res++, wn++) {
+	if (*wn == node) {		/* should be nnewresources matches */
+	    *cur++ = res->resource_name;
+	    *cur++ = res->resource_class;
+	    *cur++ = res->resource_type;
+	}
+    }
+    return TRUE;
+}
+
+
+static ViewresData *create_viewres_data (node)
+    XmuWidgetNode *node;
+{
+    register ViewresData *d = (ViewresData *) malloc (sizeof(ViewresData));
+
+    if (d) {
+	d->resource_labels = NULL;
+	d->nnewresources = XmuWnCountOwnedResources (node, node);
+	d->instance = NULL;
+	d->resource_lw = NULL;
+	d->selection_index = -1;
+    }
+    return d;
+}
+
 static int copydown (start)
     register int start;
 {
-    register WidgetNode **src = &selected_list.elements[start];
-    register WidgetNode **dst = src;
+    register XmuWidgetNode **src = &selected_list.elements[start];
+    register XmuWidgetNode **dst = src;
     register int cur;
 
     for (cur = start; start < selected_list.n_elements; start++, src++) {
 	if (*src) {
-	    (*src)->selection_index = cur++;
+	    VData((*src))->selection_index = cur++;
 	    *dst++ = *src;
 	}
     }
@@ -249,10 +305,11 @@ static int copydown (start)
 
 
 static void add_to_selected_list (node, updatewidget)
-    WidgetNode *node;
+    XmuWidgetNode *node;
     Boolean updatewidget;
 {
-    if (!node->instance || node->selection_index >= 0) return;
+    ViewresData *d = VData(node);
+    if (!d->instance || d->selection_index >= 0) return;
 
     if (selected_list.n_elements >= selected_list.max_elements) {
 	initialize_widgetnode_list (&selected_list.elements,
@@ -262,16 +319,17 @@ static void add_to_selected_list (node, updatewidget)
     INSERT_NODE (node, selected_list.n_elements);
     selected_list.n_elements++;
 
-    if (updatewidget) XtSetValues (node->instance, true_args, ONE);
+    if (updatewidget) XtSetValues (d->instance, true_args, ONE);
 }
 
 static Boolean remove_from_selected_list (node, updatewidget)
-    WidgetNode *node;
+    XmuWidgetNode *node;
     Boolean updatewidget;
 {
     int i, skips;
+    ViewresData *d = VData(node);
 
-    if ((i = node->selection_index) < 0) return FALSE;
+    if ((i = d->selection_index) < 0) return FALSE;
 
     REMOVE_NODE (node);
 
@@ -283,7 +341,7 @@ static Boolean remove_from_selected_list (node, updatewidget)
     }
     selected_list.n_elements -= skips;
 
-    if (updatewidget) XtSetValues (node->instance, false_args, ONE);
+    if (updatewidget) XtSetValues (d->instance, false_args, ONE);
     return TRUE;
 }
 
@@ -294,15 +352,16 @@ static void remove_nodes_from_selected_list (start, count, updatewidget)
     int i;
 
     for (i = 0; i < count; i++) {
-	register WidgetNode *p = selected_list.elements[i];
+	register XmuWidgetNode *p = selected_list.elements[i];
+	ViewresData *d = VData(p);
 	REMOVE_NODE (p);
-	if (updatewidget) XtSetValues (p->instance, false_args, ONE);
+	if (updatewidget) XtSetValues (d->instance, false_args, ONE);
     }
     selected_list.n_elements -= copydown (0);
 }
 	    
 static void add_subtree_to_selected_list (node, updatewidget)
-    WidgetNode *node;
+    XmuWidgetNode *node;
     Boolean updatewidget;
 {
     if (!node) return;
@@ -334,25 +393,26 @@ static void horizontal_orientation_callback (gw, closure, data)
 
 
 static Boolean create_resource_lw (node)
-    WidgetNode *node;
+    XmuWidgetNode *node;
 {
     Arg args[4];
     Cardinal n;
+    ViewresData *d = VData(node);
 
-    if (node->nnewresources == 0) return FALSE;
+    if (d->nnewresources == 0) return FALSE;
 
-    if (!node->resource_labels &&
+    if (!d->resource_labels &&
 	!set_resource_labels (node)) return FALSE;
 
     n = 0;
-    XtSetArg (args[n], XtNnumberStrings, 3 * node->nnewresources); n++;
-    XtSetArg (args[n], XtNlist, node->resource_labels); n++;
+    XtSetArg (args[n], XtNnumberStrings, 3 * d->nnewresources); n++;
+    XtSetArg (args[n], XtNlist, d->resource_labels); n++;
     XtSetArg (args[n], XtNdefaultColumns, 3); n++;
     XtSetArg (args[n], XtNforceColumns, TRUE); n++;
-    node->resource_lw = XtCreateManagedWidget (node->label, listWidgetClass,
-					       XtParent(node->instance),
-					       args, n);
-    XtRealizeWidget (node->resource_lw);
+    d->resource_lw = XtCreateManagedWidget (node->label, listWidgetClass,
+					    XtParent(d->instance),
+					    args, n);
+    XtRealizeWidget (d->resource_lw);
     return TRUE;
 }
 
@@ -364,13 +424,15 @@ static void update_selection_items ()
     Boolean descendants = FALSE;
 
     for (i = 0; i < selected_list.n_elements; i++) {
-	WidgetNode *node = selected_list.elements[i];
+	XmuWidgetNode *node = selected_list.elements[i];
+	ViewresData *d = VData(node);
+
 	/*
 	 * If node has any new resources then may be shown (if not
 	 * already being shown).  If node has widget and is managed,
 	 * then may be hidden.
 	 */
-	if (node->nnewresources > 0) {
+	if (d->nnewresources > 0) {
 	    if (IsShowing(node)) {
 		hide = TRUE;
 	    } else {
@@ -399,24 +461,25 @@ static void update_selection_items ()
 
 
 static void do_resources (node, op, updatewidget)
-    WidgetNode *node;
+    XmuWidgetNode *node;
     Boolean op;
     Boolean updatewidget;
 {
+    ViewresData *d = VData(node);
     if (op == BOOL_TOGGLE) op = (IsShowing(node) ? BOOL_OFF : BOOL_ON);
 
     if (op == BOOL_ON) {
-	if (node->resource_lw) {		/* if already created */
-	    if (!XtIsManaged(node->resource_lw)) {
+	if (d->resource_lw) {		/* if already created */
+	    if (!XtIsManaged(d->resource_lw)) {
 		NumberShowing++;
-		XtManageChild (node->resource_lw);
+		XtManageChild (d->resource_lw);
 	    }				/* else ignore it */
 	} else if (create_resource_lw (node))	/* create it */
 	  NumberShowing++;
-    } else if (node->resource_lw) {		/* if already created */
-	if (XtIsManaged (node->resource_lw)) {
+    } else if (d->resource_lw) {		/* if already created */
+	if (XtIsManaged (d->resource_lw)) {
 	    NumberShowing--;
-	    XtUnmanageChild (node->resource_lw);
+	    XtUnmanageChild (d->resource_lw);
 	    if (updatewidget) remove_from_selected_list (node, TRUE);
 	}				/* else ignore it */
     }
@@ -432,7 +495,7 @@ static void show_resources_callback (gw, closure, data)
     int op = (int) closure;
 
     if (XtIsSubclass (gw, toggleWidgetClass)) {	 /* do single item op */
-	WidgetNode *node = widget_to_node (gw);
+	XmuWidgetNode *node = widget_to_node (gw);
 
 	if (node) {
 	    XUnmapWindow (XtDisplay(treeWidget), XtWindow(treeWidget));
@@ -463,7 +526,7 @@ static void select_callback (gw, closure, data)
 {
     register int i;
     int nselected = selected_list.n_elements;
-    WidgetNode *node;
+    XmuWidgetNode *node;
 
     switch ((int) closure) {
       case SELECT_NOTHING:		/* clear selection_list */
@@ -476,7 +539,8 @@ static void select_callback (gw, closure, data)
 
       case SELECT_INVERT:		/* toggle selection state */
 	for (i = 0, node = widget_list; i < nwidgets; i++, node++) {
-	    if (node->selection_index < 0) add_to_selected_list (node, TRUE);
+	    ViewresData *d = VData(node);
+	    if (d->selection_index < 0) add_to_selected_list (node, TRUE);
 	}
 	remove_nodes_from_selected_list (0, nselected, True);
 	break;
@@ -490,7 +554,7 @@ static void select_callback (gw, closure, data)
 	      add_to_selected_list (node->superclass, TRUE);
 	} else {
 	    for (i = 0; i < nselected; i++) {
-		WidgetNode *node = selected_list.elements[i];
+		XmuWidgetNode *node = selected_list.elements[i];
 		if (node->superclass)
 		  add_to_selected_list (node->superclass, TRUE);
 	    }
@@ -506,14 +570,14 @@ static void select_callback (gw, closure, data)
 	    } while (node = node->superclass);
 	} else {
 	    for (i = 0; i < nselected; i++) {
-		WidgetNode *parent = selected_list.elements[i];
+		XmuWidgetNode *parent = selected_list.elements[i];
 
 		/*
 		 * chain up the tree, but stop if we get to nodes that
 		 * are already in the selected list.
 		 */
 		while (parent = parent->superclass) {  /* do ancestors */
-		    if (parent->selection_index >= 0) break;
+		    if (VData(parent)->selection_index >= 0) break;
 		    add_to_selected_list (parent, TRUE);
 		}
 	    }
@@ -530,7 +594,7 @@ static void select_callback (gw, closure, data)
 	    }
 	} else {
 	    for (i = 0; i < nselected; i++) {
-		WidgetNode *node = selected_list.elements[i];
+		XmuWidgetNode *node = selected_list.elements[i];
 
 		add_to_selected_list (node, TRUE);
 		for (node = node->children; node; node = node->siblings) {
@@ -547,7 +611,7 @@ static void select_callback (gw, closure, data)
 	    add_subtree_to_selected_list (node, TRUE);
 	} else {
 	    for (i = 0; i < nselected; i++) {
-		WidgetNode *parent = selected_list.elements[i];
+		XmuWidgetNode *parent = selected_list.elements[i];
 
 		add_subtree_to_selected_list (parent, TRUE);
 	    }
@@ -556,7 +620,8 @@ static void select_callback (gw, closure, data)
 
       case SELECT_HAS_RESOURCES:	/* put all w/ rescnt > 0 on sel_list */
 	for (i = 0, node = widget_list; i < nwidgets; i++, node++) {
-	    if (node->nnewresources > 0) add_to_selected_list (node, TRUE);
+	    if (VData(node)->nnewresources > 0)
+	      add_to_selected_list (node, TRUE);
 	}
 	break;
 
@@ -577,10 +642,10 @@ static void select_callback (gw, closure, data)
 /* ARGSUSED */
 static void toggle_callback (gw, closure, data)
     Widget gw;
-    caddr_t closure;			/* WidgetNode for this widget */
+    caddr_t closure;			/* XmuWidgetNode for this widget */
     caddr_t data;			/* on or off */
 {
-    WidgetNode *node = (WidgetNode *) closure;
+    XmuWidgetNode *node = (XmuWidgetNode *) closure;
     Boolean selected = (Boolean) data;
 
     if (selected) {
@@ -657,9 +722,9 @@ main (argc, argv)
 
     XtGetApplicationResources (toplevel, (caddr_t) &Appresources,
 			       Resources, XtNumber(Resources), NULL, ZERO);
-    initialize_nodes (widget_list, nwidgets);
+    XmuWnInitializeNodes (widget_list, nwidgets);
 
-    topnode = name_to_node (widget_list, nwidgets, Appresources.top_object);
+    topnode = XmuWnNameToNode (widget_list, nwidgets, Appresources.top_object);
 
     /*
      * create dummy widgets to initialize resources
@@ -673,9 +738,9 @@ main (argc, argv)
     XtDestroyWidget (dummy);
     dummy = XtCreateWidget ("dummy", widgetClass, toplevel, args, TWO);
     for (i = 0; i < nwidgets; i++) {
-	WidgetNode *node = &widget_list[i];
-	initialize_resources (node, dummy, topnode);
-	node->nnewresources = count_owned_resources (node, node);
+	XmuWidgetNode *node = &widget_list[i];
+	XmuWnFetchResources (node, dummy, topnode);
+	node->data = (XtPointer) create_viewres_data (node);
     }
     XtDestroyWidget (dummy);
 
@@ -942,12 +1007,13 @@ static void ActionResources (w, event, params, num_params)
 
 
 static void build_tree (node, tree, super)
-    WidgetNode *node;
+    XmuWidgetNode *node;
     Widget tree;
     Widget super;
 {
+    ViewresData *d = VData (node);
     Widget box, w;			/* widget for this Class */
-    WidgetNode *child;			/* iterator over children */
+    XmuWidgetNode *child;			/* iterator over children */
     Arg args[3];			/* need to set super node */
     Cardinal n;				/* count of args */
     static XtCallbackRec callback_rec[2] = {{ toggle_callback, NULL },
@@ -960,12 +1026,12 @@ static void build_tree (node, tree, super)
 
     n = 0;
     XtSetArg (args[n], XtNlabel, (Appresources.show_variable ?
-				  node->label : WnClassname(node))); n++;
+				  node->label : XmuWnClassname(node))); n++;
     XtSetArg (args[n], XtNcallback, callback_rec); n++;
 
     callback_rec[0].closure = (caddr_t) node;
     w = XtCreateManagedWidget (node->label, toggleWidgetClass, box, args, n);
-    node->instance = w;
+    d->instance = w;
 
     /*
      * recursively build the rest of the tree
@@ -977,16 +1043,17 @@ static void build_tree (node, tree, super)
 
 
 static void set_node_labels (node, depth)
-    WidgetNode *node;
+    XmuWidgetNode *node;
     int depth;
 {
     Arg args[1];
-    WidgetNode *child;
+    XmuWidgetNode *child;
+    ViewresData *d = VData(node);
 
     if (!node) return;
     XtSetArg (args[0], XtNlabel, (Appresources.show_variable ?
-				  node->label : WnClassname(node)));
-    XtSetValues (node->instance, args, ONE);
+				  node->label : XmuWnClassname(node)));
+    XtSetValues (d->instance, args, ONE);
 
     for (child = node->children; child; child = child->siblings) {
 	set_node_labels (child, depth + 1);
@@ -1038,3 +1105,5 @@ static void set_orientation_menu (horiz, dosetvalues)
 	XMapWindow (XtDisplay(treeWidget), XtWindow(treeWidget));
     }
 }
+
+
