@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.131 89/06/16 19:34:45 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.132 89/06/19 13:35:41 jim Exp $";
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 #endif /* lint */
 
@@ -100,7 +100,7 @@ int _XtGetHostname (buf, maxlen)
 {
     int len;
 
-#ifdef USE_UTSNAME
+#ifdef USE_UNAME
     struct utsname name;
 
     uname (&uname);
