@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.152 88/08/16 22:28:54 rws Exp $ */
+/* $Header: events.c,v 1.153 88/09/04 17:28:16 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -3088,146 +3088,151 @@ ProcChangeKeyboardControl (client)
     int t;
     int led = DO_ALL;
     int key = DO_ALL;
+    BITS32 vmask, index;
+    int mask, i;
     REQUEST(xChangeKeyboardControlReq);
 
     REQUEST_AT_LEAST_SIZE(xChangeKeyboardControlReq);
-    if (stuff->length !=(sizeof(xChangeKeyboardControlReq)>>2) + Ones(stuff->mask))
+    vmask = stuff->mask;
+    if (stuff->length !=(sizeof(xChangeKeyboardControlReq)>>2) + Ones(vmask))
 	return BadLength;
     vlist = (XID *)&stuff[1];		/* first word of values */
     ctrl = keybd->u.keybd.ctrl;
-    if (stuff->mask & KBKeyClickPercent)
+    while (vmask)
     {
-	t = (INT8)*vlist;
-	vlist++;
-	if (t == -1)
-	    t = defaultKeyboardControl.click;
-	else if (t < 0 || t > 100)
+	index = (BITS32) lowbit (vmask);
+	vmask &= ~index;
+	switch (index)
 	{
-	    client->errorValue = t;
-	    return BadValue;
-	}
-	ctrl.click = t;
-    }
-    if (stuff->mask & KBBellPercent)
-    {
-	t = (INT8)*vlist;
-	vlist++;
-	if (t == -1)
-	    t = defaultKeyboardControl.bell;
-	else if (t < 0 || t > 100)
-	{
-	    client->errorValue = t;
-	    return BadValue;
-	}
-	ctrl.bell = t;
-    }
-    if (stuff->mask & KBBellPitch)
-    {
-	t = (INT16)*vlist;
-	vlist++;
-	if (t == -1)
-	    t = defaultKeyboardControl.bell_pitch;
-	else if (t < 0)
-	{
-	    client->errorValue = t;
-	    return BadValue;
-	}
-	ctrl.bell_pitch = t;
-    }
-    if (stuff->mask & KBBellDuration)
-    {
-	t = (INT16)*vlist;
-	vlist++;
-	if (t == -1)
-	    t = defaultKeyboardControl.bell_duration;
-	else if (t < 0)
-	{
-	    client->errorValue = t;
-	    return BadValue;
-	}
-	ctrl.bell_duration = t;
-    }
-    if (stuff->mask & KBLed)
-    {
-	led = (CARD8)*vlist;
-	vlist++;
-	if (led < 1 || led > 32)
-	{
-	    client->errorValue = led;
-	    return BadValue;
-	}
-	if (!(stuff->mask & KBLedMode))
-	    return BadMatch;
-    }
-    if (stuff->mask & KBLedMode)
-    {
-	t = (CARD8)*vlist;
-	vlist++;
-	if (t == LedModeOff)
-	{
-	    if (led == DO_ALL)
-		ctrl.leds = 0x0;
+	case KBKeyClickPercent: 
+	    t = (INT8)*vlist;
+	    vlist++;
+	    if (t == -1)
+		t = defaultKeyboardControl.click;
+	    else if (t < 0 || t > 100)
+	    {
+		client->errorValue = t;
+		return BadValue;
+	    }
+	    ctrl.click = t;
+	    break;
+	case KBBellPercent:
+	    t = (INT8)*vlist;
+	    vlist++;
+	    if (t == -1)
+		t = defaultKeyboardControl.bell;
+	    else if (t < 0 || t > 100)
+	    {
+		client->errorValue = t;
+		return BadValue;
+	    }
+	    ctrl.bell = t;
+	    break;
+	case KBBellPitch:
+	    t = (INT16)*vlist;
+	    vlist++;
+	    if (t == -1)
+		t = defaultKeyboardControl.bell_pitch;
+	    else if (t < 0)
+	    {
+		client->errorValue = t;
+		return BadValue;
+	    }
+	    ctrl.bell_pitch = t;
+	    break;
+	case KBBellDuration:
+	    t = (INT16)*vlist;
+	    vlist++;
+	    if (t == -1)
+		t = defaultKeyboardControl.bell_duration;
+	    else if (t < 0)
+	    {
+		client->errorValue = t;
+		return BadValue;
+	    }
+	    ctrl.bell_duration = t;
+	    break;
+	case KBLed:
+	    led = (CARD8)*vlist;
+	    vlist++;
+	    if (led < 1 || led > 32)
+	    {
+		client->errorValue = led;
+		return BadValue;
+	    }
+	    if (!(stuff->mask & KBLedMode))
+		return BadMatch;
+	case KBLedMode:
+	    t = (CARD8)*vlist;
+	    vlist++;
+	    if (t == LedModeOff)
+	    {
+		if (led == DO_ALL)
+		    ctrl.leds = 0x0;
+		else
+		    ctrl.leds &= ~(((Leds)(1)) << (led - 1));
+	    }
+	    else if (t == LedModeOn)
+	    {
+		if (led == DO_ALL)
+		    ctrl.leds = ~0L;
+		else
+		    ctrl.leds |= (((Leds)(1)) << (led - 1));
+	    }
 	    else
-		ctrl.leds &= ~(((Leds)(1)) << (led - 1));
-	}
-	else if (t == LedModeOn)
-	{
-	    if (led == DO_ALL)
-		ctrl.leds = ~0L;
+	    {
+		client->errorValue = t;
+		return BadValue;
+	    }
+	    break;
+	case KBKey:
+	    key = (KeyCode)*vlist;
+	    vlist++;
+	    if (key < 8 || key > 255)
+	    {
+		client->errorValue = key;
+		return BadValue;
+	    }
+	    if (!(stuff->mask & KBAutoRepeatMode))
+		return BadMatch;
+	    break;
+	case KBAutoRepeatMode:
+	    i = (key >> 3);
+	    mask = (1 << (key & 7));
+	    t = (CARD8)*vlist;
+	    vlist++;
+	    if (t == AutoRepeatModeOff)
+	    {
+		if (key == DO_ALL)
+		    ctrl.autoRepeat = FALSE;
+		else
+		    ctrl.autoRepeats[i] &= ~mask;
+	    }
+	    else if (t == AutoRepeatModeOn)
+	    {
+		if (key == DO_ALL)
+		    ctrl.autoRepeat = TRUE;
+		else
+		    ctrl.autoRepeats[i] |= mask;
+	    }
+	    else if (t == AutoRepeatModeDefault)
+	    {
+		if (key == DO_ALL)
+		    ctrl.autoRepeat = defaultKeyboardControl.autoRepeat;
+		else
+		    ctrl.autoRepeats[i] &= ~mask;
+		    ctrl.autoRepeats[i] =
+			    (ctrl.autoRepeats[i] & ~mask) |
+			    (defaultKeyboardControl.autoRepeats[i] & mask);
+	    }
 	    else
-		ctrl.leds |= (((Leds)(1)) << (led - 1));
-	}
-	else
-	{
-	    client->errorValue = t;
-	    return BadValue;
-	}
-    }
-    if (stuff->mask & KBKey)
-    {
-	key = (KeyCode)*vlist;
-	vlist++;
-	if (key < 8 || key > 255)
-	{
-	    client->errorValue = key;
-	    return BadValue;
-	}
-	if (!(stuff->mask & KBAutoRepeatMode))
-	    return BadMatch;
-    }
-    if (stuff->mask & KBAutoRepeatMode)
-    {
-	int index = (key >> 3);
-	int mask = (1 << (key & 7));
-	t = (CARD8)*vlist;
-	vlist++;
-	if (t == AutoRepeatModeOff)
-	{
-	    if (key == DO_ALL)
-		ctrl.autoRepeat = FALSE;
-	    else
-		ctrl.autoRepeats[index] &= ~mask;
-	}
-	else if (t == AutoRepeatModeOn)
-	{
-	    if (key == DO_ALL)
-		ctrl.autoRepeat = TRUE;
-	    else
-		ctrl.autoRepeats[index] |= mask;
-	}
-	else if (t == AutoRepeatModeDefault)
-	{
-	    if (key == DO_ALL)
-		ctrl.autoRepeat = defaultKeyboardControl.autoRepeat;
-	    else
-		ctrl.autoRepeats[index] &= ~mask;
-		ctrl.autoRepeats[index] =
-			(ctrl.autoRepeats[index] & ~mask) |
-			(defaultKeyboardControl.autoRepeats[index] & mask);
-	}
-	else
-	{
-	    client->errorValue = t;
+	    {
+		client->errorValue = t;
+		return BadValue;
+	    }
+	    break;
+	default:
+	    client->errorValue = stuff->mask;
 	    return BadValue;
 	}
     }

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: gc.c,v 1.108 88/06/06 16:12:47 rws Exp $ */
+/* $Header: gc.c,v 1.109 88/07/01 15:06:39 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -383,6 +383,9 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		pval++;
 		break;
 	    default:
+		clientErrorValue = maskQ;
+		error = BadValue;
+		pval++;
 		break;
 	}
     }
@@ -519,7 +522,7 @@ CreateGC(pDrawable, mask, pval, pStatus)
 }
 
 
-void
+int
 CopyGC(pgcSrc, pgcDst, mask)
     register GC		*pgcSrc;
     register GC		*pgcDst;
@@ -529,6 +532,7 @@ CopyGC(pgcSrc, pgcDst, mask)
     BITS32		maskQ;
     GCInterestPtr	pQ, pQInit;
     int i;
+    int 		error = 0;
 
     pgcDst->serialNumber |= GC_CHANGE_SERIAL_BIT;
     pgcDst->stateChanges |= mask;
@@ -633,6 +637,8 @@ CopyGC(pgcSrc, pgcDst, mask)
 		pgcDst->arcMode = pgcSrc->arcMode;
 		break;
 	    default:
+		clientErrorValue = maskQ;
+		error = BadValue;
 		break;
 	}
     }
@@ -654,6 +660,7 @@ CopyGC(pgcSrc, pgcDst, mask)
 	pQ = pQ->pNextGCInterest;
     }
     while(pQ != pQInit);
+    return error;
 }
 
 /*****************
