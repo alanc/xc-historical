@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.8 90/08/14 10:13:08 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.9 90/09/24 09:06:19 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -14,6 +14,7 @@ Name						Reference
 "FXD"						[55]
 "IBM"						[33]
 "ICS"						[31]
+"IPSYS"						[59]
 "IXI"						[20]
 "LJK"						[56]
 "MIT"						[8]
@@ -552,6 +553,7 @@ Name						Reference
 
 "Clock"						[47]
 "Listres"					[47]
+"Xai"						[59]
 "Xbiff"						[47]
 "XCalc"						[47]
 "Xcessory"					[31]
@@ -573,6 +575,8 @@ Name						Reference
 
 18. CLASS EXTENSION RECORD TYPES
 
+"Xai" (prefix)					[59]
+"XaiCoreClassExtension"				[59]
 
 19. DISPLAY MANUFACTURER ID
 
@@ -850,4 +854,10 @@ REFERENCES
 	Sun Microsystems, Inc.
 	2550 Garcia Avenue
 	Mountain View, CA  94043-1100
+
+[59]	Keith Robson
+	Ipsys Software plc
+	Marlborough Court, Pickford St.,
+	Macclesfield, Cheshire, SK11 6JD
+	England
 Sumitomo Electric Workstation Corp.	[77]
