@@ -8,6 +8,7 @@
 #ifdef AIXArchitecture
 #define SystemV                YES
 #define OSName                 AIX			/* SVR2++ */
+#define ibmbootstrapcflags -Daix
 #ifndef USE_PCC
 #define CcCmd cc -Nd4000 -Nn3000 -DBSD_INCLUDES
 #define LibraryDefines -Hcpp -DUNIXCPP
@@ -64,8 +65,13 @@
 #ifndef ibmarchdefs
 #define ibmarchdefs /**/
 #endif
-#define StandardDefines ibmosdefs ibmarchdefs
-#define LintOpts -ax ibmosdefs ibmarchdefs
+#ifndef ibmbootstrapcflags
+#define ibmbootstrapcflags /**/
+#endif
+
+#define BootstrapCFlags -Dibm ibmbootstrapcflags
+#define StandardDefines -Dibm ibmosdefs ibmarchdefs
+#define LintOpts -ax -Dibm ibmosdefs ibmarchdefs
 
 /* 
  * This defines the name of server you want.
@@ -146,5 +152,6 @@
 /* define this as you like for normal library compilation */
 #define LibraryDefines		-DUNIXCPP StandardDefines
 
-/**/# platform:  $XConsortium: hp.cf,v 1.16 89/08/16 15:48:41 jim Exp $
+/**/# platform:  $XConsortium: ibm.cf,v 1.8 89/10/03 09:39:29 jim Exp $
 /**/# operating system:  OSName
+
