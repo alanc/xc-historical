@@ -122,6 +122,23 @@ Bool InitLines(xp, p)
     return True;
 }
  
+Bool InitWideLines(xp, p)
+    XParms  xp;
+    Parms   p;
+{
+    int size;
+
+    (void)InitLines(xp, p);
+
+    size = p->special;
+    XSetLineAttributes(xp->d, xp->bggc, (int) ((size + 9) / 10),
+	LineSolid, CapRound, JoinRound);
+    XSetLineAttributes(xp->d, xp->fggc, (int) ((size + 9) / 10),
+	LineSolid, CapRound, JoinRound);
+
+    return True;
+}
+ 
 Bool InitDashedLines(xp, p)
     XParms  xp;
     Parms   p;
@@ -139,6 +156,28 @@ Bool InitDashedLines(xp, p)
     return True;
 }
 
+Bool InitWideDashedLines(xp, p)
+    XParms  xp;
+    Parms   p;
+{
+    int		size;
+    XGCValues   gcv;
+    char	dashes[2];
+
+    (void)InitWideLines(xp, p);
+    size = p->special;
+    size = (size + 9) / 10;
+
+    /* Modify GCs to draw dashed */
+    dashes[0] = 2*size;   dashes[1] = 2*size;
+    gcv.line_style = LineOnOffDash;
+    XChangeGC(xp->d, xp->fggc, GCLineStyle, &gcv);
+    XChangeGC(xp->d, xp->bggc, GCLineStyle, &gcv);
+    XSetDashes(xp->d, xp->fggc, 0, dashes, 2);
+    XSetDashes(xp->d, xp->bggc, 0, dashes, 2);
+    return True;
+}
+
 Bool InitDoubleDashedLines(xp, p)
     XParms  xp;
     Parms   p;
@@ -151,6 +190,28 @@ Bool InitDoubleDashedLines(xp, p)
     XSetLineAttributes(xp->d, xp->bggc, 0, LineDoubleDash, CapButt, JoinMiter);
     XSetLineAttributes(xp->d, xp->fggc, 0, LineDoubleDash, CapButt, JoinMiter);
     dashes[0] = 3;   dashes[1] = 2;
+    XSetDashes(xp->d, xp->fggc, 0, dashes, 2);
+    XSetDashes(xp->d, xp->bggc, 0, dashes, 2);
+    return True;
+}
+
+Bool InitWideDoubleDashedLines(xp, p)
+    XParms  xp;
+    Parms   p;
+{
+    int		size;
+    XGCValues   gcv;
+    char	dashes[2];
+
+    (void)InitWideLines(xp, p);
+    size = p->special;
+    size = (size + 9) / 10;
+
+    /* Modify GCs to draw dashed */
+    dashes[0] = 2*size;   dashes[1] = 2*size;
+    gcv.line_style = LineDoubleDash;
+    XChangeGC(xp->d, xp->fggc, GCLineStyle, &gcv);
+    XChangeGC(xp->d, xp->bggc, GCLineStyle, &gcv);
     XSetDashes(xp->d, xp->fggc, 0, dashes, 2);
     XSetDashes(xp->d, xp->bggc, 0, dashes, 2);
     return True;
