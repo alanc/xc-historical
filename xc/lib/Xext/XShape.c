@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XShape.c,v 1.21 91/01/11 20:50:26 converse Exp $
+ * $XConsortium: XShape.c,v 1.22 91/01/12 11:19:44 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -211,7 +211,7 @@ void XShapeCombineRectangles (dpy, dest, destKind, xOff, yOff,
 			      rects, n_rects, op, ordering)
 register Display *dpy;
 XID dest;
-int op, xOff, yOff, ordering;
+int destKind, op, xOff, yOff, ordering;
 XRectangle  *rects;
 int n_rects;
 {
