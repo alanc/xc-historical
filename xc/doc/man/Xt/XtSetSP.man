@@ -130,7 +130,7 @@ Specifies a pointer to the parameters.
 Specifies the number of elements containing data in \fIvalue\fP, each
 element of a sized indicated by \fIformat\fP.
 .IP \fIformat\fP 1i
-Specifies the size in bits of the data in teh elements of \fIvalue\fP.
+Specifies the size in bits of the data in the elements of \fIvalue\fP.
 .SH DESCRIPTION
 The specified parameters will be copied and stored in a new property of
 the specified type and format on the requestor's window. To initiate a
@@ -151,7 +151,7 @@ is 8, the elements of \fIvalue\fP are assumed to be sizeof(char); if 16,
 sizeof(short); if 32, sizeof(long).
 .LP
 To generate a MULTIPLE target request with parameters for any of the
-multiple targets of teh selection request, precede individual calls to
+multiple targets of the selection request, precede individual calls to
 .ZN XtGetSelectionValue
 and
 .ZN XtGetSelectionValueIncremental
