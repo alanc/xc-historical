@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.rules,v 1.35 94/02/06 17:36:13 rws Exp $
+XCOMM platform:  $XConsortium: Win32.rules,v 1.36 94/02/06 19:32:56 rws Exp $
 
 #define HasSharedLibraries YES
 #define NeedLibInsideFlag YES
@@ -440,10 +440,3 @@ clean::									@@\
 	RemoveFile(ProgramTargetName(program))
 #endif /* ComplexCplusplusProgramTarget */
 
-#ifndef SpecialCplusplusObjectRule
-#define SpecialCplusplusObjectRule(objs,depends,options)		@@\
-XVARdef0 = objs								@@\
-									@@\
-$(XVARuse0:.o=.obj): depends						@@\
-	ObjectCplusplusCompile(options)
-#endif /* SpecialCplusplusObjectRule */
