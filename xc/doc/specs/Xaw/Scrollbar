@@ -142,7 +142,7 @@ The smallest size, in pixels, to which the thumb can shrink.
 The orientation is the direction that the thumb will be allowed to move.
 This value can be either \fBXtOrientVertical\fP or
 \fBXtOrientHorizontal\fP.
-.Rs "horizontal or vertical"
+.Rs "horizontal \fPand\fB vertical"
 .IP \fBscrollDCursor\fP 1.5i
 This cursor is used when scrolling backward in a vertical scrollbar.
 .IP \fBscrollHCursor\fP 1.5i
