@@ -1,4 +1,23 @@
-.\" $XConsortium: rstartd.man,v 1.1 94/04/02 18:18:00 rws Exp $
+.\" $XConsortium: rstartd.man,v 1.2 94/04/11 16:03:28 matt Exp $
+.\" Copyright (c) 1993 Quarterdeck Office Systems
+.\" 
+.\" Permission to use, copy, modify, distribute, and sell this software and
+.\" its documentation for any purpose is hereby granted without fee, provided
+.\" that the above copyright notice appear in all copies and that both that
+.\" copyright notice and this permission notice appear in supporting
+.\" documentation, and that the name Quarterdeck Office Systems, Inc. not
+.\" be used in advertising or publicity pertaining to distribution of this
+.\" software without specific, written prior permission.
+.\" 
+.\" THIS SOFTWARE IS PROVIDED `AS-IS'.  QUARTERDECK OFFICE SYSTEMS, INC.,
+.\" DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING WITHOUT
+.\" LIMITATION ALL IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+.\" PARTICULAR PURPOSE, OR NONINFRINGEMENT.  IN NO EVENT SHALL QUARTERDECK
+.\" OFFICE SYSTEMS, INC., BE LIABLE FOR ANY DAMAGES WHATSOEVER, INCLUDING
+.\" SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES, INCLUDING LOSS OF USE,
+.\" DATA, OR PROFITS, EVEN IF ADVISED OF THE POSSIBILITY THEREOF, AND
+.\" REGARDLESS OF WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING
+.\" OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .hy 0		\" I hate hyphenation.
 .de EX		\"Begin example
 .ne 5
@@ -248,25 +267,5 @@ The fix is to look up a host name in $DISPLAY and substitute an IP address.)
 This is a trivial example of an incompatibility that \fIrstart\fP can hide.
 .SH "SEE ALSO"
 rstart(1), rsh(1), A Flexible Remote Execution Protocol Based on \fBrsh\fP
-.SH COPYRIGHT
-Copyright (c) 1993 Quarterdeck Office Systems
-.PP
-Permission to use, copy, modify, distribute, and sell this software and
-its documentation for any purpose is hereby granted without fee, provided
-that the above copyright notice appear in all copies and that both that
-copyright notice and this permission notice appear in supporting
-documentation, and that the name Quarterdeck Office Systems, Inc. not
-be used in advertising or publicity pertaining to distribution of this
-software without specific, written prior permission.
-.PP
-THIS SOFTWARE IS PROVIDED `AS-IS'.  QUARTERDECK OFFICE SYSTEMS, INC.,
-DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING WITHOUT
-LIMITATION ALL IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
-PARTICULAR PURPOSE, OR NONINFRINGEMENT.  IN NO EVENT SHALL QUARTERDECK
-OFFICE SYSTEMS, INC., BE LIABLE FOR ANY DAMAGES WHATSOEVER, INCLUDING
-SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES, INCLUDING LOSS OF USE,
-DATA, OR PROFITS, EVEN IF ADVISED OF THE POSSIBILITY THEREOF, AND
-REGARDLESS OF WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING
-OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .SH AUTHOR
 Jordan Brown, Quarterdeck Office Systems
