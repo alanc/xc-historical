@@ -592,6 +592,7 @@ BuildIncludes($(HEADERS),.,.)
 InstallMultiple($(HEADERS),$(INCDIR))
 InstallNonExecFile(Xcms.txt,$(LIBDIR))
 InstallNonExecFile(XErrorDB,$(LIBDIR))
+InstallNonExecFile(XKeysymDB,$(LIBDIR))
 InstallLintLibrary(X11,$(LINTLIBDIR))
 
 
