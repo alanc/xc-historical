@@ -2086,7 +2086,9 @@ Cursor Movement	Delete
 New Line	Miscellaneous
 	newline-and-indent		redraw-display
 	newline-and-backup		insert-file
-	newline		do-nothing
+	newline		insert-char
+			insert-string
+			do-nothing
 
 Kill		Unkill
 	kill-word		unkill
@@ -2101,12 +2103,21 @@ A page corresponds to the size of the Text window.
 For example, if the Text window is 50 lines in length, 
 scrolling forward one page is the same as scrolling forward 50 lines.
 .IP 2. 5
+The \fBinsert-char\fP action may only be attached to a key event.  It
+calls XLookupString to translate the event into a (rebindable) Latin-1
+character (sequence) and inserts that sequence into the text at the
+current position.  The \fBinsert-string\fP action takes one or more
+arguments and inserts the arguments into the text at the current position.
+An argument beginning with the characters "0x" and containing only
+valid hexadecimal digits in the remainder is interpreted as a hexadecimal
+constant and the corresponding single character is inserted instead.
+.IP 3. 5
 The \fBdelete\fP
 action deletes a text item.
 The \fBkill\fP
 action deletes a text item and puts the item in the kill buffer
 (X cut buffer 1).
-.IP 3. 5
+.IP 4. 5
 The \fBunkill\fP
 action inserts the contents of the kill buffer into the text at the current
 position.
