@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.60 94/02/05 12:54:47 kaleb Exp $
+XCOMM $XConsortium: Imakefile,v 1.61 94/03/18 12:37:27 gildea Exp $
 XCOMM
 XCOMM                         Attention xterm porters
 XCOMM
@@ -69,9 +69,9 @@ SetUIDProgramTarget(xterm,$(OBJS1),$(DEPLIBS1),XawClientLibs,$(TERMCAPLIB) $(PTY
 NormalProgramTarget(xterm,$(OBJS1),$(DEPLIBS1),XawClientLibs,$(TERMCAPLIB) $(PTYLIB))
 #endif
 
-#if InstallXtermSetUID && defined(SunArchitecture) && HasSharedLibraries
+#if InstallXtermSetUID && defined(SunArchitecture) && HasSharedLibraries && OSMajorVersion < 5
 #if AlternateUsrLibDir
-#if OSMajorVersion > 4 || (OSMajorVersion == 4 && OSMinorVersion >= 1)
+#if OSMajorVersion == 4 && OSMinorVersion >= 1
 LDOVERRIDE = -L$(DESTDIR)$(USRLIBDIR)
 #else
 #if HasGcc
@@ -85,7 +85,7 @@ LDRESUME = -Bdynamic
 install:: xterm
 	MakeDir($(DESTDIR)$(BINDIR))
 	RemoveFile(xterm.inst)
-	LinkRule(xterm.inst,$(LDOPTIONS) $(LDOVERRIDE),$(OBJS1),XawClientLibs $(LDRESUME) $(LDLIBS) $(TERMCAPLIB) $(PTYLIB))
+	LinkRule(xterm.inst,$(CDEBUGFLAGS) $(CCOPTIONS) $(EXTRA_LDOPTIONS) $(LOCAL_LDFLAGS),$(OBJS1),$(LDOVERRIDE) XawClientLibs $(LDRESUME) $(LDLIBS) $(TERMCAPLIB) $(PTYLIB))
 	$(INSTALL) -c $(INSTPGMFLAGS) $(INSTUIDFLAGS) xterm.inst $(DESTDIR)$(BINDIR)/xterm
 	RemoveFile(xterm.inst)
 #else
