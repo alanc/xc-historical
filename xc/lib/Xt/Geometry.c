@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Geometry.c,v 1.36 89/09/14 10:13:23 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Geometry.c,v 1.37 89/09/18 08:02:19 swick Exp $";
 /* $oHeader: Geometry.c,v 1.3 88/08/23 11:37:50 asente Exp $ */
 #endif /* lint */
 
@@ -68,7 +68,8 @@ XtGeometryResult XtMakeGeometryRequest (widget, request, reply)
 	    XtAppErrorMsg(XtWidgetToApplicationContext(widget),
 			  "internalError", "xtMakeGeometryRequest",
 			  "XtToolkitError",
-			  "internal error; ShellClassExtension is NULL");
+			  "internal error; ShellClassExtension is NULL",
+			  NULL, NULL);
 	}
 	managed = True;
 	parentRealized = TRUE;
