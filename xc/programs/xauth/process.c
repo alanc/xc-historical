@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.25 89/01/03 11:39:56 jim Exp $
+ * $XConsortium: process.c,v 1.26 89/01/03 11:54:21 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -234,7 +234,7 @@ static char **split_into_words (src, argcp)  /* argvify string */
     char *src;
     int *argcp;
 {
-    char *word;
+    char *jword;
     char savec;
     char **argv;
     int cur, total;
@@ -253,8 +253,8 @@ static char **split_into_words (src, argcp)  /* argvify string */
      */
 
     do {
-	word = skip_space (src);
-	src = skip_nonspace (word);
+	jword = skip_space (src);
+	src = skip_nonspace (jword);
 	savec = *src;
 	*src = '\0';
 	if (cur == total) {
@@ -262,9 +262,9 @@ static char **split_into_words (src, argcp)  /* argvify string */
 	    argv = (char **) realloc (argv, total * sizeof (char *));
 	    if (!argv) return NULL;
 	}
-	argv[cur++] = word;
+	argv[cur++] = jword;
 	if (savec) src++;		/* if not last on line advance */
-    } while (word != src);
+    } while (jword != src);
 
     argv[--cur] = NULL;			/* smash empty token to end list */
     *argcp = cur;
@@ -602,14 +602,20 @@ static Bool xauth_allowed = True;	/* if allowed to write auth file */
 static char *xauth_filename = NULL;
 static Bool dieing = False;
 
-static die ()
+#ifdef SIGNALRETURNSINT
+typedef int _signal_t;
+#else
+typedef void _signal_t;
+#endif
+
+static _signal_t die ()
 {
     dieing = True;
     exit (auth_finalize ());
     /* NOTREACHED */
 }
 
-static catchsig (sig)
+static _signal_t catchsig (sig)
     int sig;
 {
 #ifdef SYSV

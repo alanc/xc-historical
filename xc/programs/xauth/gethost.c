@@ -1,5 +1,5 @@
 /*
- * $XConsortium: gethost.c,v 1.6 89/01/03 11:39:51 jim Exp $
+ * $XConsortium: gethost.c,v 1.7 89/11/11 16:21:50 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,10 +23,15 @@
  * Author:  Jim Fulton, MIT X Consortium
  */
 
+#include "xauth.h"
+#include <X11/X.h>
 #include <signal.h>
 #include <setjmp.h>
 #include <ctype.h>
+#ifndef __TYPES__
 #include <sys/types.h>
+#define __TYPES__
+#endif
 #include <sys/socket.h>
 #include <stdio.h>
 #include <netdb.h>
@@ -37,8 +42,6 @@ extern int errno;			/* for stupid errno.h files */
 #include <netdnet/dn.h>
 #include <netdnet/dnetdb.h>
 #endif
-#include "xauth.h"
-#include <X11/X.h>
 
 Bool nameserver_timedout = False;
 
@@ -50,7 +53,13 @@ Bool nameserver_timedout = False;
  */
 
 static jmp_buf env;
-static nameserver_lost()
+static 
+#ifdef SIGNALRETURNSINT
+int
+#else
+void
+#endif
+nameserver_lost(sig)
 {
   nameserver_timedout = True;
   longjmp (env, -1);
@@ -61,7 +70,6 @@ char *get_hostname (auth)
     Xauth *auth;
 {
     struct hostent *hp = NULL;
-    int nameserver_lost();
     char *inet_ntoa();
 #ifdef DNETCONN
     struct nodeent *np;
