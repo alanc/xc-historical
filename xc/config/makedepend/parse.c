@@ -1,5 +1,5 @@
 /*
- * $Header: parse.c,v 1.3 88/08/21 11:32:30 rws Exp $
+ * $Header: parse.c,v 1.4 88/09/03 09:51:41 rws Exp $
  */
 #include "def.h"
 #include	<sys/signal.h>
@@ -201,6 +201,12 @@ deftype(line, filep, file_red, file, parse_it)
 		/*
 		 * Separate the name of the include file.
 		 */
+		{
+		    struct symtab *sym = defined(p, file_red);
+		    if (sym) {
+			p = sym->s_value;
+		    }
+		}
 		while (*p && *p != '"' && *p != '<')
 			p++;
 		if (! *p)
