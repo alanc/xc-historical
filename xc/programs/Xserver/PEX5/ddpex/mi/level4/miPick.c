@@ -1,4 +1,5 @@
-/* $XConsortium: miPick.c,v 5.4 92/03/04 14:10:47 hersh Exp $ */
+/* $XConsortium: miPick.c,v 5.5 92/04/15 15:51:19 hersh Exp $ */
+
 
 
 /***********************************************************
@@ -475,15 +476,12 @@ UpdatePickMeasure(pPM, size, pInput)
 	    	pstr = pos->pstruct;
 	    	num_els = MISTR_NUM_EL((miStructPtr) pstr->deviceData);
 		}
-	if ((err != Success) || (trav_state.exec_str_flag == ES_POP))
-	    /* pop after a successful pick */
-	    break;
     } while (pos);
 
     EndPicking(pwks->pRend);
 
-    if (err == Success ) {
-    /* now, update the structure ref counts */
+    if (ppm->status == PEXOk) {
+      /* now, update the structure ref counts */
         path_update_struct_refs(ppm->path, (diResourceHandle) NULL,
 				PICK_RESOURCE, ADD);
     } else {

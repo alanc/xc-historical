@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: miTraverse.c,v 5.1 91/02/16 09:56:05 rws Exp $ */
+
 
 
 /***********************************************************
@@ -178,6 +179,9 @@ miTraverserState    *p_trav_state;
     ddPickPath		*pl;
     ddElementRef	*sl;
     int			zap;
+    miPPLevel		myPickLevel, *pp;
+    int			i;
+
 
     if (pPM)
 	ppm = (miPickMeasureStr *) pPM->deviceData;
@@ -235,6 +239,16 @@ miTraverserState    *p_trav_state;
 		if (go) {
 
 		    BeginStructure(pRend, p_next_str->id);
+
+		    /* build the pick path as we descend the hierarchy */
+		    if (pPM) {
+			myPickLevel.up = p_trav_state->p_pick_path;
+			myPickLevel.pp.structure = pStruct;
+			myPickLevel.pp.offset = currOffset;
+			myPickLevel.pp.pickid = pickId;
+			p_trav_state->p_pick_path = &myPickLevel;
+		    }
+
 		    err = traverser(	pRend, p_next_str, (ddULONG) 1,
 					MISTR_NUM_EL((miStructPtr) p_next_str->deviceData),
 					pPM, pSC, p_trav_state);
@@ -243,27 +257,13 @@ miTraverserState    *p_trav_state;
 		}
 
 		/*
-		 * Now, if doing picking and a pick has happened, continue 
-		 * popping out of the traversal and setting the pick path.  These
-		 * assume that the obj list is large enough, and it should since
-		 * it was checked when the traversal ended and started popping
-		 * out of the recusion
-		 */
-		if (pPM && (p_trav_state->exec_str_flag == ES_POP)) {
+		 * We built the candidate pick path when it was found. We
+		 * do nothing on the way out - except restore pointer.
+	       */
+	       if (pPM) {
+		   p_trav_state->p_pick_path = myPickLevel.up; 
+	       }
 
-		    pl = (ddPickPath *) ppm->path->pList;
-
-		    if (ppm->pathOrder == PEXTopPart)
-			zap = depth -1;
-		    else	/* order is BottomPart */
-			zap = p_trav_state->max_depth - depth;
-
-		    pl[zap].structure = pStruct;
-		    pl[zap].offset = currOffset;
-		    pl[zap].pickid = pickId;
-
-		    return (Success);
-		}
 
 		/* do the same for searching, replacing the start
 		 * path with the found path 
@@ -372,7 +372,6 @@ miTraverserState    *p_trav_state;
 		    }
 		    if (pPM) {
 			InquirePickStatus(pRend, &pickStatus, p_trav_state);
-			ppm->status = pickStatus;
 			if (pickStatus == PEXOk) {
 
 			    pl = (ddPickPath *) ppm->path->pList;
@@ -409,8 +408,23 @@ miTraverserState    *p_trav_state;
 			    pl[zap].offset = currOffset;
 			    pl[zap].pickid = pickId;
 
-			    p_trav_state->exec_str_flag = ES_POP;
-			    return (Success);
+			    /*
+			     * we want to continue on, so we do not want to
+			     * pop off to use the recursion.
+			     * follow the linked list down
+			     */
+			    pp = p_trav_state->p_pick_path;
+			    for (i = depth-1; i > 0; i-- ) {		
+			       if (ppm->pathOrder == PEXTopPart)
+				   zap = i - 1;
+			       else	
+				   zap = p_trav_state->max_depth - i;
+			      
+			       pl[zap] = pp->pp; /* structure assignment */
+			       pp = pp->up;
+			    }
+			    ppm->status = pickStatus;
+
 			}
 		    }
 		}

@@ -1,4 +1,4 @@
-/* $XConsortium: miRndrPick.c,v 1.1 92/03/04 14:11:52 hersh Exp $ */
+/* $XConsortium: miRndrPick.c,v 1.2 92/05/06 19:34:58 hersh Exp $ */
 
 /************************************************************
 Copyright 1992 by The Massachusetts Institute of Technology
@@ -79,14 +79,11 @@ ddRendererPtr       pRend;    /* renderer handle */
     ppm = (miPickMeasureStr *) xalloc(sizeof(miPickMeasureStr));
     if (!ppm) return (BadAlloc);
 
-/*
     ppm->path = puCreateList(DD_PICK_PATH);
     if (!ppm->path) {
 	xfree(ppm);
 	return (BadAlloc);
     }
-*/
-    ppm->path = 0;
 
     /* initialize pointers to NULL values */
     ppm->pWks = 0;
@@ -123,7 +120,6 @@ ddPickRecord       *pRec;     /* PickRecord */
     
     ppm = (miPickMeasureStr *) (pRend->pickstr.pseudoPM)->deviceData;
 
-/*
     if (!ppm->path) {
 	ppm->path = puCreateList(DD_PICK_PATH);
 	if (!ppm->path) {
@@ -137,8 +133,6 @@ ddPickRecord       *pRec;     /* PickRecord */
 	    return (BadAlloc);
 	}
     }
-*/
-    ppm->path = 0;
     ppm->incl_handle = pRend->ns[DD_PICK_INCL_NS];
     ppm->excl_handle = pRend->ns[DD_PICK_EXCL_NS];
 
@@ -173,17 +167,66 @@ ddPickRecord       *pRec;     /* PickRecord */
 }
 
 ddpex3rtn
-EndPickOne( pRend, pBuffer)
+EndPickOne( pRend, pBuffer, numPickElRefs, pickStatus, betterPick)
 /* in */
 ddRendererPtr       pRend;    /* renderer handle */
 /* out */
 ddBufferPtr     pBuffer;    /* list of pick element ref */
+ddULONG         *numPickElRefs;
+ddUSHORT        *pickStatus;
+ddUSHORT        *betterPick;
 {
     ddpex3rtn		err = Success;
+    miPickMeasureStr    *ppm;
+    int                 numbytes, i;
+    ddPickPath          *per;
+    pexPickElementRef   *dest;
 
-   /* JSH - to be filled in later with stuff that counts and
-      returns the path from the pick measure 
-  */
+    err = EndPicking(pRend, pRend->pickstr.pseudoPM);
+
+    ppm = (miPickMeasureStr *) (pRend->pickstr.pseudoPM)->deviceData;
+    *numPickElRefs = 0;
+    *pickStatus = ppm->status;
+    *betterPick = 0;
+
+    if (ppm->status == PEXOk && ppm->path) {  /* we have a pick */
+
+	/* send back the number of objects */
+	*numPickElRefs = ppm->path->numObj;
+
+	/* Now, tack on the list of Element Refs to the back of the reply 
+	   Note that we do NOT include the length of the list. 
+	   The length is found in the reply itself. 
+	*/
+	numbytes = sizeof(ddPickPath) * ppm->path->numObj;
+
+	PU_CHECK_BUFFER_SIZE(pBuffer, numbytes); 
+	/* Copy the Pick Path to the buffer */
+	for (per = (ddPickPath*) ppm->path->pList,
+	     dest = (pexPickElementRef*) pBuffer->pBuf, i=0;
+	     i < ppm->path->numObj; per++, dest++, i++) {
+
+	     /* if returned structure handle is the fakeStr
+	        then the pick was on a path below an immediate OC
+	        so return the struct id the user sent over in the BeginPick
+	        request, otherwise return the resource ID as normal
+	     */
+	    if ((diStructHandle)(per->structure) == pRend->pickstr.fakeStr)
+	      dest->sid = pRend->pickstr.sid;
+	    else
+	      dest->sid = ((ddStructResource*)(per->structure))->id;
+	    dest->offset = per->offset;
+	    dest->pickid = per->pickid;
+	}
+
+	pBuffer->dataSize = numbytes; /* tells dipex how long the reply is  */
+    }
+
+    if (ppm->path) {
+	puDeleteList(ppm->path); 
+	ppm->path = NULL; 
+    }
+
   return(err);
 }
 
