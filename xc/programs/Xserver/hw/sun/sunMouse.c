@@ -415,7 +415,6 @@ static void
 sunWarpCursor (pScreen, x, y)
     ScreenPtr	pScreen;
     int		x, y;
-    Bool	generateEvents;
 {
     int	    oldmask;
 
