@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.96 90/12/09 16:44:30 rws Exp $
+ * $XConsortium: XOpenDis.c,v 11.97 90/12/12 09:18:45 rws Exp $
  */
 
 #include "copyright.h"
@@ -133,7 +133,7 @@ Display *XOpenDisplay (display)
 	register int i;
 	int j, k;			/* random iterator indexes */
 	char *display_name;		/* pointer to display name */
-	int indian;			/* to determine which indian. */
+	int endian;			/* to determine which endian. */
 	xConnClientPrefix client;	/* client information */
 	xConnSetupPrefix prefix;	/* prefix information */
 	int vendorlen;			/* length of vendor string */
@@ -303,8 +303,8 @@ Display *XOpenDisplay (display)
  * in security are strongly encouraged to use an authentication and 
  * authorization system such as Kerberos.
  */
-	indian = 1;
-	if (*(char *) &indian)
+	endian = 1;
+	if (*(char *) &endian)
 	    client.byteOrder = 'l';
 	else
 	    client.byteOrder = 'B';
