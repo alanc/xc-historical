@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.30 88/01/02 17:38:54 rws Locked $ */
+/* $Header: dispatch.c,v 1.31 88/01/18 17:29:45 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -241,7 +241,6 @@ Dispatch()
 
     while (1) 
     {
-StartOver:
         if (*checkForInput[0] != *checkForInput[1])
 	    ProcessInputEvents();
 
@@ -291,8 +290,7 @@ StartOver:
 	        if (result < 0) 
 	        {
 		    CloseDownClient(client);
-		    isItTimeToYield = TRUE;
-		    continue;
+		    break;
 	        }
 	        else if (result == 0)
 	        {
@@ -302,10 +300,7 @@ StartOver:
 			     (request ? request->reqType : -1),
 			       nready);
 #endif
-		    if (nready > 0)
-			continue;
-		    else
-		        goto StartOver;
+		    continue;
 		}
 
 		client->sequence++;
@@ -323,8 +318,7 @@ StartOver:
                         CloseDownClient(client);
                     else
 		        Oops(client, request->reqType, 0, ErrorStatus);
-		    isItTimeToYield = TRUE;
-		    continue;
+		    break;
 	        }
 	    }
 	}
