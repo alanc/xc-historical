@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 1.165 88/12/31 09:57:36 rws Exp $ */
+/* $XConsortium: events.c,v 1.167 88/12/31 15:21:16 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -958,14 +958,18 @@ DeliverDeviceEvents(pWin, xE, grab, stopAt)
     Window child = None;
 
     filter = filters[xE->u.u.type];
-    if ((filter != CantBeFiltered) && !(filter & pWin->deliverableEvents))
+    if (!(filter & pWin->deliverableEvents))
 	return 0;
+    deliveries = 0;
     while (pWin)
     {
-	FixUpEventFromWindow(xE, pWin, child, FALSE);
-	deliveries = DeliverEventsToWindow(pWin, xE, 1, filter, grab);
-	if (deliveries > 0)
-	    return deliveries;
+	if (pWin->allEventMasks & filter)
+	{
+	    FixUpEventFromWindow(xE, pWin, child, FALSE);
+	    deliveries = DeliverEventsToWindow(pWin, xE, 1, filter, grab);
+	    if (deliveries > 0)
+		return deliveries;
+	}
 	if ((deliveries < 0) ||
 	    (pWin == stopAt) ||
 	    (filter & pWin->dontPropagateMask))
@@ -1765,50 +1769,55 @@ EnterLeaveEvent(type, mode, detail, pWin)
 {
     xEvent		event;
     DeviceIntPtr	keybd = inputInfo.keyboard;
-    WindowPtr		focus = keybd->u.keybd.focus.win;
+    WindowPtr		focus;
     GrabPtr		grab = inputInfo.pointer->grab;
-    Mask		mask, allMask;
+    Mask		mask;
 
     if ((pWin == motionHintWindow) && (detail != NotifyInferior))
 	motionHintWindow = NullWindow;
-    if ((mode == NotifyNormal) &&
-	grab && !grab->ownerEvents && (grab->window != pWin))
-	return;
-    event.u.u.type = type;
-    event.u.u.detail = detail;
-    event.u.enterLeave.time = currentTime.milliseconds;
-    event.u.enterLeave.rootX = sprite.hot.x;
-    event.u.enterLeave.rootY = sprite.hot.y;
- /* This call counts on same initial structure beween enter & button events */
-    FixUpEventFromWindow(&event, pWin, None, TRUE);		
-    event.u.enterLeave.flags = event.u.keyButtonPointer.sameScreen ?
-					ELFlagSameScreen : 0;
-    event.u.enterLeave.state = keyButtonState;
-    event.u.enterLeave.mode = mode;
-    if ((focus != NoneWin) &&
-	((pWin == focus) || (focus == PointerRootWin) ||
-	 IsParent(focus, pWin)))
-	event.u.enterLeave.flags |= ELFlagFocus;
     if (grab)
     {
 	mask = (pWin == grab->window) ? grab->eventMask : 0;
 	if (grab->ownerEvents)
-	    mask |= EventMaskForClient(pWin, grab->client, &allMask);
-	(void) TryClientEvents(grab->client, &event, 1, mask,
-			       filters[type], grab);
+	    mask |= EventMaskForClient(pWin, grab->client);
     }
     else
     {
-	(void)DeliverEventsToWindow(pWin, &event, 1, filters[type], NullGrab);
+	mask = pWin->allEventMasks;
     }
-    if (type == EnterNotify)
+    if (mask & filters[type])
+    {
+	event.u.u.type = type;
+	event.u.u.detail = detail;
+	event.u.enterLeave.time = currentTime.milliseconds;
+	event.u.enterLeave.rootX = sprite.hot.x;
+	event.u.enterLeave.rootY = sprite.hot.y;
+	/* Counts on the same initial structure of crossing & button events! */
+	FixUpEventFromWindow(&event, pWin, None, TRUE);		
+	event.u.enterLeave.flags = event.u.keyButtonPointer.sameScreen ?
+					    ELFlagSameScreen : 0;
+	event.u.enterLeave.state = keyButtonState;
+	event.u.enterLeave.mode = mode;
+	focus = keybd->u.keybd.focus.win;
+	if ((focus != NoneWin) &&
+	    ((pWin == focus) || (focus == PointerRootWin) ||
+	     IsParent(focus, pWin)))
+	    event.u.enterLeave.flags |= ELFlagFocus;
+	if (grab)
+	    (void)TryClientEvents(grab->client, &event, 1, mask,
+				  filters[type], grab);
+	else
+	    (void)DeliverEventsToWindow(pWin, &event, 1, filters[type],
+					NullGrab);
+    }
+    if ((type == EnterNotify) && (mask & KeymapStateMask))
     {
 	xKeymapEvent ke;
 	ke.type = KeymapNotify;
 	bcopy((char *)&keybd->down[1], (char *)&ke.map[0], 31);
 	if (grab)
-	    (void) TryClientEvents(grab->client, (xEvent *)&ke, 1, mask,
-				   KeymapStateMask, grab);
+	    (void)TryClientEvents(grab->client, (xEvent *)&ke, 1, mask,
+				  KeymapStateMask, grab);
 	else
 	    (void)DeliverEventsToWindow(pWin, (xEvent *)&ke, 1,
 					KeymapStateMask, NullGrab);
@@ -1897,7 +1906,7 @@ FocusEvent(type, mode, detail, pWin)
     event.u.u.detail = detail;
     event.u.focus.window = pWin->wid;
     (void)DeliverEventsToWindow(pWin, &event, 1, filters[type], NullGrab);
-    if (type == FocusIn)
+    if ((type == FocusIn) && (pWin->allEventMasks & KeymapStateMask))
     {
 	xKeymapEvent ke;
 	ke.type = KeymapNotify;
@@ -3436,14 +3445,13 @@ MaybeStopHint(client)
     ClientPtr client;
 {
     GrabPtr grab = inputInfo.pointer->grab;
-    Mask mask;
 
     if ((grab && (client == grab->client) &&
 	 ((grab->eventMask & PointerMotionHintMask) ||
 	  (grab->ownerEvents &&
-	   (EventMaskForClient(motionHintWindow, client, &mask) &
+	   (EventMaskForClient(motionHintWindow, client) &
 	    PointerMotionHintMask)))) ||
-	(!grab && (EventMaskForClient(motionHintWindow, client, &mask) &
+	(!grab && (EventMaskForClient(motionHintWindow, client) &
 		   PointerMotionHintMask)))
 	motionHintWindow = NullWindow;
 }
@@ -3915,23 +3923,20 @@ CheckCursorConfinement(pWin)
 }
 
 Mask
-EventMaskForClient(win, client, allMask)
+EventMaskForClient(win, client)
     WindowPtr		win;
     ClientPtr		client;
-    Mask		*allMask;
 {
-    OtherClientsPtr	other;
-    Mask		him = 0;
+    register OtherClientsPtr	other;
+
     if (win->client == client)
-	him = win->eventMask;
-    *allMask = win->eventMask;
+	return win->eventMask;
     for (other = OTHERCLIENTS(win); other; other = other->next)
     {
 	if (other->client == client)
-	    him = other->mask;
-	*allMask |= other->mask;
+	    return other->mask;
     }
-    return him;
+    return 0;
 }
 
 
