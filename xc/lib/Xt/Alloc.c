@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Alloc.c,v 1.25 89/09/14 15:19:09 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Alloc.c,v 1.26 89/09/19 20:11:04 swick Exp $";
 /* $oHeader: Alloc.c,v 1.2 88/08/18 15:33:53 asente Exp $ */
 #endif /* lint */
 
@@ -41,6 +41,7 @@ void _XtAllocError(type)
     String type;
 {
     Cardinal num_params = 1;
+    if (type == NULL) type = "local memory allocation";
     XtErrorMsg("allocError", type ,"XtToolkitError",
 	       "Cannot perform %s", &type, &num_params);
 }
