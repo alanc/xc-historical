@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.6 89/08/15 00:44:46 keith Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.8 89/08/15 12:10:46 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -34,6 +34,7 @@ Author: Keith Packard
 #include	"cfbmskbits.h"
 
 #include	"cfb8bit.h"
+#include	"fastblt.h"
 
 cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
     DrawablePtr	    pSrc, pDst;
@@ -45,7 +46,7 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 				/* start of src and dst bitmaps */
     int widthSrc, widthDst;	/* add to get to same position in next line */
 
-    register BoxPtr pbox;
+    BoxPtr pbox;
     int nbox;
 
     BoxPtr pboxTmp, pboxNext, pboxBase, pboxNew1, pboxNew2;
@@ -67,9 +68,12 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
     int nlMiddle;		/* whole longwords in dst */
     register int nl;		/* temp copy of nlMiddle */
     register unsigned int tmp, bits;
+#ifdef FAST_CONSTANT_OFFSET_MODE
+    register unsigned int bits1;
+#endif
 				/* place to store full source word */
     int xoffSrc, xoffDst;
-    int	leftShift, rightShift;
+    register int leftShift, rightShift;
 
     int nstart;			/* number of ragged bits at start of dst */
     int nend;			/* number of ragged bits at end of dst */
@@ -77,6 +81,7 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 				   overflows into the next word? */
     int careful;
     int	xoff;
+    int tmpSrc;
 
     if (pSrc->type == DRAWABLE_WINDOW)
     {
@@ -255,17 +260,68 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 	    	    xoffDst = pbox->x1 & PIM;
 		    pdstLine += (pbox->x1 >> PWSH);
 		    psrcLine += (pptSrc->x >> PWSH);
-		    if (xoffSrc > xoffDst)
+		    if (xoffSrc == xoffDst)
 		    {
-		    	leftShift = (xoffSrc - xoffDst) << (5 - PWSH);
-		    	rightShift = 32 - leftShift;
 	    	    	while (h--)
 	    	    	{
+			    int	dec;
+
 		    	    psrc = psrcLine;
 		    	    pdst = pdstLine;
 		    	    pdstLine += widthDst;
 		    	    psrcLine += widthSrc;
-			    bits = *psrc++;
+			    if (startmask)
+			    {
+			    	*pdst = (*pdst & ~startmask) | (*psrc++ & startmask);
+			    	pdst++;
+			    }
+			    nl = nlMiddle;
+#ifdef FAST_CONSTANT_OFFSET_MODE
+			    psrc += nl & (UNROLL-1);
+			    pdst += nl & (UNROLL-1);
+
+#define BodyOdd(n) pdst[-n] = psrc[-n];
+#define BodyEven(n) pdst[-n] = psrc[-n];
+
+#define LoopReset \
+    pdst += UNROLL; \
+    psrc += UNROLL;
+
+			    PackedLoop
+
+#undef BodyOdd
+#undef BodyEven
+#undef LoopReset
+
+#else
+			    DuffL(nl, label1, *pdst++ = *psrc++;)
+#endif
+
+			    if (endmask)
+			    	*pdst = (*pdst & ~endmask) | (*psrc++ & endmask);
+		    	}
+		    }
+		    else
+		    {
+		    	if (xoffSrc > xoffDst)
+			{
+			    leftShift = (xoffSrc - xoffDst) << (5 - PWSH);
+			    rightShift = 32 - leftShift;
+			}
+		    	else
+			{
+			    rightShift = (xoffDst - xoffSrc) << (5 - PWSH);
+			    leftShift = 32 - rightShift;
+			}
+		    	while (h--)
+		    	{
+			    psrc = psrcLine;
+			    pdst = pdstLine;
+			    pdstLine += widthDst;
+			    psrcLine += widthSrc;
+			    bits = 0;
+			    if (xoffSrc > xoffDst)
+			    	bits = *psrc++;
 			    if (startmask)
 			    {
 			    	tmp = BitLeft(bits,leftShift);
@@ -276,13 +332,37 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 			    	pdst++;
 			    }
 			    nl = nlMiddle;
-			    while (nl--)
- 			    {
-			    	tmp = BitLeft(bits, leftShift);
-			    	bits = *psrc++;
-			    	tmp |= BitRight(bits, rightShift);
-			    	*pdst++ = tmp;
-			    }
+#ifdef FAST_CONSTANT_OFFSET_MODE
+			    bits1 = bits;
+			    psrc += nl & (UNROLL-1);
+			    pdst += nl & (UNROLL-1);
+
+#define BodyOdd(n) \
+    bits = psrc[-n]; \
+    pdst[-n] = BitLeft(bits1, leftShift) | BitRight(bits, rightShift);
+
+#define BodyEven(n) \
+    bits1 = psrc[-n]; \
+    pdst[-n] = BitLeft(bits, leftShift) | BitRight(bits1, rightShift);
+
+#define LoopReset \
+    pdst += UNROLL; \
+    psrc += UNROLL;
+
+			    PackedLoop
+
+#undef BodyOdd
+#undef BodyEven
+#undef LoopReset
+
+#else
+			    DuffL (nl,label2,
+				tmp = BitLeft(bits, leftShift);
+				bits = *psrc++;
+				*pdst++ = tmp | BitRight(bits, rightShift);
+			    )
+#endif
+    
 			    if (endmask)
 			    {
 			    	tmp = BitLeft(bits, leftShift);
@@ -296,66 +376,6 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 			    }
 		    	}
 		    }
-		    else if (xoffDst > xoffSrc)
-		    {
-		    	rightShift = (xoffDst - xoffSrc) << (5 - PWSH);
-		    	leftShift = 32 - rightShift;
-	    	    	while (h--)
-	    	    	{
-		    	    psrc = psrcLine;
-		    	    pdst = pdstLine;
-		    	    pdstLine += widthDst;
-		    	    psrcLine += widthSrc;
-			    tmp = 0;
-			    if (startmask)
-			    {
-			    	bits = *psrc++;
-			    	tmp |= BitRight(bits, rightShift);
-			    	*pdst = (*pdst & ~startmask) |
-				    	(tmp & startmask);
-			    	pdst++;
-			    	tmp = BitLeft(bits, leftShift);
-			    }
-			    nl = nlMiddle;
-			    while (nl--)
-			    {
-			    	bits = *psrc++;
-			    	tmp |= BitRight(bits, rightShift);
-			    	*pdst++ = tmp;
-			    	tmp = BitLeft (bits, leftShift);
-			    }
-			    if (endmask)
-			    {
-			    	if (BitLeft (endmask, rightShift))
-			    	{
-			    	    bits = *psrc++;
-			    	    tmp |= BitRight (bits, rightShift);
-			    	}
-			    	*pdst = (*pdst & ~endmask) |
-				    	(tmp & endmask);
-			    }
-		    	}
-		    }
-		    else
-		    {
-	    	    	while (h--)
-	    	    	{
-		    	    psrc = psrcLine;
-		    	    pdst = pdstLine;
-		    	    pdstLine += widthDst;
-		    	    psrcLine += widthSrc;
-			    if (startmask)
-			    {
-			    	*pdst = (*pdst & ~startmask) | (*psrc++ & startmask);
-			    	pdst++;
-			    }
-			    nl = nlMiddle;
-			    while (nl--)
-				    *pdst++ = *psrc++;
-			    if (endmask)
-			    	*pdst = (*pdst & ~endmask) | (*psrc++ & endmask);
-		    	}
-	    	    }
 	    	}
 	    	else	/* xdir == -1 */
 	    	{
@@ -363,58 +383,71 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 	    	    xoffDst = (pbox->x2 - 1) & PIM;
 		    pdstLine += ((pbox->x2-1) >> PWSH) + 1;
 		    psrcLine += ((pptSrc->x+w - 1) >> PWSH) + 1;
-		    if (xoffSrc > xoffDst)
+		    if (xoffSrc == xoffDst)
 		    {
-		    	leftShift = (xoffSrc - xoffDst) << (5 - PWSH);
-		    	rightShift = 32 - leftShift;
 	    	    	while (h--)
 	    	    	{
 		    	    psrc = psrcLine;
 		    	    pdst = pdstLine;
 		    	    pdstLine += widthDst;
 		    	    psrcLine += widthSrc;
-			    tmp = 0;
 			    if (endmask)
 			    {
-			    	bits = *--psrc;
-			    	tmp = BitLeft(bits, leftShift);
 			    	pdst--;
-			    	*pdst = (*pdst & ~endmask) |
-				    	(tmp & endmask);
-			    	tmp = BitRight(bits, rightShift);
+			    	*pdst = (*pdst & ~endmask) | (*--psrc & endmask);
 			    }
 			    nl = nlMiddle;
-			    while (nl--)
-			    {
-			    	bits = *--psrc;
-			    	tmp |= BitLeft (bits, leftShift);
-			    	*--pdst = tmp;
-			    	tmp = BitRight (bits, rightShift);
-			    }
+
+#ifdef FAST_CONSTANT_OFFSET_MODE
+			    psrc -= nl & (UNROLL - 1);
+			    pdst -= nl & (UNROLL - 1);
+
+#define BodyOdd(n) pdst[n-1] = psrc[n-1];
+
+#define BodyEven(n) pdst[n-1] = psrc[n-1];
+
+#define LoopReset \
+    pdst -= UNROLL;\
+    psrc -= UNROLL;
+
+			    PackedLoop
+
+#undef BodyOdd
+#undef BodyEven
+#undef LoopReset
+
+#else
+			    DuffL(nl,label3, *--pdst = *--psrc;)
+#endif
+
 			    if (startmask)
 			    {
-			    	if (BitRight (startmask, leftShift))
-			    	{
-			    	    bits = *--psrc;
-			    	    tmp |= BitLeft(bits, leftShift);
-			    	}
 			    	--pdst;
-			    	*pdst = (*pdst & ~startmask) |
-				    	(tmp & startmask);
+			    	*pdst = (*pdst & ~startmask) | (*--psrc & startmask);
 			    }
 		    	}
 		    }
-		    else if (xoffDst > xoffSrc)
+		    else
 		    {
-		    	rightShift = (xoffDst - xoffSrc) << (5 - PWSH);
-		    	leftShift = 32 - rightShift;
+			if (xoffDst > xoffSrc)
+			{
+			    rightShift = (xoffDst - xoffSrc) << (5 - PWSH);
+			    leftShift = 32 - rightShift;
+			}
+			else
+			{
+		    	    leftShift = (xoffSrc - xoffDst) << (5 - PWSH);
+		    	    rightShift = 32 - leftShift;
+			}
 	    	    	while (h--)
 	    	    	{
 		    	    psrc = psrcLine;
 		    	    pdst = pdstLine;
 		    	    pdstLine += widthDst;
 		    	    psrcLine += widthSrc;
-			    bits = *--psrc;
+			    bits = 0;
+			    if (xoffDst > xoffSrc)
+				bits = *--psrc;
 			    if (endmask)
 			    {
 			    	tmp = BitRight(bits, rightShift);
@@ -425,13 +458,38 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 				    	(tmp & endmask);
 			    }
 			    nl = nlMiddle;
-			    while (nl--)
-			    {
-			    	tmp = BitRight (bits, rightShift);
-			    	bits = *--psrc;
-			    	tmp |= BitLeft (bits, leftShift);
-			    	*--pdst = tmp;
-			    }
+
+#ifdef FAST_CONSTANT_OFFSET_MODE
+			    bits1 = bits;
+			    psrc -= nl & (UNROLL - 1);
+			    pdst -= nl & (UNROLL - 1);
+
+#define BodyOdd(n) \
+    bits = psrc[n-1]; \
+    pdst[n-1] = BitRight(bits1, rightShift) | BitLeft(bits, leftShift);
+
+#define BodyEven(n) \
+    bits1 = psrc[n-1]; \
+    pdst[n-1] = BitRight(bits, rightShift) | BitLeft(bits1, leftShift);
+
+#define LoopReset \
+    pdst -= UNROLL; \
+    psrc -= UNROLL;
+
+			    PackedLoop
+
+#undef BodyOdd
+#undef BodyEven
+#undef LoopReset
+
+#else
+			    DuffL (nl, label4,
+				tmp = BitRight(bits, rightShift);
+				bits = *--psrc;
+				*--pdst = tmp | BitLeft(bits, leftShift);
+			    )
+#endif
+
 			    if (startmask)
 			    {
 			    	tmp = BitRight(bits, rightShift);
@@ -446,30 +504,7 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 			    }
 		    	}
 		    }
-		    else
-		    {
-	    	    	while (h--)
-	    	    	{
-		    	    psrc = psrcLine;
-		    	    pdst = pdstLine;
-		    	    pdstLine += widthDst;
-		    	    psrcLine += widthSrc;
-			    if (endmask)
-			    {
-			    	pdst--;
-			    	*pdst = (*pdst & ~endmask) | (*--psrc & endmask);
-			    }
-			    nl = nlMiddle;
-			    while (nl--)
-			    	*--pdst = *--psrc;
-			    if (startmask)
-			    {
-			    	--pdst;
-			    	*pdst = (*pdst & ~startmask) | (*--psrc & startmask);
-			    }
-		    	}
-	    	    }
-	    	}
+		}
 	    }
 	    pbox++;
 	    pptSrc++;
@@ -509,11 +544,6 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
     	    }
     	    else
     	    {
-            	register int xoffSrc;
-            	int nstart;
-            	int nend;
-            	int srcStartOver;
-	    	int tmpSrc;
             	maskbits(pbox->x1, w, startmask, endmask, nlMiddle)
             	if (startmask)
 	    	    nstart = PPW - (pbox->x1 & PIM);

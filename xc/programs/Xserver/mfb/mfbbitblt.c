@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbitblt.c,v 5.5 89/07/16 10:45:08 rws Exp $ */
+/* $XConsortium: mfbbitblt.c,v 1.3 89/08/23 00:17:28 keith Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 
@@ -344,59 +344,7 @@ each band.
 translated.
 */
 
-/*
- * magic macro for copying longword aligned regions
- */
-
-#define longcopy(from,to,count)    \
-{ \
-    switch (count & 7) { \
-	  case 0:   *to++ = *from++; \
-	  case 7:   *to++ = *from++; \
-	  case 6:   *to++ = *from++; \
-	  case 5:   *to++ = *from++; \
-	  case 4:   *to++ = *from++; \
-	  case 3:   *to++ = *from++; \
-	  case 2:   *to++ = *from++; \
-	  case 1:   *to++ = *from++; \
-    } \
-    while ((count -= 8) > 0) { \
-	  *to++ = *from++; \
-	  *to++ = *from++; \
-	  *to++ = *from++; \
-	  *to++ = *from++; \
-	  *to++ = *from++; \
-	  *to++ = *from++; \
-	  *to++ = *from++; \
-	  *to++ = *from++; \
-    } \
-}
-
 #ifndef PURDUE
-
-#define longRop(alu,from,to,count)    \
-{ \
-    switch (count & 7) { \
-	  case 0:   *to = DoRop (alu, *from++, *to); to++; \
-	  case 7:   *to = DoRop (alu, *from++, *to); to++; \
-	  case 6:   *to = DoRop (alu, *from++, *to); to++; \
-	  case 5:   *to = DoRop (alu, *from++, *to); to++; \
-	  case 4:   *to = DoRop (alu, *from++, *to); to++; \
-	  case 3:   *to = DoRop (alu, *from++, *to); to++; \
-	  case 2:   *to = DoRop (alu, *from++, *to); to++; \
-	  case 1:   *to = DoRop (alu, *from++, *to); to++; \
-    } \
-    while ((count -= 8) > 0) { \
-	  *to = DoRop (alu, *from++, *to); to++; \
-	  *to = DoRop (alu, *from++, *to); to++; \
-	  *to = DoRop (alu, *from++, *to); to++; \
-	  *to = DoRop (alu, *from++, *to); to++; \
-	  *to = DoRop (alu, *from++, *to); to++; \
-	  *to = DoRop (alu, *from++, *to); to++; \
-	  *to = DoRop (alu, *from++, *to); to++; \
-	  *to = DoRop (alu, *from++, *to); to++; \
-    } \
-}
 
 #define getunalignedword(psrc, x, dst) \
 { \
@@ -407,12 +355,6 @@ translated.
 }
 
 #else  /* PURDUE */
-#define longRop(alu,from,to,count) \
-    while (count--) \
-	{ \
-	    DoRop(*to, alu, *from++, *to); to++; \
-	}
-
 #ifdef FASTGETBITS
 #define getunalignedword(psrc, x, dst) { \
 	register int _tmp; \
@@ -428,6 +370,8 @@ translated.
 #endif  /* FASTGETBITS */
 
 #endif  /* PURDUE */
+
+#include "fastblt.h"
 
 mfbDoBitblt(pSrcDrawable, pDstDrawable, alu, prgnDst, pptSrc)
 DrawablePtr pSrcDrawable;
@@ -613,9 +557,19 @@ DDXPointPtr pptSrc;
     /* special case copy */
     if (alu == GXcopy)
     {
-	unsigned long	bits, tmp;
-	int		leftShift, rightShift, xoffDst;
+    register int nl;		/* temp copy of nlMiddle */
+    register unsigned int tmp, bits;
+#ifdef FAST_CONSTANT_OFFSET_MODE
+    register unsigned int bits1;
+#endif
 
+    int xoffSrc, xoffDst;
+    int	leftShift, rightShift;
+
+    int nstart;			/* number of ragged bits at start of dst */
+    int nend;			/* number of ragged bits at end of dst */
+    int srcStartOver;		/* pulling nstart bits from src
+				   overflows into the next word? */
 	while(nbox--)
 	{
 	    w = pbox->x2 - pbox->x1;
@@ -640,10 +594,10 @@ DDXPointPtr pptSrc;
 		while (h--)
 		{
 #ifndef PURDUE
-		    getbits (psrc, xoffSrc, w, bits)
-		    putbits (bits, xoffDst, w, pdst)
+		    getbits (psrc, xoffSrc, w, bits);
+		    putbits (bits, xoffDst, w, pdst);
 #else
-		    getandputbits(psrc, xoffSrc, xoffDst, w, pdst)
+		    getandputbits(psrc, xoffSrc, xoffDst, w, pdst);
 #endif
 		    psrc += widthSrc;
 		    pdst += widthDst;
@@ -658,17 +612,69 @@ DDXPointPtr pptSrc;
 	    	    xoffDst = pbox->x1 & 0x1f;
 		    pdstLine += (pbox->x1 >> 5);
 		    psrcLine += (pptSrc->x >> 5);
-		    if (xoffSrc > xoffDst)
+		    if (xoffSrc == xoffDst)
 		    {
-		    	leftShift = (xoffSrc - xoffDst);
-		    	rightShift = 32 - leftShift;
 	    	    	while (h--)
 	    	    	{
+			    int	dec;
+
 		    	    psrc = psrcLine;
 		    	    pdst = pdstLine;
 		    	    pdstLine += widthDst;
 		    	    psrcLine += widthSrc;
-			    bits = *psrc++;
+			    if (startmask)
+			    {
+			    	*pdst = (*pdst & ~startmask) | (*psrc++ & startmask);
+			    	pdst++;
+			    }
+			    nl = nlMiddle;
+
+#ifdef FAST_CONSTANT_OFFSET_MODE
+			    psrc += nl & (UNROLL-1);
+			    pdst += nl & (UNROLL-1);
+
+#define BodyOdd(n) pdst[-n] = psrc[-n];
+#define BodyEven(n) pdst[-n] = psrc[-n];
+
+#define LoopReset \
+    pdst += UNROLL; \
+    psrc += UNROLL;
+
+			    PackedLoop
+
+#undef BodyOdd
+#undef BodyEven
+#undef LoopReset
+
+#else
+			    DuffL(nl, label1,  *pdst++ = *psrc++;)
+#endif
+
+			    if (endmask)
+			    	*pdst = (*pdst & ~endmask) | (*psrc++ & endmask);
+		    	}
+		    }
+		    else
+		    {
+		    	if (xoffSrc > xoffDst)
+			{
+			    leftShift = (xoffSrc - xoffDst);
+			    rightShift = 32 - leftShift;
+			}
+		    	else
+			{
+			    rightShift = (xoffDst - xoffSrc);
+			    leftShift = 32 - rightShift;
+			}
+		    	while (h--)
+		    	{
+			    psrc = psrcLine;
+			    pdst = pdstLine;
+			    pdstLine += widthDst;
+			    psrcLine += widthSrc;
+			    bits = 0;
+			    if (xoffSrc > xoffDst)
+			    	bits = *psrc++;
 			    if (startmask)
 			    {
 			    	tmp = SCRLEFT(bits,leftShift);
@@ -679,13 +685,37 @@ DDXPointPtr pptSrc;
 			    	pdst++;
 			    }
 			    nl = nlMiddle;
-			    while (nl--)
- 			    {
-			    	tmp = SCRLEFT(bits, leftShift);
-			    	bits = *psrc++;
-			    	tmp |= SCRRIGHT(bits, rightShift);
-			    	*pdst++ = tmp;
-			    }
+#ifdef FAST_CONSTANT_OFFSET_MODE
+			    bits1 = bits;
+			    psrc += nl & (UNROLL-1);
+			    pdst += nl & (UNROLL-1);
+
+#define BodyOdd(n) \
+    bits = psrc[-n]; \
+    pdst[-n] = BitLeft(bits1, leftShift) | BitRight(bits, rightShift);
+
+#define BodyEven(n) \
+    bits1 = psrc[-n]; \
+    pdst[-n] = BitLeft(bits, leftShift) | BitRight(bits1, rightShift);
+
+#define LoopReset \
+    pdst += UNROLL; \
+    psrc += UNROLL;
+
+			    PackedLoop
+
+#undef BodyOdd
+#undef BodyEven
+#undef LoopReset
+
+#else
+			    DuffL (nl, label2, 
+				tmp = SCRLEFT(bits, leftShift);
+				bits = *psrc++;
+				*pdst++ = tmp | SCRRIGHT(bits, rightShift);
+			    )
+#endif
+    
 			    if (endmask)
 			    {
 			    	tmp = SCRLEFT(bits, leftShift);
@@ -699,66 +729,6 @@ DDXPointPtr pptSrc;
 			    }
 		    	}
 		    }
-		    else if (xoffDst > xoffSrc)
-		    {
-		    	rightShift = (xoffDst - xoffSrc);
-		    	leftShift = 32 - rightShift;
-	    	    	while (h--)
-	    	    	{
-		    	    psrc = psrcLine;
-		    	    pdst = pdstLine;
-		    	    pdstLine += widthDst;
-		    	    psrcLine += widthSrc;
-			    tmp = 0;
-			    if (startmask)
-			    {
-			    	bits = *psrc++;
-			    	tmp |= SCRRIGHT(bits, rightShift);
-			    	*pdst = (*pdst & ~startmask) |
-				    	(tmp & startmask);
-			    	pdst++;
-			    	tmp = SCRLEFT(bits, leftShift);
-			    }
-			    nl = nlMiddle;
-			    while (nl--)
-			    {
-			    	bits = *psrc++;
-			    	tmp |= SCRRIGHT(bits, rightShift);
-			    	*pdst++ = tmp;
-			    	tmp = SCRLEFT (bits, leftShift);
-			    }
-			    if (endmask)
-			    {
-			    	if (SCRLEFT (endmask, rightShift))
-			    	{
-			    	    bits = *psrc++;
-			    	    tmp |= SCRRIGHT (bits, rightShift);
-			    	}
-			    	*pdst = (*pdst & ~endmask) |
-				    	(tmp & endmask);
-			    }
-		    	}
-		    }
-		    else
-		    {
-	    	    	while (h--)
-	    	    	{
-		    	    psrc = psrcLine;
-		    	    pdst = pdstLine;
-		    	    pdstLine += widthDst;
-		    	    psrcLine += widthSrc;
-			    if (startmask)
-			    {
-			    	*pdst = (*pdst & ~startmask) | (*psrc++ & startmask);
-			    	pdst++;
-			    }
-			    nl = nlMiddle;
-			    while (nl--)
-				    *pdst++ = *psrc++;
-			    if (endmask)
-			    	*pdst = (*pdst & ~endmask) | (*psrc++ & endmask);
-		    	}
-	    	    }
 	    	}
 	    	else	/* xdir == -1 */
 	    	{
@@ -766,58 +736,71 @@ DDXPointPtr pptSrc;
 	    	    xoffDst = (pbox->x2 - 1) & 0x1f;
 		    pdstLine += ((pbox->x2-1) >> 5) + 1;
 		    psrcLine += ((pptSrc->x+w - 1) >> 5) + 1;
-		    if (xoffSrc > xoffDst)
+		    if (xoffSrc == xoffDst)
 		    {
-		    	leftShift = (xoffSrc - xoffDst);
-		    	rightShift = 32 - leftShift;
 	    	    	while (h--)
 	    	    	{
 		    	    psrc = psrcLine;
 		    	    pdst = pdstLine;
 		    	    pdstLine += widthDst;
 		    	    psrcLine += widthSrc;
-			    tmp = 0;
 			    if (endmask)
 			    {
-			    	bits = *--psrc;
-			    	tmp = SCRLEFT(bits, leftShift);
 			    	pdst--;
-			    	*pdst = (*pdst & ~endmask) |
-				    	(tmp & endmask);
-			    	tmp = SCRRIGHT(bits, rightShift);
+			    	*pdst = (*pdst & ~endmask) | (*--psrc & endmask);
 			    }
 			    nl = nlMiddle;
-			    while (nl--)
-			    {
-			    	bits = *--psrc;
-			    	tmp |= SCRLEFT (bits, leftShift);
-			    	*--pdst = tmp;
-			    	tmp = SCRRIGHT (bits, rightShift);
-			    }
+
+#ifdef FAST_CONSTANT_OFFSET_MODE
+			    psrc -= nl & (UNROLL - 1);
+			    pdst -= nl & (UNROLL - 1);
+
+#define BodyOdd(n) pdst[n-1] = psrc[n-1];
+
+#define BodyEven(n) pdst[n-1] = psrc[n-1];
+
+#define LoopReset \
+    pdst -= UNROLL; \
+    psrc -= UNROLL;
+
+			    PackedLoop
+
+#undef BodyOdd
+#undef BodyEven
+#undef LoopReset
+
+#else
+			    DuffL(nl, label3, *--pdst = *--psrc;)
+#endif
+
 			    if (startmask)
 			    {
-			    	if (SCRRIGHT (startmask, leftShift))
-			    	{
-			    	    bits = *--psrc;
-			    	    tmp |= SCRLEFT(bits, leftShift);
-			    	}
 			    	--pdst;
-			    	*pdst = (*pdst & ~startmask) |
-				    	(tmp & startmask);
+			    	*pdst = (*pdst & ~startmask) | (*--psrc & startmask);
 			    }
 		    	}
 		    }
-		    else if (xoffDst > xoffSrc)
+		    else
 		    {
-		    	rightShift = (xoffDst - xoffSrc);
-		    	leftShift = 32 - rightShift;
+			if (xoffDst > xoffSrc)
+			{
+			    rightShift = (xoffDst - xoffSrc);
+			    leftShift = 32 - rightShift;
+			}
+			else
+			{
+		    	    leftShift = (xoffSrc - xoffDst);
+		    	    rightShift = 32 - leftShift;
+			}
 	    	    	while (h--)
 	    	    	{
 		    	    psrc = psrcLine;
 		    	    pdst = pdstLine;
 		    	    pdstLine += widthDst;
 		    	    psrcLine += widthSrc;
-			    bits = *--psrc;
+			    bits = 0;
+			    if (xoffDst > xoffSrc)
+				bits = *--psrc;
 			    if (endmask)
 			    {
 			    	tmp = SCRRIGHT(bits, rightShift);
@@ -828,13 +811,37 @@ DDXPointPtr pptSrc;
 				    	(tmp & endmask);
 			    }
 			    nl = nlMiddle;
-			    while (nl--)
-			    {
-			    	tmp = SCRRIGHT (bits, rightShift);
-			    	bits = *--psrc;
-			    	tmp |= SCRLEFT (bits, leftShift);
-			    	*--pdst = tmp;
-			    }
+
+#ifdef FAST_CONSTANT_OFSET_MODE
+			    bits1 = bits;
+			    psrc -= nl & (UNROLL - 1);
+			    pdst -= nl & (UNROLL - 1);
+
+#define BodyOdd(n) \
+    bits = psrc[n-1]; \
+    pdst[n-1] = BitRight(bits1, rightShift) | BitLeft(bits, leftShift);
+
+#define BodyEven(n) \
+    bits1 = psrc[n-1]; \
+    pdst[n-1] = BitRight(bits, rightShift) | BitLeft(bits1, leftShift);
+
+#define LoopReset \
+    pdst -= UNROLL; \
+    psrc -= UNROLL;
+			    PackedLoop
+
+#undef BodyOdd
+#undef BodyEven
+#undef LoopReset
+
+#else
+			    DuffL(nl, label4,
+				tmp = SCRRIGHT(bits, rightShift);
+				bits = *--psrc;
+				*--pdst = tmp | SCRLEFT(bits, leftShift);
+			    )
+#endif
+
 			    if (startmask)
 			    {
 			    	tmp = SCRRIGHT(bits, rightShift);
@@ -849,215 +856,11 @@ DDXPointPtr pptSrc;
 			    }
 		    	}
 		    }
-		    else
-		    {
-	    	    	while (h--)
-	    	    	{
-		    	    psrc = psrcLine;
-		    	    pdst = pdstLine;
-		    	    pdstLine += widthDst;
-		    	    psrcLine += widthSrc;
-			    if (endmask)
-			    {
-			    	pdst--;
-			    	*pdst = (*pdst & ~endmask) | (*--psrc & endmask);
-			    }
-			    nl = nlMiddle;
-			    while (nl--)
-			    	*--pdst = *--psrc;
-			    if (startmask)
-			    {
-			    	--pdst;
-			    	*pdst = (*pdst & ~startmask) | (*--psrc & startmask);
-			    }
-		    	}
-	    	    }
 	    	}
 	    }
 	    pbox++;
 	    pptSrc++;
 	}
-#ifdef OLDWAY
-	/*
-	 * in some instances, this code is actually
-	 * faster than the code above.  It is functionally
-	 * identical; you may want to try it and compare
-	 * using x11perf.  The one known case is the
-	 * VaxStation2000; other possible suspects include
-	 * 68000/68010 machines.  Your mileage will vary.
-	 */
-        while (nbox--)
-        {
-	    w = pbox->x2 - pbox->x1;
-	    h = pbox->y2 - pbox->y1;
-
-	    if (ydir == -1) /* start at last scanline of rectangle */
-	    {
-	        psrcLine = psrcBase + ((pptSrc->y+h-1) * -widthSrc);
-	        pdstLine = pdstBase + ((pbox->y2-1) * -widthDst);
-	    }
-	    else /* start at first scanline */
-	    {
-	        psrcLine = psrcBase + (pptSrc->y * widthSrc);
-	        pdstLine = pdstBase + (pbox->y1 * widthDst);
-	    }
-
-	    /* x direction doesn't matter for < 1 longword */
-	    if (w <= 32)
-	    {
-	        int srcBit, dstBit;	/* bit offset of src and dst */
-
-	        pdstLine += (pbox->x1 >> 5);
-	        psrcLine += (pptSrc->x >> 5);
-	        psrc = psrcLine;
-	        pdst = pdstLine;
-
-	        srcBit = pptSrc->x & 0x1f;
-	        dstBit = pbox->x1 & 0x1f;
-
-	        while(h--)
-	        {
-#ifndef PURDUE
-		    getbits(psrc, srcBit, w, tmpSrc)
-		    putbits(tmpSrc, dstBit, w, pdst)
-#else
-		    getandputbits(psrc, srcBit, dstBit, w, pdst)
-#endif /* PURDUE */
-		    pdst += widthDst;
-		    psrc += widthSrc;
-	        }
-	    }
-	    else
-	    {
-	        maskbits(pbox->x1, w, startmask, endmask, nlMiddle)
-	        if (startmask)
-		    nstart = 32 - (pbox->x1 & 0x1f);
-	        else
-		    nstart = 0;
-	        if (endmask)
-	            nend = pbox->x2 & 0x1f;
-	        else
-		    nend = 0;
-
-	        xoffSrc = ((pptSrc->x & 0x1f) + nstart) & 0x1f;
-	        srcStartOver = ((pptSrc->x & 0x1f) + nstart) > 31;
-
-	        if (xdir == 1) /* move left to right */
-	        {
-	            pdstLine += (pbox->x1 >> 5);
-	            psrcLine += (pptSrc->x >> 5);
-
-		    while (h--)
-		    {
-		        psrc = psrcLine;
-		        pdst = pdstLine;
-
-		        if (startmask)
-		        {
-#ifndef PURDUE
-			    getbits(psrc, (pptSrc->x & 0x1f), nstart, tmpSrc)
-			    putbits(tmpSrc, (pbox->x1 & 0x1f), nstart, pdst)
-#else
-			    getandputbits(psrc, (pptSrc->x & 0x1f),
-					  (pbox->x1 & 0x1f), nstart, pdst)
-#endif /* PURDUE */
-			    pdst++;
-			    if (srcStartOver)
-			        psrc++;
-		        }
-
-			/* special case for aligned copies (scrolling) */
-			if (xoffSrc == 0)
-			{
-			    
-			    if ((nl = nlMiddle) != 0)
-			    {
-				longcopy (psrc, pdst, nl)
-			    }
-			}
- 			else
-			{
-			    nl = nlMiddle + 1;
-			    while (--nl)
-		            {
-				getunalignedword (psrc, xoffSrc, *pdst++);
-				psrc++;
-			    }
-			}
-
-		        if (endmask)
-		        {
-#ifndef PURDUE
-			    getbits(psrc, xoffSrc, nend, tmpSrc)
-			    putbits(tmpSrc, 0, nend, pdst)
-#else
-			    getandputbits0(psrc, xoffSrc, nend, pdst);
-#endif  /* PURDUE */
-		        }
-
-		        pdstLine += widthDst;
-		        psrcLine += widthSrc;
-		    }
-	        }
-	        else /* move right to left */
-	        {
-	            pdstLine += (pbox->x2 >> 5);
-	            psrcLine += (pptSrc->x+w >> 5);
-		    /* if fetch of last partial bits from source crosses
-		       a longword boundary, start at the previous longword
-		    */
-		    if (xoffSrc + nend >= 32)
-		        --psrcLine;
-
-		    while (h--)
-		    {
-		        psrc = psrcLine;
-		        pdst = pdstLine;
-
-		        if (endmask)
-		        {
-#ifndef PURDUE
-			    getbits(psrc, xoffSrc, nend, tmpSrc)
-			    putbits(tmpSrc, 0, nend, pdst)
-#else
-			    getandputbits0(psrc, xoffSrc, nend, pdst);
-#endif
-		        }
-
-#ifndef PURDUE
-		        nl = nlMiddle + 1;
-		        while (--nl)
-#else
-			nl = nlMiddle;
-			while (nl--)
-#endif  /* PURDUE */
-		        {
-			    --psrc;
-			    getunalignedword (psrc, xoffSrc, *--pdst)
-		        }
-
-		        if (startmask)
-		        {
-			    if (srcStartOver)
-			        --psrc;
-			    --pdst;
-#ifndef PURDUE
-			    getbits(psrc, (pptSrc->x & 0x1f), nstart, tmpSrc)
-			    putbits(tmpSrc, (pbox->x1 & 0x1f), nstart, pdst)
-#else
-			    getandputbits(psrc, (pptSrc->x & 0x1f), (pbox->x1 & 0x1f), nstart, pdst)
-#endif /* PURDUE */
-		        }
-
-		        pdstLine += widthDst;
-		        psrcLine += widthSrc;
-		    }
-	        } /* move right to left */
-	    }
-	    pbox++;
-	    pptSrc++;
-        } /* while (nbox--) */
-#endif /* OLDWAY */
     }
     else /* do some rop */
     {
@@ -1145,9 +948,15 @@ DDXPointPtr pptSrc;
 			/* special case for aligned operations */
 			if (xoffSrc == 0)
 			{
-			    if ((nl = nlMiddle) != 0)
+			    nl = nlMiddle;
+			    while (nl--)
 			    {
-				longRop (alu, psrc, pdst, nl)
+#ifndef PURDUE
+				*pdst = DoRop (alu, *psrc, *pdst);
+#else
+				DoRop (*pdst, alu, *psrc++, *pdst);
+#endif
+ 				pdst++;
 			    }
 			}
  			else
