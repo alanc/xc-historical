@@ -242,6 +242,7 @@ OBJS2 =\
 	XWrBitF.o \
 	XlibInt.o \
 	Xrm.o \
+	Xstreams.o \
 	evtomask.o \
 	globals.o \
 	GetGCVals.o \
@@ -300,28 +301,32 @@ InstallNonExec(XErrorDB,$(LIBDIR))
 DebuggedAndProfiledLibraryObjectRule()
 SpecialDebuggedAndProfiledObjectRule(XErrDes.o,$(ICONFIGFILES),$(DB_DEFINES))
 SpecialDebuggedAndProfiledObjectRule(XConnDis.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialDebuggedAndProfiledObjectRule(XlibInt.o,,$(CONN_DEFINES))
-SpecialDebuggedAndProfiledObjectRule(globals.o,,$(CONN_DEFINES))
+SpecialDebuggedAndProfiledObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialDebuggedAndProfiledObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialDebuggedAndProfiledObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
 #else
 # if DebugLibX
 DebuggedLibraryObjectRule()
 SpecialDebuggedObjectRule(XErrDes.o,$(ICONFIGFILES),$(DB_DEFINES))
 SpecialDebuggedObjectRule(XConnDis.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialDebuggedObjectRule(XlibInt.o,,$(CONN_DEFINES))
-SpecialDebuggedObjectRule(globals.o,,$(CONN_DEFINES))
+SpecialDebuggedObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialDebuggedObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialDebuggedObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
 # else
 #  if ProfileLibX
 ProfiledLibraryObjectRule()
 SpecialProfiledObjectRule(XErrDes.o,$(ICONFIGFILES),$(DB_DEFINES))
 SpecialProfiledObjectRule(XConnDis.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialProfiledObjectRule(XlibInt.o,,$(CONN_DEFINES))
-SpecialProfiledObjectRule(globals.o,,$(CONN_DEFINES))
+SpecialProfiledObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialProfiledObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialProfiledObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
 #  else
 NormalLibraryObjectRule()
 SpecialObjectRule(XErrDes.o,$(ICONFIGFILES),$(DB_DEFINES))
 SpecialObjectRule(XConnDis.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialObjectRule(XlibInt.o,,$(CONN_DEFINES))
-SpecialObjectRule(globals.o,,$(CONN_DEFINES))
+SpecialObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
 #  endif
 # endif
 #endif
