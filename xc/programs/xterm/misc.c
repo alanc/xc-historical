@@ -1,5 +1,5 @@
 /*
- *	$Header: misc.c,v 1.10 88/02/17 18:01:44 jim Exp $
+ *	$Header: misc.c,v 1.11 88/02/18 12:10:05 jim Exp $
  */
 
 
@@ -44,6 +44,7 @@
 #include "gray.ic"
 #include "wait.ic"
 #include "waitmask.ic"
+#include <X11/Shell.h>
 
 extern char *malloc();
 extern char *mktemp();
@@ -52,7 +53,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$Header: misc.c,v 1.10 88/02/17 18:01:44 jim Exp $";
+static char rcs_id[] = "$Header: misc.c,v 1.11 88/02/18 12:10:05 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -652,64 +653,27 @@ int (*func)();
 	}
 }
 
+static ChangeGroup(attribute, value)
+     String attribute;
+     XtArgVal value;
+{
+	extern Widget toplevel;
+	Arg args[1];
+
+	XtSetArg( args[0], attribute, value );
+	XtSetValues( toplevel, args, 1 );
+}
+
 Changename(name)
 register char *name;
 {
-	register TScreen *screen = &term->screen;
-#ifdef notyet
-	free(screen->iconname);
-	if((screen->iconname = 
-	 malloc((unsigned)(screen->iconnamelen = strlen(name)) + 1)) == NULL)
-		Error(ERROR_CNMALLOC1);
-	strcpy(screen->iconname, name);
-	if(screen->fullVwin.window) {
-		XChangeProperty(
-		    screen->display,
-		    VWindow(screen), 
-		    XA_WM_ICON_NAME, XA_STRING,
-		    8, PropModeReplace,
-		    (unsigned char *)name, screen->iconnamelen);
-	}
-	if(screen->fullTwin.window) {
-		free(screen->Ticonname);
-		if((screen->Ticonname = malloc((unsigned)(screen->Ticonnamelen =
-		 screen->iconnamelen + 6) + 1)) == NULL)
-			Error(ERROR_CNMALLOC2);
-		strcpy(screen->Ticonname, name);
-		strcat(screen->Ticonname, " (Tek)");
-		XChangeProperty(
-		    screen->display,
-		    VWindow(screen), 
-		    XA_WM_ICON_NAME, XA_STRING, 8, PropModeReplace,
-		    (unsigned char *)screen->Ticonname, screen->Ticonnamelen);
-	}
-#endif notyet
+    ChangeGroup( XtNiconName, (XtArgVal)name );
 }
 
 Changetitle(name)
 register char *name;
 {
-	register TScreen *screen = &term->screen;
-
-#ifdef notyet
-	free(screen->titlename);
-	if((screen->titlename = 
-	 malloc((unsigned)(screen->titlenamelen = strlen(name)) + 1)) == NULL)
-		Error(ERROR_CNMALLOC1);
-	strcpy(screen->titlename, name);
-	if(screen->fullVwin.window) {
-		XStoreName(screen->display, VWindow(screen), name);
-	}
-	if(screen->fullTwin.window) {
-		free(screen->Ttitlename);
-		if((screen->Ttitlename = malloc((unsigned)(screen->Ttitlenamelen =
-		 screen->titlenamelen + 6) + 1)) == NULL)
-			Error(ERROR_CNMALLOC2);
-		strcpy(screen->Ttitlename, name);
-		strcat(screen->Ttitlename, " (Tek)");
-		XStoreName(screen->display, TWindow(screen), screen->Ttitlename);
-	}
-#endif notyet
+    ChangeGroup( XtNtitle, (XtArgVal)name );
 }
 
 #ifndef DEBUG
