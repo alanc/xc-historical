@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 1.163 88/11/22 16:13:31 rws Exp $ */
+/* $XConsortium: events.c,v 1.164 88/11/22 18:20:33 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1767,6 +1767,7 @@ EnterLeaveEvent(type, mode, detail, pWin)
     DeviceIntPtr	keybd = inputInfo.keyboard;
     WindowPtr		focus = keybd->u.keybd.focus.win;
     GrabPtr		grab = inputInfo.pointer->grab;
+    Mask		mask, allMask;
 
     if ((pWin == motionHintWindow) && (detail != NotifyInferior))
 	motionHintWindow = NullWindow;
@@ -1788,14 +1789,29 @@ EnterLeaveEvent(type, mode, detail, pWin)
 	((pWin == focus) || (focus == PointerRootWin) ||
 	 IsParent(focus, pWin)))
 	event.u.enterLeave.flags |= ELFlagFocus;
-    (void)DeliverEventsToWindow(pWin, &event, 1, filters[type], grab);
+    if (grab)
+    {
+	mask = (pWin == grab->window) ? grab->eventMask : 0;
+	if (grab->ownerEvents)
+	    mask |= EventMaskForClient(pWin, grab->client, &allMask);
+	(void) TryClientEvents(grab->client, &event, 1, mask,
+			       filters[type], grab);
+    }
+    else
+    {
+	(void)DeliverEventsToWindow(pWin, &event, 1, filters[type], NullGrab);
+    }
     if (type == EnterNotify)
     {
 	xKeymapEvent ke;
 	ke.type = KeymapNotify;
 	bcopy((char *)&keybd->down[1], (char *)&ke.map[0], 31);
-	(void)DeliverEventsToWindow(pWin, (xEvent *)&ke, 1,
-				    KeymapStateMask, grab);
+	if (grab)
+	    (void) TryClientEvents(grab->client, (xEvent *)&ke, 1, mask,
+				   KeymapStateMask, grab);
+	else
+	    (void)DeliverEventsToWindow(pWin, (xEvent *)&ke, 1,
+					KeymapStateMask, NullGrab);
     }
 }
 
