@@ -1,4 +1,4 @@
-/* $XConsortium: accept.c,v 1.6 93/09/08 20:01:46 mor Exp $ */
+/* $XConsortium: accept.c,v 1.7 93/09/10 14:10:06 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -237,7 +237,7 @@ int fd;
 	return (NULL);
     }
 
-    iceConn->waiting_for_byteorder = 1;
+    iceConn->waiting_for_byteorder = True;
     iceConn->connection_status = IceConnectPending;
     iceConn->my_ice_version_index = 0;
 
@@ -281,7 +281,8 @@ int fd;
     iceConn->open_ref_count = 1;
     iceConn->proto_ref_count = 0;
 
-    iceConn->want_to_close = 0;
+    iceConn->skip_want_to_close = False;
+    iceConn->want_to_close = False;
 
     iceConn->saved_reply_waits = NULL;
     iceConn->ping_waits = NULL;

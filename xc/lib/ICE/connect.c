@@ -1,4 +1,4 @@
-/* $XConsortium: connect.c,v 1.7 93/09/08 20:44:30 mor Exp $ */
+/* $XConsortium: connect.c,v 1.8 93/09/10 14:08:24 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -127,7 +127,8 @@ char *errorStringRet;
     iceConn->open_ref_count = 1;
     iceConn->proto_ref_count = 0;
 
-    iceConn->want_to_close = 0;
+    iceConn->skip_want_to_close = False;
+    iceConn->want_to_close = False;
 
     iceConn->saved_reply_waits = NULL;
     iceConn->ping_waits = NULL;
@@ -163,7 +164,7 @@ char *errorStringRet;
      * value after the call to IceProcessMessage.
      */
 
-    iceConn->waiting_for_byteorder = 1;
+    iceConn->waiting_for_byteorder = True;
 
     IceProcessMessage (iceConn, NULL);
 
