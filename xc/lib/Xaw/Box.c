@@ -1,4 +1,4 @@
-/* $XConsortium: Box.c,v 1.45 90/12/31 10:22:09 gildea Exp $ */
+/* $XConsortium: Box.c,v 1.46 91/10/16 21:27:27 eswu Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

@@ -1,4 +1,4 @@
-/* $XConsortium: AsciiSink.c,v 1.57 91/07/21 20:35:00 converse Exp $ */
+/* $XConsortium: AsciiSink.c,v 1.58 91/10/16 21:03:19 eswu Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
