@@ -1,4 +1,4 @@
-/* $XConsortium: mi.h,v 1.4 89/07/09 15:32:59 rws Exp $ */
+/* $XConsortium: mi.h,v 1.5 89/07/17 17:22:25 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -50,6 +50,7 @@ extern void miMiter();
 extern void miWideLine();
 extern void miWideDash();
 extern void  miPolyArc();
+extern void  miZeroPolyArc();
 extern void miPolyFillRect();
 extern void miPolyFillArc();
 extern void  miPolyGlyphBlt();
