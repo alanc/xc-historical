@@ -1,5 +1,4 @@
-/* $XConsortium: xcmsdb.c,v 1.9 93/09/22 22:41:29 rws Exp $ */
-/* $Header: /u2/build/imported/x11r5/mit/clients/xcmsdb/RCS/xcmsdb.c,v 1.4 1993/09/03 06:59:13 alt Exp $ */
+/* $XConsortium: xcmsdb.c,v 1.10 94/02/07 23:20:55 rws Exp $ */
 
 /*
  * (c) Copyright 1990 Tektronix Inc.

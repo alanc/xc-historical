@@ -1,5 +1,4 @@
-/* $XConsortium: loadData.c,v 1.9 93/09/18 11:42:44 rws Exp $ */
-/* $Header: /u2/build/imported/x11r5/mit/clients/xcmsdb/RCS/loadData.c,v 1.7 1993/09/13 07:14:30 alt Exp $ */
+/* $XConsortium: loadData.c,v 1.10 94/02/07 23:20:09 rws Exp $ */
 
 /*
  * (c) Copyright 1990 Tektronix Inc.
