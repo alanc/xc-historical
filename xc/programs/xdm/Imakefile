@@ -16,13 +16,7 @@ LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
 		  session.o socket.o verify.o Login.o
           SRCS2 = xdmshell.c 
           OBJS2 = xdmshell.o 
-
-#ifdef MacIIArchitecture
        PROGRAMS = xdm xdmshell
-XDMSHELLINSTFLAGS = $(INSTUIDFLAGS)
-#else
-       PROGRAMS = xdm
-#endif
 
 #ifdef IHaveSubdirs
 MakeSubdirs($(SUBDIRS))
@@ -35,8 +29,8 @@ $(XDMDIR):
 #endif
 
 ComplexProgramTarget_1(xdm,$(LOCAL_LIBRARIES),)
+SingleProgramTarget(xdmshell,$(OBJS2),,)
 
 #ifdef MacIIArchitecture
-SingleProgramTarget(xdmshell,$(OBJS2),,)
-InstallProgramWithFlags(xdmshell,$(BINDIR), $(XDMSHELLINSTFLAGS))
+InstallProgramWithFlags(xdmshell,$(BINDIR), )
 #endif
