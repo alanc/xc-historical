@@ -1,42 +1,44 @@
-#**********************************************************************
-#
-#  system.twmrc
-#
-#**********************************************************************
+NoGrabServer
+DecorateTransients
+TitleFont "-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
+MenuFont "-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
+IconFont "-adobe-helvetica-bold-r-normal--*-100-*-*-*-*-*-*"
+IconManagerFont "-adobe-helvetica-bold-r-normal--*-100-*-*-*"
+ResizeFont "fixed"
 
-Button1 =    : title : f.raise
-Button2 =    : title : f.move
-Button3 =    : title : f.lower
+MoveDelta 3
+Function "move-or-raise" { f.move f.deltastop f.raise }
+Button1 = : root : f.menu "defops"
 
-Button1 =    : frame : f.raise
-Button2 =    : frame : f.move
-Button3 =    : frame : f.lower
+Button1 = : title : f.function "move-or-raise"
+Button2 = : title : f.raiselower
+Button3 = : title : f.raiselower
 
-Button1 =    : icon  : f.iconify
-Button2 =    : icon  : f.move
-Button3 =    : icon  : f.lower
+Button1 = : icon : f.function "move-or-raise"
+Button2 = : icon : f.iconify
+Button3 = : icon : f.raiselower
 
-Button1 =    : root  : f.menu "Clients"
-Button2 =    : root  : f.menu "TwmWindows"
-Button3 =    : root  : f.menu "Window Ops"
+Button1 = : iconmgr : f.iconify
+Button2 = : iconmgr : f.iconify
+Button3 = : iconmgr : f.iconify
 
-Menu "Clients"
+menu "defops"
 {
-    "Clients"		f.title
-    "xterm 80x24"	!"xterm -fn fixed -geom 80x24 &"
-    "xterm 80x48"	!"xterm -fn fixed -geom 80x48 &"
-    "xclock"		!"xclock -geom 100x100 &"
-}
-
-Menu "Window Ops"
-{
-    "Window Ops"	f.title
-    "Refresh Screen"	f.refresh
-    "Refresh Window"	f.winrefresh
-    "Move"		f.move
-    "Raise"		f.raise
-    "Lower"		f.lower
-    "Resize"		f.resize
-    "(De)Iconify"	f.iconify
-    "Quit twm"		f.quit
+"Twm"	f.title
+"Iconify"	f.iconify
+"Resize"	f.resize
+"Move"	f.move
+"Raize"	f.raise
+"Lower"	f.lower
+""		f.nop
+"Delete"	f.delete
+""		f.nop
+"Show Iconmgr"	f.showiconmgr
+"Hide Iconmgr"	f.hideiconmgr
+""		f.nop
+"Focus"	f.focus
+"Unfocus"	f.unfocus
+""		f.nop
+"Restart"	f.restart
+"Exit"	f.quit
 }

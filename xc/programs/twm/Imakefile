@@ -32,7 +32,7 @@ OBJS1=	gram.o lex.o deftwmrc.o add_window.o gc.o list.o twm.o parse.o \
 
 all:: $(PROGRAMS)
 
-depend:: lex.c gram.c
+depend:: lex.c gram.c deftwmrc.c 
 
 ComplexProgramTarget_1(twm,$(LOCAL_LIBRARIES),)
 
@@ -42,4 +42,12 @@ gram.h gram.c: gram.y
 	$(MV) y.tab.h gram.h
 
 clean::
-	$(RM) y.tab.h y.tab.c lex.yy.c gram.h gram.c lex.c
+	$(RM) y.tab.h y.tab.c lex.yy.c gram.h gram.c lex.c deftwmrc.c 
+
+deftwmrc.c:  system.twmrc
+	$(RM) $@
+	echo '/* This file is built automatically from system.twmrc */' >>$@
+	echo 'char *defaultTwmrc = "\' >>$@
+	sed -e '/^#/d' -e 's/"/\\"/g' -e 's/$$/\\n\\/' system.twmrc >>$@
+	echo '";' >>$@
+
