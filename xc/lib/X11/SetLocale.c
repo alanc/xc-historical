@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XSetLocale.c,v 1.25 91/04/07 22:53:24 rws Exp $
+ * $XConsortium: XSetLocale.c,v 1.26 91/04/08 09:28:40 rws Exp $
  */
 
 /*
@@ -73,9 +73,9 @@ _Xsetlocale(category, name)
 	return locale_name;
     if (!*name)
 	name = getenv("LC_CTYPE");
-    if (!*name)
+    if (!name || !*name)
 	name = getenv("LANG");
-    if (!*name)
+    if (!name || !*name)
 	name = "C";
     strcpy(oldname, locale_name);
     strcpy(locale_name, name);
