@@ -26,7 +26,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.36 89/07/14 11:10:42 jim Exp $
+ * $XConsortium: resize.c,v 1.37 89/07/14 12:26:45 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.36 89/07/14 11:10:42 jim Exp $";
+"$XConsortium: resize.c,v 1.37 89/07/14 12:26:45 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -378,8 +378,8 @@ int height;
 	    dwidth -= tmp_win->hints.base_width;
 	    dheight -= tmp_win->hints.base_height;
 	} else {
-	    dwidth -= tmp_win->hints.base_width;
-	    dheight -= tmp_win->hints.base_height;
+	    dwidth -= tmp_win->hints.min_width;
+	    dheight -= tmp_win->hints.min_height;
 	}
     }
 
