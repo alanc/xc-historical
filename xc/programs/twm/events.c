@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.82 89/07/26 11:02:21 jim Exp $
+ * $XConsortium: events.c,v 1.83 89/07/26 11:11:31 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.82 89/07/26 11:02:21 jim Exp $";
+"$XConsortium: events.c,v 1.83 89/07/26 11:11:31 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -293,8 +293,14 @@ HandleColormapNotify()
 	return;
 
 #ifdef DEBUG_EVENTS
-	fprintf(stderr, "    new=%d, state=%d, cmap=0x%x\n",
-	    cevent->new, cevent->state, cevent->colormap);
+    printf ("Colormap:  win 0x%lx, cmap 0x%lx, new %d, state ",
+	    cevent->window, cevent->colormap, cevent->new);
+    switch (cevent->state) {
+      case ColormapInstalled: printf ("Installed"); break;
+      case ColormapUninstalled: printf ("Uninstalled"); break;
+      default:  printf ("%d", cevent->state); break;
+    }
+    printf ("; twin 0x%lx\n", Tmp_win->w);
 #endif
 
     if (cevent->window == Tmp_win->w)
@@ -306,11 +312,13 @@ HandleColormapNotify()
 	    Tmp_win->attr.colormap = cevent->colormap;
 
 
+#ifdef stupid
 	/* this corrects a dix server (at least on HP) bug which sends
 	 * the previous colormap.  I don't know if this has been fixed in R3
 	 */
 	XGetWindowAttributes(dpy, Tmp_win->w, &attr);
 	Tmp_win->attr.colormap = attr.colormap;
+#endif
 
 	/*
 	 * Either somebody changed it, or somebody did an explicit install.
@@ -329,8 +337,9 @@ HandleColormapNotify()
 #ifdef DEBUG_EVENTS
 		fprintf(stderr, "    installing 0x%x\n",
 		    Tmp_win->attr.colormap);
+		printf ("installa from HandleColormapNotify\n");
 #endif
-		XInstallColormap(dpy, Tmp_win->attr.colormap);
+		InstallAColormap(dpy, Tmp_win->attr.colormap);
 	    }
 	}
     }
@@ -577,6 +586,17 @@ HandlePropertyNotify()
 	break;
 
     default:
+	if (Event.xproperty.atom == _XA_WM_COLORMAP_WINDOWS) {
+	    if (Tmp_win->cmap_windows) {
+		if (Tmp_win->xfree_cmap_windows) {
+		    XFree ((char *) Tmp_win->cmap_windows);
+		} else {
+		    free ((char *) Tmp_win->cmap_windows);
+		}
+	    }
+	    FetchWmProtocols (Tmp_win);
+	    break;
+	}
 #ifdef DEBUG_EVENTS
 	fprintf(stderr, "TWM Not handling property %d\n",Event.xproperty.atom);
 #endif
@@ -876,6 +896,13 @@ HandleDestroyNotify()
     if (Tmp_win->next != NULL)
 	Tmp_win->next->prev = Tmp_win->prev;
 
+    if (Tmp_win->cmap_windows) {
+	if (Tmp_win->xfree_cmap_windows) {
+	    XFree ((char *) Tmp_win->cmap_windows);
+	} else {
+	    free ((char *) Tmp_win->cmap_windows);
+	}
+    }
     free((char *)Tmp_win);
 }
 
@@ -1470,6 +1497,7 @@ HandleButtonPress()
  ***********************************************************************
  */
 
+
 void
 HandleEnterNotify()
 {
@@ -1495,7 +1523,10 @@ HandleEnterNotify()
 	    {
 		if (Tmp_win->hilite_w)
 		    XMapWindow(dpy, Tmp_win->hilite_w);
-		XInstallColormap(dpy, Scr->CMap);
+#ifdef DEBUG_EVENTS
+		printf ("installa from EnterNotify into frame or icon\n");
+#endif
+		InstallAColormap(dpy, Scr->CMap);
 		XSetWindowBorder(dpy, Tmp_win->frame, Tmp_win->border);
 		if (Tmp_win->title_w)
 		    XSetWindowBorder(dpy, Tmp_win->title_w, Tmp_win->border);
@@ -1509,8 +1540,9 @@ HandleEnterNotify()
 #ifdef DEBUG_EVENTS
 		fprintf(stderr, "    installing cmap 0x%x\n",
 		    Tmp_win->attr.colormap);
+		printf ("installa from window 0x%lx\n", Tmp_win->w);
 #endif
-		XInstallColormap(dpy, Tmp_win->attr.colormap);
+		InstallAColormap(dpy, Tmp_win->attr.colormap);
 	    }
 	}
 	if (enter_flag == FALSE && Tmp_win->auto_raise)
@@ -1579,7 +1611,6 @@ HandleLeaveNotify()
 		    }
 		    if (Tmp_win->hilite_w)
 			XUnmapWindow(dpy, Tmp_win->hilite_w);
-		    XUninstallColormap(dpy, Scr->CMap);
 		    if (Tmp_win->highlight)
 		    {
 			XSetWindowBorderPixmap(dpy, 
@@ -1595,13 +1626,17 @@ HandleLeaveNotify()
 		}
 		else if (Event.xcrossing.window == Tmp_win->w)
 		{
-		    XInstallColormap(dpy, Scr->CMap);
+#ifdef DEBUG_EVENTS
+		    printf ("installa from leaving window 0x%lx\n", Tmp_win->w);
+#endif
+		    InstallAColormap(dpy, Scr->CMap);
 		}
 	    }
 	}
 	return;
     }
 }
+
 
 /***********************************************************************
  *
@@ -1806,5 +1841,18 @@ static void flush_expose (w)
     XEvent dummy;
 
     while (XCheckTypedWindowEvent (dpy, w, Expose, &dummy)) ;
+}
+
+
+
+InstallAColormap (dpy, cmap)
+    Display *dpy;
+    Colormap cmap;
+{
+#ifdef DEBUG_EVENTS
+    printf ("Installing colormap 0x%lx\n", cmap);
+#endif
+
+    XInstallColormap (dpy, cmap);
 }
 

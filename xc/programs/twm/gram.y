@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.56 89/07/26 11:02:28 jim Exp $
+ * $XConsortium: gram.y,v 1.57 89/07/26 12:47:29 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -38,7 +38,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.56 89/07/26 11:02:28 jim Exp $";
+"$XConsortium: gram.y,v 1.57 89/07/26 12:47:29 jim Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -56,7 +56,7 @@ static MenuRoot	*root,
 
 MenuRoot *GetRoot();
 
-static Bool CheckWarpScreenArg();
+static Bool CheckWarpScreenArg(), CheckColormapArg();
 static char *ptr;
 static int Button;
 static name_list **list;
@@ -82,7 +82,7 @@ extern int yylineno;
 %token <num> F_CUTFILE F_MOVE F_ICONIFY F_FOCUS F_RESIZE F_RAISE F_LOWER
 %token <num> F_POPUP F_DEICONIFY F_FORCEMOVE WINDOW_FUNCTION MOVE_DELTA
 %token <num> F_DESTROY F_WINREFRESH F_BEEP DONT_MOVE_OFF ZOOM ICONMGRS
-%token <num> F_DELETE F_SAVEYOURSELF
+%token <num> F_DELETE F_SAVEYOURSELF F_COLORMAP
 %token <num> F_SHOWLIST F_HIDELIST NO_BACKINGSTORE NO_SAVEUNDER
 %token <num> F_ZOOM F_FULLZOOM F_UPICONMGR F_DOWNICONMGR F_HORIZOOM
 %token <num> F_RIGHTZOOM F_LEFTZOOM F_TOPZOOM F_BOTTOMZOOM F_RESTART 
@@ -684,6 +684,17 @@ action		: F_NOP			{ $$ = F_NOP; }
 					      $$ = F_NOP;
 					  }
 					}
+		| F_COLORMAP string { Action = $2;
+					if (CheckColormapArg (Action)) {
+					    $$ = F_COLORMAP;
+					} else {
+					    fprintf (stderr,
+	"twm: line %d:  ignoring invalid f.colormap argument \"%s\"\n", 
+						       yylineno, Action);
+					    $$ = F_NOP;
+					}
+				    }
+	
 		;
 
 grav		: NORTH			{ $$ = NORTH; }
@@ -913,4 +924,18 @@ static Bool CheckWarpScreenArg (s)
 
     for (; *s && isascii(*s) && isdigit(*s); s++) ;
     return (*s ? False : True);
+}
+
+
+static Bool CheckColormapArg (s)
+    register char *s;
+{
+    XmuCopyISOLatin1Lowered (s, s);
+
+    if (strcmp (s, COLORMAP_NEXT) == 0 ||
+	strcmp (s, COLORMAP_PREV) == 0 ||
+	strcmp (s, COLORMAP_DEFAULT) == 0)
+      return True;
+
+    return False;
 }

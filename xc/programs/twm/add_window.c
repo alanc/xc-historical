@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.86 89/07/26 15:04:32 jim Exp $
+ * $XConsortium: add_window.c,v 1.87 89/07/27 17:41:50 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.86 89/07/26 15:04:32 jim Exp $";
+"$XConsortium: add_window.c,v 1.87 89/07/27 17:41:50 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -167,6 +167,7 @@ IconMgr *iconp;
     tmp_win->class = NoClass;
     XGetClassHint(dpy, tmp_win->w, &tmp_win->class);
     FetchWmProtocols (tmp_win);
+    FetchWmColormapWindows (tmp_win);
 
 #ifdef DEBUG
     fprintf(stderr, "  name = \"%s\"\n", tmp_win->name);
@@ -1182,4 +1183,49 @@ FetchWmProtocols (tmp)
 	if (protocols) XFree ((char *) protocols);
     }
     tmp->protocols = flags;
+}
+
+
+FetchWmColormapWindows (tmp)
+    TwmWindow *tmp;
+{
+    register int i;
+
+    tmp->cmap_windows = NULL;
+    tmp->number_cmap_windows = 0;
+    tmp->current_cmap_window = 0;
+    tmp->xfree_cmap_windows = False;
+
+    if (XGetWMColormapWindows (dpy, tmp->w, &tmp->cmap_windows, 
+			       &tmp->number_cmap_windows) &&
+	tmp->number_cmap_windows > 0) {
+	Bool has_top_cmap = False;
+
+	for (i = 0; i < tmp->number_cmap_windows; i++) {
+	    if (tmp->w == tmp->cmap_windows[i]) {
+		has_top_cmap = True;
+		break;
+	    }
+	}
+	if (has_top_cmap) {
+	    tmp->xfree_cmap_windows = True;
+	} else {
+	    Window *wl = (Window *) malloc ((tmp->number_cmap_windows + 1) *
+					    sizeof (Window));
+
+	    if (wl) {				/* insert new element */
+		Window *src, *dst;
+
+		wl[0] = tmp->w;
+		for (i = 0, src = tmp->cmap_windows, dst = wl + 1; 
+		     i < tmp->number_cmap_windows; i++, src++, dst++) {
+		    *dst = *src;
+		}
+	    }
+	    XFree ((char*) tmp->cmap_windows);
+	    tmp->cmap_windows = wl;
+	    tmp->number_cmap_windows++;
+	}
+    }
+    return;
 }

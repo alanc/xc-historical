@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.h,v 1.16 89/06/22 16:46:18 jim Exp $
+ * $XConsortium: menus.h,v 1.17 89/07/18 17:16:07 jim Exp $
  *
  * twm menus include file
  *
@@ -133,6 +133,10 @@ extern int StartingX, StartingY, RestorePointer;
 #define WARPSCREEN_NEXT "next"
 #define WARPSCREEN_PREV "prev"
 #define WARPSCREEN_BACK "back"
+
+#define COLORMAP_NEXT "next"
+#define COLORMAP_PREV "prev"
+#define COLORMAP_DEFAULT "default"
 
 extern void InitMenus();
 extern MenuRoot *NewMenuRoot();

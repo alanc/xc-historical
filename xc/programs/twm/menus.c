@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.93 89/07/28 17:33:56 jim Exp $
+ * $XConsortium: menus.c,v 1.94 89/08/03 11:00:19 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.93 89/07/28 17:33:56 jim Exp $";
+"$XConsortium: menus.c,v 1.94 89/08/03 11:00:19 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1071,6 +1071,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
     case F_DELTASTOP:
     case F_RAISELOWER:
     case F_WARPTOSCREEN:
+    case F_COLORMAP:
 	break;
     default:
         XGrabPointer(dpy, Scr->Root, True,
@@ -1601,7 +1602,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 
 		XGetWindowAttributes(dpy, tmp_win->w, &attr);
 		tmp_win->attr.colormap = attr.colormap;
-		XInstallColormap(dpy, tmp_win->attr.colormap);
+		InstallAColormap(dpy, tmp_win->attr.colormap);
 		if (tmp_win->hilite_w)
 		    XMapWindow(dpy, tmp_win->hilite_w);
 		XSetWindowBorder(dpy, tmp_win->frame, tmp_win->border);
@@ -1705,6 +1706,18 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 		WarpToScreen (PreviousScreen, 0);
 	    } else {
 		WarpToScreen (atoi (action), 0);
+	    }
+	}
+	break;
+
+    case F_COLORMAP:
+	{
+	    if (strcmp (action, COLORMAP_NEXT) == 0) {
+		BumpWindowColormap (tmp_win, 1);
+	    } else if (strcmp (action, COLORMAP_PREV) == 0) {
+		BumpWindowColormap (tmp_win, -1);
+	    } else {
+		BumpWindowColormap (tmp_win, 0);
 	    }
 	}
 	break;
@@ -2076,7 +2089,7 @@ FocusOnRoot()
 	if (Scr->Focus->hilite_w)
 	    XUnmapWindow(dpy, Scr->Focus->hilite_w);
     }
-    XInstallColormap(dpy, Scr->CMap);
+    InstallAColormap(dpy, Scr->CMap);
     Scr->Focus = NULL;
     Scr->FocusRoot = TRUE;
 }
@@ -2393,6 +2406,42 @@ WarpToScreen (n, inc)
     return;
 }
 
+
+static void InstallWindowColormap (tmp_win, newi)
+    TwmWindow *tmp_win;
+    int newi;
+{
+    XWindowAttributes attr;
+
+    if (newi < 0) {
+	newi = tmp_win->number_cmap_windows - 1;
+    } else if (newi >= tmp_win->number_cmap_windows) {
+	newi = 0;
+    }
+
+    if (XGetWindowAttributes (dpy, tmp_win->cmap_windows[newi], &attr)) {
+	tmp_win->attr.colormap = attr.colormap;
+	tmp_win->current_cmap_window = newi;
+	InstallAColormap (dpy, attr.colormap);
+    }
+}
+
+
+BumpWindowColormap (tmp_win, inc)
+    TwmWindow *tmp_win;
+    int inc;
+{
+    if (tmp_win->cmap_windows) {
+	int newcmapindex;
+
+	if (inc == 0) {
+	    newcmapindex = -1;			/* get default element */
+	} else {
+	    newcmapindex = tmp_win->current_cmap_window + inc;
+	}
+	InstallWindowColormap (tmp_win, newcmapindex);
+    }
+}
 
 HideIconManager ()
 {

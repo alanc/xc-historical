@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: lex.l,v 1.46 89/07/27 15:28:12 jim Exp $
+ * $XConsortium: lex.l,v 1.47 89/08/02 21:03:35 jim Exp $
  *
  * .twmrc lex file
  *
@@ -37,7 +37,7 @@
  ***********************************************************************/
 
 static char RCSinfo[]=
-"$XConsortium: lex.l,v 1.46 89/07/27 15:28:12 jim Exp $";
+"$XConsortium: lex.l,v 1.47 89/08/02 21:03:35 jim Exp $";
 
 /* #include <stdio.h> */		/* lex already includes stdio.h */
 #include "gram.h"
@@ -143,6 +143,7 @@ f.sorticonmgr			{ return F_SORTICONMGR; }
 f.warpto			{ return F_WARPTO; }
 f.warptoiconmgr			{ return F_WARPTOICONMGR; }
 f.warptoscreen			{ return F_WARPTOSCREEN; }
+f.colormap			{ return F_COLORMAP; }
 f.autoraise			{ return F_AUTORAISE; }
 f.identify			{ return F_IDENTIFY; }
 f.restart			{ return F_RESTART; }

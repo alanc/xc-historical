@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.35 89/07/26 11:02:56 jim Exp $
+ * $XConsortium: twm.h,v 1.36 89/07/27 17:42:08 jim Exp $
  *
  * twm include file
  *
@@ -209,6 +209,10 @@ typedef struct TwmWindow
     short fShaped;		/* regions of the frame have been shaped */
 #endif
     unsigned long protocols;	/* which protocols this window handles */
+    Window *cmap_windows;	/* WM_COLORMAP_WINDOWS list */
+    int number_cmap_windows;	/* number of elements in cmapws */
+    int current_cmap_window;	/* current index into cmapws list */
+    Bool xfree_cmap_windows;	/* t if need to XFree prop instead of free */
 } TwmWindow;
 
 #define DoesWmTakeFocus		(1L << 0)
