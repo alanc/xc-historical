@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dpylist.c,v 1.21 90/12/06 20:36:52 keith Exp $
+ * $XConsortium: dpylist.c,v 1.22 91/01/09 17:27:21 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -80,6 +80,8 @@ int	serverPid;
 	return 0;
 }
 
+#ifdef XDMCP
+
 struct display *
 FindDisplayBySessionID (sessionID)
     CARD32  sessionID;
@@ -109,6 +111,8 @@ FindDisplayByAddress (addr, addrlen, displayNumber)
 	}
     return 0;
 }
+
+#endif /* XDMCP */
 
 #define IfFree(x)  if (x) free ((char *) x)
     
@@ -158,9 +162,11 @@ struct display	*old;
 		IfFree (*x);
 	    IfFree (d->authNames);
 	    IfFree (d->authNameLens);
+#ifdef XDMCP
 	    IfFree (d->peer);
 	    IfFree (d->from);
 	    XdmcpDisposeARRAY8 (&d->clientAddr);
+#endif
 	    free ((char *) d);
 	    break;
 	}
@@ -238,6 +244,7 @@ char		*class;
     d->startTries = 0;
     d->terminateServer = 0;
     d->grabTimeout = 0;
+#ifdef XDMCP
     d->sessionID = 0;
     d->peer = 0;
     d->peerlen = 0;
@@ -248,6 +255,7 @@ char		*class;
     d->clientAddr.data = NULL;
     d->clientAddr.length = 0;
     d->connectionType = 0;
+#endif
     displays = d;
     return d;
 }

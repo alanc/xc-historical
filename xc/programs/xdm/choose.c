@@ -1,5 +1,5 @@
 /*
- * $XConsortium: choose.c,v 1.1 91/01/31 20:53:25 keith Exp $
+ * $XConsortium: choose.c,v 1.2 91/01/31 22:02:55 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -29,15 +29,17 @@
  * xdm interface to chooser program
  */
 
+# include   "dm.h"
+
+#ifdef XDMCP
+
+# include	<X11/X.h>
 # include	<sys/types.h>
 # include	<sys/socket.h>
 # include	<netinet/in.h>
 # include	<sys/un.h>
-# include	<X11/X.h>
 # include	<netdb.h>
 # include	<ctype.h>
-
-# include   "dm.h"
 
 ProcessChooserSocket (fd)
 {
@@ -393,3 +395,5 @@ RunChooser (d)
     LogError ("Cannot execute %s\n", args[0]);
     exit (REMANAGE_DISPLAY);
 }
+
+#endif /* XDMCP */

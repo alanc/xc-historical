@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: xdmauth.c,v 1.5 90/09/29 12:00:13 rws Exp $
+ * $XConsortium: xdmauth.c,v 1.6 90/11/19 17:34:50 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -27,7 +27,7 @@
 
 #include "dm.h"
 
-#ifdef HASDES
+#ifdef HASDES			/* entire file */
 
 static char	auth_name[256];
 static int	auth_name_len;
@@ -46,19 +46,23 @@ XdmPrintDataHex (s, a, l)
     Debug ("\n");
 }
 
+#ifdef notdef			/* not used */
 XdmPrintKey (s, k)
     char	    *s;
     XdmAuthKeyRec   *k;
 {
     XdmPrintDataHex (s, (char *) k->data, 8);
 }
+#endif
 
+#ifdef XDMCP
 XdmPrintArray8Hex (s, a)
     char	*s;
     ARRAY8Ptr	a;
 {
     XdmPrintDataHex (s, (char *) a->data, a->length);
 }
+#endif
 
 XdmInitAuth (name_len, name)
     unsigned short  name_len;
@@ -118,6 +122,8 @@ XdmGetAuth (namelen, name)
     XdmPrintDataHex ("Local server auth", (char *)new->data, new->data_length);
     return new;
 }
+
+#ifdef XDMCP
 
 XdmGetXdmcpAuth (pdpy,authorizationNameLen, authorizationName)
     struct protoDisplay	*pdpy;
@@ -255,4 +261,5 @@ XdmCheckAuthentication (pdpy, displayID, authenticationName, authenticationData)
     return TRUE;
 }
 
-#endif
+#endif /* XDMCP */
+#endif /* HASDES (covering the entire file) */

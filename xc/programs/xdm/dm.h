@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.39 91/01/10 10:40:12 rws Exp $
+ * $XConsortium: dm.h,v 1.40 91/01/31 22:03:14 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -28,7 +28,16 @@
 # include	<X11/Xfuncs.h>
 # include	<X11/Xmd.h>
 # include	<X11/Xauth.h>
+
+/* If XDMCP symbol defined, compile to run XDMCP protocol */
+
+#ifndef STREAMSCONN
+#define XDMCP
+#endif
+
+#ifdef XDMCP
 # include	<X11/Xdmcp.h>
+#endif
 
 # include	<sys/param.h>	/* for NGROUPS */
 
@@ -129,6 +138,7 @@ struct display {
 	FileState	state;		/* state during HUP processing */
 	int		startTries;	/* current start try */
 
+#ifdef XDMCP
 	/* XDMCP state */
 	CARD32		sessionID;	/* ID of active session */
 	struct sockaddr	*peer;		/* sockaddr of display peer */
@@ -139,7 +149,7 @@ struct display {
 	int		useChooser;	/* Run the chooser for this display */
 	ARRAY8		clientAddr;	/* for chooser picking */
 	CARD16		connectionType;	/* ... */
-
+#endif
 	/* server management resources */
 	int		serverAttempts;	/* number of attempts at running X */
 	int		openDelay;	/* open delay time */
@@ -184,6 +194,8 @@ struct display {
 	char		*authFile;	/* file to store authorization in */
 };
 
+#ifdef XDMCP
+
 #define PROTO_TIMEOUT	(30 * 60)   /* 30 minutes should be long enough */
 
 struct protoDisplay {
@@ -201,6 +213,7 @@ struct protoDisplay {
 	ARRAY8			authenticationData;
 	XdmAuthKeyRec		key;
 };
+#endif /* XDMCP */
 
 struct greet_info {
 	char		*name;		/* user name */
@@ -228,6 +241,11 @@ struct verify_info {
 # define UNMANAGE_DISPLAY	2	/* force deletion */
 # define RESERVER_DISPLAY	3	/* force server termination */
 # define OPENFAILED_DISPLAY	4	/* XOpenDisplay failed, retry */
+
+#ifndef TRUE
+#define TRUE	1
+#define FALSE	0
+#endif
 
 extern char	*config;
 

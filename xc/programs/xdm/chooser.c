@@ -1,5 +1,5 @@
 /*
- * $XConsortium: chooser.c,v 1.2 91/01/10 17:01:28 keith Exp $
+ * $XConsortium: chooser.c,v 1.3 91/01/31 22:02:58 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -46,8 +46,6 @@
  *  +--------------------------------------------------+
  */
 
-#include    <stdio.h>
-
 #include    <X11/Intrinsic.h>
 #include    <X11/StringDefs.h>
 #include    <X11/Xatom.h>
@@ -59,11 +57,17 @@
 #include    <X11/Xaw/Box.h>
 #include    <X11/Xaw/Command.h>
 
+#include    "dm.h"
+
+#include    <X11/Xdmcp.h>
+
 #include    <sys/types.h>
+#include    <stdio.h>
+#include    <ctype.h>
+
 #include    <sys/socket.h>
 #include    <netinet/in.h>
 #include    <sys/ioctl.h>
-#include    <ctype.h>
 
 #define BROADCAST_HOSTNAME  "BROADCAST"
 
@@ -77,10 +81,6 @@
 #endif /* hpux */
 
 #include    <netdb.h>
-
-#include    "dm.h"
-
-#include    <X11/Xdmcp.h>
 
 Widget	    toplevel, label, viewport, paned, list, box, cancel, acceptit, ping;
 
@@ -437,6 +437,13 @@ RegisterHostaddr (addr, len, type)
     *prev = host;
     host->next = NULL;
 }
+
+/*
+ * Register the address for this host.
+ * Called with each of the names on the command line.
+ * The special name "BROADCAST" looks up all the broadcast
+ *  addresses on the local host.
+ */
 
 RegisterHostname (name)
     char    *name;

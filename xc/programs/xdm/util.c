@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: util.c,v 1.6 90/08/23 13:15:46 keith Exp $
+ * $XConsortium: util.c,v 1.7 91/01/31 22:03:49 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -190,7 +190,7 @@ freeArgs (argv)
 
 CleanUpChild ()
 {
-#ifdef SYSV
+#if defined(SYSV) || defined(SVR4)
 	setpgrp ();
 #else
 	setpgrp (0, getpid ());
@@ -206,3 +206,16 @@ CleanUpChild ()
 	CloseOnFork ();
 }
 
+static char localHostbuf[256];
+static int  gotLocalHostname;
+
+char *
+localHostname ()
+{
+    if (!gotLocalHostname)
+    {
+	XmuGetHostname (localHostbuf, sizeof (localHostbuf) - 1);
+	gotLocalHostname = 1;
+    }
+    return localHostbuf;
+}

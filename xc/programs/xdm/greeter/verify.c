@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: verify.c,v 1.12 90/09/14 16:31:04 rws Exp $
+ * $XConsortium: verify.c,v 1.13 90/09/14 17:51:46 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -30,10 +30,20 @@
 # ifdef NGROUPS
 # include	<grp.h>
 # endif
+#ifdef SVR4
+# include	<shadow.h>
+#endif
+
 
 struct passwd joeblow = {
 	"Nobody", "***************"
 };
+
+#ifdef SVR4
+struct spwd spjoeblow = {
+	"Nobody", "**************"
+};
+#endif
 
 Verify (d, greet, verify)
 struct display		*d;
@@ -41,16 +51,31 @@ struct greet_info	*greet;
 struct verify_info	*verify;
 {
 	struct passwd	*p;
+#ifdef SVR4
+	struct spwd	*sp;
+#endif
 	char		*crypt ();
 	char		**userEnv (), **systemEnv (), **parseArgs ();
 	char		*shell, *home;
 	char		**argv;
 
+	Debug ("Verify %s ...\n", greet->name);
 	p = getpwnam (greet->name);
 	if (!p || strlen (greet->name) == 0)
 		p = &joeblow;
-	Debug ("Verify %s %s\n", greet->name, greet->password);
-	if (strcmp (crypt (greet->password, p->pw_passwd), p->pw_passwd)) {
+#ifdef SVR4
+	sp = getspnam(greet->name);
+	if (sp == NULL) {
+		sp = &spjoeblow;
+		Debug ("getspnam() failed.  Are you root?\n");
+	}
+	endspent();
+
+	if (strcmp (crypt (greet->password, sp->sp_pwdp), sp->sp_pwdp))
+#else
+	if (strcmp (crypt (greet->password, p->pw_passwd), p->pw_passwd))
+#endif
+	{
 		Debug ("verify failed\n");
 		bzero(greet->password, strlen(greet->password));
 		return 0;

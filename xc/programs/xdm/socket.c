@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: socket.c,v 1.23 91/01/10 10:41:04 rws Exp $
+ * $XConsortium: socket.c,v 1.24 91/01/31 22:03:42 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -24,12 +24,14 @@
 
 # include "dm.h"
 
+#ifdef XDMCP
+
+# include	<X11/X.h>
+# include	<X11/Xfuncs.h>
 # include	<sys/types.h>
 # include	<sys/socket.h>
 # include	<netinet/in.h>
 # include	<sys/un.h>
-# include	<X11/X.h>
-# include	<X11/Xfuncs.h>
 # include	<netdb.h>
 # include	<ctype.h>
 
@@ -1226,16 +1228,4 @@ CARD16Ptr   displayNumber;
     return TRUE;
 }
 
-static char localHostbuf[256];
-static int  gotLocalHostname;
-
-char *
-localHostname ()
-{
-    if (!gotLocalHostname)
-    {
-	XmuGetHostname (localHostbuf, sizeof (localHostbuf) - 1);
-	gotLocalHostname = 1;
-    }
-    return localHostbuf;
-}
+#endif /* XDMCP */

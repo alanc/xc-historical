@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: server.c,v 1.9 91/01/09 17:28:07 keith Exp $
+ * $XConsortium: server.c,v 1.10 91/01/31 22:03:29 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -18,13 +18,28 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
-# include	<stdio.h>
+/*
+ * server.c - manage the X server
+ */
+
+# include	"dm.h"
 # include	<X11/Xlib.h>
 # include	<X11/Xos.h>
+# include	<stdio.h>
 # include	<signal.h>
 # include	<setjmp.h>
 # include	<errno.h>
-# include	"dm.h"
+
+#ifdef SYSV
+#define SIGNALS_RESET_WHEN_CAUGHT
+#define UNRELIABLE_SIGNALS
+#endif
+
+/* SVR4 has reliable signals, but we haven't updated this to use them yet */
+#ifdef SVR4			
+#define SIGNALS_RESET_WHEN_CAUGHT
+#endif
+
 
 static receivedUsr1;
 
@@ -38,7 +53,7 @@ static SIGVAL
 CatchUsr1 (n)
     int n;
 {
-#ifdef SYSV			/* resets signals when caught */
+#ifdef SIGNALS_RESET_WHEN_CAUGHT
     (void) signal (SIGUSR1, CatchUsr1);
 #endif
     Debug ("display manager caught SIGUSR1\n");
@@ -179,9 +194,13 @@ int	    serverPid;
 	    if (!receivedUsr1)
 		pid = wait ((waitType *) 0);
 	    else
+#ifdef USE_POSIX_STYLE_WAIT
+		pid = waitpid (-1, (int *) 0, WNOHANG);
+#else
 		pid = wait3 ((waitType *) 0, WNOHANG,
 			     (struct rusage *) 0);
-#endif
+#endif /* USE_POSIX_STYLE_WAIT else */
+#endif /* SYSV else */
 	    if (pid == serverPid ||
 		pid == -1 && errno == ECHILD)
 	    {
@@ -226,6 +245,12 @@ abortOpen (n)
 	longjmp (openAbort, 1);
 }
 
+#ifdef XDMCP
+
+#ifdef STREAMSCONN
+#include <tiuser.h>
+#endif
+
 static
 GetRemoteAddress (d, fd)
     struct display  *d;
@@ -233,10 +258,21 @@ GetRemoteAddress (d, fd)
 {
     char    buf[512];
     int	    len = sizeof (buf);
+#ifdef STREAMSCONN
+    struct netbuf	netb;
+#endif
 
     if (d->peer)
 	free ((char *) d->peer);
+#ifdef STREAMSCONN
+    netb.maxlen = sizeof(buf);
+    netb.buf = buf;
+    t_getname(fd, &netb, REMOTENAME);
+    len = 8;
+    /* lucky for us, t_getname returns something that looks like a sockaddr */
+#else
     getpeername (fd, (struct sockaddr *) buf, &len);
+#endif
     d->peerlen = 0;
     if (len)
     {
@@ -249,6 +285,8 @@ GetRemoteAddress (d, fd)
     }
     Debug ("Got remote address %s %d\n", d->name, d->peerlen);
 }
+
+#endif /* XDMCP */
 
 int
 WaitForServer (d)
@@ -267,8 +305,10 @@ WaitForServer (d)
 	    (void) signal (SIGALRM, SIG_DFL);
 	    Debug ("After XOpenDisplay(%s)\n", d->name);
 	    if (dpy) {
+#ifdef XDMCP
 	    	if (d->displayType.location == Foreign)
 		    GetRemoteAddress (d, ConnectionNumber (dpy));
+#endif
 	    	RegisterCloseOnFork (ConnectionNumber (dpy));
 		(void) fcntl (ConnectionNumber (dpy), F_SETFD, 0);
 	    	return 1;

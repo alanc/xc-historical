@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: policy.c,v 1.6 91/01/09 17:27:48 keith Exp $
+ * $XConsortium: policy.c,v 1.7 91/01/31 22:03:21 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -23,6 +23,9 @@
  */
 
 # include "dm.h"
+
+#ifdef XDMCP
+
 # include <X11/X.h>
 # include <sys/socket.h>
 #ifdef AF_INET
@@ -143,3 +146,5 @@ SelectConnectionTypeIndex (connectionTypes, connectionAddresses)
 {
     return 0;
 }
+
+#endif /* XDMCP */

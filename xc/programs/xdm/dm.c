@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.47 91/01/10 11:02:13 rws Exp $
+ * $XConsortium: dm.c,v 1.48 91/01/31 22:03:08 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -22,8 +22,9 @@
  * display manager
  */
 
+# include	"dm.h"
+
 # include	<stdio.h>
-# include	<X11/Xos.h>
 # include	<signal.h>
 #ifndef sigmask
 #define sigmask(m)  (1 << ((m - 1)))
@@ -42,7 +43,17 @@
 #endif
 #endif
 
-# include	"dm.h"
+#ifdef SYSV
+#define SIGNALS_RESET_WHEN_CAUGHT
+#define UNRELIABLE_SIGNALS
+#endif
+
+/* SVR4 has reliable signals, but we haven't updated this to use them yet */
+#ifdef SVR4			
+#define SIGNALS_RESET_WHEN_CAUGHT
+#define UNRELIABLE_SIGNALS
+#define SYSV			/* so don't try to use socket code */
+#endif
 
 extern int	errno;
 
@@ -110,7 +121,9 @@ char	**argv;
     if (debugLevel == 0 && daemonMode)
 	BecomeDaemon ();
     InitErrorLog ();
+#ifdef XDMCP
     CreateWellKnownSockets ();
+#endif
     (void) signal (SIGTERM, StopAll);
     (void) signal (SIGINT, StopAll);
     /*
@@ -121,14 +134,20 @@ char	**argv;
      *	    for each entry
      */
     SetAccessFileTime ();
+#ifdef XDMCP
     ScanAccessDatabase ();
+#endif
     ScanServers ();
     StartDisplays ();
     (void) signal (SIGHUP, RescanNotify);
 #ifndef SYSV
     (void) signal (SIGCHLD, ChildNotify);
 #endif
-    while (AnyWellKnownSockets() || AnyDisplaysLeft ())
+    while (
+#ifdef XDMCP
+	   AnyWellKnownSockets() ||
+#endif
+	   AnyDisplaysLeft ())
     {
 	if (Rescan)
 	{
@@ -144,12 +163,14 @@ char	**argv;
     Debug ("Nothing left to do, exiting\n");
 }
 
+/* ARGSUSED */
 static SIGVAL
-RescanNotify ()
+RescanNotify (n)
+    int n;
 {
     Debug ("Caught SIGHUP\n");
     Rescan = 1;
-#ifdef SYSV
+#ifdef SIGNALS_RESET_WHEN_CAUGHT
     signal (SIGHUP, RescanNotify);
 #endif
 }
@@ -213,7 +234,9 @@ RescanServers ()
     LoadDMResources ();
     ScanServers ();
     SetAccessFileTime ();
+#ifdef XDMCP
     ScanAccessDatabase ();
+#endif
     StartDisplays ();
 }
 
@@ -260,6 +283,7 @@ RescanIfMod ()
 	    ScanServers ();
 	}
     }
+#ifdef XDMCP
     if (accessFile && accessFile[0] && stat (accessFile, &statb) != -1)
     {
 	if (statb.st_mtime != AccessFileModTime)
@@ -270,19 +294,24 @@ RescanIfMod ()
 	    ScanAccessDatabase ();
 	}
     }
+#endif
 }
 
 /*
  * catch a SIGTERM, kill all displays and exit
  */
 
+/* ARGSUSED */
 static SIGVAL
-StopAll ()
+StopAll (n)
+    int n;
 {
     Debug ("Shutting down entire manager\n");
+#ifdef XDMCP
     DestroyWellKnownSockets ();
+#endif
     ForEachDisplay (StopDisplay);
-#ifdef SYSV
+#ifdef SIGNALS_RESET_WHEN_CAUGHT
     /* to avoid another one from killing us unceremoniously */
     (void) signal (SIGTERM, StopAll);
     (void) signal (SIGINT, StopAll);
@@ -313,8 +342,8 @@ WaitForChild ()
     waitType	status;
     int		mask;
 
-#ifdef SYSV
-    /* XXX classic sysV signal race condition here with RescanNotify */
+#ifdef UNRELIABLE_SIGNALS
+    /* XXX classic System V signal race condition here with RescanNotify */
     if ((pid = wait (&status)) != -1)
 #else
     mask = sigblock (sigmask (SIGCHLD) | sigmask (SIGHUP));
@@ -357,8 +386,10 @@ WaitForChild ()
  		 * no display connection was ever made, tell the
 		 * terminal that the open attempt failed
  		 */
+#ifdef XDMCP
 		if (d->displayType.origin == FromXDMCP)
 		    SendFailed (d, "Cannot open display");
+#endif
 		if (d->displayType.origin == FromXDMCP ||
 		    d->status == zombie ||
 		    ++d->startTries >= d->startAttempts)
@@ -508,9 +539,11 @@ struct display	*d;
 	SetAuthorization (d);
 	if (!WaitForServer (d))
 	    exit (OPENFAILED_DISPLAY);
+#ifdef XDMCP
 	if (d->useChooser)
 	    RunChooser (d);
 	else
+#endif
 	    ManageSession (d);
 	exit (REMANAGE_DISPLAY);
     case -1:

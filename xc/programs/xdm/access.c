@@ -1,5 +1,5 @@
 /*
- * $XConsortium: access.c,v 1.4 91/01/09 17:35:54 keith Exp $
+ * $XConsortium: access.c,v 1.5 91/01/10 11:05:15 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -28,14 +28,17 @@
  * and (potentially) a list of hosts to send ForwardQuery packets to
  */
 
-# include   <stdio.h>
-# include   <X11/Xos.h>
-# include   <netinet/in.h>
 # include   "dm.h"
+
+#ifdef XDMCP
+
+# include   <X11/Xos.h>
 # include   <X11/Xdmcp.h>
+# include   <X11/X.h>
+# include   <stdio.h>
+# include   <netinet/in.h>
 # include   <netdb.h>
 # include   <sys/socket.h>
-# include   <X11/X.h>
 
 #define ALIAS_CHARACTER	    '%'
 #define NEGATE_CHARACTER    '!'
@@ -715,3 +718,5 @@ AcceptableDisplayAddress (clientAddress, connectionType, type)
 	free (clientName);
     return (d != 0) && (d->notAllowed == 0);
 }
+
+#endif /* XDMCP */

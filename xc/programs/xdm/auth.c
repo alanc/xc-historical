@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.27 91/01/10 11:03:20 rws Exp $
+ * $XConsortium: auth.c,v 1.28 91/01/31 22:02:50 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -54,7 +54,11 @@ extern Xauth	*MitGetAuth ();
 #ifdef HASDES
 extern int	XdmInitAuth ();
 extern Xauth	*XdmGetAuth ();
+#ifdef XDMCP
 extern int	XdmGetXdmcpAuth ();
+#else
+#define XdmGetXdmcpAuth NULL
+#endif
 #endif
 
 struct AuthProtocol {
@@ -68,11 +72,11 @@ struct AuthProtocol {
 
 static struct AuthProtocol AuthProtocols[] = {
 { (unsigned short) 18,	"MIT-MAGIC-COOKIE-1",
-    MitInitAuth, MitGetAuth, NULL,
+    MitInitAuth, MitGetAuth, NULL
 },
 #ifdef HASDES
 { (unsigned short) 19,	"XDM-AUTHORIZATION-1",
-    XdmInitAuth, XdmGetAuth, XdmGetXdmcpAuth,
+    XdmInitAuth, XdmGetAuth, XdmGetXdmcpAuth
 }
 #endif
 };
@@ -143,6 +147,8 @@ char		*name;
     return auth;
 }
 
+#ifdef XDMCP
+
 SetProtoDisplayAuthorization (pdpy,
     authorizationNameLen, authorizationName)
     struct protoDisplay	*pdpy;
@@ -180,6 +186,8 @@ SetProtoDisplayAuthorization (pdpy,
 	    Debug ("Got (null)\n");
     }
 }
+
+#endif /* XDMCP */
 
 static
 CleanUpFileName (src, dst, len)
@@ -604,6 +612,32 @@ ConvertAddr (saddr, len, addr)
     return (-1);
 }
 
+#ifdef STREAMSCONN
+
+#include <tiuser.h>
+
+/* Define this host for access control.  Find all the hosts the OS knows about 
+ * for this fd and add them to the selfhosts list.
+ * TLI version, written without sufficient documentation.
+ */
+static
+DefineSelf (fd, file, auth)
+    int fd;
+    FILE	*file;
+    Xauth	*auth;
+{
+    struct netbuf	netb;
+    char		addrret[1024]; /* easier than t_alloc */
+    
+    netb.maxlen = sizeof(addrret);
+    netb.buf = addrret;
+    if (t_getname (fd, &netb, LOCALNAME) == -1)
+	t_error ("t_getname");
+    /* what a kludge */
+    writeAddr (FamilyInternet, 4, netb.buf+4, file, auth);
+}
+
+#else /* STREAMSCONN */
 #ifdef SIOCGIFCONF
 
 /* Define this host for access control.  Find all the hosts the OS knows about 
@@ -710,6 +744,7 @@ DefineSelf (fd, file, auth)
 }
 
 #endif /* SIOCGIFCONF else */
+#endif /* STREAMSCONN else */
 
 static
 setAuthNumber (auth, name)
@@ -763,6 +798,8 @@ char	*name;
     DefineLocal (file, auth);
 }
 
+#ifdef XDMCP
+
 static
 writeRemoteAuth (file, auth, peer, peerlen, name)
     FILE	    *file;
@@ -812,6 +849,8 @@ writeRemoteAuth (file, auth, peer, peerlen, name)
 	writeLocalAuth (file, auth, name);
     }
 }
+
+#endif /* XDMCP */
 
 SetUserAuthorization (d, verify)
 struct display		*d;
@@ -892,8 +931,10 @@ struct verify_info	*verify;
 		magicCookie = i;
 	    	if (d->displayType.location == Local)
 	    	    writeLocalAuth (new, auths[i], d->name);
+#ifdef XDMCP
 	    	else
 	    	    writeRemoteAuth (new, auths[i], d->peer, d->peerlen, d->name);
+#endif
 		break;
 	    }
 	}
@@ -903,8 +944,10 @@ struct verify_info	*verify;
 	    {
 	    	if (d->displayType.location == Local)
 	    	    writeLocalAuth (new, auths[i], d->name);
+#ifdef XDMCP
 	    	else
 	    	    writeRemoteAuth (new, auths[i], d->peer, d->peerlen, d->name);
+#endif
 	    }
 	}
 	if (old) {
@@ -989,8 +1032,10 @@ RemoveUserAuthorization (d, verify)
 	{
 	    if (d->displayType.location == Local)
 	    	writeLocalAuth (new, auths[i], d->name);
+#ifdef XDMCP
 	    else
 	    	writeRemoteAuth (new, auths[i], d->peer, d->peerlen, d->name);
+#endif
 	}
 	doWrite = 1;
 	if (old) {

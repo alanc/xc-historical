@@ -1,5 +1,5 @@
 /*
- * $XConsortium: protodpy.c,v 1.4 89/12/13 15:23:33 keith Exp $
+ * $XConsortium: protodpy.c,v 1.5 91/01/09 17:25:58 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -32,6 +32,9 @@
  */
 
 #include "dm.h"
+
+#ifdef XDMCP
+
 # include	<sys/types.h>
 # include	<sys/socket.h>
 # include	<netinet/in.h>
@@ -200,3 +203,5 @@ DisposeProtoDisplay (pdpy)
     free ((char *) pdpy->address);
     free ((char *) pdpy);
 }
+
+#endif /* XDMCP */

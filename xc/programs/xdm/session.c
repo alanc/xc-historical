@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.40 90/12/11 13:26:32 rws Exp $
+ * $XConsortium: session.c,v 1.41 91/01/31 22:03:33 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -407,9 +407,9 @@ waitAbort (n)
 	longjmp (tenaciousClient, 1);
 }
 
-#ifdef SYSV
+#if defined(_POSIX_SOURCE) || defined(SYSV) || defined(SVR4)
 #define killpg(pgrp, sig) kill(-(pgrp), sig)
-#endif /* SYSV */
+#endif
 
 AbortClient (pid)
 int	pid;
