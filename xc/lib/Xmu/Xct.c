@@ -1,5 +1,5 @@
 /* 
- * $XConsortium: Xct.c,v 1.13 90/12/19 19:59:49 converse Exp $
+ * $XConsortium: Xct.c,v 1.14 90/12/26 16:28:55 rws Exp $
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -14,9 +14,9 @@
  *
  */
 
-#include <stdio.h>
-#include "Xct.h"
 #include <X11/Xfuncs.h>
+#include "Xct.h"
+#include <stdio.h>
 
 #define UsedGraphic	0x0001
 #define UsedDirection	0x0002
@@ -36,8 +36,8 @@ typedef struct _XctPriv {
 #define IsMore(priv) ((priv)->ptr != (priv)->ptrend)
 #define AmountLeft(priv) ((priv)->ptrend - (priv)->ptr)
 
-char *malloc();
-char *realloc();
+extern char *malloc();
+extern char *realloc();
 
 #define HT	0x09
 #define NL	0x0a
