@@ -1,5 +1,5 @@
 #include "copyright.h"
-/* $Header: XConnDis.c,v 11.23 87/12/19 16:37:25 rws Exp $ */
+/* $Header: XConnDis.c,v 11.24 88/01/30 10:14:50 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 #define NEED_EVENTS
 /*
@@ -227,7 +227,7 @@ int _XConnectDisplay (display_name, expanded_name, screen_num)
 	 * Return the id if the connection succeeded. Rebuild the expanded
 	 * spec and return it in the result parameter.
 	 */
-	display_ptr = displaybuf;
+	display_ptr = displaybuf-1;
 	while (*(++display_ptr) != '\0')
 	    ;
 	*(display_ptr++) = ':';
