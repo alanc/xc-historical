@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: ButtonBox.c,v 1.18 87/12/17 09:03:24 swick Locked $";
+static char rcsid[] = "$Header: ButtonBox.c,v 1.19 87/12/17 16:35:52 swick Locked $";
 #endif lint
 
 /*
@@ -132,7 +132,7 @@ static void ClassInitialize()
 /*
  *
  * Do a layout, either actually assigning positions, or just calculating size.
- * Returns TRUE on success; FALSE if it couldn't make things fit.
+ * Returns minimum width and height that will preserve the same layout.
  *
  */
 
@@ -194,6 +194,8 @@ static DoLayout(bbw, width, height, replyWidth, replyHeight, position)
 /*
  *
  * Calculate preferred size, given constraining box
+ * Returns TRUE if everything will fit in the constraints, FALSE otherwise.
+ * Also returns minimum width and height that will preserve the same layout.
  *
  */
 
@@ -232,7 +234,8 @@ static void Resize(w)
 static Boolean TryNewLayout(bbw)
     ButtonBoxWidget	bbw;
 {
-    Dimension		width, height, junk_w, junk_h;
+    Dimension	width, height, proposed_width, proposed_height;
+    int		iterations;
 
     if (!PreferredSize(bbw, bbw->core.width, bbw->core.height, &width, &height))
 	(void) PreferredSize(bbw, width, height, &width, &height);
@@ -243,24 +246,59 @@ static Boolean TryNewLayout(bbw)
     }
 
     /* let's see if our parent will go for a new size. */
-    switch (XtMakeResizeRequest((Widget) bbw, width, height, &width, &height)) {
+    iterations = 0;
+    do {
+	switch (XtMakeResizeRequest(
+			    (Widget)bbw, width, height,
+			    &proposed_width, &proposed_height))
+	{
+	    case XtGeometryYes:
+		return (TRUE);
 
-	case XtGeometryYes:
-	    return (TRUE);
+	    case XtGeometryNo:
+		if ((width <= bbw->core.width) && (height <= bbw->core.height))
+		    return (TRUE);
+		else
+		    return (FALSE);
 
-	case XtGeometryNo:
-	    if ((width <= bbw->core.width) && (height <= bbw->core.height))
-	        return (TRUE);
-	    else
-	        return (FALSE);
+	    case XtGeometryAlmost:
+		if (proposed_height != height && proposed_width != width) {
+		    /* punt; parent has its own ideas */
+		    width = proposed_width;
+		    height = proposed_height;
+		}
+		else if (proposed_width != width) {
+		    /* recalc bounding box; height might change */
+		    DoLayout(bbw, proposed_width, 0, &width, &height, FALSE);
+		    width = proposed_width;
+		}
+		else { /* proposed_height != height */
+		    Boolean fits;
+		    Dimension last_width, last_height;
 
-	case XtGeometryAlmost:
-	    if (! PreferredSize(bbw, width, height, &junk_w, &junk_h))
-	        return (FALSE);
-	    (void) XtMakeResizeRequest((Widget) bbw, width, height, 
-					&width, &height);
-	    return (TRUE);
-    }
+		    /* find minimum width for this height */
+		    DoLayout(bbw, 0, proposed_height, &width, &height, FALSE);
+		    if (height <= proposed_height) {
+			height = proposed_height;
+			continue;
+		    }
+		    do { /* find some width big enough */
+			last_height = height;
+			width *= 2;
+			fits = DoLayout(bbw, width, proposed_height,
+					&width, &height, FALSE);
+		    } while (!fits && height > last_height);
+		    do { /* find minimum width */
+			last_width = width--;
+			fits = DoLayout(bbw, width, proposed_height,
+					&width, &height, FALSE);
+		    } while (fits);
+		    width = last_width;
+		    height = proposed_height;
+		}
+	}
+	iterations++;
+    } while (iterations < 10);
 }
 
 /*
