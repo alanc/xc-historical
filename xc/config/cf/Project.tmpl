@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.85 91/02/04 20:13:41 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.86 91/02/09 14:35:10 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -11,7 +11,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.85 91/02/04 20:13:41 rws Exp $
  *                                                                           *
  ****************************************************************************/
 
-#define ProjectX		4	/* do *not* change this line */
+#define ProjectX		5	/* do *not* change this line */
 
 /*
  * X-specific things
@@ -194,14 +194,8 @@ XCOMM $XConsortium: Project.tmpl,v 1.85 91/02/04 20:13:41 rws Exp $
 #ifndef XdmConfigurationSubdirectory		/* under xdm sources */
 #define XdmConfigurationSubdirectory config
 #endif
-#ifndef AwmDir
-#define AwmDir $(LIBDIR)/awm
-#endif
 #ifndef TwmDir
 #define TwmDir $(LIBDIR)/twm
-#endif
-#ifndef GwmDir
-#define GwmDir $(LIBDIR)/gwm
 #endif
 #ifndef ManPath
 #define ManPath Concat($(DESTDIR),ManDirectoryRoot)
@@ -270,42 +264,42 @@ XCOMM $XConsortium: Project.tmpl,v 1.85 91/02/04 20:13:41 rws Exp $
 #endif
 
 #ifndef SharedLibX
-#if HasSunOSSharedLibraries
+#if HasSharedLibraries
 #define SharedLibX YES
 #else
 #define SharedLibX NO
 #endif
 #endif
 #ifndef SharedOldLibX
-#if HasSunOSSharedLibraries
+#if HasSharedLibraries
 #define SharedOldLibX YES
 #else
 #define SharedOldLibX NO
 #endif
 #endif
 #ifndef SharedLibXt
-#if HasSunOSSharedLibraries
+#if HasSharedLibraries
 #define SharedLibXt YES
 #else
 #define SharedLibXt NO
 #endif
 #endif
 #ifndef SharedLibXaw
-#if HasSunOSSharedLibraries
+#if HasSharedLibraries
 #define SharedLibXaw YES
 #else
 #define SharedLibXaw NO
 #endif
 #endif
 #ifndef SharedLibXmu
-#if HasSunOSSharedLibraries
+#if HasSharedLibraries
 #define SharedLibXmu YES
 #else
 #define SharedLibXmu NO
 #endif
 #endif
 #ifndef SharedLibXext
-#if HasSunOSSharedLibraries
+#if HasSharedLibraries
 #define SharedLibXext NO	/* XXX - haven't made it sharable yet */
 #else
 #define SharedLibXext NO
@@ -313,34 +307,11 @@ XCOMM $XConsortium: Project.tmpl,v 1.85 91/02/04 20:13:41 rws Exp $
 #endif
 
 
-#ifndef SharedXlibRev
-#define SharedXlibRev 4.2
-#endif
-#ifndef SharedOldXRev
-#define SharedOldXRev 4.0
-#endif
-#ifndef SharedXtRev
-#define SharedXtRev 4.0
-#endif
-#ifndef SharedXawRev
-#define SharedXawRev 4.0
-#endif
-#ifndef SharedXmuRev
-#define SharedXmuRev 4.0
-#endif
-#ifndef SharedXextRev
-#define SharedXextRev 4.0
-#endif
-
 #ifndef HasInputExtension
 #define HasInputExtension YES
 #endif
 #ifndef DoInstallExtensionsIntoXlib
 #define DoInstallExtensionsIntoXlib NO	/* merge libXext.a into libX11.a */
-#endif
-
-#ifndef BandAidLibraryNeeded
-#define BandAidLibraryNeeded NO		/* for getting right stuff into Xlib */
 #endif
 
 #ifndef XawClientDepLibs
@@ -352,7 +323,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.85 91/02/04 20:13:41 rws Exp $
 
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System make variables; this need to be coordinated with rules
-XCOMM $XConsortium: Project.tmpl,v 1.85 91/02/04 20:13:41 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.86 91/02/09 14:35:10 rws Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -374,22 +345,12 @@ XCOMM $XConsortium: Project.tmpl,v 1.85 91/02/04 20:13:41 rws Exp $
           FONTDIR = FontDir		/* font directories */
          XINITDIR = XinitDir		/* xinit config files */
            XDMDIR = XdmDir		/* xdm config files */
-           AWMDIR = AwmDir		/* awm config files */
            TWMDIR = TwmDir		/* twm config files */
-           GWMDIR = GwmDir		/* gwm config and data files */
           MANPATH = ManPath		/* top of manual page tree */
     MANSOURCEPATH = ManSourcePath	/* prefix for man page sources */
            MANDIR = ManDir		/* man pages for commands */
         LIBMANDIR = LibmanDir		/* man pages for library routines */
       XAPPLOADDIR = XAppLoadDir		/* application default resource dir */
-#if HasSunOSSharedLibraries
-        SOXLIBREV = SharedXlibRev
-          SOXTREV = SharedXtRev
-         SOXAWREV = SharedXawRev
-        SOOLDXREV = SharedOldXRev
-         SOXMUREV = SharedXmuRev
-        SOXEXTREV = SharedXextRev
-#endif
        FONTCFLAGS = FontCompilerFlags
 
      INSTAPPFLAGS = $(INSTDATFLAGS)	/* XXX - this should go away - XXX */
@@ -478,51 +439,42 @@ XCOMM $XConsortium: Project.tmpl,v 1.85 91/02/04 20:13:41 rws Exp $
 #endif
 #endif
 
-/*
- * and now a little bit of magic for using imake without source tree; if we
- * are using shared libraries, we really do not need to depend on anything
- */
-#if SharedLibXext
-  DEPEXTENSIONLIB = /* _UseCat($(USRLIBDIR),$(EXTENSIONSRC)/lib,/libXext.sa.$(SOXEXTREV)) */
-     EXTENSIONLIB = _Use(-lXext,-L$(EXTENSIONSRC) -lXext)
-#else
+#ifdef ShLibIncludeFile
+#include ShLibIncludeFile
+#endif
+
+#if HasSharedLibraries
+        SOXLIBREV = SharedXlibRev
+          SOXTREV = SharedXtRev
+         SOXAWREV = SharedXawRev
+        SOOLDXREV = SharedOldXRev
+         SOXMUREV = SharedXmuRev
+        SOXEXTREV = SharedXextRev
+#endif
+
+#if !SharedLibXext
   DEPEXTENSIONLIB = _UseCat($(USRLIBDIR),$(EXTENSIONSRC)/lib,/libXext.a)
      EXTENSIONLIB = LoaderLibPrefix _Use(-lXext, $(DEPEXTENSIONLIB))
 #endif
-#if SharedLibX
-          DEPXLIB = $(DEPEXTENSIONLIB) /* _UseCat($(USRLIBDIR),$(XLIBSRC),/libX11.sa.$(SOXLIBREV)) */
-             XLIB = $(EXTENSIONLIB) _Use(-lX11,-L$(XLIBSRC) -lX11)
-#else
+#if !SharedLibX
           DEPXLIB = $(DEPEXTENSIONLIB) _UseCat($(USRLIBDIR),$(XLIBSRC),/libX11.a)
              XLIB = $(EXTENSIONLIB) LoaderLibPrefix _Use(-lX11,$(XLIBSRC)/libX11.a)
 #endif
       DEPXAUTHLIB = _UseCat($(USRLIBDIR),$(XAUTHSRC),/libXau.a)
          XAUTHLIB = LoaderLibPrefix _Use(-lXau,$(DEPXAUTHLIB))
-#if SharedLibXmu
-        DEPXMULIB = _UseCat($(USRLIBDIR),$(XMUSRC),/libXmu.sa.$(SOXMUREV))
-           XMULIB = _Use(-lXmu,-L$(XMUSRC) -lXmu)
-#else
+#if !SharedLibXmu
         DEPXMULIB = _UseCat($(USRLIBDIR),$(XMUSRC),/libXmu.a)
            XMULIB = LoaderLibPrefix _Use(-lXmu,$(DEPXMULIB))
 #endif
-#if SharedOldLibX
-       DEPOLDXLIB = /* _UseCat($(USRLIBDIR),$(OLDXLIBSRC),/liboldX.sa.$(SOOLDXREV)) */
-          OLDXLIB = _Use(-loldX,-L$(OLDXLIBSRC) -loldX)
-#else
+#if !SharedOldLibX
        DEPOLDXLIB = _UseCat($(USRLIBDIR),$(OLDXLIBSRC),/liboldX.a)
           OLDXLIB = LoaderLibPrefix _Use(-loldX,$(DEPOLDXLIB))
 #endif
-#if SharedLibXt
-      DEPXTOOLLIB = _UseCat($(USRLIBDIR),$(TOOLKITSRC),/libXt.sa.$(SOXTREV))
-         XTOOLLIB = _Use(-lXt,-L$(TOOLKITSRC) -lXt)
-#else
+#if !SharedLibXt
       DEPXTOOLLIB = _UseCat($(USRLIBDIR),$(TOOLKITSRC),/libXt.a)
          XTOOLLIB = LoaderLibPrefix _Use(-lXt,$(DEPXTOOLLIB))
 #endif
-#if SharedLibXaw
-        DEPXAWLIB = _UseCat($(USRLIBDIR),$(AWIDGETSRC),/libXaw.sa.$(SOXAWREV))
-           XAWLIB = _Use(-lXaw,-L$(AWIDGETSRC) -lXaw)
-#else
+#if !SharedLibXaw
         DEPXAWLIB = _UseCat($(USRLIBDIR),$(AWIDGETSRC),/libXaw.a)
            XAWLIB = LoaderLibPrefix _Use(-lXaw,$(DEPXAWLIB)) 
 #endif
@@ -533,24 +485,6 @@ XCOMM $XConsortium: Project.tmpl,v 1.85 91/02/04 20:13:41 rws Exp $
         LINTXTOOL = _UseCat($(LINTLIBDIR),$(TOOLKITSRC),/llib-lXt.ln)
           LINTXAW = _UseCat($(LINTLIBDIR),$(AWIDGETSRC),/llib-lXaw.ln)
 
-
-/*
- * Contrib support - you should not need to change these.
- */
-#if HasXwWidgets
-        XWLIBSRC = $(CONTRIBSRC)/toolkits/Xw
-        DEPXWLIB = _UseCat($(USRLIBDIR),$(XWLIBSRC),/libXw.a)
-        XWLIB = LoaderLibPrefix _Use(-lXw,$(DEPXWLIB))
-#endif
-#if HasXcuWidgets
-        XCULIBSRC = $(CONTRIBSRC)/toolkits/Xcu
-        DEPXCULIB = _UseCat($(USRLIBDIR),$(XCULIBSRC),/libXcu.a)
-        XCULIB = LoaderLibPrefix _Use(-lXcu,$(DEPXCULIB))
-#endif
-
-/*
- * the following may be removed in R4{alpha,beta,?}
- */
 #ifndef NeedDefaultDepLibs
 #define NeedDefaultDepLibs YES
 #endif
@@ -559,7 +493,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.85 91/02/04 20:13:41 rws Exp $
 /*
  * Individual libraries should override this
  */
-#if HasSunOSSharedLibraries || UseInstalled
+#if HasSharedLibraries || UseInstalled
           DEPLIBS = $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
 #else
           DEPLIBS = $(LOCAL_LIBRARIES)
