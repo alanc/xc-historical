@@ -245,14 +245,31 @@ void CreatePerfStuff(d, count, width, height, w, whitegc, blackgc)
     }
 
     if (whitegc != NULL) {
+#ifdef new
+	gcv.foreground = WhitePixel(d, 0) ^ BlackPixel(d, 0);
+	gcv.background = ~gcv.foreground;
+	gcv.function = GXinvert;
+	gcv.plane_mask = WhitePixel(d, 0) ^ BlackPixel(d, 0);
+	*whitegc = XCreateGC(d, w[0],
+	  GCForeground | GCBackground | GCFunction | GCPlaneMask, &gcv);
+#else
 	gcv.foreground = WhitePixel(d, 0);
 	gcv.background = BlackPixel(d, 0);
 	*whitegc = XCreateGC(d, w[0], GCForeground | GCBackground , &gcv);
+#endif
     }
     if (blackgc != NULL) {
+#ifdef new
+	gcv.foreground = WhitePixel(d, 0) ^ BlackPixel(d, 0);
+	gcv.background = ~gcv.foreground;
+	gcv.function = GXxor;
+	*blackgc = XCreateGC(d, w[0],
+	  GCForeground | GCBackground | GCFunction, &gcv);
+#else
 	gcv.foreground = BlackPixel(d, 0);
 	gcv.background = WhitePixel(d, 0);
 	*blackgc = XCreateGC(d, w[0], GCForeground | GCBackground , &gcv);
+#endif
     }
 }
 
