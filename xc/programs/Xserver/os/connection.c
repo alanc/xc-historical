@@ -1,5 +1,5 @@
 /***********************************************************
-Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
+Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
 
                         All Rights Reserved
@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.89 88/12/08 16:39:29 keith Exp $ */
+/* $XConsortium: connection.c,v 1.90 89/01/03 08:29:34 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -110,8 +110,6 @@ Bool AnyClientsWriteBlocked;	/* true if some client blocked on write */
 
 static Bool debug_conns = FALSE;
 
-static char whichByteIsFirst;
-
 static int SavedAllClients[mskcnt];
 static int SavedAllSockets[mskcnt];
 static int SavedClientsWithInput[mskcnt];
@@ -122,10 +120,9 @@ extern ClientPtr NextAvailableClient();
 
 extern ConnectionInput inputBuffers[];
 
-int swappedClients[MAXSOCKS];
-
 extern int AutoResetServer();
 extern int GiveUp();
+static void CloseDownFileDescriptor(), CloseConnMax();
 
 #ifdef UNIXCONN
 
@@ -170,8 +167,6 @@ void
 CreateWellKnownSockets()
 {
     int		request, i;
-    int		whichbyte;	    /* used to figure out whether this is
-   					 LSB or MSB */
 #ifdef TCPCONN
     struct sockaddr_in insock;
     int		tcpportReg;	    /* port with same byte order as server */
@@ -208,13 +203,6 @@ CreateWellKnownSockets()
     }
 
     WellKnownConnections = 0;
-    whichbyte = 1;
-    
-    if (*(char *) &whichbyte)
-        whichByteIsFirst = 'l';
-    else
-        whichByteIsFirst = 'B';
-
 
 #ifdef TCPCONN
 
@@ -338,72 +326,6 @@ ResetWellKnownSockets ()
     ResetAuthorization ();
 }
 
-
-/* We want to read the connection information.  If the client doesn't
- * send us enough data, however, we want to time out eventually.
- * The scheme is to clear a flag, set an alarm, and keep doing non-blocking
- * reads until we get all the data we want. If the alarm goes
- * off, the handler will clear the flag.  If we see that the flag is
- * cleared, we know we've timed out and return with an error.
- *
- * there remains one problem with this code:
- * there is a window of vulnerability in which we might get an alarm
- * even though all the data has come in properly.  This is because I
- * can't atomically clear the alarm.
- * 
- * Anyone who sees how to fix this problem should do so and
- * submit a fix.
- */
-
-jmp_buf	env;
-void TimeOut()
-{
-    longjmp(env, 1);
-}
-static Bool 
-ReadBuffer(conn, buffer, charsWanted)
-    long conn;
-    char *buffer;
-    int charsWanted;
-{
-    char *bptr = buffer;
-    int got, fTimeOut;
-    struct itimerval	itv;
-
-    signal(SIGALRM, TimeOut);
-    fTimeOut = FALSE;
-    /* only 1 alarm, please, not 1 per minute */
-    timerclear(&itv.it_interval);
-    itv.it_value.tv_sec = TimeOutValue;
-    itv.it_value.tv_usec = 0;
-    setitimer(ITIMER_REAL, &itv, (struct itimerval *)NULL);
-    /* It better not take a full minute to get to the read call */
-
-    while (charsWanted && (fTimeOut = setjmp(env)) == FALSE)
-    {
-	got = read(conn, bptr, charsWanted);	
-	if (got <= 0)
-	    return FALSE;
-	if(got > 0)
-	{
-	    charsWanted -= got;
-	    bptr += got;
-	    /* Ok, we got something, reset the timer */
- 	    itv.it_value.tv_sec = TimeOutValue;
-            itv.it_value.tv_usec = 0;
-	    setitimer(ITIMER_REAL, &itv, (struct itimerval *)NULL);
-	}
-    }
-    /* disable the timer */
-    timerclear(&itv.it_value);
-    setitimer(ITIMER_REAL, &itv, (struct itimerval *)NULL);
-    /* If we got here and we didn't time out, then return TRUE, because
-     * we must have read what we wanted. If we timed out, return FALSE */
-    if(fTimeOut && debug_conns)
-	ErrorF("Timed out on connection %d\n", conn);
-    return (!fTimeOut);
-}
-
 /*****************************************************************
  * ClientAuthorized
  *
@@ -423,14 +345,13 @@ ReadBuffer(conn, buffer, charsWanted)
  *
  *****************************************************************/
 
-int 
-ClientAuthorized(conn, pswapped, reason, auth_idp)
-    long conn;
-    int  *pswapped;
-    char **reason;   /* if authorization fails, put reason in here */
-    XID	*auth_idp;
+char * 
+ClientAuthorized(client, proto_n, auth_proto, string_n, auth_string)
+    ClientPtr client;
+    char *auth_proto, *auth_string;
+    int proto_n, string_n;
 {
-    short slen;
+    register OsCommPtr priv;
     union {
 	struct sockaddr sa;
 #ifdef UNIXCONN
@@ -444,87 +365,27 @@ ClientAuthorized(conn, pswapped, reason, auth_idp)
 #endif /* DNETCONN */
     } from;
     int	fromlen = sizeof (from);
-    xConnClientPrefix xccp;
     XID	 auth_id;
-    char *auth_proto = 0;
-    char *auth_string = 0;
 
-    if (!ReadBuffer(conn, (char *)&xccp, sizeof(xConnClientPrefix)))
-    {
-	/* If they can't even give us this much, just blow them off
-	 * without an error message */
-	*reason = 0;
-        return 0;
-    }
-    if (xccp.byteOrder != whichByteIsFirst)
-    {        
-	SwapConnClientPrefix(&xccp);
-	*pswapped = TRUE;
-    }
+    if (proto_n > 0)
+        auth_id = CheckAuthorization (proto_n, auth_proto,
+				      string_n, auth_string);
     else
-        *pswapped = FALSE;
-    if ((xccp.majorVersion != X_PROTOCOL) ||
-	(xccp.minorVersion != X_PROTOCOL_REVISION))
-    {        
-#define STR "Protocol version mismatch"
-        *reason = (char *)xalloc(sizeof(STR));
-        strcpy(*reason, STR);
-	if (debug_conns)
-	    ErrorF("%s\n", STR);
-#undef STR
-        return 0;
-    }
-    slen = (xccp.nbytesAuthProto + 3) & ~3;  
-    if ( slen  && (auth_proto = (char *) Xalloc (slen))) {
-        if (!ReadBuffer(conn, auth_proto, slen))
-        {
-#define STR "Length error in xConnClientPrefix for protocol authorization "
-            *reason = (char *)xalloc(sizeof(STR));
-            strcpy(*reason, STR);
-            return 0;
-#undef STR
-	}
-    }
+	auth_id = (XID) ~0L;
 
-    slen = (xccp.nbytesAuthString + 3) & ~3;   
-    if ( slen && (auth_string = (char *) Xalloc (slen)))
-        if (!ReadBuffer(conn, auth_string, slen))
-        {
-#define STR "Length error in xConnClientPrefix for protocol string"
-            *reason = (char *)xalloc(sizeof(STR));
-            strcpy(*reason, STR);
-            return 0;
-#undef STR
-	}
-
-    auth_id = (XID) -1;
-
-    if (xccp.nbytesAuthProto > 0 && xccp.nbytesAuthString > 0) {
-        auth_id = CheckAuthorization (xccp.nbytesAuthProto, auth_proto,
-				      xccp.nbytesAuthString, auth_string);
-    }
-
-    if (auth_proto)
-	Xfree (auth_proto);
-    if (auth_string)
-	Xfree (auth_string);
-
-    if (auth_id == (XID) -1 && 
-    	getpeername (conn, &from.sa, &fromlen) != -1 &&
+    priv = (OsCommPtr)client->osPrivate;
+    if (auth_id == (XID) ~0L && 
+   	getpeername (priv->fd, &from.sa, &fromlen) != -1 &&
         !InvalidHost (&from.sa, fromlen))
     {
 	auth_id = (XID) 0;
     }
 
-    if (auth_id == (XID) -1) {
-#define STR "Client is not authorized to connect to Server"
-    	*reason = (char *)xalloc(sizeof(STR));
-    	strcpy(*reason, STR);
-	return 0;
-#undef STR
-    }
+    if (auth_id == (XID) ~0L)
+	return "Client is not authorized to connect to Server";
 
-    *auth_idp = auth_id;
+    priv->auth_id = auth_id;
+    priv->conn_time = 0;
 
     /* At this point, if the client is authorized to change the access control
      * list, we should getpeername() information, and add the client to
@@ -532,10 +393,8 @@ ClientAuthorized(conn, pswapped, reason, auth_idp)
      * true purpose of the selfhosts list is to see who may change the
      * access control list.
      */
-    return(1);
+    return((char *)NULL);
 }
-
-static int padlength[4] = {0, 3, 2, 1};
 
 /*****************
  * EstablishNewConnections
@@ -548,14 +407,12 @@ void
 EstablishNewConnections()
 {
     long readyconnections;     /* mask of listeners that are ready */
-    long curconn;                  /* fd of listener that's ready */
-    long newconn;                  /* fd of new client */
-    int	 swapped;		/* set by ClientAuthorized if connection is
-				 * swapped */
-    char *reason;
-    XID	auth_id;		/* authorization id */
-    struct iovec iov[2];
-    char p[3];
+    int curconn;                  /* fd of listener that's ready */
+    register int newconn;         /* fd of new client */
+    long connect_time;
+    register int i;
+    register ClientPtr client;
+    register OsCommPtr oc;
 
 #ifdef TCP_NODELAY
     union {
@@ -575,6 +432,18 @@ EstablishNewConnections()
 
     if (readyconnections = (LastSelectMask[0] & WellKnownConnections)) 
     {
+	connect_time = GetTimeInMillis();
+	/* kill off stragglers */
+	for (i=1; i<currentMaxClients; i++)
+	{
+	    if (client = clients[i])
+	    {
+		oc = (OsCommPtr)(client->osPrivate);
+		if ((oc->conn_time != 0) &&
+		    (connect_time - oc->conn_time) >= TimeOutValue)
+		    CloseDownClient(client);     
+	    }
+	}
 	while (readyconnections) 
 	{
 	    curconn = ffs (readyconnections) - 1;
@@ -582,124 +451,118 @@ EstablishNewConnections()
 				  (struct sockaddr *) NULL, 
 				  (int *)NULL)) >= 0) 
 	    {
-		if (newconn >= lastfdesc)
-		{
-		    if (debug_conns)
-ErrorF("Didn't make connection: Out of file descriptors for connections\n");
-		    close (newconn);
-		} 
-		else 
-		{
-		    ClientPtr next = (ClientPtr)NULL;
-
 #ifdef TCP_NODELAY
-		    fromlen = sizeof (from);
-                    if (!getpeername (newconn, &from.sa, &fromlen))
+		fromlen = sizeof (from);
+		if (!getpeername (newconn, &from.sa, &fromlen))
+		{
+		    if (fromlen && (from.sa.sa_family == AF_INET)) 
 		    {
-			if (fromlen && (from.sa.sa_family == AF_INET)) 
-			{
-			    int mi = 1;
-			    setsockopt (newconn, IPPROTO_TCP, TCP_NODELAY,
-				       (char *)&mi, sizeof (int));
-			}
+			int mi = 1;
+			setsockopt (newconn, IPPROTO_TCP, TCP_NODELAY,
+				   (char *)&mi, sizeof (int));
 		    }
-#endif /* TCP_NODELAY */
-		    if (ClientAuthorized(newconn, &swapped, &reason, &auth_id))
-		    {
-#ifdef	hpux
-			/*
-			 * HPUX does not have  FNDELAY
-			 */
-		        {
-			    int	arg;
-			    arg = 1;
-			    ioctl(newconn, FIOSNBIO, &arg);
-		        }
-#else
-		        fcntl (newconn, F_SETFL, FNDELAY);
-#endif /* hpux */
-			inputBuffers[newconn].used = 1; 
-                        if (! inputBuffers[newconn].size) 
-			{
-			    inputBuffers[newconn].buffer = 
-					(char *)xalloc(BUFSIZE);
-			    inputBuffers[newconn].size = BUFSIZE;
-			    inputBuffers[newconn].bufptr = 	
-					inputBuffers[newconn].buffer;
-			}
-			if (GrabDone)
-			{
-			    BITSET(SavedAllClients, newconn);
-			    BITSET(SavedAllSockets, newconn);
-		        }
-			else
-			{
-			    BITSET(AllClients, newconn);
-			    BITSET(AllSockets, newconn);
-		        }
-			next = NextAvailableClient(swapped);
-			if (next != (ClientPtr)NULL)
-			{
-			   OsCommPtr priv;
-
-			   ConnectionTranslation[newconn] = next->index;
-			   priv =  (OsCommPtr)xalloc(sizeof(OsCommRec));
-			   priv->fd = newconn;
-			   priv->buf = (unsigned char *)
-					xalloc(OutputBufferSize);
-			   priv->bufsize = OutputBufferSize;
-			   priv->auth_id = auth_id;
-			   priv->count = 0;
-			   next->osPrivate = (pointer)priv;
-
-			   SendConnectionSetupInfo(next);
-		        }
-			else
-			{
-#define STR "Maximum number of clients exceeded"
-			   reason = (char *)xalloc(sizeof(STR));
-			   strcpy(reason, STR);
-#undef STR
-			}
-		    }
-		    if (next == (ClientPtr)NULL)
-		    {
-			xConnSetupPrefix c;
-
-			if(reason)
-			{
-			    c.success = xFalse;
-			    c.lengthReason = strlen(reason);
-			    c.length = (c.lengthReason + 3) >> 2;
-			    c.majorVersion = X_PROTOCOL;
-			    c.minorVersion = X_PROTOCOL_REVISION;
-			    if(swapped)
-			    {
-				int	n;
-
-				swaps(&c.majorVersion, n);
-				swaps(&c.minorVersion, n);
-				swaps(&c.length, n);
-			    }
-
-			    write(newconn, (char *)&c, sizeof(xConnSetupPrefix)); 
-			    iov[0].iov_len = c.lengthReason;
-			    iov[0].iov_base = reason;
-			    iov[1].iov_len = padlength[c.lengthReason & 3];
-			    iov[1].iov_base = p;
-			    writev(newconn, iov, 2);
-			    if (debug_conns)
-			        ErrorF("Didn't make connection:%s\n", reason);
-			}
-			close(newconn);
-			xfree(reason);
-		    }
-
 		}
+#endif /* TCP_NODELAY */
+#ifdef	hpux
+		/*
+		 * HPUX does not have  FNDELAY
+		 */
+		{
+		    int	arg;
+		    arg = 1;
+		    ioctl(newconn, FIOSNBIO, &arg);
+		}
+#else
+		fcntl (newconn, F_SETFL, FNDELAY);
+#endif /* hpux */
+		inputBuffers[newconn].used = 1; 
+		if (! inputBuffers[newconn].size) 
+		{
+		    inputBuffers[newconn].buffer = 
+				(char *)xalloc(BUFSIZE);
+		    inputBuffers[newconn].size = BUFSIZE;
+		    inputBuffers[newconn].bufptr = 	
+				inputBuffers[newconn].buffer;
+		}
+		if (GrabDone)
+		{
+		    BITSET(SavedAllClients, newconn);
+		    BITSET(SavedAllSockets, newconn);
+		}
+		else
+		{
+		    BITSET(AllClients, newconn);
+		    BITSET(AllSockets, newconn);
+		}
+		oc =  (OsCommPtr)xalloc(sizeof(OsCommRec));
+		oc->fd = newconn;
+		oc->buf = (unsigned char *) xalloc(OutputBufferSize);
+		oc->bufsize = OutputBufferSize;
+		oc->count = 0;
+		oc->conn_time = connect_time;
+		if ((newconn < lastfdesc) &&
+		    (client = NextAvailableClient((pointer)oc)))
+		    ConnectionTranslation[newconn] = client->index;
+		else
+		    CloseConnMax(oc);
 	    }
 	    readyconnections &= ~(1 << curconn);
 	}
     }
+}
+
+#define NOROOM "Maximum number of clients reached"
+
+/************
+ *   CloseConnMax
+ *     Close a connection due to lack of client or file descriptor space
+ ************/
+
+static void
+CloseConnMax(oc)
+    register OsCommPtr oc;
+{
+    xConnSetupPrefix csp;
+    char pad[3];
+    struct iovec iov[3];
+    char byteOrder = 0;
+    int whichbyte = 1;
+    struct timeval waittime;
+    long mask[mskcnt];
+
+    /* if these seems like a lot of trouble to go to, it probably is */
+    waittime.tv_sec = BOTIMEOUT / MILLI_PER_SECOND;
+    waittime.tv_usec = (BOTIMEOUT % MILLI_PER_SECOND) *
+		       (1000000 / MILLI_PER_SECOND);
+    CLEARBITS(mask);
+    BITSET(mask, oc->fd);
+    (void)select(oc->fd + 1, (int *) mask, (int *) NULL, (int *) NULL,
+		 &waittime);
+    /* try to read the byte-order of the connection */
+    (void)read(oc->fd, &byteOrder, 1);
+    if ((byteOrder == 'l') || (byteOrder == 'B'))
+    {
+	csp.success = xFalse;
+	csp.lengthReason = sizeof(NOROOM) - 1;
+	csp.length = (sizeof(NOROOM) + 2) >> 2;
+	csp.majorVersion = X_PROTOCOL;
+	csp.minorVersion = X_PROTOCOL_REVISION;
+	if (((*(char *) &whichbyte) && (byteOrder == 'B')) ||
+	    (!(*(char *) &whichbyte) && (byteOrder == 'l')))
+	{
+	    swaps(&csp.majorVersion, whichbyte);
+	    swaps(&csp.minorVersion, whichbyte);
+	    swaps(&csp.length, whichbyte);
+	}
+	iov[0].iov_len = sz_xConnSetupPrefix;
+	iov[0].iov_base = (char *) &csp;
+	iov[1].iov_len = csp.lengthReason;
+	iov[1].iov_base = NOROOM;
+	iov[2].iov_len = (4 - (csp.lengthReason & 3)) & 3;
+	iov[2].iov_base = pad;
+	(void)writev(oc->fd, iov, 3);
+    }
+    CloseDownFileDescriptor(oc);
 }
 
 /************
@@ -707,12 +570,13 @@ ErrorF("Didn't make connection: Out of file descriptors for connections\n");
  *     Remove this file descriptor and it's inputbuffers, etc.
  ************/
 
-void
-CloseDownFileDescriptor(connection)
-    int connection;
+static void
+CloseDownFileDescriptor(oc)
+    register OsCommPtr oc;
 {
-    close(connection);
+    int connection = oc->fd;
 
+    close(connection);
     if (inputBuffers[connection].size)
     {
 	xfree(inputBuffers[connection].buffer);
@@ -730,6 +594,8 @@ CloseDownFileDescriptor(connection)
     BITCLEAR(ClientsWriteBlocked, connection);
     if (!ANYSET(ClientsWriteBlocked))
     	AnyClientsWriteBlocked = FALSE;
+    BITCLEAR(OutputPending, connection);
+    xfree(oc);
 }
 
 /*****************
@@ -749,7 +615,6 @@ CheckConnections()
     register int	curclient;
     int			i;
     struct timeval	notime;
-    int			index;
     int r;
 
     notime.tv_sec = 0;
@@ -763,15 +628,10 @@ CheckConnections()
 	    curclient = ffs (mask[i]) - 1 + (i << 5);
             CLEARBITS(tmask);
             BITSET(tmask, curclient);
-            r = select (curclient + 1, tmask, (int *)NULL, (int *)NULL, 
+            r = select (curclient + 1, (int *)tmask, (int *)NULL, (int *)NULL, 
 			&notime);
             if (r < 0)
-            {
-		if (index = ConnectionTranslation[curclient])
-    		    CloseDownClient(clients[index]);
-                else
-                    CloseDownFileDescriptor(curclient);
-            }
+		CloseDownClient(clients[ConnectionTranslation[curclient]]);
 	    BITCLEAR(mask, curclient);
 	}
     }	
@@ -788,11 +648,12 @@ CloseDownConnection(client)
 {
     OsCommPtr oc = (OsCommPtr)client->osPrivate;
 
-    ConnectionTranslation[oc->fd] = 0;
-    CloseDownFileDescriptor(oc->fd);
+    if (oc->count)
+	FlushClient(client, oc, (char *)NULL, 0);
     if (oc->buf != NULL) /* an Xrealloc may have returned NULL */
 	xfree(oc->buf);
-    xfree(client->osPrivate);
+    ConnectionTranslation[oc->fd] = 0;
+    CloseDownFileDescriptor(oc);
 }
 
 
