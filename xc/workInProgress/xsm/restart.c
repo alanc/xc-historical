@@ -1,4 +1,4 @@
-/* $XConsortium: restart.c,v 1.11 94/07/21 15:59:06 mor Exp $ */
+/* $XConsortium: restart.c,v 1.12 94/07/26 14:16:52 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -307,6 +307,8 @@ ClientRec *client;
 		non_local_display_env, non_local_session_env);
 	}
     } else {
+	XBell (XtDisplay (topLevel), 0);
+
 	fprintf(stderr, "Can't restart ID '%s':  no program or no args\n",
 		client->clientId);
     }
