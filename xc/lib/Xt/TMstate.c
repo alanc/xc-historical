@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: TMstate.c,v 1.42 88/02/03 23:41:19 swick Locked $";
+static char rcsid[] = "$Header: TMstate.c,v 1.43 88/02/09 11:26:53 swick Exp $";
 #endif lint
 /*LINTLIBRARY*/
 
@@ -1054,7 +1054,7 @@ void _MergeTranslations (args, num_args, from, to)
     XtTranslations old,new;
     TMkind operation;
 
-    if (num_args != 0)
+    if (*num_args != 0)
 	XtWarning("MergeTM to TranslationTable needs no extra arguments");
 
     old = ((TMConvertRec*)from->addr)->old;
