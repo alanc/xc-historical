@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.85 92/06/08 11:24:21 converse Exp $ */
+/* $XConsortium: Display.c,v 1.86 92/11/23 15:32:29 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -315,6 +315,7 @@ XtAppContext XtCreateApplicationContext()
 	FD_ZERO(&app->fds.rmask);
 	FD_ZERO(&app->fds.wmask);
 	FD_ZERO(&app->fds.emask);
+	app->input_max = 0;
 	_XtHeapInit(&app->heap);
 	app->fallback_resources = NULL;
 	_XtPopupInitialize(app);
