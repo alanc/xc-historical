@@ -1,7 +1,9 @@
-XCOMM $XConsortium: Imakefile,v 1.4 92/04/17 11:59:34 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.5 94/02/10 17:14:39 rws Exp $
 
 MakeSimpleDoc(shape,shape.ms)
 
 MakeSimpleDoc(xtest,xtest.ms)
 
 MakeSimpleDoc(mit-shm,mit-shm.ms)
+
+MakeSimpleDoc(bigreq,bigreq.ms)
