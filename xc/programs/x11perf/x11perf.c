@@ -1,4 +1,4 @@
-/* $XConsortium: x11perf.c,v 2.42 93/08/04 11:46:54 dpw Exp $ */
+/* $XConsortium: x11perf.c,v 2.43 93/08/22 10:09:45 rws Exp $ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -1099,9 +1099,13 @@ main(argc, argv)
     XGetScreenSaver(xparms.d, &ssTimeout, &ssInterval, &ssPreferBlanking,
 	&ssAllowExposures);
     (void) signal(SIGINT, Cleanup); /* ^C */
+#ifdef SIGQUIT
     (void) signal(SIGQUIT, Cleanup);
+#endif
     (void) signal(SIGTERM, Cleanup);
+#ifdef SIGHUP
     (void) signal(SIGHUP, Cleanup);
+#endif
     XSetScreenSaver(xparms.d, 8 * 3600, ssInterval, ssPreferBlanking, 
 	ssAllowExposures);
 
