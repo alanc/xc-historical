@@ -55,7 +55,7 @@ and various toolkit documents.
 The number of programs that use \fIX\fP is growing rapidly.  Of particular
 interest are:
 a terminal emulator (\fIxterm\fP),
-window managers (\fIwm\fP and \fIuwm\fP), 
+a window manager (\fIuwm\fP), 
 a display manager (\fIxdm\fP),
 mail managing utilities (\fIxmh\fP and \fIxbiff\fP),
 a manual page browser (\fIxman\fP),
@@ -289,31 +289,23 @@ to explicitly draw the window's region on the screen with the pointer, for
 example).
 .PP
 Since window managers are regular (albeit complex) client programs,
-a variety of different user interfaces can be built.  The core distribution 
-provides two window managers:
-.TP 8
-.I uwm
-This window manager allows overlapping windows, uses many combinations of
-special keys and pointer buttons, does not display title bars, and is generally
-used in a point-and-type manner.
+a variety of different user interfaces can be built.  The core distribution
+comes with a window manager named \fIuwm\fP will supports overlapping windows,
+popup menus, point-and-click or click-to-type input models, and minimal use
+of screen real estate (i.e. it doesn't provide title bars around windows).  
 It tries to stay out of the way as much as possible, but can be
 somewhat difficult to master.
-.TP 8
-.I wm
-This window manager provides title bars as well as resize and moving boxes.
-It is primarily a prototype for other, prettier and more functional 
-window managers and is rarely used.
 .PP
 Several other window managers are available in the user-contributed
 distribution: 
 .TP 8
 .I awm
 This window manager is descended from \fIuwm\fP but provides optional title
-bars whose layout can be specified by the user.
+bars whose layout can be tailored by the user.
 .TP 8
 .I twm
-This window manager provides title bars, resize boxes, and reposition boxes.
-It is known for its small size and simplicity.
+This window manager provides title bars, resize and reposition boxes, and
+specially-designed icons.  It is known for its small size and simplicity.
 .TP 8
 .I rtl
 This is a \fItiling\fP window manager that rearranges and resizes windows
