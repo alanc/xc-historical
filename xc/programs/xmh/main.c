@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 2.25 91/07/14 19:11:35 converse Exp $
+/* $XConsortium: main.c,v 2.26 91/07/17 21:31:54 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -99,11 +99,11 @@ char **argv;
     InitializeWorld(argc, argv);
     subProcessRunning = False;
     appCtx = XtWidgetToApplicationContext(toplevel);
+    (void) XtAppSetWarningMsgHandler(app, PopupWarningHandler);
 
     if (app_resources.new_mail_check && app_resources.mail_interval > 0) {
 	app_resources.mail_interval *= 60000;
-	(void) XtAppAddTimeOut(appCtx,
-			       (unsigned long) app_resources.mail_interval,
+	(void) XtAppAddTimeOut(appCtx, (unsigned long) 0,
 			       CheckMail, (XtPointer)appCtx);
     }
     if (app_resources.rescan_interval > 0) {
