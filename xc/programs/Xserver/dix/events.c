@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.89 87/08/11 12:54:16 swick Locked $ */
+/* $Header: events.c,v 1.90 87/08/12 08:40:51 swick Locked $ */
 
 #include "X.h"
 #include "misc.h"
@@ -2737,13 +2737,13 @@ ProcChangeKeyboardMapping(client)
     len = stuff->length - (sizeof(xChangeKeyboardMappingReq) >> 2);  
     if (len != (stuff->keyCodes * stuff->keySymsPerKeyCode))
             return BadLength;
+    count = len / stuff->keySymsPerKeyCode;
     if ((stuff->firstKeyCode < curKeySyms.minKeyCode) ||
-	(stuff->firstKeyCode + len > curKeySyms.maxKeyCode) ||
+	(stuff->firstKeyCode + count - 1 > curKeySyms.maxKeyCode) ||
         (stuff->keySymsPerKeyCode == 0))
             return BadValue;
-    count = len / stuff->keySymsPerKeyCode;
     keysyms.minKeyCode = stuff->firstKeyCode;
-    keysyms.maxKeyCode = stuff->firstKeyCode + count;
+    keysyms.maxKeyCode = stuff->firstKeyCode + count - 1;
     keysyms.mapWidth = stuff->keySymsPerKeyCode;
     keysyms.map = (KeySym *)&stuff[1];
     SetKeySymsMap(&keysyms);
