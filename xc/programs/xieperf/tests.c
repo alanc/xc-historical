@@ -1,4 +1,4 @@
-/* $XConsortium: tests.c,v 1.4 93/11/05 17:07:58 rws Exp $ */
+/* $XConsortium: tests.c,v 1.5 93/11/05 17:58:16 rws Exp $ */
 
 /**** module tests.c ****/
 /******************************************************************************
@@ -769,19 +769,19 @@ static XieEncodeG42DParam encodeG42DParms[] = {
 	};
 
 static unsigned char q_table[] = {
-        16,  11,  12,  14,  12,  10,  16,  14,
-        13,  14,  18,  17,  16,  19,  24,  40,
-        26,  24,  22,  22,  24,  49,  35,  37,
-        29,  40,  58,  51,  61,  60,  57,  51,
-        56,  55,  64,  72,  92,  78,  64,  68,
-        87,  69,  55,  56,  80, 109,  81,  87,
-        95,  98, 103, 104, 103,  62,  77, 113,
-        121, 112, 100, 120,  92, 101, 103, 99,
+        16,  11,  10,  16,  24,  40,  51,  61,
+        12,  12,  14,  19,  26,  58,  60,  55,
+        14,  13,  16,  24,  40,  57,  69,  56,
+        14,  17,  22,  29,  51,  87,  80,  62,
+        18,  22,  37,  56,  68, 109, 103,  77,
+        24,  35,  55,  64,  81, 104, 113,  92,
+        49,  64,  78,  87, 103, 121, 120, 101,
+        72,  92,  95,  98, 112, 100, 103,  99,
 
-        17,  18,  18,  24,  21,  24,  47,  26,
-        26,  47,  99,  66,  56,  66,  99,  99,
-        99,  99,  99,  99,  99,  99,  99,  99,
-        99,  99,  99,  99,  99,  99,  99,  99,
+        17,  18,  24,  47,  99,  99,  99,  99,
+        18,  21,  26,  66,  99,  99,  99,  99,
+        24,  26,  56,  99,  99,  99,  99,  99,
+        47,  66,  99,  99,  99,  99,  99,  99,
         99,  99,  99,  99,  99,  99,  99,  99,
         99,  99,  99,  99,  99,  99,  99,  99,
         99,  99,  99,  99,  99,  99,  99,  99,
@@ -869,26 +869,26 @@ static XieEncodeTIFFPackBitsParam encodeTIFFPackBitsParms[] = {
 	};
 
 static EncodeParms EncodeParmVec[] = {
-	{ xieValEncodeG31D, ( char * ) &encodeG31DParms[0], False },
-	{ xieValEncodeG32D, ( char * ) &encodeG32DParms[0], False },
-	{ xieValEncodeG42D, ( char * ) &encodeG42DParms[0], False },
-	{ xieValEncodeTIFF2, ( char * ) &encodeTIFF2Parms[0], False },
-	{ xieValEncodeTIFFPackBits, ( char * ) &encodeTIFFPackBitsParms[0], False },
-	{ xieValEncodeUncompressedSingle, ( char * ) &encodeSingleParms[0], False },
-	{ xieValEncodeUncompressedTriple, ( char * ) &encodeTripleParms[0], False },
-	{ xieValEncodeJPEGBaseline, ( char * ) &encodeJPEGBaselineParms[0], False },
-	{ xieValEncodeG31D, ( char * ) &encodeG31DParms[0], True },
-	{ xieValEncodeG32D, ( char * ) &encodeG32DParms[0], True },
-	{ xieValEncodeG42D, ( char * ) &encodeG42DParms[0], True },
-	{ xieValEncodeTIFF2, ( char * ) &encodeTIFF2Parms[0], True },
-	{ xieValEncodeTIFFPackBits, ( char * ) &encodeTIFFPackBitsParms[0], True },
-	{ xieValEncodeUncompressedSingle, ( char * ) &encodeSingleParms[0], True },
-	{ xieValEncodeUncompressedTriple, ( char * ) &encodeTripleParms[0], True },
-	{ xieValEncodeJPEGBaseline, ( char * ) &encodeJPEGBaselineParms[0], True },
-	{ xieValEncodeJPEGBaseline, ( char * ) &encodeJPEGBaselineParms[2], True },
-	{ xieValEncodeJPEGBaseline, ( char * ) &encodeJPEGBaselineParms[2], False },
-	{ xieValEncodeJPEGBaseline, ( char * ) &encodeJPEGBaselineParms[1], True },
-	{ xieValEncodeJPEGBaseline, ( char * ) &encodeJPEGBaselineParms[1], False }
+	{ xieValEncodeG31D, ( char * ) &encodeG31DParms[0], False, 0 },
+	{ xieValEncodeG32D, ( char * ) &encodeG32DParms[0], False, 0 },
+	{ xieValEncodeG42D, ( char * ) &encodeG42DParms[0], False, 0 },
+	{ xieValEncodeTIFF2, ( char * ) &encodeTIFF2Parms[0], False, 0 },
+	{ xieValEncodeTIFFPackBits, ( char * ) &encodeTIFFPackBitsParms[0], False, 0 },
+	{ xieValEncodeUncompressedSingle, ( char * ) &encodeSingleParms[0], False, 0 },
+	{ xieValEncodeUncompressedTriple, ( char * ) &encodeTripleParms[0], False, 0 },
+	{ xieValEncodeJPEGBaseline, ( char * ) &encodeJPEGBaselineParms[0], False, 30 },
+	{ xieValEncodeG31D, ( char * ) &encodeG31DParms[0], True, 0 },
+	{ xieValEncodeG32D, ( char * ) &encodeG32DParms[0], True, 0 },
+	{ xieValEncodeG42D, ( char * ) &encodeG42DParms[0], True, 0 },
+	{ xieValEncodeTIFF2, ( char * ) &encodeTIFF2Parms[0], True, 0 },
+	{ xieValEncodeTIFFPackBits, ( char * ) &encodeTIFFPackBitsParms[0], True, 0 },
+	{ xieValEncodeUncompressedSingle, ( char * ) &encodeSingleParms[0], True, 0 },
+	{ xieValEncodeUncompressedTriple, ( char * ) &encodeTripleParms[0], True, 0 },
+	{ xieValEncodeJPEGBaseline, ( char * ) &encodeJPEGBaselineParms[0], True, 0 },
+	{ xieValEncodeJPEGBaseline, ( char * ) &encodeJPEGBaselineParms[2], True, 30 },
+	{ xieValEncodeJPEGBaseline, ( char * ) &encodeJPEGBaselineParms[2], False, 30 },
+	{ xieValEncodeJPEGBaseline, ( char * ) &encodeJPEGBaselineParms[1], True, 30 },
+	{ xieValEncodeJPEGBaseline, ( char * ) &encodeJPEGBaselineParms[1], False, 30 }
 };
 
 static ImportParms ImportParmVec[] = { 
