@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.144 89/10/03 13:07:38 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.145 89/10/05 12:34:54 swick Exp $";
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 #endif /* lint */
 
@@ -220,6 +220,7 @@ static XrmDatabase GetAppUserDefaults(dpy)
     char* path;
     Boolean deallocate = False;
     XrmDatabase rdb;
+    extern char *getenv();
 
     if ((path = getenv("XUSERFILESEARCHPATH")) == NULL) {
 	char *old_path;
@@ -469,6 +470,7 @@ void _XtDisplayInitialize(dpy, pd, name, class, urlist, num_urs, argc, argv)
 	XrmClass class_list[2];
 	XrmHashTable* search_list;
 	int search_list_size = SEARCH_LIST_SIZE;
+	extern char *getenv();
 
 	_MergeOptionTables( opTable, XtNumber(opTable), urlist, num_urs,
 			    &options, &num_options );
