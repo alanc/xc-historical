@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: xlsclients.c,v 1.1 89/03/07 17:24:37 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -230,13 +230,13 @@ print_text_field (dpy, s, tp)
     XTextProperty *tp;
 {
     if (tp->encoding == None || tp->format == 0) {
-	fputs ("''", stdout);
+	printf ("''");
 	return;
     }
 
-    if (s) fputs (s, stdout);
+    if (s) printf ("%s", s);
     if (tp->encoding == XA_STRING && tp->format == 8) {
-	fputs (tp->value ? (char *) tp->value : Nil, stdout);
+	printf ("%s", tp->value ? (char *) tp->value : Nil);
     } else {
 	unknown (dpy, tp->encoding, tp->format);
     }
@@ -274,7 +274,9 @@ print_string_list (s, n)
 	    }
 	    put_quoted ();
 	    putchar (' ');		/* word separator */
-	} else if (!((isascii(*s) && isalnum(*s)) || index ("-_+=./:,", *s))) {
+	} else if (!((isascii(*s) && isalnum(*s)) || 
+		     (*s == '-' || *s == '_' || *s == '.' || *s == '+' ||
+		      *s == '/' || *s == '=' || *s == ':' || *s == ','))) {
 	    quote = True;
 	}
     }
