@@ -31,9 +31,12 @@ NormalLibraryObjectRule()
 
 NormalLibraryTarget(oldX,$(OBJS))
 LintLibraryTarget(oldX,*.c)
+
+BuildIncludes($(HEADERS),.)
+InstallMultiple($(HEADERS),$(INCDIR))
+
 InstallLibrary(oldX,$(USRLIBDIR))
 InstallLintLibrary(oldX,$(LINTLIBDIR))
-InstallMultiple($(HEADERS),$(INCDIR))
 
 
 #if ProfileOldLibX
