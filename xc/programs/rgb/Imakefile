@@ -1,5 +1,11 @@
+#ifdef DefaultRGBDatabase
+   SITE_RGB_DB = -DRGB_DB=\"DefaultRGBDatabase\"
+#else
+   SITE_RBB_DB = /* as nothing */
+#endif
+
       DEPLIBS = 
-      DEFINES = NdbmDefines
+      DEFINES = NdbmDefines $(SITE_RGB_DB)
      INCLUDES = -I$(TOP) -I$(SERVERSRC)/include
  INSTALLFLAGS = $(INSTLIBFLAGS)
         SRCS1 = rgb.c
