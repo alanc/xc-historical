@@ -1,5 +1,5 @@
 /*
-* $xHeader: IntrinsicI.h,v 1.4 88/08/26 16:14:40 asente Exp $
+* $XConsortium: IntrinsicI.h,v 1.4 88/08/26 16:14:40 asente Exp $
 * $oHeader: IntrinsicI.h,v 1.4 88/08/26 16:14:40 asente Exp $
 */
 
@@ -49,6 +49,8 @@ SOFTWARE.
 extern void bcopy();
 extern void bzero();
 extern int bcmp();
+
+extern int XtUnspecifiedPixmap;
 
 
 /* If the alignment characteristics of your machine are right, these may be
