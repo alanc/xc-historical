@@ -1,11 +1,18 @@
 /*
- * $XConsortium: def.h,v 1.12 89/12/12 12:44:24 jim Exp $
+ * $XConsortium: def.h,v 1.13 91/02/13 11:32:32 rws Exp $
  */
 #include <stdio.h>
 #include <ctype.h>
+#include <X11/Xosdefs.h>
+#ifndef X_NOT_POSIX
+#define _POSIX_SOURCE
+#endif
 #include <sys/types.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#ifndef X_NOT_POSIX
+#undef _POSIX_SOURCE
+#endif
 
 #define MAXDEFINES	512
 #define MAXFILES	512
