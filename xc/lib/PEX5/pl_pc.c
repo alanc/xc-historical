@@ -1,4 +1,4 @@
-/* $XConsortium: pl_pc.c,v 1.3 92/05/20 20:51:36 mor Exp $ */
+/* $XConsortium: pl_pc.c,v 1.4 92/05/26 11:08:11 mor Exp $ */
 
 /************************************************************************
 Copyright 1987,1991,1992 by Digital Equipment Corporation, Maynard,
@@ -329,7 +329,7 @@ INPUT PEXPCAttributes	  *values;
 		break;
             case PEXPCMarkerColor:
 		PackColorSpecifier (&(values->marker_color), pv, sizeColor);
-		pv += NUMWORDS (sizeof (pexColourSpecifier) + sizeColor); 
+		pv += NUMWORDS (sizeof (pexColorSpecifier) + sizeColor); 
 		break;
             case PEXPCMarkerBundleIndex:
 		*pv = values->marker_bundle_index;
@@ -353,7 +353,7 @@ INPUT PEXPCAttributes	  *values;
 		break;
             case PEXPCTextColor:
 		PackColorSpecifier (&(values->text_color), pv, sizeColor);
-		pv += NUMWORDS (sizeof (pexColourSpecifier) + sizeColor); 
+		pv += NUMWORDS (sizeof (pexColorSpecifier) + sizeColor); 
 		break;
             case PEXPCCharHeight:
 		*((float *) pv) = values->char_height;
@@ -421,7 +421,7 @@ INPUT PEXPCAttributes	  *values;
 		break;
             case PEXPCLineColor:
 		PackColorSpecifier (&(values->line_color), pv, sizeColor);
-		pv += NUMWORDS (sizeof (pexColourSpecifier) + sizeColor); 
+		pv += NUMWORDS (sizeof (pexColorSpecifier) + sizeColor); 
 		break;
             case PEXPCCurveApprox:
 		*pv = values->curve_approx.method;
@@ -447,7 +447,7 @@ INPUT PEXPCAttributes	  *values;
 		break;
             case PEXPCSurfaceColor:
 		PackColorSpecifier (&(values->surface_color), pv, sizeColor);
-		pv += NUMWORDS (sizeof (pexColourSpecifier) + sizeColor); 
+		pv += NUMWORDS (sizeof (pexColorSpecifier) + sizeColor); 
 		break;
             case PEXPCReflectionAttr:
 		((pexReflectionAttr *) pv)->ambient = 
@@ -461,7 +461,7 @@ INPUT PEXPCAttributes	  *values;
 		((pexReflectionAttr *) pv)->transmission = 
 		    values->reflection_attr.transmission;
 		PackColorSpecifier (&(values->reflection_attr.specular_color), 
-		    &(((pexReflectionAttr *) pv)->specularColour), 
+		    &(((pexReflectionAttr *) pv)->specularColor), 
 		    sizeColor);
 		pv += NUMWORDS (sizeof (pexReflectionAttr) + sizeColor); 
 		break;
@@ -484,7 +484,7 @@ INPUT PEXPCAttributes	  *values;
             case PEXPCBFSurfaceColor:
 		PackColorSpecifier (&(values->bf_surface_color),
 		    pv, sizeColor);
-		pv += NUMWORDS (sizeof (pexColourSpecifier) + sizeColor); 
+		pv += NUMWORDS (sizeof (pexColorSpecifier) + sizeColor); 
 		break;
             case PEXPCBFReflectionAttr:
 		((pexReflectionAttr *) pv)->ambient = 
@@ -499,7 +499,7 @@ INPUT PEXPCAttributes	  *values;
 		    values->bf_reflection_attr.transmission;
 		PackColorSpecifier (
 		    &(values->bf_reflection_attr.specular_color), 
-		    &(((pexReflectionAttr *) pv)->specularColour), 
+		    &(((pexReflectionAttr *) pv)->specularColor), 
 		    sizeColor);
 		pv += NUMWORDS (sizeof (pexReflectionAttr) + sizeColor); 
 		break;
@@ -577,7 +577,7 @@ INPUT PEXPCAttributes	  *values;
             case PEXPCSurfaceEdgeColor:
 		PackColorSpecifier (&(values->surface_edge_color), pv, 
 		    sizeColor);
-		pv += NUMWORDS (sizeof (pexColourSpecifier) + sizeColor); 
+		pv += NUMWORDS (sizeof (pexColorSpecifier) + sizeColor); 
 		break;
             case PEXPCEdgeBundleIndex:
 		*pv = values->edge_bundle_index;
@@ -668,7 +668,7 @@ INPUT PEXPCAttributes	  *values;
 		else if (pscType == PEXPSCMCLevelCurves ||
 		    pscType == PEXPSCWCLevelCurves)
 		{
-		    int param_size = sizeof (PEXCoord) *
+		    int param_size = sizeof (float) *
 			 values->para_surf_char.psc.level_curves.count;
 		    size = sizeof (pexPSC_LevelCurves) + param_size;
 
@@ -749,7 +749,7 @@ OUTPUT PEXPCAttributes			*ppca;
 		break;
             case PEXPCMarkerColor:
 		PackColorSpecifier (pv, &(ppca->marker_color), sizeColor);
-		pv += NUMWORDS (sizeof (pexColourSpecifier) + sizeColor); 
+		pv += NUMWORDS (sizeof (pexColorSpecifier) + sizeColor); 
 		break;
             case PEXPCMarkerBundleIndex:
 		ppca->marker_bundle_index = *pv;
@@ -773,7 +773,7 @@ OUTPUT PEXPCAttributes			*ppca;
 		break;
             case PEXPCTextColor:
 		PackColorSpecifier (pv, &(ppca->text_color), sizeColor);
-		pv += NUMWORDS (sizeof (pexColourSpecifier) + sizeColor); 
+		pv += NUMWORDS (sizeof (pexColorSpecifier) + sizeColor); 
 		break;
             case PEXPCCharHeight:
 		ppca->char_height = *((float *) pv);
@@ -837,7 +837,7 @@ OUTPUT PEXPCAttributes			*ppca;
 		break;
             case PEXPCLineColor:
 		PackColorSpecifier (pv, &(ppca->line_color), sizeColor);
-		pv += NUMWORDS (sizeof (pexColourSpecifier) + sizeColor); 
+		pv += NUMWORDS (sizeof (pexColorSpecifier) + sizeColor); 
 		break;
             case PEXPCCurveApprox:
 		ppca->curve_approx.method = *pv;
@@ -863,7 +863,7 @@ OUTPUT PEXPCAttributes			*ppca;
 		break;
             case PEXPCSurfaceColor:
 		PackColorSpecifier (pv, &(ppca->surface_color), sizeColor);
-		pv += NUMWORDS (sizeof (pexColourSpecifier) + sizeColor); 
+		pv += NUMWORDS (sizeof (pexColorSpecifier) + sizeColor); 
 		break;
             case PEXPCReflectionAttr:
 		ppca->reflection_attr.ambient = 
@@ -877,7 +877,7 @@ OUTPUT PEXPCAttributes			*ppca;
 		ppca->reflection_attr.transmission = 
 		    ((pexReflectionAttr *) pv)->transmission;
 		PackColorSpecifier ( 
-		    &(((pexReflectionAttr *) pv)->specularColour), 
+		    &(((pexReflectionAttr *) pv)->specularColor), 
 		    &(ppca->reflection_attr.specular_color), sizeColor);
 		pv += NUMWORDS (sizeof (pexReflectionAttr) + sizeColor); 
 		break;
@@ -899,7 +899,7 @@ OUTPUT PEXPCAttributes			*ppca;
 		break;
             case PEXPCBFSurfaceColor:
 		PackColorSpecifier (pv, &(ppca->bf_surface_color), sizeColor);
-		pv += NUMWORDS (sizeof (pexColourSpecifier) + sizeColor); 
+		pv += NUMWORDS (sizeof (pexColorSpecifier) + sizeColor); 
 		break;
             case PEXPCBFReflectionAttr:
 		ppca->bf_reflection_attr.ambient = 
@@ -913,7 +913,7 @@ OUTPUT PEXPCAttributes			*ppca;
 		ppca->bf_reflection_attr.transmission = 
 		    ((pexReflectionAttr *) pv)->transmission;
 		PackColorSpecifier ( 
-		    &(((pexReflectionAttr *) pv)->specularColour), 
+		    &(((pexReflectionAttr *) pv)->specularColor), 
 		    &(ppca->bf_reflection_attr.specular_color), sizeColor);
 		pv += NUMWORDS (sizeof (pexReflectionAttr) + sizeColor); 
 		break;
@@ -988,7 +988,7 @@ OUTPUT PEXPCAttributes			*ppca;
             case PEXPCSurfaceEdgeColor:
 		PackColorSpecifier (pv, &(ppca->surface_edge_color),
 		    sizeColor);
-		pv += NUMWORDS (sizeof (pexColourSpecifier) + sizeColor); 
+		pv += NUMWORDS (sizeof (pexColorSpecifier) + sizeColor); 
 		break;
             case PEXPCEdgeBundleIndex:
 		ppca->edge_bundle_index = *pv;
