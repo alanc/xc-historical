@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.123 88/09/06 09:50:55 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.124 88/09/06 16:27:59 jim Exp $";
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 #endif lint
 
@@ -149,8 +149,9 @@ static XrmDatabase GetAppUserDefaults(classname)
 	char	filenamebuf[MAXPATHLEN];
 	char	*filename = &filenamebuf[0];
 
-	(void) XtGetRootDirName(filename);
-	(void) strcat(filename, ".");
+	if ((filename = getenv("XAPPLRESDIR")) == NULL) {
+	    (void) XtGetRootDirName(filename = &filenamebuf[0]);
+	}
 	(void) strcat(filename, classname);
 	
 	rdb = XrmGetFileDatabase(filename);
