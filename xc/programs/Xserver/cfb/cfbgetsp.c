@@ -73,7 +73,6 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
 	default:
 	    FatalError("cfbGetSpans: invalid depth\n");
     }
-    pptLast = ppt + nspans;
 
     if (pDrawable->type == DRAWABLE_WINDOW)
     {
@@ -87,8 +86,21 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
 	psrcBase = (unsigned int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
 	widthSrc = (int)(((PixmapPtr)pDrawable)->devKind);
     }
-    pdst = pdstStart;
 
+#if PPW == 4
+    if ((nspans == 1) && (*pwidth == 1))
+    {
+	tmpSrc = *((unsigned char *)(psrcBase + (ppt->y * (widthSrc >> 2)))
+		   + ppt->x);
+#if BITMAP_BIT_ORDER == MSBFirst
+	tmpSrc <<= 24;
+#endif
+	*pdstStart = tmpSrc;
+	return;
+    }
+#endif
+    pdst = pdstStart;
+    pptLast = ppt + nspans;
     while(ppt < pptLast)
     {
 	xEnd = min(ppt->x + *pwidth, widthSrc << (PWSH-2) );
