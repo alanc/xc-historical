@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.57 92/04/10 18:04:51 rws Exp $ */
+/* $XConsortium: events.c,v 5.58 92/04/11 13:41:58 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1701,7 +1701,7 @@ CheckDeviceGrabs(device, xE, checkFirst, count)
   
 	if ((focus->win == NoneWin) ||
 	    (i >= spriteTraceGood) ||
-	    ((i > 0) && (pWin != spriteTrace[i-1])))
+	    ((i > checkFirst) && (pWin != spriteTrace[i-1])))
 	    return FALSE;
     }
         
