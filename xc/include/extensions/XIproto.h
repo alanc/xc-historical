@@ -1,4 +1,4 @@
-/* $Header: XIproto.h,v 1.7 90/05/18 11:05:37 rws Exp $ */
+/* $Header: XIproto.h,v 1.8 90/05/18 14:04:10 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -707,26 +707,30 @@ typedef struct {
 
 typedef struct {
     CARD8  	class; 		/* feedback class		*/
-    CARD8  	length; 	/* feedback id  		*/
+    CARD8  	length; 	/* feedback length		*/
+    CARD8  	id; 		/* feedback id    		*/
 } xFeedbackState;
 
 typedef struct {
     CARD8   class;
     CARD8   length;
-    CARD8   click;
+    CARD8   id;
     CARD8   percent;
     CARD16  pitch;
     CARD16  duration;
     CARD32  led_mask;
     CARD32  led_values;
     BOOL    global_auto_repeat;
-    BYTE    pad1, pad2, pad3;
+    CARD8   click;
+    BYTE    pad1, pad2;
     BYTE    auto_repeats[32];
 } xKbdFeedbackState;
 
 typedef struct {
     CARD8   class;
     CARD8   length;
+    CARD8   id;
+    CARD8   pad1,pad2,pad3;
     CARD16  accelNum;
     CARD16  accelDenom;
     CARD16  threshold;
@@ -735,7 +739,8 @@ typedef struct {
 typedef struct {
     CARD8  	class;  	/* feedback class id		*/
     CARD8  	length; 	/* feedback length  		*/
-    BYTE	pad1, pad2;
+    CARD8   	id;
+    BYTE	pad;
     CARD32	resolution;
     CARD32	min_value;
     CARD32	max_value;
@@ -744,16 +749,17 @@ typedef struct {
 typedef struct {
     CARD8  	class;  	/* feedback class id		*/
     CARD8  	length; 	/* feedback length  		*/
+    CARD8   	id;
+    BYTE	pad;
     CARD16	max_symbols;
     CARD16	num_syms_supported;
-    BYTE	pad1, pad2;
 } xStringFeedbackState;
 
 typedef struct {
     CARD8  	class;  	/* feedback class id		*/
     CARD8  	length; 	/* feedback length  		*/
+    CARD8	id;
     CARD8	percent;
-    BYTE	pad1;
     CARD16	pitch;
     CARD16	duration;
 } xBellFeedbackState;
@@ -761,7 +767,8 @@ typedef struct {
 typedef struct {
     CARD8  	class;  	/* feedback class id		*/
     CARD8  	length; 	/* feedback length  		*/
-    BYTE	pad1, pad2;
+    CARD8	id;
+    BYTE	pad;
     CARD32	led_mask;
     CARD32	led_values;
 } xLedFeedbackState;
@@ -785,18 +792,20 @@ typedef struct {
 typedef struct {
     CARD8  	class;  	/* feedback class id		*/
     CARD8  	length; 	/* feedback length  		*/
+    CARD8  	id; 		/* feedback id      		*/
 } xFeedbackCtl;
 
 typedef struct {
     CARD8  	class;  	/* feedback class id		*/
     CARD8  	length; 	/* feedback length  		*/
+    CARD8  	id; 		/* feedback length  		*/
     KeyCode 	key; 
     CARD8	auto_repeat_mode;
     INT8	click;
     INT8	percent;
+    CARD8	pad;
     INT16	pitch;
     INT16	duration;
-    CARD16	pad;
     CARD32	led_mask;
     CARD32	led_values;
 } xKbdFeedbackCtl;
@@ -804,6 +813,8 @@ typedef struct {
 typedef struct {
     CARD8  	class;  	/* feedback class id		*/
     CARD8  	length; 	/* feedback length  		*/
+    CARD8  	id; 		/* feedback id      		*/
+    CARD8  	pad1,pad2,pad3;
     INT16	num;
     INT16	denom;
     INT16	thresh;
@@ -812,21 +823,24 @@ typedef struct {
 typedef struct {
     CARD8  	class;  	/* feedback class id		*/
     CARD8  	length; 	/* feedback length  		*/
-    BYTE	pad1, pad2;
+    CARD8  	id; 		/* feedback id      		*/
+    BYTE	pad;
     INT32	int_to_display;
 } xIntegerFeedbackCtl;
 
 typedef struct {
     CARD8  	class;  	/* feedback class id		*/
     CARD8  	length; 	/* feedback length  		*/
+    CARD8  	id; 		/* feedback id      		*/
+    CARD8  	pad1,pad2,pad3;
     CARD16	num_keysyms;
 } xStringFeedbackCtl;
 
 typedef struct {
     CARD8  	class;  	/* feedback class id		*/
     CARD8  	length; 	/* feedback length  		*/
+    CARD8  	id; 		/* feedback id      		*/
     INT8	percent;
-    BYTE	pad1;
     INT16	pitch;
     INT16	duration;
 } xBellFeedbackCtl;
@@ -834,7 +848,8 @@ typedef struct {
 typedef struct {
     CARD8  	class;  	/* feedback class id		*/
     CARD8  	length; 	/* feedback length  		*/
-    BYTE	pad1, pad2;
+    CARD8  	id; 		/* feedback id      		*/
+    BYTE	pad;
     CARD32	led_mask;
     CARD32	led_values;
 } xLedFeedbackCtl;

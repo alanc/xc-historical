@@ -1,4 +1,4 @@
-/* $XConsortium: XInput.h,v 1.6 90/05/18 10:49:44 rws Exp $ */
+/* $XConsortium: XInput.h,v 1.7 90/05/18 11:36:46 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -409,6 +409,7 @@ typedef struct {
 typedef struct {
     XID     class;
     int     length;
+    XID     id;
     int     click;
     int     percent;
     int     pitch;
@@ -421,6 +422,7 @@ typedef struct {
 typedef struct {
     XID     class;
     int     length;
+    XID     id;
     int     accelNum;
     int     accelDenom;
     int     threshold;
@@ -429,6 +431,7 @@ typedef struct {
 typedef struct {
     XID     class;
     int     length;
+    XID     id;
     int     resolution;
     int     minVal;
     int     maxVal;
@@ -437,6 +440,7 @@ typedef struct {
 typedef struct {
     XID     class;
     int     length;
+    XID     id;
     int     max_symbols;
     int     num_syms_supported;
     KeySym  *syms_supported;
@@ -445,6 +449,7 @@ typedef struct {
 typedef struct {
     XID     class;
     int     length;
+    XID     id;
     int     percent;
     int     pitch;
     int     duration;
@@ -453,17 +458,20 @@ typedef struct {
 typedef struct {
     XID     class;
     int     length;
+    XID     id;
     int     led_values;
 } XLedFeedbackState;
 
 typedef struct {
      XID            class;
      int            length;
+     XID	    id;
 } XFeedbackControl;
 
 typedef struct {
     XID     class;
     int     length;
+    XID     id;
     int     accelNum;
     int     accelDenom;
     int     threshold;
@@ -472,6 +480,7 @@ typedef struct {
 typedef struct {
     XID     class;
     int     length;
+    XID     id;
     int     click;
     int     percent;
     int     pitch;
@@ -485,6 +494,7 @@ typedef struct {
 typedef struct {
     XID     class;
     int     length;
+    XID     id;
     int     num_keysyms;
     KeySym  *syms_to_display;
 } XStringFeedbackControl;
@@ -492,12 +502,14 @@ typedef struct {
 typedef struct {
     XID     class;
     int     length;
+    XID     id;
     int     int_to_display;
 } XIntegerFeedbackControl;
 
 typedef struct {
     XID     class;
     int     length;
+    XID     id;
     int     percent;
     int     pitch;
     int     duration;
@@ -506,6 +518,7 @@ typedef struct {
 typedef struct {
     XID     class;
     int     length;
+    XID     id;
     int     led_mask;
     int     led_values;
 } XLedFeedbackControl;
