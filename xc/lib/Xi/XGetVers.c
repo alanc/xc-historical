@@ -1,4 +1,4 @@
-/* $XConsortium: XGetVers.c,v 1.4 89/09/25 16:20:37 gms Exp $ */
+/* $XConsortium: XGetVers.c,v 1.5 89/12/06 20:38:30 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -57,13 +57,21 @@ XExtensionVersion
     req->length += (req->nbytes+3)>>2;
     _XSend(dpy, name, (long)req->nbytes);
 
-    (void) _XReply (dpy, (xReply *) &rep, 0, xTrue);
-    ext = (XExtensionVersion *) Xmalloc (sizeof (XExtensionVersion));
-    ext->present = rep.present;
-    if (ext->present)
+    if (! _XReply (dpy, (xReply *) &rep, 0, xTrue)) 
 	{
-	ext->major_version = rep.major_version;
-	ext->minor_version = rep.minor_version;
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return (XExtensionVersion *) NULL;
+	}
+    ext = (XExtensionVersion *) Xmalloc (sizeof (XExtensionVersion));
+    if (ext)
+	{
+	ext->present = rep.present;
+	if (ext->present)
+	    {
+	    ext->major_version = rep.major_version;
+	    ext->minor_version = rep.minor_version;
+	    }
 	}
     UnlockDisplay(dpy);
     SyncHandle();

@@ -1,4 +1,4 @@
-/* $XConsortium: XExtToWire.c,v 1.4 89/12/06 20:31:40 rws Exp $ */
+/* $XConsortium: XExtToWire.c,v 1.5 90/05/18 11:08:33 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -58,6 +58,8 @@ XInputEventToWire(dpy, re, event, count)
 
 	    *count = 2;
 	    kev = (deviceKeyButtonPointer *) Xmalloc (*count * sizeof (xEvent));
+	    if (!kev)
+	        return(_XUnknownNativeEvent(dpy, re, event));
 	    *event = (xEvent *) kev;
 
 	    kev->type		= ev->type;
@@ -98,6 +100,8 @@ XInputEventToWire(dpy, re, event, count)
 
 	    *count = 2;
 	    pev = (deviceKeyButtonPointer *) Xmalloc (*count * sizeof (xEvent));
+	    if (!pev)
+	        return(_XUnknownNativeEvent(dpy, re, event));
 	    *event = (xEvent *) pev;
 
 	    pev->type		= ev->type;
@@ -137,6 +141,8 @@ XInputEventToWire(dpy, re, event, count)
 
 	    *count = 2;
 	    bev = (deviceKeyButtonPointer *) Xmalloc (*count * sizeof (xEvent));
+	    if (!bev)
+	        return(_XUnknownNativeEvent(dpy, re, event));
 	    *event = (xEvent *) bev;
 
 	    bev->type		= ev->type;
@@ -176,6 +182,8 @@ XInputEventToWire(dpy, re, event, count)
 
 	    *count = 2;
 	    mev = (deviceKeyButtonPointer *) Xmalloc (*count * sizeof (xEvent));
+	    if (!mev)
+	        return(_XUnknownNativeEvent(dpy, re, event));
 	    *event = (xEvent *) mev;
 
 	    mev->type		= ev->type;
@@ -215,6 +223,8 @@ XInputEventToWire(dpy, re, event, count)
 
 	    *count = 1;
 	    fev = (deviceFocus *) Xmalloc (*count * sizeof (xEvent));
+	    if (!fev)
+	        return(_XUnknownNativeEvent(dpy, re, event));
 	    *event = (xEvent *) fev;
 
 	    fev->type		= ev->type;
@@ -232,6 +242,8 @@ XInputEventToWire(dpy, re, event, count)
 
 	    *count = 1;
 	    mev = (deviceMappingNotify *) Xmalloc (*count * sizeof (xEvent));
+	    if (!mev)
+	        return(_XUnknownNativeEvent(dpy, re, event));
 	    *event = (xEvent *) mev;
 
 	    mev->type		= ev->type;
@@ -277,6 +289,8 @@ XInputEventToWire(dpy, re, event, count)
 		}
 
 	    sev = (deviceStateNotify *) Xmalloc (*count * sizeof (xEvent));
+	    if (!sev)
+	        return(_XUnknownNativeEvent(dpy, re, event));
 	    *event = (xEvent *) sev;
 	    tev = (xEvent *) (sev+1);
 
@@ -366,6 +380,8 @@ XInputEventToWire(dpy, re, event, count)
 
 	    *count = 1;
 	    cev = (changeDeviceNotify *) Xmalloc (*count * sizeof (xEvent));
+	    if (!cev)
+	        return(_XUnknownNativeEvent(dpy, re, event));
 	    *event = (xEvent *) cev;
 
 	    cev->type		= ev->type;

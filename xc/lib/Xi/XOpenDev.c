@@ -1,4 +1,4 @@
-/* $XConsortium: XOpenDev.c,v 1.3 89/09/25 16:20:58 gms Exp $ */
+/* $XConsortium: XOpenDev.c,v 1.4 89/12/06 20:38:46 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -57,15 +57,25 @@ XDevice
     req->ReqType = X_OpenDevice;
     req->deviceid = id;
 
-    _XReply (dpy, (xReply *) &rep, 0, xFalse);
+    if (! _XReply (dpy, (xReply *) &rep, 0, xFalse)) 
+	{
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return (XDevice *) NULL;
+	}
 
     rlen = rep.length << 2;
     dev = (XDevice *) Xmalloc (sizeof(XDevice) + rep.num_classes * 
 	sizeof (XInputClassInfo));
-    dev->device_id = req->deviceid;
-    dev->num_classes = rep.num_classes;
-    dev->classes = (XInputClassInfo *) ((char *) dev + sizeof (XDevice));
-    _XRead (dpy, dev->classes, rlen);
+    if (dev)
+	{
+	dev->device_id = req->deviceid;
+	dev->num_classes = rep.num_classes;
+	dev->classes = (XInputClassInfo *) ((char *) dev + sizeof (XDevice));
+	_XRead (dpy, dev->classes, rlen);
+	}
+    else
+	_XEatData (dpy, (unsigned long) rlen);
 
     UnlockDisplay (dpy);
     SyncHandle();

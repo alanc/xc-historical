@@ -1,4 +1,4 @@
-/* $XConsortium: XListDev.c,v 1.8 90/05/18 10:53:12 rws Exp $ */
+/* $XConsortium: XListDev.c,v 1.9 90/05/18 11:00:36 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -66,7 +66,12 @@ XDeviceInfo
     req->reqType = info->codes->major_opcode;
     req->ReqType = X_ListInputDevices;
 
-    (void) _XReply (dpy, (xReply *) &rep, 0, xFalse);
+    if (! _XReply (dpy, (xReply *) &rep, 0, xFalse)) 
+	{
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return (XDeviceInfo *) NULL;
+	}
 
     if (*ndevices = rep.ndevices) /* at least 1 input device */
 	{
@@ -74,6 +79,13 @@ XDeviceInfo
 	rlen = rep.length << 2;   /* multiply length by 4    */
 	list = (xDeviceInfo *) Xmalloc (rlen);
 	slist = list;
+        if (!slist)
+	    {
+	    _XEatData (dpy, (unsigned long) rlen);
+	    UnlockDisplay(dpy);
+	    SyncHandle();
+	    return (XDeviceInfo *) NULL;
+	    }
 	_XRead (dpy, list, rlen);
 
 	any = (xAnyClassPtr) ((char *) list + 
@@ -113,6 +125,12 @@ XDeviceInfo
 	    }
 
 	clist = (XDeviceInfoPtr) Xmalloc (size);
+        if (!clist)
+	    {
+	    UnlockDisplay(dpy);
+	    SyncHandle();
+	    return (XDeviceInfo *) NULL;
+	    }
 	sclist = clist;
 	Any = (XAnyClassPtr) ((char *) clist + 
 		(*ndevices * sizeof (XDeviceInfo)));

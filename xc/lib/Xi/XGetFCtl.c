@@ -1,4 +1,4 @@
-/* $XConsortium: XGetFCtl.c,v 1.3 89/09/25 16:20:24 gms Exp $ */
+/* $XConsortium: XGetFCtl.c,v 1.4 89/12/06 20:38:19 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -61,12 +61,24 @@ XFeedbackState
     req->ReqType = X_GetFeedbackControl;
     req->deviceid = dev->device_id;
 
-    (void) _XReply (dpy, (xReply *) &rep, 0, xFalse);
+    if (! _XReply (dpy, (xReply *) &rep, 0, xFalse)) 
+	{
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return (XFeedbackState *) NULL;
+	}
     if (rep.length > 0) 
 	{
 	*num_feedbacks = rep.num_feedbacks;
 	nbytes = (long)rep.length << 2;
 	f = (xFeedbackState *) Xmalloc((unsigned) nbytes);
+        if (!f)
+	    {
+	    _XEatData (dpy, (unsigned long) nbytes);
+	    UnlockDisplay(dpy);
+	    SyncHandle();
+	    return (XFeedbackState *) NULL;
+	    }
 	sav = f;
 	_XRead (dpy, (char *) f, nbytes);
 
@@ -100,6 +112,12 @@ XFeedbackState
 
 	Feedback = (XFeedbackState *) Xmalloc((unsigned) size);
 
+        if (!Feedback)
+	    {
+	    UnlockDisplay(dpy);
+	    SyncHandle();
+	    return (XFeedbackState *) NULL;
+	    }
 	f = sav;
 	for (i=0; i<*num_feedbacks; i++)
 	    {

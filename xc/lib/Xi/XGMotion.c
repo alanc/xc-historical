@@ -1,4 +1,4 @@
-/* $XConsortium: XGMotion.c,v 1.4 89/12/06 20:38:16 rws Exp $ */
+/* $XConsortium: XGMotion.c,v 1.5 90/05/18 10:50:51 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -82,13 +82,12 @@ XDeviceTimeCoord
 	(sizeof (XDeviceTimeCoord) + (rep.axes * sizeof (int)));
     savp = readp = (char *) Xmalloc (size);
     bufp = (char *) Xmalloc (size2);
-    if (!bufp) {
-	/* XXX this is wrong!!  we need to read and throw away the data
-           somehow.  Probably we should try to malloc less space and repeatedly
-           read the events into the smaller space.... */
+    if (!bufp || !savp)
+	{
 	*nEvents = 0;
+	_XEatData (dpy, (unsigned long) size);
 	UnlockDisplay(dpy);
-        SyncHandle();
+	SyncHandle();
 	return (NULL);
 	}
     _XRead (dpy, (char *) readp, size);

@@ -1,4 +1,4 @@
-/* $XConsortium: XGetKMap.c,v 1.3 89/09/25 16:20:27 gms Exp $ */
+/* $XConsortium: XGetKMap.c,v 1.4 89/12/06 20:38:23 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -61,13 +61,20 @@ KeySym
     req->firstKeyCode = first;
     req->count = keycount;
 
-    (void) _XReply (dpy, (xReply *) &rep, 0, xFalse);
+    if (! _XReply (dpy, (xReply *) &rep, 0, xFalse)) 
+	{
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return (KeySym *) NULL;
+	}
     if (rep.length > 0) {
         *syms_per_code = rep.keySymsPerKeyCode;
 	nbytes = (long)rep.length << 2;
 	mapping = (KeySym *) Xmalloc((unsigned) nbytes);
-
-	_XRead (dpy, (char *)mapping, nbytes);
+	if (mapping)
+	    _XRead (dpy, (char *)mapping, nbytes);
+	else
+	    _XEatData (dpy, (unsigned long) nbytes);
       }
 
     UnlockDisplay(dpy);

@@ -1,4 +1,4 @@
-/* $XConsortium: XGtSelect.c,v 1.3 89/09/25 16:20:51 gms Exp $ */
+/* $XConsortium: XGtSelect.c,v 1.4 89/12/06 20:38:42 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -61,7 +61,12 @@ XGetSelectedExtensionEvents (dpy, w, this_client_count, this_client_list,
     req->ReqType = X_GetSelectedExtensionEvents;
     req->window = w;
 
-    _XReply (dpy, (xReply *) &rep, 0, xFalse);
+    if (! _XReply (dpy, (xReply *) &rep, 0, xFalse)) 
+	{
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return Success;
+	}
 
     *this_client_count = rep.this_client_count;
     *all_clients_count = rep.all_clients_count;
@@ -71,7 +76,10 @@ XGetSelectedExtensionEvents (dpy, w, this_client_count, this_client_list,
     *all_clients_list = (XEventClass *) ((char *) *this_client_list + 
 	(*this_client_count * sizeof (XEventClass)));
 
-    _XRead (dpy, *this_client_list, rlen);
+    if (*this_client_list)
+	_XRead (dpy, *this_client_list, rlen);
+    else
+	_XEatData (dpy, (unsigned long) rlen);
 
     UnlockDisplay(dpy);
     SyncHandle();

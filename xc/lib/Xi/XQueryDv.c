@@ -1,4 +1,4 @@
-/* $XConsortium: XQueryDv.c,v 1.4 89/10/09 15:26:21 merge Exp $ */
+/* $XConsortium: XQueryDv.c,v 1.5 89/12/06 20:38:47 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -60,12 +60,24 @@ XDeviceState
     req->ReqType = X_QueryDeviceState;
     req->deviceid = dev->device_id;
 
-    (void) _XReply (dpy, (xReply *) &rep, 0, xFalse);
+    if (! _XReply (dpy, (xReply *) &rep, 0, xFalse)) 
+	{
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return (XDeviceState *) NULL;
+	}
 
     rlen = rep.length << 2;
     if (rlen > 0)
 	{
 	data = Xmalloc (rlen);
+	if (!data)
+	    {
+	    _XEatData (dpy, (unsigned long) rlen);
+    	    UnlockDisplay(dpy);
+    	    SyncHandle();
+    	    return ((XDeviceState *) NULL);
+	    }
 	_XRead (dpy, data, rlen);
 
 	for (i=0, any=(XInputClass *) data; i<rep.num_classes; i++)
@@ -89,6 +101,12 @@ XDeviceState
 	    any = (XInputClass *) ((char *) any + any->length);
 	    }
 	state = (XDeviceState *) Xmalloc (size + sizeof(XDeviceState));
+	if (!state)
+	    {
+    	    UnlockDisplay(dpy);
+    	    SyncHandle();
+    	    return ((XDeviceState *) NULL);
+	    }
 	state->device_id = dev->device_id;
 	state->num_classes = rep.num_classes;
 	state->data = (XInputClass *) (state + 1);

@@ -1,4 +1,4 @@
-/* $XConsortium: XGetProp.c,v 1.3 89/09/25 16:20:34 gms Exp $ */
+/* $XConsortium: XGetProp.c,v 1.4 89/12/06 20:38:28 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -58,13 +58,20 @@ XEventClass
     req->ReqType = X_GetDeviceDontPropagateList;
     req->window = window;
 
-    (void) _XReply (dpy, (xReply *) &rep, 0, xFalse);
+    if (! _XReply (dpy, (xReply *) &rep, 0, xFalse)) 
+	{
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return (XEventClass *) NULL;
+	}
     *count = rep.count;
 
     rlen = rep.length << 2;
     list = (XEventClass *) Xmalloc (rlen);
-
-    _XRead (dpy, list, rlen);
+    if (list)
+	_XRead (dpy, list, rlen);
+    else
+	_XEatData (dpy, (unsigned long) rlen);
 
     UnlockDisplay(dpy);
     SyncHandle();

@@ -1,4 +1,4 @@
-/* $XConsortium: XGetMMap.c,v 1.3 89/09/25 16:20:30 gms Exp $ */
+/* $XConsortium: XGetMMap.c,v 1.4 89/12/06 20:38:25 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -56,12 +56,23 @@ XModifierKeymap
     req->ReqType = X_GetDeviceModifierMapping;
     req->deviceid = dev->device_id;
 
-    (void) _XReply (dpy, (xReply *) &rep, 0, xFalse);
+    if (! _XReply (dpy, (xReply *) &rep, 0, xFalse)) 
+	{
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return (XModifierKeymap *) NULL;
+	}
     nbytes = (unsigned long)rep.length << 2;
     res = (XModifierKeymap *) Xmalloc(sizeof (XModifierKeymap));
-    res->modifiermap = (KeyCode *) Xmalloc (nbytes);
-    _XReadPad(dpy, (char *) res->modifiermap, nbytes);
-    res->max_keypermod = rep.numKeyPerModifier;
+    if (res)
+	{
+        res->modifiermap = (KeyCode *) Xmalloc (nbytes);
+	if (res->modifiermap)
+	    _XReadPad(dpy, (char *) res->modifiermap, nbytes);
+	else
+	    _XEatData (dpy, (unsigned long) nbytes);
+	res->max_keypermod = rep.numKeyPerModifier;
+	}
 
     UnlockDisplay(dpy);
     SyncHandle();

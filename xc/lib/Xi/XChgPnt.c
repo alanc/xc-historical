@@ -1,4 +1,4 @@
-/* $XConsortium: XChgPnt.c,v 1.3 89/09/25 16:19:58 gms Exp $ */
+/* $XConsortium: XChgPnt.c,v 1.4 89/12/06 20:31:30 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -58,6 +58,7 @@ XChangePointerDevice (dpy, dev, xaxis, yaxis)
     req->deviceid = dev->device_id;
     req->xaxis = xaxis;
     req->yaxis = yaxis;
+    rep.status = Success;
 
     (void) _XReply (dpy, (xReply *) &rep, 0, xTrue);
 

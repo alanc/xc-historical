@@ -1,4 +1,4 @@
-/* $XConsortium: XChgKbd.c,v 1.3 89/09/25 16:19:55 gms Exp $ */
+/* $XConsortium: XChgKbd.c,v 1.4 89/12/06 20:31:29 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -54,6 +54,7 @@ XChangeKeyboardDevice (dpy, dev)
     req->reqType = info->codes->major_opcode;
     req->ReqType = X_ChangeKeyboardDevice;
     req->deviceid = dev->device_id;
+    rep.status = Success;
 
     (void) _XReply (dpy, (xReply *) &rep, 0, xTrue);
 
