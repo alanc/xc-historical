@@ -18,10 +18,12 @@
 
 #define XapolloServer     Xapollo
 
+#define HasNdbm YES
+
 #define HasVoidSignalReturn NO
 
 
-/**/# platform:  $XConsortium: apollo.cf,v 1.17 89/11/27 18:23:50 keith Exp $
+/**/# platform:  $XConsortium: apollo.cf,v 1.20 90/02/22 11:00:53 keith Exp $
 /**/# operating system:  OSName
 
 /*****************************************************************************
