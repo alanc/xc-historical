@@ -18,7 +18,7 @@ AOS-4.3 (IBM)
 UTEK 4.0 (Tektronix)
 NEWS-OS 3.2 (Sony; client only)
 UNICOS 5.0.1 (Cray; client only)
-UNIX(TM) System V, Release 3.2 (AT&T; client only)
+UNIX(tm) System V, Release 3.2 (AT&T; client only)
 .sp
 Commercial implementations are also available for a much wider range
 of platforms.
@@ -191,7 +191,7 @@ support the following types of connections:
 .I "local"
 .br
 The hostname part of the display name should be the empty string.
-For example:  \fI:0\fP, \fI:1\fP, and \fI:0.1\fP.  The ``best''
+For example:  \fI:0\fP, \fI:1\fP, and \fI:0.1\fP.  The most efficient
 local transport will be chosen.
 .TP 8
 .I TCP\/IP
@@ -325,7 +325,7 @@ popup menus, point-and-click or click-to-type input models, title bars, nice
 icons (and an icon manager for those who don't like separate icon windows).
 .PP
 Several other window managers are available in the user-contributed
-software: \fIgwm\fP, \fIm_swm\fP, \fIolwm\fP, \fItekwm\fP, and \fIuwm\fP.
+software: \fIgwm\fP, \fIm_swm\fP, \fIolwm\fP, and \fItekwm\fP.
 .SH "FONT NAMES"
 Collections of characters for displaying text and symbols in X are known as
 \fIfonts\fP.  A font typically contains images that share a common appearance
@@ -359,15 +359,15 @@ systems.  It contains a small family of fixed-width fonts in pixel heights
 5 through 10, a family of fixed-width fonts from Dale Schumacher in
 similar pixel heights, several Kana fonts from Sony Corporation,
 a Kanji font, the standard cursor font, two cursor fonts from
-Digital Equipment Corporation, and OPEN LOOK(TM) cursor and glyph fonts
+Digital Equipment Corporation, and OPEN LOOK(tm) cursor and glyph fonts
 from Sun Microsystems.
 It also has font name aliases for the font names
 \fBfixed\fP and \fBvariable\fP.
 .TP 8
 .I /usr/lib/X11/fonts/75dpi
-This directory contains fonts contributed by Adobe Systems, Inc. and
-Digital Equipment Corporation, by Bitstream, Inc.,
-and by Bigelow and Holmes and Sun Microsystems, Inc.,
+This directory contains fonts contributed by Adobe Systems, Inc.,
+Digital Equipment Corporation, Bitstream, Inc.,
+Bigelow and Holmes, and Sun Microsystems, Inc.
 for 75 dots per inch displays.  An integrated selection of sizes, styles, 
 and weights are provided for each family.
 .TP 8
@@ -399,6 +399,11 @@ supports wildcarding of font names, so the full specification
 \fI-adobe-courier-medium-r-normal--10-100-75-75-m-60-iso8859-1\fP
 .sp
 could be abbreviated as:
+.sp
+.ce 1
+\fI-*-courier-medium-r-normal--*-100-*-*-*-*-*-*\fP
+.sp
+or, more tersely (but less accurately):
 .sp
 .ce 1
 \fI*-courier-medium-r-normal--*-100-*\fP
@@ -814,7 +819,8 @@ xlogo(1), xlsatoms(1), xlsclients(1), xlsfonts(1), xlswins(1), xmag(1),
 xman(1), xmh(1), xmodmap(1),
 xpr(1), xprop(1), xrdb(1), xrefresh(1), xset(1), xsetroot(1), xstdcmap(1),
 xterm(1), xwd(1), xwininfo(1), xwud(1),
-Xserver(1), Xapollo(1), Xqdss(1), Xqvss(1), Xsun(1), XmacII(1),
+Xserver(1), Xapollo(1), Xcfbpmax(1), Xhp(1), Xibm(1), XmacII(1), Xmfbpmax(1),
+Xqdss(1), Xqvss(1), Xsun(1), Xtek(1),
 kbd_mode(1), todm(1), tox(1), biff(1), init(8), ttys(5),
 .I "Xlib \- C Language X Interface\fR,\fP"
 .I "X Toolkit Intrinsics - C Language Interface\fR,\fP"
