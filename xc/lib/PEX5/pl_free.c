@@ -1,4 +1,4 @@
-/* $XConsortium: pl_free.c,v 1.7 92/05/07 23:28:34 mor Exp $ */
+/* $XConsortium: pl_free.c,v 1.1 92/05/08 15:13:00 mor Exp $ */
 
 /************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology, Cambridge,
@@ -66,7 +66,7 @@ INPUT PEXFontInfo	*fontInfo;
 
     for (i = 0; i < numFontInfo; i++)
     {
-	PEXFreeBuf ((char *) info->prop);
+	PEXFreeBuf ((char *) info->props);
 	info++;
     }
 
@@ -77,14 +77,14 @@ INPUT PEXFontInfo	*fontInfo;
 void PEXFreeFontNames (numFontNames, fontNames)
 
 INPUT unsigned long	numFontNames;
-INPUT PEXStringData	*fontNames;
+INPUT char		**fontNames;
 
 {
     int i;
 
 
     for (i = 0; i < numFontNames; i++)
-	PEXFreeBuf ((char *) fontNames[i].ch);
+	PEXFreeBuf (fontNames[i]);
 
     PEXFreeBuf ((char *) fontNames);
 }
@@ -95,32 +95,32 @@ void PEXFreePCAttributes (pcAttr)
 INPUT PEXPCAttributes	*pcAttr;
 
 {
-    FreeIfNotNull ((char *) pcAttr->model_clip_volume.half_space);
-    FreeIfNotNull ((char *) pcAttr->light_state.light_index);
-    FreeIfNotNull ((char *) pcAttr->para_surf_char.psc.level_curves.parameter);
-    FreeIfNotNull ((char *) pcAttr->para_surf_char.psc.data.ch);
+    FreeIfNotNull ((char *) pcAttr->model_clip_volume.half_spaces);
+    FreeIfNotNull ((char *) pcAttr->light_state.indices);
+    FreeIfNotNull ((char *) pcAttr->para_surf_char.psc.level_curves.parameters);
+    FreeIfNotNull ((char *) pcAttr->para_surf_char.psc.imp_dep.data);
 
     PEXFreeBuf ((char *) pcAttr);
 }
 
 
-void PEXFreePickDeviceAttributes (pdAttr)
+void PEXFreePDAttributes (pdAttr)
 
-PEXPickDeviceAttributes		*pdAttr;
+PEXPDAttributes		*pdAttr;
 
 {
-    FreeIfNotNull (pdAttr->path.element);
+    FreeIfNotNull (pdAttr->path.elements);
 
     PEXFreeBuf ((char *) pdAttr);
 }
 
 
-void PEXFreePickMeasureAttributes (pmAttr)
+void PEXFreePMAttributes (pmAttr)
 
-PEXPickMeasureAttributes	 *pmAttr;
+PEXPMAttributes	 *pmAttr;
 
 {
-    FreeIfNotNull ((char *) pmAttr->picked_prim.element);
+    FreeIfNotNull ((char *) pmAttr->pick_path.elements);
 
     PEXFreeBuf ((char *) pmAttr);
 }
@@ -132,13 +132,58 @@ INPUT unsigned long	numPickPaths;
 INPUT PEXPickPath	*pickPaths;
 
 {
-    int i;
+    int total_size, i;
 
 
-    for (i = 0; i < numPickPaths; i++)
-	PEXFreeBuf ((char *) pickPaths[i].element);
+    /*
+     * Note that memory allocation of pick paths is optimized by
+     * allocating one chunk for all the pick paths in the list, instead
+     * of allocating a seperate buffer for each pick path.
+     */
 
-    PEXFreeBuf ((char *) pickPaths);
+    if (pickPaths == PickCache)
+    {
+	/*
+	 * Make the pick cache available again.
+	 */
+
+	PickCacheInUse = 0;
+    }
+    else if (PickCacheInUse)
+    {
+	/*
+	 * The pick cache is in use, so we must free this pick path.
+	 */
+
+	PEXFreeBuf ((char *) pickPaths);
+    }
+    else
+    {
+	/*
+	 * Calculate the size of the pick path being freed.
+	 */
+
+	total_size = numPickPaths * sizeof (PEXPickPath);
+	for (i = 0; i < numPickPaths; i++)
+	    total_size += (pickPaths[i].count * sizeof (PEXPickElementRef));
+
+
+	/*
+	 * If the size is smaller than the pick cache size or bigger than
+	 * the max size, free the pick path.  Otherwise, make this path the
+	 * new pick cache buffer.
+	 */
+	
+	if (total_size <= PickCacheSize || total_size > MAX_PICK_CACHE_SIZE)
+	    PEXFreeBuf ((char *) pickPaths);
+	else
+	{
+	    if (PickCache)
+		PEXFreeBuf ((char *) PickCache);
+	    PickCache = pickPaths;
+	    PickCacheSize = total_size;
+	}
+    }
 }
 
 
@@ -147,22 +192,22 @@ void PEXFreeRendererAttributes (rdrAttr)
 INPUT PEXRendererAttributes	*rdrAttr;
 
 {
-    FreeIfNotNull ((char *) rdrAttr->current_path.element);
-    FreeIfNotNull ((char *) rdrAttr->clip_list.device_rect);
-    FreeIfNotNull ((char *) rdrAttr->pick_start_path.element);
+    FreeIfNotNull ((char *) rdrAttr->current_path.elements);
+    FreeIfNotNull ((char *) rdrAttr->clip_list.rectangles);
+    FreeIfNotNull ((char *) rdrAttr->pick_start_path.elements);
 
     PEXFreeBuf ((char *) rdrAttr);
 }
 
 
-void PEXFreeSearchContextAttributes (scAttr)
+void PEXFreeSCAttributes (scAttr)
 
 PEXSCAttributes		*scAttr;
 
 {
-    FreeIfNotNull ((char *) scAttr->start_path.element);
-    FreeIfNotNull ((char *) scAttr->normal.pair);
-    FreeIfNotNull ((char *) scAttr->inverted.pair);
+    FreeIfNotNull ((char *) scAttr->start_path.elements);
+    FreeIfNotNull ((char *) scAttr->normal.pairs);
+    FreeIfNotNull ((char *) scAttr->inverted.pairs);
 
     PEXFreeBuf ((char *) scAttr);
 }
@@ -178,7 +223,7 @@ INPUT PEXStructurePath	*paths;
 
 
     for (i = 0; i < numPaths; i++)
-	PEXFreeBuf ((char *) paths[i].element);
+	PEXFreeBuf ((char *) paths[i].elements);
 
     PEXFreeBuf ((char *) paths);
 }
@@ -201,7 +246,7 @@ INPUT PEXPointer	tableEntries;
 	PEXPatternEntry *entries = (PEXPatternEntry *) tableEntries;
 	
 	for (i = 0; i < numTableEntries; i++)
-	    PEXFreeBuf ((char *) entries[i].color);
+	    PEXFreeBuf ((char *) entries[i].colors);
 	break;
     }
     
@@ -235,7 +280,7 @@ INPUT PEXWorkstationAttributes	*wksAttr;
 
 {
     FreeIfNotNull ((char *) wksAttr->defined_views.views);
-    FreeIfNotNull ((char *) wksAttr->posted_structures.structure);
+    FreeIfNotNull ((char *) wksAttr->posted_structures.structures);
 
     PEXFreeBuf ((char *) wksAttr);
 }
