@@ -155,6 +155,7 @@ char	**argv;
 	 * or if both are set.
 	 */
 	usage (!(aflag ^ dflag));
+	usage (xflag && !lflag);
 	/* set up default file names */
 	if (!wflag)
 		wtmp_file = WTMP_FILE;
