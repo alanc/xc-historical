@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.150 91/07/10 09:33:28 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.151 91/07/12 15:54:43 gildea Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -1765,7 +1765,7 @@ int iovcnt;
 
 #endif /* CRAY */
 
-#if defined(SYSV) && defined(SYSV386)
+#if defined(SYSV) && defined(SYSV386) && !defined(STREAMSCONN)
 /*
  * SYSV/386 does not have readv so we emulate
  */
@@ -1797,7 +1797,7 @@ int iovcnt;
     return total;
 }
 
-#endif /* SYSV && SYSV386 */
+#endif /* SYSV && SYSV386 && !STREAMSCONN */
 
 #ifdef STREAMSCONN
 /*
