@@ -1,4 +1,4 @@
-.TH EDITRES 1 "Release 4+" "X Version 11"
+.TH EDITRES 1 "Release 5" "X Version 11"
 .SH NAME
 editres - a dynamic resource editor for X Toolkit applications
 .SH SYNTAX
@@ -57,6 +57,26 @@ you retrieved
 xman's widget tree before the the manual page is active, you may
 wish to refresh the widget tree after the manual page has been
 displayed.  This will allow you to also edit the manual page's resources.
+.IP "Dump Widget Tree to a File"
+For documenting applications it is often useful to be able to
+dump the entire application widget tree to an ascii file.  This file
+can then be included in the manual page.  When this menu item is selected
+a popup dialog is activated.  Type the name of the file in this
+dialog, and either select \fIokay\fP, or type a carriage-return.  Editres
+will now dump the widget tree to this file.  To cancel the file dialog
+just select the \fIcancel\fP button.
+.IP "Show Resource Box"
+This command will popup a resource box for the current client.  This
+resource box (described in detail below) will allow the user to see
+exactly which resources can be set for the widget that is currently
+selected in the widget tree display.  Only one widget may be currently
+selected, if greater or fewer are selected editres will refuse to
+pop up the resource box, and put an error message in the \fBMessage Area\fP.
+.IP "Quit"
+Exits editres.
+.SH TREE COMMANDS
+The \fBTree\fP menu contains several commands that allow operations to
+be performed on the widget tree.
 .IP "Select Widget in Client"
 This menu item allows you to select any widget in the application, editres
 will then highlight the corrosponding element the widget tree display.
@@ -67,34 +87,6 @@ wish to have displayed.  Since some widgets are fully obscured by
 their children, it is not possible to get to every widget this way,
 but this mechanism does give very useful feedback between the elements
 in the widget tree and those in the actual client.
-.IP "Dump Widget Tree to a File"
-For documenting applications it is often useful to be able to
-dump the entire application widget tree to an ascii file.  This file
-can then be included in the manual page.  When this menu item is selected
-a popup dialog is activated.  Type the name of the file in this
-dialog, and either select \fIokay\fP, or type a carriage-return.  Editres
-will now dump the widget tree to this file.  To cancel the file dialog
-just select the \fIcancel\fP button.
-.IP "Show Active Widgets"
-This command is the inverse of the \fBSelect Widget in Client\fP
-command, it will show the user each widget that is currently selected in
-the widget tree, by flashing the corresponding widget in the
-application \fInumFlashes\fP (three by default) times in the
-\fIflashColor\fP.
-.IP "Show Resource Box"
-This command will popup a resource box for the current client.  This
-resource box (described in detail below) will allow the user to see
-exactly which resources can be set for the widget that is currently
-selected in the widget tree display.  Only one widget may be currently
-selected, if greater or fewer are selected editres will refuse to
-pop up the resource box, and put an error message in the \fBMessage Area\fP.
-.IP "Show Author"
-Pops up message telling you who wrote this application.
-.IP "Quit"
-Exits editres.
-.SH TREE COMMANDS
-The \fBTree\fP menu contains several commands that allow operations to
-be performed on the widget tree.
 .IP "Select All" 
 .br
 .ns 
@@ -142,6 +134,12 @@ entries shown may be applied to any widget in the application.  If
 that widget is a child of the Tree widget, then it will only affect that
 widget, otherwise it will have the same effect as the commands in the
 tree menu.
+.IP "Flash Active Widgets"
+This command is the inverse of the \fBSelect Widget in Client\fP
+command, it will show the user each widget that is currently selected in
+the widget tree, by flashing the corresponding widget in the
+application \fInumFlashes\fP (three by default) times in the
+\fIflashColor\fP.
 .sp
 .nf
 .TA .5i 1.5i 4.0i
@@ -149,6 +147,7 @@ tree menu.
 	\fBKey	Option	Translation Entry\fP
 
 	space	Unselect	Select(nothing)
+	w	Select	Select(widget)
 	s	Select	Select(all)
 	i	Invert	Select(invert)
 	c	Select Children	Select(children)
@@ -166,27 +165,30 @@ The resource box contains five different areas.  Each of the areas,
 as they appear on the screen, from top to bottom will be discussed.
 .IP "The Resource Line"
 This area at the top of the resource box shows the current resource
-entry exactly as it would appear if you were to save it to a file.
+name exactly as it would appear if you were to save it to a file or
+apply it.
 .IP "The Widget Names and Classes"
 This area allows you to select exactly which widgets this resource will
-apply to.  The area contains three lines, the first contains the 
+apply to.  The area contains four lines, the first contains the 
 name of the selected widget and all its ancestors, and the more restrictive
 dot (\fB.\fP) separator.  The second line contains less specific the
 Class names 
 of each widget, and well as the less restrictive star (\fB*\fP) separator.
-The last line contains a set of special buttons called \fBAllow Any
-Widget\fP which will completely compress out this level of the widget
-hierarchy, replacing it with just the star separator.  
+The third line contains a set of special buttons called \fBAny Widget\fP
+which will generalize this level to match any widget.
+The last line contains a set of special buttons called \fBAny
+Widget Chain\fP which will turn the single level into something that
+matches zero or more levels.
 .IP ""
 The initial state of this area is the most restrictive, using the
 resource names and the dot separator.  By selecting the other buttons
 in this are you can ease the restrictions to allow more and more widgets
 to match the specification.  The extreme case is to select all the 
-\fBAllow Any Widget\fP buttons, which will match every widget in the
+\fBAny Widget Chain\fP buttons, which will match every widget in the
 application.   As you select different buttons the tree display will update
 to show you exactly which widgets will be effected by the current
 resource specification.
-.IP "Normal and Constrain Resources"
+.IP "Normal and Constraint Resources"
 The next area allows you to select the name of the normal or
 constraint resources you wish to set.  Some widgets may not have constraint
 resources, so that area will not appear.
@@ -309,15 +311,14 @@ Editres  editres
 				SimpleMenu  menu
 					SmeBSB  sendTree
 					SmeBSB  refreshTree
-					SmeBSB  showClientWidget
-					SmeLine  line
 					SmeBSB  dumpTreeToFile
-					SmeBSB  flashActiveWidgets
+					SmeLine  line
 					SmeBSB  getResourceList
 					SmeLine  line
 					SmeBSB  quit
 			MenuButton  treeCommands
 				SimpleMenu  menu
+					SmeBSB  showClientWidget
 					SmeBSB  selectAll
 					SmeBSB  unselectAll
 					SmeBSB  invertAll
@@ -331,6 +332,8 @@ Editres  editres
 					SmeBSB  showClassNames
 					SmeBSB  showWidgetIDs
 					SmeBSB  showWidgetWindows
+					SmeLine  line
+					SmeBSB  flashActiveWidgets
 		Paned  hPane
 			Panner  panner
 			Label  userMessage
