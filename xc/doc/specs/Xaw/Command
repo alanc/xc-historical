@@ -82,7 +82,7 @@ mappedWhenManaged	MappedWhenManaged	Boolean		True
 resize	Resize	Boolean		True
 screen	Screen	Pointer	R	Parent's Screen
 sensitive	Sensitive	Boolean		True
-shapeStype	ShapeStyle	ShapeStyle		Rectangle
+shapeStyle	ShapeStyle	ShapeStyle		Rectangle
 translations	Translations	TranslationTable		See below
 width	Width	Dimension	A	\fBlabel\fP width + 2 * \fBinternalWidth\fP
 x	X	Position		0
