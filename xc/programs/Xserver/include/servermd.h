@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $XConsortium: servermd.h,v 1.59 91/05/14 11:51:31 rws Exp $ */
+/* $XConsortium: servermd.h,v 1.60 91/06/30 11:29:35 rws Exp $ */
 
 /*
  * Machine dependent values:
@@ -149,6 +149,12 @@ SOFTWARE.
 #define GLYPHPADBYTES           4
 #define GETLEFTBITS_ALIGNMENT   1
 
+#define LARGE_INSTRUCTION_CACHE
+#define FAST_CONSTANT_OFFSET_MODE
+#define PLENTIFUL_REGISTERS
+#define AVOID_MEMORY_READ
+
+#define FAST_MEMCPY
 #endif /* AIXV3 */
 
 #if defined(ibm032) || defined (ibm)
@@ -200,7 +206,7 @@ SOFTWARE.
 
 #endif /* macII */
 
-#ifdef mips
+#if defined(mips) && !defined(sgi)
 
 #ifdef MIPSEL
 # define IMAGE_BYTE_ORDER	LSBFirst        /* Values for the PMAX only */
@@ -260,6 +266,20 @@ SOFTWARE.
 #define AVOID_MEMORY_READ
 
 #endif /* SYSV386 */
+
+#ifdef sgi
+
+#define IMAGE_BYTE_ORDER	MSBFirst
+#define BITMAP_BIT_ORDER	MSBFirst
+#define GLYPHPADBYTES		2
+#define GETLEFTBITS_ALIGNMENT	4
+
+#define AVOID_MEMORY_READ
+#define FAST_CONSTANT_OFFSET_MODE
+#define LARGE_INSTRUCTION_CACHE
+#define PLENTIFUL_REGISTERS
+
+#endif
 
 /* size of buffer to use with GetImage, measured in bytes. There's obviously
  * a trade-off between the amount of stack (or whatever ALLOCATE_LOCAL gives
