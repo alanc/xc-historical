@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: cpypln.m,v 1.5 92/06/11 17:47:34 rws Exp $
  */
 >>TITLE CopyPlane XPROTO
 >>SET startup protostartup
@@ -48,7 +48,7 @@
 
 #define CLIENT 0
 static TestType test_type = SETUP;
-Window win1, win2;
+Window win;
 xCopyPlaneReq *req;
 xEvent *ev;
 
@@ -58,15 +58,12 @@ tester()
 {
 	Create_Client(CLIENT);
 
-	win1 = Create_Default_Window(CLIENT);
-	win2 = Create_Window(CLIENT);
+	win = Create_Default_Window(CLIENT);
 	(void) Create_Default_GContext(CLIENT);
-	Map_Window(CLIENT, win1);
-	Map_Window(CLIENT, win2);
+	Map_Window(CLIENT, win);
 
 	Set_Test_Type(CLIENT, test_type);
 	req = (xCopyPlaneReq *) Make_Req(CLIENT, X_CopyPlane);
-	req->dstDrawable = win2;
 	Send_Req(CLIENT, (xReq *) req);
 	Set_Test_Type(CLIENT, GOOD);
 	switch(test_type) {
