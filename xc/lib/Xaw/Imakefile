@@ -1,0 +1,94 @@
+    STD_DEFINES = LibraryDefines
+    CDEBUGFLAGS = LibraryCDebugFlags
+       INCLUDES = -I. -I$(TOOLKITSRC) -I$(TOP) -I$(TOP)/X11
+   INSTALLFLAGS = -m 0644
+       LINTLIBS = $(LINTXLIB) $(LINTXTOOL)
+
+HEADERS = \
+	AsciiText.h \
+	Box.h \
+	Clock.h \
+	Command.h \
+	Dialog.h \
+	Form.h \
+	Grip.h \
+	Label.h \
+	Load.h \
+	Scroll.h \
+	Text.h \
+	Viewport.h \
+	VPaned.h
+
+SRCS = \
+	AsciiSink.c \
+	AsciiText.c \
+	Box.c \
+	Clock.c \
+	Command.c \
+	Dialog.c \
+	DiskSrc.c \
+	Form.c \
+	GrayPixmap.c \
+	Grip.c \
+	Label.c \
+	Load.c \
+	Scroll.c \
+	Simple.c \
+	StringSrc.c \
+	Text.c \
+	Viewport.c \
+	VPaned.c
+
+OBJS = \
+	AsciiSink.o \
+	AsciiText.o \
+	Box.o \
+	Clock.o \
+	Command.o \
+	Dialog.o \
+	DiskSrc.o \
+	Form.o \
+	GrayPixmap.o \
+	Grip.o \
+	Label.o \
+	Load.o \
+	Scroll.o \
+	Simple.o \
+	StringSrc.o \
+	Text.o \
+	Viewport.o \
+	VPaned.o
+
+#if DebugLibXaw && ProfileLibXaw
+DebuggedAndProfiledLibraryObjectRule()
+#else
+# if DebugLibXaw
+DebuggedLibraryObjectRule()
+# else
+#  if ProfileLibXaw
+ProfiledLibraryObjectRule()
+#  else
+NormalLibraryObjectRule()
+#  endif
+# endif
+#endif
+
+NormalLibraryTarget(Xaw,$(OBJS))
+LintLibraryTarget(Xaw,$(SRCS))
+InstallLibrary(Xaw,$(USRLIBDIR))
+InstallLintLibrary(Xaw,$(LINTLIBDIR))
+
+#if ProfileLibXaw
+ProfiledLibraryTarget(Xaw,$(OBJS))
+InstallLibrary(Xaw_p,$(USRLIBDIR))
+#endif
+
+#if DebugLibXaw
+DebuggedLibraryTarget(Xaw,$(OBJS))
+#endif
+
+InstallMultiple($(HEADERS),$(INCDIR))
+
+DependTarget()
+
+NormalLintTarget($(SRCS))
