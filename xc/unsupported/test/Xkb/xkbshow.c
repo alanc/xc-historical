@@ -1,4 +1,4 @@
-/* $XConsortium: xkbshow.c,v 1.1 93/09/28 22:31:24 rws Exp $ */
+/* $XConsortium: xkbshow.c,v 1.2 93/09/28 23:52:06 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -82,13 +82,13 @@ char	*name;
 
 char *
 behaviorText(behavior)
-    XkbAction behavior;
+    XkbBehavior behavior;
 {
 static char buf[30];
 
-    switch (XkbActionType(behavior)) {
+    switch (behavior.type) {
 	case XkbRadioGroupKB:
-		sprintf(buf,"radio group (%d)",XkbActionData(behavior));
+		sprintf(buf,"radio group (%d)",behavior.data);
 		break;
 	case XkbDefaultKB:	  
 		strcpy(buf,"default");
@@ -97,7 +97,7 @@ static char buf[30];
 		strcpy(buf,"lock");
 		break;
 	default:		 
-		sprintf(buf,"(unknown 0x%x)",behavior);
+		sprintf(buf,"(unknown 0x%x)",behavior.type);
 		break;
     }
     return buf;
@@ -129,79 +129,153 @@ char	*str;
 }
 
 char *
+modsFlagsText(flags)
+    CARD8 flags;
+{
+static char buf[48];
+char *str= buf;
+
+    if (flags&XkbSAClearLocks) {
+	if (str!=buf)	*str++= '+';
+	strcpy(str,"clear");
+	str+= strlen("clear");
+    }
+    if (flags&XkbSALatchToLock) {
+	if (str!=buf)	*str++= '+';
+	strcpy(str,"latch->lock");
+	str+= strlen("latch->lock");
+    }
+    *str++= '\0';
+    return buf;
+}
+char *
+
+isoAffectText(flags)
+    CARD8 flags;
+{
+static char buf[48];
+char *str= buf;
+
+    if (flags&XkbSAISONoAffectMods) {
+	if (str==buf)	*str++= '!';
+	*str++= 'M';
+    }
+    if (flags&XkbSAISONoAffectGroup) {
+	if (str==buf)	*str++= '!';
+	*str++= 'G';
+    }
+    if (flags&XkbSAISONoAffectPtr) {
+	if (str==buf)	*str++= '!';
+	*str++= 'P';
+    }
+    if (flags&XkbSAISONoAffectCtrls) {
+	if (str==buf)	*str++= '!';
+	*str++= 'C';
+    }
+    if (str==buf)
+	 strcpy(str,"all");
+    else *str++= '\0';
+    return buf;
+}
+
+char *
 actionText(sa)
     XkbAction sa;
 {
-static char buf[60];
+static char buf[100];
+char	*str1,*str2;
 
-    switch (XkbActionType(sa)) {
+    switch (sa.type) {
 	case XkbSANoAction:
-	    strcpy(buf,"NO_ACTION");
+	    strcpy(buf,"NoAction");
 	    break;
 	case XkbSASetMods:
-	    sprintf(buf,"SET_MODS(%s)",stateText(XkbActionDataLow(sa)));
+	    str1= (sa.mods.flags?modsFlagsText(sa.mods.flags):NULL);
+	    str2= (sa.mods.suppressLocks?stateText(sa.mods.suppressLocks):NULL);
+	    sprintf(buf,"SetMods(%s%s%s%s%s)",stateText(sa.mods.mods),
+					(str1?",":""),(str1?str1:""),
+					(str2?",suppress=":""),(str2?str2:""));
 	    break;
 	case XkbSAISOLock:
-	    sprintf(buf,"ISO_LOCK(%s)",stateText(XkbActionDataLow(sa)));
+	    str1= isoAffectText(sa.iso.affect);
+	    if (sa.iso.flags&XkbSAISODfltIsGroup)
+		 sprintf(buf,"ISOLock(group=%d,affect=%s)",sa.iso.group,str1);
+	    else sprintf(buf,"ISOLock(mods=%s,affect=%s)",
+				stateText(sa.iso.mods),str1);
 	    break;
 	case XkbSALockMods:
-	    sprintf(buf,"LOCK_MODS(%s)",stateText(XkbActionDataLow(sa)));
+	    sprintf(buf,"LockMods(%s)",stateText(sa.mods.mods));
 	    break;
 	case XkbSALatchMods:
-	    sprintf(buf,"LATCH_MODS(%s)",stateText(XkbActionDataLow(sa)));
+	    str1= (sa.mods.flags?modsFlagsText(sa.mods.flags):NULL);
+	    str2= (sa.mods.suppressLocks?stateText(sa.mods.suppressLocks):NULL);
+	    sprintf(buf,"LatchMods(%s%s%s%s%s)",stateText(sa.mods.mods),
+					(str1?",":""),(str1?str1:""),
+					(str2?",":""),(str2?str2:""));
 	    break;
 	case XkbSASetGroup:
-	    sprintf(buf,"SET_GROUP(%s=%d)",
-			(sa.flags&XkbSAGroupAbsolute?"absolute":"relative"),
-			XkbActionDataLow(sa));
+	    str1= (sa.group.flags?modsFlagsText(sa.group.flags):NULL);
+	    sprintf(buf,"SetGroup(%d(%s)%s%s%s)",sa.group.group,
+		(sa.group.flags&XkbSAGroupAbsolute?"absolute":"relative"),
+		(str1?",":""),(str1?str1:""),
+		(sa.group.suppressLocks?",suppress=group":""));
 	    break;
 	case XkbSALatchGroup:
-	    sprintf(buf,"LATCH_GROUP(%s=%d)",
-			(sa.flags&XkbSAGroupAbsolute?"absolute":"relative"),
-			XkbActionDataLow(sa));
+	    str1= (sa.group.flags?modsFlagsText(sa.group.flags):NULL);
+	    sprintf(buf,"LatchGroup(%d(%s)%s%s%s)",sa.group.group,
+		(sa.group.flags&XkbSAGroupAbsolute?"absolute":"relative"),
+		(str1?",":""),(str1?str1:""),
+		(sa.group.suppressLocks?",suppress=group":""));
 	    break;
 	case XkbSALockGroup:
-	    sprintf(buf,"LOCK_GROUP(%s=%d)",
-			(sa.flags&XkbSAGroupAbsolute?"absolute":"relative"),
-			XkbActionDataLow(sa));
+	    sprintf(buf,"LockGroup(%d(%s))",sa.group.group,
+		(sa.group.flags&XkbSAGroupAbsolute?"absolute":"relative"));
 	    break;
-	case XkbSAMovePtrBtn:
-	    sprintf(buf,"MOVE_POINTER=(%d,%d)",XkbActionData(sa)>>8,
-						XkbActionData(sa)&0xff);
+	case XkbSAMovePtr:
+	    sprintf(buf,"MovePtr=(%d,%d)",XkbPtrActionX(&sa.ptr),
+						XkbPtrActionY(&sa.ptr));
 	    break;
 	case XkbSAAccelPtr:
-	    sprintf(buf,"ACCEL_POINTER=(%d,%d)",XkbActionData(sa)>>8,
-						XkbActionData(sa)&0xff);
+	    sprintf(buf,"AccelPtr=(%d,%d)",XkbPtrActionX(&sa.ptr),
+						XkbPtrActionY(&sa.ptr));
 	    break;
 	case XkbSAPtrBtn:
-	    sprintf(buf,"POINTER_BUTTON(%d)",XkbActionData(sa));
+	    if (sa.btn.button==XkbSAUseDfltButton)
+		 sprintf(buf,"PtrBtn(dflt)");
+	    else sprintf(buf,"PtrBtn(%d)",sa.btn.button);
 	    break;
 	case XkbSAClickPtrBtn:
-	    sprintf(buf,"CLICK_POINTER_BUTTON(%d,%d)",
-				XkbActionDataHigh(sa),XkbActionDataLow(sa));
+	    if (sa.btn.button==XkbSAUseDfltButton)
+		 sprintf(buf,"ClickPtrBtn(%d,default)",sa.btn.count);
+	    else sprintf(buf,"ClickPtrBtn(%d,%d)",sa.btn.count,sa.btn.button);
 	    break;
 	case XkbSALockPtrBtn:
-	    sprintf(buf,"LOCK_POINTER_BUTTON(%d)",XkbActionData(sa));
+	    if (sa.btn.button==XkbSAUseDfltButton)
+		 sprintf(buf,"LockPtrBtn(default)");
+	    else sprintf(buf,"LockPtrBtn(%d)",sa.btn.button);
 	    break;
 	case XkbSASetPtrDflt:
-	    sprintf(buf,"SET_POINTER_DFLT(%d,%d)",XkbActionDataHigh(sa),
-							XkbActionDataLow(sa)); 
+	    sprintf(buf,"SetPtrDflt(%s,%d)",
+		(sa.dflt.flags==XkbSASetDfltBtn?"setDfltBtn":
+			(sa.dflt.flags==XkbSAIncrDfltBtn?"IncrDfltBtn":
+							 "Unknown")),
+		sa.dflt.value);
 	    break; 
 	case XkbSATerminate:
-	    sprintf(buf,"TERMINATE_SERVER");
+	    sprintf(buf,"Terminate");
 	    break;
 	case XkbSASwitchScreen:
-	    sprintf(buf,"SWITCH_TO_SCREEN(0x%x,%d)",XkbActionDataHigh(sa),
-							XkbActionDataLow(sa));
+	    sprintf(buf,"SwitchScreen(0x%x,%d)",sa.screen.flags,
+						sa.screen.screen);
 	    break;
 	case XkbSASetControls:
-	    sprintf(buf,"SET_CONTROLS(0x%x)",XkbActionData(sa));
+	    sprintf(buf,"SetControls(0x%x)",XkbActionCtrls(&sa.ctrls));
 	    break;
 	case XkbSALockControls:
-	    sprintf(buf,"LOCK_CONTROLS(0x%x)",XkbActionData(sa));
+	    sprintf(buf,"LockControls(0x%x)",XkbActionCtrls(&sa.ctrls));
 	    break;
 	default:
-	    sprintf(buf,"UNKNOWN(0x%x)",sa);
+	    sprintf(buf,"Unknown(0x%x)",sa);
 	    break;
     }
     return buf;
@@ -244,19 +318,14 @@ int	i,key,nKeys;
 	if ( which & XkbKeyActionsMask ) {
 	    int nActs = XkbKeyNumActions(xkb,key);
 	    XkbAction *acts=XkbKeyActionsPtr(xkb,key);
-	    printf("    Actions:  ");
-	    if (nActs==1) {
-		if (acts[0].type==XkbSANoAction) 
-		     printf("None\n");
-		else printf("%s\n",actionText(acts[0]));
-	    }
-	    else {
+	    if ((nActs>1)||(acts[0].type!=XkbSANoAction)) {
 		int nGroups= XkbKeyNumGroups(xkb,key);
 		int nLevels= nActs/nGroups;
 		int g,l;
+		printf("    Actions: ");
 		for (g=0;g<nGroups;g++) {
 		    if (g==0)
-			 printf("[ ");
+			printf("[ ");
 		    else printf("              [ ");
 		    for (l=0;l<nLevels;l++) {
 			printf("%s ",actionText(acts[(g*nGroups)+l]));
@@ -413,10 +482,6 @@ unsigned	 query;
 	fprintf(stderr,"query failed\n");
 	goto BAIL;
     }
-    if ( !XkbUseExtension(dpy) ) {
-	fprintf(stderr,"use extension failed (%d,%d)\n",i4,i5);
-	goto BAIL;
-    }
     if ((getState>0) && (getMap<0))		getMap = 0;
     else if ((getMap>0) && (getState<0))	getState = 0;
     else if ((getMap<0) && (getState<0))	getMap = getState = 1;
@@ -495,6 +560,17 @@ unsigned	 query;
 	printf("modifier names:\n");
 	for (i1=0;i1<8;i1++) {
 	    printf("    %s\n",atomText(dpy,desc->names->modifiers[i1]));
+	}
+	for (i1=0;i1<XkbNumIndicators;i1++) {
+	    if (desc->names->indicators[i1]!=None) {
+		static int been_here=0;
+		if (!been_here) {
+		    been_here=1;
+		    printf("indicator names:\n");
+		}
+		printf("%2d: %s\n",i1,
+				   atomText(dpy,desc->names->indicators[i1]));
+	    }
 	}
 	printf("symbols name:  %s\n",atomText(dpy,desc->names->symbols));
 	if (desc->names->nCharSets) {

@@ -1,4 +1,4 @@
-/* $XConsortium: xkbver.c,v 1.1 93/09/28 22:31:25 rws Exp $ */
+/* $XConsortium: xkbver.c,v 1.2 93/09/28 23:52:10 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -38,7 +38,9 @@ static	char		*dpyName = NULL;
 static	int		 synch = 0;
 
 int
-parseArgs(int argc,char *argv[])
+parseArgs(argc,argv)
+    int 	argc;
+    char *	argv[];
 {
 int i;
 
@@ -62,7 +64,9 @@ int i;
 }
 
 int
-main(int argc,char *argv[])
+main(argc,argv)
+    int 	argc;
+    char *	argv[];
 {
 Display	*dpy;
 int	i1,i2,i3,i4,i5;

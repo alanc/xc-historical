@@ -1,4 +1,4 @@
-/* $XConsortium: xkbdebug.c,v 1.1 93/09/28 22:31:15 rws Exp $ */
+/* $XConsortium: xkbdebug.c,v 1.2 93/09/28 23:51:37 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -33,12 +33,37 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 static	char		*dpyName = NULL;
 static	unsigned	 flags = 0;
+static	unsigned	 mask = 0;
+static 	char		*msg= NULL;
+static	Bool		 disableLocks = XkbLeaveLocks;
 
 int
-parseArgs(int argc,char *argv[])
+parseArgs(argc,argv)
+    int		argc;
+    char *	argv[];
 {
 int i;
+unsigned on= 0;
+unsigned off= 0;
 
+    if ((argc>1)&&(isdigit(argv[1][0]))) {
+	unsigned int tmp;
+	if (sscanf(argv[1],"%i",&tmp)!=1) {
+	    fprintf(stderr,"Flag specification must be an integer\n");
+	    return 0;
+	}
+	mask= ~0;
+	flags= tmp;
+	if (argc>2)
+	    msg= argv[2];
+	if (argc>3) {
+	    fprintf(stderr,"Warning! Extra options on command line\n");
+	    for (tmp=3;tmp<argc;tmp++) {
+		fprintf(stderr,"         %s ignored\n",argv[tmp]);
+	    }
+	}
+	return 1;
+    }
     for (i=1;i<argc;i++) {
 	if ( strcmp(argv[i],"-display")==0 ) {
 	    if ( ++i<argc )	dpyName= argv[i];
@@ -47,39 +72,77 @@ int i;
 		return 0;
 	    }
 	}
-	else if ( strcmp(argv[i],"-flags")==0 ) {
+	else if ( strcmp(argv[i],"-on")==0 ) {
 	    if ( ++i<argc ) {
-		if (sscanf(argv[i],"%i",&flags)!=1) {
-		    fprintf(stderr,"Flags specification must be an integer\n");
+		if (sscanf(argv[i],"%i",&on)!=1) {
+		    fprintf(stderr,"Flag specification must be an integer\n");
 		    return 0;
 		}
 	    }
 	    else {
-		fprintf(stderr,"Must specify a flags with -device option\n");
+		fprintf(stderr,"Must specify flags with -on option\n");
 		return 0;
 	    }
+	}
+	else if ( strcmp(argv[i],"-off")==0 ) {
+	    if ( ++i<argc ) {
+		if (sscanf(argv[i],"%i",&off)!=1) {
+		    fprintf(stderr,"Flag specification must be an integer\n");
+		    return 0;
+		}
+	    }
+	    else {
+		fprintf(stderr,"Must specify flags with -off option\n");
+		return 0;
+	    }
+	}
+	else if ( strcmp(argv[i],"-msg")==0 ) {
+	    if ( ++i<argc )
+		msg= argv[i];
+	}
+	else if ( strcmp(argv[i],"-nolock")==0 ) {
+	    disableLocks= True;
 	}
 	else {
 	    fprintf(stderr,"Unknown option %s\n",argv[i]);
 	    return 0;
 	}
     }
+    if (on&off) {
+	fprintf(stderr,"Warning! On and off (0x%x and 0x%x) overlap\n",on,off);
+	fprintf(stderr,"         Conflicting flags will be turned on\n");
+    }
+    flags= on;
+    mask= (on|off);
     return 1;
 }
 
 int
-main(int argc,char *argv[])
+main(argc,argv)
+    int		argc;
+    char *	argv[];
 {
 Display	*dpy;
 int	i1,i2,i3,i4,i5;
 unsigned	query;
+unsigned int	rtrnFlags;
 
   
     if (!parseArgs(argc,argv)) {
-	fprintf(stderr,"Usage: %s <options>\n",argv[0]);
+	fprintf(stderr,"Usage: %s [<options>] or %s <flags> [ <message> ]\n",
+								argv[0]);
 	fprintf(stderr,"Where legal options are:\n");
 	fprintf(stderr,"-display <dpy>     specifies display to use\n");
-	fprintf(stderr,"-flags   <flags>   specifies new debugging flags\n");
+	fprintf(stderr,"-on      <flags>   debugging flags to turn on\n");
+	fprintf(stderr,"-off     <flags>   debugging flags to turn off\n");
+	fprintf(stderr,"-msg     <message> message to print in log\n");
+	fprintf(stderr,"-nolock            disable locking and latching\n");
+	fprintf(stderr,"If no options are specified, %s prints the current\n",
+								argv[0]);
+	fprintf(stderr,"value of the server debugging flags and returns.\n");
+	fprintf(stderr,"The second form sets the server debugging flags to\n");
+	fprintf(stderr,"exactly <flags> and prints <message>, if specified,\n");
+	fprintf(stderr,"to the log file.\n");
 	return 1;
     }
     dpy = XOpenDisplay(dpyName);
@@ -94,7 +157,12 @@ unsigned	query;
 	goto BAIL;
     }
     XSynchronize(dpy,1);
-    XkbSetDebuggingFlags(dpy,flags);
+    XkbSetDebuggingFlags(dpy,mask,flags,msg,&rtrnFlags,&disableLocks);
+    if (mask)
+	 fprintf(stderr,"Debugging flags set to 0x%x\n",rtrnFlags);
+    else fprintf(stderr,"Current debuggging flags: 0x%x\n",rtrnFlags);
+    fprintf(stderr,"Locks are %sabled\n",
+				(disableLocks==XkbDisableLocks?"dis":"en"));
     XCloseDisplay(dpy);
     return 0;
 BAIL:

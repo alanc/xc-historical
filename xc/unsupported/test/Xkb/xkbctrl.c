@@ -1,4 +1,4 @@
-/* $XConsortium: xkbctrl.c,v 1.1 93/09/28 22:31:14 rws Exp $ */
+/* $XConsortium: xkbctrl.c,v 1.2 93/09/28 23:51:33 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -330,10 +330,10 @@ unsigned	 query;
 	if (which) {
 	    if (which&XkbRepeatKeysMask) {
 		fprintf(stderr,"Changing RepeatKeys delay%s",
-			newControls.repeatInterval>0?"and interval\n":"\n");
+			newControls.repeatInterval>0?" and interval\n":"\n");
 		desc->controls->repeatDelay= newControls.repeatDelay;
 		if (newControls.repeatInterval>0)
-		    desc->controls->repeatDelay= newControls.repeatInterval;
+		    desc->controls->repeatInterval= newControls.repeatInterval;
 	    }
 	    if (which&XkbSlowKeysMask) {
 		fprintf(stderr,"Changing SlowKeys delay\n");

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: xkbleds.c,v 1.2 93/09/28 23:51:45 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -32,7 +32,9 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <X11/XKBlib.h>
 
 char *
-atomText(Display *dpy,Atom atom)
+atomText(dpy,atom)
+    Display *	dpy;
+    Atom	atom;
 {
 static char buf[256];
 char	*name = XGetAtomName(dpy,atom);
@@ -54,7 +56,8 @@ char	*name = XGetAtomName(dpy,atom);
 }
 
 char *
-indComponentText(CARD8 which)
+indComponentText(which)
+    CARD8	which;
 {
 register int i;
 static char buf[8];
@@ -90,7 +93,9 @@ static	CARD32			changed;
 static	XkbIndicatorMapRec	map[XkbNumIndicators];
 
 int
-parseArgs(int argc,char *argv[])
+parseArgs(argc,argv)
+    int		argc;
+    char *	argv[];
 {
 int i;
 
@@ -156,7 +161,9 @@ int i;
 }
 
 void
-showMaps(Display *dpy,XkbDescRec *desc)
+showMaps(dpy,desc)
+    Display *		dpy;
+    XkbDescRec *	desc;
 {
 register int i;
 CARD8	*action;
@@ -174,7 +181,7 @@ unsigned long	 state;
 	if ((leds->maps[i].whichMods==0)&&(leds->maps[i].whichGroups==0)&&
 					  (leds->maps[i].controls==0))
 	    continue;
-	printf("Indicator %d",i);
+	printf("Indicator %d",i+1);
 	if (names&&(name=atomText(dpy,names->indicators[i]))&&(name[0]))
 	    printf(" (%s)",name);
 	printf(":\n");
@@ -188,7 +195,9 @@ unsigned long	 state;
 }
 
 int
-main(int argc,char *argv[])
+main(argc,argv)
+    int		argc;
+    char *	argv[];
 {
 Display	*dpy;
 int	i1,i2,i3,i4,i5;
@@ -235,9 +244,10 @@ unsigned	 	 query;
 		desc->indicators->maps[i1]= map[i1];
 	}
 	XkbSetIndicatorMap(dpy,changed,desc);
-	XSync(dpy,0);
     }
-BAIL:
     XCloseDisplay(dpy);
     return 0;
+BAIL:
+    XCloseDisplay(dpy);
+    return 1;
 }

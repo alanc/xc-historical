@@ -1,4 +1,4 @@
-/* $XConsortium: xkbbell.c,v 1.1 93/09/28 22:31:12 rws Exp $ */
+/* $XConsortium: xkbbell.c,v 1.2 93/09/28 23:51:29 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -38,11 +38,13 @@ static	int		 deviceSpec = XkbUseCoreKbd;
 static	int		 bellClass= -1;
 static	int		 bellID= -1;
 static	char		 bellName[20];
-static	char		 nameAtom = None;
+static	Atom		 nameAtom = None;
 static	int		 synch= 0;
 
 int
-parseArgs(int argc,char *argv[])
+parseArgs(argc,argv)
+    int		argc;
+    char *	argv[];
 {
 int i;
 
@@ -124,7 +126,9 @@ int i;
 }
 
 int
-main(int argc,char *argv[])
+main(argc,argv)
+    int		argc;
+    char *	argv[];
 {
 Display	*dpy;
 int	i1,i2,i3,i4,i5;

@@ -1,7 +1,7 @@
 /*
  * xkbev - event diagnostics for the X Keyboard Extension
  *
- * $XConsortium: xkbev.c,v 1.1 93/09/28 22:31:17 rws Exp $
+ * $XConsortium: xkbev.c,v 1.2 93/09/28 23:51:40 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -49,6 +49,7 @@ unsigned long wanted =	KeyPressMask|KeyReleaseMask|KeymapStateMask|
 			ButtonPressMask|ButtonReleaseMask|OwnerGrabButtonMask;
 int synch= 0;
 int ignore= 0;
+int xkbReqBase;
 int xkbEventBase;
 
 usage ()
@@ -183,8 +184,14 @@ do_XkbControlsNotify(xkbev)
     XkbEvent	*xkbev;
 {
     XkbControlsNotifyEvent *ctrls = &xkbev->controls;
-    printf("    changed= 0x%x, enabled= 0x%x\n",ctrls->changedControls,
-						ctrls->enabledControls);
+    printf("    changed= 0x%x, enabled= 0x%x, enabledChanges= 0x%x\n",
+			ctrls->changedControls,ctrls->enabledControls,
+			ctrls->enabledControlChanges);
+    if (ctrls->keycode!=0)
+	 printf("    keycode %d, eventType %s,",
+		ctrls->keycode,eventTypeToString(ctrls->eventType));
+    else printf("    request %d/%d%s\n",ctrls->requestMajor,ctrls->requestMinor,
+			(ctrls->requestMajor!=xkbReqBase?" (NON-XKB)":""));
     return;
 }
 
@@ -423,7 +430,7 @@ main (argc, argv)
 							XkbMinorVersion);
     XkbLibraryVersion(&i1,&i2);
     printf("X library supports XKB version %d.%02d\n",i1,i2);
-    if ( !XkbQueryExtension(dpy,&i1,&xkbEventBase,&i2,&i3,&i4)>0 ) {
+    if ( !XkbQueryExtension(dpy,&xkbReqBase,&xkbEventBase,&i2,&i3,&i4)>0 ) {
 	printf("XKB Extension not present on %s\n",XDisplayName(displayname));
 	ignore= 1;
     }

@@ -1,4 +1,4 @@
-/* $XConsortium: xkbsetmasks.c,v 1.1 93/09/28 22:31:23 rws Exp $ */
+/* $XConsortium: xkbsetmasks.c,v 1.2 93/09/28 23:52:02 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -41,7 +41,9 @@ static	unsigned	 mask = 0;
 static	unsigned	 state = 0;
 
 int
-parseArgs(int argc,char *argv[])
+parseArgs(argc,argv)
+    int		argc;
+    char *	argv[];
 {
 int i;
 
@@ -130,7 +132,9 @@ int i;
 }
 
 int
-main(int argc,char *argv[])
+main(argc,argv)
+    int		argc;
+    char *	argv[];
 {
 Display	*dpy;
 int	i1,i2,i3,i4,i5;
