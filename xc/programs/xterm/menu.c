@@ -5,6 +5,7 @@
 #include <X11/Shell.h>
 #include <X11/Xaw/SimpleMenu.h>
 #include <X11/Xaw/BSBMenuEnt.h>
+#include <X11/Xaw/LineMenuEn.h>
 #include "ptyx.h"
 #include <setjmp.h>			/* for data.h */
 #include "data.h"
@@ -200,7 +201,7 @@ static Widget create_menu (xtw, toplevel, name, entries, nentries)
 	entries->widget = XtCreateManagedWidget (entries->name, 
 						 (entries->function ?
 						  bSBMenuEntryObjectClass :
-						  menuEntryObjectClass), m,
+						  lineMenuEntryObjectClass), m,
 						 &arg, (Cardinal) 1);
     }
 

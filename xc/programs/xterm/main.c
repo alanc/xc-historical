@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.125 89/08/10 14:07:32 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.126 89/08/16 11:13:50 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -917,15 +917,9 @@ get_terminal ()
 {
 	register TScreen *screen = &term->screen;
 	
-	{
-	    unsigned long fg, bg;
-
-	    fg = screen->mousecolor;
-	    bg = (screen->mousecolor == term->core.background_pixel) ?
-		screen->foreground : term->core.background_pixel;
-
-	    screen->arrow = make_colored_cursor (XC_left_ptr, fg, bg);
-	}
+	screen->arrow = make_colored_cursor (XC_left_ptr, 
+					     screen->mousecolor,
+					     screen->mousecolorback);
 }
 
 /*

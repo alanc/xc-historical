@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.95 89/09/07 15:17:32 swick Exp $
+ * $XConsortium: charproc.c,v 1.96 89/09/21 17:53:49 jim Exp $
  */
 
 
@@ -86,6 +86,7 @@ static void VTallocbuf();
 #define	XtNloginShell		"loginShell"
 #define	XtNmarginBell		"marginBell"
 #define	XtNpointerColor		"pointerColor"
+#define XtNpointerColorBackground "pointerColorBackground"
 #define	XtNpointerShape		"pointerShape"
 #define XtNmultiClickTime	"multiClickTime"
 #define	XtNmultiScroll		"multiScroll"
@@ -139,7 +140,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.95 89/09/07 15:17:32 swick Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.96 89/09/21 17:53:49 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -264,13 +265,13 @@ static XtResource resources[] = {
 	XtRBoolean, (caddr_t) &defaultTRUE},
 {XtNbackground, XtCBackground, XtRPixel, sizeof(Pixel),
 	XtOffset(XtermWidget, core.background_pixel),
-	XtRString, "White"},
+	XtRString, "XtDefaultBackground"},
 {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
 	XtOffset(XtermWidget, screen.foreground),
-	XtRString, "Black"},
+	XtRString, "XtDefaultForeground"},
 {XtNcursorColor, XtCForeground, XtRPixel, sizeof(Pixel),
 	XtOffset(XtermWidget, screen.cursorcolor),
-	XtRString, "Black"},
+	XtRString, "XtDefaultForeground"},
 {XtNeightBitInput, XtCEightBitInput, XtRBoolean, sizeof(Boolean),
 	XtOffset(XtermWidget, screen.eight_bits), 
 	XtRBoolean, (caddr_t) &defaultTRUE},
@@ -306,7 +307,10 @@ static XtResource resources[] = {
 	XtRBoolean, (caddr_t) &defaultFALSE},
 {XtNpointerColor, XtCForeground, XtRPixel, sizeof(Pixel),
 	XtOffset(XtermWidget, screen.mousecolor),
-	XtRString, "Black"},
+	XtRString, "XtDefaultForeground"},
+{XtNpointerColorBackground, XtCBackground, XtRPixel, sizeof(Pixel),
+	XtOffset(XtermWidget, screen.mousecolorback),
+	XtRString, "XtDefaultBackground"},
 {XtNpointerShape,XtCCursor, XtRCursor, sizeof(Cursor),
 	XtOffset(XtermWidget, screen.pointer_cursor),
 	XtRString, (caddr_t) "xterm"},
@@ -1928,6 +1932,7 @@ static void VTInitialize (request, new)
    new->screen.logfile = request->screen.logfile;
    new->screen.marginbell = request->screen.marginbell;
    new->screen.mousecolor = request->screen.mousecolor;
+   new->screen.mousecolorback = request->screen.mousecolorback;
    new->screen.multiscroll = request->screen.multiscroll;
    new->screen.nmarginbell = request->screen.nmarginbell;
    new->screen.savelines = request->screen.savelines;
@@ -1961,12 +1966,14 @@ static void VTInitialize (request, new)
     if (new->misc.re_verse) {
 	unsigned long fg = new->screen.foreground;
 	unsigned long bg = new->core.background_pixel;
+	unsigned long tmp = new->screen.mousecolor;
 
-	if (new->screen.mousecolor == fg) new->screen.mousecolor = bg;
 	if (new->screen.cursorcolor == fg) new->screen.cursorcolor = bg;
 	if (new->core.border_pixel == fg) new->core.border_pixel = bg;
 	new->screen.foreground = bg;
 	new->core.background_pixel = fg;
+	new->screen.mousecolor = new->screen.mousecolorback;
+	new->screen.mousecolorback = tmp;
     }	
 
    new->keyboard.flags = 0;
@@ -2054,21 +2061,13 @@ XSetWindowAttributes *values;
 				    screen->fnt_norm->descent;
 
 	/* making cursor */
-	{
-	    unsigned long fg, bg;
-
-	    bg = term->core.background_pixel;
-	    if (screen->mousecolor == term->core.background_pixel) {
-		fg = screen->foreground;
-	    } else {
-		fg = screen->mousecolor;
-	    }
-
-	    if (!screen->pointer_cursor) 
-	      screen->pointer_cursor = make_colored_cursor (XC_xterm, fg, bg);
-	    else 
-	      recolor_cursor (screen->pointer_cursor, fg, bg);
-	}
+	if (!screen->pointer_cursor) 
+	  screen->pointer_cursor = make_colored_cursor (XC_xterm, 
+							screen->mousecolor,
+							screen->mousecolorback);
+	else 
+	  recolor_cursor (screen->pointer_cursor, 
+			  screen->mousecolor, screen->mousecolorback);
 
 	scrollbar_width = (term->misc.scrollbar ? 
 			   screen->scrollWidget->core.width : 0);

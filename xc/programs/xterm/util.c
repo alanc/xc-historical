@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: util.c,v 1.14 89/05/25 15:12:30 jim Exp $
+ *	$XConsortium: util.c,v 1.15 89/05/26 11:48:16 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* util.c */
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: util.c,v 1.14 89/05/25 15:12:30 jim Exp $";
+static char rcs_id[] = "$XConsortium: util.c,v 1.15 89/05/26 11:48:16 jim Exp $";
 #endif	/* lint */
 
 #include <stdio.h>
@@ -887,17 +887,19 @@ ReverseVideo (term)
 	XtermWidget term;
 {
 	register TScreen *screen = &term->screen;
-	register GC tmpGC;
-	register int tmp;
-	register Window tek = TWindow(screen);
+	GC tmpGC;
+	Window tek = TWindow(screen);
+	unsigned long tmp;
 
 	tmp = term->core.background_pixel;
 	if(screen->cursorcolor == screen->foreground)
 		screen->cursorcolor = tmp;
-	if(screen->mousecolor == screen->foreground)
-		screen->mousecolor = tmp;
 	term->core.background_pixel = screen->foreground;
 	screen->foreground = tmp;
+
+	tmp = screen->mousecolorback;
+	screen->mousecolorback = screen->mousecolor;
+	screen->mousecolor = tmp;
 
 	tmpGC = screen->normalGC;
 	screen->normalGC = screen->reverseGC;
@@ -907,19 +909,11 @@ ReverseVideo (term)
 	screen->normalboldGC = screen->reverseboldGC;
 	screen->reverseboldGC = tmpGC;
 
-	{
-	    unsigned long fg, bg;
-	    bg = term->core.background_pixel;
-	    if (screen->mousecolor == term->core.background_pixel) {
-		fg = screen->foreground;
-	    } else {
-		fg = screen->mousecolor;
-	    }
-	    
-	    recolor_cursor (screen->pointer_cursor, fg, bg);
-	    recolor_cursor (screen->arrow, fg, bg);
+	recolor_cursor (screen->pointer_cursor, 
+			screen->mousecolor, screen->mousecolorback);
+	recolor_cursor (screen->arrow,
+			screen->mousecolor, screen->mousecolorback);
 
-	}
 	term->misc.re_verse = !term->misc.re_verse;
 
 	XDefineCursor(screen->display, TextWindow(screen), screen->pointer_cursor);

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.64 89/08/10 14:07:18 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.65 89/09/21 17:54:13 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -110,7 +110,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.64 89/08/10 14:07:18 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.65 89/09/21 17:54:13 jim Exp $";
 #endif	/* lint */
 
 extern Widget toplevel;
@@ -328,9 +328,9 @@ Tekparse()
 			/* Do Tek GIN mode */
 			screen->TekGIN = &TekRecord->ptr[-1];
 				/* Set cross-hair cursor raster array */
-			if (GINcursor =
+			if (GINcursor = 
 			    make_colored_cursor (XC_tcross, screen->mousecolor,
-						 term->core.background_pixel))
+						 screen->mousecolorback))
 				XDefineCursor (screen->display, TShellWindow,
 					       GINcursor);
 			Tparsestate = Tbyptable;	/* Bypass mode */
@@ -747,7 +747,7 @@ dorefresh()
 
 	if (wait_cursor == None)
             wait_cursor = make_colored_cursor (XC_watch, screen->mousecolor,
-					       term->core.background_pixel);
+					       screen->mousecolorback);
         XDefineCursor(screen->display, TShellWindow, wait_cursor);
 	XFlush(screen->display);
 	if(!setjmp(Tekjump))
