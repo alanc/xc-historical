@@ -1,4 +1,4 @@
-/* $XConsortium: Toggle.c,v 1.21 91/02/17 16:37:20 converse Exp $ */
+/* $XConsortium: Toggle.c,v 1.22 91/05/04 19:26:42 converse Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -66,7 +66,7 @@ static XtResource resources[] = {
    {XtNstate, XtCState, XtRBoolean, sizeof(Boolean), 
       offset(command.set), XtRString, "off"},
    {XtNradioGroup, XtCWidget, XtRWidget, sizeof(Widget), 
-      offset(toggle.widget), XtRWidget, (caddr_t) NULL },
+      offset(toggle.widget), XtRWidget, (XtPointer) NULL },
    {XtNradioData, XtCRadioData, XtRPointer, sizeof(XtPointer), 
       offset(toggle.radio_data), XtRPointer, (XtPointer) NULL },
 };
