@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.94 91/03/23 16:48:00 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.95 91/03/23 18:06:27 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1300,7 +1300,7 @@ clean::									@@\
  */
 #ifndef InstallFonts
 #define InstallFonts(dest)						@@\
-InstallMultipleFlags($(OBJS),$(DESTDIR)dest,$(INSTDATFLAGS))		@@\
+InstallMultipleFlags($(OBJS),dest,$(INSTDATFLAGS))			@@\
 									@@\
 install::  fonts.dir							@@\
 	$(INSTALL) -c $(INSTDATFLAGS) fonts.dir $(DESTDIR)dest
