@@ -14,7 +14,6 @@
 
 \s+1\fBX Version 11, Release 4\fP\s-1
 
-\s+1\fBDRAFT - not for Redistribution\fP\s-1
 .sp 6
 .ce 4
 Chris D. Peterson
@@ -80,8 +79,8 @@ widget set come from that original version.  The design and
 implementation of the X10 toolkit were done by:
 .LP
 .Ds
-Mike Gancarz (Digital UEG)
-Charles Haynes (formerly Digital WSL)
+Mike Gancarz (formerly Digital UEG)
+Charles Haynes (Digital WSL)
 Phil Karlton (formerly Digital WSL)
 Kathleen Langone  (Digital UEG)
 Mary Larson (Digital UEG)
@@ -98,14 +97,21 @@ written by:
 Ralph R. Swick (Project Athena/ Digital)
 Terry Weissman (Digital WSL)
 Al Mento (Digital UEG)
+.De
 .LP
+Putting this manual together was a major task in and of itself.  I
+would like to thank Ralph Swick, Donna Converse, and Jim Fulton for
+taking the time to help convert my techical knowledge into legible
+text.  A special thanks to Jean Diaz (Orielly and Associates) for
+spending nearly a month with me working on all the annoying little
+details.
 .sp
 .Ds 0
 Chris D. Peterson
 MIT X Consortium
 .De
-.EH '\fBX Toolkit Athena Widgets\fP''\fBX11, Release 4 DRAFT\fP'
-.OH '\fBX Toolkit Athena Widgets\fP''\fBX11, Release 4 DRAFT\fP'
+.EH '\fBX Toolkit Athena Widgets\fP''\fBX11, Release 4\fP'
+.OH '\fBX Toolkit Athena Widgets\fP''\fBX11, Release 4\fP'
 .EF ''\fB % \fP''
 .OF ''\fB % \fP''
 
