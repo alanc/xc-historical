@@ -1,4 +1,4 @@
-/* $XConsortium: TMprint.c,v 1.1 91/01/10 14:13:39 converse Exp $ */
+/* $XConsortium: TMprint.c,v 1.2 91/01/10 17:16:25 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -208,7 +208,7 @@ static	void PrintLateModifiers(sb, lateModifiers)
     TMStringBuf	sb;
     LateBindingsPtr lateModifiers;
 {
-    for (; lateModifiers->keysym != NULL; lateModifiers++) {
+    for (; lateModifiers->keysym; lateModifiers++) {
 	CHECK_STR_OVERFLOW(sb);
 	if (lateModifiers->knot) {
 	    *sb->current++ = '~';
