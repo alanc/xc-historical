@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: GetWMProto.c,v 1.1 89/03/28 18:11:35 jim Exp $ */
+/* $XConsortium: GetWMProto.c,v 1.2 89/04/25 19:36:33 jim Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -38,21 +38,15 @@ Status XGetWMProtocols (dpy, w, protocols, countReturn)
 {
     Atom *data = NULL;
     Atom actual_type;
+    Atom prop;
     int actual_format;
     unsigned long leftover, nitems;
 
-    if (dpy->atoms->wm_protocols == None) {
-	Atom a = XInternAtom (dpy, "WM_PROTOCOLS", False);
-
-	if (a == None) return False;
-	LockDisplay (dpy);
-	dpy->atoms->wm_protocols = a;
-	UnlockDisplay (dpy);
-    }
-
+    prop =  XInternAtom(dpy, "WM_PROTOCOLS", False);
+    if (prop == None) return False;
 
     /* get the property */
-    if (XGetWindowProperty (dpy, w, dpy->atoms->wm_protocols,
+    if (XGetWindowProperty (dpy, w, prop,
     			    0L, 1000000L, False,
 			    XA_ATOM, &actual_type, &actual_format,
 			    &nitems, &leftover, (unsigned char **) &data)

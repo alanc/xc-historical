@@ -39,16 +39,12 @@ Status XSetWMProtocols (dpy, w, protocols, count)
     Atom *protocols;
     int count;
 {
-    if (dpy->atoms->wm_protocols == None) {
-	Atom a = XInternAtom (dpy, "WM_PROTOCOLS", False);
+    Atom prop;
 
-	if (a == None) return False;
-	LockDisplay (dpy);
-	dpy->atoms->wm_protocols = a;
-	UnlockDisplay (dpy);
-    }
+    prop = XInternAtom (dpy, "WM_PROTOCOLS", False);
+    if (prop == None) return False;
 
-    XChangeProperty (dpy, w, dpy->atoms->wm_protocols, XA_ATOM, 32,
+    XChangeProperty (dpy, w, prop, XA_ATOM, 32,
 		     PropModeReplace, (unsigned char *) protocols, count);
     return True;
 }
