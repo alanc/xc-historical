@@ -91,7 +91,7 @@ combinations of Visuals.
 .AE
 .LP
 .DS C
-Copyright \(co 1988 by Sun Microsystems, Inc.\s-2\u*\d\s0
+Copyright \(co 1988, 1991 by Sun Microsystems, Inc.\s-2\u*\d\s0
 .DE
 .FS
 *  Permission to use,  copy,  modify and distribute
@@ -105,7 +105,13 @@ any purpose.  It is provided "as is" without express or implied warranty.
 .br
 \(dg  The X Window System is a trademark of the Massachusetts Institute
 of Technology.
+.br
+This paper was originally presented at the Summer 1988 Usenix Conference.
+There were some errors in this version,
+and subsequent developments have obsoleted parts of it,
+so it has been updated.
 .FE
+.LP
 .Qp
 ``The polymorphic visions of the eyes and the spirit are contained in
 uniform lines of small or capital letters,  periods,  commas,  parentheses \-
@@ -855,15 +861,13 @@ If the Visual is static (StaticGray, StaticColor,  or TrueColor),
 it returns the cell in the map that is closest to the request RGB
 value.
 .Ip
-If the Visual is dynamic (GrayScale, PseudoColor,  or DirectColor)
-and the Colormap is full,  it returns the read-only cell with the
-closest RGB value to the requested one.
-.Ip
 If the Visual is dynamic,  and the Colormap has free cells,  the
 server will allocate an cell,  mark it read-only,  and set it to
 the requested RGB value.
+If there are no free cells,
+the request will fail.
 .LP
-This technique should be used by all applications except those for
+This technique can be used by applications except those for
 which the
 .I exact
 representation of a color is of primary importance,
@@ -871,8 +875,14 @@ or which use very large numbers of colors.
 The reasons for preferring this method are that it will work on
 any Visual,  and that it makes the most efficient use of the
 server's resources.
+.LP
 Note,  however,  that since AllocColor returns a value,  it
 requires a round-trip to the server and is therefore slow.
+Note also that AllocColor may fail,
+if the Visual is dynamic and there are no free cells in the colormap.
+If it does fail,
+the normal response is to move the client's allocated cells from
+the full colormap to a newly created one using CopyColormapAndFree.
 .NH 3
 Client sets color
 .LP
@@ -892,20 +902,18 @@ it should be used only if it essential to the application because
 .Ip
 it will work only on a dynamic Visual,
 .Ip
-it consumes server resources that no other client can use until they are released,
+it consumes server resources that no other client can use until they
+are released,
 .Ip
-and unlike the other techniques,
-it can fail.
+it can fail and measures must be taken to cope with this possibility.
 .LP
-In general,  clients using this technique should create a private Colormap.
-Ideally,  the default Colormap for each Visual should be left for clients using the
+In general,  clients using this technique should create a private Colormap,
+perhaps using CopyColormapAndFree to preserve any pre-allocated cells.
+Ideally,
+the default Colormap for each Visual should be left for clients using the
 other techniques to maximize the sharing of resources.
-Unfortunately,  at present a default Colormap is available only for the Visual
-of the root window.\s-2\u*\d\s0
-.FS
-*  See section 2.2 of the Xlib manual.
-This problem is being addressed by the X Consortium.
-.FE
+Unfortunately,  the protocol defines a default Colormap only for the Visual
+of the root window.
 .NH 3
 Client predicts pixel value
 .LP
@@ -923,22 +931,18 @@ sub-field mask,  and or-ed together to make the pixel value.
 If the Colormap is one of the set of ``standard'' Colormaps
 a similar calculation can be performed.
 Applications wishing to use one of these Colormaps look for a property
-describing it on the root window;
+describing it on the root window of the screen;
 if the property is not found the application creates a suitable Colormap
 and a property to describe it.
 .LP
-Unfortunately,  as specified the ``standard colormaps'' mechanism doesn't
-work if the server supports multiple Visuals.
-The properties describe a Colormap,
-but not the Visual it belongs to.
-Given a Colormap,  the protocol does not provide any means to determine
-the Visual it belongs to.
-Thus,  it must be assumed that the ``standard'' Colormaps belong to the
-default Visual.\s-2\u\(dg\d\s0
-.FS
-\(dg  See section 9.2. of the Xlib manual.
-This problem is being addressed by the X Consortium.
-.FE
+In particular,
+clients should find a property called RGB_DEFAULT_MAP on the root
+window of a multi-visual screen
+containing an array of XStandardColormap structures describing a
+default colormap for each visual,
+and the linear RGB ramps within it.
+They can use this to share colors with other applications on the screen;
+this is the preferred method for most clients.
 .NH 2
 The Undump Algorithm
 .LP
@@ -982,13 +986,12 @@ and calling AllocColor only for every distinct color would reduce the
 traffic considerably.
 .LP
 One problem is that this client creates its own Colormap.
-Ideally,  clients should share Colormaps to improve the chance they
-will appear in their correct colors.
-If the ``standard colormaps'' mechanism worked for multiple Visuals,
-we could have used the RGB_BEST_MAP property to share a Colormap
-with other similar clients.
 If the default Colormap mechanism worked for multiple Visuals,
 we could have used the appropriate default Colormap.
+Ideally,  clients should share Colormaps to improve the chance they
+will appear in their correct colors.
+We should have used the RGB_DEFAULT_MAP or RGB_BEST_MAP properties
+to share a Colormap with other similar clients.
 .LP
 The client will work on every Visual type,  in most cases providing the
 best match available for the colors in the image.
@@ -999,11 +1002,11 @@ of colors in the image,
 the first colors encountered in the right-to-left within top-to-bottom
 scan of the image will get exact colors as new read-only cells
 are allocated by AllocColor.
-At some point,  the map will fill up,  and subsequent AllocColor calls
-will return existing pre-allocated entries with approximations to
-the requested colors.
-The visual effect will be odd,  as the quality of reproduction changes
-abruptly part way down the image.
+At some point,
+the map will fill up,
+and the next AllocColor call will fail.
+Since we found the largest visual,
+there is nothing to do but give up.
 .LP
 The Visual selection process has two problems.
 For the TrueColor and DirectColor cases,
@@ -1036,12 +1039,15 @@ Visuals and the Toolkit
 .LP
 The attention paid by the X Toolkit Intrinsics to the problem
 of specifying Visuals is evident from the fact that the word Visual
-does not appear in the index to the Intrinsics manual.
+does not appear in the index to the first version of the Intrinsics manual.
 .[
 toolkit intrinsics 1988
 .]
-By reading the code,  it is possible to determine the following
-information.
+In R4,
+this was remedied.
+.[
+asente swick 1990
+.]
 .LP
 The Window for a Widget is created during the process of 
 .I realizing
@@ -1051,9 +1057,11 @@ Different Widget classes will differ as to how they choose a Visual.
 All Athena Widgets use CopyFromParent as their Visual selection,
 deferring the choice to their parent.
 The root of the Widget tree is a so-called Shell Widget,
-which in the Intrinsics implementation itself inherits its Visual
+which in the Intrinsics implementation itself by default inherits its Visual
 from its parent,  in this case the root.
-So,  all existing Widgets use the Visual of the root.
+From R4 on,
+Shell widgets have a XtNvisual resource than can be used to specify the
+visual to be used by widgets within the shell's tree.
 .LP
 The core information,  which all Widgets possess,  includes a Colormap.
 For the Athena Widgets,  this had better be a Colormap from the root's
@@ -1064,7 +1072,7 @@ One might think that it would be possible to realize a Widget in a Visual
 other than the root's by giving it a Colormap from that Visual,  but
 this will not work.
 .LP
-A Widget class that needed some Visual other than the root's
+A Widget class that needed some Visual other than its Shell's
 would have to implement its own realize procedure,  and make the choice there.
 The choice algorithm would be the same for all instances of the Widget,
 but this does not mean that all instances would have to have the same Visual.
