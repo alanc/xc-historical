@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: resource.c,v 1.43 91/07/19 21:38:03 gildea Exp $
+ * $XConsortium: resource.c,v 1.44 91/07/24 00:06:52 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -218,7 +218,7 @@ struct displayResource sessionResources[] = {
 "failsafeClient","FailsafeClient",	DM_STRING,	boffset(failsafeClient),
 				DEF_FAILSAFE_CLIENT,
 "userAuthDir",	"UserAuthDir",	DM_STRING,	boffset(userAuthDir),
-				DEF_AUTH_DIR,
+				DEF_USER_AUTH_DIR,
 "chooser",	"Chooser",	DM_STRING,	boffset(chooser),
 				DEF_CHOOSER,
 };
