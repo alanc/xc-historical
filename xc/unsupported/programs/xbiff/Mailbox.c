@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.17 88/09/30 08:45:06 swick Exp $
+ * $XConsortium: Mailbox.c,v 1.18 89/03/31 09:47:33 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -14,6 +14,12 @@
  * without express or implied warranty.
  *
  * Author:  Jim Fulton, MIT X Consortium
+ *
+ * I recommend that you use the new mailfull and mailempty bitmaps instead of
+ * the ugly mailboxes:
+ *
+ *         XBiff*fullPixmap:  mailfull
+ *         XBiff*emptyPixmap:  mailempty
  */
 
 #include <X11/Xos.h>
@@ -25,11 +31,9 @@
 #include <stdio.h>			/* for printing error messages */
 #include <sys/stat.h>			/* for stat() */
 #include <pwd.h>			/* for getting username */
-#include <X11/bitmaps/flagup>		/* for flag up (mail present) bits */
-#include <X11/bitmaps/flagdown>		/* for flag down (mail not here) */
-
-#define PictureWidth flagdown_width	/* better be same as flagup_width */
-#define PictureHeight flagdown_height	/* better be same as flagup_height */
+#include <X11/bitmaps/mailfull>		/* for flag up (mail present) bits */
+#include <X11/bitmaps/mailempty>	/* for flag down (mail not here) */
+#include <X11/Xmu.h>			/* for StringToPixmap */
 
 #define min(a,b) ((a) < (b) ? (a) : (b))
 #define max(a,b) ((a) > (b) ? (a) : (b))
@@ -60,6 +64,7 @@ static XtActionsRec actionsList[] = {
 #define goffset(field) XtOffset(Widget,core.field)
 
 static Dimension defDim = 48;
+static Pixmap nopix = None;
 
 static XtResource resources[] = {
     { XtNwidth, XtCWidth, XtRDimension, sizeof (Dimension), 
@@ -82,7 +87,16 @@ static XtResource resources[] = {
 	offset (volume), XtRString, "33"},
     { XtNonceOnly, XtCBoolean, XtRBoolean, sizeof(Boolean),
 	offset (once_only), XtRImmediate, (caddr_t)False },
-
+    { XtNfullPixmap, XtCFullPixmap, XtRPixmap, sizeof(Pixmap),
+	offset (full_bitmap), XtRString, "flagup" },
+    { XtNfullPixmapMask, XtCFullPixmapMask, XtRPixmap, sizeof(Pixmap),
+	offset (full_bitmap_mask), XtRPixmap, (caddr_t) &nopix },
+    { XtNemptyPixmap, XtCFullPixmap, XtRPixmap, sizeof(Pixmap),
+	offset (empty_bitmap), XtRString, "flagdown" },
+    { XtNemptyPixmap, XtCFullPixmap, XtRPixmap, sizeof(Pixmap),
+	offset (empty_bitmap_mask), XtRPixmap, (caddr_t) &nopix },
+    { XtNflip, XtCFlip, XtRBoolean, sizeof(Boolean),
+	offset (flip), XtRString, "true" },
 };
 
 #undef offset
@@ -90,7 +104,7 @@ static XtResource resources[] = {
 
 static void GetMailFile(), CloseDown();
 static void check_mailbox(), redraw_mailbox(), beep();
-static void Initialize(), Realize(), Destroy(), Redisplay();
+static void ClassInitialize(), Initialize(), Realize(), Destroy(), Redisplay();
 static Boolean SetValues();
 
 MailboxClassRec mailboxClassRec = {
@@ -98,7 +112,7 @@ MailboxClassRec mailboxClassRec = {
     /* superclass		*/	&widgetClassRec,
     /* class_name		*/	"Mailbox",
     /* widget_size		*/	sizeof(MailboxRec),
-    /* class_initialize		*/	NULL,
+    /* class_initialize		*/	ClassInitialize,
     /* class_part_initialize	*/	NULL,
     /* class_inited		*/	FALSE,
     /* initialize		*/	Initialize,
@@ -137,6 +151,17 @@ WidgetClass mailboxWidgetClass = (WidgetClass) &mailboxClassRec;
  * widget initialization
  */
 
+static void ClassInitialize ()
+{
+    static XtConvertArgRec screenConvertArg[] = {
+    { XtBaseOffset, (caddr_t) XtOffset(Widget, core.screen), sizeof(Screen *) }
+    };
+
+    XtAddConverter (XtRString, XtRPixmap, XmuCvtStringToPixmap,
+		    screenConvertArg, XtNumber(screenConvertArg));
+    return;
+}
+
 /* ARGSUSED */
 static void Initialize (request, new)
     Widget request, new;
@@ -145,8 +170,8 @@ static void Initialize (request, new)
 
     if (!w->mailbox.filename) GetMailFile (w);
 
-    if (w->core.width <= 0) w->core.width = PictureWidth;
-    if (w->core.height <= 0) w->core.height = PictureHeight;
+    if (w->core.width <= 0) w->core.width = 1;
+    if (w->core.height <= 0) w->core.height = 1;
 
     if (w->mailbox.reverseVideo) {
 	Pixel tmp;
@@ -242,6 +267,35 @@ static void clock_tic (client_data, id)
     return;
 }
 
+static Pixmap make_pixmap (dpy, w, bitmap, depth, flip, widthp, heightp)
+    Display *dpy;
+    MailboxWidget w;
+    Pixmap bitmap;
+    Boolean flip;
+    int depth;
+    int *widthp, *heightp;
+{
+    Window root;
+    int x, y;
+    unsigned int width, height, bw, dep;
+    unsigned long fore, back;
+
+    if (!XGetGeometry (dpy, bitmap, &root, &x, &y, &width, &height, &bw, &dep))
+      return None;
+
+    *widthp = (int) width;
+    *heightp = (int) height;
+    if (flip) {
+	fore = w->core.background_pixel;
+	back = w->mailbox.foreground_pixel;
+    } else {
+	fore = w->mailbox.foreground_pixel;
+	back = w->core.background_pixel;
+    }
+    return XmuCreatePixmapFromBitmap (dpy, w->core.window, bitmap, 
+				      width, height, depth, fore, back);
+}
+
 static GC get_mailbox_gc (w)
     MailboxWidget w;
 {
@@ -264,7 +318,7 @@ static void Realize (gw, valuemaskp, attr)
 {
     MailboxWidget w = (MailboxWidget) gw;
     register Display *dpy = XtDisplay (w);
-    int depth = DefaultDepth (dpy, DefaultScreen (dpy));
+    int depth = w->core.depth;
 
     *valuemaskp |= (CWBitGravity | CWCursor);
     attr->bit_gravity = ForgetGravity;
@@ -276,19 +330,27 @@ static void Realize (gw, valuemaskp, attr)
     /*
      * build up the pixmaps that we'll put into the image
      */
+    if (w->mailbox.full_bitmap == None) {
+	w->mailbox.full_bitmap = 
+	  XCreateBitmapFromData (dpy, w->core.window, mailfull_bits,
+				 mailfull_width, mailfull_height);
+    }
+    if (w->mailbox.empty_bitmap == None) {
+	w->mailbox.empty_bitmap =
+	  XCreateBitmapFromData (dpy, w->core.window, mailempty_bits,
+				 mailempty_width, mailempty_height);
+    }
 
-    w->mailbox.flagup_pixmap  = 
-      XCreatePixmapFromBitmapData (dpy, w->core.window, flagup_bits,
-				   flagup_width, flagup_height,
-				   w->core.background_pixel, 
-				   w->mailbox.foreground_pixel,
-				   depth);
-    w->mailbox.flagdown_pixmap = 
-      XCreatePixmapFromBitmapData (dpy, w->core.window, flagdown_bits,
-				   flagdown_width, flagdown_height,
-				   w->mailbox.foreground_pixel,
-				   w->core.background_pixel,
-				   depth);
+    w->mailbox.empty_pixmap = make_pixmap (dpy, w, w->mailbox.empty_bitmap,
+					   depth, False,
+					   &w->mailbox.ewidth,
+					   &w->mailbox.eheight);
+    w->mailbox.full_pixmap = make_pixmap (dpy, w, w->mailbox.full_bitmap,
+					  depth, w->mailbox.flip,
+					  &w->mailbox.fwidth,
+					  &w->mailbox.fheight);
+			 
+    /* save bitmaps and masks for SHAPE extension */
 
     w->mailbox.gc = get_mailbox_gc (w);
 
@@ -459,23 +521,28 @@ static void redraw_mailbox (w)
     GC gc = w->mailbox.gc;
     Pixmap picture;
     Pixel back;
+    int width, height;
 
     /* center the picture in the window */
 
-    x = (((int)w->core.width) - PictureWidth) / 2;
-    y = (((int)w->core.height) - PictureHeight) / 2;
-
     if (w->mailbox.flag_up) {		/* paint the "up" position */
-	back = w->mailbox.foreground_pixel;
-	picture = w->mailbox.flagup_pixmap;
+	width = w->mailbox.fwidth;
+	height = w->mailbox.fheight;
+	back = (w->mailbox.flip ? w->mailbox.foreground_pixel :
+		w->core.background_pixel);
+	picture = w->mailbox.full_pixmap;
     } else {				/* paint the "down" position */
+	width = w->mailbox.ewidth;
+	height = w->mailbox.eheight;
 	back = w->core.background_pixel;
-	picture = w->mailbox.flagdown_pixmap;
+	picture = w->mailbox.empty_pixmap;
     }
+    x = (((int)w->core.width) - width) / 2;
+    y = (((int)w->core.height) - height) / 2;
 
     XSetWindowBackground (dpy, win, back);
     XClearWindow (dpy, win);
-    XCopyArea (dpy, picture, win, gc, 0, 0, PictureWidth, PictureHeight, x, y);
+    XCopyArea (dpy, picture, win, gc, 0, 0, width, height, x, y);
     return;
 }
 

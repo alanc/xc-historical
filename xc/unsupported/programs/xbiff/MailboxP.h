@@ -1,5 +1,5 @@
 /*
- * $XConsortium: MailboxP.h,v 1.11 88/09/30 08:44:55 swick Exp $
+ * $XConsortium: MailboxP.h,v 1.12 89/03/30 16:05:45 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -22,7 +22,11 @@
 #include <X11/Mailbox.h>
 #include <X11/CoreP.h>
 
+#ifdef SYSV
+#define MAILBOX_DIRECTORY "/usr/mail"
+#else
 #define MAILBOX_DIRECTORY "/usr/spool/mail"
+#endif
 
 typedef struct {			/* new fields for mailbox widget */
     /* resources */
@@ -31,6 +35,7 @@ typedef struct {			/* new fields for mailbox widget */
     String filename;			/* filename to watch */
     String check_command;		/* command to exec for mail check */
     Boolean reverseVideo;		/* do reverse video? */
+    Boolean flip;			/* flip full pixmap */
     int volume;				/* bell volume */
     Boolean once_only;			/* ring bell only once on new mail */
     /* local state */
@@ -38,8 +43,11 @@ typedef struct {			/* new fields for mailbox widget */
     long last_size;			/* size in bytes of mailboxname */
     XtIntervalId interval_id;		/* time between checks */
     Boolean flag_up;			/* is the flag up? */
-    Pixmap flagup_pixmap;		/* for when there is mail */
-    Pixmap flagdown_pixmap;		/* for when there isn't mail */
+    Pixmap full_pixmap;			/* for when there is mail */
+    Pixmap empty_pixmap;		/* for when there isn't mail */
+    Pixmap full_bitmap, empty_bitmap;
+    Pixmap full_bitmap_mask, empty_bitmap_mask;
+    int fwidth, fheight, ewidth, eheight;
 } MailboxPart;
 
 typedef struct _MailboxRec {		/* full instance record */

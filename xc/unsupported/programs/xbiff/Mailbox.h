@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.h,v 1.12 88/09/30 08:44:24 swick Exp $
+ * $XConsortium: Mailbox.h,v 1.13 89/03/30 16:05:44 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -27,12 +27,22 @@
 
 #define XtNupdate		"update"
 #define XtNfile			"file"
-#define XtNcheckCommand "checkCommand"	/* command to exec for mail check */
+#define XtNcheckCommand		"checkCommand"	/* command to exec */
 #define XtNonceOnly		"onceOnly"
-#define XtNvolume "volume"		/* Int: volume for bell */
+#define XtNvolume		"volume"	/* Int: volume for bell */
+#define XtNfullPixmap		"fullPixmap"
+#define XtNfullPixmapMask	"fullPixmapMask"
+#define XtNemptyPixmap		"emptyPixmap"
+#define XtNemptyPixmapMask	"emptyPixmapMask"
+#define XtNflip			"flip"
 
-#define XtCCheckCommand "CheckCommand"
-#define XtCVolume "Volume"
+#define XtCCheckCommand		"CheckCommand"
+#define XtCVolume		"Volume"
+#define XtCFullPixmap		"FullPixmap"
+#define XtCFullPixmapMask	"FullPixmapMask"
+#define XtCEmptyPixmap		"EmptyPixmap"
+#define XtCEmptyPixmapMask	"EmptyPixmapMask"
+#define XtCFlip			"Flip"
 
 
 /* structures */
