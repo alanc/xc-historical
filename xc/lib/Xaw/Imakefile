@@ -46,7 +46,8 @@ HEADERS = \
 	VPaned.h \
 	VPanedP.h \
 	Viewport.h \
-	ViewportP.h
+	ViewportP.h \
+	XawMisc.h
 
 SRCS = \
 	AsciiSink.c \
