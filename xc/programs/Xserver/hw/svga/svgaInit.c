@@ -1,4 +1,4 @@
-/* $XConsortium: svgaInit.c,v 1.3 93/09/19 09:44:29 rws Exp $ */
+/* $XConsortium: svgaInit.c,v 1.4 93/09/20 12:03:10 rws Exp $ */
 /*
  * Copyright 1990,91,92,93 by Thomas Roell, Germany.
  * Copyright 1991,92,93    by SGCS (Snitily Graphics Consulting Services), USA.
@@ -51,6 +51,8 @@ extern void ProcessInputEvents();
 #ifndef ADMPATH
 #define ADMPATH "/usr/adm/X%smsgs"
 #endif
+
+char *svgaconfig = SVGACONFIG;
 
 static const PixmapFormatRec svgaFormats[] = {
   {  1,  1, BITMAP_SCANLINE_PAD },
@@ -397,6 +399,8 @@ ddxProcessArgument(
     return 1;
   }
   else if (!strcmp(argv[i], "-config")) {
+    if (i + 1 < argc)
+      svgaconfig = argv[i + 1];
     return 2;
   }
 
