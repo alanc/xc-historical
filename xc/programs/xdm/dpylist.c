@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dpylist.c,v 1.11 89/09/09 13:01:10 keith Exp $
+ * $XConsortium: dpylist.c,v 1.12 89/10/09 14:57:32 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -152,15 +152,39 @@ char		*class;
 	{
 		d->class = (char *) 0;
 	}
+	/* initialize every field to avoid possible problems */
 	d->argv = 0;
 	d->status = notRunning;
 	d->pid = -1;
 	d->state = NewEntry;
-	d->authorization = 0;
-	d->from = 0;
-	d->fromlen = 0;
+	d->resources = NULL;
+	d->xrdb = NULL;
+	d->cpp = NULL;
+	d->startup = NULL;
+	d->reset = NULL;
+	d->session = NULL;
+	d->userPath = NULL;
+	d->systemPath = NULL;
+	d->systemShell = NULL;
+	d->failsafeClient = NULL;
+	d->authorize = FALSE;
+	d->authorization = NULL;
+	d->authFile = NULL;
+	d->userAuthDir = NULL;
+	d->authName = NULL;
+	d->authNameLen = 0;
+	d->openDelay = 0;
+	d->openRepeat = 0;
+	d->openTimeout = 0;
+	d->startAttempts = 0;
+	d->terminateServer = 0;
+	d->grabTimeout = 0;
+	d->sessionID = 0;
 	d->peer = 0;
 	d->peerlen = 0;
+	d->from = 0;
+	d->fromlen = 0;
+	d->displayNumber = 0;
 	displays = d;
 	return d;
 }

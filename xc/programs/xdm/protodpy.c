@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: protodpy.c,v 1.1 89/10/12 17:07:45 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -104,9 +104,10 @@ NewProtoDisplay (address, addrlen, displayNumber,
 	free ((char *) pdpy);
 	return NULL;
     }
-    pdpy->displayNumber = displayNumber;
     pdpy->addrlen = addrlen;
     bcopy (address, pdpy->address, addrlen);
+    time (&pdpy->date);
+    pdpy->displayNumber = displayNumber;
     pdpy->connectionType = connectionType;
     if (!XdmcpCopyARRAY8 (connectionAddress, &pdpy->connectionAddress))
     {
@@ -115,8 +116,8 @@ NewProtoDisplay (address, addrlen, displayNumber,
 	return NULL;
     }
     pdpy->sessionID = sessionID;
+    pdpy->authorization = (Xauth *) NULL;
     pdpy->next = protoDisplays;
-    time (&pdpy->date);
     TimeoutProtoDisplays (pdpy->date);
     protoDisplays = pdpy;
     return pdpy;
