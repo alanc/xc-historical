@@ -19,42 +19,42 @@ XtAppContext appContext;
 
 
 void
-_XtIceWatchProc (iceConn, clientData, opening, watchData)
+_XtIceWatchProc (ice_conn, client_data, opening, watch_data)
 
-IceConn 	iceConn;
-IcePointer	clientData;
+IceConn 	ice_conn;
+IcePointer	client_data;
 Bool		opening;
-IcePointer	*watchData;
+IcePointer	*watch_data;
 
 {
     if (opening)
     {
-	XtAppContext appContext = (XtAppContext) clientData;
+	XtAppContext appContext = (XtAppContext) client_data;
 	void _XtProcessIceMsgProc ();
 
-	*watchData = (IcePointer) XtAppAddInput (
+	*watch_data = (IcePointer) XtAppAddInput (
 	    appContext,
-	    IceConnectionNumber (iceConn),
+	    IceConnectionNumber (ice_conn),
             (XtPointer) XtInputReadMask,
 	    _XtProcessIceMsgProc,
-	    (XtPointer) iceConn);
+	    (XtPointer) ice_conn);
     }
     else
     {
-	XtRemoveInput ((XtInputId) *watchData);
+	XtRemoveInput ((XtInputId) *watch_data);
     }
 }
 
 
 void
-_XtProcessIceMsgProc (clientData, source, id)
+_XtProcessIceMsgProc (client_data, source, id)
 
-XtPointer	clientData;
+XtPointer	client_data;
 int 		*source;
 XtInputId	*id;
 
 {
-    IceConn	iceConn = (IceConn) clientData;
+    IceConn	ice_conn = (IceConn) client_data;
 
-    IceProcessMessage (iceConn, NULL);
+    IceProcessMessage (ice_conn, NULL);
 }
