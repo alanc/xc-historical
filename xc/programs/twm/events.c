@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.179 91/05/11 17:36:08 dave Exp $
+ * $XConsortium: events.c,v 1.180 91/05/31 17:39:27 dave Exp $
  *
  * twm event handling
  *
@@ -62,6 +62,11 @@ TwmWindow *ButtonWindow;	/* button press window structure */
 XEvent ButtonEvent;		/* button press event */
 XEvent Event;			/* the current event */
 TwmWindow *Tmp_win;		/* the current twm window */
+
+/* Used in HandleEnterNotify to remove border highlight from a window 
+ * that has not recieved a LeaveNotify event because of a pointer grab 
+ */
+TwmWindow *UnHighLight_win = NULL;
 
 Window DragWindow;		/* variables used in moving windows */
 int origDragX;
@@ -2005,6 +2010,20 @@ HandleEnterNotify()
     XEnterWindowEvent *ewp = &Event.xcrossing;
     HENScanArgs scanArgs;
     XEvent dummy;
+    
+    /*
+     * Save the id of the window entered.  This will be used to remove
+     * border highlight on entering the next application window.
+     */
+    if (UnHighLight_win && ewp->window != UnHighLight_win->w) {
+      SetBorder (UnHighLight_win, False);	/* application window */
+      if (UnHighLight_win->list) /* in the icon box */
+	NotActiveIconManager(UnHighLight_win->list);
+    }
+    if (ewp->window == Scr->Root)
+      UnHighLight_win = NULL;
+    else if (Tmp_win)
+      UnHighLight_win = Tmp_win;
 
     /*
      * if we aren't in the middle of menu processing
