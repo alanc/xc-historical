@@ -1,4 +1,4 @@
-/* $XConsortium: xtesttest.c,v 1.3 92/02/01 15:08:26 rws Exp $ */
+/* $XConsortium: xtesttest.c,v 1.4 92/02/25 09:57:39 keith Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -47,6 +47,7 @@ main (argc, argv)
     int key, minkey, maxkey;
     XEvent ev, second_ev, third_ev;
     long    delta_time;
+    unsigned char buttons[256];
 
     ProgramName = argv[0];
     for (i = 1; i < argc; i++) {
@@ -119,12 +120,15 @@ main (argc, argv)
 	ev.xkey.x_root != 10 ||
 	ev.xkey.y_root != 10)
 	printf("error: bad event received for key release\n");
-    XTestFakeButtonEvent(dpy, 1, True, 0);
+    XGetPointerMapping(dpy, buttons, sizeof(buttons));
+    for (i = 0; !buttons[i] && (i < sizeof(buttons)); i++)
+	;
+    XTestFakeButtonEvent(dpy, i + 1, True, 0);
     XTestFakeMotionEvent(dpy, DefaultScreen(dpy), 9, 8, 1000);
-    XTestFakeButtonEvent(dpy, 1, False, 2000);
+    XTestFakeButtonEvent(dpy, i + 1, False, 2000);
     XNextEvent(dpy, &ev);
     if (ev.type != ButtonPress ||
-	ev.xbutton.button != 1 ||
+	ev.xbutton.button != buttons[i] ||
 	ev.xbutton.x_root != 10 ||
 	ev.xbutton.y_root != 10)
 	printf("error: bad event received for button press\n");
@@ -138,7 +142,7 @@ main (argc, argv)
 	printf ("Poor event spacing is %d should be %d\n", delta_time, 1000);
     XNextEvent(dpy, &third_ev);
     if (third_ev.type != ButtonRelease ||
-	third_ev.xbutton.button != 1 ||
+	third_ev.xbutton.button != buttons[i] ||
 	third_ev.xbutton.x_root != 9 ||
 	third_ev.xbutton.y_root != 8)
 	printf("error: bad event received for button release\n");
