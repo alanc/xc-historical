@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.79 89/09/22 17:57:49 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.80 89/09/26 13:13:37 swick Exp $";
 /* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
 #endif /* lint */
 /*LINTLIBRARY*/
@@ -398,9 +398,9 @@ void XtConvertCase(dpy,keysym,lower_return,upper_return)
 {
     XtPerDisplay perDisplay;
     perDisplay = _XtGetPerDisplay(dpy);
-    if (perDisplay != NULL && perDisplay->defaultCaseConverter != NULL)
-        (*perDisplay->defaultCaseConverter)(dpy,keysym,
-            lower_return,upper_return);
+    if (perDisplay->defaultCaseConverter != NULL)
+        (*perDisplay->defaultCaseConverter)
+	    (dpy, keysym, lower_return, upper_return);
 }
 
 Boolean _XtMatchUsingStandardMods (event,eventSeq)
@@ -646,9 +646,14 @@ static void _XtTranslateEvent (w, closure, event)
 		/* is it within the timeout? */
 		if (nextState != NULL && nextState->index == index) {
 		    unsigned long time = GetTime(tm, event);
-		    unsigned long delta = ev->eventCode;
-		    if (delta == 0) delta = stateTable->clickTime;
-		    if (tm->lastEventTime + delta >= time) {
+		    unsigned long delta =
+#ifdef notdef
+			ev->eventCode;
+		    if (delta == 0)
+		      delta =
+#endif
+		       _XtGetPerDisplay(event->xany.display)->multi_click_time;
+		    if ((tm->lastEventTime + delta) >= time) {
 			current_state = nextState;
 			break;
 		    }
@@ -681,14 +686,16 @@ static void _XtTranslateEvent (w, closure, event)
     while (actions != NULL) {
 	/* perform any actions */
         if (actions->index >= 0) {
+	   /* non-accelerator context */
            if (proc_table[actions->index] != NULL) {
 	       ActionHook hook;
 	       for (hook = actionHookList; hook != NULL; hook = hook->next) {
 		   (*hook->proc)( w,
 				  hook->closure,
-				  XrmQuarkToString( stateTable->
-						    quarkTable[actions->index]
-						  ),
+				  (actions->token != NULL)
+				     ? actions->token
+				     : XrmQuarkToString( stateTable->
+						quarkTable[actions->index] ),
 				  event,
 				  actions->params,
 				  &actions->num_params
@@ -698,13 +705,31 @@ static void _XtTranslateEvent (w, closure, event)
 		   ( w, event, actions->params, &actions->num_params );
 	  }
         }
-        else {
+        else /* actions->index < 0 */ {
+	    /* accelerator context */
             int temp = -(actions->index+1);
-            if (accProcTbl[temp].proc != NULL &&
-                    accProcTbl[temp].widget != 0)
-              (*(accProcTbl[temp].proc))(
-                accProcTbl[temp].widget,
-                event, actions->params, &actions->num_params);
+	    Widget widget;
+            if (accProcTbl[temp].proc != NULL
+		&& (widget = accProcTbl[temp].widget) != NULL
+		&& XtIsSensitive(widget)) {
+
+		ActionHook hook;
+		for (hook = actionHookList; hook != NULL; hook = hook->next) {
+		    (*hook->proc)( widget,
+				   hook->closure,
+				   actions->token,
+				   event,
+				   actions->params,
+				   &actions->num_params
+				 );
+		}
+		(*(accProcTbl[temp].proc))(
+					   accProcTbl[temp].widget,
+					   event,
+					   actions->params,
+					   &actions->num_params
+					  );
+	    }
         }
 
 	actions = actions->next;
@@ -1171,7 +1196,6 @@ void _XtInitializeStateTable(pStateTable)
     stateTable->numEvents = 0;
     stateTable->eventTblSize = 0;
     stateTable->eventObjTbl = NULL;
-    stateTable->clickTime = 200; /* ||| need some way of setting this !!! */
     stateTable->head = NULL;
     stateTable->quarkTable =
         (XrmQuark *)XtCalloc((Cardinal)20,(Cardinal)sizeof(XrmQuark));
@@ -1474,7 +1498,6 @@ void _XtOverrideTranslations(old, new,merged)
 	return;
     }
     _XtInitializeStateTable(&temp);
-    temp->clickTime = new->clickTime;
     /* merge in new table, overriding any existing bindings from old */
     MergeTables(temp, new, FALSE,new->accProcTbl);
     MergeTables(temp, old, FALSE,old->accProcTbl);
@@ -1492,7 +1515,6 @@ void _XtAugmentTranslations(old, new,merged)
 	return;
     }
     _XtInitializeStateTable(&temp);
-    temp->clickTime = old->clickTime;
     MergeTables(temp, old, FALSE,old->accProcTbl);
     MergeTables(temp, new, FALSE,new->accProcTbl);
     *merged= temp;
@@ -1673,7 +1695,6 @@ void XtInstallAccelerators(destination,source)
     else {
 	XtTranslations temp;
 	_XtInitializeStateTable(&temp);
-	temp->clickTime = source->core.accelerators->clickTime;
 	if (source->core.accelerators->operation == XtTableOverride) {
 	    MergeTables(temp,source->core.accelerators,FALSE,accBindings);
 	    MergeTables(temp, destination->core.tm.translations,FALSE,
@@ -2236,10 +2257,7 @@ void XtRegisterCaseConverter(dpy, proc, start, stop)
     KeySym stop;
 
 {
-    XtPerDisplay perDisplay;
-    perDisplay = _XtGetPerDisplay(dpy);
-    if (perDisplay != NULL)
-         perDisplay->defaultCaseConverter = proc;
+    _XtGetPerDisplay(dpy) ->defaultCaseConverter = proc;
 }
 /* ARGSUSED */
 void _XtConvertCase(dpy, keysym, lower_return, upper_return)
