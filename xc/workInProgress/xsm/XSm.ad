@@ -1,4 +1,4 @@
-! $XConsortium: XSm.ad,v 1.17 94/08/11 18:57:23 mor Exp mor $
+! $XConsortium: XSm.ad,v 1.18 94/08/17 17:38:53 mor Exp mor $
 *chooseSessionPopup*font:		12x24
 *chooseSessionLabel.label:		Session Menu
 *chooseSessionMessageLabel.label:	Press button again to confirm...
@@ -65,4 +65,7 @@
 	<Btn1Up>:	notify() reset()\n
 
 *nameSessionOkButton.Accelerators: #override\n\
+	<Key>Return:	set() notify() unset()\n
+
+*saveOkButton.Accelerators: #override\n\
 	<Key>Return:	set() notify() unset()\n

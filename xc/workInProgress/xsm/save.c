@@ -1,4 +1,4 @@
-/* $XConsortium: save.c,v 1.7 94/08/11 19:10:40 mor Exp mor $ */
+/* $XConsortium: save.c,v 1.8 94/08/17 17:52:04 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -440,6 +440,8 @@ create_save_popup ()
         NULL);
 
     XtAddCallback (saveCancelButton, XtNcallback, SaveCancelXtProc, 0);
+
+    XtInstallAllAccelerators (saveForm, saveForm);
 }
 
 
