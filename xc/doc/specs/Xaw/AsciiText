@@ -24,10 +24,10 @@ Source Name	textSource
 .sp 1
 .LP
 The AsciiText widget is really a collection of smaller parts.  It
-includes the Text widget, an AsciiSource, and an AsciiSink.  Some of
+includes the Text widget, an AsciiSrc, and an AsciiSink.  Some of
 the resources listed below are not actually resources of the
-AsciiText, but belong to the AsciiSource or AsciiSink.  This is
-.IN "AsciiSource object" ""
+AsciiText, but belong to the AsciiSrc or AsciiSink.  This is
+.IN "AsciiSrc object" ""
 .IN "AsciiSink object" ""
 is noted in the explanation of each resource where it applies.  When
 specifying these resources in a resource file be sure to use
@@ -93,7 +93,7 @@ selectTypes	SelectTypes	XawTextSelectType*		See above
 sensitive	Sensitive	Boolean		True
 string	String	String		NULL
 textSink	TextSink	Widget		An AsciiSink
-textSource	TextSource	Widget		An AsciiSource
+textSource	TextSource	Widget		An AsciiSrc
 topMargin	Margin	Position		2		
 translations	Translations	TranslationTable		See above
 type	Type	XawAsciiType		XawAsciiString
