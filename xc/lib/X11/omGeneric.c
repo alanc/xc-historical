@@ -1,4 +1,4 @@
-/* $XConsortium: omGeneric.c,v 1.1 93/09/17 13:32:12 rws Exp $ */
+/* $XConsortium: omGeneric.c,v 1.2 93/09/24 10:52:42 rws Exp $ */
 /******************************************************************
 
               Copyright 1991, 1992 by TOSHIBA Corp.
@@ -252,7 +252,7 @@ found:
 	}
 	if (prop_fname)
 	    Xfree(prop_fname);
-	if (found_num == data_num)
+	if (found_num == gen->font_data_num)
 	    return found_num;
 	fs_list++;
     }
