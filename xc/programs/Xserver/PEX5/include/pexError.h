@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pexError.h,v 5.1 91/02/16 09:57:55 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -38,10 +38,7 @@ extern WriteEventsToClient();
 #define PEX_ERROR_CODE(error_code) ((error_code) + PexErrorBase)
 
 #define PEX_ERR_EXIT(error_code, problem, cntxt) { \
-    unsigned short temp; \
-    temp = MinorOpcodeOfRequest((cntxt)->client); \
-    SendErrorToClient(	(cntxt)->client, (unsigned) PexReqCode, \
-			(temp), (XID) (problem), (int) (error_code)); \
+    (cntxt)->client->errorValue = problem;	\
     return(error_code); }
 
 
