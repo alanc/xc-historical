@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XGeom.c,v 1.3 88/02/07 11:22:03 jim Exp $/
+/* $XConsortium$ */
 /* Copyright Massachusetts Institute of Technology 1985 */
 
 #include "Xlibint.h"
