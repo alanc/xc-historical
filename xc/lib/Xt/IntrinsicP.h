@@ -1,5 +1,5 @@
 /*
-* $XConsortium: IntrinsicP.h,v 1.34 88/10/25 11:18:14 swick Exp $
+* $XConsortium: IntrinsicP.h,v 1.35 89/06/16 18:09:10 jim Exp $
 * $oHeader: IntrinsicP.h,v 1.4 88/08/26 14:49:52 asente Exp $
 */
 
@@ -114,9 +114,12 @@ typedef struct _XtTMRec {
 #include "CompositeP.h"
 #include "ConstrainP.h"
 
+#ifdef notdef
 #define XtDisplay(widget)	((widget)->core.screen->display)
 #define XtScreen(widget)	((widget)->core.screen)
 #define XtWindow(widget)	((widget)->core.window)
+#endif /*notdef*/
+
 #define XtClass(widget)		((widget)->core.widget_class)
 #define XtSuperclass(widget)	(XtClass(widget)->core_class.superclass)
 #define XtIsManaged(widget)     ((widget)->core.managed)
@@ -124,6 +127,7 @@ typedef struct _XtTMRec {
 #define XtIsSensitive(widget)	((widget)->core.sensitive && \
 				 (widget)->core.ancestor_sensitive)
 #define XtParent(widget)	((widget)->core.parent)
+#define XtName(widget)		(XrmQuarkToString((widget)->core.xrm_name))
 
 #ifdef DEBUG
 #define XtCheckSubclass(w, widget_class_ptr, message)	\
