@@ -9,32 +9,32 @@ EXPORTS = \
 	keysym.h
 
 IMPORTS = \
-	$(XMENUDIR)/XMenu.h \
-	$(XLIBDIR)/Conversion.h \
-	$(XLIBDIR)/X10.h \
-	$(XLIBDIR)/Xlib.h \
-	$(XLIBDIR)/Xresource.h \
-	$(XLIBDIR)/XrmConvert.h \
-	$(XLIBDIR)/Xutil.h \
-	$(CLIENTDIR)/bitmaps \
-	$(FONTDIR)/cursorfont.h \
-	$(TOOLKITDIR)/Atoms.h \
-	$(TOOLKITDIR)/Boolean.h \
-	$(TOOLKITDIR)/ButtonBox.h \
-	$(TOOLKITDIR)/Clock.h \
-	$(TOOLKITDIR)/Command.h \
-	$(TOOLKITDIR)/Dialog.h \
-	$(TOOLKITDIR)/Form.h \
-	$(TOOLKITDIR)/Intrinsic.h \
-	$(TOOLKITDIR)/Label.h \
-	$(TOOLKITDIR)/Load.h \
-	$(TOOLKITDIR)/Menu.h \
-	$(TOOLKITDIR)/Scroll.h \
-	$(TOOLKITDIR)/Text.h \
-	$(TOOLKITDIR)/TextDisp.h \
-	$(TOOLKITDIR)/VPane.h \
-	$(TOOLKITDIR)/Xtlib.h \
-	$(TOOLKITDIR)/fd.h
+	$(XMENUSRC)/XMenu.h \
+	$(XLIBSRC)/Conversion.h \
+	$(XLIBSRC)/X10.h \
+	$(XLIBSRC)/Xlib.h \
+	$(XLIBSRC)/Xresource.h \
+	$(XLIBSRC)/XrmConvert.h \
+	$(XLIBSRC)/Xutil.h \
+	$(CLIENTSRC)/bitmaps \
+	$(FONTSRC)/cursorfont.h \
+	$(TOOLKITSRC)/Atoms.h \
+	$(TOOLKITSRC)/Boolean.h \
+	$(TOOLKITSRC)/ButtonBox.h \
+	$(TOOLKITSRC)/Clock.h \
+	$(TOOLKITSRC)/Command.h \
+	$(TOOLKITSRC)/Dialog.h \
+	$(TOOLKITSRC)/Form.h \
+	$(TOOLKITSRC)/Intrinsic.h \
+	$(TOOLKITSRC)/Label.h \
+	$(TOOLKITSRC)/Load.h \
+	$(TOOLKITSRC)/Menu.h \
+	$(TOOLKITSRC)/Scroll.h \
+	$(TOOLKITSRC)/Text.h \
+	$(TOOLKITSRC)/TextDisp.h \
+	$(TOOLKITSRC)/VPane.h \
+	$(TOOLKITSRC)/Xtlib.h \
+	$(TOOLKITSRC)/fd.h
 
 INSTALLFLAGS = -m 0444
 
