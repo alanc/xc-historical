@@ -138,6 +138,7 @@ OBJS = \
 	TextPop.o \
 	TextTr.o \
 	Toggle.o \
+	Tree.o \
 	Vendor.o \
 	Viewport.o \
 	XawInit.o 
