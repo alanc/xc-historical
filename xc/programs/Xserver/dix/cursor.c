@@ -23,17 +23,51 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $XConsortium: cursor.c,v 1.32 89/03/18 16:23:44 rws Exp $ */
+/* $XConsortium: cursor.c,v 1.33 89/03/22 14:22:59 rws Exp $ */
 
 #include "X.h"
-#include "scrnintstr.h"
-#include "cursorstr.h"
-#include "dixfont.h"	/* for CreateRootCursor */
-#include "resource.h"	/* for CreateRootCursor */
-
 #include "Xmd.h"
-#include "dix.h"	/* for CreateRootCursor  */
-#include "opaque.h"	/* for CloseFont  */
+#include "scrnintstr.h"
+#include "dixstruct.h"
+#include "cursorstr.h"
+#include "dixfontstr.h"
+#include "opaque.h"
+
+typedef struct _GlyphShare {
+    FontPtr font;
+    unsigned short sourceChar;
+    unsigned short maskChar;
+    CursorBitsPtr bits;
+    struct _GlyphShare *next;
+} GlyphShare, *GlyphSharePtr;
+
+static GlyphSharePtr sharedGlyphs = (GlyphSharePtr)NULL;
+
+static void
+FreeCursorBits(bits)
+    CursorBitsPtr bits;
+{
+    if (--bits->refcnt > 0)
+	return;
+    xfree(bits->source);
+    xfree(bits->mask);
+    if (bits->refcnt == 0)
+    {
+	register GlyphSharePtr *prev, this;
+
+	for (prev = &sharedGlyphs;
+	     (this = *prev) && (this->bits != bits);
+	     prev = &this->next)
+	    ;
+	if (this)
+	{
+	    *prev = this->next;
+	    CloseFont(this->font);
+	    xfree(this);
+	}
+	xfree(bits);
+    }
+}
 
 /*
  * To be called indirectly by DeleteResource; must use exactly two args
@@ -57,8 +91,7 @@ FreeCursor( pCurs, cid)
         if ( pscr->UnrealizeCursor)
 	    (void)( *pscr->UnrealizeCursor)( pscr, pCurs);
     }
-    xfree( pCurs->source);
-    xfree( pCurs->mask);
+    FreeCursorBits(pCurs->bits);
     xfree( pCurs);
     return(Success);
 }
@@ -68,31 +101,33 @@ FreeCursor( pCurs, cid)
  * does not copy the src and mask bits
  */
 CursorPtr 
-AllocCursor( psrcbits, pmaskbits, cm,
+AllocCursor(psrcbits, pmaskbits, cm,
 	    foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue)
     unsigned char *	psrcbits;		/* server-defined padding */
     unsigned char *	pmaskbits;		/* server-defined padding */
     CursorMetricPtr	cm;
-    unsigned	int foreRed, foreGreen, foreBlue;
-    unsigned	int backRed, backGreen, backBlue;
+    unsigned		foreRed, foreGreen, foreBlue;
+    unsigned		backRed, backGreen, backBlue;
 {
+    CursorBitsPtr  bits;
     CursorPtr 	pCurs;
     int		nscr;
     ScreenPtr 	pscr;
 
-    pCurs = (CursorPtr )xalloc( sizeof(CursorRec)); 
+    pCurs = (CursorPtr)xalloc(sizeof(CursorRec) + sizeof(CursorBits));
     if (!pCurs)
 	return (CursorPtr)NULL;
+    bits = (CursorBitsPtr)((char *)pCurs + sizeof(CursorRec));
+    bits->source = psrcbits;
+    bits->mask = pmaskbits;
+    bits->width = cm->width;
+    bits->height = cm->height;
+    bits->xhot = cm->xhot;
+    bits->yhot = cm->yhot;
+    bits->refcnt = -1;
 
-    pCurs->source = psrcbits;
-    pCurs->mask = pmaskbits;
-
-    pCurs->width = cm->width;
-    pCurs->height = cm->height;
-
+    pCurs->bits = bits;
     pCurs->refcnt = 1;		
-    pCurs->xhot = cm->xhot;
-    pCurs->yhot = cm->yhot;
 
     pCurs->foreRed = foreRed;
     pCurs->foreGreen = foreGreen;
@@ -123,6 +158,177 @@ AllocCursor( psrcbits, pmaskbits, cm,
     return pCurs;
 }
 
+int
+AllocGlyphCursor(source, sourceChar, mask, maskChar,
+		 foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue,
+		 ppCurs, client)
+    Font source, mask;
+    unsigned short sourceChar, maskChar;
+    unsigned foreRed, foreGreen, foreBlue;
+    unsigned backRed, backGreen, backBlue;
+    CursorPtr *ppCurs;
+    ClientPtr client;
+{
+    FontPtr  sourcefont, maskfont;
+    unsigned char   *srcbits;
+    unsigned char   *mskbits;
+    CursorMetricRec cm;
+    int res;
+    CursorBitsPtr  bits;
+    CursorPtr 	pCurs;
+    int		nscr;
+    ScreenPtr 	pscr;
+    GlyphSharePtr pShare;
+
+    sourcefont = (FontPtr) LookupID(source, RT_FONT, RC_CORE);
+    maskfont = (FontPtr) LookupID(mask, RT_FONT, RC_CORE);
+
+    if (!sourcefont)
+    {
+	client->errorValue = source;
+	return(BadFont);
+    }
+    if (!maskfont && (mask != None))
+    {
+	client->errorValue = mask;
+	return(BadFont);
+    }
+    if (sourcefont != maskfont)
+	pShare = (GlyphSharePtr)NULL;
+    else
+    {
+	for (pShare = sharedGlyphs;
+	     pShare &&
+	     ((pShare->font != sourcefont) ||
+	      (pShare->sourceChar != sourceChar) ||
+	      (pShare->maskChar != maskChar));
+	     pShare = pShare->next)
+	    ;
+    }
+    if (pShare)
+    {
+	pCurs = (CursorPtr)xalloc(sizeof(CursorRec));
+	if (!pCurs)
+	    return BadAlloc;
+	bits = pShare->bits;
+	bits->refcnt++;
+    }
+    else
+    {
+	if (!CursorMetricsFromGlyph(sourcefont, sourceChar, &cm))
+	{
+	    client->errorValue = sourceChar;
+	    return BadValue;
+	}
+	if (!maskfont)
+	{
+	    register long n;
+	    register unsigned char *bits;
+
+	    n = PixmapBytePad(cm.width, 1)*(long)cm.height;
+	    bits = mskbits = (unsigned char *)xalloc(n);
+	    if (!bits)
+		return BadAlloc;
+	    while (--n >= 0)
+		*bits++ = ~0;
+	}
+	else
+	{
+	    if (!CursorMetricsFromGlyph(maskfont, maskChar, &cm))
+	    {
+		client->errorValue = maskChar;
+		return BadValue;
+	    }
+	    if (res = ServerBitsFromGlyph(maskfont, maskChar, &cm, &mskbits))
+		return res;
+	}
+	if (res = ServerBitsFromGlyph(sourcefont, sourceChar, &cm, &srcbits))
+	{
+	    xfree(mskbits);
+	    return res;
+	}
+	if (sourcefont != maskfont)
+	{
+	    pCurs = (CursorPtr)xalloc(sizeof(CursorRec));
+	    if (pCurs)
+		bits = (CursorBitsPtr)xalloc(sizeof(CursorBits));
+	    else
+		bits = (CursorBitsPtr)NULL;
+	}
+	else
+	{
+	    pCurs = (CursorPtr)xalloc(sizeof(CursorRec) + sizeof(CursorBits));
+	    if (pCurs)
+		bits = (CursorBitsPtr)((char *)pCurs + sizeof(CursorRec));
+	    else
+		bits = (CursorBitsPtr)NULL;
+	}
+	if (!bits)
+	{
+	    xfree(pCurs);
+	    xfree(mskbits);
+	    xfree(srcbits);
+	    return BadAlloc;
+	}
+	bits->source = srcbits;
+	bits->mask = mskbits;
+	bits->width = cm.width;
+	bits->height = cm.height;
+	bits->xhot = cm.xhot;
+	bits->yhot = cm.yhot;
+	if (sourcefont != maskfont)
+	    bits->refcnt = -1;
+	else
+	{
+	    bits->refcnt = 1;
+	    pShare = (GlyphSharePtr)xalloc(sizeof(GlyphShare));
+	    if (!pShare)
+	    {
+		FreeCursorBits(bits);
+		return BadAlloc;
+	    }
+	    pShare->font = sourcefont;
+	    sourcefont->refcnt++;
+	    pShare->sourceChar = sourceChar;
+	    pShare->maskChar = maskChar;
+	    pShare->bits = bits;
+	    pShare->next = sharedGlyphs;
+	    sharedGlyphs = pShare;
+	}
+    }
+    pCurs->bits = bits;
+    pCurs->refcnt = 1;
+
+    pCurs->foreRed = foreRed;
+    pCurs->foreGreen = foreGreen;
+    pCurs->foreBlue = foreBlue;
+
+    pCurs->backRed = backRed;
+    pCurs->backGreen = backGreen;
+    pCurs->backBlue = backBlue;
+
+    /*
+     * realize the cursor for every screen
+     */
+    for (nscr = 0; nscr < screenInfo.numScreens; nscr++)
+    {
+	pscr = screenInfo.screens[nscr];
+        if ( pscr->RealizeCursor && !( *pscr->RealizeCursor)( pscr, pCurs))
+	{
+	    while (--nscr >= 0)
+	    {
+		pscr = screenInfo.screens[nscr];
+		if ( pscr->UnrealizeCursor)
+		    ( *pscr->UnrealizeCursor)( pscr, pCurs);
+	    }
+	    FreeCursorBits(pCurs->bits);
+	    xfree(pCurs);
+	    return BadAlloc;
+	}
+    }
+    *ppCurs = pCurs;
+    return Success;
+}
 
 /***********************************************************
  * CreateRootCursor
@@ -130,8 +336,7 @@ AllocCursor( psrcbits, pmaskbits, cm,
  * look up the name of a font
  * open the font
  * add the font to the resource table
- * make bitmaps from glyphs "glyph" and "glyph + 1" of the font
- * make a cursor from the bitmaps
+ * make a cursor from the glyphs
  * add the cursor to the resource table
  *************************************************************/
 
@@ -142,9 +347,6 @@ CreateRootCursor(pfilename, glyph)
 {
     CursorPtr 	curs;
     FontPtr 	cursorfont;
-    unsigned char *psrcbits;
-    unsigned char *pmskbits;
-    CursorMetricRec cm;
     XID		fontID;
 
     fontID = FakeClientID(0);
@@ -153,22 +355,13 @@ CreateRootCursor(pfilename, glyph)
 	!AddResource(fontID, RT_FONT, (pointer)cursorfont, CloseFont, RC_CORE))
 	return NullCursor;
 
-    if (!CursorMetricsFromGlyph(cursorfont, glyph+1, &cm))
+    if (AllocGlyphCursor(fontID, glyph, fontID, glyph + 1,
+			 0, 0, 0, ~0, ~0, ~0, &curs, serverClient) != Success)
 	return NullCursor;
 
-    if (ServerBitsFromGlyph(fontID, cursorfont, glyph, &cm, &psrcbits))
-	return NullCursor;
-    if (ServerBitsFromGlyph(fontID, cursorfont, glyph+1, &cm, &pmskbits))
-	return NullCursor;
-
-    curs = AllocCursor( psrcbits, pmskbits, &cm, 0, 0, 0, ~0, ~0, ~0);
-
-    if (!curs ||
-	!AddResource(FakeClientID(0), RT_CURSOR, (pointer)curs, FreeCursor,
+    if (!AddResource(FakeClientID(0), RT_CURSOR, (pointer)curs, FreeCursor,
 		     RC_CORE))
 	return NullCursor;
 
     return curs;
 }
-
-
