@@ -1,4 +1,4 @@
-/* $Header: Form.h,v 1.1 87/09/11 07:59:26 toddb Exp $ */
+/* $Header: Form.h,v 1.2 87/12/22 08:53:13 swick Locked $ */
 
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -84,6 +84,7 @@ typedef struct _FormRec		*FormWidget;
 
 extern WidgetClass formWidgetClass;
  
+/* oldXtk compatability routines */
 extern Window XtFormCreate(); /* parent, args, argCount */
     /* Window   parent;     */
     /* ArgList  args;       */
