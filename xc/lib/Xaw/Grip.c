@@ -1,4 +1,4 @@
-/* $XConsortium: Grip.c,v 1.27 89/12/08 12:35:56 swick Exp $ */
+/* $XConsortium: Grip.c,v 1.28 91/01/06 16:08:35 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -35,18 +35,18 @@ SOFTWARE.
 
 static XtResource resources[] = {
    {XtNwidth, XtCWidth, XtRDimension, sizeof(Dimension),
-      XtOffset(GripWidget, core.width), XtRImmediate,
-      (caddr_t) DEFAULT_GRIP_SIZE},
+      XtOffsetOf(GripRec, core.width), XtRImmediate,
+      (XtPointer) DEFAULT_GRIP_SIZE},
    {XtNheight, XtCHeight, XtRDimension, sizeof(Dimension),
-      XtOffset(GripWidget, core.height), XtRImmediate,
-      (caddr_t) DEFAULT_GRIP_SIZE},
+      XtOffsetOf(GripRec, core.height), XtRImmediate,
+      (XtPointer) DEFAULT_GRIP_SIZE},
    {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
-      XtOffset(GripWidget, core.background_pixel), XtRString,
+      XtOffsetOf(GripRec, core.background_pixel), XtRString,
 	"XtDefaultForeground"},
    {XtNborderWidth, XtCBorderWidth, XtRDimension, sizeof(Dimension),
-      XtOffset(GripWidget, core.border_width), XtRImmediate, (caddr_t)0},
-   {XtNcallback, XtCCallback, XtRCallback, sizeof(caddr_t), 
-      XtOffset(GripWidget, grip.grip_action), XtRCallback, NULL},
+      XtOffsetOf(GripRec, core.border_width), XtRImmediate, (XtPointer)0},
+   {XtNcallback, XtCCallback, XtRCallback, sizeof(XtPointer), 
+      XtOffsetOf(GripRec, grip.grip_action), XtRCallback, NULL},
 };
 
 static void GripAction( /* Widget, XEvent*, String*, Cardinal */ );
@@ -114,5 +114,5 @@ static void GripAction( widget, event, params, num_params )
     call_data.params = params;
     call_data.num_params = *num_params;
 
-    XtCallCallbacks( widget, XtNcallback, (caddr_t)&call_data );
+    XtCallCallbacks( widget, XtNcallback, (XtPointer)&call_data );
 }
