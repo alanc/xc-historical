@@ -1,5 +1,5 @@
 
-/* $XConsortium: sun.h,v 5.23 93/09/23 10:52:12 dpw Exp $ */
+/* $XConsortium: sun.h,v 5.24 93/10/05 15:27:43 kaleb Exp $ */
 
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
@@ -250,12 +250,14 @@ typedef struct _sunFbDataRec {
     char	*name;		/* /usr/include/fbio names */
 } sunFbDataRec;
 
+#ifndef XKB
 extern Bool		sunAutoRepeatHandlersInstalled;
+extern long		sunAutoRepeatInitiate;
+extern long		sunAutoRepeatDelay;
+#endif
 extern sunFbDataRec	sunFbData[];
 extern fbFd		sunFbs[];
 extern Bool		sunSwapLkeys;
-extern long		sunAutoRepeatInitiate;
-extern long		sunAutoRepeatDelay;
 extern int		sunScreenIndex;
 extern int*		sunProtected;
 

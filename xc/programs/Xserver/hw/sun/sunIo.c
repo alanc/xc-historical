@@ -1,4 +1,4 @@
-/* $XConsortium: sunIo.c,v 5.15 93/09/26 12:27:43 rws Exp $ */
+/* $XConsortium: sunIo.c,v 5.16 93/10/05 15:41:17 kaleb Exp $ */
 /*-
  * sunIo.c --
  *	Functions to handle input from the keyboard and mouse.
@@ -206,6 +206,7 @@ ddxProcessArgument (argc, argv, i)
 		(void) setrlimit (RLIMIT_NOFILE, &rl);
 	}
 #endif /* } */
+#ifndef XKB
     if (strcmp (argv[i], "-ar1") == 0) {	/* -ar1 int */
 	if (++i >= argc) UseMsg ();
 	sunAutoRepeatInitiate = 1000 * (long)atoi(argv[i]);
@@ -220,6 +221,7 @@ ddxProcessArgument (argc, argv, i)
 	    sunAutoRepeatDelay =  999000;
 	return 2;
     }
+#endif
     if (strcmp (argv[i], "-swapLkeys") == 0) {	/* -swapLkeys */
 	sunSwapLkeys = TRUE;
 	return 1;
@@ -260,8 +262,10 @@ ddxProcessArgument (argc, argv, i)
 void
 ddxUseMsg()
 {
+#ifndef XKB
     ErrorF("-ar1 int            set autorepeat initiate time\n");
     ErrorF("-ar2 int            set autorepeat interval time\n");
+#endif
     ErrorF("-swapLkeys          swap keysyms on L1..L10\n");
     ErrorF("-debug              disable non-blocking console mode\n");
     ErrorF("-dev fn[:fn][:fn]   name of device[s] to open\n");

@@ -1,5 +1,5 @@
 
-/* $XConsortium: sunFbs.c,v 1.2 93/08/08 18:17:44 kaleb Exp $ */
+/* $XConsortium: sunFbs.c,v 1.3 93/09/26 12:27:57 rws Exp $ */
 
 /*
  * Copyright 1990, 1993 Massachusetts Institute of Technology
@@ -180,16 +180,18 @@ Bool sunScreenInit (pScreen)
     ScreenPtr	pScreen;
 {
     SetupScreen(pScreen);
+#ifndef XKB
     extern void   sunBlockHandler();
     extern void   sunWakeupHandler();
     static ScreenPtr autoRepeatScreen;
+#endif
     extern miPointerScreenFuncRec   sunPointerScreenFuncs;
 
     pPrivate->installedMap = 0;
     pPrivate->CloseScreen = pScreen->CloseScreen;
     pScreen->CloseScreen = closeScreen;
     pScreen->SaveScreen = sunSaveScreen;
-
+#ifndef XKB
     /*
      *	Block/Unblock handlers
      */
@@ -202,7 +204,7 @@ Bool sunScreenInit (pScreen)
         pScreen->BlockHandler = sunBlockHandler;
         pScreen->WakeupHandler = sunWakeupHandler;
     }
-
+#endif
     if (!sunCursorInitialize (pScreen))
 	miDCInitialize (pScreen, &sunPointerScreenFuncs);
     return TRUE;

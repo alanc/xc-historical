@@ -1,4 +1,4 @@
-/* $XConsortium: sunInit.c,v 5.36 93/09/26 12:27:16 rws Exp $ */
+/* $XConsortium: sunInit.c,v 5.37 93/09/30 13:40:33 rws Exp $ */
 /*
  * sunInit.c --
  *	Initialization functions for screen/keyboard/mouse, etc.
@@ -90,7 +90,9 @@ extern Bool sunCG6Init();
 
 static Bool	sunDevsInited = FALSE;
 
+#ifndef XKB
 Bool sunAutoRepeatHandlersInstalled;	/* FALSE each time InitOutput called */
+#endif
 Bool sunSwapLkeys = FALSE;
 Bool FlipPixels = FALSE;
 Bool FbInfo = FALSE;
@@ -402,9 +404,9 @@ void InitOutput(pScreenInfo, argc, argv)
     pScreenInfo->numPixmapFormats = NUMFORMATS;
     for (i=0; i< NUMFORMATS; i++)
         pScreenInfo->formats[i] = formats[i];
-
+#ifndef XKB
     sunAutoRepeatHandlersInstalled = FALSE;
-
+#endif
     if (!sunDevsInited) {
 	/* first time ever */
 	for (scr = 0; scr < MAXSCREENS; scr++)

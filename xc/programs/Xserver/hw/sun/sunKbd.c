@@ -1,4 +1,4 @@
-/* $XConsortium: sunKbd.c,v 5.28 93/09/20 09:20:29 kaleb Exp $ */
+/* $XConsortium: sunKbd.c,v 5.30 93/10/07 10:27:55 kaleb Exp $ */
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
  *
@@ -51,8 +51,10 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define KB_SUN4		4
 #endif
 
+#ifndef XKB
 #define AUTOREPEAT_INITIATE	200
 #define AUTOREPEAT_DELAY	50
+#endif
 
 #define tvminus(tv, tv1, tv2)   /* tv = tv1 - tv2 */ \
 		if ((tv1).tv_usec < (tv2).tv_usec) { \
@@ -79,18 +81,22 @@ extern SunModmapRec *sunType4ModMaps[];
 extern void	ProcessInputEvents();
 extern void	miPointerPosition();
 
+#ifndef XKB
 long	  	  sunAutoRepeatInitiate = 1000 * AUTOREPEAT_INITIATE;
 long	  	  sunAutoRepeatDelay = 1000 * AUTOREPEAT_DELAY;
+#endif
 
 static void		bell();
 static void		kbdCtrl();
 static Firm_event	*kbdGetEvents();
 static void		kbdEnqueueEvent();
+#ifndef XKB
 static int		autoRepeatKeyDown = 0;
 static int		autoRepeatReady;
 static int		autoRepeatFirst;
 static struct timeval	autoRepeatLastKeyDownTv;
 static struct timeval	autoRepeatDeltaTv;
+#endif
 static KeybdCtrl*	pKbdCtrl;
 
 static KbPrivRec  	sysKbPriv = {
@@ -282,8 +288,9 @@ sunKbdProc (pKeyboard, what)
 	     */
 	    (void) memset ((void *) defaultKeyboardControl.autoRepeats,
 			   ~0, sizeof defaultKeyboardControl.autoRepeats);
+#ifndef XKB
 	    autoRepeatKeyDown = 0;
-
+#endif
 	    /*
 	     * Initialize the keysym map
 	     */
@@ -531,8 +538,9 @@ static Firm_event *kbdGetEvents (pKeyboard, pNumEvents, pAgain)
  *
  *-----------------------------------------------------------------------
  */
-
+#ifndef XKB
 static xEvent	autoRepeatEvent;
+#endif
 
 static void kbdEnqueueEvent (pKeyboard, fe)
     DevicePtr	  pKeyboard;
@@ -551,6 +559,7 @@ static void kbdEnqueueEvent (pKeyboard, fe)
     dev = (DeviceIntPtr) pKeyboard;
 
     keyModifiers = dev->key->modifierMap[key];
+#ifndef XKB
     if (autoRepeatKeyDown && (keyModifiers == 0) &&
 	((fe->value == VKEY_DOWN) || (key == autoRepeatEvent.u.u.detail))) {
 	/*
@@ -558,11 +567,11 @@ static void kbdEnqueueEvent (pKeyboard, fe)
 	 */
 	autoRepeatKeyDown = 0;
     }
-
+#endif
     xE.u.keyButtonPointer.time = TVTOMILLI(fe->time);
     xE.u.u.type = ((fe->value == VKEY_UP) ? KeyRelease : KeyPress);
     xE.u.u.detail = key;
-
+#ifndef XKB
     /* look up the present idea of the keysym */
     map_index = 0;
     if (dev->key->state & ShiftMask) map_index ^= 1;
@@ -603,10 +612,11 @@ static void kbdEnqueueEvent (pKeyboard, fe)
 	autoRepeatKeyDown++;
 	autoRepeatLastKeyDownTv = fe->time;
     }
+#endif /* ! XKB */
     mieqEnqueue (&xE);
 }
 
-
+#ifndef XKB
 void sunEnqueueAutoRepeat ()
 {
 #ifndef i386 /* { */
@@ -671,6 +681,7 @@ void sunEnqueueAutoRepeat ()
     tvplus(autoRepeatLastKeyDownTv, autoRepeatLastKeyDownTv, 
 		    autoRepeatDeltaTv);
 }
+#endif /* ! XKB */
 
 /*-
  *-----------------------------------------------------------------------
@@ -781,7 +792,7 @@ Bool LegalModifier(key, pDev)
     return TRUE;
 }
 
-
+#ifndef XKB
 /*ARGSUSED*/
 void sunBlockHandler(nscreen, pbdata, pptv, pReadmask)
     int nscreen;
@@ -834,3 +845,4 @@ void sunWakeupHandler(nscreen, pbdata, err, pReadmask)
 	autoRepeatReady = 0;
     }
 }
+#endif /* ! XKB */
