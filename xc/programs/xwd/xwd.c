@@ -1,4 +1,4 @@
-/* $XConsortium: xwd.c,v 1.55 91/07/19 23:09:16 rws Exp $ */
+/* $XConsortium: xwd.c,v 1.56 91/07/25 18:00:15 rws Exp $ */
 
 /* Copyright 1987 Massachusetts Institute of Technology */
 
@@ -166,7 +166,9 @@ main(argc, argv)
      */
     Window_Dump(target_win, out_file);
 
+    XCloseDisplay(dpy);
     fclose(out_file);
+    exit(0);
 }
 
 
@@ -333,15 +335,21 @@ Window_Dump(window, out)
 	}
     }
 
-    (void) fwrite((char *)&header, sizeof(header), 1, out);
-    (void) fwrite(win_name, win_name_size, 1, out);
+    if (fwrite((char *)&header, sizeof(header), 1, out) != 1 ||
+	fwrite(win_name, win_name_size, 1, out) != 1) {
+	perror("xwd: ");
+	exit(1);
+    }
 
     /*
      * Write out the color maps, if any
      */
 
     if (debug) outl("xwd: Dumping %d colors.\n", ncolors);
-    (void) fwrite((char *) colors, sizeof(XColor), ncolors, out);
+    if (fwrite((char *) colors, sizeof(XColor), ncolors, out) != ncolors) {
+	perror("xwd: ");
+	exit(1);
+    }
 
     /*
      * Write out the buffer.
@@ -354,7 +362,11 @@ Window_Dump(window, out)
      *  what other functions of xwd will be taken over by this (as yet)
      *  non-existant X function.
      */
-    (void) fwrite(image->data, (int) buffer_size, 1, out);
+    if (fwrite(image->data, (int) buffer_size, 1, out) != 1 ||
+	fflush(out)) {
+	perror("xwd: ");
+	exit(1);
+    }
 
     /*
      * free the color buffer.
