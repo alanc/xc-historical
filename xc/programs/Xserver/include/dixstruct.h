@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dixstruct.h,v 1.11 88/09/06 15:47:57 jim Exp $ */
+/* $XConsortium: dixstruct.h,v 1.12 89/01/05 09:25:28 rws Exp $ */
 #ifndef DIXSTRUCT_H
 #define DIXSTRUCT_H
 
@@ -72,5 +72,7 @@ extern TimeStamp currentTime;
 extern void CloseDownClient();
 
 extern TimeStamp ClientTimeToServerTime();
+extern void UpdateCurrentTime();
+extern void UpdateCurrentTimeIf();
 
 #endif /* DIXSTRUCT_H */
