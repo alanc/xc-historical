@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.32 90/03/12 18:48:19 rws Exp $ */
+/* $XConsortium: mibstore.c,v 5.33 90/03/16 15:30:43 rws Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2237,8 +2237,8 @@ miBSClearBackingStore(pWin, x, y, w, h, generateExposures)
 		    gcvalues[1] = (XID) background.pixmap;
 		    gcmask = GCFillStyle|GCTile;
 		}
-		gcvalues[2] = ts_x_origin;
-		gcvalues[3] = ts_y_origin;
+		gcvalues[2] = ts_x_origin - pBackingStore->x;
+		gcvalues[3] = ts_y_origin - pBackingStore->y;
 		gcmask |= GCTileStipXOrigin|GCTileStipYOrigin;
 		DoChangeGC(pGC, gcmask, gcvalues, TRUE);
 		ValidateGC((DrawablePtr)pBackingStore->pBackingPixmap, pGC);
