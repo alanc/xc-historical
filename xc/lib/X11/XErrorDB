@@ -1,4 +1,4 @@
-! $XConsortium: XErrorDB,v 1.20 93/09/28 23:22:14 rws Exp $
+! $XConsortium: XErrorDB,v 1.21 93/10/24 16:33:31 rws Exp $
 ! these are used in XGetErrorMessage.
 XlibMessage.XError: X Error of failed request
 XlibMessage.MajorCode: Major opcode of failed request:  %d
@@ -160,7 +160,7 @@ XRequest.Multi-Buffering.7: X_MbufGetBufferAttributes
 XRequest.Multi-Buffering.8: X_MbufGetBufferInfo
 XRequest.Multi-Buffering.9: X_MbufCreateStereoWindow
 XProtoError.Multi-Buffering.0: BadBuffer (invalid Buffer parameter)
-XlibMessage.Multi-Buffering.0: Buffer id in failed request 0x%lx
+XlibMessage.Multi-Buffering.0: Buffer id in failed request:  0x%lx
 ! SHAPE extension, an X Consortium standard
 XRequest.SHAPE.0: X_ShapeQueryVersion
 XRequest.SHAPE.1: X_ShapeRectangles
@@ -215,7 +215,7 @@ XRequest.MIT-SHM.3: X_ShmPutImage
 XRequest.MIT-SHM.4: X_ShmGetImage
 XRequest.MIT-SHM.5: X_ShmCreatePixmap
 XProtoError.MIT-SHM.0: BadShmSeg (invalid shared segment parameter)
-XlibMessage.MIT-SHM.0: Segment id in failed request 0x%lx
+XlibMessage.MIT-SHM.0: Segment id in failed request:  0x%lx
 ! MIT-SUNDRY-NONSTANDARD extension, definitely not an X Consortium standard
 XRequest.MIT-SUNDRY-NONSTANDARD.0: X_MITSetBugMode
 XRequest.MIT-SUNDRY-NONSTANDARD.1: X_MITGetBugMode
@@ -325,35 +325,35 @@ XRequest.X3D-PEX.102: PEX_BeginPickAll
 XRequest.X3D-PEX.103: PEX_EndPickAll
 XRequest.X3D-PEX.104: PEX_PickAll
 XProtoError.X3D-PEX.0: PEXColorTypeError
-XlibMessage.X3D-PEX.0: Color type in failed request 0x%lx
+XlibMessage.X3D-PEX.0: Color type in failed request:  0x%lx
 XProtoError.X3D-PEX.1: PEXRendererStateError
-XlibMessage.X3D-PEX.1: Renderer id in failed request 0x%lx
+XlibMessage.X3D-PEX.1: Renderer id in failed request:  0x%lx
 XProtoError.X3D-PEX.2: PEXFloatingPointFormatError
-XlibMessage.X3D-PEX.2: Format in failed request 0x%lx
+XlibMessage.X3D-PEX.2: Format in failed request:  0x%lx
 XProtoError.X3D-PEX.3: PEXLabelError
-XlibMessage.X3D-PEX.3: Label in failed request 0x%lx
+XlibMessage.X3D-PEX.3: Label in failed request:  0x%lx
 XProtoError.X3D-PEX.4: PEXLookupTableError
-XlibMessage.X3D-PEX.4: Table id in failed request 0x%lx
+XlibMessage.X3D-PEX.4: Table id in failed request:  0x%lx
 XProtoError.X3D-PEX.5: PEXNameSetError
-XlibMessage.X3D-PEX.5: Nameset in failed request 0x%lx
+XlibMessage.X3D-PEX.5: Nameset in failed request:  0x%lx
 XProtoError.X3D-PEX.6: PEXPathError
-XlibMessage.X3D-PEX.6: Path id in failed request 0x%lx
+XlibMessage.X3D-PEX.6: Path id in failed request:  0x%lx
 XProtoError.X3D-PEX.7: PEXFontError
-XlibMessage.X3D-PEX.7: Font id in failed request 0x%lx
+XlibMessage.X3D-PEX.7: Font id in failed request:  0x%lx
 XProtoError.X3D-PEX.8: PEXPhigsWksError
-XlibMessage.X3D-PEX.8: Workstation id in failed request 0x%lx
+XlibMessage.X3D-PEX.8: Workstation id in failed request:  0x%lx
 XProtoError.X3D-PEX.9: PEXPickMeasureError
-XlibMessage.X3D-PEX.9: Device id in failed request 0x%lx
+XlibMessage.X3D-PEX.9: Device id in failed request:  0x%lx
 XProtoError.X3D-PEX.10: PEXPipelineContextError
-XlibMessage.X3D-PEX.10: Context id in failed request 0x%lx
+XlibMessage.X3D-PEX.10: Context id in failed request:  0x%lx
 XProtoError.X3D-PEX.11: PEXRendererError
-XlibMessage.X3D-PEX.11: Renderer id in failed request 0x%lx
+XlibMessage.X3D-PEX.11: Renderer id in failed request:  0x%lx
 XProtoError.X3D-PEX.12: PEXSearchContextError
-XlibMessage.X3D-PEX.12: Context id in failed request 0x%lx
+XlibMessage.X3D-PEX.12: Context id in failed request:  0x%lx
 XProtoError.X3D-PEX.13: PEXStructureError
-XlibMessage.X3D-PEX.13: Structure id in failed request 0x%lx
+XlibMessage.X3D-PEX.13: Structure id in failed request:  0x%lx
 XProtoError.X3D-PEX.14: PEXOutputCommandError
-XlibMessage.X3D-PEX.14: Resource id in failed request 0x%lx
+XlibMessage.X3D-PEX.14: Resource id in failed request:  0x%lx
 ! XTEST extension
 XRequest.XTEST.0: X_XTestGetVersion
 XRequest.XTEST.1: X_XTestCompareCursor
@@ -388,19 +388,19 @@ XRequest.XIE.24: XIE_QueryPhotoflo
 XRequest.XIE.25: XIE_Await
 XRequest.XIE.26: XIE_Abort
 XProtoError.XIE.0: XIE_ColorListError
-XlibMessage.XIE.0: ColorList in failed request 0x%lx
+XlibMessage.XIE.0: ColorList in failed request:  0x%lx
 XProtoError.XIE.1: XIE_LUTError
-XlibMessage.XIE.1: LUT in failed request 0x%lx
+XlibMessage.XIE.1: LUT in failed request:  0x%lx
 XProtoError.XIE.2: XIE_PhotofloError
-XlibMessage.XIE.2: Photoflo in failed request 0x%lx
+XlibMessage.XIE.2: Photoflo in failed request:  0x%lx
 XProtoError.XIE.3: XIE_PhotomapError
-XlibMessage.XIE.3: Photomap in failed request 0x%lx
+XlibMessage.XIE.3: Photomap in failed request:  0x%lx
 XProtoError.XIE.4: XIE_PhotospaceError
-XlibMessage.XIE.4: Photospace in failed request 0x%lx
+XlibMessage.XIE.4: Photospace in failed request:  0x%lx
 XProtoError.XIE.5: XIE_ROIError
-XlibMessage.XIE.5: ROI in failed request 0x%lx
+XlibMessage.XIE.5: ROI in failed request:  0x%lx
 XProtoError.XIE.6: XIE_FloError
-XlibMessage.XIE.6: Photoflo in failed request 0x%lx
+XlibMessage.XIE.6: Photoflo in failed request:  0x%lx
 ! SYNC extension
 XRequest.SYNC.0: X_SyncInitialize
 XRequest.SYNC.1: X_SyncListSystemCounters
@@ -417,9 +417,9 @@ XRequest.SYNC.11: X_SyncDestroyAlarm
 XRequest.SYNC.12: X_SyncSetPriority
 XRequest.SYNC.13: X_SyncGetPriority
 XProtoError.SYNC.0: XSyncBadCounter
-XlibMessage.SYNC.0: Counter in failed request 0x%lx
+XlibMessage.SYNC.0: Counter in failed request:  0x%lx
 XProtoError.SYNC.1: XSyncBadAlarm
-XlibMessage.SYNC.1: Alarm in failed request 0x%lx
+XlibMessage.SYNC.1: Alarm in failed request:  0x%lx
 ! XKB extension
 XRequest.XKEYBOARD.0: XkbUseExtension
 XRequest.XKEYBOARD.1: XkbSelectEvents
@@ -445,7 +445,7 @@ XRequest.XKEYBOARD.20: XkbGetGeometry
 XRequest.XKEYBOARD.21: XkbSetGeometry
 XRequest.XKEYBOARD.101: XkbSetDebuggingFlags
 XProtoError.XKEYBOARD.0: XkbBadKeyboard
-XlibMessage.XKEYBOARD.0: Device id in failed request 0x%lx
+XlibMessage.XKEYBOARD.0: Device id in failed request:  0x%lx
 ! GLX extension for OpenGL, an OpenGL Architectural Review Board standard
 ! GLX Commands
 XRequest.GLX.7: X_GLXQueryVersion
