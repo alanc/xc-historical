@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.33 94/03/18 15:59:21 mor Exp $ */
+/* $XConsortium: process.c,v 1.34 94/03/30 19:46:43 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -93,29 +93,65 @@ Author: Ralph Mor, X Consortium
  * reply is ready, we remove that replyWait from the list.
  *
  * If the reply/error is ready for the replyWait passed in to
- * IceProcessMessages, True is returned.  Otherwise, False is returned.
+ * IceProcessMessages, *replyReadyRet is set to True.
+ *
+ * The return value of IceProcessMessages is one of the following:
+ *
+ * IceProcessMessagesSuccess - the message was processed successfully.
+ * IceProcessMessagesIOError - an IO error occured.  The caller should
+ *			       invoked IceCloseConnection.
+ * IceProcessMessagesConnectionClosed - the connection was closed as a
+ *					result of shutdown negotiation.
  */
 
-Bool
-IceProcessMessages (iceConn, replyWait)
+IceProcessMessagesStatus
+IceProcessMessages (iceConn, replyWait, replyReadyRet)
 
 IceConn		 iceConn;
 IceReplyWaitInfo *replyWait;
+Bool		 *replyReadyRet;
 
 {
     iceMsg		*header;
     Bool		replyReady = False;
     IceReplyWaitInfo	*useThisReplyWait = NULL;
-    
+    int			retStatus = IceProcessMessagesSuccess;
+
+    if (replyWait)
+	*replyReadyRet = False;
+
+    /*
+     * Each time IceProcessMessages is entered, we increment the dispatch
+     * level.  Each time we leave it, we decrement the dispatch level.
+     */
+
+    iceConn->dispatch_level++;
+
+
+    /*
+     * Read the ICE message header.
+     */
+
     if (!_IceRead (iceConn, (unsigned long) SIZEOF (iceMsg), iceConn->inbuf))
     {
 	/*
 	 * If we previously sent a WantToClose and now we detected
 	 * that the connection was closed, _IceRead returns status 0.
 	 * Since the connection was closed, we just want to return here.
+
+	return (IceProcessMessagesConnectionClosed);
+    }
+
+    if (!iceConn->io_ok)
+    {
+	/*
+	 * An unexpected IO error occured.  The caller of IceProcessMessages
+	 * should call IceCloseConnection which will cause the watch procedures
+	 * to be invoked and the ICE connection to be freed.
 	 */
 
-	return (False);
+	iceConn->dispatch_level--;
+	return (IceProcessMessagesIOError);
     }
 
     header = (iceMsg *) iceConn->inbuf;
@@ -139,14 +175,15 @@ IceReplyWaitInfo *replyWait;
 	            ICE_ByteOrder, 2, 1, &byteOrder);
 
 		iceConn->connection_status = IceConnectRejected;
-		return (0);
 	    }
+	    else
+	    {
+		iceConn->swap =
+	            (((*(char *) &endian) && byteOrder == IceMSBfirst) ||
+	             !(*(char *) &endian) && byteOrder == IceLSBfirst);
 
-	    iceConn->swap =
-	        (((*(char *) &endian) && byteOrder == IceMSBfirst) ||
-	         !(*(char *) &endian) && byteOrder == IceLSBfirst);
-
-	    iceConn->waiting_for_byteorder = 0;
+		iceConn->waiting_for_byteorder = 0;
+	    }
 	}
 	else
 	{
@@ -164,7 +201,10 @@ IceReplyWaitInfo *replyWait;
 	    iceConn->connection_status = IceConnectRejected;
 	}
 
-	return (False);
+	iceConn->dispatch_level--;
+	if (!iceConn->io_ok)
+	    retStatus = IceProcessMessagesIOError;
+	return (retStatus);
     }
 
     if (iceConn->swap)
@@ -203,11 +243,23 @@ IceReplyWaitInfo *replyWait;
 	 * ICE protocol
 	 */
 
+	Bool connectionClosed;
+
 	_IceProcessCoreMsgProc processIce =
 	    _IceVersions[iceConn->my_ice_version_index].process_core_msg_proc;
 
-	replyReady = (*processIce) (iceConn, header->minorOpcode,
-	    header->length, iceConn->swap, useThisReplyWait);
+	(*processIce) (iceConn, header->minorOpcode,
+	    header->length, iceConn->swap,
+	    useThisReplyWait, &replyReady, &connectionClosed);
+
+	if (connectionClosed)
+	{
+	    /*
+	     * As a result of shutdown negotiation, the connection was closed.
+	     */
+
+	    return (IceProcessMessagesConnectionClosed);
+	}
     }
     else
     {
@@ -247,9 +299,10 @@ IceReplyWaitInfo *replyWait;
 		IcePoProcessMsgProc processProc =
 		    processMsgInfo->process_msg_proc.orig_client;
 
-		replyReady = (*processProc) (iceConn,
+		(*processProc) (iceConn,
 		    processMsgInfo->client_data, header->minorOpcode,
-		    header->length, iceConn->swap, useThisReplyWait);
+		    header->length, iceConn->swap,
+		    useThisReplyWait, &replyReady);
 	    }
 	}
     }
@@ -267,9 +320,17 @@ IceReplyWaitInfo *replyWait;
      */
 
     if (replyWait)
-	return (_IceCheckReplyReady (iceConn, replyWait));
-    else
-	return (False);
+	*replyReadyRet = _IceCheckReplyReady (iceConn, replyWait);
+
+
+    /*
+     * Decrement the dispatch level and check for bad IO status.
+     */
+
+    iceConn->dispatch_level--;
+    if (!iceConn->io_ok)
+	retStatus = IceProcessMessagesIOError;
+    return (retStatus);
 }
 
 
@@ -458,6 +519,12 @@ IceReplyWaitInfo *replyWait;
 
     IceReadCompleteMessage (iceConn, SIZEOF (iceErrorMsg),
 	iceErrorMsg, message, pStart);
+
+    if (!IceValidIO (iceConn))
+    {
+	IceDisposeCompleteMessage (iceConn, pStart);
+	return (0);
+    }
 
     severity = message->severity;
 
@@ -736,6 +803,12 @@ Bool		swap;
     IceReadCompleteMessage (iceConn, SIZEOF (iceConnectionSetupMsg),
 	iceConnectionSetupMsg, message, pStart);
 
+    if (!IceValidIO (iceConn))
+    {
+	IceDisposeCompleteMessage (iceConn, pStart);
+	return (0);
+    }
+
     pData = pStart;
 
     SKIP_STRING (pData, swap);				       /* vendor */
@@ -972,6 +1045,12 @@ IceReplyWaitInfo	*replyWait;
     IceReadCompleteMessage (iceConn, SIZEOF (iceAuthRequiredMsg),
 	iceAuthRequiredMsg, message, authData);
 
+    if (!IceValidIO (iceConn))
+    {
+	IceDisposeCompleteMessage (iceConn, authData);
+	return (0);
+    }
+
     if (swap)
     {
 	message->authDataLength = lswaps (message->authDataLength);
@@ -1155,6 +1234,12 @@ Bool		swap;
 
     IceReadCompleteMessage (iceConn, SIZEOF (iceAuthReplyMsg),
 	iceAuthReplyMsg, message, replyData);
+
+    if (!IceValidIO (iceConn))
+    {
+	IceDisposeCompleteMessage (iceConn, replyData);
+	return (0);
+    }
 
     if (swap)
     {
@@ -1450,6 +1535,12 @@ IceReplyWaitInfo	*replyWait;
     IceReadCompleteMessage (iceConn, SIZEOF (iceAuthNextPhaseMsg),
 	iceAuthNextPhaseMsg, message, authData);
 
+    if (!IceValidIO (iceConn))
+    {
+	IceDisposeCompleteMessage (iceConn, authData);
+	return (0);
+    }
+
     if (swap)
     {
 	message->authDataLength = lswaps (message->authDataLength);
@@ -1570,6 +1661,12 @@ IceReplyWaitInfo 	*replyWait;
     IceReadCompleteMessage (iceConn, SIZEOF (iceConnectionReplyMsg),
 	iceConnectionReplyMsg, message, pStart);
 
+    if (!IceValidIO (iceConn))
+    {
+	IceDisposeCompleteMessage (iceConn, pStart);
+	return (0);
+    }
+
     pData = pStart;
 
     SKIP_STRING (pData, swap);				     /* vendor */
@@ -1686,6 +1783,12 @@ Bool		swap;
 
     IceReadCompleteMessage (iceConn, SIZEOF (iceProtocolSetupMsg),
 	iceProtocolSetupMsg, message, pStart);
+
+    if (!IceValidIO (iceConn))
+    {
+	IceDisposeCompleteMessage (iceConn, pStart);
+	return (0);
+    }
 
     pData = pStart;
 
@@ -2040,6 +2143,12 @@ IceReplyWaitInfo 	*replyWait;
     IceReadCompleteMessage (iceConn, SIZEOF (iceProtocolReplyMsg),
 	iceProtocolReplyMsg, message, pStart);
 
+    if (!IceValidIO (iceConn))
+    {
+	IceDisposeCompleteMessage (iceConn, pStart);
+	return (0);
+    }
+
     pData = pStart;
 
     SKIP_STRING (pData, swap);				     /* vendor */
@@ -2160,12 +2269,15 @@ unsigned long	length;
 
 
 static
-ProcessWantToClose (iceConn, length)
+ProcessWantToClose (iceConn, length, connectionClosedRet)
 
 IceConn 	iceConn;
 unsigned long	length;
+Bool		*connectionClosedRet;
 
 {
+    *connectionClosedRet = False;
+
     CHECK_SIZE_MATCH (iceConn, ICE_WantToClose,
 	length, SIZEOF (iceWantToCloseMsg), IceFatalToConnection);
 
@@ -2180,7 +2292,9 @@ unsigned long	length;
 	 * received a NoClose.
 	 */
 
-	_IceFreeConnection (iceConn, False);
+	_IceConnectionClosed (iceConn);		/* invoke watch procs */
+	_IceFreeConnection (iceConn);
+	*connectionClosedRet = True;
     }
     else if (iceConn->proto_ref_count > 0)
     {
@@ -2243,17 +2357,22 @@ unsigned long	length;
 
 
 
-Bool
-_IceProcessCoreMessage (iceConn, opcode, length, swap, replyWait)
+void
+_IceProcessCoreMessage (iceConn, opcode, length, swap,
+    replyWait, replyReadyRet, connectionClosedRet)
 
 IceConn 	 iceConn;
 int     	 opcode;
 unsigned long	 length;
 Bool    	 swap;
 IceReplyWaitInfo *replyWait;
+Bool		 *replyReadyRet;
+Bool		 *connectionClosedRet;
 
 {
     Bool replyReady = False;
+
+    *connectionClosedRet = False;
 
     switch (opcode)
     {
@@ -2309,7 +2428,7 @@ IceReplyWaitInfo *replyWait;
 
     case ICE_WantToClose:
 
-	ProcessWantToClose (iceConn, length);
+	ProcessWantToClose (iceConn, length, connectionClosedRet);
 	break;
 
     case ICE_NoClose:
@@ -2324,5 +2443,6 @@ IceReplyWaitInfo *replyWait;
 	break;
     }
 
-    return (replyReady);
+    if (replyWait)
+	*replyReadyRet = replyReady;
 }
