@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.54 89/03/14 15:46:14 rws Exp $ */
+/* $XConsortium: io.c,v 1.55 89/03/23 09:04:51 rws Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -316,116 +316,138 @@ FlushClient(who, oc, extraBuf, extraCount)
     char *extraBuf;
     int extraCount; /* do not modify... returned below */
 {
-    int connection = oc->fd,
-    	total, n, i, notWritten, written,
-	iovCnt = 0;
+    int connection = oc->fd;
     struct iovec iov[3];
     char padBuffer[3];
+    long written = 0;
+    long padsize = padlength[extraCount & 3];
+    long notWritten = oc->output.count + extraCount + padsize;
+    long todo = notWritten;
 
-    total = 0;
-    if (oc->output.count)
-    {
-	total += iov[iovCnt].iov_len = oc->output.count;
-	iov[iovCnt++].iov_base = (caddr_t)oc->output.buf;
-        /* Notice that padding isn't needed for oc->output.buf since
-           it is alreay padded by WriteToClient */
-    }
-    if (extraCount)
-    {
-	total += iov[iovCnt].iov_len = extraCount;
-	iov[iovCnt++].iov_base = extraBuf;
-	if (extraCount & 3)
-	{
-	    total += iov[iovCnt].iov_len = padlength[extraCount & 3];
-	    iov[iovCnt++].iov_base = padBuffer;
+    while (notWritten) {
+	long before = written;	/* amount of whole thing written */
+	long remain = todo;	/* amount to try this time, <= notWritten */
+	int i = 0;
+	long len;
+
+	/* You could be very general here and have "in" and "out" iovecs
+	 * and write a loop without using a macro, but what the heck.  This
+	 * translates to:
+	 *
+	 *     how much of this piece is new?
+	 *     if more new then we are trying this time, clamp
+	 *     if nothing new
+	 *         then bump down amount already written, for next piece
+	 *         else put new stuff in iovec, will need all of next piece
+	 *
+	 * Note that todo had better be at least 1 or else we'll end up
+	 * writing 0 iovecs.
+	 */
+#define InsertIOV(pointer, length) \
+	len = (length) - before; \
+	if (len > remain) \
+	    len = remain; \
+	if (len <= 0) { \
+	    before = (-len); \
+	} else { \
+	    iov[i].iov_len = len; \
+	    iov[i].iov_base = (pointer) + before; \
+	    i++; \
+	    remain -= len; \
+	    before = 0; \
 	}
-    }
 
-    notWritten = total;
-    while ((n = writev (connection, iov, iovCnt)) != notWritten)
-    {
-#ifdef hpux
-	if (n == -1 && errno == EMSGSIZE)
-	    n = swWritev (connection, iov, 2);
+	InsertIOV ((char *)oc->output.buf, oc->output.count)
+	InsertIOV (extraBuf, extraCount)
+	InsertIOV (padBuffer, padsize)
+
+	errno = 0;
+	if ((len = writev(connection, iov, i)) >= 0)
+	{
+	    written += len;
+	    notWritten -= len;
+	    todo = notWritten;
+	}
+#ifdef apollo /* stupid sr10.1 UDS bug - supposedly fixed in sr10.2 */
+	else if ((errno == EWOULDBLOCK) && (todo > 4096))
+	{
+	    todo = 4096;
+	}
 #endif
-        if (n > 0) 
-        {
-	    notWritten -= n;
-	    for (i = 0; i < iovCnt; i++)
-            {
-		if (n > iov[i].iov_len)
+	else if ((errno == EWOULDBLOCK)
+#ifdef SUNSYSV /* check for another brain-damaged OS bug */
+		 || (errno == 0)
+#endif
+#ifdef EMSGSIZE /* check for another brain-damaged OS bug */
+		 || ((errno == EMSGSIZE) && (todo == 1))
+#endif
+		)
+	{
+	    /* If we've arrived here, then the client is stuffed to the gills
+	       and not ready to accept more.  Make a note of it and buffer
+	       the rest. */
+	    BITSET(ClientsWriteBlocked, connection);
+	    AnyClientsWriteBlocked = TRUE;
+
+	    if (written < oc->output.count)
+	    {
+		if (written > 0)
 		{
-		    n -= iov[i].iov_len;
-		    iov[i].iov_len = 0;
-		}
-		else
-		{
-		    iov[i].iov_len -= n;
-		    iov[i].iov_base += n;
-		    break;
+		    oc->output.count -= written;
+		    bcopy((char *)oc->output.buf + written,
+			  (char *)oc->output.buf,
+			  oc->output.count);
+		    written = 0;
 		}
 	    }
-	    continue;
+	    else
+	    {
+		written -= oc->output.count;
+		oc->output.count = 0;
+	    }
+
+	    if (notWritten > oc->output.size)
+	    {
+		unsigned char *obuf;
+
+		obuf = (unsigned char *)xrealloc(oc->output.buf,
+						 notWritten +
+						 OutputBufferSize);
+		if (!obuf)
+		{
+		    close(connection);
+		    MarkClientException(who);
+		    oc->output.count = 0;
+		    return(-1);
+		}
+		oc->output.size = notWritten + OutputBufferSize;
+		oc->output.buf = obuf;
+	    }
+
+	    /* If the amount written extended into the padBuffer, then the
+	       difference "extraCount - written" may be less than 0 */
+	    if ((len = extraCount - written) > 0)
+		bcopy (extraBuf + written,
+		       (char *)oc->output.buf + oc->output.count,
+		       len);
+
+	    oc->output.count = notWritten; /* this will include the pad */
+	    /* return only the amount explicitly requested */
+	    return extraCount;
 	}
-	else if (errno != EWOULDBLOCK)
-        {
+#ifdef EMSGSIZE /* check for another brain-damaged OS bug */
+	else if (errno == EMSGSIZE)
+	{
+	    todo >>= 1;
+	}
+#endif
+	else
+	{
 	    close(connection);
-            MarkClientException(who);
+	    MarkClientException(who);
 	    oc->output.count = 0;
 	    return(-1);
 	}
-
-	/* If we've arrived here, then the client is stuffed to the gills
-	   and not ready to accept more.  Make a note of it and buffer
-	   the rest. */
-	BITSET(ClientsWriteBlocked, connection);
-	AnyClientsWriteBlocked = TRUE;
-
-	written = total - notWritten;
-	if (written < oc->output.count)
-	{
-	    if (written > 0)
-	    {
-		oc->output.count -= written;
-		bcopy((char *)oc->output.buf + written,
-		      (char *)oc->output.buf,
-		      oc->output.count);
-		written = 0;
-	    }
-	}
-	else
-	{
-	    written -= oc->output.count;
-	    oc->output.count = 0;
-	}
-
-	if (notWritten > oc->output.size)
-	{
-	    unsigned char *obuf;
-
-	    obuf = (unsigned char *)xrealloc(oc->output.buf,
-					     notWritten + OutputBufferSize);
-	    if (!obuf)
-	    {
-		close(connection);
-		MarkClientException(who);
-		oc->output.count = 0;
-		return(-1);
-	    }
-	    oc->output.size = notWritten + OutputBufferSize;
-	    oc->output.buf = obuf;
-	}
-
-	/* If the amount written extended into the padBuffer, then the
-	   difference "extraCount - written" may be less than 0 */
-	if ((n = extraCount - written) > 0)
-	    bcopy (extraBuf + written,
-		   (char *)oc->output.buf + oc->output.count,
-		   n);
-
-	oc->output.count = notWritten; /* this will include the pad */
-
-	return extraCount; /* return only the amount explicitly requested */
     }
 
     /* everything was flushed out */
