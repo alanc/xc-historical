@@ -1,7 +1,4 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: Box.c,v 1.43 89/12/07 20:14:26 kit Exp $";
-#endif /* lint */
-
+/* $XConsortium: Box.c,v 1.44 90/03/23 18:13:58 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -166,7 +163,7 @@ static DoLayout(bbw, width, height, reply_width, reply_height, position)
 	    if (widget->core.mapped_when_managed) num_mapped_children++;
 	    /* Compute widget width */
 	    bw = widget->core.width + 2*widget->core.border_width + h_space;
-	    if (lw + bw > width) {
+	    if ((Dimension)(lw + bw) > width) {
 		if (lw > h_space) {
 		    /* At least one widget on this line, and
 		     * can't fit any more.  Start new line if vbox.
