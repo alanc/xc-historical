@@ -1,5 +1,5 @@
 /*
- * $XConsortium: CloseHook.h,v 1.1 89/07/14 17:51:53 jim Exp $
+ * $XConsortium: CloseHook.h,v 1.2 90/12/19 18:08:38 converse Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -24,6 +24,13 @@
 
 typedef caddr_t CloseHook;
 
+typedef void (*XmuCloseHookProc)(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */,
+    caddr_t	/* data */
+#endif 
+);
+
 #ifdef __cplusplus
 extern "C" {					/* for C++ V2.0 */
 #endif
@@ -31,12 +38,7 @@ extern "C" {					/* for C++ V2.0 */
 extern CloseHook XmuAddCloseDisplayHook(
 #if NeedFunctionPrototypes
     Display *	/* dpy */,
-    int (*) (
-#if NeedNestedPrototypes
-	     Display *	/* dpy */,
-	     caddr_t	/* arg */
-#endif
-	     )	/* func */,
+    XmuCloseHookProc	/* proc */,
     caddr_t	/* arg */
 #endif
 );
@@ -45,12 +47,7 @@ extern Bool XmuLookupCloseDisplayHook(
 #if NeedFunctionPrototypes
     Display *	/* dpy */,
     CloseHook	/* handle */,
-    int (*)(
-#if NeedNestedPrototypes
-	    Display *	/* dpy */,
-	    caddr_t	/* arg */
-#endif
-	    )	/* func */,
+    XmuCloseHookProc	/* proc */,
     caddr_t	/* arg  */
 #endif
 );
@@ -59,12 +56,7 @@ extern Bool XmuRemoveCloseDisplayHook(
 #if NeedFunctionPrototypes
     Display *	/* dpy */,
     CloseHook	/* handle */,
-    int (*)(
-#if NeedNestedPrototypes
-	    Display *	/* dpy */,
-	    caddr_t	/* arg */
-#endif
-	    )	/* func */,
+    XmuCloseHookProc	/* proc */,
     caddr_t	/* arg */
 #endif
 );
