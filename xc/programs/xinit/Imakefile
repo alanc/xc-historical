@@ -1,4 +1,4 @@
-        DEFINES = ConnectionFlags
+        DEFINES = ConnectionFlags -DBINDIR=\"$(INSTALLDIR)\"
 LOCAL_LIBRARIES = $(XLIB)
 
 SimpleProgramTarget(xinit)
