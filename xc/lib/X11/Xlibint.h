@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.131 94/01/11 12:35:03 mor Exp $ */
+/* $XConsortium: Xlibint.h,v 11.132 94/01/15 10:07:56 gildea Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -251,7 +251,7 @@ extern LockInfoPtr _Xglobal_lock;
 #define _XUnlockMutex(lock)	if (_XUnlockMutex_fn) (*_XUnlockMutex_fn)(lock)
 #endif
 #define _XCreateMutex(lock)	if (_XCreateMutex_fn) (*_XCreateMutex_fn)(lock);
-#define XFreeMutex(lock)	if (_XFreeMutex_fn) (*_XFreeMutex_fn)(lock);
+#define _XFreeMutex(lock)	if (_XFreeMutex_fn) (*_XFreeMutex_fn)(lock);
 
 #else /* XTHREADS */
 #define LockDisplay(dis)
@@ -259,7 +259,7 @@ extern LockInfoPtr _Xglobal_lock;
 #define _XUnlockMutex(lock)
 #define UnlockDisplay(dis)
 #define _XCreateMutex(lock)
-#define XFreeMutex(lock)
+#define _XFreeMutex(lock)
 #endif
 
 #define Xfree(ptr) free((ptr))

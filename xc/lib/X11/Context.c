@@ -1,4 +1,4 @@
-/* $XConsortium: Context.c,v 1.17 93/11/15 11:18:38 kaleb Exp $ */
+/* $XConsortium: Context.c,v 1.18 93/12/09 15:01:54 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988, 1990 by Digital Equipment Corporation, Maynard,
@@ -105,7 +105,11 @@ static void _XFreeContextDB(display)
     register int i;
     register TableEntry *pentry, entry, next;
 
-    if (db = display->context_db) {
+    LockDisplay(display);
+    db = display->context_db;
+    UnlockDisplay(display);
+    if (db) {
+	_XLockMutex(&db->linfo);
 	for (i = db->mask + 1, pentry = db->table ; --i >= 0; pentry++) {
 	    for (entry = *pentry; entry; entry = next) {
 		next = entry->next;
@@ -113,6 +117,7 @@ static void _XFreeContextDB(display)
 	    }
 	}
 	Xfree((char *) db->table);
+	_XFreeMutex(&db->linfo);
 	Xfree((char *) db);
     }
 }

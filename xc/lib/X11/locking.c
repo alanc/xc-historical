@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.c,v 1.22 94/01/15 10:09:31 gildea Exp $
+ * $XConsortium: locking.c,v 1.23 94/01/16 17:00:50 gildea Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -29,6 +29,7 @@
 #undef _XLockMutex
 #undef _XUnlockMutex
 #undef _XCreateMutex
+#undef _XFreeMutex
 
 #ifdef XTHREADS
 
