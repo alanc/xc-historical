@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: pick.c,v 2.23 88/09/06 17:23:28 jim Exp $";
+static char rcs_id[] = "$XConsortium: pick.c,v 2.24 89/02/03 09:17:09 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -255,6 +255,8 @@ static void ExecRowOr(w, closure, call_data)
     caddr_t closure;		/* FormEntry */
     caddr_t call_data;		/* unused */
 {
+    static DeleteWidget();
+
     FormEntry entry = (FormEntry)closure;
     RowList row = entry->row;
     FormBox form = row->group->form;
@@ -273,6 +275,8 @@ static void ExecGroupOr(w, closure, call_data)
     caddr_t closure;		/* FormEntry */
     caddr_t call_data;		/* unused */
 {
+    static AddDetailGroup();
+
     FormBox form = ((FormEntry)closure)->row->group->form;
 /* %%%    XUnmapWindow(theDisplay, XtWindow(form->inner)); */
     PrepareToUpdate(form);
