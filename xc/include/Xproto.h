@@ -1,5 +1,5 @@
 /*
- *	$Header: Xproto.h,v 1.72 87/08/24 15:54:14 susan Exp $
+ *	$Header: Xproto.h,v 1.73 87/09/03 16:23:10 newman Exp $
  */
 
 /* Definitions for the X window system used by server and c bindings */
@@ -473,7 +473,7 @@ typedef struct {
     BYTE pad1;
     CARD16 sequenceNumber B16;
     CARD32 length B32;
-    CARD16 nFonts B32;
+    CARD16 nFonts B16;
     CARD16 pad2 B16;
     CARD32 pad3 B32;
     CARD32 pad4 B32;
@@ -1117,7 +1117,7 @@ typedef struct {
     CARD8 reqType;
     BYTE pad;
     CARD16 length B16;
-    CARD32 id;  /* a Window, Drawable, Font, GContext, Pixmap, etc. */
+    CARD32 id B32;  /* a Window, Drawable, Font, GContext, Pixmap, etc. */
     } xResourceReq;
 
 typedef struct {
