@@ -17,7 +17,7 @@ without express or implied warranty.
 */
 
 #ifndef lint
-static char *rcsid_xhost_c = "$Header: xhost.c,v 11.14 88/06/29 15:18:45 jim Exp $";
+static char *rcsid_xhost_c = "$Header: xhost.c,v 11.15 88/06/29 15:23:27 jim Exp $";
 #endif
  
 #include <signal.h>
@@ -96,8 +96,8 @@ main(argc, argv)
 #endif
  
 	if ((dpy = XOpenDisplay(NULL)) == NULL) {
-	    fprintf(stderr, "%s: Can't open display /* '%s' */\n",
-		    argv[0]/*, XDisplayName("\0")*/);
+	    fprintf(stderr, "%s:  unable to open display \"%s\"\n",
+		    argv[0], XDisplayName (NULL));
 	    exit(1);
 	}
 
