@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: inputstr.h,v 1.30 93/07/12 09:45:02 dpw Exp $ */
+/* $XConsortium: inputstr.h,v 1.31 93/09/25 16:42:16 rws Exp $ */
 
 #ifndef INPUTSTRUCT_H
 #define INPUTSTRUCT_H
@@ -108,7 +108,7 @@ typedef struct _KeyClassRec {
 #ifdef XKB
     int			keymapSerial;
     int			ddxSerial;
-    struct _XKBSrvInfoRec *xkbInfo;
+    struct _XkbSrvInfoRec *xkbInfo;
 #endif
 } KeyClassRec, *KeyClassPtr;
 
