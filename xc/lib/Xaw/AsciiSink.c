@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.23 88/09/22 09:15:36 swick Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.24 88/10/04 16:05:02 swick Exp $";
 #endif lint
 
 
@@ -32,7 +32,7 @@ SOFTWARE.
 #include <X11/Xatom.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
-#include "TextP.h"
+#include <X11/TextP.h>
 
 
 #define GETLASTPOS (*source->Scan)(source, 0, XtstAll, XtsdRight, 1, TRUE)
@@ -144,8 +144,7 @@ static int AsciiDisplayText (w, x, y, pos1, pos2, highlight)
 		XFillRectangle(XtDisplay(w), XtWindow(w), invgc, x,
 			       y - font->ascent, width,
 			       (Dimension) (data->font->ascent +
-					    data->font->descent),
-			   False);
+					    data->font->descent));
 		x += width;
 		j = -1;
 	    }
@@ -222,7 +221,9 @@ static AsciiClearToBackground (w, x, y, width, height)
   Position x, y;
   Dimension width, height;
 {
-    XClearArea(XtDisplay(w), XtWindow(w), x, y, width, height, False);
+    XFillRectangle(XtDisplay(w), XtWindow(w),
+		   ((AsciiSinkData*)((TextWidget)w)->text.sink->data)->invgc,
+		   x, y, width, height);
 }
 
 /*
