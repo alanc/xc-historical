@@ -1,4 +1,4 @@
-/* $XConsortium: XI.h,v 1.1 89/10/13 17:10:49 jim Exp $ */
+/* $XConsortium: XI.h,v 1.2 89/11/07 19:28:02 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -144,6 +144,16 @@ SOFTWARE.
 #define IntegerFeedbackClass  	3
 #define LedFeedbackClass  	4
 #define BellFeedbackClass  	5
+
+#define _devicePointerMotionHint 0
+#define _deviceButton1Motion	 1
+#define _deviceButton2Motion	 2
+#define _deviceButton3Motion	 3
+#define _deviceButton4Motion	 4
+#define _deviceButton5Motion	 5
+#define _deviceButtonMotion	 6
+#define _deviceButtonGrab	 7
+#define _deviceOwnerGrabButton	 8
 
 typedef	unsigned long	XEventClass;
 
