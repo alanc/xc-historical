@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontscale.c,v 1.2 91/05/30 19:05:46 keith Exp $
+ * $XConsortium: fontscale.c,v 1.3 91/06/12 14:35:12 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -142,7 +142,12 @@ FontFileCompleteXLFD (vals, def)
 	if (vals->y <= 0)
 	    vals->y = def->y;
 	if (vals->pixel > 0)
-	    vals->point = (vals->pixel * 7227) / (vals->y * 10);
+	{
+	    if (!vals->y)
+		vals->point = 0;
+	    else
+		vals->point = (vals->pixel * 7227) / (vals->y * 10);
+	}
 	else if (vals->point > 0)
 	    vals->pixel = (vals->point * vals->y * 10) / 7227;
 	else {
