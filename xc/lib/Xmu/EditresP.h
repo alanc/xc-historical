@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Editres.h,v 1.8 90/06/28 15:41:38 kit Exp $
+ * $XConsortium: Editres.h,v 1.9 91/04/04 21:35:52 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -225,7 +225,7 @@
 
 #include <X11/Intrinsic.h>
 
-#define BYTE 8
+#define XER_NBBY 8		/* number of bits in a byte */
 #define BYTE_MASK 255
 
 #define HEADER_SIZE 6

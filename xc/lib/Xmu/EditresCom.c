@@ -1,5 +1,5 @@
 /*
- * $XConsortium: EditresCom.c,v 1.24 91/04/11 09:04:28 rws Exp $
+ * $XConsortium: EditresCom.c,v 1.25 91/05/09 17:26:25 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -447,6 +447,7 @@ EditresEvent * event;
 	    char buf[BUFSIZ];
 	    sprintf(buf,"Unknown Protocol request %d.",event->any_event.type);
 	    SendFailure(w, sel, ident, buf);
+	    return;
 	}
     }
 
@@ -773,7 +774,7 @@ ProtocolStream * stream;
      * Overwrite the first 2 bytes with the real count.
      */
 
-    *(stream->top) = count >> BYTE;
+    *(stream->top) = count >> XER_NBBY;
     *(stream->top + 1) = count;
     return(NULL);
 }
@@ -900,7 +901,7 @@ ProtocolStream * stream;
      * Overwrite the first 2 bytes with the real count.
      */
 
-    *(stream->top) = count >> BYTE;
+    *(stream->top) = count >> XER_NBBY;
     *(stream->top + 1) = count;
     return(NULL);
 }
@@ -1430,7 +1431,7 @@ _XEditResPut16(stream, value)
 ProtocolStream * stream;
 unsigned int value;
 {
-    _XEditResPut8(stream, (value >> BYTE) & BYTE_MASK);
+    _XEditResPut8(stream, (value >> XER_NBBY) & BYTE_MASK);
     _XEditResPut8(stream, value & BYTE_MASK);
 }
 
@@ -1449,7 +1450,7 @@ unsigned long value;
     int i;
 
     for (i = 3; i >= 0; i--) 
-	_XEditResPut8(stream, (value >> (BYTE*i)) & BYTE_MASK);
+	_XEditResPut8(stream, (value >> (XER_NBBY*i)) & BYTE_MASK);
 }
 
 /*	Function Name: _XEditResPutWidgetInfo
@@ -1545,7 +1546,7 @@ unsigned short * val;
     if ( !(_XEditResGet8(stream, &temp1) && _XEditResGet8(stream, &temp2)) )
 	return(FALSE);
     
-    *val = (((unsigned short) temp1 << BYTE) + ((unsigned short) temp2));
+    *val = (((unsigned short) temp1 << XER_NBBY) + ((unsigned short) temp2));
     return(TRUE);
 }
 
@@ -1566,13 +1567,13 @@ short * val;
     if ( !(_XEditResGet8(stream, &temp1) && _XEditResGet8(stream, &temp2)) )
 	return(FALSE);
     
-    if (temp1 & (1 << (BYTE - 1))) { /* If the sign bit is active. */
+    if (temp1 & (1 << (XER_NBBY - 1))) { /* If the sign bit is active. */
 	*val = -1;		 /* store all 1's */
-	*val &= (temp1 << BYTE); /* Now and in the MSB */
+	*val &= (temp1 << XER_NBBY); /* Now and in the MSB */
 	*val &= temp2;		 /* and LSB */
     }
     else 
-	*val = (((unsigned short) temp1 << BYTE) + ((unsigned short) temp2));
+	*val = (((unsigned short) temp1 << XER_NBBY) + ((unsigned short) temp2));
 
     return(TRUE);
 }
@@ -1595,7 +1596,7 @@ unsigned long * val;
     if ( !(_XEditResGet16(stream, &temp1) && _XEditResGet16(stream, &temp2)) )
 	return(FALSE);
     
-    *val = (((unsigned short) temp1 << (BYTE * 2)) + 
+    *val = (((unsigned short) temp1 << (XER_NBBY * 2)) + 
 	    ((unsigned short) temp2));
     return(TRUE);
 }

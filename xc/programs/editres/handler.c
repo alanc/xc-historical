@@ -1,5 +1,5 @@
 /*
- * $XConsortium: handler.c,v 1.18 91/03/19 12:38:30 gildea Exp $
+ * $XConsortium: handler.c,v 1.19 91/04/04 21:35:25 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -751,8 +751,8 @@ XtPointer node_ptr, junk;
 			CreateSetValuesCommand, (XtPointer) &info);
     
     if (info.count > 0) {
-	*(stream->top + len++) = info.count >> BYTE; /* Set the correct */
-	*(stream->top + len) = info.count;           /* count. */
+	*(stream->top + len++) = info.count >> XER_NBBY; /* Set the correct */
+	*(stream->top + len) = info.count;               /* count. */
 
 	SetCommand(node->tree_info->tree_widget, LocalSetValues, NULL);
     }
