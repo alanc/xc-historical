@@ -1,39 +1,16 @@
-.TH XSETROOT 1 "12 June 1987" "X Version 11"
+.TH XSETROOT 1 "1 March 1988" "X Version 11"
 .SH NAME
 xsetroot \- X window system root window parameter setting utility
 .SH SYNOPSIS
 .B xsetroot
-[ -help ]
-[ -def ]
-[-cursor
-.I cursorfile mask\ file
-]
-[-bitmap
-.I filename
-]
-[-mod
-.I x y
-]
-[ -gray ]
-[ -grey ]
-[-fg
-.I color
-]
-[-bg
-.I color
-]
-[ -rv ]
-[-solid
-.I color
-]
-[-name
-.I string
-]
-[
-.I host : display
-]
+[-help] [-def] [-display \fIhost\fP:\fIdpy\fP]
+[-cursor \fIcursorfile maskfile\fP] [-bitmap \fIfilename\fP]
+[-mod \fIx y\fP] [-gray] [-grey] [-fg \fIcolor\fP] [-bg \fIcolor\fP] [-rv]
+[-solid \fIcolor\fP] [-name \fIstring\fP]
 .SH DESCRIPTION
-.I Xsetroot
+The 
+.I setroot
+program
 allows you to tailor the appearance of the background ("root")
 window on a workstation display running X.  Normally, you experiment with
 .I xsetroot
@@ -42,20 +19,13 @@ until you find a personalized look that you like, then put the
 command that produces it into your .login file.
 If no options are specified, or if
 .I -def
-is specified, the window is reset to its default state.
+is specified, the window is reset to its default state.  the
 .I -def
-can be specified along with other options and only the non-specified
+option can be specified along with other options and only the non-specified
 characteristics will be reset to the default state.
 .PP
-Only one of the background color/tileing changing options (
-.IR -solid ,
-.IR -gray ,
-.IR -grey ,
-.IR -bitmap
-and
-.IR -mod )
-may be specified at a time.
-
+Only one of the background color/tileing changing options 
+(-solid, -gray, -grey, -bitmap, and -mod) may be specified at a time.
 .PP
 The various options are as follows:
 .IP -help
@@ -99,14 +69,12 @@ Set the name of the root window to ``string''.  There is no default value.
 Usually a name is assigned to a window so that the
 window manager can use a text representation when the window is iconified.
 This option is unused since you can't iconify the background.
-.IP "host:display"
+.IP "-display host:dpy"
 Defaults to the DISPLAY environment variable, which is usually set
 to be one's own workstation host, display 0.  
 .SH "SEE ALSO"
 xset(1), X(1)
 .SH AUTHOR
-Mark Lillibridge, MIT Project Athena
-.br
 Copyright (c) 1987 by Massachusetts Institute of Technology.
 .br
-See \fIX(1)\fP for a full copyright notice.
+Mark Lillibridge, MIT Project Athena
