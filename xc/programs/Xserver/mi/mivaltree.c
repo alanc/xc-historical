@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char rcsid[] =
-"$Header: mivaltree.c,v 5.6 89/07/12 13:44:38 rws Exp $ SPRITE (Berkeley)";
+"$Header: mivaltree.c,v 5.7 89/07/12 17:17:01 keith Exp $ SPRITE (Berkeley)";
 #endif lint
 
 #include    <stdio.h>
@@ -289,9 +289,6 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
     	}
     }
 
-    pParent->valdata->oldAbsCorner.x = pParent->drawable.x;
-    pParent->valdata->oldAbsCorner.y = pParent->drawable.y;
-
     /*
      * Since the borderClip must not be clipped by the children, we do
      * the border exposure first...
@@ -400,6 +397,14 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
     if (pParent->backStorage)
     {
 	(* pScreen->Subtract) (exposed, &pParent->clipList, universe);
+	if ((*pScreen->RegionNotEmpty) (exposed))
+	{
+	    RegionPtr	temp, CreateUnclippedWinSize();
+	    
+	    temp = CreateUnclippedWinSize (pParent);
+	    (* pScreen->Intersect) (exposed, exposed, temp);
+	    (* pScreen->RegionDestroy) (temp);
+	}
 	(* pScreen->SaveDoomedAreas)(pParent, exposed, dx, dy);
     }
     
