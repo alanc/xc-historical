@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XMultibuf.c,v 1.13 89/10/08 15:12:25 rws Exp $
+ * $XConsortium: XMultibuf.c,v 1.14 89/10/08 16:23:07 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -168,7 +168,18 @@ static int error_string (dpy, code, codes, buffer, nbytes)
     char *buffer;
     int nbytes;
 {
-    buffer[0] = '\0';
+    char buf[32];
+    char *def = "";
+
+    if (code >= codes->first_error)  {
+	switch (code - codes->first_error) {
+	  case MultibufferBadBuffer:  def = "BadBuffer"; break;
+	}
+	
+	sprintf (buf, "%s.%d", multibuf_extension_name, code);
+	XGetErrorDatabaseText (dpy, "XProtoError", buf, def, buffer, nbytes);
+    }
+    return 1;
 }
 
 
