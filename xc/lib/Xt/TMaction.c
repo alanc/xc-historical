@@ -1,4 +1,4 @@
-/* $XConsortium: TMaction.c,v 1.1 91/01/10 14:13:47 converse Exp $ */
+/* $XConsortium: TMaction.c,v 1.2 91/01/10 17:15:46 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -728,6 +728,8 @@ static void _XtMenuPopdownAction(widget, event, params, num_params)
     }
 }
 
+static CompiledActionTable tmActionsCompiled;
+
 static XtActionsRec RConst tmActions[] = {
     {"XtMenuPopup", XtMenuPopupAction},
     {"XtMenuPopdown", _XtMenuPopdownAction},
@@ -744,7 +746,20 @@ static XtActionsRec RConst tmActions[] = {
 void _XtActionInitialize(app)
     XtAppContext app;
 {
-    XtAppAddActions(app, (XtActionList) tmActions, XtNumber(tmActions));
+    register ActionList rec;
+
+    /* making a copy is better for shared libraries than writing in place? */
+    if (!tmActionsCompiled) {
+	XtActionList copy;
+	copy = (XtActionList)XtMalloc(sizeof(tmActions));
+	bcopy((char *)tmActions, (char *)copy, sizeof(tmActions));
+	tmActionsCompiled = CompileActionTable(copy, XtNumber(tmActions));
+    }
+    rec = XtNew(ActionListRec);
+    rec->next = app->action_table;
+    app->action_table = rec;
+    rec->table = tmActionsCompiled;
+    rec->count = XtNumber(tmActions);
 }
 
 #if NeedFunctionPrototypes
