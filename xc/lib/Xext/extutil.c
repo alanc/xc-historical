@@ -1,5 +1,5 @@
 /*
- * $XConsortium: extutil.c,v 1.15 93/11/11 17:40:11 kaleb Exp $
+ * $XConsortium: extutil.c,v 1.16 93/12/09 14:59:33 kaleb Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -97,7 +97,6 @@ XExtDisplayInfo *XextAddDisplay (extinfo, dpy, ext_name, hooks, nevents, data)
 
     dpyinfo = (XExtDisplayInfo *) Xmalloc (sizeof (XExtDisplayInfo));
     if (!dpyinfo) return NULL;
-    dpyinfo->next = extinfo->head;
     dpyinfo->display = dpy;
     dpyinfo->data = data;
     dpyinfo->codes = XInitExtension (dpy, ext_name);
@@ -139,6 +138,7 @@ XExtDisplayInfo *XextAddDisplay (extinfo, dpy, ext_name, hooks, nevents, data)
      * now, chain it onto the list
      */
     _XLockMutex(_Xglobal_lock);
+    dpyinfo->next = extinfo->head;
     extinfo->head = dpyinfo;
     extinfo->cur = dpyinfo;
     extinfo->ndisplays++;
