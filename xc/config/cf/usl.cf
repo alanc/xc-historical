@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: usl.cf,v 1.24 93/09/19 11:04:15 rws Exp $
+XCOMM platform:  $XConsortium: usl.cf,v 1.25 93/09/21 11:17:17 rws Exp $
 
 #define OSName			UNIX System V/386 Release 4.2 Version 1
 XCOMM operating system:  OSName
@@ -8,10 +8,8 @@ XCOMM operating system:  OSName
 
 #define SystemV4		YES
 #define HasLdRunPath		YES
-/* The default here is to use the streams interface for Xlib, but various
- * other things (X server, font server, font library, phigs, xdm chooser)
- * still depend on sockets being around, so we always link with -lsocket.
- */
+#define HasSockets		YES
+#define ConnectionFlags		-DTCPCONN -DUNIXCONN -DLOCALCONN
 #define ExtraLibraries		-lsocket -lnsl
 #define BootstrapCFlags		-DUSL
 #define NeedWidePrototypes	NO	/* experimental */
