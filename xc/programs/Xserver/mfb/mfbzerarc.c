@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mfbzerarc.c,v 5.16 94/01/07 09:43:41 dpw Exp $ */
+/* $XConsortium: mfbzerarc.c,v 5.17 94/01/12 18:05:39 dpw Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -34,10 +34,15 @@ without any express or implied warranty.
 #include "mizerarc.h"
 #include "mi.h"
 
+/*
+ * Note: LEFTMOST must be the bit leftmost in the actual screen
+ * representation.  This depends also on the IMAGE_BYTE_ORDER.
+ * LONG2CHARS() takes care of the re-ordering as required. (DHD)
+ */
 #if (BITMAP_BIT_ORDER == MSBFirst)
-#define LEFTMOST	((PixelType) (1 << PLST))
+#define LEFTMOST	((PixelType) LONG2CHARS((1 << PLST)))
 #else
-#define LEFTMOST	((PixelType) 1)
+#define LEFTMOST	((PixelType) LONG2CHARS(1))
 #endif
 
 #define PixelateWhite(addr,yoff,xoff) \
@@ -102,7 +107,7 @@ mfbZeroArcSS(pDraw, pGC, arc)
     if (do360 && (arc->width == arc->height) && !(arc->width & 1))
     {
 	int xoffset = nlwidth;
-	PixelType *yorghl = mfbScanlineDelta(yorgl, info.h, nlwidth);
+	PixelType *yorghl = mfbScanlineDeltaNoBankSwitch(yorgl, info.h, nlwidth);
 	int xorghp = info.xorg + info.h;
 	int xorghn = info.xorg - info.h;
 
