@@ -1,5 +1,54 @@
-
 #include "Intrinsic.h"
+#include "Atoms.h"
+/******************************************************************
+ *
+ * Core Resources
+ *
+ ******************************************************************/
+
+static Resource resources[] = {
+    {XtNx, XtCPosition, XrmRInt, sizeof(int),
+         Offset(Widget,core.x), XtRString, "0"},
+    {XtNy, XtCPosition, XrmRInt, sizeof(int),
+         Offset(Widget,core.y), XtRString, "0"},
+    {XtNwidth, XtCWidth, XrmRInt, sizeof(int),
+         Offset(Widget,core.width), XtRString, "1"},
+    {XtNheight, XtCHeight, XrmRInt, sizeof(int),
+         Offset(Widget,core.height), XtRString, "1"},
+    {XtNdepth, XtCDepth,XrmRInt,sizeof(int),
+         Offset(Widget,core.depth), XtRString, "1"},
+    {XtNbackground,XtCBackground,XrmRPixel,sizeof(Pixel),
+         Offset(Widget,core.background_pixel), XtRString, "White"},
+    {XtNborderWidth, XtCBorderWidth,XrmRInt, sizeof(int),
+         Offset(Widget,core.border_width),XtRString, "1"},
+    {XtNborder,XtCBorderColor,XrmRPixel,sizeof(Pixel),
+         Offset(Widget,core.border_pixel),XtRString, "Black"},
+    {XtNsensitive,XtCSensitive,XrmRBoolean, sizeof(Boolean),
+         Offset(Widget,core.sensitive),XtRString,"TRUE"}
+    };
+extern void CoreDestroy();
+extern void SetValues ();
+WidgetClassData widgetClassData = {
+         (WidgetClass)NULL,	/*superclass pointer*/
+         "Core",		/*class_name*/
+          sizeof(WidgetData),   /*size of core data record*/
+          (WidgetProc)NULL,	/*Initialize*/
+          (WidgetProc)NULL,	/*Realize*/
+          NULL,			/*actions*/
+          resources,		/*resource list*/
+          XtNumber(resources),	/*resource_count*/
+          NULL,			/*xrm_extra*/
+          NULLQUARK,		/*xrm_class*/
+          FALSE,		/*visible_interest*/
+          CoreDestroy,		/*destroy proc*/
+          (WidgetGeometryProc)NULL, /*reconfigure*/
+          (WidgetExposeProc)NULL, /*expose*/
+          SetValues,		/*set_values*/
+          FALSE,		/*accept_focus*/
+          (WidgetProc)NULL      /*accept_focus*/
+};
+          
+
 
 Widget XtCreate(widgetClass,parent,args,argCount)
 	
@@ -33,17 +82,37 @@ Widget XtCreate(widgetClass,parent,args,argCount)
     widgetClass->coreClass.initialize();
     return (widget);
 }
+void FillInParameters(widget,valuemask,values)
+    Widget  widget;
+    ValueMask *valuemask;
+    XSetWindowAttributes *values;
+{
+    *valuemask = (CWBackPixel | CWBorderPixel | CWEventMask);
+    (*values).event_mask = widget->core.event_mask;
+    (*values).background_pixel = widget->core.background_pixel;
+    (*values).border_pixel = widget->core.border_pixel;
+    return;
+}
 
+void RegisterWindow(widget,window)
+    Widget    widget;
+    Window    window;
+{
+}
 
 void XtRealize (widget)
     
     Widget    widget;
 {
     CompositeWidget cwidget;
+    ValueMask valuemask;
+    XSetWindowAttributes values;
     Cardinal i;
-   if XtWidgetIsRealized(widget) return;
-   widget->core.widget_class->coreClass.realize();
-   if (IsSubClass (widget, compositeWidgetClass))
+   if (XtWidgetIsRealized(widget)) return;
+   FillInParameters (widget,&valuemask,&values);
+   widget->core.widget_class->coreClass.realize(widget,valuemask,&values);
+   RegisterWindow(widget,widget->core.window);
+   if (IsSubClass (widget, compositeWidgetClass)) {
         cwidget = (CompositeWidget)widget;
 	for (i= cwidget->composite.num_children;i!=0;--i) 
 		XtRealize(cwidget->composite.children[i-1]);
@@ -54,6 +123,7 @@ void XtRealize (widget)
 			XMapWindow(cwidget->composite.children[i-1]);
 			i--;
 			} }
+   }
     if (widget->core.parent == NULL) XMapWindow(widget);
    return;
 }
@@ -68,7 +138,7 @@ void XtSetSensitive(widget,sensitive)
     if ((widget->core.sensitive == widget->core.ancestor_sensitive) 
                                  && IsSubClass (widget,compositeWidgetClass))
       for (i= ((CompositeWidget)widget)->composite.num_children;i != 0; --i)
-        XtSetSensitivity (((CompositeWidget)widget)->composite.children[i-1],sensitive);
+        XtSetSensitive (((CompositeWidget)widget)->composite.children[i-1],sensitive);
       
 }
 
@@ -143,3 +213,7 @@ void XtDestroy (widget)
 
 }
 
+void CoreDestroy (widget)
+    Widget    widget;
+{
+}
