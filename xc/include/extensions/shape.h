@@ -26,11 +26,12 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shape.h,v 1.3 89/03/23 20:10:50 keith Exp $ */
+/* $XConsortium: shape.h,v 1.4 89/03/28 14:18:53 keith Exp $ */
 
 #ifndef _SHAPE_H_
 #define _SHAPE_H_
 
+#define X_ShapeQueryVersion		0
 #define X_ShapeRectangles		1
 #define X_ShapeMask			2
 #define X_ShapeCombine			3
@@ -62,7 +63,8 @@ typedef struct {
     int kind;		    /* ShapeWindow or ShapeBorder */
     int x, y;		    /* extents of new region */
     unsigned width, height;
-    Time time;
+    Time time;		    /* server timestamp when region changed */
+    Bool shaped;	    /* true if the region exists */
 } XShapeEvent;
 #endif
 
