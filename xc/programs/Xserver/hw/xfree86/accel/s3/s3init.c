@@ -1,4 +1,4 @@
-/* $XConsortium: s3init.c,v 1.5 95/01/16 13:16:52 kaleb Exp kaleb $ */
+/* $XConsortium: s3init.c,v 1.6 95/01/23 15:34:00 kaleb Exp kaleb $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.51 1995/01/23 01:29:26 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
@@ -413,7 +413,8 @@ s3Init(mode)
        * Set up the Serial Access Mode 256 Words Control
        *   (bit 6 in CR58)
        */
-      if (S3_964_SERIES(s3ChipId))
+      if (S3_964_SERIES(s3ChipId) &&
+	  !OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options))
          s3SAM256 = 0x40;
       else if ((OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options) &&
                S3_928_ONLY(s3ChipId)) ||
@@ -1489,7 +1490,11 @@ s3Init(mode)
 
       outb(vgaCRIndex, 0x65);
       if (DAC_IS_TI3025) {
-         outb(vgaCRReg, 0);
+	 if (OFLG_ISSET(OPTION_NUMBER_NINE,&s3InfoRec.options)) {
+	    outb(vgaCRReg, 0x82);
+	 } else {
+	    outb(vgaCRReg, 0);
+	 }
       } else {
 	 /* set s3 reg65 for some unknown reason			*/
 	 if (s3InfoRec.bitsPerPixel == 32)
@@ -1680,36 +1685,19 @@ s3Init(mode)
                s3OutTiIndReg(TI_GENERAL_IO_DATA, 0x00, TI_GID_TI_DAC_6BIT);
          }
          if (DAC_IS_TI3025) {
-	    if (OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options)) {
-	       outb(vgaCRIndex, 0x6D);             /* set blank delay */
-	       if (s3InfoRec.bitsPerPixel == 32)
-		  if (mode->Flags & V_DBLCLK)
-		     outb(vgaCRReg, 0x10);
-		  else
-		     outb(vgaCRReg, 0x20);
-	       else if (s3InfoRec.bitsPerPixel == 16)
-		  if (mode->Flags & V_DBLCLK) 
-		     outb(vgaCRReg, 0x20);
-		  else
-		     outb(vgaCRReg, 0x31);
+	    outb(vgaCRIndex, 0x6D);
+	    if (s3Bpp == 1)
+	       if (mode->Flags & V_DBLCLK) 
+		  outb(vgaCRReg, 0x02);
 	       else
-		  outb(vgaCRReg, 0x20);
-	    }
-	    else {
-	       outb(vgaCRIndex, 0x6D);
-	       if (s3Bpp == 1)
-		  if (mode->Flags & V_DBLCLK) 
-		     outb(vgaCRReg, 0x02);
-		  else
-		     outb(vgaCRReg, 0x03);
-	       else if (s3Bpp == 2)
-		  if (mode->Flags & V_DBLCLK) 
-		     outb(vgaCRReg, 0x00);
-		  else
-		     outb(vgaCRReg, 0x01);
-	       else /* (s3Bpp == 4) */
+		  outb(vgaCRReg, 0x03);
+	    else if (s3Bpp == 2)
+	       if (mode->Flags & V_DBLCLK) 
 		  outb(vgaCRReg, 0x00);
-	    }
+	       else
+		  outb(vgaCRReg, 0x01);
+	    else /* (s3Bpp == 4) */
+	       outb(vgaCRReg, 0x00);
 	 }
       } else {
          /* set s3 reg53 to non-parallel addressing by and'ing 0xDF     */
