@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ali_driver.c,v 1.1 94/12/15 21:06:48 kaleb Exp kaleb $ 
+ * $XConsortium: ali_driver.c,v 1.2 95/01/06 20:58:25 kaleb Exp kaleb $ 
  * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ali/ali_driver.c,v 3.1 1995/01/02 05:01:42 dawes Exp $
  */
 
@@ -67,7 +67,7 @@ static void *   ALISave();
 static void     ALIRestore();
 static void     ALIAdjust();
 #if 0
-static void	ALIFbInit();
+static void     ALIFbInit();
 #endif
 extern void     ALISetRead();
 extern void     ALISetWrite();
