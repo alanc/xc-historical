@@ -10,6 +10,7 @@
 #define _XtDviP_h
 
 #include "Dvi.h"
+#include <X11/Xaw/SimpleP.h>
 #include "DviChar.h"
 
 /***********************************************************************
@@ -37,8 +38,9 @@ typedef struct _DviClass {
  */
 
 typedef struct _DviClassRec {
-	CoreClassPart	core_class;
-	DviClassPart	command_class;
+    CoreClassPart	core_class;
+    SimpleClassPart	simple_class;
+    DviClassPart	command_class;
 } DviClassRec;
 
 extern DviClassRec dviClassRec;
@@ -197,8 +199,9 @@ typedef struct {
  */
 
 typedef struct _DviRec {
-	CorePart	core;
-	DviPart		dvi;
+    CorePart	core;
+    SimplePart	simple;
+    DviPart	dvi;
 } DviRec;
 
 extern XFontStruct	*QueryFont ();

@@ -115,9 +115,11 @@ static XtGeometryResult	QueryGeometry ();
 static void		ShowDvi ();
 static void		CloseFile (), OpenFile ();
 
+#define SuperClass ((SimpleWidgetClass)&simpleClassRec)
+
 DviClassRec dviClassRec = {
 {
-	&widgetClassRec,		/* superclass		  */	
+	(WidgetClass) SuperClass,	/* superclass		  */	
 	"Dvi",				/* class_name		  */
 	sizeof(DviRec),			/* size			  */
 	ClassInitialize,		/* class_initialize	  */
@@ -147,11 +149,15 @@ DviClassRec dviClassRec = {
 	NULL,				/* callback_private	  */
 	0,				/* tm_table		  */
 	QueryGeometry,			/* query_geometry	  */
-	NULL,				/* display_accelerator	  */
-	NULL				/* extension		  */
-},{
-	0,				/* field not used    */
-},
+	XtInheritDisplayAccelerator,	/* display_accelerator	  */
+	NULL,				/* extension		  */
+},  /* CoreClass fields initialization */
+{
+    XtInheritChangeSensitive		/* change_sensitive	*/
+},  /* SimpleClass fields initialization */
+{
+    0,                                     /* field not used    */
+},  /* DviClass fields initialization */
 };
 
 WidgetClass dviWidgetClass = (WidgetClass) &dviClassRec;
@@ -319,7 +325,10 @@ SetValues (current, request, new)
 	    }
     }
     if (current->dvi.screen_resolution != request->dvi.screen_resolution)
+    {
 	ResetFonts (new);
+	new->dvi.line_width = -1;
+    }
     if (request->dvi.device_resolution)
 	new->dvi.scale = ((double) request->dvi.screen_resolution) /
 			     ((double) request->dvi.device_resolution);
