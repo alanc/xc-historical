@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.162 93/09/23 16:57:04 rws Exp $ */
+/* $XConsortium: connection.c,v 1.163 93/09/26 11:55:58 gildea Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -438,10 +438,10 @@ CreateWellKnownSockets()
 #endif /* UNIXCONN */
     if (WellKnownConnections == 0)
         FatalError ("Cannot establish any listening sockets");
-    signal (SIGPIPE, SIG_IGN);
-    signal (SIGHUP, AutoResetServer);
-    signal (SIGINT, GiveUp);
-    signal (SIGTERM, GiveUp);
+    OsSignal (SIGPIPE, SIG_IGN);
+    OsSignal (SIGHUP, AutoResetServer);
+    OsSignal (SIGINT, GiveUp);
+    OsSignal (SIGTERM, GiveUp);
     AllSockets[0] = WellKnownConnections;
     ResetHosts(display);
     /*
@@ -459,7 +459,7 @@ CreateWellKnownSockets()
      * in the second case, the signal will be quite
      * useful
      */
-    if (signal (SIGUSR1, SIG_IGN) == SIG_IGN)
+    if (OsSignal (SIGUSR1, SIG_IGN) == SIG_IGN)
 	RunFromSmartParent = TRUE;
     ParentProcess = getppid ();
     if (RunFromSmartParent) {
