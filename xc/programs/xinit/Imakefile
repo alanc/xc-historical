@@ -1,11 +1,16 @@
-XCOMM $XConsortium: Imakefile,v 1.22 91/07/29 21:02:36 gildea Exp $
-        DEFINES = ConnectionFlags $(SIGNAL_DEFINES) -DBINDIR=\"$(BINDIR)\"
+XCOMM $XConsortium: Imakefile,v 1.23 93/05/28 11:46:47 rws Exp $
+#if HasVFork
+  VFORK_DEFINES = -DHAS_VFORK
+#endif
+        DEFINES = ConnectionFlags $(VFORK_DEFINES) $(SIGNAL_DEFINES) \
+			-DBINDIR=\"$(BINDIR)\"
         DEPLIBS = $(DEPXMULIB) $(DEPXLIB)
 LOCAL_LIBRARIES = $(XMULIB) $(XLIB)
           SRCS1 = xinit.c 
           OBJS1 = xinit.o 
   SAMPLECONFIGS = xinitrc /* xserverrc */
        PROGRAMS = xinit startx $(SAMPLECONFIGS)
+
 
 ComplexProgramTarget_1(xinit,$(LOCAL_LIBRARIES),NullParameter)
 

@@ -1,4 +1,4 @@
-/* $XConsortium: xinit.c,v 11.54 91/12/23 17:26:08 gildea Exp $ */
+/* $XConsortium: xinit.c,v 11.55 93/09/20 17:56:55 hersh Exp $ */
 
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
@@ -39,13 +39,13 @@ char **newenviron = NULL;
 #define SHELL "sh"
 #endif
 
-#ifdef macII
+#ifndef HAS_VFORK
 #define vfork() fork()
-#endif /* macII */
-
-#if defined(SYSV) && !defined(hpux)
-#define vfork() fork()
-#endif /* SYSV and not hpux */
+#else
+#if defined(sun) && !defined(SVR4)
+#include <vfork.h>
+#endif
+#endif
 
 /* A/UX setpgid incorrectly removes the controlling terminal.
    Per Posix, only setsid should do that. */
@@ -123,7 +123,8 @@ extern int errno;
 #endif
 
 
-static shutdown();
+static void shutdown();
+static void set_environment();
 
 #ifdef SIGNALRETURNSINT
 #define SIGVAL int
@@ -160,7 +161,7 @@ sigUsr1(sig)
 #endif
 }
 
-static Execute (vec)
+static void Execute (vec)
     char **vec;				/* has room from up above */
 {
     execvp (vec[0], vec);
@@ -518,7 +519,7 @@ static int ignorexio (dpy)
 }
 
 static
-shutdown()
+void shutdown()
 {
 	/* have kept display opened, so close it now */
 	if (clientpid > 0) {
@@ -571,7 +572,7 @@ shutdown()
  * make a new copy of environment that has room for DISPLAY
  */
 
-set_environment ()
+static void set_environment ()
 {
     int nenvvars;
     char **newPtr, **oldPtr;
