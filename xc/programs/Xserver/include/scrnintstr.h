@@ -1,4 +1,4 @@
-/* $XConsortium: scrnintstr.h,v 5.19 93/09/29 17:08:44 dpw Exp $ */
+/* $XConsortium: scrnintstr.h,v 5.20 93/09/29 18:57:17 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -61,6 +61,660 @@ typedef struct _Depth {
     unsigned long	*vids;    /* block of visual ids for this depth */
   } DepthRec;
 
+
+/*
+ *  There is a typedef for each screen function pointer so that code that
+ *  needs to declare a screen function pointer (e.g. in a screen private
+ *  or as a local variable) can easily do so and retain full type checking.
+ */
+
+typedef    Bool (* CloseScreenProcPtr)(
+#if NeedNestedPrototypes
+	int /*index*/,
+	ScreenPtr /*pScreen*/
+#endif
+);
+
+typedef    void (* QueryBestSizeProcPtr)(
+#if NeedNestedPrototypes
+	int /*class*/,
+	unsigned short * /*pwidth*/,
+	unsigned short * /*pheight*/,
+	ScreenPtr /*pScreen*/
+#endif
+);
+
+typedef    Bool (* SaveScreenProcPtr)(
+#if NeedNestedPrototypes
+	 ScreenPtr /*pScreen*/,
+	 int /*on*/
+#endif
+);
+
+typedef    void (* GetImageProcPtr)(
+#if NeedNestedPrototypes
+	DrawablePtr /*pDrawable*/,
+	int /*sx*/,
+	int /*sy*/,
+	int /*w*/,
+	int /*h*/,
+	unsigned int /*format*/,
+	unsigned long /*planeMask*/,
+	char * /*pdstLine*/
+#endif
+);
+
+typedef    void (* GetSpansProcPtr)(
+#if NeedNestedPrototypes
+	DrawablePtr /*pDrawable*/,
+	int /*wMax*/,
+	DDXPointPtr /*ppt*/,
+	int* /*pwidth*/,
+	int /*nspans*/,
+	char * /*pdstStart*/
+#endif
+);
+
+typedef    void (* PointerNonInterestBoxProcPtr)(
+#if NeedNestedPrototypes
+	ScreenPtr /*pScreen*/,
+	BoxPtr /*pBox*/
+#endif
+);
+
+typedef    void (* SourceValidateProcPtr)(
+#if NeedNestedPrototypes
+	DrawablePtr /*pDrawable*/,
+	int /*x*/,
+	int /*y*/,
+	int /*width*/,
+	int /*height*/
+#endif
+);
+
+typedef    Bool (* CreateWindowProcPtr)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWindow*/
+#endif
+);
+
+typedef    Bool (* DestroyWindowProcPtr)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWindow*/
+#endif
+);
+
+typedef    Bool (* PositionWindowProcPtr)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWindow*/,
+	int /*x*/,
+	int /*y*/
+#endif
+);
+
+typedef    Bool (* ChangeWindowAttributesProcPtr)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWindow*/,
+	BITS32 /*mask*/
+#endif
+);
+
+typedef    Bool (* RealizeWindowProcPtr)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWindow*/
+#endif
+);
+
+typedef    Bool (* UnrealizeWindowProcPtr)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWindow*/
+#endif
+);
+
+typedef    int  (* ValidateTreeProcPtr)(
+#if NeedNestedPrototypes
+	WindowPtr /*pParent*/,
+	WindowPtr /*pChild*/,
+	VTKind /*kind*/
+#endif
+);
+
+typedef    void (* PostValidateTreeProcPtr)(
+#if NeedNestedPrototypes
+	WindowPtr /*pParent*/,
+	WindowPtr /*pChild*/,
+	VTKind /*kind*/
+#endif
+);
+
+typedef    void (* WindowExposuresProcPtr)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWindow*/,
+	RegionPtr /*prgn*/,
+	RegionPtr /*other_exposed*/
+#endif
+);
+
+typedef    void (* PaintWindowBackgroundProcPtr)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWindow*/,
+	RegionPtr /*pRegion*/,
+	int /*what*/
+#endif
+);
+
+typedef    void (* PaintWindowBorderProcPtr)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWindow*/,
+	RegionPtr /*pRegion*/,
+	int /*what*/
+#endif
+);
+
+typedef    void (* CopyWindowProcPtr)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWindow*/,
+	DDXPointRec /*ptOldOrg*/,
+	RegionPtr /*prgnSrc*/
+#endif
+);
+
+typedef    void (* ClearToBackgroundProcPtr)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWindow*/,
+	int /*x*/,
+	int /*y*/,
+	int /*w*/,
+	int /*h*/,
+	Bool /*generateExposures*/
+#endif
+);
+
+typedef    void (* ClipNotifyProcPtr)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWindow*/,
+	int /*dx*/,
+	int /*dy*/
+#endif
+);
+
+typedef    PixmapPtr (* CreatePixmapProcPtr)(
+#if NeedNestedPrototypes
+	ScreenPtr /*pScreen*/,
+	int /*width*/,
+	int /*height*/,
+	int /*depth*/
+#endif
+);
+
+typedef    Bool (* DestroyPixmapProcPtr)(
+#if NeedNestedPrototypes
+	PixmapPtr /*pPixmap*/
+#endif
+);
+
+typedef    void (* SaveDoomedAreasProcPtr)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWindow*/,
+	RegionPtr /*prgnSave*/,
+	int /*xorg*/,
+	int /*yorg*/
+#endif
+);
+
+typedef    RegionPtr (* RestoreAreasProcPtr)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWindow*/,
+	RegionPtr /*prgnRestore*/
+#endif
+);
+
+typedef    void (* ExposeCopyProcPtr)(
+#if NeedNestedPrototypes
+	WindowPtr /*pSrc*/,
+	DrawablePtr /*pDst*/,
+	GCPtr /*pGC*/,
+	RegionPtr /*prgnExposed*/,
+	int /*srcx*/,
+	int /*srcy*/,
+	int /*dstx*/,
+	int /*dsty*/,
+	unsigned long /*plane*/
+#endif
+);
+
+typedef    RegionPtr (* TranslateBackingStoreProcPtr)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWindow*/,
+	int /*windx*/,
+	int /*windy*/,
+	RegionPtr /*oldClip*/,
+	int /*oldx*/,
+	int /*oldy*/
+#endif
+);
+
+typedef    RegionPtr (* ClearBackingStoreProcPtr)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWindow*/,
+	int /*x*/,
+	int /*y*/,
+	int /*w*/,
+	int /*h*/,
+	Bool /*generateExposures*/
+#endif
+);
+
+typedef    void (* DrawGuaranteeProcPtr)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWindow*/,
+	GCPtr /*pGC*/,
+	int /*guarantee*/
+#endif
+);
+    
+typedef    Bool (* RealizeFontProcPtr)(
+#if NeedNestedPrototypes
+	ScreenPtr /*pScreen*/,
+	FontPtr /*pFont*/
+#endif
+);
+
+typedef    Bool (* UnrealizeFontProcPtr)(
+#if NeedNestedPrototypes
+	ScreenPtr /*pScreen*/,
+	FontPtr /*pFont*/
+#endif
+);
+
+typedef    void (* ConstrainCursorProcPtr)(
+#if NeedNestedPrototypes
+	ScreenPtr /*pScreen*/,
+	BoxPtr /*pBox*/
+#endif
+);
+
+typedef    void (* CursorLimitsProcPtr)(
+#if NeedNestedPrototypes
+	ScreenPtr /*pScreen*/,
+	CursorPtr /*pCursor*/,
+	BoxPtr /*pHotBox*/,
+	BoxPtr /*pTopLeftBox*/
+#endif
+);
+
+typedef    Bool (* DisplayCursorProcPtr)(
+#if NeedNestedPrototypes
+	ScreenPtr /*pScreen*/,
+	CursorPtr /*pCursor*/
+#endif
+);
+
+typedef    Bool (* RealizeCursorProcPtr)(
+#if NeedNestedPrototypes
+	ScreenPtr /*pScreen*/,
+	CursorPtr /*pCursor*/
+#endif
+);
+
+typedef    Bool (* UnrealizeCursorProcPtr)(
+#if NeedNestedPrototypes
+	ScreenPtr /*pScreen*/,
+	CursorPtr /*pCursor*/
+#endif
+);
+
+typedef    void (* RecolorCursorProcPtr)(
+#if NeedNestedPrototypes
+	ScreenPtr /*pScreen*/,
+	CursorPtr /*pCursor*/,
+	Bool /*displayed*/
+#endif
+);
+
+typedef    Bool (* SetCursorPositionProcPtr)(
+#if NeedNestedPrototypes
+	ScreenPtr /*pScreen*/,
+	int /*x*/,
+	int /*y*/,
+	Bool /*generateEvent*/
+#endif
+);
+
+typedef    Bool (* CreateGCProcPtr)(
+#if NeedNestedPrototypes
+	GCPtr /*pGC*/
+#endif
+);
+
+typedef    Bool (* CreateColormapProcPtr)(
+#if NeedNestedPrototypes
+	ColormapPtr /*pColormap*/
+#endif
+);
+
+typedef    void (* DestroyColormapProcPtr)(
+#if NeedNestedPrototypes
+	ColormapPtr /*pColormap*/
+#endif
+);
+
+typedef    void (* InstallColormapProcPtr)(
+#if NeedNestedPrototypes
+	ColormapPtr /*pColormap*/
+#endif
+);
+
+typedef    void (* UninstallColormapProcPtr)(
+#if NeedNestedPrototypes
+	ColormapPtr /*pColormap*/
+#endif
+);
+
+typedef    int (* ListInstalledColormapsProcPtr) (
+#if NeedNestedPrototypes
+	ScreenPtr /*pScreen*/,
+	XID* /*pmaps */
+#endif
+);
+
+typedef    void (* StoreColorsProcPtr)(
+#if NeedNestedPrototypes
+	ColormapPtr /*pColormap*/,
+	int /*ndef*/,
+	xColorItem * /*pdef*/
+#endif
+);
+
+typedef    void (* ResolveColorProcPtr)(
+#if NeedNestedPrototypes
+	unsigned short* /*pred*/,
+	unsigned short* /*pgreen*/,
+	unsigned short* /*pblue*/,
+	VisualPtr /*pVisual*/
+#endif
+);
+
+typedef    RegionPtr (* RegionCreateProcPtr)(
+#if NeedNestedPrototypes
+	BoxPtr /*rect*/,
+	int /*size*/
+#endif
+);
+
+typedef    void (* RegionInitProcPtr)(
+#if NeedNestedPrototypes
+	RegionPtr /*pReg*/,
+	BoxPtr /*rect*/,
+	int /*size*/
+#endif
+);
+
+typedef    Bool (* RegionCopyProcPtr)(
+#if NeedNestedPrototypes
+	RegionPtr /*dst*/,
+	RegionPtr /*src*/
+#endif
+);
+
+typedef    void (* RegionDestroyProcPtr)(
+#if NeedNestedPrototypes
+	RegionPtr /*pReg*/
+#endif
+);
+
+typedef    void (* RegionUninitProcPtr)(
+#if NeedNestedPrototypes
+	RegionPtr /*pReg*/
+#endif
+);
+
+typedef    Bool (* IntersectProcPtr)(
+#if NeedNestedPrototypes
+	RegionPtr /*newReg*/,
+	RegionPtr /*reg1*/,
+	RegionPtr /*reg2*/
+#endif
+);
+
+typedef    Bool (* UnionProcPtr)(
+#if NeedNestedPrototypes
+	RegionPtr /*newReg*/,
+	RegionPtr /*reg1*/,
+	RegionPtr /*reg2*/
+#endif
+);
+
+typedef    Bool (* SubtractProcPtr)(
+#if NeedNestedPrototypes
+	RegionPtr /*regD*/,
+	RegionPtr /*regM*/,
+	RegionPtr /*regS*/
+#endif
+);
+
+typedef    Bool (* InverseProcPtr)(
+#if NeedNestedPrototypes
+	RegionPtr /*newReg*/,
+	RegionPtr /*reg1*/,
+	BoxPtr /*invRect*/
+#endif
+);
+
+typedef    void (* RegionResetProcPtr)(
+#if NeedNestedPrototypes
+	RegionPtr /*pReg*/,
+	BoxPtr /*pBox*/
+#endif
+);
+
+typedef    void (* TranslateRegionProcPtr)(
+#if NeedNestedPrototypes
+	RegionPtr /*pReg*/,
+	int /*x*/,
+	int /*y*/
+#endif
+);
+
+typedef    int (* RectInProcPtr)(
+#if NeedNestedPrototypes
+	RegionPtr /*region*/,
+	BoxPtr /*prect*/
+#endif
+);
+
+typedef    Bool (* PointInRegionProcPtr)(
+#if NeedNestedPrototypes
+	RegionPtr /*pReg*/,
+	int /*x*/,
+	int /*y*/,
+	BoxPtr /*box*/
+#endif
+);
+
+typedef    Bool (* RegionNotEmptyProcPtr)(
+#if NeedNestedPrototypes
+	RegionPtr /*pReg*/
+#endif
+);
+
+typedef    void (* RegionEmptyProcPtr)(
+#if NeedNestedPrototypes
+	RegionPtr /*pReg*/
+#endif
+);
+
+typedef    BoxPtr (* RegionExtentsProcPtr)(
+#if NeedNestedPrototypes
+	RegionPtr /*pReg*/
+#endif
+);
+
+typedef    Bool (* RegionAppendProcPtr)(
+#if NeedNestedPrototypes
+	RegionPtr /*dstrgn*/,
+	RegionPtr /*rgn*/
+#endif
+);
+
+typedef    Bool (* RegionValidateProcPtr)(
+#if NeedNestedPrototypes
+	RegionPtr /*badreg*/,
+	Bool* /*pOverlap*/
+#endif
+);
+
+typedef    RegionPtr (* BitmapToRegionProcPtr)(
+#if NeedNestedPrototypes
+	PixmapPtr /*pPix*/
+#endif
+);
+
+typedef    RegionPtr (* RectsToRegionProcPtr)(
+#if NeedNestedPrototypes
+	int /*nrects*/,
+	xRectangle* /*prect*/,
+	int /*ctype*/
+#endif
+);
+
+typedef    void (* SendGraphicsExposeProcPtr)(
+#if NeedNestedPrototypes
+	ClientPtr /*client*/,
+	RegionPtr /*pRgn*/,
+	XID /*drawable*/,
+	int /*major*/,
+	int /*minor*/
+#endif
+);
+
+typedef    void (* ScreenBlockHandlerProcPtr)(
+#if NeedNestedPrototypes
+	int /*screenNum*/,
+	pointer /*blockData*/,
+	struct timeval ** /*pTimeout*/,
+	pointer /*pReadmask*/
+#endif
+);
+
+typedef    void (* ScreenWakeupHandlerProcPtr)(
+#if NeedNestedPrototypes
+	 int /*screenNum*/,
+	 pointer /*wakeupData*/,
+	 unsigned long /*result*/,
+	 pointer /*pReadMask*/
+#endif
+);
+
+typedef    Bool (* CreateScreenResourcesProcPtr)(
+#if NeedNestedPrototypes
+	ScreenPtr /*pScreen*/
+#endif
+);
+
+typedef    Bool (* ModifyPixmapHeaderProcPtr)(
+#if NeedNestedPrototypes
+	PixmapPtr /*pPixmap*/,
+	int /*width*/,
+	int /*height*/,
+	int /*depth*/,
+	int /*bitsPerPixel*/,
+	int /*devKind*/,
+	pointer /*pPixData*/
+#endif
+);
+
+typedef    void (* MarkWindowProcPtr)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWin*/
+#endif
+);
+
+typedef    Bool (* MarkOverlappedWindowsProcPtr)(
+#if NeedNestedPrototypes
+	WindowPtr /*parent*/,
+	WindowPtr /*firstChild*/,
+	WindowPtr * /*pLayerWin*/
+#endif
+);
+
+typedef    Bool (* ChangeSaveUnderProcPtr)(
+#if NeedNestedPrototypes
+	WindowPtr /*pLayerWin*/,
+	WindowPtr /*firstChild*/
+#endif
+);
+
+typedef    void (* PostChangeSaveUnderProcPtr)(
+#if NeedNestedPrototypes
+	WindowPtr /*pLayerWin*/,
+	WindowPtr /*firstChild*/
+#endif
+);
+
+typedef    void (* MoveWindowProcPtr)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWin*/,
+	int /*x*/,
+	int /*y*/,
+	WindowPtr /*pSib*/,
+	VTKind /*kind*/
+#endif
+);
+
+typedef    void (* ResizeWindowProcPtr)(
+#if NeedNestedPrototypes
+    WindowPtr /*pWin*/,
+    int /*x*/,
+    int /*y*/, 
+    unsigned int /*w*/,
+    unsigned int /*h*/,
+    WindowPtr /*pSib*/
+#endif
+);
+
+typedef    WindowPtr (* GetLayerWindowProcPtr)(
+#if NeedNestedPrototypes
+    WindowPtr /*pWin*/
+#endif
+);
+
+typedef    void (* HandleExposuresProcPtr)(
+#if NeedNestedPrototypes
+    WindowPtr /*pWin*/
+#endif
+);
+
+typedef    void (* ReparentWindowProcPtr)(
+#if NeedNestedPrototypes
+    WindowPtr /*pWin*/,
+    WindowPtr /*pPriorParent*/
+#endif
+);
+
+#ifdef SHAPE
+typedef    void (* SetShapeProcPtr)(
+#if NeedFunctionPrototypes
+	WindowPtr /*pWin*/
+#endif
+);
+#endif /* SHAPE */
+
+typedef    void (* ChangeBorderWidthProcPtr)(
+#if NeedFunctionPrototypes
+	WindowPtr /*pWin*/,
+	unsigned int /*width*/
+#endif
+);
+
+typedef    void (* MarkUnrealizedWindowProcPtr)(
+#if NeedFunctionPrototypes
+	WindowPtr /*pChild*/,
+	WindowPtr /*pWin*/,
+	Bool /*fromConfigure*/
+#endif
+);
+
 typedef struct _Screen {
     int			myNum;	/* index of this instance in Screens[] */
     ATOM		id;
@@ -96,559 +750,102 @@ typedef struct _Screen {
 
     /* Random screen procedures */
 
-    Bool (* CloseScreen)(
-#if NeedNestedPrototypes
-	int /*index*/,
-	ScreenPtr /*pScreen*/
-#endif
-);
-
-    void (* QueryBestSize)(
-#if NeedNestedPrototypes
-	int /*class*/,
-	unsigned short* /*pwidth*/,
-	unsigned short* /*pheight*/,
-	ScreenPtr /*pScreen*/
-#endif
-);
-
-    Bool (* SaveScreen)(
-#if NeedNestedPrototypes
-	 ScreenPtr /*pScreen*/,
-	 int /*on*/
-#endif
-);
-
-    void (* GetImage)(
-#if NeedNestedPrototypes
-	DrawablePtr /*pDrawable*/,
-	int /*sx*/,
-	int /*sy*/,
-	int /*w*/,
-	int /*h*/,
-	unsigned int /*format*/,
-	unsigned long /*planeMask*/,
-	char * /*pdstLine*/
-#endif
-);
-
-    void (* GetSpans)(
-#if NeedNestedPrototypes
-	DrawablePtr /*pDrawable*/,
-	int /*wMax*/,
-	DDXPointPtr /*ppt*/,
-	int* /*pwidth*/,
-	int /*nspans*/,
-	char * /*pdstStart*/
-#endif
-);
-
-    void (* PointerNonInterestBox)(
-#if NeedNestedPrototypes
-	ScreenPtr /*pScreen*/,
-	BoxPtr /*pBox*/
-#endif
-);
-
-    void (* SourceValidate)(
-#if NeedNestedPrototypes
-	DrawablePtr /*pDrawable*/,
-	int /*x*/,
-	int /*y*/,
-	int /*width*/,
-	int /*height*/
-#endif
-);
+    CloseScreenProcPtr		CloseScreen;
+    QueryBestSizeProcPtr	QueryBestSize;
+    SaveScreenProcPtr		SaveScreen;
+    GetImageProcPtr		GetImage;
+    GetSpansProcPtr		GetSpans;
+    PointerNonInterestBoxProcPtr PointerNonInterestBox;
+    SourceValidateProcPtr	SourceValidate;
 
     /* Window Procedures */
 
-    Bool (* CreateWindow)(
-#if NeedNestedPrototypes
-	WindowPtr /*pWindow*/
-#endif
-);
-
-    Bool (* DestroyWindow)(
-#if NeedNestedPrototypes
-	WindowPtr /*pWindow*/
-#endif
-);
-
-    Bool (* PositionWindow)(
-#if NeedNestedPrototypes
-	WindowPtr /*pWindow*/,
-	int /*x*/,
-	int /*y*/
-#endif
-);
-
-    Bool (* ChangeWindowAttributes)(
-#if NeedNestedPrototypes
-	WindowPtr /*pWindow*/,
-	BITS32 /*mask*/
-#endif
-);
-
-    Bool (* RealizeWindow)(
-#if NeedNestedPrototypes
-	WindowPtr /*pWindow*/
-#endif
-);
-
-    Bool (* UnrealizeWindow)(
-#if NeedNestedPrototypes
-	WindowPtr /*pWindow*/
-#endif
-);
-
-    int  (* ValidateTree)(
-#if NeedNestedPrototypes
-	WindowPtr /*pParent*/,
-	WindowPtr /*pChild*/,
-	VTKind /*kind*/
-#endif
-);
-
-    void (* PostValidateTree)(
-#if NeedNestedPrototypes
-	WindowPtr /*pParent*/,
-	WindowPtr /*pChild*/,
-	VTKind /*kind*/
-#endif
-);
-
-    void (* WindowExposures)(
-#if NeedNestedPrototypes
-	WindowPtr /*pWindow*/,
-	RegionPtr /*prgn*/,
-	RegionPtr /*other_exposed*/
-#endif
-);
-
-    void (* PaintWindowBackground)(
-#if NeedNestedPrototypes
-	WindowPtr /*pWindow*/,
-	RegionPtr /*pRegion*/,
-	int /*what*/
-#endif
-);
-
-    void (* PaintWindowBorder)(
-#if NeedNestedPrototypes
-	WindowPtr /*pWindow*/,
-	RegionPtr /*pRegion*/,
-	int /*what*/
-#endif
-);
-
-    void (* CopyWindow)(
-#if NeedNestedPrototypes
-	WindowPtr /*pWindow*/,
-	DDXPointRec /*ptOldOrg*/,
-	RegionPtr /*prgnSrc*/
-#endif
-);
-
-    void (* ClearToBackground)(
-#if NeedNestedPrototypes
-	WindowPtr /*pWindow*/,
-	int /*x*/,
-	int /*y*/,
-	int /*w*/,
-	int /*h*/,
-	Bool /*generateExposures*/
-#endif
-);
-
-    void (* ClipNotify)(
-#if NeedNestedPrototypes
-	WindowPtr /*pWindow*/,
-	int /*dx*/,
-	int /*dy*/
-#endif
-);
+    CreateWindowProcPtr		CreateWindow;
+    DestroyWindowProcPtr	DestroyWindow;
+    PositionWindowProcPtr	PositionWindow;
+    ChangeWindowAttributesProcPtr ChangeWindowAttributes;
+    RealizeWindowProcPtr	RealizeWindow;
+    UnrealizeWindowProcPtr	UnrealizeWindow;
+    ValidateTreeProcPtr		ValidateTree;
+    PostValidateTreeProcPtr	PostValidateTree;
+    WindowExposuresProcPtr	WindowExposures;
+    PaintWindowBackgroundProcPtr PaintWindowBackground;
+    PaintWindowBorderProcPtr	PaintWindowBorder;
+    CopyWindowProcPtr		CopyWindow;
+    ClearToBackgroundProcPtr	ClearToBackground;
+    ClipNotifyProcPtr		ClipNotify;
 
     /* Pixmap procedures */
 
-    PixmapPtr (* CreatePixmap)(
-#if NeedNestedPrototypes
-	ScreenPtr /*pScreen*/,
-	int /*width*/,
-	int /*height*/,
-	int /*depth*/
-#endif
-);
-
-    Bool (* DestroyPixmap)(
-#if NeedNestedPrototypes
-	PixmapPtr /*pPixmap*/
-#endif
-);
+    CreatePixmapProcPtr		CreatePixmap;
+    DestroyPixmapProcPtr	DestroyPixmap;
 
     /* Backing store procedures */
 
-    void (* SaveDoomedAreas)(
-#if NeedNestedPrototypes
-	WindowPtr /*pWindow*/,
-	RegionPtr /*prgnSave*/,
-	int /*xorg*/,
-	int /*yorg*/
-#endif
-);
-
-    RegionPtr (* RestoreAreas)(
-#if NeedNestedPrototypes
-	WindowPtr /*pWindow*/,
-	RegionPtr /*prgnRestore*/
-#endif
-);
-
-    void (* ExposeCopy)(
-#if NeedNestedPrototypes
-	WindowPtr /*pSrc*/,
-	DrawablePtr /*pDst*/,
-	GCPtr /*pGC*/,
-	RegionPtr /*prgnExposed*/,
-	int /*srcx*/,
-	int /*srcy*/,
-	int /*dstx*/,
-	int /*dsty*/,
-	unsigned long /*plane*/
-#endif
-);
-
-    RegionPtr (* TranslateBackingStore)(
-#if NeedNestedPrototypes
-	WindowPtr /*pWindow*/,
-	int /*windx*/,
-	int /*windy*/,
-	RegionPtr /*oldClip*/,
-	int /*oldx*/,
-	int /*oldy*/
-#endif
-);
-
-    RegionPtr (* ClearBackingStore)(
-#if NeedNestedPrototypes
-	WindowPtr /*pWindow*/,
-	int /*x*/,
-	int /*y*/,
-	int /*w*/,
-	int /*h*/,
-	Bool /*generateExposures*/
-#endif
-);
-
-    void (* DrawGuarantee)(
-#if NeedNestedPrototypes
-	WindowPtr /*pWindow*/,
-	GCPtr /*pGC*/,
-	int /*guarantee*/
-#endif
-);
+    SaveDoomedAreasProcPtr	SaveDoomedAreas;
+    RestoreAreasProcPtr		RestoreAreas;
+    ExposeCopyProcPtr		ExposeCopy;
+    TranslateBackingStoreProcPtr TranslateBackingStore;
+    ClearBackingStoreProcPtr	ClearBackingStore;
+    DrawGuaranteeProcPtr	DrawGuarantee;
     
     /* Font procedures */
 
-    Bool (* RealizeFont)(
-#if NeedNestedPrototypes
-	ScreenPtr /*pScreen*/,
-	FontPtr /*pFont*/
-#endif
-);
-
-    Bool (* UnrealizeFont)(
-#if NeedNestedPrototypes
-	ScreenPtr /*pScreen*/,
-	FontPtr /*pFont*/
-#endif
-);
+    RealizeFontProcPtr		RealizeFont;
+    UnrealizeFontProcPtr	UnrealizeFont;
 
     /* Cursor Procedures */
-    void (* ConstrainCursor)(
-#if NeedNestedPrototypes
-	ScreenPtr /*pScreen*/,
-	BoxPtr /*pBox*/
-#endif
-);
 
-    void (* CursorLimits)(
-#if NeedNestedPrototypes
-	ScreenPtr /*pScreen*/,
-	CursorPtr /*pCursor*/,
-	BoxPtr /*pHotBox*/,
-	BoxPtr /*pTopLeftBox*/
-#endif
-);
-
-    Bool (* DisplayCursor)(
-#if NeedNestedPrototypes
-	ScreenPtr /*pScreen*/,
-	CursorPtr /*pCursor*/
-#endif
-);
-
-    Bool (* RealizeCursor)(
-#if NeedNestedPrototypes
-	ScreenPtr /*pScreen*/,
-	CursorPtr /*pCursor*/
-#endif
-);
-
-    Bool (* UnrealizeCursor)(
-#if NeedNestedPrototypes
-	ScreenPtr /*pScreen*/,
-	CursorPtr /*pCursor*/
-#endif
-);
-
-    void (* RecolorCursor)(
-#if NeedNestedPrototypes
-	ScreenPtr /*pScreen*/,
-	CursorPtr /*pCursor*/,
-	Bool /*displayed*/
-#endif
-);
-
-    Bool (* SetCursorPosition)(
-#if NeedNestedPrototypes
-	ScreenPtr /*pScreen*/,
-	int /*x*/,
-	int /*y*/,
-	Bool /*generateEvent*/
-#endif
-);
+    ConstrainCursorProcPtr	ConstrainCursor;
+    CursorLimitsProcPtr		CursorLimits;
+    DisplayCursorProcPtr	DisplayCursor;
+    RealizeCursorProcPtr	RealizeCursor;
+    UnrealizeCursorProcPtr	UnrealizeCursor;
+    RecolorCursorProcPtr	RecolorCursor;
+    SetCursorPositionProcPtr	SetCursorPosition;
 
     /* GC procedures */
 
-    Bool (* CreateGC)(
-#if NeedNestedPrototypes
-	GCPtr /*pGC*/
-#endif
-);
+    CreateGCProcPtr		CreateGC;
 
     /* Colormap procedures */
 
-    Bool (* CreateColormap)(
-#if NeedNestedPrototypes
-	ColormapPtr /*pColormap*/
-#endif
-);
-
-    void (* DestroyColormap)(
-#if NeedNestedPrototypes
-	ColormapPtr /*pColormap*/
-#endif
-);
-
-    void (* InstallColormap)(
-#if NeedNestedPrototypes
-	ColormapPtr /*pColormap*/
-#endif
-);
-
-    void (* UninstallColormap)(
-#if NeedNestedPrototypes
-	ColormapPtr /*pColormap*/
-#endif
-);
-
-    int (* ListInstalledColormaps) (
-#if NeedNestedPrototypes
-	ScreenPtr /*pScreen*/,
-	XID* /*pmaps */
-#endif
-);
-
-    void (* StoreColors)(
-#if NeedNestedPrototypes
-	ColormapPtr /*pColormap*/,
-	int /*ndef*/,
-	xColorItem * /*pdef*/
-#endif
-);
-
-    void (* ResolveColor)(
-#if NeedNestedPrototypes
-	unsigned short* /*pred*/,
-	unsigned short* /*pgreen*/,
-	unsigned short* /*pblue*/,
-	VisualPtr /*pVisual*/
-#endif
-);
+    CreateColormapProcPtr	CreateColormap;
+    DestroyColormapProcPtr	DestroyColormap;
+    InstallColormapProcPtr	InstallColormap;
+    UninstallColormapProcPtr	UninstallColormap;
+    ListInstalledColormapsProcPtr ListInstalledColormaps;
+    StoreColorsProcPtr		StoreColors;
+    ResolveColorProcPtr		ResolveColor;
 
     /* Region procedures */
 
-    RegionPtr (* RegionCreate)(
-#if NeedNestedPrototypes
-	BoxPtr /*rect*/,
-	int /*size*/
-#endif
-);
-
-    void (* RegionInit)(
-#if NeedNestedPrototypes
-	RegionPtr /*pReg*/,
-	BoxPtr /*rect*/,
-	int /*size*/
-#endif
-);
-
-    Bool (* RegionCopy)(
-#if NeedNestedPrototypes
-	RegionPtr /*dst*/,
-	RegionPtr /*src*/
-#endif
-);
-
-    void (* RegionDestroy)(
-#if NeedNestedPrototypes
-	RegionPtr /*pReg*/
-#endif
-);
-
-    void (* RegionUninit)(
-#if NeedNestedPrototypes
-	RegionPtr /*pReg*/
-#endif
-);
-
-    Bool (* Intersect)(
-#if NeedNestedPrototypes
-	RegionPtr /*newReg*/,
-	RegionPtr /*reg1*/,
-	RegionPtr /*reg2*/
-#endif
-);
-
-    Bool (* Union)(
-#if NeedNestedPrototypes
-	RegionPtr /*newReg*/,
-	RegionPtr /*reg1*/,
-	RegionPtr /*reg2*/
-#endif
-);
-
-    Bool (* Subtract)(
-#if NeedNestedPrototypes
-	RegionPtr /*regD*/,
-	RegionPtr /*regM*/,
-	RegionPtr /*regS*/
-#endif
-);
-
-    Bool (* Inverse)(
-#if NeedNestedPrototypes
-	RegionPtr /*newReg*/,
-	RegionPtr /*reg1*/,
-	BoxPtr /*invRect*/
-#endif
-);
-
-    void (* RegionReset)(
-#if NeedNestedPrototypes
-	RegionPtr /*pReg*/,
-	BoxPtr /*pBox*/
-#endif
-);
-
-    void (* TranslateRegion)(
-#if NeedNestedPrototypes
-	RegionPtr /*pReg*/,
-	int /*x*/,
-	int /*y*/
-#endif
-);
-
-    int (* RectIn)(
-#if NeedNestedPrototypes
-	RegionPtr /*region*/,
-	BoxPtr /*prect*/
-#endif
-);
-
-    Bool (* PointInRegion)(
-#if NeedNestedPrototypes
-	RegionPtr /*pReg*/,
-	int /*x*/,
-	int /*y*/,
-	BoxPtr /*box*/
-#endif
-);
-
-    Bool (* RegionNotEmpty)(
-#if NeedNestedPrototypes
-	RegionPtr /*pReg*/
-#endif
-);
-
-    void (* RegionEmpty)(
-#if NeedNestedPrototypes
-	RegionPtr /*pReg*/
-#endif
-);
-
-    BoxPtr (* RegionExtents)(
-#if NeedNestedPrototypes
-	RegionPtr /*pReg*/
-#endif
-);
-
-    Bool (* RegionAppend)(
-#if NeedNestedPrototypes
-	RegionPtr /*dstrgn*/,
-	RegionPtr /*rgn*/
-#endif
-);
-
-    Bool (* RegionValidate)(
-#if NeedNestedPrototypes
-	RegionPtr /*badreg*/,
-	Bool* /*pOverlap*/
-#endif
-);
-
-    RegionPtr (* BitmapToRegion)(
-#if NeedNestedPrototypes
-	PixmapPtr /*pPix*/
-#endif
-);
-
-    RegionPtr (* RectsToRegion)(
-#if NeedNestedPrototypes
-	int /*nrects*/,
-	xRectangle* /*prect*/,
-	int /*ctype*/
-#endif
-);
-
-    void (* SendGraphicsExpose)(
-#if NeedNestedPrototypes
-	ClientPtr /*client*/,
-	RegionPtr /*pRgn*/,
-	XID /*drawable*/,
-	int /*major*/,
-	int /*minor*/
-#endif
-);
+    RegionCreateProcPtr		RegionCreate;
+    RegionInitProcPtr		RegionInit;
+    RegionCopyProcPtr		RegionCopy;
+    RegionDestroyProcPtr	RegionDestroy;
+    RegionUninitProcPtr		RegionUninit;
+    IntersectProcPtr		Intersect;
+    UnionProcPtr		Union;
+    SubtractProcPtr		Subtract;
+    InverseProcPtr		Inverse;
+    RegionResetProcPtr		RegionReset;
+    TranslateRegionProcPtr	TranslateRegion;
+    RectInProcPtr		RectIn;
+    PointInRegionProcPtr	PointInRegion;
+    RegionNotEmptyProcPtr	RegionNotEmpty;
+    RegionEmptyProcPtr		RegionEmpty;
+    RegionExtentsProcPtr	RegionExtents;
+    RegionAppendProcPtr		RegionAppend;
+    RegionValidateProcPtr	RegionValidate;
+    BitmapToRegionProcPtr	BitmapToRegion;
+    RectsToRegionProcPtr	RectsToRegion;
+    SendGraphicsExposeProcPtr	SendGraphicsExpose;
 
     /* os layer procedures */
-    void (* BlockHandler)(
-#if NeedNestedPrototypes
-	int /*screenNum*/,
-	pointer /*blockData*/,
-	struct timeval ** /*pTimeout*/,
-	pointer /*pReadmask*/
-#endif
-);
 
-    void (* WakeupHandler)(
-#if NeedNestedPrototypes
-	 int /*screenNum*/,
-	 pointer /*wakeupData*/,
-	 unsigned long /*result*/,
-	 pointer /*pReadMask*/
-#endif
-);
+    ScreenBlockHandlerProcPtr	BlockHandler;
+    ScreenWakeupHandlerProcPtr	WakeupHandler;
 
     pointer blockData;
     pointer wakeupData;
@@ -656,23 +853,8 @@ typedef struct _Screen {
     /* anybody can get a piece of this array */
     DevUnion	*devPrivates;
 
-    Bool (* CreateScreenResources)(
-#if NeedNestedPrototypes
-	ScreenPtr /*pScreen*/
-#endif
-);
-
-    Bool (* ModifyPixmapHeader)(
-#if NeedNestedPrototypes
-	PixmapPtr /*pPixmap*/,
-	int /*width*/,
-	int /*height*/,
-	int /*depth*/,
-	int /*bitsPerPixel*/,
-	int /*devKind*/,
-	pointer /*pPixData*/
-#endif
-);
+    CreateScreenResourcesProcPtr CreateScreenResources;
+    ModifyPixmapHeaderProcPtr	ModifyPixmapHeader;
 
     PixmapPtr pScratchPixmap;		/* scratch pixmap "pool" */
 
@@ -682,97 +864,22 @@ typedef struct _Screen {
     unsigned		totalPixmapSize;
 #endif
 
-    void (* MarkWindow)(
-#if NeedNestedPrototypes
-	WindowPtr /*pWin*/
-#endif
-);
-
-    Bool (* MarkOverlappedWindows)(
-#if NeedNestedPrototypes
-	WindowPtr /*parent*/,
-	WindowPtr /*firstChild*/,
-	WindowPtr * /*pLayerWin*/
-#endif
-);
-
-
-    Bool (* ChangeSaveUnder)(
-#if NeedNestedPrototypes
-	WindowPtr /*pLayerWin*/,
-	WindowPtr /*firstChild*/
-#endif
-);
-
-    void (* PostChangeSaveUnder)(
-#if NeedNestedPrototypes
-	WindowPtr /*pLayerWin*/,
-	WindowPtr /*firstChild*/
-#endif
-);
-
-    void (* MoveWindow)(
-#if NeedNestedPrototypes
-	WindowPtr /*pWin*/,
-	int /*x*/,
-	int /*y*/,
-	WindowPtr /*pSib*/,
-	VTKind /*kind*/
-#endif
-);
-
-    void (* ResizeWindow)(
-#if NeedNestedPrototypes
-    WindowPtr /*pWin*/,
-    int /*x*/,
-    int /*y*/, 
-    unsigned int /*w*/,
-    unsigned int /*h*/,
-    WindowPtr /*pSib*/
-#endif
-);
-
-    WindowPtr (* GetLayerWindow)(
-#if NeedNestedPrototypes
-    WindowPtr /*pWin*/
-#endif
-);
-
-    void (* HandleExposures)(
-#if NeedNestedPrototypes
-    WindowPtr /*pWin*/
-#endif
-);
-
-    void (* ReparentWindow)(
-#if NeedNestedPrototypes
-    WindowPtr /*pWin*/,
-    WindowPtr /*pPriorParent*/
-#endif
-);
+    MarkWindowProcPtr		MarkWindow;
+    MarkOverlappedWindowsProcPtr MarkOverlappedWindows;
+    ChangeSaveUnderProcPtr	ChangeSaveUnder;
+    PostChangeSaveUnderProcPtr	PostChangeSaveUnder;
+    MoveWindowProcPtr		MoveWindow;
+    ResizeWindowProcPtr		ResizeWindow;
+    GetLayerWindowProcPtr	GetLayerWindow;
+    HandleExposuresProcPtr	HandleExposures;
+    ReparentWindowProcPtr	ReparentWindow;
 
 #ifdef SHAPE
-    void (* SetShape)(
-#if NeedFunctionPrototypes
-	WindowPtr /*pWin*/
-#endif
-);
+    SetShapeProcPtr		SetShape;
 #endif /* SHAPE */
 
-    void (* ChangeBorderWidth)(
-#if NeedFunctionPrototypes
-	WindowPtr /*pWin*/,
-	unsigned int /*width*/
-#endif
-);
-
-    void (* MarkUnrealizedWindow)(
-#if NeedFunctionPrototypes
-	WindowPtr /*pChild*/,
-	WindowPtr /*pWin*/,
-	Bool /*fromConfigure*/
-#endif
-);
+    ChangeBorderWidthProcPtr	ChangeBorderWidth;
+    MarkUnrealizedWindowProcPtr	MarkUnrealizedWindow;
 
 } ScreenRec;
 
