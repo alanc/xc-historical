@@ -1,4 +1,4 @@
-/* $XConsortium: xqueryst.c,v 1.7 91/07/17 16:39:03 rws Exp $ */
+/* $XConsortium: xqueryst.c,v 1.8 92/10/20 17:12:02 rws Exp $ */
 
 /***********************************************************************
  *
@@ -78,6 +78,8 @@ ProcXQueryDeviceState(client)
 	return Success;
 	}
 
+    if (dev->valuator->motionHintWindow)
+	MaybeStopDeviceHint(dev, client);
 
     k = dev->key;
     if (k != NULL)
