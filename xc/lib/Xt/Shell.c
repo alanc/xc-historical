@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.64 89/09/21 15:52:10 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.65 89/09/21 16:39:50 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif /* lint */
 
@@ -69,7 +69,7 @@ static void ShellAncestorSensitive();
  *
  ***************************************************************************/
 
-#define Offset(x)	(XtOffset(ShellWidget, x))
+#define Offset(x)	(XtOffsetOf(ShellRec, x))
 static XtResource shellResources[]=
 {
 	{XtNx, XtCPosition, XtRPosition, sizeof(Position),
@@ -238,7 +238,7 @@ externaldef(overrideshellwidgetclass) WidgetClass overrideShellWidgetClass =
  ***************************************************************************/
 
 #undef Offset
-#define Offset(x)	(XtOffset(WMShellWidget, x))
+#define Offset(x)	(XtOffsetOf(WMShellRec, x))
 
 static XtResource wmResources[]=
 {
@@ -295,8 +295,9 @@ static XtResource wmResources[]=
 /* wm_hints */
 	{ XtNinput, XtCInput, XtRBool, sizeof(Bool),
 	    Offset(wm.wm_hints.input), XtRImmediate, (XtPointer)False},
-	{ XtNinitialState, XtCInitialState, XtRInt, sizeof(int),
-	    Offset(wm.wm_hints.initial_state), XtRImmediate, (XtPointer)1},
+	{ XtNinitialState, XtCInitialState, XtRInitialState, sizeof(int),
+	    Offset(wm.wm_hints.initial_state),
+	    XtRImmediate, (XtPointer)NormalState},
 	{ XtNiconPixmap, XtCIconPixmap, XtRBitmap, sizeof(XtPointer),
 	    Offset(wm.wm_hints.icon_pixmap), XtRPixmap, NULL},
 	{ XtNiconWindow, XtCIconWindow, XtRWindow, sizeof(XtPointer),
@@ -374,7 +375,7 @@ externaldef(wmshellwidgetclass) WidgetClass wmShellWidgetClass = (WidgetClass) (
  ***************************************************************************/
 
 #undef Offset
-#define Offset(x)	(XtOffset(TransientShellWidget, x))
+#define Offset(x)	(XtOffsetOf(TransientShellRec, x))
 
 static XtResource transientResources[]=
 {
@@ -450,7 +451,7 @@ externaldef(transientshellwidgetclass) WidgetClass transientShellWidgetClass =
  ***************************************************************************/
 
 #undef Offset
-#define Offset(x)	(XtOffset(TopLevelShellWidget, x))
+#define Offset(x)	(XtOffsetOf(TopLevelShellRec, x))
 
 static XtResource topLevelResources[]=
 {
@@ -528,7 +529,7 @@ externaldef(toplevelshellwidgetclass) WidgetClass topLevelShellWidgetClass =
  ***************************************************************************/
 
 #undef Offset
-#define Offset(x)	(XtOffset(ApplicationShellWidget, x))
+#define Offset(x)	(XtOffsetOf(ApplicationShellRec, x))
 
 static XtResource applicationResources[]=
 {
@@ -765,7 +766,7 @@ static void WMInitialize(req, new)
 	TopLevelShellWidget tls = (TopLevelShellWidget) new;	/* maybe */
 
 	if(w->wm.title == NULL) {
-	    if (XtIsSubclass(new, topLevelShellWidgetClass) &&
+	    if (XtIsTopLevelShell(new) &&
 		    tls->topLevel.icon_name != NULL &&
 		    strlen(tls->topLevel.icon_name) != 0) {
 		w->wm.title = XtNewString(tls->topLevel.icon_name);
@@ -781,7 +782,7 @@ static void WMInitialize(req, new)
 	/* Find the values of the atoms, somewhere... */
 
 	for (new = new->core.parent;
-		new != NULL && !XtIsSubclass(new, wmShellWidgetClass);
+		new != NULL && !XtIsWMShell(new);
 		new = new->core.parent) {}
 	if (new == NULL) {
 	    w->wm.wm_configure_denied =
@@ -1162,8 +1163,7 @@ static void EventHandler(wid, closure, event)
 		    w->shell.client_specified |= _XtShellPositionValid;
 		}
 		else w->shell.client_specified &= ~_XtShellPositionValid;
-		if (XtIsSubclass(wid, wmShellWidgetClass) &&
-			!wmshell->wm.wait_for_wm) {
+		if (XtIsWMShell(wid) && !wmshell->wm.wait_for_wm) {
 		    /* Consider trusting the wm again */
 		    register struct _OldXSizeHints *hintp
 			= &wmshell->wm.size_hints;
@@ -1176,8 +1176,8 @@ static void EventHandler(wid, closure, event)
 		break;
 
 	    case ClientMessage:
-		if( event->xclient.message_type == WM_CONFIGURE_DENIED(wid)  &&
-			XtIsSubclass(wid, wmShellWidgetClass)) {
+		if( event->xclient.message_type == WM_CONFIGURE_DENIED(wid)
+		    && XtIsWMShell(wid)) {
 
 		    /* 
 		     * UT Oh! the window manager has come back alive
@@ -1216,7 +1216,7 @@ static void EventHandler(wid, closure, event)
 		if(event->xclient.message_type == WM_MOVED(wid)) {
 		    w->core.x = event->xclient.data.s[0];
 		    w->core.y  = event->xclient.data.s[1];
-		    if (XtIsSubclass((Widget)w, wmShellWidgetClass)) {
+		    if (XtIsWMShell((Widget)w)) {
 			WMShellWidget wmshell = (WMShellWidget) w;
 			/* Any window manager which sends this must be 
 			   good guy.  Let's reset our flag. */
@@ -1290,8 +1290,8 @@ static void ChangeManaged(wid)
 	}
     }
 
-    if (!XtIsRealized ((Widget) wid)) {
-	Boolean is_wmshell = XtIsSubclass(wid, wmShellWidgetClass);
+    if (!XtIsRealized (wid)) {
+	Boolean is_wmshell = XtIsWMShell(wid);
 	int x, y, width, height, win_gravity = -1, flag;
 	struct _OldXSizeHints hints, *hintsP;
 
