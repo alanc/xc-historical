@@ -25,7 +25,7 @@ in this Software without prior written authorization from the X Consortium.
 
 ********************************************************/
 
-/* $XConsortium: shape.c,v 5.20 94/02/07 22:20:54 rws Exp $ */
+/* $XConsortium: shape.c,v 5.21 94/04/17 20:32:55 rws Exp dpw $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -469,7 +469,7 @@ ProcShapeQueryExtents (client)
     REQUEST(xShapeQueryExtentsReq);
     WindowPtr		pWin;
     xShapeQueryExtentsReply	rep;
-    BoxRec		extents;
+    BoxRec		extents, *pExtents;
     register int	n;
 
     REQUEST_SIZE_MATCH (xShapeQueryExtentsReq);
@@ -482,7 +482,9 @@ ProcShapeQueryExtents (client)
     rep.boundingShaped = (wBoundingShape(pWin) != 0);
     rep.clipShaped = (wClipShape(pWin) != 0);
     if (wBoundingShape(pWin)) {
-	extents = *REGION_EXTENTS(pWin->drawable.pScreen, wBoundingShape(pWin));
+     /* this is done in two steps because of a compiler bug on SunOS 4.1.3 */
+	pExtents = REGION_EXTENTS(pWin->drawable.pScreen, wBoundingShape(pWin));
+	extents = *pExtents;
     } else {
 	extents.x1 = -wBorderWidth (pWin);
 	extents.y1 = -wBorderWidth (pWin);
@@ -494,7 +496,9 @@ ProcShapeQueryExtents (client)
     rep.widthBoundingShape = extents.x2 - extents.x1;
     rep.heightBoundingShape = extents.y2 - extents.y1;
     if (wClipShape(pWin)) {
-	extents = *REGION_EXTENTS(pWin->drawable.pScreen, wClipShape(pWin));
+     /* this is done in two steps because of a compiler bug on SunOS 4.1.3 */
+	pExtents = REGION_EXTENTS(pWin->drawable.pScreen, wClipShape(pWin));
+	extents = *pExtents;
     } else {
 	extents.x1 = 0;
 	extents.y1 = 0;
