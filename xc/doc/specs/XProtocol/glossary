@@ -10,8 +10,8 @@
 \s+1\fBGlossary\fP\s-1
 .sp 2
 .na
-.EH '\fBX Protocol\fP''\fBX11, Release 4\fP'
-.OH '\fBX Protocol\fP''\fBX11, Release 4\fP'
+.EH '\fBX Protocol\fP''\fBX11, Release 5\fP'
+.OH '\fBX Protocol\fP''\fBX11, Release 5\fP'
 .EF ''\fB % \fP''
 .OF ''\fB % \fP''
 .LP

@@ -12,8 +12,8 @@
 \s+1\fBKEYSYM Encoding\fP\s-1
 .sp 2
 .LP
-.EH '\s+2\fBX Protocol\fP''\fBX11, Release 4\fP\s-2'
-.OH '\s+2\fBX Protocol\fP''\fBX11, Release 4\fP\s-2'
+.EH '\s+2\fBX Protocol\fP''\fBX11, Release 5\fP\s-2'
+.OH '\s+2\fBX Protocol\fP''\fBX11, Release 5\fP\s-2'
 .EF ''\s+2\fB % \fP\s-2''
 .OF ''\s+2\fB % \fP\s-2''
 For convenience, KEYSYM values are viewed as split into four bytes: 

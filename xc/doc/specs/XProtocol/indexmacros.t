@@ -27,8 +27,8 @@
 ..
 .\" set up various parameters for the right evironment.
 .\" Your taste may be different.
-.eh '\s+1\fBX Protocol\fP''\fBX11, Release 4\fP\s-1'
-.oh '\s+1\fBX Protocol\fP''\fBX11, Release 4\fP\s-1'
+.eh '\s+1\fBX Protocol\fP''\fBX11, Release 5\fP\s-1'
+.oh '\s+1\fBX Protocol\fP''\fBX11, Release 5\fP\s-1'
 .ef ''\s+1\fB % \fP\s-1''
 .of ''\s+1\fB % \fP\s-1''
 .\" Set the page number for the index properly.
