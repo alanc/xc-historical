@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.15 89/11/06 19:20:25 rws Exp $ */
+/* $XConsortium: events.c,v 5.16 89/11/10 11:00:01 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -747,7 +747,10 @@ DeactivateKeyboardGrab(keybd)
 {
     register GrabPtr grab = keybd->grab;
     register DeviceIntPtr dev;
+    register WindowPtr focusWin = keybd->focus->win;
 
+    if (focusWin == FollowKeyboardWin)
+	focusWin = inputInfo.keyboard->focus->win;
     keybd->grab = NullGrab;
     keybd->sync.state = NOT_GRABBED;
     keybd->fromPassiveGrab = FALSE;
@@ -756,7 +759,7 @@ DeactivateKeyboardGrab(keybd)
 	if (dev->sync.other == grab)
 	    dev->sync.other = NullGrab;
     }
-    DoFocusEvents(keybd, grab->window, keybd->focus->win, NotifyUngrab);
+    DoFocusEvents(keybd, grab->window, focusWin, NotifyUngrab);
     ComputeFreezes();
 }
 
