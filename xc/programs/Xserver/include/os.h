@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: os.h,v 1.15 87/08/02 18:45:54 toddb Locked $ */
+/* $Header: os.h,v 1.16 87/08/19 20:14:16 toddb Locked $ */
 
 #ifndef OS_H
 #define OS_H
@@ -41,7 +41,7 @@ typedef struct _FontPathRec *FontPathPtr;
 typedef struct _NewClientRec *NewClientPtr;
 
 /* os-dependent definition of local allocation and deallocation */
-#ifdef ibm032 /* RT/PC */
+#if defined(ibm032) && !defined(_pcc_)
 #define ALLOCATE_LOCAL(size) (alloca(size))
 #define DEALLOCATE_LOCAL(ptr)
 pragma on(alloca);
