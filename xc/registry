@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.33 91/05/28 08:25:37 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.34 91/05/28 08:32:44 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -682,6 +682,7 @@ Name						Reference
 Value	Name					Reference
 -----	----					---------
 1	MIT					[8]
+2	GfxBase					[74]
 
 
 
@@ -1015,4 +1016,9 @@ REFERENCES
 	Software Transformation
 	1601 Saratoga-Sunnyvale Rd
 	Cupertino, CA 95014
+
+[74]	Dale Luck
+	GfxBase, Inc.
+	1881 Ellwell Dr.
+	Milpitas, CA 95035
 Sumitomo Electric Workstation Corp.	[77]
