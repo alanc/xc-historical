@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.66 89/12/12 11:16:11 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.67 89/12/18 17:14:15 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -720,7 +720,7 @@ all::									@@\
 									@@\
 .c.o:									@@\
 	$(RM) $@ shared/$@						@@\
-	$(CC) -pic -c $(SHAREDCODEDEF) $(SHLIBDEF) $(CFLAGS) $*.c	@@\
+	$(CC) -pic -c $(SHAREDCODEDEF) $(SHLIBDEF) -O $(CCOPTIONS) $(ALLDEFINES) $*.c	@@\
 	$(MV) $*.o shared/$*.o						@@\
 	$(CC) -c $(SHLIBDEF) $(CFLAGS) $*.c				@@\
 									@@\
@@ -742,7 +742,7 @@ all::									@@\
 									@@\
 .c.o:									@@\
 	$(RM) $@ shared/$@ debugger/$@					@@\
-	$(CC) -pic -c $(SHAREDCODEDEF) $(SHLIBDEF) $(CFLAGS) $*.c	@@\
+	$(CC) -pic -c $(SHAREDCODEDEF) $(SHLIBDEF) -O $(CCOPTIONS) $(ALLDEFINES) $*.c	@@\
 	$(MV) $*.o shared/$*.o						@@\
 	$(CC) -g -c $(SHLIBDEF) $(CFLAGS) $*.c				@@\
 	$(MV) $*.o debugger/$*.o					@@\
@@ -768,7 +768,7 @@ all::									@@\
 									@@\
 objs:	depends								@@\
 	$(RM) $@ shared/$@ debugger/$@					@@\
-	$(CC) -pic -c $(SHAREDCODEDEF) $(SHLIBDEF) $(CFLAGS) options $*.c @@\
+	$(CC) -pic -c $(SHAREDCODEDEF) $(SHLIBDEF) -O $(CCOPTIONS) $(ALLDEFINES) options $*.c @@\
 	$(MV) $*.o shared/$*.o						@@\
 	$(CC) -g -c $(SHLIBDEF) $(CFLAGS) options $*.c			@@\
 	$(MV) $*.o debugger/$*.o					@@\
@@ -786,7 +786,7 @@ all::									@@\
 									@@\
 objs:	depends								@@\
 	$(RM) $@ shared/$@ 						@@\
-	$(CC) -pic -c $(SHAREDCODEDEF) $(SHLIBDEF) $(CFLAGS) options $*.c @@\
+	$(CC) -pic -c $(SHAREDCODEDEF) $(SHLIBDEF) -O $(CCOPTIONS) $(ALLDEFINES) options $*.c @@\
 	$(MV) $*.o shared/$*.o						@@\
 	$(CC) -c $(SHLIBDEF) $(CFLAGS) options $*.c
 #endif /* SpecialDebuggedAndProfiledObjectRule */
