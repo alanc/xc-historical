@@ -2,7 +2,7 @@
 static char sccsid[]="@(#)menu.c	1.7 Stellar 87/10/16";
 #endif
 /*
- *	$Header: menu.c,v 1.28 87/09/11 22:31:28 rws Exp $
+ *	$Header: menu.c,v 1.1 88/02/10 13:08:08 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -45,7 +45,7 @@ static char sccsid[]="@(#)menu.c	1.7 Stellar 87/10/16";
 #include "data.h"
 
 #ifndef lint
-static char rcs_id[] = "$Header: menu.c,v 1.28 87/09/11 22:31:28 rws Exp $";
+static char rcs_id[] = "$Header: menu.c,v 1.1 88/02/10 13:08:08 jim Exp $";
 #endif	lint
 
 #define DEFMENUBORDER	2
@@ -140,8 +140,15 @@ register char *name;
            resourceList, XtNumber(resourceList), NULL, 0);
 
 	if (Menu_Default.menuFontInfo == NULL) {
-	    Menu_Default.menuFontInfo = xw->screen.fnt_norm;
-	    MenugcFontMask = VTgcFontMask;
+	    if (xw->screen.fnt_norm) {
+		Menu_Default.menuFontInfo = xw->screen.fnt_norm;
+		MenugcFontMask = VTgcFontMask;
+	    } else {
+		Display *dpy = XtDisplay (xw);
+		Menu_Default.menuFontInfo =
+		  XQueryFont (dpy, DefaultGC (dpy, DefaultScreen (dpy))->gid);
+		MenugcFontMask = 0;
+	    }
 	}
 };
 
