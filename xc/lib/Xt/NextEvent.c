@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.130 93/09/27 14:14:08 kaleb Exp $ */
+/* $XConsortium: NextEvent.c,v 1.131 93/10/06 17:31:42 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -360,7 +360,7 @@ ENDILOOP:   ;
     wf->fdli = 0;
     if (!ignoreEvents)
 	for ( ; wf->fdli < app->count; wf->fdli++, fdlp++)
-	    if (fdlp->revents & POLLIN &&
+	    if (fdlp->revents & (POLLIN|POLLHUP) &&
 		XEventsQueued (app->list[wf->fdli], QueuedAfterReading))
 		*dpy_no = wf->fdli;
 
@@ -368,7 +368,7 @@ ENDILOOP:   ;
 	for ( ; wf->fdli < wf->fdlistlen; wf->fdli++, fdlp++) {
 	    condition = 0;
 	    if (fdlp->revents) {
-		if (fdlp->revents & POLLIN)
+		if (fdlp->revents & (POLLIN|POLLHUP))
 		    condition = XtInputReadMask;
 		if (fdlp->revents & POLLOUT)
 		    condition |= XtInputWriteMask;
