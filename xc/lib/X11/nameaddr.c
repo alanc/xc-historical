@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: nameaddr.c,v 1.1 91/07/12 15:54:51 gildea Exp $ */
 /*	nameaddr.c - included by Xstreams.c			*/
 /*	Used for System V Release 4.0 networking code		*/
 
@@ -349,9 +349,8 @@ fprintf(stderr, "Trying to get the binding address for service %s on %s\n",
 		}
 		
 #ifdef DEBUG
-		netbufp->buf[netbufp->len] = '\0';
-		fprintf(stderr, "Address: len %d maxlen %d buf %s\n", 
-			netbufp->len, netbufp->maxlen, netbufp->buf);
+		fprintf(stderr, "Address: maxlen %d buf ", netbufp->maxlen);
+		dumpBytes(netbufp->len, netbufp->buf);
 #endif
 		if((fd = (*action)(netconfigp->nc_device, netbufp)) < 0)
 		{
@@ -398,7 +397,7 @@ fprintf(stderr, "Trying to get the binding address for service %s on %s\n",
 	    (void) netdir_free((char *)nd_addrlistp, ND_ADDRLIST);
 	  }
 #ifdef DEBUG
-	  else nc_perror("netdir_getbyname() failed\n");
+	  else netdir_perror("netdir_getbyname() failed");
 #endif
 	}
 	return(-1);
