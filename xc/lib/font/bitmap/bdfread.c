@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: bdfread.c,v 1.17 93/09/17 18:26:50 gildea Exp $ */
+/* $XConsortium: bdfread.c,v 1.18 94/02/03 15:24:38 gildea Exp $ */
 
 #include <ctype.h>
 #include "fntfilst.h"
@@ -895,6 +895,7 @@ bdfPadToTerminal(pFont)
 	if (!new.bits)
 	    return FALSE;
 	FontCharReshape(pFont, &bitmapFont->metrics[i], &new);
+        new.metrics.attributes = bitmapFont->metrics[i].metrics.attributes;
 	xfree(bitmapFont->metrics[i].bits);
 	bitmapFont->metrics[i] = new;
     }
