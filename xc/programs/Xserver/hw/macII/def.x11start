@@ -6,10 +6,18 @@ xclock -analog -update 60 =96x96-2-2 &
 sleep 1
 xload =96x96-100-2 &
 sleep 1
-xlogo -g =96x96-200-0 &
+xlogo -fg grey -bg maroon -g =96x96-200-2 &
 sleep 1
-xterm =80x24+40+88 &
+xterm =80x24+40+88 -title "`hostname` 1" &
 sleep 1
-xterm =80x24+60+108 &
+xterm =80x24+60+108 -title "`hostname` 2" &
 sleep 1
-exec $SHELL
+if [ -r /dev/oldmsgs ]
+then
+	tail -f /dev/oldmsgs &
+	tailproc=$!
+	$SHELL
+	kill $tailproc
+else
+	exec $SHELL
+fi
