@@ -1,5 +1,5 @@
 /*
-* $Header: Intrinsic.h,v 1.67 88/02/01 20:29:21 swick Locked $
+* $Header: Intrinsic.h,v 1.68 88/02/02 20:09:14 swick Locked $
 */
 
 /*
@@ -26,8 +26,8 @@
  */
 #ifndef _XtIntrinsic_h
 #define _XtIntrinsic_h
-#include	<X11/Xlib.h>
-#include	<X11/Xresource.h>
+#include	<X/Xlib.h>
+#include	<X/Xresource.h>
 #include	<sys/types.h>
 
 #ifndef NULL
@@ -585,6 +585,16 @@ extern void XtWarning();  /* message */
 
 /*************************************************************
  *
+ * Misc
+ *
+ ************************************************************/
+
+extern Cursor XtGetCursor(); /* dpy, num */
+    /* Display *dpy */
+    /* int num */
+
+/*************************************************************
+ *
  * Information routines
  *
  ************************************************************/
@@ -618,4 +628,3 @@ extern Boolean XtIsRealized();
 
 #endif _XtIntrinsic_h
 /* DON'T ADD STUFF AFTER THIS #endif */
-
