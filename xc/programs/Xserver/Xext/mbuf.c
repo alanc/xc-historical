@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: mbuf.c,v 1.19 93/09/20 20:16:09 dpw Exp $ */
+/* $XConsortium: mbuf.c,v 1.20 94/01/07 09:45:59 dpw Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -46,26 +46,30 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "inputstr.h"
 #include <sys/time.h>
 
-/*
- * per-Multibuffer data
- */
- 
-typedef struct _Multibuffers	*MultibuffersPtr;
-
-#define SameClient(obj,client) \
-	(CLIENT_BITS((obj)->resource) == (client)->clientAsMask)
+/* given an OtherClientPtr obj, get the ClientPtr */
 #define rClient(obj) (clients[CLIENT_ID((obj)->resource)])
+
+/* given a MultibufferPtr b, get the ClientPtr */
 #define bClient(b)   (clients[CLIENT_ID(b->pPixmap->drawable.id)])
 
 #define ValidEventMasks (ExposureMask|MultibufferClobberNotifyMask|MultibufferUpdateNotifyMask)
 
+/* The _Multibuffer and _Multibuffers structures below refer to each other,
+ * so we need this forward declaration
+ */
+typedef struct _Multibuffers	*MultibuffersPtr;
+
+/*
+ * per-Multibuffer data
+ */
+ 
 typedef struct _Multibuffer {
     MultibuffersPtr pMultibuffers;  /* associated window data */
     Mask	    eventMask;	    /* MultibufferClobberNotifyMask|ExposureMask|MultibufferUpdateNotifyMask */
     Mask	    otherEventMask; /* mask of all other clients event masks */
-    OtherClients    *otherClients;
-    int		    number;	    /* index into array */
-    int		    side;	    /* alwys Mono */
+    OtherClients    *otherClients;  /* other clients that want events */
+    int		    number;	    /* index of this buffer into array */
+    int		    side;	    /* always Mono */
     int		    clobber;	    /* Unclobbered, PartiallyClobbered, FullClobbered */
     PixmapPtr	    pPixmap;	    /* associated pixmap */
 } MultibufferRec, *MultibufferPtr;
@@ -88,7 +92,7 @@ typedef struct _Multibuffers {
     unsigned short	width, height;	/* last known window size */
     short		x, y;		/* for static gravity */
 
-    MultibufferPtr	buffers;
+    MultibufferPtr	buffers;        /* array of numMultibuffer buffers */
 } MultibuffersRec;
 
 /*
@@ -285,6 +289,56 @@ ProcGetBufferVersion (client)
     return (client->noClientException);
 }
 
+static void
+SetupBackgroundPainter (pWin, pGC)
+    WindowPtr	pWin;
+    GCPtr	pGC;
+{
+    pointer	    gcvalues[4];
+    int		    ts_x_origin, ts_y_origin;
+    PixUnion	    background;
+    int		    backgroundState;
+    Mask	    gcmask;
+
+    /*
+     * First take care of any ParentRelative stuff by altering the
+     * tile/stipple origin to match the coordinates of the upper-left
+     * corner of the first ancestor without a ParentRelative background.
+     * This coordinate is, of course, negative.
+     */
+
+    ts_x_origin = ts_y_origin = 0;
+    while (pWin->backgroundState == ParentRelative) {
+	ts_x_origin -= pWin->origin.x;
+	ts_y_origin -= pWin->origin.y;
+	pWin = pWin->parent;
+    }
+    backgroundState = pWin->backgroundState;
+    background = pWin->background;
+
+    switch (backgroundState)
+    {
+    case BackgroundPixel:
+	gcvalues[0] = (pointer) background.pixel;
+	gcvalues[1] = (pointer) FillSolid;
+	gcmask = GCForeground|GCFillStyle;
+	break;
+
+    case BackgroundPixmap:
+	gcvalues[0] = (pointer) FillTiled;
+	gcvalues[1] = (pointer) background.pixmap;
+	gcvalues[2] = (pointer) ts_x_origin;
+	gcvalues[3] = (pointer) ts_y_origin;
+	gcmask = GCFillStyle|GCTile|GCTileStipXOrigin|GCTileStipYOrigin;
+	break;
+
+    default:
+	gcvalues[0] = (pointer) GXnoop;
+	gcmask = GCFunction;
+    }
+    DoChangeGC(pGC, gcmask, (XID *)gcvalues, TRUE);
+}
+
 int
 CreateImageBuffers (pWin, nbuf, ids, action, hint)
     WindowPtr	pWin;
@@ -298,6 +352,8 @@ CreateImageBuffers (pWin, nbuf, ids, action, hint)
     ScreenPtr		pScreen;
     int			width, height, depth;
     int			i;
+    GCPtr		pClearGC = NULL;
+    xRectangle		clearRect;
 
     DestroyImageBuffers(pWin);
     pMultibuffers = (MultibuffersPtr) xalloc (sizeof (MultibuffersRec) +
@@ -313,6 +369,16 @@ CreateImageBuffers (pWin, nbuf, ids, action, hint)
     height = pWin->drawable.height;
     depth = pWin->drawable.depth;
     pScreen = pWin->drawable.pScreen;
+
+    if (pWin->backgroundState != None)
+    {
+	pClearGC = GetScratchGC (pWin->drawable.depth, pScreen);
+	SetupBackgroundPainter (pWin, pClearGC);
+	clearRect.x = clearRect.y = 0;
+	clearRect.width = width;
+	clearRect.height = height;
+    }
+
     for (i = 0; i < nbuf; i++)
     {
 	pMultibuffer = &pMultibuffers->buffers[i];
@@ -335,6 +401,13 @@ CreateImageBuffers (pWin, nbuf, ids, action, hint)
 	    break;
 	}
 	pMultibuffer->pPixmap->drawable.id = ids[i];
+
+	if (i > 0 && pClearGC)
+	{
+	    ValidateGC((DrawablePtr)pMultibuffer->pPixmap, pClearGC);
+	    (*pClearGC->ops->PolyFillRect)((DrawablePtr)pMultibuffer->pPixmap,
+					   pClearGC, 1, &clearRect);
+	}
     }
     pMultibuffers->numMultibuffer = i;
     pMultibuffers->refcnt = i;
@@ -349,6 +422,7 @@ CreateImageBuffers (pWin, nbuf, ids, action, hint)
     pMultibuffers->width = width;
     pMultibuffers->height = height;
     pWin->devPrivates[MultibufferWindowIndex].ptr = (pointer) pMultibuffers;
+    if (pClearGC) FreeScratchGC(pClearGC);
     return Success;
 }
 
@@ -437,12 +511,12 @@ ProcDisplayImageBuffers (client)
 	return Success;
     minDelay = stuff->minDelay;
     ids = (XID *) &stuff[1];
-    ppMultibuffers = (MultibuffersPtr *) xalloc (nbuf * sizeof (MultibuffersPtr));
-    pMultibuffer = (MultibufferPtr *) xalloc (nbuf * sizeof (MultibufferPtr));
+    ppMultibuffers = (MultibuffersPtr *) ALLOCATE_LOCAL(nbuf * sizeof (MultibuffersPtr));
+    pMultibuffer = (MultibufferPtr *) ALLOCATE_LOCAL(nbuf * sizeof (MultibufferPtr));
     if (!ppMultibuffers || !pMultibuffer)
     {
-	xfree (ppMultibuffers);
-	xfree (pMultibuffer);
+	if (ppMultibuffers) DEALLOCATE_LOCAL(ppMultibuffers);
+	if (pMultibuffer)   DEALLOCATE_LOCAL(pMultibuffer);
 	client->errorValue = 0;
 	return BadAlloc;
     }
@@ -453,8 +527,8 @@ ProcDisplayImageBuffers (client)
 	pMultibuffer[i] = (MultibufferPtr) LookupIDByType (ids[i], MultibufferResType);
 	if (!pMultibuffer[i])
 	{
-	    xfree (ppMultibuffers);
-	    xfree (pMultibuffer);
+	    DEALLOCATE_LOCAL(ppMultibuffers);
+	    DEALLOCATE_LOCAL(pMultibuffer);
 	    client->errorValue = ids[i];
 	    return MultibufferErrorBase + MultibufferBadBuffer;
 	}
@@ -463,8 +537,8 @@ ProcDisplayImageBuffers (client)
 	{
 	    if (ppMultibuffers[i] == ppMultibuffers[j])
 	    {
-	    	xfree (ppMultibuffers);
-	    	xfree (pMultibuffer);
+	    	DEALLOCATE_LOCAL(ppMultibuffers);
+	    	DEALLOCATE_LOCAL(pMultibuffer);
 		client->errorValue = ids[i];
 	    	return BadMatch;
 	    }
@@ -482,8 +556,8 @@ ProcDisplayImageBuffers (client)
     }
     else
 	PerformDisplayRequest (ppMultibuffers, pMultibuffer, nbuf);
-    xfree (ppMultibuffers);
-    xfree (pMultibuffer);
+    DEALLOCATE_LOCAL(ppMultibuffers);
+    DEALLOCATE_LOCAL(pMultibuffer);
     return Success;
 }
 
@@ -710,7 +784,7 @@ ProcGetBufferInfo (client)
 	nInfo += pDepth->numVids;
     }
     pInfo = (xMbufBufferInfo *)
-	    ALLOCATE_LOCAL (pScreen->numVisuals * sizeof (xMbufBufferInfo));
+		ALLOCATE_LOCAL (nInfo * sizeof (xMbufBufferInfo));
     if (!pInfo)
 	return BadAlloc;
 
@@ -751,6 +825,68 @@ ProcGetBufferInfo (client)
 }
 
 static int
+ProcClearImageBufferArea (client)
+    register ClientPtr	client;
+{
+    REQUEST (xMbufClearImageBufferAreaReq);
+    MultibufferPtr	pMultibuffer;
+    WindowPtr pWin;
+    xRectangle clearRect;
+    int width, height;
+    DrawablePtr pDrawable;
+    ScreenPtr pScreen;
+
+    REQUEST_SIZE_MATCH (xMbufClearImageBufferAreaReq);
+    pMultibuffer = (MultibufferPtr) LookupIDByType (stuff->buffer, MultibufferResType);
+    if (!pMultibuffer)
+	return MultibufferErrorBase + MultibufferBadBuffer;
+    if ((stuff->exposures != xTrue) && (stuff->exposures != xFalse))
+    {
+	client->errorValue = stuff->exposures;
+        return(BadValue);
+    }
+    pWin = pMultibuffer->pMultibuffers->pWindow;
+    width  = pWin->drawable.width;
+    height = pWin->drawable.height;
+    pScreen = pWin->drawable.pScreen;
+
+    clearRect.x = stuff->x;
+    clearRect.y = stuff->y;
+    clearRect.width  = stuff->width  ? stuff->width  : width;
+    clearRect.height = stuff->height ? stuff->height : height;
+
+    if (pWin->backgroundState != None)
+    {
+	GCPtr pClearGC;
+	pClearGC = GetScratchGC (pWin->drawable.depth, pScreen);
+	SetupBackgroundPainter (pWin, pClearGC);
+
+	if (pMultibuffer->number == pMultibuffer->pMultibuffers->displayedMultibuffer)
+	    pDrawable = (DrawablePtr)pWin;
+	else
+	    pDrawable = (DrawablePtr)pMultibuffer->pPixmap;
+
+	ValidateGC(pDrawable, pClearGC);
+	(*pClearGC->ops->PolyFillRect) (pDrawable, pClearGC, 1, &clearRect);
+	FreeScratchGC(pClearGC);
+    }
+
+    if (stuff->exposures)
+    {
+	RegionRec region;
+	BoxRec box;
+	box.x1 = clearRect.x;
+	box.y1 = clearRect.y;
+	box.x2 = clearRect.x + clearRect.width;
+	box.y2 = clearRect.y + clearRect.height;
+	REGION_INIT(pScreen, &region, &box, 1);
+	MultibufferExpose(pMultibuffer, &region);
+	REGION_UNINIT(pScreen, &region);
+    }
+    return Success;
+}
+
+static int
 ProcMultibufferDispatch (client)
     register ClientPtr	client;
 {
@@ -774,6 +910,8 @@ ProcMultibufferDispatch (client)
 	return ProcGetBufferAttributes (client);
     case X_MbufGetBufferInfo:
 	return ProcGetBufferInfo (client);
+    case X_MbufClearImageBufferArea:
+	return ProcClearImageBufferArea (client);
     default:
 	return BadRequest;
     }
@@ -902,6 +1040,23 @@ SProcGetBufferInfo (client)
 }
 
 static int
+SProcClearImageBufferArea(client)
+    register ClientPtr client;
+{
+    register char n;
+    REQUEST(xMbufClearImageBufferAreaReq);
+
+    swaps(&stuff->length, n);
+    REQUEST_SIZE_MATCH (xMbufClearImageBufferAreaReq);
+    swapl(&stuff->buffer, n);
+    swaps(&stuff->x, n);
+    swaps(&stuff->y, n);
+    swaps(&stuff->width, n);
+    swaps(&stuff->height, n);
+    return ProcClearImageBufferArea(client);
+}
+
+static int
 SProcMultibufferDispatch (client)
     register ClientPtr	client;
 {
@@ -925,6 +1080,8 @@ SProcMultibufferDispatch (client)
 	return SProcGetBufferAttributes (client);
     case X_MbufGetBufferInfo:
 	return SProcGetBufferInfo (client);
+    case X_MbufClearImageBufferArea:
+	return SProcClearImageBufferArea (client);
     default:
 	return BadRequest;
     }
@@ -951,61 +1108,6 @@ SClobberNotifyEvent (from, to)
 }
 
 static void
-SetupBackgroundPainter (pWin, pGC)
-    WindowPtr	pWin;
-    GCPtr	pGC;
-{
-    XID		    gcvalues[4];
-    int		    ts_x_origin, ts_y_origin;
-    PixUnion	    background;
-    int		    backgroundState;
-    Mask	    gcmask;
-
-    /*
-     * set up the gc to clear the pixmaps;
-     */
-    ts_x_origin = ts_y_origin = 0;
-
-    backgroundState = pWin->backgroundState;
-    background = pWin->background;
-    if (backgroundState == ParentRelative) {
-	WindowPtr	pParent;
-
-	pParent = pWin;
-	while (pParent->backgroundState == ParentRelative) {
-	    ts_x_origin -= pParent->origin.x;
-	    ts_y_origin -= pParent->origin.y;
-	    pParent = pParent->parent;
-	}
-	backgroundState = pParent->backgroundState;
-	background = pParent->background;
-    }
-
-    /*
-     * First take care of any ParentRelative stuff by altering the
-     * tile/stipple origin to match the coordinates of the upper-left
-     * corner of the first ancestor without a ParentRelative background.
-     * This coordinate is, of course, negative.
-     */
-
-    if (backgroundState == BackgroundPixel)
-    {
-	gcvalues[0] = (XID) background.pixel;
-	gcvalues[1] = FillSolid;
-	gcmask = GCForeground|GCFillStyle;
-    }
-    else
-    {
-	gcvalues[0] = FillTiled;
-	gcvalues[1] = (XID) background.pixmap;
-	gcvalues[2] = ts_x_origin;
-	gcvalues[3] = ts_y_origin;
-	gcmask = GCFillStyle|GCTile|GCTileStipXOrigin|GCTileStipYOrigin;
-    }
-    DoChangeGC(pGC, gcmask, gcvalues, TRUE);
-}
-
-static void
 PerformDisplayRequest (ppMultibuffers, pMultibuffer, nbuf)
     MultibufferPtr	    *pMultibuffer;
     MultibuffersPtr	    *ppMultibuffers;
@@ -1017,15 +1119,16 @@ PerformDisplayRequest (ppMultibuffers, pMultibuffer, nbuf)
     WindowPtr	    pWin;
     RegionPtr	    pExposed;
     int		    i;
-    MultibufferPtr	    pPrevMultibuffer;
-    XID		    bool;
+    MultibufferPtr  pPrevMultibuffer;
+    XID		    graphicsExpose;
 
     UpdateCurrentTime ();
     for (i = 0; i < nbuf; i++)
     {
 	pWin = ppMultibuffers[i]->pWindow;
 	pGC = GetScratchGC (pWin->drawable.depth, pWin->drawable.pScreen);
-	pPrevMultibuffer = &ppMultibuffers[i]->buffers[ppMultibuffers[i]->displayedMultibuffer];
+	pPrevMultibuffer =
+	   &ppMultibuffers[i]->buffers[ppMultibuffers[i]->displayedMultibuffer];
 	pPrevPixmap = pPrevMultibuffer->pPixmap;
 	pNewPixmap = pMultibuffer[i]->pPixmap;
 	switch (ppMultibuffers[i]->updateAction)
@@ -1043,10 +1146,13 @@ PerformDisplayRequest (ppMultibuffers, pMultibuffer, nbuf)
 				       1, &clearRect);
 	    break;
 	case MultibufferUpdateActionUntouched:
+	    /* copy the window to the pixmap that represents the
+	     * currently displayed buffer
+	     */
 	    if (pPrevMultibuffer->eventMask & ExposureMask)
 	    {
-	    	bool = TRUE;
-	    	DoChangeGC (pGC, GCGraphicsExposures, &bool, FALSE);
+	    	graphicsExpose = TRUE;
+	    	DoChangeGC (pGC, GCGraphicsExposures, &graphicsExpose, FALSE);
 	    }
 	    ValidateGC ((DrawablePtr)pPrevPixmap, pGC);
 	    pExposed = (*pGC->ops->CopyArea)
@@ -1056,39 +1162,58 @@ PerformDisplayRequest (ppMultibuffers, pMultibuffer, nbuf)
 			     0, 0,
 			     pWin->drawable.width, pWin->drawable.height,
 			     0, 0);
+
+	    /* if we couldn't copy the whole window to the buffer,
+	     * send expose events (if any client wants them)
+	     */
 	    if (pPrevMultibuffer->eventMask & ExposureMask)
-	    {
+	    { /* some client wants expose events */
 	    	if (pExposed)
 	    	{
 		    RegionPtr	pWinSize;
+		    ScreenPtr pScreen = pWin->drawable.pScreen;
 		    extern RegionPtr	CreateUnclippedWinSize();
 
 		    pWinSize = CreateUnclippedWinSize (pWin);
-		    REGION_INTERSECT(pWin->drawable.pScreen, pExposed,
-							  pExposed, pWinSize);
-		    REGION_DESTROY(pWin->drawable.pScreen, pWinSize);
+		    /* pExposed is window-relative, but at this point
+		     * pWinSize is screen-relative.  Make pWinSize be
+		     * window-relative so that region ops involving
+		     * pExposed and pWinSize behave sensibly.
+		     */
+		    REGION_TRANSLATE(pScreen, pWinSize,
+				     -pWin->drawable.x,
+				     -pWin->drawable.y);
+		    REGION_INTERSECT(pScreen, pExposed, pExposed, pWinSize);
+		    REGION_DESTROY(pScreen, pWinSize);
 	    	    MultibufferExpose (pPrevMultibuffer, pExposed);
-	    	    REGION_DESTROY(pWin->drawable.pScreen, pExposed);
+	    	    REGION_DESTROY(pScreen, pExposed);
 	    	}
-	    	bool = FALSE;
-	    	DoChangeGC (pGC, GCGraphicsExposures, &bool, FALSE);
+	    	graphicsExpose = FALSE;
+	    	DoChangeGC (pGC, GCGraphicsExposures, &graphicsExpose, FALSE);
 	    }
-	    break;
+	    break; /* end case MultibufferUpdateActionUntouched */
+
 	case MultibufferUpdateActionCopied:
 	    ValidateGC ((DrawablePtr)pPrevPixmap, pGC);
 	    (*pGC->ops->CopyArea) ((DrawablePtr)pNewPixmap,
 				   (DrawablePtr)pPrevPixmap, pGC,
-				   0, 0, pWin->drawable.width, pWin->drawable.height,
+				   0, 0,
+				   pWin->drawable.width, pWin->drawable.height,
 				   0, 0);
 	    break;
-	}
+	} /* end switch on update action */
+
+	/* display the new buffer */
 	ValidateGC ((DrawablePtr)pWin, pGC);
 	(*pGC->ops->CopyArea) ((DrawablePtr)pNewPixmap, (DrawablePtr)pWin, pGC,
-			       0, 0, pWin->drawable.width, pWin->drawable.height,
+			       0, 0,
+			       pWin->drawable.width, pWin->drawable.height,
 			       0, 0);
 	ppMultibuffers[i]->lastUpdate = currentTime;
-	MultibufferUpdate (pMultibuffer[i], ppMultibuffers[i]->lastUpdate.milliseconds);
-	AliasMultibuffer (ppMultibuffers[i], pMultibuffer[i] - ppMultibuffers[i]->buffers);
+	MultibufferUpdate (pMultibuffer[i],
+			   ppMultibuffers[i]->lastUpdate.milliseconds);
+	AliasMultibuffer (ppMultibuffers[i],
+			  pMultibuffer[i] - ppMultibuffers[i]->buffers);
 	FreeScratchGC (pGC);
     }
 }
@@ -1140,8 +1265,13 @@ DisplayImageBuffers (ids, nbuf)
     return Success;
 }
 
-static DisplayRequestPtr    pPendingRequests;
+/* A display request waits on this simple linked list until it is time
+ * to be executed.  The display requests are ordered by increasing TimeStamp
+ * (earliest to latest).
+ */
+static DisplayRequestPtr    pPendingRequests = NULL;
 
+/* delete a display request from pPendingRequests */
 static void
 DisposeDisplayRequest (pRequest)
     DisplayRequestPtr	pRequest;
@@ -1149,7 +1279,8 @@ DisposeDisplayRequest (pRequest)
     DisplayRequestPtr	pReq, pPrev;
 
     pPrev = 0;
-    for (pReq = pPendingRequests; pReq; pReq = pReq->next)
+    for (pReq = pPendingRequests;  pReq;  pPrev = pReq, pReq = pReq->next)
+    {
 	if (pReq == pRequest)
 	{
 	    if (pPrev)
@@ -1159,8 +1290,12 @@ DisposeDisplayRequest (pRequest)
 	    xfree (pReq);
 	    break;
 	}
+    }
 }
 
+/* insert a new display request onto pPendingRequests, return TRUE if
+ * successful
+ */
 static Bool
 QueueDisplayRequest (client, activateTime)
     ClientPtr	    client;
@@ -1189,12 +1324,13 @@ QueueDisplayRequest (client, activateTime)
 	xfree (pRequest);
 	return FALSE;
     }
+
+    /* put the request in the correct place on the list */
     pPrev = 0;
-    for (pReq = pPendingRequests; pReq; pReq = pReq->next)
+    for (pReq = pPendingRequests;  pReq;  pPrev = pReq, pReq = pReq->next)
     {
 	if (CompareTimeStamps (pReq->activateTime, activateTime) == LATER)
 	    break;
-	pPrev = pReq;
     }
     if (pPrev)
 	pPrev->next = pRequest;
@@ -1227,9 +1363,15 @@ MultibufferBlockHandler (data, wt, LastSelectMask)
     DisplayRequestPtr	    pReq, pNext;
     unsigned long	    newdelay, olddelay;
     static struct timeval   delay_val;
+    Bool		    foundBufferReadyToDisplay = FALSE;
 
+    /* if no display requests are waiting, we're done */
     if (!pPendingRequests)
 	return;
+
+    /* resume servicing clients that have display requests whose time
+     * has come
+     */
     UpdateCurrentTimeIf ();
     for (pReq = pPendingRequests; pReq; pReq = pNext)
     {
@@ -1238,19 +1380,36 @@ MultibufferBlockHandler (data, wt, LastSelectMask)
 	    break;
 	AttendClient (pReq->pClient);
 	FreeResource (pReq->id, 0);
+	foundBufferReadyToDisplay = TRUE;
     }
-    pReq = pPendingRequests;
-    if (!pReq)
+
+    /* If we didn't find a buffer that wants to be displayed, and there 
+     * aren't any scheduled in the future, don't adjust the wait time
+     */
+    if (!foundBufferReadyToDisplay && !pPendingRequests)
 	return;
-    newdelay = pReq->activateTime.milliseconds - currentTime.milliseconds;
-    if (*wt == NULL)
+
+    /* determine when we want select to wake up to service the next
+     * display request in the queue
+     */
+    if (foundBufferReadyToDisplay)
     {
+	newdelay = 0;
+    }
+    else
+    {
+	newdelay = pPendingRequests->activateTime.milliseconds
+	    		- currentTime.milliseconds;
+    }
+
+    if (*wt == NULL)
+    { /* select wasn't going to have a timeout; now it will */
 	delay_val.tv_sec = newdelay / 1000;
 	delay_val.tv_usec = 1000 * (newdelay % 1000);
 	*wt = &delay_val;
     }
     else
-    {
+    { /* modify existing select timeout */
 	olddelay = (*wt)->tv_sec * 1000 + (*wt)->tv_usec / 1000;
 	if (newdelay < olddelay)
 	{
@@ -1269,6 +1428,7 @@ MultibufferWakeupHandler (data, i, LastSelectMask)
 {
     DisplayRequestPtr	pReq, pNext;
 
+    /* if no display requests are waiting, don't come here next time */
     if (!pPendingRequests)
     {
 	RemoveBlockAndWakeupHandlers (MultibufferBlockHandler,
@@ -1277,6 +1437,10 @@ MultibufferWakeupHandler (data, i, LastSelectMask)
 	BlockHandlerRegistered = 0;
 	return;
     }
+
+    /* resume servicing clients that have display requests whose time
+     * has come
+     */
     UpdateCurrentTimeIf ();
     for (pReq = pPendingRequests; pReq; pReq = pNext)
     {
@@ -1302,8 +1466,11 @@ DeliverEventsToMultibuffer (pMultibuffer, pEvents, count, filter)
     int attempt;
     OtherClients *other;
 
+    /* if nobody wants the event, we're done */
     if (!((pMultibuffer->otherEventMask|pMultibuffer->eventMask) & filter))
 	return 0;
+
+    /* maybe send event to owner */
     if (attempt = TryClientEvents(
 	bClient(pMultibuffer), pEvents, count, pMultibuffer->eventMask, filter, (GrabPtr) 0))
     {
@@ -1312,6 +1479,8 @@ DeliverEventsToMultibuffer (pMultibuffer, pEvents, count, filter)
 	else
 	    nondeliveries--;
     }
+
+    /* maybe send event to other clients */
     for (other = pMultibuffer->otherClients; other; other=other->next)
     {
 	if (attempt = TryClientEvents(
@@ -1367,12 +1536,14 @@ MultibufferExpose (pMultibuffer, pRegion)
 		pe->u.expose.height = pBox->y2 - pBox->y1;
 		pe->u.expose.count = (numRects - i);
 	    }
-	    (void) DeliverEventsToMultibuffer (pMultibuffer, pEvent, numRects, ExposureMask);
+	    (void) DeliverEventsToMultibuffer (pMultibuffer, pEvent, numRects,
+					       ExposureMask);
 	    DEALLOCATE_LOCAL(pEvent);
 	}
     }
 }
 
+/* send UpdateNotify event */
 void
 MultibufferUpdate (pMultibuffer, time)
     MultibufferPtr	pMultibuffer;
@@ -1480,11 +1651,16 @@ MultibufferPositionWindow (pWin, x, y)
     pScreen = pWin->drawable.pScreen;
     pMultibufferScreen = (MultibufferScreenPtr) pScreen->devPrivates[MultibufferScreenIndex].ptr;
     (*pMultibufferScreen->PositionWindow) (pWin, x, y);
+
+    /* if this window is not multibuffered, we're done */
     if (!(pMultibuffers = (MultibuffersPtr) pWin->devPrivates[MultibufferWindowIndex].ptr))
 	return TRUE;
+
+    /* if new size is same as old, we're done */
     if (pMultibuffers->width == pWin->drawable.width &&
         pMultibuffers->height == pWin->drawable.height)
 	return TRUE;
+
     width = pWin->drawable.width;
     height = pWin->drawable.height;
     dx = pWin->drawable.x - pMultibuffers->x;
@@ -1493,8 +1669,12 @@ MultibufferPositionWindow (pWin, x, y)
     dh = height - pMultibuffers->height;
     GravityTranslate (0, 0, -dx, -dy, dw, dh,
 		      pWin->bitGravity, &destx, &desty);
+
+    /* if the window grew, remember to paint the window background,
+     * and maybe send expose events, for the new areas of the buffers
+     */
     clear = pMultibuffers->width < width || pMultibuffers->height < height ||
-	    pWin->bitGravity == ForgetGravity;
+		pWin->bitGravity == ForgetGravity;
 
     sourcex = 0;
     sourcey = 0;
@@ -1535,7 +1715,8 @@ MultibufferPositionWindow (pWin, x, y)
     for (i = 0; i < pMultibuffers->numMultibuffer; i++)
     {
 	pMultibuffer = &pMultibuffers->buffers[i];
-	pPixmap = (*pScreen->CreatePixmap) (pScreen, width, height, pWin->drawable.depth);
+	pPixmap = (*pScreen->CreatePixmap) (pScreen, width, height,
+					    pWin->drawable.depth);
 	if (!pPixmap)
 	{
 	    DestroyImageBuffers (pWin);
@@ -1592,7 +1773,7 @@ MultibufferDrawableDelete (value, id)
 	pPixmap = (PixmapPtr) pDrawable;
     }
     (*pPixmap->drawable.pScreen->DestroyPixmap) (pPixmap);
-    return TRUE;
+    return Success;
 }
 
 /* Resource delete func for MultibufferResType */
@@ -1612,7 +1793,7 @@ MultibufferDelete (value, id)
 			    MultibuffersResType, TRUE);
 	xfree (pMultibuffers);
     }
-    return TRUE;
+    return Success;
 }
 
 /* Resource delete func for MultibuffersResType */
@@ -1630,7 +1811,7 @@ MultibuffersDelete (value, id)
 	for (i = pMultibuffers->numMultibuffer; --i >= 0; )
 	    FreeResource (pMultibuffers->buffers[i].pPixmap->drawable.id, 0);
     }
-    return TRUE;
+    return Success;
 }
 
 /* Resource delete func for DisplayRequestResType */
@@ -1638,11 +1819,11 @@ MultibuffersDelete (value, id)
 static int
 DisplayRequestDelete (value, id)
     pointer	value;
-    XID			id;
+    XID		id;
 {
     DisplayRequestPtr	pRequest = (DisplayRequestPtr)value;
     DisposeDisplayRequest (pRequest);
-    return TRUE;
+    return Success;
 }
 
 /* Resource delete func for OtherClientResType */
@@ -1669,7 +1850,7 @@ OtherClientDelete (value, id)
 	}
 	prev = other;
     }
-    return TRUE;
+    return Success;
 }
 
 static int
@@ -1689,7 +1870,7 @@ EventSelectForMultibuffer (pMultibuffer, client, mask)
     {
 	pMultibuffer->eventMask = mask;
     }
-    else
+    else /* some other client besides the creator wants events */
     {
 	for (other = pMultibuffer->otherClients; other; other = other->next)
 	{
@@ -1705,7 +1886,7 @@ EventSelectForMultibuffer (pMultibuffer, client, mask)
 	    }
 	}
 	if (!other)
-	{
+	{ /* new client that never selected events on this buffer before */
 	    other = (OtherClients *) xalloc (sizeof (OtherClients));
 	    if (!other)
 		return BadAlloc;
@@ -1724,6 +1905,7 @@ EventSelectForMultibuffer (pMultibuffer, client, mask)
     return (client->noClientException);
 }
 
+/* or together all the otherClients event masks */
 static void
 RecalculateMultibufferOtherEvents (pMultibuffer)
     MultibufferPtr	pMultibuffer;
@@ -1737,7 +1919,7 @@ RecalculateMultibufferOtherEvents (pMultibuffer)
     pMultibuffer->otherEventMask = otherEventMask;
 }
 
-/* add milliseconds to a timestamp */
+/* add milliseconds to a timestamp, handling overflow */
 static void
 BumpTimeStamp (ts, inc)
 TimeStamp   *ts;
