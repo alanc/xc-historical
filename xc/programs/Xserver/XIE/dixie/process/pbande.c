@@ -1,4 +1,4 @@
-/* $XConsortium: pbande.c,v 1.1 93/10/26 10:01:47 rws Exp $ */
+/* $XConsortium: pbande.c,v 1.2 93/11/06 15:53:14 rws Exp $ */
 /**** module pbande.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -68,7 +68,6 @@ terms and conditions:
    *  more X server includes.
    */
 #include <misc.h>
-#include <extnsionst.h>
 #include <dixstruct.h>
   /*
    *  Server XIE Includes
@@ -133,7 +132,6 @@ peDefPtr MakeBandExt(flo,tag,pe)
     pvt->bias = ConvertFromIEEE(lswapl(stuff->bias));
     coef[0]   = ConvertFromIEEE(lswapl(stuff->constant0));
     coef[1]   = ConvertFromIEEE(lswapl(stuff->constant1));
-    coef[2]   = ConvertFromIEEE(lswapl(stuff->constant2));
     coef[2]   = ConvertFromIEEE(lswapl(stuff->constant2));
   } else {
     memcpy((char *)raw, (char *)stuff, sizeof(xieFloBandExtract));

@@ -1,4 +1,4 @@
-/* $XConsortium: XIEprotost.h,v 1.1 93/10/26 09:41:11 rws Exp $ */
+/* $XConsortium: XIEprotost.h,v 1.3 93/10/28 15:29:33 mor Exp $ */
 /******************************************************************************
 
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -49,6 +49,10 @@ terms and conditions:
 
 #include <X11/Xmd.h>			/* defines things like CARD32 */
 
+#define Drawable CARD32
+#define Colormap CARD32
+#define GContext CARD32
+
 typedef CARD32	xieTypFloat;
 
 #ifndef WORD64
@@ -74,11 +78,13 @@ typedef CARD16  xieTypColorAllocTechnique;
 
 typedef	CARD32	xieTypColorList;
 
-typedef CARD16	xieTypColorspace;
-
 typedef CARD8	xieTypCompareOp;
 
 typedef CARD16  xieTypConstrainTechnique;
+
+typedef CARD16  xieTypConvertFromRGBTechnique;
+
+typedef CARD16  xieTypConvertToRGBTechnique;
 
 typedef CARD16  xieTypConvolveTechnique;
 
@@ -393,13 +399,13 @@ typedef struct {
 } xieFloConvertFromIndex;
 
 typedef struct {
-    CARD16		elemType B16;
-    CARD16		elemLength B16;
-    xieTypPhototag	src B16;
-    CARD16		pad B16;
-    xieTypColorspace	colorspace B16;
-    CARD16		lenParams B16;
-    /* Technique dependent color params */
+    CARD16			   elemType B16;
+    CARD16			   elemLength B16;
+    xieTypPhototag		   src B16;
+    CARD16			   pad B16;
+    xieTypConvertFromRGBTechnique  convert B16;
+    CARD16			   lenParams B16;
+    /* Technique dependent conversion params */
 } xieFloConvertFromRGB;
 
 typedef struct {
@@ -416,13 +422,13 @@ typedef struct {
 } xieFloConvertToIndex;
 
 typedef struct {
-    CARD16		elemType B16;
-    CARD16		elemLength B16;
-    xieTypPhototag	src B16;
-    CARD16		pad B16;
-    xieTypColorspace	colorspace B16;
-    CARD16		lenParams B16;
-    /* Technique dependent color params */
+    CARD16			elemType B16;
+    CARD16			elemLength B16;
+    xieTypPhototag		src B16;
+    CARD16			pad B16;
+    xieTypConvertToRGBTechnique	convert B16;
+    CARD16			lenParams B16;
+    /* Technique dependent conversion params */
 } xieFloConvertToRGB;
 
 typedef struct {
@@ -723,6 +729,24 @@ typedef struct {
 } xieTecRGBToYCC;
 
 typedef struct {
+    xieTypFloat			matrix00 B32;
+    xieTypFloat			matrix01 B32;
+    xieTypFloat			matrix02 B32;
+    xieTypFloat			matrix10 B32;
+    xieTypFloat			matrix11 B32;
+    xieTypFloat			matrix12 B32;
+    xieTypFloat			matrix20 B32;
+    xieTypFloat			matrix21 B32;
+    xieTypFloat			matrix22 B32;
+    xieTypWhiteAdjustTechnique	whiteAdjusted B16;
+    CARD16			lenWhiteParams B16;
+    xieTypGamutTechnique	gamutCompress B16;
+    CARD16			lenGamutParams B16;
+    /* Technique dependent white params */
+    /* Technique dependent gamut params */
+} xieTecCIELabToRGB, xieTecCIEXYZToRGB;
+
+typedef struct {
     CARD32			levels0 B32;
     CARD32			levels1 B32;
     CARD32			levels2 B32;
@@ -732,8 +756,8 @@ typedef struct {
     xieTypFloat			bias0 B32;
     xieTypFloat			bias1 B32;
     xieTypFloat			bias2 B32;
-    xieTypGamutTechnique	gamutTechnique B16;
-    CARD16			numGamutParams B16;
+    xieTypGamutTechnique	gamutCompress B16;
+    CARD16			lenGamutParams B16;
     /* Technique dependent gamut params */
 } xieTecYCbCrToRGB;
 
@@ -745,28 +769,10 @@ typedef struct {
     xieTypFloat			lumaGreen B32;
     xieTypFloat			lumaBlue B32;
     xieTypFloat			scale B32;
-    xieTypGamutTechnique	gamutTechnique B16;
-    CARD16			numGamutParams B16;
+    xieTypGamutTechnique	gamutCompress B16;
+    CARD16			lenGamutParams B16;
     /* Technique dependent gamut params */
 } xieTecYCCToRGB;
-
-typedef struct {
-    xieTypFloat			matrix00 B32;
-    xieTypFloat			matrix01 B32;
-    xieTypFloat			matrix02 B32;
-    xieTypFloat			matrix10 B32;
-    xieTypFloat			matrix11 B32;
-    xieTypFloat			matrix12 B32;
-    xieTypFloat			matrix20 B32;
-    xieTypFloat			matrix21 B32;
-    xieTypFloat			matrix22 B32;
-    xieTypWhiteAdjustTechnique	whiteAdjusted B16;
-    CARD16			numWhiteParams B16;
-    xieTypGamutTechnique	gamutTechnique B16;
-    CARD16			numGamutParams B16;
-    /* Technique dependent white params */
-    /* Technique dependent gamut params */
-} xieTecCIELabToRGB, xieTecCIEXYZToRGB;
 
 typedef struct {
     xieTypFloat		constant0 B32;
@@ -811,13 +817,25 @@ typedef struct {
 typedef struct {
     xieTypInterleave	interleave;
     xieTypOrientation	bandOrder;
+    BOOL		upSample;
+    CARD8		pad;
+} xieTecDecodeJPEGBaseline;
+
+typedef struct {
+    xieTypInterleave	interleave;
+    xieTypOrientation	bandOrder;
     CARD16		pad B16;
-} xieTecDecodeJPEGBaseline, xieTecDecodeJPEGLossless;
+} xieTecDecodeJPEGLossless;
 
 typedef struct {
     CARD8	thresholdOrder;
     CARD8	pad[3];
 } xieTecDitherOrdered;
+
+typedef struct {
+    CARD8		preference;
+    CARD8		pad[3];
+} xieTecEncodeServerChoice;
 
 typedef struct {
     xieTypOrientation	fillOrder;
@@ -861,9 +879,12 @@ typedef struct {
 typedef struct {
     xieTypInterleave	interleave;
     xieTypOrientation	bandOrder;
-    CARD16		lenQtable B16;	/* multiple of 4 */
+    CARD8		horizontalSamples[3];
+    CARD8		verticalSamples[3];
+    CARD16		lenQtable  B16;	/* multiple of 4 */
     CARD16		lenACtable B16;	/* multiple of 4 */
     CARD16		lenDCtable B16;	/* multiple of 4 */
+    CARD16		pad B16;
     /* LISTofCARD8 (Qtable)  */
     /* LISTofCARD8 (ACtable) */
     /* LISTofCARD8 (DCtable) */
@@ -933,18 +954,18 @@ typedef struct {
 /*
  * SIZEOF values
  */
-#define sz_xieTypFloat				4
-#define sz_xieTypConstant			12
-#define sz_xieTypMatrix				36
 #define sz_xieTypAlignment			1
 #define sz_xieTypArithmeticOp			1
 #define sz_xieTypColorAllocTechnique		2
 #define sz_xieTypColorList			4
-#define sz_xieTypColorspace			2
 #define sz_xieTypCompareOp			1
+#define sz_xieTypConstant			12
 #define sz_xieTypConstrainTechnique		2
+#define sz_xieTypConvertFromRGBTechnique	2
+#define sz_xieTypConvertToRGBTechnique		2
 #define sz_xieTypConvolveTechnique		2
 #define sz_xieTypDataClass			1
+#define sz_xieTypDataType			1
 #define sz_xieTypDecodeTechnique		2
 #define sz_xieTypDitherTechnique		2
 #define sz_xieTypEncodeTechnique		2
@@ -953,6 +974,7 @@ typedef struct {
 #define sz_xieTypExecutable			8
 #define sz_xieTypExportNotify			1
 #define sz_xieTypExportState			1
+#define sz_xieTypFloat				4
 #define sz_xieTypGamutTechnique			2
 #define sz_xieTypGeometryTechnique		2
 #define sz_xieTypHistogramData			8
@@ -961,6 +983,7 @@ typedef struct {
 #define sz_xieTypLevels				12
 #define sz_xieTypLUT				4
 #define sz_xieTypMathOp				1
+#define sz_xieTypMatrix				36
 #define sz_xieTypOrientation			1
 #define sz_xieTypPhotofloOutcome		1
 #define sz_xieTypPhotofloState			1
@@ -1019,8 +1042,6 @@ typedef struct {
 #define sz_xieTecColorAllocRequantize		4
 #define sz_xieTecClipScale			48
 #define sz_xieTecHardClip			0
-#define sz_xieTecConvolveConstant		12
-#define sz_xieTecConvolveReplicate		0
 #define sz_xieTecRGBToCIELab			40
 #define sz_xieTecRGBToCIEXYZ			40
 #define sz_xieTecRGBToYCbCr			36
@@ -1029,6 +1050,8 @@ typedef struct {
 #define sz_xieTecYCCToRGB			32
 #define sz_xieTecCIELabToRGB			44
 #define sz_xieTecCIEXYZToRGB			44
+#define sz_xieTecConvolveConstant		12
+#define sz_xieTecConvolveReplicate		0
 #define sz_xieTecDecodeUncompressedSingle	8
 #define sz_xieTecDecodeUncompressedTriple	16
 #define sz_xieTecDecodeG31D			4
@@ -1040,12 +1063,13 @@ typedef struct {
 #define sz_xieTecDecodeJPEGLossless		4
 #define sz_xieTecDitherOrdered			4
 #define sz_xieTecDitherErrorDiffusion		4
+#define sz_xieTecEncodeServerChoice		4
 #define sz_xieTecEncodeUncompressedSingle	4
 #define sz_xieTecEncodeUncompressedTriple	12
 #define sz_xieTecEncodeG31D			4
 #define sz_xieTecEncodeG32D			8
 #define sz_xieTecEncodeG42D			4
-#define sz_xieTecEncodeJPEGBaseline		8
+#define sz_xieTecEncodeJPEGBaseline		16
 #define sz_xieTecEncodeJPEGLossless		8
 #define sz_xieTecEncodeTIFF2			4
 #define sz_xieTecEncodeTIFFPackBits		4
@@ -1062,5 +1086,9 @@ typedef struct {
 #define sz_xieTecHistogramHyperbolic		8
 #define sz_xieTecWhiteAdjustNone		0
 #define sz_xieTecWhiteAdjustCIELabShift		12
+
+#undef Drawable
+#undef Colormap
+#undef GContext
 
 #endif /* XIEPROTOST_H */

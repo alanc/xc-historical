@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.5 93/11/01 10:22:20 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.4 93/11/06 15:48:46 rws Exp $
 XCOMM build device independent export element objects
 #include <Server.tmpl>
 
@@ -21,7 +21,6 @@ OBJS2 = echist.o ecroi.o eroi.o
               ../process/llib-lproc.ln ../request/llib-lreq.ln
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
-NormalLibraryTarget(export,$(OBJS))
 LintLibraryTarget(exp,$(SRCS))
 
 NormalLintTarget($(SRCS))

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: events.c,v 1.1 93/07/19 11:39:20 mor Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -94,9 +94,9 @@ xEvent		*wire;
     host_event->flo_id     = wire_event->instanceFloID;
     host_event->src        = wire_event->src;
     host_event->elem_type  = wire_event->type;
-    host_event->data[0]    = wire_event->data1;
-    host_event->data[1]    = wire_event->data2;
-    host_event->data[2]    = wire_event->data3;
+    host_event->data[0]    = wire_event->data0;
+    host_event->data[1]    = wire_event->data1;
+    host_event->data[2]    = wire_event->data2;
 
     return (True);
 }

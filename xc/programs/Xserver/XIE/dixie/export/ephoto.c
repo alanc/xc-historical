@@ -1,4 +1,4 @@
-/* $XConsortium: ephoto.c,v 1.2 93/10/31 09:37:48 dpw Exp $ */
+/* $XConsortium: ephoto.c,v 1.3 93/11/06 15:49:44 rws Exp $ */
 /**** module ephoto.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -68,7 +68,6 @@ terms and conditions:
    *  more X server includes.
    */
 #include <misc.h>
-#include <extnsionst.h>
 #include <dixstruct.h>
 #include <servermd.h>
   /*
@@ -77,21 +76,28 @@ terms and conditions:
 #include <corex.h>
 #include <error.h>
 #include <macro.h>
+#include <flo.h>
 #include <photomap.h>
 #include <element.h>
 #include <technq.h>
+#include <tables.h>	/* For Server Choice function */
 
 
 /*
  *  routines referenced by other modules.
  */
 peDefPtr	MakeEPhoto();
+Bool		BuildDecodeFromEncode();
+Bool		CompareDecode();
 
 /*
  *  routines internal to this module
  */
+static Bool     CopyEPhotoServerChoice();
 static Bool	PrepEPhoto();
 static Bool	DebriefEPhoto();
+
+extern pointer	GetImportTechnique();
 
 /*
  * dixie entry points
@@ -143,20 +149,34 @@ peDefPtr MakeEPhoto(flo,tag,pe)
   inFlo[SRCtag].srcTag = raw->src;
 
   /* 
-	copy technique data (if any)
+   * copy technique data (if any)
    */
-  if(raw->encodeTechnique == xieValEncodeServerChoice) {
-    if(raw->lenParams)
-      TechniqueError(flo,ped,xieValEncode,raw->encodeTechnique,raw->lenParams,
+  if (raw->encodeTechnique == xieValEncodeServerChoice) {
+    if (!CopyEPhotoServerChoice(flo,ped,&stuff[1],&raw[1],raw->lenParams))
+       TechniqueError(flo,ped,xieValEncode,raw->encodeTechnique,raw->lenParams,
 		     return(ped));
-  } else if(!(ped->techVec = FindTechnique(xieValEncode,raw->encodeTechnique)) 
-    || !(ped->techVec->copyfnc(flo, ped, &stuff[1], &raw[1], raw->lenParams)))
-    TechniqueError(flo,ped,xieValEncode,raw->encodeTechnique,raw->lenParams,
-		   return(ped));
+  } else if (!(ped->techVec = FindTechnique(xieValEncode,raw->encodeTechnique)) 
+         || !(ped->techVec->copyfnc(flo,ped,&stuff[1],&raw[1],raw->lenParams)))
+       TechniqueError(flo,ped,xieValEncode,raw->encodeTechnique,raw->lenParams,
+		     return(ped));
+
   return(ped);
 }                               /* end MakeEPhoto */
 
-/* All technique copy routines are defined in ecphoto.c */
+static Bool CopyEPhotoServerChoice(flo, ped, sparms, rparms, tsize) 
+     floDefPtr  flo;
+     peDefPtr   ped;
+     xieTecEncodeServerChoice *sparms, *rparms;
+     CARD16	tsize;
+{
+  if(tsize == 1)
+    rparms->preference = sparms->preference;
+
+  return(tsize <= 1);
+}
+
+/* All other technique-specific copy routines are defined in ecphoto.c */
+
 
 /*------------------------------------------------------------------------
 ---------------- routine: prepare for analysis and execution -------------
@@ -166,42 +186,319 @@ static Bool PrepEPhoto(flo,ped)
      peDefPtr   ped;
 {
   xieFloExportPhotomap *raw = (xieFloExportPhotomap *)ped->elemRaw;
-  ePhotoDefPtr pvt = (ePhotoDefPtr) ped->elemPvt;
-  inFloPtr     inf = &ped->inFloLst[IMPORT];
-  outFloPtr    src = &inf->srcDef->outFlo;
-  outFloPtr    dst = &ped->outFlo;
+  ePhotoDefPtr          pvt = (ePhotoDefPtr)ped->elemPvt;
+  xieBoolProc        scPrep = (xieBoolProc)NULL;
+  inFloPtr              inf = &ped->inFloLst[SRCtag];
+  outFloPtr             dst = &ped->outFlo;
   CARD32 b;
-/*
- * protocol parameter verification not yet implemented,
- * and the encodeTechnique is being ignored.   Bob...
- */
-  /* find the photomap resource and bind it to our flo */
+
+  /* find the photomap resource and bind it to our flo
+   */
   if(!(pvt->map = (photomapPtr) LookupIDByType(raw->photomap, RT_PHOTOMAP)))
     PhotomapError(flo,ped,raw->photomap, return(FALSE));
   ++pvt->map->refCnt;
 
-  /* 
-     grab a copy of the input attributes and propagate them to our output
-   */
-  dst->bands = inf->bands = src->bands;
-	/*  note: dst->bands may change later if we discover we are
-	 *  encoding TripleBand data interleaved BandByPixel 
-	 */
-  for(b = 0; b < src->bands; ++b) {
-    if (IsntCanonic(src->format[b].class))
-      MatchError(flo, ped, return(FALSE));
-    dst->format[b] = inf->format[b] = src->format[b];
+  pvt->congress = FALSE;
+  if(raw->encodeTechnique == xieValEncodeServerChoice) {
+    if(!(scPrep = ((xieBoolProc (*)())
+		   DDInterface[DDServerChoiceIndex]) (flo, ped)))
+      TechniqueError(flo,ped,xieValEncode,raw->encodeTechnique,raw->lenParams,
+		     return(FALSE));
+  } else {
+    /* grab a copy of the input attributes and propagate them to our output
+     */   
+    outFloPtr src = &inf->srcDef->outFlo;
+    for(b = 0; b < src->bands; ++b) {
+      if(IsntCanonic(src->format[b].class))
+        MatchError(flo,ped, return(FALSE));
+      dst->format[b] = inf->format[b] = src->format[b];
+    dst->bands = inf->bands = src->bands;
+    /* dst->bands will be 1 if we encode TripleBand interleaved BandByPixel */
+    }
   }
 
-  if(raw->encodeTechnique != xieValEncodeServerChoice &&
-     !(ped->techVec->prepfnc(flo, ped, &raw[1])))
-    TechniqueError(flo,ped,xieValEncode,raw->encodeTechnique,raw->lenParams,
-                   return(FALSE));
+  /* do technique-specific preparations
+   */
+  if(scPrep) {
+      if (!(*scPrep)(flo,ped)) 
+          TechniqueError(flo,ped,xieValEncode,raw->encodeTechnique,
+			raw->lenParams, return(FALSE));
+  } else {
+    if(!(ped->techVec->prepfnc(flo, ped, &raw[1])))
+      TechniqueError(flo,ped,xieValEncode,raw->encodeTechnique,raw->lenParams,
+		     return(FALSE));
 
+    pvt->encodeNumber = raw->encodeTechnique; 
+    pvt->encodeLen    = raw->lenParams << 2; 
+    pvt->encodeParms  = (pointer)&raw[1];
+
+    if(!BuildDecodeFromEncode(flo,ped))
+      AllocError(flo,ped, return(FALSE));
+
+    /* see if import data can leap-frog the import and export elements
+     */
+    if(ped->inFloLst[IMPORT].srcDef->flags.import && CompareDecode(flo,ped)) {
+      inFloPtr import = &inf->srcDef->inFloLst[IMPORT];
+
+      /* copy smuggled data attributes to our inFlo */
+      inf->bands = import->bands;
+      for(b = 0; b < import->bands; ++b)
+        inf->format[b] = import->format[b];
+      pvt->congress = TRUE;
+    }
+  }
   return(TRUE);
 }                               /* end PrepEPhoto */
 
-/* All technique prep routines are defined in ecphoto.c */
+/* All technique-specific prep routines are defined in ecphoto.c */
+
+Bool BuildDecodeFromEncode(flo,ped)
+  floDefPtr flo;
+  peDefPtr  ped;
+{
+  ePhotoDefPtr pvt = (ePhotoDefPtr)ped->elemPvt;
+
+  /* Based on the encode technique, build a correspoinding decode technique */
+  switch(pvt->encodeNumber) {
+    case xieValEncodeUncompressedSingle:
+      {
+	xieTecEncodeUncompressedSingle *etec = 
+	  (xieTecEncodeUncompressedSingle *)pvt->encodeParms;
+	xieTecDecodeUncompressedSingle *dtec;
+	
+	if (!(dtec = (xieTecDecodeUncompressedSingle *)
+	      XieMalloc(sizeof(xieTecDecodeUncompressedSingle))))
+	  AllocError(flo,ped, return(FALSE));
+	pvt->decodeNumber = xieValDecodeUncompressedSingle;
+	pvt->decodeLen    = sizeof(xieTecDecodeUncompressedSingle);
+	pvt->decodeParms  = (pointer)dtec;
+	dtec->fillOrder   = etec->fillOrder;
+	dtec->pixelOrder  = etec->pixelOrder;
+	dtec->pixelStride = etec->pixelStride;
+	dtec->leftPad     = 0;
+	dtec->scanlinePad = etec->scanlinePad;
+      }
+      break;
+    case xieValEncodeUncompressedTriple: 
+      {
+	xieTecEncodeUncompressedTriple *etec = 
+	  (xieTecEncodeUncompressedTriple *)pvt->encodeParms;
+	xieTecDecodeUncompressedTriple *dtec;
+	int i;
+	
+	if (!(dtec = (xieTecDecodeUncompressedTriple *)
+	      XieMalloc(sizeof(xieTecDecodeUncompressedTriple))))
+	  AllocError(flo,ped, return(FALSE));
+	pvt->decodeNumber = xieValDecodeUncompressedTriple;
+	pvt->decodeLen    = sizeof(xieTecDecodeUncompressedTriple);
+	pvt->decodeParms  = (pointer)dtec;
+	dtec->fillOrder   = etec->fillOrder;
+	dtec->pixelOrder  = etec->pixelOrder;
+	dtec->bandOrder   = etec->bandOrder;
+	dtec->interleave  = etec->interleave;
+	for (i = 0; i < 3; i++) {
+	  dtec->leftPad[i] = 0;
+	  dtec->pixelStride[i] = etec->pixelStride[i];
+	  dtec->scanlinePad[i] = etec->scanlinePad[i];
+	}
+      }
+      break;
+    case xieValEncodeG31D:
+      {
+	xieTecEncodeG31D *etec = (xieTecEncodeG31D *)pvt->encodeParms;
+	xieTecDecodeG31D *dtec;
+	
+	if (!(dtec = (xieTecDecodeG31D *)
+	      XieMalloc(sizeof(xieTecDecodeG31D))))
+	  AllocError(flo,ped, return(FALSE));
+	pvt->decodeNumber  = xieValDecodeG31D;
+	pvt->decodeLen     = sizeof(xieTecDecodeG31D);
+	pvt->decodeParms   = (pointer)dtec;
+	dtec->normal       = TRUE;
+	dtec->radiometric  = etec->radiometric;
+	dtec->encodedOrder = etec->encodedOrder;
+      }
+      break;
+    case xieValEncodeG32D:
+      {
+	xieTecEncodeG32D *etec = (xieTecEncodeG32D *)pvt->encodeParms;
+	xieTecDecodeG32D *dtec;
+	
+	if (!(dtec = (xieTecDecodeG32D *)
+	      XieMalloc(sizeof(xieTecDecodeG32D))))
+	  AllocError(flo,ped, return(FALSE));
+	pvt->decodeNumber  = xieValDecodeG32D;
+	pvt->decodeLen     = sizeof(xieTecDecodeG32D);
+	pvt->decodeParms   = (pointer)dtec;
+	dtec->normal       = TRUE;
+	dtec->radiometric  = etec->radiometric;
+	dtec->encodedOrder = etec->encodedOrder;
+      }
+      break;
+    case xieValEncodeG42D:
+      {
+	xieTecEncodeG42D *etec = (xieTecEncodeG42D *)pvt->encodeParms;
+	xieTecDecodeG42D *dtec;
+	
+	if (!(dtec = (xieTecDecodeG42D *)
+	      XieMalloc(sizeof(xieTecDecodeG42D))))
+	  AllocError(flo,ped, return(FALSE));
+	pvt->decodeNumber  = xieValDecodeG42D;
+	pvt->decodeLen     = sizeof(xieTecDecodeG42D);
+	pvt->decodeParms   = (pointer)dtec;
+	dtec->normal       = TRUE;
+	dtec->radiometric  = etec->radiometric;
+	dtec->encodedOrder = etec->encodedOrder;
+      }
+      break;
+    case xieValEncodeJPEGBaseline:
+      {
+	xieTecEncodeJPEGBaseline *etec = 
+	  (xieTecEncodeJPEGBaseline *)pvt->encodeParms;
+	xieTecDecodeJPEGBaseline *dtec;
+	
+	if (!(dtec = (xieTecDecodeJPEGBaseline *)
+	      XieMalloc(sizeof(xieTecDecodeJPEGBaseline))))
+	  AllocError(flo,ped, return(FALSE));
+	pvt->decodeNumber  = xieValDecodeJPEGBaseline;
+	pvt->decodeLen     = sizeof(xieTecDecodeJPEGBaseline);
+	pvt->decodeParms   = (pointer)dtec;
+	dtec->interleave   = etec->interleave;
+	dtec->bandOrder    = etec->bandOrder;
+      }
+      break;
+    case xieValEncodeTIFF2: 
+      {
+	xieTecEncodeTIFF2 *etec = (xieTecEncodeTIFF2 *)pvt->encodeParms;
+	xieTecDecodeTIFF2 *dtec;
+	
+	if (!(dtec = (xieTecDecodeTIFF2 *)
+	      XieMalloc(sizeof(xieTecDecodeTIFF2))))
+	  AllocError(flo,ped, return(FALSE));
+	pvt->decodeNumber  = xieValDecodeTIFF2;
+	pvt->decodeLen     = sizeof(xieTecDecodeTIFF2);
+	pvt->decodeParms   = (pointer)dtec;
+	dtec->normal       = TRUE;
+	dtec->radiometric  = etec->radiometric;
+	dtec->encodedOrder = etec->encodedOrder;
+      }
+      break;
+    case xieValEncodeTIFFPackBits:
+      {
+	xieTecEncodeTIFFPackBits *etec = 
+	  (xieTecEncodeTIFFPackBits *)pvt->encodeParms;
+	xieTecDecodeTIFFPackBits *dtec;
+	
+	if (!(dtec = (xieTecDecodeTIFFPackBits *)
+	      XieMalloc(sizeof(xieTecDecodeTIFFPackBits))))
+	  AllocError(flo,ped, return(FALSE));
+	pvt->decodeNumber  = xieValDecodeTIFFPackBits;
+	pvt->decodeLen     = sizeof(xieTecDecodeTIFFPackBits);
+	pvt->decodeParms   = (pointer)dtec;
+	dtec->normal       = TRUE;
+	dtec->encodedOrder = etec->encodedOrder;
+      }
+      break;
+    case xieValEncodeJPEGLossless: /* not implemented in SI */
+    default:
+      ImplementationError(flo,ped, return(FALSE));
+  }
+  return(TRUE);
+}
+
+Bool CompareDecode(flo,ped)
+  floDefPtr flo;
+  peDefPtr  ped;
+{
+  ePhotoDefPtr pvt = (ePhotoDefPtr)ped->elemPvt;
+  peDefPtr  srcped = ped->inFloLst[IMPORT].srcDef;
+  CARD16 decodeNumber, decodeLen;
+  pointer decodeParms;
+
+  decodeParms = GetImportTechnique(srcped,&decodeNumber,&decodeLen);
+  if(decodeNumber != pvt->decodeNumber)
+	return(FALSE);
+
+  switch (decodeNumber) {
+	    case xieValDecodeUncompressedSingle:
+		{
+		    xieTecDecodeUncompressedSingle *itec =
+	     		(xieTecDecodeUncompressedSingle *)decodeParms;
+		    xieTecDecodeUncompressedSingle *otec =
+	     		(xieTecDecodeUncompressedSingle *)pvt->decodeParms;
+
+		    return (itec->fillOrder   == otec->fillOrder   &&
+        		    itec->pixelOrder  == otec->pixelOrder  &&
+        		    itec->pixelStride == otec->pixelStride &&
+        		    itec->leftPad     == otec->leftPad     && 
+        		    itec->pixelStride == otec->pixelStride &&
+        		    itec->scanlinePad == otec->scanlinePad);
+		}
+		break;
+	    case xieValDecodeUncompressedTriple:
+		{
+		    xieTecDecodeUncompressedTriple *itec =
+	     		(xieTecDecodeUncompressedTriple *)decodeParms;
+		    xieTecDecodeUncompressedTriple *otec =
+	     		(xieTecDecodeUncompressedTriple *)pvt->decodeParms;
+
+		    return (itec->fillOrder      == otec->fillOrder      &&
+        		    itec->pixelOrder     == otec->pixelOrder     &&
+        		    itec->interleave     == otec->interleave     &&
+        		    itec->bandOrder      == otec->bandOrder      &&
+        		    itec->leftPad[0]     == otec->leftPad[0]     && 
+        		    itec->leftPad[1]     == otec->leftPad[1]     && 
+        		    itec->leftPad[2]     == otec->leftPad[2]     && 
+        		    itec->pixelStride[0] == otec->pixelStride[0] &&
+        		    itec->pixelStride[1] == otec->pixelStride[1] &&
+        		    itec->pixelStride[2] == otec->pixelStride[2] &&
+        		    itec->scanlinePad[0] == otec->scanlinePad[0] &&
+        		    itec->scanlinePad[1] == otec->scanlinePad[1] &&
+        		    itec->scanlinePad[2] == otec->scanlinePad[2]);
+		}
+		break;
+	    case xieValDecodeG31D: 
+	    case xieValDecodeG32D:
+	    case xieValDecodeG42D:
+	    case xieValDecodeTIFF2:
+		{
+                    xieTecDecodeG31D *itec = (xieTecDecodeG31D *)decodeParms;
+                    xieTecDecodeG31D *otec =
+                        	(xieTecDecodeG31D *)pvt->decodeParms;
+
+		    return (itec->normal       == otec->normal      &&
+			    itec->radiometric  == otec->radiometric &&
+			    itec->encodedOrder == otec->encodedOrder);
+		}
+		break;
+	    case xieValDecodeJPEGBaseline:
+	    case xieValDecodeJPEGLossless:
+		{
+                    xieTecDecodeJPEGBaseline *itec = 
+				(xieTecDecodeJPEGBaseline *)decodeParms;
+                    xieTecDecodeJPEGBaseline *otec =
+                        	(xieTecDecodeJPEGBaseline *)pvt->decodeParms;
+		    
+		    return (itec->interleave == otec->interleave &&
+			    itec->bandOrder  == otec->bandOrder  &&
+			    itec->upSample   == otec->upSample);
+		}
+		break;
+	    case xieValDecodeTIFFPackBits:
+		{
+                    xieTecDecodeTIFFPackBits *itec = 
+				(xieTecDecodeTIFFPackBits *)decodeParms;
+                    xieTecDecodeTIFFPackBits *otec =
+                        	(xieTecDecodeTIFFPackBits *)pvt->decodeParms;
+
+		    return (itec->normal       == otec->normal &&
+			    itec->encodedOrder == otec->encodedOrder);
+		}
+		break;
+	    default:
+	        return (FALSE);
+  }
+}
 
 /*------------------------------------------------------------------------
 ---------------------- routine: post execution cleanup -------------------
@@ -221,241 +518,67 @@ static Bool DebriefEPhoto(flo,ped,ok)
   if(!(pvt && (map = pvt->map))) return(FALSE);
 
   if(ok && map->refCnt > 1) {
-    /* 
-        free old compression parameters and image data
+    
+    /* free old compression parameters and image data
      */
-    if (map->tecParms)
-	    map->tecParms = (pointer)XieFree(map->tecParms);
-    if (map->pvtParms)
-	    map->pvtParms = (pointer)XieFree(map->pvtParms);
-    map->pvtParms = pvt->pvtParms;
-    map->dataClass = (src->bands == 3)? xieValTripleBand : xieValSingleBand;
+    if(map->tecParms)
+      map->tecParms = (pointer)XieFree(map->tecParms);
+
+    if(map->pvtParms)
+      map->pvtParms = (pointer)XieFree(map->pvtParms);
 
     for(b = 0; b < map->bands; b++) 
       FreeStrips(&map->strips[b]);
-    /* 
-	stash our new attributes and data into the photomap
+    
+    /* stash our new attributes and data into the photomap
      */
     map->bands = ped->outFlo.bands;
     map->dataType = (map->format[0].class & UNCONSTRAINED
 		     ? xieValUnconstrained : xieValConstrained);
+    map->technique = pvt->decodeNumber;
+    map->lenParms  = pvt->decodeLen;
+    map->tecParms  = pvt->decodeParms;
+    map->pvtParms  = pvt->pvtParms;
+    map->dataClass = src->bands == 3 ? xieValTripleBand : xieValSingleBand;
     for(b = 0; b < map->bands; ++b) {
-      map->format[b] = ped->outFlo.format[b];
-      DebriefStrips(&ped->outFlo.export[b],&map->strips[b]);
+        map->format[b] = ped->outFlo.format[b];
+        DebriefStrips(&ped->outFlo.output[b],&map->strips[b]);
     }
-    if (src->bands == 3  &&  map->bands == 1) 	
+    pvt->decodeParms = NULL;
+
+    if (src->bands == 3  &&  map->bands == 1) {
+      /*
+       * save format for the other bands too, we'll need them when we decode
+       */
       for(b = 1; b < src->bands; ++b) 
         map->format[b] = src->format[b];
-	  /* save these, because we'll need them when we decode */
-
-    /* Create technique parameter record for decoding the photomap */
-    switch(raw->encodeTechnique) {
-	/* Encode server choice requests as uncompressed data */
-        case xieValEncodeServerChoice:
-	    if (map->bands == 1) {
-	        xieTecDecodeUncompressedSingle *dtec;
-
-	        if (!(dtec = (xieTecDecodeUncompressedSingle *)
-			    XieMalloc(sizeof(xieTecDecodeUncompressedSingle))))
-	            FloAllocError(flo,ped->phototag,xieElemExportPhotomap, 
-		    					return(FALSE));
-	        map->technique    = xieValDecodeUncompressedSingle;
-	        map->tecParms     = (pointer)dtec;
-#if (IMAGE_BYTE_ORDER == MSBFirst) /* Conform to server's "native" format */
-	        dtec->fillOrder   = xieValMSFirst;
-	        dtec->pixelOrder  = xieValMSFirst; 
-#else
-	        dtec->fillOrder   = xieValLSFirst;
-	        dtec->pixelOrder  = xieValLSFirst; 
-#endif
-	        dtec->pixelStride = map->format[0].stride;
-	        dtec->leftPad     = 0;
-	        dtec->scanlinePad = PITCH_MOD >> 3;
-	    } else {
-	        xieTecDecodeUncompressedTriple *dtec;
-	        int i;
-
-	        if (!(dtec = (xieTecDecodeUncompressedTriple *)
-			    XieMalloc(sizeof(xieTecDecodeUncompressedTriple))))
-	            FloAllocError(flo,ped->phototag,xieElemExportPhotomap, 
-		    				    return(FALSE));
-	        map->technique    = xieValDecodeUncompressedTriple;
-	        map->tecParms     = (pointer)dtec;
-#if (IMAGE_BYTE_ORDER == MSBFirst) /* Conform to server's "native" format */
-	        dtec->fillOrder   = xieValMSFirst;
-	        dtec->pixelOrder  = xieValMSFirst; 
-#else
-	        dtec->fillOrder   = xieValLSFirst;
-	        dtec->pixelOrder  = xieValLSFirst; 
-#endif
-	        dtec->bandOrder   = xieValLSFirst;
-	        dtec->interleave  = xieValBandByPlane; 
-	        for (i = 0; i < 3; i++) {
-	 	    dtec->leftPad[i] = 0;
-		    dtec->pixelStride[i] = map->format[i].stride; 
-		    dtec->scanlinePad[i] = PITCH_MOD >> 3;
-	        }
-	    }
-	    break;
-        case xieValEncodeUncompressedSingle:
-	    {
-	    xieTecEncodeUncompressedSingle *etec = 
-				(xieTecEncodeUncompressedSingle *)&raw[1];
-	    xieTecDecodeUncompressedSingle *dtec;
-
-	    if (!(dtec = (xieTecDecodeUncompressedSingle *)
-			XieMalloc(sizeof(xieTecDecodeUncompressedSingle))))
-	        FloAllocError(flo,ped->phototag,xieElemExportPhotomap, 
-		    				return(FALSE));
-	    map->technique    = xieValDecodeUncompressedSingle;
-	    map->tecParms     = (pointer)dtec;
-	    dtec->fillOrder   = etec->fillOrder;
-	    dtec->pixelOrder  = etec->pixelOrder;
-	    dtec->pixelStride = etec->pixelStride;
-	    dtec->leftPad     = 0;
-	    dtec->scanlinePad = etec->scanlinePad;
-	    }
-	    break;
-        case xieValEncodeUncompressedTriple: 
-	    {
-	    xieTecEncodeUncompressedTriple *etec = 
-				(xieTecEncodeUncompressedTriple *)&raw[1];
-	    xieTecDecodeUncompressedTriple *dtec;
-	    int i;
-
-	    if (!(dtec = (xieTecDecodeUncompressedTriple *)
-			XieMalloc(sizeof(xieTecDecodeUncompressedTriple))))
-	        FloAllocError(flo,ped->phototag,xieElemExportPhotomap, 
-		    				return(FALSE));
-	    map->technique    = xieValDecodeUncompressedTriple;
-	    map->tecParms     = (pointer)dtec;
-	    dtec->fillOrder   = etec->fillOrder;
-	    dtec->pixelOrder  = etec->pixelOrder;
-	    dtec->bandOrder   = etec->bandOrder;
-	    dtec->interleave  = etec->interleave;
-	    for (i = 0; i < 3; i++) {
-		dtec->leftPad[i] = 0;
-		dtec->pixelStride[i] = etec->pixelStride[i];
-		dtec->scanlinePad[i] = etec->scanlinePad[i];
-	    }
-	    }
-	    break;
-	case xieValEncodeG31D:
-	    {
-	    xieTecEncodeG31D *etec = (xieTecEncodeG31D *)&raw[1];
-	    xieTecDecodeG31D *dtec;
-
-	    if (!(dtec = (xieTecDecodeG31D *)
-					XieMalloc(sizeof(xieTecDecodeG31D))))
-	        FloAllocError(flo,ped->phototag,xieElemExportPhotomap, 
-		    				return(FALSE));
-	    map->technique     = xieValDecodeG31D;
-	    map->tecParms      = (pointer)dtec;
-	    dtec->normal       = TRUE;
-	    dtec->radiometric  = etec->radiometric;
-	    dtec->encodedOrder = etec->encodedOrder;
-	    }
-	    break;
-	case xieValEncodeG32D:
-	    {
-	    xieTecEncodeG32D *etec = (xieTecEncodeG32D *)&raw[1];
-	    xieTecDecodeG32D *dtec;
-
-	    if (!(dtec = (xieTecDecodeG32D *)
-					XieMalloc(sizeof(xieTecDecodeG32D))))
-    		FloAllocError(flo,ped->phototag,xieElemExportPhotomap, 
-						return(FALSE));
-	    map->technique     = xieValDecodeG32D;
-	    map->tecParms      = (pointer)dtec;
-	    dtec->normal       = TRUE;
-	    dtec->radiometric  = etec->radiometric;
-	    dtec->encodedOrder = etec->encodedOrder;
-	    }
-	    break;
-	case xieValEncodeG42D:
-	    {
-	    xieTecEncodeG42D *etec = (xieTecEncodeG42D *)&raw[1];
-	    xieTecDecodeG42D *dtec;
-
-	    if (!(dtec = (xieTecDecodeG42D *)
-					XieMalloc(sizeof(xieTecDecodeG42D))))
-    		FloAllocError(flo,ped->phototag,xieElemExportPhotomap, 
-						return(FALSE));
-	    map->technique     = xieValDecodeG42D;
-	    map->tecParms      = (pointer)dtec;
-	    dtec->normal       = TRUE;
-	    dtec->radiometric  = etec->radiometric;
-	    dtec->encodedOrder = etec->encodedOrder;
-	    }
-	    break;
-	case xieValEncodeJPEGBaseline:
-	    {
-	    xieTecEncodeJPEGBaseline *etec = 
-					(xieTecEncodeJPEGBaseline *)&raw[1];
-	    xieTecDecodeJPEGBaseline *dtec;
-
-	    if (!(dtec = (xieTecDecodeJPEGBaseline *)
-				XieMalloc(sizeof(xieTecDecodeJPEGBaseline))))
-    		FloAllocError(flo,ped->phototag,xieElemExportPhotomap, 
-						return(FALSE));
-	    map->technique     = xieValDecodeJPEGBaseline;
-	    map->tecParms      = (pointer)dtec;
-	    dtec->interleave   = etec->interleave;
-	    dtec->bandOrder    = etec->bandOrder;
-	    }
-	    break;
-   	case xieValEncodeTIFF2: 
-	    {
-	    xieTecEncodeTIFF2 *etec = (xieTecEncodeTIFF2 *)&raw[1];
-	    xieTecDecodeTIFF2 *dtec;
-
-	    if (!(dtec = (xieTecDecodeTIFF2 *)
-				XieMalloc(sizeof(xieTecDecodeTIFF2))))
-    		FloAllocError(flo,ped->phototag,xieElemExportPhotomap, 
-						return(FALSE));
-	    map->technique     = xieValDecodeTIFF2;
-	    map->tecParms      = (pointer)dtec;
-	    dtec->normal       = TRUE;
-	    dtec->radiometric  = etec->radiometric;
-	    dtec->encodedOrder = etec->encodedOrder;
-	    }
-	    break;
-	case xieValEncodeTIFFPackBits:
-	    {
-	    xieTecEncodeTIFFPackBits *etec = 
-					(xieTecEncodeTIFFPackBits *)&raw[1];
-	    xieTecDecodeTIFFPackBits *dtec;
-
-	    if (!(dtec = (xieTecDecodeTIFFPackBits *)
-				XieMalloc(sizeof(xieTecDecodeTIFFPackBits))))
-    		FloAllocError(flo,ped->phototag,xieElemExportPhotomap, 
-						return(FALSE));
-	    map->technique     = xieValDecodeTIFFPackBits;
-	    map->tecParms      = (pointer)dtec;
-	    dtec->normal       = TRUE;
-	    dtec->encodedOrder = etec->encodedOrder;
-	    }
-	    break;
-	case xieValEncodeJPEGLossless:
-	default:
-	    ImplementationError(flo,ped, return(FALSE));
     }
   }
+
+  /* if server choice, free space used to hold fabricated encode parameters */
+  if (pvt->serverChose && pvt->encodeParms)
+	XieFree(pvt->encodeParms);
+
+  /* Free decodeParms if something went afoul before hooking on to photomap */
+  if (pvt->decodeParms)
+	XieFree(pvt->decodeParms);
+
   /* free image data that's left over on our outFlo
    */
   for(b = 0; b < ped->outFlo.bands; b++)
-    FreeStrips(&ped->outFlo.export[b]);
+    FreeStrips(&ped->outFlo.output[b]);
   
   /* 
-       unbind ourself from the photomap
-   */
+    unbind ourself from the photomap
+    */
   if(map->refCnt > 1)
     --map->refCnt;
   else if(LookupIDByType(raw->photomap, RT_PHOTOMAP))
     FreeResourceByType(map->ID, RT_PHOTOMAP, RT_NONE);
   else
     DeletePhotomap(map, map->ID);
-
+  
   return(TRUE);
 }                               /* end DebriefEPhoto */
+
 /* end module ephoto.c */

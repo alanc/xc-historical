@@ -1,4 +1,4 @@
-/* $XConsortium: photomap.c,v 1.2 93/10/31 09:41:20 dpw Exp $ */
+/* $XConsortium: photomap.c,v 1.4 93/11/06 15:57:19 rws Exp $ */
 /**** module photomap.c ****/
 /****************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -68,7 +68,6 @@ terms and conditions:
  *  more X server includes.
  */
 #include <misc.h>
-#include <extnsionst.h>
 #include <dixstruct.h>
 /*
  *  Module Specific Includes
@@ -168,7 +167,7 @@ int ProcQueryPhotomap(client)
   if( map->bands ) {
     rep.populated       = TRUE;
     rep.dataType        = map->dataType;
-    rep.data            = map->dataClass;
+    rep.dataClass       = map->dataClass;
     rep.width0          = map->format[0].width;
     rep.height0         = map->format[0].height;
     rep.levels0         = map->format[0].levels;
@@ -198,7 +197,7 @@ int ProcQueryPhotomap(client)
       swapl(&rep.width0,n);
       swapl(&rep.height0,n);
       swapl(&rep.levels0,n);
-      if (rep.data == xieValTripleBand) {
+      if (rep.dataClass == xieValTripleBand) {
 	swapl(&rep.width1,n);
 	swapl(&rep.height1,n);
 	swapl(&rep.levels1,n);

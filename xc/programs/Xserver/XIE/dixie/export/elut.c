@@ -1,4 +1,4 @@
-/* $XConsortium: elut.c,v 1.1 93/10/26 10:02:19 rws Exp $ */
+/* $XConsortium: elut.c,v 1.2 93/11/06 15:49:30 rws Exp $ */
 /**** module elut.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -68,7 +68,6 @@ terms and conditions:
    *  more X server includes.
    */
 #include <misc.h>
-#include <extnsionst.h>
 #include <dixstruct.h>
   /*
    *  Server XIE Includes
@@ -158,16 +157,16 @@ static Bool PrepELUT(flo,ped)
   outFloPtr    src = &inf->srcDef->outFlo;
   outFloPtr    dst = &ped->outFlo;
   CARD32    *start = &(raw->start0);
-  lutPtr	lut;
-  CARD32 b;
+  lutPtr       lut;
+  CARD32   b, oops;
 
   /* find the LUT resource and bind it to our flo */
   if(!(lut = pvt->lut = (lutPtr) LookupIDByType(raw->lut, RT_LUT)))
     LUTError(flo,ped,raw->lut, return(FALSE));
 
   ++pvt->lut->refCnt;
-  if ( !raw->merge && (start[0] || start[1] || start[2]) )
-	MatchError(flo, ped, return(FALSE));
+  if(!raw->merge && ((oops=start[0]) || (oops=start[1]) || (oops=start[2])))
+	ValueError(flo, ped, oops, return(FALSE));
 
   /* Validate and Propagate input attributes to our output */
   dst->bands = inf->bands = src->bands;
@@ -207,8 +206,8 @@ static Bool DebriefELUT(flo,ped,ok)
 	for(b = 0; b < lut->lutCnt; b++) {
 	   int nbytes = LutPitch(lut->format[b].level);
 	   memcpy(lut->strips[b].flink->data + start[b] * nbytes,
-	   	 ped->outFlo.export[b].flink->data,
-		 ped->outFlo.export[b].flink->length * nbytes);
+	   	 ped->outFlo.output[b].flink->data,
+		 ped->outFlo.output[b].flink->length * nbytes);
 	} /* transient strips freed below */
     } else { 
 	/* free old LUT data */
@@ -218,17 +217,17 @@ static Bool DebriefELUT(flo,ped,ok)
 	/* stash our new attributes and data into the LUT */
 	lut->lutCnt = ped->outFlo.bands;
 	for(b = 0; b < lut->lutCnt; ++b) {
-	    lut->format[b].bandOrder = ped->outFlo.format[b].width;/*ugly hack*/
-	    lut->format[b].length = ped->outFlo.format[b].height;/* ugly hack */
-	    lut->format[b].level  = ped->outFlo.format[b].levels;
-	    DebriefStrips(&ped->outFlo.export[b],&lut->strips[b]);
+	    lut->format[b].bandOrder = ped->outFlo.format[b].width;  /* hack */
+	    lut->format[b].length    = ped->outFlo.format[b].height; /* hack */
+	    lut->format[b].level     = ped->outFlo.format[b].levels;
+	    DebriefStrips(&ped->outFlo.output[b],&lut->strips[b]);
 	}
     }
   }
   /* free image data that's left over on our outFlo
    */
   for(b = 0; b < ped->outFlo.bands; b++)
-    FreeStrips(&ped->outFlo.export[b]);
+    FreeStrips(&ped->outFlo.output[b]);
   
   /* unbind ourself from the LUT
    */

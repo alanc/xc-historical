@@ -1,4 +1,4 @@
-/* $XConsortium: ecphoto.c,v 1.2 93/11/06 15:49:01 rws Exp $ */
+/* $XConsortium: ecphoto.c,v 1.3 93/11/06 19:09:51 rws Exp $ */
 /**** module ecphoto.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -68,7 +68,6 @@ terms and conditions:
    *  more X server includes.
    */
 #include <misc.h>
-#include <extnsionst.h>
 #include <dixstruct.h>
   /*
    *  Server XIE Includes
@@ -76,6 +75,7 @@ terms and conditions:
 #include <corex.h>
 #include <error.h>
 #include <macro.h>
+#include <photomap.h>
 #include <element.h>
 #include <technq.h>
 
@@ -101,16 +101,21 @@ Bool		PrepECPhotoTIFFPackBits();
 #if XIE_FULL
 Bool		CopyECPhotoUnTriple();
 Bool		CopyECPhotoJPEGBaseline();
-Bool		CopyECPhotoJPEGLossless();
 Bool		PrepECPhotoUnTriple();
 Bool		PrepECPhotoJPEGBaseline();
+#ifdef BEYOND_SI
+Bool		CopyECPhotoJPEGLossless();
 Bool		PrepECPhotoJPEGLossless();
+#endif /* BEYOND_SI */
 #endif
 
 /*
  *  routines internal to this module
  */
 static Bool	PrepECPhoto();
+
+extern Bool	BuildDecodeFromEncode();
+extern Bool	CompareDecode();
 
 /*
  * dixie element entry points
@@ -133,7 +138,7 @@ peDefPtr MakeECPhoto(flo,tag,pe)
   ELEMENT_AT_LEAST_SIZE(xieFloExportClientPhoto);
   ELEMENT_NEEDS_1_INPUT(src);
   
-  if(!(ped = MakePEDef(1, (CARD32)stuff->elemLength<<2, 0)))
+  if(!(ped = MakePEDef(1, (CARD32)stuff->elemLength<<2, sizeof(ePhotoDefRec))))
     FloAllocError(flo,tag,xieElemExportClientPhoto, return(NULL)) ;
 
   ped->diVec	     = &eCPhotoVec;
@@ -315,6 +320,7 @@ Bool CopyECPhotoJPEGBaseline(flo, ped, sparms, rparms, tsize)
   return(TRUE);
 }
 
+#ifdef BEYOND_SI
 Bool CopyECPhotoJPEGLossless(flo, ped, sparms, rparms, tsize)
      floDefPtr  flo;
      peDefPtr   ped;
@@ -331,7 +337,9 @@ Bool CopyECPhotoJPEGLossless(flo, ped, sparms, rparms, tsize)
   }
   return(TRUE);
 }
+#endif /* BEYOND_SI */
 #endif
+
 
 
 /*------------------------------------------------------------------------
@@ -341,10 +349,11 @@ static Bool PrepECPhoto(flo,ped)
      floDefPtr  flo;
      peDefPtr   ped;
 {
-  inFloPtr inf = &ped->inFloLst[SRCtag];
-  outFloPtr src = &inf->srcDef->outFlo;
-  outFloPtr dst = &ped->outFlo;
   xieFloExportClientPhoto *raw = (xieFloExportClientPhoto *)ped->elemRaw;
+  ePhotoDefPtr             pvt = (ePhotoDefPtr)ped->elemPvt;
+  inFloPtr                 inf = &ped->inFloLst[SRCtag];
+  outFloPtr                src = &inf->srcDef->outFlo;
+  outFloPtr                dst = &ped->outFlo;
   int b;
   
   /* Make sure notify value is valid
@@ -354,6 +363,7 @@ static Bool PrepECPhoto(flo,ped)
      raw->notify != xieValNewData)
     ValueError(flo,ped,raw->notify, return(FALSE));
 		
+  pvt->congress = FALSE;
   dst->bands = inf->bands = src->bands;
   for(b = 0; b < src->bands; b++) {
     if (IsntConstrained(src->format[b].class))
@@ -363,6 +373,26 @@ static Bool PrepECPhoto(flo,ped)
   if(!(ped->techVec->prepfnc(flo, ped, &raw[1])))
     TechniqueError(flo,ped,xieValHistogram,raw->encodeTechnique,raw->lenParams,
                    return(FALSE));
+
+  pvt->encodeNumber = raw->encodeTechnique;
+  pvt->encodeLen    = raw->lenParams << 2;
+  pvt->encodeParms  = (pointer)&raw[1];
+
+  if(ped->inFloLst[IMPORT].srcDef->flags.import) {
+    /*
+     * see if import data can leap-frog the import and export elements
+     */
+    if(BuildDecodeFromEncode(flo,ped) && CompareDecode(flo,ped)) {
+      inFloPtr import = &inf->srcDef->inFloLst[IMPORT];
+
+      inf->bands = import->bands;
+      for(b = 0; b < import->bands; ++b)
+	inf->format[b] = import->format[b];
+      pvt->congress = TRUE;
+    }
+    if(pvt->decodeParms)
+       pvt->decodeParms = (pointer)XieFree(pvt->decodeParms);
+  }
   return(TRUE);
 }                               /* end PrepECPhoto */
 
@@ -605,6 +635,7 @@ Bool PrepECPhotoJPEGBaseline(flo, ped, tec)
   
 } /* PrepECPhotoJPEGBaseline */
 
+#ifdef BEYOND_SI
 Bool PrepECPhotoJPEGLossless(flo, ped, tec) 
      floDefPtr flo;
      peDefPtr  ped;
@@ -672,6 +703,7 @@ Bool PrepECPhotoJPEGLossless(flo, ped, tec)
   return(TRUE);
   
 } /* PrepECPhotoJPEGLossless */
+#endif /* BEYOND_SI */
 #endif
 
 /* end module ecphoto.c */

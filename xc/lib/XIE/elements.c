@@ -1,4 +1,4 @@
-/* $XConsortium: elements.c,v 1.1 93/10/26 09:42:17 rws Exp $ */
+/* $XConsortium: elements.c,v 1.3 93/10/28 15:17:50 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
 
@@ -648,9 +648,9 @@ XiePhotoElement	*elemSrc;
     BEGIN_ELEM_HEAD (ConvertFromRGB, elemSrc,
 	LENOF (xieFloConvertFromRGB) + techLen, *bufDest, elemDest);
 
-    elemDest->src 		= elemSrc->data.ConvertFromRGB.src;
-    elemDest->colorspace 	= elemSrc->data.ConvertFromRGB.color_space;
-    elemDest->lenParams 	= techLen;
+    elemDest->src 	= elemSrc->data.ConvertFromRGB.src;
+    elemDest->convert 	= elemSrc->data.ConvertFromRGB.color_space;
+    elemDest->lenParams	= techLen;
 
     END_ELEM_HEAD (ConvertFromRGB, *bufDest, elemDest);
 
@@ -713,9 +713,9 @@ XiePhotoElement	*elemSrc;
     BEGIN_ELEM_HEAD (ConvertToRGB, elemSrc, 
 	LENOF (xieFloConvertToRGB) + techLen, *bufDest, elemDest);
 
-    elemDest->src 		= elemSrc->data.ConvertToRGB.src;
-    elemDest->colorspace 	= elemSrc->data.ConvertToRGB.color_space;
-    elemDest->lenParams 	= techLen;
+    elemDest->src 	= elemSrc->data.ConvertToRGB.src;
+    elemDest->convert 	= elemSrc->data.ConvertToRGB.color_space;
+    elemDest->lenParams = techLen;
 
     END_ELEM_HEAD (ConvertToRGB, *bufDest, elemDest);
 

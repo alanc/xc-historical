@@ -1,4 +1,4 @@
-/* $XConsortium: iclut.c,v 1.1 93/10/26 09:59:48 rws Exp $ */
+/* $XConsortium: iclut.c,v 1.2 93/11/06 15:51:29 rws Exp $ */
 /**** module iclut.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -69,7 +69,6 @@ terms and conditions:
    *  more X server includes.
    */
 #include <misc.h>
-#include <extnsionst.h>
 #include <dixstruct.h>
   /*
    *  Server XIE Includes
@@ -162,21 +161,19 @@ static Bool PrepICLUT(flo,ped)
   switch(raw->class) {
   case xieValSingleBand :
 
-    if(!raw->length0 || !raw->levels0)
+    if(!raw->length0)
       ValueError(flo,ped,0, return(FALSE));
-    if(raw->levels0 > MAX_LEVELS(1))
+    if(raw->levels0 < 2 || raw->levels0 > MAX_LEVELS(1))
       MatchError(flo,ped, return(FALSE));
     inflo->bands = 1;
     break;
 #if XIE_FULL
   case xieValTripleBand :
-    if(!raw->length0 || !raw->levels0 ||
-       !raw->length1 || !raw->levels1 ||
-       !raw->length2 || !raw->levels2)
+    if(!raw->length0 || !raw->length1 || !raw->length2)
       ValueError(flo,ped,0, return(FALSE));
-    if(raw->levels0 > MAX_LEVELS(3) ||
-       raw->levels1 > MAX_LEVELS(3) ||
-       raw->levels2 > MAX_LEVELS(3))
+    if(raw->levels0 || raw->levels0 > MAX_LEVELS(3) ||
+       raw->levels1 || raw->levels1 > MAX_LEVELS(3) ||
+       raw->levels2 || raw->levels2 > MAX_LEVELS(3))
       MatchError(flo,ped, return(FALSE));
 
     inflo->bands	    = 3;

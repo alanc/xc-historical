@@ -1,4 +1,4 @@
-/* $XConsortium: event.c,v 1.1 93/10/26 09:57:55 rws Exp $ */
+/* $XConsortium: event.c,v 1.3 93/11/06 15:56:15 rws Exp $ */
 /**** module event.c ****/
 /****************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -126,9 +126,9 @@ void SendFloEvent(flo)
     case xieEvnNoExportAvailable:
       swaps(&evn.src, n);
       swaps(&evn.type, n);
+      swapl(&((xieExportAvailableEvn *)&evn)->data0, n);
       swapl(&((xieExportAvailableEvn *)&evn)->data1, n);
       swapl(&((xieExportAvailableEvn *)&evn)->data2, n);
-      swapl(&((xieExportAvailableEvn *)&evn)->data3, n);
       break;
     case xieEvnNoImportObscured:
       swaps(&evn.src, n);

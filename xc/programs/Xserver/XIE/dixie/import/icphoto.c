@@ -1,4 +1,4 @@
-/* $XConsortium: icphoto.c,v 1.1 93/10/26 09:59:11 rws Exp $ */
+/* $XConsortium: icphoto.c,v 1.2 93/11/06 15:51:36 rws Exp $ */
 /**** module icphoto.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -68,7 +68,6 @@ terms and conditions:
    *  more X server includes.
    */
 #include <misc.h>
-#include <extnsionst.h>
 #include <dixstruct.h>
   /*
    *  Server XIE Includes
@@ -90,7 +89,9 @@ Bool		CopyICPhotoG31D();
 Bool		CopyICPhotoG32D();
 Bool		CopyICPhotoG42D();
 Bool		CopyICPhotoJPEGBaseline();
+#ifdef  BEYOND_SI
 Bool		CopyICPhotoJPEGLossless();
+#endif /* BEYOND_SI */
 Bool		CopyICPhotoTIFF2();
 Bool		CopyICPhotoTIFFPackBits();
 
@@ -100,7 +101,9 @@ Bool		PrepICPhotoG31D();
 Bool		PrepICPhotoG32D();
 Bool		PrepICPhotoG42D();
 Bool		PrepICPhotoJPEGBaseline();
+#ifdef  BEYOND_SI
 Bool		PrepICPhotoJPEGLossless();
+#endif /* BEYOND_SI */
 Bool		PrepICPhotoTIFF2();
 Bool		PrepICPhotoTIFFPackBits();
 
@@ -255,6 +258,7 @@ Bool CopyICPhotoJPEGBaseline(flo, ped, rparms, cparms, tsize)
   return(TRUE);
 }
 
+#ifdef  BEYOND_SI
 Bool CopyICPhotoJPEGLossless(flo, ped, rparms, cparms, tsize)
      floDefPtr  flo;
      peDefPtr   ped;
@@ -268,6 +272,7 @@ Bool CopyICPhotoJPEGLossless(flo, ped, rparms, cparms, tsize)
   
   return(TRUE);
 }
+#endif /* BEYOND_SI */
 
 Bool CopyICPhotoTIFF2(flo, ped, rparms, cparms, tsize)
      floDefPtr  flo;
@@ -669,6 +674,7 @@ Bool PrepICPhotoJPEGBaseline(flo, ped, raw, tec)
 
 } /* PrepICPhotoJPEGBaseline */
 
+#ifdef  BEYOND_SI
 Bool PrepICPhotoJPEGLossless(flo, ped, raw, tec) 
      floDefPtr flo;
      peDefPtr  ped;
@@ -714,6 +720,7 @@ Bool PrepICPhotoJPEGLossless(flo, ped, raw, tec)
   return(TRUE);
 
 } /* PrepICPhotoJPEGLossless */
+#endif /* BEYOND_SI */
 
 Bool PrepICPhotoTIFF2(flo, ped, raw, tec) 
      floDefPtr flo;

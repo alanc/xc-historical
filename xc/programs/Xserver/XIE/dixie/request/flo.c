@@ -1,4 +1,4 @@
-/* $XConsortium: flo.c,v 1.3 93/10/31 09:41:13 dpw Exp $ */
+/* $XConsortium: flo.c,v 1.4 93/11/06 15:56:37 rws Exp $ */
 /**** module flo.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -70,7 +70,6 @@ terms and conditions:
  */
 #include <misc.h>
 #include <dixstruct.h>
-#include <extnsionst.h>
 /*
  *  Server XIE Includes
  */
@@ -279,7 +278,7 @@ peDefPtr MakePEDef(inFloCnt, rawLen, pvtLen)
 
     /* init the outFlo */
     for(b = 0; b < xieValMaxBands; ++b) {
-      ListInit(&ped->outFlo.export[b]);
+      ListInit(&ped->outFlo.output[b]);
       ped->outFlo.format[b].band = b;
     }
 
@@ -308,8 +307,8 @@ peDefPtr FreePEDef(ped)
      * empty the outFlo
      */
     for(b = 0; b < xieValMaxBands; ++b) {
-      if(!ListEmpty(&ped->outFlo.export[b]))
-	FreeStrips(&ped->outFlo.export[b]);
+      if(!ListEmpty(&ped->outFlo.output[b]))
+	 FreeStrips(&ped->outFlo.output[b]);
     }
     /* free element parameter structures
      */
@@ -386,7 +385,8 @@ Bool	UpdateFormatfromLevels(ped)
     SetDepthFromLevels(ped->outFlo.format[i].levels, 
 		       ped->outFlo.format[i].depth);
     
-    if((bits = ped->outFlo.format[i].depth) > MAX_DEPTH(ped->outFlo.bands))
+    if((bits = ped->outFlo.format[i].depth) > MAX_DEPTH(ped->outFlo.bands) ||
+	ped->outFlo.format[i].levels < 2)
       return(FALSE);
     
     else if(bits == 1) {

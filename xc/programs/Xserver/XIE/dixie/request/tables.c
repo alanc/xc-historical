@@ -1,4 +1,4 @@
-/* $XConsortium: tables.c,v 1.1 93/10/26 09:58:08 rws Exp $ */
+/* $XConsortium: tables.c,v 1.2 93/11/06 15:57:57 rws Exp $ */
 /**** tables.c ****/
 /****************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -55,7 +55,6 @@ terms and conditions:
 #include "Xproto.h"		/* defines protocol-related stuff	*/
 #include "misc.h"		/* includes os.h, which type FatalError	*/
 #include "dixstruct.h" 		/* this picks up ClientPtr definition	*/
-#include "extnsionst.h"		/* defines things like ExtensionEntry	*/
 #include <stdio.h>		/* needed if we do any printf's		*/
 
 #include "XIE.h"		
@@ -86,8 +85,20 @@ static peDefPtr ElementNotImplemented(flo,tag,pe)
   FloElementError(flo,tag,pe->elemType, return(NULL));
 }
 
+/*------------------------------------------------------------------------
+---------------- Array of DD entry points called from DI  ----------------
+------------------------------------------------------------------------*/
+/* Very rarely, a device independent routine needs to access device dependent
+   code. Interface through this array.
+*/
+xieVoidProc DDInterface[] = {
+                (xieVoidProc)DAGalyze,
+                (xieVoidProc)GetServerChoice
+};
+
+
 #if XIE_FULL
-static int (*ProcTable414[])() = {
+static int (*ProcTable5_00[])() = {
 /* 00 */  ProcNotImplemented,	/* Illegal protocol request */	
 /* 01 */  ProcNotImplemented,	/* QueryImageExtension doesn't use the table */
 /* 02 */  ProcQueryTechniques,
@@ -117,7 +128,7 @@ static int (*ProcTable414[])() = {
 /* 26 */  ProcAbort
   };
 
-static int (*SProcTable414[])() = {
+static int (*SProcTable5_00[])() = {
 /* 00 */  ProcNotImplemented,	/* Illegal protocol request */	
 /* 01 */  ProcNotImplemented,	/* QueryImageExtension doesn't use the table */
 /* 02 */  SProcQueryTechniques,
@@ -190,7 +201,7 @@ peDefPtr (*MakeTable[])() = {
 
 #else /* XIEdis */
 
-static int (*ProcTable414[])() = {
+static int (*ProcTable5_00[])() = {
 /* 00 */  ProcNotImplemented,	/* Illegal protocol request */	
 /* 01 */  ProcNotImplemented,	/* QueryImageExtension doesn't use the table */
 /* 02 */  ProcQueryTechniques,
@@ -220,7 +231,7 @@ static int (*ProcTable414[])() = {
 /* 26 */  ProcAbort
   };
 
-static int (*SProcTable414[])() = {
+static int (*SProcTable5_00[])() = {
 /* 00 */  ProcNotImplemented,	/* Illegal protocol request */	
 /* 01 */  ProcNotImplemented,	/* QueryImageExtension doesn't use the table */
 /* 02 */  SProcQueryTechniques,
@@ -302,13 +313,13 @@ void init_proc_tables(minorVersion, ptable, sptable)
 {
   /* Kind of boring with only one version to work with */
   switch (minorVersion) {
-  case 14:
-    *ptable = ProcTable414;
-    *sptable = SProcTable414;
+  case 0:
+    *ptable  =  ProcTable5_00;
+    *sptable = SProcTable5_00;
     break;
   default:
-    *ptable = ProcTable414;
-    *sptable = SProcTable414;
+    *ptable  =  ProcTable5_00;
+    *sptable = SProcTable5_00;
   }
 }
 

@@ -1,4 +1,4 @@
-/* $XConsortium: pctoi.c,v 1.2 93/10/31 09:40:32 dpw Exp $ */
+/* $XConsortium: pctoi.c,v 1.3 93/11/06 15:54:15 rws Exp $ */
 /**** module pctoi.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -69,7 +69,6 @@ terms and conditions:
    *  more X server includes.
    */
 #include <misc.h>
-#include <extnsionst.h>
 #include <dixstruct.h>
 #include <scrnintstr.h>
 #include <colormapst.h>
@@ -89,9 +88,11 @@ terms and conditions:
  */
 peDefPtr	MakeConvertToIndex();
 Bool 		CopyCtoIAllocAll();
+Bool 		PrepCtoIAllocAll();
+#ifdef BEYOND_SI
 Bool 		CopyCtoIAllocMatch();
 Bool 		CopyCtoIAllocRequantize();
-Bool 		PrepCtoIAllocAll();
+#endif /* BEYOND_SI */
 
 /* routines internal to this module
  */
@@ -183,6 +184,7 @@ Bool CopyCtoIAllocAll(flo, ped, sparms, rparms, tsize, isDefault)
   return(TRUE);
 }
 
+#ifdef BEYOND_SI
 Bool CopyCtoIAllocMatch(flo, ped, sparms, rparms, tsize, isDefault) 
      floDefPtr  flo;
      peDefPtr   ped;
@@ -225,6 +227,8 @@ Bool CopyCtoIAllocRequantize(flo, ped, sparms, rparms, tsize, isDefault)
   
   return(TRUE);
 }
+#endif /* BEYOND_SI */
+
 
 /*------------------------------------------------------------------------
 ---------------- routine: prepare for analysis and execution -------------

@@ -1,4 +1,4 @@
-/* $XConsortium: pctrgb.c,v 1.1 93/10/26 10:02:06 rws Exp $ */
+/* $XConsortium: pctrgb.c,v 1.2 93/10/31 09:40:33 dpw Exp $ */
 /**** module pctrgb.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -69,7 +69,6 @@ terms and conditions:
    *  more X server includes.
    */
 #include <misc.h>
-#include <extnsionst.h>
 #include <dixstruct.h>
   /*
    *  Server XIE Includes
@@ -151,17 +150,17 @@ xieFlo        *pe;
   if( flo->reqClient->swapped ) {
     raw->elemType   = stuff->elemType;
     raw->elemLength = stuff->elemLength;
-    cpswaps(stuff->src,        raw->src);
-    cpswaps(stuff->colorspace, raw->colorspace);
-    cpswaps(stuff->lenParams,  raw->lenParams);
+    cpswaps(stuff->src,       raw->src);
+    cpswaps(stuff->convert,   raw->convert);
+    cpswaps(stuff->lenParams, raw->lenParams);
   } else
     memcpy((char *)raw, (char *)stuff, sizeof(xieFloConvertToRGB));
   /*
    * copy technique data (if any)
    */
-  if(!(ped->techVec = FindTechnique(xieValConvertToRGB, raw->colorspace)) ||
+  if(!(ped->techVec = FindTechnique(xieValConvertToRGB, raw->convert)) ||
      !(ped->techVec->copyfnc(flo, ped, &stuff[1], &raw[1], raw->lenParams)))
-    TechniqueError(flo,ped,xieValConvertToRGB,raw->colorspace,raw->lenParams,
+    TechniqueError(flo,ped,xieValConvertToRGB,raw->convert,raw->lenParams,
 		   return(ped));
 
  /*
@@ -193,28 +192,28 @@ CARD16	tsize;
    if( flo->reqClient->swapped ) {
 	swap_floats(&pvt->matrix[0], &sparms->matrix00, 9);
 	cpswaps(sparms->whiteAdjusted,  pvt->whiteAdjusted);
-	cpswaps(sparms->numWhiteParams, pvt->numWhiteParams);
-	cpswaps(sparms->gamutTechnique, pvt->gamutTechnique);
-	cpswaps(sparms->numGamutParams, pvt->numGamutParams);
+	cpswaps(sparms->lenWhiteParams, pvt->lenWhiteParams);
+	cpswaps(sparms->gamutCompress,  pvt->gamutCompress);
+	cpswaps(sparms->lenGamutParams, pvt->lenGamutParams);
    } else {
 	copy_floats(&pvt->matrix[0], &sparms->matrix00, 9);
         pvt->whiteAdjusted  = sparms->whiteAdjusted;
-        pvt->numWhiteParams = sparms->numWhiteParams;
-        pvt->gamutTechnique = sparms->gamutTechnique;
-        pvt->numGamutParams = sparms->numGamutParams;
+        pvt->lenWhiteParams = sparms->lenWhiteParams;
+        pvt->gamutCompress  = sparms->gamutCompress;
+        pvt->lenGamutParams = sparms->lenGamutParams;
    }
 
    if(!(pvt->whiteTec = FindTechnique(xieValWhiteAdjust, pvt->whiteAdjusted)) ||
       !(pvt->whiteTec->copyfnc(flo, ped, &sparms[1], pvt->whitePoint, 
-                                  pvt->whiteTec, pvt->numWhiteParams, 
+                                  pvt->whiteTec, pvt->lenWhiteParams, 
 				  pvt->whiteAdjusted == xieValDefault)))
        TechniqueError(flo,ped,xieValWhiteAdjust,
-		      pvt->whiteAdjusted,pvt->numWhiteParams, return(TRUE));
+		      pvt->whiteAdjusted,pvt->lenWhiteParams, return(TRUE));
 
-   if(!(pvt->gamutTec = FindTechnique(xieValGamut, pvt->gamutTechnique)) ||
-      !(pvt->gamutTec->copyfnc(pvt->numGamutParams)))
+   if(!(pvt->gamutTec = FindTechnique(xieValGamut, pvt->gamutCompress)) ||
+      !(pvt->gamutTec->copyfnc(pvt->lenGamutParams)))
        TechniqueError(flo,ped,xieValGamut,
-		      pvt->gamutTechnique,pvt->numGamutParams, return(TRUE));
+		      pvt->gamutCompress,pvt->lenGamutParams, return(TRUE));
 
    return (TRUE);
 }
@@ -243,22 +242,22 @@ CARD16	tsize;
 	cpswapl(sparms->levels2, pvt->levels2);
 	swap_floats(&pvt->red, &sparms->lumaRed, 3);
 	swap_floats(&pvt->bias0, &sparms->bias0, 3);
-	cpswaps(sparms->gamutTechnique, pvt->gamutTechnique);
-	cpswaps(sparms->numGamutParams, pvt->numGamutParams);
+	cpswaps(sparms->gamutCompress,  pvt->gamutCompress);
+	cpswaps(sparms->lenGamutParams, pvt->lenGamutParams);
    } else {
 	pvt->levels0 = sparms->levels0;
 	pvt->levels1 = sparms->levels1;
 	pvt->levels2 = sparms->levels2;
 	copy_floats(&pvt->red, &sparms->lumaRed, 3);
 	copy_floats(&pvt->bias0, &sparms->bias0, 3);
-        pvt->gamutTechnique = sparms->gamutTechnique;
-        pvt->numGamutParams = sparms->numGamutParams;
+        pvt->gamutCompress  = sparms->gamutCompress;
+        pvt->lenGamutParams = sparms->lenGamutParams;
    }
 
-   if(!(pvt->gamutTec = FindTechnique(xieValGamut, pvt->gamutTechnique)) ||
-      !(pvt->gamutTec->copyfnc(pvt->numGamutParams)))
+   if(!(pvt->gamutTec = FindTechnique(xieValGamut, pvt->gamutCompress)) ||
+      !(pvt->gamutTec->copyfnc(pvt->lenGamutParams)))
        TechniqueError(flo,ped,xieValGamut,
-		      pvt->gamutTechnique,pvt->numGamutParams, return(TRUE));
+		      pvt->gamutCompress,pvt->lenGamutParams, return(TRUE));
 
    return (TRUE);
 }
@@ -284,22 +283,22 @@ CARD16	tsize;
 	cpswapl(sparms->levels2, pvt->levels2);
 	swap_floats(&pvt->red, &sparms->lumaRed, 3);
 	pvt->scale = ConvertFromIEEE(lswapl(sparms->scale));
-	cpswaps(sparms->gamutTechnique, pvt->gamutTechnique);
-	cpswaps(sparms->numGamutParams, pvt->numGamutParams);
+	cpswaps(sparms->gamutCompress,  pvt->gamutCompress);
+	cpswaps(sparms->lenGamutParams, pvt->lenGamutParams);
    } else {
 	pvt->levels0 = sparms->levels0;
 	pvt->levels1 = sparms->levels1;
 	pvt->levels2 = sparms->levels2;
 	copy_floats(&pvt->red, &sparms->lumaRed, 3);
 	pvt->scale = ConvertFromIEEE(sparms->scale);
-        pvt->gamutTechnique = sparms->gamutTechnique;
-        pvt->numGamutParams = sparms->numGamutParams;
+        pvt->gamutCompress  = sparms->gamutCompress;
+        pvt->lenGamutParams = sparms->lenGamutParams;
    }
 
-   if(!(pvt->gamutTec = FindTechnique(xieValGamut, pvt->gamutTechnique)) ||
-      !(pvt->gamutTec->copyfnc(pvt->numGamutParams)))
+   if(!(pvt->gamutTec = FindTechnique(xieValGamut, pvt->gamutCompress)) ||
+      !(pvt->gamutTec->copyfnc(pvt->lenGamutParams)))
        TechniqueError(flo,ped,xieValGamut,
-		      pvt->gamutTechnique,pvt->numGamutParams, return(TRUE));
+		      pvt->gamutCompress,pvt->lenGamutParams, return(TRUE));
 
    return (TRUE);
 }
@@ -503,7 +502,7 @@ static Bool PrepPConvertToRGB(flo,ped)
 
   if (!(ped->techVec->prepfnc(flo, ped, raw, &raw[1])))
 	TechniqueError(flo,ped,xieValConvertToRGB,
-		       raw->colorspace,raw->lenParams, return(FALSE));
+		       raw->convert,raw->lenParams, return(FALSE));
 
 
   return (TRUE);

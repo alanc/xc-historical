@@ -1,4 +1,4 @@
-/* $XConsortium: eroi.c,v 1.1 93/10/26 10:02:44 rws Exp $ */
+/* $XConsortium: eroi.c,v 1.2 93/11/06 15:49:51 rws Exp $ */
 /**** module eroi.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -68,7 +68,6 @@ terms and conditions:
    *  more X server includes.
    */
 #include <misc.h>
-#include <extnsionst.h>
 #include <dixstruct.h>
   /*
    *  Server XIE Includes
@@ -190,10 +189,10 @@ static Bool DebriefEROI(flo,ped,ok)
      * out with the old, in with the new
      */
     FreeStrips(&roi->strips);
-    DebriefStrips(&ped->outFlo.export[0],&roi->strips);
+    DebriefStrips(&ped->outFlo.output[0],&roi->strips);
   }
   /* free roi data that's left over on our outFlo */
-  FreeStrips(&ped->outFlo.export[0]);
+  FreeStrips(&ped->outFlo.output[0]);
   
   /* unbind ourself from the roi */
   if(roi->refCnt > 1)

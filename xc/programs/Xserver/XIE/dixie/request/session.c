@@ -1,4 +1,4 @@
-/* $XConsortium: session.c,v 1.1 93/10/26 09:58:39 rws Exp $ */
+/* $XConsortium: session.c,v 1.3 93/11/06 15:57:49 rws Exp $ */
 /**** session.c ****/
 /****************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -42,7 +42,7 @@ terms and conditions:
      Logic, Inc.
 *****************************************************************************
 
-	session.c: Initialization code for the XIE V4.14 server. 
+	session.c: Initialization code for the XIE server. 
 
 	Dean Verheiden -- AGE Logic, Inc  March, 1993
 
@@ -59,7 +59,7 @@ terms and conditions:
 #include <stdio.h>		/* needed if we do any printf's		*/
 
 #include "XIE.h"		
-#include "XIEproto.h"		/* Xie v4.14 protocol specification	*/
+#include "XIEproto.h"		/* Xie protocol specification		*/
 #include <corex.h>		/* core X interface routine definitions */ 
 #include <tables.h>
 #include <macro.h>		/* server internal macros		*/
@@ -103,7 +103,6 @@ struct _client_table {
   CARD16   pad;		
 } client_table[MAXCLIENTS];
 
-
 void XieInit()
 {
   ExtensionEntry *AddExtension();
@@ -135,10 +134,12 @@ void XieInit()
   if (extEntry == NULL)
     FatalError(" could not add Xie as an extension\n");
   
-  XieReset(extEntry);
+  /* Initialize client table */
+  bzero((char *)client_table, sizeof(client_table));
 
   if (!technique_init() || DdxInit() != Success)
     FatalError(" could not add Xie as an extension\n");
+
 }
 
 /**********************************************************************/
@@ -303,9 +304,6 @@ XID id;
 static void XieReset (extEntry)
      ExtensionEntry	*extEntry;
 {
-  /* Initialize client table */
-  bzero((char *)client_table, sizeof(client_table));
-
 #ifdef REPORT_MEMORY_LEAKS
 
   /* memory leak debug code

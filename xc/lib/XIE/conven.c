@@ -1,4 +1,4 @@
-/* $XConsortium: conven.c,v 1.1 93/10/26 09:43:49 rws Exp $ */
+/* $XConsortium: conven.c,v 1.5 93/10/28 15:17:48 mor Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -1235,10 +1235,11 @@ Bool		normal;
 
 
 XieDecodeJPEGBaselineParam *
-XieTecDecodeJPEGBaseline (interleave, band_order)
+XieTecDecodeJPEGBaseline (interleave, band_order, up_sample)
 
 XieInterleave	interleave;
 XieOrientation  band_order;
+Bool		up_sample;
 
 {
     XieDecodeJPEGBaselineParam *param = (XieDecodeJPEGBaselineParam *)
@@ -1246,6 +1247,7 @@ XieOrientation  band_order;
 
     param->interleave = interleave;
     param->band_order = band_order;
+    param->up_sample  = up_sample;
 
     return (param);
 }
@@ -1400,11 +1402,16 @@ XieOrientation	encoded_order;
 
 
 XieEncodeJPEGBaselineParam *
-XieTecEncodeJPEGBaseline (interleave, band_order, q_table, q_size,
-    ac_table, ac_size, dc_table, dc_size)
+XieTecEncodeJPEGBaseline (interleave, band_order,
+			  horizontal_samples, vertical_samples,
+			  q_table, q_size,
+			  ac_table, ac_size,
+			  dc_table, dc_size)
 
 XieInterleave	interleave;
 XieOrientation  band_order;
+unsigned char	horizontal_samples[3];
+unsigned char	vertical_samples[3];
 char		*q_table;
 unsigned int	q_size;
 char		*ac_table;
@@ -1416,15 +1423,24 @@ unsigned int	dc_size;
     XieEncodeJPEGBaselineParam *param = (XieEncodeJPEGBaselineParam *)
 	Xmalloc (sizeof (XieEncodeJPEGBaselineParam));
     
-    param->interleave = interleave;
-    param->band_order = band_order;
-    param->q_size     = q_size;
-    param->ac_size    = ac_size;
-    param->dc_size    = dc_size;
+    param->interleave            = interleave;
+    param->band_order            = band_order;
 
-    param->q_table    = (char *) Xmalloc (q_size);
-    param->ac_table   = (char *) Xmalloc (ac_size);
-    param->dc_table   = (char *) Xmalloc (dc_size);
+    param->horizontal_samples[0] = horizontal_samples[0];
+    param->horizontal_samples[1] = horizontal_samples[1];
+    param->horizontal_samples[2] = horizontal_samples[2];
+
+    param->vertical_samples[0]   = vertical_samples[0];
+    param->vertical_samples[1]   = vertical_samples[1];
+    param->vertical_samples[2]   = vertical_samples[2];
+
+    param->q_size                = q_size;
+    param->ac_size               = ac_size;
+    param->dc_size               = dc_size;
+
+    param->q_table               = (char *) Xmalloc (q_size);
+    param->ac_table              = (char *) Xmalloc (ac_size);
+    param->dc_table              = (char *) Xmalloc (dc_size);
 
     memcpy (param->q_table, q_table, q_size);
     memcpy (param->ac_table, ac_table, ac_size);
@@ -1488,6 +1504,20 @@ XieOrientation	encoded_order;
 	Xmalloc (sizeof (XieEncodeTIFFPackBitsParam));
 
     param->encoded_order = encoded_order;
+
+    return (param);
+}
+
+XieEncodeServerChoiceParam *
+XieTecEncodeServerChoice (preference)
+
+unsigned int	preference;
+
+{
+    XieEncodeServerChoiceParam *param = (XieEncodeServerChoiceParam *)
+	Xmalloc (sizeof (XieEncodeServerChoiceParam));
+
+    param->preference = preference;
 
     return (param);
 }

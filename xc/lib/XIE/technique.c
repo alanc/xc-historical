@@ -1,4 +1,4 @@
-/* $XConsortium: technique.c,v 1.1 93/10/26 09:41:38 rws Exp $ */
+/* $XConsortium: technique.c,v 1.4 93/10/28 15:17:57 mor Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -274,8 +274,8 @@ int			encode;
         dstParam->bias0     = _XieConvertToIEEE (srcParam->bias[0]);
         dstParam->bias1     = _XieConvertToIEEE (srcParam->bias[1]);
         dstParam->bias2     = _XieConvertToIEEE (srcParam->bias[2]);
-	dstParam->gamutTechnique = srcParam->gamut_tech;
-	dstParam->numGamutParams = gamutLen;
+	dstParam->gamutCompress  = srcParam->gamut_tech;
+	dstParam->lenGamutParams = gamutLen;
 
 	END_TECHNIQUE (xieTecYCbCrToRGB, *bufDest, dstParam);
 
@@ -317,8 +317,8 @@ int			encode;
         dstParam->lumaGreen = _XieConvertToIEEE (srcParam->luma_green);
         dstParam->lumaBlue  = _XieConvertToIEEE (srcParam->luma_blue);
         dstParam->scale     = _XieConvertToIEEE (srcParam->scale);
-	dstParam->gamutTechnique = srcParam->gamut_tech;
-	dstParam->numGamutParams = gamutLen;
+	dstParam->gamutCompress  = srcParam->gamut_tech;
+	dstParam->lenGamutParams = gamutLen;
 
 	END_TECHNIQUE (xieTecYCCToRGB, *bufDest, dstParam);
 
@@ -367,10 +367,10 @@ int			encode;
         dstParam->matrix21 = _XieConvertToIEEE (srcParam->matrix[7]);
         dstParam->matrix22 = _XieConvertToIEEE (srcParam->matrix[8]);
 
-	dstParam->whiteAdjusted = srcParam->white_adjust_tech;
-	dstParam->numWhiteParams = whiteLen;
-	dstParam->gamutTechnique = srcParam->gamut_tech;
-	dstParam->numGamutParams = gamutLen;
+	dstParam->whiteAdjusted  = srcParam->white_adjust_tech;
+	dstParam->lenWhiteParams = whiteLen;
+	dstParam->gamutCompress  = srcParam->gamut_tech;
+	dstParam->lenGamutParams = gamutLen;
 
 	END_TECHNIQUE (xieTecCIELabToRGB, *bufDest, dstParam);
 
@@ -599,6 +599,7 @@ int			   encode;
 
 	dstParam->interleave = srcParam->interleave;
 	dstParam->bandOrder = srcParam->band_order;
+	dstParam->upSample = srcParam->up_sample;
 
 	END_TECHNIQUE (xieTecDecodeJPEGBaseline, *bufDest, dstParam);
     }
@@ -757,6 +758,33 @@ int				encode;
 
 
 int
+_XieEncodeServerChoiceParam (bufDest, srcParam, encode)
+
+char				**bufDest;
+XieEncodeServerChoiceParam	*srcParam;
+int				encode;
+
+{
+    int length = LENOF (xieTecEncodeServerChoice);
+    xieTecEncodeServerChoice *dstParam;
+
+    if (srcParam == NULL) 
+	return(0);
+
+    if (encode)
+    {
+	BEGIN_TECHNIQUE (xieTecEncodeServerChoice, *bufDest, dstParam);
+
+	dstParam->preference = srcParam->preference;
+
+	END_TECHNIQUE (xieTecEncodeServerChoice, *bufDest, dstParam);
+    }
+
+    return (length);
+}
+
+
+int
 _XieEncodeG32DParam (bufDest, srcParam, encode)
 
 char			**bufDest;
@@ -837,6 +865,12 @@ int			   encode;
 
 	dstParam->interleave = srcParam->interleave;
 	dstParam->bandOrder  = srcParam->band_order;
+	dstParam->horizontalSamples[0] = srcParam->horizontal_samples[0];
+	dstParam->horizontalSamples[1] = srcParam->horizontal_samples[1];
+	dstParam->horizontalSamples[2] = srcParam->horizontal_samples[2];
+	dstParam->verticalSamples[0] = srcParam->vertical_samples[0];
+	dstParam->verticalSamples[1] = srcParam->vertical_samples[1];
+	dstParam->verticalSamples[2] = srcParam->vertical_samples[2];
 	dstParam->lenQtable  = srcParam->q_size;
 	dstParam->lenACtable = srcParam->ac_size;
 	dstParam->lenDCtable = srcParam->dc_size;
@@ -1141,22 +1175,22 @@ _XieInitTechFuncTable ()
 	xieValColorAllocRequantize, _XieColorAllocRequantizeParam);
 
     _XieRegisterTechFunc (xieValConvertFromRGB,
-	xieValCIELab, _XieRGBToCIELabParam);
+	xieValRGBToCIELab, _XieRGBToCIELabParam);
     _XieRegisterTechFunc (xieValConvertFromRGB,
-	xieValCIEXYZ, _XieRGBToCIEXYZParam);
+	xieValRGBToCIEXYZ, _XieRGBToCIEXYZParam);
     _XieRegisterTechFunc (xieValConvertFromRGB,
-	xieValYCbCr, _XieRGBToYCbCrParam);
+	xieValRGBToYCbCr, _XieRGBToYCbCrParam);
     _XieRegisterTechFunc (xieValConvertFromRGB,
-	xieValYCC, _XieRGBToYCCParam);
+	xieValRGBToYCC, _XieRGBToYCCParam);
 
     _XieRegisterTechFunc (xieValConvertToRGB,
-	xieValCIELab, _XieCIELabToRGBParam);
+	xieValCIELabToRGB, _XieCIELabToRGBParam);
     _XieRegisterTechFunc (xieValConvertToRGB,
-	xieValCIEXYZ, _XieCIEXYZToRGBParam);
+	xieValCIEXYZToRGB, _XieCIEXYZToRGBParam);
     _XieRegisterTechFunc (xieValConvertToRGB,
-	xieValYCbCr, _XieYCbCrToRGBParam);
+	xieValYCbCrToRGB, _XieYCbCrToRGBParam);
     _XieRegisterTechFunc (xieValConvertToRGB,
-	xieValYCC, _XieYCCToRGBParam);
+	xieValYCCToRGB, _XieYCCToRGBParam);
 	
     _XieRegisterTechFunc (xieValConstrain,
 	xieValConstrainClipScale, _XieClipScaleParam);
@@ -1196,8 +1230,12 @@ _XieInitTechFuncTable ()
     _XieRegisterTechFunc (xieValDither,
 	xieValDitherOrdered, _XieDitherOrderedParam);
 
+/*
     _XieRegisterTechFunc (xieValEncode,
 	xieValEncodeServerChoice, 0);
+*/
+    _XieRegisterTechFunc (xieValEncode,
+	xieValEncodeServerChoice, _XieEncodeServerChoiceParam);
     _XieRegisterTechFunc (xieValEncode,
 	xieValEncodeUncompressedSingle, _XieEncodeUncompressedSingleParam);
     _XieRegisterTechFunc (xieValEncode,

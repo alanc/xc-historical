@@ -1,4 +1,4 @@
-/* $XConsortium: photomap.c,v 1.2 93/07/26 19:03:42 mor Exp $ */
+/* $XConsortium: photomap.c,v 1.3 93/10/28 15:17:56 mor Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -76,14 +76,14 @@ XiePhotomap	photomap;
 
 
 Status
-XieQueryPhotomap (display, photomap, populated_ret, datatype_ret, class_ret,
-    decode_technique_ret, width_ret, height_ret, levels_ret)
+XieQueryPhotomap (display, photomap, populated_ret, datatype_ret,
+    dataclass_ret, decode_technique_ret, width_ret, height_ret, levels_ret)
 
 Display      		*display;
 XiePhotomap    		photomap;
 Bool         		*populated_ret;
 XieDataType   		*datatype_ret;
-XieDataClass		*class_ret;
+XieDataClass		*dataclass_ret;
 XieDecodeTechnique	*decode_technique_ret;
 XieLTriplet     	width_ret;
 XieLTriplet     	height_ret;
@@ -116,7 +116,7 @@ XieLTriplet     	levels_ret;
 
     *populated_ret 	  = rep.populated;
     *datatype_ret         = rep.dataType;
-    *class_ret		  = rep.data;
+    *dataclass_ret	  = rep.dataClass;
     *decode_technique_ret = rep.decodeTechnique;
     width_ret[0]      	  = rep.width0;
     width_ret[1]      	  = rep.width1;

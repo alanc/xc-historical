@@ -1,4 +1,4 @@
-/* $XConsortium: XIElib.h,v 1.3 93/10/28 15:17:36 mor Exp $ */
+/* $XConsortium: XIElib.h,v 1.4 93/10/30 14:57:34 rws Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -575,7 +575,13 @@ typedef struct {
 typedef struct {
     XieInterleave	interleave;
     XieOrientation  	band_order;
-} XieDecodeJPEGBaselineParam, XieDecodeJPEGLosslessParam;
+    Bool		up_sample;
+} XieDecodeJPEGBaselineParam;
+
+typedef struct {
+    XieInterleave	interleave;
+    XieOrientation  	band_order;
+} XieDecodeJPEGLosslessParam;
 
 
 /* Dither */
@@ -624,8 +630,14 @@ typedef struct {
 } XieEncodeG42DParam;
 
 typedef struct {
+    unsigned int	preference;
+} XieEncodeServerChoiceParam;
+
+typedef struct {
     XieInterleave	interleave;
     XieOrientation  	band_order;
+    unsigned char	horizontal_samples[3];
+    unsigned char	vertical_samples[3];
     char		*q_table;
     unsigned int	q_size;
     char		*ac_table;
@@ -1696,7 +1708,8 @@ extern XieDecodeTIFFPackBitsParam *XieTecDecodeTIFFPackBits (
 extern XieDecodeJPEGBaselineParam *XieTecDecodeJPEGBaseline (
 #if NeedFunctionPrototypes
     XieInterleave	/* interleave */,
-    XieOrientation	/* band_order */
+    XieOrientation	/* band_order */,
+    Bool		/* up_sample  */
 #endif
 );
 
@@ -1759,10 +1772,18 @@ extern XieEncodeG42DParam *XieTecEncodeG42D (
 #endif
 );
 
+extern XieEncodeServerChoiceParam *XieTecEncodeServerChoice (
+#if NeedFunctionPrototypes
+    unsigned int	/* preference */
+#endif
+);
+
 extern XieEncodeJPEGBaselineParam *XieTecEncodeJPEGBaseline (
 #if NeedFunctionPrototypes
     XieInterleave	/* interleave */,
-    XieOrientation	/*  band_order */,
+    XieOrientation	/* band_order */,
+    unsigned char[3]	/* horizontal_samples[3] */,
+    unsigned char[3]	/* vertical_samples[3] */,
     char *		/* q_table */,
     unsigned int	/* q_size */,
     char *		/* ac_table */,

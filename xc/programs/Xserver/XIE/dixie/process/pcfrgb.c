@@ -1,4 +1,4 @@
-/* $XConsortium: pcfrgb.c,v 1.1 93/10/26 10:02:00 rws Exp $ */
+/* $XConsortium: pcfrgb.c,v 1.2 93/10/31 09:40:23 dpw Exp $ */
 /**** module pcfrgb.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -69,7 +69,6 @@ terms and conditions:
    *  more X server includes.
    */
 #include <misc.h>
-#include <extnsionst.h>
 #include <dixstruct.h>
   /*
    *  Server XIE Includes
@@ -142,17 +141,17 @@ xieFlo        *pe;
   if( flo->reqClient->swapped ) {
     raw->elemType   = stuff->elemType;
     raw->elemLength = stuff->elemLength;
-    cpswaps(stuff->src,        raw->src);
-    cpswaps(stuff->colorspace, raw->colorspace);
-    cpswaps(stuff->lenParams,  raw->lenParams);
+    cpswaps(stuff->src,       raw->src);
+    cpswaps(stuff->convert,   raw->convert);
+    cpswaps(stuff->lenParams, raw->lenParams);
   } else
     memcpy((char *)raw, (char *)stuff, sizeof(xieFloConvertFromRGB));
   /*
    * copy technique data (if any)
    */
-  if(!(ped->techVec = FindTechnique(xieValConvertFromRGB, raw->colorspace)) ||
+  if(!(ped->techVec = FindTechnique(xieValConvertFromRGB,  raw->convert)) ||
      !(ped->techVec->copyfnc(flo, ped, &stuff[1], &raw[1], raw->lenParams)))
-    TechniqueError(flo,ped,xieValConvertFromRGB,raw->colorspace,raw->lenParams,
+    TechniqueError(flo,ped,xieValConvertFromRGB,raw->convert,raw->lenParams,
 		   return(ped));
 
  /*
@@ -184,20 +183,20 @@ CARD16	tsize;
 
    if( flo->reqClient->swapped ) {
 	swap_floats(&pvt->matrix[0], &sparms->matrix00, 9);
-	cpswaps(sparms->whiteAdjusted,  pvt->whiteAdjusted);
-	cpswaps(sparms->lenParams,  pvt->lenParams);
+	cpswaps(sparms->whiteAdjusted, pvt->whiteAdjusted);
+	cpswaps(sparms->lenParams,     pvt->lenWhiteParams);
    } else {
 	copy_floats(&pvt->matrix[0], &sparms->matrix00, 9);
-        pvt->whiteAdjusted = sparms->whiteAdjusted;
-        pvt->lenParams = sparms->lenParams;
+        pvt->whiteAdjusted  = sparms->whiteAdjusted;
+        pvt->lenWhiteParams = sparms->lenParams;
    }
 
    if(!(pvt->whiteTec = FindTechnique(xieValWhiteAdjust, pvt->whiteAdjusted)) ||
       !(pvt->whiteTec->copyfnc(flo, ped, &sparms[1], pvt->whitePoint, 
-					 pvt->whiteTec, pvt->lenParams,
+					 pvt->whiteTec, pvt->lenWhiteParams,
 			                 pvt->whiteAdjusted == xieValDefault)))
        TechniqueError(flo,ped,xieValWhiteAdjust,pvt->whiteAdjusted,
-		      pvt->lenParams, return(TRUE));
+		      pvt->lenWhiteParams, return(TRUE));
 
    return (TRUE);
 }
@@ -393,7 +392,7 @@ static Bool PrepPConvertFromRGB(flo,ped)
   */
 
   if (!(ped->techVec->prepfnc(flo, ped, raw, &raw[1])))
-	TechniqueError(flo,ped,xieValConvertFromRGB,raw->colorspace,
+	TechniqueError(flo,ped,xieValConvertFromRGB,raw->convert,
 		       raw->lenParams, return(FALSE));
 
   return (TRUE);
