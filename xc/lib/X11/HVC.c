@@ -1,4 +1,4 @@
-/* $XConsortium: TekHVC.c,v 1.9 92/06/11 12:09:55 converse Exp $ */
+/* $XConsortium: TekHVC.c,v 1.10 92/06/11 16:26:37 converse Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -581,6 +581,8 @@ _XcmsTekHVC_CheckModify(pColor)
  *
  */
 {
+    int n;
+
     /* For now only use the TekHVC numbers as inputs */
     if (pColor->format != XcmsTekHVCFormat) {
 	return(0);
@@ -596,11 +598,12 @@ _XcmsTekHVC_CheckModify(pColor)
 	pColor->spec.TekHVC.C = 0.0 - XMY_DBL_EPSILON;
     }
 
-    while (pColor->spec.TekHVC.H < 0.0) {
-	pColor->spec.TekHVC.H += 360.0;
-    }
-    while (pColor->spec.TekHVC.H >= 360.0) {
-	pColor->spec.TekHVC.H -= 360.0;
+    if (pColor->spec.TekHVC.H < 0.0) {
+	n = (359.0 - pColor->spec.TekHVC.H) / 360.0;
+	pColor->spec.TekHVC.H += n * 360.0;
+    } else if (pColor->spec.TekHVC.H >= 360.0) {
+	n = pColor->spec.TekHVC.H / 360.0;
+	pColor->spec.TekHVC.H -= n * 360.0;
     } 
     return(1);
 }
