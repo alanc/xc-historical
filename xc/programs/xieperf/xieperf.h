@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.h,v 1.2 93/07/19 14:42:24 rws Exp $ */
+/* $XConsortium: xieperf.h,v 1.4 93/07/26 14:40:49 rws Exp $ */
 
 /**** module xieperf.h ****/
 /******************************************************************************
@@ -63,7 +63,11 @@ terms and conditions:
 #endif
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <malloc.h>
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+char *malloc();
+#endif
 #include <fcntl.h>
 
 #define WIDTH         600	/* Size of large window to work within  */
