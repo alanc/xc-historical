@@ -13,9 +13,11 @@
 
 #ifdef MipsArchitecture
 #define BuildServer NO		/* for now, do not build PMAX server */
+/* increase some compiler tables to avoid overflow (bleah, static tables) */
+#define StandardDefines		-Wf,-XNh2000
 #endif
 
-/**/# platform:  $XConsortium: ultrix.cf,v 1.2 89/02/09 13:00:23 jim Exp $
+/**/# platform:  $XConsortium: ultrix.cf,v 1.3 89/02/24 13:34:28 jim Exp $
 /**/# operating system:  OSName
 
 /*****************************************************************************
