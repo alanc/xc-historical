@@ -1,7 +1,7 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.17 93/08/25 10:04:12 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.18 94/04/17 20:10:03 rws Exp $
 XCOMM 
-$XCCOPY
+XCOMM
 XCOMM Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. 
 XCOMM 
 XCOMM			 All Rights Reserved
