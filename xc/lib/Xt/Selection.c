@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.61 91/02/03 18:21:32 converse Exp $ */
+/* $XConsortium: Selection.c,v 1.62 91/05/01 12:06:52 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -696,9 +696,8 @@ XtPointer closure;
 Boolean incremental;
 {
     Select ctx;
-    SelectRec oldctx;
+    Select oldctx = NULL;
     Window window;
-    Boolean old_context = FALSE;
 
     if (!XtIsRealized(widget)) return False;
 
@@ -732,8 +731,7 @@ Boolean incremental;
 		    replacement = TRUE;
 		}
 		else if (!ctx->was_disowned) {
-		    oldctx = *ctx;
-		    old_context = TRUE;
+		    oldctx = ctx;
 		}
 		ctx->free_when_done = TRUE;
 		ctx = NewContext(XtDisplay(widget), selection);
@@ -744,15 +742,15 @@ Boolean incremental;
 	    }
 	}
     	if (ctx->widget != widget || ctx->was_disowned || replacement) {
+	    if (ctx->widget && !ctx->was_disowned && !replacement) {
+		oldctx = ctx;
+		oldctx->free_when_done = TRUE;
+		ctx = NewContext(XtDisplay(widget), selection);
+	    }
 	    XtAddEventHandler(widget, (EventMask)0, TRUE,
 			      HandleSelectionEvents, (XtPointer)ctx);
 	    XtAddCallback(widget, XtNdestroyCallback,
 			  WidgetDestroyed, (XtPointer)ctx);
-	    if (ctx->widget && !ctx->was_disowned && !replacement && 
-		!old_context) {
-		oldctx = *ctx;
-		old_context = TRUE;
-	    }
 	}
 	ctx->widget = widget;	/* Selection offically changes hands. */
 	ctx->time = time;
@@ -765,8 +763,15 @@ Boolean incremental;
     ctx->owner_closure = closure;
     ctx->was_disowned = FALSE;
 
-    if (old_context)
-	(void) LoseSelection(&oldctx, oldctx.widget, selection, oldctx.time);
+    /* Defer calling the previous selection owner's lose selection procedure
+     * until the new selection is established, to allow the previous 
+     * selection owner to ask for the new selection to be converted in 
+     * the lose selection procedure.  The context pointer is the closure
+     * of the event handler and the destroy callback, so the old context
+     * pointer and the record contents must be preserved for LoseSelection.
+     */
+    if (oldctx)
+	(void) LoseSelection(oldctx, oldctx->widget, selection, oldctx->time);
 
     return TRUE;
 }
