@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: globals.c,v 1.47 89/12/07 20:33:48 keith Exp $ */
+/* $XConsortium: globals.c,v 1.48 91/05/14 12:05:02 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -44,13 +44,13 @@ KeybdCtrl defaultKeyboardControl = {
 	DEFAULT_AUTOREPEAT,
 	DEFAULT_AUTOREPEATS,
 	DEFAULT_LEDS,
-	DEFAULT_KBD_ID};
+	0};
 
 PtrCtrl defaultPointerControl = {
 	DEFAULT_PTR_NUMERATOR,
 	DEFAULT_PTR_DENOMINATOR,
 	DEFAULT_PTR_THRESHOLD
-	DEFAULT_PTR_ID};
+	0};
 
 ClientPtr *clients;
 ClientPtr  serverClient;
