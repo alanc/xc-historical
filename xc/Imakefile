@@ -88,14 +88,14 @@ World::
 	@echo ""
 	@date
 	@echo ""
-	cd $(IMAKESRC); $(MAKE) -f Makefile.ini clean; $(MAKE) -f Makefile.ini BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)"
+	cd $(IMAKESRC); $(MAKE) $(MFLAGS) -f Makefile.ini clean; $(MAKE) $(MFLAGS) -f Makefile.ini BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)"
 	-$(RM) Makefile.bak; $(MV) Makefile Makefile.bak
-	$(MAKE) -f Makefile.bak Makefile
-	$(MAKE) Makefiles
-	$(MAKE) clean
-	$(MAKE) includes
-	$(MAKE) depend
-	$(MAKE) $(WORLDOPTS)
+	$(MAKE) $(MFLAGS) -f Makefile.bak Makefile
+	$(MAKE) $(MFLAGS) Makefiles
+	$(MAKE) $(MFLAGS) clean
+	$(MAKE) $(MFLAGS) includes
+	$(MAKE) $(MFLAGS) depend
+	$(MAKE) $(MFLAGS) $(WORLDOPTS)
 	@echo ""
 	@date
 	@echo ""
@@ -108,13 +108,13 @@ Everything::
 	@echo ""
 	@date
 	@echo ""
-	cd $(IMAKESRC); $(MAKE) -f Makefile.ini BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)"
+	cd $(IMAKESRC); $(MAKE) $(MFLAGS) -f Makefile.ini BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)"
 	-$(RM) Makefile.bak; $(MV) Makefile Makefile.bak
-	$(MAKE) -f Makefile.bak Makefile
-	$(MAKE) Makefiles
-	$(MAKE) includes
-	$(MAKE) depend
-	$(MAKE) $(WORLDOPTS)
+	$(MAKE) $(MFLAGS) -f Makefile.bak Makefile
+	$(MAKE) $(MFLAGS) Makefiles
+	$(MAKE) $(MFLAGS) includes
+	$(MAKE) $(MFLAGS) depend
+	$(MAKE) $(MFLAGS) $(WORLDOPTS)
 	@echo ""
 	@date
 	@echo ""
@@ -166,7 +166,7 @@ flushlinks::
 
 XCOMM rebuild the top-level Makefile
 mastermakefile::
-	cd $(IMAKESRC); $(MAKE) -f Makefile.ini clean; $(MAKE) -f Makefile.ini BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)"
+	cd $(IMAKESRC); $(MAKE) $(MFLAGS) -f Makefile.ini clean; $(MAKE) $(MFLAGS) -f Makefile.ini BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)"
 	-$(RM) Makefile.bak; $(MV) Makefile Makefile.bak
-	$(MAKE) -f Makefile.bak Makefile
-	cd $(IMAKESRC); $(MAKE) clean
+	$(MAKE) $(MFLAGS) -f Makefile.bak Makefile
+	cd $(IMAKESRC); $(MAKE) $(MFLAGS) clean
