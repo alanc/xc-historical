@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.166 91/05/29 18:06:43 gildea Exp $
+ * $XConsortium: charproc.c,v 1.167 91/05/31 19:47:18 gildea Exp $
  */
 
 /*
@@ -2028,9 +2028,9 @@ VTRun()
 
 /*ARGSUSED*/
 static void VTExpose(w, event, region)
-Widget w;
-XEvent *event;
-Region region;
+    Widget w;
+    XEvent *event;
+    Region region;
 {
 	register TScreen *screen = &term->screen;
 
@@ -2039,12 +2039,12 @@ Region region;
 		fputs("Expose\n", stderr);
 #endif	/* DEBUG */
 	if (event->type == Expose)
-		HandleExposure (screen, (XExposeEvent *)event);
+		HandleExposure (screen, event);
 }
 
 static void VTGraphicsOrNoExpose (event)
-XEvent *event;
-    {
+    XEvent *event;
+{
 	register TScreen *screen = &term->screen;
 	if (screen->incopy <= 0) {
 		screen->incopy = 1;
@@ -2052,7 +2052,7 @@ XEvent *event;
 			screen->scrolls--;
 	}
 	if (event->type == GraphicsExpose)
-	  if (HandleExposure (screen, (XExposeEvent *)event))
+	  if (HandleExposure (screen, event))
 		screen->cursor_state = OFF;
 	if ((event->type == NoExpose) || ((XGraphicsExposeEvent *)event)->count == 0) {
 		if (screen->incopy <= 0 && screen->scrolls > 0)
