@@ -3,14 +3,14 @@ COMMENT  (c) Copyright Bigelow & Holmes 1986, 1985. Lucida is a registered
 COMMENT  trademark of Bigelow & Holmes. See LEGAL NOTICE file for terms 
 COMMENT  of the license. 
 FONT -B&H-LucidaTypewriter-Medium-R-Normal-Sans-17-120-100-100-M-100-ISO8859-1
-SIZE 17 100 100
+SIZE 12 100 100
 FONTBOUNDINGBOX 13 18 -1 -3
 STARTPROPERTIES 19
 COMMENT Begin LogicalFontDescription
 FONTNAME_REGISTRY ""
 FOUNDRY "B&H"
 FAMILY_NAME "LucidaTypewriter"
-NAME "Medium"
+WEIGHT_NAME "Medium"
 SLANT "R"
 SETWIDTH_NAME "Normal"
 ADD_STYLE_NAME "Sans"

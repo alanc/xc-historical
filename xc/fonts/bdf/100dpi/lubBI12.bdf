@@ -3,14 +3,14 @@ COMMENT  (c) Copyright Bigelow & Holmes 1986, 1985. Lucida is a registered
 COMMENT  trademark of Bigelow & Holmes. See LEGAL NOTICE file for terms 
 COMMENT  of the license. 
 FONT -B&H-LucidaBright-DemiBold-I-Normal--17-120-100-100-P-101-ISO8859-1
-SIZE 17 100 100
+SIZE 12 100 100
 FONTBOUNDINGBOX 31 21 -11 -4
 STARTPROPERTIES 19
 COMMENT Begin LogicalFontDescription
 FONTNAME_REGISTRY ""
 FOUNDRY "B&H"
 FAMILY_NAME "LucidaBright"
-NAME "DemiBold"
+WEIGHT_NAME "DemiBold"
 SLANT "I"
 SETWIDTH_NAME "Normal"
 ADD_STYLE_NAME ""
