@@ -1,4 +1,4 @@
-/* $XConsortium: manager.c,v 1.1 93/09/03 13:25:12 mor Exp $ */
+/* $XConsortium: sm_manager.c,v 1.2 93/09/08 20:19:08 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -240,6 +240,8 @@ SmsConn smsConn;
 
     if (i < _SmsConnectionCount)
     {
+	IceDoneWithProtocol (smsConn->iceConn, _SmsOpcode);
+
 	if (i < _SmsConnectionCount - 1)
 	{
 	    _SmsConnectionObjs[i] =
