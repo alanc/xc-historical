@@ -1,4 +1,4 @@
-/* $XConsortium: XKBlib.h,v 1.6 94/04/01 18:44:17 erik Exp $ */
+/* $XConsortium: XKBlib.h,v 1.7 94/04/08 02:57:42 erik Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -417,13 +417,6 @@ extern	Status XkbInitCanonicalKeyTypes(
     XkbDescPtr			/* xkb */,
     unsigned			/* which */,
     int				/* keypadVMod */
-#endif
-);
-
-extern	Status XkbAllocKeyType(
-#if NeedFunctionPrototypes
-	XkbKeyTypePtr *		/* type_inout */,
-	unsigned		/* nVMapEntries */
 #endif
 );
 

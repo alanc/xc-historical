@@ -35,49 +35,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 /***====================================================================***/
 
 Status
-XkbAllocKeyType(type_inout,nMapEntries)
-    XkbKeyTypePtr *	type_inout;
-    unsigned		nMapEntries;
-{
-XkbKeyTypePtr	type;
-
-    type= *type_inout;
-    if (type==NULL) {
-	type= (XkbKeyTypePtr)Xcalloc(1,sizeof(XkbKeyTypeRec));
-	if (type==NULL)
-	    return False;
-	*type_inout= type;
-	type->free&= ~XkbNoFreeKTStruct;
-    }
-    if (nMapEntries>0) {
-	XkbKTMapEntryPtr oldMap;
-	oldMap= type->map;
-	if ((type->map==NULL)||(type->free&XkbNoFreeKTMap)) {
-	    register int size;
-	    size= type->map_count+nMapEntries;
-	    type->map= (XkbKTMapEntryPtr)
-				Xcalloc(size,sizeof(XkbKTMapEntryRec));
-	    if (type->map==NULL)
-		return False;
-	    if (oldMap)
-		memcpy(type->map,oldMap,
-				type->map_count*sizeof(XkbKTMapEntryRec));
-	    type->free&= ~XkbNoFreeKTMap;
-	}
-	else if (type->map_count<nMapEntries) {
-	    type->map= (XkbKTMapEntryPtr)Xrealloc(type->map,
-					 nMapEntries*sizeof(XkbKTMapEntryRec));
-	    if (type->map==NULL)
-		return False;
-	    type->free&= ~XkbNoFreeKTMap;
-	    bzero(&type->map[type->map_count],
-		 (nMapEntries-type->map_count)*sizeof(XkbKTMapEntryRec));
-	}
-    }
-    return True;
-}
-
-Status
 XkbAllocClientMap(xkb,which,nTypes)
     XkbDescPtr		xkb;
     unsigned		which;
