@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.80 91/12/09 18:58:03 rws Exp $ */
+/* $XConsortium: window.c,v 5.81 92/01/09 19:32:06 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -558,7 +558,7 @@ MakeRootTile(pWin)
     ScreenPtr pScreen = pWin->drawable.pScreen;
     GCPtr pGC;
     unsigned char back[128];
-    int len = PixmapBytePad(4, 1);
+    int len = BitmapBytePad(4);
     register unsigned char *from, *to;
     register int i, j;
 
@@ -4117,8 +4117,8 @@ TileScreenSaver(i, kind)
     cm.height=16;
     cm.xhot=8;
     cm.yhot=8;
-    srcbits = (unsigned char *)xalloc( PixmapBytePad(32, 1)*16);
-    mskbits = (unsigned char *)xalloc( PixmapBytePad(32, 1)*16);
+    srcbits = (unsigned char *)xalloc( BitmapBytePad(32)*16);
+    mskbits = (unsigned char *)xalloc( BitmapBytePad(32)*16);
     if (!srcbits || !mskbits)
     {
 	xfree(srcbits);
@@ -4127,7 +4127,7 @@ TileScreenSaver(i, kind)
     }
     else
     {
-	for (j=0; j<PixmapBytePad(32, 1)*16; j++)
+	for (j=0; j<BitmapBytePad(32)*16; j++)
 	    srcbits[j] = mskbits[j] = 0x0;
 	cursor = AllocCursor(srcbits, mskbits, &cm, 0, 0, 0, 0, 0, 0);
 	if (cursor)
