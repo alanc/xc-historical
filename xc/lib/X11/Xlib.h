@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.158 89/06/15 11:52:28 jim Exp $ */
+/* $XConsortium: Xlib.h,v 11.159 89/07/18 11:06:06 jim Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -1108,6 +1108,7 @@ long XEventMaskOfScreen();
 int XScreenNumberOfScreen();
 int (*XSetErrorHandler())(), (*XSetIOErrorHandler())();
 XPixmapFormatValues *XListPixmapFormats();
+Bool XListDepths();
 
 /* ICCCM routines for things that don't require special include files; */
 /* other declarations are given in Xutil.h                             */
