@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.7 91/07/27 02:29:05 keith Exp $ */
+/* $XConsortium: dispatch.c,v 1.8 92/01/31 17:40:44 eswu Exp $ */
 /*
  * protocol dispatcher
  */
@@ -660,8 +660,9 @@ ProcGetResolution(client)
     WriteReplyToClient(client, sizeof(fsGetResolutionReply), &reply);
     if (client->swapped)
 	client->pSwapReplyFunc = CopySwap16Write;
-    WriteSwappedDataToClient(client, client->resolutions,
-			   (client->num_resolutions * sizeof(fsResolution)));
+
+    WriteSwappedDataToClient(client,
+       (client->num_resolutions * sizeof(fsResolution)), client->resolutions);
 
     return client->noClientException;
 }
