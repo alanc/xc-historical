@@ -56,7 +56,7 @@ leftMargin	leftMargin	Dimension		4
 rightBitmap	RightBitmap	Pixmap		XtUnspecifiedPixmap
 rightMargin	rightMargin	Dimension		4
 sensitive	Sensitive	Boolean		True
-vertSpace	VertSpace	Int		25
+vertSpace	VertSpace	int		25
 width	Width	Dimension	A	TextWidth + margins
 .sp 3p
 _

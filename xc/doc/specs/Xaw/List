@@ -52,7 +52,7 @@ callback	Callback	Callback		NULL
 colormap	Colormap	Pointer		Parent's Colormap
 columnSpacing	Spacing	Dimension		6
 cursor	Cursor	Cursor		None
-defaultColumns	Columns	Int		2
+defaultColumns	Columns	int		2
 depth	Depth	int	C	Parent's Depth
 destroyCallback	Callback	XtCallbackList		NULL
 font	Font	FontStruct		XtDefaultFont
@@ -63,9 +63,9 @@ insensitiveBorder	Insensitive	Pixmap		GreyPixmap
 internalHeight	Height	Dimension		2
 internalWidth	Width	Dimension		4
 list	List	Pointer		name of widget
-longest	Longest	Int	A	computed at runtime
+longest	Longest	int	A	computed at runtime
 mappedWhenManaged	MappedWhenManaged	Boolean		True
-numberStrings	NumberStrings	Int	A	computed for NULL terminated list
+numberStrings	NumberStrings	int	A	computed for NULL terminated list
 pasteBuffer	Boolean	Boolean		False
 rowSpacing	Spacing	Dimension		2
 verticalList	Boolean	Boolean		False

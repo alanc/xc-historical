@@ -70,8 +70,8 @@ callback	Callback	Callback		NULL
 dataCompression	DataCompression	Boolean		True
 destroyCallback	Callback	Callback		NULL
 editType	EditType	EditMode		XawtextRead
-length	Length	Int	A	length of \fBstring\fP
-pieceSize	PieceSize	Int		BUFSIZ
+length	Length	int	A	length of \fBstring\fP
+pieceSize	PieceSize	int		BUFSIZ
 string	String	String		NULL
 type	Type	AsciiType		XawAsciiString
 useStringInPlace	UseStringInPlace	Boolean		False

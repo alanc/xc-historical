@@ -60,7 +60,7 @@ borderPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
 borderWidth	BorderWidth	Dimension		1
 children	ReadOnly	WidgetList	R	NULL
 colormap	Colormap	Pointer		Parent's Colormap
-defaultDistance	Thickness	Int		4
+defaultDistance	Thickness	int		4
 depth	Depth	int	C	Parent's Depth
 destroyCallback	Callback	XtCallbackList		NULL
 height	Height	Dimension	A	Enough space to contain all children
