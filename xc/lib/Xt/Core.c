@@ -1,4 +1,4 @@
-/* $XConsortium: Core.c,v 1.50 91/02/17 14:02:31 converse Exp $ */
+/* $XConsortium: Core.c,v 1.51 91/05/09 18:44:54 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -232,7 +232,8 @@ static void CoreInitialize(requested_widget, new_widget, args, num_args)
     if (save1)
 	_XtMergeTranslations(new_widget, save1, save1->operation);
     if (!save1 || save2)
-	_XtMergeTranslations(new_widget, save2, save2->operation);
+	_XtMergeTranslations(new_widget, save2, 
+			     ((save2) ? save2->operation : XtTableReplace));
 }
 
 static void CoreRealize(widget, value_mask, attributes)
