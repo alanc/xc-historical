@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miQuadMesh.c,v 5.1 91/02/16 09:55:41 rws Exp $ */
 
 
 /***********************************************************
@@ -117,8 +117,8 @@ miQuadMesh(pRend, pExecuteOC)
 
   ddTri = (miTriangleStripStruct *) (pGStr + 1);
 
-  num_cols = (ddQuad->mPts - 1);
-  num_rows = (ddQuad->nPts - 1);
+  num_cols = (ddQuad->nPts - 1);
+  num_rows = (ddQuad->mPts - 1);
 
   /* At this point, we need to check if the edges are visible or not. */
   /* If they are we need to explicitly add them. This is part of the  */
