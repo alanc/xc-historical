@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.110 94/03/29 15:32:12 kaleb Exp $
+XCOMM site:  $XConsortium: site.def,v 1.111 94/03/29 16:21:29 gildea Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -62,7 +62,11 @@ XCOMM site:  $XConsortium: site.def,v 1.110 94/03/29 15:32:12 kaleb Exp $
 
 #ifdef AfterVendorCF
 
+#ifdef CrayArchitecture
+#define ProjectRoot /hot/u2/n4920
+#else
 #define ProjectRoot /X11
+#endif
 
 #ifndef BuildXKBlib
 #define BuildXKBlib	YES
@@ -151,11 +155,8 @@ clean::									@@\
 #endif
 
 #ifdef BSD386Architecture
-#undef BuildServer
-#define BuildServer YES
 #define XnestServer YES
 #define XVirtualFramebufferServer YES
-#define ServerExtraDefines -DSYSV386
 #endif
 
 #ifdef SVR4Architecture
