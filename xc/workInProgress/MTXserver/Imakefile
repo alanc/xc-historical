@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.168 93/12/13 17:34:34 dpw Exp $
+XCOMM $XConsortium: Imakefile,v 2.1 94/01/11 18:28:26 gildea Exp $
 /*
  * Merged X Server Master Makefile
  */
@@ -6,20 +6,22 @@ XCOMM $XConsortium: Imakefile,v 1.168 93/12/13 17:34:34 dpw Exp $
 #include <Server.tmpl>
 
 #define StdLibs $(DIX) $(OS) $(FONT) $(MI) $(EXTENSIONS)
-#define MFBBareLibs $(DIX) $(OS) $(FONT) $(MFB) $(MI)
+#define MFBBareLibs $(DIX) $(OS) $(FONT) $(MFB) $(MI) $(MTSERVERLIBS)
 #define MFBLibs MFBBareLibs $(EXTENSIONS)
-#define CFBBareLibs $(DIX) $(OS) $(FONT) $(CFB) $(MFB) $(MI)
+#define CFBBareLibs $(DIX) $(OS) $(FONT) $(CFB) $(MFB) $(MI) $(MTSERVERLIBS)
 #define CFBLibs CFBBareLibs $(EXTENSIONS)
-#define CFB8BareLibs $(DIX) $(OS) $(FONT) $(CFB8) $(MFB) $(MI)
+#define CFB8BareLibs $(DIX) $(OS) $(FONT) $(CFB8) $(MFB) $(MI) $(MTSERVERLIBS)
 #define CFB8Libs CFB8BareLibs $(EXTENSIONS)
-#define CFB16BareLibs $(DIX) $(OS) $(FONT) $(CFB16) $(MFB) $(MI)
+#define CFB16BareLibs $(DIX) $(OS) $(FONT) $(CFB16) $(MFB) $(MI) $(MTSERVERLIBS)
 #define CFB16Libs CFB16BareLibs $(EXTENSIONS)
-#define CFB32BareLibs $(DIX) $(OS) $(FONT) $(CFB32) $(MFB) $(MI)
+#define CFB32BareLibs $(DIX) $(OS) $(FONT) $(CFB32) $(MFB) $(MI) $(MTSERVERLIBS)
 #define CFB32Libs CFB32BareLibs $(EXTENSIONS)
 
 #if XServerThreaded
    THREADS_LIBS = ThreadsLibraries
 THREADS_LDFLAGS = ThreadsLoadFlags
+   MTSERVERLIBS = pcthreads/libpcthreads.a
+   MTSERVERDIRS = pcthreads
 #endif
 
 #if BuildPexExt
@@ -65,7 +67,7 @@ THREADS_LDFLAGS = ThreadsLoadFlags
 #endif
         SYSLIBS = MathLibrary Krb5Libraries $(THREADS_LIBS) $(DBM_LIBRARY)
            CBRT = mi/cbrt.o
-        STDDIRS = dix os mi $(EXTDIRS)
+        STDDIRS = dix os mi $(EXTDIRS) $(MTSERVERDIRS)
 
 XCOMM
 XCOMM This turns off the default rule for compiling .c files because
