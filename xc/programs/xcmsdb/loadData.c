@@ -1,4 +1,4 @@
-/* $XConsortium: loadData.c,v 1.3 91/02/17 14:48:54 dave Exp $ */
+/* $XConsortium: loadData.c,v 1.5 91/05/14 15:00:33 dave Exp $ */
 
 /*
  * (c) Copyright 1990 Tektronix Inc.
@@ -53,10 +53,20 @@
  *		files (external includes or internal includes).
  */
 
+#ifdef X_NOT_STDC_ENV
 extern char *strtok();
 extern char *strchr();
-extern char *calloc();	/* use calloc since it initializes bytes to zero */
-extern int LINEAR_RGB_FreeSCCData();
+#endif
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+char *calloc();
+#endif
+#if defined(macII) && !defined(__STDC__)  /* stdlib.h fails to define these */
+char *calloc();
+#endif /* macII */
+
+/* extern int LINEAR_RGB_FreeSCCData(); /* /* XXX Xlib internal */
 
 /*
  *      LOCAL TYPEDEFS
@@ -279,7 +289,7 @@ closeS(stream, pScreenData)
     if (stream) {
         fclose (stream);
     }
-    (void) LINEAR_RGB_FreeSCCData(pScreenData);
+    /* (void) LINEAR_RGB_FreeSCCData(pScreenData); */ /* Xlib internal */
 }
 
 /*
