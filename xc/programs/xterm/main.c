@@ -1,5 +1,5 @@
 /*
- *	$Header: main.c,v 1.2 88/02/08 20:36:03 newman Locked $
+ *	$Header: main.c,v 1.1 88/02/10 13:08:07 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* main.c */
 
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.2 88/02/08 20:36:03 newman Locked $";
+static char rcs_id[] = "$Header: main.c,v 1.1 88/02/10 13:08:07 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xos.h>
@@ -822,7 +822,16 @@ get_terminal ()
 		term->core.background_pixel,
 		DefaultDepth(screen->display, DefaultScreen(screen->display)));
 
-	screen->arrow = make_arrow(screen->mousecolor, term->core.background_pixel);
+
+	{
+	    unsigned long fg, bg;
+
+	    fg = screen->mousecolor;
+	    bg = (screen->mousecolor == term->core.background_pixel) ?
+		screen->foreground : term->core.background_pixel;
+
+	    screen->arrow = make_arrow (fg, bg);
+	}
 
 	XAutoRepeatOn(screen->display);
 
@@ -1286,8 +1295,7 @@ spawn ()
 		 (int)VWindow(screen));
 		Setenv ("WINDOWID=", buf);
 		/* put the display into the environment of the shell*/
-		if (display[0] != '\0') 
-			Setenv ("DISPLAY=", XDisplayName(display));
+		Setenv ("DISPLAY=", XDisplayName(display));
 
 		signal(SIGTERM, SIG_DFL);
 #if !defined(SYSV) || defined(JOBCONTROL)
