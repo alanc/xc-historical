@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* Copyright 1985, 1986, Massachusetts Institute of Technology */
+/* Copyright 1987 Massachusetts Institute of Technology */
 
 /*
  * xwd.c MIT Project Athena, X Window system window raster image dumper.
@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$Header: xwd.c,v 1.11 87/06/13 10:55:15 dkk Locked $";
+static char *rcsid_xwd_c = "$Header: xwd.c,v 1.12 87/06/16 00:50:43 chariot Locked $";
 #endif
 
 /*%
@@ -45,21 +45,15 @@ static char *rcsid_xwd_c = "$Header: xwd.c,v 1.11 87/06/13 10:55:15 dkk Locked $
  *%  color can be supported.
 %*/
 
-#include <X11/X.h>
 #include <X11/Xlib.h>
+#include <X11/Xutil.h>
 #include <sys/types.h>
 #include <stdio.h>
 #include <strings.h>
-#include <fonts/cursorfont.h>
 
 char *calloc();
 
 #include "XWDFile.h"
-
-#define MAX(a, b) (a) > (b) ? (a) : (b)
-#define MIN(a, b) (a) < (b) ? (a) : (b)
-
-#define ABS(a) (a) < 0 ? -(a) : (a)
 
 #define UBPS (sizeof(short)/2) /* useful bytes per short */
 #define BitmapSize(width, height) (((((width) + 15) >> 3) &~ 1) * (height) * UBPS)
@@ -78,6 +72,9 @@ char *calloc();
 
 extern int errno;
 
+/* Include routines to do parsing */
+#include "jdisplay.h"
+
 main(argc, argv)
     int argc;
     char **argv;
@@ -88,83 +85,62 @@ main(argc, argv)
     
     unsigned buffer_size;
     unsigned int virt_width, virt_height;
-    unsigned int shape;
     int virt_x, virt_y;
     int win_name_size;
     int header_size;
 /*%    int ncolors = 0;   %*/
-    int pointer_mode, keyboard_mode;
-    int screen;
     int depth;
     int format;
     int offset;
     long plane_mask;
-    char *str_index;
     char *file_name;
-    char display[256];
     char win_name[32];
-    char *data;
     Bool nobdrs = False;
     Bool debug = False;
     Bool standard_out = True;
-    Bool owner_events = True;
 
-    Pixmap source;
-    Pixmap mask;
 /*%
     XColor *scolor;
     XColor *bcolor;
     XColor *pixcolors;
 %*/
-    Display *dpy;
     Window target_win;
-    Window confine_to;
     Window rootwin;
     XWindowAttributes win_info;
-    Visual *visual;
-    Drawable image_win;
     XImage *image;
-    Cursor cursor;
-    XButtonPressedEvent rep;
 
     XWDFileHeader header;
 
     FILE *out_file = stdout;
 
-    pointer_mode = keyboard_mode = GrabModeAsync;
-
 /*%    *bcolor = *scolor = DONT_KNOW_YET    %*/
 
+    INIT_NAME;
+
+    Setup_Display_And_Screen(&argc, argv);
+
     for (i = 1; i < argc; i++) {
-	str_index = (char *)index (argv[i], ':');
-	if(str_index != (char *)NULL) {
-	    (void) strncpy(display,argv[i],sizeof(display));
-	    continue;
-        }
-	str_index = (char *) index (argv [i], '-');
-	if (str_index == (char *)NULL) Syntax(argv[0]);
-	if (strncmp(argv[i], "-nobdrs", 6) == 0) {
+	if (!strcmp(argv[i], "-nobdrs")) {
 	    nobdrs = True;
 	    continue;
 	}
-	if (strncmp(argv[i], "-debug", 6) == 0) {
+	if (!strcmp(argv[i], "-debug")) {
 	    debug = True;
 	    continue;
 	}
-	if (strncmp(argv[i], "-help", 5) == 0) {
-	    Syntax(argv[0]);
-	}
-	if (strncmp(argv[i], "-out", 4) == 0) {
-	    if (++i >= argc) Syntax(argv[0]);
+	if (!strcmp(argv[i], "-help"))
+	  usage();
+	if (!strcmp(argv[i], "-out")) {
+	    if (++i >= argc) usage();
 	    file_name = argv[i];
 	    standard_out = False;
 	    continue;
 	}
-	if(strncmp(argv[i], "-xy", 3) == 0) {
+	if (!strcmp(argv[i], "-xy")) {
 	    format = XYPixmap;
 	    continue;
 	}
-	Syntax(argv[0]);
+	usage();
     }
     
     if (!standard_out) {
@@ -175,28 +151,7 @@ main(argc, argv)
 	  Error("Can't open output file as specified.");
     }
 
-    /*
-     * Open the display.
-     */
-    if ((dpy = XOpenDisplay(display)) == NULL) {
-        fprintf(stderr, "%s: Can't open display '%s'\n",
-		argv[0], XDisplayName(display));
-	exit(1);
-      }
-
-    screen = DefaultScreen(dpy);
     rootwin = RootWindow(dpy, screen);
-
-    /*
-     * Store the cursor incase we need it.
-     */
-    shape = XC_center_ptr;  /* Comes from fonts/cursorfont.h */
-    source = BlackPixel(dpy, screen);
-    mask = WhitePixel(dpy, screen);
-    if (debug) fprintf(stderr,"xwd: Storing target cursor.\n");
-    if(!(cursor = XCreateFontCursor(dpy, shape)))
-
-	Error("Error occured while trying to store target cursor.\n");
 
     /*
      * Set the right pixmap format for the display type.
@@ -211,30 +166,12 @@ main(argc, argv)
     /*
      * Let the user select the target window.
      */
-    confine_to = rootwin;
-
-    if(XGrabPointer(dpy, rootwin, owner_events, ButtonPress,
-		    pointer_mode, keyboard_mode, confine_to, cursor,
-		    CurrentTime) != GrabSuccess)
-      Error("Can't grab the mouse.\n");
-    XNextEvent(dpy, &rep);
-    XUngrabPointer(dpy, CurrentTime);
-    target_win = rep.subwindow;
-    if (target_win == 0) {
-	/*
-	 * The user must have indicated the root window.
-	 */
-	if (debug) fprintf(stderr,"xwd: Root window selected as target.\n");
-	target_win = rootwin;
-    }
-    else if (debug) 
-     fprintf(stderr,
-	     "xwd: Window 0x%x slected as target.\n", target_win);
+    target_win = Select_Window(dpy);
 
     /*
      * Inform the user not to alter the screen.
      */
-    XBell(dpy, 50);
+    Beep();
 
     /*
      * Get the parameters of the window being dumped.
@@ -242,11 +179,11 @@ main(argc, argv)
     if (debug) fprintf(stderr,"xwd: Getting target window information.\n");
 
     if(XGetWindowAttributes(dpy, target_win, &win_info) == FAILURE) 
-     Error("Can't query target window.\n");
+      Fatal_Error("Can't query target window.\n");
 
-    if(XFetchName(dpy, target_win, win_name) == FAILURE) {
-      (void) strncpy(win_name, "xwdump", sizeof (win_name));
-    }
+    XFetchName(dpy, target_win, win_name);
+    if (!win_name[0])
+      strcpy(win_name, "xwdump");
 
     /*
      * sizeof(char) is included for the null string terminator.
@@ -259,7 +196,6 @@ main(argc, argv)
      */
     if (nobdrs) {
 	if (debug) fprintf(stderr,"xwd: Image without borders selected.\n");
-	image_win = target_win;
 	virt_x = 0;
 	virt_y = 0;
 	virt_width = win_info.width;
@@ -267,7 +203,6 @@ main(argc, argv)
     }
     else {
 	if (debug) fprintf(stderr,"xwd: Image with borders selected.\n");
-	image_win = target_win;
 	virt_x = win_info.x;
 	virt_y = win_info.y;
 	virt_width = win_info.width + (win_info.border_width << 1);
@@ -277,9 +212,8 @@ main(argc, argv)
     /*
      * Determine the pixmap size.
      */
-    if (format == XYBitmap) {
+    if (format == XYBitmap)
       buffer_size = BitmapSize(virt_width, virt_height);
-    }
 
 /*%
     else if (format == XYPixmap) {
@@ -311,14 +245,13 @@ main(argc, argv)
      * Color windows get snarfed in Z format first to check the color
      * map allocations before resnarfing if XY format selected.
      */
-
     plane_mask = 1;
 
 /*    XGetImage() calls XCreateImage() internally, and this, in turn
  *  does the memory allocation so we don't have to.
  */
 
-    image = XGetImage ( dpy, image_win, 0, 0, virt_width,
+    image = XGetImage ( dpy, target_win, 0, 0, virt_width,
 		       virt_height, plane_mask, format);
 
     if (debug) fprintf(stderr,"xwd: Getting pixmap.\n");
@@ -388,7 +321,7 @@ if(DisplayPlanes(dpy, screen) > 16)
 	/* reread in XY format if necessary */
 /*%
 	if(format == XYPixmap) {
-	    image = XGetImage(dpy, image_win, 0, 0, virt_width,
+	    image = XGetImage(dpy, target_win, 0, 0, virt_width,
 	                      virt_height, plane_mask, format);
 %*/
 
@@ -481,20 +414,17 @@ if(DisplayPlanes(dpy, screen) > 16)
      */
     if (debug) fprintf(stderr,"xwd: Freeing window name string.\n");
     free(win_name);
-    exit(0);
-
 }
 
 /*
  * Report the syntax for calling xwd.
  */
-Syntax(call)
-    char *call;
+usage()
 {
     fprintf(
 	stderr,
-	"xwd: %s [-debug] [-help] [-nobdrs] [-out <file>]\n",
-    	call
+	"%s: %s [-debug] [-help] [-nobdrs] [-out <file>]\n",
+	    program_name
     );
     fprintf(stderr, "                [-xy] [[host]:vs]\n");
     exit(1);
@@ -507,7 +437,7 @@ Syntax(call)
 Error(string)
 	char *string;	/* Error description string. */
 {
-	fprintf(stderr, "\nxwd: Error => %s", string);
+	fprintf(stderr, "\nxwd: Error => %s\n", string);
 	if (errno != 0) {
 		perror("xwd");
 		fprintf(stderr, "\n");
