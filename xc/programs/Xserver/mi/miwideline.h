@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.h,v 1.5 89/11/21 19:04:44 keith Exp $
+ * $XConsortium: miwideline.h,v 1.6 90/05/15 18:37:02 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -25,6 +25,8 @@
 typedef struct _SpanData {
     SpanGroup	fgGroup, bgGroup;
 } SpanDataRec, *SpanDataPtr;
+
+extern SpanDataPtr  miSetupSpanData ();
 
 /*
  * Polygon edge description for integer wide-line routines
