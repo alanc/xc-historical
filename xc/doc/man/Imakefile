@@ -10,6 +10,8 @@ all::
 #ifdef IHaveSubdirs
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
+#else
+depend:
 #endif
 
 InstallManPage(X,$(MANDIR))
