@@ -1,6 +1,4 @@
-/*
- * $XConsortium: Simple.h,v 1.9 89/07/21 01:44:53 kit Exp $
- */
+/* $XConsortium: Simple.h,v 1.10 90/03/05 17:47:34 kit Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -45,7 +43,7 @@ SOFTWARE.
  border		     BorderColor	Pixel		XtDefaultForeground
  borderWidth	     BorderWidth	Dimension	1
  cursor		     Cursor		Cursor		None
- cursorName	     Cursor		String		"None"
+ cursorName	     Cursor		String		NULL
  destroyCallback     Callback		Pointer		NULL
  height		     Height		Dimension	0
  insensitiveBorder   Insensitive	Pixmap		Gray
