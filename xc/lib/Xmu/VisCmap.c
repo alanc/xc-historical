@@ -1,4 +1,4 @@
-/* $XConsortium: VisCmap.c,v 1.1 89/03/09 14:16:23 converse Exp $ */
+/* $XConsortium: VisCmap.c,v 1.2 89/03/20 14:55:25 converse Exp $ */
 
 /* 
  * Copyright 1989 by the Massachusetts Institute of Technology
@@ -23,6 +23,55 @@
 
 static int default_allocation();
 static void best_allocation();
+
+/* To determine the best allocation of reds, greens, and blues in a 
+ * standard colormap, use XmuGetColormapAllocation.
+ *	property	specifies one of the standard colormap property names
+ * 	vinfo		specifies visual information
+ * 	rmax		returns maximum red value 
+ *      gmax 		returns maximum green value
+ * 	bmax 		returns maximum blue value
+ *
+ * XmuGetColormapAllocation returns 0 on failure, non-zero on success.
+ * It is assumed that the visual is appropriate for the colormap property.
+ */
+
+Status XmuGetColormapAllocation(property, vinfo, rmax, gmax, bmax)
+Atom		property;
+XVisualInfo	*vinfo;
+unsigned long	*rmax, *gmax, *bmax;
+{
+    Status 	status = 1;
+
+    if (vinfo->colormap_size <= 2)
+	return 0;
+
+    switch (property)
+    {
+      case XA_RGB_DEFAULT_MAP:
+	status = default_allocation(vinfo->colormap_size, rmax, gmax, bmax);
+	break;
+      case XA_RGB_BEST_MAP:
+	best_allocation(vinfo, rmax, gmax, bmax);
+	break;
+      case XA_RGB_GRAY_MAP:
+      case XA_RGB_RED_MAP:
+	*rmax = vinfo->colormap_size - 1;
+	*gmax = *bmax = 0;
+	break;
+      case XA_RGB_GREEN_MAP:
+	*gmax = vinfo->colormap_size - 1;
+	*rmax = *bmax = 0;
+	break;
+      case XA_RGB_BLUE_MAP:
+	*bmax = vinfo->colormap_size - 1;
+	*rmax = *gmax = 0;
+	break;
+      default:
+	status = 0;
+    }
+    return status;
+}
 
 /*
  * To create all of the appropriate standard colormaps for a given visual on
