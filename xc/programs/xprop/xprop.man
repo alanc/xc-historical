@@ -272,12 +272,11 @@ To display the point size of the fixed font: \fIxprop\fP -font fixed POINT_SIZE
 To display all the properties of window # 0x200007: \fIxprop\fP -id 0x200007
 .SH ENVIRONMENT
 .PP
+.TP 8
 .B DISPLAY
-.br
 To get default display.
-.PP
+.TP 8
 .B XPROPFORMATS
-.br
 Specifies the name of a file from which additional formats are to be obtained.
 .PP
 .SH SEE ALSO
