@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbscrinit.c,v 5.5 89/07/16 17:25:19 rws Exp $ */
+/* $XConsortium: mfbscrinit.c,v 5.6 89/07/18 18:03:31 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"	/* for xColorItem */
@@ -114,8 +114,6 @@ mfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     pScreen->defColormap = (Colormap) FakeClientID(0);
     pScreen->minInstalledCmaps = 1;
     pScreen->maxInstalledCmaps = 1;
-    pScreen->whitePixel = 1;
-    pScreen->blackPixel = 0;
     pScreen->backingStoreSupport = Always;
     pScreen->saveUnderSupport = NotUseful;
 
