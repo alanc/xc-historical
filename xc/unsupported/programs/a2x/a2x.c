@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.54 92/04/13 17:03:26 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.55 92/04/15 13:46:04 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -88,9 +88,10 @@ released automatically at next button or non-modifier key.
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h> /* Sun needs it */
+#include <math.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <X11/Xatom.h>
 #include <X11/extensions/shape.h>
 #include <X11/extensions/XTest.h>
 #include <X11/Xos.h>
@@ -117,6 +118,7 @@ typedef struct {
     char dir;
     double xmult;
     double ymult;
+    Screen *screen;
     int rootx, rooty;
     Mask input;
     Window best;
@@ -143,6 +145,7 @@ typedef struct {
 } Trigger;
 
 Display *dpy;
+Atom MIT_OBJ_CLASS;
 int maxfd;
 int Xmask;
 int fdmask[10];
@@ -729,41 +732,253 @@ destroy_region(univ)
 }
 
 Bool
+match_class(w, rec, prop)
+    Window w;
+    MatchRec *rec;
+    Atom prop;
+{
+    Atom type;
+    int format;
+    int i;
+    unsigned long len;
+    unsigned long left;
+    char *data;
+    Bool ok;
+
+    ok = False;
+    if (XGetWindowProperty(dpy, w, prop, 0L, 10000L, False,
+			   XA_STRING, &type, &format, &len, &left,
+			   (unsigned char **)&data) == Success) {
+	if (format == 8) {
+	    i = strlen(data) + 1;
+	    if (i > len)
+		i = len;
+	    if ((!rec->name[0] || !strcmp(rec->name, data)) &&
+		(!rec->class[0] || !strcmp(rec->class, data + i)))
+		ok = True;
+	}
+	XFree(data);
+    }
+    return ok;
+}
+
+Bool
 matches(w, rec, getcw)
     Window w;
     MatchRec *rec;
     Bool getcw;
 {
-    XClassHint hints;
-    Bool ok = True;
+    Bool ok;
+    char *name;
 
     switch (rec->match) {
     case MatchName:
     case MatchPrefix:
 	if (getcw)
 	    w = XmuClientWindow(dpy, w);
-	if (!XFetchName(dpy, w, &hints.res_name))
+	if (!XFetchName(dpy, w, &name))
 	    return False;
 	if (rec->match == MatchName)
-	    ok = !strcmp(rec->name, hints.res_name);
+	    ok = !strcmp(rec->name, name);
 	else
-	    ok = !strncmp(rec->name, hints.res_name, rec->nlen);
-	XFree(hints.res_name);
+	    ok = !strncmp(rec->name, name, rec->nlen);
+	XFree(name);
 	break;
     case MatchClass:
 	if (getcw)
 	    w = XmuClientWindow(dpy, w);
-	if (!XGetClassHint(dpy, w, &hints))
-	    return False;
-	ok = ((!rec->name[0] || !strcmp(rec->name, hints.res_name)) &&
-	      (!rec->class[0] || !strcmp(rec->class, hints.res_class)));
-	XFree(hints.res_name);
-	XFree(hints.res_class);
+	ok = ((getcw && match_class(w, rec, XA_WM_CLASS)) ||
+	      match_class(w, rec, MIT_OBJ_CLASS));
 	break;
     default:
+	ok = True;
 	break;
     }
     return ok;
+}
+
+double
+compute_best_right(rec, univ, cx, cy)
+    Closest *rec;
+    Region univ;
+    int cx;
+    int cy;
+{
+    int maxy, maxx, x, y, Y, Y2, i;
+
+    cx -= rec->rootx;
+    cy -= rec->rooty;
+    if (cy < 0)
+	cy = -cy;
+    maxy = HeightOfScreen(rec->screen) - rec->rooty;
+    if (rec->rooty > maxy)
+	maxy = rec->rooty;
+    i = sqrt(rec->best_dist / rec->ymult);
+    if (i < maxy)
+	maxy = i;
+    maxx = WidthOfScreen(rec->screen) - rec->rootx;
+    i = sqrt(rec->best_dist);
+    if (i < maxx)
+	maxx = i;
+    if (XRectInRegion(univ, rec->rootx, rec->rooty - maxy,
+		      maxx + 1, maxy + maxy + 1) == RectangleOut)
+	return -1;
+    for (Y = cy; Y <= maxy; Y++) {
+	Y2 = Y * Y;
+	for (y = cy; y <= Y; y++) {
+	    x = sqrt(rec->ymult * (Y2 - y*y));
+	    if (x < cx)
+		break;
+	    if (XRectInRegion(univ, rec->rootx, rec->rooty - y,
+			      x + 1, y + y + 1) == RectangleOut)
+		continue;
+	    for (i = 0; i <= x; i++) {
+		if (!XPointInRegion(univ, rec->rootx + i, rec->rooty - y) &&
+		    !XPointInRegion(univ, rec->rootx + i, rec->rooty + y))
+		    continue;
+		return i * i + rec->ymult * y * y;
+	    }
+	}
+    }
+    return -1;
+}
+
+double
+compute_best_left(rec, univ, cx, cy)
+    Closest *rec;
+    Region univ;
+    int cx;
+    int cy;
+{
+    int maxy, maxx, x, y, Y, Y2, i;
+
+    cx = rec->rootx - cx;
+    cy -= rec->rooty;
+    if (cy < 0)
+	cy = -cy;
+    maxy = HeightOfScreen(rec->screen) - rec->rooty;
+    if (rec->rooty > maxy)
+	maxy = rec->rooty;
+    i = sqrt(rec->best_dist / rec->ymult);
+    if (i < maxy)
+	maxy = i;
+    maxx = rec->rootx;
+    i = sqrt(rec->best_dist);
+    if (i < maxx)
+	maxx = i;
+    if (XRectInRegion(univ, rec->rootx - maxx, rec->rooty - maxy,
+		      maxx + 1, maxy + maxy + 1) == RectangleOut)
+	return -1;
+    for (Y = cy; Y <= maxy; Y++) {
+	Y2 = Y * Y;
+	for (y = cy; y <= Y; y++) {
+	    x = sqrt(rec->ymult * (Y2 - y*y));
+	    if (x < cx)
+		break;
+	    if (XRectInRegion(univ, rec->rootx - x, rec->rooty - y,
+			      x + 1, y + y + 1) == RectangleOut)
+		continue;
+	    for (i = 0; i <= x; i++) {
+		if (!XPointInRegion(univ, rec->rootx - i, rec->rooty - y) &&
+		    !XPointInRegion(univ, rec->rootx - i, rec->rooty + y))
+		    continue;
+		return i * i + rec->ymult * y * y;
+	    }
+	}
+    }
+    return -1;
+}
+
+double
+compute_best_up(rec, univ, cx, cy)
+    Closest *rec;
+    Region univ;
+    int cx;
+    int cy;
+{
+    int maxy, maxx, x, y, X, X2, i;
+
+    cx -= rec->rootx;
+    if (cx < 0)
+	cx = -cx;
+    cy = rec->rooty - cy;
+    maxx = WidthOfScreen(rec->screen) - rec->rootx;
+    if (rec->rootx > maxx)
+	maxx = rec->rootx;
+    i = sqrt(rec->best_dist / rec->xmult);
+    if (i < maxx)
+	maxx = i;
+    maxy = rec->rooty;
+    i = sqrt(rec->best_dist);
+    if (i < maxy)
+	maxy = i;
+    if (XRectInRegion(univ, rec->rootx - maxx, rec->rooty - maxy,
+		      maxx + maxx + 1, maxy + 1) == RectangleOut)
+	return -1;
+    for (X = cx; X <= maxx; X++) {
+	X2 = X * X;
+	for (x = cx; x <= X; x++) {
+	    y = sqrt(rec->xmult * (X2 - x*x));
+	    if (y < cy)
+		break;
+	    if (XRectInRegion(univ, rec->rootx - x, rec->rooty - y,
+			      x + x + 1, y + 1) == RectangleOut)
+		continue;
+	    for (i = 0; i <= y; i++) {
+		if (!XPointInRegion(univ, rec->rootx - x, rec->rooty - i) &&
+		    !XPointInRegion(univ, rec->rootx + x, rec->rooty - i))
+		    continue;
+		return rec->xmult * x * x + i * i;
+	    }
+	}
+    }
+    return -1;
+}
+
+double
+compute_best_down(rec, univ, cx, cy)
+    Closest *rec;
+    Region univ;
+    int cx;
+    int cy;
+{
+    int maxy, maxx, x, y, X, X2, i;
+
+    cx -= rec->rootx;
+    if (cx < 0)
+	cx = -cx;
+    cy -= rec->rooty;
+    maxx = WidthOfScreen(rec->screen) - rec->rootx;
+    if (rec->rootx > maxx)
+	maxx = rec->rootx;
+    i = sqrt(rec->best_dist / rec->xmult);
+    if (i < maxx)
+	maxx = i;
+    maxy = HeightOfScreen(rec->screen) - rec->rooty;
+    i = sqrt(rec->best_dist);
+    if (i < maxy)
+	maxy = i;
+    if (XRectInRegion(univ, rec->rootx - maxx, rec->rooty,
+		      maxx + maxx + 1, maxy + 1) == RectangleOut)
+	return -1;
+    for (X = cx; X <= maxx; X++) {
+	X2 = X * X;
+	for (x = cx; x <= X; x++) {
+	    y = sqrt(rec->xmult * (X2 - x*x));
+	    if (y < cy)
+		break;
+	    if (XRectInRegion(univ, rec->rootx - x, rec->rooty,
+			      x + x + 1, y + 1) == RectangleOut)
+		continue;
+	    for (i = 0; i <= y; i++) {
+		if (!XPointInRegion(univ, rec->rootx - x, rec->rooty + i) &&
+		    !XPointInRegion(univ, rec->rootx + x, rec->rooty + i))
+		    continue;
+		return rec->xmult * x * x + i * i;
+	    }
+	}
+    }
+    return -1;
 }
 
 double
@@ -774,37 +989,52 @@ compute_distance(rec, univ)
     Box box;
     int x, y;
 
+    if (XPointInRegion(univ, rec->rootx, rec->rooty))
+	return -1;
     compute_box(univ, &box);
     switch (rec->dir) {
-    case 'U':
-    case 'D':
-	if ((rec->dir == 'U') ?
-	    (box.y2 > rec->rooty) : (box.y1 < rec->rooty))
-	    return -1;
-	if (box.x2 < rec->rootx)
-	    x = box.x2;
-	else if (box.x1 > rec->rootx)
-	    x = box.x1;
-	else
-	    x = rec->rootx;
-	y = (rec->dir == 'U') ? box.y2 : box.y1;
-	break;
     case 'R':
     case 'L':
-	if ((rec->dir == 'R') ?
-	    (box.x1 < rec->rootx) : (box.x2 > rec->rootx))
-	    return -1;
+	if (rec->dir == 'R' && box.x1 >= rec->rootx)
+	    x = box.x1;
+	else if (rec->dir == 'L' && box.x2 <= rec->rootx)
+	    x = box.x2;
+	else
+	    x = rec->rootx;
 	if (box.y2 < rec->rooty)
 	    y = box.y2;
 	else if (box.y1 > rec->rooty)
 	    y = box.y1;
 	else
 	    y = rec->rooty;
-	x = (rec->dir == 'R') ? box.x1 : box.x2;
-	break;
-    case 'C':
-	if (XPointInRegion(univ, rec->rootx, rec->rooty))
+	if (((x - rec->rootx) * (x - rec->rootx) +
+	     rec->ymult * (y - rec->rooty) * (y - rec->rooty)) >=
+	    rec->best_dist)
 	    return -1;
+	if (rec->dir == 'R')
+	    return compute_best_right(rec, univ, x, y);
+	return compute_best_left(rec, univ, x, y);
+    case 'U':
+    case 'D':
+	if (box.x2 < rec->rootx)
+	    x = box.x2;
+	else if (box.x1 > rec->rootx)
+	    x = box.x1;
+	else
+	    x = rec->rootx;
+	if (rec->dir == 'U' && box.y2 <= rec->rooty)
+	    y = box.y2;
+	else if (rec->dir == 'D' && box.y1 > rec->rooty)
+	    y = box.y1;
+	else
+	    y = rec->rooty;
+	if ((rec->xmult * (x - rec->rootx) * (x - rec->rootx) +
+	     (y - rec->rooty) * (y - rec->rooty)) >= rec->best_dist)
+	    return -1;
+	if (rec->dir == 'U')
+	    return compute_best_up(rec, univ, x, y);
+	return compute_best_down(rec, univ, x, y);
+    case 'C':
 	if (box.x2 < rec->rootx)
 	    x = box.x2;
 	else if (box.x1 > rec->rootx)
@@ -817,9 +1047,9 @@ compute_distance(rec, univ)
 	    y = box.y1;
 	else
 	    y = rec->rooty;
+	return (rec->xmult * (x - rec->rootx) * (x - rec->rootx) +
+		rec->ymult * (y - rec->rooty) * (y - rec->rooty));
     }
-    return (rec->xmult * (x - rec->rootx) * (x - rec->rootx) +
-	    rec->ymult * (y - rec->rooty) * (y - rec->rooty));
 }
 
 Bool
@@ -1037,14 +1267,15 @@ do_jump(buf)
 		  &rec.bestx, &rec.besty, (unsigned int *)&screen);
     for (screen = 0; RootWindow(dpy, screen) != root; screen++)
 	;
+    rec.screen = ScreenOfDisplay(dpy, screen);
     if (rec.recurse && child) {
 	XGetWindowAttributes(dpy, child, &wa);
 	root = child;
     } else {
 	wa.x = 0;
 	wa.y = 0;
-	wa.width = WidthOfScreen(ScreenOfDisplay(dpy, screen));
-	wa.height = HeightOfScreen(ScreenOfDisplay(dpy, screen));
+	wa.width = WidthOfScreen(rec.screen);
+	wa.height = HeightOfScreen(rec.screen);
     }
     univ = XCreateRegion();
     rect.x = wa.x;
@@ -1722,6 +1953,7 @@ main(argc, argv)
 	olderror = XSetErrorHandler(error);
     }
     reset_mapping();
+    MIT_OBJ_CLASS = XInternAtom(dpy, "_MIT_OBJ_CLASS", False);
     Xmask = 1 << ConnectionNumber(dpy);
     maxfd = ConnectionNumber(dpy) + 1;
     while (1) {
