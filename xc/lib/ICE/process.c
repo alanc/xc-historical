@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.32 94/03/17 12:26:43 mor Exp $ */
+/* $XConsortium: process.c,v 1.33 94/03/18 15:59:21 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -518,6 +518,17 @@ IceReplyWaitInfo *replyWait;
 		strcpy (errorStr, tempstr);
 		break;
 
+	    case IceSetupFailed:
+
+		prefix = "Connection Setup Failed, reason : ";
+
+		EXTRACT_STRING (pData, swap, temp);
+		errorStr = (char *) malloc (
+		    strlen (prefix) + strlen (temp) + 1);
+		sprintf (errorStr, "%s%s", prefix, temp);
+		free (temp);
+		break;
+
 	    case IceAuthRejected:
 
 		prefix = "Authentication Rejected, reason : ";
@@ -575,6 +586,17 @@ IceReplyWaitInfo *replyWait;
 		    "None of the authentication protocols specified are supported";
 		errorStr = (char *) malloc (strlen (temp) + 1);
 		strcpy (errorStr, temp);
+		break;
+
+	    case IceSetupFailed:
+
+		prefix = "Protocol Setup Failed, reason : ";
+
+		EXTRACT_STRING (pData, swap, temp);
+		errorStr = (char *) malloc (
+		    strlen (prefix) + strlen (temp) + 1);
+		sprintf (errorStr, "%s%s", prefix, temp);
+		free (temp);
 		break;
 
 	    case IceAuthRejected:
@@ -918,6 +940,7 @@ Bool		swap;
     }
 
     IceDisposeCompleteMessage (iceConn, pStart);
+    return (0);
 }
 
 
@@ -1268,29 +1291,72 @@ Bool		swap;
 	if (status == IcePaAuthAccepted)
 	{
 	    IcePaProcessMsgProc	processMsgProc;
-	    IceProtocolSetupNotifyProc	protocolSetupNotifyProc;
+	    IceProtocolSetupProc protocolSetupProc;
+	    IceProtocolActivateProc protocolActivateProc;
 	    _IceProcessMsgInfo *process_msg_info;
+	    IcePointer clientData = NULL;
+	    char *failureReason = NULL;
+	    Status status = 1;
 
-	    processMsgProc = myProtocol->version_recs[
-	        iceConn->protosetup_to_me->my_version_index].process_msg_proc;
+	    protocolSetupProc = myProtocol->protocol_setup_proc;
+	    protocolActivateProc = myProtocol->protocol_activate_proc;
 
-	    AcceptProtocol (iceConn,
-	        iceConn->protosetup_to_me->his_opcode,
-	        iceConn->protosetup_to_me->my_opcode,
-	        iceConn->protosetup_to_me->his_version_index,
-		myProtocol->vendor, myProtocol->release);
-
-	    process_msg_info = &iceConn->process_msg_info[
-	       iceConn->protosetup_to_me->his_opcode -iceConn->his_min_opcode];
-
-	    process_msg_info->client_data = NULL;
-	    process_msg_info->accept_flag = 1;
-	    process_msg_info->process_msg_proc.accept_client = processMsgProc;
-
-	    protocolSetupNotifyProc = myProtocol->protocol_setup_notify_proc;
-
-	    if (protocolSetupNotifyProc)
+	    if (protocolSetupProc)
 	    {
+		/*
+		 * Notify the client of the Protocol Setup.
+		 */
+
+		status = (*protocolSetupProc) (iceConn,
+		    myProtocol->version_recs[iceConn->protosetup_to_me->
+		        my_version_index].major_version,
+		    myProtocol->version_recs[iceConn->protosetup_to_me->
+		        my_version_index].minor_version,
+		    iceConn->protosetup_to_me->his_vendor,
+		    iceConn->protosetup_to_me->his_release,
+		    &clientData, &failureReason);
+
+		/*
+		 * Set vendor and release pointers to NULL, so it won't
+		 * get freed below.  The ProtocolSetupProc should
+		 * free it.
+		 */
+
+		iceConn->protosetup_to_me->his_vendor = NULL;
+		iceConn->protosetup_to_me->his_release = NULL;
+	    }
+
+	    if (status != 0)
+	    {
+		/*
+		 * Send the Protocol Reply
+		 */
+
+		AcceptProtocol (iceConn,
+	            iceConn->protosetup_to_me->his_opcode,
+	            iceConn->protosetup_to_me->my_opcode,
+	            iceConn->protosetup_to_me->his_version_index,
+		    myProtocol->vendor, myProtocol->release);
+
+
+		/*
+		 * Set info for this protocol.
+		 */
+
+		processMsgProc = myProtocol->version_recs[
+	            iceConn->protosetup_to_me->
+	            my_version_index].process_msg_proc;
+
+		process_msg_info = &iceConn->process_msg_info[
+	            iceConn->protosetup_to_me->
+		    his_opcode -iceConn->his_min_opcode];
+
+		process_msg_info->client_data = clientData;
+		process_msg_info->accept_flag = 1;
+		process_msg_info->process_msg_proc.
+		    accept_client = processMsgProc;
+
+
 		/*
 		 * Increase the reference count for the number
 		 * of active protocols.
@@ -1300,26 +1366,29 @@ Bool		swap;
 
 
 		/*
-		 * Notify the client of the Protocol Setup.
+		 * Notify the client that the protocol is active.  The reason
+		 * we have this 2nd callback invoked is because the client
+		 * may wish to immediately generate a message for this
+		 * protocol, but it must wait until we send the Protocol Reply.
 		 */
 
-		(*protocolSetupNotifyProc) (iceConn,
-		    myProtocol->version_recs[iceConn->protosetup_to_me->
-		        my_version_index].major_version,
-		    myProtocol->version_recs[iceConn->protosetup_to_me->
-		        my_version_index].minor_version,
-		    iceConn->protosetup_to_me->his_vendor,
-		    iceConn->protosetup_to_me->his_release,
-		    &process_msg_info->client_data);
-
+		if (protocolActivateProc)
+		{
+		    (*protocolActivateProc) (iceConn,
+		        process_msg_info->client_data);
+		}
+	    }
+	    else
+	    {
 		/*
-		 * Set vendor and release pointers to NULL, so it won't
-		 * get freed below.  The ProtocolSetupNotifyProc should
-		 * free it.
+		 * An error was encountered.
 		 */
 
-		iceConn->protosetup_to_me->his_vendor = NULL;
-		iceConn->protosetup_to_me->his_release = NULL;
+		_IceErrorSetupFailed (iceConn, ICE_ProtocolSetup,
+		    failureReason);
+
+		if (failureReason)
+		    free (failureReason);
 	    }
 	}
 
@@ -1350,6 +1419,7 @@ Bool		swap;
 	free (errorString);
 
     IceDisposeCompleteMessage (iceConn, replyData);
+    return (0);
 }
 
 
@@ -1595,7 +1665,7 @@ Bool		swap;
     int  	      	accept_setup_now = 0;
     int			myAuthIndex = 0;
     int			hisAuthIndex = 0;
-    Bool		mustAuthenticate;
+    char		mustAuthenticate;
     int			authUsableCount;
     int			authUsableFlags[MAX_ICE_AUTH_NAMES];
     int			authIndices[MAX_ICE_AUTH_NAMES];
@@ -1849,26 +1919,55 @@ Bool		swap;
     if (accept_setup_now)
     {
 	IcePaProcessMsgProc		processMsgProc;
-	IceProtocolSetupNotifyProc	protocolSetupNotifyProc;
+	IceProtocolSetupProc		protocolSetupProc;
+	IceProtocolActivateProc		protocolActivateProc;
 	_IceProcessMsgInfo		*process_msg_info;
+	IcePointer			clientData = NULL;
+	char 				*failureReason = NULL;
+	Status				status = 1;
 
-	processMsgProc = myProtocol->version_recs[
-	    myVersionIndex].process_msg_proc;
+	protocolSetupProc = myProtocol->protocol_setup_proc;
+	protocolActivateProc = myProtocol->protocol_activate_proc;
 
-	AcceptProtocol (iceConn, hisOpcode, myOpcode, hisVersionIndex,
-	    myProtocol->vendor, myProtocol->release);
-
-	process_msg_info = &iceConn->process_msg_info[hisOpcode -
-	    iceConn->his_min_opcode];
-
-	process_msg_info->client_data = NULL;
-	process_msg_info->accept_flag = 1;
-	process_msg_info->process_msg_proc.accept_client = processMsgProc;
-
-	protocolSetupNotifyProc = myProtocol->protocol_setup_notify_proc;
-
-	if (protocolSetupNotifyProc)
+	if (protocolSetupProc)
 	{
+	    /*
+	     * Notify the client of the Protocol Setup.
+	     */
+
+	    status = (*protocolSetupProc) (iceConn,
+		myProtocol->version_recs[myVersionIndex].major_version,
+		myProtocol->version_recs[myVersionIndex].minor_version,
+	        vendor, release, &clientData, &failureReason);
+
+	    vendor = release = NULL;   /* so we don't free it */
+	}
+
+	if (status != 0)
+	{
+	    /*
+	     * Send the Protocol Reply
+	     */
+
+	    AcceptProtocol (iceConn, hisOpcode, myOpcode, hisVersionIndex,
+	        myProtocol->vendor, myProtocol->release);
+
+
+	    /*
+	     * Set info for this protocol.
+	     */
+
+	    processMsgProc = myProtocol->version_recs[
+	        myVersionIndex].process_msg_proc;
+
+	    process_msg_info = &iceConn->process_msg_info[hisOpcode -
+	        iceConn->his_min_opcode];
+
+	    process_msg_info->client_data = clientData;
+	    process_msg_info->accept_flag = 1;
+	    process_msg_info->process_msg_proc.accept_client = processMsgProc;
+
+
 	    /*
 	     * Increase the reference count for the number of active protocols.
 	     */
@@ -1877,15 +1976,28 @@ Bool		swap;
 
 
 	    /*
-	     * Notify the client of the Protocol Setup.
+	     * Notify the client that the protocol is active.  The reason
+	     * we have this 2nd callback invoked is because the client
+	     * may wish to immediately generate a message for this
+	     * protocol, but it must wait until we send the Protocol Reply.
 	     */
 
-	    (*protocolSetupNotifyProc) (iceConn,
-		myProtocol->version_recs[myVersionIndex].major_version,
-		myProtocol->version_recs[myVersionIndex].minor_version,
-	        vendor, release, &process_msg_info->client_data);
+	    if (protocolActivateProc)
+	    {
+		(*protocolActivateProc) (iceConn,
+		    process_msg_info->client_data);
+	    }
+	}
+	else
+	{
+	    /*
+	     * An error was encountered.
+	     */
 
-	    vendor = release = NULL;   /* so we don't free it */
+	    _IceErrorSetupFailed (iceConn, ICE_ProtocolSetup, failureReason);
+
+	    if (failureReason)
+		free (failureReason);
 	}
     }
 
@@ -1904,6 +2016,7 @@ Bool		swap;
     }
 
     IceDisposeCompleteMessage (iceConn, pStart);
+    return (0);
 }
 
 
@@ -2010,6 +2123,8 @@ unsigned long	length;
 	length, SIZEOF (icePingMsg), IceFatalToConnection);
 
     PingReply (iceConn);
+
+    return (0);
 }
 
 
@@ -2038,6 +2153,8 @@ unsigned long	length;
     {
 	_IceErrorBadState (iceConn, 0, ICE_PingReply, IceCanContinue);
     }
+
+    return (0);
 }
 
 
@@ -2091,6 +2208,8 @@ unsigned long	length;
 	    IceFlush (iceConn);
 	}
     }
+
+    return (0);
 }
 
 
@@ -2118,6 +2237,8 @@ unsigned long	length;
     {
 	_IceErrorBadState (iceConn, 0, ICE_NoClose, IceCanContinue);
     }
+
+    return (0);
 }
 
 
