@@ -1,9 +1,9 @@
 /*
- *	$XConsortium: input.c,v 1.8 89/12/10 20:44:48 jim Exp $
+ *	$XConsortium: input.c,v 1.9 90/03/16 17:16:34 jim Exp $
  */
 
 #ifndef lint
-static char *rcsid_input_c = "$XConsortium: input.c,v 1.8 89/12/10 20:44:48 jim Exp $";
+static char *rcsid_input_c = "$XConsortium: input.c,v 1.9 90/03/16 17:16:34 jim Exp $";
 #endif	/* lint */
 
 #include <X11/copyright.h>
@@ -34,7 +34,7 @@ static char *rcsid_input_c = "$XConsortium: input.c,v 1.8 89/12/10 20:44:48 jim 
 /* input.c */
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: input.c,v 1.8 89/12/10 20:44:48 jim Exp $";
+static char rcs_id[] = "$XConsortium: input.c,v 1.9 90/03/16 17:16:34 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xlib.h>
@@ -149,7 +149,7 @@ Bool eightbit;
 			nbytes--;
 		}
 		if ((nbytes == 1) && eightbit) {
-		    if (screen->eight_bits)
+		    if (screen->input_eight_bits)
 		      *string |= 0x80;	/* turn on eighth bit */
 		    else
 		      unparseputc (033, pty);  /* escape */

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.124 90/04/30 16:53:13 converse Exp $
+ * $XConsortium: charproc.c,v 1.125 90/06/05 14:56:57 jim Exp $
  */
 
 
@@ -85,6 +85,7 @@ static void VTallocbuf();
 #define XtNcutNewline		"cutNewline"
 #define XtNcutToBeginningOfLine	"cutToBeginningOfLine"
 #define XtNeightBitInput	"eightBitInput"
+#define XtNeightBitOutput	"eightBitOutput"
 #define XtNgeometry		"geometry"
 #define XtNtekGeometry		"tekGeometry"
 #define	XtNinternalBorder	"internalBorder"
@@ -123,6 +124,7 @@ static void VTallocbuf();
 #define XtCCutNewline		"CutNewline"
 #define XtCCutToBeginningOfLine	"CutToBeginningOfLine"
 #define XtCEightBitInput	"EightBitInput"
+#define XtCEightBitOutput	"EightBitOutput"
 #define XtCGeometry		"Geometry"
 #define	XtCJumpScroll		"JumpScroll"
 #define	XtCLogfile		"Logfile"
@@ -151,7 +153,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.124 90/04/30 16:53:13 converse Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.125 90/06/05 14:56:57 jim Exp $";
 #endif	/* lint */
 
 static int nparam;
@@ -324,7 +326,10 @@ static XtResource resources[] = {
 	XtOffset(XtermWidget, screen.cursorcolor),
 	XtRString, "XtDefaultForeground"},
 {XtNeightBitInput, XtCEightBitInput, XtRBoolean, sizeof(Boolean),
-	XtOffset(XtermWidget, screen.eight_bits), 
+	XtOffset(XtermWidget, screen.input_eight_bits), 
+	XtRBoolean, (caddr_t) &defaultTRUE},
+{XtNeightBitOutput, XtCEightBitOutput, XtRBoolean, sizeof(Boolean),
+	XtOffset(XtermWidget, screen.output_eight_bits), 
 	XtRBoolean, (caddr_t) &defaultTRUE},
 {XtNgeometry,XtCGeometry, XtRString, sizeof(char *),
 	XtOffset(XtermWidget, misc.geo_metry),
@@ -1152,6 +1157,14 @@ in_put()
 			} else if(bcnt == 0)
 				Panic("input: read returned zero\n", 0);
 			else {
+			        if (!screen->output_eight_bits) {
+				    register int bc = bcnt;
+				    register Char *b = bptr;
+
+				    for (; bc > 0; bc--, b++) {
+					*b &= (Char) 0x7f;
+				    }
+				}
 				if(screen->scrollWidget && screen->scrollttyoutput &&
 				 screen->topline < 0)
 					/* Scroll to bottom */
@@ -2034,7 +2047,8 @@ static void VTInitialize (request, new)
    new->screen.cutToBeginningOfLine = request->screen.cutToBeginningOfLine;
    new->screen.always_highlight = request->screen.always_highlight;
    new->screen.pointer_cursor = request->screen.pointer_cursor;
-   new->screen.eight_bits = request->screen.eight_bits;
+   new->screen.input_eight_bits = request->screen.input_eight_bits;
+   new->screen.output_eight_bits = request->screen.output_eight_bits;
    new->screen.allowSendEvents = request->screen.allowSendEvents;
    new->misc.titeInhibit = request->misc.titeInhibit;
    for (i = 0; i < NMENUFONTS; i++) {

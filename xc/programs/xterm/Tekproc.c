@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.78 90/03/16 17:22:19 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.79 90/06/05 14:56:48 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -110,7 +110,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.78 90/03/16 17:22:19 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.79 90/06/05 14:56:48 jim Exp $";
 #endif	/* lint */
 
 extern Widget toplevel;
@@ -677,6 +677,14 @@ again:
 				} else if(Tbcnt == 0)
 					Panic("input: read returned zero\n", 0);
 				else {
+				    if (!screen->output_eight_bits) {
+					register int bc = Tbcnt;
+					register Char *b = Tbptr;
+
+					for (; bc > 0; bc--, b++) {
+					    *b &= (Char) 0x7f;
+					}
+				    }
 					break;
 				}
 			}

@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.42 90/06/05 17:48:47 jim Exp $
+ *	$XConsortium: ptyx.h,v 1.42 90/06/06 09:18:33 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -340,7 +340,8 @@ typedef struct {
 	Atom*		selection_atoms; /* which selections we own */
 	Cardinal	sel_atoms_size;	/*  how many atoms allocated */
 	Cardinal	selection_count; /* how many atoms in use */
-	Boolean		eight_bits;	/* use 8th bit instead of ESC prefix */
+	Boolean		input_eight_bits;/* use 8th bit instead of ESC prefix */
+	Boolean		output_eight_bits; /* honor all bits or strip */
 	Pixmap		menu_item_bitmap;	/* mask for checking items */
 	Widget		mainMenu, vtMenu, tekMenu, fontMenu;
 	char*		menu_font_names[NMENUFONTS];

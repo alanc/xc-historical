@@ -457,8 +457,13 @@ is ``black.''
 Specifies the color to use for the text cursor.  The default is ``black.''
 .TP 8
 .B "eightBitInput (\fPclass\fB EightBitInput\fP)"
-Specifies whether or not eight-bit characters should be accepted.  The
-default is ``true.''
+Specifies whether or not eight-bit characters input from the keyboard should
+be accepted as is or converted into a sequence of escape-7bit characters.
+The default is ``true.''
+.TP 8
+.B "eightBitOutput (\fPclass\fB EightBitOutput\fP)"
+Specifies whether or not eight-bit characters sent from the host should be
+accepted as is or stripped when printed.  The default is ``true.''
 .TP 8
 .B "font (\fPclass\fB Font)"
 Specifies the name of the normal font.  The default is ``vtsingle.''
