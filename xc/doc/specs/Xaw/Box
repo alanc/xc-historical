@@ -5,75 +5,72 @@ Box Widget
 \*(SN Box Widget
 .XE
 .IN "Box widget" "" "@DEF@"
-The Box widget provides geometry management of
-arbitrary widgets in a box of a specified dimension.
-The children are rearranged when resizing events occur either on the 
-Box or when children are added or deleted.
-The Box widget always attempts to pack its children as closely as possible
-within the geometry allowed by its parent.
+.Ds 0
+.TA 2.0i
+.ta 2.0i
+.sp
+Header file	Box.h
+Class		boxWidgetClass
+Class Name	Box
+Superclass	Composite Widget
+.sp
+.De
 .LP
-Box widgets are commonly used to manage a related set of Command
-widgets and are frequently called ButtonBox widgets, but the children are
-not limited to buttons.
+The Box widget provides geometry management of arbitrary widgets in a
+box of a specified dimension.  The children are rearranged when
+resizing events occur either on the Box, or when children are managed or
+unmanaged.  The Box widget always attempts to pack its children as
+tightly as possible within the geometry allowed by its parent.  The
+algorithm used gives preference to vertical stacking.  An unconstrained
+Box will resize itself to be as wide as its widest child.  The height
+of the Box will be just enough to contain all its children.
 .LP
-The children are arranged on a background that
+Box widgets are commonly used to manage a related set of buttons and
+are often called ButtonBox widgets, but the children are not
+limited to buttons.  These children are arranged on a background that
 has its own specified dimensions and color.
 .LP
-The class variable for the Box widget is
-.PN boxWidgetClass .
-.LP
-When creating a Box widget instance,
-the following resources are retrieved from the argument list
-or from the resource database:
+When creating a Box widget instance, the following resources are
+retrieved from the argument list or from the resource database:
 .IN "Box widget" "resources"
 .ps 9
 .nr PS 9
 .vs 11
 .nr VS 11
 .TS H
-lw(1.5i) lw(1i) lw(1i) lw(2i) .
+lw(1.5i) lw(1i) lw(1i) lw(2i).
 _
 .sp 3p
 .TB
-Name	Type	Default	Description
+Name	Class	Type	Default Value
 .sp 3p
 _
 .TH
 .R
 .sp 3p
-XtNbackground	Pixel	XtDefaultBackground	Window background color
-XtNbackgroundPixmap	Pixmap	None	Window background pixmap
-XtNborderColor	Pixel	XtDefaultForeground	Window border color
-XtNborderPixmap	Pixmap	None	Window border pixmap
-XtNborderWidth	Dimension	1	Border width on button box
-T{
-XtNdestroyCallback
-T}	T{
-XtCallbackList
-T}	T{
-NULL
-T}	T{
-Callbacks for 
-.PN XtDestroyWidget
-T}
-XtNhSpace	Dimension	4	Pixel distance left and right of children
-XtNheight	Dimension	see below	Viewing height of inner window
-T{
-XtNmappedWhenManaged
-T}	T{
-Boolean
-T}	T{
-True
-T}	T{
-Whether
-.PN XtMapWidget
-is automatic
-T}
-XtNtranslations	TranslationTable	None	Event-to-action translations
-XtNvSpace	Dimension	4	Pixel distance top and bottom of children
-XtNwidth	Dimension	width of widest child	Viewing width of inner window
-XtNx	Position	0	Widget location x coordinate
-XtNy	Position	0	Widget location y coordinate
+accelerators	Acceleratore	AcceleratorTable	NULL
+ancestorSensitive	AncestorSensitive	Boolean	True
+background	Background	Pixel	XtDefaultBackground
+backgroundPixmap	Pixmap	Pixmap	XtUnspecifiedPixmap
+borderColor	BorderColor	Pixel	XtDefaultForeground
+borderPixmap	Pixmap	Pixmap	XtUnspecifiedPixmap
+borderWidth	BorderWidth	Dimension	1
+children	ReadOnly	WidgetList	NULL
+colormap	Colormap	Pointer	Parent's Colormap
+depth	Depth	int	Parent's Depth
+destroyCallback	Callback	XtCallbackList	NULL
+height	Height	Dimension	Tall enough to contain all managed children
+hSpace	HSpace	Dimension	4
+insertPosition	InsertPosition	Function	NULL
+mappedWhenManaged	MappedWhenManaged	Boolean	True
+numChildren	ReadOnly	Cardinal	0
+screen	Screen	Pointer	Parent's Screen
+sensitive	Sensitive	Boolean	True
+vSpace	VSpace	Dimension	4
+translations	Translations	TranslationTable	NULL
+width	Width	Dimension	Width of the widest child + 2 * \fBhSpace\fP
+x	X	Position	0
+y	Y	Position	0
 .sp 3p
 _
 .TE
@@ -81,47 +78,77 @@ _
 .nr PS 11
 .vs 13
 .nr VS 13
+.IP accelerators 1.5i
+A list of actions to be executed by this widget, even though the
+event occurred in another widget.  See section 10.4 in the \fI\*(xT\fP.
+.IP ancestorSensitive 1.5i
+The sensitivity state of the ancestors of this widget.  A widget is
+insensitive if either it or any of its ancestors is insensitive.
+This resource is not settable with \fBXtSetValues\fP.  It may
+however be queried.
+.IP background 1.5i
+The background color of this widget.
+.IP backgroundPixmap 1.5i
+The background pixmap of this widget.  If this resource is set to
+anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
+used instead of a background color.
+.IP borderColor 1.5i
+The color of this widget's border.
+.IP borderPixmap 1.5i
+The border pixmap of this widget.  If this resource is set to
+anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
+used instead of a background color.
+.IP borderWidth 1.5i
+This is the width of the border of this widget's window.
+.IP children 1.5i
+A list of all this composite widget'c current children.
+.IP colormap 1.5i
+The colormap that this widget will use to display all of its colors.
+.IP depth 1.5i
+The depth of this widget's window.
+.IP destroyCallback 1.5i
+All callback functions on this list are called when this widget is destroyed.
+.IP height 1.5i
+.br
+.ns
+.IP width 1.5i
+The height and width of this widget in pixels.
+.IP \fBhSpace\fP 1.5i
+.br
+.ns
+.IP \fBvSpace\fP 1.5i
+The amount of space, in pixels, to leave between the children.  Also
+the amount of space left between the outermost children and the edge
+of the box. 
+.IP insertPosition 1.5i
+[||| What is this resource anyway??? ]
+.IP mappedWhenManaged 1.5i
+If this resource is \fBtrue\fP then the widget will automatically be
+mapped by the Toolkit when it is realized and managed.
+.IP numChildren 1.5i
+The number of children in this composite widget.
+.IP screen 1.5i
+The screen that this widget is displayed on.  This is not a settable resource.
+.IP sensitive 1.5i
+Whether or not the toolkit will pass events to this widget.  The
+widget will not get events if either \fBancestorSensitive\fP or 
+\fBsensitive\fP is \fBfalse\fP.
+.IP translations 1.5i
+The translations associated with this widget.
+.IP x 1.5i
+.br
+.ns
+.IP y 1.5i
+The location of the upper lefthand corner of this widget in its parent.
+.NH 3
+Layout Semantics
 .LP
-The Box widget positions its children in rows with
-.PN XtNhSpace
-pixels to the left and right of each child and
-.PN XtNvSpace
-pixels between rows.
-If the Box width is not specified,
-the Box widget uses the width of the widest child.
-Each time a child is managed or unmanaged, the Box widget will
-attempt to reposition the remaining children to compact the box.
-Children are positioned in order left to right, top to bottom.
-When the next child does not fit on the current row, a new row is
-started.  If a child is wider than the width of the box, the box
-will request a larger width from it parent and will begin the
-layout process from the beginning if a new width is granted.
-After positioning all children,
-the Box widget attempts to shrink its own size to the minimum dimensions
+Each time a child is managed or unmanaged, the Box widget will attempt
+to reposition the remaining children to compact the box.  Children are
+positioned in order left to right, top to bottom.  When the next child
+does not fit on the current row, a new row is started.  If a child is
+wider than the width of the box, the box will request a larger width
+from it parent and will begin the layout process from the beginning if
+a new width is granted.  After positioning all children, the Box
+widget attempts to shrink its own size to the minimum dimensions
 required for the layout.
-.LP
-.IN "Box widget" "creating"
-.IN "Creating widgets" "Box"
-To create a box widget instance, use 
-.PN XtCreateWidget
-and specify the class variable
-.PN boxWidgetClass .
-.LP
-.IN "Box widget" "adding children"
-To add a child to the Box, use
-.PN XtCreateWidget
-and specify the widget ID of the Box as the parent of the new widget.
-.LP
-.IN "Box widget" "removing children"
-To remove a child from the Box, use 
-.PN XtUnmanageChild
-or
-.PN XtDestroyWidget
-and specify the widget ID of the child.
-.LP
-.IN "Box widget" "destroying"
-.IN "Destroying widgets" "Box"
-To destroy a Box widget instance, use
-.PN XtDestroyWidget
-and specify the widget ID of the Box widget.
-All the children of this box are automatically destroyed at the same time.

@@ -14,17 +14,53 @@
 .na
 .LP
 .XS
-Chapter 4 - Composite and Contraint Widgets
+Chapter 5 - Composite and Contraint Widgets
 .XE
 .LP
-This chapter describes the following Athena Composite widgets:
-.IP \(bu 5
-Box
-.IP \(bu 5
-Dialog
-.IP \(bu 5
-Form
-.IP \(bu 5
-Paned
-.IP \(bu 5
-Viewport
+These widgets may contain arbitrary widget children.  They implement a
+policy for the size and location of their children.  
+.IP \fBBox\fP 1i
+This widget will pack its children as tightly as possible.
+The packing algorithm gives preference to vertical stacking. 
+.IP \fBDialog\fP 1i
+An implementaton of a commonly used interaction semantic to prompt for
+auxiliary input from the user, such as a filename.
+.IP \fBForm\fP 1i
+A more sophisticated layout widget that allows the children to specify
+their positions relative to the other children, and edges of the Form.
+.IP \fBPaned\fP 1i
+Allows children to be tiled vertically or horizontally.  Semantics are
+also provided to allow the user to dynamically size the individual panes.
+.IP \fBViewport\fP 1i
+Consists of a frame, one or two scrollbars, and an inner window.  The
+inner window can contain all the data that is to be displayed.  This inner
+window will be clipped by the frame with the scrollbars controlling
+which section of the inner window is currently visable.
+.LP
+.NH 3
+Geometry Management
+.LP
+The geometry management semantics provided by the X Toolkit give full
+control of the size and 
+position of a widget to the parent of that widget.  While the children 
+are allowed to request a certain size or location, it is the parent
+who makes the final decision.   Many of the composite widgets here
+will deny any geometry request from their children by default.  If
+a child widget is not getting the expected size or location, it
+is most likely the parent disallowing a request, or
+implementing sematics slightly different than those expected by the
+application programmer.
+.LP
+If the application wishes to change the size or location of
+any widget it should make a call to \fBXtSetValues\fP.  This will
+allow the widget to ask its parent for the new size or location.
+As noted above the parent is allowed to refuse this request,
+and in this case the child must live with the results.  If the
+applicaiton cannot get the desired semantics then perhaps it should use
+a different composite widget.  Under no circumstances should an
+application programmer resort to \fBXtMoveWidget\fP or
+\fBXtResizeWidget\fP these functions are exclusively for the use of
+Composite widget implementors.
+.LP
+For more information on geometry managment consult the \fI\*(xT\fP.
+
