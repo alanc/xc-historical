@@ -1,6 +1,6 @@
 /* LINTLIBRARY */
 #ifndef lint
-static char rcsid[] = "$Header: Core.c,v 6.39 88/02/01 17:19:14 swick Exp $";
+static char rcsid[] = "$Header: Core.c,v 6.40 88/02/01 17:39:34 swick Locked $";
 #endif lint
 
 /*
@@ -252,7 +252,8 @@ static void CoreDestroy (widget)
 {
     register XtEventRec *event, *next;
 
-    XtFree((char *) (widget->core.name));
+    if (*widget->core.name != '\0') /* special case; we didn't copy this */
+	XtFree((char *) (widget->core.name));
     if (widget->core.background_pixmap > 2)
 	XFreePixmap(XtDisplay(widget), widget->core.background_pixmap);
     if (widget->core.border_pixmap > 2)
