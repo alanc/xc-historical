@@ -1,4 +1,4 @@
-/* $XConsortium: bitfun.c,v 1.1 93/10/26 09:48:11 rws Exp $ */
+/* $XConsortium: bitfun.c,v 1.2 93/10/31 09:47:56 dpw Exp $ */
 /**** module bitfun.c ****/
 /******************************************************************************
 				NOTICE
@@ -159,14 +159,14 @@ unsigned char _ByteReverseTable[]= {
 
 #define p4 *outp++		
 
-void *bitexpand(inp,outp,bw,olow,ohigh)
+pointer bitexpand(inp,outp,bw,olow,ohigh)
 	LogInt *inp;			/* these are actualy bits... */
 	unsigned long *outp;		/* its actually bytes but ... */
 	int bw;				/* number of bits to extract */
 	unsigned char olow;		/* zero bit maps to this */
 	unsigned char ohigh;		/* one bit maps to this */
 {
-	void *dst = (void*)outp;
+	pointer dst = (pointer)outp;
 	int nw;
 	unsigned long inval, c;
 	if (olow == 0) {
