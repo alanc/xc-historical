@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: tocutil.c,v 1.10 88/01/25 14:23:19 swick Locked $";
+static char rcs_id[] = "$Header: tocutil.c,v 2.10 88/01/25 14:23:19 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -105,12 +105,13 @@ void TUScanFileForToc(toc)
     static Arg arglist[] = {
 	{XtNlabel, NULL},
 	{XtNx, (XtArgVal) 30},
-	{XtNy, (XtArgVal) 30}
+	{XtNy, (XtArgVal) 20}
     };
 
     Widget parent, label;
     Scrn scrn;
     char  **argv, str[100];
+    XEvent event;
     if (toc) {
 	TUGetFullFolderInfo(toc);
 	if (toc->num_scrns) scrn = toc->scrn[0];
@@ -122,8 +123,14 @@ void TUScanFileForToc(toc)
 	label = XtCreateWidget( "alert", labelWidgetClass, parent,
 			        arglist, XtNumber(arglist) );
 	XtRealizeWidget(label);
-	(*(label->core.widget_class->core_class.expose))(label, NULL); /* %%%Hack. */
-	XFlush(XtDisplay(label));
+	XtMapWidget(label);
+	XWindowEvent( XtDisplay(label),
+		      XtWindow(label),
+		      ExposureMask, &event );
+	do {
+	    XtDispatchEvent( &event );
+	}
+	while ( XCheckTypedEvent( XtDisplay(label), Expose, &event ) );
 
 	argv = MakeArgv(4);
 	argv[0] = "scan";
