@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbplygblt.c,v 5.5 92/12/23 17:47:31 rws Exp $ */
+/* $XConsortium: mfbplygblt.c,v 5.6 92/12/24 09:26:34 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -177,7 +177,7 @@ MFBPOLYGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 		    getleftbits(pglyph, w, tmpSrc);
 		    *pdst OPEQ (SCRRIGHT(tmpSrc, xoff) & startmask);
 		    pglyph += widthGlyph;
-		    mfbScanlineInc(pdst, widthDst, widthDst);
+		    mfbScanlineInc(pdst, widthDst);
 	        }
 	    }
 	    else
@@ -191,7 +191,7 @@ MFBPOLYGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 		    *pdst OPEQ (SCRRIGHT(tmpSrc, xoff) & startmask);
 		    *(pdst+1) OPEQ (SCRLEFT(tmpSrc, nFirst) & endmask);
 		    pglyph += widthGlyph;
-		    mfbScanlineInc(pdst, widthDst, widthDst);
+		    mfbScanlineInc(pdst, widthDst);
 	        }
 	    } /* glyph crosses longwords boundary */
 
@@ -339,7 +339,7 @@ MFBPOLYGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 			getshiftedleftbits(pglyph, glyphCol, getWidth, tmpSrc);
 			*pdst OPEQ (SCRRIGHT(tmpSrc, xoff) & startmask);
 			pglyph += widthGlyph;
-			mfbScanlineInc(pdst, widthDst, widthDst);
+			mfbScanlineInc(pdst, widthDst);
 		    }
 		}
 		else
@@ -352,7 +352,7 @@ MFBPOLYGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 			*pdst OPEQ (SCRRIGHT(tmpSrc, xoff) & startmask);
 			*(pdst+1) OPEQ (SCRLEFT(tmpSrc, nFirst) & endmask);
 			pglyph += widthGlyph;
-			mfbScanlineInc(pdst, widthDst, widthDst);
+			mfbScanlineInc(pdst, widthDst);
 		    }
 		}
 	    } /* for each glyph */
