@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.9 91/07/16 23:08:10 gildea Exp $
         DEFINES = 
            SRCS = dashlist.c planemask.c getfile.c tests.c text.c \
                   choice.c main.c interpret.c record.c testfrac.c
@@ -16,7 +16,7 @@ ComplexProgramTarget(xgc)
 InstallAppDefaults(Xgc)
 
 gram.h gram.c: gram.y
-	yacc -d gram.y
+	$(YACC) -d gram.y
 	$(MV) y.tab.c gram.c
 	$(MV) y.tab.h gram.h
 
