@@ -22,7 +22,7 @@ LibraryObjectRule()
 
 #if DoSharedLib
 #if DoNormalLib
-SharedLibraryTarget(oldX,$(SOOLDXREV),$(OBJS),shared,.)
+SharedLibraryTarget(oldX,$(SOOLDXREV),$(OBJS),shared,..)
 #else
 SharedLibraryTarget(oldX,$(SOOLDXREV),$(OBJS),.,.)
 #endif

@@ -144,7 +144,7 @@ SpecialLibObjectRule(LocBitmap.o,$(ICONFIGFILES),$(BITDEFS))
 
 #if DoSharedLib
 #if DoNormalLib
-SharedLibraryTarget(Xmu,$(SOXMUREV),$(OBJS),shared,.)
+SharedLibraryTarget(Xmu,$(SOXMUREV),$(OBJS),shared,..)
 #else
 SharedLibraryTarget(Xmu,$(SOXMUREV),$(OBJS),.,.)
 #endif
