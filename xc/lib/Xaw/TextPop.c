@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextPop.c,v 1.6 89/09/01 14:29:39 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextPop.c,v 1.7 89/09/06 17:30:20 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -78,6 +78,9 @@ static void DoReplaceOne(), DoReplaceAll();
 static Widget CreateDialog();
 static Boolean DoSearch(), SetResourceByName(), Replace();
 static String GetString();
+
+static char radio_trans_string[] =
+    "<Btn1Down>,<Btn1Up>:   set() notify()";
 
 static char search_text_trans[] = 
   "~Shift<Key>Return:      DoSearchAction(Popdown) \n\
@@ -321,20 +324,20 @@ char * ptr;
 				args, num_args);
 
   num_args = 0;
-  XtSetArg(args[num_args], XtNlabel, "Cancel"); num_args++;
-  XtSetArg(args[num_args], XtNfromVert, text); num_args++;
-  XtSetArg(args[num_args], XtNleft, XtChainLeft); num_args++;
-  XtSetArg(args[num_args], XtNright, XtChainLeft); num_args++;
-  cancel = XtCreateManagedWidget("cancel", commandWidgetClass, form,
-				 args, num_args);
-
-  num_args = 0;
   XtSetArg(args[num_args], XtNlabel, "Insert File"); num_args++;
   XtSetArg(args[num_args], XtNfromVert, text); num_args++;
-  XtSetArg(args[num_args], XtNfromHoriz, cancel); num_args++;
   XtSetArg(args[num_args], XtNleft, XtChainLeft); num_args++;
   XtSetArg(args[num_args], XtNright, XtChainLeft); num_args++;
   insert = XtCreateManagedWidget("insert", commandWidgetClass, form,
+				 args, num_args);
+
+  num_args = 0;
+  XtSetArg(args[num_args], XtNlabel, "Cancel"); num_args++;
+  XtSetArg(args[num_args], XtNfromVert, text); num_args++;
+  XtSetArg(args[num_args], XtNfromHoriz, insert); num_args++;
+  XtSetArg(args[num_args], XtNleft, XtChainLeft); num_args++;
+  XtSetArg(args[num_args], XtNright, XtChainLeft); num_args++;
+  cancel = XtCreateManagedWidget("cancel", commandWidgetClass, form,
 				 args, num_args);
 
   XtAddCallback(cancel, XtNcallback, PopdownFileInsert, (caddr_t) tw);
@@ -631,6 +634,14 @@ char * ptr;
   num_args++;
   search->right_toggle = XtCreateManagedWidget("forwards", toggleWidgetClass, 
 					       form, args, num_args);
+
+  {
+    XtTranslations radio_translations;
+
+    radio_translations = XtParseTranslationTable(radio_trans_string);
+    XtOverrideTranslations(search->left_toggle, radio_translations);
+    XtOverrideTranslations(search->right_toggle, radio_translations);
+  }
 
   num_args = 0;
   XtSetArg(args[num_args], XtNfromVert, search->left_toggle); num_args++;
