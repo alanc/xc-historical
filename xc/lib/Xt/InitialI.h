@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.19 89/09/22 14:43:45 kit Exp $ */
+/* $XConsortium: InitialI.h,v 1.20 89/09/22 17:48:58 swick Exp $ */
 /* $oHeader: InitializeI.h,v 1.8 88/09/01 11:25:04 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -96,6 +96,7 @@ typedef struct {
 typedef struct _XtAppStruct {
     XtAppContext next;		/* link to next app in process context */
     ProcessContext process;	/* back pointer to our process context */
+    CallbackList destroy_callbacks;
     Display **list;
     TimerEventRec *timerQueue;
     WorkProcRec *workQueue;
@@ -115,6 +116,7 @@ typedef struct _XtAppStruct {
     Boolean sync, being_destroyed, error_inited;
     Heap heap;
     String * fallback_resources;	/* Set by XtAppSetFallbackResources. */
+    struct _ActionHookRec* action_hook_list;
 } XtAppStruct;
 
 extern void _XtSetDefaultErrorHandlers();
@@ -160,6 +162,7 @@ typedef struct _XtPerDisplayStruct {
 					  this is currently only used in 
 					  XtSetColormapWindows. */
     Time last_timestamp;	       /* from last event dispatched */
+    int multi_click_time;	       /* for XtSetMultiClickTime */
 } XtPerDisplayStruct, *XtPerDisplay;
 
 extern void _XtPerDisplayInitialize();
