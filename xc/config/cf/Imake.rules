@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.37 89/07/16 18:26:16 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.38 89/07/16 21:10:15 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -69,6 +69,8 @@
  *      NamedDependSubdirs                       (name,dirs)
  *      InstallSubdirs                           (dirs)
  *      InstallManSubdirs                        (dirs)
+ *      NamedIncludesSubdirs                     (name,dirs)
+ *      IncludesSubdirs                             (dirs)
  *      NamedCleanSubdirs                        (name,dirs)
  *      CleanSubdirs                             (dirs)
  *      NamedTagSubdirs                          (name,dirs)
@@ -947,6 +949,21 @@ clean::									@@\
 
 
 /*
+ * NamedTargetSubdirs - recursively make a series of steps
+ */
+#ifndef NamedTargetSubdirs
+#define NamedTargetSubdirs(name,dirs,what,flags)			@@\
+name::									@@\
+	@case '${MFLAGS}' in *[ik]*) set +e;; esac; \			@@\
+	for i in dirs ;\						@@\
+	do \								@@\
+		(cd $$i ; echo what "in $(CURRENT_DIR)/$$i"; \		@@\
+			$(MAKE) $(MFLAGS) flags name); \		@@\
+	done
+#endif
+
+
+/*
  * MakeSubdirs - generate rules to have make all do recursive makes in 
  * indicated subdirectories.
  */
@@ -1031,6 +1048,12 @@ install.man::								@@\
 				DESTDIR='$(DESTDIR)' install.man ); \	@@\
 	done
 #endif /* InstallManSubdirs */
+
+
+#ifndef IncludesSubdirs
+#define IncludesSubdirs(dirs) \						@@\
+NamedTargetSubdirs(includes,dirs,including,)
+#endif
 
 
 /*
