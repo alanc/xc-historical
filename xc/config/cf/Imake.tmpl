@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.194 93/09/13 19:48:19 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.195 93/09/14 10:33:49 rws Exp $
 XCOMM
 
 /*
@@ -130,6 +130,9 @@ _NULLCMD_ = @ echo -n
 #else
 #define HasSockets		YES	/* bsd does have them */
 #endif
+#endif
+#ifndef HasStreams
+#define HasStreams		!HasSockets
 #endif
 #ifndef HasDECnet
 #define HasDECnet		NO
