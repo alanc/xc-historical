@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGetStCmap.c,v 1.3 87/09/11 08:15:49 jim Locked $ */
+/* $Header: XGetStCmap.c,v 1.4 88/02/07 11:42:30 jim Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -51,7 +51,7 @@ Status XGetStandardColormap (dpy, w, cmap, property)
 
         if ((nitems < NumPropStandardColormapElements)
 	 || (actual_format != 32)) {
-		Xfree ((char *)prop);
+		if (prop) Xfree ((char *)prop);
                 return(0);
 		}
 	cmap->colormap	 = prop->colormap;
