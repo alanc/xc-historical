@@ -852,7 +852,6 @@ static void InsertChild(w, args, num_args)
     
     (*(((CompositeWidgetClass)(shellWidgetClass->core_class.superclass))->
 	    composite_class.insert_child)) (w, args, num_args);
-    XtManageChild(w);	/* Add to managed set now */
 }
 
 /*
