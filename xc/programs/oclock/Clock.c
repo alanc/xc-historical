@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Clock.c,v 1.21 91/02/20 19:28:10 converse Exp $
+ * $XConsortium: Clock.c,v 1.22 91/03/08 13:31:29 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -27,14 +27,18 @@
  * a NeWS clone clock
  */
 
-# include <X11/Xos.h>
-# include <stdio.h>
-# include <X11/IntrinsicP.h>
-# include <X11/StringDefs.h>
-# include <X11/Xmu/Converters.h>
-# include "ClockP.h"
-# include <math.h>
-# include <X11/extensions/shape.h>
+#include <X11/IntrinsicP.h>
+#include <X11/StringDefs.h>
+#include <X11/Xmu/Converters.h>
+#include "ClockP.h"
+#include <X11/Xos.h>
+#include <stdio.h>
+#include <math.h>
+#include <X11/extensions/shape.h>
+
+#ifdef X_NOT_STDC_ENV
+extern struct tm *localtime();
+#endif
 
 #define offset(field) XtOffsetOf(ClockRec, clock.field)
 #define goffset(field) XtOffsetOf(WidgetRec, core.field)
@@ -412,7 +416,7 @@ static void new_time (client_data, id)
 {
         ClockWidget	w = (ClockWidget)client_data;
 	long		now;
-	struct tm	*localtime (), *tm;
+	struct tm	*tm;
 	
 	if (!w->clock.transparent)
 	if (w->clock.polys_valid) {
