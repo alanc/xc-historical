@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.61 92/08/22 12:46:14 rws Exp $
+ * $XConsortium: main.c,v 1.62 92/08/22 13:04:19 rws Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -403,6 +403,13 @@ char *getline(filep)
 				*p++ = ' ';
 			}
 			continue;
+		}
+		else if (*p == '\\') {
+			if (*(p+1) == '\n') {
+				*p = ' ';
+				*(p+1) = ' ';
+				lineno++;
+			}
 		}
 		else if (*p == '\n') {
 			lineno++;
