@@ -28,13 +28,12 @@ static char rcsid[] = "$Header: Scroll.c,v 1.15 88/01/07 14:21:20 swick Locked $
 /* created by weissman, Mon Jul  7 13:20:03 1986 */
 /* converted by swick, Thu Aug 27 1987 */
 
-#include "Xlib.h"
-#include "Xresource.h"
-#include "Intrinsic.h"
-#include "Scroll.h"
+#include <X/Xlib.h>
+#include <X/Xresource.h>
+#include <X/Intrinsic.h>
+#include <X/Scroll.h>
+#include <X/Atoms.h>
 #include "ScrollP.h"
-#include "Atoms.h"
-#include "cursorfont.h"
 
 /* Private definitions. */
 
@@ -169,6 +168,7 @@ static	XrmQuark  XtQEvertical;
 
 extern void _XLowerCase();
 
+/* ARGSUSED */
 static void CvtStringToOrientation(screen, fromVal, toVal)
     Screen	*screen;
     XrmValuePtr	fromVal;
@@ -282,12 +282,12 @@ static void PaintThumb( w )
     oldtop = w->scrollbar.topLoc;
     oldbot = oldtop + w->scrollbar.shownLength;
     newtop = w->scrollbar.length * w->scrollbar.top;
-    newbot = newtop + w->scrollbar.length * w->scrollbar.shown;
+    newbot = newtop + (int)(w->scrollbar.length * w->scrollbar.shown);
     if (newbot < newtop + MINBARHEIGHT) newbot = newtop + MINBARHEIGHT;
     w->scrollbar.topLoc = newtop;
     w->scrollbar.shownLength = newbot - newtop;
 
-    if (XtIsRealized(w)) {
+    if (XtIsRealized((Widget)w)) {
 	if (newtop < oldtop) FillArea(w, newtop, MIN(newbot, oldtop), 1);
 	if (newtop > oldtop) FillArea(w, oldtop, MIN(newtop, oldbot), 0);
 	if (newbot < oldbot) FillArea(w, MAX(newbot, oldtop), oldbot, 0);
@@ -428,6 +428,7 @@ static void Redisplay( gw, event )
 }
 
 
+/* ARGSUSED */
 static void StartScroll( gw, event, params, num_params )
   Widget gw;
   XEvent *event;
@@ -469,11 +470,81 @@ static void StartScroll( gw, event, params, num_params )
 }
 
 
+static Boolean CompareEvents( oldEvent, newEvent )
+    XEvent *oldEvent, *newEvent;
+{
+#define Check(field) if (newEvent->field != oldEvent->field) return False;
+
+    Check(xany.display);
+    Check(xany.type);
+    Check(xany.window);
+
+    switch( newEvent->type ) {
+      case MotionNotify:
+		Check(xmotion.state); break;
+      case ButtonPress:
+      case ButtonRelease:
+		Check(xbutton.state);
+		Check(xbutton.button); break;
+      case KeyPress:
+      case KeyRelease:
+		Check(xkey.state);
+		Check(xkey.keycode); break;
+      case EnterNotify:
+      case LeaveNotify:
+		Check(xcrossing.mode);
+		Check(xcrossing.detail);
+		Check(xcrossing.state); break;
+    }
+#undef Check
+
+    return True;
+}
+
+struct EventData {
+	XEvent *oldEvent;
+	int count;
+};
+
+static Boolean PeekNotifyEvent( dpy, event, args )
+    Display *dpy;
+    XEvent *event;
+    char *args;
+{
+    struct EventData *eventData = (struct EventData*)args;
+
+    if ((++eventData->count == QLength(dpy)) /* since PeekIf blocks */
+	|| CompareEvents(event, eventData->oldEvent))
+	return True;
+}
+
+
+static Boolean LookAhead( w, event )
+    Widget w;
+    XEvent *event;
+{
+    XEvent newEvent;
+    struct EventData eventData;
+
+    if (QLength(XtDisplay(w)) == 0) return False;
+
+    eventData.count = 0;
+    eventData.oldEvent = event;
+
+    XPeekIfEvent(XtDisplay(w), &newEvent, PeekNotifyEvent, (char*)&eventData);
+
+    if (CompareEvents(event, &newEvent))
+	return True;
+    else
+	return False;
+}
+
+
 static void ExtractPosition( event, x, y )
     XEvent *event;
     int *x, *y;			/* RETURN */
 {
-    switch (event->type) {
+    switch( event->type ) {
       case MotionNotify:
 		*x = event->xmotion.x;	 *y = event->xmotion.y;	  break;
       case ButtonPress:
@@ -502,6 +573,8 @@ static void NotifyScroll( gw, event, params, num_params   )
     int x, y;
 
     if (w->scrollbar.direction == 0) return; /* if no StartScroll */
+
+    if (LookAhead(gw, event)) return;
 
     if (num_params > 0) style = *params[0];
     else		style = 'P';
@@ -559,10 +632,12 @@ static void MoveThumb( gw, event, params, num_params )
 
     if (w->scrollbar.direction == 0) return; /* if no StartScroll */
 
+    if (LookAhead(gw, event)) return;
+
     ExtractPosition( event, &x, &y );
     w->scrollbar.top = FractionLoc(w, x, y);
     PaintThumb(w);
-    XFlush(XtDisplay(w));
+    XFlush(XtDisplay(w));	/* re-draw it before Notifying */
 }
 
 
@@ -576,6 +651,8 @@ static void NotifyThumb( gw, event, params, num_params )
     register ScrollbarWidget w = (ScrollbarWidget) gw;
 
     if (w->scrollbar.direction == 0) return; /* if no StartScroll */
+
+    if (LookAhead(gw, event)) return;
 
     XtCallCallbacks( gw, XtNthumbProc, w->scrollbar.top);
 }
