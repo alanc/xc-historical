@@ -1,4 +1,4 @@
-/* $XConsortium: sunInit.c,v 5.35 93/08/31 18:16:48 kaleb Exp $ */
+/* $XConsortium: sunInit.c,v 5.36 93/09/26 12:27:16 rws Exp $ */
 /*
  * sunInit.c --
  *	Initialization functions for screen/keyboard/mouse, etc.
@@ -158,7 +158,9 @@ fbFd sunFbs[MAXSCREENS];
 static PixmapFormatRec	formats[] = {
     { 1, 1, BITMAP_SCANLINE_PAD	}, /* 1-bit deep */
     { 8, 8, BITMAP_SCANLINE_PAD	}, /* 8-bit deep */
+#ifdef notdef
     { 24, 32, BITMAP_SCANLINE_PAD } /* 24-bit deep */
+#endif
 };
 #define NUMFORMATS	(sizeof formats)/(sizeof formats[0])
 
