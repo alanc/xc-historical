@@ -1,4 +1,4 @@
-/* $XConsortium: Create.c,v 1.93 93/09/20 17:00:30 kaleb Exp $ */
+/* $XConsortium: Create.c,v 1.94 93/10/06 17:10:37 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -293,7 +293,6 @@ static Widget _XtCreate(
     UNLOCK_PROCESS;
 
     if (cache_refs != NULL) {
-	extern void _XtCallbackReleaseCacheRefs();
 	XtAddCallback( widget, XtNdestroyCallback,
 		       XtCallbackReleaseCacheRefList, (XtPointer)cache_refs );
     }
