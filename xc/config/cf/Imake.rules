@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.79 90/12/13 22:30:57 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.80 90/12/21 16:35:00 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -303,7 +303,11 @@ Concat(load,server):							@@\
 #endif /* ServerTarget */
 
 
-
+#if DoRanlibCmd
+#define RanLibrary(args) $(RANLIB) args
+#else
+#define RanLibrary(args) /**/
+#endif
 
 /*
  * InstallLibrary - generate rules to install the indicated library.
@@ -312,7 +316,7 @@ Concat(load,server):							@@\
 #define	InstallLibrary(libname,dest)					@@\
 install:: Concat(lib,libname.a)						@@\
 	$(INSTALL) -c $(INSTLIBFLAGS) Concat(lib,libname.a) dest	@@\
-	$(RANLIB) $(RANLIBINSTFLAGS) Concat(dest/lib,libname.a)
+	RanLibrary($(RANLIBINSTFLAGS) Concat(dest/lib,libname.a))
 #endif /* InstallLibrary */
 
 /*
@@ -341,7 +345,7 @@ install:: Concat(lib,libname.so.rev) 					@@\
 #define	InstallSharedLibraryData(libname,rev,dest)			@@\
 install:: Concat(lib,libname.sa.rev)					@@\
 	$(INSTALL) -c $(INSTLIBFLAGS) Concat(lib,libname.sa.rev) dest	@@\
-	$(RANLIB) $(RANLIBINSTFLAGS) Concat(dest/lib,libname.sa.rev)
+	RanLibrary($(RANLIBINSTFLAGS) Concat(dest/lib,libname.sa.rev))
 
 #endif /* InstallSharedLibraryData */
 
@@ -904,7 +908,7 @@ AllTarget(Concat(lib,libname.a))					@@\
 Concat(lib,libname.a): objlist						@@\
 	$(RM) $@							@@\
 	$(AR) $@ objlist						@@\
-	$(RANLIB) $@
+	RanLibrary($@)
 #endif /* NormalLibraryTarget */
 
 
@@ -940,7 +944,7 @@ AllTarget(Concat(lib,libname.sa.rev))					@@\
 Concat(lib,libname.sa.rev):  salist					@@\
 	$(RM) $@							@@\
 	$(AR) $@ salist							@@\
-	$(RANLIB) $@							@@\
+	RanLibrary($@)							@@\
 									@@\
 clean::									@@\
 	$(RM) Concat(lib,libname.sa.rev)
@@ -963,7 +967,7 @@ Concat(lib,libname.a): objlist1 objlist2				@@\
 	$(RM) $@							@@\
 	$(AR) $@ objlist1						@@\
 	$(AR) $@ objlist2						@@\
-	$(RANLIB) $@
+	RanLibrary($@)
 #endif /* NormalLibraryTarget2 */
 
 
@@ -977,7 +981,7 @@ AllTarget(Concat3(lib,libname,_p.a))					@@\
 Concat3(lib,libname,_p.a): objlist					@@\
 	$(RM) $@							@@\
 	cd profiled; $(AR) ../$@ objlist				@@\
-	$(RANLIB) $@
+	RanLibrary($@)
 
 #endif /* ProfiledLibraryTarget */
 
@@ -992,7 +996,7 @@ AllTarget(Concat3(lib,libname,_d.a))					@@\
 Concat3(lib,libname,_d.a): objlist					@@\
 	$(RM) $@							@@\
 	cd debugger; $(AR) ../$@ objlist				@@\
-	$(RANLIB) $@
+	RanLibrary($@)
 
 #endif /* DebuggedLibraryTarget */
 
