@@ -1,9 +1,12 @@
 /*
- * $XConsortium: charproc.c,v 1.108 89/10/30 17:26:18 jim Exp $
+ * $XConsortium: charproc.c,v 1.109 89/10/30 17:36:41 jim Exp $
  */
 
 
 #include <X11/copyright.h>
+#include <X11/Xlib.h>
+#include <X11/Xatom.h>
+#include <X11/Xmu/Atoms.h>
 
 /*
  * Copyright 1988 Massachusetts Institute of Technology
@@ -140,7 +143,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.108 89/10/30 17:26:18 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.109 89/10/30 17:36:41 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -182,6 +185,7 @@ extern void HandleScrollForward();
 extern void HandleScrollBack();
 extern void HandleCreateMenu();
 extern void HandleSetFont();
+extern void HandleSetSelectedFont();
 extern void HandleSetMenuFont();
 extern void set_vt_font();
 
@@ -240,6 +244,7 @@ static XtActionsRec actionsList[] = {
     { "select-cursor-end",	  HandleKeyboardSelectEnd },
     { "set-font",	  HandleSetFont },
     { "set-menu-font",	  HandleSetMenuFont },
+    { "set-selected-font",HandleSetSelectedFont },
     { "start-extend",	  HandleStartExtend },
     { "start-cursor-extend",	  HandleKeyboardStartExtend },
     { "string",		  HandleStringEvent },
@@ -2597,6 +2602,52 @@ void HandleSetFont(w, event, params, param_count)
     }
 	
     if (!didit) Bell();
+}
+
+/* ARGSUSED */
+void DoSetSelectedFont(w, client_data, selection, type, value, length, format)
+    Widget w;
+    XtPointer client_data;
+    Atom *selection, *type;
+    XtPointer value;
+    unsigned long *length;
+    int *format;
+{
+    if (*type != XA_STRING || *format != 8) { Bell(); return; }
+    if (!try_new_font(&term->screen, value, NULL, True, fontMenu_fontescape))
+	Bell();
+}
+
+/* ARGSUSED */
+void HandleSetSelectedFont(w, event, params, param_count)
+    Widget w;
+    XEvent *event;		/* unused */
+    String *params;		/* unused */
+    Cardinal *param_count;	/* unused */
+{
+    static AtomPtr *atoms;
+    static int atomCount = 0;
+    AtomPtr *pAtom;
+    int a;
+    String atomName;
+
+    switch (*param_count) {
+      case 0:	atomName = "PRIMARY_FONT"; break;
+      case 1:	atomName = params[0]; break;
+      default:	Bell(); return;
+    }
+    for (pAtom = atoms, a = atomCount; a; a--, pAtom++) {
+	if (strcmp(atomName, XmuNameOfAtom(*pAtom)) == 0) break;
+    }
+    if (!a) {
+	atoms = (AtomPtr*)XtRealloc( atoms, sizeof(AtomPtr)*(atomCount+1) );
+	*(pAtom = &atoms[atomCount++]) = XmuMakeAtom(atomName);
+    }
+
+#define XA_PRIMARY_FONT XmuInternAtom(XtDisplay(w), *pAtom)
+
+    XtGetSelectionValue(w, XA_PRIMARY_FONT, XA_STRING, DoSetSelectedFont,
+			NULL, XtLastTimestampProcessed(XtDisplay(w)));
 }
 
 /* ARGSUSED */
