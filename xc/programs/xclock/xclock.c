@@ -2,7 +2,7 @@
  *  Hacked from Tony Della Fera's much hacked clock program.
  */
 #ifndef lint
-static char rcsid[] = "$Header: xclock.c,v 1.7 87/12/08 08:18:34 swick Locked $";
+static char rcsid[] = "$Header: xclock.c,v 1.10 88/02/11 16:10:48 jim Exp $";
 #endif  lint
 
 #include <X/Xatom.h>
@@ -21,10 +21,10 @@ extern void exit();
 
 static XrmOptionDescRec options[] = {
 {"-chime",	"*clock.chime",		XrmoptionNoArg,		"TRUE"},
-{"-hd",		"*clock.hand",		XrmoptionSepArg,	NULL},
-{"-hands",	"*clock.hand",		XrmoptionSepArg,	NULL},
-{"-hl",		"*clock.high",		XrmoptionSepArg,	NULL},
-{"-highlight",	"*clock.high",		XrmoptionSepArg,	NULL},
+{"-hd",		"*clock.hands",		XrmoptionSepArg,	NULL},
+{"-hands",	"*clock.hands",		XrmoptionSepArg,	NULL},
+{"-hl",		"*clock.highlight",	XrmoptionSepArg,	NULL},
+{"-highlight",	"*clock.highlight",	XrmoptionSepArg,	NULL},
 {"-update",	"*clock.update",	XrmoptionSepArg,	NULL},
 {"-padding",	"*clock.padding",	XrmoptionSepArg,	NULL},
 {"-d",		"*clock.analog",	XrmoptionNoArg,		"FALSE"},
@@ -40,7 +40,8 @@ Syntax(call)
 	char *call;
 {
 	(void) printf ("Usage: %s [-analog] [-bw <pixels>] [-digital]\n", call);
-	(void) printf ("       [-fg <color>] [-bg <color>] [-hl <color>] [-bd <color>]\n");
+	(void) printf ("       [-fg <color>] [-bg <color>] [-hd <color>]\n");
+	(void) printf ("       [-hl <color>] [-bd <color>]\n");
 	(void) printf ("       [-fn <font_name>] [-help] [-padding <pixels>]\n");
 	(void) printf ("       [-rv] [-update <seconds>] [-d [<host>]:[<vs>]]\n");
 	(void) printf ("       [-g =[<width>][x<height>][<+-><xoff>[<+-><yoff>]]]\n\n");
