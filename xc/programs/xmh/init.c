@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: init.c,v 1.8 87/12/24 10:21:11 swick Exp $";
+static char rcs_id[] = "$Header: init.c,v 1.9 88/01/19 14:27:05 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -29,6 +29,8 @@ static char rcs_id[] = "$Header: init.c,v 1.8 87/12/24 10:21:11 swick Exp $";
 /* Init.c - Handle start-up initialization. */
 
 #include "xmh.h"
+
+extern char* _XLowerCase();
 
 /* Xmh-specific resources. */
 
@@ -78,17 +80,21 @@ static XtResource resources[] = {
 	 (Cardinal)&defNewMailCheck, XrmRString, "True"},
     {"makecheckpoints", "MakeCheckPoints", XrmRBoolean, sizeof(Boolean),
 	 (Cardinal)&defMakeCheckpoints, XrmRString, "False"},
+    {"mailPath", "MailPath", XrmRString, sizeof(char *),
+	 (Cardinal)&mailDir, XrmRString, NULL},
 };
 
 static XrmOptionDescRec table[] = {
-    {"-debug",	"debug",	XrmoptionNoArg,	"on"}
+    {"-debug",	"debug",	XrmoptionNoArg,	"on"},
+    {"-path",	"mailPath",	XrmoptionSepArg, NULL}
 };
 
 /* Tell the user how to use this program. */
-Syntax()
+Syntax(call)
+    char *call;
 {
     extern void exit();
-    (void)fprintf(stderr, "usage:  xmh [display] [=geometry] \n");
+    (void)fprintf(stderr, "usage: %s [display] [=geometry] [-path <path>]\n", call);
     exit(2);
 }
 
@@ -125,8 +131,6 @@ char **argv;
     FILEPTR fid;
     XrmResourceDataBase db, db2;
     char str[500], str2[500], *ptr;
-    XrmNameList names;
-    XrmClassList classes;
     Scrn scrn;
     static XtActionsRec actions[] = {
 	{"open-folder", OpenFolder},
@@ -139,48 +143,47 @@ char **argv;
 
     toplevel = XtInitialize(progName, "Xmh", table, XtNumber(table),
 			    &argc, argv);
-/*    if (argc > 1) Syntax();*/
+    if (argc > 1) Syntax(progName);
     theDisplay = XtDisplay(toplevel);
     theScreen = DefaultScreen(theDisplay);
 
     homeDir = MallocACopy(getenv("HOME"));
 
-    (void) sprintf(str, "%s/.mh_profile", homeDir);
-    fid = myfopen(str, "r");
-    if (fid) {
-	while (ptr = ReadLine(fid)) {
-	    if (strncmp(ptr, "Path:", 5) == 0) {
-		ptr += 5;
-		while (*ptr == ' ' || *ptr == '\t')
-		    ptr++;
-		(void) strcpy(str, ptr);
-	    }
-	}
-	(void) myfclose(fid);
-    } else {
-	fid = myfopen(str, "w");
+    XtGetSubresources((Widget) toplevel, (caddr_t) NULL, progName, "Xmh",
+		      resources, XtNumber(resources), NULL, (Cardinal) 0);
+
+    if (!mailDir) {
+	(void) sprintf(str, "%s/.mh_profile", homeDir);
+	fid = myfopen(str, "r");
 	if (fid) {
-	    (void) fprintf(fid, "Path: Mail\n");
+	    while (ptr = ReadLine(fid)) {
+		strncpy(str2, ptr, 5);
+		str2[5] = '\0';
+		_XLowerCase(str2, str2);
+		if (strcmp(str2, "path:") == 0) {
+		    ptr += 5;
+		    while (*ptr == ' ' || *ptr == '\t')
+			ptr++;
+		    (void) strcpy(str, ptr);
+		}
+	    }
 	    (void) myfclose(fid);
-	} else Punt("Can't read or create .mh_profile!");
-	(void) strcpy(str, "Mail");
+	} else {
+	    (void) strcpy(str, "Mail");
+	}
+	for (l=strlen(str) - 1; l>=0 && (str[l] == ' ' || str[l] == '\t'); l--)
+	    str[l] = 0;
+	if (str[0] == '/')
+	    (void) strcpy(str2, str);
+	else
+	    (void) sprintf(str2, "%s/%s", homeDir, str);
+	mailDir = MallocACopy(str2);
     }
-    for (l = strlen(str) - 1; l >= 0 && (str[l] == ' ' || str[l] == '\t'); l--)
-	str[l] = 0;
-    if (str[0] == '/')
-	(void) strcpy(str2, str);
-    else
-	(void) sprintf(str2, "%s/%s", homeDir, str);
-    mailDir = MallocACopy(str2);
+
     (void) sprintf(str, "%s/draft", mailDir);
     draftFile = MallocACopy(str);
     (void) sprintf(str, "%s/xmhdraft", mailDir);
     xmhDraftFile = MallocACopy(str);
-
-    defViewGeometry = defCompGeometry = defPickGeometry = NULL;
-
-    XtGetSubresources((Widget) toplevel, (caddr_t) NULL, progName, "Xmh",
-		      resources, XtNumber(resources), NULL, (Cardinal) 0);
 
     NullSource = XtCreateEDiskSource("/dev/null", FALSE);
 
@@ -210,17 +213,17 @@ char **argv;
 
     XtAddActions(actions, XtNumber(actions));
 
-if (debug) {(void)fprintf(stderr, "Making screen ... "); (void)fflush(stderr);}
+    DEBUG("Making screen ... ")
 
     scrn = CreateNewScrn(STtocAndView);
 
-if (debug) {(void)fprintf(stderr, " setting toc ... "); (void)fflush(stderr);}
+    DEBUG(" setting toc ... ")
 
     TocSetScrn(InitialFolder, scrn);
 
-if (debug) (void)fprintf(stderr, "done\n");
+    DEBUG("done.\n");
 
-/* if (debug) {(void)fprintf(stderr, "Syncing ... "); (void)fflush(stderr); XSync(theDisplay, 0); (void)fprintf(stderr, "done\n");} */
+/* if (debug) {DEBUG("Syncing ..."); ExecSyncOn(); DEBUG(" done\n");} */
 
     MapScrn(scrn);
 }
