@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.108 94/03/28 19:37:04 matt Exp $
+XCOMM site:  $XConsortium: site.def,v 1.109 94/03/28 20:29:00 matt Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -84,7 +84,7 @@ XCOMM site:  $XConsortium: site.def,v 1.108 94/03/28 19:37:04 matt Exp $
 #define PreIncDir /usr/local/lib/gcc-lib/sun3-sunos4.1/2.3.2/include
 #endif
 #if defined(SunArchitecture) && defined(SVR4)
-#define PreIncDir /opt/gnu/lib/gcc-lib/sparc-sun-solaris2/2.3.3/include
+#define PreIncDir /opt/gnu/lib/gcc-lib/sparc-sun-solaris2/2.5.8/include
 #endif
 #if defined(SunArchitecture) && !defined(SVR4)
 #define PreIncDir /usr/local/lib/gcc-lib/sparc-sun-sunos4.1.3/2.5.8/include
