@@ -24,8 +24,8 @@ all:: $(PROGRAMS) $(DATADEP)
 
 SingleProgramTarget(rgb,$(OBJS1),NullParameter,$(DBMLIB))
 SingleProgramTarget(showrgb,$(OBJS2),NullParameter,$(DBMLIB))
-SpecialObjectRule(rgb.o,$(ICONFIGFILES),NullParameter)
-SpecialObjectRule(showrgb.o,$(ICONFIGFILES),NullParameter)
+SpecialObjectRule(rgb.o,$(ICONFIGFILES),$(_NOOP_))
+SpecialObjectRule(showrgb.o,$(ICONFIGFILES),$(_NOOP_))
 InstallMultiple($(DATAFILES) rgb.txt,$(LIBDIR))
 InstallProgramWithFlags(showrgb,$(BINDIR),)
 
