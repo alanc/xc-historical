@@ -2,7 +2,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
 
 #ifndef lint
-static char rcsid[] = "$Header: XEvToWire.c,v 11.13 87/10/28 12:54:38 jim Locked $";
+static char rcsid[] = "$Header: XEvToWire.c,v 11.14 88/02/06 15:27:54 jim Exp $";
 #endif
 
 /*
@@ -18,14 +18,12 @@ static char rcsid[] = "$Header: XEvToWire.c,v 11.13 87/10/28 12:54:38 jim Locked
  * reformat a wire event into an XEvent structure of the right type.
  */
 /*ARGSUSED*/
+Status
 _XEventToWire(dpy, re, event)
 register Display *dpy;	/* pointer to display structure */
 register XEvent *re;	/* pointer to where event should be reformatted */
 register xEvent *event;	/* wire protocol event */
 {
-#ifdef lint
-	dpy = dpy;
-#endif
 	switch (event->u.u.type = re->type) {
 	      case KeyPress:
 	      case KeyRelease:
@@ -362,8 +360,9 @@ register xEvent *event;	/* wire protocol event */
 			  event->u.clientMessage.u.l.longs3   = ev->data.l[3];
 			  event->u.clientMessage.u.l.longs4   = ev->data.l[4];
 			  break;
-			default: /* XXX should never occur */
-				break;
+			default:
+			  /* client passing bogus data, let server complain */
+			  break;
 			}
 		    }
 		break;
@@ -377,7 +376,7 @@ register xEvent *event;	/* wire protocol event */
 		break;
 		
 	      default:
-		/* XXX should do something about unknown event here */
-		break;
+		return(_XUnknownNativeEvent(dpy, re, event));
 	}
+	return(1);
 }
