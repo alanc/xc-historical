@@ -6,7 +6,7 @@ SUBDIRS = \
  	xditview xdm xdpyinfo xedit xev xfd xhost xinit xkill \
  	xload xlogo xlsclients xlsfonts xlswins xmag xman xmessage xmh \
 	xmodmap xpr xprop xrdb xrefresh \
- 	xset xsetroot xterm xwd xwininfo xwud
+ 	xset xsetroot xterm xwd xwininfo xwud twm
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
