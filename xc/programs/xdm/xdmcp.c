@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: xdmcp.c,v 1.2 91/07/16 22:19:52 gildea Exp $
+ * $XConsortium: xdmcp.c,v 1.3 91/07/18 18:57:22 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -285,7 +285,7 @@ NetworkAddressToName(connectionType, connectionAddress, displayNumber)
 	    char		*localhost, *localHostname();
 
 	    data = connectionAddress->data;
-	    hostent = gethostbyaddr (data,
+	    hostent = gethostbyaddr ((char *)data,
 				     connectionAddress->length, AF_INET);
 
 	    localhost = localHostname ();
@@ -1035,7 +1035,7 @@ NetworkAddressToHostname (connectionType, connectionAddress)
 	{
 	    struct hostent	*hostent;
 
-	    hostent = gethostbyaddr (connectionAddress->data,
+	    hostent = gethostbyaddr ((char *)connectionAddress->data,
 				     connectionAddress->length, AF_INET);
 
 	    if (!hostent)
