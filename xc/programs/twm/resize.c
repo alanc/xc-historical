@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.59 89/11/27 17:12:30 jim Exp $
+ * $XConsortium: resize.c,v 1.60 89/12/08 19:18:32 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.59 89/11/27 17:12:30 jim Exp $";
+"$XConsortium: resize.c,v 1.60 89/12/08 19:18:32 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -390,7 +390,7 @@ int height;
         dheight /= tmp_win->hints.height_inc;
     }
 
-    sprintf(str, " %4d x %-4d ", dwidth, dheight);
+    (void) sprintf (str, " %4d x %-4d ", dwidth, dheight);
     XRaiseWindow(dpy, Scr->SizeWindow);
     FBF(Scr->DefaultC.fore, Scr->DefaultC.back, Scr->SizeFont.font->fid);
     XDrawImageString (dpy, Scr->SizeWindow, Scr->NormalGC,

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.133 89/12/06 12:01:11 jim Exp $
+ * $XConsortium: menus.c,v 1.134 89/12/09 22:21:35 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.133 89/12/06 12:01:11 jim Exp $";
+"$XConsortium: menus.c,v 1.134 89/12/09 22:21:35 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -47,20 +47,16 @@ static char RCSinfo[] =
 #include "twm.h"
 #include "gc.h"
 #include "menus.h"
+#include "resize.h"
 #include "events.h"
 #include "util.h"
 #include "parse.h"
 #include "gram.h"
 #include "screen.h"
-#include "pull.bm"
+#include <X11/bitmaps/menu12>
 #include "version.h"
 
-
-#define SYNC XSync(dpy, 0);
-
 extern XEvent Event;
-
-char *getenv();
 
 #if defined(SYSV) && !defined(hpux)
 #define vfork fork
@@ -95,6 +91,7 @@ extern int Context;
 extern TwmWindow *ButtonWindow, *Tmp_win;
 extern XEvent Event, ButtonEvent;
 extern char *InitFile;
+static void Identify();
 
 #define SHADOWWIDTH 5			/* in pixels */
 
@@ -130,7 +127,7 @@ InitMenus()
 	    free(key->name);
 	    tmp = key;
 	    key = key->next;
-	    free(tmp);
+	    free((char *) tmp);
 	}
 	Scr->FuncKeyRoot.next = NULL;
     }
@@ -295,12 +292,12 @@ void InitTitlebarButtons ()
      */
     if (!Scr->NoDefaults) {
 	/* insert extra buttons */
-	if (!CreateTitleButton (TBPM_ICONIFY, F_ICONIFY, "", NULL,
+	if (!CreateTitleButton (TBPM_ICONIFY, F_ICONIFY, "", (MenuRoot *) NULL,
 				False, False)) {
 	    fprintf (stderr, "%s:  unable to add iconify button\n",
 		     ProgramName);
 	}
-	if (!CreateTitleButton (TBPM_RESIZE, F_RESIZE, "", NULL,
+	if (!CreateTitleButton (TBPM_RESIZE, F_RESIZE, "", (MenuRoot *) NULL,
 				True, True)) {
 	    fprintf (stderr, "%s:  unable to add resize button\n",
 		     ProgramName);
@@ -400,15 +397,15 @@ int exposure;
 	{
 
 	    /* create the pull right pixmap if needed */
-	    if (Scr->pullPm == NULL)
+	    if (Scr->pullPm == None)
 	    {
 		Scr->pullPm = XCreatePixmapFromBitmapData(dpy, Scr->Root,
-		    pull_bits, pull_width, pull_height, 1, 0, 1);
+		    menu12_bits, menu12_width, menu12_height, 1, 0, 1);
 	    }
-	    x = mr->width - pull_width - 5;
-	    y = y_offset + ((Scr->MenuFont.height - pull_height) / 2);
+	    x = mr->width - menu12_width - 5;
+	    y = y_offset + ((Scr->MenuFont.height - menu12_height) / 2);
 	    XCopyPlane(dpy, Scr->pullPm, mr->w, gc, 0, 0,
-		pull_width, pull_height, x, y, 1);
+		menu12_width, menu12_height, x, y, 1);
 	}
     }
     else
@@ -600,7 +597,7 @@ NewMenuRoot(name)
     tmp->width = 0;
     tmp->mapped = NEVER_MAPPED;
     tmp->pull = FALSE;
-    tmp->w = NULL;
+    tmp->w = None;
     tmp->shadow = None;
     tmp->real_menu = FALSE;
 
@@ -951,8 +948,6 @@ Bool PopUpMenu (menu, x, y, center)
     int x, y;
     Bool center;
 {
-    MenuItem *tmp, *tmp1;
-
     if (!menu) return False;
 
     if (menu == Scr->Windows)
@@ -969,13 +964,13 @@ Bool PopUpMenu (menu, x, y, center)
 	menu->width = 0;
 	menu->mapped = NEVER_MAPPED;
 
-	AddToMenu(menu, "TWM Windows", NULL, NULL, F_TITLE, NULL, NULL);
+	AddToMenu(menu, "TWM Windows", NULLSTR, NULL, F_TITLE,NULLSTR,NULLSTR);
 	for (tmp_win = Scr->TwmRoot.next;
 	     tmp_win != NULL;
 	     tmp_win = tmp_win->next)
 	{
 	    AddToMenu (menu, tmp_win->name, (char *) tmp_win, NULL, F_POPUP, 
-		       NULL, NULL);
+		       NULLSTR, NULLSTR);
 	}
 	MakeMenu(menu);
     }
@@ -1100,24 +1095,6 @@ FindMenuRoot(name)
     return NULL;
 }
 
-CheckButton(dpy, event, count)
-Display *dpy;
-XEvent *event;
-int *count;
-{
-    if (event->type == ButtonRelease)
-    {
-	*count = TRUE;
-	return TRUE;
-    }
-    *count -= 1;
-    if (*count <= 0)
-    {
-	*count = FALSE;
-	return TRUE;
-    }
-    return FALSE;
-}
 
 /***********************************************************************
  *
@@ -1150,17 +1127,11 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
     int pulldown;
 {
     static Time last_time = 0;
-    static int calldepth = 0;
 
     char tmp[200];
     char *ptr;
-    int len;
     char buff[MAX_FILE_SIZE];
     int count, fd;
-    MenuRoot *root, *tmp_root;
-    MenuItem *item, *tmp_item;
-    ScreenInfo *oldScr;
-    int scrnum;
     Window rootw;
     int origX, origY;
     int do_next_action = TRUE;
@@ -1254,7 +1225,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	    Scr->SortIconMgr = TRUE;
 
 	    if (context == C_ICONMGR)
-		SortIconManager(NULL);
+		SortIconManager((IconMgr *) NULL);
 	    else if (tmp_win->iconmgr)
 		SortIconManager(tmp_win->iconmgrp);
 	    else
@@ -1272,7 +1243,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	break;
 
     case F_VERSION:
-	Identify (NULL);
+	Identify ((TwmWindow *) NULL);
 	break;
 
     case F_AUTORAISE:
@@ -1650,8 +1621,6 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 
 	if (tmp_win->icon == FALSE)
 	{
-	    XWindowAttributes attr;
-
 	    if (!Scr->FocusRoot && Scr->Focus == tmp_win)
 	    {
 		FocusOnRoot();
@@ -2043,7 +2012,7 @@ Execute(s)
 	colon = buf + 8 + (colon - ds);	/* use version in buf */
 	dot1 = index (colon, '.');	/* first period after colon */
 	if (!dot1) dot1 = colon + strlen (colon);  /* if not there, append */
-	sprintf (dot1, ".%d", Scr->screen);
+	(void) sprintf (dot1, ".%d", Scr->screen);
 	putenv (buf);
     }
 
@@ -2066,7 +2035,7 @@ Execute(s)
     signal(SIGINT, istat);
     signal(SIGQUIT, qstat);
 
-    sprintf (buf, "DISPLAY=%s", oldDisplay);
+    (void) sprintf (buf, "DISPLAY=%s", oldDisplay);
     putenv (buf);
 }
 
@@ -2081,7 +2050,7 @@ Execute(s)
 void
 FocusOnRoot()
 {
-    SetFocus (NULL);
+    SetFocus ((TwmWindow *) NULL);
     if (Scr->Focus != NULL)
     {
 	SetBorder (Scr->Focus, False);
@@ -2224,7 +2193,7 @@ int def_x, def_y;
 		SetBorder (t, False);
 		if (t == Scr->Focus)
 		{
-		    SetFocus (NULL);
+		    SetFocus ((TwmWindow *) NULL);
 		    Scr->Focus = NULL;
 		    Scr->FocusRoot = TRUE;
 		}
@@ -2252,7 +2221,7 @@ int def_x, def_y;
     SetBorder (tmp_win, False);
     if (tmp_win == Scr->Focus)
     {
-	SetFocus (NULL);
+	SetFocus ((TwmWindow *) NULL);
 	Scr->Focus = NULL;
 	Scr->FocusRoot = TRUE;
     }
@@ -2263,7 +2232,7 @@ int def_x, def_y;
 	tmp_win->icon_on = FALSE;
 }
 
-Identify(t)
+static void Identify (t)
 TwmWindow *t;
 {
     int i, n, twidth, width, height;
@@ -2273,7 +2242,7 @@ TwmWindow *t;
     unsigned udummy;
 
     n = 0;
-    sprintf(Info[n++], "Twm version:  %s", Version);
+    (void) sprintf(Info[n++], "Twm version:  %s", Version);
     Info[n++][0] = '\0';
 
     if (t) {
@@ -2281,18 +2250,18 @@ TwmWindow *t;
 		      &wwidth, &wheight, &bw, &depth);
 	(void) XTranslateCoordinates (dpy, t->w, Scr->Root, JunkX, JunkY,
 				      &x, &y, &junk);
-	sprintf(Info[n++], "Name             = \"%s\"", t->full_name);
-	sprintf(Info[n++], "Class.res_name   = \"%s\"", t->class.res_name);
-	sprintf(Info[n++], "Class.res_class  = \"%s\"", t->class.res_class);
+	(void) sprintf(Info[n++], "Name             = \"%s\"", t->full_name);
+	(void) sprintf(Info[n++], "Class.res_name   = \"%s\"", t->class.res_name);
+	(void) sprintf(Info[n++], "Class.res_class  = \"%s\"", t->class.res_class);
 	Info[n++][0] = '\0';
-	sprintf(Info[n++], "Geometry/root    = %dx%d+%d+%d", wwidth, wheight,
+	(void) sprintf(Info[n++], "Geometry/root    = %dx%d+%d+%d", wwidth, wheight,
 		x, y);
-	sprintf(Info[n++], "Border width     = %d", bw);
-	sprintf(Info[n++], "Depth            = %d", depth);
+	(void) sprintf(Info[n++], "Border width     = %d", bw);
+	(void) sprintf(Info[n++], "Depth            = %d", depth);
     }
 
     Info[n++][0] = '\0';
-    sprintf(Info[n++], "Click to dismiss....");
+    (void) sprintf(Info[n++], "Click to dismiss....");
 
     /* figure out the width and height of the info window */
     height = n * (Scr->DefaultFont.height+2);
@@ -2340,6 +2309,7 @@ int state;
 }
 
 Bool GetWMState (w, statep, iwp)
+    Window w;
     int *statep;
     Window *iwp;
 {

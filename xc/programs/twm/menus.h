@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.h,v 1.22 89/11/14 16:36:50 jim Exp $
+ * $XConsortium: menus.h,v 1.23 89/11/15 21:19:25 jim Exp $
  *
  * twm menus include file
  *
@@ -52,10 +52,10 @@ typedef struct MenuItem
     struct MenuRoot *root;	/* back pointer to my MenuRoot */
     char *item;			/* the character string displayed */
     char *action;		/* action to be performed */
-    unsigned long fore;		/* foreground color */
-    unsigned long back;		/* background color */
-    unsigned long hi_fore;	/* highlight foreground */
-    unsigned long hi_back;	/* highlight background */
+    Pixel fore;			/* foreground color */
+    Pixel back;			/* background color */
+    Pixel hi_fore;		/* highlight foreground */
+    Pixel hi_back;		/* highlight background */
     short item_num;		/* item number of this menu */
     short x;			/* x coordinate for text */
     short func;			/* twm built in function */
@@ -73,8 +73,8 @@ typedef struct MenuRoot
     char *name;			/* name of root */
     Window w;			/* the window of the menu */
     Window shadow;		/* the shadow window */
-    int hi_fore;		/* highlight foreground */
-    int hi_back;		/* highlight background */
+    Pixel hi_fore;		/* highlight foreground */
+    Pixel hi_back;		/* highlight background */
     short mapped;		/* NEVER_MAPPED, UNMAPPED, or MAPPED */
     short height;		/* height of the menu */
     short width;		/* width of the menu */
@@ -139,6 +139,7 @@ extern int MenuDepth;
 #define COLORMAP_PREV "prev"
 #define COLORMAP_DEFAULT "default"
 
+extern void InitTitlebarButtons();
 extern void InitMenus();
 extern MenuRoot *NewMenuRoot();
 extern MenuItem *AddToMenu();

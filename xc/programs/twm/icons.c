@@ -21,7 +21,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: icons.c,v 1.11 89/11/19 15:34:12 jim Exp $
+ * $XConsortium: icons.c,v 1.12 89/11/22 16:07:27 jim Exp $
  *
  * Icon releated routines
  *
@@ -35,6 +35,7 @@
 #include "icons.h"
 #include "gram.h"
 #include "parse.h"
+#include "util.h"
 
 #define iconWidth(w)	(Scr->IconBorderWidth * 2 + w->icon_w_width)
 #define iconHeight(w)	(Scr->IconBorderWidth * 2 + w->icon_w_height)
@@ -98,7 +99,6 @@ roundUp (v, multiple)
     return ((v + multiple - 1) / multiple) * multiple;
 }
 
-IconEntry   *ie;
 PlaceIcon(tmp_win, def_x, def_y, final_x, final_y)
 TwmWindow *tmp_win;
 int def_x, def_y;
@@ -218,7 +218,7 @@ IconDown (tmp_win)
 	    {
 	    	ip->next = ie->next;
 	    	mergeEntries (ie, ip);
-	    	free (ie);
+	    	free ((char *) ie);
 		ie = ip;
 	    	ip = prevIconEntry (ip, ir);
 	    } else if (in && in->used == 0 &&
@@ -227,7 +227,7 @@ IconDown (tmp_win)
 	    {
 	    	ie->next = in->next;
 	    	mergeEntries (in, ie);
-	    	free (in);
+	    	free ((char *) in);
 	    	in = ie->next;
 	    } else
 		break;
@@ -278,6 +278,7 @@ int grav1, grav2;
     ir->entries->used = 0;
 }
 
+#ifdef comment
 FreeIconEntries (ir)
     IconRegion	*ir;
 {
@@ -286,10 +287,9 @@ FreeIconEntries (ir)
     for (ie = ir->entries; ie; ie=tmp)
     {
 	tmp = ie->next;
-	free (ie);
+	free ((char *) ie);
     }
 }
-
 FreeIconRegions()
 {
     IconRegion *ir, *tmp;
@@ -299,11 +299,12 @@ FreeIconRegions()
 	tmp = ir;
 	FreeIconEntries (ir);
 	ir = ir->next;
-	free(tmp);
+	free((char *) tmp);
     }
     Scr->FirstRegion = NULL;
     Scr->LastRegion = NULL;
 }
+#endif
 
 CreateIconWindow(tmp_win, def_x, def_y)
 TwmWindow *tmp_win;
@@ -338,9 +339,9 @@ int def_x, def_y;
 	bm = NULL;
 	if (icon_name != NULL)
 	{
-	    if ((bm = (Pixmap)LookInNameList(Scr->Icons, icon_name)) == NULL)
+	    if ((bm = (Pixmap)LookInNameList(Scr->Icons, icon_name)) == None)
 	    {
-		if ((bm = GetBitmap (icon_name, Scr->Root)) != NULL)
+		if ((bm = GetBitmap (icon_name)) != None)
 		    AddToList(&Scr->Icons, icon_name, (char *)bm);
 	    }
 	}
@@ -398,9 +399,9 @@ int def_x, def_y;
 	bm = NULL;
 	if (icon_name != NULL)
 	{
-	    if ((bm = (Pixmap)LookInNameList(Scr->Icons, icon_name)) == NULL)
+	    if ((bm = (Pixmap)LookInNameList(Scr->Icons, icon_name)) == None)
 	    {
-		if ((bm = GetBitmap (icon_name, Scr->Root)) != NULL)
+		if ((bm = GetBitmap (icon_name)) != None)
 		    AddToList(&Scr->Icons, icon_name, (char *)bm);
 	    }
 	}

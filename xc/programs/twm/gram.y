@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.81 89/11/30 20:03:25 jim Exp $
+ * $XConsortium: gram.y,v 1.82 89/12/09 22:22:07 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -37,9 +37,6 @@
  ***********************************************************************/
 
 %{
-static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.81 89/11/30 20:03:25 jim Exp $";
-
 #include <stdio.h>
 #include <ctype.h>
 #include "twm.h"
@@ -48,14 +45,19 @@ static char RCSinfo[]=
 #include "util.h"
 #include "screen.h"
 #include "parse.h"
+#include <X11/Xos.h>
+#include <X11/Xmu/CharSet.h>
 
 static char *Action = "";
 static char *Name = "";
 static MenuRoot	*root, *pull = NULL;
 
-MenuRoot *GetRoot();
+static MenuRoot *GetRoot();
 
-static Bool CheckWarpScreenArg(), CheckWarpRingArg(), CheckColormapArg();
+static Bool CheckWarpScreenArg(), CheckWarpRingArg();
+#ifdef comment
+static Bool CheckColormapArg();
+#endif
 static void GotButton(), GotKey(), GotTitleButton();
 static char *ptr;
 static name_list **list;
@@ -86,8 +88,8 @@ extern int yylineno;
 %token <num> START_ICONIFIED NO_TITLE_HILITE TITLE_HILITE
 %token <num> MOVE RESIZE WAIT SELECT KILL LEFT_TITLEBUTTON RIGHT_TITLEBUTTON 
 %token <num> NUMBER KEYWORD NKEYWORD CKEYWORD CLKEYWORD FKEYWORD FSKEYWORD 
-%token <num> DKEYWORD JKEYWORD WINDOW_RING WARP_CURSOR ERRORTOKEN
-%token <ptr> STRING SKEYWORD
+%token <num> SKEYWORD DKEYWORD JKEYWORD WINDOW_RING WARP_CURSOR ERRORTOKEN
+%token <ptr> STRING 
 
 %type <ptr> string
 %type <num> action button number signed_number full fullkey
@@ -138,7 +140,7 @@ stmt		: error
 		| RIGHT_TITLEBUTTON string EQUALS action { 
 					  GotTitleButton ($2, $4, True);
 					}
-		| button string		{ root = GetRoot($2, 0, 0);
+		| button string		{ root = GetRoot($2, NULLSTR, NULLSTR);
 					  Scr->Mouse[$1][C_ROOT][0].func = F_MENU;
 					  Scr->Mouse[$1][C_ROOT][0].menu = root;
 					}
@@ -150,10 +152,10 @@ stmt		: error
 					  }
 					  else
 					  {
-					    root = GetRoot(TWM_ROOT, 0, 0);
+					    root = GetRoot(TWM_ROOT,NULLSTR,NULLSTR);
 					    Scr->Mouse[$1][C_ROOT][0].item = 
-						AddToMenu(root,"x",Action,0,$2,
-							NULL, NULL);
+						AddToMenu(root,"x",Action,
+							  NULLSTR,$2,NULLSTR,NULLSTR);
 					  }
 					  Action = "";
 					  pull = NULL;
@@ -190,9 +192,9 @@ stmt		: error
 		| MENU string LP string COLON string RP	{
 					root = GetRoot($2, $4, $6); }
 		  menu			{ root->real_menu = TRUE;}
-		| MENU string 		{ root = GetRoot($2, 0, 0); }
+		| MENU string 		{ root = GetRoot($2, NULLSTR, NULLSTR); }
 		  menu			{ root->real_menu = TRUE; }
-		| FUNCTION string	{ root = GetRoot($2, 0, 0); }
+		| FUNCTION string	{ root = GetRoot($2, NULLSTR, NULLSTR); }
 		  function
 		| ICONS 		{ list = &Scr->IconNames; }
 		  icon_list
@@ -208,19 +210,19 @@ stmt		: error
 					  }
 					  else
 					  {
-					    root = GetRoot(TWM_ROOT, 0, 0);
+					    root = GetRoot(TWM_ROOT,NULLSTR,NULLSTR);
 					    Scr->DefaultFunction.item = 
-						AddToMenu(root,"x",Action,0,$2,
-							NULL, NULL);
+						AddToMenu(root,"x",Action,
+							  NULLSTR,$2, NULLSTR, NULLSTR);
 					  }
 					  Action = "";
 					  pull = NULL;
 					}
 		| WINDOW_FUNCTION action { Scr->WindowFunction.func = $2;
-					   root = GetRoot(TWM_ROOT, 0, 0);
+					   root = GetRoot(TWM_ROOT,NULLSTR,NULLSTR);
 					   Scr->WindowFunction.item = 
-						AddToMenu(root,"x",Action,0,$2,
-							NULL, NULL);
+						AddToMenu(root,"x",Action,
+							  NULLSTR,$2, NULLSTR, NULLSTR);
 					   Action = "";
 					   pull = NULL;
 					}
@@ -462,13 +464,13 @@ iconm_entries	: /* Empty */
 		;
 
 iconm_entry	: string string number	{ if (Scr->FirstTime)
-					    AddToList(list, $1,
-						AllocateIconManager($1, NULL,
+					    AddToList(list, $1, (char *)
+						AllocateIconManager($1, NULLSTR,
 							$2,$3));
 					}
 		| string string string number
 					{ if (Scr->FirstTime)
-					    AddToList(list, $1,
+					    AddToList(list, $1, (char *)
 						AllocateIconManager($1,$2,
 						$3, $4));
 					}
@@ -503,8 +505,8 @@ function_entries: /* Empty */
 		| function_entries function_entry
 		;
 
-function_entry	: action		{ AddToMenu(root, "", Action, NULL, $1,
-						NULL, NULL);
+function_entry	: action		{ AddToMenu(root, "", Action, NULLSTR, $1,
+						NULLSTR, NULLSTR);
 					  Action = "";
 					}
 		;
@@ -517,7 +519,7 @@ menu_entries	: /* Empty */
 		;
 
 menu_entry	: string action		{ AddToMenu(root, $1, Action, pull, $2,
-						NULL, NULL);
+						NULLSTR, NULLSTR);
 					  Action = "";
 					  pull = NULL;
 					}
@@ -535,7 +537,7 @@ action		: FKEYWORD	{ $$ = $1; }
 				Action = $2;
 				switch ($1) {
 				  case F_MENU:
-				    pull = GetRoot ($2, 0, 0);
+				    pull = GetRoot ($2, NULLSTR,NULLSTR);
 				    pull->prev = root;
 				    break;
 				  case F_WARPRING:
@@ -672,8 +674,7 @@ char *str;
     *o = '\0';
 }
 
-MenuRoot *
-GetRoot(name, fore, back)
+static MenuRoot *GetRoot(name, fore, back)
 char *name;
 char *fore, *back;
 {
@@ -681,7 +682,7 @@ char *fore, *back;
 
     tmp = FindMenuRoot(name);
     if (tmp == NULL)
-	tmp = NewMenuRoot(name, fore, back);
+	tmp = NewMenuRoot(name);
 
     if (fore)
     {
@@ -715,9 +716,9 @@ int butt, func;
 	}
 	else
 	{
-	    root = GetRoot(TWM_ROOT, 0, 0);
-	    Scr->Mouse[butt][i][mods].item = AddToMenu(root,"x",Action,0,func,
-		    NULL, NULL);
+	    root = GetRoot(TWM_ROOT, NULLSTR, NULLSTR);
+	    Scr->Mouse[butt][i][mods].item = AddToMenu(root,"x",Action,
+		    NULLSTR, func, NULLSTR, NULLSTR);
 	}
     }
     Action = "";
@@ -790,6 +791,7 @@ static Bool CheckWarpRingArg (s)
 }
 
 
+#ifdef comment
 static Bool CheckColormapArg (s)
     register char *s;
 {
@@ -802,7 +804,7 @@ static Bool CheckColormapArg (s)
 
     return False;
 }
-
+#endif
 
 twmrc_error_prefix ()
 {

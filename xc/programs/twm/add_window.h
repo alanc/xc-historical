@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.h,v 1.4 89/07/18 17:15:40 jim Exp $
+ * $XConsortium: add_window.h,v 1.5 89/10/27 14:01:10 jim Exp $
  *
  * AddWindow include file
  *
@@ -43,10 +43,8 @@ extern char NoName[];
 
 extern TwmWindow *AddWindow();
 extern int MappedNotOverride();
-extern void GrabAllButtons();
 extern void GrabButtons();
 extern void GrabKeys();
-extern void UngrabAllButtons();
 extern void UngrabButtons();
 extern void UngrabKeys();
 extern int AddingX;	

@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: list.c,v 1.15 89/11/13 17:02:52 jim Exp $
+ * $XConsortium: list.c,v 1.16 89/11/20 17:22:57 jim Exp $
  *
  * TWM code to deal with the name lists for the NoTitle list and
  * the AutoRaise list
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: list.c,v 1.15 89/11/13 17:02:52 jim Exp $";
+"$XConsortium: list.c,v 1.16 89/11/20 17:22:57 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -172,11 +172,11 @@ char *name;
  ***********************************************************************
  */
 
-GetColorFromList(list_head, name, class, ptr)
+int GetColorFromList(list_head, name, class, ptr)
 name_list *list_head;
 char *name;
 XClassHint *class;
-int *ptr;
+Pixel *ptr;
 {
     int save;
     name_list *nptr;
@@ -247,7 +247,7 @@ name_list **list;
     for (nptr = *list; nptr != NULL; )
     {
 	tmp = nptr->next;
-	free(nptr);
+	free((char *) nptr);
 	nptr = tmp;
     }
     *list = NULL;

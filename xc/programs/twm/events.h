@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.h,v 1.10 89/11/22 16:07:26 jim Exp $
+ * $XConsortium: events.h,v 1.11 89/12/09 22:21:20 jim Exp $
  *
  * twm event handler include file
  *
@@ -41,8 +41,11 @@
 
 typedef void (*event_proc)();
 
+extern void InitEvents();
 extern Bool StashEventTime();
 extern Time lastTimestamp;
+extern void SimulateMapRequest();
+extern void AutoRaiseWindow();
 #define LastTimestamp() lastTimestamp
 extern Bool DispatchEvent();
 extern void HandleEvents();
@@ -74,7 +77,6 @@ extern int DragWidth;
 extern int DragHeight;
 
 extern int ButtonPressed;
-extern int ButtonNeeded;
 extern int Cancel;
 
 extern XEvent Event;

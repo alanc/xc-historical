@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: screen.h,v 1.57 89/12/08 19:18:39 jim Exp $
+ * $XConsortium: screen.h,v 1.58 89/12/09 22:21:56 jim Exp $
  *
  * twm per-screen data include file
  *
@@ -97,7 +97,7 @@ typedef struct ScreenInfo
       int number_cwins;		/* number of elements in current list */
       int maxCmaps;		/* maximum number of installed colormaps */
       int first_pass;		/* first pass thru loading algorithm? */
-      int first_req;		/* seq # for first XInstallColormap() req in
+      unsigned long first_req;	/* seq # for first XInstallColormap() req in
 				   pass thru loading a colortable list */
       int max_cwins;		/* maximum number of cwins in a list, so far */
       char *scoreboard;		/* conflicts between installable colortables */
@@ -126,10 +126,10 @@ typedef struct ScreenInfo
     ColorPair IconC;		/* icon colors */
     ColorPair IconManagerC;	/* icon manager colors */
     ColorPair DefaultC;		/* default colors */
-    int BorderColor;		/* color of window borders */
-    int MenuShadowColor;	/* menu shadow color */
-    int IconBorderColor;	/* icon border color */
-    int IconManagerHighlight;	/* icon manager highlight */
+    Pixel BorderColor;		/* color of window borders */
+    Pixel MenuShadowColor;	/* menu shadow color */
+    Pixel IconBorderColor;	/* icon border color */
+    Pixel IconManagerHighlight;	/* icon manager highlight */
 
     Cursor TitleCursor;		/* title bar cursor */
     Cursor FrameCursor;		/* frame cursor */
@@ -245,7 +245,7 @@ typedef struct ScreenInfo
 extern int MultiScreen;
 extern int NumScreens;
 extern ScreenInfo **ScreenList;
-extern ScreenInfo *Scr, *PrevScr;
+extern ScreenInfo *Scr;
 extern int FirstScreen;
 
 #define PPOS_OFF 0

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: parse.c,v 1.35 89/12/09 16:52:25 jim Exp $
+ * $XConsortium: parse.c,v 1.36 89/12/09 22:21:53 jim Exp $
  *
  * parse the .twmrc file
  *
@@ -38,11 +38,12 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: parse.c,v 1.35 89/12/09 16:52:25 jim Exp $";
+"$XConsortium: parse.c,v 1.36 89/12/09 22:21:53 jim Exp $";
 #endif
 
 #include <stdio.h>
 #include <X11/Xos.h>
+#include <X11/Xmu/CharSet.h>
 #include "twm.h"
 #include "screen.h"
 #include "menus.h"
@@ -71,7 +72,6 @@ static int twmFileInput(), twmStringListInput();
 void twmUnput();
 int (*twmInputFunc)();
 
-extern char *getenv();
 extern char *defTwmrc[];		/* default bindings */
 
 
@@ -136,7 +136,8 @@ int ParseTwmrc (filename)
 		if (home) {
 		    homelen = strlen (home);
 		    cp = tmpfilename;
-		    sprintf (tmpfilename, "%s/.twmrc.%d", home, Scr->screen);
+		    (void) sprintf (tmpfilename, "%s/.twmrc.%d",
+				    home, Scr->screen);
 		    break;
 		}
 	    }
@@ -182,7 +183,7 @@ int ParseStringList (sl)
 {
     stringListSource = sl;
     currentString = *sl;
-    return doparse (twmStringListInput, "string list", NULL);
+    return doparse (twmStringListInput, "string list", (char *)NULL);
 }
 
 
@@ -911,7 +912,7 @@ static int ParseUsePPosition (s)
 
 
 do_squeeze_entry (list, name, justify, num, denom)
-    name_list *list;			/* squeeze or dont-squeeze list */
+    name_list **list;			/* squeeze or dont-squeeze list */
     char *name;				/* window name */
     int justify;			/* left, center, right */
     int num;				/* signed num */

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.121 89/12/06 12:06:36 jim Exp $
+ * $XConsortium: events.c,v 1.122 89/12/09 22:21:47 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.121 89/12/06 12:06:36 jim Exp $";
+"$XConsortium: events.c,v 1.122 89/12/09 22:21:47 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -53,8 +53,9 @@ static char RCSinfo[]=
 #include "util.h"
 #include "screen.h"
 #include "iconmgr.h"
-#include "siconify.bm"
 #include "version.h"
+
+extern int iconifybox_width, iconifybox_height;
 
 #define MAX_X_EVENT 256
 event_proc EventHandler[MAX_X_EVENT]; /* event handler jump table */
@@ -79,7 +80,6 @@ static TwmWindow *enter_win, *raise_win;
 
 ScreenInfo *FindScreenInfo();
 int ButtonPressed = -1;
-int ButtonNeeded = -1;
 int Cancel = FALSE;
 
 void HandleCreateNotify();
@@ -336,8 +336,6 @@ void
 HandleColormapNotify()
 {
     XColormapEvent *cevent = (XColormapEvent *) &Event;
-    Bool sameScreen;
-    Window child;
     ColormapWindow *cwin, **cwins;
     TwmColormap *cmap;
     int i, j, n, number_cwins;
@@ -887,7 +885,7 @@ HandleClientMessage()
 			      &(button.xmotion.y_root),
 			      &JunkX, &JunkY, &JunkMask);
 
-		ExecuteFunction(F_ICONIFY, NULL, Event.xany.window,
+		ExecuteFunction(F_ICONIFY, NULLSTR, Event.xany.window,
 		    Tmp_win, &button, FRAME, FALSE);
 		XUngrabPointer(dpy, CurrentTime);
 	    }
@@ -994,7 +992,7 @@ HandleExpose()
 		FB(Tmp_win->list->fore, Tmp_win->list->back);
 		XCopyPlane(dpy, Scr->siconifyPm, Tmp_win->list->icon,
 		    Scr->NormalGC,
-		    0,0, siconify_width, siconify_height, 0, 0, 1);
+		    0,0, iconifybox_width, iconifybox_height, 0, 0, 1);
 		flush_expose (Event.xany.window);
 		return;
 	    }
@@ -1135,7 +1133,7 @@ HandleMapRequest()
     if (Tmp_win == NULL)
     {
 	/* Add decorations. */
-	Tmp_win = AddWindow(Event.xany.window, FALSE, 0);
+	Tmp_win = AddWindow(Event.xany.window, FALSE, (IconMgr *) NULL);
 	if (Tmp_win == NULL)
 	    return;
     }
@@ -1146,8 +1144,7 @@ HandleMapRequest()
 	 * in the icon manager.  Add it again, if requested.
 	 */
 	if (Tmp_win->list == NULL)
-
-	    AddIconManager(Tmp_win);
+	    (void) AddIconManager (Tmp_win);
     }
 
     /* If it's not merely iconified, and we have hints, use them. */
@@ -1858,7 +1855,7 @@ HandleLeaveNotify()
 		    SetBorder (Tmp_win, False);
 		    if (Scr->TitleFocus ||
 			Tmp_win->protocols & DoesWmTakeFocus)
-		      SetFocus (NULL);
+		      SetFocus ((TwmWindow *) NULL);
 		    Scr->Focus = NULL;
 		} else if (Event.xcrossing.window == Tmp_win->w) {
 		    InstallWindowColormaps (LeaveNotify,
@@ -1883,7 +1880,7 @@ void
 HandleConfigureRequest()
 {
     XWindowChanges xwc;
-    unsigned int   xwcm;
+    unsigned long xwcm;
     int x, y, width, height, bw;
     int gravx, gravy;
     XConfigureRequestEvent *cre = &Event.xconfigurerequest;
@@ -2098,7 +2095,6 @@ ReinstallWindowColormaps ()
     int i, j, n, number_cwins, state;
     ColormapWindow **cwins, *cwin, **maxcwin;
     TwmColormap *cmap;
-    TwmWindow *tmp;
     char *row;
 
     ColortableThrashing = FALSE; /* till this pass starts thrashing */
@@ -2150,7 +2146,7 @@ InstallWindowColormaps (type, opaque)
     int i, n, number_cwins, state;
     ColormapWindow **cwins, *cwin, **maxcwin;
     TwmColormap *cmap;
-    TwmWindow *tmp;
+    TwmWindow *tmp_win;
 
     switch (type) {
     case EnterNotify:
@@ -2160,9 +2156,9 @@ InstallWindowColormaps (type, opaque)
 	for (i = 0, cwins = Scr->cmapInfo.cwins; i < Scr->cmapInfo.number_cwins;
 	     i++, cwins++)
 	    (*cwins)->colormap->state &= ~CM_INSTALLABLE;
-	tmp = (TwmWindow *) opaque;
-	number_cwins = Scr->cmapInfo.number_cwins = tmp->number_cwins;
-	cwins = Scr->cmapInfo.cwins = tmp->cwins;
+	tmp_win = (TwmWindow *) opaque;
+	number_cwins = Scr->cmapInfo.number_cwins = tmp_win->number_cwins;
+	cwins = Scr->cmapInfo.cwins = tmp_win->cwins;
 	break;
     
     case PropertyNotify:

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.100 89/12/09 16:18:11 jim Exp $
+ * $XConsortium: twm.c,v 1.101 89/12/09 22:21:14 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.100 89/12/09 16:18:11 jim Exp $";
+"$XConsortium: twm.c,v 1.101 89/12/09 22:21:14 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -57,8 +57,6 @@ static char RCSinfo[] =
 #include "iconmgr.h"
 #include <X11/Xproto.h>
 
-#include "gray.bm"
-
 Display *dpy;			/* which display are we talking to */
 Window ResizeWindow;		/* the window we are resizing */
 
@@ -69,7 +67,7 @@ int HasShape;			/* server supports shape extension? */
 int ShapeEventBase, ShapeErrorBase;
 #endif
 ScreenInfo **ScreenList;	/* structures for each screen */
-ScreenInfo *Scr = NULL, *PrevScr = NULL;  /* the cur and prev screens */
+ScreenInfo *Scr = NULL;		/* the cur and prev screens */
 int PreviousScreen;		/* last screen that we were on */
 int FirstScreen;		/* TRUE ==> first screen of display */
 Bool PrintErrorMessages = False;	/* controls error messages */
@@ -102,7 +100,6 @@ int ParseError;			/* error parsing the .twmrc file */
 int HandlingEvents = FALSE;	/* are we handling events yet? */
 
 Window JunkRoot;		/* junk window */
-Window JunkParent;		/* junk window */
 Window JunkChild;		/* junk window */
 int JunkX;			/* junk variable */
 int JunkY;			/* junk variable */
@@ -188,7 +185,7 @@ main(argc, argv, environ)
     signal(SIGQUIT, Done);
     signal(SIGTERM, Done);
 
-    Home = (char *)getenv("HOME");
+    Home = getenv("HOME");
     if (Home == NULL)
 	Home = "./";
 
@@ -320,7 +317,7 @@ main(argc, argv, environ)
 		MaxCmapsOfScreen(ScreenOfDisplay(dpy, Scr->screen));
 	Scr->cmapInfo.scoreboard = (char *) malloc(1);
 	Scr->cmapInfo.max_cwins = 1;
-	InstallWindowColormaps(0, &Scr->TwmRoot);
+	InstallWindowColormaps(0, (char *) &Scr->TwmRoot);
 
 	Scr->StdCmapInfo.head = Scr->StdCmapInfo.tail = 
 	  Scr->StdCmapInfo.mru = NULL;
@@ -355,7 +352,7 @@ main(argc, argv, environ)
 
 	if (FirstScreen)
 	{
-	    SetFocus (NULL);
+	    SetFocus ((TwmWindow *)NULL);
 
 	    /* define cursors */
 
@@ -726,8 +723,7 @@ RestoreWithdrawnLocation (tmp)
  ***********************************************************************
  */
 
-void
-Reborder ()
+void Reborder ()
 {
     TwmWindow *tmp;			/* temp twm window structure */
     int scrnum;
@@ -748,11 +744,10 @@ Reborder ()
     }
 
     XUngrabServer (dpy);
-    SetFocus (NULL);
+    SetFocus ((TwmWindow*)NULL);
 }
 
-void
-Done()
+void Done()
 {
     Reborder ();
     XCloseDisplay(dpy);
@@ -785,6 +780,7 @@ static int TwmErrorHandler(dpy, event)
 }
 
 
+/* ARGSUSED*/
 static int CatchRedirectError(dpy, event)
     Display *dpy;
     XErrorEvent *event;

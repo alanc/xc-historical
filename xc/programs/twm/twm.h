@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.53 89/11/28 11:33:12 jim Exp $
+ * $XConsortium: twm.h,v 1.54 89/12/09 22:21:23 jim Exp $
  *
  * twm include file
  *
@@ -50,6 +50,8 @@
 #define WithdrawnState 0
 #endif
 
+typedef unsigned long Pixel;
+
 #ifdef SIGNALRETURNSINT
 typedef int (*SigProc)();	/* type of function returned by signal() */
 #else
@@ -69,6 +71,8 @@ typedef void (*SigProc)();	/* type of function returned by signal() */
 #define TRUE	1
 #define FALSE	0
 #endif
+
+#define NULLSTR ((char *) NULL)
 
 #define MAX_BUTTONS	5	/* max mouse buttons supported */
 
@@ -129,8 +133,7 @@ typedef struct MyFont
 
 typedef struct ColorPair
 {
-    int fore;
-    int back;
+    Pixel fore, back;
 } ColorPair;
 
 typedef struct _TitleButton {
@@ -224,14 +227,14 @@ typedef struct TwmWindow
     XWindowAttributes attr;	/* the child window attributes */
     XSizeHints hints;		/* normal hints */
     XWMHints *wmhints;		/* WM hints */
-    int group;			/* group ID */
+    Window group;		/* group ID */
     XClassHint class;
     struct WList *list;
     /***********************************************************************
      * color definitions per window
      **********************************************************************/
-    int border;			/* border color */
-    int icon_border;		/* border color */
+    Pixel border;		/* border color */
+    Pixel icon_border;		/* border color */
     ColorPair border_tile;
     ColorPair title;
     ColorPair iconc;
@@ -277,6 +280,11 @@ typedef struct TwmWindow
 #define TBPM_QUESTION ":question"	/* name of unknown titlebar pixmap */
 #define TBPM_MENU ":menu"	/* name of titlebar pixmap for menus */
 
+extern char *malloc(), *calloc(), *realloc(), *getenv();
+extern void free();
+extern void Reborder(), Done();
+void ComputeCommonTitleOffsets();
+void ComputeWindowTitleOffsets(), ComputeTitleLocation();
 extern char *ProgramName;
 extern Display *dpy;
 extern Window ResizeWindow;	/* the window we are resizing */
@@ -306,7 +314,6 @@ extern int ParseError;
 extern int HandlingEvents;
 
 extern Window JunkRoot;
-extern Window JunkParent;
 extern Window JunkChild;
 extern int JunkX;
 extern int JunkY;
@@ -321,8 +328,7 @@ extern char Info[][INFO_SIZE];
 extern int Argc;
 extern char **Argv;
 extern char **Environ;
-
-extern void Done();
+extern void NewFontCursor();
 
 extern Bool ErrorOccurred;
 extern XErrorEvent LastErrorEvent;

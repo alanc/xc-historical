@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: util.c,v 1.32 89/11/28 15:42:43 jim Exp $
+ * $XConsortium: util.c,v 1.33 89/12/09 22:22:03 jim Exp $
  *
  * utility routines for twm
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: util.c,v 1.32 89/11/28 15:42:43 jim Exp $";
+"$XConsortium: util.c,v 1.33 89/12/09 22:22:03 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -200,6 +200,7 @@ void MoveOutline(root, x, y, width, height, bw, th)
 
 void
 Zoom(wf, wt)
+    Window wf, wt;
 {
     int fx, fy, fw, fh;
     int tx, ty, tw, th;
@@ -211,8 +212,7 @@ Zoom(wf, wt)
     if (!Scr->DoZoom)
 	return;
 
-    if (wf == NULL || wt == NULL)
-	return;
+    if (wf == None || wt == None) return;
 
     XGetGeometry(dpy, wf, &JunkRoot, &fx, &fy, &fw, &fh, &JunkBW, &JunkDepth);
     XGetGeometry(dpy, wt, &JunkRoot, &tx, &ty, &tw, &th, &JunkBW, &JunkDepth);
@@ -331,7 +331,7 @@ char *name;
 		 "%s:  unable to allocate %d bytes to expand filename %s/%s\n",
 		 ProgramName, HomeLen + strlen(name) + 2, Home, &name[1]);
     } else {
-	sprintf (newname, "%s/%s", Home, &name[1]);
+	(void) sprintf (newname, "%s/%s", Home, &name[1]);
     }
 
     return newname;
@@ -437,7 +437,7 @@ Pixmap FindBitmap (name, widthp, heightp)
 		     ProgramName, Scr->IconDirectory, name);
 	    return None;
 	}
-	sprintf (bigname, "%s/%s", Scr->IconDirectory, name);
+	(void) sprintf (bigname, "%s/%s", Scr->IconDirectory, name);
 	if (XReadBitmapFile (dpy, Scr->Root, bigname, widthp, heightp, &pm,
 			     &HotX, &HotY) != BitmapSuccess) {
 	    pm = None;
@@ -543,7 +543,7 @@ LocateStandardColormaps()
 
 GetColor(kind, what, name)
 int kind;
-int *what;
+Pixel *what;
 char *name;
 {
     XColor color, junkcolor;
@@ -608,14 +608,14 @@ char *name;
       gotit:
 	if (stdcmap) {
             color.pixel = (stdcmap->base_pixel +
-			   ((unsigned long)((color.red / 65535.0) *
-					   stdcmap->red_max + 0.5) *
+			   ((Pixel)((color.red / 65535.0) *
+				    stdcmap->red_max + 0.5) *
 			    stdcmap->red_mult) +
-			   ((unsigned long)((color.green /65535.0) *
-					    stdcmap->green_max + 0.5) *
+			   ((Pixel)((color.green /65535.0) *
+				    stdcmap->green_max + 0.5) *
 			    stdcmap->green_mult) +
-			   ((unsigned long)((color.blue  / 65535.0) *
-					    stdcmap->blue_max + 0.5) *
+			   ((Pixel)((color.blue  / 65535.0) *
+				    stdcmap->blue_max + 0.5) *
 			    stdcmap->blue_mult));
         } else {
 	    fprintf (stderr, "%s:  unable to allocate color \"%s\"\n", 
@@ -839,6 +839,7 @@ static Pixmap CreateQuestionPixmap (widthp, heightp)
 }
 
 
+/* ARGSUSED */
 static Pixmap CreateMenuPixmap (widthp, heightp)
     int *widthp, *heightp;
 {

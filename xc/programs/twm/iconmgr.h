@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: iconmgr.h,v 1.9 89/04/13 15:48:19 jim Exp $
+ * $XConsortium: iconmgr.h,v 1.10 89/07/18 17:15:56 jim Exp $
  *
  * Icon Manager includes
  *
@@ -43,7 +43,7 @@ typedef struct WList
     int x, y, width, height;
     int row, col;
     int me;
-    unsigned fore, back, highlight;
+    Pixel fore, back, highlight;
     unsigned top, bottom;
     short active;
     short down;
@@ -70,5 +70,20 @@ typedef struct IconMgr
 
 extern int iconmgr_textx;
 extern WList *DownIconManager;
+
+extern void CreateIconManagers();
+extern IconMgr *AllocateIconManager();
+extern void MoveIconManager();
+extern void JumpIconManager();
+extern WList *AddIconManager();
+extern void InsertInIconManager();
+extern void RemoveFromIconManager();
+extern void RemoveIconManager();
+extern void ActiveIconManager();
+extern void NotActiveIconManager();
+extern void DrawIconManagerBorder();
+extern void SortIconManager();
+extern void PackIconManager();
+
 
 #endif /* _ICONMGR_ */

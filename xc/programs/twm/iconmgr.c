@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: iconmgr.c,v 1.35 89/11/27 10:37:21 jim Exp $
+ * $XConsortium: iconmgr.c,v 1.36 89/11/27 14:19:36 jim Exp $
  *
  * Icon Manager routines
  *
@@ -34,6 +34,7 @@
 #include "util.h"
 #include "parse.h"
 #include "screen.h"
+#include "resize.h"
 #include "add_window.h"
 #include "siconify.bm"
 #include <X11/Xos.h>
@@ -42,6 +43,8 @@
 int iconmgr_textx = siconify_width+11;
 WList *Active = NULL;
 WList *DownIconManager = NULL;
+int iconifybox_width = siconify_width;
+int iconifybox_height = siconify_height;
 
 /***********************************************************************
  *
@@ -58,13 +61,13 @@ WList *DownIconManager = NULL;
  ***********************************************************************
  */
 
-CreateIconManagers()
+void CreateIconManagers()
 {
     IconMgr *p;
     int mask;
     char str[100];
     char str1[100];
-    unsigned background;
+    Pixel background;
     char *icon_name;
 
     if (Scr->NoIconManagers)
@@ -90,7 +93,8 @@ CreateIconManagers()
 	      (2 * Scr->BorderWidth) + JunkY;
 
 	background = Scr->IconManagerC.back;
-	GetColorFromList(Scr->IconManagerBL, p->name, NULL, &background);
+	GetColorFromList(Scr->IconManagerBL, p->name, (XClassHint *)NULL,
+			 &background);
 
 	p->w = XCreateSimpleWindow(dpy, Scr->Root,
 	    JunkX, JunkY, p->width, p->height, 1,
@@ -129,12 +133,11 @@ CreateIconManagers()
  ***********************************************************************
  */
 
-IconMgr *
-AllocateIconManager(name, icon_name, geom, columns)
-char *name;
-char *geom;
-char *icon_name;
-int columns;
+IconMgr *AllocateIconManager(name, icon_name, geom, columns)
+    char *name;
+    char *geom;
+    char *icon_name;
+    int columns;
 {
     IconMgr *p;
 
@@ -190,8 +193,8 @@ int columns;
  ***********************************************************************
  */
 
-MoveIconManager(dir)
-int dir;
+void MoveIconManager(dir)
+    int dir;
 {
     IconMgr *ip;
     WList *tmp = NULL;
@@ -312,8 +315,8 @@ int dir;
  ***********************************************************************
  */
 
-JumpIconManager(dir)
-int dir;
+void JumpIconManager(dir)
+    int dir;
 {
     IconMgr *ip, *tmp_ip = NULL;
     int got_it;
@@ -445,9 +448,8 @@ int dir;
  ***********************************************************************
  */
 
-WList *
-AddIconManager(tmp_win)
-TwmWindow *tmp_win;
+WList *AddIconManager(tmp_win)
+    TwmWindow *tmp_win;
 {
     WList *tmp;
     int h;
@@ -555,10 +557,10 @@ TwmWindow *tmp_win;
  ***********************************************************************
  */
 
-InsertInIconManager(ip, tmp, tmp_win)
-IconMgr *ip;
-WList *tmp;
-TwmWindow *tmp_win;
+void InsertInIconManager(ip, tmp, tmp_win)
+    IconMgr *ip;
+    WList *tmp;
+    TwmWindow *tmp_win;
 {
     WList *tmp1;
     int added;
@@ -599,9 +601,9 @@ TwmWindow *tmp_win;
     }
 }
 
-RemoveFromIconManager(ip, tmp)
-IconMgr *ip;
-WList *tmp;
+void RemoveFromIconManager(ip, tmp)
+    IconMgr *ip;
+    WList *tmp;
 {
     if (tmp->prev == NULL)
 	ip->first = tmp->next;
@@ -625,8 +627,8 @@ WList *tmp;
  ***********************************************************************
  */
 
-RemoveIconManager(tmp_win)
-TwmWindow *tmp_win;
+void RemoveIconManager(tmp_win)
+    TwmWindow *tmp_win;
 {
     IconMgr *ip;
     WList *tmp;
@@ -648,7 +650,7 @@ TwmWindow *tmp_win;
     XDeleteContext(dpy, tmp->w, ScreenContext);
     XDestroyWindow(dpy, tmp->w);
     ip->count -= 1;
-    free(tmp);
+    free((char *) tmp);
 
     PackIconManager(ip);
 
@@ -659,8 +661,8 @@ TwmWindow *tmp_win;
 
 }
 
-ActiveIconManager(active)
-WList *active;
+void ActiveIconManager(active)
+    WList *active;
 {
     active->active = TRUE;
     Active = active;
@@ -668,15 +670,15 @@ WList *active;
     DrawIconManagerBorder(active);
 }
 
-NotActiveIconManager(active)
-WList *active;
+void NotActiveIconManager(active)
+    WList *active;
 {
     active->active = FALSE;
     DrawIconManagerBorder(active);
 }
 
-DrawIconManagerBorder(tmp)
-WList *tmp;
+void DrawIconManagerBorder(tmp)
+    WList *tmp;
 {
     {
 	XSetForeground(dpy, Scr->NormalGC, tmp->fore);
@@ -706,8 +708,8 @@ WList *tmp;
  ***********************************************************************
  */
 
-SortIconManager(ip)
-IconMgr *ip;
+void SortIconManager(ip)
+    IconMgr *ip;
 {
     WList *tmp1, *tmp2;
     int done;
@@ -751,8 +753,8 @@ IconMgr *ip;
  ***********************************************************************
  */
 
-PackIconManager(ip)
-IconMgr *ip;
+void PackIconManager(ip)
+    IconMgr *ip;
 {
     int newwidth, i, row, col, maxcol,  colinc, rowinc, wheight, wwidth;
     int new_x, new_y;

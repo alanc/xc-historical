@@ -28,16 +28,13 @@
 
 /***********************************************************************
  *
- * $XConsortium: lex.l,v 1.60 89/11/20 17:22:54 jim Exp $
+ * $XConsortium: lex.l,v 1.61 89/11/30 18:03:31 jim Exp $
  *
  * .twmrc lex file
  *
  * 12-Nov-87 Thomas E. LaStrange		File created
  *
  ***********************************************************************/
-
-static char RCSinfo[]=
-"$XConsortium: lex.l,v 1.60 89/11/20 17:22:54 jim Exp $";
 
 /* #include <stdio.h> */		/* lex already includes stdio.h */
 #include "gram.h"

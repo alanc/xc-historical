@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: cursor.c,v 1.6 89/11/20 17:22:43 jim Exp $
+ * $XConsortium: cursor.c,v 1.7 89/12/09 22:21:26 jim Exp $
  *
  * cursor creation code
  *
@@ -31,6 +31,7 @@
 
 #include <stdio.h>
 #include "twm.h"
+#include <X11/Xos.h>
 #include "screen.h"
 #include "util.h"
 
@@ -119,8 +120,9 @@ static struct _CursorName {
 {"xterm",		XC_xterm,		None},
 };
 
-NewFontCursor(cp, str)
-Cursor *cp, str;
+void NewFontCursor (cp, str)
+    Cursor *cp;
+    char *str;
 {
     int i;
 

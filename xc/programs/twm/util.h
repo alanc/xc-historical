@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: util.h,v 1.8 89/10/27 14:01:39 jim Exp $
+ * $XConsortium: util.h,v 1.9 89/11/01 17:28:12 jim Exp $
  *
  * utility routines header file
  *
@@ -39,9 +39,8 @@
 #ifndef _UTIL_
 #define _UTIL_
 
+extern void	Zoom();
 extern void	MoveOutline();
-extern Pixmap	MakePixmap();
-extern Pixmap	MakeCenteredPixmap();
 extern Pixmap	GetBitmap(), FindBitmap();
 extern void	GetUnknownIcon();
 extern char 	*ExpandFilename();

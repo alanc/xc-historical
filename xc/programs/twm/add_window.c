@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.124 89/12/09 22:21:28 jim Exp $
+ * $XConsortium: add_window.c,v 1.125 89/12/09 22:52:51 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.124 89/12/09 22:21:28 jim Exp $";
+"$XConsortium: add_window.c,v 1.125 89/12/09 22:52:51 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -55,8 +55,10 @@ static char RCSinfo[]=
 #include "screen.h"
 #include "iconmgr.h"
 
-#include "hilite.bm"
-#include "gray.bm"
+#define gray_width 2
+#define gray_height 2
+static char gray_bits[] = {
+   0x02, 0x01};
 
 int AddingX;
 int AddingY;
@@ -66,8 +68,6 @@ int AddingH;
 static int PlaceX = 50;
 static int PlaceY = 50;
 static void CreateWindowTitlebarButtons();
-void ComputeCommonTitleOffsets();
-void ComputeWindowTitleOffsets(), ComputeTitleLocation();
 
 char NoName[] = "Untitled"; /* name if no name is specified */
 
@@ -742,7 +742,7 @@ IconMgr *iconp;
 	GrabKeys(tmp_win);
     }
 
-    AddIconManager(tmp_win);
+    (void) AddIconManager(tmp_win);
 
     XSaveContext(dpy, tmp_win->w, TwmContext, tmp_win);
     XSaveContext(dpy, tmp_win->w, ScreenContext, Scr);
@@ -804,90 +804,6 @@ MappedNotOverride(w)
 
     XGetWindowAttributes(dpy, w, &wa);
     return ((wa.map_state != IsUnmapped) && (wa.override_redirect != True));
-}
-
-/***********************************************************************
- *
- *  Procedure:
- *	GrabAllButtons - grab needed buttons for all windows
- *
- ***********************************************************************
- */
-
-void
-GrabAllButtons()
-{
-    TwmWindow *tmp_win;
-
-    for (tmp_win = Scr->TwmRoot.next;
-	 tmp_win != NULL;
-	 tmp_win = tmp_win->next)
-    {
-	GrabButtons(tmp_win);
-    }
-}
-
-/***********************************************************************
- *
- *  Procedure:
- *	GrabAllKeys - grab needed keys for all windows
- *
- ***********************************************************************
- */
-
-void
-GrabAllKeys()
-{
-    TwmWindow *tmp_win;
-
-    for (tmp_win = Scr->TwmRoot.next;
-	 tmp_win != NULL; 
-	 tmp_win = tmp_win->next)
-    {
-	GrabKeys(tmp_win);
-    }
-}
-
-/***********************************************************************
- *
- *  Procedure:
- *	UngrabAllButtons - ungrab buttons for all windows
- *
- ***********************************************************************
- */
-
-void
-UngrabAllButtons()
-{
-    TwmWindow *tmp_win;
-
-    for (tmp_win = Scr->TwmRoot.next;
-	 tmp_win != NULL;
-	 tmp_win = tmp_win->next)
-    {
-	UngrabButtons(tmp_win);
-    }
-}
-
-/***********************************************************************
- *
- *  Procedure:
- *	UngrabAllKeys - ungrab keys for all windows
- *
- ***********************************************************************
- */
-
-void
-UngrabAllKeys()
-{
-    TwmWindow *tmp_win;
-
-    for (tmp_win = Scr->TwmRoot.next;
-	 tmp_win != NULL;
-	 tmp_win = tmp_win->next)
-    {
-	UngrabKeys(tmp_win);
-    }
 }
 
 
@@ -1030,72 +946,6 @@ TwmWindow *tmp_win;
 	}
     }
 }
-
-/***********************************************************************
- *
- *  Procedure:
- *	UngrabButtons - ungrab buttons for windows
- *
- *  Inputs:
- *	tmp_win - the twm window structure to use
- *
- ***********************************************************************
- */
-
-void
-UngrabButtons(tmp_win)
-TwmWindow *tmp_win;
-{
-    int i;
-
-    for (i = 0; i < MAX_BUTTONS+1; i++)
-    {
-	XUngrabButton(dpy, i, AnyModifier, tmp_win->w);
-    }
-}
-
-/***********************************************************************
- *
- *  Procedure:
- *	UngrabKeys - ungrab keys for windows
- *
- *  Inputs:
- *	tmp_win - the twm window structure to use
- *
- ***********************************************************************
- */
-
-void
-UngrabKeys(tmp_win)
-TwmWindow *tmp_win;
-{
-    FuncKey *tmp;
-
-    for (tmp = Scr->FuncKeyRoot.next; tmp != NULL; tmp = tmp->next)
-    {
-	switch (tmp->cont)
-	{
-	case C_WINDOW:
-	    XUngrabKey(dpy, tmp->keycode, tmp->mods, tmp_win->w);
-	    break;
-
-	case C_ICON:
-	    if (tmp_win->icon_w)
-		XUngrabKey(dpy, tmp->keycode, tmp->mods, tmp_win->icon_w);
-
-	case C_TITLE:
-	    if (tmp_win->title_w)
-		XUngrabKey(dpy, tmp->keycode, tmp->mods, tmp_win->title_w);
-	    break;
-
-	case C_ROOT:
-	    XUngrabKey(dpy, tmp->keycode, tmp->mods, Scr->Root);
-	    break;
-	}
-    }
-}
-
-
 
 static Window CreateHighlightWindow (tmp_win)
     TwmWindow *tmp_win;
