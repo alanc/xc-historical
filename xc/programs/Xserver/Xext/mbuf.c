@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: mbuf.c,v 1.21 94/03/24 20:42:20 dpw Exp $ */
+/* $XConsortium: mbuf.c,v 1.22 94/03/28 11:02:47 dpw Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -119,9 +119,6 @@ static int		MultibufferErrorBase;
 int			MultibufferScreenIndex = -1;
 int			MultibufferWindowIndex = -1;
 
-static int		BlockHandlerRegistered;
-static void		MultibufferBlockHandler(), MultibufferWakeupHandler();
-
 static void		PerformDisplayRequest ();
 static void		DisposeDisplayRequest ();
 static Bool		QueueDisplayRequest ();
@@ -156,13 +153,6 @@ static int		MultibufferDelete ();
  */
 static RESTYPE		MultibuffersResType;
 static int		MultibuffersDelete ();
-/*
- * Per display-buffers request is attached to a resource so that
- * it will disappear if the client dies before the request should
- * be processed
- */
-static RESTYPE		DisplayRequestResType;
-static int		DisplayRequestDelete ();
 /*
  * Clients other than the buffer creator attach event masks in
  * OtherClient structures; each has a resource of this type.
@@ -225,11 +215,9 @@ MultibufferExtensionInit()
 	CreateNewResourceType(MultibufferDrawableDelete)|RC_CACHED|RC_DRAWABLE;
     MultibufferResType = CreateNewResourceType(MultibufferDelete);
     MultibuffersResType = CreateNewResourceType(MultibuffersDelete);
-    DisplayRequestResType = CreateNewResourceType(DisplayRequestDelete);
     OtherClientResType = CreateNewResourceType(OtherClientDelete);
     if (MultibufferDrawableResType && MultibufferResType &&
-	MultibuffersResType && DisplayRequestResType &&
-	OtherClientResType &&
+	MultibuffersResType && 	OtherClientResType &&
 	(extEntry = AddExtension(MULTIBUFFER_PROTOCOL_NAME,
 				 MultibufferNumberEvents, 
 				 MultibufferNumberErrors,
@@ -1265,78 +1253,19 @@ DisplayImageBuffers (ids, nbuf)
     return Success;
 }
 
-/* A display request waits on this simple linked list until it is time
- * to be executed.  The display requests are ordered by increasing TimeStamp
- * (earliest to latest).
- */
-static DisplayRequestPtr    pPendingRequests = NULL;
 
-/* delete a display request from pPendingRequests */
-static void
-DisposeDisplayRequest (pRequest)
-    DisplayRequestPtr	pRequest;
-{
-    DisplayRequestPtr	pReq, pPrev;
-
-    pPrev = 0;
-    for (pReq = pPendingRequests;  pReq;  pPrev = pReq, pReq = pReq->next)
-    {
-	if (pReq == pRequest)
-	{
-	    if (pPrev)
-		pPrev->next = pReq->next;
-	    else
-		pPendingRequests = pReq->next;
-	    xfree (pReq);
-	    break;
-	}
-    }
-}
-
-/* insert a new display request onto pPendingRequests, return TRUE if
- * successful
- */
 static Bool
 QueueDisplayRequest (client, activateTime)
     ClientPtr	    client;
     TimeStamp	    activateTime;
 {
-    DisplayRequestPtr	pRequest, pReq, pPrev;
+    /* see xtest.c:ProcXTestFakeInput for code similar to this */
 
-    if (!BlockHandlerRegistered)
+    if (!ClientSleepUntil(client, &activateTime, NULL, NULL))
     {
-	if (!RegisterBlockAndWakeupHandlers (MultibufferBlockHandler,
-					     MultibufferWakeupHandler,
-					     (pointer) 0))
-	{
-	    return FALSE;
-	}
-	BlockHandlerRegistered = TRUE;
-    }
-    pRequest = (DisplayRequestPtr) xalloc (sizeof (DisplayRequestRec));
-    if (!pRequest)
-	return FALSE;
-    pRequest->pClient = client;
-    pRequest->activateTime = activateTime;
-    pRequest->id = FakeClientID (client->index);
-    if (!AddResource (pRequest->id, DisplayRequestResType, (pointer) pRequest))
-    {
-	xfree (pRequest);
 	return FALSE;
     }
-
-    /* put the request in the correct place on the list */
-    pPrev = 0;
-    for (pReq = pPendingRequests;  pReq;  pPrev = pReq, pReq = pReq->next)
-    {
-	if (CompareTimeStamps (pReq->activateTime, activateTime) == LATER)
-	    break;
-    }
-    if (pPrev)
-	pPrev->next = pRequest;
-    else
-	pPendingRequests = pRequest;
-    pRequest->next = pReq;
+    /* swap the request back so we can simply re-execute it */
     if (client->swapped)
     {
     	register int    n;
@@ -1347,110 +1276,11 @@ QueueDisplayRequest (client, activateTime)
     	swaps (&stuff->minDelay, n);
     	swaps (&stuff->maxDelay, n);
     }
-    client->sequence--;
     ResetCurrentRequest (client);
-    IgnoreClient (client);
+    client->sequence--;
     return TRUE;
 }
 
-/*ARGSUSED*/
-static void
-MultibufferBlockHandler (data, wt, LastSelectMask)
-    pointer	    data;		/* unused */
-    struct timeval  **wt;		/* wait time */
-    pointer	    LastSelectMask;	/* unused */
-{
-    DisplayRequestPtr	    pReq, pNext;
-    unsigned long	    newdelay, olddelay;
-    static struct timeval   delay_val;
-    Bool		    foundBufferReadyToDisplay = FALSE;
-
-    /* if no display requests are waiting, we're done */
-    if (!pPendingRequests)
-	return;
-
-    /* resume servicing clients that have display requests whose time
-     * has come
-     */
-    UpdateCurrentTimeIf ();
-    for (pReq = pPendingRequests; pReq; pReq = pNext)
-    {
-	pNext = pReq->next;
-	if (CompareTimeStamps (pReq->activateTime, currentTime) == LATER)
-	    break;
-	AttendClient (pReq->pClient);
-	FreeResource (pReq->id, 0);
-	foundBufferReadyToDisplay = TRUE;
-    }
-
-    /* If we didn't find a buffer that wants to be displayed, and there 
-     * aren't any scheduled in the future, don't adjust the wait time
-     */
-    if (!foundBufferReadyToDisplay && !pPendingRequests)
-	return;
-
-    /* determine when we want select to wake up to service the next
-     * display request in the queue
-     */
-    if (foundBufferReadyToDisplay)
-    {
-	newdelay = 0;
-    }
-    else
-    {
-	newdelay = pPendingRequests->activateTime.milliseconds
-	    		- currentTime.milliseconds;
-    }
-
-    if (*wt == NULL)
-    { /* select wasn't going to have a timeout; now it will */
-	delay_val.tv_sec = newdelay / 1000;
-	delay_val.tv_usec = 1000 * (newdelay % 1000);
-	*wt = &delay_val;
-    }
-    else
-    { /* modify existing select timeout */
-	olddelay = (*wt)->tv_sec * 1000 + (*wt)->tv_usec / 1000;
-	if (newdelay < olddelay)
-	{
-	    (*wt)->tv_sec = newdelay / 1000;
-	    (*wt)->tv_usec = 1000 * (newdelay % 1000);
-	}
-    }
-}
-
-/*ARGSUSED*/
-static void
-MultibufferWakeupHandler (data, i, LastSelectMask)
-    pointer	    data;
-    int		    i;
-    pointer	    LastSelectMask;
-{
-    DisplayRequestPtr	pReq, pNext;
-
-    /* if no display requests are waiting, don't come here next time */
-    if (!pPendingRequests)
-    {
-	RemoveBlockAndWakeupHandlers (MultibufferBlockHandler,
-				      MultibufferWakeupHandler,
-				      (pointer) 0);
-	BlockHandlerRegistered = 0;
-	return;
-    }
-
-    /* resume servicing clients that have display requests whose time
-     * has come
-     */
-    UpdateCurrentTimeIf ();
-    for (pReq = pPendingRequests; pReq; pReq = pNext)
-    {
-	pNext = pReq->next;
-	if (CompareTimeStamps (pReq->activateTime, currentTime) == LATER)
-	    break;
-	AttendClient (pReq->pClient);
-	FreeResource (pReq->id, 0);
-    }
-}
 
 /*
  * Deliver events to a buffer
@@ -1812,18 +1642,6 @@ MultibuffersDelete (value, id)
 	for (i = pMultibuffers->numMultibuffer; --i >= 0; )
 	    FreeResource (pMultibuffers->buffers[i].pPixmap->drawable.id, 0);
     }
-    return Success;
-}
-
-/* Resource delete func for DisplayRequestResType */
-/*ARGSUSED*/
-static int
-DisplayRequestDelete (value, id)
-    pointer	value;
-    XID		id;
-{
-    DisplayRequestPtr	pRequest = (DisplayRequestPtr)value;
-    DisposeDisplayRequest (pRequest);
     return Success;
 }
 
