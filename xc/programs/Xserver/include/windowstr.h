@@ -1,4 +1,4 @@
-/* $Header: windowstr.h,v 1.1 87/09/10 00:20:09 toddb Locked $ */
+/* $Header: windowstr.h,v 1.2 87/09/10 00:22:10 toddb Locked $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -34,6 +34,7 @@ SOFTWARE.
 #include "resource.h"	/* for ROOT_WINDOW_ID_BASE */
 #include "dix.h"
 #include "miscstruct.h"
+#include "Xprotostr.h"
 
 
 typedef struct _BackingStore {
