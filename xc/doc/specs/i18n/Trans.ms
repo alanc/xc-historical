@@ -1,12 +1,9 @@
-.\" $XConsortium: Trans.ms,v 1.1 94/04/08 23:39:48 rws Exp $
+.\" $XConsortium: Trans.ms,v 1.2 94/04/17 20:06:00 rws Exp $
 .\" To print this out, type tbl macros.t This File | troff -ms
 .EH ''''
 .OH ''''
 .EF ''''
 .OF ''''
-.fp 6 I
-.fp 7 C
-.cp 8 CB
 .ps 11
 .nr PS 11
 .\" .nr PD 1v
@@ -93,16 +90,16 @@ layer, an interface layer and a transport layer. The purpose of this
 layering is to make the protocol independent of transport implementation.
 Each function of these layers are:
 .RS 3
-.IP "\f6The protocol layer\fP"
+.IP "\fIThe protocol layer\fP"
 .br
 implements overall function of XIM and calls the interface layer
 functions when it needs to communicate to IM Server. 
-.IP "\f6The interface layer\fP"
+.IP "\fIThe interface layer\fP"
 .br
 separates the implementation of the transport layer from the protocol
 layer, in other words, it provides implementation independent hook for
 the transport layer functions.
-.IP "\f6The transport layer\fP"
+.IP "\fIThe transport layer\fP"
 .br
 handles actual data communication with IM Server. It is done by a set
 of several functions named transporters.
@@ -137,15 +134,15 @@ typedef struct {
 .br
       Bool (*config);
 } TransportSW;
+.De
 .LP
-.IP "\f6transport_name\fP" 15
+.IP "\fItransport_name\fP" 15
 name of transport(*1)
 .FS 
 (*1) Refer to "The Input Method Protocol: Appendix B" 
 .FE
-.IP "\f6config\fP" 15
+.IP "\fIconfig\fP" 15
 initial configuration function
-.De
 .LP
 A sample entry for the Xlib supporting transporters is shown below:
 .LP
@@ -154,8 +151,8 @@ A sample entry for the Xlib supporting transporters is shown below:
 .ta .5i 2.5i
 TransportSW _XimTransportRec[] = {
 .sp 3p
-/*	char \f6*:
-\ *	transport_name\fP,	Bool \f6(*config)()\fP
+/*	char \fI*:
+\ *	transport_name\fP,	Bool \fI(*config)()\fP
 \ */
 	``X'',	_XimXConf,
 	``tcp'',	_XimTransConf,
@@ -176,16 +173,16 @@ The following function will be called once when Xlib configures the
 transporter functions.
 .sp 6p 
 .FD 0
-Bool (*config)(\f6im\fP, \f6transport_data\fP)
+Bool (*config)(\fIim\fP, \fItransport_data\fP)
 .br
-      XIM \f6im\fP;
+      XIM \fIim\fP;
 .br
-      char \f6*transport_data\fP;
+      char \fI*transport_data\fP;
 .br
 .FN
-.IP \f6im\fP 1i
+.IP \fIim\fP 1i
 Specifies XIM structure address.
-.IP \f6transport_data\fP 1i
+.IP \fItransport_data\fP 1i
 Specifies the data specific to the transporter, in IM Server address. (*1)
 .FS 
 (*1) Refer to "The Input Method Protocol: Appendix B" 
@@ -194,8 +191,8 @@ Specifies the data specific to the transporter, in IM Server address. (*1)
 .LP
 This function must setup the transporter function pointers. 
 .LP
-The actual \f6config\fP function will be chosen by IM Server at the
-pre-connection time, matching by the \f6transport_name\fP specified 
+The actual \fIconfig\fP function will be chosen by IM Server at the
+pre-connection time, matching by the \fItransport_name\fP specified 
 in the \fB_XimTransportRec\fP array; The specific members of XimProto 
 structure listed below must be initialized so that point they 
 appropriate transporter functions.
@@ -272,11 +269,11 @@ When \fBXOpenIM\fP is called, the following function is called to connect
 with the IM Server.
 .sp 6p
 .FD 0
-Bool (*connect)(\f6im\fP)
+Bool (*connect)(\fIim\fP)
 .br
-      XIM \f6im\fP;
+      XIM \fIim\fP;
 .FN
-.IP \f6im\fP 1i
+.IP \fIim\fP 1i
 Specifies XIM structure address.
 .sp 6p
 .LP
@@ -285,11 +282,11 @@ connection is established successfully, this function returns True.
 The Alternative Entry for this function is:
 .sp 6p
 .FD 0
-Bool _XimConnect(\f6im\fP)
+Bool _XimConnect(\fIim\fP)
 .br
-      XIM \f6im\fP;
+      XIM \fIim\fP;
 .FN
-.IP \f6im\fP 1i
+.IP \fIim\fP 1i
 Specifies XIM structure address.
 .LP
 .NH 2
@@ -303,11 +300,11 @@ disconnect the connection with the IM Server. The Alternative Entry
 for this function is:
 .sp 6p
 .FD 0
-Bool (*shutdown)(\f6im\fP)
+Bool (*shutdown)(\fIim\fP)
 .br
-      XIM \f6im\fP;
+      XIM \fIim\fP;
 .FN
-.IP \f6im\fP 1i
+.IP \fIim\fP 1i
 Specifies XIM structure address.
 .sp 6p
 .LP
@@ -316,11 +313,11 @@ connection is closed successfully, this function returns True. The
 Alternative Entry for this function is:
 .sp 6p
 .FD 0
-Bool _XimShutdown(\f6im\fP)
+Bool _XimShutdown(\fIim\fP)
 .br
-      XIM \f6im\fP;
+      XIM \fIim\fP;
 .FN
-.IP \f6im\fP
+.IP \fIim\fP
 Specifies XIM structure address.
 .LP
 .NH 2
@@ -333,43 +330,43 @@ The following function is called, when Xlib needs to write data to the
 IM Server.
 .sp 6p
 .FD 0
-Bool (*write)(\f6im\fP, \f6len\fP, \f6data\fP)
+Bool (*write)(\fIim\fP, \fIlen\fP, \fIdata\fP)
 .br
-      XIM \f6im\fP;
+      XIM \fIim\fP;
 .br
-      INT16 \f6len\fP;
+      INT16 \fIlen\fP;
 .br
-      XPointer \f6data\fP;
+      XPointer \fIdata\fP;
 .FN
-.IP \f6im\fP 1i
+.IP \fIim\fP 1i
 Specifies XIM structure address.
-.IP \f6len\fP 1i
+.IP \fIlen\fP 1i
 Specifies the length of writing data.
-.IP \f6data\fP 1i
+.IP \fIdata\fP 1i
 Specifies the writing data.
 .sp 6p
 .LP
-This function writes the \f6data\fP to the IM Server, regardless
-of the contents.  The number of bytes is passed to \f6len\fP. The
-writing data is passed to \f6data\fP. If data is sent successfully,
+This function writes the \fIdata\fP to the IM Server, regardless
+of the contents.  The number of bytes is passed to \fIlen\fP. The
+writing data is passed to \fIdata\fP. If data is sent successfully,
 the function returns True. Refer to "The Input Method Protocol" for
 the contents of the writing data. The Alternative Entry for this
 function is:
 .sp 6p
 .FD 0
-Bool _XimWrite(\f6im\fP, \f6len\fP, \f6data\fP)
+Bool _XimWrite(\fIim\fP, \fIlen\fP, \fIdata\fP)
 .br
-      XIM \f6im\fP;
+      XIM \fIim\fP;
 .br
-      INT16 \f6len\fP;
+      INT16 \fIlen\fP;
 .br
-      XPointer \f6data\fP;
+      XPointer \fIdata\fP;
 .FN
-.IP \f6im\fP 1i
+.IP \fIim\fP 1i
 Specifies XIM structure address.
-.IP \f6len\fP 1i
+.IP \fIlen\fP 1i
 Specifies the length of writing data.
-.IP \f6data\fP 1i
+.IP \fIdata\fP 1i
 Specifies the writing data.
 .LP
 .NH 2
@@ -382,90 +379,90 @@ The following function is called when Xlib waits for response from IM
 server synchronously.
 .sp 6p
 .FD 0
-Bool (*read)(\f6im\fP, \f6read_buf\fP, \f6buf_len\fP, \f6ret_len\fP)
+Bool (*read)(\fIim\fP, \fIread_buf\fP, \fIbuf_len\fP, \fIret_len\fP)
 .br
-      XIM \f6im\fP;
+      XIM \fIim\fP;
 .br
-      XPointer \f6read_buf\fP;
+      XPointer \fIread_buf\fP;
 .br
-      int \f6buf_len\fP;
+      int \fIbuf_len\fP;
 .br
-      int \f6*ret_len\fP;
+      int \fI*ret_len\fP;
 .FN
-.IP \f6im\fP 1i
+.IP \fIim\fP 1i
 Specifies XIM structure address.
-.IP \f6read_buf\fP 1i
+.IP \fIread_buf\fP 1i
 Specifies the buffer to store data.
-.IP \f6buf_len\fP 1i
-Specifies the size of the \f6buffer\fP
-.IP \f6ret_len\fP
+.IP \fIbuf_len\fP 1i
+Specifies the size of the \fIbuffer\fP
+.IP \fIret_len\fP
 Specifies the length of stored data.
 .sp 6p
 .LP
-This function stores the read data in \f6read_buf\fP, which size is
-specified as \f6buf_len\fP. The size of data is set to \f6ret_len\fP. 
+This function stores the read data in \fIread_buf\fP, which size is
+specified as \fIbuf_len\fP. The size of data is set to \fIret_len\fP. 
 This function return True, if the data is read normally or reading
 data is completed.
 .LP
 The Alternative Entry for this function is:
 .sp 6p
 .FD 0
-Bool _XimRead(\f6im\fP, \f6ret_len\fP, \f6buf\fP, \f6buf_len\fP, \f6predicate\fP, \f6predicate_arg\fP)
+Bool _XimRead(\fIim\fP, \fIret_len\fP, \fIbuf\fP, \fIbuf_len\fP, \fIpredicate\fP, \fIpredicate_arg\fP)
 .br
-      XIM \f6im\fP;
+      XIM \fIim\fP;
 .br
-      INT16 \f6*ret_len\fP;
+      INT16 \fI*ret_len\fP;
 .br
-      XPointer \f6buf\fP;
+      XPointer \fIbuf\fP;
 .br
-      int \f6buf_len\fP;
+      int \fIbuf_len\fP;
 .br
-      Bool \f6(*predicate)()\fP;
+      Bool \fI(*predicate)()\fP;
 .br
-      XPointer \f6predicate_arg\fP;
+      XPointer \fIpredicate_arg\fP;
 .FN
-.IP \f6im\fP 1i
+.IP \fIim\fP 1i
 Specifies XIM structure address.
-.IP \f6ret_len\fP 1i
-Specifies the size of the \f6data\fP buffer.
-.IP \f6buf\fP 1i
+.IP \fIret_len\fP 1i
+Specifies the size of the \fIdata\fP buffer.
+.IP \fIbuf\fP 1i
 Specifies the buffer to store data.
-.IP \f6buf_len\fP 1i
-Specifies the length of \f6buffer\fP.
-.IP \f6predicate\fP 1i
+.IP \fIbuf_len\fP 1i
+Specifies the length of \fIbuffer\fP.
+.IP \fIpredicate\fP 1i
 Specifies the predicate for the XIM data.
-.IP \f6predicate_arg\fP 1i
+.IP \fIpredicate_arg\fP 1i
 Specifies the predicate specific data.
 .sp 6p
 .LP
-The predicate procedure indicates whether the \f6data\fP is for the
-XIM or not. \f6len\fP
-This function stores the read data in \f6buf\fP, which size is specified 
-as \f6buf_len\fP. The size of data is set to \f6ret_len\fP.
-If \f6preedicate()\fP returns True, this function returns True.
+The predicate procedure indicates whether the \fIdata\fP is for the
+XIM or not. \fIlen\fP
+This function stores the read data in \fIbuf\fP, which size is specified 
+as \fIbuf_len\fP. The size of data is set to \fIret_len\fP.
+If \fIpreedicate()\fP returns True, this function returns True.
 If not, it calls the registered callback function. 
 .LP
 The procedure and its arguments are:
 .LP
 .sp 6p
 .FD 0
-Bool (*predicate)(\f6im\fP, \f6len\fP, \f6data\fP, \f6predicate_arg\fP)
+Bool (*predicate)(\fIim\fP, \fIlen\fP, \fIdata\fP, \fIpredicate_arg\fP)
 .br
-      XIM \f6im\fP;
+      XIM \fIim\fP;
 .br
-      INT16 \f6len\fP;
+      INT16 \fIlen\fP;
 .br
-      XPointer \f6data\fP;
+      XPointer \fIdata\fP;
 .br
-      XPointer \f6predicate_arg\fP;
+      XPointer \fIpredicate_arg\fP;
 .FN
-.IP \f6im\fP 1i
+.IP \fIim\fP 1i
 Specifies XIM structure address.
-.IP \f6len\fP 1i
-Specifies the size of the \f6data\fP buffer.
-.IP \f6data\fP 1i
+.IP \fIlen\fP 1i
+Specifies the size of the \fIdata\fP buffer.
+.IP \fIdata\fP 1i
 Specifies the buffer to store data.
-.IP \f6predicate_arg\fP 1i
+.IP \fIpredicate_arg\fP 1i
 Specifies the predicate specific data.
 .LP
 .NH 2
@@ -477,11 +474,11 @@ Flushing buffer
 The following function is called when Xlib needs to flush the data.
 .sp 6p
 .FD 0
-void (*flush)(\f6im\fP)
+void (*flush)(\fIim\fP)
 .br
-      XIM \f6im\fP;
+      XIM \fIim\fP;
 .FN
-.IP \f6im\fP 1i
+.IP \fIim\fP 1i
 Specifies XIM structure address.
 .sp 6p
 .LP
@@ -490,11 +487,11 @@ transport layer. If data transfer is completed, the function returns
 True.  The Alternative Entry for this function is:
 .sp 6p
 .FD 0
-void _XimFlush(\f6im\fP)
+void _XimFlush(\fIim\fP)
 .br
-      XIM \f6im\fP;
+      XIM \fIim\fP;
 .FN
-.IP \f6im\fP 1i
+.IP \fIim\fP 1i
 Specifies XIM structure address.
 .LP
 .NH 2
@@ -506,7 +503,7 @@ Registering asynchronous data handler
 Xlib needs to handle asynchronous response from IM Server. This is
 because some of the XIM data occur asynchronously to X events.
 .LP
-Those data will be handled in the \f6Filter\fP, and the \f6Filter\fP
+Those data will be handled in the \fIFilter\fP, and the \fIFilter\fP
 will call asynchronous data handler in the protocol layer. Then it
 calls dispatchers in the transport layer. The dispatchers are
 implemented by the protocol layer. This function must store the
@@ -518,41 +515,41 @@ sequentially in order of registration, on arrival of asynchronous
 data. The register_dispatcher is declared as following:
 .sp 6p
 .FD 0
-Bool (*register_dispatcher)(\f6im\fP, \f6dispatcher\fP, \f6call_data\fP)
+Bool (*register_dispatcher)(\fIim\fP, \fIdispatcher\fP, \fIcall_data\fP)
 .br
-      XIM \f6im\fP;
+      XIM \fIim\fP;
 .br
-      Bool \f6(*dispatcher)()\fP;
+      Bool \fI(*dispatcher)()\fP;
 .br
-      XPointer \f6call_data\fP;
+      XPointer \fIcall_data\fP;
 .FN
-.IP \f6im\fP 1i
+.IP \fIim\fP 1i
 Specifies XIM structure address.
-.IP \f6dispatcher\fP 1i
+.IP \fIdispatcher\fP 1i
 Specifies the dispatcher function to register.
-.IP \f6call_data\fP 1i
-Specifies a parameter for the \f6dispatcher\fP.
+.IP \fIcall_data\fP 1i
+Specifies a parameter for the \fIdispatcher\fP.
 .LP
 The dispatcher is a function of the following type:
 .sp 6p
 .FD 0
-Bool (*dispatcher)(\f6im\fP, \f6len\fP, \f6data\fP, \f6call_data\fP)
+Bool (*dispatcher)(\fIim\fP, \fIlen\fP, \fIdata\fP, \fIcall_data\fP)
 .br
-      XIM \f6im\fP;
+      XIM \fIim\fP;
 .br
-      INT16 \f6len\fP;
+      INT16 \fIlen\fP;
 .br
-      XPointer \f6data\fP;
+      XPointer \fIdata\fP;
 .br
-      XPointer \f6call_data\fP;
+      XPointer \fIcall_data\fP;
 .FN
-.IP \f6im\fP 1i
+.IP \fIim\fP 1i
 Specifies XIM structure address.
-.IP \f6len\fP 1i
-Specifies the size of the \f6data\fP buffer.
-.IP \f6data\fP 1i
+.IP \fIlen\fP 1i
+Specifies the size of the \fIdata\fP buffer.
+.IP \fIdata\fP 1i
 Specifies the buffer to store data.
-.IP \f6call_data\fP 1i
+.IP \fIcall_data\fP 1i
 Specifies a parameter passed to the register_dispatcher.
 .sp 6p
 .LP
@@ -565,20 +562,20 @@ that the data has been processed by the upper layer.  The Alternative
 Entry for this function is:
 .sp 6p
 .FD 0
-Bool _XimRegisterDispatcher(\f6im\fP, \f6dispatcher\fP, \f6call_data\fP)
+Bool _XimRegisterDispatcher(\fIim\fP, \fIdispatcher\fP, \fIcall_data\fP)
 .br
-      XIM \f6im\fP;
+      XIM \fIim\fP;
 .br
-      Bool \f6(*dispatcher)()\fP;
+      Bool \fI(*dispatcher)()\fP;
 .br
-      XPointer \f6call_data\fP;
+      XPointer \fIcall_data\fP;
 .FN
-.IP \f6im\fP 1i
+.IP \fIim\fP 1i
 Specifies XIM structure address.
-.IP \f6dispatcher\fP 1i
+.IP \fIdispatcher\fP 1i
 Specifies the dispatcher function to register.
-.IP \f6call_data\fP 1i
-Specifies a parameter for the \f6dispatcher\fP.
+.IP \fIcall_data\fP 1i
+Specifies a parameter for the \fIdispatcher\fP.
 .LP
 .NH 2
 Calling dispatcher
@@ -590,23 +587,23 @@ The following function is used to call the registered dispatcher
 function, when the asynchronous response from IM Server has arrived.
 .sp 6p
 .FD 0
-Bool (*call_dispatcher)(\f6im\fP, \f6len\fP, \f6data\fP)
+Bool (*call_dispatcher)(\fIim\fP, \fIlen\fP, \fIdata\fP)
 .br
-      XIM \f6im\fP;
+      XIM \fIim\fP;
 .br
-      INT16 \f6len\fP;
+      INT16 \fIlen\fP;
 .br
-      XPointer \f6data\fP;
+      XPointer \fIdata\fP;
 .FN
-.IP \f6im\fP 1i
+.IP \fIim\fP 1i
 Specifies XIM structure address.
-.IP \f6len\fP 1i
-Specifies the size of \f6data\fP buffer.
-.IP \f6data\fP 1i
+.IP \fIlen\fP 1i
+Specifies the size of \fIdata\fP buffer.
+.IP \fIdata\fP 1i
 Specifies the buffer to store data.
 .LP
 The call_dispatcher must call the dispatcher function, in order of 
-their registration. \f6len\fP and \f6data\fP are the data passed to 
+their registration. \fIlen\fP and \fIdata\fP are the data passed to 
 register_dispatcher.
 .LP
 The return values are checked at each invocation, and if it finds
@@ -617,13 +614,13 @@ Protocol packet unit or not.
 The Alternative Entry for this function is:
 .sp 6p
 .FD 0
-Bool _XimCallDispatcher(\f6im\fP, \f6len\fP, \f6data\fP)
+Bool _XimCallDispatcher(\fIim\fP, \fIlen\fP, \fIdata\fP)
 .br
-      XIM \f6im\fP;
+      XIM \fIim\fP;
 .br
-      INT16 \f6len\fP;
+      INT16 \fIlen\fP;
 .br
-      XPointer \f6call_data\fP;
+      XPointer \fIcall_data\fP;
 .FN
 .LP
 .bp
@@ -794,7 +791,6 @@ IM Server.
 .IP (3)
 If major/minor-transport-version number is not available, it is regarded
 as 0.
-.RE
 .RE
 .LP
 .IP (*2) 
