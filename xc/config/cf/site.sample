@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.sample,v 1.5 94/03/04 08:11:25 gildea Exp $
+XCOMM site:  $XConsortium: site.sample,v 1.6 94/03/30 16:03:52 gildea Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -28,11 +28,14 @@ XCOMM site:  $XConsortium: site.sample,v 1.5 94/03/04 08:11:25 gildea Exp $
 #define LocalConfigFiles host.def
 #endif
 
-#include <host.def>
 */
 
 
 #ifdef BeforeVendorCF
+
+/*
+#include <host.def>
+*/
 
 /*
 #ifndef HasGcc2
@@ -82,6 +85,10 @@ XCOMM site:  $XConsortium: site.sample,v 1.5 94/03/04 08:11:25 gildea Exp $
 #ifdef SVR4Architecture
 #define SvgaConfig vga.pmi:1024x768
 #endif
+*/
+
+/*
+#include <host.def>
 */
 
 #endif /* AfterVendorCF */
