@@ -792,7 +792,7 @@ Boolean XmuCvtStringToColorCursor(\fIdpy\fP, \fIargs\fP, \fInum_args\fP, \fIfrom
 .br
       XtPointer * \fIdata\fP;
 .FN
-.Ip \fIdpy\fP 1i
+.IP \fIdpy\fP 1i
 specifies the display to use for conversion warnings
 .IP \fIargs\fP 1i
 specifies the required conversion arguments
@@ -2332,7 +2332,6 @@ Status XmuCreateColormap(\fIdpy\fP, \fIcolormap\fP)
 specifies the connection under which the map is created
 .IP \fIcolormap\fP 1i
 specifies the map to be created
-.FN
 .LP
 To create any one colormap which is described by an
 .PN XStandardColormap
