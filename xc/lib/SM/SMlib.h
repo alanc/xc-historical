@@ -1,4 +1,4 @@
-/* $XConsortium: SMlib.h,v 1.16 94/01/31 11:04:07 mor Exp $ */
+/* $XConsortium: SMlib.h,v 1.17 94/03/16 15:49:49 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -17,8 +17,8 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
 
-#ifndef SMLIB_H
-#define SMLIB_H
+#ifndef _SMLIB_H_
+#define _SMLIB_H_
 
 #include <X11/SM/SM.h>
 #include <X11/ICE/ICElib.h>
@@ -568,4 +568,4 @@ extern void SmFreeReasons (
 #endif
 );
 
-#endif /* SMLIB_H */
+#endif /* _SMLIB_H_ */

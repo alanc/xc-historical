@@ -1,4 +1,4 @@
-/* $XConsortium: XIEprotost.h,v 1.3 93/10/28 15:29:33 mor Exp $ */
+/* $XConsortium: XIEprotost.h,v 1.4 94/01/12 19:42:39 rws Exp $ */
 /******************************************************************************
 
 				NOTICE
@@ -44,8 +44,8 @@ terms and conditions:
 
 ******************************************************************************/
 
-#ifndef XIEPROTOST_H
-#define XIEPROTOST_H
+#ifndef _XIEPROTOST_H_
+#define _XIEPROTOST_H_
 
 #include <X11/Xmd.h>			/* defines things like CARD32 */
 
@@ -1091,4 +1091,4 @@ typedef struct {
 #undef Colormap
 #undef GContext
 
-#endif /* XIEPROTOST_H */
+#endif /* _XIEPROTOST_H_ */

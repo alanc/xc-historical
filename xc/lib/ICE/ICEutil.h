@@ -1,4 +1,4 @@
-/* $XConsortium: ICEutil.h,v 1.2 94/03/08 12:16:06 mor Exp $ */
+/* $XConsortium: ICEutil.h,v 1.3 94/03/17 12:21:45 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -17,8 +17,8 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
 
-#ifndef ICEUTIL_H
-#define ICEUTIL_H
+#ifndef _ICEUTIL_H_
+#define _ICEUTIL_H_
 
 #include <stdio.h>
 
@@ -124,4 +124,4 @@ extern void IceSetPaAuthData (
 #endif
 );
 
-#endif /* ICEUTIL_H */
+#endif /* _ICEUTIL_H_ */

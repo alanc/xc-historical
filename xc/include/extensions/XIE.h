@@ -1,4 +1,4 @@
-/* $XConsortium: XIE.h,v 1.2 93/10/28 15:29:26 mor Exp $ */
+/* $XConsortium: XIE.h,v 1.3 94/01/12 19:36:23 rws Exp $ */
 /******************************************************************************
 
 				NOTICE
@@ -43,8 +43,8 @@ terms and conditions:
 
 ******************************************************************************/
 
-#ifndef XIE_H
-#define XIE_H
+#ifndef _XIE_H_
+#define _XIE_H_
 
 
 /* Extension Name and version number */
@@ -403,4 +403,4 @@ terms and conditions:
 
 #define xieNumFloErrors		  19
 
-#endif /* XIE_H */
+#endif /* _XIE_H_ */

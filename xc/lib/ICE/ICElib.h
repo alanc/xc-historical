@@ -1,4 +1,4 @@
-/* $XConsortium: ICElib.h,v 1.31 94/03/17 15:36:28 mor Exp $ */
+/* $XConsortium: ICElib.h,v 1.32 94/03/17 15:41:08 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -17,8 +17,8 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
 
-#ifndef ICELIB_H
-#define ICELIB_H
+#ifndef _ICELIB_H_
+#define _ICELIB_H_
 
 #include <X11/ICE/ICE.h>
 #include <X11/Xfuncproto.h>
@@ -477,4 +477,4 @@ extern void IceAppUnlockConn (
 #endif
 );
 
-#endif /* ICELIB_H */
+#endif /* _ICELIB_H_ */

@@ -1,4 +1,4 @@
-/* $XConsortium: ICEproto.h,v 1.4 93/12/07 11:04:02 mor Exp $ */
+/* $XConsortium: ICEproto.h,v 1.5 93/12/28 11:41:22 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -17,8 +17,8 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
 
-#ifndef ICEPROTO_H
-#define ICEPROTO_H
+#ifndef _ICEPROTO_H_
+#define _ICEPROTO_H_
 
 typedef struct {
     CARD8	majorOpcode;
@@ -161,4 +161,4 @@ typedef iceMsg  iceNoCloseMsg;
 #define sz_iceWantToCloseMsg		8
 #define sz_iceNoCloseMsg		8
 
-#endif /* ICEPROTO_H */
+#endif /* _ICEPROTO_H_ */

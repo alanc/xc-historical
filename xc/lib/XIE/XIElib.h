@@ -1,4 +1,4 @@
-/* $XConsortium: XIElib.h,v 1.6 94/02/22 17:41:18 mor Exp $ */
+/* $XConsortium: XIElib.h,v 1.7 94/03/09 15:02:16 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -15,8 +15,8 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 ******************************************************************************/
 
-#ifndef XIELIB_H
-#define XIELIB_H
+#ifndef _XIELIB_H_
+#define _XIELIB_H_
 
 #include <X11/Xlib.h>
 #include <X11/extensions/XIE.h>
@@ -1896,4 +1896,4 @@ extern XieWhiteAdjustCIELabShiftParam *XieTecWhiteAdjustCIELabShift (
 );
 
 
-#endif /* XIELIB_H */
+#endif /* _XIELIB_H_ */

@@ -1,4 +1,4 @@
-/* $XConsortium: elements.h,v 1.1 93/07/19 11:39:18 mor Exp $ */
+/* $XConsortium: elements.h,v 1.2 93/09/23 11:43:35 mor Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -16,8 +16,8 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 ******************************************************************************/
 
-#ifndef ELEMENTS_H
-#define ELEMENTS_H
+#ifndef _ELEMENTS_H_
+#define _ELEMENTS_H_
 
 #if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
 #define ELEM_NAME(_name_) xieFlo##_name_
@@ -91,4 +91,4 @@ without express or implied warranty.
 
 #endif
 
-#endif /* ELEMENTS_H */
+#endif /* _ELEMENTS_H_ */

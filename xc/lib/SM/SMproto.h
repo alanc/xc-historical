@@ -1,4 +1,4 @@
-/* $XConsortium: SMproto.h,v 1.4 93/12/15 17:31:44 mor Exp $ */
+/* $XConsortium: SMproto.h,v 1.5 93/12/28 11:46:25 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -17,8 +17,8 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
 
-#ifndef SMPROTO_H
-#define SMPROTO_H
+#ifndef _SMPROTO_H_
+#define _SMPROTO_H_
 
 typedef struct {
     CARD8	majorOpcode;
@@ -166,4 +166,4 @@ typedef struct {
 #define sz_smGetPropertiesMsg 		8
 #define sz_smPropertiesReplyMsg 	8
 
-#endif /* SMPROTO_H */
+#endif /* _SMPROTO_H_ */

@@ -1,4 +1,4 @@
-/* $XConsortium: SM.h,v 1.5 93/12/28 11:46:08 mor Exp $ */
+/* $XConsortium: SM.h,v 1.6 94/03/07 13:23:11 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -17,8 +17,8 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
 
-#ifndef SM_H
-#define SM_H
+#ifndef _SM_H_
+#define _SM_H_
 
 /*
  * Protocol Version
@@ -110,4 +110,4 @@ Author: Ralph Mor, X Consortium
 #define SM_GetProperties 	14
 #define SM_PropertiesReply 	15
 
-#endif /* SM_H */
+#endif /* _SM_H_ */

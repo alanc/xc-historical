@@ -1,4 +1,4 @@
-/* $XConsortium: XIEproto.h,v 1.3 93/10/28 15:29:31 mor Exp $ */
+/* $XConsortium: XIEproto.h,v 1.4 94/01/12 19:36:55 rws Exp $ */
 /******************************************************************************
 
 				NOTICE
@@ -44,8 +44,8 @@ terms and conditions:
 
 ******************************************************************************/
 
-#ifndef XIEPROTO_H
-#define XIEPROTO_H
+#ifndef _XIEPROTO_H_
+#define _XIEPROTO_H_
 
 #include <X11/extensions/XIEprotost.h>
 
@@ -661,4 +661,4 @@ typedef struct {
 #undef Colormap
 #undef GContext
 
-#endif /* XIEPROTO_H */
+#endif /* _XIEPROTO_H_ */

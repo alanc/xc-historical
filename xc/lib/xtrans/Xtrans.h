@@ -1,4 +1,4 @@
-/* $XConsortium: Xtrans.h,v 1.15 94/03/02 12:16:03 mor Exp $ */
+/* $XConsortium: Xtrans.h,v 1.16 94/03/15 13:18:42 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -24,8 +24,8 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef _XTRANS_H
-#define _XTRANS_H
+#ifndef _XTRANS_H_
+#define _XTRANS_H_
 
 #include <X11/Xfuncproto.h>
 #include <X11/Xos.h>
@@ -428,4 +428,4 @@ TRANS(GetPeerNetworkId)(
 
 #endif /* ICE_t */
 
-#endif /* _XTRANS_H */
+#endif /* _XTRANS_H_ */

@@ -1,4 +1,4 @@
-/* $XConsortium: SMlibint.h,v 1.13 94/03/07 15:23:07 mor Exp $ */
+/* $XConsortium: SMlibint.h,v 1.14 94/03/16 15:49:58 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -17,8 +17,8 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
 
-#ifndef SMLIBINT_H
-#define SMLIBINT_H
+#ifndef _SMLIBINT_H_
+#define _SMLIBINT_H_
 
 #include <X11/ICE/ICElibint.h>
 #include <X11/SM/SMproto.h>
@@ -352,4 +352,4 @@ extern SmPointer	_SmsNewClientData;
 extern SmcErrorHandler _SmcErrorHandler;
 extern SmsErrorHandler _SmsErrorHandler;
 
-#endif /* SMLIBINT */
+#endif /* _SMLIBINT_H_ */

@@ -1,4 +1,4 @@
-/* $XConsortium: XIElibint.h,v 1.2 93/09/23 11:43:20 mor Exp $ */
+/* $XConsortium: XIElibint.h,v 1.3 93/10/28 15:23:15 rws Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -16,8 +16,8 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 ******************************************************************************/
 
-#ifndef XIELIBINT_H
-#define XIELIBINT_H
+#ifndef _XIELIBINT_H_
+#define _XIELIBINT_H_
 
 #include <X11/Xlibint.h>
 #include <X11/Xfuncs.h>
@@ -284,4 +284,4 @@ extern xieTypFloat	_XieConvertToIEEE();
 #define sz_INT32 				4
 #define sz_INT16 				2
 
-#endif /* XIELIBINT_H */
+#endif /* _XIELIBINT_H_ */

@@ -1,4 +1,4 @@
-/* $XConsortium: ICE.h,v 1.2 93/12/07 11:03:52 mor Exp $ */
+/* $XConsortium: ICE.h,v 1.3 93/12/28 11:40:49 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -18,8 +18,8 @@ Author: Ralph Mor, X Consortium
 
 ******************************************************************************/
 
-#ifndef ICE_H
-#define ICE_H
+#ifndef _ICE_H_
+#define _ICE_H_
 
 /*
  * Protocol Version
@@ -88,4 +88,4 @@ Author: Ralph Mor, X Consortium
 #define IceMajorOpcodeDuplicate		6
 #define IceUnknownProtocol		7
 
-#endif /* ICE_H */
+#endif /* _ICE_H_ */
