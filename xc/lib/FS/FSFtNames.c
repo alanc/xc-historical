@@ -1,4 +1,4 @@
-/* $XConsortium: FSFtNames.c,v 1.2 91/05/13 15:11:40 gildea Exp $ */
+/* $XConsortium: FSFtNames.c,v 1.3 92/11/18 21:31:13 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -22,7 +22,7 @@
  * THIS SOFTWARE.
  */
 
-#include	"FSlibint.h"
+#include "FSlibint.h"
 
 char      **
 FSListFonts(svr, pattern, maxNames, actualCount)
@@ -65,11 +65,11 @@ FSListFonts(svr, pattern, maxNames, actualCount)
 	}
 	_FSReadPad(svr, c, rlen);
 	/* unpack */
-	length = *c;
+	length = *(unsigned char *)c;
 	for (i = 0; i < rep.nFonts; i++) {
 	    flist[i] = c + 1;
 	    c += length + 1;
-	    length = *c;
+	    length = *(unsigned char *)c;
 	    *c = '\0';
 	}
     } else {
