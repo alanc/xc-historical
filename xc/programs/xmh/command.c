@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: command.c,v 2.11 88/02/22 10:33:59 swick Exp $";
+static char rcs_id[] = "$Header: command.c,v 2.12 88/02/24 09:14:08 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -35,6 +35,15 @@ static char rcs_id[] = "$Header: command.c,v 2.11 88/02/22 10:33:59 swick Exp $"
 #include <sys/wait.h>
 #endif	/* SYSV */
 #include <sys/resource.h>
+
+#ifdef macII
+#define vfork() fork()
+#endif /* macII */
+
+#if defined(SYSV) && !defined(hpux)
+#define vfork() fork()
+#endif /* SYSV and not hpux */
+
 
 #ifndef FD_SET
 #define NFDBITS         (8*sizeof(fd_set))
