@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.143 90/04/17 14:04:35 jim Exp $
+ * $XConsortium: add_window.c,v 1.144 90/04/24 09:28:44 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.143 90/04/17 14:04:35 jim Exp $";
+"$XConsortium: add_window.c,v 1.144 90/04/24 09:28:44 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -184,31 +184,12 @@ IconMgr *iconp;
     else
 	tmp_win->group = NULL;
 
-    GetWindowSizeHints (tmp_win);
-
     /*
      * The July 27, 1988 draft of the ICCCM ignores the size and position
      * fields in the WM_NORMAL_HINTS property.
      */
 
     tmp_win->transient = Transient(tmp_win->w);
-    /*
-     * Don't bother user if:
-     * 
-     *     o  the window is a transient, or
-     * 
-     *     o  a USPosition was requested, or
-     * 
-     *     o  a PPosition was requested and UsePPosition is ON or
-     *        NON_ZERO if the window is at other than (0,0)
-     */
-    ask_user = TRUE;
-    if (tmp_win->transient || 
-	(tmp_win->hints.flags & USPosition) ||
-        ((tmp_win->hints.flags & PPosition) && Scr->UsePPosition &&
-	 (Scr->UsePPosition == PPOS_ON || 
-	  tmp_win->attr.x != 0 || tmp_win->attr.y != 0)))
-      ask_user = FALSE;
 
     if (tmp_win->name == NULL)
 	tmp_win->name = NoName;
@@ -313,8 +294,26 @@ IconMgr *iconp;
 	tmp_win->wmhints->flags |= StateHint;
     }
 
+    GetWindowSizeHints (tmp_win);
     GetGravityOffsets (tmp_win, &gravx, &gravy);
 
+    /*
+     * Don't bother user if:
+     * 
+     *     o  the window is a transient, or
+     * 
+     *     o  a USPosition was requested, or
+     * 
+     *     o  a PPosition was requested and UsePPosition is ON or
+     *        NON_ZERO if the window is at other than (0,0)
+     */
+    ask_user = TRUE;
+    if (tmp_win->transient || 
+	(tmp_win->hints.flags & USPosition) ||
+        ((tmp_win->hints.flags & PPosition) && Scr->UsePPosition &&
+	 (Scr->UsePPosition == PPOS_ON || 
+	  tmp_win->attr.x != 0 || tmp_win->attr.y != 0)))
+      ask_user = FALSE;
 
     /*
      * do any prompting for position
