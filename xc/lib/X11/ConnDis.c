@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.79 91/05/02 13:59:51 rws Exp $
+ * $XConsortium: XConnDis.c,v 11.80 91/05/08 10:00:39 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -346,14 +346,16 @@ int _XConnectDisplay (display_name, fullnamep, dpynump, screenp,
  */
 #include <sys/socket.h>
 
-#ifndef hpux
-#ifdef apollo			/* nest if(n)defs because makedepend is broken */
+#ifdef hpux
+#define NO_TCP_H
+#endif
+#ifdef MOTOROLA
+#ifdef SYSV
+#define NO_TCP_H
+#endif
+#endif
 #ifndef NO_TCP_H
 #include <netinet/tcp.h>
-#endif /* NO_TCP_H */
-#else  /* apollo */
-#include <netinet/tcp.h>
-#endif /* apollo */
 #endif
 #endif /* NEED_BSDISH */
 
