@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.39 91/05/09 20:54:56 rws Exp $ */
+/* $XConsortium: events.c,v 5.40 91/06/01 10:48:29 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -2950,9 +2950,10 @@ ProcSendEvent(client)
     /* The client's event type must be a core event type or one defined by an
 	extension. */
 
-    if ( ! ((stuff->event.u.u.type < LASTEvent) || 
-	((EXTENSION_EVENT_BASE  <= stuff->event.u.u.type) &&
-	(stuff->event.u.u.type < lastEvent))) )
+    if ( ! ((stuff->event.u.u.type > X_Reply &&
+	     stuff->event.u.u.type < LASTEvent) || 
+	    (stuff->event.u.u.type >= EXTENSION_EVENT_BASE &&
+	     stuff->event.u.u.type < lastEvent)))
     {
 	client->errorValue = stuff->event.u.u.type;
 	return BadValue;
