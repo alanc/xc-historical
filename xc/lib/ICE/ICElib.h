@@ -1,4 +1,4 @@
-/* $XConsortium: ICElib.h,v 1.28 94/03/08 12:13:08 mor Exp $ */
+/* $XConsortium: ICElib.h,v 1.29 94/03/15 13:31:20 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -120,8 +120,8 @@ typedef struct {
 
 typedef IcePoAuthStatus (*IcePoAuthProc) (
 #if NeedFunctionPrototypes
+    IceConn		/* iceConn */,
     IcePointer *	/* authStatePtr */,
-    char *		/* networkId */,
     Bool		/* cleanUp */,
     Bool		/* swap */,
     int			/* authDataLen */,
@@ -134,8 +134,8 @@ typedef IcePoAuthStatus (*IcePoAuthProc) (
 
 typedef IcePaAuthStatus (*IcePaAuthProc) (
 #if NeedFunctionPrototypes
+    IceConn		/* iceConn */,
     IcePointer *	/* authStatePtr */,
-    char *		/* networkId */,
     Bool		/* swap */,
     int			/* replyDataLen */,
     IcePointer		/* replyData */,

@@ -1,4 +1,4 @@
-/* $XConsortium: iceauth.c,v 1.12 94/03/08 12:17:24 mor Exp $ */
+/* $XConsortium: iceauth.c,v 1.13 94/03/15 13:39:37 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -89,11 +89,11 @@ int len;
 
 
 IcePoAuthStatus
-_IcePoMagicCookie1Proc (authStatePtr, networkId, cleanUp, swap,
+_IcePoMagicCookie1Proc (iceConn, authStatePtr, cleanUp, swap,
     authDataLen, authData, replyDataLenRet, replyDataRet, errorStringRet)
 
+IceConn		iceConn;
 IcePointer	*authStatePtr;
-char		*networkId;
 Bool 		cleanUp;
 Bool		swap;
 int     	authDataLen;
@@ -119,14 +119,14 @@ char    	**errorStringRet;
 	/*
 	 * This is the first time we're being called.  Search the
 	 * authentication data for the first occurence of
-	 * MIT-MAGIC-COOKIE-1 that matches networkId.
+	 * MIT-MAGIC-COOKIE-1 that matches iceConn->connection_string.
 	 */
 
 	unsigned short  length;
 	char		*data;
 
-	_IceGetPoAuthData ("ICE", networkId, "MIT-MAGIC-COOKIE-1",
-	    &length, &data);
+	_IceGetPoAuthData ("ICE", iceConn->connection_string,
+	    "MIT-MAGIC-COOKIE-1", &length, &data);
 
 	if (!data)
 	{
@@ -169,11 +169,11 @@ char    	**errorStringRet;
 
 
 IcePaAuthStatus
-_IcePaMagicCookie1Proc (authStatePtr, networkId, swap,
+_IcePaMagicCookie1Proc (iceConn, authStatePtr, swap,
     replyDataLen, replyData, authDataLenRet, authDataRet, errorStringRet)
 
+IceConn		iceConn;
 IcePointer	*authStatePtr;
-char		*networkId;
 Bool		swap;
 int     	replyDataLen;
 IcePointer	replyData;
@@ -203,14 +203,14 @@ char    	**errorStringRet;
     {
 	/*
 	 * Search the authentication data for the first occurence of
-	 * MIT-MAGIC-COOKIE-1 that matches networkId.
+	 * MIT-MAGIC-COOKIE-1 that matches iceConn->connection_string.
 	 */
 
 	unsigned short  length;
 	char		*data;
 
-	_IceGetPaAuthData ("ICE", networkId, "MIT-MAGIC-COOKIE-1",
-	    &length, &data);
+	_IceGetPaAuthData ("ICE", iceConn->connection_string,
+	    "MIT-MAGIC-COOKIE-1", &length, &data);
 
 	if (data)
 	{

@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.30 94/03/16 16:12:43 mor Exp $ */
+/* $XConsortium: process.c,v 1.31 94/03/17 10:16:04 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -647,8 +647,7 @@ IceReplyWaitInfo *replyWait;
 		authProc = _IcePoAuthProcs[
 		    iceConn->connect_to_you->my_auth_index];
 
-		(*authProc) (&iceConn->connect_to_you->my_auth_state,
-		    iceConn->connection_string,
+		(*authProc) (iceConn, &iceConn->connect_to_you->my_auth_state,
 		    True /* clean up */, False /* swap */,
 		    0, NULL, NULL, NULL, NULL);
 	    }
@@ -661,8 +660,8 @@ IceReplyWaitInfo *replyWait;
 		authProc = protocol->auth_procs[iceConn->
 		    protosetup_to_you->my_auth_index];
 
-		(*authProc) (&iceConn->protosetup_to_you->my_auth_state,
-		    iceConn->connection_string,
+		(*authProc) (iceConn,
+		    &iceConn->protosetup_to_you->my_auth_state,
 		    True /* clean up */, False /* swap */,
 		    0, NULL, NULL, NULL, NULL);
 	    }
@@ -869,7 +868,7 @@ Bool		swap;
 
 	authState = NULL;
 
-	status = (*authProc) (&authState, iceConn->connection_string,
+	status = (*authProc) (iceConn, &authState,
 	    swap, 0, NULL, &authDataLen, &authData, &errorString);
 
 	if (status == IcePaAuthContinue)
@@ -1039,8 +1038,7 @@ IceReplyWaitInfo	*replyWait;
     authState = NULL;
     authDataLen = message->authDataLength;
 
-    status = (*authProc) (&authState,
-	iceConn->connection_string, False /* don't clean up */,
+    status = (*authProc) (iceConn, &authState, False /* don't clean up */,
 	swap, authDataLen, authData, &replyDataLen, &replyData, &errorString);
 
     if (status == IcePoAuthHaveReply)
@@ -1151,8 +1149,7 @@ Bool		swap;
 	IcePaAuthProc authProc = _IcePaAuthProcs[
 	    iceConn->connect_to_me->my_auth_index];
 	IcePaAuthStatus status =
-	    (*authProc) (&iceConn->connect_to_me->my_auth_state,
-	    iceConn->connection_string, swap,
+	    (*authProc) (iceConn, &iceConn->connect_to_me->my_auth_state, swap,
 	    replyDataLen, replyData, &authDataLen, &authData, &errorString);
 
 	if (status == IcePaAuthContinue)
@@ -1224,9 +1221,9 @@ Bool		swap;
 	IcePaAuthProc authProc = myProtocol->auth_procs[
 	    iceConn->protosetup_to_me->my_auth_index];
 	IcePaAuthStatus status =
-	    (*authProc) (&iceConn->protosetup_to_me->my_auth_state,
-	    iceConn->connection_string, swap,
-	    replyDataLen, replyData, &authDataLen, &authData, &errorString);
+	    (*authProc) (iceConn, &iceConn->protosetup_to_me->my_auth_state,
+	    swap, replyDataLen, replyData,
+	    &authDataLen, &authData, &errorString);
 	int free_setup_info = 1;
 
 	if (status == IcePaAuthContinue)
@@ -1423,8 +1420,7 @@ IceReplyWaitInfo	*replyWait;
 
     authDataLen = message->authDataLength;
 
-    status = (*authProc) (authState,
-        iceConn->connection_string, False /* don't clean up */,
+    status = (*authProc) (iceConn, authState, False /* don't clean up */,
 	swap, authDataLen, authData, &replyDataLen, &replyData, &errorString);
 
     if (status == IcePoAuthHaveReply)
@@ -1526,8 +1522,7 @@ IceReplyWaitInfo 	*replyWait;
 	    IcePoAuthProc authProc = _IcePoAuthProcs[
 		iceConn->connect_to_you->my_auth_index];
 
-	    (*authProc) (&iceConn->connect_to_you->my_auth_state,
-		iceConn->connection_string,
+	    (*authProc) (iceConn, &iceConn->connect_to_you->my_auth_state,
 		True /* clean up */, False /* swap */,
 	        0, NULL, NULL, NULL, NULL);
 	}
@@ -1815,8 +1810,7 @@ Bool		swap;
 
 	authState = NULL;
 
-	status = (*authProc) (&authState,
-	    iceConn->connection_string, swap, 0, NULL,
+	status = (*authProc) (iceConn, &authState, swap, 0, NULL,
 	    &authDataLen, &authData, &errorString);
 
 	if (status == IcePaAuthContinue)
@@ -1958,8 +1952,7 @@ IceReplyWaitInfo 	*replyWait;
 	    IcePoAuthProc authProc = myProtocol->auth_procs[
 		iceConn->protosetup_to_you->my_auth_index];
 
-	    (*authProc) (&iceConn->protosetup_to_you->my_auth_state,
-		iceConn->connection_string,
+	    (*authProc) (iceConn, &iceConn->protosetup_to_you->my_auth_state,
 		True /* clean up */, False /* swap */,
 	        0, NULL, NULL, NULL, NULL);
 	}
