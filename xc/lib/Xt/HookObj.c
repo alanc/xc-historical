@@ -1,7 +1,6 @@
-/* $XConsortium: HookObj.c,v 1.0 93/10/25 15:35:12 kaleb Exp $ */
+/* $XConsortium: HookObj.c,v 1.1 94/01/07 19:59:50 kaleb Exp $ */
 
 #include "IntrinsicI.h"
-#include "HookObjP.h"
 #include "StringDefs.h"
 /******************************************************************
  *
