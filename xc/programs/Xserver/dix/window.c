@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.40 89/10/10 09:50:20 rws Exp $ */
+/* $XConsortium: window.c,v 5.41 89/10/13 13:57:35 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -2146,6 +2146,12 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 				      &pWin->borderClip, &pWin->winSize);
 	    }
     	}
+	else if ((pWin->drawable.height != h || pWin->drawable.width != w) &&
+		 HasBorder (pWin))
+	{
+	    borderVisible = (*pScreen->RegionCreate) (NullBox, 1);
+	    (*pScreen->RegionCopy) (borderVisible, &pWin->borderClip);
+	}
     }
     pWin->origin.x = x + bw;
     pWin->origin.y = y + bw;
@@ -2175,9 +2181,9 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 
 	anyMarked |= MarkOverlappedWindows(pWin, pFirstChange);
 
-	if (pWin->valdata && shrunk)
+	if (pWin->valdata)
  	{
-	    pWin->valdata->before.shrunk = TRUE;
+	    pWin->valdata->before.shrunk = shrunk;
 	    pWin->valdata->before.borderVisible = borderVisible;
 	}
 
