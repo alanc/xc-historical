@@ -153,7 +153,8 @@ directly into the window.
 .de Le \" Label encoding
 .ie 'Bold'\\$1' .IP \fBencoding\fP 1.5i
 .el .IP encoding 1.5i
-The encoding method used in the string displayed in this widget.
+The encoding method used by the value of the \fBlabel\fP resource.
+The value may be \fBXawTextEncoding8bit\fP or \fBXawTextEncodingChar2b\fP.
 ..
 .de Lf \" Label font
 .ie 'Bold'\\$1' .IP \fBfont\fP 1.5i
@@ -180,6 +181,7 @@ The minimum amount of space to leave between the \fBlabel\fP or
 .de Ju \" Lable justify
 .ie 'Bold'\\$1' .IP \fBjustify\fP 1.5i
 .el .IP justify 1.5i
+.IN "conversions" "Justify"
 Specifies left, center, or right alignment of \fBlabel\fP within the
 widget.  This resource may be specified with the values
 \fBXtJustifyLeft\fP, \fBXtJustifyCenter\fP, or \fBXtJustifyRight\fP.
@@ -190,15 +192,16 @@ is larger than necessary to display the \fBlabel\fP.
 .de La \" Label label
 .ie 'Bold'\\$1' .IP \fBlabel\fP 1.5i
 .el .IP label 1.5i
-Specifies the Latin1 text string to be displayed in the widget's window
+Specifies the text string to be displayed in the widget's window
 if no bitmap is specified.  The default is the name of this widget.
-Newline characters will cause line breaks.
+Irregardless of the value of \fBencoding\fP, a single newline character
+(1 byte) will cause a line break.
 ..
 .de Ll \" Label leftBitmap
 .ie 'Bold'\\$1' .IP \fBleftBitmap\fP 1.5i
 .el .IP leftBitmap 1.5i
 Specifies a bitmap to display to the left of the label in the widget's 
-window.  The default is none.
+window.
 ..
 .de Re \" Label resize
 .ie 'Bold'\\$1' .IP \fBresize\fP 1.5i
@@ -236,6 +239,7 @@ selected.  The default value is 2 pixels if the \fBshapeStyle\fP is
 .de Ss \" Command shapeStyle
 .ie 'Bold'\\$1' .IP \fBshapeStyle\fP 1.5i
 .el .IP shapeStyle 1.5i
+.IN "conversions" "ShapeStyle"
 Nonrectangular buttons may be created using this resource.
 Nonrectangular buttons are supported only on a server that supports the
 \fBShape Extension\fP.  If nonrectangular buttons are specified
@@ -338,8 +342,11 @@ The distance the new child is placed from its left or upper neighbor is
 determined by the \fBhorizDistance\fP and \fBvertDistance\fP resources.
 .IN "horizDistance" ""
 .IN "vertDistance" ""
+.IN "conversions" "Widget"
 This implies some things about how the order of creation affects the 
-possible placement of the children.  
+possible placement of the children.  The Form widget registers a 
+string to widget converter which does not postpone conversion and
+does not cache conversion results.
 .LP
 The second layout method is used when the \\$1 is resized.  It does not
 matter what causes this resize, and it is possible for a resize to
@@ -416,6 +423,7 @@ scroll the text display to a certain character position.
 .de Tz \" Text resize
 .ie 'Bold'\\$1' .IP \fBresize\fP 1.5i 
 .el .IP resize 1.5i
+.IN "conversions" "XawTextResizeMode"
 Controls whether or not the Text widget attempts to resize itself when
 it is no longer able to display the full text buffer in the associated
 window.  Any attempt by the Text widget to resize itself is always
@@ -436,6 +444,7 @@ acceptable for this resource.
 .ns
 .ie 'Bold'\\$1' .IP \fBscrollVertical\fP 1.5i
 .el .IP scrollVertical 1.5i
+.IN "conversions" "XawTextScrollMode"
 These resources control the placement of scrollbars on the left and
 bottom edge of the text widget.  These resources accept the
 values \fBXawtextScrollAlways\fP, \fBXawtextScrollWhenNeeded\fP, and
@@ -468,7 +477,7 @@ the resource manager.
 .el .IP textSource 1.5i
 These are the TextSink or TextSource objects used by this widget.
 .ie 'Bold'\\$1' When using the Text widget these MUST be set by the \
-application programmer
+application programmer.
 .el The AsciiText widget initializes these resources to point \
 to an AsciiSink and AsciiSrc respectively.
 ..
@@ -483,6 +492,7 @@ happen.  The accepted values for this resource are
 .IN "XawtextWrapLine" ""
 \fBXawtextWrapWord\fP.  With \fBXawtextWrapLine\fP all text
 .IN "XawtextWrapWord" ""
+.IN "WrapMode"
 that is beyond the right edge of the window will be displayed on the
 next line.  With \fBXawtextWrapWord\fP the
 same action occurs but the text is broken at a word boundary if 
@@ -526,7 +536,7 @@ foreground color used by the text sink.
 .de Sd \" AsciiSink displayNonprinting
 .ie 'Bold'\\$1' .IP \fBdisplayNonprinting\fP 1.5i
 .el .IP displayNonprinting 1.5i
-If this resources is \fBTrue\fP, the Text widget will display all
+If this resource is \fBTrue\fP, the Text widget will display all
 non-printable characters as the string \fI^@\fP.  If \fBFalse\fP, the
 Text widget 
 will just leave a blank space where a non-printable character exists
@@ -553,6 +563,7 @@ Legal values are \fBXawtextRead\fP, \fBXawtextEdit\fP, and
 .IN "XawtextEdit" ""
 \fBXawtextAppend\fP.
 .IN "XawtextAppend" ""
+.IN "conversions" "XawTextEditType"
 .Rs "read, edit, \fPand\fB append"
 .So \\$1
 ..
@@ -564,7 +575,7 @@ Legal values are \fBXawtextRead\fP, \fBXawtextEdit\fP, and
 .ie 'Bold'\\$1' .IP \fBcallback\fP 1.5i
 .el .IP callback 1.5i
 The callbacks registered on this resource will be called every time the
-text buffer changes.
+text buffer changes, after the text has been updated.
 .So \\$1
 ..
 .de Od \" AsciiSrc dataCompression
@@ -576,7 +587,7 @@ edited.  On systems where CPU cycles are cheaper than memory, it is helpful to
 spend some extra time to compress this buffer back to its minimum size.
 If this resource is \fBTrue\fP, the AsciiSrc will compress its data
 to the minimum size required every time the text string is saved, or the
-value of the string is queried.  This is an AsciiSrc resource.
+value of the string is queried.
 .So \\$1
 ..
 .de Ol \" AsciiSrc length
@@ -610,12 +621,11 @@ displayed.  This string is normally copied by the text widget into
 internal memory, but may be used in place by setting the
 \fBuseStringInPlace\fP resource.  As of X11R4 this is a settable resource.
 .So \\$1
-.LP
-.NT
-When the \fBstring\fP resource is queried - using \fBXtGetValues\fP - and
-\fBuseStringInPlace\fP is \fBFalse\fP, the string is only valid until
-the next time the \fBstring\fP is queried (see Section 5.6.1.1).
-.NE
+When the \fBstring\fP resource is queried, using \fBXtGetValues\fP, and
+\fBuseStringInPlace\fP is false, the value returned is valid until
+the next time the \fBstring\fP resource is queried, or until the application 
+writer calls \fBXawAsciiSrcFreeString\fP.  If \fBuseStringInPlace\fP is
+true, a pointer to the actual string is returned.  See also section 5.6.
 ..
 .de Ot \" AsciiSrc type
 .ie 'Bold'\\$1' .IP \fBtype\fP 1.5i
@@ -625,6 +635,7 @@ This resource may be either \fBXawAsciiString\fP or
 \fBstring\fP resource contains the name of a file to be opened or a buffer to
 be displayed by the text widget.  A converter has been registered for
 this resource and accepts the values \fBstring\fP and \fBfile\fP.
+.IN "conversions" "AsciiType"
 .So \\$1
 ..
 .de Ou \" AsciiSrc useStringInPlace
