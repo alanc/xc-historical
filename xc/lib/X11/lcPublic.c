@@ -1,4 +1,4 @@
-/* $XConsortium: lcPublic.c,v 1.3 93/09/23 12:31:41 rws Exp $ */
+/* $XConsortium: lcPublic.c,v 1.4 94/01/20 18:07:14 rws Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -263,6 +263,8 @@ destroy(lcd)
 
     if (pub->siname)
 	Xfree(pub->siname);
+    if (pub->encoding_name)
+	Xfree(pub->encoding_name);
 
     destroy_core(lcd);
 }
