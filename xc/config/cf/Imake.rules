@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.31 89/05/17 13:55:39 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.32 89/05/22 15:42:00 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -740,7 +740,9 @@ lib/**/libname.a: objlist						@@\
 
 
 /*
- * NormalSharedLibraryTarget - generate rules to create a shared library
+ * NormalSharedLibraryTarget - generate rules to create a shared library;
+ * build it into a different name so that the we don't hose people by having
+ * the library gone for long periods.
  */
 #ifndef NormalSharedLibraryTarget
 #if HasSunOSSharedLibraries
@@ -748,8 +750,10 @@ lib/**/libname.a: objlist						@@\
 AllTarget(lib/**/libname.so.rev)					@@\
 									@@\
 lib/**/libname.so.rev:  objlist						@@\
-	$(RM) $@							@@\
-	$(LD) -o $@ -assert pure-text objlist				@@\
+	$(RM) $@~							@@\
+	$(LD) -o $@~ -assert pure-text objlist				@@\
+	$(RM) $@ 							@@\
+	$(MV) $@~ $@							@@\
 									@@\
 clean::									@@\
 	$(RM) lib/**/libname.so.rev					@@\
