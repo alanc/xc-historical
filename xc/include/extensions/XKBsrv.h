@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: XKBsrv.h,v 1.1 93/09/26 21:12:21 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -204,7 +204,7 @@ extern XKBAction *_XKBNewActionsForKey(
 
 extern void XKBUpdateKeyTypesFromCore(
 #if NeedFunctionPrototypes
-    DeviceIntRec *	/* pXDev */,
+    DeviceIntPtr	/* pXDev */,
     KeyCode 		/* first */,
     CARD8 		/* num */,
     xKBMapNotify *	/* pChanges */
@@ -214,7 +214,7 @@ extern void XKBUpdateKeyTypesFromCore(
 void
 XKBUpdateActions(
 #if NeedFunctionPrototypes
-    DeviceIntRec *	/* pXDev */,
+    DeviceIntPtr	/* pXDev */,
     KeyCode 		/* first */,
     CARD8 		/* num */,
     xKBMapNotify *	/* pChanges */
@@ -223,7 +223,7 @@ XKBUpdateActions(
 
 extern void XKBApplyMappingChange(
 #if NeedFunctionPrototypes
-    DeviceIntRec *	/* pXDev */,
+    DeviceIntPtr	/* pXDev */,
     CARD8 		/* request */,
     KeyCode 		/* firstKey */,
     CARD8 		/* num */
@@ -232,7 +232,7 @@ extern void XKBApplyMappingChange(
 
 extern void XKBUpdateIndicators(
 #if NeedFunctionPrototypes
-    DeviceIntRec *		/* keybd */,
+    DeviceIntPtr		/* keybd */,
     CARD32		 	/* changed */,
     XKBIndicatorChangesRec *	/* pChanges */
 #endif
@@ -253,21 +253,21 @@ extern unsigned XKBStateChangedFlags(
 
 extern	void XKBSendStateNotify(
 #if NeedFunctionPrototypes
-       DeviceIntRec *	/* kbd */,
+       DeviceIntPtr	/* kbd */,
        xKBStateNotify *	/* pSN */
 #endif
 );
 
 extern	void XKBSendMapNotify(
 #if NeedFunctionPrototypes
-       DeviceIntRec *	/* kbd */,
+       DeviceIntPtr	/* kbd */,
        xKBMapNotify *	/* ev */
 #endif
 );
 
 extern	int  XKBComputeControlsNotify(
 #if NeedFunctionPrototypes
-	DeviceIntRec *		/* kbd */,
+	DeviceIntPtr		/* kbd */,
 	XKBControlsRec *	/* old */,
 	XKBControlsRec *	/* new */,
 	xKBControlsNotify *	/* pCN */
@@ -276,21 +276,21 @@ extern	int  XKBComputeControlsNotify(
 
 extern	void XKBSendControlsNotify(
 #if NeedFunctionPrototypes
-       DeviceIntRec *		/* kbd */,
+       DeviceIntPtr		/* kbd */,
        xKBControlsNotify *	/* ev */
 #endif
 );
 
 extern	void XKBSendIndicatorNotify(
 #if NeedFunctionPrototypes
-       DeviceIntRec *		/* kbd */,
+       DeviceIntPtr		/* kbd */,
        xKBIndicatorNotify *	/* ev */
 #endif
 );
 
 extern	void XKBHandleBell(
 #if NeedFunctionPrototypes
-       DeviceIntRec *	/* kbd */,
+       DeviceIntPtr	/* kbd */,
        CARD8		/* percent */,
        pointer 		/* control */,
        CARD8		/* class */,
@@ -300,28 +300,28 @@ extern	void XKBHandleBell(
 
 extern	void XKBSendSlowKeyNotify(
 #if NeedFunctionPrototypes
-       DeviceIntRec *		/* kbd */,
+       DeviceIntPtr		/* kbd */,
        xKBSlowKeyNotify *	/* pEv */
 #endif
 );
 
 extern	void XKBSendNamesNotify(
 #if NeedFunctionPrototypes
-       DeviceIntRec *	/* kbd */,
+       DeviceIntPtr	/* kbd */,
        xKBNamesNotify *	/* ev */
 #endif
 );
 
 extern	void XKBSendCompatNotify(
 #if NeedFunctionPrototypes
-       DeviceIntRec *		/* kbd */,
+       DeviceIntPtr		/* kbd */,
        xKBCompatMapNotify *	/* ev */
 #endif
 );
 
 extern void XKBSendNotification(
 #if NeedFunctionPrototypes
-    DeviceIntRec *		/* kbd */,
+    DeviceIntPtr		/* kbd */,
     XKBChangesRec *		/* pChanges */
 #endif
 );
@@ -329,43 +329,43 @@ extern void XKBSendNotification(
 extern void XKBProcessKeyboardEvent(
 #if NeedFunctionPrototypes
     xEvent * 			/* xE */,
-    DeviceIntRec *		/* keybd */,
+    DeviceIntPtr		/* keybd */,
     int 			/* count */
 #endif
 );
 
 extern	XKBInterestRec *XKBFindClientResource(
 #if NeedFunctionPrototypes
-       DeviceRec *	/* inDev */,
-       ClientRec *	/* client */
+       DevicePtr	/* inDev */,
+       ClientPtr	/* client */
 #endif
 );
 
 extern	XKBInterestRec *XKBAddClientResource(
 #if NeedFunctionPrototypes
-       DeviceRec *	/* inDev */,
-       ClientRec *	/* client */,
+       DevicePtr	/* inDev */,
+       ClientPtr	/* client */,
        XID		/* id */
 #endif
 );
 
 extern	int XKBRemoveClient(
 #if NeedFunctionPrototypes
-       DeviceRec *	/* inDev */,
-       ClientRec *	/* client */
+       DevicePtr	/* inDev */,
+       ClientPtr	/* client */
 #endif
 );
 
 extern	int XKBRemoveResourceClient(
 #if NeedFunctionPrototypes
-       DeviceRec *	/* inDev */,
+       DevicePtr	/* inDev */,
        XID		/* id */
 #endif
 );
 
 extern	void DDXUpdateIndicators(
 #if NeedFunctionPrototypes
-	DeviceRec *	/* keybd */,
+	DevicePtr	/* keybd */,
 	CARD32		/* oldState */,
 	CARD32		/* newState */
 #endif
