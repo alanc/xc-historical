@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.38 93/08/25 10:01:03 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.39 93/08/25 10:11:17 rws Exp $
 
          YFLAGS = -d
         DEPLIBS = $(DEPXMULIB) $(DEPXLIB)
@@ -25,8 +25,7 @@ LexFile(lex)
 
 YaccFile(gram,$(YFLAGS))
 
-ComplexProgramTarget(twm)
-InstallNonExecFile(system.twmrc,$(TWMDIR))
+includes:: deftwmrc.c 
 
 depend:: deftwmrc.c 
 
@@ -45,3 +44,5 @@ deftwmrc.c:  system.twmrc
 		system.twmrc >>$@
 	echo '    (char *) 0 };' >>$@
 
+ComplexProgramTarget(twm)
+InstallNonExecFile(system.twmrc,$(TWMDIR))
