@@ -1,4 +1,4 @@
-! $XConsortium: XSm.ad,v 1.15 94/08/02 18:41:06 mor Exp mor $
+! $XConsortium: XSm.ad,v 1.16 94/08/10 15:11:15 mor Exp mor $
 *chooseSessionPopup*font:		12x24
 *chooseSessionLabel.label:		Session Menu
 *chooseSessionMessageLabel.label:	Press button again to confirm...
@@ -8,16 +8,18 @@
 *chooseSessionCancelButton.label:	Cancel
 
 *clientInfoButton.label:	Client List
+*nameSessionButton.label:	Name Session...
 *checkPointButton.label:	Checkpoint
 *shutdownButton.label:		Shutdown
-*nameSessionButton.label:	Name Session...
+*shutdownSave.label:		With Save
+*shutdownDontSave.label:	No Save
 
 *clientInfoPopup.title:		Client List
 *clientInfoPopup.iconName:	Client List
 *viewPropButton.label:		View Properties
 *cloneButton.label:		Clone
 *killClientButton.label:	Kill Client
-*restartHintLabel.label:	Restart Style Hint
+*restartHintButton.label:	Restart Hint
 *restartIfRunning.label:	If Running
 *restartAnyway.label:		Anyway
 *restartImmediately.label:	Immediately
@@ -40,13 +42,7 @@
 *interactStyleErrors.label:	Errors
 *interactStyleAny.label:	Any
 
-*saveOkButton.label:		OK
 *saveCancelButton.label:	Cancel
-
-*shutdownDialog.label:		There are no active clients.  OK to shutdown?
-*shutdownPopup.title:		Shutdown Prompt
-*shutdownOkButton.label:	OK
-*shutdownCancelButton.label:	Cancel
 
 *nameSessionPopup.title:	Name Session
 *nameSessionPopup*font:		10x20
