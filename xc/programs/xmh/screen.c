@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: screen.c,v 2.18 88/02/22 10:38:55 swick Exp $";
+static char rcs_id[] = "$Header: screen.c,v 2.19 88/02/22 21:42:05 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -158,7 +158,6 @@ Scrn scrn;
     extern void ExecForceRescan();
     int i, theight, min, max;
     ButtonBox buttonbox;
-    static Arg arglist[] = {XtNiconPixmap, NULL};
     static char *extra[] = {
 	"<Btn1Down>(2): open-folder()",
 	NULL
@@ -248,9 +247,11 @@ Scrn scrn;
     BBoxLockSize(scrn->tocbuttons);
     BBoxLockSize(scrn->viewbuttons);
 
-    arglist[0].value = (XtArgVal) NoMailPixmap;
-    /* %%% Wrong; should check InitialFolder->mailpending.  */
-    XtSetValues(scrn->parent, arglist, XtNumber(arglist));
+    if (mailWaitingFlag) {
+	static Arg arglist[] = {XtNiconPixmap, NULL};
+	arglist[0].value = (XtArgVal) NoMailPixmap;
+	XtSetValues(scrn->parent, arglist, XtNumber(arglist));
+    }
 
     XtRealizeWidget(scrn->parent);
 
