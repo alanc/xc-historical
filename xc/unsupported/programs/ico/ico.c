@@ -1,4 +1,4 @@
-/* $XConsortium: ico.c,v 1.39 93/09/26 20:17:32 rws Exp $ */
+/* $XConsortium: ico.c,v 1.40 93/12/24 09:05:09 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -343,6 +343,9 @@ void * do_ico_window(closure)
 	int winX, winY;
 	int icoW = 0, icoH = 0;
 
+#ifdef DEBUG
+	printf("thread %x starting\n", xthread_self());
+#endif
 	closure->cmap = XDefaultColormap(dpy,DefaultScreen(dpy));
 	if (!closure->cmap) {
 		icoFatal("no default colormap!");
@@ -374,7 +377,6 @@ void * do_ico_window(closure)
 	    bg = tmp;
 	}
 
-
 	/* Set up window parameters, create and map window if necessary */
 
 	if (useRoot)
@@ -397,6 +399,7 @@ void * do_ico_window(closure)
 		xswa.event_mask = ExposureMask | StructureNotifyMask;
 		xswa.background_pixel = bg;
 		xswa.border_pixel = fg;
+
 		closure->draw_window = XCreateWindow(dpy, DefaultRootWindow(dpy), 
 		    winX, winY, closure->winW, closure->winH, 0, 
 		    DefaultDepth(dpy, DefaultScreen(dpy)), 
@@ -405,11 +408,17 @@ void * do_ico_window(closure)
 		XChangeProperty(dpy, closure->draw_window, XA_WM_NAME, XA_STRING, 8, 
 				PropModeReplace, (unsigned char *)"Ico", 3);
 		XMapWindow(dpy, closure->draw_window);
+#ifdef DEBUG
+		printf("thread %x waiting for Expose\n", xthread_self());
+#endif
 		for (;;) {
 		    XNextEvent(dpy, &xev);
 		    if (xev.type == Expose)
 			break;
 		}
+#ifdef DEBUG
+		printf("thread %x got Expose\n", xthread_self());
+#endif
 		if (XGetWindowAttributes(dpy,closure->draw_window,&xwa)==0) {
 			icoFatal("cannot get window attributes (size)");
 		}
