@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mizerline.c,v 1.9 89/03/22 10:51:22 rws Exp $ */
+/* $XConsortium: mizerline.c,v 5.0 89/06/09 15:08:54 keith Exp $ */
 #include "X.h"
 
 #include "misc.h"
@@ -54,6 +54,15 @@ DDXPointRec *pptInit;	/* points in the polyline */
     register int x,y;	/* current point on the line */
     int i;		/* traditional name for loop counter */
 
+    DDXPointPtr pspanInit;
+    int *pwidthInit;
+    int list_len = dst->height;
+    Bool local = TRUE;
+
+    pspanInit = (DDXPointPtr)ALLOCATE_LOCAL(list_len * sizeof(DDXPointRec));
+    pwidthInit = (int *)ALLOCATE_LOCAL(list_len * sizeof(int));
+    if (!pspanInit || !pwidthInit)
+	return;
     ppt = pptInit;
     npt = nptInit;
     if (pgc->miTranslate)
@@ -99,11 +108,8 @@ DDXPointRec *pptInit;	/* points in the polyline */
     npt = nptInit;
     while (--npt)
     {
-
 	DDXPointPtr pspan;
-	DDXPointPtr pspanInit;
  	int *pwidth;
-	int *pwidthInit;
 	int width;
 
 	pt1 = *ppt++;
@@ -132,13 +138,35 @@ DDXPointRec *pptInit;	/* points in the polyline */
 	e2 = e1 - 2*du;
 	e = e1 - du;
 
-	pspanInit = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * (ady+1));
-	pwidthInit = (int *)ALLOCATE_LOCAL(sizeof(int) * (ady+1));
-	if (!pspanInit || !pwidthInit)
+	if (ady >= list_len)
 	{
-	    if (pspanInit) DEALLOCATE_LOCAL(pspanInit);
-	    if (pwidthInit) DEALLOCATE_LOCAL(pwidthInit);
-	    continue;
+	    DDXPointPtr npspanInit;
+	    int *npwidthInit;
+
+	    if (local)
+	    {
+		DEALLOCATE_LOCAL(pwidthInit);
+		pwidthInit = (int *)NULL;
+		DEALLOCATE_LOCAL(pspanInit);
+		pspanInit = (DDXPointPtr)NULL;
+		local = FALSE;
+	    }
+	    list_len = ady + 1;
+	    npspanInit = (DDXPointPtr)xrealloc(pspanInit,
+					       sizeof(DDXPointRec) * list_len);
+	    if (!npspanInit)
+	    {
+		list_len = 0;
+		continue;
+	    }
+	    pspanInit = npspanInit;
+	    npwidthInit = (int *)xrealloc(pwidthInit, sizeof(int) * list_len);
+	    if (!npwidthInit)
+	    {
+		list_len = 0;
+		continue;
+	    }
+	    pwidthInit = npwidthInit;
 	}
 	pspan = pspanInit;
 	pwidth = pwidthInit;
@@ -213,9 +241,17 @@ DDXPointRec *pptInit;	/* points in the polyline */
 
 	(*pgc->ops->FillSpans)(dst, pgc, pwidth-pwidthInit,
 			  pspanInit, pwidthInit, FALSE);
+    }
+    if (local)
+    {
 	DEALLOCATE_LOCAL(pwidthInit);
 	DEALLOCATE_LOCAL(pspanInit);
-    } 
+    }
+    else
+    {
+	xfree(pwidthInit);
+	xfree(pspanInit);
+    }
 
     if ((pgc->capStyle != CapNotLast) &&
 	((ppt->x != pptInit->x) ||
