@@ -1,4 +1,4 @@
-/* $XConsortium: sunMouse.c,v 5.11 91/11/14 13:35:56 keith Exp $ */
+/* $XConsortium: sunMouse.c,v 5.12 91/11/15 18:28:42 gildea Exp $ */
 /*-
  * sunMouse.c --
  *	Functions for playing cat and mouse... sorry.
@@ -425,11 +425,25 @@ sunWarpCursor (pScreen, x, y)
     ScreenPtr	pScreen;
     int		x, y;
 {
+#ifdef SVR4
+    sigset_t newmask, oldmask;
+#else
     int	    oldmask;
+#endif
 
+#ifdef SVR4
+    sigemptyset(&newmask);
+    sigaddset(&newmask, SIGIO);
+    sigprocmask(SIG_BLOCK, &newmask, &oldmask);
+#else
     oldmask = sigblock (sigmask(SIGIO));
+#endif
     miPointerWarpCursor (pScreen, x, y);
+#ifdef SVR4
+    sigprocmask(SIG_SETMASK, &oldmask, NULL);
+#else
     sigsetmask (oldmask);
+#endif
 }
 
 #ifdef SUN_WINDOWS

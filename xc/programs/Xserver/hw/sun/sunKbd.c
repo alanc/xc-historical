@@ -1,4 +1,4 @@
-/* $XConsortium: sunKbd.c,v 5.15 92/06/04 10:16:23 rws Exp $ */
+/* $XConsortium: sunKbd.c,v 5.16 92/11/18 14:10:21 rws Exp $ */
 /*-
  * sunKbd.c --
  *	Functions for retrieving data from a keyboard.
@@ -91,6 +91,8 @@ static KbPrivRec  	sysKbPriv = {
     &sysKbCtrl,			/* Initial full duration = .25 sec. */
     0,				/* lock state */
 };
+
+static void sunAlarmHandler() {}
 
 /*-
  *-----------------------------------------------------------------------
@@ -215,6 +217,16 @@ sunKbdProc (pKeyboard, what)
 		    (sunModMap[sysKbPriv.type]),
 		    sunBell,
 		    sunKbdCtrl);
+#ifdef SVR4
+	    {
+		struct sigaction act;
+
+		act.sa_handler = sunAlarmHandler;
+		sigemptyset(&act.sa_mask);
+		act.sa_flags = 0;
+		sigaction(SIGALRM, &act, NULL);
+	    }
+#endif
 	    break;
 
 	case DEVICE_ON:
@@ -354,7 +366,33 @@ sunBell (loudness, pKeyboard)
      * Leave the bell on for a while == duration (ms) proportional to
      * loudness desired with a 10 thrown in to convert from ms to usecs.
      */
+#ifdef SVR4
+    {
+	struct itimerval ival;
+	sigset_t nmask, omask;
+
+	ival.it_interval.tv_sec = 0;
+	ival.it_interval.tv_usec = 0;
+	gettimeofday(&ival.it_value);
+	ival.it_value.tv_usec += pPriv->ctrl->bell_duration * 1000;
+	if (ival.it_value.tv_usec >= 1000000)
+	{
+	    ival.it_value.tv_sec += ival.it_value.tv_usec / 1000000;
+	    ival.it_value.tv_usec %= 1000000;
+	}
+	sigemptyset(&nmask);
+	sigaddset(&nmask, SIGALRM);
+	sigprocmask(SIG_BLOCK, &nmask, &omask);
+	setitimer(ITIMER_REAL, &ival, NULL);
+	sigsuspend(&omask);
+	ival.it_value.tv_sec = 0;
+	ival.it_value.tv_usec = 0;
+	setitimer(ITIMER_REAL, &ival, NULL);
+	sigprocmask(SIG_SETMASK, &omask, NULL);
+    }
+#else
     usleep (pPriv->ctrl->bell_duration * 1000);
+#endif
  
     kbdCmd = KBD_CMD_NOBELL;
     if (ioctl (pPriv->fd, KIOCCMD, &kbdCmd) < 0) {
@@ -592,7 +630,11 @@ sunKbdEnqueueEvent (pKeyboard, fe)
 
 sunEnqueueAutoRepeat ()
 {
+#ifdef SVR4
+    sigset_t newmask, oldmask;
+#else
     int	oldmask;
+#endif
     int	delta;
 
     if (sysKbPriv.ctrl->autoRepeat != AutoRepeatModeOn) {
@@ -613,11 +655,21 @@ sunEnqueueAutoRepeat ()
      */
     autoRepeatEvent.u.keyButtonPointer.time += delta;
     autoRepeatEvent.u.u.type = KeyRelease;
+#ifdef SVR4
+    sigemptyset(&newmask);
+    sigaddset(&newmask, SIGIO);
+    sigprocmask(SIG_BLOCK, &newmask, &oldmask);
+#else
     oldmask = sigblock (sigmask(SIGIO));
+#endif
     mieqEnqueue (&autoRepeatEvent);
     autoRepeatEvent.u.u.type = KeyPress;
     mieqEnqueue (&autoRepeatEvent);
+#ifdef SVR4
+    sigprocmask(SIG_SETMASK, &oldmask, NULL);
+#else
     sigsetmask (oldmask);
+#endif
     /* Update time of last key down */
     tvplus(autoRepeatLastKeyDownTv, autoRepeatLastKeyDownTv, 
 		    autoRepeatDeltaTv);
@@ -647,7 +699,11 @@ sunChangeKbdTranslation(pKeyboard,makeTranslated)
     int 	kbdFd;
     int 	tmp;
     int		kbdOpenedHere;
+#ifdef SVR4
+    sigset_t	new_mask, old_mask;
+#else
     int		old_mask;
+#endif
     int		toread;
     char	junk[8192];
 
@@ -660,7 +716,12 @@ sunChangeKbdTranslation(pKeyboard,makeTranslated)
      * Workaround for SS1 serial driver kernel bug when KIOCTRANS ioctl()s
      * occur too closely together in time.
      */
+#ifdef SVR4
+    sigfillset(&new_mask);
+    sigprocmask(SIG_BLOCK, &new_mask, &old_mask);
+#else
     old_mask = sigblock (~0);
+#endif
     gettimeofday(&tv, (struct timezone *) NULL);
     tvminus(lastChngKbdDeltaTv, tv, lastChngKbdTransTv);
     lastChngKbdDelta = TVTOMILLI(lastChngKbdDeltaTv);
@@ -743,13 +804,21 @@ sunChangeKbdTranslation(pKeyboard,makeTranslated)
     }
     if ( kbdOpenedHere )
 	(void) close( kbdFd );
+#ifdef SVR4
+    sigprocmask(SIG_SETMASK, &old_mask, NULL);
+#else
     sigsetmask (old_mask);
+#endif
     return(0);
 
 bad:
     if ( kbdOpenedHere && kbdFd >= 0 )
 	(void) close( kbdFd );
+#ifdef SVR4
+    sigprocmask(SIG_SETMASK, &old_mask, NULL);
+#else
     sigsetmask (old_mask);
+#endif
     return(-1);
 }
 
