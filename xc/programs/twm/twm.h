@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.42 89/11/03 19:03:47 jim Exp $
+ * $XConsortium: twm.h,v 1.43 89/11/03 19:11:03 jim Exp $
  *
  * twm include file
  *
@@ -182,6 +182,7 @@ typedef struct TwmWindow
     int icon_width;		/* width of the icon bitmap */
     int icon_height;		/* height of the icon bitmap */
     int title_height;		/* height of the title bar */
+    int title_width;		/* width of the title bar */
     char *full_name;		/* full name of the window */
     char *name;			/* name of the window */
     char *icon_name;		/* name of the icon */
