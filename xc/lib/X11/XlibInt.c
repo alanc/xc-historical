@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.177 93/09/15 10:07:04 gildea Exp $
+ * $XConsortium: XlibInt.c,v 11.179 93/09/15 15:11:04 gildea Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -468,11 +468,14 @@ static _XFlushInt (dpy, cv)
 	register long size, todo;
 	register int write_stat;
 	register char *bufindex;
+	struct _XPreFlush *cb;
 
 	if (dpy->flags & XlibDisplayIOError) return;
 
 	size = todo = dpy->bufptr - dpy->buffer;
 	bufindex = dpy->bufptr = dpy->buffer;
+	for (cb = dpy->flushes; cb; cb = cb->next)
+	    (*cb->proc)(dpy, cb->codes, bufindex, size);
 	/*
 	 * While write has not written the entire buffer, keep looping
 	 * until the entire buffer is written.  bufindex will be incremented
@@ -1116,8 +1119,16 @@ _XSend (dpy, data, size)
 	long padsize = padlength[size & 3];
 	long total = dpybufsize + size + padsize;
 	long todo = total;
+	struct _XPreFlush *cb;
 
 	if (dpy->flags & XlibDisplayIOError) return;
+
+	for (cb = dpy->flushes; cb; cb = cb->next) {
+	    (*cb->proc)(dpy, cb->codes, dpy->bufptr, dpybufsize);
+	    (*cb->proc)(dpy, cb->codes, data, size);
+	    if (padsize)
+		(*cb->proc)(dpy, cb->codes, pad, padsize);
+	}
 
 	/*
 	 * There are 3 pieces that may need to be written out:
