@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.54 89/11/30 17:20:23 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.55 89/12/02 15:39:31 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -333,7 +333,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.54 89/11/30 17:20:23 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.55 89/12/02 15:39:31 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -440,7 +440,7 @@ Berklib.c: sysV/Berklib.c					@@\
              XLIB = LoaderLibPrefix _Use(-lXext -lX11, $(DEPXLIB))
 #endif
       DEPXAUTHLIB = _Use($(USRLIBDIR),$(XAUTHSRC))/libXau.a
-         XAUTHLIB = LoaderLibPrefix $(DEPXAUTHLIB)
+         XAUTHLIB = LoaderLibPrefix _Use(-lXau,$(DEPXAUTHLIB))
 #if SharedLibXmu
         DEPXMULIB = /* _Use($(USRLIBDIR),$(XMUSRC))/libXmu.so.$(SOXMUREV) */
            XMULIB = _Use(-lXmu,-L$(XMUSRC) -lXmu)
@@ -474,6 +474,22 @@ Berklib.c: sysV/Berklib.c					@@\
           LINTXMU = _Use($(USRLIBDIR),$(XMUSRC))/llib-lXmu.ln
         LINTXTOOL = _Use($(USRLIBDIR),$(TOOLKITSRC))/llib-lXt.ln
           LINTXAW = _Use($(USRLIBDIR),$(AWIDGETSRC))/llib-lXaw.ln
+
+
+/*
+ * Contrib support - you shouldn't need to change these.
+ */
+#if HasXwWidgets
+        XWLIBSRC = $(CONTRIBSRC)/toolkits/Xw
+        DEPXWLIB = _Use($(USRLIBDIR),$(XWLIBSRC))/libXw.a
+        XWLIB = LoaderLibPrefix _Use(-lXw,$(DEPXWLIB))
+#endif
+#if HasXcuWidget
+        XCULIBSRC = $(CONTRIBSRC)/toolkits/Xcu
+        DEPXCULIB = _Use($(USELIBDIR),$(XWLIBSRC))/libXcu.a
+        XCULIB = LoaderLibPrefix _Use(-lXcu,$(DEPXCULIB))
+#endif
+
 #undef _Use
 
 /*

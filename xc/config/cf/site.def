@@ -1,4 +1,4 @@
-/**/# site:  $XConsortium: site.def,v 1.18 89/11/01 09:24:56 jim Exp $
+/**/# site:  $XConsortium: site.def,v 1.19 89/11/22 09:53:47 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -10,6 +10,18 @@
  *     #ifndef ABuildParameter                                               *
  *     #define ABuildParameter myvalue                                       *
  *     #endif                                                                *
+ *                                                                           *
+ * Make sure you check the following parameters:                             *
+ *                                                                           *
+ *     1.  HasLargeTmp                                                       *
+ *     2.  InstallOldHeaderFiles                                             *
+ *     3.  ContribDir                                                        *
+ *     4.  HasXwWidgets                                                      *
+ *     5.  HasXcuWidgets                                                     *
+ *                                                                           *
+ * Note on using DESTDIR:  If you want to install into a scratch directory   *
+ * but will eventually move the tree back to the root, compile with DESTDIR  *
+ * blank and install with "make install DESTDIR=directory".                  *
  *                                                                           *
  * We strongly recommend that you don't change the installation directories  *
  * and just use symbolic links if you want things to be installed on a       *
@@ -24,33 +36,63 @@
  *     > end                                                                 *
  *     # make install                                                        *
  *                                                                           *
- * Note on using DESTDIR:  If you want to install into a scratch directory   *
- * but will eventually move the tree back to the root, compile with DESTDIR  *
- * blank and install with "make install DESTDIR=directory".                  *
- *                                                                           *
  *****************************************************************************/
 
 /*
- * place site-specific definitions here
+ * SET THESE PARAMETERS FIRST !!!
  */
 
 /*
- * Set ContribDir to wherever you've placed your sources; the R4 tape comes
- * with the core tree in ./mit and the contrib tree in ./contrib, so to get
- * to contrib, go up from TOP:
- */
-#ifndef ContribDir
-#define ContribDir $(TOP)/../contrib
-#endif
-
-
-/*
- * If your /tmp space is less than a 1meg, you should probably set this to NO
+ * 1.  HasLargeTmp - if your /tmp space is less than a 1meg, you should 
+ * probably set this to NO
  */
 #ifndef HasLargeTmp
 #define HasLargeTmp YES
 #endif
 
+
+/*
+ * 2.  InstallOldHeaderFiles - set the following to YES until you have 
+ * converted your Xaw programs to use the new naming scheme.
+ */
+#ifndef InstallOldHeaderFiles
+#define InstallOldHeaderFiles NO	/* set to YES for compat with R3 Xaw */
+#endif
+
+
+/*
+ * 3.  ContribDir - set ContribDir to wherever you've placed your sources; the
+ * R4 tape comes with the core tree in ./mit and the contrib tree in ./contrib,
+ * so to get to contrib, go up from TOP:
+ */
+#ifndef ContribDir
+#define ContribDir $(TOP)/../contrib
+#endif
+
+/*
+ * 4.  HasXwWidgets - if you want to have make variables for the Xw widgets
+ * used in Doug Young's book, set this to YES.
+ */
+#ifndef HasXwWidgets		/* whether or not to include make vars */
+#define HasXwWidgets NO
+#endif
+
+
+/*
+ * 5.  HasXcuWidgets - if you want to have make variables for the Xcu widgets,
+ * set this to YES.
+ */
+#ifndef HasXcuWidgets		/* whether or not to include make vars */
+#define HasXcuWidgets NO
+#endif
+
+
+
+/*****************************************************************************
+ *                                                                           *
+ *			       Build Parameters                              *
+ *                                                                           *
+ *****************************************************************************/
 
 /*
  * If you want to use GCC, set HasGcc in the appropriate .cf files.  This 
@@ -82,12 +124,8 @@
 #endif
 
 /*
- * Set the following to YES until you have converted your Xaw programs to use
- * the new naming scheme.
+ * Make sure that the library has compatibility stuff built into it, for wno
  */
-#ifndef InstallOldHeaderFiles
-#define InstallOldHeaderFiles NO	/* set to YES for compat with R3 Xaw */
-#endif
 #ifndef BuildXawBC
 #define BuildXawBC YES			/* headers can be installed later */
 #endif
@@ -99,10 +137,6 @@
 #endif
 #endif
 
-
-/*
- * XXX - remove in R4
- */
 #ifndef SharedLibXext
-#define SharedLibXext NO
+#define SharedLibXext NO	/* XXX - haven't made it sharable yet */
 #endif
