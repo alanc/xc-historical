@@ -33,12 +33,18 @@ CLIENTDIRSTOMAKE = \
 		$(DIRSTOMAKE) \
 		$(UTILSRC) \
 		$(XMANSRC)
-    LINTLIBDIRS = \
+  LNINSTALLDIRS = \
 		$(EXTENSIONSRC) \
 		$(LIBSRC)
 
 MakeSubdirs($(DIRSTOMAKE) $(RGBSRC) $(XMANSRC))
-MakeLintLibSubdirs($(LINTLIBDIRS))
+
+install.ln::
+	-mkdir $(LINTLIBDIR)
+
+MakeLintSubdirs($(LNINSTALLDIRS),install.ln,install.ln)
+
+MakeLintSubdirs($(LNINSTALLDIRS),external.ln,lintlib)
 
 #
 # before depending, be sure that include has everything in it.
@@ -52,7 +58,6 @@ install::
 	-mkdir $(USRLIBDIR)
 	-mkdir $(BINDIR)
 	-mkdir $(LIBDIR)
-	-mkdir $(LINTLIBDIR)
 	-mkdir $(XAPPLOADDIR)
 	-mkdir $(INCDIR)
 	-mkdir $(UWMDIR)
