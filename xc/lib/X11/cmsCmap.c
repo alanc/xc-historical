@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsCmap.c,v 1.7 91/02/12 16:12:29 dave Exp $" */
+/* $XConsortium: XcmsCmap.c,v 1.9 91/05/13 23:07:03 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -355,37 +355,29 @@ _XcmsDeleteCmapRec(dpy, cmap)
  *
  */
 {
-    XcmsCmapRec *pPrev;
-    XcmsCmapRec *pNext;
+    XcmsCmapRec **pPrevPtr;
+    XcmsCmapRec *pRec;
+    int scr;
 
-    if (((XcmsCmapRec *)dpy->cms.clientCmaps)->cmapID == cmap) {
-	/*
-	 * Target CmapRec is at the head of the list.
-	 */
-	pNext = ((XcmsCmapRec *)dpy->cms.clientCmaps)->pNext;
-	if (((XcmsCmapRec *)dpy->cms.clientCmaps)->ccc) {
-	    XcmsFreeCCC(((XcmsCmapRec *)dpy->cms.clientCmaps)->ccc);
+    /* If it is the default cmap for a screen, do not delete it,
+     * because the server will not actually free it */
+    for (scr = ScreenCount(dpy); --scr >= 0; ) {
+	if (cmap == DefaultColormap(dpy, scr))
+	    return;
+    }
+
+    /* search for it in the list */
+    pPrevPtr = (XcmsCmapRec **)&dpy->cms.clientCmaps;
+    while ((pRec = *pPrevPtr) && (pRec->cmapID != cmap)) {
+	pPrevPtr = &pRec->pNext;
+    }
+
+    if (pRec) {
+	if (pRec->ccc) {
+	    XcmsFreeCCC(pRec->ccc);
 	}
-	Xfree(dpy->cms.clientCmaps);
-	dpy->cms.clientCmaps = (XPointer)pNext;
-	return;
-    }
-
-    /*
-     * Target CmapRec is not at the head of the list.
-     * Traverse the linked list until found (or end).
-     */
-    pPrev = (XcmsCmapRec *)dpy->cms.clientCmaps;
-    while ((pPrev != NULL) && (pPrev->pNext->cmapID != cmap)) {
-	    pPrev = pPrev->pNext;
-    }
-    if (pPrev != NULL) {
-	/*
-	 * We found it!
-	 */
-	pNext = pPrev->pNext->pNext;
-	Xfree(pPrev->pNext);
-	pPrev->pNext = pNext;
+	*pPrevPtr = pRec->pNext;
+	Xfree(pRec);
     }
 }
 
