@@ -24,7 +24,7 @@ SOFTWARE.
 #include <stdio.h>
 #ifndef VMS
 #include <X11/Xatom.h>
-#include <sys/time.h>
+#include <X11/Xos.h>
 #else
 #include <decw$include/Xatom.h>
 #endif
@@ -168,7 +168,7 @@ Test test[] = {
   {"-tsrect100", "100x100 transparent stippled rectangle",
 		InitRects, DoRects, NullProc, EndRects, False, 0,
 		{200, 30, 100, NULL, NULL, FillStippled}},
-  {"-tsrect100", "500x500 transparent stippled rectangle",
+  {"-tsrect500", "500x500 transparent stippled rectangle",
 		InitRects, DoRects, NullProc, EndRects, False, 0,
 		{200, 1, 500, NULL, NULL, FillStippled}},
   {"-osrect",  "1x1 opaque stippled rectangle",
@@ -315,22 +315,31 @@ Test test[] = {
 		{200000, 80, False, "6x13", NULL}},
   {"-tr10text", "Char in 80-char line (TR 10)",
 		InitText, DoText, ClearTextWin, EndText, False, 0,
-		{2000, 80, False, "times_roman10", NULL}},
+		{2000, 80, False, 
+		"-adobe-times-medium-r-normal--10-100-75-75-p-54-iso8859-1", 
+		NULL}},
   {"-tr24text", "Char in 30-char line (TR 24)",
 		InitText, DoText, ClearTextWin, EndText, False, 0,
-		{2000, 30, False, "times_roman24", NULL}},
+		{2000, 30, False, 
+		"-adobe-times-medium-r-normal--24-240-75-75-p-124-iso8859-1",
+ 		NULL}},
   {"-polytext", "Char in 20/40/20 line (6x13, TR 10)",
 		InitText, DoPolyText, ClearTextWin, EndText, False, 0,
-		{2000, 80, True, "6x13", "times_roman10"}},
+		{2000, 80, True, "6x13", 
+		"-adobe-times-medium-r-normal--10-100-75-75-p-54-iso8859-1"}},
   {"-fitext",   "Char in 80-char image line (6x13)",
 		InitText, DoImageText, ClearTextWin, EndText, False, 0,
 		{2000, 80, False, "6x13", NULL}},
   {"-tr10itext", "Char in 80-char image line (TR 10)",
 		InitText, DoImageText, ClearTextWin, EndText, False, 0,
-		{2000, 80, False, "times_roman10", NULL}},
+		{2000, 80, False, 
+		"-adobe-times-medium-r-normal--10-100-75-75-p-54-iso8859-1", 
+		NULL}},
   {"-tr24itext", "Char in 30-char image line (TR 24)",
 		InitText, DoImageText, ClearTextWin, EndText, False, 0,
-		{2000, 30, False, "times_roman24", NULL}},
+		{2000, 30, False, 
+		"-adobe-times-medium-r-normal--24-240-75-75-p-124-iso8859-1",
+ 		NULL}},
   {"-scroll10", "Scroll 10x10 pixels",
 		InitScrolling, DoScrolling, MidScroll, EndScrolling, False, 0,
 		{100, 1, 10}},
