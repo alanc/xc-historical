@@ -402,29 +402,29 @@ Fill 10-pixel/side triangle.
 .B \-triangle100
 Fill 100-pixel/side triangle.
 .TP 14
-.B \-striangle10
-Fill 10-pixel/side transparent stippled triangle, 8x8 stipple pattern.
-.TP 14
-.B \-striangle100
-Fill 100-pixel/side transparent stippled triangle, 8x8 stipple pattern.
-.TP 14
-.B \-ostriangle10
-Fill 10-pixel/side opaque stippled triangle, 8x8 stipple pattern.
-.TP 14
-.B \-ostriangle100
-Fill 100-pixel/side opaque stippled triangle, 8x8 stipple pattern.
-.TP 14
-.B \-tiletriangle10
-Fill 10-pixel/side tiled triangle, 4x4 tile pattern.
-.TP 14
-.B \-tiletriangle100
-Fill 100-pixel/side tiled triangle, 4x4 tile pattern.
-.TP 14
 .B \-trap10
 Fill 10x10 trapezoid.
 .TP 14
 .B \-trap100
 Fill 100x100 trapezoid.
+.TP 14
+.B \-strap10
+Fill 10x10 transparent stippled trapezoid, 8x8 stipple pattern.
+.TP 14
+.B \-strap100
+Fill 100x100 transparent stippled trapezoid, 8x8 stipple pattern.
+.TP 14
+.B \-ostrap10
+Fill 10x10 opaque stippled trapezoid, 8x8 stipple pattern.
+.TP 14
+.B \-ostrap100
+Fill 100x100 opaque stippled trapezoid, 8x8 stipple pattern.
+.TP 14
+.B \-tiletrap10
+Fill 10x10 tiled trapezoid, 4x4 tile pattern.
+.TP 14
+.B \-tiletrap100
+Fill 100x100 tiled trapezoid, 4x4 tile pattern.
 .TP 14
 .B \-complex10
 Fill 10-pixel/side complex polygon.
