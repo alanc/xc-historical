@@ -1,4 +1,4 @@
-/* $XConsortium: XRegion.c,v 11.27 89/12/08 16:49:43 converse Exp $ */
+/* $XConsortium: XRegion.c,v 11.28 90/12/26 16:24:42 rws Exp $ */
 /************************************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -52,7 +52,6 @@ SOFTWARE.
 #include "Xutil.h"
 #include "region.h"
 #include "poly.h"
-#include <X11/Xfuncs.h>
 
 #ifdef DEBUG
 #define assert(expr) {if (!(expr)) FatalError(\
