@@ -1,4 +1,4 @@
-/* $XConsortium: ICElibint.h,v 1.2 93/08/20 10:13:59 mor Exp $ */
+/* $XConsortium: ICElibint.h,v 1.3 93/08/20 17:12:57 rws Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -38,7 +38,7 @@ purpose.  It is provided "as is" without express or implied warranty.
  * Pad to a 64 bit boundary
  */
 
-#define PAD64(_bytes) ((8 - ((int) (_bytes) % 8)) % 8)
+#define PAD64(_bytes) ((8 - ((unsigned int) (_bytes) % 8)) % 8)
 
 #define PADDED_BYTES64(_bytes) (_bytes + PAD64 (_bytes))
 
@@ -47,7 +47,7 @@ purpose.  It is provided "as is" without express or implied warranty.
  * Pad to 32 bit boundary
  */
 
-#define PAD32(_bytes) ((4 - ((int) (_bytes) % 4)) % 4)
+#define PAD32(_bytes) ((4 - ((unsigned int) (_bytes) % 4)) % 4)
 
 #define PADDED_BYTES32(_bytes) (_bytes + PAD32 (_bytes))
 
@@ -623,6 +623,38 @@ extern void
 _IceFreeConnection (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */
+#endif
+);
+
+extern void
+_IceAddReplyWait (
+#if NeedFunctionPrototypes
+    IceConn		/* iceConn */,
+    IceReplyWaitInfo *	/* replyWait */
+#endif
+);
+
+extern IceReplyWaitInfo *
+_IceSearchReplyWaits (
+#if NeedFunctionPrototypes
+    IceConn		/* iceConn */,
+    int			/* majorOpcode */
+#endif
+);
+
+extern void
+_IceSetReplyReady (
+#if NeedFunctionPrototypes
+    IceConn		/* iceConn */,
+    IceReplyWaitInfo *	/* replyWait */
+#endif
+);
+
+extern Bool
+_IceCheckReplyReady (
+#if NeedFunctionPrototypes
+    IceConn		/* iceConn */,
+    IceReplyWaitInfo *	/* replyWait */
 #endif
 );
 
