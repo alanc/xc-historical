@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miReplace.c,v 5.1 91/02/16 09:55:40 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -233,8 +233,8 @@ OC_REPLACE_FUNC_HEADER(NurbSurface)
     EXTRACT_CARD16(ddNurb->nPts, ptr);
     EXTRACT_CARD32(ddNurb->numTrimCurveLists, ptr);	/* is pNurb->numLists */
 
-    EXTRACT_STRUCT(ddNurb->numUknots, FLOAT, ddNurb->pUknots, ptr);
-    EXTRACT_STRUCT(ddNurb->numVknots, FLOAT, ddNurb->pVknots, ptr);
+    EXTRACT_STRUCT(ddNurb->numUknots, PEXFLOAT, ddNurb->pUknots, ptr);
+    EXTRACT_STRUCT(ddNurb->numVknots, PEXFLOAT, ddNurb->pVknots, ptr);
 
     ddNurb->points.numLists = 1;
     ddNurb->points.maxLists = 1;
@@ -266,7 +266,7 @@ OC_REPLACE_FUNC_HEADER(NurbSurface)
 	    EXTRACT_FLOAT(ddtc->uMax, ptr);
 	    EXTRACT_CARD32(ddtc->numKnots, ptr);
 	    EXTRACT_CARD32(ddtc->points.numPoints, ptr);
-	    EXTRACT_STRUCT( ddtc->numKnots, FLOAT, ddtc->pKnots, ptr);
+	    EXTRACT_STRUCT( ddtc->numKnots, PEXFLOAT, ddtc->pKnots, ptr);
 	    if (type == PEXRational) {
 		/* Note this only works because these points are never
 								transformed */

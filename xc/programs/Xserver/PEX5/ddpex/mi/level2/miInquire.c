@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miInquire.c,v 5.1 91/02/16 09:55:38 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -774,7 +774,7 @@ OC_INQ_FUNC_HEADER(NurbCurve)
     PACK_CARD32(ddNurb->numKnots, ptr);
     PACK_CARD32(ddNurb->points.ddList->numPoints, ptr);
 
-    PACK_LISTOF_STRUCT(	ddNurb->numKnots, FLOAT, ddNurb->pKnots, ptr);
+    PACK_LISTOF_STRUCT(	ddNurb->numKnots, PEXFLOAT, ddNurb->pKnots, ptr);
 
     if (ddNurb->points.type == DDPT_4D) {
 	pNurb->coordType = PEXRational;
@@ -1070,8 +1070,8 @@ OC_INQ_FUNC_HEADER(NurbSurface)
     PACK_CARD16(ddNurb->nPts, ptr);
     PACK_CARD32(ddNurb->numTrimCurveLists, ptr);
 
-    PACK_LISTOF_STRUCT(ddNurb->numUknots, FLOAT, ddNurb->pUknots, ptr);
-    PACK_LISTOF_STRUCT(ddNurb->numVknots, FLOAT, ddNurb->pVknots, ptr);
+    PACK_LISTOF_STRUCT(ddNurb->numUknots, PEXFLOAT, ddNurb->pUknots, ptr);
+    PACK_LISTOF_STRUCT(ddNurb->numVknots, PEXFLOAT, ddNurb->pVknots, ptr);
 
     i = ddNurb->mPts * ddNurb->nPts;
     if (ddNurb->points.type == DD_HOMOGENOUS_POINT) {
@@ -1099,7 +1099,7 @@ OC_INQ_FUNC_HEADER(NurbSurface)
 	    PACK_FLOAT(ddTC->uMax, ptr);
 	    PACK_CARD32(ddTC->numKnots, ptr);
 	    PACK_CARD32(ddTC->points.numPoints, ptr);
-	    PACK_LISTOF_STRUCT(ddTC->numKnots,FLOAT,ddTC->pKnots, ptr);
+	    PACK_LISTOF_STRUCT(ddTC->numKnots,PEXFLOAT,ddTC->pKnots, ptr);
 	    if (ddTC->pttype == DD_3D_POINT) {
 		PACK_LISTOF_STRUCT( ddTC->points.numPoints, ddCoord4D,
 				    ddTC->points.pts.p4Dpt, ptr);
