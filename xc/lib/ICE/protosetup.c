@@ -1,4 +1,4 @@
-/* $XConsortium: protosetup.c,v 1.16 94/03/15 13:34:23 mor Exp $ */
+/* $XConsortium: protosetup.c,v 1.17 94/03/18 15:59:23 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -42,7 +42,7 @@ char 	   *errorStringRet;
     char		*pData;
     _IceProtocol	*myProtocol;
     int			extra;
-    Bool		gotReply;
+    Bool		gotReply, ioErrorOccured;
     int			accepted, i;
     int			hisOpcode;
     unsigned long	setup_sequence;
@@ -180,10 +180,22 @@ char 	   *errorStringRet;
     iceConn->protosetup_to_you->my_auth_indices = authIndices;
 
     gotReply = False;
+    ioErrorOccured = False;
     accepted = 0;
 
-    while (gotReply == False)
-	if ((gotReply = IceProcessMessages (iceConn, &replyWait)) == True)
+    while (!gotReply && !ioErrorOccured)
+    {
+	ioErrorOccured = (IceProcessMessages (
+	    iceConn, &replyWait, &gotReply) == IceProcessMessagesIOError);
+
+	if (ioErrorOccured)
+	{
+	    strncpy (errorStringRet,
+		"IO error occured doing Protocol Setup on connection",
+		errorLength);
+	    return (IceProtocolSetupIOError);
+	}
+	else if (gotReply)
 	{
 	    if (reply.type == ICE_PROTOCOL_REPLY)
 	    {
@@ -220,6 +232,7 @@ char 	   *errorStringRet;
 	    free ((char *) iceConn->protosetup_to_you);
 	    iceConn->protosetup_to_you = NULL;
 	}
+    }
 
     if (accepted)
     {
