@@ -1,4 +1,4 @@
-/* $XConsortium: xgtmotion.c,v 1.11 92/10/20 17:11:55 rws Exp $ */
+/* $XConsortium: xgtmotion.c,v 1.12 92/11/14 10:47:36 rws Exp $ */ /*ALLOC-FIX*/
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -125,14 +125,13 @@ ProcXGetDeviceMotionEvents(client)
     {
 	size = sizeof(Time) + (axes * sizeof (INT32));
 	tsize = num_events * size;
-	coords = (INT32 *) xalloc (tsize);
+	coords = (INT32 *) ALLOCATE_LOCAL(tsize);
 	rep.nEvents = (v->GetMotionProc) (
 		dev, coords, start.milliseconds, stop.milliseconds);
-
     }
     if (rep.nEvents > 0)
 	{
-        length = (rep.nEvents * size +3) / 4;
+        length = (rep.nEvents * size +3) >> 2;
         rep.length = length;
 	}
     nEvents = rep.nEvents;
@@ -151,8 +150,8 @@ ProcXGetDeviceMotionEvents(client)
 		}
 	    }
 	WriteToClient(client, length * 4, coords);
+	DEALLOCATE_LOCAL(coords);
         }
-    xfree(coords);
     return Success;
 }
 
