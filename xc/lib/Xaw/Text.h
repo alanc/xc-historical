@@ -1,4 +1,4 @@
-/* $XConsortium: Text.h,v 1.38 91/04/09 19:54:35 converse Exp $ */
+/* $XConsortium: Text.h,v 1.39 91/05/04 18:59:03 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -76,7 +76,7 @@ typedef struct {
     int  firstPos;
     int  length;
     char *ptr;
-    Atom format;
+    unsigned long format;
     } XawTextBlock, *XawTextBlockPtr; 
 
 #include <X11/Xaw/TextSink.h>
@@ -132,7 +132,7 @@ typedef struct {
 #define XawEditError		1
 #define XawPositionError	2
 
-extern Atom FMT8BIT;
+extern unsigned long FMT8BIT;
 
 /* Class record constants */
 
@@ -141,9 +141,7 @@ extern WidgetClass textWidgetClass;
 typedef struct _TextClassRec *TextWidgetClass;
 typedef struct _TextRec      *TextWidget;
 
-#ifdef __cplusplus
-extern "C" {					/* for C++ V2.0 */
-#endif
+_XFUNCPROTOBEGIN
 
 extern void XawTextDisplay(
 #if NeedFunctionPrototypes
@@ -265,9 +263,7 @@ extern void XawTextDisplayCaret(
 #endif
 );
 
-#ifdef __cplusplus
-}						/* for C++ V2.0 */
-#endif
+_XFUNCPROTOEND
 
 /*
  * For R3 compatability only. 
