@@ -100,6 +100,7 @@ static int nextFreeClientID; /* always MIN free client ID */
 
 static int	nClients;	/* number active clients */
 
+CallbackListPtr ClientStateCallback;
 char dispatchException = 0;
 char isItTimeToYield;
 
@@ -972,7 +973,7 @@ ProcGrabServer(client)
 	ServerGrabInfoRec grabinfo;
 	grabinfo.client = client;
 	grabinfo.grabstate  = SERVER_GRABBED;
-	CallCallbacks(&ServerGrabCallback, &grabinfo);
+	CallCallbacks(&ServerGrabCallback, (pointer)&grabinfo);
     }
 
     return(client->noClientException);
@@ -1002,7 +1003,7 @@ UngrabServer(client)
 	ServerGrabInfoRec grabinfo;
 	grabinfo.client = client;
 	grabinfo.grabstate  = SERVER_UNGRABBED;
-	CallCallbacks(&ServerGrabCallback, &grabinfo);
+	CallCallbacks(&ServerGrabCallback, (pointer)&grabinfo);
     }
 }
 
@@ -3314,6 +3315,9 @@ CloseDownClient(client)
 	}
 	client->clientGone = TRUE;  /* so events aren't sent to client */
 	CloseDownConnection(client);
+	client->clientState = ClientStateRetained;
+	if (ClientStateCallback)
+	    CallCallbacks(&ClientStateCallback, (pointer)client);
 	--nClients;
     }
 
@@ -3323,17 +3327,20 @@ CloseDownClient(client)
 	    ClientSignal (client);
 	else
 	{
-	    FreeClientResources(client);
-	    if (client->index < nextFreeClientID)
-		nextFreeClientID = client->index;
-	    clients[client->index] = NullClient;
-	    if (client->requestVector != InitialVector && nClients == 0)
+	    if (client->clientState == ClientStateRunning && nClients == 0)
 	    {
 		if (terminateAtReset)
 		    dispatchException |= DE_TERMINATE;
 		else
 		    dispatchException |= DE_RESET;
 	    }
+	    client->clientState = ClientStateGone;
+	    if (ClientStateCallback)
+		CallCallbacks(&ClientStateCallback, (pointer)client);
+	    FreeClientResources(client);
+	    if (client->index < nextFreeClientID)
+		nextFreeClientID = client->index;
+	    clients[client->index] = NullClient;
 	    xfree(client);
 
 	    while (!clients[currentMaxClients-1])
@@ -3407,10 +3414,49 @@ void InitClient(client, i, ospriv)
     client->swapped = FALSE;
     client->big_requests = FALSE;
     client->priority = 0;
+    client->clientState = ClientStateInitial;
 #ifdef XKB
     client->xkbClientFlags = 0;
     client->mapNotifyMask = 0;
 #endif
+}
+
+extern int clientPrivateLen;
+extern unsigned *clientPrivateSizes;
+extern unsigned totalClientSize;
+
+int
+InitClientPrivates(client)
+    ClientPtr client;
+{
+    register char *ptr;
+    DevUnion *ppriv;
+    register unsigned *sizes;
+    register unsigned size;
+    register int i;
+
+    if (client->index)
+	ppriv = (DevUnion *)(client + 1);
+    else
+    {
+	ppriv = (DevUnion *)xalloc(totalClientSize - sizeof(ClientRec));
+	if (!ppriv)
+	    return 0;
+    }
+    client->devPrivates = ppriv;
+    sizes = clientPrivateSizes;
+    ptr = (char *)(ppriv + clientPrivateLen);
+    for (i = clientPrivateLen; --i >= 0; ppriv++, sizes++)
+    {
+	if ( (size = *sizes) )
+	{
+	    ppriv->ptr = (pointer)ptr;
+	    ptr += size;
+	}
+	else
+	    ppriv->ptr = (pointer)NULL;
+    }
+    return 1;
 }
 
 /************************
@@ -3431,10 +3477,11 @@ NextAvailableClient(ospriv)
     i = nextFreeClientID;
     if (i == MAXCLIENTS)
 	return (ClientPtr)NULL;
-    clients[i] = client = (ClientPtr)xalloc(sizeof(ClientRec));
+    clients[i] = client = (ClientPtr)xalloc(totalClientSize);
     if (!client)
 	return (ClientPtr)NULL;
     InitClient(client, i, ospriv);
+    InitClientPrivates(client);
     if (!InitClientResources(client))
     {
 	xfree(client);
@@ -3452,6 +3499,8 @@ NextAvailableClient(ospriv)
 	currentMaxClients++;
     while ((nextFreeClientID < MAXCLIENTS) && clients[nextFreeClientID])
 	nextFreeClientID++;
+    if (ClientStateCallback)
+	CallCallbacks(&ClientStateCallback, (pointer)client);
     return(client);
 }
 
@@ -3507,18 +3556,9 @@ ProcEstablishConnection(client)
      * if auth protocol does some magic, fall back through to the
      * dispatcher.
      */
-    if (client->requestVector == InitialVector)
+    if (client->clientState == ClientStateInitial)
 	return(SendConnSetup(client, reason));
-    else
-    {
-	/*
-	 * bump up nClients because otherwise if the client has to get
-	 * terminated in the middle of a multi-packet authorization,
-	 * bad things might happen, like nClients going negative
-	 */
-	nClients++;
-	return(client->noClientException);
-    }
+    return(client->noClientException);
 }
 
 int
@@ -3550,8 +3590,7 @@ SendConnSetup(client, reason)
 	return (client->noClientException = -1);
     }
 
-    if (client->requestVector == InitialVector)
-	nClients++;		/* nClients not already bumped up */
+    nClients++;
     client->requestVector = client->swapped ? SwappedProcVector : ProcVector;
     client->sequence = 0;
     ((xConnSetup *)ConnectionInfo)->ridBase = client->clientAsMask;
@@ -3588,9 +3627,9 @@ SendConnSetup(client, reason)
 	(void)WriteToClient(client, (int)(connSetupPrefix.length << 2),
 			    ConnectionInfo);
     }
-#ifdef XRECORD
-    XRecordNewClient(client);
-#endif
+    client->clientState = ClientStateRunning;
+    if (ClientStateCallback)
+	CallCallbacks(&ClientStateCallback, (pointer)client);
     return (client->noClientException);
 }
 
