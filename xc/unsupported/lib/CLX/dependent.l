@@ -548,7 +548,11 @@
   #.(declare-buffun)
   (the short-float (* (the int16 value) #.(coerce (/ pi 180.0 64.0) 'short-float))))
 
-;;; Character transformation
+
+;;-----------------------------------------------------------------------------
+;; Character transformation
+;;-----------------------------------------------------------------------------
+
 
 ;;; This stuff transforms chars to ascii codes in card8's and back.
 ;;; You might have to hack it a little to get it to work for your machine.
@@ -714,6 +718,7 @@
 ;;	our own here, based on Zetalisp primitives.  Holding-Lock is very
 ;;	similar to with-lock on The TI Explorer, and a little more efficient
 ;;	than with-process-lock on a Symbolics.
+;;-----------------------------------------------------------------------------
 
 ;;; MAKE-PROCESS-LOCK: Creating a process lock.
 
@@ -1776,6 +1781,7 @@
 (defun x-type-error (object type &optional error-string)
   (x-error 'type-error :object object :type type :type-string error-string))
 
+
 ;;-------------------------------------------------------------------------------
 ;; Error handlers
 ;;    Hack up KMP error signaling using zetalisp until the real thing comes along
@@ -1955,6 +1961,11 @@
 			       (symbol-package type))))
     (apply make-function slot-initializations)))
 
+
+;;-----------------------------------------------------------------------------
+;;  HOST hacking
+;;-----------------------------------------------------------------------------
+
 #-(or explorer Genera)
 (defun host-address (host &optional (family :internet))
   ;; Return a list whose car is the family keyword (:internet :DECnet :Chaos)
@@ -2053,7 +2064,10 @@
 		      :name)
 	    family)))
 
-;;; Printing routines.
+
+;;-----------------------------------------------------------------------------
+;; Printing routines.
+;;-----------------------------------------------------------------------------
 
 #-lispm
 (defun display-print (display stream depth)
@@ -2070,7 +2084,10 @@
     (princ " " stream)
     (princ (display-display display) stream)))
 
-;;;; Whether to use closures for requests or not.
+
+;;-----------------------------------------------------------------------------
+;; Whether to use closures for requests or not.
+;;-----------------------------------------------------------------------------
 
 ;;; If this variable is non-NIL, then request code is compiled in a much more
 ;;; compact format, as the common code wrapped around each request is shared,
@@ -2081,7 +2098,10 @@
 
 (defconstant *use-closures-for-requests* #+lispm t #-lispm nil)
 
-;;;; Resource stuff
+
+;;-----------------------------------------------------------------------------
+;; Resource stuff
+;;-----------------------------------------------------------------------------
 
 ;;; STRINGABLE-EQUAL - compare two stringables.  Ignore case whan comparing a
 ;;; string to a symbol.
@@ -2148,3 +2168,226 @@
 			 #+excl (short-site-name)
 			 #-excl (machine-instance)))))))
 
+
+;;-------------------------------------------------------------------------------
+;; Image stuff
+;;-------------------------------------------------------------------------------
+
+(deftype pixarray-1-element-type ()
+  'bit)
+
+(deftype pixarray-4-element-type ()
+  'card4)
+
+(deftype pixarray-8-element-type ()
+  'card8)
+
+(deftype pixarray-16-element-type ()
+  'card16)
+
+(deftype pixarray-24-element-type ()
+  #-Genera 'card24 #+Genera 'int32)
+
+(deftype pixarray-32-element-type ()
+  #-Genera 'card32 #+Genera 'int32)
+
+(deftype pixarray-1  ()
+  '(array pixarray-1-element-type (* *)))
+
+(deftype pixarray-4  ()
+  '(array pixarray-4-element-type (* *)))
+
+(deftype pixarray-8  ()
+  '(array pixarray-8-element-type (* *)))
+
+(deftype pixarray-16 ()
+  '(array pixarray-16-element-type (* *)))
+
+(deftype pixarray-24 ()
+  '(array pixarray-24-element-type (* *)))
+
+(deftype pixarray-32 ()
+  '(array pixarray-32-element-type (* *)))
+
+(deftype pixarray ()
+  '(or pixarray-1 pixarray-4 pixarray-8 pixarray-16 pixarray-24 pixarray-32))
+
+(deftype bitmap ()
+  'pixarray-1)
+
+;;; Lispms, Vaxen, Dec/Mips boxes, and 80*86s are all little endian.
+
+(defconstant *image-bit-lsb-first-p*
+	     #+(or lispm vax) t
+	     #-(or lispm vax) nil)
+
+(defconstant *image-byte-lsb-first-p*
+	     #+(or lispm vax) t
+	     #-(or lispm vax) nil)
+
+;;; All known lisps running CLX work best with image unit and pad being 32
+;;; bits.
+
+(defconstant *image-unit* 32)
+
+(defconstant *image-pad* 32)	     
+
+;;; These are used to read and write pixels from and to CARD8s.
+
+;;; READ-IMAGE-LOAD-BYTE is used to extract 1 and 4 bit pixels from CARD8s.
+
+(defmacro read-image-load-byte (size position integer)
+  `(the (unsigned-byte ,size)
+	(#-Genera ldb #+Genera sys:%logldb
+	 (byte ,size ,(if *image-bit-lsb-first-p* position (- 7 position)))
+	 (the card8 ,integer))))
+
+;;; READ-IMAGE-ASSEMBLE-BYTES is used to build 16, 24 and 32 bit pixels from
+;;; the appropriate number of CARD8s.
+
+(defmacro read-image-assemble-bytes (&rest bytes)
+  (let* ((bytes (if *image-byte-lsb-first-p* bytes (reverse bytes)))
+	 (it (first bytes))
+	 (count 0))
+    (dolist (byte (rest bytes))
+      (setq it
+	    `(#-Genera dpb #+Genera sys:%logdpb 
+	      (the card8 ,byte)
+	      (byte 8 ,(incf count 8))
+	      (the (unsigned-byte ,count) ,it))))
+    #-Genera `(the (unsigned-byte ,(* (length bytes) 8)) ,it)
+    #+Genera it))
+
+;;; WRITE-IMAGE-LOAD-BYTE is used to extract a CARD8 from a 16, 24 or 32 bit
+;;; pixel.
+
+(defmacro write-image-load-byte (position integer integer-size)
+  `(the card8
+	(#-Genera ldb #+Genera sys:%logldb
+	  (byte 8 ,(if *image-byte-lsb-first-p*
+		       position
+		     (- integer-size 8 position)))
+	  #-Genera (the (unsigned-byte ,integer-size) ,integer)
+	  #+Genera ,integer
+	  )))
+
+;;; WRITE-IMAGE-ASSEMBLE-BYTES is used to build a CARD8 from 1 or 4 bit
+;;; pixels.
+
+(defmacro write-image-assemble-bytes (&rest bytes)
+  (let* ((bytes (if *image-bit-lsb-first-p* bytes (reverse bytes)))
+	 (size (floor 8 (length bytes)))
+	 (it (first bytes))
+	 (count 0))
+    (dolist (byte (rest bytes))
+      (setq it `(#-Genera dpb #+Genera sys:%logdpb
+		 (the (unsigned-byte ,size) ,byte)
+		 (byte ,size ,(incf count size))
+		 (the (unsigned-byte ,count) ,it))))
+    `(the card8 ,it)))
+
+;;; If you can write fast routines that can read and write pixarrays out of a
+;;; buffer-bytes, do it!  It makes the image code a lot faster.  The
+;;; FAST-READ-PIXARRAY, FAST-WRITE-PIXARRAY and FAST-COPY-PIXARRAY routines
+;;; return T if they can do it, NIL if they can't.
+
+;;; FAST-READ-PIXARRAY - fill part of a pixarray from a buffer of card8s
+
+(defun fast-read-pixarray (bbuf boffset pixarray
+			   x y width height padded-bytes-per-line
+			   bits-per-pixel)
+  (declare (type buffer-bytes bbuf)
+	   (type array-index boffset
+		 padded-bytes-per-line)
+	   (type pixarray pixarray)
+	   (type card16 x y width height)
+	   (type (member 1 4 8 16 24 32) bits-per-pixel))
+  (progn bbuf boffset pixarray x y width height padded-bytes-per-line
+	 bits-per-pixel)
+  (or
+    #+lispm
+    (let* ((padded-bits-per-line (* padded-bytes-per-line 8))
+	   (padded-pixels-per-line
+	     (floor padded-bits-per-line bits-per-pixel))
+	   (pixarray-padded-pixels-per-line
+	     (array-row-major-index pixarray 1 0))
+	   (pixarray-padded-bits-per-line
+	     (* pixarray-padded-pixels-per-line bits-per-pixel)))
+      (when (and (= (sys:array-element-size pixarray) bits-per-pixel)
+		 (zerop (mod padded-bits-per-line 32))
+		 (zerop (mod pixarray-padded-bits-per-line 32)))
+	(if (zerop boffset)
+	    (sys:with-stack-array (a (list (+ y height) padded-pixels-per-line)
+				     :element-type (array-element-type pixarray)
+				     :displaced-to bbuf)
+	      (sys:bitblt boole-1 width height a x y pixarray 0 0))
+	  (sys:with-stack-array (b (- (length bbuf) boffset)
+				   :element-type 'card8
+				   :displaced-to bbuf
+				   :displaced-index-offset boffset)
+	    (sys:with-stack-array (a (list (+ y height) padded-pixels-per-line)
+				     :element-type (array-element-type pixarray)
+				     :displaced-to b)
+	      (sys:bitblt boole-1 width height a x y pixarray 0 0))))
+	t))))
+
+;;; FAST-WRITE-PIXARRAY - copy part of a pixarray into an array of CARD8s
+
+(defun fast-write-pixarray (bbuf boffset pixarray x y width height
+			    padded-bytes-per-line bits-per-pixel)
+  (declare (type buffer-bytes bbuf)
+	   (type pixarray pixarray)
+	   (type card16 x y width height)
+	   (type array-index boffset padded-bytes-per-line)
+	   (type (member 1 4 8 16 24 32) bits-per-pixel))
+  (progn bbuf boffset pixarray x y width height padded-bytes-per-line
+	 bits-per-pixel)
+  (or
+    #+lispm
+    (let* ((padded-bits-per-line (* padded-bytes-per-line 8))
+	   (padded-pixels-per-line
+	     (floor padded-bits-per-line bits-per-pixel))
+	   (pixarray-padded-pixels-per-line
+	     (array-row-major-index pixarray 1 0))
+	   (pixarray-padded-bits-per-line
+	     (* pixarray-padded-pixels-per-line bits-per-pixel)))
+      (when (and (= (sys:array-element-size pixarray) bits-per-pixel)
+		 (zerop (mod padded-bits-per-line 32))
+		 (zerop (mod pixarray-padded-bits-per-line 32)))
+	(if (zerop boffset)
+	    (sys:with-stack-array (a (list height padded-pixels-per-line)
+				     :element-type (array-element-type pixarray)
+				     :displaced-to bbuf)
+	      (sys:bitblt boole-1 width height pixarray x y a 0 0))
+	  (sys:with-stack-array (b (- (length bbuf) boffset)
+				   :element-type 'card8
+				   :displaced-to bbuf
+				   :displaced-index-offset boffset)
+	    (sys:with-stack-array (a (list height padded-pixels-per-line)
+				     :element-type (array-element-type pixarray)
+				     :displaced-to b)
+	      (sys:bitblt boole-1 width height pixarray x y a 0 0))))
+	t))))
+
+;;; FAST-COPY-PIXARRAY - copy part of a pixarray into another
+
+(defun fast-copy-pixarray (pixarray copy x y width height bits-per-pixel)
+  (declare (type pixarray pixarray copy)
+	   (type card16 x y width height)
+	   (type (member 1 4 8 16 24 32) bits-per-pixel))
+  (progn pixarray copy x y width height bits-per-pixel)
+  (or
+    #+lispm
+    (let* ((pixarray-padded-pixels-per-line
+	     (array-row-major-index pixarray 1 0))
+	   (pixarray-padded-bits-per-line
+	     (* pixarray-padded-pixels-per-line bits-per-pixel))
+	   (copy-padded-pixels-per-line
+	     (array-row-major-index copy 1 0))
+	   (copy-padded-bits-per-line
+	     (* copy-padded-pixels-per-line bits-per-pixel)))
+      (when (and (= (sys:array-element-size pixarray) bits-per-pixel)
+		 (zerop (mod pixarray-padded-bits-per-line 32))
+		 (zerop (mod copy-padded-bits-per-line 32)))
+	(sys:bitblt boole-1 width height pixarray x y copy 0 0)
+	t))))
