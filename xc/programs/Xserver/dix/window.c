@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 1.241 89/04/23 14:35:34 rws Exp $ */
+/* $XConsortium: window.c,v 1.242 89/04/25 07:55:15 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -40,6 +40,8 @@ SOFTWARE.
 #include "dixstruct.h"
 #include "gcstruct.h"
 #include "servermd.h"
+
+typedef enum { VTOther, VTStack, VTMove, VTUnmap, VTMap } VTKind;
 
 /******
  * Window stuff for server 
@@ -1669,7 +1671,7 @@ MoveWindow(pWin, x, y, pNextSib)
 	}
 #endif /* DO_SAVE_UNDERS */
 
-        (* pScreen->ValidateTree)(pParent, (WindowPtr)NULL, TRUE, anyMarked);
+        (* pScreen->ValidateTree)(pParent, (WindowPtr)NULL, VTMove, anyMarked);
 	
 	DoObscures(pParent); 
 	(* pWin->CopyWindow)(pWin, oldpt, oldRegion);
@@ -1948,7 +1950,7 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 	}
 #endif /* DO_SAVE_UNDERS */
 
-	(* pScreen->ValidateTree)(pParent, pFirstChange, TRUE, anyMarked);
+	(* pScreen->ValidateTree)(pParent, pFirstChange, VTOther, anyMarked);
 
 	DoObscures(pParent); 
 
@@ -2136,7 +2138,7 @@ ChangeBorderWidth(pWin, width)
 #endif /* DO_SAVE_UNDERS */
 
         (* pScreen->ValidateTree)(pParent,(anyMarked ? pWin : (WindowPtr)NULL),
-					     TRUE, anyMarked );  
+					     VTOther, anyMarked );  
 
         if (width > oldwidth)
 	{
@@ -2441,8 +2443,9 @@ WhereDoIGoInTheStack(pWin, pSib, x, y, w, h, smode)
 }
 
 static void
-ReflectStackChange(pWin, pSib)
+ReflectStackChange(pWin, pSib, kind)
     WindowPtr pWin, pSib;
+    VTKind  kind;
 {
 /* Note that pSib might be NULL */
 
@@ -2476,7 +2479,7 @@ ReflectStackChange(pWin, pSib)
 	}
 #endif /* DO_SAVE_UNDERS */
         (* pWin->drawable.pScreen->ValidateTree)(pParent, pFirstChange,
-					 TRUE, anyMarked);
+					 kind, anyMarked);
 	DoObscures(pParent);
 	HandleExposures(pParent);
 #ifdef DO_SAVE_UNDERS
@@ -2714,7 +2717,7 @@ ActuallyDoSomething:
     else if (action == RESIZE_WIN)
         SlideAndSizeWindow(pWin, x, y, w, h, pSib);
     else if (mask & CWStackMode)
-        ReflectStackChange(pWin, pSib);
+        ReflectStackChange(pWin, pSib, VTOther);
 
     if (action != RESTACK_WIN)
 	CheckCursorConfinement(pWin);
@@ -2783,7 +2786,7 @@ SetShape(pWin)
 	}
 #endif /* DO_SAVE_UNDERS */
 
-        (* pScreen->ValidateTree)(pParent, (WindowPtr)NULL, TRUE, anyMarked);
+        (* pScreen->ValidateTree)(pParent, (WindowPtr)NULL, VTOther, anyMarked);
 	
 	DoObscures(pParent); 
 
@@ -2866,8 +2869,9 @@ CirculateWindow(pParent, direction, client)
 
     event.u.u.type = CirculateNotify;
     DeliverEvents(pWin, &event, 1, NullWindow);
-    ReflectStackChange(pWin, (direction == RaiseLowest) ? pFirst
-						        : (WindowPtr)NULL);
+    ReflectStackChange(pWin,
+		       (direction == RaiseLowest) ? pFirst : (WindowPtr)NULL,
+		       VTStack);
 
     return(Success);
 }
@@ -3119,7 +3123,7 @@ MapWindow(pWin, SendExposures, BitsAvailable, SendNotification, client)
 #endif /* DO_SAVE_UNDERS */
 
 	/* anyMarked must be TRUE to force visibility events on all windows */
-	(* pScreen->ValidateTree)(pParent, pWin, TRUE, TRUE);
+	(* pScreen->ValidateTree)(pParent, pWin, VTMap, TRUE);
         if (SendExposures) 
         {
 	    if (!BitsAvailable)
@@ -3285,7 +3289,7 @@ UnmapWindow(pWin, SendExposures, SendNotification, fromConfigure)
     if (wasViewable)
     {
         (* pWin->drawable.pScreen->ValidateTree)(pParent, pWin, 
-						 TRUE, anyMarked);
+						 VTUnmap, anyMarked);
 	/*
 	 * For backingStore == Always, we must allow the backing-store
 	 * implementation to grab the bits off the screen before the window
@@ -3382,7 +3386,7 @@ UnmapSubwindows(pWin, sendExposures)
     if (wasViewable)
     {
 	(* pWin->drawable.pScreen->ValidateTree)(pWin, pHead,
-						 TRUE, anyMarked);
+						 VTUnmap, anyMarked);
 	if (sendExposures)
 	{
 	    DoObscures(pWin);
