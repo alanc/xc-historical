@@ -1,8 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $Source: /usr/expo/X/src/clients/xmodmap/RCS/handle.c,v $
- * $Header: handle.c,v 1.5 88/07/12 14:42:21 jim Exp $
+ * $XConsortium: handle.c,v 1.6 88/07/27 09:40:10 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *

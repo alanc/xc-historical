@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$Header: xinit.c,v 11.24 88/09/05 14:24:38 jim Exp $";
+static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.25 88/09/05 15:05:56 jim Exp $";
 #endif /* lint */
 #include <X11/copyright.h>
 

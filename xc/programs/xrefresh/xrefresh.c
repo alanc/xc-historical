@@ -23,8 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 /*
- * $Source: /usr/expo/X/src/clients/xrefresh/RCS/xrefresh.c,v $
- * $Header: xrefresh.c,v 1.7 88/02/09 11:54:49 jim Exp $
+ * $XConsortium: xrefresh.c,v 1.8 88/07/07 13:36:21 jim Exp $
  *
  * Kitchen sink version, useful for clearing small areas and flashing the 
  * screen.

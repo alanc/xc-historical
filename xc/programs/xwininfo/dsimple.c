@@ -1,4 +1,4 @@
-/* $Header: dsimple.c,v 1.5 88/02/09 11:29:17 jim Exp $ */
+/* $XConsortium: dsimple.c,v 1.6 88/05/18 16:28:04 jim Exp $ */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>

@@ -1,8 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $Source: /usr.MC68020/expo.lcs.mit.edu/jim/X11/xmodmap/RCS/pf.c,v $
- * $Header: pf.c,v 1.4 88/02/08 18:10:22 jim Exp $
+ * $XConsortium: pf.c,v 1.1 88/02/08 18:34:00 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *

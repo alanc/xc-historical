@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: util.c,v 1.6 87/09/11 08:22:16 toddb Exp $";
+static char rcs_id[] = "$XConsortium: util.c,v 1.7 88/02/23 21:06:14 rws Exp $";
 #endif
 
 /*

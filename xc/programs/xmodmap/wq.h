@@ -1,8 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $Source: /usr.MC68020/expo.lcs.mit.edu/jim/X11/xmodmap/RCS/wq.h,v $
- * $Header: wq.h,v 1.4 88/02/08 17:13:47 jim Exp $
+ * $XConsortium: wq.h,v 1.1 88/02/08 18:33:59 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *

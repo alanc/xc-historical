@@ -1,8 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $Source: /usr/expo/X/src/clients/xmodmap/RCS/exec.c,v $
- * $Header: exec.c,v 1.2 88/02/24 08:11:08 jim Exp $
+ * $XConsortium: exec.c,v 1.3 88/05/04 16:04:09 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  * Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.

@@ -1,7 +1,7 @@
 /* 
- * $Locker: keith $ 
+ * $Locker: jim $ 
  */ 
-static char	*rcsid = "$Header: xwud.c,v 1.19 88/03/16 16:54:47 jim Exp $";
+static char	*rcsid = "$XConsortium: xwud.c,v 1.20 88/09/03 20:34:59 keith Exp $";
 #include <X11/copyright.h>
 
 /* Copyright 1985, 1986, Massachusetts Institute of Technology */
@@ -32,7 +32,7 @@ static char	*rcsid = "$Header: xwud.c,v 1.19 88/03/16 16:54:47 jim Exp $";
  */
 
 #ifndef lint
-static char *rcsid_xwud_c = "$Header: xwud.c,v 1.19 88/03/16 16:54:47 jim Exp $";
+static char *rcsid_xwud_c = "$XConsortium: xwud.c,v 1.20 88/09/03 20:34:59 keith Exp $";
 #endif
 
 #include <X11/Xos.h>
