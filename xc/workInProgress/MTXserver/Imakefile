@@ -14,7 +14,7 @@
     FONTUTILDIR = $(FONTSRC)/mkfontdir
        FONTUTIL = $(FONTUTILDIR)/fontdir.o
             BSD = os/4.2bsd/libos.a $(XAULIB) $(XDMCPLIB)
-        BSDEMUL = os/bsdemul/libbsdemul.a
+        BSDEMUL = $(TOP)/lib/Berk/Berklib.o
            SYSV = os/sysV/libos.a
             MFB = ddx/mfb/libmfb.a
             CFB = ddx/cfb/libcfb.a
@@ -297,8 +297,7 @@ XCOMM
 #define need_ddx_mi
 #define need_ddx_hp
 #define need_os_42bsd
-#define need_os_bsdemul
-HPDIRS = dix ddx/snf ddx/mi ddx/hp os/4.2bsd os/bsdemul
+HPDIRS = dix ddx/snf ddx/mi ddx/hp os/4.2bsd
 
 /* set up .o load */
 #ifdef hp9000s300
@@ -316,31 +315,6 @@ XhpDIRS = $(HPDIRS)
 
 ServerTarget(Xhp,$(EXTDIR) $(FONTUTILDIR) $(HPDIRS),$(HPOBJS),$(HPLIBS),$(HPSYSLIBS))
 #endif /* dohpServer */
-
-
-#ifdef dohpMitServer
-XCOMM
-XCOMM HP server
-XCOMM
-#define need_dix
-#define need_ddx_snf
-#define need_ddx_mi
-#define need_ddx_hpMit
-#define need_ddx_cfb
-#define need_ddx_mfb
-#define need_os_42bsd
-#define need_os_bsdemul
-HPMITDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/cfb ddx/hp.mit os/4.2bsd os/bsdemul
-HPMITOBJS = ddx/hp.mit/hpInit.o $(FONTUTIL)
-HPMITLIBS = $(HPMIT) $(CFB) $(DIX) $(BSD) $(SNF) $(MFB) $(MI) $(EXTENSIONS) $(BSDEMUL)
-#if ServerMallocLib
-HPMITMALLOCLIB = -lmalloc
-#endif
-HPMITSYSLIBS = $(SYSLIBS) $(HPMALLOCLIB)
-XhpMitDIRS = $(HPMITDIRS)
-
-ServerTarget(XhpMit,$(EXTDIR) $(FONTUTILDIR) $(HPMITDIRS),$(HPMITOBJS),$(HPMITLIBS),$(HPMITSYSLIBS))
-#endif /* dohpMitServer */
 
 
 #ifdef doibmServer
@@ -424,14 +398,13 @@ XCOMM
 #define need_ddx_cfb
 #define need_ddx_macII
 #define need_os_42bsd
-#define need_os_bsdemul
-MACIIDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/cfb ddx/macII os/4.2bsd os/bsdemul
+MACIIDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/cfb ddx/macII os/4.2bsd
 MACIIOBJS = ddx/macII/macIIInitS.o ddx/macII/macIIColor.o $(FONTUTIL)
 MACIILIBS = $(MACII) $(CFB) $(DIX) $(BSD) $(SNF) $(BSDEMUL) $(MFB) $(MI) $(EXTENSIONS)
 MACIISYSLIBS = $(SYSLIBS)
 XmacIIDIRS = $(MACIIDIRS)
  
-ServerTarget(XmacII,$(EXTDIR) $(FONTUTILDIR) $(MACIIDIRS),$(MACIIOBJS),$(MACIILIBS),$(MACIISYSLIBS))
+ServerTarget(XmacII,$(EXTDIR) $(FONTUTILDIR) $(MACIIDIRS),$(MACIIOBJS),$(MACIILIBS),$(CBRT) $(MACIISYSLIBS))
 #endif /* domacIIServer */
 
 
@@ -445,17 +418,10 @@ XCOMM
 #define need_ddx_omron
 #define need_ddx_mfb
 #define need_os_42bsd
-#ifdef UniOSU
-#define need_os_bsdemul
-LUNADIRS = dix ddx/snf ddx/mi ddx/mfb ddx/omron os/4.2bsd \
-	    os/bsdemul
-#else
 LUNADIRS = dix ddx/snf ddx/mi ddx/mfb ddx/omron os/4.2bsd
-#endif
 LUNAOBJS = $(FONTUTIL)
-#ifdef	need_os_bsdemul
-LUNALIBS = $(DIX) $(LUNA) $(BSD) $(BSDEMUL) $(SNF) $(MFB) $(MI) \
-	    $(EXTENSIONS)
+#ifdef UniOSU
+LUNALIBS = $(DIX) $(LUNA) $(BSD) $(BSDEMUL) $(SNF) $(MFB) $(MI) $(EXTENSIONS)
 #else
 LUNALIBS = $(DIX) $(LUNA) $(BSD) $(SNF) $(MFB) $(MI) $(EXTENSIONS)
 #endif
@@ -479,11 +445,6 @@ ServerTarget(Xluna,$(EXTDIR) $(FONTUTILDIR) $(LUNADIRS),$(LUNAOBJS),$(LUNALIBS),
 #define dir_os_42bsd os/4.2bsd
 #else
 #define dir_os_42bsd /**/
-#endif
-#ifdef need_os_bsdemul
-#define dir_os_bsdemul os/bsdemul
-#else
-#define dir_os_bsdemul /**/
 #endif
 
 #ifdef need_ddx_snf
@@ -584,7 +545,7 @@ ServerTarget(Xluna,$(EXTDIR) $(FONTUTILDIR) $(LUNADIRS),$(LUNAOBJS),$(LUNALIBS),
 
 OURDIX = dir_dix
 OURDDX = dir_ddx_snf dir_ddx_mfb dir_ddx_cfb dir_ddx_mi
-OUROS = dir_os_42bsd dir_os_bsdemul
+OUROS = dir_os_42bsd
 DECDDX = dir_ddx_dec_lk201 dir_ddx_dec_qdss dir_ddx_dec_qvss dir_ddx_dec_mfbpmax dir_ddx_dec_cfbpmax
 HPDDX = dir_ddx_hp dir_ddx_hpMit
 OTHERDDX = dir_ddx_apollo dir_ddx_apollo_apc dir_ddx_ibm dir_ddx_macII dir_ddx_sun dir_ddx_tek dir_ddx_omron
@@ -599,7 +560,7 @@ SUBDIRS = $(OURDIX) $(OURDDX) $(OUROS) $(DECDDX) $(HPDDX) $(OTHERDDX)
 		  ddx/dec/mfbpmax ddx/dec/cfbpmax \
                   ddx/hp ddx/hp.mit ddx/tek \
                   ddx/macII ddx/omron
-      ALLOSDIRS = os/4.2bsd os/bsdemul
+      ALLOSDIRS = os/4.2bsd
      ALLSUBDIRS = dix $(ALLDDXDIRS) $(ALLOSDIRS)
 
 InstallMultiple($(ALL),$(BINDIR))
