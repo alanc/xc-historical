@@ -1,4 +1,4 @@
-.\" $XConsortium: mkdepend.man,v 1.8 92/08/22 12:40:48 rws Exp $
+.\" $XConsortium: mkdepend.man,v 1.9 92/08/22 14:57:52 rws Exp $
 .TH MAKEDEPEND 1 "Release 5" "X Version 11"
 .UC 4
 .SH NAME
@@ -25,6 +25,10 @@ makedepend \- create dependencies in makefiles
 .B \-sstring
 ] [
 .B \-wwidth
+] [
+.B \-v
+] [
+.B \-m
 ] [
 \-\ \-
 .B otheroptions
@@ -199,6 +203,25 @@ Normally,
 will ensure that every output line that it writes will be no wider than
 78 characters for the sake of readability.
 This option enables you to change this width.
+.TP 5
+.B \-v
+Verbose operation.
+This option causes 
+.B makedepend
+to emit the list of files included by each input file on standard output.
+.TP 5
+.B \-m
+Warn about multiple inclusion.
+This option causes 
+.B makedepend
+to produce a warning if any input file includes another file more than
+once.  In previous versions of 
+.B makedepend
+this was the default behavior; the default has been changed to better
+match the behavior of the C compiler, which does not consider multiple
+inclusion to be an error.  This option is provided for backward 
+compatibility, and to aid in debugging problems related to multiple
+inclusion.
 .TP 5
 .B "\-\ \- options \-\ \-"
 If

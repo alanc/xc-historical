@@ -1,5 +1,5 @@
 /*
- * $XConsortium: parse.c,v 1.25 93/07/12 18:00:51 gildea Exp $
+ * $XConsortium: parse.c,v 1.26 93/07/13 18:14:14 gildea Exp $
  */
 #include "def.h"
 
@@ -96,8 +96,12 @@ find_includes(filep, file, file_red, recursion, failOK)
 		case INCLUDEDOT:
 			add_include(filep, file, file_red, line, TRUE, failOK);
 			break;
-		case PRAGMA:
 		case ERROR:
+		    	warning("%s: %d: %s\n", file_red->i_file,
+				 filep->f_line, line);
+		    	break;
+		    
+		case PRAGMA:
 		case IDENT:
 		case SCCS:
 		case EJECT:

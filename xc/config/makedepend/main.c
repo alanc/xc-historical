@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.78 93/09/17 13:49:32 rws Exp $
+ * $XConsortium: main.c,v 1.79 93/12/06 15:16:20 kaleb Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -68,6 +68,7 @@ boolean	append = FALSE;
 boolean	printed = FALSE;
 boolean	verbose = FALSE;
 boolean	show_where_not = FALSE;
+boolean warn_multiple = FALSE;	/* Warn on multiple includes of same file */
 
 static
 #ifdef SIGNALRETURNSINT
@@ -265,7 +266,11 @@ main(argc, argv)
 				argc--;
 			}
 			break;
-		
+
+		case 'm':
+			warn_multiple = TRUE;
+			break;
+			
 		/* Ignore -O, -g so we can just pass ${CFLAGS} to
 		   makedepend
 		 */

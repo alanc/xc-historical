@@ -1,5 +1,5 @@
 /*
- * $XConsortium: include.c,v 1.11 91/04/05 17:33:48 rws Exp $
+ * $XConsortium: include.c,v 1.12 92/08/24 16:31:40 gildea Exp $
  */
 #include "def.h"
 
@@ -8,6 +8,7 @@ extern struct	inclist	inclist[ MAXFILES ],
 extern char	*includedirs[ ];
 extern char	*notdotdot[ ];
 extern boolean show_where_not;
+extern boolean warn_multiple;
 
 struct inclist *inc_path(file, include, dot)
 	register char	*file,
@@ -241,11 +242,14 @@ included_by(ip, newfile)
 				/* only bitch if ip has */
 				/* no #include SYMBOL lines  */
 				/* and is not a .c file */
-				warning("%s includes %s more than once!\n",
-					ip->i_file, newfile->i_file);
-				warning1("Already have\n");
-				for (i=0; i<ip->i_listlen; i++)
-					warning1("\t%s\n", ip->i_list[i]->i_file);
+				if (warn_multiple)
+				{
+					warning("%s includes %s more than once!\n",
+						ip->i_file, newfile->i_file);
+					warning1("Already have\n");
+					for (i=0; i<ip->i_listlen; i++)
+						warning1("\t%s\n", ip->i_list[i]->i_file);
+				}
 			    }
 			    return;
 			}
