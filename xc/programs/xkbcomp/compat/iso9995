@@ -3,7 +3,7 @@ xkb_compatibility "default"
 // Fairly complete set of symbol interpretations to provide reasonable
 // default behavior
 
-virtual_modifiers LevelThree,AltGr,Alt=Mod1;
+virtual_modifiers LevelThree,AltGr;
 
 interpret.repeat= False;
 setMods.clearLocks= True;
@@ -49,7 +49,7 @@ interpret ISO_Prev_Group {
 	action= LockGroup(group=-1);
 };
 
-indicator "Alt Gr" {
+indicator "Group 2" {
     !allowExplicit;
-    group= All-Group1;
+    groups= All-Group1;
 };
