@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.50 91/12/24 12:10:48 rws Exp $ */
+/* $XConsortium: events.c,v 5.51 91/12/26 09:46:14 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -485,7 +485,8 @@ MonthChangedOrBadTime(xE)
 #define NoticeTime(xE) { \
     if ((xE)->u.keyButtonPointer.time < currentTime.milliseconds) \
 	MonthChangedOrBadTime(xE); \
-    currentTime.milliseconds = (xE)->u.keyButtonPointer.time; }
+    currentTime.milliseconds = (xE)->u.keyButtonPointer.time; \
+    lastDeviceEventTime = currentTime; }
 
 void
 NoticeEventTime(xE)
