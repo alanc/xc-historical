@@ -1,5 +1,5 @@
 /*
- * $XConsortium: oclock.c,v 1.14 92/04/01 17:27:56 converse Exp $
+ * $XConsortium: oclock.c,v 1.15 93/09/21 18:31:38 kaleb Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -41,8 +41,20 @@ static XtActionsRec actions[] = {
 
 static Atom wm_delete_window;
 
-/* Command line options table.  Only resources are entered here...there is a
-   pass over the remaining options after XtParseCommand is let loose. */
+static void die(w, client_data, call_data)
+    Widget	w;
+    XtPointer	client_data, call_data;
+{
+    XCloseDisplay(XtDisplay(w));
+    exit(0);
+}
+
+static void save(w, client_data, call_data)
+    Widget w;
+    XtPointer client_data, call_data;
+{
+    return;	/* stateless */
+}
 
 /* Exit with message describing command line format */
 
@@ -60,6 +72,9 @@ void usage()
 "       [-backing {backing-store}] [-shape] [-noshape] [-transparent]\n");
     exit(1);
 }
+
+/* Command line options table.  Only resources are entered here...there is a
+   pass over the remaining options after XtParseCommand is let loose. */
 
 static XrmOptionDescRec options[] = {
 {"-fg",		"*Foreground",		XrmoptionSepArg,	NULL},
@@ -85,10 +100,12 @@ void main(argc, argv)
     Arg arg[2];
     int	i;
     
-    toplevel = XtAppInitialize(&xtcontext, "Clock", options, XtNumber(options),
-			       &argc, argv, NULL, NULL, 0);
-
+    toplevel = XtOpenApplication(&xtcontext, "Clock",
+				 options, XtNumber(options), &argc, argv, NULL,
+				 sessionShellWidgetClass, NULL, 0);
     if (argc != 1) usage();
+    XtAddCallback(toplevel, XtNsaveCallback, save, NULL);
+    XtAddCallback(toplevel, XtNdieCallback, die, NULL);
 
     XtAppAddActions
 	(xtcontext, actions, XtNumber(actions));
@@ -99,16 +116,18 @@ void main(argc, argv)
     XtSetArg (arg[i], XtNiconPixmap, 
 	      XCreateBitmapFromData (XtDisplay(toplevel),
 				     XtScreen(toplevel)->root,
-				     (char *)oclock_bits, oclock_width, oclock_height));
+				     (char *)oclock_bits,
+				     oclock_width, oclock_height));
     i++;
     XtSetArg (arg[i], XtNiconMask,
 	      XCreateBitmapFromData (XtDisplay(toplevel),
 				     XtScreen(toplevel)->root,
-				     (char *)oclmask_bits, oclmask_width, oclmask_height));
+				     (char *)oclmask_bits,
+				     oclmask_width, oclmask_height));
     i++;
     XtSetValues (toplevel, arg, i);
 
-    clock = XtCreateManagedWidget ("clock", clockWidgetClass, toplevel, NULL, 0);
+    clock=XtCreateManagedWidget("clock", clockWidgetClass, toplevel, NULL, 0);
     XtRealizeWidget (toplevel);
 
     wm_delete_window = XInternAtom(XtDisplay(toplevel), "WM_DELETE_WINDOW",
@@ -128,11 +147,14 @@ static void quit(w, event, params, num_params)
     String *params;
     Cardinal *num_params;
 {
+    Arg arg;
+
     if (event->type == ClientMessage && 
 	event->xclient.data.l[0] != wm_delete_window) {
 	XBell(XtDisplay(w), 0);
     } else {
-	XCloseDisplay(XtDisplay(w));
-	exit(0);
+	XtSetArg(arg, XtNjoinSession, False);
+	XtSetValues(w, &arg, (Cardinal)1);
+	die(w, NULL, NULL);
     }
 }
