@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.h,v 1.10 94/07/06 15:49:09 mor Exp $ */
+/* $XConsortium: xsm.h,v 1.11 94/07/07 15:16:27 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -107,7 +107,33 @@ extern AppResources app_resources;
 
 extern XtAppContext	appContext;
 
+extern char		*sm_id;
+
+extern ClientRec	*ClientList;
+extern List	 	*PendingList;
+extern int		numClients;
+extern Bool		client_info_visible;
+extern String 		*clientNames;
+extern int		numClientNames;
+extern int		saveDoneCount;
+
+extern int		interactCount;
+extern Bool		shutdownInProgress;
+extern Bool		shutdownCancelled;
+extern Bool		shutdownDialogUp;
+
+
 extern Widget		topLevel;
+
+extern Widget		    chooseSessionPopup;
+
+extern Widget		    	chooseSessionForm;
+
+extern Widget			    chooseSessionListWidget;
+
+extern Widget			    chooseSessionOkButton;
+
+extern Widget			    chooseSessionCancelButton;
 
 extern Widget		    mainWindow;
 

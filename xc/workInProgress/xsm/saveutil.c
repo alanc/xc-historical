@@ -1,4 +1,4 @@
-/* $XConsortium: save.c,v 1.9 94/07/07 11:22:40 mor Exp $ */
+/* $XConsortium: saveutil.c,v 1.10 94/07/07 15:16:14 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -27,8 +27,6 @@ in this Software without prior written authorization from the X Consortium.
 
 #include "xsm.h"
 
-extern List	 *PendingList;
-extern ClientRec *ClientList;
 char 		 session_save_file[PATH_MAX];
 Bool	 	 getline();
 
