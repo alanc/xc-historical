@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.65 90/01/11 09:56:58 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.66 90/01/30 12:41:01 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -336,7 +336,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.65 90/01/11 09:56:58 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.66 90/01/30 12:41:01 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -384,7 +384,7 @@ Berklib.c: sysV/Berklib.c					@@\
               RGB = rgb			/* assume BINDIR in path */
             FONTC = bdftosnf		/* assume BINDIR in path */
         MKFONTDIR = mkfontdir		/* assume BINDIR in path */
-        MKDIRHIER = BourneShell $(BINDIR)/mkdirhier.sh
+        MKDIRHIER = BourneShell $(BINDIR)/mkdirhier
 #else
             IMAKE = $(IMAKESRC)/imake
            DEPEND = DependCmd
