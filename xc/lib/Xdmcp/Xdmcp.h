@@ -13,6 +13,8 @@
  *
  */
 
+#ifndef _XDMCP_H_
+#define _XDMCP_H_
 #define XDM_PROTOCOL_VERSION	1
 #define XDM_UDP_PORT		177
 #define XDM_MAX_MSGLEN		8192
@@ -116,3 +118,4 @@ extern long *Xalloc (), *Xrealloc ();
 extern void Xfree();
 #endif
 #endif
+#endif /* _XDMCP_H_ */
