@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.126 89/12/14 11:40:46 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.127 89/12/14 14:52:16 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -146,15 +146,16 @@ typedef int		XtCacheType;
 #ifdef CRAY
 typedef long		Boolean;
 typedef char*		XtArgVal;
+typedef long		XtEnum;
 #else
 typedef char		Boolean;
 typedef long		XtArgVal;
+typedef unsigned char	XtEnum;
 #endif
 
 typedef unsigned int	Cardinal;
 typedef unsigned short	Dimension;  /* Size in pixels			*/
 typedef short		Position;   /* Offset from 0 coordinate		*/
-typedef unsigned char	XtEnum;
 typedef char*		XtPointer;
 
 typedef XtPointer	Opaque;
