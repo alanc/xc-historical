@@ -78,19 +78,24 @@ The ICE Library
 .XE
 .LP
 A client that wishes to utilize ICE must first register the protocols it
-understands with the ICE library.  It then either opens a connection with
-another client, or it waits for connections made by other clients.  A client
-can both initiate connections with other clients and be
+understands with the ICE library.  Each protocol is dynamically assigned
+a major opcode ranging from 1-255 (two clients can use different
+major opcodes for the same protocol).  The next step for the client is to
+either open a connection with another client, or to wait for connections made
+by other clients.  Any ICE authentication requirements are handled internally
+by the ICE library.  A client can both initiate connections with other
+clients and be
 waiting for clients to connect to itself (a nested session manager is an
 example).  Once an ICE connection is established between the two clients, one
 of the clients needs to initiate a \fIProtocol Setup\fP\^ in order to
 "activate" a given protocol.  Once the other client accepts the
-\fIProtocol Setup\fP\^, the
+\fIProtocol Setup\fP\^ (depending on the protocol, this may require
+authentication), the
 two clients are ready to start passing messages specific to that protocol to
 each other.  Multiple protocols may be active on a single ICE connection.
 Clients are responsible for notifying the ICE library when a protocol is no
-longer active on an ICE connection (although ICE does not define how each
-sub-protocol triggers a protocol shutdown).
+longer active on an ICE connection, although ICE does not define how each
+sub-protocol triggers a protocol shutdown.
 .LP
 The ICE library utilizes callbacks to process incoming messages.  Using
 callbacks allows \fIProtocol Setups\fP\^ and authentication to happen
@@ -104,11 +109,13 @@ Intended Audience
 .XE
 .LP
 This document is intended primarily for implementors of protocol libraries
-layered on top of ICE.  In addition, application writers that wish to have
-their code accept ICE connections should look at the section titled
-\fIListening For and Accepting ICE Connections\fP\^.
-Typically, clients that wish to utilize ICE will make calls into individual
-protocol libraries rather than directly make calls into the ICE library.
+layered on top of ICE.  Typically, applications that wish to utilize ICE
+will make calls into individual protocol libraries rather than directly
+make calls into the ICE library.  However, some applications will have to
+make some initial calls into the ICE library in order to accept ICE
+connections (for example, a session manager accepting connections from
+clients).  But in general, protocol libraries should be designed to hide
+the inner details of ICE from applications.
 .LP
 .NH 1
 Header Files and Library Name
@@ -131,10 +138,9 @@ Note on prefixes
 \*(SN Note on prefixes
 .XE
 .LP
-Throughout the library, a distinction is made between a client that
-initiates a \fIProtocol Setup\fP\^ and a client which responds with a
-\fIProtocol Reply\fP\^.  The following prefixes are used by the library
-functions and data structures to distinguish between the two:
+The following name prefixes are used in the library to distinguish between
+a client that initiates a \fIProtocol Setup\fP\^ and a client which
+responds with a \fIProtocol Reply\fP\^:
 .LP
 .PN IcePo
 - \fIIce Protocol Originator\fP\^
@@ -304,15 +310,18 @@ a pointer to the reply message to be filled in (the protocol library
 should cast this
 .PN IcePointer
 to the appropriate reply type).  In most
-cases, the reply will have some fixed-size part, and the sender
-function will have provided a pointer to a structure (e.g.) to hold
+cases, the reply will have some fixed-size part, and the client waiting
+for the reply will have provided a pointer to a structure to hold
 this fixed-size data.  If there is variable-length data, it would be
-expected that the reply function will have to allocate additional
+expected that the
+.PN IcePoProcessMsgProc
+callback will have to allocate additional
 memory and store pointer(s) to that memory in the fixed-size
 structure.  If the entire data is variable length (e.g., a single
-variable-length string), then the sender function would probably
+variable-length string), then the client waiting for the reply would probably
 just pass a pointer to fixed-size space to hold a pointer, and the
-reply function would allocate the storage and store the pointer.
+.PN IcePoProcessMsgProc
+callback would allocate the storage and store the pointer.
 It is the responsibility of the client receiving the reply to
 free up any memory allocated on it's behalf.
 .LP
@@ -409,25 +418,27 @@ the \fIProtocol Setup\fP\^ and needs to respond to an
 .sM
 typedef IcePoAuthStatus (*IcePoAuthProc)();
 .FD 0
-IcePoAuthStatus PoAuthProc\^(\^\fIauth_state_ptr\fP, \fIclean_up\fP\^, \fIswap\fP\^,
+IcePoAuthStatus PoAuthProc\^(\^\fIauth_state_ptr\fP, \fIconnection_string\fP\^, \fIclean_up\fP\^, \fIswap\fP\^,
 .br
                     \fIauth_datalen\fP\^, \fIauth_data\fP\^, \fIreply_datalen_ret\fP\^, \fIreply_data_ret\fP\^, \fIerror_string_ret\fP\^)
 .br
-     IcePointer *\fIauth_state_ptr\fP\^;
+    IcePointer *\fIauth_state_ptr\fP\^;
 .br
-     Bool \fIclean_up\fP\^;
+    char *\fIconnection_string\fP\^;
 .br
-     Bool \fIswap\fP\^;
+    Bool \fIclean_up\fP\^;
 .br
-     int \fIauth_datalen\fP\^;
+    Bool \fIswap\fP\^;
 .br
-     IcePointer \fIauth_data\fP\^;
+    int \fIauth_datalen\fP\^;
 .br
-     int *\fIreply_datalen_ret\fP\^;
+    IcePointer \fIauth_data\fP\^;
 .br
-     IcePointer *\fIreply_data_ret\fP\^;
+    int *\fIreply_datalen_ret\fP\^;
 .br
-     char **\fIerror_string_ret\fP\^;
+    IcePointer *\fIreply_data_ret\fP\^;
+.br
+    char **\fIerror_string_ret\fP\^;
 .FN
 .IP \fIauth_state_ptr\fP 1.1i
 A pointer to state maintained by the
@@ -436,6 +447,8 @@ function is invoked, *\fIauth_state_ptr\fP\^ is
 .PN NULL ,
 and the function should initialize it's state and set
 this pointer.
+.IP \fIconnection_string\fP\^
+The network ID of the client accepting the ICE connection.
 .IP \fIclean_up\fP 1.1i
 If
 .PN True ,
@@ -506,11 +519,13 @@ is the callback invoked for the client that received a
 .sM
 typedef IcePaAuthStatus (*IcePaAuthProc) ();
 .FD 0
-IcePaAuthStatus PaAuthProc\^(\^\fIauth_state_ptr\fP, \fIswap\fP\^,
+IcePaAuthStatus PaAuthProc\^(\^\fIauth_state_ptr\fP, \fIconnection_string\fP\^, \fIswap\fP\^,
 .br
                     \fIreply_datalen\fP\^, \fIreply_data\fP\^, \fIauth_datalen_ret\fP\^, \fIauth_data_ret\fP\^, \fIerror_string_ret\fP\^)
 .br
     IcePointer *\fIauth_state_ptr\fP\^;
+.br
+    char *\fIconnection_string\fP\^;
 .br
     Bool \fIswap\fP\^;
 .br
@@ -527,12 +542,15 @@ IcePaAuthStatus PaAuthProc\^(\^\fIauth_state_ptr\fP, \fIswap\fP\^,
 .IP \fIauth_state_ptr\fP 1.1i
 A pointer to state maintained by the
 authentication procedure.  The first time this
-function is invoked, *\fIauth_state_ptr\fP\^ is
+function is invoked, \fIreply_datalen\fP is zero,
+*\fIauth_state_ptr\fP\^ is
 .PN NULL ,
 and the function should initialize it's state and set
 this pointer.  When authentication
 is accepted or rejected, the function should clean up
 the state it was maintaining.
+.IP \fIconnection_string\fP\^
+The network ID of the client accepting the ICE connection.
 .IP \fIswap\fP 1.1i
 If
 .PN True ,
@@ -770,9 +788,11 @@ function.
 .LP
 .sM
 .FD 0
-IceConn IceOpenConnection\^(\^\fInetwork_ids_list\fP, \fIerror_length\fP\^, \fIerror_string_ret\fP\^)
+IceConn IceOpenConnection\^(\^\fInetwork_ids_list\fP, \fImust_authenticate\fP\^, \fIerror_length\fP\^, \fIerror_string_ret\fP\^)
 .br
      char *\fInetwork_ids_list\fP\^;
+.br
+     Bool \fImust_authenticate\fP\^;
 .br
      int  \fIerror_length\fP\^;
 .br
@@ -780,6 +800,10 @@ IceConn IceOpenConnection\^(\^\fInetwork_ids_list\fP, \fIerror_length\fP\^, \fIe
 .FN
 .IP \fInetwork_ids_list\fP 1i
 Specifies the network ID(s) of the other client.
+.IP \fImust_authenticate\fP 1i
+If
+.PN True ,
+the other client may not bypass authentication.
 .IP \fIerror_length\fP 1i
 Length of the \fIerror_string_ret\fP\^ argument passed in.
 .IP \fIerror_string_ret\fP 1i
@@ -1203,7 +1227,7 @@ function.
 .LP
 .sM
 .FD 0
-IceProtocolSetupStatus IceProtocolSetup\^(\^\fIice_conn\fP, \fImy_opcode\fP\^, \fIauth_count\fP\^, \fIauth_indices\fP\^,
+IceProtocolSetupStatus IceProtocolSetup\^(\^\fIice_conn\fP, \fImy_opcode\fP\^, \fIauth_count\fP\^, \fIauth_indices\fP\^, \fImust_authenticate\fP\^,
 .br
                     \fImajor_version_ret\fP\^, \fIminor_version_ret\fP\^, \fIvendor_ret\fP\^, \fIrelease_ret\fP\^, \fIerror_length\fP\^, \fIerror_string_ret\fP\^)
 .br
@@ -1214,6 +1238,8 @@ IceProtocolSetupStatus IceProtocolSetup\^(\^\fIice_conn\fP, \fImy_opcode\fP\^, \
     int \fIauth_count\fP\^;
 .br
     int *\fIauth_indices\fP\^;
+.br
+    Bool \fImust_authenticate\fP\^;
 .br
     int *\fImajor_version_ret\fP\^;
 .br
@@ -1240,6 +1266,10 @@ A list of indices into the authentication protocols specified
 in
 .PN IceRegisterForProtocolSetup .
 The indices are zero based.
+.IP \fImust_authenticate\fP 1i
+If
+.PN True ,
+the other client may not bypass authentication.
 .IP \fImajor_version_ret\fP 1.1i
 The major version of the protocol to be used is returned.
 .IP \fIminor_version_ret\fP 1.1i
@@ -1368,15 +1398,18 @@ a pointer to the reply message to be filled in (the protocol library
 should cast this
 .PN IcePointer
 to the appropriate reply type).  In most
-cases, the reply will have some fixed-size part, and the sender
-function will have provided a pointer to a structure (e.g.) to hold
+cases, the reply will have some fixed-size part, and the client waiting
+for the reply will have provided a pointer to a structure to hold
 this fixed-size data.  If there is variable-length data, it would be
-expected that the reply function will have to allocate additional
+expected that the
+.PN IcePoProcessMsgProc
+callback will have to allocate additional
 memory and store pointer(s) to that memory in the fixed-size
 structure.  If the entire data is variable length (e.g., a single
-variable-length string), then the sender function would probably
+variable-length string), then the client waiting for the reply would probably
 just pass a pointer to fixed-size space to hold a pointer, and the
-reply function would allocate the storage and store the pointer.
+.PN IcePoProcessMsgProc
+callback would allocate the storage and store the pointer.
 It is the responsibility of the client receiving the reply to
 free up any memory allocated on it's behalf.
 .LP
@@ -1539,16 +1572,9 @@ char *IceConnectionString\^(\^\fIice_conn\fP\^)
     IceConn \fIice_conn\fP\^;
 .FN
 .eM
-For ICE connections created with
-.PN IceOpenConnection ,
-this function returns the network ID of the client which
+Returns the network ID of the client which
 accepted this connection.  The string should be freed with a call to
 free() when no longer needed.
-.br
-For ICE connections created with
-.PN IceAcceptConnection ,
-this function will return
-.PN NULL .
 .LP
 .sp 0.5
 .sM
