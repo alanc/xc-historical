@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.2 93/11/02 11:12:43 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.3 93/11/16 16:28:30 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -342,11 +342,10 @@ Bool		success;
 
 
 void
-CloseConnectionProc (smsConn, managerData, locale, count, reasonMsgs)
+CloseConnectionProc (smsConn, managerData, count, reasonMsgs)
 
 SmsConn 	smsConn;
 SmPointer  	managerData;
-char 		*locale;
 int		count;
 char 		**reasonMsgs;
 
@@ -358,8 +357,7 @@ char 		**reasonMsgs;
 
 
     printf (
-	"Client Id = %s, received CONNECTION CLOSED [Locale = %s]\n",
-	client->clientId, locale);
+	"Client Id = %s, received CONNECTION CLOSED\n", client->clientId);
 
     for (i = 0; i < count; i++)
 	printf ("   Reason string %d: %s\n", i + 1, reasonMsgs[i]);
@@ -394,7 +392,6 @@ char 		**reasonMsgs;
 
     numClients--;
 
-    free (locale);
     SmFreeReasons (count, reasonMsgs);
 }
 
@@ -975,8 +972,9 @@ XtInputId	*id;
 
 {
     IceConn 	ice_conn;
+    char	*connstr;
 
-    if ((ice_conn = IceAcceptConnection (*source)) == NULL)
+    if ((ice_conn = IceAcceptConnection ((IceListenObj) client_data)) == NULL)
     {
 	printf ("IceAcceptConnection failed\n");
     }
@@ -989,8 +987,11 @@ XtInputId	*id;
 
 	if (IceConnectionStatus (ice_conn) == IceConnectAccepted)
 	{
-	    printf ("ICE Connection opened by client, IceConn fd = %d\n",
+	    printf ("ICE Connection opened by client, IceConn fd = %d, ",
 		IceConnectionNumber (ice_conn));
+	    connstr = IceConnectionString (ice_conn);
+	    printf ("Accept at networkId %s\n", connstr);
+	    free (connstr);
 	    printf ("\n");
 	}
 	else
@@ -1014,12 +1015,14 @@ myIOErrorHandler (ice_conn)
 IceConn 	ice_conn;
 
 {
-    printf ("IO error handler invoked\n");
-
     if (ClientList == NULL)
     {
-	fprintf (stderr, "Internal error; no clients\n");
-	exit (1);
+	/*
+	 * The client must have disconnected before the ICE connection
+	 * became valid.  Example: ICE authentication failed.
+	 */
+
+	;
     }
     else
     {
@@ -1055,23 +1058,41 @@ IceConn 	ice_conn;
 	    IceCloseConnection (ice_conn);
 
 	    numClients--;
-
-
-	    /*
-	     * We can't return.  Must do a long jump.  Make sure any
-	     * popups are uppopped.
-	     */
-
-	    XtPopdown (shutdownPopup);
-	    XtPopdown (savePopup);
-	    XtSetSensitive (shutdownPopup, 1);
-	    XtSetSensitive (savePopup, 1);
-	    XtSetSensitive (mainWindow, 1);
-
-	    longjmp (JumpHere, 1);
 	}
     }
+
+
+    /*
+     * We can't return.  Must do a long jump.  Make sure any
+     * popups are uppopped.
+     */
+
+    XtPopdown (shutdownPopup);
+    XtPopdown (savePopup);
+    XtSetSensitive (shutdownPopup, 1);
+    XtSetSensitive (savePopup, 1);
+    XtSetSensitive (mainWindow, 1);
+
+    longjmp (JumpHere, 1);
 }    
+
+
+/*
+ * Host Based Authentication Callback.  This callback is invoked if
+ * the connecting client can't offer any authentication methods that
+ * we can accept.  We can accept/reject based on the hostname.
+ */
+
+Bool
+HostBasedProc (hostname)
+
+char *hostname;
+
+{
+    printf ("Attempt to connect from: %s\n", hostname);
+    printf ("Stay away damn it!!!\n\n");
+    return (0);
+}
 
 
 
@@ -1491,6 +1512,80 @@ restart_everything()
     if(session_env) free(session_env);
     if(audio_env) free(audio_env);
 }
+
+
+
+Status
+set_auth (count, listenObjs)
+
+int		count;
+IceListenObj	*listenObjs;
+
+{
+    FILE		*fp;
+    char		*filename;
+    IceAuthFileEntry	authFileEntry[2];
+    IceAuthDataEntry	authDataEntry[2];
+    int			i, j;
+
+    filename = IceAuthFileName ();
+
+    if (!(fp = fopen (filename, "wb")))
+	return (0);
+
+    authFileEntry[0].protocol_name = "ICE";
+    authFileEntry[0].protocol_data_length = 0;
+    authFileEntry[0].protocol_data = NULL;
+    authFileEntry[0].auth_name = "ICE-MAGIC-COOKIE-1";
+    authFileEntry[0].auth_data_length = 20;
+    authFileEntry[0].auth_data = "Ralph's Magic Cookie";
+
+    authFileEntry[1].protocol_name = "XSMP";
+    authFileEntry[1].protocol_data_length = 0;
+    authFileEntry[1].protocol_data = NULL;
+    authFileEntry[1].auth_name = "SM-AUTH-TEST-2";
+    authFileEntry[1].auth_data_length = 0;
+    authFileEntry[1].auth_data = NULL;
+
+    authDataEntry[0].protocol_name = authFileEntry[0].protocol_name;
+    authDataEntry[0].auth_name = authFileEntry[0].auth_name;
+    authDataEntry[0].auth_data_length = authFileEntry[0].auth_data_length;
+    authDataEntry[0].auth_data = authFileEntry[0].auth_data;
+
+    authDataEntry[1].protocol_name = authFileEntry[1].protocol_name;
+    authDataEntry[1].auth_name = authFileEntry[1].auth_name;
+    authDataEntry[1].auth_data_length = authFileEntry[1].auth_data_length;
+    authDataEntry[1].auth_data = authFileEntry[1].auth_data;
+
+    for (i = 0; i < count; i++)
+    {
+	char *networkId = IceGetListenNetworkId (listenObjs[i]);
+
+	authFileEntry[0].address = networkId;
+	authFileEntry[1].address = networkId;
+
+	authDataEntry[0].address = networkId;
+	authDataEntry[1].address = networkId;
+
+	for (j = 0; j < 2; j++)
+	    if (!IceWriteAuthFileEntry (fp, &authFileEntry[j]))
+	    {
+		fclose (fp);
+		return (0);
+	    }
+
+	IceSetPaAuthData (2, authDataEntry);
+
+	IceSetHostBasedAuthProc (listenObjs[i], HostBasedProc);
+
+	free (networkId);
+    }
+
+    fclose (fp);
+    return (1);
+}
+
+
 
 /*
  * Main program
@@ -1502,9 +1597,9 @@ int  argc;
 char **argv;
 
 {
+    IceListenObj *listenObjs;
     char 	*networkIds;
     int  	count, i;
-    int  	*descrips;
     char 	errormsg[256];
     char	*p;
     static	char environment_name[] = "SESSION_MANAGER";
@@ -1522,17 +1617,24 @@ char **argv;
      * Init SM lib
      */
 
-    if (!SmsInitialize ("SAMPLE-SM", "1.0", NewClientProc,
-	NULL, 256, errormsg))
+    if (!SmsInitialize ("SAMPLE-SM", "1.0",
+	NewClientProc, NULL,
+	HostBasedProc, 256, errormsg))
     {
 	printf ("%s\n", errormsg);
 	exit (1);
     }
 
-    if (!IceListenForConnections (&count, &descrips,
-	&networkIds, 256, errormsg))
+    if (!IceListenForConnections (&count, &listenObjs,
+	256, errormsg))
     {
 	printf ("%s\n", errormsg);
+	exit (1);
+    }
+
+    if (!set_auth (count, listenObjs))
+    {
+	printf ("Could not set authorization\n");
 	exit (1);
     }
 
@@ -1791,11 +1893,14 @@ char **argv;
     
     for (i = 0; i < count; i++)
     {
-	XtAppAddInput (appContext, descrips[i], (XtPointer) XtInputReadMask,
-	    newConnectionXtProc, NULL);
+	XtAppAddInput (appContext,
+	    IceGetListenDescrip (listenObjs[i]),
+	    (XtPointer) XtInputReadMask,
+	    newConnectionXtProc, (XtPointer) listenObjs[i]);
     }
 
     /* the sizeof includes the \0, so we don't need to count the '=' */
+    networkIds = IceComposeNetworkIdList (count, listenObjs);
     p = malloc((sizeof environment_name) + strlen(networkIds) + 1);
     if(!p) nomem();
     sprintf(p, "%s=%s", environment_name, networkIds);
@@ -1808,7 +1913,6 @@ char **argv;
     printf ("Waiting for connections...\n");
     printf ("\n");
     
-    free ((char *) descrips);
     free (networkIds);
 
     setjmp (JumpHere);
