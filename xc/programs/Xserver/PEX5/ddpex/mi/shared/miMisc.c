@@ -1,4 +1,4 @@
-/* $XConsortium: miMisc.c,v 5.5 92/04/23 15:58:26 hersh Exp $ */
+/* $XConsortium: miMisc.c,v 5.6 92/04/23 17:50:59 hersh Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -401,80 +401,80 @@ miEnumType	miParametricSurfaceCharsET[MI_MAXDRAWABLES][SI_P_SURF_CHAR_NUM] = {
         } }
 
 /* macro to count space needed for et info */
-#define COUNT_ET( num, pet ) 							\
-	count+=4;	/* space for returned num value */			\
-	switch (itemMask)							\
-	{									\
-		case PEXETIndex:	/* return index values only */		\
-			count += (num << 1);					\
-			/* add pad if necessary */				\
-			if (num & 1)						\
-				count+=2;					\
-		break;								\
-										\
-		case PEXETMnemonic:	/* return mnemonics only */		\
-			for (j=0; j<num; j++, pet++)					\
-			{							\
-				/* add length of string */			\
-				count += 2;					\
-				/* then number of chars in string */		\
-				count +=  strlen((pet)->name);			\
-				/* then pads for string (and its length) */	\
-				count += PADDING(strlen((pet)->name) + 2);	\
-			}							\
-		break;								\
-										\
-		case PEXETBoth:		/* return index and mnemonic */		\
-			for (j=0; j<num; j++, pet++)					\
-			{							\
-				/* add index */					\
-				count += 2;					\
-				/* add length of string */			\
-				count += 2;					\
-				/* then number of chars in string */		\
-				count +=  strlen((pet)->name);			\
-				/* then pads for string */			\
-				count += PADDING( strlen((pet)->name) );	\
-			}							\
-		break;								\
-										\
+#define COUNT_ET( num, pet ) 						\
+	count+=4;	/* space for returned num value */		\
+	switch (itemMask)						\
+	{								\
+		case PEXETIndex:	/* return index values only */	\
+			count += (num << 1);				\
+			/* add pad if necessary */			\
+			if (num & 1)					\
+				count+=2;				\
+		break;							\
+									\
+		case PEXETMnemonic:	/* return mnemonics only */	\
+			for (j=0; j<num; j++, pet++)			\
+			{						\
+				/* add length of string */		\
+				count += 2;				\
+				/* then number of chars in string */	\
+				count +=  strlen((pet)->name);		\
+				/* then pads for string (and its length) */\
+				count += PADDING(strlen((pet)->name) + 2);\
+			}						\
+		break;							\
+									\
+		case PEXETBoth:		/* return index and mnemonic */	\
+			for (j=0; j<num; j++, pet++)			\
+			{						\
+				/* add index */				\
+				count += 2;				\
+				/* add length of string */		\
+				count += 2;				\
+				/* then number of chars in string */	\
+				count +=  strlen((pet)->name);		\
+				/* then pads for string */		\
+				count += PADDING( strlen((pet)->name) );\
+			}						\
+		break;							\
+									\
         }			  /* switch (itemMask) */
 
 /* macro to put hard coded et info into buffer */
 #define GET_ET( num, pet ) \
-	/* always increment the list count and return the number of types */	\
-	(*pNumLists)++;								\
-	PUT_BUF32(pbuf, (num));							\
-	/* now put in the index and/or mnemonic */				\
-	switch (itemMask)							\
-	{									\
-		case PEXETIndex:	/* return index values only */		\
-			for (j=0; j<(num); j++, pet++)					\
-				PUT_BUF16(pbuf, (pet)->index);			\
-			/* add pad if necessary */				\
-			if ((num) & 1)						\
-				PUT_BUF16(pbuf, 0);				\
-		break;								\
-										\
-		case PEXETMnemonic:	/* return mnemonics only */		\
-			for (j=0; j<(num); j++, pet++)					\
-			{							\
-				size = strlen( (pet)->name );			\
-				/* PUT_STR pads end of string */		\
-				PUT_STR(pbuf, (pet)->name, size, 0);		\
-			}							\
-		break;								\
-										\
-		case PEXETBoth:		/* return index and mnemonic */		\
-			for (j=0; j<(num); j++, pet++)					\
-			{							\
-				size = strlen( (pet)->name );			\
-				PUT_BUF16(pbuf, (pet)->index);			\
-				/* PUT_STR pads end of string */		\
-				PUT_STR(pbuf, (pet)->name, size, 2);		\
-			}							\
-		break;								\
-										\
+	/* always increment the list count and return the number of types */\
+	(*pNumLists)++;							\
+	PUT_BUF32(pbuf, (num));						\
+	/* now put in the index and/or mnemonic */			\
+	switch (itemMask)						\
+	{								\
+		case PEXETIndex:	/* return index values only */	\
+			for (j=0; j<(num); j++, pet++)			\
+				PUT_BUF16(pbuf, (pet)->index);		\
+			/* add pad if necessary */			\
+			if ((num) & 1)					\
+				PUT_BUF16(pbuf, 0);			\
+		break;							\
+									\
+		case PEXETMnemonic:	/* return mnemonics only */	\
+			for (j=0; j<(num); j++, pet++)			\
+			{						\
+				size = strlen( (pet)->name );		\
+				/* PUT_STR pads end of string */	\
+				PUT_STR(pbuf, (pet)->name, size, 0);	\
+			}						\
+		break;							\
+									\
+		case PEXETBoth:		/* return index and mnemonic */	\
+			for (j=0; j<(num); j++, pet++)			\
+			{						\
+				size = strlen( (pet)->name );		\
+				PUT_BUF16(pbuf, (pet)->index);		\
+				/* PUT_STR pads end of string */	\
+				PUT_STR(pbuf, (pet)->name, size, 2);	\
+			}						\
+		break;							\
+									\
         }			  /* switch (itemMask) */
 
 #define	DO_ET(num, pet)			\
