@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.45 89/07/28 12:19:03 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.46 89/08/02 21:53:52 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -395,6 +395,9 @@
 #define StandardCppDefines     /**/
 #endif
 #endif
+#ifndef StandardIncludes
+#define StandardIncludes /**/			/* for platform-specifics */
+#endif
 #ifndef StandardDefines
 #if SystemV
 #define StandardDefines         -DSYSV
@@ -444,6 +447,7 @@
            RANLIB = RanlibCmd
   RANLIBINSTFLAGS = RanlibInstFlags
                RM = RmCmd
+     STD_INCLUDES = StandardIncludes
   STD_CPP_DEFINES = StandardCppDefines
       STD_DEFINES = StandardDefines
  EXTRA_LOAD_FLAGS = ExtraLoadFlags
@@ -470,7 +474,7 @@
       CDEBUGFLAGS = DefaultCDebugFlags
         CCOPTIONS = DefaultCCOptions	/* to distinguish from param flags */
       COMPATFLAGS = CompatibilityFlags
-       ALLDEFINES = $(INCLUDES) $(STD_DEFINES) $(DEFINES) $(COMPATFLAGS)
+       ALLDEFINES = $(STD_INCLUDES) $(INCLUDES) $(STD_DEFINES) $(DEFINES) $(COMPATFLAGS)
            CFLAGS = $(CDEBUGFLAGS) $(CCOPTIONS) $(ALLDEFINES)
         LINTFLAGS = $(LINTOPTS) -DLINT $(ALLDEFINES)
           LDFLAGS = $(CDEBUGFLAGS) $(CCOPTIONS) $(SYS_LIBRARIES) $(EXTRA_LIBRARIES)
