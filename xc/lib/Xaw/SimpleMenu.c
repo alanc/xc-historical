@@ -1,4 +1,4 @@
-/* $XConsortium: SimpleMenu.c,v 1.37 91/02/17 16:04:18 converse Exp $ */
+/* $XConsortium: SimpleMenu.c,v 1.38 91/04/08 19:46:33 converse Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -1058,21 +1058,21 @@ Position x, y;
 	int width = w->core.width + 2 * w->core.border_width;
 	int height = w->core.height + 2 * w->core.border_width;
 	
-	if (x < 0) 
-	    x = 0;
-	else {
+	if (x >= 0) {
 	    int scr_width = WidthOfScreen(XtScreen(w));
 	    if (x + width > scr_width)
 		x = scr_width - width;
 	}
+	if (x < 0) 
+	    x = 0;
 	
-	if (y < 0)
-	    y = 0;
-	else {
+	if (y >= 0) {
 	    int scr_height = HeightOfScreen(XtScreen(w));
 	    if (y + height > scr_height)
 		y = scr_height - height;
 	}
+	if (y < 0)
+	    y = 0;
     }
     
     XtSetArg(arglist[num_args], XtNx, x); num_args++;

@@ -1,4 +1,4 @@
-/* $XConsortium: MenuButton.c,v 1.16 91/01/06 16:08:37 rws Exp $ */
+/* $XConsortium: MenuButton.c,v 1.17 91/02/17 15:25:29 converse Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -187,21 +187,21 @@ Cardinal * num_params;
   menu_x = button_x;
   menu_y = button_y + button_height;
 
-  if (menu_x < 0) 
-    menu_x = 0;
-  else {
+  if (menu_x >= 0) {
     int scr_width = WidthOfScreen(XtScreen(menu));
     if (menu_x + menu_width > scr_width)
       menu_x = scr_width - menu_width;
   }
+  if (menu_x < 0) 
+    menu_x = 0;
 
-  if (menu_y < 0)
-    menu_y = 0;
-  else {
+  if (menu_y >= 0) {
     int scr_height = HeightOfScreen(XtScreen(menu));
     if (menu_y + menu_height > scr_height)
       menu_y = scr_height - menu_height;
   }
+  if (menu_y < 0)
+    menu_y = 0;
 
   num_args = 0;
   XtSetArg(arglist[num_args], XtNx, menu_x); num_args++;
