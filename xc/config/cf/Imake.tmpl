@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.98 91/03/12 17:24:53 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.96 91/03/12 18:31:43 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate .cf
 XCOMM configuration files.  Site-wide parameters may be set in the file
@@ -298,7 +298,7 @@ XCOMM site-specific configuration parameters - edit site.def to change
 #define HasLargeTmp		NO	/* be paranoid */
 #endif
 #ifndef HasSockets
-#if SystemV | SystemV4
+#if SystemV || SystemV4
 #define HasSockets		NO	/* do not assume it has them */
 #else
 #define HasSockets		YES	/* bsd does have them */
@@ -483,14 +483,14 @@ XCOMM site-specific configuration parameters - edit site.def to change
 #define LintCmd lint
 #endif
 #ifndef LintLibFlag
-#if SystemV
+#if SystemV || SystemV4
 #define LintLibFlag -o
 #else
 #define LintLibFlag -C
 #endif
 #endif
 #ifndef LintOpts
-#if SystemV
+#if SystemV || SystemV4
 #define LintOpts -ax
 #else
 #define LintOpts -axz
