@@ -1,4 +1,4 @@
-/* $XConsortium: xhost.c,v 11.53 93/09/28 01:22:25 gildea Exp $ */
+/* $XConsortium: xhost.c,v 11.54 93/09/29 19:36:20 gildea Exp $ */
  
 /*
 
@@ -146,125 +146,125 @@ static int XFamily(af)
 Display *dpy;
 
 main(argc, argv)
-	int argc;
-	char **argv;
+    int argc;
+    char **argv;
 {
-	register char *arg;
-	int i, nhosts;
-	char *hostname;
-	int nfailed = 0;
-	XHostAddress *list;
-	Bool enabled = False;
+    register char *arg;
+    int i, nhosts;
+    char *hostname;
+    int nfailed = 0;
+    XHostAddress *list;
+    Bool enabled = False;
 #ifdef DNETCONN
-	char *dnet_htoa();
-	struct nodeent *np;
-	struct dn_naddr *nlist, dnaddr, *dnaddrp, *dnet_addr();
-	char *cp;
+    char *dnet_htoa();
+    struct nodeent *np;
+    struct dn_naddr *nlist, dnaddr, *dnaddrp, *dnet_addr();
+    char *cp;
 #endif
  
-	ProgramName = argv[0];
+    ProgramName = argv[0];
 
-	if ((dpy = XOpenDisplay(NULL)) == NULL) {
-	    fprintf(stderr, "%s:  unable to open display \"%s\"\n",
-		    ProgramName, XDisplayName (NULL));
-	    exit(1);
-	}
+    if ((dpy = XOpenDisplay(NULL)) == NULL) {
+	fprintf(stderr, "%s:  unable to open display \"%s\"\n",
+		ProgramName, XDisplayName (NULL));
+	exit(1);
+    }
 
-	XSetErrorHandler(local_xerror);
+    XSetErrorHandler(local_xerror);
  
  
-	if (argc == 1) {
+    if (argc == 1) {
 #ifdef DNETCONN
-		setnodeent(1); /* keep the database accessed */
+	setnodeent(1);		/* keep the database accessed */
 #endif
-		sethostent(1); /* don't close the data base each time */
-		list = XListHosts(dpy, &nhosts, &enabled);
-		if (enabled)
-		    printf ("access control enabled, only authorized clients can connect\n");
-		else
-		    printf ("access control disabled, clients can connect from any host\n");
+	sethostent(1);		/* don't close the data base each time */
+	list = XListHosts(dpy, &nhosts, &enabled);
+	if (enabled)
+	    printf ("access control enabled, only authorized clients can connect\n");
+	else
+	    printf ("access control disabled, clients can connect from any host\n");
 
-		if (nhosts != 0) {
-		    for (i = 0; i < nhosts; i++ )  {
-		      hostname = get_hostname(&list[i]);
-		      if (hostname) {
-			  switch (list[i].family) {
-			  case FamilyInternet:
-                              printf("INET:");
-			      break;
-                          case FamilyDECnet:
-                              printf("DNET:");
-                              break;
-                          case FamilyNetname:
-                              printf("NIS:");
-                              break;
-                          case FamilyKrb5Principal:
-			      printf("KRB:");
-                              break;
-			  case FamilyLocalHost:
-			      printf("LOCAL:");
-			      break;
-			  }
-			  printf ("%s", hostname);
-		      } else {
+	if (nhosts != 0) {
+	    for (i = 0; i < nhosts; i++ )  {
+		hostname = get_hostname(&list[i]);
+		if (hostname) {
+		    switch (list[i].family) {
+		    case FamilyInternet:
+			printf("INET:");
+			break;
+		    case FamilyDECnet:
+			printf("DNET:");
+			break;
+		    case FamilyNetname:
+			printf("NIS:");
+			break;
+		    case FamilyKrb5Principal:
+			printf("KRB:");
+			break;
+		    case FamilyLocalHost:
+			printf("LOCAL:");
+			break;
+		    }
+		    printf ("%s", hostname);
+		} else {
 #ifdef STREAMSCONN
-			  print_streams_hostnames (list, nhosts);
+		    print_streams_hostnames (list, nhosts);
 #else
-			  printf ("<unknown address in family %d>",
-				  list[i].family);
+		    printf ("<unknown address in family %d>",
+			    list[i].family);
 #endif
-		      }
-		      if (nameserver_timedout) {
-			  printf("\t(no nameserver response within %d seconds)\n",
-				 NAMESERVER_TIMEOUT);
-			  nameserver_timedout = 0;
-		      } else
-			  printf("\n");
-		    }
-		    free(list);
-		    endhostent();
 		}
-		exit(0);
+		if (nameserver_timedout) {
+		    printf("\t(no nameserver response within %d seconds)\n",
+			   NAMESERVER_TIMEOUT);
+		    nameserver_timedout = 0;
+		} else
+		    printf("\n");
+	    }
+	    free(list);
+	    endhostent();
 	}
+	exit(0);
+    }
  
-	if (argc == 2 && !strcmp(argv[1], "-help")) {
-	    fprintf(stderr, "usage: %s [[+-]hostname ...]\n", argv[0]);
-	    exit(1);
-	}
+    if (argc == 2 && !strcmp(argv[1], "-help")) {
+	fprintf(stderr, "usage: %s [[+-]hostname ...]\n", argv[0]);
+	exit(1);
+    }
 
-	for (i = 1; i < argc; i++) {
-	    arg = argv[i];
-	    if (*arg == '-') {
+    for (i = 1; i < argc; i++) {
+	arg = argv[i];
+	if (*arg == '-') {
 	    
-	        if (!argv[i][1] && ((i+1) == argc)) {
-		    printf ("access control enabled, only authorized clients can connect\n");
-		    XEnableAccessControl(dpy);
-		} else {
-		    arg = argv[i][1]? &argv[i][1] : argv[++i];
-		    if (!change_host (dpy, arg, False)) {
-			fprintf (stderr, "%s:  bad hostname \"%s\"\n",
-				 ProgramName, arg);
-			nfailed++;
-		    }
-		}
+	    if (!argv[i][1] && ((i+1) == argc)) {
+		printf ("access control enabled, only authorized clients can connect\n");
+		XEnableAccessControl(dpy);
 	    } else {
-	        if (*arg == '+' && !argv[i][1] && ((i+1) == argc)) {
-		    printf ("access control disabled, clients can connect from any host\n");
-		    XDisableAccessControl(dpy);
-		} else {
-		    if (*arg == '+') {
-		      arg = argv[i][1]? &argv[i][1] : argv[++i];
-		    }
-		    if (!change_host (dpy, arg, True)) {
-			fprintf (stderr, "%s:  bad hostname \"%s\"\n",
-				 ProgramName, arg);
-			nfailed++;
-		    }
+		arg = argv[i][1]? &argv[i][1] : argv[++i];
+		if (!change_host (dpy, arg, False)) {
+		    fprintf (stderr, "%s:  bad hostname \"%s\"\n",
+			     ProgramName, arg);
+		    nfailed++;
+		}
+	    }
+	} else {
+	    if (*arg == '+' && !argv[i][1] && ((i+1) == argc)) {
+		printf ("access control disabled, clients can connect from any host\n");
+		XDisableAccessControl(dpy);
+	    } else {
+		if (*arg == '+') {
+		    arg = argv[i][1]? &argv[i][1] : argv[++i];
+		}
+		if (!change_host (dpy, arg, True)) {
+		    fprintf (stderr, "%s:  bad hostname \"%s\"\n",
+			     ProgramName, arg);
+		    nfailed++;
 		}
 	    }
 	}
-	XCloseDisplay (dpy);  /* does an XSync first */
-	exit(nfailed);
+    }
+    XCloseDisplay (dpy);	/* does an XSync first */
+    exit(nfailed);
 }
 
  
@@ -282,145 +282,145 @@ int change_host (dpy, name, add)
     char *name;
     Bool add;
 {
-  struct hostent *hp;
-  XHostAddress ha;
-  char *lname;
-  int namelen, i, family = FamilyWild;
+    struct hostent *hp;
+    XHostAddress ha;
+    char *lname;
+    int namelen, i, family = FamilyWild;
 #ifdef K5AUTH
-  krb5_principal princ;
-  krb5_data kbuf;
+    krb5_principal princ;
+    krb5_data kbuf;
 #endif
 #ifdef NEEDSOCKETS
-  static struct in_addr addr;	/* so we can point at it */
+    static struct in_addr addr;	/* so we can point at it */
 #endif
-  char *cp;
+    char *cp;
 #ifdef DNETCONN
-  struct dn_naddr *dnaddrp;
-  struct nodeent *np;
-  static struct dn_naddr dnaddr;
-#endif /* DNETCONN */
-  static char *add_msg = "being added to access control list";
-  static char *remove_msg = "being removed from access control list";
+    struct dn_naddr *dnaddrp;
+    struct nodeent *np;
+    static struct dn_naddr dnaddr;
+#endif				/* DNETCONN */
+    static char *add_msg = "being added to access control list";
+    static char *remove_msg = "being removed from access control list";
 
-  namelen = strlen(name);
-  if ((lname = (char *)malloc(namelen)) == NULL) {
-    fprintf (stderr, "%s: malloc bombed in change_host\n", ProgramName);
-    exit (1);
-  }
-  for (i = 0; i < namelen; i++) {
-    lname[i] = tolower(name[i]);
-  }
-  if (!strncmp("inet:", lname, 5)) {
+    namelen = strlen(name);
+    if ((lname = (char *)malloc(namelen)) == NULL) {
+	fprintf (stderr, "%s: malloc bombed in change_host\n", ProgramName);
+	exit (1);
+    }
+    for (i = 0; i < namelen; i++) {
+	lname[i] = tolower(name[i]);
+    }
+    if (!strncmp("inet:", lname, 5)) {
 #ifdef TCPCONN
-    family = FamilyInternet;
-    name += 5;
+	family = FamilyInternet;
+	name += 5;
 #else
-    fprintf (stderr, "%s: not compiled for TCP/IP\n", ProgramName);
-    return 0;
+	fprintf (stderr, "%s: not compiled for TCP/IP\n", ProgramName);
+	return 0;
 #endif
-  }
-  if (!strncmp("dnet:", lname, 5)) {
+    }
+    if (!strncmp("dnet:", lname, 5)) {
 #ifdef DNETCONN
-    family = FamilyDECnet;
-    name += 5;
+	family = FamilyDECnet;
+	name += 5;
 #else
-    fprintf (stderr, "%s: not compiled for DECnet\n", ProgramName);
-    return 0;
+	fprintf (stderr, "%s: not compiled for DECnet\n", ProgramName);
+	return 0;
 #endif
-  }
-  if (!strncmp("nis:", lname, 4)) {
+    }
+    if (!strncmp("nis:", lname, 4)) {
 #ifdef SECURE_RPC
-    family = FamilyNetname;
-    name += 4;
+	family = FamilyNetname;
+	name += 4;
 #else
-    fprintf (stderr, "%s: not compiled for Secure RPC\n", ProgramName);
-    return 0;
+	fprintf (stderr, "%s: not compiled for Secure RPC\n", ProgramName);
+	return 0;
 #endif
-  }
-  if (!strncmp("krb:", lname, 4)) {
+    }
+    if (!strncmp("krb:", lname, 4)) {
 #ifdef K5AUTH
-    family = FamilyKrb5Principal;
-    name +=4;
+	family = FamilyKrb5Principal;
+	name +=4;
 #else
-    fprintf (stderr, "%s: not compiled for Kerberos V5\n", ProgramName);
-    return 0;
+	fprintf (stderr, "%s: not compiled for Kerberos V5\n", ProgramName);
+	return 0;
 #endif
-  }
-  if (!strncmp("local:", lname, 6)) {
-    family = FamilyLocalHost;
-  }
-  if (family == FamilyWild && (cp = strchr(lname, ':'))) {
-    *cp = '\0';
-    fprintf (stderr, "%s: unknown address family \"%s\"\n",
-	     ProgramName, lname);
-    return 0;
-  }
-  free(lname);
-
-#ifdef DNETCONN
-  if (family == FamilyDECnet ||
-      (cp = strchr(name, ':')) && (*(cp + 1) == ':') &&
-      !(*cp = '\0')) {
-    ha.family = FamilyDECnet;
-    if (dnaddrp = dnet_addr(name)) {
-      dnaddr = *dnaddrp;
-    } else {
-      if ((np = getnodebyname (name)) == NULL) {
-	  fprintf (stderr, "%s:  unable to get node name for \"%s::\"\n",
-		   ProgramName, name);
-	  return 0;
-      }
-      dnaddr.a_len = np->n_length;
-      memmove( dnaddr.a_addr, np->n_addr, np->n_length);
     }
-    ha.length = sizeof(struct dn_naddr);
-    ha.address = (char *)&dnaddr;
-    if (add) {
-	XAddHost (dpy, &ha);
-	printf ("%s:: %s\n", name, add_msg);
-    } else {
-	XRemoveHost (dpy, &ha);
-	printf ("%s:: %s\n", name, remove_msg);
+    if (!strncmp("local:", lname, 6)) {
+	family = FamilyLocalHost;
     }
-    return 1;
-  }
-#endif /* DNETCONN */
-#ifdef K5AUTH
-  if (family == FamilyKrb5Principal) {
-    krb5_error_code retval;
-
-    retval = krb5_parse_name(name, &princ);
-    if (retval) {
-	krb5_init_ets();	/* init krb errs for error_message() */
-	fprintf(stderr, "%s: krb5_parse_name failed: %s\n",
-		ProgramName, error_message(retval));
+    if (family == FamilyWild && (cp = strchr(lname, ':'))) {
+	*cp = '\0';
+	fprintf (stderr, "%s: unknown address family \"%s\"\n",
+		 ProgramName, lname);
 	return 0;
     }
-    XauKrb5Encode(princ, &kbuf);
-    ha.length = kbuf.length;
-    ha.address = kbuf.data;
-    ha.family = family;
-    if (add)
-      XAddHost(dpy, &ha);
-    else
-      XRemoveHost(dpy, &ha);
-    krb5_free_principal(princ);
-    free(kbuf.data);
-    printf( "%s %s\n", name, add ? add_msg : remove_msg);
-    return 1;
-  }
+    free(lname);
+
+#ifdef DNETCONN
+    if (family == FamilyDECnet ||
+	(cp = strchr(name, ':')) && (*(cp + 1) == ':') &&
+	!(*cp = '\0')) {
+	ha.family = FamilyDECnet;
+	if (dnaddrp = dnet_addr(name)) {
+	    dnaddr = *dnaddrp;
+	} else {
+	    if ((np = getnodebyname (name)) == NULL) {
+		fprintf (stderr, "%s:  unable to get node name for \"%s::\"\n",
+			 ProgramName, name);
+		return 0;
+	    }
+	    dnaddr.a_len = np->n_length;
+	    memmove( dnaddr.a_addr, np->n_addr, np->n_length);
+	}
+	ha.length = sizeof(struct dn_naddr);
+	ha.address = (char *)&dnaddr;
+	if (add) {
+	    XAddHost (dpy, &ha);
+	    printf ("%s:: %s\n", name, add_msg);
+	} else {
+	    XRemoveHost (dpy, &ha);
+	    printf ("%s:: %s\n", name, remove_msg);
+	}
+	return 1;
+    }
+#endif				/* DNETCONN */
+#ifdef K5AUTH
+    if (family == FamilyKrb5Principal) {
+	krb5_error_code retval;
+
+	retval = krb5_parse_name(name, &princ);
+	if (retval) {
+	    krb5_init_ets();	/* init krb errs for error_message() */
+	    fprintf(stderr, "%s: krb5_parse_name failed: %s\n",
+		    ProgramName, error_message(retval));
+	    return 0;
+	}
+	XauKrb5Encode(princ, &kbuf);
+	ha.length = kbuf.length;
+	ha.address = kbuf.data;
+	ha.family = family;
+	if (add)
+	    XAddHost(dpy, &ha);
+	else
+	    XRemoveHost(dpy, &ha);
+	krb5_free_principal(princ);
+	free(kbuf.data);
+	printf( "%s %s\n", name, add ? add_msg : remove_msg);
+	return 1;
+    }
 #endif
-  if (family == FamilyLocalHost) {
-    ha.length = 0;
-    ha.address = "";
-    ha.family = family;
-    if (add)
-      XAddHost(dpy, &ha);
-    else
-      XRemoveHost(dpy, &ha);
-    printf( "non-network local connections %s\n", add ? add_msg : remove_msg);
-    return 1;
-  }
+    if (family == FamilyLocalHost) {
+	ha.length = 0;
+	ha.address = "";
+	ha.family = family;
+	if (add)
+	    XAddHost(dpy, &ha);
+	else
+	    XRemoveHost(dpy, &ha);
+	printf( "non-network local connections %s\n", add ? add_msg : remove_msg);
+	return 1;
+    }
     /*
      * If it has an '@', it's a netname
      */
@@ -462,44 +462,44 @@ int change_host (dpy, name, add)
         return 1;
     }
 #ifdef STREAMSCONN
-  if (get_streams_address (name, &ha)) {
-    if (add) {
-	XAddHost (dpy, &ha);
-	printf ("%s %s\n", name, add_msg);
-    } else {
-	XRemoveHost (dpy, &ha);
-	printf ("%s %s\n", name, remove_msg);
+    if (get_streams_address (name, &ha)) {
+	if (add) {
+	    XAddHost (dpy, &ha);
+	    printf ("%s %s\n", name, add_msg);
+	} else {
+	    XRemoveHost (dpy, &ha);
+	    printf ("%s %s\n", name, remove_msg);
+	}
+	return 1;
     }
-    return 1;
-  }
 #endif
 #ifdef NEEDSOCKETS
-  /*
-   * First see if inet_addr() can grok the name; if so, then use it.
-   */
-  if ((addr.s_addr = inet_addr(name)) != -1) {
-    ha.family = FamilyInternet;
-    ha.length = 4;		/* but for Cray would be sizeof(addr.s_addr) */
-    ha.address = (char *)&addr;	/* but for Cray would be &addr.s_addr */
-    if (add) {
-	XAddHost (dpy, &ha);
-	printf ("%s %s\n", name, add_msg);
+    /*
+     * First see if inet_addr() can grok the name; if so, then use it.
+     */
+    if ((addr.s_addr = inet_addr(name)) != -1) {
+	ha.family = FamilyInternet;
+	ha.length = 4;		/* but for Cray would be sizeof(addr.s_addr) */
+	ha.address = (char *)&addr; /* but for Cray would be &addr.s_addr */
+	if (add) {
+	    XAddHost (dpy, &ha);
+	    printf ("%s %s\n", name, add_msg);
+	} else {
+	    XRemoveHost (dpy, &ha);
+	    printf ("%s %s\n", name, remove_msg);
+	}
+	return 1;
+    } 
+    /*
+     * Is it in the namespace?
+     */
+    else if (((hp = gethostbyname(name)) == (struct hostent *)NULL)
+	     || hp->h_addrtype != AF_INET) {
+	return 0;
     } else {
-	XRemoveHost (dpy, &ha);
-	printf ("%s %s\n", name, remove_msg);
-    }
-    return 1;
-  } 
-  /*
-   * Is it in the namespace?
-   */
-  else if (((hp = gethostbyname(name)) == (struct hostent *)NULL)
-       || hp->h_addrtype != AF_INET) {
-    return 0;
-  } else {
-    ha.family = XFamily(hp->h_addrtype);
-    ha.length = hp->h_length;
-#ifdef h_addr				/* new 4.3bsd version of gethostent */
+	ha.family = XFamily(hp->h_addrtype);
+	ha.length = hp->h_length;
+#ifdef h_addr			/* new 4.3bsd version of gethostent */
     {
 	char **list;
 
@@ -514,18 +514,18 @@ int change_host (dpy, name, add)
 	}
     }
 #else
-    ha.address = hp->h_addr;
-    if (add) {
-	XAddHost (dpy, &ha);
-    } else {
-	XRemoveHost (dpy, &ha);
-    }
+	ha.address = hp->h_addr;
+	if (add) {
+	    XAddHost (dpy, &ha);
+	} else {
+	    XRemoveHost (dpy, &ha);
+	}
 #endif
-    printf ("%s %s\n", name, add ? add_msg : remove_msg);
-    return 1;
-  }
-#endif /* NEEDSOCKETS */
-  return 0;
+	printf ("%s %s\n", name, add ? add_msg : remove_msg);
+	return 1;
+    }
+#endif				/* NEEDSOCKETS */
+    return 0;
 }
 
 
@@ -541,103 +541,103 @@ static char *get_hostname (ha)
     XHostAddress *ha;
 {
 #ifdef TCPCONN
-  struct hostent *hp = NULL;
-  char *inet_ntoa();
+    struct hostent *hp = NULL;
+    char *inet_ntoa();
 #endif
 #ifdef DNETCONN
-  struct nodeent *np;
-  static char nodeaddr[5 + 2 * DN_MAXADDL];
-#endif /* DNETCONN */
+    struct nodeent *np;
+    static char nodeaddr[5 + 2 * DN_MAXADDL];
+#endif				/* DNETCONN */
 #ifdef K5AUTH
-  krb5_principal princ;
-  krb5_data kbuf;
-  char *kname;
-  static char kname_out[255];
+    krb5_principal princ;
+    krb5_data kbuf;
+    char *kname;
+    static char kname_out[255];
 #endif
 
 #ifdef TCPCONN
-  if (ha->family == FamilyInternet) {
-    /* gethostbyaddr can take a LONG time if the host does not exist.
-       Assume that if it does not respond in NAMESERVER_TIMEOUT seconds
-       that something is wrong and do not make the user wait.
-       gethostbyaddr will continue after a signal, so we have to
-       jump out of it. 
-       */
-    signal(SIGALRM, nameserver_lost);
-    alarm(4);
-    if (setjmp(env) == 0) {
-      hp = gethostbyaddr (ha->address, ha->length, AF_INET);
-    }
-    alarm(0);
-    if (hp)
-      return (hp->h_name);
-    else return (inet_ntoa(*((struct in_addr *)(ha->address))));
-  }
-#endif
-  if (ha->family == FamilyNetname) {
-    static char netname[512];
-    int len;
-#ifdef SECURE_RPC
-    int uid, gid, gidlen, gidlist[NGROUPS_MAX];
-#endif
-
-    if (ha->length < sizeof(netname) - 1)
-        len = ha->length;
-    else
-        len = sizeof(netname) - 1;
-    memmove( netname, ha->address, len);
-    netname[len] = '\0';
-#ifdef SECURE_RPC
-    if (netname2user(netname, &uid, &gid, &gidlen, gidlist)) {
-	struct passwd *pwd;
-	char *cp;
-
-	pwd = getpwuid(uid);
-	if (pwd)
-	    sprintf(netname, "%s@ (%*.*s)", pwd->pw_name,
-		    ha->length, ha->length, ha->address);
+    if (ha->family == FamilyInternet) {
+	/* gethostbyaddr can take a LONG time if the host does not exist.
+	   Assume that if it does not respond in NAMESERVER_TIMEOUT seconds
+	   that something is wrong and do not make the user wait.
+	   gethostbyaddr will continue after a signal, so we have to
+	   jump out of it. 
+	   */
+	signal(SIGALRM, nameserver_lost);
+	alarm(4);
+	if (setjmp(env) == 0) {
+	    hp = gethostbyaddr (ha->address, ha->length, AF_INET);
+	}
+	alarm(0);
+	if (hp)
+	    return (hp->h_name);
+	else return (inet_ntoa(*((struct in_addr *)(ha->address))));
     }
 #endif
-    return (netname);
-  }
+    if (ha->family == FamilyNetname) {
+	static char netname[512];
+	int len;
+#ifdef SECURE_RPC
+	int uid, gid, gidlen, gidlist[NGROUPS_MAX];
+#endif
+
+	if (ha->length < sizeof(netname) - 1)
+	    len = ha->length;
+	else
+	    len = sizeof(netname) - 1;
+	memmove( netname, ha->address, len);
+	netname[len] = '\0';
+#ifdef SECURE_RPC
+	if (netname2user(netname, &uid, &gid, &gidlen, gidlist)) {
+	    struct passwd *pwd;
+	    char *cp;
+
+	    pwd = getpwuid(uid);
+	    if (pwd)
+		sprintf(netname, "%s@ (%*.*s)", pwd->pw_name,
+			ha->length, ha->length, ha->address);
+	}
+#endif
+	return (netname);
+    }
 #ifdef DNETCONN
-  if (ha->family == FamilyDECnet) {
-    struct dn_naddr *addr_ptr = (struct dn_naddr *) ha->address;
+    if (ha->family == FamilyDECnet) {
+	struct dn_naddr *addr_ptr = (struct dn_naddr *) ha->address;
 
-    if (np = getnodebyaddr(addr_ptr->a_addr, addr_ptr->a_len, AF_DECnet)) {
-      sprintf(nodeaddr, "%s", np->n_name);
-    } else {
-      sprintf(nodeaddr, "%s", dnet_htoa(ha->address));
+	if (np = getnodebyaddr(addr_ptr->a_addr, addr_ptr->a_len, AF_DECnet)) {
+	    sprintf(nodeaddr, "%s", np->n_name);
+	} else {
+	    sprintf(nodeaddr, "%s", dnet_htoa(ha->address));
+	}
+	return(nodeaddr);
     }
-    return(nodeaddr);
-  }
 #endif
 #ifdef K5AUTH
-  if (ha->family == FamilyKrb5Principal) {
-    kbuf.data = ha->address;
-    kbuf.length = ha->length;
-    XauKrb5Decode(kbuf, &princ);
-    krb5_unparse_name(princ, &kname);
-    krb5_free_principal(princ);
-    strncpy(kname_out, kname, sizeof (kname_out));
-    free(kname);
-    return kname_out;
-  }
+    if (ha->family == FamilyKrb5Principal) {
+	kbuf.data = ha->address;
+	kbuf.length = ha->length;
+	XauKrb5Decode(kbuf, &princ);
+	krb5_unparse_name(princ, &kname);
+	krb5_free_principal(princ);
+	strncpy(kname_out, kname, sizeof (kname_out));
+	free(kname);
+	return kname_out;
+    }
 #endif
-  if (ha->family == FamilyLocalHost) {
-    return "";
-  }
+    if (ha->family == FamilyLocalHost) {
+	return "";
+    }
 #ifdef STREAMSCONN 
-  return get_streams_hostname (ha);
+    return get_streams_hostname (ha);
 #else
-  return (NULL);
+    return (NULL);
 #endif
 }
 
 static signal_t nameserver_lost()
 {
-  nameserver_timedout = 1;
-  longjmp(env, -1);
+    nameserver_timedout = 1;
+    longjmp(env, -1);
 }
 
 /*
@@ -675,50 +675,50 @@ static Bool get_streams_address (name, hap)
     char *name;
     XHostAddress *hap;
 {
-  static char buf[128];
-  char	 *ptr, *packet, *retptr, pktbuf[128];
-  int	 n;
+    static char buf[128];
+    char *ptr, *packet, *retptr, pktbuf[128];
+    int	 n;
 
 
-  if(_XsTypeOfStream[ConnectionNumber(dpy)]  == X_LOCAL_STREAM)
-  {
+    if(_XsTypeOfStream[ConnectionNumber(dpy)]  == X_LOCAL_STREAM)
+    {
 	hap->family = FamilyUname;
 	hap->length = strlen(name) +1;
 	hap->address = name;
 	return True;
-  }
+    }
 
-  packet = pktbuf;
-  ptr = &packet[2*sizeof(int)];
+    packet = pktbuf;
+    ptr = &packet[2*sizeof(int)];
 
-  n = strlen(name) + 1;
-  ((xHostEntry *) ptr)->length = n;
-  ptr += sizeof(xHostEntry);
-  memcpy(ptr, name, n);
+    n = strlen(name) + 1;
+    ((xHostEntry *) ptr)->length = n;
+    ptr += sizeof(xHostEntry);
+    memcpy(ptr, name, n);
 
-  retptr = packet;
-   *(int *) retptr = n+sizeof(xHostEntry);
-   *(int *) (retptr + sizeof(int)) = 1;
+    retptr = packet;
+    *(int *) retptr = n+sizeof(xHostEntry);
+    *(int *) (retptr + sizeof(int)) = 1;
 
-  if(GetNetworkInfo (ConnectionNumber(dpy), NULL, ConvertNameToNetAddr, &packet, &retptr, NULL)<0)
-           {
-		return False;
-           }
-   hap->family = ((xHostEntry *) retptr)->family;
-   hap->length = ((xHostEntry *) retptr)->length;
-   hap->address = buf;
+    if(GetNetworkInfo (ConnectionNumber(dpy), NULL, ConvertNameToNetAddr, &packet, &retptr, NULL)<0)
+    {
+	return False;
+    }
+    hap->family = ((xHostEntry *) retptr)->family;
+    hap->length = ((xHostEntry *) retptr)->length;
+    hap->address = buf;
   
-   if(hap->length > 127)
+    if(hap->length > 127)
    	hap->length = 127;
 
-   /* trim internet address to four */
-   if (hap->family == FamilyInternet)
+    /* trim internet address to four */
+    if (hap->family == FamilyInternet)
 	hap->length = 4;
 
-   ptr = &retptr[sizeof(xHostEntry)];
-   memcpy(buf, ptr, hap->length);
-   buf[hap->length] = '\0';
-   return True;
+    ptr = &retptr[sizeof(xHostEntry)];
+    memcpy(buf, ptr, hap->length);
+    buf[hap->length] = '\0';
+    return True;
 }
 
 
@@ -786,37 +786,37 @@ print_streams_hostnames (list, nhosts)
 static char *get_streams_hostname (ha)
     XHostAddress *ha;
 {
-  static char buf[128];
-  char	 *ptr, *packet, pktbuf[128], *retptr;
-  int	 n, len;
+    static char buf[128];
+    char	 *ptr, *packet, pktbuf[128], *retptr;
+    int	 n, len;
 
-   if(_XsTypeOfStream[ConnectionNumber(dpy)] == X_LOCAL_STREAM || ha->family == FamilyUname){
+    if(_XsTypeOfStream[ConnectionNumber(dpy)] == X_LOCAL_STREAM || ha->family == FamilyUname){
 	return(ha->address);
-  }
+    }
 
-  packet = pktbuf;
-  ptr = &packet[2*sizeof(int)];
+    packet = pktbuf;
+    ptr = &packet[2*sizeof(int)];
 
-  ((xHostEntry *) ptr)->length = ha->length;
-  ((xHostEntry *) ptr)->family = ha->family;
+    ((xHostEntry *) ptr)->length = ha->length;
+    ((xHostEntry *) ptr)->family = ha->family;
 
-  ptr += sizeof(xHostEntry);
-  memcpy(ptr, ha->address, ha->length);
+    ptr += sizeof(xHostEntry);
+    memcpy(ptr, ha->address, ha->length);
 
-   retptr = packet;
-   *(int *) retptr = ha->length+sizeof(xHostEntry);
-   *(int *) (retptr + sizeof(int)) = 1;
+    retptr = packet;
+    *(int *) retptr = ha->length+sizeof(xHostEntry);
+    *(int *) (retptr + sizeof(int)) = 1;
 
-  if(GetNetworkInfo (ConnectionNumber(dpy), NULL, ConvertNetAddrToName, &packet, &retptr, NULL)<0)
-           {
-		ha->address[ha->length] = '\0';
-		return(ha->address);
-           }
-   ptr = &retptr[sizeof(xHostEntry)];
-   len = ((xHostEntry *) retptr)->length;
-   memcpy(buf, ptr, len);
-   buf[len] = '\0';
-   return(buf);
+    if(GetNetworkInfo (ConnectionNumber(dpy), NULL, ConvertNetAddrToName, &packet, &retptr, NULL)<0)
+    {
+	ha->address[ha->length] = '\0';
+	return(ha->address);
+    }
+    ptr = &retptr[sizeof(xHostEntry)];
+    len = ((xHostEntry *) retptr)->length;
+    memcpy(buf, ptr, len);
+    buf[len] = '\0';
+    return(buf);
 }
 
 #endif /* STREAMSCONN */
