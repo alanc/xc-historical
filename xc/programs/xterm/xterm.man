@@ -35,6 +35,9 @@ instead of a
 .RB ` \- ',
 the option is restored to its default value):
 .TP 8
+.B \-help
+This causes \fIxterm\fP to print out a verbose message describing its options.
+.TP 8
 .B \-132
 Normally, the VT102 DECCOLM escape sequence that switches between 80 and
 132 column mode is ignored.
