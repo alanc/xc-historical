@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.120 89/11/21 16:41:26 jim Exp $
+ * $XConsortium: menus.c,v 1.121 89/11/22 15:36:46 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.120 89/11/21 16:41:26 jim Exp $";
+"$XConsortium: menus.c,v 1.121 89/11/22 15:36:46 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1580,79 +1580,13 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	if (DeferExecution(context, func, Scr->SelectCursor))
 	    return TRUE;
 
-	if (!WindowMoved)
-	{
-	    int vis;
-	    int bw;
+	if (!WindowMoved) {
+	    XWindowChanges xwc;
 
-	    if (w == tmp_win->icon_w)
-	    {
-		vis = tmp_win->icon_vis;
-		bw = BW2;
-	    }
-	    else
-	    {
-		w = tmp_win->frame;
-		vis = tmp_win->frame_vis;
-		bw = tmp_win->frame_bw;
-	    }
-
-	    if (vis == VisibilityUnobscured)
-		XLowerWindow(dpy, w);
-	    else
-	    {
-		int myX, myY, myWidth, myHeight;
-		int x, y, width, height;
-		Window *children;
-		int nchildren;
-		int i;
-
-		/*
-		 * If the window is above all of its siblings, but partially
-		 * offscreen, its visibility is VisibilityPartiallyObscured,
-		 * but we'd want to lower it.
-		 */
-		XGetGeometry(dpy, w, &JunkRoot, 
-			     &myX, &myY, &myWidth, &myHeight,
-			     &JunkBW, &JunkDepth);
-		
-		/* If it's completely onscreen, it must be obscured. */
-		if (myX > 0 && (myX + myWidth+bw) <= Scr->MyDisplayWidth &&
-		    myY > 0 && (myY + myHeight+bw) <= Scr->MyDisplayHeight)
-		{
-		    XRaiseWindow(dpy, w);
-		}
-		else
-		{
-		    XQueryTree(dpy, Scr->Root, &JunkRoot, &JunkParent,
-			       &children, &nchildren);
-		    /*
-		     * Start at the upper-most window and work down.  Look
-		     * for an obscuring sibling above w.
-		     */
-		    for (i = nchildren - 1; i >= 0; i--)
-		    {
-			if (children[i] == w)
-			{
-			    XLowerWindow(dpy, w);
-			    break;
-			}
-			else
-			{
-			    XGetGeometry(dpy, children[i], &JunkRoot,
-					 &x, &y, &width, &height,
-					 &JunkBW, &JunkDepth);
-			    if (x + width >= myX && x < myX + myWidth &&
-				y + height >= myY && y < myY + myHeight)
-			    {
-				XRaiseWindow(dpy, w);
-				break;
-			    }
-			}
-		    } /* for */
-		    XFree(children);
-		}
-	    }
+	    xwc.stack_mode = Opposite;
+	    if (w != tmp_win->icon_w)
+	      w = tmp_win->frame;
+	    XConfigureWindow (dpy, w, CWStackMode, &xwc);
 	}
 	break;
 	
