@@ -1,5 +1,5 @@
 /* static char rcsid[] =
-	"$XConsortium: Initer.c,v 1.2 89/12/10 10:30:32 rws Exp $"; */
+	"$XConsortium: Initer.c,v 1.3 90/07/15 16:18:45 rws Exp $"; */
 
 /* 
  * Copyright 1988, 1989 by the Massachusetts Institute of Technology
@@ -86,7 +86,7 @@ XtAppContext **app_list, app_con;
     }
   }
 
-  *app_list = (XtAppContext *)  XtRealloc(*app_list,
+  *app_list = (XtAppContext *)  XtRealloc((char *)(*app_list),
 					  sizeof(XtAppContext *) * (i + 2) );
   (*app_list)[i++] = app_con;
   (*app_list)[i] = NULL;
