@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shape.c,v 5.16 91/06/17 11:36:52 rws Exp $ */
+/* $XConsortium: shape.c,v 5.17 92/05/15 13:57:34 keith Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -159,7 +159,7 @@ RegionOperate (client, pWin, kind, destRgnp, srcRgn, op, xoff, yoff, create)
     }
     if (srcRgn)
 	(*pScreen->RegionDestroy) (srcRgn);
-    SetShape (pWin);
+    (*pScreen->SetShape) (pWin);
     SendShapeNotify (pWin, kind);
     return Success;
 }
@@ -455,7 +455,7 @@ ProcShapeOffset (client)
     if (srcRgn)
     {
         (*pScreen->TranslateRegion) (srcRgn, stuff->xOff, stuff->yOff);
-        SetShape (pWin);
+        (*pScreen->SetShape) (pWin);
     }
     SendShapeNotify (pWin, (int)stuff->destKind);
     return Success;
