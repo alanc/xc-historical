@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.57 90/03/01 15:42:01 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.58 90/03/01 15:54:35 kit Exp $";
 #endif /* lint */
 
 
@@ -870,7 +870,7 @@ static Boolean GetGeometry(w, width, height)
     Widget w;
     Dimension width, height;
 {
-    XtWidgetGeometry geometry, &return_geom;
+    XtWidgetGeometry geometry, return_geom;
     XtGeometryResult result;
 
     if (width == w->core.width && height == w->core.height)
