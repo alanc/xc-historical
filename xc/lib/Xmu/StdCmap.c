@@ -1,4 +1,4 @@
-/* $XConsortium */
+/* $XConsortium$ */
 
 /* 
  * Copyright 1989 by the Massachusetts Institute of Technology
@@ -23,346 +23,446 @@
 #ifndef MIN
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #endif
-#define MAX_GREENS	256
-#define MAX_BLUES	256
 
 extern char	*calloc();
 extern void	free();
 
-static Status best_map();
-static Status red_map();
-static Status green_map();
-static Status blue_map();
-static Status gray_map();
 static Status default_map();
-static Status allocate();
+static Status rgb_map();
+static Status static_map();
 
-/*	Create a standard colormap for the given screen and visual,
- *	with the given red, green, and blue maximum values, with the
- *	given standard property name.  If flag is true and the property
- *	is already defined, do not redefine it.  Return 0 on failure,
- *	non-zero on success.
+/*
+ * To create any one standard colormap, use XmuStandardColormap().
+ *
+ * Create a standard colormap for the given screen, visualid, and visual
+ * depth, with the given red, green, and blue maximum values, with the
+ * given standard property name.  If replace is true and the property is
+ * already defined, redefine it.  Return 0 on failure, non-zero on success.
+ *
+ * All colormaps are created with read only allocations, with the exception
+ * of read only allocations of colors in the RGB_DEFAULT_MAP which fail to
+ * return the expected pixel value, and these are individually defined as
+ * read/write allocations.  This is done so that the all the cells defined
+ * in the default map are contiguous, for use in image processing.
+ *
+ * Standard colormaps of static visuals are defined if the map of the
+ * static visual matches the definition of an appropriate standard map.
+ * Resources created by this function are not made permanent; that is the
+ * caller's responsibility.
  */
 
-Status XmuStandardColormap(dpy, screen, visual, red_max, green_max, blue_max,
-		      property, flag)
+Status XmuStandardColormap(dpy, screen, visualid, depth, red_max,
+			   green_max, blue_max, property, replace)
     Display		*dpy;
     int			screen; 
-    Visual		*visual;
+    VisualID		visualid;
+    unsigned int	depth;
     unsigned long	red_max, green_max, blue_max;
     Atom		property;
-    int			flag;	/* 0: replace; non-zero: do not replace */
+    Bool		replace;
 {
     XStandardColormap	colormap;
+    XStandardColormap	stdmap;
     Status		status = 0;
+    XVisualInfo		vinfo_template, *vinfo;
+    long		vinfo_mask;
+    int			n;
+    unsigned long	ncolors;
     
-    /* XXX ICCCM Xlib changes; and, should I check to see if the property
-     * has the desired allocation?
-     */
-    if (flag && XGetStandardColormap(dpy, RootWindow(dpy, screen), &colormap,
-				     property))
+    if (!replace && XGetStandardColormap(dpy, RootWindow(dpy, screen),
+					 &colormap, property))
 	return 1;
 
-    colormap.colormap = NULL;
-    colormap.red_max = red_max;
-    if (red_max > 0)
-	colormap.red_mult = (green_max + 1) * (blue_max + 1);
-    else
-	colormap.red_mult = 1;
-    colormap.green_max = green_max;
-    if (green_max > 0)
-	colormap.green_mult = blue_max + 1;
-    else
-	colormap.green_mult = 1;
-    colormap.blue_max = blue_max;
-    colormap.blue_mult = 1;
-    colormap.base_pixel = 0;
+    vinfo_template.visualid = visualid;	
+    vinfo_template.screen = screen;
+    vinfo_template.depth = depth;
+    vinfo_mask = VisualIDMask | VisualScreenMask | VisualDepthMask;
+    if ((vinfo = XGetVisualInfo(dpy, vinfo_mask, &vinfo_template, &n)) == NULL)
+	return 0;
 
-    switch (property)
+    /* determine that the number of colors requested is <= map size */
+    ncolors = (red_max + 1) * (green_max + 1) * (blue_max + 1);
+    if (ncolors > vinfo->colormap_size)
     {
-      case XA_RGB_BEST_MAP:
-	status = best_map(dpy, screen, visual, &colormap);
-	break;
-      case XA_RGB_RED_MAP:
-	status = red_map(dpy, screen, visual, &colormap);
-	break;
-      case XA_RGB_GREEN_MAP:
-	status = green_map(dpy, screen, visual, &colormap);
-	break;
-      case XA_RGB_BLUE_MAP:
-	status = blue_map(dpy, screen, visual, &colormap);
-	break;
-      case XA_RGB_GRAY_MAP:
-	status = gray_map(dpy, screen, visual, &colormap);
-	break;
-      case XA_RGB_DEFAULT_MAP:
-	status =default_map(dpy, screen, visual, &colormap);
-	break;
+	XFree((char *) vinfo);
+	return 0;
     }
     
-    if (status)	/* XXX ICCCM Xlib changes */
+    switch (property)
     {
-	XStandardColormap	std_colormap;
-	
+      case XA_RGB_DEFAULT_MAP:
+	if ((red_max == 0 || green_max == 0 || blue_max == 0) ||
+	    (vinfo->class != PseudoColor && vinfo->class != DirectColor))
+	{
+	    XFree((char *) vinfo);
+	    return 0;
+	}
+	break;
+      case XA_RGB_RED_MAP:
+	if ((vinfo->class != PseudoColor && vinfo->class != DirectColor)
+	    || (red_max == 0))
+	{	
+	    XFree((char *) vinfo);
+	    return 0;
+	}
+	green_max = blue_max = 0;
+	break;
+      case XA_RGB_GREEN_MAP:
+	if ((vinfo->class != PseudoColor && vinfo->class != DirectColor) ||
+	    (green_max == 0))
+	{	
+	    XFree((char *) vinfo);
+	    return 0;
+	}
+	red_max = blue_max = 0;
+      case XA_RGB_BLUE_MAP:	
+	if ((vinfo->class != PseudoColor && vinfo->class != DirectColor) ||
+	    blue_max == 0)
+	{
+	    XFree((char *) vinfo);
+	    return 0;
+	}
+	red_max = green_max = 0;
+	break;
+      case XA_RGB_BEST_MAP:
+	if (vinfo->class == GrayScale || vinfo->class == StaticGray ||
+	    red_max == 0 || green_max == 0 || blue_max == 0)
+	{
+	    XFree((char *) vinfo);
+	    return 0;
+	}
+	break;
+      case XA_RGB_GRAY_MAP:
+	if (vinfo->class == StaticColor || vinfo->class == TrueColor ||
+	    red_max == 0)
+	{
+	    XFree((char *) vinfo);
+	    return 0;
+	}
+	green_max = blue_max = 0;
+	break;
+      default:
+	XFree((char *) vinfo);
+	return 0;
+    }
+
+    /* fill in the standard colormap structure */
+    colormap.colormap = (property == XA_RGB_DEFAULT_MAP)
+     ? DefaultColormap(dpy, screen)
+     : XCreateColormap(dpy, RootWindow(dpy, screen), vinfo->visual, AllocNone);
+    colormap.red_max = red_max;
+    colormap.red_mult = (red_max > 0) ? (green_max + 1) * (blue_max + 1) : 1;
+    colormap.green_max = green_max;
+    colormap.green_mult = (green_max > 0) ? blue_max + 1 : 1;
+    colormap.blue_max = blue_max;
+    colormap.blue_mult = 1;
+    colormap.base_pixel = 0;	/* base pixel may change for RGB_DEFAULT_MAP */
+
+    if (property == XA_RGB_DEFAULT_MAP)
+	status = default_map(dpy, vinfo, &colormap);
+    else if (vinfo->class == PseudoColor || vinfo->class == DirectColor ||
+	     vinfo->class == GrayScale)
+	status = rgb_map(dpy, vinfo, &colormap, property);
+    else
+	status = static_map(dpy, &colormap, property);
+
+    if (status)
+    {
 	XGrabServer(dpy);
-	if (! XGetStandardColormap(dpy, RootWindow(dpy, screen),
-				   &std_colormap, property))
+	if (replace || (! XGetStandardColormap(dpy, RootWindow(dpy, screen),
+					       &stdmap, property)))
 	    XSetStandardColormap(dpy, RootWindow(dpy, screen), &colormap,
 				 property);
 	XUngrabServer(dpy);
     }
+    else
+	XFreeColormap(dpy, colormap.colormap);
+
+    XFree((char *) vinfo);
     return status;
 }
-
-/*	Create an RGB_BEST_MAP standard colormap.
- */
-static Status best_map(dpy, screen, visual, colormap)
-    Display			*dpy;
-    Visual			*visual;
-    XStandardColormap	*colormap;
+
+static int compare(e1, e2)
+    unsigned long	*e1, *e2;
 {
-    register int	n, i, j, k;
-    XColor		*color;
-    
-
-    if (colormap->green_max > MAX_GREENS || colormap->blue_max > MAX_BLUES)
-	return 0;
-    if (allocate(dpy, screen, visual, colormap, &color) == 0)
-	return 0;
-    
-    if (visual->class == PseudoColor || visual->class == DirectColor)
-    {
-	unsigned short	red, green[MAX_GREENS], blue[MAX_BLUES];
-
-	green[0] = blue[0] = 0;
-	for (i=1; i <= colormap->green_max; i++)
-	    green[i] = (unsigned short) ((i * 65535) / colormap->green_max);
-	for (i=1; i <= colormap->blue_max; i++)
-	    blue[i] = (unsigned short) ((i * 65535) / colormap->blue_max);
-	
-	n = 0;
-	for (i=0; i <= colormap->red_max; i++) 
-	{
-	    red = (unsigned short) ((i * 65535) / colormap->red_max);
-	    for (j=0; j <= colormap->green_max; j++)
-		for (k=0; k <= colormap->blue_max; k++) 
-		{
-		    color[n].pixel = (unsigned long) n;
-		    color[n].flags = DoRed | DoGreen | DoBlue;
-		    color[n].red = red;
-		    color[n].green = green[j];
-		    color[n++].blue = blue[k];
-		}
-	}
-	
-	n = MIN(n, visual->map_entries);
-	XStoreColors(dpy, colormap->colormap, color, n);
-	free((char *) color);
+    if (*e1 < *e2)
+	return -1;
+    if (*e1 > *e2)
 	return 1;
-    }
-    else if (visual->class == StaticColor || visual->class == TrueColor)
-    {
-	unsigned short	red, green;
-	
-	XQueryColors(dpy, DefaultColormap(dpy, screen), color,
-		     visual->map_entries);
-	n = 0;
-	for (i=0; i <= colormap->red_max; i++)
-	{
-	    red = (i * 65535) / colormap->red_max;
-	    for (j=0; j <= colormap->green_max; j++)
-	    {
-		green = (j * 65535) / colormap->green_max;
-		for (k=0; k <= colormap->blue_max; k++)
-		{
-		    if (color[n].red != red)
-			goto failure;
-		    if (color[n].green != green)
-			goto failure;
-		    if (color[n].blue != ((k * 65535) / colormap->blue_max))
-			goto failure;
-		    n++;
-		}
-	    }
-	}
-	free((char *) color);
-	return 1;
-    }
-  failure:
-    free((char *) color);
     return 0;
 }
 
-static Status red_map(dpy, screen, visual, colormap)
+static Status default_map(dpy, vinfo, colormap)
     Display		*dpy;
-    int			screen;
-    Visual		*visual;
+    XVisualInfo		*vinfo;
     XStandardColormap	*colormap;
 {
-    register int	n;
-    XColor		*color;
-
-    if (allocate(dpy, screen, visual, colormap, &color) == 0)
-	return 0;
-
-    for (n=0; n <= colormap->red_max; n++) 
-    {
-	color[n].pixel = (unsigned long) n;
-	color[n].flags = DoRed;
-	color[n].red = (unsigned short) ((n * 65535) / colormap->red_max);
-    }
-
-    n = MIN(n, visual->map_entries);
-    XStoreColors(dpy, colormap->colormap, color, n);
-    free((char *) color);
-    return 1;
-}
-
-static Status green_map(dpy, screen, visual, colormap)
-    Display		*dpy;
-    int			screen;
-    Visual		*visual;
-    XStandardColormap	*colormap;
-{
-    register int	n;
-    XColor		*color;
-
-    if (allocate(dpy, screen, visual, colormap, &color) == 0)
-	return 0;
-
-    for (n=0; n <= colormap->green_max; n++) 
-    {
-	color[n].pixel = (unsigned long) n;
-	color[n].flags = DoGreen;
-	color[n].green = (unsigned short) ((n * 65535) / colormap->green_max);
-    }
-    n = MIN(n, visual->map_entries);
-    XStoreColors(dpy, colormap->colormap, color, n);
-    free((char *) color);
-    return 1;
-}
-
-static Status blue_map(dpy, screen, visual, colormap)
-    Display		*dpy;
-    int			screen;
-    Visual		*visual;
-    XStandardColormap	*colormap;
-{
-    register int	n;
-    XColor		*color;
-
-    if (allocate(dpy, screen, visual, colormap, &color) == 0)
-	return 0;
-
-    for (n=0; n <= colormap->blue_max; n++) 
-    {
-	color[n].pixel = (unsigned long) n;
-	color[n].flags = DoBlue;
-	color[n].blue = (unsigned short) ((n * 65535) / colormap->blue_max);
-    }
-    n = MIN(n, visual->map_entries);
-    XStoreColors(dpy, colormap->colormap, color, n);
-    free((char *) color);
-    return 1;
-}
-
-static Status gray_map(dpy, screen, visual, colormap)
-Display			*dpy;
-int			screen;
-Visual			*visual;
-XStandardColormap	*colormap;
-{
-    register int	n;
-    XColor		*color;
-
-    if (allocate(dpy, screen, visual, colormap, &color) == 0)
-	return 0;
-
-    for (n=0; n <= colormap->red_max; n++) 
-    {
-	color[n].pixel = (unsigned long) n;
-	color[n].flags = DoRed | DoGreen | DoBlue;
-	color[n].red = (unsigned short) ((n * 65535) / colormap->red_max);
-	color[n].green = color[n].blue = color[n].red;
-    }
-    n = MIN(n, visual->map_entries);
-    XStoreColors(dpy, colormap->colormap, color, n);
-    free((char *) color);
-    return 1;
-}
-
-static Status default_map(dpy, screen, visual, colormap)
-    Display		*dpy;
-    int			screen;
-    Visual		*visual;
-    XStandardColormap	*colormap;
-{
-    XColor		*color;
-
-/*	this won't work    
-    if (allocate(dpy, screen, visual, colormap, &color) == 0)
-	return 0;
- */    
-    /* just like best map.  What about allocating from high end of map? */
-    return 1;
-}
-
-static Status allocate(dpy, screen, visual, colormap, color)
-    Display		*dpy;
-    int			screen;
-    Visual		*visual;
-    XStandardColormap	*colormap;
-    XColor		**color;
-{
-    unsigned int	n;
-    Status		status;
-    unsigned long	pixels;
-    int			rbits, gbits, bbits;
-    unsigned long	rmask, gmask, bmask;
-    unsigned long	b;
+    XColor		color;
+    int			n;
+    int			limit;
+    int			i, r, g, gg;
+    int			first_index;
+    int			remainder;
+    int 		count;
+    int			*val;
+    unsigned int	npixels;
+    unsigned long	*pixels;
+    unsigned long	pixel;
+    unsigned long	ncolors;
     
     
-    /* Create the colormap, allocate cells if it is read/write */
-
-    switch (visual->class)
-    {
-      case PseudoColor:
-      case GrayScale:
-	colormap->colormap = XCreateColormap(dpy, RootWindow(dpy, screen),
-					     visual, AllocAll);
-	/* XXX we don't always need/want to alloc all, e.g. gpx */
-	break;
-      case DirectColor:
-	colormap->colormap = XCreateColormap(dpy, RootWindow(dpy, screen),
-					     visual, AllocNone);
-	rbits = gbits = bbits = 0;
-	for (b=colormap->red_max; b > 0; b>>=1)
-	    rbits++;
-	for (b=colormap->green_max; b > 0; b>>=1)
-	    gbits++;
-	for (b=colormap->blue_max; b > 0; b>>=1)
-	    bbits++;
-	status = XAllocColorPlanes(dpy, colormap->colormap, 1, &pixels, 0,
-				   rbits, gbits, bbits,
-				   &rmask, &gmask, &bmask);
-	if (!status) return 0;
-	break;
-      case TrueColor:
-      case StaticColor:
-      case StaticGray:
-	colormap->colormap = XCreateColormap(dpy, RootWindow(dpy, screen),
-					     visual, AllocNone);
-	break;
-      default:
+    /* allocate the entire map so that we can free individual pixels */
+    npixels = vinfo->colormap_size;
+    pixels = (unsigned long *) calloc(npixels, sizeof(unsigned long));
+    if (pixels == NULL)
 	return 0;
-    }
-	    
-    n = (colormap->red_max + 1) * (colormap->green_max + 1) *
+    ncolors = (colormap->red_max + 1) * (colormap->green_max + 1) *
 	(colormap->blue_max + 1);
-    if (((*color) = (XColor *) calloc(n, (unsigned) sizeof(XColor))) == NULL)
-    {
-	(void) fprintf(stderr, "XmuStandardColormap: out of memory\n");
+    for (n=npixels; n >= ncolors; n--)
+	if (XAllocColorCells(dpy, colormap->colormap, 1,
+			     (unsigned long *) NULL, (unsigned int) 0,
+			     pixels, (unsigned int) n))
+	    break;
+    
+    if (n < ncolors)
 	return 0;
+
+    /* insure that pixel values are given in increasing order */
+    qsort((char *) pixels, n, sizeof(unsigned long), compare);
+
+    /* we have enough cells, now are they contiguous? */
+    i = count = 1;
+    remainder = n - 1;
+    first_index = 0;
+    while (count < ncolors && ncolors - count <= remainder)
+    {
+	if (pixels[i-1] + 1 == pixels[i])
+	    count++;
+	else
+	{	count = 1;
+		first_index = i;
+	    }
+	i++;
+	remainder--;
+    }
+    if (count != ncolors)
+    {	/* can't find enough contiguous cells, give up */
+	XFreeColors(dpy, colormap->colormap, pixels, n, (unsigned long) 0);
+	free((char *) pixels);
+	return 0;
+    }
+    colormap->base_pixel = pixels[first_index];
+    
+    /* n = number of pixel allocations we actually got, pixels[0..(n-1)]
+     * ncolors = number of colors we want to define
+     * npixels = size of the colormap
+     * ncolors <= n
+     */
+    
+    limit = (colormap->red_max > colormap->green_max)
+	? colormap->red_max : colormap->green_max;
+    limit = (colormap->blue_max > limit) ? colormap->blue_max : limit;
+    if ((val = (int *) calloc((unsigned int) limit, sizeof(int))) == NULL)
+    {
+	XFreeColors(dpy, colormap->colormap, pixels, n, (unsigned long) 0);
+	free((char *) pixels);
+	return 0;
+    }
+    val[0] = 0;
+    for (i=1; i <= limit; i++)
+	val[i] = val[i-1] + 65535;
+
+
+    color.flags = DoRed | DoGreen | DoBlue;
+    r = colormap->red_mult;
+    g = colormap->green_mult;
+    gg = colormap->green_max + 1;
+    for (n=colormap->base_pixel+1, i=1; i < ncolors - 1; i++, n++)
+    {
+	color.pixel = pixel = (unsigned long) n;
+	XFreeColors(dpy, colormap->colormap, &pixel, 1, (unsigned long) 0);
+	color.red = (unsigned short) (val[i/r] / colormap->red_max);
+	color.green = (unsigned short) (val[(i/g)%gg] / colormap->green_max);
+	color.blue = (unsigned short) (val[i%g] / colormap->blue_max);
+	
+	if (! XAllocColor(dpy, colormap->colormap, &color))
+	{
+	    XFreeColors(dpy, colormap->colormap, pixels, n, (unsigned long) 0);
+	    free((char *) pixels);
+	    free((char *) val);
+	    return 0;
+	}
+	if (color.pixel != pixel)
+        {
+	    XFreeColors(dpy, colormap->colormap, &(color.pixel), 1,
+			(unsigned long) 0);
+	    if (! XAllocColorCells(dpy, colormap->colormap, (Bool) 0,
+				   (unsigned long *) NULL, (unsigned int) 0,
+				   &pixel, (unsigned int) 1) 
+		|| pixel != n)
+	    {
+		XFreeColors(dpy, colormap->colormap, pixels, n,
+			    (unsigned long) 0);
+		free((char *) pixels);
+		free((char *) val);
+		return 0;
+	    }
+	    color.pixel = pixel;
+	    XStoreColors(dpy, colormap->colormap, &color, 1);
+	}
+    }
+    
+    /* We have a read-only RGB_COLOR_MAP - now free unused cells */
+    /* free pixels occuring before the contiguous sequence begins */
+    if (first_index)
+	XFreeColors(dpy, colormap->colormap, pixels, first_index, 
+		    (unsigned long) 0);
+    /* free pixels following the contiguous sequence */
+    if (remainder)
+	XFreeColors(dpy, colormap->colormap,
+		    &(pixels[first_index + ncolors]), remainder,
+		    (unsigned long) 0);
+
+    free((char *) pixels);
+    free((char *) val);
+    return 1;
+}
+
+static Status rgb_map(dpy, vinfo, colormap, property)
+    Display		*dpy;
+    XVisualInfo		*vinfo;
+    XStandardColormap	*colormap;
+    Atom		property;
+{
+    int			i, r, g, gg, n, ncolors, limit;
+    Status		status;
+    XColor		color;
+    unsigned long	*pixels, pixel;
+    unsigned int	npixels;
+    int			*val;
+
+    /* allocate the entire map so that we can free individual pixels */
+    npixels = vinfo->colormap_size;
+    pixels = (unsigned long *) calloc((unsigned) npixels,
+				      sizeof(unsigned long));
+    if (pixels == NULL)
+	return 0;
+    if (! XAllocColorCells(dpy, colormap->colormap, 1, (unsigned long *) NULL,
+			   (unsigned int) 0, pixels, npixels))
+    {
+	free((char *) pixels);
+	return 0;
+    }
+
+    /* insure that pixel values are given in increasing order */
+    qsort((char *) pixels, npixels, sizeof(unsigned long), compare);
+    
+    /* we know that the pixels array contains the values [0..(mapsize -1)] 
+     * ncolors = number of colors we want to define
+     * npixels = size of the colormap
+     * ncolors <= npixels, because we tested upon determining ncolors
+     */
+    
+    ncolors = (colormap->red_max + 1) * (colormap->green_max + 1) *
+	(colormap->blue_max + 1);
+    limit = (colormap->red_max > colormap->green_max)
+	? colormap->red_max : colormap->green_max;
+    limit = (colormap->blue_max > limit) ? colormap->blue_max : limit;
+    if ((val = (int *) calloc((unsigned int) limit, sizeof(int))) == NULL)
+    {
+	free((char *) pixels);
+	return 0;
+    }
+    val[0] = 0;
+    for (i=1; i <= limit; i++)
+	val[i] = val[i-1] + 65535;
+    
+    r = colormap->red_mult;
+    g = colormap->green_mult;
+    gg = colormap->green_max + 1;
+    for (n=colormap->base_pixel, i=0; i < ncolors; i++, n++)
+    {
+	color.pixel = pixel = (unsigned long) n;
+	XFreeColors(dpy, colormap->colormap, &pixel, 1, (unsigned long) 0);
+	
+	switch (property)
+	{
+	  case XA_RGB_BEST_MAP:
+	    color.red = (unsigned short) (val[i/r] / colormap->red_max);
+	    color.green = (unsigned short) (val[(i/g)%gg] /
+					    colormap->green_max);
+	    color.blue = (unsigned short) (val[i%g] / colormap->blue_max);
+	    break;
+	  case XA_RGB_RED_MAP:
+	    color.red = (unsigned short) (val[i] / colormap->red_max);
+	    color.green = color.blue = 0;
+	    break;
+	  case XA_RGB_GREEN_MAP:
+	    color.green = (unsigned short) (val[i] / colormap->green_max);
+	    color.red = color.blue = 0;
+	    break;
+	  case XA_RGB_BLUE_MAP:
+	    color.blue = (unsigned short) (val[i] / colormap->blue_max);
+	    color.red = color.green = 0;
+	    break;
+	  case XA_RGB_GRAY_MAP:
+	    color.blue = color.green = color.red =
+		(unsigned short) (val[i] / colormap->red_max);
+	    break;
+	}
+	
+	status = XAllocColor(dpy, colormap->colormap, &color);
+	if (status == 0 || color.pixel != (unsigned long) n)
+	{
+	    free((char *) pixels);
+	    free((char *) val);
+	    return 0;
+	}
+    }
+    
+    /* We have a read-only RGB_COLOR_MAP - now free unused cells */
+    if (ncolors < npixels)
+    {
+	limit = npixels - ncolors;
+	for (i=0; i < limit; i++)
+	    pixels[i] = ncolors + i;
+	XFreeColors(dpy, colormap->colormap, pixels, limit, (unsigned long) 0);
+    }
+    return 1;
+	
+}
+
+static Status static_map(dpy, colormap, property)
+    Display		*dpy;
+    XStandardColormap	*colormap;
+    Atom		property;
+{
+    int			i, last_pixel;
+    XColor		color;
+
+    last_pixel = (colormap->red_max + 1) * (colormap->green_max + 1) * 
+	(colormap->blue_max + 1) + colormap->base_pixel - 1;
+
+    for(i=colormap->base_pixel; i <= last_pixel; i++)
+    {
+	color.pixel = (unsigned long) i;
+	color.red = (unsigned short)
+	    (((i/colormap->red_mult) * 65535) / colormap->red_max);
+
+	if (property == XA_RGB_BEST_MAP)
+	{
+	    color.green = (unsigned short)
+		((((i/colormap->green_mult) % (colormap->green_max + 1)) *
+		  65535) / colormap->green_max);
+	    color.blue = (unsigned short)
+		(((i%colormap->green_mult) * 65535) / colormap->blue_max);
+	}
+	else
+	    color.green = color.blue = color.red;
+
+	XAllocColor(dpy, colormap->colormap, &color);
+	if (color.pixel != (unsigned long) i)
+	    return 0;
     }
     return 1;
 }
