@@ -5,7 +5,7 @@
 # 
 #  xman - X window system manual page display program.
 # 
-#  $XConsortium: Imakefile,v 1.4 88/09/06 17:47:19 jim Exp $
+#  $XConsortium: Imakefile,v 1.6 88/10/26 17:09:33 jim Exp $
 #  $Athena: Imakefile,v 1.1 88/08/31 21:11:32 kit Locked $
 # 
 #  Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -27,9 +27,9 @@
 #
         DEFINES = -DHELPFILE=\"$(LIBDIR)$(PATHSEP)xman.help\"
 LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
-           SRCS = ScrollByL.c handler.c man.c pages.c buttons.c help.c menu.c \
+           SRCS = ScrollByL.c handler.c man.c pages.c buttons.c help.c \
                   search.c globals.c main.c misc.c tkfuncs.c
-           OBJS = ScrollByL.o handler.o man.o pages.o buttons.o help.o menu.o \
+           OBJS = ScrollByL.o handler.o man.o pages.o buttons.o help.o \
                   search.o globals.o main.o misc.o tkfuncs.o
 
        INCLUDES = -I$(TOOLKITSRC) -I$(TOP)
@@ -37,3 +37,4 @@ LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
 ComplexProgramTarget(xman)
 
 InstallNonExec(xman.help, $(LIBDIR))
+InstallNonExec(Xman.ad, $(XAPPLOADDIR)$(PATHSEP)Xman)
