@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: defs.h,v 1.1 88/08/31 22:52:29 jim Exp $
+ * $XConsortium: defs.h,v 1.2 88/09/06 17:47:34 jim Exp $
  * $Athena: defs.h,v 4.0 88/08/31 22:11:42 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -39,10 +39,10 @@
 #define MANPAGE_ITALIC   "helvetica-boldoblique12"
 #define DIRECTORY_NORMAL "fixed"
 #else
-#define MANPAGE_NORMAL   "8x13"
-#define MANPAGE_BOLD     "8x13bold"
-#define MANPAGE_ITALIC   "8x13"
-#define DIRECTORY_NORMAL "8x13"
+#define MANPAGE_NORMAL   "fixed"
+#define MANPAGE_BOLD     "*-helvetica-bold-r-normal--12-*"
+#define MANPAGE_ITALIC   "*-helvetica-bold-o-normal--12-*"
+#define DIRECTORY_NORMAL "fixed"
 #endif ATHENA
 
 #define TOPBOXNAME  "topBox"	/* Name of the Top Box. */
