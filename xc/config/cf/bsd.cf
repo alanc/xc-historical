@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: bsd.cf,v 1.12 91/06/06 14:13:08 rws Exp $
+XCOMM platform:  $XConsortium: bsd.cf,v 1.13 91/07/03 14:43:28 rws Exp $
 
 #define OSName            4.3bsd
 XCOMM operating system:  OSName
@@ -13,8 +13,9 @@ XCOMM operating system:  OSName
 /* #define HasGcc YES */	/* very useful for the server */
 
 #ifdef VaxArchitecture
+#define XqdssServer YES
 #define XqvssServer YES
-#define BuildPexExt NO
+#define BuildPexExt XqdssServer
 #define HasSaberC YES
 #else
 #define BuildServer NO
