@@ -1,4 +1,4 @@
-/* $XConsortium: TMkey.c,v 1.19 92/12/22 17:20:52 converse Exp $ */
+/* $XConsortium: TMkey.c,v 1.20 93/08/27 16:29:47 kaleb Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -368,6 +368,7 @@ void _XtBuildKeysymTables(dpy,pd)
     for (i=0;i<32;i++)
 	pd->isModifier[i] = 0;
     pd->mode_switch = 0;
+    pd->num_lock = 0;
     for (i=0;i<8;i++) {
         table[i].idx = tempCount;
         table[i].count = 0;
@@ -381,6 +382,8 @@ void _XtBuildKeysymTables(dpy,pd)
                     keysym = pd->keysyms[idx];
 		    if ((keysym == XK_Mode_switch) && (i > 2))
 			pd->mode_switch |= 1 << i;
+		    if ((keysym == XK_Num_Lock) && (i > 2))
+			pd->num_lock |= 1 << i;
                     if (keysym != 0 && keysym != tempKeysym ){
                         if (tempCount==maxCount) {
                             maxCount += KeysymTableSize;
@@ -466,7 +469,7 @@ void XtTranslateKey(dpy, keycode, modifiers,
 
     LOCK_APP(app);
     pd = _XtGetPerDisplay(dpy);
-    *modifiers_return = (ShiftMask|LockMask) | pd->mode_switch;
+    *modifiers_return = (ShiftMask|LockMask) | pd->mode_switch | pd->num_lock;
     if (((int)keycode < pd->min_keycode) || ((int)keycode > pd->max_keycode)) {
 	*keysym_return = NoSymbol;
 	UNLOCK_APP(app);
@@ -480,7 +483,14 @@ void XtTranslateKey(dpy, keycode, modifiers,
 	syms += 2;
 	per -= 2;
     }
-    if (!(modifiers & ShiftMask) &&
+    if ((modifiers & pd->num_lock) &&
+	(per > 1 && (IsKeypadKey(syms[1]) || IsPrivateKeypadKey(syms[1])))) {
+	if ((modifiers & ShiftMask) ||
+	    ((modifiers & LockMask) && (pd->lock_meaning == XK_Shift_Lock)))
+	    *keysym_return = syms[0];
+	else
+	    *keysym_return = syms[1];
+    } else if (!(modifiers & ShiftMask) &&
 	(!(modifiers & LockMask) || (pd->lock_meaning == NoSymbol))) {
 	if ((per == 1) || (syms[1] == NoSymbol))
 	    XtConvertCase(dpy, syms[0], keysym_return, &usym);
