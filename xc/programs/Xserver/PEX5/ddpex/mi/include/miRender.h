@@ -1,5 +1,5 @@
 
-/* $XConsortium: miRender.h,v 5.1 91/02/16 09:54:40 rws Exp $ */
+/* $XConsortium: miRender.h,v 5.2 91/05/01 14:18:42 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -191,6 +191,11 @@ typedef struct _miDDContextRendAttrs {
 	ddUSHORT		modelClip;
 	ddULONG			pickId;
 	ddULONG			hlhsrType;
+	ddColourSpecifier       backgroundColour;
+	ddUSHORT                clearI;
+	ddUSHORT                clearZ;
+	ddUSHORT                echoMode;
+	ddColourSpecifier       echoColour;
 } miDDContextRendAttrs;
 
 #define MI_MAXTEMPDATALISTS 4 /* Note, must be 2^n for macros to work */
