@@ -210,12 +210,13 @@
 	 (FORMAT t "~a (~d) length ~d"
 		 (request-name request) request length))))))
 
-(DEFUN find-trace (display type sequence)
-  (DOLIST (history (display-trace-history display))
-    (WHEN (AND (SYMBOLP (CAR history))
-	       (= (AREF (CDR history) 0) type)
-	       (= (byte-ref16 (CDR history) 2) sequence))
-      (RETURN (CDR history)))))
+(defun find-trace (display type sequence &optional (number 0))
+  (dolist (history (display-trace-history display))
+    (when (and (symbolp (car history))
+	       (= (aref (cdr history) 0) type)
+	       (= (byte-ref16 (cdr history) 2) sequence)
+	       (minusp (decf number)))
+      (return (cdr history)))))
 
 (defun describe-error (display sequence)
   "Describe the error associated with request SEQUENCE."
@@ -301,18 +302,29 @@
       name
     (POSITION (STRING name) *event-key-vector* :test #'EQUALP :key #'STRING)))
 
-(DEFUN describe-event (display name sequence)
-  "Describe the event with event-name NAME and sequence number SEQUENCE."
-  (DECLARE (type display display)
-	   (type (OR stringable (integer 0 63)) name)
+(defun describe-event (display name sequence &optional (number 0))
+  "Describe the event with event-name NAME and sequence number SEQUENCE.
+If there is more than one event, return NUMBER in the sequence."
+  (declare (type display display)
+	   (type (or stringable (integer 0 63)) name)
 	   (type (integer 0) sequence))
-  (LET* ((number (event-number name))
-	 (vector (AND number (find-trace display number sequence))))
-    (IF (NOT number)
-	(FORMAT T "~%~s isn't an event name" name)
-      (IF (NOT vector)
-	  (FORMAT T "~%Event ~s not found"
-		  (AREF *event-key-vector* number))
+  (let* ((event (event-number name))
+	 (vector (and event (find-trace display event sequence number))))
+    (if (not event)
+	(format t "~%~s isn't an event name" name)
+      (if (not vector)
+	  (if (and (plusp number) (setq vector (find-trace display event sequence 0)))
+	      (do ((i 1 (1+ i))
+		   (last-vector))
+		  (nil)
+		(if (setq vector (find-trace display event sequence i))
+		    (setq last-vector vector)
+		  (progn 
+		    (format t "~%Event number ~d not found, last event was ~d"
+			    number (1- i))
+		    (return (trace-event-print display last-vector)))))
+	    (format t "~%Event ~s not found"
+		    (aref *event-key-vector* event)))
 	(trace-event-print display vector)))))
 
 (DEFUN trace-event-print (display vector)
@@ -339,32 +351,33 @@
  The default is to show ALL history entries.
  When the LENGTH parameter is used, only the last LENGTH entries are
  displayed."
-  (DECLARE (type display display))
+  (declare (type display display))
   #+ti (si:load-if "clx:debug;describe")
-  (DOLIST (hist (REVERSE (SUBSEQ (display-trace-history display)
+  (dolist (hist (reverse (subseq (display-trace-history display)
 				 0 length)))
-    (LET* ((id (CAR hist))
-	   (VECTOR (CDR hist))
-	   (LENGTH (LENGTH vector)))
+    (let* ((id (car hist))
+	   (vector (cdr hist))
+	   (length (length vector)))
       (format t "~%~5d " id)
-      (CASE id
+      (case id
 	(:error
 	 (trace-error-print display vector))
 	(:event
-	 (LET ((event (trace-event-print display vector)))
-	   (WHEN event (FORMAT t "~{ ~s~}" event))))
+	 (let ((event (trace-event-print display vector)))
+	   (when event (format t "from ~d ~{ ~s~}"
+			       (byte-ref16 vector 2) event))))
 	(:reply
-	 (FORMAT t "To ~d length ~d"
+	 (format t "To ~d length ~d"
 		 (byte-ref16 vector 2) length)
-	 (LET ((actual-length (index+ 32 (index* 4 (byte-ref32 vector 4)))))
-	   (UNLESS (= length actual-length)
-	     (FORMAT t " Should be ~d **************" actual-length)))
-	 (LET ((*print-array* t)
+	 (let ((actual-length (index+ 32 (index* 4 (byte-ref32 vector 4)))))
+	   (unless (= length actual-length)
+	     (format t " Should be ~d **************" actual-length)))
+	 (let ((*print-array* t)
 	       (*print-base* 16.))
-	   (PRINC " ")
-	   (PRINC vector)))
+	   (princ " ")
+	   (princ vector)))
 	(otherwise
-	  (let* ((len (LENGTH vector))
+	  (let* ((len (length vector))
 		 (hist (make-reply-buffer len)))
 	    (buffer-replace (reply-ibuf8 hist) vector 0 len)
 	    (print-history-description hist)))))))
