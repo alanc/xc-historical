@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sony.cf,v 1.50 94/02/19 18:08:19 rws Exp $
+XCOMM platform:  $XConsortium: sony.cf,v 1.51 94/03/08 18:47:23 matt Exp $
 
 #ifdef SonyBsdArchitecture
 
@@ -62,12 +62,19 @@ XCOMM platform:  $XConsortium: sony.cf,v 1.50 94/02/19 18:08:19 rws Exp $
 
 /*
  * SONY C++ compiler is based on vanilla cfront, which means it
- * refuses to compile files unless their names end in ".C".
+ * refuses to compile files unless their names end in ".C".  We
+ * have to include the extra explicit .C.o rule to override the 
+ * one that is built into make on this platform, otherwise the 
+ * second and subsequent compiles of each source file (the ones
+ * where the .C file already exists) use the builtin rule rather
+ * than the X11 rule.
  */
 
 #define NormalLibObjCplusplusCompile(options) test -r $*.C || $(LN) $*.CCsuf $*.C @@\
 	$(CCC) -c $(CCFLAGS) options $*.C
 
+.C.o:
+	$(CCC) -c $(CCFLAGS) options $*.C
 
 XCOMM operating system:  OSName
 
