@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: WaitFor.c,v 1.53 91/05/04 23:13:48 keith Exp $ */
+/* $XConsortium: WaitFor.c,v 1.54 91/05/12 10:14:44 rws Exp $ */
 
 /*****************************************************************
  * OS Depedent input routines:
@@ -67,6 +67,8 @@ extern void EstablishNewConnections();
 extern void SaveScreens();
 extern void ResetOsBuffers();
 extern void ProcessInputEvents();
+extern void BlockHandler();
+extern void WakeupHandler();
 
 extern int errno;
 
