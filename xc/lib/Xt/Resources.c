@@ -1,4 +1,4 @@
-/* $XConsortium: Resources.c,v 1.111 93/09/11 16:32:23 rws Exp $ */
+/* $XConsortium: Resources.c,v 1.112 93/09/18 18:18:33 kaleb Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -91,6 +91,40 @@ void _XtCopyToArg(src, dst, size)
     register unsigned int size;
 {
     if (! (*dst)) {
+#ifdef GETVALUES_BUG
+	/* old GetValues semantics (storing directly into arglists) are bad,
+	 * but preserve for compatibility as long as arglist contains NULL.
+	 */
+        if	(size == sizeof(long))	   *dst = (XtArgVal)*(long*)src;
+	else if (size == sizeof(short))    *dst = (XtArgVal)*(short*)src;
+	else if (size == sizeof(char))	   *dst = (XtArgVal)*(char*)src;
+	else if (size == sizeof(XtPointer)) *dst = (XtArgVal)*(XtPointer*)src;
+	else if (size == sizeof(char*))    *dst = (XtArgVal)*(char**)src;
+	else if (size == sizeof(XtArgVal)) *dst = *(XtArgVal*)src;
+	else (void) memmove((char*)dst, (char*)src, (int)size);
+#else
+	XtErrorMsg("invalidGetValues", "xtGetValues", XtCXtToolkitError,
+	    "NULL ArgVal in XtGetValues", (String*) NULL, (Cardinal*) NULL);
+#endif
+    }
+    else {
+	/* proper GetValues semantics: argval is pointer to destination */
+	if	(size == sizeof(long))	   *((long*)*dst) = *(long*)src;
+	else if (size == sizeof(short))    *((short*)*dst) = *(short*)src;
+	else if (size == sizeof(char))	   *((char*)*dst) = *(char*)src;
+	else if (size == sizeof(XtPointer)) *((XtPointer*)*dst) = *(XtPointer*)src;
+	else if (size == sizeof(char*))    *((char**)*dst) = *(char**)src;
+	else if (size == sizeof(XtArgVal)) *((XtArgVal*)*dst)= *(XtArgVal*)src;
+	else (void) memmove((char*)*dst, (char*)src, (int)size);
+    }
+} /* _XtCopyToArg */
+
+static void CopyToArg(src, dst, size)
+    char* src;
+    XtArgVal *dst;
+    register unsigned int size;
+{
+    if (! (*dst)) {
 	/* old GetValues semantics (storing directly into arglists) are bad,
 	 * but preserve for compatibility as long as arglist contains NULL.
 	 */
@@ -112,7 +146,7 @@ void _XtCopyToArg(src, dst, size)
 	else if (size == sizeof(XtArgVal)) *((XtArgVal*)*dst)= *(XtArgVal*)src;
 	else (void) memmove((char*)*dst, (char*)src, (int)size);
     }
-} /* _XtCopyToArg */
+} /* CopyToArg */
 
 #else
 void _XtCopyFromArg(src, dst, size)
@@ -154,6 +188,51 @@ void _XtCopyToArg(src, dst, size)
     register unsigned int size;
 {
     if (!*dst) {
+#ifdef GETVALUES_BUG
+	/* old GetValues semantics (storing directly into arglists) are bad,
+	 * but preserve for compatibility as long as arglist contains NULL.
+	 */
+	union {
+	    long	longval;
+#ifdef LONG64
+	    int		intval;
+#endif
+	    short	shortval;
+	    char	charval;
+	    char*	charptr;
+	    XtPointer	ptr;
+	} u;
+	if (size <= sizeof(XtArgVal)) {
+	    (void) memmove((char*)&u, (char*)src, (int)size );
+	    if	    (size == sizeof(long)) 	*dst = (XtArgVal)u.longval;
+#ifdef LONG64
+	    else if (size == sizeof(int))	*dst = (XtArgVal)u.intval;
+#endif
+	    else if (size == sizeof(short))	*dst = (XtArgVal)u.shortval;
+	    else if (size == sizeof(char))	*dst = (XtArgVal)u.charval;
+	    else if (size == sizeof(char*))	*dst = (XtArgVal)u.charptr;
+	    else if (size == sizeof(XtPointer))	*dst = (XtArgVal)u.ptr;
+	    else (void) memmove((char*)dst, (char*)src, (int)size );
+	}
+	else
+	    (void) memmove((char*)dst, (char*)src, (int)size );
+#else
+	XtErrorMsg("invalidGetValues", "xtGetValues", XtCXtToolkitError,
+	    "NULL ArgVal in XtGetValues", (String*) NULL, (Cardinal*) NULL);
+#endif
+    }
+    else {
+	/* proper GetValues semantics: argval is pointer to destination */
+	(void) memmove((char*)*dst, (char*)src, (int)size );
+    }
+} /* _XtCopyToArg */
+
+static void CopyToArg(src, dst, size)
+    char* src;
+    XtArgVal *dst;
+    register unsigned int size;
+{
+    if (!*dst) {
 	/* old GetValues semantics (storing directly into arglists) are bad,
 	 * but preserve for compatibility as long as arglist contains NULL.
 	 */
@@ -186,7 +265,7 @@ void _XtCopyToArg(src, dst, size)
 	/* proper GetValues semantics: argval is pointer to destination */
 	(void) memmove((char*)*dst, (char*)src, (int)size );
     }
-} /* _XtCopyToArg */
+} /* CopyToArg */
 
 #endif
 
@@ -695,7 +774,7 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 		    } else { /* will fit - copy directly into value field */
 			arg->value = (XtArgVal) NULL;
 		    }
-		    _XtCopyToArg((char *)(base - rx->xrm_offset - 1),
+		    CopyToArg((char *)(base - rx->xrm_offset - 1),
 				 &arg->value, rx->xrm_size);
 
 		} else {
