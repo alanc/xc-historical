@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Text.c,v 1.3 87/09/13 13:26:23 newman Locked $";
+static char rcsid[] = "$Header: Text.c,v 1.4 87/09/13 23:32:44 swick Locked $";
 #endif lint
 
 /*
@@ -69,7 +69,7 @@ static XtResource resources[] = {
     {XtNleftMargin, XtCMargin, XrmRInt, sizeof (int), 
         XtOffset(TextWidget, text.leftmargin), XrmRString, "2"},
     {XtNselectionArray, XtCSelectionArray, XrmRPointer, 
-        sizeof(SelectionArray), XtOffset(TextWidget, text.sarray), 
+        sizeof(SelectionArray), XtOffset(TextWidget, text.sarray[0]), 
 	XrmRPointer, NULL},
     {XtNtextSource, XtCTextSource, XrmRPointer, sizeof (caddr_t), 
          XtOffset(TextWidget, text.source), XrmRPointer, NULL},
@@ -77,14 +77,16 @@ static XtResource resources[] = {
          XtOffset(TextWidget, text.sink), XrmRPointer, NULL},
     {XtNselection, XtCSelection, XrmRPointer, sizeof(caddr_t),
 	 XtOffset(TextWidget, text.s), XrmRPointer, NULL},
-    {XtNeventBindings, XtCEventBindings, XtRStringTable, 
-        sizeof(_XtTranslations), XtOffset(TextWidget, core.translations), 
-	XtRStringTable, (caddr_t)&defaultTextTranslations},
+    {XtNtranslations, XtCTranslations, XtRTranslationTable,
+        sizeof(XtTranslations), XtOffset(TextWidget, core.translations), 
+	XtRTranslationTable, (caddr_t)&defaultTextTranslations},
 };
 
   
-static void Initialize(request, new)
+static void Initialize(request, new, args, num_args)
  Widget request, new;
+ ArgList args;
+ Cardinal *num_args;
 {
     TextWidget ctx = (TextWidget) new;
 
@@ -104,6 +106,8 @@ static void Initialize(request, new)
     ctx->text.sarray[3] = XtselectParagraph;
     ctx->text.sarray[4] = XtselectAll;
     ctx->text.sarray[5] = XtselectNull;
+    ctx->text.lasttime = 0; /* ||| correct? */
+    ctx->text.time = 0; /* ||| correct? */
     ctx->text.showposition = TRUE;
     ctx->text.lastPos = GETLASTPOS;
     ctx->text.dialog = NULL;
@@ -111,6 +115,7 @@ static void Initialize(request, new)
     ctx->text.updateTo = (XtTextPosition *) XtMalloc(1);
     ctx->text.numranges = ctx->text.maxranges = 0;
     ctx->text.gc = DefaultGCOfScreen(XtScreen(ctx));
+    ctx->text.hasfocus = FALSE;
     BuildLineTable(ctx, ctx->text.lt.top);
 /* what about this ugly scrollbar stuff?
     if (ctx->text.options & scrollVertical) {
@@ -131,18 +136,14 @@ static void Initialize(request, new)
 
 static void Realize( w, valueMask, attributes )
    Widget w;
-   Mask valueMask;
+   Mask *valueMask;
    XSetWindowAttributes *attributes;
 {
    TextWidget ctx = (TextWidget)w;
+
+   XtCreateWindow( w, InputOutput, (Visual *)CopyFromParent,
+		   *valueMask, attributes);
    if (ctx->text.sbar) XtRealizeWidget(ctx->text.sbar);
-   ctx->core.window = 
-          XCreateWindow(
-                XtDisplay(w), w->core.parent->core.window,
-                w->core.x, w->core.y,
-                w->core.width, w->core.height, w->core.border_width,
-                w->core.depth, InputOutput, (Visual *)CopyFromParent,
-                valueMask, attributes);
 }
 
 /* Utility routines for support of Text */
@@ -356,7 +357,7 @@ static void BuildLineTable (ctx, position)
     }
     if (ctx->text.lt.info == NULL) {
 	ctx->text.lt.info = (LineTableEntry *)
-	    XtMalloc((unsigned)sizeof(LineTableEntry) * (lines + 1));
+	    XtCalloc(lines + 1, (unsigned)sizeof(LineTableEntry));
 	for (line = 0; line < lines; line++) {
 	    ctx->text.lt.info[line].position = 0;
 	    ctx->text.lt.info[line].y = 0;
@@ -734,7 +735,7 @@ static void DisplayText(ctx, pos1, pos2)
 static void DoSelection (ctx, position, time, motion)
   TextWidget ctx;
   XtTextPosition position;
-  unsigned short time;
+  Time time;
   Boolean motion;
 {
     int     delta;
@@ -1185,7 +1186,7 @@ static void Resize(w)
  * This routine allow the application program to Set attributes.
  */
 
-Boolean XtTextSetValues(current, request, new, last)
+static Boolean SetValues(current, request, new, last)
 Widget current, request, new;
 Boolean last;
 {
@@ -1202,6 +1203,7 @@ Boolean last;
 	ForceBuildLineTable(oldtw);
 	redisplay = TRUE;
     }
+
     if (oldtw->text.insertPos != newtw->text.insertPos)
 	oldtw->text.showposition = TRUE;
 
@@ -1211,10 +1213,16 @@ Boolean last;
     if (oldtw->text.leftmargin != newtw->text.leftmargin)
 	redisplay = TRUE;
 
+    /* ||| This may be the best way to do this, as some optimizations
+     *     can occur here that may be harder if we let XtSetValues
+     *     call our expose proc.
+     */
     if (redisplay) 
 	DisplayTextWindow(oldtw);
+
     _XtTextExecuteUpdate(oldtw);
-    return (FALSE);  /*  this needs looking at! */
+
+    return (FALSE);
 }
 
 
@@ -1484,14 +1492,14 @@ StuffFromBuffer(ctx, buffer)
 	XBell(XtDisplay(ctx), 50);
 	return;
     }
-    ctx->text.insertPos = ctx->text.source->scan(ctx->text.source, 
+    ctx->text.insertPos = (*(ctx->text.source->scan))(ctx->text.source, 
     	ctx->text.insertPos, XtstPositions, XtsdRight, text.length, TRUE);
     _XtTextSetNewSelection(ctx, ctx->text.insertPos, ctx->text.insertPos);
     XtFree(text.ptr);
 }
 
 
-static UnKill(ctx, event)
+static void UnKill(ctx, event)
   TextWidget ctx;
    XEvent *event;
 {
@@ -1500,7 +1508,7 @@ static UnKill(ctx, event)
    EndAction(ctx);
 }
 
-static Stuff(ctx, event)
+static void Stuff(ctx, event)
   TextWidget ctx;
    XEvent *event;
 {
@@ -1518,39 +1526,39 @@ static XtTextPosition NextPosition(ctx, position, kind, direction)
 {
     XtTextPosition pos;
 
-     pos = ctx->text.source->scan(
+     pos = (*(ctx->text.source->scan))(
 	    ctx->text.source, position, kind, direction, 1, FALSE);
      if (pos == ctx->text.insertPos) 
-         pos = ctx->text.source->scan(
+         pos = (*(ctx->text.source->scan))(
             ctx->text.source, position, kind, direction, 2, FALSE);
      return pos;
 }
 
 /* routines for moving around */
 
-static MoveForwardChar(ctx, event)
+static void MoveForwardChar(ctx, event)
    TextWidget ctx;
    XEvent *event;
 {
    StartAction(ctx, event);
-   ctx->text.insertPos = ctx->text.source->scan(
+   ctx->text.insertPos = (*(ctx->text.source->scan))(
         ctx->text.source, ctx->text.insertPos, XtstPositions, XtsdRight, 1, 
 	TRUE);
    EndAction(ctx);
 }
 
-static MoveBackwardChar(ctx, event)
+static void MoveBackwardChar(ctx, event)
     TextWidget ctx;
    XEvent *event;
 {
    StartAction(ctx, event);
-    ctx->text.insertPos = ctx->text.source->scan(
+    ctx->text.insertPos = (*(ctx->text.source->scan))(
             ctx->text.source, ctx->text.insertPos, XtstPositions, XtsdLeft,
 	    1, TRUE);
    EndAction(ctx);
 }
 
-static MoveForwardWord(ctx, event)
+static void MoveForwardWord(ctx, event)
     TextWidget ctx;
    XEvent *event;
 {
@@ -1560,7 +1568,7 @@ static MoveForwardWord(ctx, event)
    EndAction(ctx);
 }
 
-static MoveBackwardWord(ctx, event)
+static void MoveBackwardWord(ctx, event)
     TextWidget ctx;
    XEvent *event;
 {
@@ -1570,7 +1578,7 @@ static MoveBackwardWord(ctx, event)
    EndAction(ctx);
 }
 
-static MoveBackwardParagraph(ctx, event)
+static void MoveBackwardParagraph(ctx, event)
     TextWidget ctx;
    XEvent *event;
 {
@@ -1580,7 +1588,7 @@ static MoveBackwardParagraph(ctx, event)
    EndAction(ctx);
 }
 
-static MoveForwardParagraph(ctx, event)
+static void MoveForwardParagraph(ctx, event)
     TextWidget ctx;
    XEvent *event;
 {
@@ -1591,7 +1599,7 @@ static MoveForwardParagraph(ctx, event)
 }
 
 
-static MoveToLineStart(ctx, event)
+static void MoveToLineStart(ctx, event)
   TextWidget ctx;
    XEvent *event;
 {
@@ -1603,7 +1611,7 @@ static MoveToLineStart(ctx, event)
    EndAction(ctx);
 }
 
-static MoveToLineEnd(ctx, event)
+static void MoveToLineEnd(ctx, event)
   TextWidget ctx;
    XEvent *event;
 {
@@ -1616,7 +1624,7 @@ static MoveToLineEnd(ctx, event)
     if (next > ctx->text.lastPos)
 	next = ctx->text.lastPos;
     else
-	next = ctx->text.source->scan(ctx->text.source, next, XtstPositions, 
+	next = (*(ctx->text.source->scan))(ctx->text.source, next, XtstPositions, 
 	  XtsdLeft, 1, TRUE);
     ctx->text.insertPos = next;
    EndAction(ctx);
@@ -1626,7 +1634,7 @@ static MoveToLineEnd(ctx, event)
 static int LineLastWidth = 0;
 static XtTextPosition LineLastPosition = 0;
 
-static MoveNextLine(ctx, event)
+static void MoveNextLine(ctx, event)
   TextWidget ctx;
    XEvent *event;
 {
@@ -1642,7 +1650,7 @@ static MoveNextLine(ctx, event)
     if (LineLastPosition == ctx->text.insertPos)
 	width = LineLastWidth;
     else
-	ctx->text.sink->findDistance(ctx,
+	(*(ctx->text.sink->findDistance))(ctx,
 		ctx->text.lt.info[line].position, ctx->text.lt.info[line].x,
 		ctx->text.insertPos, &width, &position, &height);
     line++;
@@ -1651,10 +1659,10 @@ static MoveNextLine(ctx, event)
 	EndAction(ctx);
 	return;
     }
-    ctx->text.sink->findPosition(ctx,
+    (*(ctx->text.sink->findPosition))(ctx,
 	    ctx->text.lt.info[line].position, ctx->text.lt.info[line].x,
 	    width, FALSE, &position, &width2, &height);
-    maxp = ctx->text.source->scan(ctx->text.source,
+    maxp = (*(ctx->text.source->scan))(ctx->text.source,
             ctx->text.lt.info[line+1].position,
 	    XtstPositions, XtsdLeft, 1, TRUE);
     if (position > maxp)
@@ -1665,7 +1673,7 @@ static MoveNextLine(ctx, event)
    EndAction(ctx);
 }
 
-static MovePreviousLine(ctx, event)
+static void MovePreviousLine(ctx, event)
   TextWidget ctx;
    XEvent *event;
 {
@@ -1682,15 +1690,15 @@ static MovePreviousLine(ctx, event)
 	if (LineLastPosition == ctx->text.insertPos)
 	    width = LineLastWidth;
 	else
-	    ctx->text.sink->findDistance(ctx,
+	    (*(ctx->text.sink->findDistance))(ctx,
 		    ctx->text.lt.info[line].position, 
 		    ctx->text.lt.info[line].x,
 		    ctx->text.insertPos, &width, &position, &height);
 	line--;
-	ctx->text.sink->findPosition(ctx,
+	(*(ctx->text.sink->findPosition))(ctx,
 		ctx->text.lt.info[line].position, ctx->text.lt.info[line].x,
 		width, FALSE, &position, &width2, &height);
-	maxp = ctx->text.source->scan(ctx->text.source, 
+	maxp = (*(ctx->text.source->scan))(ctx->text.source, 
 		ctx->text.lt.info[line+1].position,
 		XtstPositions, XtsdLeft, 1, TRUE);
 	if (position > maxp)
@@ -1704,28 +1712,28 @@ static MovePreviousLine(ctx, event)
 
 
 
-static MoveBeginningOfFile(ctx, event)
+static void MoveBeginningOfFile(ctx, event)
   TextWidget ctx;
    XEvent *event;
 {
    StartAction(ctx, event);
-    ctx->text.insertPos = ctx->text.source->scan(ctx->text.source, 
+    ctx->text.insertPos = (*(ctx->text.source->scan))(ctx->text.source, 
     	ctx->text.insertPos, XtstFile, XtsdLeft, 1, TRUE);
    EndAction(ctx);
 }
 
 
-static MoveEndOfFile(ctx, event)
+static void MoveEndOfFile(ctx, event)
   TextWidget ctx;
    XEvent *event;
 {
    StartAction(ctx, event);
-    ctx->text.insertPos = ctx->text.source->scan(ctx->text.source, 
+    ctx->text.insertPos = (*(ctx->text.source->scan))(ctx->text.source, 
     	ctx->text.insertPos, XtstFile,  XtsdRight, 1, TRUE);
    EndAction(ctx);
 }
 
-static ScrollOneLineUp(ctx, event)
+static void ScrollOneLineUp(ctx, event)
   TextWidget ctx;
    XEvent *event;
 {
@@ -1734,7 +1742,7 @@ static ScrollOneLineUp(ctx, event)
    EndAction(ctx);
 }
 
-static ScrollOneLineDown(ctx, event)
+static void ScrollOneLineDown(ctx, event)
   TextWidget ctx;
    XEvent *event;
 {
@@ -1743,7 +1751,7 @@ static ScrollOneLineDown(ctx, event)
    EndAction(ctx);
 }
 
-static MoveNextPage(ctx, event)
+static void MoveNextPage(ctx, event)
   TextWidget ctx;
    XEvent *event;
 {
@@ -1753,7 +1761,7 @@ static MoveNextPage(ctx, event)
    EndAction(ctx);
 }
 
-static MovePreviousPage(ctx, event)
+static void MovePreviousPage(ctx, event)
   TextWidget ctx;
    XEvent *event;
 {
@@ -1768,35 +1776,35 @@ static MovePreviousPage(ctx, event)
 
 /* delete routines */
 
-static DeleteForwardChar(ctx, event)
+static void DeleteForwardChar(ctx, event)
     TextWidget ctx;
    XEvent *event;
 {
     XtTextPosition next;
 
    StartAction(ctx, event);
-    next = ctx->text.source->scan(
+    next = (*(ctx->text.source->scan))(
             ctx->text.source, ctx->text.insertPos, XtstPositions, 
 	    XtsdRight, 1, TRUE);
     DeleteOrKill(ctx, ctx->text.insertPos, next, FALSE);
    EndAction(ctx);
 }
 
-static DeleteBackwardChar(ctx, event)
+static void DeleteBackwardChar(ctx, event)
     TextWidget ctx;
    XEvent *event;
 {
     XtTextPosition next;
 
    StartAction(ctx, event);
-    next = ctx->text.source->scan(
+    next = (*(ctx->text.source->scan))(
             ctx->text.source, ctx->text.insertPos, XtstPositions, 
 	    XtsdLeft, 1, TRUE);
     DeleteOrKill(ctx, next, ctx->text.insertPos, FALSE);
    EndAction(ctx);
 }
 
-static DeleteForwardWord(ctx, event)
+static void DeleteForwardWord(ctx, event)
     TextWidget ctx;
    XEvent *event;
 {
@@ -1808,7 +1816,7 @@ static DeleteForwardWord(ctx, event)
    EndAction(ctx);
 }
 
-static DeleteBackwardWord(ctx, event)
+static void DeleteBackwardWord(ctx, event)
     TextWidget ctx;
    XEvent *event;
 {
@@ -1820,7 +1828,7 @@ static DeleteBackwardWord(ctx, event)
    EndAction(ctx);
 }
 
-static KillForwardWord(ctx, event)
+static void KillForwardWord(ctx, event)
     TextWidget ctx;
    XEvent *event;
 {
@@ -1832,7 +1840,7 @@ static KillForwardWord(ctx, event)
    EndAction(ctx);
 }
 
-static KillBackwardWord(ctx, event)
+static void KillBackwardWord(ctx, event)
     TextWidget ctx;
    XEvent *event;
 {
@@ -1844,7 +1852,7 @@ static KillBackwardWord(ctx, event)
    EndAction(ctx);
 }
 
-static KillCurrentSelection(ctx, event)
+static void KillCurrentSelection(ctx, event)
     TextWidget ctx;
    XEvent *event;
 {
@@ -1853,7 +1861,7 @@ static KillCurrentSelection(ctx, event)
    EndAction(ctx);
 }
 
-static DeleteCurrentSelection(ctx, event)
+static void DeleteCurrentSelection(ctx, event)
     TextWidget ctx;
    XEvent *event;
 {
@@ -1862,7 +1870,7 @@ static DeleteCurrentSelection(ctx, event)
    EndAction(ctx);
 }
 
-static KillToEndOfLine(ctx, event)
+static void KillToEndOfLine(ctx, event)
     TextWidget ctx;
    XEvent *event;
 {
@@ -1872,7 +1880,7 @@ static KillToEndOfLine(ctx, event)
     _XtTextShowPosition(ctx);
     line = LineForPosition(ctx, ctx->text.insertPos);
     last = ctx->text.lt.info[line + 1].position;
-    next = ctx->text.source->scan(ctx->text.source, ctx->text.insertPos,
+    next = (*(ctx->text.source->scan))(ctx->text.source, ctx->text.insertPos,
        XtstEOL, XtsdRight, 1, FALSE);
     if (last > ctx->text.lastPos)
 	last = ctx->text.lastPos;
@@ -1882,22 +1890,23 @@ static KillToEndOfLine(ctx, event)
    EndAction(ctx);
 }
 
-static KillToEndOfParagraph(ctx, event)
+static void KillToEndOfParagraph(ctx, event)
     TextWidget ctx;
    XEvent *event;
 {
     XtTextPosition next;
 
    StartAction(ctx, event);
-    next = ctx->text.source->scan(ctx->text.source, ctx->text.insertPos, XtstEOL, XtsdRight,
-	    1, FALSE);
+    next = (*(ctx->text.source->scan))(ctx->text.source, ctx->text.insertPos,
+				       XtstEOL, XtsdRight, 1, FALSE);
     if (next == ctx->text.insertPos)
-	next = ctx->text.source->scan(ctx->text.source, next, XtstEOL, XtsdRight, 1, TRUE);
+	next = (*(ctx->text.source->scan))(ctx->text.source, next, XtstEOL,
+					   XtsdRight, 1, TRUE);
     DeleteOrKill(ctx, ctx->text.insertPos, next, TRUE);
    EndAction(ctx);
 }
 
-static int InsertNewLineAndBackup(ctx, event)
+static void InsertNewLineAndBackup(ctx, event)
   TextWidget ctx;
    XEvent *event;
 {
@@ -1933,7 +1942,7 @@ static int InsertNewLine(ctx, event)
    StartAction(ctx, event);
     if (InsertNewLineAndBackupInternal(ctx))
 	return(EDITERROR);
-    next = ctx->text.source->scan(ctx->text.source, ctx->text.insertPos,
+    next = (*(ctx->text.source->scan))(ctx->text.source, ctx->text.insertPos,
 	    XtstPositions, XtsdRight, 1, TRUE);
     ctx->text.insertPos = next;
    EndAction(ctx);
@@ -1941,7 +1950,7 @@ static int InsertNewLine(ctx, event)
 }
 
 
-static InsertNewLineAndIndent(ctx, event)
+static void InsertNewLineAndIndent(ctx, event)
   TextWidget ctx;
    XEvent *event;
 {
@@ -1949,11 +1958,11 @@ static InsertNewLineAndIndent(ctx, event)
     XtTextPosition pos1, pos2;
 
    StartAction(ctx, event);
-    pos1 = ctx->text.source->scan(ctx->text.source, ctx->text.insertPos, 
+    pos1 = (*(ctx->text.source->scan))(ctx->text.source, ctx->text.insertPos, 
     	XtstEOL, XtsdLeft, 1, FALSE);
-    pos2 = ctx->text.source->scan(ctx->text.source, pos1, XtstEOL, 
+    pos2 = (*(ctx->text.source->scan))(ctx->text.source, pos1, XtstEOL, 
     	XtsdLeft, 1, TRUE);
-    pos2 = ctx->text.source->scan(ctx->text.source, pos2, XtstWhiteSpace, 
+    pos2 = (*(ctx->text.source->scan))(ctx->text.source, pos2, XtstWhiteSpace, 
     	XtsdRight, 1, TRUE);
     text.ptr = _XtTextGetText(ctx, pos1, pos2);
     text.length = strlen(text.ptr);
@@ -1963,13 +1972,13 @@ static InsertNewLineAndIndent(ctx, event)
 	EndAction(ctx);
 	return;
     }
-    ctx->text.insertPos = ctx->text.source->scan(ctx->text.source, 
+    ctx->text.insertPos = (*(ctx->text.source->scan))(ctx->text.source, 
     	ctx->text.insertPos, XtstPositions, XtsdRight, text.length, TRUE);
     XtFree(text.ptr);
    EndAction(ctx);
 }
 
-static NewSelection(ctx, l, r)
+static void NewSelection(ctx, l, r)
   TextWidget ctx;
   XtTextPosition l, r;
 {
@@ -1982,22 +1991,22 @@ static NewSelection(ctx, l, r)
     }
 }
 
-static SelectWord(ctx, event)
+static void SelectWord(ctx, event)
   TextWidget ctx;
    XEvent *event;
 {
     XtTextPosition l, r;
    StartAction(ctx, event);
-    l = ctx->text.source->scan(ctx->text.source, ctx->text.insertPos, 
+    l = (*(ctx->text.source->scan))(ctx->text.source, ctx->text.insertPos, 
     	XtstWhiteSpace, XtsdLeft, 1, FALSE);
-    r = ctx->text.source->scan(ctx->text.source, l, XtstWhiteSpace, 
+    r = (*(ctx->text.source->scan))(ctx->text.source, l, XtstWhiteSpace, 
     	XtsdRight, 1, FALSE);
     NewSelection(ctx, l, r);
    EndAction(ctx);
 }
 
 
-static SelectAll(ctx, event)
+static void SelectAll(ctx, event)
   TextWidget ctx;
    XEvent *event;
 {
@@ -2006,7 +2015,7 @@ static SelectAll(ctx, event)
    EndAction(ctx);
 }
 
-static SelectStart(ctx, event)
+static void SelectStart(ctx, event)
   TextWidget ctx;
    XEvent *event;
 {
@@ -2015,7 +2024,7 @@ static SelectStart(ctx, event)
    EndAction(ctx);
 }
 
-static SelectAdjust(ctx, event)
+static void SelectAdjust(ctx, event)
   TextWidget ctx;
    XEvent *event;
 {
@@ -2024,7 +2033,7 @@ static SelectAdjust(ctx, event)
    EndAction(ctx);
 }
 
-static SelectEnd(ctx, event)
+static void SelectEnd(ctx, event)
   TextWidget ctx;
    XEvent *event;
 {
@@ -2033,7 +2042,7 @@ static SelectEnd(ctx, event)
    EndAction(ctx);
 }
 
-static ExtendStart(ctx, event)
+static void ExtendStart(ctx, event)
   TextWidget ctx;
    XEvent *event;
 {
@@ -2042,7 +2051,7 @@ static ExtendStart(ctx, event)
    EndAction(ctx);
 }
 
-static ExtendAdjust(ctx, event)
+static void ExtendAdjust(ctx, event)
   TextWidget ctx;
    XEvent *event;
 {
@@ -2051,7 +2060,7 @@ static ExtendAdjust(ctx, event)
    EndAction(ctx);
 }
 
-static ExtendEnd(ctx, event)
+static void ExtendEnd(ctx, event)
   TextWidget ctx;
    XEvent *event;
 {
@@ -2061,7 +2070,7 @@ static ExtendEnd(ctx, event)
 }
 
 
-static RedrawDisplay(ctx, event)
+static void RedrawDisplay(ctx, event)
   TextWidget ctx;
    XEvent *event;
 {
@@ -2088,7 +2097,7 @@ _XtTextAbortDialog(ctx, event)
 /* Insert a file of the given name into the text.  Returns 0 if file found, 
    -1 if not. */
 
-static InsertFileNamed(ctx, str)
+static int InsertFileNamed(ctx, str)
   TextWidget ctx;
   char *str;
 {
@@ -2105,7 +2114,7 @@ static InsertFileNamed(ctx, str)
     while ((text.length = read(fid, buf, 512)) > 0) {
 	text.ptr = buf;
 	(void) ReplaceText(ctx, position, position, &text);
-	position = ctx->text.source->scan(ctx->text.source, position, 
+	position = (*(ctx->text.source->scan))(ctx->text.source, position, 
 		XtstPositions, XtsdRight, text.length, TRUE);
     }
     (void) close(fid);
@@ -2114,7 +2123,7 @@ static InsertFileNamed(ctx, str)
     return 0;
 }
 
-static DoInsert(ctx)
+static void DoInsert(ctx)
   TextWidget ctx;
 {
 /* can't do dialog boxes yet
@@ -2125,7 +2134,7 @@ static DoInsert(ctx)
 */
 }
 
-static TextFocusIn (ctx, event)
+static void TextFocusIn (ctx, event)
   TextWidget ctx;
    XEvent *event;
 { ctx->text.hasfocus = TRUE; }
@@ -2138,7 +2147,7 @@ static void TextFocusOut(ctx, event)
 #define STRBUFSIZE 100
 
 static XComposeStatus compose_status = {NULL, 0};
-static InsertChar(ctx, event)
+static void InsertChar(ctx, event)
   TextWidget ctx;
    XEvent *event;
 {
@@ -2164,7 +2173,7 @@ static InsertChar(ctx, event)
    EndAction(ctx);
 }
 
-static InsertFile(ctx, event)
+static void InsertFile(ctx, event)
   TextWidget ctx;
    XEvent *event;
 {
@@ -2210,75 +2219,75 @@ static InsertFile(ctx, event)
 
 XtActionsRec textActionsTable [] = {
 /* motion bindings */
-  {"forward-character", 	(caddr_t)MoveForwardChar},
-  {"backward-character", 	(caddr_t)MoveBackwardChar},
-  {"forward-word", 		(caddr_t)MoveForwardWord},
-  {"backward-word", 		(caddr_t)MoveBackwardWord},
-  {"forward-paragraph", 	(caddr_t)MoveForwardParagraph},
-  {"backward-paragraph", 	(caddr_t)MoveBackwardParagraph},
-  {"beginning-of-line", 	(caddr_t)MoveToLineStart},
-  {"end-of-line", 		(caddr_t)MoveToLineEnd},
-  {"next-line", 		(caddr_t)MoveNextLine},
-  {"previous-line", 		(caddr_t)MovePreviousLine},
-  {"next-page", 		(caddr_t)MoveNextPage},
-  {"previous-page", 		(caddr_t)MovePreviousPage},
-  {"beginning-of-file", 	(caddr_t)MoveBeginningOfFile},
-  {"end-of-file", 		(caddr_t)MoveEndOfFile},
-  {"scroll-one-line-up", 	(caddr_t)ScrollOneLineUp},
-  {"scroll-one-line-down", 	(caddr_t)ScrollOneLineDown},
+  {"forward-character", 	MoveForwardChar},
+  {"backward-character", 	MoveBackwardChar},
+  {"forward-word", 		MoveForwardWord},
+  {"backward-word", 		MoveBackwardWord},
+  {"forward-paragraph", 	MoveForwardParagraph},
+  {"backward-paragraph", 	MoveBackwardParagraph},
+  {"beginning-of-line", 	MoveToLineStart},
+  {"end-of-line", 		MoveToLineEnd},
+  {"next-line", 		MoveNextLine},
+  {"previous-line", 		MovePreviousLine},
+  {"next-page", 		MoveNextPage},
+  {"previous-page", 		MovePreviousPage},
+  {"beginning-of-file", 	MoveBeginningOfFile},
+  {"end-of-file", 		MoveEndOfFile},
+  {"scroll-one-line-up", 	ScrollOneLineUp},
+  {"scroll-one-line-down", 	ScrollOneLineDown},
 /* delete bindings */
-  {"delete-next-character", 	(caddr_t)DeleteForwardChar},
-  {"delete-previous-character", (caddr_t)DeleteBackwardChar},
-  {"delete-next-word", 		(caddr_t)DeleteForwardWord},
-  {"delete-previous-word", 	(caddr_t)DeleteBackwardWord},
-  {"delete-selection", 		(caddr_t)DeleteCurrentSelection},
+  {"delete-next-character", 	DeleteForwardChar},
+  {"delete-previous-character", DeleteBackwardChar},
+  {"delete-next-word", 		DeleteForwardWord},
+  {"delete-previous-word", 	DeleteBackwardWord},
+  {"delete-selection", 		DeleteCurrentSelection},
 /* kill bindings */
-  {"kill-word", 		(caddr_t)KillForwardWord},
-  {"backward-kill-word", 	(caddr_t)KillBackwardWord},
-  {"kill-selection", 		(caddr_t)KillCurrentSelection},
-  {"kill-to-end-of-line", 	(caddr_t)KillToEndOfLine},
-  {"kill-to-end-of-paragraph", 	(caddr_t)KillToEndOfParagraph},
+  {"kill-word", 		KillForwardWord},
+  {"backward-kill-word", 	KillBackwardWord},
+  {"kill-selection", 		KillCurrentSelection},
+  {"kill-to-end-of-line", 	KillToEndOfLine},
+  {"kill-to-end-of-paragraph", 	KillToEndOfParagraph},
 /* unkill bindings */
-  {"unkill", 			(caddr_t)UnKill},
-  {"stuff", 			(caddr_t)Stuff},
+  {"unkill", 			UnKill},
+  {"stuff", 			Stuff},
 /* new line stuff */
-  {"newline-and-indent", 	(caddr_t)InsertNewLineAndIndent},
-  {"newline-and-backup", 	(caddr_t)InsertNewLineAndBackup},
-  {"newline", 			(caddr_t)InsertNewLine},
+  {"newline-and-indent", 	InsertNewLineAndIndent},
+  {"newline-and-backup", 	InsertNewLineAndBackup},
+  {"newline", 			(XtActionProc)InsertNewLine},
 /* Selection stuff */
-  {"select-word", 		(caddr_t)SelectWord},
-  {"select-all", 		(caddr_t)SelectAll},
-  {"select-start", 		(caddr_t)SelectStart},
-  {"select-adjust", 		(caddr_t)SelectAdjust},
-  {"select-end", 		(caddr_t)SelectEnd},
-  {"extend-start", 		(caddr_t)ExtendStart},
-  {"extend-adjust", 		(caddr_t)ExtendAdjust},
-  {"extend-end", 		(caddr_t)ExtendEnd},
+  {"select-word", 		SelectWord},
+  {"select-all", 		SelectAll},
+  {"select-start", 		SelectStart},
+  {"select-adjust", 		SelectAdjust},
+  {"select-end", 		SelectEnd},
+  {"extend-start", 		ExtendStart},
+  {"extend-adjust", 		ExtendAdjust},
+  {"extend-end", 		ExtendEnd},
 /* Miscellaneous */
-  {"redraw-display", 		(caddr_t)RedrawDisplay},
-  {"insert-file", 		(caddr_t)InsertFile},
-  {"insert-char", 		(caddr_t)InsertChar},
-  {"focus-in", 	 	        (caddr_t)TextFocusIn},
-  {"focus-out", 		(caddr_t)TextFocusOut},
+  {"redraw-display", 		RedrawDisplay},
+  {"insert-file", 		InsertFile},
+  {"insert-char", 		InsertChar},
+  {"focus-in", 	 	        TextFocusIn},
+  {"focus-out", 		TextFocusOut},
   {NULL,NULL}
 };
 
 static char *defaultTextEventBindings[] = {
 /* motion bindings */
     "Ctrl<Key>F:		forward-character()",
-    "<Key>0xff53:	forward-character()", 
+    "<Key>0xff53:		forward-character()", 
     "Ctrl<Key>B:		backward-character()",
-    "<Key>0xff51:	backward-character()",
+    "<Key>0xff51:		backward-character()",
     "Meta<Key>F:		forward-word()",
     "Meta<Key>B:		backward-word()",
     "Meta<Key>]:		forward-paragraph()",
     "Ctrl<Key>[:		backward-paragraph()",
     "Ctrl<Key>A:		beginning-of-line()",
     "Ctrl<Key>E:		end-of-line()",
-    "Ctrl<Key>N:           next-line()",
-    "<Key>0xff54:	next-line()",
+    "Ctrl<Key>N:		next-line()",
+    "<Key>0xff54:		next-line()",
     "Ctrl<Key>P:		previous-line()",
-    "<Key>0xff52:       previous-line()",
+    "<Key>0xff52:		previous-line()",
     "Ctrl<Key>V:		next-page()",
     "Meta<Key>V:		previous-page()",
     "Meta<Key>\\<:		beginning-of-file()",
@@ -2288,9 +2297,9 @@ static char *defaultTextEventBindings[] = {
 /* delete binding*/
     "Ctrl<Key>D:		delete-next-character()",
     "Ctrl<Key>H:		delete-previous-character()",
-    "<Key>0xff7f:	delete-previous-character()",
-    "<Key>0xffff:	delete-previous-character()",
-    "<Key>0xff08:	delete-previous-character()",
+    "<Key>0xff7f:		delete-previous-character()",
+    "<Key>0xffff:		delete-previous-character()",
+    "<Key>0xff08:		delete-previous-character()",
     "Meta<Key>D:		delete-next-word()",
     "Meta<Key>H:		delete-previous-word()",
 /* kill bindings */
@@ -2304,25 +2313,25 @@ static char *defaultTextEventBindings[] = {
     "Meta<Key>Y:		stuff()",
 /* new line stuff */
     "Ctrl<Key>J:		newline-and-indent()",
-    "<Key>0xff0a:	newline-and-indent()",
+    "<Key>0xff0a:		newline-and-indent()",
     "Ctrl<Key>O:		newline-and-backup()",
     "Ctrl<Key>M:		newline()",
-    "<Key>0xff0d:	newline()",
+    "<Key>0xff0d:		newline()",
 /* Miscellaneous */
     "Ctrl<Key>L:		redraw-display()",
     "Meta<Key>I:		insert-file()",
-   "<FocusIn>:		focus-in()",
-   "<FocusOut>:		focus-out()",
+   "<FocusIn>:			focus-in()",
+   "<FocusOut>:			focus-out()",
 /* selection stuff */
-    "<Btn1Down>:	select-start()",
-    "Button1<PtrMoved>:	extend-adjust()",
-    "<Btn1Up>:		extend-end()",
-    "<Btn2Down>:	stuff()",
-    "<Btn3Down>:	extend-start()",
-    "Button3<PtrMoved>: 	extend-adjust()",
-    "<Btn3Up>:		extend-end()",
+    "<Btn1Down>:		select-start()",
+    "Button1<PtrMoved>:		extend-adjust()",
+    "<Btn1Up>:			extend-end()",
+    "<Btn2Down>:		stuff()",
+    "<Btn3Down>:		extend-start()",
+    "Button3<PtrMoved>:		extend-adjust()",
+    "<Btn3Up>:			extend-end()",
 /* default character handling */
-    "<Key>:		insert-char()",
+    "<Key>:			insert-char()",
     
     NULL
 };
@@ -2344,13 +2353,13 @@ TextClassRec textClassRec = {
     /* resources        */      resources,
     /* num_ resource    */      XtNumber(resources),
     /* xrm_class        */      NULLQUARK,
-    /* compress_motion    */    TRUE,
-    /* compress_exposure  */    FALSE,
+    /* compress_motion  */      TRUE,
+    /* compress_exposure*/      FALSE,
     /* visible_interest */      FALSE,
     /* destroy          */      TextDestroy,
     /* resize           */      Resize,
     /* expose           */      ProcessExposeRegion,
-    /* set_values       */      XtTextSetValues,
+    /* set_values       */      SetValues,
     /* accept_focus     */      TextAcceptFocus,
 };
 
