@@ -1,5 +1,5 @@
 /*
- * $XConsortium: actions.c,v 1.5 91/01/10 11:35:36 rws Exp $
+ * $XConsortium: actions.c,v 1.6 91/02/16 16:03:51 converse Exp $
  *
  * actions.c - externally available procedures for xcalc
  * 
@@ -36,8 +36,8 @@ extern void post_op(), Quit(), ringbell(), do_select();
 #ifndef IEEE
 extern    jmp_buf env;
 extern void fail_op();
-#define XCALC_PRE_OP(keynum) { int i; if (pre_op(keynum)) return; \
-		       if ((i = setjmp (env))) {fail_op(i); return;}}
+#define XCALC_PRE_OP(keynum) { if (pre_op(keynum)) return; \
+		       if (setjmp (env)) {fail_op(); return;}}
 #else
 #define XCALC_PRE_OP(keynum) if (pre_op(keynum)) return;
 #endif
