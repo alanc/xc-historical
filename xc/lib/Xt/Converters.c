@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Converters.c,v 1.45 89/09/26 18:06:38 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Converters.c,v 1.46 89/10/03 08:31:57 swick Exp $";
 /* $oHeader: Converters.c,v 1.6 88/09/01 09:26:23 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -131,6 +131,7 @@ static Boolean CvtStringToBool();
 static Boolean CvtStringToCursor();
 static Boolean CvtStringToDisplay();
 static Boolean CvtStringToFile();
+static Boolean CvtStringToFloat();
 static Boolean CvtStringToFont();
 static Boolean CvtStringToFontStruct();
 static Boolean CvtStringToGeometry();
@@ -624,6 +625,28 @@ static void FreeFile(app, toVal, closure, args, num_args)
 }
 
 /*ARGSUSED*/
+static Boolean CvtStringToFloat(dpy, args, num_args, fromVal, toVal, closure_ret)
+    Display*	dpy;
+    XrmValuePtr args;
+    Cardinal    *num_args;
+    XrmValuePtr	fromVal;
+    XrmValuePtr	toVal;
+    XtPointer	*closure_ret;
+{
+    float f;
+    extern double atof();
+
+    if (*num_args != 0)
+	XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
+		 "wrongParameters","cvtStringToFloat","XtToolkitError",
+                 "String to Float conversion needs no extra arguments",
+                 (String *) NULL, (Cardinal *)NULL);
+
+    f = atof(fromVal->addr);
+    done(float, f);
+}
+
+/*ARGSUSED*/
 static Boolean CvtStringToFont(dpy, args, num_args, fromVal, toVal, closure_ret)
     Display*	dpy;
     XrmValuePtr args;
@@ -1105,6 +1128,7 @@ XrmQuark  XtQCursor;
 XrmQuark  XtQDisplay;
 XrmQuark  XtQDimension;
 XrmQuark  XtQFile;
+XrmQuark  XtQFloat;
 XrmQuark  XtQFont;
 XrmQuark  XtQFontStruct;
 XrmQuark  XtQGeometry;
@@ -1130,6 +1154,7 @@ void _XtConvertInitialize()
     XtQDimension	= XrmStringToQuark(XtRDimension);
     XtQDisplay		= XrmStringToQuark(XtRDisplay);
     XtQFile		= XrmStringToQuark(XtRFile);
+    XtQFloat		= XrmStringToQuark(XtRFloat);
     XtQFont		= XrmStringToQuark(XtRFont);
     XtQFontStruct	= XrmStringToQuark(XtRFontStruct);
     XtQGeometry		= XrmStringToQuark(XtRGeometry);
@@ -1160,41 +1185,42 @@ _XtAddDefaultConverters(table)
 	    (XtConvertArgList) convert_args, (Cardinal)num_args, \
 	    True, cache, destructor)
 
-    Add(XtQColor,   XtQPixel,       CvtXColorToPixel,	NULL, 0, XtCacheNone);
-    Add(XtQInt,     XtQBoolean,     CvtIntToBoolean,	NULL, 0, XtCacheNone);
-    Add(XtQInt,     XtQBool,        CvtIntToBool,	NULL, 0, XtCacheNone);
+    Add(XtQColor,   XtQPixel,	    CvtXColorToPixel,	NULL, 0, XtCacheNone);
+    Add(XtQInt,	    XtQBoolean,	    CvtIntToBoolean,	NULL, 0, XtCacheNone);
+    Add(XtQInt,	    XtQBool,	    CvtIntToBool,	NULL, 0, XtCacheNone);
     Add(XtQInt,	    XtQDimension,   CvtIntToShort,	NULL, 0, XtCacheNone);
-    Add(XtQInt,     XtQPixel,       CvtIntToPixel,      NULL, 0, XtCacheNone);
-    Add(XtQInt,     XtQPosition,    CvtIntToShort,      NULL, 0, XtCacheNone);
-    Add(XtQInt,     XtQPixmap,      CvtIntToPixmap,	NULL, 0, XtCacheNone);
-    Add(XtQInt,     XtQFont,        CvtIntToFont,	NULL, 0, XtCacheNone);
-    Add(XtQInt,     XtQColor,       CvtIntOrPixelToXColor,
+    Add(XtQInt,	    XtQPixel,	    CvtIntToPixel,	NULL, 0, XtCacheNone);
+    Add(XtQInt,	    XtQPosition,    CvtIntToShort,	NULL, 0, XtCacheNone);
+    Add(XtQInt,	    XtQPixmap,	    CvtIntToPixmap,	NULL, 0, XtCacheNone);
+    Add(XtQInt,	    XtQFont,	    CvtIntToFont,	NULL, 0, XtCacheNone);
+    Add(XtQInt,	    XtQColor,	    CvtIntOrPixelToXColor,
 	colorConvertArgs, XtNumber(colorConvertArgs), XtCacheByDisplay);
 
-    Add(XtQString,  XtQBoolean,     CvtStringToBoolean, NULL, 0, XtCacheNone);
-    Add(XtQString,  XtQBool,        CvtStringToBool,	NULL, 0, XtCacheNone);
-    Add2(XtQString,  XtQCursor,     CvtStringToCursor,
+    Add(XtQString,  XtQBoolean,	    CvtStringToBoolean, NULL, 0, XtCacheNone);
+    Add(XtQString,  XtQBool,	    CvtStringToBool,	NULL, 0, XtCacheNone);
+    Add2(XtQString,  XtQCursor,	    CvtStringToCursor,
 	screenConvertArg, XtNumber(screenConvertArg),
 	XtCacheByDisplay, FreeCursor);
-    Add(XtQString,  XtQDimension,   CvtStringToShort,   NULL, 0, XtCacheNone);
-    Add(XtQString,  XtQDisplay,     CvtStringToDisplay, NULL, 0, XtCacheAll);
-    Add2(XtQString,  XtQFile,       CvtStringToFile,	NULL, 0,
+    Add(XtQString,  XtQDimension,   CvtStringToShort,	NULL, 0, XtCacheNone);
+    Add(XtQString,  XtQDisplay,	    CvtStringToDisplay, NULL, 0, XtCacheAll);
+    Add2(XtQString, XtQFile,	    CvtStringToFile,	NULL, 0,
 	 XtCacheAll | XtCacheRefCount, FreeFile);
-    Add2(XtQString,  XtQFont,       CvtStringToFont,
+    Add(XtQString,  XtQFloat,	    CvtStringToFloat,	NULL, 0, XtCacheNone);
+    Add2(XtQString, XtQFont,	    CvtStringToFont,
 	screenConvertArg, XtNumber(screenConvertArg),
 	XtCacheByDisplay, FreeFont);
-    Add2(XtQString,  XtQFontStruct, CvtStringToFontStruct,
+    Add2(XtQString, XtQFontStruct,  CvtStringToFontStruct,
 	screenConvertArg, XtNumber(screenConvertArg),
 	XtCacheByDisplay, FreeFontStruct);
-    Add(XtQString,  XtQInt,         CvtStringToInt,	NULL, 0, XtCacheAll);
-    Add(XtQString,  XtQPosition,    CvtStringToShort,   NULL, 0, XtCacheAll);
-    Add2(XtQString,  XtQPixel,      CvtStringToPixel,
+    Add(XtQString,  XtQInt,	    CvtStringToInt,	NULL, 0, XtCacheAll);
+    Add(XtQString,  XtQPosition,    CvtStringToShort,	NULL, 0, XtCacheAll);
+    Add2(XtQString, XtQPixel,	    CvtStringToPixel,
 	colorConvertArgs, XtNumber(colorConvertArgs),
 	XtCacheByDisplay, FreePixel);
-    Add(XtQString,  XtQShort,       CvtStringToShort,   NULL, 0, XtCacheAll);
+    Add(XtQString,  XtQShort,	    CvtStringToShort,	NULL, 0, XtCacheAll);
     Add(XtQString,  XtQUnsignedChar,CvtStringToUnsignedChar,NULL,0,XtCacheAll);
 
-    Add(XtQPixel,   XtQColor,       CvtIntOrPixelToXColor,
+    Add(XtQPixel,   XtQColor,	    CvtIntOrPixelToXColor,
 	colorConvertArgs, XtNumber(colorConvertArgs), XtCacheByDisplay);
 
     Add(XtQString,  XtQGeometry,    CvtStringToGeometry, NULL, 0, XtCacheNone);
