@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Scale.c,v 1.8 91/03/21 13:58:08 dave Exp $
+ * $XConsortium: Scale.c,v 1.9 91/03/26 14:41:34 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -33,7 +33,8 @@
 #include <X11/Xaw/XawInit.h>
 #include "ScaleP.h"
 
-double rint();
+#define myrint(x) floor(x + 0.5)
+
 #if __STDC__ && !defined(NOSTDHDRS)
 #include <stdlib.h>
 #endif
@@ -41,9 +42,6 @@ double rint();
 #define streq(a,b) (strcmp( (a), (b) ) == 0)
 #define min(x, y) (x > y ? y : x)
 #define max(x, y) (x < y ? y : x)
-#ifdef SYSV
-#define rint(x)                       floor(x + 0.5)
-#endif
 
 #define DefaultBufferSize 1024
 #define DefaultScaleFactor NULL
@@ -326,14 +324,14 @@ void BuildTable(sw)
     
     /* Build the scaling table */	
     for (x = 0; x < sw->scale.image->width; x++) {
-	sw->scale.table.x[(int) x] = (Position) rint(sw->scale.scale_x * x);
+	sw->scale.table.x[(int) x] = (Position) myrint(sw->scale.scale_x * x);
 	sw->scale.table.width[(int) x] = (Dimension)
-	    rint(sw->scale.scale_x * (x + 1)) - rint(sw->scale.scale_x * x);
+	    myrint(sw->scale.scale_x *(x + 1)) - myrint(sw->scale.scale_x * x);
     }
     for (y = 0; y < sw->scale.image->height; y++) {
-	sw->scale.table.y[(int) y] = (Position) rint(sw->scale.scale_y * y);
+	sw->scale.table.y[(int) y] = (Position) myrint(sw->scale.scale_y * y);
 	sw->scale.table.height[(int) y] = (Dimension)
-	    rint(sw->scale.scale_y * (y + 1)) - rint(sw->scale.scale_y * y);
+	    myrint(sw->scale.scale_y *(y + 1)) - myrint(sw->scale.scale_y * y);
     }
 }
 
@@ -614,7 +612,7 @@ void Proportional(sw)
     ScaleWidget sw;
 {
     float scale_x, scale_y;
-    
+
     scale_x = sw->scale.scale_y / sw->scale.aspect_ratio;
     scale_y = sw->scale.scale_x * sw->scale.aspect_ratio;
     
@@ -639,8 +637,8 @@ void Proportional(sw)
 	else
 	    sw->scale.scale_x /= y_ratio;
     }
-    
-    if (abs(sw->scale.scale_x / sw->scale.scale_y * sw->scale.aspect_ratio 
+
+    if (fabs(sw->scale.scale_x / sw->scale.scale_y * sw->scale.aspect_ratio 
 	    - 1.0) > sw->scale.precision)
 	XtWarning("can not preserve aspect ratio");
 }
@@ -651,9 +649,9 @@ void GetScaledSize(sw)
     ScaleWidget sw;
 {
     sw->scale.width = (Dimension)
-	max(rint(sw->scale.scale_x * sw->scale.image->width), 1);
+	max(myrint(sw->scale.scale_x * sw->scale.image->width), 1);
     sw->scale.height = (Dimension)
-	max(rint(sw->scale.scale_y * sw->scale.image->height), 1);
+	max(myrint(sw->scale.scale_y * sw->scale.image->height), 1);
 }
 
 
