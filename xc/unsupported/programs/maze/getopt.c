@@ -14,7 +14,7 @@
 #include <stdio.h>
 #include <X11/Xos.h>
 
-#define ERR(_s, _c) { if (opterr) fprintf (stderr, "%s%c\n", argv[0], _s, _c);}
+#define ERR(_s, _c) { if (opterr) fprintf (stderr, "%s%s%c\n", argv[0], _s, _c);}
 
 int	opterr = 1;
 int	optind = 1;
