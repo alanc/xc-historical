@@ -214,8 +214,8 @@ ServerTarget(Xndx,$(EXTDIR) $(FONTUTILDIR) $(NDXDIRS),$(NDXOBJS),$(NDXLIBS),$(SY
 # pegasus server
 #
 PEGASUSDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/tek os/4.2bsd
-PEGASUSOBJS = ddx/tek/tek4310.obj $(FONTUTIL)
-PEGASUSLIBS = $(MFB) $(MI) $(DIX) $(UNIX) $(SNF) $(EXTENSIONS)
+PEGASUSOBJS = ddx/tek/tek4310.obj ddx/tek/tekextra.o $(FONTUTIL)
+PEGASUSLIBS = $(DIX) $(UNIX) $(SNF) $(MFB) $(MI) $(EXTENSIONS)
 XpegDIRS = $(PEGASUSDIRS)
 
 ServerTarget(Xpeg,$(EXTDIR) $(FONTUTILDIR) $(PEGASUSDIRS),$(PEGASUSOBJS),$(PEGASUSLIBS),$(SYSLIBS))
