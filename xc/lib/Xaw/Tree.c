@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: Tree.c,v 1.3 90/02/01 18:04:55 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -49,9 +49,8 @@ static void             insert_new_node();
 static void             delete_node();
 static void             new_layout();
 static void             Redisplay();
-static TreeOffsetPtr    create_offset();
 static void             set_positions();
-static void             reset();
+static void             initialize_dimensions();
 
 static XtResource resources[] = {
  {XtNhorizontalSpace,XtCSpace,XtRDimension,sizeof(Dimension),
@@ -163,7 +162,9 @@ static void Initialize(request, new)
    * Allocate the tables used by the layout
    * algorithm.
    */
-  new->tree.largest    = create_offset(10);
+  new->tree.n_largest = 0;
+  initialize_dimensions (&new->tree.largest, &new->tree.n_largest, 
+			 INITIAL_TREE_DEPTH);
   new->tree.horiz = TRUE;
 } 
 
@@ -445,42 +446,28 @@ static void set_positions(tw, w, level)
   }
 }
 
-static TreeOffsetPtr create_offset(size)
-   int size;
-{
- TreeOffsetPtr  offset = 
-                 (TreeOffsetPtr) XtMalloc(sizeof(TreeOffset));
- offset->size = size;
- offset->array = 
-             (Dimension *) XtMalloc(size * sizeof(Dimension));
- return (offset);
-}
 
-static void reset(offset)
-   TreeOffsetPtr offset;
+static void initialize_dimensions (listp, sizep, n)
+    Dimension **listp;
+    int *sizep;
+    int n;
 {
-  int i;
-  for(i=0; i< offset->size; i++)
-    offset->array[i] = 0;
-}
+    register int i;
+    register Dimension *l;
 
-static void set_offset_to_max_value (offset, nindex, value)
-    TreeOffsetPtr offset;
-    int nindex;
-    Dimension value;
-{
-    if (nindex >= offset->size) {
-	int oldsize = offset->size;
-	register int i;
-
-	offset->size = nindex + nindex / 2;
-	offset->array = (Dimension *) 
-	  XtRealloc (offset->array, offset->size * sizeof(Dimension));
-	for (i = oldsize; i < offset->size; i++) offset->array[i] = 0;
+    if (!*listp) {
+	*listp = (Dimension *) XtCalloc (n, sizeof(Dimension));
+	*sizep = ((*listp) ? n : 0);
+	return;
     }
-    if (offset->array[nindex] < value) offset->array[nindex] = value;
+    if (n > *sizep) {
+	*listp = (Dimension *) XtRealloc (*listp, n * sizeof(Dimension));
+	*sizep = ((*listp) ? n : 0);
+	if (!*listp) return;
+    }
+    for (i = *sizep, l = (*listp) + i; i < n; i++, l++) *l = 0;
+    return;
 }
-
 
 static void compute_bounding_box_subtree (tree, w, depth)
     TreeWidget tree;
@@ -495,8 +482,18 @@ static void compute_bounding_box_subtree (tree, w, depth)
     /*
      * Set the max-size per level.
      */
-    set_offset_to_max_value (tree->tree.largest, depth,
-			    (horiz ? w->core.width : w->core.height));
+    if (depth >= tree->tree.n_largest) {
+	initialize_dimensions (&tree->tree.largest,
+			       &tree->tree.n_largest, depth);
+    }
+    newwidth = (horiz ? w->core.width : w->core.height);
+    if (tree->tree.largest[depth] < newwidth)
+      tree->tree.largest[depth] = newwidth;
+
+
+    /*
+     * initialize
+     */
     tc->tree.bbwidth = w->core.width;
     tc->tree.bbheight = w->core.height;
 
@@ -566,12 +563,12 @@ static void arrange_subtree (tree, w, depth, x, y)
      * out parents.
      */
     if (horiz) {
-	newx = x + tree->tree.largest->array[depth];
+	newx = x + tree->tree.largest[depth];
 	if (depth > 0) newx += tree->tree.h_min_space;
 	newy = y;
     } else {
 	newx = x;
-	newy = y + tree->tree.largest->array[depth];
+	newy = y + tree->tree.largest[depth];
 	if (depth > 0) newy += tree->tree.v_min_space;
     }
 
@@ -613,7 +610,8 @@ static void new_layout (tw)
      * this information to layout the children at each level.
      */
 
-    reset (tw->tree.largest);
+    initialize_dimensions (&tw->tree.largest, &tw->tree.n_largest, 
+			   tw->tree.n_largest);
     compute_bounding_box_subtree (tw, tw->tree.tree_root, 0);
 
    /*

@@ -56,17 +56,13 @@ typedef struct _TreeClassRec {
 extern TreeClassRec treeClassRec;
 
 typedef struct {
-    Dimension  *array;
-    int         size;
-  }  TreeOffset, *TreeOffsetPtr;
-
-typedef struct {
     Dimension      h_min_space;
     Dimension      v_min_space;
     Pixel          foreground;
     GC             gc;
     Widget         tree_root;
-    TreeOffsetPtr  largest;
+    Dimension      *largest;
+    int            n_largest;
     Boolean        horiz;
 } TreePart;
 
@@ -96,6 +92,8 @@ typedef struct _TreeConstraintsRec {
 
 #define TREE_CONSTRAINT(w) \
                    ((TreeConstraints)((w)->core.constraints))
+
+#define INITIAL_TREE_DEPTH 10
 
 #endif TREEP_H
 
