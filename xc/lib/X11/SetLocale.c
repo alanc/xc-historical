@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XSetLocale.c,v 1.18 91/04/02 16:21:06 rws Exp $
+ * $XConsortium: XSetLocale.c,v 1.19 91/04/02 17:37:22 rws Exp $
  */
 
 /*
@@ -124,6 +124,10 @@ _XlcSetLocaleModifiers(xlocale, modifiers)
 
     return (xlocale->lc_modifier);
 }
+
+#ifndef X_NOT_STDC_ENV
+static char *_XGetOSLocaleName();
+#endif
 
 /*ARGSUSED*/
 static Bool
