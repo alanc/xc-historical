@@ -1,4 +1,4 @@
-/* $XConsortium: lbxswap.c,v 1.1 94/03/17 19:45:33 dpw Exp $ */
+/* $XConsortium: lbxswap.c,v 1.2 94/03/27 13:18:13 dpw Exp mor $ */
 /*
  * $NCDId: @(#)lbxswap.c,v 1.2 1994/03/21 20:59:28 lemke Exp $
  * $NCDOr: lbxmain.c,v 1.4 1993/12/06 18:47:18 keithp Exp keithp $
@@ -345,6 +345,43 @@ SProcLbxFillPoly(client)
     return ProcLbxDispatch(client);
 }
 
+static int
+SProcLbxPutImage(client)
+    register ClientPtr client;
+{
+    register int n;
+
+    REQUEST(xLbxPutImageReq);
+
+    swaps (&stuff->lbxLength, n);
+    swaps (&stuff->xLength, n);
+    swapl (&stuff->drawable, n);
+    swapl (&stuff->gc, n);
+    swaps (&stuff->width, n);
+    swaps (&stuff->height, n);
+    swaps (&stuff->dstX, n);
+    swaps (&stuff->dstY, n);
+    return ProcLbxPutImage(client);
+}
+
+static int
+SProcLbxGetImage(client)
+    register ClientPtr client;
+{
+    register int n;
+
+    REQUEST(xLbxGetImageReq);
+
+    swaps (&stuff->length, n);
+    swapl (&stuff->drawable, n);
+    swaps (&stuff->x, n);
+    swaps (&stuff->y, n);
+    swaps (&stuff->width, n);
+    swaps (&stuff->height, n);
+    swapl (&stuff->planeMask, n);
+    return ProcLbxGetImage(client);
+}
+
 int
 SProcLbxDispatch(client)
     register ClientPtr client;
@@ -397,6 +434,10 @@ SProcLbxDispatch(client)
 	return SProcLbxGetProperty(client);
     case X_LbxTagData:
 	return SProcLbxTagData(client);
+    case X_LbxPutImage:
+	return SProcLbxPutImage(client);
+    case X_LbxGetImage:
+	return SProcLbxGetImage(client);
     default:
 	return BadRequest;
     }
