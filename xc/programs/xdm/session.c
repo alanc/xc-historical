@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.54 91/09/12 19:55:51 keith Exp $
+ * $XConsortium: session.c,v 1.55 91/09/19 16:25:56 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -545,6 +545,9 @@ execute (argv, environ)
 char	**argv;
 char	**environ;
 {
+    /* give /dev/null as stdin */
+    (void) close (0);
+    open ("/dev/null", 0);
     /* make stdout follow stderr to the log file */
     dup2 (2,1);
     execve (argv[0], argv, environ);
