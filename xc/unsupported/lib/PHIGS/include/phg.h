@@ -1,4 +1,4 @@
-/* $XConsortium: phg.h,v 5.1 91/02/16 09:49:06 rws Exp $ */
+/* $XConsortium: phg.h,v 5.2 91/03/29 16:39:55 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -51,9 +51,14 @@ SOFTWARE.
 #include "PEX.h"
 #include "PEXproto.h"
 
-/* declare these here, <malloc.h> doesn't exist on all systems */
-extern  char    *malloc();
-extern  char    *realloc();
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+char *malloc(), *realloc();
+#endif
+#if defined(macII) && !defined(__STDC__)  /* stdlib.h fails to define these */
+char *malloc(), *realloc();
+#endif /* macII */
 
 /* Not all environments declare errno in <errno.h> (Sony, in particular) */
 extern int	 errno;
