@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: gc.c,v 1.11 89/04/12 18:55:38 jim Exp $
+ * $XConsortium: gc.c,v 1.12 89/04/13 15:48:16 jim Exp $
  *
  * Open the fonts and create the GCs
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: gc.c,v 1.11 89/04/12 18:55:38 jim Exp $";
+"$XConsortium: gc.c,v 1.12 89/04/13 15:48:16 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -68,17 +68,6 @@ CreateGCs()
     prevScr = Scr;
 
     /* create GC's */
-
-    if (Scr->ReverseVideo)
-    {
-	Scr->DefaultC.back = Scr->Black;
-	Scr->DefaultC.fore = Scr->White;
-    }
-    else
-    {
-	Scr->DefaultC.fore = Scr->Black;
-	Scr->DefaultC.back = Scr->White;
-    }
 
     gcm = 0;
     gcm |= GCFunction;	    gcv.function = GXxor;

@@ -26,7 +26,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: lex.l,v 1.25 89/04/13 10:01:20 jim Exp $
+ * $XConsortium: lex.l,v 1.26 89/04/13 14:52:09 jim Exp $
  *
  * .twmrc lex file
  *
@@ -35,7 +35,7 @@
  ***********************************************************************/
 
 static char RCSinfo[]=
-"$XConsortium: lex.l,v 1.25 89/04/13 10:01:20 jim Exp $";
+"$XConsortium: lex.l,v 1.26 89/04/13 14:52:09 jim Exp $";
 
 #include <stdio.h>
 #include "gram.h"
@@ -43,9 +43,9 @@ static char RCSinfo[]=
 extern int ParseError;
 
 %}
-%k 5000
+%k 6000
 %e 4000
-%p 8000
+%p 9000
 %n 4000
 %a 4000
 
@@ -216,6 +216,10 @@ t.move				{ return F_MOVE; }
 				return (TITLE_FOREGROUND); }
 [Tt][Ii][Tt][Ll][Ee][Bb][Aa][Cc][Kk][Gg][Rr][Oo][Uu][Nn][Dd] {
 				return (TITLE_BACKGROUND); }
+[dD][eE][fF][aA][uU][lL][tT][fF][oO][rR][eE][gG][rR][oO][uU][nN][dD]	{
+				return (DEFAULT_FOREGROUND); }
+[dD][eE][fF][aA][uU][lL][tT][bB][aA][cC][kK][gG][rR][oO][uU][nN][dD]	{
+				return (DEFAULT_BACKGROUND); }
 [Bb][Oo][Rr][Dd][Ee][Rr][Tt][Ii][Ll][Ee][Ff][Oo][Rr][Ee][Gg][Rr][Oo][Uu][Nn][Dd] {
 				return (BORDER_TILE_FOREGROUND); }
 [Bb][Oo][Rr][Dd][Ee][Rr][Tt][Ii][Ll][Ee][Bb][Aa][Cc][Kk][Gg][Rr][Oo][Uu][Nn][Dd] {

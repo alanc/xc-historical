@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.29 89/04/12 18:55:41 jim Exp $
+ * $XConsortium: gram.y,v 1.30 89/04/13 10:01:09 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -35,7 +35,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.29 89/04/12 18:55:41 jim Exp $";
+"$XConsortium: gram.y,v 1.30 89/04/13 10:01:09 jim Exp $";
 
 #include <stdio.h>
 #include "twm.h"
@@ -89,6 +89,7 @@ extern int yylineno;
 %token <num> MENU_FONT ICON_FONT UNKNOWN_ICON ICONS ICON_DIRECTORY
 %token <num> META SHIFT CONTROL WINDOW TITLE ICON ROOT FRAME
 %token <num> COLON EQUALS BORDER_COLOR TITLE_FOREGROUND TITLE_BACKGROUND
+%token <num> DEFAULT_FOREGROUND DEFAULT_BACKGROUND 
 %token <num> MENU_FOREGROUND MENU_BACKGROUND MENU_SHADOW_COLOR
 %token <num> MENU_TITLE_FOREGROUND MENU_TITLE_BACKGROUND F_AUTORAISE
 %token <num> ICON_FOREGROUND ICON_BACKGROUND ICON_BORDER_COLOR
@@ -119,7 +120,7 @@ stmts		: /* Empty */
 
 stmt		: error
 		| FORCE_ICON		{ if (Scr->FirstTime) Scr->ForceIcon = TRUE; }
-		| REVERSE_VIDEO		{ if (Scr->FirstTime) Scr->ReverseVideo = TRUE; }
+		| REVERSE_VIDEO		{ /* ignore */ }
 		| ICON_REGION string grav grav { AddIconRegion($2, $3, $4); }
 		| ICON_FONT string	{   Scr->IconFont.name = $2;
 					    GetFont(&Scr->IconFont);
@@ -451,6 +452,10 @@ color_entry	: BORDER_COLOR string	{ GetColor(color,
 						&Scr->TitleC.back, $2);
 					    list = &Scr->TitleBackgroundL; }
 		  win_color_list
+		| DEFAULT_FOREGROUND string { GetColor(color,
+						&Scr->DefaultC.fore, $2); }
+		| DEFAULT_BACKGROUND string { GetColor(color,
+						&Scr->DefaultC.back, $2); }
 		| ICON_FOREGROUND string { GetColor(color,
 						&Scr->IconC.fore, $2); }
 		| ICON_FOREGROUND string { GetColor(color,
