@@ -6,7 +6,7 @@
  * DoNormalLib, DoSharedLib, DoDebugLib, DoProfileLib
  */
 
-XCOMM $XConsortium: Library.tmpl,v 1.3 90/11/30 11:15:30 rws Exp $
+XCOMM $XConsortium: Library.tmpl,v 1.4 91/03/24 17:22:34 rws Exp $
 
          CC = LibraryCcCmd
   CCOPTIONS = LibraryCCOptions
@@ -65,7 +65,7 @@ all::									@@\
 clean::									@@\
 	_DebuggedCleanDir()						@@\
 	_ProfiledCleanDir()						@@\
-	_SharedCleanDir()
+	_SharedCleanDir()						@@\
 
 #endif /* LibraryObjectRule */
 
