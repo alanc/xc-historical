@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: gc.c,v 1.13 89/04/18 13:31:30 jim Exp $
+ * $XConsortium: gc.c,v 1.14 89/05/17 14:31:34 jim Exp $
  *
  * Open the fonts and create the GCs
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: gc.c,v 1.13 89/04/18 13:31:30 jim Exp $";
+"$XConsortium: gc.c,v 1.14 89/05/17 14:31:34 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -72,7 +72,7 @@ CreateGCs()
     gcm = 0;
     gcm |= GCFunction;	    gcv.function = GXxor;
     gcm |= GCLineWidth;	    gcv.line_width = 0;
-    gcm |= GCForeground;    gcv.foreground = 0xfd;
+    gcm |= GCForeground;    gcv.foreground = 0x0f;
     gcm |= GCSubwindowMode; gcv.subwindow_mode = IncludeInferiors;
 
     Scr->DrawGC = XCreateGC(dpy, Scr->Root, gcm, &gcv);
