@@ -1,5 +1,5 @@
 /*
- * $XConsortium: screen.c,v 2.54 89/12/16 03:33:51 converse Exp $
+ * $XConsortium: screen.c,v 2.55 90/01/22 17:57:40 swick Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -459,6 +459,7 @@ XtPointer data, junk;
   EnableProperButtons( (Scrn) data);
 }  
 
+static void EnableCallback();
 
 #define SetButton(buttonbox, name, value) \
     if (value) BBoxEnable(BBoxFindButtonNamed(buttonbox, name)); \
@@ -468,7 +469,6 @@ XtPointer data, junk;
 void EnableProperButtons(scrn)
 Scrn scrn;
 {
-    static void EnableCallback();
     int value, changed, reapable;
     Button	button;
 
