@@ -237,7 +237,7 @@ _default_mapping _default_mappings[] = {
 	 */
 	{ XA_WM_COMMAND, "8s", " = { $0+ }\n" },
 	{ XA_WM_HINTS, "32mbcxxxii", ":\n\
-?m0(\t\tApplication accepts input\\\?: $1\n)\
+?m0(\t\tApplication accepts input\\?: $1\n)\
 ?m1(\t\tInitial state is \
 ?$2=0(Don't Care State)\
 ?$2=1(Normal State)\
@@ -313,8 +313,7 @@ Read_Mappings(stream)
 {
 	char format_buffer[100];
 	char name[1000], *dformat, *format;
-	int count, length, c;
-	char *ptr;
+	int count, c;
 	Atom atom, Parse_Atom();
 
 	while ((count=fscanf(stream," %990s %90s ",name,format_buffer))!=EOF) {
@@ -899,7 +898,7 @@ long Extract_Len_String(pointer, length, size, string)
 }
 
 thunk *Break_Down_Property(pointer, length, format, size)
-     char *pointer;
+     char *pointer, *format;
      int length, size;
 {
 	thunk *thunks;
@@ -988,7 +987,6 @@ main(argc, argv)
 int argc;
 char **argv;
 {
-  int i;
   FILE *stream;
   char *name, *getenv();
   thunk *props, *Handle_Prop_Requests();
@@ -1004,8 +1002,8 @@ char **argv;
   /* Set up default atom to format, dformat mapping */
   Setup_Mapping();
   if (name = getenv("XPROPFORMATS")) {
-	  if (!(stream=fopen(argv[0], "r")))
-	    Fatal_Error("unable to open file %s for reading.", argv[0]);
+	  if (!(stream=fopen(name, "r")))
+	    Fatal_Error("unable to open file %s for reading.", name);
 	  Read_Mappings(stream);
 	  fclose(stream);
   }
@@ -1086,10 +1084,8 @@ thunk *Handle_Prop_Requests(argc, argv)
      int argc;
      char **argv;
 {
-  char *format, *dformat, *prop, *value;
-  char mode;
+  char *format, *dformat, *prop;
   thunk *thunks, t;
-  int thunk_no;
 
   thunks = Create_Thunk_List();
 
@@ -1116,38 +1112,12 @@ thunk *Handle_Prop_Requests(argc, argv)
     /* Get property name */
     prop = argv++[0]; argc--;
 
-#ifdef SET
-    /* If no '=' present, we display the property */
-    if (!rindex(prop, '=')) {
-#endif
-      t.value = Parse_Atom(prop, True);
-      t.format = format;
-      t.dformat = dformat;
-      if (t.value)
-	thunks = Add_Thunk(thunks, t);
-      Show_Prop(format, dformat, prop);
-#ifdef SET
-      continue;
-    }
-    
-    /* Otherwise, seperate into property name, value, & mode */
-    value = rindex(prop, '=');
-    value[0] = '\0';  mode = ' ';
-    if (!*prop) usage();
-    if (value[-1]=='+') {
-      mode = '+';
-      value[-1] = '\0';
-    }
-    if (value[-1]=='-') {
-      mode = '-';
-      value[-1] = '\0';
-    }
-    if (!*prop) usage();
-    value++;
-
-    /* Set the property now that we have all the needed info */
-    Set_Prop(target_win, format, dformat, prop, mode, value);
-#endif
+    t.value = Parse_Atom(prop, True);
+    t.format = format;
+    t.dformat = dformat;
+    if (t.value)
+      thunks = Add_Thunk(thunks, t);
+    Show_Prop(format, dformat, prop);
   }
   return(thunks);
 }
