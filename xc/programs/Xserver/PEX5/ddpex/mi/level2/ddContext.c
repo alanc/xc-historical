@@ -1,4 +1,4 @@
-/* $XConsortium: ddContext.c,v 5.3 91/07/01 08:26:24 rws Exp $ */
+/* $XConsortium: ddContext.c,v 5.4 91/10/24 17:57:21 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -953,5 +953,71 @@ ValidateDDContextAttrs(pRend, pddc, tables, namesets, attrs)
 
 	miBldCC_xform(pRend, pddc);
     }
+
+    /* If the echo mode changes, we have to change all these GCs */
+    if( attrs & PEXDynEchoMode )
+      {
+        pddc->Static.misc.flags |= POLYLINEGCFLAG;
+        pddc->Static.misc.flags |= MARKERGCFLAG;
+        pddc->Static.misc.flags |= FILLAREAGCFLAG;
+        pddc->Static.misc.flags |= EDGEGCFLAG;
+        pddc->Static.misc.flags |= TEXTGCFLAG;
+      }
+
+    /*
+     * Set the Clip List in each GC if there are any
+     * all GCs are defined at the same time so check if any one exists
+     */
+    if ((attrs & PEXDynClipList) && pddc->Static.misc.pPolylineGC) 
+     {
+
+      extern int      SetClipRects();
+      extern void     ValidateGC();
+      xRectangle      *xrects, *p;
+      ddDeviceRect    *ddrects;
+      ddLONG          numrects;
+      XID	      gcval;
+      int             i;
+
+      numrects = pRend->clipList->numObj;
+      if (numrects) {
+        ddrects = (ddDeviceRect *) pRend->clipList->pList;
+        xrects = (xRectangle*) Xalloc(numrects * sizeof(xRectangle));
+        if (!xrects) return BadAlloc;
+        /* Need to convert to XRectangle format */
+        for (i = 0, p = xrects; i < numrects; i++, p++, ddrects++) {
+          p->x = ddrects->xmin;
+          p->y = pRend->pDrawable->height - ddrects->ymax;
+          p->width = ddrects->xmax - ddrects->xmin + 1;
+          p->height = ddrects->ymax - ddrects->ymin + 1;
+          }
+
+        SetClipRects(pddc->Static.misc.pPolylineGC, 0, 0,
+                     (int)numrects, xrects, Unsorted);
+        SetClipRects(pddc->Static.misc.pFillAreaGC, 0, 0,
+                     (int)numrects, xrects, Unsorted);
+        SetClipRects(pddc->Static.misc.pEdgeGC, 0, 0,
+                     (int)numrects, xrects, Unsorted);
+        SetClipRects(pddc->Static.misc.pPolyMarkerGC, 0, 0,
+                     (int)numrects, xrects, Unsorted);
+        SetClipRects(pddc->Static.misc.pTextGC, 0, 0,
+                     (int)numrects, xrects, Unsorted);
+        Xfree((char*)xrects);
+      }
+      else {
+	gcval = None;
+	ChangeGC(pddc->Static.misc.pPolylineGC, GCClipMask, &gcval);
+	ChangeGC(pddc->Static.misc.pFillAreaGC, GCClipMask, &gcval);
+	ChangeGC(pddc->Static.misc.pEdgeGC, GCClipMask, &gcval);
+	ChangeGC(pddc->Static.misc.pPolyMarkerGC, GCClipMask, &gcval);
+	ChangeGC(pddc->Static.misc.pTextGC, GCClipMask, &gcval);
+      }
+      ValidateGC(pRend->pDrawable, pddc->Static.misc.pPolylineGC);
+      ValidateGC(pRend->pDrawable, pddc->Static.misc.pFillAreaGC);
+      ValidateGC(pRend->pDrawable, pddc->Static.misc.pEdgeGC);
+      ValidateGC(pRend->pDrawable, pddc->Static.misc.pPolyMarkerGC);
+      ValidateGC(pRend->pDrawable, pddc->Static.misc.pTextGC);
+    }
+
     return (Success);
 }
