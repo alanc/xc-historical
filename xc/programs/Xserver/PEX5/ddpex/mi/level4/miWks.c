@@ -1,4 +1,4 @@
-/* $XConsortium: miWks.c,v 5.4 91/07/10 08:52:28 rws Exp $ */
+/* $XConsortium: miWks.c,v 5.5 91/10/01 02:29:46 hersh Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -739,63 +739,63 @@ InquireWksInfo(pWKS, mask, pNumValues, pBuffer)
 	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWMarkerBundle) {
-	      PACK_CARD32((PLUTID(pwks->pRend->lut[PEXMarkerBundleLUT])), pbyte);
+	      PACK_CARD32(*(PLUTID(pwks->pRend->lut[PEXMarkerBundleLUT])), pbyte);
 	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWTextBundle) {
-	      PACK_CARD32((PLUTID(pwks->pRend->lut[PEXTextBundleLUT])), pbyte);
+	      PACK_CARD32(*(PLUTID(pwks->pRend->lut[PEXTextBundleLUT])), pbyte);
 	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWLineBundle) {
-	      PACK_CARD32((PLUTID(pwks->pRend->lut[PEXLineBundleLUT])), pbyte);
+	      PACK_CARD32(*(PLUTID(pwks->pRend->lut[PEXLineBundleLUT])), pbyte);
 	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWInteriorBundle) {
-	      PACK_CARD32((PLUTID(pwks->pRend->lut[PEXInteriorBundleLUT])), pbyte);
+	      PACK_CARD32(*(PLUTID(pwks->pRend->lut[PEXInteriorBundleLUT])), pbyte);
 	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWEdgeBundle) {
-	      PACK_CARD32((PLUTID(pwks->pRend->lut[PEXEdgeBundleLUT])), pbyte);
+	      PACK_CARD32(*(PLUTID(pwks->pRend->lut[PEXEdgeBundleLUT])), pbyte);
 	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWColourTable) {
-	      PACK_CARD32((PLUTID(pwks->pRend->lut[PEXColourLUT])), pbyte);
+	      PACK_CARD32(*(PLUTID(pwks->pRend->lut[PEXColourLUT])), pbyte);
 	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWDepthCueTable) {
-	      PACK_CARD32((PLUTID(pwks->pRend->lut[PEXDepthCueLUT])), pbyte);
+	      PACK_CARD32(*(PLUTID(pwks->pRend->lut[PEXDepthCueLUT])), pbyte);
 	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWLightTable) {
-	      PACK_CARD32((PLUTID(pwks->pRend->lut[PEXLightLUT])), pbyte);
+	      PACK_CARD32(*(PLUTID(pwks->pRend->lut[PEXLightLUT])), pbyte);
 	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWColourApproxTable) {
-	      PACK_CARD32((PLUTID(pwks->pRend->lut[PEXColourApproxLUT])), pbyte);
+	      PACK_CARD32(*(PLUTID(pwks->pRend->lut[PEXColourApproxLUT])), pbyte);
 	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWPatternTable) {
-	      PACK_CARD32((PLUTID(pwks->pRend->lut[PEXPatternLUT])), pbyte);
+	      PACK_CARD32(*(PLUTID(pwks->pRend->lut[PEXPatternLUT])), pbyte);
 	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWTextFontTable) {
-	      PACK_CARD32((PLUTID(pwks->pRend->lut[PEXTextFontLUT])), pbyte);
+	      PACK_CARD32(*(PLUTID(pwks->pRend->lut[PEXTextFontLUT])), pbyte);
 	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWHighlightIncl) {
-	      PACK_CARD32((PNSID(pwks->pRend->ns[(int) DD_HIGH_INCL_NS])), pbyte);
+	      PACK_CARD32(*(PNSID(pwks->pRend->ns[(int) DD_HIGH_INCL_NS])), pbyte);
 	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWHighlightExcl) {
-	      PACK_CARD32((PNSID(pwks->pRend->ns[(int) DD_HIGH_EXCL_NS])), pbyte);
+	      PACK_CARD32(*(PNSID(pwks->pRend->ns[(int) DD_HIGH_EXCL_NS])), pbyte);
 	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWInvisibilityIncl) {
-	      PACK_CARD32((PNSID(pwks->pRend->ns[(int) DD_INVIS_INCL_NS])), pbyte);
+	      PACK_CARD32(*(PNSID(pwks->pRend->ns[(int) DD_INVIS_INCL_NS])), pbyte);
 	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWInvisibilityExcl) {
-	      PACK_CARD32((PNSID(pwks->pRend->ns[(int) DD_INVIS_EXCL_NS])), pbyte);
+	      PACK_CARD32(*(PNSID(pwks->pRend->ns[(int) DD_INVIS_EXCL_NS])), pbyte);
 	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWPostedStructures) {
