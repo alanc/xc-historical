@@ -1,4 +1,4 @@
-/* $XConsortium: utils.c,v 1.15 94/02/09 18:16:41 gildea Exp $ */
+/* $XConsortium: utils.c,v 1.16 94/03/02 12:17:11 mor Exp $ */
 /*
  * misc os utilities
  */
@@ -171,8 +171,9 @@ GetTimeInMillis()
 static void
 usage()
 {
-    fprintf(stderr, "%s: [-cf config-file] [-p tcp_port] [-s server_number]\n", progname);
-    exit(-1);
+    fprintf(stderr, "usage: %s [-config config_file] [-port tcp_port]\n",
+	    progname);
+    exit(1);
 }
 
 OsInitAllocator ()
