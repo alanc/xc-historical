@@ -1,5 +1,5 @@
-# $XConsortium: Imakefile,v 1.13 89/10/05 18:00:37 jim Exp $
-     HEADERS = Xext.h multibuf.h shape.h XShm.h xtestext1.h bezier.h plxvideo.h 
+# $XConsortium: Imakefile,v 1.14 89/10/06 11:51:09 jim Exp $
+     HEADERS = Xext.h multibuf.h shape.h XShm.h MITMisc.h xtestext1.h bezier.h plxvideo.h 
 INSTALLFLAGS = -m 0444
 
 all:
