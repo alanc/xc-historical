@@ -62,7 +62,7 @@ in getting the image on the screen faster.
 .PP
 .TP 8
 .B "-plane \fInumber\fP"
-If the image is in XY format, you can select a single bit plane to display
+You can select a single bit plane of the image to display
 with this option.  Planes are numbered with zero being the least
 significant bit.  This option can be used to figure out which plane to
 pass to \fIxpr(1)\fP for printing.
