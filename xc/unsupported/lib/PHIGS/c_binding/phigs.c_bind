@@ -1,4 +1,4 @@
-/* $XConsortium: phigs.c_bind,v 5.2 91/03/21 15:45:06 hersh Exp $ */
+/* $XConsortium: phigs.c_bind,v 5.3 91/07/12 19:50:49 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -154,12 +154,12 @@ Pint                    *status;        /* OUT status of retrieval      */
 void
 pcell_array3(parallelogram, colr_array)
 Pparal		*parallelogram;	/* cell parallelogram: [0]=P; [1]=Q; [2]=R */
-Ppat_rep	colr_array;	/* colour array */
+Ppat_rep	*colr_array;	/* colour array */
 {}
 void
 pcell_array(rectangle, colr_array)
 Prect		*rectangle;	/* cell rectangle	*/
-Ppat_rep	colr_array;	/* colour array */
+Ppat_rep	*colr_array;	/* colour array */
 {}
 void
 pcell_array3_plus(paral, dim, colour_model, colrs)
