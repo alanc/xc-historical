@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Label.c,v 1.68 89/06/07 13:25:07 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Label.c,v 1.69 89/06/08 18:05:27 swick Exp $";
 #endif /* lint */
 
 
@@ -346,8 +346,8 @@ static Boolean SetValues(current, request, new)
 
 	}
 
-    /* calculate the window size */
-    if (newlw->label.resize) {
+    /* recalculate the window size if something has changed. */
+    if (newlw->label.resize && was_resized) {
 	if (curlw->core.width == reqlw->core.width) {
 	    newlw->core.width =
 		newlw->label.label_width +2*newlw->label.internal_width;
