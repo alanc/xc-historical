@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: StrToWidg.c,v 1.1 88/10/03 10:30:58 swick Exp $";
+static char Xrcsid[] = "$XConsortium: StrToWidg.c,v 1.2 89/03/30 17:07:26 jim Exp $";
 #endif /* lint */
 
 /* Copyright 1988 Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -18,6 +18,8 @@ static char Xrcsid[] = "$XConsortium: StrToWidg.c,v 1.1 88/10/03 10:30:58 swick 
 #include <X11/copyright.h>
 
 #include <X11/IntrinsicP.h>
+#include <X11/ObjectP.h>
+#include <X11/Object.h>
 
 #define	done(address, type) \
 	{ toVal->size = sizeof(type); \
