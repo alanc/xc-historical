@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.193 94/04/01 20:51:19 kaleb Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.194 94/04/17 20:14:16 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -787,8 +787,6 @@ Boolean XtIsSensitive(object)
     UNLOCK_APP(app);
     return retval;
 }
-
-/*
 
 /*
  * Internal routine; must be called only after XtIsWidget returns false
