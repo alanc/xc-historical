@@ -1,4 +1,4 @@
-/* $XConsortium: smproxy.c,v 1.10 94/07/06 15:47:57 mor Exp $ */
+/* $XConsortium: smproxy.c,v 1.11 94/07/06 16:26:34 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -424,10 +424,15 @@ XCreateWindowEvent *event;
 
 
     /*
-     * Select for Property Notify on the window
+     * Select for Property Notify on the window so we can determine
+     * when the client has set all required properties.
+     *
+     * Select for Substructure Notify so we can determine when the
+     * window is destroyed.
      */
 
-    XSelectInput (disp, event->window, PropertyChangeMask);	
+    XSelectInput (disp, event->window,
+	SubstructureNotifyMask | PropertyChangeMask);	
 
 
     /*
