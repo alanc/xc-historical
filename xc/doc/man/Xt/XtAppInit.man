@@ -211,7 +211,7 @@ and the specified \fIargs\fP and \fInum_args\fP and returns the
 created shell. The modified \fIargc\fP and \fIargv\fP returned by
 .ZN XtDisplayInitialize
 are returned in \fIargc_in_out\fP and \fIargv_in_out\fP. If
-\fIapp_context_return\fI is not NULL, the created application context
+\fIapp_context_return\fP is not NULL, the created application context
 is also returned. If the display specified by the command line cannot
 be opened, an error message is issued and
 .ZN XtAppInitialize
