@@ -1,4 +1,4 @@
-/* $XConsortium: miwideline.c,v 1.55 94/03/31 14:04:47 dpw Exp $ */
+/* $XConsortium: miwideline.c,v 1.56 94/04/17 20:27:59 dpw Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -37,17 +37,19 @@ from the X Consortium.
  */
 
 #include <stdio.h>
+#ifdef _XOPEN_SOURCE
 #include <math.h>
+#else
+#define _XOPEN_SOURCE	/* to get prototype for hypot on some systems */
+#include <math.h>
+#undef _XOPEN_SOURCE
+#endif
 #include "X.h"
 #include "windowstr.h"
 #include "gcstruct.h"
 #include "miscstruct.h"
 #include "miwideline.h"
 #include "mi.h"
-
-#if (defined(SVR4) || defined(SYSV) && defined(i386)) && __STDC__
-extern double hypot(double, double);
-#endif
 
 #ifdef ICEILTEMPDECL
 ICEILTEMPDECL

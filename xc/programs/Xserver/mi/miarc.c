@@ -45,11 +45,17 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.49 94/03/21 15:37:37 dpw Exp $ */
+/* $XConsortium: miarc.c,v 5.50 94/04/17 20:27:12 dpw Exp $ */
 /* Author: Keith Packard and Bob Scheifler */
 /* Warning: this code is toxic, do not dally very long here. */
 
+#ifdef _XOPEN_SOURCE
 #include <math.h>
+#else
+#define _XOPEN_SOURCE	/* to get prototype for hypot on some systems */
+#include <math.h>
+#undef _XOPEN_SOURCE
+#endif
 #include "X.h"
 #include "Xprotostr.h"
 #include "misc.h"
@@ -62,9 +68,6 @@ SOFTWARE.
 #include "mifillarc.h"
 #include "Xfuncproto.h"
 
-#if defined(SVR4) && __STDC__
-extern double hypot(double, double);
-#endif
 static double miDsin(), miDcos(), miDasin(), miDatan2();
 double	cbrt(
 #if NeedFunctionPrototypes
