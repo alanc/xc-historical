@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.63 91/07/13 14:38:41 converse Exp $
+ * $XConsortium: init.c,v 2.64 91/07/13 22:53:37 converse Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -370,8 +370,12 @@ char **argv;
     if (app_resources.rescan_interval == -1)
 	app_resources.rescan_interval = 5 * app_resources.check_frequency;
 
-    (void) sprintf(str, "%s/.mh_profile", homeDir);
-    fid = myfopen(str, "r");
+    ptr = getenv("MH");
+    if (!ptr) {
+	(void) sprintf(str, "%s/.mh_profile", homeDir);
+	ptr = str;
+    }
+    fid = myfopen(ptr, "r");
     if (fid) {
 	while (ptr = ReadLine(fid)) {
 	    char *cp;
