@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.103 89/11/05 19:01:14 jim Exp $
+ * $XConsortium: add_window.c,v 1.104 89/11/06 16:16:12 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.103 89/11/05 19:01:14 jim Exp $";
+"$XConsortium: add_window.c,v 1.104 89/11/06 16:16:12 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -592,6 +592,10 @@ IconMgr *iconp;
     attributes.event_mask = (SubstructureRedirectMask | VisibilityChangeMask |
 			     ButtonPressMask | ButtonReleaseMask |
 			     EnterWindowMask | LeaveWindowMask);
+    if (tmp_win->transient && tmp_win->attr.save_under && Scr->SaveUnder) {
+	attributes.save_under = True;
+	valuemask |= CWSaveUnder;
+    }
 
     tmp_win->frame = XCreateWindow (dpy, Scr->Root, tmp_win->frame_x,
 				    tmp_win->frame_y, tmp_win->frame_width,
