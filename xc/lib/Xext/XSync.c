@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: XSync.c,v 1.3 93/09/04 16:36:39 rws Exp $ */
 /***********************************************************
 Copyright 1991,1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 the Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -69,7 +69,7 @@ static
 XEXT_GENERATE_FIND_DISPLAY(find_display, sync_info,
 			   sync_extension_name,
 			   &sync_extension_hooks,
-			   XSyncNumberEvents, (caddr_t) NULL)
+			   XSyncNumberEvents, (XPointer) NULL)
 
 static 
 XEXT_GENERATE_CLOSE_DISPLAY(close_display, sync_info)
