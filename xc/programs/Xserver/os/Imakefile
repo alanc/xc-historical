@@ -11,7 +11,7 @@ OS_DEFINES=
 
 DEFINES= ConnectionFlags $(OS_DEFINES)
 CDEBUGFLAGS = ServerCDebugFlags
-INCLUDES = -I.  -I../../include -I../../../include
+INCLUDES = -I.  -I../../include -I$(INCLUDESRC)
 LINTLIBS = ../../dix/llib-ldix.ln
 
 NormalLibraryObjectRule()

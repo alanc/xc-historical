@@ -9,7 +9,7 @@ OBJS = atom.o colormap.o cursor.o dispatch.o dixutils.o events.o \
 
 STD_DEFINES = ServerDefines
 CDEBUGFLAGS = ServerCDebugFlags
-   INCLUDES = -I. -I../include -I../../include
+   INCLUDES = -I. -I../include -I$(INCLUDESRC)
 EXT_DEFINES = ExtensionDefines
    LINTLIBS = ../ddx/snf/llib-lsnf.ln ../os/4.2bsd/llib-los.ln
 

@@ -21,7 +21,7 @@ OBJS =   mfbgc.o mfbwindow.o mfbfont.o \
 
 STD_DEFINES = ServerDefines
 CDEBUGFLAGS = ServerCDebugFlags
-INCLUDES = -I. -I../../include -I../../../include
+INCLUDES = -I. -I../../include -I$(INCLUDESRC)
 LINTDEFS = -DMFBPOLYGLYPHBLT=mfbPolyGlyphBltWhite \
 	   -DMFBIMAGEGLYPHBLT=mfbImageGlyphBltWhite \
 	   -DEQWHOLEWORD=\=~0 -DOPEQ=\|=
