@@ -241,9 +241,8 @@ ServerTarget(XmacII,$(EXTDIR) $(FONTUTILDIR) $(MACIIDIRS),$(MACIIOBJS),$(MACIILI
 #
 # other, necessary targets
 #
-CleanSubdirs($(SUBDIRS))
-TagSubdirs($(SUBDIRS))
-MakefileSubdirs($(SUBDIRS))
+MakeMakeSubdirs($(SERVERSUBDIRS),RealMakefiles)
+MakeNsubdirMakefiles()
 InstallMultiple($(ALL),$(BINDIR))
 
 #
@@ -268,6 +267,23 @@ Real/**/target:								@@\
 			LINT=$(LINT) DESTDIR=$(DESTDIR) ); \		@@\
 	done
 
+Makefiles::
+	@for i in $(ALL); do \
+		dirs="$$dirs \$$($${i}DIRS)"; \
+	done; \
+	$(MAKE) $(MFLAGS) RealMakefiles "SERVERSUBDIRS=$$dirs"
+
+AllMakefiles::
+	@$(MAKE) $(MFLAGS) RealMakefiles "SERVERSUBDIRS=$(SUBDIRS)"
+
+AllClean::
+	@$(MAKE) $(MFLAGS) Realclean "SERVERSUBDIRS=$(SUBDIRS)"
+
+AllTags::
+	@$(MAKE) $(MFLAGS) Realtags "SERVERSUBDIRS=$(SUBDIRS)"
+
+DoServerSubdirList(clean)
+DoServerSubdirList(tags)
 DoServerSubdirList(depend)
 DoServerSubdirList(install)
 DoServerSubdirList(lintlib)
