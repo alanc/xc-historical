@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: command.c,v 2.19 89/05/31 10:23:00 swick Exp $";
+static char rcs_id[] = "$XConsortium: command.c,v 2.20 89/05/31 10:24:15 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -305,10 +305,6 @@ static void FreeStatus( w, closure, call_data )
 #ifdef notdef
     XtRemoveInput( status->error_inputId );
 #endif /*notdef*/
-    if (status->error_pipe[0]) {
-	close( status->error_pipe[0] );
-	close( status->error_pipe[1] );
-    }
     if (status->error_output != NULL) XtFree(status->error_output);
     XtFree( closure );
 }
