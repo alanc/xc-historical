@@ -1,11 +1,12 @@
-SRCS = 6x10.bdf 6x12.bdf 6x13.bdf 8x13.bdf 8x13B.bdf 9x15.bdf cursor.bdf \
-	deccurs.bdf decsess.bdf
-OBJS = 6x10.snf 6x12.snf 6x13.snf 8x13.snf 8x13B.snf 9x15.snf cursor.snf \
-	deccurs.snf decsess.snf
+SRCS = 5x8.bdf 6x10.bdf 6x12.bdf 6x13.bdf 8x13.bdf 8x13B.bdf 9x15.bdf \
+	cursor.bdf deccurs.bdf decsess.bdf
+OBJS = 5x8.snf 6x10.snf 6x12.snf 6x13.snf 8x13.snf 8x13B.snf 9x15.snf \
+	cursor.snf deccurs.snf decsess.snf
 FONTINSTDIR = $(FONTDIR)/misc
 
 MakeFonts()
 
+FontTarget(5x8)
 FontTarget(6x10)
 FontTarget(6x12)
 FontTarget(6x13)
