@@ -2,7 +2,9 @@
 LOCAL_LIBRARIES = XawClientLibs
            SRCS = xload.c get_load.c
            OBJS = xload.o get_load.o
-      DEFINES = -DOSMAJORVERSION=OSMajorVersion -DOSMINORVERSION=OSMinorVersion 
+ OSMAJORVERSION = OSMajorVersion
+ OSMINORVERSION = OSMinorVersion
+      DEFINES = -DOSMAJORVERSION=$(OSMAJORVERSION) -DOSMINORVERSION=$(OSMINORVERSION) 
 
    INSTALLFLAGS = $(INSTKMEMFLAGS)
 
