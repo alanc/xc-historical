@@ -30,7 +30,6 @@
 #ifndef DEBUG
 #define NDEBUG
 #endif
-#include	<assert.h>
 #include	<stdio.h>
 #include	"fontfilest.h"
 #include	"speedo.h"
@@ -54,6 +53,8 @@ typedef struct _sp_master {
     FILE       *fp;
     ufix8      *f_buffer;
     ufix8      *c_buffer;
+    char       *copyright;
+    ufix8	*key;
     buff_t      font;
     buff_t      char_data;
     ufix16      mincharsize;
@@ -62,6 +63,8 @@ typedef struct _sp_master {
     int         max_id;
     int         state;		/* open, closed */
     int         refcount;	/* number of instances */
+    int        *enc;
+    int         enc_size;
 }           SpeedoMasterFontRec, *SpeedoMasterFontPtr;
 
 typedef struct _cur_font_stats {
@@ -121,5 +124,12 @@ extern unsigned long compute_sp_data_size();
 
 extern int  bics_map[];
 extern int  bics_map_size;
+
+
+#ifdef NCD
+extern int  adobe_map[];
+extern int  adobe_map_size;
+
+#endif
 
 #endif				/* _SPINT_H_ */
