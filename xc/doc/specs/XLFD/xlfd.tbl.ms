@@ -1,5 +1,5 @@
 .\" Use tbl and -ms and macros.t	-*- Nroff -*-
-.\" $XConsortium: xlfd.tbl.ms,v 1.33 94/04/08 14:39:41 gildea Exp $
+.\" $XConsortium: xlfd.tbl.ms,v 1.34 94/04/08 15:08:08 gildea Exp $
 .de sC			\" start change
 .mc \s+5\(br\s0\"	\" make tall enough to span paragraph skip
 ..
@@ -381,7 +381,7 @@ to the font name syntax (for example, \*Q1.4\*U)
 T}
 .sC
 XFNExtPrefix ::=	OCTET \- \*Q+\*U (PLUS)
-XFNDelim ::=	OCTET \- \*Q-\*U (HYPHEN)
+XFNDelim ::=	OCTET \- \*Q\-\*U (HYPHEN)
 .eC
 T{
 PrivFontNameRegistry ::=
@@ -396,12 +396,12 @@ Field values are constructed as strings of ISO 8859-1 graphic characters,
 excluding the following:
 .sC
 .IP \(bu 5
-\*Q-\*U (HYPHEN), the XLFD font name delimiter character
+\*Q\-\*U (HYPHEN), the XLFD font name delimiter character
 .IP \(bu 5
 \*Q?\*U (QUESTION MARK) and \*Q*\*U (ASTERISK), the X protocol 
 font name wildcard characters
 .IP \(bu 5
-\*Q,\*U (COMMA), used by Xlib to separate XLFD font names in a font set.
+\*Q\^,\^\*U (COMMA), used by Xlib to separate XLFD font names in a font set.
 .IP \(bu 5
 \*Q\fC"\fP\*U (QUOTATION MARK), used by some commercial products to quote a
 font name.
@@ -783,7 +783,7 @@ width of each glyph in the font
 (measured in tenths of pixels), multiplied by \-1 if the dominant
 writing direction for the font is right-to-left.
 .sC
-A leading \*Q~\*U (TILDE) indicates a negative value.
+A leading \*Q\^~\^\*U (TILDE) indicates a negative value.
 For monospaced and character cell fonts, 
 this is the width of all glyphs in the font.
 .eC
@@ -844,7 +844,7 @@ OrganizationId ::=	T{
 STRING8\-the registered name or acronym of the organization
 T}
 .sC
-Dot ::=	OCTET\-\*Q\.\*U (FULL STOP)
+Dot ::=	OCTET\-\*Q\^.\^\*U (FULL STOP)
 .eC
 Year ::=	STRING8\-numeric year (for example, 1989)
 .TE
@@ -888,7 +888,7 @@ DecDigit ::=	\*Q0\*U | \*Q1\*U | \*Q2\*U | \*Q3\*U | \*Q4\*U | \*Q5\*U | \*Q6\*U
 HexDigit ::=	DecDigit | \*Qa\*U | \*Qb\*U | \*Qc\*U | \*Qd\*U | \*Qe\*U | \*Qf\*U
 LeftBracket ::=	\*Q[\*U (LEFT SQUARE BRACKET)
 RightBracket ::=	\*Q]\*U (RIGHT SQUARE BRACKET)
-Space ::=	\*Q \*U (SPACE)
+Space ::=	\*Q\0\*U (SPACE)
 Underscore ::=	\*Q_\*U (LOW LINE)
 .TE
 .eC
@@ -899,7 +899,7 @@ Each Range specifies characters that are to be part of the subset
 included in the font.
 A Range containing two Numbers specifies the first and last character,
 inclusively, of a range of characters.
-A Range that is a single Number specifies that single character to be
+A Range that is a single Number specifies a single character to be
 included in the font.
 A HexNumber is interpreted as a hexadecimal number.
 A DecNumber is interpreted as a decimal number.
@@ -2180,7 +2180,7 @@ of the rasterizer.  Words within this
 name should be separated by a single SPACE.
 T}
 .sC
-Space ::=	OCTET\-\*Q \*U (SPACE)
+Space ::=	OCTET\-\*Q\0\*U (SPACE)
 .eC
 .TE
 .NL
@@ -2265,7 +2265,7 @@ AXIS_NAMES
 AXIS_NAMES is a list of all the
 names of the axes for a polymorphic font, separated by a null (0) byte.
 These names are suitable for presentation in a user interface.
-See sesion \n(sP, Polymorphic Fonts.
+See section \n(sP, Polymorphic Fonts.
 .NH 3
 AXIS_LIMITS
 .br
@@ -2278,7 +2278,7 @@ AXIS_LIMITS
 AXIS_LIMITS is a list of integers, two for each axis,
 giving the minimum and maximum allowable values for that axis of a
 polymorphic font.
-See sesion \n(sP, Polymorphic Fonts.
+See section \n(sP, Polymorphic Fonts.
 .NH 3
 AXIS_TYPES
 .br
@@ -2290,7 +2290,7 @@ AXIS_TYPES
 .LP
 AXIS_TYPES is like AXIS_NAMES,
 but can be registered as having specific semantics.
-See sesion \n(sP, Polymorphic Fonts.
+See section \n(sP, Polymorphic Fonts.
 .br
 .eC
 .NH 2
@@ -2353,7 +2353,9 @@ is \*Q[\*U, the character must be followed with ASCII representations of
 four floating point numbers and a trailing \*Q]\*U, with white space
 separating the numbers and optional white space separating the numbers
 from the \*Q[\*U and \*Q]\*U characters.  Numbers use standard floating point
-syntax but use the character \*Q~\*U to represent a minus sign in the mantissa
+.sC
+syntax but use the character \*Q\^~\^\*U to represent a minus sign in the mantissa
+.eC
 or exponent.
 .LP
 .sC
@@ -2380,10 +2382,10 @@ Exponent ::=	\*Qe\*U SignedInteger | \*QE\*U SignedInteger
 SignedInteger ::=	Sign Integer | Integer
 LeftBracket ::=	OCTET \- \*Q[\*U (LEFT SQUARE BRACKET)
 RightBracket ::=	OCTET \- \*Q]\*U (RIGHT SQUARE BRACKET)
-SpaceChar ::=	OCTET \- \*Q \*U (SPACE)
-Tilde ::=	OCTET \- \*Q~\*U (TILDE)
+SpaceChar ::=	OCTET \- \*Q\0\*U (SPACE)
+Tilde ::=	OCTET \- \*Q\^~\^\*U (TILDE)
 Plus ::=	OCTET \- \*Q+\*U (PLUS)
-Dot ::=	OCTET \- \*Q.\*U (FULL STOP)
+Dot ::=	OCTET \- \*Q\^.\^\*U (FULL STOP)
 .TE
 .NL
 .eC
@@ -2774,7 +2776,7 @@ Sample derived instance:
 .LP
 If an axis allows negative values, a client requests a negative value by
 .sC
-using \*Q~\*U (TILDE) as a minus sign.
+using \*Q\^~\^\*U (TILDE) as a minus sign.
 .eC
 .LP
 Axis types can be registered with the X Consortium, along with their
