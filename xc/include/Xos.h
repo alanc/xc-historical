@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.12 89/01/18 17:13:46 jim Exp $
+ * $XConsortium: Xos.h,v 1.13 89/06/14 11:12:29 jim Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -89,10 +89,13 @@
 #ifdef umips
 #include <bsd/sys/time.h>			/* SYSV && umips */
 #else
+#ifndef __TIMEVAL__
+#define __TIMEVAL__
 struct timeval {
     long tv_sec;
     long tv_usec;
 };
+#endif
 #endif /* umips or not */
 #endif /* USG */
 
