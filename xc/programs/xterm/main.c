@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.68 88/08/13 09:11:53 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.71 88/08/29 21:36:14 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -62,7 +62,9 @@ SOFTWARE.
 #ifdef SYSV				/* note that macII is *not* SYSV */
 #include <sys/ioctl.h>
 #include <sys/termio.h>
+#ifndef mips
 #include <sys/ptyio.h>
+#endif /* not mips */
 #include <sys/stat.h>
 #ifdef JOBCONTROL
 #include <sys/bsdtty.h>
@@ -394,6 +396,21 @@ char **argv;
 	int fd2 = -1;
 	int fd3 = -1;
 
+	ProgramName = argv[0];
+
+#ifdef debug
+	{
+	    FILE *fp = fopen ("/tmp/xterm.args", "a");
+	    if (fp) {
+		for (i = 0; i < argc; i++) {
+		    fprintf (stderr, "%s ", argv[i]);
+		}
+		fprintf (stderr, "\n");
+		fclose (fp);
+	    }
+	}
+#endif
+
 #ifdef	hpux
 	/* This is a temporary kludge to get around the bug in 6.2 hp-ux unix
 	 * domain sockets which will crash the server if we do an invalid
@@ -424,8 +441,6 @@ char **argv;
 	    }
 	}
 #endif	/* hpux */
-
-	ProgramName = argv[0];
 
 #ifdef macII
 	/*
@@ -597,7 +612,8 @@ char **argv;
 		ptydev[strlen(ptydev) - 1] = ttydev[strlen(ttydev) - 1] =
 			get_ty[strlen(get_ty) - 1];
 		if ((loginpty = open(ptydev, O_RDWR, 0)) < 0) {
-			consolepr("open(%s) failed\n", ptydev);
+			consolepr("pty open of \"%s\" failed, ttydev \"%s\", get_ty \"%s\"\n",
+				  ptydev, ttydev, get_ty);
 			exit(ERROR_PTYS);
 		}
 		chown(ttydev, 0, 0);
@@ -847,6 +863,22 @@ int *pty;
 {
 	static int devindex, letter = 0;
 
+#if defined (mips) && defined (SYSTYPE_SYSV)
+	struct stat fstat_buf;
+
+	*pty = open ("/dev/ptc", O_RDWR);
+	if (*pty < 0 || (fstat (*pty, &fstat_buf)) < 0) {
+	  return(1);
+	}
+	sprintf (ttydev, "/dev/ttyq%d", minor(fstat_buf.st_rdev));
+	sprintf (ptydev, "/dev/ptyq%d", minor(fstat_buf.st_rdev));
+	if ((*tty = open (ttydev, O_RDWR)) < 0) {
+	  close (*pty);
+	  return(1);
+	}
+	/* got one! */
+	return(0);
+#else /* not (mips && SYSTYPE_SYSV) */
 	while (PTYCHAR1[letter]) {
 	    ttydev [strlen(ttydev) - 2]  = ptydev [strlen(ptydev) - 2] =
 		    PTYCHAR1 [letter];
@@ -870,6 +902,7 @@ int *pty;
 	 * condition and let our caller terminate cleanly.
 	 */
 	return(1);
+#endif /* mips && SYSTYPE_SYSV */
 }
 
 get_terminal ()
@@ -1276,6 +1309,15 @@ spawn ()
 
 		if (!get_ty) {
 #ifdef USE_SYSV_TERMIO
+#ifdef mips
+		    /* If the control tty had its modes screwed around with,
+		       eg. by lineedit in the shell, or emacs, etc. then tio
+		       will have bad values.  Let's just get termio from the
+		       new tty and tailor it.  */
+		    if (ioctl (tty, TCGETA, &tio) == -1)
+		      SysError (ERROR_TIOCGETP);
+		    tio.c_lflag |= ECHOE;
+#endif /* mips */
 		    /* Now is also the time to change the modes of the
 		     * child pty.
 		     */
@@ -1553,7 +1595,9 @@ spawn ()
 		} else if (get_ty) {
 			signal(SIGHUP, SIG_IGN);
 #ifdef SYSV				/* macII does NOT want this */
+#ifndef mips
 			ioctl (0, TIOCTTY, &zero);
+#endif /* not mips */
 			execlp (getty_program, "getty", get_ty, "Xwindow", 0);
 
 #else	/* !SYSV */
