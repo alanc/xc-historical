@@ -1,6 +1,7 @@
-LOCAL_LIBRARIES = $(FONTSRC)/lib/libfont.a
+FONTLIBSRC = $(FONTSRC)/lib/font
+LOCAL_LIBRARIES = $(FONTLIBSRC)/libfont.a
 DEPLIBS = $(LOCAL_LIBRARIES)
-INCLUDES = -I$(FONTSRC)/include -I$(FONTSRC)/lib/include
+INCLUDES = -I$(FONTSRC)/include -I$(FONTLIBSRC)/include
 SRCS = mkfontdir.c
 OBJS = mkfontdir.o
 

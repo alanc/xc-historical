@@ -1,6 +1,6 @@
-       INCLUDES = -I../../include -I../../lib -I$(FONTSRC)/include
-        DEPLIBS = ../../lib/libFS.a $(DEPXLIB)
-LOCAL_LIBRARIES = ../../lib/libFS.a $(XLIB)
+LOCAL_LIBRARIES = $(FONTSRC)/lib/fs/libFS.a $(XLIB)
+DEPLIBS = $(FONTSRC)/lib/fs/libFS.a $(DEPXLIB)
+INCLUDES = -I$(FONTSRC)/include
 
            SRCS = chars.c fstobdf.c header.c props.c
            OBJS = chars.o fstobdf.o header.o props.o

@@ -4,7 +4,7 @@
 SRCS =	connection.c waitfor.c io.c utils.c osinit.c config.c access.c osglue.c
 OBJS =  connection.o waitfor.o io.o utils.o osinit.o config.o access.o osglue.o
 
-INCLUDES = -I. -I../../include -I../include -I$(FONTSRC)/include
+INCLUDES = -I../include -I$(FONTSRC)/include
 
 CONN_DEFINES = ConnectionFlags
 

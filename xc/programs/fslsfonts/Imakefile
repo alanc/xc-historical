@@ -1,7 +1,8 @@
-LOCAL_LIBRARIES = ../../lib/libFS.a
+LOCAL_LIBRARIES = $(FONTSRC)/lib/fs/libFS.a
+DEPLIBS = $(LOCAL_LIBRARIES)
 SRCS = fslsfonts.c
 OBJS = fslsfonts.o
-INCLUDES = -I../../include -I../../lib -I$(FONTSRC)/include
+INCLUDES = -I$(FONTSRC)/include
 
 ComplexProgramTarget(fslsfonts)
 
