@@ -69,7 +69,8 @@ or \fB#if\fP), \fIimake\fP will make a temporary \fImakefile\fP in
 which the '#' lines are prepended with the string ``/**/'' (so that
 \fIcpp\fP will copy the line into the \fIMakefile\fP as a comment).
 .PP
-The \fIImakefile\fP reads in file containing machine-dependent parameters 
+The IMAKE_TEMPLATE typically
+reads in file containing machine-dependent parameters 
 (specified as \fIcpp\fP symbols), a site-specific parameters file, a file
 containing \fIcpp\fP macro functions for generating \fImake\fP rules, and
 finally the \fIImakefile\fP (specified by INCLUDE_IMAKEFILE) in the current 
