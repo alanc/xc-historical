@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.59 91/10/16 21:36:10 eswu Exp $
+ * $XConsortium: Mailbox.c,v 1.60 93/08/17 18:02:18 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -27,7 +27,6 @@
 #include <X11/cursorfont.h>		/* for cursor constants */
 #include <X11/Xosdefs.h>		/* for X_NOT_POSIX def */
 #ifdef WIN32
-#define _X86_ _M_IX86
 #include <stdlib.h>
 #include <X11/Xw32defs.h>
 #else

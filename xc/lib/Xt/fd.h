@@ -1,5 +1,5 @@
 /*
-* $XConsortium: fd.h,v 1.15 93/07/08 13:29:55 kaleb Exp $
+* $XConsortium: fd.h,v 1.16 93/08/17 17:27:06 rws Exp $
 * $oHeader: fd.h,v 1.4 88/08/26 14:49:54 asente Exp $
 */
 
@@ -35,7 +35,6 @@ SOFTWARE.
 #ifndef	FD_SETSIZE
 #define	FD_SETSIZE	256
 #endif
-#define _X86_ _M_IX86
 #define BOOL wBOOL
 #undef Status
 #define Status wStatus

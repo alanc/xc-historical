@@ -1,5 +1,5 @@
 /*
- * $XConsortium: GetHost.c,v 1.2 90/12/14 19:24:38 converse Exp $
+ * $XConsortium: GetHost.c,v 1.3 93/08/16 14:11:21 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -26,7 +26,6 @@
  */
 
 #ifdef WIN32
-#define _X86_ _M_IX86
 #include <winsock.h>
 #endif
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Flush.c,v 1.4 91/07/16 20:33:52 gildea Exp $
+ * $XConsortium: Flush.c,v 1.5 93/08/17 15:35:40 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -27,7 +27,6 @@
 #include <tiuser.h>
 #else
 #ifdef WIN32
-#define _X86_ _M_IX86
 #define BOOL wBOOL
 #include <winsock.h>
 #undef BOOL

@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibnet.h,v 1.26 93/08/15 13:38:51 rws Exp $ */
+/* $XConsortium: Xlibnet.h,v 1.27 93/08/16 14:12:25 rws Exp $ */
 
 /*
 Copyright 1991 Massachusetts Institute of Technology
@@ -266,7 +266,6 @@ extern Xstream _XsStream[];
 
 #else /* not WIN32 */
 
-#define _X86_ _M_IX86
 #define BOOL wBOOL
 #undef Status
 #define Status wStatus

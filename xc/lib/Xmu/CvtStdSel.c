@@ -1,4 +1,4 @@
-/* $XConsortium: CvtStdSel.c,v 1.24 93/08/16 14:27:24 rws Exp $
+/* $XConsortium: CvtStdSel.c,v 1.25 93/08/16 14:34:45 rws Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -41,7 +41,6 @@
 
 #ifndef SYSVNET
 #ifdef WIN32
-#define _X86_ _M_IX86
 #define BOOL wBOOL
 #undef Status
 #define Status wStatus
