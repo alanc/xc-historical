@@ -3,7 +3,7 @@
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
- * $XConsortium: xload.c,v 1.29 90/12/21 15:26:27 gildea Exp $
+ * $XConsortium: xload.c,v 1.30 91/01/10 21:48:41 gildea Exp $
  */
 
 #include <stdio.h> 
@@ -118,8 +118,8 @@ void main(argc, argv)
     /* For security reasons, we reset our uid/gid after doing the necessary
        system initialization and before calling any X routines. */
     InitLoadPoint();
+    setgid(getgid());		/* reset gid first while still (maybe) root */
     setuid(getuid());
-    setgid(getgid());
 
     toplevel = XtAppInitialize(&app_con, "XLoad", options, XtNumber(options),
 			       &argc, argv, NULL, NULL, 0);
