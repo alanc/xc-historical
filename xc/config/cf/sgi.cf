@@ -1,9 +1,10 @@
-XCOMM platform:  $XConsortium: sgi.cf,v 1.23 92/05/13 11:45:15 mor Exp $
+XCOMM platform:  $XConsortium: sgi.cf,v 1.24 92/11/04 14:07:50 rws Exp $
 
 #define OSName			IRIX
 XCOMM operating system:  OSName
 #define OSMajorVersion		4
 #define OSMinorVersion		0
+#define OSTeenyVersion          1
 
 #if OSMajorVersion < 4
 /* We do not guarantee this will work */

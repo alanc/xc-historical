@@ -1,9 +1,10 @@
-XCOMM platform:  $XConsortium: hp.cf,v 1.52 92/05/11 10:20:19 rws Exp $
+XCOMM platform:  $XConsortium: hp.cf,v 1.53 92/08/15 11:20:24 rws Exp $
 
 #define OSName                 HP-UX 8.07
 XCOMM operating system:  OSName
 #define OSMajorVersion         8
 #define OSMinorVersion         0
+#define OSTeenyVersion         7
 
 #define SystemV                YES
 #define Malloc0ReturnsNull     YES
