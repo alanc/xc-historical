@@ -20,16 +20,10 @@ NormalLintTarget($(SRCS))
 
 DependTarget()
 
-#
-# `specially made just for initext.o.  If the Makefile changes, then
+# `specially made just for initext.o.  If the macro file changes, then
 # we make a new initext.o because the extension list may have changed.
-#
-# XXX
-# the dependency is on "./Makefile" because if it were just "Makefile",
-# the the rule for building the Makefile would be invoked if it is out
-# of date with respect to ./Imakefile or others.
-#
-initext.o: ./Makefile
+
+initext.o: $(IRULESRC)/$(MACROFILE)
 	$(CC) -c $(CFLAGS) $(EXT_DEFINES) initext.c
 
 ../../include/Xatom.h initatoms.c:	BuiltInAtoms buildatoms
