@@ -1,5 +1,5 @@
 /*
- * $XConsortium: editres.c,v 1.11 91/01/10 14:01:52 gildea Exp $
+ * $XConsortium: editres.c,v 1.12 91/02/16 17:46:17 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -100,7 +100,7 @@ char **argv;
     BuildWidgetTree(toplevel);
 
     SetMessage(global_screen_data.info_label, 
-	       "Welcome to the X Resource Editor version 0.1");
+	       "Welcome to the X Resource Editor version 1.0");
 
     global_screen_data.set_values_popup = NULL;
 
