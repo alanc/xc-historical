@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sony.cf,v 1.49 94/01/23 16:37:01 kaleb Exp $
+XCOMM platform:  $XConsortium: sony.cf,v 1.50 94/02/19 18:08:19 rws Exp $
 
 #ifdef SonyBsdArchitecture
 
@@ -59,6 +59,16 @@ XCOMM platform:  $XConsortium: sony.cf,v 1.49 94/01/23 16:37:01 kaleb Exp $
 #endif
 
 #endif
+
+/*
+ * SONY C++ compiler is based on vanilla cfront, which means it
+ * refuses to compile files unless their names end in ".C".
+ */
+
+#define NormalLibObjCplusplusCompile(options) test -r $*.C || $(LN) $*.CCsuf $*.C @@\
+	$(CCC) -c $(CCFLAGS) options $*.C
+
+
 XCOMM operating system:  OSName
 
 #define BuildServer             NO
