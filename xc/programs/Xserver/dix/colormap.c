@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 5.16 91/03/14 09:38:47 keith Exp $ */
+/* $XConsortium: colormap.c,v 5.17 91/05/09 21:24:57 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -49,6 +49,7 @@ int   FreeClientPixels();
 #define NUMRED(vis) ((vis->redMask >> vis->offsetRed) + 1)
 #define NUMGREEN(vis) ((vis->greenMask >> vis->offsetGreen) + 1)
 #define NUMBLUE(vis) ((vis->blueMask >> vis->offsetBlue) + 1)
+#define RGBMASK(vis) (vis->redMask | vis->greenMask | vis->blueMask)
 
 /* GetNextBitsOrBreak(bits, mask, base)  -- 
  * (Suggestion: First read the macro, then read this explanation.
@@ -1292,44 +1293,44 @@ QueryColors (pmap, count, ppixIn, prgbList)
     if ((pmap->class | DynamicClass) == DirectColor)
     {
 	int numred, numgreen, numblue;
+	Pixel rgbbad;
 
 	numred = NUMRED(pVisual);
 	numgreen = NUMGREEN(pVisual);
 	numblue = NUMBLUE(pVisual);
+	rgbbad = ~RGBMASK(pVisual);
 	for( ppix = ppixIn, prgb = prgbList; --count >= 0; ppix++, prgb++)
 	{
 	    pixel = *ppix;
+	    if (pixel & rgbbad) {
+		clientErrorValue = pixel;
+		errVal =  BadValue;
+		continue;
+	    }
 	    i  = (pixel & pVisual->redMask) >> pVisual->offsetRed;
 	    if (i >= numred)
 	    {
 		clientErrorValue = pixel;
 		errVal =  BadValue;
+		continue;
 	    }
-	    else
+	    prgb->red = pmap->red[i].co.local.red;
+	    i  = (pixel & pVisual->greenMask) >> pVisual->offsetGreen;
+	    if (i >= numgreen)
 	    {
-		prgb->red = pmap->red[i].co.local.red;
-
-
-		i  = (pixel & pVisual->greenMask) >> pVisual->offsetGreen;
-		if (i >= numgreen)
-		{
-		    clientErrorValue = pixel;
-		    errVal =  BadValue;
-		}
-		else
-		{
-		    prgb->green = pmap->green[i].co.local.green;
-
-		    i  = (pixel & pVisual->blueMask) >> pVisual->offsetBlue;
-		    if (i >= numblue)
-		    {
-			clientErrorValue = pixel;
-			errVal =  BadValue;
-		    }
-		    else
-			prgb->blue = pmap->blue[i].co.local.blue;
-		}
+		clientErrorValue = pixel;
+		errVal =  BadValue;
+		continue;
 	    }
+	    prgb->green = pmap->green[i].co.local.green;
+	    i  = (pixel & pVisual->blueMask) >> pVisual->offsetBlue;
+	    if (i >= numblue)
+	    {
+		clientErrorValue = pixel;
+		errVal =  BadValue;
+		continue;
+	    }
+	    prgb->blue = pmap->blue[i].co.local.blue;
 	}
     }
     else
@@ -2060,9 +2061,7 @@ FreeColors (pmap, client, count, pixels, mask)
 	return(BadAccess);
     if ((class | DynamicClass) == DirectColor)
     {
-	rmask = mask & (pmap->pVisual->redMask |
-			pmap->pVisual->greenMask |
-			pmap->pVisual->blueMask);
+	rmask = mask & RGBMASK(pmap->pVisual);
         result = FreeCo(pmap, client, REDMAP, count, pixels, rmask);
 	/* If any of the three calls fails, we must report that, if more
 	 * than one fails, it's ok that we report the last one */
@@ -2106,7 +2105,7 @@ FreeCo (pmap, client, color, npixIn, ppixIn, mask)
     Pixel	*pptr, *cptr;
     int 	n, zapped;
     int		errVal = Success;
-    int		offset;
+    int		offset, numents;
 
     if (npixIn == 0)
         return (errVal);
@@ -2119,24 +2118,28 @@ FreeCo (pmap, client, color, npixIn, ppixIn, mask)
       case REDMAP:
 	cmask = pmap->pVisual->redMask;
 	offset = pmap->pVisual->offsetRed;
+	numents = (cmask >> offset) + 1;
 	ppixClient = pmap->clientPixelsRed[client];
 	npixClient = pmap->numPixelsRed[client];
 	break;
       case GREENMAP:
 	cmask = pmap->pVisual->greenMask;
 	offset = pmap->pVisual->offsetGreen;
+	numents = (cmask >> offset) + 1;
 	ppixClient = pmap->clientPixelsGreen[client];
 	npixClient = pmap->numPixelsGreen[client];
 	break;
       case BLUEMAP:
 	cmask = pmap->pVisual->blueMask;
 	offset = pmap->pVisual->offsetBlue;
+	numents = (cmask >> offset) + 1;
 	ppixClient = pmap->clientPixelsBlue[client];
 	npixClient = pmap->numPixelsBlue[client];
 	break;
       case PSEUDOMAP:
 	cmask = ~((Pixel)0);
 	offset = 0;
+	numents = pmap->pVisual->ColormapEntries;
 	ppixClient = pmap->clientPixelsRed[client];
 	npixClient = pmap->numPixelsRed[client];
 	break;
@@ -2149,7 +2152,7 @@ FreeCo (pmap, client, color, npixIn, ppixIn, mask)
         for (pptr = ppixIn, n = npixIn; --n >= 0; pptr++)
 	{
 	    pixTest = ((*pptr | bits) & cmask) >> offset;
-	    if (pixTest >= pmap->pVisual->ColormapEntries)
+	    if (pixTest >= numents)
 	    {
 		clientErrorValue = *pptr | bits;
 		errVal = BadValue;
@@ -2256,20 +2259,26 @@ StoreColors (pmap, count, defs)
     if((class | DynamicClass) == DirectColor)
     {
 	int numred, numgreen, numblue;
+	Pixel rgbbad;
 
 	numred = NUMRED(pVisual);
 	numgreen = NUMGREEN(pVisual);
 	numblue = NUMBLUE(pVisual);
+	rgbbad = ~RGBMASK(pVisual);
         for (pdef = defs, n = 0; n < count; pdef++, n++)
 	{
 	    ok = TRUE;
             (*pmap->pScreen->ResolveColor)
 	        (&pdef->red, &pdef->green, &pdef->blue, pmap->pVisual);
 
+	    if (pdef->pixel & rgbbad)
+	    {
+		errVal = BadValue;
+		ok = FALSE;
+	    }
 	    pix = (pdef->pixel & pVisual->redMask) >> pVisual->offsetRed;
 	    if (pix >= numred)
 	    {
-		clientErrorValue = pdef->pixel;
 		errVal = BadValue;
 		ok = FALSE;
 	    }
@@ -2290,7 +2299,6 @@ StoreColors (pmap, count, defs)
 	    pix = (pdef->pixel & pVisual->greenMask) >> pVisual->offsetGreen;
 	    if (pix >= numgreen)
 	    {
-		clientErrorValue = pdef->pixel;
 		errVal = BadValue;
 		ok = FALSE;
 	    }
@@ -2311,7 +2319,6 @@ StoreColors (pmap, count, defs)
 	    pix = (pdef->pixel & pVisual->blueMask) >> pVisual->offsetBlue;
 	    if (pix >= numblue)
 	    {
-		clientErrorValue = pdef->pixel;
 		errVal = BadValue;
 		ok = FALSE;
 	    }
@@ -2337,7 +2344,8 @@ StoreColors (pmap, count, defs)
 		if(idef != n)
 		    defs[idef] = defs[n];
 		idef++;
-	    }
+	    } else
+		clientErrorValue = pdef->pixel;
 	}
     }
     else
