@@ -1,4 +1,4 @@
-/* $XConsortium: Xtranstli.c,v 1.19 94/05/05 11:44:11 mor Exp $ */
+/* $XConsortium: Xtranstli.c,v 1.20 94/06/02 10:35:37 mor Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -735,7 +735,7 @@ struct t_bind	*req;
     {
 	PRMSG(1, "TRANS(TLICreateListener): failed to allocate a t_bind\n",
 	      0,0,0 );
-	return -1;
+	return TRANS_CREATE_LISTENER_FAILED;
     }
     
     if( t_bind(ciptr->fd, req, ret) < 0 )
@@ -743,7 +743,7 @@ struct t_bind	*req;
 	PRMSG(1, "TRANS(TLICreateListener): t_bind failed\n", 0,0,0 );
 	t_free((char *)req,T_BIND);
 	t_free((char *)ret,T_BIND);
-	return -1;
+	return TRANS_CREATE_LISTENER_FAILED;
     }
     
     if( memcmp(req->addr.buf,ret->addr.buf,req->addr.len) != 0 )
@@ -766,7 +766,7 @@ struct t_bind	*req;
 	      0,0,0 );
 	t_free((char *)req,T_BIND);
 	t_free((char *)ret, T_BIND);
-	return -1;
+	return TRANS_CREATE_LISTENER_FAILED;
     }
     
     ciptr->addrlen=ret->addr.len;
@@ -820,7 +820,7 @@ char		*port;
 	PRMSG(1,
 	    "TRANS(TLIINETCreateListener): failed to allocate a t_bind\n",
 	    0,0,0 );
-	return -1;
+	return TRANS_CREATE_LISTENER_FAILED;
     }
 
     if( port && *port ) {
@@ -830,7 +830,7 @@ char		*port;
 		  "TRANS(TLIINETCreateListener): can't resolve name:HOST_SELF.%s\n",
 		  port, 0,0 );
 	    t_free((char *)req,T_BIND);
-	    return -1;
+	    return TRANS_CREATE_LISTENER_FAILED;
 	}
     } else {
 	sinaddr=(struct sockaddr_in *)req->addr.buf;
@@ -865,7 +865,7 @@ char		*port;
 	PRMSG(1,
 	      "TRANS(TLITLICreateListener): failed to allocate a t_bind\n",
 	      0,0,0 );
-	return -1;
+	return TRANS_CREATE_LISTENER_FAILED;
     }
     
     if( (sunaddr=(struct sockaddr_un *)
@@ -875,7 +875,7 @@ char		*port;
 	      "TRANS(TLITLICreateListener): failed to allocate a sockaddr_un\n",
 	      0,0,0 );
 	t_free((char *)req,T_BIND);
-	return -1;
+	return TRANS_CREATE_LISTENER_FAILED;
     }
     
     sunaddr->sun_family=AF_UNIX;
