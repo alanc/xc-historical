@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xstdcmap.c,v 1.5 89/07/18 17:54:55 jim Exp $
+ * $XConsortium: xstdcmap.c,v 1.6 89/07/24 11:06:26 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -140,12 +140,14 @@ static void parse(argc, argv)
     (void) sprintf(option, "%s%s", program_name, ".delete");
     if (XrmGetResource(database, option, (char *) NULL, &type, &value)) {
 	register int i;
-	for (i=0; i < NPROPERTIES; i++) 
-	    if (strncmp((char *) value.addr, propertyTable[i].nickname,
-			(int) value.size) == 0) {
+	for (i=0; i < NPROPERTIES; i++) {
+	    if (strcmp((char *) value.addr, propertyTable[i].nickname) == 0) {
 		propertyTable[i].delete++;
 		break;
 	    }
+	    if (strcmp((char *) value.addr, "all") == 0)
+		propertyTable[i].delete++;
+	}
     }
 		
     (void) sprintf(option, "%s%s", program_name, ".display");
