@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sessreg.c,v 1.14 94/10/28 21:20:07 gildea Exp gildea $
+ * $XConsortium: sessreg.c,v 1.15 94/12/08 21:35:31 gildea Exp kaleb $
  *
  * Copyright (c) 1990  X Consortium
  * 
@@ -242,7 +242,7 @@ char	**argv;
 	if (!Lflag)
 		llog_file = LLOG_FILE;
 #endif
-#ifndef SYSV
+#if !defined(SYSV) && !defined(linux)
 	if (!tflag)
 		ttys_file = TTYS_FILE;
 	if (!sflag && !utmp_none) {
