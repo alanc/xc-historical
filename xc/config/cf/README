@@ -195,7 +195,6 @@ Project.tmpl provides defaults for the following variables:
 	BandAidLibraryObjects	Xlib object files to merge in
 	BandAidLibrarySources	Xlib source files to merge in
 	BinDir			directory in which to install programs
-	BuildExamples		boolean controlling make of examples stuff
 	BuildIncRoot		relative path to location of headers in build
 	BuildIncTop		path from build includes directory to top
 	BuildServer		boolean controlling make of server stuff
