@@ -1,17 +1,27 @@
-XCOMM platform:  $XConsortium: sony.cf,v 1.7 90/12/26 11:40:20 rws Exp $
+XCOMM platform:  $XConsortium: sony.cf,v 1.8 90/12/26 20:50:42 rws Exp $
 XCOMM operating system:  OSName
 
 /*
  * SET VERSION NUMBERS BEFORE MAKING MAKEFILES
  */
 
-#define OSName            NEWS-OS 3.3
-#define OSMajorVersion    3
-#define OSMinorVersion    3
-#define BuildServer       NO
-#define HasInputExtension YES
-#define UnalignedReferencesAllowed NO	       /* if arbitrary deref is okay */
-#define SetTtyGroup YES
-#define HasBsearch YES
-#define HasVoidSignalReturn NO
-
+#ifdef bsd43
+#define OSName                  NEWS-OS 3.3
+#define OSMajorVersion          3
+#define OSMinorVersion          3
+#define BuildServer             NO
+#define SetTtyGroup             YES
+#define HasBsearch              YES
+#define HasVoidSignalReturn     NO
+#else
+#define OSName                  NEWS-OS 5.0U
+#define OSMajorVersion          5
+#define OSMinorVersion          0
+#define BootstrapCFlags		-Dsony
+#define BuildServer             NO
+#define SystemV4		YES
+#define BootstrapCFlags		-Dsony
+#define CcCmd                   /usr/bin/cc
+#define ExtraLibraries		-lnsl
+#define DefaultCCOptions        -Wf,-XNp5000,-XNd3500
+#endif
