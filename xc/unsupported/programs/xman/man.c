@@ -1,7 +1,7 @@
 /*
  * xman - X Window System manual page display program.
  *
- * $XConsortium: man.c,v 1.18 91/02/08 11:31:36 gildea Exp $
+ * $XConsortium: man.c,v 1.19 91/02/13 16:10:41 converse Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -222,14 +222,6 @@ SectionList ** list;
  *	Returns: TRUE in we should use default sections
  */
   
-#define SUFFIX "suffix"
-#define FOLD "fold"
-#define FOLDSUFFIX "foldsuffix"
-#define MNULL 0
-#define MSUFFIX 1
-#define MFOLD 2
-#define MFOLDSUFFIX 3
-
 static void
 ReadMandescFile( section_list, path )
 SectionList ** section_list;
