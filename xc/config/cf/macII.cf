@@ -4,7 +4,7 @@
 
 #define SystemV           YES
 
-#define OSName            A/UX 2.0
+#define OSName            A/UX 2.0.1
 #define OSMajorVersion    2
 #define OSMinorVersion    0
 /* the server *REALLY* needs GCC for performance */
@@ -27,7 +27,7 @@
 #define CcCmd cc -A 3
 #endif
 
-XCOMM platform:  $XConsortium: macII.cf,v 1.24 91/03/25 10:55:07 rws Exp $
+XCOMM platform:  $XConsortium: macII.cf,v 1.25 91/03/26 11:55:36 rws Exp $
 XCOMM operating system:  OSName
 
 /*****************************************************************************
