@@ -67,17 +67,22 @@ Xmh*comp.scrollVertical:	Always
 Xmh*comp.scrollHorizontal:	WhenNeeded
 Xmh*comp.autoFill:		True
 
+Xmh*sequenceMenu.Translations: #override\n\
+<Btn2Up>:XtMenuPopdown()notify()XmhOpenSequenceFromSequenceMenu()unhighlight()\n\
+<Btn3Up>:XtMenuPopdown()XmhPushSequence()notify()XmhAddToSequence()XmhPopSequence()unhighlight()\n\
+<BtnUp>:XtMenuPopdown()notify()unhighlight()\n
+
 Xmh*folders*MenuButton.Translations:#override\n\
-        <BtnDown>:     set()XmhPopupFolderMenu()\n\
-        <Btn2Up>:      XmhSetCurrentFolder()reset()XmhOpenFolderFromMenu()\n\
-	<Btn3Up>:      XmhPushFolder()XmhSetCurrentFolder()XmhMarkMove()XmhPopFolder()reset()\n\
-        <BtnUp>:       XmhSetCurrentFolder()reset()\n\
-        <LeaveWindow>: reset()XmhLeaveFolderButton()\n
+<BtnDown>:set()XmhPopupFolderMenu()\n\
+<Btn2Up>:XmhSetCurrentFolder()reset()XmhOpenFolder()\n\
+<Btn3Up>:XmhPushFolder()XmhSetCurrentFolder()reset()XmhMarkMove()XmhPopFolder()\n\
+<BtnUp>:XmhSetCurrentFolder()reset()\n\
+<LeaveWindow>:reset()XmhLeaveFolderButton()\n
 
 Xmh*folders*SimpleMenu.Translations:#override\n\
-        <Btn2Up>: notify()XtMenuPopdown()unhighlight()XmhOpenFolderFromMenu()\n\
-	<Btn3Up>: XmhPushFolder()notify()XmhMarkMove()XmhPopFolder()XtMenuPopdown()unhighlight()\n\
-        <BtnUp>:  notify()XtMenuPopdown()unhighlight()\n
+<Btn2Up>:XtMenuPopdown()notify()XmhOpenFolderFromMenu()unhighlight()\n\
+<Btn3Up>:XtMenuPopdown()XmhPushFolder()notify()XmhMarkMove()XmhPopFolder()unhighlight()\n\
+<BtnUp>:XtMenuPopdown()notify()unhighlight()\n
 
 Xmh*toc.Translations: #override\n\
 	<Btn2Down>: select-start()\n\
