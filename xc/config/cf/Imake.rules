@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.154 93/08/25 09:41:42 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.155 93/08/25 10:00:48 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1259,6 +1259,10 @@ NormalLintTarget($(SRCS))
 src:  dir/src								@@\
 	RemoveFile($@)							@@\
 	$(LN) $? $@							@@\
+									@@\
+includes:: src								@@\
+									@@\
+depends:: src								@@\
 									@@\
 clean::									@@\
 	RemoveFile(src)
