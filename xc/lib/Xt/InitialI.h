@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.34 90/08/23 14:39:25 swick Exp $ */
+/* $XConsortium: InitialI.h,v 1.35 90/08/31 08:13:11 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -243,6 +243,7 @@ typedef struct _XtPerDisplayStruct {
     struct _TMContext* tm_context;     /* for XtGetActionKeysym */
     CallbackList mapping_callbacks;    /* special case for TM */
     XtPerDisplayInputRec pdi;	       /* state for modal grabs & kbd focus */
+    struct _WWTable *WWtable;	       /* window to widget table */
 } XtPerDisplayStruct, *XtPerDisplay;
 
 typedef struct _PerDisplayTable {
