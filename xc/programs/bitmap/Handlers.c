@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Handlers.c,v 1.9 91/04/16 09:06:48 rws Exp $
+ * $XConsortium: Handlers.c,v 1.10 91/07/24 15:25:01 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,12 +23,11 @@
  * Author:  Davor Matic, MIT X Consortium
  */
 
-#include <X11/StringDefs.h>
 #include <X11/IntrinsicP.h>
+#include <X11/StringDefs.h>
 #include "BitmapP.h"
     
 #include <stdio.h>
-#include <string.h>
 #include <math.h>
 
 #ifndef abs

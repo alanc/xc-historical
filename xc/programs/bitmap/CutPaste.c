@@ -1,5 +1,5 @@
 /*
- * $XConsortium: CutPaste.c,v 1.5 91/07/19 12:01:30 dave Exp $
+ * $XConsortium: CutPaste.c,v 1.6 91/07/24 15:33:34 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -29,7 +29,6 @@
 #include "BitmapP.h"
     
 #include <stdio.h>
-#include <string.h>
 #include <math.h>
 
 #ifndef abs

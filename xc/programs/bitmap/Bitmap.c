@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.38 91/07/24 15:46:52 converse Exp $
+ * $XConsortium: Bitmap.c,v 1.39 91/10/21 14:31:37 eswu Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -34,7 +34,6 @@
 #include "BitmapP.h"
     
 #include <stdio.h>
-#include <string.h>
 #include <math.h>
 
 #ifndef abs

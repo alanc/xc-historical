@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Graphics.c,v 1.14 91/06/27 16:10:45 dave Exp $
+ * $XConsortium: Graphics.c,v 1.15 91/07/24 15:24:24 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,13 +23,12 @@
  * Author:  Davor Matic, MIT X Consortium
  */
 
-#include <X11/StringDefs.h>
 #include <X11/IntrinsicP.h>
+#include <X11/StringDefs.h>
 #include <X11/Xfuncs.h>
 #include "BitmapP.h"
     
 #include <stdio.h>
-#include <string.h>
 #include <math.h>
 
 #ifndef abs

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ReqMach.c,v 1.9 91/04/16 09:06:39 rws Exp $
+ * $XConsortium: ReqMach.c,v 1.10 91/07/24 15:23:52 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,13 +23,13 @@
  * Author:  Davor Matic, MIT X Consortium
  */
 
-#include <X11/StringDefs.h>
 #include <X11/IntrinsicP.h>
+#include <X11/StringDefs.h>
 #include <X11/Xfuncs.h>
+#include <X11/Xos.h>
 #include "BitmapP.h"
     
 #include <stdio.h>
-#include <string.h>
 #include <math.h>
 
 #ifndef abs
