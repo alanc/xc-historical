@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header$";
+static char rcsid[] = "$Header: Error.c,v 1.12 87/11/01 19:34:33 haynes BL5 $";
 #endif lint
 
 /*
@@ -24,11 +24,18 @@ static char rcsid[] = "$Header$";
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-#include "Xlib.h"
+#ifndef VMS
+#include <X11/Xlib.h>
 #include <stdio.h>
+#else
+#include Xlib
+#include stdio
+#include "VMSutil.h"
+#include <descrip.h>
+#endif
 #include "Intrinsic.h"
 
-void _XtError (message)
+static void _XtError (message)
     String message;
 {
     extern void exit();
@@ -36,30 +43,95 @@ void _XtError (message)
     exit(1);
 }
 
-void _XtWarning (message)
+static void _XtWarning (message)
     String message;
 { (void) fprintf(stderr, "X Toolkit Warning: %s\n", message); }
 
 static void (*errorFunction)() = _XtError;
+static vmsbinderror = FALSE;
 static void (*warningFunction)() = _XtWarning;
+static vmsbindwarning = FALSE;
 
-void XtError(message) String message; { (*errorFunction)(message); }
+void XtError(message) 
+String message; 
+{ 
+#ifdef DWTVMS
+    $DESCRIPTOR(message$dsc, message); 
 
-void XtWarning(message) String message; { (*warningFunction)(message); }
+    if (vmsbinderror) (*errorFunction)(&message$dsc);
+    else (*errorFunction)(message); 
+#else
+/* how do you construct a descriptor in "C"?
+    if (vmsbinderror) (*errorFunction)(&message$dsc);
+    else (*errorFunction)(message);
+*/
+    (*errorFunction)(message); 
+#endif
+
+}
+
+void XtWarning(message) 
+String message; 
+{ 
+#ifdef DWTVMS
+    $DESCRIPTOR(message$dsc, message); 
+
+    if (vmsbindwarning) (*warningFunction)(&message$dsc);
+    else  (*warningFunction)(message);
+#else
+/*  how do you construct a descriptor in "C"?
+    if (vmsbindwarning) (*warningFunction)(&message)
+    else (*warningFunction)(message);
+*/
+    (*warningFunction)(message);
+#endif
+
+
+}
+
+
+#ifdef DWTVMS
+void XT$SETERRORHANDLER(handler) 
+    register void (*handler)();
+{ 
+    if (handler != NULL) {
+      errorFunction = handler;
+      vmsbinderror = TRUE;
+    }
+    else {
+      errorFunction = _XtError;
+      vmsbinderror = FALSE;
+    }
+}
+
+void XT$SETWARNINGHANDLER(handler) 
+    register void (*handler)();
+{ 
+    if (handler != NULL) {
+      warningFunction = handler;
+      vmsbindwarning = TRUE;
+    }
+    else {
+      warningFunction = _XtWarning;
+      vmsbindwarning = FALSE;
+    }
+}
+#endif
 
 void XtSetErrorHandler(handler)
     register void (*handler)();
 {
     if (handler != NULL) errorFunction = handler;
     else errorFunction = _XtError;
+    vmsbinderror = FALSE;
 }
-
 
 void XtSetWarningHandler(handler)
     register void (*handler)();
 {
     if (handler != NULL) warningFunction = handler;
     else warningFunction = _XtWarning;
+    vmsbindwarning = FALSE;
 }
 
 
