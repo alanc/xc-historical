@@ -385,8 +385,6 @@
   ;; are ignored; it is assumed the handler either takes care of the error
   ;; completely, or else signals. For all core errors, the keyword/value argument
   ;; pairs are:
-  ;;    :display display
-  ;;    :error-key error-key
   ;;    :major card8
   ;;    :minor card16
   ;;    :sequence card16
@@ -399,8 +397,8 @@
   ;; For :value errors, another pair is:
   ;;    :value card32
   (declare (type display display)
-	   (type (or (sequence (function (&rest key-vals)))
-		     (function (&rest key-vals)))
+	   (type (or (sequence (function (display symbol &rest key-vals)))
+		     (function (display symbol &rest key-vals)))
 		 handler)))
 
 (defmacro define-condition (name base &body items)
@@ -414,9 +412,11 @@
   sequence
   current-sequence)
 
-(defun default-error-handler (&rest key-vals)
+(defun default-error-handler (display error-key &rest key-vals)
   ;; The default display-error-handler.
   ;; It signals the conditions listed below.
+  (declare (type display display)
+	   (type symbol error-key))
   )
 
 (define-condition resource-error request-error
