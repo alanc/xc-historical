@@ -21,7 +21,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium$ */
+/* $XConsortium: dixfonts.c,v 1.54 95/05/19 19:18:17 dpw Exp dpw $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -307,10 +307,11 @@ doOpenFont(client, c)
 	err = BadFontName;
 	goto bail;
     }
+    if (!pfont->fpe)
+	pfont->fpe = fpe;
     pfont->refcnt++;
     if (pfont->refcnt == 1) {
-	pfont->fpe = fpe;
-	UseFPE(fpe);
+	UseFPE(pfont->fpe);
 	for (i = 0; i < screenInfo.numScreens; i++) {
 	    pScr = screenInfo.screens[i];
 	    if (pScr->RealizeFont)
