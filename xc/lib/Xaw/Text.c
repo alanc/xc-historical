@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.108 89/08/18 14:32:19 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.109 89/08/18 15:12:28 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -1565,8 +1565,13 @@ XawTextBlock *text;
 
   if ((pos1 == ctx->text.insertPos) && (src->edit_mode == XawtextAppend)) {
     ctx->text.insertPos = ctx->text.lastPos;
-    pos2 += ctx->text.insertPos - pos1;
+    pos2 = (*Scan)(src, ctx->text.insertPos, XawstPositions, XawsdRight,
+		   (ctx->text.insertPos - pos1), TRUE);
     pos1 = ctx->text.insertPos;
+    if ( (pos1 == pos2) && (text->length == 0) ) {
+      ctx->text.update_disabled = FALSE; /* rearm redisplay. */
+      return( XawEditError );
+    }
   }
 
   updateFrom = (*Scan)(src, pos1, XawstWhiteSpace, XawsdLeft, 1, TRUE);
