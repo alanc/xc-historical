@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.13 94/05/11 16:20:22 kaleb Exp $
+XCOMM $XConsortium: Imakefile,v 1.14 94/06/01 15:57:45 kaleb Exp kaleb $
 
 MANDIR = $(LIBMANDIR)
 MANSUFFIX = $(LIBMANSUFFIX)
@@ -106,7 +106,7 @@ InstallManPageLong(XtSetVal,$(MANDIR),XtSetValues)
 InstallManPageAliases(XtSetValues,$(MANDIR),XtVaSetValues XtSetSubvalues XtGetValues XtVaGetValues XtGetSubvalues)
 InstallManPageLong(XtStrCW,$(MANDIR),XtStringConversionWarning)
 InstallManPageLong(XtDStrCW,$(MANDIR),XtDisplayStringConversionWarning)
-InstallManPageLong(XtTransC,$(MANDIR),XtTranslateCoordinates)
+InstallManPageLong(XtTransC,$(MANDIR),XtTranslateCoords)
 InstallManPageLong(XtKeysym,$(MANDIR),XtGetKeysymTable)
 InstallManPageAliases(XtGetKeysymTable,$(MANDIR),XtKeysymToKeycodeList)
 InstallManPageLong(XtAppSTC,$(MANDIR),XtAppSetTypeConverter)
@@ -150,7 +150,7 @@ InstallManPageLong(XtErr,$(MANDIR),XtError)
 InstallManPageAliases(XtError,$(MANDIR),XtSetErrorHandler XtSetWarningHandler XtWarning)
 InstallManPageLong(XtGEDB,$(MANDIR),XtGetErrorDatabase)
 InstallManPageAliases(XtGetErrorDatabase,$(MANDIR),XtGetErrorDatabaseText)
-InstallManPageLong(XtAllocGC,$(MANDIR),XtAllocGC)
+InstallManPageLong(XtAllocGC,$(MANDIR),XtAllocateGC)
 InstallManPageLong(XtAppRCR,$(MANDIR),XtAppReleaseCacheRefs)
 InstallManPageLong(XtSetWMC,$(MANDIR),XtSetWMColormapWindows)
 InstallManPageLong(XtFindF,$(MANDIR),XtFindFile)
