@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xload_c = "$Header: xload.c,v 1.4 87/09/13 03:18:40 swick Locked $";
+static char *rcsid_xload_c = "$Header: xload.c,v 1.5 87/12/04 16:34:42 swick Locked $";
 #endif  lint
 
 #include <stdio.h> 
@@ -7,7 +7,7 @@ static char *rcsid_xload_c = "$Header: xload.c,v 1.4 87/09/13 03:18:40 swick Loc
 #include "Xlib.h"
 #include "Intrinsic.h"
 #include "Atoms.h"
-#include "TopLevel.h"
+#include "Shell.h"
 #include "Load.h"
 #include "xload.bit"
 
