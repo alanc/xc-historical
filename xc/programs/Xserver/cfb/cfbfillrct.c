@@ -16,7 +16,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbfillrct.c,v 5.9 89/11/19 15:42:14 rws Exp $ */
+/* $XConsortium: cfbfillrct.c,v 5.10 90/01/31 12:31:20 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -29,6 +29,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 
 #include "cfb.h"
 #include "cfbmskbits.h"
+#include "mergerop.h"
 
 #if PPW == 4
 extern void cfb8FillRectOpaqueStippled32();
@@ -337,11 +338,15 @@ cfbFillRectTile32 (pDrawable, pGC, nBox, pBox)
     unsigned long *pbits;/* pointer to start of pixmap */
     PixmapPtr	    tile;	/* rotated, expanded tile */
     Bool	    isCopy;
+    MROP_DECLARE()
 
     tile = ((cfbPrivGCPtr) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pRotatedPixmap;
     tileHeight = tile->drawable.height;
     psrc = (int *)tile->devPrivate.ptr;
     isCopy = (pGC->alu == GXcopy && (pGC->planemask & PMSK) == PMSK);
+
+    if (!isCopy)
+	MROP_INITIALIZE(pGC->alu, pGC->planemask);
 
     if (pDrawable->type == DRAWABLE_WINDOW)
     {
@@ -388,8 +393,7 @@ cfbFillRectTile32 (pDrawable, pGC, nBox, pBox)
 		    ++srcy;
 		    if (srcy == tileHeight)
 		    	srcy = 0;
-		    *p = (*p & ~startmask) |
-			 (DoRop (pGC->alu, srcpix, *p) & startmask);
+		    *p = MROP_MASK (srcpix, *p, startmask);
 		    p += nlwExtra;
 	    	}
 	    }
@@ -479,19 +483,17 @@ cfbFillRectTile32 (pDrawable, pGC, nBox, pBox)
 		    nlw = nlwMiddle;
 		    if (startmask)
 		    {
-			*p = (*p & ~startmask) |
-			     (DoRop (pGC->alu, srcpix, *p) & startmask);
+			*p = MROP_MASK (srcpix, *p, startmask);
 			p++;
 		    }
 		    while (nlw--)
 		    {
-			*p = DoRop (pGC->alu, srcpix, *p);
+			*p = MROP_SOLID (srcpix, *p);
 			++p;
 		    }
 		    if (endmask)
 		    {
-		    	*p = (*p & ~endmask) |
-			     (DoRop (pGC->alu, srcpix, *p) & endmask);
+			*p = MROP_MASK (srcpix, *p, endmask);
 		    }
 		    p += nlwExtra;
 		}
@@ -499,6 +501,20 @@ cfbFillRectTile32 (pDrawable, pGC, nBox, pBox)
 	}
         pBox++;
     }
+}
+
+extern void cfbFillBoxTileOddCopy ();
+extern void cfbFillBoxTileOddGeneral ();
+
+void
+cfbFillBoxTileOdd (pDrawable, n, rects, tile, xrot, yrot)
+    DrawablePtr	pDrawable;
+    int		n;
+    BoxPtr	rects;
+    PixmapPtr	tile;
+    int		xrot, yrot;
+{
+    cfbFillBoxTileOddCopy (pDrawable, n, rects, tile, xrot, yrot, GXcopy, ~0);
 }
 
 void
@@ -509,10 +525,17 @@ cfbFillRectTileOdd (pDrawable, pGC, nBox, pBox)
     BoxPtr	pBox;
 {
     int	xrot, yrot;
+    void    (*fill)();
 
     xrot = pDrawable->x + pGC->patOrg.x;
     yrot = pDrawable->y + pGC->patOrg.y;
-    cfbFillBoxTileOdd (pDrawable, nBox, pBox, pGC->tile.pixmap, xrot, yrot);
+    fill = cfbFillBoxTileOddGeneral;
+    if ((pGC->planemask & PMSK) == PMSK)
+    {
+	if (pGC->alu == GXcopy)
+	    fill = cfbFillBoxTileOddCopy;
+    }
+    (*fill) (pDrawable, nBox, pBox, pGC->tile.pixmap, xrot, yrot, pGC->alu, pGC->planemask);
 }
 
 #define NUM_STACK_RECTS	1024
