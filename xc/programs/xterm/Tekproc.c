@@ -1,6 +1,6 @@
 /*
  * $Source: /usr/expo/X/src/clients/xterm.new/RCS/Tekproc.c,v $
- * $Header: Tekproc.c,v 1.4 88/02/16 17:39:55 jim Exp $
+ * $Header: Tekproc.c,v 1.5 88/02/16 17:48:05 jim Exp $
  *
  * Warning, there be crufty dragons here.  This is a good example of how to add
  * a trash bag on the side of a widget.  
@@ -117,7 +117,7 @@ char *curs_color;
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$Header: Tekproc.c,v 1.4 88/02/16 17:39:55 jim Exp $";
+static char rcs_id[] = "$Header: Tekproc.c,v 1.5 88/02/16 17:48:05 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -1520,6 +1520,7 @@ static char *Ttext[] = {
 
 static Tmodes curmodes;
 static int Tsize;
+static Boolean vshow;
 
 Menu *Tsetupmenu(menu)
 register Menu **menu;
@@ -1535,11 +1536,11 @@ register Menu **menu;
 		for(cp = Ttext ; *cp ; cp++)
 			AddMenuItem(*menu, *cp);
 		CheckItem(*menu, size);
-/*		if(vshow = screen->show)
+		if(vshow = screen->Vshow)
 			CheckItem(*menu, TMENU_VTWIN);
 		else
 			DisableItem(*menu, TMENU_HIDETEK);
-*/
+
 		DisableItem(*menu, TMENU_LINE);
 		Tsize = size;
 		return(*menu);
@@ -1548,11 +1549,11 @@ register Menu **menu;
 		UncheckItem(*menu, Tsize);
 		CheckItem(*menu, Tsize = size);
 	}
-/*	if(vshow != screen->show) {
-		SetItemCheck(*menu, TMENU_VTWIN, (vshow = screen->show));
+	if(vshow != screen->Vshow) {
+		SetItemCheck(*menu, TMENU_VTWIN, (vshow = screen->Vshow));
 		SetItemDisable(*menu, TMENU_HIDETEK, !vshow);
 	}
-*/
+
 	return(*menu);
 }
 
