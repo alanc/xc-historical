@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.116 89/11/22 15:36:39 jim Exp $
+ * $XConsortium: add_window.c,v 1.117 89/11/22 16:07:19 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.116 89/11/22 15:36:39 jim Exp $";
+"$XConsortium: add_window.c,v 1.117 89/11/22 16:07:19 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -752,9 +752,9 @@ IconMgr *iconp;
      */
     tmp_win->mapped = FALSE;
 
-    SetupWindow(tmp_win,
-	tmp_win->frame_x, tmp_win->frame_y,
-	tmp_win->frame_width, tmp_win->frame_height);
+    SetupWindow (tmp_win,
+		 tmp_win->frame_x, tmp_win->frame_y,
+		 tmp_win->frame_width, tmp_win->frame_height, -1);
 
     /* wait until the window is iconified and the icon window is mapped
      * before creating the icon window 

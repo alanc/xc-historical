@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: iconmgr.c,v 1.34 89/11/22 15:36:43 jim Exp $
+ * $XConsortium: iconmgr.c,v 1.35 89/11/27 10:37:21 jim Exp $
  *
  * Icon Manager routines
  *
@@ -816,6 +816,6 @@ IconMgr *ip;
     if (ip->twm_win)
       SetupWindow (ip->twm_win,
 		   ip->twm_win->frame_x, ip->twm_win->frame_y,
-		   newwidth, ip->height + ip->twm_win->title_height);
+		   newwidth, ip->height + ip->twm_win->title_height, -1);
     ip->width = savewidth;
 }
