@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.30 89/05/16 18:45:28 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.31 89/05/17 13:55:39 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -10,7 +10,7 @@
  * 
  *      SaberProgramTarget          (program,srclist,objlist,locallibs,syslibs)
  *      RemoveTargetProgram                      (program)
- *     	SingleProgramTarget              (program,objects,locallibs,syslibs)
+ *     	NormalProgramTarget         (program,objects,deplibs,locallibs,syslibs)
  *     	SimpleProgramTarget                      (program)
  *     	ComplexProgramTarget                     (program)
  *     	ComplexProgramTarget_1                   (program,locallib,syslib)
@@ -128,13 +128,13 @@ $(RM) program; if [ -f program ]; then $(MV) program program/**/~; fi
 #endif
 
 /*
- * SingleProgramTarget - generate rules to compile and link the indicated 
+ * NormalProgramTarget - generate rules to compile and link the indicated 
  * program; since it does not use any default object files, it may be used for
  * multiple programs in the same Imakefile.
  */
-#ifndef SingleProgramTarget
-#define	SingleProgramTarget(program,objects,locallibs,syslibs)		@@\
-program: objects locallibs						@@\
+#ifndef NormalProgramTarget
+#define	NormalProgramTarget(program,objects,deplibs,locallibs,syslibs)	@@\
+program: objects deplibs						@@\
 	RemoveTargetProgram($@)						@@\
 	$(CC) -o $@ objects locallibs $(LDFLAGS) syslibs $(EXTRA_LOAD_FLAGS) @@\
 									@@\
@@ -144,8 +144,17 @@ relink::								@@\
 									@@\
 clean::									@@\
 	$(RM) program
-#endif /* SingleProgramTarget */
+#endif /* NormalProgramTarget */
 
+
+/*
+ * SingleProgramTarget - obsolete version of NormalProgramTarget that doesn't have
+ * deplibs.
+ */
+#ifndef SingleProgramTarget
+#define	SingleProgramTarget(program,objects,locallibs,syslibs)		@@\
+NormalProgramTarget(program,objects,,locallibs,syslibs)
+#endif /* SingleProgramTarget */
 
 /*
  * SimpleProgramTarget - generate rules for compiling and linking programs
