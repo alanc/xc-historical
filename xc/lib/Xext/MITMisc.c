@@ -1,5 +1,5 @@
 /*
- * $XConsortium: MITMisc.c,v 1.3 90/05/15 18:51:15 keith Exp $
+ * $XConsortium: MITMisc.c,v 1.4 91/01/05 14:46:12 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -68,7 +68,7 @@ static XEXT_GENERATE_CLOSE_DISPLAY (close_display, mit_info)
 
 /*****************************************************************************
  *                                                                           *
- *		    public Shared Memory Extension routines                  *
+ *		    public routines               			     *
  *                                                                           *
  *****************************************************************************/
 
