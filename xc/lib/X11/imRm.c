@@ -1,4 +1,4 @@
-/* $XConsortium: imRm.c,v 1.2 94/01/20 18:05:20 rws Exp $ */
+/* $XConsortium: imRm.c,v 1.3 94/03/26 17:00:43 rws Exp $ */
 /******************************************************************
 
 	  Copyright 1990, 1991, 1992,1993, 1994 by FUJITSU LIMITED
@@ -693,6 +693,8 @@ _XimDefaultLineSpace(info, top, parm, mode)
 	return(True);
     }
 
+    if (!fontset)
+	return(True);
     fset_extents = XExtentsOfFontSet(fontset);
     line_space = fset_extents->max_logical_extent.height;
     out = (int *)((char *)top + info->offset);
