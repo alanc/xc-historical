@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.226 93/09/17 14:46:47 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.227 93/09/21 22:56:49 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987, 1991 by the Massachusetts Institute of Technology
  *
@@ -1326,7 +1326,7 @@ extern char *XGetAtomName(
     Atom		/* atom */
 #endif
 );
-extern void XGetAtomNames(
+extern Status XGetAtomNames(
 #if NeedFunctionPrototypes
     Display*		/* dpy */,
     Atom*		/* atoms */,
@@ -1375,7 +1375,7 @@ extern Atom XInternAtom(
     Bool		/* only_if_exists */		 
 #endif
 );
-extern void XInternAtoms(
+extern Status XInternAtoms(
 #if NeedFunctionPrototypes
     Display*		/* dpy */,
     char**		/* names */,
