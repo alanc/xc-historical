@@ -1,4 +1,4 @@
-/* $XConsortium: XKB.c,v 1.8 94/02/04 21:23:17 rws Exp $ */
+/* $XConsortium: XKB.c,v 1.9 94/02/05 02:38:25 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -753,7 +753,7 @@ int nGroups,nSyms;
 	pChanges->firstKeySym= key;
 	pChanges->nKeySyms= 1;
     }
-    return;
+    return 1;
 }
 
 /***====================================================================***/
@@ -1080,7 +1080,7 @@ XkbGetUpdatedMap(dpy,which,xkb)
 		_XkbReadKeySyms(dpy,&buf,xkb,&rep,1);
 		_XkbReadKeyActions(dpy,&buf,xkb,&rep,1);
 		_XkbReadKeyBehaviors(dpy,&buf,xkb,&rep);
-		left= _XkbFreeReadBuffer(buf);
+		left= _XkbFreeReadBuffer(&buf);
 		if (left) 
 		    fprintf(stderr,
 			"GetUpdatedMap! Wrong length (%d extra bytes)\n",
@@ -1163,7 +1163,7 @@ XkbGetKeyTypes(dpy,first,num,xkb)
 	int			left;
 	if (_XkbInitReadBuffer(dpy,&buf,rep.length*4)) {
 	    _XkbReadKeyTypes(dpy,&buf,xkb,&rep,1);
-	    left= _XkbFreeReadBuffer(buf);
+	    left= _XkbFreeReadBuffer(&buf);
 	    if (left) 
 		fprintf(stderr,"GetKeyTypes! Wrong length (%d extra bytes)\n",
 									left);
@@ -1224,7 +1224,7 @@ XkbGetKeyActions(dpy,first,num,xkb)
 	int			left;
 	if (_XkbInitReadBuffer(dpy,&buf,rep.length*4)) {
 	    _XkbReadKeyActions(dpy,&buf,xkb,&rep,0);
-	    left= _XkbFreeReadBuffer(buf);
+	    left= _XkbFreeReadBuffer(&buf);
 	    if (left) 
 		fprintf(stderr,"GetKeyActions! Wrong length (%d extra bytes)\n",
 									left);
@@ -1282,7 +1282,7 @@ XkbGetKeySyms(dpy,first,num,xkb)
 	int			left;
 	if (_XkbInitReadBuffer(dpy,&buf,rep.length*4)) {
 	    _XkbReadKeySyms(dpy,&buf,xkb,&rep,0);
-	    left= _XkbFreeReadBuffer(buf);
+	    left= _XkbFreeReadBuffer(&buf);
 	    if (left) 
 		fprintf(stderr,"GetKeySyms! Wrong length (%d extra bytes)\n",
 									left);
@@ -1343,7 +1343,7 @@ XkbGetKeyBehaviors(dpy,first,num,xkb)
 	int			left;
 	if (_XkbInitReadBuffer(dpy,&buf,rep.length*4)) {
 	    _XkbReadKeyBehaviors(dpy,&buf,xkb,&rep);
-	    left= _XkbFreeReadBuffer(buf);
+	    left= _XkbFreeReadBuffer(&buf);
 	    if (left) 
 		fprintf(stderr,
 			"GetKeyBehaviors! Wrong length (%d extra bytes)\n",
@@ -2147,7 +2147,7 @@ xkbSetMapReq tmp;
 						    &req->totalSyms)/4;
     req->length+= _XkbSizeKeyActions(xkb,req->firstKeyAction,req->nKeyActions,
 						    &req->totalActions)/4;
-    req->length+= ((req->nKeyBehaviors*sizeof(XkbBehavior))+3)/4;
+    req->length+= ((req->nKeyBehaviors*sizeof(XkbBehavior))+(unsigned)3)/4;
 
     tmp= *req;
     if ( tmp.nKeyTypes>0 )
@@ -2444,7 +2444,7 @@ XkbRefreshMap(dpy,xkb,changes)
 		_XkbReadKeySyms(dpy,&buf,xkb,&rep,1);
 		_XkbReadKeyActions(dpy,&buf,xkb,&rep,1);
 		_XkbReadKeyBehaviors(dpy,&buf,xkb,&rep);
-		left= _XkbFreeReadBuffer(buf);
+		left= _XkbFreeReadBuffer(&buf);
 		if (left) 
 		    fprintf(stderr,
 			"XkbRefresh! Wrong length (%d extra bytes)\n",
