@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.94 91/02/05 14:11:42 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.95 91/02/05 16:58:52 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1502,7 +1502,7 @@ static XtGeometryResult GeometryManager( wid, request, reply )
 
 typedef struct {
 	Widget  w;
-	int     request_num;
+	unsigned long request_num;
 	Boolean done;
 } QueryStruct;
 
@@ -1552,7 +1552,7 @@ static Bool isMine(dpy, event, arg)
 static _wait_for_response(w, event, request_num)
 	ShellWidget	w;
 	XEvent		*event;
-        int		request_num;
+        unsigned long	request_num;
 {
 	XtAppContext app = XtWidgetToApplicationContext((Widget) w);
 	QueryStruct q;
@@ -1572,10 +1572,12 @@ static _wait_for_response(w, event, request_num)
  	    /*
  	     * look for match event and discard all prior configures
  	     */
-	    (void)XCheckIfEvent( XtDisplay(w), event, isMine, (char*)&q);
-
-	    if (q.done)
-		return TRUE;
+	    if (XCheckIfEvent( XtDisplay(w), event, isMine, (char*)&q)) {
+		if (q.done)
+		    return TRUE;
+		else
+		    continue;	/* flush old events */
+	    }
 
 	    if (_XtwaitForSomething(TRUE, TRUE, FALSE, TRUE, &timeout, app)
 		!= -1) continue; /* %%% we're in trouble if an event arrives
@@ -1597,7 +1599,8 @@ static XtGeometryResult RootGeometryManager(gw, request, reply)
     XEvent event;
     Boolean wm;
     register struct _OldXSizeHints *hintp;
-    int oldx, oldy, oldwidth, oldheight, oldborder_width, request_num;
+    int oldx, oldy, oldwidth, oldheight, oldborder_width;
+    unsigned long request_num;
 
     if (XtIsWMShell(gw)) {
 	wm = True;
