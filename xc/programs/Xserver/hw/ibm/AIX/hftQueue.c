@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyIO.c,v 1.1 91/05/10 09:09:03 jap Exp $
+ * $XConsortium: hftQueue.c,v 1.4 91/07/16 13:02:11 jap Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -455,7 +455,12 @@ hftDispatchEvents()
 	if      (input[sink]==HFT_ESC_KEYBOARD)         device= HFT_KEYBOARD;
 	else if (input[sink]==HFT_ESC_LOCATOR)          device= HFT_LOCATOR;
 	else if (input[sink]==HFT_ESC_ADAPT)            device= HFT_ADAPT;
-	else if (input[sink]==HFT_ESC_FOCUSIN)          ;
+	else if (input[sink]==HFT_ESC_FOCUSIN) {
+	  TRACE(("new HFT_ESC_FOCUSIN\n"));
+	      HFT_INCR(sink);
+	      hftRingbuf.hf_sink= sink;
+	      continue;   /* with while loop */
+	  }
 	else                                            goto illegal;
 	HFT_INCR(sink);
 	nPending= hftEvSize[device];
