@@ -1,4 +1,4 @@
-.\" $XConsortium: Xserver.man,v 1.44 92/02/25 10:24:47 rws Exp $
+.\" $XConsortium: Xserver.man,v 1.45 92/09/15 15:57:06 rws Exp $
 .TH XSERVER 1 "Release 5"  "X Version 11"
 .SH NAME
 Xserver \- X Window System server
@@ -56,6 +56,12 @@ disables host-based access control mechanisms.  Enables access by any host,
 and permits any host to modify the access control list.
 Use with extreme caution.
 This option exists primarily for running test suites remotely.
+.TP 8
+.B \-audit \fIlevel\fP
+Sets the audit trail level.  The default level is 1, meaning only connection
+rejections are reported.  Level 2 additionally reports all successful
+connections and disconnects.  Level 0 turns off the audit trail.
+Audit lines are sent as standard error output.
 .TP 8
 .B \-auth \fIauthorization-file\fP
 Specifies a file which contains a collection of authorization records used
