@@ -1,4 +1,4 @@
-/* $XConsortium: XDrSegs.c,v 11.12 89/05/26 18:30:09 rws Exp $ */
+/* $XConsortium: XDrSegs.c,v 11.13 91/01/06 11:45:21 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -34,11 +34,11 @@ XDrawSegments (dpy, d, gc, segments, nsegments)
 	req->gc = gc->gid;
 	n = nsegments;
 	len = ((long)n) << 1;
-	if (len > (dpy->max_request_size - req->length)) {
+	if (!dpy->bigreq_size && len > (dpy->max_request_size - req->length)) {
 	    n = (dpy->max_request_size - req->length) >> 1;
 	    len = ((long)n) << 1;
 	}
-	req->length += len;
+	SetReqLen(req, len, len);
 	len <<= 2; /* watch out for macros... */
 	Data16 (dpy, (short *) segments, len);
 	nsegments -= n;

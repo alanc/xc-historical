@@ -1,4 +1,4 @@
-/* $XConsortium: XDrPoints.c,v 1.14 89/05/30 12:29:08 rws Exp $ */
+/* $XConsortium: XDrPoints.c,v 1.15 91/01/06 11:45:17 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -38,9 +38,9 @@ XDrawPoints(dpy, d, gc, points, n_points, mode)
 	req->gc = gc->gid;
 	req->coordMode = mode;
 	n = n_points;
-	if (n > (dpy->max_request_size - req->length))
+	if (!dpy->bigreq_size && n > (dpy->max_request_size - req->length))
 	    n = dpy->max_request_size - req->length;
-	req->length += n;
+	SetReqLen(req, n, n);
 	nbytes = ((long)n) << 2; /* watch out for macros... */
 	if (xoff || yoff) {
 	    pt.x = xoff + points->x;
