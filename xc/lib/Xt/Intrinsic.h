@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.173 91/07/21 00:19:04 rws Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.174 91/09/09 16:25:56 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -101,7 +101,6 @@ typedef struct _WidgetClassRec *WidgetClass;
 typedef struct _CompositeRec *CompositeWidget;
 typedef struct _XtActionsRec *XtActionList;
 typedef struct _XtEventRec *XtEventTable;
-typedef struct _XtBoundAccActionRec *XtBoundAccActions;
 
 typedef struct _XtAppStruct *XtAppContext;
 typedef unsigned long	XtValueMask;
