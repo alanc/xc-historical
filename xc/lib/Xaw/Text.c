@@ -1,4 +1,4 @@
-/* $XConsortium: Text.c,v 1.174 91/03/26 15:24:25 converse Exp $ */
+/* $XConsortium: Text.c,v 1.175 91/03/27 14:26:36 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1658,7 +1658,7 @@ int	num_atoms;
     salt->s.atom_count = j;
 }
 
-void 
+static void 
 _SetSelection(ctx, left, right, selections, count)
 TextWidget ctx;
 XawTextPosition left, right;
