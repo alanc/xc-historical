@@ -21,12 +21,14 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osdep.h,v 1.31 93/07/12 09:34:02 dpw Exp $ */
+/* $XConsortium: osdep.h,v 1.32 93/09/03 08:19:15 dpw Exp $ */
 
 #define BOTIMEOUT 200 /* in milliseconds */
 #define BUFSIZE 4096
 #define BUFWATERMARK 8192
 #define MAXBUFSIZE (1 << 22)
+
+#include <X11/Xmd.h>
 
 #ifndef sgi	    /* SGI defines OPEN_MAX in a useless way */
 #ifndef X_NOT_POSIX
@@ -66,6 +68,14 @@ SOFTWARE.
 #endif
 
 #define mskcnt ((MAXSOCKS + 31) / 32)	/* size of bit array */
+
+#ifdef LONG64
+typedef unsigned int FdMask;
+#else
+typedef unsigned long FdMask;
+#endif
+
+typedef FdMask FdSet[mskcnt];
 
 #if (mskcnt==1)
 #define BITMASK(i) (1 << (i))
@@ -142,9 +152,8 @@ SOFTWARE.
 #endif
 
 #if (mskcnt>4)
-#define COPYBITS(src, dst) memmove((caddr_t) dst, (caddr_t) src, \
-				 mskcnt*sizeof(long))
-#define CLEARBITS(buf) bzero((caddr_t) buf, mskcnt*sizeof(long))
+#define COPYBITS(src, dst) memcpy(dst, src, sizeof(FdSet))
+#define CLEARBITS(buf) bzero((char *) buf, sizeof(FdSet))
 #define MASKANDSETBITS(dst, b1, b2)  \
 		      { int cri;			\
 			for (cri=mskcnt; --cri>=0; )	\
