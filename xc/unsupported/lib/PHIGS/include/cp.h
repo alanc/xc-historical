@@ -1,4 +1,4 @@
-/* $XConsortium: cp.h,v 5.2 91/02/16 15:09:18 rws Exp $ */
+/* $XConsortium: cp.h,v 5.3 91/03/27 09:29:36 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -150,20 +150,24 @@ typedef struct {
     }		ret;			/* returned data buffers */
 } Cp_shm_buf;
 
-#ifdef _POSIX_SOURCE
+#ifndef X_NOT_POSIX
+#define _POSIX_SOURCE
 #include <limits.h>
-#define MSKCNT ((OPEN_MAX + 31) / 32)
-#else
+#undef _POSIX_SOURCE
+#endif
+#ifndef OPEN_MAX
 #include <sys/param.h>
 #ifdef NOFILE
-#define MSKCNT ((NOFILE + 31) / 32)
+#define OPEN_MAX NOFILE
 #else
-#define MSKCNT ((NOFILES_MAX + 31) / 32)
+#define OPEN_MAX NOFILES_MAX
 #endif
 #ifdef FLOAT
 #undef FLOAT	/* hp9000s300 defines FLOAT in <sys/param.h> */
 #endif
 #endif
+
+#define MSKCNT ((OPEN_MAX + 31) / 32)
 
 typedef struct _Cp_struct {
     Cp_func		funcs[NUM_CP_FUNCS];
