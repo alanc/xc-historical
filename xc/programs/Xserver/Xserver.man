@@ -1,29 +1,29 @@
-.TH X 8C "10 September 1987"  "X Version 11"
+.TH Xserver 8C "1 March 1988"  "X Version 11"
 .SH NAME
 X - X window system server
 .SH SYNOPSIS
 .B X
-<display> [ option ... ] <tty>
+displaynumber [-option ...] ttyname
 .SH DESCRIPTION
 .I X
-is the window system server.
-It is normally run automatically by \fIinit(8)\fP,
-which provides the tty argument.
-The display argument is the number of the bitmap display to service.
-The number is typically in the range 0-6, and defines the ports the
-server will accept connections on and the filename of the device.
+is the window system server.  On systems derived from 4.3bsd, it is run
+automatically run \fIinit(8)\fP, otherwise it is started from the
+\fIxinit(1)\fP program.  The \fIdisplaynumber\fP argument is used
+by clients in their DISPLAY environment variables to indicate which server
+to contact (large machines may have several displays attached).  This
+number is usually in the range of 0-6 and is also used to determine the
+names of various startup files.  The \fIttyname\fP argument is passed in
+by \fIinit\fP and isn't used.
 .PP
-The program \fIxinit(8)\fP is  usually used to start
-X interactively.
-.PP
-The X that gets invoked in either of these ways is actually one
+The \fIX\fP that gets invoked in either of these ways is actually one
 of a range of servers configured for the hardware you are running
 on.  Their individual peculiarites are documented in separate
 manual pages in this section.
 .PP
-Connections through the Unix domain, through TCP, and through DECnet are
-currently possible.  The connections actually accepted by a server depend
-on how it was compiled.  Unix domain connections are through \fI/dev/X*\fP,
+The sample server currently supports connections using the TCP/IP, Berkeley
+Unix domain, and DECnet protocols (depending on the configuration of the
+machine on which the server is running).
+Unix domain connections are through \fI/dev/X*\fP,
 where * is the display number.
 TCP connections are through ports 6000+N (VAX byte order),
 where N is the display number.  DECnet
@@ -86,8 +86,7 @@ sets default cursor font
 sets the default font
 .PP
 Specific implementations may have other command-line options.
-.SH
-INITIALIZATION
+.SH INITIALIZATION
 .PP
 \fIX(1)\fP and your first \fIxterm(1)\fP are normally started by the 
 \fIinit(8)\fP program.
@@ -95,7 +94,8 @@ INITIALIZATION
 A typical line in \fI/etc/ttys\fP might be:
 .sp
 .nf
-	ttyv0 "/etc/xterm -L =-1+1 :0" xterm on secure window="/etc/Xvs100 0 -c -l"
+	ttyv0 "/etc/xterm -L -geometry -1+1 -display :0" xterm on \\
+		secure window="/etc/Xvs100 0 -c -l"
 .fi
 .sp
 However, if you want the xterm to run on a different machine, you might have:
@@ -107,7 +107,7 @@ However, if you want the xterm to run on a different machine, you might have:
 on the server machine and
 .sp
 .nf
-	ttyv0 "/exe/xterm -L =-1+1 orpheus:0" xterm on secure
+	ttyv0 "/exe/xterm -L -geometry -1+1 -display expo:0" xterm on secure
 .fi
 .sp
 on the client machine.
@@ -130,7 +130,7 @@ the login \fIxterm(1)\fP) started on the display terminates.
 This signal causes all connections to be closed (thereby ``disowning'' the
 terminal), all resources to be freed, and all defaults restored.
 .sp
-The X protocol is documented in ``X.doc''.
+The X protocol is documented doc/X/Protocol/.
 Note that while X is running, all access to the display must be through
 the window system.
 .SH "SEE ALSO"
@@ -156,10 +156,8 @@ If
 dies before its clients, new clients won't be able to connect until all
 existing connections have their TCP TIME_WAIT timers expire.
 .SH AUTHORS
+Copyright 1984, 1985, 1986, 1987, 1988, Massachusetts Institute of Technology.
+.br
 Susan Angebranndt, Raymond Drewry, Philip Karlton, and Todd Newman,
 supported by a cast of thouands.  (See the protocl and Xlib
 documents for complete acknowledgements.)
-.br
-Copyright (c) 1984, 1985, 1986, 1987 by Massachusetts Institute of Technology.
-.br
-See \fIX(1)\fP for a complete copyright notice.
