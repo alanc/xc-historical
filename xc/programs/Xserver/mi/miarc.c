@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.3 89/07/20 19:16:20 keith Exp $ */
+/* $XConsortium: miarc.c,v 5.4 89/07/21 13:54:01 keith Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -36,6 +36,10 @@ SOFTWARE.
 #include "mi.h"
 
 double	miDsin(), miDcos(), miDasin(), miDatan2();
+
+#ifdef ICEILTEMPDECL
+ICEILTEMPDECL
+#endif
 
 /*
  * some interesting sematic interpretation of the protocol:
@@ -1706,15 +1710,15 @@ drawZeroArc (pDraw, pGC, tarc, left, right)
 		int	minx, maxx, miny, maxy, t;
 		xRectangle  rect;
 
-		minx = ceil (x0 + w) + tarc.x;
-		maxx = ceil (x1 + w) + tarc.x;
+		minx = ICEIL (x0 + w) + tarc.x;
+		maxx = ICEIL (x1 + w) + tarc.x;
 		if (minx > maxx) {
 			t = minx;
 			minx = maxx;
 			maxx = t;
 		}
-		miny = ceil (y0 + h) + tarc.y;
-		maxy = ceil (y1 + h) + tarc.y;
+		miny = ICEIL (y0 + h) + tarc.y;
+		maxy = ICEIL (y1 + h) + tarc.y;
 		if (miny > maxy) {
 			t = miny;
 			miny = maxy;
@@ -2964,9 +2968,9 @@ span (left, right)
 		default:
 			FatalError ("miarc.c: illegal quadrant mask bit %d\n", bit);
 		}
-		xmin = (int) ceil (min + arcXcenter) + arcXoffset;
-		xmax = (int) ceil (max + arcXcenter) + arcXoffset;
-		spany = (int) (ceil (arcYcenter - y)) + arcYoffset;
+		xmin = ICEIL (min + arcXcenter) + arcXoffset;
+		xmax = ICEIL (max + arcXcenter) + arcXoffset;
+		spany = ICEIL (arcYcenter - y) + arcYoffset;
 
 		if (xmax > xmin)
 			newFinalSpan (spany, xmin, xmax);
@@ -3008,9 +3012,9 @@ double	left, right;
 		default:
 			FatalError ("miarc.c: illegal quadrant mask bit %d\n", bit);
 		}
-		xmin = (int) ceil (min + arcXcenter) + arcXoffset;
-		xmax = (int) ceil (max + arcXcenter) + arcXoffset;
-		spany = (int) (ceil (arcYcenter - y)) + arcYoffset;
+		xmin = ICEIL (min + arcXcenter) + arcXoffset;
+		xmax = ICEIL (max + arcXcenter) + arcXoffset;
+		spany = ICEIL (arcYcenter - y) + arcYoffset;
 
 		if (xmax > xmin)
 			deleteFinalSpan (spany, xmin, xmax);
@@ -3278,7 +3282,7 @@ drawQuadrant (def, acc, a0, a1, mask, right, left)
 	fromInt = def->h - floor (def->h);
 	computeBound (def, &bound, acc, right, left);
 	y = fmin (bound.inner.min, bound.outer.min);
-	miny = ceil(y - fromInt) + fromInt;
+	miny = ICEIL(y - fromInt) + fromInt;
 	minIsInteger = y == miny;
 	y = fmax (bound.inner.max, bound.outer.max);
 	maxy = floor (y - fromInt) + fromInt;

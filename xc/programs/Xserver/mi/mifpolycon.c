@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mifpolycon.c,v 5.0 89/06/09 15:08:24 keith Exp $ */
+/* $XConsortium: mifpolycon.c,v 5.1 89/07/03 15:01:23 rws Exp $ */
 #include <math.h>
 #include "X.h"
 #include "gcstruct.h"
@@ -30,6 +30,10 @@ SOFTWARE.
 #include "mifpoly.h"
 
 static int GetFPolyYBounds();
+
+#ifdef ICEILTEMPDECL
+ICEILTEMPDECL
+#endif
 
 /*
  *	Written by Todd Newman; April. 1987.
@@ -103,7 +107,7 @@ miFillSppPoly(dst, pgc, count, ptsIn, xTrans, yTrans, xFtrans, yFtrans)
 	Marked[j] = 0;
     nextleft = nextright = imin;
     Marked[imin] = -1;
-    y = (int) ceil(ptsIn[nextleft].y + yFtrans);
+    y = ICEIL(ptsIn[nextleft].y + yFtrans);
 
     /*
      *  loop through all edges of the polygon
@@ -185,13 +189,13 @@ miFillSppPoly(dst, pgc, count, ptsIn, xTrans, yTrans, xFtrans, yFtrans)
             /* reverse the edges if necessary */
             if (xl < xr) 
             {
-                *(width++) = ceil(xr) - ceil(xl);
-                (ptsOut++)->x = ceil(xl) + xTrans;
+                *(width++) = ICEIL(xr) - ICEIL(xl);
+                (ptsOut++)->x = ICEIL(xl) + xTrans;
             }
             else 
             {
-                *(width++) = ceil(xl) - ceil(xr);
-                (ptsOut++)->x = ceil(xr) + xTrans;
+                *(width++) = ICEIL(xl) - ICEIL(xr);
+                (ptsOut++)->x = ICEIL(xr) + xTrans;
             }
             y++;
 
@@ -240,7 +244,7 @@ GetFPolyYBounds(pts, n, yFtrans, by, ty)
         pts++;
     }
 
-    *by = (int) ceil(ymin + yFtrans);
-    *ty = (int) ceil(ymax + yFtrans - 1);
+    *by = ICEIL(ymin + yFtrans);
+    *ty = ICEIL(ymax + yFtrans - 1);
     return(ptMin-ptsStart);
 }
