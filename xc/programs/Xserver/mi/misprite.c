@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.2 89/06/16 16:56:55 keith Exp $ */
+/* $XConsortium: misprite.c,v 5.3 89/06/21 11:23:26 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -1542,12 +1542,12 @@ miSpriteDisplayCursor (pScreen, pCursor, x, y)
 	 * encloses the new sprite, in which case we use
 	 * the flicker-free MoveCursor primitive.
 	 */
-	sx = pScreenPriv->x - pCursor->xhot;
-	sy = pScreenPriv->y - pCursor->yhot;
+	sx = pScreenPriv->x - (int)pCursor->bits->xhot;
+	sy = pScreenPriv->y - (int)pCursor->bits->yhot;
 	if (sx >= pScreenPriv->saved.x1 &&
-	    sx + pCursor->width < pScreenPriv->saved.x2 &&
+	    sx + (int)pCursor->bits->width < pScreenPriv->saved.x2 &&
 	    sy >= pScreenPriv->saved.y1 &&
-	    sy + pCursor->height < pScreenPriv->saved.y2)
+	    sy + (int)pCursor->bits->height < pScreenPriv->saved.y2)
 	{
 	    pScreenPriv->isUp = FALSE;
 	    (void) (*pScreenPriv->funcs->MoveCursor) (pScreen, pCursor,
@@ -1621,10 +1621,10 @@ miSpriteRestoreCursor (pScreen)
 
     pScreenPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
     pCursor = pScreenPriv->pCursor;
-    x = pScreenPriv->x - pCursor->xhot;
-    y = pScreenPriv->y - pCursor->yhot;
-    w = pCursor->width;
-    h = pCursor->height;
+    x = pScreenPriv->x - (int)pCursor->bits->xhot;
+    y = pScreenPriv->y - (int)pCursor->bits->yhot;
+    w = pCursor->bits->width;
+    h = pCursor->bits->height;
     pScreenPriv->saved.x1 = x - w/2;
     pScreenPriv->saved.y1 = y - h/2;
     pScreenPriv->saved.x2 = pScreenPriv->saved.x1 + w * 2;

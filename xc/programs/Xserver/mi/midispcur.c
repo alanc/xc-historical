@@ -4,7 +4,7 @@
  * machine independent cursor display routines
  */
 
-/* $XConsortium: midispcur.c,v 5.1 89/06/16 16:56:55 keith Exp $ */
+/* $XConsortium: midispcur.c,v 5.2 89/06/21 11:23:39 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -154,13 +154,13 @@ miDCRealizeCursor (pScreen, pCursor)
     pPriv = (miDCCursorPtr) xalloc (sizeof (miDCCursorRec));
     if (!pPriv)
 	return FALSE;
-    pPriv->sourceBits = (*pScreen->CreatePixmap) (pScreen, pCursor->width, pCursor->height, 1);
+    pPriv->sourceBits = (*pScreen->CreatePixmap) (pScreen, pCursor->bits->width, pCursor->bits->height, 1);
     if (!pPriv->sourceBits)
     {
 	xfree ((pointer) pPriv);
 	return FALSE;
     }
-    pPriv->maskBits =  (*pScreen->CreatePixmap) (pScreen, pCursor->width, pCursor->height, 1);
+    pPriv->maskBits =  (*pScreen->CreatePixmap) (pScreen, pCursor->bits->width, pCursor->bits->height, 1);
     if (!pPriv->maskBits)
     {
 	(*pScreen->DestroyPixmap) (pPriv->sourceBits);
@@ -179,28 +179,28 @@ miDCRealizeCursor (pScreen, pCursor)
     }
 
     (*pGC->ops->PutImage) (pPriv->sourceBits, pGC, 1,
-			   0, 0, pCursor->width, pCursor->height,
- 			   0, XYPixmap, pCursor->source);
+			   0, 0, pCursor->bits->width, pCursor->bits->height,
+ 			   0, XYPixmap, pCursor->bits->source);
     gcvals[0] = GXand;
     ChangeGC (pGC, GCFunction, gcvals);
     ValidateGC (pPriv->sourceBits, pGC);
     (*pGC->ops->PutImage) (pPriv->sourceBits, pGC, 1,
-			   0, 0, pCursor->width, pCursor->height,
- 			   0, XYPixmap, pCursor->mask);
+			   0, 0, pCursor->bits->width, pCursor->bits->height,
+ 			   0, XYPixmap, pCursor->bits->mask);
 
     /* mask bits -- pCursor->mask & ~pCursor->source */
     gcvals[0] = GXcopy;
     ChangeGC (pGC, GCFunction, gcvals);
     ValidateGC (pPriv->maskBits, pGC);
     (*pGC->ops->PutImage) (pPriv->maskBits, pGC, 1,
-			   0, 0, pCursor->width, pCursor->height,
- 			   0, XYPixmap, pCursor->mask);
+			   0, 0, pCursor->bits->width, pCursor->bits->height,
+ 			   0, XYPixmap, pCursor->bits->mask);
     gcvals[0] = GXandInverted;
     ChangeGC (pGC, GCFunction, gcvals);
     ValidateGC (pPriv->maskBits, pGC);
     (*pGC->ops->PutImage) (pPriv->maskBits, pGC, 1,
-			   0, 0, pCursor->width, pCursor->height,
- 			   0, XYPixmap, pCursor->source);
+			   0, 0, pCursor->bits->width, pCursor->bits->height,
+ 			   0, XYPixmap, pCursor->bits->source);
     FreeScratchGC (pGC);
     return TRUE;
 }
@@ -279,7 +279,7 @@ miDCPutUpCursor (pScreen, pCursor, x, y, source, mask)
 	}
     }
     miDCPutBits (pWin, pPriv, pScreenPriv->pSourceGC, pScreenPriv->pMaskGC,
-		 x, y, pCursor->width, pCursor->height, source, mask);
+		 x, y, pCursor->bits->width, pCursor->bits->height, source, mask);
     return TRUE;
 }
 
@@ -427,7 +427,7 @@ miDCMoveCursor (pScreen, pCursor, x, y, w, h, dx, dy, source, mask)
 	    return FALSE;
     }
     miDCPutBits (pTemp, pPriv, pScreenPriv->pPixSourceGC, pScreenPriv->pPixMaskGC,
- 		 dx, dy, pCursor->width, pCursor->height, source, mask);
+ 		 dx, dy, pCursor->bits->width, pCursor->bits->height, source, mask);
 
     /*
      * copy the temporary pixmap onto the screen
