@@ -1,5 +1,5 @@
 /*
- * $XConsortium: EditResCom.c,v 1.12 90/06/28 12:11:45 kit Exp $
+ * $XConsortium: EditResCom.c,v 1.13 90/06/28 12:18:58 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -42,6 +42,8 @@
  * Local structure definitions.
  *
  ************************************************************/
+
+typedef enum { BlockNone, BlockSetValues, BlockAll } EditresBlock;
 
 typedef struct _SetValuesEvent {
     EditresCommand type;	/* first field must be type. */
@@ -93,18 +95,24 @@ typedef union _EditresEvent {
     FindChildEvent find_child_event;
 } EditresEvent;
 
+typedef struct _Globals {
+    EditresBlock block;
+    SVErrorInfo error_info;
+    ProtocolStream stream;
+    ProtocolStream * command_stream; /* command stream. */
+} Globals;
+
 #define CURRENT_PROTOCOL_VERSION 4L
 
 #define streq(a,b) (strcmp( (a), (b) ) == 0)
 
 static Atom res_editor_command, res_editor_protocol, client_value;
 
-static SVErrorInfo global_error_info;
-
-static ProtocolStream global_stream; /* zeroed out by compiler. */
-static ProtocolStream * global_command_stream; /* command stream. */
+static Globals globals;
 
 static void SendFailure(), SendCommand(), InsertWidget(), ExecuteCommand();
+static void FreeEvent(), ExecuteSetValues(), ExecuteGetGeometry();
+static void ExecuteGetResources();
 
 /************************************************************
  *
@@ -139,6 +147,7 @@ Boolean *cont;
     Display * disp;
 
     if (!first_time) {
+	static void LoadResources();
 	disp = XtDisplay(w);
 
 	first_time = TRUE;
@@ -151,6 +160,7 @@ Boolean *cont;
 	 */
 
 	client_value = XInternAtom(disp, EDITRES_CLIENT_VALUE, False);
+	LoadResources(w);
     }
 
     if (event->type == ClientMessage) {
@@ -165,9 +175,9 @@ Boolean *cont;
 	res_comm = c_event->data.l[1];
 	ident = (ResIdent) c_event->data.l[2];
 	if (c_event->data.l[3] != CURRENT_PROTOCOL_VERSION) {
-	    _EresResetStream(&global_stream);
-	    _EresInsert8(&global_stream, CURRENT_PROTOCOL_VERSION);
-	    SendCommand(w, res_comm, ident, ProtocolMismatch, &global_stream);
+	    _EresResetStream(&globals.stream);
+	    _EresInsert8(&globals.stream, CURRENT_PROTOCOL_VERSION);
+	    SendCommand(w, res_comm, ident, ProtocolMismatch, &globals.stream);
 	    return;
 	}
 
@@ -204,7 +214,7 @@ unsigned long length;
 
     stream = &alloc_stream;	/* easier to think of it this way... */
 
-    stream->current = stream->top = data;
+    stream->current = stream->top = (unsigned char *) data;
     stream->size = HEADER_SIZE;		/* size of header. */
 
     /*
@@ -403,6 +413,18 @@ EditresEvent * event;
     static char * DoGetGeometry(), *DoGetResources();
     char * str;
 
+    if (globals.block == BlockAll) {
+	SendFailure(w, sel, ident, 
+		    "This client has blocked all Editres commands.");
+	return;
+    }
+    else if ((globals.block == BlockSetValues) && 
+	(event->any_event.type == SetValues)) {
+	SendFailure(w, sel, ident, 
+		    "This client has blocked all SetValues requests.");
+	return;
+    }
+
     switch(event->any_event.type) {
     case SendWidgetTree:
 	func = DumpWidgets;
@@ -427,9 +449,9 @@ EditresEvent * event;
 	}
     }
 
-    _EresResetStream(&global_stream);
-    if ((str = (*func)(w, event, &global_stream)) == NULL)
-	SendCommand(w, sel, ident, PartialSuccess, &global_stream);
+    _EresResetStream(&globals.stream);
+    if ((str = (*func)(w, event, &globals.stream)) == NULL)
+	SendCommand(w, sel, ident, PartialSuccess, &globals.stream);
     else {
 	SendFailure(w, sel, ident, str);
 	XtFree(str);
@@ -466,8 +488,8 @@ int * format_ret;
 	return(FALSE);
 
     *type_ret = res_editor_protocol;
-    *value_ret = global_command_stream->real_top;
-    *length_ret = global_command_stream->size + HEADER_SIZE;
+    *value_ret = (XtPointer) globals.command_stream->real_top;
+    *length_ret = globals.command_stream->size + HEADER_SIZE;
     *format_ret = EDITRES_FORMAT;
 
     return(TRUE);
@@ -501,9 +523,9 @@ Atom sel;
 ResIdent ident;
 char * str;
 {
-    _EresResetStream(&global_stream);
-    _EresInsertString8(&global_stream, str);
-    SendCommand(w, sel, ident, Failure, &global_stream);
+    _EresResetStream(&globals.stream);
+    _EresInsertString8(&globals.stream, str);
+    SendCommand(w, sel, ident, Failure, &globals.stream);
 }
 
 /*	Function Name: BuildReturnPacket
@@ -521,7 +543,7 @@ EditresCommand command;
 ProtocolStream * stream;
 {
     long old_alloc, old_size;
-    XtPointer old_current;
+    unsigned char * old_current;
     
     /*
      * We have cleverly keep enough space at the top of the header
@@ -549,7 +571,7 @@ ProtocolStream * stream;
     stream->current = old_current;
     stream->size = old_size;
     
-    return(stream->real_top);
+    return((XtPointer) stream->real_top);
 }    
 
 /*	Function Name: SendCommand
@@ -571,7 +593,7 @@ EditresCommand command;
 ProtocolStream * stream;
 {
     BuildReturnPacket(ident, command, stream);
-    global_command_stream = stream;	
+    globals.command_stream = stream;	
 
 /*
  * I REALLY want to own the selection.  Since this was not triggered
@@ -768,7 +790,7 @@ HandleToolkitErrors(name, type, class, msg, params, num_params)
 String name, type, class, msg, *params;
 Cardinal * num_params;
 {
-    SVErrorInfo * info = &global_error_info;	
+    SVErrorInfo * info = &globals.error_info;	
     char buf[BUFSIZ];
 
     if ( streq(name, "unknownType") ) 
@@ -817,7 +839,7 @@ unsigned short * count;
 {
     XtErrorMsgHandler old;
     
-    SVErrorInfo * info = &global_error_info;	
+    SVErrorInfo * info = &globals.error_info;	
     info->event = sv_event;	/* No data can be passed to */
     info->stream = stream;	/* an error handler, so we */
     info->count = count;	/* have to use a global, YUCK... */
@@ -1355,17 +1377,17 @@ _EresInsert8(stream, value)
 ProtocolStream * stream;
 unsigned int value;
 {
-    unsigned int temp;
+    unsigned char temp;
 
     if (stream->size >= stream->alloc) {
 	stream->alloc += 100;
-	stream->real_top = XtRealloc(stream->real_top, 
-				     stream->alloc + HEADER_SIZE);
+	stream->real_top = (unsigned char *) XtRealloc(stream->real_top, 
+						  stream->alloc + HEADER_SIZE);
 	stream->top = stream->real_top + HEADER_SIZE;
 	stream->current = stream->top + stream->size;
     }
 
-    temp = value & BYTE_MASK;
+    temp = (unsigned char) (value & BYTE_MASK);
     *((stream->current)++) = temp;
     (stream->size)++;
 }
@@ -1442,8 +1464,8 @@ ProtocolStream * stream;
     stream->current = stream->top;
     stream->size = 0;
     if (stream->real_top == NULL) {
-	stream->real_top = XtRealloc(stream->real_top, 
-				     stream->size + HEADER_SIZE);
+	stream->real_top = (unsigned char *) XtRealloc(stream->real_top, 
+						  stream->alloc + HEADER_SIZE);
 	stream->top = stream->real_top + HEADER_SIZE;
 	stream->current = stream->top + stream->size;
     }
@@ -1612,6 +1634,94 @@ WidgetInfo * info;
     }
     return(TRUE);
 }
-
 	    
+/************************************************************
+ *
+ * Code for Loading the EditresBlock resource.
+ *
+ ************************************************************/
+
+/*	Function Name: CvStringToBlock
+ *	Description: Converts a string to an editres block value.
+ *	Arguments: dpy - the display.
+ *                 args, num_args - **UNUSED **
+ *                 from_val, to_val - value to convert, and where to put result
+ *                 converter_data - ** UNUSED **
+ *	Returns: TRUE if conversion was sucessful.
+ */
+
+/* ARGSUSED */
+static Boolean
+CvtStringToBlock(dpy, args, num_args, from_val, to_val, converter_data)
+Display * dpy;
+XrmValue * args;
+Cardinal num_args;
+XrmValue * from_val, * to_val;
+XtPointer * converter_data;
+{
+    char ptr[BUFSIZ];
+    static EditresBlock block;
+
+    XmuCopyISOLatin1Lowered(ptr, from_val->addr);
+
+    if (streq(ptr, "none")) 
+	block = BlockNone;
+    else if (streq(ptr, "setvalues")) 
+	block = BlockSetValues;
+    else if (streq(ptr, "all")) 
+	block = BlockAll;
+    else {
+	Cardinal num_params = 1;
+	String params[1];
+
+	params[0] = from_val->addr;
+	XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
+			"CvtStringToBlock", "unknownValue", "EditresError",
+			"Could not convert string \"%s\" to EditresBlock.",
+			params, &num_params);
+	return(FALSE);
+    }
+
+    if (to_val->addr != NULL) {
+	if (to_val->size < sizeof(EditresBlock)) {
+	    to_val->size = sizeof(EditresBlock);
+	    return(FALSE);
+	}
+	*(EditresBlock *)(to_val->addr) = block;
+    }
+    else 
+	to_val->addr = (XtPointer) block;
+
+    to_val->size = sizeof(EditresBlock);
+    return(TRUE);
+}
+    
+#define XtREditresBlock ("EditresBlock")
+
+/*	Function Name: LoadResources
+ *	Description: Loads a global resource the determines of this
+ *                   application should allow Editres requests.
+ *	Arguments: w - any widget in the tree.
+ *	Returns: none.
+ */
+
+static void
+LoadResources(w)
+Widget w;
+{
+    static XtResource resources[] = {
+        {"editresBlock", "EditresBlock", XtREditresBlock, sizeof(EditresBlock),
+	 XtOffsetOf(Globals, block), XtRImmediate, (XtPointer) BlockNone}
+    };
+
+    for (; XtParent(w) != NULL; w = XtParent(w)) {} 
+
+    XtAppSetTypeConverter(XtWidgetToApplicationContext(w),
+			  XtRString, XtREditresBlock, CvtStringToBlock,
+			  NULL, (Cardinal) 0, XtCacheAll, NULL);
+
+    XtGetApplicationResources( w, (caddr_t) &globals, resources,
+			      XtNumber(resources), NULL, (Cardinal) 0);
+}
+
     
