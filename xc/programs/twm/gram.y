@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.46 89/06/22 16:46:11 jim Exp $
+ * $XConsortium: gram.y,v 1.47 89/06/23 14:22:36 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -35,7 +35,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.46 89/06/22 16:46:11 jim Exp $";
+"$XConsortium: gram.y,v 1.47 89/06/23 14:22:36 jim Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -105,7 +105,7 @@ extern int yylineno;
 %token <num> CUR_TITLE CUR_ICONMGR CUR_ICON NO_ICONMGRS F_SORTICONMGR
 %token <num> CUR_MOVE CUR_RESIZE CUR_WAIT CUR_SELECT CUR_KILL
 %token <num> ICON_REGION NORTH SOUTH EAST WEST RESTART_PREVIOUS_STATE
-%token <num> F_WARPTOSCREEN AUTO_RELATIVE_RESIZE
+%token <num> F_WARPTOSCREEN AUTO_RELATIVE_RESIZE FRAME_PADDING TITLE_PADDING
 %token <ptr> STRING
 
 %type <ptr> string
@@ -189,6 +189,10 @@ stmt		: error
 					}
 		| ZOOM			{ if (Scr->FirstTime) 
 						Scr->DoZoom = TRUE; }
+		| FRAME_PADDING	number	{ if (Scr->FirstTime)
+						Scr->FramePadding = $2; }
+		| TITLE_PADDING	number	{ if (Scr->FirstTime)
+						Scr->TitlePadding = $2; }
 		| BORDERWIDTH number	{ if (Scr->FirstTime) 
 						Scr->BorderWidth = $2; }
 		| ICON_BORDERWIDTH number{ if (Scr->FirstTime) 

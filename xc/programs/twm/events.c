@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.70 89/06/30 19:33:13 jim Exp $
+ * $XConsortium: events.c,v 1.71 89/06/30 20:12:51 jim Exp $
  *
  * twm event handling
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.70 89/06/30 19:33:13 jim Exp $";
+"$XConsortium: events.c,v 1.71 89/06/30 20:12:51 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -683,7 +683,7 @@ HandleExpose()
 	height = Scr->DefaultFont.height+2;
 	for (i = 0; i < InfoLines; i++)
 	{
-	    XDrawImageString(dpy, Scr->InfoWindow, Scr->NormalGC,
+	    XDrawString(dpy, Scr->InfoWindow, Scr->NormalGC,
 		5, (i*height) + Scr->DefaultFont.y, Info[i], strlen(Info[i]));
 	}
 	flush_expose (Event.xany.window);
@@ -691,12 +691,14 @@ HandleExpose()
 
     if (Tmp_win != NULL)
     {
+	int h = Scr->TitleHeight - Scr->FramePadding * 2;
+
 	if (Event.xany.window == Tmp_win->title_w)
 	{
 	    FBF(Tmp_win->title.fore, Tmp_win->title.back,
 		Scr->TitleBarFont.font->fid);
 
-	    XDrawImageString(dpy, Tmp_win->title_w, Scr->NormalGC,
+	    XDrawString (dpy, Tmp_win->title_w, Scr->NormalGC,
 		TitleBarX, Scr->TitleBarFont.y,
 		Tmp_win->name, strlen(Tmp_win->name));
 	    flush_expose (Event.xany.window);
@@ -706,7 +708,7 @@ HandleExpose()
 	{
 	    FB(Tmp_win->title.fore, Tmp_win->title.back);
 	    XCopyPlane(dpy, Scr->iconifyPm, Tmp_win->iconify_w, Scr->NormalGC,
-		0,0, Scr->TitleHeight, Scr->TitleHeight, 0, 0, 1);
+		0,0, h, h, 0, 0, 1);
 	    flush_expose (Event.xany.window);
 	    return;
 	}
@@ -714,7 +716,7 @@ HandleExpose()
 	{
 	    FB(Tmp_win->title.fore, Tmp_win->title.back);
 	    XCopyPlane(dpy, Scr->resizePm, Tmp_win->resize_w, Scr->NormalGC,
-		0,0, Scr->TitleHeight, Scr->TitleHeight, 0, 0, 1);
+		0,0, h, h, 0, 0, 1);
 	    flush_expose (Event.xany.window);
 	    return;
 	}
@@ -724,7 +726,7 @@ HandleExpose()
 	    FBF(Tmp_win->iconc.fore, Tmp_win->iconc.back,
 		Scr->IconFont.font->fid);
 
-	    XDrawImageString(dpy, Tmp_win->icon_w,
+	    XDrawString (dpy, Tmp_win->icon_w,
 		Scr->NormalGC,
 		Tmp_win->icon_x, Tmp_win->icon_y,
 		Tmp_win->icon_name, strlen(Tmp_win->icon_name));
@@ -738,7 +740,7 @@ HandleExpose()
 	    {
 		FBF(Tmp_win->list->fore, Tmp_win->list->back,
 		    Scr->IconManagerFont.font->fid);
-		XDrawImageString(dpy, Event.xany.window, Scr->NormalGC, 
+		XDrawString (dpy, Event.xany.window, Scr->NormalGC, 
 		    iconmgr_textx, Scr->IconManagerFont.y+4,
 		    Tmp_win->icon_name, strlen(Tmp_win->icon_name));
 		DrawIconManagerBorder(Tmp_win->list);
@@ -760,7 +762,7 @@ HandleExpose()
     if (Event.xany.window == Scr->VersionWindow)
     {
 	FBF(Scr->DefaultC.fore, Scr->DefaultC.back, Scr->VersionFont.font->fid);
-	XDrawImageString(dpy, Scr->VersionWindow, Scr->NormalGC,
+	XDrawString (dpy, Scr->VersionWindow, Scr->NormalGC,
 	    twm_width + 10,
 	    2 + Scr->VersionFont.font->ascent, Version, strlen(Version));
 	flush_expose (Event.xany.window);

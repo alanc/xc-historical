@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.52 89/06/12 10:47:38 jim Exp $
+ * $XConsortium: twm.c,v 1.53 89/06/22 16:46:20 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.52 89/06/12 10:47:38 jim Exp $";
+"$XConsortium: twm.c,v 1.53 89/06/22 16:46:20 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -363,17 +363,10 @@ main(argc, argv, environ)
 	CreateGCs();
 	MakeMenus();
 
-	Scr->TitleHeight = Scr->TitleBarFont.height + 2;
-	Scr->TitleBarFont.y -= 1;
-
-	/* the buttons need to be an odd width and height */
-	if ((Scr->TitleHeight & 1) == 0)
-	{
-	    Scr->TitleHeight += 1;
-	    Scr->TitleBarFont.y += 1;
-	}
-
-	TitleBarX = Scr->TitleHeight + 8;
+	TitleBarX = (Scr->FramePadding + Scr->TitleBarFont.height + 
+		     Scr->TitlePadding);
+	Scr->TitleHeight = Scr->TitleBarFont.height + Scr->FramePadding * 2;
+	Scr->TitleBarFont.y += Scr->FramePadding;
 
 	XGrabServer(dpy);
 	XSync(dpy, 0);
@@ -535,6 +528,8 @@ InitVariables()
     Scr->IconManagerC.back = white;
     Scr->IconManagerHighlight = black;
 
+    Scr->FramePadding = 2;		/* values that look "nice" on */
+    Scr->TitlePadding = 8;		/* 75 and 100dpi displays */
     Scr->BorderWidth = BW;
     Scr->IconBorderWidth = BW;
     Scr->UnknownWidth = 0;

@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: util.c,v 1.17 89/06/12 16:01:27 jim Exp $
+ * $XConsortium: util.c,v 1.18 89/06/13 09:25:30 jim Exp $
  *
  * utility routines for twm
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: util.c,v 1.17 89/06/12 16:01:27 jim Exp $";
+"$XConsortium: util.c,v 1.18 89/06/13 09:25:30 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -596,7 +596,7 @@ MyFont *font;
 
     }
     font->height = font->font->ascent + font->font->descent;
-    font->y = font->font->ascent + 1;
+    font->y = font->font->ascent;
 }
 
 

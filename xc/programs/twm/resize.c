@@ -26,7 +26,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.30 89/06/30 20:13:08 jim Exp $
+ * $XConsortium: resize.c,v 1.31 89/07/05 15:04:01 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.30 89/06/30 20:13:08 jim Exp $";
+"$XConsortium: resize.c,v 1.31 89/07/05 15:04:01 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -690,8 +690,9 @@ int x, y, w, h;
 
     if (tmp_win->title_height)
     {
-        width = (title_width - TitleBarX - TitleBarX - tmp_win->name_width -
-		 TITLEBAR_ITEM_PADDING * 2);
+	int start = TitleBarX + tmp_win->name_width + Scr->TitlePadding;
+
+	width = (title_width - start - TitleBarX);
 
         if (width <= 0)
         {
@@ -700,7 +701,7 @@ int x, y, w, h;
         }
         else
         {
-            xwc.x = TitleBarX + tmp_win->name_width + TITLEBAR_ITEM_PADDING;
+            xwc.x = start;
             xwc.width = width;
         }
 

@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.65 89/07/05 13:42:59 jim Exp $
+ * $XConsortium: add_window.c,v 1.66 89/07/05 14:31:43 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.65 89/07/05 13:42:59 jim Exp $";
+"$XConsortium: add_window.c,v 1.66 89/07/05 14:31:43 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -1040,7 +1040,7 @@ TwmWindow *tmp_win;
 	XDrawRectangle (dpy, Scr->resizePm, gc, 0, 0, w - 1, w - 1);
 
 	w = (w + 1) / 2;
-	XDrawRectangle (dpy, Scr->resizePm, gc, 0, 0, w - 1, w - 1);
+	XDrawRectangle (dpy, Scr->resizePm, gc, 0, 0, w, w);
 
 
 	/*
@@ -1115,7 +1115,7 @@ TwmWindow *tmp_win;
 	}
 
 	tmp_win->hilite_w = XCreateWindow (dpy, tmp_win->title_w,
-					   TitleBarX, 2, 8, h,
+					   TitleBarX, Scr->FramePadding, 8, h,
 					   0, Scr->d_depth, CopyFromParent,
 					   Scr->d_visual, valuemask,
 					   &attributes);
