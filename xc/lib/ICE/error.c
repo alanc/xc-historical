@@ -1,4 +1,4 @@
-/* $XConsortium: error.c,v 1.7 93/12/07 11:04:07 mor Exp $ */
+/* $XConsortium: error.c,v 1.8 93/12/28 11:43:29 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -32,7 +32,7 @@ int	severity;
 {
     IceErrorHeader (iceConn,
 	majorOpcode, offendingMinor,
-	iceConn->sequence - 1,
+	iceConn->receive_sequence,
 	severity,
 	IceBadMinor,
 	0);
@@ -52,7 +52,7 @@ int	severity;
 {
     IceErrorHeader (iceConn,
 	majorOpcode, offendingMinor,
-	iceConn->sequence - 1,
+	iceConn->receive_sequence,
 	severity,
 	IceBadState,
 	0);
@@ -72,7 +72,7 @@ int	severity;
 {
     IceErrorHeader (iceConn,
 	majorOpcode, offendingMinor,
-	iceConn->sequence - 1,
+	iceConn->receive_sequence,
 	severity,
 	IceBadLength,
 	0);
@@ -94,7 +94,7 @@ IcePointer	value;
 {
     IceErrorHeader (iceConn,
 	majorOpcode, offendingMinor,
-	iceConn->sequence - 1,
+	iceConn->receive_sequence,
 	IceCanContinue,
 	IceBadValue,
 	WORD64COUNT (8 + length));
@@ -122,7 +122,7 @@ int	offendingMinor;
 
     IceErrorHeader (iceConn,
 	0, offendingMinor,
-	iceConn->sequence - 1,
+	iceConn->receive_sequence,
 	severity,
 	IceNoAuth,
 	0);
@@ -143,7 +143,7 @@ int	offendingMinor;
 
     IceErrorHeader (iceConn,
 	0, offendingMinor,
-	iceConn->sequence - 1,
+	iceConn->receive_sequence,
 	severity,
 	IceNoVersion,
 	0);
@@ -165,7 +165,7 @@ char	*reason;
 
     IceErrorHeader (iceConn,
 	0, offendingMinor,
-	iceConn->sequence - 1,
+	iceConn->receive_sequence,
 	IceFatalToProtocol,
 	IceAuthRejected,
 	WORD64COUNT (bytes));
@@ -191,7 +191,7 @@ char	*reason;
 
     IceErrorHeader (iceConn,
 	0, offendingMinor,
-	iceConn->sequence - 1,
+	iceConn->receive_sequence,
 	IceFatalToProtocol,
 	IceAuthFailed,
 	WORD64COUNT (bytes));
@@ -216,7 +216,7 @@ char	*protocolName;
 
     IceErrorHeader (iceConn,
 	0, ICE_ProtocolSetup,
-	iceConn->sequence - 1,
+	iceConn->receive_sequence,
 	IceFatalToProtocol,
 	IceProtocolDuplicate,
 	WORD64COUNT (bytes));
@@ -240,7 +240,7 @@ int	majorOpcode;
 
     IceErrorHeader (iceConn,
 	0, ICE_ProtocolSetup,
-	iceConn->sequence - 1,
+	iceConn->receive_sequence,
 	IceFatalToProtocol,
 	IceMajorOpcodeDuplicate,
 	1 /* length */);
@@ -262,7 +262,7 @@ char	*protocolName;
 
     IceErrorHeader (iceConn,
 	0, ICE_ProtocolSetup,
-	iceConn->sequence - 1,
+	iceConn->receive_sequence,
 	IceFatalToProtocol,
 	IceUnknownProtocol,
 	WORD64COUNT (bytes));
@@ -288,7 +288,7 @@ int	severity;
 
     IceErrorHeader (iceConn,
 	0, offendingMinor,
-	iceConn->sequence - 1,
+	iceConn->receive_sequence,
 	severity,
 	IceBadMajor,
 	1 /* length */);
