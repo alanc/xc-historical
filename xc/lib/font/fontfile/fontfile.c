@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontfile.c,v 1.5 91/06/12 14:35:09 keith Exp $
+ * $XConsortium: fontfile.c,v 1.7 91/07/16 20:13:50 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -114,6 +114,7 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
     FontAliasEntryPtr	alias;
     FontBCEntryPtr	bc;
     int			ret;
+    Bool		noSpecificSize;
     
     if (namelen >= MAXFONTNAMELEN)
 	return AllocError;
@@ -129,11 +130,12 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
     {
 	tmpName.length = strlen (lowerName);
 	entry = FontFileFindNameInDir (&dir->scalable, &tmpName);
+	noSpecificSize = vals.point <= 0 && vals.pixel <= 0;
     	if (entry && entry->type == FONT_ENTRY_SCALABLE &&
 	    FontFileCompleteXLFD (&vals, &entry->u.scalable.extra->defaults))
 	{
 	    scalable = &entry->u.scalable;
-	    scaled = FontFileFindScaledInstance (entry, &vals);
+	    scaled = FontFileFindScaledInstance (entry, &vals, noSpecificSize);
 	    /*
 	     * A scaled instance can occur one of two ways:
 	     *
@@ -174,7 +176,7 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
 	    }
 	    else
 	    {
-		ret = FontFileMatchBitmapSource (fpe, pFont, flags, entry, &tmpName, &vals, format, fmask);
+		ret = FontFileMatchBitmapSource (fpe, pFont, flags, entry, &tmpName, &vals, format, fmask, noSpecificSize);
 		if (ret != Successful)
 		{
 		    /* Make a new scaled instance */
@@ -430,6 +432,7 @@ FontFileListOneFontWithInfo (client, fpe, namep, namelenp, pFontInfo)
     int			ret;
     char		*name = *namep;
     int			namelen = *namelenp;
+    Bool		noSpecificSize;
     
     if (namelen >= MAXFONTNAMELEN)
 	return AllocError;
@@ -445,11 +448,12 @@ FontFileListOneFontWithInfo (client, fpe, namep, namelenp, pFontInfo)
     {
 	tmpName.length = strlen (lowerName);
 	entry = FontFileFindNameInDir (&dir->scalable, &tmpName);
+	noSpecificSize = vals.point <= 0 && vals.pixel <= 0;
     	if (entry && entry->type == FONT_ENTRY_SCALABLE &&
 	    FontFileCompleteXLFD (&vals, &entry->u.scalable.extra->defaults))
 	{
 	    scalable = &entry->u.scalable;
-	    scaled = FontFileFindScaledInstance (entry, &vals);
+	    scaled = FontFileFindScaledInstance (entry, &vals, noSpecificSize);
 	    /*
 	     * A scaled instance can occur one of two ways:
 	     *
@@ -491,7 +495,7 @@ FontFileListOneFontWithInfo (client, fpe, namep, namelenp, pFontInfo)
 	    {
 #ifdef NOTDEF
 		/* no special case yet */
-		ret = FontFileMatchBitmapSource (fpe, pFont, flags, entry, &vals, format, fmask);
+		ret = FontFileMatchBitmapSource (fpe, pFont, flags, entry, &vals, format, fmask, noSpecificSize);
 		if (ret != Successful)
 #endif
 		{

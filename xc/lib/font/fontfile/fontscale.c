@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontscale.c,v 1.3 91/06/12 14:35:12 keith Exp $
+ * $XConsortium: fontscale.c,v 1.4 91/07/16 20:14:22 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -174,21 +174,49 @@ MatchScalable (a, b)
 }
 
 FontScaledPtr
-FontFileFindScaledInstance (entry, vals)
+FontFileFindScaledInstance (entry, vals, noSpecificSize)
     FontEntryPtr	entry;
     FontScalablePtr	vals;
 {
     FontScalableEntryPtr    scalable;
     FontScalableExtraPtr    extra;
-    int			    i;
+    FontScalablePtr	    mvals;
+    int			    dist, i;
+    int			    mindist, mini;
 
     scalable = &entry->u.scalable;
     extra = scalable->extra;
-    /* See if we've scaled to this value yet */
-    for (i = 0; i < extra->numScaled; i++)
+    if (noSpecificSize && extra->numScaled)
     {
-	if (MatchScalable (&extra->scaled[i].vals, vals))
-	    return &extra->scaled[i];
+	mini = 0;
+	mindist = extra->scaled[0].vals.point - vals->point;
+	if (mindist < 0)
+	    mindist = -mindist;
+	for (i = 1; i < extra->numScaled; i++)
+	{
+	    mvals = &extra->scaled[i].vals;
+	    if (mvals->x == vals->x && mvals->y == vals->y)
+	    {
+		dist = mvals->point - vals->point;
+		if (dist < 0)
+		    dist = -dist;
+		if (dist < mindist)
+		{
+		    mindist = dist;
+		    mini = i;
+		}
+	    }
+	}
+	return &extra->scaled[mini];
+    }
+    else
+    {
+    	/* See if we've scaled to this value yet */
+    	for (i = 0; i < extra->numScaled; i++)
+    	{
+	    if (MatchScalable (&extra->scaled[i].vals, vals))
+	    	return &extra->scaled[i];
+    	}
     }
     return 0;
 }

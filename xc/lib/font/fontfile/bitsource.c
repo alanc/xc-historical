@@ -1,6 +1,6 @@
 /* $NCDId: @(#)bitsource.c,v 1.4 1991/07/02 17:00:59 lemke Exp $ */
 /*
- * $XConsortium: bitsource.c,v 1.2 91/06/12 14:35:05 keith Exp $
+ * $XConsortium: bitsource.c,v 1.4 91/07/16 18:05:53 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -77,7 +77,7 @@ FontFileUnregisterBitmapSource (fpe)
 	}
 }
 
-FontFileMatchBitmapSource (fpe, pFont, flags, entry, zeroPat, vals, format, fmask)
+FontFileMatchBitmapSource (fpe, pFont, flags, entry, zeroPat, vals, format, fmask, noSpecificSize)
     FontPathElementPtr	fpe;
     FontPtr		*pFont;
     int			flags;
@@ -86,6 +86,7 @@ FontFileMatchBitmapSource (fpe, pFont, flags, entry, zeroPat, vals, format, fmas
     FontScalablePtr	vals;
     fsBitmapFormat	format;
     fsBitmapFormatMask	fmask;
+    Bool		noSpecificSize;
 {
     int			source;
     FontEntryPtr	zero;
@@ -108,7 +109,7 @@ FontFileMatchBitmapSource (fpe, pFont, flags, entry, zeroPat, vals, format, fmas
 	zero = FontFileFindNameInDir (&dir->scalable, zeroPat);
 	if (!zero)
 	    continue;
-    	scaled = FontFileFindScaledInstance (zero, vals);
+    	scaled = FontFileFindScaledInstance (zero, vals, noSpecificSize);
     	if (scaled)
     	{
 	    if (scaled->pFont)
