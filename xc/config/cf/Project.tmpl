@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.227 94/03/08 20:37:42 matt Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.228 94/03/18 14:53:05 matt Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -376,6 +376,9 @@ XCOMM $XConsortium: Project.tmpl,v 1.227 94/03/08 20:37:42 matt Exp $
 #ifndef ContribDir
 #define ContribDir $(TOP)/../contrib	/* contrib is outside core tree */
 #endif
+#ifndef UnsupportedDir
+#define UnsupportedDir $(TOP)/unsupported
+#endif
 #ifndef AllocateLocalDefines
 #define AllocateLocalDefines /**/
 #endif
@@ -436,6 +439,7 @@ XCOMM X Window System make variables; these need to be coordinated with rules
        INCLUDESRC = $(TOP)/X11
         SERVERSRC = $(TOP)/programs/Xserver
        CONTRIBSRC = ContribDir
+   UNSUPPORTEDSRC = UnsupportedDir
            DOCSRC = $(TOP)/doc
            RGBSRC = $(TOP)/programs/rgb
       BDFTOPCFSRC = $(PROGRAMSRC)/bdftopcf
