@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbscrinit.c,v 5.6 89/07/18 18:03:31 rws Exp $ */
+/* $XConsortium: mfbscrinit.c,v 5.7 89/07/21 18:39:48 keith Exp $ */
 
 #include "X.h"
 #include "Xproto.h"	/* for xColorItem */
@@ -199,5 +199,8 @@ mfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     pScreen->wakeupData = (pointer)NULL;
 
     miInitializeBackingStore (pScreen, &mfbBSFuncRec);
+#ifdef MITSHM
+    ShmRegisterFbFuncs(pScreen);
+#endif
     return TRUE;
 }

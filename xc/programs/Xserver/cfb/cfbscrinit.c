@@ -251,5 +251,8 @@ cfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     }
     pScreen->rootVisual = visuals[i].vid;
     miInitializeBackingStore (pScreen, &cfbBSFuncRec);
+#ifdef MITSHM
+    ShmRegisterFbFuncs(pScreen);
+#endif
     return TRUE;
 }
