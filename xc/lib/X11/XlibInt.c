@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.159 92/01/09 18:51:51 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.160 92/01/20 12:26:01 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -1143,7 +1143,7 @@ register xEvent *event;	/* wire protocol event */
 	      case KeymapNotify:
 		{
 			register XKeymapEvent *ev = (XKeymapEvent *) re;
-			ev->window	= dpy->current;
+			ev->window	= None;
 			bcopy ((char *)((xKeymapEvent *) event)->map,
 			       &ev->key_vector[1], 
 			       sizeof (((xKeymapEvent *) event)->map));
