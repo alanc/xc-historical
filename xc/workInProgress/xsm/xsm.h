@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.h,v 1.2 94/02/22 15:42:55 mor Exp $ */
+/* $XConsortium: xsm.h,v 1.3 94/03/08 12:28:59 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -80,7 +80,7 @@ typedef struct _PendingProp {
 } PendingProp;
 
 typedef struct _PendingValue {
-    void		*value;
+    XtPointer		value;
     int			length;
 } PendingValue;
 
