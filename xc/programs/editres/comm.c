@@ -57,8 +57,8 @@ XtIntervalId * id;
     XtDisownSelection(w, global_client.atom, 
 		      XtLastTimestampProcessed(XtDisplay(w)));
 
-    sprintf(msg, "It appears that this client does not %s.",
-	    "listen to the Resource Editor");
+    sprintf(msg, "It appears that this client does not understand\n%s",
+	    "the Editres Protocol.");
     SetMessage(global_screen_data.info_label, msg);
 }
 
@@ -583,14 +583,17 @@ ProtocolStream * stream;
 						   res_info->num_resources);
 
 		    for (j = 0; j < res_info->num_resources; j++) {
+			unsigned char temp;
 			ResourceInfo * info = res_info->res_info + j;
-			if (!(_EresRetrieveResType(stream, &(info->res_type)) &&
+			if (!(_EresRetrieveResType(stream, &(temp)) &&
 			      _EresRetrieveString8(stream, &(info->name)) &&
 			      _EresRetrieveString8(stream, &(info->class)) &&
 			      _EresRetrieveString8(stream, &(info->type))))
 			{
 			    goto done;
 			}
+			else
+			    info->res_type = (ResourceType) temp;
 		    } /* for */
 		} /* else */
 	    } /* for */
