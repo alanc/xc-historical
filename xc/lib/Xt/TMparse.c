@@ -556,6 +556,7 @@ static char * ParseTableSym(str, table, eventCodeMaskP, eventCodeP)
     tableSymName[str-start] = '\0';
     if (! LookupTableSym(table, tableSymName, eventCodeP))
 	Syntax("Unknown Detail Type.");
+    *eventCodeMaskP = ~0L;
 
     return str;
 }
