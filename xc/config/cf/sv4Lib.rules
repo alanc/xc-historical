@@ -1,4 +1,4 @@
-XCOMM $XConsortium: sv4Lib.rules,v 1.1 91/03/23 16:53:27 rws Exp $
+XCOMM $XConsortium: sv4Lib.rules,v 1.2 91/03/23 17:22:32 rws Exp $
 
 /*
  * SVR4 shared library rules
@@ -21,6 +21,9 @@ XCOMM $XConsortium: sv4Lib.rules,v 1.1 91/03/23 16:53:27 rws Exp $
 #endif
 #ifndef PositionIndependentCFlags
 #define PositionIndependentCFlags -K PIC
+#endif
+#ifndef ExtraLoadFlags
+#define ExtraLoadFlags -z nodefs
 #endif
 
 /*
