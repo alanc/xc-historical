@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.c,v 1.8 93/08/22 10:21:01 rws Exp $ */
+/* $XConsortium: xieperf.c,v 1.9 93/08/22 11:24:22 rws Exp $ */
 
 int   verbosity_Group_xielib ;
 int   verbosity_Group_xielib_user_level ;
@@ -915,14 +915,9 @@ main(argc, argv)
     else if ( xparms.vinfo.depth == 24 )
 	capabilities |= CAPA_COLOR_24;
 
-#ifndef VMS
-    gethostname (hostname, 100);
+    XmuGetHostname(hostname, 100);
     printf ("%s server on %s\nfrom %s\n",
 	    ServerVendor (xparms.d), DisplayString (xparms.d), hostname);
-#else
-    printf ("%s server on %s\n",
-	    ServerVendor (xparms.d), DisplayString (xparms.d));
-#endif
     PrintTime ();
 
     /* Force screen out of screen-saver mode, grab current data, and set
