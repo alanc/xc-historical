@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $XConsortium: servermd.h,v 1.62 91/12/19 19:02:40 keith Exp $ */
+/* $XConsortium: servermd.h,v 1.63 92/08/11 09:53:25 rws Exp $ */
 
 /*
  * Machine dependent values:
@@ -182,6 +182,10 @@ SOFTWARE.
 #define	GLYPHPADBYTES		2		/* to match product server */
 #define	GETLEFTBITS_ALIGNMENT	4		/* PA forces longs to 4 */
 						/* byte boundries */
+#define AVOID_MEMORY_READ
+#define FAST_CONSTANT_OFFSET_MODE
+#define LARGE_INSTRUCTION_CACHE
+#define PLENTIFUL_REGISTERS
 
 #endif /* hpux */
 
