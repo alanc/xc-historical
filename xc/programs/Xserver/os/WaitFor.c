@@ -61,6 +61,7 @@ extern Bool AnyClientsWriteBlocked;
 extern void CheckConnections();
 extern void EstablishNewConnections();
 extern void SaveScreens();
+extern void ResetOsBuffers();
 
 extern int errno;
 
@@ -147,6 +148,7 @@ WaitForSomething(pClientsReady)
 		timeSinceSave = -timeout;
 		if ((timeSinceSave >= timeTilFrob) && (timeTilFrob >= 0))
 		{
+		    ResetOsBuffers(); /* not ideal, but better than nothing */
 		    SaveScreens(SCREEN_SAVER_ON, ScreenSaverActive);
 		    if (ScreenSaverInterval)
 			/* round up to the next ScreenSaverInterval */
