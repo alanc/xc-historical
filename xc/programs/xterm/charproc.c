@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.167 91/05/31 19:47:18 gildea Exp $
+ * $XConsortium: charproc.c,v 1.168 91/06/18 11:16:11 gildea Exp $
  */
 
 /*
@@ -83,6 +83,8 @@ static void bitset(), bitclr();
 #define BELLSUPPRESSMSEC 200
 
 #define XtNalwaysHighlight "alwaysHighlight"
+#define XtNappcursorDefault "appcursorDefault"
+#define XtNappkeypadDefault "appkeypadDefault"
 #define XtNbellSuppressTime "bellSuppressTime"
 #define XtNboldFont "boldFont"
 #define XtNc132 "c132"
@@ -126,6 +128,8 @@ static void bitset(), bitclr();
 #define XtNallowSendEvents "allowSendEvents"
 
 #define XtCAlwaysHighlight "AlwaysHighlight"
+#define XtCAppcursorDefault "AppcursorDefault"
+#define XtCAppkeypadDefault "AppkeypadDefault"
 #define XtCBellSuppressTime "BellSuppressTime"
 #define XtCBoldFont "BoldFont"
 #define XtCC132 "C132"
@@ -353,6 +357,12 @@ static XtResource resources[] = {
 {XtNalwaysHighlight,XtCAlwaysHighlight,XtRBoolean,
         sizeof(Boolean),XtOffsetOf(XtermWidgetRec, screen.always_highlight),
         XtRBoolean, (caddr_t) &defaultFALSE},
+{XtNappcursorDefault,XtCAppcursorDefault,XtRBoolean,
+        sizeof(Boolean),XtOffsetOf(XtermWidgetRec, misc.appcursorDefault),
+        XtRBoolean, (XtPointer) &defaultFALSE},
+{XtNappkeypadDefault,XtCAppkeypadDefault,XtRBoolean,
+        sizeof(Boolean),XtOffsetOf(XtermWidgetRec, misc.appkeypadDefault),
+        XtRBoolean, (XtPointer) &defaultFALSE},
 {XtNbellSuppressTime, XtCBellSuppressTime, XtRInt, sizeof(int),
         XtOffsetOf(XtermWidgetRec, screen.bellSuppressTime),
         XtRInt, (XtPointer) &defaultBellSuppressTime},

@@ -1,6 +1,6 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.188 91/06/24 18:16:38 gildea Exp $";
-#endif  /* lint */
+static char *rid="$XConsortium: main.c,v 1.188 91/06/24 18:17:53 gildea Exp $";
+#endif /* lint */
 
 /*
  * 				 W A R N I N G
@@ -960,6 +960,16 @@ char **argv;
 	if (term->misc.tekInhibit)			inhibit |= I_TEK;
 
 	term->initflags = term->flags;
+
+	if (term->misc.appcursorDefault) {
+	    term->keyboard.flags |= CURSOR_APL;
+	    update_appcursor();
+	}
+
+	if (term->misc.appkeypadDefault) {
+	    term->keyboard.flags |= KYPD_APL;
+	    update_appkeypad();
+	}
 
 /*
  * Set title and icon name if not specified
