@@ -1,4 +1,4 @@
-/* $XConsortium: SetLocale.c,v 1.38 94/03/28 11:21:31 rws Exp $ */
+/* $XConsortium: SetLocale.c,v 1.39 94/04/17 20:20:59 rws Exp kaleb $ */
 
 /*
  * Copyright 1990, 1991 by OMRON Corporation, NTT Software Corporation,
@@ -138,7 +138,7 @@ _XlcMapOSLocaleName(osname, siname)
     char *osname;
     char *siname;
 {
-#if defined(hpux) || defined(__bsdi__) || defined(sun) || defined(SVR4) || defined(sgi) || defined(__osf__) || defined(AIXV3) || defined(ultrix) || defined(WIN32)
+#if defined(hpux) || defined(CSRG_BASED) || defined(sun) || defined(SVR4) || defined(sgi) || defined(__osf__) || defined(AIXV3) || defined(ultrix) || defined(WIN32)
 #ifdef hpux
 #define SKIPCOUNT 2
 #define STARTCHAR ':'

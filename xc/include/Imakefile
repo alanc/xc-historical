@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.84 94/02/09 15:56:26 matt Exp $
+XCOMM $XConsortium: Imakefile,v 1.85 94/03/29 15:54:38 gildea Exp kaleb $
 #define IHaveSubdirs
 #define PassCDebugFlags /**/
 
@@ -28,6 +28,12 @@ BuildIncludes($(HEADERS),.,.)
 
 InstallMultipleFlags($(HEADERS),$(INCDIR),$(INSTINCFLAGS))
 MakeSubdirs($(SUBDIRS))
+
+InstallLinkKitNonExecFile(X.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(Xmd.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(Xos.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(Xproto.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(Xprotostr.h,$(LINKKITDIR)/include)
 
 depend::
 

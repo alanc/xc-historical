@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.221 94/04/02 13:50:51 gildea Exp $";
+static char *rid="$XConsortium: main.c,v 1.222 94/04/17 20:23:28 gildea Exp kaleb $";
 #endif /* lint */
 
 /*
@@ -121,6 +121,17 @@ static Bool IsPts = False;
 #if defined(sony) && defined(bsd43) && !defined(KANJI)
 #define KANJI
 #endif
+
+#ifdef linux
+#define USE_SYSV_TERMIO
+#define USE_SYSV_PGRP
+#define USE_SYSV_UTMP
+#define USE_SYSV_SIGNALS
+#define HAS_UTMP_UT_HOST
+#define LASTLOG
+#define WTMP
+#endif
+
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 
@@ -197,7 +208,9 @@ static Bool IsPts = False;
 #define HAS_UTMP_UT_HOST
 #endif
 #else /* } !SYSV { */			/* BSD systems */
+#ifndef linux
 #include <sgtty.h>
+#endif
 #include <sys/resource.h>
 #define HAS_UTMP_UT_HOST
 #define HAS_BSD_GROUPS
@@ -902,10 +915,16 @@ char **argv;
 #ifndef sgi
 	d_tio.c_line = 0;
 #endif
+#ifndef linux
 	d_tio.c_cc[VINTR] = 0x7f;		/* DEL  */
-	d_tio.c_cc[VQUIT] = '\\' & 0x3f;	/* '^\'	*/
 	d_tio.c_cc[VERASE] = '#';		/* '#'	*/
 	d_tio.c_cc[VKILL] = '@';		/* '@'	*/
+#else
+	d_tio.c_cc[VINTR] = 'C' & 0x3f;		/* '^C'	*/
+	d_tio.c_cc[VERASE] = 0x7f;		/* DEL	*/
+	d_tio.c_cc[VKILL] = 'U' & 0x3f;		/* '^U'	*/
+#endif
+	d_tio.c_cc[VQUIT] = '\\' & 0x3f;	/* '^\'	*/
     	d_tio.c_cc[VEOF] = 'D' & 0x3f;		/* '^D'	*/
 	d_tio.c_cc[VEOL] = '@' & 0x3f;		/* '^@'	*/
 #ifdef VSWTCH
@@ -940,7 +959,11 @@ char **argv;
         d_ltc.t_lnextc = '\377';
 #endif	/* TIOCSLTC */
 #ifdef USE_TERMIOS
+#ifndef linux
 	d_tio.c_cc[VSUSP] = '\000';
+#else
+	d_tio.c_cc[VSUSP] = 'Z' & 0x3f;
+#endif
 	d_tio.c_cc[VDSUSP] = '\000';
 	d_tio.c_cc[VREPRINT] = '\377';
 	d_tio.c_cc[VDISCARD] = '\377';
@@ -2330,7 +2353,9 @@ spawn ()
 
 		/* set up the new entry */
 		utmp.ut_type = USER_PROCESS;
+#ifndef linux
 		utmp.ut_exit.e_exit = 2;
+#endif
 		(void) strncpy(utmp.ut_user,
 			       (pw && pw->pw_name) ? pw->pw_name : "????",
 			       sizeof(utmp.ut_user));

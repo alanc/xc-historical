@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: lex.l,v 1.67 94/03/19 13:09:31 rws Exp $
+ * $XConsortium: lex.l,v 1.68 94/04/17 20:38:14 rws Exp kaleb $
  *
  * .twmrc lex file
  *
@@ -67,7 +67,7 @@ in this Software without prior written authorization from the X Consortium.
 extern char *ProgramName;
 
 extern int ParseError;
-#ifdef __bsdi__
+#if defined(CSRG_BASED) || defined(linux)
 int yylineno;
 
 #undef YY_INPUT

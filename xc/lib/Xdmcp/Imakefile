@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.21 93/09/04 16:33:39 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.22 94/03/29 15:54:21 gildea Exp kaleb $
 #define DoNormalLib NormalLibXdmcp
 #define DoSharedLib SharedLibXdmcp
 #define DoDebugLib DebugLibXdmcp
@@ -102,5 +102,7 @@ OBJS = \
 
 SpecialCLibObjectRule(Fill,$(ICONFIGFILES),ConnectionFlags)
 SpecialCLibObjectRule(Flush,$(ICONFIGFILES),ConnectionFlags)
+
+InstallLinkKitLibrary(Xdmcp,$(LINKKITDIR)/lib)
 
 DependTarget()

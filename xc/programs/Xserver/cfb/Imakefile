@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 5.40 93/09/04 19:40:53 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.41 93/09/06 18:37:23 rws Exp kaleb $
 #include <Server.tmpl>
 
 #ifndef PixelSize
@@ -214,6 +214,21 @@ stipsprc32.o: stipsprc32.s
 stipsprcte32.o: stipsprcte32.s
 	$(CPP) -DTETEXT stipsprcte32.s | $(AS) -o $@ -
 #endif
+#endif
+
+#if PixelSize == 32
+InstallLinkKitNamedLibrary(cfb,cfb32,$(LINKKITDIR)/lib)
+#endif
+#if PixelSize == 16
+InstallLinkKitNamedLibrary(cfb,cfb16,$(LINKKITDIR)/lib)
+#endif
+#if PixelSize == 8
+InstallLinkKitLibrary(cfb,$(LINKKITDIR)/lib)
+InstallLinkKitNonExecFile(cfb.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(cfb8bit.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(cfbmap.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(cfbmskbits.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(cfbrrop.h,$(LINKKITDIR)/include)
 #endif
 
 DependTarget()

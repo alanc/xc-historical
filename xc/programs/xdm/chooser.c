@@ -1,5 +1,5 @@
 /*
- * $XConsortium: chooser.c,v 1.19 94/04/17 20:03:34 rws Exp $
+ * $XConsortium: chooser.c,v 1.20 94/06/03 16:34:39 mor Exp kaleb $
  *
 Copyright (c) 1990  X Consortium
 
@@ -516,7 +516,7 @@ n = ifcp->ifc_len / sizeof (struct ifreq);
 	if (ioctl (socketFD, (int) SIOCGIFCONF, (char *) &ifc) < 0)
 	    return;
 	for (ifr = ifc.ifc_req
-#if defined (__bsdi__) || defined(__NetBSD__)
+#ifdef CSRG_BASED
 	     ; (char *)ifr < ifc.ifc_buf + ifc.ifc_len;
 	     ifr = (struct ifreq *)((char *)ifr + sizeof (struct ifreq) +
 		(ifr->ifr_addr.sa_len > sizeof (ifr->ifr_addr) ?

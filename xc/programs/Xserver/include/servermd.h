@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $XConsortium: servermd.h,v 1.70 94/04/17 20:26:08 dpw Exp $ */
+/* $XConsortium: servermd.h,v 1.71 94/05/05 16:03:22 dpw Exp kaleb $ */
 
 /*
  * Machine dependent values:
@@ -321,14 +321,14 @@ SOFTWARE.
      defined(MACH386) || \
      defined(linux) || \
      (defined(AMOEBA) && defined(i80386)) || \
-     defined(_MINIX))
+     defined(MINIX))
 
 #ifndef IMAGE_BYTE_ORDER
 #define IMAGE_BYTE_ORDER	LSBFirst
 #endif
 
 #ifndef BITMAP_BIT_ORDER
-# if defined(XF86MONOVGA) || defined(XF86VGA16) || defined(XF86BDM2)
+# if defined(XF86MONOVGA) || defined(XF86VGA16) || defined(XF86MONO)
 #  define BITMAP_BIT_ORDER      MSBFirst
 # else
 #  define BITMAP_BIT_ORDER      LSBFirst
@@ -352,7 +352,6 @@ SOFTWARE.
 #define FAST_CONSTANT_OFFSET_MODE
 #define FAST_MEMCPY
 #define NO_ONE_RECT
-#define SINGLEDEPTH
 #endif
 
 #endif /* SVR4 / BSD / i386 */

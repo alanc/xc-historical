@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.72 94/04/01 12:37:39 gildea Exp converse $
+XCOMM $XConsortium: Imakefile,v 1.73 94/09/21 20:56:18 converse Exp kaleb $
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
@@ -46,6 +46,9 @@ PWD_DEFINES = -DUSESHADOW
 #if SystemV || defined(SequentArchitecture)
 SYS_LIBRARIES = -lsec
 #endif
+#ifdef LinuxArchitecture
+SYS_LIBRARIES = -lshadow
+#endif
 #endif
 
 #if defined(UltrixArchitecture)
@@ -54,6 +57,10 @@ SYS_LIBRARIES = -lauth
 
 #if (defined(AIXArchitecture) && (OSMajorVersion >= 3))
 SYS_LIBRARIES = -ls
+#endif
+
+#if defined(XFree86Version) && HasLibCrypt
+SYS_LIBRARIES = -lcrypt
 #endif
 
 #if HasBSD44Sockets

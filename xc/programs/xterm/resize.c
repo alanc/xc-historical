@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: resize.c,v 1.28 93/07/02 17:26:29 rws Exp $
+ *	$XConsortium: resize.c,v 1.29 93/09/20 17:42:18 hersh Exp kaleb $
  */
 
 /*
@@ -54,7 +54,7 @@
 #undef SYSV				/* pretend to be bsd */
 #endif /* macII */
 
-#ifdef SYSV
+#if defined(SYSV) || defined(linux)
 #define USE_SYSV_TERMIO
 #define USE_SYSV_UTMP
 #else /* else not SYSV */
@@ -65,7 +65,9 @@
 #ifdef USE_SYSV_TERMIO
 #include <sys/termio.h>
 #else /* else not USE_SYSV_TERMIO */
+#ifndef linux
 #include <sgtty.h>
+#endif
 #endif	/* USE_SYSV_TERMIO */
 
 #ifdef USE_USG_PTYS

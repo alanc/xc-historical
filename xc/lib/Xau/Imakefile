@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.23 94/02/10 21:04:52 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.24 94/03/29 15:54:23 gildea Exp kaleb $
 #define DoNormalLib NormalLibXau
 #define DoSharedLib SharedLibXau
 #define DoDebugLib DebugLibXau
@@ -28,5 +28,7 @@ OBJS =	AuDispose.o AuFileName.o AuGetAddr.o AuGetBest.o AuLock.o \
 	AuRead.o AuUnlock.o AuWrite.o $(K5ENCOBJ)
 
 #include <Library.tmpl>
+
+InstallLinkKitLibrary(Xau,$(LINKKITDIR)/lib)
 
 DependTarget()

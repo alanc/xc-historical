@@ -1,4 +1,4 @@
-/* $XConsortium: genauth.c,v 1.19 94/10/22 20:33:50 gildea Exp gildea $ */
+/* $XConsortium: genauth.c,v 1.20 94/10/22 20:49:27 gildea Exp kaleb $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -91,6 +91,9 @@ long	sum[2];
 	LogError("Cannot open randomFile \"%s\", errno = %d\n", name, errno);
 	return 0;
     }
+#ifdef FRAGILE_DEV_MEM
+    if (strcmp(name, "/dev/mem") == 0) lseek (fd, 0x100000, SEEK_SET);
+#endif
     reads = FILE_LIMIT;
     sum[0] = 0;
     sum[1] = 0;

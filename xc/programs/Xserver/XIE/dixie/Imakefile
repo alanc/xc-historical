@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.3 93/10/31 09:36:06 dpw Exp $
+XCOMM $XConsortium: Imakefile,v 1.3 93/11/06 15:48:24 rws Exp kaleb $
 XCOMM build dixie archive
 #include <Server.tmpl>
 
@@ -16,3 +16,6 @@ DependSubdirs($(SUBDIRS))
 
 MakeLintLibSubdirs($(SUBDIRS))
 LintSubdirs($(SUBDIRS))
+
+InstallLinkKitLibrary(dixie,$(LINKKITDIR)/lib)
+

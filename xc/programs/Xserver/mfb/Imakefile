@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.37 94/03/11 18:37:14 dpw Exp $
+XCOMM $XConsortium: Imakefile,v 1.38 94/03/11 18:47:47 dpw Exp kaleb $
 #include <Server.tmpl>
 
 SRCS1 =	 mfbgc.c mfbwindow.c mfbfont.c \
@@ -81,5 +81,10 @@ ObjectFromSpecialSource(mfbbltG,mfbblt,-DMROP=0)
 ObjectFromSpecialSource(mfbtileC,mfbtile,-DMROP=Mcopy)
 
 ObjectFromSpecialSource(mfbtileG,mfbtile,-DMROP=0)
+
+InstallLinkKitLibrary(mfb,$(LINKKITDIR)/lib)
+InstallLinkKitNonExecFile(fastblt.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(mfb.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(mergerop.h,$(LINKKITDIR)/include)
 
 DependTarget()

@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.194 94/04/17 20:14:16 kaleb Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.195 94/05/05 14:46:30 mor Exp kaleb $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1054,7 +1054,7 @@ static char *ExtractLocaleName(lang)
     String	lang;
 {
 
-#if defined(hpux) || defined(__bsdi__) || defined(sun) || defined(SVR4) || defined(sgi) || defined(__osf__) || defined(AIXV3) || defined(ultrix) || defined(WIN32)
+#if defined(hpux) || defined(CSRG_BASED) || defined(sun) || defined(SVR4) || defined(sgi) || defined(__osf__) || defined(AIXV3) || defined(ultrix) || defined(WIN32)
 #ifdef hpux
 #define SKIPCOUNT 2
 #define STARTCHAR ':'

@@ -1,4 +1,4 @@
-/* $XConsortium: xinit.c,v 11.57 94/03/04 18:04:15 rws Exp $ */
+/* $XConsortium: xinit.c,v 11.58 94/04/17 20:24:30 rws Exp kaleb $ */
 
 /*
 
@@ -37,7 +37,6 @@ in this Software without prior written authorization from the X Consortium.
 #include <sys/wait.h>
 #endif
 #include <errno.h>
-extern int sys_nerr;
 #include <setjmp.h>
 
 #ifndef X_NOT_STDC_ENV
@@ -68,22 +67,16 @@ char **newenviron = NULL;
 
 char *bindir = BINDIR;
 char *server_names[] = {
-#ifdef vax				/* Digital */
-    "Xqvss       Digital monochrome display on Microvax or VAXstation",
-    "Xqdss       Digital color display on Microvax of VAXstation",
-#endif
 #if defined(ultrix) && defined(mips)
-    "Xmfbpmax    Digital monochrome display on DECstation 3100",
-    "Xcfbpmax    Digital color display on DECstation 3100",
+    "Xdec        Digital color display on DECstation",
 #endif
 #ifdef sun				/* Sun */
-    "Xsun        Sun monochrome and color displays on Sun 2, 3, or 4 series",
+    "Xsun        Sun BW2, CG2, CG3, CG4, or CG6 on Sun 2, 3, 4, or 386i",
+    "Xsunmono    Sun BW2 on Sun 2, 3, 4, or 386i ",
+    "Xsun24      Sun BW2, CG2, CG3, CG4, CG6, or CG8 on Sun 4",
 #endif
 #ifdef hpux				/* HP */
     "Xhp         HP monochrome and colors displays on 9000/300 series",
-#endif
-#ifdef apollo				/* Apollo */
-    "Xapollo     Apollo monochrome and color displays",
 #endif
 #ifdef ibm				/* IBM */
     "Xibm        IBM AED, APA, 8514a, megapel, VGA displays on PC/RT",
@@ -91,8 +84,14 @@ char *server_names[] = {
 #ifdef macII				/* MacII */
     "XmacII      Apple monochrome display on Macintosh II",
 #endif
-#ifdef M4310				/* Tektronix Pegasus */
-    "Xpeg        Tektronix Pegasus display on 431x series",
+#ifdef XFREE86
+    "XF86_SVGA   SVGA colour display on i386 PC",
+    "XF86_Mono   monochrome display on i386 PC",
+    "XF86_VGA16  16 colour VGA display on i386 PC",
+    "XF86_S3     S3 colour display on i386 PC",
+    "XF86_8514   IBM 8514/A colour display on i386 PC",
+    "XF86_Mach8  ATI Mach8 colour display on i386 PC",
+    "XF86_Mach32 ATI Mach32 colour display on i386 PC",
 #endif
     NULL};
 
@@ -122,7 +121,7 @@ char *displayNum;
 char *program;
 Display *xd;			/* server connection */
 #ifndef SYSV
-#if defined(SVR4) || defined(_POSIX_SOURCE) || defined(__bsdi__)
+#if defined(SVR4) || defined(_POSIX_SOURCE) || defined(CSRG_BASED)
 int status;
 #else
 union wait	status;
@@ -629,10 +628,7 @@ Fatal(fmt, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9)
 Error(fmt, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9)
 	char	*fmt;
 {
-	extern char	*sys_errlist[];
-
 	fprintf(stderr, "%s:  ", program);
-	if (errno > 0 && errno < sys_nerr)
-	  fprintf (stderr, "%s (errno %d):  ", sys_errlist[errno], errno);
+	fprintf (stderr, "%s (errno %d):  ", strerror(errno), errno);
 	fprintf(stderr, fmt, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9);
 }

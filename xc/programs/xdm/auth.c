@@ -1,4 +1,4 @@
-/* $XConsortium: auth.c,v 1.55 94/06/03 16:34:12 mor Exp mor $ */
+/* $XConsortium: auth.c,v 1.57 94/10/07 19:46:21 converse Exp kaleb $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -778,7 +778,7 @@ DefineSelf (fd, file, auth)
     if (ioctl (fd, SIOCGIFCONF, (char *) &ifc) < 0)
         LogError ("Trouble getting network interface configuration");
     for (ifr = ifc.ifc_req
-#if defined (__bsdi__) || defined(__NetBSD__)
+#ifdef CSRG_BASED
 	 ; (char *)ifr < ifc.ifc_buf + ifc.ifc_len;
 	 ifr = (struct ifreq *)((char *)ifr + sizeof (struct ifreq) +
 		   (ifr->ifr_addr.sa_len > sizeof (ifr->ifr_addr) ?

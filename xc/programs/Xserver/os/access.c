@@ -1,4 +1,4 @@
-/* $XConsortium: access.c,v 1.73 94/04/17 20:26:53 rws Exp dpw $ */
+/* $XConsortium: access.c,v 1.74 94/08/11 15:03:42 dpw Exp kaleb $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -494,7 +494,7 @@ DefineSelf (fd)
     if (ioctl (fd, (int) SIOCGIFCONF, (pointer) &ifc) < 0)
         Error ("Getting interface configuration");
     for (ifr = ifc.ifc_req
-#if defined (__bsdi__) || defined(__NetBSD__)
+#ifdef CSRG_BASED
 	 ; (char *)ifr < ifc.ifc_buf + ifc.ifc_len;
 	 ifr = (struct ifreq *)((char *)ifr + sizeof (struct ifreq) +
 		(ifr->ifr_addr.sa_len > sizeof (ifr->ifr_addr) ?
