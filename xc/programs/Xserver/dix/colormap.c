@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: colormap.c,v 1.52 87/08/29 18:34:57 todd Exp $ */
+/* $Header: colormap.c,v 1.52 87/09/11 07:18:27 toddb Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -512,6 +512,7 @@ CopyColormapAndFree (mid, pSrc, client)
         CopyFree (GREENMAP, client, pSrc, pmap);
         CopyFree (BLUEMAP, client, pSrc, pmap);
     }
+    /* XXX should worry about removing any RT_CMAPENTRY resource */
     return(result);
 }
 
@@ -780,7 +781,8 @@ AllocColor (pmap, pred, pgreen, pblue, pPix, client)
     /* if this is the client's first pixel in this colormap, tell the
      * resource manager that the client has pixels in this colormap which
      * should be freed when the client dies */
-    if ((pmap->numPixelsRed)[client] == 1)
+    if (((pmap->numPixelsRed)[client] == 1) &&
+	(CLIENT_ID(pmap->mid) != client))
     {
 	colorResource	*pcr;
 
@@ -1170,6 +1172,7 @@ AllocColorCells (client, pmap, colors, planes, contig, ppix, masks)
     Pixel	rmask, gmask, bmask, *ppixFirst;
     int		r, g, b, n, class;
     int		ok;
+    int		oldcount = pmap->numPixelsRed[client];
 
     class = pmap->class;
     if (class == StaticColor)
@@ -1178,6 +1181,7 @@ AllocColorCells (client, pmap, colors, planes, contig, ppix, masks)
     }
     if (pmap->class == DirectColor)
     {
+	oldcount += pmap->numPixelsGreen[client] + pmap->numPixelsBlue[client];
         ok = AllocDirect (client, pmap, colors, planes, planes, planes,
 	     contig, ppix, &rmask, &gmask, &bmask);
         r = g = b = 0;
@@ -1206,6 +1210,22 @@ AllocColorCells (client, pmap, colors, planes, contig, ppix, masks)
 	    *masks++ = (1 << r++);
 	}
     }
+
+    /* if this is the client's first pixels in this colormap, tell the
+     * resource manager that the client has pixels in this colormap which
+     * should be freed when the client dies */
+    if (!oldcount && colors && (ok == Success) &&
+	(CLIENT_ID(pmap->mid) != client))
+    {
+	colorResource	*pcr;
+
+	pcr = (colorResource *) Xalloc(sizeof(colorResource));
+	pcr->mid = pmap->mid;
+	pcr->client = client;
+	AddResource(
+	   FakeClientID(client), RT_CMAPENTRY, pcr, FreeClientPixels, RC_CORE);
+    }
+
     return (ok);
 
 }
@@ -1225,6 +1245,7 @@ AllocColorPlanes (client, pmap, colors, r, g, b, contig, pixels,
     Pixel	mask, *ppixFirst;
     register int		shift, i;
     int		class;
+    int		oldcount = pmap->numPixelsRed[client];
 
     class = pmap->class;
     if (class == StaticColor)
@@ -1232,8 +1253,11 @@ AllocColorPlanes (client, pmap, colors, r, g, b, contig, pixels,
 	return (BadMatch); /* Shouldn't try on this type */
     }
     if (class == DirectColor)
+    {
+	oldcount += pmap->numPixelsGreen[client] + pmap->numPixelsBlue[client];
         ok = AllocDirect (client, pmap, colors, r, g, b, contig, pixels,
 	  prmask, pgmask, pbmask);
+    }
     else
     {
 	/* Allocate the proper pixels */
@@ -1273,6 +1297,22 @@ AllocColorPlanes (client, pmap, colors, r, g, b, contig, pixels,
 	                *prmask, *pgmask, *pbmask, ppixFirst);
 	}
     }
+
+    /* if this is the client's first pixels in this colormap, tell the
+     * resource manager that the client has pixels in this colormap which
+     * should be freed when the client dies */
+    if (!oldcount && colors && (ok == Success) &&
+	(CLIENT_ID(pmap->mid) != client))
+    {
+	colorResource	*pcr;
+
+	pcr = (colorResource *) Xalloc(sizeof(colorResource));
+	pcr->mid = pmap->mid;
+	pcr->client = client;
+	AddResource(
+	   FakeClientID(client), RT_CMAPENTRY, pcr, FreeClientPixels, RC_CORE);
+    }
+
     return (ok);
 	
 
@@ -1763,6 +1803,7 @@ FreeColors (pmap, client, count, pixels, mask)
     else
         result = FreeCo(pmap, client, PSEUDOMAP, count, pixels, mask);
 
+    /* XXX should worry about removing any RT_CMAPENTRY resource */
     return (result);
 }
 
@@ -1879,6 +1920,7 @@ FreeCo (pmap, client, color, npixIn, ppixIn, mask)
 	else
 	{
 	    npixClient = 0;
+	    Xfree(ppixClient);
     	    ppixClient = (Pixel *)NULL;
 	}
 	switch(color)
