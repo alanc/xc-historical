@@ -1,4 +1,4 @@
-/* $XConsortium: xeyes.c,v 1.12 91/01/26 14:37:22 rws Exp $ */
+/* $XConsortium: xeyes.c,v 1.13 91/02/22 18:02:50 converse Exp $ */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -71,14 +71,13 @@ void main(argc, argv)
 {
     XtAppContext app_context;
     Widget toplevel;
-    Widget eyes;
     Arg arg[2];
     Cardinal i;
     
-    toplevel = XtInitialize(NULL, "XEyes", options, XtNumber(options), 
-			    &argc, argv);
+    toplevel = XtAppInitialize(&app_context, "XEyes", 
+			       options, XtNumber(options), &argc, argv,
+			       NULL, arg, (Cardinal) 0);
     if (argc != 1) usage();
-    app_context = XtWidgetToApplicationContext(toplevel);
     XtAppAddActions(app_context, actions, XtNumber(actions));
     XtOverrideTranslations
 	(toplevel, XtParseTranslationTable ("<Message>WM_PROTOCOLS: quit()"));
@@ -97,7 +96,7 @@ void main(argc, argv)
     i++;
     XtSetValues (toplevel, arg, i);
 
-    eyes = XtCreateManagedWidget ("eyes", eyesWidgetClass, toplevel, NULL, 0);
+    (void) XtCreateManagedWidget ("eyes", eyesWidgetClass, toplevel, NULL, 0);
     XtRealizeWidget (toplevel);
     wm_delete_window = XInternAtom(XtDisplay(toplevel), "WM_DELETE_WINDOW",
 				   False);
@@ -106,6 +105,7 @@ void main(argc, argv)
     XtAppMainLoop(app_context);
 }
 
+/*ARGSUSED*/
 static void quit(w, event, params, num_params)
     Widget w;
     XEvent *event;
@@ -116,7 +116,7 @@ static void quit(w, event, params, num_params)
 	event->xclient.data.l[0] != wm_delete_window) {
 	XBell(XtDisplay(w), 0);
     } else {
-	XCloseDisplay(XtDisplay(w));
+	XtDestroyApplicationContext(XtWidgetToApplicationContext(w));
 	exit(0);
     }
 }
