@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Varargs.c,v 1.12 90/02/09 16:38:02 kit Exp $";
+    "$XConsortium: Varargs.c,v 1.13 90/02/09 16:50:29 kit Exp $";
 #endif
 /*
 
@@ -322,8 +322,9 @@ _XtVaToArgList(widget, var, max_count, args_return, num_args_return)
     ArgList		args = (ArgList)NULL;
     XtTypedArg		typed_arg;
     XtResourceList	resources = (XtResourceList)NULL;
-    Cardinal		num_resources = 0;
+    Cardinal		num_resources;
     Boolean		fetched_resource_list = False;
+    static void		GetResources();
 
     if (max_count  == 0) {
 	*num_args_return = 0;
@@ -345,7 +346,7 @@ _XtVaToArgList(widget, var, max_count, args_return, num_args_return)
 	    /* if widget is NULL, typed args are ignored */
 	    if (widget != NULL) {
 		if (!fetched_resource_list) {
-		    XtGetResourceList(XtClass(widget), &resources, &num_resources);
+		    GetResources(widget, &resources, &num_resources);
 		    fetched_resource_list = True;
 		}
 		count += _XtTypedArgToArg(widget, &typed_arg, &args[count],
@@ -353,7 +354,7 @@ _XtVaToArgList(widget, var, max_count, args_return, num_args_return)
 	    }
 	} else if (strcmp(attr, XtVaNestedList) == 0) {
 	    if (widget != NULL || !fetched_resource_list) {
-		XtGetResourceList(XtClass(widget), &resources, &num_resources);
+		GetResources(widget, &resources, &num_resources);
 		fetched_resource_list = True;
 	    }
 
@@ -366,14 +367,52 @@ _XtVaToArgList(widget, var, max_count, args_return, num_args_return)
 	}
     }
 
-    if (resources != (XtResourceList)NULL) {
-	XtFree((XtPointer)resources);
-    }
+    XtFree((XtPointer)resources);
 
     *num_args_return = (Cardinal)count;
     *args_return = (ArgList)args;
 }
 
+/*	Function Name: GetResources
+ *	Description: Retreives the normal and constraint resources
+ *                   for this widget.
+ *	Arguments: widget - the widget.
+ * RETURNED        res_list - the list of resource for this widget
+ * RETURNED        number - the number of resources in the above list.
+ *	Returns: none
+ */
+
+static void
+GetResources(widget, res_list, number)
+Widget widget;
+XtResourceList * res_list;
+Cardinal * number;
+{
+    Widget parent = XtParent(widget);
+
+    XtInitializeWidgetClass(XtClass(widget));
+    XtGetResourceList(XtClass(widget), res_list, number);
+    
+    if ((parent != NULL) && (XtIsConstraint(parent))) {
+	int i;
+	XtResourceList constraint;
+	Cardinal num_constraint;
+
+	XtInitializeWidgetClass(XtClass(parent));
+	
+	XtGetConstraintResourceList(XtClass(parent), &constraint, 
+				    &num_constraint);
+
+	*res_list = (XtResourceList) XtRealloc(*res_list, sizeof(XtResource) * 
+					       (*number + num_constraint));
+
+	for (i = 0; i < num_constraint; i++)
+	    (*res_list)[*number + i] = constraint[i];
+
+	*number += num_constraint;
+	XtFree( (XtPointer) constraint);
+    }
+}
 
 static int _XtNestedArgtoTypedArg(args, avlist) 
     XtTypedArgList      args;
