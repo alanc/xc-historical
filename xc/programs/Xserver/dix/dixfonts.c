@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.15 91/02/23 00:33:43 keith Exp $ */
+/* $XConsortium: dixfonts.c,v 1.16 91/02/23 20:09:45 keith Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -840,9 +840,10 @@ FreeFontPath(list, n)
 }
 
 static int
-SetFontPathElements(npaths, paths)
+SetFontPathElements(npaths, paths, bad)
     int         npaths;
     unsigned char *paths;
+    int		*bad;
 {
     int         i,
                 err;
@@ -854,22 +855,23 @@ SetFontPathElements(npaths, paths)
     fplist = (FontPathElementPtr *)
 	xalloc(sizeof(FontPathElementPtr) * npaths);
     if (!fplist)
+    {
+	*bad = 0;
 	return BadAlloc;
+    }
     for (i = 0; i < npaths; i++) {
 	len = (unsigned int) (*cp++);
 	if (len) {
 	    fpe = (FontPathElementPtr) xalloc(sizeof(FontPathElementRec));
 	    if (!fpe) {
-	memfail:
-		while (--i >= 0)
-		    FreeFPE(fplist[i]);
-		xfree(fplist);
-		return BadAlloc;
+		err = BadAlloc;
+		goto bail;
 	    }
 	    fpe->name = (char *) xalloc(len + 1);
 	    if (!fpe->name) {
-		xfree((char *) fplist);
-		goto memfail;
+		xfree(fpe);
+		err = BadAlloc;
+		goto bail;
 	    }
 	    fpe->refcount = 1;
 	    fplist[i] = fpe;
@@ -878,19 +880,32 @@ SetFontPathElements(npaths, paths)
 	    fpe->name[len] = '\0';
 	    fpe->name_length = len;
 	    fpe->type = DetermineFPEType(fpe->name);
-	    if (fpe->type == -1) {	/* unrecognized fpe type */
-		/* XXX error handling */
-		continue;
+	    if (fpe->type == -1) 
+	    {
+		xfree (fpe);
+		xfree (fpe->name);
+		err = BadValue;
+		goto bail;
 	    }
 	    err = (*fpe_functions[fpe->type].init_fpe) (fpe);
-/* XXX need some more work here for errors -- do we quit or keep going? */
 	    if (err != Success)
-		return err;
+	    {
+		xfree (fpe);
+		xfree (fpe->name);
+		err = BadValue;
+		goto bail;
+	    }
 	}
     }
     FreeFontPath(font_path_elements, num_fpes);
     font_path_elements = fplist;
     num_fpes = npaths;
+    return Success;
+bail:
+    *bad = i;
+    while (--i >= 0)
+	FreeFPE(fplist[i]);
+    xfree(fplist);
     return err;
 }
 
@@ -902,19 +917,30 @@ SetFontPath(client, npaths, paths, error)
     unsigned char *paths;
     int        *error;
 {
-    int         len,
-                err = Success;
+    unsigned char   *new_font_path_string;
+    int		    len,
+		    err = Success;
 
     if (npaths == 0) {
-	SetDefaultFontPath(defaultFontPath);
+	if (!SetDefaultFontPath(defaultFontPath))
+	    return BadName;
     } else {
-	err = SetFontPathElements(npaths, paths);
+	len = strlen(paths) + 1;
+	new_font_path_string = (unsigned char *) xalloc(len);
+	if (!new_font_path_string)
+	    return BadAlloc;
 
-	if (err == Success) {
-	    /* stash it for GetFontPath */
-	    len = strlen(paths) + 1;
-	    font_path_string = (unsigned char *) xalloc(len);
-	    bcopy(paths, font_path_string, len);
+	err = SetFontPathElements(npaths, paths, error);
+
+	if (err == Success) 
+	{
+	    bcopy(paths, new_font_path_string, len);
+	    xfree (font_path_string);
+	    font_path_string = new_font_path_string;
+	}
+	else
+	{
+	    xfree (new_font_path_string);
 	}
     }
     return err;
@@ -926,11 +952,13 @@ SetDefaultFontPath(path)
     unsigned char *cp,
                *pp,
                *nump,
-               *newpath;
+               *newpath,
+	       *new_font_path_string;
     int         num = 1,
                 len,
                 err,
-                size = 0;
+                size = 0,
+		bad;
 
     /* get enough for string, plus values -- use up commas */
     len = strlen(path) + 1;
@@ -952,13 +980,22 @@ SetDefaultFontPath(path)
     }
     *nump = (unsigned char) size;
 
-    err = SetFontPathElements(num, newpath);
+    new_font_path_string = (unsigned char *) xalloc(len);
+    if (!new_font_path_string)
+	return BadAlloc;
+
+    err = SetFontPathElements(num, newpath, &bad);
 
     /* stash it for GetFontPath */
-    if (err == Success) {
-	font_path_string = (unsigned char *) xalloc(len);
-	bcopy(newpath, font_path_string, len);
+    if (err == Success)
+    {
+	bcopy(newpath, new_font_path_string, len);
+	xfree (font_path_string);
+	font_path_string = new_font_path_string;
     }
+    else
+	xfree (new_font_path_string);
+
     DEALLOCATE_LOCAL(newpath);
 
     return err;

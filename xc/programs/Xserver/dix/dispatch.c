@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.24 91/01/29 09:22:50 rws Exp $ */
+/* $XConsortium: dispatch.c,v 5.25 91/02/14 19:35:40 keith Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -3009,7 +3009,6 @@ ProcGetFontPath(client)
     WriteReplyToClient(client, sizeof(xGetFontPathReply), &reply);
     if (stringLens || numpaths)
 	(void)WriteToClient(client, stringLens + numpaths, bufferStart);
-    if (bufferStart) DEALLOCATE_LOCAL(bufferStart);
     return(client->noClientException);
 }
 
