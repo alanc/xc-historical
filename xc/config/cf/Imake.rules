@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.99 91/03/24 17:55:25 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.100 91/03/24 18:26:10 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1334,3 +1334,7 @@ FontBaseObj(basename).Z:  FontSrc(basename)				@@\
 #define AllTarget(depends)						@@\
 all:: depends
 #endif /* AllTarget */
+
+#ifdef DefineOldLibraryRules
+#include <oldlib.rules>
+#endif
