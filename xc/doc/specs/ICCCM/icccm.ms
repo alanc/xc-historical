@@ -101,6 +101,11 @@ Mike Wexler
 Glenn Widener
 .De
 .LP
+For the Device Color Characterization section:
+.Ds
+Keith Packard.
+.De
+.LP
 In addition, thanks are due to those who contributed to the public review:
 .LP
 .Ds
@@ -2054,7 +2059,7 @@ Window managers are free to assume convenient values for all fields of
 the WM_HINTS property if a window is mapped without one.
 .LP
 The input field is used to communicate to the window manager the input focus
-model used by the client (see section 4.1.7.).
+model used by the client (see section 4.1.7).
 .LP
 Clients with the Globally Active and No Input models should set the
 input flag to
@@ -2347,7 +2352,7 @@ height_inc	CARD32
 _
 .TE
 .LP
-For more details see section 9.1.7 in \fIXlib \- C Language X Interface\fP.
+For more details see section 14.1.12 in \fIXlib \- C Language X Interface\fP.
 .NH 3
 Changing Window State
 .XS
@@ -3755,7 +3760,7 @@ Summary of Window Manager Property Types
 .XE
 .LP
 The window manager properties are summarized in the following table
-(see also section 9.1 of \fIXlib \- C Language X Interface\fP).
+(see also section 14.1 of \fIXlib \- C Language X Interface\fP).
 .TS H
 l l n c.
 _
@@ -4334,7 +4339,7 @@ requests.
 If your clients are
 .PN DirectColor
 type applications,
-you should consult section 9.3 of \fIXlib \- C Language X Interface\fP
+you should consult section 14.3 of \fIXlib \- C Language X Interface\fP
 for conventions connected with sharing standard colormaps.
 They should look for and create the properties described there on
 the root window of the appropriate screen.
@@ -4909,7 +4914,7 @@ to ensure that the two protocols are orthogonal.
 Clients using the earlier protocol can be detected (see WM_PROTOCOLS above)
 and supported in a backwards-compatibility mode.
 .IP \(bu 5
-The conventions in Section 9.3.1. of \fIXlib \- C Language X Interface\fP
+The conventions in Section 14.3.1. of \fIXlib \- C Language X Interface\fP
 regarding properties of type RGB_COLOR_MAP have been changed,  
 but clients that use the earlier conventions can be detected 
 because their properties are four bytes shorter.
