@@ -1,4 +1,4 @@
-/* $XConsortium: xditview.c,v 1.22 91/02/19 16:34:42 converse Exp $ */
+/* $XConsortium: xditview.c,v 1.23 91/03/19 12:39:12 gildea Exp $ */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -46,9 +46,11 @@
 
 #include "xdit.bm"
 #include "xdit_mask.bm"
-#include "stdio.h"
+#include <stdio.h>
 
+#ifndef sgi			/* SGI declares popen() in stdio.h */
 extern FILE *popen();
+#endif
 extern void exit();
 
 /* Command line options table.  Only resources are entered here...there is a
@@ -285,7 +287,7 @@ NewFile (name)
 char	*name;
 {
     Arg	    arg[2];
-    char    *n, *rindex ();
+    char    *n;
     FILE    *new_file;
     Boolean seek = 0;
 
