@@ -1,4 +1,4 @@
-/* $XConsortium: XMakeAssoc.c,v 10.19 92/04/15 09:43:17 rws Exp $ */
+/* $XConsortium: XMakeAssoc.c,v 10.20 93/08/17 12:01:21 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 /*
@@ -80,7 +80,7 @@ XMakeAssoc(dpy, table, x_id, data)
 	if (new_entry == NULL) {
 		/* Malloc failed! */
 		errno = ENOMEM;
-		(*_XIOErrorFunction)(dpy);
+		_XIOError(dpy);
 	}
 	new_entry->display = dpy;
 	new_entry->x_id = x_id;
