@@ -1,4 +1,4 @@
-/* $XConsortium: Text.c,v 1.167 91/02/17 16:23:15 converse Exp $ */
+/* $XConsortium: Text.c,v 1.168 91/03/06 16:14:11 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -2614,6 +2614,9 @@ Widget w;
   DestroyHScrollBar(ctx);
   DestroyVScrollBar(ctx);
 
+  XtFree((char *)ctx->text.s.selections);
+  XtFree((char *)ctx->text.lt.info);
+  XtFree((char *)ctx->text.search);
   XtFree((char *)ctx->text.updateFrom);
   XtFree((char *)ctx->text.updateTo);
 }
