@@ -50,7 +50,25 @@ XtGeometryReturnCode XtMakeGeometryRequest (widget, request, reply)
         return XtgeometryNo;
     return ((CompositeWidgetClass) (widget->core.parent->core.widget_class))
     		->compositeClass.geometry_manager (widget, request, reply);
-}
+} /* XtMakeGeometryRequest */
+
+XtGeometryReturnCode XtMakeResizeRequest
+	(widget, width, height, replyWidth, replyHeight)
+    Widget	widget;
+    Dimension	width, height;
+    Dimension	*replyWidth, *replyHeight;
+{
+    WidgetGeometry request, reply;
+    XtGeometryReturnCode r;
+
+    request.request_mode = CWWidth | CWHeight;
+    request.width = width;
+    request.height = height;
+    r = XtMakeGeometryRequest(widget, &request, &reply);
+    *replyWidth  = ((reply.request_mode & CWWidth ) ? reply.width  : width );
+    *replyHeight = ((reply.request_mode & CWHeight) ? reply.height : height);
+    return r;
+} /* XtMakeResizeRequest */
 
 extern void XtResizeWidget(w)
     Widget w;
