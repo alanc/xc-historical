@@ -1,4 +1,4 @@
-/* $XConsortium: ImText.c,v 11.17 91/07/12 16:27:57 rws Exp $ */
+/* $XConsortium: ImText.c,v 11.18 93/11/05 11:12:59 kaleb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -36,22 +36,12 @@ XDrawImageString(dpy, d, gc, x, y, string, length)
 #endif
 {   
     register xImageText8Req *req;
-    xQueryTextExtentsReq *qreq;
-    xQueryTextExtentsReply rep;
     char *CharacterOffset = (char *)string;
     int FirstTimeThrough = True;
     int lastX = 0;
-    char *buf, *ptr, *str;
-    int i;
 
     LockDisplay(dpy);
     FlushGC(dpy, gc);
-    if (length > 255 &&
-	! (buf = _XAllocScratch (dpy, (unsigned long) 512))) {
-	UnlockDisplay(dpy);
-	SyncHandle();
-	return 0;
-    }
 
     while (length > 0) 
     {
@@ -66,6 +56,12 @@ XDrawImageString(dpy, d, gc, x, y, string, length)
         }
 	else
 	{
+	    char buf[512];
+	    char *ptr, *str;
+	    xQueryTextExtentsReq *qreq;
+	    xQueryTextExtentsReply rep;
+	    int i;
+
 	    GetReq(QueryTextExtents, qreq);
 	    qreq->fid = gc->gid;
 	    qreq->length += (510 + 3)>>2;
