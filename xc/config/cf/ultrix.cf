@@ -18,9 +18,10 @@
 #endif
 
 #ifdef MipsArchitecture
-#define BuildServer NO		/* for now, do not build PMAX server */
+#define XmfbpmaxServer Xmfbpmax
 #define StandardDefines		-Wf,-XNh2000
+#define ServerDefines StandardDefines -Olimit 2000 ExtensionDefines -DPURDUE
 #endif
 
-/**/# platform:  $XConsortium: ultrix.cf,v 1.6 89/04/18 14:46:12 jim Exp $
+/**/# platform:  $XConsortium: ultrix.cf,v 1.7 89/05/10 14:57:54 jim Exp $
 /**/# operating system:  OSName
