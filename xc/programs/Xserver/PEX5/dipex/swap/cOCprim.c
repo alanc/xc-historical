@@ -1,4 +1,4 @@
-/* $XConsortium: cOCprim.c,v 5.1 91/02/16 09:57:16 rws Exp $ */
+/* $XConsortium: cOCprim.c,v 5.2 91/03/15 18:46:05 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -275,8 +275,8 @@ pexPolylineSet	*strmPtr;
 
 	SWAP_CARD32 ((*pj));
 	k = *pj++;
-	for (j=0, pv = (pexVertex *)pj; j<k; j++, pv++) {
-	    SwapVertex (swapPtr, pv, strmPtr->vertexAttribs, strmPtr->colourType);
+	for (j=0, pv = (pexVertex *)pj; j<k; j++) {
+	    pv = (pexVertex *) SwapVertex (swapPtr, pv, strmPtr->vertexAttribs, strmPtr->colourType);
 	}
 
     }
