@@ -1,4 +1,4 @@
-/* $XConsortium: Keyboard.c,v 1.33 94/04/01 20:51:26 kaleb Exp $ */
+/* $XConsortium: Keyboard.c,v 1.34 94/04/17 20:14:26 kaleb Exp converse $ */
 
 /********************************************************
 
@@ -69,12 +69,24 @@ in this Software without prior written authorization from the X Consortium.
 extern void _XtFillAncestorList();
 extern void _XtSendFocusEvent();
 
+/* InActiveSubtree cache of the current focus source and its ancestors */
+static Widget	*pathTrace = NULL;
+static int	pathTraceDepth = 0;
+static int	pathTraceMax = 0;
+
 /* FindKeyDestination, ancestor list for Xt focus management */
 static Display	*pseudoTraceDisplay = NULL;
 static Widget	*pseudoTrace = NULL;
 static int	pseudoTraceDepth = 0;
 static int	pseudoTraceMax = 0;
 
+void _XtClearAncestorCache(widget)
+    Widget widget;
+{
+    /* the caller must lock the process lock */
+    if (pathTraceDepth && pathTrace[0] == widget)
+	pathTraceDepth = 0;
+}
 
 static XtServerGrabPtr CheckServerGrabs(event, trace, traceDepth)
     XEvent	*event;
@@ -456,23 +468,16 @@ typedef enum {NotActive = 0, IsActive, IsTarget} ActiveType;
 static ActiveType InActiveSubtree(widget)
     Widget	widget;
 {
-    static Widget	*pathTrace = NULL;
-    static int		pathTraceDepth = 0;
-    static int		pathTraceMax = 0;
-    static Display	*display = NULL;
     Boolean		isTarget;
     ActiveType		retval;
 
     LOCK_PROCESS;
-    if (!pathTraceDepth || 
-	!(display == XtDisplay(widget)) ||
-	!(widget == pathTrace[0])) {
+    if (!pathTraceDepth || widget != pathTrace[0]) {
 	_XtFillAncestorList(&pathTrace, 
 			    &pathTraceMax, 
 			    &pathTraceDepth,
 			    widget,
 			    NULL);
-	display = XtDisplay(widget);
     }
     if (widget == _FindFocusWidget(widget, 
 				   pathTrace,
