@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XRegstFlt.c,v 1.9 91/05/28 09:45:52 rws Exp $
+ * $XConsortium: XRegstFlt.c,v 1.9 91/05/28 09:49:40 rws Exp $
  */
 
  /*
@@ -45,14 +45,13 @@ _XFreeIMFilters(display)
 }
 
 /*
- * Register a filter with the filter machinery.
+ * Register a filter with the filter machinery by event mask.
  */
 void
-XRegisterFilter(display, window, event_mask, nonmaskable, filter, client_data)
+_XRegisterFilterByMask(display, window, event_mask, filter, client_data)
     Display *display;
     Window window;
     unsigned long event_mask;
-    Bool nonmaskable;
     Bool (*filter)(
 #if NeedNestedPrototypes
 		   Display*, Window, XEvent*, XPointer
@@ -67,7 +66,43 @@ XRegisterFilter(display, window, event_mask, nonmaskable, filter, client_data)
 	return;
     rec->window = window;
     rec->event_mask = event_mask;
-    rec->nonmaskable = nonmaskable;
+    rec->start_type = 0;
+    rec->end_type = 0;
+    rec->filter = filter;
+    rec->client_data = client_data;
+    LockDisplay(display);
+    rec->next = display->im_filters;
+    display->im_filters = rec;
+    display->free_funcs->im_filters = _XFreeIMFilters;
+    UnlockDisplay(display);
+}
+
+/*
+ * Register a filter with the filter machinery by type code.
+ */
+void
+_XRegisterFilterByType(display, window, start_type, end_type,
+		       filter, client_data)
+    Display *display;
+    Window window;
+    int start_type;
+    int end_type;
+    Bool (*filter)(
+#if NeedNestedPrototypes
+		   Display*, Window, XEvent*, XPointer
+#endif
+		   );
+    XPointer client_data;
+{
+    XFilterEventRec		*rec;
+
+    rec = (XFilterEventList)Xmalloc(sizeof(XFilterEventRec));
+    if (!rec)
+	return;
+    rec->window = window;
+    rec->event_mask = 0;
+    rec->start_type = start_type;
+    rec->end_type = end_type;
     rec->filter = filter;
     rec->client_data = client_data;
     LockDisplay(display);
@@ -78,7 +113,7 @@ XRegisterFilter(display, window, event_mask, nonmaskable, filter, client_data)
 }
 
 void
-XUnregisterFilter(display, window, filter, client_data)
+_XUnregisterFilter(display, window, filter, client_data)
     Display *display;
     Window window;
     Bool (*filter)(
