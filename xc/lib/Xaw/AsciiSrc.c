@@ -1,4 +1,4 @@
-/* $XConsortium: AsciiSrc.c,v 1.54 91/07/05 17:59:42 converse Exp $ */
+/* $XConsortium: AsciiSrc.c,v 1.55 91/07/25 18:09:27 rws Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -142,7 +142,7 @@ AsciiSrcClassRec asciiSrcClassRec = {
   },
 /* asciiSrc_class fields */
   {
-    /* Keep the compiler happy */       NULL
+    /* Keep the compiler happy */       '\0'
   }
 };
 
@@ -178,8 +178,10 @@ ClassInitialize()
 
 /* ARGSUSED */
 static void
-Initialize(request, new)
+Initialize(request, new, args, num_args)
 Widget request, new;
+ArgList args;
+Cardinal *num_args;
 {
   AsciiSrcObject src = (AsciiSrcObject) new;
   FILE * file;
@@ -1217,7 +1219,7 @@ Piece * piece;
 /* ARGSUSED */
 static void
 CvtStringToAsciiType(args, num_args, fromVal, toVal)
-XrmValuePtr *args;		/* unused */
+XrmValuePtr 	args;		/* unused */
 Cardinal	*num_args;	/* unused */
 XrmValuePtr	fromVal;
 XrmValuePtr	toVal;
