@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.51 89/04/12 18:59:58 jim Exp $
+ * $XConsortium: events.c,v 1.52 89/04/13 10:01:00 jim Exp $
  *
  * twm event handling
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.51 89/04/12 18:59:58 jim Exp $";
+"$XConsortium: events.c,v 1.52 89/04/13 10:01:00 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1184,7 +1184,10 @@ HandleButtonRelease()
 	ResizeWindow == NULL)
     {
 	XUngrabPointer(dpy, CurrentTime);
-	XUngrabServer(dpy);
+	if (!Scr->NoGrabServer)
+	{
+	    XUngrabServer(dpy);
+	}
 	EventHandler[EnterNotify] = HandleEnterNotify;
 	EventHandler[LeaveNotify] = HandleLeaveNotify;
 	ButtonPressed = -1;

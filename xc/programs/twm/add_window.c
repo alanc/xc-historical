@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.36 89/04/13 15:48:09 jim Exp $
+ * $XConsortium: add_window.c,v 1.37 89/04/27 19:38:37 keith Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.36 89/04/13 15:48:09 jim Exp $";
+"$XConsortium: add_window.c,v 1.37 89/04/27 19:38:37 keith Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -235,11 +235,12 @@ IconMgr *iconp;
 	     */
 	    while (TRUE)
 	    {
-		XUngrabServer(dpy);
-		XSync(dpy, 0);
-#ifndef NO_GRAB
-		XGrabServer(dpy);
-#endif
+		if (!Scr->NoGrabServer)
+		{
+		    XUngrabServer(dpy);
+		    XSync(dpy, 0);
+		    XGrabServer(dpy);
+		}
 		XQueryPointer(dpy, Scr->Root, &JunkRoot, &JunkChild,
 		    &JunkX, &JunkY, &AddingX, &AddingY, &JunkMask);
 
@@ -331,7 +332,10 @@ IconMgr *iconp;
 	    tmp_win->attr.height = AddingH - tmp_win->title_height -
 		2*(tmp_win->bw + tmp_win->frame_bw);
 
-	    XUngrabServer(dpy);
+	    if (!Scr->NoGrabServer)
+	    {
+		XUngrabServer(dpy);
+	    }
 	}
     }
     else if (HandlingEvents && dont_know && Scr->RandomPlacement)
@@ -387,9 +391,10 @@ IconMgr *iconp;
     tmp_win->icon = FALSE;
     tmp_win->icon_on = FALSE;
 
-#ifndef NO_GRAB
-    XGrabServer(dpy);
-#endif
+    if (!Scr->NoGrabServer)
+    {
+	XGrabServer(dpy);
+    }
 
     /*
      * Make sure the client window still exists.  We don't want to leave an
@@ -402,7 +407,10 @@ IconMgr *iconp;
 		     &JunkWidth, &JunkHeight, &JunkBW, &JunkDepth) == 0)
     {
 	free((char *)tmp_win);
-	XUngrabServer(dpy);
+	if (!Scr->NoGrabServer)
+	{
+	    XUngrabServer(dpy);
+	}
 	return(NULL);
     }
 
@@ -594,7 +602,10 @@ IconMgr *iconp;
     }
 
     SetHints(tmp_win);
-    XUngrabServer(dpy);
+    if (!Scr->NoGrabServer)
+    {
+	XUngrabServer(dpy);
+    }
 
     /* if we were in the middle of a menu activated function, regrab
      * the pointer 

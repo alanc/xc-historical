@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.31 89/04/18 13:31:33 jim Exp $
+ * $XConsortium: gram.y,v 1.32 89/04/18 13:34:25 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -35,7 +35,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.31 89/04/18 13:31:33 jim Exp $";
+"$XConsortium: gram.y,v 1.32 89/04/18 13:34:25 jim Exp $";
 
 #include <stdio.h>
 #include "twm.h"
@@ -87,12 +87,12 @@ extern int yylineno;
 %token <num> WARPCURSOR NUMBER BORDERWIDTH TITLE_FONT 
 %token <num> RESIZE_FONT NO_TITLE AUTO_RAISE FORCE_ICON NO_HILITE
 %token <num> MENU_FONT ICON_FONT UNKNOWN_ICON ICONS ICON_DIRECTORY
-%token <num> META SHIFT CONTROL WINDOW TITLE ICON ROOT FRAME
+%token <num> META SHIFT CONTROL WINDOW TITLE ICON ROOT FRAME 
 %token <num> COLON EQUALS BORDER_COLOR TITLE_FOREGROUND TITLE_BACKGROUND
 %token <num> DEFAULT_FOREGROUND DEFAULT_BACKGROUND 
 %token <num> MENU_FOREGROUND MENU_BACKGROUND MENU_SHADOW_COLOR
 %token <num> MENU_TITLE_FOREGROUND MENU_TITLE_BACKGROUND F_AUTORAISE
-%token <num> ICON_FOREGROUND ICON_BACKGROUND ICON_BORDER_COLOR
+%token <num> ICON_FOREGROUND ICON_BACKGROUND ICON_BORDER_COLOR NO_GRAB_SERVER
 %token <num> NO_RAISE_ON_MOVE NO_RAISE_ON_DEICONIFY NO_RAISE_ON_RESIZE
 %token <num> COLOR MONOCHROME NO_TITLE_FOCUS FUNCTION F_FUNCTION
 %token <num> BORDER_TILE_FOREGROUND BORDER_TILE_BACKGROUND F_IDENTIFY
@@ -159,6 +159,8 @@ stmt		: error
 						Scr->ShowVersion = FALSE; }
 		| SORT_ICONMGR		{ if (Scr->FirstTime) 
 						Scr->SortIconMgr = TRUE; }
+		| NO_GRAB_SERVER	{ if (Scr->FirstTime)
+						Scr->NoGrabServer = TRUE; }
 		| NO_MENU_SHADOWS	{ if (Scr->FirstTime) 
 						Scr->Shadow = FALSE; }
 		| NO_RAISE_ON_MOVE	{ if (Scr->FirstTime) 

@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.38 89/04/13 15:48:44 jim Exp $
+ * $XConsortium: twm.c,v 1.39 89/04/18 13:33:14 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.38 89/04/13 15:48:44 jim Exp $";
+"$XConsortium: twm.c,v 1.39 89/04/18 13:33:14 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -373,10 +373,11 @@ main(argc, argv, environ)
 
 	TitleBarX = Scr->TitleHeight + 8;
 
-#ifndef NO_GRAB
-	XGrabServer(dpy);
-	XSync(dpy, 0);
-#endif
+	if (!Scr->NoGrabServer)
+	{
+	    XGrabServer(dpy);
+	    XSync(dpy, 0);
+	}
 
 	JunkX = 0;
 	JunkY = 0;
@@ -452,7 +453,10 @@ main(argc, argv, environ)
 		0, 0, 100, Scr->SizeFont.height + 4, BW,
 		Scr->DefaultC.fore, Scr->DefaultC.back);
 
-	XUngrabServer(dpy);
+	if (!Scr->NoGrabServer)
+	{
+	    XUngrabServer(dpy);
+	}
 
 	FirstScreen = FALSE;
     	Scr->FirstTime = FALSE;
@@ -543,6 +547,7 @@ InitVariables()
     Scr->Focus = NULL;
     Scr->WarpCursor = FALSE;
     Scr->ForceIcon = FALSE;
+    Scr->NoGrabServer = FALSE;
     Scr->NoRaiseMove = FALSE;
     Scr->NoRaiseResize = FALSE;
     Scr->NoRaiseDeicon = FALSE;

@@ -1,6 +1,6 @@
 /***********************************************************************
  *
- * $XConsortium: screen.h,v 1.24 89/04/13 15:48:41 jim Exp $
+ * $XConsortium: screen.h,v 1.25 89/04/18 13:33:11 jim Exp $
  *
  * twm per-screen data include file
  *
@@ -126,6 +126,7 @@ typedef struct ScreenInfo
     short FocusRoot;		/* is the input focus on the root ? */
     short WarpCursor;		/* warp cursor on de-iconify ? */
     short ForceIcon;		/* force the icon to the user specified */
+    short NoGrabServer;		/* don't do server grabs */
     short NoRaiseMove;		/* don't raise window following move */
     short NoRaiseResize;	/* don't raise window following resize */
     short NoRaiseDeicon;	/* don't raise window on deiconify */

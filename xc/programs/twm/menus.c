@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.49 89/04/13 10:01:23 jim Exp $
+ * $XConsortium: menus.c,v 1.50 89/04/13 15:48:26 jim Exp $
  *
  * twm menu code
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.49 89/04/13 10:01:23 jim Exp $";
+"$XConsortium: menus.c,v 1.50 89/04/13 15:48:26 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1248,9 +1248,9 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 	}
 #endif
 
-#ifndef NO_GRAB
-	XGrabServer(dpy);
-#endif
+	if (!Scr->NoGrabServer) {
+	    XGrabServer(dpy);
+	}
 	XGrabPointer(dpy, event.xbutton.root, True,
 	    ButtonPressMask | ButtonReleaseMask,
 	    GrabModeAsync, GrabModeAsync,

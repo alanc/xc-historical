@@ -26,7 +26,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.16 89/04/13 16:36:15 jim Exp $
+ * $XConsortium: resize.c,v 1.17 89/04/22 12:14:37 rws Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.16 89/04/13 16:36:15 jim Exp $";
+"$XConsortium: resize.c,v 1.17 89/04/22 12:14:37 rws Exp $";
 #endif
 
 #include <stdio.h>
@@ -92,9 +92,10 @@ TwmWindow *tmp_win;
     int         junkbw, junkDepth;
 
     ResizeWindow = tmp_win->frame;
-#ifndef NO_GRAB
-    XGrabServer(dpy);
-#endif
+    if (!Scr->NoGrabServer)
+    {
+	XGrabServer(dpy);
+    }
     XGrabPointer(dpy, Scr->Root, True,
         ButtonPressMask | ButtonReleaseMask,
         GrabModeAsync, GrabModeAsync,
@@ -137,9 +138,10 @@ int x, y, w, h;
     Window      junkRoot;
     int         junkbw, junkDepth;
 
-#ifndef NO_GRAB
-    XGrabServer(dpy);
-#endif
+    if (!Scr->NoGrabServer)
+    {
+	XGrabServer(dpy);
+    }
     XGrabPointer(dpy, Scr->Root, True,
         ButtonReleaseMask,
         GrabModeAsync, GrabModeAsync,
@@ -839,7 +841,10 @@ int flag;
     SetupWindow(tmp_win, dragx , dragy , dragWidth, dragHeight);
     SetHints(tmp_win);
     XUngrabPointer(dpy, CurrentTime);
-    XUngrabServer(dpy);
+    if (!Scr->NoGrabServer)
+    {
+	XUngrabServer(dpy);
+    }
 }
 
 #ifdef SHAPE
