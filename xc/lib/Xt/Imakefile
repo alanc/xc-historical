@@ -5,37 +5,19 @@
        LINTLIBS = $(LINTXLIB)
 
 HEADERS = \
-	AsciiText.h \
 	Atoms.h \
-	Box.h \
 	Cardinal.h \
-	Clock.h \
-	Command.h \
 	Convert.h \
-	Dialog.h \
-	Form.h \
-	Grip.h \
 	Intrinsic.h \
-	Label.h \
-	Load.h \
 	Misc.h \
-	Scroll.h \
 	Shell.h \
-	Text.h \
 	TopLevel.h \
-	TM.h \
-	Viewport.h \
-	VPaned.h
+	TM.h
 
 SRCS = \
 	Alloc.c \
 	ArgList.c \
-	AsciiSink.c \
-	AsciiText.c \
-	Box.c \
 	Callback.c \
-	Clock.c \
-	Command.c \
 	Composite.c \
 	Constraint.c \
 	Convert.c \
@@ -44,43 +26,25 @@ SRCS = \
 	Create.c \
 	Cursors.c \
 	Destroy.c \
-	Dialog.c \
-	DiskSrc.c \
 	Error.c \
 	Event.c \
-	Form.c \
 	GCManager.c \
 	Geometry.c \
-	GrayPixmap.c \
-	Grip.c \
 	Initialize.c \
 	Intrinsic.c \
-	Label.c \
-	Load.c \
 	Manage.c \
 	NextEvent.c \
 	Popup.c \
 	Resources.c \
-	Scroll.c \
 	Shell.c \
-	Simple.c \
-	StringSrc.c \
-	Text.c \
 	TMparse.c \
 	TMstate.c \
-	Vendor.c \
-	Viewport.c \
-	VPaned.c
+	Vendor.c
 
 OBJS = \
 	Alloc.o \
 	ArgList.o \
-	AsciiSink.o \
-	AsciiText.o \
-	Box.o \
 	Callback.o \
-	Clock.o \
-	Command.o \
 	Composite.o \
 	Constraint.o \
 	Convert.o \
@@ -89,33 +53,20 @@ OBJS = \
 	Create.o \
 	Cursors.o \
 	Destroy.o \
-	Dialog.o \
-	DiskSrc.o \
 	Error.o \
 	Event.o \
-	Form.o \
 	GCManager.o \
 	Geometry.o \
-	GrayPixmap.o \
-	Grip.o \
 	Initialize.o \
 	Intrinsic.o \
-	Label.o \
-	Load.o \
 	Manage.o \
 	NextEvent.o \
 	Popup.o \
 	Resources.o \
-	Scroll.o \
 	Shell.o \
-	Simple.o \
-	StringSrc.o \
-	Text.o \
 	TMparse.o \
 	TMstate.o \
-	Vendor.o \
-	Viewport.o \
-	VPaned.o
+	Vendor.o
 
 #if DebugLibXt && ProfileLibXt
 DebuggedAndProfiledLibraryObjectRule()
