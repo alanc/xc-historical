@@ -17,9 +17,9 @@ int fgPixel, bgPixel;
 static Bool *doit;
 
 static XRectangle ws[] = {
-    {150, 150, 90, 90},
-    {300, 180, 90, 90},
-    {450, 210, 90, 90}
+    {300, 280, 90, 90},
+    {150, 250, 90, 90},
+    {450, 310, 90, 90}
   };
 #define MAXCLIP     (sizeof(ws) / sizeof(ws[0]))
 static Window clipWindows[MAXCLIP];
@@ -107,13 +107,17 @@ void GetTime (usec)
             (1000000 * (stop.tv_sec - start.tv_sec));
 }
 
-void ReportTimes(r, n, str)
-    int  r;
+void ReportTimes(usec, n, str)
+    int usec;
     int n;
     char *str;
 {
-    r /= n;
-    printf("%6d repetitions @ %2d.%03d millisec/%s\n", n, r/1000, r%1000, str);
+    int usecperobj, objpersec;
+
+    usecperobj = (usec * 10) / n;
+    objpersec = (int) ((double) n * 1000000.0 / (double) usec + 0.5);
+    printf("%6d reps @ %2d.%04d msec (%4d/sec): %s\n", 
+	n, usecperobj/10000, usecperobj%10000, objpersec, str);
 }
 
 /*					generic X stuff */
@@ -185,7 +189,8 @@ void usage()
 "where options include:",
 "    -display host:dpy		the X server to contact",
 "    -sync			do the tests in synchronous mode",
-"    -repeat <n>\t		do tests <n> times (default = 5)",
+"    -repeat <n>		do tests <n> times (default = 5)",
+"    -time <s>			do tests for <s> seconds each (default = 5)",
 "    -draw			draw after each test -- pmax only",
 "    -all			do all tests",
 "    -fg			the foreground color to use",
@@ -207,6 +212,25 @@ NULL};
     exit (1);
 }
 
+void EndSync(d, w)
+    Display *d;
+    Window  w;
+{
+    if (w == NULL) {
+	XSync (d, 0);
+    } else {
+	/*
+	 * Some graphics hardware allows the server to claim it is done,
+	 * while in reality the hardware is busily working away.  So fetch
+	 * a pixel from the window that was drawn to, which should be
+	 * enough to make the server wait for the graphics hardware.
+	 */
+	XImage *i;
+	i = XGetImage(d, w, 1, 1, 1, 1, ~0, ZPixmap);
+	XDestroyImage(i);
+    }
+}
+
 /* Main window created (if any) that the current benchmark draws to. */
 static Window perfWindow;
 
@@ -218,22 +242,10 @@ DoTest(d, test, label)
     int     r;
     int     ret_width, ret_height;
 
-    XSync (d, 0);
+    XSync (d, True);
     InitTimes ();
     (*test->proc) (d, &test->parms);
-    if (perfWindow == NULL) {
-	XSync (d, 0);
-    } else {
-	/*
-	 * Some graphics hardware allows the server to claim it is done,
-	 * while in reality the hardware is busily working away.  So fetch
-	 * a pixel from the window that was drawn to, which should be
-	 * enough to make the server wait for the graphics hardware.
-	 */
-	XImage *i;
-	i = XGetImage(d, perfWindow, 1, 1, 1, 1, ~0, ZPixmap);
-	XDestroyImage(i);
-    }
+    EndSync(d, perfWindow);
 
     GetTime (&r);
     ReportTimes (r, test->parms.reps * test->parms.objects, label);
@@ -262,6 +274,104 @@ Window CreatePerfWindow(d, x, y, width, height)
 
 
 
+void CreateClipWindows(display, clips)
+    Display *display;
+    int     clips;
+{
+    int j;
+
+    if (clips > MAXCLIP) clips = MAXCLIP;
+    for (j = 0; j < clips; j++) {
+	clipWindows[j] = CreatePerfWindow(display,
+	    ws[j].x, ws[j].y, ws[j].width, ws[j].height);
+    }
+} /* CreateClipWindows */
+
+void DestroyClipWindows(display, clips)
+    Display *display;
+    int     clips;
+{
+    int j;
+
+    if (clips > MAXCLIP) clips = MAXCLIP;
+    for (j = 0; j < clips; j++) {
+	XDestroyWindow(display, clipWindows[j]);
+    }
+} /* DestroyClipWindows */
+
+
+
+Bool CalibrateTest(d, test, seconds)
+    Display *d;
+    Test *test;
+    int seconds;
+{
+    int usecs;
+    int reps, exponent;
+
+    /* Attempt to get an idea how long each rep lasts by first getting enough
+       reps to last more than a second.  Then set p->reps to run long
+       enough to do enough reps to last as many seconds as the guy asked for.
+
+       If init call to test ever fails, return False and test will be skipped.
+    */
+
+    reps = 1;
+    for (;;) {
+	test->parms.reps = reps;
+	if (test->init != NULL) {
+	    if (! ((*test->init) (d, &test->parms))) {
+		return False;
+	    }
+	    /* Create clip windows if requested */
+	    if (perfWindow != NULL) {
+		CreateClipWindows(d, test->clips);
+	    }
+	}
+	XSync(d, 0);
+	InitTimes();
+	(*test->proc) (d, &test->parms);
+	EndSync(d, perfWindow);
+	GetTime(&usecs);
+	if (test->passCleanup != NULL)
+	    (*test->passCleanup) (d, &test->parms);
+	if (test->cleanup != NullProc)
+	    (*test->cleanup) (d, &test->parms);
+	if (perfWindow != NULL) {
+	    DestroyClipWindows(d, test->clips);
+	}
+	if (reps > test->parms.reps) {
+	    /* The test can't do as many reps as we asked for.  Give up */
+	    return True;
+	}
+	/* Did we go long enough? */
+	if (usecs >= 1000000) break;
+
+	/* Assume that it took 1/100 sec if we didn't get a clock tick. */
+	if (usecs == 0) usecs = 10000;
+
+	/* Try to get up to 1.5 seconds. */
+	reps = (int) (1500000.0 * (double)reps / (double)usecs) + 1;
+
+    }
+
+    reps = (int) ((double)seconds * 1000000.0 * (double)reps 
+		    / (double)usecs) + 1;
+
+    /* Now round reps up to 1 digit accuracy, so we don't get really weird
+       numbers coming out */
+    reps--;
+    exponent = 1;
+    while (reps > 9) {
+	reps /= 10;
+	exponent *= 10;
+    }
+    reps = (reps + 1) * exponent;
+    test->parms.reps = reps;
+    return True;
+} /* CalibrateTest */
+
+
 void CreatePerfStuff(d, count, width, height, w, bggc, fggc)
     Display *d;
     int width, height, count;
@@ -274,7 +384,7 @@ void CreatePerfStuff(d, count, width, height, w, bggc, fggc)
 
     xswa.override_redirect = True;
     for (i = 0; i < count; i++) {
-	w[i] = CreatePerfWindow(d, 50+i*width, 50+i*height, width, height);
+	w[i] = CreatePerfWindow(d, 2+i*width, 2+i*height, width, height);
     }
 
     if (count != 0) {
@@ -328,32 +438,31 @@ void CreatePerfStuff(d, count, width, height, w, bggc, fggc)
     }
 }
 
-void CreateClipWindows(display, clips)
-    Display *display;
-    int     clips;
+int AllocateColor(display, name, pixel)
+    Display     *display;
+    char	*name;
+    int		pixel;
 {
-    int j;
+    XColor      color;
+    Colormap    cmap;
 
-    if (clips > MAXCLIP) clips = MAXCLIP;
-    for (j = 0; j < clips; j++) {
-	clipWindows[j] = CreatePerfWindow(display,
-	    ws[j].x, ws[j].y, ws[j].width, ws[j].height);
+    if (name != NULL) {
+	cmap = XDefaultColormap(display, DefaultScreen(display));
+
+	/* Try to parse color name */
+	if (XParseColor(display, cmap, name, &color)) {
+	    if (XAllocColor(display, cmap, &color)) {
+		pixel = color.pixel;
+	    } else {
+		(void) fprintf(stderr,
+		    "Can't allocate colormap entry for color %s\n", name);
+	    }
+	} else {
+	    (void) fprintf(stderr, "Can't parse color name %s\n", name);
+	}
     }
-} /* CreateClipWindows */
-
-void DestroyClipWindows(display, clips)
-    Display *display;
-    int     clips;
-{
-    int j;
-
-    if (clips > MAXCLIP) clips = MAXCLIP;
-    for (j = 0; j < clips; j++) {
-	XDestroyWindow(display, clipWindows[j]);
-    }
-} /* DestroyClipWindows */
-
-
+    return pixel;
+} /* AllocateColor */
 
 Window root;
 main(argc, argv)
@@ -367,8 +476,13 @@ main(argc, argv)
     char   *displayName;
     Display * display;
     int     repeat = 5;
+    int     seconds = 5;
     Bool foundOne = False;
     Bool synchronous = False;
+
+    /* ScreenSaver state */
+    int ssTimeout, ssIntervalReturn, ssPreferBlanking, ssAllowExposures;
+
 
     ForEachTest(numTests);
     doit = (Bool *)calloc(numTests, sizeof(Bool));
@@ -388,7 +502,13 @@ main(argc, argv)
 	    if (argc <= i)
 		usage ();
 	    repeat = atoi (argv[++i]);
-	    if (repeat == 0)
+	    if (repeat <= 0)
+	       usage ();
+	} else if (strcmp (argv[i], "-time") == 0) {
+	    if (argc <= i)
+		usage ();
+	    seconds = atoi (argv[++i]);
+	    if (seconds <= 0)
 	       usage ();
 	} else if (strcmp(argv[i], "-fg") == 0) {
 	    if (argc <= i)
@@ -425,37 +545,20 @@ main(argc, argv)
 #endif
     PrintTime ();
 
+/* ||| Doesn't seem to work so well.
+    XGetScreenSaver(display, &ssTimeout, &ssIntervalReturn, &ssPreferBlanking,
+	&ssAllowExposures);
+    XForceScreenSaver(display, ScreenSaverReset);
+    XSetScreenSaver(display, 0, 0, DefaultBlanking, DefaultExposures);
+*/
     root = RootWindow (display, 0);
     if (drawToGPX) {
         tileToQuery = XCreatePixmap(display, root, 32, 32, 1);
     }
 
 
-    fgPixel = BlackPixel(display, 0);
-    bgPixel = WhitePixel(display, 0);
-    if (foreground != NULL) {
-	/* Try to allocate a foreground color as specified */
-	XColor def, cdef;
-
-	if (XAllocNamedColor(display,
-		XDefaultColormap(display, DefaultScreen(display)),
-		foreground, &def, &cdef)) {
-	    fgPixel = def.pixel;
-	} else {
-	    (void) fprintf(stderr, "Cannot allocate color %s\n", foreground);
-	}
-    }
-    if (background != NULL) {
-	/* Try to allocate a background color as specified */
-	XColor def, cdef;
-	if (XAllocNamedColor(display,
-		XDefaultColormap(display, DefaultScreen(display)),
-		background, &def, &cdef)) {
-	    bgPixel = def.pixel;
-	} else {
-	    (void) fprintf(stderr, "Cannot allocate color %s\n", background);
-	}
-    }
+    fgPixel = AllocateColor(display, foreground, BlackPixel(display, 0));
+    bgPixel = AllocateColor(display, background, WhitePixel(display, 0));
 
     if (synchronous)
 	XSynchronize (display, True);
@@ -471,18 +574,20 @@ main(argc, argv)
 			break;
 		    if (reps > 10)
 			test[i].parms.reps = reps/test[i].parms.objects;
-		    sprintf (label, "%s (%d children)",
+		    sprintf (label, "%s (%d kids)",
 			    test[i].label, test[i].parms.objects);
 		} else {
 		    strcpy (label, test[i].label);
 		}
 		perfWindow = NULL;
-		if (test[i].init == NULL ||
-			((*test[i].init) (display, &test[i].parms))) {
+		if (CalibrateTest(display, &test[i], seconds)) {
+		    if (test[i].init != NULL)
+			(void)(*test[i].init) (display, &test[i].parms);
 		    /* Create clip windows if requested */
 		    if (perfWindow != NULL) {
 			CreateClipWindows(display, test[i].clips);
 		    }
+
 		    for (j = 0; j < repeat; j++)
 			DoTest (display, &test[i], label);
 		    if (test[i].cleanup != NullProc)
@@ -492,6 +597,7 @@ main(argc, argv)
 		    }
 		} else {
 		    /* Test failed to initialize properly */
+		    printf("FAILED TEST: %s\n", test[i].label);
 		}
 		printf ("\n");
 		if (!test[i].children)
@@ -500,5 +606,9 @@ main(argc, argv)
 	    }
 	}
     }
+/*
+    XSetScreenSaver(display, ssTimeout, ssIntervalReturn, ssPreferBlanking,
+	ssAllowExposures);
+*/
 }
 
