@@ -1,5 +1,5 @@
 /*
- * $XConsortium: patcache.c,v 1.2 91/06/14 10:58:11 rws Exp $
+ * $XConsortium: patcache.c,v 1.3 92/03/23 16:46:12 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -62,8 +62,11 @@ MakeFontPatternCache ()
     cache = (FontPatternCachePtr) xalloc (sizeof *cache);
     if (!cache)
 	return 0;
-    for (i = 0; i < NENTRIES; i++)
+    for (i = 0; i < NENTRIES; i++) {
+	cache->entries[i].patlen = 0;
 	cache->entries[i].pattern = 0;
+	cache->entries[i].pFont = 0;
+    }
     EmptyFontPatternCache (cache);
     return cache;
 }
@@ -132,8 +135,9 @@ CacheFontPattern (cache, pattern, patlen, pFont)
     newpat = (char *) xalloc (patlen);
     if (!newpat)
 	return;
-    if (e = cache->free)
+    if (cache->free)
     {
+	e = cache->free;
 	cache->free = e->next;
     }
     else
@@ -155,8 +159,11 @@ CacheFontPattern (cache, pattern, patlen, pFont)
     /* link to new hash chain */
     e->hash = Hash (pattern, patlen);
     i = e->hash % NBUCKETS;
-    if (e->next = cache->buckets[i])
+    if (cache->buckets[i])
+    {
+	e->next = cache->buckets[i];
 	e->next->prev = &(e->next);
+    }
     cache->buckets[i] = e;
     e->prev = &(cache->buckets[i]);
     e->pFont = pFont;
@@ -177,7 +184,7 @@ FindCachedFontPattern (cache, pattern, patlen)
     i = hash % NBUCKETS;
     for (e = cache->buckets[i]; e; e = e->next)
     {
-	if (e->hash == hash && e->patlen == patlen &&
+	if (e->patlen == patlen && e->hash == hash &&
 	    !bcmp (e->pattern, pattern, patlen))
 	{
 	    return e->pFont;
