@@ -1,4 +1,4 @@
-/* $XConsortium: fonts.c,v 1.17 93/08/24 18:49:37 gildea Exp $ */
+/* $XConsortium: fonts.c,v 1.18 93/09/20 18:10:38 hersh Exp $ */
 /*
  * font control
  */
@@ -31,7 +31,7 @@
 #include	<X11/Xos.h>
 #include	"clientstr.h"
 #include	"resource.h"
-#include	"difsfontst.h"
+#include	"difsfnst.h"
 #include	"fontstruct.h"
 #include	"closestr.h"
 #include	"globals.h"

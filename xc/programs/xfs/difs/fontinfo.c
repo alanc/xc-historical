@@ -1,4 +1,4 @@
-/* $XConsortium: fontinfo.c,v 1.10 93/08/24 18:49:35 gildea Exp $ */
+/* $XConsortium: fontinfo.c,v 1.11 93/09/20 18:10:27 hersh Exp $ */
 /*
  * font data query
  */
@@ -30,7 +30,7 @@
 #include        <stdio.h>
 #include        <X11/Xos.h>
 #include        "clientstr.h"
-#include        "difsfontst.h"
+#include        "difsfnst.h"
 #include        "fontstruct.h"
 #include        "closestr.h"
 #include        "globals.h"

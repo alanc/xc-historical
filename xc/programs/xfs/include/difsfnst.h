@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: dffsfnst.h,v 1.3 91/05/13 16:48:35 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -20,15 +20,12 @@
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
- * %W%	%E%
- *
  */
 
 #ifndef _DIFSFONTST_H_
 #define _DIFSFONTST_H_
 
-#include	"difsfont.h"
+#include	"difsfn.h"
 #include	"font.h"
 #include	"misc.h"
 

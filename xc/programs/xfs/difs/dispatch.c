@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.18 93/08/24 18:49:34 gildea Exp $ */
+/* $XConsortium: dispatch.c,v 1.19 93/09/20 18:10:35 hersh Exp $ */
 /*
  * protocol dispatcher
  */
@@ -34,7 +34,7 @@
 #include	"extentst.h"
 #include	"globals.h"
 #include	"resource.h"
-#include	"difsfontst.h"
+#include	"difsfnst.h"
 #include	"fontstruct.h"
 #include	"site.h"
 #include	"events.h"
