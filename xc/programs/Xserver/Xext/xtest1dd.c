@@ -275,6 +275,7 @@ static void	parse_delay_fake();
 static void	send_ack();
 static void	start_play_clock();
 static void	compute_action_time();
+static int	find_residual_time();
 
 /*
  * This function is defined in the "events.c" file in the dix part of the
