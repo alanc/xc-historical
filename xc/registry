@@ -1,4 +1,4 @@
-/* $XConsortium: registry,v 1.99 94/06/03 19:03:26 rws Exp $ */
+/* $XConsortium: registry,v 1.100 94/07/07 09:32:59 rws Exp $ */
 
 				  X Registry
 
@@ -1400,7 +1400,7 @@ REFERENCES
 	2550 Garcia Avenue
 	Mountain View, CA  94043-1100
 
-[93]	Bob Schulman
+[93]	Russell Leefer
 	Jupiter Systems
 	Suite 200
 	1351 Harbor Bay Parkway
