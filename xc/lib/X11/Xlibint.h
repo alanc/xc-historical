@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.135 94/01/22 18:33:42 gildea Exp $ */
+/* $XConsortium: Xlibint.h,v 11.136 94/02/05 16:41:39 gildea Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -204,17 +204,6 @@ struct _XLockPtrs {
     /* used by all, including extensions; do not move */
     void (*lock_display)();
     void (*unlock_display)();
-    /* used only in XlibInt.c */
-    void (*pop_reader)();
-    struct _XCVList *(*push_reader)();
-    void (*condition_wait)();
-    void (*internal_lock_display)();
-    /* used in XlibInt.c and locking.c */
-    void (*condition_signal)();
-    /* used in XlibInt.c and XLockDis.c */
-    void (*lock_wait)();
-    void (*user_lock_display)();
-    void (*user_unlock_display)();
 };
 
 typedef struct _LockInfoRec *LockInfoPtr;
@@ -353,6 +342,7 @@ extern int errno;			/* Internal system error number. */
 #define XlibDisplayProcConni	(1L << 4) /* in _XProcessInternalConnection */
 #define XlibDisplayReadEvents	(1L << 5) /* in _XReadEvents */
 #define XlibDisplayReply	(1L << 5) /* in _XReply */
+#define XlibDisplayWriting	(1L << 6) /* in _XFlushInt, _XSend */
 
 /*
  * X Protocol packetizing macros.
