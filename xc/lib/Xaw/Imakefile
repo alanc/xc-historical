@@ -124,12 +124,10 @@ SRCS = \
 
 #if SharedDataSeparation
 UNSHAREDOBJS = AllWidgets.o sharedlib.o
-#else
-DATAOBJS = AllWidgets.o
 #endif
 
 OBJS = \
-	$(DATAOBJS) \
+	AllWidgets.o \
 	AsciiSink.o \
 	AsciiSrc.o \
 	AsciiText.o \
@@ -169,7 +167,6 @@ OBJS = \
 
 LibraryObjectRule()
 
-SpecialObjectRule(AllWidgets.o,,$(SHLIBDEF))
 #if DoSharedLib && SharedDataSeparation
 SpecialObjectRule(sharedlib.o,,$(SHLIBDEF))
 #endif
@@ -185,7 +182,7 @@ InstallSharedLibrary(Xaw,$(SOXAWREV),$(USRLIBDIR))
 InstallSharedLibraryData(Xaw,$(SOXAWREV),$(USRLIBDIR))
 #endif
 #if DoNormalLib
-NormalLibraryTarget(Xaw,$(OBJS) $(UNSHAREDOBJS))
+NormalLibraryTarget(Xaw,$(OBJS))
 InstallLibrary(Xaw,$(USRLIBDIR))
 #endif
 #if DoProfileLib
