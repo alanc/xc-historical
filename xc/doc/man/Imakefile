@@ -1,12 +1,16 @@
+#if InstallLibManPages
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
+#endif
 
-SUBDIRS = Xlib Xt
+SUBDIRS = Xlib Xt XI
 
 all::
 
+#ifdef IHaveSubdirs
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
+#endif
 
 InstallManPage(X,$(MANDIR))
 InstallManPageLong(Consortium,$(MANDIR),XConsortium)
