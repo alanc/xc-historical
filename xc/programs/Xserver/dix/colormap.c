@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: colormap.c,v 1.53 87/10/03 12:52:36 rws Locked $ */
+/* $Header: colormap.c,v 1.54 87/10/03 14:49:02 rws Locked $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -737,9 +737,8 @@ AllocColor (pmap, pred, pgreen, pblue, pPix, client)
 
     case GrayScale:
     case PseudoColor:
-        FindColor(pmap, pmap->red, entries, &rgb, pPix, PSEUDOMAP,
-          client, AllComp);
-	if(*pPix  == NoneFound)
+	if (FindColor(pmap, pmap->red, entries, &rgb, pPix, PSEUDOMAP,
+		      client, AllComp) == NoneFound)
 	{
 	    return (BadAlloc);
 	}
@@ -748,27 +747,24 @@ AllocColor (pmap, pred, pgreen, pblue, pPix, client)
     case DirectColor:
 	pixT = 0;
 	pixel = (*pPix & pVisual->redMask) >> pVisual->offsetRed; 
-	FindColor(pmap, pmap->red, entries, &rgb, &pixel, REDMAP,
-	  client, RedComp);
-	if(pixel == NoneFound)
+	if (FindColor(pmap, pmap->red, entries, &rgb, &pixel, REDMAP,
+		      client, RedComp) == NoneFound)
 	{
 	    return (BadAlloc);
 	}
 	else
 	    pixT |= pixel;
 	pixel = (*pPix & pVisual->greenMask) >> pVisual->offsetGreen; 
-	FindColor(pmap, pmap->green, entries, &rgb, &pixel, GREENMAP,
-	  client, GreenComp);
-	if(pixel == NoneFound)
+	if (FindColor(pmap, pmap->green, entries, &rgb, &pixel, GREENMAP,
+		      client, GreenComp) == NoneFound)
 	{
 	    return (BadAlloc);
 	}
 	else
 	    pixT |= pixel;
 	pixel = (*pPix & pVisual->blueMask) >> pVisual->offsetBlue; 
-	FindColor(pmap, pmap->blue, entries, &rgb, &pixel, BLUEMAP,
-	  client, BlueComp);
-	if(pixel == NoneFound)
+	if (FindColor(pmap, pmap->blue, entries, &rgb, &pixel, BLUEMAP,
+		      client, BlueComp) == NoneFound)
 	{
 	    return (BadAlloc);
 	}
@@ -862,7 +858,7 @@ FindColor (pmap, pentFirst, size, prgb, pPixel, channel, client, comp)
 
     free = NoneFound;
 
-    if((pixel = *pPixel) > size)
+    if((pixel = *pPixel) >= size)
 	pixel = 0;
     /* see if there is a match, and also look for a free entry */
     for (pent = pentFirst + pixel, count = 0; count < size; count++)
@@ -900,7 +896,8 @@ FindColor (pmap, pentFirst, size, prgb, pPixel, channel, client, comp)
 	    if(pmap->flags & BeingCreated)
 		break;
 	}
-	if(++pixel > size)
+	pixel++;
+	if(pixel >= size)
 	{
 	    pent = pentFirst;
 	    pixel = 0;
