@@ -1,4 +1,4 @@
-/* $XConsortium: CvtStdSel.c,v 1.10 89/10/08 14:57:27 rws Exp $
+/* $XConsortium: CvtStdSel.c,v 1.11 89/10/09 13:49:46 jim Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -29,7 +29,7 @@
 #include "Xmu.h"
 
 
-#ifdef SUNSHLIB
+#if defined(SUNSHLIB) && defined(SHAREDCODE)
 /*
  * hack to avoid undefined symbol errors at runtime
  */
