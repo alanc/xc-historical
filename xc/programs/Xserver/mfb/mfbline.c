@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbline.c,v 1.34 87/09/11 07:21:06 toddb Exp $ */
+/* $Header: mfbline.c,v 1.36 88/02/06 10:42:36 rws Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"
@@ -605,47 +605,8 @@ mfbDashLine( pDrawable, pGC, mode, npt, pptInit)
 	bgRop = ReduceRop(pGC->alu, pGC->bgPixel);
     }
 
-    while(nseg--)
+    for (; --nseg >= 0; pdash++)
     {
-	if (pGC->lineStyle == LineOnOffDash)
-	{
-	    while ((nseg) && (pdash->which == ODD_DASH))
-	    {
-		if (pdash->newLine)
-		{
-	            pt1Orig = pt1 = *pptInit++;
-	            pt2 = *pptInit;
-	            adx = pt2.x - pt1.x;
-	            ady = pt2.y - pt1.y;
-	            signdx = sign(adx);
-	            signdy = sign(ady);
-	            adx = abs(adx);
-	            ady = abs(ady);
-	            e = pdash->e;
-	            e1 = pdash->e1;
-	            e2 = pdash->e2;
-	            if (adx > ady)
-		        axis = X_AXIS;
-	            else
-		        axis = Y_AXIS;
-		}
-		nseg--;
-		pdash++;
-	    }
-	    /* ??? is this right ??? */
-	    if (!nseg)
-		break;
-	}
-	else if (pGC->lineStyle == LineDoubleDash)
-	{
-	    /* use a different color for odd dashes */
-	    if (pdash->which == EVEN_DASH)
-		rop = fgRop;
-	    else
-		rop = bgRop;
-
-	}
-
 	if (pdash->newLine)
 	{
 	    pt1Orig = pt1 = *pptInit++;
@@ -663,6 +624,19 @@ mfbDashLine( pDrawable, pGC, mode, npt, pptInit)
 		axis = X_AXIS;
 	    else
 		axis = Y_AXIS;
+	}
+	if (pGC->lineStyle == LineOnOffDash)
+	{
+	    if (pdash->which == ODD_DASH)
+		continue;
+	}
+	else if (pGC->lineStyle == LineDoubleDash)
+	{
+	    /* use a different color for odd dashes */
+	    if (pdash->which == EVEN_DASH)
+		rop = fgRop;
+	    else
+		rop = bgRop;
 	}
 
 	nbox = nboxInit;
@@ -739,8 +713,7 @@ mfbDashLine( pDrawable, pGC, mode, npt, pptInit)
 			pbox++;
 	    }
 	} /* while (nbox--) */
-	pdash++;
-    } /* while --nseg */
+    } /* for */
 
     Xfree(pdashInit);
 }
