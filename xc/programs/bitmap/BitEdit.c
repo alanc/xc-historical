@@ -1,5 +1,5 @@
 /*
- * $XConsortium: BitEdit.c,v 1.22 91/07/22 19:57:49 keith Exp $
+ * $XConsortium: BitEdit.c,v 1.23 91/10/21 14:31:34 eswu Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -200,7 +200,7 @@ static ButtonRec buttons[] = {
 
 #include "Dialog.h"
 
-Widget 
+static Widget 
     top_widget, 
     parent_widget,
     formy_widget,
@@ -214,12 +214,12 @@ Widget
     box_widget,
     normal_image_widget,
     inverted_image_widget;
-Boolean image_visible = False;
-Pixmap check_mark;
-Dialog input_dialog, error_dialog, qsave_dialog;
-Time btime;
-String filename = NULL, basename = NULL, format;
-char message[80];
+static Boolean image_visible = False;
+static Pixmap check_mark;
+static Dialog input_dialog, error_dialog, qsave_dialog;
+static Time btime;
+static String filename = NULL, basename = NULL, format;
+static char message[80];
 
 
 void FixMenu();
