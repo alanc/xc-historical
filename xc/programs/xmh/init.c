@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.55 91/04/09 08:48:20 rws Exp $
+ * $XConsortium: init.c,v 2.56 91/05/13 22:21:16 gildea Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -308,7 +308,8 @@ char **argv;
 
 	/* additional actions to implement support for WM_PROTOCOLS */
 
-	{"XmhCancelPick",		XmhCancelPick}
+	{"XmhCancelPick",		XmhCancelPick},
+	{"XmhWMDeletePopup", 		XmhWMDeletePopup}
     };
 
     static Arg shell_args[] = {
@@ -417,7 +418,7 @@ char **argv;
     XtRegisterGrabAction(XmhPopupFolderMenu, True, 
 			 ButtonPressMask | ButtonReleaseMask,
 			 GrabModeAsync, GrabModeAsync);
-
+    wm_protocols = XInternAtom(XtDisplay(toplevel), "WM_PROTOCOLS", False);
     wm_delete_window = XInternAtom(XtDisplay(toplevel), "WM_DELETE_WINDOW",
 				   False);
 
