@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Shell.c,v 1.21 88/02/23 09:02:41 swick Exp $";
+static char rcsid[] = "$Header: Shell.c,v 1.22 88/02/24 17:38:00 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -972,9 +972,10 @@ static void ChangeManaged(wid)
 		XtMoveWidget (childwid, (int)(-childwid->core.border_width),
 			(int)(-childwid->core.border_width));
 	    }
-	}
-    }
-
+	    XtSetKeyboardFocus(wid, childwid);
+	    break;		/* only one managed child allowed */
+	} /* managed */
+    } /* for */
 }
 
 /*
