@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: bsdi.cf,v 1.12 94/11/21 17:13:14 kaleb Exp kaleb $
+XCOMM platform:  $XConsortium: bsdi.cf,v 1.13 95/01/05 19:33:32 kaleb Exp kaleb $
 
 #define OSName            BSD/386 1.1
 #define OSVendor          BSDI
@@ -30,8 +30,9 @@ XCOMM operating system:  OSName
 # define GccGasOption /**/
 #endif
 
-#define ServerExtraDefines GccGasOption -DSTATIC_COLOR -DAVOID_GLYPHBLT
+#define ServerExtraDefines GccGasOption XFree86ServerDefines
 #define ServerOSDefines XFree86ServerOSDefines -DDDXTIME
+#define XFree86ConsoleDefines /**/
 #define AsmDefines -DUSE_GAS
 
 #define StandardDefines	-DCSRG_BASED

@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: linux.cf,v 1.5 94/11/21 17:13:14 kaleb Exp kaleb $
+XCOMM platform:  $XConsortium: linux.cf,v 1.6 95/01/05 19:39:53 kaleb Exp kaleb $
 
 #define OSName			Linux
 #define OSVendor		/**/
@@ -11,7 +11,6 @@ XCOMM platform:  $XConsortium: linux.cf,v 1.5 94/11/21 17:13:14 kaleb Exp kaleb 
 #endif
 #define HasGcc			YES
 #define HasGcc2			YES
-#define HasCplusplus		YES
 #define HasGcc2ForCplusplus	YES
 #define GccUsesGas		YES
 #define UseGas			YES
