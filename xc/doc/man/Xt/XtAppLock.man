@@ -115,7 +115,7 @@ Specifies the application context.
 .ZN XtAppLock 
 locks the application context including all its related displays and widgets.
 .LP
-.ZN XtAppLock 
+.ZN XtAppUnlock 
 unlocks the application context.
 .SH "SEE ALSO"
 .br
