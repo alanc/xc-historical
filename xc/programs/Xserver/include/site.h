@@ -31,7 +31,7 @@ SOFTWARE.
 
 #define COMPILEDDEFAULTFONTPATH	"/usr/lib/X11/fonts/"   /* trailing '/' !! */
 #define COMPILEDDEFAULTFONT	"fixed"
-#define COMPILEDCURSORFONT	"cursorfont"
+#define COMPILEDCURSORFONT	"cursor"
 #define RGB_DB			"/usr/lib/X11/rgb"
 #define RGB_DB_ALTERNATE	"/usr/lib/rgb"
 
