@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.7 92/03/12 13:29:04 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.8 92/03/12 13:54:40 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -29,6 +29,7 @@ Syntax of magic values in the input stream:
 ^T^Q			quit moving mouse
 ^T^S			Shift key for next character
 ^T^T			^T
+^T^W<number> <number>^T warp to position (<number> <number>)
 ^T^X<number>^T		move mouse <number> pixels horizontally
 ^T^Y<number>^T		move mouse <number> pixels vertically
 ^Texit^T		exit the program
@@ -329,6 +330,18 @@ do_y(delta)
 	move_pointer(0, delta);
 }
 
+do_warp(x, y)
+    int x, y;
+{
+    Window root, child;
+    int rx, ry, wx, wy;
+    unsigned int state;
+
+    XQueryPointer(dpy, DefaultRootWindow(dpy), &root, &child, &rx, &ry,
+		  &wx, &wy, &state);
+    XWarpPointer(dpy, None, root, 0, 0, 0, 0, x, y);
+}
+
 start_moving()
 {
     moving = 1;
@@ -494,7 +507,11 @@ main(argc, argv)
 		    dochar(keysym_char);
 		else if (buf[i] == '\002') /* control b */
 		    do_button(atoi(buf+i+1));
-		else if (buf[i] == '\030') /* control x */
+		else if (buf[i] == '\027') { /* control w */
+		    int x = strtol(buf+i+1, &endptr, 10);
+		    if (*endptr)
+			do_warp(x, atoi(endptr+1));
+		} else if (buf[i] == '\030') /* control x */
 		    do_x(atoi(buf+i+1));
 		else if (buf[i] == '\031') /* control y */
 		    do_y(atoi(buf+i+1));
