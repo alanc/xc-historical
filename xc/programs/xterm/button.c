@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: button.c,v 1.15 88/10/07 14:14:42 swick Exp $
+ *	$XConsortium: button.c,v 1.16 88/10/07 15:09:45 swick Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.15 88/10/07 14:14:42 swick Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.16 88/10/07 15:09:45 swick Exp $";
 #endif	/* lint */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -625,7 +625,7 @@ register int row;
 
 	for(i = screen->max_col,
 	 ch = screen->buf[2 * (row + screen->topline)] + i ;
-	 i > 0 && *ch == 0 ; ch--, i--);
+	 i > 0 && (*ch == ' ' || *ch == 0); ch--, i--);
 	return(i);
 }	
 
@@ -1101,7 +1101,7 @@ register TScreen *screen;
 	register char *ch;
 
 	ch = screen->buf[2 * (row + screen->topline)];
-	while (ecol >= scol && ch[ecol] == 0)
+	while (ecol >= scol && (ch[ecol] == ' ' || ch[ecol] == 0))
 	    ecol--;
 	return (ecol - scol + 1);
 }
