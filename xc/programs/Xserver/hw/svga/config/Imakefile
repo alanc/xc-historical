@@ -1,0 +1,13 @@
+/* $XConsortium$ */
+
+#ifndef SvgaDir
+#define SvgaDir $(LIBDIR)/svga
+#endif
+
+VGADIR = SvgaDir
+
+all::
+
+InstallNonExecFile(vga.pmi,$(VGADIR))
+
+depend::
