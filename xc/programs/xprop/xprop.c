@@ -1,4 +1,4 @@
-/* $XConsortium: xprop.c,v 1.34 91/01/22 18:23:35 gildea Exp $*/
+/* $XConsortium: xprop.c,v 1.35 91/04/02 19:32:12 gildea Exp $*/
 /*
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -822,7 +822,8 @@ long Mask_Word(thunks, format)
 int Is_A_DFormat(string)
      char *string;
 {
-  return( string[0] && string[0]!='-' && !isalpha(string[0]) );
+  return( string[0] && string[0] != '-' &&
+	 !(isalpha(string[0]) || string[0] == '_') );
 }
 
 char *Handle_Backslash(dformat)
