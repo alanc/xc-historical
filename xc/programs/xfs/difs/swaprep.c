@@ -1,4 +1,4 @@
-/* $XConsortium: swaprep.c,v 1.4 91/07/25 12:25:19 keith Exp $ */
+/* $XConsortium: swaprep.c,v 1.5 91/07/27 02:30:02 keith Exp $ */
 /*
  * font server reply swapping
  */
@@ -376,7 +376,7 @@ WriteSConnectionInfo(client, size, pInfo)
 
     pInfoT = pInfoTBase = (char *) ALLOCATE_LOCAL(size);
     if (!pInfoT) {
-	client->noClientException = -1;
+	client->noClientException = -2;
 	return;
     }
     SwapConnSetupAccept(pConnSetup, (fsConnSetupAccept *) pInfoT);
