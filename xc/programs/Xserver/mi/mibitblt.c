@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mibitblt.c,v 1.65 88/09/04 17:11:11 rws Exp $ */
+/* $XConsortium: mibitblt.c,v 1.66 88/09/06 14:48:57 jim Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -773,7 +773,7 @@ miPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
 	prgnSrc = (*pGC->pScreen->RegionCreate)(&box, 1);
 
         miOpqStipDrawable(pDraw, pGC, prgnSrc, (unsigned long *) pImage,
-			  leftPad, (w - leftPad), h, x, y);
+			  leftPad, w, h, x, y);
 	(*pGC->pScreen->RegionDestroy)(prgnSrc);
 	break;
 
