@@ -1,4 +1,4 @@
-/* $XConsortium: scrnintstr.h,v 5.4 89/07/17 17:22:08 rws Exp $ */
+/* $XConsortium: scrnintstr.h,v 5.5 89/07/18 08:58:54 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -83,8 +83,10 @@ typedef struct _Screen {
     pointer		devPrivate;
     short       	numVisuals;
     VisualPtr		visuals;
+    int			WindowPrivateLen;
     unsigned		*WindowPrivateSizes;
     unsigned		totalWindowSize;
+    int			GCPrivateLen;
     unsigned		*GCPrivateSizes;
     unsigned		totalGCSize;
 
@@ -208,6 +210,6 @@ typedef struct _ScreenInfo {
 extern ScreenInfo screenInfo;
 
 extern int AllocateWindowPrivateIndex(), AllocateGCPrivateIndex();
-extern void AllocateWindowPrivate(), AllocateGCPrivate();
+extern Bool AllocateWindowPrivate(), AllocateGCPrivate();
 
 #endif /* SCREENINTSTRUCT_H */
