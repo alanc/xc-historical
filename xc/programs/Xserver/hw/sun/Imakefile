@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 5.11 91/07/23 16:20:13 keith Exp $
+XCOMM $XConsortium: Imakefile,v 5.12 91/07/26 20:56:18 keith Exp $
 #include <Server.tmpl>
 
 #ifdef SparcArchitecture
@@ -54,6 +54,7 @@ InstallProgram(constype,$(BINDIR))
 InstallManPage(kbd_mode,$(MANDIR))
 InstallManPage(constype,$(MANDIR))
 InstallManPage(Xsun,$(MANDIR))
+InstallManPageAliases(Xsun,$(MANDIR),XsunMono)
 
 saber_src:
 	#load $(CFLAGS) $(SRCS1)
