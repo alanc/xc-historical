@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.56 88/07/20 18:11:29 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.57 88/07/21 12:06:46 xguest Locked $";
 #endif	/* lint */
 
 /*
@@ -397,6 +397,30 @@ char **argv;
 	** of the various terminal structures (which may change from
 	** implementation to implementation.
 	*/
+#ifdef macII
+	d_tio.c_iflag = ICRNL|IXON;
+	d_tio.c_oflag = OPOST|ONLCR|TAB3;
+    	d_tio.c_cflag = B9600|CS8|CREAD|PARENB|HUPCL;
+    	d_tio.c_lflag = ISIG|ICANON|ECHO|ECHOE|ECHOK;
+
+	d_tio.c_line = 0;
+
+	d_tio.c_cc[VINTR] = CINTR;
+	d_tio.c_cc[VQUIT] = CQUIT;
+	d_tio.c_cc[VERASE] = CERASE;
+	d_tio.c_cc[VKILL] = CKILL;
+    	d_tio.c_cc[VEOF] = CEOF;
+	d_tio.c_cc[VEOL] = CNUL;
+	d_tio.c_cc[VEOL2] = CNUL;
+	d_tio.c_cc[VSWTCH] = CNUL;
+
+        d_ltc.t_suspc = CSUSP;		/* t_suspc */
+        d_ltc.t_dsuspc = CDSUSP;	/* t_dsuspc */
+        d_ltc.t_rprntc = 0;		/* reserved...*/
+        d_ltc.t_flushc = 0;
+        d_ltc.t_werasc = 0;
+        d_ltc.t_lnextc = 0;
+#else  /* macII */
 	d_tio.c_iflag = ICRNL|IXON;
 	d_tio.c_oflag = OPOST|ONLCR|TAB3;
 #ifdef BAUD_0
@@ -446,6 +470,7 @@ char **argv;
 #ifdef TIOCLSET
 	d_lmode = 0;
 #endif	/* TIOCLSET */
+#endif  /* macII */
 #endif	/* USE_SYSV_TERMIO */
 
 	/* This is ugly.  When running under init, we need to make sure
