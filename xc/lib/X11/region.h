@@ -1,4 +1,4 @@
-/* $XConsortium: region.h,v 11.10 88/09/06 16:08:15 jim Exp $ */
+/* $XConsortium: region.h,v 11.11 89/11/14 18:12:08 rws Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -23,7 +23,8 @@ SOFTWARE.
 
 ************************************************************************/
 
-#include "Xlibint.h"
+#ifndef _XREGION_H
+#define _XREGION_H
 
 typedef struct {
     short x1, x2, y1, y2;
@@ -162,3 +163,5 @@ typedef struct _POINTBLOCK {
     XPoint pts[NUMPTSTOBUFFER];
     struct _POINTBLOCK *next;
 } POINTBLOCK;
+
+#endif
