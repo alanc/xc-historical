@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $Header: swaprep.c,v 1.5 87/08/13 15:46:17 newman Locked $ */
+/* $Header: swaprep.c,v 1.23 87/08/14 22:34:48 toddb Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -384,10 +384,7 @@ SListFontsWithInfoReply(pClient, size, pRep)
 {
     int n;
 
-    /* XXXXXXXXXXXXX When Sue has implemented the unswapped version, . . .  */
-    swaps(&pRep->sequenceNumber, n);
-    swapl(&pRep->length, n);
-    swaps(&pRep->nFonts, n);
+    SwapFont((xQueryFontReply *)pRep);
     WriteToClient(pClient, size, (char *) pRep);
 }
 
