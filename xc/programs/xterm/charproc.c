@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.118 89/12/09 17:24:17 jim Exp $
+ * $XConsortium: charproc.c,v 1.119 89/12/10 20:45:03 jim Exp $
  */
 
 
@@ -149,7 +149,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.118 89/12/09 17:24:17 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.119 89/12/10 20:45:03 jim Exp $";
 #endif	/* lint */
 
 static int nparam;
@@ -1125,6 +1125,13 @@ in_put()
 
 	select_mask = pty_mask;	/* force initial read */
 	for( ; ; ) {
+#ifdef        CRAY
+		trackTimeOut.tv_sec = 0;
+		trackTimeOut.tv_usec = 1;
+		(void) select(max_plus1, &select_mask, (int *) NULL,
+		    (int *)NULL, &trackTimeOut);
+#endif        /* CRAY */
+
 		if((select_mask & pty_mask) && (eventMode == NORMAL)) {
 			if(screen->logging)
 				FlushLog(screen);

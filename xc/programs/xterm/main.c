@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.141 89/12/13 16:26:26 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.142 89/12/14 17:37:09 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -937,7 +937,6 @@ int *pty;
 		(void) devindex++;
 		return(0);
 	    }
-	    devindex++;
 	}
 #else /* !CRAY */
 	while (PTYCHAR1[letter]) {

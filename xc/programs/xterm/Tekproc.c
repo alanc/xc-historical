@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.72 89/12/10 20:44:32 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.73 89/12/13 16:36:17 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -110,7 +110,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.72 89/12/10 20:44:32 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.73 89/12/13 16:36:17 jim Exp $";
 #endif	/* lint */
 
 extern Widget toplevel;
@@ -655,6 +655,13 @@ again:
 			TekFlush();
 		Tselect_mask = pty_mask;	/* force a read */
 		for( ; ; ) {
+#ifdef CRAY
+			struct timeval crocktimeout;
+			crocktimeout.tv_sec = 0;
+			crocktimeout.tv_usec = 1;
+			(void) select (max_plus1, &Tselect_mask, (int *) NULL,
+				       (int *) NULL, &crocktimeout);
+#endif
 			if(Tselect_mask & pty_mask) {
 				if(screen->logging)
 					FlushLog(screen);
