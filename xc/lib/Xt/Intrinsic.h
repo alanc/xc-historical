@@ -1,5 +1,5 @@
 /*
-* $Header: Intrinsic.h,v 1.70 88/02/05 15:52:48 swick Locked $
+* $Header: Intrinsic.h,v 1.71 88/02/05 20:46:45 swick Locked $
 */
 
 /*
@@ -635,6 +635,9 @@ extern Boolean XtIsManaged();
 
 extern Boolean XtIsRealized();
     /*	Widget widget;		*/
+
+extern Widget XtParent();
+    /*  Widget widget;		*/
 
 #endif _XtIntrinsicP_h
 

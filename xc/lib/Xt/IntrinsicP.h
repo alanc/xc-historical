@@ -1,5 +1,5 @@
 /*
-* $Header: IntrinsicP.h,v 6.20 88/02/05 15:52:19 swick Locked $
+* $Header: IntrinsicP.h,v 6.21 88/02/05 20:47:13 swick Locked $
 */
 
 /*
@@ -99,6 +99,7 @@ typedef XtGeometryResult (*XtGeometryHandler)();
 #define XtScreen(widget)	((widget)->core.screen)
 #define XtWindow(widget)	((widget)->core.window)
 #define XtClass(widget)		((widget)->core.widget_class)
+#define XtParent(widget)	((widget)->core.parent)
 #define XtSuperclass(widget)	(XtClass(widget)->core_class.superclass)
 #define XtIsManaged(widget)     ((widget)->core.managed)
 #define XtIsRealized(widget)	((widget)->core.window != NULL)

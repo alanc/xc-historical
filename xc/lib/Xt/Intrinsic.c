@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Intrinsic.c,v 6.16 88/01/29 12:03:57 asente Exp $";
+static char rcsid[] = "$Header: Intrinsic.c,v 1.111 88/02/02 19:18:50 swick Locked $";
 #endif lint
 
 /*
@@ -335,3 +335,11 @@ Boolean XtIsRealized (widget)
 {
     return (widget->core.window != NULL);
 } /* XtIsRealized */
+
+#undef XtParent
+
+Widget XtParent(widget)
+    Widget widget;
+{
+    return (widget->core.parent);
+}
