@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.89 91/02/12 21:43:10 keith Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.90 91/02/13 10:32:49 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate .cf
 XCOMM configuration files.  Site-wide parameters may be set in the file
@@ -32,12 +32,12 @@ XCOMM
  * 
  *     1.  Identify a machine-specific cpp symbol.  If your preprocessor 
  *         does not have any built in, you will need to add the symbol to the
- *         cpp_argv table in util/imake/imake.c and rebuild imake with the
+ *         cpp_argv table in config/imakemdep.h and rebuild imake with the
  *         BOOTSTRAPCFLAGS variable set (see the macII for an example).
  *
  *     2.  Add all machine-specific cpp symbols (either defined by you or by
  *         the preprocessor or compiler) to the predefs table in 
- *         util/makedepend/main.c.
+ *         config/imakemdep.h.
  *
  *     3.  But a new #ifdef block below that defines MacroIncludeFile and
  *         MacroFile for your new platform and then #undefs the machine-
