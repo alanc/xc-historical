@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.39 92/01/22 17:34:28 gildea Exp $
+ * $XConsortium: process.c,v 1.40 92/01/22 18:19:51 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -735,7 +735,7 @@ static int write_auth_file (tmpnam)
     char *tmpnam;
 {
     FILE *fp;
-    AuthList *list, *magic_cookie;
+    AuthList *list;
 
     /*
      * xdm and auth spec assumes auth file is 12 or fewer characters
@@ -754,19 +754,19 @@ static int write_auth_file (tmpnam)
      * Write MIT-MAGIC-COOKIE-1 first, because R4 Xlib knows
      * only that and uses the first authorization it finds.
      */
-    magic_cookie = (AuthList *)NULL;
     for (list = xauth_head; list; list = list->next) {
 	if (list->auth->name_length == 18
 	    && strncmp(list->auth->name, "MIT-MAGIC-COOKIE-1", 18) == 0)
 	{
-	    magic_cookie = list;
 	    XauWriteAuth (fp, list->auth);
-	    break;
 	}
     }
     for (list = xauth_head; list; list = list->next) {
-	if (list != magic_cookie)
+	if (list->auth->name_length != 18
+	    || strncmp(list->auth->name, "MIT-MAGIC-COOKIE-1", 18) != 0)
+	{
 	    XauWriteAuth (fp, list->auth);
+	}
     }
 
     (void) fclose (fp);
