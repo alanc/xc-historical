@@ -1,4 +1,4 @@
-/* $XConsortium: saveutil.c,v 1.22 94/11/14 15:33:19 mor Exp mor $ */
+/* $XConsortium: saveutil.c,v 1.23 94/11/30 18:14:03 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -397,8 +397,8 @@ char *sm_id;
 
 
 
-void
-ExecuteOldDiscardCommands(session_name)
+Status
+DeleteSession (session_name)
 
 char *session_name;
 
@@ -424,7 +424,7 @@ char *session_name;
 
     f = fopen(filename, "r");
     if(!f) {
-	return;
+	return (0);
     }
 
     buf = NULL;
@@ -438,7 +438,7 @@ char *session_name;
     {
 	if (verbose)
 	    printf("Can't delete session save file - incompatible version.\n");
-	return;
+	return (0);
     }
 
     /* Skip SM's id */
@@ -498,6 +498,8 @@ char *session_name;
     }
 
     fclose(f);
+
+    return ((remove (filename) == -1) ? 0 : 1);
 }
 
 
