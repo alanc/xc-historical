@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miinitext.c,v 1.2 88/09/06 14:50:36 jim Exp $ */
+/* $XConsortium: miinitext.c,v 1.3 88/09/29 18:20:24 rws Exp $ */
 
 void
 InitExtensions()
@@ -38,4 +38,7 @@ InitExtensions()
 #ifdef OTHEREXTENSION
     OtherExtensionInit();
 #endif OTHEREXTENSION
+#ifdef SHAPE
+    ShapeExtensionInit ();
+#endif
 }

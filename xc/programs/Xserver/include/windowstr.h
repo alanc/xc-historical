@@ -1,4 +1,4 @@
-/* $XConsortium: windowstr.h,v 1.8 88/08/13 15:38:28 rws Exp $ */
+/* $XConsortium: windowstr.h,v 1.9 88/09/06 15:48:55 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -98,7 +98,12 @@ typedef struct _Window {
 
 	PropertyPtr userProps;            /* client's property list */
 
+#ifdef SHAPE
+	RegionPtr windowShape;		/* window relative shape */
+	RegionPtr borderShape;		/* window relative border shape */
+#else
 	XID nolongerused; /* XXX still here for ddx binary compatibility */
+#endif
 	PixmapPtr backgroundTile;
 	unsigned long backgroundPixel;
 	PixmapPtr borderTile;

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 1.221 88/11/11 09:52:30 rws Exp $ */
+/* $XConsortium: window.c,v 1.222 88/12/31 15:22:06 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -82,6 +82,7 @@ extern void WindowHasNewCursor();
 extern void RecalculateDeliverableEvents();
 extern long random();
 static Bool MarkSiblingsBelowMe();
+static void SetWinSize(), SetBorderSize();
 
 #define INPUTONLY_LEGAL_MASK (CWWinGravity | CWEventMask | \
 			      CWDontPropagate | CWOverrideRedirect | CWCursor )
@@ -575,7 +576,10 @@ SetWindowToDefaults(pWin, pScreen)
 
     pWin->exposed = (* pScreen->RegionCreate)(NULL, 1);
     pWin->borderExposed = (* pScreen->RegionCreate)(NULL, 1);
-
+#ifdef SHAPE
+    pWin->windowShape = (RegionPtr) NULL;
+    pWin->borderShape = (RegionPtr) NULL;
+#endif
 }
 
 static void
@@ -944,15 +948,7 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
     pWin->clipList = (* pScreen->RegionCreate)(NULL, 1);
     pWin->borderClip = (* pScreen->RegionCreate)(NULL, 1);
     pWin->winSize = (* pScreen->RegionCreate)(NULL, 1);
-    ClippedRegionFromBox(pParent, pWin->winSize,
-			 pWin->absCorner.x, pWin->absCorner.y, (int)w, (int)h);
     pWin->borderSize = (* pScreen->RegionCreate)(NULL, 1);
-    if (bw)
-	ClippedRegionFromBox(pParent, pWin->borderSize,
-		pWin->absCorner.x - (int)bw, pWin->absCorner.y - (int)bw,
-		(int)(w + (bw<<1)), (int)(h + (bw<<1)));
-    else
-	(* pScreen->RegionCopy)(pWin->borderSize, pWin->winSize);
 
     pWin->parent = pParent;    
     pHead = RealChildHead(pParent);
@@ -975,6 +971,9 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
             pParent->lastChild = pWin;
 	pParent->firstChild = pWin;
     }
+
+    SetWinSize (pWin);
+    SetBorderSize (pWin);
 
     /* We SHOULD check for an error value here XXX */
     (*pScreen->CreateWindow)(pWin);
@@ -1619,6 +1618,56 @@ MoveWindowInStack(pWin, pNextSib)
 }
 
 static void
+SetWinSize (pWin)
+WindowPtr   pWin;
+{
+    ClippedRegionFromBox(pWin->parent, pWin->winSize,
+			 pWin->absCorner.x, pWin->absCorner.y,
+ 			 (int)pWin->clientWinSize.width,
+ 			 (int)pWin->clientWinSize.height);
+#ifdef SHAPE
+    if (pWin->windowShape) {
+        ScreenPtr	pScreen = pWin->drawable.pScreen;
+
+	(*pScreen->TranslateRegion)
+	    (pWin->winSize, - pWin->absCorner.x, - pWin->absCorner.y);
+	(*pScreen->Intersect)
+	    (pWin->winSize, pWin->winSize, pWin->windowShape);
+	(*pScreen->TranslateRegion)
+	    (pWin->winSize, pWin->absCorner.x, pWin->absCorner.y);
+    }
+#endif
+}
+
+static void
+SetBorderSize (pWin)
+WindowPtr   pWin;
+{
+    int	bw = pWin->borderWidth;
+
+    if (bw) {
+	ClippedRegionFromBox(pWin->parent, pWin->borderSize,
+		pWin->absCorner.x - (int)bw, pWin->absCorner.y - (int)bw,
+		(int)(pWin->clientWinSize.width + (bw<<1)),
+ 		(int)(pWin->clientWinSize.height + (bw<<1)));
+#ifdef SHAPE
+    	if (pWin->borderShape) {
+            ScreenPtr	pScreen = pWin->drawable.pScreen;
+    
+	    (*pScreen->TranslateRegion)
+	    	(pWin->borderSize, - pWin->absCorner.x, - pWin->absCorner.y);
+	    (*pScreen->Intersect)
+	    	(pWin->borderSize, pWin->borderSize, pWin->borderShape);
+	    (*pScreen->TranslateRegion)
+	    	(pWin->borderSize, pWin->absCorner.x, pWin->absCorner.y);
+    	}
+#endif
+    } else {
+	(* pWin->drawable.pScreen->RegionCopy)(pWin->borderSize, pWin->winSize);
+    }
+}
+
+static void
 MoveWindow(pWin, x, y, pNextSib)
     WindowPtr pWin;
     short x,y;
@@ -1658,18 +1707,8 @@ MoveWindow(pWin, x, y, pNextSib)
     pWin->absCorner.x = pParent->absCorner.x + x + (int)bw;
     pWin->absCorner.y = pParent->absCorner.y + y + (int)bw;
 
-    ClippedRegionFromBox(pParent, pWin->winSize,
-			 pWin->absCorner.x, pWin->absCorner.y,
-			 (int)pWin->clientWinSize.width,
-			 (int)pWin->clientWinSize.height);
-
-    if (bw)
-	ClippedRegionFromBox(pParent, pWin->borderSize,
-			     pWin->absCorner.x - bw, pWin->absCorner.y - bw,
-			     (int)pWin->clientWinSize.width + (bw<<1),
-			     (int)pWin->clientWinSize.height + (bw<<1));
-    else
-        (* pScreen->RegionCopy)(pWin->borderSize, pWin->winSize);
+    SetWinSize (pWin);
+    SetBorderSize (pWin);
 
     (* pScreen->PositionWindow)(pWin,pWin->absCorner.x, pWin->absCorner.y);
 
@@ -1812,19 +1851,9 @@ ResizeChildrenWinSize(pWin, dx, dy, dw, dh)
 	pSib->absCorner.x = x + cwsx;
 	pSib->absCorner.y = y + cwsy;
 
-	ClippedRegionFromBox(pWin, pSib->winSize,
-			     pSib->absCorner.x, pSib->absCorner.y,
-			     (int)pSib->clientWinSize.width,
-			     (int)pSib->clientWinSize.height);
+	SetWinSize (pSib);
+	SetBorderSize (pSib);
 
-	if (pSib->borderWidth)
-	    ClippedRegionFromBox(pWin, pSib->borderSize,
-		pSib->absCorner.x - pSib->borderWidth,
-		pSib->absCorner.y - pSib->borderWidth,
-		(int)pSib->clientWinSize.width + (pSib->borderWidth<<1),
-		(int)pSib->clientWinSize.height + (pSib->borderWidth<<1));
-	else
-	    (* pScreen->RegionCopy)(pSib->borderSize, pSib->winSize);
 	(* pScreen->PositionWindow)(pSib, pSib->absCorner.x, pSib->absCorner.y);
 	pSib->marked = 1;
 	if (pSib->firstChild) 
@@ -1965,14 +1994,8 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
     x = pWin->absCorner.x = pParent->absCorner.x + x + bw;
     y = pWin->absCorner.y = pParent->absCorner.y + y + bw;
 
-    ClippedRegionFromBox(pParent, pWin->winSize,
-			 x, y, (int)w, (int)h);
-
-    if (pWin->borderWidth)
-	ClippedRegionFromBox(pParent, pWin->borderSize,
-			     x - bw, y - bw, (int)w + (bw<<1), (int)h + (bw<<1));
-    else
-        (* pScreen->RegionCopy)(pWin->borderSize, pWin->winSize);
+    SetWinSize (pWin);
+    SetBorderSize (pWin);
 
     dw = (int)w - (int)width;
     dh = (int)h - (int)height;
@@ -2737,6 +2760,36 @@ ActuallyDoSomething:
 #undef REBORDER_WIN
 }
 
+#ifdef SHAPE
+/******
+ *
+ * SetShape
+ *    The border/window shape has changed.  Recompute winSize/borderSize
+ *    and send appropriate exposure events
+ */
+
+SetShape(pWin)
+    WindowPtr	pWin;
+{
+    int	x, y, bw;
+
+    bw = pWin->borderWidth;
+    if (pWin->parent)
+    {
+        x = pWin->absCorner.x - pWin->parent->absCorner.x - (int)bw;
+        y = pWin->absCorner.y - pWin->parent->absCorner.y - (int)bw;
+    }
+    else
+    {
+        x = pWin->absCorner.x;
+        y = pWin->absCorner.y;
+    }
+    /*
+     * use MoveWindow to avoid the dirty work.  A cheap hack...
+     */
+    MoveWindow(pWin, x, y, pWin->nextSib);
+}
+#endif
 
 /******
  *
@@ -2897,19 +2950,8 @@ ReparentWindow(pWin, pParent, x, y, client)
     pWin->absCorner.y = y + bw + pParent->absCorner.y;
 
     /* clip to parent */
-    ClippedRegionFromBox(pParent, pWin->winSize,
-			 pWin->absCorner.x, pWin->absCorner.y,
-			 (int)pWin->clientWinSize.width,
-			 (int)pWin->clientWinSize.height);
-
-    if (bw)
-	ClippedRegionFromBox(pParent, pWin->borderSize,
-			     pWin->absCorner.x - bw,
-			     pWin->absCorner.y - bw,
-			     (int)pWin->clientWinSize.width + (bw<<1),
-			     (int)pWin->clientWinSize.height + (bw<<1));
-    else
-        (* pScreen->RegionCopy)(pWin->borderSize, pWin->winSize);
+    SetWinSize (pWin);
+    SetBorderSize (pWin);
 
     (* pScreen->PositionWindow)(pWin, pWin->absCorner.x, pWin->absCorner.y);
     ResizeChildrenWinSize(pWin, 0, 0, 0, 0);

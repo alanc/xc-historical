@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 1.167 88/12/31 15:21:16 rws Exp $ */
+/* $XConsortium: events.c,v 1.167 88/12/31 15:49:46 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1023,6 +1023,9 @@ XYToWindow(x, y)
 	int x, y;
 {
     register WindowPtr  pWin;
+#ifdef SHAPE
+    BoxRec		box;
+#endif
 
     spriteTraceGood = 1;	/* root window still there */
     pWin = ROOT->firstChild;
@@ -1034,7 +1037,29 @@ XYToWindow(x, y)
 		    pWin->borderWidth) &&
 		(y >= pWin->absCorner.y - pWin->borderWidth) &&
 		(y < pWin->absCorner.y + (int)pWin->clientWinSize.height +
-		    pWin->borderWidth))
+		    pWin->borderWidth)
+#ifdef SHAPE
+		/* this is ugly.  x,y are in the window if
+		 * they are either in the border, or in the
+		 * window itself.  The above test already
+		 * demonstrated that the point is in the
+		 * window bounding box, the below checks
+		 * simply constrain the valid points to the
+		 * appropriate regions.
+		 */
+		&& (pWin->borderWidth > 0 &&
+		    (!pWin->borderShape ||
+		     (*pWin->drawable.pScreen->PointInRegion)
+		       (pWin->borderShape,
+			   x - pWin->absCorner.x, y - pWin->absCorner.y,
+			   &box)) ||
+		    (!pWin->windowShape ||
+		     (*pWin->drawable.pScreen->PointInRegion)
+		       (pWin->windowShape,
+			   x - pWin->absCorner.x, y - pWin->absCorner.y,
+			   &box)))
+#endif
+		)
 	{
 	    if (spriteTraceGood >= spriteTraceSize)
 	    {
