@@ -2,7 +2,7 @@
  * mipointer.c
  */
 
-/* $XConsortium: mipointer.c,v 5.11 91/04/26 21:46:50 keith Exp $ */
+/* $XConsortium: mipointer.c,v 5.12 91/05/04 23:10:16 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -284,6 +284,8 @@ miPointerUpdate ()
     Bool		newScreen = FALSE;
 
     pScreen = miPointer.pScreen;
+    if (!pScreen)
+	return;
     pScreenPriv = GetScreenPrivate (pScreen);
     x = miPointer.x;
     y = miPointer.y;
