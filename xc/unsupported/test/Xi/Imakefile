@@ -1,25 +1,15 @@
-# $XConsortium: Imakefile,v 1.9 91/02/17 15:50:51 rws Exp $
+# $XConsortium: Imakefile,v 1.10 91/02/17 16:05:32 rws Exp $
 
-   XTOUCHSRCS = XTouch.c
-   XTOUCHOBJS = XTouch.o
-   XPROTOERRORSRCS = XPErrors.c
-   XPROTOERROROBJS = XPErrors.o
-   XLISTSRCS = XList.c
-   XLISTOBJS = XList.o
-   XSELINPUTSRCS = XSelInput.c
-   XSELINPUTOBJS = XSelInput.o
-   XSENDEVSRCS = XSendEv.c
-   XSENDEVOBJS = XSendEv.o
-   INCLUDES = -I../include
    LOCLIBS = $(XILIB) $(XLIB)
    DEPLIBS = $(DEPXILIB) $(DEPXLIB)
+   SRCS = XTouch.c XPErrors.c XList.c XSelInput.c XSendEv.c
 
 all: xtouch xprotoerrors xlist xselinput xsendev
 
-NormalProgramTarget(xtouch,$(XTOUCHOBJS),$(DEPLIBS),$(LOCLIBS),)
-NormalProgramTarget(xprotoerrors,$(XPROTOERROROBJS),$(DEPLIBS),$(LOCLIBS),)
-NormalProgramTarget(xlist,$(XLISTOBJS),$(DEPLIBS),$(LOCLIBS),)
-NormalProgramTarget(xselinput,$(XSELINPUTOBJS),$(DEPLIBS),$(LOCLIBS),)
-NormalProgramTarget(xsendev,$(XSENDEVOBJS),$(DEPLIBS),$(LOCLIBS),)
+NormalProgramTarget(xtouch,XTouch.o,$(DEPLIBS),$(LOCLIBS),)
+NormalProgramTarget(xprotoerrors,XPErrors.o,$(DEPLIBS),$(LOCLIBS),)
+NormalProgramTarget(xlist,XList.o,$(DEPLIBS),$(LOCLIBS),)
+NormalProgramTarget(xselinput,XSelInput.o,$(DEPLIBS),$(LOCLIBS),)
+NormalProgramTarget(xsendev,XSendEv.o,$(DEPLIBS),$(LOCLIBS),)
 
 DependTarget()
