@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.170 90/12/28 16:43:13 gildea Exp $ */
+/* $XConsortium: Initialize.c,v 1.171 90/12/31 13:02:03 rws Exp $ */
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 
 /***********************************************************
@@ -162,7 +162,7 @@ void XtToolkitInitialize()
 static String XtGetRootDirName(buf)
      String buf;
 {
-#ifdef _POSIX_SOURCE
+#if defined(_POSIX_SOURCE) || defined(SVR4)
      uid_t uid;
 #else
      int uid;
