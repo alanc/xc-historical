@@ -9,7 +9,7 @@ xdpr \- dump an X window directly to the printer
 .IR xwd (1),
 .IR xpr (1), and
 .IR lpr (1)
-to dump an X window, process it for the LN03 laser printer, and print
+to dump an X window, process it for a laser printer, and print
 it out.  This is the easiest way to get a printout of a window.
 \fIXdpr\fP by default will print the largest possible representation 
 of the window on the output page.
@@ -26,7 +26,7 @@ will be passed as arguments to the
 .IR xpr(1)
 command.
 .SH SEE ALSO
-xwd(1), xpr(1), xwud(1), X(1)
+X(1), xwd(1), xpr(1), xwud(1)
 .SH ENVIRONMENT
 DISPLAY - for which display to use be default.
 .SH COPYRIGHT
