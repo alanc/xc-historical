@@ -1,4 +1,15 @@
-.\" $XConsortium: editres.man,v 1.9 94/04/11 16:03:24 matt Exp $
+.\" $XConsortium: editres.man,v 1.10 94/04/11 21:22:23 gildea Exp $
+.\" Copyright 1993 Massachusetts Institute of Technology
+.\"
+.\" Permission to use, copy, modify, distribute, and sell this software and
+.\" its documentation for any purpose is hereby granted without fee, provided
+.\" that the above copyright notice appear in all copies and that both that
+.\" copyright notice and this permission notice appear in supporting
+.\" documentation, and that the name of M.I.T. not be used in advertising or
+.\" publicity pertaining to distribution of the software without specific,
+.\" written prior permission.  M.I.T. makes no representations about the
+.\" suitability of this software for any purpose.  It is provided "as is"
+.\" without express or implied warranty.
 .TH EDITRES 1 "Release 6" "X Version 11"
 .SH NAME
 editres \- a dynamic resource editor for X Toolkit applications
@@ -405,10 +416,6 @@ X(1), xrdb(1), Athena Widget Set
 This is a prototype, there are lots of nifty features I would love to add,
 but I hope this will give you some ideas about what a resource editor
 can do.
-.SH COPYRIGHT
-Copyright 1990, Massachusetts Institute of Technology.
-.br
-See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHOR
 Chris D. Peterson, formerly MIT X Consortium
 
