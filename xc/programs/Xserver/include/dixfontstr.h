@@ -1,17 +1,17 @@
-/* $XConsortium: dixfontstr.h,v 1.6 89/03/11 15:20:13 rws Exp $ */
+/* $XConsortium: dixfontstr.h,v 1.7 91/01/27 13:07:41 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
 
                         All Rights Reserved
 
-Permission to use, copy, modify, and distribute this software and its 
-documentation for any purpose and without fee is hereby granted, 
+Permission to use, copy, modify, and distribute this software and its
+documentation for any purpose and without fee is hereby granted,
 provided that the above copyright notice appear in all copies and that
-both that copyright notice and this permission notice appear in 
+both that copyright notice and this permission notice appear in
 supporting documentation, and that the names of Digital or MIT not be
 used in advertising or publicity pertaining to distribution of the
-software without specific, written prior permission.  
+software without specific, written prior permission.
 
 DIGITAL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
 ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
@@ -30,12 +30,12 @@ SOFTWARE.
 #include "fontstruct.h"
 #include "misc.h"
 
-extern FontPtr	FontFileLoad(/* name, length */); /* implemented in OS layer */
-extern Bool	FontFilePropLoad(/* name, length, *font, fi, *props */);
-extern void	FontUnload(/* font */);
+extern FontPtr FontFileLoad( /* name, length */ );	/* implemented in OS
+							 * layer */
+extern Bool FontFilePropLoad( /* name, length, *font, fi, *props */ );
+extern void FontUnload( /* font */ );
 
 #ifndef R4_FONT_STRUCTURES
-
 #define FONTCHARSET(font)	  (font)->pCS
 #define FONTMAXBOUNDS(font,field) (font)->pCS->maxbounds.field
 #define FONTMINBOUNDS(font,field) (font)->pCS->minbounds.field
@@ -56,35 +56,36 @@ extern void	FontUnload(/* font */);
 #define FONTPROPS(font)		  (font)->pCS->props
 #define FONTGLYPHBITS(base,pci)	  ((unsigned char *) (pci)->pPriv)
 
-extern FontPathPtr  fpExpandFontNamePattern(), fpGetFontPath();
+extern FontPathPtr fpExpandFontNamePattern(), fpGetFontPath();
 
 typedef struct _EncodedFont FontRec;
-typedef struct _CharSet	    FontInfoRec, *FontInfoPtr;
+typedef struct _CharSet FontInfoRec,
+           *FontInfoPtr;
 
 #else
 
 typedef struct _DIXFontProp {
-    ATOM	name;
-    INT32	value;	/* assumes ATOM is not larger than INT32 */
-} DIXFontProp;
+    ATOM        name;
+    INT32       value;		/* assumes ATOM is not larger than INT32 */
+}           DIXFontProp;
 
 /*
  * FONT is created at font load time; it is not part of the
  * font file format.
  */
 typedef struct _Font {
-    FontInfoPtr	pFI;
-    DIXFontProp	*pFP;
-    CharInfoPtr	pCI;			/* bitmap metrics and offset */
-    char	*pGlyphs;
-    pointer	osPrivate;
-    int		fileType;		/* tag for OS layer */
-    int		refcnt;			/* free storage when this goes to 0 */
-    pointer	devPriv[MAXSCREENS];	/* information private to screen */
-    CharInfoPtr	pInkCI;			/* ink metrics */
-    CharInfoPtr	pInkMin;		/* ink metrics */
-    CharInfoPtr	pInkMax;		/* ink metrics */
-} FontRec;
+    FontInfoPtr pFI;
+    DIXFontProp *pFP;
+    CharInfoPtr pCI;		/* bitmap metrics and offset */
+    char       *pGlyphs;
+    pointer     osPrivate;
+    int         fileType;	/* tag for OS layer */
+    int         refcnt;		/* free storage when this goes to 0 */
+    pointer     devPriv[MAXSCREENS];	/* information private to screen */
+    CharInfoPtr pInkCI;		/* ink metrics */
+    CharInfoPtr pInkMin;	/* ink metrics */
+    CharInfoPtr pInkMax;	/* ink metrics */
+}           FontRec;
 
 #define FONTCHARSET(font)	  (font)->pFI
 #define FONTMAXBOUNDS(font,field) (font)->pFI->maxbounds.metrics.field
@@ -107,8 +108,10 @@ typedef struct _Font {
 #define FONTPROPS(font)		  (font)->pFP
 #define FONTGLYPHBITS(base,pci)	  (((unsigned char *) base) + (pci)->byteOffset)
 
-typedef struct _FontInfoRec	FontInfoRec, *FontInfoPtr;
-typedef struct _DIXFontProp	DIXFontPropRec, *DIXFontPropPtr;
+typedef struct _FontInfoRec FontInfoRec,
+           *FontInfoPtr;
+typedef struct _DIXFontProp DIXFontPropRec,
+           *DIXFontPropPtr;
 
 #endif
 
@@ -130,12 +133,14 @@ typedef struct _DIXFontProp	DIXFontPropRec, *DIXFontPropPtr;
 
 
 /* in dixfont.c */
-extern Bool	SetDefaultFont();
-extern int	CloseFont();
-extern Bool	DescribeFont();
-extern void	ServerBitmapFromGlyph();
-extern Bool	CursorMetricsFromGlyph();
-extern void	GetGlyphs();
-extern Bool	QueryTextExtents();
+extern Bool SetDefaultFont();
+extern int  CloseFont();
+extern Bool DescribeFont();
+extern void ServerBitmapFromGlyph();
+extern Bool CursorMetricsFromGlyph();
+extern void GetGlyphs();
+extern int  LoadGlyphs();
+extern Bool QueryTextExtents();
+extern int  ListFonts();
 
-#endif /* DIXFONTSTRUCT_H */
+#endif				/* DIXFONTSTRUCT_H */

@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $XConsortium: cursor.c,v 1.38 89/07/16 17:24:22 rws Exp $ */
+/* $XConsortium: cursor.c,v 1.39 91/01/27 13:01:00 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -345,13 +345,18 @@ CreateRootCursor(pfilename, glyph)
 {
     CursorPtr 	curs;
     FontPtr 	cursorfont;
+    int	err;
     XID		fontID;
 
     fontID = FakeClientID(0);
-    cursorfont = OpenFont( (unsigned)strlen( pfilename), pfilename);
-    if (!cursorfont || !AddResource(fontID, RT_FONT, (pointer)cursorfont))
+    err = OpenFont(serverClient, fontID, FontLoadAll | FontOpenSync,
+	(unsigned)strlen( pfilename), pfilename);
+    if (err != Success)
 	return NullCursor;
 
+    cursorfont = (FontPtr)LookupIDByType(fontID, RT_FONT);
+    if (!cursorfont)
+	return NullCursor;
     if (AllocGlyphCursor(fontID, glyph, fontID, glyph + 1,
 			 0, 0, 0, ~0, ~0, ~0, &curs, serverClient) != Success)
 	return NullCursor;

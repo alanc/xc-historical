@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dix.h,v 1.55 89/03/23 11:54:16 rws Exp $ */
+/* $XConsortium: dix.h,v 1.56 89/08/20 12:14:05 rws Exp $ */
 
 #ifndef DIX_H
 #define DIX_H
@@ -127,6 +127,10 @@ SOFTWARE.
 
 typedef struct _TimeStamp *TimeStampPtr;
 typedef struct _Client *ClientPtr;
+
+typedef struct _WorkQueue	*WorkQueuePtr;
+
+
 extern ClientPtr requestingClient;
 extern ClientPtr *clients;
 extern ClientPtr serverClient;

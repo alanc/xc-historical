@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $XConsortium: dixutils.c,v 1.35 89/09/30 10:46:46 keith Exp $ */
+/* $XConsortium: dixutils.c,v 1.36 91/02/06 21:11:31 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -370,32 +370,13 @@ InitBlockAndWakeupHandlers ()
  * sleeps for input.
  */
 
-typedef struct _WorkQueue {
-    struct _WorkQueue	*next;
-    Bool		(*function)();
-    ClientPtr		client;
-    pointer		closure;
-} WorkQueueRec, *WorkQueuePtr;
-
-static WorkQueuePtr	workQueue, *workQueueLast = &workQueue;
+WorkQueuePtr		workQueue;
+static WorkQueuePtr	*workQueueLast = &workQueue;
 static Bool		WorkBlockHandlerRegistered;
 
 /* ARGSUSED */
-static void
-WorkWakeupHandler (blockData, pTimeout, pReadmask)
-    pointer blockData;
-    pointer pTimeout;
-    pointer pReadmask;
-{
-    return;
-}
-
-/* ARGSUSED */
-static void
-WorkBlockHandler (blockData, pTimeout, pReadmask)
-    pointer blockData;
-    pointer pTimeout;
-    pointer pReadmask;
+void
+ProcessWorkQueue()
 {
     WorkQueuePtr    q, n, p;
 
@@ -429,9 +410,6 @@ WorkBlockHandler (blockData, pTimeout, pReadmask)
     else
     {
 	workQueueLast = &workQueue;
-	RemoveBlockAndWakeupHandlers (WorkBlockHandler,
-				      WorkWakeupHandler, NULL);
-	WorkBlockHandlerRegistered = FALSE;
     }
 }
 
@@ -446,22 +424,13 @@ QueueWorkProc (function, client, closure)
     q = (WorkQueuePtr) xalloc (sizeof *q);
     if (!q)
 	return FALSE;
-    if (!WorkBlockHandlerRegistered)
-    {
-	if (!RegisterBlockAndWakeupHandlers (WorkBlockHandler,
-					    WorkWakeupHandler, NULL))
-	{
-	    xfree (q);
-	    return FALSE;
-	}
-	WorkBlockHandlerRegistered = TRUE;
-    }
     q->function = function;
     q->client = client;
     q->closure = closure;
     q->next = NULL;
     *workQueueLast = q;
     workQueueLast = &q->next;
+    return TRUE;
 }
 
 /*
@@ -479,7 +448,7 @@ typedef struct _SleepQueue {
     pointer		closure;
 } SleepQueueRec, *SleepQueuePtr;
 
-static SleepQueuePtr	sleepQueue;
+static SleepQueuePtr	sleepQueue = NULL;
 
 Bool
 ClientSleep (client, function, closure)
@@ -513,6 +482,7 @@ ClientSignal (client)
 	{
 	    return QueueWorkProc (q->function, q->client, q->closure);
 	}
+    return FALSE;
 }
 
 ClientWakeup (client)

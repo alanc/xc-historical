@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: WaitFor.c,v 1.66 90/06/06 13:54:00 rws Exp $ */
+/* $XConsortium: WaitFor.c,v 1.49 90/06/13 09:35:30 rws Exp $ */
 
 /*****************************************************************
  * OS Depedent input routines:
@@ -60,10 +60,13 @@ extern int ConnectionTranslation[];
 extern Bool NewOutputPending;
 extern Bool AnyClientsWriteBlocked;
 
+extern WorkQueuePtr workQueue;
+
 extern void CheckConnections();
 extern void EstablishNewConnections();
 extern void SaveScreens();
 extern void ResetOsBuffers();
+extern void ProcessInputEvents();
 
 extern int errno;
 
@@ -135,6 +138,10 @@ WaitForSomething(pClientsReady)
        crashed connections and the screen saver timeout */
     while (1)
     {
+	/* deal with any blocked jobs */
+	if (workQueue)
+	    ProcessWorkQueue();
+
 	if (ANYSET(ClientsWithInput))
 	{
 	    COPYBITS(ClientsWithInput, clientsReadable);

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: glyphcurs.c,v 5.1 89/07/03 13:27:00 rws Exp $ */
+/* $XConsortium: glyphcurs.c,v 5.2 91/01/27 13:01:03 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -95,6 +95,9 @@ ServerBitsFromGlyph(pfont, ch, cm, ppbits)
     rect.y = 0;
     rect.width = cm->width;
     rect.height = cm->height;
+
+/* XXX -- need the proper closure data */
+    (void) LoadGlyphs((pointer) 0, pfont, 1, 2, char2b);
 
     /* fill the pixmap with 0 */
     gcval[0] = GXcopy;

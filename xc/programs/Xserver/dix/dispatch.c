@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.23 91/01/27 13:01:06 keith Exp $ */
+/* $XConsortium: dispatch.c,v 5.24 91/01/29 09:22:50 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -44,7 +44,6 @@ SOFTWARE.
 extern WindowPtr *WindowTable;
 extern xConnSetupPrefix connSetupPrefix;
 extern char *ConnectionInfo;
-extern void ProcessInputEvents();
 extern void ValidateGC();
 extern Atom MakeAtom();
 extern char *NameForAtom();
@@ -82,6 +81,8 @@ extern char *ClientAuthorized();
 extern Bool InsertFakeRequest();
 static void KillAllClients();
 static void DeleteClientFromAnySelections();
+extern void ProcessWorkQueue();
+
 
 static int nextFreeClientID; /* always MIN free client ID */
 
@@ -1017,20 +1018,20 @@ int
 ProcOpenFont(client)
     register ClientPtr client;
 {
-    FontPtr pFont;
+    int	err;
     REQUEST(xOpenFontReq);
 
     REQUEST_FIXED_SIZE(xOpenFontReq, stuff->nbytes);
     client->errorValue = stuff->fid;
     LEGAL_NEW_RESOURCE(stuff->fid, client);
-    if ( pFont = OpenFont( stuff->nbytes, (char *)&stuff[1]))
+    err = OpenFont(client, stuff->fid, (Mask) 0,
+		stuff->nbytes, (char *)&stuff[1]);
+    if (err == Success)
     {
-	if (!AddResource(stuff->fid, RT_FONT, (pointer)pFont))
-	    return BadAlloc;
 	return(client->noClientException);
     }
     else
-	return (BadName);
+	return err;
 }
 
 int
@@ -1165,84 +1166,24 @@ int
 ProcListFonts(client)
     register ClientPtr client;
 {
-    xListFontsReply reply; 
-    FontPathPtr fpr;
-    int stringLens, i;
-    char *bufptr, *bufferStart;
     REQUEST(xListFontsReq);
 
     REQUEST_FIXED_SIZE(xListFontsReq, stuff->nbytes);
 
-    fpr = ExpandFontNamePattern( stuff->nbytes, 
-				 (char *) &stuff[1], stuff->maxNames);
-    if (!fpr)
-	return(BadAlloc);
-    stringLens = 0;
-    for (i=0; i<fpr->npaths; i++)
-        stringLens += fpr->length[i];
-
-    reply.type = X_Reply;
-    reply.length = (stringLens + fpr->npaths + 3) >> 2;
-    reply.nFonts = fpr->npaths;
-    reply.sequenceNumber = client->sequence;
-
-    bufptr = bufferStart = (char *)ALLOCATE_LOCAL(reply.length << 2);
-    if(!bufptr && reply.length)
-    {
-	FreeFontRecord(fpr);
-        return(BadAlloc);
-    }
-
-            /* since WriteToClient long word aligns things, 
-	       copy to temp buffer and write all at once */
-    for (i=0; i<fpr->npaths; i++)
-    {
-        *bufptr++ = fpr->length[i];
-        bcopy(fpr->paths[i], bufptr,  fpr->length[i]);
-        bufptr += fpr->length[i];
-    }
-    WriteReplyToClient(client, sizeof(xListFontsReply), &reply);
-    (void)WriteToClient(client, stringLens + fpr->npaths, bufferStart);
-    FreeFontRecord(fpr);
-    DEALLOCATE_LOCAL(bufferStart);
-    
-    return(client->noClientException);
+    return ListFonts(client, (unsigned char *) &stuff[1], stuff->nbytes, 
+	stuff->maxNames);
 }
 
 int
 ProcListFontsWithInfo(client)
     register ClientPtr client;
 {
-    pointer		    closure;
-    xListFontsWithInfoReply *reply;
-    xListFontsWithInfoReply last_reply;
-    int			    rlength;
-    char		    *name;
-    int			    nlength;
     REQUEST(xListFontsWithInfoReq);
-
-    extern pointer StartListFontsWithInfo ();
 
     REQUEST_FIXED_SIZE(xListFontsWithInfoReq, stuff->nbytes);
 
-    closure = StartListFontsWithInfo ( client, stuff->nbytes,
+    return StartListFontsWithInfo(client, stuff->nbytes,
 				    (char *) &stuff[1], stuff->maxNames);
-    if (!closure)
-	return BadAlloc;
-
-    while (NextListFontsWithInfo (closure, &reply, &rlength, &name, &nlength))
-    {
-	WriteReplyToClient(client, rlength, reply);
-	(void)WriteToClient(client, nlength, name);
-    }
-    FinishListFontsWithInfo (closure);
-    bzero((char *)&last_reply, sizeof(xListFontsWithInfoReply));
-    last_reply.type = X_Reply;
-    last_reply.sequenceNumber = client->sequence;
-    last_reply.length = (sizeof(xListFontsWithInfoReply)
-			  - sizeof(xGenericReply)) >> 2;
-    WriteReplyToClient(client, sizeof(xListFontsWithInfoReply), &last_reply);
-    return(client->noClientException);
 }
 
 /*ARGSUSED*/
@@ -2048,6 +1989,8 @@ ProcPolyText(client)
 	    if ( pNextElt > endReq)
 		return( BadLength);
 	    xorg += *((INT8 *)(pElt + 1));	/* must be signed */
+	    (void) LoadGlyphs(client, pGC->font, *pElt, itemSize,
+		pElt + TextEltHeader);
 	    xorg = (* polyText)(pDraw, pGC, xorg, stuff->y, *pElt,
 		pElt + TextEltHeader);
 	    pElt = pNextElt;
@@ -2070,6 +2013,7 @@ ProcImageText8(client)
     REQUEST_FIXED_SIZE(xImageTextReq, stuff->nChars);
     VALIDATE_DRAWABLE_AND_GC(stuff->drawable, pDraw, pGC, client);
 
+    (void) LoadGlyphs(client, pGC->font, stuff->nChars, 1, &stuff[1]);
     (*pGC->ops->ImageText8)(pDraw, pGC, stuff->x, stuff->y,
 		       stuff->nChars, &stuff[1]);
     return (client->noClientException);
@@ -2087,6 +2031,7 @@ ProcImageText16(client)
     REQUEST_FIXED_SIZE(xImageTextReq, stuff->nChars << 1);
     VALIDATE_DRAWABLE_AND_GC(stuff->drawable, pDraw, pGC, client);
 
+    (void) LoadGlyphs(client, pGC->font, stuff->nChars, 2, &stuff[1]);
     (*pGC->ops->ImageText16)(pDraw, pGC, stuff->x, stuff->y,
 			stuff->nChars, &stuff[1]);
     return (client->noClientException);
@@ -3036,7 +2981,7 @@ ProcSetFontPath(client)
     }
     if (total >= 4)
 	return(BadLength);
-    result = SetFontPath(stuff->nFonts, (char *)&stuff[1], &error);
+    result = SetFontPath(client, stuff->nFonts, (char *)&stuff[1], &error);
     if (error != -1)
 	client->errorValue = error;
     if (!result)
@@ -3048,40 +2993,22 @@ int
 ProcGetFontPath(client)
     register ClientPtr client;
 {
-    FontPathPtr pFP;
     xGetFontPathReply reply;
-    int stringLens, i;
-    char *bufferStart;
-    register char  *bufptr;
+    int stringLens, numpaths;
+    unsigned char *bufferStart;
     REQUEST (xReq);
 
     REQUEST_SIZE_MATCH(xReq);
-    pFP = GetFontPath();
-    if (!pFP)
-	return(BadAlloc);
-    stringLens = 0;
-    for (i=0; i<pFP->npaths; i++)
-        stringLens += pFP->length[i];
+    bufferStart = GetFontPath(&numpaths, &stringLens);
 
     reply.type = X_Reply;
     reply.sequenceNumber = client->sequence;
-    reply.length = (stringLens + pFP->npaths + 3) >> 2;
-    reply.nPaths = pFP->npaths;
+    reply.length = (stringLens + numpaths + 3) >> 2;
+    reply.nPaths = numpaths;
 
-    bufptr = bufferStart = (char *)ALLOCATE_LOCAL(reply.length << 2);
-    if(!bufptr && reply.length)
-        return(BadAlloc);
-            /* since WriteToClient long word aligns things, 
-	       copy to temp buffer and write all at once */
-    for (i=0; i<pFP->npaths; i++)
-    {
-        *bufptr++ = pFP->length[i];
-        bcopy(pFP->paths[i], bufptr,  pFP->length[i]);
-        bufptr += pFP->length[i];
-    }
     WriteReplyToClient(client, sizeof(xGetFontPathReply), &reply);
-    if (stringLens || pFP->npaths)
-	(void)WriteToClient(client, stringLens + pFP->npaths, bufferStart);
+    if (stringLens || numpaths)
+	(void)WriteToClient(client, stringLens + numpaths, bufferStart);
     if (bufferStart) DEALLOCATE_LOCAL(bufferStart);
     return(client->noClientException);
 }

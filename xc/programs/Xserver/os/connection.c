@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.124 91/01/08 08:26:02 rws Exp $ */
+/* $XConsortium: connection.c,v 1.125 91/02/06 21:12:02 keith Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -911,6 +911,7 @@ IgnoreClient (client)
 	BITCLEAR(SavedAllSockets, connection);
 	BITCLEAR(SavedAllClients, connection);
     }
+    isItTimeToYield = TRUE;
 }
 
 /****************

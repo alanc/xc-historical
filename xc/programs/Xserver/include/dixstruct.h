@@ -5,13 +5,13 @@ and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
 
                         All Rights Reserved
 
-Permission to use, copy, modify, and distribute this software and its 
-documentation for any purpose and without fee is hereby granted, 
+Permission to use, copy, modify, and distribute this software and its
+documentation for any purpose and without fee is hereby granted,
 provided that the above copyright notice appear in all copies and that
-both that copyright notice and this permission notice appear in 
+both that copyright notice and this permission notice appear in
 supporting documentation, and that the names of Digital or MIT not be
 used in advertising or publicity pertaining to distribution of the
-software without specific, written prior permission.  
+software without specific, written prior permission.
 
 DIGITAL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
 ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
@@ -22,7 +22,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dixstruct.h,v 1.13 89/05/18 20:44:41 rws Exp $ */
+/* $XConsortium: dixstruct.h,v 1.14 89/07/03 16:37:22 rws Exp $ */
+
 #ifndef DIXSTRUCT_H
 #define DIXSTRUCT_H
 
@@ -38,39 +39,48 @@ SOFTWARE.
  */
 
 typedef struct _TimeStamp {
-    unsigned long	months;			/* really ~49.7 days */
-    unsigned long	milliseconds;
-} TimeStamp;
+    unsigned long months;	/* really ~49.7 days */
+    unsigned long milliseconds;
+}           TimeStamp;
 
 #ifdef DEBUG
 #define MAX_REQUEST_LOG 100
 #endif
 
 typedef struct _Client {
-    int index;
-    Mask clientAsMask;
-    pointer requestBuffer;
-    pointer osPrivate;			/* for OS layer, including scheduler */
-    Bool swapped;
-    void (* pSwapReplyFunc)();		
-    XID	errorValue;
-    int sequence;
-    int closeDownMode;
-    int clientGone;
-    int noClientException;       /* this client died or needs to be killed*/
+    int         index;
+    Mask        clientAsMask;
+    pointer     requestBuffer;
+    pointer     osPrivate;	/* for OS layer, including scheduler */
+    Bool        swapped;
+    void        (*pSwapReplyFunc) ();
+    XID         errorValue;
+    int         sequence;
+    int         closeDownMode;
+    int         clientGone;
+    int         noClientException;	/* this client died or needs to be
+					 * killed */
     DrawablePtr lastDrawable;
-    Drawable lastDrawableID;
-    GCPtr lastGC;
-    GContext lastGCID;    
-    pointer *saveSet;
-    int numSaved;
-    pointer screenPrivate[MAXSCREENS];
-    int (**requestVector)();
+    Drawable    lastDrawableID;
+    GCPtr       lastGC;
+    GContext    lastGCID;
+    pointer    *saveSet;
+    int         numSaved;
+    pointer     screenPrivate[MAXSCREENS];
+    int         (**requestVector) ();
+
 #ifdef DEBUG
     unsigned char requestLog[MAX_REQUEST_LOG];
-    int requestLogIndex;
+    int         requestLogIndex;
 #endif
-} ClientRec;
+}           ClientRec;
+
+typedef struct _WorkQueue {
+    struct _WorkQueue *next;
+    Bool        (*function) ();
+    ClientPtr   client;
+    pointer     closure;
+}           WorkQueueRec;
 
 extern TimeStamp currentTime;
 extern void CloseDownClient();
@@ -79,4 +89,4 @@ extern TimeStamp ClientTimeToServerTime();
 extern void UpdateCurrentTime();
 extern void UpdateCurrentTimeIf();
 
-#endif /* DIXSTRUCT_H */
+#endif				/* DIXSTRUCT_H */
