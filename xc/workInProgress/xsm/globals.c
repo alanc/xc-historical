@@ -1,4 +1,4 @@
-/* $XConsortium: globals.c,v 1.20 94/12/13 20:34:16 mor Exp mor $ */
+/* $XConsortium: globals.c,v 1.21 94/12/16 17:32:34 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -26,6 +26,9 @@ in this Software without prior written authorization from the X Consortium.
 ******************************************************************************/
 
 #include <X11/ICE/ICEutil.h>
+
+int		Argc;
+char		**Argv;
 
 List		*RunningList;
 List		*PendingList;

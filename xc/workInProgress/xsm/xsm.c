@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.73 94/12/27 17:46:04 mor Exp mor $ */
+/* $XConsortium: xsm.c,v 1.74 94/12/30 16:12:04 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -106,6 +106,9 @@ char **argv;
     char 	errormsg[256];
     static	char environment_name[] = "SESSION_MANAGER";
     int		success, found_command_line_name, i;
+
+    Argc = argc;
+    Argv = argv;
 
     for (i = 1; i < argc; i++)
     {

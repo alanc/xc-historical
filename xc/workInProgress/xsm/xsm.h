@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.h,v 1.34 94/12/13 20:34:51 mor Exp mor $ */
+/* $XConsortium: xsm.h,v 1.35 94/12/16 17:37:08 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -115,6 +115,9 @@ typedef struct _PropValue {
     int			length;
 } PropValue;
 
+
+extern int		Argc;
+extern char		**Argv;
 
 extern char		*display_env, *non_local_display_env;
 extern char		*session_env, *non_local_session_env;
