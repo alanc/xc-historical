@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlcWrap.c,v 11.6 91/04/08 17:12:31 rws Exp $
+ * $XConsortium: XlcWrap.c,v 11.7 91/04/15 11:00:10 rws Exp $
  */
 
 /*
@@ -100,7 +100,7 @@ Bool _XlcValidModSyntax(mods, valid_mods)
 	    break;
 	}
     }
-    return mods != (char *)NULL;
+    return !mods || !*mods;
 }
 
 static Const char *im_valid[] = {"im", (char *)NULL};
@@ -117,7 +117,7 @@ _XlcDefaultMapModifiers (lcd, user_mods, prog_mods)
 
     if (!_XlcValidModSyntax(prog_mods, (char **)im_valid))
 	return (char *)NULL;
-    if (user_mods && !_XlcValidModSyntax(user_mods, (char **)im_valid))
+    if (!_XlcValidModSyntax(user_mods, (char **)im_valid))
 	return (char *)NULL;
     i = strlen(prog_mods) + 1;
     if (user_mods)
