@@ -1,4 +1,4 @@
-/* $XConsortium: CallbackI.h,v 1.11 90/08/29 13:09:40 swick Exp $ */
+/* $XConsortium: CallbackI.h,v 1.12 90/12/03 16:28:53 converse Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -31,13 +31,15 @@ SOFTWARE.
 
 typedef XrmResource **CallbackTable;
 
+#define _XtCBCalling 1
+#define _XtCBFreeAfterCalling 2
+
 typedef struct internalCallbackRec {
-    int	count;
+    unsigned short count;
+    char	   is_padded;	/* contains NULL padding for external form */
+    char	   call_state;  /* combination of _XtCB{FreeAfter}Calling */
     /* XtCallbackList */
 } InternalCallbackRec, *InternalCallbackList;
-
-extern XtPointer XtGarbageCollection;
-
 
 extern void _XtAddCallback(
 #if NeedFunctionPrototypes
@@ -55,14 +57,6 @@ extern void _XtAddCallbackOnce(
 #endif
 );
 
-extern void _XtCallCallbacks(
-#if NeedFunctionPrototypes
-    Widget			/* widget */,
-    InternalCallbackList	/* callbacks */,
-    XtPointer 			/* callData */
-#endif
-);
-
 extern InternalCallbackList _XtCompileCallbackList(
 #if NeedFunctionPrototypes
     XtCallbackList		/* xtcallbacks */
@@ -71,7 +65,7 @@ extern InternalCallbackList _XtCompileCallbackList(
 
 extern XtCallbackList _XtGetCallbackList(
 #if NeedFunctionPrototypes
-    InternalCallbackList	/* list */
+    InternalCallbackList*	/* callbacks */
 #endif
 );
 
