@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.5 93/09/10 14:10:43 mor Exp $
+XCOMM $XConsortium: Imakefile,v 1.6 93/11/18 11:11:33 mor Exp $
 
 #define DoNormalLib NormalLibICE
 #define DoSharedLib SharedLibICE
@@ -57,6 +57,7 @@ OBJS = connect.o \
 
 SpecialCLibObjectRule(connect,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialCLibObjectRule(accept,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialCLibObjectRule(misc,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialCLibObjectRule(connutil,$(ICONFIGFILES),$(CONN_DEFINES) $(SOCK_DEFINES))
 
 DependTarget()
