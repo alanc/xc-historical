@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XInitExt.c,v 11.20 89/11/08 17:04:15 converse Exp $ */
+/* $XConsortium: XInitExt.c,v 11.21 89/11/13 14:57:13 converse Exp $ */
 /* Copyright  Massachusetts Institute of Technology 1987 */
 
 #include "Xlibint.h"
@@ -247,13 +247,13 @@ int (*XESetError(dpy, extension, proc))()
 	UnlockDisplay(dpy);
 	return (oldproc);
 }
-int (*XESetErrorString(dpy, extension, proc))()
+char *(*XESetErrorString(dpy, extension, proc))()
 	Display *dpy;		/* display */
 	int extension;		/* extension number */
-	int (*proc)();		/* routine to call when I/O error happens */
+	char *(*proc)();	/* routine to call when I/O error happens */
 {
 	register _XExtension *e;	/* for lookup of extension */
-	register int (*oldproc)();
+	register char *(*oldproc)();
 	if ((e = XLookupExtension (dpy, extension)) == NULL) return (NULL);
 	LockDisplay(dpy);
 	oldproc = e->error_string;
