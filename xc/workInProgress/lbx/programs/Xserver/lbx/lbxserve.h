@@ -1,4 +1,4 @@
-/* $XConsortium: lbxserve.h,v 1.4 94/11/08 20:25:30 mor Exp mor $ */
+/* $XConsortium: lbxserve.h,v 1.5 94/12/01 20:28:45 mor Exp $ */
 /*
  * $NCDId: @(#)lbxserve.h,v 1.17 1994/11/18 20:32:38 lemke Exp $
  * $NCDOr: lbxserve.h,v 1.1 1993/12/06 18:47:18 keithp Exp $
@@ -25,12 +25,15 @@
  * Author:  Keith Packard, Network Computing Devices
  */
 
+#ifndef _LBXSERVE_H_
+#define _LBXSERVE_H_
 /* XXX only handles one LBX connection right now */
 #include "lbxdeltastr.h"
 #define _XLBX_SERVER_
 #include "lbxstr.h"
 
 #define MAX_LBX_CLIENTS	MAXCLIENTS
+#define	MAX_NUM_PROXIES	8
 
 typedef struct _LbxClient *LbxClientPtr;
 typedef struct _LbxProxy *LbxProxyPtr;
@@ -52,6 +55,8 @@ typedef struct _LbxClient {
     int         (*uncompressedWriteToClient) ();
     Drawable	drawableCache[GFX_CACHE_SIZE];
     GContext	gcontextCache[GFX_CACHE_SIZE];
+    pointer	gfx_buffer;	/* tmp buffer for unpacking gfx requests */
+    unsigned long	gb_size;
 }           LbxClientRec;
 
 typedef struct _LbxProxy {
@@ -91,3 +96,4 @@ extern LbxClientPtr lbxClients[MAXCLIENTS];
 
 extern void LbxDixInit();
 extern LbxProxyPtr LbxPidToProxy();
+#endif				/* _LBXSERVE_H_ */

@@ -1,4 +1,4 @@
-/* $XConsortium: lbxmain.c,v 1.3 95/03/16 18:22:03 mor Exp $ */
+/* $XConsortium: lbxmain.c,v 1.15 95/03/21 20:03:18 mor Exp $ */
 /*
  * $NCDId: @(#)lbxmain.c,v 1.61 1994/11/18 20:32:36 lemke Exp $
  * $NCDOr: lbxmain.c,v 1.4 1993/12/06 18:47:18 keithp Exp keithp $
@@ -91,6 +91,7 @@ LbxProxyPtr proxyList;
 static unsigned char LbxReqCode;
 int 	LbxEventCode;
 static int BadLbxClientCode;
+static int	nextFreeProxyID = 1;
 
 extern int  LzwWriteV (), LzwRead ();
 extern void LzwCompressOn (), LzwCompressOff ();
@@ -107,7 +108,10 @@ extern int  (*LbxInitialVector[3])();
 extern ClientPtr	ReadingClient, WritingClient;
 
 #ifndef NDEBUG
+/*
 int lbxDebug = DBG_CLIENT|DBG_SWITCH;
+*/
+int lbxDebug = 0;
 
 #define LbxSequence(i)	lbxClients[i]->client->sequence
 #endif
@@ -129,6 +133,7 @@ LbxExtensionInit()
     lbxBlockHandlerCount = 0;
     lbxCompressWorkProcCount = 0;
     proxyList = NULL;
+    nextFreeProxyID = 1;
     if ((extEntry = AddExtension(LBXNAME, LbxNumberEvents, LbxNumberErrors,
 				 ProcLbxDispatch, SProcLbxDispatch,
 				 LbxResetProc, StandardMinorOpcode)))
@@ -1270,6 +1275,8 @@ LbxInitClient (proxy, client, index)
 #ifdef notused
     client->public.requestLength = LbxRequestLength;
 #endif
+    lbxClient->gfx_buffer = (pointer) NULL;
+    lbxClient->gb_size = 0;
     return TRUE;
 }
 
@@ -1297,6 +1304,7 @@ LbxFreeClient (client)
     --proxy->numClients;
     proxy->lbxClients[lbxClient->index] = 0;
     lbxClients[client->index] = 0;
+    xfree(lbxClient->gfx_buffer);
     client->public.writeToClient = lbxClient->writeToClient;
     client->public.readRequest = lbxClient->readRequest;
     xfree (lbxClient);
@@ -1322,6 +1330,8 @@ LbxFreeProxy (proxy)
 	    break;
 	}
     }
+    if (proxy->pid < nextFreeProxyID)
+	nextFreeProxyID = proxy->pid;
     xfree (proxy);
 }
 
@@ -1423,6 +1433,34 @@ int Writev(fd, iov, iovcnt)
     return writev(fd, iov, iovcnt);
 }
 
+static int
+NextProxyID()
+{
+    LbxProxyPtr proxy = proxyList;
+    int         id;
+    Bool        hit;
+
+    if (!proxy) {
+	nextFreeProxyID = 1;
+	return nextFreeProxyID++;
+    }
+    for (id = 0; id < MAX_NUM_PROXIES; id++) {
+	hit = FALSE;
+	while (proxy) {
+	    if (proxy->pid == id) {
+		hit = TRUE;
+		break;
+	    }
+	    proxy = proxy->next;
+	}
+	if (!hit) {
+	    nextFreeProxyID = id;
+	    return id;
+	}
+    }
+    return -1;
+}
+
 int
 ProcLbxStartProxy(client)
     register ClientPtr	client;
@@ -1444,8 +1482,11 @@ ProcLbxStartProxy(client)
 	return BadAlloc;
     bzero(proxy, sizeof (LbxProxyRec));
     proxy->next = proxyList;
-    proxy->pid = client->index;	/* XXX have to be sure this doesn't go over
-    				 * MAX_NUM_PROXIES */
+    proxy->pid = NextProxyID();
+    if (proxy->pid < 0) {	/* too many proxies */
+	LbxFreeProxy(proxy);
+	return BadAlloc;
+    }
     proxyList = proxy;
 
     /*
