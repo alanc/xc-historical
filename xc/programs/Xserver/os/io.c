@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.69 92/08/21 19:28:47 rws Exp $ */
+/* $XConsortium: io.c,v 1.70 92/09/07 12:05:30 rws Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -333,6 +333,7 @@ ReadRequestFromClient(client)
 	oci->bufptr += (sizeof(xBigReq) - sizeof(xReq));
 	*(xReq *)oci->bufptr = *request;
 	oci->lenLastReq -= (sizeof(xBigReq) - sizeof(xReq));
+	client->req_len -= (sizeof(xBigReq) - sizeof(xReq)) >> 2;
     }
 #endif
     client->requestBuffer = (pointer)oci->bufptr;
