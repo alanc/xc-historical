@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Event.c,v 1.63 88/02/26 20:25:28 swick Exp $";
+static char rcsid[] = "$Header: Event.c,v 1.64 88/03/03 11:57:06 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -33,6 +33,11 @@ SOFTWARE.
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
 extern void bzero();
+
+static GrabRec *grabList;
+static GrabRec *freeGrabs;
+static Boolean OnlyKeyboardGrabs;
+
 
 EventMask _XtBuildEventMask(widget)
     Widget widget;
@@ -515,15 +520,6 @@ static GrabRec* OnGrabList (widget)
     return (NULL);
 }
 
-static Boolean OnlyKeyboardGrabs()
-{
-    register GrabRec* gl;
-    for (gl = grabList; gl != NULL; gl = gl->next) {
-	if (gl->keyboard_focus != (Widget)NULL) return False;
-    }
-    return True;
-}
-
 
 void XtDispatchEvent (event)
     XEvent  *event;
@@ -641,6 +637,8 @@ static void AddGrab(widget, exclusive, spring_loaded, keyboard_focus)
     gl->spring_loaded = spring_loaded;
     gl->keyboard_focus= keyboard_focus;
 
+    if (keyboard_focus == (Widget)NULL) OnlyKeyboardGrabs = False;
+
     XtAddCallback(
 		  (keyboard_focus != NULL) ? keyboard_focus : widget,
 		  XtNdestroyCallback, GrabDestroyCallback,
@@ -721,10 +719,12 @@ static void RemoveGrab(widget, keyboard_focus)
     register GrabList gl, prev, next;
     Widget focus_widget;
 
+    OnlyKeyboardGrabs = True;
     for (prev = NULL, gl = grabList; gl != NULL; prev = gl, gl = gl->next) {
 	if (gl->widget == widget)
 	    if (!keyboard_focus || gl->keyboard_focus != NULL)
 		break;
+	if (gl->keyboard_focus == (Widget)NULL) OnlyKeyboardGrabs = False;
     }
 
     if (gl == NULL) {
@@ -749,6 +749,14 @@ static void RemoveGrab(widget, keyboard_focus)
 	    gl = gl->next;
 	}
 	if (keyboard_focus) break; /* don't remove all grabs (yet) */
+	if (gl->keyboard_focus == (Widget)NULL) OnlyKeyboardGrabs = False;
+    }
+    while (gl) {
+	if (gl->keyboard_focus == (Widget)NULL) {
+	    OnlyKeyboardGrabs = False;
+	    break;
+	}
+	gl = gl->next;
     }
     XtRemoveCallback(
 		     keyboard_focus ? focus_widget : widget,
@@ -781,6 +789,7 @@ void _XtEventInitialize()
     grabList = NULL;
     freeGrabs = NULL;
     DestroyList = NULL;
+    OnlyKeyboardGrabs = True;
     nullRegion = XCreateRegion();
     exposeRegion = XCreateRegion();
     InitializeHash();
