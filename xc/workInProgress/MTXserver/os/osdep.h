@@ -57,6 +57,10 @@ SOFTWARE.
 #endif
 #endif
 
+#ifdef MTX
+#include "xthreads.h"
+#endif
+
 #if OPEN_MAX <= 128
 #define MAXSOCKS (OPEN_MAX - 1)
 #else
