@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.c,v 1.6 90/02/02 11:36:44 jim Exp $
+ * $XConsortium: Tree.c,v 1.8 90/02/02 14:41:06 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -428,13 +428,14 @@ static void Redisplay (tw, event, region)
 	     * Don't draw lines from the fake tree_root.
 	     */
 	    if (child != tw->tree.tree_root && tc->tree.n_children) {
-		int srcx, srcy;
+		int srcx = child->core.x + child->core.border_width;
+		int srcy = child->core.y + child->core.border_width;
 		if (horiz) {
-		    srcx = child->core.x + child->core.width;
-		    srcy = child->core.y + child->core.height / 2;
+		    srcx += child->core.width + child->core.border_width;
+		    srcy += child->core.height / 2;
 		} else {
-		    srcx = child->core.x + child->core.width / 2;
-		    srcy = child->core.y + child->core.height;
+		    srcx += child->core.width / 2;
+		    srcy += child->core.height + child->core.border_width;
 		}
 
 		for (j = 0; j < tc->tree.n_children; j++) {
@@ -444,15 +445,17 @@ static void Redisplay (tw, event, region)
 			 * right center to left center
 			 */
 			XDrawLine (dpy, w, gc, srcx, srcy,
-				   k->core.x,
-				   k->core.y + k->core.height / 2);
+				   k->core.x + k->core.border_width,
+				   (k->core.y + k->core.border_width +
+				    k->core.height / 2));
 		    } else {
 			/*
 			 * bottom center to top center
 			 */
 			XDrawLine (dpy, w, gc, srcx, srcy,
-				   k->core.x + k->core.width / 2,
-				   k->core.y);
+				   (k->core.x + k->core.border_width +
+				    k->core.width / 2),
+				   k->core.y + k->core.border_width);
 		    }
 		}
 	    }
@@ -537,6 +540,7 @@ static void compute_bounding_box_subtree (tree, w, depth)
     register int i;
     Bool horiz = IsHorizontal (tree);
     Dimension newwidth, newheight;
+    Dimension bw2 = w->core.border_width * 2;
 
     /*
      * Set the max-size per level.
@@ -545,7 +549,7 @@ static void compute_bounding_box_subtree (tree, w, depth)
 	initialize_dimensions (&tree->tree.largest,
 			       &tree->tree.n_largest, depth);
     }
-    newwidth = (horiz ? w->core.width : w->core.height);
+    newwidth = ((horiz ? w->core.width : w->core.height) + bw2);
     if (tree->tree.largest[depth] < newwidth)
       tree->tree.largest[depth] = newwidth;
 
@@ -553,8 +557,8 @@ static void compute_bounding_box_subtree (tree, w, depth)
     /*
      * initialize
      */
-    tc->tree.bbwidth = w->core.width;
-    tc->tree.bbheight = w->core.height;
+    tc->tree.bbwidth = w->core.width + bw2;
+    tc->tree.bbheight = w->core.height + bw2;
 
     if (tc->tree.n_children == 0) return;
 
