@@ -1,11 +1,11 @@
 SRCS = atom.c colormap.c cursor.c dispatch.c dixutils.c events.c \
 	extension.c gc.c globals.c glyphcurs.c grabs.c \
 	main.c property.c resource.c swaprep.c swapreq.c \
-	tables.c window.c initatoms.c
+	tables.c window.c initatoms.c dixfonts.c
 OBJS = atom.o colormap.o cursor.o dispatch.o dixutils.o events.o \
 	extension.o gc.o globals.o glyphcurs.o grabs.o \
 	main.o property.o resource.o swaprep.o swapreq.o \
-	tables.o window.o initatoms.o
+	tables.o window.o initatoms.o dixfonts.o
 
  STD_DEFINES = ServerDefines
  CDEBUGFLAGS = ServerCDebugFlags
