@@ -1,4 +1,4 @@
-/* $XConsortium: regions.c,v 1.4 91/10/10 11:18:57 rws Exp $ */
+/* $XConsortium: regions.c,v 1.5 92/07/07 17:14:47 gildea Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991
@@ -51,13 +51,13 @@ The included files are:
 #include  "hints.h"
 #include  "strokes.h"      /* to pick up 'DoStroke'                        */
 static Unwind();
-static int newfilledge();
+static void newfilledge();
 static struct edgelist *splitedge();
-static int vertjoin();
+static void vertjoin();
 static int touches();
 static int crosses();
-static int edgemin();
-static int edgemax();
+static void edgemin();
+static void edgemax();
 static discard();
 static edgecheck();
 static struct edgelist *NewEdge();
@@ -732,7 +732,7 @@ This function also has to keep the bounding box of the region
 up to date.
 */
  
-static int newfilledge(R, xmin, xmax, ymin, ymax, isdown)
+static void newfilledge(R, xmin, xmax, ymin, ymax, isdown)
        register struct region *R;  /* region being built                     */
        fractpel xmin,xmax;   /* X range of this edge                         */
        fractpel ymin,ymax;   /* Y range of this edge                         */
@@ -975,7 +975,7 @@ Then, we return the caller a pointer to 'new':
  
 The two edges must be disjoint vertically.
 */
-static int vertjoin(top, bottom)
+static void vertjoin(top, bottom)
        register struct edgelist *top;  /* uppermost region                   */
        register struct edgelist *bottom;  /* bottommost region               */
 {
@@ -1282,7 +1282,7 @@ static int crosses(h, left, right)
 :h3.cedgemin() - Stores the Mininum of an Edge and an X Value
 */
  
-static int cedgemin(h, e1, x)
+static void cedgemin(h, e1, x)
        register int h;
        register pel *e1;
        register pel x;
@@ -1295,7 +1295,7 @@ static int cedgemin(h, e1, x)
 :h3.cedgemax() - Stores the Maximum of an Edge and an X Value
 */
  
-static int cedgemax(h, e1, x)
+static void cedgemax(h, e1, x)
        register int h;
        register pel *e1;
        register pel x;
@@ -1308,7 +1308,7 @@ static int cedgemax(h, e1, x)
 :h3.edgemin() - Stores the Mininum of Two Edges in First Edge
 */
  
-static int edgemin(h, e1, e2)
+static void edgemin(h, e1, e2)
        register int h;
        register pel *e1,*e2;
 {
@@ -1320,7 +1320,7 @@ static int edgemin(h, e1, e2)
 :h3.edgemax() - Stores the Maximum of Two Edges in First Edge
 */
  
-static int edgemax(h, e1, e2)
+static void edgemax(h, e1, e2)
        register int h;
        register pel *e1,*e2;
 {
