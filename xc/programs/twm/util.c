@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: util.c,v 1.44 91/01/25 14:29:50 dave Exp $
+ * $XConsortium: util.c,v 1.45 91/04/02 14:48:43 gildea Exp $
  *
  * utility routines for twm
  *
@@ -48,6 +48,7 @@
 
 static Pixmap CreateXLogoPixmap(), CreateResizePixmap();
 static Pixmap CreateQuestionPixmap(), CreateMenuPixmap();
+static Pixmap CreateDotPixmap();
 int HotX, HotY;
 
 /***********************************************************************
@@ -328,11 +329,13 @@ Pixmap FindBitmap (name, widthp, heightp)
 	    char *name;
 	    Pixmap (*proc)();
 	} pmtab[] = {
-	    { TBPM_XLOGO,	CreateXLogoPixmap },
-	    { TBPM_ICONIFY,	CreateXLogoPixmap },
+	    { TBPM_DOT,		CreateDotPixmap },
+	    { TBPM_ICONIFY,	CreateDotPixmap },
 	    { TBPM_RESIZE,	CreateResizePixmap },
+	    { TBPM_XLOGO,	CreateXLogoPixmap },
+	    { TBPM_DELETE,	CreateXLogoPixmap },
+	    { TBPM_MENU,	CreateMenuPixmap },
 	    { TBPM_QUESTION,	CreateQuestionPixmap },
-	    { TBPM_MENU,	CreateMenuPixmap },  /* XXX - don't doc, niy */
 	};
 	
 	for (i = 0; i < (sizeof pmtab)/(sizeof pmtab[0]); i++) {
@@ -714,13 +717,14 @@ static Pixmap CreateResizePixmap (widthp, heightp)
     unsigned int *widthp, *heightp;
 {
     int h = Scr->TBInfo.width - Scr->TBInfo.border * 2;
-    if (h < 0) h = 0;
+    if (h < 1) h = 1;
 
     *widthp = *heightp = (unsigned int) h;
     if (Scr->tbpm.resize == None) {
-	XSegment segs[4];
+	XPoint	points[3];
 	GC gc;
 	int w;
+	int lw;
 
 	/*
 	 * create the pixmap
@@ -730,17 +734,30 @@ static Pixmap CreateResizePixmap (widthp, heightp)
 	XSetForeground (dpy, gc, 0);
 	XFillRectangle (dpy, Scr->tbpm.resize, gc, 0, 0, h, h);
 	XSetForeground (dpy, gc, 1);
+	lw = h / 16;
+	if (lw == 1)
+	    lw = 0;
+	XSetLineAttributes (dpy, gc, lw, LineSolid, CapButt, JoinMiter);
 
 	/*
 	 * draw the resize button, 
 	 */
 	w = (h * 2) / 3;
-	segs[0].x1 = w; segs[0].y1 = 0; segs[0].x2 = w; segs[0].y2 = w;
-	segs[1].x1 = 0; segs[1].y1 = w; segs[1].x2 = w; segs[1].y2 = w;
+	points[0].x = w;
+	points[0].y = 0;
+	points[1].x = w;
+	points[1].y = w;
+	points[2].x = 0;
+	points[2].y = w;
+	XDrawLines (dpy, Scr->tbpm.resize, gc, points, 3, CoordModeOrigin);
 	w = w / 2;
-	segs[2].x1 = w; segs[2].y1 = 0; segs[2].x2 = w; segs[2].y2 = w;
-	segs[3].x1 = 0; segs[3].y1 = w; segs[3].x2 = w; segs[3].y2 = w;
-	XDrawSegments (dpy, Scr->tbpm.resize, gc, segs, 4);
+	points[0].x = w;
+	points[0].y = 0;
+	points[1].x = w;
+	points[1].y = w;
+	points[2].x = 0;
+	points[2].y = w;
+	XDrawLines (dpy, Scr->tbpm.resize, gc, points, 3, CoordModeOrigin);
 
 	/*
 	 * done drawing
@@ -750,6 +767,32 @@ static Pixmap CreateResizePixmap (widthp, heightp)
     return Scr->tbpm.resize;
 }
 
+
+static Pixmap CreateDotPixmap (widthp, heightp)
+    unsigned int *widthp, *heightp;
+{
+    int h = Scr->TBInfo.width - Scr->TBInfo.border * 2;
+
+    h = h * 3 / 4;
+    if (h < 1) h = 1;
+    if (!(h & 1))
+	h--;
+    *widthp = *heightp = (unsigned int) h;
+    if (Scr->tbpm.delete == None) {
+	GC  gc;
+	Pixmap pix;
+
+	pix = Scr->tbpm.delete = XCreatePixmap (dpy, Scr->Root, h, h, 1);
+	gc = XCreateGC (dpy, pix, 0L, NULL);
+	XSetLineAttributes (dpy, gc, h, LineSolid, CapRound, JoinRound);
+	XSetForeground (dpy, gc, 0L);
+	XFillRectangle (dpy, pix, gc, 0, 0, h, h);
+	XSetForeground (dpy, gc, 1L);
+	XDrawLine (dpy, pix, gc, h/2, h/2, h/2, h/2);
+	XFreeGC (dpy, gc);
+    }
+    return Scr->tbpm.delete;
+}
 
 #define questionmark_width 8
 #define questionmark_height 8
@@ -774,11 +817,83 @@ static Pixmap CreateQuestionPixmap (widthp, heightp)
 }
 
 
-/* ARGSUSED */
 static Pixmap CreateMenuPixmap (widthp, heightp)
     int *widthp, *heightp;
 {
-    fprintf (stderr, "%s:  built-in bitmap \"%s\" not implemented.\n",
-	     ProgramName, TBPM_MENU);
-    return None;
+    CreateMenuIcon (Scr->TBInfo.width - Scr->TBInfo.border * 2,widthp,heightp);
+}
+
+Pixmap CreateMenuIcon (height, widthp, heightp)
+    int	height;
+    int	*widthp, *heightp;
+{
+    int h, w;
+    int ih, iw;
+    int	ix, iy;
+    int	mh, mw;
+    int	tw, th;
+    int	lw, lh;
+    int	lx, ly;
+    int	lines, dly;
+    int off;
+    int	bw;
+
+    h = height;
+    w = h * 7 / 8;
+    if (h < 1)
+	h = 1;
+    if (w < 1)
+	w = 1;
+    *widthp = w;
+    *heightp = h;
+    if (Scr->tbpm.menu == None) {
+	Pixmap  pix;
+	GC	gc;
+
+	pix = Scr->tbpm.menu = XCreatePixmap (dpy, Scr->Root, w, h, 1);
+	gc = XCreateGC (dpy, pix, 0L, NULL);
+	XSetForeground (dpy, gc, 0L);
+	XFillRectangle (dpy, pix, gc, 0, 0, w, h);
+	XSetForeground (dpy, gc, 1L);
+	ix = 1;
+	iy = 1;
+	ih = h - iy * 2;
+	iw = w - ix * 2;
+	off = ih / 8;
+	mh = ih - off;
+	mw = iw - off;
+	bw = mh / 16;
+	if (bw == 0 && mw > 2)
+	    bw = 1;
+	tw = mw - bw * 2;
+	th = mh - bw * 2;
+	XFillRectangle (dpy, pix, gc, ix, iy, mw, mh);
+	XFillRectangle (dpy, pix, gc, ix + iw - mw, iy + ih - mh, mw, mh);
+	XSetForeground (dpy, gc, 0L);
+	XFillRectangle (dpy, pix, gc, ix+bw, iy+bw, tw, th);
+	XSetForeground (dpy, gc, 1L);
+	lw = tw / 2;
+	if ((tw & 1) ^ (lw & 1))
+	    lw++;
+	lx = ix + bw + (tw - lw) / 2;
+
+	lh = th / 2 - bw;
+	if ((lh & 1) ^ ((th - bw) & 1))
+	    lh++;
+	ly = iy + bw + (th - bw - lh) / 2;
+
+	lines = 3;
+	if ((lh & 1) && lh < 6)
+	{
+	    lines--;
+	}
+	dly = lh / (lines - 1);
+	while (lines--)
+	{
+	    XFillRectangle (dpy, pix, gc, lx, ly, lw, bw);
+	    ly += dly;
+	}
+	XFreeGC (dpy, gc);
+    }
+    return Scr->tbpm.menu;
 }

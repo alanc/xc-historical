@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: screen.h,v 1.60 89/12/14 14:52:26 jim Exp $
+ * $XConsortium: screen.h,v 1.61 90/03/15 14:23:04 jim Exp $
  *
  * twm per-screen data include file
  *
@@ -54,6 +54,7 @@ typedef struct _TitlebarPixmaps {
     Pixmap resize;
     Pixmap question;
     Pixmap menu;
+    Pixmap delete;
 } TitlebarPixmaps;
 
 typedef struct ScreenInfo
@@ -77,7 +78,8 @@ typedef struct ScreenInfo
     TitlebarPixmaps tbpm;	/* titlebar pixmaps */
     Pixmap UnknownPm;		/* the unknown icon pixmap */
     Pixmap siconifyPm;		/* the icon manager iconify pixmap */
-    Pixmap pullPm;		/* pull right menu arrow */
+    Pixmap pullPm;		/* pull right menu icon */
+    int	pullW, pullH;		/* size of pull right menu icon */
     Pixmap hilitePm;		/* focus highlight window background */
     int hilite_pm_width, hilite_pm_height;  /* cache the size */
 

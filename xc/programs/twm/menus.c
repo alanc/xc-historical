@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.174 91/03/05 16:07:18 dave Exp $
+ * $XConsortium: menus.c,v 1.175 91/03/14 16:05:38 dave Exp $
  *
  * twm menu code
  *
@@ -401,17 +401,16 @@ int exposure;
 
 	if (mi->func == F_MENU)
 	{
-
 	    /* create the pull right pixmap if needed */
 	    if (Scr->pullPm == None)
 	    {
-		Scr->pullPm = XCreatePixmapFromBitmapData(dpy, Scr->Root,
-		    (char *)menu12_bits, menu12_width, menu12_height, 1, 0, 1);
+		Scr->pullPm = CreateMenuIcon (Scr->MenuFont.height,
+					     &Scr->pullW, &Scr->pullH);
 	    }
-	    x = mr->width - menu12_width - 5;
-	    y = y_offset + ((Scr->MenuFont.height - menu12_height) / 2);
+	    x = mr->width - Scr->pullW - 5;
+	    y = y_offset + ((Scr->MenuFont.height - Scr->pullH) / 2);
 	    XCopyPlane(dpy, Scr->pullPm, mr->w, gc, 0, 0,
-		menu12_width, menu12_height, x, y, 1);
+		Scr->pullW, Scr->pullH, x, y, 1);
 	}
     }
     else
@@ -2272,7 +2271,47 @@ TwmWindow *tmp_win;
 {
     TwmWindow *t;
 
-    /* de-iconify group members (if any) */
+    /* de-iconify the main window */
+    if (tmp_win->icon)
+    {
+	if (tmp_win->icon_on)
+	    Zoom(tmp_win->icon_w, tmp_win->frame);
+	else if (tmp_win->group != NULL)
+	{
+	    for (t = Scr->TwmRoot.next; t != NULL; t = t->next)
+	    {
+		if (tmp_win->group == t->w && t->icon_on)
+		{
+		    Zoom(t->icon_w, tmp_win->frame);
+		    break;
+		}
+	    }
+	}
+    }
+
+    XMapWindow(dpy, tmp_win->w);
+    tmp_win->mapped = TRUE;
+    if (Scr->NoRaiseDeicon)
+	XMapWindow(dpy, tmp_win->frame);
+    else
+	XMapRaised(dpy, tmp_win->frame);
+    SetMapStateProp(tmp_win, NormalState);
+
+    if (tmp_win->icon_w) {
+	XUnmapWindow(dpy, tmp_win->icon_w);
+	IconDown (tmp_win);
+    }
+    if (tmp_win->list)
+	XUnmapWindow(dpy, tmp_win->list->icon);
+    if ((Scr->WarpCursor ||
+	 LookInList(Scr->WarpCursorL, tmp_win->full_name, &tmp_win->class)) &&
+	tmp_win->icon)
+      WarpToWindow (tmp_win);
+    tmp_win->icon = FALSE;
+    tmp_win->icon_on = FALSE;
+
+
+    /* now de-iconify group members (if any) */
     if (tmp_win->group == tmp_win->w)
     {
 	for (t = Scr->TwmRoot.next; t != NULL; t = t->next)
@@ -2304,45 +2343,6 @@ TwmWindow *tmp_win;
 	}
     }
 
-    /* now de-iconify the main window */
-    if (tmp_win->icon)
-    {
-	if (tmp_win->icon_on)
-	    Zoom(tmp_win->icon_w, tmp_win->frame);
-	else if (tmp_win->group != NULL)
-	{
-	    for (t = Scr->TwmRoot.next; t != NULL; t = t->next)
-	    {
-		if (tmp_win->group == t->w && t->icon_on)
-		{
-		    Zoom(t->icon_w, tmp_win->frame);
-		    break;
-		}
-	    }
-	}
-    }
-
-
-    XMapWindow(dpy, tmp_win->w);
-    tmp_win->mapped = TRUE;
-    if (Scr->NoRaiseDeicon)
-	XMapWindow(dpy, tmp_win->frame);
-    else
-	XMapRaised(dpy, tmp_win->frame);
-    SetMapStateProp(tmp_win, NormalState);
-
-    if (tmp_win->icon_w) {
-	XUnmapWindow(dpy, tmp_win->icon_w);
-	IconDown (tmp_win);
-    }
-    if (tmp_win->list)
-	XUnmapWindow(dpy, tmp_win->list->icon);
-    if ((Scr->WarpCursor ||
-	 LookInList(Scr->WarpCursorL, tmp_win->full_name, &tmp_win->class)) &&
-	tmp_win->icon)
-      WarpToWindow (tmp_win);
-    tmp_win->icon = FALSE;
-    tmp_win->icon_on = FALSE;
     XSync (dpy, 0);
 }
 

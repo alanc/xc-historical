@@ -27,7 +27,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.70 91/01/10 10:13:27 rws Exp $
+ * $XConsortium: twm.h,v 1.71 91/04/04 14:34:25 gildea Exp $
  *
  * twm include file
  *
@@ -283,11 +283,13 @@ typedef struct TwmWindow
 #define DoesWmSaveYourself	(1L << 1)
 #define DoesWmDeleteWindow	(1L << 2)
 
-#define TBPM_XLOGO ":xlogo"	/* name of titlebar pixmap for xlogo */
-#define TBPM_ICONIFY ":iconify"	/* same image as xlogo */
+#define TBPM_DOT ":dot"		/* name of titlebar pixmap for dot */
+#define TBPM_ICONIFY ":iconify"	/* same image as dot */
 #define TBPM_RESIZE ":resize"	/* name of titlebar pixmap for resize button */
-#define TBPM_QUESTION ":question"	/* name of unknown titlebar pixmap */
+#define TBPM_XLOGO ":xlogo"	/* name of titlebar pixmap for xlogo */
+#define TBPM_DELETE ":delete"	/* same image as xlogo */
 #define TBPM_MENU ":menu"	/* name of titlebar pixmap for menus */
+#define TBPM_QUESTION ":question"	/* name of unknown titlebar pixmap */
 
 #include <X11/Xosdefs.h>
 #ifndef X_NOT_STDC_ENV
@@ -338,6 +340,7 @@ extern int Argc;
 extern char **Argv;
 extern char **Environ;
 extern void NewFontCursor();
+extern Pixmap CreateMenuIcon();
 
 extern Bool ErrorOccurred;
 extern XErrorEvent LastErrorEvent;

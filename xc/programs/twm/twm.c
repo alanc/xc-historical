@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.121 91/01/18 17:26:15 dave Exp $
+ * $XConsortium: twm.c,v 1.122 91/03/14 11:53:52 dave Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -392,6 +392,7 @@ main(argc, argv, environ)
 	Scr->tbpm.resize = None;
 	Scr->tbpm.question = None;
 	Scr->tbpm.menu = None;
+	Scr->tbpm.delete = None;
 
 	InitVariables();
 	InitMenus();
