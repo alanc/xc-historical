@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.60 92/10/04 21:32:40 rws Exp $
+XCOMM site:  $XConsortium: site.def,v 1.61 92/10/17 14:15:53 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -104,6 +104,7 @@ clean::									@@\
 
 #ifdef i860SVR4Architecture
 #define BuildFontServer YES
+#define NormalLibX YES
 #endif
 
 #endif /* AfterVendorCF */
