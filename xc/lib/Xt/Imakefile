@@ -1,6 +1,7 @@
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
+/*  CDEBUGFLAGS = LibaryCDebugFlags */
     CDEBUGFLAGS = -g
         SUBDIRS = clients
        INCLUDES = -I. -I$(XRMSRC) -I$(XLIBSRC) -I$(TOP) -I$(TOP)/X11
@@ -28,13 +29,13 @@ HEADERS = \
 	TM.h
 
 SRCS = \
-	ArgList.c \
 	Alloc.c \
+	ArgList.c \
 	AsciiSink.c \
 	ButtonBox.c \
+	Cascade.c \
 	Clock.c \
 	Command.c \
-	Conversion.c \
 	Cursors.c \
 	DiskSrc.c \
 	Error.c \
@@ -44,10 +45,11 @@ SRCS = \
 	GrayPixmap.c \
 	Initialize.c \
 	Intrinsic.c \
+	Knob.c \
 	Label.c \
 	Load.c \
 	NextEvent.c \
-	Quarks.c \
+	Popup.c \
 	Resources.c \
 	Scroll.c \
 	StringSrc.c \
@@ -55,17 +57,16 @@ SRCS = \
 	TextKinds.c \
 	TMparse.c \
 	TMstate.c \
-	Xrm.c
-#	VPane.c
+	VPane.c
 
 OBJS = \
-	ArgList.o \
 	Alloc.o \
+	ArgList.o \
 	AsciiSink.o \
 	ButtonBox.o \
+	Cascade.o \
 	Clock.o \
 	Command.o \
-	Conversion.o \
 	Cursors.o \
 	DiskSrc.o \
 	Error.o \
@@ -75,10 +76,11 @@ OBJS = \
 	GrayPixmap.o \
 	Initialize.o \
 	Intrinsic.o \
+	Knob.o \
 	Label.o \
 	Load.o \
 	NextEvent.o \
-	Quarks.o \
+	Popup.o \
 	Resources.o \
 	Scroll.o \
 	StringSrc.o \
@@ -86,8 +88,7 @@ OBJS = \
 	TextKinds.o \
 	TMparse.o \
 	TMstate.o \
-	Xrm.o
-#	VPane.o
+	VPane.o
 
 #if DebugLibXtk && ProfileLibXtk
 DebuggedAndProfiledLibraryObjectRule()
@@ -108,7 +109,7 @@ AliasedLibraryTarget(Xtk,Xtk11)
 LintLibraryTarget(Xtk,$(SRCS))
 InstallLibrary(Xtk,$(USRLIBDIR))
 InstallLibraryAlias(Xtk,Xtk11,$(USRLIBDIR))
-InstallLintLibrary(Xtk,$(USRLIBDIR))
+InstallLintLibrary(Xtk,$(LINTLIBDIR))
 
 #if ProfileLibXtk
 ProfiledLibraryTarget(Xtk,$(OBJS))
