@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.191 95/01/06 19:12:51 gildea Exp kaleb $
+XCOMM $XConsortium: Imakefile,v 1.192 95/01/25 20:37:15 kaleb Exp $
 /*
  * Server Master Makefile
  */
@@ -56,6 +56,10 @@ XCOMM $XConsortium: Imakefile,v 1.191 95/01/06 19:12:51 gildea Exp kaleb $
         LBXDIRS = $(TOP)/workInProgress/lbx/programs/Xserver/lbx \
                   $(TOP)/workInProgress/lbx/lib/lbxutil
 #endif
+#if BuildDBE
+         DBEEXT = dbe/libdbe.a
+         DBEDIR = dbe
+#endif
 #ifdef SiteExtensionLibs
      SITEEXTS = SiteExtensionLibs
 #endif
@@ -64,9 +68,9 @@ XCOMM $XConsortium: Imakefile,v 1.191 95/01/06 19:12:51 gildea Exp kaleb $
 #endif
 
       OTHEREXTS = Xext/libext.a $(XKBEXT) $(XINPUTEXT) $(XIEEXT) \
-                  $(LBXEXT) $(SITEEXTS)
+                  $(LBXEXT) $(DBEEXT) $(SITEEXTS)
         EXTDIRS = Xext $(XKBDIR) $(XIDIR) $(XIEDIR) $(PEXDIR) \
-                  $(LBXDIRS) $(SITEEXTDIRS)
+                  $(LBXDIRS) $(DBEDIR) $(SITEEXTDIRS)
      EXTENSIONS = $(OTHEREXTS) $(PEXLIBS)
          XAULIB = $(XAUTHSRC)/libXau.a
        XDMCPLIB = $(XDMCPLIBSRC)/libXdmcp.a
