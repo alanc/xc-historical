@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibnet.h,v 1.1 91/01/08 20:37:36 gildea Exp $ */
+/* $XConsortium: Xlibnet.h,v 1.2 91/02/12 11:55:41 rws Exp $ */
 
 /*
 Copyright 1991 Massachusetts Institute of Technology
@@ -147,15 +147,15 @@ without express or implied warranty.
 #define CLEARBITS(buf) bzero((caddr_t) buf, MSKCNT*sizeof(long))
 #define MASKANDSETBITS(dst, b1, b2)  \
 		      { int cri;			\
-			for (cri=0; cri<MSKCNT; cri++)	\
+			for (cri=MSKCNT; --cri>=0; )	\
 		          dst[cri] = (b1[cri] & b2[cri]) }
 #define ORBITS(dst, b1, b2)  \
 		      { int cri;			\
-		      for (cri=0; cri<MSKCNT; cri++)	\
-		          dst[cri] = (b1[cri] | b2[cri]) }
+		      for (cri=MSKCNT; --cri>=0; )	\
+		          dst[cri] = (b1[cri] | b2[cri]); }
 #define UNSETBITS(dst, b1) \
 		      { int cri;			\
-		      for (cri=0; cri<MSKCNT; cri++)	\
+		      for (cri=MSKCNT; --cri>=0; )	\
 		          dst[cri] &= ~b1[cri];  }
 /*
  * If MSKCNT>4, then ANYSET is a routine defined in XlibInt.c.
