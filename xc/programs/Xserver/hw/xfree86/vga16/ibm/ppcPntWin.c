@@ -1,4 +1,5 @@
-/* $XConsortium: ppcPntWin.c,v 1.1 94/03/28 21:37:22 dpw Exp $ */
+/* $XConsortium: ppcPntWin.c,v 1.1 94/10/05 13:45:56 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcPntWin.c,v 3.0 1994/05/04 15:03:30 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -79,7 +80,6 @@ SOFTWARE.
 #include "pixmapstr.h"
 #include "scrnintstr.h"
 
-#include "mfb.h"
 #include "ppc.h"
 
 #include "ibmTrace.h"
@@ -170,7 +170,7 @@ ppcPaintWindowSolid(pWin, pRegion, what)
 	 * call fill routine, the parms are:
 	 * 	fill(color, alu, planes, x, y, width, height);
 	 */
-	vgaFillSolid( pixel, GXcopy, pm, pbox->x1, pbox->y1, 
+	vgaFillSolid( pWin, pixel, GXcopy, pm, pbox->x1, pbox->y1, 
 		pbox->x2 - pbox->x1, pbox->y2 - pbox->y1 ) ; 
     }
     return ;
@@ -204,7 +204,7 @@ ppcPaintWindowTile(pWin, pRegion, what)
 	 * call tile routine, the parms are:
 	 * 	tile(tile, alu, planes, x, y, width, height,xSrc,ySrc);
 	 */
-	ppcTileRect(pTile, GXcopy, pm, 
+	ppcTileRect(pWin, pTile, GXcopy, pm, 
 		pbox->x1, pbox->y1, 
 		pbox->x2 - pbox->x1, pbox->y2 - pbox->y1,
 		pWin->drawable.x, pWin->drawable.y );

@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: ppcImg.c,v 1.1 94/10/05 13:45:56 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcImg.c,v 3.1 1994/05/31 08:12:22 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -89,8 +90,10 @@ ppcGetImage( pDraw, sx, sy, w, h, format, planeMask, pdstLine )
     GCPtr	pGC ;
     char *pDst = (char *) pdstLine ;
 
+#if 0
 	miGetImage( pDraw, sx, sy, w, h, format, planeMask, pdstLine ) ;
         return;
+#endif
 
     depth = pDraw->depth ;
     if ( format == ZPixmap ) {
@@ -107,7 +110,7 @@ ppcGetImage( pDraw, sx, sy, w, h, format, planeMask, pdstLine )
 	    gcv[0] = GXcopy ;
 	    gcv[1] = planeMask ;
 	    DoChangeGC( pGC, GCPlaneMask | GCFunction, gcv, 0 ) ;
-	    ValidateGC( pPixmap, pGC ) ;
+	    ValidateGC( (DrawablePtr)pPixmap, pGC ) ;
 
 	    pbits = (char *)ALLOCATE_LOCAL(w);
 
@@ -117,10 +120,11 @@ ppcGetImage( pDraw, sx, sy, w, h, format, planeMask, pdstLine )
 		width = w ;
 		(* pDraw->pScreen->GetSpans)( pDraw, w, &pt, &width, 1, pbits ) ;
 		pt.x = 0 ;
-		pt.y = 0 ;
+		pt.y = i ;
 		width = w ;
-		(* pGC->ops->SetSpans)( pPixmap, pGC, pbits, &pt, &width, 1, TRUE ) ;
-		(* pDraw->pScreen->GetSpans)( pPixmap, w, &pt, &width, 1, pDst ) ;
+		if ( planeMask & ((1 << depth) - 1) ) /* GJA -- mfb bug */ 
+		  (* pGC->ops->SetSpans)( (DrawablePtr)pPixmap, pGC, pbits, &pt, &width, 1, TRUE ) ;
+		(* pDraw->pScreen->GetSpans)( (DrawablePtr)pPixmap, w, &pt, &width, 1, pDst ) ;
 		pDst += linelength ;
 	    }
 

@@ -1,4 +1,5 @@
-/* $XConsortium: ppcBStore.c,v 1.1 94/03/28 21:34:47 dpw Exp $ */
+/* $XConsortium: ppcBStore.c,v 1.1 94/10/05 13:45:56 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcBStore.c,v 3.1 1994/06/18 16:26:35 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -91,7 +92,6 @@ SOFTWARE.
 #include "windowstr.h"
 
 #include "mibstore.h"
-#include "mfb.h"
 
 #include "ppc.h"
 
@@ -129,7 +129,7 @@ ppcSaveAreas( pPixmap, prgnSave, xorg, yorg, pWin )
 	return ;
 
     for ( pBox = REGION_RECTS(prgnSave) ; nBox-- ; pBox++ )
-	vgaReadColorImage( pBox->x1 + xorg,
+	vgaReadColorImage( pWin, pBox->x1 + xorg,
 		 pBox->y1 + yorg,
 		 pBox->x2 - pBox->x1,
 		 pBox->y2 - pBox->y1,
@@ -171,11 +171,11 @@ ppcRestoreAreas( pPixmap, prgnRestore, xorg, yorg, pWin )
     if ( !( nBox = REGION_NUM_RECTS(prgnRestore) ) )
 	return ;
     for ( pBox = REGION_RECTS(prgnRestore) ; nBox-- ; pBox++ )
-	vgaDrawColorImage( pBox->x1,
+	vgaDrawColorImage( pWin, pBox->x1,
 		 pBox->y1,
 		 pBox->x2 - pBox->x1,
 		 pBox->y2 - pBox->y1,
-		 ( (char *)pPixmap->devPrivate.ptr )
+		 ( (unsigned char *)pPixmap->devPrivate.ptr )
 		 + ( ( pBox->y1 - yorg ) * pPixmap->devKind )
 		 + ( pBox->x1 - xorg ),
 		 pPixmap->devKind,

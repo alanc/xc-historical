@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: ppcBitmap.c,v 1.1 94/10/05 13:45:56 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcBitmap.c,v 3.0 1994/05/04 15:03:19 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -29,7 +30,6 @@
 #include "pixmap.h"
 #include "pixmapstr.h"
 
-#include "mfb.h"
 #include "maskbits.h"
 
 #include "OScompiler.h"

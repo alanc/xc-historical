@@ -1,4 +1,5 @@
-/* $XConsortium: ppcPolyPnt.c,v 1.1 94/03/28 21:37:28 dpw Exp $ */
+/* $XConsortium: ppcPolyPnt.c,v 1.1 94/10/05 13:45:56 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcPolyPnt.c,v 3.0 1994/05/04 15:03:32 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -145,7 +146,8 @@ if ( pGC->miTranslate ) {
 
 	for ( ppt = pptInit ; npt-- ; ppt++ )
 		if ( (* PointInRegion)( pRegion, ppt->x, ppt->y, &box ) )
-			vgaFillSolid( fg, alu, pm, ppt->x, ppt->y, 1, 1 ) ;
+			vgaFillSolid( (WindowPtr)pDrawable,
+				fg, alu, pm, ppt->x, ppt->y, 1, 1 ) ;
 }
 
 return ;

@@ -1,4 +1,5 @@
-/* $XConsortium: vgaGC.c,v 1.1 94/03/28 21:39:14 dpw Exp $ */
+/* $XConsortium: vgaGC.c,v 1.1 94/10/05 13:45:56 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaGC.c,v 3.0 1994/05/04 15:03:46 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -107,8 +108,6 @@ SOFTWARE.
 #include "mi.h"
 #include "mistruct.h"
 
-#include "mfb.h"
-
 #include "OScompiler.h"
 
 #include "ppc.h"
@@ -138,7 +137,7 @@ register ppcPrivGCPtr devPriv ;
 	    pGC->ops->PushPixels	= miPushPixels ; /* GJA */
 	    pGC->ops->PolyArc	= v16ZeroPolyArc ;
 	    pGC->ops->PolyFillArc	= v16PolyFillArc ;
-	    pGC->ops->PolySegment	= ppcScrnZeroSegs ;
+	    pGC->ops->PolySegment	= v16SegmentSS ;
 	}
 	return;
 }
@@ -163,14 +162,23 @@ register Mask bsChanges = 0 ;
 					    : miPolyArc )
 		: miPolyArc ) ;
 	    pGC->ops->PolySegment = ( ( pGC->lineStyle == LineSolid )
-		? ( ( pGC->lineWidth == 0 ) ? ppcScrnZeroSegs
-					    : miPolySegment )
-		: miPolySegment ) ;
+		? ( ( pGC->lineWidth == 0 )
+			? ( ( pGC->fillStyle == FillSolid ) ?
+				v16SegmentSS : miPolySegment )
+			: miPolySegment )
+		: ( ( pGC->lineWidth == 0 )
+			? ( ( pGC->fillStyle == FillSolid ) ?
+				v16SegmentSD : miPolySegment )
+			: miPolySegment ) ) ;
 	    pGC->ops->Polylines = ( ( pGC->lineStyle == LineSolid )
-		? ( ( pGC->lineWidth == 0 ) ? ppcScrnZeroLine
-					    : miWideLine )
-		: ( ( pGC->lineWidth == 0 ) ? ppcScrnZeroDash
-					    : miWideDash ) ) ;
+		? ( ( pGC->lineWidth == 0 )
+			? ( (pGC->fillStyle == FillSolid ) ?
+				v16LineSS : miZeroLine )
+			: miWideLine )
+		: ( ( pGC->lineWidth == 0 )
+			? ( (pGC->fillStyle == FillSolid ) ?
+				v16LineSD : miWideDash )
+			: miWideDash ) ) ;
 	    /*
 	     * If these are just square boxes with no funny business
 	     * going on we can call the fast routine that draws

@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: ppcArea.c,v 1.1 94/10/05 13:45:56 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcArea.c,v 3.0 1994/05/04 15:03:16 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -75,28 +76,28 @@ switch (  ( (ppcPrivGC *) pGC->devPrivates[mfbGCPrivateIndex].ptr )->colorRrop.f
 		for ( pPixmap = pGC->tile.pixmap ; --nboxes ; pBox++ )
 			if ( ( w = pBox->x2 - ( x = pBox->x1 ) )
 			  && ( h = pBox->y2 - ( y = pBox->y1 ) ) )
-				ppcTileRect( pPixmap, alu, pm,
+				ppcTileRect( pWin, pPixmap, alu, pm,
 					     x, y, w, h, xSrc, ySrc ) ;
 		break ;
 	case FillOpaqueStippled:
 		for ( pPixmap = pGC->stipple ; --nboxes ; pBox++ )
 			if ( ( w = pBox->x2 - ( x = pBox->x1 ) )
 			  && ( h = pBox->y2 - ( y = pBox->y1 ) ) )
-				ppcOpaqueStipple( pPixmap, fg, bg, alu, pm,
+				ppcOpaqueStipple( pWin, pPixmap, fg, bg, alu, pm,
 					     x, y, w, h, xSrc, ySrc ) ;
 		break ;
 	case FillStippled:
 		for ( pPixmap = pGC->stipple ; --nboxes ; pBox++ )
 			if ( ( w = pBox->x2 - ( x = pBox->x1 ) )
 			  && ( h = pBox->y2 - ( y = pBox->y1 ) ) )
-				vgaFillStipple( pPixmap, fg, alu, pm,
+				vgaFillStipple( pWin, pPixmap, fg, alu, pm,
 					     x, y, w, h, xSrc, ySrc ) ;
 		break ;
 	case FillSolid:
 		for ( ; --nboxes ; pBox++ )
 			if ( ( w = pBox->x2 - ( x = pBox->x1 ) )
 			  && ( h = pBox->y2 - ( y = pBox->y1 ) ) )
-				vgaFillSolid( fg, alu, pm, x, y, w, h ) ;
+				vgaFillSolid( pWin, fg, alu, pm, x, y, w, h ) ;
 		break ;
 }
 

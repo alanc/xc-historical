@@ -1,4 +1,5 @@
-/* $XConsortium: ppcSetSp.c,v 1.1 94/03/28 21:36:16 dpw Exp $ */
+/* $XConsortium: ppcSetSp.c,v 1.1 94/10/05 13:45:56 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcSetSp.c,v 3.1 1994/06/18 16:26:39 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -98,11 +99,13 @@ ppcSetScanline( pixCount, psrc, pdst, pm, alu )
     register int		pixCount;	/* width of scanline in bits */
     register char	*psrc;
     register unsigned char	*pdst;		/* where to put the bits */
-    register const int		pm;		/* plane mask */
+    register int		pm;		/* plane mask */
     const int			alu;		/* raster op */
 {
-register const int npm = ~pm ;	/* inverted plane mask */
+register int npm = ~pm ;	/* inverted plane mask */
 register char tmpx ;
+
+pm &= 0x0F; npm &= 0x0F; /* GJA */
 
 switch ( alu ) {
 	case GXclear:		/* 0x0 Zero 0 */
@@ -271,10 +274,10 @@ ppcSetSpans( pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted )
 					    + ( ppt->y * widthDst ),
 				            pm, alu ) ;
 		    else
-			vgaDrawColorImage
-			    ( xStart, ppt->y, xEnd - xStart, 1,
-			      psrc + ( xStart - ppt->x ), xEnd - xStart,
-			      alu, pm ) ;
+			vgaDrawColorImage( (WindowPtr)pDrawable,
+			      xStart, ppt->y, xEnd - xStart, 1,
+			      (unsigned char *)psrc + ( xStart - ppt->x ),
+			      xEnd - xStart, alu, pm ) ;
 		    if ( ppt->x + width <= pbox->x2 )
 		        break ; /* End of the line, as it were */
 		}
@@ -308,11 +311,11 @@ ppcSetSpans( pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted )
 						 + xStart ),
 						pm, alu ) ;
     			else	/* pDrawable->type == DRAWABLE_WINDOW */
-			    vgaDrawColorImage
-				( xStart, ppt->y, xEnd - xStart, 1,
-				  psrc + ( xStart - ppt->x ), xEnd - xStart,
-					/* GJA ^ */
-				  alu, pm ) ;
+			    vgaDrawColorImage( (WindowPtr)pDrawable,
+				  xStart, ppt->y, xEnd - xStart, 1,
+				  (unsigned char *)psrc + ( xStart - ppt->x ),
+							/* GJA ^ */
+				  xEnd - xStart, alu, pm ) ;
 		    }
 
 		}

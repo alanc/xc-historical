@@ -1,6 +1,5 @@
-/* $XConsortium$ */
-/*
- */
+/* $XConsortium: gen_driver.c,v 1.1 94/10/05 13:48:57 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga2/drivers/generic/gen_driver.c,v 3.5 1994/09/11 00:51:50 dawes Exp $ */
 
 /*
  * Generic VGA driver for mono operation.  This driver doesn't do much since
@@ -55,10 +54,17 @@ vgaVideoChipRec GENERIC = {
   0xFFFF,
   0x00000, 0x10000,
   0x00000, 0x10000,
-  FALSE,
+  TRUE,
   VGA_NO_DIVIDE_VERT,
   {0,},
   32,
+  FALSE,
+  0,
+  0,
+  FALSE,
+  FALSE,
+  NULL,
+  1,
 };
 
 #define new ((vgaGENERICPtr)vgaNewVideoState)
@@ -260,7 +266,7 @@ static void
 GENERICAdjust(x, y)
      int x, y;
 {
-  int Base = (y * vga2InfoRec.virtualX + x + 3) >> 3;
+  int Base = (y * vga2InfoRec.displayWidth + x + 3) >> 3;
 
   outw(vgaIOBase + 4, (Base & 0x00FF00) | 0x0C);
   outw(vgaIOBase + 4, ((Base & 0x00FF) << 8) | 0x0D);

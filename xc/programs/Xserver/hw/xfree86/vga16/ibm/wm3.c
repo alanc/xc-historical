@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: wm3.c,v 1.1 94/10/05 13:45:56 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/wm3.c,v 3.0 1994/05/04 15:03:54 dawes Exp $ */
 #include <sys/types.h>
 #include "compiler.h"
 #include "vgaReg.h"
@@ -81,7 +82,7 @@ GC *pGC;
         ALU = OR;
         break;
     case GXnand:         /* rop0 = RROP_WHITE;  rop1 = RROP_INVERT; -- TRICKY */
-        ALU = OR;
+        ALU = AND;
         post_invert = 1;
         break;
     case GXset:          /* rop0 = RROP_WHITE;  rop1 = RROP_WHITE; */

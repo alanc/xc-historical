@@ -1,4 +1,5 @@
-/* $XConsortium: ppcCpArea.c,v 1.1 94/03/28 21:35:45 dpw Exp $ */
+/* $XConsortium: ppcCpArea.c,v 1.1 94/10/05 13:45:56 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcCpArea.c,v 3.1 1994/06/18 16:26:37 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -58,7 +59,6 @@ SOFTWARE.
 #include "scrnintstr.h"
 
 #include "mi.h"
-#include "mfb.h"
 
 #include "OScompiler.h"
 
@@ -154,10 +154,11 @@ if ( ! pPriv->pCompositeClip )
 		dy = srcy - dsty ;
 
 		for ( ; nbox-- ; pbox++ )
-			vgaDrawColorImage( pbox->x1, pbox->y1,
+			vgaDrawColorImage( (WindowPtr)pDstDrawable,
+				 pbox->x1, pbox->y1,
 				 pbox->x2 - pbox->x1,
 				 pbox->y2 - pbox->y1,
-				 data + pbox->x1 + dx
+				 (unsigned char *)data + pbox->x1 + dx
 				  + ( ( pbox->y1 + dy ) * stride ),
 				 stride,
 				 pGC->alu, pGC->planemask ) ;
@@ -353,7 +354,7 @@ int dstx, dsty ;
 		}
 		{ /* Here is the "REAL" copy. All clipped and GO. */
 		for ( ; nbox-- ; pbox++ )
-			vgaBitBlt( alu, pm, pm,
+			vgaBitBlt( (WindowPtr)pDstDrawable, alu, pm, pm,
 				 pbox->x1 + dx, pbox->y1 + dy,
 				 pbox->x1, pbox->y1,
 				 pbox->x2 - pbox->x1, pbox->y2 - pbox->y1 ) ;
