@@ -22,7 +22,7 @@
  * $NCDId: @(#)lbxfuncs.c,v 1.43 1995/03/09 00:54:06 lemke Exp $
  */
 
-/* $XConsortium: lbxfuncs.c,v 1.13 95/05/24 16:14:13 mor Exp mor $ */
+/* $XConsortium: lbxfuncs.c,v 1.14 95/05/30 18:33:33 mor Exp mor $ */
 
 /*
  * top level LBX request & reply handling
@@ -73,7 +73,7 @@ FinishSetupReply(client, setup_len, setup_data, changes, majorVer, minorVer)
     int         setup_len;
     xConnSetup *setup_data;
     pointer     changes;
-    CARD16      majorVer,
+    int		majorVer,
                 minorVer;
 {
     xConnSetupPrefix reply;
@@ -176,7 +176,7 @@ get_tagged_setup_reply(client, data)
     }
 
     FinishSetupReply(client, len, tag_data, change_list,
-		     rep->majorVersion, rep->minorVersion);
+		     (int) rep->majorVersion, (int) rep->minorVersion);
 
     return;
 }
@@ -1738,7 +1738,8 @@ DoLBXReply(client, data, len)
 		}
 
 		FinishSetupReply (client, reply->length << 2,
-		    (xConnSetup *)&prefix[1], NULL, majorVer, minorVer);
+		    (xConnSetup *)&prefix[1], NULL,
+		    (int) majorVer, (int) minorVer);
 
 		return FALSE;
 	    }
