@@ -1,4 +1,4 @@
-/* $XConsortium: ico.c,v 1.5 88/08/29 16:12:32 jim Exp $ */
+/* $XConsortium: ico.c,v 1.6 88/09/06 17:54:09 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -111,6 +111,7 @@ static char *help_message[] = {
 "    -dbl                             use double buffering",
 "    -noedges                         don't draw wire frame edges",
 "    -faces                           draw faces",
+"    -lw number                       line width to use",
 "    -i                               invert",
 "    -sleep number                    seconds to sleep in between draws",
 "    -obj objname                     type of polyhedral object to draw",
@@ -141,7 +142,9 @@ char **argv;
 	int icoDeltaX, icoDeltaY;
 	int icoW, icoH;
 	XEvent xev;
+	unsigned long vmask;
 	XGCValues xgcv;
+	int linewidth = 0;
 
 	ProgramName = argv[0];
 
@@ -166,6 +169,8 @@ char **argv;
 			numcolors = argv - colornames;
 			--argv;
 		}
+		else if (!strcmp (*argv, "-lw"))
+			linewidth = atoi(*++argv);
 		else if (!strcmp (*argv, "-dbl"))
 			dblbuf = 1;
 		else if (!strcmp(*argv, "-noedges"))
@@ -263,16 +268,16 @@ char **argv;
 
 	/* Set up a graphics context: */
 
-	gc = XCreateGC(dpy, win, 0, NULL);
-	XSetForeground(dpy, gc, fg);
-	XSetBackground(dpy, gc, bg);
-
-	if (dash)
-		{
-		xgcv.line_style = LineDoubleDash;
-		xgcv.dashes = dash;
-		XChangeGC(dpy, gc, GCLineStyle | GCDashList, &xgcv);
-		}
+	vmask = (GCBackground | GCForeground | GCLineWidth);
+	xgcv.background = bg;
+	xgcv.foreground = fg;
+	xgcv.line_width = linewidth;
+	if (dash) {
+	    xgcv.line_style = LineDoubleDash;
+	    xgcv.dashes = dash;
+	    vmask |= (GCLineStyle | GCDashList);
+	}
+	gc = XCreateGC (dpy, win, vmask, &xgcv);
 
 	if (dofaces && numcolors>=1) {
 	    int i,t,bits;
