@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Event.c,v 1.93 89/06/16 19:34:33 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Event.c,v 1.94 89/09/12 16:46:54 swick Exp $";
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 #endif /* lint */
 
@@ -35,6 +35,24 @@ SOFTWARE.
 static XtAsyncHandler asyncHandler = NULL;
 static XtPointer asyncClosure = NULL;
 #endif
+
+/*
+ * These are definitions to make the code that handles exposure compresssion
+ * easier to read.
+ *
+ * COMP_EXPOSE      - The compression exposure field of "widget"
+ * COMP_EXPOSE_TYPE - The type of compression (lower 4 bits of COMP_EXPOSE.
+ * GRAPHICS_EXPOSE  - TRUE if the widget wants graphics expose events
+ *                    dispatched.
+ * NO_EXPOSE        - TRUE if the widget wants No expose events dispatched.
+ */
+
+#define COMP_EXPOSE   (widget->core.widget_class->core_class.compress_exposure)
+#define COMP_EXPOSE_TYPE (COMP_EXPOSE & 0x0f)
+#define GRAPHICS_EXPOSE  ((XtExposeGraphicsExpose & COMP_EXPOSE) || \
+			  (XtExposeGraphicsExposeMerged & COMP_EXPOSE))
+#define NO_EXPOSE        (XtExposeNoExpose & COMP_EXPOSE)
+
 
 static GrabList grabList;	/* %%% should this be in the AppContext? */
 static GrabList focusList;	/* %%% should this be in the AppContext? */
@@ -372,39 +390,30 @@ static void DispatchEvent(event, widget, mask)
     int numprocs, i;
     XEvent nextEvent;
 
-    if (mask == ExposureMask) {
-	XtExposeProc expose = widget->core.widget_class->core_class.expose;
-	if (expose != NULL) {
-	    if (!widget->core.widget_class->core_class.compress_exposure) {
+    if ( widget->core.widget_class->core_class.expose != NULL )
+	if ( (mask == ExposureMask) ||
+	     ((event->type == NoExpose) && NO_EXPOSE) ||
+	     ((event->type == GraphicsExpose) && GRAPHICS_EXPOSE) ) {
+	    XtExposeProc expose = widget->core.widget_class->core_class.expose;
+
+	    /* We need to mask off the bits that could contain the information
+	     * about whether or not we desire Graphics and NoExpose events.  */
+
+	    if ( (COMP_EXPOSE_TYPE == XtExposeNoCompress) || NO_EXPOSE )
 		(*expose)(widget, event, (Region)NULL);
-	    }
 	    else {
-		XtPerDisplay pd = _XtGetPerDisplay(event->xany.display);
-		XtAddExposureToRegion(event, pd->region);
-		if (event->xexpose.count == 0) {
-		    /* Patch event to have the new bounding box.  Unless
-		       someone's goofed, it can only be an Expose event */
-		    XRectangle rect;
-		    XClipBox(pd->region, &rect);
-		    event->xexpose.x = rect.x;
-		    event->xexpose.y = rect.y;
-		    event->xexpose.width = rect.width;
-		    event->xexpose.height = rect.height;
-		    (*expose)(widget, event, pd->region);
-		    (void) XIntersectRegion(
-		        nullRegion, pd->region, pd->region);
-		}
+		static void CompressExposures();
+		CompressExposures(event, widget);
 	    }
 	}
-    }
 
     if (mask == EnterWindowMask &&
 	    widget->core.widget_class->core_class.compress_enterleave) {
 	if (XPending(event->xcrossing.display)) {
 	    XPeekEvent(event->xcrossing.display, &nextEvent);
 	    if (nextEvent.type == LeaveNotify &&
-		    event->xcrossing.window == nextEvent.xcrossing.window &&
-		    event->xcrossing.subwindow == nextEvent.xcrossing.subwindow) {
+		  event->xcrossing.window == nextEvent.xcrossing.window &&
+		  event->xcrossing.subwindow == nextEvent.xcrossing.subwindow){
 		/* skip the enter/leave pair */
 		XNextEvent(event->xcrossing.display, &nextEvent);
 		return;
@@ -461,6 +470,167 @@ static void DispatchEvent(event, widget, mask)
     for (i=0 ; i<numprocs ; i++) (*(proc[i]))(widget, closure[i], event);
 }
 
+/*
+ * This structure is passed into the check exposure proc.
+ */
+
+typedef struct _CheckExposeInfo {
+    int type1, type2;		/* Types of events to check for. */
+    Boolean non_matching;	/* Was there an event that did not 
+				   match eighter type? */
+    Window window;		/* Window to match. */
+} CheckExposeInfo;
+
+#define GetCount(ev) ( ((ev)->type == GraphicsExpose) ? \
+		       (ev)->xgraphicsexpose.count : (ev)->xexpose.count)
+
+/*	Function Name: CompressExposures
+ *	Description: Handles all exposure compression
+ *	Arguments: event - the xevent that is to be dispatched
+ *                 widget - the widget that this event occured in.
+ *	Returns: none.
+ *
+ *      NOTE: Event must be of type Expose or GraphicsExpose.
+ */
+
+static void
+CompressExposures(event, widget)
+Widget widget;
+XEvent * event;
+{
+    XtPerDisplay pd = _XtGetPerDisplay(event->xany.display);
+    CheckExposeInfo info;
+    static void SetExposureEvent();
+    int count;
+
+    XtAddExposureToRegion(event, pd->region);
+
+    if ( GetCount(event) != 0 )
+	return;
+
+    if ( (COMP_EXPOSE_TYPE == XtExposeCompressSeries) ||
+	 (XPending(XtDisplay(widget)) == 0) ) {
+	SetExposureEvent(event, widget, pd);
+	return;
+    }
+
+    if (COMP_EXPOSE & XtExposeGraphicsExposeMerged) {
+	info.type1 = Expose;
+	info.type2 = GraphicsExpose;
+    }
+    else {
+	info.type1 = event->type;
+	info.type2 = 0;
+    }
+    info.window = XtWindow(widget);
+
+/*
+ * We have to be very careful here not to hose down the processor
+ * when blocking until count gets to zero.
+ *
+ * First, check to see if there are any events in the queue for this
+ * widget, and of the correct type.  
+ *
+ * Once we cannot find any more events, check to see that count is zero. 
+ * If it is not then block until we get another exposure event.
+ *
+ * If we find no more events, and count on the last one we saw was zero we
+ * we can be sure that all events have been processed.
+ */
+
+    count = 0;
+    while (TRUE) {
+	XEvent event_return;
+	static Bool CheckExposureEvent();
+
+	info.non_matching = FALSE;
+	if (XCheckIfEvent(XtDisplay(widget), &event_return, 
+			  CheckExposureEvent, (char *) &info)) {
+	    if ( (COMP_EXPOSE_TYPE == XtExposeCompressMultiple) &&
+		info.non_matching )
+	    {
+		break; /* Non Expose Event occured, we are done compressing. */
+	    }
+	    count = GetCount(&event_return);
+	    XtAddExposureToRegion(&event_return, pd->region);
+	}
+	else if (count != 0) {
+	    XIfEvent(XtDisplay(widget), &event_return,
+		     CheckExposureEvent, (char *) &info);
+	    count = GetCount(&event_return);
+	    XtAddExposureToRegion(&event_return, pd->region);
+	}
+	else /* count == 0 && XCheckIfEvent Failed. */
+	    break;
+    }
+
+    SetExposureEvent(event, widget, pd);
+}
+
+/*	Function Name: SetExposureEvent
+ *	Description: Sets the x, y, width, and height of the event
+ *                   to be the clip box of Expose Region.
+ *	Arguments: event  - the X Event to mangle.
+ *                 widget - the widget that this event occured in.
+ *                 pd     - the per display information for this widget.
+ *	Returns: none.
+ */
+
+static void
+SetExposureEvent(event, widget, pd)
+XEvent * event;
+Widget widget;
+XtPerDisplay pd;
+{
+    XtExposeProc expose = widget->core.widget_class->core_class.expose;
+    XRectangle rect;
+
+    XClipBox(pd->region, &rect);
+    if (event->type == Expose) {
+	event->xexpose.x = rect.x;
+	event->xexpose.y = rect.y;
+	event->xexpose.width = rect.width;
+	event->xexpose.height = rect.height;
+    }
+    else {			/* Graphics Expose Event. */
+	event->xgraphicsexpose.x = rect.x;
+	event->xgraphicsexpose.y = rect.y;
+	event->xgraphicsexpose.width = rect.width;
+	event->xgraphicsexpose.height = rect.height;
+    }
+    (*expose)(widget, event, pd->region);
+    (void) XIntersectRegion(nullRegion, pd->region, pd->region);
+}
+
+/*	Function Name: CheckExposureEvent
+ *	Description: Checks the event cue for an expose event
+ *	Arguments: display - the display connection.
+ *                 event - the event to check.
+ *                 arg - a pointer to the exposure info structure.
+ *	Returns: TRUE if we found an event of the correct type
+ *               with the right window.
+ *
+ * NOTE: The only valid types (info.type1 and info.type2) are Expose
+ *       and GraphicsExpose.
+ */
+
+/* ARGSUSED */
+static Bool
+CheckExposureEvent(disp, event, arg)
+Display * disp;
+XEvent * event;
+char * arg;
+{
+    CheckExposeInfo * info = ((CheckExposeInfo *) arg);
+
+    if ( (info->type1 == event->type) || (info->type2 == event->type)) {
+	if (event->type == GraphicsExpose)
+	    return(event->xgraphicsexpose.drawable == info->window);
+	return(event->xexpose.window == info->window);
+    }
+    info->non_matching = TRUE;
+    return(FALSE);
+}
 
 typedef enum _GrabType {pass, ignore, remap} GrabType;
 
