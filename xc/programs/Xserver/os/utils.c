@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.79 89/06/16 17:02:52 keith Exp $ */
+/* $XConsortium: utils.c,v 1.80 89/07/03 15:16:20 rws Exp $ */
 #include <stdio.h>
 #include "Xos.h"
 #include "misc.h"
@@ -48,8 +48,6 @@ extern long ScreenSaverTime;		/* for forcing reset */
 extern Bool permitOldBugs;
 extern int monitorResolution;
 
-Bool clientsDoomed = FALSE;
-Bool GivingUp = FALSE;
 void ddxUseMsg();
 
 extern char *sbrk();
@@ -75,7 +73,7 @@ char *dev_tty_from_init = NULL;		/* since we need to parse it anyway */
 
 AutoResetServer ()
 {
-    clientsDoomed = TRUE;
+    dispatchException |= DE_RESET;
     isItTimeToYield = TRUE;
 #ifdef GPROF
     chdir ("/tmp");
@@ -90,9 +88,8 @@ AutoResetServer ()
 
 GiveUp()
 {
-    clientsDoomed = TRUE;
+    dispatchException |= DE_TERMINATE;
     isItTimeToYield = TRUE;
-    GivingUp = TRUE;
 }
 
 

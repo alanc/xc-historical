@@ -40,6 +40,7 @@ SOFTWARE.
 #include <signal.h>
 #include "osdep.h"
 #include "dixstruct.h"
+#include "opaque.h"
 
 extern long AllSockets[];
 extern long AllClients[];
@@ -54,7 +55,6 @@ extern long ScreenSaverTime;               /* milliseconds */
 extern long ScreenSaverInterval;               /* milliseconds */
 extern int ConnectionTranslation[];
 
-extern Bool clientsDoomed;
 extern Bool NewOutputPending;
 extern Bool AnyClientsWriteBlocked;
 
@@ -63,8 +63,6 @@ extern void EstablishNewConnections();
 extern void SaveScreens();
 
 extern int errno;
-
-int isItTimeToYield = 1;
 
 #ifdef MULTI_X_HACK
 extern int XMulti;
@@ -196,7 +194,7 @@ WaitForSomething(pClientsReady)
 	    }
 #endif /* XTESTEXT1 */
 	    /* keep this check close to select() call to minimize race */
-	    if (clientsDoomed)
+	    if (dispatchException)
 		i = -1;
 	    else if (AnyClientsWriteBlocked)
 	    {
@@ -216,7 +214,7 @@ WaitForSomething(pClientsReady)
 #endif /* XTESTEXT1 */
 	    if (i <= 0) /* An error or timeout occurred */
             {
-		if (clientsDoomed)
+		if (dispatchException)
 		    return 0;
 		CLEARBITS(clientsWritable);
 		if (i < 0) 

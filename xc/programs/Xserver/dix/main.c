@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 5.0 89/06/09 14:59:25 keith Exp $ */
+/* $XConsortium: main.c,v 5.1 89/06/16 16:52:17 keith Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -44,7 +44,6 @@ extern long defaultScreenSaverInterval;
 extern int defaultScreenSaverBlanking;
 extern int defaultScreenSaverAllowExposures;
 
-extern Bool GivingUp;
 void ddxGiveUp();
 
 extern char *display;
@@ -252,7 +251,7 @@ main(argc, argv)
         CloseFont(defaultFont, (Font)0);
         defaultFont = (FontPtr)NULL;
 
-	if (GivingUp)
+	if (dispatchException & DE_TERMINATE)
 	{
 	    ddxGiveUp();
 	    break;
