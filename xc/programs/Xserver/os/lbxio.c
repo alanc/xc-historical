@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.87 94/04/01 17:37:05 dpw Exp $ */
+/* $XConsortium: lbxio.c,v 1.1 94/12/01 20:58:09 mor Exp mor $ */
 /*****************************************************************
  * i/o functions
  *
@@ -74,12 +74,6 @@ extern ConnectionOutputPtr FreeOutputs;
 extern OsCommPtr AvailableInput;
 
 extern ConnectionInputPtr AllocateInputBuffer(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
-
-extern ConnectionOutputPtr AllocateOutputBuffer(
 #if NeedFunctionPrototypes
     void
 #endif
