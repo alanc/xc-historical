@@ -1,6 +1,6 @@
 /*
  * $Source: /usr/expo/X/src/lib/Xaw/RCS/Mailbox.c,v $
- * $Header: Mailbox.c,v 1.4 88/03/03 14:43:26 swick Exp $
+ * $Header: Mailbox.c,v 1.5 88/03/03 16:23:19 swick Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -153,6 +153,14 @@ static void clock_tic (client_data, id)
     MailboxWidget w = (MailboxWidget) client_data;
 
     check_mailbox (w, FALSE, FALSE);
+
+    /*
+     * and reset the timer
+     */
+
+    w->mailbox.interval_id = XtAddTimeOut (w->mailbox.update * 1000,
+					   clock_tic, (caddr_t) w);
+
     return;
 }
 
@@ -207,6 +215,9 @@ static void Realize (gw, valuemaskp, attr)
     w->mailbox.gc = get_mailbox_gc (w);
 
     XtAddEventHandler (gw, ButtonPressMask, FALSE, HandleButtonPress, NULL);
+
+    w->mailbox.interval_id = XtAddTimeOut (w->mailbox.update * 1000,
+					   clock_tic, (caddr_t) w);
 
     return;
 }
@@ -279,13 +290,6 @@ static void check_mailbox (w, force_redraw, reset)
 
     w->mailbox.last_size = mailboxsize;
     if (force_redraw) redraw_mailbox (w);
-
-    /*
-     * and reset the timer
-     */
-
-    w->mailbox.interval_id = XtAddTimeOut (w->mailbox.update * 1000,
-					   clock_tic, (caddr_t) w);
     return;
 }
 
