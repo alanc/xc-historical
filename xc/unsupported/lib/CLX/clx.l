@@ -871,7 +871,7 @@
 		(setq mask (logior mask (ash 1 bit)))))))))
 
 (defun decode-mask (key-vector mask)
-  (declare (type (simple-vector keyword (*)) key-vector)
+  (declare (type (simple-array keyword (*)) key-vector)
 	   (type mask32 mask))
   (declare-values list)
   (do ((m mask (ash m -1))
