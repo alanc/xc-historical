@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbfillrct.c,v 1.38 89/03/16 14:47:22 jim Exp $ */
+/* $XConsortium: mfbfillrct.c,v 5.0 89/06/09 15:06:21 keith Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 #include "pixmapstr.h"
@@ -60,10 +60,10 @@ mfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     BoxPtr pboxClippedBase;
     BoxPtr pextent;
     mfbPrivGC	*priv;
-
     int alu;
     void (* pfn) ();
     PixmapPtr ppix;
+    int numRects;
 
     priv = (mfbPrivGC *) pGC->devPrivates[mfbGCPrivateIndex].ptr;
     alu = priv->ropFillArea;
@@ -71,8 +71,8 @@ mfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     ppix = *(priv->ppPixmap);
     prgnClip = priv->pCompositeClip;
 
-    pboxClippedBase = (BoxPtr)ALLOCATE_LOCAL(prgnClip->numRects * 
-					     sizeof(BoxRec));
+    numRects = REGION_NUM_RECTS(prgnClip);
+    pboxClippedBase = (BoxPtr)ALLOCATE_LOCAL(numRects * sizeof(BoxRec));
 
     if (!pboxClippedBase)
 	return;
@@ -143,8 +143,8 @@ mfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	    break;
 	  case rgnPART:
 	    pboxClipped = pboxClippedBase;
-	    pbox = prgnClip->rects;
-	    n = prgnClip->numRects;
+	    pbox = REGION_RECTS(prgnClip);
+	    n = numRects;
 
 	    /* clip the rectangle to each box in the clip region
 	       this is logically equivalent to calling Intersect()

@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbsetsp.c,v 1.23 89/03/16 14:47:14 jim Exp $ */
+/* $XConsortium: mfbsetsp.c,v 5.0 89/06/09 15:07:04 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -181,8 +181,8 @@ mfbSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
 	widthDst = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
     }
 
-    pbox =  prgnDst->rects;
-    pboxLast = pbox + prgnDst->numRects;
+    pbox =  REGION_RECTS(prgnDst);
+    pboxLast = pbox + REGION_NUM_RECTS(prgnDst);
 
     if(fSorted)
     {
@@ -250,7 +250,7 @@ mfbSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
 	    if(ppt->y >= 0 && ppt->y < yMax)
 	    {
 		
-		for(pbox = prgnDst->rects; pbox< pboxLast; pbox++)
+		for(pbox = REGION_RECTS(prgnDst); pbox< pboxLast; pbox++)
 		{
 		    if(pbox->y1 > ppt->y)
 		    {

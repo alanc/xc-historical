@@ -111,8 +111,8 @@ cfbPaintAreaSolid(pWin, pRegion, what)
     pPixmap = (PixmapPtr)(pWin->drawable.pScreen->devPrivate);
     pbits = (int *)pPixmap->devPrivate.ptr;
     nlwScreen = (pPixmap->devKind) >> 2;
-    nbox = pRegion->numRects;
-    pbox = pRegion->rects;
+    nbox = REGION_NUM_RECTS(pRegion);
+    pbox = REGION_RECTS(pRegion);
 
     while (nbox--)
     {
@@ -238,8 +238,8 @@ cfbPaintArea32(pWin, pRegion, what)
     pPixmap = (PixmapPtr)(pWin->drawable.pScreen->devPrivate);
     pbits = (int *)pPixmap->devPrivate.ptr;
     nlwScreen = (pPixmap->devKind) >> 2;
-    nbox = pRegion->numRects;
-    pbox = pRegion->rects;
+    nbox = REGION_NUM_RECTS(pRegion);
+    pbox = REGION_RECTS(pRegion);
 
     while (nbox--)
     {
@@ -373,8 +373,8 @@ cfbPaintAreaOther(pWin, pRegion, what)
     tileHeight = pPixmap->drawable.height;
     tileWidth = pPixmap->drawable.width;
 
-    nbox = pRegion->numRects;
-    pbox = pRegion->rects;
+    nbox = REGION_NUM_RECTS(pRegion);
+    pbox = REGION_RECTS(pRegion);
 
     while (nbox--)
     {

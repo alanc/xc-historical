@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbplygblt.c,v 1.18 89/03/23 18:58:02 rws Exp $ */
+/* $XConsortium: mfbplygblt.c,v 5.0 89/06/09 15:06:52 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -225,6 +225,7 @@ MFBPOLYGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
       case rgnPART:
       {
 	TEXTPOS *ppos;
+	RegionPtr cclip;
 	int nbox;
 	BoxPtr pbox;
 	int xpos;		/* x position of char origin */
@@ -270,8 +271,9 @@ MFBPOLYGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    }
 	}
 
-	pbox = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip->rects;
-	nbox = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip->numRects;
+	cclip = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip;
+	pbox = REGION_RECTS(cclip);
+	nbox = REGION_NUM_RECTS(cclip);
 
 	for (; --nbox >= 0; pbox++)
 	{

@@ -1,4 +1,4 @@
-/* $XConsortium: mfbpntwin.c,v 1.6 89/03/23 18:52:15 rws Exp $ */
+/* $XConsortium: mfbpntwin.c,v 5.0 89/06/09 15:06:58 keith Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -81,20 +81,20 @@ mfbPaintWindowSolid(pWin, pRegion, what)
     if (what == PW_BACKGROUND)
     {
 	if (pWin->background.pixel)
-	    mfbSolidWhiteArea(pWin, pRegion->numRects, pRegion->rects,
-			      GXset, NullPixmap);
+	    mfbSolidWhiteArea(pWin, REGION_NUM_RECTS(pRegion),
+			      REGION_RECTS(pRegion), GXset, NullPixmap);
 	else
-	    mfbSolidBlackArea(pWin, pRegion->numRects, pRegion->rects,
-			      GXclear, NullPixmap);
+	    mfbSolidBlackArea(pWin, REGION_NUM_RECTS(pRegion),
+			      REGION_RECTS(pRegion), GXclear, NullPixmap);
     } 
     else
     {
 	if (pWin->border.pixel)
-	    mfbSolidWhiteArea(pWin, pRegion->numRects, pRegion->rects,
-			      GXset, NullPixmap);
+	    mfbSolidWhiteArea(pWin, REGION_NUM_RECTS(pRegion),
+			      REGION_RECTS(pRegion), GXset, NullPixmap);
 	else
-	    mfbSolidBlackArea(pWin, pRegion->numRects, pRegion->rects,
-			      GXclear, NullPixmap);
+	    mfbSolidBlackArea(pWin, REGION_NUM_RECTS(pRegion),
+			      REGION_RECTS(pRegion), GXclear, NullPixmap);
     }
 }
 
@@ -153,8 +153,8 @@ mfbPaintWindow32(pWin, pRegion, what)
     pPixmap = (PixmapPtr)(pWin->drawable.pScreen->devPrivate);
     pbits = (unsigned int *)pPixmap->devPrivate.ptr;
     nlwScreen = (pPixmap->devKind) >> 2;
-    nbox = pRegion->numRects;
-    pbox = pRegion->rects;
+    nbox = REGION_NUM_RECTS(pRegion);
+    pbox = REGION_RECTS(pRegion);
 
     while (nbox--)
     {

@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbimggblt.c,v 1.7 89/03/23 18:59:55 rws Exp $ */
+/* $XConsortium: mfbimggblt.c,v 5.0 89/06/09 15:06:42 keith Exp $ */
 #include	"X.h"
 #include	"Xmd.h"
 #include	"Xproto.h"
@@ -269,6 +269,7 @@ MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	TEXTPOS *ppos;
 	int nbox;
 	BoxPtr pbox;
+	RegionPtr cclip;
 	int xpos;		/* x position of char origin */
 	int i;
 	BoxRec clip;
@@ -315,8 +316,9 @@ MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    }
 	}
 
-	pbox = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip->rects;
-	nbox = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip->numRects;
+	cclip = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip;
+	pbox = REGION_RECTS(cclip);
+	nbox = REGION_NUM_RECTS(cclip);
 
 	/* HACK ALERT
 	   since we continue out of the loop below so often, it

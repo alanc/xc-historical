@@ -55,23 +55,24 @@ mfbSaveAreas(pPixmap, prgnSave, xorg, yorg)
     DDXPointPtr		pPtsInit;
     register BoxPtr	pBox;
     register int	i;
+    int			numRects;
     
-    pPtsInit =
-	(DDXPointPtr)ALLOCATE_LOCAL(prgnSave->numRects * sizeof(DDXPointRec));
+    numRects = REGION_NUM_RECTS(prgnSave);
+    pPtsInit = (DDXPointPtr)ALLOCATE_LOCAL(numRects * sizeof(DDXPointRec));
     if (!pPtsInit)
 	return;
     
-    pBox = prgnSave->rects;
+    pBox = REGION_RECTS(prgnSave);
     pPt = pPtsInit;
 #ifndef PURDUE
-    for (i = prgnSave->numRects; i > 0; i--) {
+    for (i = numRects; --i >= 0; ) {
 	pPt->x = pBox->x1 + xorg;
 	pPt->y = pBox->y1 + yorg;
 	pPt++;
 	pBox++;
     }
 #else
-    i = prgnSave->numRects;
+    i = numRects;
     Duff(i, pPt->x = pBox->x1 + xorg; pPt->y = pBox->y1 + yorg; pPt++; pBox++);
 #endif  /* PURDUE */
 
@@ -116,23 +117,24 @@ mfbRestoreAreas(pPixmap, prgnRestore, xorg, yorg)
     DDXPointPtr		pPtsInit;
     register BoxPtr	pBox;
     register int	i;
+    int			numRects;
     
-    pPtsInit =
-	(DDXPointPtr)ALLOCATE_LOCAL(prgnRestore->numRects*sizeof(DDXPointRec));
+    numRects = REGION_NUM_RECTS(prgnRestore);
+    pPtsInit = (DDXPointPtr)ALLOCATE_LOCAL(numRects*sizeof(DDXPointRec));
     if (!pPtsInit)
 	return;
     
-    pBox = prgnRestore->rects;
+    pBox = REGION_RECTS(prgnRestore);
     pPt = pPtsInit;
 #ifndef PURDUE
-    for (i = prgnRestore->numRects; i > 0; i--) {
+    for (i = numRects; --i >= 0; ) {
 	pPt->x = pBox->x1 - xorg;
 	pPt->y = pBox->y1 - yorg;
 	pPt++;
 	pBox++;
     }
 #else
-    i = prgnRestore->numRects;
+    i = numRects;
     Duff(i, pPt->x = pBox->x1 - xorg; pPt->y = pBox->y1 - yorg; pPt++; pBox++);
 #endif  /* PURDUE */
 

@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpolypnt.c,v 1.15 89/03/16 14:47:30 jim Exp $ */
+/* $XConsortium: mfbpolypnt.c,v 5.0 89/06/09 15:06:59 keith Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -76,8 +76,8 @@ mfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
 	return;
 
     pGCPriv = (mfbPrivGC *) pGC->devPrivates[mfbGCPrivateIndex].ptr;
-    pboxInit = pGCPriv->pCompositeClip->rects;
-    nboxInit = pGCPriv->pCompositeClip->numRects;
+    pboxInit = REGION_RECTS(pGCPriv->pCompositeClip);
+    nboxInit = REGION_NUM_RECTS(pGCPriv->pCompositeClip);
     rop = pGCPriv->rop;
 
     xorg = pDrawable->x;

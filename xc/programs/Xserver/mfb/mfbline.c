@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbline.c,v 5.0 89/06/09 15:06:45 keith Exp $ */
+/* $XConsortium: mfbline.c,v 5.1 89/06/12 16:28:42 keith Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"
@@ -196,9 +196,11 @@ mfbLineSS(pDrawable, pGC, mode, npt, pptInit)
 				/* a bunch of temporaries */
     int tmp;
     int x1, x2, y1, y2;
+    RegionPtr cclip;
 
-    pboxInit = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip->rects;
-    nboxInit = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip->numRects;
+    cclip = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip;
+    pboxInit = REGION_RECTS(cclip);
+    nboxInit = REGION_NUM_RECTS(cclip);
 
     xorg = pDrawable->x;
     yorg = pDrawable->y;
@@ -621,10 +623,11 @@ mfbDashLine( pDrawable, pGC, mode, npt, pptInit)
 
     int clipdx, clipdy;		/* difference between clipped and
 				   unclipped start point */
+    RegionPtr cclip;
 
-
-    pboxInit = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip->rects;
-    nboxInit = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip->numRects;
+    cclip = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip;
+    pboxInit = REGION_RECTS(cclip);
+    nboxInit = REGION_NUM_RECTS(cclip);
 
     xorg = pDrawable->x;
     yorg = pDrawable->y;

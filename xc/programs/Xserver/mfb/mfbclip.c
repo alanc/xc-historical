@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbclip.c,v 1.20 89/04/05 19:37:29 rws Exp $ */
+/* $XConsortium: mfbclip.c,v 5.0 89/06/09 15:06:17 keith Exp $ */
 #include "X.h"
 #include "miscstruct.h"
 #include "pixmapstr.h"
@@ -29,22 +29,45 @@ SOFTWARE.
 #include "regionstr.h"
 #include "gc.h"
 #include "maskbits.h"
+#include "mi.h"
 
-extern Bool Must_have_memory;
+#define ADDRECT(reg,r,fr,rx1,ry1,rx2,ry2)			\
+if (((rx1) < (rx2)) && ((ry1) < (ry2)) &&			\
+    (!((reg)->data->numRects &&					\
+       ((r-1)->y1 == (ry1)) &&					\
+       ((r-1)->y2 == (ry2)) &&					\
+       ((r-1)->x1 <= (rx1)) &&					\
+       ((r-1)->x2 >= (rx2)))))					\
+{								\
+    if ((reg)->data->numRects == (reg)->data->size)		\
+    {								\
+	miRectAlloc(reg, 1);					\
+	fr = REGION_BOXPTR(reg);				\
+	r = fr + (reg)->data->numRects;				\
+    }								\
+    r->x1 = (rx1);						\
+    r->y1 = (ry1);						\
+    r->x2 = (rx2);						\
+    r->y2 = (ry2);						\
+    (reg)->data->numRects++;					\
+    if(r->x1 < (reg)->extents.x1)				\
+	(reg)->extents.x1 = r->x1;				\
+    if(r->x2 > (reg)->extents.x2)				\
+	(reg)->extents.x2 = r->x2;				\
+    r++;							\
+}
 
 /* Convert bitmap clip mask into clipping region. 
  * First, goes through each line and makes boxes by noting the transitions
  * from 0 to 1 and 1 to 0.
  * Then it coalesces the current line with the previous if they have boxes
- * at the same X coordinates.  We have to keep indices to rectangles rather 
- * than pointers because everything may move if we Xrealloc when adding a
- * rectangle.
+ * at the same X coordinates.
  */
 RegionPtr
 mfbPixmapToRegion(pPix)
     PixmapPtr	pPix;
 {
-    RegionPtr	pReg;
+    register RegionPtr	pReg;
     register unsigned	*pw, w;
     register int	ib;
     int			width, h, base, rx1, crects;
@@ -59,20 +82,15 @@ mfbPixmapToRegion(pPix)
     pReg = (*pPix->drawable.pScreen->RegionCreate)(NULL, 1);
     if(!pReg)
 	return NullRegion;
-    rects = (BoxPtr) xalloc(sizeof(BoxRec));
-    if (!rects)
-    {
-	(*pPix->drawable.pScreen->RegionDestroy)(pReg);
-	return NullRegion;
-    }
-    Must_have_memory = TRUE; /* XXX */
-    FirstRect = rects;
+    FirstRect = REGION_BOXPTR(pReg);
+    rects = FirstRect;
     width = pPix->drawable.width;
+    pReg->extents.x1 = width - 1;
+    pReg->extents.x2 = 0;
     pw = (unsigned int  *)pPix->devPrivate.ptr;
     irectPrevStart = -1;
     for(h = 0; h < pPix->drawable.height; h++)
     {
-
 	irectLineStart = rects - FirstRect;
 	pwLineStart = pw;
 	/* If the Screen left most bit of the word is set, we're starting in
@@ -117,8 +135,8 @@ mfbPixmapToRegion(pPix)
 		    if(fInBox)
 		    {
 			/* end box */
-			MEMCHECK(pReg, rects, FirstRect);
-			ADDRECT(pReg, rects, rx1, h, base + ib, h + 1);
+			ADDRECT(pReg, rects, FirstRect,
+				rx1, h, base + ib, h + 1);
 			fInBox = FALSE;
 		    }
 		}
@@ -149,8 +167,8 @@ mfbPixmapToRegion(pPix)
 		    if(fInBox)
 		    {
 			/* end box */
-			MEMCHECK(pReg, rects, FirstRect);
-			ADDRECT(pReg, rects, rx1, h, base + ib, h + 1);
+			ADDRECT(pReg, rects, FirstRect,
+				rx1, h, base + ib, h + 1);
 			fInBox = FALSE;
 		    }
 		}
@@ -161,8 +179,7 @@ mfbPixmapToRegion(pPix)
 	/* If scanline ended with last bit set, end the box */
 	if(fInBox)
 	{
-	    MEMCHECK(pReg, rects, FirstRect);
-	    ADDRECT(pReg, rects, rx1, h, base + ib, h + 1);
+	    ADDRECT(pReg, rects, FirstRect, rx1, h, base + ib, h + 1);
 	}
 	/* if all rectangles on this line have the same x-coords as
 	 * those on the previous line, then add 1 to all the previous  y2s and 
@@ -196,25 +213,29 @@ mfbPixmapToRegion(pPix)
 			prectO++;
 		    }
 		    rects -= crects;
-		    pReg->numRects -= crects;
+		    pReg->data->numRects -= crects;
 		}
 	    }
 	}
 	if(!fSame)
 	    irectPrevStart = irectLineStart;
     }
-    if(pReg->numRects)
-    {
-	xfree(pReg->rects);
-	pReg->rects = FirstRect;
-    }
+    if (!pReg->data->numRects)
+	pReg->extents.x1 = pReg->extents.x2 = 0;
     else
     {
-	xfree(FirstRect);
-	pReg->size = 1;
+	pReg->extents.y1 = REGION_BOXPTR(pReg)->y1;
+	pReg->extents.y2 = REGION_END(pReg)->y2;
+	if (pReg->data->numRects == 1)
+	{
+	    xfree(pReg->data);
+	    pReg->data = (RegDataPtr)NULL;
+	}
     }
-    Must_have_memory = FALSE; /* XXX */
-
+#ifdef DEBUG
+    if (!miValidRegion(pReg))
+	FatalError("Assertion failed file %s, line %d: expr\n", __FILE__, __LINE__);
+#endif
     return(pReg);
 }
 

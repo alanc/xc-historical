@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbitblt.c,v 1.60 89/05/20 10:15:30 rws Exp $ */
+/* $XConsortium: mfbbitblt.c,v 5.0 89/06/09 15:06:03 keith Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 
@@ -93,13 +93,13 @@ int dstx, dsty;
     register int dy;
     xRectangle origSource;
     DDXPointRec origDest;
-
+    int numRects;
 #ifdef PURDUE
     RegionRec fastRegion;	/* special region for clipping to 1 box */
     BoxRec fastBox;
     int fastClip = 0;		/* for fast clipping with pixmap source */
     int fastExpose = 0;		/* for fast exposures with pixmap source */
-#endif PURDUE
+#endif /* PURDUE */
 
     origSource.x = srcx;
     origSource.y = srcy;
@@ -133,7 +133,7 @@ int dstx, dsty;
 	    prgnSrcClip = (*pGC->pScreen->RegionCreate)(&box, 1);
 	    realSrcClip = 1;
 	}
-#else PURDUE
+#else /* PURDUE */
 	{
 	    /* Pixmap sources generate simple exposure events */
 	    fastExpose = 1;
@@ -153,11 +153,9 @@ int dstx, dsty;
 	    if (fastBox.y2 > pSrcDrawable->y + pSrcDrawable->height)
 	      fastBox.y2 = pSrcDrawable->y + pSrcDrawable->height;
 
-	    /* Initialize the fast region */
-	    fastRegion.numRects = 1;
-	    fastRegion.rects = &fastBox;
+	    (*pGC->pScreen->RegionInit)(&fastRegion, &fastBox, 1);
 	}
-#endif PURDUE
+#endif /* PURDUE */
     }
     else
     {
@@ -176,14 +174,14 @@ int dstx, dsty;
 	}
 	else
 	{
-	    prgnSrcClip = ((WindowPtr)pSrcDrawable)->clipList;
+	    prgnSrcClip = &((WindowPtr)pSrcDrawable)->clipList;
 	}
     }
 
 #ifdef PURDUE
     /* Don't create a source region if we are doing a fast clip */
     if (!fastClip)
-#endif PURDUE
+#endif /* PURDUE */
     {
 	BoxRec srcBox;
 
@@ -223,10 +221,12 @@ int dstx, dsty;
 			       prgnDst,
 			       ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip);
 
-#else PURDUE
+#else /* PURDUE */
     /* Translate and clip the dst to the destination composite clip */
     if (fastClip)
     {
+	RegionPtr cclip;
+
         /* Translate the region directly */
         fastBox.x1 -= dx;
         fastBox.x2 -= dx;
@@ -236,9 +236,10 @@ int dstx, dsty;
 	/* If the destination composite clip is one rectangle we can
 	   do the clip directly.  Otherwise we have to create a full
 	   blown region and call intersect */
-        if (((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip->numRects == 1)
+	cclip = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip;
+        if (REGION_NUM_RECTS(cclip) == 1)
         {
-	    BoxPtr pBox = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip->rects;
+	    BoxPtr pBox = REGION_RECTS(cclip);
 	  
 	    if (fastBox.x1 < pBox->x1) fastBox.x1 = pBox->x1;
 	    if (fastBox.x2 > pBox->x2) fastBox.x2 = pBox->x2;
@@ -247,7 +248,7 @@ int dstx, dsty;
 
 	    /* Check to see if the region is empty */
 	    if (fastBox.x1 >= fastBox.x2 || fastBox.y1 >= fastBox.y2)
-	        fastRegion.numRects = 0;
+		(*pGC->pScreen->RegionEmpty)(&fastRegion);
 
 	    /* Use the fast region for all future computation.
 	       The following code insures that RegionDestroy is not
@@ -274,25 +275,26 @@ int dstx, dsty;
 				   prgnDst,
 				 ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip);
     }
-#endif PURDUE
+#endif /* PURDUE */
 
     /* Do bit blitting */
-    if (prgnDst->numRects)
+    numRects = REGION_NUM_RECTS(prgnDst);
+    if (numRects)
     {
-	if(!(pptSrc = (DDXPointPtr)ALLOCATE_LOCAL( prgnDst->numRects *
-						   sizeof(DDXPointRec))))
+	if(!(pptSrc = (DDXPointPtr)ALLOCATE_LOCAL(numRects *
+						  sizeof(DDXPointRec))))
 	{
 #ifdef PURDUE
 	    if (!fastClip)
-#endif PURDUE
+#endif /* PURDUE */
 		(*pGC->pScreen->RegionDestroy)(prgnDst);
 	    if (realSrcClip)
 		(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
 	    return NULL;
 	}
-	pbox = prgnDst->rects;
+	pbox = REGION_RECTS(prgnDst);
 	ppt = pptSrc;
-	for (i=0; i<prgnDst->numRects; i++, pbox++, ppt++)
+	for (i = numRects; --i >= 0; pbox++, ppt++)
 	{
 	    ppt->x = pbox->x1 + dx;
 	    ppt->y = pbox->y1 + dy;
@@ -308,7 +310,7 @@ int dstx, dsty;
 #ifdef PURDUE
         /* Pixmap sources generate a NoExposed (we return NULL to do this) */
         if (!fastExpose)
-#endif PURDUE
+#endif /* PURDUE */
 	    prgnExposed =
 		miHandleExposures(pSrcDrawable, pDstDrawable, pGC,
 				  origSource.x, origSource.y,
@@ -320,7 +322,7 @@ int dstx, dsty;
     
     /* Destroy any created regions */
     if (!fastClip)
-#endif PURDUE
+#endif /* PURDUE */
 	(*pGC->pScreen->RegionDestroy)(prgnDst);
     if (realSrcClip)
 	(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
@@ -511,8 +513,8 @@ DDXPointPtr pptSrc;
 	       ((pSrcDrawable->type == DRAWABLE_WINDOW) &&
 		(pDstDrawable->type == DRAWABLE_WINDOW)));
 
-    pbox = prgnDst->rects;
-    nbox = prgnDst->numRects;
+    pbox = REGION_RECTS(prgnDst);
+    nbox = REGION_NUM_RECTS(prgnDst);
 
     pboxNew1 = NULL;
     pptNew1 = NULL;

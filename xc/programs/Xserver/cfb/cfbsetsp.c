@@ -163,8 +163,8 @@ cfbSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
     }
     yMax = (int) pDrawable->y + (int) pDrawable->height;
 
-    pbox =  prgnDst->rects;
-    pboxLast = pbox + prgnDst->numRects;
+    pbox = REGION_RECTS(prgnDst);
+    pboxLast = pbox + REGION_NUM_RECTS(prgnDst);
 
     if(fSorted)
     {
@@ -232,7 +232,7 @@ cfbSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
 	    if(ppt->y >= 0 && ppt->y < yMax)
 	    {
 		
-		for(pbox = prgnDst->rects; pbox< pboxLast; pbox++)
+		for(pbox = REGION_RECTS(prgnDst); pbox< pboxLast; pbox++)
 		{
 		    if(pbox->y1 > ppt->y)
 		    {

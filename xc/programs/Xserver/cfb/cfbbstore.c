@@ -16,7 +16,7 @@
  */
 #ifndef lint
 static char rcsid[] =
-"$XConsortium: cfbbstore.c,v 1.5 89/03/21 11:41:43 rws Exp $ SPRITE (Berkeley)";
+"$XConsortium: cfbbstore.c,v 5.0 89/06/09 15:01:26 keith Exp $ SPRITE (Berkeley)";
 #endif lint
 
 #include    "cfb.h"
@@ -59,14 +59,14 @@ cfbSaveAreas(pPixmap, prgnSave, xorg, yorg)
     register BoxPtr	pBox;
     register int	i;
     
-    pPtsInit =
-	(DDXPointPtr)ALLOCATE_LOCAL(prgnSave->numRects * sizeof(DDXPointRec));
+    i = REGION_NUM_RECTS(prgnSave);
+    pPtsInit = (DDXPointPtr)ALLOCATE_LOCAL(i * sizeof(DDXPointRec));
     if (!pPtsInit)
 	return;
     
-    pBox = prgnSave->rects;
+    pBox = REGION_RECTS(prgnSave);
     pPt = pPtsInit;
-    for (i = prgnSave->numRects; i > 0; i--) {
+    while (--i >= 0) {
 	pPt->x = pBox->x1 + xorg;
 	pPt->y = pBox->y1 + yorg;
 	pPt++;
@@ -115,14 +115,14 @@ cfbRestoreAreas(pPixmap, prgnRestore, xorg, yorg)
     register BoxPtr	pBox;
     register int	i;
     
-    pPtsInit =
-	(DDXPointPtr)ALLOCATE_LOCAL(prgnRestore->numRects*sizeof(DDXPointRec));
+    i = REGION_NUM_RECTS(prgnRestore);
+    pPtsInit = (DDXPointPtr)ALLOCATE_LOCAL(i*sizeof(DDXPointRec));
     if (!pPtsInit)
 	return;
     
-    pBox = prgnRestore->rects;
+    pBox = REGION_RECTS(prgnRestore);
     pPt = pPtsInit;
-    for (i = prgnRestore->numRects; i > 0; i--) {
+    while (--i >= 0) {
 	pPt->x = pBox->x1 - xorg;
 	pPt->y = pBox->y1 - yorg;
 	pPt++;
