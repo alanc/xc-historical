@@ -1,5 +1,5 @@
 .\" Use eqn, tbl, and -ms
-.\" $XConsortium: xdmcp.ms,v 1.17 89/12/13 18:43:11 keith Exp $
+.\" $XConsortium: xdmcp.ms,v 1.18 91/07/28 15:48:25 rws Exp $
 .EQ
 delim @@
 define oc % "\\fR{\\fP" %
@@ -421,7 +421,6 @@ Timeout/Retransmission policy:
 .RS
 Like all packets sent from a manager, this packet should never be
 retransmitted.
-.RE
 .RE
 .RE
 .LP
@@ -1046,7 +1045,6 @@ An \f8Alive\fP packet is sent in response to a \f8KeepAlive\fP request.  If
 a session is currently active on the display, the manager includes the
 \f7Session ID\fP in the packet.  The display can use this information to
 determine the status of the manager.
-.RE
 .RE
 .RE
 .NH 1
