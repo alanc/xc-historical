@@ -1,4 +1,4 @@
-/* $XConsortium: grabs.c,v 1.7 89/03/11 16:50:38 rws Exp $ */
+/* $XConsortium: grabs.c,v 1.8 89/03/16 14:45:08 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -333,7 +333,7 @@ DeletePassiveGrabFromList(pMinuendGrab)
 	    if (!pNewGrab)
 		ok = FALSE;
 	    else if (!(pNewGrab->modifiersDetail.pMask =
-		       DeleteDetailFromMask(pNewGrab->modifiersDetail.pMask,
+		       DeleteDetailFromMask(grab->modifiersDetail.pMask,
 					 pMinuendGrab->modifiersDetail.exact)))
 	    {
 		FreeGrab(pNewGrab);
