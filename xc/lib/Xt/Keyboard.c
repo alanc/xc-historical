@@ -1,6 +1,4 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: Keyboard.c,v 1.14 90/04/03 17:03:54 swick Exp $";
-#endif
+/* $XConsortium: Keyboard.c,v 1.15 90/07/26 07:37:59 swick Exp $ */
 
 /********************************************************
 
@@ -38,20 +36,17 @@ SOFTWARE.
 extern void _XtFillAncestorList();
 extern void _XtSendFocusEvent();
 
-static XtServerGrabPtr CheckServerGrabs(event, trace,
-					traceDepth, pdi)
+static XtServerGrabPtr CheckServerGrabs(event, trace, traceDepth)
     XEvent	*event;
     Widget	*trace;
     Cardinal	traceDepth;
-    XtPerDisplayInput pdi;
 {
     XtServerGrabPtr 	grab;
     Cardinal		i;
 
     for (i = traceDepth;  i > 0; i--)
       {
-	 if (grab = _XtCheckServerGrabsOnWidget(event, trace[i-1],
-						KEYBOARD, pdi))
+	 if (grab = _XtCheckServerGrabsOnWidget(event, trace[i-1], KEYBOARD))
 	   return (grab);
      }
     return (XtServerGrabPtr)0;
@@ -294,8 +289,8 @@ static Widget 	FindKeyDestination(widget, event,
 			{
 			    static Display	*pseudoTraceDisplay = NULL;
 			    static Widget	*pseudoTrace = NULL;
-			    static Cardinal     pseudoTraceDepth = 0;
-			    static Cardinal	pseudoTraceMax = 0;
+			    static int		pseudoTraceDepth = 0;
+			    static int		pseudoTraceMax = 0;
 			    XtServerGrabPtr	grab;
 
 			    if (!pseudoTraceDepth || 
@@ -320,7 +315,7 @@ static Widget 	FindKeyDestination(widget, event,
 			      }
 			    if (grab = CheckServerGrabs((XEvent*)event,
 							pseudoTrace,
-							pseudoTraceDepth, pdi))
+							pseudoTraceDepth))
 			      {
 				  XtDevice device = &pdi->keyboard;
 				  
@@ -365,7 +360,7 @@ Widget _XtProcessKeyboardEvent(event, widget, pdi)
 	      if (!IsServerGrab(device->grabType) && 
 		  (newGrab = CheckServerGrabs((XEvent*)event,
 					      pdi->trace,
-					      pdi->traceDepth, pdi)))
+					      pdi->traceDepth)))
 		{
 		    /*
 		     * honor pseudo-grab from prior event by X
@@ -427,8 +422,8 @@ static ActiveType InActiveSubtree(widget)
     Widget	widget;
 {
     static Widget	*pathTrace = NULL;
-    static Cardinal     pathTraceDepth = 0;
-    static Cardinal	pathTraceMax = 0;
+    static int		pathTraceDepth = 0;
+    static int		pathTraceMax = 0;
     static Display	*display = NULL;
     Boolean		isTarget;
     
