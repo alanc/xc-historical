@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Scroll.c,v 1.30 88/03/02 17:00:59 jim Exp $";
+static char rcsid[] = "$Header: Scroll.c,v 1.31 88/03/03 14:43:39 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -90,6 +90,8 @@ static XtResource resources[] = {
 	     Offset(scrollbar.leftCursor), XtRString, "sb_left_arrow"},
   {XtNscrollRCursor, XtCScrollRCursor, XtRCursor, sizeof(Cursor),
 	     Offset(scrollbar.rightCursor), XtRString, "sb_right_arrow"},
+  {XtNreverseVideo, XtCReverseVideo, XtRBoolean, sizeof (Boolean),
+	     Offset(scrollbar.reverse_video), XtRString, "FALSE"},
 };
 
 static void ClassInitialize();
@@ -322,6 +324,14 @@ static void Initialize( request, new )
     ScrollbarWidget w = (ScrollbarWidget) new;
     XGCValues gcValues;
     extern Pixmap XtSimpleStippledPixmap();
+
+    if (w->scrollbar.reverse_video) {
+	Pixel fg = w->scrollbar.foreground;
+	Pixel bg = w->core.background_pixel;
+
+	w->core.background_pixel = fg;
+	w->scrollbar.foreground = bg;
+    }
 
     if (w->scrollbar.thumb == NULL) {
         w->scrollbar.thumb = XtSimpleStippledPixmap (XtScreen(w),
