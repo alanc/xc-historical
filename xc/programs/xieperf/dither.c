@@ -1,4 +1,4 @@
-/* $XConsortium: dither.c,v 1.2 93/07/26 14:14:55 rws Exp $ */
+/* $XConsortium: dither.c,v 1.3 93/07/26 17:21:10 rws Exp $ */
 
 /**** module do_dither.c ****/
 /******************************************************************************
@@ -92,6 +92,14 @@ void DoDitherFloMapImmediate(xp, p, reps)
 	levels[ 2 ] = 0;
 	in_low[ 0 ] = 0.0;
 	out_low[ 0 ] = 0;
+	in_low[ 1 ] = 0.0;
+	in_high[ 1 ] = 0.0;
+	in_low[ 2 ] = 0.0;
+	in_high[ 2 ] = 0.0;
+	out_low[ 1 ] = 0;
+	out_high[ 1 ] = 0;
+	out_low[ 2 ] = 0;
+	out_high[ 2 ] = 0;
 	if ( ( ( DitherParms * )p->ts )->drawable == Drawable )
 		out_high[ 0 ] = ( 1 << xp->vinfo.depth ) - 1;
 	else
@@ -216,6 +224,14 @@ void DoDitherFloMapStored(xp, p, reps)
 	in_low[ 0 ] = 0.0;
 	in_high[ 0 ] = ( float ) 1;
 	out_low[ 0 ] = 0;
+	in_low[ 1 ] = 0.0;
+	in_high[ 1 ] = 0.0;
+	in_low[ 2 ] = 0.0;
+	in_high[ 2 ] = 0.0;
+	out_low[ 1 ] = 0;
+	out_high[ 1 ] = 0;
+	out_low[ 2 ] = 0;
+	out_high[ 2 ] = 0;
         if ( ( ( DitherParms * )p->ts )->drawable == Drawable )
                 out_high[ 0 ] = ( 1 << xp->vinfo.depth ) - 1;
         else

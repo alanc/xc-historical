@@ -1,4 +1,4 @@
-/* $XConsortium: constrain.c,v 1.2 93/07/26 14:13:49 rws Exp $ */
+/* $XConsortium: constrain.c,v 1.3 93/07/26 17:20:43 rws Exp $ */
 
 /**** module do_constrain.c ****/
 /******************************************************************************
@@ -96,6 +96,14 @@ void DoConstrainFloMapImmediate(xp, p, reps)
 	in_high[ 0 ] = ( float ) ( 1 << xp->vinfo.depth ) - 1.0;
 	out_low[ 0 ] = 0;
 	out_high[ 0 ] = ( 1 << xp->vinfo.depth ) - 1;
+	in_low[ 1 ] = 0.0;
+	in_high[ 1 ] = 0.0;
+	in_low[ 2 ] = 0.0;
+	in_high[ 2 ] = 0.0;
+	out_low[ 1 ] = 0;
+	out_high[ 1 ] = 0;
+	out_low[ 2 ] = 0;
+	out_high[ 2 ] = 0;
 
 	if ( ( ( ConstrainParms * ) p->ts )->clamp & ClampInputs )
 	{
@@ -192,6 +200,15 @@ void DoConstrainFloMapStored(xp, p, reps)
 	in_low[ 0 ] = 0.0;
 	in_high[ 0 ] = ( float ) ( 1 << xp->vinfo.depth ) - 1.0 ;
 	out_low[ 0 ] = 0;
+	out_high[ 0] = 0;
+	in_low[ 1 ] = 0.0;
+	in_high[ 1 ] = 0.0;
+	in_low[ 2 ] = 0.0;
+	in_high[ 2 ] = 0.0;
+	out_low[ 1 ] = 0;
+	out_high[ 1 ] = 0;
+	out_low[ 2 ] = 0;
+	out_high[ 2 ] = 0;
 	if ( xp->vinfo.depth == 1 ) 
 		out_high[ 0 ] = 1;
 	else

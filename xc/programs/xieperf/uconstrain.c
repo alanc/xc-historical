@@ -1,4 +1,4 @@
-/* $XConsortium: uconstrain.c,v 1.1 93/07/19 13:04:13 rws Exp $ */
+/* $XConsortium: uconstrain.c,v 1.2 93/07/26 14:38:36 rws Exp $ */
 
 /**** module do_unconstrain.c ****/
 /******************************************************************************
@@ -95,6 +95,14 @@ void DoUnconstrainFloMapImmediate(xp, p, reps)
 	in_high[ 0 ] = ( float ) ( 1 << xp->vinfo.depth ) - 1.0;
 	out_low[ 0 ] = 0;
 	out_high[ 0 ] = ( 1 << xp->vinfo.depth ) - 1;
+	in_low[ 1 ] = 0.0;
+	in_high[ 1 ] = 0.0;
+	in_low[ 2 ] = 0.0;
+	in_high[ 2 ] = 0.0;
+	out_low[ 1 ] = 0;
+	out_high[ 1 ] = 0;
+	out_low[ 2 ] = 0;
+	out_high[ 2 ] = 0;
 
 	if ( ( ( UnconstrainParms * ) p->ts )->clamp & ClampInputs )
 	{
@@ -194,6 +202,14 @@ void DoUnconstrainFloMapStored(xp, p, reps)
 	in_high[ 0 ] = ( float ) levels[ 0 ];
 	out_low[ 0 ] = 0;
 	out_high[ 0 ] = levels[ 0 ] / 2;
+	in_low[ 1 ] = 0.0;
+	in_high[ 1 ] = 0.0;
+	in_low[ 2 ] = 0.0;
+	in_high[ 2 ] = 0.0;
+	out_low[ 1 ] = 0;
+	out_high[ 1 ] = 0;
+	out_low[ 2 ] = 0;
+	out_high[ 2 ] = 0;
 	if ( tech == xieValConstrainHardClip )
 	{
 		tech_parms = ( char * ) NULL;
