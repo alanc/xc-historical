@@ -282,10 +282,19 @@ MakeNewConnections()
 	}
 #endif				/* TCP_NODELAY */
 
-#ifdef hpux
+    /* ultrix reads hang on Unix sockets, hpux reads fail */
+#if defined(O_NONBLOCK) && (!defined(ultrix) && !defined(hpux))
+    (void) fcntl (newconn, F_SETFL, O_NONBLOCK);
 #else
-	fcntl(newconn, F_SETFL, FNDELAY);
-#endif				/* hpux */
+#ifdef FIOSNBIO
+    {
+	int arg = 1;
+	ioctl (newconn, FIOSNBIO, &arg);
+    }
+#else
+    (void) fcntl (newconn, F_SETFL, FNDELAY);
+#endif
+#endif
 
 	oc = (OsCommPtr) fsalloc(sizeof(OsCommRec));
 	ibuf = (char *) fsalloc(BUFSIZE);
