@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.c,v 1.5 93/07/11 13:39:57 rws Exp $
+ * $XConsortium: locking.c,v 1.6 93/07/11 14:53:52 rws Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -437,7 +437,7 @@ Status XInitThreads()
 #endif
     _Xglobal_lock = mutex_malloc();
     if (_Xglobal_lock == NULL)
-	return 1;
+	return 0;
     mutex_init(_Xglobal_lock);
     _XLockMutex_fn = _XLockMutex;
     _XUnlockMutex_fn = _XUnlockMutex;
@@ -448,11 +448,12 @@ Status XInitThreads()
     setlinebuf(stdout);		/* for debugging messages */
 #endif
 
-    return 0;
+    return 1;
 }
 
 #else /* XTHREADS */
 Status XInitThreads()
 {
+    return 0;
 }
 #endif /* XTHREADS */
