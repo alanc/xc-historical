@@ -1,5 +1,5 @@
 #!/bin/sh 
-# $XConsortium$
+# $XConsortium: inspex.sh,v 5.2 91/02/16 10:04:49 rws Exp $
 ###################################################################
 # Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
 # 
@@ -80,7 +80,7 @@
 # INSPEXLOG - full pathname of log file, default "$INSPEXDEST/ilog.<date>"
 # INSPEXIMAGEREF - master reference directory, default INSPEXHOME/refimages
 # PEXLIBDIR, PEXINCDIR - directories containing the PEX includes and libs. 
-#	These default to "../../../lib/PEX" and "../../../lib/PEX/include"
+#	These default to "../../lib/PEX" and "../../lib/PEX/include"
 #	respectively (absolute paths are derived from these relative ones).
 # XLIBDIR, XINCDIR - the directory containing the X library
 #	libX11.a, and the directory containing the include
@@ -946,7 +946,7 @@ done
 #
 if [ ! "$PEXINCDIR" ]
 then
-	default=../../../lib/PEX/include
+	default=../../lib/PEX/include
 	if [ -d $default ]
 	then
 		if [ -d $default/phigs ]
