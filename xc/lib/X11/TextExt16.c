@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XTextExt16.c,v 11.15 89/06/07 13:16:26 jim Exp $
+ * $XConsortium: XTextExt16.c,v 11.16 89/06/07 13:44:05 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  */
@@ -26,7 +26,11 @@ XTextExtents16 (fs, string, nchars, dir, font_ascent, font_descent, overall)
     int nfound = 0;			/* number of characters found */
     XCharStruct *def;			/* info about default char */
 
-    CI_GET_DEFAULT_INFO_2D (fs, def);
+    if (singlerow) {
+	CI_GET_DEFAULT_INFO_1D (fs, def);
+    } else {
+	CI_GET_DEFAULT_INFO_2D (fs, def);
+    }
 
     *dir = fs->direction;
     *font_ascent = fs->ascent;
@@ -44,8 +48,9 @@ XTextExtents16 (fs, string, nchars, dir, font_ascent, font_descent, overall)
 	unsigned int r = (unsigned int) string->byte1;	/* watch for macros */
 	unsigned int c = (unsigned int) string->byte2;	/* watch for macros */
 
-	if (singlerow && r == 0) {
-	    CI_GET_CHAR_INFO_1D (fs, c, def, cs);
+	if (singlerow) {
+	    unsigned int ind = ((r << 8) | c);		/* watch for macros */
+	    CI_GET_CHAR_INFO_1D (fs, ind, def, cs);
 	} else {
 	    CI_GET_CHAR_INFO_2D (fs, r, c, def, cs);
 	}
@@ -91,7 +96,11 @@ int XTextWidth16 (fs, string, count)
     XCharStruct *def;			/* info about default char */
     int width = 0;			/* RETURN value */
 
-    CI_GET_DEFAULT_INFO_2D (fs, def);
+    if (singlerow) {
+	CI_GET_DEFAULT_INFO_1D (fs, def);
+    } else {
+	CI_GET_DEFAULT_INFO_2D (fs, def);
+    }
 
     /*
      * Iterate over all character in the input string; only consider characters
@@ -102,8 +111,9 @@ int XTextWidth16 (fs, string, count)
 	unsigned int r = (unsigned int) string->byte1;	/* watch for macros */
 	unsigned int c = (unsigned int) string->byte2;	/* watch for macros */
 
-	if (singlerow && r == 0) {
-	    CI_GET_CHAR_INFO_1D (fs, c, def, cs);
+	if (singlerow) {
+	    unsigned int ind = ((r << 8) | c);		/* watch for macros */
+	    CI_GET_CHAR_INFO_1D (fs, ind, def, cs);
 	} else {
 	    CI_GET_CHAR_INFO_2D (fs, r, c, def, cs);
 	}
