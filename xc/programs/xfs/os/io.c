@@ -1,4 +1,4 @@
-/* $XConsortium: io.c,v 1.10 92/11/18 21:30:56 gildea Exp $ */
+/* $XConsortium: io.c,v 1.11 93/09/20 18:08:47 hersh Exp $ */
 /*
  * i/o functions
  */
@@ -25,6 +25,7 @@
  * THIS SOFTWARE.
  */
 
+#include	<X11/Xtrans.h>
 #include	<stdio.h>
 #include	<errno.h>
 #include	<sys/types.h>
@@ -178,7 +179,7 @@ ReadRequest(client)
 	    oci->bufcnt = gotnow;
 	}
 	/* fill 'er up */
-	result = read(fd, oci->buffer + oci->bufcnt,
+	result = _FONTTransRead(oc->trans_conn, oci->buffer + oci->bufcnt,
 		      oci->size - oci->bufcnt);
 	if (result <= 0) {
 	    if ((result < 0) && ETEST(errno)) {
@@ -330,34 +331,6 @@ ResetCurrentRequest(client)
     }
 }
 
-#ifdef CRAY
-/*
- * Cray UniCOS does not have writev so we emulate.
- * Copied from XlibInt.c
- */
-#define writev _XWriteV
-
-#include <sys/socket.h>
-
-static int _XWriteV (fd, iov, iovcnt)
-    int fd;
-    struct iovec *iov;
-    int iovcnt;
-{
-    struct msghdr hdr;
-
-    hdr.msg_iov = iov;
-    hdr.msg_iovlen = iovcnt;
-    hdr.msg_accrights = NULL;
-    hdr.msg_accrightslen = 0;
-    hdr.msg_name = NULL;
-    hdr.msg_namelen = 0;
-
-    return (sendmsg (fd, &hdr, 0));
-}
-
-#endif /* CRAY */
-
 int
 FlushClient(client, oc, extraBuf, extraCount, padsize)
     ClientPtr   client;
@@ -419,7 +392,7 @@ FlushClient(client, oc, extraBuf, extraCount, padsize)
 	InsertIOV(padBuffer, padsize);
 
 	errno = 0;
-	if ((len = writev(fd, iov, i)) >= 0) {
+	if ((len = _FONTTransWritev(oc->trans_conn, iov, i)) >= 0) {
 	    written += len;
 	    notWritten -= len;
 	    todo = notWritten;
@@ -446,7 +419,7 @@ FlushClient(client, oc, extraBuf, extraCount, padsize)
 		obuf = (unsigned char *) fsrealloc(oco->buf,
 					      notWritten + OutputBufferSize);
 		if (!obuf) {
-		    close(fd);
+		    _FONTTransClose(oc->trans_conn);
 		    MarkClientException(client);
 		    oco->count = 0;
 		    return -1;
@@ -461,7 +434,7 @@ FlushClient(client, oc, extraBuf, extraCount, padsize)
 	    oco->count = notWritten;
 	    return extraCount;
 	} else {
-	    close(fd);
+	    _FONTTransClose(oc->trans_conn);
 	    MarkClientException(client);
 	    oco->count = 0;
 	    return -1;
@@ -545,7 +518,7 @@ write_to_client_internal(client, count, buf, padBytes)
 	if ((oco = FreeOutputs) != (ConnectionOutputPtr) 0) {
 	    FreeOutputs = oco->next;
 	} else if (!(oco = AllocateOutputBuffer())) {
-	    close(oc->fd);
+	    _FONTTransClose(oc->trans_conn);
 	    MarkClientException(client);
 	    return -1;
 	}
