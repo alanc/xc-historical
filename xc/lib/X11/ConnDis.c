@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.60 89/10/10 19:41:04 jim Exp $
+ * $XConsortium: XConnDis.c,v 11.61 89/10/12 13:20:03 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -32,6 +32,10 @@
 #include "Xlibint.h"
 #include <X11/Xauth.h>
 #include <ctype.h>
+#ifdef DNETCONN
+#include <netdnet/dn.h>
+#include <netdnet/dnetdb.h>
+#endif
 
 #ifndef X_CONNECTION_RETRIES		/* number retries on ECONNREFUSED */
 #define X_CONNECTION_RETRIES 5
@@ -198,27 +202,21 @@ int _XConnectDisplay (display_name, fullnamep, dpynump, screenp,
 #endif
 #endif
 
+#ifdef UNIXCONN
     /*
      * Now that the defaults have been established, see if we have any 
      * special names that we have to override:
      *
-     *     :0         =>     if DNETCONN then decnet-socket else 
-     *                                if UNIXCONN then unix-domain-socket
-     *     unix:0     =>     if UNIXCONN then unix-domain-socket
+     *     :N         =>     if UNIXCONN then unix-domain-socket
+     *     ::N        =>     if UNIXCONN then unix-domain-socket
+     *     unix:N     =>     if UNIXCONN then unix-domain-socket
      *
      * Note that if UNIXCONN isn't defined, then we can use the default
      * transport connection function set above.
      */
     if (!phostname) {
-#ifdef DNETCONN
-	connfunc = MakeDECnetConnection;  /* force DECnet */
-#else
-#ifdef UNIXCONN
 	connfunc = MakeUNIXSocketConnection;
-#endif
-#endif
     }
-#ifdef UNIXCONN
     else if (strcmp (phostname, "unix") == 0) {
 	connfunc = MakeUNIXSocketConnection;
     }
@@ -373,7 +371,7 @@ static int MakeDECnetConnection (phostname, idisplay, retries,
     struct dn_naddr *dnaddrp, dnaddr;
     struct nodeent *np;
 
-    if (phostname) phostname = "0";
+    if (!phostname) phostname = "0";
 
     /*
      * build the target object name.
@@ -400,7 +398,7 @@ static int MakeDECnetConnection (phostname, idisplay, retries,
 	bcopy (np->n_addr, dnaddr.a_addr, np->n_length);
     }
 
-    *saddrlenp = sizeof (struct dn_anaddr);
+    *saddrlenp = sizeof (struct dn_naddr);
     *saddrp = Xmalloc (*saddrlenp);
     if (!*saddrp) {
 	(void) close (fd);
