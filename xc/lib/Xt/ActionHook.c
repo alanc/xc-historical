@@ -1,4 +1,4 @@
-/* $XConsortium: ActionHook.c,v 1.6 93/10/06 16:54:09 kaleb Exp $ */
+/* $XConsortium: ActionHook.c,v 1.7 94/04/17 20:13:35 kaleb Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -114,16 +114,19 @@ void XtRemoveActionHook( id )
     XtAppContext app = hook->app;
     LOCK_APP(app);
     for (p = &app->action_hook_list; p != NULL && *p != hook; p = &(*p)->next);
-    if (p == NULL) {
+    if (p) {
+	*p = hook->next;
+	XtFree( (XtPointer)hook );
+	if (app->action_hook_list == NULL)
+	    _XtRemoveCallback(&app->destroy_callbacks, FreeActionHookList,
+			      (XtPointer) &app->action_hook_list);
+    }
 #ifdef DEBUG
+    else {
 	XtAppWarningMsg(app, "badId", "xtRemoveActionHook", XtCXtToolkitError,
 			"XtRemoveActionHook called with bad or old hook id",
 			(String*)NULL, (Cardinal*)NULL);
-#endif /*DEBUG*/	
-	UNLOCK_APP(app);
-	return;
     }
-    *p = hook->next;
-    XtFree( (XtPointer)hook );
+#endif /*DEBUG*/
     UNLOCK_APP(app);
 }
