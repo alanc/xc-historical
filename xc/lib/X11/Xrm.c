@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.48 90/12/01 17:53:08 rws Exp $
+ * $XConsortium: Xrm.c,v 1.49 90/12/02 17:57:49 rws Exp $
  */
 
 /***********************************************************
@@ -2210,7 +2210,7 @@ static Bool GetNEntry(table, names, classes, closure)
 	return False;
     /* found one */
     if (table->hasloose &&
-	GetLooseVEntry((LTable)entry, names, classes, closure))
+	GetLooseVEntry((LTable)table, names, classes, closure))
 	return True;
     if (table->tight && table == otable->next) {
 	table = table->next;
