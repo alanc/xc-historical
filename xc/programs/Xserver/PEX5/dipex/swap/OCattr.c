@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: OCattr.c,v 5.1 91/02/16 09:57:08 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -57,7 +57,6 @@ SwapPEXMarkerType (swapPtr, strmPtr)
 pexSwap		*swapPtr;
 pexMarkerType	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_ENUM_TYPE_INDEX (strmPtr->markerType);
 
 }
@@ -67,7 +66,6 @@ SwapPEXMarkerScale (swapPtr, strmPtr)
 pexSwap		*swapPtr;
 pexMarkerScale	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_FLOAT (strmPtr->scale);
 
 }
@@ -77,7 +75,6 @@ SwapPEXMarkerColourIndex (swapPtr, strmPtr)
 pexSwap			*swapPtr;
 pexMarkerColourIndex	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_TABLE_INDEX (strmPtr->index);
 
 }
@@ -87,7 +84,6 @@ SwapPEXMarkerBundleIndex (swapPtr, strmPtr)
 pexSwap			*swapPtr;
 pexMarkerBundleIndex	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_TABLE_INDEX (strmPtr->index);
 
 }
@@ -111,7 +107,6 @@ SwapPEXAtextStyle (swapPtr, strmPtr)
 pexSwap		*swapPtr;
 pexAtextStyle	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_ENUM_TYPE_INDEX (strmPtr->style);
 
 }
@@ -121,7 +116,6 @@ SwapPEXTextPrecision (swapPtr, strmPtr)
 pexSwap			*swapPtr;
 pexTextPrecision	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_CARD16 (strmPtr->precision);
 
 }
@@ -131,7 +125,6 @@ SwapPEXCharExpansion (swapPtr, strmPtr)
 pexSwap			*swapPtr;
 pexCharExpansion	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_FLOAT (strmPtr->expansion);
 
 }
@@ -141,7 +134,6 @@ SwapPEXCharSpacing (swapPtr, strmPtr)
 pexSwap		*swapPtr;
 pexCharSpacing	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_FLOAT (strmPtr->spacing);
 
 }
@@ -151,7 +143,6 @@ SwapPEXCharHeight (swapPtr, strmPtr)
 pexSwap		*swapPtr;
 pexCharHeight	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_FLOAT (strmPtr->height);
 
 }
@@ -163,7 +154,6 @@ SwapPEXCharUpVector (swapPtr, strmPtr)
 pexSwap		*swapPtr;
 pexCharUpVector	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_VECTOR2D (strmPtr->up);
 
 }
@@ -175,7 +165,6 @@ SwapPEXTextPath (swapPtr, strmPtr)
 pexSwap		*swapPtr;
 pexTextPath	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_CARD16 (strmPtr->path);
 
 }
@@ -187,7 +176,6 @@ SwapPEXTextAlignment (swapPtr, strmPtr)
 pexSwap			*swapPtr;
 pexTextAlignment	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_TEXT_ALIGN_DATA (strmPtr->alignment);
 
 }
@@ -199,7 +187,6 @@ SwapPEXLineType (swapPtr, strmPtr)
 pexSwap		*swapPtr;
 pexLineType	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_ENUM_TYPE_INDEX (strmPtr->lineType);
 
 }
@@ -209,7 +196,6 @@ SwapPEXLineWidth (swapPtr, strmPtr)
 pexSwap		*swapPtr;
 pexLineWidth	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_FLOAT (strmPtr->width);
 
 }
@@ -219,7 +205,6 @@ SwapPEXLineColourIndex (swapPtr, strmPtr)
 pexSwap			*swapPtr;
 pexLineColourIndex	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_TABLE_INDEX (strmPtr->index);
 
 }
@@ -230,7 +215,6 @@ pexSwap			*swapPtr;
 pexCurveApproximation	*strmPtr;
 {
 
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_CURVE_APPROX (strmPtr->approx);
 
 }
@@ -240,7 +224,6 @@ SwapPEXPolylineInterp (swapPtr, strmPtr)
 pexSwap			*swapPtr;
 pexPolylineInterp	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_ENUM_TYPE_INDEX (strmPtr->polylineInterp);
 
 }
@@ -250,7 +233,6 @@ SwapPEXInteriorStyle (swapPtr, strmPtr)
 pexSwap			*swapPtr;
 pexInteriorStyle	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_ENUM_TYPE_INDEX (strmPtr->interiorStyle);
 
 }
@@ -262,7 +244,6 @@ SwapPEXSurfaceColourIndex (swapPtr, strmPtr)
 pexSwap			*swapPtr;
 pexSurfaceColourIndex	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_TABLE_INDEX (strmPtr->index);
 
 }
@@ -275,7 +256,6 @@ SwapPEXSurfaceReflModel (swapPtr, strmPtr)
 pexSwap			*swapPtr;
 pexSurfaceReflModel	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_ENUM_TYPE_INDEX (strmPtr->reflectionModel);
 
 }
@@ -288,7 +268,6 @@ SwapPEXSurfaceInterp (swapPtr, strmPtr)
 pexSwap			*swapPtr;
 pexSurfaceInterp	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_ENUM_TYPE_INDEX (strmPtr->surfaceInterp);
 
 }
@@ -302,7 +281,6 @@ pexSwap			*swapPtr;
 pexSurfaceApproximation	*strmPtr;
 {
 
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SwapSurfaceApprox (swapPtr, &(strmPtr->approx));
 }
 
@@ -311,7 +289,6 @@ SwapPEXCullingMode (swapPtr, strmPtr)
 pexSwap		*swapPtr;
 pexCullingMode	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_CULL_MODE (strmPtr->cullMode);
 
 }
@@ -321,7 +298,6 @@ SwapPEXDistinguishFlag (swapPtr, strmPtr)
 pexSwap			*swapPtr;
 pexDistinguishFlag	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_CARD16 (strmPtr->distinguish);
 
 }
@@ -331,7 +307,6 @@ SwapPEXPatternSize (swapPtr, strmPtr)
 pexSwap		*swapPtr;
 pexPatternSize	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_COORD2D (strmPtr->size);
 
 }
@@ -341,7 +316,6 @@ SwapPEXPatternRefPt (swapPtr, strmPtr)
 pexSwap		*swapPtr;
 pexPatternRefPt	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_COORD2D (strmPtr->point);
 
 }
@@ -351,7 +325,6 @@ SwapPEXPatternAttr (swapPtr, strmPtr)
 pexSwap		*swapPtr;
 pexPatternAttr	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_COORD3D (strmPtr->refPt);
     SWAP_VECTOR3D (strmPtr->vector1);
     SWAP_VECTOR3D (strmPtr->vector2);
@@ -363,7 +336,6 @@ SwapPEXSurfaceEdgeFlag (swapPtr, strmPtr)
 pexSwap			*swapPtr;
 pexSurfaceEdgeFlag	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
 
 }
 
@@ -372,7 +344,6 @@ SwapPEXSurfaceEdgeType (swapPtr, strmPtr)
 pexSwap			*swapPtr;
 pexSurfaceEdgeType	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_ENUM_TYPE_INDEX (strmPtr->edgeType);
 
 }
@@ -382,7 +353,6 @@ SwapPEXSurfaceEdgeWidth (swapPtr, strmPtr)
 pexSwap			*swapPtr;
 pexSurfaceEdgeWidth	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_FLOAT (strmPtr->width);
 
 }
@@ -392,7 +362,6 @@ SwapPEXSetAsfValues (swapPtr, strmPtr)
 pexSwap		*swapPtr;
 pexSetAsfValues	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_ASF_ATTR (strmPtr->attribute);
 
 }
@@ -402,7 +371,6 @@ SwapPEXLocalTransform (swapPtr, strmPtr)
 pexSwap			*swapPtr;
 pexLocalTransform	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_COMPOSITION (strmPtr->compType);
     SWAP_MATRIX (strmPtr->matrix);
 
@@ -413,9 +381,8 @@ SwapPEXLocalTransform2D (swapPtr, strmPtr)
 pexSwap			*swapPtr;
 pexLocalTransform2D	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_COMPOSITION (strmPtr->compType);
-    SWAP_MATRIX (strmPtr->matrix3X3);
+    SWAP_MATRIX_3X3 (strmPtr->matrix3X3);
 
 }
 
@@ -424,7 +391,6 @@ SwapPEXGlobalTransform (swapPtr, strmPtr)
 pexSwap			*swapPtr;
 pexGlobalTransform	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_MATRIX (strmPtr->matrix);
 
 }
@@ -434,8 +400,7 @@ SwapPEXGlobalTransform2D (swapPtr, strmPtr)
 pexSwap			*swapPtr;
 pexGlobalTransform2D	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
-    SWAP_MATRIX (strmPtr->matrix3X3);
+    SWAP_MATRIX_3X3 (strmPtr->matrix3X3);
 
 }
 
@@ -444,7 +409,6 @@ SwapPEXModelClip (swapPtr, strmPtr)
 pexSwap		*swapPtr;
 pexModelClip	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
 
 }
 
@@ -453,7 +417,6 @@ SwapPEXRestoreModelClip (swapPtr, strmPtr)
 pexSwap			*swapPtr;
 pexRestoreModelClip	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
 
 }
 
@@ -462,7 +425,6 @@ SwapPEXLightState (swapPtr, strmPtr)
 pexSwap		*swapPtr;
 pexLightState	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_CARD16 (strmPtr->numEnable);
     SWAP_CARD16 (strmPtr->numDisable);
 
@@ -473,7 +435,6 @@ SwapPEXPickId (swapPtr, strmPtr)
 pexSwap		*swapPtr;
 pexPickId	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_CARD32 (strmPtr->pickId);
 
 }
@@ -483,7 +444,6 @@ SwapPEXHlhsrIdentifier (swapPtr, strmPtr)
 pexSwap			*swapPtr;
 pexHlhsrIdentifier	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_CARD32 (strmPtr->hlhsrID);
 
 }
@@ -494,7 +454,6 @@ SwapPEXExecuteStructure (swapPtr, strmPtr)
 pexSwap			*swapPtr;
 pexExecuteStructure	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_STRUCTURE (strmPtr->id);
 
 }
@@ -504,7 +463,6 @@ SwapPEXLabel (swapPtr, strmPtr)
 pexSwap		*swapPtr;
 pexLabel	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_CARD32 (strmPtr->label);
 
 }
@@ -514,7 +472,6 @@ SwapPEXApplicationData (swapPtr, strmPtr)
 pexSwap			*swapPtr;
 pexApplicationData	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_CARD16 (strmPtr->numElements);
 
 }
@@ -524,7 +481,6 @@ SwapPEXGse (swapPtr, strmPtr)
 pexSwap	  *swapPtr;
 pexGse	    *strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_CARD32 (strmPtr->id);
     SWAP_CARD16 (strmPtr->numElements);
 
@@ -560,6 +516,7 @@ CARD32		num;
     int i;
     for (i=0, pc = (pexCoord4D *)ptr; i<num; i++, pc++)
 	SWAP_COORD4D ((*pc));
+    return (unsigned char *) pc;
 }
 
 unsigned char *
@@ -572,6 +529,7 @@ CARD32		num;
     int i;
     for (i=0, pc = ptr; i<num; i++, pc++)
 	SWAP_COORD3D ((*pc));
+    return (unsigned char *) pc;
 }
 
 unsigned char *
@@ -584,6 +542,7 @@ CARD32		num;
     int i;
     for (i=0, pc = (pexCoord2D *)ptr; i<num; i++, pc++)
 	SWAP_COORD2D ((*pc));
+    return (unsigned char *) pc;
 }
 
 unsigned char *
@@ -764,7 +723,7 @@ SwapSurfaceApprox(swapPtr, ptr)
 pexSwap		    *swapPtr;
 pexSurfaceApprox    *ptr;
 {
-    SWAP_ENUM_TYPE_INDEX (ptr->approxMethod); 
+    SWAP_ENUM_TYPE_INDEX (ptr->approxMethod);
     SWAP_FLOAT (ptr->uTolerance);
     SWAP_FLOAT (ptr->vTolerance); 
 }
@@ -792,9 +751,9 @@ pexTrimCurve *pTC;
 
     ptr = (unsigned char *)pf;
     if (pTC->type == PEXRational) 
-	ptr = SwapCoord4DList(swapPtr, (pexCoord4D *)ptr, pTC->numCoord);
-    else 
 	ptr = SwapCoord3DList(swapPtr, (pexCoord3D *)ptr, pTC->numCoord);
+    else 
+	ptr = SwapCoord2DList(swapPtr, (pexCoord2D *)ptr, pTC->numCoord);
 
-
+    return ptr;
 }
