@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.91 89/10/06 12:35:08 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.92 89/10/06 19:15:15 swick Exp $";
 /* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
 #endif /* lint */
 /*LINTLIBRARY*/
@@ -65,14 +65,19 @@ static GrabActionRec *grabActionList = NULL;
 	str = str - old + *buf;					  \
     }
 
-#define ExpandToFit(more) \
-    if (str - *buf > *len - STR_THRESHOLD - strlen(more)) { 		\
-	String old = *buf;						\
-	*buf = XtRealloc(old,						\
-		(Cardinal)(*len += STR_INCAMOUNT + strlen(more)));	\
-	str = str - old + *buf;						\
+#define ExpandForChars( nchars ) \
+    if (str - *buf > *len - STR_THRESHOLD - nchars) { 		\
+	String old = *buf;					\
+	*buf = XtRealloc(old,					\
+	    (Cardinal)(*len += STR_INCAMOUNT + nchars));	\
+	str = str - old + *buf;					\
     }
 
+#define ExpandToFit(more) \
+    {								\
+	int l = strlen(more);					\
+	ExpandForChars(l);					\
+    }
 
 #define _InitializeKeysymTables(dpy, pd) \
     if (pd->keysyms == NULL) \
@@ -308,6 +313,21 @@ static String PrintEvent(buf, len, str, event, dpy)
     return str;
 }
 
+static String PrintEventSeq(buf, len, str, eventSeq, dpy)
+    String *buf;
+    int *len;
+    register String str;
+    register EventSeqPtr eventSeq;
+    Display *dpy;
+{
+    while (eventSeq != NULL) {
+	str = PrintEvent(buf, len, str, &eventSeq->event, dpy);
+	if ((eventSeq = eventSeq->next) != NULL)
+	    *str++ = ',';
+    }
+    return str;
+}
+
 static String PrintParams(buf, len, str, params, num_params)
     String *buf;
     int *len;
@@ -317,11 +337,16 @@ static String PrintParams(buf, len, str, params, num_params)
     register Cardinal i;
     for (i = 0; i<num_params; i++) {
 	ExpandToFit( params[i] );
-	if (i != 0) (void) sprintf(str, ", ");
+	if (i != 0) {
+	    *str++ = ',';
+	    *str++ = ' ';
+	}
+	*str++ = '"';
+	strcpy(str, params[i]);
 	str += strlen(str);
-	(void) sprintf(str, "\"%s\"", params[i]);
-	str += strlen(str);
+	*str++ = '"';
     }
+    *str = '\0';
     return str;
 }
 
@@ -341,23 +366,28 @@ static String PrintActions(buf, len, str, actions, stateTable)
 	} else {
 	    /* accelerator */
 	    int temp = -(actions->index+1);
-	    String name = XtName( stateTable->accProcTbl[temp].widget );
-	    int nameLen;
-	    ExpandToFit( name );
-	    bcopy( name, str, nameLen = strlen(name) );
-	    str += nameLen;
-	    *str++ = '`';
+	    if (stateTable->accProcTbl != NULL) {
+		Widget w = stateTable->accProcTbl[temp].widget;
+		if (w != NULL) {
+		    String name = XtName(w);
+		    int nameLen = strlen(name);
+		    ExpandForChars( nameLen );
+		    bcopy( name, str, nameLen );
+		    str += nameLen;
+		    *str++ = '`';
+		}
+	    }
 	    proc = XrmQuarkToString( stateTable->accQuarkTable[temp] );
 	}
 	ExpandToFit( proc );
-	(void) sprintf(str, "%s(", proc);
-	str += strlen(str);
+	strcpy(str, proc);
+	str += strlen(proc);
+	*str++ = '(';
 	str = PrintParams(buf, len, str, actions->params, actions->num_params);
-	str += strlen(str);
-	(void) sprintf(str, ")");
-	str += strlen(str);
+	*str++ = ')';
 	actions = actions->next;
     }
+    *str = '\0';
     return str;
 }
 
@@ -1413,6 +1443,7 @@ void _XtAddEventSeqToStateTable(eventSeq, stateTable)
 {
     register int     index;
     register StatePtr *state;
+    EventSeqPtr initialEvent = eventSeq;
 
     if (eventSeq == NULL) return;
 
@@ -1436,10 +1467,31 @@ void _XtAddEventSeqToStateTable(eventSeq, stateTable)
 
 	if (eventSeq->actions != NULL) {
 	    if ((*state)->actions != NULL) {
+		String str, buf = (String)XtMalloc((Cardinal)100);
+		int len = 100;
+		String params[1];
+		Cardinal num_params = 1;
 		XtWarningMsg ("translationError","ambigiousActions", 
                            "XtToolkitError",
                            "Overriding earlier translation manager actions.",
                             (String *)NULL, (Cardinal *)NULL);
+		str = PrintEventSeq( &buf, &len, buf, initialEvent, NULL );
+		/* CHECK_STR_OVERFLOW */
+		if (str - buf > len - STR_THRESHOLD) {
+		    String old = buf;
+		    buf = XtRealloc(old, (Cardinal)(len += STR_INCAMOUNT));
+		    str = str - old + buf;
+		}
+		*str++ = ':';
+		(void)PrintActions( &buf, &len, str, (*state)->actions, stateTable );
+		params[0] = buf;
+		XtWarningMsg ("translationError","oldActions","XtToolkitError",
+			      "Previous entry was: %s", params, &num_params);
+		(void)PrintActions( &buf, &len, buf, eventSeq->actions, stateTable );
+		params[0] = buf;
+		XtWarningMsg ("translationError","newActions","XtToolkitError",
+			      "New actions are:%s", params, &num_params);
+		XtFree((XtPointer)buf);
 		FreeActions((*state)->actions);
 	    }
 	    (*state)->actions = eventSeq->actions;
@@ -1924,18 +1976,15 @@ void XtInstallAccelerators(destination, source)
 	 int len = 100;
 	 String str = buf;
 	 int i;
-         str[0] = '\0';
-	 for (i = 0; i < source->core.accelerators->numEvents;) {
-	     str = PrintState( &buf, &len, str,
-			       source->core.accelerators->eventObjTbl[i].state,
-			       source->core.accelerators,
-			       False,
-			       XtDisplay(destination)
-			     );
-	     if (++i == source->core.accelerators->numEvents) break;
-	     else {
-		 *str++ = '\n';
-		 *str = '\0';
+         *str = '\0';
+	 for (i = 0; i < source->core.accelerators->numEvents; i++) {
+	     StatePtr state = source->core.accelerators->eventObjTbl[i].state;
+	     if (state != NULL) {
+		 if (str != buf) *str++ = '\n';
+		 str = PrintState( &buf, &len, str, str-buf, state,
+				   source->core.accelerators,
+				   XtDisplay(destination)
+				 );
 	     }
 	 }
          (*(XtClass(source)->core_class.display_accelerator))(source,buf);
@@ -2046,30 +2095,33 @@ static Boolean LookAheadForCycleOrMulticlick(state, eot, countP, nextLevelP)
     return False;
 }
 
-static String PrintState(buf, len, str, state, stateTable, printActions, dpy)
+static String PrintState(buf, len, str, start, state, stateTable, dpy)
     String *buf;
     int *len;
     register String str;
+    int start;			/* offset of current LHS; -1 =>print *buf */
     StatePtr state;
     XtTranslations stateTable;
-    Boolean printActions;
     Display *dpy;
 {
     int oldOffset = str - *buf;
     int clickCount;
-    Boolean cycle = state->cycle;
+    Boolean cycle;
     StatePtr nextLevel;
-    StatePtr sameLevel = state->next;
+    StatePtr sameLevel;
 
     /* print the current state */
     if (state == NULL) return str;
 
+    sameLevel = state->next;
     str = PrintEvent( buf, len, str,
 		      &stateTable->eventObjTbl[state->index].event,
 		      dpy );
 
-    cycle |= LookAheadForCycleOrMulticlick( state, stateTable->eventObjTbl,
-					    &clickCount, &nextLevel );
+    cycle = LookAheadForCycleOrMulticlick( state, stateTable->eventObjTbl,
+					   &clickCount, &nextLevel )
+	|| state->cycle;
+
     if (cycle || clickCount > 0) {
 	if (clickCount > 0)
 	    sprintf( str, "(%d%s)", clickCount+1, cycle ? "+" : "" );
@@ -2081,31 +2133,45 @@ static String PrintState(buf, len, str, state, stateTable, printActions, dpy)
     }
 
     if (state->actions != NULL) {
-	if (printActions) {
+	if (start == -1) {
 	    int offset = str - *buf;
 	    CHECK_STR_OVERFLOW;
 	    *str++ = ':';
-	    *str = '\0';
 	    (void) PrintActions(buf, len, str, state->actions, stateTable);
 	    (void) printf("%s\n", *buf);
-	    str = *buf + offset; *str = '\0';
+	    str = *buf + offset;
 	}
     } else {
 	*str++ = ',';
-	*str = '\0';
     }
+    *str = '\0';
 
     /* print succeeding states */
-    if (state->nextLevel != NULL && !state->cycle)
-	PrintState( buf, len, str, state->nextLevel,
-		    stateTable, printActions, dpy );
-
-    str = *buf + oldOffset; *str = '\0';
-    if (sameLevel != NULL) {
-	/* print sibling states */
-	PrintState(buf, len, str, sameLevel, stateTable, printActions, dpy);
-	*str = '\0';
+    if (state->nextLevel != NULL && !state->cycle) {
+	if (state->actions && start != -1) {
+	    *str++ = '\n';
+	    ExpandForChars( oldOffset - start );
+	    bcopy( *buf+start, str, oldOffset - start );
+	    str += oldOffset - start;
+    	}
+	str = PrintState( buf, len, str, start, state->nextLevel,
+			  stateTable, dpy );
     }
+
+    if (sameLevel != NULL) {	/* print sibling states */
+	if (start == -1)
+	    str = *buf + oldOffset;
+	else {
+	    *str++ = '\n';
+	    ExpandForChars( oldOffset - start );
+	    bcopy( *buf+start, str, oldOffset - start );
+	    str += oldOffset - start;
+	}
+	str = PrintState(buf, len, str, start, sameLevel, stateTable, dpy);
+    }
+
+    if (start == -1) str = *buf + oldOffset;
+    *str = '\0';
     return str;
 }
 
@@ -2125,9 +2191,9 @@ void _XtTranslateTablePrint(translations)
 			   &buf,
 			   &len,
 			   buf,
+			   -1,
 			   translations->eventObjTbl[i].state,
 			   translations,
-			   True,
 			   NULL
 			 );
     }
@@ -2183,9 +2249,9 @@ static void _XtDisplayInstalledAccelerators(widget, event, params, num_params)
 			       &buf,
 			       &len,
 			       buf,
+			       -1,
 			       translations->eventObjTbl[i].state,
 			       translations,
-			       True,
 			       XtDisplay(eventWidget)
 			     );
 	}
