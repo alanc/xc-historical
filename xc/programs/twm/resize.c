@@ -26,7 +26,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.22 89/06/12 15:32:38 jim Exp $
+ * $XConsortium: resize.c,v 1.23 89/06/22 18:32:07 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.22 89/06/12 15:32:38 jim Exp $";
+"$XConsortium: resize.c,v 1.23 89/06/22 18:32:07 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -441,6 +441,7 @@ ConstrainSize (tmp_win, widthp, heightp)
 #define makemult(a,b) ((b==1) ? (a) : (((int)((a)/(b))) * (b)) )
 
     int minWidth, minHeight, maxWidth, maxHeight, xinc, yinc, delta;
+    int baseWidth, baseHeight;
     int dwidth = *widthp, dheight = *heightp;
 
 
@@ -450,8 +451,21 @@ ConstrainSize (tmp_win, widthp, heightp)
     if (tmp_win->hints.flags & PMinSize) {
         minWidth = tmp_win->hints.min_width;
         minHeight = tmp_win->hints.min_height;
+    } else if (tmp_win->hints.flags & PBaseSize) {
+        minWidth = tmp_win->hints.base_width;
+        minHeight = tmp_win->hints.base_height;
     } else
-        minWidth = minHeight = 0;
+        minWidth = minHeight = 1;
+
+    if (tmp_win->hints.flags & PBaseSize) {
+	baseWidth = tmp_win->hints.base_width;
+	baseHeight = tmp_win->hints.base_height;
+    } else if (tmp_win->hints.flags & PMinSize) {
+	baseWidth = tmp_win->hints.min_width;
+	baseHeight = tmp_win->hints.min_height;
+    } else
+	baseWidth = baseHeight = 0;
+
 
     if (tmp_win->hints.flags & PMaxSize) {
         maxWidth = tmp_win->hints.max_width;
@@ -465,20 +479,30 @@ ConstrainSize (tmp_win, widthp, heightp)
     } else
         xinc = yinc = 1;
 
+    /*
+     * First, clamp to min and max values
+     */
     if (dwidth < minWidth) dwidth = minWidth;
     if (dheight < minHeight) dheight = minHeight;
 
     if (dwidth > maxWidth) dwidth = maxWidth;
     if (dheight > maxHeight) dheight = maxHeight;
 
-    dwidth = ((dwidth - minWidth) / xinc * xinc) + minWidth;
-    dheight = ((dheight - minHeight) / yinc * yinc) + minHeight;
 
+    /*
+     * Second, fit to base + N * inc
+     */
+    dwidth = ((dwidth - baseWidth) / xinc * xinc) + baseWidth;
+    dheight = ((dheight - baseHeight) / yinc * yinc) + baseHeight;
+
+
+    /*
+     * Third, adjust for aspect ratio
+     */
 #define maxAspectX tmp_win->hints.max_aspect.x
 #define maxAspectY tmp_win->hints.max_aspect.y
 #define minAspectX tmp_win->hints.min_aspect.x
 #define minAspectY tmp_win->hints.min_aspect.y
-
     if (tmp_win->hints.flags & PAspect)
     {
         if (dwidth * maxAspectX > dheight * maxAspectY)
@@ -508,6 +532,10 @@ ConstrainSize (tmp_win, widthp, heightp)
         }
     }
 
+
+    /*
+     * Fourth, account for border width and title height
+     */
     *widthp = dwidth + 2*tmp_win->bw;
     *heightp = dheight + tmp_win->title_height + 2*tmp_win->bw;
 }
