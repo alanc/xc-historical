@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.16 92/03/21 17:15:59 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.17 92/03/23 16:13:29 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -53,7 +53,8 @@ released automatically at next button or non-modifier key.
 #define _POSIX_SOURCE
 #include <signal.h>
 
-#define keysym_char '\024' /* control T */
+#define control_char '\024' /* control T */
+#define control_end '\224'
 
 Display *dpy;
 unsigned char button_map[256];
@@ -63,12 +64,12 @@ unsigned short modmask[256];
 unsigned short curmods = 0;
 unsigned short tempmods = 0;
 KeyCode shift, control, mod1, mod2, mod3, mod4, mod5, meta;
-int bs_is_del = 1;
+Bool bs_is_del = True;
 KeySym last_sym = 0;
 KeyCode last_keycode = 0;
 struct termios oldterm;
-int istty = 0;
-int moving = 0;
+Bool istty = False;
+Bool moving = False;
 int moving_x = 0;
 int moving_y = 0;
 int (*olderror)();
@@ -82,8 +83,19 @@ typedef struct {
     char *undo;
     int undo_len;
 } undo;
-undo *undos = NULL;
+undo no_undos[] = {
+{
+    0,
+    0,
+    0,
+    0,
+    0
+}
+};
+undo *undos = no_undos;
 int curbscount = 0;
+Bool in_control_seq = False;
+Bool need_bs = False;
 
 void
 usage()
@@ -403,7 +415,7 @@ do_warp(screen, x, y)
 void
 start_moving()
 {
-    moving = 1;
+    moving = True;
     moving_x = 0;
     moving_y = 0;
 }
@@ -411,7 +423,7 @@ start_moving()
 void
 stop_moving()
 {
-    moving = 0;
+    moving = False;
     moving_x = 0;
     moving_y = 0;
 }
@@ -455,6 +467,8 @@ save_unit(buf, i, j)
     char *buf;
     int i, j;
 {
+    if (buf[j] == control_char)
+	buf[j] = control_end;
     j = j - i + 1;
     if (history_end + j > sizeof(history))
 	trim_history();
@@ -468,51 +482,68 @@ undo_backspaces()
     char c;
 
     for (; history_end; history_end--) {
-	c = history[history_end];
-	if (!iscntrl(c) || isspace(c)) {
+	c = history[history_end-1];
+	if (!in_control_seq &&
+	    ((c == control_end) ||
+	     (history_end && (history[history_end-2] == control_char))))
+	    in_control_seq = True;
+	if (c == control_char) {
+	    if (need_bs && !iscntrl(history[history_end]))
+		do_char('\b');
+	    in_control_seq = False;
+	    need_bs = False;
+	    if (!curbscount &&
+		(history_end < 3 || history[history_end-3] != control_char)) {
+		history_end--;
+		return;
+	    }
+	}
+	else if (c != control_end && (!iscntrl(c) || isspace(c))) {
 	    if (!curbscount)
 		return;
 	    curbscount--;
-	    do_char('\b');
+	    if (in_control_seq)
+		need_bs = True;
+	    else
+		do_char('\b');
 	}
     }
+    in_control_seq = False;
     for (; curbscount; curbscount--)
 	do_char('\b');
 }
 
-int
+Bool
 do_backspace(c, up)
     char c;
     undo **up;
 {
     undo *u;
-    int partial = 0;
+    Bool partial = False;
 
     if (c != '\b') {
 	undo_backspaces();
-	return 0;
+	return False;
     }
     curbscount++;
-    if (undos) {
-	for (u = undos; u->bscount; u++) {
-	    if (history_end >= u->seq_len &&
-		!bcmp(history+history_end-u->seq_len, u->seq, u->seq_len)) {
-		if (curbscount < u->bscount)
-		    partial = 1;
-		else {
-		    /* do it */
-		    history_end -= u->seq_len;
-		    curbscount -= u->bscount;
-		    *up = u;
-		    return 1;
-		}
+    for (u = undos; u->bscount; u++) {
+	if (history_end >= u->seq_len &&
+	    !bcmp(history+history_end-u->seq_len, u->seq, u->seq_len)) {
+	    if (curbscount < u->bscount)
+		partial = True;
+	    else {
+		/* do it */
+		history_end -= u->seq_len;
+		curbscount -= u->bscount;
+		*up = u;
+		return True;
 	    }
 	}
     }
     *up = NULL;
     if (!partial)
 	undo_backspaces();
-    return 1;
+    return True;
 }
 
 main(argc, argv)
@@ -522,7 +553,7 @@ main(argc, argv)
     register int n, i, j;
     int eventb, errorb, vmajor, vminor;
     struct termios term;
-    int noecho = 1;
+    Bool noecho = True;
     char *dname = NULL;
     char buf[1024];
     XEvent ev;
@@ -546,10 +577,10 @@ main(argc, argv)
 	    dname = *argv;
 	    break;
 	case 'e':
-	    noecho = 0;
+	    noecho = False;
 	    break;
 	case 'b':
-	    bs_is_del = 0;
+	    bs_is_del = False;
 	    break;
 	default:
 	    usage();
@@ -568,7 +599,7 @@ main(argc, argv)
     }	
     signal(SIGPIPE, SIG_IGN);
     if (tcgetattr(0, &term) >= 0) {
-	istty = 1;
+	istty = True;
 	oldterm = term;
 	term.c_lflag &= ~(ICANON|ISIG);
 	term.c_iflag &= ~(IXOFF|IXON|ICRNL);
@@ -625,12 +656,13 @@ main(argc, argv)
 		    continue;
 		if (i < u->undo_len) {
 		    bcopy(buf+i, buf+u->undo_len, n - i);
+		    n += (u->undo_len - i);
 		    i = u->undo_len;
 		}
 		i -= u->undo_len;
 		bcopy(u->undo, buf+i, u->undo_len);
 	    }
-	    if (buf[i] != keysym_char) {
+	    if (buf[i] != control_char) {
 		if (history_end == sizeof(history))
 		    trim_history();
 		history[history_end++] = buf[i];
@@ -647,7 +679,7 @@ main(argc, argv)
 			quit(0);
 		    n += j;
 		}
-		if (buf[j] != keysym_char) {
+		if (buf[j] != control_char) {
 		    if (j != i)
 			continue;
 		    switch (buf[j]) {
@@ -677,7 +709,7 @@ main(argc, argv)
 		}
 		buf[j] = '\0';
 		if (j == i)
-		    do_char(keysym_char);
+		    do_char(control_char);
 		else if (buf[i] == '\002') /* control b */
 		    do_button(atoi(buf+i+1));
 		else if (buf[i] == '\027') { /* control w */
@@ -698,7 +730,7 @@ main(argc, argv)
 		    do_keysym(sym);
 		else if (sym = XStringToKeysym(buf+i))
 		    do_keysym(sym);
-		buf[j] = keysym_char;
+		buf[j] = control_char;
 		save_unit(buf, i - 1, j);
 		i = j;
 		break;
