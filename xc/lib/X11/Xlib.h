@@ -1,4 +1,4 @@
-/* $Header: Xlib.h,v 11.132 87/09/10 16:55:59 rws Locked $ */
+/* $Header: Xlib.h,v 11.133 87/09/12 02:35:11 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -949,7 +949,7 @@ Colormap *XListInstalledColormaps();
 char **XListFonts(), **XListFontsWithInfo(), **XGetFontPath();
 char **XListExtensions();
 Atom *XListProperties();
-XImage *XCreateImage(), *XGetImage();
+XImage *XCreateImage(), *XGetImage(), *XGetSubImage();
 XHostAddress *XListHosts();
 KeySym XKeycodeToKeysym(), XLookupKeysym(), *XGetKeyboardMapping();
 KeySym XStringToKeysym();
