@@ -2,7 +2,7 @@
  * XDM-AUTHENTICATION-1 (XDMCP authentication) and
  * XDM-AUTHORIZATION-1 (client authorization) protocols
  *
- * $XConsortium: xdmauth.c,v 1.1 89/12/13 14:46:40 keith Exp $
+ * $XConsortium: xdmauth.c,v 1.2 89/12/15 20:10:17 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -80,14 +80,52 @@ XdmAuthenticationAddAuth (name_len, name, data_len, data)
     AddAuthorization (name_len, name, data_len, data);
 }
 
+
+#define atox(c)	('0' <= c && c <= '9' ? c - '0' : \
+		 'a' <= c && c <= 'f' ? c - 'a' + 10 : \
+		 'A' <= c && c <= 'F' ? c - 'A' + 10 : -1)
+
+static
+HexToBinary (in, out, len)
+    char    *out, *in;
+{
+    int	    top, bottom;
+
+    while (len > 0)
+    {
+	top = atox(in[0]);
+	if (top == -1)
+	    return 0;
+	bottom = atox(in[1]);
+	if (bottom == -1)
+	    return 0;
+	*out++ = (top << 4) | bottom;
+	in += 2;
+	len -= 2;
+    }
+    if (len)
+	return 0;
+    *out++ = '\0';
+    return 1;
+}
+
 XdmAuthenticationInit (cookie, cookie_len)
     char    *cookie;
     int	    cookie_len;
 {
     bzero (privateKey.data, 8);
-    if (cookie_len > 7)
-	cookie_len = 7;
-    bcopy (cookie, privateKey.data + 1, cookie_len);
+    if (!strncmp (cookie, "0x", 2) || !strcmp (cookie, "0X", 2))
+    {
+	if (cookie_len > 2 + 2 * 8)
+	    cookie_len = 2 + 2 * 8;
+	HexToBinary (cookie + 2, privateKey.data, cookie_len - 2);
+    }
+    else
+    {
+    	if (cookie_len > 7)
+	    cookie_len = 7;
+    	bcopy (cookie, privateKey.data + 1, cookie_len);
+    }
     XdmcpGenerateKey (&rho);
     XdmcpRegisterAuthentication (XdmAuthenticationName, XdmAuthenticationNameLen,
 				 &rho,
@@ -138,7 +176,7 @@ XdmClientAuthCompare (a, b)
 
 static
 XdmClientAuthDecode (plain, auth)
-    char		*plain;
+    unsigned char	*plain;
     XdmClientAuthPtr	auth;
 {
     int	    i, j;
@@ -157,7 +195,7 @@ XdmClientAuthDecode (plain, auth)
     auth->time = 0;
     for (i = 0; i < 4; i++)
     {
-	auth->time = (auth->time << 8) | (plain[j] & 0xff);
+	auth->time |= plain[j] << ((3 - i) << 3);
 	j++;
     }
 }
@@ -273,6 +311,9 @@ char	*crypto;
     XdmClientAuthPtr	client;
     char		*plain;
 
+    /* Encrypted packets must be a multiple of 8 bytes long */
+    if (crypto_length & 7)
+	return (XID) -1;
     plain = (char *) xalloc (crypto_length);
     if (!plain)
 	return (XID) -1;
@@ -282,11 +323,11 @@ char	*crypto;
 	{
 	    client->next = xdmClients;
 	    xdmClients = client;
-	    xfree (crypto);
+	    xfree (plain);
 	    return auth->id;
 	}
     }
-    xfree (crypto);
+    xfree (plain);
     return (XID) -1;
 }
 
@@ -307,6 +348,7 @@ XdmResetCookie ()
 	next_client = client->next;
 	xfree (client);
     }
+    xdmClients = (XdmClientAuthPtr) 0;
 }
 
 XID
