@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: pages.c,v 1.2 88/09/06 17:48:20 jim Exp $
+ * $XConsortium: pages.c,v 1.3 89/01/06 18:42:26 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -274,6 +274,16 @@ caddr_t struct_pointer,data;
   for(first = FALSE,buf[0] = '\0',bufp = buf,col=INDENT;;) {
     if (current_line % NLINES == 3 && !IS_HELP(w) )
       first = TRUE;
+
+/* 
+ * Lets make sure that we do not run out of space in our buffer, making full
+ * use of it is not critical since no window will be wide enough to display
+ * nearly BUFSIZ characters.
+ */
+
+    if ( (bufp - buf) > (BUFSIZ - 10) )
+      while (*c != '\n')	/* toss everything until we find a <CR>. */
+	c++;
 
     switch(*c) {
 
