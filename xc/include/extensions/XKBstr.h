@@ -1,4 +1,4 @@
-/* $XConsortium: XKBstr.h,v 1.4 93/09/28 20:16:45 rws Exp $ */
+/* $XConsortium: XKBstr.h,v 1.9 94/04/04 12:10:02 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -193,8 +193,9 @@ typedef struct _XkbCtrlsAction {
 					((a)->ctrls2=(((c)>>16)&0xff)),\
 					((a)->ctrls1=(((c)>>8)&0xff)),\
 					((a)->ctrls0=((c)&0xff)))
-#define	XkbActionCtrls(a) ((unsigned)(((a)->ctrls3<<24)|((a)->ctrls2<<16)|\
-					  ((a)->ctrls1<<8)|((a)->ctrls0)))
+#define	XkbActionCtrls(a) ((((unsigned)(a)->ctrls3)<<24)|\
+			   (((unsigned)(a)->ctrls2)<<16)|\
+			   (((unsigned)(a)->ctrls1)<<8)|((a)->ctrls0))
 
 typedef struct _XkbMessageAction {
 	unsigned char	type;
