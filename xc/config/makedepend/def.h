@@ -1,5 +1,5 @@
 /*
- * $XConsortium: def.h,v 1.10 89/12/09 16:12:45 jim Exp $
+ * $XConsortium: def.h,v 1.11 89/12/12 12:19:56 jim Exp $
  */
 #include <stdio.h>
 #include <ctype.h>
@@ -45,7 +45,7 @@ extern int	_debugmask;
  *     3	show #include SYMBOL
  *     4-6	unused
  */
-#define debug(level,arg) { if (_debugmask & (1 << level)) log arg; }
+#define debug(level,arg) { if (_debugmask & (1 << level)) warning arg; }
 #else
 #define	debug(level,arg) /**/
 #endif /* DEBUG */

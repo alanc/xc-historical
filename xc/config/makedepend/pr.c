@@ -1,5 +1,5 @@
 /*
- * $XConsortium: pr.c,v 1.7 89/05/14 14:22:04 rws Exp $
+ * $XConsortium: pr.c,v 1.8 89/07/21 11:31:25 jim Exp $
  */
 #include "def.h"
 
@@ -25,11 +25,11 @@ add_include(file, file_red, include, dot)
 	newfile = inc_path(file->i_file, include, dot);
 	if (newfile == NULL) {
 		if (file != file_red)
-			log("%s (reading %s): ",
+			warning("%s (reading %s): ",
 				file_red->i_file, file->i_file);
 		else
-			log("%s: ", file->i_file);
-		log("cannot find include file \"%s\"\n", include);
+			warning("%s: ", file->i_file);
+		warning("cannot find include file \"%s\"\n", include);
 		show_where_not = TRUE;
 		newfile = inc_path(file->i_file, include, dot);
 		show_where_not = FALSE;

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.35 89/12/09 16:12:40 jim Exp $
+ * $XConsortium: main.c,v 1.36 89/12/12 12:05:07 jim Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -62,7 +62,7 @@ catch (sig)
     int sig;
 {
 	fflush (stdout);
-	log_fatal ("got signal %d\n", sig);
+	fatal ("got signal %d\n", sig);
 }
 
 #ifndef USG
@@ -169,7 +169,7 @@ main(argc, argv)
 				argc--;
 			}
 			if (*startat != '#')
-				log_fatal("-s flag's value should start %s\n",
+				fatal("-s flag's value should start %s\n",
 					"with '#'.");
 			break;
 		case 'f':
@@ -189,8 +189,8 @@ main(argc, argv)
 			break;
 		default:
 			if (endmarker) break;
-	/*		log_fatal("unknown opt = %s\n", argv[0]); */
-			log("ignoring option %s\n", argv[0]);
+	/*		fatal("unknown opt = %s\n", argv[0]); */
+			warning("ignoring option %s\n", argv[0]);
 		}
 	}
 	*incp++ = INCLUDEDIR;
@@ -245,7 +245,7 @@ struct filepointer *getfile(file)
 
 	content = (struct filepointer *)malloc(sizeof(struct filepointer));
 	if ((fd = open(file, O_RDONLY)) < 0) {
-		log("cannot open \"%s\"\n", file);
+		warning("cannot open \"%s\"\n", file);
 		content->f_p = content->f_base = content->f_end = malloc(1);
 		*content->f_p = '\0';
 		return(content);
@@ -254,9 +254,9 @@ struct filepointer *getfile(file)
 	content->f_len = st.st_size+1;
 	content->f_base = malloc(content->f_len);
 	if (content->f_base == NULL)
-		log_fatal("cannot allocate mem\n");
+		fatal("cannot allocate mem\n");
 	if (read(fd, content->f_base, st.st_size) != st.st_size)
-		log_fatal("cannot read all of %s\n", file);
+		fatal("cannot read all of %s\n", file);
 	close(fd);
 	content->f_p = content->f_base;
 	content->f_end = content->f_base + st.st_size;
@@ -273,14 +273,14 @@ freefile(fp)
 }
 
 /*VARARGS*/
-log_fatal(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9)
+fatal(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9)
 {
-	log(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9);
+	warning(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9);
 	exit (1);
 }
 
 /*VARARGS0*/
-log(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9)
+warning(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9)
 {
 	fprintf(stderr, "%s:  ", ProgramName);
 	fprintf(stderr, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9);
@@ -418,18 +418,18 @@ redirect(line, makefile)
 		else if (stat("Makefile", &st) == 0)
 			makefile = "Makefile";
 		else
-			log_fatal("[mM]akefile is not present\n");
+			fatal("[mM]akefile is not present\n");
 	}
 	else
 	    stat(makefile, &st);
 	if ((fdin = fopen(makefile, "r")) == NULL)
-		log_fatal("cannot open \"%s\"\n", makefile);
+		fatal("cannot open \"%s\"\n", makefile);
 	sprintf(backup, "%s.bak", makefile);
 	unlink(backup);
 	if (rename(makefile, backup) < 0)
-		log_fatal("cannot rename %s to %s\n", makefile, backup);
+		fatal("cannot rename %s to %s\n", makefile, backup);
 	if ((fdout = freopen(makefile, "w", stdout)) == NULL)
-		log_fatal("cannot open \"%s\"\n", backup);
+		fatal("cannot open \"%s\"\n", backup);
 	len = strlen(line);
 	while (fgets(buf, BUFSIZ, fdin) && !found) {
 		if (*buf == '#' && strncmp(line, buf, len) == 0)
@@ -438,7 +438,7 @@ redirect(line, makefile)
 	}
 	if (!found) {
 		if (verbose)
-		log("Adding new delimiting line \"%s\" and dependencies...\n",
+		warning("Adding new delimiting line \"%s\" and dependencies...\n",
 			line);
 		puts(line); /* same as fputs(fdout); but with newline */
 	}

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: parse.c,v 1.13 89/12/09 16:00:18 jim Exp $
+ * $XConsortium: parse.c,v 1.14 89/12/09 16:12:42 jim Exp $
  */
 #include "def.h"
 #include	<sys/signal.h>
@@ -79,7 +79,7 @@ find_includes(filep, file, file_red, recursion)
 			 * undefine all occurances of line by killing s_name
 			 */
 			if (!*line) {
-			    log("%s, line %d: incomplete undef == \"%s\"\n",
+			    warning("%s, line %d: incomplete undef == \"%s\"\n",
 				file_red->i_file, filep->f_line, line);
 			    break;
 			}
@@ -105,17 +105,17 @@ find_includes(filep, file, file_red, recursion)
 		case EJECT:
 			break;
 		case -1:
-			log("%s", file_red->i_file);
+			warning("%s", file_red->i_file);
 			if (file_red != file)
-			    log(" (reading %s)", file->i_file);
-			log(", line %d: unknown directive == \"%s\"\n",
+			    warning(" (reading %s)", file->i_file);
+			warning(", line %d: unknown directive == \"%s\"\n",
 			    filep->f_line, line);
 			break;
 		case -2:
-			log("%s", file_red->i_file);
+			warning("%s", file_red->i_file);
 			if (file_red != file)
-			    log(" (reading %s)", file->i_file);
-			log(", line %d: incomplete include == \"%s\"\n",
+			    warning(" (reading %s)", file->i_file);
+			warning(", line %d: incomplete include == \"%s\"\n",
 			    filep->f_line, line);
 			break;
 		}
@@ -162,7 +162,7 @@ gobble(filep, file, file_red)
 		case ELIFFALSE:
 			return(type);
 		case -1:
-			log("%s, line %d: unknown directive == \"%s\"\n",
+			warning("%s, line %d: unknown directive == \"%s\"\n",
 				file_red->i_file, filep->f_line, line);
 			break;
 		}
@@ -412,7 +412,7 @@ define(def, file)
 		sp = file->i_lastdef++;
 	}
 	else if (file->i_lastdef > file->i_defs + file->i_deflen)
-		log_fatal("define() botch\n");
+		fatal("define() botch\n");
 
 	/*
 	 * copy the symbol being defined.

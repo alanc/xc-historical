@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cppsetup.c,v 1.5 89/06/13 19:15:36 jim Exp $
+ * $XConsortium: cppsetup.c,v 1.6 89/11/03 10:21:20 jim Exp $
  */
 #include "def.h"
 
@@ -87,14 +87,14 @@ struct symtab *lookup(symbol)
 pperror(tag, x0,x1,x2,x3,x4)
 	int	tag,x0,x1,x2,x3,x4;
 {
-	log("\"%s\", line %d: ", currentinc->i_file, currentfile->f_line);
-	log(x0,x1,x2,x3,x4);
+	warning("\"%s\", line %d: ", currentinc->i_file, currentfile->f_line);
+	warning(x0,x1,x2,x3,x4);
 }
 
 
 yyerror(s)
 	register char	*s;
 {
-	log_fatal("Fatal error: %s\n", s);
+	fatal("Fatal error: %s\n", s);
 }
 #endif /* CPP */

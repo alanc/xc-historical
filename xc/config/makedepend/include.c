@@ -1,5 +1,5 @@
 /*
- * $XConsortium: include.c,v 1.6 88/09/22 13:52:38 jim Exp $
+ * $XConsortium: include.c,v 1.7 88/11/08 12:19:55 jim Exp $
  */
 #include "def.h"
 
@@ -41,7 +41,7 @@ struct inclist *inc_path(file, include, dot)
 			found = TRUE;
 		}
 		else if (show_where_not)
-			log("\tnot in %s\n", include);
+			warning("\tnot in %s\n", include);
 	}
 
 	/*
@@ -65,7 +65,7 @@ struct inclist *inc_path(file, include, dot)
 			found = TRUE;
 		}
 		else if (show_where_not)
-			log("\tnot in %s\n", path);
+			warning("\tnot in %s\n", path);
 	}
 
 	/*
@@ -82,7 +82,7 @@ struct inclist *inc_path(file, include, dot)
 				break;
 			}
 			else if (show_where_not)
-				log("\tnot in %s\n", path);
+				warning("\tnot in %s\n", path);
 		}
 
 	if (!found) {
@@ -190,7 +190,7 @@ issymbolic(dir, component)
 	&& (st.st_mode & S_IFMT) == S_IFLNK) {
 		*pp++ = copy(buf);
 		if (pp >= &notdotdot[ MAXDIRS ])
-			log_fatal("out of .. dirs, increase MAXDIRS\n");
+			fatal("out of .. dirs, increase MAXDIRS\n");
 		return(TRUE);
 	}
 #endif
@@ -210,7 +210,7 @@ struct inclist *newinclude(newfile, incstring)
 	 */
 	ip = inclistp++;
 	if (inclistp == inclist + MAXFILES - 1)
-		log_fatal("out of space: increase MAXFILES\n");
+		fatal("out of space: increase MAXFILES\n");
 	ip->i_file = copy(newfile);
 	ip->i_included_sym = FALSE;
 	if (incstring == NULL)
@@ -244,11 +244,11 @@ included_by(ip, newfile)
 			    {
 				/* only bitch if ip has */
 				/* no #include SYMBOL lines  */
-				log("%s includes %s more than once!\n",
+				warning("%s includes %s more than once!\n",
 					ip->i_file, newfile->i_file);
-				log("Already have\n");
+				warning("Already have\n");
 				for (i=0; i<ip->i_listlen; i++)
-					log("\t%s\n", ip->i_list[i]->i_file);
+					warning("\t%s\n", ip->i_list[i]->i_file);
 			    }
 			    return;
 			}

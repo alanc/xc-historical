@@ -1,5 +1,5 @@
 #
-# $XConsortium: cpp.ed,v 1.1 88/09/06 17:53:29 jim Exp $
+# $XConsortium: cpp.ed,v 1.2 88/09/06 17:53:42 jim Exp $
 #
 # $Locker $
 #
@@ -61,15 +61,15 @@ cpp_varsetup(argc,argv)
 .
 /^dump(/s/$/	DELETED/p
 .,/^}/c
-dump() { log_fatal("dump\n"); }
+dump() { fatal("dump\n"); }
 .
 /^refill(/s/$/	DELETED/p
 .,/^}/c
-refill() { log_fatal("refill\n"); }
+refill() { fatal("refill\n"); }
 .
 /^slookup(/s/$/	DELETED/p
 .-1,/^}/c
-static struct symtab *slookup() { log_fatal("slookup\n"); }
+static struct symtab *slookup() { fatal("slookup\n"); }
 .
 w
 q
