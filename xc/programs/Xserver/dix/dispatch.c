@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 2.3 87/08/19 13:36:27 newman Locked $ */
+/* $Header: dispatch.c,v 1.6 87/08/20 16:22:09 toddb Locked $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1175,13 +1175,14 @@ int
 ProcListFontsWithInfo(client)
     register ClientPtr client;
 {
-    xListFontsWithInfoReply *reply;
+    register xListFontsWithInfoReply *reply;
     xListFontsWithInfoReply last_reply;
     FontRec font;
     FontInfoRec finfo;
-    FontPathPtr fpaths;
-    char **path;
-    int n, *length, rlength;
+    register FontPathPtr fpaths;
+    register char **path;
+    register int n, *length;
+    int rlength;
     REQUEST(xListFontsWithInfoReq);
 
     REQUEST_AT_LEAST_SIZE(xListFontsWithInfoReq);
@@ -1197,7 +1198,7 @@ ProcListFontsWithInfo(client)
 	rlength = sizeof(xListFontsWithInfoReply)
 		    + finfo.nProps * sizeof(xFontProp);
 	if (reply = (xListFontsWithInfoReply *)ALLOCATE_LOCAL(rlength))
-  	{
+	{
 		reply->type = X_Reply;
 		reply->sequenceNumber = client->sequence;
 		reply->length = (rlength - sizeof(xGenericReply)
@@ -1208,7 +1209,7 @@ ProcListFontsWithInfo(client)
 		WriteReplyToClient(client, rlength, reply);
 		WriteToClient(client, *length, *path);
 		DEALLOCATE_LOCAL(reply);
-  	}
+	}
 	Xfree((char *)font.pFP);
     }
     FreeFontRecord(fpaths);
@@ -1708,8 +1709,9 @@ ProcGetImage(client)
     register ClientPtr	client;
 {
     register DrawablePtr pDraw;
-    int			nlines, linesDone, widthLine, linesPerBuf,
-                         widthBytesLine, height;
+    int			nlines, linesPerBuf, widthBytesLine;
+    register int	height, linesDone;
+    int i;
     char		*pBuf;
     xGetImageReply	xgi;
 
@@ -1737,44 +1739,75 @@ ProcGetImage(client)
 	xgi.visual = None;
     }
     xgi.type = X_Reply;
+    /* should this be set??? */
     xgi.sequenceNumber = client->sequence;
     xgi.depth = pDraw->depth;
     if(stuff->format == ZPixmap)
     {
-	widthLine = stuff->width;
-	widthBytesLine = widthLine << 2;
+	widthBytesLine = PixmapBytePad(stuff->width, pDraw->depth);
+	xgi.length = (widthBytesLine >> 2) * stuff->height;
     }
     else 
     {
-	widthLine = PixmapWidthInPadUnits(stuff->width, pDraw->depth);
-	widthBytesLine = PixmapBytePad(stuff->width, pDraw->depth);
+	widthBytesLine = PixmapBytePad(stuff->width, 1);
+	xgi.length = (widthBytesLine >> 2) * stuff->height * pDraw->depth;
     }
-    xgi.length = widthLine * height;
     linesPerBuf = IMAGE_BUFSIZE / widthBytesLine;
     if(!(pBuf = (char *) ALLOCATE_LOCAL(IMAGE_BUFSIZE)))
         return (client->noClientException = BadAlloc);
 
     WriteReplyToClient(client, sizeof (xGetImageReply), &xgi);
 
-    linesDone = 0;
-    while (height - linesDone > 0)
+    if (stuff->format == ZPixmap)
     {
-	nlines = min(linesPerBuf, height - linesDone);
-	(*pDraw->pScreen->GetImage) (pDraw,
-	                             stuff->x,
-				     stuff->y + linesDone,
-				     stuff->width, 
-				     nlines,
-				     stuff->format,
-				     stuff->planeMask,
-				     pBuf);
-	/* Note that this is NOT a call to WriteSwappedDataToClient,
-           as we do NOT byte swap */
-	WriteToClient(client, nlines * widthBytesLine, pBuf);
-	linesDone += nlines;
-
+        linesDone = 0;
+        while (height - linesDone > 0)
+        {
+	    nlines = min(linesPerBuf, height - linesDone);
+	    (*pDraw->pScreen->GetImage) (pDraw,
+	                                 stuff->x,
+				         stuff->y + linesDone,
+				         stuff->width, 
+				         nlines,
+				         stuff->format,
+				         stuff->planeMask,
+				         pBuf);
+	    /* Note that this is NOT a call to WriteSwappedDataToClient,
+               as we do NOT byte swap */
+	    WriteToClient(client, nlines * widthBytesLine, pBuf);
+	    linesDone += nlines;
+        }
     }
-    
+    else
+    {
+	for (i = 0; i <pDraw->depth; i++)
+	{
+            linesDone = 0;
+            while (height - linesDone > 0)
+            {
+	        nlines = min(linesPerBuf, height - linesDone);
+		if (stuff->planeMask & (1<<i))
+		{
+	            (*pDraw->pScreen->GetImage) (pDraw,
+	                                         stuff->x,
+				                 stuff->y + linesDone,
+				                 stuff->width, 
+				                 nlines,
+				                 stuff->format,
+				                 stuff->planeMask,
+				                 pBuf);
+		}
+		else
+		{
+		    bzero(pBuf, nlines * widthBytesLine);
+		}
+	        /* Note that this is NOT a call to WriteSwappedDataToClient,
+                   as we do NOT byte swap */
+	        WriteToClient(client, nlines * widthBytesLine, pBuf);
+	        linesDone += nlines;
+            }
+	}
+    }
     DEALLOCATE_LOCAL(pBuf);
     return (client->noClientException);
 }
@@ -2062,6 +2095,7 @@ ProcAllocColor                (client)
 	acr.red = stuff->red;
 	acr.green = stuff->green;
 	acr.blue = stuff->blue;
+	acr.pixel = 0;
 	if(retval = AllocColor(pmap, &acr.red, &acr.green, &acr.blue,
 	                       &acr.pixel, client->index))
 	{
@@ -2106,6 +2140,7 @@ ProcAllocNamedColor           (client)
 	    ancr.screenRed = ancr.exactRed;
 	    ancr.screenGreen = ancr.exactGreen;
 	    ancr.screenBlue = ancr.exactBlue;
+	    ancr.pixel = 0;
 	    if(retval = AllocColor(pcmp,
 	                 &ancr.screenRed, &ancr.screenGreen, &ancr.screenBlue,
 			 &ancr.pixel, client->index))
@@ -3020,7 +3055,7 @@ Oops (client, reqCode, minorCode, status)
     for (i=0; i<currentMaxClients; i++)
         if (clients[i] == client) break;
     ErrorF(  "OOPS! => client: %x, seq: %d, err: %d, maj:%d, min: %d resID: %x\n",
-    	client, rep.sequenceNumber, rep.errorCode,
+    	client->index, rep.sequenceNumber, rep.errorCode,
 	rep.majorCode, rep.minorCode, rep.resourceID);
 
     WriteEventsToClient (client, 1, (xEvent *) &rep); 
