@@ -390,10 +390,10 @@ static void CvtStringToGeometry(screen, fromVal, toVal)
     }
 
     if (i & XNegative)
-	g.pos.xpos = WidthOfScreen(screen)-1-g.pos.xpos;
+	g.pos.xpos += WidthOfScreen(screen);
 
     if (i & YNegative)
-	g.pos.ypos = HeightOfScreen(screen)-1-g.pos.ypos;
+	g.pos.ypos += HeightOfScreen(screen);
 
     done(&g, Geometry);
 }
