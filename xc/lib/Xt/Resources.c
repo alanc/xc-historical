@@ -1,4 +1,4 @@
-/* $XConsortium: Resources.c,v 1.98 91/02/04 21:52:20 rws Exp $ */
+/* $XConsortium: Resources.c,v 1.99 91/02/05 16:58:43 gildea Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -591,7 +591,6 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 		register XtTypedArg* arg = typed_args + typed[j] - 1;
 		XrmQuark from_type;
 		XrmValue from_val, to_val;
-		Boolean converted;
 
 		from_type = StringToQuark(arg->type);
 		from_val.size = arg->size;
