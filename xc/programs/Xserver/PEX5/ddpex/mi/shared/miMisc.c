@@ -1,4 +1,4 @@
-/* $XConsortium: miMisc.c,v 5.5 92/04/23 15:54:50 hersh Exp $ */
+/* $XConsortium: miMisc.c,v 5.5 92/04/23 15:58:26 hersh Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -833,12 +833,12 @@ MatchRendererTargets(pDraw, depth, drawType, visualID, maxTriplets, pexBuffer)
              * are fair game.
              */
 	    if ((drawType == PEXWindow) || (drawType == PEXDontCare))
-	      ADD_TRIPLET(pDepth->depth, pDepth->vids[ivisual], PEXWindow);
+	      ADD_TRIPLET(pDepth->depth, PEXWindow, pDepth->vids[ivisual] );
 	    if ((drawType == PEXPixmap) || (drawType == PEXDontCare))
-	      ADD_TRIPLET(pDepth->depth, pDepth->vids[ivisual], PEXPixmap);
+	      ADD_TRIPLET(pDepth->depth, PEXPixmap, pDepth->vids[ivisual] );
 #ifdef MULTIBUFFER
 	    if ((drawType == PEXBuffer) || (drawType == PEXDontCare))
-	      ADD_TRIPLET(pDepth->depth, pDepth->vids[ivisual], PEXBuffer);
+	      ADD_TRIPLET(pDepth->depth, PEXBuffer, pDepth->vids[ivisual] );
 #endif	      
 	  }
 	}
