@@ -1,0 +1,85 @@
+XCOMM platform:  $XConsortium: Win32.rules,v 1.3 93/08/10 22:07:13 rws Exp $
+
+#define RemoveTargetProgram(program) $(RM) program.exe
+
+#define MakeDir(dir) -$(MKDIRHIER) dir
+
+#define BuildIncludes(srclist,dstsubdir,dstupdir)			@@\
+includes::								@@\
+	MakeDir($(BUILDINCDIR)/dstsubdir)				@@\
+	for %%i in (srclist) do @<<tmp.bat %%i				@@\
+cd $(BUILDINCDIR)/dstsubdir						@@\
+$(RM) %1								@@\
+$(LN) $(BUILDINCTOP)/dstupdir/$(CURRENT_DIR)/%1 .			@@\
+<<
+
+#define LinkRule(program,options,objects,libraries) \
+$(CCLINK) Concat(-Fe,program) options objects libraries $(EXTRA_LOAD_FLAGS)
+
+#define	NormalProgramTarget(program,objects,deplibs,locallibs,syslibs)	@@\
+	OBJS = objects							@@\
+									@@\
+program.exe: $(OBJS:.o=.obj) deplibs					@@\
+	RemoveTargetProgram($@)						@@\
+	LinkRule($@,$(LDOPTIONS),$(OBJS:.o=.obj),locallibs $(LDLIBS) syslibs) @@\
+									@@\
+clean::									@@\
+	$(RM) program.exe
+
+#define	ProgramTargetHelper(program,srcs,objs,deplib,locallib,syslib)	@@\
+program.exe: $(objs:.o=.obj) $(deplib)					@@\
+	RemoveTargetProgram($@)						@@\
+	LinkRule($@,$(LDOPTIONS),$(objs:.o=.obj),locallib $(LDLIBS) syslib) @@\
+									@@\
+InstallProgram(program,$(BINDIR))					@@\
+InstallManPage(program,$(MANDIR))
+
+#define	ComplexProgramTarget(program)					@@\
+        PROGRAM = program.exe						@@\
+									@@\
+AllTarget(program.exe)							@@\
+									@@\
+ProgramTargetHelper(program,SRCS,OBJS,DEPLIBS,$(LOCAL_LIBRARIES),NullParameter) @@\
+									@@\
+DependTarget()								@@\
+LintTarget()								@@\
+									@@\
+clean::									@@\
+	$(RM) $(PROGRAM)
+
+#define	ComplexProgramTarget_1(program,locallib,syslib)			@@\
+            OBJS = $(OBJS1) $(OBJS2) $(OBJS3)				@@\
+            SRCS = $(SRCS1) $(SRCS2) $(SRCS3)				@@\
+        PROGRAM1 = program.exe						@@\
+									@@\
+AllTarget($(PROGRAM1) $(PROGRAM2) $(PROGRAM3))				@@\
+									@@\
+ProgramTargetHelper(program,SRCS1,OBJS1,DEPLIBS1,locallib,syslib)	@@\
+									@@\
+DependTarget()								@@\
+LintTarget()								@@\
+									@@\
+clean::									@@\
+	for %%i in ($(PROGRAMS)) do $(RM) %%i.exe
+
+#define	ComplexProgramTarget_2(program,locallib,syslib)			@@\
+        PROGRAM2 = program.exe						@@\
+									@@\
+ProgramTargetHelper(program,SRCS2,OBJS2,DEPLIBS2,locallib,syslib)
+
+#define	ComplexProgramTarget_3(program,locallib,syslib)			@@\
+        PROGRAM3 = program.exe						@@\
+									@@\
+ProgramTargetHelper(program,SRCS3,OBJS3,DEPLIBS3,locallib,syslib)
+
+#define MoveToBakFile(file) -@if exist file do $(MV) file file.bak
+
+#define RMoveToBakFile(file) -@if exist file do $(RM) file.bak		@@\
+	-@if exist file do $(MV) file file.bak
+
+#define InstallMultipleDestFlags(step,list,dest,flags)			@@\
+step:: list								@@\
+	MakeDir($(DESTDIR)dest)						@@\
+	-@for %%i in (list) do $(INSTALL) -c flags %%i $(DESTDIR)dest)
+
+#define	CleanTarget()
