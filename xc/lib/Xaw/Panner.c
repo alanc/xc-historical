@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.32 90/03/07 18:55:57 jim Exp $
+ * $XConsortium: Panner.c,v 1.33 90/03/08 10:52:37 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -322,8 +322,8 @@ static void rescale (pw)
     if (pw->panner.canvas_height < 1)
       pw->panner.canvas_height = pw->core.height;
 
-    if (pw->core.width < hpad) hpad = 0;
-    if (pw->core.height < vpad) vpad = 0;
+    if (pw->core.width <= hpad) hpad = 0;
+    if (pw->core.height <= vpad) vpad = 0;
 
     pw->panner.haspect = (((double) (pw->core.width - hpad)) /
 			  ((double) pw->panner.canvas_width));
