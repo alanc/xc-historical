@@ -1,4 +1,4 @@
-/* $XConsortium: ar_ops.c,v 5.4 91/04/04 15:19:31 hersh Exp $ */
+/* $XConsortium: ar_ops.c,v 5.5 91/07/10 09:18:29 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -394,17 +394,17 @@ phg_ar_read_eoa(arh)
 Ar_handle     arh;
 { 
     int nbytes;
-    short opcode;
     int fd = arh->fd;
+    Phg_ar_end_archive    endar;
  
     /* Find EOA element position */
     nbytes = lseek(fd, (off_t)-4, L_XTND);
  
     /* Insure the last element is EOA */
-    if (read(fd, (char *)&opcode, sizeof(short)) != sizeof(short)) 
+    if (read(fd, (char *)&endar, sizeof(endar)) != sizeof(endar))
 	return(1);
 
-    if (opcode != PHG_AR_EOA) 
+    if (endar.opcode != PHG_AR_EOA) 
 	return(1);
  
     /* Remove the EOA element.  This is written by pclosearfile. */
@@ -477,13 +477,14 @@ int
 phg_ar_write_eoa(fd)
 int fd;
 {
-    int opcode = PHG_AR_EOA << 16;
- 
+    Phg_ar_end_archive    endar;
+    
     /* Find end of file */
     (void) lseek(fd, (off_t)0, L_XTND);
  
-    /* Write the EOA element */
-    if (write(fd, (char *)&opcode, sizeof(int)) != sizeof(int)) 
+    endar.opcode = PHG_AR_EOA;
+    
+    if (write(fd, (char *)&endar, sizeof(endar)) != sizeof(endar))
 	return(1);
  
     return(0);
