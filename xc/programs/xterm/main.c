@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.210 94/01/14 16:04:33 gildea Exp $";
+static char *rid="$XConsortium: main.c,v 1.211 94/01/18 15:21:19 rws Exp $";
 #endif /* lint */
 
 /*
@@ -62,17 +62,19 @@ SOFTWARE.
 
 #ifdef SVR4
 #define SYSV			/* SVR4 is (approx) superset of SVR3 */
-#define USE_SYSV_UTMP
 #define ATT
+#define USE_SYSV_UTMP
 #define USE_TERMIOS
+#define HAS_UTMP_UT_HOST
 #endif
 
 #if defined(sgi) && OSMAJORVERSION >= 5
 #define SVR4			/* close enough for xterm */
 #define USE_SYSV_UTMP
 #define USE_TERMIOS
+#define HAS_UTMP_UT_HOST
 #endif
-  
+
 #ifdef SYSV386
 #define USE_SYSV_UTMP
 #define ATT
@@ -124,8 +126,10 @@ static Bool IsPts = False;
 #ifdef SYSV
 #ifdef USE_USG_PTYS			/* AT&T SYSV has no ptyio.h */
 #include <sys/stream.h>			/* get typedef used in ptem.h */
-#include <sys/ptem.h>			/* get struct winsize */
 #include <sys/stropts.h>		/* for I_PUSH */
+#ifndef SVR4
+#include <sys/ptem.h>			/* get struct winsize */
+#endif
 #include <poll.h>			/* for POLLIN */
 #endif /* USE_USG_PTYS */
 #define USE_SYSV_TERMIO
@@ -190,7 +194,17 @@ extern int errno;
 #define ttyslot() 1
 #endif /* apollo */
 
+#ifdef SVR4
+#include <utmpx.h>
+#define setutent setutxent
+#define getutent getutxent
+#define getutid getutxid
+#define endutent endutxent
+#define pututline pututxline
+#else
 #include <utmp.h>
+#endif
+
 #ifdef LASTLOG
 #include <lastlog.h>
 #endif
@@ -1553,7 +1567,11 @@ spawn ()
 #endif	/* sun */
 	struct passwd *pw = NULL;
 #ifdef UTMP
+#ifdef SVR4
+	struct utmpx utmp;
+#else
 	struct utmp utmp;
+#endif
 #ifdef LASTLOG
 	struct lastlog lastlog;
 #endif	/* LASTLOG */
@@ -2269,17 +2287,28 @@ spawn ()
 			       sizeof(utmp.ut_name));
 
 		utmp.ut_pid = getpid();
+#ifdef SVR4
+		utmp.ut_session = getsid(0);
+		utmp.ut_xtime = time ((long *) 0);
+		utmp.ut_tv.tv_usec = 0;
+#else
 		utmp.ut_time = time ((long *) 0);
+#endif
 
 		/* write out the entry */
 		if (!resource.utmpInhibit)
 		    (void) pututline(&utmp);
 #ifdef WTMP
-		if ( term->misc.login_shell &&
+#ifdef SVR4
+		if (term->misc.login_shell)
+		    updwtmpx(WTMPX_FILE, &utmp);
+#else
+		if (term->misc.login_shell &&
 		     (i = open(etc_wtmp, O_WRONLY|O_APPEND)) >= 0) {
 		    write(i, (char *)&utmp, sizeof(struct utmp));
 		    close(i);
 		}
+#endif
 #endif
 		/* close the file */
 		(void) endutent();
@@ -2635,7 +2664,7 @@ spawn ()
 #endif	/* SYSV */
 #endif /* USE_SYSV_SIGNALS and not SIGTSTP */
 
-	return;
+	return 0;
 }							/* end spawn */
 
 SIGNAL_T
@@ -2646,10 +2675,15 @@ Exit(n)
         int pty = term->screen.respond;  /* file descriptor of pty */
 #ifdef UTMP
 #ifdef USE_SYSV_UTMP
+#ifdef SVR4
+	struct utmpx utmp;
+	struct utmpx *utptr;
+#else
 	struct utmp utmp;
 	struct utmp *utptr;
+#endif
 	char *ptyname;
-#ifdef WTMP
+#if defined(WTMP) && !defined(SVR4)
 	int fd;			/* for /etc/wtmp */
 	int i;
 #endif
@@ -2673,14 +2707,24 @@ Exit(n)
 	    /* write it out only if it exists, and the pid's match */
 	    if (utptr && (utptr->ut_pid == screen->pid)) {
 		    utptr->ut_type = DEAD_PROCESS;
+#ifdef SVR4
+		    utmp.ut_session = getsid(0);
+		    utmp.ut_xtime = time ((long *) 0);
+		    utmp.ut_tv.tv_usec = 0;
+#else
 		    utptr->ut_time = time((long *) 0);
+#endif
 		    (void) pututline(utptr);
 #ifdef WTMP
+#ifdef SVR4
+		    updwtmpx(WTMPX_FILE, &utmp);
+#else
 		    /* set wtmp entry if wtmp file exists */
 		    if ((fd = open(etc_wtmp, O_WRONLY | O_APPEND)) >= 0) {
 		      i = write(fd, utptr, sizeof(utmp));
 		      i = close(fd);
 		    }
+#endif
 #endif
 
 	    }
@@ -2874,7 +2918,7 @@ remove_termcap_entry (buf, str)
             strinbuf[1] = '\0';
         }
     }
-    return;
+    return 0;
 }
 
 /*
