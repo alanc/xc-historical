@@ -1,5 +1,5 @@
 .\" Use -ms
-.\" $XConsortium: a2x.ms,v 1.34 93/04/03 10:55:01 rws Exp $
+.\" $XConsortium: a2x.ms,v 1.35 93/04/13 19:59:55 rws Exp $
 .de Ds
 .RS
 .nf
@@ -1165,6 +1165,15 @@ Backspace when you type {Del}, then use this option so that \fBa2x\fP knows.
 Clears the screen at startup time (using the standard ANSI escape
 sequence).
 .LP
+.B \-C \fI<char>\fP
+.IP
+Changes the control sequence character from {c\-t} to {c\-\fI<char>\fP}.
+This option really only exists for people using \fBa2x\fP to attach an
+alternative keyboard to X (not using DragonDictate) who find that
+they frequently use {c\-t} as a normal control character.  This option
+lets you specify a less frequently used control character as the control
+sequence character.
+.LP
 .B \-d \fIdisplay\fP
 .IP
 Specifies the X server to connect to.
@@ -1196,6 +1205,14 @@ Specifies the hotkey for use with DESQview/X.
 .B \-u \fI<undo-file>\fP
 .IP
 Specifies the filename of the undo file.
+.LP
+.B \-U
+.IP
+Turns off undo interpretation of Backspace by \fBa2x\fP; the character
+will be passed through as a normal character.  This option really only
+exists for people using \fBa2x\fP to attach an alternative keyboard to X
+(not using DragonDictate).  You will probably also want to enable the
+\fB\-b\fP option.
 .LP
 .B \-w \fI<DOS-window-name>\fP
 .IP
