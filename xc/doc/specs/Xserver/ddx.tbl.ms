@@ -1,4 +1,4 @@
-.\" $XConsortium: ddx.tbl.ms,v 1.18 89/01/16 18:15:40 rws Exp $
+.\" $XConsortium: ddx.tbl.ms,v 1.19 89/03/28 14:01:10 rws Exp $
 .EF 'Porting Layer Definition'- % -'March 1, 1988'
 .OF 'Porting Layer Definition'- % -'March 1, 1988'
 .EH '''
@@ -2542,9 +2542,7 @@ Font Loading and Manipulation
 .LP
 
 There are a number of routines used by the server to deal with loading
-and manipulating fonts.  Routines to deal with SNF format are
-supplied (in server/ddx/snf), but you can replace these if you want to
-do conversion from other formats.
+and manipulating fonts.
 .nf
 
 	SetDefaultFont(defaultfontname)
@@ -2553,80 +2551,63 @@ do conversion from other formats.
 SetDefaultFont establishes the default font in graphics contexts.
 .nf
 
-	FontPtr OpenFont(lenfname, pfilename)
+	FontPtr FontFileLoad(pfontname, lenfname);
+		char *pfontname;
 		unsigned lenfname;
-		char *pfilename;
 .fi
-OpenFont is the primary routine for loading a font.
+FontFileLoad is the primary routine for loading a font.
 It should call ExpandFontName, and should try to share
-any existing font structure for the font.  It must also
-call RealizeFont for each screen.
+any existing font structure for the font.  DIX is responsible for
+calling RealizeFont for each screen.
 .nf
 
-	int CloseFont(pfont)
+	int FontUnload(pfont)
 		FontPtr pfont;
 .fi
-CloseFont is used to close a font.  It should free the
-storage if the font is no longer used (if decrementing
-the reference count makes it zero).
+FontUnload is used to unload a font.  It should free the
+storage for the font.  DIX will have already called
+UnrealizeFont for each screen.
 .nf
 
-	Bool DescribeFont(pfontname, lenfname, pfi, ppfp)
-		char *pfontname;
-		int lenfname;
-		FontInfoPtr pfi;
-		DIXFontPropPtr *ppfp;
+	Bool FontFilePropLoad(fontname, length, font, fi, props)
+		char *fontname;
+		unsigned int length;
+		FontInfoPtr fi;
+		DIXFontPropPtr *props;
+		FontPtr	*font;
 .fi
-DescribeFont gets used by ListFontsWithInfo to extract
+FontFilePropLoad gets used by ListFontsWithInfo to extract
 metric and property information from the font.  It should
 return False if the font does not exist.  The font name
 should be expanded with ExpandFontName.
+
+Routines to deal with SNF format are
+supplied (in server/ddx/snf), but you can replace or augment these if you want
+to do conversion from other formats.  For each format, the OS layer needs to
+know the file extension for the format (e.g. "snf"), an optional filter program
+(given as a command line) to execute to convert the format to a usable format
+(e.g., to uncompress a compressed file, or to compile a BDF file on the fly),
+plus routines to load the font, load the font properties, and free the font.
 .nf
 
-	void QueryFont(pf, pr, nprotoxcistructs)
-		FontPtr pf;
-		xQueryFontReply *pr;
-		int nprotoxcistructs;
+	FontPtr FontFileReader->loadFont(fp)
+		FID fp;
 .fi
-QueryFont should fill in the reply structure with all
-the appropriate information.  The caller must have
-allocated sufficient space after the reply structure
-to hold all of the font properties.
+This routine takes an open file and loads the font.
 .nf
 
-	void GetGlyphs(font, count, chars, fontEncoding, glyphcount, glyphs)
+	Bool FontFileReader->loadProperties(fp)
+		FID fp;
+		FontInfoPtr pfi;
+		DIXFontPropPtr *ppdfp;
+.fi
+This routine takes an open file and loads the font properties and metrics.
+.nf
+
+	FontFileReader->freeFont(font)
 		FontPtr font;
-		unsigned long count;
-		register unsigned char *chars;
-		FontEncoding fontEncoding;
-		unsigned long *glyphcount;
-		CharInfoPtr glyphs[];
 .fi
-GetGlyphs extracts glyph information for the given characters
-from the font, which is assumed to have the specified glyph encoding.
-The glyphs array is preallocated by the caller.  The glyphcount
-should be set to the number of glyphs stored.
-.nf
-
-	void QueryGlyphExtents(font, charinfo, count, info)
-		FontPtr font;
-		CharInfoPtr *charinfo;
-		unsigned long count;
-		register ExtentInfoRec *info;
-.fi
-QueryGlyphExtents should calculate the extents (according to the
-rules given in the protocol for QueryTextExtent) of the string
-represented by the list of charinfos.
-.nf
-
-Bool QueryTextExtents(font, count, chars, info)
-		FontPtr font;
-		unsigned long count;
-		unsigned char *chars;
-		ExtentInfoRec *info;
-.fi
-QueryTextExtents is a composition of GetGlyphs and QueryGlyphExtents.
-It returns FALSE if memory could not be allocated to perform the computation.
+This routine frees the storage associated with a font.
 
 .NH 4
 Font Realization
