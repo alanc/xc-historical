@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.20 91/01/06 12:12:39 rws Exp $
+ * $XConsortium: Bitmap.c,v 1.21 91/01/11 13:53:43 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -723,16 +723,13 @@ static void Initialize(request, new, argv, argc)
     new->bitmap.selection.own = False;
     new->bitmap.selection.limbo = False;
 
-    fprintf(stderr,"#1 GOT HERE (INIT)!\n");
     new->bitmap.request_stack = (BWRequestStack *)
 	XtMalloc(sizeof(BWRequestStack));
-    fprintf(stderr,"#2 GOT HERE (INIT)!\n");
 
     new->bitmap.request_stack[0].request = NULL;
     new->bitmap.request_stack[0].call_data = NULL;
     new->bitmap.request_stack[0].trap = False;
 
-    fprintf(stderr,"#3 GOT HERE (INIT)!\n");
     if (BWParseSize(new->bitmap.size, 
 		    &new->bitmap.width,
 		    &new->bitmap.height)
@@ -742,7 +739,6 @@ static void Initialize(request, new, argv, argc)
       new->bitmap.height = FallbackBitmapHeight;
       XtWarning("Cannot parse the size resource.  BitmapWidget");
     }
-    fprintf(stderr,"#4 GOT HERE (INIT)!\n");
 
     new->core.width = new->bitmap.width * new->bitmap.squareW + 
 	2 * new->bitmap.distance;
@@ -817,17 +813,14 @@ static void Initialize(request, new, argv, argc)
 
     new->bitmap.storage = NULL;
     
-    fprintf(stderr,"#5 GOT HERE (INIT)!\n");
     new->bitmap.image = CreateBitmapImage(new, 
 					  image_data,
 					  new->bitmap.width,
 					  new->bitmap.height);
-    fprintf(stderr,"#6 GOT HERE (INIT)!\n");    
     new->bitmap.buffer = CreateBitmapImage(new, 
 					   buffer_data,
 					   new->bitmap.width,
 					   new->bitmap.height);
-    fprintf(stderr,"#7 GOT HERE (INIT)!\n");
 
     /* Read file */
     {
@@ -867,10 +860,8 @@ static void Initialize(request, new, argv, argc)
 	    new->bitmap.basename = StripFilename(new->bitmap.filename);
 	}
     }
-    fprintf(stderr,"#8 GOT HERE (INIT)!\n");
 
     Resize(new);
-    fprintf(stderr,"#9 GOT HERE (INIT)!\n");
 }
 
 

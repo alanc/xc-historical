@@ -1,5 +1,5 @@
 /*
- * $XConsortium: BitEdit.c,v 1.15 91/01/04 13:22:20 dmatic Exp $
+ * $XConsortium: BitEdit.c,v 1.16 91/01/11 13:53:37 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -1030,7 +1030,6 @@ void main(argc, argv)
 			      options, XtNumber(options), 
 			      (Cardinal *)&argc, argv);
 
-    fprintf(stderr,"#1 GOT HERE!\n");
     if (argc > 3) {
 	fprintf(stderr, usage);
 	exit (0);
@@ -1060,7 +1059,6 @@ void main(argc, argv)
     fileButton_widget = XtCreateManagedWidget("fileButton",
 					      menuButtonWidgetClass, 
 					      formy_widget, NULL, 0);
-    fprintf(stderr,"#2 GOT HERE!\n");
     for (i = 0; i < XtNumber(file_menu); i++) {
 	w = XtCreateManagedWidget(file_menu[i].name, 
 				  (file_menu[i].trap ? 
@@ -1122,12 +1120,9 @@ void main(argc, argv)
 	    radio_data  = buttons[i].name;
 	}
     }
-    fprintf(stderr,"#3 GOT HERE!\n");    
     bitmap_widget = XtCreateManagedWidget("bitmap", bitmapWidgetClass,
 					  pane_widget, NULL, 0);
-    fprintf(stderr,"#4 GOT HERE!\n");
     XtRealizeWidget(top_widget);
-    fprintf(stderr,"#5 GOT HERE!\n");
     if (argc > 1)
       if (BWReadFile(bitmap_widget, argv[1], NULL)) 
 	if (argc > 2)
@@ -1169,8 +1164,7 @@ void main(argc, argv)
     qsave_dialog = CreateDialog(top_widget, "qsave", Yes | No | Cancel);
 
     XawToggleSetCurrent(radio_group, radio_data);
-    fprintf(stderr,"#6 GOT HERE!\n");
     BWEngageRequest(bitmap_widget, PointRequest, True, Plain);
-    fprintf(stderr,"#7 GOT HERE!\n");
+
     XtMainLoop();
 }

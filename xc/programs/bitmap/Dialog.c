@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Dialog.c,v 1.6 90/12/02 22:46:49 dmatic Exp $
+ * $XConsortium: Dialog.c,v 1.7 90/12/08 17:29:35 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -43,13 +43,14 @@ static XtActionsRec actions_table[] = {
 static DialogButton dialog_buttons[] = {
     {"yes", Yes},
     {"no", No},
+    {"maybe", Maybe},
     {"okay", Okay},
     {"abort", Abort},
     {"cancel", Cancel},
     {"retry", Retry},
 };
 
-static int selected;
+static unsigned long selected;
 
 /* ARGSUSED */
 static void SetSelected(w, name)
@@ -82,7 +83,7 @@ static void SetDialogButton(w, event, argv, argc)
 Dialog CreateDialog(top_widget, name, options)
      Widget top_widget;
      String name;
-     int options;
+     unsigned long options;
 {
     int i;
     Dialog popup;
@@ -122,7 +123,7 @@ void PopdownDialog(popup, answer)
     XtPopdown(popup->shell_widget);
 }
 
-int PopupDialog(popup, message, suggestion, answer, grab)
+unsigned long PopupDialog(popup, message, suggestion, answer, grab)
     Dialog popup;
     String message, suggestion, *answer;
     XtGrabKind grab;
@@ -152,20 +153,22 @@ int PopupDialog(popup, message, suggestion, answer, grab)
   XtSetArg(wargs[n], XtNborderWidth, &border_width); n++;
   XtGetValues(popup->shell_widget, wargs, n);
 
-  popup_x = max(0, min(top_x + ((Position)top_width - (Position)popup_width) / 2, 
-		       (Position)DisplayWidth(XtDisplay(popup->shell_widget), 
-				    DefaultScreen(XtDisplay(popup->shell_widget))) -
-		       (Position)popup_width - 2 * (Position)border_width));
-  popup_y = max(0, min(top_y + ((Position)top_height - (Position)popup_height) / 2,
-		       (Position)DisplayHeight(XtDisplay(popup->shell_widget), 
-				     DefaultScreen(XtDisplay(popup->shell_widget))) -
-		       (Position)popup_height - 2 * (Position)border_width));
+  popup_x = max(0, 
+	min(top_x + ((Position)top_width - (Position)popup_width) / 2, 
+	    (Position)DisplayWidth(XtDisplay(popup->shell_widget), 
+		   DefaultScreen(XtDisplay(popup->shell_widget))) -
+	    (Position)popup_width - 2 * (Position)border_width));
+  popup_y = max(0, 
+	min(top_y + ((Position)top_height - (Position)popup_height) / 2,
+	    (Position)DisplayHeight(XtDisplay(popup->shell_widget), 
+		    DefaultScreen(XtDisplay(popup->shell_widget))) -
+	    (Position)popup_height - 2 * (Position)border_width));
   n = 0;
   XtSetArg(wargs[n], XtNx, popup_x); n++;
   XtSetArg(wargs[n], XtNy, popup_y); n++;
   XtSetValues(popup->shell_widget, wargs, n);
 
-  selected = Empty;
+  selected = None;
 
   XtPopup(popup->shell_widget, grab);
   XWarpPointer(XtDisplay(popup->shell_widget), 
@@ -174,7 +177,7 @@ int PopupDialog(popup, message, suggestion, answer, grab)
 	       0, 0, top_width, top_height,
 	       popup_width / 2, popup_height / 2);
 
-  while ((selected & popup->options) == Empty) {
+  while ((selected & popup->options) == None) {
       XEvent event;
       XtNextEvent(&event);
       XtDispatchEvent(&event);
