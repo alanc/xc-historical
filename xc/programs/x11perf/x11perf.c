@@ -550,7 +550,7 @@ main(argc, argv)
     GC      tgc;	    
 
     /* ScreenSaver state */
-    int ssTimeout, ssIntervalReturn, ssPreferBlanking, ssAllowExposures;
+    int ssTimeout, ssInterval, ssPreferBlanking, ssAllowExposures;
 
     /* Save away argv, argc, for usage to print out */
     saveargc = argc;
@@ -622,12 +622,13 @@ main(argc, argv)
 #endif
     PrintTime ();
 
-/* ||| Doesn't seem to work so well.
-    XGetScreenSaver(xparms.d, &ssTimeout, &ssIntervalReturn, &ssPreferBlanking,
-	&ssAllowExposures);
+    /* Force screen out of screen-saver mode, grab current data, and set
+       time to blank to a suitable large number, like 3 hours. */
     XForceScreenSaver(xparms.d, ScreenSaverReset);
-    XSetScreenSaver(xparms.d, 0, 0, DefaultBlanking, DefaultExposures);
-*/
+    XGetScreenSaver(xparms.d, &ssTimeout, &ssInterval, &ssPreferBlanking,
+	&ssAllowExposures);
+    XSetScreenSaver(xparms.d, 3 * 3600, ssInterval, ssPreferBlanking,
+	ssAllowExposures);
 
     if (drawToFakeServer) {
         tileToQuery =
@@ -646,6 +647,12 @@ main(argc, argv)
 
     if (synchronous)
 	XSynchronize (xparms.d, True);
+
+    /* Get mouse pointer out of the way of the performance window.  On
+       software cursor machines it will slow graphics performance.  On
+       all MIT-derived servers it will slow window creation/configuration
+       performance. */
+    XWarpPointer(xparms.d, None, status, 0, 0, 0, 0, WIDTH, 20);
 
     /* Figure out how long to call HardwareSync, so we can adjust for that
        in our total elapsed time */
@@ -695,9 +702,9 @@ main(argc, argv)
 	}
     }
     XDestroyWindow(xparms.d, xparms.w);
-/*
-    XSetScreenSaver(xparms.d, ssTimeout, ssIntervalReturn, ssPreferBlanking,
+
+    /* Restore ScreenSaver to original state. */
+    XSetScreenSaver(xparms.d, ssTimeout, ssInterval, ssPreferBlanking,
 	ssAllowExposures);
-*/
 }
 
