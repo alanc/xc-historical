@@ -14,8 +14,8 @@
  * this software for any purpose.  It is provided "as is"
  * without express or implied warranty.
  * 
- * $Header: imake.c,v 1.27 88/07/13 17:17:59 rws Exp $
- * $Locker: rws $
+ * $Header: imake.c,v 1.29 88/07/19 15:02:18 xguest Exp $
+ * $Locker: jim $
  *
  * Author:
  *	Todd Brunhoff
@@ -94,7 +94,7 @@
 #else	/* !SYSV */
 #include	<sys/wait.h>
 #endif	/* !SYSV */
-#include	<sys/signal.h>
+#include	<signal.h>
 #include	<sys/stat.h>
 
 #ifdef SYSV
@@ -105,7 +105,7 @@
 #define	FALSE		0
 #define	ARGUMENTS	50
 
-#if defined(sun) || defined(hpux)
+#if defined(sun) || defined(hpux) || defined(macII)
 #define REDUCED_TO_ASCII_SPACE
 #endif
 #ifdef REDUCED_TO_ASCII_SPACE
