@@ -1,4 +1,4 @@
-/* $XConsortium: ico.c,v 1.18 89/10/05 18:36:16 jim Exp $ */
+/* $XConsortium: ico.c,v 1.19 89/10/05 18:39:39 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -176,6 +176,7 @@ char **argv;
 	char *ico_geom = NULL;
 	char *delta_geom = NULL;
 	int icodeltax2, icodeltay2;
+	extern int _Xdebug;
 
 	ProgramName = argv[0];
 
@@ -239,6 +240,8 @@ char **argv;
 			poly = findpoly(*++argv);
 		else if (!strcmp(*argv, "-dsync"))
 			dsync = 1;
+		else if (!strncmp(*argv, "-sync",  5)) 
+			_Xdebug = 1;
 		else if (!strcmp(*argv, "-objhelp")) {
 			giveObjHelp();
 			exit(1);
@@ -369,9 +372,10 @@ char **argv;
 					MultibufferUpdateActionBackground,
 					MultibufferUpdateHintFrequent,
 					multibuffers) == 2) {
-		    XmbufDisplayBuffers (dpy, 1, &multibuffers[1], 0, 0);
-		    XmbufDisplayBuffers (dpy, 1, &multibuffers[0], 0, 0);
-		    win = multibuffers[0];
+                    XCopyArea (dpy, w, multibuffers[1],
+                               DefaultGC(dpy, DefaultScreen(dpy)),
+                               0, 0, winW, winH, 0, 0);
+		    win = multibuffers[1];
 		} else 
 		  icoFatal ("unable to obtain 2 buffers");
 	    } else
@@ -662,7 +666,7 @@ int prevX, prevY;
 				ppts[j].x = pv2[p0].x;
 				ppts[j].y = pv2[p0].y;
 			}
-			XFillPolygon(dpy, w, gc, ppts, pcount,
+			XFillPolygon(dpy, win, gc, ppts, pcount,
 				Convex, CoordModeOrigin);
 		}
 
@@ -704,7 +708,7 @@ int prevX, prevY;
 					dbpair.pixelsperbuf-1]);
 			}
 		}
-		XDrawSegments(dpy, w, gc, edges, pe - edges);
+		XDrawSegments(dpy, win, gc, edges, pe - edges);
 	}
 
 	if (dsync)
@@ -717,7 +721,7 @@ int prevX, prevY;
 	}
 	if (dblbuf)
 		dbpair.dbufnum = 1 - dbpair.dbufnum;
-	if (sleepcount) sleep(sleepcount);
+	if (!multibuf && sleepcount) sleep(sleepcount);
 	}
 
 char *xalloc(nbytes)
@@ -857,6 +861,7 @@ setDrawBuf (n)
 	n = 0;
     }
 #endif /* MULTIBUFFER */
+
     dbpair.drawbuf = dbpair.bufs+n;
     xgcv.foreground = dbpair.drawbuf->pixels[dbpair.pixelsperbuf-1];
     xgcv.background = dbpair.drawbuf->pixels[0];
@@ -875,7 +880,7 @@ int n;
     if (multibuf) {
 	static int firsttime = 1;
 
-	XmbufDisplayBuffers (dpy, 1, &multibuffers[1-n], 0, 0);
+	XmbufDisplayBuffers (dpy, 1, &multibuffers[n], sleepcount*1000, 0);
 	if (firsttime) {
 	    firsttime = 0;
 	    n = 0;
