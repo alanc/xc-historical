@@ -310,18 +310,27 @@ View'' button will change to a ``Save View'' button, which should be
 pressed to save your edits.
 
 .SH COMPOSITION WINDOWS
-Aside from the normal text editing functions, there are three command
+Aside from the normal text editing functions, there are six command
 buttons associated with composition windows:
 .TP 8
-.B Abort Comp
-Abort this composition window.  If changes have been made, you will be
+.B Close
+Close this composition window.  If changes have been made since the
+most recent Save or Send, you will be
 asked to confirm losing them.
 .PP
 .TP 8
 .B Send
-Send this composition.  If any errors appear in the message header, you
-will receive a mail message containing this composition and a description
-of the error.
+Send this composition.
+.PP
+.TP 8
+.B Reset
+Replace the current composition with an empty message.  If changes have
+been made since the most recent Send or Save, you will be
+asked to confirm losing them.
+.PP
+.TP 8
+.B Compose
+Bring up another new composition window.
 .PP
 .TP 8
 .B Save
@@ -330,7 +339,14 @@ named ``drafts'', one will be created.)  Then you can safely close the
 composition.  At some future date, you can continue working on the
 composition by opening your drafts folder, selecting the message, and
 using the ``Use as Composition'' command.
-
+.PP
+.TP 8
+.B Insert
+Insert a related message into the composition.  If the composition window
+was created with a \fIReply\fP button, the related message is the message
+being replied to, otherwise no related message is defined and this button
+is inactive.  The message will be filtered before being inserted;
+see \fBReplyInsertFilter\fP under CUSTOMIZING below.
 .SH TEXT EDITING COMMANDS
 All of the text editing commands are actually defined by the Text widget
 in the X Toolkit.  The commands may be bound to different keys than the
@@ -685,6 +701,16 @@ must be specifically redirected!  If a message or range of messages is
 selected for printing, the full file paths of each message file is
 appended to the specified print command.   (Default is ``enscript >/dev/null
 2>/dev/null'').
+.PP
+.TP 8
+.B ReplyInsertFilter
+A shell command to be executed when the \fIInsert\fP button is activated
+in a composition window.  The full path and filename of the source
+message is added to the end of the command before being passed to \fIsh\fP(1).
+The default filter is \fIecho\fP; i.e. it merely inserts the
+name of the file into the composition.  Other interesting filters are
+\fIawk -e '{print "    " $0}'\fP or
+\fI/usr/new/mh.6.5/lib/mhl -form mhl.body\fP.
 .PP
 .TP 8
 .B TempDir
