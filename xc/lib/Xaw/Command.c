@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Command.c,v 1.64 89/11/28 11:58:37 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Command.c,v 1.65 89/11/29 19:32:20 jim Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -91,10 +91,11 @@ static XtResource resources[] = {
 static Boolean SetValues();
 static void Initialize(), Redisplay(), Set(), Reset(), Notify(), Unset();
 static void Highlight(), Unhighlight(), Destroy(), PaintCommandWidget();
+static void ClassInitialize();
 
 #ifdef SHAPE
 static Boolean ShapeButton();
-static void ClassInitialize(), Realize(), Resize();
+static void Realize(), Resize();
 #endif SHAPE
 
 static XtActionsRec actionsList[] =
