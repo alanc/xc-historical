@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.96 91/05/09 21:46:22 rws Exp $ */
+/* $XConsortium: utils.c,v 1.97 91/05/10 07:06:35 jap Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -59,8 +59,8 @@ void ddxUseMsg();
 
 #ifndef SVR4
 extern char *sbrk();
-
 #endif
+
 #ifdef AIXV3
 #define AIXFILE "/tmp/aixfile"
 FILE *aixfd;
@@ -758,3 +758,4 @@ OpenDebug()
         }
         chmod(AIXFILE,00777);
 }
+#endif
