@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: handler.c,v 1.14 90/10/28 17:59:49 dave Exp $
+ * $XConsortium: handler.c,v 1.15 91/01/09 17:31:22 rws Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -22,6 +22,7 @@
 #include "globals.h"
 
 static void PutUpManpage();
+static void ToggleBothShownState();
 
 /*	Function Name: OptionCallback
  *	Description: This is the callback function for the callback menu.
@@ -38,7 +39,6 @@ OptionCallback(w, pointer, junk)
 Widget w;
 caddr_t pointer,junk;
 {
-  static void ToggleBothShownState();
   ManpageGlobals * man_globals = (ManpageGlobals *) pointer;
   String params;
   Cardinal num_params = 1;
