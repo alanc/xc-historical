@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: colormap.c,v 1.66 88/02/25 18:28:33 rws Exp $ */
+/* $Header: colormap.c,v 1.67 88/03/15 14:48:46 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -102,7 +102,8 @@ CreateColormap (mid, pScreen, pVisual, ppcmap, alloc, client)
     ColormapPtr	pmap;
     register	EntryPtr	pent;
     int		i;
-    Pixel	*ppix;
+    register	Pixel	*ppix, **pptr;
+
 
     class = pVisual->class;
     if(!(class & DynamicClass) && (alloc != AllocNone) && (client != SERVER_ID))
@@ -128,7 +129,8 @@ CreateColormap (mid, pScreen, pVisual, ppcmap, alloc, client)
     pmap->clientPixelsRed = (Pixel **) xalloc(MAXCLIENTS * sizeof(Pixel *));
     pmap->numPixelsRed = (int *) xalloc(MAXCLIENTS * sizeof(int));
     bzero((char *) pmap->numPixelsRed, MAXCLIENTS * sizeof(int));
-    bzero((char *) pmap->clientPixelsRed, MAXCLIENTS * sizeof(Pixel *));
+    for (pptr = &pmap->clientPixelsRed[MAXCLIENTS]; --pptr >= pmap->clientPixelsRed; )
+	*pptr = (Pixel *)NULL;
     if (alloc == AllocAll)
     {
 	pmap->flags |= AllAllocated;
@@ -159,8 +161,12 @@ CreateColormap (mid, pScreen, pVisual, ppcmap, alloc, client)
 	pmap->numPixelsGreen = (int *) xalloc(MAXCLIENTS * sizeof(int));
 	pmap->numPixelsBlue = (int *) xalloc(MAXCLIENTS * sizeof(int));
 
-	bzero((char *) pmap->clientPixelsGreen, MAXCLIENTS * sizeof(Pixel *));
-	bzero((char *) pmap->clientPixelsBlue, MAXCLIENTS * sizeof(Pixel *));
+	bcopy((char *) pmap->clientPixelsRed,
+	      (char *) pmap->clientPixelsGreen,
+	      MAXCLIENTS * sizeof(Pixel *));
+	bcopy((char *) pmap->clientPixelsRed,
+	      (char *) pmap->clientPixelsBlue,
+	      MAXCLIENTS * sizeof(Pixel *));
 	bzero((char *) pmap->numPixelsGreen, MAXCLIENTS * sizeof(int));
 	bzero((char *) pmap->numPixelsBlue, MAXCLIENTS * sizeof(int));
 
