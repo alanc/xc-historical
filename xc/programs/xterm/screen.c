@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: screen.c,v 1.25 91/04/22 13:43:47 gildea Exp $
+ *	$XConsortium: screen.c,v 1.26 91/04/24 14:26:49 gildea Exp $
  */
 
 /*
@@ -525,6 +525,10 @@ ScreenResize (screen, width, height, flags)
 		
 		if(screen->cursor_state)
 			HideCursor();
+		if ( screen->alternate
+		     && term->misc.resizeGravity == SouthWestGravity )
+		    /* swap buffer pointers back to make all this hair work */
+		    SwitchBufPtrs(screen);
 		if (screen->altbuf) 
 		    (void) Reallocate(&screen->altbuf, (Char **)&screen->abuf_address,
 			 rows, cols, screen->max_row + 1, screen->max_col + 1);
@@ -538,7 +542,7 @@ ScreenResize (screen, width, height, flags)
 		screen->max_row += delta_rows;
 		screen->max_col = cols - 1;
 
-		if ( term->misc.resizeGravity == SouthWestGravity) {
+		if (term->misc.resizeGravity == SouthWestGravity) {
 		    screen->savedlines -= move_down_by;
 		    if (screen->savedlines < 0)
 			screen->savedlines = 0;
@@ -549,16 +553,10 @@ ScreenResize (screen, width, height, flags)
 		    screen->cur_row += move_down_by;
 		    screen->cursor_row += move_down_by;
 		    ScrollSelection(screen, move_down_by);
-		}
 
-		if ( move_down_by != delta_rows
-		     && term->misc.resizeGravity == SouthWestGravity)
-		    /* bit gravity did the wrong thing */
-		    if (delta_rows > 0)
-			ScrnRefresh(screen, delta_rows, 0,
-				    screen->max_row + 1 - delta_rows, cols, 1);
-		    else
-			ScrnRefresh(screen, 0, 0, rows, cols, 1);
+		    if (screen->alternate)
+			SwitchBufPtrs(screen); /* put the pointers back */
+		}
 	
 		/* adjust scrolling region */
 		screen->top_marg = 0;
