@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Display.c,v 1.15 89/02/23 18:56:58 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Display.c,v 1.16 89/03/10 17:49:13 rws Exp $";
 /* $oHeader: Display.c,v 1.9 88/09/01 11:28:47 asente Exp $ */
 #endif lint
 
@@ -251,9 +251,14 @@ int _XtAppDestroyCount = 0;
 static void DestroyAppContext(app)
 	XtAppContext app;
 {
+	XtAppContext* prev_app = &app->process->appContextList;
 	while (app->count-- > 0) XCloseDisplay(app->list[app->count]);
 	if (app->list != NULL) XtFree((char *)app->list);
 	_XtFreeConverterTable(app->converterTable);
+	while (*prev_app != app) prev_app = &(*prev_app)->next;
+	*prev_app = app->next;
+	if (app->process->defaultAppContext == app)
+	    app->process->defaultAppContext = NULL;
 	XtFree((char *)app);
 }
 
