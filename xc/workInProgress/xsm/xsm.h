@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.h,v 1.16 94/07/15 14:11:50 mor Exp $ */
+/* $XConsortium: xsm.h,v 1.17 94/07/18 15:02:10 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -82,6 +82,7 @@ typedef struct _ClientRec {
     char 		*clientId;
     char		*clientHostname;
     Bool		interactPending;
+    Bool		wantsPhase2;
     int			numProps;
     SmProp		*props[MAX_PROPS];
     char		*discardCommand;
@@ -122,6 +123,7 @@ extern Bool		client_info_visible;
 extern String 		*clientNames;
 extern int		numClientNames;
 extern int		saveDoneCount;
+extern int		phase2RequestCount;
 
 extern int		interactCount;
 extern Bool		shutdownInProgress;
