@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: bsdi.cf,v 1.6 94/03/04 17:59:02 rws Exp $
+XCOMM platform:  $XConsortium: bsdi.cf,v 1.7 94/03/26 17:10:07 kaleb Exp $
 
 #define OSName            BSD/386 1.1
 XCOMM operating system:  OSName
@@ -10,6 +10,7 @@ XCOMM operating system:  OSName
 #if OSMinorVersion >= 1
 #define HasGcc2		YES
 #define HasGcc2ForCplusplus YES
+#define BuildFresco	NO
 #define CcCmd		gcc2
 #endif
 #define CppCmd		/usr/bin/cpp
