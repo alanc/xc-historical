@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xdpyinfo.c,v 1.19 91/01/23 11:55:10 rws Exp $
+ * $XConsortium: xdpyinfo.c,v 1.20 91/02/06 18:34:30 rws Exp $
  * 
  * xdpyinfo - print information about X display connecton
  *
@@ -18,11 +18,11 @@
  * Author:  Jim Fulton, MIT X Consortium
  */
 
-#include <stdio.h>
-#include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/extensions/multibuf.h>
+#include <X11/Xos.h>
+#include <stdio.h>
 
 char *ProgramName;
 
@@ -99,8 +99,7 @@ print_display_info (dpy)
 	    ProtocolVersion (dpy), ProtocolRevision (dpy));
     printf ("vendor string:    %s\n", ServerVendor (dpy));
     printf ("vendor release number:    %d\n", VendorRelease (dpy));
-    printf ("maximum request size:  %ld longwords (%ld bytes)\n",
-	    XMaxRequestSize (dpy), XMaxRequestSize (dpy) * sizeof (long));
+    printf ("maximum request size:  %ld bytes\n", XMaxRequestSize (dpy) * 4);
     printf ("motion buffer size:  %d\n", XDisplayMotionBufferSize (dpy));
 
     switch (BitmapBitOrder (dpy)) {
