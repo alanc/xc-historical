@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.22 89/04/26 12:25:27 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.23 89/04/26 16:08:38 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -24,6 +24,7 @@
  *     	InstallProgram                           (program,dest)
  *      InstallProgramWithFlags                  (program,dest,flags)
  *     	InstallScript                            (program,dest)
+ *      InstallMultipleDestProg                  (step,list,dest,prog)
  *      InstallMultipleDestFlags                 (step,list,dest,flags)
  *      InstallMultipleDest                      (step,list,dest)
  *     	InstallMultiple                          (list,dest)
@@ -345,17 +346,28 @@ install:: program.script						@@\
 
 
 /*
+ * InstallMultipleDestProg - generate rules to install multiple files at
+ * once during a particular step in the build using a specific program.
+ */
+#ifndef InstallMultipleDestProg
+#define InstallMultipleDestProg(step,list,dest,prog)			@@\
+step:: list								@@\
+	@case '${MFLAGS}' in *[i]*) set +e;; esac; \			@@\
+	for i in list; do \						@@\
+		(set -x; prog $$i dest); \				@@\
+	done
+#endif /* InstallMultipleDestProg */
+
+
+
+/*
  * InstallMultipleDestFlags - generate rules to install multiple files at
  * once during a particular step in the build using a specific set of install 
  * flags.
  */
 #ifndef InstallMultipleDestFlags
 #define InstallMultipleDestFlags(step,list,dest,flags)			@@\
-step:: list								@@\
-	@case '${MFLAGS}' in *[i]*) set +e;; esac; \			@@\
-	for i in list; do \						@@\
-		(set -x; $(INSTALL) -c flags $$i dest); \		@@\
-	done
+InstallMultipleDestProg(step,list,dest,$(INSTALL) -c flags)
 #endif /* InstallMultipleDestFlags */
 
 
