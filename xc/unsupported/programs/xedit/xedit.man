@@ -1,4 +1,4 @@
-.TH XEDIT "1 March 1988" "X Version 11"
+.TH XEDIT 1 "1 March 1988" "X Version 11"
 .UC 4
 .SH NAME
 xedit \- animate text
