@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XParseCol.c,v 11.15 87/10/29 23:59:52 newman Exp $ */
+/* $XConsortium: XParseCol.c,v 11.16 88/09/06 16:09:27 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #define NEED_REPLIES
@@ -45,7 +45,7 @@ Status XParseColor (dpy, cmap, spec, def)
 	if (n != 3 && n != 6 && n != 9 && n != 12)
 	    return (0);
 	n /= 3;
-	r = g = b = 0;
+	g = b = 0;
 	do {
 	    r = g;
 	    g = b;
