@@ -1,4 +1,4 @@
-/* $XConsortium: thr_stubs.c,v 1.1 93/12/06 16:24:21 kaleb Exp $ */
+/* $XConsortium: thr_stubs.c,v 1.2 94/01/12 12:11:55 kaleb Exp $ */
 /*
  * Stub interface to thread routines that Solaris needs but shipped
  * broken/buggy versions in 5.2 and 5.3
@@ -10,16 +10,18 @@
  * at link time by non-threaded programs.
  */
 
+extern int errno;
+
 typedef int thread_t;
 
-thread_t thr_self(void) { return 0; }
-int thr_create(void) { return 0; }
-int mutex_init(void) { return 0; }
-int mutex_destroy(void) { return 0; }
-int mutex_lock(void) { return 0; }
-int mutex_unlock(void) { return 0; }
-int cond_init(void) { return 0; }
-int cond_destroy(void) { return 0; }
-int cond_wait(void) { return 0; }
-int cond_signal(void) { return 0; }
-int cond_broadcast(void) { return 0; }
+thread_t thr_self(void) { errno = -1; return 0; }
+int thr_create(void) { errno = -1; return -1; }
+int mutex_init(void) { errno = -1; return -1; }
+int mutex_destroy(void) { errno = -1; return -1; }
+int mutex_lock(void) { errno = -1; return -1; }
+int mutex_unlock(void) { errno = -1; return -1; }
+int cond_init(void) { errno = -1; return -1; }
+int cond_destroy(void) { errno = -1; return -1; }
+int cond_wait(void) { errno = -1; return -1; }
+int cond_signal(void) { errno = -1; return -1; }
+int cond_broadcast(void) { errno = -1; return -1; }
