@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: Convert.c,v 5.1 91/02/16 09:57:05 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -78,12 +78,12 @@ CARD16 *i;
 /* Byte swap and convert a float */
 FLOAT
 SwapIEEEToVax(f)
-FLOAT f;
+FLOAT *f;
 {
     FLOAT x;
     CARD32 i;
 
-    i = SwapCARD32((CARD32 *)(&f));
+    i = SwapCARD32((CARD32 *) f);
 
     x = ConvertIEEEToVax((FLOAT *)(&i));
 
@@ -93,12 +93,12 @@ FLOAT f;
 
 FLOAT
 SwapVaxToIEEE(f)
-FLOAT f;
+FLOAT *f;
 {
     FLOAT x;
     CARD32 i;
 
-    i = SwapCARD32((CARD32 *)(&f));
+    i = SwapCARD32((CARD32 *) f);
 
     x = ConvertVaxToIEEE((FLOAT *)(&i));
 
@@ -106,3 +106,20 @@ FLOAT f;
 }
 
 
+/* Byte swap a float */
+FLOAT
+SwapFLOAT (f)
+FLOAT *f;
+{
+    CARD8  n;
+    CARD8  *x = (CARD8 *)f;
+
+    n = x[0];
+    x[0] = x[3];
+    x[3] = n;
+    n = x[1];
+    x[1] = x[2];
+    x[2] = n;
+
+    return (*f);
+}
