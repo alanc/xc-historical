@@ -1,4 +1,4 @@
-/* $XConsortium: save.c,v 1.3 94/08/25 20:21:57 mor Exp mor $ */
+/* $XConsortium: save.c,v 1.4 94/12/27 18:46:57 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -342,12 +342,21 @@ char *prefix;
 
 {
 #ifndef X_NOT_POSIX
-    return ((char *) XtNewString ((char *) tempnam (path, prefix)));
+    return ((char *) tempnam (path, prefix));
 #else
     char tempFile[PATH_MAX];
+    char *tmp;
 
     sprintf (tempFile, "%s/%sXXXXXX", path, prefix);
-    return ((char *) XtNewString ((char *) mktemp (tempFile)));
+    tmp = (char *) mktemp (tempFile);
+    if (tmp)
+    {
+	char *ptr = (char *) malloc (strlen (tmp) + 1);
+	strcpy (ptr, tmp);
+	return (ptr);
+    }
+    else
+	return (NULL);
 #endif
 }
 
@@ -357,10 +366,11 @@ char *
 WriteProxyFile ()
 
 {
-    FILE *proxyFile;
-    char *path, *filename;
+    FILE *proxyFile = NULL;
+    char *filename = NULL;
+    char *path;
     WinInfo *winptr;
-    Bool success = True;
+    Bool success = False;
 
     path = getenv ("SM_SAVE_DIR");
     if (!path)
@@ -370,13 +380,18 @@ WriteProxyFile ()
 	    path = ".";
     }
 
-    filename = unique_filename (path, ".prx");
-    proxyFile = fopen (filename, "wb");
+    if ((filename = unique_filename (path, ".prx")) == NULL)
+	goto bad;
+
+    if (!(proxyFile = fopen (filename, "wb")))
+	goto bad;
 
     if (!write_short (proxyFile, SAVEFILE_VERSION))
-	success = False;
+	goto bad;
 
+    success = True;
     winptr = win_head;
+
     while (winptr && success)
     {
 	if (winptr->client_id)
@@ -389,12 +404,19 @@ WriteProxyFile ()
 	winptr = winptr->next;
     }
 
-    fclose (proxyFile);
+ bad:
+
+    if (proxyFile)
+	fclose (proxyFile);
 
     if (success)
 	return (filename);
     else
+    {
+	if (filename)
+	    free (filename);
 	return (NULL);
+    }
 }
 
 
