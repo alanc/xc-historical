@@ -54,8 +54,8 @@ Syntax(call)
 }
 
 static void	NewFile ();
-static Widget	toplevel, vpaned, viewport, box, dvi;
-static Widget	nextPage, prevPage, selectPage, open, quit, page;
+static Widget	toplevel, vpaned, viewport, dvi;
+static Widget	page;
 
 static char menuString[] = "\
 Next Page\n\
@@ -91,20 +91,9 @@ void main(argc, argv)
 			{XtNheight, 800},   /* neither is this */
 			{XtNshowGrip, False},
     };
-    static Arg	    boxArgs[] = {
-			{XtNskipAdjust, True},
-			{XtNshowGrip, False},
-    };
-    static XtCallbackRec commandCallback[] = {
-			{ commandCall, (caddr_t) 0, },
-			{ NULL, NULL }
-    };
-    static Arg	    commandArgs[] = {
-			{XtNcallback, (int) commandCallback},
-    };
     static Arg	    vPanedArgs[] = {
 			{XtNallowResize, True},
-			{XtNskipAdjust, True},
+/*			{XtNskipAdjust, True}, */
     };
     static Arg	    labelArgs[] = {
 			{XtNlabel, (int) pageLabel},
@@ -134,30 +123,16 @@ void main(argc, argv)
     if (argc > 1)
 	file_name = argv[1];
 
-    vpaned = XtCreateManagedWidget("vpaned", vPanedWidgetClass, toplevel,
-				    vPanedArgs, XtNumber (vPanedArgs));
-    XtPanedSetRefigureMode (vpaned, FALSE);
-    box = XtCreateManagedWidget ("box", boxWidgetClass, vpaned,
-				    boxArgs, XtNumber (boxArgs));
-    nextPage = XtCreateManagedWidget ("Next Page", commandWidgetClass, box,
-					commandArgs, XtNumber (commandArgs));
-    prevPage = XtCreateManagedWidget ("Previous Page", commandWidgetClass, box,
-					commandArgs, XtNumber (commandArgs));
-    selectPage = XtCreateManagedWidget ("Select Page", commandWidgetClass, box,
-					commandArgs, XtNumber (commandArgs));
-    open = XtCreateManagedWidget ("Open", commandWidgetClass, box,
-				        commandArgs, XtNumber (commandArgs));
-    quit = XtCreateManagedWidget ("Quit", commandWidgetClass, box,
-					commandArgs, XtNumber (commandArgs));
-    page = XtCreateManagedWidget ("Page", labelWidgetClass, box,
-					labelArgs, XtNumber (labelArgs));
     menu = XawMenuCreate ("menu", menuWidgetClass, toplevel, menuString,
 			    "<Btn1Down>", menuCallback);
+    vpaned = XtCreateManagedWidget("vpaned", vPanedWidgetClass, toplevel,
+				    vPanedArgs, XtNumber (vPanedArgs));
+    page = XtCreateManagedWidget ("Page", labelWidgetClass, vpaned,
+					labelArgs, XtNumber (labelArgs));
     viewport = XtCreateManagedWidget("viewport", viewportWidgetClass, vpaned,
 				     viewportArgs, XtNumber (viewportArgs));
     dvi = XtCreateManagedWidget ("dvi", dviWidgetClass, viewport, NULL, 0);
 
-    XtPanedSetRefigureMode (vpaned, TRUE);
     if (file_name)
 	NewFile (file_name);
     XtRealizeWidget (toplevel);
@@ -240,68 +215,44 @@ char	*name;
 static fileBuf[1024];
 
 static void
-commandCall (cw, closure, data)
-    Widget  cw;
-    int	    closure, data;
-{
-    Arg	dviArg[1];
-    int	number;
-
-    if (cw == nextPage) {
-	XtSetArg (dviArg[0], XtNpageNumber, &number);
-	XtGetValues (dvi, dviArg, 1);
-	SetPageNumber (number+1);
-    } else if (cw == prevPage) {
-	XtSetArg (dviArg[0], XtNpageNumber, &number);
-	XtGetValues (dvi, dviArg, 1);
-	SetPageNumber (number-1);
-    } else if (cw == selectPage) {
-	MakePrompt (cw, "Page number", SelectPage, "");
-    } else if (cw == open) {
-	if (current_file_name[0])
-	    strcpy (fileBuf, current_file_name);
-	else
-	    fileBuf[0] = '\0';
-	MakePrompt (cw, "File to open:", NewFile, fileBuf);
-    } else if (cw == quit) {
-	exit (0);
-    }
-}
-
-
-static void
 menuCall (mw, closure, data)
     Widget  mw;
     caddr_t closure, data;
 {
     int	    menuItem = (int) data;
-    Arg	dviArg[1];
-    int	number;
+    Arg	    args[1];
+    int	    number;
+    int	    resetSelection = 0;
 
     switch (menuItem) {
     case MenuNextPage:
-	XtSetArg (dviArg[0], XtNpageNumber, &number);
-	XtGetValues (dvi, dviArg, 1);
+	XtSetArg (args[0], XtNpageNumber, &number);
+	XtGetValues (dvi, args, 1);
 	SetPageNumber (number+1);
+	resetSelection = 1;
 	break;
     case MenuPreviousPage:
-	XtSetArg (dviArg[0], XtNpageNumber, &number);
-	XtGetValues (dvi, dviArg, 1);
+	XtSetArg (args[0], XtNpageNumber, &number);
+	XtGetValues (dvi, args, 1);
 	SetPageNumber (number-1);
+	resetSelection = 1;
 	break;
     case MenuSelectPage:
-	MakePrompt (mw, "Page number", SelectPage, "");
+	MakePrompt (page, "Page number", SelectPage, "");
 	break;
     case MenuOpenFile:
 	if (current_file_name[0])
 	    strcpy (fileBuf, current_file_name);
 	else
 	    fileBuf[0] = '\0';
-	MakePrompt (mw, "File to open:", NewFile, fileBuf);
+	MakePrompt (page, "File to open:", NewFile, fileBuf);
+	resetSelection = 1;
 	break;
     case MenuQuit:
 	exit (0);
     }
+    XtSetArg (args[0], XtNselection, (int) menuItem);
+    XtSetValues (mw, args, 1);
 }
     
 Widget	promptShell, promptDialog;
