@@ -42,7 +42,7 @@ TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
 OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: misc.h,v 1.65 94/01/11 20:54:46 rob Exp $ */
+/* $XConsortium: misc.h,v 1.66 94/02/23 15:47:30 dpw Exp $ */
 #ifndef MISC_H
 #define MISC_H 1
 /*
@@ -114,13 +114,6 @@ typedef struct _Client *ClientPtr; /* also in dix.h */
 #define USE_BACKGROUND_PIXEL 3
 #define USE_BORDER_PIXEL 3
 
-#ifdef XTHREADS
-#define NOSWAP 0
-#define SWAP   1
-#define UNKNOWN 2
-#endif
-
-
 
 /* byte swap a 32-bit literal */
 #define lswapl(x) ((((x) & 0xff) << 24) |\
@@ -136,8 +129,8 @@ typedef struct _Client *ClientPtr; /* also in dix.h */
 #ifndef abs
 #define abs(a) ((a) > 0 ? (a) : -(a))
 #endif
-#ifndef fabs
-#define fabs(a) ((a) > 0.0 ? (a) : -(a))	/* floating absolute value */
+#ifndef Fabs
+#define Fabs(a) ((a) > 0.0 ? (a) : -(a))	/* floating absolute value */
 #endif
 #define sign(x) ((x) < 0 ? -1 : ((x) > 0 ? 1 : 0))
 /* this assumes b > 0 */
@@ -173,29 +166,31 @@ typedef struct _Client *ClientPtr; /* also in dix.h */
     SwapLongs((CARD32 *)(stuff + 1), LengthRestL(stuff))
 
 /* byte swap a 32-bit value */
-#define swapl(x, n) n = ((char *) (x))[0];\
+#define swapl(x, n) { \
+		 n = ((char *) (x))[0];\
 		 ((char *) (x))[0] = ((char *) (x))[3];\
 		 ((char *) (x))[3] = n;\
 		 n = ((char *) (x))[1];\
 		 ((char *) (x))[1] = ((char *) (x))[2];\
-		 ((char *) (x))[2] = n;
+		 ((char *) (x))[2] = n; }
 
 /* byte swap a short */
-#define swaps(x, n) n = ((char *) (x))[0];\
+#define swaps(x, n) { \
+		 n = ((char *) (x))[0];\
 		 ((char *) (x))[0] = ((char *) (x))[1];\
-		 ((char *) (x))[1] = n
+		 ((char *) (x))[1] = n; }
 
 /* copy 32-bit value from src to dst byteswapping on the way */
-#define cpswapl(src, dst) \
+#define cpswapl(src, dst) { \
                  ((char *)&(dst))[0] = ((char *) &(src))[3];\
                  ((char *)&(dst))[1] = ((char *) &(src))[2];\
                  ((char *)&(dst))[2] = ((char *) &(src))[1];\
-                 ((char *)&(dst))[3] = ((char *) &(src))[0];
+                 ((char *)&(dst))[3] = ((char *) &(src))[0]; }
 
 /* copy short from src to dst byteswapping on the way */
-#define cpswaps(src, dst)\
+#define cpswaps(src, dst) { \
 		 ((char *) &(dst))[0] = ((char *) &(src))[1];\
-		 ((char *) &(dst))[1] = ((char *) &(src))[0];
+		 ((char *) &(dst))[1] = ((char *) &(src))[0]; }
 
 extern void SwapLongs(
 #if NeedFunctionPrototypes
