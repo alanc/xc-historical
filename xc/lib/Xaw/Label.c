@@ -59,10 +59,6 @@ static char *sccsid = "@(#)Label.c	1.15	2/25/87";
 #define XtRjustify		"Justify"
 
 static Resource resources[] = {
-    {XtNwidth, XtCWidth, XrmRInt, sizeof(int),
-         Offset(Widget,core.width), XtRString, "0"},
-    {XtNheight, XtCHeight, XrmRInt, sizeof(int),
-         Offset(Widget,core.height), XtRString, "0"},
     {XtNforeground, XtCForeground, XrmRPixel, sizeof(Pixel),
 	Offset(LabelWidget, label.foreground), XrmRString, "Black"},
     {XtNfont,  XtCFont, XrmRFontStruct, sizeof(XFontStruct *),

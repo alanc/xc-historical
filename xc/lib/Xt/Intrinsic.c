@@ -12,9 +12,9 @@ static Resource resources[] = {
     {XtNy, XtCPosition, XrmRInt, sizeof(int),
          Offset(Widget,core.y), XtRString, "0"},
     {XtNwidth, XtCWidth, XrmRInt, sizeof(int),
-         Offset(Widget,core.width), XtRString, "1"},
+         Offset(Widget,core.width), XtRString, "0"},
     {XtNheight, XtCHeight, XrmRInt, sizeof(int),
-         Offset(Widget,core.height), XtRString, "1"},
+         Offset(Widget,core.height), XtRString, "0"},
 /* default depth should be "InheritFromParent", and we should have a */
 /* string to depth type converter, but it needs the widget to be able */
 /* to find the parent's depth... right now, we kludge it and check for */
@@ -454,9 +454,9 @@ void XtSetSensitive(widget,sensitive)
 #define TABLESIZE 20
 static unsigned long listSize;
 typedef struct {
-         int offset;
-         WidgetClass widgetClass;
-}CallbackTableRec,*CallbackTable;
+    int offset;
+    WidgetClass widgetClass;
+} CallbackTableRec,*CallbackTable;
 
 static CallbackTable callbackTable = NULL;
 static CallbackType currentIndex = 1;
