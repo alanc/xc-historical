@@ -1,7 +1,7 @@
 /* $XConsortium: wire.c,v 1.4 94/02/20 11:14:31 dpw Exp $ */
 /*
  * $NCDOr: wire.c,v 1.2 1993/11/19 21:29:10 keithp Exp keithp $
- * $NCDId: @(#)wire.c,v 1.31 1994/03/07 19:04:55 lemke Exp $
+ * $NCDId: @(#)wire.c,v 1.32 1994/03/08 01:41:11 dct Exp $
  *
  * Copyright 1992 Network Computing Devices
  *
@@ -40,6 +40,15 @@
 
 extern int  NewOutputPending;
 
+#ifdef LBX_STATS
+extern int  delta_out_total;
+extern int  delta_out_attempts;
+extern int  delta_out_hits;
+extern int  delta_in_total;
+extern int  delta_in_attempts;
+extern int  delta_in_hits;
+#endif
+
 #ifndef NDEBUG
 int         lbxDebug = 0;
 
@@ -68,10 +77,19 @@ WriteReqToServer(client, len, buf)
     int         newlen;
     Bool        written = FALSE;
 
+#ifdef LBX_STATS
+    delta_out_total++;
+#endif
     if (DELTA_CACHEABLE(&server->outdeltas, len)) {
+#ifdef LBX_STATS
+	delta_out_attempts++;
+#endif
 	if ((diffs = LBXDeltaMinDiffs(&server->outdeltas, buf, len,
 			     min(MAXBYTESDIFF, (len - sz_xLbxDeltaReq) >> 1),
 				      &cindex)) >= 0) {
+#ifdef LBX_STATS
+	    delta_out_hits++;
+#endif
 	    LBXEncodeDelta(&server->outdeltas, buf, diffs, cindex,
 			   &tempdeltabuf[sz_xLbxDeltaReq]);
 	    p->reqType = server->lbxReq;
@@ -454,10 +472,17 @@ ServerProcStandardEvent(sc)
 	len = sizeof(xLbxEvent);
     }
 
+#ifdef LBX_STATS
+    delta_in_total++;
+#endif
     if (rep->generic.type == server->lbxEvent &&
 	    rep->generic.data1 == LbxDeltaEvent) {
 	xLbxDeltaReq *delta = (xLbxDeltaReq *) rep;
 
+#ifdef LBX_STATS
+	delta_in_attempts++;
+	delta_in_hits++;
+#endif
 	/* Note that LBXDecodeDelta decodes and adds current msg to the cache */
 	len = LBXDecodeDelta(&server->indeltas, ((char *) rep) + sz_xLbxDeltaReq,
 			     delta->diffs, delta->cindex, &rep);
@@ -471,9 +496,14 @@ ServerProcStandardEvent(sc)
 	       rep->generic.data1 == LbxSwitchEvent) {
 	cacheable = FALSE;
     }
+
     /* stick in delta buffer before LBX code modified things */
-    if (cacheable && DELTA_CACHEABLE(&server->indeltas, len))
+    if (cacheable && DELTA_CACHEABLE(&server->indeltas, len)) {
+#ifdef LBX_STATS
+	delta_in_attempts++;
+#endif
 	LBXAddDeltaIn(&server->indeltas, (char *) rep, len);
+    }
 
     if (rep->generic.type != server->lbxEvent) {
 	if (!client->awaitingSetup && rep->generic.type == X_Reply) {
