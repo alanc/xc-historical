@@ -1,4 +1,4 @@
-/* $XConsortium: miConvert.c,v 5.2 91/05/01 14:39:02 hersh Exp $ */
+/* $XConsortium: miConvert.c,v 5.3 91/05/05 18:50:02 rws Exp $ */
 
 
 /***********************************************************
@@ -546,7 +546,7 @@ listofddFacet		**foutput;	/* output facet list */
 
 	/* Copy the input normal */
 	if (DD_IsFacetNormal(finput->type))
-	  *(out_fct.pFacetN++) = *(in_fct.pFacetN);
+	  *(out_fct.pFacetN++) = *(in_fct.pFacetN++);
 
     }
  
