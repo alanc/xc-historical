@@ -1,4 +1,4 @@
-/* $XConsortium: xiemd.h,v 1.4 93/11/06 15:36:49 rws Exp $ */
+/* $XConsortium: xiemd.h,v 1.5 94/01/12 20:17:50 rws Exp $ */
 /**** module xiemd.h ****/
 /******************************************************************************
 				NOTICE
@@ -88,8 +88,13 @@ extern unsigned char _ByteReverseTable[];
 **  to access individual bits.  
 */
 
+#ifdef LONG64
+typedef CARD64		LogInt;
+#define LOGSHIFT	(6)
+#else
 typedef CARD32		LogInt;
 #define LOGSHIFT	(5)
+#endif
 #define LOGSIZE		(sizeof(LogInt)<<3)
 #define LOGMASK		(LOGSIZE-1)
 
