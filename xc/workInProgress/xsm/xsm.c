@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.21 94/02/08 12:08:49 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.22 94/02/08 13:44:26 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -1856,6 +1856,8 @@ main(argc, argv)
     char *	progName;
     char 	errormsg[256];
     static	char environment_name[] = "SESSION_MANAGER";
+
+    umask (0077);	/* disallow non-owner access */
 
     p = strrchr(argv[0], '/');
     progName = (p ? p + 1 : argv[0]);
