@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*
  * Font server C interface library
  */
