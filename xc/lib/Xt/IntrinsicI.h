@@ -1,4 +1,4 @@
-/* $XConsortium: IntrinsicI.h,v 1.54 93/09/28 11:21:23 kaleb Exp $ */
+/* $XConsortium: IntrinsicI.h,v 1.55 94/01/14 17:57:52 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -124,8 +124,8 @@ SOFTWARE.
 
 #else
 
-#define XtMemmove(src, dst, size)	\
-	(void) memcpy((char *) (src), (char *) (dst), (int) (size))
+#define XtMemmove(dst, src, size)	\
+	(void) memcpy((char *) (dst), (char *) (src), (int) (size))
 
 #define XtBZero(dst, size) 	\
 	bzero((char *) (dst), (int) (size))
