@@ -1,4 +1,4 @@
-/* $XConsortium: uconvRep.c,v 5.9 92/04/23 16:15:03 hersh Exp $ */
+/* $XConsortium: uconvRep.c,v 5.10 92/06/02 18:28:26 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -820,14 +820,10 @@ pexEndPickOneReply	*reply;
     SWAP_CARD32 (reply->length);	
     SWAP_CARD16 (reply->pickStatus);
 
-    /* JSH commented out because until the Pick Functionality is
-       actually written this will seg fault on a NULL pointer
-
     p_data = (pexPickElementRef *)(reply+1);
     for (i=0; i < reply->numPickElRefs; i++, p_data++) 
 	    SWAP_PICK_ELEMENT_REF((*p_data));
     
-    */
     SWAP_CARD32 (reply->numPickElRefs);
 }
 
@@ -846,14 +842,10 @@ pexPickOneReply		*reply;
     SWAP_CARD32 (reply->length);
     SWAP_CARD16 (reply->pickStatus);
 
-    /* JSH commented out because until the Pick Functionality is
-       actually written this will seg fault on a NULL pointer
-
     p_data = (pexPickElementRef *)(reply+1);
     for (i=0; i < reply->numPickElRefs; i++, p_data++) 
 	    SWAP_PICK_ELEMENT_REF((*p_data));
     
-    */
     SWAP_CARD32 (reply->numPickElRefs);
 }
 
