@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.137 89/10/04 12:33:07 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.138 89/10/08 18:23:06 jim Exp $";
 /* $oHeader: Intrinsic.c,v 1.4 88/08/18 15:40:35 asente Exp $ */
 #endif /* lint */
 
@@ -31,6 +31,9 @@ SOFTWARE.
 
 #include "IntrinsicI.h"
 #include "StringDefs.h"
+#ifndef VMS
+#include <sys/stat.h>
+#endif /* VMS */
 
 Boolean XtIsSubclass(widget, widgetClass)
     Widget    widget;
@@ -515,37 +518,325 @@ Boolean XtIsObject(object)
 }
 
 
+static Boolean TestFile(path)
+    String path;
+{
+#ifdef VMS
+    return TRUE;	/* Who knows what to do here? */
+#else
+    struct stat status;
+
+    return (access(path, R_OK) == 0 &&		/* exists and is readable */
+	    stat(path, &status) == 0 &&		/* get the status */
+	    (status.st_mode & S_IFDIR) == 0);	/* not a directory */
+#endif /* VMS */
+}
+
+/* return of TRUE = resolved string fit, FALSE = didn't fit.  Not
+   null-terminated and not collapsed if it didn't fit */
+
+static Boolean Resolve(source, len, sub, num, buf, collapse)
+    register char *source;	/* The source string */
+    register int len;		/* The length in bytes of *source */
+    Substitution sub;	/* Array of string values to substitute */
+    Cardinal num;	/* Number of substitution entries */
+    char *buf;		/* Where to put the resolved string; */
+    char collapse;	/* Character to collapse */
+{
+    register int bytesLeft = MAXPATHLEN;
+    register char* bp = buf;
+#ifndef DONT_COLLAPSE
+    Boolean atBeginning = TRUE;
+    Boolean prevIsCollapse = FALSE;
+
+#define PUT(ch) \
+    { \
+	if (--bytesLeft == 0) return FALSE; \
+        if (prevIsCollapse) \
+	    if ((*bp = ch) != collapse) { \
+		prevIsCollapse = FALSE; \
+		bp++; \
+	    } \
+	    else bytesLeft++; \
+        else if ((*bp++ = ch) == collapse && !atBeginning) \
+	    prevIsCollapse = TRUE; \
+    }
+#else /* DONT_COLLAPSE */
+
+#define PUT(ch) \
+    { \
+	if (--bytesLeft == 0) return FALSE; \
+	*bp++ = ch; \
+    }
+#endif /* DONT_COLLAPSE */
+#define escape '%'
+
+    while (len--) {
+#ifndef DONT_COLLAPSE
+	if (*source == collapse) {
+	    PUT(*source);
+	    source++;
+	    continue;
+	}
+	else
+#endif /* DONT_COLLAPSE */
+	    if (*source != escape) {
+		PUT(*source);
+	}
+	else {
+	    source++;
+	    if (len-- == 0) {
+		PUT(escape);
+		break;
+	    }
+
+	    if (*source == ':' || *source == escape)
+		PUT(*source)
+	    else {
+		/* Match the character against the match array */
+		register int j;
+
+		for (j = 0; j < num && sub[j].match != *source; j++) {}
+
+		/* Substitute the substitution string */
+
+		if (j >= num) PUT(*source)
+		else if (sub[j].substitution != NULL) {
+		    char *sp = sub[j].substitution;
+		    while (*sp) {
+			PUT(*sp);
+			sp++;
+		    }
+		}
+	    }
+	}
+	source++;
+#ifndef DONT_COLLAPSE
+	atBeginning = FALSE;
+#endif /* DONT_COLLAPSE */
+    }
+    PUT('\0');
+
+    return TRUE;
+#undef PUT
+#undef escape
+}
+
+
+String XtFindFile(path, substitutions, num_substitutions, predicate)
+    String path;
+    Substitution substitutions;
+    Cardinal num_substitutions;
+    XtFilePredicate predicate;
+{
+    char *buf, *buf1, *buf2, *colon, *start;
+    int len;
+    Boolean firstTime = TRUE;
+
+    buf = buf1 = XtMalloc((unsigned)MAXPATHLEN);
+    buf2 = XtMalloc((unsigned)MAXPATHLEN);
+
+    if (predicate == NULL) predicate = TestFile;
+
+    while (1) {
+	start = path;
+	while (1) {
+	    colon = index(start, ':');
+	    if (colon == NULL) break;
+	    if (colon == path) {start++; path++; continue; }
+	    if (*(colon-1) != '%') break;
+	    start = colon+1;
+	}
+	if (colon != NULL)
+	    len = colon - start;
+	else
+	    len = strlen(path);
+	if (Resolve(path, len, substitutions, num_substitutions,
+		    buf, '/')) {
+	    if (firstTime || strcmp(buf1,buf2) != 0) {
+#ifdef XNL_DEBUG
+		printf("Testing file %s\n", buf);
+#endif /* XNL_DEBUG */
+
+		/* Check out the file */
+		if ((*predicate) (buf)) {
+		    /* We've found it, return it */
+#ifdef XNL_DEBUG
+		    printf("File found.\n");
+#endif /* XNL_DEBUG */
+		    if (buf == buf1) XtFree(buf2);
+		    else XtFree(buf1);
+		    return buf;
+		}
+		if (buf == buf1)
+		    buf = buf2;
+		else
+		    buf = buf1;
+		firstTime = FALSE;
+	    }
+	}
+
+	/* Nope...any more paths? */
+
+	if (colon == NULL) break;
+	path = colon+1;
+    }
+
+    /* No file found */
+
+    XtFree(buf1);
+    XtFree(buf2);
+    return NULL;
+}
+
+
+static void FillInLangSubs(subs, pd)
+    Substitution subs;
+    XtPerDisplay pd;
+{
+    int len;
+    char *string, *p1, *p2, *p3;
+    char **rest;
+    char *ch;
+
+    if (pd->language == NULL || pd->language[0] == '\0') {
+	subs[0].substitution = subs[1].substitution =
+		subs[2].substitution = subs[3].substitution = NULL;
+	return;
+    }
+
+    len = strlen(pd->language) + 1;
+    string = subs[0].substitution = pd->language;
+    p1 = subs[1].substitution = XtMalloc((Cardinal) 3*len);
+    p2 = subs[2].substitution = subs[1].substitution + len;
+    p3 = subs[3].substitution = subs[2].substitution + len;
+
+    /* Everything up to the first "_" goes into p1.  From "_" to "." in
+       p2.  The rest in p3.  If no delimiters, all goes into p1.  We
+       assume p1, p2, and p3 are large enough. */
+
+    *p1 = *p2 = *p3 = '\0';
+
+    ch = index(string, '_');
+    if (ch != NULL) {
+	len = ch - string;
+	(void) strncpy(p1, string, len);
+	p1[len] = '\0';
+	string = ch + 1;
+	rest = &p2;
+    } else rest = &p1;
+
+    /* Rest points to where we put the first part */
+
+    ch = index(string, '.');
+    if (ch != NULL) {
+	len = ch - string;
+	strncpy(*rest, string, len);
+	(*rest)[len] = '\0';
+	(void) strcpy(p3, ch+1);
+    } else (void) strcpy(*rest, string);
+}
+
+static SubstitutionRec defaultSubs[] = {
+    {'N', NULL},
+    {'T', NULL},
+    {'S', NULL},
+    {'L', NULL},
+    {'l', NULL}, 
+    {'t', NULL},
+    {'c', NULL}
+};
+
+
 String XtResolvePathname(dpy, type, filename, suffix, path, predicate)
     Display *dpy;
     String type, filename, suffix, path;
     XtFilePredicate predicate;
 {
     XtPerDisplay pd = _XtGetPerDisplay(dpy);
-    char resolved_name[MAXPATHLEN];
-    String class = XrmQuarkToString(pd->class);
+    static char *defaultPath = NULL;
+    char *massagedPath;
+    int bytesAllocd, bytesLeft;
+    char *ch, *result;
+    extern char* getenv();
 
-    /* stub routine for now */
-    if (type != NULL && strcmp(type, "app-defaults") == 0
-	  && filename == NULL
-	  && suffix == NULL
-	  && path == NULL
-	  && predicate == NULL) {
-	strcpy(resolved_name, "/usr/lib/X11/app-defaults/");
-    } else if (type == NULL
-	  && filename == NULL
-	  && suffix == NULL
-	  && predicate == NULL) {
-	extern char *getenv();
-	char	*dirname;
-	if ((dirname = getenv("XAPPLRESDIR")) == NULL) {
-	    if ((dirname = getenv("HOME")) == NULL)
-		dirname = "/";
+#ifndef XFILESEARCHPATHDEFAULT
+#define XFILESEARCHPATHDEFAULT "/usr/lib/X11/%L/%T/%N%S:/usr/lib/X11/%l/%T/%N%S:/usr/lib/X11/%T/%N%S"
+#endif
+
+    if (path == NULL) {
+#ifndef VMS
+	if (defaultPath == NULL) {
+	    defaultPath = getenv("XFILESEARCHPATH");
+	    if (defaultPath == NULL) defaultPath = XFILESEARCHPATHDEFAULT;
 	}
-	strcpy(resolved_name, dirname);
-    } else {
-	XtWarning( "XtResolvePathname is only a stub; returning filename" );
-	return XtNewString(filename);
+	path = defaultPath;
+#else
+	path = "";	/* NULL would kill us later */
+#endif /* VMS */
+    }	
+
+    if (filename == NULL) {
+	filename = XrmClassToString(pd->class);
     }
-    (void) strcat(resolved_name, class);
-    return XtNewString(resolved_name);
+
+    bytesAllocd = bytesLeft = 1000;
+    massagedPath = ALLOCATE_LOCAL(bytesAllocd);
+    if (massagedPath == NULL) _XtAllocError("alloca");
+
+    if (path[0] == ':') {
+	strcpy(massagedPath, "%N%S");
+	ch = &massagedPath[4];
+	bytesLeft -= 4;
+    } else ch = massagedPath;
+
+    /* Insert %N%S between adjacent colons */
+
+    while (*path != '\0') {
+	if (bytesLeft < 8) {
+	    int bytesUsed = bytesAllocd - bytesLeft;
+	    char *new = (bytesAllocd += 1000, ALLOCATE_LOCAL(bytesAllocd));
+	    if (new == NULL) _XtAllocError("alloca");
+	    strncpy( massagedPath, new, bytesUsed );
+	    ch = new + bytesUsed;
+	    DEALLOCATE_LOCAL(massagedPath);
+	    massagedPath = new;
+	    bytesLeft = bytesAllocd - bytesUsed;
+	}
+	if (*path == '%' && *(path+1) == ':') {
+	    *ch++ = '%';
+	    *ch++ = ':';
+	    path += 2;
+	    bytesLeft -= 2;
+	    continue;
+	}
+	if (*path == ':' && *(path+1) == ':') {
+	    strcpy(ch, ":%N%S:");
+	    ch += 6;
+	    bytesLeft -= 6;
+	    while (*path == ':') path++;
+	    continue;
+	}
+	*ch++ = *path++;
+	bytesLeft--;
+    }
+    *ch = '\0';
+#ifdef XNL_DEBUG
+    printf("Massaged path: %s\n", massagedPath);
+#endif /* XNL_DEBUG */
+
+    defaultSubs[0].substitution = filename;
+    defaultSubs[1].substitution = type;
+    defaultSubs[2].substitution = suffix;
+    FillInLangSubs(&defaultSubs[3], pd);
+
+    result = XtFindFile(massagedPath, defaultSubs, XtNumber(defaultSubs),
+	    predicate);
+
+    if (defaultSubs[4].substitution != NULL)
+	XtFree( (XtPointer)defaultSubs[4].substitution );
+
+    DEALLOCATE_LOCAL(massagedPath);
+
+    return result;
 }
