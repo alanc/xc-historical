@@ -21,6 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+/* $Header: mfbimage.c,v 1.30 87/08/19 18:03:26 drewry Exp $ */
 #include "X.h"
 #include "Xmd.h"
 extern int starttab[];
@@ -65,7 +66,7 @@ SCRLEFT(dst, x)
 	takes dst[x, 32] and moves them to dst[0, 32-x]
 	the contents of the rest of dst are 0 ONLY IF
 	dst is UNSIGNED.
-	this is a right shift on LSBFirst (forrward-thinking)
+	this is a right shift on LSBFirst (forward-thinking)
 	machines like the VAX, and left shift on MSBFirst
 	(backwards) machines like the 680x0 and pc/rt.
 
@@ -98,6 +99,9 @@ mask32bits(x, w, startmask, endmask, nlw)
 NOTE
 	any pointers passe to the following 4 macros are
 	guranteed to be 32-bit aligned.
+	The only non-32-bit-aligned references ever made are
+	to font glyphs, and those are made with getleftbits()
+	and getshiftedleftbits (qq.v.)
 
 getbits(psrc, x, w, dst)
 	starting at position x in psrc (x < 32), collect w
@@ -118,11 +122,6 @@ getbits(psrc, x, w, dst)
 	get n bits from next word, move screen-right by m, zeroing
 		 lower m bits of word.
 	OR the two things together.
-
-	in the font code, psrc is NOT guaranteed to be 32-bit aligned.
-	on  many machines this will cause problems.  there are
-	several versions of this macro which do various alignments
-	so that the macro converts this into one or two aligned fetches.
 
 putbits(src, x, w, pdst)
 	starting at position x in pdst, put down the screen-leftmost
@@ -155,6 +154,11 @@ putbitsrrop(src, x, w, pdst, ROP)
 	(see mfb.h for DoRRop)
 
 -----------------------------------------------------------------------
+	The two macros below are used only for getting bits from glyphs
+in fonts, and glyphs in fonts are gotten only with the following two
+mcros.
+	You should tune these macros toyour font format and cpu
+byte ordering.
 
 NOTE
 getleftbits(psrc, w, dst)
@@ -163,25 +167,24 @@ getleftbits(psrc, w, dst)
 	<=32 bits wide.
 	psrc is declared (unsigned char *)
 
-WARNING:
-   some C compilers object to ANDing a pointer with a constant.  silly
-twits.  so, we cast psrc as an int before doing anything to it.  this
-means we assume (int) and (unsigned char *) are the same size.
+	psrc is NOT guaranteed to be 32-bit aligned.  on  many
+	machines this will cause problems, so there are several
+	versions of this macro.
 
 	this macro is called ONLY for getting bits from font glyphs,
-	and assumes that the bits of the glyph have been
-	written in memory as pieces of a byte stream.  if
-	this is not true (i.e. if you have changed
-	the server-natural font format definition)
-	you may have to rewrite this.
+	and depends on the server-natural font padding.
 
 	for blazing text performance, you want this macro
 	to touch memory as infrequently as possible (e.g.
 	fetch longwords) and as efficiently as possible
 	(e.g. don't fetch misaligned longwords)
 
-	YOU SHOULD TUNE THIS MACRO TO YOUR PROCESSOR!
-
+getshiftedleftbits(psrc, offset, w, dst)
+	used by the font code; like getleftbits, but shifts the
+	bits SCRLEFT by offset.
+	this is implemented portably, calling getleftbits()
+	and SCRLEFT().
+	psrc is declared (unsigned char *).
 */
 
 #if (BITMAP_BIT_ORDER == MSBFirst)	/* pc/rt, 680x0 */
@@ -208,7 +211,7 @@ means we assume (int) and (unsigned char *) are the same size.
     startmask = starttab[(x)&0x1f]; \
     endmask = endtab[((x)+(w)) & 0x1f];
 
-#if GETBITS_ALIGNMENT == 1
+
 #define getbits(psrc, x, w, dst) \
 if ( ((x) + (w)) <= 32) \
 { \
@@ -221,49 +224,6 @@ else \
     dst = (SCRLEFT(*(psrc), (x)) & endtab[m]) | \
 	  (SCRRIGHT(*((psrc)+1), m) & starttab[m]); \
 }
-#endif /* GETBITS_ALIGNMENT == 1 */
-
-#if GETBITS_ALIGNMENT == 2
-#define getbits(psrc, x, w, dst) \
-{\
-    register unsigned *ptr= (unsigned *)(psrc);\
-    register unsigned off= (x)+((((unsigned)ptr)&0x01)<<3);\
-    ptr=(unsigned *)((((unsigned)ptr)&(~0x1))+(((off&0xf0)>0)<<1));\
-    off&=0xf;\
-    if ( ((off) + (w)) <= 32) \
-    { \
-	dst = SCRLEFT(*ptr, (off)); \
-    } \
-    else \
-    { \
-	int m; \
-	m = 32-(off); \
-	dst = (SCRLEFT(*ptr, (off)) & endtab[m]) | \
-	    (SCRRIGHT(*(ptr+1), m) & starttab[m]); \
-    }\
-}
-#endif /* GETBITS_ALIGNMENT == 2 */
-
-#if GETBITS_ALIGNMENT == 4
-#define getbits(psrc, x, w, dst) \
-{\
-    register unsigned *ptr= (unsigned *)(psrc);\
-    register unsigned off= (x)+((((unsigned)ptr)&0x03)<<3);\
-    ptr=(unsigned *)(((unsigned)ptr)&(~0x3))+((off&0xe0)>0);\
-    off&=0x1f;\
-    if ( ((off) + (w)) <= 32) \
-    { \
-	dst = SCRLEFT(*ptr, (off)); \
-    } \
-    else \
-    { \
-	int m; \
-	m = 32-(off); \
-	dst = (SCRLEFT(*ptr, (off)) & endtab[m]) | \
-	    (SCRRIGHT(*(ptr+1), m) & starttab[m]); \
-    }\
-}
-#endif /* GETBITS_ALIGNMENT == 4 */
 
 
 #define putbits(src, x, w, pdst) \
@@ -334,4 +294,18 @@ else \
 }
 
 #define getleftbits(psrc, w, dst) \
-	getbits((unsigned int *)(psrc), 0, (w), (dst))
+    { \
+	int off; \
+	off = ( ((int)(psrc)) & 0x03) << 3; \
+	getbits( \
+		(unsigned int *)( ((int)(psrc)) &~0x03), \
+		(off), (w), (dst) \
+	       ); \
+    }
+
+
+#define getshiftedleftbits(psrc, offset, w, dst) \
+	getleftbits((psrc), (w), (dst)); \
+	dst = SCRLEFT((dst), (offset));
+
+
