@@ -1,4 +1,4 @@
-.\" $XConsortium: CH01,v 1.8 92/11/16 17:41:41 converse Exp $
+.\" $XConsortium: CH01,v 1.9 94/01/07 19:35:51 converse Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991, 1994
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -1719,9 +1719,10 @@ for each of the built-in classes.  These procedures are
 .PN XtIsWMShell ,
 .PN XtIsVendorShell ,
 .PN XtIsTransientShell ,
-.PN XtIsTopLevelShell
+.PN XtIsTopLevelShell ,
+.PN XtIsApplicationShell 
 and
-.PN XtIsApplicationShell .
+.PN XtIsSessionShell .
 .IN "XtIsObject" "" "@DEF@"
 .IN "XtIsRectObj" "" "@DEF@"
 .IN "XtIsWidget" "" "@DEF@"
@@ -1734,6 +1735,7 @@ and
 .IN "XtIsTransientShell" "" "@DEF@"
 .IN "XtIsTopLevelShell" "" "@DEF@"
 .IN "XtIsApplicationShell" "" "@DEF@"
+.IN "XtIsSessionShell" "" "@DEF@"
 .LP
 All these macros and functions have the same argument description.
 .FD 0
@@ -1843,7 +1845,7 @@ In all widget classes:	\fIclass_name\fP
 .br
 	\fIallocate\fP
 .br
-	\fIdealloate\fP
+	\fIdeallocate\fP
 .sp
 In Composite widget classes:	\fIgeometry_manager\fP
 .br
@@ -2162,6 +2164,12 @@ fields.  The class may declare any reserved value it wishes for
 the inheritance constant for its new fields.  The following inheritance
 constants are defined:
 .LP
+For Object:
+.IP
+.PN XtInheritAllocate
+.IP
+.PN XtInheritDeallocate
+.LP
 For Core:
 .IP
 .PN XtInheritRealize
@@ -2310,4 +2318,48 @@ Any value stored in the class part extension fields of
 or
 .PN ShellClassPart
 must point to an extension record conforming to this definition.
+.LP
+The \*(xI provide a utility function for widget writers to locate a
+particular class extension record in a linked list, given a widget class
+and the offset of the \fIextension\fP field in the class record.
+.LP
+To locate a class extension record, use
+.PN XtGetClassExtension .
+.IN "XtGetClassExtension" "" "@DEF@"
+.FD 0
+XtPointer XtGetClassExtension(\fIobject_class\fP, \fIbyte_offset\fP, \
+\fItype\fP, \fIversion\fP, \fIrecord_size\fP);
+.br
+      WidgetClass \fIobject_class\fP;
+.br
+      Cardinal \fIbyte_offset\fP;
+.br
+      XrmQuark \fItype\fP;
+.br
+      long \fIversion\fP;
+.br
+      Cardinal \fIrecord_size\fP;
+.FN
+.IP \fIobject_class\fP 1i
+Specifies the object class containing the extension list to be searched.
+.IP \fIbyte_offset\fP 1i
+Specifies the offset in bytes from the base of the
+class record of the extension field to be searched.
+.IP \fItype\fP 1i
+Specifies the record_type of the class extension to be located.
+.IP \fIversion\fP 1i
+Specifies the minimum acceptable version of the class
+extension required for a match.
+.IP \fIrecord_size\fP 1i
+Specifies the minimum acceptable length of the class
+extension record required for a match, or 0.
+.LP
+The list of extension records at the specified offset in the specified
+object class will be searched for a match on the specified type,
+a version greater than or equal to the specified version, and a record
+size greater than or equal the specified record_size if it is nonzero.
+.PN XtGetClassExtension
+returns a pointer to a matching extension record or NULL if no match
+is found.  The returned extension record must not be modified or
+freed by the caller if the caller is not the object class owner.
 .bp
