@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.39 91/07/02 13:11:03 rws Exp $
+ * $XConsortium: miwideline.c,v 1.40 91/07/03 15:44:04 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -164,6 +164,74 @@ miFillPolyHelper (pDrawable, pGC, pixel, spanData, y, overall_height,
     {
 	SpanGroup   *group;
 
+	spanRec.count = ppt - spanRec.points;
+	if (pixel == pGC->fgPixel)
+	    group = &spanData->fgGroup;
+	else
+	    group = &spanData->bgGroup;
+	miAppendSpans (group, &spanRec);
+    }
+}
+
+static void
+miFillRectPolyHelper (pDrawable, pGC, pixel, spanData, x, y, w, h)
+    DrawablePtr	pDrawable;
+    GCPtr	pGC;
+    unsigned long   pixel;
+    SpanDataPtr	spanData;
+    int		x, y, w, h;
+{
+    register DDXPointPtr ppt;
+    DDXPointPtr pptInit;
+    register int *pwidth;
+    int *pwidthInit;
+    unsigned long oldPixel;
+    Spans	spanRec;
+    xRectangle  rect;
+    int		xorg;
+
+    if (!spanData)
+    {
+	rect.x = x;
+	rect.y = y;
+	rect.width = w;
+	rect.height = h;
+    	oldPixel = pGC->fgPixel;
+    	if (pixel != oldPixel)
+    	{
+    	    DoChangeGC (pGC, GCForeground, (XID *)&pixel, FALSE);
+    	    ValidateGC (pDrawable, pGC);
+    	}
+	(*pGC->ops->PolyFillRect) (pDrawable, pGC, 1, &rect);
+    	if (pixel != oldPixel)
+    	{
+	    DoChangeGC (pGC, GCForeground, (XID *)&oldPixel, FALSE);
+	    ValidateGC (pDrawable, pGC);
+    	}
+    }
+    else
+    {
+	SpanGroup   *group;
+	spanRec.points = (DDXPointPtr) xalloc (h * sizeof (*ppt));
+	if (!spanRec.points)
+	    return;
+	spanRec.widths = (int *) xalloc (h * sizeof (int));
+	if (!spanRec.widths)
+	{
+	    xfree (spanRec.points);
+	    return;
+	}
+	ppt = spanRec.points;
+	pwidth = spanRec.widths;
+
+	while (h--)
+	{
+	    ppt->x = x;
+	    ppt->y = y;
+	    ppt++;
+	    *pwidth++ = w;
+	    y++;
+	}
 	spanRec.count = ppt - spanRec.points;
 	if (pixel == pGC->fgPixel)
 	    group = &spanData->fgGroup;
@@ -1202,26 +1270,16 @@ miWideSegment (pDrawable, pGC, pixel, spanData,
 	leftFace->xa = 0;
 	leftFace->ya = -rightFace->ya;
 	leftFace->k = rightFace->k;
-	lefts[0].height = lw;
-	lefts[0].x = x1;
+	x = x1;
 	if (projectLeft)
-	    lefts[0].x -= (lw >> 1);
-	lefts[0].stepx = 0;
-	lefts[0].signdx = 1;
-	lefts[0].e = -lw;
-	lefts[0].dx = 0;
-	lefts[0].dy = lw;
-	rights[0].height = lw;
-	rights[0].x = x2 - 1;
+	    x -= (lw >> 1);
+	y = y1 - (lw >> 1);
+	dx = x2 - x;
 	if (projectRight)
-	    rights[0].x += (lw + 1 >> 1);
-	rights[0].stepx = 0;
-	rights[0].signdx = 1;
-	rights[0].e = -lw;
-	rights[0].dx = 0;
-	rights[0].dy = lw;
-	miFillPolyHelper (pDrawable, pGC, pixel, spanData, y1 - (lw >> 1), lw,
-		     lefts, rights, 1, 1);
+	    dx += (lw + 1 >> 1);
+	dy = lw;
+	miFillRectPolyHelper (pDrawable, pGC, pixel, spanData,
+			      x, y, dx, dy);
     }
     else if (dx == 0)
     {
@@ -1231,28 +1289,16 @@ miWideSegment (pDrawable, pGC, pixel, spanData,
 	rightFace->xa = -leftFace->xa;
 	rightFace->ya = 0;
 	rightFace->k = leftFace->k;
-	topy = y1;
-	bottomy = y1 + dy;
+	y = y1;
 	if (projectLeft)
-	    topy -= lw / 2;
+	    y -= lw >> 1;
+	x = x1 - (lw >> 1);
+	dy = y2 - y;
 	if (projectRight)
-	    bottomy += lw/2;
-	lefts[0].height = bottomy - topy;
-	lefts[0].x = x1 - (lw >> 1);
-	lefts[0].stepx = 0;
-	lefts[0].signdx = 1;
-	lefts[0].e = -dy;
-	lefts[0].dx = dx;
-	lefts[0].dy = dy;
-
-	rights[0].height = bottomy - topy;
-	rights[0].x = lefts[0].x + (lw-1);
-	rights[0].stepx = 0;
-	rights[0].signdx = 1;
-	rights[0].e = -dy;
-	rights[0].dx = dx;
-	rights[0].dy = dy;
-	miFillPolyHelper (pDrawable, pGC, pixel, spanData, topy, bottomy - topy, lefts, rights, 1, 1);
+	    dy += (lw + 1 >> 1);
+	dx = lw;
+	miFillRectPolyHelper (pDrawable, pGC, pixel, spanData,
+			      x, y, dx, dy);
     }
     else
     {
