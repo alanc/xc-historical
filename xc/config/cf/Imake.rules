@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.51 89/08/24 10:40:01 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.52 89/08/28 14:09:46 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -551,7 +551,9 @@ depend::								@@\
 
 
 /*
- * CleanTarget - generate rules to remove any garbage files.
+ * CleanTarget - generate rules to remove any garbage files; the #* is here
+ * instead of in the definition of RM_CMD because System V will treat the 
+ * pound sign in the RM_CMD variable as a comment.
  */
 #ifndef CleanTarget
 #define	CleanTarget()							@@\
