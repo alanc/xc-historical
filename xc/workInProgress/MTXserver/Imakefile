@@ -1,16 +1,10 @@
-XCOMM $XConsortium: Imakefile,v 1.166 93/09/26 15:41:16 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.167 93/11/07 11:02:20 rws Exp $
 /*
  * Server Master Makefile
  */
 
 #include <Server.tmpl>
 
-#define StdSubdirs dix os mi $(EXTDIRS)
-#define MFBSubdirs StdSubdirs mfb
-#define CFBSubdirs MFBSubdirs cfb cfb16 cfb32
-#define CFB8Subdirs MFBSubdirs cfb
-#define CFB16Subdirs MFBSubdirs cfb cfb16
-#define CFB32Subdirs MFBSubdirs cfb cfb32
 #define StdLibs $(DIX) $(OS) $(FONT) $(MI) $(EXTENSIONS)
 #define MFBBareLibs $(DIX) $(OS) $(FONT) $(MFB) $(MI)
 #define MFBLibs MFBBareLibs $(EXTENSIONS)
@@ -71,6 +65,7 @@ XCOMM $XConsortium: Imakefile,v 1.166 93/09/26 15:41:16 gildea Exp $
         SYSLIBS = MathLibrary Krb5Libraries DBMLibrary
 #endif
            CBRT = mi/cbrt.o
+        STDDIRS = dix os mi $(EXTDIRS)
 
 XCOMM
 XCOMM This turns off the default rule for compiling .c files because
@@ -79,233 +74,144 @@ XCOMM just a hack because of the Sun version of make and nfs.
 XCOMM
 .c.o:
 
-/*****************************************************************************
- *		  ALL definitions, add one for each server                   *
- *****************************************************************************/
-
-#if XqdssServer
-ALL1 = Xqdss
-#define realServer
-#endif
-
-#if XqvssServer
-#if XqdssServer
-ALL2 = Xqvss
-#else
-ALL1 = Xqvss
-#define realServer
-#endif
-#endif
-
-#if XdecServer
-ALL1 = Xdec
-#define realServer
-#endif
-
-#if XmfbpmaxServer
-ALL1 = Xmfbpmax
-#define realServer
-#endif
-
-#if XcfbpmaxServer
-#if XmfbpmaxServer
-ALL2 = Xcfbpmax
-#else
-ALL1 = Xcfbpmax
-#define realServer
-#endif
-#endif
-
-#if XsunServer || Xsun24Server
-ALL1 = Xsun
-#define realServer
-#endif
-
-#if XsunMonoServer
-#if XsunServer || Xsun24Server
-ALL2 = XsunMono
-#else
-ALL1 = XsunMono
-#define realServer
-#endif
-#endif
-
-#if XibmServer
-ALL1 = Xibm
-#define realServer
-#endif
-
-#if XtekServer
-ALL1 = Xtek
-#define realServer
-#endif
-
-#if XmacIIServer
-ALL1 = XmacII
-#define realServer
-#endif
-
-#if XlunaServer
-ALL1 = Xluna
-#define realServer
-#endif
-
-#if XmipsServer
-ALL1 = Xmips
-#define realServer
-#endif
-
-#if XnonServer
-ALL1 = Xnon
-#endif
-
-#if XirisServer
-ALL1 = Xiris
-#define realServer
-#endif
-
-#if XhpServer
-ALL1 = Xhp
-#define realServer
-#endif
-
-#if XsvgaServer
-ALL1 = Xsvga
-#define realServer
-#endif
-
-#if XnestServer
-ALL3 = Xnest
-#endif
-
-/* end ALL definitions */
-
-ALL = $(ALL1) $(ALL2) $(ALL3)
-
-all: $(ALL)
-
-
-/*****************************************************************************
- *		  Build rule blocks, add one for each server                 *
- *****************************************************************************/
-
-
-#if XqdssServer
-XCOMM
-XCOMM Digital qdss server
-XCOMM
-SUBDIRS0 = MFBSubdirs hw/dec/lk201
-SUBDIRS1 = hw/dec/qdss hw/dec/qdss/libtl
-QDSSDIRS = $(SUBDIRS0) $(SUBDIRS1) $(DEPDIRS)
-QDSSOBJS = hw/dec/qdss/init.o hw/dec/qdss/qdss_io.o hw/dec/lk201/lk201.o
-QDSSLIBS = hw/dec/qdss/libqdss.a hw/dec/qdss/libtl/libtl.a \
-           hw/dec/qdss/libqdss.a MFBLibs
-
-ServerTarget(Xqdss,$(QDSSDIRS),$(QDSSOBJS),$(QDSSLIBS),$(SYSLIBS))
-#endif /* XqdssServer */
-
-
-#if XqvssServer
-XCOMM
-XCOMM Digital qvss server
-XCOMM
-SUBDIRS0 = MFBSubdirs hw/dec/lk201
-SUBDIRS2 = hw/dec/qvss
-QVSSDIRS = $(SUBDIRS0) $(SUBDIRS2) $(DEPDIRS)
-QVSSOBJS = hw/dec/qvss/init.o hw/dec/qvss/qvss_io.o hw/dec/lk201/lk201.o
-QVSSLIBS = MFBLibs
-
-ServerTarget(Xqvss,$(QVSSDIRS),$(QVSSOBJS),$(QVSSLIBS),$(SYSLIBS))
-#endif /* XqvssServer */
-
+XCOMM 		  Build rule blocks, add one for each server
+XCOMM 
+XCOMM The ALL definitions that used to be here have been folded into the
+XCOMM build blocks.
+XCOMM 
+XCOMM If a server needs mfb, its build block should have a line like:
+XCOMM MFBDIR = mfb
+XCOMM Similarly, its build block should have:
+XCOMM CFB8DIR  = cfb   (if the servr needs 8 bit cfb)
+XCOMM CFB16DIR = cfb16 (16 bit cfb)
+XCOMM CFB32DIR = cfb32 (32 bit cfb)
+XCOMM 
+XCOMM If a server does not need all of the above components, simply
+XCOMM omit the relevant lines from the build block.
+XCOMM 
+XCOMM Additional ddx directories can be split across three variables:
+XCOMM DDXDIR1, DDXDIR2, and DDXDIR3.  Most servers only use DDXDIR1,
+XCOMM but if two servers can be built on a platform then DDXDIR1 is
+XCOMM typically set to the ddx directories that are shared by both
+XCOMM servers, DDXDIR2 is the directories unique to one of the servers,
+XCOMM and DDXDIR3 is the directories unique to the other server.
+XCOMM 
+XCOMM If these guidelines are followed, a make at the top of the server
+XCOMM tree should result in each subdirectory being built only once,
+XCOMM even if multiple servers that share subdirectories are being built.
+XCOMM It was possible to get this result with the old SUBDIRSn scheme
+XCOMM (from which the current scheme is derived), but it became very
+XCOMM difficult to attain with the advent of the fake framebuffer server
+XCOMM (Xffb), which can be built on any platform and thus interacted strongly
+XCOMM with SUBDIRSn.  The current scheme made accomodating Xffb a snap,
+XCOMM and should in general be easier to maintain.
 
 #if XdecServer
 XCOMM
 XCOMM Digital MIPS based WS server (ultrix 4.2 and beyond)
 XCOMM
-SUBDIRS0 = CFBSubdirs hw/dec/ws
-DECDIRS = $(SUBDIRS0) $(DEPDIRS)
-DECOBJS = hw/dec/ws/init.o
-DECLIBS = hw/dec/ws/libdec.a CFBLibs
-
+MFBDIR  = mfb
+CFB8DIR = cfb
+DDXDIR1 = hw/dec/ws
+DECDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
+DECOBJS = hw/dec/ws/init.o hw/dec/ws/sdepthinit.o
+DECLIBS = hw/dec/ws/libdec.a CFB8Libs
 ServerTarget(Xdec,$(DECDIRS),$(DECOBJS),$(DECLIBS),$(SYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall Xdec
+#endif
 #endif /* XdecServer */
 
 
-#if XmfbpmaxServer
+#if XdecMultiDepthServer
 XCOMM
-XCOMM Digital mfbpmax server
+XCOMM Digital MIPS based WS server (ultrix 4.2 and beyond)
+XCOMM Supports 8, 12, and 24 bit pixmaps
 XCOMM
-SUBDIRS0 = MFBSubdirs
-SUBDIRS2 = hw/dec/lk201
-SUBDIRS3 = hw/dec/mfbpmax
-PMAXMFBDIRS = $(SUBDIRS0) $(SUBDIRS2) $(SUBDIRS3) $(DEPDIRS)
-PMAXMFBOBJS = hw/dec/mfbpmax/init.o hw/dec/mfbpmax/mfbpmax_io.o hw/dec/lk201/lk201.o
-PMAXMFBLIBS = MFBLibs
-
-ServerTarget(Xmfbpmax,$(PMAXMFBDIRS),$(PMAXMFBOBJS),$(PMAXMFBLIBS),$(SYSLIBS))
-#endif /* XmfbpmaxServer */
-
-
-#if XcfbpmaxServer
-XCOMM
-XCOMM Digital cfbpmax server
-XCOMM
-SUBDIRS0 = MFBSubdirs
-SUBDIRS1 = cfb hw/dec/cfbpmax
-SUBDIRS2 = hw/dec/lk201
-PMAXCFBDIRS = $(SUBDIRS0) $(SUBDIRS1) $(SUBDIRS2) $(DEPDIRS)
-PMAXCFBOBJS = hw/dec/cfbpmax/init.o hw/dec/cfbpmax/cfbpmax_io.o \
-	hw/dec/cfbpmax/cfbpmaxcolor.o hw/dec/lk201/lk201.o
-PMAXCFBLIBS = CFB8Libs
-
-ServerTarget(Xcfbpmax,$(PMAXCFBDIRS),$(PMAXCFBOBJS),$(PMAXCFBLIBS),$(SYSLIBS))
-#endif /* XcfbpmaxServer */
+MFBDIR   = mfb
+CFB8DIR  = cfb
+CFB16DIR = cfb16
+CFB32DIR = cfb32
+DDXDIR1  = hw/dec/ws
+DECDIRS1 = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
+DECOBJS1 = hw/dec/ws/init.o hw/dec/ws/mdepthinit.o
+DECLIBS1 = hw/dec/ws/libdec.a CFBLibs
+ServerTarget(Xdec_md,$(DECDIRS1),$(DECOBJS1),$(DECLIBS1),$(SYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall Xdec_md
+#endif
+#endif /* XdecMultiDepthServer */
 
 
 #if XsunServer
 XCOMM
 XCOMM Sun server
 XCOMM
-SUBDIRS0 = MFBSubdirs
-SUBDIRS1 = cfb
-SUBDIRS2 = hw/sun
-SUNDIRS = $(SUBDIRS0) $(SUBDIRS1) $(SUBDIRS2) $(DEPDIRS)
+MFBDIR = mfb
+CFB8DIR = cfb
+DDXDIR1 = hw/sun
+SUNDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
 SUNOBJS = hw/sun/sunInit.o
 SUNLIBS = hw/sun/libsun.a CFB8Libs
-SUNSYSLIBS = $(SYSLIBS)
+ServerTarget(Xsun,$(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(SYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall Xsun
+#endif
+#endif /* XsunServer */
 
-ServerTarget(Xsun,$(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(SUNSYSLIBS))
-#else
+
 #if Xsun24Server
 XCOMM
-XCOMM Sun server
+XCOMM Sun server for 24 bit framebuffer - doesn't work yet
 XCOMM
-SUBDIRS0 = MFBSubdirs
-SUBDIRS1 = cfb cfb16 cfb32
-SUBDIRS2 = hw/sun
-SUNDIRS = $(SUBDIRS0) $(SUBDIRS1) $(SUBDIRS2) $(DEPDIRS)
-SUNOBJS = hw/sun/sunInit.o
-SUNLIBS = hw/sun/libsun.a CFBLibs
-SUNSYSLIBS = $(SYSLIBS)
-
-ServerTarget(Xsun,$(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(SUNSYSLIBS))
+MFBDIR = mfb
+CFB8DIR = cfb
+CFB16DIR = cfb16
+CFB32DIR = cfb32
+DDXDIR1 = hw/sun
+SUN24DIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
+SUN24OBJS = hw/sun/sunInitMulti.o
+SUN24LIBS = hw/sun/libsun.a CFBLibs
+ServerTarget(Xsun24,$(SUN24DIRS),$(SUN24OBJS),$(SUN24LIBS),$(SYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall Xsun24
+#endif
 #endif /* Xsun24Server */
-#endif /* XsunServer */
+
 
 #if XsunMonoServer
 XCOMM
 XCOMM Sun monochrome server
 XCOMM
-SUBDIRS0 = MFBSubdirs
-SUBDIRS2 = hw/sun
-SUNMDIRS = $(SUBDIRS0) $(SUBDIRS2) $(DEPDIRS)
+MFBDIR = mfb
+DDXDIR1 = hw/sun
+SUNDIRS = $(STDDIRS) $(MFBDIR) $(DDXDIR1) $(DEPDIRS)
 SUNMOBJS = hw/sun/sunInitMono.o hw/sun/sunInitExtMono.o
 SUNMLIBS = hw/sun/libsun.a MFBBareLibs $(OTHEREXTS)
-SUNSYSLIBS = $(SYSLIBS)
-
-ServerTarget(XsunMono,$(SUNMDIRS),$(SUNMOBJS),$(SUNMLIBS),$(SUNSYSLIBS))
+ServerTarget(XsunMono,$(SUNMDIRS),$(SUNMOBJS),$(SUNMLIBS),$(SYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall XsunMono
+#endif
 #endif /* XsunMonoServer */
+
+
+#if XsunMultiDepthServer
+XCOMM
+XCOMM Sun multiple pixmap depth (8, 12, 24) server
+XCOMM
+MFBDIR = mfb
+CFB8DIR = cfb
+CFB16DIR = cfb16
+CFB32DIR = cfb32
+DDXDIR1 = hw/sun
+SUNMDDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
+SUNMDOBJS = hw/sun/sunInitMulti.o
+SUNMDLIBS = hw/sun/libsun.a CFBLibs
+ServerTarget(Xsun_md,$(SUNMDDIRS),$(SUNMDOBJS),$(SUNMDLIBS),$(SYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall Xsun_md
+#endif
+#endif /* XsunMultiDepthServer */
 
 
 #if XibmServer
@@ -317,12 +223,16 @@ IBMALLOCLIB = hw/ibm/common/libibmalloc.a
 #else
 IBMALLOCLIB = 
 #endif
-SUBDIRS0 = CFB8Subdirs hw/ibm
-IBMDIRS = $(SUBDIRS0) $(DEPDIRS)
+MFBDIR  = mfb
+CFB8DIR = cfb
+DDXDIR1 = hw/ibm
+IBMDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
 IBMOBJS = hw/ibm/common/ibmcomm.o hw/ibm/common/ibmDate.o
 IBMLIBS = hw/ibm/AIX/hft.o hw/ibm/libibm.a $(IBMALLOCLIB) CFB8Libs
-
 ServerTarget(Xibm,$(IBMDIRS),$(IBMOBJS),$(IBMLIBS),$(SYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall Xibm
+#endif
 #endif /* XibmServer */
 
 
@@ -330,13 +240,17 @@ ServerTarget(Xibm,$(IBMDIRS),$(IBMOBJS),$(IBMLIBS),$(SYSLIBS))
 XCOMM
 XCOMM Tektronix server
 XCOMM
-SUBDIRS0 = CFB8Subdirs hw/tek
-TEKDIRS = $(SUBDIRS0) $(DEPDIRS)
+MFBDIR  = mfb
+CFB8DIR = cfb
+DDXDIR1 = hw/tek
+TEKDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
 TEKOBJS = hw/tek/pegInit.o
 TEKLIBS = hw/tek/libtek.a CFB8Libs
 TEKSYSLIBS = $(CBRT) $(SYSLIBS)
-
 ServerTarget(Xtek,$(TEKDIRS),$(TEKOBJS),$(TEKLIBS),$(TEKSYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall Xtek
+#endif
 #endif /* XtekServer */
 
 
@@ -344,13 +258,17 @@ ServerTarget(Xtek,$(TEKDIRS),$(TEKOBJS),$(TEKLIBS),$(TEKSYSLIBS))
 XCOMM
 XCOMM Apple MacII server
 XCOMM
-SUBDIRS0 = CFB8Subdirs hw/macII
-MACIIDIRS = $(SUBDIRS0) $(DEPDIRS)
+MFBDIR  = mfb
+CFB8DIR = cfb
+DDXDIR1 = hw/macII
+MACIIDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
 MACIIOBJS = hw/macII/macIIInitS.o hw/macII/macIIColor.o
 MACIILIBS = hw/macII/libmacII.a CFB8Libs
 MACIISYSLIBS = $(CBRT) $(SYSLIBS)
- 
 ServerTarget(XmacII,$(MACIIDIRS),$(MACIIOBJS),$(MACIILIBS),$(MACIISYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall XmacII
+#endif
 #endif /* XmacIIServer */
 
 
@@ -358,16 +276,19 @@ ServerTarget(XmacII,$(MACIIDIRS),$(MACIIOBJS),$(MACIILIBS),$(MACIISYSLIBS))
 XCOMM
 XCOMM OMRON Luna server
 XCOMM
-SUBDIRS0 = MFBSubdirs hw/omron
-LUNADIRS = $(SUBDIRS0) $(DEPDIRS)
+MFBDIR  = mfb
+DDXDIR1 = hw/omron
+LUNADIRS = $(STDDIRS) $(MFBDIR) $(DDXDIR1) $(DEPDIRS)
 LUNAOBJS = hw/omron/omronInit.o
 #ifdef uniosu
 LUNALIBS = hw/omron/libomron.a MFBLibs $(BSDEMUL)
 #else
 LUNALIBS = hw/omron/libomron.a MFBLibs
 #endif
-
 ServerTarget(Xluna,$(LUNADIRS),$(LUNAOBJS),$(LUNALIBS),$(SYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall Xluna
+#endif
 #endif /* XlunaServer */
 
 
@@ -375,13 +296,17 @@ ServerTarget(Xluna,$(LUNADIRS),$(LUNAOBJS),$(LUNALIBS),$(SYSLIBS))
 XCOMM
 XCOMM MIPS server
 XCOMM
-SUBDIRS0 = CFB8Subdirs hw/mips
-MIPSDIRS = $(SUBDIRS0) $(DEPDIRS)
+MFBDIR  = mfb
+CFB8DIR = cfb
+DDXDIR1 = hw/mips
+MIPSDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
 MIPSOBJS = hw/mips/mipsInit.o
 MIPSLIBS = hw/mips/libmips.a CFB8Libs
 MIPSSYSLIBS = $(SYSLIBS) -lc /usr/lib/libc.a
- 
 ServerTarget(Xmips,$(MIPSDIRS),$(MIPSOBJS),$(MIPSLIBS),$(MIPSSYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall Xmips
+#endif
 #endif /* XmipsServer */
 
 
@@ -389,10 +314,11 @@ ServerTarget(Xmips,$(MIPSDIRS),$(MIPSOBJS),$(MIPSLIBS),$(MIPSSYSLIBS))
 XCOMM
 XCOMM SGI Iris Server
 XCOMM
-SGIDIRS = hw/sgi/IRIX hw/sgi/common hw/sgi/gr1 hw/sgi/nfb hw/sgi/rrm \
+DDXDIR1 = hw/sgi/IRIX hw/sgi/common hw/sgi/gr1 hw/sgi/nfb hw/sgi/rrm \
 	hw/sgi/sgi
-SUBDIRS0 = CFBSubdirs $(SGIDIRS)
-IRISDIRS = $(SUBDIRS0) $(DEPDIRS)
+MFBDIR  = mfb
+CFB8DIR = cfb
+IRISDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
 IRISOBJS =
 IRISLIBS = 	$(DIX) $(OS) \
 		hw/sgi/common/libcomm.a \
@@ -404,65 +330,106 @@ IRISLIBS = 	$(DIX) $(OS) \
 		$(CFB) $(MFB) $(MI) $(FONT) $(EXTENSIONS) \
 		hw/sgi/IRIX/libirix.a
 IRISSYSLIBS = $(SYSLIBS)
- 
 ServerTarget(Xiris,$(IRISDIRS),$(IRISOBJS),$(IRISLIBS),$(IRISSYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall Xiris
+#endif
 #endif /* XirisServer */
+
 
 #if XhpServer
 XCOMM
 XCOMM Hewlett Packard CFB Server
 XCOMM
-SUBDIRS0 = CFB32Subdirs hw/hp
-HPSUBDIRS = $(SUBDIRS0) $(DEPDIRS)
+MFBDIR  = mfb
+CFB8DIR = cfb
+CFB32DIR = cfb32
+DDXDIR1 = hw/hp
+HPSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
 HPOBJS = hw/hp/hp.o
 HPLIBS = CFB32Libs
 HPSYSLIBS = $(CBRT) $(SYSLIBS) /usr/lib/libdbm.a -ldld
 ServerTarget(Xhp,$(HPSUBDIRS),$(HPOBJS),$(HPLIBS),$(HPSYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall Xhp
+#endif
 #endif	/* XhpServer */
+
 
 #if XsvgaServer
 XCOMM
 XCOMM SVGA CFB Server
 XCOMM
 INSTPGMFLAGS = InstPgmFlags $(INSTUIDFLAGS) /* server must be suid root  */
-SUBDIRS0 = CFB8Subdirs hw/svga
-SVGASUBDIRS = $(SUBDIRS0)
+MFBDIR  = mfb
+CFB8DIR = cfb
+DDXDIR1 = hw/svga
+SVGASUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
 SVGAOBJS = hw/svga/svga.o
 SVGALIBS = CFB8Libs
 SVGASYSLIBS = $(CBRT) -lm -lmalloc
 ServerTarget(Xsvga,$(SVGASUBDIRS),$(SVGAOBJS),$(SVGALIBS),$(SVGASYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall Xsvga
+#endif
 #endif	/* XsvgaServer */
 
+
 #if XnestServer
-#ifndef realServer
-SUBDIRS0 = StdSubdirs
-#endif
-SUBDIRS4 = hw/xnest
-XNESTDIRS = StdSubdirs $(SUBDIRS4) $(DEPDIRS)
+XCOMM
+XCOMM Server with Xlib-based ddx
+XCOMM
+XNESTDDXDIR = hw/xnest
+XNESTDIRS = $(STDDIRS) $(XNESTDDXDIR) $(DEPDIRS)
 XNESTOBJS = 
 XNEST = hw/xnest/libxnest.a
 XNESTLIBS = $(DIX) $(OS) $(FONT) $(XNEST) $(MI) $(EXTENSIONS)
 XNESTSYSLIBS = $(LDPRELIB) $(XLIB) $(SYSLIBS)
-
 ServerTarget(Xnest,$(XNESTDIRS),$(XNESTOBJS),$(XNESTLIBS),$(XNESTSYSLIBS))
 #endif /* XnestServer */
+
 
 #if XnonServer
 XCOMM
 XCOMM non server, just compile sources for build test
 XCOMM
-SUBDIRS0 = CFBSubdirs
-
-Xnon: $(SUBDIRS0) $(DEPDIRS)
-
+MFBDIR   = mfb
+CFB8DIR  = cfb
+CFB16DIR = cfb16
+CFB32DIR = cfb32
+Xnon: $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DEPDIRS)
 #endif /* XnonServer */
 
 
-SUBDIRS = $(SUBDIRS0) $(SUBDIRS1) $(SUBDIRS2) $(SUBDIRS3) $(SUBDIRS4)
+#if XFakeFramebufferServer
+XCOMM
+XCOMM server with fake (malloc'ed) framebuffer
+XCOMM
+MFBDIR   = mfb
+CFB8DIR  = cfb
+CFB16DIR = cfb16
+CFB32DIR = cfb32
+XFFBDDXDIR  = hw/ffb
+XFFBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(XFFBDDXDIR) $(DEPDIRS)
+XFFBOBJS = hw/ffb/stubs.o
+XFFB = hw/ffb/libffb.a
+XFFBLIBS = $(DIX) $(OS) $(FONT) $(XFFB) $(MFB) $(CFB) $(MI) $(EXTENSIONS) 
+#ifdef HPArchitecture
+XFFBSYSLIBS =  $(CBRT) $(SYSLIBS) /usr/lib/libdbm.a -ldld
+#else
+XFFBSYSLIBS = $(SYSLIBS)
+#endif
+ServerTarget(Xffb,$(XFFBDIRS),$(XFFBOBJS),$(XFFBLIBS),$(XFFBSYSLIBS))
+#endif /* XFakeFramebufferServer */
 
-#ifdef realServer
+
+CFBDIRS = $(CFB8DIR) $(CFB16DIR) $(CFB32DIR)
+DDXDIRS = $(DDXDIR1) $(DDXDIR2) $(DDXDIR3) $(XFFBDDXDIR) $(XNESTDDXDIR)
+SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFBDIRS) $(DDXDIRS)
+
+#ifdef ServerToInstall
 install::
-	-(cd $(DESTDIR)$(BINDIR); $(RM) X; $(LN) $(ALL1) X)
+	-(cd $(DESTDIR)$(BINDIR); $(RM) X; $(LN) ServerToInstall X)
 #endif
 
 #define IHaveSubdirs
