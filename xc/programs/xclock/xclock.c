@@ -2,16 +2,16 @@
  *  Hacked from Tony Della Fera's much hacked clock program.
  */
 #ifndef lint
-static char rcsid[] = "$Header: xclock.c,v 1.10 88/02/11 16:10:48 jim Exp $";
+static char rcsid[] = "$Header: xclock.c,v 1.11 88/02/13 21:27:54 rws Exp $";
 #endif  lint
 
-#include <X/Xatom.h>
-#include <X/Xlib.h>
-#include <X/Intrinsic.h>
-#include <X/Atoms.h>
-#include <X/Shell.h>
-#include <X/Clock.h>
-#include <X/Cardinals.h>
+#include <X11/Xatom.h>
+#include <X11/Xlib.h>
+#include <X11/Intrinsic.h>
+#include <X11/Atoms.h>
+#include <X11/Shell.h>
+#include <X11/Clock.h>
+#include <X11/Cardinals.h>
 #include "clock.bit"
 
 extern void exit();
@@ -30,6 +30,8 @@ static XrmOptionDescRec options[] = {
 {"-d",		"*clock.analog",	XrmoptionNoArg,		"FALSE"},
 {"-digital",	"*clock.analog",	XrmoptionNoArg,		"FALSE"},
 {"-analog",	"*clock.analog",	XrmoptionNoArg,		"TRUE"},
+{"-rv",		"*clock.reverseVideo",	XrmoptionNoArg,		"TRUE"},
+{"-reverse",	"*clock.reverseVideo",	XrmoptionNoArg,		"TRUE"},
 };
 
 
