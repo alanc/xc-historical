@@ -536,6 +536,12 @@ The optional \fIlist\fP is a list of window names and colors so that
 client specific colors may be specified.  See the \fBBorderColor\fP
 variable for a complete description of the \fIlist\fP.
 The default is "white".
+.IP "\fBDefaultForeground\fP \fIstring\fP" 20
+This variable sets the foreground color to be used for twm sizing windows,
+etc.  The default is "black".
+.IP "\fBDefaultBackground\fP \fIstring\fP" 20
+This variable sets the background color to be used for twm sizing windows,
+etc.  The default is "white".
 .IP "\fBTitleForeground\fP \fIstring\fP [ { \fIlist\fP } ]" 20
 This variable sets the foreground color for the title bars.
 It can only be specified inside of a 
