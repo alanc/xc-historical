@@ -24,7 +24,7 @@ DESCRIPTION:
     [detailed description]
 
 REPEAT BY:
-    [what you did to get the error; include test program if appropriate]
+    [what you did to get the error; include test program if at all possible]
 
 SAMPLE FIX:
     [preferred, but not necessary.  Please send context diffs (diff -c -b)]
