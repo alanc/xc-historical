@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.148 93/08/15 17:40:22 converse Exp $ */
+/* $XConsortium: Event.c,v 1.149 93/08/15 18:07:22 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -738,20 +738,32 @@ static Boolean CallEventHandlers(widget, event, mask)
 static Region nullRegion;
 static void CompressExposures();
 
+#define KnownButtons (Button1MotionMask|Button2MotionMask|Button3MotionMask|\
+		      Button4MotionMask|Button5MotionMask)
+
 /* keep this SMALL to avoid blowing stack cache! */
 /* because some compilers allocate all local locals on procedure entry */
 #define EHSIZE 4
 
-static Boolean DispatchEventToWidget(event, widget, mask, pd)
-    register XEvent    *event;
-    Widget    widget;
-    EventMask mask;
-    XtPerDisplay pd;
+#if NeedFunctionPrototypes
+Boolean XtDispatchEventToWidget(
+    Widget widget,
+    XEvent* event)
+#else
+Boolean XtDispatchEventToWidget(widget, event)
+    Widget widget;
+    XEvent* event;
+#endif
 {
-    register XtEventRec *p;   
+    register XtEventRec *p;
     Boolean was_dispatched = False;
     Boolean call_tm = False;
     Boolean cont_to_disp;
+    EventMask mask;
+
+    mask = _XtConvertTypeToMask(event->type);
+    if (event->type == MotionNotify)
+	mask |= (event->xmotion.state & KnownButtons);
 
     if ( (mask == ExposureMask) ||
 	 ((event->type == NoExpose) && NO_EXPOSE) ||
@@ -768,7 +780,7 @@ static Boolean DispatchEventToWidget(event, widget, mask, pd)
 		(*widget->core.widget_class->core_class.expose)
 		    (widget, event, (Region)NULL);
 	    else {
-		CompressExposures(event, widget, pd);
+		CompressExposures(event, widget);
 	    }
 	    was_dispatched = True;
 	}
@@ -843,30 +855,6 @@ static Boolean DispatchEventToWidget(event, widget, mask, pd)
     return (was_dispatched|call_tm);
 }
 
-#define KnownButtons (Button1MotionMask|Button2MotionMask|Button3MotionMask|\
-		      Button4MotionMask|Button5MotionMask)
-
-#if NeedFunctionPrototypes
-Boolean XtDispatchEventToWidget(
-    Widget widget,
-    XEvent* event)
-#else
-Boolean XtDispatchEventToWidget(widget, event)
-    Widget widget;
-    XEvent* event;
-#endif
-{
-    EventMask	mask;
-    Boolean	was_dispatched;
-
-    mask = _XtConvertTypeToMask(event->xany.type);
-    if (event->xany.type == MotionNotify)
-	mask |= (event->xmotion.state & KnownButtons);
-    was_dispatched = DispatchEventToWidget(event, widget, mask, 
-				       _XtGetPerDisplay(event->xany.display));
-    return was_dispatched;
-}
-
 /*
  * This structure is passed into the check exposure proc.
  */
@@ -895,14 +883,14 @@ static void SendExposureEvent();
 static Bool CheckExposureEvent();
 
 static void
-CompressExposures(event, widget, pd)
+CompressExposures(event, widget)
 Widget widget;
 XEvent * event;
-XtPerDisplay pd;
 {
     CheckExposeInfo info;
     int count;
     Display* dpy = XtDisplay (widget);
+    XtPerDisplay pd = _XtGetPerDisplay(dpy);
 
     XtAddExposureToRegion(event, pd->region);
 
@@ -1120,14 +1108,12 @@ static Widget LookupSpringLoaded(grabList)
     return NULL;
 }
 
-static Boolean DispatchEvent(event, widget, mask, pd)
+static Boolean DispatchEvent(event, widget)
     XEvent* event;
     Widget widget;
-    EventMask mask;
-    XtPerDisplay pd;
 {
 
-    if (mask == EnterWindowMask &&
+    if (event->type == EnterNotify &&
 	    widget->core.widget_class->core_class.compress_enterleave) {
 	if (XPending(event->xcrossing.display)) {
 	    XEvent nextEvent;
@@ -1159,7 +1145,7 @@ static Boolean DispatchEvent(event, widget, mask, pd)
 	}
     }
 
-    return DispatchEventToWidget(event, widget, mask, pd);
+    return XtDispatchEventToWidget(widget, event);
 }
 
 typedef enum _GrabType {pass, ignore, remap} GrabType;
@@ -1168,35 +1154,28 @@ static Boolean DefaultDispatcher(event)
     XEvent  *event;
 {
     register    Widget widget;
-    EventMask   mask;
     GrabType    grabType;
-    Widget	dspWidget;
-    XtPerDisplay pd;
     XtPerDisplayInput pdi;
     XtGrabList  grabList;
 
-    mask = _XtConvertTypeToMask(event->xany.type);
     /* the default dispatcher discards all extension events */
-    if (mask == NoEventMask) return False;
-
-    widget = XtWindowToWidget (event->xany.display, event->xany.window);
-    pd = _XtGetPerDisplay(event->xany.display);
-    pdi = _XtGetPerDisplayInput(event->xany.display);
-    grabList = *_XtGetGrabList(pdi);
+    if (event->type >= LASTEvent)
+	return False;
 
     grabType = pass;
-    switch (event->xany.type) {
+    switch (event->type) {
       case KeyPress:
       case KeyRelease:
       case ButtonPress:
       case ButtonRelease:	grabType = remap;
 				break;
-      case MotionNotify:	grabType = ignore;
-	                        mask |= (event->xmotion.state & KnownButtons);
-				break;
+      case MotionNotify:
       case EnterNotify:		grabType = ignore;
 	                        break;
     }
+    widget = XtWindowToWidget (event->xany.display, event->xany.window);
+    pdi = _XtGetPerDisplayInput(event->xany.display);
+    grabList = *_XtGetGrabList(pdi);
 
     if (widget == NULL) {
 	if (grabType != remap)
@@ -1206,7 +1185,7 @@ static Boolean DefaultDispatcher(event)
 	else if ((widget = LookupSpringLoaded(grabList)) != NULL) {
 	    if (XFilterEvent(event, XtWindow(widget)))
 		return True;
-	    return DispatchEventToWidget(event, widget, mask, pd);
+	    return XtDispatchEventToWidget(widget, event);
 	}
 	return XFilterEvent(event, None);
     }
@@ -1215,30 +1194,31 @@ static Boolean DefaultDispatcher(event)
       case pass:
 	if (XFilterEvent(event, XtWindow(widget)))
 	    return True;
-	return DispatchEventToWidget(event, widget, mask, pd);
+	return XtDispatchEventToWidget(widget, event);
 
       case ignore:
 	if ((grabList == NULL || _XtOnGrabList(widget, grabList))
 	    && XtIsSensitive(widget)) {
 	    if (XFilterEvent(event, XtWindow(widget)))
 		return True;
-	    return DispatchEvent(event, widget, mask, pd);
+	    return DispatchEvent(event, widget);
 	}
 	return False;
 
       case remap: {
-	  Boolean was_dispatched = False;
-	  extern Widget _XtFindRemapWidget();
-	  extern void _XtUngrabBadGrabs();
+	  Boolean	was_dispatched = False;
+	  Widget	dspWidget;
+	  EventMask	mask = _XtConvertTypeToMask(event->type);
+	  extern Widget	_XtFindRemapWidget();
+	  extern void	_XtUngrabBadGrabs();
 
 	  dspWidget = _XtFindRemapWidget(event, widget, mask, pdi);
 	    
 	  if ((grabList == NULL || _XtOnGrabList(dspWidget, grabList))
 	      && XtIsSensitive(dspWidget)) {
-	      if (XFilterEvent(event, XtWindow(widget)))
+	      if (XFilterEvent(event, XtWindow(dspWidget)))
 		  return True;
-	      was_dispatched = DispatchEventToWidget(event, dspWidget,
-						     mask, pd);
+	      was_dispatched = XtDispatchEventToWidget(dspWidget, event);
 	  }
 	  else _XtUngrabBadGrabs(event, widget, mask, pdi);
 		
@@ -1249,7 +1229,7 @@ static Boolean DefaultDispatcher(event)
 	  if (widget != NULL && widget != dspWidget) {
 	      if (XFilterEvent(event, XtWindow(widget)))
 		  return True;
-	      was_dispatched |= DispatchEventToWidget(event, widget, mask, pd);
+	      was_dispatched |= XtDispatchEventToWidget(widget, event);
 	  }
 	  return was_dispatched;
       }
@@ -1270,7 +1250,7 @@ Boolean XtDispatchEvent (event)
     XtEventDispatchProc dispatch = DefaultDispatcher;
     void _XtRefreshMapping();
 
-    switch (event->xany.type) {
+    switch (event->type) {
       case KeyPress:
       case KeyRelease:	   time = event->xkey.time;		break;
       case ButtonPress:
@@ -1287,7 +1267,7 @@ Boolean XtDispatchEvent (event)
     pd->last_event = *event;
 
     if (pd->dispatcher_list) {
-	dispatch = pd->dispatcher_list[event->xany.type];
+	dispatch = pd->dispatcher_list[event->type];
 	if (dispatch == NULL) dispatch = DefaultDispatcher;
     }
     was_dispatched = (*dispatch)(event);
@@ -1512,9 +1492,7 @@ void _XtSendFocusEvent(child, type)
 	event.detail = NotifyAncestor;
 	if (XFilterEvent((XEvent*)&event, XtWindow(child)))
 	    return;
-	DispatchEventToWidget((XEvent*)&event, child,
-				 _XtConvertTypeToMask(type),
-				 _XtGetPerDisplay(dpy));
+	XtDispatchEventToWidget(child, (XEvent*)&event);
     }
 }
 
