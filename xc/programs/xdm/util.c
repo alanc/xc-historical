@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: util.c,v 1.1 88/11/23 17:00:28 keith Exp $
+ * $XConsortium: util.c,v 1.2 88/12/15 18:32:23 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -24,6 +24,10 @@
  * various utility routines
  */
 
+# include   <sys/signal.h>
+
+extern void	free ();
+
 printEnv (e)
 char	**e;
 {
@@ -36,9 +40,9 @@ makeEnv (name, value)
 char	*name;
 char	*value;
 {
-	char	*result, *malloc ();
+	char	*result, *malloc (), *sprintf ();
 
-	result = malloc (strlen (name) + strlen (value) + 2);
+	result = malloc ((unsigned) (strlen (name) + strlen (value) + 2));
 	if (!result) {
 		LogOutOfMem ("makeEnv");
 		return 0;
@@ -72,7 +76,6 @@ setEnv (e, name, value)
 	char	**new, **old;
 	char	*newe;
 	int	envsize;
-	int	i;
 	int	l;
 	char	*malloc (), *realloc ();
 
@@ -92,7 +95,8 @@ setEnv (e, name, value)
 			return e;
 		}
 		envsize = old - e;
-		new = (char **) realloc (e, (envsize + 2) * sizeof (char *));
+		new = (char **) realloc ((char *) e,
+				(unsigned) ((envsize + 2) * sizeof (char *)));
 	} else {
 		envsize = 0;
 		new = (char **) malloc (2 * sizeof (char *));
@@ -134,8 +138,9 @@ char	*string;
 	for (;;) {
 		if (!*string || isblank (*string)) {
 			if (word != string) {
-				argv = (char **) realloc ((char *) argv, (i + 2) * sizeof (char *));
-				save = malloc (string - word + 1);
+				argv = (char **) realloc ((char *) argv,
+					(unsigned) ((i + 2) * sizeof (char *)));
+				save = malloc ((unsigned) (string - word + 1));
 				if (!argv || !save) {
 					LogOutOfMem ("parseArgs");
 					if (argv)
@@ -157,3 +162,20 @@ char	*string;
 	argv[i] = 0;
 	return argv;
 }
+
+CleanUpChild ()
+{
+#ifdef SYSV
+	setpgrp ();
+#else
+	setpgrp (0, getpid ());
+	sigsetmask (0);
+#endif
+	(void) signal (SIGCHLD, SIG_DFL);
+	(void) signal (SIGTERM, SIG_DFL);
+	(void) signal (SIGPIPE, SIG_DFL);
+	(void) signal (SIGALRM, SIG_DFL);
+	(void) signal (SIGHUP, SIG_DFL);
+	CloseOnFork ();
+}
+
