@@ -1,5 +1,5 @@
 /*
- * $XConsortium: widgets.c,v 1.17 91/07/09 09:39:45 rws Exp $
+ * $XConsortium: widgets.c,v 1.18 91/07/09 09:46:52 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -549,7 +549,7 @@ WNode * node;
 static void
 MakeBoxLookNice(dot, star, any, single, name, class, endbox)
 Widget dot, star, any, single, name, class;
-Boolean endbox;
+int endbox;
 {
 
 #define MAX_HDIST 3
