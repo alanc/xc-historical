@@ -1,4 +1,4 @@
-/* $XConsortium: GCOps.c,v 1.1 93/07/12 15:28:26 rws Exp $ */
+/* $XConsortium: GCOps.c,v 1.2 93/07/20 10:24:05 rws Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -100,7 +100,7 @@ void xnestPutImage(pDrawable, pGC, depth, x, y, w, h, leftPad, format, pImage)
   XImage *ximage;
   
   ximage = XCreateImage(xnestDisplay, xnestDefaultVisual(pDrawable->pScreen), 
-			depth, format, leftPad / depth, (char *)pImage, 
+			depth, format, leftPad, (char *)pImage, 
 			w, h, BitmapPad(xnestDisplay), 0);
   
   if (ximage) {
