@@ -33,9 +33,10 @@ static int charsPerLine, totalLines;
 #define SEGS 3
 
 
-Bool InitText(xp, p)
+int InitText(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     int		i, j;
     char	ch;
@@ -44,7 +45,7 @@ Bool InitText(xp, p)
     font = XLoadQueryFont(xp->d, p->font);
     if (font == NULL) {
 	printf("Could not load font '%s', benchmark omitted\n", p->font);
-	return False;
+	return 0;
     }
 
     bfont = NULL;
@@ -52,7 +53,7 @@ Bool InitText(xp, p)
 	bfont = XLoadQueryFont(xp->d, p->bfont);
 	if (bfont == NULL) {
 	    printf("Could not load font '%s', benchmark omitted\n", p->bfont);
-	    return False;
+	    return 0;
 	}
     }
 
@@ -72,7 +73,7 @@ Bool InitText(xp, p)
     p->objects = charsPerLine;
 
     totalLines = '\177' - ' ' + 1;
-    if (totalLines > p->reps) totalLines = p->reps;
+    if (totalLines > reps) totalLines = reps;
 
     charBuf = (char **) malloc(totalLines*sizeof (char *));
     if (p->special)
@@ -100,18 +101,19 @@ Bool InitText(xp, p)
 	    items[i*SEGS+2].font = font->fid;
 	}
     }
-    return True;
+    return reps;
 }
 
-void DoText(xp, p)
+void DoText(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     int     i, line, startLine;
 
     startLine = 0;
     line = 0;
-    for (i = 0; i != p->reps; i++) {
+    for (i = 0; i != reps; i++) {
 	XDrawString(
 	    xp->d, xp->w, xp->fggc, XPOS, ypos, charBuf[line], charsPerLine);
 	ypos += height;
@@ -125,15 +127,16 @@ void DoText(xp, p)
     }
 }
 
-void DoPolyText(xp, p)
+void DoPolyText(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     int     i, line, startLine;
 
     startLine = 0;
     line = 0;
-    for (i = 0; i != p->reps; i++) {
+    for (i = 0; i != reps; i++) {
 	XDrawText(
 	    xp->d, xp->w, xp->fggc, XPOS, ypos, &items[line*SEGS], SEGS);
 	ypos += height;
@@ -147,15 +150,16 @@ void DoPolyText(xp, p)
     }
 }
 
-void DoImageText(xp, p)
+void DoImageText(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     int     i, line, startLine;
 
     startLine = 0;
     line = 0;
-    for (i = 0; i != p->reps; i++) {
+    for (i = 0; i != reps; i++) {
 	XDrawImageString(
 	    xp->d, xp->w, xp->fggc, XPOS, ypos, charBuf[line], charsPerLine);
 	ypos += height;
