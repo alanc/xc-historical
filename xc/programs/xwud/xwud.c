@@ -1,4 +1,4 @@
-/* $XConsortium: xwud.c,v 1.41 91/02/02 17:42:27 rws Exp $ */
+/* $XConsortium: xwud.c,v 1.42 91/02/02 17:47:22 rws Exp $ */
 /* Copyright 1985, 1986, 1988 Massachusetts Institute of Technology */
 
 /*
@@ -38,6 +38,24 @@ usage()
     fprintf(stderr, "            [-new] [-std <maptype>] [-raw] [-vis <vis-type-or-id>]\n");
     fprintf(stderr, "            [-help] [-rv] [-plane <number>] [-fg <color>] [-bg <color>]\n");
     exit(1);
+}
+
+Bool
+Read(ptr, size, nitems, stream)
+    char *ptr;
+    int size;
+    int nitems;
+    FILE *stream;
+{
+    size *= nitems;
+    while (size) {
+	nitems = fread(ptr, 1, size, stream);
+	if (nitems <= 0)
+	    return False;
+	size -= nitems;
+	ptr += nitems;
+    }
+    return True;
 }
 
 main(argc, argv)
@@ -173,7 +191,7 @@ main(argc, argv)
     /*
      * Read in header information.
      */
-    if(fread((char *)&header, sizeof(header), 1, in_file) != 1)
+    if(!Read((char *)&header, sizeof(header), 1, in_file))
       Error("Unable to read dump file header.");
 
     if (*(char *) &swaptest)
@@ -195,7 +213,7 @@ main(argc, argv)
       Error("Can't malloc window name storage.");
 
      /* read in window name */
-    if(fread(win_name, sizeof(char), win_name_size, in_file) != win_name_size)
+    if(!Read(win_name, sizeof(char), win_name_size, in_file))
       Error("Unable to read window name from dump file.");
 
     /* initialize the input image */
@@ -221,7 +239,7 @@ main(argc, argv)
 	colors = (XColor *)malloc((unsigned) ncolors * sizeof(XColor));
 	if (!colors)
 	    Error("Can't malloc color table");
-	if(fread((char *) colors, sizeof(XColor), ncolors, in_file) != ncolors)
+	if(!Read((char *) colors, sizeof(XColor), ncolors, in_file))
 	  Error("Unable to read color map from dump file.");
 	if (*(char *) &swaptest) {
 	    for (i = 0; i < ncolors; i++) {
@@ -237,8 +255,7 @@ main(argc, argv)
       Error("Can't malloc data buffer.");
 
     /* read in the image data */
-    count = fread(buffer, sizeof(char), (int)buffer_size, in_file);
-    if (count != buffer_size)
+    if (!Read(buffer, sizeof(char), (int)buffer_size, in_file))
         Error("Unable to read pixmap from dump file.");
 
      /* close the input file */
