@@ -1,6 +1,6 @@
-/* $XConsortium: XLbx.h,v 1.2 94/02/20 10:30:43 dpw Exp $ */
+/* $XConsortium: XLbx.h,v 1.3 94/03/08 16:57:09 dpw Exp $ */
 /*
- * $NCDId: @(#)XLbx.h,v 1.15 1994/03/04 02:29:51 dct Exp $
+ * $NCDId: @(#)XLbx.h,v 1.16 1994/03/07 21:40:41 lemke Exp $
  *
  * Copyright 1992 Network Computing Devices
  *
@@ -54,7 +54,7 @@
 #define	X_LbxQueryFont			22
 #define	X_LbxChangeProperty		23
 #define	X_LbxGetProperty		24
-#define	X_LbxPropertyData		25
+#define	X_LbxTagData			25
 
 #define LbxEvent			0
 #define LbxNumberEvents			(LbxEvent + 1)
@@ -67,6 +67,7 @@
 #define LbxCloseEvent			1
 #define LbxDeltaEvent			2
 #define LbxInvalidateTagEvent		3
+#define LbxSendTagDataEvent		4
 
 /* Lbx compression schemes */
 #define LbxCompressNone			0

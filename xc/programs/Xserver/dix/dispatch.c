@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.61 94/02/16 12:31:28 rws Exp $ */
+/* $XConsortium: dispatch.c,v 5.62 94/02/23 15:48:05 dpw Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -3543,6 +3543,14 @@ ProcInitialConnection(client)
     ResetCurrentRequest(client);
     return (client->noClientException);
 }
+
+#ifdef LBX
+void
+IncrementClientCount()
+{
+    nClients++;
+}
+#endif
 
 int
 SendConnSetup(client, reason)

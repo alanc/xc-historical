@@ -19,10 +19,11 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * 
+ * $NCDId: @(#)compress_lzw.c,v 1.3 1994/03/08 01:37:21 dct Exp $
  */
 /* Copyright 1988, 1989, 1990 Network Computing Devices, Inc.  All rights reserved. */
 
-/* $XConsortium: compress_lzw.c,v 1.3 94/02/20 10:32:58 dpw Exp $ */
+/* $XConsortium: compress_lzw.c,v 1.4 94/03/08 16:58:36 dpw Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/Xfuncs.h>
@@ -45,6 +46,13 @@ extern int errno;
 #include "lbxbufstr.h"
 
 void LzwFree();
+
+#ifdef LBX_STATS
+extern int lzw_out_compressed;
+extern int lzw_out_plain;
+extern int lzw_in_compressed;
+extern int lzw_in_plain;
+#endif
 
 #define BYTESTREAM_DAEMON
 
@@ -1007,6 +1015,9 @@ LzwFlush(txport)
 	compress_flush(priv);
 	len = outputbuf - (packet + LZW_PACKET_HDRLEN);
 	LZW_PUT_PKTHDR(packet, len, TRUE);
+#ifdef LBX_STATS
+	lzw_out_compressed += len;
+#endif
 	CommitOutBuf(&comp->outbuf, len + LZW_PACKET_HDRLEN);
 	in_count = 0;
     }
@@ -1095,6 +1106,9 @@ LzwWrite(txport, buffer, buflen)
 	}
 
 	len = MIN(LZW_MAX_PLAIN - in_count, lenleft);
+#ifdef LBX_STATS
+	lzw_out_plain += len;
+#endif
 	inputbuf = p;
 	inputbufend = p + len;
 	compress(priv);
@@ -1148,10 +1162,14 @@ LzwRead(txport, buffer, buflen)
 	    inputbuf = packet + LZW_PACKET_HDRLEN;
 	    inputbufend = inputbuf + retval;
 	    newpacket = TRUE;
+#ifdef LBX_STATS
+	    if (LZW_COMPRESSED(packet))
+		lzw_in_compressed += retval - LZW_PACKET_HDRLEN;
+#endif
 	}
 	else
 	    newpacket = FALSE;
-	    
+
 	if (LZW_COMPRESSED(packet))
 	    decompress(priv, newpacket);
 	else {
@@ -1159,13 +1177,20 @@ LzwRead(txport, buffer, buflen)
 	    memmove(outputbuf, inputbuf, len);
 	    inputbuf += len;
 	    outputbuf += len;
+#ifdef LBX_STATS
+	    lzw_in_plain -= len;	/* gets added back in later */
+#endif
 	}
     }
 
     if ((len = outputbuf - buffer) == 0)
 	return retval;
-    else
+    else {
+#ifdef LBX_STATS
+	lzw_in_plain += len;
+#endif
 	return len;
+    }
 }
 
 int

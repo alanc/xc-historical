@@ -1,4 +1,4 @@
-/* $XConsortium: XIE.h,v 1.3 94/01/12 19:36:23 rws Exp $ */
+/* $XConsortium: lbxtags.c,v 1.2 94/02/20 10:50:33 dpw Exp $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -20,13 +20,17 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDId: @(#)lbxtags.c,v 1.3 1994/02/11 00:10:07 lemke Exp $
+ * $NCDId: @(#)lbxtags.c,v 1.8 1994/03/08 18:27:54 lemke Exp $
  */
 
 #include "X.h"
 #include "misc.h"
+#include "lbxdata.h"
 #include "resource.h"
 #include "lbxtags.h"
+#define _XLBX_SERVER_
+#include "lbxstr.h"
+
 #ifdef NCD
 #include <ncd/assert.h>
 #else
@@ -43,6 +47,17 @@ tag_free(data, id)
     pointer     data;
     XID         id;
 {
+    TagData     td = (TagData) data;
+    FontTagInfoPtr	ftip;
+
+    /* some types need to be freed, others are shared */
+    if (td->data_type == LbxTagTypeFont) {
+	/* remove any back links */
+	ftip = (FontTagInfoPtr) td->tdata;
+	FontSetPrivate(ftip->pfont, lbx_font_private, (pointer) 0);
+	xfree(ftip->replydata);
+	xfree(ftip);
+    }
     xfree(data);
 }
 
@@ -97,7 +112,7 @@ Bool
 TagSaveTag(tid, dtype, size, data)
     XID         tid;
     int         dtype;
-    int		size;
+    int         size;
     pointer     data;
 {
     TagData     td;
@@ -120,6 +135,12 @@ void
 TagDeleteTag(tid)
     XID         tid;
 {
+    TagData     td;
+    FontTagInfoPtr	ftip;
+
+    td = (TagData) LookupIDByType(tid, TagResType);
+    if (!td)			/* some of the prop tags may not be all there */
+	return;
     FreeResource(tid, 0);
 }
 

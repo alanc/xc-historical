@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: property.c,v 5.11 93/09/25 11:42:22 rws Exp $ */
+/* $XConsortium: property.c,v 5.13 94/02/20 10:39:43 dpw Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -201,8 +201,13 @@ ProcChangeProperty(client)
 	return(BadAtom);
     }
 
+#ifdef LBX
+    err = LbxChangeWindowProperty(client, pWin, stuff->property, stuff->type,
+	 (int)format, (int)mode, len, TRUE, (pointer)&stuff[1], TRUE, NULL);
+#else
     err = ChangeWindowProperty(pWin, stuff->property, stuff->type, (int)format,
 			       (int)mode, len, (pointer)&stuff[1], TRUE);
+#endif
     if (err != Success)
 	return err;
     else
@@ -476,6 +481,13 @@ ProcGetProperty(client)
 		    WriteReplyToClient(client, sizeof(xGenericReply), &reply);
 		    return(Success);
 		}
+#ifdef LBX
+		/* make sure we have the current value */                       
+		if (pProp->owner_pid != 0) {                                        
+		    LbxStallPropRequest(client, pProp);
+                    return client->noClientException;
+		}                                              
+#endif
 
 	    /*
              *  Return type, format, value to client

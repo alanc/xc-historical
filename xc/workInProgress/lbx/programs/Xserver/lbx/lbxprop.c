@@ -1,4 +1,4 @@
-/* $XConsortium: lbxprop.c,v 1.2 94/02/20 10:51:41 dpw Exp $ */
+/* $XConsortium: lbxprop.c,v 1.3 94/02/23 15:53:05 dpw Exp $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -20,7 +20,7 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDId: @(#)lbxprop.c,v 1.3 1994/02/11 00:09:36 lemke Exp $
+ * $NCDId: @(#)lbxprop.c,v 1.9 1994/03/08 19:22:31 lemke Exp $
  *
  * Author:  Dave Lemke, Network Computing Devices
  */
@@ -46,20 +46,257 @@
 #include "lbxtags.h"
 #include "Xfuncproto.h"
 
-extern int (*ProcVector[256])();
+extern int  (*ProcVector[256]) ();
 extern void (*ReplySwapVector[256]) ();
 extern void CopySwap16Write(), CopySwap32Write(), Swap32Write();
-extern int fWriteToClient();
+extern int  fWriteToClient();
+
+#ifdef NCD	/* XXX this should be elsewhere */
+#define	memmove(dst,src,len)	bcopy(src,dst,len)
+#endif
+
+void
+LbxStallPropRequest(client, pProp)
+    ClientPtr	client;
+    PropertyPtr	pProp;
+{
+    LbxQueryTagData(client, pProp->owner_pid, pProp->tag_id, LbxTagTypeProperty, pProp);    
+    ResetCurrentRequest(client);			        
+    client->sequence--; 				        
+
+/* XXX this won't work too well went done to a proxy client.
+ * need finer grain of control
+ */
+    IgnoreClient(client);				        
+}
+
+int
+LbxChangeWindowProperty(client, pWin, property, type, format, mode, len,
+			have_data, value, sendevent, tag)
+    ClientPtr   client;
+    WindowPtr   pWin;
+    Atom        property,
+                type;
+    int         format,
+                mode;
+    unsigned long len;
+    Bool        have_data;
+    pointer     value;
+    Bool        sendevent;
+    XID        *tag;
+{
+    PropertyPtr pProp;
+    xEvent      event;
+    int         sizeInBytes;
+    int         totalSize;
+    pointer     data;
+    XID         tid = 0;
+    int         owner = 0;
+
+    sizeInBytes = format >> 3;
+    totalSize = len * sizeInBytes;
+
+    /* first see if property already exists */
+
+    pProp = wUserProps(pWin);
+    while (pProp) {
+	if (pProp->propertyName == property)
+	    break;
+	pProp = pProp->next;
+    }
+    if (!pProp) {		/* just add to list */
+	if (!pWin->optional && !MakeWindowOptional(pWin))
+	    return (BadAlloc);
+	pProp = (PropertyPtr) xalloc(sizeof(PropertyRec));
+	if (!pProp)
+	    return (BadAlloc);
+	data = (pointer) xalloc(totalSize);
+	if (!data && len) {
+	    xfree(pProp);
+	    return (BadAlloc);
+	}
+	pProp->propertyName = property;
+	pProp->type = type;
+	pProp->format = format;
+	pProp->data = data;
+	if (have_data) {
+	    if (len)
+		memmove((char *) data, (char *) value, totalSize);
+	} else {
+	    owner = LbxProxyID(client);
+	    tid = TagNewTag();
+	    if (!tid) {
+		xfree(pProp);
+		xfree(pProp->data);
+		return BadAlloc;
+	    }
+	    if (!TagSaveTag(tid, LbxTagTypeProperty, totalSize,
+			    pProp->data)) {
+		xfree(pProp);
+		xfree(pProp->data);
+		return BadAlloc;
+	    }
+	    TagMarkProxy(tid, owner);
+	}
+	pProp->tag_id = tid;
+	pProp->owner_pid = owner;
+	pProp->size = len;
+	pProp->next = pWin->optional->userProps;
+	pWin->optional->userProps = pProp;
+    } else {
+	/*
+	 * To append or prepend to a property the request format and type must
+	 * match those of the already defined property.  The existing format
+	 * and type are irrelevant when using the mode "PropModeReplace" since
+	 * they will be written over.
+	 */
+
+	if ((format != pProp->format) && (mode != PropModeReplace))
+	    return (BadMatch);
+	if ((pProp->type != type) && (mode != PropModeReplace))
+	    return (BadMatch);
+
+	/* if its a modify instead of replace, make sure we have the
+         * current value
+         */
+        if ((mode != PropModeReplace) && (pProp->owner_pid != 0)) {
+	    LbxStallPropRequest(client, pProp);
+            return(client->noClientException);
+        }
+
+	/* make sure any old tag is flushed first */
+	if (pProp->tag_id) {
+	    LbxFlushPropertyTag(pProp->tag_id);
+	    pProp->tag_id = 0;
+	}
+	if (mode == PropModeReplace) {
+	    if (totalSize != pProp->size * (pProp->format >> 3)) {
+		data = (pointer) xrealloc(pProp->data, totalSize);
+		if (!data && len)
+		    return (BadAlloc);
+		pProp->data = data;
+	    }
+	    if (have_data) {
+		if (len)
+		    memmove((char *) pProp->data, (char *) value, totalSize);
+	    } else {
+		owner = LbxProxyID(client);
+		tid = TagNewTag();
+		if (!tid) {
+		    xfree(pProp);
+		    xfree(pProp->data);
+		    return BadAlloc;
+		}
+		if (!TagSaveTag(tid, LbxTagTypeProperty, totalSize,
+				pProp->data)) {
+		    xfree(pProp);
+		    xfree(pProp->data);
+		    return BadAlloc;
+		}
+		TagMarkProxy(tid, owner);
+	    }
+	    pProp->tag_id = tid;
+	    pProp->owner_pid = owner;
+	    pProp->size = len;
+	    pProp->type = type;
+	    pProp->format = format;
+	} else if (len == 0) {
+	    /* do nothing */
+	} else if (mode == PropModeAppend) {
+	    data = (pointer) xrealloc(pProp->data,
+				      sizeInBytes * (len + pProp->size));
+	    if (!data)
+		return (BadAlloc);
+	    pProp->data = data;
+	    memmove(&((char *) data)[pProp->size * sizeInBytes],
+		    (char *) value,
+		    totalSize);
+	    pProp->size += len;
+	} else if (mode == PropModePrepend) {
+	    data = (pointer) xalloc(sizeInBytes * (len + pProp->size));
+	    if (!data)
+		return (BadAlloc);
+	    memmove(&((char *) data)[totalSize], (char *) pProp->data,
+		    (int) (pProp->size * sizeInBytes));
+	    memmove((char *) data, (char *) value, totalSize);
+	    xfree(pProp->data);
+	    pProp->data = data;
+	    pProp->size += len;
+	}
+    }
+    if (sendevent) {
+	event.u.u.type = PropertyNotify;
+	event.u.property.window = pWin->drawable.id;
+	event.u.property.state = PropertyNewValue;
+	event.u.property.atom = pProp->propertyName;
+	event.u.property.time = currentTime.milliseconds;
+	DeliverEvents(pWin, &event, 1, (WindowPtr) NULL);
+    }
+    if (tag)
+	*tag = tid;
+    return (Success);
+}
 
 int
 LbxChangeProperty(client)
-    ClientPtr	client;
+    ClientPtr   client;
 {
+    WindowPtr   pWin;
+    char        format,
+                mode;
+    unsigned long len;
+    int         err;
+    XID         newtag;
+    xLbxChangePropertyReply rep;
+
+    REQUEST(xLbxChangePropertyReq);
+
+    REQUEST_AT_LEAST_SIZE(xLbxChangePropertyReq);
+    UpdateCurrentTime();
+    format = stuff->format;
+    mode = stuff->mode;
+    if ((mode != PropModeReplace) && (mode != PropModeAppend) &&
+	    (mode != PropModePrepend)) {
+	client->errorValue = mode;
+	return BadValue;
+    }
+    if ((format != 8) && (format != 16) && (format != 32)) {
+	client->errorValue = format;
+	return BadValue;
+    }
+    len = stuff->nUnits;
+    if (len > ((0xffffffff - sizeof(xChangePropertyReq)) >> 2))
+	return BadLength;
+
+    pWin = (WindowPtr) LookupWindow(stuff->window, client);
+    if (!pWin)
+	return (BadWindow);
+    if (!ValidAtom(stuff->property)) {
+	client->errorValue = stuff->property;
+	return (BadAtom);
+    }
+    if (!ValidAtom(stuff->type)) {
+	client->errorValue = stuff->type;
+	return (BadAtom);
+    }
+    err = LbxChangeWindowProperty(client, pWin, stuff->property, stuff->type,
+		   (int) format, (int) mode, len, FALSE, (pointer) &stuff[1],
+				  TRUE, &newtag);
+    if (err)
+	return err;
+
+    rep.type = X_Reply;
+    rep.sequenceNumber = client->sequence;
+    rep.length = 0;
+    rep.tag = newtag;
+    WriteReplyToClient(client, sizeof(xLbxChangePropertyReply), &rep);
+
+    return client->noClientException;
 }
 
 int
 LbxGetProperty(client)
-    ClientPtr	client;
+    ClientPtr   client;
 {
     PropertyPtr pProp,
                 prevProp;
@@ -117,19 +354,18 @@ LbxGetProperty(client)
 		    WriteReplyToClient(client, sizeof(xGenericReply), &reply);
 		    return (Success);
 		}
-/* XXX if serve doesn't have data, go get it from owner */
-#ifdef morework
-if (pProp->owner_pid)
-{
-suspend()
-send query to owner
-restart
-}
-#endif
+
+		/* make sure we have the current value */
+		if ((pProp->owner_pid != 0) && 
+                	(pProp->owner_pid != LbxProxyID(client))) {
+		    LbxStallPropRequest(client, pProp);
+		    return(client->noClientException);
+		}
+
 		/*
 		 * Return type, format, value to client
 		 */
-		n = (pProp->format / 8) * pProp->size;	/* size (bytes) of prop */
+		            n = (pProp->format / 8) * pProp->size;	/* size (bytes) of prop */
 		ind = stuff->longOffset << 2;
 
 		/*
@@ -166,7 +402,7 @@ restart
                 reply.tag = pProp->tag_id;
 
 		if (stuff->delete && (reply.bytesAfter == 0)) {
-		    LbxFlushPropertyTag(client, tid);
+		    LbxFlushPropertyTag(tid);
 		}
 		if (stuff->delete && (reply.bytesAfter == 0)) {	/* send the event */
 		    xEvent      event;
@@ -224,31 +460,8 @@ restart
 }
 
 int
-LbxPropertyData(client)
-    ClientPtr	client;
-{
-    PropertyPtr prop;
-    TagData     td;
-    pointer     data;
-    int         len;
-
-    REQUEST(xLbxPropertyDataReq);
-
-    data = (pointer) &stuff[1];
-
-    td = TagGetTag(stuff->tag);
-    if (td) {			/* may have been destroyed out from under us */
-	prop = (PropertyPtr) td->tdata;
-        len = prop->size * prop->format/8;
-	bcopy((char *) data, (char *) prop->data, len);
-    }
-    return client->noClientException;
-}
-
-
-int
 LbxFlushPropertyTag(tid)
-    XID	tid;
+    XID         tid;
 {
     LbxSendInvalidateTagToProxies(tid, LbxTagTypeProperty);
     TagDeleteTag(tid);

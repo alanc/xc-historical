@@ -1,6 +1,6 @@
-/* $XConsortium: lbxstr.h,v 1.2 94/02/20 10:30:53 dpw Exp $ */
+/* $XConsortium: lbxstr.h,v 1.3 94/03/08 16:57:13 dpw Exp $ */
 /*
- * $NCDId: @(#)lbxstr.h,v 1.17 1994/03/04 02:29:53 dct Exp $
+ * $NCDId: @(#)lbxstr.h,v 1.18 1994/03/07 21:40:43 lemke Exp $
  *
  * Copyright 1992 Network Computing Devices
  *
@@ -278,14 +278,16 @@ typedef struct {
 } xLbxGetPropertyReply;
 #define sz_xLbxGetPropertyReply	32
 
-typedef struct _LbxPropertyData {
+typedef struct _LbxTagData {
     CARD8	reqType;	/* always LbxReqCode */
-    CARD8	lbxReqType;	/* always X_LbxPropertyData */
+    CARD8	lbxReqType;	/* always X_LbxTagData */
     CARD16	length B16;
     XID		tag B32;
+    CARD32	real_length B32;
+    /* XXX need other info?  type?  format? */
     /* data */
-} xLbxPropertyDataReq;
-#define	sz_xLbxPropertyDataReq	8
+} xLbxTagDataReq;
+#define	sz_xLbxTagDataReq	12
 
 typedef struct _LbxQueryTag {
     CARD8	reqType;	/* always LbxReqCode */

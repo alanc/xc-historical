@@ -1,4 +1,4 @@
-/* $XConsortium: XIE.h,v 1.3 94/01/12 19:36:23 rws Exp $ */
+/* $XConsortium: lbxdix.c,v 1.2 94/02/20 10:49:24 dpw Exp $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -20,7 +20,7 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDId: @(#)lbxdix.c,v 1.11 1994/02/11 00:10:55 lemke Exp $
+ * $NCDId: @(#)lbxdix.c,v 1.17 1994/03/08 02:16:29 dct Exp $
  *
  * Author:  Dave Lemke, Network Computing Devices
  */
@@ -42,20 +42,26 @@
 #include "servermd.h"
 #include "dixfontstr.h"
 #include "gcstruct.h"
+#include "scrnintstr.h"
+#include "windowstr.h"
+#include "propertyst.h"
 #define _XLBX_SERVER_
 #include "lbxstr.h"
 #include "lbxserve.h"
 #include "lbxtags.h"
+#include "lbxdata.h"
+#include "assert.h"
 #include "Xfuncproto.h"
 
 extern void CopySwap32Write();
-extern int (*ProcVector[256])();
+extern int  (*ProcVector[256]) ();
+extern int  (*SwappedProcVector[256]) ();
 extern void (*ReplySwapVector[256]) ();
 
 /* XXX should be per-proxy */
 static int  motion_allowed_events = 0;
 
-static int	lbx_font_private;
+int         lbx_font_private;
 
 void
 LbxDixInit()
@@ -130,6 +136,120 @@ LbxIncrementPixel(client, cmap, pixel, amount)
 	AllocColor(pmap, &red, &green, &blue, &pixel, client);
 }
 
+static int  conn_info_tag;
+
+extern WindowPtr *WindowTable;
+extern xConnSetupPrefix connSetupPrefix;
+extern char *ConnectionInfo;
+extern int  connBlockScreenStart;
+
+int
+LbxSendConnSetup(client, reason)
+    ClientPtr   client;
+    char       *reason;
+{
+    xWindowRoot *root;
+    TagData     td;
+    pointer     tagdata;
+    int         dlength;
+    Bool        tag_known = FALSE,
+                send_data;
+    int         n;
+    int         i;
+    CARD32      dataBuf[1 + MAXSCREENS];
+    xLbxConnSetupPrefix csp;
+
+    if (reason)
+	return SendConnSetup(client, reason);
+
+    if (!conn_info_tag) {
+	conn_info_tag = TagNewTag();
+	tagdata = (pointer) ConnectionInfo;
+	dlength = connSetupPrefix.length << 2;
+	if (!TagSaveTag(conn_info_tag, LbxTagTypeConnInfo, dlength,
+			tagdata)) {
+	    /* can't save it, so report no tag */
+	    conn_info_tag = 0;
+	}
+    } else {
+	td = TagGetTag(conn_info_tag);
+	tagdata = td->tdata;
+	dlength = td->size;
+	tag_known = TagProxyMarked(conn_info_tag, LbxProxyID(client));
+    }
+    if (conn_info_tag)
+	TagMarkProxy(conn_info_tag, LbxProxyID(client));
+
+    send_data = (!conn_info_tag || !tag_known);
+
+    IncrementClientCount();
+
+    client->requestVector = client->swapped ? SwappedProcVector : ProcVector;
+    client->sequence = 0;
+    dataBuf[0] = ((xConnSetup *) ConnectionInfo)->ridBase = client->clientAsMask;
+    ((xConnSetup *) ConnectionInfo)->ridMask = RESOURCE_ID_MASK;
+    /* fill in the "currentInputMask" */
+    root = (xWindowRoot *) (ConnectionInfo + connBlockScreenStart);
+    for (i = 0; i < screenInfo.numScreens; i++) {
+	register int j;
+	register xDepth *pDepth;
+
+	dataBuf[i + 1] = root->currentInputMask =
+	    WindowTable[i]->eventMask | wOtherEventMasks(WindowTable[i]);
+	pDepth = (xDepth *) (root + 1);
+	for (j = 0; j < root->nDepths; j++) {
+	    pDepth = (xDepth *) (((char *) (pDepth + 1)) +
+				 pDepth->nVisuals * sizeof(xVisualType));
+	}
+	root = (xWindowRoot *) pDepth;
+    }
+
+    csp.success = TRUE;
+    csp.tagOnly = !send_data;
+    csp.majorVersion = connSetupPrefix.majorVersion;
+    csp.minorVersion = connSetupPrefix.minorVersion;
+    csp.tag = conn_info_tag;
+    if (send_data) {
+	csp.length = 1 + (dlength >> 2);
+    } else {
+	csp.length = 2 + screenInfo.numScreens;
+	dlength = (1 + screenInfo.numScreens) << 2;
+	tagdata = (pointer) dataBuf;
+    }
+
+#ifdef notyet
+    if (client->swapped) {
+	WriteSConnSetupPrefix(client, &connSetupPrefix);
+	WriteSConnectionInfo(client,
+			     (unsigned long) (connSetupPrefix.length << 2),
+			     ConnectionInfo);
+    }
+#endif
+
+    WriteToClient(client, sizeof(xLbxConnSetupPrefix), (char *) &csp);
+    WriteToClient(client, dlength, tagdata);
+
+#ifndef NCD
+    client->clientState = ClientStateRunning;
+    if (ClientStateCallback)
+	CallCallbacks(&ClientStateCallback, (pointer) client);
+#endif
+    return client->noClientException;
+}
+
+/*
+ * This routine should be called if any of the ConnectionInfo changes
+ */
+LbxFlushConnInfoTag()
+{
+
+    if (conn_info_tag) {
+	TagDeleteTag(conn_info_tag);
+	LbxSendInvalidateTagToProxies(conn_info_tag, LbxTagTypeConnInfo);
+	conn_info_tag = 0;
+    }
+}
+
 extern InputInfo inputInfo;
 
 static int  modifier_map_tag;
@@ -157,7 +277,7 @@ LbxGetModifierMapping(client)
 	}
     } else {
 	td = TagGetTag(modifier_map_tag);
-        tagdata = td->tdata;
+	tagdata = td->tdata;
 	tag_known = TagProxyMarked(modifier_map_tag, LbxProxyID(client));
     }
     if (modifier_map_tag)
@@ -206,8 +326,9 @@ LbxGetKeyboardMapping(client)
     TagData     td;
     pointer     tagdata;
     xLbxGetKeyboardMappingReply rep;
+
     REQUEST(xLbxGetKeyboardMappingReq);
-    KeySymsPtr curKeySyms = &inputInfo.keyboard->key->curKeySyms;
+    KeySymsPtr  curKeySyms = &inputInfo.keyboard->key->curKeySyms;
     int         dlength;
     Bool        tag_known = FALSE,
                 send_data;
@@ -219,15 +340,14 @@ LbxGetKeyboardMapping(client)
  * all the time
  */
     if ((stuff->firstKeyCode < curKeySyms->minKeyCode) ||
-        (stuff->firstKeyCode > curKeySyms->maxKeyCode)) {
+	    (stuff->firstKeyCode > curKeySyms->maxKeyCode)) {
 	client->errorValue = stuff->firstKeyCode;
 	return BadValue;
     }
     if (stuff->firstKeyCode + stuff->count > curKeySyms->maxKeyCode + 1) {
 	client->errorValue = stuff->count;
-        return BadValue;
+	return BadValue;
     }
-
     rep.type = X_Reply;
     rep.sequenceNumber = client->sequence;
     rep.keysperkeycode = curKeySyms->mapWidth;
@@ -236,7 +356,7 @@ LbxGetKeyboardMapping(client)
     if (!keyboard_map_tag) {
 	keyboard_map_tag = TagNewTag();
 	tagdata = (pointer) curKeySyms->map[(stuff->firstKeyCode -
-		curKeySyms->minKeyCode) * curKeySyms->mapWidth];
+			     curKeySyms->minKeyCode) * curKeySyms->mapWidth];
 	dlength = (curKeySyms->mapWidth * stuff->count);
 	if (!TagSaveTag(keyboard_map_tag, LbxTagTypeKeymap, dlength,
 			tagdata)) {
@@ -245,7 +365,7 @@ LbxGetKeyboardMapping(client)
 	}
     } else {
 	td = TagGetTag(keyboard_map_tag);
-        tagdata = td->tdata;
+	tagdata = td->tdata;
 	tag_known = TagProxyMarked(keyboard_map_tag, LbxProxyID(client));
     }
     if (keyboard_map_tag)
@@ -272,8 +392,8 @@ LbxGetKeyboardMapping(client)
     if (send_data) {
 	client->pSwapReplyFunc = CopySwap32Write;
 	WriteSwappedDataToClient(
-	    client,
-	    curKeySyms->mapWidth * stuff->count * sizeof(KeySym),
+				 client,
+			curKeySyms->mapWidth * stuff->count * sizeof(KeySym),
 	    &curKeySyms->map[(stuff->firstKeyCode - curKeySyms->minKeyCode) *
 			     curKeySyms->mapWidth]);
     }
@@ -292,7 +412,7 @@ LbxFlushKeyboardMapTag()
 
 int
 LbxQueryFont(client)
-    ClientPtr	client;
+    ClientPtr   client;
 {
     xQueryFontReply *reply;
     xLbxQueryFontReply lbxrep;
@@ -300,10 +420,11 @@ LbxQueryFont(client)
     register GC *pGC;
     Bool        queried_info = FALSE;
     Bool        send_data = FALSE;
-    Bool        free_reply = FALSE;
+    Bool        free_data = FALSE;
     int         rlength = 0;
-    TagData     td;
+    TagData     td = NULL;
     XID         tid;
+    FontTagInfoPtr ftip;
 
     REQUEST(xLbxQueryFontReq);
 
@@ -343,23 +464,31 @@ LbxQueryFont(client)
 	if (!reply) {
 	    return (BadAlloc);
 	}
+	free_data = TRUE;
 	queried_info = TRUE;
 	send_data = TRUE;
 	QueryFont(pFont, reply, nprotoxcistructs);
     } else {			/* just get data from tag */
-	reply = (xQueryFontReply *) td->tdata;
-	rlength = td->size;
+	ftip = (FontTagInfoPtr) td->tdata;
+	reply = ftip->replydata;
+	rlength = ftip->size;
     }
 
     if (!td) {
 	/* data allocation is done when font is first queried */
 	tid = TagNewTag();
-	if (TagSaveTag(tid, LbxTagTypeFont, rlength, (pointer) reply)) {
+	ftip = (FontTagInfoPtr) xalloc(sizeof(FontTagInfoRec));
+	if (ftip && TagSaveTag(tid, LbxTagTypeFont, sizeof(FontTagInfoRec),
+			       (pointer) ftip)) {
 	    td = TagGetTag(tid);
 	    FontSetPrivate(pFont, lbx_font_private, (pointer) td);
-	} else {		/* can't save it for later, so be sure to
-				 * clean up */
-	    free_reply = TRUE;
+	    ftip = (FontTagInfoPtr) td->tdata;
+	    ftip->pfont = pFont;
+	    ftip->size = rlength;
+	    ftip->replydata = reply;
+	    free_data = FALSE;
+	} else {
+	    xfree(ftip);
 	}
     }
     if (td) {
@@ -383,21 +512,21 @@ LbxQueryFont(client)
  */
     if (send_data)
 	WriteReplyToClient(client, rlength, reply);
-    if (free_reply)
+    if (free_data)
 	xfree(reply);
     return (client->noClientException);
 }
 
 void
 LbxFreeFontTag(pfont)
-    FontPtr	pfont;
+    FontPtr     pfont;
 {
-    TagData	td;
+    TagData     td;
 
     td = (TagData) FontGetPrivate(pfont, lbx_font_private);
     if (td) {
 	LbxSendInvalidateTagToProxies(td->tid, LbxTagTypeFont);
-        TagDeleteTag(td->tid);
+	TagDeleteTag(td->tid);
     }
 }
 
@@ -407,27 +536,40 @@ LbxQueryTag(client, tag)
     XID         tag;
 {
     xLbxQueryTagReply rep;
-    TagData     tdata;
+    TagData     td;
     int         n;
+    FontTagInfoPtr ftip;
+    unsigned long size;
+    pointer     data;
 
-    tdata = TagGetTag(tag);
+    td = TagGetTag(tag);
 
     rep.type = X_Reply;
     rep.sequenceNumber = client->sequence;
-    if (!tdata) {
+    if (!td) {
 	rep.valid = 0;
 	rep.length = 0;
+	rep.real_length = 0;
     } else {
+	if (td->data_type == LbxTagTypeFont) {
+	    ftip = (FontTagInfoPtr) td->tdata;
+	    size = ftip->size;
+	    data = (pointer) ftip->replydata;
+	} else {
+	    size = td->size;
+	    data = td->tdata;
+	}
 	rep.valid = 1;
-	rep.length = tdata->size >> 2;
+	rep.length = (size + 3) >> 2;
+	rep.real_length = size;
     }
     if (client->swapped) {
 	swaps(&rep.sequenceNumber, n);
 	swapl(&rep.length, n);
     }
     WriteToClient(client, sizeof(xLbxQueryTagReply), (char *) &rep);
-    if (tdata)
-	WriteToClient(client, tdata->size, (char *) tdata->tdata);
+    if (td)
+	WriteToClient(client, size, (char *) data);
 
     return client->noClientException;
 }
@@ -441,9 +583,9 @@ LbxInvalidateTag(client, tag)
 }
 
 LbxSendInvalidateTag(client, tag, tagtype)
-    ClientPtr	client;
+    ClientPtr   client;
     XID         tag;
-    int		tagtype;
+    int         tagtype;
 {
     xLbxEvent   ev;
     int         n;
@@ -459,31 +601,266 @@ LbxSendInvalidateTag(client, tag, tagtype)
     if (client->swapped) {
 	swaps(&ev.sequenceNumber, n);
 	swapl(&ev.client, n);
+	swapl(&ev.detail1, n);
+	swapl(&ev.detail2, n);
     }
-    DBG (DBG_CLIENT, (stderr, "Invalidating tag  %d\n", tag));
+    DBG(DBG_CLIENT, (stderr, "Invalidating tag  %d\n", tag));
     WriteToClient(client, sizeof(xLbxEvent), (char *) &ev);
 }
 
 
 LbxSendInvalidateTagToProxies(tag, tagtype)
-    XID		tag;
-    int		tagtype;
+    XID         tag;
+    int         tagtype;
 {
-    LbxProxyPtr	proxy;
-    int		i;
-    ClientPtr	client;
-    extern LbxProxyPtr	proxyList;
+    LbxProxyPtr proxy;
+    int         i;
+    ClientPtr   client;
+    LbxClientPtr lbxcp;
+    extern LbxProxyPtr proxyList;
 
     /* send Invalidates to all proxies */
     proxy = proxyList;
     while (proxy) {
 	/* find some client of the proxy to use */
-	if (client = proxy->lbxClients[LbxMasterClientIndex]->client) {
+	lbxcp = proxy->lbxClients[LbxMasterClientIndex];
+	if (lbxcp && (client = lbxcp->client)) {
 	    LbxSendInvalidateTag(client, tag, tagtype);
-            TagClearProxy(tag, LbxProxyID(client));
+	    TagClearProxy(tag, LbxProxyID(client));
 	}
 	proxy = proxy->next;
     }
+}
+
+LbxProxyPtr
+LbxPidToProxy(pid)
+    int	pid;
+{
+    LbxProxyPtr proxy;
+    extern LbxProxyPtr proxyList;
+
+    proxy = proxyList;
+    while (proxy) {
+    	if (proxy->pid == pid)
+            return proxy;
+    }
+    assert(0);
+    return NULL;
+}
+
+void
+LbxSendSendTagData(pid, tag, tagtype)
+    int		pid;
+    XID         tag;
+    int         tagtype;
+{
+    xLbxEvent   ev;
+    int         n;
+    extern int  LbxEventCode;
+    LbxProxyPtr proxy;
+    ClientPtr   client;
+    LbxClientPtr lbxcp;
+
+    proxy = LbxPidToProxy(pid);
+    lbxcp = proxy->lbxClients[LbxMasterClientIndex];
+    if (lbxcp && (client = lbxcp->client)) {
+	ev.type = LbxEventCode;
+	ev.lbxType = LbxSendTagDataEvent;
+	ev.sequenceNumber = client->sequence;
+	ev.client = client->index;
+	ev.detail1 = tag;
+	ev.detail2 = tagtype;
+
+	if (client->swapped) {
+	    swaps(&ev.sequenceNumber, n);
+	    swapl(&ev.client, n);
+	    swapl(&ev.detail1, n);
+	    swapl(&ev.detail2, n);
+	}
+	DBG(DBG_CLIENT, (stderr, "Requesting tag %d\n", tag));
+	WriteToClient(client, sizeof(xLbxEvent), (char *) &ev);
+    }
+}
+
+/*
+ * keep track of clients stalled waiting for tags to come back from
+ * a proxy.  since multiple clinets can be waiting for the same tag,
+ * we have to keep a list of all of them.
+ */
+
+typedef struct _sendtagq {
+    XID         tag;
+    int         tagtype;	/* XXX unnecessary? */
+    int         num_stalled;
+    ClientPtr  *stalled_clients;
+    pointer     infop;
+    struct _sendtagq *next;
+}           SendTagQRec, *SendTagQPtr;
+
+static SendTagQPtr queried_tags = NULL;
+
+#define	LbxSendTagFailed	-1
+#define	LbxSendTagSendIt	0
+#define	LbxSendTagAlreadySent	1
+
+static Bool
+LbxQueueSendTag(client, tag, tagtype, infop)
+    ClientPtr   client;
+    XID         tag;
+    int         tagtype;
+    pointer     infop;
+{
+    SendTagQPtr sqtp,
+                prev = NULL,
+                new;
+    ClientPtr  *newlist;
+
+    sqtp = queried_tags;
+    /* see if we're asking for one already in the pipeline */
+    while (sqtp) {
+	if (sqtp->tag == tag) {
+	    assert(sqtp->tagtype == tagtype);
+	    assert(sqtp->infop == infop);
+	    /* add new client to list */
+	    newlist = (ClientPtr *) xrealloc(sqtp->stalled_clients,
+			      (sizeof(ClientPtr) * (sqtp->num_stalled + 1)));
+	    if (!newlist)
+		return LbxSendTagFailed;
+	    newlist[sqtp->num_stalled++] = client;
+	    sqtp->stalled_clients = newlist;
+	    DBG(DBG_CLIENT, (stderr, "Additional client requesting tag %d\n", tag));
+	    return LbxSendTagAlreadySent;
+	}
+	prev = sqtp;
+	sqtp = sqtp->next;
+    }
+
+    /* make new one */
+    new = (SendTagQPtr) xalloc(sizeof(SendTagQRec));
+    newlist = (ClientPtr *) xalloc(sizeof(ClientPtr));
+    if (!new || !newlist) {
+	xfree(new);
+	xfree(newlist);
+	return LbxSendTagFailed;
+    }
+    *newlist = client;
+    new->stalled_clients = newlist;
+    new->num_stalled = 1;
+    new->tag = tag;
+    new->tagtype = tagtype;
+    new->infop = infop;
+    new->next = NULL;
+
+    /* stick on end of list */
+    if (prev)
+	prev->next = new;
+    else
+	queried_tags = new;
+    return LbxSendTagSendIt;
+}
+
+static      SendTagQPtr
+LbxFindQTag(tag)
+{
+    SendTagQPtr sqtp;
+
+    sqtp = queried_tags;
+    while (sqtp) {
+	if (sqtp->tag == tag) {
+	    return sqtp;
+	}
+	sqtp = sqtp->next;
+    }
+    assert(0);
+    return (SendTagQPtr) NULL;
+}
+
+static void
+LbxRemoveQTag(tag)
+{
+    SendTagQPtr sqtp,
+                prev = NULL;
+
+    sqtp = queried_tags;
+    while (sqtp) {
+	if (sqtp->tag == tag) {
+	    if (prev)
+		prev->next = sqtp->next;
+	    else
+		queried_tags = sqtp->next;
+	    xfree(sqtp->stalled_clients);
+	    xfree(sqtp);
+	    return;
+	}
+	prev = sqtp;
+	sqtp = sqtp->next;
+    }
+    assert(0);
+}
+
+/*
+ * server sends this
+ */
+
+void
+LbxQueryTagData(client, owner_pid, tag, tagtype, infop)
+    ClientPtr   client;
+    int		owner_pid;
+    XID         tag;
+    int         tagtype;
+    pointer     infop;
+{
+    /* save the info and the client being stalled */
+    if (LbxQueueSendTag(client, tag, tagtype, infop) == LbxSendTagSendIt) {
+	LbxSendSendTagData(owner_pid, tag, tagtype);
+    }
+}
+
+/*
+ * server recieves this
+ */
+int
+LbxTagData(client, tag, len, data)
+    ClientPtr   client;
+    XID         tag;
+    unsigned long len;
+    pointer     data;
+{
+    TagData     td;
+    SendTagQPtr stqp;
+    ClientPtr   cp;
+    PropertyPtr pProp;
+
+    stqp = LbxFindQTag(tag);
+
+    td = TagGetTag(tag);
+    assert(stqp->tagtype == td->data_type);
+
+    if (stqp && td) {
+	switch (td->data_type) {
+	case LbxTagTypeProperty:
+	    assert(len == td->size);
+	    if (len == td->size) {
+		bcopy((char *) data, (char *) td->tdata, len);
+	    }
+	    /* mark it as known by server */
+	    pProp = (PropertyPtr) stqp->infop;
+	    pProp->owner_pid = 0;
+	    break;
+	default:
+	    /* don't do others yet (ever?) */
+	    break;
+	}
+
+	/* wake up stalled clients */
+	cp = *stqp->stalled_clients;
+	while (stqp->num_stalled--) {
+	    AttendClient(cp);
+	    cp++;
+	}
+	LbxRemoveQTag(tag);
+    }
+    return Success;
 }
 
 /*
@@ -492,12 +869,15 @@ LbxSendInvalidateTagToProxies(tag, tagtype)
 LbxFlushTags(proxy)
     LbxProxyPtr proxy;
 {
+    if (conn_info_tag)
+	TagClearProxy(conn_info_tag, proxy->pid);
     if (modifier_map_tag)
 	TagClearProxy(modifier_map_tag, proxy->pid);
     if (keyboard_map_tag)
 	TagClearProxy(keyboard_map_tag, proxy->pid);
     /* XXX flush all font tags -- how? */
-    /* without this, a proxy re-connect will confuse things slightly -- the
+    /*
+     * without this, a proxy re-connect will confuse things slightly -- the
      * proxy will need to do QueryTag to get in sync on font data & global
      * props
      */
@@ -506,6 +886,18 @@ LbxFlushTags(proxy)
 /* when server resets, need to reset global tags */
 LbxResetTags()
 {
+    SendTagQPtr stqp,
+                next;
+
+    conn_info_tag = 0;
     modifier_map_tag = 0;
     keyboard_map_tag = 0;
+
+    /* clean out any pending tag requests */
+    stqp = queried_tags;
+    while (stqp) {
+	next = stqp->next;
+	LbxRemoveQTag(stqp);
+	stqp = next;
+    }
 }
