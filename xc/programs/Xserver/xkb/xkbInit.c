@@ -1,4 +1,4 @@
-/* $XConsortium: xkbInit.c,v 1.5 94/04/08 15:15:34 erik Exp $ */
+/* $XConsortium: xkbInit.c,v 1.7 94/05/11 18:32:14 kaleb Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -728,15 +728,11 @@ XkbProcessArguments(argc,argv,i)
     if (strcmp (argv[i], "-ar1") == 0) {	/* -ar1 int */
 	if (++i >= argc) UseMsg ();
 	XkbDfltRepeatDelay = (long)atoi(argv[i]);
-	if (XkbDfltRepeatDelay > 1000)
-	    XkbDfltRepeatDelay =  999;
 	return 2;
     }
     if (strcmp (argv[i], "-ar2") == 0) {	/* -ar2 int */
 	if (++i >= argc) UseMsg ();
 	XkbDfltRepeatInterval = (long)atoi(argv[i]);
-	if (XkbDfltRepeatInterval > 1000)
-	    XkbDfltRepeatInterval =  999;
 	return 2;
     }
     return 0;
