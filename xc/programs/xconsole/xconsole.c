@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xconsole.c,v 1.3 91/02/09 17:15:47 rws Exp $
+ * $XConsortium: xconsole.c,v 1.4 91/02/17 12:26:25 dave Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -103,6 +103,9 @@ static XrmOptionDescRec options[] = {
 
 #ifndef USE_FILE
 #include    <sys/ioctl.h>
+#ifdef SVR4
+#include    <sys/termios.h>
+#endif
 
 #ifdef TIOCCONS
 #define USE_PTY
@@ -577,13 +580,16 @@ get_pty (pty, tty, ttydev, ptydev)
     int	    *pty, *tty;
     char    *ttydev, *ptydev;
 {
-#ifdef att
-	if ((*pty = open ("/dev/ptmx", O_RDWR)) >= 0 &&
-	    (*tty = open (strcpy(ttydev,ptsname(*pty)), O_RDWR)) >= 0)
+#ifdef SVR4
+	if ((*pty = open ("/dev/ptmx", O_RDWR)) < 0) {
+	    return 1;
+	}
+	strcpy(ttydev, ptsname(*pty));
+	if ((*tty = open(ttydev, O_RDWR)) >= 0)
 	    return 0;
 	if (*pty >= 0)
 	    close (*pty);
-#else /* !att, need lots of code */
+#else /* !SVR4, need lots of code */
 #ifdef USE_GET_PSEUDOTTY
 	if ((*pty = getpseudotty (&ttydev, &ptydev)) >= 0 &&
 	    (*tty = open (ttydev, O_RDWR)) >= 0)
@@ -654,7 +660,7 @@ get_pty (pty, tty, ttydev, ptydev)
 #endif /* CRAY else not CRAY */
 #endif /* umips && SYSTYPE_SYSV */
 #endif /* USE_GET_PSEUDOTTY */
-#endif /* att */
+#endif /* SVR4 */
 	/* We were unable to allocate a pty master!  Return an error
 	 * condition and let our caller terminate cleanly.
 	 */
