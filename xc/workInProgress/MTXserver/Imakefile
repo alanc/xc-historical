@@ -51,8 +51,8 @@ ServerTarget(sun,$(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(SUNSYSLIBS))
 #
 APA16DIRS = $(COMMONSUBDIRS) ddx/mfb ddx/ibm
 APA16OBJS = ddx/ibm/rt/rtinit.o ddx/ibm/rt/rtio.o
-APA16LIBS = $(DIX) $(UNIX) $(MFB) $(MI) \
-		ddx/ibm/rt/librt.a ddx/ibm/apa16/libapa16.a
+APA16LIBS = ddx/ibm/rt/librt.a ddx/ibm/apa16/libapa16.a \
+		$(DIX) $(UNIX) $(MFB) $(MI)
 
 ServerTarget(apa16,$(APA16DIRS),$(APA16OBJS),$(APA16LIBS),$(SYSLIBS))
 

@@ -14,7 +14,7 @@
  * this software for any purpose.  It is provided "as is"
  * without express or implied warranty.
  * 
- * $Header: imake.c,v 1.8 87/08/03 09:25:43 toddb Locked $
+ * $Header: imake.c,v 1.10 87/08/03 10:27:04 toddb Locked $
  * $Locker: toddb $
  *
  * Author:
@@ -24,12 +24,13 @@
  *
  * imake: the include-make program.
  *
- * Usage: imake [ -Idir ] [-T] [-f imakefile ] [-s] [-v] [ make flags ]
+ * Usage: imake [-Idir] [-Ddefine] [-T] [-f imakefile ] [-s] [-v] [make flags]
  *
  * Imake takes a template makefile (Imake.template) and runs cpp on it
  * producing a temporary makefile in /usr/tmp.  It then runs make on
  * this pre-processed makefile.
  * Options:
+ *		-D	define.  Same as cpp -D argument.
  *		-I	Include directory.  Same as cpp -I argument.
  *		-T	template.  Designate a template other
  * 			than Imake.template
@@ -258,7 +259,9 @@ SetOpts(argc, argv)
 	     * We intercept these flags.
 	     */
 	    if (argv[0][0] == '-') {
-		if (argv[0][1] == 'I') {
+		if (argv[0][1] == 'D') {
+		    AddCppArg(argv[0]);
+		} else if (argv[0][1] == 'I') {
 		    AddCppArg(argv[0]);
 		} else if (argv[0][1] == 'f') {
 		    if (argv[0][2])

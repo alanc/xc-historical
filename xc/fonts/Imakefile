@@ -5,7 +5,7 @@
 all: $(SUBDIRS) fonts
 
 $(SUBDIRS): FRC
-	cd $@; echo building $@ ; make $(MFLAGS) all) ;\
+	cd $@; echo building $@ ; make $(MFLAGS) all
 
 InstallMultiple($(HEADERS),$(INCDIR))
 InstallMultiple(snf/?*.snf,$(LIBDIR)/fonts)
@@ -19,16 +19,16 @@ fonts: snf
 	cd snf; make -f Makefile
 
 snf/Makefile: bdf Makefile
-	@echo "Building snf/Makefile"; \
-	echo "# This makefile is created automagically by ../Makefile"\
-			 > snf/Makefile; \
-	echo 'FC=../$(FC)' >> snf/Makefile; \
-	echo 'all: \'	>> snf/Makefile; \
+	@echo "Building $@"; \
+	rm -f $@; \
+	echo "# This makefile is created automagically by ../Makefile" > $@; \
+	echo 'FC=../$(FC)' >> $@; \
+	echo 'all: \'	>> $@; \
 	(cd bdf;ls *.bdf) \
-	| sed -e 's/\(.*\).bdf$$/\1.snf \\/' -e '$$s/..$$//' >> snf/Makefile; \
-	echo >> snf/Makefile; \
+	| sed -e 's/\(.*\).bdf$$/\1.snf \\/' -e '$$s/..$$//' >> $@; \
+	echo >> $@; \
 	(cd bdf; ls *.bdf) \
-	| awk -F. '{printf "%s.snf: ../bdf/%s.bdf $$(FC)\n\t$$(FC) ../bdf/%s.bdf >$$@\n", $$1, $$1, $$1}' >> snf/Makefile
+	| awk -F. '{printf "%s.snf: ../bdf/%s.bdf $$(FC)\n\t$$(FC) ../bdf/%s.bdf >$$@\n", $$1, $$1, $$1}' >> $@
 
 snf:
 	mkdir snf
