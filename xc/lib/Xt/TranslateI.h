@@ -1,5 +1,5 @@
-/* $XConsortium: TranslateI.h,v 1.4 88/09/05 16:19:33 swick Exp $ */
-/* $Header: TranslateI.h,v 1.4 88/09/05 16:19:33 swick Exp $ */
+/* $XConsortium: TranslateI.h,v 1.5 88/09/06 09:42:37 swick Exp $ */
+/* $Header: TranslateI.h,v 1.5 88/09/06 09:42:37 swick Exp $ */
 /* $oHeader: TranslateI.h,v 1.2 88/08/18 15:56:37 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -117,8 +117,8 @@ typedef struct _TranslationData {
 #define _XtEventTimerEventType ((unsigned long)-1L)
 #define _XtTimerEventType ((unsigned long)-2L)
 #define StandardMask (ShiftMask | LockMask)
-#define AnyButtonMask (1<<28)	/* private to TM */
-
+#define KeysymModMask		(1<<27) /* private to TM */
+#define AnyButtonMask		(1<<28)	/* private to TM */
 
 typedef struct _EventSeqRec *EventSeqPtr;
 typedef struct _EventSeqRec {
