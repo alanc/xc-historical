@@ -8,7 +8,8 @@ SRCS =	\
 	macIIMouse.c \
 	macIIUtils.c \
 	macIIGC.c \
-	macIIKMap.c
+	macIIKMap.c \
+	Xrepair.c
 
 OFILES = macIIInit.o
 
@@ -31,11 +32,13 @@ CDEBUGFLAGS = ServerCDebugFlags
 
 NormalLibraryObjectRule()
 
-all:: $(OFILES) 
+all:: $(OFILES) Xrepair
 
 lintlib:
 
 NormalLibraryTarget(macII,$(OBJS))
 NormalLintTarget($(SRCS))
+SingleProgramTarget(Xrepair, Xrepair.o,,)
+InstallProgram(Xrepair,$(BINDIR))
 DependTarget()
 InstallManPage(XmacII,$(MANDIR))
