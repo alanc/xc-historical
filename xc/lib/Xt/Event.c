@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.165 94/03/31 20:56:11 converse Exp $ */
+/* $XConsortium: Event.c,v 1.166 94/03/31 22:17:33 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1086,13 +1086,15 @@ void XtAddExposureToRegion(event, region)
 {
     XRectangle rect;
     XExposeEvent *ev = (XExposeEvent *) event;
-    /* Expose and GraphicsExpose fields of interest are at identical offsets */
+    /* These Expose and GraphicsExpose fields are at identical offsets */
 
-    rect.x = ev->x;
-    rect.y = ev->y;
-    rect.width = ev->width;
-    rect.height = ev->height;
-    XUnionRectWithRegion(&rect, region, region);
+    if (event->type == Expose || event->type == GraphicsExpose) {
+	rect.x = ev->x;
+	rect.y = ev->y;
+	rect.width = ev->width;
+	rect.height = ev->height;
+	XUnionRectWithRegion(&rect, region, region);
+    }
 }
 
 #ifndef MAX
@@ -1104,12 +1106,12 @@ void XtAddExposureToRegion(event, region)
 #endif
 
 static void AddExposureToRectangularRegion(event, region)
-     XEvent *event;
+     XEvent *event; /* when called internally, type is always appropriate */
      Region  region;
 {
     XRectangle rect;
     XExposeEvent *ev = (XExposeEvent *) event;
-    /* Expose and GraphicsExpose fields of interest are at identical offsets */
+    /* These Expose and GraphicsExpose fields are at identical offsets */
 
     rect.x = ev->x;
     rect.y = ev->y;
