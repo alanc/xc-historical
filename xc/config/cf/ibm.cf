@@ -1,7 +1,7 @@
-XCOMM platform:  $XConsortium: ibm.cf,v 1.37 93/09/21 11:17:01 rws Exp $
+XCOMM platform:  $XConsortium: ibm.cf,v 1.38 93/09/30 15:29:28 rws Exp $
 
 #ifdef RsArchitecture
-#define OSName		AIX 3.2.0
+#define OSName		AIX 3.2.1
 #define OSMajorVersion	3
 #define OSMinorVersion	2
 #else
