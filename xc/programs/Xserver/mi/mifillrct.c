@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mifillrct.c,v 1.18 87/09/11 07:19:08 toddb Exp $ */
+/* $XConsortium: mifillrct.c,v 1.19 88/09/06 14:49:20 jim Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -84,8 +84,8 @@ miPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     pwFirst = (int *) ALLOCATE_LOCAL(maxheight * sizeof(int));
     if(!pptFirst || !pwFirst)
     {
-	DEALLOCATE_LOCAL(pwFirst);
-	DEALLOCATE_LOCAL(pptFirst);
+	if (pwFirst) DEALLOCATE_LOCAL(pwFirst);
+	if (pptFirst) DEALLOCATE_LOCAL(pptFirst);
 	return;
     }
 

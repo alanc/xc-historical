@@ -21,11 +21,13 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mipolyutil.c,v 1.12 87/09/11 07:19:12 toddb Exp $ */
+/* $XConsortium: mipolyutil.c,v 1.13 88/09/06 14:49:24 jim Exp $ */
 #include "miscstruct.h"
 #include "gc.h"
 #include "miscanfill.h"
 #include "mipoly.h"
+
+extern void  miFreeStorage();
 
 #define MAXINT 0x7fffffff
 #define MININT -MAXINT
@@ -49,7 +51,7 @@ SOFTWARE.
  *     bucket.  Finally, we can insert it.
  *
  */
-void
+Bool
 miInsertEdgeInET(ET, ETE, scanline, SLLBlock, iSLLBlock)
     EdgeTable *ET;
     EdgeTableEntry *ETE;
@@ -80,7 +82,9 @@ miInsertEdgeInET(ET, ETE, scanline, SLLBlock, iSLLBlock)
         if (*iSLLBlock > SLLSPERBLOCK-1) 
         {
             tmpSLLBlock = 
-		  (ScanLineListBlock *)Xalloc(sizeof(ScanLineListBlock));
+		  (ScanLineListBlock *)xalloc(sizeof(ScanLineListBlock));
+	    if (!tmpSLLBlock)
+		return FALSE;
             (*SLLBlock)->next = tmpSLLBlock;
             tmpSLLBlock->next = (ScanLineListBlock *)NULL;
             *SLLBlock = tmpSLLBlock;
@@ -110,6 +114,7 @@ miInsertEdgeInET(ET, ETE, scanline, SLLBlock, iSLLBlock)
         prev->next = ETE;
     else
         pSLL->edgelist = ETE;
+    return TRUE;
 }
 
 /*
@@ -137,7 +142,7 @@ miInsertEdgeInET(ET, ETE, scanline, SLLBlock, iSLLBlock)
  *
  */
 
-void
+Bool
 miCreateETandAET(count, pts, ET, AET, pETEs, pSLLBlock)
     register int count;
     register DDXPointPtr pts;
@@ -152,7 +157,7 @@ miCreateETandAET(count, pts, ET, AET, pETEs, pSLLBlock)
 
     int dy;
 
-    if (count < 2)  return;
+    if (count < 2)  return TRUE;
 
     /*
      *  initialize the Active Edge Table
@@ -208,7 +213,11 @@ miCreateETandAET(count, pts, ET, AET, pETEs, pSLLBlock)
             dy = bottom->y - top->y;
             BRESINITPGONSTRUCT(dy, top->x, bottom->x, pETEs->bres);
 
-            miInsertEdgeInET(ET, pETEs, top->y, &pSLLBlock, &iSLLBlock);
+            if (!miInsertEdgeInET(ET, pETEs, top->y, &pSLLBlock, &iSLLBlock))
+	    {
+		miFreeStorage(pSLLBlock->next);
+		return FALSE;
+	    }
 
             ET->ymax = max(ET->ymax, PrevPt->y);
             ET->ymin = min(ET->ymin, PrevPt->y);
@@ -217,6 +226,7 @@ miCreateETandAET(count, pts, ET, AET, pETEs, pSLLBlock)
 
         PrevPt = CurrPt;
     }
+    return TRUE;
 }
 
 /*
@@ -361,7 +371,7 @@ miFreeStorage(pSLLBlock)
     while (pSLLBlock) 
     {
         tmpSLLBlock = pSLLBlock->next;
-        Xfree(pSLLBlock);
+        xfree(pSLLBlock);
         pSLLBlock = tmpSLLBlock;
     }
 }

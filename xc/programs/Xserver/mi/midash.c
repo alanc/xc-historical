@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: midash.c,v 1.9 88/08/08 12:47:35 matt Exp $ */
+/* $XConsortium: midash.c,v 1.10 88/09/06 14:49:39 jim Exp $ */
 #include "miscstruct.h"
 #include "mistruct.h"
 #include "mifpoly.h"
@@ -128,6 +128,8 @@ int *pnseg;
 
 	nseg++;
 	pseg = CheckDashStorage(&psegBase, nseg, &nsegMax);
+	if (!pseg)
+	    return (miDashPtr)NULL;
 	pseg->pt = pt1;
 	pseg->e1 = e1;
 	pseg->e2 = e2;
@@ -175,6 +177,8 @@ int *pnseg;
 	    {
 		nseg++;
 		pseg = CheckDashStorage(&psegBase, nseg, &nsegMax);
+		if (!pseg)
+		    return (miDashPtr)NULL;
 		pseg->pt.x = x;
 		pseg->pt.y = y;
 		pseg->e1 = e1;
@@ -201,6 +205,8 @@ int *pnseg;
     }
     *pnseg = nseg;
     pseg = CheckDashStorage(&psegBase, nseg+1, &nsegMax);
+    if (!pseg)
+	return (miDashPtr)NULL;
     pseg->pt = pt2;
     pseg->e = base_e;
     pseg->which = which;
@@ -225,9 +231,17 @@ int *pnsegMax;			/* size (in segments) of list so far */
 {
     if (nseg > *pnsegMax)
     {
+	miDashPtr newppseg;
+
 	*pnsegMax += NSEGDELTA;
-	*ppseg = (miDashPtr)Xrealloc(*ppseg, 
-				     (*pnsegMax)*sizeof(miDashRec));
+	newppseg = (miDashPtr)Xrealloc(*ppseg,
+				       (*pnsegMax)*sizeof(miDashRec));
+	if (!newppseg)
+	{
+	    xfree(*ppseg);
+	    return (miDashPtr)NULL;
+	}
+	*ppseg = newppseg;
     }
     return(*ppseg+(nseg-1));
 }

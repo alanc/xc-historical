@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mibitblt.c,v 1.69 88/10/15 10:25:55 keith Exp $ */
+/* $XConsortium: mibitblt.c,v 1.70 88/10/15 10:34:08 rws Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -73,9 +73,7 @@ miCopyArea(pSrcDrawable, pDstDrawable,
     /* If the destination isn't realized, this is easy */
     if (pDstDrawable->type == DRAWABLE_WINDOW &&
 	!((WindowPtr)pDstDrawable)->realized)
-    {
-	return NULL;
-    }
+	return (RegionPtr)NULL;
 
     /* clip the source */
     if (pSrcDrawable->type == DRAWABLE_PIXMAP)
@@ -123,8 +121,6 @@ miCopyArea(pSrcDrawable, pDstDrawable,
 	dsty = yOut;
     }
 
-
-
     pptFirst = ppt = (DDXPointPtr)
         ALLOCATE_LOCAL(heightSrc * sizeof(DDXPointRec));
     pwidthFirst = pwidth = (unsigned int *)
@@ -139,7 +135,7 @@ miCopyArea(pSrcDrawable, pDstDrawable,
            DEALLOCATE_LOCAL(pwidthFirst);
        if (pptFirst)
            DEALLOCATE_LOCAL(pptFirst);
-       return;
+       return (RegionPtr)NULL;
     }
 
     /* If not the same drawable then order of move doesn't matter.
@@ -228,23 +224,26 @@ miCopyArea(pSrcDrawable, pDstDrawable,
 	}
 	pbits = (*pSrcDrawable->pScreen->GetSpans)(pSrcDrawable, width, 
 					       pptFirst, pwidthFirst, height);
-        ppt = pptFirst;
-	pwidth = pwidthFirst;
-	xMin -= (srcx - dstx);
-	y = yMin - (srcy - dsty);
-	for(j = 0; j < height; j++)
+	if (pbits)
 	{
-	    ppt->x = xMin;
-	    ppt++->y = y++;
-	    *pwidth++ = width;
+	    ppt = pptFirst;
+	    pwidth = pwidthFirst;
+	    xMin -= (srcx - dstx);
+	    y = yMin - (srcy - dsty);
+	    for(j = 0; j < height; j++)
+	    {
+		ppt->x = xMin;
+		ppt++->y = y++;
+		*pwidth++ = width;
+	    }
+
+	    (*pGC->SetSpans)(pDstDrawable, pGC, pbits, pptFirst, pwidthFirst,
+			     height, TRUE);
+	    xfree(pbits);
 	}
-	
-        (*pGC->SetSpans)(pDstDrawable, pGC, pbits, pptFirst, pwidthFirst,
-	                 height, TRUE);
-        Xfree(pbits);
     }
     prgnExposed = miHandleExposures(pSrcDrawable, pDstDrawable, pGC, xIn, yIn,
-		      widthSrc, heightSrc, xOut, yOut, 0);
+		      widthSrc, heightSrc, xOut, yOut, (unsigned long)0);
     if(realSrcClip)
 	(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
 		
@@ -269,7 +268,7 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
 {
     int			i, j, k, depth, width, bitsPerPixel, widthInBytes;
     DDXPointRec 	pt;
-    unsigned int 	*pline, shifted_pline;
+    unsigned int 	*pline;
     unsigned int	bit;
     unsigned char	*pCharsOut;
     CARD16		*pShortsOut;
@@ -284,9 +283,11 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
     }
     widthInBytes = PixmapBytePad(w, 1);
     if(!result)
-        result = (unsigned long *)Xalloc(h * widthInBytes);
+        result = (unsigned long *)xalloc(h * widthInBytes);
+    if (!result)
+	return (unsigned long *)NULL;
     bitsPerPixel = GetBitsPerPixel(depth);
-    bzero(result, h * widthInBytes);
+    bzero((char *)result, h * widthInBytes);
     if(BITMAP_SCANLINE_UNIT == 8)
 	pCharsOut = (unsigned char *) result;
     else if(BITMAP_SCANLINE_UNIT == 16)
@@ -305,9 +306,12 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
 	    pt.y = i;
 	    width = w;
             pline = (*pDraw->pScreen->GetSpans)(pDraw, width, &pt, &width, 1);	
-	    bcopy(pline, pCharsOut, widthInBytes);
+	    if (pline)
+	    {
+		bcopy((char *)pline, (char *)pCharsOut, widthInBytes);
+		xfree(pline);
+	    }
 	    pCharsOut += widthInBytes;
-	    Xfree(pline);
 	}
 	else
 	{
@@ -322,10 +326,15 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
 		/* Fetch the next pixel */
 		pline = (*pDraw->pScreen->GetSpans)(pDraw, width, &pt,
 		                                   &width, 1);
-		/*
-		 * Now get the bit and insert into a bitmap in XY format.
-		 */
-		bit = (unsigned int) ((*pline >> planeNum) & 1);
+		if (pline)
+		{
+		    /*
+		     * Now get the bit and insert into a bitmap in XY format.
+		     */
+		    bit = (unsigned int) ((*pline >> planeNum) & 1);
+		    xfree(pline);
+		} else
+		    bit = 0;
 		/* XXX assuming bit order == byte order */
 	        if(BITMAP_BIT_ORDER == LSBFirst) {
 		    bit <<= k;
@@ -363,7 +372,6 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
 		        k = 0;
 		    }
 		}
-	        Xfree(pline);
 	    }
 	    if (BITMAP_SCANLINE_UNIT == 8)
 		pCharsOut += delta;
@@ -419,7 +427,7 @@ miOpqStipDrawable(pDraw, pGC, prgnSrc, pbits, srcx, w, h, dstx, dsty)
     int		oldfill, i;
     unsigned long oldfg;
     int		*pwidth, *pwidthFirst;
-    long	gcv[6];
+    XID		gcv[6];
     PixmapPtr	pStipple, pPixmap;
     DDXPointRec	oldOrg;
     GCPtr	pGCT;
@@ -427,17 +435,18 @@ miOpqStipDrawable(pDraw, pGC, prgnSrc, pbits, srcx, w, h, dstx, dsty)
     xRectangle rect;
     RegionPtr	prgnSrcClip;
 
-    pPixmap = (PixmapPtr)(*pDraw->pScreen->CreatePixmap)
+    pPixmap = (*pDraw->pScreen->CreatePixmap)
 			   (pDraw->pScreen, w + srcx, h, 1);
-
     if (!pPixmap)
-    {
-	ErrorF( "miOpqStipDrawable can't make temp pixmap\n");
 	return;
-    }
 
     /* Put the image into a 1 bit deep pixmap */
     pGCT = GetScratchGC(1, pDraw->pScreen);
+    if (!pGCT)
+    {
+	(*pDraw->pScreen->DestroyPixmap)(pPixmap);
+	return;
+    }
     /* First set the whole pixmap to 0 */
     gcv[0] = 0;
     DoChangeGC(pGCT, GCBackground, gcv, 0);
@@ -445,10 +454,10 @@ miOpqStipDrawable(pDraw, pGC, prgnSrc, pbits, srcx, w, h, dstx, dsty)
     miClearDrawable((DrawablePtr)pPixmap, pGCT);
     ppt = pptFirst = (DDXPointPtr)ALLOCATE_LOCAL(h * sizeof(DDXPointRec));
     pwidth = pwidthFirst = (int *)ALLOCATE_LOCAL(h * sizeof(int));
-    if(!ppt || !pwidth)
+    if(!pptFirst || !pwidthFirst)
     {
-	if (pwidth) DEALLOCATE_LOCAL(pwidth);
-	if (ppt) DEALLOCATE_LOCAL(ppt);
+	if (pwidthFirst) DEALLOCATE_LOCAL(pwidthFirst);
+	if (pptFirst) DEALLOCATE_LOCAL(pptFirst);
 	FreeScratchGC(pGCT);
 	return;
     }
@@ -627,10 +636,13 @@ miCopyPlane(pSrcDrawable, pDstDrawable,
 			   srcx + box.x1, srcy + box.y1,
 			   box.x2 - box.x1, box.y2 - box.y1,
 			   (unsigned long *) NULL);
-	miOpqStipDrawable(pDstDrawable, pGC, prgnSrc, ptile, 0,
-			  box.x2 - box.x1, box.y2 - box.y1,
-			  dstx + box.x1, dsty + box.y1);
-	Xfree(ptile);
+	if (ptile)
+	{
+	    miOpqStipDrawable(pDstDrawable, pGC, prgnSrc, ptile, 0,
+			      box.x2 - box.x1, box.y2 - box.y1,
+			      dstx + box.x1, dsty + box.y1);
+	    xfree(ptile);
+	}
     }
     prgnExposed = miHandleExposures(pSrcDrawable, pDstDrawable, pGC, srcx, srcy,
 		      width, height, dstx, dsty, bitPlane);
@@ -667,7 +679,7 @@ miGetImage(pDraw, sx, sy, w, h, format, planeMask, pdstLine)
     int			depth, i, linelength, width, srcx, srcy;
     DDXPointRec		pt;
     unsigned long	*pbits;
-    long		gcv[2];
+    XID			gcv[2];
     PixmapPtr		pPixmap = (PixmapPtr)NULL;
     GCPtr		pGC;
     pointer		pDst = pdstLine;
@@ -680,8 +692,15 @@ miGetImage(pDraw, sx, sy, w, h, format, planeMask, pdstLine)
 	   )
 	{
 	    pGC = GetScratchGC(depth, pDraw->pScreen);
-            pPixmap = (PixmapPtr)(*pDraw->pScreen->CreatePixmap)
+	    if (!pGC)
+		return;
+            pPixmap = (*pDraw->pScreen->CreatePixmap)
 			       (pDraw->pScreen, w, h, depth);
+	    if (!pPixmap)
+	    {
+		FreeScratchGC(pGC);
+		return;
+	    }
 	    gcv[0] = GXcopy;
 	    gcv[1] = planeMask;
 	    DoChangeGC(pGC, GCPlaneMask | GCFunction, gcv, 0);
@@ -703,19 +722,22 @@ miGetImage(pDraw, sx, sy, w, h, format, planeMask, pdstLine)
 	    width = w;
             pbits = (unsigned long *)
 	        (*pDraw->pScreen->GetSpans)(pDraw, w, &pt, &width, 1);
-	    if (pPixmap)
+	    if (pPixmap && pbits)
 	    {
 	       pt.x = 0;
 	       pt.y = 0;
 	       width = w;
 	       (*pGC->SetSpans)(pPixmap, pGC, pbits, &pt, &width, 1, TRUE);
-	       Xfree(pbits);
+	       xfree(pbits);
 	       pbits = (unsigned long *)
 		  (*pDraw->pScreen->GetSpans)(pPixmap, w, &pt, &width, 1);
 	    }
-	    bcopy(pbits, (char *)pDst, linelength);
+	    if (pbits)
+	    {
+		bcopy((char *)pbits, (char *)pDst, linelength);
+		xfree(pbits);
+	    }
 	    pDst += linelength;
-	    Xfree(pbits);
 	}
 	if (pPixmap)
 	{
@@ -725,7 +747,8 @@ miGetImage(pDraw, sx, sy, w, h, format, planeMask, pdstLine)
     }
     else
     {
-	(void) miGetPlane(pDraw, ffs(planeMask) - 1, sx, sy, w, h, pDst);
+	(void) miGetPlane(pDraw, ffs(planeMask) - 1, sx, sy, w, h,
+			  (unsigned long *)pDst);
     }
 }
 
@@ -811,12 +834,12 @@ miPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
       case ZPixmap:
     	ppt = pptFirst = (DDXPointPtr)ALLOCATE_LOCAL(h * sizeof(DDXPointRec));
     	pwidth = pwidthFirst = (int *)ALLOCATE_LOCAL(h * sizeof(int));
-	if(!ppt || !pwidth)
+	if(!pptFirst || !pwidthFirst)
         {
-	   if (pwidth)
-               DEALLOCATE_LOCAL(pwidth);
-           if (ppt)
-               DEALLOCATE_LOCAL(ppt);
+	   if (pwidthFirst)
+               DEALLOCATE_LOCAL(pwidthFirst);
+           if (pptFirst)
+               DEALLOCATE_LOCAL(pptFirst);
            return;
         }
 	if ((pDraw->type == DRAWABLE_WINDOW) &&
@@ -848,8 +871,8 @@ miClearDrawable(pDraw, pGC)
     DrawablePtr	pDraw;
     GCPtr	pGC;
 {
-    int     fg = pGC->fgPixel;
-    int	    bg = pGC->bgPixel;
+    unsigned long    fg = pGC->fgPixel;
+    unsigned long    bg = pGC->bgPixel;
     xRectangle rect;
 
     rect.x = 0;

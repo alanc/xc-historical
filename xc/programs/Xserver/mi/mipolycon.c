@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mipolycon.c,v 1.17 88/09/06 14:49:00 jim Exp $ */
+/* $XConsortium: mipolycon.c,v 1.18 88/10/02 15:01:56 rws Exp $ */
 #include "gcstruct.h"
 #include "pixmap.h"
 #include "miscanfill.h"
@@ -43,7 +43,7 @@ static int getPolyYBounds();
  *     For a derivation of the algorithm, see the author of
  *     this code.
  */
-int
+Bool
 miFillConvexPoly(dst, pgc, count, ptsIn)
     DrawablePtr dst;
     GCPtr	pgc;
@@ -74,20 +74,15 @@ miFillConvexPoly(dst, pgc, count, ptsIn)
     imin = getPolyYBounds(ptsIn, count, &ymin, &ymax);
 
     dy = ymax - ymin + 1;
+    if ((count < 3) || (dy < 0))
+	return(TRUE);
     ptsOut = FirstPoint = (DDXPointPtr )ALLOCATE_LOCAL(sizeof(DDXPointRec)*dy);
     width = FirstWidth = (int *)ALLOCATE_LOCAL(sizeof(int) * dy);
-    if(!ptsOut || !width)
+    if(!FirstPoint || !FirstWidth)
     {
-	DEALLOCATE_LOCAL(width);
-	DEALLOCATE_LOCAL(ptsOut);
+	if (FirstWidth) DEALLOCATE_LOCAL(FirstWidth);
+	if (FirstPoint) DEALLOCATE_LOCAL(FirstPoint);
 	return(FALSE);
-    }
-
-    if ((count < 3) || (dy < 0))
-    {
-	DEALLOCATE_LOCAL(width);
-	DEALLOCATE_LOCAL(ptsOut);
-	return(TRUE);
     }
 
     nextleft = nextright = imin;

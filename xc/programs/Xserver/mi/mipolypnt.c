@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mipolypnt.c,v 1.7 87/09/11 07:20:17 toddb Exp $ */
+/* $XConsortium: mipolypnt.c,v 1.8 88/09/06 14:49:56 jim Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 #include "pixmapstr.h"
@@ -40,7 +40,7 @@ miPolyPoint(pDrawable, pGC, mode, npt, pptInit)
     int 		xorg;
     int 		yorg;
     int 		nptTmp;
-    int			fsOld, fsNew;
+    unsigned long	fsOld, fsNew;
     int			*pwidthInit, *pwidth;
     int			i;
     register xPoint 	*ppt;

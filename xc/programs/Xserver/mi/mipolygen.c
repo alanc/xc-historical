@@ -21,12 +21,14 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mipolygen.c,v 1.19 88/10/02 15:01:48 rws Exp $ */
+/* $XConsortium: mipolygen.c,v 1.20 88/10/03 15:00:12 jim Exp $ */
 #include "X.h"
 #include "gcstruct.h"
 #include "miscanfill.h"
 #include "mipoly.h"
 #include "pixmap.h"
+
+extern void miloadAET(), micomputeWAET(), miFreeStorage();
 
 /*
  *
@@ -38,7 +40,7 @@ SOFTWARE.
  *     See fillpoly.h for a complete description of the algorithm.
  */
 
-int
+Bool
 miFillGeneralPoly(dst, pgc, count, ptsIn)
     DrawablePtr dst;
     GCPtr	pgc;
@@ -69,7 +71,11 @@ miFillGeneralPoly(dst, pgc, count, ptsIn)
 	return(FALSE);
     ptsOut = FirstPoint;
     width = FirstWidth;
-    miCreateETandAET(count, ptsIn, &ET, &AET, pETEs, &SLLBlock);
+    if (!miCreateETandAET(count, ptsIn, &ET, &AET, pETEs, &SLLBlock))
+    {
+	DEALLOCATE_LOCAL(pETEs);
+	return(FALSE);
+    }
     pSLL = ET.scanlines.next;
 
     if (pgc->fillRule == EvenOddRule) 

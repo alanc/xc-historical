@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miglblt.c,v 1.17 88/03/19 15:03:38 rws Exp $ */
+/* $XConsortium: miglblt.c,v 1.18 88/09/06 14:49:13 jim Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -78,7 +78,7 @@ miPolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     register int nbyGlyphWidth;		/* bytes per scanline of glyph */
     int nbyPadGlyph;			/* server padded line of glyph */
 
-    int gcvals[3];
+    XID gcvals[3];
 
     if ((pDrawable->type == DRAWABLE_WINDOW) &&
 	(pGC->miTranslate))
@@ -93,10 +93,17 @@ miPolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     height = pfont->pFI->maxbounds.metrics.ascent + 
 	pfont->pFI->maxbounds.metrics.descent;
 
-    pPixmap = (PixmapPtr)(*pDrawable->pScreen->CreatePixmap)
-      (pDrawable->pScreen, width, height, 1);
+    pPixmap = (*pDrawable->pScreen->CreatePixmap)(pDrawable->pScreen,
+						  width, height, 1);
+    if (!pPixmap)
+	return;
 
     pGCtmp = GetScratchGC(1, pDrawable->pScreen);
+    if (!pGCtmp)
+    {
+	(*pDrawable->pScreen->DestroyPixmap)(pPixmap);
+	return;
+    }
 
     gcvals[0] = GXcopy;
     gcvals[1] = 1;
@@ -107,8 +114,11 @@ miPolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     nbyLine = PixmapBytePad(width, 1);
     pbits = (unsigned char *)ALLOCATE_LOCAL(height*nbyLine);
     if (!pbits)
-        return ;
-
+    {
+	(*pDrawable->pScreen->DestroyPixmap)(pPixmap);
+	FreeScratchGC(pGCtmp);
+        return;
+    }
     while(nglyph--)
     {
 	pci = *ppci++;
@@ -153,7 +163,7 @@ miImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     unsigned char *pglyphBase;	/* start of array of glyphs */
 {
     ExtentInfoRec info;		/* used by QueryGlyphExtents() */
-    long gcvals[3];
+    XID gcvals[3];
     int oldAlu, oldFS;
     unsigned long	oldFG;
     xRectangle backrect;
@@ -171,30 +181,24 @@ miImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     oldFS = pGC->fillStyle;
 
     /* fill in the background */
-    gcvals[0] = (long) GXcopy;
-    gcvals[1] = (long) pGC->bgPixel;
-    gcvals[2] = (long) FillSolid;
+    gcvals[0] = GXcopy;
+    gcvals[1] = pGC->bgPixel;
+    gcvals[2] = FillSolid;
     DoChangeGC(pGC, GCFunction|GCForeground|GCFillStyle, gcvals, 0);
     ValidateGC(pDrawable, pGC);
     (*pGC->PolyFillRect)(pDrawable, pGC, 1, &backrect);
 
     /* put down the glyphs */
-    gcvals[0] = (long) oldFG;
+    gcvals[0] = oldFG;
     DoChangeGC(pGC, GCForeground, gcvals, 0);
     ValidateGC(pDrawable, pGC);
     (*pGC->PolyGlyphBlt)(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
 
     /* put all the toys away when done playing */
-    gcvals[0] = (long) oldAlu;
-    gcvals[1] = (long) oldFG;
-    gcvals[2] = (long) oldFS;
+    gcvals[0] = oldAlu;
+    gcvals[1] = oldFG;
+    gcvals[2] = oldFS;
     DoChangeGC(pGC, GCFunction|GCForeground|GCFillStyle, gcvals, 0);
-/*
-   ???
-   should we cal ValidateGC now, to leave everything exactly as we
-found it
-   ???
-*/
 
 }
 

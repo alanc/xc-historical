@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 1.68 89/01/11 17:37:57 keith Exp $ */
+/* $XConsortium: miarc.c,v 1.69 89/03/18 12:58:06 rws Exp $ */
 /* Author: Keith Packard */
 
 #include "X.h"
@@ -57,8 +57,6 @@ SOFTWARE.
  *  when calculating pixel positions with complicated floating-
  *  point expressions.
  */
-
-extern double sqrt(), cos(), sin(), atan();
 
 /* these are from our <math.h>, but I'm told some systems don't have
  * math.h and that they're not in all versions of math.h. */
@@ -120,8 +118,6 @@ typedef struct _miPolyArc {
 	miArcJoinPtr	joins;
 } miPolyArcRec, *miPolyArcPtr;
 
-static miPolyArcPtr miComputeArcs ();
-
 #define GCValsFunction		0
 #define GCValsForeground 	1
 #define GCValsBackground 	2
@@ -130,7 +126,43 @@ static miPolyArcPtr miComputeArcs ();
 #define GCValsJoinStyle		5
 #define GCValsMask		(GCFunction | GCForeground | GCBackground | \
 				 GCLineWidth | GCCapStyle | GCJoinStyle)
-static CARD32 gcvals[6];
+static XID gcvals[6];
+
+#undef max
+#undef min
+
+extern double sqrt(), cos(), sin(), atan(), atan2(), pow(), acos(), asin();
+extern double ceil(), floor();
+extern void miFillSppPoly();
+static void fillSpans(), span(), drawArc(), drawQuadrant(), drawZeroArc();
+static int computeAngleFromPath();
+static miPolyArcPtr miComputeArcs ();
+
+static int
+max (x, y)
+{
+	return x>y? x:y;
+}
+
+static int
+min (x, y)
+{
+	return x<y? x:y;
+}
+
+static double
+fmax (a, b)
+double	a,b;
+{
+	return a > b? a : b;
+}
+
+static double
+fmin (a, b)
+double	a, b;
+{
+	return a < b ? a : b;
+}
 
 /*
  * draw one segment of the arc using the arc spans generation routines
@@ -144,9 +176,7 @@ miArcSegment(pDraw, pGC, tarc, right, left)
     miArcFacePtr	right, left;
 {
     int l = pGC->lineWidth;
-    int	w, h;
     int a0, a1, startAngle, endAngle;
-    int st, ct;
     miArcFacePtr	temp;
 
     if (tarc.width == 0 || tarc.height == 0) {
@@ -219,8 +249,7 @@ miPolyArc(pDraw, pGC, narcs, parcs)
     int				xMin, xMax, yMin, yMax;
     int				dx, dy;
     int				xOrg, yOrg;
-    double			helperDx, helperDy;
-    int				ifirst, count, width;
+    int				width;
     Bool			fTricky;
     DrawablePtr			pDrawTo;
     unsigned long		fg, bg;
@@ -265,6 +294,8 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 	    }
 
 	    pGCTo = GetScratchGC(1, pDraw->pScreen);
+	    if (!pGCTo)
+		return;
 	    gcvals[GCValsFunction] = GXcopy;
 	    gcvals[GCValsForeground] = 1;
 	    gcvals[GCValsBackground] = 0;
@@ -292,6 +323,11 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 	     * validate it */
 	    pDrawTo = (DrawablePtr)(*pDraw->pScreen->CreatePixmap)
 					(pDraw->pScreen, dx, dy, 1, XYBitmap);
+	    if (!pDrawTo)
+	    {
+		FreeScratchGC(pGCTo);
+		return;
+	    }
 	    ValidateGC(pDrawTo, pGCTo);
 	    miClearDrawable(pDrawTo, pGCTo);
 	}
@@ -306,7 +342,7 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 	if (!polyArcs)
 	{
 	    if (fTricky) {
-		(*pDraw->pScreen->DestroyPixmap) (pDrawTo);
+		(*pDraw->pScreen->DestroyPixmap) ((PixmapPtr)pDrawTo);
 		FreeScratchGC (pGCTo);
 	    }
 	    return;
@@ -331,7 +367,6 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 	    }
 	    for (i = 0; i < polyArcs[iphase].narcs; i++) {
 		miArcDataPtr	arcData;
-		int		j;
 
 		arcData = &polyArcs[iphase].arcs[i];
 		miArcSegment(pDrawTo, pGCTo, arcData->arc,
@@ -400,13 +435,13 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 	     iphase--)
 	{
 	    if (polyArcs[iphase].narcs > 0)
-		Xfree((pointer) polyArcs[iphase].arcs);
+		xfree(polyArcs[iphase].arcs);
 	    if (polyArcs[iphase].njoins > 0)
-		Xfree ((pointer) polyArcs[iphase].joins);
+		xfree (polyArcs[iphase].joins);
 	    if (polyArcs[iphase].ncaps > 0)
-		Xfree ((pointer) polyArcs[iphase].caps);
+		xfree (polyArcs[iphase].caps);
 	}
-	Xfree((pointer) polyArcs);
+	xfree(polyArcs);
 
 	if(fTricky)
 	{
@@ -420,10 +455,10 @@ static double
 angleBetween (center, point1, point2)
 	SppPointRec	center, point1, point2;
 {
-	double	atan2 (), a1, a2, a;
+	double	a1, a2, a;
 	
 	/*
-	 * reflect from X coordinates back to elipse
+	 * reflect from X coordinates back to ellipse
 	 * coordinates -- y increasing upwards
 	 */
 	a1 = atan2 (- (point1.y - center.y), point1.x - center.x);
@@ -453,7 +488,7 @@ double		fx, fy;
 miArcJoin (pDraw, pGC, pLeft, pRight,
 	   xOrgLeft, yOrgLeft, xFtransLeft, yFtransLeft,
 	   xOrgRight, yOrgRight, xFtransRight, yFtransRight)
-	DrawablePtr	*pDraw;
+	DrawablePtr	pDraw;
 	GCPtr		pGC;
 	miArcFacePtr	pRight, pLeft;
 	int		xOrgRight, yOrgRight;
@@ -461,7 +496,7 @@ miArcJoin (pDraw, pGC, pLeft, pRight,
 	int		xOrgLeft, yOrgLeft;
 	double		xFtransLeft, yFtransLeft;
 {
-	SppPointRec	center, corner, otherCorner, end;
+	SppPointRec	center, corner, otherCorner;
 	SppPointRec	poly[5], e;
 	SppPointPtr	pArcPts;
 	int		cpt;
@@ -470,7 +505,6 @@ miArcJoin (pDraw, pGC, pLeft, pRight,
 	int		polyLen;
 	int		xOrg, yOrg;
 	double		xFtrans, yFtrans;
-	double		angle[4];
 	double		a;
 	double		ae, ac2, ec2, bc2, de;
 	double		width;
@@ -512,7 +546,9 @@ miArcJoin (pDraw, pGC, pLeft, pRight,
 		arc.height = width;
 		arc.angle1 = -atan2 (corner.y - center.y, corner.x - center.x);
 		arc.angle2 = a;
-		pArcPts = (SppPointPtr) Xalloc (sizeof (SppPointRec));
+		pArcPts = (SppPointPtr) xalloc (sizeof (SppPointRec));
+		if (!pArcPts)
+		    return;
 		pArcPts->x = center.x;
 		pArcPts->y = center.y;
 		if( cpt = miGetArcPts(&arc, 1, &pArcPts))
@@ -521,8 +557,8 @@ miArcJoin (pDraw, pGC, pLeft, pRight,
 			 * to be the corners, we assure that the cap will meet up with the
 			 * rest of the line */
 			miFillSppPoly(pDraw, pGC, cpt, pArcPts, xOrg, yOrg, xFtrans, yFtrans);
-			Xfree((pointer)pArcPts);
 		}
+		xfree(pArcPts);
 		return;
 	case JoinMiter:
 		/*
@@ -558,8 +594,9 @@ miArcJoin (pDraw, pGC, pLeft, pRight,
 	miFillSppPoly (pDraw, pGC, polyLen, poly, xOrg, yOrg, xFtrans, yFtrans);
 }
 
+/*ARGSUSED*/
 miArcCap (pDraw, pGC, pFace, end, xOrg, yOrg, xFtrans, yFtrans)
-	DrawablePtr	*pDraw;
+	DrawablePtr	pDraw;
 	GCPtr		pGC;
 	miArcFacePtr	pFace;
 	int		end;
@@ -641,24 +678,22 @@ miPolyFillArc(pDraw, pGC, narcs, parcs)
 	 * handle it better */
         if(pGC->arcMode == ArcPieSlice && parcs[i].angle2 < FULLCIRCLE)
 	{
-	    if (!(pPts = (SppPointPtr)Xalloc(sizeof(SppPointRec))))
+	    if (!(pPts = (SppPointPtr)xalloc(sizeof(SppPointRec))))
 		return;
 	    if(cpt = miGetArcPts(&sppArc, 1, &pPts))
 	    {
 		pPts[0].x = sppArc.x + sppArc.width/2;
 		pPts[0].y = sppArc.y + sppArc.height /2;
 		miFillSppPoly(pDraw, pGC, cpt + 1, pPts, 0, 0, 0.0, 0.0);
-		Xfree((pointer) pPts);
 	    }
+	    xfree(pPts);
 	}
         else /* Chord */
 	{
 	    pPts = (SppPointPtr)NULL;
 	    if(cpt = miGetArcPts(&sppArc, 0, &pPts))
-	    {
 		miFillSppPoly(pDraw, pGC, cpt, pPts, 0, 0, 0.0, 0.0);
-		Xfree((pointer) pPts);
-	    }
+	    xfree(pPts);
 	}
     }
 }
@@ -692,7 +727,6 @@ miGetArcPts(parc, cpt, ppPts)
 		xc, yc, /* the center point */
                 xt, yt;	/* possible next point */
     int		count, i, axis, npts = 2; /* # points used thus far */
-    double      asin(), fmax (), sin(), cos ();
     SppPointPtr	poly;
     DDXPointRec last;		/* last point on integer boundaries */
 
@@ -722,15 +756,15 @@ miGetArcPts(parc, cpt, ppPts)
 
     cdt = 2 * cos(dt);
 #ifdef NOARCCOMPRESSION
-    if (!(poly = (SppPointPtr) Xrealloc((pointer)*ppPts,
+    if (!(poly = (SppPointPtr) xrealloc((pointer)*ppPts,
 					(cpt + count) * sizeof(SppPointRec))))
 	return(0);
-    *ppPts = poly;
 #else				/* ARCCOMPRESSION */
-    if (!(poly = (SppPointPtr) Xrealloc((pointer)*ppPts,
+    if (!(poly = (SppPointPtr) xrealloc((pointer)*ppPts,
 					(cpt + 2) * sizeof(SppPointRec))))
 	return(0);
 #endif				/* ARCCOMPRESSION */
+    *ppPts = poly;
 
     xc = parc->width/2.0;		/* store half width and half height */
     yc = parc->height/2.0;
@@ -769,10 +803,11 @@ miGetArcPts(parc, cpt, ppPts)
  	    if ((npts - 2) % REALLOC_STEP == 0)
 	    {
  		if (!(poly = (SppPointPtr)
-		      Xrealloc((pointer) poly,
+		      xrealloc((pointer) poly,
 			       ((npts + REALLOC_STEP + cpt) *
 				sizeof(SppPointRec)))))
 		    return(0);
+		*ppPts = poly;
 	    }
 	    /* check if we just switched direction in the minor axis */
 	    if (((poly[cpt + npts - 2].y - poly[cpt + npts - 1].y > 0.0) ?
@@ -791,10 +826,11 @@ miGetArcPts(parc, cpt, ppPts)
 		if ((npts - 2) % REALLOC_STEP == 0)
 		{
 		    if (!(poly = (SppPointPtr)
-			  Xrealloc((pointer) poly,
+			  xrealloc((pointer) poly,
 				   ((npts + REALLOC_STEP + cpt) *
 				    sizeof(SppPointRec)))))
 			return(0);
+		    *ppPts = poly;
 		}
 	    }
  	    last.x = ROUNDTOINT( poly[cpt + npts].x = xt );
@@ -817,9 +853,6 @@ miGetArcPts(parc, cpt, ppPts)
 	poly[cpt +i -1].y = (sin(st + et) * parc->height/2.0 + yc);
     }
 
-#ifndef NOARCCOMPRESSION	/* i.e.:  ARCCOMPRESSION */
-    *ppPts = poly;		/* may have changed during reallocs */
-#endif				/* ARCCOMPRESSION */
     return(count);
 }
 
@@ -830,32 +863,50 @@ struct arcData {
 
 # define ADD_REALLOC_STEP	20
 
+static void
 addCap (capsp, ncapsp, sizep, end, arcIndex)
 	miArcCapPtr	*capsp;
 	int		*ncapsp, *sizep;
 	int		end, arcIndex;
 {
+	int newsize;
 	miArcCapPtr	cap;
 
 	if (*ncapsp == *sizep)
-		*capsp = (miArcCapPtr) Xrealloc (*capsp,
- 				(*sizep += ADD_REALLOC_STEP) * sizeof (**capsp));
+	{
+	    newsize = *sizep + ADD_REALLOC_STEP;
+	    cap = (miArcCapPtr) xrealloc (*capsp,
+					  newsize * sizeof (**capsp));
+	    if (!cap)
+		return;
+	    *sizep = newsize;
+	    *capsp = cap;
+	}
 	cap = &(*capsp)[*ncapsp];
 	cap->end = end;
 	cap->arcIndex = arcIndex;
 	++*ncapsp;
 }
 
+static void
 addJoin (joinsp, njoinsp, sizep, end0, index0, phase0, end1, index1, phase1)
 	miArcJoinPtr	*joinsp;
 	int		*njoinsp, *sizep;
 	int		end0, index0, end1, index1;
 {
+	int newsize;
 	miArcJoinPtr	join;
 
 	if (*njoinsp == *sizep)
-		*joinsp = (miArcJoinPtr) Xrealloc (*joinsp,
- 				(*sizep += ADD_REALLOC_STEP) * sizeof (**joinsp));
+	{
+	    newsize = *sizep + ADD_REALLOC_STEP;
+	    join = (miArcJoinPtr) xrealloc (*joinsp,
+					    newsize * sizeof (**joinsp));
+	    if (!join)
+		return;
+	    *sizep = newsize;
+	    *joinsp = join;
+	}
 	join = &(*joinsp)[*njoinsp];
 	join->end0 = end0;
 	join->arcIndex0 = index0;
@@ -866,17 +917,25 @@ addJoin (joinsp, njoinsp, sizep, end0, index0, phase0, end1, index1, phase1)
 	++*njoinsp;
 }
 
-miArcDataPtr
+static miArcDataPtr
 addArc (arcsp, narcsp, sizep, xarc)
 	miArcDataPtr	*arcsp;
 	int		*narcsp, *sizep;
 	xArc		xarc;
 {
+	int newsize;
 	miArcDataPtr	arc;
 
 	if (*narcsp == *sizep)
-		*arcsp = (miArcDataPtr) Xrealloc (*arcsp,
- 				(*sizep += ADD_REALLOC_STEP) * sizeof (**arcsp));
+	{
+	    newsize = *sizep + ADD_REALLOC_STEP;
+	    arc = (miArcDataPtr) xrealloc (*arcsp,
+					   newsize * sizeof (**arcsp));
+	    if (!arc)
+		return (miArcDataPtr)NULL;
+	    *sizep = newsize;
+	    *arcsp = arc;
+	}
 	arc = &(*arcsp)[*narcsp];
 	arc->arc = xarc;
 	++*narcsp;
@@ -901,7 +960,7 @@ miComputeArcs (parcs, narcs, isDashed, isDoubleDash, pDash, nDashes, dashOffset)
 	int		capSize[2];
 	int		arcSize[2];
 	int		angle2;
-	double		x0, y0, x1, y1, a0, a1, xc, yc;
+	double		a0, a1;
 	struct arcData	*data;
 	miArcDataPtr	arc;
 	xArc		xarc;
@@ -913,11 +972,16 @@ miComputeArcs (parcs, narcs, isDashed, isDoubleDash, pDash, nDashes, dashOffset)
 	int		iDashStart, dashRemainingStart, iphaseStart;
 	int		startAngle, spanAngle, endAngle, backwards;
 	int		prevDashAngle, dashAngle;
-	static int	computeAngleFromPath ();
 
-	arcs = (miPolyArcPtr) Xalloc (sizeof (*arcs) * (isDoubleDash ? 2 : 1));
 	data = (struct arcData *) ALLOCATE_LOCAL (narcs * sizeof (struct arcData));
-
+	if (!data)
+	    return (miPolyArcPtr)NULL;
+	arcs = (miPolyArcPtr) xalloc (sizeof (*arcs) * (isDoubleDash ? 2 : 1));
+	if (!arcs)
+	{
+	    DEALLOCATE_LOCAL(data);
+	    return (miPolyArcPtr)NULL;
+	}
 	for (i = 0; i < narcs; i++) {
 		a0 = torad (parcs[i].angle1);
 		angle2 = parcs[i].angle2;
@@ -1016,8 +1080,9 @@ miComputeArcs (parcs, narcs, isDashed, isDoubleDash, pDash, nDashes, dashOffset)
 			while (prevDashAngle != endAngle) {
 				dashAngle = computeAngleFromPath
  						(prevDashAngle, endAngle,
-		 				  parcs[i].width, parcs[i].height,
-						  &dashRemaining, backwards);
+						 (int)parcs[i].width,
+						 (int)parcs[i].height,
+						 &dashRemaining, backwards);
 				if (iphase == 0 || isDoubleDash) {
 					xarc = parcs[i];
 					xarc.angle1 = prevDashAngle;
@@ -1193,7 +1258,7 @@ miComputeArcs (parcs, narcs, isDashed, isDoubleDash, pDash, nDashes, dashOffset)
 # define mod(a,b)	((a) >= 0 ? (a) % (b) : (b) - (-a) % (b))
 
 /*
- * compute the angle of an elipse which cooresponds to
+ * compute the angle of an ellipse which cooresponds to
  * the given path length.  Note that the correct solution
  * to this problem is an eliptic integral, we'll punt and
  * approximate (it's only for dashes anyway).  The approximation
@@ -1207,15 +1272,14 @@ miComputeArcs (parcs, narcs, isDashed, isDoubleDash, pDash, nDashes, dashOffset)
 static int
 computeAngleFromPath (startAngle, endAngle, w, h, lenp, backwards)
 	int	startAngle, endAngle;	/* normalized absolute angles in *64 degrees;
-	int	w, h;		/* elipse width and height */
+	int	w, h;		/* ellipse width and height */
 	int	*lenp;
 	int	backwards;
 {
 	double	len;
-	double	t0, t1, t, l, x0, y0, x1, y1, sidelen;
-	int	a, startq, endq, q;
+	double	t0, t1, x0, y0, x1, y1, sidelen;
+	int	startq, endq, q;
 	int	a0, a1;
-	double	atan2 (), floor (), acos (), asin ();
 
 	a0 = startAngle;
 	a1 = endAngle;
@@ -1228,7 +1292,6 @@ computeAngleFromPath (startAngle, endAngle, w, h, lenp, backwards)
 		a1 += FULLCIRCLE;
 	startq = floor ((double) a0 / (90.0 * 64.0));
 	endq = floor ((double) a1 / (90.0 * 64.0));
-	a = a0;
 	a0 = a0 - startq * 90 *64;
 	a1 = a1 - endq * 90 * 64;
 	for (q = startq; q <= endq && len > 0; ++q) {
@@ -1301,7 +1364,7 @@ computeAngleFromPath (startAngle, endAngle, w, h, lenp, backwards)
 			x1 = x0 + (x1 - x0) * len / sidelen;
 			/*
 			 * translate the point to the angle on the
-			 * elipse
+			 * ellipse
 			 * match the actual angle)
 			 */
 			if (x1 == (double) w/2 && y1 == 0)
@@ -1358,11 +1421,10 @@ computeAngleFromPath (startAngle, endAngle, w, h, lenp, backwards)
 # define Dsin(d)	((d) == 0.0 ? 0.0 : ((d) == 90.0 ? 1.0 : sin(d*M_PI/180.0)))
 # define Dcos(d)	((d) == 0.0 ? 1.0 : ((d) == 90.0 ? 0.0 : cos(d*M_PI/180.0)))
 
-double
+static double
 FullDcos (a)
 double	a;
 {
-	double	cos ();
 	int	i;
 
 	if (floor (a/90) == a/90) {
@@ -1377,11 +1439,10 @@ double	a;
 	return cos (a * M_PI / 180.0);
 }
 
-double
+static double
 FullDsin (a)
 double	a;
 {
-	double	sin ();
 	int	i;
 
 	if (floor (a/90) == a/90) {
@@ -1404,14 +1465,13 @@ double	a;
 #undef min
 #undef max
 
-extern double	ceil (), floor (), sin (), cos (), sqrt (), pow ();
-
 #define fabs(x)	((x) >= 0.0 ? (x) : -(x))
 
 /*
  * draw zero width/height arcs
  */
 
+static void
 drawZeroArc (pDraw, pGC, tarc, left, right)
     DrawablePtr   pDraw;
     GCPtr         pGC;
@@ -1464,7 +1524,7 @@ drawZeroArc (pDraw, pGC, tarc, left, right)
 		}
 	}
 	if (x1 != x0 && y1 != y0) {
-		int	minx, maxx, miny, maxy, y, t;
+		int	minx, maxx, miny, maxy, t;
 		xRectangle  rect;
 
 		minx = ceil (x0 + w) + tarc.x;
@@ -1540,7 +1600,7 @@ struct line {
  */
 
 struct arc_bound {
-	struct bound	elipse;
+	struct bound	ellipse;
 	struct bound	inner;
 	struct bound	outer;
 	struct bound	right;
@@ -1570,7 +1630,7 @@ struct arc_def {
 	double	a0, a1;
 };
 
-double
+static double
 Sqrt (x)
 double	x;
 {
@@ -1583,20 +1643,6 @@ double	x;
 	return sqrt (x);
 }
 
-double
-fmax (a, b)
-double	a,b;
-{
-	return a > b? a : b;
-}
-
-double
-fmin (a, b)
-double	a, b;
-{
-	return a < b ? a : b;
-}
-
 #define boundedLt(value, bounds) \
 	((bounds).min <= (value) && (value) < (bounds).max)
 
@@ -1604,18 +1650,17 @@ double	a, b;
 	((bounds).min <= (value) && (value) <= (bounds).max)
 
 /*
- * this computes the elipse y value associated with the
+ * this computes the ellipse y value associated with the
  * bottom of the tail.
  */
 
 # define CUBED_ROOT_2	1.2599210498948732038115849718451499938964
 # define CUBED_ROOT_4	1.5874010519681993173435330390930175781250
 
-double
-tailElipseY (w, h, l)
+static double
+tailEllipseY (w, h, l)
 	double	w, h, l;
 {
-	extern double	Sqrt (), pow ();
 	double		t;
 
 	if (w != h) {
@@ -1630,10 +1675,10 @@ tailElipseY (w, h, l)
 
 /*
  * inverse functions -- compute edge coordinates
- * from the elipse
+ * from the ellipse
  */
 
-double
+static double
 outerXfromXY (x, y, def, acc)
 	double			x, y;
 	struct arc_def		*def;
@@ -1643,7 +1688,7 @@ outerXfromXY (x, y, def, acc)
 		   (2 * Sqrt (x*x *acc->h4 + y*y * acc->w4));
 }
 
-double
+static double
 outerXfromY (y, def, acc)
 	double			y;
 	struct arc_def		*def;
@@ -1657,7 +1702,7 @@ outerXfromY (y, def, acc)
 		   (2 * Sqrt (x*x *acc->h4 + y*y * acc->w4));
 }
 
-double
+static double
 outerYfromXY (x, y, def, acc)
 	double		x, y;
 	struct arc_def		*def;
@@ -1667,7 +1712,7 @@ outerYfromXY (x, y, def, acc)
 		   (2 * Sqrt (x*x * acc->h4 + y*y * acc->w4));
 }
 
-double
+static double
 outerYfromY (y, def, acc)
 	double	y;
 	struct arc_def		*def;
@@ -1681,7 +1726,7 @@ outerYfromY (y, def, acc)
 		   (2 * Sqrt (x*x * acc->h4 + y*y * acc->w4));
 }
 
-double
+static double
 innerXfromXY (x, y, def, acc)
 	double			x, y;
 	struct arc_def		*def;
@@ -1691,7 +1736,7 @@ innerXfromXY (x, y, def, acc)
 		   (2 * Sqrt (x*x * acc->h4 + y*y * acc->w4));
 }
 
-double
+static double
 innerXfromY (y, def, acc)
 	double			y;
 	struct arc_def		*def;
@@ -1705,7 +1750,7 @@ innerXfromY (y, def, acc)
 		   (2 * Sqrt (x*x * acc->h4 + y*y * acc->w4));
 }
 
-double
+static double
 innerYfromXY (x, y, def, acc)
 	double			x, y;
 	struct arc_def		*def;
@@ -1715,7 +1760,7 @@ innerYfromXY (x, y, def, acc)
 		   (2 * Sqrt (x*x * acc->h4 + y*y * acc->w4));
 }
 
-double
+static double
 innerYfromY (y, def, acc)
 	double	y;
 	struct arc_def		*def;
@@ -1729,6 +1774,7 @@ innerYfromY (y, def, acc)
 		   (2 * Sqrt (x*x * acc->h4 + y*y * acc->w4));
 }
 
+static void
 computeLine (x1, y1, x2, y2, line)
 	double		x1, y1, x2, y2;
 	struct line	*line;
@@ -1742,7 +1788,7 @@ computeLine (x1, y1, x2, y2, line)
 	}
 }
 
-double
+static double
 intersectLine (y, line)
 	double		y;
 	struct line	*line;
@@ -1751,11 +1797,12 @@ intersectLine (y, line)
 }
 
 /*
- * compute various accelerators for an elipse.  These
+ * compute various accelerators for an ellipse.  These
  * are simply values that are used repeatedly in
  * the computations
  */
 
+static void
 computeAcc (def, acc)
 	struct arc_def		*def;
 	struct accelerators	*acc;
@@ -1769,47 +1816,48 @@ computeAcc (def, acc)
 	acc->h2mw2 = acc->h2 - acc->w2;
 	acc->wh2mw2 = def->w * acc->h2mw2;
 	acc->wh4 = def->w * acc->h4;
-	acc->tail_y = tailElipseY (def->w, def->h, def->l);
+	acc->tail_y = tailEllipseY (def->w, def->h, def->l);
 	for (i = 0; i <= BINARY_TABLE_SIZE; i++)
 		acc->innerValid[i] = acc->outerValid[i] = 0;
 }
 		
 /*
  * compute y value bounds of various portions of the arc,
- * the outer edge, the elipse and the inner edge.
+ * the outer edge, the ellipse and the inner edge.
  */
 
+static void
 computeBound (def, bound, acc, right, left)
 	struct arc_def		*def;
 	struct arc_bound	*bound;
 	struct accelerators	*acc;
 	miArcFacePtr		right, left;
 {
-	double		t, elipseX ();
+	double		t;
 	double		innerTaily;
 	double		tail_y;
 	struct bound	innerx, outerx;
-	struct bound	elipsex;
+	struct bound	ellipsex;
 
-	bound->elipse.min = Dsin (def->a0) * def->h;
-	bound->elipse.max = Dsin (def->a1) * def->h;
+	bound->ellipse.min = Dsin (def->a0) * def->h;
+	bound->ellipse.max = Dsin (def->a1) * def->h;
 	if (def->a0 == 45 && def->w == def->h)
-		elipsex.min = bound->elipse.min;
+		ellipsex.min = bound->ellipse.min;
 	else
-		elipsex.min = Dcos (def->a0) * def->w;
+		ellipsex.min = Dcos (def->a0) * def->w;
 	if (def->a1 == 45 && def->w == def->h)
-		elipsex.max = bound->elipse.max;
+		ellipsex.max = bound->ellipse.max;
 	else
-		elipsex.max = Dcos (def->a1) * def->w;
-	bound->outer.min = outerYfromXY (elipsex.min, bound->elipse.min, def, acc);
-	bound->outer.max = outerYfromXY (elipsex.max, bound->elipse.max, def, acc);
-	bound->inner.min = innerYfromXY (elipsex.min, bound->elipse.min, def, acc);
-	bound->inner.max = innerYfromXY (elipsex.max, bound->elipse.max, def, acc);
+		ellipsex.max = Dcos (def->a1) * def->w;
+	bound->outer.min = outerYfromXY (ellipsex.min, bound->ellipse.min, def, acc);
+	bound->outer.max = outerYfromXY (ellipsex.max, bound->ellipse.max, def, acc);
+	bound->inner.min = innerYfromXY (ellipsex.min, bound->ellipse.min, def, acc);
+	bound->inner.max = innerYfromXY (ellipsex.max, bound->ellipse.max, def, acc);
 
-	outerx.min = outerXfromXY (elipsex.min, bound->elipse.min, def, acc);
-	outerx.max = outerXfromXY (elipsex.max, bound->elipse.max, def, acc);
-	innerx.min = innerXfromXY (elipsex.min, bound->elipse.min, def, acc);
-	innerx.max = innerXfromXY (elipsex.max, bound->elipse.max, def, acc);
+	outerx.min = outerXfromXY (ellipsex.min, bound->ellipse.min, def, acc);
+	outerx.max = outerXfromXY (ellipsex.max, bound->ellipse.max, def, acc);
+	innerx.min = innerXfromXY (ellipsex.min, bound->ellipse.min, def, acc);
+	innerx.max = innerXfromXY (ellipsex.max, bound->ellipse.max, def, acc);
 	
 	/*
 	 * save the line end points for the
@@ -1822,8 +1870,8 @@ computeBound (def, bound, acc, right, left)
 	if (right) {
 		right->counterClock.y = bound->outer.min;
 		right->counterClock.x = outerx.min;
-		right->center.y = bound->elipse.min;
-		right->center.x = elipsex.min;
+		right->center.y = bound->ellipse.min;
+		right->center.x = ellipsex.min;
 		right->clock.y = bound->inner.min;
 		right->clock.x = innerx.min;
 	}
@@ -1831,8 +1879,8 @@ computeBound (def, bound, acc, right, left)
 	if (left) {
 		left->clock.y = bound->outer.max;
 		left->clock.x = outerx.max;
-		left->center.y = bound->elipse.max;
-		left->center.x = elipsex.max;
+		left->center.y = bound->ellipse.max;
+		left->center.x = ellipsex.max;
 		left->counterClock.y = bound->inner.max;
 		left->counterClock.x = innerx.max;
 	}
@@ -1853,10 +1901,10 @@ computeBound (def, bound, acc, right, left)
 		bound->inner.max = t;
 	}
 	tail_y = acc->tail_y;
-	if (tail_y > bound->elipse.max)
-		tail_y = bound->elipse.max;
-	else if (tail_y < bound->elipse.min)
-		tail_y = bound->elipse.min;
+	if (tail_y > bound->ellipse.max)
+		tail_y = bound->ellipse.max;
+	else if (tail_y < bound->ellipse.min)
+		tail_y = bound->ellipse.min;
 	innerTaily = innerYfromY (tail_y, def, acc);
 	if (bound->inner.min > innerTaily)
 		bound->inner.min = innerTaily;
@@ -1865,7 +1913,7 @@ computeBound (def, bound, acc, right, left)
 }
 
 /*
- * using newtons method and a binary search, compute the elipse y value
+ * using newtons method and a binary search, compute the ellipse y value
  * associated with the given edge value (either outer or
  * inner).  This is the heart of the scan conversion code and
  * is generally called three times for each span.  It should
@@ -1877,7 +1925,7 @@ computeBound (def, bound, acc, right, left)
  *   edge_y = y + y * -------------------------------
  *                    2 * sqrt (x^2 * h^4 + y^2 * w^4)
  *
- * for y.  (x, y) is a point on the elipse, so x can be
+ * for y.  (x, y) is a point on the ellipse, so x can be
  * found from y:
  *
  *                ( h^2 - y^2 )
@@ -1901,9 +1949,9 @@ computeBound (def, bound, acc, right, left)
 # define binaryIndexFromY(y, def)	(((y) / (def)->h) * ((double) BINARY_TABLE_SIZE))
 # define yFromBinaryIndex(i, def)	((((double) i) / ((double) BINARY_TABLE_SIZE)) * (def)->h)
 
-#ifdef NOTDEF
+#ifdef notdef
 
-double
+static double
 binaryValue (i, def, acc, valid, table, f)
 	int			i;
 	struct arc_def		*def;
@@ -1924,17 +1972,16 @@ binaryValue (i, def, acc, valid, table, f)
 	(valid[i] ? table[i] : (valid[i] = 1, table[i] = f (yFromBinaryIndex (i, def), def, acc)))
 #endif
 
-double
-elipseY (edge_y, def, bound, acc, outer, y0, y1)
+static double
+ellipseY (edge_y, def, acc, outer, y0, y1)
 	double			edge_y;
 	struct arc_def		*def;
-	struct arc_bound	*bound;
 	struct accelerators	*acc;
 	register double		y0, y1;
 {
-	register double	w, h, l, h2, h4, w2, w4, x, y2;
+	register double	w, l, h2, h4, w2, w4, x, y2;
 	double		newtony, binaryy;
-	double		value0, value1, valuealt;
+	double		value0, value1;
 	double		newtonvalue, binaryvalue;
 	double		minY, maxY;
 	double		binarylimit;
@@ -1947,7 +1994,6 @@ elipseY (edge_y, def, bound, acc, outer, y0, y1)
 	 * compute some accelerators
 	 */
 	w = def->w;
-	h = def->h;
 	if (outer) {
 		f = outerYfromY;
 		l = def->l;
@@ -2053,16 +2099,18 @@ elipseY (edge_y, def, bound, acc, outer, y0, y1)
 	return y1;
 }
 
-double
-elipseX (elipse_y, def, acc)
-	double			elipse_y;
+#ifdef notdef
+static double
+ellipseX (ellipse_y, def, acc)
+	double			ellipse_y;
 	struct arc_def		*def;
 	struct accelerators	*acc;
 {
-	return def->w / def->h * Sqrt (acc->h2 - elipse_y * elipse_y);
+	return def->w / def->h * Sqrt (acc->h2 - ellipse_y * ellipse_y);
 }
+#endif
 
-double
+static double
 outerX (outer_y, def, bound, acc)
 	register double		outer_y;
 	register struct arc_def	*def;
@@ -2082,12 +2130,12 @@ outerX (outer_y, def, bound, acc)
 		return x;
 	}
 	if (outer_y == bound->outer.min)
-		y = bound->elipse.min;
+		y = bound->ellipse.min;
 	if (outer_y == bound->outer.max)
-		y = bound->elipse.max;
+		y = bound->ellipse.max;
 	else
-		y = elipseY (outer_y, def, bound, acc, 1,
- 			     bound->elipse.min, bound->elipse.max);
+		y = ellipseY (outer_y, def, acc, 1,
+			      bound->ellipse.min, bound->ellipse.max);
 	return outerXfromY (y, def, acc);
 }
 
@@ -2095,6 +2143,7 @@ outerX (outer_y, def, bound, acc)
  * this equation has two solutions -- it's not a function
  */
 
+static void
 innerXs (inner_y, def, bound, acc, innerX1p, innerX2p)
 	register double		inner_y;
 	struct arc_def		*def;
@@ -2103,7 +2152,7 @@ innerXs (inner_y, def, bound, acc, innerX1p, innerX2p)
 	double			*innerX1p, *innerX2p;
 {
 	register double	x1, x2;
-	double		xalt, y0, y1, altY, elipse_y1, elipse_y2;
+	double		xalt, y0, y1, altY, ellipse_y1, ellipse_y2;
 
 	/*
 	 * special case for circles
@@ -2116,30 +2165,30 @@ innerXs (inner_y, def, bound, acc, innerX1p, innerX2p)
 		*innerX1p = *innerX2p = x2;
 		return;
 	}
-	if (boundedLe (acc->tail_y, bound->elipse)) {
+	if (boundedLe (acc->tail_y, bound->ellipse)) {
 		if (def->h > def->w) {
-			y0 = bound->elipse.min;
+			y0 = bound->ellipse.min;
 			y1 = acc->tail_y;
-			altY = bound->elipse.max;
+			altY = bound->ellipse.max;
 		} else {
-			y0 = bound->elipse.max;
+			y0 = bound->ellipse.max;
 			y1 = acc->tail_y;
-			altY = bound->elipse.min;
+			altY = bound->ellipse.min;
 		}
-		elipse_y1 = elipseY (inner_y, def, bound, acc, 0, y0, y1);
-		elipse_y2 = elipseY (inner_y, def, bound, acc, 0, y1, altY);
-		if (elipse_y1 == -1.0)
-			elipse_y1 = elipse_y2;
-		if (elipse_y2 == -1.0)
-			elipse_y2 = elipse_y1;
+		ellipse_y1 = ellipseY (inner_y, def, acc, 0, y0, y1);
+		ellipse_y2 = ellipseY (inner_y, def, acc, 0, y1, altY);
+		if (ellipse_y1 == -1.0)
+			ellipse_y1 = ellipse_y2;
+		if (ellipse_y2 == -1.0)
+			ellipse_y2 = ellipse_y1;
 	} else {
-		elipse_y1 = elipseY (inner_y, def, bound, acc, 0,
-				     bound->elipse.min, bound->elipse.max);
-		elipse_y2 = elipse_y1;
+		ellipse_y1 = ellipseY (inner_y, def, acc, 0,
+				       bound->ellipse.min, bound->ellipse.max);
+		ellipse_y2 = ellipse_y1;
 	}
-	x2 = x1 = innerXfromY (elipse_y1, def, acc);
-	if (elipse_y1 != elipse_y2)
-		x2 = innerXfromY (elipse_y2, def, acc);
+	x2 = x1 = innerXfromY (ellipse_y1, def, acc);
+	if (ellipse_y1 != ellipse_y2)
+		x2 = innerXfromY (ellipse_y2, def, acc);
 	if (acc->left.valid && boundedLe (inner_y, bound->left)) {
 		xalt = intersectLine (inner_y, &acc->left);
 		if (xalt < x2 && xalt < x1)
@@ -2160,30 +2209,30 @@ innerXs (inner_y, def, bound, acc, innerX1p, innerX2p)
 
 /*
  * this section computes the x value of the span at y 
- * intersected with the specified face of the elipse.
+ * intersected with the specified face of the ellipse.
  *
  * this is the min/max X value over the set of normal
- * lines to the entire elipse,  the equation of the
+ * lines to the entire ellipse,  the equation of the
  * normal lines is:
  *
- *     elipse_x h^2                   h^2
- * x = ------------ y + elipse_x (1 - --- )
- *     elipse_y w^2                   w^2
+ *     ellipse_x h^2                   h^2
+ * x = ------------ y + ellipse_x (1 - --- )
+ *     ellipse_y w^2                   w^2
  *
- * compute the derivative with-respect-to elipse_y and solve
+ * compute the derivative with-respect-to ellipse_y and solve
  * for zero:
  *    
- *       (w^2 - h^2) elipse_y^3 + h^4 y
+ *       (w^2 - h^2) ellipse_y^3 + h^4 y
  * 0 = - ----------------------------------
- *       h w elipse_y^2 sqrt (h^2 - elipse_y^2)
+ *       h w ellipse_y^2 sqrt (h^2 - ellipse_y^2)
  *
- *            (   h^4 y     )
- * elipse_y = ( ----------  ) ^ (1/3)
- *            ( (h^2 - w^2) )
+ *             (   h^4 y     )
+ * ellipse_y = ( ----------  ) ^ (1/3)
+ *             ( (h^2 - w^2) )
  *
  * The other two solutions to the equation are imaginary.
  *
- * This gives the position on the elipse which generates
+ * This gives the position on the ellipse which generates
  * the normal with the largest/smallest x intersection point.
  *
  * Now compute the second derivative to check whether
@@ -2204,14 +2253,13 @@ innerXs (inner_y, def, bound, acc, innerX1p, innerX2p)
  */
 
 /*
- * computes the position on the elipse whose normal line
+ * computes the position on the ellipse whose normal line
  * intersects the given scan line maximally
  */
 
-double
-hookElipseY (scan_y, def, bound, acc, left)
+static double
+hookEllipseY (scan_y, bound, acc, left)
 	double			scan_y;
-	struct arc_def		*def;
 	struct arc_bound	*bound;
 	struct accelerators	*acc;
 {
@@ -2219,8 +2267,8 @@ hookElipseY (scan_y, def, bound, acc, left)
 
 	if (acc->h2mw2 == 0) {
 		if (scan_y > 0 && !left || scan_y < 0 && left)
-			return bound->elipse.min;
-		return bound->elipse.max;
+			return bound->ellipse.min;
+		return bound->ellipse.max;
 	}
 	ret = (acc->h4 * scan_y) / (acc->h2mw2);
 	if (ret >= 0)
@@ -2234,7 +2282,7 @@ hookElipseY (scan_y, def, bound, acc, left)
  * given scan line with the right side of the lower hook
  */
 
-double
+static double
 hookX (scan_y, def, bound, acc, left)
 	double			scan_y;
 	struct arc_def		*def;
@@ -2242,24 +2290,24 @@ hookX (scan_y, def, bound, acc, left)
 	struct accelerators	*acc;
 	int			left;
 {
-	double	elipse_y, elipse_x, x, xalt;
+	double	ellipse_y, x;
 	double	maxMin;
 
 	if (def->w != def->h) {
-		elipse_y = hookElipseY (scan_y, def, bound, acc, left);
-		if (boundedLe (elipse_y, bound->elipse)) {
+		ellipse_y = hookEllipseY (scan_y, bound, acc, left);
+		if (boundedLe (ellipse_y, bound->ellipse)) {
 			/*
 		 	 * compute the value of the second
 		 	 * derivative
 		 	 */
-			maxMin = elipse_y*elipse_y*elipse_y * acc->h2mw2 -
-		 	 acc->h2 * scan_y * (3 * elipse_y*elipse_y - 2*acc->h2);
+			maxMin = ellipse_y*ellipse_y*ellipse_y * acc->h2mw2 -
+		 	 acc->h2 * scan_y * (3 * ellipse_y*ellipse_y - 2*acc->h2);
 			if ((left && maxMin > 0) || (!left && maxMin < 0)) {
-				if (elipse_y == 0)
+				if (ellipse_y == 0)
 					return def->w + left ? -def->l/2 : def->l/2;
-				x = (acc->h2 * scan_y - elipse_y * acc->h2mw2) *
-					Sqrt (acc->h2 - elipse_y * elipse_y) /
-			 		(def->h * def->w * elipse_y);
+				x = (acc->h2 * scan_y - ellipse_y * acc->h2mw2) *
+					Sqrt (acc->h2 - ellipse_y * ellipse_y) /
+			 		(def->h * def->w * ellipse_y);
 				return x;
 			}
 		}
@@ -2291,6 +2339,7 @@ hookX (scan_y, def, bound, acc, left)
  * the given y coordinate
  */
 
+static void
 arcSpan (y, def, bounds, acc)
 	double			y;
 	struct arc_def		*def;
@@ -2388,9 +2437,9 @@ realAllocSpan ()
 	register struct finalSpan	*span;
 	register int			i;
 
-	newChunk = (struct finalSpanChunk *) Xalloc (sizeof (struct finalSpanChunk));
+	newChunk = (struct finalSpanChunk *) xalloc (sizeof (struct finalSpanChunk));
 	if (!newChunk)
-		return (struct finalSpan *) Xalloc (sizeof (struct finalSpan));
+		return (struct finalSpan *) NULL;
 	newChunk->next = chunks;
 	chunks = newChunk;
 	freeFinalSpans = span = newChunk->data + 1;
@@ -2404,18 +2453,22 @@ realAllocSpan ()
 	return span;
 }
 
+static void
 disposeFinalSpans ()
 {
 	struct finalSpanChunk	*chunk, *next;
 
 	for (chunk = chunks; chunk; chunk = next) {
 		next = chunk->next;
-		Xfree (chunk);
+		xfree (chunk);
 	}
 	chunks = 0;
 	freeFinalSpans = 0;
+	xfree(finalSpans);
+	finalSpans = 0;
 }
 
+static void
 fillSpans (pDrawable, pGC)
     DrawablePtr	pDrawable;
     GCPtr	pGC;
@@ -2431,29 +2484,28 @@ fillSpans (pDrawable, pGC)
 
 	if (nspans == 0)
 		return;
-	xSpan = xSpans = (DDXPointPtr) Xalloc (nspans * sizeof (DDXPointRec));
-	xWidth = xWidths = (int *) Xalloc (nspans * sizeof (int));
-	i = 0;
-	f = finalSpans;
-	for (spany = finalMiny; spany < finalMaxy; spany++, f++) {
-		for (span = *f; span; span=span->next) {
-			if (span->max <= span->min) {
-				printf ("span width: %d\n", span->max-span->min);
-				continue;
-			}
-			xSpan->x = span->min;
-			xSpan->y = spany;
-			++xSpan;
-			*xWidth++ = span->max - span->min;
-			++i;
-		}
+	xSpan = xSpans = (DDXPointPtr) xalloc (nspans * sizeof (DDXPointRec));
+	xWidth = xWidths = (int *) xalloc (nspans * sizeof (int));
+	if (xSpans && xWidths)
+	{
+	    i = 0;
+	    f = finalSpans;
+	    for (spany = finalMiny; spany < finalMaxy; spany++, f++) {
+		    for (span = *f; span; span=span->next) {
+			    if (span->max <= span->min)
+				    continue;
+			    xSpan->x = span->min;
+			    xSpan->y = spany;
+			    ++xSpan;
+			    *xWidth++ = span->max - span->min;
+			    ++i;
+		    }
+	    }
+	    (*pGC->FillSpans) (pDrawable, pGC, i, xSpans, xWidths, TRUE);
 	}
 	disposeFinalSpans ();
-	Xfree (finalSpans);
-	(*pGC->FillSpans) (pDrawable, pGC, i, xSpans, xWidths, TRUE);
-	Xfree (xSpans);
-	Xfree (xWidths);
-	finalSpans = 0;
+	xfree (xSpans);
+	xfree (xWidths);
 	finalMiny = 0;
 	finalMaxy = 0;
 	finalSize = 0;
@@ -2466,7 +2518,7 @@ fillSpans (pDrawable, pGC)
 			  &finalSpans[(y) - finalMiny] : \
 			  realFindSpan (y))
 
-struct finalSpan **
+static struct finalSpan **
 realFindSpan (y)
 {
 	struct finalSpan	**newSpans;
@@ -2484,8 +2536,10 @@ realFindSpan (y)
 		else
 			change = SPAN_REALLOC;
 		newSize = finalSize + change;
-		newSpans = (struct finalSpan **) Xalloc
+		newSpans = (struct finalSpan **) xalloc
  					(newSize * sizeof (struct finalSpan *));
+		if (!newSpans)
+		    return (struct finalSpan **)NULL;
 		newMiny = finalMiny;
 		newMaxy = finalMaxy;
 		if (y < finalMiny)
@@ -2496,12 +2550,12 @@ realFindSpan (y)
 			bcopy ((char *) finalSpans,
 	 		       ((char *) newSpans) + (finalMiny-newMiny) * sizeof (struct finalSpan *),
 			       finalSize * sizeof (struct finalSpan *));
-			Xfree (finalSpans);
+			xfree (finalSpans);
 		}
 		if ((i = finalMiny - newMiny) > 0)
-			bzero (newSpans, i * sizeof (struct finalSpan *));
+			bzero ((char *)newSpans, i * sizeof (struct finalSpan *));
 		if ((i = newMaxy - finalMaxy) > 0)
-			bzero (newSpans + finalMaxy - newMiny,
+			bzero ((char *)(newSpans + finalMaxy - newMiny),
 			       i * sizeof (struct finalSpan *));
 		finalSpans = newSpans;
 		finalMaxy = newMaxy;
@@ -2511,9 +2565,10 @@ realFindSpan (y)
 	return &finalSpans[y - finalMiny];
 }
 
+static void
 newFinalSpan (y, xmin, xmax)
-int		y;
-register int	xmin, xmax;
+    int		y;
+    register int	xmin, xmax;
 {
 	register struct finalSpan	*x;
 	register struct finalSpan	**f;
@@ -2521,6 +2576,8 @@ register int	xmin, xmax;
 	struct finalSpan		*prev;
 
 	f = findSpan (y);
+	if (!f)
+	    return;
 	oldx = 0;
 	for (;;) {
 		prev = 0;
@@ -2554,14 +2611,18 @@ register int	xmin, xmax;
 	}
 	if (!oldx) {
 		x = allocFinalSpan ();
-		x->min = xmin;
-		x->max = xmax;
-		x->next = *f;
-		*f = x;
-		++nspans;
+		if (x)
+		{
+		    x->min = xmin;
+		    x->max = xmax;
+		    x->next = *f;
+		    *f = x;
+		    ++nspans;
+		}
 	}
 }
 
+static void
 mirrorSppPoint (quadrant, sppPoint)
 	int		quadrant;
 	SppPointPtr	sppPoint;
@@ -2590,6 +2651,7 @@ static double	spanY;
 
 static int	quadrantMask;
 
+static void
 span (left, right)
 	double	left, right;
 {
@@ -2641,13 +2703,13 @@ span (left, right)
  * first quadrant.
  */
 
+static void
 drawArc (x0, y0, w, h, l, a0, a1, right, left)
 	int	x0, y0, w, h, l, a0, a1;
 	miArcFacePtr	right, left;	/* save end line points */
 {
 	struct arc_def		def;
 	struct accelerators	acc;
-	struct span		*result;
 	int			startq, endq, curq;
 	int			rightq, leftq, righta, lefta;
 	miArcFacePtr		passRight, passLeft;
@@ -2657,7 +2719,7 @@ drawArc (x0, y0, w, h, l, a0, a1, right, left)
 		int	mask;
 	}	band[5], sweep[20];
 	int			bandno, sweepno;
-	int			i, j, k;
+	int			i, j;
 	int			flipRight = 0, flipLeft = 0;			
 
 	def.w = ((double) w) / 2;
@@ -2829,7 +2891,7 @@ drawArc (x0, y0, w, h, l, a0, a1, right, left)
 				passLeft = left;
 		}
 		drawQuadrant (&def, &acc, sweep[j].a0, sweep[j].a1, mask, 
- 			      passRight, passLeft, l == 0);
+ 			      passRight, passLeft);
 	}
 	/*
 	 * mirror the coordinates generated for the
@@ -2861,13 +2923,13 @@ drawArc (x0, y0, w, h, l, a0, a1, right, left)
 	}
 }
 
-drawQuadrant (def, acc, a0, a1, mask, right, left, isZero)
+static void
+drawQuadrant (def, acc, a0, a1, mask, right, left)
 	struct arc_def		*def;
 	struct accelerators	*acc;
 	int			a0, a1;
 	int			mask;
 	miArcFacePtr		right, left;
-	int			isZero;
 {
 	struct arc_bound	bound;
 	double			miny, maxy, y;
@@ -2898,14 +2960,3 @@ drawQuadrant (def, acc, a0, a1, mask, right, left, isZero)
 		span (0.0, 1.0);
 	}
 }
-
-max (x, y)
-{
-	return x>y? x:y;
-}
-
-min (x, y)
-{
-	return x<y? x:y;
-}
-

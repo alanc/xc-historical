@@ -21,10 +21,12 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miregion.c,v 1.37 88/09/06 14:49:42 jim Exp $ */
+/* $XConsortium: miregion.c,v 1.38 88/10/03 14:58:06 jim Exp $ */
 
 #include "miscstruct.h"
 #include "regionstr.h"
+
+extern Bool Must_have_memory;
 
 #ifdef DEBUG
 #define assert(expr) {if (!(expr)) \
@@ -105,8 +107,10 @@ miRegionCreate(rect, size)
     register RegionPtr temp;       /*   new region  */
    
     size = max(1, size);
-    temp = (RegionPtr ) Xalloc (sizeof (RegionRec));
-    temp->rects = (BOX *) Xalloc (size * (sizeof(BOX)));
+    Must_have_memory = TRUE; /* XXX */
+    temp = (RegionPtr ) xalloc (sizeof (RegionRec));
+    temp->rects = (BOX *) xalloc (size * (sizeof(BOX)));
+    Must_have_memory = FALSE; /* XXX */
     if (rect == (BOX *)NULL)
     {
         temp->numRects = 0;
@@ -135,8 +139,10 @@ miRegionCopy(dstrgn, rgn)
         {
             if (dstrgn->rects)
             {
-                dstrgn->rects = (BOX *) Xrealloc(dstrgn->rects, 
+		Must_have_memory = TRUE; /* XXX */
+                dstrgn->rects = (BOX *) xrealloc(dstrgn->rects, 
                                  rgn->numRects * (sizeof(BOX)));
+		Must_have_memory = FALSE; /* XXX */
             }
 	    else
 		ErrorF(  "RC HORRIBLE ERROR...\n");
@@ -148,7 +154,8 @@ miRegionCopy(dstrgn, rgn)
         dstrgn->extents.x2 = rgn->extents.x2;
         dstrgn->extents.y2 = rgn->extents.y2;
 
-	bcopy(rgn->rects, dstrgn->rects, rgn->numRects * sizeof(BOX));   
+	bcopy((char *)rgn->rects, (char *)dstrgn->rects,
+	      rgn->numRects * sizeof(BOX));   
     }
 }
 
@@ -381,7 +388,9 @@ miRegionOp(newReg, reg1, reg2, overlapFunc,  nonOverlap1Func, nonOverlap2Func)
      */
     newReg->size = max(reg1->numRects,reg2->numRects) * 2;
 
-    newReg->rects = (BoxPtr) Xalloc (sizeof(BoxRec) * newReg->size);
+    Must_have_memory = TRUE; /* XXX */
+    newReg->rects = (BoxPtr) xalloc (sizeof(BoxRec) * newReg->size);
+    Must_have_memory = FALSE; /* XXX */
     
     /*
      * Initialize ybot and ytop.
@@ -569,12 +578,13 @@ miRegionOp(newReg, reg1, reg2, overlapFunc,  nonOverlap1Func, nonOverlap2Func)
      * Only do this stuff if the number of rectangles allocated is more than
      * twice the number of rectangles in the region (a simple optimization...).
      */
+    Must_have_memory = TRUE; /* XXX */
     if (newReg->numRects < (newReg->size >> 1))
     {
 	if (REGION_NOT_EMPTY(newReg))
 	{
 	    newReg->size = newReg->numRects;
-	    newReg->rects = (BoxPtr) Xrealloc (newReg->rects,
+	    newReg->rects = (BoxPtr) xrealloc (newReg->rects,
 					       sizeof(BoxRec) * newReg->size);
 	}
 	else
@@ -584,11 +594,12 @@ miRegionOp(newReg, reg1, reg2, overlapFunc,  nonOverlap1Func, nonOverlap2Func)
 	     * the region is empty
 	     */
 	    newReg->size = 1;
-	    Xfree(newReg->rects);
-	    newReg->rects = (BoxPtr) Xalloc(sizeof(BoxRec));
+	    xfree(newReg->rects);
+	    newReg->rects = (BoxPtr) xalloc(sizeof(BoxRec));
 	}
     }
-    Xfree (oldRects);
+    Must_have_memory = FALSE; /* XXX */
+    xfree (oldRects);
 }
 
 /*-
@@ -721,6 +732,7 @@ miIntersectO (pReg, r1, r1End, r2, r2End, y1, y2)
 
     pNextRect = &pReg->rects[pReg->numRects];
 
+    Must_have_memory = TRUE; /* XXX */
     while ((r1 != r1End) && (r2 != r2End))
     {
 	x1 = max(r1->x1,r2->x1);
@@ -766,6 +778,7 @@ miIntersectO (pReg, r1, r1End, r2, r2End, y1, y2)
 	    r2++;
 	}
     }
+    Must_have_memory = FALSE; /* XXX */
 }
 
 
@@ -780,7 +793,8 @@ miIntersect(newReg, reg1, reg2)
 	(!EXTENTCHECK(&reg1->extents, &reg2->extents)))
         newReg->numRects = 0;
     else
-	miRegionOp (newReg, reg1, reg2, miIntersectO, NULL, NULL);
+	miRegionOp (newReg, reg1, reg2, miIntersectO,
+		    (void (*)())NULL, (void (*)())NULL);
     
     /*
      * Can't alter newReg's extents before we call miRegionOp because
@@ -828,6 +842,7 @@ miUnionNonO (pReg, r, rEnd, y1, y2)
 
     assert(y1 < y2);
 
+    Must_have_memory = TRUE; /* XXX */
     while (r != rEnd)
     {
 	assert(r->x1 < r->x2);
@@ -842,7 +857,7 @@ miUnionNonO (pReg, r, rEnd, y1, y2)
 	assert(pReg->numRects<=pReg->size);
 	r++;
     }
-
+    Must_have_memory = FALSE; /* XXX */
 }
 
 /*-
@@ -898,7 +913,7 @@ miUnionO (pReg, r1, r1End, r2, r2End, y1, y2)
     }  \
     assert(pReg->numRects<=pReg->size);\
     r++;
-    
+    Must_have_memory = TRUE; /* XXX */
     assert (y1<y2);
     while ((r1 != r1End) && (r2 != r2End))
     {
@@ -923,6 +938,7 @@ miUnionO (pReg, r1, r1End, r2, r2End, y1, y2)
     {
 	MERGERECT(r2);
     }
+    Must_have_memory = FALSE; /* XXX */
 }
 
 int 
@@ -1025,6 +1041,7 @@ miSubtractNonO1 (pReg, r, rEnd, y1, y2)
 	
     assert(y1<y2);
 
+    Must_have_memory = TRUE; /* XXX */
     while (r != rEnd)
     {
 	assert(r->x1<r->x2);
@@ -1040,6 +1057,7 @@ miSubtractNonO1 (pReg, r, rEnd, y1, y2)
 
 	r++;
     }
+    Must_have_memory = FALSE; /* XXX */
 }
 
 /*-
@@ -1074,6 +1092,7 @@ miSubtractO (pReg, r1, r1End, r2, r2End, y1, y2)
     assert(y1<y2);
     pNextRect = &pReg->rects[pReg->numRects];
 
+    Must_have_memory = TRUE; /* XXX */
     while ((r1 != r1End) && (r2 != r2End))
     {
 	if (r2->x2 <= x1)
@@ -1187,6 +1206,7 @@ miSubtractO (pReg, r1, r1End, r2, r2End, y1, y2)
 	    x1 = r1->x1;
 	}
     }
+    Must_have_memory = FALSE; /* XXX */
 }
 	
 /*-
@@ -1217,7 +1237,8 @@ miSubtract(regD, regM, regS)
         return(1);
     }
  
-    miRegionOp (regD, regM, regS, miSubtractO, miSubtractNonO1, NULL);
+    miRegionOp (regD, regM, regS, miSubtractO, miSubtractNonO1,
+		(void (*)())NULL);
 
     /*
      * Can't alter newReg's extents before we call miRegionOp because
@@ -1363,8 +1384,8 @@ void
 miRegionDestroy(pRegion)
     RegionPtr pRegion;
 {
-    Xfree(pRegion->rects);
-    Xfree(pRegion);
+    xfree(pRegion->rects);
+    xfree(pRegion);
 }
 
 

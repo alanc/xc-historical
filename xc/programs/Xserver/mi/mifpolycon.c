@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mifpolycon.c,v 1.12 88/09/06 14:50:32 jim Exp $ */
+/* $XConsortium: mifpolycon.c,v 1.13 88/10/15 17:50:12 keith Exp $ */
 #include "X.h"
 #include "gcstruct.h"
 #include "windowstr.h"
@@ -109,15 +109,17 @@ miFillSppPoly(dst, pgc, count, ptsIn, xTrans, yTrans, xFtrans, yFtrans)
     imin = GetFPolyYBounds(ptsIn, count, yFtrans, &ymin, &ymax);
 
     y = ymax - ymin + 1;
+    if ((count < 3) || (y <= 0))
+	return;
     ptsOut = FirstPoint = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * y);
     width = FirstWidth = (int *) ALLOCATE_LOCAL(sizeof(int) * y);
     Marked = (int *) ALLOCATE_LOCAL(sizeof(int) * count);
 
-    if(!ptsOut || !width || !Marked || (count < 3) || (y <= 0))
+    if(!ptsOut || !width || !Marked)
     {
-	DEALLOCATE_LOCAL(Marked);
-	DEALLOCATE_LOCAL(width);
-	DEALLOCATE_LOCAL(ptsOut);
+	if (Marked) DEALLOCATE_LOCAL(Marked);
+	if (width) DEALLOCATE_LOCAL(width);
+	if (ptsOut) DEALLOCATE_LOCAL(ptsOut);
 	return;
     }
 

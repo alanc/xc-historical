@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miexpose.c,v 1.37 89/02/16 11:56:45 rws Exp $ */
+/* $XConsortium: miexpose.c,v 1.38 89/03/18 16:25:36 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -310,7 +310,7 @@ miSendGraphicsExpose (client, pRgn, drawable, major, minor)
 	    pe->u.graphicsExposure.majorEvent = major;
 	    pe->u.graphicsExposure.minorEvent = minor;
 	}
-	TryClientEvents(client, pEvent, pRgn->numRects,
+	TryClientEvents(client, pEvent, (int)pRgn->numRects,
 			    0, NoEventMask, NullGrab);
 	DEALLOCATE_LOCAL(pEvent);
     }
@@ -478,9 +478,11 @@ border tile in the resource table.
 
 static GCPtr	screenContext[MAXSCREENS];
 
+/*ARGSUSED*/
 static
-tossGC (pGC)
+tossGC (pGC, id)
 GCPtr pGC;
+GC id;
 {
     int i;
 
@@ -564,6 +566,10 @@ int what;
 	}
     }
 
+    prect = (xRectangle *)ALLOCATE_LOCAL(prgn->numRects * sizeof(xRectangle));
+    if (!prect)
+	return;
+
     newValues[FUNCTION] = GXcopy;
     gcmask |= GCFunction | GCClipMask;
 
@@ -573,6 +579,12 @@ int what;
     if (pWin->visual != pRoot->visual)
     {
 	usingScratchGC = TRUE;
+	pGC = GetScratchGC(pWin->drawable.depth, pWin->drawable.pScreen);
+	if (!pGC)
+	{
+	    DEALLOCATE_LOCAL(prect);
+	    return;
+	}
 	/*
 	 * mash the clip list so we can paint the border by
 	 * mangling the window in place, pretending it
@@ -597,7 +609,6 @@ int what;
 	    newValues[ABSX] = 0;
 	    newValues[ABSY] = 0;
 	}
-	pGC = GetScratchGC(pWin->drawable.depth, pWin->drawable.pScreen);
     } else {
 	/*
 	 * draw the background to the root window
@@ -605,8 +616,11 @@ int what;
 	if (screenContext[i] == (GCPtr)NULL)
 	{
 	    screenContext[i] = CreateGC(pWin, (BITS32) 0, (XID *) 0, &status);
-	    AddResource (FakeClientID (0), RT_GC, (pointer) screenContext[i],
-	    		 tossGC, RC_CORE);
+	    if (!screenContext[i])
+		return;
+	    if (!AddResource(FakeClientID(0), RT_GC, (pointer)screenContext[i],
+			     tossGC, RC_CORE))
+	        return;
 	}
 	pGC = screenContext[i];
 	newValues[SUBWINDOW] = IncludeInferiors;
@@ -683,7 +697,6 @@ int what;
     if (pWin->drawable.serialNumber != pGC->serialNumber)
 	ValidateGC(pWin, pGC);
 
-    prect = (xRectangle *)ALLOCATE_LOCAL(prgn->numRects * sizeof(xRectangle));
     pbox = prgn->rects;
     for (i= 0; i < prgn->numRects; i++, pbox++, prect++)
     {
