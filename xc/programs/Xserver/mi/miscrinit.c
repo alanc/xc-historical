@@ -14,7 +14,7 @@ without express or implied warranty.
 
 */
 
-/* $XConsortium: miscrinit.c,v 5.0 90/09/24 09:18:02 rws Exp $ */
+/* $XConsortium: miscrinit.c,v 5.1 90/09/24 10:17:45 rws Exp $ */
 
 #include "X.h"
 #include "servermd.h"
@@ -108,6 +108,7 @@ miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
     /* CreateWindow, DestroyWindow, PositionWindow, ChangeWindowAttributes */
     /* RealizeWindow, UnrealizeWindow */
     pScreen->ValidateTree = miValidateTree;
+    pScreen->PostValidateTree = (void (*)()) 0;
     pScreen->WindowExposures = miWindowExposures;
     /* PaintWindowBackground, PaintWindowBorder, CopyWindow */
     pScreen->ClearToBackground = miClearToBackground;
