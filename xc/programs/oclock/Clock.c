@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Clock.c,v 1.19 91/01/10 18:16:05 converse Exp $
+ * $XConsortium: Clock.c,v 1.20 91/02/16 20:33:18 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -36,34 +36,34 @@
 # include <math.h>
 # include <X11/extensions/shape.h>
 
-#define Offset(field) XtOffsetOf(ClockRec, clock.field)
-#define Goffset(field) XtOffsetOf(CoreRec, core.field)
+#define offset(field) XtOffsetOf(ClockRec, clock.field)
+#define goffset(field) XtOffsetOf(WidgetRec, core.field)
 
 static XtResource resources[] = {
     {XtNwidth, XtCWidth, XtRDimension, sizeof(Dimension),
-	Goffset(width), XtRString, "120"},
+        goffset(width), XtRImmediate, (XtPointer) 120},
     {XtNheight, XtCHeight, XtRDimension, sizeof(Dimension),
-	Goffset(height), XtRString, "120"},
+	goffset(height), XtRImmediate, (XtPointer) 120},
     {XtNminute, XtCForeground, XtRPixel, sizeof (Pixel),
-	Offset(minute), XtRString, XtDefaultForeground},
+	offset(minute), XtRString, XtDefaultForeground},
     {XtNhour, XtCForeground, XtRPixel, sizeof (Pixel),
-	Offset(hour), XtRString, XtDefaultForeground},
+	offset(hour), XtRString, XtDefaultForeground},
     {XtNjewel, XtCForeground, XtRPixel, sizeof (Pixel),
-	Offset(jewel), XtRString, XtDefaultForeground},
+	offset(jewel), XtRString, XtDefaultForeground},
     {XtNbackingStore, XtCBackingStore, XtRBackingStore, sizeof (int),
-    	Offset (backing_store), XtRString, "default"},
+    	offset (backing_store), XtRString, "default"},
     {XtNborderSize, XtCBorderSize, XtRFloat, sizeof (float),
-	Offset (border_size), XtRString, "0.1"},
+	offset (border_size), XtRString, "0.1"},
     {XtNjewelSize, XtCBorderSize, XtRFloat, sizeof (float),
-	Offset (jewel_size), XtRString, "0.075"},
+	offset (jewel_size), XtRString, "0.075"},
     {XtNshapeWindow, XtCShapeWindow, XtRBoolean, sizeof (Boolean),
-	Offset (shape_window), XtRString, "TRUE"},
+	offset (shape_window), XtRImmediate, (XtPointer) True},
     {XtNtransparent, XtCTransparent, XtRBoolean, sizeof (Boolean),
-	Offset (transparent), XtRString, "FALSE"},
+	offset (transparent), XtRImmediate, (XtPointer) False},
 };
 
-#undef Offset
-#undef Goffset
+#undef offset
+#undef goffset
 
 static void 	new_time();
 
