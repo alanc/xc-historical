@@ -1,6 +1,6 @@
 
 /*
- * $XConsortium: Xrm.c,v 1.31 89/11/28 12:29:41 rws Exp $
+ * $XConsortium: Xrm.c,v 1.3 90/06/01 15:40:59 kit Exp $
  */
 
 /***********************************************************
@@ -27,11 +27,11 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include	<X11/Xlib.h>
 #include	"Xlibint.h"
 #include	<X11/Xresource.h>
 #include	<stdio.h>
 #include	<ctype.h>
+#include 	"XrmI.h"
 #ifdef SYSV
 #include	<X11/Xos.h>
 #endif /* SYSV */
@@ -64,7 +64,7 @@ Joel McCormack
 
 */
 
-
+typedef unsigned long Signature;
 
 extern void bzero();
 
@@ -107,6 +107,35 @@ static int     maxResourceQuark = -1;
 
 #define IsResourceQuark(q)  ((q) <= maxResourceQuark && resourceQuarks[q])
 
+#define CHUNK_SIZE 5100
+
+static char * global_ptr;
+static unsigned int space_left = 0;
+
+#ifdef TEST
+char *
+LocalMalloc(size)
+unsigned int size;
+{
+    register char * ptr;
+
+    if (size > space_left) {
+	if ((ptr = Xmalloc(CHUNK_SIZE)) == NULL) 
+	    return(NULL);
+
+	space_left = CHUNK_SIZE;
+    }
+    else
+	ptr = global_ptr;	
+
+    space_left -= size;
+    global_ptr = ptr + size;
+
+    return(ptr);
+}
+#else
+#  define LocalMalloc Xmalloc
+#endif
 
 #if NeedFunctionPrototypes
 void XrmStringToQuarkList(
@@ -118,28 +147,30 @@ void XrmStringToQuarkList(name, quarks)
     register XrmQuarkList quarks;   /* RETURN */
 #endif
 {
-    register int    i;
-    register char   ch;
-    char	    oneName[1000];
+    register int	i;
+    register char       ch, *tname;
+    register Signature  sig = 0;
 
-    if (name != NULL) {
-	for (i = 0 ; ((ch = *name) != '\0') ; name++) {
-	    if (ch == '.') {
+    if ((tname = name) != NULL) {
+	for (i = 0 ; ((ch = *tname) != '\0') ; tname++) {
+	    if (ch == '.' || ch == '*') {
 		if (i != 0) {
-		    oneName[i] = 0;
-		    *quarks = XrmStringToQuark(oneName);
-		    quarks++;
+		    /* Found a complete name */
+		    *quarks++ = _XrmInternalStringToQuark(name, i, sig);
+
 		    i = 0;
+		    sig = 0;
 		}
+
+		name = tname + 1;
 	    } else {
-		oneName[i] = ch;
+		sig = (sig << 1) + ch; /* Compute the signature. */
 	    	i++;
 	    }
 	}
+	/* Do last name */
 	if (i != 0) {
-	    oneName[i] = 0;
-	    *quarks = XrmStringToQuark(oneName);
-	    quarks++;
+	    *quarks++ = _XrmInternalStringToQuark(name, i, sig);
 	}
     }
     *quarks = NULLQUARK;
@@ -159,35 +190,35 @@ void XrmStringToBindingQuarkList(name, bindings, quarks)
 {
     register int	i;
     register XrmBinding binding;
-    register char       ch;
-    char		oneName[1000];
+    register char       ch, *tname;
+    register Signature  sig = 0;
 
-    if (name != NULL) {
+    if ((tname = name) != NULL) {
 	binding = XrmBindTightly;
-	for (i = 0 ; ((ch = *name) != '\0') ; name++) {
+	for (i = 0 ; ((ch = *tname) != '\0') ; tname++) {
 	    if (ch == '.' || ch == '*') {
 		if (i != 0) {
 		    /* Found a complete name */
-		    *bindings = binding;
-		    bindings++;
-		    oneName[i] = '\0';
-		    *quarks = XrmStringToQuark(oneName);
-		    quarks++;
+		    *bindings++ = binding;
+		    *quarks++ = _XrmInternalStringToQuark(name, i, sig);
+
 		    i = 0;
+		    sig = 0;
 		    binding = XrmBindTightly;
 		}
-		if (ch == '*') binding = XrmBindLoosely;
+		if (ch == '*') 
+		    binding = XrmBindLoosely;
+
+		name = tname + 1;
 	    } else {
-		oneName[i] = ch;
+		sig = (sig << 1) + ch; /* Compute the signature. */
 	    	i++;
 	    }
 	}
 	/* Do last name */
 	if (i != 0) {
-	    oneName[i] = '\0';
 	    *bindings = binding;
-	    *quarks = XrmStringToQuark(oneName);
-	    quarks++;
+	    *quarks++ = _XrmInternalStringToQuark(name, i, sig);
 	}
     }
     *quarks = NULLQUARK;
@@ -218,7 +249,7 @@ static void PutEntry(bucket, bindings, quarks, type, value)
 	table = bucket->tables[binding];
 	if (table == NULL) {
 	    if ((table = bucket->tables[binding] =
-		 (XrmHashTable) Xmalloc(sizeof(XrmHashBucket) * HASHSIZE))
+		 (XrmHashTable) LocalMalloc(sizeof(XrmHashBucket) * HASHSIZE))
 		 == NULL)
 		return;
 	    bzero((char *) table, sizeof(XrmHashBucket) * HASHSIZE);
@@ -233,7 +264,7 @@ static void PutEntry(bucket, bindings, quarks, type, value)
 
 	/* Create new bucket if needed */
 	if (bucket == NULL) {
-	    if ((bucket = (XrmHashBucket) Xmalloc(sizeof(XrmHashBucketRec)))
+	    if ((bucket = (XrmHashBucket)LocalMalloc(sizeof(XrmHashBucketRec)))
 		 == NULL)
 		return;
 	    bzero((char *) bucket, sizeof(XrmHashBucketRec));
@@ -267,7 +298,7 @@ static void PutEntry(bucket, bindings, quarks, type, value)
     }
     bucket->type = type;
     bucket->value.size = value->size;
-    if ((bucket->value.addr = (caddr_t) Xmalloc(value->size)) == NULL)
+    if ((bucket->value.addr = (caddr_t) LocalMalloc(value->size)) == NULL)
 	return;
     bcopy((char *) value->addr, (char *) bucket->value.addr, (int) value->size);
 } /* PutEntry */
@@ -860,131 +891,366 @@ void XrmQPutStringResource(pdb, bindings, quarks, str)
     PutEntry(*pdb, bindings, quarks, XrmQString, &value);
 } /* XrmQPutStringResource */
 
+/*	Function Name: GetDatabase
+ *	Description: Parses a string and stores it as a database.
+ *	Arguments: db - the database.
+ *                 str - a pointer to the string containing the database.
+ *	Returns: 0 if failure, 1 if totally sucessful.
+ */
 
-static void PutLineResources(pdb, get_line, closure)
-    XrmDatabase *pdb;
-    char	*((*get_line)(/* buf, count, closure */));
-    caddr_t     closure;
+/*
+ * This function is highly optimized to inline as much as possible. 
+ * Be very careful with modifications, or simplifications, as they 
+ * may adversely affect the performance.
+ *
+ * Chris Peterson, MIT X Consortium		5/17/90.
+ */
+
+#define LIST_SIZE 101
+#define BUFFER_SIZE 100
+
+int
+GetDatabase(db, str)
+XrmDatabase * db;
+register char * str;
 {
-    register char   *s, *ts, ch;
-    char	buf[5000];
-    char        *pbuf = buf;
-    int		pbuf_size = sizeof(buf);
-    Bool	have_entire_value;
-    register char   *nameStr, *valStr;
-    XrmBinding	    bindings[100];
-    XrmQuark	    quarks[100];
-    XrmValue	    value;
+    register char * ptr;
+    register unsigned short bits = 0;
+    register char c;
+    register Signature sig;
+    register char * ptr_max;
+    register XrmQuarkList t_quarks;
+    register XrmBindingList t_bindings;
 
-#define CheckForFullBuffer()						   \
-    if (s - pbuf == pbuf_size - 1) { /* if line filled buffer */	   \
-	char *obuf = pbuf;						   \
-	if (pbuf == buf) {						   \
-	    int osize = pbuf_size;					   \
-	    pbuf_size *= 2;						   \
-	    if ((pbuf = Xmalloc(pbuf_size)) == NULL)			   \
-		return;							   \
-	    bcopy(buf, pbuf, osize);					   \
-	}								   \
-	else {								   \
-	    pbuf_size *= 2;						   \
-	    if ((pbuf = Xrealloc(pbuf, pbuf_size)) == NULL) 		   \
-		return;							   \
-	}								   \
-	s = pbuf + (s - obuf);						   \
-	ts = pbuf + (ts - obuf);					   \
-	nameStr = pbuf + (nameStr - obuf);				   \
-	valStr = pbuf + (valStr - obuf);				   \
-	if ((char *)(*get_line)(s, pbuf_size - (s-pbuf), closure) != NULL) \
-	    have_entire_value = False;					   \
-    }
+    int alloc_chars = BUFSIZ, return_value = 1;
+    char buffer[BUFSIZ], *value_str;
+    XrmQuark quarks[LIST_SIZE];
+    XrmBinding bindings[LIST_SIZE];
+    XrmValue value;
 
-    if (*pdb == NULL) *pdb = NewDatabase();
-    for (;;) {
-	s = (char *)(*get_line)(pbuf, pbuf_size, closure);
-	if (s == NULL) break;
+    if ((value_str = Xmalloc(sizeof(char) * alloc_chars)) == NULL)
+	return(0);
+
+    while (!xrm_is_EOF(bits)) {
 
 	/*
-	 * Scan to start of resource name/class specification
-	 *
-	 * Comments are indicated by an exclamation mark in column 0 only.  The
-	 * check for sharp sign after optional white space is in violation of 
-	 * the spec, but is there for compatibility (for now).
+	 * First: check the first character in a line to see if it is
+	 * a "!" which will signify a comment.
 	 */
-	if (*s == '!') continue;
-	for (; ((ch = *s) != '\n') && isspace(ch); s++) {};
-	if ((ch == '\0') || (ch == '\n') || (ch == '#')) continue;
-    
-	nameStr = valStr = s;
-	ts = s - 1;
-	do {
-	    have_entire_value = True;
-	    /* Scan to end of resource name/class specification */
-	    for (; ; s++) {
-		if ((ch = *s) == '\0' || ch == '\n')
-		    break;
-		if (ch == ':') {
-		    s++;
-		    break;
-		}
-		if (! isspace(ch))
-		    ts = s;
-	    }
-	    CheckForFullBuffer();
-	} while (! have_entire_value);
-    
-	/* Remove trailing white space from name/class */
-	ts[1] = '\0';
-	
-	/* Scan to start of resource value */
-	for (; *s != '\n' && isspace(*s); s++) {};
-    
-	valStr = ts = s;
-	do {
-	    have_entire_value = True;
-	    /* Scan to end of resource value */
-	    for (; ((ch = *s) != '\0' && ch != '\n');s++) {
-		if (ch == '\\') {
-		    if (*++s == 'n') {	    /* \n becomes LF */
-			*ts = '\n';
-			ts++;
-		    } else if (*s == '\n') {  /* \LF means continue next line */
-			if ((char *)(*get_line)(s, pbuf_size - (s-pbuf), closure) == NULL)
-			    break;
-			s--;
-		    } else if (isascii(s[0]) && isdigit(s[0]) &&
-			       isascii(s[1]) && isdigit(s[1]) &&
-			       isascii(s[2]) && isdigit(s[2])) {
-			register unsigned char *uts = (unsigned char *) ts;
-			*uts = (unsigned char) ((s[0] - '0') * 0100 + 
-						(s[1] - '0') * 010 +
-						(s[2] - '0'));
-			ts++;
-			s += 2;
-		    } else if (*s != '\0') {
-			*ts = *s;
-			ts++;
-		    } else break;
-		} else {
-		    *ts = ch;
-		    ts++;
-		}
-	    };
-	    CheckForFullBuffer();
-	} while (! have_entire_value);
-	*ts = '\0';
-    
-	/* Store it in database */
-	value.size = s - valStr + 1;
-	value.addr = (caddr_t) valStr;
-	
-	XrmStringToBindingQuarkList(nameStr, bindings, quarks);
-	XrmQPutResource(pdb, bindings, quarks, XrmQString, &value);
-    } /* for lines left to process */
-    if (pbuf != buf) Xfree(pbuf);
-#undef CheckForFullBuffer
-} /* PutLineResources */
 
+	if (xrm_is_EOF(bits = get_next_char(c, str)))
+	    goto done;		/* End of file, we're done. */
+	    
+	if (xrm_is_comment(bits)) { /* Comment, spin to next '\n' */
+	    while (!xrm_is_EOL(bits = get_next_char(c, str))) {}
+
+	    continue;		/* start a new line. */
+	}
+
+	/*
+	 * Second: Remove extra whitespace. 
+	 */
+
+	if (xrm_is_space(bits))
+	    while (xrm_is_space((bits = get_next_char(c, str)))) {};
+	
+	/*
+	 * Ignore empty lines.
+	 */
+
+	if (xrm_is_EOL(bits)) 
+	    continue;		/* start a new line. */
+	    
+	    
+	/*
+	 * Third: loop through the LHS of the resource specification
+	 * storing characters and converting this to a Quark.
+	 *
+	 * If the number of quarks is greater than LIST_SIZE - 1.  This
+	 * function will trash your memory.
+	 *
+	 * If the length of any quark is larger than BUFSIZ this function
+	 * will also trash memory.
+	 */
+	
+	t_bindings = bindings;
+	t_quarks = quarks;
+
+	/*
+	 * Process the optional leading binding.
+	 */
+
+	if (xrm_is_loose(bits)) {
+	    *t_bindings = XrmBindLoosely;	
+	    bits = get_next_char(c, str);
+	}
+	else {
+	    *t_bindings = XrmBindTightly;	
+	    if (xrm_is_tight(bits))
+		bits = get_next_char(c, str);
+	}
+
+	sig = 0;
+	ptr = buffer;
+	for(;;) {
+
+	    while (!xrm_is_end_of_quark(bits)) {
+		*ptr++ = c;
+		sig = (sig << 1) + c; /* Compute the signature. */
+		bits = get_next_char(c, str);
+	    }
+		
+	    *t_quarks++ = _XrmInternalStringToQuark(buffer, ptr - buffer, sig);
+	    
+	    if (xrm_is_separator(bits))  {
+		if (!xrm_is_space(bits))
+		    break;
+		/* Remove white space */
+		do {
+		    *ptr++ = c;
+		    sig = (sig << 1) + c; /* Compute the signature. */
+		} while (xrm_is_space(bits = get_next_char(c, str)));
+		if (xrm_is_separator(bits))
+		    break;
+		/* The spec doesn't permit it, but support spaces
+		 * internal to resource name/class */
+		t_quarks--;
+		continue;
+	    }
+
+	    /*
+	     * Set new binding. 
+	     */
+	    
+	    if (xrm_is_tight(bits))
+		*(++t_bindings) = XrmBindTightly;
+	    else
+		*(++t_bindings) = XrmBindLoosely;
+
+	    bits = get_next_char(c, str);
+	    sig = 0;
+	    ptr = buffer;
+	} 
+
+	*t_quarks = NULLQUARK;
+
+	/*
+	 * Make sure that there is a ':' in this line.
+	 */
+
+	if (!xrm_is_real_separator(bits)) {
+	    unsigned short old_bits;
+
+	    if (xrm_is_EOL(bits)) 
+		continue;
+
+	    /*
+	     * A parsing error has occured, toss everything on the line
+	     * a new_line can still be escaped with a '\'.
+	     */
+
+	    return_value = 0;
+	    do {
+		old_bits = bits;
+		bits = get_next_char(c, str);
+	    } while (!(xrm_is_EOF(bits) ||
+		       (xrm_is_EOL(bits) && !xrm_is_backslash(old_bits))));
+	    continue;
+	}
+
+	/*
+	 * I now have a quark and binding list for the entire left hand
+	 * side.  "c" currently points to the ":" separating the left hand
+	 * side for the right hand side.  It is time to begin processing
+	 * the right hand side.
+	 */
+
+	/* 
+	 * Fourth: Remove more whitespace
+	 */
+
+	for(;;) {
+	    unsigned short old_bits;
+
+	    if (xrm_is_space(bits = get_next_char(c, str)))
+		continue;
+	    if (!xrm_is_backslash(bits))
+		break;
+	    old_bits = bits;
+	    bits = get_next_char(c, str);
+	    if (xrm_is_EOL(bits) && !xrm_is_EOF(bits))
+		continue;
+	    str--;
+	    bits = old_bits;
+	    break;
+	}
+
+	/* 
+	 * Fifth: Process the right hand side.
+	 */
+
+	ptr = value_str;
+	ptr_max = ptr + alloc_chars - 4;
+
+	for(;;) {
+
+	    /*
+	     * Tight loop for the normal case:  Non backslash, non-end of value
+	     * character that will fit into the allocated buffer.
+	     */
+
+	    while (!(xrm_is_backslash_or_EOV(bits) ||
+		     (ptr >= ptr_max)) ) {
+		*ptr++ = c;
+		bits = get_next_char(c, str);
+	    }
+
+	    if (xrm_is_end_of_value(bits))
+		break;
+
+	    if (xrm_is_backslash(bits)) {
+		char temp[3];
+		int count;
+
+		/*
+		 * We need to do some magic after a backslash.
+		 */
+
+		bits = get_next_char(c, str); 
+
+		if (xrm_is_EOL(bits)) 
+		    if (xrm_is_EOF(bits)) 
+			goto done;
+		    else {
+			bits = get_next_char(c, str);
+			continue;
+		    }
+
+		/*
+		 * "\n" means insert a newline.
+		 */
+		  
+		if (xrm_is_n(bits)) {
+		    *ptr++ = A_NEW_LINE;
+		    bits = get_next_char(c, str);
+		    continue;
+		}
+
+		/*
+		 * pick up to three octal digits after the '\'.
+		 */
+		
+		count = 0;
+		while (xrm_is_odigit(bits) && count < 3) {
+		    temp[count] = c;
+		    bits = get_next_char(c, str);
+		    count++;
+		}
+		
+		/*
+		 * If we found three digits then insert that octal code into
+		 * into the value string as a character.
+		 */
+		
+		if (count == 2) {
+		    *ptr++ = (unsigned char) ((temp[0] - ZERO) * 0100 +
+					      (temp[1] - ZERO) * 010 +
+					      (temp[2] - ZERO));
+		}
+		else {
+		    int tcount;
+
+		    /* 
+		     * Otherwise just insert those characters into the 
+		     * string.
+		     */
+
+		    *ptr++ = BACKSLASH;
+		    for (tcount = 0; tcount < count; tcount++) {
+			*ptr++ = temp[tcount]; /* print them in 
+						  the correct order */
+			count--;
+		    }
+		}
+	    }
+	    
+	    /* 
+	     * It is important to make sure that there is room for at least
+	     * four more characters in the buffer, since I can add that
+	     * many characters into the buffer after a backslash has occured.
+	     */
+
+	    if (ptr >= ptr_max) {
+		char * temp_str;
+
+		alloc_chars += BUFSIZ/10;		
+		temp_str = Xrealloc(value_str, sizeof(char) * alloc_chars);
+
+		if (value_str == NULL) {
+		    return_value = 0;
+		    goto done;
+		}
+
+		ptr = temp_str + (ptr - value_str); /* reset pointer. */
+		value_str = temp_str;
+		ptr_max = value_str + alloc_chars - 4;
+	    }
+	}
+
+	/*
+	 * Lastly: Terminate the value string, and store this entry 
+	 * 	   into the database.
+	 */
+
+	*ptr++ = STRING_TERMINATOR;
+
+	/* Store it in database */
+	value.size = ptr - value_str;
+	value.addr = (caddr_t) value_str;
+	
+	XrmQPutResource(db, bindings, quarks, XrmQString, &value);
+    }
+
+ done:
+
+    Xfree(value_str);
+    return(return_value);
+}
+
+/*	Function Name: ReadInFile
+ *	Description: Reads the file into a buffer.
+ *	Arguments: filename - the name of the file.
+ *	Returns: An allocated string containing the contents of the file.
+ */
+
+char * 
+ReadInFile(filename)
+char * filename;
+{
+    register int fd, size;
+    char * filebuf;
+
+    if ( (fd = OpenFile(filename)) == -1 ) 
+	return(NULL);
+
+    GetSizeOfFile(filename, size);
+	
+    if ((filebuf = Xmalloc(size + 1)) == NULL) { /* leave room for '\0' */
+	close(fd);
+	return(NULL);
+    }
+
+    if (ReadFile(fd, filebuf, size) != size) { /* If we didn't read the
+						  correct number of bytes. */
+	CloseFile(fd);
+	Xfree(filebuf);
+	return(NULL);
+    }
+    CloseFile(fd);
+
+    filebuf[size] = '\0';	/* NULL terminate it. */
+    return(filebuf);
+}
 
 #if NeedFunctionPrototypes
 void XrmPutStringResource(
@@ -1020,7 +1286,7 @@ void XrmPutLineResource(pdb, line)
     char	*line;
 #endif
 {
-    PutLineResources(pdb, getstring, (caddr_t) &line);
+   (void) GetDatabase(pdb, line);
 } 
 
 #if NeedFunctionPrototypes
@@ -1034,7 +1300,7 @@ XrmDatabase XrmGetStringDatabase(data)
     XrmDatabase     db;
 
     db = NULL;
-    PutLineResources(&db, getstring, (caddr_t) &data);
+    (void) GetDatabase(&db, data);
     return db;
 }
 
@@ -1046,20 +1312,14 @@ XrmDatabase XrmGetFileDatabase(fileName)
     char 	    *fileName;
 #endif
 {
-    register FILE   *file;
-    XrmDatabase     db;
+    XrmDatabase     db = NULL;
+    char * str, * ReadInFile();
 
-    if (fileName == NULL)
-    	return NULL;
+    if ((str = ReadInFile(fileName)) == NULL)
+	return(NULL);
 
-    file = fopen(fileName, "r");
-    if (file == NULL) {
-	return NULL;
-    }
-
-    db = NULL;
-    PutLineResources(&db, fgets, (caddr_t) file);
-    fclose(file);
+    (void) GetDatabase(&db, str);
+    Xfree(str);
     return db;
 }
 

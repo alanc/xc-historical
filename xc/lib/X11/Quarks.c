@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Quarks.c,v 1.17 89/12/11 19:08:34 rws Exp $
+ * $XConsortium: Quarks.c,v 1.2 90/06/01 15:41:06 kit Exp $
  */
 
 /***********************************************************
@@ -27,12 +27,12 @@ SOFTWARE.
 ******************************************************************/
 
 #include "Xlibint.h"
-#include "Xresource.h"
+#include <X11/Xresource.h>
 
 extern void bcopy();
 
 
-typedef long Signature;
+typedef unsigned long Signature;
 
 static XrmQuark nextQuark = 1;	/* next available quark number */
 static XrmString *quarkToStringTable = NULL;
@@ -82,8 +82,7 @@ typedef struct _NodeRec {
     XrmString	name;
 } NodeRec;
 
-#define HASHTABLESIZE 1024
-#define HASHTABLEMASK 1023
+#define HASHTABLESIZE 1021	/* A prime has table size. */
 static Node nodeTable[HASHTABLESIZE];
 
 static int XrmAllocMoreQuarkToStringTable()
@@ -112,50 +111,51 @@ static int XrmAllocMoreQuarkToStringTable()
 }
 
 #if NeedFunctionPrototypes
-XrmQuark XrmStringToQuark(
-    register const char *name)
+XrmQuark _XrmInternalStringToQuark(
+    register const char *name, register int len, register Signature sig)
 #else
-XrmQuark XrmStringToQuark(name)
+XrmQuark _XrmInternalStringToQuark(name, len, sig)
     register XrmString name;
+    register int len;
+    register Signature sig;
 #endif
 {
-    register Signature 	sig = 0;
-    register Signature	scale = 27;
-    register XrmString	tname;
+    register char *tname, *tnch;
+    register int i;
     register Node	np;
-    register XrmString	npn;
     	     Node	*hashp;
-	     unsigned	strLength;
 
     if (name == NULL)
 	return (NULLQUARK);
 
-    /* Compute string signature (sparse 32-bit hash value) */
-    for (tname = (XrmString) name; *tname != '\0'; tname++) {
-	sig = sig*scale + (unsigned int) *tname;
-    }
-    strLength = tname - name + 1;
-
     /* Look for string in hash table */
-    hashp = &nodeTable[sig & HASHTABLEMASK];
+
+    hashp = &nodeTable[sig % HASHTABLESIZE];
     for (np = *hashp; np != NULL; np = np->next) {
-	if (np->sig == sig) {
-	    for (npn=np->name, tname = (XrmString) name;
-	     ((scale = *tname) != 0) && (scale == *npn); ++tname, ++npn) {};
-	    if (scale == *npn) {
-	        return np->quark;
-	    }
+	if (np->sig == sig) {	                /* Inline a string compare. */
+	    for (i = len, tname = np->name, tnch = name; 
+		 (--i >= 0) && (*tname++ == *tnch++) ;) {}
+	    if (i < 0)		/* all characters matched. */
+		return np->quark;
 	}
     }
-
-    /* Not found, add string to hash table */
-
-    if ((! (np = (Node) Xpermalloc(sizeof(NodeRec)))) ||
-	(! (np->name = Xpermalloc(strLength))))
+	
+    if ((! (np = (Node) Xpermalloc((unsigned int) sizeof(NodeRec)))) ||
+	(! (np->name = Xpermalloc((unsigned int) len + 1))))
 	return NULLQUARK;
     np->next = *hashp;
     np->sig = sig;
-    bcopy(name, np->name, (int) strLength);
+
+    /*
+     * Inline a strncpy(). 
+     */
+
+    tname = name;
+    tnch = np->name;
+    for (i = len; i != 0; i--, tname++, tnch++)
+	*tnch = *tname;
+    *tnch = '\0';
+
     np->quark = nextQuark;
     if ((nextQuark >= maxQuarks) && (! XrmAllocMoreQuarkToStringTable()))
 	    return NULLQUARK;
@@ -164,6 +164,28 @@ XrmQuark XrmStringToQuark(name)
     quarkToStringTable[nextQuark] = np->name;
     ++nextQuark;
     return np->quark;
+}
+
+#if NeedFunctionPrototypes
+XrmQuark XrmStringToQuark(
+    const char *name)
+#else
+XrmQuark XrmStringToQuark(name)
+    XrmString name;
+#endif
+{
+    register char c, *tname;
+    register int i = 0;
+    register Signature sig = 0;
+
+    if (name == NULL)
+	return (NULLQUARK);
+
+    tname = name;
+    for ( ; (c = *tname++) != '\0'; i++)
+	sig = (sig << 1) + c;
+
+    return(_XrmInternalStringToQuark(name, i, sig));
 }
 
 XrmQuark XrmUniqueQuark()
