@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: screen.c,v 1.7 88/09/06 17:08:32 jim Exp $
+ *	$XConsortium: screen.c,v 1.8 88/10/07 08:18:41 swick Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* screen.c */
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: screen.c,v 1.7 88/09/06 17:08:32 jim Exp $";
+static char rcs_id[] = "$XConsortium: screen.c,v 1.8 88/10/07 08:18:41 swick Exp $";
 #endif	/* lint */
 
 #include <X11/Xlib.h>
@@ -382,14 +382,14 @@ register TScreen *screen;
 int width, height;
 unsigned *flags;
 {
-	register int rows, cols;
+	int rows, cols;
 	register int index;
-	register int savelines;
+	int savelines;
 	register ScrnBuf sb = screen->allbuf;
 	register ScrnBuf ab = screen->altbuf;
 	register int x;
-	register int border = 2 * screen->border;
-	register int i, j, k;
+	int border = 2 * screen->border;
+	int i, j, k;
 #ifdef sun
 #ifdef TIOCSSIZE
 	struct ttysize ts;
