@@ -1,4 +1,4 @@
-/* $XConsortium: XTest.h,v 1.4 92/04/20 13:13:54 rws Exp $ */
+/* $XConsortium: XTest.h,v 1.5 92/12/17 11:43:39 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -35,6 +35,8 @@ without express or implied warranty.
 #define XTestExtensionName	"XTEST"
 
 #ifndef _XTEST_SERVER_
+
+#include <X11/extensions/XInput.h>
 
 _XFUNCPROTOBEGIN
 
@@ -96,6 +98,52 @@ extern XTestFakeRelativeMotionEvent(
     Display*		/* dpy */,
     int			/* x */,
     int			/* y */,
+    unsigned long	/* delay */
+#endif
+);
+
+extern XTestFakeDeviceKeyEvent(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    XDevice*		/* dev */,
+    unsigned int	/* keycode */,
+    Bool		/* is_press */,
+    int*		/* axes */,
+    int			/* n_axes */,
+    unsigned long	/* delay */
+#endif
+);
+
+extern XTestFakeDeviceButtonEvent(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    XDevice*		/* dev */,
+    unsigned int	/* button */,
+    Bool		/* is_press */,
+    int*		/* axes */,
+    int			/* n_axes */,
+    unsigned long	/* delay */
+#endif
+);
+
+extern XTestFakeProximityEvent(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    XDevice*		/* dev */,
+    Bool		/* in_prox */,
+    int*		/* axes */,
+    int			/* n_axes */,
+    unsigned long	/* delay */
+#endif
+);
+
+extern XTestFakeDeviceMotionEvent(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    XDevice*		/* dev */,
+    Bool		/* is_relative */,
+    int*		/* axes */,
+    int			/* n_axes */,
     unsigned long	/* delay */
 #endif
 );
