@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.104 89/11/01 18:02:43 jim Exp $
+ * $XConsortium: menus.c,v 1.105 89/11/01 19:21:08 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.104 89/11/01 18:02:43 jim Exp $";
+"$XConsortium: menus.c,v 1.105 89/11/01 19:21:08 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -305,7 +305,7 @@ int exposure;
 		    pull_bits, pull_width, pull_height, 1, 0, 1);
 	    }
 	    x = mr->width - pull_width - 5;
-	    y = y_offset + ((Scr->EntryHeight - pull_height)/2);
+	    y = y_offset + ((Scr->MenuFont.height - pull_height) / 2);
 	    XCopyPlane(dpy, Scr->pullPm, mr->w, gc, 0, 0,
 		pull_width, pull_height, x, y, 1);
 	}
