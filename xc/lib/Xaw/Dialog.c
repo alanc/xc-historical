@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.27 89/04/07 11:13:59 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.28 89/05/11 01:05:08 kit Exp $";
 #endif /* lint */
 
 
@@ -110,7 +110,7 @@ DialogClassRec dialogClassRec = {
     /* extension          */   NULL
   },
   { /* form_class fields */
-    /* empty              */   0
+    /* layout             */   XtInheritLayout
   },
   { /* dialog_class fields */
     /* empty              */   0
@@ -154,9 +154,7 @@ static void ConstraintInitialize(request, new)
 Widget request, new;
 {
     DialogWidget dw = (DialogWidget)new->core.parent;
-    WidgetList children = dw->composite.children;
     DialogConstraints constraint = (DialogConstraints)new->core.constraints;
-    Widget *childP;
 
     if (!XtIsSubclass(new, commandWidgetClass))	/* if not a button */
 	return;					/* then just use defaults */
@@ -168,6 +166,8 @@ Widget request, new;
       constraint->form.vert_base = dw->dialog.valueW;
 
     if (dw->composite.num_children > 1) {
+	WidgetList children = dw->composite.children;
+	Widget *childP;
         for (childP = children + dw->composite.num_children - 1;
 	     childP >= children; childP-- ) {
 	    if (*childP == dw->dialog.labelW || *childP == dw->dialog.valueW)
@@ -198,8 +198,8 @@ Widget current, request, new;
     }
 
     if ( (w->dialog.label != old->dialog.label) ||
-	 ((w->dialog.label != NULL) && /* we already know the label's are == */
-	   streq(w->dialog.label, old->dialog.label)) ) {
+	 ((w->dialog.label != NULL) && /* so both are non-NULL */
+	   !streq(w->dialog.label, old->dialog.label)) ) {
         num_args = 0;
         XtSetArg( args[num_args], XtNlabel, w->dialog.label ); num_args++;
 	XtSetValues( w->dialog.labelW, args, num_args );
@@ -212,7 +212,22 @@ Widget current, request, new;
 	    XtFree(old->dialog.value);
 	}
 	else if (old->dialog.value == NULL) { /* create a new value widget. */
+	    w->core.width = old->core.width;
+	    w->core.height = old->core.height;
+#ifdef notdef
+/* this would be correct if Form had the same semantics on Resize
+ * as on MakeGeometryRequest.  Unfortunately, Form botched it, so
+ * any subclasses will currently have to deal with the fact that
+ * we're about to change our real size.
+ */
+	    w->form.resize_in_layout = False; */
 	    CreateDialogValueWidget( (Widget) w);
+	    w->core.width = w->form.preferred_width;
+	    w->core.height = w->form.preferred_height;
+	    w->form.resize_in_layout = True;
+#else /*notdef*/
+	    CreateDialogValueWidget( (Widget) w);
+#endif /*notdef*/
 	}
 	else {			/* Widget ok, just change string. */
 	    XawTextBlock t_block;
@@ -227,6 +242,9 @@ Widget current, request, new;
 		XawEditDone) 
 	        XtWarning("Error while changing value in Dialog Widget.");
 
+	    /* the new value will have just been copied into our (private)
+	     * buffer copy, and we want to preserve our private pointer...
+	     */
 	    w->dialog.value = old->dialog.value;
 	}
     }
@@ -247,14 +265,20 @@ Widget w;
 {
     DialogWidget dw = (DialogWidget) w;    
     String initial_value = dw->dialog.value;
-    Cardinal length = Max( dw->dialog.max_length, strlen(initial_value)+1 );
+    Cardinal length = strlen(initial_value)+1;
     Arg arglist[10];
     Cardinal num_args = 0;
 
+    if (dw->dialog.max_length < length)
+	dw->dialog.max_length = length;
+    else
+	length = dw->dialog.max_length;
     dw->dialog.value = XtMalloc( length );
     strcpy( dw->dialog.value, initial_value );
+#ifdef notdef
     XtSetArg(arglist[num_args], XtNwidth,
 	     dw->dialog.labelW->core.width); num_args++; /* ||| hack */
+#endif /*notdef*/
     XtSetArg(arglist[num_args], XtNstring, dw->dialog.value); num_args++;
     XtSetArg(arglist[num_args], XtNlength, length); num_args++;
     XtSetArg(arglist[num_args], XtNfromVert, dw->dialog.labelW); num_args++;
@@ -265,8 +289,28 @@ Widget w;
     XtSetArg(arglist[num_args], XtNleft, XtChainLeft); num_args++;
     XtSetArg(arglist[num_args], XtNright, XtChainRight); num_args++;
     
-    dw->dialog.valueW = XtCreateManagedWidget("value",asciiStringWidgetClass,
-					      w, arglist, num_args);
+    dw->dialog.valueW = XtCreateWidget("value",asciiStringWidgetClass,
+				       w, arglist, num_args);
+
+    /* if the value widget is being added after buttons,
+     * then the buttons need new layout constraints.
+     */
+    if (dw->composite.num_children > 1) {
+	WidgetList children = dw->composite.children;
+	Widget *childP;
+        for (childP = children + dw->composite.num_children - 1;
+	     childP >= children; childP-- ) {
+	    if (*childP == dw->dialog.labelW || *childP == dw->dialog.valueW)
+		continue;
+	    if (XtIsManaged(*childP) &&
+		XtIsSubclass(*childP, commandWidgetClass)) {
+	        ((DialogConstraints)(*childP)->core.constraints)->
+		    form.vert_base = dw->dialog.valueW;
+	    }
+	}
+    }
+    XtManageChild(dw->dialog.valueW);
+
 #ifdef notdef
     static int grabfocus;
     static Resource resources[] = {
@@ -284,6 +328,7 @@ Widget w;
 				  CurrentTime); /* !!! Hackish. |||*/
 #endif /* notdef */
 }
+
 
 void XawDialogAddButton(dialog, name, function, param)
 Widget dialog;
