@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.59 92/08/22 11:44:43 rws Exp $
+ * $XConsortium: main.c,v 1.60 92/08/22 12:39:50 rws Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -47,7 +47,7 @@ struct	inclist inclist[ MAXFILES ],
 		*inclistp = inclist;
 
 char	*filelist[ MAXFILES ];
-char	*includedirs[ MAXDIRS ];
+char	*includedirs[ MAXDIRS + 1 ];
 char	*notdotdot[ MAXDIRS ];
 char	*objprefix = "";
 char	*objsuffix = ".o";
