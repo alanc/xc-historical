@@ -1077,45 +1077,25 @@
 #+Genera
 (defun open-x-stream (host display protocol)
   (let ((host (net:parse-host host)))
-    (cond ((or protocol (plusp display))
-	   ;; The protocol was specified or the display isn't 0, so we
-	   ;; can't use the Generic Network System.  If the protocol was
-	   ;; specified, then use that protocol, otherwise, blindly use
-	   ;; TCP.
-	   (ccase protocol
-	     ((:tcp nil)
-	      (tcp:open-tcp-stream
-		host (+ *x-tcp-port* display) nil
-		:direction :io
-		:characters nil
-		:ascii-translation nil))
-	     ((:dna)
-	      (dna:open-dna-bidirectional-stream
-		host (format nil "X$X~D" display)
-		:characters nil
-		:ascii-translation nil))))
-	  ((neti:find-paths-to-service-on-host :x-window-system host t nil)
-	   ;; The Generic Network System has found declared paths to the
-	   ;; service on the host, so just invoke the service using the
-	   ;; declared paths.
-	   (let ((neti:*invoke-service-automatic-retry* t))
-	     (net:invoke-service-on-host :x-window-system host)))
-	  ((neti:find-paths-to-protocol-on-host :x-window-system host nil)
-	   ;; There are no declared paths to the service, but there are
-	   ;; paths to the protocol.  Try them out.
-	   (loop with saps = (neti:find-paths-to-protocol-on-host :x-window-system host nil)
-		 with errors = nil
-		 for sap in saps
-		 do (scl:condition-case (error)
-			 (return (neti:invoke-service-access-path sap nil))
-		       (error (push error errors)))
-		 finally
-		   (error 'neti:unable-to-invoke-service
-			  :service :x-window-system :host host
-			  :service-access-paths saps
-			  :errors (reverse errors))))
-	  (t
-	   (error "There's no way to open an X connection to ~A:~D" host display)))))
+    (if (or protocol (plusp display))
+	;; The protocol was specified or the display isn't 0, so we
+	;; can't use the Generic Network System.  If the protocol was
+	;; specified, then use that protocol, otherwise, blindly use
+	;; TCP.
+	(ccase protocol
+	  ((:tcp nil)
+	   (tcp:open-tcp-stream
+	     host (+ *x-tcp-port* display) nil
+	     :direction :io
+	     :characters nil
+	     :ascii-translation nil))
+	  ((:dna)
+	   (dna:open-dna-bidirectional-stream
+	     host (format nil "X$X~D" display)
+	     :characters nil
+	     :ascii-translation nil)))
+      (let ((neti:*invoke-service-automatic-retry* t))
+	(net:invoke-service-on-host :x-window-system host)))))
 
 #+explorer
 (defun open-x-stream (host display protocol)
