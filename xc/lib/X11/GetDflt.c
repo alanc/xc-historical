@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: XGetDflt.c,v 1.14 88/09/19 13:55:55 jim Exp $
  */
 
 /***********************************************************
@@ -97,7 +97,7 @@ static XrmDatabase InitDefaults (dpy)
 	(void) GetHomeDir (fname);
 	(void) strcat (fname, "/.Xdefaults-");
 	len = strlen (fname);
-	gethostname (fname+len, BUFSIZ-len);
+	(void) _XGetHostname (fname+len, BUFSIZ-len);
 	xenv = fname;
     }
     userdb = XrmGetFileDatabase (xenv);
