@@ -68,6 +68,7 @@ HEADERS = \
 	Template.h \
 	TemplateP.h \
 	Text.h \
+	TextI.h \
 	TextP.h \
 	TextSink.h \
 	TextSinkP.h \
