@@ -90,6 +90,11 @@ static unsigned long	action_count = 0;
 static void	XTestWireToEvent();
 static int	XTestCheckExtInit();
 static Bool	XTestIdentifyMyEvent();
+static int	XTestInitExtension();
+static int	XTestKeyOrButton();
+static int	XTestCheckDelay();
+static int	XTestPackInputAction();
+static int	XTestWriteInputActions();
 
 /******************************************************************************
  *
