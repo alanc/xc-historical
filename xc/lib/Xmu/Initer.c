@@ -1,5 +1,5 @@
 /* static char rcsid[] =
-	"$XConsortium: Initer.c,v 1.3 90/07/15 16:18:45 rws Exp $"; */
+	"$XConsortium: Initer.c,v 1.4 90/07/21 15:03:50 rws Exp $"; */
 
 /* 
  * Copyright 1988, 1989 by the Massachusetts Institute of Technology
@@ -21,8 +21,8 @@
  * Date:        May 8, 1989
  */
 
-#include <stdio.h>
 #include <X11/Intrinsic.h>
+#include <X11/Xmu/Initer.h>
 
 struct InitializerList {
   void (*function)();		/* The function to call. */
