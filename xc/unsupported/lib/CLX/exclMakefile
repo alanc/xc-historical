@@ -58,7 +58,7 @@ L_SRC	= defsystem.cl package.cl excldep.cl depdefs.cl clx.cl \
 
 all:	$(C_OBJS) compile-CLX cat
 
-clos:	$(C_OBJS) compile-closified-CLX cat
+clue:	$(C_OBJS) compile-CLX-for-CLUE cat
 
 CLX:	$(C_OBJS) compile-CLX load-CLX
 
@@ -80,7 +80,7 @@ compile-CLX:	$(C_OBJS)
 	| $(CL) $(CLOPTS) -batch
 
 
-compile-closified-CLX:	$(C_OBJS)
+compile-CLX-for-CLUE:	$(C_OBJS)
 	$(ECHO) " \
 	(proclaim '(optimize (speed $(SPEED)) (safety $(SAFETY)))) \
 	(setq excl::*print-nickname* t) \
@@ -92,8 +92,9 @@ compile-closified-CLX:	$(C_OBJS)
 	    (gc) (gc) \
 	    (setf (sys:gsgc-parameter :generation-spread) spread))) \
 	(load \"defsystem\") \
+	#+allegro (pushnew :clx-for-clue *features*) \
 	#+allegro (compile-system :clx) \
-	#-allegro (compile-clx) \
+	#-allegro (compile-clx \"\" \"\" :for-clue t) \
 	#+allegro (compile-system :clx-debug)" \
 	| $(CL) $(CLOPTS) -batch
 

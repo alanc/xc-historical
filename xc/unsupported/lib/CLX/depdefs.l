@@ -24,6 +24,12 @@
 ;;; Declarations
 ;;;-------------------------------------------------------------------------
 
+;;; If CLUE is on the features list, also add CLX-FOR-CLUE
+
+#+(or clue clx-for-clue)
+(eval-when (eval compile load)
+  (pushnew :clx-for-clue *features*))
+
 ;;; fix a bug in kcl's RATIONAL...
 ;;;   redefine both the function and the type.
 
@@ -375,6 +381,24 @@
 
 ;;; Pseudo-class mechanism.
 
+(eval-when (eval compile load)
+(defvar
+  *def-clx-class-use-defclass*
+  ;; Always use DEFCLASS in Genera
+  #+Genera t
+  ;; If we're compiling for CLUE, just use DEFCLASS for DRAWABLE, WINDOW and
+  ;; PIXMAP.  CLUE wants to do method discrimination on WINDOWs, and this
+  ;; requires WINDOW to be a class.  If window is a class, then DRAWABLE and
+  ;; PIXMAP have to be CLASSES too.
+  #+(and (not Genera) clx-for-clue) '(drawable window pixmap)
+  ;; By default don't use DEFCLASS
+  #-(or Genera clx-for-clue) nil
+  "Controls whether DEF-CLX-CLASS uses DEFCLASS.  
+   If it is a list, it is interpreted by DEF-CLX-CLASS to be a list of type names
+   for which DEFCLASS should be used. 
+   If it is not a list, then DEFCLASS is always used.")
+)
+
 (defmacro def-clx-class ((name &rest options) &body slots)
   (let ((clos-package (or (find-package :clos)
 			  (find-package :pcl)
@@ -384,7 +408,9 @@
 				    #+clx-ansi-common-lisp :common-lisp)))
 			    (and (find-symbol (string 'defclass) lisp-pkg)
 				 lisp-pkg)))))
-    (if clos-package
+    (if (and clos-package
+	     (or (not (listp *def-clx-class-use-defclass*))
+		 (member name *def-clx-class-use-defclass*)))
 	(let ((constructor t)
 	      (constructor-args t)
 	      (include nil)

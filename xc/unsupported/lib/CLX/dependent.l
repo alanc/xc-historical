@@ -2039,7 +2039,7 @@
 		     (:print-function condition-print)
 		     (:include ,(first parent-types)
 		      (report-function ',report-function)))
-	   ,slot-names)
+	   ,@slot-names)
 	 ,(when documentation
 	    `(setf (documentation name 'type) ,documentation))
 	 ,(when reporter

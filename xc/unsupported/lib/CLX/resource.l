@@ -20,7 +20,7 @@
 
 (in-package :xlib)
 
-#+clue ;; for CLUE only
+#+clx-for-clue ;; for CLUE only
 (defparameter *resource-subclassp* nil
   "When non-nil and no match found, search superclasses.")
 
@@ -257,7 +257,7 @@
 	  ((and loose
 		(not (stringable-equal name class))
 		(get-entry-lookup loose class names classes)))
-	  #+clue ;; for CLUE only
+	  #+clx-for-clue ;; for CLUE only
 	  ((and *resource-subclassp*
 		(or loose tight)
 		(dolist (class (cluei::class-all-superclasses class))
@@ -281,7 +281,7 @@
 			(setq result
 			      (get-entry-lookup loose class names classes)))
 	       (return result))
-	     #+clue ;; for CLUE only
+	     #+clx-for-clue ;; for CLUE only
 	     (when *resource-subclassp*
 	       (dolist (class (cluei::class-all-superclasses class))
 		 (when (setq result
@@ -388,7 +388,7 @@
       (get-tables-lookup tight class names classes))
     (when (and loose (not (stringable-equal name class)))
       (get-tables-lookup loose class names classes))
-    #+clue ;; for CLUE only
+    #+clx-for-clue ;; for CLUE only
     (when *resource-subclassp*
       (dolist (class (cluei::class-all-superclasses class))
 	(declare (type symbol class))
@@ -406,7 +406,7 @@
 	(get-tables-lookup loose name names classes)
 	(unless (stringable-equal name class)
 	  (get-tables-lookup loose class names classes))
-	#+clue ;; for CLUE only
+	#+clx-for-clue ;; for CLUE only
 	(when *resource-subclassp*
 	  (dolist (class (cluei::class-all-superclasses class))
 	    (get-tables-lookup loose class names classes)))
@@ -499,7 +499,7 @@
   (resource-with-open-file (stream pathname)
     (loop
       (let ((string (read-line stream nil :eof)))
-	(declare (type string string))
+	(declare (type (or string keyword) string))
 	(when (eq string :eof) (return database))
 	(let* ((end (length string))
 	       (i (position '(#\tab #\space) string
@@ -522,12 +522,13 @@
 	      (otherwise
 	       (multiple-value-bind (name-list value)
 		   (parse-resource string i end)
-		 (when key (setq value (funcall key value)))
-		 (when
-		   (cond (test (funcall test name-list value))
-			 (test-not (not (funcall test-not name-list value)))
-			 (t t))
-		   (add-resource database name-list value)))))))))))
+		 (when name-list 
+		   (when key (setq value (funcall key value)))
+		   (when
+		     (cond (test (funcall test name-list value))
+			   (test-not (not (funcall test-not name-list value)))
+			   (t t))
+		     (add-resource database name-list value))))))))))))
 
 (defun parse-resource (string &optional (start 0) end)
   ;; Parse a resource specfication string into a list of names and a value
@@ -559,7 +560,12 @@
        (return
 	 (values
 	   (nreverse name-list)
-	   (string-trim '(#\tab #\space) (subseq string (1+ term)))))))
+	   (string-trim '(#\tab #\space) (subseq string (1+ term))))))
+      (otherwise
+	(return
+	  (values
+	    (nreverse name-list)
+	    (subseq string i term)))))
     (setq i (1+ term))))
 
 (defun write-resources (database pathname &key write test test-not)

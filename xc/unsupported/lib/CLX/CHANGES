@@ -126,3 +126,28 @@ o ANGLEP type check sped up for excl.  Arc drawing should be lots faster.
 o RATIONAL type definition for kcl now takes the correct optional args.
 
 o (SETF FONT-PATH) changed to return the value
+
+o Fixed typo in the hex parsing in READ-BITMAP-FILE
+
+o Made READ-RESOURCES more robust about weird resource files.
+
+o New feature :CLX-FOR-CLUE.  Put this on the *features* list before compiling
+  CLX if you want CLX to be compiled with special features for CLUE.
+  If :CLUE is already on the features when compiling CLX, :CLX-FOR-CLUE will be
+  automatically added to the features list too.  The special features include
+  the use of DEFCLASS for the DRAWABLE, WINDOW, and PIXMAP types, and the 
+  *resource-subclassp* switch. In exclMakefile, the clos target has been replaced
+  with a clue target, which should be used to compile CLX for CLUE.  A new 
+  keyword argument :FOR-CLUE has been added to COMPILE-CLX.   Use :FOR-CLUE T
+  when compiling CLX for CLUE.
+
+o New variable *DEF-CLX-CLASS-USE-DEFCLASS*, which controls whether DEF-CLX-CLASS
+  uses DEFCLASS.  If it is a list, it is interpreted by DEF-CLX-CLASS to be a list
+  of type names for which DEFCLASS should be used. If it is not a list, DEFCLASS
+  is always used. It's either 
+    T in Genera, 
+    (DRAWABLE WINDOW PIXMAP) if :CLX-FOR-CLUE is on *FEATURES*,
+    or NIL by default.
+
+o Fixed typo in DEFINE-CONDITION for #-(or lispm clx-ansi-common-lisp excl lcl3.0).
+
