@@ -294,6 +294,85 @@ void DoPutImage(xp, p)
     }
 }
 
+#ifdef MITSHM
+/* ||| This is included to measure the experimental MIT shared memory interface.
+       There are no guarantees that this interface will remain unchanged, but
+       then you know that if you'd turned on MITSHM anyway.
+*/
+
+
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <X11/extensions/XShm.h>
+
+static XImage		shm_image;
+static XShmSegmentInfo	shminfo;
+
+Bool InitShmPutImage (xp, p)
+    XParms  xp;
+    Parms   p;
+{
+    int	image_size;
+
+    (void) InitGetImage(xp, p);
+    XClearWindow(xp->d, xp->w);
+    shm_image = *image;
+    image_size = image->bytes_per_line * image->height;
+    shminfo.shmid = shmget(IPC_PRIVATE, image_size, IPC_CREAT|0777);
+    if (shminfo.shmid < 0)
+    {
+	perror ("shmget");
+	return False;
+    }
+    shminfo.shmaddr = (char *) shmat(shminfo.shmid, 0, 0);
+    if (shminfo.shmaddr == ((char *) -1))
+    {
+	perror ("shmat");
+	return False;
+    }
+    shminfo.readOnly = True;
+    XShmAttach (xp->d, &shminfo);
+    shm_image.data = shminfo.shmaddr;
+    bcopy (image->data, shm_image.data, image_size);
+    shm_image.obdata = (char *) &shminfo;
+    return True;
+}
+
+void DoShmPutImage(xp, p)
+    XParms  xp;
+    Parms   p;
+{
+    int i, size;
+    XSegment *sa, *sb;
+
+    size = p->special;
+    for (sa = segsa, sb = segsb, i = 0; i != p->reps; i++, sa++, sb++) {
+	XShmPutImage(xp->d, xp->w, xp->fggc, &shm_image,
+	    sa->x1, sa->y1, sa->x2, sa->y2, size, size, False);
+	XShmPutImage(xp->d, xp->w, xp->fggc, &shm_image,
+	    sa->x2, sa->y2, sa->x1, sa->y1, size, size, False);
+	XShmPutImage(xp->d, xp->w, xp->fggc, &shm_image,
+	    sb->x2, sb->y2, sb->x2, sb->y2, size, size, False);
+	XShmPutImage(xp->d, xp->w, xp->fggc, &shm_image,
+	    sb->x1, sb->y1, sb->x2, sb->y2, size, size, False);
+    }
+}
+
+void EndShmPutImage(xp, p)
+    XParms  xp;
+    Parms   p;
+{
+    void    EndGetImage();
+
+    EndGetImage (xp, p);
+    shmdt (shminfo.shmaddr);
+    shmctl (shminfo.shmid, IPC_RMID, 0);
+}
+
+#endif
+
+
 void MidCopyPix(xp, p)
     XParms  xp;
     Parms   p;
