@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: Flush.c,v 1.1 89/09/14 17:11:12 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -28,11 +28,14 @@
 #include    "Xmd.h"
 #include    "Xdmcp.h"
 
+/* keep SVR4 compiler from complaining about scope of arg declaration below */
+typedef  struct sockaddr *  netaddrbuf;
+
 int
 XdmcpFlush (fd, buffer, to, tolen)
     int		    fd;
     XdmcpBufferPtr  buffer;
-    struct sockaddr *to;
+    netaddrbuf      to;
     int		    tolen;
 {
     if (sendto (fd, buffer->data, buffer->pointer, 0, to, tolen) !=
