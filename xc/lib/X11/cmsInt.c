@@ -1,24 +1,27 @@
-/* $XConsortium: XcmsInt.c,v 1.4 91/02/12 16:13:02 dave Exp $" */
+/* $XConsortium: XcmsInt.c,v 1.5 91/02/15 18:33:44 dave Exp $" */
 
 /*
- * (c) Copyright 1990 1991, Tektronix Inc.
+ * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
  * 	All Rights Reserved
- *
- * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose and without fee is hereby granted,
- * provided that the above copyright notice appear in all copies and that
- * both that copyright notice and this permission notice appear in
- * supporting documentation, and that the name of Tektronix not be used
- * in advertising or publicity pertaining to distribution of the software
- * without specific, written prior permission.
- *
- * Tektronix disclaims all warranties with regard to this software, including
- * all implied warranties of merchantability and fitness, in no event shall
- * Tektronix be liable for any special, indirect or consequential damages or
- * any damages whatsoever resulting from loss of use, data or profits,
- * whether in an action of contract, negligence or other tortious action,
- * arising out of or in connection with the use or performance of this
- * software.
+ * 
+ * This file is a component of an X Window System-specific implementation
+ * of Xcms based on the TekColor Color Management System.  Permission is
+ * hereby granted to use, copy, modify, sell, and otherwise distribute this
+ * software and its documentation for any purpose and without fee, provided
+ * that this copyright, permission, and disclaimer notice is reproduced in
+ * all copies of this software and in supporting documentation.  TekColor
+ * is a trademark of Tektronix, Inc.
+ * 
+ * Tektronix makes no representation about the suitability of this software
+ * for any purpose.  It is provided "as is" and with all faults.
+ * 
+ * TEKTRONIX DISCLAIMS ALL WARRANTIES APPLICABLE TO THIS SOFTWARE,
+ * INCLUDING THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE.  IN NO EVENT SHALL TEKTRONIX BE LIABLE FOR ANY
+ * SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
+ * RESULTING FROM LOSS OF USE, DATA, OR PROFITS, WHETHER IN AN ACTION OF
+ * CONTRACT, NEGLIGENCE, OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR THE PERFORMANCE OF THIS SOFTWARE.
  *
  *
  *	NAME
@@ -64,9 +67,9 @@ static void _XcmsFreeDefaultCCCs();
  *
  *	SYNOPSIS
  */
-caddr_t *
+XPointer *
 _XcmsCopyPointerArray(pap)
-    caddr_t *pap;
+    XPointer *pap;
 /*
  *	DESCRIPTION
  *		Copies an array of NULL terminated pointers.
@@ -77,17 +80,17 @@ _XcmsCopyPointerArray(pap)
  *
  */
 {
-    caddr_t *newArray;
+    XPointer *newArray;
     char **tmp;
     int n;
 
     for (tmp = pap, n = 0; *tmp != NULL; tmp++, n++);
     n++; /* add 1 to include the NULL pointer */
 
-    if (newArray = (caddr_t *)Xmalloc(n * sizeof(caddr_t))) {
-	bcopy((char *)pap, (char *)newArray, (unsigned)(n * sizeof(caddr_t)));
+    if (newArray = (XPointer *)Xmalloc(n * sizeof(XPointer))) {
+	bcopy((char *)pap, (char *)newArray, (unsigned)(n * sizeof(XPointer)));
     }
-    return((caddr_t *)newArray);
+    return((XPointer *)newArray);
 }
 
 /*
@@ -98,7 +101,7 @@ _XcmsCopyPointerArray(pap)
  */
 void
 _XcmsFreePointerArray(pap)
-    caddr_t *pap;
+    XPointer *pap;
 /*
  *	DESCRIPTION
  *		Frees an array of NULL terminated pointers.
@@ -117,10 +120,11 @@ _XcmsFreePointerArray(pap)
  *
  *	SYNOPSIS
  */
-caddr_t *
-_XcmsPushPointerArray(pap, p)
-    caddr_t *pap;
-    caddr_t p;
+XPointer *
+_XcmsPushPointerArray(pap, p, papNoFree)
+    XPointer *pap;
+    XPointer p;
+    XPointer *papNoFree;
 /*
  *	DESCRIPTION
  *		Places the specified pointer at the head of an array of NULL
@@ -132,7 +136,7 @@ _XcmsPushPointerArray(pap, p)
  *
  */
 {
-    caddr_t *newArray;
+    XPointer *newArray;
     char **tmp;
     int n;
 
@@ -141,13 +145,15 @@ _XcmsPushPointerArray(pap, p)
     /* add 2: 1 for the new pointer and another for the NULL pointer */
     n += 2;
 
-    if (newArray = (caddr_t *)Xmalloc(n * sizeof(caddr_t))) {
+    if (newArray = (XPointer *)Xmalloc(n * sizeof(XPointer))) {
 	bcopy((char *)pap, (char *)(newArray+1),
-		(unsigned)((n-1) * sizeof(caddr_t)));
+		(unsigned)((n-1) * sizeof(XPointer)));
 	*newArray = p;
     }
-    _XcmsFreePointerArray(pap);
-    return((caddr_t *)newArray);
+    if (pap != papNoFree) {
+        _XcmsFreePointerArray(pap);
+    }
+    return((XPointer *)newArray);
 }
 
 /*
@@ -171,7 +177,7 @@ _XcmsInitDefaultCCCs(dpy)
 {
     int nScrn = ScreenCount(dpy);
     int i;
-    XcmsCCC *pCCC;
+    XcmsCCC ccc;
 
     if (nScrn <= 0) {
 	return(0);
@@ -181,26 +187,26 @@ _XcmsInitDefaultCCCs(dpy)
      * Create an array of XcmsCCC structures, one for each screen.
      * They serve as the screen's default CCC.
      */
-    if (!(pCCC = (XcmsCCC *)
-	    Xcalloc((unsigned)nScrn, (unsigned) sizeof(XcmsCCC)))) {
+    if (!(ccc = (XcmsCCC)
+	    Xcalloc((unsigned)nScrn, (unsigned) sizeof(XcmsCCCRec)))) {
 	return(0);
     } 
-    dpy->cms.defaultCCCs = (caddr_t)pCCC;
+    dpy->cms.defaultCCCs = (XPointer)ccc;
     dpy->free_funcs->defaultCCCs = _XcmsFreeDefaultCCCs;
 
-    for (i = 0; i < nScrn; i++, pCCC++) {
-	pCCC->dpy = dpy;
-	pCCC->screen_number = i;
-	pCCC->visual = DefaultVisual(dpy, i);
+    for (i = 0; i < nScrn; i++, ccc++) {
+	ccc->dpy = dpy;
+	ccc->screenNumber = i;
+	ccc->visual = DefaultVisual(dpy, i);
 	/*
 	 * Used calloc to allocate memory so:
-	 *	pCCC->clientWhitePt->format == XCMS_UNDEFINED_FORMAT
-	 *	pCCC->gamutCompFunc == NULL
-	 *	pCCC->whitePtAdjFunc == NULL
-	 *	pCCC->pPerScrnInfo = NULL
+	 *	ccc->clientWhitePt->format == XcmsUndefinedFormat
+	 *	ccc->gamutCompProc == NULL
+	 *	ccc->whitePtAdjProc == NULL
+	 *	ccc->pPerScrnInfo = NULL
 	 *
-	 * Don't need to create XcmsPerScrnInfo and its pSCCFuncSet and
-	 * pSCCData components until the default CCC is accessed.
+	 * Don't need to create XcmsPerScrnInfo and its functionSet and
+	 * pScreenData components until the default CCC is accessed.
 	 * Note that the XcmsDefaultCCC routine calls _XcmsInitScrnInto
 	 * to do this.
 	 */
@@ -231,7 +237,7 @@ _XcmsFreeDefaultCCCs(dpy)
  */
 {
     int nScrn = ScreenCount(dpy);
-    XcmsCCC *pCCC;
+    XcmsCCC ccc;
     int i;
 
     /*
@@ -239,8 +245,8 @@ _XcmsFreeDefaultCCCs(dpy)
      *		Do not use XcmsFreeCCC here because it will not free
      *		DefaultCCC's.
      */
-    pCCC = (XcmsCCC *)dpy->cms.defaultCCCs;
-    for (i = nScrn; i--; pCCC++) {
+    ccc = (XcmsCCC)dpy->cms.defaultCCCs;
+    for (i = nScrn; i--; ccc++) {
 	/*
 	 * Check if XcmsPerScrnInfo exists.
 	 *
@@ -249,23 +255,23 @@ _XcmsFreeDefaultCCCs(dpy)
 	 * It just so happens that we place its reference in the
 	 * default CCC.
 	 */
-	if (pCCC->pPerScrnInfo) {
+	if (ccc->pPerScrnInfo) {
 	    /* Check if SCCData exists */
-	    if ((pCCC->pPerScrnInfo->state == XCMS_INIT_SUCCESS ||
-		    pCCC->pPerScrnInfo->state == XCMS_INIT_DEFAULT)
-		    && pCCC->pPerScrnInfo->pSCCData) {
-		(*((XcmsSCCFuncSet *)pCCC->pPerScrnInfo->pSCCFuncSet)->pFreeSCCData)
-			(pCCC->pPerScrnInfo->pSCCData);
+	    if ((ccc->pPerScrnInfo->state == XcmsInitSuccess ||
+		    ccc->pPerScrnInfo->state == XcmsInitDefault)
+		    && ccc->pPerScrnInfo->screenData) {
+		(*((XcmsSCCFuncSet *)ccc->pPerScrnInfo->functionSet)->pFreeSCCData)
+			(ccc->pPerScrnInfo->screenData);
 	    }
 	}
-	Xfree(pCCC->pPerScrnInfo);
+	Xfree(ccc->pPerScrnInfo);
     }
 
     /*
      * Free the array of XcmsCCC structures
      */
     Xfree(dpy->cms.defaultCCCs);
-    dpy->cms.defaultCCCs = (caddr_t)NULL;
+    dpy->cms.defaultCCCs = (XPointer)NULL;
 }
 
 
@@ -277,9 +283,9 @@ _XcmsFreeDefaultCCCs(dpy)
  *	SYNOPSIS
  */
 int
-_XcmsInitScrnInfo(dpy, screen_number)
+_XcmsInitScrnInfo(dpy, screenNumber)
     register Display *dpy;
-    int screen_number;
+    int screenNumber;
 /*
  *	DESCRIPTION
  *		Given a display and screen number, this routine attempts
@@ -291,44 +297,44 @@ _XcmsInitScrnInfo(dpy, screen_number)
  */
 {
     XcmsSCCFuncSet **papSCCFuncSet = _XcmsSCCFuncSets;
-    XcmsCCC	*pDefaultCCC;
+    XcmsCCC defaultccc;
 
     /*
      * Check if the XcmsCCC's for each screen has been created.
      * Really dont need to be created until some routine uses the TekCMS
      * API routines.
      */
-    if ((XcmsCCC *)dpy->cms.defaultCCCs == NULL) {
+    if ((XcmsCCC)dpy->cms.defaultCCCs == NULL) {
 	if (!_XcmsInitDefaultCCCs(dpy)) {
 	    return(0);
 	}
     }
 
-    pDefaultCCC = (XcmsCCC *)dpy->cms.defaultCCCs + screen_number;
+    defaultccc = (XcmsCCC)dpy->cms.defaultCCCs + screenNumber;
 
     /*
      * For each SCCFuncSet, try its pInitScrnFunc.
      *	If the function succeeds, then we got it!
      */
 
-    if (!pDefaultCCC->pPerScrnInfo) {
+    if (!defaultccc->pPerScrnInfo) {
 	/*
 	 * This is the only place where XcmsPerScrnInfo structures
 	 * are allocated since there is only one allocated per Screen.
 	 * It just so happens that we place its reference in the
 	 * default CCC.
 	 */
-	if (!(pDefaultCCC->pPerScrnInfo = (XcmsPerScrnInfo *)
+	if (!(defaultccc->pPerScrnInfo = (XcmsPerScrnInfo *)
 		Xcalloc(1, (unsigned) sizeof(XcmsPerScrnInfo)))) {
 	    return(0);
 	} 
-	pDefaultCCC->pPerScrnInfo->state = XCMS_INIT_NONE;
+	defaultccc->pPerScrnInfo->state = XcmsInitNone;
     }
 
     while (*papSCCFuncSet != NULL) {
-	if ((*(*papSCCFuncSet)->pInitScrnFunc)(dpy, screen_number,
-		pDefaultCCC->pPerScrnInfo)) {
-	    pDefaultCCC->pPerScrnInfo->state = XCMS_INIT_SUCCESS;
+	if ((*(*papSCCFuncSet)->pInitScrnFunc)(dpy, screenNumber,
+		defaultccc->pPerScrnInfo)) {
+	    defaultccc->pPerScrnInfo->state = XcmsInitSuccess;
 	    return(1);
 	}
 	papSCCFuncSet++;
@@ -337,5 +343,5 @@ _XcmsInitScrnInfo(dpy, screen_number)
     /*
      * Use Default SCCData
      */
-    return(_XcmsLRGB_InitScrnDefault(dpy, screen_number, pDefaultCCC->pPerScrnInfo));
+    return(_XcmsLRGB_InitScrnDefault(dpy, screenNumber, defaultccc->pPerScrnInfo));
 }

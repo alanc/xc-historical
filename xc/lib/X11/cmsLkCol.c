@@ -1,24 +1,27 @@
 /* $XConsortium: XcmsLkCol.c,v 1.6 91/02/20 09:02:39 rws Exp $ */
 
 /*
- * (c) Copyright 1989 1990 1991 Tektronix Inc.
+ * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
  * 	All Rights Reserved
- *
- * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose and without fee is hereby granted,
- * provided that the above copyright notice appear in all copies and that
- * both that copyright notice and this permission notice appear in
- * supporting documentation, and that the name of Tektronix not be used
- * in advertising or publicity pertaining to distribution of the software
- * without specific, written prior permission.
- *
- * Tektronix disclaims all warranties with regard to this software, including
- * all implied warranties of merchantability and fitness, in no event shall
- * Tektronix be liable for any special, indirect or consequential damages or
- * any damages whatsoever resulting from loss of use, data or profits,
- * whether in an action of contract, negligence or other tortious action,
- * arising out of or in connection with the use or performance of this
- * software.
+ * 
+ * This file is a component of an X Window System-specific implementation
+ * of Xcms based on the TekColor Color Management System.  Permission is
+ * hereby granted to use, copy, modify, sell, and otherwise distribute this
+ * software and its documentation for any purpose and without fee, provided
+ * that this copyright, permission, and disclaimer notice is reproduced in
+ * all copies of this software and in supporting documentation.  TekColor
+ * is a trademark of Tektronix, Inc.
+ * 
+ * Tektronix makes no representation about the suitability of this software
+ * for any purpose.  It is provided "as is" and with all faults.
+ * 
+ * TEKTRONIX DISCLAIMS ALL WARRANTIES APPLICABLE TO THIS SOFTWARE,
+ * INCLUDING THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE.  IN NO EVENT SHALL TEKTRONIX BE LIABLE FOR ANY
+ * SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
+ * RESULTING FROM LOSS OF USE, DATA, OR PROFITS, WHETHER IN AN ACTION OF
+ * CONTRACT, NEGLIGENCE, OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR THE PERFORMANCE OF THIS SOFTWARE.
  *
  *
  *	NAME
@@ -40,11 +43,10 @@
  */
 extern void _XColor_to_XcmsRGB();
 extern void _XcmsRGB_to_XColor();
-
+extern void _XcmsUnresolveColor();
 #ifdef X_NOT_STDC_ENV
 extern char *getenv();
 #endif
-
 
 /*
  *	NAME
@@ -60,7 +62,7 @@ XcmsLookupColor (
     _Xconst char *color_name,
     XcmsColor *pColor_exact_return,
     XcmsColor *pColor_scrn_return,
-    XcmsSpecFmt result_format)
+    XcmsColorFormat result_format)
 #else
 Status
 XcmsLookupColor(dpy, cmap, color_name, pColor_exact_return, pColor_scrn_return,
@@ -70,7 +72,7 @@ XcmsLookupColor(dpy, cmap, color_name, pColor_exact_return, pColor_scrn_return,
     char *color_name;
     XcmsColor *pColor_exact_return;
     XcmsColor *pColor_scrn_return;
-    XcmsSpecFmt result_format;
+    XcmsColorFormat result_format;
 #endif
 /*
  *	DESCRIPTION
@@ -83,14 +85,14 @@ XcmsLookupColor(dpy, cmap, color_name, pColor_exact_return, pColor_scrn_return,
  *		color displayable by the specified screen (screen
  *		specification).  The calling routine sets the format for these
  *		returned specifications in the XcmsColor format component.
- *		If XCMS_UNDEFINED_FORMAT, the specification is returned in the
+ *		If XcmsUndefinedFormat, the specification is returned in the
  *		format used to store the color in the database.
  */
 {
-    Status retval1 = XCMS_SUCCESS;
-    Status retval2 = XCMS_SUCCESS;
+    Status retval1 = XcmsSuccess;
+    Status retval2 = XcmsSuccess;
     char tmpName[BUFSIZ];
-    XcmsCCC *pCCC;
+    XcmsCCC ccc;
     register int n;
     xLookupColorReply reply;
     register xLookupColorReq *req;
@@ -101,22 +103,19 @@ XcmsLookupColor(dpy, cmap, color_name, pColor_exact_return, pColor_scrn_return,
  */
     if (dpy == NULL || color_name[0] == '\0' || pColor_scrn_return == 0
 	    || pColor_exact_return == NULL) {
-	return(XCMS_FAILURE);
+	return(XcmsFailure);
     }
 
-    if ((pCCC = XcmsCCCofColormap(dpy, cmap)) == (XcmsCCC *)NULL) {
-	return(XCMS_FAILURE);
+    if ((ccc = XcmsCCCOfColormap(dpy, cmap)) == (XcmsCCC)NULL) {
+	return(XcmsFailure);
     }
 
 /*
  * 1. Convert string to a XcmsColor
  */
     strncpy(tmpName, color_name, BUFSIZ - 1);
-    if ((retval1 = _XcmsResolveColorString(pCCC, color_name,
-	    pColor_exact_return, result_format)) == XCMS_FAILURE) {
-	return(XCMS_FAILURE);
-    }
-    if (retval1 == _XCMS_NEWNAME) {
+    if ((retval1 = _XcmsResolveColorString(ccc, color_name,
+	    pColor_exact_return, result_format)) != XcmsSuccess) {
 	goto PassToServer;
     }
 
@@ -131,12 +130,12 @@ XcmsLookupColor(dpy, cmap, color_name, pColor_exact_return, pColor_scrn_return,
      */
     bcopy((char *)pColor_exact_return, (char *)pColor_scrn_return,
 	    sizeof(XcmsColor));
-    if (pColor_scrn_return->format == XCMS_RGB_FORMAT) {
-	_XcmsUnresolveColor(pCCC, pColor_scrn_return, 1);
-	retval2 = XCMS_SUCCESS;
-    } else if ((retval2 = XcmsConvertColors(pCCC, pColor_scrn_return, 1,
-	    XCMS_RGB_FORMAT, (Bool *)NULL)) == XCMS_FAILURE) {
-	return(XCMS_FAILURE);
+    if (pColor_scrn_return->format == XcmsRGBFormat) {
+	_XcmsUnresolveColor(ccc, pColor_scrn_return, 1);
+	retval2 = XcmsSuccess;
+    } else if ((retval2 = XcmsConvertColors(ccc, pColor_scrn_return, 1,
+	    XcmsRGBFormat, (Bool *)NULL)) == XcmsFailure) {
+	return(XcmsFailure);
     }
 
     /*
@@ -146,15 +145,15 @@ XcmsLookupColor(dpy, cmap, color_name, pColor_exact_return, pColor_scrn_return,
      */
 
     switch (result_format) {
-      case XCMS_RGB_FORMAT :
+      case XcmsRGBFormat :
 	break;
-      case XCMS_UNDEFINED_FORMAT :
+      case XcmsUndefinedFormat :
 	result_format = pColor_exact_return->format;
 	/* fall through */
       default :
-	if (XcmsConvertColors(pCCC, pColor_scrn_return, 1, result_format,
-		(Bool *) NULL) == XCMS_FAILURE) {
-	    return(XCMS_FAILURE);
+	if (XcmsConvertColors(ccc, pColor_scrn_return, 1, result_format,
+		(Bool *) NULL) == XcmsFailure) {
+	    return(XcmsFailure);
 	}
 	break;
     }
@@ -168,7 +167,7 @@ PassToServer:
      * overwritten by XcmsResolveColorString().
      */
 
-    n = tmpName ? strlen (tmpName) : 0;
+    n = tmpName[0] == '\0' ? strlen (tmpName) : 0;
     LockDisplay(dpy);
     GetReq (LookupColor, req);
     req->cmap = cmap;
@@ -178,7 +177,7 @@ PassToServer:
     if (!_XReply (dpy, (xReply *) &reply, 0, xTrue)) {
 	UnlockDisplay(dpy);
 	SyncHandle();
-	return (XCMS_FAILURE);
+	return (XcmsFailure);
 	}
     def.red   = reply.exactRed;
     def.green = reply.exactGreen;
@@ -191,8 +190,8 @@ PassToServer:
     UnlockDisplay(dpy);
     SyncHandle();
 
-    _XColor_to_XcmsRGB(pCCC, &def, pColor_exact_return, 1);
-    _XColor_to_XcmsRGB(pCCC, &scr, pColor_scrn_return, 1);
+    _XColor_to_XcmsRGB(ccc, &def, pColor_exact_return, 1);
+    _XColor_to_XcmsRGB(ccc, &scr, pColor_scrn_return, 1);
 
     /*
      * Then, convert XcmsColor structure to the target specification
@@ -200,17 +199,17 @@ PassToServer:
      *    pCompressed.
      */
 
-    if (result_format != XCMS_RGB_FORMAT
-	    && result_format != XCMS_UNDEFINED_FORMAT) {
-	if (XcmsConvertColors(pCCC, pColor_exact_return, 1, result_format,
-		(Bool *) NULL) == XCMS_FAILURE) {
-	    return(XCMS_FAILURE);
+    if (result_format != XcmsRGBFormat
+	    && result_format != XcmsUndefinedFormat) {
+	if (XcmsConvertColors(ccc, pColor_exact_return, 1, result_format,
+		(Bool *) NULL) == XcmsFailure) {
+	    return(XcmsFailure);
 	}
-	if (XcmsConvertColors(pCCC, pColor_scrn_return, 1, result_format,
-		(Bool *) NULL) == XCMS_FAILURE) {
-	    return(XCMS_FAILURE);
+	if (XcmsConvertColors(ccc, pColor_scrn_return, 1, result_format,
+		(Bool *) NULL) == XcmsFailure) {
+	    return(XcmsFailure);
 	}
     }
 
-    return(XCMS_SUCCESS);
+    return(XcmsSuccess);
 }

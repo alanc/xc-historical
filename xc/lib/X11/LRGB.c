@@ -1,24 +1,27 @@
 /* $XConsortium: XcmsLRGB.c,v 1.7 91/02/16 15:57:19 dave Exp $" */
 
 /*
- * (c) Copyright 1990 1991 Tektronix Inc.
+ * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
  * 	All Rights Reserved
- *
- * This code, which implements the TekColor Human Interface and/or the TekHVC
- * Color Space algorithms, is proprietary to Tektronix, Inc., and permission
- * is granted for use only in the form supplied.  Revisions, modifications,
- * or * adaptations are not permitted without the prior written approval of
- * Tektronix, Inc., Beaverton, OR 97077.  Code and supporting documentation
- * copyright Tektronix, Inc. 1990 1991 All rights reserved.  TekColor and TekHVC
- * are trademarks of Tektronix, Inc.  U.S. and foreign patents pending.
- *
- * Tektronix disclaims all warranties with regard to this software, including
- * all implied warranties of merchantability and fitness, in no event shall
- * Tektronix be liable for any special, indirect or consequential damages or
- * any damages whatsoever resulting from loss of use, data or profits,
- * whether in an action of contract, negligence or other tortious action,
- * arising out of or in connection with the use or performance of this
- * software.
+ * 
+ * This file is a component of an X Window System-specific implementation
+ * of Xcms based on the TekColor Color Management System.  Permission is
+ * hereby granted to use, copy, modify, sell, and otherwise distribute this
+ * software and its documentation for any purpose and without fee, provided
+ * that this copyright, permission, and disclaimer notice is reproduced in
+ * all copies of this software and in supporting documentation.  TekColor
+ * is a trademark of Tektronix, Inc.
+ * 
+ * Tektronix makes no representation about the suitability of this software
+ * for any purpose.  It is provided "as is" and with all faults.
+ * 
+ * TEKTRONIX DISCLAIMS ALL WARRANTIES APPLICABLE TO THIS SOFTWARE,
+ * INCLUDING THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE.  IN NO EVENT SHALL TEKTRONIX BE LIABLE FOR ANY
+ * SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
+ * RESULTING FROM LOSS OF USE, DATA, OR PROFITS, WHETHER IN AN ACTION OF
+ * CONTRACT, NEGLIGENCE, OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR THE PERFORMANCE OF THIS SOFTWARE.
  *
  *
  *	NAME
@@ -82,12 +85,12 @@ extern void LINEAR_RGB_FreeSCCData();
 /*
  *      FORWARD DECLARATIONS
  */
-Status LINEAR_RGB_RGB_to_RGBi();
-Status LINEAR_RGB_RGBi_to_CIEXYZ();
-Status LINEAR_RGB_CIEXYZ_to_RGBi();
-Status LINEAR_RGB_RGBi_to_RGB();
+Status XcmsRGBToRGBi();
+Status XcmsRGBiToCIEXYZ();
+Status XcmsCIEXYZToRGBi();
+Status XcmsRGBiToRGB();
 int LINEAR_RGB_InitSCCData();
-caddr_t LINEAR_RGB_CopySCCData();
+XPointer LINEAR_RGB_CopySCCData();
 int XcmsLRGB_RGB_ParseString();
 int XcmsLRGB_RGBi_ParseString();
 
@@ -141,53 +144,53 @@ static unsigned short MASK[17] = {
 
     /*
      * A NULL terminated array of function pointers that when applied
-     * in series will convert an XcmsColor structure from XCMS_RGB_FORMAT
-     * to XCMS_CIEXYZ_FORMAT.
+     * in series will convert an XcmsColor structure from XcmsRGBFormat
+     * to XcmsCIEXYZFormat.
      */
 static XcmsFuncPtr Fl_RGB_to_CIEXYZ[] = {
-    LINEAR_RGB_RGB_to_RGBi,
-    LINEAR_RGB_RGBi_to_CIEXYZ,
+    XcmsRGBToRGBi,
+    XcmsRGBiToCIEXYZ,
     NULL
 };
 
     /*
      * A NULL terminated array of function pointers that when applied
-     * in series will convert an XcmsColor structure from XCMS_CIEXYZ_FORMAT
-     * to XCMS_RGB_FORMAT.
+     * in series will convert an XcmsColor structure from XcmsCIEXYZFormat
+     * to XcmsRGBFormat.
      */
 static XcmsFuncPtr Fl_CIEXYZ_to_RGB[] = {
-    LINEAR_RGB_CIEXYZ_to_RGBi,
-    LINEAR_RGB_RGBi_to_RGB,
+    XcmsCIEXYZToRGBi,
+    XcmsRGBiToRGB,
     NULL
 };
 
     /*
      * A NULL terminated array of function pointers that when applied
-     * in series will convert an XcmsColor structure from XCMS_RGBi_FORMAT
-     * to XCMS_CIEXYZ_FORMAT.
+     * in series will convert an XcmsColor structure from XcmsRGBiFormat
+     * to XcmsCIEXYZFormat.
      */
 static XcmsFuncPtr Fl_RGBi_to_CIEXYZ[] = {
-    LINEAR_RGB_RGBi_to_CIEXYZ,
+    XcmsRGBiToCIEXYZ,
     NULL
 };
 
     /*
      * A NULL terminated array of function pointers that when applied
-     * in series will convert an XcmsColor structure from XCMS_CIEXYZ_FORMAT
-     * to XCMS_RGBi_FORMAT.
+     * in series will convert an XcmsColor structure from XcmsCIEXYZFormat
+     * to XcmsRGBiFormat.
      */
 static XcmsFuncPtr Fl_CIEXYZ_to_RGBi[] = {
-    LINEAR_RGB_CIEXYZ_to_RGBi,
+    XcmsCIEXYZToRGBi,
     NULL
 };
 
     /*
      * RGBi Color Spaces
      */
-XcmsColorSpace	XcmsLRGB_RGBi_ColorSpace =
+XcmsColorSpace	XcmsRGBiColorSpace =
     {
 	XcmsRGBi_prefix,	/* prefix */
-	XCMS_RGBi_FORMAT,		/* id */
+	XcmsRGBiFormat,		/* id */
 	XcmsLRGB_RGBi_ParseString,	/* parseString */
 	Fl_RGBi_to_CIEXYZ,	/* to_CIEXYZ */
 	Fl_CIEXYZ_to_RGBi	/* from_CIEXYZ */
@@ -196,10 +199,10 @@ XcmsColorSpace	XcmsLRGB_RGBi_ColorSpace =
     /*
      * RGB Color Spaces
      */
-XcmsColorSpace	XcmsLRGB_RGB_ColorSpace =
+XcmsColorSpace	XcmsRGBColorSpace =
     {
 	XcmsRGB_prefix,		/* prefix */
-	XCMS_RGB_FORMAT,		/* id */
+	XcmsRGBFormat,		/* id */
 	XcmsLRGB_RGB_ParseString,	/* parseString */
 	Fl_RGB_to_CIEXYZ,	/* to_CIEXYZ */
 	Fl_CIEXYZ_to_RGB	/* from_CIEXYZ */
@@ -210,8 +213,8 @@ XcmsColorSpace	XcmsLRGB_RGB_ColorSpace =
      * LINEAR_RGB Screen Color Characteristics Function Set.
      */
 static XcmsColorSpace	*DDColorSpaces[] = {
-    &XcmsLRGB_RGB_ColorSpace,
-    &XcmsLRGB_RGBi_ColorSpace,
+    &XcmsRGBColorSpace,
+    &XcmsRGBiColorSpace,
     NULL
 };
 
@@ -225,7 +228,7 @@ static XcmsColorSpace	*DDColorSpaces[] = {
     /*
      * LINEAR_RGB Screen Color Characteristics Function Set.
      */
-XcmsSCCFuncSet	LINEAR_RGB_SCCFuncSet =
+XcmsSCCFuncSet	XcmsLinearRGBFunctionSet =
     {
 	&DDColorSpaces[0],	/* pDDColorSpaces */
 	LINEAR_RGB_InitSCCData,	/* pInitScrnFunc */
@@ -289,9 +292,9 @@ IntensityCmp (p1, p2)
 	return (-1);
     }
     if (p1->intensity > p2->intensity) {
-	return (XCMS_SUCCESS);
+	return (XcmsSuccess);
     }
-    return (XCMS_FAILURE);
+    return (XcmsFailure);
 }
 
 /*
@@ -317,13 +320,12 @@ ValueInterpolation (key, lo, hi, answer, bitsPerRGB)
 {
     XcmsFloat ratio;
 
-    ratio = 
-      ((XcmsFloat)key->value - (XcmsFloat)lo->value) / 
+    ratio = ((XcmsFloat)key->value - (XcmsFloat)lo->value) / 
 	((XcmsFloat)hi->value - (XcmsFloat)lo->value);
     answer->value = key->value;
-    answer->intensity = (hi->intensity) - (lo->intensity) * ratio;
+    answer->intensity = (hi->intensity - lo->intensity) * ratio;
     answer->intensity += lo->intensity;
-    return (XCMS_SUCCESS);
+    return (XcmsSuccess);
 }
 
 /*
@@ -351,10 +353,9 @@ IntensityInterpolation (key, lo, hi, answer, bitsPerRGB)
     int tmp;
     ratio = (key->intensity - lo->intensity) / (hi->intensity - lo->intensity);
     answer->intensity = key->intensity;
-    tmp = (((XcmsFloat)hi->value - (XcmsFloat)lo->value) * ratio)
-      + (XcmsFloat)0.5;
+    tmp = (((XcmsFloat)hi->value - (XcmsFloat)lo->value) * ratio);
     answer->value = (lo->value + tmp + HALF[bitsPerRGB]) & MASK[bitsPerRGB];
-    return (XCMS_SUCCESS);
+    return (XcmsSuccess);
 }
 
 
@@ -397,7 +398,7 @@ _XcmsTableSearch (key, bitsPerRGB, base, nel, nKeyPtrSize, compar, interpol, ans
     /* for value, use only the significant high order bits */
     ((IntensityRec *)key)->value &= MASK[bitsPerRGB];
 
-    last = hi = base + (nel * nKeyPtrSize);
+    last = hi = base + ((nel - 1) * nKeyPtrSize);
     mid = lo = base;
 
     while (mid != last) {
@@ -408,7 +409,7 @@ _XcmsTableSearch (key, bitsPerRGB, base, nel, nKeyPtrSize, compar, interpol, ans
 	if (result == 0) {
 
 	    bcopy(mid, answer, nKeyPtrSize);
-	    return (XCMS_SUCCESS);
+	    return (XcmsSuccess);
 	} else if (result < 0) {
 	    hi = mid;
 	} else {
@@ -471,7 +472,7 @@ XcmsLRGB_RGB_ParseString(spec, pColor)
 /*
  *	DESCRIPTION
  *		This routines takes a string and attempts to convert
- *		it into a XcmsColor structure with XCMS_RGB_FORMAT.
+ *		it into a XcmsColor structure with XcmsRGBFormat.
  *
  *	RETURNS
  *		0 if failed, non-zero otherwise.
@@ -493,7 +494,7 @@ XcmsLRGB_RGB_ParseString(spec, pColor)
 	spec++;
 	n = strlen(spec);
 	if (n != 3 && n != 6 && n != 9 && n != 12) {
-	    return(XCMS_FAILURE);
+	    return(XcmsFailure);
 	}
 
 	n /= 3;
@@ -513,7 +514,7 @@ XcmsLRGB_RGB_ParseString(spec, pColor)
 		*/
 		else if (c >= 'a' && c <= 'f')
 		    b |= c - ('a' - 10);
-		else return (XCMS_FAILURE);
+		else return (XcmsFailure);
 	    }
 	} while (*spec != '\0');
 
@@ -530,7 +531,7 @@ XcmsLRGB_RGB_ParseString(spec, pColor)
 		((unsigned long)b * 0xFFFF) / ((1 << n) - 1);
     } else {
 	if ((pchar = strchr(spec, ':')) == NULL) {
-	    return(XCMS_FAILURE);
+	    return(XcmsFailure);
 	}
 	n = (int)(pchar - spec);
 
@@ -538,7 +539,7 @@ XcmsLRGB_RGB_ParseString(spec, pColor)
 	 * Check for proper prefix.
 	 */
 	if (strncmp(spec, XcmsRGB_prefix, n) != 0) {
-	    return(XCMS_FAILURE);
+	    return(XcmsFailure);
 	}
 
 	/*
@@ -551,7 +552,7 @@ XcmsLRGB_RGB_ParseString(spec, pColor)
 	    *pShort = 0;
 	    while (*spec != '/' && *spec != '\0') {
 		if (++n > 4) {
-		    return(XCMS_FAILURE);
+		    return(XcmsFailure);
 		}
 		c = *spec++;
 		*pShort <<= 4;
@@ -563,16 +564,16 @@ XcmsLRGB_RGB_ParseString(spec, pColor)
 		*/
 		else if (c >= 'a' && c <= 'f')
 		    *pShort |= c - ('a' - 10);
-		else return (XCMS_FAILURE);
+		else return (XcmsFailure);
 	    }
 	    if (n < 4) {
 		*pShort = ((unsigned long)*pShort * 0xFFFF) / ((1 << n*4) - 1);
 	    }
 	}
     }
-    pColor->format = XCMS_RGB_FORMAT;
+    pColor->format = XcmsRGBFormat;
     pColor->pixel = 0;
-    return (XCMS_SUCCESS);
+    return (XcmsSuccess);
 }
 
 
@@ -589,7 +590,7 @@ XcmsLRGB_RGBi_ParseString(spec, pColor)
 /*
  *	DESCRIPTION
  *		This routines takes a string and attempts to convert
- *		it into a XcmsColor structure with XCMS_RGBi_FORMAT.
+ *		it into a XcmsColor structure with XcmsRGBiFormat.
  *		The assumed RGBi string syntax is:
  *		    RGBi:<r>/<g>/<b>
  *		Where r, g, and b are in string input format for floats
@@ -607,7 +608,7 @@ XcmsLRGB_RGBi_ParseString(spec, pColor)
     char *pchar;
 
     if ((pchar = strchr(spec, ':')) == NULL) {
-	return(XCMS_FAILURE);
+	return(XcmsFailure);
     }
     n = (int)(pchar - spec);
 
@@ -615,7 +616,7 @@ XcmsLRGB_RGBi_ParseString(spec, pColor)
      * Check for proper prefix.
      */
     if (strncmp(spec, XcmsRGBi_prefix, n) != 0) {
-	return(XCMS_FAILURE);
+	return(XcmsFailure);
     }
 
     /*
@@ -625,28 +626,28 @@ XcmsLRGB_RGBi_ParseString(spec, pColor)
 	    &pColor->spec.RGBi.red,
 	    &pColor->spec.RGBi.green,
 	    &pColor->spec.RGBi.blue) != 3) {
-	return(XCMS_FAILURE);
+	return(XcmsFailure);
     }
 
     /*
      * Succeeded !
      */
-    pColor->format = XCMS_RGBi_FORMAT;
+    pColor->format = XcmsRGBiFormat;
     pColor->pixel = 0;
-    return (XCMS_SUCCESS);
+    return (XcmsSuccess);
 }
 
 
 /*
  *	NAME
- *		LINEAR_RGB_CIEXYZ_to_RGBi - convert CIE XYZ to RGB
+ *		XcmsCIEXYZToRGBi - convert CIE XYZ to RGB
  *
  *	SYNOPSIS
  */
 /* ARGSUSED */
 Status 
-LINEAR_RGB_CIEXYZ_to_RGBi(pCCC, pXcmsColors_in_out, nColors, pCompressed)
-    XcmsCCC *pCCC;
+XcmsCIEXYZToRGBi(ccc, pXcmsColors_in_out, nColors, pCompressed)
+    XcmsCCC ccc;
     XcmsColor *pXcmsColors_in_out;/* pointer to XcmsColors to convert 	*/
     unsigned int nColors;	/* Number of colors			*/
     Bool *pCompressed;		/* pointer to an array of Bool		*/
@@ -656,23 +657,23 @@ LINEAR_RGB_CIEXYZ_to_RGBi(pCCC, pXcmsColors_in_out, nColors, pCompressed)
  *		structures from RGB format to RGBi format.
  *
  *	RETURNS
- *		XCMS_FAILURE if failed,
- *		XCMS_SUCCESS if succeeded without gamut compression.
- *		XCMS_SUCCESS_WITH_COMPRESSION if succeeded with gamut
+ *		XcmsFailure if failed,
+ *		XcmsSuccess if succeeded without gamut compression.
+ *		XcmsSuccessWithCompression if succeeded with gamut
  *			compression.
  */
 {
-    LINEAR_RGB_SCCData *pSCCData;
+    LINEAR_RGB_SCCData *pScreenData;
     XcmsFloat tmp[3];
     int hasCompressed = 0;
     unsigned int i;
     XcmsColor *pColor = pXcmsColors_in_out;
 
-    if (pCCC == NULL) {
-	return(XCMS_FAILURE);
+    if (ccc == NULL) {
+	return(XcmsFailure);
     }
 
-    pSCCData = (LINEAR_RGB_SCCData *)pCCC->pPerScrnInfo->pSCCData;
+    pScreenData = (LINEAR_RGB_SCCData *)ccc->pPerScrnInfo->screenData;
 
     /*
      * XcmsColors should be White Point Adjusted, if necessary, by now!
@@ -690,13 +691,13 @@ LINEAR_RGB_CIEXYZ_to_RGBi(pCCC, pXcmsColors_in_out, nColors, pCompressed)
 
     for (i = 0; i < nColors; i++) {
 
-	/* Make sure format is XCMS_CIEXYZ_FORMAT */
-	if (pColor->format != XCMS_CIEXYZ_FORMAT) {
-	    return(XCMS_FAILURE);
+	/* Make sure format is XcmsCIEXYZFormat */
+	if (pColor->format != XcmsCIEXYZFormat) {
+	    return(XcmsFailure);
 	}
 
 	/* Multiply [A]-1 * [XYZ] to get RGB intensity */
-	_XcmsMatVec((XcmsFloat *) pSCCData->XYZtoRGBmatrix,
+	_XcmsMatVec((XcmsFloat *) pScreenData->XYZtoRGBmatrix,
 		(XcmsFloat *) &pColor->spec, tmp);
 
 	if ((MIN3 (tmp[0], tmp[1], tmp[2]) < -EPS) ||
@@ -706,32 +707,32 @@ LINEAR_RGB_CIEXYZ_to_RGBi(pCCC, pXcmsColors_in_out, nColors, pCompressed)
 	     * RGBi out of screen's gamut
 	     */
 
-	    if (pCCC->gamutCompFunc == NULL) {
+	    if (ccc->gamutCompProc == NULL) {
 		/*
 		 * Aha!! Here's that little trick that will allow
 		 * gamut compression routines to get the out of bound
 		 * RGBi.  
 		 */
 		bcopy((char *)tmp, (char *)&pColor->spec, sizeof(tmp));
-		pColor->format = XCMS_RGBi_FORMAT;
-		return(XCMS_FAILURE);
-	    } else if ((*pCCC->gamutCompFunc)(pCCC, pXcmsColors_in_out, nColors,
+		pColor->format = XcmsRGBiFormat;
+		return(XcmsFailure);
+	    } else if ((*ccc->gamutCompProc)(ccc, pXcmsColors_in_out, nColors,
 		    i, pCompressed) == 0) {
-		return(XCMS_FAILURE);
+		return(XcmsFailure);
 	    }
 
 	    /*
 	     * The gamut compression function should return colors in CIEXYZ
 	     *	Also check again to if the new color is within gamut.
 	     */
-	    if (pColor->format != XCMS_CIEXYZ_FORMAT) {
-		return(XCMS_FAILURE);
+	    if (pColor->format != XcmsCIEXYZFormat) {
+		return(XcmsFailure);
 	    }
-	    _XcmsMatVec((XcmsFloat *) pSCCData->XYZtoRGBmatrix,
+	    _XcmsMatVec((XcmsFloat *) pScreenData->XYZtoRGBmatrix,
 		    (XcmsFloat *) &pColor->spec, tmp);
 	    if ((MIN3 (tmp[0], tmp[1], tmp[2]) < -EPS) ||
 		(MAX3 (tmp[0], tmp[1], tmp[2]) > (1.0 + EPS))) {
-		return(XCMS_FAILURE);
+		return(XcmsFailure);
 	    }
 	    hasCompressed++;
 	}
@@ -753,9 +754,9 @@ LINEAR_RGB_CIEXYZ_to_RGBi(pCCC, pXcmsColors_in_out, nColors, pCompressed)
 	} else if (pColor->spec.RGBi.blue > 1.0) {
 		pColor->spec.RGBi.blue = 1.0;
 	}
-	(pColor++)->format = XCMS_RGBi_FORMAT;
+	(pColor++)->format = XcmsRGBiFormat;
     }
-    return (hasCompressed ? XCMS_SUCCESS_WITH_COMPRESSION : XCMS_SUCCESS);
+    return (hasCompressed ? XcmsSuccessWithCompression : XcmsSuccess);
 }
 
 
@@ -767,8 +768,8 @@ LINEAR_RGB_CIEXYZ_to_RGBi(pCCC, pXcmsColors_in_out, nColors, pCompressed)
  */
 /* ARGSUSED */
 Status 
-LINEAR_RGB_RGBi_to_CIEXYZ(pCCC, pXcmsColors_in_out, nColors, pCompressed)
-    XcmsCCC *pCCC;
+XcmsRGBiToCIEXYZ(ccc, pXcmsColors_in_out, nColors, pCompressed)
+    XcmsCCC ccc;
     XcmsColor *pXcmsColors_in_out;/* pointer to XcmsColors to convert 	*/
     unsigned int nColors;	/* Number of colors			*/
     char *pCompressed;		/* pointer to a bit array		*/
@@ -778,22 +779,22 @@ LINEAR_RGB_RGBi_to_CIEXYZ(pCCC, pXcmsColors_in_out, nColors, pCompressed)
  *		structures from RGBi format to CIEXYZ format.
  *
  *	RETURNS
- *		XCMS_FAILURE if failed,
- *		XCMS_SUCCESS if succeeded.
+ *		XcmsFailure if failed,
+ *		XcmsSuccess if succeeded.
  */
 {
-    LINEAR_RGB_SCCData *pSCCData;
+    LINEAR_RGB_SCCData *pScreenData;
     XcmsFloat tmp[3];
 
     /*
      * pCompressed ignored in this function.
      */
 
-    if (pCCC == NULL) {
-	return(XCMS_FAILURE);
+    if (ccc == NULL) {
+	return(XcmsFailure);
     }
 
-    pSCCData = (LINEAR_RGB_SCCData *)pCCC->pPerScrnInfo->pSCCData;
+    pScreenData = (LINEAR_RGB_SCCData *)ccc->pPerScrnInfo->screenData;
 
     /*
      * XcmsColors should be White Point Adjusted, if necessary, by now!
@@ -802,26 +803,26 @@ LINEAR_RGB_RGBi_to_CIEXYZ(pCCC, pXcmsColors_in_out, nColors, pCompressed)
     while (nColors--) {
 
 	/* Multiply [A]-1 * [XYZ] to get RGB intensity */
-	_XcmsMatVec((XcmsFloat *) pSCCData->RGBtoXYZmatrix,
+	_XcmsMatVec((XcmsFloat *) pScreenData->RGBtoXYZmatrix,
 		(XcmsFloat *) &pXcmsColors_in_out->spec, tmp);
 
 	bcopy((char *)tmp, (char *)&pXcmsColors_in_out->spec, sizeof(tmp));
-	(pXcmsColors_in_out++)->format = XCMS_CIEXYZ_FORMAT;
+	(pXcmsColors_in_out++)->format = XcmsCIEXYZFormat;
     }
-    return(XCMS_SUCCESS);
+    return(XcmsSuccess);
 }
 
 
 /*
  *	NAME
- *		LINEAR_RGB_RGBi_to_RGB
+ *		XcmsRGBiToRGB
  *
  *	SYNOPSIS
  */
 /* ARGSUSED */
 Status 
-LINEAR_RGB_RGBi_to_RGB(pCCC, pXcmsColors_in_out, nColors, pCompressed)
-    XcmsCCC *pCCC;
+XcmsRGBiToRGB(ccc, pXcmsColors_in_out, nColors, pCompressed)
+    XcmsCCC ccc;
     XcmsColor *pXcmsColors_in_out;/* pointer to XcmsColors to convert 	*/
     unsigned int nColors;	/* Number of colors			*/
     char *pCompressed;		/* pointer to a bit array		*/
@@ -831,13 +832,13 @@ LINEAR_RGB_RGBi_to_RGB(pCCC, pXcmsColors_in_out, nColors, pCompressed)
  *		structures from RGBi format to RGB format.
  *
  *	RETURNS
- *		XCMS_FAILURE if failed,
- *		XCMS_SUCCESS if succeeded without gamut compression.
- *		XCMS_SUCCESS_WITH_COMPRESSION if succeeded with gamut
+ *		XcmsFailure if failed,
+ *		XcmsSuccess if succeeded without gamut compression.
+ *		XcmsSuccessWithCompression if succeeded with gamut
  *			compression.
  */
 {
-    LINEAR_RGB_SCCData *pSCCData;
+    LINEAR_RGB_SCCData *pScreenData;
     XcmsRGB tmpRGB;
     IntensityRec keyIRec, answerIRec;
 
@@ -845,66 +846,66 @@ LINEAR_RGB_RGBi_to_RGB(pCCC, pXcmsColors_in_out, nColors, pCompressed)
      * pCompressed ignored in this function.
      */
 
-    if (pCCC == NULL) {
-	return(XCMS_FAILURE);
+    if (ccc == NULL) {
+	return(XcmsFailure);
     }
 
-    pSCCData = (LINEAR_RGB_SCCData *)pCCC->pPerScrnInfo->pSCCData;
+    pScreenData = (LINEAR_RGB_SCCData *)ccc->pPerScrnInfo->screenData;
 
     while (nColors--) {
 
-	/* Make sure format is XCMS_RGBi_FORMAT */
-	if (pXcmsColors_in_out->format != XCMS_RGBi_FORMAT) {
-	    return(XCMS_FAILURE);
+	/* Make sure format is XcmsRGBiFormat */
+	if (pXcmsColors_in_out->format != XcmsRGBiFormat) {
+	    return(XcmsFailure);
 	}
 
 	keyIRec.intensity = pXcmsColors_in_out->spec.RGBi.red;
-	if (!_XcmsTableSearch((char *)&keyIRec, pCCC->visual->bits_per_rgb,
-		(char *)pSCCData->pRedTbl->pBase,
-		(unsigned)pSCCData->pRedTbl->nEntries,
+	if (!_XcmsTableSearch((char *)&keyIRec, ccc->visual->bits_per_rgb,
+		(char *)pScreenData->pRedTbl->pBase,
+		(unsigned)pScreenData->pRedTbl->nEntries,
 		(unsigned)sizeof(IntensityRec),
 		IntensityCmp, IntensityInterpolation, (char *)&answerIRec)) {
-	    return(XCMS_FAILURE);
+	    return(XcmsFailure);
 	}
 	tmpRGB.red = answerIRec.value;
 
 	keyIRec.intensity = pXcmsColors_in_out->spec.RGBi.green;
-	if (!_XcmsTableSearch((char *)&keyIRec, pCCC->visual->bits_per_rgb,
-		(char *)pSCCData->pGreenTbl->pBase,
-		(unsigned)pSCCData->pGreenTbl->nEntries,
+	if (!_XcmsTableSearch((char *)&keyIRec, ccc->visual->bits_per_rgb,
+		(char *)pScreenData->pGreenTbl->pBase,
+		(unsigned)pScreenData->pGreenTbl->nEntries,
 		(unsigned)sizeof(IntensityRec),
 		IntensityCmp, IntensityInterpolation, (char *)&answerIRec)) {
-	    return(XCMS_FAILURE);
+	    return(XcmsFailure);
 	}
 	tmpRGB.green = answerIRec.value;
 
 	keyIRec.intensity = pXcmsColors_in_out->spec.RGBi.blue;
-	if (!_XcmsTableSearch((char *)&keyIRec, pCCC->visual->bits_per_rgb,
-		(char *)pSCCData->pBlueTbl->pBase,
-		(unsigned)pSCCData->pBlueTbl->nEntries,
+	if (!_XcmsTableSearch((char *)&keyIRec, ccc->visual->bits_per_rgb,
+		(char *)pScreenData->pBlueTbl->pBase,
+		(unsigned)pScreenData->pBlueTbl->nEntries,
 		(unsigned)sizeof(IntensityRec),
 		IntensityCmp, IntensityInterpolation, (char *)&answerIRec)) {
-	    return(XCMS_FAILURE);
+	    return(XcmsFailure);
 	}
 	tmpRGB.blue = answerIRec.value;
 
 	bcopy((char *)&tmpRGB, (char *)&pXcmsColors_in_out->spec, sizeof(XcmsRGB));
-	(pXcmsColors_in_out++)->format = XCMS_RGB_FORMAT;
+	(pXcmsColors_in_out++)->format = XcmsRGBFormat;
     }
-    return(XCMS_SUCCESS);
+    return(XcmsSuccess);
 }
 
 
 /*
  *	NAME
- *		LINEAR_RGB_RGB_to_RGBi
+ *		XcmsRGBToRGBi
  *
  *	SYNOPSIS
  */
 /* ARGSUSED */
 Status 
-LINEAR_RGB_RGB_to_RGBi(pCCC, pXcmsColors_in_out, nColors, pCompressed)
-    XcmsCCC *pCCC;
+XcmsRGBToRGBi(ccc, pXcmsColors_in_out, nColors, pCompressed)
+    XcmsCCC ccc;
     XcmsColor *pXcmsColors_in_out;/* pointer to XcmsColors to convert 	*/
     unsigned int nColors;	/* Number of colors			*/
     char *pCompressed;		/* pointer to a bit array		*/
@@ -914,11 +915,11 @@ LINEAR_RGB_RGB_to_RGBi(pCCC, pXcmsColors_in_out, nColors, pCompressed)
  *		structures from RGB format to RGBi format.
  *
  *	RETURNS
- *		XCMS_FAILURE if failed,
- *		XCMS_SUCCESS if succeeded.
+ *		XcmsFailure if failed,
+ *		XcmsSuccess if succeeded.
  */
 {
-    LINEAR_RGB_SCCData *pSCCData;
+    LINEAR_RGB_SCCData *pScreenData;
     XcmsRGBi tmpRGBi;
     IntensityRec keyIRec, answerIRec;
 
@@ -926,53 +927,53 @@ LINEAR_RGB_RGB_to_RGBi(pCCC, pXcmsColors_in_out, nColors, pCompressed)
      * pCompressed ignored in this function.
      */
 
-    if (pCCC == NULL) {
-	return(XCMS_FAILURE);
+    if (ccc == NULL) {
+	return(XcmsFailure);
     }
 
-    pSCCData = (LINEAR_RGB_SCCData *)pCCC->pPerScrnInfo->pSCCData;
+    pScreenData = (LINEAR_RGB_SCCData *)ccc->pPerScrnInfo->screenData;
 
     while (nColors--) {
 
-	/* Make sure format is XCMS_RGB_FORMAT */
-	if (pXcmsColors_in_out->format != XCMS_RGB_FORMAT) {
-	    return(XCMS_FAILURE);
+	/* Make sure format is XcmsRGBFormat */
+	if (pXcmsColors_in_out->format != XcmsRGBFormat) {
+	    return(XcmsFailure);
 	}
 
 	keyIRec.value = pXcmsColors_in_out->spec.RGB.red;
-	if (!_XcmsTableSearch((char *)&keyIRec, pCCC->visual->bits_per_rgb,
-		(char *)pSCCData->pRedTbl->pBase,
-		(unsigned)pSCCData->pRedTbl->nEntries,
+	if (!_XcmsTableSearch((char *)&keyIRec, ccc->visual->bits_per_rgb,
+		(char *)pScreenData->pRedTbl->pBase,
+		(unsigned)pScreenData->pRedTbl->nEntries,
 		(unsigned)sizeof(IntensityRec),
 		ValueCmp, ValueInterpolation, (char *)&answerIRec)) {
-	    return(XCMS_FAILURE);
+	    return(XcmsFailure);
 	}
 	tmpRGBi.red = answerIRec.intensity;
 
 	keyIRec.value = pXcmsColors_in_out->spec.RGB.green;
-	if (!_XcmsTableSearch((char *)&keyIRec, pCCC->visual->bits_per_rgb,
-		(char *)pSCCData->pGreenTbl->pBase,
-		(unsigned)pSCCData->pGreenTbl->nEntries,
+	if (!_XcmsTableSearch((char *)&keyIRec, ccc->visual->bits_per_rgb,
+		(char *)pScreenData->pGreenTbl->pBase,
+		(unsigned)pScreenData->pGreenTbl->nEntries,
 		(unsigned)sizeof(IntensityRec),
 		ValueCmp, ValueInterpolation, (char *)&answerIRec)) {
-	    return(XCMS_FAILURE);
+	    return(XcmsFailure);
 	}
 	tmpRGBi.green = answerIRec.intensity;
 
 	keyIRec.value = pXcmsColors_in_out->spec.RGB.blue;
-	if (!_XcmsTableSearch((char *)&keyIRec, pCCC->visual->bits_per_rgb,
-		(char *)pSCCData->pBlueTbl->pBase,
-		(unsigned)pSCCData->pBlueTbl->nEntries,
+	if (!_XcmsTableSearch((char *)&keyIRec, ccc->visual->bits_per_rgb,
+		(char *)pScreenData->pBlueTbl->pBase,
+		(unsigned)pScreenData->pBlueTbl->nEntries,
 		(unsigned)sizeof(IntensityRec),
 		ValueCmp, ValueInterpolation, (char *)&answerIRec)) {
-	    return(XCMS_FAILURE);
+	    return(XcmsFailure);
 	}
 	tmpRGBi.blue = answerIRec.intensity;
 
 	bcopy((char *)&tmpRGBi, (char *)&pXcmsColors_in_out->spec, sizeof(XcmsRGBi));
-	(pXcmsColors_in_out++)->format = XCMS_RGBi_FORMAT;
+	(pXcmsColors_in_out++)->format = XcmsRGBiFormat;
     }
-    return(XCMS_SUCCESS);
+    return(XcmsSuccess);
 }
 
 /*
@@ -981,17 +982,17 @@ LINEAR_RGB_RGB_to_RGBi(pCCC, pXcmsColors_in_out, nColors, pCompressed)
  *
  *	SYNOPSIS
  */
-int
-LINEAR_RGB_InitSCCData(dpy, screen_number, pPerScrnInfo)
+Status
+LINEAR_RGB_InitSCCData(dpy, screenNumber, pPerScrnInfo)
     Display *dpy;
-    int screen_number;
+    int screenNumber;
     XcmsPerScrnInfo *pPerScrnInfo;
 /*
  *	DESCRIPTION
  *
  *	RETURNS
- *		0 if failed.
- *		1 if succeeded with no modifications.
+ *		XcmsFailure if failed.
+ *		XcmsSuccess if succeeded.
  *
  */
 {
@@ -1003,14 +1004,14 @@ LINEAR_RGB_InitSCCData(dpy, screen_number, pPerScrnInfo)
     XcmsFloat *pValue;
     IntensityRec *pIRec;
 
-    LINEAR_RGB_SCCData *pSCCData;
+    LINEAR_RGB_SCCData *pScreenData;
 
     /*
-     * Allocate memory for pSCCData
+     * Allocate memory for pScreenData
      */
-    if (!(pSCCData = (LINEAR_RGB_SCCData *) 
+    if (!(pScreenData = (LINEAR_RGB_SCCData *) 
 		      Xcalloc (1, sizeof(LINEAR_RGB_SCCData)))) {
-	return(XCMS_FAILURE);
+	return(XcmsFailure);
     }
 
     /*
@@ -1025,58 +1026,58 @@ LINEAR_RGB_InitSCCData(dpy, screen_number, pPerScrnInfo)
      *  screen info using this property.  If it is not use the default.
      */
     if (MatrixAtom != None &&
-	_XcmsGetProperty (dpy, RootWindow(dpy, screen_number), MatrixAtom, 
+	_XcmsGetProperty (dpy, RootWindow(dpy, screenNumber), MatrixAtom, 
 	   &format_return, &nitems_return, &nbytes_return, &property_return) &&
 	   nitems_return == 18) {
 
 	/* Get the RGBtoXYZ and XYZtoRGB matrices */
-	pValue = (XcmsFloat *) pSCCData;
+	pValue = (XcmsFloat *) pScreenData;
 	pChar = property_return;
 	for (count = 0; count < 18; count++) {
-	    *pValue++ = (XcmsFloat) _XcmsGetElement (format_return, &pChar) / 
-			(XcmsFloat) XDCCC_NUMBER;
+	    *pValue++ = (XcmsFloat)_XcmsGetElement(format_return, &pChar)
+		    / (XcmsFloat)XDCCC_NUMBER;
 	}
 	XFree (property_return);
-	pPerScrnInfo->screenWhitePt.spec.CIEXYZ.X = pSCCData->RGBtoXYZmatrix[0][0] +
-					      pSCCData->RGBtoXYZmatrix[0][1] +
-					      pSCCData->RGBtoXYZmatrix[0][2];
-	pPerScrnInfo->screenWhitePt.spec.CIEXYZ.Y = pSCCData->RGBtoXYZmatrix[1][0] +
-					      pSCCData->RGBtoXYZmatrix[1][1] +
-					      pSCCData->RGBtoXYZmatrix[1][2];
-	pPerScrnInfo->screenWhitePt.spec.CIEXYZ.Z = pSCCData->RGBtoXYZmatrix[2][0] +
-					      pSCCData->RGBtoXYZmatrix[2][1] +
-					      pSCCData->RGBtoXYZmatrix[2][2];
+	pPerScrnInfo->screenWhitePt.spec.CIEXYZ.X = pScreenData->RGBtoXYZmatrix[0][0] +
+					      pScreenData->RGBtoXYZmatrix[0][1] +
+					      pScreenData->RGBtoXYZmatrix[0][2];
+	pPerScrnInfo->screenWhitePt.spec.CIEXYZ.Y = pScreenData->RGBtoXYZmatrix[1][0] +
+					      pScreenData->RGBtoXYZmatrix[1][1] +
+					      pScreenData->RGBtoXYZmatrix[1][2];
+	pPerScrnInfo->screenWhitePt.spec.CIEXYZ.Z = pScreenData->RGBtoXYZmatrix[2][0] +
+					      pScreenData->RGBtoXYZmatrix[2][1] +
+					      pScreenData->RGBtoXYZmatrix[2][2];
 	if ((pPerScrnInfo->screenWhitePt.spec.CIEXYZ.Y < (1.0 - EPS) )
 		|| (pPerScrnInfo->screenWhitePt.spec.CIEXYZ.Y > (1.0 + EPS))) {
 	    goto FreeSCCData;
 	} else {
 	    pPerScrnInfo->screenWhitePt.spec.CIEXYZ.Y = 1.0;
 	}
-	pPerScrnInfo->screenWhitePt.format = XCMS_CIEXYZ_FORMAT;
+	pPerScrnInfo->screenWhitePt.format = XcmsCIEXYZFormat;
 	pPerScrnInfo->screenWhitePt.pixel = 0;
 #ifdef PDEBUG
 	printf ("A Matrix values:\n");
 	printf ("       %f %f %f\n       %f %f %f\n       %f %f %f\n",
-		pSCCData->RGBtoXYZmatrix[0][0],
-		pSCCData->RGBtoXYZmatrix[0][1],
-		pSCCData->RGBtoXYZmatrix[0][2],
-		pSCCData->RGBtoXYZmatrix[1][0],
-		pSCCData->RGBtoXYZmatrix[1][1],
-		pSCCData->RGBtoXYZmatrix[1][2],
-		pSCCData->RGBtoXYZmatrix[2][0],
-		pSCCData->RGBtoXYZmatrix[2][1],
-		pSCCData->RGBtoXYZmatrix[2][2]);
+		pScreenData->RGBtoXYZmatrix[0][0],
+		pScreenData->RGBtoXYZmatrix[0][1],
+		pScreenData->RGBtoXYZmatrix[0][2],
+		pScreenData->RGBtoXYZmatrix[1][0],
+		pScreenData->RGBtoXYZmatrix[1][1],
+		pScreenData->RGBtoXYZmatrix[1][2],
+		pScreenData->RGBtoXYZmatrix[2][0],
+		pScreenData->RGBtoXYZmatrix[2][1],
+		pScreenData->RGBtoXYZmatrix[2][2]);
 	printf ("A- Matrix values:\n");
 	printf ("       %f %f %f\n       %f %f %f\n       %f %f %f\n",
-		pSCCData->XYZtoRGBmatrix[0][0],
-		pSCCData->XYZtoRGBmatrix[0][1],
-		pSCCData->XYZtoRGBmatrix[0][2],
-		pSCCData->XYZtoRGBmatrix[1][0],
-		pSCCData->XYZtoRGBmatrix[1][1],
-		pSCCData->XYZtoRGBmatrix[1][2],
-		pSCCData->XYZtoRGBmatrix[2][0],
-		pSCCData->XYZtoRGBmatrix[2][1],
-		pSCCData->XYZtoRGBmatrix[2][2]);
+		pScreenData->XYZtoRGBmatrix[0][0],
+		pScreenData->XYZtoRGBmatrix[0][1],
+		pScreenData->XYZtoRGBmatrix[0][2],
+		pScreenData->XYZtoRGBmatrix[1][0],
+		pScreenData->XYZtoRGBmatrix[1][1],
+		pScreenData->XYZtoRGBmatrix[1][2],
+		pScreenData->XYZtoRGBmatrix[2][0],
+		pScreenData->XYZtoRGBmatrix[2][1],
+		pScreenData->XYZtoRGBmatrix[2][2]);
 	printf ("Screen White Pt value: %f %f %f\n",
 		pPerScrnInfo->screenWhitePt.spec.CIEXYZ.X,
 		pPerScrnInfo->screenWhitePt.spec.CIEXYZ.Y,
@@ -1091,66 +1092,68 @@ LINEAR_RGB_InitSCCData(dpy, screen_number, pPerScrnInfo)
      *	4. Get the Intensity Profile if it exists
      */
     if (CorrectAtom != None &&
-	_XcmsGetProperty (dpy, RootWindow(dpy, screen_number), CorrectAtom,
+	_XcmsGetProperty (dpy, RootWindow(dpy, screenNumber), CorrectAtom,
 	   &format_return, &nitems_return, &nbytes_return, &property_return) &&
 	    nitems_return > 3) {
 
 	pChar = property_return;
-	cType = (int) _XcmsGetElement (format_return, &pChar);
-	nTables = (int) _XcmsGetElement (format_return, &pChar);
-	nElements = (int) _XcmsGetElement (format_return, &pChar);
+	cType = _XcmsGetElement(format_return, &pChar);
+	nTables = _XcmsGetElement(format_return, &pChar);
 
 	if (cType == 0) {
 	    /* Red Intensity Table */
-	    if (!(pSCCData->pRedTbl = (IntensityTbl *)
+	    if (!(pScreenData->pRedTbl = (IntensityTbl *)
 		    Xcalloc (1, sizeof(IntensityTbl)))) {
 		goto FreeSCCData;
 	    }
-	    if (!(pSCCData->pRedTbl->pBase = (IntensityRec *)
+	    nElements = pScreenData->pRedTbl->nEntries = 
+		    _XcmsGetElement(format_return, &pChar);
+	    if (!(pScreenData->pRedTbl->pBase = (IntensityRec *)
 		  Xcalloc (nElements, sizeof(IntensityRec)))) {
 		goto FreeRedTbl;
 	    }
-	    pSCCData->pRedTbl->nEntries = nElements;
-	    pIRec = (IntensityRec *) pSCCData->pRedTbl->pBase;
-	    for (count = 0; count < nElements; count++, pIRec++) {
+	    pIRec = (IntensityRec *) pScreenData->pRedTbl->pBase;
+	    for (; nElements--; pIRec++) {
 		pIRec->value = _XcmsGetElement (format_return, &pChar);
 		pIRec->intensity = (XcmsFloat) 
 		 _XcmsGetElement (format_return, &pChar)/(XcmsFloat)XDCCC_NUMBER;
 	    }
 	    if (nTables == 1) {
 		/* Green Intensity Table */
-		pSCCData->pGreenTbl =pSCCData->pRedTbl;
+		pScreenData->pGreenTbl = pScreenData->pRedTbl;
 		/* Blue Intensity Table */
-		pSCCData->pBlueTbl = pSCCData->pRedTbl;
+		pScreenData->pBlueTbl = pScreenData->pRedTbl;
 	    } else {
 		/* Green Intensity Table */
-		if (!(pSCCData->pGreenTbl = (IntensityTbl *)
+		if (!(pScreenData->pGreenTbl = (IntensityTbl *)
 			Xcalloc (1, sizeof(IntensityTbl)))) {
 		    goto FreeRedTblElements;
 		}
-		if (!(pSCCData->pGreenTbl->pBase = (IntensityRec *)
+		nElements = pScreenData->pGreenTbl->nEntries =
+			(int) _XcmsGetElement (format_return, &pChar);
+		if (!(pScreenData->pGreenTbl->pBase = (IntensityRec *)
 		      Xcalloc (nElements, sizeof(IntensityRec)))) {
 		    goto FreeGreenTbl;
 		}
-		pSCCData->pGreenTbl->nEntries = nElements;
-		pIRec = (IntensityRec *) pSCCData->pGreenTbl->pBase;
-		for (count = 0; count < nElements; count++, pIRec++) {
+		pIRec = (IntensityRec *) pScreenData->pGreenTbl->pBase;
+		for (; nElements--; pIRec++) {
 		    pIRec->value = _XcmsGetElement (format_return, &pChar);
 		    pIRec->intensity = (XcmsFloat)
 		     _XcmsGetElement (format_return, &pChar)/(XcmsFloat)XDCCC_NUMBER;
 		}
 		/* Blue Intensity Table */
-		if (!(pSCCData->pBlueTbl = (IntensityTbl *)
+		if (!(pScreenData->pBlueTbl = (IntensityTbl *)
 			Xcalloc (1, sizeof(IntensityTbl)))) {
 		    goto FreeGreenTblElements;
 		}
-		if (!(pSCCData->pBlueTbl->pBase = (IntensityRec *)
+		nElements = pScreenData->pBlueTbl->nEntries =
+			(int) _XcmsGetElement (format_return, &pChar);
+		if (!(pScreenData->pBlueTbl->pBase = (IntensityRec *)
 		      Xcalloc (nElements, sizeof(IntensityRec)))) {
 		    goto FreeBlueTbl;
 		}
-		pSCCData->pBlueTbl->nEntries = nElements;
-		pIRec = (IntensityRec *) pSCCData->pBlueTbl->pBase;
-		for (count = 0; count < nElements; count++, pIRec++) {
+		pIRec = (IntensityRec *) pScreenData->pBlueTbl->pBase;
+		for (; nElements--; pIRec++) {
 		    pIRec->value = _XcmsGetElement (format_return, &pChar);
 		    pIRec->intensity = (XcmsFloat)
 		     _XcmsGetElement (format_return, &pChar)/(XcmsFloat)XDCCC_NUMBER;
@@ -1158,55 +1161,58 @@ LINEAR_RGB_InitSCCData(dpy, screen_number, pPerScrnInfo)
 	    }	    
 	} else {
 	    /* Red Intensity Table */
-	    if (!(pSCCData->pRedTbl = (IntensityTbl *)
+	    if (!(pScreenData->pRedTbl = (IntensityTbl *)
 		    Xcalloc (1, sizeof(IntensityTbl)))) {
 		goto FreeSCCData;
 	    }
-	    if (!(pSCCData->pRedTbl->pBase = (IntensityRec *)
+	    nElements = pScreenData->pRedTbl->nEntries =
+		    (int) _XcmsGetElement (format_return, &pChar);
+	    if (!(pScreenData->pRedTbl->pBase = (IntensityRec *)
 		  Xcalloc (nElements, sizeof(IntensityRec)))) {
 		goto FreeRedTbl;
 	    }
-	    pSCCData->pRedTbl->nEntries = nElements;
-	    pIRec = (IntensityRec *) pSCCData->pRedTbl->pBase;
-	    for (count = 0; count < nElements; count++, pIRec++) {
+	    pIRec = (IntensityRec *) pScreenData->pRedTbl->pBase;
+	    for (; nElements--; pIRec++) {
 		pIRec->value = count;
 		pIRec->intensity = (XcmsFloat) 
 		  _XcmsGetElement (format_return,&pChar)/(XcmsFloat)XDCCC_NUMBER;
 	    }
 	    if (nTables == 1) {
 		/* Green Intensity Table */
-		pSCCData->pGreenTbl = pSCCData->pRedTbl;
+		pScreenData->pGreenTbl = pScreenData->pRedTbl;
 		/* Blue Intensity Table */
-		pSCCData->pBlueTbl = pSCCData->pRedTbl;
+		pScreenData->pBlueTbl = pScreenData->pRedTbl;
 	    } else {
 		/* Green Intensity Table */
-		if (!(pSCCData->pGreenTbl = (IntensityTbl *)
+		if (!(pScreenData->pGreenTbl = (IntensityTbl *)
 			Xcalloc (1, sizeof(IntensityTbl)))) {
 		    goto FreeRedTblElements;
 		}
-		if (!(pSCCData->pGreenTbl->pBase =(IntensityRec *)
+		nElements = pScreenData->pGreenTbl->nEntries =
+			(int) _XcmsGetElement (format_return, &pChar);
+		if (!(pScreenData->pGreenTbl->pBase =(IntensityRec *)
 		      Xcalloc (nElements, sizeof(IntensityRec)))) {
 		    goto FreeGreenTbl;
 		}
-		pSCCData->pGreenTbl->nEntries = nElements;
-		pIRec = (IntensityRec *) pSCCData->pGreenTbl->pBase;
-		for (count = 0; count < nElements; count++, pIRec++) {
+		pIRec = (IntensityRec *) pScreenData->pGreenTbl->pBase;
+		for (; nElements; pIRec++) {
 		    pIRec->value = count;
 		    pIRec->intensity = (XcmsFloat) 
 		     _XcmsGetElement (format_return, &pChar)/(XcmsFloat)XDCCC_NUMBER;
 		}
 		/* Blue Intensity Table */
-		if (!(pSCCData->pBlueTbl = (IntensityTbl *)
+		if (!(pScreenData->pBlueTbl = (IntensityTbl *)
 			Xcalloc (1, sizeof(IntensityTbl)))) {
 		    goto FreeGreenTblElements;
 		}
-		if (!(pSCCData->pBlueTbl->pBase =(IntensityRec *)
+		nElements = pScreenData->pBlueTbl->nEntries =
+			(int) _XcmsGetElement (format_return, &pChar);
+		if (!(pScreenData->pBlueTbl->pBase =(IntensityRec *)
 		      Xcalloc (nElements, sizeof(IntensityRec)))) {
 		    goto FreeBlueTbl;
 		}
-		pSCCData->pBlueTbl->nEntries = nElements;
-		pIRec = (IntensityRec *) pSCCData->pBlueTbl->pBase;
-		for (count = 0; count < nElements; count++, pIRec++) {
+		pIRec = (IntensityRec *) pScreenData->pBlueTbl->pBase;
+		for (; nElements--; pIRec++) {
 		    pIRec->value = count;
 		    pIRec->intensity = (XcmsFloat)
 		     _XcmsGetElement (format_return, &pChar)/(XcmsFloat)XDCCC_NUMBER;
@@ -1215,22 +1221,22 @@ LINEAR_RGB_InitSCCData(dpy, screen_number, pPerScrnInfo)
 	}
 	XFree (property_return);
 #ifdef ALLDEBUG
-	printf ("Intensity Table  RED    %d\n", nElements);
-	pIRec = (IntensityRec *) pSCCData->pRedTbl->pBase;
-	for (count = 0; count < nElements; count++, pIRec++) {
+	printf ("Intensity Table  RED    %d\n", pScreenData->pRedTbl->nEntries);
+	pIRec = (IntensityRec *) pScreenData->pRedTbl->pBase;
+	for (count = 0; count < pScreenData->pRedTbl->nEntries; count++, pIRec++) {
 	    printf ("\t0x%4x\t%f\n", pIRec->value, pIRec->intensity);
 	}
-	if (pSCCData->pGreenTbl->pBase != pSCCData->pRedTbl->pBase) {
-	    printf ("Intensity Table  GREEN  %d\n", nElements);
-	    pIRec = (IntensityRec *)pSCCData->pGreenTbl->pBase;
-	    for (count = 0; count < nElements; count++, pIRec++) {
+	if (pScreenData->pGreenTbl->pBase != pScreenData->pRedTbl->pBase) {
+	    printf ("Intensity Table  GREEN  %d\n", pScreenData->pGreenTbl->nEntries);
+	    pIRec = (IntensityRec *)pScreenData->pGreenTbl->pBase;
+	    for (count = 0; count < pScreenData->pGreenTbl->nEntries; count++, pIRec++) {
 		printf ("\t0x%4x\t%f\n", pIRec->value, pIRec->intensity);
 	    }
 	}
-	if (pSCCData->pBlueTbl->pBase != pSCCData->pRedTbl->pBase) {
-	    printf ("Intensity Table  BLUE   %d\n", nElements);
-	    pIRec = (IntensityRec *) pSCCData->pBlueTbl->pBase;
-	    for (count = 0; count < nElements; count++, pIRec++) {
+	if (pScreenData->pBlueTbl->pBase != pScreenData->pRedTbl->pBase) {
+	    printf ("Intensity Table  BLUE   %d\n", pScreenData->pBlueTbl->nEntries);
+	    pIRec = (IntensityRec *) pScreenData->pBlueTbl->pBase;
+	    for (count = 0; count < pScreenData->pBlueTbl->nEntries; count++, pIRec++) {
 		printf ("\t0x%4x\t%f\n", pIRec->value, pIRec->intensity);
 	    }
 	}
@@ -1240,38 +1246,38 @@ LINEAR_RGB_InitSCCData(dpy, screen_number, pPerScrnInfo)
 	goto FreeSCCData;
     }
     /* Free the old memory and use the new structure created. */
-    LINEAR_RGB_FreeSCCData((LINEAR_RGB_SCCData *) pPerScrnInfo->pSCCData);
+    LINEAR_RGB_FreeSCCData((LINEAR_RGB_SCCData *) pPerScrnInfo->screenData);
 
-    pPerScrnInfo->pSCCFuncSet = (caddr_t) &LINEAR_RGB_SCCFuncSet;
+    pPerScrnInfo->functionSet = (XPointer) &XcmsLinearRGBFunctionSet;
 
-    pPerScrnInfo->pSCCData = (caddr_t) pSCCData;
+    pPerScrnInfo->screenData = (XPointer) pScreenData;
 
-    pPerScrnInfo->state = XCMS_INIT_SUCCESS;
+    pPerScrnInfo->state = XcmsInitSuccess;
 
-    return(XCMS_SUCCESS);
+    return(XcmsSuccess);
 
 FreeBlueTblElements:
-    free(pSCCData->pBlueTbl->pBase);
+    free(pScreenData->pBlueTbl->pBase);
 
 FreeBlueTbl:
-    free(pSCCData->pBlueTbl);
+    free(pScreenData->pBlueTbl);
 
 FreeGreenTblElements:
-    free(pSCCData->pBlueTbl->pBase);
+    free(pScreenData->pBlueTbl->pBase);
 
 FreeGreenTbl:
-    free(pSCCData->pGreenTbl);
+    free(pScreenData->pGreenTbl);
 
 FreeRedTblElements:
-    free(pSCCData->pRedTbl->pBase);
+    free(pScreenData->pRedTbl->pBase);
 
 FreeRedTbl:
-    free(pSCCData->pRedTbl);
+    free(pScreenData->pRedTbl);
 
 FreeSCCData:
-    free(pSCCData);
-    pPerScrnInfo->state = XCMS_INIT_NONE;
-    return(XCMS_FAILURE);
+    free(pScreenData);
+    pPerScrnInfo->state = XcmsInitNone;
+    return(XcmsFailure);
 }
 
 /*
@@ -1280,10 +1286,11 @@ FreeSCCData:
  *
  *	SYNOPSIS
  */
+/* ARGSUSED */
 int
-_XcmsLRGB_InitScrnDefault(dpy, screen_number, pPerScrnInfo)
+_XcmsLRGB_InitScrnDefault(dpy, screenNumber, pPerScrnInfo)
     Display *dpy;
-    int screen_number;
+    int screenNumber;
     XcmsPerScrnInfo *pPerScrnInfo;
 /*
  *	DESCRIPTION
@@ -1295,7 +1302,7 @@ _XcmsLRGB_InitScrnDefault(dpy, screen_number, pPerScrnInfo)
  *		Returns zero if initialization failed; non-zero otherwise.
  */
 {
-    pPerScrnInfo->pSCCData = (caddr_t)&Default_RGB_SCCData;
+    pPerScrnInfo->screenData = (XPointer)&Default_RGB_SCCData;
     pPerScrnInfo->screenWhitePt.spec.CIEXYZ.X =
 		Default_RGB_SCCData.RGBtoXYZmatrix[0][0] +
 		Default_RGB_SCCData.RGBtoXYZmatrix[0][1] +
@@ -1310,14 +1317,14 @@ _XcmsLRGB_InitScrnDefault(dpy, screen_number, pPerScrnInfo)
 		Default_RGB_SCCData.RGBtoXYZmatrix[2][2];
     if ((pPerScrnInfo->screenWhitePt.spec.CIEXYZ.Y < (1.0 - EPS) )
 	    || (pPerScrnInfo->screenWhitePt.spec.CIEXYZ.Y > (1.0 + EPS))) {
-	pPerScrnInfo->pSCCData = (caddr_t)NULL;
-	pPerScrnInfo->state = XCMS_INIT_NONE;
+	pPerScrnInfo->screenData = (XPointer)NULL;
+	pPerScrnInfo->state = XcmsInitNone;
 	return(0);
     }
     pPerScrnInfo->screenWhitePt.spec.CIEXYZ.Y = 1.0;
-    pPerScrnInfo->screenWhitePt.format = XCMS_CIEXYZ_FORMAT;
+    pPerScrnInfo->screenWhitePt.format = XcmsCIEXYZFormat;
     pPerScrnInfo->screenWhitePt.pixel = 0;
-    pPerScrnInfo->pSCCFuncSet = (caddr_t)&LINEAR_RGB_SCCFuncSet;
-    pPerScrnInfo->state = XCMS_INIT_DEFAULT;
+    pPerScrnInfo->functionSet = (XPointer)&XcmsLinearRGBFunctionSet;
+    pPerScrnInfo->state = XcmsInitDefault;
     return(1);
 }

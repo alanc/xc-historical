@@ -1,24 +1,27 @@
-/* $XConsortium: XcmsCvCols.c,v 1.5 91/03/28 15:07:39 rws Exp $" */
+/* $XConsortium: XcmsCvCols.c,v 1.4 91/02/15 18:33:37 dave Exp $" */
 
 /*
- * (c) Copyright 1990 1991 Tektronix Inc.
+ * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
  * 	All Rights Reserved
- *
- * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose and without fee is hereby granted,
- * provided that the above copyright notice appear in all copies and that
- * both that copyright notice and this permission notice appear in
- * supporting documentation, and that the name of Tektronix not be used
- * in advertising or publicity pertaining to distribution of the software
- * without specific, written prior permission.
- *
- * Tektronix disclaims all warranties with regard to this software, including
- * all implied warranties of merchantability and fitness, in no event shall
- * Tektronix be liable for any special, indirect or consequential damages or
- * any damages whatsoever resulting from loss of use, data or profits,
- * whether in an action of contract, negligence or other tortious action,
- * arising out of or in connection with the use or performance of this
- * software.
+ * 
+ * This file is a component of an X Window System-specific implementation
+ * of Xcms based on the TekColor Color Management System.  Permission is
+ * hereby granted to use, copy, modify, sell, and otherwise distribute this
+ * software and its documentation for any purpose and without fee, provided
+ * that this copyright, permission, and disclaimer notice is reproduced in
+ * all copies of this software and in supporting documentation.  TekColor
+ * is a trademark of Tektronix, Inc.
+ * 
+ * Tektronix makes no representation about the suitability of this software
+ * for any purpose.  It is provided "as is" and with all faults.
+ * 
+ * TEKTRONIX DISCLAIMS ALL WARRANTIES APPLICABLE TO THIS SOFTWARE,
+ * INCLUDING THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE.  IN NO EVENT SHALL TEKTRONIX BE LIABLE FOR ANY
+ * SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
+ * RESULTING FROM LOSS OF USE, DATA, OR PROFITS, WHETHER IN AN ACTION OF
+ * CONTRACT, NEGLIGENCE, OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR THE PERFORMANCE OF THIS SOFTWARE.
  *
  *
  *	NAME
@@ -78,14 +81,14 @@ EqualCIEXYZ(p1, p2)
     XcmsColor *p1, *p2;
 /*
  *	DESCRIPTION
- *		Compares two XcmsColor structures that are in XCMS_CIEXYZ_FORMAT
+ *		Compares two XcmsColor structures that are in XcmsCIEXYZFormat
  *
  *	RETURNS
  *		Returns 1 if equal; 0 otherwise.
  *
  */
 {
-    if (p1->format != XCMS_CIEXYZ_FORMAT || p2->format != XCMS_CIEXYZ_FORMAT) {
+    if (p1->format != XcmsCIEXYZFormat || p2->format != XcmsCIEXYZFormat) {
 	return(0);
     }
     if ((p1->spec.CIEXYZ.X != p2->spec.CIEXYZ.X)
@@ -104,9 +107,9 @@ EqualCIEXYZ(p1, p2)
  *	SYNOPSIS
  */
 static XcmsColorSpace *
-ColorSpaceOfID(pCCC, id)
-    XcmsCCC *pCCC;
-    XcmsSpecFmt	id;
+ColorSpaceOfID(ccc, id)
+    XcmsCCC ccc;
+    XcmsColorFormat	id;
 /*
  *	DESCRIPTION
  *		Returns a pointer to the color space structure
@@ -120,7 +123,7 @@ ColorSpaceOfID(pCCC, id)
 {
     XcmsColorSpace	**papColorSpaces;
 
-    if (pCCC == NULL) {
+    if (ccc == NULL) {
 	return(NULL);
     }
 
@@ -140,7 +143,7 @@ ColorSpaceOfID(pCCC, id)
     /*
      * Next try Device-Dependent color spaces
      */
-    papColorSpaces = ((XcmsSCCFuncSet *)pCCC->pPerScrnInfo->pSCCFuncSet)->papDDColorSpaces;
+    papColorSpaces = ((XcmsSCCFuncSet *)ccc->pPerScrnInfo->functionSet)->papDDColorSpaces;
     if (papColorSpaces != NULL) {
 	while (*papColorSpaces != NULL) {
 	    if ((*papColorSpaces)->id == id) {
@@ -162,7 +165,7 @@ ColorSpaceOfID(pCCC, id)
  */
 static int
 ValidDIColorSpaceID(id)
-    XcmsSpecFmt id;
+    XcmsColorFormat id;
 /*
  *	DESCRIPTION
  *		Determines if the specified color space ID is a valid
@@ -194,9 +197,9 @@ ValidDIColorSpaceID(id)
  *	SYNOPSIS
  */
 static int
-ValidDDColorSpaceID(pCCC, id)
-    XcmsCCC *pCCC;
-    XcmsSpecFmt id;
+ValidDDColorSpaceID(ccc, id)
+    XcmsCCC ccc;
+    XcmsColorFormat id;
 /*
  *	DESCRIPTION
  *		Determines if the specified color space ID is a valid
@@ -209,9 +212,9 @@ ValidDDColorSpaceID(pCCC, id)
 {
     XcmsColorSpace **papRec;
 
-    if (pCCC->pPerScrnInfo->state == XCMS_INIT_SUCCESS ||
-	    pCCC->pPerScrnInfo->state == XCMS_INIT_DEFAULT) {
-	papRec = ((XcmsSCCFuncSet *)pCCC->pPerScrnInfo->pSCCFuncSet)->papDDColorSpaces;
+    if (ccc->pPerScrnInfo->state == XcmsInitSuccess ||
+	    ccc->pPerScrnInfo->state == XcmsInitDefault) {
+	papRec = ((XcmsSCCFuncSet *)ccc->pPerScrnInfo->functionSet)->papDDColorSpaces;
 	while (*papRec != NULL) {
 	    if ((*papRec)->id == id) {
 		return(1);
@@ -230,13 +233,13 @@ ValidDDColorSpaceID(pCCC, id)
  *	SYNOPSIS
  */
 static Status
-ConvertMixedColors(pCCC, pColors_in_out, pWhitePt, nColors,
+ConvertMixedColors(ccc, pColors_in_out, pWhitePt, nColors,
 	targetFormat, pCompressed, format_flag)
-    XcmsCCC *pCCC;
+    XcmsCCC ccc;
     XcmsColor *pColors_in_out;
     XcmsColor *pWhitePt;
     unsigned int nColors;
-    XcmsSpecFmt targetFormat;
+    XcmsColorFormat targetFormat;
     Bool *pCompressed;
     unsigned char format_flag;
 /*
@@ -250,19 +253,19 @@ ConvertMixedColors(pCCC, pColors_in_out, pWhitePt, nColors,
  *		    0x03 : convert all specifications to the target format.
  *
  *	RETURNS
- *		XCMS_FAILURE if failed,
- *		XCMS_SUCCESS if none of the color specifications were
+ *		XcmsFailure if failed,
+ *		XcmsSuccess if none of the color specifications were
  *			compressed in the conversion process
- *		XCMS_SUCCESS_WITH_COMPRESSION if at least one of the
+ *		XcmsSuccessWithCompression if at least one of the
  *			color specifications were compressed in the
  *			conversion process.
  *
  */
 {
     XcmsColor *pColor, *pColors_start;
-    XcmsSpecFmt format;
+    XcmsColorFormat format;
     Status retval_tmp;
-    Status retval = XCMS_SUCCESS;
+    Status retval = XcmsSuccess;
     unsigned int iColors;
     unsigned int nBatch;
 
@@ -291,23 +294,23 @@ ConvertMixedColors(pCCC, pColors_in_out, pWhitePt, nColors,
 		 * Device-Independent target format
 		 *	Assumes source formats are already in DI format
 		 */
-		if ((retval_tmp = _XcmsDIConvertColors(pCCC, pColors_start,
-			pWhitePt, nBatch, targetFormat)) == XCMS_FAILURE) {
-		    return(XCMS_FAILURE);
+		if ((retval_tmp = _XcmsDIConvertColors(ccc, pColors_start,
+			pWhitePt, nBatch, targetFormat)) == XcmsFailure) {
+		    return(XcmsFailure);
 		}
 	    } else if ((XCMS_DD_ID(format) && (format_flag & DD_FORMAT)) ||
-		(format == XCMS_CIEXYZ_FORMAT && XCMS_DD_ID(targetFormat))) {
+		(format == XcmsCIEXYZFormat && XCMS_DD_ID(targetFormat))) {
 		/*
 		 * Device-Dependent target format
 		 *	Assumes source formats are already in DD format
 		 *	or CIEXYZ format.
 		 */
-		if ((retval_tmp = _XcmsDDConvertColors(pCCC, pColors_start,
-			nBatch, targetFormat, pCompressed)) == XCMS_FAILURE) {
-		    return(XCMS_FAILURE);
+		if ((retval_tmp = _XcmsDDConvertColors(ccc, pColors_start,
+			nBatch, targetFormat, pCompressed)) == XcmsFailure) {
+		    return(XcmsFailure);
 		}
 	    } else {
-		return(XCMS_FAILURE);
+		return(XcmsFailure);
 	    }
 	    retval = MAX(retval, retval_tmp);
 	}
@@ -329,8 +332,8 @@ ConvertMixedColors(pCCC, pColors_in_out, pWhitePt, nColors,
  *	SYNOPSIS
  */
 int
-_XcmsEqualWhitePts(pCCC, pWhitePt1, pWhitePt2)
-    XcmsCCC *pCCC;
+_XcmsEqualWhitePts(ccc, pWhitePt1, pWhitePt2)
+    XcmsCCC ccc;
     XcmsColor *pWhitePt1, *pWhitePt2;
 /*
  *	DESCRIPTION
@@ -345,16 +348,16 @@ _XcmsEqualWhitePts(pCCC, pWhitePt1, pWhitePt2)
     bcopy((char *)pWhitePt1, (char *)&tmp1, sizeof(XcmsColor));
     bcopy((char *)pWhitePt2, (char *)&tmp2, sizeof(XcmsColor));
 
-    if (tmp1.format != XCMS_CIEXYZ_FORMAT) {
-	if (_XcmsDIConvertColors(pCCC, &tmp1, (XcmsColor *) NULL, 1,
-		XCMS_CIEXYZ_FORMAT)==0) {
+    if (tmp1.format != XcmsCIEXYZFormat) {
+	if (_XcmsDIConvertColors(ccc, &tmp1, (XcmsColor *) NULL, 1,
+		XcmsCIEXYZFormat)==0) {
 	    return(0);
 	}
     }
 
-    if (tmp2.format != XCMS_CIEXYZ_FORMAT) {
-	if (_XcmsDIConvertColors(pCCC, &tmp2, (XcmsColor *) NULL, 1,
-		XCMS_CIEXYZ_FORMAT)==0) {
+    if (tmp2.format != XcmsCIEXYZFormat) {
+	if (_XcmsDIConvertColors(ccc, &tmp2, (XcmsColor *) NULL, 1,
+		XcmsCIEXYZFormat)==0) {
 	    return(0);
 	}
     }
@@ -370,13 +373,13 @@ _XcmsEqualWhitePts(pCCC, pWhitePt1, pWhitePt2)
  *	SYNOPSIS
  */
 Status
-_XcmsDIConvertColors(pCCC, pColors_in_out, pWhitePt, nColors,
+_XcmsDIConvertColors(ccc, pColors_in_out, pWhitePt, nColors,
 	newFormat)
-    XcmsCCC *pCCC;
+    XcmsCCC ccc;
     XcmsColor *pColors_in_out;
     XcmsColor *pWhitePt;
     unsigned int nColors;
-    XcmsSpecFmt newFormat;
+    XcmsColorFormat newFormat;
 /*
  *	DESCRIPTION
  *		Convert XcmsColor structures to another Device-Independent
@@ -394,8 +397,8 @@ _XcmsDIConvertColors(pCCC, pColors_in_out, pWhitePt, nColors,
  *		
  *
  *	RETURNS
- *		XCMS_FAILURE if failed,
- *		XCMS_SUCCESS if succeeded.
+ *		XcmsFailure if failed,
+ *		XcmsSuccess if succeeded.
  *
  */
 {
@@ -414,22 +417,22 @@ _XcmsDIConvertColors(pCCC, pColors_in_out, pWhitePt, nColors,
     if (pColors_in_out == NULL ||
 	    !ValidDIColorSpaceID(pColors_in_out->format) ||
 	    !ValidDIColorSpaceID(newFormat)) {
-	return(XCMS_FAILURE);
+	return(XcmsFailure);
     }
 
     /*
      * Get a handle on the function list for the current specification format
      */
-    if ((pFrom = ColorSpaceOfID(pCCC, pColors_in_out->format))
+    if ((pFrom = ColorSpaceOfID(ccc, pColors_in_out->format))
 	    == NULL) {
-	return(XCMS_FAILURE);
+	return(XcmsFailure);
     }
 
     /*
      * Get a handle on the function list for the new specification format
      */
-    if ((pTo = ColorSpaceOfID(pCCC, newFormat)) == NULL) {
-	return(XCMS_FAILURE);
+    if ((pTo = ColorSpaceOfID(ccc, newFormat)) == NULL) {
+	return(XcmsFailure);
     }
 
     src_to_CIEXYZ = pFrom->to_CIEXYZ;
@@ -455,9 +458,9 @@ Continue:
 	 * Execute the functions to CIEXYZ, stopping short as necessary
 	 */
 	while (src_to_CIEXYZ != to_CIEXYZ_stop) {
-	    if ((*src_to_CIEXYZ++)(pCCC, pWhitePt, pColors_in_out,
-		    nColors) == XCMS_FAILURE) {
-		return(XCMS_FAILURE);
+	    if ((*src_to_CIEXYZ++)(ccc, pWhitePt, pColors_in_out,
+		    nColors) == XcmsFailure) {
+		return(XcmsFailure);
 	    }
 	}
 
@@ -481,9 +484,9 @@ Continue:
 	 * Execute the functions all the way to CIEXYZ
 	 */
 	while (*src_to_CIEXYZ) {
-	    if ((*src_to_CIEXYZ++)(pCCC, pWhitePt, pColors_in_out,
-		    nColors) == XCMS_FAILURE) {
-		return(XCMS_FAILURE);
+	    if ((*src_to_CIEXYZ++)(ccc, pWhitePt, pColors_in_out,
+		    nColors) == XcmsFailure) {
+		return(XcmsFailure);
 	    }
 	}
 
@@ -498,13 +501,13 @@ Continue:
      * Execute the functions from CIEXYZ.
      */
     while (*from_CIEXYZ_start) {
-	if ((*from_CIEXYZ_start++)(pCCC, pWhitePt, pColors_in_out,
-		nColors) == XCMS_FAILURE) {
-	    return(XCMS_FAILURE);
+	if ((*from_CIEXYZ_start++)(ccc, pWhitePt, pColors_in_out,
+		nColors) == XcmsFailure) {
+	    return(XcmsFailure);
 	}
     }
 
-    return(XCMS_SUCCESS);
+    return(XcmsSuccess);
 }
 
 
@@ -515,12 +518,12 @@ Continue:
  *	SYNOPSIS
  */
 Status
-_XcmsDDConvertColors(pCCC, pColors_in_out, nColors, newFormat,
+_XcmsDDConvertColors(ccc, pColors_in_out, nColors, newFormat,
 	pCompressed)
-    XcmsCCC *pCCC;
+    XcmsCCC ccc;
     XcmsColor *pColors_in_out;
     unsigned int nColors;
-    XcmsSpecFmt newFormat;
+    XcmsColorFormat newFormat;
     Bool *pCompressed;
 /*
  *	DESCRIPTION
@@ -542,10 +545,10 @@ _XcmsDDConvertColors(pCCC, pColors_in_out, nColors, newFormat,
  *
  *
  *	RETURNS
- *		XCMS_FAILURE if failed,
- *		XCMS_SUCCESS if none of the color specifications were
+ *		XcmsFailure if failed,
+ *		XcmsSuccess if none of the color specifications were
  *			compressed in the conversion process
- *		XCMS_SUCCESS_WITH_COMPRESSION if at least one of the
+ *		XcmsSuccessWithCompression if at least one of the
  *			color specifications were compressed in the
  *			conversion process.
  *
@@ -559,40 +562,40 @@ _XcmsDDConvertColors(pCCC, pColors_in_out, nColors, newFormat,
     int	retval;
     int hasCompressed = 0;
 
-    if (pCCC == NULL || pColors_in_out == NULL) {
-	return(XCMS_FAILURE);
+    if (ccc == NULL || pColors_in_out == NULL) {
+	return(XcmsFailure);
     }
 
     if (nColors == 0 || pColors_in_out->format == newFormat) {
 	/* do nothing */
-	return(XCMS_SUCCESS);
+	return(XcmsSuccess);
     }
 
-    if (((XcmsSCCFuncSet *)pCCC->pPerScrnInfo->pSCCFuncSet) == NULL) {
-	return(XCMS_FAILURE);	/* hmm, an internal error? */
+    if (((XcmsSCCFuncSet *)ccc->pPerScrnInfo->functionSet) == NULL) {
+	return(XcmsFailure);	/* hmm, an internal error? */
     }
 
     /*
-     * Its ok if pColors_in_out->format == XCMS_CIEXYZ_FORMAT
+     * Its ok if pColors_in_out->format == XcmsCIEXYZFormat
      *	or 
-     * if newFormat == XCMS_CIEXYZ_FORMAT
+     * if newFormat == XcmsCIEXYZFormat
      */
-    if ( !( ValidDDColorSpaceID(pCCC, pColors_in_out->format)
+    if ( !( ValidDDColorSpaceID(ccc, pColors_in_out->format)
 	    ||
-	    (pColors_in_out->format == XCMS_CIEXYZ_FORMAT))
+	    (pColors_in_out->format == XcmsCIEXYZFormat))
 	 ||
-	 !(ValidDDColorSpaceID(pCCC, newFormat)
+	 !(ValidDDColorSpaceID(ccc, newFormat)
 	    ||
-	    newFormat == XCMS_CIEXYZ_FORMAT)) {
-	return(XCMS_FAILURE);
+	    newFormat == XcmsCIEXYZFormat)) {
+	return(XcmsFailure);
     }
 
-    if ((pFrom = ColorSpaceOfID(pCCC, pColors_in_out->format)) == NULL){
-	return(XCMS_FAILURE);
+    if ((pFrom = ColorSpaceOfID(ccc, pColors_in_out->format)) == NULL){
+	return(XcmsFailure);
     }
 
-    if ((pTo = ColorSpaceOfID(pCCC, newFormat)) == NULL) {
-	return(XCMS_FAILURE);
+    if ((pTo = ColorSpaceOfID(ccc, newFormat)) == NULL) {
+	return(XcmsFailure);
     }
 
     src_to_CIEXYZ = pFrom->to_CIEXYZ;
@@ -617,12 +620,12 @@ Continue:
 	 * Execute the functions
 	 */
 	while (src_to_CIEXYZ != to_CIEXYZ_stop) {
-	    retval = (*src_to_CIEXYZ++)(pCCC, pColors_in_out, nColors,
+	    retval = (*src_to_CIEXYZ++)(ccc, pColors_in_out, nColors,
 		    pCompressed);
-	    if (retval == XCMS_FAILURE) {
-		return(XCMS_FAILURE);
+	    if (retval == XcmsFailure) {
+		return(XcmsFailure);
 	    }
-	    hasCompressed |= (retval == XCMS_SUCCESS_WITH_COMPRESSION);
+	    hasCompressed |= (retval == XcmsSuccessWithCompression);
 	}
 
 	/*
@@ -645,12 +648,12 @@ Continue:
 	 * Execute the functions all the way to CIEXYZ
 	 */
 	while (*src_to_CIEXYZ) {
-	    retval = (*src_to_CIEXYZ++)(pCCC, pColors_in_out, nColors,
+	    retval = (*src_to_CIEXYZ++)(ccc, pColors_in_out, nColors,
 		    pCompressed);
-	    if (retval == XCMS_FAILURE) {
-		return(XCMS_FAILURE);
+	    if (retval == XcmsFailure) {
+		return(XcmsFailure);
 	    }
-	    hasCompressed |= (retval == XCMS_SUCCESS_WITH_COMPRESSION);
+	    hasCompressed |= (retval == XcmsSuccessWithCompression);
 	}
 
 	/*
@@ -660,15 +663,15 @@ Continue:
     }
 
     while (*from_CIEXYZ_start) {
-	retval = (*from_CIEXYZ_start++)(pCCC, pColors_in_out, nColors,
+	retval = (*from_CIEXYZ_start++)(ccc, pColors_in_out, nColors,
 		pCompressed);
-	if (retval == XCMS_FAILURE) {
-	    return(XCMS_FAILURE);
+	if (retval == XcmsFailure) {
+	    return(XcmsFailure);
 	}
-	hasCompressed |= (retval == XCMS_SUCCESS_WITH_COMPRESSION);
+	hasCompressed |= (retval == XcmsSuccessWithCompression);
     }
 
-    return(hasCompressed ? XCMS_SUCCESS_WITH_COMPRESSION : XCMS_SUCCESS);
+    return(hasCompressed ? XcmsSuccessWithCompression : XcmsSuccess);
 }
 
 
@@ -685,20 +688,20 @@ Continue:
  *	SYNOPSIS
  */
 Status
-XcmsConvertColors(pCCC, pColors_in_out, nColors, targetFormat, pCompressed)
-    XcmsCCC *pCCC;
+XcmsConvertColors(ccc, pColors_in_out, nColors, targetFormat, pCompressed)
+    XcmsCCC ccc;
     XcmsColor *pColors_in_out;
     unsigned int nColors;
-    XcmsSpecFmt targetFormat;
+    XcmsColorFormat targetFormat;
     Bool *pCompressed;
 /*
  *	DESCRIPTION
  *		Convert XcmsColor structures to another format
  *
  *	RETURNS
- *		XCMS_FAILURE if failed,
- *		XCMS_SUCCESS if succeeded without gamut compression,
- *		XCMS_SUCCESS_WITH_COMPRESSION if succeeded with gamut
+ *		XcmsFailure if failed,
+ *		XcmsSuccess if succeeded without gamut compression,
+ *		XcmsSuccessWithCompression if succeeded with gamut
  *			compression.
  *
  */
@@ -707,15 +710,15 @@ XcmsConvertColors(pCCC, pColors_in_out, nColors, targetFormat, pCompressed)
     XcmsColor Color1;
     XcmsColor *pColors_tmp;
     int whiteAdj = 0;
-    XcmsSpecFmt format;
+    XcmsColorFormat format;
     Status retval;
     unsigned char contents_flag = 0x00;
     unsigned int iColors;
 
-    if (pCCC == NULL || pColors_in_out == NULL ||
+    if (ccc == NULL || pColors_in_out == NULL ||
 		!(ValidDIColorSpaceID(targetFormat) ||
-		ValidDDColorSpaceID(pCCC, targetFormat))) {
-	return(XCMS_FAILURE);
+		ValidDDColorSpaceID(ccc, targetFormat))) {
+	return(XcmsFailure);
     }
 
     /*
@@ -724,8 +727,8 @@ XcmsConvertColors(pCCC, pColors_in_out, nColors, targetFormat, pCompressed)
     format = pColors_in_out->format;
     for (pColors_tmp = pColors_in_out, iColors = nColors; iColors; pColors_tmp++, iColors--) {
 	if (!(ValidDIColorSpaceID(pColors_tmp->format) ||
-		ValidDDColorSpaceID(pCCC, pColors_tmp->format))) {
-	    return(XCMS_FAILURE);
+		ValidDDColorSpaceID(ccc, pColors_tmp->format))) {
+	    return(XcmsFailure);
 	}
 	if (XCMS_DI_ID(pColors_tmp->format)) {
 	    contents_flag |= DI_FORMAT;
@@ -742,27 +745,27 @@ XcmsConvertColors(pCCC, pColors_in_out, nColors, targetFormat, pCompressed)
      */
     if ((contents_flag & DI_FORMAT) || XCMS_DI_ID(targetFormat)) {
 	/* To proceed, we need to get the Client White Point */
-	bcopy((char *)&pCCC->clientWhitePt, (char *)&clientWhitePt,
+	bcopy((char *)&ccc->clientWhitePt, (char *)&clientWhitePt,
 		sizeof(XcmsColor));
-	if (clientWhitePt.format == XCMS_UNDEFINED_FORMAT) {
+	if (clientWhitePt.format == XcmsUndefinedFormat) {
 	    /*
 	     * If the Client White Point is undefined, convert to the Screen
 	     *   White Point
 	     */
-	    bcopy((char *)&pCCC->pPerScrnInfo->screenWhitePt, (char *)&clientWhitePt,
+	    bcopy((char *)&ccc->pPerScrnInfo->screenWhitePt, (char *)&clientWhitePt,
 		    sizeof(XcmsColor));
-	} else if (pCCC->whitePtAdjFunc != NULL) {
-	    if (clientWhitePt.format != XCMS_CIEXYZ_FORMAT) {
+	} else if (ccc->whitePtAdjProc != NULL) {
+	    if (clientWhitePt.format != XcmsCIEXYZFormat) {
 		bcopy((char *)&clientWhitePt, (char *)&tmpWhitePt,
 			sizeof(XcmsColor));
-		if (_XcmsDIConvertColors(pCCC, &tmpWhitePt, (XcmsColor *) NULL,
-			1, XCMS_CIEXYZ_FORMAT)==0){
-		    return(XCMS_FAILURE);
+		if (_XcmsDIConvertColors(ccc, &tmpWhitePt, (XcmsColor *) NULL,
+			1, XcmsCIEXYZFormat)==0){
+		    return(XcmsFailure);
 		}
-		if (!EqualCIEXYZ(&tmpWhitePt, &pCCC->pPerScrnInfo->screenWhitePt)) {
+		if (!EqualCIEXYZ(&tmpWhitePt, &ccc->pPerScrnInfo->screenWhitePt)) {
 		    whiteAdj = 1;
 		}
-	    } else if (!EqualCIEXYZ(&clientWhitePt, &pCCC->pPerScrnInfo->screenWhitePt)) {
+	    } else if (!EqualCIEXYZ(&clientWhitePt, &ccc->pPerScrnInfo->screenWhitePt)) {
 		whiteAdj = 1;
 	    }
 	}
@@ -794,7 +797,7 @@ XcmsConvertColors(pCCC, pColors_in_out, nColors, targetFormat, pCompressed)
 	    /*
 	     * DI-to-DI only conversion
 	     */
-	    retval = _XcmsDIConvertColors(pCCC, pColors_tmp,
+	    retval = _XcmsDIConvertColors(ccc, pColors_tmp,
 		    &clientWhitePt, nColors, targetFormat);
 	} else if (XCMS_DD_ID(format) && XCMS_DD_ID(targetFormat)) {
 	    /*
@@ -802,7 +805,7 @@ XcmsConvertColors(pCCC, pColors_in_out, nColors, targetFormat, pCompressed)
 	     *   Since DD->DD there will be no compressed thus we can
 	     *   pass NULL instead of pCompressed.
 	     */
-	    retval = _XcmsDDConvertColors(pCCC, pColors_tmp, nColors,
+	    retval = _XcmsDDConvertColors(ccc, pColors_tmp, nColors,
 		    targetFormat, (Bool *)NULL);
 	} else {
 	    /*
@@ -824,16 +827,16 @@ XcmsConvertColors(pCCC, pColors_in_out, nColors, targetFormat, pCompressed)
 		     * White Point Adjustment
 		     *		Client White Point to Screen White Point
 		     */
-		    retval = (*pCCC->whitePtAdjFunc)(pCCC, &clientWhitePt,
-			    &pCCC->pPerScrnInfo->screenWhitePt,
+		    retval = (*ccc->whitePtAdjProc)(ccc, &clientWhitePt,
+			    &ccc->pPerScrnInfo->screenWhitePt,
 			    targetFormat, pColors_tmp, nColors, pCompressed);
 		} else {
-		    if (_XcmsDIConvertColors(pCCC, pColors_tmp,
-			    &clientWhitePt, nColors, XCMS_CIEXYZ_FORMAT)
-			    == XCMS_FAILURE) {
+		    if (_XcmsDIConvertColors(ccc, pColors_tmp,
+			    &clientWhitePt, nColors, XcmsCIEXYZFormat)
+			    == XcmsFailure) {
 			goto Failure;
 		    }
-		    retval = _XcmsDDConvertColors(pCCC, pColors_tmp, nColors,
+		    retval = _XcmsDDConvertColors(ccc, pColors_tmp, nColors,
 			    targetFormat, pCompressed);
 		}
 	    } else {
@@ -845,19 +848,19 @@ XcmsConvertColors(pCCC, pColors_in_out, nColors, targetFormat, pCompressed)
 		     * White Point Adjustment
 		     *		Screen White Point to Client White Point
 		     */
-		    retval = (*pCCC->whitePtAdjFunc)(pCCC,
-			    &pCCC->pPerScrnInfo->screenWhitePt, &clientWhitePt,
+		    retval = (*ccc->whitePtAdjProc)(ccc,
+			    &ccc->pPerScrnInfo->screenWhitePt, &clientWhitePt,
 			    targetFormat, pColors_tmp, nColors, pCompressed);
 		} else {
 		    /*
 		     * Since DD->CIEXYZ, no compression takes place therefore
 		     * we can pass NULL instead of pCompressed.
 		     */
-		    if (_XcmsDDConvertColors(pCCC, pColors_tmp, nColors,
-			    XCMS_CIEXYZ_FORMAT, (Bool *)NULL) == XCMS_FAILURE) {
+		    if (_XcmsDDConvertColors(ccc, pColors_tmp, nColors,
+			    XcmsCIEXYZFormat, (Bool *)NULL) == XcmsFailure) {
 			goto Failure;
 		    }
-		    retval = _XcmsDIConvertColors(pCCC, pColors_tmp,
+		    retval = _XcmsDIConvertColors(ccc, pColors_tmp,
 			    &clientWhitePt, nColors, targetFormat);
 		}
 	    }
@@ -871,7 +874,7 @@ XcmsConvertColors(pCCC, pColors_in_out, nColors, targetFormat, pCompressed)
 	    /*
 	     * Convert from DI to DI in batches of contiguous formats
 	     */
-	    retval = ConvertMixedColors(pCCC, pColors_tmp, &clientWhitePt,
+	    retval = ConvertMixedColors(ccc, pColors_tmp, &clientWhitePt,
 		    nColors, targetFormat, (Bool *)NULL,
 		    (unsigned char)DI_FORMAT);
 	} else if ((contents_flag == (DD_FORMAT | MIX_FORMAT)) &&
@@ -879,7 +882,7 @@ XcmsConvertColors(pCCC, pColors_in_out, nColors, targetFormat, pCompressed)
 	    /*
 	     * Convert from DD to DD in batches of contiguous formats
 	     */
-	    retval = ConvertMixedColors(pCCC, pColors_tmp,
+	    retval = ConvertMixedColors(ccc, pColors_tmp,
 		    (XcmsColor *)NULL, nColors, targetFormat, (Bool *)NULL,
 		    (unsigned char)DD_FORMAT);
 	} else if (XCMS_DI_ID(targetFormat)) {
@@ -896,8 +899,8 @@ XcmsConvertColors(pCCC, pColors_in_out, nColors, targetFormat, pCompressed)
 	     * Since DD->CIEXYZ, no compression takes place therefore
 	     * we can pass NULL instead of pCompressed.
 	     */
-	    retval = ConvertMixedColors(pCCC, pColors_tmp, &clientWhitePt,
-		    nColors, XCMS_CIEXYZ_FORMAT, (Bool *)NULL,
+	    retval = ConvertMixedColors(ccc, pColors_tmp, &clientWhitePt,
+		    nColors, XcmsCIEXYZFormat, (Bool *)NULL,
 		    (unsigned char)DD_FORMAT);
 
 	    /*
@@ -906,7 +909,7 @@ XcmsConvertColors(pCCC, pColors_in_out, nColors, targetFormat, pCompressed)
 	     * Since DD->DI, no compression takes place therefore
 	     * we can pass NULL instead of pCompressed.
 	     */
-	    retval = ConvertMixedColors(pCCC, pColors_tmp, &clientWhitePt,
+	    retval = ConvertMixedColors(ccc, pColors_tmp, &clientWhitePt,
 		    nColors, targetFormat, (Bool *)NULL,
 		    (unsigned char)DI_FORMAT);
 	} else {
@@ -927,9 +930,9 @@ XcmsConvertColors(pCCC, pColors_in_out, nColors, targetFormat, pCompressed)
 	     * Since ??->CIEXYZ, no compression takes place therefore
 	     * we can pass NULL instead of pCompressed.
 	     */
-	    if ((retval = ConvertMixedColors(pCCC, pColors_tmp, &clientWhitePt,
-		    nColors, XCMS_CIEXYZ_FORMAT, (Bool *)NULL,
-		    (unsigned char)(DI_FORMAT | DD_FORMAT))) == XCMS_FAILURE) {
+	    if ((retval = ConvertMixedColors(ccc, pColors_tmp, &clientWhitePt,
+		    nColors, XcmsCIEXYZFormat, (Bool *)NULL,
+		    (unsigned char)(DI_FORMAT | DD_FORMAT))) == XcmsFailure) {
 		goto Failure;
 	    }
 
@@ -937,13 +940,13 @@ XcmsConvertColors(pCCC, pColors_in_out, nColors, targetFormat, pCompressed)
 	     * Convert all specifications (now in CIEXYZ format) to
 	     * the target format
 	     */
-	    retval = ConvertMixedColors(pCCC, pColors_tmp,
+	    retval = ConvertMixedColors(ccc, pColors_tmp,
 		    (XcmsColor *)NULL, nColors, targetFormat, (Bool *)NULL,
 		    (unsigned char)DI_FORMAT);
 	}
     }
 
-    if (retval != XCMS_FAILURE) {
+    if (retval != XcmsFailure) {
 	bcopy((char *)pColors_tmp, (char *)pColors_in_out,
 		nColors * sizeof(XcmsColor));
     }
@@ -956,18 +959,18 @@ Failure:
     if (nColors > 1) {
 	Xfree((char *)pColors_tmp);
     }
-    return(XCMS_FAILURE);
+    return(XcmsFailure);
 }
 
 
 /*
  *	NAME
- *		XcmsRegIdOfPrefix
+ *		XcmsRegFormatOfPrefix
  *
  *	SYNOPSIS
  */
-XcmsSpecFmt
-_XcmsRegIdOfPrefix(prefix)
+XcmsColorFormat
+_XcmsRegFormatOfPrefix(prefix)
     char *prefix;
 /*
  *	DESCRIPTION
@@ -987,5 +990,5 @@ _XcmsRegIdOfPrefix(prefix)
 	}
 	pEntry++;
     }
-    return(XCMS_UNDEFINED_FORMAT);
+    return(XcmsUndefinedFormat);
 }

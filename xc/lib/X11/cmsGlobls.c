@@ -1,24 +1,27 @@
-/*$XConsortium: XcmsGlobls.c,v 1.4 91/02/12 16:12:54 dave Exp $ */
+/*$XConsortium: XcmsGlobls.c,v 1.5 91/02/20 18:47:11 dave Exp $ */
 
 /*
- * (c) Copyright 1990 1991 Tektronix Inc.
+ * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
  * 	All Rights Reserved
- *
- * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose and without fee is hereby granted,
- * provided that the above copyright notice appear in all copies and that
- * both that copyright notice and this permission notice appear in
- * supporting documentation, and that the name of Tektronix not be used
- * in advertising or publicity pertaining to distribution of the software
- * without specific, written prior permission.
- *
- * Tektronix disclaims all warranties with regard to this software, including
- * all implied warranties of merchantability and fitness, in no event shall
- * Tektronix be liable for any special, indirect or consequential damages or
- * any damages whatsoever resulting from loss of use, data or profits,
- * whether in an action of contract, negligence or other tortious action,
- * arising out of or in connection with the use or performance of this
- * software.
+ * 
+ * This file is a component of an X Window System-specific implementation
+ * of Xcms based on the TekColor Color Management System.  Permission is
+ * hereby granted to use, copy, modify, sell, and otherwise distribute this
+ * software and its documentation for any purpose and without fee, provided
+ * that this copyright, permission, and disclaimer notice is reproduced in
+ * all copies of this software and in supporting documentation.  TekColor
+ * is a trademark of Tektronix, Inc.
+ * 
+ * Tektronix makes no representation about the suitability of this software
+ * for any purpose.  It is provided "as is" and with all faults.
+ * 
+ * TEKTRONIX DISCLAIMS ALL WARRANTIES APPLICABLE TO THIS SOFTWARE,
+ * INCLUDING THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE.  IN NO EVENT SHALL TEKTRONIX BE LIABLE FOR ANY
+ * SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
+ * RESULTING FROM LOSS OF USE, DATA, OR PROFITS, WHETHER IN AN ACTION OF
+ * CONTRACT, NEGLIGENCE, OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR THE PERFORMANCE OF THIS SOFTWARE.
  *
  *
  *	NAME
@@ -39,35 +42,37 @@
  *              that are not already declared in any of the included header
  *		files (external includes or internal includes).
  */
-extern XcmsSCCFuncSet	LINEAR_RGB_SCCFuncSet;
+extern XcmsSCCFuncSet	XcmsLinearRGBFunctionSet;
+#ifdef GRAY
 extern XcmsSCCFuncSet	GRAY_SCCFuncSet;
+#endif /* GRAY */
 
 /* UNDEFINED Color Space */
-extern XcmsColorSpace	XcmsUNDEFINED_ColorSpace;
+extern XcmsColorSpace	XcmsUNDEFINEDColorSpace;
 
 /* CIE XYZ Color Space */
-extern XcmsColorSpace	XcmsCIEXYZ_ColorSpace;
+extern XcmsColorSpace	XcmsCIEXYZColorSpace;
 
 /* CIE uvY Color Space */
-extern XcmsColorSpace	XcmsCIEuvY_ColorSpace;
+extern XcmsColorSpace	XcmsCIEuvYColorSpace;
 
 /* CIE xyY Color Space */
-extern XcmsColorSpace	XcmsCIExyY_ColorSpace;
+extern XcmsColorSpace	XcmsCIExyYColorSpace;
 
 /* CIE Lab Color Space */
-extern XcmsColorSpace	XcmsCIELab_ColorSpace;
+extern XcmsColorSpace	XcmsCIELabColorSpace;
 
 /* CIE Luv Color Space */
-extern XcmsColorSpace	XcmsCIELuv_ColorSpace;
+extern XcmsColorSpace	XcmsCIELuvColorSpace;
 
 #ifndef TekHVC_NOTIN_APILIB
 /* TekHVC Color Space */
-extern XcmsColorSpace	XcmsTekHVC_ColorSpace;
+extern XcmsColorSpace	XcmsTekHVCColorSpace;
 #endif
 
 /* Device Dependent Color Space Structures */
-extern XcmsColorSpace	XcmsLRGB_RGBi_ColorSpace;
-extern XcmsColorSpace	XcmsLRGB_RGB_ColorSpace;
+extern XcmsColorSpace	XcmsRGBiColorSpace;
+extern XcmsColorSpace	XcmsRGBColorSpace;
 
 
 /*
@@ -80,15 +85,15 @@ extern XcmsColorSpace	XcmsLRGB_RGB_ColorSpace;
      * Initial array of Device Independent Color Spaces
      */
 XcmsColorSpace *_XcmsDIColorSpacesInit[] = {
-    &XcmsCIEXYZ_ColorSpace,
-    &XcmsCIEuvY_ColorSpace,
-    &XcmsCIExyY_ColorSpace,
-    &XcmsCIELab_ColorSpace,
-    &XcmsCIELuv_ColorSpace,
+    &XcmsCIEXYZColorSpace,
+    &XcmsCIEuvYColorSpace,
+    &XcmsCIExyYColorSpace,
+    &XcmsCIELabColorSpace,
+    &XcmsCIELuvColorSpace,
 #ifdef TekHVC_IN_APILIB
-    &XcmsTekHVC_ColorSpace,
+    &XcmsTekHVCColorSpace,
 #endif
-    &XcmsUNDEFINED_ColorSpace,
+    &XcmsUNDEFINEDColorSpace,
     NULL
 };
     /*
@@ -102,8 +107,8 @@ XcmsColorSpace **_XcmsDIColorSpaces = _XcmsDIColorSpacesInit;
      * Initial array of Device Dependent Color Spaces
      */
 XcmsColorSpace *_XcmsDDColorSpacesInit[] = {
-    &XcmsLRGB_RGB_ColorSpace,
-    &XcmsLRGB_RGBi_ColorSpace,
+    &XcmsRGBColorSpace,
+    &XcmsRGBiColorSpace,
     NULL
 };
     /*
@@ -117,8 +122,10 @@ XcmsColorSpace **_XcmsDDColorSpaces = &_XcmsDDColorSpacesInit[0];
      * Initial array of Screen Color Characterization Function Sets
      */
 XcmsSCCFuncSet	*_XcmsSCCFuncSetsInit[] = {
-	&LINEAR_RGB_SCCFuncSet,
+	&XcmsLinearRGBFunctionSet,
+#ifdef GRAY
 	&GRAY_SCCFuncSet,
+#endif /* GRAY */
 	NULL};
     /*
      * Pointer to the array of pointers to XcmsSCCFuncSet structures
@@ -145,13 +152,13 @@ char	XcmsRGBi_prefix[] = "rgbi";
 char	XcmsRGB_prefix[] = "rgb";
 
 XcmsRegColorSpaceEntry _XcmsRegColorSpaces[] = {
-    XcmsCIEXYZ_prefix,	XCMS_CIEXYZ_FORMAT,
-    XcmsCIEuvY_prefix,	XCMS_CIEuvY_FORMAT,
-    XcmsCIExyY_prefix,	XCMS_CIExyY_FORMAT,
-    XcmsCIELab_prefix,	XCMS_CIELab_FORMAT,
-    XcmsCIELuv_prefix,	XCMS_CIELuv_FORMAT,
-    XcmsTekHVC_prefix,	XCMS_TekHVC_FORMAT,
-    XcmsRGB_prefix,	XCMS_RGB_FORMAT,
-    XcmsRGBi_prefix,	XCMS_RGBi_FORMAT,
+    XcmsCIEXYZ_prefix,	XcmsCIEXYZFormat,
+    XcmsCIEuvY_prefix,	XcmsCIEuvYFormat,
+    XcmsCIExyY_prefix,	XcmsCIExyYFormat,
+    XcmsCIELab_prefix,	XcmsCIELabFormat,
+    XcmsCIELuv_prefix,	XcmsCIELuvFormat,
+    XcmsTekHVC_prefix,	XcmsTekHVCFormat,
+    XcmsRGB_prefix,	XcmsRGBFormat,
+    XcmsRGBi_prefix,	XcmsRGBiFormat,
     NULL, 0
 };

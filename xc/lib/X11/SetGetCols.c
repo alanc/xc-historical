@@ -1,24 +1,27 @@
 /* $XConsortium: XcmsSetGet.c,v 1.3 91/02/12 16:13:44 dave Exp $" */
 
 /*
- * (c) Copyright 1989 1990 1991 Tektronix Inc.
+ * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
  * 	All Rights Reserved
- *
- * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose and without fee is hereby granted,
- * provided that the above copyright notice appear in all copies and that
- * both that copyright notice and this permission notice appear in
- * supporting documentation, and that the name of Tektronix not be used
- * in advertising or publicity pertaining to distribution of the software
- * without specific, written prior permission.
- *
- * Tektronix disclaims all warranties with regard to this software, including
- * all implied warranties of merchantability and fitness, in no event shall
- * Tektronix be liable for any special, indirect or consequential damages or
- * any damages whatsoever resulting from loss of use, data or profits,
- * whether in an action of contract, negligence or other tortious action,
- * arising out of or in connection with the use or performance of this
- * software.
+ * 
+ * This file is a component of an X Window System-specific implementation
+ * of Xcms based on the TekColor Color Management System.  Permission is
+ * hereby granted to use, copy, modify, sell, and otherwise distribute this
+ * software and its documentation for any purpose and without fee, provided
+ * that this copyright, permission, and disclaimer notice is reproduced in
+ * all copies of this software and in supporting documentation.  TekColor
+ * is a trademark of Tektronix, Inc.
+ * 
+ * Tektronix makes no representation about the suitability of this software
+ * for any purpose.  It is provided "as is" and with all faults.
+ * 
+ * TEKTRONIX DISCLAIMS ALL WARRANTIES APPLICABLE TO THIS SOFTWARE,
+ * INCLUDING THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE.  IN NO EVENT SHALL TEKTRONIX BE LIABLE FOR ANY
+ * SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
+ * RESULTING FROM LOSS OF USE, DATA, OR PROFITS, WHETHER IN AN ACTION OF
+ * CONTRACT, NEGLIGENCE, OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR THE PERFORMANCE OF THIS SOFTWARE.
  *
  *
  *	NAME
@@ -38,12 +41,6 @@
 #include "Xlibint.h"
 #include "Xcmsint.h"
 
-
-/*
- *      INTERNAL INCLUDES
- *              Include files for local use only, therefore, NOT exported
- *		to any package or program using this package.
- */
 
 /*
  *      EXTERNS
@@ -74,7 +71,7 @@ _XcmsSetGetColors(xColorProc, dpy, cmap, pColors_in_out, nColors,
     Colormap cmap;
     XcmsColor *pColors_in_out;
     unsigned int nColors;
-    XcmsSpecFmt result_format;
+    XcmsColorFormat result_format;
     Bool *pCompressed;
 /*
  *	DESCRIPTION
@@ -86,20 +83,20 @@ _XcmsSetGetColors(xColorProc, dpy, cmap, pColors_in_out, nColors,
  *			XcmsStoreColors
  *
  *	RETURNS
- *		XCMS_FAILURE if failed;
- *		XCMS_SUCCESS if it succeeded without gamut compression;
- *		XCMS_SUCCESS_WITH_COMPRESSION if it succeeded with gamut
+ *		XcmsFailure if failed;
+ *		XcmsSuccess if it succeeded without gamut compression;
+ *		XcmsSuccessWithCompression if it succeeded with gamut
  *			compression;
  */
 {
-    XcmsCCC *pCCC;
+    XcmsCCC ccc;
     XColor *pXColors_in_out;
-    Status retval = XCMS_SUCCESS;
+    Status retval = XcmsSuccess;
 
     /*
      * Argument Checking
      *	1. Assume xColorProc is correct
-     *	2. Insure pCCC not NULL
+     *	2. Insure ccc not NULL
      *	3. Assume cmap correct (should be checked by Server)
      *	4. Insure pColors_in_out valid
      *	5. Assume method_in is valid (should be checked by Server)
@@ -107,25 +104,25 @@ _XcmsSetGetColors(xColorProc, dpy, cmap, pColors_in_out, nColors,
      */
 
     if (dpy == NULL) {
-	return(XCMS_FAILURE);
+	return(XcmsFailure);
     }
 
     if (nColors == 0) {
-	return(XCMS_SUCCESS);
+	return(XcmsSuccess);
     }
 
-    if (result_format == XCMS_UNDEFINED_FORMAT) {
-	return(XCMS_FAILURE);
+    if (result_format == XcmsUndefinedFormat) {
+	return(XcmsFailure);
     }
 
     if (!((*xColorProc == XAllocColor) || (*xColorProc == XStoreColor)
 	    || (*xColorProc == XStoreColors) || (*xColorProc == XQueryColor) 
 	    || (*xColorProc == XQueryColors))) {
-	return(XCMS_FAILURE);
+	return(XcmsFailure);
     }
 
-    if ((pCCC = XcmsCCCofColormap(dpy, cmap)) == (XcmsCCC *)NULL) {
-	return(XCMS_FAILURE);
+    if ((ccc = XcmsCCCOfColormap(dpy, cmap)) == (XcmsCCC)NULL) {
+	return(XcmsFailure);
     }
 
     if ((*xColorProc == XAllocColor) || (*xColorProc == XStoreColor)
@@ -138,7 +135,7 @@ _XcmsSetGetColors(xColorProc, dpy, cmap, pColors_in_out, nColors,
      */
     if ((pXColors_in_out = (XColor *)Xcalloc(nColors, sizeof(XColor))) ==
 	    NULL) {
-	return(XCMS_FAILURE);
+	return(XcmsFailure);
     }
 
     if ((*xColorProc == XQueryColor) || (*xColorProc == XQueryColors)) {
@@ -147,9 +144,9 @@ _XcmsSetGetColors(xColorProc, dpy, cmap, pColors_in_out, nColors,
     /*
      * Convert to RGB, adjusting for white point differences if necessary.
      */
-    if ((retval = XcmsConvertColors(pCCC, pColors_in_out, nColors, XCMS_RGB_FORMAT,
-	    pCompressed)) == XCMS_FAILURE) {
-	return(XCMS_FAILURE);
+    if ((retval = XcmsConvertColors(ccc, pColors_in_out, nColors, XcmsRGBFormat,
+	    pCompressed)) == XcmsFailure) {
+	return(XcmsFailure);
     }
 
 Query:
@@ -162,19 +159,19 @@ Query:
      * Now make appropriate X Call
      */
     if (*xColorProc == XAllocColor) {
-	if ((*xColorProc)(pCCC->dpy, cmap, pXColors_in_out) == 0) {
+	if ((*xColorProc)(ccc->dpy, cmap, pXColors_in_out) == 0) {
 	    Xfree((char *)pXColors_in_out);
-	    return(XCMS_FAILURE);
+	    return(XcmsFailure);
 	}
     } else if ((*xColorProc == XQueryColor) || (*xColorProc == XStoreColor)) {
 	/* Note: XQueryColor and XStoreColor do not return any Status */
-	(*xColorProc)(pCCC->dpy, cmap, pXColors_in_out);
+	(*xColorProc)(ccc->dpy, cmap, pXColors_in_out);
     } else if ((*xColorProc == XQueryColors) || (*xColorProc == XStoreColors)){
 	/* Note: XQueryColors and XStoreColors do not return any Status */
-	(*xColorProc)(pCCC->dpy, cmap, pXColors_in_out, nColors);
+	(*xColorProc)(ccc->dpy, cmap, pXColors_in_out, nColors);
     } else {
 	Xfree((char *)pXColors_in_out);
-	return(XCMS_FAILURE);
+	return(XcmsFailure);
     }
 
     if ((*xColorProc == XStoreColor) || (*xColorProc == XStoreColors)) {
@@ -185,7 +182,7 @@ Query:
     /*
      * Now, convert returned XColor(i.e., rgb) to XcmsColor structures
      */
-    _XColor_to_XcmsRGB(pCCC, pXColors_in_out, pColors_in_out, nColors);
+    _XColor_to_XcmsRGB(ccc, pXColors_in_out, pColors_in_out, nColors);
     Xfree((char *)pXColors_in_out);
 
     /*
@@ -194,10 +191,10 @@ Query:
      *    pCompressed.
      */
 
-    if (result_format != XCMS_RGB_FORMAT) {
-	if (XcmsConvertColors(pCCC, pColors_in_out, nColors, result_format,
-		(Bool *) NULL) == XCMS_FAILURE) {
-	    return(XCMS_FAILURE);
+    if (result_format != XcmsRGBFormat) {
+	if (XcmsConvertColors(ccc, pColors_in_out, nColors, result_format,
+		(Bool *) NULL) == XcmsFailure) {
+	    return(XcmsFailure);
 	}
     }
     return(retval);

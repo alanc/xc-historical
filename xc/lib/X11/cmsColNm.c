@@ -1,24 +1,27 @@
 /* $XConsortium: XcmsColNm.c,v 1.8 91/02/19 08:52:45 rws Exp $" */
 
 /*
- * (c) Copyright 1990 1991 Tektronix Inc.
+ * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
  * 	All Rights Reserved
- *
- * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose and without fee is hereby granted,
- * provided that the above copyright notice appear in all copies and that
- * both that copyright notice and this permission notice appear in
- * supporting documentation, and that the name of Tektronix not be used
- * in advertising or publicity pertaining to distribution of the software
- * without specific, written prior permission.
- *
- * Tektronix disclaims all warranties with regard to this software, including
- * all implied warranties of merchantability and fitness, in no event shall
- * Tektronix be liable for any special, indirect or consequential damages or
- * any damages whatsoever resulting from loss of use, data or profits,
- * whether in an action of contract, negligence or other tortious action,
- * arising out of or in connection with the use or performance of this
- * software.
+ * 
+ * This file is a component of an X Window System-specific implementation
+ * of Xcms based on the TekColor Color Management System.  Permission is
+ * hereby granted to use, copy, modify, sell, and otherwise distribute this
+ * software and its documentation for any purpose and without fee, provided
+ * that this copyright, permission, and disclaimer notice is reproduced in
+ * all copies of this software and in supporting documentation.  TekColor
+ * is a trademark of Tektronix, Inc.
+ * 
+ * Tektronix makes no representation about the suitability of this software
+ * for any purpose.  It is provided "as is" and with all faults.
+ * 
+ * TEKTRONIX DISCLAIMS ALL WARRANTIES APPLICABLE TO THIS SOFTWARE,
+ * INCLUDING THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE.  IN NO EVENT SHALL TEKTRONIX BE LIABLE FOR ANY
+ * SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
+ * RESULTING FROM LOSS OF USE, DATA, OR PROFITS, WHETHER IN AN ACTION OF
+ * CONTRACT, NEGLIGENCE, OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR THE PERFORMANCE OF THIS SOFTWARE.
  *
  *
  *	NAME
@@ -46,6 +49,9 @@
  *              that are not already declared in any of the included header
  *		files (external includes or internal includes).
  */
+extern char *getenv();
+extern void qsort();
+extern char *bsearch();
 extern XcmsColorSpace **_XcmsDIColorSpaces;
 
 
@@ -53,8 +59,8 @@ extern XcmsColorSpace **_XcmsDIColorSpaces;
  *      LOCAL DEFINES
  *		#define declarations local to this package.
  */
-#ifndef LIBDIR
-#define LIBDIR "/usr/lib/X11"
+#ifndef XCMS_DEFAULT_DBPATH
+#define XCMS_DEFAULT_DBPATH  "/usr/lib/X11/Xcms.txt"
 #endif
 
 #ifndef isgraph
@@ -66,12 +72,29 @@ extern XcmsColorSpace **_XcmsDIColorSpaces;
 #define END_TOKEN	"XCMS_COLORDB_END"
 #define DELIM_CHAR	'\t'
 
+#define	NOT_VISITED	0x0
+#define	VISITED		0x1
+#define CYCLE		0xFFFF
+#define XcmsDbInitNone		-1
+#define XcmsDbInitFailure	0
+#define XcmsDbInitSuccess	1
+
 /*
  *      LOCAL TYPEDEFS
- *              typedefs local to this package (for use with local vars).
- *
  */
+typedef struct _XcmsPair {
+    char *first;
+    char *second;
+    int flag;
+} XcmsPair;
 
+/*
+ *      LOCAL VARIABLES
+ */
+static int XcmsColorDbState = XcmsDbInitNone;
+static int nEntries;
+static char *strings;
+static XcmsPair *pairs;
 
 
 /************************************************************************
@@ -87,8 +110,8 @@ extern XcmsColorSpace **_XcmsDIColorSpaces;
  *	SYNOPSIS
  */
 static XcmsColorSpace *
-_XcmsColorSpaceOfString(pCCC, color_string)
-    XcmsCCC *pCCC;
+_XcmsColorSpaceOfString(ccc, color_string)
+    XcmsCCC ccc;
     char *color_string;
 /*
  *	DESCRIPTION
@@ -108,11 +131,11 @@ _XcmsColorSpaceOfString(pCCC, color_string)
     char *pchar;
 
     if ((pchar = strchr(color_string, ':')) == NULL) {
-	return(XCMS_FAILURE);
+	return(XcmsFailure);
     }
     n = (int)(pchar - color_string);
 
-    if (pCCC == NULL) {
+    if (ccc == NULL) {
 	return(NULL);
     }
 
@@ -132,7 +155,7 @@ _XcmsColorSpaceOfString(pCCC, color_string)
     /*
      * Next try Device-Dependent color spaces
      */
-    papColorSpaces = ((XcmsSCCFuncSet *)pCCC->pPerScrnInfo->pSCCFuncSet)->papDDColorSpaces;
+    papColorSpaces = ((XcmsSCCFuncSet *)ccc->pPerScrnInfo->functionSet)->papDDColorSpaces;
     if (papColorSpaces != NULL) {
 	while (*papColorSpaces != NULL) {
 	    if (strncmp((*papColorSpaces)->prefix, color_string, n) == 0) {
@@ -199,8 +222,8 @@ _XcmsCopyISOLatin1Lowered(dst, src)
  *	SYNOPSIS
  */
 static int
-_XcmsParseColorString(pCCC, color_string, pColor)
-    XcmsCCC *pCCC;
+_XcmsParseColorString(ccc, color_string, pColor)
+    XcmsCCC ccc;
     char *color_string;
     XcmsColor *pColor;
 /*
@@ -220,7 +243,7 @@ _XcmsParseColorString(pCCC, color_string, pColor)
     XcmsColorSpace	*pColorSpace;
     char		string_lowered[BUFSIZ];
 
-    if (pCCC == NULL) {
+    if (ccc == NULL) {
 	return(0);
     }
 
@@ -231,21 +254,74 @@ _XcmsParseColorString(pCCC, color_string, pColor)
 	return(0);
     }
 
-    _XcmsCopyISOLatin1Lowered((unsigned char *)string_lowered,
-	    (unsigned char *)color_string);
+    _XcmsCopyISOLatin1Lowered((char *)string_lowered, (char *)color_string);
 
     if (*string_lowered == '#') {
-	if ((pColorSpace = _XcmsColorSpaceOfString(pCCC, "rgb:")) != NULL) {
+	if ((pColorSpace = _XcmsColorSpaceOfString(ccc, "rgb:")) != NULL) {
 	    return((*pColorSpace->parseString)(string_lowered, pColor));
 	}
     }
 
-    if ((pColorSpace = _XcmsColorSpaceOfString(pCCC, string_lowered)) != NULL) {
+    if ((pColorSpace = _XcmsColorSpaceOfString(ccc, string_lowered)) != NULL) {
 	return((*pColorSpace->parseString)(string_lowered, pColor));
     }
 
     return(0);
 }
+
+
+/*
+ *	NAME
+ *		FirstCmp - Compare color names of pair recs
+ *
+ *	SYNOPSIS
+ */
+int FirstCmp(p1, p2)
+    XcmsPair *p1, *p2;
+/*
+ *	DESCRIPTION
+ *		Compares the color names of XcmsColorTuples.
+ *		This routine is public to allow access from qsort???.
+ *
+ *	RETURNS
+ *		0 if equal;
+ *		< 0 if first precedes second,
+ *		> 0 if first succeeds second.
+ *
+ */
+{
+    return(strcmp(p1->first, p2->first));
+}
+
+
+
+/*
+ *	NAME
+ *		stringSectionSize - determine memory needed for strings
+ *
+ *	SYNOPSIS
+ */
+static void
+SetNoVisit()
+/*
+ *	DESCRIPTION
+ *
+ *	RETURNS
+ *		void
+ *
+ */
+{
+    int i;
+    XcmsPair *pair = pairs;
+
+    for (i = 0; i < nEntries; i++, pair++) {
+	if (pair->flag != CYCLE) {
+	    pair->flag = NOT_VISITED;
+	}
+    }
+}
+
+
 
 
 /*
@@ -265,7 +341,7 @@ field2(pBuf, delim, p1, p2)
  *		Extracts two fields from a "record".
  *
  *	RETURNS
- *		XCMS_SUCCESS if succeeded, otherwise XCMS_FAILURE.
+ *		XcmsSuccess if succeeded, otherwise XcmsFailure.
  *
  */
 {
@@ -274,7 +350,7 @@ field2(pBuf, delim, p1, p2)
     /* Find Field 1 */
     while (!isgraph(*pBuf)) {
 	if ((*pBuf != '\n') || (*pBuf != '\0')) {
-	    return(XCMS_FAILURE);
+	    return(XcmsFailure);
 	}
 	if (isspace(*pBuf) || (*pBuf == delim)) {
 	    pBuf++;
@@ -287,18 +363,18 @@ field2(pBuf, delim, p1, p2)
 	pBuf++;
     }
     if ((*pBuf == '\n') || (*pBuf == '\0')) {
-	return(XCMS_FAILURE);
+	return(XcmsFailure);
     }
     if ((*pBuf == ' ') || (*pBuf == delim)) {
 	*pBuf++ = '\0';	/* stuff end of string character */
     } else {
-	return(XCMS_FAILURE);
+	return(XcmsFailure);
     }
 
     /* Find Field 2 */
     while (!isgraph(*pBuf)) {
 	if ((*pBuf == '\n') || (*pBuf == '\0')) {
-	    return(XCMS_FAILURE);
+	    return(XcmsFailure);
 	}
 	if (isspace(*pBuf) || (*pBuf == delim)) {
 	    pBuf++;
@@ -314,7 +390,7 @@ field2(pBuf, delim, p1, p2)
 	*pBuf = '\0';	/* stuff end of string character */
     }
 
-    return(XCMS_SUCCESS);
+    return(XcmsSuccess);
 }
 
 
@@ -325,9 +401,8 @@ field2(pBuf, delim, p1, p2)
  *	SYNOPSIS
  */
 static Status
-_XcmsLookupColorName(pCCC, stream, name, pColor)
-    XcmsCCC *pCCC;
-    FILE *stream;
+_XcmsLookupColorName(ccc, name, pColor)
+    XcmsCCC ccc;
     char *name;
     XcmsColor *pColor;
 /*
@@ -336,9 +411,9 @@ _XcmsLookupColorName(pCCC, stream, name, pColor)
  *		Database for the specified string.
  *
  *	RETURNS
- *		XCMS_FAILURE if failed to find a matching entry in
+ *		XcmsFailure if failed to find a matching entry in
  *			the database.
- *		XCMS_SUCCESS if succeeded in converting color name to
+ *		XcmsSuccess if succeeded in converting color name to
  *			XcmsColor.
  *		_XCMS_NEWNAME if succeeded in converting color string (which
  *			is a color name to yet another color name.
@@ -351,16 +426,27 @@ _XcmsLookupColorName(pCCC, stream, name, pColor)
  {
     Status		retval = 0;
     char		name_lowered[BUFSIZ];
-    char		buf[BUFSIZ];
     register int	i, j;
     int			len;
-    char		token[BUFSIZ];
-    char		token2[BUFSIZ];
     char		*tmpName;
-    char		*f1;
-    char		*f2;
-    char		tmp[BUFSIZ];
-    char		*pBuf;
+    XcmsPair		*pair, tmpPair;
+
+    /*
+     * Check state of Database:
+     *		XcmsDbInitNone
+     *		XcmsDbInitSuccess
+     *		XcmsDbInitFailure
+     */
+    if (XcmsColorDbState == XcmsDbInitFailure) {
+	return(XcmsFailure);
+    }
+    if (XcmsColorDbState == XcmsDbInitNone) {
+	if (!LoadColornameDB()) {
+	    return(XcmsFailure);
+	}
+    }
+
+    SetNoVisit();
 
     /*
      * While copying name to name_lowered, convert to lowercase
@@ -370,10 +456,10 @@ _XcmsLookupColorName(pCCC, stream, name, pColor)
 
 Retry:
     if ((len = strlen(tmpName)) > BUFSIZ -1) {
-	return(XCMS_FAILURE);
+	return(XcmsFailure);
     }
 
-    _XcmsCopyISOLatin1Lowered((unsigned char *)name_lowered, (unsigned char *)tmpName);
+    _XcmsCopyISOLatin1Lowered((char *)name_lowered, (char *)tmpName);
 
     /*
      * Now, remove spaces.
@@ -384,6 +470,105 @@ Retry:
 	}
     }
     name_lowered[i] = '\0';
+    tmpPair.first = name_lowered;
+
+    if ((pair = (XcmsPair *)bsearch((char *)&tmpPair, (char *)pairs, nEntries,
+	    sizeof(XcmsPair), FirstCmp)) == NULL) {
+	if (retval == 2) {
+	    if (name != tmpName) {
+		strncpy(name, tmpName, BUFSIZ - 1);
+	    }
+	    return(_XCMS_NEWNAME);
+	}
+	return(XcmsFailure);
+    }
+
+    if (pair->flag == CYCLE) {
+	return(XcmsFailure);
+    }
+    if (pair->flag == VISITED) {
+	pair->flag = CYCLE;
+	return(XcmsFailure);
+    }
+	    
+    if (_XcmsParseColorString(ccc, pair->second, pColor) == XcmsSuccess) {
+	/* f2 contains a numerical string specification */
+	return(XcmsSuccess);
+    } else {
+	/* f2 does not contain a numerical string specification */
+	tmpName = pair->second;
+	pair->flag = VISITED;
+	retval = 2;
+	goto Retry;
+    }
+}
+
+
+/*
+ *	NAME
+ *		RemoveSpaces
+ *
+ *	SYNOPSIS
+ */
+static int
+RemoveSpaces(pString)
+    char *pString;
+/*
+ *	DESCRIPTION
+ *		Removes spaces from string.
+ *
+ *	RETURNS
+ *		Void
+ *
+ */
+{
+    int i, count = 0;
+    char *cptr;
+
+    /* REMOVE SPACES */
+    cptr = pString;
+    for (i = strlen(pString); i; i--, cptr++) {
+	if (!isspace(*cptr)) {
+	    *pString++ = *cptr;
+	    count++;
+	}
+    }
+    *pString = '\0';
+    return(count);
+}
+
+
+/*
+ *	NAME
+ *		stringSectionSize - determine memory needed for strings
+ *
+ *	SYNOPSIS
+ */
+static int
+stringSectionSize(stream, pNumEntries, pSectionSize)
+    FILE *stream;
+    int	*pNumEntries;
+    int	*pSectionSize;
+/*
+ *	DESCRIPTION
+ *		Determines the amount of memory required to store the
+ *		color name strings and also the number of strings.
+ *
+ *	RETURNS
+ *		XcmsSuccess if succeeded, otherwise XcmsFailure.
+ *
+ */
+{
+    char buf[BUFSIZ];
+    char token[BUFSIZ];
+    char token2[BUFSIZ];
+    char *pBuf;
+    char *f1;
+    char *f2;
+    int i;
+
+    *pNumEntries = 0;
+    *pSectionSize = 0;
 
     /*
      * Advance to START_TOKEN
@@ -395,20 +580,94 @@ Retry:
 		&& (strcmp(token, START_TOKEN) == 0)) {
 	    if (strcmp(token2, FORMAT_VERSION) != 0) {
 		/* text file not in the right format */
-		return(XCMS_FAILURE);
+		return(XcmsFailure);
 	    }
 	    break;
 	} /* else it was just a blank line or comment */
     }
 
     if (pBuf == NULL) {
-	if (retval == 2) {
-	    if (name != tmpName) {
-		strncpy(name, tmpName, BUFSIZ - 1);
-	    }
-	    return(_XCMS_NEWNAME);
+	return(XcmsFailure);
+    }
+
+    while((pBuf = fgets(buf, BUFSIZ, stream)) != NULL) {
+	if ((sscanf(buf, "%s", token)) && (strcmp(token, END_TOKEN) == 0)) {
+	    break;
 	}
-	return(XCMS_FAILURE);
+
+	if (field2(buf, DELIM_CHAR, &f1, &f2) != XcmsSuccess) {
+	    return(XcmsFailure);
+	}
+
+	(*pNumEntries)++;
+
+	(*pSectionSize) += (i = strlen(f1)) + 1;
+	for (; i; i--, f1++) {
+	    /* REMOVE SPACES FROM COUNT */
+	    if (isspace(*f1)) {
+		(*pSectionSize)--;
+	    }
+	}
+
+	(*pSectionSize) += (i = strlen(f2)) + 1;
+	for (; i; i--, f2++) {
+	    /* REMOVE SPACES FROM COUNT */
+	    if (isspace(*f2)) {
+		(*pSectionSize)--;
+	    }
+	}
+
+    }
+
+    return(XcmsSuccess);
+}
+
+
+/*
+ *	NAME
+ *		ReadColornameDB - Read the Color Name Database
+ *
+ *	SYNOPSIS
+ */
+static Status
+ReadColornameDB(stream, pRec, pString)
+    FILE *stream;
+    XcmsPair *pRec;
+    char *pString;
+/*
+ *	DESCRIPTION
+ *		Loads the Color Name Database from a text file.
+ *
+ *	RETURNS
+ *		XcmsSuccess if succeeded, otherwise XcmsFailure.
+ *
+ */
+{
+    char buf[BUFSIZ];
+    char token[BUFSIZ];
+    char token2[BUFSIZ];
+    char *f1;
+    char *f2;
+    char *pBuf;
+
+    /*
+     * Advance to START_TOKEN
+     *	 Anything before is just considered as comments.
+     */
+
+    while((pBuf = fgets(buf, BUFSIZ, stream)) != NULL) {
+	if ((sscanf(buf, "%s %s", token, token2))
+		&& (strcmp(token, START_TOKEN) == 0)) {
+	    if (strcmp(token2, FORMAT_VERSION) != 0) {
+		/* text file not in the right format */
+		return(XcmsFailure);
+	    }
+	    break;
+	} /* else it was just a blank line or comment */
+    }
+
+    if (pBuf == NULL) {
+	return(XcmsFailure);
     }
 
     /*
@@ -416,229 +675,134 @@ Retry:
      */
 
     while ((pBuf = fgets(buf, BUFSIZ, stream)) != NULL) {
-	if ((sscanf(buf, "%s", token))
-	    && (strcmp(token, END_TOKEN) == 0)) {
+	if ((sscanf(buf, "%s", token)) && (strcmp(token, END_TOKEN) == 0)) {
 	    /*
-	     * Found END_TOKEN
+	     * Found END_TOKEN so break out of for loop
 	     */
-	    if (retval == 2) {
-		if (name != tmpName) {
-		    strncpy(name, tmpName, BUFSIZ - 1);
-		}
-		return(_XCMS_NEWNAME);
-	    }
-	    return(XCMS_FAILURE);
+	    break;
 	}
 
 	/*
-	 * Get tuples
+	 * Get pairs
 	 */
-	if (field2(buf, DELIM_CHAR, &f1, &f2) != XCMS_SUCCESS) {
+	if (field2(buf, DELIM_CHAR, &f1, &f2) != XcmsSuccess) {
 	    /* Invalid line */
 	    continue;
 	}
 
 	/*
-	 * Process string
+	 * Add strings
 	 */
-	len = strlen(f1);
 
-	/* REMOVE SPACES */
-	for (i = 0, j = 0; i < len; j++) {
-	    if (!isspace(f1[j])) {
-		f1[i++] = f1[j];
-	    }
-	}
-	f1[i] = '\0';
+	/* Left String */
+	pRec->first = pString;
+	_XcmsCopyISOLatin1Lowered((char *)pString, (char *)f1);
+	pString += (1 + RemoveSpaces(pString));
+	pRec->second = pString;
+	/* Right String */
+	_XcmsCopyISOLatin1Lowered((char *)pString, (char *)f2);
+	pString += RemoveSpaces(pString) + 1;
+	pRec++;
 
-	/* CONVERT TO LOWERCASE */
-	len = strlen(f1);
-	_XcmsCopyISOLatin1Lowered((unsigned char *)tmp, (unsigned char *)f1);
-
-	/*
-	 * Compare
-	 */
-	if (strcmp(name_lowered, tmp) == 0) {
-	    if (_XcmsParseColorString(pCCC, f2, pColor) == XCMS_SUCCESS) {
-		/* f2 contains a numerical string specification */
-		return(XCMS_SUCCESS);
-	    } else {
-		/* f2 does not contain a numerical string specification */
-		name = f2;
-		retval = 2;
-		goto Retry;
-	    }
-	}
     }
 
-    return(0);
+    return(XcmsSuccess);
 }
 
 
 /*
  *	NAME
- *		resolvePathname
+ *		LoadColornameDB - Load the Color Name Database
  *
  *	SYNOPSIS
  */
-/* ARGSUSED */
-static char *
-resolvePathname(dpy, type, filename, suffix, root, path, substitutions,
-	num_substitutions, predicate, fp, mode)
-    Display *dpy;
-    char *type, *filename, *suffix, *root;
-    char *path;
-    caddr_t /* Substitution */ substitutions;
-    int num_substitutions;
-    caddr_t /* XFilePredicate */ predicate;
-    FILE **fp;
-    char *mode;
+static Status
+LoadColornameDB()
 /*
  *	DESCRIPTION
- *		"Dummy" routine until the real XResolvePathname is
- *		available.  This is a hack!
+ *		Loads the Color Name Database from a text file.
  *
  *	RETURNS
- *		Returns the filename.
- *		Also opens the file and returns the file pointer via fp.
+ *		XcmsSuccess if succeeded, otherwise XcmsFailure.
  *
  */
- {
-    char pathname[BUFSIZ];
-    char real_root[BUFSIZ];
-    char real_locale[BUFSIZ];
+{
+    int size;
+    FILE *stream;
+    char *pathname;
     struct stat txt;
-    char *pathname_ret;
-    int i;
+    int length;
 
-    *fp = NULL;
+    if ((pathname = (char *)getenv(XCMS_DBFILEPATH_ENV_VAR)) == NULL) {
+	pathname = XCMS_DEFAULT_DBPATH;
+    }
+
+    length = strlen(pathname);
+    if ((length == 0) || (length >= (BUFSIZ - 5))){
+	XcmsColorDbState = XcmsDbInitFailure;
+	return(XcmsFailure);
+    }
+
+    if (stat(pathname, &txt)) {
+	/* can't stat file */
+	XcmsColorDbState = XcmsDbInitFailure;
+	return(XcmsFailure);
+    }
+
+    if ((stream = fopen(pathname, "r")) == NULL) {
+	return(XcmsFailure);
+    }
+
+    stringSectionSize(stream, &nEntries, &size);
+    rewind(stream);
+
+    strings = (char *) Xmalloc(size);
+    pairs = (XcmsPair *)Xcalloc(nEntries, sizeof(XcmsPair));
+
+    ReadColornameDB(stream, pairs, strings);
 
     /*
-     * root
+     * sort the pair recs
      */
-    if (root == NULL) {
-	strcpy(real_root, LIBDIR);
-    } else {
-	strcpy(real_root, root);
-    }
+    qsort((char *)pairs, nEntries,
+	    sizeof(XcmsPair), FirstCmp);
 
-    /*
-     * Fudge Locale to usascii
-     */
-    strcpy(real_locale, "usascii");
-
-    pathname[0] = '\0';
-
-    if (path) {
-	if (*path == ':') {
-	    /* ignore leading colon */
-	    path++;
-	}
-
-	i = 0;
-	while (*path != '\0') {
-	    if (*path == '%') {
-		path++;
-		switch(*path++) {
-		  case 'D' : /* directory separator */
-		    pathname[i++] = '/';
-		    break;
-		  case 'F' : /* file separator */
-		    pathname[i++] = '/';
-		    break;
-		  case 'R' : /* root */
-		    strcpy(&pathname[i], real_root);
-		    i += strlen(real_root);
-		    break;
-		  case 'L' : /* locale */
-		    strcpy(&pathname[i], real_locale);
-		    i += strlen(real_locale);
-		    break;
-		  case 'T' : /* type */
-		    if (type != NULL) {
-			strcpy(&pathname[i], type);
-			i += strlen(type);
-		    }
-		    break;
-		  case 'N' : /* filename */
-		    if (filename != NULL) {
-			strcpy(&pathname[i], filename);
-			i += strlen(filename);
-		    }
-		    break;
-		  case 'S' : /* suffix */
-		    if (suffix != NULL) {
-			strcpy(&pathname[i], suffix);
-			i += strlen(suffix);
-		    }
-		    break;
-		  case ':' : /* colon */
-		    pathname[i++] = ':';
-		    break;
-		  case '%' : /* colon */
-		    pathname[i++] = '%';
-		    break;
-		  default :
-		   break;
-		}
-	    } else if (*path == ':') {
-		path++;
-		if (*path == ':') {
-		    /* not path separator, really a colon */
-		    pathname[i++] = *path++;
-		} else {
-		    /* path separator */
-		    pathname[i] = '\0';
-		    if ((*fp = fopen(pathname, "r")) != NULL) {
-			pathname_ret = (char *) Xmalloc(strlen(pathname) + 1);
-			strcpy(pathname_ret, pathname);
-			return(pathname_ret);
-		    } else {
-			/* start all over */
-			pathname[0] = '\0';
-			i = 0;
-		    }
-
-		}
-	    } else {
-		pathname[i++] = *path++;
-	    }
-	}
-    }
-
-    if (pathname[0] == '\0') {
-	/*
-	 * Couldn't find file using path, so build our own
-	 */
-	strcpy(pathname, real_root);
-	strcat(pathname, "/");
-	strcat(pathname, real_locale);
-	if (type != NULL) {
-	    strcat(pathname, "/");
-	    strcat(pathname, type);
-	}
-	if (filename != NULL) {
-	    strcat(pathname, "/");
-	    strcat(pathname, filename);
-	}
-	if (suffix != NULL) {
-	    strcat(pathname, suffix);
-	}
-
-	if (stat(pathname, &txt)) {
-	    /* can't stat file */
-	    return((char *)NULL);
-	}
-    }
-
-    pathname[i] = '\0';
-    if ((*fp = fopen(pathname, "r")) == NULL) {
-	return((char *)NULL);
-    }
-    pathname_ret = (char *) Xmalloc(strlen(pathname) + 1);
-    strcpy(pathname_ret, pathname);
-    return(pathname_ret);
+    XcmsColorDbState = XcmsDbInitSuccess;
+    return(XcmsSuccess);
 }
+
+
+/*
+ *	NAME
+ *		XcmsFreeColorDB - Free Color Name Database
+ *
+ *	SYNOPSIS
+ */
+void
+XcmsFreeColorDB()
+/*
+ *	DESCRIPTION
+ *		Creates
+ *
+ *	RETURNS
+ *		XcmsSuccess if succeeded, otherwise XcmsFailure.
+ *
+ */
+{
+    /*
+     * Check if XcmsColorDB has been intialized
+     */
+    if (XcmsColorDbState != XcmsDbInitSuccess) {
+	return;
+    }
+
+    /*
+     * Free memory
+     */
+    free(strings);
+    free(pairs);
+}
+
 
 
 /************************************************************************
@@ -656,17 +820,17 @@ resolvePathname(dpy, type, filename, suffix, root, path, substitutions,
 #if NeedFunctionPrototypes
 Status
 _XcmsResolveColorString (
-    XcmsCCC *pCCC,
+    XcmsCCC ccc,
     _Xconst char *color_string,
     XcmsColor *pColor_exact_return,
-    XcmsSpecFmt result_format)
+    XcmsColorFormat result_format)
 #else
 Status
-_XcmsResolveColorString(pCCC, color_string, pColor_exact_return, result_format)
-    XcmsCCC *pCCC;
+_XcmsResolveColorString(ccc, color_string, pColor_exact_return, result_format)
+    XcmsCCC ccc;
     char *color_string;
     XcmsColor *pColor_exact_return;
-    XcmsSpecFmt result_format;
+    XcmsColorFormat result_format;
 #endif
 /*
  *	DESCRIPTION
@@ -674,9 +838,9 @@ _XcmsResolveColorString(pCCC, color_string, pColor_exact_return, result_format)
  *		associated with a color name in the Device-Independent Color
  *		Name Database.
  *	RETURNS
- *		XCMS_FAILURE if failed to parse string or find any entry in
+ *		XcmsFailure if failed to parse string or find any entry in
  *			the database.
- *		XCMS_SUCCESS if succeeded in converting color string to
+ *		XcmsSuccess if succeeded in converting color string to
  *			XcmsColor.
  *		_XCMS_NEWNAME if succeeded in converting color string (which
  *			is a color name to yet another color name.
@@ -686,7 +850,7 @@ _XcmsResolveColorString(pCCC, color_string, pColor_exact_return, result_format)
  *		color displayable by the specified screen (screen
  *		specification).  The calling routine sets the format for these
  *		returned specifications in the XcmsColor format component.
- *		If XCMS_UNDEFINED_FORMAT, the specification is returned in the
+ *		If XcmsUndefinedFormat, the specification is returned in the
  *		format used to store the color in the database.
  *
  *	CAVEATS
@@ -697,15 +861,13 @@ _XcmsResolveColorString(pCCC, color_string, pColor_exact_return, result_format)
     XcmsColor dbWhitePt;	/* whitePt associated with pColor_exact_return*/
     int inheritScrnWhitePt = 0;	/* Indicates if pColor_exact_return inherits */
 				/*    the screen's white point */
-    FILE *stream;
-    char *filename_ret;
     int retval;
 
 /*
  * 0. Check for invalid arguments.
  */
-    if (pCCC == NULL || color_string[0] == '\0' || pColor_exact_return == NULL) {
-	return(XCMS_FAILURE);
+    if (ccc == NULL || color_string[0] == '\0' || pColor_exact_return == NULL) {
+	return(XcmsFailure);
     }
 
 /*
@@ -713,64 +875,38 @@ _XcmsResolveColorString(pCCC, color_string, pColor_exact_return, result_format)
  *    If successful, then convert the specification to the target format
  *    and return.
  */
-    if (_XcmsParseColorString(pCCC, color_string, pColor_exact_return)
+    if (_XcmsParseColorString(ccc, color_string, pColor_exact_return)
 	    == 1) {
-	if (result_format != XCMS_UNDEFINED_FORMAT
+	if (result_format != XcmsUndefinedFormat
 		&& pColor_exact_return->format != result_format) {
 	    /* need to be converted to the target format */
-	    return(XcmsConvertColors(pCCC, pColor_exact_return, 1, 
+	    return(XcmsConvertColors(ccc, pColor_exact_return, 1, 
 		    result_format, (Bool *) NULL));
 	} else {
-	    return(XCMS_SUCCESS);
+	    return(XcmsSuccess);
 	}
     }
 
 /*
  * 2. Attempt to find it in the DI Color Name Database
  */
-    /*
-     * a. Build path to the proper national XCMS.txt.
-     */
-    filename_ret = resolvePathname(
-	    pCCC->dpy,	/* display */
-	    XCMS_COLORNAMEDB_TYPE,	/* type */
-	    XCMS_COLORNAMEDB_FILENAME,	/* filename */
-	    XCMS_COLORNAMEDB_SUFFIX,	/* suffix */
-	    NULL,	/* root */
-	    getenv(XCMS_DBFILEPATH_ENV_VAR), /* file path */
-	    NULL,	/* substitutions */
-	    0,		/* num_substitutions */
-	    NULL,	/* predicate */
-	    &stream,	/* address of FILE pointer */
-	    "r"		/* mode */
-	    );
-
-    if (stream == NULL) {
-	if (filename_ret != NULL) {
-	    Xfree(filename_ret);
-	}
-	return(XCMS_FAILURE);
-    }
 
     /*
-     * b. Convert String into a XcmsColor structure
+     * a. Convert String into a XcmsColor structure
      *       Attempt to extract the specification for color_string from the
      *       DI Database (pColor_exact_return).  If the DI Database does not
      *	     have this entry, then return failure.
      */
-    retval = _XcmsLookupColorName(pCCC, stream, color_string,
-	    pColor_exact_return);
+    retval = _XcmsLookupColorName(ccc, color_string, pColor_exact_return);
 
     if (retval == _XCMS_NEWNAME) {
 	/* color_string replaced with a color name */
 	return(retval);
     }
 
-    if ((retval == XCMS_FAILURE)
-	   || (pColor_exact_return->format == XCMS_UNDEFINED_FORMAT)) {
-	Xfree(filename_ret);
-	fclose(stream);
-	return(XCMS_FAILURE);
+    if ((retval == XcmsFailure)
+	   || (pColor_exact_return->format == XcmsUndefinedFormat)) {
+	return(XcmsFailure);
     }
 
     /*
@@ -784,24 +920,22 @@ _XcmsResolveColorString(pCCC, color_string, pColor_exact_return, result_format)
      *	  then assume the white point is the same as the Screen White Point.
      */
     if (XCMS_DD_ID(pColor_exact_return->format) ||
-	    (_XcmsLookupColorName(pCCC, stream, "WhitePoint", &dbWhitePt)
+	    (_XcmsLookupColorName(ccc, "WhitePoint", &dbWhitePt)
 	    != 1)) {
 	inheritScrnWhitePt++;
-	bcopy((char *)&pCCC->pPerScrnInfo->screenWhitePt, (char *)&dbWhitePt,
+	bcopy((char *)&ccc->pPerScrnInfo->screenWhitePt, (char *)&dbWhitePt,
 		sizeof(XcmsColor));
     }
-    Xfree(filename_ret);
-    fclose(stream);
 
     /*
      * d. White Point Adjustment  (ClientWhitePoint versus DBWhitePt)
      *
      */
-    if (result_format == XCMS_UNDEFINED_FORMAT) {
+    if (result_format == XcmsUndefinedFormat) {
 	result_format = pColor_exact_return->format;
     }
-    if ((pCCC->clientWhitePt.format == XCMS_UNDEFINED_FORMAT && inheritScrnWhitePt)
-	    || _XcmsEqualWhitePts(pCCC, &pCCC->clientWhitePt, &dbWhitePt)) {
+    if ((ccc->clientWhitePt.format == XcmsUndefinedFormat && inheritScrnWhitePt)
+	    || _XcmsEqualWhitePts(ccc, &ccc->clientWhitePt, &dbWhitePt)) {
 	/*
 	 * 1. Client White Point is equal to the Screen White Point AND
 	 *	a. pColor_exact_return->format is Device-Dependent (e.g. RGB,
@@ -813,20 +947,20 @@ _XcmsResolveColorString(pCCC, color_string, pColor_exact_return, result_format)
 	 * Therefore, we can just use dbWhitePt in our conversion and
 	 * convert to the target format.
 	 */
-	return(_XcmsConvertColorsWithWhitePt(pCCC, pColor_exact_return,
+	return(_XcmsConvertColorsWithWhitePt(ccc, pColor_exact_return,
 		&dbWhitePt, 1, result_format, (Bool *) NULL));
-    } else if (pCCC->whitePtAdjFunc) {
+    } else if (ccc->whitePtAdjProc) {
 	/*
 	 * Database White Point and Client White Point are not equal therefore
 	 *	the pColor_exact_return must be White Point Adjusted from the
 	 *	Database White Point to the Client White Point.
 	 */
-	return((*pCCC->whitePtAdjFunc)(pCCC, &dbWhitePt,
-		&pCCC->clientWhitePt, result_format, pColor_exact_return, 1,
+	return((*ccc->whitePtAdjProc)(ccc, &dbWhitePt,
+		&ccc->clientWhitePt, result_format, pColor_exact_return, 1,
 		(Bool *) NULL));
     } else {
 	/*
-	 * White Point Adjustment function unavailable in pCCC, therefore
+	 * White Point Adjustment function unavailable in ccc, therefore
 	 * do not perform white point adjustment.  Just convert to target
 	 * format
 	 */
@@ -834,7 +968,7 @@ _XcmsResolveColorString(pCCC, color_string, pColor_exact_return, result_format)
 	    return(1);
 	}
 	/* Convert to the target format */
-	return(XcmsConvertColors(pCCC, pColor_exact_return,
+	return(XcmsConvertColors(ccc, pColor_exact_return,
 		1, result_format, (Bool *) NULL));
     }
 }
