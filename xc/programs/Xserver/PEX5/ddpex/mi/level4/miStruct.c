@@ -1,4 +1,4 @@
-/* $XConsortium: miStruct.c,v 5.6 92/02/05 12:25:39 mor Exp $ */
+/* $XConsortium: miStruct.c,v 5.7 92/03/17 15:41:19 hersh Exp $ */
 
 
 /***********************************************************
@@ -1643,10 +1643,11 @@ StoreElements(pStruct, numOCs, pOCs, ppErr)
 			    if (MI_IS_PEX_OC(poc->elementType))
 			      err = (*ReplaceCSSElementTable[poc->elementType])
 						    (pStruct, preplel, poc);
-			    else
+			    else {
 			      /* Bad Element Type Exit Now */
 			      err = !Success;
 			      break;
+			    }
 			}
 		} else
 		    /* Bad Replace */
