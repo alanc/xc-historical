@@ -188,34 +188,37 @@ static void Resize (gw)
     Widget	parent;
     int		x, y;
 
-    XClearWindow (XtDisplay (w), XtWindow (w));
-    SetTransform (&w->eyes.t,
-		    0, w->core.width,
- 		    w->core.height, 0,
-		    W_MIN_X, W_MAX_X,
-		    W_MIN_Y, W_MAX_Y);
+    if (XtIsRealized (gw))
+    {
+    	XClearWindow (XtDisplay (w), XtWindow (w));
+    	SetTransform (&w->eyes.t,
+		    	0, w->core.width,
+ 		    	w->core.height, 0,
+		    	W_MIN_X, W_MAX_X,
+		    	W_MIN_Y, W_MAX_Y);
 #ifdef SHAPE
-    if (w->eyes.shape_window) {
-    	w->eyes.shape_mask = XCreatePixmap (XtDisplay (w), XtWindow (w),
-	    	w->core.width, w->core.height, 1);
-    	if (!w->eyes.shapeGC)
-            w->eyes.shapeGC = XCreateGC (XtDisplay (w), w->eyes.shape_mask, 0, &xgcv);
-    	XSetForeground (XtDisplay (w), w->eyes.shapeGC, 0);
-    	XFillRectangle (XtDisplay (w), w->eyes.shape_mask, w->eyes.shapeGC, 0, 0,
-	    w->core.width, w->core.height);
-    	XSetForeground (XtDisplay (w), w->eyes.shapeGC, 1);
-    	eyeLiner (w, w->eyes.shape_mask, w->eyes.shapeGC, (GC) 0, 0);
-    	eyeLiner (w, w->eyes.shape_mask, w->eyes.shapeGC, (GC) 0, 1);
-	x = y = 0;
-	for (parent = (Widget) w; XtParent (parent); parent = XtParent (parent)) {
-	    x += parent->core.x + parent->core.border_width;
-	    x += parent->core.y + parent->core.border_width;
-	}
-    	XShapeCombineMask (XtDisplay (parent), XtWindow (parent), ShapeBounding,
-		       	   x, y, w->eyes.shape_mask, ShapeSet);
-    	XFreePixmap (XtDisplay (w), w->eyes.shape_mask);
-    }
+    	if (w->eyes.shape_window) {
+    	    w->eyes.shape_mask = XCreatePixmap (XtDisplay (w), XtWindow (w),
+	    	    w->core.width, w->core.height, 1);
+    	    if (!w->eyes.shapeGC)
+            	w->eyes.shapeGC = XCreateGC (XtDisplay (w), w->eyes.shape_mask, 0, &xgcv);
+    	    XSetForeground (XtDisplay (w), w->eyes.shapeGC, 0);
+    	    XFillRectangle (XtDisplay (w), w->eyes.shape_mask, w->eyes.shapeGC, 0, 0,
+	    	w->core.width, w->core.height);
+    	    XSetForeground (XtDisplay (w), w->eyes.shapeGC, 1);
+    	    eyeLiner (w, w->eyes.shape_mask, w->eyes.shapeGC, (GC) 0, 0);
+    	    eyeLiner (w, w->eyes.shape_mask, w->eyes.shapeGC, (GC) 0, 1);
+	    x = y = 0;
+	    for (parent = (Widget) w; XtParent (parent); parent = XtParent (parent)) {
+	    	x += parent->core.x + parent->core.border_width;
+	    	x += parent->core.y + parent->core.border_width;
+	    }
+    	    XShapeCombineMask (XtDisplay (parent), XtWindow (parent), ShapeBounding,
+		       	       x, y, w->eyes.shape_mask, ShapeSet);
+    	    XFreePixmap (XtDisplay (w), w->eyes.shape_mask);
+    	}
 #endif
+    }
 }
 
 static void Realize (gw, valueMask, attrs)
