@@ -1,4 +1,4 @@
-/* $XConsortium: CvtStdSel.c,v 1.3 88/10/03 17:16:28 swick Exp $
+/* $XConsortium: CvtStdSel.c,v 1.4 88/10/04 16:19:19 swick Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -19,6 +19,84 @@
 #include <netdb.h>
 #include <sys/socket.h>
 #include "Xmu.h"
+
+
+static char *get_os_name ()
+{
+	char *os_name = NULL;
+	FILE *f = NULL;
+
+#ifdef OS_NAME
+	return XtNewString(OS_NAME);
+#else
+
+#if !defined(X_OS_FILE)
+#ifdef SYSV			/* keep separate until makedepend fixed */
+#define USE_UNAME
+#endif
+#ifdef ultrix
+#define USE_UNAME
+#endif
+#endif /*X_OS_FILE*/
+
+
+#ifdef USE_UNAME
+#include <sys/utsname.h>
+	struct utsname uts;
+
+	if (uname (&uts) == 0) {
+	    int len = strlen(uts.sysname);
+#ifndef hpux				/* because of hostname length crock */
+	    len += 1 + strlen(uts.release);
+#endif
+	    os_name = XtMalloc (len);
+	    strcpy (os_name, uts.sysname);
+#ifndef hpux
+	    strcat (os_name, " ");
+	    strcat (os_name, uts.release);
+#endif
+	    return os_name;
+	}
+#endif
+
+#if !defined(MOTD_FILE) && !defined(NO_MOTD_FILE) && defined(unix)
+#define MOTD_FILE "/etc/motd"
+#endif
+
+#ifdef X_OS_FILE
+	f = fopen(X_OS_FILE, "r");
+	if (!f)
+#endif
+#ifdef MOTD_FILE
+	       f = fopen(MOTD_FILE, "r");
+#endif
+	if (f) {
+	    char motd[512];
+	    motd[0] = '\0';
+	    (void) fgets(motd, 511, f);
+	    fclose(f);
+	    motd[511] = '\0';
+	    if (motd[0] != '\0') {
+		int len = strlen(motd);
+		if (motd[len - 1] == '\n')
+		    motd[len - 1] = '\0';
+		return XtNewString(motd);
+	    }
+	}
+
+#ifdef sun
+	return XtNewString("SunOS");
+#else
+# if !defined(SYSV) && defined(unix)
+	return XtNewString("BSD");
+# else
+	return NULL;
+# endif
+#endif
+
+#endif /*OS_NAME*/
+}
+
 
 Boolean XmuConvertStandardSelection(w, time, selection, target,
 				    type, value, length, format)
@@ -128,17 +206,10 @@ Boolean XmuConvertStandardSelection(w, time, selection, target,
 	return True;
     }
     if (*target == XA_OWNER_OS(d)) {
-	FILE *f = fopen("/etc/motd", "r");
-	char* motd = XtMalloc(512);
-	if (f == NULL) return False;
-	(void) fgets(motd, 511, f);
-	fclose(f);
-	motd[511] = '\0';
-	*value = motd;
+	*value = get_os_name();
+	if (*value == NULL) return False;
 	*type = XA_STRING;
-	*length = strlen(motd);
-	if (*length && motd[*length - 1] == '\n')
-	    motd[--(*length)] = '\0';
+	*length = strlen(*value);
 	*format = 8;
 	return True;
     }
