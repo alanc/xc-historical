@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ncr.cf,v 1.12 94/09/16 18:59:38 kaleb Exp kaleb $
+XCOMM platform:  $XConsortium: ncr.cf,v 1.13 94/11/21 17:13:14 kaleb Exp kaleb $
 #define OSName			Unix System V Release 4/MP-RAS
 #define OSVendor		NCR
 XCOMM operating system:  OSName
@@ -107,5 +107,4 @@ install.man:: 								@@\
 		); \							@@\
 	done
 
-#define i386Architecture
 #include <svr4.cf>

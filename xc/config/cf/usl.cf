@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: usl.cf,v 1.31 94/05/21 14:11:23 rws Exp kaleb $
+XCOMM platform:  $XConsortium: usl.cf,v 1.32 94/11/21 17:13:14 kaleb Exp kaleb $
 
 #define OSName			UNIX System V/386 Release 4.2 Version 1.1.1
 XCOMM operating system:  OSName
@@ -10,5 +10,4 @@ XCOMM operating system:  OSName
 #define NeedWidePrototypes	NO	/* experimental */
 #define ServerExtraDefines	-D__USLC__ -DSTATIC_COLOR -DAVOID_GLYPHBLT
 #define ServerOSDefines		-DDDXTIME -DDDXOSINIT
-#define i386Architecture
 #include <svr4.cf>
