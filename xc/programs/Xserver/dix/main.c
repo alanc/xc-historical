@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 1.144 89/01/04 08:39:05 rws Exp $ */
+/* $XConsortium: main.c,v 1.145 89/01/16 13:47:30 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -60,6 +60,8 @@ extern void InitEvents();
 extern void InitExtensions();
 extern void DefineInitialRootWindow();
 extern void QueryMinMaxKeyCodes();
+extern Bool InitClientResources();
+static Bool CreateConnectionBlock();
 
 PaddingInfo PixmapWidthPaddingInfo[33];
 int connBlockScreenStart;
@@ -161,9 +163,13 @@ main(argc, argv)
 	    CreateWellKnownSockets();
 	    InitProcVectors();
 	    clients = (ClientPtr *)xalloc(MAXCLIENTS * sizeof(ClientPtr));
+	    if (!clients)
+		FatalError("couldn't create client array");
 	    for (i=1; i<MAXCLIENTS; i++) 
 		clients[i] = NullClient;
 	    serverClient = (ClientPtr)xalloc(sizeof(ClientRec));
+	    if (!serverClient)
+		FatalError("couldn't create server client");
             serverClient->sequence = 0;
             serverClient->closeDownMode = RetainPermanent;
             serverClient->clientGone = FALSE;
@@ -178,12 +184,16 @@ main(argc, argv)
         clients[0] = serverClient;
         currentMaxClients = 1;
 
-	InitClientResources(serverClient);      /* for root resources */
+	if (!InitClientResources(serverClient))      /* for root resources */
+	    FatalError("couldn't init server resources");
 
 	SetInputCheck(&alwaysCheckForInput[0], &alwaysCheckForInput[1]);
-	screenInfo.arraySize = 0;
+	screenInfo.arraySize = MAXSCREENS;
 	screenInfo.numScreens = 0;
-	screenInfo.screen = (ScreenPtr)NULL;
+	screenInfo.screen = (ScreenPtr)xalloc(MAXSCREENS * sizeof(ScreenRec));
+	if (!screenInfo.screen)
+	    FatalError("couldn't create screen structures");
+
 	/*
 	 * Just in case the ddx doesnt supply a format for depth 1 (like qvss).
 	 */
@@ -197,7 +207,7 @@ main(argc, argv)
 	InitAtoms();
 	InitOutput(&screenInfo, argc, argv);
 	if (screenInfo.numScreens < 1)
-	    FatalError("no screens found\n");
+	    FatalError("no screens found");
 	InitEvents();
 	InitExtensions(); 
 	InitInput(argc, argv);
@@ -205,18 +215,19 @@ main(argc, argv)
 
 	SetDefaultFontPath(defaultFontPath);	/* default path has no nulls */
 	if ( ! SetDefaultFont(defaultTextFont))
-	    ErrorF( "main: Could not open default font '%s'\n",
-	        defaultTextFont);
+	    FatalError("could not open default font '%s'", defaultTextFont);
 	if ( ! (rootCursor = CreateRootCursor(defaultCursorFont, 0)))
-	    ErrorF( "main: Could not open default cursor font '%s'\n",
-		defaultCursorFont);
+	    FatalError("could not open default cursor font '%s'",
+		       defaultCursorFont);
 
 	for (i=0; i<screenInfo.numScreens; i++) 
 	{
-	    CreateRootWindow(i);
+	    if (CreateRootWindow(i) != Success)
+		FatalError("could not create root window for all screens");
 	}
         DefineInitialRootWindow(&WindowTable[0]);
-	CreateConnectionBlock();
+	if (!CreateConnectionBlock())
+	    FatalError("could not create connection block info");
 
 	Dispatch();
 
@@ -253,6 +264,7 @@ main(argc, argv)
 
 static int padlength[4] = {0, 3, 2, 1};
 
+static Bool
 CreateConnectionBlock()
 {
     xConnSetup setup;
@@ -290,6 +302,8 @@ CreateConnectionBlock()
 	    (setup.numFormats * sizeof(xPixmapFormat)) +
             (setup.numRoots * sizeof(xWindowRoot));
     ConnectionInfo = (char *) xalloc(lenofblock);
+    if (!ConnectionInfo)
+	return FALSE;
 
     bcopy((char *)&setup, ConnectionInfo, sizeof(xConnSetup));
     sizesofar = sizeof(xConnSetup);
@@ -321,33 +335,39 @@ CreateConnectionBlock()
 	VisualPtr	pVisual;
 
 	pScreen = &(screenInfo.screen[i]);
-        root.windowId = WindowTable[i].wid;
-        root.defaultColormap = pScreen->defColormap;
-        root.whitePixel = pScreen->whitePixel;
+	root.windowId = WindowTable[i].wid;
+	root.defaultColormap = pScreen->defColormap;
+	root.whitePixel = pScreen->whitePixel;
 	root.blackPixel = pScreen->blackPixel;
-        root.currentInputMask = 0;    /* filled in when sent */
-        root.pixWidth = pScreen->width;
-        root.pixHeight = pScreen->height;
-        root.mmWidth = pScreen->mmWidth;
+	root.currentInputMask = 0;    /* filled in when sent */
+	root.pixWidth = pScreen->width;
+	root.pixHeight = pScreen->height;
+	root.mmWidth = pScreen->mmWidth;
 	root.mmHeight = pScreen->mmHeight;
-        root.minInstalledMaps = pScreen->minInstalledCmaps;
-        root.maxInstalledMaps = pScreen->maxInstalledCmaps; 
-        root.rootVisualID = pScreen->rootVisual;		
-        root.backingStore = pScreen->backingStoreSupport;
-        root.saveUnders = pScreen->saveUnderSupport != NotUseful;
-        root.rootDepth = pScreen->rootDepth;
+	root.minInstalledMaps = pScreen->minInstalledCmaps;
+	root.maxInstalledMaps = pScreen->maxInstalledCmaps; 
+	root.rootVisualID = pScreen->rootVisual;		
+	root.backingStore = pScreen->backingStoreSupport;
+	root.saveUnders = pScreen->saveUnderSupport != NotUseful;
+	root.rootDepth = pScreen->rootDepth;
 	root.nDepths = pScreen->numDepths;
-        bcopy((char *)&root, pBuf, sizeof(xWindowRoot));
+	bcopy((char *)&root, pBuf, sizeof(xWindowRoot));
 	sizesofar += sizeof(xWindowRoot);
-        pBuf += sizeof(xWindowRoot);
+	pBuf += sizeof(xWindowRoot);
 
 	pDepth = pScreen->allowedDepths;
 	for(j = 0; j < pScreen->numDepths; j++, pDepth++)
 	{
 	    lenofblock += sizeof(xDepth) + 
 		    (pDepth->numVids * sizeof(xVisualType));
-            ConnectionInfo = (char *)xrealloc(ConnectionInfo, lenofblock);
-            pBuf = ConnectionInfo + sizesofar;            
+	    pBuf = (char *)xrealloc(ConnectionInfo, lenofblock);
+	    if (!pBuf)
+	    {
+		xfree(ConnectionInfo);
+		return FALSE;
+	    }
+	    ConnectionInfo = pBuf;
+	    pBuf += sizesofar;            
 	    depth.depth = pDepth->depth;
 	    depth.nVisuals = pDepth->numVids;
 	    bcopy((char *)&depth, pBuf, sizeof(xDepth));
@@ -366,7 +386,7 @@ CreateConnectionBlock()
 		visual.blueMask = pVisual->blueMask;
 		bcopy((char *)&visual, pBuf, sizeof(xVisualType));
 		pBuf += sizeof(xVisualType);
-	        sizesofar += sizeof(xVisualType);
+		sizesofar += sizeof(xVisualType);
 	    }
 	}
     }
@@ -374,6 +394,7 @@ CreateConnectionBlock()
     connSetupPrefix.length = lenofblock/4;
     connSetupPrefix.majorVersion = X_PROTOCOL;
     connSetupPrefix.minorVersion = X_PROTOCOL_REVISION;
+    return TRUE;
 }
 
 /*
@@ -384,6 +405,7 @@ with its screen number, a pointer to its ScreenRec, argc, and argv.
 
 */
 
+int
 AddScreen(pfnInit, argc, argv)
     Bool	(* pfnInit)();
     int argc;
@@ -396,17 +418,12 @@ AddScreen(pfnInit, argc, argv)
     void	(**jNI) ();
 #endif /* DEBUG */
 
-    if (screenInfo.numScreens == screenInfo.arraySize)
-    {
-	screenInfo.arraySize += 5;
-	screenInfo.screen = (ScreenPtr)xrealloc(
-	    screenInfo.screen, 
-	    screenInfo.arraySize * sizeof(ScreenRec));
-    }
+    if (screenInfo.numScreens == MAXSCREENS)
+	return -1;
 
 #ifdef DEBUG
 	    for (jNI = &screenInfo.screen[i].QueryBestSize; 
-		 jNI < (void (**) ()) &screenInfo.screen[i].RegionExtents; 
+		 jNI < (void (**) ()) &screenInfo.screen[i].SendGraphicsExpose;
 		 jNI++)
 		*jNI = NotImplemented;
 #endif /* DEBUG */
