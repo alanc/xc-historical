@@ -1,4 +1,4 @@
-/* $XConsortium: prop.c,v 1.4 94/12/12 20:01:43 mor Exp mor $ */
+/* $XConsortium: prop.c,v 1.5 94/12/14 16:53:57 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -182,13 +182,13 @@ Bool		freeIt;
 	memcpy (pval->value, theProp->vals[i].value, theProp->vals[i].length);
 	((char *) pval->value)[theProp->vals[i].length] = '\0';
 
-	ListAddLast (pprop->values, pval);
+	ListAddLast (pprop->values, (char *) pval);
     }
 
     if (pl)
-	pl->thing = pprop;
+	pl->thing = (char *) pprop;
     else
-	ListAddLast (client->props, pprop);
+	ListAddLast (client->props, (char *) pprop);
 
     if (strcmp (theProp->name, SmDiscardCommand) == 0)
     {
