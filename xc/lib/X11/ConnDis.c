@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ConnDis.c,v 11.114 94/01/28 23:29:50 rws Exp $
+ * $XConsortium: ConnDis.c,v 11.115 94/02/07 18:33:33 mor Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -1070,8 +1070,10 @@ GetAuthorization(trans_conn, family, saddr, saddrlen, idisplay,
 	    if (auth_ezencode(servernetname, 100, rpc_cred,
 			      &auth_datalen))
 		auth_data = rpc_cred;
-	    else
+	    else {
+		auth_datalen = 0;
 		auth_data = NULL;
+	    }
 	}
     }
 #endif
