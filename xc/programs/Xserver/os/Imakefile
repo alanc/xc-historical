@@ -22,12 +22,22 @@
 #define OtherObjects
 #endif
 
+#if HasDESLibrary
+DESDEFS = -DHASDES
+DESOBJS = xdmauth.o
+DESSRCS = xdmauth.c
+#else
+DESDEFS = 
+DESOBJS =
+DESSCRS =
+#endif
+
 BOOTSTRAPCFLAGS = 
            SRCS = WaitFor.c access.c connection.c fonttype.c io.c oscolor.c \
-                  osfonts.c osinit.c utils.c auth.c mitauth.c\
+                  osfonts.c osinit.c utils.c auth.c mitauth.c $(DESSRCS) \
  		  xdmcp.c OtherSources
            OBJS = WaitFor.o access.o connection.o fonttype.o io.o oscolor.o \
-                  osfonts.o osinit.o utils.o auth.o mitauth.o\
+                  osfonts.o osinit.o utils.o auth.o mitauth.o $(DESOBJS) \
  		  xdmcp.o OtherObjects
    FONT_DEFINES = FontDefines FontFilters
 #if SpecialMalloc
@@ -35,7 +45,7 @@ BOOTSTRAPCFLAGS =
 #else
      OS_DEFINES =
 #endif /* SpecialMalloc */
-        DEFINES = ConnectionFlags $(OS_DEFINES)
+        DEFINES = ConnectionFlags $(OS_DEFINES) $(DESDEFS)
        INCLUDES = -I.  -I../../include -I$(INCLUDESRC) -I$(TOP)/lib/Xau
     EXT_DEFINES = ExtensionDefines
        LINTLIBS = ../../dix/llib-ldix.ln
