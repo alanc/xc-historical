@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ultrix.cf,v 1.49 92/05/31 14:33:36 rws Exp $
+XCOMM platform:  $XConsortium: ultrix.cf,v 1.50 93/08/23 18:15:15 rws Exp $
 
 #define OSName            Ultrix-32 4.3
 XCOMM operating system:  OSName
@@ -7,7 +7,6 @@ XCOMM operating system:  OSName
 
 #define HasNdbm YES
 #define HasPutenv YES
-#define HasSaberC YES
 #define HasShm YES
 #define LintLibFlag -o
 #define LintOpts -ax
