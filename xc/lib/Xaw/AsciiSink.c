@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: AsciiSink.c,v 1.9 88/02/05 23:14:14 swick Exp $";
+static char rcsid[] = "$Header: AsciiSink.c,v 1.10 88/02/14 13:58:11 rws Exp $";
 #endif lint
 
 /*
@@ -31,6 +31,7 @@ static char rcsid[] = "$Header: AsciiSink.c,v 1.9 88/02/05 23:14:14 swick Exp $"
 #include <X11/Atoms.h>
 #include <X11/Text.h>
 #include <X11/TextP.h>
+
 
 #define GETLASTPOS (*source->Scan)(source, 0, XtstAll, XtsdRight, 1, TRUE)
 /* Private Ascii TextSink Definitions */
@@ -150,16 +151,18 @@ static int AsciiDisplayText (w, x, y, pos1, pos2, highlight)
 }
 
 
+#define insertCursor_width 6
+#define insertCursor_height 3
+static char insertCursor_bits[] = {0x0c, 0x1e, 0x33};
+
+#ifdef SERVERNOTBROKEN
 static Pixmap CreateInsertCursor(s)
 Screen *s;
 {
-#   define insertCursor_width 6
-#   define insertCursor_height 3
-    static char insertCursor_bits[] = {0x0c, 0x1e, 0x33};
-
     return (XCreateBitmapFromData (DisplayOfScreen(s), RootWindowOfScreen(s),
         insertCursor_bits, insertCursor_width, insertCursor_height));
 }
+#endif
 
 /*
  * The following procedure manages the "insert" cursor.
@@ -175,15 +178,27 @@ static AsciiInsertCursor (w, x, y, state)
 
 /*
     XCopyArea(sink->dpy,
-	      (state == XtisOn) ? data->insertCursorOn : data->insertCursorOff, w,
-	      data->normgc, 0, 0, insertCursor_width, insertCursor_height,
+	      (state == XtisOn) ? data->insertCursorOn : data->insertCursorOff,
+	      w, data->normgc, 0, 0, insertCursor_width, insertCursor_height,
 	      x - (insertCursor_width >> 1), y - (insertCursor_height));
 */
-    if (state != data->laststate && XtIsRealized(w))
+
+    if (state != data->laststate && XtIsRealized(w)) {
+#ifdef SERVERNOTBROKEN
 	XCopyPlane(XtDisplay(w),
 		  data->insertCursorOn, XtWindow(w),
 		  data->xorgc, 0, 0, insertCursor_width, insertCursor_height,
 		  x - (insertCursor_width >> 1), y - (insertCursor_height), 1);
+#else /* SERVER is BROKEN */
+	/*
+	 * See the comment down at the bottom where the pixmap gets built
+	 * for why we are doing this this way.
+	 */
+	XCopyArea (XtDisplay(w), data->insertCursorOn, XtWindow (w),
+		   data->xorgc, 0, 0, insertCursor_width, insertCursor_height,
+		   x - (insertCursor_width >> 1), y - (insertCursor_height));
+#endif /* SERVERNOTBROKEN */
+    }
     data->laststate = state;
 }
 
@@ -392,6 +407,7 @@ XtTextSink XtAsciiSinkCreate (parent, args, num_args)
     values.background = 0;
     data->xorgc = XtGetGC(parent, valuemask, &values);
 
+
     wid = -1;
     if ((!XGetFontProperty(font, XA_QUAD_WIDTH, &wid)) || wid <= 0) {
 	if (font->per_char && font->min_char_or_byte2 <= '0' &&
@@ -403,7 +419,50 @@ XtTextSink XtAsciiSinkCreate (parent, args, num_args)
     if (wid <= 0) wid = 1;
     data->tabwidth = 8 * wid;
     data->font = font;
+#ifdef SERVERNOTBROKEN
     data->insertCursorOn = CreateInsertCursor(XtScreen(parent));
+#else
+    /*
+     * This is the work around for not being able to do CopyPlane with XOR.
+     * However, there is another bug which doesn't let us use the new
+     * CreatePixmapFromBitmapData routine to build the pixmap that we will
+     * use CopyArea with.
+     */
+#ifdef SERVERNOTBROKEN2
+    data->insertCursorOn =
+      XCreatePixmapFromBitmapData (XtDisplay (parent), 
+				   RootWindowOfScreen(XtScreen(parent)),
+				   insertCursor_bits, insertCursor_width,
+				   insertCursor_height, data->foreground,
+				   parent->core.background_pixel,
+				   parent->core.depth);
+#else /* SERVER is BROKEN the second way */
+    {
+	Screen *screen = XtScreen (parent);
+	Display *dpy = XtDisplay (parent);
+	Window root = RootWindowOfScreen(screen);
+	Pixmap bitmap = XCreateBitmapFromData (dpy, root, insertCursor_bits,
+					       insertCursor_width,
+					       insertCursor_height);
+	Pixmap pixmap = XCreatePixmap (dpy, root, insertCursor_width,
+				       insertCursor_height,
+				       DefaultDepthOfScreen (screen));
+	XGCValues gcv;
+	GC gc;
+
+	gcv.function = GXcopy;
+	gcv.foreground = data->foreground ^ parent->core.background_pixel;
+	gcv.background = 0;
+	gcv.graphics_exposures = False;
+	gc = XtGetGC (parent, (GCFunction | GCForeground | GCBackground |
+			       GCGraphicsExposures), &gcv);
+	XCopyPlane (dpy, bitmap, pixmap, gc, 0, 0, insertCursor_width,
+		    insertCursor_height, 0, 0, 1);
+	XtDestroyGC (gc);
+	data->insertCursorOn = pixmap;
+    }
+#endif /* SERVERNOTBROKEN2 */
+#endif /* SERVERNOTBROKEN */
     data->laststate = XtisOff;
     return sink;
 }
