@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.188 91/05/20 12:05:02 converse Exp $ */
+/* $XConsortium: Initialize.c,v 1.189 91/05/29 15:19:06 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -351,7 +351,7 @@ XrmDatabase XtScreenDatabase(screen)
     Display *dpy;
     int scrno;
     Bool doing_def;
-    XrmDatabase db, olddb, user_db;
+    XrmDatabase db, olddb, server_db;
     XtPerDisplay pd;
     Status do_fallback;
     char *scr_resources;
@@ -368,44 +368,15 @@ XrmDatabase XtScreenDatabase(screen)
     if (db = pd->per_screen_db[scrno])
 	return db;
     scr_resources = XScreenResourceString(screen);
-    if (doing_def) {
-	XrmRepresentation type;
-	XrmValue value;
-	XrmName names[3];
-	XrmClass classes[3];
-
-	user_db = (XrmDatabase)NULL;
-	CombineUserDefaults(dpy, &user_db);
-	names[0] = pd->name;
-	names[1] = XrmPermStringToQuark("xnlLanguage");
-	names[2] = NULLQUARK;
-	classes[0] = pd->class;
-	classes[1] = XrmPermStringToQuark("XnlLanguage");
-	classes[2] = NULLQUARK;
-	if ((!pd->cmd_db ||
-	     !XrmQGetResource(pd->cmd_db, names, classes, &type, &value))
-	    &&
-	    (!user_db ||
-	     !XrmQGetResource(user_db, names, classes, &type, &value))){
-	    pd->language = "";
-	} else {
-	    pd->language = (char *)value.addr;
-	}
-    }
-
-    if (pd->appContext->langProcRec.proc)
-	pd->language = (*pd->appContext->langProcRec.proc)
-	    (dpy, pd->language, pd->appContext->langProcRec.closure);
-    else if (! pd->language || pd->language[0] == '\0') /* R4 compatibility */
-	pd->language = getenv("LANG");
-    if (pd->language) 
-	pd->language = XtNewString(pd->language);
 
     if (ScreenCount(dpy) == 1) {
 	db = pd->cmd_db;
 	pd->cmd_db = NULL;
+	server_db = pd->server_db;
+	pd->server_db = NULL;
     } else {
 	db = CopyDB(pd->cmd_db);
+	server_db = CopyDB(pd->server_db);
     }
     {   /* Environment defaults */
 	char	filenamebuf[PATH_MAX];
@@ -425,12 +396,10 @@ XrmDatabase XtScreenDatabase(screen)
 	XrmCombineDatabase(XrmGetStringDatabase(scr_resources), &db, False);
 	XFree(scr_resources);
     }
-    {   /* Server or host defaults */
-	if (!doing_def)
-	    CombineUserDefaults(dpy, &db);
-	else if (user_db)
-	    (void)XrmCombineDatabase(user_db, &db, False);
-    }
+    /* Server or host defaults */
+    if (server_db)
+	(void) XrmCombineDatabase(server_db, &db, False);
+
     if (!db)
 	db = XrmGetStringDatabase("");
     pd->per_screen_db[scrno] = db;
@@ -626,6 +595,39 @@ XrmDatabase _XtPreparseCommandLine(urlist, num_urs, argc, argv, applName,
     return db;
 }
 
+  
+static void GetLanguage(dpy, pd)
+    Display *dpy;
+    XtPerDisplay pd;
+{
+    XrmRepresentation type;
+    XrmValue value;
+    XrmName name_list[3];
+    XrmName class_list[3];
+
+    if (! pd->language) {
+	name_list[0] = pd->name;
+	name_list[1] = XrmPermStringToQuark("xnlLanguage");
+	class_list[0] = pd->class;
+	class_list[1] = XrmPermStringToQuark("XnlLanguage");
+	name_list[2] = class_list[2] = NULLQUARK;
+	if (pd->server_db &&
+	    XrmQGetResource(pd->server_db,name_list,class_list, &type, &value)
+	    && type == _XtQString)
+	    pd->language = (char *) value.addr;
+    }
+
+    if (pd->appContext->langProcRec.proc) {
+	if (! pd->language) pd->language = "";
+	pd->language = (*pd->appContext->langProcRec.proc)
+	    (dpy, pd->language, pd->appContext->langProcRec.closure);
+    }
+    else if (! pd->language || pd->language[0] == '\0') /* R4 compatibility */
+	pd->language = getenv("LANG");
+
+    if (pd->language) pd->language = XtNewString(pd->language);
+}
+
 
 void _XtDisplayInitialize(dpy, pd, name, urlist, num_urs, argc, argv)
 	Display *dpy;
@@ -646,13 +648,14 @@ void _XtDisplayInitialize(dpy, pd, name, urlist, num_urs, argc, argv)
 	XrmHashTable* search_list;
 	int search_list_size = SEARCH_LIST_SIZE;
 
+	if (!pd->server_db)
+	    CombineUserDefaults(dpy, &pd->server_db);
+
+	GetLanguage(dpy, pd);
+
+	/* Parse the command line and remove Xt arguments from argv */
 	_MergeOptionTables( opTable, XtNumber(opTable), urlist, num_urs,
 			    &options, &num_options );
-
-	/*
-	   This routine parses the command line arguments and removes them from
-	   argv.
-	 */
 	XrmParseCommand(&pd->cmd_db, options, num_options, name, argc, argv);
 
 	db = XtScreenDatabase(DefaultScreenOfDisplay(dpy));
