@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XClDisplay.c,v 11.14 87/08/11 13:16:25 newman Locked $ */
+/* $Header: XClDisplay.c,v 11.12 87/08/26 23:41:24 jg Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #include "Xlibint.h"
@@ -26,6 +26,8 @@ XCloseDisplay (dpy)
 			(*ext->close_display)(dpy, &ext->codes);
 		ext = ext->next;
 	}    
+        LockDisplay(dpy);
 	_XDisconnectDisplay(dpy->fd);
 	_XFreeDisplayStructure (dpy);
+                                    /* XXX Should there be an UnlockDisplay? */
 }
