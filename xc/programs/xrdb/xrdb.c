@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: xrdb.c,v 11.27 89/05/26 14:03:53 rws Exp $";
+static char rcs_id[] = "$XConsortium: xrdb.c,v 11.28 89/06/19 14:04:20 jim Exp $";
 #endif
 
 /*
@@ -247,12 +247,19 @@ void GetEntries(entries, buff)
 	    if (sscanf (str, "# %d", &dummy) == 1) lineno = dummy - 1;
 	    continue;
 	}
+	for (temp = str; 
+	     *temp && *temp != '\n' && isascii(*temp) && isspace(*temp); 
+	     temp++) ;
+	if (!*temp || *temp == '\n') continue;
+
 	colon = FindFirst(str, ':');
 	if (colon == NULL)
 	    break;
 	if (colon > line) {
 	    line[0] = '\0';
-	    fprintf(stderr, "line missing colon ignored: %s\n", str);
+	    fprintf (stderr, 
+		     "%s:  colon missing on line %d, ignoring entry \"%s\"\n",
+		     ProgramName, lineno, str);
 	    continue;
 	}
 
