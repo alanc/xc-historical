@@ -64,7 +64,7 @@ This option indicates that the current modifier map should be printed on the
 standard output.
 .TP 8
 .B \-pk
-This option indicates that the current key table map should be printed on the
+This option indicates that the current keymap table should be printed on the
 standard output.
 .TP 8
 .B \-pp
@@ -81,10 +81,10 @@ a name like \fI.xmodmaprc\fP.
 .PP
 The
 .I xmodmap
-program reads a list of expressions and converts them into appropriate
-calls to the \fIXlib\fP routines \fIXChangeKeyboardMapping\fP,
-\fIXInsertModifiermapEntry\fP and \fIXDeleteModifiermapEntry\fP.  Allowable
-expressions include:
+program reads a list of expressions and parses them all before attempting
+execute any of them.  This makes it possible to refer to keysyms that are
+being redefined in a natural way without having to worry as much about name
+conflicts.
 .TP 8
 .B keycode \fINUMBER\fP = \fIKEYSYMNAME ...\fP
 The list of keysyms is assigned to the indicated keycode 
@@ -118,12 +118,43 @@ This removes the given keysyms from the indicated modifier map.  Unlike
 the keysym names are evaluated as the line is read in.  This allows you to
 remove keys from a modifier without having to worry about whether or not they
 have been reassigned.
+.TP 8
+.B "pointer = default"
+This sets the pointer map back to its default settings (button 1 generates a 
+code of 1, button 2 generates a 2, etc.).
+.TP 8
+.B pointer = \fINUMBER ...\fP
+This sets to pointer map to contain the indicated button codes.  The list
+always starts with the first physical button.
 .PP
 Lines that begin with an exclamation mark (!) are taken as comments.
 .PP
 If you want to change the binding of a modifier key, you must also remove it
 from the appropriate modifier map.
 .SH EXAMPLES
+.PP
+Many pointers are designed such the first button is pressed using the index
+finger of the right hand.  People who are left-handed frequently find that it
+is more comfortable to reverse the button codes that get generated so that
+the primary button is pressed using the index finger of the left hand.  This
+could be done on a 3 button pointer as follows:
+.EX
+%  xmodmap -e "pointer = 3 2 1"
+.EE
+.PP
+Many editor applications support the notion of Meta keys (similar to Control 
+keys except that Meta is held down instead of Control).  However,
+some servers do not have a Meta keysym in the default keymap table, so one
+needs to be added by hand.
+The following command will attach Meta to the Multi-language key (sometimes
+label Compose Character).  It also takes advantage of the fact that 
+applications that need a Meta key simply need to get the keycode and don't
+require the keysym to be in the first column of the keymap table.  This
+means that applications that are looking for a Multi_key (including the
+default modifier map) won't notice any change.
+.EX
+%  keysym Multi_key = Multi_key Meta_L
+.EE
 .PP
 One of the more simple, yet convenient, uses of \fIxmodmap\fP is to set the
 keyboard's "rubout" key to generate an alternate keysym.  This frequently
