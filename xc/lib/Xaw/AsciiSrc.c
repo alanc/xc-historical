@@ -1,4 +1,4 @@
-/* $XConsortium: AsciiSrc.c,v 1.49 91/03/20 15:27:55 converse Exp $ */
+/* $XConsortium: AsciiSrc.c,v 1.51 91/03/25 18:21:57 converse Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -90,7 +90,6 @@ static void RemoveOldStringOrFile(),  CvtStringToAsciiType();
 static void ClassInitialize(), Initialize(), Destroy(), GetValuesHook();
 static String MyStrncpy(), StorePiecesInString();
 static Boolean SetValues(), WriteToFile();
-extern char *tmpnam();
 extern int errno, sys_nerr;
 extern char* sys_errlist[];
 
@@ -957,7 +956,8 @@ Boolean newString;
     case XawtextAppend:
     case XawtextEdit:
 	if (src->ascii_src.string == NULL) {
-	    src->ascii_src.string = tmpnam(fileName);
+	    src->ascii_src.string = fileName;
+	    (void) tmpnam(src->ascii_src.string);
 	    src->ascii_src.is_tempfile = TRUE;
 	    open_mode = "w";
 	} else
@@ -969,7 +969,12 @@ Boolean newString;
 		   NULL, NULL);
     }
 
-    if (newString && ! src->ascii_src.is_tempfile) {
+    /* Allocate new memory for the temp filename, because it is held in
+     * a stack variable, not static memory.  This widget does not need
+     * to keep the private state field is_tempfile -- it is only accessed
+     * in this routine, and its former setting is unused.
+     */
+    if (newString || src->ascii_src.is_tempfile) {
 	src->ascii_src.string = XtNewString(src->ascii_src.string);
 	src->ascii_src.allocated_string = TRUE;
     }
