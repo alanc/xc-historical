@@ -1,4 +1,4 @@
-/* $XConsortium: vga.c,v 1.1 94/10/05 13:51:06 kaleb Exp kaleb $ */
+/* $XConsortium: vga.c,v 1.1 94/03/28 21:55:24 dpw Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.22 1994/09/24 15:15:18 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -794,6 +794,9 @@ vgaProbe()
 	  ourmfbDoBitbltCopy = mfbDoBitbltCopy;
 	  ourmfbDoBitbltCopyInverted = mfbDoBitbltCopyInverted;
 	}
+#else
+	ourmfbDoBitbltCopy = mfbDoBitbltTwoBanksCopy;
+	ourmfbDoBitbltCopyInverted = mfbDoBitbltTwoBanksCopyInverted;
 #endif /* BANKEDMONOVGA */
 #endif /* !MONOVGA */
 #endif /* !XF86VGA16 */
