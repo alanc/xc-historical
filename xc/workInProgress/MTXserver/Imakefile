@@ -1,20 +1,25 @@
+#define IHaveSubdirs
+#define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
+
     CDEBUGFLAGS = -g
-  COMMONSUBDIRS = dix os/4.2bsd ddx/mi
-     ALLSUBDIRS = $(COMMONSUBDIRS) ddx/sun ddx/cfb ddx/ibm ddx/apollo \
-			ddx/mfb ddx/lk201 ddx/qvss
-        SUBDIRS = os dix ddx
-           UNIX = os/4.2bsd/oslib.a
+     ALLDDXDIRS = ddx/mi ddx/sun ddx/cfb ddx/apollo ddx/mfb ddx/lk201 \
+                    ddx/qvss ddx/ibm/apa16 ddx/ibm/rt
+      ALLOSDIRS = os/sysV os/4.2bsd
+        SUBDIRS = dix $(ALLDDXDIRS) $(ALLOSDIRS)
+           UNIX = os/4.2bsd/libos.a
+           SYSV = os/sysV/libos.a
             MFB = ddx/mfb/libmfb.a
             CFB = ddx/cfb/libcfb.a
              MI = ddx/mi/libmi.a
-            DIX = dix/dix.a
-            SUN = ddx/sun/sun.a
+            DIX = dix/libdix.a
+            SUN = ddx/sun/libsun.a
         SYSLIBS = -lm -ldbm
-          VS100 = ddx/vs100/vs100.a ddx/vs100/libvs100/libvs100.a
-           QDSS = ddx/qdss/libQD.a libQIL.a
             ALL = Xqvss Xsun Xapa16 Xapollo
 
 
+#ifdef XServerName
+all: XServerName
+#else XServerName
 all: servertype
 	@(s=`cat servertype`; \
 	  set -x; \
@@ -24,79 +29,78 @@ servertype:
 	@echo "For the server, you must either supply a specific"; \
 	echo "target ($(ALL)) or put the name of that target in"; \
 	echo "the file server/$@"
+#endif XServerName
 
 #
 # qvss server
 #
-QVSSDIRS = $(COMMONSUBDIRS) ddx/mfb ddx/lk201 ddx/qvss
+QVSSDIRS = ddx/mi ddx/mfb ddx/lk201 ddx/qvss os/4.2bsd
 QVSSOBJS = ddx/qvss/init.o ddx/qvss/qvss_io.o ddx/lk201/lk201.o
 QVSSLIBS = $(DIX) $(UNIX) $(MFB) $(MI)
+#ifdef XQvssServer
+SERVERDIRS = $(QVSSDIRS)
+#endif
 
-ServerTarget(qvss,$(QVSSDIRS),$(QVSSOBJS),$(QVSSLIBS),$(SYSLIBS))
+ServerTarget(Xqvss,dix $(QVSSDIRS),$(QVSSOBJS),$(QVSSLIBS),$(SYSLIBS))
 
 
 #
 # sun server
 #
-SUNDIRS = $(COMMONSUBDIRS) ddx/mfb ddx/cfb
+SUNDIRS = ddx/mi ddx/mfb ddx/cfb ddx/sun os/4.2bsd
 SUNOBJS = ddx/sun/sunInit.o
 SUNLIBS = $(SUN) $(CFB) $(DIX) $(UNIX) $(MFB) $(MI)
 SUNSYSLIBS = $(SYSLIBS) -lsunwindow -lpixrect
+#ifdef XSunServer
+SERVERDIRS = $(SUNDIRS)
+#endif
 
-ServerTarget(sun,$(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(SUNSYSLIBS))
+ServerTarget(Xsun,dix $(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(SUNSYSLIBS))
 
 
 #
 # apa16 server
 #
-APA16DIRS = $(COMMONSUBDIRS) ddx/mfb ddx/ibm
+APA16DIRS = ddx/mi ddx/mfb ddx/ibm/apa16 ddx/ibm/rt os/4.2bsd
 APA16OBJS = ddx/ibm/rt/rtinit.o ddx/ibm/rt/rtio.o
 APA16LIBS = ddx/ibm/rt/librt.a ddx/ibm/apa16/libapa16.a \
 		$(DIX) $(UNIX) $(MFB) $(MI)
+#ifdef XApa16Server
+SERVERDIRS = $(APA16DIRS)
+#endif
 
-ServerTarget(apa16,$(APA16DIRS),$(APA16OBJS),$(APA16LIBS),$(SYSLIBS))
+ServerTarget(Xapa16,dix $(APA16DIRS),$(APA16OBJS),$(APA16LIBS),$(SYSLIBS))
 
 
 #
 # apollo server
 #
-APOLLODIRS = $(COMMONSUBDIRS) ddx/mfb ddx/apollo
+APOLLODIRS = ddx/mi ddx/mfb ddx/apollo os/4.2bsd
 APOLLOOBJS = ddx/apollo/init.o ddx/apollo/apollo_io.o \
 		ddx/apollo/gpr_type_mgr.o /sys/traits/io_traits
 APOLLOLIBS = $(DIX) $(UNIX) $(MFB) $(MI)
+#ifdef XApolloServer
+SERVERDIRS = $(APA16DIRS)
+#endif
 
-ServerTarget(apollo,$(APOLLODIRS),$(APOLLOOBJS),$(APOLLOLIBS),$(SYSLIBS))
+ServerTarget(Xapollo,dix $(APOLLODIRS),$(APOLLOOBJS),$(APOLLOLIBS),$(SYSLIBS))
 
 #
 # other, necessary targets
 #
-$(ALLSUBDIRS): FRC
-	cd $@ ; echo "compiling $@";\
-	$(MAKE) $(MFLAGS) 'CDEBUGFLAGS=$(CDEBUGFLAGS)' all;
+DependSubdirs($(SERVERDIRS))
+
+$(SUBDIRS): FRC
+	@cd $@ ; echo "making $@"; \
+	$(MAKE) $(MFLAGS) PassCDebugFlags all
 FRC:
-
-clean::
-	rm -f $(ALL)
-	for i in $(SUBDIRS); do \
-		(cd $$i ; echo "cleaning $$i";\
-		$(MAKE) $(MFLAGS) clean);\
-	done
-
-depend::
-	for i in $(SUBDIRS); do \
-		(cd $$i ; echo "depending $$i";\
-		$(MAKE) $(MFLAGS) depend);\
-	done
 
 lint:
 	lint dix/?*.ln os/4.2bsd/?*.ln ddx/mi/?*.ln ddx/mfb/?*.ln > lint.out
 
 lintlibs:
 	echo "This will take a while"
-	for i in dix os/4.2bsd ddx/mi ddx/mfb; do \
+	for i in dix $(SERVERDIRS); do \
 		(cd $$i ; echo " -- making lintlib in $$i"; \
 		$(MAKE) $(MFLAGS) lint) \
 	done
-
-Makefiles:
-	@echo Not yet

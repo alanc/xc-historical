@@ -1,5 +1,5 @@
 #define IHaveSubdirs
-#define PassCDebugFlags
+#define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
              FC = compiler/fc
          SUBDIRS= compiler
