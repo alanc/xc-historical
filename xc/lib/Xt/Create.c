@@ -1,4 +1,4 @@
-/* $XConsortium: Create.c,v 1.74 90/07/02 16:47:25 swick Exp $ */
+/* $XConsortium: Create.c,v 1.75 90/07/26 10:00:40 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -401,6 +401,7 @@ Widget XtCreateManagedWidget(name, widget_class, parent, args, num_args)
 {
     register Widget	    widget;
 
+    XtCheckSubclass(parent, compositeWidgetClass, "in XtCreateManagedWidget");
     widget = XtCreateWidget(name, widget_class, parent, args, num_args);
     XtManageChild(widget);
     return widget;
@@ -470,6 +471,7 @@ Widget _XtCreatePopupShell(name, widget_class, parent, args, num_args,
                 "XtCreatePopupShell requires non-NULL widget class",
                   (String *)NULL, (Cardinal *)NULL);
     }
+    XtCheckSubclass(parent, coreWidgetClass, "in XtCreatePopupShell");
     default_screen = parent->core.screen;
     widget = _XtCreate(
 		       name, (char *)NULL, widget_class, parent,
