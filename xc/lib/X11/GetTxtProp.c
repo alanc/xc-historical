@@ -53,6 +53,10 @@ Status XGetTextProperty (display, window, tp, property)
 	return True;
     }
 
+    tp->value = NULL;
+    tp->encoding = None;
+    tp->format = 0;
+    tp->nitems = 0;
     return False;
 }
 
