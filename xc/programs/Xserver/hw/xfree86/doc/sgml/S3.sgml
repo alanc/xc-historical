@@ -150,7 +150,7 @@ chances are good it might work for you, too.
         <item> &num;9 GXE Level 10, 11, 12
 	</itemize>	
 
- 	8 bpp only  
+ 	8, 15/16 and 24(32) bpp
 
  	Option <tt/"number_nine"/
 
@@ -162,7 +162,7 @@ chances are good it might work for you, too.
         <item> &num;9 GXE Level 14, 16
 	</itemize>
                         
-	8 bpp only  
+	8, 15/16 and 24(32) bpp
 
  	Supports RGB with sync-on-green
 
@@ -480,7 +480,7 @@ exit
 </code>
 
 <verb>
-$XConsortium: S3.sgml,v 1.2 95/01/16 13:17:46 kaleb Exp kaleb $
+$XConsortium: S3.sgml,v 1.3 95/01/23 15:34:49 kaleb Exp kaleb $
 $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.9 1995/01/23 01:30:07 dawes Exp $
 </verb>
 

@@ -1,7 +1,7 @@
-/* $XConsortium: s3Ti3020.h,v 1.3 94/12/27 11:29:42 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Ti3020.h,v 3.9 1995/01/21 14:07:36 dawes Exp $ */
+/* $XConsortium: s3Ti3020.h,v 1.4 95/01/23 15:33:58 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Ti3020.h,v 3.10 1995/01/26 02:18:20 dawes Exp $ */
 /*
- * Copyright 1994 by Robin Cutshaw <robin@paros.com>
+ * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
