@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.27 91/07/18 22:13:06 keith Exp $ */
+/* $XConsortium: dixfonts.c,v 1.28 91/07/18 22:41:11 keith Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -287,20 +287,27 @@ doOpenFont(client, c)
 	err = BadFontName;
 	goto bail;
     }
+    pfont->fpe = fpe;
+    UseFPE(pfont->fpe);
+    pfont->refcnt++;
     if (!AddResource(c->fontid, RT_FONT, (pointer) pfont)) {
 	err = AllocError;
 	goto bail;
     }
-    if (pfont->refcnt == 0) {
+    if (pfont->refcnt == 1) {
 	for (i = 0; i < screenInfo.numScreens; i++) {
 	    pScr = screenInfo.screens[i];
 	    if (pScr->RealizeFont)
-		(*pScr->RealizeFont) (pScr, pfont);
+	    {
+		if (!(*pScr->RealizeFont) (pScr, pfont))
+		{
+		    CloseFont (pfont, (Font) 0);
+		    err = AllocError;
+		    goto bail;
+		}
+	    }
 	}
-	pfont->fpe = fpe;
-	UseFPE(pfont->fpe);
     }
-    pfont->refcnt++;
     if (patternCache && pfont->info.cachable)
 	CacheFontPattern(patternCache, c->origFontName, c->origFontNameLen,
 			 pfont);
