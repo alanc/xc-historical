@@ -1,12 +1,12 @@
 #include "copyright.h"
 
-/* $XConsortium: XPutImage.c,v 11.51 89/11/08 18:48:59 converse Exp $ */
+/* $XConsortium: XPutImage.c,v 11.52 90/06/15 17:17:50 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include <stdio.h>
 #include "Xlibint.h"
 
-#ifdef __STDC__
+#if __STDC__
 #define Const const
 #else
 #define Const /**/
@@ -517,7 +517,7 @@ static int Const HalfOrder[12] = {
 
 /* Cancel a GetReq operation, before doing _XSend or Data */
 
-#if defined(__STDC__) && !(defined(UNIXCPP))
+#if __STDC__ && !(defined(UNIXCPP))
 #define UnGetReq(name)\
     dpy->bufptr -= SIZEOF(x##name##Req);\
     dpy->request--

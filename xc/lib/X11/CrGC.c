@@ -1,11 +1,11 @@
 #include "copyright.h"
 
-/* $XConsortium: XCrGC.c,v 11.31 89/11/08 17:06:30 converse Exp $ */
+/* $XConsortium: XCrGC.c,v 11.32 90/06/15 17:17:37 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
 
-#ifdef __STDC__
+#if __STDC__
 #define Const const
 #else
 #define Const /**/

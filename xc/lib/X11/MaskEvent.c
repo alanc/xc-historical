@@ -1,12 +1,12 @@
 #include "copyright.h"
 
-/* $XConsortium: XMaskEvent.c,v 11.18 88/09/06 16:11:31 jim Exp $ */
+/* $XConsortium: XMaskEvent.c,v 11.19 90/06/15 17:21:06 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_EVENTS
 #include "Xlibint.h"
 
-#ifdef __STDC__
+#if __STDC__
 #define Const const
 #else
 #define Const /**/

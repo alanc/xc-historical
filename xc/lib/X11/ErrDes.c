@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XErrDes.c,v 11.39 90/06/15 11:38:55 rws Exp $
+ * $XConsortium: XErrDes.c,v 11.40 90/06/15 15:56:26 rws Exp $
  */
 
 /***********************************************************
@@ -35,7 +35,7 @@ SOFTWARE.
 #define ERRORDB "/usr/lib/X11/XErrorDB"
 #endif
 
-#ifdef __STDC__
+#if __STDC__
 #define Const const
 #else
 #define Const /**/

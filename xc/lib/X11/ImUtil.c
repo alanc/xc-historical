@@ -1,13 +1,13 @@
 #include "copyright.h"
 
-/* $XConsortium: XImUtil.c,v 11.37 89/12/09 19:14:41 rws Exp $ */
+/* $XConsortium: XImUtil.c,v 11.38 90/06/15 17:17:55 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
 #include "Xutil.h"
 #include <stdio.h>
 
-#ifdef __STDC__
+#if __STDC__
 #define Const const
 #else
 #define Const /**/

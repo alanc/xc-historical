@@ -1,4 +1,4 @@
-/* $XConsortium: XStrKeysym.c,v 11.8 90/07/27 09:02:14 rws Exp $ */
+/* $XConsortium: XStrKeysym.c,v 11.9 90/10/30 08:51:40 rws Exp $ */
 /* Copyright 1985, 1987, 1990 Massachusetts Institute of Technology */
 
 #include "Xlibint.h"
@@ -7,7 +7,7 @@
 
 extern XrmQuark _XrmInternalStringToQuark();
 
-#ifdef __STDC__
+#if __STDC__
 #define Const const
 #else
 #define Const /**/

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.49 90/12/02 17:57:49 rws Exp $
+ * $XConsortium: Xrm.c,v 1.50 90/12/02 18:21:20 rws Exp $
  */
 
 /***********************************************************
@@ -33,7 +33,7 @@ SOFTWARE.
 #include	<ctype.h>
 #include 	"XrmI.h"
 
-#ifdef __STDC__
+#if __STDC__
 #define Const const
 #else
 #define Const /**/

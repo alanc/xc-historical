@@ -1,12 +1,12 @@
 #include "copyright.h"
 
-/* $XConsortium: XWinEvent.c,v 11.15 88/09/06 16:11:24 jim Exp $ */
+/* $XConsortium: XWinEvent.c,v 11.16 90/06/15 17:21:09 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #define NEED_EVENTS
 #include "Xlibint.h"
 
-#ifdef __STDC__
+#if __STDC__
 #define Const const
 #else
 #define Const /**/

@@ -1,11 +1,11 @@
-/* $XConsortium: XKeysymStr.c,v 11.0 90/07/26 18:33:14 rws Exp $ */
+/* $XConsortium: XKeysymStr.c,v 11.1 90/12/02 17:54:47 rws Exp $ */
 /* Copyright 1990 Massachusetts Institute of Technology */
 
 #include "Xlibint.h"
 #include <X11/Xresource.h>
 #include <X11/keysymdef.h>
 
-#ifdef __STDC__
+#if __STDC__
 #define Const const
 #else
 #define Const /**/
