@@ -1,4 +1,4 @@
-/* $XConsortium: info.c,v 1.18 94/11/14 15:32:08 mor Exp mor $ */
+/* $XConsortium: info.c,v 1.19 94/11/30 17:56:17 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -232,11 +232,14 @@ ClientRec *client;
 
 	if (!client_prop_visible)
 	{
+	    char geom[16];
+
 	    XtVaGetValues (mainWindow, XtNx, &x, XtNy, &y, NULL);
 	    XtTranslateCoords (mainWindow, x, y, &rootx, &rooty);
+
+	    sprintf (geom, "+%d+%d", rootx + 50, rooty + 150);
 	    XtVaSetValues (clientPropPopup,
-	        XtNx, rootx + 50,
-	        XtNy, rooty + 150,
+		XtNgeometry, geom,
 	        NULL);
 
 	    XtPopup (clientPropPopup, XtGrabNone);
@@ -691,6 +694,7 @@ ClientInfoXtProc (w, client_data, callData)
 {
     Position x, y, rootx, rooty;
     static int first_time = 1;
+    char geom[16];
 
     if (!client_info_visible)
     {
@@ -709,9 +713,10 @@ ClientInfoXtProc (w, client_data, callData)
 
 	XtVaGetValues (mainWindow, XtNx, &x, XtNy, &y, NULL);
 	XtTranslateCoords (mainWindow, x, y, &rootx, &rooty);
+
+	sprintf (geom, "+%d+%d", rootx + 100, rooty + 50);
 	XtVaSetValues (clientInfoPopup,
-	    XtNx, rootx + 100,
-	    XtNy, rooty + 50,
+	    XtNgeometry, geom,
 	    NULL);
 
 	if (first_time)
@@ -775,6 +780,8 @@ create_client_info_popup ()
         XtNfromVert, NULL,
 	XtNtop, XawChainTop,
 	XtNbottom, XawChainTop,
+	XtNleft, XawChainLeft,
+	XtNright, XawChainLeft,
         NULL);
     
     XtAddCallback (viewPropButton, XtNcallback, ViewPropXtProc, 0);
@@ -786,6 +793,8 @@ create_client_info_popup ()
         XtNfromVert, NULL,
 	XtNtop, XawChainTop,
 	XtNbottom, XawChainTop,
+	XtNleft, XawChainLeft,
+	XtNright, XawChainLeft,
         NULL);
     
     XtAddCallback (cloneButton, XtNcallback, CloneXtProc, 0);
@@ -797,6 +806,8 @@ create_client_info_popup ()
         XtNfromVert, NULL,
 	XtNtop, XawChainTop,
 	XtNbottom, XawChainTop,
+	XtNleft, XawChainLeft,
+	XtNright, XawChainLeft,
         NULL);
     
     XtAddCallback (killClientButton, XtNcallback, KillClientXtProc, 0);
@@ -809,6 +820,8 @@ create_client_info_popup ()
         XtNfromVert, NULL,
 	XtNtop, XawChainTop,
 	XtNbottom, XawChainTop,
+	XtNleft, XawChainLeft,
+	XtNright, XawChainLeft,
 	NULL);
 
     restartHintMenu = XtVaCreatePopupShell (
@@ -847,6 +860,8 @@ create_client_info_popup ()
         XtNfromVert, NULL,
 	XtNtop, XawChainTop,
 	XtNbottom, XawChainTop,
+	XtNleft, XawChainLeft,
+	XtNright, XawChainLeft,
         NULL);
 
     XtAddCallback (clientInfoDoneButton, XtNcallback, listDoneXtProc, 0);
@@ -860,7 +875,7 @@ create_client_info_popup ()
         XtNfromVert, viewPropButton,
 	XtNresizable, True,
 	XtNtop, XawChainTop,
-	XtNbottom, XawChainBottom,
+	XtNbottom, XawChainTop,
 	NULL);
 
     XtAddCallback (clientListWidget, XtNcallback, ClientListXtProc, 0);
@@ -871,6 +886,10 @@ create_client_info_popup ()
         XtNfromVert, clientListWidget,
         XtNborderWidth, 0,
         XtNvertDistance, 20,
+	XtNtop, XawChainBottom,
+	XtNbottom, XawChainBottom,
+	XtNleft, XawChainLeft,
+	XtNright, XawChainLeft,
 	NULL);
 
     manualRestartCommands = XtVaCreateManagedWidget (
@@ -883,7 +902,7 @@ create_client_info_popup ()
 	XtNscrollVertical, XawtextScrollAlways,
 	XtNwidth, 350,
 	XtNheight, 100,
-	XtNtop, XawChainTop,
+	XtNtop, XawChainBottom,
 	XtNbottom, XawChainBottom,
 	NULL);
 
@@ -905,9 +924,10 @@ create_client_info_popup ()
 	"clientPropDoneButton", commandWidgetClass, clientPropForm,
         XtNfromHoriz, NULL,
         XtNfromVert, NULL,
-	XtNresizable, True,
 	XtNtop, XawChainTop,
 	XtNbottom, XawChainTop,
+	XtNleft, XawChainLeft,
+	XtNright, XawChainLeft,
         NULL);
 
     XtAddCallback (clientPropDoneButton, XtNcallback, clientPropDoneXtProc, 0);
