@@ -11,7 +11,7 @@ Toggle Widget
 Header file	Toggle.h
 Class		toggleWidgetClass
 Class Name	Toggle
-Superclass 	Command Widget
+Superclass 	Command
 .sp
 .De
 .LP
@@ -48,7 +48,7 @@ _
 .TH
 .R
 .sp 3p
-accelerators	Acceleratore	AcceleratorTable	NULL
+accelerators	Accelerators	AcceleratorTable	NULL
 ancestorSensitive	AncestorSensitive	Boolean	True
 background	Background	Pixel	XtDefaultBackground
 backgroundPixmap	Pixmap	Pixmap	XtUnspecifiedPixmap
@@ -96,33 +96,39 @@ event occurred in another widget.  See section 10.4 in the \fI\*(xT\fP.
 .IP ancestorSensitive 1.5i
 The sensitivity state of the ancestors of this widget.  A widget is
 insensitive if either it or any of its ancestors is insensitive.
-This resource is not settable with \fBXtSetValues\fP.  It may
-however be queried.
+This resource should not be changed with \fBXtSetValues\fP.  It may,
+however, be queried.
 .IP background 1.5i
-The background color of this widget.
+An index into this widget's colormap specifing the background color of the
+widget's window.
 .IP backgroundPixmap 1.5i
 The background pixmap of this widget.  If this resource is set to
 anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
-used instead of a background color.
+used instead of the background color.
 .IP bitmap 1.5i
-A bitmap to display instead of the label.  The default size of the
-Toggle will be just large enough to contain the bitmap and the button's
+A bitmap to display instead of a label.  The default size of the
+Label will be just large enough to contain the bitmap and the widget's
 internal width and height.  The resource converter for this resource
 converts a filename into a bitmap.  See \fBConverting Bitmaps\fP for
-details on the string to bitmap conversion.
+details on the string to bitmap conversion.  If this bitmap is one bit
+deep then the 1's will be rendered in the foreground color, and the
+0's in the background color.  Supported is also provided to copy this
+pixmap directly into the window with \fBXCopyArea\fP if \fBbitmap\fP
+has a depth greater than 1.
 .IP borderColor 1.5i
-The color of this widget's border.
+An index into this widget's colormap specifing the border color of the
+widget's window.
 .IP borderPixmap 1.5i
 The border pixmap of this widget.  If this resource is set to
 anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
-used instead of a background color.
+used instead of the border color.
 .IP borderWidth 1.5i
-This is the width of the border of this widget's window.
-.IP callback 1.5i
+This is the width of this widget's border.
+.IP \fBcallback\fP 1.5i
 A list of routines to be called when the notify action is invoked.
 .IP colormap 1.5i
-The colormap that this widget will use to display all of its colors.
-.IP cornerRoundPercent 1.5i
+The colormap that this widget wants for its window.
+.IP \fBcornerRoundPercent\fP 1.5i
 When a \fBShapeStyle\fP of \fBroundedRectangle\fP is used this
 resource controls the radius of the rounded corder.  The radius of the
 rounded corders is specified as a percentage of the length of the
@@ -131,7 +137,7 @@ shortest side of the widget.  This must be a positive value.
 The cursor that will be displayed as the mouse pointer, whenever the mouse
 pointer is in this widget.
 .IP depth 1.5i
-The depth of this widgets window.
+The depth of this widget's window.
 .IP destroyCallback 1.5i
 All callback functions on this list are called when this widget is destroyed.
 .IP font 1.5i
@@ -144,21 +150,21 @@ all 1's in the \fBbitmap\fP.
 .ns
 .IP width 1.5i
 The height and width of this widget in pixels.
-.IP highlightThickness 1.5i
+.IP \fBhighlightThickness\fP 1.5i
 The thickness of the rectangle that is used to highlight a the button
 alerting the user that it is ready to be selected.  The default value is
 2 pixels if the \fBshapeStyle\fP is \fBrectangle\fP, and 0 Pixels (no
-highlighting) othersize.
+highlighting) otherwise.
 .IP insensitiveBorder 1.5i
 This pixmap will be tiled into the widget's border if it becomes insensitive.
 .IP internalHeight 1.5i
 .br
 .ns
 .IP internalWidth 1.5i
-The minium amount of space to leave between the label or bitmap and the
-vertical or horizontal edges of the window.
+The minimum amount of space to leave between the \fBlabel\fP or \fBbitmap\fP
+and the vertical or horizontal edges of the window.
 .IP justify 1.5i
-Specifies left, center, or right alignment of the label
+Specifies left, center, or right alignment of the label 
 within the widget.  This resource may be
 specified with the values \fBXtJustifyLeft\fP, \fBXtJustifyCenter\fP,
 or \fBXtJustifyRight\fP.  When specifying the justification from a
@@ -167,7 +173,7 @@ used.
 .IP label 1.5i
 This is a Latin1 text string to be displayed in the Toggle's window.
 .IP mappedWhenManaged 1.5i
-If this resource is \fBTrue\fP then the widget will automatically be
+If this resource is \fBTrue\fP then the widget's window will automatically be
 mapped by the Toolkit when it is realized and managed.
 .IP \fBradioData\fP 1.5i
 Specifies the data that will be returned from a call to
@@ -212,7 +218,7 @@ widget will not get events if either \fBancestorSensitive\fP or
 .IP \fBstate\fP
 Specifies whether the Toggle widget is set (\fBTrue\fP) or unset (\fBFalse\fP).
 .IP translations 1.5i
-The translations associated with this widget.
+The event bindings associated with this widget.
 .IP x 1.5i
 .br
 .ns
@@ -235,6 +241,7 @@ and unhighlighted states with \fBhighlight\fP and \fBunhighlight\fP
 The following are the default translation bindings used by the
 Toggle widget: 
 .LP
+.sp
 .Ds 0
 .TA .5i 2.25i
 .ta .5i 2.25i
@@ -308,7 +315,7 @@ the application programmers responsibility to choose an initial
 state for the radio group by setting one of its member toggle widget's
 \fBstate\fP to \fBTrue\fP.
 .NH 3
-Convience Routines
+Convenience Routines
 .LP
 The following functions allow easy access to the Toggle widget's radio
 group functionality.

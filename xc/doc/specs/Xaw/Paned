@@ -12,7 +12,7 @@ Paned Widget
 Header file	Paned.h
 Class		panedWidgetClass
 Class Name	Paned
-Superclass	Constraint Widget
+Superclass	Constraint
 .sp
 .De
 .LP
@@ -42,7 +42,7 @@ One mouse binding allows border between two panes to be moved, without
 affecting any of the other panes.  when this occurs the mouse pointer
 will change to an arrow that points along the pane border.
 .LP
-The default binding for the paned widget are.
+The default bindings for the Paned widget's grips are.
 .ps 9
 .nr PS 9
 .vs 11
@@ -88,7 +88,7 @@ _
 .TH
 .R
 .sp 3p
-accelerators	Acceleratore	AcceleratorTable	NULL
+accelerators	Accelerators	AcceleratorTable	NULL
 ancestorSensitive	AncestorSensitive	Boolean	True
 background	Background	Pixel	XtDefaultBackground
 backgroundPixmap	Pixmap	Pixmap	XtUnspecifiedPixmap
@@ -139,32 +139,28 @@ event occurred in another widget.  See section 10.4 in the \fI\*(xT\fP.
 .IP ancestorSensitive 1.5i
 The sensitivity state of the ancestors of this widget.  A widget is
 insensitive if either it or any of its ancestors is insensitive.
-This resource is not settable with \fBXtSetValues\fP.  It may
-however be queried.
+This resource should not be changed with \fBXtSetValues\fP.  It may,
+however, be queried.
 .IP background 1.5i
-The background color of this widget.
+An index into this widget's colormap specifing the background color of the
+widget's window.
 .IP backgroundPixmap 1.5i
 The background pixmap of this widget.  If this resource is set to
 anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
-used instead of a background color.
-.IP \fBBetweenCursor\fP 1.5i
-The cursor that is to be used when changing the boundry between two panes.
-The default value is \fBverticalBetweenCursor\fB or
-\fBhorizontalBetweenCursor\fP depeneding on the orientation of the
-Paned widget.
+used instead of the background color.
 .IP borderColor 1.5i
-The color of this widget's border.
+An index into this widget's colormap specifing the border color of the
+widget's window.
 .IP borderPixmap 1.5i
 The border pixmap of this widget.  If this resource is set to
 anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
-used instead of a background color.
+used instead of the border color.
 .IP borderWidth 1.5i
-This is the width of the border of this widget's window.
+This is the width of this widget's border.
 .IP children 1.5i
-A list of all this composite widget'c current children.  The children
-of the pane also contain the grips. 
+A list of all this composite widget'c current children.
 .IP colormap 1.5i
-The colormap that this widget will use to display all of its colors.
+The colormap that this widget wants for its window.
 .IP \fBcursor\fP 1.5i
 The cursor the use when the mouse pointer is over the Paned widget,
 but not in any of its children (children may also inherit this cursor).
@@ -197,7 +193,7 @@ each pane its preferred size.
 .br
 .ns
 .IP \fBverticalBetweenCursor\fP 1.5i
-The cursor to be used for the grip when changing the boundry between
+The cursor to be used for the grip when changing the boundary between
 two panes.  These resources allow the cursors to be different
 depending on the orientation of the Paned widget.
 .IP \fBhorzontalGripCursor\fP 1.5i
@@ -234,7 +230,7 @@ resize when the Paned widget is oriented horizontally.
 The cursor used to indicate which is the \fIimportant\fP pane to
 resize when the Paned widget is oriented vertically.
 .IP mappedWhenManaged 1.5i
-If this resource is \fBTrue\fP then the widget will automatically be
+If this resource is \fBTrue\fP then the widget's window will automatically be
 mapped by the Toolkit when it is realized and managed.
 .IP numChildren 1.5i
 The number of children in this composite widget.  This is not the same
@@ -256,7 +252,7 @@ Whether or not the toolkit will pass events to this widget.  The
 widget will not get events if either \fBancestorSensitive\fP or 
 \fBsensitive\fP is \fBFalse\fP.
 .IP translations 1.5i
-The translations associated with this widget.
+The event bindings associated with this widget.
 .IP x 1.5i
 .br
 .ns
@@ -438,7 +434,7 @@ This argument causes the Paned widget to commit the changes selected
 by the previously started action.  The cursor is changed back to the
 grip's inactive cursor.  No second argument is needed in this case.
 .NH 3 
-Convience Routines
+Convenience Routines
 .LP
 .IN "Paned widget" "enable pane resizing"
 .IN "Paned widget" "disable pane resizing"

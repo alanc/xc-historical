@@ -12,7 +12,7 @@ Dialog Widget
 Header file	Dialog.h
 Class		dialogWidgetClass
 Class Name	Dialog
-Superclass	Form Widget
+Superclass	Form
 .sp
 .De
 .LP
@@ -27,7 +27,8 @@ The typical Dialog widget contains three areas.  The first line
 contains a description of the function of the Dialog widget, for
 example, the string \fIFilename:\fP.  The second line contains an area
 into which the user types input.  The third line can contain buttons
-that let the user confirm or cancel the Dialog input.
+that let the user confirm or cancel the Dialog input.  Any of these
+areas may be omitted by the application.
 .NH 3
 Resources
 .LP
@@ -49,7 +50,7 @@ _
 .TH
 .R
 .sp 3p
-accelerators	Acceleratore	AcceleratorTable	NULL
+accelerators	Accelerators	AcceleratorTable	NULL
 ancestorSensitive	AncestorSensitive	Boolean	True
 background	Background	Pixel	XtDefaultBackground
 backgroundPixmap	Pixmap	Pixmap	XtUnspecifiedPixmap
@@ -87,29 +88,31 @@ event occurred in another widget.  See section 10.4 in the \fI\*(xT\fP.
 .IP ancestorSensitive 1.5i
 The sensitivity state of the ancestors of this widget.  A widget is
 insensitive if either it or any of its ancestors is insensitive.
-This resource is not settable with \fBXtSetValues\fP.  It may
-however be queried.
+This resource should not be changed with \fBXtSetValues\fP.  It may,
+however, be queried.
 .IP background 1.5i
-The background color of this widget.
+An index into this widget's colormap specifing the background color of the
+widget's window.
 .IP backgroundPixmap 1.5i
 The background pixmap of this widget.  If this resource is set to
 anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
-used instead of a background color.
+used instead of the background color.
 .IP borderColor 1.5i
-The color of this widget's border.
+An index into this widget's colormap specifing the border color of the
+widget's window.
 .IP borderPixmap 1.5i
 The border pixmap of this widget.  If this resource is set to
 anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
-used instead of a background color.
+used instead of the border color.
 .IP borderWidth 1.5i
-This is the width of the border of this widget's window.
+This is the width of this widget's border.
 .IP children 1.5i
 A list of all this composite widget'c current children.
 .IP colormap 1.5i
-The colormap that this widget will use to display all of its colors.
+The colormap that this widget wants for its window.
 .IP defaultDistance 1.5i
-The default internal spacing for the children for the box.  This is
-the default value for the constraint resources \fBhorizDistnace\fP and
+The default internal spacing for the children.  This is
+the default value for the constraint resources \fBhorizDistance\fP and
 \fBvertDistance\fP.
 .IP depth 1.5i
 The depth of this widget's window.
@@ -128,7 +131,7 @@ Dialog widget's label.
 .IP \fBlabel\fP 1.5i
 A single line Latin1 string to be displayed at the top of the Dialog widget.
 .IP mappedWhenManaged 1.5i
-If this resource is \fBTrue\fP then the widget will automatically be
+If this resource is \fBTrue\fP then the widget's window will automatically be
 mapped by the Toolkit when it is realized and managed.
 .IP numChildren 1.5i
 The number of children in this composite widget.
@@ -139,11 +142,11 @@ Whether or not the toolkit will pass events to this widget.  The
 widget will not get events if either \fBancestorSensitive\fP or 
 \fBsensitive\fP is \fBFalse\fP.
 .IP translations 1.5i
-The translations associated with this widget.
+The event bindings associated with this widget.
 .IP \fBvalue\fP 1.5i
 An initial value for the string field that the user will enter text
 into.  By default no text entry field is avaliable to the user.
-Specifying an initiail value for \fBvalue\fP activates the text entry
+Specifying an initial value for \fBvalue\fP activates the text entry
 field.  If string input is desired, but no initial value is to be
 specifed then set this resource to "" (empty string).
 .IP x 1.5i
@@ -208,8 +211,8 @@ details.
 .ns
 .IP fromVert 1.5i
 Which widget this child should be placed underneath (or to the right
-of).  If a value of NULL is specified then this widget will be right
-next to the edge of the Dialog.
+of).  If a value of NULL is specified then this widget will be positioned
+realtive to the edge of the Dialog.
 .IP horizDistance 1.5i
 .br
 .ns
@@ -243,10 +246,11 @@ happen before the widget becomes visable (due to constraints imposed
 by the parent of the Dialog widget).  This layout method uses the
 \fBbottom\fP, \fBtop\fP, \fBleft\fP, and \fBright\fP resources.  These 
 are used to determine what will happen the each edge of the child when
-the Dialog is resized.  If value of \fBXawChain*\fP is specified the
+the Dialog is resized.  If value of \fBXawChain\fP\fI<something>\fP is
+specified the 
 the edge of the child will remain a fixed distance from the
 \fIchain\fP edge of the form.  For example if \fBXawChainLeft\fP is
-specified for the \fBright\fP rresource of a child then the right
+specified for the \fBright\fP resource of a child then the right
 edge of that child will remain a fixed distance from the left edge of
 the Dialog widget.  If a value of \fBXawRubber\fP is specified, that
 edge will grow by the same percentage that the Dialog grew.  For
@@ -284,23 +288,24 @@ _
 .nr PS 11
 .vs 13
 .nr VS 13
-NH 4
+.NH 4
 Example
 .LP
-If you wish to force the Dialog never resize any of its children
+If you wish to force the Dialog to never resize one or more of its children
 then set \fBleft\fP and \fBright\fP to \fBXawChainLeft\fP and
-\fBtop\fP and \fBbottom\fP to \fBXawChainTop\fP.  This will cause all
-the children to remain a fixed distance from the top and left
+\fBtop\fP and \fBbottom\fP to \fBXawChainTop\fP.  This will cause
+the child to remain a fixed distance from the top and left
 edges of the Dialog, and to never resize.
 .NH 4
 Special Considerations
 .LP
 The Dialog widget automatically sets the \fBtop\fP and \fBbottom\fP
 resources for all Children that are subclasses of the Command widget,
-as well 
-as the widget children that are used to contain the \fBlabel\fP,
+as well as the widget children that are used to contain the \fBlabel\fP,
 \fBvalue\fP, and \fBicon\fP.  This policy allows the buttons at the
 bottom of the Dialog to interact correctly with the predefined children.
+And makes it possible for a client to simply create and manage a new
+Command button without having to specify its constraints.
 .LP
 The Dialog will also set \fBfromLeft\fP to the last button in the
 Dialog for each new button added to the Dialog widget.
@@ -312,12 +317,12 @@ own Dialog policy.
 .NH 3
 Automatically Created Children.
 .LP
-The Dialog uses Label widget's to contain the \fBlabel\fP and
+The Dialog uses Label widgets to contain the \fBlabel\fP and
 \fBicon\fP.  These widgets are named \fIlabel\fP and \fIicon\fP
 respectivly.  The Dialog \fBvalue\fP is contained in an AsciiText
-widget whos name is \fIvalue\fP.  Using \fBXtName\fP the application
-can change the attributes of these widgets that are not avaliable
-through the Dialog widget itself.
+widget whose name is \fIvalue\fP.  Using \fBXtNameToWidget\fP the application
+can change those resources associated with each of these widgets that
+are not avaliable through the Dialog widget itself.
 .LP
 .NH 3
 Convenience Routines
@@ -333,11 +338,13 @@ String XawDialogGetValueString(\fIw\fP)
 .IP \fIw\fP 1i
 Specifies the widget ID of the Dialog box.
 .LP
-This function returns the copy of the value string of the Dialog
+This function returns a copy of the value string of the Dialog
 widget.  This string is allocated by the AsciiText widget and will
 remain valid and unchanged until another call to
-\fBXawDialogGetValueString\fP or a \fBXtGetValues\fP call on the
-\fBvalue\fP widget, when the string will be automatically freed.
+\fBXawDialogGetValueString\fP or an \fBXtGetValues\fP call on the
+\fBvalue\fP widget, when the string will be automatically freed, and
+a new string is returned.  This string may be freed earlier by calling
+the Text widget function \fBXawAsciiSourceFreeString\fP.
 .LP
 .sp
 To add a new button to the Dialog widget use
@@ -364,3 +371,18 @@ NULL is specified then no callback is added.
 .IP \fIclient_data\fP 1i
 The client_data to be passed to the Callback function.
 .LP
+This function is merely a shorthand for the code sequence:
+.sp
+.ps 9
+.nr PS 9
+.Ds 0
+.TA 1i 2i
+.ta 1i 2i
+{
+	Widget button = XtCreateManagedWidget(name, commandWidgetClass, w, NULL, ZERO);
+	XtAddCallback(button, XtNcallback, func, client_data);
+}
+.De
+.ps 11
+.nr PS 11
+.sp

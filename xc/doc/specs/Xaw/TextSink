@@ -13,6 +13,7 @@ Ascii Sink Object
 Header file	AsciiSink.h
 Class		asciiSinkObjectClass
 Class Name	AsciiSink
+Superclass	TextSink
 .sp 1
 .LP
 The AsciiSink object is used by a text widget to render the text.  It
@@ -21,7 +22,6 @@ Carriage Return.  The name may be a bit misleading, but is left this
 way for compatability.  This object also reports the text window
 metrics to the text widgets.
 .De
-.sp 1
 .LP
 .IN "AsciiSink object" "resources"
 .ps 9
@@ -53,7 +53,8 @@ _
 .vs 13
 .nr VS 13
 .IP background 1.5i
-The background color of the text to display in the text widget.  I have
+An index into the parent's colormap specifing the color that will be
+used for the background.  I have
 added this resource to the AsciiSink instead of just stealing if from the
 Text widget for completeness.
 .IP destroyCallback 1.5i
@@ -70,7 +71,8 @@ entering passwords and other sensitive information.
 The font for rendering all text.  This font must be a character cell,
 (fixed width) font.
 .IP foreground 1.5i
-The foreground color of all text displayed.
+An index into the parent's colormap specifing the color that will be
+used to display the text's forground.
 .LP
 .NH 2
 TextSink Object
@@ -86,6 +88,7 @@ TextSink Object
 Header file	TextSink.h
 Class		textSinkObjectClass
 Class Name	TextSink
+Superclass	Object
 .sp 1
 .LP
 The TextSink object is the root object for all Text Sinks.  Any new text
@@ -94,7 +97,6 @@ TextSink Class contains all methods the Text widget expects a Text
 sink to export.  Since all Text sinks will have some resources in
 common the TextSink defines a few new resources. 
 .De
-.sp 1
 .LP
 .IN "AsciiSink object" "resources"
 .ps 9
@@ -124,7 +126,8 @@ _
 .vs 13
 .nr VS 13
 .IP \fBbackground\fP 1.5i
-One background color is provided in TextSink.
+An index into the parent's colormap specifing a foreground color.  One
+foreground color is provided in TextSink.
 .IP destroyCallback 1.5i
 All callback functions on this list are called when this object is destroyed.
 .IP \fBfont\fP 1.5i
@@ -134,19 +137,20 @@ restriction.   This resource is included, as it is assumed that all
 TextSinks will need at least one font.  Subclasses of the TextSink are
 free to use this resource as they see fit.
 .IP \fBforeground\fP 1.5i
-One foreground color is provided in TextSink, as at least one will be
-required.  
+.IP foreground 1.5i
+An index into the parent's colormap specifing a foreground color.  One
+foreground color is provided in TextSink, as at least one will be required.
 .NH 3
 Subclassing the TextSink
 .IN "TextSink object" "Subclassing" "@DEF@"
 .LP
 The only purpose of the TextSink Object is to be subclassed.  It
-contains the minium set of class methods that all text sinks must have.
+contains the minimum set of class methods that all text sinks must have.
 While all may be inherited, the
 direct descendant of TextSink \fBmust specify\fP some of them as TextSink does
 contain enough smarts to be a valid text sink by itself.  Do not try to use
 the TextSink as a valid sink for the Text widget, it is not intended
-to be used as a sink by itself and bad things will probabally happen.
+to be used as a sink by itself and bad things will probably happen.
 .ps 9
 .nr PS 9
 .vs 11
@@ -172,7 +176,6 @@ MaxLines	XtInheritMaxLines	XawTextSinkMaxLines	no
 MaxHeight	XtInheritMaxHeight	XawTextSinkMaxHeight	no
 SetTabs	XtInheritSetTabs	XawTextSinkSetTabs	no
 GetCursorBounds	XtInheritGetCursorBounds	XawTextSinkGetCursorBounds	yes
-.sp 1
 _
 .TE
 .ps 11
@@ -210,7 +213,7 @@ to be printed.
 Specifies the location within the text source of the last character
 to be printed.
 .IP \fIhighlight\fP 1i
-If this is \fBTrue\fP then paint then paint this text region highlighted.
+If this is \fBTrue\fP, paint the text region highlighted.
 .LP
 The text widget will only pass one line at a time to the text sink so this
 function does not need to know how to line feed the text.  It is
@@ -320,7 +323,7 @@ character position, but between this position and the reference position.
 .IP \fIresPos\fP 1.25i
 \fI*resPos\fP will contain the character position that corresponds to the
 location that we have specified, or the closest white space if
-\fIstopAtWordBread\fP is \fBTrue\fP.
+\fIstopAtWordBreak\fP is \fBTrue\fP.
 .IP \fIresWidth\fP 1.25i
 \fI*resWidth\fP will contain the actual distance between \fIfromPos\fP
 and \fI*resPos\fI.
@@ -361,10 +364,10 @@ desired character position.
 .IP \fIresPos\fP 1i
 \fI*resPos\fP will contain the character position that corresponds to the
 location that we have specified, or the closest white space if
-\fIstopAtWordBread\fP is \fBTrue\fP.
+\fIstopAtWordBreak\fP is \fBTrue\fP.
 .LP
 This function need make no attempt to deal with line feeds.  The text
-widget will only call it one line at a time.  This is a more convient
+widget will only call it one line at a time.  This is a more convenient
 interface to the \fBFindPosition\fP function, and provides a subset of the
 functionality.
 .NH 4
@@ -374,7 +377,7 @@ To find the distance in pixels between two text positions on the same
 line use the function \fBFindDistance\fP.
 .IN "TextSink" "FindDistance" "@DEF@"
 .FD 0
-void FindPosition(\fIw\fP, \fIfromPos\fP, \fIfromX\fP, \fItoPos\fP, \fIresWidth\fP, \fIresPos\fP, \fIresHeight\fP)
+void FindDistance(\fIw\fP, \fIfromPos\fP, \fIfromX\fP, \fItoPos\fP, \fIresWidth\fP, \fIresPos\fP, \fIresHeight\fP)
 .br
       Widget \fIw\fP;
 .br
@@ -439,7 +442,7 @@ function to compute the maximum height of the window by using the
 height of \fBfont\fP. 
 .IN "TextSink" "MaxHeight" "@DEF@"
 .FD 0
-int MaxLines(\fIw\fP, \fIlines\fP)
+int MaxHeight(\fIw\fP, \fIlines\fP)
 .br
       Widget \fIw\fP;
 .br
@@ -454,7 +457,7 @@ Returns the height that will be taken up by the number of lines passed.
 .NH 4
 Setting the Tab Stops
 .LP
-To set the tabs stops for a text sink use the \fBSetTabs\fI
+To set the tab stops for a text sink use the \fBSetTabs\fP
 function.  The TextSink already defines this function to set the tab
 x location in pixels to be the number of characters times the figure width
 of \fBfont\fP.
@@ -492,6 +495,6 @@ XRectangle \fI*rect\fP;
 Specifies the widget ID of the TextSink object.
 .IP \fIrect\fP 1i
 This must be a pointer to a valid XRectangle Structure.  It will
-contain the locaion and size of the text cursor when this function returns.
+contain the location and size of the text cursor when this function returns.
 .LP
 \fIRect\fP is filled with the current size and location of the text cursor.

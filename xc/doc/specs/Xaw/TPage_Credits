@@ -12,22 +12,14 @@
 
 \s+1\fBX Window System\fP\s-1
 
-\s+1\fBX Version 11, Release 3+\fP\s-1
+\s+1\fBX Version 11, Release 4\fP\s-1
 
 \s+1\fBDRAFT - not for Redistribution\fP\s-1
 .sp 6
 .ce 4
-\s-1Ralph R. Swick
+Chris D. Peterson
 .sp 6p
-Digital Equipment Corporation
-External Research Group
-MIT Project Athena
-.sp 2
-.ce 4
-Terry Weissman
-.sp 6p
-Digital Equipment Corporation
-Western Software Laboratory\s+1
+MIT X Consortium
 .bp
 \&
 .ps 9
@@ -36,7 +28,7 @@ Western Software Laboratory\s+1
 .LP
 The X Window System is a trademark of MIT.
 .LP
-Copyright \(co 1985, 1986, 1987, 1988
+Copyright \(co 1985, 1986, 1987, 1988, 1989
 Massachusetts Institute of Technology, Cambridge, Massachusetts,
 and Digital Equipment Corporation, Maynard, Massachusetts.
 .LP
@@ -62,50 +54,58 @@ Acknowledgments
 .sp 2
 .na
 .LP
-The implementation of the Athena Widgets was the responsibility of
-Ralph Swick, Ron Newman (Project Athena), 
-and Mark Ackerman (Project Athena).
-Additional contributions to their implementation was made by:
+Many thanks go to Ralph Swick (Project Athena/ Digital) who has
+contributed much time and effort to this widget set.  Previous
+versions of the widget set are largely due to his time and effort.
+Many of the improvements that I have been able to make are because he
+provided a solid foundation to build upon.  While much of the effort
+has been Ralph's, many other people have contributed to the code.
 .LP
 .Ds
+Mark Ackerman (Project Athena)
+Donna Converse (MIT X Consortium)
+Jim Fulton (MIT X Consortium)
+Loretta Guarino-Reid (Digital WSL)
+Charles Haynes (Digital WSL)
 Rich Hyde (Digital WSL)
-Terry Weissman (Digital WSL)
 Mary Larson (Digital UEG)
 Joel McCormack (Digital WSL)
+Ron Newman (Project Athena)
 Jeanne Rich (Digital WSL)
-Charles Haynes (Digital WSL)
-Loretta Guarino-Reid (Digital WSL)
+Terry Weissman (Digital WSL)
 .De
 .LP
-The contributors to the X10 toolkit also deserve much of the
-credit for this work.
-The Athena Widgets borrow heavily on the their counterparts in the X10 toolkit.
-The design and implementation of the X10 toolkit were done by:
+While not much remains of the X10 toolkit, many of the ideas for this
+widget set come from that original version.  The design and
+implementation of the X10 toolkit were done by:
 .LP
 .Ds
-Terry Weissman (Digital WSL)
-Smokey Wallace (Digital WSL)
-Phil Karlton (Digital WSL)
-Charles Haynes (Digital WSL)
-Ram Rao (Digital UEG)
-Mary Larson (Digital UEG)
 Mike Gancarz (Digital UEG)
+Charles Haynes (Digital WSL)
+Phil Karlton (Digital WSL)
 Kathleen Langone  (Digital UEG)
+Mary Larson (Digital UEG)
+Ram Rao (Digital UEG)
+Smokey Wallace (Digital WSL)
+Terry Weissman (Digital WSL)
 .De
 .LP
-Thanks go to Al Mento of Digital's UEG Documentation Group for 
-formatting and generally improving this document
-and to Chris Peterson of Project Athena for testing the many versions
-of the code and reviewing this document.
+I have used the formatting ideas, and some of the words from previous
+versions of this document.  The X11R3 Athena widget document was
+written by:
+.LP
+.Ds
+Ralph R. Swick (Project Athena/ Digital)
+Terry Weissman (Digital WSL)
+Al Mento (Digital UEG)
 .LP
 .sp
 .Ds 0
-Ralph R. Swick
-Digital Equipment Corporation
-External Research Group
-MIT Project Athena
+Chris D. Peterson
+MIT X Consortium
 .De
-.EH '\fBX Toolkit Athena Widgets\fP''\fBX11, Release 3+ DRAFT\fP'
-.OH '\fBX Toolkit Athena Widgets\fP''\fBX11, Release 3+ DRAFT\fP'
+.EH '\fBX Toolkit Athena Widgets\fP''\fBX11, Release 4 DRAFT\fP'
+.OH '\fBX Toolkit Athena Widgets\fP''\fBX11, Release 4 DRAFT\fP'
 .EF ''\fB % \fP''
 .OF ''\fB % \fP''
+

@@ -12,7 +12,7 @@ SmeBSB Object
 Header file	SmeBSB.h
 Class		smeBSBObjectClass
 Class Name	SmeBSB
-Superclass	Sme Object
+Superclass	Sme
 .sp
 .De
 .LP
@@ -77,7 +77,9 @@ All callback functions on this list are called when this object is destroyed.
 .IP \fBfont\fP 1.5i
 The font used to display the text label.
 .IP \fBforeground\fP 1.5i
-The color to render the label, and all 1's in the bitmap.
+An index into SimpleMenu's colormap specifing the color that will be
+used to draw the \fBlabel\fP.  This color is also used to render all
+1's in the left and right bitmaps.
 .IP height 1.5i
 .br
 .ns

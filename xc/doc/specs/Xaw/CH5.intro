@@ -28,32 +28,32 @@ Each piece of the text widget has a specific purpose, and will be
 discussed later in this chapter in detail.  The following list is a
 quick overview of the functionality of each piece.
 .IN "Text Widget" ""
-.IP Text 15 
+.IP \fBText\fP 15 
 This is the glue that binds everything else together.  This widget code
 reads the text data from the source, and displays the information in the
 sink.  All translations and actions are handled here in the Text widget itself.
 .IN "TextSink Object" ""
-.IP TextSink 15 
+.IP \fBTextSink\fP 15 
 This object is responsible for 
 displaying and clearing the drawing area.  It also reports the
 configuration of the window that contains the drawing area.  The TextSink
 does not have its own window, but does all it drawing on the Text
 widget's window. 
 .IN "TextSource Object" ""
-.IP TextSource 15 
+.IP \fBTextSource\fP 15 
 This object is responsibile for reading, editing and searching through the
 text buffer.  This buffer can
 be any store of information that this particular TextSource knows how to read.
 .IN "AsciiSink Object" ""
-.IP AsciiSink 15
+.IP \fBAsciiSink\fP 15
 This object is a subclass of the TextSink and knows how to display
 ASCII text.  Extended support has been added to display 8-bit characters.
 .IN "AsciiSource Object" ""
-.IP AsciiSource 15
+.IP \fBAsciiSource\fP 15
 This object is a subclass of the TextSource and knows how to read strings
 and files.
 .IN "AsciiText Widget" ""
-.IP AsciiText 15
+.IP \fBAsciiText\fP 15
 This widget is a subclass of the Text widget that automatically attaches
 an AsciiSource and AsciiSink to itself at creation time.  This widget provides
 the simplest interface to the Athena Text Widget.
@@ -105,6 +105,7 @@ user will not be allowed to delete characters in a read-only text widget.
 .NH3
 Default Key Bindings
 .LP
+.sp
 .Ds 0
 .TA 1.0i 3.0i 4.5i
 .ta 1.0i 3.0i 4.5i
@@ -131,6 +132,7 @@ Ctrl-w	Kill Selection	Meta-Backspace	Delete Previous Word
 Ctrl-y	Unkill	Meta-Shift Backspace	Kill Previous Word
 Ctrl-z	Scroll One Line Up
 .De
+.sp
 .LP
 The user can also use the mouse to \fIcut and paste\fP text in the text
 widgets.  The commands supported by the mouse buttons are listed below.

@@ -86,6 +86,7 @@ to its parent's window.
 Subclassing the Sme Object
 .IN "Sme object" "Subclassing" "@DEF"
 .LP
+.sp
 To Create a new Sme object you will need to define a few class procedures.
 These proceedures allow the SimpleMenu to highlight, and unhighlight the
 menu entry as the mouse pointer moves over it, as well as notifying the
@@ -102,6 +103,7 @@ Called to return the widget to its normal (unhighlighted) state.
 .IP \fBNotify\fP(\|) 
 Called when the user selects this menu entry.
 .LP
+.sp
 Other then these specialized class procedures creating a new object
 should be straight forward.  It is just a matter of subclassing
 Sme and defining your own redisplay and highlight procedures.  Here are

@@ -40,11 +40,12 @@ void XawTextUnsetSelection(\fIw\fP)
 .br
      Widget \fIw\fP;
 .FN
-.LP
+.IP \fIw\fP 1i
+Specifies the widget ID of the text widget.
 .NH 3
 Getting Current Text Selection
 .LP
-To enable the application retrieve the text that has been selected by this
+To enable the application to retrieve the text that has been selected by this
 text widget use \fBXawTextGetSelectionPos\fP.
 .IN "XawTextGetSelectionPos" "" "@DEF@"
 .FD 0
@@ -63,7 +64,7 @@ function returns.
 \fI*end\fP will contain the beginning of the text selection when this
 function returns.  
 .LP
-If the returned values are equal, no text is current selected.
+If the returned values are equal, no text is currently selected.
 .NH 3
 Replacing Text
 .LP
@@ -100,7 +101,8 @@ Either the Source was read-only or the range to be deleted is larger
 than the length of the Source. 
 .LP
 .sp 1
-The \fBXawTextBlock\fP structure (defined in < X11/Xaw/Text.h >) contains:
+The \fBXawTextBlock\fP structure is defined in the Text widget's
+public header file as follows: 
 .LP
 .IN "XawTextBlock" "" "@DEF@"
 .Ds 0

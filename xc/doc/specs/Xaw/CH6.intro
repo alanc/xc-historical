@@ -20,17 +20,18 @@ Chapter 5 - Composite and Contraint Widgets
 These widgets may contain arbitrary widget children.  They implement a
 policy for the size and location of their children.  
 .IP \fBBox\fP 1i
-This widget will pack its children as tightly as possible.
-The packing algorithm gives preference to vertical stacking. 
+This widget will pack its children as tightly as possible in
+non-overlapping rows.  The packing algorithm gives preference to
+vertical stacking, by default.  
 .IP \fBDialog\fP 1i
 An implementaton of a commonly used interaction semantic to prompt for
 auxiliary input from the user, such as a filename.
 .IP \fBForm\fP 1i
 A more sophisticated layout widget that allows the children to specify
-their positions relative to the other children, and edges of the Form.
+their positions relative to the other children, or to edges of the Form.
 .IP \fBPaned\fP 1i
-Allows children to be tiled vertically or horizontally.  Semantics are
-also provided to allow the user to dynamically size the individual panes.
+Allows children to be tiled vertically or horizontally.  Controls are
+also provided to allow the user to dynamically resize the individual panes.
 .IP \fBViewport\fP 1i
 Consists of a frame, one or two scrollbars, and an inner window.  The
 inner window can contain all the data that is to be displayed.  This inner
@@ -38,7 +39,7 @@ window will be clipped by the frame with the scrollbars controlling
 which section of the inner window is currently visable.
 .LP
 .NH 3
-Geometry Management
+A Brief Note on Geometry Management
 .LP
 The geometry management semantics provided by the X Toolkit give full
 control of the size and 
@@ -59,7 +60,7 @@ and in this case the child must live with the results.  If the
 applicaiton cannot get the desired semantics then perhaps it should use
 a different composite widget.  Under no circumstances should an
 application programmer resort to \fBXtMoveWidget\fP or
-\fBXtResizeWidget\fP these functions are exclusively for the use of
+\fBXtResizeWidget\fP; these functions are exclusively for the use of
 Composite widget implementors.
 .LP
 For more information on geometry managment consult the \fI\*(xT\fP.

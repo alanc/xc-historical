@@ -12,7 +12,7 @@ Viewport Widget
 Header file	Viewport.h
 Class		viewportWidgetClass
 Class Name	Viewport
-Superclass	Form Widget
+Superclass	Form
 .sp
 .De
 .LP
@@ -47,7 +47,7 @@ _
 .TH
 .R
 .sp 3p
-accelerators	Acceleratore	AcceleratorTable	NULL
+accelerators	Accelerators	AcceleratorTable	NULL
 ancestorSensitive	AncestorSensitive	Boolean	True
 allowHoriz	Boolean	Boolean	False
 allowVert	Boolean	Boolean	False
@@ -86,8 +86,8 @@ event occurred in another widget.  See section 10.4 in the \fI\*(xT\fP.
 .IP ancestorSensitive 1.5i
 The sensitivity state of the ancestors of this widget.  A widget is
 insensitive if either it or any of its ancestors is insensitive.
-This resource is not settable with \fBXtSetValues\fP.  It may
-however be queried.
+This resource should not be changed with \fBXtSetValues\fP.  It may,
+however, be queried.
 .IP \fBallowHoriz\fP 1.5i
 .br
 .ns
@@ -96,24 +96,25 @@ If these resources are \fBFalse\fP then the Viewport will never create
 a scrollbar in this direction.  If it is \fBTrue\fP then the scrollbar will
 only appear when it is needed, unless \fBforceBars\fP is \fBTrue\fP.
 .IP background 1.5i
-The background color of this widget.
+An index into this widget's colormap specifing the background color of the
+widget's window.
 .IP backgroundPixmap 1.5i
 The background pixmap of this widget.  If this resource is set to
 anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
-used instead of a background color.
+used instead of the background color.
 .IP borderColor 1.5i
-The color of this widget's border.
+An index into this widget's colormap specifing the border color of the
+widget's window.
 .IP borderPixmap 1.5i
 The border pixmap of this widget.  If this resource is set to
 anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
-used instead of a background color.
+used instead of the border color.
 .IP borderWidth 1.5i
-This is the width of the border of this widget's window.
+This is the width of this widget's border.
 .IP children 1.5i
-A list of all this composite widget'c current children.  This list contains
-many extra children created by the Viewport for internal use.
+A list of all this composite widget'c current children.
 .IP colormap 1.5i
-The colormap that this widget will use to display all of its colors.
+The colormap that this widget wants for its window.
 .IP depth 1.5i
 The depth of this widget's window.
 .IP destroyCallback 1.5i
@@ -130,7 +131,7 @@ The height and width of this widget in pixels.
 .IP insertPosition 1.5i
 [||| What is this resource anyway??? ]
 .IP mappedWhenManaged 1.5i
-If this resource is \fBTrue\fP then the widget will automatically be
+If this resource is \fBTrue\fP then the widget's window will automatically be
 mapped by the Toolkit when it is realized and managed.
 .IP numChildren 1.5i
 The number of children in this composite widget.  This list contains
@@ -142,7 +143,7 @@ Whether or not the toolkit will pass events to this widget.  The
 widget will not get events if either \fBancestorSensitive\fP or 
 \fBsensitive\fP is \fBFalse\fP.
 .IP translations 1.5i
-The translations associated with this widget.
+The event bindings associated with this widget.
 .IP \fBuseBottom\fP 1.5i
 .br
 .ns

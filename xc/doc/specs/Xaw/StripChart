@@ -11,7 +11,7 @@ StripChart Widget
 Header file	StripChart.h
 Class		stripChartWidgetClass
 Class Name	StripChart
-Superclass	Simple Widget
+Superclass	Simple
 .sp
 .De
 .LP
@@ -37,7 +37,7 @@ _
 .TH
 .R
 .sp 3p
-accelerators	Acceleratore	AcceleratorTable	NULL
+accelerators	Accelerators	AcceleratorTable	NULL
 ancestorSensitive	AncestorSensitive	Boolean	True
 background	Background	Pixel	XtDefaultBackground
 backgroundPixmap	Pixmap	Pixmap	XtUnspecifiedPixmap
@@ -76,24 +76,31 @@ event occurred in another widget.  See section 10.4 in the \fI\*(xT\fP.
 .IP ancestorSensitive 1.5i
 The sensitivity state of the ancestors of this widget.  A widget is
 insensitive if either it or any of its ancestors is insensitive.
-This resource is not settable with \fBXtSetValues\fP.  It may
-however be queried.
+This resource should not be changed with \fBXtSetValues\fP.  It may,
+however, be queried.
 .IP background 1.5i
-The background color of this widget.
+An index into this widget's colormap specifing the background color of the
+widget's window.
 .IP backgroundPixmap 1.5i
 The background pixmap of this widget.  If this resource is set to
 anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
-used instead of a background color.
+used instead of the background color.
 .IP borderColor 1.5i
-The color of this widget's border.
+An index into this widget's colormap specifing the border color of the
+widget's window.
 .IP borderPixmap 1.5i
 The border pixmap of this widget.  If this resource is set to
 anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
-used instead of a background color.
+used instead of the border color.
 .IP borderWidth 1.5i
-This is the width of the border of this widget's window.
+This is the width of this widget's border.
+.IP \fBcallback\fP 1.5i
+All routines on this list are called whenever the \fBGripAction\fP
+action routine is invoked.  The \fIcall_data\fP contains all
+information passed to the action routines.  A more thorough description
+is given below in the \fBGrip Actions\fP section.
 .IP colormap 1.5i
-The colormap that this widget will use to display all of its colors.
+The colormap that this widget wants for its window.
 .IP cursor 1.5i
 The cursor that will be displayed as the mouse pointer, whenever the mouse
 pointer is in this widget.
@@ -102,7 +109,8 @@ The depth of this widget's window.
 .IP destroyCallback 1.5i
 All callback functions on this list are called when this widget is destroyed.
 .IP \fBforeground\fP 1.5i
-The color used to draw the load graph.
+An index into this widget's colormap specifing the color that will be
+used to draw the graph.
 .IP \fBgetValue\fP 1.5i
 This is a list of functions to call every \fBupdate\fP seconds.  This function
 will get the value to be graphed by the StripChart widget.  The
@@ -116,7 +124,8 @@ undefined.
 .IP width 1.5i
 The height and width of this widget in pixels.
 .IP \fBhighlight\fP 1.5i
-The color used to draw the scale lines on the graph.
+An index into this widget's colormap specifing the color that will be
+used to draw the scale lines on the graph.
 .IP insensitiveBorder 1.5i
 This pixmap will be tiled into the widget's border if it becomes insensitive.
 .IP \fBjumpScroll\fP 1.5i
@@ -125,10 +134,10 @@ scrolled to the left.  This resources specifies the number of pixels
 it will jump.  Smooth scrolling is achieved by setting this resource
 to 1. 
 .IP mappedWhenManaged 1.5i
-If this resource is \fBTrue\fP then the widget will automatically be
+If this resource is \fBTrue\fP then the widget's window will automatically be
 mapped by the Toolkit when it is realized and managed.
 .IP \fBminScale\fP 1.5i
-The minium scale for the graph.  The number of divisions on the graph
+The minimum scale for the graph.  The number of divisions on the graph
 will always be greater than or equal to this value.
 .IP screen 1.5i
 The screen that this widget is displayed on.  This is not a settable resource.
@@ -137,7 +146,7 @@ Whether or not the toolkit will pass events to this widget.  The
 widget will not get events if either \fBancestorSensitive\fP or 
 \fBsensitive\fP is \fBFalse\fP.
 .IP translations 1.5i
-The translations associated with this widget.
+The event bindings associated with this widget.
 .IP \fBupdate\fP
 The number of seconds between graph updates.  Each update is
 represented on the graph as a 1 pixel wide line.  Every \fBupdate\fP seconds

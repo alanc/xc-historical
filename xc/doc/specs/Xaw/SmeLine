@@ -12,7 +12,7 @@ SmeLine Object
 Header file	SmeLine.h
 Class		smeLineObjectClass
 Class Name	SmeLine
-Superclass	Sme Object
+Superclass	Sme
 .De
 .sp
 .LP
@@ -59,7 +59,8 @@ _
 .IP destroyCallback 1.5i
 All callback functions on this list are called when this object is destroyed.
 .IP \fBforeground\fP 1.5i
-The color of the line.
+An index into SimpleMenu's colormap specifing the color that will be
+used to draw the line.
 .IP height 1.5i
 .br
 .ns

@@ -9,6 +9,7 @@ Text Widget Actions.
 
 The Actions supported by the text widgets are:
 .LP
+.sp
 .Ds 0
 .TA .5i	2.5i 3i
 .ta .5i 2.5i 3i
@@ -46,14 +47,17 @@ Miscellaneous	New Line
 	transpose-characters		kill-paragraph
 			kill-to-end-of-paragraph
 .De
+.sp
 .LP
 The following list is a detailed description of all the actions
 provided by the text widgets.  Most of these actions take no
 arguments, and unless otherwise noted you may assume this to be the
 case.  
 .LP
-\fBThe Movement Actions\fP
-.bs 2
+.NH 3
+The Movement Actions\fP
+.LP
+.sp
 .IP forward-character(\|) 2.0i
 .br
 .ns
@@ -113,9 +117,10 @@ do not move the cursor.  Other than the scrollbars this is the only
 way that the cursor may be moved off of the visible text area.  The widget
 will be scrolled so that the cursor is back on the screen as soon as some
 other action is executed.
+.NH 3
+The Delete Actions
 .LP
-\fBThe Delete Actions\fP
-.bs 2
+.sp
 .IP delete-next-character(\|) 2.0i
 .br
 .ns
@@ -133,9 +138,10 @@ the next word boundary.  Word boundary is defined in the
 .IP delete-selection(\|) 2.0i
 This action removes all characters in the current selection.
 The selection can be set with the selection actions.
+.NH 3
+The Selection Actions
 .LP
-\fBThe Selection Actions\fP
-.bs 2
+.sp
 .IP select-word(\|) 2.0i
 This action will select the word the cursor is currently on.  If the cursor is
 between words then it will select the previous word.
@@ -177,9 +183,10 @@ exists or the cut buffer that is not empty and inserts it into the
 text widget at the current cursor location. A \fIname\fP can be a
 selection (e.g. \fBPRIMARY\fP) or a cut buffer (e.g
 \fBCUT_BUFFER0\fP).  Note that case is important.
+.NH 3
+The New Line Actions
 .LP
-\fBThe New Line Actions\fP
-.bs 2
+.sp
 .IP newline-and-indent(\|) 2.0i
 This action inserts a newline into the text and adds spaces to
 that line to indent it to match the previous line [ This action is
@@ -188,9 +195,10 @@ still a bit buggy ].
 This action inserts a newline into the text \fIafter\fP the cursor.
 .IP newline(\|) 2.0i
 This action inserts a newline into the text \fIbefore\fP the cursor.
+.NH 3
+Kill and Actions
 .LP
-\fBKill and Actions\fP
-.bs 2
+.sp
 .IP kill-word(\|) 2.0i
 .br
 .ns
@@ -212,9 +220,10 @@ It then stuffs the deleted text into the kill buffer (X Cut Buffer 1).
 This action deletes everything between the current cursor location and
 the next paragraph boundary.
 It then stuffs the deleted text into the kill buffer (X Cut Buffer 1).
+.NH 3
+Miscellaneous Actions
 .LP
-\fBMiscellaneous Actions\fP
-.bs 1
+.sp 1
 .IP redraw-display(\|) 2.0i
 This action recomputes the location of all the text lines on the
 display, scrolls the text to vertically center the line containing the cursor
@@ -347,9 +356,11 @@ T}
 .LP
 The default selectType array is:
 .LP
+.sp
 .Ds 0
 {XawselectPosition, XawselectWord, XawselectLine, XawselectParagraph, XawselectAll, XawselectNull}
 .De
+.sp
 .LP
 If the timeout value (1/10 of a second) is exceeded, the next
 \fIselect-start\fP action returns to the first entry in the selection
@@ -361,6 +372,7 @@ array is set.
 Default Translation Bindings
 .IN "text widgets" "Default Translations"
 .LP
+.sp
 .Ds 0
 .TA .5i 2.5i
 .ta .5i 2.5i

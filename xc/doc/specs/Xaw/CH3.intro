@@ -21,27 +21,28 @@ These widgets each perform a specific user interface function.  They
 are \fIsimple\fP because they can only be used as leaves of the widget
 tree (they have no widget children).  They are used to display
 information or get simple user input.
-.IP Command 1i
-A push button that when selected will case a specific action
+.sp
+.IP \fBCommand\fP 1i
+A push button that, when selected, will cause a specific action
 to take place.  This widget can display a string or bitmap.
-.IP Grip 1i
+.IP \fBGrip\fP 1i
 A rectangle that may be selected, and bound to an action.
-.IP Label 1i
+.IP \fBLabel\fP 1i
 A rectangle that may contain a single line of text or
 a bitmap image.
-.IP List 1i
-A list of strings in row column form that may be selected, an action
-can be called that will be passed the name of the item selected.
-.IP Scrollbar
+.IP \fBList\fP 1i
+A list of strings in row column form that may be selected.  A callback 
+routine can be called that will be passed the name of the item selected.
+.IP \fBScrollbar\fP
 A rectangluar area containing a \fIthumb\fP that may be slid up and down
 the region. 
-.IP Simple 1i
+.IP \fBSimple\fP 1i
 The base class for most of the simple widgets.  Provides a rectangular
 area with settable mouse cursor.
-.IP StripChart 1i
+.IP \fBStripChart\fP 1i
 A real time graph that will automatically update and scroll.
-.IP Toggle 1i
-A push button that contains state information.  Thie widget can
+.IP \fBToggle\fP 1i
+A push button that contains state information.  This widget can
 display a string or bitmap image.  Toggles may also be used as radio
 buttons to implement a \fIOne of Many\fP group of buttons.
 

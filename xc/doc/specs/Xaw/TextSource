@@ -13,6 +13,7 @@ Ascii Source Object
 Header file	AsciiSrc.h
 Class		asciiSrcObjectClass
 Class Name	AsciiSrc
+Superclass	TextSource
 .sp 1
 .LP
 The AsciiSource object is used by a text widget to read the text from
@@ -47,7 +48,6 @@ string passed to the AsciiSource at startup is not updated as the user
 types.  The only ways to get the latest version of the text string is
 with \fBXtSetValues\fP.
 .De
-.sp 1
 .LP
 .IN "AsciiSource object" "resources"
 .ps 9
@@ -129,10 +129,10 @@ sure to set the \fBtype\fP resource to size of the buffer allocated
 by the application.  If the \fBstring\fP is used in place then it must
 exist for the lifetime of the text widget, or until it has been reset.
 .NH 3
-Convience Routines
+Convenience Routines
 .LP
-The AsciiSource has a few convience routines that allow the
-application programmer quicker or more convient access to some of the
+The AsciiSource has a few convenience routines that allow the
+application programmer quicker or easier access to some of the
 commonly used functionality of the AsciiSource.
 .NH 4
 Conserving Memory
@@ -153,7 +153,7 @@ Specifies the widget ID of the AsciiSource object.
 .LP
 This function will free the memory that contains the string pointer returned
 by \fBXtGetValues\fP.  This will normally happen automatically when
-the next call to \fBXtGetValues\fP occures, or when the widget is destroyed.
+the next call to \fBXtGetValues\fP occurs, or when the widget is destroyed.
 .NH 4
 Saving Files
 .LP
@@ -194,8 +194,8 @@ changed, no action will be taken.
 .NH 4
 Seeing if the Source has Changed
 .LP
-To find out if a the text buffer in an AsciiSource oject has changed
-since the last time it was saved or queried use \fXawAsciiSourceChanged\fP.
+To find out if the text buffer in an AsciiSource object has changed
+since the last time it was saved or queried use \fBXawAsciiSourceChanged\fP.
 .FD 0
 Boolean XawAsciiSourceChanged(\fIw\fP)
 .br
@@ -207,7 +207,7 @@ Specifies the widget ID of the AsciiSource object.
 This function will return \fBTrue\fP if the source has changed since
 the last time it was saved or queried.  The internal change flag is
 reset whenever the string is queried via \fBXtGetValues\fP or the
-buffer is saved with one of the convience functions described above.
+buffer is saved with one of the convenience functions described above.
 .NH 2
 TextSource Object
 .LP
@@ -223,6 +223,7 @@ TextSource Object
 Header file	TextSrc.h
 Class		textSrcObjectClass
 Class Name	TextSrc
+Superclass	Object
 .sp 1
 .LP
 The TextSource object is the root object for all text sources.  Any new text
@@ -233,7 +234,6 @@ source to export.
 Since all text sources will have some resources in common the
 TextSource defines a few new resources.  
 .De
-.sp 1
 .LP
 .IN "TextSource object" "resources"
 .ps 9
@@ -273,14 +273,14 @@ Subclassing the TextSource
 .IN "TextSource object" "Subclassing" "@DEF@"
 .LP
 The only purpose of the TextSource Object is to be subclassed.  It
-contains the minium set of class methods that all text sources must have.
+contains the minimum set of class methods that all text sources must have.
 All class methods defined by the TextSource must be defined, as the Text
 widget uses them all.  While all may be inherited, the direct
 descendant of TextSource \fBmust specify\fP some of them as TextSource
 does not contain enough smarts to be a valid text source by itself.
 Do not try to use the TextSource as a valid source for the Text
 widget, it is not intended to be used as a source by itself and bad
-things will probabally happen. 
+things will probably happen. 
 .ps 9
 .nr PS 9
 .vs 11
@@ -296,7 +296,6 @@ _
 .TH
 .R
 .sp 3p
-.sp 1
 Read	XtInheritRead	XawTextSourceRead	yes
 Replace	XtInheritReplace	XawTextSourceReplace	no
 Scan	XtInheritScan	XawTextSourceScan	yes
@@ -338,14 +337,14 @@ The maximum number of characters to read from the text buffer.
 .LP
 This function returns the actual number of characters read from the
 text buffer.  The function is not required to return \fIlength\fP
-characters if that many characters are in the file, is may break at
-any point that is convient to the internal structure of the
+characters if that many characters are in the file, it may break at
+any point that is convenient to the internal structure of the
 source.  It may take several calls to \fBRead\fP before the desired
 portion of the text buffer is fully retreived.
 .NH 4
 Replacing Text.
 .LP
-The replace or edit the text in a text buffer use the \fBReplace\fP function.
+To replace or edit the text in a text buffer use the \fBReplace\fP function.
 .FD 0
 XawTextPosition Replace(\fIw\fP, \fIstart\fP, \fIend\fP, \fItext\fP)
 .br
@@ -387,8 +386,8 @@ the new text is inserted after \fIstart\fP.
 .NH 4
 Scanning the TextSource
 .LP
-To search the text source for one of the predefined boundry types is 
-done with the \fBScan\fP function.
+To search the text source for one of the predefined boundary types us
+the \fBScan\fP function. 
 .FD 0
 XawTextPosition Scan(\fIw\fP, \fIposition\fP, \fItype\fP, \fIdir\fP, \fIcount\fP, \fIinclude\fP)
 .br
@@ -409,7 +408,7 @@ Specifies the widget ID of the TextSource object.
 .IP \fIposition\fP 1i
 The position to begin scanning the source.
 .IP \fItype\f 1i
-The type of boundry to scan for, may be one of: \fBXawstPosition\fP,
+The type of boundary to scan for, may be one of: \fBXawstPosition\fP,
 \fBXawstWhiteSpace\fP, \fBXawstEOL\fP, \fBXawstParagraph\fP, \fBXawstAll\fP.
 The exact defintion of these types is left up to the individual text source.
 .IP \fIdir\f 1i
@@ -417,12 +416,12 @@ The direction to scan, may be either \fBXawsdLeft\fP to search
 backward, or \fBXawsdRight\fP to search forward.
 .IP \fIcount\fP 1i
 The number of boundries to scan for.
-.IP \finclude\fP 1i
-Once a boundry has been found this specifies whether to include the
-last boundry in position that is returned.
+.IP \fIinclude\fP 1i
+Once a boundary has been found this specifies whether to include the
+last boundary in position that is returned.
 .LP
 The \fBScan\fP function returns the position in the text source of the desired
-boundry.  It is expected to return a valid address for
+boundary.  It is expected to return a valid address for
 all calls made to it, thus if a particular request is made that would take
 the text widget beyond an end of the source it must just return the
 position of that end, and not go off into space.
@@ -486,12 +485,12 @@ Specifies the type of the selection that has been requested, which
 indicates the desired information about the seletion (e.g. Filename,
 Text, Window).
 .IP \fItype\fP 1i
-A pointer  to an atome into which the property type of the converted
+A pointer to an atom into which the property type of the converted
 value of the selection is to be stored.  For instance, either file
 name or text might have property type \fBXA_STRING\fP.
 .IP \fIvalue\fP 1i
-A pointer into which a pointer ot the vonverted value of the selection
-is to be stored.  The selection owner is responsible for allocationg
+A pointer into which a pointer ot the converted value of the selection
+is to be stored.  The selection owner is responsible for allocating
 this storage.  The memory is considered owned by the toolkit, and is
 freed by XtFree when the Intrinsics selection mechanism is done with it.
 .IP \fIlength\fP 1i
