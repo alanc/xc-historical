@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.161 93/09/12 20:32:56 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.162 93/09/18 16:00:22 rws Exp $
 /*
  * Server Master Makefile
  */
@@ -419,9 +419,9 @@ ServerTarget(Xhp,$(HPSUBDIRS),$(HPOBJS),$(HPLIBS),$(HPSYSLIBS))
 XCOMM
 XCOMM SVGA CFB Server
 XCOMM
-SUBDIRS0 = CFB8Subdirs ddx/svga
+SUBDIRS0 = CFB8Subdirs hw/svga
 SVGASUBDIRS = $(SUBDIRS0)
-SVGAOBJS = ddx/svga/svga.o
+SVGAOBJS = hw/svga/svga.o
 SVGALIBS = CFB8Libs
 SVGASYSLIBS = $(CBRT) -lm -lmalloc
 ServerTarget(Xsvga,$(SVGASUBDIRS),$(SVGAOBJS),$(SVGALIBS),$(SVGASYSLIBS))
