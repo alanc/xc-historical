@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$Header: xwd.c,v 1.30 87/12/21 12:12:47 rws Exp $";
+static char *rcsid_xwd_c = "$Header: xwd.c,v 1.31 88/01/04 08:48:48 rws Exp $";
 #endif
 
 /*%
@@ -296,9 +296,15 @@ Window_Dump(window, out)
  */
 usage()
 {
-    printf("%s: %s [-debug] [-help] %s [-nobdrs] [-out <file>]",
+    printf("usage: %s [-debug] [-help] %s [-nobdrs] [-out <file>]",
 	   program_name, SELECT_USAGE);
-    printf(" [-xy] [[host]:vs]\n");
+    printf(" [-xy] [display]\n");
+    fprintf (stderr,
+	"where display can be specified as:\n");
+    fprintf (stderr,
+	"    -display host:dpy    or -d host:dpy\n");
+    fprintf (stderr,
+	"    host:dpy             obselete format, use -display\n");
     exit(1);
 }
 
