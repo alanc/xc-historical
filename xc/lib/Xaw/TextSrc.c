@@ -1,6 +1,4 @@
-#if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: TextSrc.c,v 1.7 90/05/08 15:19:39 converse Exp $";
-#endif 
+/* $XConsortium: TextSrc.c,v 1.8 90/11/30 18:30:10 rws Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -264,7 +262,7 @@ static Boolean
 ConvertSelection(w, selection, target, type, value, length, format)
 Widget w;
 Atom * selection, * target, * type;
-caddr_t * value;
+XtPointer * value;
 unsigned long * length;
 int * format;
 {
@@ -477,14 +475,14 @@ XawTextBlock *        text;
 Boolean
 #if NeedFunctionPrototypes
 XawTextSourceConvertSelection(Widget w, Atom *selection, Atom *target, 
-			      Atom *type, caddr_t *value,
+			      Atom *type, XtPointer *value,
 			      unsigned long *length, int *format)
 #else
 XawTextSourceConvertSelection(w, selection, 
 			      target, type, value, length, format)
 Widget w;
 Atom * selection, * target, * type;
-caddr_t * value;
+XtPointer * value;
 unsigned long * length;
 int * format;
 #endif
