@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.154 94/03/08 12:20:27 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.155 94/03/08 14:27:19 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -938,13 +938,11 @@ static void TopLevelInitialize(req, new, args, num_args)
 #define XtCurrentDirectoryMask	(1L<<1)
 #define XtDiscardCommandMask	(1L<<2)
 #define XtEnvironmentMask	(1L<<3)
-#define XtProcessIDMask		(1L<<4)
-#define XtProgramMask		(1L<<5)
-#define XtResignCommandMask	(1L<<6)
-#define XtRestartCommandMask	(1L<<7)
-#define XtRestartStyleHintMask	(1L<<8)
-#define XtShutdownCommandMask	(1L<<9)
-#define XtUserIDMask		(1L<<10)
+#define XtProgramMask		(1L<<4)
+#define XtResignCommandMask	(1L<<5)
+#define XtRestartCommandMask	(1L<<6)
+#define XtRestartStyleHintMask	(1L<<7)
+#define XtShutdownCommandMask	(1L<<8)
 
 extern char *getenv();
 
@@ -2631,13 +2629,11 @@ static PropertyRec propertyTable[] = {
   {SmCurrentDirectory, Offset(application.current_dir),      ArrayPack},
   {SmDiscardCommand,   Offset(application.discard_command),  ListPack},
   {SmEnvironment,      Offset(application.environment),	     ListPack},
-  {SmProcessID,	       0,				     ArrayPack},
   {SmProgram,          Offset(application.program_path),     ArrayPack},
   {SmResignCommand,    Offset(application.resign_command),   ListPack},
   {SmRestartCommand,   Offset(application.restart_command),  ListPack},
   {SmRestartStyleHint, Offset(application.restart_style),    CardPack},
-  {SmShutdownCommand,  Offset(application.shutdown_command), ListPack},
-  {SmUserID,	       0,				     ArrayPack}
+  {SmShutdownCommand,  Offset(application.shutdown_command), ListPack}
 };
 #undef Offset
 
@@ -2669,15 +2665,17 @@ static void SetSessionProperties(w, initialize, set_mask, unset_mask)
 		if (*(unsigned char *)addr)
 		    props[num_props++] =(*(p->proc))(p->name, (XtPointer)addr);
 	    }
-	    else if (p->offset && (* addr))
+	    else if (* addr)
 		props[num_props++] = (*(p->proc))(p->name, (XtPointer)addr);
 
 	}
 	user_name = _XtGetUserName();
 	if (user_name)
 	    props[num_props++] = ArrayPack(SmUserID, &user_name);
-	SmcSetProperties(w->application.connection, num_props, props);
-	FreePacks(props, num_props);
+	if (num_props) {
+	    SmcSetProperties(w->application.connection, num_props, props);
+	    FreePacks(props, num_props);
+	}
 	return;
     } 
 
