@@ -20,7 +20,7 @@
        AUTHSRCS = AuDispose.c AuGetBest.c AuFileName.c AuRead.c 
            SRCS = *.c
         HEADERS = Xlib.h Xresource.h Xutil.h cursorfont.h Xlibint.h Xlibos.h \
-			Xlibnet.h Xstreams.h 
+			Xlibnet.h Xstreams.h Xcms.h
        LINTLIBS =
 
 OBJS1 =\
