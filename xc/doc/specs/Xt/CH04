@@ -1,4 +1,4 @@
-.\" $XConsortium: CH04,v 1.6 91/08/26 13:29:49 swick Exp $
+.\" $XConsortium: CH04,v 1.7 91/08/26 20:16:23 swick Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -634,7 +634,7 @@ the
 resource list are
 .LP
 .TS
-lw(1.5i) lw(1.5i) lw(2.5i) .
+lw(1.7i) lw(1.7i) lw(1.2i) .
 _
 .sp 6p
 Name	Class	Representation
@@ -664,7 +664,7 @@ the
 resource list are
 .LP
 .TS
-lw(1.5i) lw(1.5i) lw(2.5i) .
+lw(1.7i) lw(1.7i) lw(1.2i) .
 _
 .sp 6p
 Name	Class	Representation
@@ -706,12 +706,12 @@ VendorShell
 is implementation-defined.
 .LP
 The resource names, classes, and representation types that are specified in the
-.PN transientShellClassRec
+.PN transient\%ShellClassRec
 .IN "TransientShell" "resources"
 resource list are
 .LP
 .TS
-lw(1.5i) lw(1.5i) lw(2.5i) .
+lw(1.7i) lw(1.7i) lw(1.2i) .
 _
 .sp 6p
 Name	Class	Representation
@@ -729,7 +729,7 @@ The resource names, classes, and representation types that are specified in the
 resource list are
 .LP
 .TS
-lw(1.5i) lw(1.5i) lw(2.5i) .
+lw(1.7i) lw(1.7i) lw(1.2i) .
 _
 .sp 6p
 Name	Class	Representation
@@ -744,11 +744,11 @@ _
 .TE
 .LP
 The resource names, classes, and representation types that are specified in the
-.PN applicationShellClassRec
+.PN application\%ShellClassRec
 resource list are
 .LP
 .TS
-lw(1.5i) lw(1.5i) lw(2.5i) .
+lw(1.7i) lw(1.7i) lw(1.2i) .
 _
 .sp 6p
 Name	Class	Representation
@@ -853,7 +853,7 @@ The \fIcreate_popup_child_proc\fP procedure is called by the
 procedure and may remain NULL.
 The \fIgrab_kind\fP, \fIspring_loaded\fP,
 and \fIpopped_up\fP fields maintain widget
-tate information as described under
+state information as described under
 .PN XtPopup ,
 .PN XtMenuPopup ,
 .PN XtPopdown ,
@@ -892,7 +892,7 @@ and its subclasses are
 .IN "XtUnspecifiedShellInt" "" "@DEF@"
 .IN "XtUnspecifiedWindow"
 .TS
-lw(1i) lw(3i).
+lw(1i) lw(4i).
 _
 .sp 6p
 Field	Default Value
@@ -1138,7 +1138,8 @@ argv	NULL
 _
 .TE
 .LP
-The \fIargc\fP \fIand\fP argv fields are used to initialize the standard property
+The \fIargc\fP and \fIargv\fP fields are used to initialize
+the standard property
 .PN \s-1WM_COMMAND\s+1 .
 See the \fI\*(xC\fP for more information.
 .bp
