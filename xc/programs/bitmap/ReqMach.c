@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ReqMach.c,v 1.6 91/01/06 12:13:00 rws Exp $
+ * $XConsortium: ReqMach.c,v 1.7 91/01/09 16:55:42 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -199,7 +199,7 @@ Boolean BWTerminateRequest(w, cont)
 /*
  * Simple interface to BWTerminateRequest that takes only a widget.
  */
-void BWTerminate(w)
+void BWAbort(w)
     Widget w;
 {
     BWTerminateRequest(w, True);
