@@ -12,7 +12,7 @@
  */
 char *ProgramName;			/* argv[0], set at top of main() */
 Bool format_numeric = False;		/* dump entries in hex */
-
+Bool verbose = True;			/* print certain messages */
 
 /*
  * local data
@@ -27,15 +27,19 @@ static char *defsource = "(stdin)";
 /*
  * utility routines
  */
-void print_help ()
+void print_help (printall)
+    Bool printall;
 {
     static char *help[] = {
 "",
 "where options include:",
-"    -f authfilename           name of authority file to use (must be first)",
+"    -f authfilename           name of authority file to use",
 "    -n                        start in numeric mode",
+"    -q                        print no unsolicited messages",
 "",
 "and commands have the following syntax",
+NULL };
+    static char *cmds[] = {
 "    add dpyname protoname hexkey      add entry to authority file",
 "    extract filename dpyname...       extract auth entries into file",
 "    list [dpyname...]                 list auth entries",
@@ -56,9 +60,14 @@ void print_help ()
 NULL };
     char **msg;
 
-    fprintf (stderr, "usage:  %s [-options ...] [command arg ...]\n",
-	     ProgramName);
-    for (msg = help; *msg; msg++) {
+    if (printall) {
+	fprintf (stderr, "usage:  %s [-options ...] [command arg ...]\n",
+		 ProgramName);
+	for (msg = help; *msg; msg++) {
+	    fprintf (stderr, "%s\n", *msg);
+	}
+    }
+    for (msg = cmds; *msg; msg++) {
 	fprintf (stderr, "%s\n", *msg);
     }
     return;
@@ -66,7 +75,7 @@ NULL };
 
 static void usage ()
 {
-    print_help ();
+    print_help (True);
     exit (1);
 }
 
@@ -104,6 +113,9 @@ main (argc, argv)
 	      case 'n':			/* -n */
 		format_numeric = True;
 		continue;
+	      case 'q':			/* -q */
+		verbose = False;
+		continue;
 	      default:
 		usage ();
 	    }
@@ -130,6 +142,9 @@ main (argc, argv)
 	exit (1);
     }
 
+    if (verbose) {
+	printf ("Using authorization file %s\n", authfilename);
+    }
     status = process_command (sourcename, 1, nargs, arglist);
 
     (void) auth_finalize ();
