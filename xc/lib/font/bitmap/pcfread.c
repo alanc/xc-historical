@@ -1,5 +1,5 @@
 /*
- * $XConsortium: pcfread.c,v 1.4 91/05/30 19:07:21 keith Exp $
+ * $XConsortium: pcfread.c,v 1.5 91/06/04 15:51:32 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -307,6 +307,7 @@ pcfGetAccel(pFontInfo, file, tables, ntables, type)
     pFontInfo->inkInside = pcfGetINT8(file, format);
     pFontInfo->inkMetrics = pcfGetINT8(file, format);
     pFontInfo->drawDirection = pcfGetINT8(file, format);
+    pFontInfo->anamorphic = FALSE;
      /* natural alignment */ pcfGetINT8(file, format);
     pFontInfo->fontAscent = pcfGetINT32(file, format);
     pFontInfo->fontDescent = pcfGetINT32(file, format);

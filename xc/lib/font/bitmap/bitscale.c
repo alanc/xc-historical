@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bitscale.c,v 1.7 91/06/21 18:13:46 keith Exp $
+ * $XConsortium: bitscale.c,v 1.8 91/07/19 23:22:29 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -476,6 +476,9 @@ ScaleFont(opf, widthMult, heightMult, props, propCount, isStringProp)
 #define MAXSHORT    32767
 #define MINSHORT    -32768
 
+    pfi->anamorphic = FALSE;
+    if (heightMult != widthMult)
+	pfi->anamorphic = TRUE;
     pfi->fontDescent *= heightMult;
     pfi->fontAscent *= heightMult;
     pfi->minbounds.leftSideBearing = MAXSHORT;

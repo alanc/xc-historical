@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: snfread.c,v 1.7 91/06/04 15:52:22 rws Exp $ */
+/* $XConsortium: snfread.c,v 1.8 91/07/10 08:22:04 rws Exp $ */
 
 #include <ctype.h>
 #include "fontfilest.h"
@@ -87,6 +87,7 @@ snfCopyInfo(snfInfo, pFontInfo)
     pFontInfo->inkMetrics = snfInfo->inkMetrics;
     pFontInfo->allExist = snfInfo->allExist;
     pFontInfo->drawDirection = snfInfo->drawDirection;
+    pFontInfo->anamorphic = FALSE;
     pFontInfo->maxOverlap = 0;
     pFontInfo->minbounds = snfInfo->minbounds.metrics;
     pFontInfo->maxbounds = snfInfo->maxbounds.metrics;
