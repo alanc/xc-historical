@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.151 90/08/03 11:16:06 swick Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.152 90/08/22 12:14:21 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -435,6 +435,11 @@ static Widget NameListToWidget(root, names, bindings,
     if (names[0] == NULLQUARK) {
 	*out_depth = *found_depth = in_depth;
 	return root;
+    }
+
+    if (! XtIsWidget(root)) {
+	*out_depth = 10000;
+	return NULL;
     }
 
     if (*bindings == XrmBindTightly) {
