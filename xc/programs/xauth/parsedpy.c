@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: parsedpy.c,v 1.1 88/11/30 12:28:40 jim Exp $
  *
  * parse_displayname - utility routine for splitting up display name strings
  *
@@ -49,7 +49,7 @@ extern char *malloc();
  * private utility routines
  */
 
-static char *copystring (src, len)
+/*static*/ char *copystring (src, len)
     char *src;
     int len;
 {
@@ -131,7 +131,7 @@ Bool parse_displayname (displayname, familyp, hostp, dpynump, scrnump, restp)
 #else
 	if (dnet) {
 	    host = copystring ("0", 1);
-	    family = FamilyDecnet;
+	    family = FamilyDECnet;
 	} else {
 	    host = copyhostname ();
 	    family = FamilyInternet;

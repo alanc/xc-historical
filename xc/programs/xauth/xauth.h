@@ -9,7 +9,8 @@ typedef int Bool;
 #endif
 
 extern char *ProgramName;
-extern Bool okay_to_use_stdin;
-int process_command_list(), auth_initialize();
+
+extern char *copystring(), *malloc();
+int process_command(), auth_initialize(), auth_finalize();
 extern void print_help();
-extern Bool print_numeric;
+extern Bool format_numeric;

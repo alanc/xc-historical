@@ -1,20 +1,6 @@
 /*
  * xauth - manipulate authorization file
  *
- * Syntax:
- *
- *     xauth [-f authfilename] [command arg ...]
- *
- * where commands include
- *
- *     help
- *     list [displayname]
- *     merge filename [filename ...]
- *     extract filename displayname
- *     add displayname protocolname hexkey
- *     remove displayname
- *     source filename
- *
  * If no command is given on the command line, the standard input will
  * be read.
  */
@@ -25,8 +11,7 @@
  * global data
  */
 char *ProgramName;			/* argv[0], set at top of main() */
-Bool okay_to_use_stdin = True;		/* set to false after using */
-Bool print_numeric = False;		/* dump entries in hex */
+Bool format_numeric = False;		/* dump entries in hex */
 
 
 /*
@@ -48,7 +33,7 @@ void print_help ()
 "",
 "where options include:",
 "    -f authfilename           name of authority file to use (must be first)",
-"    -n                        read and write entries in numeric form",
+"    -n                        start in numeric mode",
 "",
 "and commands have the following syntax",
 "    help                              display this message",
@@ -57,7 +42,10 @@ void print_help ()
 "    extract filename dpyname          extract entry for display into file",
 "    add dpyname protoname hexkey      add entry to authority file",
 "    remove dpyname                    remove entry for given display",
+"    numeric [on/off]                  turn numeric mode on or off",
 "    source filename                   read command from the given file",
+"    info                              print out info about inputs",
+"    quit                              exit program (same as end of file)",
 "",
 "If a single dash is specified as a filename for the merge or source commands",
 "the data will be read from the standard input.  If a single dash is",
@@ -82,33 +70,6 @@ static void usage ()
 }
 
 
-static void initialize (fn)
-    char *fn;
-{
-    char *authfilename = NULL;
-
-    if (!fn) {
-	authfilename = XauFileName ();	/* static name, do not free */
-	if (!authfilename) {
-	    fprintf (stderr,
-		     "%s:  unable to generate an authority file name\n",
-		     ProgramName);
-	    exit (1);
-	}
-    } else {
-	authfilename = fn;
-    }
-
-    if (auth_initialize (authfilename) != 0) {
-	fprintf (stderr, "%s:  unable to initialize authority file \"%s\"\n",
-		 ProgramName, authfilename);
-	exit (1);
-    }
-
-    return;
-}
-
-
 /*
  * The main routine - parses command line and calls action procedures
  */
@@ -120,6 +81,7 @@ main (argc, argv)
     char *sourcename = defsource;
     char **arglist = defcmds;
     int nargs = ndefcmds;
+    int status;
 
     ProgramName = argv[0];
 
@@ -139,7 +101,7 @@ main (argc, argv)
 		authfilename = argv[i];
 		continue;
 	      case 'n':			/* -n */
-		print_numeric = True;
+		format_numeric = True;
 		continue;
 	      default:
 		usage ();
@@ -152,8 +114,25 @@ main (argc, argv)
 	}
     }
 
-    initialize (authfilename);
-    exit ((process_command_list (sourcename, 1, nargs, arglist) != 0) ? 1 : 0);
+    if (!authfilename) {
+	authfilename = XauFileName ();	/* static name, do not free */
+	if (!authfilename) {
+	    fprintf (stderr,
+		     "%s:  unable to generate an authority file name\n",
+		     ProgramName);
+	    exit (1);
+	}
+    }
+    if (auth_initialize (authfilename) != 0) {
+	fprintf (stderr, "%s:  unable to initialize authority file \"%s\"\n",
+		 ProgramName, authfilename);
+	exit (1);
+    }
+
+    status = process_command (sourcename, 1, nargs, arglist);
+
+    (void) auth_finalize ();
+    exit ((status != 0) ? 1 : 0);
 }
 
 
