@@ -1,4 +1,4 @@
-/* $XConsortium: PassivGrab.c,v 1.19 91/07/21 16:04:41 converse Exp $ */
+/* $XConsortium: PassivGrab.c,v 1.20 92/05/11 17:44:00 converse Exp $ */
 
 /********************************************************
 
@@ -31,6 +31,8 @@ SOFTWARE.
 #include "PassivGraI.h"
 
 static String XtNinvalidWidget = "invalidWidget";
+static String GrabMsg      = "Widget specified in grab is not a widget";
+static String UngrabMsg    = "Widget specified in ungrab is not a widget";
 
 /* typedef unsigned long Mask; */
 #define BITMASK(i) (((Mask)1) << ((i) & 31))
@@ -673,8 +675,7 @@ void GrabKeyOrButton (widget, keyOrButton, modifiers, owner_events,
     if (!XtIsWidget(widget)){
 	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
 		     XtNinvalidWidget, "grabKeyOrButton", XtCXtToolkitError,
-		     "Widget specified in grab is not a widget",
-		     (String *)NULL, (Cardinal *)NULL);
+			GrabMsg, (String *)NULL, (Cardinal *)NULL);
 	return;
     }
     
@@ -725,8 +726,7 @@ void   UngrabKeyOrButton (widget, keyOrButton, modifiers, isKeyboard)
     if (!XtIsWidget(widget)){
 	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
 		     XtNinvalidWidget, "ungrabKeyOrButton", XtCXtToolkitError,
-		     "Widget specified in ungrab is not a widget",
-		     (String *)NULL, (Cardinal *)NULL);
+			UngrabMsg, (String *)NULL, (Cardinal *)NULL);
 	return;
     }
     
@@ -877,12 +877,13 @@ static int GrabDevice (widget, owner_events,
     XtPerDisplayInput	pdi;
     int			returnVal;
     
-    if (!XtIsWidget(widget) || !XtIsRealized(widget))
+    if (!XtIsWidget(widget))
       XtAppErrorMsg(XtWidgetToApplicationContext(widget),
 		    XtNinvalidWidget, "grabDevice", XtCXtToolkitError,
-		    "Grab widget must be a realized widget",
-		    (String*)NULL, (Cardinal*)NULL);
-    
+		    GrabMsg, (String*)NULL, (Cardinal*)NULL);
+    if (!XtIsRealized(widget))
+	return GrabNotViewable;
+
     pdi = _XtGetPerDisplayInput(XtDisplay(widget));
     
     if (!isKeyboard)
@@ -921,11 +922,12 @@ static void   UngrabDevice(widget, time, isKeyboard)
     XtPerDisplayInput	pdi = _XtGetPerDisplayInput(XtDisplay(widget));
     XtDevice		device = isKeyboard ? &pdi->keyboard : &pdi->pointer;
 
-    if (!XtIsWidget(widget) || !XtIsRealized(widget))
+    if (!XtIsWidget(widget))
       XtAppErrorMsg(XtWidgetToApplicationContext(widget),
 		    XtNinvalidWidget, "ungrabDevice", XtCXtToolkitError,
-		    "Grab widget must be a realized widget",
-		    (String*)NULL, (Cardinal*)NULL);
+		    UngrabMsg, (String*)NULL, (Cardinal*)NULL);
+    if (!XtIsRealized(widget))
+	return;
      
     if (device->grabType != XtNoServerGrab)
       {
