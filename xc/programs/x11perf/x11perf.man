@@ -1,4 +1,4 @@
-.\" $XConsortium: x11perf.man,v 1.17 93/08/04 11:47:10 dpw Exp $
+.\" $XConsortium: x11perf.man,v 1.18 93/09/20 21:23:07 rws Exp $
 .TH X11PERF 1 "Release 5" "X Version 11"
 .SH NAME
 x11perf \- X11 server performance test program
@@ -189,6 +189,11 @@ benchmarks in which the planemask is actually used.
 .TP 14
 .B \-depth <depth>
 Use a visual with <depth> planes per pixel (default is the default
+visual).
+.TP 14
+.B \-vclass <vclass>
+Use a visual with of class <vclass>.  <vclass> can be StaticGray, GrayScale,
+StaticColor, PseudoColor, TrueColor, or DirectColor.  (default is the default
 visual).
 .TP 14
 .B \-reps <n>
