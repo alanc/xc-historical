@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.126 89/08/22 17:29:28 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.127 89/09/07 17:46:21 swick Exp $";
 /* $oHeader: Intrinsic.c,v 1.4 88/08/18 15:40:35 asente Exp $ */
 #endif /* lint */
 
@@ -50,16 +50,37 @@ Boolean XtIsSubclass(widget, widgetClass)
     return (FALSE);
 } /* XtIsSubclass */
 
-Bool _XtClassIsSubclass(subWidgetClass,widgetClass)
-    WidgetClass  subWidgetClass,widgetClass;
+
+Boolean _XtCheckSubclassFlag(object, flag)
+    Widget object;
+    XtEnum flag;
 {
-    register WidgetClass w;
-    for (w=subWidgetClass;w != NULL;
-                          w = w->core_class.superclass)
-        if (w == widgetClass) return (TRUE);
-    return (FALSE);
-}; /*_XtClassIsSubclass */
-    
+    if (object->core.widget_class->core_class.class_inited & flag)
+	return True;
+    else
+	return False;
+
+} /*_XtVerifySubclass */
+
+
+Boolean _XtIsSubclassOf(object, widgetClass, superClass, flag)
+    Widget object;
+    WidgetClass widgetClass, superClass;
+    XtEnum flag;
+{
+    if (!(object->core.widget_class->core_class.class_inited & flag))
+	return False;
+    else {
+	register WidgetClass c = object->core.widget_class;
+	while (c != superClass) {
+	    if (c == widgetClass)
+		return True;
+	    c = c->core_class.superclass;
+	}
+	return False;
+    }
+} /*_XtIsSubclassOf */
+
 
 static void ComputeWindowAttributes(widget,value_mask,values)
     Widget		 widget;
