@@ -1,4 +1,4 @@
-/* $XConsortium: sunKbd.c,v 5.27 93/09/17 17:43:02 kaleb Exp $ */
+/* $XConsortium: sunKbd.c,v 5.28 93/09/20 09:20:29 kaleb Exp $ */
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
  *
@@ -98,9 +98,10 @@ static KbPrivRec  	sysKbPriv = {
     -1,			/* Descriptor open to device */
     kbdGetEvents,	/* Function to read events */
     kbdEnqueueEvent,	/* Function to enqueue an event */
-    (Bool)0,		/* Mapped queue */
     0,			/* offset for device keycodes */
-    &defaultKeyboardControl/* Initial full duration = .25 sec. */
+    0,			/* initial LEDs all off */
+    (Bool)0,		/* Mapped queue */
+    (Bool)0,		/* initial keyclick off */
 };
 
 static void kbdWait()
@@ -365,17 +366,19 @@ sunKbdProc (pKeyboard, what)
  *
  *-----------------------------------------------------------------------
  */
-static void bell (loudness, pKeyboard)
+static void bell (loudness, pKeyboard, ctrl, unused)
     int	    	  loudness;	    /* Percentage of full volume */
     DevicePtr	  pKeyboard;	    /* Keyboard to ring */
+    KeybdCtrl*    ctrl;
+    int           unused;
 {
     KbPrivPtr	  pPriv = (KbPrivPtr) pKeyboard->devicePrivate;
     int	  	  kbdCmd;   	    /* Command to give keyboard */
     int	 	  kbdOpenedHere; 
+    DeviceIntPtr  dev = (DeviceIntPtr)pKeyboard;
  
-    if (loudness == 0) {
+    if (loudness == 0 || ctrl->bell == 0)
  	return;
-    }
 
     kbdOpenedHere = (pPriv->fd == -1);
     if ( kbdOpenedHere ) {
@@ -393,16 +396,13 @@ static void bell (loudness, pKeyboard)
     }
  
     /*
-     * Leave the bell on for a while == duration (ms) proportional to
-     * loudness desired with a 10 thrown in to convert from ms to usecs.
+     * Leave the bell on for a while == duration (ms) 
      */
-    usleep (pPriv->ctrl->bell_duration * 1000);
+    usleep (ctrl->bell_duration * 1000);
  
     kbdCmd = KBD_CMD_NOBELL;
-    if (ioctl (pPriv->fd, KIOCCMD, &kbdCmd) == -1) {
+    if (ioctl (pPriv->fd, KIOCCMD, &kbdCmd) == -1)
 	Error ("Failed to deactivate bell");
-	goto bad;
-    }
 
 bad:
     if ( kbdOpenedHere ) {
@@ -411,20 +411,12 @@ bad:
     }
 }
 
-/*
- * The LEDs are coded in the ctrl->leds byte as their real values
- * as per /usr/include/sundev/kbd.h
- */
-void sunKbdSetLights (pKeyboard)
-    DevicePtr	pKeyboard;
+static void SetLights (fd, ctrl)
+    int fd;
+    KeybdCtrl*	ctrl;
 {
-    KbPrivPtr	pPriv = (KbPrivPtr) pKeyboard->devicePrivate;
-    char	request;
-
-    request = pPriv->ctrl->leds;
-
 #ifdef KIOCSLED /* { */
-    if (ioctl (pPriv->fd, KIOCSLED, &request) == -1)
+    if (ioctl (fd, KIOCSLED, &ctrl->leds) == -1)
 	Error("Failed to set keyboard lights");
 #endif /* } */
 }
@@ -459,28 +451,19 @@ static void kbdCtrl (pKeyboard, ctrl)
 	}
     }
 
-    if (ctrl->click != pPriv->ctrl->click)
-    {
+    if (ctrl->click != pPriv->click) {
     	int kbdClickCmd;
 
-	pPriv->ctrl->click = ctrl->click;
-	kbdClickCmd = pPriv->ctrl->click ? KBD_CMD_CLICK : KBD_CMD_NOCLICK;
+	pPriv->click = ctrl->click;
+	kbdClickCmd = pPriv->click ? KBD_CMD_CLICK : KBD_CMD_NOCLICK;
     	if (ioctl (pPriv->fd, KIOCCMD, &kbdClickCmd) == -1)
  	    Error("Failed to set keyclick");
     }
  
-    if (ctrl->leds != pPriv->ctrl->leds)
-    {
-	pPriv->ctrl->leds = ctrl->leds & SUN_LED_MASK;
-	sunKbdSetLights (pKeyboard);
+    if (ctrl->leds != pPriv->leds) {
+	pPriv->leds = ctrl->leds & SUN_LED_MASK;
+	SetLights (pPriv->fd, ctrl);
     }
-
-    pPriv->ctrl->bell = ctrl->bell;
-    pPriv->ctrl->bell_pitch = ctrl->bell_pitch;
-    pPriv->ctrl->bell_duration = ctrl->bell_duration;
-    pPriv->ctrl->autoRepeat = ctrl->autoRepeat;
-    for (i = 0; i < sizeof ctrl->autoRepeats / sizeof ctrl->autoRepeats[0]; i++)
-	pPriv->ctrl->autoRepeats[i] = ctrl->autoRepeats[i];
 
     if ( kbdOpenedHere ) {
 	(void) close(pPriv->fd);
@@ -488,18 +471,17 @@ static void kbdCtrl (pKeyboard, ctrl)
     }
 }
 
-void sunKbdModLight (pKeyboard, on, led)
-    DevicePtr	pKeyboard;
+static void ModLight (fd, ctrl, on, led)
+    int		fd;
+    KeybdCtrl*	ctrl;
     Bool	on;
     int		led;
 {
-    KbPrivPtr	pPriv = (KbPrivPtr) pKeyboard->devicePrivate;
-
     if(on)
-	pPriv->ctrl->leds |= led;
+	ctrl->leds |= led;
     else
-	pPriv->ctrl->leds &= ~led;
-    sunKbdSetLights (pKeyboard);
+	ctrl->leds &= ~led;
+    SetLights (fd, ctrl);
 }
 
 /*-
@@ -545,19 +527,6 @@ static Firm_event *kbdGetEvents (pKeyboard, pNumEvents, pAgain)
  *-----------------------------------------------------------------------
  * kbdEnqueueEvent --
  *
- * Results:
- *
- * Side Effects:
- *
- * Caveat:
- *      To reduce duplication of code and logic (and therefore bugs), the
- *      sunwindows version of kbd processing (kbdEnqueueEventSunWin())
- *      counterfeits a firm event and calls this routine.  This
- *      couunterfeiting relies on the fact this this routine only looks at the
- *      id, time, and value fields of the firm event which it is passed.  If
- *      this ever changes, the kbdEnqueueEventSunWin will also have to
- *      change.
- *
  *-----------------------------------------------------------------------
  */
 
@@ -572,13 +541,14 @@ static void kbdEnqueueEvent (pKeyboard, fe)
     BYTE		key;
     CARD8		keyModifiers;
     KeySym		ksym;
-    int			led;
     int			map_index;
     DeviceIntPtr	dev;
+    KeybdCtrl*		ctrl;
 
-    key = (fe->id & 0x7f) + sysKbPriv.offset;
     pPriv = (KbPrivPtr)pKeyboard->devicePrivate;
+    key = (fe->id & 0x7f) + pPriv->offset;
     dev = (DeviceIntPtr) pKeyboard;
+    ctrl = &dev->kbdfeed->ctrl;
 
     keyModifiers = dev->key->modifierMap[key];
     if (autoRepeatKeyDown && (keyModifiers == 0) &&
@@ -612,20 +582,20 @@ static void kbdEnqueueEvent (pKeyboard, fe)
 	|| (keyModifiers & LockMask))) 
 	return;
 
-    if ((ksym == XK_Num_Lock && pPriv->ctrl->leds & LED_NUM_LOCK) 
-	|| (ksym == XK_Scroll_Lock && pPriv->ctrl->leds & LED_SCROLL_LOCK) 
-	|| (ksym == SunXK_Compose && pPriv->ctrl->leds & LED_COMPOSE)
-	|| ((keyModifiers & LockMask) && pPriv->ctrl->leds & LED_CAPS_LOCK))
+    if ((ksym == XK_Num_Lock && ctrl->leds & LED_NUM_LOCK) 
+	|| (ksym == XK_Scroll_Lock && ctrl->leds & LED_SCROLL_LOCK) 
+	|| (ksym == SunXK_Compose && ctrl->leds & LED_COMPOSE)
+	|| ((keyModifiers & LockMask) && ctrl->leds & LED_CAPS_LOCK))
 	xE.u.u.type = KeyRelease;
 
     if (ksym == XK_Num_Lock)
-	sunKbdModLight (pKeyboard, xE.u.u.type == KeyPress, LED_NUM_LOCK);
+	ModLight (pPriv->fd, ctrl, xE.u.u.type == KeyPress, LED_NUM_LOCK);
     else if (ksym == XK_Scroll_Lock)
-	sunKbdModLight (pKeyboard, xE.u.u.type == KeyPress, LED_SCROLL_LOCK);
+	ModLight (pPriv->fd, ctrl, xE.u.u.type == KeyPress, LED_SCROLL_LOCK);
     else if (ksym == SunXK_Compose)
-	sunKbdModLight (pKeyboard, xE.u.u.type == KeyPress, LED_COMPOSE);
+	ModLight (pPriv->fd, ctrl, xE.u.u.type == KeyPress, LED_COMPOSE);
     else if (keyModifiers & LockMask)
-	sunKbdModLight (pKeyboard, xE.u.u.type == KeyPress, LED_CAPS_LOCK);
+	ModLight (pPriv->fd, ctrl, xE.u.u.type == KeyPress, LED_CAPS_LOCK);
     else if ((xE.u.u.type == KeyPress) && (keyModifiers == 0)) {
 	/* initialize new AutoRepeater event & mark AutoRepeater on */
 	autoRepeatEvent = xE;
@@ -635,6 +605,8 @@ static void kbdEnqueueEvent (pKeyboard, fe)
     }
     mieqEnqueue (&xE);
 }
+
+static KeybdCtrl *pKbdCtrl = (KeybdCtrl *) 0;
 
 void sunEnqueueAutoRepeat ()
 {
@@ -646,13 +618,13 @@ void sunEnqueueAutoRepeat ()
     int	delta;
     int	i, mask;
 
-    if (sysKbPriv.ctrl->autoRepeat != AutoRepeatModeOn) {
+    if (pKbdCtrl->autoRepeat != AutoRepeatModeOn) {
 	autoRepeatKeyDown = 0;
 	return;
     }
     i=(autoRepeatEvent.u.u.detail >> 3);
     mask=(1 << (autoRepeatEvent.u.u.detail & 7));
-    if (!(sysKbPriv.ctrl->autoRepeats[i] & mask)) {
+    if (!(pKbdCtrl->autoRepeats[i] & mask)) {
 	autoRepeatKeyDown = 0;
 	return;
     }
@@ -810,7 +782,6 @@ Bool LegalModifier(key, pDev)
     return TRUE;
 }
 
-static KeybdCtrl *pKbdCtrl = (KeybdCtrl *) 0;
 
 /*ARGSUSED*/
 void sunBlockHandler(nscreen, pbdata, pptv, pReadmask)
@@ -825,7 +796,7 @@ void sunBlockHandler(nscreen, pbdata, pptv, pReadmask)
 	return;
 
     if (pKbdCtrl == (KeybdCtrl *) 0)
-	pKbdCtrl = ((KbPrivPtr) LookupKeyboardDevice()->devicePrivate)->ctrl;
+	pKbdCtrl = &((DeviceIntPtr) LookupKeyboardDevice())->kbdfeed->ctrl;
 
     if (pKbdCtrl->autoRepeat != AutoRepeatModeOn)
 	return;
@@ -848,7 +819,7 @@ void sunWakeupHandler(nscreen, pbdata, err, pReadmask)
     struct timeval tv;
 
     if (pKbdCtrl == (KeybdCtrl *) 0)
-	pKbdCtrl = ((KbPrivPtr) LookupKeyboardDevice()->devicePrivate)->ctrl;
+	pKbdCtrl = &((DeviceIntPtr) LookupKeyboardDevice())->kbdfeed->ctrl;
 
     if (pKbdCtrl->autoRepeat != AutoRepeatModeOn)
 	return;

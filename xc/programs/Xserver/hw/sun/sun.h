@@ -1,5 +1,5 @@
 
-/* $XConsortium: sun.h,v 5.22 93/08/31 18:16:07 kaleb Exp $ */
+/* $XConsortium: sun.h,v 5.23 93/09/23 10:52:12 dpw Exp $ */
 
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
@@ -183,11 +183,10 @@ typedef struct kbPrivate {
     int	    	  fd;	    	    	/* Descriptor open to device */
     Firm_event	  *(*GetEvents)();  	/* Function to read events */
     void    	  (*EnqueueEvent)();	/* Function to process an event */
-    Bool	  map_q;		/* TRUE if fd has a mapped event queue */
     int		  offset;		/* to be added to device keycodes */
-    KeybdCtrl	  *ctrl;    	    	/* Current control structure (for
- 					 * keyclick, bell duration, auto-
- 					 * repeat, etc.) */
+    Leds	  leds;			/* led save state */
+    int		  click;		/* kbd click save state */
+    Bool	  map_q;		/* TRUE if has a mapped event queue */
 } KbPrivRec, *KbPrivPtr;
 
 typedef struct {
