@@ -12,7 +12,7 @@ has support for the following operating systems:
 Ultrix 3.1 (Digital)
 SunOS 4.0.3 (Sun)
 HP-UX 6.5 (Hewlett-Packard)
-Domain/OS 10.2 (HP/Apollo)
+Domain/OS 10.1 (HP/Apollo)
 A/UX 1.1 (Apple)
 AOS-4.3 (IBM)
 UTEK 4.0 (Tektronix)
