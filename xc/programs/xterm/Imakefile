@@ -4,7 +4,7 @@
 /**/#                                                                         #
 /**/#                                                                         #
 /**/# Xterm assumes that bcopy can handle overlapping arguments.  If your     #
-/**/# bcopy (or memcpy) can't, write a routine called bcopy and link it in    #
+/**/# bcopy (or memcpy) cannot, write a routine called bcopy and link it in   #
 /**/# or add -Dbcopy=mybcopy to the DEFINES list below.                       #
 /**/#                                                                         #
 /**/###########################################################################
@@ -22,8 +22,8 @@
 #endif
 /*
  *	[PUCC = Purdue University Computer Center]
- *	If you use PUCC's ptyd, add "-DPUCC_PTYD" to the DEFINES
- *	and dink the -DUTMP (also don't define WTMP or LASTLOG - since
+ *	If you use the PUCC ptyd, add "-DPUCC_PTYD" to the DEFINES
+ *	and dink the -DUTMP (also do not define WTMP or LASTLOG - since
  *	ptyd does all that logging for you)  You will need to add
  *	the right library load line (we use -lpucc) to the 
  *	ComplexProgramTarget (right next to -ltermcap)
