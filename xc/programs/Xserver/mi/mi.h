@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $Header: mi.h,v 1.1 87/09/11 07:49:59 toddb Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -32,8 +32,8 @@ typedef struct _miDash *miDashPtr;
 
 extern void  miPutImage();
 extern void  miGetImage();
-extern void  miCopyArea();
-extern void  miCopyPlane();
+extern RegionPtr  miCopyArea();
+extern RegionPtr  miCopyPlane();
 extern void  miClearToBackground();
 extern int   miValidateTree();
 extern void  miPolySegment();
@@ -77,6 +77,7 @@ extern    void miRegionEmpty();
 extern    int miNumberRectsInRegion();
 extern    void miWindowExposures();    
 extern    BoxPtr miRegionExtents();
-
+extern    void miSendGraphicsExpose();
+extern    RegionPtr miHandleExposures();
 
 #endif /* MI_H */

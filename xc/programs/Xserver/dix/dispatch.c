@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.61 88/08/21 20:03:53 rws Exp $ */
+/* $Header: dispatch.c,v 1.62 88/08/29 17:17:07 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1544,6 +1544,7 @@ ProcCopyArea(client)
     register DrawablePtr pSrc;
     register GC *pGC;
     REQUEST(xCopyAreaReq);
+    RegionPtr pRgn;
 
     REQUEST_SIZE_MATCH(xCopyAreaReq);
 
@@ -1563,10 +1564,16 @@ ProcCopyArea(client)
     }
     else
         pSrc = pDst;
-    (*pGC->CopyArea)(pSrc, pDst, pGC, stuff->srcX, stuff->srcY,
+    pRgn = (*pGC->CopyArea)(pSrc, pDst, pGC, stuff->srcX, stuff->srcY,
 				 stuff->width, stuff->height, 
 				 stuff->dstX, stuff->dstY);
-				 
+    if (pRgn)
+    {
+	(*pDst->pScreen->SendGraphicsExpose)
+ 		(client, pRgn, stuff->dstDrawable, X_CopyArea, 0);
+	(*pDst->pScreen->RegionDestroy) (pRgn);
+    }
+
     return(client->noClientException);
 }
 
@@ -1577,6 +1584,7 @@ ProcCopyPlane(client)
     register DrawablePtr psrcDraw, pdstDraw;
     register GC *pGC;
     REQUEST(xCopyPlaneReq);
+    RegionPtr pRgn;
 
     REQUEST_SIZE_MATCH(xCopyPlaneReq);
 
@@ -1605,9 +1613,15 @@ ProcCopyPlane(client)
        return(BadValue);
     }
 
-    (*pGC->CopyPlane)(psrcDraw, pdstDraw, pGC, stuff->srcX, stuff->srcY,
+    pRgn = (*pGC->CopyPlane)(psrcDraw, pdstDraw, pGC, stuff->srcX, stuff->srcY,
 				 stuff->width, stuff->height, 
 				 stuff->dstX, stuff->dstY, stuff->bitPlane);
+    if (pRgn)
+    {
+	(*pdstDraw->pScreen->SendGraphicsExpose)
+ 		(client, pRgn, stuff->dstDrawable, X_CopyPlane, 0);
+	(*pdstDraw->pScreen->RegionDestroy) (pRgn);
+    }
     return(client->noClientException);
 }
 

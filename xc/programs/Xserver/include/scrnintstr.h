@@ -1,4 +1,4 @@
-/* $Header: scrnintstr.h,v 1.1 87/09/11 07:50:28 rws Locked $ */
+/* $Header: scrnintstr.h,v 1.2 88/01/02 13:59:53 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -156,6 +156,7 @@ typedef struct _Screen {
     Bool (* RegionNotEmpty)();      	/* pRegion: RegionPtr */
     void (* RegionEmpty)();        	/* pRegion: RegionPtr */
     BoxPtr (*RegionExtents)(); 		/* pRegion: RegionPtr */
+    void (* SendGraphicsExpose)();	/* client, rgn, draw, major, minor */
 
     /* os layer procedures */
     void (* BlockHandler)();		/* data: pointer */

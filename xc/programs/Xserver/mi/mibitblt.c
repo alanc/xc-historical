@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mibitblt.c,v 1.61 88/07/29 11:26:50 keith Exp $ */
+/* $Header: mibitblt.c,v 1.62 88/08/10 13:03:03 rws Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -45,7 +45,7 @@ static int GetBitsPerPixel();
  *     set them in the destination with SetSpans
  * We let SetSpans worry about clipping to the destination.
  */
-void
+RegionPtr
 miCopyArea(pSrcDrawable, pDstDrawable,
 	    pGC, xIn, yIn, widthSrc, heightSrc, xOut, yOut)
     register DrawablePtr 	pSrcDrawable;
@@ -61,6 +61,7 @@ miCopyArea(pSrcDrawable, pDstDrawable,
     			/* may be a new region, or just a copy */
     RegionPtr 		prgnSrcClip;
     			/* non-0 if we've created a src clip */
+    RegionPtr		prgnExposed;
     int 		realSrcClip = 0;
     int			srcx, srcy, dstx, dsty, i, j, y, width, height,
     			xMin, xMax, yMin, yMax;
@@ -240,7 +241,7 @@ miCopyArea(pSrcDrawable, pDstDrawable,
 	                 height, TRUE);
         Xfree(pbits);
     }
-    miHandleExposures(pSrcDrawable, pDstDrawable, pGC, xIn, yIn,
+    prgnExposed = miHandleExposures(pSrcDrawable, pDstDrawable, pGC, xIn, yIn,
 		      widthSrc, heightSrc, xOut, yOut, 0);
     if(realSrcClip)
 	(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
@@ -248,6 +249,7 @@ miCopyArea(pSrcDrawable, pDstDrawable,
     DEALLOCATE_LOCAL(ordering);
     DEALLOCATE_LOCAL(pwidthFirst);
     DEALLOCATE_LOCAL(pptFirst);
+    return prgnExposed;
 }
 
 /* MIGETPLANE -- gets a bitmap representing one plane of pDraw
@@ -550,7 +552,7 @@ miOpqStipDrawable(pDraw, pGC, prgnSrc, pbits, srcx, w, h, dstx, dsty)
  * build a source clip
  * Use the bitmap we've built up as a Stipple for the destination 
  */
-void
+RegionPtr
 miCopyPlane(pSrcDrawable, pDstDrawable,
 	    pGC, srcx, srcy, width, height, dstx, dsty, bitPlane)
     DrawablePtr 	pSrcDrawable;
@@ -563,7 +565,7 @@ miCopyPlane(pSrcDrawable, pDstDrawable,
 {
     unsigned long	*ptile;
     BoxRec 		box;
-    RegionPtr		prgnSrc;
+    RegionPtr		prgnSrc, prgnExposed;
 
     /* incorporate the source clip */
 
@@ -626,10 +628,11 @@ miCopyPlane(pSrcDrawable, pDstDrawable,
 			  box.x2 - box.x1, box.y2 - box.y1,
 			  dstx + box.x1, dsty + box.y1);
     }
-    miHandleExposures(pSrcDrawable, pDstDrawable, pGC, srcx, srcy,
+    prgnExposed = miHandleExposures(pSrcDrawable, pDstDrawable, pGC, srcx, srcy,
 		      width, height, dstx, dsty, bitPlane);
     Xfree(ptile);
     (*pGC->pScreen->RegionDestroy)(prgnSrc);
+    return prgnExposed;
 }
 
 /* MIGETIMAGE -- public entry for the GetImage Request

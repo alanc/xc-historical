@@ -1,4 +1,4 @@
-/* $Header: gcstruct.h,v 1.3 87/12/31 17:25:30 rws Exp $ */
+/* $Header: gcstruct.h,v 1.4 88/07/29 12:17:11 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -88,8 +88,8 @@ typedef struct _GC{
     void (* SetSpans)();
 
     void (* PutImage)();
-    void (* CopyArea)();
-    void (* CopyPlane)();
+    RegionPtr (* CopyArea)();
+    RegionPtr (* CopyPlane)();
     void (* PolyPoint)();
     void (* Polylines)();
     void (* PolySegment)();

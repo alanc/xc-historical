@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: miexpose.c,v 1.31 88/07/20 16:09:24 keith Exp $ */
+/* $Header: miexpose.c,v 1.32 88/07/29 12:06:48 keith Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -66,7 +66,7 @@ exposing is done by the backing store's GraphicsExpose function, of course.
 
 */
 
-void
+RegionPtr
 miHandleExposures(pSrcDrawable, pDstDrawable,
 		  pGC, srcx, srcy, width, height, dstx, dsty, plane)
     register DrawablePtr	pSrcDrawable;
@@ -187,55 +187,6 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
     /* intersect with visible areas of dest */
     (*pscr->Intersect)(prgnExposed, prgnExposed, prgnDstClip);
 
-    /* send them to the client */
-    if (pGC->graphicsExposures)
-    {
-        if (REGION_NOT_EMPTY(prgnExposed))
-        {
-            xEvent *pEvent;
-    	    register xEvent *pe;
-    	    register BoxPtr pBox = prgnExposed->rects;
-    	    register int i;
-
-	    if(!(pEvent = (xEvent *)ALLOCATE_LOCAL(prgnExposed->numRects * 
-					 sizeof(xEvent))))
-		return;
-	    pe = pEvent;
-
-	    for (i=1; i<=prgnExposed->numRects; i++, pe++, pBox++)
-	    {
-	        pe->u.u.type = GraphicsExpose;
-	        pe->u.graphicsExposure.drawable = 
-				requestingClient->lastDrawableID;
-	        pe->u.graphicsExposure.x = pBox->x1;
-	        pe->u.graphicsExposure.y = pBox->y1;
-	        pe->u.graphicsExposure.width = pBox->x2 - pBox->x1;
-	        pe->u.graphicsExposure.height = pBox->y2 - pBox->y1;
-	        pe->u.graphicsExposure.count = prgnExposed->numRects - i;
-		pe->u.graphicsExposure.majorEvent =
-			((xReq *)requestingClient->requestBuffer)->reqType;
-		/* XXX will need support for extensions */
-		pe->u.graphicsExposure.minorEvent = 0;
-	    }
-	    TryClientEvents(requestingClient, pEvent, prgnExposed->numRects,
-			    0, NoEventMask, NullGrab);
-	    DEALLOCATE_LOCAL(pEvent);
-        }
-        else
-        {
-            xEvent event;
-	    event.u.u.type = NoExpose;
-	    event.u.noExposure.drawable = requestingClient->lastDrawableID;
-	    event.u.noExposure.majorEvent = 
-			((xReq *)requestingClient->requestBuffer)->reqType;
-	    /* XXX will need support for extensions */
-	    event.u.noExposure.minorEvent = 0;
-	    TryClientEvents(requestingClient, &event, 1,
-	        0, NoEventMask, NullGrab);
-        }
-    }
-
-
     if ((pDstDrawable->type == DRAWABLE_WINDOW) &&
 	(((WindowPtr)pDstDrawable)->backgroundTile != None))
     {
@@ -247,12 +198,69 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
 
 	(*pWin->PaintWindowBackground)(pDstDrawable, prgnExposed, 
 				       PW_BACKGROUND);
+
+	(*pscr->TranslateRegion)(prgnExposed,
+ 				 -pWin->absCorner.x, -pWin->absCorner.y);
     }
     if (prgnDstClip != prgnSrcClip)
 	(*pscr->RegionDestroy)(prgnDstClip);
     (*pscr->RegionDestroy)(prgnSrcClip);
     (*pscr->RegionDestroy)(prgnSrc);
-    (*pscr->RegionDestroy)(prgnExposed);
+    if (pGC->graphicsExposures)
+	return prgnExposed;
+    else
+    {
+	(*pscr->RegionDestroy) (prgnExposed);
+	return NULL;
+    }
+}
+
+void
+miSendGraphicsExpose (client, pRgn, drawable, major, minor)
+    ClientPtr	client;
+    RegionPtr	pRgn;
+    XID		drawable;
+    int	major;
+    int	minor;
+{
+    if (REGION_NOT_EMPTY(pRgn))
+    {
+        xEvent *pEvent;
+	register xEvent *pe;
+	register BoxPtr pBox = pRgn->rects;
+	register int i;
+
+	if(!(pEvent = (xEvent *)ALLOCATE_LOCAL(pRgn->numRects * 
+					 sizeof(xEvent))))
+		return;
+	pe = pEvent;
+
+	for (i=1; i<=pRgn->numRects; i++, pe++, pBox++)
+	{
+	    pe->u.u.type = GraphicsExpose;
+	    pe->u.graphicsExposure.drawable = drawable;
+	    pe->u.graphicsExposure.x = pBox->x1;
+	    pe->u.graphicsExposure.y = pBox->y1;
+	    pe->u.graphicsExposure.width = pBox->x2 - pBox->x1;
+	    pe->u.graphicsExposure.height = pBox->y2 - pBox->y1;
+	    pe->u.graphicsExposure.count = pRgn->numRects - i;
+	    pe->u.graphicsExposure.majorEvent = major;
+	    pe->u.graphicsExposure.minorEvent = minor;
+	}
+	TryClientEvents(client, pEvent, pRgn->numRects,
+			    0, NoEventMask, NullGrab);
+	DEALLOCATE_LOCAL(pEvent);
+    }
+    else
+    {
+        xEvent event;
+	event.u.u.type = NoExpose;
+	event.u.noExposure.drawable = drawable;
+	event.u.noExposure.majorEvent = major;
+	event.u.noExposure.minorEvent = minor;
+	TryClientEvents(client, &event, 1,
+	    0, NoEventMask, NullGrab);
+    }
 }
 
 void
