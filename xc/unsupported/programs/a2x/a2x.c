@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.53 92/04/13 09:18:47 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.54 92/04/13 17:03:26 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -766,6 +766,62 @@ matches(w, rec, getcw)
     return ok;
 }
 
+double
+compute_distance(rec, univ)
+    Closest *rec;
+    Region univ;
+{
+    Box box;
+    int x, y;
+
+    compute_box(univ, &box);
+    switch (rec->dir) {
+    case 'U':
+    case 'D':
+	if ((rec->dir == 'U') ?
+	    (box.y2 > rec->rooty) : (box.y1 < rec->rooty))
+	    return -1;
+	if (box.x2 < rec->rootx)
+	    x = box.x2;
+	else if (box.x1 > rec->rootx)
+	    x = box.x1;
+	else
+	    x = rec->rootx;
+	y = (rec->dir == 'U') ? box.y2 : box.y1;
+	break;
+    case 'R':
+    case 'L':
+	if ((rec->dir == 'R') ?
+	    (box.x1 < rec->rootx) : (box.x2 > rec->rootx))
+	    return -1;
+	if (box.y2 < rec->rooty)
+	    y = box.y2;
+	else if (box.y1 > rec->rooty)
+	    y = box.y1;
+	else
+	    y = rec->rooty;
+	x = (rec->dir == 'R') ? box.x1 : box.x2;
+	break;
+    case 'C':
+	if (XPointInRegion(univ, rec->rootx, rec->rooty))
+	    return -1;
+	if (box.x2 < rec->rootx)
+	    x = box.x2;
+	else if (box.x1 > rec->rootx)
+	    x = box.x1;
+	else
+	    x = rec->rootx;
+	if (box.y2 < rec->rooty)
+	    y = box.y2;
+	else if (box.y1 > rec->rooty)
+	    y = box.y1;
+	else
+	    y = rec->rooty;
+    }
+    return (rec->xmult * (x - rec->rootx) * (x - rec->rootx) +
+	    rec->ymult * (y - rec->rooty) * (y - rec->rooty));
+}
+
 Bool
 find_closest(rec, parent, pwa, puniv, level)
     Closest *rec;
@@ -782,7 +838,6 @@ find_closest(rec, parent, pwa, puniv, level)
     Bool found;
     double dist;
     Box box;
-    int x, y;
     Region iuniv, univ;
 
     XQueryTree(dpy, parent, &wa.root, &wa.root, &children, &nchild);
@@ -832,53 +887,8 @@ find_closest(rec, parent, pwa, puniv, level)
 	    continue;
 	if (!matches(child, &rec->match, !level))
 	    continue;
-	compute_box(univ, &box);
-	switch (rec->dir) {
-	case 'U':
-	case 'D':
-	    if ((rec->dir == 'U') ?
-		(box.y2 > rec->rooty) : (box.y1 < rec->rooty))
-		continue;
-	    if (box.x2 < rec->rootx)
-		x = box.x2;
-	    else if (box.x1 > rec->rootx)
-		x = box.x1;
-	    else
-		x = rec->rootx;
-	    y = (rec->dir == 'U') ? box.y2 : box.y1;
-	    break;
-	case 'R':
-	case 'L':
-	    if ((rec->dir == 'R') ?
-		(box.x1 < rec->rootx) : (box.x2 > rec->rootx))
-	    	continue;
-	    if (box.y2 < rec->rooty)
-		y = box.y2;
-	    else if (box.y1 > rec->rooty)
-		y = box.y1;
-	    else
-		y = rec->rooty;
-	    x = (rec->dir == 'R') ? box.x1 : box.x2;
-	    break;
-	case 'C':
-	    if (XPointInRegion(univ, rec->rootx, rec->rooty))
-		continue;
-	    if (box.x2 < rec->rootx)
-		x = box.x2;
-	    else if (box.x1 > rec->rootx)
-		x = box.x1;
-	    else
-		x = rec->rootx;
-	    if (box.y2 < rec->rooty)
-		y = box.y2;
-	    else if (box.y1 > rec->rooty)
-		y = box.y1;
-	    else
-		y = rec->rooty;
-	}
-	dist = (rec->xmult * (x - rec->rootx) * (x - rec->rootx) +
-		rec->ymult * (y - rec->rooty) * (y - rec->rooty));
-	if (dist >= rec->best_dist)
+	dist = compute_distance(rec, univ);
+	if (dist < 0 || dist >= rec->best_dist)
 	    continue;
 	rec->best = children[i];
 	rec->best_dist = dist;
