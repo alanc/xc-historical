@@ -1,0 +1,177 @@
+#**********************************************************************
+#
+#    .twmrc
+#
+#**********************************************************************
+
+NoVersion
+NoHighlight
+RestartPreviousState
+ClientBorderWidth
+NoGrabServer
+NoRaiseOnMove
+NoRaiseOnResize
+OpaqueMove
+BorderWidth	2
+TitleFont	"-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
+MenuFont	"-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
+IconFont	"-adobe-helvetica-bold-r-normal--*-100-*-*-*-*-*-*"
+ResizeFont	"6x10"
+NoSaveUnders
+
+###############################################################################
+#                                                                             #
+#                           Declare some nice colors                          #
+#                                                                             #
+###############################################################################
+
+Cursors
+{
+    Button "hand2"
+}
+
+Color
+{
+    DefaultForeground "white"
+    DefaultBackground "blue"
+    BorderColor "#bcc"
+    TitleBackground "#b36"
+    TitleForeground "#dee"
+    MenuBackground "#b36"
+    MenuForeground "#dee"
+    MenuTitleBackground "#b36"
+    MenuTitleForeground "#dee"
+    IconBackground "#b36"
+    IconForeground "#dee"
+    IconBorderColor "#dee"
+    IconManagerBackground "#b36"
+    IconManagerForeground "#dee"
+}
+
+Monochrome
+{
+    IconManagerHighlight  "white"
+}
+
+
+###############################################################################
+#                                                                             #
+#                             Define key bindings                             #
+#                                                                             #
+###############################################################################
+
+MoveDelta 3
+Function "move-or-raise"
+{
+    f.move
+    f.deltastop
+    f.raise
+}
+
+
+DefaultFunction f.nop
+
+Button1 =      : root                     : f.menu "twmops"
+Button1 =      : title                    : f.move
+Button1 = m    : window|icon|frame|title  : f.lower
+Button2 =      : root                     : f.menu "windowops"
+Button2 = m    : window                   : f.resize
+Button2 =      : icon                     : f.iconify
+Button2 = m    : icon                     : f.iconify
+Button3 =      : root                     : f.showiconmgr
+Button3 =      : iconmgr                  : f.hideiconmgr
+Button3 = m    : root                     : f.menu "apps"
+Button3 = m    : window|icon|frame|title  : f.function "move-or-raise"
+
+
+###############################################################################
+#                                                                             #
+#     Display an icon manager across the top of the screen.  Don't manage     #
+#                the windows for which you don't show a title.                #
+#                                                                             #
+###############################################################################
+
+ShowIconManager
+IconManagerGeometry	"360x50+500+1" 6
+IconManagerFont		"-adobe-helvetica-bold-r-normal--*-100-*-*-*"
+IconifyByUnmapping
+DontIconifyByUnmapping
+{
+  "xclock"
+  "xbiff"
+  "xload"
+  "oclock"
+  "TWM Icon Manager"
+  "expo"
+}
+IconManagerDontShow
+{
+  "xclock"
+  "xbiff"
+  "xload"
+  "oclock"
+  "TWM Icon Manager"
+  "expo"
+}
+NoTitle
+{
+  "xclock"
+  "xbiff"
+  "xload"
+  "oclock"
+  "TWM Icon Manager"
+}
+
+IconDirectory "/users/jim/icons"
+Icons
+{
+  "XTerm"	"terminal"
+  "emacs"	"paper"
+}
+#UnknownIcon	"icon"
+
+
+
+
+###############################################################################
+#                                                                             #
+#                          Define some useful menus.                          #
+#                                                                             #
+###############################################################################
+
+menu "twmops"
+{
+"Twm Operations"	f.title
+"Show Iconmgr"		f.showiconmgr
+"Hide Iconmgr"		f.hideiconmgr
+""			f.nop
+"Restart"		f.restart
+""			f.nop
+"Exit"			f.quit
+}
+
+menu "windowops"
+{
+"Window Operations"	f.title
+"Kill Window"		f.destroy
+""			f.nop
+"Identify Window"	f.identify
+"Refresh Screen"	f.refresh
+""			f.nop
+"Move Window"		f.move
+"Lower Window"		f.lower
+"Raise Window"		f.raise
+"Iconify Window"	f.iconify
+"Resize Window"		f.resize
+""			f.nop
+"Focus on Window"	f.focus
+"Unfocus"		f.unfocus
+}
+
+menu "apps"
+{
+"Applications"		f.title
+"xterm"			!"xterm &"
+"xterm -e /bin/sh"	!"xterm -e /bin/sh &"
+"xcalc"			!"xcalc &"
+}
