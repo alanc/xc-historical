@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Resources.c,v 1.62 89/09/11 17:43:26 swick Exp $";
+    "$XConsortium: Resources.c,v 1.63 89/09/12 16:48:24 swick Exp $";
 /* $oHeader: Resources.c,v 1.6 88/09/01 13:39:14 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -68,7 +68,7 @@ void XtCopyDefaultColormap(widget, offset, value)
     int		offset;
     XrmValue    *value;
 {
-    value->addr = (XtPointer)(&DefaultColormapOfScreen(XtScreen(widget)));
+    value->addr = (XtPointer)(&DefaultColormapOfScreen(XtScreenOfObject(widget)));
 } /* XtCopyDefaultColormap */
 
 
@@ -91,7 +91,7 @@ void XtCopyDefaultDepth(widget, offset, value)
     int		offset;
     XrmValue    *value;
 {
-    value->addr = (XtPointer)(&DefaultDepthOfScreen(XtScreen(widget)));
+    value->addr = (XtPointer)(&DefaultDepthOfScreen(XtScreenOfObject(widget)));
 } /* XtCopyDefaultDepth */
 
 /* If the alignment characteristics of your machine are right, these may be
@@ -469,10 +469,7 @@ static XtCacheRef *GetResources(widget, base, names, classes,
     /* Mark each resource as not found on arg list */
     bzero((char *) found, (int) (num_resources * sizeof(Boolean)));
 
-    /* Get display */
-    if (XtIsWidget(widget))
-	dpy = XtDisplay(widget);
-    else dpy = XtDisplay(widget->core.parent);
+    dpy = XtDisplayOfObject(widget);
     
     /* Copy the args into the resources, mark each as found */
     {
@@ -847,18 +844,56 @@ static void GetValues(base, res, num_resources, args, num_args)
     }
 } /* GetValues */
 
-static void CallGetValuesHook(widgetClass, w, args, num_args)
-    WidgetClass	  widgetClass;
+static void CallGetValuesHook(widget_class, w, args, num_args)
+    WidgetClass	  widget_class;
     Widget	  w;
     ArgList	  args;
     Cardinal	  num_args;
 {
-    if (widgetClass->core_class.superclass != NULL) {
+    if (widget_class->core_class.superclass != NULL) {
 	CallGetValuesHook
-	    (widgetClass->core_class.superclass, w, args, num_args);
+	    (widget_class->core_class.superclass, w, args, num_args);
     }
-    if (widgetClass->core_class.get_values_hook != NULL) {
-	(*(widgetClass->core_class.get_values_hook)) (w, args, &num_args);
+    if (widget_class->core_class.get_values_hook != NULL) {
+	(*(widget_class->core_class.get_values_hook)) (w, args, &num_args);
+    }
+}
+
+
+
+static void CallConstraintGetValuesHook(widget_class, w, args, num_args)
+    WidgetClass	  widget_class;
+    Widget	  w;
+    ArgList	  args;
+    Cardinal	  num_args;
+{
+    ConstraintClassExtension ext;
+
+    if (widget_class->core_class.superclass
+	->core_class.class_inited & ConstraintClassFlag) {
+	CallConstraintGetValuesHook
+	    (widget_class->core_class.superclass, w, args, num_args);
+    }
+
+    for (ext = (ConstraintClassExtension)((ConstraintWidgetClass)widget_class)
+		 ->constraint_class.extension;
+	 ext != NULL && ext->record_type != NULLQUARK;
+	 ext = (ConstraintClassExtension)ext->next_extension);
+
+    if (ext != NULL) {
+	if (  ext->version == XtConstraintExtensionVersion
+	      && ext->record_size == sizeof(ConstraintClassExtensionRec)) {
+	    if (ext->get_values_hook != NULL)
+		(*(ext->get_values_hook)) (w, args, &num_args);
+	} else {
+	    String params[1];
+	    Cardinal num_params = 1;
+	    params[0] = widget_class->core_class.class_name;
+	    XtAppWarningMsg(XtWidgetToApplicationContext(w),
+		 "invalidExtension", "xtCreateWidget", "XtToolkitError",
+		 "widget class %s has invalid ConstraintClassExtension record",
+		 params, &num_params);
+	}
     }
 }
 
@@ -882,15 +917,19 @@ void XtGetValues(w, args, num_args)
 	wc->core_class.num_resources, args, num_args);
 
     /* Get constraint values if necessary */
-    if (w->core.constraints != NULL) {
-	ConstraintWidgetClass cwc;
-	cwc = (ConstraintWidgetClass) XtClass(w->core.parent);
+    if (XtIsConstraint(w->core.parent)) {
+	ConstraintWidgetClass cwc
+	    = (ConstraintWidgetClass) XtClass(w->core.parent);
 	GetValues((char*)w->core.constraints, 
 	    (XrmResourceList *)(cwc->constraint_class.resources),
 	    cwc->constraint_class.num_resources, args, num_args);
     }
     /* Notify any class procedures that we have performed get_values */
     CallGetValuesHook(wc, w, args, num_args);
+
+    /* Notify constraint get_values if necessary */
+    if (XtIsConstraint(w->core.parent))
+	CallConstraintGetValuesHook(XtClass(w->core.parent), w, args,num_args);
 } /* XtGetValues */
 
 void XtGetSubvalues(base, resources, num_resources, args, num_args)
