@@ -1,4 +1,4 @@
-/* $XConsortium: XListDev.c,v 1.11 90/05/18 11:24:11 rws Exp $ */
+/* $XConsortium: XListDev.c,v 1.12 90/05/18 11:31:39 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 

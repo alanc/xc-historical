@@ -1,4 +1,4 @@
-/* $XConsortium: XGMotion.c,v 1.5 90/05/18 10:50:51 rws Exp $ */
+/* $XConsortium: XGMotion.c,v 1.6 90/05/18 11:23:19 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 

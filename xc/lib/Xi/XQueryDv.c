@@ -1,4 +1,4 @@
-/* $XConsortium: XQueryDv.c,v 1.5 89/12/06 20:38:47 rws Exp $ */
+/* $XConsortium: XQueryDv.c,v 1.6 90/05/18 11:23:49 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -167,3 +167,8 @@ XDeviceState
     return (state);
     }
 
+XFreeDeviceState (list)
+    XDeviceState *list;
+    {
+    XFree (list);
+    }

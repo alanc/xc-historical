@@ -1,4 +1,4 @@
-/* $XConsortium: XGetFCtl.c,v 1.5 90/05/18 11:23:21 rws Exp $ */
+/* $XConsortium: XGetFCtl.c,v 1.6 90/05/18 13:51:07 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -234,5 +234,11 @@ XFeedbackState
 
     UnlockDisplay(dpy);
     SyncHandle();
-    return (Feedback);
+    return (Sav);
+    }
+
+XFreeFeedbackList (list)
+    XFeedbackState *list;
+    {
+    XFree (list);
     }
