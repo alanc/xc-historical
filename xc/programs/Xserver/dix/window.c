@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.185 87/12/05 12:44:32 rws Locked $ */
+/* $Header: window.c,v 1.186 87/12/09 20:42:10 rws Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -769,9 +769,9 @@ DestroySubwindows(pWin, client)
 	if (pSib != (WindowPtr) NULL)
 	{
 	    event.u.u.type = UnmapNotify;
-	    event.u.unmapNotify.window = pWin->wid;
+	    event.u.unmapNotify.window = pChild->wid;
 	    event.u.unmapNotify.fromConfigure = xFalse;
-	    DeliverEvents(pWin, &event, 1, NullWindow);
+	    DeliverEvents(pChild, &event, 1, NullWindow);
 	}
         else
         {
@@ -2643,17 +2643,16 @@ UnmapSubwindows(pWin, sendExposures)
     Bool wasMapped = (Bool)pWin->realized;
 
     pChild = pWin->lastChild;
-    event.u.u.type = UnmapNotify;
-    event.u.unmapNotify.fromConfigure = xFalse;
     RegionEmpty = pWin->drawable.pScreen->RegionEmpty;
     UnrealizeWindow = pWin->drawable.pScreen->UnrealizeWindow;    
     while (pChild) 
     {
 	if (pChild->mapped) 
         {
+	    event.u.u.type = UnmapNotify;
 	    event.u.unmapNotify.window = pChild->wid;
 	    event.u.unmapNotify.fromConfigure = xFalse;
-	    DeliverEvents(pWin, &event, 1, NullWindow);
+	    DeliverEvents(pChild, &event, 1, NullWindow);
 	    pChild->mapped = 0;
             if (wasMapped)
 	    {
