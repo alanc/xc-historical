@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Destroy.c,v 1.15 88/09/06 09:48:54 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Destroy.c,v 1.16 88/09/06 16:27:44 jim Exp $";
 /* $oHeader: Destroy.c,v 1.3 88/09/01 11:27:27 asente Exp $ */
 #endif lint
 
@@ -69,8 +69,12 @@ static void Phase1Destroy (widget)
 static void Phase2Callbacks(widget)
     Widget    widget;
 {
-    CallbackList callbacks = (CallbackList)(widget->core.destroy_callbacks);
-    _XtCallCallbacks(&callbacks, (Opaque) NULL);
+    extern CallbackList* _XtCallbackList();
+    if (widget->core.destroy_callbacks != NULL) {
+	_XtCallCallbacks(
+	      _XtCallbackList((CallbackStruct*)widget->core.destroy_callbacks),
+	      (caddr_t) NULL);
+    }
 } /* Phase2Callbacks */
 
 static void Phase2Destroy(widget)
