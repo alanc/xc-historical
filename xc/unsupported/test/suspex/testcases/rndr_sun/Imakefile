@@ -1,4 +1,4 @@
-# $XConsortium$
+# $XConsortium: Imakefile,v 1.0 93/11/22 12:53:09 rws Exp $
 #
 #       NOTICE TO USER: The source code in this file is copyrighted under
 #       U.S. and international laws.  SunSoft, Inc., a Sun Microsystems,
@@ -38,9 +38,8 @@ SUSPEX_LIB = $(SUSPEX_LIB_DIR)/libSusPEX.a
 CDEBUGFLAGS = -g
 INCLUDES = -I. -I$(COMMON_DIR) 
 
-PEXLIB=-lPEX5
-LDLIBS = $(SUSPEX_LIB) $(PEXLIB) $(XMULIB) $(XLIB) -lm
-LDOPTIONS = -L$(LIBDIR)
+LOCAL_LIBRARIES = $(SUSPEX_LIB) $(PEXUT_LIB) $(PEXLIB) $(XMULIB) $(XLIB)
+SYS_LIBRARIES = MathLibrary
 
 PROGS = accum_state clear_image clear_z clipList copy_nameset copy_plc \
 	echo_mode filters hlhsr hlhsr_z lut_dynamics render_elements \
@@ -54,21 +53,24 @@ $(SUSPEX_LIB):
 $(COMMON_OBJS):
 	(cd $(COMMON_DIR); make)
 
-NormalProgramTarget(accum_state, accum_state.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(clear_image, clear_image.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(clear_z, clear_z.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(clipList, clipList.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(copy_nameset, copy_nameset.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(copy_plc, copy_plc.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(echo_mode, echo_mode.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(filters, filters.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(hlhsr,hlhsr.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(hlhsr_z, hlhsr_z.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(lut_dynamics, lut_dynamics.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(render_elements,render_elements.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(rndr_targets, rndr_targets.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(shareDraw, shareDraw.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(window_resize, window_resize.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
+#define CommonTarget(prog) \
+  NormalProgramTarget(prog, prog.o $(SHARED_MAIN_OBJS), $(PEXUT_LIB) $(SUSPEX_LIB),$(LOCAL_LIBRARIES),)
+
+CommonTarget(accum_state)
+CommonTarget(clear_image)
+CommonTarget(clear_z)
+CommonTarget(clipList)
+CommonTarget(copy_nameset)
+CommonTarget(copy_plc)
+CommonTarget(echo_mode)
+CommonTarget(filters)
+CommonTarget(hlhsr)
+CommonTarget(hlhsr_z)
+CommonTarget(lut_dynamics)
+CommonTarget(render_elements)
+CommonTarget(rndr_targets)
+CommonTarget(shareDraw)
+CommonTarget(window_resize)
 
 DependTarget()
 

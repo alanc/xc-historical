@@ -1,4 +1,4 @@
-# $XConsortium$
+# $XConsortium: Imakefile,v 1.0 93/11/22 12:53:03 rws Exp $
 #
 #       NOTICE TO USER: The source code in this file is copyrighted under
 #       U.S. and international laws.  SunSoft, Inc., a Sun Microsystems,
@@ -36,9 +36,8 @@ SUSPEX_LIB = $(SUSPEX_LIB_DIR)/libSusPEX.a
 CDEBUGFLAGS = -g
 INCLUDES = -I. -I$(COMMON_DIR) 
 
-PEXLIB=-lPEX5
-LDLIBS = $(SUSPEX_LIB) $(PEXLIB) $(XMULIB) $(XLIB) -lm
-LDOPTIONS = -L$(LIBDIR)
+LOCAL_LIBRARIES = $(SUSPEX_LIB) $(PEXUT_LIB) $(PEXLIB) $(XMULIB) $(XLIB)
+SYS_LIBRARIES = MathLibrary
 
 PROGS = copy_struct del_struct_el element_search \
 	fetch_lines \
@@ -53,16 +52,20 @@ $(SUSPEX_LIB):
 $(COMMON_OBJS):
 	(cd $(COMMON_DIR); make)
 
-NormalProgramTarget(copy_struct, copy_struct.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(del_struct_el, del_struct_el.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(element_search, element_search.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(fetch_lines, fetch_lines.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(get_struct_info,get_struct_info.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(get_lines_info, get_lines_info.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(struct_edit,struct_edit.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(struct_hier,struct_hier.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(struct_ref, struct_ref.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(struct_ref2, struct_ref2.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
+#define CommonTarget(prog) \
+  NormalProgramTarget(prog, prog.o $(SHARED_MAIN_OBJS), $(PEXUT_LIB) $(SUSPEX_LIB),$(LOCAL_LIBRARIES),)
+
+
+CommonTarget(copy_struct)
+CommonTarget(del_struct_el)
+CommonTarget(element_search)
+CommonTarget(fetch_lines)
+CommonTarget(get_struct_info)
+CommonTarget(get_lines_info)
+CommonTarget(struct_edit)
+CommonTarget(struct_hier)
+CommonTarget(struct_ref)
+CommonTarget(struct_ref2)
 
 DependTarget()
 
