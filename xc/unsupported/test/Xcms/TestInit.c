@@ -1,18 +1,24 @@
-/* $XConsortium: TestInit.c,v 1.3 91/02/17 17:16:58 rws Exp $ */
+/* $XConsortium: TestInit.c,v 1.4 91/05/14 15:03:08 dave Exp $ */
 
 /*
- *	Copyright (c) 1988, Tektronix, Inc.
- *	Confidential -- All proprietary rights reserved.
- *	Licensed Material -- Property of Tektronix, Inc.
+ * (c) Copyright 1988, Tektronix Inc.
+ * 	All Rights Reserved
  *
- *	This program is the property of Tektronix, Inc. or others
- *	from whom Tektronix has obtained a licensing right, and is
- *	considered by Tektronix to be confidential.  It is protected
- *	by U.S. copyright law as an unpublished work and is
- *	furnished pursuant to a written license agreement.  It may
- *	not be used, copied or otherwise reproduced, or disclosed to
- *	others except in accordance with the terms and conditions of
- *	that agreement.
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted,
+ * provided that the above copyright notice appear in all copies and that
+ * both that copyright notice and this permission notice appear in
+ * supporting documentation, and that the name of Tektronix not be used
+ * in advertising or publicity pertaining to distribution of the software
+ * without specific, written prior permission.
+ *
+ * Tektronix disclaims all warranties with regard to this software, including
+ * all implied warranties of merchantability and fitness, in no event shall
+ * Tektronix be liable for any special, indirect or consequential damages or
+ * any damages whatsoever resulting from loss of use, data or profits,
+ * whether in an action of contract, negligence or other tortious action,
+ * arising out of or in connection with the use or performance of this
+ * software.
  *
  *	NAME
  *		testinit.c -- TekCMS LibTest Utilities
