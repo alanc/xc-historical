@@ -45,11 +45,12 @@ software without specific, written prior permission.
  *-----------------------------------------------------------------------
  */
 void
-mfbSaveAreas(pPixmap, prgnSave, xorg, yorg)
+mfbSaveAreas(pPixmap, prgnSave, xorg, yorg, pWin)
     PixmapPtr	  	pPixmap;  	/* Backing pixmap */
     RegionPtr	  	prgnSave; 	/* Region to save (pixmap-relative) */
     int	    	  	xorg;	    	/* X origin of region */
     int	    	  	yorg;	    	/* Y origin of region */
+    WindowPtr		pWin;
 {
     register DDXPointPtr pPt;
     DDXPointPtr		pPtsInit;
@@ -101,11 +102,12 @@ mfbSaveAreas(pPixmap, prgnSave, xorg, yorg)
  *-----------------------------------------------------------------------
  */
 void
-mfbRestoreAreas(pPixmap, prgnRestore, xorg, yorg)
+mfbRestoreAreas(pPixmap, prgnRestore, xorg, yorg, pWin)
     PixmapPtr	  	pPixmap;  	/* Backing pixmap */
     RegionPtr	  	prgnRestore; 	/* Region to restore (screen-relative)*/
     int	    	  	xorg;	    	/* X origin of window */
     int	    	  	yorg;	    	/* Y origin of window */
+    WindowPtr		pWin;
 {
     register DDXPointPtr pPt;
     DDXPointPtr		pPtsInit;

@@ -1,4 +1,4 @@
-/* $XConsortium: cfb.h,v 5.29 93/09/20 20:08:19 dpw Exp $ */
+/* $XConsortium: cfb.h,v 5.30 93/09/21 08:55:31 dpw Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -467,7 +467,8 @@ extern void cfbSaveAreas(
     PixmapPtr /*pPixmap*/,
     RegionPtr /*prgnSave*/,
     int /*xorg*/,
-    int /*yorg*/
+    int /*yorg*/,
+    WindowPtr /*pWin*/
 #endif
 );
 
@@ -476,7 +477,8 @@ extern void cfbRestoreAreas(
     PixmapPtr /*pPixmap*/,
     RegionPtr /*prgnRestore*/,
     int /*xorg*/,
-    int /*yorg*/
+    int /*yorg*/,
+    WindowPtr /*pWin*/
 #endif
 );
 /* cfbcmap.c */

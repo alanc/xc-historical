@@ -1,4 +1,4 @@
-/* $XConsortium: svgaIo.c,v 1.4 93/09/23 18:47:48 rws Exp $ */
+/* $XConsortium: svgaIo.c,v 1.5 93/09/29 11:47:29 rws Exp $ */
 /*
  * Copyright 1990,91,92,93 by Thomas Roell, Germany.
  * Copyright 1991,92,93    by SGCS (Snitily Graphics Consulting Services), USA.
@@ -30,9 +30,6 @@
 #include "atKeynames.h"
 #include "inputstr.h"
 #include <sys/kd.h>
-
-extern void mieqProcessInputEvents();
-extern void mieqEnqueue();
 
 xqEventQueue *XqueQaddr = NULL;
 static int          XqueSema = 0;

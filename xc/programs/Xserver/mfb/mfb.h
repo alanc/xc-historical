@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfb.h,v 5.21 93/09/13 09:31:26 dpw Exp $ */
+/* $XConsortium: mfb.h,v 5.22 93/09/20 20:26:42 dpw Exp $ */
 /* Monochrome Frame Buffer definitions 
    written by drewry, september 1986
 */
@@ -186,7 +186,8 @@ extern void mfbSaveAreas(
     PixmapPtr /*pPixmap*/,
     RegionPtr /*prgnSave*/,
     int /*xorg*/,
-    int /*yorg*/
+    int /*yorg*/,
+    WindowPtr /*pWin*/
 #endif
 );
 
@@ -195,7 +196,8 @@ extern void mfbRestoreAreas(
     PixmapPtr /*pPixmap*/,
     RegionPtr /*prgnRestore*/,
     int /*xorg*/,
-    int /*yorg*/
+    int /*yorg*/,
+    WindowPtr /*pWin*/
 #endif
 );
 /* mfbclip.c */

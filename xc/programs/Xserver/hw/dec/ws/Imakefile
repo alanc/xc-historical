@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.8 93/09/04 17:26:26 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.9 93/09/04 19:16:45 rws Exp $
 #include <Server.tmpl>
 
 XCOMM
@@ -13,7 +13,7 @@ OFILES = init.o
 
 OBJS = ws_io.o ws_color.o cfbinit.o ext_device.o $(ACC).o mdepthinit.o
 INCLUDES = -I../../../mfb -I../../../mi -I../../../include -I$(INCLUDESRC) \
-		-I$(EXTINCSRC)
+		-I$(EXTINCSRC) -I$(FONTINCSRC)
 LINTLIBS = ../../../dix/llib-ldix.ln ../../../os/llib-los.ln \
 	   ../../mfb/llib-lmfb.ln ../../mi/llib-lmi.ln
 

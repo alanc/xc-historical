@@ -1,5 +1,5 @@
 
-/* $XConsortium: sun.h,v 5.24 93/10/05 15:27:43 kaleb Exp $ */
+/* $XConsortium: sun.h,v 5.25 93/10/11 11:51:05 rws Exp $ */
 
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
@@ -217,7 +217,7 @@ typedef struct {
 
 typedef struct {
     ColormapPtr	    installedMap;
-    Bool	    (*CloseScreen)();
+    CloseScreenProcPtr CloseScreen;
     void	    (*UpdateColormap)();
     sunCursorRec    hardwareCursor;
     Bool	    hasHardwareCursor;

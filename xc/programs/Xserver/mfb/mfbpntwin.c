@@ -1,4 +1,4 @@
-/* $XConsortium: mfbpntwin.c,v 5.8 91/12/26 20:19:31 rws Exp $ */
+/* $XConsortium: mfbpntwin.c,v 5.9 93/09/13 09:32:05 dpw Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -33,8 +33,7 @@ SOFTWARE.
 
 #include "mfb.h"
 #include "maskbits.h"
-
-extern void miPaintWindow();
+#include "mi.h"
 
 void
 mfbPaintWindow(pWin, pRegion, what)

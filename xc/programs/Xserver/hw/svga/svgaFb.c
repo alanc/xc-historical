@@ -1,4 +1,4 @@
-/* $XConsortium: svgaFb.c,v 1.2 93/09/20 12:09:57 rws Exp $ */
+/* $XConsortium: svgaFb.c,v 1.3 93/09/20 14:05:32 rws Exp $ */
 /*
  * Copyright 1990,91,92,93 by Thomas Roell, Germany.
  * Copyright 1991,92,93    by SGCS (Snitily Graphics Consulting Services), USA.
@@ -39,10 +39,6 @@
 #endif
 
 extern miBSFuncRec svgaBankBSFuncRec;
-
-extern Bool miInitializeBackingStore();
-extern Bool miDCInitialize();
-extern Bool miScreenInit();
 
 static Bool ScreenIsSaved = FALSE;
 static ColormapPtr pInstalledMap;
@@ -345,8 +341,7 @@ svgaSVGAScreenInit(
   ShmRegisterFbFuncs(pScreen);
 #endif
 
-  if (!miInitializeBackingStore(pScreen, &svgaBankBSFuncRec))
-    return FALSE;
+  miInitializeBackingStore(pScreen, &svgaBankBSFuncRec);
 
   if (!miDCInitialize(pScreen, &svgaScreenFuncsRec))
     return FALSE;

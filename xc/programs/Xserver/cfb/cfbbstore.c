@@ -16,7 +16,7 @@
  */
 #ifndef lint
 static char rcsid[] =
-"$XConsortium: cfbbstore.c,v 5.5 90/03/10 15:48:40 keith Exp $ SPRITE (Berkeley)";
+"$XConsortium: cfbbstore.c,v 5.6 92/05/05 13:37:36 keith Exp $ SPRITE (Berkeley)";
 #endif
 
 #include    "cfb.h"
@@ -48,11 +48,12 @@ static char rcsid[] =
  *-----------------------------------------------------------------------
  */
 void
-cfbSaveAreas(pPixmap, prgnSave, xorg, yorg)
+cfbSaveAreas(pPixmap, prgnSave, xorg, yorg, pWin)
     PixmapPtr	  	pPixmap;  	/* Backing pixmap */
     RegionPtr	  	prgnSave; 	/* Region to save (pixmap-relative) */
     int	    	  	xorg;	    	/* X origin of region */
     int	    	  	yorg;	    	/* Y origin of region */
+    WindowPtr		pWin;
 {
     register DDXPointPtr pPt;
     DDXPointPtr		pPtsInit;
@@ -108,11 +109,12 @@ cfbSaveAreas(pPixmap, prgnSave, xorg, yorg)
  *-----------------------------------------------------------------------
  */
 void
-cfbRestoreAreas(pPixmap, prgnRestore, xorg, yorg)
+cfbRestoreAreas(pPixmap, prgnRestore, xorg, yorg, pWin)
     PixmapPtr	  	pPixmap;  	/* Backing pixmap */
     RegionPtr	  	prgnRestore; 	/* Region to restore (screen-relative)*/
     int	    	  	xorg;	    	/* X origin of window */
     int	    	  	yorg;	    	/* Y origin of window */
+    WindowPtr		pWin;
 {
     register DDXPointPtr pPt;
     DDXPointPtr		pPtsInit;

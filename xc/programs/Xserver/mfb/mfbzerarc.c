@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mfbzerarc.c,v 5.13 92/12/24 09:26:43 rws Exp $ */
+/* $XConsortium: mfbzerarc.c,v 5.14 92/12/24 13:07:59 rws Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -32,8 +32,7 @@ without any express or implied warranty.
 #include "mfb.h"
 #include "maskbits.h"
 #include "mizerarc.h"
-
-extern void miPolyArc(), miZeroPolyArc();
+#include "mi.h"
 
 #if (BITMAP_BIT_ORDER == MSBFirst)
 #define LEFTMOST	((PixelType) 0x80000000)

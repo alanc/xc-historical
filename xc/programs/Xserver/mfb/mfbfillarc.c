@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mfbfillarc.c,v 5.8 92/12/23 17:40:53 rws Exp $ */
+/* $XConsortium: mfbfillarc.c,v 5.9 92/12/24 09:26:18 rws Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -26,8 +26,7 @@ without any express or implied warranty.
 #include "mfb.h"
 #include "maskbits.h"
 #include "mifillarc.h"
-
-extern void miPolyFillArc();
+#include "mi.h"
 
 static void
 mfbFillEllipseSolid(pDraw, arc, rop)

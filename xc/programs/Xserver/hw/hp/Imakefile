@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 3.4 93/09/04 17:27:25 rws Exp $
+XCOMM $XConsortium: Imakefile,v 3.5 93/10/07 10:21:00 rws Exp $
 #include <Server.tmpl>
 
 #define IHaveSubdirs
@@ -27,7 +27,7 @@ DEFINES = $(ANSI_DEFINES)
 LIB_DEFINES = -DLIBDIR=\"$(LIBDIR)\"
 
 INCLUDES = -I. -I./include -I./input -I../../mfb -I../../cfb -I../../mi \
-	-I../../include -I$(INCLUDESRC) -I$(EXTINCSRC)
+	-I../../include -I$(INCLUDESRC) -I$(EXTINCSRC) -I$(FONTINCSRC) 
 
 LINTLIBS = ../../dix/llib-ldix.ln ../../os/4.2bsd/llib-los.ln \
 	../mfb/llib-lmfb.ln ../mi/llib-lmi.ln ../cfb/llib-lcfb.ln

@@ -1,4 +1,4 @@
-/* $XConsortium: svgaBank.c,v 1.5 93/09/20 12:05:03 rws Exp $ */
+/* $XConsortium: svgaBank.c,v 1.6 93/09/20 14:04:03 rws Exp $ */
 /*
  * Copyright 1990,91,92,93 by Thomas Roell, Germany.
  * Copyright 1991,92,93    by SGCS (Snitily Graphics Consulting Services), USA.
@@ -1522,7 +1522,8 @@ svgaBankSaveAreas(
     PixmapPtr pPixmap,
     RegionPtr prgnSave,
     int       xorg,
-    int       yorg
+    int       yorg,
+    WindowPtr pWin
 )
 {
   ScreenPtr         pScreen = pPixmap->drawable.pScreen;
@@ -1544,7 +1545,7 @@ svgaBankSaveAreas(
 
       (*pScreen->TranslateRegion)(&rgnClipped, -xorg, -yorg);
 
-      cfbSaveAreas(pPixmap, &rgnClipped, xorg, yorg);
+      cfbSaveAreas(pPixmap, &rgnClipped, xorg, yorg, pWin);
     }
   }
 
@@ -1557,7 +1558,8 @@ svgaBankRestoreAreas(
     PixmapPtr pPixmap,
     RegionPtr prgnRestore,
     int       xorg,
-    int       yorg
+    int       yorg,
+    WindowPtr pWin
 )
 {
   ScreenPtr         pScreen = pPixmap->drawable.pScreen;
@@ -1576,7 +1578,7 @@ svgaBankRestoreAreas(
 
       SET_SINGLE_BANK(pDrawable, i);
       
-      cfbRestoreAreas(pPixmap, &rgnClipped, xorg, yorg);
+      cfbRestoreAreas(pPixmap, &rgnClipped, xorg, yorg, pWin);
     }
 
   }
