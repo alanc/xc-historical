@@ -1,18 +1,292 @@
-.TH XEDIT 1 "1 March 1988" "X Version 11"
-.UC 4
+.TH xedit 1X
 .SH NAME
-xedit \- simple text editor
-.SH SYNOPSIS
-.B Xedit
-[-r] [-display \fIhost\fP:\fIdpy\fP]
-.SH DESCRIPTION
-.I Xedit
-displays text.  It accepts the standard X toolkit command line options.
-.SH BUGS
-There are lots of bugs.  There are lots of lacking features.
-Does not yet implement 3d extensions.
-.SH COPYRIGHT
-Copyright 1988, Digital Equipment Corporation.
-.br
-See \fIX(1)\fP for a full statement of rights and permissions.
+xedit - X Toolkit-based text editor
+.SH SYNTAX
+\fBxedit\fR [ \fIgeometry\fP ]  [ \fIdisplay\fR ] [ \fIfile\fP ]
+.SH ARGUMENTS
+.IP \fIgeometry\fR 15
+Specifies the width, length, and location of
+the
+.B xedit
+window.
+If the geometry argument is not specified,
+.B xedit
+uses mouse input.
 
+The geometry argument has the format
+\fB=\fR[\fIwidth\fR][x\fIlength\fR][\fIx\fR][\fIy\fR].
+.RS
+.IP \fIwidth\fR 15
+Specifies the number of pixels of the window's horizontal dimension.
+.IP \fIlength\fR
+Specifies the number of pixels of the window's vertical dimension.
+.IP \fIx\fR
+Specifies the x screen coordinate (pixel value)
+for the starting corner of the window.
+.IP \fIy\fR
+Specifies the y screen coordinate (pixel value)
+for the starting corner of the
+window.
+.PP
+Depending on which corner of the screen each is relative to,
+the x and y coordinates
+must be preceded by a plus (+) or a minus (\-).
+For more information about the screen coordinate system,
+see
+.MS X 1X .
+.RE
+.IP "\fIdisplay\fR" 15
+Specifies the display screen on which
+.B xedit
+displays its window.
+If the display argument is not specified,
+.B xedit
+uses the display screen specified by your DISPLAY environment variable.
+The display argument has the format \fIhostname\fP\^:\^\fInumber\fP.
+Using \fB::\fP instead of \fB:\fP
+indicates that DECNET is to be used for transport.
+.RS
+.IP \fIhostname\fP 15
+Specifies the name of the host machine on which the
+display is connected.
+You can specify the name 
+the name
+.B unix 
+or leave the field blank
+to use UNIX IPC,
+or the name of your host machine to use TCP.
+.IP \fInumber\fP 15
+Specifies the number of the display on that host machine.
+.RE
+.PP
+.RS 15
+The default is \fB:0\fP.
+.RE
+.IP "\fIfile\fR" 15
+Specifies the file that is to be loaded during start-up.
+If a file is not specified,
+.B xedit
+lets you load a file or create a new file after it has started up.
+.SH DESCRIPTION
+The
+.B xedit
+text editor is an X Toolkit-based window-oriented text editor.
+At start-up,
+.B xedit
+provides a window that consists of the following three areas:
+.IP "Commands Menu" 25
+Lists editing commands (for example, \fBUndo\fP or \fBSearch\fP).
+.IP "Message Window"
+Displays
+.B xedit
+messages.
+In addition, this window can be used as a scratch pad.
+.IP "Edit Window"
+Displays the text of the file that you are editing or creating.
+.SH COMMANDS
+.IP "Quit" 25
+Quits the current editing session.
+If any changes have not been saved,
+.B xedit 
+displays a warning message and allows you to save the file.
+.IP "Save"
+Stores a copy of the original, unedited file in \fIfile\fR.BAK. 
+Then, overwrites the original file with the edited contents.
+.IP "Edit"
+Allows the text displayed in the Edit window to be edited.
+.IP "Load"
+Loads the specified file and displays it in the Edit window.
+.IP "Undo"
+Undoes the last edit only.
+.IP "More"
+Undoes each edit previous to the last edit,
+which must first be undone with the 
+.B Undo
+command.
+.IP "Jump"
+Advances the cursor from the beginning of the file to the text line
+that corresponds to the selected line number.
+.IP "<<"
+Searches from the cursor back to the beginning of the file for the string
+entered in the Search input box.
+If you do not enter a string in the Search input box,
+.B xedit
+automatically copies the last string that you selected from any
+X application into the Search input box and searches for that string.
+.IP "Search >>"
+Searches from the cursor forward to the end of the file for the string
+entered in the search input box.
+If you do not enter a string in the Search input box,
+.B xedit
+automatically copies the last string that you selected from any
+X application into the Search input box and searches for that string.
+.IP "Replace"
+Replaces the last searched-for string
+with the string specified in the Replace input box.
+If no string has been previously searched for,
+searches from the insert cursor to the end of the file 
+for the next occurrence of the search string and highlights it.
+.IP "All"
+Repositions the cursor at the beginning of the file and replaces all 
+occurrences of the search string with the string specified in the 
+Replace input box.
+.SH RESTRICTIONS
+Large numbers of certain edit functions (for example, Undo or More)
+tend to degrade performance over
+time.
+If there is a noticeable decrease in response time,
+save and reload the file.
+.SH X DEFAULTS
+.LP
+Like most X-based applications,
+.B xedit
+reads the \fB.Xdefaults\fR file during start-up
+and uses the appropriate resource specification to customize the appearance 
+or characteristics of its displayed
+.B xedit
+window.
+The format for a resource
+specification in the \fB.Xdefaults\fP file is:
+.sp
+.DS
+.TA 2.5i
+.ta 2.5i
+[\^\fIname\fP.\^]\^\fIresource\fR\^:	\fIvalue\fR
+.DE
+.IP \fIname\fR 1i
+Specifies the application name or, in the case of X Toolkit-based applications,
+the name string that restricts the resource assignment to
+that application or to a component of an application.
+If this argument is not specified,
+the resource assignment is globally available to all X applications.
+.IP \fIresource\fR 1i
+Specifies the X resource.
+.IP \fIvalue\fR 1i
+Specifies the value that is to be assigned to the resource.
+.LP
+Because each X Toolkit-based application can consist of a combination of
+widgets (for example, command buttons and a scroll bar),
+the name string
+can be formed by adding widget class and name identifiers 
+to the string.
+For further information about adding class and name identifiers,
+see the \fIGuide to the xedit Editor\fP.
+.PP
+For
+.B xedit,
+the available class identifiers are:
+.sp
+.nf
+ButtonBox
+Command
+Scrollbar
+Text   
+.fi
+.PP
+For
+.B xedit,
+the available name identifiers are:
+.sp
+.nf
+All
+Edit
+EditWindow
+Jump
+Load
+MessageWindow
+More
+Quit
+Replace
+Save
+Undo
+xedit
+.fi
+.sp
+.LP
+For
+.B xedit,
+the available resources are:
+.IP EnableBackups 22
+Specifies that,
+when edits made to an existing file are saved,
+.B xedit
+is to copy the original version of that file to \fIfile\fR.BAK 
+before it saves the changes.
+If the value of this option is specified as off, 
+a backup file is not created.
+.IP background
+Specifies the background color to be displayed in command buttons.
+The default is white.
+.IP border
+Specifies the border color of the 
+.B xedit
+window.
+.IP borderWidth
+Specifies the border width, in pixels, of the 
+.B xedit
+window.
+.IP font
+Specifies the font displayed in the
+.B xedit
+window.
+.IP foreground
+Specifies the foreground color of the
+.B xedit
+window.
+The default is black.
+.IP geometry
+Specifies the geometry (window size and screen location)
+to be used as the default for the 
+.B xedit
+window.
+For information about the format of the geometry specification,
+see ARGUMENTS.
+.IP internalHeight
+Specifies the internal horizontal padding (spacing between text and button
+border) for command buttons.
+.IP internalWidth
+Specifies the internal vertical padding (spacing between text and button
+border) for command buttons.
+.SH KEY BINDINGS
+.LP
+Each specification included in the \f(TR.XtActions\fP file
+modifies a key setting
+for the editor that
+.B xedit
+uses.
+When defining key specifications,
+the following resource specification must be placed in your \f(TR\.Xdefaults\fP
+file.
+.EX
+text.EventBindings:     .XtActions
+.EE
+.LP
+Each key specification assigns an editor command to a named
+key and/or mouse combination and has the format:
+.sp
+.DS
+.TA .5i 1.5i
+.ta .5i 1.5i
+\fIkey\fP\^:	\fIfunction\fR
+.DE
+.sp
+.IP \fIkey\fR 15
+Specifies the key or mouse button that is used to invoke the named function.
+.IP \fIfunction\fR
+Specifies the function to be invoked when the named key is pressed.
+.LP
+For more information about specifications in the
+.B .XtActions
+file,
+see
+.MS X 1X .
+.SH FILES
+~/.Xdefaults
+.br
+~/.XtActions
+.br
+/usr/lib/.Xdefaults
+.br
+/usr/lib/.XtActions
+.SH SEE ALSO
+X(1X)
