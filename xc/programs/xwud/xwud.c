@@ -1,7 +1,7 @@
 /* 
  * $Locker: dkk $ 
  */ 
-static char	*rcsid = "$Header: xwud.c,v 1.1 87/05/29 08:55:58 dkk Locked $";
+static char	*rcsid = "$Header: xwud.c,v 1.2 87/05/29 10:00:53 dkk Locked $";
 #include <X11/copyright.h>
 
 /* Copyright 1985, 1986, Massachusetts Institute of Technology */
@@ -32,7 +32,7 @@ static char	*rcsid = "$Header: xwud.c,v 1.1 87/05/29 08:55:58 dkk Locked $";
  */
 
 #ifndef lint
-static char *rcsid_xwud_c = "$Header: xwud.c,v 1.1 87/05/29 08:55:58 dkk Locked $";
+static char *rcsid_xwud_c = "$Header: xwud.c,v 1.2 87/05/29 10:00:53 dkk Locked $";
 #endif
 
 #include <X11/Xlib.h>
@@ -43,11 +43,18 @@ extern char *calloc();
 
 #include <X11/XWDFile.h>   /*  Note:  XWDFile.h (in xwd now) must be moved %%*/
 
-typedef enum _bool {FALSE, TRUE} Bool;
+/* typedef enum _bool {FALSE, TRUE} Bool; %%*/
 
 #define MAX(a, b) (a) > (b) ? (a) : (b)
 #define MIN(a, b) (a) < (b) ? (a) : (b)
 #define ABS(a) (a) < 0 ? -(a) : (a)
+
+#define UBPS (sizeof(short)/2) /* useful bytes per short */
+#define BitmapSize(width, height) (((((width) + 15) >> 3) &~ 1) * (height) * UBPS)
+#define XYPixmapSize(width, height, planes) (BitmapSize(width, height) * (planes))
+#define BZPixmapSize(width, height) ((width) * (height))
+#define WZPixmapSize(width, height) (((width) * (height)) << 1)
+
 
 #define FAILURE 0
 
@@ -60,6 +67,7 @@ main(argc, argv)
     register int i;
     register int *histbuffer;
     register u_short *wbuffer;
+    XImage *image;
     register char *buffer;
 
     int j, status;
@@ -70,13 +78,15 @@ main(argc, argv)
     int backpixel;
     int screen;
     unsigned buffer_size, total_buffer_size;
+    unsigned long value_mask = 0;
+    long tmp;
     int win_name_size;
     char *str_index;
     char *file_name;
     char display[256];
     char *win_name;
-    Bool standard_in = TRUE;
-    Bool newcolors = FALSE, debug = FALSE, inverse = FALSE;
+    Bool standard_in = True;
+    Bool newcolors = False, debug = False, inverse = False;
 
     XColor *pixcolors, *newpixcolors;
     Display *dpy;
@@ -85,6 +95,9 @@ main(argc, argv)
     Colormap colormap;
     XEvent event;
     register XExposeEvent *xevent = (XExposeEvent *)&event;
+
+    GC gc;
+    XGCValues *gc_val;
 
     XWDFileHeader header;
 
@@ -104,15 +117,15 @@ main(argc, argv)
 	if (strncmp(argv[i], "-in", 4) == 0) {
 	    if (++i >= argc) Syntax(argv[0]);
 	    file_name = argv[i];
-	    standard_in = FALSE;
+	    standard_in = False;
 	    continue;
 	}
 	if(strcmp(argv[i], "-inverse") == 0) {
-	    inverse = TRUE;
+	    inverse = True;
 	    continue;
 	}
 	if(strcmp(argv[i], "-debug") == 0) {
-	    debug = TRUE;
+	    debug = True;
 	    continue;
 	}
 	Syntax(argv[0]);
@@ -148,10 +161,12 @@ main(argc, argv)
      */
     if (header.file_version != XWD_FILE_VERSION) {
 	fprintf(stderr,"xwud: XWD file format version missmatch.");
-	if(header.file_version == 5 && header.display_planes == 1)
+	if((header.file_version == 5 ||header.file_version == 6)
+	   && header.display_planes == 1)
 	  fprintf(stderr,"\n      (monochrome works anyway)\n");
 	else Error("exiting.");
-    }
+      }
+
     screen = DefaultScreen(dpy);
     colormap = DefaultColormap(dpy, screen);
     if(DisplayPlanes(dpy, screen) < header.display_planes)
@@ -229,7 +244,7 @@ main(argc, argv)
 	  Error("Can't query the color map?");
 	for(i=0; i<header.window_ncolors; i++)
 	  if(!ColorEqual(&pixcolors[i], &newpixcolors[i])) {
-	      newcolors = TRUE;
+	      newcolors = True;
 	      break;
 	  }
 	if(debug) {
@@ -256,14 +271,16 @@ main(argc, argv)
      */
     (void) fclose(in_file);
 
+    image->data = buffer;   /*  %%*/
+
     /*
      * If necessary, get and store the new colors, convert the pixels to the
      * new colors appropriately.
      */
     if(newcolors) {
 	cpixels = (int *)calloc(header.window_ncolors+1,sizeof(int));
-	if(XGetColorCells(0, header.window_ncolors, 0, &cplanes, cpixels)
-	   == 0)
+	if(/*XGetColorCells(0, header.window_ncolors, 0, &cplanes, cpixels)
+	   == 0 %*/ 1)
 	  Error("Can't allocate colors.");
 	for(i=0; i<header.window_ncolors; i++) {
 	    newpixcolors[i].pixel = cpixels[i];
@@ -310,7 +327,7 @@ main(argc, argv)
     /*
      * Create the image window.
      */
-    image_win = XCreateWindow(dpy,
+    image_win = XCreateSimpleWindow(dpy,
 	RootWindow(dpy, screen),
 	header.window_x, header.window_y,
 	header.pixmap_width, header.pixmap_height,
@@ -338,13 +355,21 @@ main(argc, argv)
     /*
      * Set up a while loop to maintain the image.
      */
-    while (TRUE) {
+    while (True) {
 	int i, nbytes;
 	/*
 	 * Wait on mouse input event to terminate.
 	 */
 	XNextEvent(dpy, &event);
 	if (event.type == ButtonPressMask) break;
+
+	value_mask |= GCForeground;
+	value_mask |= GCBackground;
+
+	gc_val->foreground = BlackPixel (dpy, screen);  /*  Default  */
+	gc_val->background = WhitePixel (dpy, screen);  /*  Default  */
+
+	gc = XCreateGC (dpy, image_win, value_mask, gc_val);
 
 	switch((int)event.type) {
 /*	  case ExposureMask:  /* Copy the data into the window.%%(dupl)*/
@@ -354,31 +379,46 @@ main(argc, argv)
 		  XYPixmapSize(header.pixmap_width,
 			       header.pixmap_height, 1);
 		nbytes = BitmapSize(header.pixmap_width,1);
-		if(header.display_planes > 1) {
+/*		if(header.display_planes > 1) {
 		    forepixel = -1;
 		    backpixel = 0;
-		    planes = 1<<(DisplayPlanes(dpy, screen)); /* MSB << 1 */
-		}
+		    planes = 1<<(DisplayPlanes(dpy, screen));%*/ /* MSB << 1 */
+/*		}
 		else {
 		    forepixel = WhitePixel(dpy, screen);
 		    backpixel = BlackPixel(dpy, screen);
-		    planes = AllPlanes();
+		    planes = AllPlanes;
+
 		}
+%*/
 		for(j=0; j<header.display_planes; j++) {	
 		    if(header.display_planes > 1)
 			planes >>= 1; /* shift down a bit */
 		    for(i=0; i<xevent->height; i+=100)
-		      if(inverse)
-			XBitmapBitsPut(image_win,
-				       0, i + xevent->y,
+		      if(inverse) {
+			tmp = gc_val->foreground;
+/*  Here we reverse video.
+%*/
+			gc_val->foreground = gc_val->background;
+			gc_val->background = tmp;
+
+			XChangeGC(dpy, gc, value_mask, gc_val);
+			XPutImage(dpy, image_win,
+				       gc, image, 0, i + xevent->y,
 				       header.pixmap_width, 
 				       MIN(100, xevent->height - i),
 				       buffer+((i+xevent->y)*nbytes)
-				          + (onebufsize * j), 
-				       backpixel, forepixel,
-				       0, GXcopy, planes);
+				          + (onebufsize * j));
+		      }
 		      else
-			XBitmapBitsPut(image_win,
+			XPutImage(dpy, image_win,
+				       gc, image, 0, i + xevent->y,
+				       header.pixmap_width, 
+				       MIN(100, xevent->height - i),
+				       buffer+((i+xevent->y)*nbytes)
+				          + (onebufsize * j));
+
+/*			XBitmapBitsPut(image_win,
 				       0, i + xevent->y,
 				       header.pixmap_width, 
 				       MIN(100, xevent->height - i),
@@ -386,27 +426,30 @@ main(argc, argv)
 				          + (onebufsize * j), 
 				       forepixel, backpixel,
 				       0, GXcopy, planes);
+%*/
 		}
 	    } 
 	    else if(DisplayPlanes(dpy, screen) < 9) {
-		nbytes = BZPixmapSize(header.pixmap_width,1);
+/*		nbytes = BZPixmapSize(header.pixmap_width,1);
 		for(i=0; i<xevent->height; i+=100)
 		  XPixmapBitsPutZ(image_win, 
 				  0, i + xevent->y,
 				  header.pixmap_width,
 				  MIN(100, xevent->height - i),
 				  buffer+((i+xevent->y)*nbytes),
-				  0, GXcopy, AllPlanes());
+				  0, GXcopy, AllPlanes);
+%*/
 	    }
 	    else {  /* Display Planes > 8 */
-		nbytes = WZPixmapSize(header.pixmap_width, 1);
+/*		nbytes = WZPixmapSize(header.pixmap_width, 1);
 		for(i=0; i<xevent->height; i+=100)
 		  XPixmapBitsPutZ(image_win, 
 				  0, i + xevent->y,
 				  header.pixmap_width,
 				  MIN(50, xevent->height - i),
 				  buffer+((i+xevent->y)*nbytes),
-				  0, GXcopy, AllPlanes());
+				  0, GXcopy, AllPlanes);
+%*/
 	    }
 	}
     }
