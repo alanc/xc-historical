@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.160 93/07/13 17:58:19 mor Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.161 93/07/14 10:55:30 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -773,7 +773,7 @@ UnsharedLibReferences(XBSD,Xbsd,$(LIBSRC)/Berk)
 /*
  * Individual libraries should override this
  */
-#if HasSharedLibraries || UseInstalled
+#if HasSharedLibraries || defined(UseInstalled)
           DEPLIBS = $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
 #else
           DEPLIBS = $(LOCAL_LIBRARIES)
