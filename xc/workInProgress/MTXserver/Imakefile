@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.136 91/11/04 16:48:19 keith Exp $
+XCOMM $XConsortium: Imakefile,v 1.137 91/12/19 14:37:54 keith Exp $
 /*
  * Server Master Makefile
  */
@@ -7,7 +7,7 @@ XCOMM $XConsortium: Imakefile,v 1.136 91/11/04 16:48:19 keith Exp $
 
 #define StdSubdirs dix os ddx/mi
 #define MFBSubdirs StdSubdirs ddx/mfb
-#define CFBSubdirs MFBSubdirs ddx/cfb
+#define CFBSubdirs MFBSubdirs ddx/cfb ddx/cfb16 ddx/cfb32
 #define StdLibs $(DIX) $(OS) $(MI) $(EXTENSIONS)
 #define MFBBareLibs $(DIX) $(OS) $(FONT) $(MFB) $(MI)
 #define MFBLibs MFBBareLibs $(EXTENSIONS)
@@ -43,7 +43,7 @@ XCOMM $XConsortium: Imakefile,v 1.136 91/11/04 16:48:19 keith Exp $
              OS = os/libos.a $(XAULIB) $(XDMCPLIB)
         BSDEMUL = $(LIBSRC)/Berk/Berklib.o
             MFB = ddx/mfb/libmfb.a
-            CFB = ddx/cfb.new/libcfb.a ddx/cfb16/libcfb.a ddx/cfb32/libcfb.a
+            CFB = ddx/cfb/libcfb.a ddx/cfb16/libcfb.a ddx/cfb32/libcfb.a
              MI = ddx/mi/libmi.a
             DIX = dix/libdix.a
            FONT = $(FONTSRC)/lib/font/libfont.a
@@ -234,7 +234,7 @@ XCOMM
 SUNWINDOWSLIBS = -lsunwindow -lpixrect
 #endif
 SUBDIRS0 = MFBSubdirs
-SUBDIRS1 = ddx/cfb
+SUBDIRS1 = ddx/cfb ddx/cfb16 ddx/cfb32
 SUBDIRS2 = ddx/sun
 SUNDIRS = $(SUBDIRS0) $(SUBDIRS1) $(SUBDIRS2) $(DEPDIRS)
 SUNOBJS = ddx/sun/sunInit.o
