@@ -1,5 +1,5 @@
 /*
- * $XConsortium: screen.c,v 2.56 91/01/10 22:32:06 gildea Exp $
+ * $XConsortium: screen.c,v 2.57 91/07/05 18:54:06 converse Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -204,6 +204,7 @@ Scrn scrn;
 	{ XtNselectTypes,	(XtArgVal) sarray},
 	{ XtNdisplayCaret,	(XtArgVal) False}
     };
+    extern void XmhCheckForNewMail();
 
     scrn->mainbuttons   = BBoxCreate(scrn, "menuBox");
     scrn->folderlabel   = CreateTitleBar(scrn, "folderTitlebar");
@@ -251,11 +252,8 @@ Scrn scrn;
 	    XtParseTranslationTable("<Message>WM_PROTOCOLS: XmhClose()\n");
     XtOverrideTranslations(scrn->parent, WMProtocolsTranslations);
 
-    if (app_resources.mail_waiting_flag) {
-	Arg args[1];
-	XtSetArg(args[0], XtNiconPixmap, NoMailPixmap);
-	XtSetValues(scrn->parent, args, (Cardinal)1);
-    }
+    if (app_resources.new_mail_check)
+	XmhCheckForNewMail(NULL, NULL, NULL, NULL);
 }
 
 static XtTranslations ViewWMProtocols;
