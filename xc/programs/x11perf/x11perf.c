@@ -33,7 +33,7 @@ SOFTWARE.
 
 static Bool drawToFakeServer = False;
 static Pixmap tileToQuery = None;
-
+static Bool labels = False;
 static Bool xorMode = False;
 
 static double syncTime = 0.0;
@@ -164,7 +164,7 @@ double RoundTo3Digits(d)
 }
 
 
-void ReportTimes(usecs, n, str)
+void ReportTimes(usecs, n, str, average)
     double  usecs;
     int     n;
     char    *str;
@@ -178,8 +178,13 @@ void ReportTimes(usecs, n, str)
 	averaging results from several repetitions. */
     objspersec =  RoundTo3Digits(objspersec);
 
-    printf("%6d reps @ %7.4f msec (%6.1f/sec): %s\n", 
-	n, msecsperobj, objspersec, str);
+    if (average) {
+	printf("%6d trep @ %7.4f msec (%6.1f/sec): %s\n", 
+	    n, msecsperobj, objspersec, str);
+    } else {
+	printf("%6d reps @ %7.4f msec (%6.1f/sec): %s\n", 
+	    n, msecsperobj, objspersec, str);
+    }
 }
 
 
@@ -262,6 +267,7 @@ void usage()
 "    -time <s>			do tests for <s> seconds each (default = 5)",
 /*"    -draw			draw after each test -- pmax only",*/
 "    -all			do all tests",
+"    -labels			generate test labels for use by mungeall.sh",
 "    -fg			the foreground color to use",
 "    -bg		        the background color to use",
 "    -xor			use GXxor mode to draw",
@@ -381,7 +387,7 @@ void DestroyClipWindows(xp, clips)
 } /* DestroyClipWindows */
 
 
-DoTest(xp, test, label)
+double DoTest(xp, test, label)
     XParms  xp;
     Test    *test;
     char    *label;
@@ -395,11 +401,11 @@ DoTest(xp, test, label)
     HardwareSync(xp);
 
     time = ElapsedTime(syncTime);
-    ReportTimes (time, test->parms.reps * test->parms.objects, label);
     if (drawToFakeServer)
         XQueryBestSize(xp->d, TileShape, tileToQuery,
 		       32, 32, &ret_width, &ret_height);
     (*test->passCleanup) (xp, &test->parms);
+    return time;
 }
 
 
@@ -601,6 +607,8 @@ main(argc, argv)
 	    ForEachTest (j)
 		doit[j] = True;
 	    foundOne = True;
+	} else if (strcmp (argv[i], "-labels") == 0) {
+	    labels = True;
 	} else if (strcmp (argv[i], "-sync") == 0) {
 	    synchronous = True;
 	} else if (strcmp (argv[i], "-draw") == 0) {
@@ -661,13 +669,30 @@ main(argc, argv)
 		foundOne = True;
 	}
     }
+
+    if (labels) {
+	/* Just print out list of tests for use with .sh programs that
+	   assemble data from different x11perf runs into a nice format */
+	ForEachTest (i) {
+	    int child;
+	    if (test[i].children) {
+		for (child = 0; subs[child] != 0; child++) {
+		    printf ("%s (%d kids)\n", test[i].label, subs[child]);
+		}
+	    } else {
+		printf ("%s\n", test[i].label);
+	    }
+	}
+	exit(0);
+    }
+
     if (!foundOne)
 	usage ();
     xparms.d = Open_Display (displayName);
-    printf("x11perf - X11 performance program, version 1.0\n");
+    printf("x11perf - X11 performance program, version 1.1\n");
 #ifndef VMS
     gethostname (hostname, 100);
-    printf ("%s server on %s from %s\n",
+    printf ("%s server on %s\nfrom %s\n",
 	    ServerVendor (xparms.d), DisplayString (xparms.d), hostname);
 #else
     printf ("%s server on %s\n",
@@ -722,7 +747,7 @@ main(argc, argv)
 	    int     child = 0;
 	    char    label[100];
 	    int     reps = test[i].parms.reps;
-	    double  junk;
+	    double  time, totalTime;
 
 	    CreatePerfGCs(&xparms);
 	    while (1) {
@@ -736,7 +761,7 @@ main(argc, argv)
 		    strcpy (label, test[i].label);
 		}
 		DisplayStatus(xparms.d, status, tgc, "Calibrating", label);
-		if (CalibrateTest(&xparms, &test[i], seconds, &junk)) {
+		if (CalibrateTest(&xparms, &test[i], seconds, &time)) {
 		    DisplayStatus(xparms.d, status, tgc, "Testing", label);
 		    XDestroySubwindows(xparms.d, xparms.w);
 		    XClearWindow(xparms.d, xparms.w);
@@ -744,8 +769,19 @@ main(argc, argv)
 		    /* Create clip windows if requested */
 		    CreateClipWindows(&xparms, test[i].clips);
 
-		    for (j = 0; j != repeat; j++)
-			DoTest (&xparms, &test[i], label);
+		    totalTime = 0.0;
+		    for (j = 0; j != repeat; j++) {
+			time = DoTest(&xparms, &test[i], label);
+			totalTime += time;
+			ReportTimes (time, 
+				test[i].parms.reps * test[i].parms.objects,
+				label, False);
+		    }
+		    if (repeat > 1) {
+			ReportTimes(totalTime,
+			    repeat * test[i].parms.reps * test[i].parms.objects,
+			    label, True);
+		    }
 		    (*test[i].cleanup) (&xparms, &test[i].parms);
 		    DestroyClipWindows(&xparms, test[i].clips);
 		} else {
