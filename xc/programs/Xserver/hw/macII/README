@@ -10,7 +10,7 @@ anonymous ftp).
 
 Build the system by:
 
-1)	As super-user, run the script X11R3setup.sh located in this directory.
+1)	As super-user, run the script R3setup.sh located in this directory.
 	Now leave super-user mode.
 
 2)	In the top-level directory, type:
