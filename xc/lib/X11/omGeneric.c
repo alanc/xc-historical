@@ -1,4 +1,4 @@
-/* $XConsortium: omGeneric.c,v 1.8 95/06/02 23:29:17 converse Exp kaleb $ */
+/* $XConsortium: omGeneric.c,v 1.9 95/09/12 19:23:55 kaleb Exp kaleb $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -435,8 +435,11 @@ parse_fontname(oc)
 	     * There are 14 fields in an XLFD name -- make certain the
 	     * charset (& encoding) is placed in the correct field.
 	     */
-	    last = strrchr (last, '-');
-	    if (num_fields == 14) last = strrchr (last - 1, '-');
+	    last = strrchr (buf, '-');
+	    if (num_fields == 14) {
+		*last = '\0';
+		last = strrchr (buf, '-');
+	    }
 	} else {
 /*
  * Keep in mind that the server will provide a scaled font in response to 
