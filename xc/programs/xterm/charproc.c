@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.107 89/10/30 17:14:48 jim Exp $
+ * $XConsortium: charproc.c,v 1.108 89/10/30 17:26:18 jim Exp $
  */
 
 
@@ -140,7 +140,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.107 89/10/30 17:14:48 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.108 89/10/30 17:26:18 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -182,6 +182,8 @@ extern void HandleScrollForward();
 extern void HandleScrollBack();
 extern void HandleCreateMenu();
 extern void HandleSetFont();
+extern void HandleSetMenuFont();
+extern void set_vt_font();
 
 /*
  * NOTE: VTInitialize zeros out the entire ".screen" component of the 
@@ -237,6 +239,7 @@ static XtActionsRec actionsList[] = {
     { "select-cursor-start",	  HandleKeyboardSelectStart },
     { "select-cursor-end",	  HandleKeyboardSelectEnd },
     { "set-font",	  HandleSetFont },
+    { "set-menu-font",	  HandleSetMenuFont },
     { "start-extend",	  HandleStartExtend },
     { "start-cursor-extend",	  HandleKeyboardStartExtend },
     { "string",		  HandleStringEvent },
@@ -2594,6 +2597,48 @@ void HandleSetFont(w, event, params, param_count)
     }
 	
     if (!didit) Bell();
+}
+
+/* ARGSUSED */
+void HandleSetMenuFont(w, event, params, param_count)
+    Widget w;
+    XEvent *event;		/* unused */
+    String *params;		/* unused */
+    Cardinal *param_count;	/* unused */
+{
+    int fontnum;
+
+    switch (*param_count) {
+      case 0:
+	fontnum = fontMenu_fontdefault;
+	break;
+
+      case 1:
+	switch (params[0][0]) {
+	  case 'd': case 'D': case '0':
+	    fontnum = fontMenu_fontdefault; break;
+	  case '1':
+	    fontnum = fontMenu_font1; break;
+	  case '2':
+	    fontnum = fontMenu_font2; break;
+	  case '3':
+	    fontnum = fontMenu_font3; break;
+	  case '4':
+	    fontnum = fontMenu_font4; break;
+	  case 'e': case 'E':
+	    fontnum = fontMenu_fontescape; break;
+	  default:
+	    Bell();
+	    return;
+	}
+	break;
+
+      default:
+	Bell();
+	return;
+    }
+
+    set_vt_font (fontnum, True);
 }
 
 
