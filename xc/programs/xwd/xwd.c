@@ -29,20 +29,20 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$Header: xwd.c,v 10.12 86/11/25 09:01:08 jg Rel $";
+static char *rcsid_xwd_c = "$Header: xwd.c,v 1.1 87/05/18 09:40:42 dkk Locked $";
 #endif
 
-#include <X/Xlib.h>
+#include <X11/Xlib.h>
 #include <sys/types.h>
 #include <stdio.h>
 #include <strings.h>
 
 char *calloc();
 
-typedef enum _bool {FALSE, TRUE} Bool;
+/*  typedef enum _bool {FALSE, TRUE} Bool;   %%*/
 
-#include "../cursors/target.cursor"
-#include "../cursors/target_mask.cursor"
+#include "target.cursor"
+#include "target_mask.cursor"
 
 #include "XWDFile.h"
 
@@ -53,6 +53,9 @@ typedef enum _bool {FALSE, TRUE} Bool;
 #define FAILURE 0
 
 #define FEEP_VOLUME 0
+
+#define TRUE = True
+#define FALSE = False
 
 extern int errno;
 
@@ -65,12 +68,14 @@ main(argc, argv)
     register char *buffer, *cbuffer;
 
     unsigned buffer_size;
+    unsigned int x, y;
     int virt_x, virt_y;
     int virt_width, virt_height;
     int pixmap_format = -1;
     int win_name_size;
     int header_size;
     int ncolors = 0;
+    int pointer_mode, keyboard_mode;
     char *str_index;
     char *file_name;
     char display[256];
@@ -78,18 +83,28 @@ main(argc, argv)
     Bool nobdrs = FALSE;
     Bool debug = FALSE;
     Bool standard_out = TRUE;
+    Bool owner_events = TRUE;
 
+    Pixmap source;
+    Pixmap mask;
+    XColor *scolor;
+    XColor *bcolor;
     Color *pixcolors;
     Display *dpy;
     Window target_win;
     Window image_win;
-    WindowInfo win_info;
+    Window confine_to;
+    XWindowAttributes win_info;
     Cursor cursor;
     XButtonEvent rep;
 
     XWDFileHeader header;
 
     FILE *out_file = stdout;
+
+    pointer_mode = keyboard_mode = GrabModeSync;
+    confine_to = 0;
+    *dpy = NULL;
 
     for (i = 1; i < argc; i++) {
 	str_index = (char *)index (argv[i], ':');
@@ -145,7 +160,7 @@ main(argc, argv)
      * Store the cursor incase we need it.
      */
     if (debug) fprintf(stderr,"xwd: Storing target cursor.\n");
-    if((cursor = XCreateCursor(
+    if((cursor = XCreateCursor(dpy
     	target_width, target_height, 
     	target_bits, target_mask_bits, 
 	8, 8,
@@ -165,10 +180,12 @@ main(argc, argv)
     /*
      * Let the user select the target window.
      */
-    if(XGrabMouse(RootWindow, cursor, ButtonPressed) == FAILURE)
+    if(XGrabPointer(dpy, RootWindow, owner_events, ButtonPress,
+		    pointer_mode, keyboard_mode, confine_to, cursor,
+		    CurrentTime) == FAILURE)
       Error("Can't grab the mouse.");
     XNextEvent(&rep);
-    XUngrabMouse();
+    XUngrabPointer(dpy, CurrentTime);
     target_win = rep.subwindow;
     if (target_win == 0) {
 	/*
@@ -184,14 +201,14 @@ main(argc, argv)
     /*
      * Inform the user not to alter the screen.
      */
-    XFeep(FEEP_VOLUME);
+    XBell(dpy, 50);
 
     /*
      * Get the parameters of the window being dumped.
      */
     if (debug) fprintf(stderr,"xwd: Getting target window information.\n");
 
-    if(XQueryWindow(target_win, &win_info) == FAILURE) 
+    if(XGetWindowAttributes(dpy, target_win, &win_info) == FAILURE) 
      Error("Can't query target window.");
     if(XFetchName(target_win, &win_name) == FAILURE)
      Error("Can't fetch target window name.");
