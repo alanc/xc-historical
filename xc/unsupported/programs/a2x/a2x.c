@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.120 93/04/13 20:01:10 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.121 93/04/15 20:15:37 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -492,7 +492,7 @@ xtrap_clean_up()
 #endif
 
 #ifndef MSDOS
-#ifndef X_NOT_POSIX
+#ifndef X_NOT_STDC_ENV
 #define Strtod strtod
 #define Strtol strtol
 #else
