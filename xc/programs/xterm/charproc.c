@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.164 91/05/11 23:26:46 gildea Exp $
+ * $XConsortium: charproc.c,v 1.165 91/05/17 18:36:22 gildea Exp $
  */
 
 /*
@@ -868,7 +868,7 @@ static void VTparse()
 			break;
 
 		 case CASE_DECSTBM:
-			/* DECSTBM */
+			/* DECSTBM - set scrolling region */
 			if((top = param[0]) < 1)
 				top = 1;
 			if(nparam < 2 || (bot = param[1]) == DEFAULT
@@ -1019,7 +1019,7 @@ static void VTparse()
 			break;
 
 		 case CASE_OSC:
-			/* do osc escapes */
+			/* Operating System Command: ESC ] */
 			do_osc(finput);
 			parsestate = groundtable;
 			break;
@@ -1622,13 +1622,13 @@ dpmodes(termw, func)
 				FromAlternate(screen);
 			}
 			break;
-		case 1000:		/* xtem bogus sequence		*/
+		case 1000:		/* xterm bogus sequence		*/
 			if(func == bitset)
 				screen->send_mouse_pos = 2;
 			else
 				screen->send_mouse_pos = 0;
 			break;
-		case 1001:		/* xtem sequence w/hilite tracking */
+		case 1001:		/* xterm sequence w/hilite tracking */
 			if(func == bitset)
 				screen->send_mouse_pos = 3;
 			else
