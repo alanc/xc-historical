@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: SendSup.c,v 1.10 92/06/11 15:51:53 rws Exp $
+ * $XConsortium: SendSup.c,v 1.11 92/12/22 09:13:03 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -120,10 +120,10 @@ int format;
 	break;
     case 16:
 	{
-	    unsigned short * valuePtr;
+	    CARD16 * valuePtr;
 	    int valueLen;
 
-	    valuePtr = (unsigned short *) ((unsigned char *) rp + size);
+	    valuePtr = (CARD16 *) ((unsigned char *) rp + size);
 	    valueLen = (((int)(rp->length<<2)) - size)/2;	/* shorts extra */ 
 
 	    squeeze_me_in(cl,  ((long)valueLen) * 2L);
@@ -135,10 +135,10 @@ int format;
 	break;
     case 32:
 	{
-	    unsigned long * valuePtr;
+	    CARD32 * valuePtr;
 	    int valueLen;
 
-	    valuePtr = (unsigned long *) ((unsigned char *) rp + size);
+	    valuePtr = (CARD32 *) ((unsigned char *) rp + size);
 	    valueLen = (((int)(rp->length<<2)) - size)/4;	/* longs extra */ 
 	    squeeze_me_in(cl,  ((long)valueLen) * 4L);
 	    for(i=0;i<valueLen;i++) {
