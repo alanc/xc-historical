@@ -14,19 +14,23 @@ used.
 .SH "OPTIONS"
 .PP
 .TP 8
-.B \-display \fIdisplayname\fP
-This option specifies the X server to contact.
-.TP 8
-.B \-range \fI[low]-[high]\fP
-This option specifies the range of atom values to check.  If \fIlow\fP is not
-given, a value of 1 assumed.  If \fIhigh\fP is not given, \fIxlsatoms\fP will
-stop at the first undefined atom at or above \fIlow\fP.
+.B \-display \fIdpy\fP
+This option specifies the X server to which to connect.
 .TP 8
 .B \-format \fIstring\fP
 This option specifies a \fIprintf\fP-style string used to list each atom
 \fI<value,name>\fP pair, printed in that order (\fIvalue\fP is an \fIunsigned
 long\fP and \fIname\fP is a \fIchar *\fP).  \fIXlsatoms\fP will supply a
 newline at the end of each line.  The default is \fI%ld\\t%s\fP.
+.TP 8
+.B \-range \fI[low]-[high]\fP
+This option specifies the range of atom values to check.  If \fIlow\fP is not
+given, a value of 1 assumed.  If \fIhigh\fP is not given, \fIxlsatoms\fP will
+stop at the first undefined atom at or above \fIlow\fP.
+.TP 8
+.B \-name \fIstring\fP
+This option specifies the name of an atom to list.  If the atom does not 
+exist, a message will be printed on the standard error.
 .PP
 .SH "SEE ALSO"
 X(1), Xserver(1), xprop(1)

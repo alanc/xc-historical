@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: xlsatoms.c,v 1.1 89/08/22 09:28:26 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -33,17 +33,88 @@ char *ProgramName;
 
 static void usage ()
 {
-    fprintf (stderr, "usage:  %s [-options ...]\n\n", ProgramName);
+    fprintf (stderr, "usage:  %s [-options...]\n\n", ProgramName);
     fprintf (stderr, "where options include:\n");
-    fprintf (stderr, 
+    fprintf (stderr,
 	     "    -display dpy            X server to which to connect\n");
+    fprintf (stderr,
+	     "    -format string          printf-style format to use\n");
     fprintf (stderr,
 	     "    -range [num]-[num]      atom values to list\n");
     fprintf (stderr,
-	     "    -format string          printf format to use\n");
-    fprintf (stderr, "\n");
+	     "    -name string            name of single atom to print\n");
+    putc ('\n', stderr);
     exit (1);
 }
+
+
+main (argc, argv)
+    int argc;
+    char **argv;
+{
+    char *displayname = NULL;
+    char *format = "%lu\t%s";
+    int i, doit;
+    Display *dpy = NULL;
+
+    ProgramName = argv[0];
+
+    for (doit = 0; doit < 2; doit++) {	/* pre-parse to get display */
+	for (i = 1; i < argc; i++) {
+	    char *arg = argv[i];
+
+	    if (arg[0] == '-') {
+		switch (arg[1]) {
+		  case 'd':			/* -display dpy */
+		    if (++i >= argc) usage ();
+		    if (!doit) displayname = argv[i];
+		    continue;
+		  case 'f':			/* -format string */
+		    if (++i >= argc) usage ();
+		    if (doit) format = argv[i];
+		    continue;
+		  case 'r':			/* -range num-[num] */
+		    if (++i >= argc) usage ();
+		    if (doit) do_range (dpy, format, argv[i]);
+		    continue;
+		  case 'n':			/* -name string */
+		    if (++i >= argc) usage ();
+		    if (doit) do_name (dpy, format, argv[i]);
+		    continue;
+		}
+	    }
+	    usage ();
+	}
+	if (!doit) {
+	    dpy = XOpenDisplay (displayname);
+	    if (!dpy) {
+		fprintf (stderr, "%s:  unable to open display \"%s\"\n",
+			 ProgramName, XDisplayName (displayname));
+		exit (1);
+	    }
+	}
+    }
+
+    XCloseDisplay (dpy);
+    exit (0);
+}
+
+do_name (dpy, format, name)
+    Display *dpy;
+    char *format;
+    char *name;
+{
+    Atom a = XInternAtom (dpy, name, True);
+
+    if (a != None) {
+	printf (format, (unsigned long) a, name);
+	putchar ('\n');
+    } else {
+	fprintf (stderr, "%s:  no atom named \"%s\" on server \"%s\"\n",
+		 ProgramName, name, DisplayString(dpy));
+    }
+}
+
 
 #define RangeLow (1 << 0)
 #define RangeHigh (1 << 1)
@@ -61,6 +132,7 @@ static int parse_range (range, lowp, highp)
     }
 
     dash = index (range, '-');
+    if (!dash) dash = index (range, ':');
     if (dash) {
 	if (dash == range) {		/* -high */
 	    *lowp = 1;
@@ -83,53 +155,18 @@ static int parse_range (range, lowp, highp)
     return mask;
 }
 
-main (argc, argv)
-    int argc;
-    char **argv;
-{
-    char *displayname = NULL;
-    int i;
+do_range (dpy, format, range)
     Display *dpy;
-    char *range = NULL;
-    int rangemask;
+    char *format;
+    char *range;
+{
+    int mask;
     long low, high;
-    char *format = "%ld\t%s";
 
-    ProgramName = argv[0];
-
-    for (i = 1; i < argc; i++) {
-	char *arg = argv[i];
-
-	if (arg[0] == '-') {
-	    switch (arg[1]) {
-	      case 'd':			/* -display dpy */
-		if (++i >= argc) usage ();
-		displayname = argv[i];
-		continue;
-	      case 'r':			/* -range num-[num] */
-		if (++i >= argc) usage ();
-		range = argv[i];
-		continue;
-	      case 'f':			/* -format string */
-		if (++i >= argc) usage ();
-		format = argv[i];
-		continue;
-	    }
-	}
-	usage ();
-    }
-
-    rangemask = parse_range (range, &low, &high);
-
-    dpy = XOpenDisplay (displayname);
-    if (!dpy) {
-	fprintf (stderr, "%s:  unable to open display \"%s\"\n",
-		 ProgramName, XDisplayName (displayname));
-	exit (1);
-    }
-
-    list_atoms (dpy, format, rangemask, low, high);
+    mask = parse_range (range, &low, &high);
+    list_atoms (dpy, format, mask, low, high);
 }
+
 
 static int catcher (dpy, err)
     Display *dpy;
