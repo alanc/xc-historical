@@ -45,8 +45,10 @@ xinit -e widgets -- Xsun -l -c
 xinit rsh fasthost cpupig -display workstation:1 -- 1 -a 2 -t 5
 .PP
 .SH "SEE ALSO"
-X(8C), xterm(1)
-.SH AUTHOR
-Copyright (c) 1988 by Massachusetts Institute of Technology.
+X(1), Xserver(1), xterm(1)
+.SH COPYRIGHT
+Copyright 1988, Massachusetts Institute of Technology.
 .br
+See \fIX(1)\fP for a full statement of rights and permissions.
+.SH AUTHOR
 Bob Scheifler, MIT Laboratory for Computer Science

@@ -162,12 +162,13 @@ The \fB-compact\fP option is
 supported for PostScript output.
 It compresses white space but not black space, so it is not useful for
 reverse-video windows.
+.SH COPYRIGHT
+Copyright 1988, Massachusetts Institute of Technology.
+.br
+Copyright 1986, Marvin Solomon and the University of Wisconsin.
+.br
+See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHOR
-.PP
-Copyright 1985, Massachusetts Institute of Technology.
-PostScript support copyright 1986, Marvin Solomon and the University of
-Wisconsin.
-.PP
-Michael R. Gretzinger, MIT Project Athena
-.PP
-Jose Capo, MIT Project Athena (PP3812 support)
+Michael R. Gretzinger, MIT Project Athena, 
+Jose Capo, MIT Project Athena (PP3812 support),
+Marvin Solomon (University of Wisconsin).

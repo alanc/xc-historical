@@ -747,7 +747,7 @@ Thus, to run \fIxmh\fR showing all message headers,
 ~/.mh_profile
 
 .SH SEE ALSO
-mh (1) - the mh Mail Handler
+X(1), xrdb(1), X Toolkit, mh(1) - the mh Mail Handler
 
 .SH BUGS
 Printing support is minimal.
@@ -763,6 +763,10 @@ Still a few commands missing (rename folder, remail message).
 
 Needs sub-folder support.
 
+.SH COPYRIGHT
+Copyright 1988, Digital Equipment Corporation.
+.br
+See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHOR
 Terry Weissman, Digital Western Research Laboratory
 

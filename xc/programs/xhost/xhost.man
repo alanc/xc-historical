@@ -56,7 +56,7 @@ whether or not access control is currently enabled.
 .SH FILES
 /etc/X*.hosts
 .SH "SEE ALSO"
-X(8C), xterm(1)
+X(1), Xserver(1)
 .SH ENVIRONMENT
 .TP 8
 .B DISPLAY
@@ -69,9 +69,11 @@ is a valid command line argument (indicating that you want
 to remove the machine named 
 .I ``display''
 from the access list).
-.SH AUTHORS
-Copyright 1988 by Massachusetts Institute of Technology.
+.SH COPYRIGHT
+Copyright 1988, Massachusetts Institute of Technology.
 .br
+See \fIX(1)\fP for a full statement of rights and permissions.
+.SH AUTHORS
 Bob Scheifler, MIT Laboratory for Computer Science,
 .br
 Jim Gettys, MIT Project Athena (DEC).

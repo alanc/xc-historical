@@ -137,8 +137,8 @@ to get the default host and display number.
 .B XENVIRONMENT
 to get the name of a resource file that overrides the global resources
 stored in the RESOURCE_MANAGER property.
-.SH SEE ALSO
-X(1), xrdb(1), X(1), time(3C), select(2)
+.SH "SEE ALSO"
+X(1), xrdb(1), time(3C), Athena Clock widget
 .SH BUGS
 .I Xclock
 believes the Unix clock.  When specifying the window size manually  in
@@ -152,12 +152,14 @@ of less than 1 hour is treated as a positive offset.
 Digital clock windows default to the analog clock size.
 .PP
 Border color has to be explicitly specified when reverse video is used.
-.SH AUTHORS
-.PP
+.SH COPYRIGHT
 Copyright 1988, Massachusetts Institute of Technology.
 .br
+See \fIX(1)\fP for a full statement of rights and permissions.
+.SH AUTHORS
 Tony Della Fera (MIT-Athena, DEC)
 .br
 Dave Mankins (MIT-Athena, BBN)
 .br
 Ed Moy (UC Berkeley)
+

@@ -243,11 +243,13 @@ does.
 Case sensitivity might be confusing at first.
 .PP
 There should be a nicer tool for setting up the keymap files.
-.SH AUTHOR
-Copyright 1988 Massachusetts Institute of Technology
+.SH COPYRIGHT
+Copyright 1988, Massachusetts Institute of Technology.
 .br
 Copyright 1987 Sun Microsystems,  Inc.
 .br
+See \fIX(1)\fP for a full statement of rights and permissions.
+.SH AUTHOR
 Jim Fulton, MIT X Consortium, rewritten from an original by 
 David Rosenthal of Sun Microsystems
 

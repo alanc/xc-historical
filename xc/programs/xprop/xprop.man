@@ -285,9 +285,11 @@ Specifies the name of a file from which additional formats are to be obtained.
 To get default host and display number.
 .SH SEE ALSO
 X(1), xwininfo(1)
-.SH AUTHOR
-Copyright 1987, Massachusetts Institute of Technology.
+.SH COPYRIGHT
+Copyright 1988, Massachusetts Institute of Technology.
 .br
+See \fIX(1)\fP for a full statement of rights and permissions.
+.SH AUTHOR
 Mark Lillibridge, MIT Project Athena
 
 

@@ -29,10 +29,11 @@ command.
 xwd(1), xpr(1), xwud(1), X(1)
 .SH ENVIRONMENT
 DISPLAY - for which display to use be default.
+.SH COPYRIGHT
+Copyright 1988, Massachusetts Institute of Technology.
+.br
+See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHOR
-.PP
-Copyright 1985, Massachusetts Institute of Technology
-.PP
 Michael R. Gretzinger, MIT Project Athena
-.PP
+.br
 Jim Gettys, MIT Project Athena

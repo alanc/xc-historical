@@ -41,7 +41,9 @@ X(1), Xserver(8C), xterm(1), xfd(1)
 to get the default host and display to use.
 .SH BUGS
 Accidentally doing ``xlsfonts -l'' can tie up your server for a very long time.
-.SH AUTHOR
-Copyright 1987 Massachusetts Institute of Technology.
+.SH COPYRIGHT
+Copyright 1988, Massachusetts Institute of Technology.
 .br
+See \fIX(1)\fP for a full statement of rights and permissions.
+.SH AUTHOR
 Mark Lillibridge, MIT Project Athena

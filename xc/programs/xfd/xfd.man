@@ -180,7 +180,7 @@ Set the file we should look in to get the bitmap for the icon.
 .B Title
 Set the title to be used.
 .SH "SEE ALSO"
-X(1), X(8C), xterm(1), xlsfonts(1), xrdb(1)
+X(1), Xserver(1), xterm(1), xlsfonts(1), xrdb(1)
 .SH ENVIRONMENT
 .PP
 .TP 8
@@ -194,7 +194,9 @@ in the RESOURCE_MANGER property.
 It should display the name of the font somewhere.
 .PP
 It should be rewritten to use the X toolkit.
-.SH AUTHOR
-Copyright 1988 by Massachusetts Institute of Technology.
+.SH COPYRIGHT
+Copyright 1988, Massachusetts Institute of Technology.
 .br
+See \fIX(1)\fP for a full statement of rights and permissions.
+.SH AUTHOR
 Mark Lillibridge, MIT Project Athena

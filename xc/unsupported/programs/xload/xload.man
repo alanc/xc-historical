@@ -120,7 +120,7 @@ to get the default host and display number.
 to get the name of a resource file that overrides the global resources 
 stored in the RESOURCE_MANAGER property.
 .SH SEE ALSO
-X(1), xrdb(1), X(8C), mem(4), select(2)
+X(1), xrdb(1), mem(4), Athena Load widget
 .SH DIAGNOSTICS
 Unable to open display or create window. Unable to open /dev/kmem.
 Unable to query window for dimensions. Various X errors.
@@ -133,10 +133,12 @@ the same group as /dev/kmem.
 Reading /dev/kmem is inherently non-portable.
 .PP
 Border color has to be explicitly specified when reverse video is used.
-.SH AUTHORS
-Copyright (c) 1985, Massachusetts Institute of Technology.
+.SH COPYRIGHT
+Copyright 1988, Massachusetts Institute of Technology.
 .br
+See \fIX(1)\fP for a full statement of rights and permissions.
+.SH AUTHORS
 K. Shane Hartman (MIT-LCS) and Stuart A. Malone (MIT-LCS);
 .br
-features added by Jim Gettys (MIT-Athena), Bob Scheifler (MIT-LCS),
+with features added by Jim Gettys (MIT-Athena), Bob Scheifler (MIT-LCS),
 and Tony Della Fera (MIT-Athena)
