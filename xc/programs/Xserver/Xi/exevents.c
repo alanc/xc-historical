@@ -1,4 +1,4 @@
-/* $XConsortium: xexevents.c,v 1.41 92/12/30 18:43:43 rws Exp $ */
+/* $XConsortium: xexevents.c,v 1.42 93/02/25 14:32:33 rws Exp $ */
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
 Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -108,6 +108,7 @@ ProcessOtherEvent (xE, other, count)
     int             	key, bit, rootX, rootY;
     ButtonClassPtr	b = other->button;
     KeyClassPtr		k = other->key;
+    ValuatorClassPtr	v = other->valuator;
     void		NoticeEventTime();
     deviceValuator	*xV = (deviceValuator *) xE;
 
@@ -124,11 +125,34 @@ ProcessOtherEvent (xE, other, count)
     for (i=1; i<count; i++)
 	if ((++xV)->type == DeviceValuator)
 	    {
+	    int first = xV->first_valuator;
+	    int *axisvals;
+
+	    if (!v || (xV->num_valuators && (first + xV->num_valuators > v->numAxes)))
+		FatalError("Bad valuators reported for device %s\n",other->name);
 	    xV->device_state = 0;
 	    if (k)
 		xV->device_state |= k->state;
 	    if (b)
 	        xV->device_state |= b->state;
+	    axisvals = v->axisVal;
+	    switch (xV->num_valuators) {
+		case 6:
+		    *(axisvals+first+5) = xV->valuator5;
+		case 5:
+		    *(axisvals+first+4) = xV->valuator4;
+		case 4:
+		    *(axisvals+first+3) = xV->valuator3;
+		case 3:
+		    *(axisvals+first+2) = xV->valuator2;
+		case 2:
+		    *(axisvals+first+1) = xV->valuator1;
+		case 1:
+		    *(axisvals+first) = xV->valuator0;
+		case 0:
+		default:
+		    break;
+		}
 	    }
     
     if (xE->type == DeviceKeyPress)
