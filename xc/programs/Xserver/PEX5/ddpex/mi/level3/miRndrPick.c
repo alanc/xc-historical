@@ -1,4 +1,4 @@
-/* $XConsortium: miRndrPick.c,v 1.6 92/11/17 17:30:48 hersh Exp $ */
+/* $XConsortium: miRndrPick.c,v 1.7 92/11/18 19:02:57 hersh Exp $ */
 
 /************************************************************
 Copyright 1992 by The Massachusetts Institute of Technology
@@ -381,6 +381,7 @@ ddRendererPtr       pRend;    /* renderer handle */
     trav_state.p_curr_sc_el = (ddElementRef *) NULL;
     trav_state.max_depth = 0;
     trav_state.pickId = 0;
+    trav_state.ROCoffset = 0;
     pPM = pRend->pickstr.pseudoPM;
 
     pp = (ddPickPath *) pRend->pickStartPath->pList ;
