@@ -1,10 +1,14 @@
-XCOMM $XConsortium: Imakefile,v 1.2 94/02/10 19:32:24 matt Exp $
+XCOMM $XConsortium: Imakefile,v 1.2 94/02/10 19:38:07 matt Exp $
 
         DEPLIBS = FrescoClientDepLibs
-LOCAL_LIBRARIES = FrescoClientLibs $(TCL_LIBRARIES)
-       INCLUDES = $(TCL_INCLUDES)
+LOCAL_LIBRARIES = FrescoClientLibs 
            SRCS = main.CCsuf
            OBJS = main.Osuf
+
+#if ThreadedX
+  LOCAL_LDFLAGS = ThreadsLoadFlags
+  SYS_LIBRARIES = ThreadsLibraries
+#endif
 
 #define CplusplusSource
 
