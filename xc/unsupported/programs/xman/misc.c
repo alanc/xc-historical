@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: misc.c,v 1.4 89/01/06 18:42:24 kit Exp $
+ * $XConsortium: misc.c,v 1.5 89/02/14 16:08:06 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -178,8 +178,10 @@ char * entry;
     return(NULL);
   }
 
-/* if the catdir is writeable the ask the user if he/she wants to
-   write the man page to it. */
+/*
+ * If the catdir is writeable the ask then user if he/she wants to
+ * write the man page to it. 
+ */
 
   sprintf(catdir,"%s/%s%c", path, CAT, section[LCAT]);
   
@@ -192,6 +194,16 @@ char * entry;
     XtPopup( PopupChild(man_globals->manpagewidgets.manpage, 0),
 	    XtGrabExclusive);
   }
+  else {
+
+/*
+ * We do not need the filename anymore, and have the fd open.
+ * We will unlink it.     
+ */
+    unlink(man_globals->tmpfile);
+    man_globals->tmpfile[0] = '\0'; /* remove name of tmpfile. */
+  }
+    
   XtPopdown( PopupChild(w, 0) );
   
   return(file);

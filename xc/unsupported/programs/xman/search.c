@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: search.c,v 1.3 89/01/06 18:42:28 kit Exp $
+ * $XConsortium: search.c,v 1.4 89/02/14 16:32:55 kit Exp $
  * $oHeader: search.c,v 4.0 88/08/31 22:13:19 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -195,34 +195,26 @@ int type;
 {
   char cmdbuf[BUFSIZ],*mantmp,*manpath;
   char tmp[BUFSIZ],path[BUFSIZ];
-  char string_buf[BUFSIZ],*cmp_str;
-  char error_buf[BUFSIZ],label[BUFSIZ];
+  char string_buf[BUFSIZ], cmp_str[BUFSIZ], error_buf[BUFSIZ],label[BUFSIZ];
   FILE * file;
-  int i,count;
+  int i, count;
   Boolean flag;
-
-  /* if there was a CR ignore it and every thing after it */
-
-  for (i = 0; i <= strlen(man_globals->search_string);i++) {
-    if (man_globals->search_string[i] == '\n')
-      man_globals->search_string[i] = '\0';
-  }
 
   /* If the string is empty or starts with a space then do not search */
 
-  if (!strcmp(man_globals->search_string,"") || 
+  if ( streq(man_globals->search_string,"") || 
       (man_globals->search_string[0] == ' ')) {
     PrintWarning(man_globals, "You want me to search for what???");
     return(NULL);
   }
 
-  strcpy(tmp,MANTEMP);		/* get a temp file. */
+  strcpy(tmp, MANTEMP);		/* get a temp file. */
   mantmp = mktemp(tmp);
 
   /* set the command */
 
   manpath=getenv("MANPATH");
-  if (manpath == NULL || strcmp(manpath,"") == 0)
+  if (manpath == NULL || streq(manpath,"") )
     strcpy(path,MANDIR);
   else
     strcpy(path,manpath);
@@ -240,6 +232,13 @@ int type;
     if((file = fopen(mantmp,"r")) == NULL)
       PrintError("lost temp file? out of temp space?");
 
+/* 
+ * Since we keep the FD open we can unlink the file safely, this
+ * will keep extra files out of /tmp. 
+ */
+
+    unlink(mantmp);
+
     sprintf(string_buf,"%s: nothing appropriate",man_globals->search_string);
 
     /*
@@ -247,18 +246,14 @@ int type;
      */
   
     count = 0;
-    cmp_str = "foo";
     flag = FALSE;
-    while ( cmp_str != NULL && count <= LOOKLINES ) {
-      fgets(cmp_str, 80, file);
-      /* strip off the '\n' */
-      for (i = 0; i <= strlen(cmp_str);i++) {
-	if (cmp_str[i] == '\n')
-	  cmp_str[i] = '\0';
-      }
-      if (!strcmp(cmp_str,string_buf)) {
+    while ( fgets(cmp_str, BUFSIZ, file) != NULL && count < LOOKLINES ) {
+      if ( cmp_str[strlen(cmp_str) - 1] == '\n') /* strip off the '\n' */
+	  cmp_str[strlen(cmp_str) - 1] = '\0';
+
+      if (streq(cmp_str, string_buf)) {
 	flag = TRUE;
-	count += LOOKLINES;	/* we've matched finish loop fast. */
+	break;
       }
       count++;
     }

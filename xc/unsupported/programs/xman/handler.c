@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: handler.c,v 1.2 88/09/06 17:47:50 jim Exp $
+ * $XConsortium: handler.c,v 1.3 89/01/06 18:42:00 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -227,11 +227,11 @@ caddr_t global_pointer,junk;
 
   man_globals = (ManpageGlobals *) global_pointer;
 
-  if ( !strcmp(Name(w),MANUALSEARCH) )
+  if ( streq(Name(w),MANUALSEARCH) )
     file = DoSearch(man_globals,MANUAL);
-  else if ( !strcmp(Name(w),APROPOSSEARCH) )
+  else if ( streq(Name(w),APROPOSSEARCH) )
     file = DoSearch(man_globals,APROPOS);
-  else if ( !strcmp(Name(w),CANCEL) ) 
+  else if ( streq(Name(w),CANCEL) ) 
     file = NULL;
   else 
     PrintError("Unknown widget, in Search Box.");
@@ -443,12 +443,20 @@ caddr_t global_pointer,junk;
 
 /* if we aren't canceling then we should save the file */
 
-  if (strcmp(Name(w),CANCEL_FILE_SAVE)) {
+  if (!streq(Name(w),CANCEL_FILE_SAVE)) {
     sprintf(str,"%s %s %s",COPY,man_globals->tmpfile,man_globals->filename);
 
     if(system(str) != 0)		/* execute copy. */
       PrintError("Something went wrong trying to copy temp file to cat dir.");
   }
+
+/*
+ * We do not need the filename anymore, and have the fd open.
+ * We will unlink it.     
+ */
+
+  unlink(man_globals->tmpfile);
+  man_globals->tmpfile[0] = '\0'; /* remove name of tmpfile. */
 
   XtPopdown( XtParent(XtParent(w)) );
 }

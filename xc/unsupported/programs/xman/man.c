@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: man.c,v 1.5 89/02/14 16:08:01 kit Exp $
+ * $XConsortium: man.c,v 1.6 89/02/15 13:50:40 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -32,7 +32,6 @@ static void AddToCurrentSection(), AddNewSection(), AddStandardSections();
 static int CmpEntryLabel();
 
 #define SECT_ERROR -1
-#define streq(a, b)        ( strcmp((a), (b)) == 0 )
 
 typedef struct _SectionList {
   struct _SectionList * next;	/* link to next elem in list. */
