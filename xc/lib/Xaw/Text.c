@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.74 88/10/18 12:32:55 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.75 88/10/19 19:00:10 swick Exp $";
 #endif
 
 
@@ -886,7 +886,8 @@ static int _XtTextSetNewSelection(ctx, left, right, selections, count)
     ctx->text.s.right = right;
     if (ctx->text.source->SetSelection != nullProc) {
 	(*ctx->text.source->SetSelection) (ctx->text.source,
-					   left, right, selections[0]);
+					   left, right,
+					   count ? selections[0] : NULL);
     }
     if (left < right) {
 	int buffer;
