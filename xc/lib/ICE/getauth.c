@@ -1,4 +1,4 @@
-/* $XConsortium: getauth.c,v 1.3 93/12/07 16:42:00 mor Exp $ */
+/* $XConsortium: getauth.c,v 1.4 94/02/06 15:23:12 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -23,14 +23,30 @@ Author: Ralph Mor, X Consortium
 
 static Bool auth_valid ();
 
+extern int		_IcePaAuthDataEntryCount;
+extern IceAuthDataEntry _IcePaAuthDataEntries[];
+
 
 /*
- * The IceGetPoAuthData functions is implementation dependent.
- * The SI relies on an .ICEauthority file.
+ * The functions in this file are not a standard part of ICElib.
+ *
+ * The sample implementation uses an .ICEauthority to manipulate
+ * authentication data.
+ *
+ * For the client that initiates a Protocol Setup, we look in the
+ * .ICEauthority file to get the data.
+ *
+ * For the client accepting the Protocol Setup, we get the data
+ * from an in-memory database of authentication data (set by the
+ * application calling IceSetPaAuthData).  We have to get the data
+ * from memory because getting it directly from the .ICEauthority
+ * file is not secure - someone can just modify the contents of the
+ * .ICEauthority file behind our back.
  */
 
 void
-IceGetPoAuthData (protocolName, address, authName, authDataLenRet, authDataRet)
+_IceGetPoAuthData (protocolName, address, authName,
+    authDataLenRet, authDataRet)
 
 char		*protocolName;
 char		*address;
@@ -62,7 +78,8 @@ char		**authDataRet;
 
 
 void
-IceGetPaAuthData (protocolName, address, authName, authDataLenRet, authDataRet)
+_IceGetPaAuthData (protocolName, address, authName,
+    authDataLenRet, authDataRet)
 
 char		*protocolName;
 char		*address;
