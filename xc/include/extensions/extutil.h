@@ -1,5 +1,5 @@
 /*
- * $XConsortium: extutil.h,v 1.8 89/11/21 11:31:49 rws Exp $
+ * $XConsortium: extutil.h,v 1.9 89/12/05 09:37:57 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -61,7 +61,7 @@ typedef struct _XExtensionHooks {
     Bool (*wire_to_event)();
     Status (*event_to_wire)();
     int (*error)();
-    int (*error_string)();
+    char *(*error_string)();
 } XExtensionHooks;
 
 extern XExtensionInfo *XextCreateExtension();
@@ -103,7 +103,7 @@ int proc (dpy, codes) \
 }
 
 #define XEXT_GENERATE_ERROR_STRING(proc,extname,nerr,errl) \
-int proc (dpy, code, codes, buf, n) \
+char *proc (dpy, code, codes, buf, n) \
     Display  *dpy; \
     int code; \
     XExtCodes *codes; \
