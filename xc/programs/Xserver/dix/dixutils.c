@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $XConsortium: dixutils.c,v 1.32 89/03/18 16:24:05 rws Exp $ */
+/* $XConsortium: dixutils.c,v 1.33 89/07/16 17:24:49 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -228,6 +228,14 @@ NoopDDA()
 {
 }
 
+typedef struct _BlockHandler {
+    void    (*BlockHandler)();
+    void    (*WakeupHandler)();
+    pointer blockData;
+} BlockHandlerRec, *BlockHandlerPtr;
+
+static BlockHandlerPtr	handlers;
+static int		numHandlers;
 
 /* called from the OS layer */
 BlockHandler(pTimeout, pReadmask)
@@ -235,10 +243,14 @@ pointer	pTimeout;	/* DIX doesn't want to know how OS represents time */
 pointer pReadmask;	/* nor how it represents the set of descriptors */
 {
     register int i;
+    
     for (i = 0; i < screenInfo.numScreens; i++)
 	(* screenInfo.screens[i]->BlockHandler)(i, 
 				screenInfo.screens[i]->blockData,
 				pTimeout, pReadmask);
+    for (i = 0; i < numHandlers; i++)
+	(*handlers[i].BlockHandler) (handlers[i].blockData,
+				     pTimeout, pReadmask);
 }
 
 
@@ -247,9 +259,38 @@ unsigned long	result;	/* 32 bits of undefined result from the wait */
 pointer pReadmask;	/* the resulting descriptor mask */
 {
     register int i;
+    for (i = numHandlers - 1; i >= 0; i--)
+	(*handlers[i].WakeupHandler) (handlers[i].blockData,
+				      result, pReadmask);
     for (i = 0; i < screenInfo.numScreens; i++)
 	(* screenInfo.screens[i]->WakeupHandler)(i, 
 				screenInfo.screens[i]->wakeupData,
 				result, pReadmask);
 }
 
+Bool
+RegisterBlockAndWakeupHandlers (blockHandler, wakeupHandler, blockData)
+    void    (*blockHandler)();
+    void    (*wakeupHandler)();
+    pointer blockData;
+{
+    BlockHandlerPtr new;
+
+    new = (BlockHandlerPtr) xrealloc (handlers, (numHandlers + 1) *
+				      sizeof (BlockHandlerRec));
+    if (!new)
+	return FALSE;
+    handlers = new;
+    handlers[numHandlers].BlockHandler = blockHandler;
+    handlers[numHandlers].WakeupHandler = wakeupHandler;
+    handlers[numHandlers].blockData = blockData;
+    numHandlers = numHandlers + 1;
+    return TRUE;
+}
+
+InitBlockAndWakeupHandlers ()
+{
+    xfree (handlers);
+    handlers = (BlockHandlerPtr) 0;
+    numHandlers = 0;
+}
