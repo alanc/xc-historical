@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.107 91/05/09 16:07:32 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.108 91/05/11 10:11:01 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -92,9 +92,11 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.107 91/05/09 16:07:32 rws Exp $
  *	CppScriptTarget				(dst,src,defs,deplist)
  *	MakeScriptFromCpp			(name,defs)
  *	MakeDirectories				(step,dirs)
+ *	MakeFontsDir				(deplist)
  *	MakeFonts				()
  *	InstallFonts				(dest)
  *	InstallFontAliases			(dest)
+ *	InstallFontScale			(dest)
  *	FontTarget				(basename)
  *	CompressedFontTarget			(basename)
  *	AllTarget				(depends)
@@ -1260,17 +1262,31 @@ step::									@@\
 
 
 /*
- * MakeFonts - generate rules to build font databases.
+ * MakeFontsDir - generate rules to build fonts.dir database.
  */
-#ifndef MakeFonts
-#define MakeFonts()							@@\
-all::  $(OBJS) fonts.dir						@@\
+#ifndef MakeFontsDir
+#define MakeFontsDir(deplist)						@@\
+all:: fonts.dir								@@\
 									@@\
-fonts.dir:  $(OBJS)							@@\
+fonts.dir:  deplist							@@\
 	$(MKFONTDIR) .							@@\
 									@@\
 clean::									@@\
-	$(RM) *.snf *.snf.Z *.pcf *.pcf.Z fonts.dir
+	$(RM) fonts.dir
+#endif /* MakeFontsDir */
+
+
+/*
+ * MakeFonts - generate rules to build font database.
+ */
+#ifndef MakeFonts
+#define MakeFonts()							@@\
+all::  $(OBJS)								@@\
+									@@\
+MakeFontsDir($(OBJS))							@@\
+									@@\
+clean::									@@\
+	$(RM) *.snf *.snf.Z *.pcf *.pcf.Z
 #endif /* MakeFonts */
 
 
