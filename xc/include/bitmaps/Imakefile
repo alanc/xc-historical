@@ -11,6 +11,7 @@ SRCS = \
 	dimple1 \
 	dimple3 \
 	dot \
+	escherknot \
 	flagdown \
 	flagup \
 	flipped_gray \
