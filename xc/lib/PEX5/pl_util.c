@@ -1,4 +1,4 @@
-/* $XConsortium: pl_util.c,v 1.5 92/08/26 15:18:10 mor Exp $ */
+/* $XConsortium: pl_util.c,v 1.6 92/09/09 14:09:05 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -1883,7 +1883,7 @@ OUTPUT PEXMatrix	transform_return;
      *         (Vx, Vy, Vz) is the lower left corner of the DC viewport.
      *
      *    M4 : maps DC to X drawable coordinates (flips Y).
-     *         H is the window height - 1.
+     *         H is the window height.
      */
 
     float 		scale_x, scale_y, scale_z;
@@ -1987,7 +1987,7 @@ OUTPUT PEXMatrix3x3	transform_return;
      *         (Vx, Vy) is the lower left corner of the DC viewport.
      *
      *    M4 : maps DC to X drawable coordinates (flips Y).
-     *         H is the window height - 1.
+     *         H is the window height.
      */
 
     float 		scale_x, scale_y;
@@ -2067,7 +2067,7 @@ OUTPUT PEXMatrix	transform_return;
      *    0 0 0  1     0  0  0  1     0 0 0  1     0  0 0 1
      *
      *    M1 : maps X drawable coordinates to DC (flips Y).
-     *         H is the window height - 1.
+     *         H is the window height.
      *
      *    M2 : translates DC viewport to origin
      *         (Vx, Vy, Vz) is the lower left corner of the DC viewport.
@@ -2171,7 +2171,7 @@ INPUT PEXMatrix3x3	transform_return;
      *    0 0  1     0  0  1     0 0  1      0  0 1
      *
      *    M1 : maps X drawable coordinates to DC (flips Y).
-     *         H is the window height - 1.
+     *         H is the window height.
      *
      *    M2 : translates DC viewport to origin
      *         (Vx, Vy) is the lower left corner of the DC viewport.
