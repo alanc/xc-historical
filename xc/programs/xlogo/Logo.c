@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Logo.c,v 1.1 88/02/23 10:32:17 rws Exp $";
+static char rcsid[] = "$Header: Logo.c,v 1.2 88/02/26 12:13:44 swick Exp $";
 #endif
 
 /*
@@ -68,7 +68,7 @@ LogoClassRec logoClassRec = {
     /* version			*/	XtVersion,
     /* callback_private		*/	NULL,
     /* tm_table			*/	NULL,
-    /* query_geometry		*/	NULL,
+    /* query_geometry		*/	XtInheritQueryGeometry,
     }
 };
 

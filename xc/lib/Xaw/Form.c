@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Form.c,v 1.13 88/02/26 09:10:38 swick Exp $";
+static char rcsid[] = "$Header: Form.c,v 1.14 88/02/26 11:58:27 swick Exp $";
 #endif lint
 
 
@@ -108,7 +108,7 @@ FormClassRec formClassRec = {
     /* version            */    XtVersion,
     /* callback_private   */    NULL,
     /* tm_table           */    NULL,
-    /* query_geometry     */	NULL,		/* %%% fix this! */
+    /* query_geometry     */	XtInheritQueryGeometry,	/* %%% fix this! */
   },
   { /* composite_class fields */
     /* geometry_manager   */   GeometryManager,

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Simple.c,v 1.8 88/02/26 10:05:35 swick Exp $";
+static char rcsid[] = "$Header: Simple.c,v 1.9 88/02/26 12:15:32 swick Exp $";
 #endif lint
 
 /* Copyright	Massachusetts Institute of Technology	1987 */
@@ -57,7 +57,7 @@ SimpleClassRec simpleClassRec = {
     /* version			*/	XtVersion,
     /* callback_private		*/	NULL,
     /* tm_table			*/	NULL,
-    /* query_geometry		*/	NULL,
+    /* query_geometry		*/	XtInheritQueryGeometry,
   },
   { /* simple fields */
     /* change_sensitive		*/	ChangeSensitive

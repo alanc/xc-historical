@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Dialog.c,v 1.9 88/02/26 09:08:04 swick Exp $";
+static char rcsid[] = "$Header: Dialog.c,v 1.10 88/02/26 11:57:37 swick Exp $";
 #endif lint
 
 
@@ -86,7 +86,7 @@ DialogClassRec dialogClassRec = {
     /* version            */    XtVersion,
     /* callback_private   */    NULL,
     /* tm_table           */    NULL,
-    /* query_geometry     */	NULL
+    /* query_geometry     */	XtInheritQueryGeometry
   },
   { /* composite_class fields */
     /* geometry_manager   */   XtInheritGeometryManager,

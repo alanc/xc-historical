@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: AsciiText.c,v 1.8 88/02/14 13:58:26 rws Exp $";
+static char rcsid[] = "$Header: AsciiText.c,v 1.9 88/02/25 12:03:53 swick Exp $";
 #endif lint
 
 
@@ -84,7 +84,8 @@ AsciiStringClassRec asciiStringClassRec = {
     /* accept_focus     */      XtInheritAcceptFocus,
     /* version          */	XtVersion,
     /* callback_private */      NULL,
-    /* tm_table         */      XtInheritTranslations
+    /* tm_table         */      XtInheritTranslations,
+    /* query_geometry	*/	XtInheritQueryGeometry
   },
   { /* text fields */
     /* empty            */      0
@@ -124,7 +125,8 @@ AsciiDiskClassRec asciiDiskClassRec = {
     /* accept_focus     */      XtInheritAcceptFocus,
     /* version          */	XtVersion,
     /* callback_private */      NULL,
-    /* tm_table         */      XtInheritTranslations
+    /* tm_table         */      XtInheritTranslations,
+    /* query_geometry	*/	XtInheritQueryGeometry
   },
   { /* text fields */
     /* empty            */      0

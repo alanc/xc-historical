@@ -1,6 +1,6 @@
 /*
  * $Source: /usr/expo/X/src/lib/Xaw/RCS/Mailbox.c,v $
- * $Header: Mailbox.c,v 1.2 88/02/23 15:52:38 jim Exp $
+ * $Header: Mailbox.c,v 1.3 88/02/26 12:14:09 swick Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -97,7 +97,7 @@ MailboxClassRec mailboxClassRec = {
     /* version			*/	XtVersion,
     /* callback_private		*/	NULL,
     /* tm_table			*/	NULL,
-    /* query_geometry		*/	NULL,
+    /* query_geometry		*/	XtInheritQueryGeometry,
     }
 };
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Grip.c,v 1.13 88/02/24 16:06:01 swick Exp $";
+static char rcsid[] = "$Header: Grip.c,v 1.14 88/02/26 12:12:02 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -93,7 +93,7 @@ GripClassRec gripClassRec = {
     /* version            */   XtVersion,
     /* callback_private   */   NULL,
     /* tm_table           */   NULL,
-    /* query_geometry     */   NULL,
+    /* query_geometry     */   XtInheritQueryGeometry,
    }, {
     /* empty              */   0  /* make C compiler happy */
    }
