@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: midash.c,v 1.6 87/06/15 00:41:05 sue Exp $ */
+/* $Header: midash.c,v 1.6 87/09/10 09:35:18 rws Locked $ */
 #include "miscstruct.h"
 #include "mistruct.h"
 
@@ -79,7 +79,9 @@ int *pnseg;
     while(lenCur > pDash[iDash])
     {
 	lenCur -= pDash[iDash];
-	iDash = (++iDash > nDash) ? iDash : 0;
+	iDash++;
+	if (iDash >= nDash)
+	    iDash = 0;
 	which = ~which;
     }
     lenMax = pDash[iDash];
@@ -176,7 +178,9 @@ int *pnseg;
 		pseg->newLine = 0;
 
 		/* move on to next dash */
-		iDash = (++iDash < nDash) ? iDash : 0;
+		iDash++;
+		if (iDash >= nDash)
+		    iDash = 0;
 		lenMax = pDash[iDash];
 		lenCur = 0;
 	    }
