@@ -98,12 +98,6 @@ XCOMM
 #define	XhpServer /* as nothing */
 #endif
 
-#ifdef XhpMitServer
-#define dohpMitServer
-#else
-#define XhpMitServer /* as nothing */
-#endif
-
 #ifdef	XapolloServer
 #define doapolloServer
 #else
@@ -141,7 +135,7 @@ XCOMM
  *                                                                           *
 /*****************************************************************************
  */
-ALL = XqvssServer XqdssServer XsunServer XapolloServer XibmServer XhpServer XhpMitServer XmacIIServer XmfbpmaxServer XcfbpmaxServer XtekServer XlunaServer
+ALL = XqvssServer XqdssServer XsunServer XapolloServer XibmServer XhpServer XmacIIServer XmfbpmaxServer XcfbpmaxServer XtekServer XlunaServer
 ALLPOSSIBLE = Xqvss Xqdss Xsun Xibm Xapollo Xhp XhpMit XmacII Xcfbpmax Xmfbpmax Xtek Xluna
 
 all: $(ALL)
@@ -313,7 +307,7 @@ HPMALLOCLIB = -lmalloc
 HPSYSLIBS = $(SYSLIBS) $(HPMALLOCLIB)
 XhpDIRS = $(HPDIRS)
 
-ServerTarget(Xhp,$(EXTDIR) $(FONTUTILDIR) $(HPDIRS),$(HPOBJS),$(HPLIBS),$(HPSYSLIBS))
+ServerTarget(Xhp,$(EXTDIR) $(FONTUTILDIR) $(HPDIRS),$(HPOBJS),$(HPLIBS),$(CBRT) $(HPSYSLIBS))
 #endif /* dohpServer */
 
 
