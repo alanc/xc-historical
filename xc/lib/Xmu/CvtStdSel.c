@@ -6,7 +6,6 @@
  *
  * Public entry points:
  *
- *	XmuInitAtoms(display)		initialize Selection Atoms
  *	XmuConvertStandardSelection()	return a known selection
  */
 
@@ -14,31 +13,7 @@
 
 #include <X11/Intrinsic.h>
 #include <X11/Xatom.h>
-
-#define _CvtStdSel_c_
 #include "Xmu.h"
-
-void XmuInitAtoms(d)
-    Display *d;
-{
-    XA_TEXT		  = XInternAtom(d, "TEXT",		 False);
-    XA_TIMESTAMP	  = XInternAtom(d, "TIMESTAMP",		 False);
-    XA_LIST_LENGTH	  = XInternAtom(d, "LIST_LENGTH",	 False);
-    XA_LENGTH		  = XInternAtom(d, "LENGTH",		 False);
-    XA_TARGETS		  = XInternAtom(d, "TARGETS",		 False);
-    XA_CHARACTER_POSITION = XInternAtom(d, "CHARACTER_POSITION", False);
-    XA_DELETE		  = XInternAtom(d, "DELETE",		 False);
-    XA_HOSTNAME		  = XInternAtom(d, "HOSTNAME",		 False);
-    XA_IP_ADDRESS	  = XInternAtom(d, "IP_ADDRESS",	 False);
-    XA_DECNET_ADDRESS	  = XInternAtom(d, "DECNET_ADDRESS",	 False);
-    XA_USER		  = XInternAtom(d, "USER",		 False);
-    XA_CLASS		  = XInternAtom(d, "CLASS",		 False);
-    XA_NAME		  = XInternAtom(d, "NAME",		 False);
-    XA_CLIENT_WINDOW	  = XInternAtom(d, "CLIENT_WINDOW",	 False);
-    XA_ATOM_PAIR	  = XInternAtom(d, "ATOM_PAIR",		 False);
-    XA_SPAN		  = XInternAtom(d, "SPAN",		 False);
-    XA_NET_ADDRESS	  = XInternAtom(d, "NET_ADDRESS",	 False);
-}
 
 Boolean XmuConvertStandardSelection(w, time, selection, target,
 				    type, value, length, format)
@@ -49,12 +24,8 @@ Boolean XmuConvertStandardSelection(w, time, selection, target,
     unsigned long *length;
     int *format;
 {
-    static Boolean inited = False;
-    if (!inited) {
-	XmuInitAtoms(XtDisplay(w));
-	inited = True;
-    }
-    if (*target == XA_TIMESTAMP) {
+    Display *d = XtDisplay(w);
+    if (*target == XA_TIMESTAMP(d)) {
 	*value = XtMalloc(4);
 	if (sizeof(long) == 4)
 	    *(long*)*value = time;
@@ -66,7 +37,8 @@ Boolean XmuConvertStandardSelection(w, time, selection, target,
 	*length = 1;
 	*format = 32;
 	return True;
-    } else if (*target == XA_HOSTNAME) {
+    }
+    if (*target == XA_HOSTNAME(d)) {
 	char hostname[1024];
 	gethostname(hostname, 1024);
 	*value = XtNewString(hostname);
@@ -74,9 +46,14 @@ Boolean XmuConvertStandardSelection(w, time, selection, target,
 	*length = strlen(hostname);
 	*format = 8;
 	return True;
-    } else if (*target == XA_IP_ADDRESS) {
-    } else if (*target == XA_DECNET_ADDRESS) {
-    } else if (*target == XA_USER) {
+    }
+    if (*target == XA_IP_ADDRESS(d)) {
+	return False;
+    }
+    if (*target == XA_DECNET_ADDRESS(d)) {
+	return False;
+    }
+    if (*target == XA_USER(d)) {
 	char *name = (char*)getenv("USER");
 	if (name == NULL) return False;
 	*value = XtNewString(name);
@@ -84,9 +61,36 @@ Boolean XmuConvertStandardSelection(w, time, selection, target,
 	*length = strlen(name);
 	*format = 8;
 	return True;
-    } else if (*target == XA_CLASS) {
-    } else if (*target == XA_NAME) {
-    } else if (*target == XA_CLIENT_WINDOW) {
+    }
+    if (*target == XA_CLASS(d)) {
+	return False;
+    }
+    if (*target == XA_NAME(d)) {
+ 	return False;
+    }
+    if (*target == XA_CLIENT_WINDOW(d)) {
+	return False;
+    }
+    if (*target == XA_OWNER_OS(d)) {
+	return False;
+    }
+    if (*target == XA_TARGETS(d)) {
+#define NUM_TARGETS 9
+	Atom* std_targets = (Atom*)XtMalloc(NUM_TARGETS*sizeof(Atom));
+	std_targets[0] = XA_TIMESTAMP(d);
+	std_targets[1] = XA_HOSTNAME(d);
+	std_targets[2] = XA_IP_ADDRESS(d);
+	std_targets[3] = XA_DECNET_ADDRESS(d);
+	std_targets[4] = XA_USER(d);
+	std_targets[5] = XA_CLASS(d);
+	std_targets[6] = XA_NAME(d);
+	std_targets[7] = XA_CLIENT_WINDOW(d);
+	std_targets[8] = XA_OWNER_OS(d);
+	*value = (caddr_t)std_targets;
+	*type = XA_ATOM;
+	*length = NUM_TARGETS;
+	*format = 32;
+	return True;
     }
     /* else */
     return False;
