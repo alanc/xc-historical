@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 */
 
-/* $XConsortium: multibufpx.c,v 1.11 91/06/01 13:25:50 rws Exp $ */
+/* $XConsortium: multibufbf.c,v 1.1 92/03/17 17:00:52 eswu Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -564,9 +564,9 @@ bufResetProc(pScreen)
      * whoever called RegisterDoubleBufferHardware
      */
 
-    (* pScreen->RegionUninit)(pMBPriv->backBuffer);
-    (* pScreen->RegionUninit)(pMBPriv->subtractRgn);
-    (* pScreen->RegionUninit)(pMBPriv->unionRgn);
+    (* pScreen->RegionUninit)(&pMBPriv->backBuffer);
+    (* pScreen->RegionUninit)(&pMBPriv->subtractRgn);
+    (* pScreen->RegionUninit)(&pMBPriv->unionRgn);
     xfree(pMBPriv);
 }
 
