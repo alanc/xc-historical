@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.16 89/06/19 11:14:59 jim Exp $
+ * $XConsortium: Xos.h,v 1.17 89/10/03 16:53:50 swick Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -117,7 +117,9 @@ struct timezone {
 
 #ifdef SYSV
 #ifndef macII
+#ifndef ibm
 #define SIGCHLD SIGCLD
+#endif
 #endif
 #endif
 
