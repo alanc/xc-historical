@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XMultibuf.c,v 1.16 89/10/08 17:01:15 jim Exp $
+ * $XConsortium: XMultibuf.c,v 1.17 89/10/08 17:11:13 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -70,12 +70,12 @@ static /* const */ char *multibuf_error_list[] = {
 static XEXT_GENERATE_FIND_DISPLAY (find_display, multibuf_info,
 				   multibuf_extension_name, 
 				   &multibuf_extension_hooks, 
-				   MultibufferNumberOfEvents, NULL)
+				   MultibufferNumberEvents, NULL)
 
 static XEXT_GENERATE_CLOSE_DISPLAY (close_display, multibuf_info)
 
 static XEXT_GENERATE_ERROR_STRING (error_string, multibuf_extension_name,
-				   MultibufferNumberOfErrors, 
+				   MultibufferNumberErrors, 
 				   multibuf_error_list)
 
 /*

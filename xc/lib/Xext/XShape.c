@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XShape.c,v 1.14 89/10/06 11:27:24 jim Exp $
+ * $XConsortium: XShape.c,v 1.15 89/10/08 16:23:02 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -62,7 +62,7 @@ static /* const */ XExtensionHooks shape_extension_hooks = {
 static XEXT_GENERATE_FIND_DISPLAY (find_display, shape_info,
 				   shape_extension_name, 
 				   &shape_extension_hooks,
-				   ShapeNumberOfEvents, NULL)
+				   ShapeNumberEvents, NULL)
 
 static XEXT_GENERATE_CLOSE_DISPLAY (close_display, shape_info)
 

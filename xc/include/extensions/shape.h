@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shape.h,v 1.10 89/10/05 17:30:18 jim Exp $ */
+/* $XConsortium: shape.h,v 1.11 89/10/05 17:35:00 jim Exp $ */
 
 #ifndef _SHAPE_H_
 #define _SHAPE_H_
@@ -51,7 +51,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define ShapeNotifyMask			(1L << 0)
 #define ShapeNotify			0
 
-#define ShapeNumberOfEvents		(ShapeNotify + 1)
+#define ShapeNumberEvents		(ShapeNotify + 1)
 
 #ifndef _SHAPE_SERVER_
 typedef struct {
