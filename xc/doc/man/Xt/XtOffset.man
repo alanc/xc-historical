@@ -99,11 +99,17 @@
 .ny0
 .TH XtOffset 3Xt "Release 6" "X Version 11" "XT FUNCTIONS"
 .SH NAME
-XtOffset, XtNumber \- determine the byte offset or number of array elements
+XtOffset, XtOffsetOf, XtNumber \- determine the byte offset or number of array elements
 .SH SYNTAX
 Cardinal XtOffset(\fIpointer_type\fP, \fIfield_name\fP)
 .br
       Type \fIpointer_type\fP;
+.br
+      Field \fIfield_name\fP;
+.LP
+Cardinal XtOffsetOf(\fIstructure_type\fP, \fIfield_name\fP)
+.br
+      Type \fIstructure_type\fP;
 .br
       Field \fIfield_name\fP;
 .LP
@@ -117,12 +123,23 @@ Specifies a fixed-size array.
 Specifies the name of the field for which to calculate the byte offset.
 .IP \fIpointer_type\fP 1i
 Specifies a type that is declared as a pointer to the structure.
+.IP \fIstructure_type\fP 1i
+Specifies a type that is declared as a structure.
 .SH DESCRIPTION
 The
 .ZN XtOffset
 macro is usually used to determine the offset of various resource fields 
 from the beginning of a widget and can be used at compile time in static
 initializations.
+.LP
+The
+.ZN XtOffsetOf
+macro expands to a constant expression that gives the offset in bytes
+to the specified structure member rom the beginning of the structure.
+It is normally used to statically initialize resource lists and is more
+portable than
+.ZN XtOffset ,
+which serves the same function.
 .LP
 The
 .ZN XtNumber
