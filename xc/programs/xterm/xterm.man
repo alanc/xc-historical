@@ -1,4 +1,4 @@
-.TH XTERM 1 "18 October 1988" "X Version 11"
+.TH XTERM 1 "25 October 1988" "X Version 11"
 .de Ds
 .nf
 .\\$1D \\$2 \\$1
@@ -94,7 +94,7 @@ This option indicates that \fIxterm\fP should work around a bug in the
 cursor motion package that causes the
 .IR more (1)
 program to display lines that are exactly the width of the window and
-are followed by line beginning with a tab to be displayed incorrectly
+are followed by a line beginning with a tab to be displayed incorrectly
 (the leading tabs are not displayed).
 .TP 8
 .B \+cu
@@ -143,16 +143,16 @@ the string is assumed to be a command to be used as the endpoint of a pipe.
 The default filename is ``\fBXtermLog.\fIXXXXX\fR'' (where \fIXXXXX\fP
 is the process id of \fIxterm\fP) and is created in the directory from which
 \fIxterm\fP was started (or the user's home directory in the case of a
-login window.
+login window).
 .TP 8
 .B \-ls
-This option indicates that shell that is started in the \fIxterm\fP window
+This option indicates that the shell that is started in the \fIxterm\fP window
 be a login shell (i.e. the first character of argv[0] will be a dash,
 indicating to the shell that it should read the user's .login or .profile).
 .TP 8
 .B \+ls
 This option indicates that the shell that is started should not be a login
-shell (i.e. it will be normal ``subshell'').
+shell (i.e. it will be a normal ``subshell'').
 .TP 8
 .B \-mb
 This option indicates that \fIxterm\fP should ring a margin bell when
@@ -239,7 +239,7 @@ than in VT102 mode.  Switching between the two windows is done using the
 This option indicates that \fIxterm\fP should start in VT102 mode.
 .TP 8
 .BI \-tm " string"
-This option specifies a serious of terminal setting keywords followed by the
+This option specifies a series of terminal setting keywords followed by the
 characters that should be bound to those functions, similar to the \fIstty\fP
 program.  This is ignored when \fB\-L\fP is given since \fIgetty\fP resets
 the terminal.  Allowable keywords include: intr, quit, erase, kill, eof,
@@ -269,7 +269,7 @@ window will be flashed.
 This option indicates that a visual bell should not be used.
 .TP 8
 .B \-C
-This option indicates that this window should be receive console output.  This
+This option indicates that this window should receive console output.  This
 is not supported on all systems.
 .TP 8
 .B \-S\fIccn\fP
@@ -340,7 +340,7 @@ This option specifies the font to be used for displaying normal text.  The
 default is ``vtsingle.''
 .TP 8
 .B \-name \fIname\fP
-This option specifies the application name under which resource are to be
+This option specifies the application name under which resources are to be
 obtained, rather than the default executable file name.
 \fIName\fP should not contain ``.'' or ``*'' characters.
 .TP 8
@@ -356,7 +356,7 @@ the foreground and background colors.
 .TP 8
 .B \-geometry \fIgeometry\fP
 This option specifies the prefered size and position of the VT102 window;
-see \fIX(1)\fP;
+see \fIX(1)\fP.
 .TP 8
 .B \-display \fIdisplay\fP
 This option specifies the X server to contact; see \fIX(1)\fP.
@@ -428,7 +428,9 @@ sets of characters should be treated the same when doing cut and paste.
 See the section on specifying character classes.
 .TP 8
 .B "curses (\fPclass\fB Curses)"
-Specifies whether or not the last column bug in cursor should be worked around.
+Specifies whether or not the last column bug in
+.IR curses (3x)
+should be worked around.
 The default is ``false.''
 .TP 8
 .B "background (\fPclass\fB Background)"
@@ -756,9 +758,9 @@ This can be convenient when some program has left the scroll regions
 set incorrectly (often a problem when using VMS or TOPS-20).
 The full reset entry will clear the screen, reset tabs to every
 eight columns, and reset the terminal modes (such as wrap and smooth scroll)
-to there initial states just after
+to their initial states just after
 .I xterm
-has finish processing the command line options.
+has finished processing the command line options.
 The
 .B Tektronix
 menu sets various modes in the Tektronix emulation, and is popped up when the
@@ -773,7 +775,7 @@ characters of the same class (e.g. letters, white space, punctuation) to be
 selected.  Since different people have different preferences for what should
 be selected (for example, should filenames be selected as a whole or only
 the separate subnames), the default mapping can be overridden through the use 
-of the \fIclarClass\fP (class \fICharClass\fP) resource.
+of the \fIcharClass\fP (class \fICharClass\fP) resource.
 .PP
 This resource is simply a list of \fIrange\fP:\fIvalue\fP pairs where the
 range is either a single number or \fIlow\fP-\fIhigh\fP in the range of 0
@@ -1016,7 +1018,7 @@ resize(1), X(1), pty(4), tty(4)
 .SH BUGS
 .PP
 The \fB\-L\fP option is no longer needed as the new \fIxdm\fP display manager
-system handling logging in in a much cleaner way.  No more messing around with
+system handles logging in in a much cleaner way.  No more messing around with
 trying to match colors in \fI/etc/ttys\fP or worrying about an unwanted login
 window.  \fBThis option may be removed in future releases.\fP
 .PP
