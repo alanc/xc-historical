@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: CH03,v 1.6 91/07/31 20:23:53 swick Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -131,6 +131,7 @@ The geometry manager must communicate with the window manager, if it exists,
 and the box must also accept
 .PN ConfigureNotify
 events when the window size is changed by the window manager.
+
 .NH 2
 Addition of Children to a Composite Widget: the insert_child Procedure
 .XS
@@ -183,6 +184,7 @@ the insert_child procedure must first reallocate the array
 and update \fInum_slots\fP.
 The insert_child procedure then places the child at the appropriate position
 in the array and increments the \fInum_children\fP field.
+
 .NH 2
 Insertion Order of Children: the insert_position Procedure
 .XS
@@ -229,6 +231,7 @@ and returning \fInum_children\fP indicates that it should go after all other chi
 The default insert_position function returns \fInum_children\fP
 and can be overridden by a specific composite widget's resource list
 or by the argument list provided when the composite widget is created.
+
 .NH 2
 Deletion of Children: the delete_child Procedure
 .XS
@@ -254,6 +257,7 @@ Passes the child being deleted.
 Most widgets inherit the delete_child procedure from their superclass.
 Composite widgets that create companion widgets define their own
 delete_child procedure to remove these companion widgets.
+
 .NH 2
 Adding and Removing Children from the Managed Set
 .XS
@@ -269,6 +273,7 @@ The change_managed procedure pointer is of type
 .PN XtWidgetProc .
 The widget argument specifies the composite widget whose managed child
 set has been modified.
+
 .NH 3
 Managing Children
 .XS
@@ -542,6 +547,7 @@ if the specified widget is of class RectObj or any subclass thereof
 and is managed, or
 .PN False
 otherwise.
+
 .NH 2
 Controlling When Widgets Get Mapped
 .XS
@@ -622,6 +628,7 @@ XtUnmapWidget(\fIw\fP)
 .FN
 .IP \fIw\fP 1i
 Specifies the widget.  \*(cI
+
 .NH 2
 Constrained Composite Widgets
 .XS

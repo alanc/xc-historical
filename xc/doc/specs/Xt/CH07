@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: CH07,v 1.6 91/07/31 20:24:11 swick Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -65,6 +65,7 @@ translation manager,
 which maps sequences of X events, with modifiers, into procedure calls.
 Applications rarely use any of the event manager routines besides
 .PN XtAppMainLoop .
+
 .NH 2
 Adding and Deleting Additional Event Sources
 .XS
@@ -81,6 +82,7 @@ The next section describes functions that provide input gathering from files.
 The application registers the files with the \*(xI read routine.
 When input is pending on one of the files,
 the registered callback procedures are invoked.
+
 .NH 3
 Adding and Removing Input Sources
 .XS
@@ -185,6 +187,7 @@ The
 .PN XtRemoveInput
 function causes the \*(xI read routine to stop watching for events
 from the file source specified by \fIid\fP.
+
 .NH 3
 Adding and Removing Timeouts
 .XS
@@ -267,6 +270,7 @@ The
 .PN XtRemoveTimeOut
 function removes the pending timeout.
 Note that timeouts are automatically removed once they trigger.
+
 .NH 2
 Constraining Events to a Cascade of Widgets
 .XS
@@ -1016,6 +1020,7 @@ If \fIaccept_focus\fP is NULL,
 .PN XtCallAcceptFocus
 returns
 .PN False .
+
 .NH 2
 Querying Event Sources
 .XS
@@ -1125,6 +1130,7 @@ and waits for an X event while looking at the other input sources
 and timeout values and calling any callback procedures triggered by them.
 This wait time can be used for background processing;
 see Section 7.8.
+
 .NH 2
 Dispatching Events
 .XS
@@ -1316,6 +1322,7 @@ Applications can provide their own version of this loop,
 which tests some global termination flag or tests that the number
 of top-level widgets is larger than zero before circling back to the call to
 .PN XtAppNextEvent .
+
 .NH 2
 Setting and Checking the Sensitivity State of a Widget
 .XS
@@ -1457,6 +1464,7 @@ returns
 .PN True ;
 otherwise, it returns 
 .PN False .
+
 .NH 2
 Adding Background Work Procedures
 .XS
@@ -1541,6 +1549,7 @@ Specifies which work procedure to remove.
 The
 .PN XtRemoveWorkProc
 function explicitly removes the specified background work procedure.
+
 .NH 2
 X Event Filters
 .XS
@@ -1554,6 +1563,7 @@ unwanted, handle
 pointer motion compression,
 enter/leave compression, and
 exposure compression.
+
 .NH 3
 Pointer Motion Compression
 .XS
@@ -1570,6 +1580,7 @@ When a request for an event would return a motion event,
 the \*(xI check if there are any other motion events
 for the same widget immediately
 following the current one and, if so, skip all but the last of them.
+
 .NH 3
 Enter/Leave Compression
 .XS
@@ -1584,6 +1595,7 @@ the widget class field \fIcompress_enterleave\fP should be
 .IN "compress_enterleave field"
 These enter and leave events are not delivered to the client
 if they are found together in the input queue.
+
 .NH 3
 Exposure Compression
 .XS
@@ -1735,6 +1747,7 @@ by means of direct Xlib calls.
 Widgets cannot simply write to the screen and forget what they have done.
 They must keep enough state to redisplay the window or parts
 of it if a portion is obscured and then reexposed.
+
 .NH 3
 Redisplay of a Widget: the expose Procedure
 .XS
@@ -1821,6 +1834,7 @@ In this case,
 the expose procedures for Pushbutton and Toggle inherit
 their superclass's expose procedure;
 see Section 1.6.10.
+
 .NH 3
 Widget Visibility
 .XS

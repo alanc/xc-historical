@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: CH05,v 1.6 91/07/31 20:24:03 swick Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -61,6 +61,7 @@ widget on the pop-up list.
 .IN "pop-up" "" "@DEF@"
 .IN "pop-up" "list"
 .IN "pop-up" "child"
+
 .NH 2
 Pop-Up Widget Types
 .LP
@@ -279,6 +280,7 @@ which provide the opportunity either to make last-minute changes to a
 pop-up child before it is popped up or to change it after it is popped down.
 Note that excessive use of pop-up callbacks can make
 popping up occur more slowly.
+
 .NH 2
 Mapping a Pop-Up Widget
 .XS
@@ -567,6 +569,7 @@ If
 .PN XtMenuPopup
 gets to the application top-level shell widget and has not
 found a matching shell, it generates a warning and returns immediately.
+
 .NH 2
 Unmapping a Pop-Up Widget
 .XS
