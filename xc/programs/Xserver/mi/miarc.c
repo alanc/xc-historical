@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.32 91/06/15 15:10:23 rws Exp $ */
+/* $XConsortium: miarc.c,v 5.33 91/06/15 15:14:19 rws Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -259,105 +259,6 @@ miArcSegment(pDraw, pGC, tarc, right, left)
 	     right, left);
 }
 
-static void
-miFillWideCircle(pDraw, pGC, parc)
-    DrawablePtr	pDraw;
-    GCPtr	pGC;
-    xArc	*parc;
-{
-    int doinner;
-    register int x, y, e;
-    int xk, yk, xm, ym, dx, dy, xorg, yorg;
-    int slw;
-    int inx, iny, ine;
-    int inxk, inyk, inxm, inym;
-    int inslw;
-    DDXPointPtr points;
-    register DDXPointPtr pts;
-    int *widths;
-    register int *wids;
-
-    doinner = -pGC->lineWidth;
-    if (!doinner)
-	doinner = -1;
-    slw = parc->width - doinner;
-    points = (DDXPointPtr)ALLOCATE_LOCAL((sizeof(DDXPointRec) * 2) * slw);
-    if (!points)
-	return;
-    widths = (int *)ALLOCATE_LOCAL((sizeof(int) * 2) * slw);
-    if (!widths)
-    {
-	DEALLOCATE_LOCAL(points);
-	return;
-    }
-    y = parc->height >> 1;
-    dy = parc->height & 1;
-    yorg = parc->y + y;
-    xorg = parc->x + y + dy;
-    dx = 1 - dy;
-    MIWIDEARCSETUP(x, y, dy, slw, e, xk, xm, yk, ym);
-    inslw = parc->width + doinner;
-    if (inslw > 0)
-    {
-	MIWIDEARCSETUP(inx, iny, dy, inslw, ine, inxk, inxm, inyk, inym);
-    } else
-	doinner--;
-    if (pGC->miTranslate)
-    {
-	xorg += pDraw->x;
-	yorg += pDraw->y;
-    }
-    pts = points;
-    wids = widths;
-    while (y)
-    {
-	MIFILLARCSTEP(slw);
-	if (++doinner > 0)
-	{
-	    MIFILLINARCSTEP(inslw);
-	    pts->x = xorg - x;
-	    pts->y = yorg - y;
-	    *wids++ = x - inx;
-	    pts++;
-	    pts->x = xorg - inx + inslw;
-	    pts->y = yorg - y;
-	    *wids++ = inx - x + slw - inslw;
-	    pts++;
-	}
-	else
-	{
-	    pts->x = xorg - x;
-	    pts->y = yorg - y;
-	    pts++;
-	    *wids++ = slw;
-	}
-	if (miFillArcLower(slw))
-	{
-	    if ((doinner > 0) && miFillInArcLower(inslw))
-	    {
-		pts->x = xorg - x;
-		pts->y = yorg + y + dy;
-		*wids++ = x - inx;
-		pts++;
-		pts->x = xorg - inx + inslw;
-		pts->y = yorg + y + dy;
-		*wids++ = inx - x + slw - inslw;
-		pts++;
-	    }
-	    else
-	    {
-		pts->x = xorg - x;
-		pts->y = yorg + y + dy;
-		pts++;
-		*wids++ = slw;
-	    }
-	}
-    }
-    (*pGC->ops->FillSpans)(pDraw, pGC, pts - points, points, widths, FALSE);
-    DEALLOCATE_LOCAL(widths);
-    DEALLOCATE_LOCAL(points);
-}
-
 /*
 
 Three equations combine to describe the boundaries of the arc
@@ -423,6 +324,7 @@ correspond to the inner and outer boundaries.
 
 typedef struct {
     short lx, lw, rx, rw;
+    char lowrdx; /* takes care of assymetry of inside edge, upper/lower */
 } miArcSpan;
 
 typedef struct {
@@ -441,6 +343,7 @@ typedef struct {
 
 static arcCacheRec arcCache[CACHESIZE];
 static unsigned long lrustamp;
+static arcCacheRec *lastCacheHit = &arcCache[0];
 static RESTYPE cacheType;
 
 /*
@@ -472,50 +375,75 @@ miFreeArcCache (data, id)
     lrustamp = 0;
 }
 
-static miArcSpanData *
-miComputeWideEllipse(lw, parc, mustFree)
-    int		   lw;
-    register xArc *parc;
-    Bool	  *mustFree;
-{
+static void
+miComputeCircleSpans(lw, parc, spdata)
+    int lw;
+    xArc *parc;
     miArcSpanData *spdata;
+{
     register miArcSpan *span;
-    register arcCacheRec *cent, *lruent;
+    int doinner;
+    register int x, y, e;
+    int xk, yk, xm, ym, dx, dy;
+    register int slw, inslw;
+    int inx, iny, ine;
+    int inxk, inyk, inxm, inym;
+
+    doinner = -lw;
+    if (!doinner)
+	doinner = -1;
+    slw = parc->width - doinner;
+    y = parc->height >> 1;
+    dy = parc->height & 1;
+    dx = 1 - dy;
+    MIWIDEARCSETUP(x, y, dy, slw, e, xk, xm, yk, ym);
+    inslw = parc->width + doinner;
+    if (inslw > 0)
+    {
+	MIWIDEARCSETUP(inx, iny, dy, inslw, ine, inxk, inxm, inyk, inym);
+    } else
+	doinner--;
+    span = spdata->spans;
+    while (y)
+    {
+	MIFILLARCSTEP(slw);
+	if (++doinner > 0)
+	{
+	    MIFILLINARCSTEP(inslw);
+	    span->lx = dy - x;
+	    span->lw = x - inx;
+	    span->rx = dy - inx + inslw;
+	    span->rw = inx - x + slw - inslw;
+	    span->lowrdx = !miFillInArcLower(inslw);
+	}
+	else
+	{
+	    span->lx = dy - x;
+	    span->lw = slw;
+	    span->rw = -1;
+	}
+	span++;
+    }
+    spdata->count = span - spdata->spans;
+    if (!(lw & 1) && !dy)
+	spdata->count--;
+    if (!dy)
+	spdata->count--;
+}
+
+static void
+miComputeEllipseSpans(lw, parc, spdata)
+    int lw;
+    xArc *parc;
+    miArcSpanData *spdata;
+{
+    register miArcSpan *span;
+    miArcSpan *basespan;
     double w, h, r, xorg;
-    register int k;
     double Hs, Hf, WH, K, Vk, Nk, Fk, Vr, N, Nc, Z, rs;
     double A, T, b, d, x, y, t, inx, outx, hepp, hepm;
     int flip, solution;
-    arcCacheRec fakeent;
 
-    if (!lw)
-	lw = 1;
-    if (parc->height <= 1500)
-    {
-	*mustFree = FALSE;
-	lruent = &arcCache[0];
-	for (k = CACHESIZE, cent = lruent; --k >= 0; cent++)
-	{
-	    if (cent->lw == lw &&
-		cent->width == parc->width &&
-		cent->height == parc->height)
-	    {
-		cent->lrustamp = ++lrustamp;
-		return cent->spdata;
-	    }
-	    if (cent->lrustamp < lruent->lrustamp)
-		lruent = cent;
-	}
-	if (!cacheType)
-	{
-	    cacheType = CreateNewResourceType(miFreeArcCache);
-	    (void) AddResource(FakeClientID(0), cacheType, NULL);
-	}
-    } else {
-	lruent = &fakeent;
-	lruent->spdata = NULL;
-	*mustFree = TRUE;
-    }
     w = parc->width / 2.0;
     h = parc->height / 2.0;
     r = lw / 2.0;
@@ -529,39 +457,19 @@ miComputeWideEllipse(lw, parc, mustFree)
     Fk = Hf / WH;
     hepp = h + EPSILON;
     hepm = h - EPSILON;
-    K = h + (lw >> 1);
-    k = (parc->height >> 1) + (lw >> 1);
-    if (!(lw & 1))
-    {
-	K -= 1.0;
-	k--;
-    }
-    spdata = lruent->spdata;
-    if (!spdata || spdata->k != k)
-    {
-	if (spdata)
-	    xfree(spdata);
-	spdata = (miArcSpanData *)xalloc(sizeof(miArcSpanData) +
-					 sizeof(miArcSpan) * (k + 1));
-	lruent->spdata = spdata;
-	if (!spdata)
-	{
-	    lruent->lrustamp = 0;
-	    lruent->lw = 0;
-	    return spdata;
-	}
-	spdata->spans = (miArcSpan *)(spdata + 1);
-	spdata->k = k;
-    }
-    lruent->lrustamp = ++lrustamp;
-    lruent->lw = lw;
-    lruent->width = parc->width;
-    lruent->height = parc->height;
+    K = h + ((lw - 1) >> 1);
     span = spdata->spans;
     if (parc->width & 1)
 	xorg = .5;
     else
 	xorg = 0.0;
+    if (!(lw & 1) && !(parc->width & 1)) {
+	span->lx = 0;
+	span->lw = 1;
+	span->rx = -1;
+	span++;
+    }
+    basespan = span;
     for (; K > 0.0; K -= 1.0, span++) {
 	N = (K * K + Nk) / 6.0;
 	Nc = N * N * N;
@@ -653,9 +561,10 @@ miComputeWideEllipse(lw, parc, mustFree)
 	    span->lw = ICEIL(xorg - inx) - span->lx;
 	    span->rx = ICEIL(xorg + inx);
 	    span->rw = ICEIL(xorg + outx) - span->rx;
+	    span->lowrdx = 0;
 	}
     }
-    spdata->count = span - spdata->spans;
+    spdata->count = span - basespan;
     if (!(parc->height & 1)) {
 	outx = w + r;
 	if (r >= h)
@@ -678,6 +587,81 @@ miComputeWideEllipse(lw, parc, mustFree)
 	    span->rw = ICEIL(xorg + outx) - span->rx;
 	}
     }
+}
+
+static miArcSpanData *
+miComputeWideEllipse(lw, parc, mustFree)
+    int		   lw;
+    register xArc *parc;
+    Bool	  *mustFree;
+{
+    register miArcSpanData *spdata;
+    register arcCacheRec *cent, *lruent;
+    register int k;
+    arcCacheRec fakeent;
+
+    if (!lw)
+	lw = 1;
+    if (parc->height <= 1500)
+    {
+	*mustFree = FALSE;
+	cent = lastCacheHit;
+	if (cent->lw == lw &&
+	    cent->width == parc->width && cent->height == parc->height)
+	{
+	    cent->lrustamp = ++lrustamp;
+	    return cent->spdata;
+	}
+	lruent = &arcCache[0];
+	for (k = CACHESIZE, cent = lruent; --k >= 0; cent++)
+	{
+	    if (cent->lw == lw &&
+		cent->width == parc->width && cent->height == parc->height)
+	    {
+		cent->lrustamp = ++lrustamp;
+		lastCacheHit = cent;
+		return cent->spdata;
+	    }
+	    if (cent->lrustamp < lruent->lrustamp)
+		lruent = cent;
+	}
+	if (!cacheType)
+	{
+	    cacheType = CreateNewResourceType(miFreeArcCache);
+	    (void) AddResource(FakeClientID(0), cacheType, NULL);
+	}
+    } else {
+	lruent = &fakeent;
+	lruent->spdata = NULL;
+	*mustFree = TRUE;
+    }
+    k = (parc->height >> 1) + ((lw - 1) >> 1);
+    spdata = lruent->spdata;
+    if (!spdata || spdata->k != k)
+    {
+	if (spdata)
+	    xfree(spdata);
+	spdata = (miArcSpanData *)xalloc(sizeof(miArcSpanData) +
+					 sizeof(miArcSpan) * (k + 2));
+	lruent->spdata = spdata;
+	if (!spdata)
+	{
+	    lruent->lrustamp = 0;
+	    lruent->lw = 0;
+	    return spdata;
+	}
+	spdata->spans = (miArcSpan *)(spdata + 1);
+	spdata->k = k;
+    }
+    lruent->lrustamp = ++lrustamp;
+    lruent->lw = lw;
+    lruent->width = parc->width;
+    lruent->height = parc->height;
+    lastCacheHit = lruent;
+    if (parc->width == parc->height)
+	miComputeCircleSpans(lw, parc, spdata);
+    else
+	miComputeEllipseSpans(lw, parc, spdata);
     return spdata;
 }
 
@@ -730,13 +714,12 @@ miFillWideEllipse(pDraw, pGC, parc)
 	yorg += pDraw->y;
     }
     k = spdata->k;
-    if (!(lw & 1)) {
-	if (!(parc->width & 1)) {
-	    pts->x = xorg;
-	    pts->y = yorg - k - 1;
-	    pts++;
-	    *wids++ = 1;
-	}
+    if (!(lw & 1) && !(parc->width & 1)) {
+	pts->x = xorg;
+	pts->y = yorg - k - 1;
+	pts++;
+	*wids++ = 1;
+	span++;
     }
     for (n = spdata->count; --n >= 0; k--, span++)
     {
@@ -762,9 +745,9 @@ miFillWideEllipse(pDraw, pGC, parc)
 	    pts[2].x = pts[0].x;
 	    pts[2].y = yorg + k + dy;
 	    wids[2] = wids[0];
-	    pts[3].x = pts[1].x;
+	    pts[3].x = pts[1].x - span->lowrdx;
 	    pts[3].y = pts[2].y;
-	    wids[3] = wids[0];
+	    wids[3] = wids[1] + span->lowrdx;
 	    pts += 4;
 	    wids += 4;
 	}
@@ -793,6 +776,7 @@ miFillWideEllipse(pDraw, pGC, parc)
     if (mustFree)
 	xfree(spdata);
     (*pGC->ops->FillSpans)(pDraw, pGC, pts - points, points, widths, FALSE);
+
     DEALLOCATE_LOCAL(widths);
     DEALLOCATE_LOCAL(points);
 }
@@ -847,10 +831,7 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 		   (parcs->angle2 >= FULLCIRCLE ||
 		    parcs->angle2 <= -FULLCIRCLE))
 	    {
-		if (parcs->width == parcs->height)
-		    miFillWideCircle(pDraw, pGC, parcs);
-		else
-		    miFillWideEllipse(pDraw, pGC, parcs);
+		miFillWideEllipse(pDraw, pGC, parcs);
 		if (!--narcs)
 		    return;
 		parcs++;
