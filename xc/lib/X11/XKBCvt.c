@@ -1,4 +1,4 @@
-/* "$XConsortium: Lookup.c,v 1.12 90/12/11 13:19:10 rws Exp $"; */
+/* "$XConsortium: XKBCvt.c,v 1.1 93/09/28 00:01:41 rws Exp $"; */
 
 /*
  * Copyright 1988, 1989 by the Massachusetts Institute of Technology
@@ -165,7 +165,7 @@ static int _XkbHandleSpecialSym(keysym, buffer, nbytes, status)
 }
 
 int _XkbKSToKnownSet (priv, keysym, buffer, nbytes, status)
-    void *priv;
+    XPointer priv;
     KeySym keysym;
     char *buffer;
     int nbytes;
@@ -269,7 +269,7 @@ typedef struct _XkbToKS {
 
 static KeySym
 _XkbKnownSetToKS(priv,buffer,nbytes,status)
-    void *priv;
+    XPointer priv;
     char *buffer;
     int nbytes;
     Status *status;
@@ -303,51 +303,51 @@ KeySym	lower,upper;
 
 
 static XkbConverters	cvt_ascii = {
-	_XkbKSToKnownSet,&WantLatin1,_XkbKnownSetToKS,NULL,_XkbDefaultToUpper
+	_XkbKSToKnownSet,(XPointer)&WantLatin1,_XkbKnownSetToKS,NULL,_XkbDefaultToUpper
 };
 
 static XkbConverters	cvt_latin1 = {
-	_XkbKSToKnownSet,&WantLatin1,_XkbKnownSetToKS,NULL,NULL
+	_XkbKSToKnownSet,(XPointer)&WantLatin1,_XkbKnownSetToKS,NULL,NULL
 };
 
 static XkbConverters	cvt_latin2 = {
-	_XkbKSToKnownSet,&WantLatin2,_XkbKnownSetToKS,NULL,NULL
+	_XkbKSToKnownSet,(XPointer)&WantLatin2,_XkbKnownSetToKS,NULL,NULL
 };
 
 static XkbConverters	cvt_latin3 = {
-	_XkbKSToKnownSet,&WantLatin3,_XkbKnownSetToKS,NULL,NULL
+	_XkbKSToKnownSet,(XPointer)&WantLatin3,_XkbKnownSetToKS,NULL,NULL
 };
 
 static XkbConverters	cvt_latin4 = {
-	_XkbKSToKnownSet,&WantLatin4,_XkbKnownSetToKS,NULL,NULL
+	_XkbKSToKnownSet,(XPointer)&WantLatin4,_XkbKnownSetToKS,NULL,NULL
 };
 
 static XkbConverters	cvt_kana = {
-	_XkbKSToKnownSet,&WantKana,_XkbKnownSetToKS,NULL,NULL
+	_XkbKSToKnownSet,(XPointer)&WantKana,_XkbKnownSetToKS,NULL,NULL
 };
 
 static XkbConverters	cvt_X0201 = {
-	_XkbKSToKnownSet,&WantX0201,_XkbKnownSetToKS,NULL,NULL
+	_XkbKSToKnownSet,(XPointer)&WantX0201,_XkbKnownSetToKS,NULL,NULL
 };
 
 static XkbConverters	cvt_Arabic = {
-	_XkbKSToKnownSet,&WantArabic,_XkbKnownSetToKS,NULL,NULL
+	_XkbKSToKnownSet,(XPointer)&WantArabic,_XkbKnownSetToKS,NULL,NULL
 };
 
 static XkbConverters	cvt_Cyrillic = {
-	_XkbKSToKnownSet,&WantCyrillic,_XkbKnownSetToKS,NULL,NULL
+	_XkbKSToKnownSet,(XPointer)&WantCyrillic,_XkbKnownSetToKS,NULL,NULL
 };
 
 static XkbConverters	cvt_Greek = {
-	_XkbKSToKnownSet,&WantGreek,_XkbKnownSetToKS,NULL,NULL
+	_XkbKSToKnownSet,(XPointer)&WantGreek,_XkbKnownSetToKS,NULL,NULL
 };
 
 static XkbConverters	cvt_APL = {
-	_XkbKSToKnownSet,&WantAPL,_XkbKnownSetToKS,NULL,NULL
+	_XkbKSToKnownSet,(XPointer)&WantAPL,_XkbKnownSetToKS,NULL,NULL
 };
 
 static XkbConverters	cvt_Hebrew = {
-	_XkbKSToKnownSet,&WantHebrew,_XkbKnownSetToKS,NULL,NULL
+	_XkbKSToKnownSet,(XPointer)&WantHebrew,_XkbKnownSetToKS,NULL,NULL
 };
 
 
