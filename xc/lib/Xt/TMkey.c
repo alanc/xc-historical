@@ -1,4 +1,4 @@
-/* $XConsortium: TMkey.c,v 1.11 91/05/04 13:53:09 rws Exp $ */
+/* $XConsortium: TMkey.c,v 1.12 91/07/05 15:04:12 rws Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -448,7 +448,7 @@ void XtTranslateKey(dpy, keycode, modifiers,
 	else
 	    *keysym_return = syms[0];
     } else if (!(modifiers & LockMask) ||
-	       (dpy->lock_meaning != XK_Caps_Lock)) {
+	       (pd->lock_meaning != XK_Caps_Lock)) {
 	if ((per == 1) || ((usym = syms[1]) == NoSymbol))
 	    XtConvertCase(dpy, syms[0], &lsym, &usym);
 	*keysym_return = usym;
