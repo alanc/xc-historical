@@ -10,6 +10,9 @@
        PROGRAMS = resize xterm
    INSTALLFLAGS = $(INSTUIDFLAGS)
        INCLUDES = -I$(TOOLKITSRC) -I$(TOP)
+#ifdef RtArchitecture
+             CC = pcc
+#endif
 
 ComplexProgramTarget_1(xterm,$(XAWLIB) $(XTOOLLIB) $(XLIB),-ltermcap)
 
