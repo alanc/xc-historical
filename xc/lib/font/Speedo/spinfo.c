@@ -1,4 +1,4 @@
-/* $XConsortium: spinfo.c,v 1.3 91/05/11 09:58:53 rws Exp $ */
+/* $XConsortium: spinfo.c,v 1.4 91/06/04 15:50:36 rws Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -20,6 +20,8 @@
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ * $NCDId: @(#)spinfo.c,v 4.6 1991/06/24 16:55:09 lemke Exp $
  *
  * Author: Dave Lemke, Network Computing Devices, Inc
  *
@@ -72,7 +74,6 @@ static fontProp extraProps[] = {
 #define NEXTRAPROPS (sizeof(extraProps) / sizeof(fontProp))
 
 #define	NPROPS	(NNAMEPROPS + NEXTRAPROPS)
-
 
 void
 make_sp_standard_props()
@@ -133,12 +134,6 @@ adjust_min_max(minc, maxc, tmp)
 }
 
 
-/*
- * XXX
- *
- * AVERAGE_WIDTH computation is probaly a crock.  will ikely overflow, and
- * is losing precision
- */
 void
 compute_sp_bounds(spf, pinfo, flags)
     SpeedoFontPtr spf;
@@ -146,7 +141,8 @@ compute_sp_bounds(spf, pinfo, flags)
     unsigned long flags;
 {
     int         i,
-                id, index;
+                id,
+                index;
     xCharInfo   minchar,
                 maxchar,
                 tmpchar;
@@ -155,7 +151,7 @@ compute_sp_bounds(spf, pinfo, flags)
     double      pix_width,
                 total_width = 0.0;
     SpeedoMasterFontPtr spmf = spf->master;
-    int		firstChar;
+    int	firstChar;
 
     firstChar = spmf->first_char_id;
     minchar.ascent = minchar.descent =
@@ -287,51 +283,3 @@ compute_sp_props(spf, fontname, pinfo)
 	}
     }
 }
-
-#ifdef NOTYET
-static int
-get_font_info(pinfo, fontname, filename, zname, spfont)
-    FontInfoPtr pinfo;
-    char       *fontname;
-    char       *filename;
-    FontFileNamePtr zname;
-    SpeedoFontPtr *spfont;
-{
-    SpeedoFontPtr spf;
-    int         err;
-
-    err = open_sp_font(fontname, filename, zname,
-	       (fsBitmapFormat) 0, (fsBitmapFormatMask) 0, (unsigned long) 0,
-		       spfont);
-    spf = *spfont;
-
-    if (err != Successful)
-	return err;
-
-    cur_spf = spf;
-    sp_reset_master (spf->master);
-
-    make_sp_header(spf, pinfo);
-
-    compute_sp_bounds(spf, pinfo, (unsigned long) 0);
-
-    compute_sp_props(spf, fontname, pinfo);
-
-    return Successful;
-}
-
-int
-SpeedoInfoLoad(pinfo, fontname, filename, zname)
-    FontInfoPtr pinfo;
-    char       *fontname;
-    char       *filename;
-    FontFileNamePtr zname;
-{
-    int         ret;
-    SpeedoFontPtr spfont;
-
-    ret = get_font_info(pinfo, fontname, filename, zname, &spfont);
-    close_sp_font(spfont);
-    return ret;
-}
-#endif
