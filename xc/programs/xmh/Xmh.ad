@@ -68,14 +68,14 @@ Xmh*comp.scrollHorizontal:	WhenNeeded
 Xmh*comp.autoFill:		True
 
 Xmh*sequenceMenu.Translations: #override\n\
-<Btn2Up>:XtMenuPopdown()notify()XmhOpenSequenceFromSequenceMenu()unhighlight()\n\
+<Btn2Up>:XtMenuPopdown()notify()XmhOpenSequence()unhighlight()\n\
 <Btn3Up>:XtMenuPopdown()XmhPushSequence()notify()XmhAddToSequence()XmhPopSequence()unhighlight()\n\
 <BtnUp>:XtMenuPopdown()notify()unhighlight()\n
 
 Xmh*folders*MenuButton.Translations:#override\n\
 <BtnDown>:set()XmhPopupFolderMenu()\n\
-<Btn2Up>:XmhSetCurrentFolder()reset()XmhOpenFolder()\n\
-<Btn3Up>:XmhPushFolder()XmhSetCurrentFolder()reset()XmhMarkMove()XmhPopFolder()\n\
+<Btn2Up>:XmhSetCurrentFolder()XmhOpenFolder()reset()\n\
+<Btn3Up>:XmhPushFolder()XmhSetCurrentFolder()XmhMarkMove()XmhPopFolder()reset()\n\
 <BtnUp>:XmhSetCurrentFolder()reset()\n\
 <LeaveWindow>:reset()XmhLeaveFolderButton()\n
 
