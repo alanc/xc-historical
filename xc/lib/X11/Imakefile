@@ -317,6 +317,11 @@ AuRead.c:  $(XAUTHSRC)/AuRead.c
 	$(RM) $@
 	$(LN) $? $@
 
+clean::
+	$(RM) $(AUTHSRCS)
+
+depend:: $(AUTHSRCS)
+
 DependTarget()
 
 
