@@ -47,15 +47,19 @@ extern void EndValGC();
 
 extern Bool InitSegs();
 extern Bool InitDashedSegs();
+extern Bool InitDoubleDashedSegs();
 extern void DoSegs();
 extern void EndSegs();
 
 extern Bool InitLines();
 extern Bool InitDashedLines();
+extern Bool InitDoubleDashedLines();
 extern void DoLines();
 extern void EndLines();
 
 extern Bool InitWideLines();
+extern Bool InitWideDashedLines();
+extern Bool InitWideDoubleDashedLines();
 extern void DoWideLines();
 extern void EndWideLines();
 
@@ -226,6 +230,9 @@ Test test[] = {
   {"-dseg100", "100-pixel dashed segment",
 		InitDashedSegs, DoSegs, NullProc, EndSegs, False, 0,
 		{10, POLY, 100}},
+  {"-ddseg100", "100-pixel double-dashed segment",
+		InitDoubleDashedSegs, DoSegs, NullProc, EndSegs, False, 0,
+		{10, POLY, 100}},
   {"-line1",   "1-pixel line",
 		InitLines, DoLines, NullProc, EndLines, False, 0,
 		{200, POLY, 1}},
@@ -244,6 +251,9 @@ Test test[] = {
   {"-dline100", "100-pixel dashed line",
 		InitDashedLines, DoLines, NullProc, EndLines, False, 0,
 		{10, POLY, 100}},
+  {"-ddline100", "100-pixel double-dashed line",
+		InitDoubleDashedLines, DoLines, NullProc, EndLines, False, 0,
+		{10, POLY, 100}},
   {"-wline10",   "10x1 wide line",
 		InitWideLines, DoWideLines, NullProc, EndWideLines, False, 0,
 		{200, 100, 10}},
@@ -253,6 +263,14 @@ Test test[] = {
   {"-wline500", "500x50 wide line",
 		InitWideLines, DoWideLines, NullProc, EndWideLines, False, 0,
 		{20, 50, 500}},
+  {"-wdline100",  "100x10 wide dashed line",
+		InitWideDashedLines, DoWideLines, NullProc, EndWideLines,
+		False, 0,
+		{100, 100, 100}},
+  {"-wddline100",  "100x10 wide double-dashed line",
+		InitWideDoubleDashedLines, DoWideLines, NullProc, EndWideLines,
+		False, 0,
+		{100, 100, 100}},
   {"-circle1",  "1-pixel diameter circle",
 		InitCircles, DoArcs, NullProc, EndArcs, False, 0,
 		{20, POLY, 1}},
