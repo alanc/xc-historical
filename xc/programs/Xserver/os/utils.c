@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.72 89/03/22 14:47:05 rws Exp $ */
+/* $XConsortium: utils.c,v 1.73 89/03/23 18:37:13 rws Exp $ */
 #include <stdio.h>
 #include "Xos.h"
 #include "misc.h"
@@ -42,6 +42,7 @@ extern int logoScreenSaver;
 #endif
 
 extern long ScreenSaverTime;		/* for forcing reset */
+extern Bool permitOldBugs;
 
 Bool clientsDoomed = FALSE;
 Bool GivingUp = FALSE;
@@ -161,6 +162,7 @@ void UseMsg()
     ErrorF("-alloc int             chance alloc should fail\n");
 #endif
     ErrorF("-auth string           select authorization file\n");	
+    ErrorF("bc                     enable bug compatibility\n");
     ErrorF("-bs                    disable any backing store support\n");
     ErrorF("-c                     turns off key-click\n");
     ErrorF("c #                    key-click volume (0-8)\n");
@@ -246,6 +248,8 @@ char	*argv[];
 	    } else
 		UseMsg();
 	}
+	else if ( strcmp( argv[i], "bc") == 0)
+	    permitOldBugs = TRUE;
 	else if ( strcmp( argv[i], "-bs") == 0)
 	    disableBackingStore = TRUE;
 	else if ( strcmp( argv[i], "c") == 0)
