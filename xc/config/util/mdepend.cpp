@@ -1,6 +1,6 @@
 XCOMM!/bin/sh
 XCOMM
-XCOMM $XConsortium$
+XCOMM $XConsortium: mdepend.cpp,v 1.7 91/08/22 11:42:53 rws Exp $
 XCOMM
 XCOMM	Do the equivalent of the 'makedepend' program, but do it right.
 XCOMM
@@ -55,6 +55,7 @@ objsuffix='.o'
 width=78
 endmarker=""
 verbose=n
+append=n
 
 while [ $# != 0 ]
 do
@@ -99,6 +100,10 @@ do
 			    ;;
 			-v)
 			    verbose="y"
+			    ;;
+
+			-a)
+			    append="y"
 			    ;;
 
 			-cc)
@@ -200,21 +205,26 @@ case "$makefile" in
 esac
 
 XCOMM
-XCOMM Append the magic string and a blank line so that /^$magic_string/+1,\$d
-XCOMM can be used to delete everything from after the magic string to the end
-XCOMM of the file.  Then, append a blank line again and then the dependencies.
+XCOMM If not -a, append the magic string and a blank line so that
+XCOMM /^$magic_string/+1,\$d can be used to delete everything from after
+XCOMM the magic string to the end of the file.  Then, append a blank
+XCOMM line again and then the dependencies.
 XCOMM
-cat >> $makefile << END_OF_APPEND
+if [ "$append" = "n" ]
+then
+    cat >> $makefile << END_OF_APPEND
 
 $magic_string
 
 END_OF_APPEND
-ed $silent $makefile << END_OF_ED_SCRIPT
+    ed $silent $makefile << END_OF_ED_SCRIPT
 /^$magic_string/+1,\$d
 w
 q
 END_OF_ED_SCRIPT
-echo '' >>$makefile
+    echo '' >>$makefile
+fi
+
 cat $DEPENDLINES >>$makefile
 
 case "$makefile" in
