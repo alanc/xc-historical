@@ -1,0 +1,6 @@
+XCOMM
+XCOMM data files for defining application defaults
+XCOMM $Header$
+XCOMM
+
+InstallAppDefaults(Fresco)
