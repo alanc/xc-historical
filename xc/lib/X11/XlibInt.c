@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.157 92/01/02 15:30:56 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.158 92/01/03 13:57:59 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -736,13 +736,6 @@ Status _XReply (dpy, rep, extra, discard)
 			case BadAccess:
 				return (0);
 			}
-		else if ((dpy->flags & XlibDisplayIgnoreFont) &&
-			 (err->errorCode == BadName) &&
-			 (err->majorCode == X_OpenFont) &&
-			 (serial == (cur_request -
-				     ((dpy->flags & XlibDisplayAddNoOp)
-				      ? 2 : 1))))
-		    break; /* pretend it didn't happen */
 		/* 
 		 * we better see if there is an extension who may
 		 * want to suppress the error.
@@ -1409,10 +1402,17 @@ int _XError (dpy, rep)
      * giving it to the user.
      */
     XEvent event; /* make it a large event */
+    _XInternalErrorHandler *async;
+
+    event.xerror.serial = _XSetLastRequestRead(dpy, (xGenericReply *)rep);
+
+    for (async = dpy->async_handlers; async; async = async->next) {
+	if ((*async->handler)(dpy, rep, async->data))
+	    return 0;
+    }
 
     event.xerror.display = dpy;
     event.xerror.type = X_Error;
-    event.xerror.serial = _XSetLastRequestRead(dpy, (xGenericReply *)rep);
     event.xerror.resourceid = rep->resourceID;
     event.xerror.error_code = rep->errorCode;
     event.xerror.request_code = rep->majorCode;
@@ -1427,6 +1427,44 @@ int _XError (dpy, rep)
     }
 }
     
+Bool
+_XAsyncErrorHandler(dpy, rep, data)
+    register Display *dpy;
+    xError *rep;
+    XPointer data;
+{
+    _XInternalErrorState *state;
+
+    state = (_XInternalErrorState *)data;
+    if ((!state->error_code || rep->errorCode == state->error_code) &&
+	(!state->major_opcode || rep->majorCode == state->major_opcode) &&
+	(!state->minor_opcode || rep->minorCode == state->minor_opcode) &&
+	(!state->min_sequence_number ||
+	 (state->min_sequence_number <= dpy->last_request_read)) &&
+	(!state->max_sequence_number ||
+	 (state->max_sequence_number >= dpy->last_request_read))) {
+	state->last_error_received = rep->errorCode;
+	state->error_count++;
+	return 1;
+    }
+    return 0;
+}
+
+_XDeqInternalErrorHandler(dpy, handler)
+    Display *dpy;
+    _XInternalErrorHandler *handler;
+{
+    _XInternalErrorHandler **prev;
+    _XInternalErrorHandler *async;
+
+    for (prev = &dpy->async_handlers;
+	 (async = *prev) && (async != handler);
+	 prev = &async->next)
+	;
+    if (async)
+	*prev = async->next;
+}
+
 /*
  * _XIOError - call user connection error handler and exit
  */
