@@ -1,4 +1,4 @@
-/* $XConsortium: Vendor.c,v 1.16 91/01/11 18:35:05 converse Exp $ */
+/* $XConsortium: Vendor.c,v 1.17 91/02/17 16:44:25 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -132,9 +132,9 @@ static void XawVendorShellClassInitialize()
 static void XawVendorShellInitialize(req, new)
 	Widget req, new;
 {
-    void _EditResCheckMessages();
+    void _XEditResCheckMessages();
 
-    XtAddEventHandler(new, (EventMask) 0, TRUE, _EditResCheckMessages, NULL);
+    XtAddEventHandler(new, (EventMask) 0, TRUE, _XEditResCheckMessages, NULL);
 }
 
 /* ARGSUSED */

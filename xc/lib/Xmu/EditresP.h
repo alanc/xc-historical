@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: Editres.h,v 1.8 90/06/28 15:41:38 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -280,9 +280,10 @@ typedef struct _ProtocolStream {
  *
  ************************************************************/
 
-void _EresInsertString8(), _EresInsert8(), _EresInsert16(), _EresInsert32();
-void _EresInsertWidgetInfo(), _EresInsertWidget(), _EresResetStream();
+void _XEditResPutString8(), _XEditResPut8(), _XEditResPut16();
+void _XEditResPut32(), _XEditResPutWidgetInfo(), _XEditResPutWidget();
+void _XEditResResetStream();
 
-Boolean _EresRetrieve8(), _EresRetrieve16(), _EresRetrieveSigned16();
-Boolean _EresRetrieve32(), _EresRetrieveString8(), _EresRetrieveWidgetInfo();
+Boolean _XEditResGet8(), _XEditResGet16(), _XEditResGetSigned16();
+Boolean _XEditResGet32(), _XEditResGetString8(), _XEditResGetWidgetInfo();
 

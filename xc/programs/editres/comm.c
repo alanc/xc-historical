@@ -1,4 +1,4 @@
-/* $XConsortium: comm.c,v 1.17 91/01/09 17:44:21 gildea Exp $ */
+/* $XConsortium: comm.c,v 1.18 91/03/19 15:33:09 gildea Exp $ */
 /*
  * Copyright 1990 Massachusetts Institute of Technology
  * 
@@ -383,7 +383,7 @@ int * format;
 	return;
     }
 
-    (void) _EresRetrieve8(stream, &ident);
+    (void) _XEditResGet8(stream, &ident);
     if (global_client.ident != ident) {
 #ifdef DEBUG
 	if (global_resources.debug)
@@ -396,8 +396,8 @@ int * format;
 	return;
     }
 
-    (void) _EresRetrieve8(stream, &error_code); 
-    (void) _EresRetrieve32(stream, &(stream->size));
+    (void) _XEditResGet8(stream, &error_code); 
+    (void) _XEditResGet32(stream, &(stream->size));
     stream->top = stream->current; /* reset stream to top of value.*/
 
     switch ((int) error_code) {
@@ -471,7 +471,7 @@ CurrentClient * client_data;
     stream->current = stream->real_top;
     stream->alloc = stream->size + (2 * HEADER_SIZE);	
     
-    _EresInsert8(stream, client_data->ident);
+    _XEditResPut8(stream, client_data->ident);
     switch(client_data->command) {
     case LocalSendWidgetTree:
 	command = SendWidgetTree;
@@ -493,8 +493,8 @@ CurrentClient * client_data;
 	break;
     }
 				  
-    _EresInsert8(stream, (unsigned char) command);
-    _EresInsert32(stream, old_size);
+    _XEditResPut8(stream, (unsigned char) command);
+    _XEditResPut32(stream, old_size);
 
     stream->alloc = old_alloc;
     stream->current = old_current;
@@ -526,7 +526,7 @@ ProtocolStream * stream;
 
 	    send_event->type = SendWidgetTree;
 
-	    if (!_EresRetrieve16(stream, &(send_event->num_entries)))
+	    if (!_XEditResGet16(stream, &(send_event->num_entries)))
 		goto done;
 	    
 	    send_event->info = (WidgetTreeInfo *)
@@ -535,10 +535,10 @@ ProtocolStream * stream;
 
 	    for (i = 0; i < (int)send_event->num_entries; i++) {
 		WidgetTreeInfo * info = send_event->info + i;
-		if (!(_EresRetrieveWidgetInfo(stream, &(info->widgets)) &&
-		      _EresRetrieveString8(stream, &(info->name)) &&
-		      _EresRetrieveString8(stream, &(info->class)) &&
-		      _EresRetrieve32(stream, &(info->window)))) 
+		if (!(_XEditResGetWidgetInfo(stream, &(info->widgets)) &&
+		      _XEditResGetString8(stream, &(info->name)) &&
+		      _XEditResGetString8(stream, &(info->class)) &&
+		      _XEditResGet32(stream, &(info->window)))) 
 		{
 		    goto done;
 		}
@@ -551,7 +551,7 @@ ProtocolStream * stream;
 
 	    sv_event->type = SetValues;
 
-	    if (!_EresRetrieve16(stream, &(sv_event->num_entries)))
+	    if (!_XEditResGet16(stream, &(sv_event->num_entries)))
 		goto done;
 	    
 	    sv_event->info = (SetValuesInfo *) XtCalloc(sizeof(SetValuesInfo),
@@ -559,8 +559,8 @@ ProtocolStream * stream;
 
 	    for (i = 0; i < (int)sv_event->num_entries; i++) {
 		SetValuesInfo * info = sv_event->info + i;
-		if (!(_EresRetrieveWidgetInfo(stream, &(info->widgets)) &&
-		      _EresRetrieveString8(stream, &(info->message))))
+		if (!(_XEditResGetWidgetInfo(stream, &(info->widgets)) &&
+		      _XEditResGetString8(stream, &(info->message))))
 		{
 		    goto done;
 		}
@@ -573,7 +573,7 @@ ProtocolStream * stream;
 	    
 	    res_event->type = GetGeometry;
 
-	    if (!_EresRetrieve16(stream, &(res_event->num_entries)))
+	    if (!_XEditResGet16(stream, &(res_event->num_entries)))
 		goto done;
 
 	    res_event->info = (GetResourcesInfo *) 
@@ -582,19 +582,19 @@ ProtocolStream * stream;
 
 	    for (i = 0; i < (int)res_event->num_entries; i++) {
 		GetResourcesInfo * res_info = res_event->info + i;
-		if (!(_EresRetrieveWidgetInfo(stream, &(res_info->widgets)) &&
-		      _EresRetrieveBoolean(stream, &(res_info->error))))
+		if (!(_XEditResGetWidgetInfo(stream, &(res_info->widgets)) &&
+		      _XEditResGetBoolean(stream, &(res_info->error))))
 		{
 		    goto done;
 		}
 		if (res_info->error) {
-		    if (!_EresRetrieveString8(stream, &(res_info->message))) 
+		    if (!_XEditResGetString8(stream, &(res_info->message))) 
 			goto done;
 		}
 		else {
 		    unsigned int j;
 
-		    if (!_EresRetrieve16(stream, &(res_info->num_resources)))
+		    if (!_XEditResGet16(stream, &(res_info->num_resources)))
 			goto done;
 
 		    res_info->res_info = (ResourceInfo *) 
@@ -604,10 +604,10 @@ ProtocolStream * stream;
 		    for (j = 0; j < res_info->num_resources; j++) {
 			unsigned char temp;
 			ResourceInfo * info = res_info->res_info + j;
-			if (!(_EresRetrieveResType(stream, &(temp)) &&
-			      _EresRetrieveString8(stream, &(info->name)) &&
-			      _EresRetrieveString8(stream, &(info->class)) &&
-			      _EresRetrieveString8(stream, &(info->type))))
+			if (!(_XEditResGetResType(stream, &(temp)) &&
+			      _XEditResGetString8(stream, &(info->name)) &&
+			      _XEditResGetString8(stream, &(info->class)) &&
+			      _XEditResGetString8(stream, &(info->type))))
 			{
 			    goto done;
 			}
@@ -625,7 +625,7 @@ ProtocolStream * stream;
 
 	    geom_event->type = GetGeometry;
 
-	    if (!_EresRetrieve16(stream, &(geom_event->num_entries)))
+	    if (!_XEditResGet16(stream, &(geom_event->num_entries)))
 		goto done;
 	    
 	    geom_event->info = (GetGeomInfo *) XtCalloc(sizeof(GetGeomInfo),
@@ -633,22 +633,22 @@ ProtocolStream * stream;
 
 	    for (i = 0; i < (int)geom_event->num_entries; i++) {
 		GetGeomInfo * info = geom_event->info + i;
-		if (!(_EresRetrieveWidgetInfo(stream, &(info->widgets)) &&
-		      _EresRetrieveBoolean(stream, &(info->error))))
+		if (!(_XEditResGetWidgetInfo(stream, &(info->widgets)) &&
+		      _XEditResGetBoolean(stream, &(info->error))))
 		{
 		    goto done;
 		}
 		if (info->error) {
-		    if (!_EresRetrieveString8(stream, &(info->message)))
+		    if (!_XEditResGetString8(stream, &(info->message)))
 			goto done;
 		}
 		else {
-		    if (!(_EresRetrieveBoolean(stream, &(info->visable)) &&
-			  _EresRetrieveSigned16(stream, &(info->x)) &&
-			  _EresRetrieveSigned16(stream, &(info->y)) &&
-			  _EresRetrieve16(stream, &(info->width)) &&
-			  _EresRetrieve16(stream, &(info->height)) &&
-			  _EresRetrieve16(stream, &(info->border_width))))
+		    if (!(_XEditResGetBoolean(stream, &(info->visable)) &&
+			  _XEditResGetSigned16(stream, &(info->x)) &&
+			  _XEditResGetSigned16(stream, &(info->y)) &&
+			  _XEditResGet16(stream, &(info->width)) &&
+			  _XEditResGet16(stream, &(info->height)) &&
+			  _XEditResGet16(stream, &(info->border_width))))
 		    {
 			goto done;
 		    }
@@ -662,7 +662,7 @@ ProtocolStream * stream;
 
 	    find_event->type = FindChild;
 
-	    if (!_EresRetrieveWidgetInfo(stream, &(find_event->widgets)))
+	    if (!_XEditResGetWidgetInfo(stream, &(find_event->widgets)))
 		goto done;
 	}
 	break;

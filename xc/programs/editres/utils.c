@@ -1,5 +1,5 @@
 /*
- * $XConsortium: utils.c,v 1.13 91/01/09 17:46:03 gildea Exp $
+ * $XConsortium: utils.c,v 1.14 91/03/19 12:38:56 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -861,9 +861,9 @@ WNode * node;
     for (i--, temp = node; temp != 0; temp = temp->parent, i--) 
 	widget_list[i] = temp->id;
 	
-    _EresInsert16(stream, num_widgets);	/* insert number of widgets. */
+    _XEditResPut16(stream, num_widgets);	/* insert number of widgets. */
     for (i = 0; i < num_widgets; i++) 	/* insert Widgets themselves. */
-	_EresInsert32(stream, widget_list[i]);
+	_XEditResPut32(stream, widget_list[i]);
     
     XtFree((char *)widget_list);
 }
@@ -880,7 +880,7 @@ ProtocolStream * stream;
 {
     char * return_str;
 
-    if (_EresRetrieveString8(stream, &return_str)) 
+    if (_XEditResGetString8(stream, &return_str)) 
 	return(return_str);
 
     return(XtNewString("Unable to unpack protocol request."));
@@ -900,7 +900,7 @@ ProtocolStream * stream;
     char buf[BUFSIZ];
     unsigned char version;
 
-    if (!_EresRetrieve8(stream, &version)) 
+    if (!_XEditResGet8(stream, &version)) 
 	return(XtNewString("Unable to unpack protocol request."));
 
     sprintf(buf, "This version of editres uses protocol version %d.\n%s%d",

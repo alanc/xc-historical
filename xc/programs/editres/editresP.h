@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: editresP.h,v 1.8 90/07/03 16:06:59 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -52,8 +52,8 @@ extern void exit();
  * Retrieving ResType and Boolean is the same as retrieving a Card8.
  */
 
-#define _EresRetrieveBoolean _EresRetrieve8
-#define _EresRetrieveResType _EresRetrieve8
+#define _XEditResGetBoolean _XEditResGet8
+#define _XEditResGetResType _XEditResGet8
 
 /*
  * Contexts to use with the X Context Manager.

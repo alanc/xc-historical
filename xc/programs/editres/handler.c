@@ -1,5 +1,5 @@
 /*
- * $XConsortium: handler.c,v 1.17 91/02/20 19:57:07 converse Exp $
+ * $XConsortium: handler.c,v 1.18 91/03/19 12:38:30 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -95,7 +95,7 @@ XtPointer value, call_data;
     if (!XtIsWidget(w))     /* Make sure that we use a "Real" widget here. */
 	w = XtParent(w);
 
-    _EresResetStream(&(global_client.stream)); /* an empty message. */
+    _XEditResResetStream(&(global_client.stream)); /* an empty message. */
     SetCommand(w, LocalSendWidgetTree, NULL);
 }
 
@@ -293,8 +293,8 @@ XtPointer junk, garbage;
      * No resoruces, fetch them from the client.
      */
 
-    _EresResetStream(stream); 
-    _EresInsert16(stream, (unsigned short) 1);
+    _XEditResResetStream(stream); 
+    _XEditResPut16(stream, (unsigned short) 1);
     InsertWidgetFromNode(stream, node);
     SetCommand(global_tree_info->tree_widget, LocalGetResources, NULL);
 }
@@ -726,18 +726,18 @@ XtPointer node_ptr, junk;
     XrmPutLineResource(&(info.database), value);
 
 
-    _EresResetStream(stream);
-    _EresInsertString8(stream, info.name); /* Insert name */
-    _EresInsertString8(stream, XtRString); /* insert type */
+    _XEditResResetStream(stream);
+    _XEditResPutString8(stream, info.name); /* Insert name */
+    _XEditResPutString8(stream, XtRString); /* insert type */
 
     /*
      * Insert value.
      */
 
     value = GetResourceValueForSetValues(node, &size);
-    _EresInsert16(stream, size);    
+    _XEditResPut16(stream, size);    
     for (i = 0; i < size; i++) 
-	_EresInsert8(stream, value[i]);
+	_XEditResPut8(stream, value[i]);
     XtFree(value);
     len = stream->current - stream->top;
 
@@ -745,7 +745,7 @@ XtPointer node_ptr, junk;
      * Insert the widget count, overriden later. 
      */
 
-    _EresInsert16(stream, 0); 
+    _XEditResPut16(stream, 0); 
 
     ExecuteOverAllNodes(node->tree_info->top_node,
 			CreateSetValuesCommand, (XtPointer) &info);

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: geometry.c,v 1.10 90/09/29 09:58:16 rws Exp $
+ * $XConsortium: geometry.c,v 1.11 91/01/09 17:45:41 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,10 +23,10 @@
  * Author:  Chris D. Peterson, MIT X Consortium
  */
 
-#include <stdio.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
+#include <stdio.h>
 
 #include <X11/Xaw/Cardinals.h>	
 
@@ -67,10 +67,10 @@ Widget w;
 	if (node != NULL) {
 	    ProtocolStream * stream = &(global_client.stream);	    
 	    
-	    _EresResetStream(stream);
+	    _XEditResResetStream(stream);
 	    InsertWidgetFromNode(stream, node);
-	    _EresInsert16(stream, (short) x);
-	    _EresInsert16(stream, (short) y);
+	    _XEditResPut16(stream, (short) x);
+	    _XEditResPut16(stream, (short) y);
 	    SetCommand(w, LocalFindChild, NULL);
 	    return;
 	}
@@ -182,11 +182,11 @@ TreeInfo * tree_info;
 	return;
     }
 	
-    _EresResetStream(stream); 
+    _XEditResResetStream(stream); 
     /*
      * Insert the number of widgets. 
      */
-    _EresInsert16(stream, (unsigned short) tree_info->num_nodes);
+    _XEditResPut16(stream, (unsigned short) tree_info->num_nodes);
 
     for (i = 0; i < tree_info->num_nodes; i++) 
 	InsertWidgetFromNode(stream, global_tree_info->active_nodes[i]);

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: svpopup.c,v 1.8 90/06/28 15:16:25 kit Exp $
+ * $XConsortium: svpopup.c,v 1.9 91/02/20 19:58:01 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -60,22 +60,23 @@
  *
  ************************************************************/
 
-#include "editresP.h"
-
 #ifdef SET_VALUES_POPUP
 
-#include <stdio.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>	/* Get standard string definations. */
 #include <X11/Xatom.h>
 #include <X11/cursorfont.h>
 #include <X11/Shell.h>
 
+#include "editresP.h"
+
 #include <X11/Xaw/AsciiText.h>
 #include <X11/Xaw/Cardinals.h>	
 #include <X11/Xaw/Command.h>	
 #include <X11/Xaw/Form.h>
 #include <X11/Xaw/Label.h>	
+
+#include <stdio.h>
 
 extern void SetMessage(), SetCommand(), InsertWidgetFromNode();
 extern void GetAllStrings(), PopupCentered();
@@ -334,11 +335,11 @@ caddr_t junk, garbage;
     XtSetArg(args[0], XtNstring, &res_value);
     XtGetValues(global_screen_data.val_text, args, ONE);
     
-    _EresResetStream(stream);
-    _EresInsertString8(stream, res_name);
-    _EresInsertString8(stream, XtRString);
-    _EresInsertString8(stream, res_value);
-    _EresInsert16(stream, global_tree_info->num_nodes);
+    _XEditResResetStream(stream);
+    _XEditResPutString8(stream, res_name);
+    _XEditResPutString8(stream, XtRString);
+    _XEditResPutString8(stream, res_value);
+    _XEditResPut16(stream, global_tree_info->num_nodes);
 
     for (i = 0; i < global_tree_info->num_nodes; i++) 
 	InsertWidgetFromNode(stream, global_tree_info->active_nodes[i]);
