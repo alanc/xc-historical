@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xfuncs.h,v 1.2 91/01/09 15:03:56 rws Exp $
+ * $XConsortium: Xfuncs.h,v 1.3 91/01/09 15:06:17 rws Exp $
  * 
  * Copyright 1990 by the Massachusetts Institute of Technology
  *
@@ -32,7 +32,7 @@
 #else
 #if defined(SYSV) && !defined(_XUSEBFUNCS)
 #include <memory.h>
-#ifdef _XBCOPYFUNC
+#if defined(_XBCOPYFUNC) && !defined(macII)
 #define bcopy _XBCOPYFUNC
 #define _XNEEDBCOPYFUNC
 #endif
