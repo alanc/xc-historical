@@ -45,6 +45,7 @@ install::
 	-mkdir $(XAPPLOADDIR)
 	-mkdir $(INCDIR)
 	-mkdir $(FONTDIR)
+	-mkdir $(UWMDIR)
 	-mkdir $(MANDIR)
 
 World:: $(IMAKE)
