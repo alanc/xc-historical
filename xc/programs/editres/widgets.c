@@ -1,5 +1,5 @@
 /*
- * $XConsortium: widgets.c,v 1.16 91/07/08 11:56:31 rws Exp $
+ * $XConsortium: widgets.c,v 1.17 91/07/09 09:39:45 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -65,7 +65,7 @@ extern void ResourceListCallback(), PopdownResBox(), SaveResource();
 extern void GetNamesAndClasses(), ApplyResource(), ActivateResourceWidgets();
 extern void ActivateWidgetsAndSetResourceString(), SetFile();
 
-extern InitSetValues();
+extern void InitSetValues();
 
 /*	Function Name: BuildWidgetTree
  *	Description: Creates all widgets for Editres.

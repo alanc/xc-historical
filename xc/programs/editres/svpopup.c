@@ -1,5 +1,5 @@
 /*
- * $XConsortium: svpopup.c,v 1.11 91/07/08 11:06:14 rws Exp $
+ * $XConsortium: svpopup.c,v 1.12 91/07/09 09:39:39 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -43,6 +43,7 @@ extern void SetMessage(), SetCommand(), InsertWidgetFromNode();
 extern void GetAllStrings(), PopupCentered();
 
 static void _SetField(), CreateSetValuesPopup();
+static void DoSetValues(), CancelSetValues();
 
 /*	Function Name: PopupSetValues
  *	Description: This function pops up the setvalues dialog
@@ -191,7 +192,6 @@ CreateSetValuesPopup(parent, scr_data)
 Widget parent;
 ScreenData * scr_data;
 {
-    static void DoSetValues(), CancelSetValues();
     Widget form, cancel, do_it, label;
     Widget res_label;
     Arg args[10];
