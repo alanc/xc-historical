@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: io.c,v 1.36 87/09/09 23:04:35 rws Locked $ */
+/* $Header: io.c,v 1.37 87/11/09 13:46:04 rws Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -42,9 +42,15 @@ SOFTWARE.
 #include "osdep.h"
 #include "opaque.h"
 #include "dixstruct.h"
+#include "misc.h"
 
 extern long ClientsWithInput[];
+extern long ClientsWriteBlocked[];
+extern long OutputPending[];
 extern ClientPtr ConnectionTranslation[];
+extern Bool NewOutputPending;
+extern Bool AnyClientsWriteBlocked;
+static Bool CriticalOutputPending;
 static int timesThisConnection = 0;
 
 extern int errno;
@@ -97,7 +103,18 @@ ReadRequestFromClient(who, status, oldbuf)
     int *status;          /* read at least n from client */
     char *oldbuf;
 {
-    int client = ((osPrivPtr)who->osPrivate)->fd;
+#define YieldControl()				\
+        { isItTimeToYield = TRUE;		\
+	  timesThisConnection = 0; }
+#define YieldControlNoInput()			\
+        { YieldControl();			\
+	  BITCLEAR(ClientsWithInput, client); }
+#define YieldControlAndReturnNull()		\
+        { YieldControlNoInput();		\
+	  return((char *) NULL ); }
+
+    OsComm oc = (OsComm)who->osPrivate;
+    int client = oc->fd;
     int result, gotnow, needed;
     register ConnectionInput *pBuff;
     register xReq *request;
@@ -125,16 +142,12 @@ ReadRequestFromClient(who, status, oldbuf)
 	        *status = 0;
 	    else
 	        *status = -1;
-	    BITCLEAR(ClientsWithInput, client);
-	    isItTimeToYield = TRUE;
-	    return((char *)NULL);
+	    YieldControlAndReturnNull();
 	}
 	else if (result == 0)
         {
-	    BITCLEAR(ClientsWithInput, client);
-	    isItTimeToYield = TRUE;
 	    *status = -1;
-            return((char *) NULL);
+	    YieldControlAndReturnNull();
 	}
 	else 
 	{
@@ -155,9 +168,7 @@ ReadRequestFromClient(who, status, oldbuf)
         if (needed > MAXBUFSIZE)
         {
     	    *status = -1;
-	    BITCLEAR(ClientsWithInput, client);
-	    isItTimeToYield = TRUE;
-    	    return((char *)NULL);
+	    YieldControlAndReturnNull();
         }
 	if (needed <= 0)
             needed = sizeof(xReq);
@@ -184,20 +195,18 @@ ReadRequestFromClient(who, status, oldbuf)
 	{
 	    result = read(client, pBuff->buffer + pBuff->bufcnt, 
 		      pBuff->size - pBuff->bufcnt); 
-	    if (result < 0) {
+	    if (result < 0)
+	    {
 		if (errno == EWOULDBLOCK)
 		    *status = 0;
 		else
 		    *status = -1;
-		BITCLEAR(ClientsWithInput, client);
-		isItTimeToYield = TRUE;
-		return((char *)NULL);
+		YieldControlAndReturnNull();
 	    }
-	    if (result == 0) {
+	    if (result == 0)
+	    {
 		*status = -1;
-		BITCLEAR(ClientsWithInput, client);
-		isItTimeToYield = TRUE;
-		return((char *)NULL);
+		YieldControlAndReturnNull();
 	    }
             pBuff->bufcnt += result;        
 	}
@@ -230,16 +239,12 @@ ReadRequestFromClient(who, status, oldbuf)
 		    *status = 0;
 		else
 		    *status = -1;
-		BITCLEAR(ClientsWithInput, client);
-		isItTimeToYield = TRUE;
-		return((char *)NULL);
+		YieldControlAndReturnNull();
 	    }
 	    else if (result == 0)
 	    {
 		*status = -1;
-		BITCLEAR(ClientsWithInput, client);
-		isItTimeToYield = TRUE;
-		return((char *)NULL);
+		YieldControlAndReturnNull();
 	    }
 	    i += result;
     	    pBuff->bufcnt += result;
@@ -255,98 +260,99 @@ ReadRequestFromClient(who, status, oldbuf)
      *  can get into the queue.   
      */
 
-    if (pBuff->bufcnt + pBuff->buffer >= pBuff->bufptr + needed + sizeof(xReq)) 
+    if (++timesThisConnection == MAX_TIMES_PER)
+    {
+	YieldControl();
+    }
+    else if (pBuff->bufcnt + pBuff->buffer
+	     >= pBuff->bufptr + needed + sizeof(xReq)) 
     {
 	request = (xReq *)(pBuff->bufptr + needed);
         if ((pBuff->bufcnt + pBuff->buffer) >= 
             ((char *)request + request_length(request, who)))
 	    BITSET(ClientsWithInput, client);
         else
-	{
-	    BITCLEAR(ClientsWithInput, client);
-	    isItTimeToYield = TRUE;
-	}
+	    YieldControlNoInput();
     }
     else
-    {
-        BITCLEAR(ClientsWithInput, client);
-	isItTimeToYield = TRUE;
-    }
-    if ((++timesThisConnection == MAX_TIMES_PER) || (isItTimeToYield))
-    {
-        isItTimeToYield = TRUE;
-        timesThisConnection = 0;
-    }
+	YieldControlNoInput();
+
     return((char *)pBuff->bufptr);
+
+#undef YieldControlAndReturnNull
+#undef YieldControl
 }
-
-
-/*****************
- * WriteToClient
- *    We might have to wait, if the client isn't keeping up with us.  We 
- *    wait for a short time, then close the connection.  This isn't a 
- *    wonderful solution,
- *    but it rarely seems to be a problem right now, and buffering output for
- *    asynchronous delivery sounds complicated and expensive.
- *    Long word aligns all data.
- *****************/
 
     /* lookup table for adding padding bytes to data that is read from
     	or written to the X socket.  */
 static int padlength[4] = {0, 3, 2, 1};
 
-int
-WriteToClient (who, count, buf)
+ /********************
+ * FlushClient()
+ *    If the client isn't keeping up with us, then we try to continue
+ *    buffering the data and set the apropriate bit in ClientsWritable
+ *    (which is used by WaitFor in the select).  If the connection yields
+ *    a permanent error, or we can't allocate any more space, we then
+ *    close the connection.
+ *
+ **********************/
+
+static int
+FlushClient(who, oc, extraBuf, extraCount)
     ClientPtr who;
-    char *buf;
-    int count;
+    OsComm oc;
+    unsigned char *extraBuf;
+    int extraCount;
 {
-#define OUTTIME 2		
-    int connection = ((osPrivPtr)who->osPrivate)->fd;
-    int total;
-    register int n;
-    int mask[mskcnt];
+#define OUTTIME 2
+    int connection = oc->fd,
+    	total, n, i, notWritten, written,
+	mask[mskcnt],
+	iovCnt = 0;
     struct timeval outtime;
-    struct iovec iov[2];
+    struct iovec iov[3];
     char pad[3];
-    int secondTime = 0;
+    unsigned char *buf = oc->buf;
 
-    outtime.tv_sec = (long) OUTTIME;
-    outtime.tv_usec = 0;
-
-    if (connection == -1) 
+    total = 0;
+    if (oc->count)
     {
-	ErrorF( "OH NO, %d translates to -1\n", connection);
-	return(-1);
+	total += iov[iovCnt].iov_len = oc->count;
+	iov[iovCnt++].iov_base = (caddr_t)oc->buf;
+        /* Notice that padding isn't needed for oc->buf since
+           it is alreay padded by WriteToClient */
+    }
+    if (extraCount)
+    {
+	total += iov[iovCnt].iov_len = extraCount;
+	iov[iovCnt++].iov_base = (caddr_t)extraBuf;
+	if (extraCount & 3)
+	{
+	    total += iov[iovCnt].iov_len = padlength[extraCount & 3];
+	    iov[iovCnt++].iov_base = pad;
+	}
     }
 
-    if (connection == -2) 
-    {
-#ifdef notdef
-	ErrorF( "CONNECTION %d ON ITS WAY OUT\n", connection);
-#endif
-	return(-1);
-    }
-
-   iov[0].iov_len = count;
-   iov[0].iov_base = buf;
-   iov[1].iov_len = padlength[count & 3];
-   iov[1].iov_base = pad;
-
-    total = iov[0].iov_len + iov[1].iov_len;
-    while ((n = writev (connection, iov, 2)) != total)
+    notWritten = total;
+    while ((n = writev (connection, iov, iovCnt)) != notWritten)
     {
         if (n > 0) 
         {
-	    total -= n;
-	    if ((iov[0].iov_len -= n) < 0)
-	    {
-	        iov[1].iov_len += iov[0].iov_len;
-		iov[1].iov_base -= iov[0].iov_len;
-		iov[0].iov_len = 0;
+	    notWritten -= n;
+	    for (i = 0; i < iovCnt; i++)
+            {
+		if (n > iov[i].iov_len)
+		{
+		    n -= iov[i].iov_len;
+		    iov[i].iov_len = 0;
+		}
+		else
+		{
+		    iov[i].iov_len -= n;
+		    iov[i].iov_base += n;
+		    break;
+		}
 	    }
-	    else
-	        iov[0].iov_base += n;
 	    continue;
 	}
 	else if (errno != EWOULDBLOCK)
@@ -365,34 +371,183 @@ WriteToClient (who, count, buf)
             MarkClientException(who);
 	    return(-1);
 	}
- /* blocked => be willing to try him once more */
+
+	/* If we've arrived here, then the client is stuffed to the gills
+	   and not ready to accept more.  Make a note of it and buffer
+	   the rest. */
+	printf("mark %d blocked\n", who->index);
+	BITSET(ClientsWriteBlocked, who->index);
+	AnyClientsWriteBlocked = TRUE;
+
+	written = total - notWritten;
+	if (written < oc->count)
+	{
+	    if (written > 0)
+	    {
+		oc->count = oc->count - written;
+		bcopy(oc->buf + written, oc->buf, oc->count);
+	    }
+	}
+	else /* written >= oc->count */
+	{
+	    /* simply add the "extra" buffer to the current buffer */
+	    extraBuf += notWritten;
+	    oc->count = 0;
+	}
+	if ((n = oc->count + notWritten) > oc->bufsize)
+	{
+	    /* allocate at least enough to contain it plus one BUFSIZ */
+	    oc->bufsize += n + BUFSIZ;
+	    oc->buf = (unsigned char *)Xrealloc(oc->buf, oc->bufsize);
+	    if (oc->buf == NULL)
+	    {
+	outOfMem:
 #ifdef notdef
-        ErrorF("Connection %d blocked, be willing to try write once more:\n",
-		connection);
-        ErrorF("need to write: %d, have written: %d, errno: %d\n", 
-	       total, n, errno);
-#endif
-	CLEARBITS(mask);
-	BITSET(mask, connection);
-	n = select (connection + 1, (int *) NULL, mask, (int *) NULL, 
-		&outtime);
-	if ((n != 1) && (secondTime == 3))
-        {
-#ifdef notdef
-	    ErrorF("Connection %d write failed after partial\n", connection);
-#endif
+		ErrorF("Closing connection %d because out of memory\n",
+			connection);
 		/* this close will cause the select in WaitForSomething
 		   to return that the connection is dead, so we can actually
 		   clean up after the client.  We can't clean up here,
 		   because the we're in the middle of doing something
 		   and will probably screw up some data strucutres */
-	    close(connection);
-            MarkClientException(who);
-	    return(-1);
+#endif
+		close(connection);
+		MarkClientException(who);
+		oc->count = 0;
+		return(-1);
+	    }
 	}
-        else
-            secondTime++;
+	return extraCount; /* return only the amount explicitly requested */
     }
+
+    /* everything was flushed out */
+    oc->count = 0;
+    if (oc->bufsize > BUFSIZ)
+    {
+	oc->bufsize = BUFSIZ;
+	oc->buf = (unsigned char *)Xalloc(BUFSIZ);
+	if (oc->buf == NULL) /* nearly impossible */
+	    goto outOfMem;
+    }
+    return extraCount; /* return only the amount explicitly requested */
+}
+
+ /********************
+ * FlushAllOutput()
+ *    Flush all clients with output.  However, if some client still
+ *    has input in the queue (more requests), then don't flush.  This
+ *    will prevent the output queue from being flushed every time around
+ *    the round robin queue.  Now, some say that it SHOULD be flushed
+ *    every time around, but...
+ *
+ **********************/
+
+void
+FlushAllOutput()
+{
+    register int index, base, mask;
+    OsComm oc;
+    register ClientPtr client;
+
+    if (! NewOutputPending)
+	return;
+
+    /*
+     * It may be that some client still has critical output pending,
+     * but he is not yet ready to receive it anyway, so we will
+     * simply wait for the select to tell us when he's ready to receive.
+     */
+    CriticalOutputPending = FALSE;
+    NewOutputPending = FALSE;
+
+    for (base = 0; base < mskcnt; base++)
+    {
+	mask = OutputPending[ base ];
+	OutputPending[ base ] = 0;
+	while (mask)
+	{
+	    index = ffs(mask) - 1;
+	    mask &= ~lowbit(mask);
+	    if ((client = clients[(32 * base) + index ]) == NULL)
+		continue;
+	    if (client->clientGone)
+		continue;
+	    oc = (OsComm)client->osPrivate;
+	    if (GETBIT(ClientsWithInput, client->index))
+	    {
+		printf("don't flush #d: input pending\n", client->index);
+		BITSET(OutputPending, client->index); /* set the bit again */
+		NewOutputPending = TRUE;
+	    }
+	    else
+		FlushClient(client, oc, NULL, 0);
+	}
+    }
+
+}
+
+void
+FlushIfCriticalOutputPending()
+{
+    if (CriticalOutputPending)
+	FlushAllOutput();
+}
+
+void
+SetCriticalOutputPending()
+{
+    CriticalOutputPending = TRUE;
+}
+
+/*****************
+ * WriteToClient
+ *    Copies buf into ClientPtr.buf if it fits (with padding), else
+ *    flushes ClientPtr.buf and buf to client.  As of this writing,
+ *    every use of WriteToClient is cast to void, and the result
+ *    is ignored.  Potentially, this could be used by requests
+ *    that are sending several chunks of data and want to break
+ *    out of a loop on error.  Thus, we will leave the type of
+ *    this routine as int.
+ *****************/
+
+int
+WriteToClient (who, count, buf)
+    ClientPtr who;
+    char *buf;
+    int count;
+{
+    OsComm oc = (OsComm)who->osPrivate;
+    int padthis;
+
+    if (oc->fd == -1) 
+    {
+	ErrorF( "OH NO, %d translates to -1\n", oc->fd);
+	return(-1);
+    }
+
+    if (oc->fd == -2) 
+    {
+#ifdef notdef
+	ErrorF( "CONNECTION %d ON ITS WAY OUT\n", oc->fd);
+#endif
+	return(-1);
+    }
+
+    padthis =  padlength[count & 3];
+
+    if (oc->count + count > oc->bufsize)
+    {
+	BITCLEAR(OutputPending, who->index);
+	CriticalOutputPending = FALSE;
+	NewOutputPending = FALSE;
+	return FlushClient(who, oc, buf, count);
+    }
+
+    NewOutputPending = TRUE;
+    BITSET(OutputPending, who->index);
+    bcopy(buf, oc->buf + oc->count, count);
+    oc->count += count + padthis;
+    
     return(count);
 }
 

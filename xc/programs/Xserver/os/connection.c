@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: connection.c,v 1.70 88/07/04 10:48:58 rws Exp $ */
+/* $Header: connection.c,v 1.71 88/07/08 16:09:20 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -79,17 +79,21 @@ typedef long CCID;      /* mask of indices into client socket table */
 #endif
 
 char *display;			/* The display number */
-int lastfdesc;                  /* maximum file descriptor */
+int lastfdesc;			/* maximum file descriptor */
 
-long WellKnownConnections;    /* Listener mask */
+long WellKnownConnections;	/* Listener mask */
 long EnabledDevices;		/* mask for input devices that are on */
-long AllSockets[mskcnt];        /* select on this */
-long AllClients[mskcnt];              /* available clients */
-long LastSelectMask[mskcnt];          /* mask returned from last select call */
-long ClientsWithInput[mskcnt];
+long AllSockets[mskcnt];	/* select on this */
+long AllClients[mskcnt];	/* available clients */
+long LastSelectMask[mskcnt];	/* mask returned from last select call */
+long ClientsWithInput[mskcnt];	/* clients with FULL requests in buffer */
+long ClientsWriteBlocked[mskcnt];/* clients who cannot receive output */
+long OutputPending[mskcnt];	/* clients with reply/event data ready to go */
 long MaxClients = MAXSOCKS ;
 long NConnBitArrays = mskcnt;
 long FirstClient;
+Bool NewOutputPending;		/* not yet attempted to write some new output */
+Bool AnyClientsWriteBlocked;	/* true if some client blocked on write */
 
 static Bool debug_conns = FALSE;
 
@@ -535,13 +539,16 @@ ErrorF("Didn't make connection: Out of file descriptors for connections\n");
 			next = NextAvailableClient();
 			if (next != (ClientPtr)NULL)
 			{
-			   osPrivPtr priv;
+			   OsComm priv;
 
 			   newclients[(*nnew)++] = next;
 			   next->swapped = swapped;
 			   ConnectionTranslation[newconn] = next;
-			   priv =  (osPrivPtr)Xalloc(sizeof(osPrivRec));
+			   priv =  (OsComm)Xalloc(sizeof(OsCommRec));
 			   priv->fd = newconn;
+			   priv->buf = (unsigned char *)Xalloc(BUFSIZ);
+			   priv->bufsize = BUFSIZ;
+			   priv->count = 0;
 			   next->osPrivate = (pointer)priv;
 		        }
 			else
@@ -674,10 +681,12 @@ CheckConnections()
 CloseDownConnection(client)
     ClientPtr client;
 {
-    int connection = ((osPrivPtr)client->osPrivate)->fd;
+    OsComm oc = (OsComm)client->osPrivate;
 
-    ConnectionTranslation[connection] = (ClientPtr)NULL;
-    CloseDownFileDescriptor(connection);
+    ConnectionTranslation[oc->fd] = (ClientPtr)NULL;
+    CloseDownFileDescriptor(oc->fd);
+    if (oc->buf != NULL) /* an Xrealloc may have returned NULL */
+	Xfree(oc->buf);
     Xfree(client->osPrivate);
 }
 
@@ -710,7 +719,8 @@ RemoveEnabledDevice(fd)
 OnlyListenToOneClient(client)
     ClientPtr client;
 {
-    int connection = ((osPrivPtr)client->osPrivate)->fd;
+    OsComm oc = (OsComm)client->osPrivate;
+    int connection = oc->fd;
 
     if (! GrabDone)
     {

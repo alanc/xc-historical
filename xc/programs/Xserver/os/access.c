@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: access.c,v 1.19 88/01/02 16:35:42 rws Exp $ */
+/* $Header: access.c,v 1.20 88/02/13 22:00:48 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -238,7 +238,7 @@ AuthorizedClient(client)
     register HOST	*host;
 
     alen = sizeof (from);
-    if (!getpeername (((osPrivPtr)client->osPrivate)->fd, &from, &alen))
+    if (!getpeername (((OsComm)client->osPrivate)->fd, &from, &alen))
     {
         if ((family = ConvertAddr (&from, &alen, &addr)) >= 0)
 	{

@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.53 88/07/05 18:52:05 rws Exp $ */
+/* $Header: dispatch.c,v 1.54 88/07/06 10:51:20 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -231,8 +231,10 @@ Dispatch()
 
     while (1) 
     {
-        if (*checkForInput[0] != *checkForInput[1])
+        if (*checkForInput[0] != *checkForInput[1]) {
 	    ProcessInputEvents();
+	    FlushIfCriticalOutputPending();
+	}
 
 	WaitForSomething(clientReady, &nready, newClients, &nnew);
 
@@ -270,8 +272,10 @@ Dispatch()
             requestingClient = client;
 	    while (! isItTimeToYield)
 	    {
-	        if (*checkForInput[0] != *checkForInput[1])
+	        if (*checkForInput[0] != *checkForInput[1]) {
 		    ProcessInputEvents();
+		    FlushIfCriticalOutputPending();
+		}
 	   
 		/* now, finally, deal with client requests */
 
@@ -311,6 +315,7 @@ Dispatch()
 		    break;
 	        }
 	    }
+	    FlushAllOutput();
 	}
 	/* Not an error, we just need to know to restart */
 	if((nClients == -1) || clientsDoomed)
@@ -742,7 +747,7 @@ ProcGetAtomName(client)
 	reply.sequenceNumber = client->sequence;
 	reply.nameLength = len;
 	WriteReplyToClient(client, sizeof(xGetAtomNameReply), &reply);
-	WriteToClient(client, len, str);
+	(void)WriteToClient(client, len, str);
 	return(client->noClientException);
     }
     else 
@@ -1210,7 +1215,7 @@ ProcListFonts(client)
         bufptr += fpr->length[i];
     }
     WriteReplyToClient(client, sizeof(xListFontsReply), &reply);
-    WriteToClient(client, stringLens + fpr->npaths, bufferStart);
+    (void)WriteToClient(client, stringLens + fpr->npaths, bufferStart);
     FreeFontRecord(fpr);
     DEALLOCATE_LOCAL(bufferStart);
     
@@ -1254,7 +1259,7 @@ ProcListFontsWithInfo(client)
 		reply->nameLength = *length;
 		reply->nReplies = n;
 		WriteReplyToClient(client, rlength, reply);
-		WriteToClient(client, *length, *path);
+		(void)WriteToClient(client, *length, *path);
 		DEALLOCATE_LOCAL(reply);
 	}
 	xfree(font.pFP);
@@ -1944,7 +1949,7 @@ ProcGetImage(client)
 				         pBuf);
 	    /* Note that this is NOT a call to WriteSwappedDataToClient,
                as we do NOT byte swap */
-	    WriteToClient(client, nlines * widthBytesLine, pBuf);
+	    (void)WriteToClient(client, nlines * widthBytesLine, pBuf);
 	    linesDone += nlines;
         }
     }
@@ -1968,7 +1973,7 @@ ProcGetImage(client)
 				                 pBuf);
 		    /* Note: NOT a call to WriteSwappedDataToClient,
 		       as we do NOT byte swap */
-		    WriteToClient(client, nlines * widthBytesLine, pBuf);
+		    (void)WriteToClient(client, nlines * widthBytesLine, pBuf);
 		    linesDone += nlines;
 		}
             }
@@ -3047,7 +3052,7 @@ ProcGetFontPath(client)
         bufptr += pFP->length[i];
     }
     WriteReplyToClient(client, sizeof(xGetFontPathReply), &reply);
-    WriteToClient(client, stringLens + pFP->npaths, bufferStart);
+    (void)WriteToClient(client, stringLens + pFP->npaths, bufferStart);
     DEALLOCATE_LOCAL(bufferStart);
     return(client->noClientException);
 }
@@ -3286,8 +3291,10 @@ SendConnectionSetupInfo(client)
         WriteSConnectionInfo(client, connSetupPrefix.length << 2, ConnectionInfo);
 	}
     else {
-        WriteToClient(client, sizeof(xConnSetupPrefix), (char *) &connSetupPrefix);
-        WriteToClient(client, connSetupPrefix.length << 2, ConnectionInfo);
+        (void)WriteToClient(client, sizeof(xConnSetupPrefix),
+				(char *) &connSetupPrefix);
+        (void)WriteToClient(client, connSetupPrefix.length << 2,
+				ConnectionInfo);
 	}
 }
 

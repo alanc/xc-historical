@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: osdep.h,v 1.8 87/09/01 17:24:02 rws Locked $ */
+/* $Header: osdep.h,v 1.9 87/11/09 13:58:54 rws Exp $ */
 
 #ifndef NULL
 #define NULL 0
@@ -49,8 +49,6 @@ SOFTWARE.
 #define BITSET(buf, i) MASKWORD(buf, i) |= BITMASK(i)
 #define BITCLEAR(buf, i) MASKWORD(buf, i) &= ~BITMASK(i)
 #define GETBIT(buf, i) (MASKWORD(buf, i) & BITMASK(i))
-
-int cri;
 
 #if (mskcnt==1)
 #define COPYBITS(src, dst) dst[0] = src[0]
@@ -118,15 +116,18 @@ int cri;
 				 mskcnt*sizeof(long))
 #define CLEARBITS(buf) bzero((caddr_t) buf, mskcnt*sizeof(long))
 #define MASKANDSETBITS(dst, b1, b2)  \
-		      for (cri=0; cri<mskcnt; cri++) \
-		          dst[cri] = (b1[cri] & b2[cri])
+		      { int cri;			\
+			for (cri=0; cri<mskcnt; cri++)	\
+		          dst[cri] = (b1[cri] & b2[cri]) }
 #define ORBITS(dst, b1, b2)  \
-		      for (cri=0; cri<mskcnt; cri++) \
-		          dst[cri] = (b1[cri] | b2[cri])
+		      { int cri;			\
+		      for (cri=0; cri<mskcnt; cri++)	\
+		          dst[cri] = (b1[cri] | b2[cri]) }
 #define UNSETBITS(dst, b1) \
-		      for (cri=0; cri<mskcnt; cri++) \
-		          dst[cri] &= ~b1[cri]; 
-#define ANYSET(src) (src[0] || src[1] || src[2] || src[3])
+		      { int cri;			\
+		      for (cri=0; cri<mskcnt; cri++)	\
+		          dst[cri] &= ~b1[cri];  }
+#define ANYSET(src) (src[0] || src[1] || src[2] || src[3] || src[4])
 #endif
 
 typedef struct _connectionInput {
@@ -138,6 +139,12 @@ typedef struct _connectionInput {
     int size;
 } ConnectionInput;
 
-typedef struct _osPriv {
+typedef struct _osComm {
     int fd;
-} osPrivRec, *osPrivPtr;
+    unsigned char *buf;
+    int bufsize;
+    int count;
+} OsCommRec, *OsComm;
+
+void FlushAllOutput();
+void FlushIfCriticalOutputPending();

@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.147 88/07/05 14:38:03 rws Exp $ */
+/* $Header: events.c,v 1.148 88/07/06 10:55:10 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -747,6 +747,12 @@ TryClientEvents (client, pEvents, count, mask, filter, grab)
 	    for (i = 0; i < count; i++)
 		pEvents[i].u.u.sequenceNumber = client->sequence;
 	}
+
+	if (filters[pEvents->u.u.type] &
+	    (ButtonPressMask | ButtonReleaseMask
+             | KeyPressMask | KeyReleaseMask))
+		SetCriticalOutputPending();
+
 	WriteEventsToClient(client, count, pEvents);
 	if (debug_events) ErrorF(  " delivered\n");
 	return 1;
@@ -2907,7 +2913,7 @@ ProcGetModifierMapping(client)
     WriteReplyToClient(client, sizeof(xGetModifierMappingReply), &rep);
 
     /* Reply with the (modified by DDX) map that SetModifierMapping passed in */
-    WriteToClient(client, 8*maxKeysPerModifier, (char *)modifierKeyMap);
+    (void)WriteToClient(client, 8*maxKeysPerModifier, (char *)modifierKeyMap);
     return client->noClientException;
 }
 
@@ -3033,7 +3039,8 @@ ProcGetPointerMapping(client)
     rep.nElts = inputInfo.pointer->u.ptr.mapLength;
     rep.length = (rep.nElts + (4-1))/4;
     WriteReplyToClient(client, sizeof(xGetPointerMappingReply), &rep);
-    WriteToClient(client, rep.nElts, (char *)&inputInfo.pointer->u.ptr.map[1]);
+    (void)WriteToClient(client, rep.nElts,
+			(char *)&inputInfo.pointer->u.ptr.map[1]);
     return Success;    
 }
 
@@ -3890,13 +3897,13 @@ WriteEventsToClient(pClient, count, events)
 	       this event was sent with "SendEvent." */
 	    (*EventSwapVector[eventFrom->u.u.type & 0177])
 		(eventFrom, &eventTo);
-	    WriteToClient(pClient, sizeof(xEvent), (char *)&eventTo);
+	    (void)WriteToClient(pClient, sizeof(xEvent), (char *)&eventTo);
 	}
     }
 
     else
     {
-	WriteToClient(pClient, count * sizeof(xEvent), (char *) events);
+	(void)WriteToClient(pClient, count * sizeof(xEvent), (char *) events);
     }
 }
 

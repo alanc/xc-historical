@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: WaitFor.c,v 1.26 88/05/16 17:37:47 keith Exp $ */
+/* $Header: WaitFor.c,v 1.27 88/05/21 13:35:26 rws Exp $ */
 
 /*****************************************************************
  * OS Depedent input routines:
@@ -47,12 +47,16 @@ extern long LastSelectMask[];
 extern long WellKnownConnections;
 extern long EnabledDevices;
 extern long ClientsWithInput[];
+extern long ClientsWriteBlocked[];
+extern long OutputPending[];
 
 extern long ScreenSaverTime;               /* milliseconds */
 extern long ScreenSaverInterval;               /* milliseconds */
 extern ClientPtr ConnectionTranslation[];
 
 extern Bool clientsDoomed;
+extern Bool NewOutputPending;
+extern Bool AnyClientsWriteBlocked;
 
 extern void CheckConnections();
 extern int FirstClient;
@@ -64,9 +68,14 @@ int isItTimeToYield = 1;
 
 /*****************
  * WaitForSomething:
- *     Make the server suspend until there is data from clients or
- *     input or ddx notices something of interest (graphics
- *     queue ready, etc.)  If the time between INPUT events is
+ *     Make the server suspend until there is
+ *	1. data from clients or
+ *	2. input events available or
+ *	3. ddx notices something of interest (graphics
+ *	   queue ready, etc.) or
+ *	4. clients that have buffered replies/events are ready
+ *
+ *     If the time between INPUT events is
  *     greater than ScreenSaverTime, the display is turned off (or
  *     saved, depending on the hardware).  So, WaitForSomething()
  *     has to handle this also (that's why the select() has a timeout.
@@ -88,13 +97,14 @@ WaitForSomething(pClientsReady, nready, pNewClients, nnew)
     int i;
     struct timeval waittime, *wt;
     long timeout;
-    long readyClients[mskcnt];
+    long clientsReadable[mskcnt];
+    long clientsWritable[mskcnt];
     long curclient;
     int selecterr;
 
     *nready = 0;
     *nnew = 0;
-    CLEARBITS(readyClients);
+    CLEARBITS(clientsReadable);
     if (! (ANYSET(ClientsWithInput)))
     {
 	/* We need a while loop here to handle 
@@ -139,12 +149,22 @@ WaitForSomething(pClientsReady, nready, pNewClients, nnew)
                 wt = NULL;
 	    COPYBITS(AllSockets, LastSelectMask);
 	    BlockHandler(&wt, LastSelectMask);
-	    i = select (MAXSOCKS, LastSelectMask, 
-			(int *) NULL, (int *) NULL, wt);
+	    if (NewOutputPending)
+	    	FlushAllOutput();
+	    if (AnyClientsWriteBlocked)
+	    {
+		COPYBITS(ClientsWriteBlocked, clientsWritable);
+		i = select (MAXSOCKS, LastSelectMask, clientsWritable,
+			    (int *) NULL, wt);
+	    }
+	    else
+		i = select (MAXSOCKS, LastSelectMask,
+			    (int *) NULL, (int *) NULL, wt);
 	    selecterr = errno;
 	    WakeupHandler(i, LastSelectMask);
 	    if (i <= 0) /* An error or timeout occurred */
             {
+		CLEARBITS(clientsWritable);
 		if (i < 0) 
 		    if (selecterr == EBADF)    /* Some client disconnected */
 		    {
@@ -158,30 +178,37 @@ WaitForSomething(pClientsReady, nready, pNewClients, nnew)
     	    }
 	    else
 	    {
-		MASKANDSETBITS(readyClients, LastSelectMask, AllClients); 
+		if (AnyClientsWriteBlocked && ANYSET (clientsWritable))
+		{
+		    NewOutputPending = TRUE;
+		    ORBITS(OutputPending, clientsWritable, OutputPending);
+		    UNSETBITS(ClientsWriteBlocked, clientsWritable);
+		}
+
+		MASKANDSETBITS(clientsReadable, LastSelectMask, AllClients); 
 		if (LastSelectMask[0] & WellKnownConnections) 
-		   EstablishNewConnections(pNewClients, nnew);
+		    EstablishNewConnections(pNewClients, nnew);
 		if (*nnew || (LastSelectMask[0] & EnabledDevices) 
-		    || (ANYSET (readyClients)))
+		    || (ANYSET (clientsReadable)))
 			    break;
 	    }
 	}
     }
     else
     {
-       COPYBITS(ClientsWithInput, readyClients);
+       COPYBITS(ClientsWithInput, clientsReadable);
     }
 
-    if (ANYSET(readyClients))
+    if (ANYSET(clientsReadable))
     {
 	for (i=0; i<mskcnt; i++)
 	{
-	    while (readyClients[i])
+	    while (clientsReadable[i])
 	    {
-		curclient = ffs (readyClients[i]) - 1;
+		curclient = ffs (clientsReadable[i]) - 1;
 		pClientsReady[(*nready)++] = 
 			ConnectionTranslation[curclient + (32 * i)];
-		readyClients[i] &= ~(1 << curclient);
+		clientsReadable[i] &= ~(1 << curclient);
 	    }
 	}	
     }
