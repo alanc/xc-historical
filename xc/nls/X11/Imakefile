@@ -1,0 +1,16 @@
+INSTALLFLAGS = $(INSTDATFLAGS)
+
+FILES = C \
+	ja_JP.jis7 ja_JP.jis8 ja_JP.sjis ja_JP.ujis \
+	ko_KR.euc \
+	lt_LN.bit7 lt_LN.bit8 \
+	wr_WR.ct \
+	zh_CN.ugb zh_TW.big5 \
+	nls.dir
+
+all::
+
+MakeDirectories(install,$(NLSDIR))
+InstallMultiple($(FILES),$(NLSDIR))
+
+depend::
