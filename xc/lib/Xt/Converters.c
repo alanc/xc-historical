@@ -1,4 +1,4 @@
-/* $XConsortium: Converters.c,v 1.83 91/07/20 17:20:08 rws Exp $ */
+/* $XConsortium: Converters.c,v 1.84 91/07/20 17:56:29 rws Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -99,7 +99,7 @@ void _XtConvertInitialize()
 	    else {						\
 		static type static_val;				\
 		static_val = (value);				\
-		toVal->addr = (XtPointer)&static_val;		\
+		toVal->addr = (XPointer)&static_val;		\
 	    }							\
 	    toVal->size = sizeof(type);				\
 	    return True;					\
