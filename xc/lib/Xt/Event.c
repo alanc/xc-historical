@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Event.c,v 1.97 89/09/22 17:52:38 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Event.c,v 1.98 89/09/28 17:11:47 swick Exp $";
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 #endif /* lint */
 
@@ -763,7 +763,7 @@ static struct {
     eventType &= 0x7f;	/* Events sent with XSendEvent have high bit set. */
     (*mask)      = masks[eventType].mask;
     (*grabType)  = masks[eventType].grabType;
-};
+}
 
 static Boolean OnGrabList(widget)
     register Widget widget;
