@@ -2460,10 +2460,9 @@
     `(the card8 ,it)))
 
 #+(or Genera lcl3.0 excl)
-(progn
-
 (defvar *computed-image-byte-lsb-first-p* *image-byte-lsb-first-p*)
 
+#+(or Genera lcl3.0 excl)
 (defvar *computed-image-bit-lsb-first-p* *image-bit-lsb-first-p*)
 
 ;;; The following table gives the bit ordering within bytes (when accessed
@@ -2497,6 +2496,7 @@
 ;;; 2Ll	07-00 15-08 23-16 31-24
 ;;; 4Ll	07-00 15-08 23-16 31-24
 
+#+(or Genera lcl3.0 excl) 
 (defconstant
   *image-bit-ordering-table*
   '(((1 (00 07) (08 15) (16 23) (24 31)) (nil nil))
@@ -2512,6 +2512,7 @@
     ((2 (07 00) (15 08) (23 16) (31 24)) (t   t))
     ((4 (07 00) (15 08) (23 16) (31 24)) (t   t))))
   
+#+(or Genera lcl3.0 excl) 
 (defun compute-image-byte-and-bit-ordering ()
   (declare (values image-byte-lsb-first-p image-bit-lsb-first-p))
   ;; First compute the ordering 
@@ -2543,11 +2544,10 @@
 	       ordering))
       (values-list byte-and-bit-ordering))))
 
+#+(or Genera lcl3.0 excl) 
 (multiple-value-setq
   (*computed-image-byte-lsb-first-p* *computed-image-bit-lsb-first-p*)
   (compute-image-byte-and-bit-ordering))
-
-)
 
 ;;; If you can write fast routines that can read and write pixarrays out of a
 ;;; buffer-bytes, do it!  It makes the image code a lot faster.  The
