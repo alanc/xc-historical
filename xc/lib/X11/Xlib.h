@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.204 91/05/11 23:27:21 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.205 91/05/13 20:50:19 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987, 1991 by the Massachusetts Institute of Technology
  *
@@ -1083,7 +1083,7 @@ typedef void (*XIMProc)();
 typedef struct _XIM *XIM;
 typedef struct _XIC *XIC;
 
-typedef unsigned short XIMStyle;
+typedef unsigned long XIMStyle;
 
 typedef struct {
     unsigned short count_styles;
