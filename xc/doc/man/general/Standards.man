@@ -1,4 +1,4 @@
-.\" $XConsortium: Standards.man,v 1.6 91/09/09 16:13:44 rws Exp $
+.\" $XConsortium: Standards.man,v 1.7 93/02/25 16:42:03 rws Exp $
 .TH XSTANDARDS 1 "Release 5"  "X Version 11"
 .SH NAME
 X Standards \- MIT X Consortium Standards
@@ -81,6 +81,10 @@ The following documents are currently draft standards of the MIT X Consortium.
 Extending X for Double-Buffering, Multi-Buffering, and Stereo
 Version 3.2
 Jeffrey Friedberg, Larry Seiler, Jeff Vroom
+
+X Image Extension, Protocol Reference Manual
+Version 4.12
+Bob Shelley
 .fi
 
 .SH "INCLUDE FILES"
