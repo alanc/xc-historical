@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.160 94/04/01 17:41:51 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.161 94/04/01 18:55:56 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1053,19 +1053,21 @@ extern char *getenv();
 static void JoinSession();
 static void SetSessionProperties();
 static void StopManagingSession();
-static String *HackParseArgv(); /* XXX */
 
 typedef struct _XtSaveYourselfRec {
-    XtSaveYourself  next;
-    int             save_type;
-    int             interact_style;
-    Boolean         shutdown;
-    Boolean         fast;
-    Boolean         save_success;
-    Boolean         cancel_shutdown;
-    int             interact_dialog_type;
-    int             save_tokens;
-    int             interact_tokens;
+    XtSaveYourself next;
+    int            save_type;
+    int            interact_style;
+    Boolean        shutdown;
+    Boolean        fast;
+    Boolean        cancel_shutdown;
+    int		   phase; 
+    int            interact_dialog_type;
+    Boolean	   request_cancel;
+    Boolean	   request_next_phase;
+    Boolean        save_success;
+    int            save_tokens;
+    int            interact_tokens;
 } XtSaveYourselfRec;
 
 /* ARGSUSED */
@@ -1078,6 +1080,10 @@ static void SessionInitialize(req, new, args, num_args)
 
     if (w->session.session_id) w->session.session_id =
 	XtNewString(w->session.session_id);
+    if (w->session.restart_command) w->session.restart_command =
+	NewStringArray(w->session.restart_command);
+    if (w->session.clone_command) w->session.clone_command = 
+	NewStringArray(w->session.clone_command);
     if (w->session.discard_command) w->session.discard_command =
 	NewStringArray(w->session.discard_command);
     if (w->session.resign_command) w->session.resign_command =
@@ -1088,6 +1094,8 @@ static void SessionInitialize(req, new, args, num_args)
 	NewStringArray(w->session.environment);
     if (w->session.current_dir) w->session.current_dir =
 	XtNewString(w->session.current_dir);
+    if (w->session.program_path) w->session.program_path = 
+	XtNewString(w->session.program_path);
 
     w->session.checkpoint_state = XtSaveInactive;
     w->session.input_id = 0;
@@ -1096,21 +1104,6 @@ static void SessionInitialize(req, new, args, num_args)
     if ((w->session.join_session) &&
 	(w->application.argv || w->session.restart_command))
 	JoinSession(w);
-
-    w->session.restart_command = w->session.restart_command
-	? NewStringArray(w->session.restart_command)
-	: HackParseArgv(w->session.session_id, w->application.argv, True);
-
-    w->session.clone_command = w->session.clone_command
-	? NewStringArray(w->session.clone_command)
-	: HackParseArgv(w->session.session_id,
-			w->session.restart_command, False);
-
-    w->session.program_path = w->session.program_path
-	? XtNewString(w->session.program_path)
-	: w->session.restart_command ?
-	    XtNewString(w->session.restart_command[0])
-		: NULL;
 
     if (w->session.connection)
 	SetSessionProperties(w, True, 0L, 0L);
@@ -2546,12 +2539,14 @@ static void ApplicationShellInsertChild(widget)
 extern String _XtGetUserName();
 
 static void CallSaveCallbacks();
+static String *EditCommand();
+static Boolean ExamineToken();
+static void GetIceEvent();
+static XtCheckpointToken GetToken();
 static void XtCallCancelCallbacks();
 static void XtCallDieCallbacks();
 static void XtCallSaveCallbacks();
 static void XtCallSaveCompleteCallbacks();
-static void GetIceEvent();
-static XtCheckpointToken GetToken();
 
 static void StopManagingSession(w, connection)
     SessionShellWidget w;
@@ -2565,7 +2560,6 @@ static void StopManagingSession(w, connection)
 	w->session.input_id = 0;
     }
     w->session.connection = NULL;
-    w->session.join_session = False;
 }
 
 #define XT_MSG_LENGTH 256
@@ -2608,8 +2602,8 @@ static void JoinSession(w)
 			    params, &num_params);
 	}
     }
+
     if (w->session.connection) {
-	w->session.join_session = True;
 	if (w->session.session_id == NULL
 	    || (strcmp(w->session.session_id, sm_client_id) != 0)) {
 	    XtFree(w->session.session_id);
@@ -2623,8 +2617,17 @@ static void JoinSession(w)
 			  IceConnectionNumber(ice_conn),
 			  (XtPointer) XtInputReadMask,
 			  GetIceEvent, (XtPointer) ice_conn);
-    } else {
-	w->session.join_session = False;
+
+	w->session.restart_command =
+	    EditCommand(w->session.session_id, w->session.restart_command,
+			w->application.argv);
+
+	if (! w->session.clone_command) w->session.clone_command =
+	    EditCommand(NULL, NULL, w->session.restart_command);
+
+	if (! w->session.program_path)
+	    w->session.program_path = w->session.restart_command
+		? XtNewString(w->session.restart_command[0]) : NULL;
     }
 }
 #undef XT_MSG_LENGTH
@@ -2856,8 +2859,8 @@ static void CallSaveCallbacks(w)
     } else {
 	w->session.checkpoint_state = XtSaveActive;
 	token = GetToken((Widget) w, XtSessionCheckpoint);
-	XtCallCallbackList((Widget)w, w->session.save_callbacks,
-			   (XtPointer)token);
+	_XtCallConditionalCallbackList((Widget)w, w->session.save_callbacks,
+				       (XtPointer)token, ExamineToken);
 	XtSessionReturnToken(token);
     }
 }
@@ -2878,15 +2881,16 @@ static void XtCallSaveCallbacks(connection, client_data, save_type, shutdown,
 
     save = XtNew(XtSaveYourselfRec);
     save->next = NULL;
-    save->save_tokens = 0;
-    save->interact_tokens = 0;
     save->save_type = save_type;
     save->interact_style = interact;
     save->shutdown = shutdown;
     save->fast = fast;
-    save->save_success = True;
     save->cancel_shutdown = False;
+    save->phase = 1;
     save->interact_dialog_type = SmDialogNormal;
+    save->request_cancel = save->request_next_phase = False;
+    save->save_success = True;
+    save->save_tokens = save->interact_tokens = 0;
 
     prev = (XtSaveYourself) &w->session.save;
     while (prev->next)
@@ -2895,54 +2899,6 @@ static void XtCallSaveCallbacks(connection, client_data, save_type, shutdown,
 
     if (w->session.checkpoint_state == XtSaveInactive)
 	CallSaveCallbacks(w);
-}
-
-/*ARGSUSED*/
-static void XtCallSaveCompleteCallbacks(connection, client_data)
-    SmcConn	connection;
-    SmPointer	client_data;
-{
-    SessionShellWidget w =  (SessionShellWidget) client_data;
-/*
-    XtCallCallbackList((Widget)w, w->session.save_complete_callbacks,
-		       (XtPointer) NULL);
-*/
-}
-
-/*ARGSUSED*/
-static void XtCallDieCallbacks(connection, client_data)
-    SmcConn	connection;	/* unused */
-    SmPointer	client_data;
-{
-    SessionShellWidget w =  (SessionShellWidget) client_data;
-
-    StopManagingSession(w, w->session.connection);
-    XtCallCallbackList((Widget)w, w->session.die_callbacks,
-		       (XtPointer) NULL);
-}
-
-/*ARGSUSED*/
-static void XtCallCancelCallbacks(connection, client_data)
-    SmcConn	connection;	/* unused */
-    SmPointer	client_data;
-{
-    SessionShellWidget w = (SessionShellWidget) client_data;
-
-    if (w->session.checkpoint_state) 
-	w->session.save->cancel_shutdown = True;
-
-    XtCallCallbackList((Widget)w, w->session.cancel_callbacks,
-		       (XtPointer) NULL);
-
-    if (w->session.checkpoint_state == XtInteractPending) {
-	XtRemoveAllCallbacks((Widget)w, XtNinteractCallback);
-	w->session.checkpoint_state = XtSaveActive;
-	if (w->session.save->save_tokens == 0) {
-	    w->session.checkpoint_state = XtSaveInactive;
-	    SmcSaveYourselfDone(w->session.connection, False);
-	    CleanUpSave(w);
-	}
-    }
 }
 
 static void XtInteractPermission(connection, data)
@@ -2963,8 +2919,72 @@ static void XtInteractPermission(connection, data)
 	token = GetToken(w, XtSessionInteract);
     	XtRemoveCallback(w, XtNinteractCallback, callback, client_data);
 	(*callback)(w, client_data, (XtPointer) token);
-    } else {
+    } else if (! sw->session.save->cancel_shutdown) {
 	SmcInteractDone(connection, False);
+    }
+}
+
+/*ARGSUSED*/
+static void XtCallSaveCompleteCallbacks(connection, client_data)
+    SmcConn	connection;
+    SmPointer	client_data;
+{
+    SessionShellWidget w =  (SessionShellWidget) client_data;
+
+    XtCallCallbackList((Widget)w, w->session.save_complete_callbacks,
+		       (XtPointer) NULL);
+}
+
+/*ARGSUSED*/
+static void XtCallNextPhaseCallbacks(connection, client_data)
+    SmcConn	connection;	/* unused */
+    SmPointer	client_data;
+{
+    SessionShellWidget w =  (SessionShellWidget) client_data;
+    w->session.save->phase = 2;
+    CallSaveCallbacks(w);
+}
+
+/*ARGSUSED*/
+static void XtCallDieCallbacks(connection, client_data)
+    SmcConn	connection;	/* unused */
+    SmPointer	client_data;
+{
+    SessionShellWidget w =  (SessionShellWidget) client_data;
+
+    StopManagingSession(w, w->session.connection);
+    XtCallCallbackList((Widget)w, w->session.die_callbacks,
+		       (XtPointer) NULL);
+}
+
+/*ARGSUSED*/
+static void XtCallCancelCallbacks(connection, client_data)
+    SmcConn	connection;	/* unused */
+    SmPointer	client_data;
+{
+    SessionShellWidget w = (SessionShellWidget) client_data;
+    Boolean call_interacts = False;
+
+    if (w->session.checkpoint_state != XtSaveInactive) {
+	w->session.save->cancel_shutdown = True;
+	call_interacts = (w->session.save->interact_style != None);
+    }
+
+    XtCallCallbackList((Widget)w, w->session.cancel_callbacks,
+		       (XtPointer) NULL);
+
+    if (call_interacts) {
+	w->session.save->interact_style = None;
+	XtInteractPermission(w->session.connection, (SmPointer) w);
+    }
+
+    if (w->session.checkpoint_state != XtSaveInactive) {
+	if (w->session.save->save_tokens == 0 &&
+	    w->session.checkpoint_state == XtSaveActive) {
+	    w->session.checkpoint_state = XtSaveInactive;
+	    SmcSaveYourselfDone(w->session.connection, False);
+	    CleanUpSave(w);
+	}
     }
 }
 
@@ -2988,11 +3008,14 @@ static XtCheckpointToken GetToken(widget, type)
     token->interact_style = save->interact_style;
     token->shutdown = save->shutdown;
     token->fast = save->fast;
-    token->save_success = save->save_success;
     token->cancel_shutdown = save->cancel_shutdown;
+    token->phase = save->phase;
     token->interact_dialog_type = save->interact_dialog_type;
-    token->widget = widget;
+    token->request_cancel = save->request_cancel;
+    token->request_next_phase = save->request_next_phase;
+    token->save_success = save->save_success;
     token->type = type;
+    token->widget = widget;
     return token;
 }
 
@@ -3015,6 +3038,27 @@ XtCheckpointToken XtSessionGetToken(widget)
     return token;
 }
 
+static Boolean ExamineToken(call_data)
+    XtPointer	call_data;
+{
+    XtCheckpointToken token = (XtCheckpointToken) call_data;
+    SessionShellWidget w = (SessionShellWidget) token->widget;
+
+    if (token->interact_dialog_type == SmDialogError)
+	w->session.save->interact_dialog_type = SmDialogError;
+    if (token->request_next_phase)
+	w->session.save->request_next_phase = True;
+    if (! token->save_success)
+	w->session.save->save_success = False;
+
+    token->interact_dialog_type = w->session.save->interact_dialog_type;
+    token->request_next_phase = w->session.save->request_next_phase;
+    token->save_success = w->session.save->save_success;
+    token->cancel_shutdown = w->session.save->cancel_shutdown;
+
+    return True;
+}
+
 #if NeedFunctionPrototypes
 void XtSessionReturnToken(XtCheckpointToken token)
 #else
@@ -3024,7 +3068,7 @@ void XtSessionReturnToken(token)
 {
     SessionShellWidget w = (SessionShellWidget) token->widget;
     Boolean has_some;
-    Boolean save_done;
+    Boolean phase_done;
     XtCallbackProc callback;
     XtPointer client_data;
     WIDGET_TO_APPCON((Widget)w);
@@ -3034,10 +3078,7 @@ void XtSessionReturnToken(token)
     has_some = (XtHasCallbacks(token->widget, XtNinteractCallback)
 		== XtCallbackHasSome);
 
-    if (token->save_success == False)
-	w->session.save->save_success = False;
-    if (token->interact_dialog_type == SmDialogError)
-	w->session.save->interact_dialog_type = SmDialogError;
+    (void) ExamineToken((XtPointer) token);
 
     if (token->type == XtSessionCheckpoint) {
 	w->session.save->save_tokens--;
@@ -3049,10 +3090,10 @@ void XtSessionReturnToken(token)
 	}
 	XtFree((char*) token);
     } else {
-	if (token->cancel_shutdown == True)
-	    w->session.save->cancel_shutdown = True;
+	if (token->request_cancel)
+	    w->session.save->request_cancel = True;
+	token->request_cancel = w->session.save->request_cancel;
 	if (has_some) {
-	    token->cancel_shutdown = w->session.save->cancel_shutdown;
 	    _XtPeekCallback((Widget)w, w->session.interact_callbacks,
 			    &callback, &client_data);
 	    XtRemoveCallback((Widget)w, XtNinteractCallback,
@@ -3062,27 +3103,34 @@ void XtSessionReturnToken(token)
 	    w->session.save->interact_tokens--;
 	    if (w->session.save->interact_tokens == 0) {
 		w->session.checkpoint_state = XtSaveActive;
-		SmcInteractDone(w->session.connection,
-				w->session.save->cancel_shutdown);
+		if (! w->session.save->cancel_shutdown)
+		    SmcInteractDone(w->session.connection,
+				    w->session.save->request_cancel);
 	    }
 	    XtFree((char *) token);
 	}
     }
 
-    save_done = (w->session.save->save_tokens == 0 && 
-		 w->session.checkpoint_state == XtSaveActive);
+    phase_done = (w->session.save->save_tokens == 0 && 
+		  w->session.checkpoint_state == XtSaveActive);
 
-    if (save_done) {
-	w->session.checkpoint_state = XtSaveInactive;
-	SmcSaveYourselfDone(w->session.connection,
-			    w->session.save->save_success);
-	CleanUpSave(w);
+    if (phase_done) {
+	if (w->session.save->request_next_phase && 
+	    w->session.save->phase == 1) {
+	    SmcRequestSaveYourselfPhase2(w->session.connection,
+					 XtCallNextPhaseCallbacks,
+					 (SmPointer)w);
+	} else {
+	    w->session.checkpoint_state = XtSaveInactive;
+	    SmcSaveYourselfDone(w->session.connection,
+				w->session.save->save_success);
+	    CleanUpSave(w);
+	}
     }
 
     UNLOCK_APP(app);
 }
 
-/* begin parse hack */
 static Boolean IsInArray(str, sarray)
     String str;
     String *sarray;
@@ -3096,24 +3144,28 @@ static Boolean IsInArray(str, sarray)
     return False;
 }
 
-static String* HackParseArgv(str, sarray, want)
-    String str;		/* sm_client_id */
-    String* sarray;
-    Boolean want;
+static String* EditCommand(str, src1, src2)
+    String str;		/* if not NULL, the sm_client_id */
+    String *src1;	/* first choice */
+    String *src2;	/* alternate */
 {
     Boolean have;
+    Boolean want;
     int count;
+    String *sarray;
     String *s;
     String *new;
 
-    /* This code is temporary and buggy.  The massaging of the restart and
-     * clone command will have to take into account the application's 
-     * options table and will have re-employ Xt parsing of argv.
-     */
+    want = (str != NULL);
+    sarray = (src1 ? src1 : src2);
     if (! sarray) return NULL;
     have = IsInArray("-xtsessionID", sarray);
-    if ((want && have) || (!want && !have) || !str)
-	return NewStringArray(sarray);
+    if ((want && have) || (!want && !have)) {
+	if (sarray == src1)
+	    return src1;
+	else 
+	    return NewStringArray(sarray);
+    }
 
     count = 0;
     for (s = sarray; *s; s++)
@@ -3147,4 +3199,4 @@ static String* HackParseArgv(str, sarray, want)
     XtFree((char *)s);
     return new;
 }
-/* end parse hack */
+
