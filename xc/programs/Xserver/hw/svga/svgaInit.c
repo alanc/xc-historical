@@ -1,4 +1,4 @@
-/* $XConsortium: svgaInit.c,v 1.4 93/09/20 12:03:10 rws Exp $ */
+/* $XConsortium: svgaInit.c,v 1.5 93/09/20 13:17:49 rws Exp $ */
 /*
  * Copyright 1990,91,92,93 by Thomas Roell, Germany.
  * Copyright 1991,92,93    by SGCS (Snitily Graphics Consulting Services), USA.
@@ -41,7 +41,6 @@
 
 extern char *display;
 extern Bool mieqInit();
-extern Bool OsInitColors();
 extern void ProcessInputEvents();
 
 #ifndef PATH_MAX
@@ -79,38 +78,18 @@ svgaWakeup(
 }
 
 void
-OsInit()
+OsVendorInit()
 {
-  FILE             *err, *fp;
+  FILE             *fp;
   int              fd, pid;
   char             fname[PATH_MAX];
   struct vt_mode   VT;
   static Bool      inited = FALSE;
-  static char      buf[BUFSIZ];
   static struct    kd_quemode xqueMode;
 
   if (!inited)
     {
       inited = TRUE;
-
-      /* hack test to decide where to log errors */
-      if (write (2, fname, 0))
-	{
-	  sprintf(fname, ADMPATH, display);
-	  /*
-	   * uses stdio to avoid os dependencies here,
-	   * a real os would use
-	   *  open (fname, O_WRONLY|O_APPEND|O_CREAT, 0666)
-	   */
-	  if (!(err = fopen (fname, "a+")))
-	    err = fopen ("/dev/null", "w");
-
-	  if (err && (fileno(err) != 2)) {
-	    dup2 (fileno (err), 2);
-	    fclose (err);
-	  }
-	  setvbuf (stderr, buf, _IOLBF, BUFSIZ);
-	}
 
       /*
        * USL compatibilty stuff ...
@@ -212,9 +191,6 @@ OsInit()
   if (sysi86(SI86V86, V86SC_IOPL, PS_IOPL) == -1) {
     FatalError("Failed to aquire IO permissions\n");
   }
-
-  (void)OsInitAllocator();
-  (void)OsInitColors();
 }
 
 /*
