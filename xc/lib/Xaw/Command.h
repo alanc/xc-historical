@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Command.h,v 1.11 88/02/25 16:25:15 swick Exp $
+* $XConsortium: Command.h,v 1.12 88/09/04 12:31:15 swick Exp $
 */
 
 
@@ -64,16 +64,6 @@ SOFTWARE.
  y		     Position		int		0
 
 */
-
-#ifndef _XtJustify_e
-#define _XtJustify_e
-
-typedef enum {
-    XtJustifyLeft,       /* justify text to left side of button   */
-    XtJustifyCenter,     /* justify text in center of button      */
-    XtJustifyRight       /* justify text to right side of button  */
-} XtJustify;
-#endif _XtJustify_e
 
 #define XtNcallback		"callback"
 #define XtNhighlightThickness   "highlightThickness"
