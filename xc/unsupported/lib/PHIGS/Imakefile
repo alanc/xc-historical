@@ -1,5 +1,5 @@
 ##
-# $XConsortium$
+# $XConsortium: Imakefile,v 5.2 91/02/16 09:50:59 rws Exp $
 ##
 ## 
 ## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -74,7 +74,7 @@ CDEBUGFLAGS = PexPhigsCDebugFlags
 CHILD = phigsmon
 
 all:: errortext subdirs swapcode
-	$(AR) ruvl $(PEXLIBNAME) $(ALL_OBJ)
+	$(AR) rul $(PEXLIBNAME) $(ALL_OBJ)
 	$(RANLIB) $(PEXLIBNAME)
 	$(MAKE) $(CHILD)
 
@@ -97,9 +97,9 @@ errortext: FRC $(LIB_SHARED_DIR)
 
 swapcode: FRC
 	@echo "Extracting swap objects from diPEX library" $(SWAPLIB)
-	$(AR) xvl $(SWAPLIB) $(SWAPOBJS)
+	$(AR) xl $(SWAPLIB) $(SWAPOBJS)
 	@echo "Archiving swap objects into" $(PEXLIBNAME)
-	$(AR) ruvl $(PEXLIBNAME) $(SWAPOBJS)
+	$(AR) rul $(PEXLIBNAME) $(SWAPOBJS)
 	-rm -f $(SWAPOBJS)
 	
 lintlib lint-library: FRC
