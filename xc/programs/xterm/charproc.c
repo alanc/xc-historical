@@ -1,5 +1,5 @@
 /*
- * $XHeader: charproc.c,v 1.36 88/07/12 10:41:08 jim Exp $
+ * $XHeader: charproc.c,v 1.37 88/07/12 11:53:09 jim Exp $
  */
 
 
@@ -122,7 +122,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XHeader: charproc.c,v 1.36 88/07/12 10:41:08 jim Exp $";
+static char rcs_id[] = "$XHeader: charproc.c,v 1.37 88/07/12 11:53:09 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -234,8 +234,8 @@ static XtResource resources[] = {
 {XtNpointerColor, XtCForeground, XtRPixel, sizeof(Pixel),
 	XtOffset(XtermWidget, screen.mousecolor),
 	XtRString, "Black"},
-{XtNpointerShape,XtCCursor, XtRString, sizeof(Cursor),
-	XtOffset(XtermWidget, misc.curs_shape),
+{XtNpointerShape,XtCCursor, XtRCursor, sizeof(Cursor),
+	XtOffset(XtermWidget, screen.pointer_cursor),
 	XtRString, (caddr_t) "xterm"},
 {XtNmultiClickTime,XtCMultiClickTime, XtRInt, sizeof(int),
 	XtOffset(XtermWidget, screen.multiClickTime),
@@ -1829,6 +1829,7 @@ static void VTInitialize (request, new)
    new->screen.cutNewline = request->screen.cutNewline;
    new->screen.cutToBeginningOfLine = request->screen.cutToBeginningOfLine;
    new->screen.always_highlight = request->screen.always_highlight;
+   new->screen.pointer_cursor = request->screen.pointer_cursor;
    new->misc.titeInhibit = request->misc.titeInhibit;
 
     /*
@@ -1955,11 +1956,10 @@ XSetWindowAttributes *values;
 		fg = screen->mousecolor;
 	    }
 
-	    if (XStrCmp(term->misc.curs_shape, "arrow") == 0) {
-		screen->curs = make_arrow (fg, bg);
-	    } else {
-		screen->curs = make_xterm (fg, bg);
-	    }
+	    if (!screen->pointer_cursor) 
+	    	screen->pointer_cursor = make_xterm (fg, bg);
+	    else 
+	        recolor_cursor (screen->pointer_cursor, fg, bg);
 	}
 
 	scrollbar_width = (term->misc.scrollbar ? 
@@ -2132,7 +2132,7 @@ XSetWindowAttributes *values;
 	screen->curgr = 2;			/* G2 => GR.		*/
 	screen->curss = 0;			/* No single shift.	*/
 
-	XDefineCursor(screen->display, VShellWindow, screen->curs );
+	XDefineCursor(screen->display, VShellWindow, screen->pointer_cursor);
 
         screen->cur_col = screen->cur_row = 0;
 	screen->max_col = Width(screen)  / screen->fullVwin.f_width - 1;

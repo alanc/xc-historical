@@ -1,5 +1,5 @@
 /*
- *	$Header: misc.c,v 1.18 88/05/18 10:46:09 jim Exp $
+ *	$Header: misc.c,v 1.19 88/07/11 16:52:36 jim Exp $
  */
 
 
@@ -53,7 +53,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$Header: misc.c,v 1.18 88/05/18 10:46:09 jim Exp $";
+static char rcs_id[] = "$Header: misc.c,v 1.19 88/07/11 16:52:36 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -85,11 +85,7 @@ Cursor make_colored_cursor (cursorindex, fg, bg)
 	c = XCreateFontCursor (dpy, cursorindex);
 	if (c == (Cursor) 0) return (c);
 
-	foreback[0].pixel = fg;
-	foreback[1].pixel = bg;
-	XQueryColors (dpy, DefaultColormap (dpy, DefaultScreen (dpy)),
-		      foreback, 2);
-	XRecolorCursor (dpy, c, foreback, foreback+1);
+	recolor_cursor (c, fg, bg);
 	return (c);
 }
 
@@ -311,13 +307,6 @@ Pixel fg, bg;
 	return (make_colored_cursor (XC_tcross, fg, bg));
 }
 
-/* ARGSUSED */
-Cursor make_xterm(fg, bg)
-unsigned long fg, bg;
-{
-	return (make_colored_cursor (XC_xterm, fg, bg));
-}
-
 static XColor background = { 0L, 65535, 65535, 65535 };
 static XColor foreground = { 0L,    0,     0,     0 };
 
@@ -348,6 +337,14 @@ unsigned long fg, bg;
 
 {
 	return (make_colored_cursor (XC_left_ptr, fg, bg));
+}
+
+/* ARGSUSED */
+Cursor make_xterm(fg, bg)
+unsigned long fg, bg;
+
+{
+	return (make_colored_cursor (XC_xterm, fg, bg));
 }
 
 char *uniquesuffix(name)

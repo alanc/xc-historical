@@ -1,5 +1,5 @@
 /*
- *	$Header: ptyx.h,v 1.10 88/07/11 16:52:42 jim Exp $
+ *	$Header: ptyx.h,v 1.11 88/07/12 09:16:26 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -235,7 +235,8 @@ typedef struct {
 		int	f_width;	/* width of fonts in pixels	*/
 		int	f_height;	/* height of fonts in pixels	*/
 	} fullVwin;
-	Cursor		curs;		/* cursor resource from X	*/
+	Cursor pointer_cursor;		/* pointer cursor in window	*/
+
 	/* Terminal fonts must be of the same size and of fixed width */
 	XFontStruct	*fnt_norm;	/* normal font of terminal	*/
 	XFontStruct	*fnt_bold;	/* bold font of terminal	*/
@@ -349,7 +350,6 @@ typedef struct _Misc {
     char *T_geometry;
     char *f_n;
     char *f_b;
-    char *curs_shape;
     Boolean log_on;
     Boolean login_shell;
     Boolean re_verse;

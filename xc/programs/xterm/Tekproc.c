@@ -1,5 +1,5 @@
 /*
- * $Header: Tekproc.c,v 1.30 88/06/28 15:11:22 swick Exp $
+ * $Header: Tekproc.c,v 1.31 88/07/11 16:52:16 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -115,7 +115,7 @@ char *curs_color;
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$Header: Tekproc.c,v 1.30 88/06/28 15:11:22 swick Exp $";
+static char rcs_id[] = "$Header: Tekproc.c,v 1.31 88/07/11 16:52:16 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -1317,7 +1317,7 @@ static void TekRealize (gw, valuemaskp, values)
     screen->TekGIN = FALSE;			/* GIN off		*/
 
 
-    XDefineCursor(screen->display, TShellWindow, screen->curs);
+    XDefineCursor(screen->display, TShellWindow, screen->pointer_cursor);
     TekUnselect ();
 
     {	/* there's gotta be a better way... */

@@ -1,5 +1,5 @@
 /*
- *	$Header: util.c,v 1.3 88/02/12 12:01:07 jim Exp $
+ *	$Header: util.c,v 1.4 88/02/18 17:54:48 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* util.c */
 
 #ifndef lint
-static char rcs_id[] = "$Header: util.c,v 1.3 88/02/12 12:01:07 jim Exp $";
+static char rcs_id[] = "$Header: util.c,v 1.4 88/02/18 17:54:48 jim Exp $";
 #endif	/* lint */
 
 #include <stdio.h>
@@ -901,8 +901,6 @@ ReverseVideo (term)
 	screen->normalboldGC = screen->reverseboldGC;
 	screen->reverseboldGC = tmpGC;
 
-	XFreeCursor(screen->display, screen->curs);
-	XFreeCursor(screen->display, screen->arrow);
 	{
 	    unsigned long fg, bg;
 	    bg = term->core.background_pixel;
@@ -911,15 +909,13 @@ ReverseVideo (term)
 	    } else {
 		fg = screen->mousecolor;
 	    }
-	    if (XStrCmp(term->misc.curs_shape, "arrow") == 0) {
-		screen->curs = make_arrow (fg, bg);
-	    } else {
-		screen->curs = make_xterm (fg, bg);
-	    }
-	    screen->arrow = make_arrow (fg, bg);
+	    
+	    recolor_cursor (screen->pointer_cursor, fg, bg);
+	    recolor_cursor (screen->arrow, fg, bg);
+
 	}
 
-	XDefineCursor(screen->display, TextWindow(screen), screen->curs);
+	XDefineCursor(screen->display, TextWindow(screen), screen->pointer_cursor);
 	if(tek)
 		XDefineCursor(screen->display, tek, screen->arrow);
 #ifdef MODEMENU
@@ -953,3 +949,21 @@ ReverseVideo (term)
 	    TekExpose((XExposeEvent *) NULL);
 	}
 }
+
+
+recolor_cursor (cursor, fg, bg)
+    Cursor cursor;			/* X cursor ID to set */
+    unsigned long fg, bg;		/* pixel indexes to look up */
+{
+    register TScreen *screen = &term->screen;
+    register Display *dpy = screen->display;
+    XColor colordefs[2];		/* 0 is foreground, 1 is background */
+
+    colordefs[0].pixel = fg;
+    colordefs[1].pixel = bg;
+    XQueryColors (dpy, DefaultColormap (dpy, DefaultScreen (dpy)),
+		  colordefs, 2);
+    XRecolorCursor (dpy, cursor, colordefs, colordefs+1);
+    return;
+}
+
