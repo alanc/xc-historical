@@ -1,4 +1,4 @@
-/* $XConsortium: client.c,v 1.2 93/09/03 17:09:28 mor Exp $ */
+/* $XConsortium: sm_client.c,v 1.3 93/09/08 20:13:53 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -158,11 +158,15 @@ char 		*errorStringRet;
 	    }
 	    else
 	    {
+		IceDoneWithProtocol (iceConn, _SmcOpcode);
+		IceCloseConnection (iceConn);
+
 		free (smcConn->vendor);
 		free (smcConn->release);
 		strncpy (errorStringRet,
 		    "Failed to register client", errorLength);
 		free ((char *) smcConn);
+
 		return (NULL);
 	    }
 	}
@@ -181,33 +185,39 @@ int	count;
 char    **reasonMsgs;
 
 {
-    IceConn			iceConn = smcConn->iceConn;
-    smCloseConnectionMsg 	*pMsg;
-    char 			*pData;
-    int				extra, i;
+    IceConn	iceConn = smcConn->iceConn;
+    int		i;
 
-    if (locale == NULL || *locale == '\0')
-	locale = setlocale (LC_ALL, NULL);
+    if (IceCheckShutdownNegotiation (iceConn) == True)
+    {
+	smCloseConnectionMsg 	*pMsg;
+	char 			*pData;
+	int			extra;
 
-    extra = 8 + ARRAY8_BYTES (strlen (locale));
+	if (locale == NULL || *locale == '\0')
+	    locale = setlocale (LC_ALL, NULL);
 
-    for (i = 0; i < count; i++)
-	extra += ARRAY8_BYTES (strlen (reasonMsgs[i]));
+	extra = 8 + ARRAY8_BYTES (strlen (locale));
 
-    IceGetHeaderExtra (iceConn, _SmcOpcode, SM_CloseConnection,
-	SIZEOF (smCloseConnectionMsg), WORD64COUNT (extra),
-	smCloseConnectionMsg, pMsg, pData);
+	for (i = 0; i < count; i++)
+	    extra += ARRAY8_BYTES (strlen (reasonMsgs[i]));
 
-    STORE_ARRAY8 (pData, strlen (locale), locale);
+	IceGetHeaderExtra (iceConn, _SmcOpcode, SM_CloseConnection,
+	    SIZEOF (smCloseConnectionMsg), WORD64COUNT (extra),
+	    smCloseConnectionMsg, pMsg, pData);
 
-    STORE_CARD32 (pData, count);
-    pData += 4;
+	STORE_ARRAY8 (pData, strlen (locale), locale);
 
-    for (i = 0; i < count; i++)
-	STORE_ARRAY8 (pData, strlen (reasonMsgs[i]), reasonMsgs[i]); 
+	STORE_CARD32 (pData, count);
+	pData += 4;
 
-    IceFlush (iceConn);
+	for (i = 0; i < count; i++)
+	    STORE_ARRAY8 (pData, strlen (reasonMsgs[i]), reasonMsgs[i]); 
 
+	IceFlush (iceConn);
+    }
+
+    IceDoneWithProtocol (iceConn, _SmcOpcode);
     IceCloseConnection (iceConn);
 
     for (i = 0; i < _SmcConnectionCount; i++)
