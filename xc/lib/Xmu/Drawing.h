@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Drawing.h,v 1.4 90/02/26 17:02:38 jim Exp $
+ * $XConsortium: Drawing.h,v 1.5 90/03/28 15:17:43 swick Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -27,6 +27,10 @@
 #ifndef _XtIntrinsic_h
 typedef unsigned long Pixel;
 #endif
+#endif
+
+#ifdef __cplusplus			/* do not leave open across includes */
+extern "C" {					/* for C++ V2.0 */
 #endif
 
 void XmuDrawRoundedRectangle(
@@ -155,5 +159,9 @@ int XmuReadBitmapDataFromFile(
     int*		/* yhot_return */
 #endif
 );
+
+#ifdef __cplusplus
+}						/* for C++ V2.0 */
+#endif
 
 #endif /* _XMU_DRAWING_H_ */
