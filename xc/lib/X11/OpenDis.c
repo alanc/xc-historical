@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.90 89/11/14 16:21:12 converse Exp $
+ * $XConsortium: XOpenDis.c,v 11.91 89/11/19 13:12:36 rws Exp $
  */
 
 #include "copyright.h"
@@ -201,6 +201,58 @@ Display *XOpenDisplay (display)
 		conn_auth_data = NULL;
 	    }
 	}
+#ifdef HASDES
+	/*
+	 * build XDM-AUTHORIZATION-1 data
+	 */
+	if (conn_auth_namelen == 19 &&
+	    !strncmp (conn_auth_name, "XDM-AUTHORIZATION-1", 19))
+	{
+	    static char    encrypted_data[192/8];
+	    int	    i, j;
+	    struct sockaddr_in	in_addr;
+	    int	    addrlen;
+	    long    now;
+
+	    j = 0;
+	    for (i = 0; i < 8; i++)
+	    {
+		encrypted_data[j] = conn_auth_data[i];
+		j++;
+	    }
+	    addrlen = sizeof (in_addr);
+	    getsockname (dpy->fd, (struct sockaddr *) &in_addr, &addrlen);
+	    if (in_addr.sin_family == 2)
+	    {
+		encrypted_data[j] = in_addr.sin_addr.s_net; j++;
+		encrypted_data[j] = in_addr.sin_addr.s_host; j++;
+		encrypted_data[j] = in_addr.sin_addr.s_lh; j++;
+		encrypted_data[j] = in_addr.sin_addr.s_impno; j++;
+		encrypted_data[j] = (in_addr.sin_port >> 8) & 0xff; j++;
+		encrypted_data[j] = (in_addr.sin_port) & 0xff; j++;
+	    }
+	    else
+	    {
+		encrypted_data[j] = 0xff; j++;
+		encrypted_data[j] = 0xff; j++;
+		encrypted_data[j] = 0xff; j++;
+		encrypted_data[j] = 0xff; j++;
+		i = getpid ();
+		encrypted_data[j] = (i >> 8) & 0xff; j++;
+		encrypted_data[j] = (i) & 0xff; j++;
+	    }
+	    time (&now);
+	    for (i = 3; i >= 0; i--)
+	    {
+		encrypted_data[j] = (now >> (i * 8)) & 0xff;
+		j++;
+	    }
+	    XdmcpEncrypt (encrypted_data, conn_auth_data + 8,
+			  encrypted_data, 192/8);
+	    conn_auth_data = encrypted_data;
+	    conn_auth_datalen = 192 / 8;
+	}
+#endif /* HASDES */
 	if (server_addr) (void) Xfree (server_addr);
 /*
  * The xConnClientPrefix describes the initial connection setup information
