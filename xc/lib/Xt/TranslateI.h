@@ -1,5 +1,5 @@
-/* $XConsortium: TranslateI.h,v 1.17 90/04/13 20:12:37 swick Exp $ */
-/* $oHeader: TranslateI.h,v 1.2 88/08/18 15:56:37 asente Exp $ */
+/* $XConsortium: TranslateI.h,v 1.18 90/06/04 15:06:40 kit Exp $ */
+
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -101,21 +101,24 @@ typedef struct _StateRec {
 typedef enum {XtTableReplace,XtTableAugment,XtTableOverride} _XtTranslateOp;
 
 typedef struct _TranslationData {
+    struct _StateTableData*	stateTable;
+    struct _XtBoundAccActionRec* accProcTbl;
+} TranslationData;
+
+typedef struct _StateTableData {
     _XtTranslateOp	operation; /*replace,augment,override*/
     unsigned int	numEvents;
     unsigned int	eventTblSize;
     EventObjPtr		eventObjTbl;
-    unsigned long	lastEventTime;
     unsigned int	numQuarks;   /* # of entries in quarkTable */
     unsigned int	quarkTblSize; /*total size of quarkTable */
     XrmQuark*		quarkTable;  /* table of quarkified rhs*/
     unsigned int	accNumQuarks;
     unsigned int	accQuarkTblSize;
     XrmQuark*		accQuarkTable;
-    struct _XtBoundAccActionRec* accProcTbl;
     StatePtr		head;	/* head of list of all states */
     Boolean		mappingNotifyInterest;
-} TranslationData;
+} StateTableData, *StateTablePtr;
 
 #define _XtEventTimerEventType ((unsigned long)-1L)
 #define KeysymModMask		(1<<27) /* private to TM */
