@@ -291,11 +291,11 @@ The following command line arguments are provided for compatibility with
 older versions.  They may not be supported in the next release as the X 
 Toolkit provides standard options that accomplish the same task.
 .TP 8
-.B "%geom"
+.B "%\fIgeom\fP"
 This option specifies the prefered size and position of the Tektronix window.
 It is shorthand for specifying the "\fI*tekGeometry\fP" resource.
 .TP 8
-.B \#geom
+.B \#\fIgeom\fP
 This option specifies the prefered position of the icon window.
 It is shorthand for specifying the "\fI*iconGeometry\fP" resource.
 .TP 8
