@@ -1,4 +1,4 @@
-/* $XConsortium: SMproto.h,v 1.2 93/09/08 20:29:40 mor Exp $ */
+/* $XConsortium: SMproto.h,v 1.3 93/12/07 11:05:28 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -51,6 +51,19 @@ typedef struct {
 typedef struct {
     CARD8	majorOpcode;
     CARD8	minorOpcode;
+    CARD8	unused1[2];
+    CARD32	length B32;
+    CARD8	saveType;
+    CARD8	shutdown;
+    CARD8	interactStyle;
+    CARD8	fast;
+    CARD8	global;
+    CARD8	unused2[3];
+} smSaveYourselfRequestMsg;
+
+typedef struct {
+    CARD8	majorOpcode;
+    CARD8	minorOpcode;
     CARD8	dialogType;
     CARD8	unused;
     CARD32	length B32;
@@ -98,7 +111,6 @@ typedef struct {
     CARD8	minorOpcode;
     CARD8	unused[2];
     CARD32	length B32;
-    /* a	ARRAY8		locale */
     /* b	LISTofARRAY8	reasons */
 } smCloseConnectionMsg;
 
@@ -111,6 +123,14 @@ typedef struct {
     CARD8	unused2[4];
     /* a	LISTofPROPERTY	properties */
 } smSetPropertiesMsg;
+
+typedef struct {
+    CARD8	majorOpcode;
+    CARD8	minorOpcode;
+    CARD8	unused[2];
+    CARD32	length B32;
+    /* a	LISTofARRAY8	property names */
+} smDeletePropertiesMsg;
 
 typedef struct {
     CARD8	majorOpcode;
@@ -135,6 +155,7 @@ typedef struct {
 #define sz_smRegisterClientMsg 		8
 #define sz_smRegisterClientReplyMsg 	8
 #define sz_smSaveYourselfMsg 		16
+#define sz_smSaveYourselfRequestMsg	16
 #define sz_smInteractRequestMsg 	8
 #define sz_smInteractMsg 		8
 #define sz_smInteractDoneMsg 		8
@@ -143,6 +164,7 @@ typedef struct {
 #define sz_smShutdownCancelledMsg 	8
 #define sz_smCloseConnectionMsg 	8
 #define sz_smSetPropertiesMsg 		16
+#define sz_smDeletePropertiesMsg 	8
 #define sz_smGetPropertiesMsg 		8
 #define sz_smPropertiesReplyMsg 	8
 
