@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontdir.c,v 1.2 91/05/11 14:24:25 rws Exp $
+ * $XConsortium: fontdir.c,v 1.3 91/05/16 14:29:22 rws Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -48,7 +48,6 @@ FontFileInitTable (table, size)
 FontFileFreeEntry (entry)
     FontEntryPtr    entry;
 {
-    int			    i;
     FontScalableExtraPtr   extra;
 
     switch (entry->type)
@@ -91,6 +90,9 @@ FontFileMakeDir(dirName, size)
 
     dirlen = strlen(dirName);
     if (dirName[dirlen - 1] != '/')
+#ifdef NCD
+    if (dirlen)     /* leave out slash for builtins */
+#endif
 	needslash = 1;
     dir = (FontDirectoryPtr) xalloc(sizeof *dir + dirlen + needslash + 1);
     if (!dir)
@@ -127,9 +129,6 @@ FontFileAddEntry(table, prototype)
 {
     FontEntryPtr    entry;
     int		    newsize;
-    int		    name_len;
-    int		    ndashes;
-    char	    c;
 
     /* can't add entries to a sorted table, pointers get broken! */
     if (table->sorted)
@@ -394,7 +393,6 @@ FontFileAddFontFile (dir, fontName, fileName)
 {
     FontEntryRec	    entry;
     FontScalableRec	    vals, zeroVals;
-    char		    zeroName[MAXFONTNAMELEN + 1];
     FontRendererPtr	    renderer;
     FontEntryPtr	    existing;
     FontScalableExtraPtr    extra;
@@ -486,24 +484,24 @@ FontFileAddFontFile (dir, fontName, fileName)
 	    extra->defaults.width = -1;
 	    if (vals.x <= 0 || vals.y <= 0)
 	    {
-	    	resolution = GetClientResolutions (&num);
-	    	if (resolution && num > 0)
-	    	{
+	        resolution = GetClientResolutions (&num);
+	        if (resolution && num > 0)
+	        {
 	    	    extra->defaults.x = resolution->x;
 	    	    extra->defaults.y = resolution->y;
-	    	}
-	    	else
-	    	{
+	        }
+	        else
+	        {
 		    extra->defaults.x = 75;
 		    extra->defaults.y = 75;
-	    	}
-	    }
-	    else
-	    {
+	        }
+	     }
+	     else 
+	     {
 		extra->defaults.x = vals.x;
 		extra->defaults.y = vals.y;
-	    }
-	    FontFileCompleteXLFD (&extra->defaults, &extra->defaults);
+	     }
+	     FontFileCompleteXLFD (&extra->defaults, &extra->defaults);
 	}
 	extra->numScaled = 0;
 	extra->sizeScaled = 0;
