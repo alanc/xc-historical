@@ -1,5 +1,5 @@
 #include "copyright.h"
-/* $Header: XConnDis.c,v 11.31 88/08/09 17:12:34 jim Exp $ */
+/* $Header: XConnDis.c,v 11.32 88/08/24 21:05:34 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 #define NEED_EVENTS
 /*
@@ -189,7 +189,8 @@ int _XConnectDisplay (display_name, expanded_name, prop_name, screen_num)
  
 			/* Set up the socket data. */
 			inaddr.sin_family = host_ptr->h_addrtype;
-#ifdef CRAY
+#if defined(CRAY) && defined(OLDTCP)
+			/* Only Cray UNICOS3 and UNICOS4 will define this */
 			{
 				long t;
 				bcopy((char *)host_ptr->h_addr,
@@ -201,13 +202,14 @@ int _XConnectDisplay (display_name, expanded_name, prop_name, screen_num)
 			bcopy((char *)host_ptr->h_addr, 
 			      (char *)&inaddr.sin_addr, 
 			      sizeof(inaddr.sin_addr));
-#endif /* CRAY else BSD */
+#endif /* CRAY and OLDTCP */
 		} else {
-#ifdef CRAY
+#if defined(CRAY) && defined(OLDTCP)
+			/* Only Cray UNICOS3 and UNICOS4 will define this */
 			inaddr.sin_addr = hostinetaddr;
 #else
 			inaddr.sin_addr.s_addr = hostinetaddr;
-#endif /* CRAY else BSD */
+#endif /* CRAY and OLDTCP */
 			inaddr.sin_family = AF_INET;
 		}
 		addr = (struct sockaddr *) &inaddr;
