@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: bdfread.c,v 1.9 91/09/07 11:59:15 keith Exp $ */
+/* $XConsortium: bdfread.c,v 1.10 92/03/20 14:33:02 keith Exp $ */
 
 #include <ctype.h>
 #include "fontfilest.h"
@@ -208,8 +208,7 @@ bdfReadCharacters(file, pFont, pState, bit, byte, glyph, scan)
                 ndx,
                 nchars,
                 nignored;
-    int         char_row,
-                char_col;
+    unsigned int char_row, char_col;
     int         numEncodedGlyphs = 0;
     CharInfoPtr *bdfEncoding[256];
     BitmapFontPtr  bitmapFont;
@@ -592,6 +591,8 @@ bdfReadProperties(file, pFont, pState)
 		stringProps[nextProp] = TRUE;
 		props[nextProp].value =
 		    bdfGetPropertyValue(line + strlen(namebuf) + 1);
+		if (!props[nextProp].value)
+		    goto BAILOUT;
 		break;
 	    } else if (bdfIsInteger(secondbuf)) {
 		stringProps[nextProp] = FALSE;
@@ -611,6 +612,8 @@ bdfReadProperties(file, pFont, pState)
 		stringProps[nextProp] = TRUE;
 		props[nextProp].value =
 		    bdfGetPropertyValue(line + strlen(namebuf) + 1);
+		if (!props[nextProp].value)
+		    goto BAILOUT;
 		break;
 	    } else {
 		bdfError("invalid '%s' parameter value\n", namebuf);
@@ -757,9 +760,7 @@ bdfReadFont(pFont, file, bit, byte, glyph, scan)
 	goto BAILOUT;
 
     if (state.haveDefaultCh) {
-	int         r,
-	            c,
-	            cols;
+	unsigned int r, c, cols;
 
 	r = pFont->info.defaultCh >> 8;
 	c = pFont->info.defaultCh & 0xFF;
