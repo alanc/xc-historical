@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.131 89/09/13 14:47:57 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.132 89/09/14 10:11:28 swick Exp $";
 /* $oHeader: Intrinsic.c,v 1.4 88/08/18 15:40:35 asente Exp $ */
 #endif /* lint */
 
@@ -562,4 +562,40 @@ Boolean XtIsObject(object)
 	    return False;
     }
     return True;
+}
+
+
+String XtResolvePathname(dpy, type, filename, suffix, path, predicate)
+    Display *dpy;
+    String type, filename, suffix, path;
+    XtFilePredicate predicate;
+{
+    XtPerDisplay pd = _XtGetPerDisplay(dpy);
+    char resolved_name[MAXPATHLEN];
+    String class = XrmQuarkToString(pd->class);
+
+    /* stub routine for now */
+    if (type != NULL && strcmp(type, "app-defaults") == 0
+	  && filename == NULL
+	  && suffix == NULL
+	  && path == NULL
+	  && predicate == NULL) {
+	strcpy(resolved_name, "/usr/lib/X11/app-defaults/");
+    } else if (type == NULL
+	  && filename == NULL
+	  && suffix == NULL
+	  && predicate == NULL) {
+	extern char *getenv();
+	char	*dirname;
+	if ((dirname = getenv("XAPPLRESDIR")) == NULL) {
+	    if ((dirname = getenv("HOME")) == NULL)
+		dirname = "/";
+	}
+	strcpy(resolved_name, dirname);
+    } else {
+	XtWarning( "XtResolvePathname is only a stub; returning filename" );
+	return XtNewString(filename);
+    }
+    (void) strcat(resolved_name, class);
+    return XtNewString(resolved_name);
 }
