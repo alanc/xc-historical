@@ -1,5 +1,5 @@
 /*
-** xbench
+** xgc
 **
 ** choice.c
 **
@@ -16,7 +16,7 @@
 #include <X11/Command.h>
 #include <X11/StringDefs.h>
 
-#include "xbench.h"
+#include "xgc.h"
 
 extern XStuff X;
 
@@ -26,7 +26,7 @@ extern XStuff X;
 **   a form widget.  Exactly one of these command buttons can be "on" at
 **   any given time;  the rest are "off".  "On" command buttons have
 **   the foreground and background colors reversed.
-**   Also, specifically because it comes in handy in xbench, choosing one
+**   Also, specifically because it comes in handy in xgc, choosing one
 **   of the buttons causes a string associated with it to be printed out
 **   (and interpreted).  Half of the string is global to the whole form
 **   and the other half is local to each button.
@@ -37,12 +37,12 @@ extern XStuff X;
 **
 ** w is the form widget (already created) into which we will place the
 ** command buttons.  info contains lots of useful information, such
-** as the names of the buttons and their strings (see xbench.h).
+** as the names of the buttons and their strings (see xgc.h).
 */
 
 void create_choice(w,info)
      Widget      w;
-     XbenchStuff *info;
+     XgcStuff *info;
 {
   static Widget *commands;
   static Widget label;
@@ -124,7 +124,7 @@ void create_choice(w,info)
 
     strcpy(tmp,info->choice.text);
     strcat(tmp," ");
-    strcat(tmp,(*(info->data))[i].text);
+    strcat(tmp,(info->data)[i].text);
     strcat(tmp,"\n");
     text = (char *) malloc(strlen(tmp) * sizeof(char) + 2);
     strcpy(text,tmp);
@@ -132,7 +132,7 @@ void create_choice(w,info)
     callbacklist[1].closure = (caddr_t) text;
 
     /* so make the thing already */
-    commands[i] = XtCreateManagedWidget((*info->data)[i].name,
+    commands[i] = XtCreateManagedWidget((info->data[i]).name,
 	    				commandWidgetClass,w,
 					commandargs,XtNumber(commandargs));
   }
@@ -182,6 +182,7 @@ void select_button(w,closure,call_data)
 				   that was selected */
   Widget cur_widget;		/* the widget we're talking about while
 				   we're in the loop */
+
   static Arg args[] = {
     {XtNforeground,          (XtArgVal) NULL },
     {XtNbackground,          (XtArgVal) NULL },
@@ -193,17 +194,19 @@ void select_button(w,closure,call_data)
   parent = (CompositeWidget) XtParent(w);
   num_children = parent->composite.num_children;
 
-  for (i=0;i<num_children;++i) { /* go through the siblings one by one */
+  for (i=1;i<num_children;++i) { /* go through the siblings one by one
+				  * start at 1 so label isn't affected
+				  */
     cur_widget = parent->composite.children[i];
     if (cur_widget == w) {	/* is the one the user selected? */
-      args[0].value = X.background;
-      args[1].value = X.foreground;
-      args[2].value = 0;	/* because otherwise it looks funny */
+      args[0].value = (XtArgVal) X.background;
+      args[1].value = (XtArgVal) X.foreground;
+      args[2].value = (XtArgVal) 0;	/* because otherwise it looks funny */
     }
     else {			/* make the other ones look normal */
-      args[0].value = X.foreground;
-      args[1].value = X.background;
-      args[2].value = 2;
+      args[0].value = (XtArgVal) X.foreground;
+      args[1].value = (XtArgVal) X.background;
+      args[2].value = (XtArgVal) 2;
     }
     XtSetValues(cur_widget,args,XtNumber(args));
   }
