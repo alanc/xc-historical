@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Event.c,v 1.112 89/12/15 23:51:06 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Event.c,v 1.113 90/04/04 11:27:50 swick Exp $";
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 #endif /* lint */
 
@@ -76,14 +76,13 @@ EventMask XtBuildEventMask(widget)
 }
 
 static void
-RemoveEventHandler(widget, eventMask, other, proc, closure, raw, check_closure)
+RemoveEventHandler(widget, eventMask, other, proc, closure, raw)
 Widget	        widget;
 EventMask       eventMask;
 Boolean	        other;
 XtEventHandler  proc;
 XtPointer	closure;
 Boolean	        raw;
-Boolean	        check_closure;
 {
     XtEventRec *p, **pp;
     EventMask oldMask = XtBuildEventMask(widget);
@@ -94,7 +93,7 @@ Boolean	        check_closure;
     if (p == NULL) return;	                    /* No Event Handlers. */
 
     /* find it */
-    while (p->proc != proc || (check_closure && p->closure != closure)) {
+    while (p->proc != proc || p->closure != closure) {
         pp = &p->next;
         p = *pp;
 	if (p == NULL) return;	                     /* Didn't find it */
@@ -138,17 +137,15 @@ Boolean	        check_closure;
  *                                      list, this will force it to the 
  *                                      beginning or end depending on position.
  *                 raw - If FALSE call XSelectInput for events in mask.
- *                 check_closure - check to see if closures match as
- *                                 as well as proceedure.
  *	Returns: none
  */
 
 static void 
 AddEventHandler(widget, eventMask, other, proc, 
-		closure, position, force_new_position, raw, check_closure)
+		closure, position, force_new_position, raw)
 Widget	        widget;
 EventMask       eventMask;
-Boolean         other, force_new_position, raw, check_closure;
+Boolean         other, force_new_position, raw;
 XtEventHandler  proc;
 XtPointer	closure;
 XtListPosition  position;
@@ -164,7 +161,7 @@ XtListPosition  position;
     prev = NULL;
 
     while ((p != NULL) &&
-	   (p->proc != proc || (check_closure && (p->closure != closure)))) {
+	   (p->proc != proc || p->closure != closure)) {
 	prev = p;
 	p = p->next;
     }
@@ -213,7 +210,6 @@ XtListPosition  position;
 	p->non_filter = p->non_filter || other;
 	p->select |= ! raw;
 	p->raw |= raw;
-	if (!check_closure) p->closure = closure;
     }
 
     if (XtIsRealized(widget) && !raw) {
@@ -232,7 +228,7 @@ void XtRemoveEventHandler(widget, eventMask, other, proc, closure)
     XtEventHandler  proc;
     XtPointer	    closure;
 {
-    RemoveEventHandler(widget, eventMask, other, proc, closure, FALSE, TRUE);
+    RemoveEventHandler(widget, eventMask, other, proc, closure, FALSE);
 }
 
 void XtAddEventHandler(widget, eventMask, other, proc, closure)
@@ -243,7 +239,7 @@ void XtAddEventHandler(widget, eventMask, other, proc, closure)
     XtPointer	    closure;
 {
     AddEventHandler(widget, eventMask, other, 
-		    proc, closure, XtListTail, FALSE, FALSE, TRUE);
+		    proc, closure, XtListTail, FALSE, FALSE);
 }
 
 void XtInsertEventHandler(widget, eventMask, other, proc, closure, position)
@@ -255,7 +251,7 @@ void XtInsertEventHandler(widget, eventMask, other, proc, closure, position)
     XtListPosition  position;
 {
     AddEventHandler(widget, eventMask, other, 
-		    proc, closure, position, TRUE, FALSE, TRUE);
+		    proc, closure, position, TRUE, FALSE);
 }
 
 void XtRemoveRawEventHandler(widget, eventMask, other, proc, closure)
@@ -265,7 +261,7 @@ void XtRemoveRawEventHandler(widget, eventMask, other, proc, closure)
     XtEventHandler  proc;
     XtPointer	    closure;
 {
-    RemoveEventHandler(widget, eventMask, other, proc, closure, TRUE, TRUE);
+    RemoveEventHandler(widget, eventMask, other, proc, closure, TRUE);
 }
 
 void XtInsertRawEventHandler(widget, eventMask, other, proc, closure, position)
@@ -277,7 +273,7 @@ void XtInsertRawEventHandler(widget, eventMask, other, proc, closure, position)
     XtListPosition  position;
 {
     AddEventHandler(widget, eventMask, other, 
-		    proc, closure, position, TRUE, TRUE, TRUE);
+		    proc, closure, position, TRUE, TRUE);
 }
 
 void XtAddRawEventHandler(widget, eventMask, other, proc, closure)
@@ -288,7 +284,7 @@ void XtAddRawEventHandler(widget, eventMask, other, proc, closure)
     XtPointer	    closure;
 {
     AddEventHandler(widget, eventMask, other, 
-		    proc, closure, XtListTail, FALSE, TRUE, TRUE);
+		    proc, closure, XtListTail, FALSE, TRUE);
 }
 
 typedef struct _HashRec *HashPtr;
