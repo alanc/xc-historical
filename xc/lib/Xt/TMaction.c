@@ -1,4 +1,4 @@
-/* $XConsortium: TMaction.c,v 1.9 91/02/18 22:47:16 converse Exp $ */
+/* $XConsortium: TMaction.c,v 1.10 91/02/19 15:08:54 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -149,8 +149,8 @@ static void ReportUnboundActions(xlations, bindData)
 }
 
 
-static CompiledAction *SearchActionTable(quark, actionTable, numActions)
-    XrmQuark		quark;
+static CompiledAction *SearchActionTable(signature, actionTable, numActions)
+    XrmQuark		signature;
     CompiledActionTable	actionTable;
     Cardinal		numActions;
 {
@@ -158,19 +158,16 @@ static CompiledAction *SearchActionTable(quark, actionTable, numActions)
 
     left = 0;
     right = numActions - 1;
-
     while (left <= right) {
-	i = (left + right) / 2;
-
-	if (quark < actionTable[i].signature)
+	i = (left + right) >> 1;
+	if (signature < actionTable[i].signature)
 	    right = i - 1;
-	else {
+	else if (signature > actionTable[i].signature)
 	    left = i + 1;
-	    if (quark == actionTable[i].signature) {
-		while (i && actionTable[i - 1].signature == quark)
-		    i--;
-		return &actionTable[i];
-	    }
+	else {
+	    while (i && actionTable[i - 1].signature == signature)
+		i--;
+	    return &actionTable[i];
 	}
     }
     return (CompiledAction *) NULL;
