@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGetImage.c,v 11.15 87/08/18 14:03:16 jg Exp $ */
+/* $Header: XGetImage.c,v 11.15 87/09/01 14:49:28 toddb Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -48,7 +48,9 @@ XImage *XGetImage (dpy, d, x, y, width, height, plane_mask, format)
         _XReadPad (dpy, data, nbytes);
 	image = XCreateImage(dpy, _XVIDtoVisual(dpy, rep.visual),
 		(int) rep.depth, format, 0, data, width, height,
-		dpy->bitmap_pad,0);
+ 		((format == ZPixmap) ? _XGetScanlinePad(dpy, rep.depth)
+ 				     : dpy->bitmap_pad), 0);
+	
 
 	UnlockDisplay(dpy);
 	SyncHandle();
