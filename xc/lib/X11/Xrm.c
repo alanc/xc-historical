@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Xrm.c,v 1.13 88/06/14 16:40:44 swick Exp $";
+static char rcsid[] = "$Header: Xrm.c,v 1.14 88/08/29 11:55:40 swick Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -535,15 +535,18 @@ Bool XrmQGetSearchList(db, names, classes, searchList, listLength)
     if (db != NULL) {
 	nTight = db->tables[(int) XrmBindTightly];
 	nLoose = db->tables[(int) XrmBindLoosely];
-	if (nTight != NULL || nLoose != NULL)
-	if (*names != NULLQUARK) {
-	    GetTables(nTight, nLoose, names, classes, searchList);
-	} else if (nTight != NULL) {
-	    if (numTables == lenTables) return False;
-	    searchList[numTables++] = nTight;
+	if (nTight != NULL || nLoose != NULL) {
+	    if (*names != NULLQUARK) {
+		GetTables(nTight, nLoose, names, classes, searchList);
+	    } else if (nTight != NULL) {
+		if (numTables == lenTables) return False;
+		searchList[numTables++] = nTight;
+	    }
+	    if (nLoose != NULL) {
+		if (numTables == lenTables) return False;
+		searchList[numTables++] = nLoose;
+	    }
 	}
-	if (numTables == lenTables) return False;
-	searchList[numTables++] = nLoose;
     }
     if (numTables == lenTables) return False;
     searchList[numTables] = NULL;
