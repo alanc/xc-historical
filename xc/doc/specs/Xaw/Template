@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: Template,v 1.11 91/07/30 17:27:48 gildea Exp $
 All Athena widgets have three separate files associated with them:
 .LP
 .IP \(bu 3
@@ -60,10 +60,8 @@ are:
 ..
 .CB
 .\".so ../../lib/Xaw/Template.h
-#include <X11/copyright.h>
-
-/* XConsortium: Template.h,v 1.2 88/10/25 17:22:09 swick Exp $ */
-/* Copyright Massachusetts Institute of Technology 1987, 1988 */
+/* $XConsortium: Template.h,v 1.5 90/12/19 18:46:00 converse Exp $ */
+/* Copyright	Massachusetts Institute of Technology	1987, 1988 */
 
 #ifndef _Template_h
 #define _Template_h
@@ -93,9 +91,9 @@ are:
 
 /* define any special resource names here that are not in <X11/StringDefs.h> */
 
-#define XtNtemplateResource	"templateResource"
+#define XtNtemplateResource "templateResource"
 
-#define XtCTemplateResource	"TemplateResource"
+#define XtCTemplateResource "TemplateResource"
 
 /* declare specific TemplateWidget class and instance datatypes */
 
@@ -106,8 +104,7 @@ typedef struct _TemplateRec*	TemplateWidget;
 
 extern WidgetClass templateWidgetClass;
 
-#endif  _Template_h
-
+#endif /* _Template_h */
 .CE
 .LP
 .sp
@@ -133,9 +130,9 @@ convenience procedures, so we need to add
 	...
  */
 
-#define XtNdrawingColor1		"drawingColor1"
-#define XtNdrawingColor2		"drawingColor2"
-#define XtNexposeCallback	"exposeCallback"
+#define XtNdrawingColor1 "drawingColor1"
+#define XtNdrawingColor2 "drawingColor2"
+#define XtNexposeCallback "exposeCallback"
 
 extern Pixel WindowColor1(\|/* Widget */\|);
 extern Pixel WindowColor2(\|/* Widget */\|);
@@ -163,21 +160,21 @@ The contents of the Template private header file,
 are:
 .CB
 .\".so ../../lib/Xaw/TemplateP.h
-#include <X11/copyright.h>
+/* $XConsortium: TemplateP.h,v 1.6 91/03/13 20:12:07 rws Exp $ */
 
-/* XConsortium: TemplateP.h,v 1.2 88/10/25 17:31:47 swick Exp $ */
-/* Copyright Massachusetts Institute of Technology 1987, 1988 */
+/* Copyright	Massachusetts Institute of Technology	1987, 1988
+ */
 
 #ifndef _TemplateP_h
 #define _TemplateP_h
 
-#include "Template.h"
+#include <X11/Xaw/Template.h>
 /* include superclass private header file */
 #include <X11/CoreP.h>
 
 /* define unique representation types not found in <X11/StringDefs.h> */
 
-#define XtRTemplateResource	"TemplateResource"
+#define XtRTemplateResource "TemplateResource"
 
 typedef struct {
 	int empty;
@@ -201,8 +198,7 @@ typedef struct _TemplateRec {
 	TemplatePart	template;
 } TemplateRec;
 
-#endif  _TemplateP_h
-
+#endif /* _TemplateP_h */
 .CE
 .LP
 .sp
@@ -240,20 +236,20 @@ The contents of the Template implementation file,
 are:
 .CB
 .\".so ../../lib/Xaw/Template.c
-#include <X11/copyright.h>
+/* $XConsortium: Template.c,v 1.4 91/02/17 16:18:42 converse Exp $ */
 
-/* XConsortium: Template.c,v 1.2 88/10/25 17:40:25 swick Exp $ */
-/* Copyright Massachusetts Institute of Technology 1987, 1988 */
+/* Copyright	Massachusetts Institute of Technology	1987, 1988
+ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 #include "TemplateP.h"
 
 static XtResource resources[] = {
-#define offset(field) XtOffset(TemplateWidget, template.field)
+#define offset(field) XtOffsetOf(TemplateRec, template.field)
 	/* {name, class, type, size, offset, default_type, default_addr}, */
-	{ XtNtemplateResource, XtCTemplateResource, XtRTemplateResource, sizeof(char*),
-		offset(resource), XtRString, "default" },
+    { XtNtemplateResource, XtCTemplateResource, XtRTemplateResource,
+	  sizeof(char*), offset(resource), XtRString, (XtPointer) "default" },
 #undef offset
 };
 
@@ -315,7 +311,7 @@ WidgetClass templateWidgetClass = (WidgetClass)&templateClassRec;
 The resource list for the "WindowWidget" might look like the following:
 .CB
 static XtResource resources[] = {
-#define offset(field) XtOffset(WindowWidget, window.field)
+#define offset(field) XtOffsetOf(WindowWidgetRec, window.field)
 	/* {name, class, type, size, offset, default_type, default_addr}, */
 	{ XtNdrawingColor1, XtCColor, XtRPixel, sizeof(Pixel),
 		  offset(color_1), XtRString, XtDefaultForeground },
