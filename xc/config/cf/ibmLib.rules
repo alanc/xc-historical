@@ -1,4 +1,4 @@
-XCOMM $XConsortium: ibmLib.rules,v 1.1 91/05/03 15:29:28 rws Exp $
+XCOMM $XConsortium: ibmLib.rules,v 1.2 91/05/03 15:59:01 rws Exp $
 
 /*
  * AIX shared library rules
@@ -6,6 +6,9 @@ XCOMM $XConsortium: ibmLib.rules,v 1.1 91/05/03 15:29:28 rws Exp $
 
 #ifndef HasSharedLibraries
 #define HasSharedLibraries YES
+#endif
+#ifndef ForceNormalLib
+#define ForceNormalLib NO
 #endif
 #ifndef SharedDataSeparation
 #define SharedDataSeparation NO
