@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mibitblt.c,v 5.21 94/01/21 22:03:27 dpw Exp $ */
+/* $XConsortium: mibitblt.c,v 5.22 94/03/16 14:52:34 dpw Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -702,8 +702,8 @@ miPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
     DrawablePtr		pDraw;
     GCPtr		pGC;
     int 		depth, x, y, w, h, leftPad;
-    unsigned int	format;
-    unsigned char	*pImage;
+    int			format;
+    char		*pImage;
 {
     DDXPointPtr		pptFirst, ppt;
     int			*pwidthFirst, *pwidth;

@@ -1,4 +1,4 @@
-/* $XConsortium: mi.h,v 1.13 94/01/07 09:44:08 dpw Exp $ */
+/* $XConsortium: mi.h,v 1.15 94/03/06 18:22:37 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -116,8 +116,8 @@ extern void miPutImage(
     int /*w*/,
     int /*h*/,
     int /*leftPad*/,
-    unsigned int /*format*/,
-    unsigned char * /*pImage*/
+    int /*format*/,
+    char * /*pImage*/
 #endif
 );
 
