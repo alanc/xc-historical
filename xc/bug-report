@@ -25,7 +25,7 @@ SYNOPSIS:
 
 DESCRIPTION:
     [Detailed description of problem.  Don't just say "<blah>
-     doesn't work, here's a fix", explain what your program does
+     doesn't work, here's a fix," explain what your program does
      to get to the <blah> state.  If this is a request for an
      enhancement, justify it.]
 
@@ -35,14 +35,14 @@ REPEAT BY:
      sure it depends only on libraries in the MIT X distribution, not
      on any vendor or third-party libraries.  Be specific; if we can't
      reproduce it, we can't fix it.  Don't just say "run this program
-     and it will be obvious, tell us exactly what we should see when
+     and it will be obvious," tell us exactly what we should see when
      the program is run.  Bug reports without a clear, deterministic
      way of reproducing them will be fixed only after all bug reports
      that do.]
 
 SAMPLE FIX:
     [Preferred, but not necessary.  Please send context diffs (diff -c).
-     Be sure to include our "$XConsortium" ident line in any diffs.  The
+     Be sure to include our "XConsortium" ident line in any diffs.  The
      best way to do this is to add your own versioning line immediately
      after ours.]
 
