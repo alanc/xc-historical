@@ -1,82 +1,82 @@
-XCOMM $XConsortium: Imakefile,v 1.5 91/07/24 15:40:19 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.6 93/09/04 17:15:51 rws Exp $
 #include <Server.tmpl>
 
-       SRCS = 	xallowev.c \
-		xchgkbd.c \
-		xchgdctl.c \
-		xchgfctl.c \
-		xchgkmap.c \
-		xchgprop.c \
-		xchgptr.c \
-		xclosedev.c \
-		xdevbell.c \
-		xexevents.c \
-		xextinit.c \
-		xgetdctl.c \
-		xgetfctl.c \
-		xgetfocus.c \
-		xgetbmap.c \
-		xgetkmap.c \
-		xgetmmap.c \
-		xgetprop.c \
-		xgetselev.c \
-		xgetvers.c \
-		xgtmotion.c \
-		xgrabdev.c \
-		xgrabdevb.c \
-		xgrabdevk.c \
-		xlistdev.c \
-		xopendev.c \
-		xqueryst.c \
-		xselectev.c \
-		xsendexev.c \
-		xsetdval.c \
-		xsetfocus.c \
-		xsetmode.c \
-		xsetbmap.c \
-		xsetmmap.c \
-		xstubs.c \
-		xungrdev.c \
-		xungrdevb.c \
-		xungrdevk.c 
+       SRCS = 	allowev.c \
+		chgkbd.c \
+		chgdctl.c \
+		chgfctl.c \
+		chgkmap.c \
+		chgprop.c \
+		chgptr.c \
+		closedev.c \
+		devbell.c \
+		exevents.c \
+		extinit.c \
+		getdctl.c \
+		getfctl.c \
+		getfocus.c \
+		getbmap.c \
+		getkmap.c \
+		getmmap.c \
+		getprop.c \
+		getselev.c \
+		getvers.c \
+		gtmotion.c \
+		grabdev.c \
+		grabdevb.c \
+		grabdevk.c \
+		listdev.c \
+		opendev.c \
+		queryst.c \
+		selectev.c \
+		sendexev.c \
+		setdval.c \
+		setfocus.c \
+		setmode.c \
+		setbmap.c \
+		setmmap.c \
+		stubs.c \
+		ungrdev.c \
+		ungrdevb.c \
+		ungrdevk.c 
 
-       OBJS =   xallowev.o \
-		xchgkbd.o \
-		xchgdctl.o \
-		xchgfctl.o \
-		xchgkmap.o \
-		xchgprop.o \
-		xchgptr.o \
-		xclosedev.o \
-		xdevbell.o \
-		xexevents.o \
-		xextinit.o \
-		xgetdctl.o \
-		xgetfctl.o \
-		xgetfocus.o \
-		xgetbmap.o \
-		xgetkmap.o \
-		xgetmmap.o \
-		xgetprop.o \
-		xgetselev.o \
-		xgetvers.o \
-		xgtmotion.o \
-		xgrabdev.o \
-		xgrabdevb.o \
-		xgrabdevk.o \
-		xlistdev.o \
-		xopendev.o \
-		xqueryst.o \
-		xselectev.o \
-		xsendexev.o \
-		xsetdval.o \
-		xsetfocus.o \
-		xsetmode.o \
-		xsetbmap.o \
-		xsetmmap.o \
-		xungrdev.o \
-		xungrdevb.o \
-		xungrdevk.o 
+       OBJS =   allowev.o \
+		chgkbd.o \
+		chgdctl.o \
+		chgfctl.o \
+		chgkmap.o \
+		chgprop.o \
+		chgptr.o \
+		closedev.o \
+		devbell.o \
+		exevents.o \
+		extinit.o \
+		getdctl.o \
+		getfctl.o \
+		getfocus.o \
+		getbmap.o \
+		getkmap.o \
+		getmmap.o \
+		getprop.o \
+		getselev.o \
+		getvers.o \
+		gtmotion.o \
+		grabdev.o \
+		grabdevb.o \
+		grabdevk.o \
+		listdev.o \
+		opendev.o \
+		queryst.o \
+		selectev.o \
+		sendexev.o \
+		setdval.o \
+		setfocus.o \
+		setmode.o \
+		setbmap.o \
+		setmmap.o \
+		ungrdev.o \
+		ungrdevb.o \
+		ungrdevk.o 
    INCLUDES = -I../include -I$(EXTINCSRC) -I$(INCLUDESRC)
    LINTLIBS = ../dix/llib-ldix.ln ../os/llib-los.ln
 
@@ -85,8 +85,4 @@ NormalLibraryObjectRule()
 LintLibraryTarget(xinput,$(SRCS))
 NormalLintTarget($(SRCS))
 
-saber_src:
-	#load $(CFLAGS) $(SRCS)
-
 DependTarget()
-
