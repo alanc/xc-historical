@@ -12,13 +12,13 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: ungrbkybrd.m,v 1.7 92/06/11 17:17:19 rws Exp $
  */
 >>TITLE XUngrabKeyboard CH07
 void
 
 Display	*display = Dsp;
-Time	time = CurrentTime;
+Time	thetime = CurrentTime;
 >>ASSERTION Good B 3
 When the client has actively grabbed the keyboard, then a call to xname
 releases the keyboard and any queued events.
@@ -43,7 +43,7 @@ XEvent	ev;
 	win = defwin(display);
 	XSelectInput(display, win, KeyPressMask|KeyReleaseMask);
 
-	XGrabKeyboard(display, win, False, GrabModeAsync, GrabModeSync, time);
+	XGrabKeyboard(display, win, False, GrabModeAsync, GrabModeSync, thetime);
 
 	if (noext(0)) {
 		XCALL;
@@ -138,11 +138,11 @@ XEvent	ev;
 Window	win;
 
 	win = defwin(display);
-	time = gettime(display);
+	thetime = gettime(display);
 
-	XGrabKeyboard(display, win, False, GrabModeSync, GrabModeSync, time);
+	XGrabKeyboard(display, win, False, GrabModeSync, GrabModeSync, thetime);
 
-	time -= 1;
+	thetime -= 1;
 	XCALL;
 
 	if (ispfrozen())
@@ -152,8 +152,8 @@ Window	win;
 		FAIL;
 	}
 
-	time = gettime(display);
-	time += (config.speedfactor+1) * 1000000;
+	thetime = gettime(display);
+	thetime += (config.speedfactor+1) * 1000000;
 
 	XCALL;
 
@@ -201,7 +201,7 @@ int 	orevert;
 		report("Could not set up focus");
 		return;
 	}
-	XGrabKeyboard(display, grabwin, False, GrabModeSync, GrabModeSync, time);
+	XGrabKeyboard(display, grabwin, False, GrabModeSync, GrabModeSync, thetime);
 
 	XSelectInput(display, grabwin, FocusChangeMask);
 	XSelectInput(display, win, FocusChangeMask);

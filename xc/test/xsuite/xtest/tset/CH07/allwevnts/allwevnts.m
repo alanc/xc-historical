@@ -12,14 +12,14 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: allwevnts.m,v 1.7 92/06/11 17:11:03 rws Exp $
  */
 >>TITLE XAllowEvents CH07
 void
-xname(display, event_mode, time)
+xname(display, event_mode, thetime)
 Display	*display = Dsp;
 int 	event_mode = AsyncPointer;
-Time	time = CurrentTime;
+Time	thetime = CurrentTime;
 >>EXTERN
 
 /*
@@ -38,15 +38,15 @@ static	Window	grabwin;
  * Grab and freeze the pointer.
  */
 static void
-grabfreezepointer(disp, time)
+grabfreezepointer(disp, thetime)
 Display	*disp;
-Time	time;
+Time	thetime;
 {
 
 	grabwin = defwin(disp);
 
 	XGrabPointer(disp, grabwin, False, PointerMotionMask,
-		GrabModeSync, GrabModeAsync, None, None, time);
+		GrabModeSync, GrabModeAsync, None, None, thetime);
 }
 
 /*
@@ -82,10 +82,10 @@ Verify that the pointer is still frozen.
 >>CODE
 
 	/* get time from the server */
-	time = gettime(display);
-	grabfreezepointer(display, time);
+	thetime = gettime(display);
+	grabfreezepointer(display, thetime);
 
-	time -= 100;
+	thetime -= 100;
 	XCALL;
 
 	if (ispfrozen(display))
@@ -99,8 +99,8 @@ Verify that the pointer is still frozen.
 	 * Get current time again and add several minutes to get a time in the
 	 * future.
 	 */
-	time = gettime(display);
-	time += ((config.speedfactor+1) * 1000000);
+	thetime = gettime(display);
+	thetime += ((config.speedfactor+1) * 1000000);
 	XCALL;
 
 	if (ispfrozen(display))
@@ -124,7 +124,7 @@ Call xname with event_mode AsyncPointer.
 Verify that pointer is not frozen.
 >>CODE
 
-	grabfreezepointer(display, time);
+	grabfreezepointer(display, thetime);
 
 	event_mode = AsyncPointer;
 	XCALL;
@@ -150,7 +150,7 @@ Call xname with event_mode AsyncPointer.
 Verify that pointer is not frozen.
 >>CODE
 
-	grabfreezepointer(display, time);
+	grabfreezepointer(display, thetime);
 	XGrabKeyboard(display, grabwin, False, GrabModeSync, GrabModeAsync,
 		CurrentTime);
 
@@ -212,7 +212,7 @@ If test extension available:
 >>CODE
 >>SET end-function restoredevstate
 
-	grabfreezepointer(display, time);
+	grabfreezepointer(display, thetime);
 	XChangeActivePointerGrab(display, ButtonPressMask | PointerMotionMask,
 				 None, CurrentTime);
 	if (ispfrozen(display))
@@ -286,7 +286,7 @@ Call xname with event_mode SyncPointer.
 Verify that pointer is not frozen.
 >>CODE
 
-	grabfreezepointer(display, time);
+	grabfreezepointer(display, thetime);
 	XGrabKeyboard(display, grabwin, False, GrabModeSync, GrabModeAsync,
 		CurrentTime);
 
@@ -571,7 +571,7 @@ If extensions available:
 
 	grabwin = defwin(display);
 	XGrabPointer(display, grabwin, False, PointerMotionMask,
-		GrabModeAsync, GrabModeSync, None, None, time);
+		GrabModeAsync, GrabModeSync, None, None, thetime);
 	XGrabKeyboard(display, grabwin, False, GrabModeAsync, GrabModeSync,
 		CurrentTime);
 
@@ -731,7 +731,7 @@ If extensions available:
 
 	grabwin = defwin(display);
 	XGrabPointer(display, grabwin, False, PointerMotionMask,
-		GrabModeAsync, GrabModeSync, None, None, time);
+		GrabModeAsync, GrabModeSync, None, None, thetime);
 	XGrabKeyboard(display, grabwin, False, GrabModeAsync, GrabModeSync,
 		CurrentTime);
 
@@ -1258,7 +1258,7 @@ If extensions are available:
 
 	grabwin = defwin(display);
 	XGrabPointer(display, grabwin, False, PointerMotionMask,
-		GrabModeSync, GrabModeSync, None, None, time);
+		GrabModeSync, GrabModeSync, None, None, thetime);
 	XGrabKeyboard(display, grabwin, False, GrabModeSync, GrabModeSync,
 		CurrentTime);
 
@@ -1409,7 +1409,7 @@ If extensions available:
 
 	grabwin = defwin(display);
 	XGrabPointer(display, grabwin, False, PointerMotionMask,
-		GrabModeSync, GrabModeSync, None, None, time);
+		GrabModeSync, GrabModeSync, None, None, thetime);
 	XGrabKeyboard(display, grabwin, False, GrabModeSync, GrabModeSync,
 		CurrentTime);
 
@@ -1491,7 +1491,7 @@ static	int 	modes[] = {
 	AsyncKeyboard, SyncKeyboard, ReplayKeyboard};
 int 	i;
 
-	grabfreezepointer(display, time);
+	grabfreezepointer(display, thetime);
 
 	for (i = 0; i < NELEM(modes); i++) {
 		event_mode = modes[i];

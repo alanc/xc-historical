@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: grbpntr.m,v 1.11 92/06/11 17:13:25 rws Exp $
  */
 >>TITLE XGrabPointer CH07
 int
@@ -25,7 +25,7 @@ int 	pointer_mode = GrabModeAsync;
 int 	keyboard_mode = GrabModeAsync;
 Window	confine_to = None;
 Cursor	cursor = None;
-Time	time = CurrentTime;
+Time	thetime = CurrentTime;
 >>EXTERN
 
 /*
@@ -368,7 +368,7 @@ XEvent	ev;
 	/*
 	 * Freeze the pointer by grabbing the keyboard.
 	 */
-	XGrabKeyboard(display, grab_window, False, GrabModeSync, GrabModeAsync, time);
+	XGrabKeyboard(display, grab_window, False, GrabModeSync, GrabModeAsync, thetime);
 	(void) warppointer(display, grab_window, 1, 1);
 	if (XCheckMaskEvent(display, (long)event_mask, &ev)) {
 		delete("Pointer event was received while frozen");
@@ -550,8 +550,8 @@ If extensions available:
 		FAIL;
 	}
 
-	XUngrabKeyboard(display, time);
-	XAllowEvents(display, AsyncKeyboard, time);
+	XUngrabKeyboard(display, thetime);
+	XAllowEvents(display, AsyncKeyboard, thetime);
 	if (!iskfrozen())
 		CHECK;
 	else {
@@ -602,8 +602,8 @@ XEvent	ev;
 	} else
 		CHECK;
 
-	XUngrabKeyboard(display, time);
-	XAllowEvents(display, AsyncKeyboard, time);
+	XUngrabKeyboard(display, thetime);
+	XAllowEvents(display, AsyncKeyboard, thetime);
 	if (isdeleted())
 		return;
 
@@ -1179,7 +1179,7 @@ int	rc;
 	} else
 		CHECK;
 
-	time = t1;
+	thetime = t1;
 	rc = XCALL;
 
 	if (!pgrabbed()) {
@@ -1191,14 +1191,14 @@ int	rc;
 	} else
 		CHECK;
 	/* now set up OK */
-	trace("Grabbed at time 0x%lx.",(unsigned long)time);
-	XUngrabPointer(display, time - 1);
+	trace("Grabbed at time 0x%lx.",(unsigned long)thetime);
+	XUngrabPointer(display, thetime - 1);
 	if (!pgrabbed()) {
 		report("Last pointer grab time set earlier than specified time.");
 		FAIL;
 	} else
 		CHECK;
-	XUngrabPointer(display, time);
+	XUngrabPointer(display, thetime);
 	if (pgrabbed()) {
 		report("Last pointer grab time set later than specified time.");
 		FAIL;
@@ -1220,7 +1220,7 @@ int	rc;
 	} else
 		CHECK;
 
-	time = CurrentTime;
+	thetime = CurrentTime;
 	rc = XCALL;
 
 	if (!pgrabbed()) {
@@ -1537,13 +1537,13 @@ int 	ret;
 	grab_window = defwin(display);
 
 	/* get time from the server */
-	time = gettime(display);
+	thetime = gettime(display);
 
 	/* This sets the last-pointer-grab time */
 	XCALL;
-	XUngrabPointer(display, time);
+	XUngrabPointer(display, thetime);
 
-	time -= 100;
+	thetime -= 100;
 	ret = XCALL;
 	if (ret == GrabInvalidTime)
 		CHECK;
@@ -1552,14 +1552,14 @@ int 	ret;
 			grabreplyname(ret));
 		FAIL;
 	}
-	XUngrabPointer(display, time);
+	XUngrabPointer(display, thetime);
 
 	/*
 	 * Get current time again and add several minutes to get a time in the
 	 * future.
 	 */
-	time = gettime(display);
-	time += ((config.speedfactor+1) * 1000000);
+	thetime = gettime(display);
+	thetime += ((config.speedfactor+1) * 1000000);
 
 	ret = XCALL;
 	if (ret == GrabInvalidTime)

@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: stinptfcs.m,v 1.8 92/06/11 17:16:29 rws Exp $
  */
 >>TITLE XSetInputFocus CH07
 void
@@ -20,7 +20,7 @@ void
 Display	*display = Dsp;
 Window	focus;
 int 	revert_to = RevertToNone;
-Time	time = CurrentTime;
+Time	thetime = CurrentTime;
 >>EXTERN
 /*
  * NOTE: This test should not be run with a window manager as some
@@ -720,12 +720,12 @@ int 	newrevert;
 
 	win = defwin(display);
 
-	time = gettime(display);
+	thetime = gettime(display);
 	focus = None;
 
 	XCALL;
 
-	time -= 12;
+	thetime -= 12;
 	focus = win;
 	XCALL;
 
@@ -737,8 +737,8 @@ int 	newrevert;
 		FAIL;
 	}
 
-	time = gettime(display);
-	time += ((config.speedfactor+1) * 1000000);
+	thetime = gettime(display);
+	thetime += ((config.speedfactor+1) * 1000000);
 
 	XCALL;
 
@@ -786,18 +786,18 @@ int	junk;
 	} else
 		CHECK;
 
-	time = t1;
+	thetime = t1;
 	focus = win;
 	XCALL;
 
 	XGetInputFocus(display, &focus_return, &junk);
 	if (focus_return != win) {
-		report("Failed to change focus with time = 0x%lx.", (unsigned long)time);
+		report("Failed to change focus with time = 0x%lx.", (unsigned long)thetime);
 		FAIL;
 	} else
 		CHECK;
-	trace("Focus set at time 0x%lx.",(unsigned long)time);
-	time--;
+	trace("Focus set at time 0x%lx.",(unsigned long)thetime);
+	thetime--;
 	focus = DRW(display);
 	XCALL;
 	XGetInputFocus(display, &focus_return, &junk);
@@ -806,7 +806,7 @@ int	junk;
 		FAIL;
 	} else
 		CHECK;
-	time = t1;
+	thetime = t1;
 	XCALL;
 	XGetInputFocus(display, &focus_return, &junk);
 	if (focus_return != focus) {
@@ -816,7 +816,7 @@ int	junk;
 		CHECK;
 
 	/* last despairing attempt */
-	time = CurrentTime;
+	thetime = CurrentTime;
 	XCALL;
 	XGetInputFocus(display, &focus_return, &junk);
 	if (focus_return != focus) {
@@ -833,7 +833,7 @@ int	junk;
 	} else
 		CHECK;
 
-	time = CurrentTime;
+	thetime = CurrentTime;
 	focus = win;
 	XCALL;
 
@@ -852,7 +852,7 @@ int	junk;
 		CHECK;
 
 	trace("Focus changed at time between 0x%lx and 0x%lx (diff = %d).",t1,t2,t2-t1);
-	time = t1;
+	thetime = t1;
 	focus = DRW(display);
 	XCALL;
 	XGetInputFocus(display, &focus_return, &junk);
@@ -861,7 +861,7 @@ int	junk;
 		FAIL;
 	} else
 		CHECK;
-	time = t2;
+	thetime = t2;
 	XCALL;
 	XGetInputFocus(display, &focus_return, &junk);
 	if (focus_return != focus) {

@@ -12,15 +12,15 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: chngactvpn.m,v 1.6 92/06/11 17:11:34 rws Exp $
  */
 >>TITLE XChangeActivePointerGrab CH07
 void
-xname
+xname(display, event_mask, cursor, thetime)
 Display	*display = Dsp;
 unsigned int 	event_mask = PointerMotionMask;
 Cursor	cursor = None;
-Time	time = CurrentTime;
+Time	thetime = CurrentTime;
 >>ASSERTION Good A
 When the pointer is actively grabbed by the client and the specified time is
 not earlier than the last-pointer-grab time nor later than
@@ -115,7 +115,7 @@ Time	t;
 		GrabModeAsync, None, None, t);
 
 	/* Earlier than last-pointer-grab time */
-	time = t - 12;
+	thetime = t - 12;
 	XCALL;
 
 	XSync(display, True);	/* Flush any event */
@@ -141,7 +141,7 @@ Time	t;
 
 	/* Later than X server time */
 	t = gettime(Dsp);
-	time = t + (config.speedfactor+1)*1000000;
+	thetime = t + (config.speedfactor+1)*1000000;
 	XCALL;
 
 	XSync(display, True);	/* Flush any event */

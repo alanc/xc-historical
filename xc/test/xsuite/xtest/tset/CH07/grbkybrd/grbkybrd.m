@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: grbkybrd.m,v 1.7 92/06/11 17:13:17 rws Exp $
  */
 >>TITLE XGrabKeyboard CH07
 int
@@ -22,7 +22,7 @@ Window	grab_window = defwin(display);
 Bool	owner_events = False;
 int 	pointer_mode = GrabModeAsync;
 int 	keyboard_mode = GrabModeAsync;
-Time	time = CurrentTime;
+Time	thetime = CurrentTime;
 >>#
 >># Expect that GrabSuccess is returned unless otherwise mentioned.
 >>SET return-value GrabSuccess
@@ -544,7 +544,7 @@ XEvent	ev;
 	} else
 		CHECK;
 
-	XUngrabKeyboard(display, time);
+	XUngrabKeyboard(display, thetime);
 	if (isdeleted())
 		return;
 
@@ -727,7 +727,7 @@ Call XUngrabKeyboard with time.
 Verify that pointer is released.
 >>CODE
 
-	time = gettime(display);
+	thetime = gettime(display);
 	pointer_mode = GrabModeSync;
 	XCALL;
 
@@ -738,14 +738,14 @@ Verify that pointer is released.
 		return;
 	}
 
-	XUngrabKeyboard(display, time-1);
+	XUngrabKeyboard(display, thetime-1);
 	if (ispfrozen())
 		CHECK;
 	else {
 		report("Last-keyboard-grab time not set correctly");
 		FAIL;
 	}
-	XUngrabKeyboard(display, time);
+	XUngrabKeyboard(display, thetime);
 	if (ispfrozen()) {
 		report("Last-keyboard-grab time not set correctly");
 		FAIL;
@@ -855,13 +855,13 @@ Verify that xname returns GrabInvalidTime.
 >>CODE
 int 	ret;
 
-	time = gettime(display);
+	thetime = gettime(display);
 
 	/* Set the last-keyboard-grab time */
 	XCALL;
-	XUngrabKeyboard(display, time);
+	XUngrabKeyboard(display, thetime);
 
-	time -= 43;
+	thetime -= 43;
 	ret = XCALL;
 	if (ret == GrabInvalidTime)
 		CHECK;
@@ -871,10 +871,10 @@ int 	ret;
 			grabreplyname(ret));
 		FAIL;
 	}
-	XUngrabKeyboard(display, time);
+	XUngrabKeyboard(display, thetime);
 
-	time = gettime(display);
-	time += ((config.speedfactor+1) * 1000000);
+	thetime = gettime(display);
+	thetime += ((config.speedfactor+1) * 1000000);
 	ret = XCALL;
 	if (ret == GrabInvalidTime)
 		CHECK;

@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: stslctnown.m,v 1.8 92/06/11 16:14:05 rws Exp $
  */
 >>TITLE XSetSelectionOwner CH04
 void
@@ -20,7 +20,7 @@ void
 Display *display = Dsp;
 Atom selection = XA_COPYRIGHT;
 Window owner = defwin(display);
-Time time = CurrentTime;
+Time thetime = CurrentTime;
 >>EXTERN
 #include "Xatom.h"
 >>ASSERTION Good A
@@ -60,12 +60,12 @@ XEvent ev;
 	callwindow = owner;
 
 /* Call xname to assign the owner and time for the selection. */
-	time = calltime;
+	thetime = calltime;
 	XCALL;
 
 /* Call xname to clear the selection. */
 	display = client2;
-	time = CurrentTime;
+	thetime = CurrentTime;
 	owner = None;
 	XCALL;
 	XSync(client1, False);
@@ -141,14 +141,14 @@ XEvent ev;
 
 /* Call xname to assign the owner and time for the selection. */
 	display = calldisplay;
-	time = calltime;
+	thetime = calltime;
 	XCALL;
 
 /* Call xname to assign the selection to a new client and owner */
 /* 	with time before last change time. */
 	display = client2;
 	owner = defwin(client2);
-	time = calltime-1;
+	thetime = calltime-1;
 	XCALL;
 
 /* Verify that no SelectionClear event occurred. */
@@ -169,7 +169,7 @@ XEvent ev;
 /* 	with time after current server time. */
 	display = client3;
 	owner = defwin(client3);
-	time = gettime(client3)+(Time)100000;
+	thetime = gettime(client3)+(Time)100000;
 	XCALL;
 
 /* Verify that no SelectionClear event occurred. */
@@ -222,12 +222,12 @@ XEvent ev;
 	calltime = gettime(client1);
 
 /* Call xname to assign the owner and time for the selection. */
-	time = CurrentTime;
+	thetime = CurrentTime;
 	XCALL;
 
 /* Call xname to clear the selection, to obtain selection time. */
 	display = client2;
-	time = CurrentTime;
+	thetime = CurrentTime;
 	owner = None;
 	XCALL;
 	XSync(client1, False);
@@ -294,7 +294,7 @@ Verify that the selection has no owner.
 		CHECK;
 
 /* Call xname to set no owner for the selection. */
-	time = CurrentTime;
+	thetime = CurrentTime;
 	owner = None;
 	XCALL;
 
@@ -345,12 +345,12 @@ XEvent ev;
 
 /* Call xname to assign the owner and time for the selection. */
 	callwindow = owner;
-	time = calltime;
+	thetime = calltime;
 	XCALL;
 
 /* Call xname to assign the selection to a new owner. */
 	display = client2;
-	time = CurrentTime;
+	thetime = CurrentTime;
 	owner = defwin(client2);
 	XCALL;
 	XSync(client1, False);

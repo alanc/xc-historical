@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: cnvrtslctn.m,v 1.5 92/06/11 16:12:31 rws Exp $
  */
 >>TITLE XConvertSelection CH04
 void
@@ -22,7 +22,7 @@ Atom selection = XA_COPYRIGHT;
 Atom target = XA_NOTICE;
 Atom property = XA_INTEGER;
 Window requestor = defwin(display);
-Time  time = CurrentTime;
+Time  thetime = CurrentTime;
 >>EXTERN
 #include "Xatom.h"
 >>ASSERTION Good A

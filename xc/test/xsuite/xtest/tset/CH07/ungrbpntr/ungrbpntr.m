@@ -12,13 +12,13 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: ungrbpntr.m,v 1.4 92/06/11 17:17:28 rws Exp $
  */
 >>TITLE XUngrabPointer CH07
 void
 
 Display	*display = Dsp;
-Time	time = CurrentTime;
+Time	thetime = CurrentTime;
 >>ASSERTION Good A
 When
 the client has actively grabbed the pointer with
@@ -99,15 +99,15 @@ unsigned int 	mask;
 
 	grabwin = defwin(display);
 
-	time = gettime(display);
+	thetime = gettime(display);
 	XGrabPointer(display, grabwin, False, mask, GrabModeSync, GrabModeAsync,
-		None, None, time);
+		None, None, thetime);
 
 	XSync(client2, True);
 	if (isdeleted())
 		return;
 
-	time -= 100;
+	thetime -= 100;
 	XCALL;
 
 	(void) warppointer(display, win, 8, 8);
@@ -123,8 +123,8 @@ unsigned int 	mask;
 	 * Get current time again and add several minutes to get a time in the
 	 * future.
 	 */
-	time = gettime(display);
-	time += ((config.speedfactor+1) * 1000000);
+	thetime = gettime(display);
+	thetime += ((config.speedfactor+1) * 1000000);
 
 	XCALL;
 
