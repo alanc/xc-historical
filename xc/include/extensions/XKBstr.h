@@ -387,6 +387,7 @@ typedef	struct _XkbDesc {
 	XkbAlternateSymsPtr	alt_syms;
 	XkbGeometryPtr		geom;
 } XkbDescRec, *XkbDescPtr;
+#define	XkbKeyKeyTypeIndex(d,k)	(XkbCMKeyTypeIndex((d)->map,k))
 #define	XkbKeyKeyType(d,k)	(XkbCMKeyType((d)->map,k))
 #define	XkbKeyGroupWidth(d,k)	(XkbKeyKeyType(d,k)->group_width)
 #define	XkbKeyGroupsWrap(d,k)	(XkbCMKeyGroupsWrap((d)->map,(k)))
