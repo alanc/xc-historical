@@ -1,5 +1,5 @@
 /*
- * $XConsortium: StrToLong.c,v 1.1 89/06/07 16:48:26 jim Exp $
+ * $XConsortium: StrToLong.c,v 1.2 89/07/14 18:05:40 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
