@@ -1,7 +1,10 @@
 /*
- * $XConsortium: def.h,v 1.20 92/08/22 12:59:08 rws Exp $
+ * $XConsortium: def.h,v 1.21 92/08/22 14:36:45 rws Exp $
  */
 #include <X11/Xosdefs.h>
+#ifdef WIN32
+#include <X11/Xw32defs.h>
+#endif
 #include <stdio.h>
 #include <ctype.h>
 #ifndef X_NOT_POSIX

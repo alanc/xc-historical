@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.65 92/08/24 16:31:41 gildea Exp $
+ * $XConsortium: main.c,v 1.66 93/03/29 18:54:04 rws Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -71,7 +71,7 @@ catch (sig)
 	fatalerr ("got signal %d\n", sig);
 }
 
-#if defined(USG) || (defined(SYSV386) && defined(SYSV))
+#if defined(USG) || (defined(SYSV386) && defined(SYSV)) || defined(WIN32)
 #define USGISH
 #endif
 
@@ -247,13 +247,21 @@ main(argc, argv)
 	 */
 #ifdef USGISH
 /*  should really reset SIGINT to SIG_IGN if it was.  */
+#ifdef SIGHUP
 	signal (SIGHUP, catch);
+#endif
 	signal (SIGINT, catch);
+#ifdef SIGQUIT
 	signal (SIGQUIT, catch);
+#endif
 	signal (SIGILL, catch);
+#ifdef SIGBUS
 	signal (SIGBUS, catch);
+#endif
 	signal (SIGSEGV, catch);
+#ifdef SIGSYS
 	signal (SIGSYS, catch);
+#endif
 #else
 	sig_act.sa_handler = catch;
 #ifdef _POSIX_SOURCE
