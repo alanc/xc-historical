@@ -11,6 +11,7 @@ ClientBorderWidth
 NoGrabServer
 NoRaiseOnMove
 NoRaiseOnResize
+DecorateTransients
 OpaqueMove
 BorderWidth	2
 TitleFont	"-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
@@ -87,8 +88,11 @@ Button2 = m    : icon                     : f.iconify
 Button3 =      : root                     : f.menu "apps"
 Button3 = m    : root                     : f.showiconmgr
 Button3 =      : iconmgr                  : f.hideiconmgr
+Button3 =      : title                    : f.zoom
 Button3 = m    : window|icon|frame|title  : f.function "move-or-raiselower"
-
+"Left"  = m    : all                      : f.raiselower
+"Right" = m    : all                      : f.iconify
+"F20"   =      : all                      : f.warptoscreen "next"
 
 ###############################################################################
 #                                                                             #
@@ -173,6 +177,7 @@ menu "windowops"
 "Circulate Window"	f.raiselower
 "Resize Window"		f.resize
 "Move Window"		f.move
+"Zoom Window"		f.zoom
 ""			f.nop
 "Focus on Window"	f.focus
 "Unfocus"		f.unfocus
