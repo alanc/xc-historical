@@ -109,6 +109,7 @@ static char defaultTranslations[] =
 static void Redisplay(), Realize(), Resize(), Destroy(), Scream();
 static void Initialize(), ClassInitialize();
 static Boolean SetValues(), SetValuesHook();
+static XtGeometryResult GeoScream();
 
 /*
  * Action Routine Definitions
@@ -170,10 +171,10 @@ SimpleMenuClassRec simpleMenuClassRec = {
     /* display_accelerator*/    NULL,
     /* extension	  */    NULL
   },{
-    /* geometry_manager   */    (XtGeometryHandler) Scream,
-    /* change_managed     */    (XtWidgetProc) Scream,
-    /* insert_child	  */	(XtWidgetProc) Scream,
-    /* delete_child	  */	(XtWidgetProc) Scream,
+    /* geometry_manager   */    GeoScream,
+    /* change_managed     */    Scream,
+    /* insert_child	  */	Scream,
+    /* delete_child	  */	Scream,
     /* extension	  */    NULL
   },{
     /* Shell extension	  */    NULL
@@ -206,11 +207,28 @@ ClassInitialize()
   XmuAddInitializer( AddPositionAction, NULL);
 }
 
-/*      Function Name: Scream
+/*      Function Name: GeoScream
  *      Description:   Complain to the programmer who tries to add children
  *                     to a menu.
  *      Arguments:     w - the menu widget.
  *                     *** All others are ignored ****
+ *      Returns:       XtGeometryNo.
+ */
+
+/* ARGSUSED */
+static XtGeometryResult
+GeoScream(w, request, reply)
+Widget w;
+XtWidgetGeometry *request, *reply;
+{
+  Scream(w);
+  return(XtGeometryNo);
+}
+
+/*      Function Name: Scream
+ *      Description:   Complain to the programmer who tries to add children
+ *                     to a menu.
+ *      Arguments:     w - the menu widget.
  *      Returns:       none.
  */
 
