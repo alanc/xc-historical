@@ -163,6 +163,10 @@ The default  is "white".
 This variable specifies the width in pixels of of the border surrounding
 all windows.
 The default is 2.
+.IP "\fBClientBorderWidth\fP" 20
+This variable causes \fItwm\fP to use a window's border width for the border
+width of the frame.  The \fIBorderWidth\fP variable is still used for the
+borders of windows created by \fItwm\fP.
 .IP "\fBColor\fP { \fIcolors\fP }" 20
 This variable is a list of color assignments to be made if the default
 display has a depth greater than one, or in other words, has the ability
@@ -466,10 +470,8 @@ use this feature, this variable will disable \fItwm\fP from using
 backing store.
 .IP "\fBNoGrabServer\fP" 20
 If this variable is specified, \fItwm\fP will not grab the server
-when performing certain operations. By default, \fItwm\fP will
-grab the server when necessary. \fITwm\fP will grab the server
-when menus are invoked, so you will want to define this variable
-if you plan on using pseudoroots.
+when performing certain operations.  By default, \fItwm\fP will
+grab the server when necessary.
 .IP "\fBNoHighlight\fP [ { \fIlist\fP } ]" 20
 This variable turns off border highlighting.
 An optional list may be specified with window names to selectively turn off
@@ -523,6 +525,19 @@ the \fBf.version\fP function.
 .IP "\fBOpaqueMove\fP" 20
 This variable causes the \fBf.move\fP function to drag the window 
 around on the display rather than an outline of the window.
+.IP "\fBPixmaps\fP { \fIpixmaps\fP }" 20
+This variable is a list of pixmaps that define the appearance of various
+images.  Each entry is a keyword indicating which pixmap to set followed by a 
+string giving the name of the bitmap file.  The following pixmaps 
+may be specified:
+.EX 0
+\fBPixmaps\fP
+{
+	TitleHighlight	"gray1"		# for title highlight window
+}
+.EE
+The default for \fITitleHighlight\fP is to use a set of horizontal stripes
+(but, a gray pattern is much better for interlaced monitors).
 .IP "\fBRandomPlacement\fP" 20
 This causes windows with no specified geometry to be placed on the display 
 in a random (kind of) position when they are created.  The default is
@@ -531,6 +546,11 @@ to allow the user to position the window interactively.
 This variable names the font to be displayed in the dimensions window
 during window resize operations.
 The default is "fixed".
+.IP "\fBRestartPreviousState\fP" 20
+This causes \fItwm\fP to attempt to use the WM_STATE property on client windows
+to tell which windows should be iconified and which should be left visible.
+If this variable is not set, the window manager will use the WM_NORMAL_HINTS
+to determine the desired initial state of each window.
 .IP "\fBStartIconified\fP [ { \fIlist\fP } ] " 20
 This variable is a list of window names that will be started up iconified.
 It is useful for programs that do not support the Xt "-iconic" flag yet.
@@ -732,6 +752,20 @@ If executed from a menu, the cursor is changed to
 the \fBSelect\fP cursor
 and the next window that receives a button press will be
 the window that is deiconified.
+.IP "\fBf.deltastop\fP" 20
+This function allows you to abort a user-defined function if the pointer has 
+been moved more than \fIMoveDelta\fP pixels.  This is useful for emulating
+the "move-or-raise" semantics provided by other window managers:
+.EX 0
+Function "move-or-raise"
+{
+    f.move
+    f.deltastop
+    f.raise
+}
+
+Button3 = m : window|icon|frame|title : f.function "move-or-raise"
+.EE
 .IP "\fBf.destroy\fP" 20
 This function allows you to destroy a window client.
 If executed from a menu, the cursor 
@@ -1238,9 +1272,14 @@ Evans & Sutherland Computer Corporation
 Salt Lake City, Utah
 All Rights Reserved.
 .PP
+.ce 2
+COPYRIGHT 1989
+Hewlett-Packard Company and Massachusetts Institute of Technology
+.PP
 THE INFORMATION IN THIS SOFTWARE IS SUBJECT TO CHANGE WITHOUT NOTICE AND
-SHOULD NOT BE CONSTRUED AS A COMMITMENT BY EVANS & SUTHERLAND.
-EVANS & SUTHERLAND  MAKES NO REPRESENTATIONS ABOUT THE SUITABILITY
+SHOULD NOT BE CONSTRUED AS A COMMITMENT BY EVANS & SUTHERLAND, 
+HEWLETT-PACKARD, OR MIT.  EVANS & SUTHERLAND, HEWLETT-PACKARD, AND MIT 
+MAKE NO REPRESENTATIONS ABOUT THE SUITABILITY
 OF THIS SOFTWARE FOR
 ANY PURPOSE.  IT IS SUPPLIED "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY.
 .PP
@@ -1252,19 +1291,15 @@ Permission to use, copy, modify, and distribute this software and its
 documentation for any purpose and without fee is hereby granted, provided
 that the above copyright notice appear in all copies and that both the
 copyright notice and this permission notice appear in supporting documentation,
-and that the name of Evans & Sutherland not be used in advertising
+and that the names of Evans & Sutherland, Hewlett-Packard, and MIT not be 
+used in advertising
 or publicity pertaining to distribution of the software without specific, 
 written prior permission.
-.SH ACKNOWLEDGEMENTS
-Special thanks to Dave Payne at Apple Computer for the initial 
-multiscreen code and numerous bug fixes and enhancements.
-.SH AUTHOR
-.nf
-Thomas E. LaStrange
-Hewlett Packard Company
-Graphics Technology Division
-Fort Collins, Colorado
-
-ARPA: toml%hpfcla@hplabs.hp.com
-UUCP: hplabs!hpfcla!toml
-.fi
+.SH AUTHORS
+Tom LaStrange, Solbourne Computer
+.br
+Dave Payne, Apple Computer
+.br
+Jim Fulton, MIT X Consortium
+.br
+Keith Packard, MIT X Consortium
