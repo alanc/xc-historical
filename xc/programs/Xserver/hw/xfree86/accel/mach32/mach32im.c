@@ -1,4 +1,4 @@
-/* $XConsortium: mach32im.c,v 1.2 94/10/12 19:59:09 kaleb Exp kaleb $ */
+/* $XConsortium: mach32im.c,v 1.3 94/10/14 13:11:59 kaleb Exp kaleb $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32im.c,v 3.3 1994/09/11 00:49:00 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -39,19 +39,67 @@
 #include "mach32im.h"
 
 #define	mach32BankSize  (64 * 1024)
-void	(*mach32ImageReadFunc)();
-void	(*mach32ImageWriteFunc)();
-void	(*mach32ImageFillFunc)();
+void	(*mach32ImageWriteFunc)(
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, short, unsigned long
+#endif
+);
+void	(*mach32ImageReadFunc)(
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, unsigned long
+#endif
+);
+void	(*mach32ImageFillFunc)(
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, int, int, short, unsigned long
+#endif
+);
 
-static	void	mach32ImageRead();
-static	void	mach32ImageWrite();
-static	void	mach32ImageFill();
-static	void	mach32ImageReadBank();
-static	void	mach32ImageWriteBank();
-static	void	mach32ImageFillBank();
-static	void	mach32ImageReadNoMem();
-static	void	mach32ImageWriteNoMem();
-static	void	mach32ImageFillNoMem();
+static	void	mach32ImageWrite(
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, short, unsigned long
+#endif
+);
+static	void	mach32ImageRead(
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, unsigned long
+#endif
+);
+static	void	mach32ImageFill(
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, int, int, short, unsigned long
+#endif
+);
+static	void	mach32ImageWriteBank(
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, short, unsigned long
+#endif
+);
+static	void	mach32ImageReadBank(
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, unsigned long
+#endif
+);
+static	void	mach32ImageFillBank(
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, int, int, short, unsigned long
+#endif
+);
+static	void	mach32ImageWriteNoMem(
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, short, unsigned long
+#endif
+);
+static	void	mach32ImageReadNoMem(
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, unsigned long
+#endif
+);
+static	void	mach32ImageFillNoMem(
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, int, int, short, unsigned long
+#endif
+);
 
 static	short	bank_to_page_1[48];
 static	short	bank_to_page_2[48];
@@ -170,17 +218,31 @@ mach32ImageInit()
 }
 
 static void
+#if NeedFunctionPrototypes
+mach32ImageWrite(
+    int			x,
+    int			y,
+    int			w,
+    int			h,
+    char		*psrc,
+    int			pwidth,
+    int			px,
+    int			py,
+    short		alu,
+    unsigned long	planemask)
+#else
 mach32ImageWrite(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
     int			x;
     int			y;
     int			w;
     int			h;
-    unsigned char	*psrc;
+    char		*psrc;
     int			pwidth;
     int			px;
     int			py;
     short		alu;
     unsigned long	planemask;
+#endif
 {
     unsigned char *curvm;
     int byteCount;
@@ -211,17 +273,31 @@ mach32ImageWrite(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
 }
 
 static void
+#if NeedFunctionPrototypes
+mach32ImageWriteBank(
+    int			x,
+    int			y,
+    int			w,
+    int			h,
+    char		*psrc,
+    int			pwidth,
+    int			px,
+    int			py,
+    short		alu,
+    unsigned long	planemask)
+#else
 mach32ImageWriteBank(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
     int			x;
     int			y;
     int			w;
     int			h;
-    unsigned char	*psrc;
+    char		*psrc;
     int			pwidth;
     int			px;
     int			py;
     short		alu;
     unsigned long	planemask;
+#endif
 {
     unsigned char *curvm;
     int offset;
@@ -299,17 +375,31 @@ mach32ImageWriteBank(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
 }
 
 static void
+#if NeedFunctionPrototypes
+mach32ImageWriteNoMem(
+    int			x,
+    int			y,
+    int			w,
+    int			h,
+    char		*psrc,
+    int			pwidth,
+    int			px,
+    int			py,
+    short		alu,
+    unsigned long	planemask)
+#else
 mach32ImageWriteNoMem(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
     int			x;
     int			y;
     int			w;
     int			h;
-    unsigned char	*psrc;
+    char		*psrc;
     int			pwidth;
     int			px;
     int			py;
     short		alu;
     unsigned long	planemask;
+#endif
 {
     int count = ((w + 1) >> 1) * BytesPerPixel;
     int j;
@@ -352,16 +442,29 @@ mach32ImageWriteNoMem(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
 
 
 static void
+#if NeedFunctionPrototypes
+mach32ImageRead(
+    int			x,
+    int			y,
+    int			w,
+    int			h,
+    char		*psrc,
+    int			pwidth,
+    int			px,
+    int			py,
+    unsigned long	planemask)
+#else
 mach32ImageRead(x, y, w, h, psrc, pwidth, px, py, planemask)
     int			x;
     int			y;
     int			w;
     int			h;
-    unsigned char	*psrc;
+    char		*psrc;
     int			pwidth;
     int			px;
     int			py;
     unsigned long	planemask;
+#endif
 {
     int j;
     unsigned char *curvm;
@@ -386,16 +489,29 @@ mach32ImageRead(x, y, w, h, psrc, pwidth, px, py, planemask)
 }
 
 static void
+#if NeedFunctionPrototypes
+mach32ImageReadBank(
+    int			x,
+    int			y,
+    int			w,
+    int			h,
+    char		*psrc,
+    int			pwidth,
+    int			px,
+    int			py,
+    unsigned long	planemask)
+#else
 mach32ImageReadBank(x, y, w, h, psrc, pwidth, px, py, planemask)
     int			x;
     int			y;
     int			w;
     int			h;
-    unsigned char	*psrc;
+    char		*psrc;
     int			pwidth;
     int			px;
     int			py;
     unsigned long	planemask;
+#endif
 {
     unsigned char *curvm;
     int offset;
@@ -451,16 +567,29 @@ mach32ImageReadBank(x, y, w, h, psrc, pwidth, px, py, planemask)
 }
 
 static void
+#if NeedFunctionPrototypes
+mach32ImageReadNoMem(
+    int			x,
+    int			y,
+    int			w,
+    int			h,
+    char		*psrc,
+    int			pwidth,
+    int			px,
+    int			py,
+    unsigned long	planemask)
+#else
 mach32ImageReadNoMem(x, y, w, h, psrc, pwidth, px, py, planemask)
     int			x;
     int			y;
     int			w;
     int			h;
-    unsigned char	*psrc;
+    char		*psrc;
     int			pwidth;
     int			px;
     int			py;
     unsigned long	planemask;
+#endif
 {
     int	j;
     int	i;
@@ -508,12 +637,27 @@ mach32ImageReadNoMem(x, y, w, h, psrc, pwidth, px, py, planemask)
 }
 
 static void
+#if NeedFunctionPrototypes
+mach32ImageFill(
+    int			x,
+    int			y,
+    int			w,
+    int			h,
+    char		*psrc,
+    int			pwidth,
+    int			pw,
+    int			ph,
+    int			pox,
+    int			poy,
+    short		alu,
+    unsigned long	planemask)
+#else
 mach32ImageFill(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
     int			x;
     int			y;
     int			w;
     int			h;
-    unsigned char	*psrc;
+    char		*psrc;
     int			pwidth;
     int			pw;
     int			ph;
@@ -521,9 +665,10 @@ mach32ImageFill(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
     int			poy;
     short		alu;
     unsigned long	planemask;
+#endif
 {
     int i,j;
-    unsigned char	*pline;
+    char		*pline;
     int                 mod, ymod;
     unsigned char       *curvm;
     int                 count;
@@ -565,12 +710,27 @@ mach32ImageFill(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
 }
 
 static void
+#if NeedFunctionPrototypes
+mach32ImageFillBank(
+    int			x,
+    int			y,
+    int			w,
+    int			h,
+    char		*psrc,
+    int			pwidth,
+    int			pw,
+    int			ph,
+    int			pox,
+    int			poy,
+    short		alu,
+    unsigned long	planemask)
+#else
 mach32ImageFillBank(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
     int			x;
     int			y;
     int			w;
     int			h;
-    unsigned char	*psrc;
+    char		*psrc;
     int			pwidth;
     int			pw;
     int			ph;
@@ -578,9 +738,10 @@ mach32ImageFillBank(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
     int			poy;
     short		alu;
     unsigned long	planemask;
+#endif
 {
     int i,j;
-    unsigned char	*pline;
+    char		*pline;
     int                 mod, ymod;
     unsigned char       *curvm;
     int                 count;
@@ -649,12 +810,27 @@ mach32ImageFillBank(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
 }
 
 static void
+#if NeedFunctionPrototypes
+mach32ImageFillNoMem(
+    int			x,
+    int			y,
+    int			w,
+    int			h,
+    char		*psrc,
+    int			pwidth,
+    int			pw,
+    int			ph,
+    int			pox,
+    int			poy,
+    short		alu,
+    unsigned long	planemask)
+#else
 mach32ImageFillNoMem(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
     int			x;
     int			y;
     int			w;
     int			h;
-    unsigned char	*psrc;
+    char		*psrc;
     int			pwidth;
     int			pw;
     int			ph;
@@ -662,9 +838,10 @@ mach32ImageFillNoMem(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
     int			poy;
     short		alu;
     unsigned long	planemask;
+#endif
 {
     int i,j;
-    unsigned char	*pline;
+    char		*pline;
     int                 mod, ymod;
     int                 count;
 
@@ -727,10 +904,22 @@ mach32ImageFillNoMem(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
 
 void
 #if NeedFunctionPrototypes
-mach32ImageStipple(int x, int y, int w, int h, unsigned char *psrc,
-		   int pwidth, int pw, int ph, int pox, int poy,
-		   Pixel fgPixel, Pixel bgPixel, short alu, Pixel planemask,
-		   int opaque)
+mach32ImageStipple(
+    int			x, 
+    int			y, 
+    int			w, 
+    int			h, 
+    char		*psrc,
+    int			pwidth, 
+    int			pw, 
+    int			ph, 
+    int			pox, 
+    int			poy,
+    Pixel		fgPixel, 
+    Pixel		bgPixel, 
+    short		alu, 
+    unsigned long	planemask,
+    int			opaque)
 #else
 mach32ImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
 		  fgPixel, bgPixel, alu, planemask, opaque)
@@ -738,13 +927,13 @@ mach32ImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
     int			y;
     int			w;
     int			h;
-    unsigned char	*psrc;
+    char		*psrc;
     int			pw, ph, pox, poy;
     int			pwidth;
     Pixel		fgPixel;
     Pixel		bgPixel;
     short		alu;
-    Pixel		planemask;
+    unsigned long	planemask;
     int			opaque;
 #endif
 {
@@ -859,9 +1048,21 @@ mach32ImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
 
 #if NeedFunctionPrototypes
 void
-mach32ImageOpStipple(int x, int y, int w, int h, unsigned char *psrc,
-		     int pwidth, int pw, int ph, int pox, int poy,
-		     Pixel fgPixel, Pixel bgPixel, short alu, Pixel planemask)
+mach32ImageOpStipple(
+    int			x,
+    int			y,
+    int			w,
+    int			h,
+    char		*psrc,
+    int			pwidth,
+    int			pw,
+    int			ph,
+    int			pox,
+    int			poy,
+    Pixel		fgPixel,
+    Pixel		bgPixel,
+    short		alu,
+    unsigned long	planemask)
 #else
 void
 mach32ImageOpStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, fgPixel, bgPixel, alu, planemask)
@@ -869,7 +1070,7 @@ mach32ImageOpStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, fgPixel, bgPixe
     int			y;
     int			w;
     int			h;
-    unsigned char	*psrc;
+    char		*psrc;
     int			pwidth;
     int			pw;
     int			ph;
@@ -878,7 +1079,7 @@ mach32ImageOpStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, fgPixel, bgPixe
     Pixel		fgPixel;
     Pixel		bgPixel;
     short		alu;
-    Pixel		planemask;
+    unsigned long	planemask;
 #endif
 {
     mach32ImageStipple(x, y, w, h , psrc, pwidth, pw, ph, pox, poy,
@@ -886,6 +1087,16 @@ mach32ImageOpStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, fgPixel, bgPixe
 }
 
 void
+#if NeedFunctionPrototypes
+mach32FontOpStipple(
+    int			x,
+    int			y,
+    int			w,
+    int			h,
+    unsigned char	*psrc,
+    int			pwidth,
+    Pixel		id)
+#else
 mach32FontOpStipple(x, y, w, h, psrc, pwidth, id)
     int			x;
     int			y;
@@ -894,9 +1105,10 @@ mach32FontOpStipple(x, y, w, h, psrc, pwidth, id)
     unsigned char	*psrc;
     int			pwidth;
     Pixel		id;
+#endif
 {
     extern unsigned short mach32cachemask[];
 
-    mach32ImageStipple(x, y, w, h, psrc, pwidth, w, h, x, y,
+    mach32ImageStipple(x, y, w, h, (char *) psrc, pwidth, w, h, x, y,
 		       ~0, 0, mach32alu[GXcopy], (Pixel)mach32cachemask[id], 1);
 }
