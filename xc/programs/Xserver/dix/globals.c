@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $Header: globals.c,v 1.36 87/09/01 17:09:36 swick Locked $ */
+/* $Header: globals.c,v 1.37 87/09/07 12:53:20 swick Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -34,22 +34,6 @@ SOFTWARE.
 #include "site.h"
 #include "dixstruct.h"
 #include "os.h"
-
-#define DEFAULT_KEYBOARD_CLICK 	0
-#define DEFAULT_BELL		50
-#define DEFAULT_BELL_PITCH	400
-#define DEFAULT_BELL_DURATION	100
-#define DEFAULT_AUTOREPEAT	FALSE
-#define DEFAULT_AUTOREPEATS	{\
-	0, 0, 0, 0, 0, 0, 0, 0,\
-	0, 0, 0, 0, 0, 0, 0, 0,\
-	0, 0, 0, 0, 0, 0, 0, 0,\
-	0, 0, 0, 0, 0, 0, 0, 0 }
-#define DEFAULT_LEDS		0x0        /* all off */
-
-#define DEFAULT_PTR_NUMERATOR	1
-#define DEFAULT_PTR_DENOMINATOR	1
-#define DEFAULT_PTR_THRESHOLD	2000
 
 ScreenInfo screenInfo;
 KeybdCtrl defaultKeyboardControl = {
@@ -81,9 +65,9 @@ int  ScreenSaverBlanking;
 int  ScreenSaverAllowExposures;
 
 long defaultScreenSaverTime = DEFAULT_SCREEN_SAVER_TIME;
-long defaultScreenSaverInterval = DEFAULT_SCREEN_SAVER_TIME;
-int  defaultScreenSaverBlanking = DefaultBlanking;
-int  defaultScreenSaverAllowExposures = DefaultExposures;
+long defaultScreenSaverInterval = DEFAULT_SCREEN_SAVER_INTERVAL;
+int  defaultScreenSaverBlanking = DEFAULT_SCREEN_SAVER_BLANKING;
+int  defaultScreenSaverAllowExposures = DEFAULT_SCREEN_SAVER_EXPOSURES;
 
 char *defaultFontPath = COMPILEDDEFAULTFONTPATH;
 char *defaultTextFont = COMPILEDDEFAULTFONT;
