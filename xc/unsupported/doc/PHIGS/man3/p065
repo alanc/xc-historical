@@ -1,5 +1,5 @@
 .\"
-.\" $XConsortium$
+.\" $XConsortium: p065,v 5.1 91/02/16 09:37:51 rws Exp $
 .\"
 .\" 
 .\" Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -22,7 +22,7 @@
 .\" USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
 .\" OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 .\" PERFORMANCE OF THIS SOFTWARE.
-.TH "GET CHOICE" 3P "29 February 1991"
+.TH "GET CHOICE" 3P "16 August 1991"
 .SH NAME
 GET CHOICE \- retrieve the
 \s-2CHOICE\s+2
@@ -66,8 +66,8 @@ Pin_status is defined in phigs.h as follows:
 .nf
 typedef enum {
 .sp .2
-	PIN_STATUS_OK,
 	PIN_STATUS_NONE,
+	PIN_STATUS_OK,
 	PIN_STATUS_NO_IN
 .sp .2
 } Pin_status;
