@@ -1,5 +1,5 @@
 /*
- * $XConsortium: AsciiText.h,v 1.14 89/06/29 13:43:10 kit Exp $ 
+ * $XConsortium: AsciiText.h,v 1.15 89/07/06 16:00:35 kit Exp $ 
  */
 
 /***********************************************************
@@ -59,29 +59,41 @@ SOFTWARE.
 
 /* Resources:
 
- Name		     Class		RepType		Default Value
- ----		     -----		-------		-------------
- background	     Background		Pixel		XtDefaultBackground
- border		     BorderColor	Pixel		XtDefaultForeground
- borderWidth	     BorderWidth	Dimension	1
- destroyCallback     Callback		Pointer		NULL
- displayPosition     TextPosition	int		0
- editType	     EditType		XawTextEditType	XawtextRead
- font		     Font		XFontStruct*	Fixed
- foreground	     Foreground		Pixel		Black
- height		     Height		Dimension	font height
- insertPosition	     TextPosition	int		0
- leftMargin	     Margin		Dimension	2
- mappedWhenManaged   MappedWhenManaged	Boolean		True
- selectTypes	     SelectTypes	Pointer		(internal)
- selection	     Selection		Pointer		empty selection
- sensitive	     Sensitive		Boolean		True
- string		     String		String		NULL
- textOptions	     TextOptions	int		0
- width		     Width		Dimension	100
- x		     Position		Position	0
- y		     Position		Position	0
+ Name		     Class		RepType		  Default Value
+ ----		     -----		-------		  -------------
+ autoFill	     AutoFill		Boolean		  False
+ background	     Background		Pixel		  XtDefaultBackground
+ border		     BorderColor	Pixel		  XtDefaultForeground
+ borderWidth	     BorderWidth	Dimension	  1
+ bottomMargin	     Margin		Position	  2
+ cursor		     Cursor		Cursor		  xterm
+ destroyCallback     Callback		Pointer		  NULL
+ displayCaret	     Output		Boolean		  True
+ displayPosition     TextPosition	int		  0
+ editType	     EditType		XawTextEditType	  XawtextRead
+ font		     Font		XFontStruct*	  Fixed
+ foreground	     Foreground		Pixel		  Black
+ height		     Height		Dimension	  font height
+ insertPosition	     TextPosition	int		  0
+ leftMargin	     Margin		Position	  2
+ mappedWhenManaged   MappedWhenManaged	Boolean		  True
+ resize		     Resize		XawTextResizeMode XawtextResizeNever
+ rightMargin	     Margin		Position	  4
+ scrollHorizontal    Scroll		XawTextScrollMode XawtextScrollNever
+ scrollVertical	     Scroll		XawTextScrollMode XawtextScrollNever
+ selectTypes	     SelectTypes	Pointer		  pos/word/line/par/all
+ selection	     Selection		Pointer		  (empty selection)
+ sensitive	     Sensitive		Boolean		  True
+ sink		     TextSink		Widget		  (none)
+ source		     TextSource		Widget		  (none)
+ string		     String		String		  NULL
+ topMargin	     Margin		Position	  2
+ width		     Width		Dimension	  100
+ wrap		     Wrap		XawTextWrapMode	  XawtextWrapNever
+ x		     Position		Position	  0
+ y		     Position		Position	  0
 
+ (see also *Src.h and *Sink.h)
 */
 
 /*

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: AsciiSrc.h,v 1.8 90/12/01 13:02:06 rws Exp $
+ * $XConsortium: AsciiSrc.h,v 1.9 90/12/12 15:37:32 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -41,7 +41,13 @@
 
  Name		     Class		RepType		Default Value
  ----		     -----		-------		-------------
-
+ callback	     Callback		Callback	(none)
+ dataCompression     DataCompression	Boolean		True
+ length		     Length		int		(internal)
+ pieceSize	     PieceSize		int		BUFSIZ
+ string		     String		String		NULL
+ type		     Type		XawAsciiType	XawAsciiString
+ useStringInPlace    UseStringInPlace	Boolean		False
 
 */
  
