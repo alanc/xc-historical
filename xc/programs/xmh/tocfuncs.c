@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocfuncs.c,v 2.33 91/07/07 16:34:14 converse Exp $
+ * $XConsortium: tocfuncs.c,v 2.34 91/07/10 19:54:59 converse Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -675,27 +675,33 @@ void XmhCheckForNewMail(w, e, p, n)
     Toc toc;
     Scrn scrn;
     int i, j, hasmail;
-    static Arg arglist[] = {XtNiconPixmap, (XtArgVal) None};
+    Boolean mail_waiting = False;
+    static Boolean icon_state = -1;
 
     for (i=0 ; i<numFolders ; i++) {
 	toc = folderList[i];
 	if (TocCanIncorporate(toc)) {
 	    hasmail = TocCheckForNewMail(toc);
+	    if (hasmail) mail_waiting = True;
 	    for (j=0 ; j<numScrns ; j++) {
 		scrn = scrnList[j];
-		if (scrn->kind == STtocAndView) {
-
-		    if (app_resources.mail_waiting_flag
-			&& toc == InitialFolder) {
-			arglist[0].value = (XtArgVal)
-			    (hasmail ? NewMailPixmap : NoMailPixmap);
-			XtSetValues(scrn->parent,
-				    arglist, XtNumber(arglist));
-		    } 
+		if (scrn->kind == STtocAndView)
 		    /* give visual indication of new mail waiting */
 		    BBoxMailFlag(scrn->folderbuttons, TocName(toc),
 				 hasmail);
-		}
+	    }
+	}
+    }
+    if (app_resources.mail_waiting_flag && icon_state != mail_waiting) {
+	Arg args[1];
+	icon_state = mail_waiting;
+	for (j=0; j<numScrns; j++) {
+	    scrn = scrnList[j];
+	    if (scrn->kind == STtocAndView) {
+		XtSetArg(args[0], XtNiconPixmap,
+			 (mail_waiting ? app_resources.new_mail_icon
+			               : app_resources.no_mail_icon));
+		XtSetValues(scrn->parent, args, (Cardinal)1);
 	    }
 	}
     }
