@@ -1,5 +1,5 @@
 .\" Use eqn, tbl, and -ms
-.\" $XConsortium: xdmcp.ms,v 1.21 94/04/17 20:05:11 rws Exp $
+.\" $XConsortium: xdmcp.ms,v 1.22 94/04/17 23:53:02 rws Exp $
 .EQ
 delim @@
 define oc % "\\fR{\\fP" %
@@ -1387,7 +1387,7 @@ display number somewhere
 Send \fBAccept\fP packet
 .br
 \(-> \fIidle\fP
-.RE		
+.RE	
 
 .LP
 \fIdecline-session\fP:
