@@ -4,7 +4,7 @@
  * internal structure definitions for mi backing store
  */
 
-/* $XConsortium: mibstorest.h,v 5.4 89/07/21 08:48:07 keith Exp $ */
+/* $XConsortium: mibstorest.h,v 5.5 89/07/26 12:14:01 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -46,6 +46,8 @@ typedef struct {
 
 typedef struct {
     PixmapPtr	  pBackingPixmap;   /* Pixmap for saved areas */
+    short	  x;		    /* origin of pixmap relative to window */
+    short	  y;
     RegionRec	  SavedRegion;	    /* Valid area in pBackingPixmap */
     char    	  viewable; 	    /* Tracks pWin->viewable so SavedRegion may
 				     * be initialized correctly when the window
