@@ -420,7 +420,7 @@ double DoTest(xp, test, reps)
     int     reps;
 {
     double  time;
-    int     ret_width, ret_height;
+    unsigned int ret_width, ret_height;
 
     HardwareSync (xp);
     InitTimes ();
