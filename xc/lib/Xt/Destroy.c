@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Destroy.c,v 1.21 89/10/06 17:40:50 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Destroy.c,v 1.22 89/10/09 13:36:37 swick Exp $";
 /* $oHeader: Destroy.c,v 1.3 88/09/01 11:27:27 asente Exp $ */
 #endif /* lint */
 
@@ -115,7 +115,6 @@ static void XtPhase2Destroy (widget, closure, call_data)
     _XtDestroyList = &newDestroyList;
 
     parent = widget->core.parent;
-    window = 0;
 
     if (parent != NULL && XtIsComposite(parent)) {
 	XtWidgetProc delete_child =
@@ -139,6 +138,12 @@ static void XtPhase2Destroy (widget, closure, call_data)
 	display = XtDisplay(widget); /* widget is freed in Phase2Destroy */
         window = widget->core.window;
     }
+    else {
+	window = 0;
+#ifdef lint
+	display = 0;
+#endif
+    }
 
     Recursive(widget, Phase2Callbacks);
     while (newDestroyList != NULL) {
@@ -156,7 +161,7 @@ static void XtPhase2Destroy (widget, closure, call_data)
     app->in_phase2_destroy = outerInPhase2Destroy;
 
     /* popups destroy their own window if parent->being_destroyed */
-    if (window != NULL && (parent == NULL || !parent->core.being_destroyed))
+    if (window && (parent == NULL || !parent->core.being_destroyed))
 	XDestroyWindow(display, window);
 } /* XtPhase2Destroy */
 
