@@ -13,7 +13,7 @@ This program is nothing more than a wrapper around the Athena Load widget.
 .PP
 .I Xload
 accepts all of the standard X Toolkit command line options along with the 
-additional options listed below:
+following additional options:
 .PP
 .TP 8
 .B \-scale \fIinteger\fP
@@ -26,24 +26,26 @@ use fewer than this number.  The default is 1.
 .B \-update \fIseconds\fP
 This option specifies the frequency in seconds at which
 .I xload
-updates its display.  Expose events will cause automatic updating.  The minimum
-as well as default time is 5 seconds.
+updates its display.  If the load average window is uncovered (by moving 
+windows with a window manager or by the \fIxrefresh\fP program), the graph
+will be also be updated.  The minimum amount of time allowed between updates
+is 5 seconds (which is also the default).
 .TP 8
 .B \-hl \fIcolor\fP
 This option specifies the color of the label and scale lines.  
 .PP
 The following standard X Toolkit arguments are commonly used
-with \fIxload\fP.
+with \fIxload\fP:
 .PP
 .TP 8
 .B \-bd \fIcolor\fP
 This option specifies the border color.
-The default color is ``black''.
+The default is \fIblack\fP.
 .PP
 .TP 8
 .B \-bg \fIcolor\fP
 This option specifies the background color.
-The default color is ``white''.
+The default is \fIwhite\fP.
 .PP
 .TP 8
 .B \-bw \fIpixels\fP
@@ -53,12 +55,12 @@ The default value is 2.
 .TP 8
 .B \-fg \fIcolor\fP
 This option specifies the graph color.
-The default color is ``black''.
+The default color is \fIblack\fP.
 .PP
 .TP 8
 .B \-fn \fIfontname\fP
 This option specifies the font to be used in displaying the name of the 
-host whose load is being monitored.  The default is ``6x10.''
+host whose load is being monitored.  The default is \fI6x10\fP.
 .PP
 .TP 8
 .B \-rv
@@ -67,12 +69,11 @@ foreground and background colors.
 .PP
 .TP 8
 .B \-geometry \fIgeometry\fP
-This option specifies the prefered size and postion of the window;
-see \fIX(1)\fP.
+This option specifies the prefered size and postion of the window.
 .PP
 .TP 8
 .B \-display \fIdisplay\fP
-This option specifies the X server to contact; see \fIX(1)\fP.
+This option specifies the X server to contact.
 .PP
 .TP 8
 .B \-xrm \fIresourcestring\fP
@@ -102,9 +103,9 @@ Specifies the minimum number of ticks that will be displayed.  The default
 is 1.
 .TP 8
 .B foreground (\fPclass\fB Foreground)
-Specifies the color for the graph.  Using the class specifies the
-color for all things that normally would appear in the foreground color.
-The default is ``black'' since the core default for background is ``white.''
+Specifies the color for the graph.  
+The default is \fIblack\fP since the core default for background 
+is \fIwhite\fP.
 .TP 8
 .B highlight (\fPclass\fB Foreground)
 Specifies the color for the text and scale lines.  The default is the same
@@ -114,31 +115,23 @@ as for the \fBforeground\fP resource.
 Specifies the label to use on the graph.  The default is the hostname.
 .TP 8
 .B font (\fPclass\fB Font)
-Specifies the font to be used for the label.  The default is ``fixed.''
+Specifies the font to be used for the label.  The default is \fIfixed\fP.
 .TP 8
 .B reverseVideo (\fPclass\fB ReverseVideo)
 Specifies that the foreground and background should be reversed.
-.SH ENVIRONMENT
-.PP
-.TP 8
-.B DISPLAY 
-to get the default host and display number.
-.TP 8
-.B XENVIRONMENT
-to get the name of a resource file that overrides the global resources 
-stored in the RESOURCE_MANAGER property.
 .SH SEE ALSO
 X(1), xrdb(1), mem(4), Athena Load widget
 .SH DIAGNOSTICS
 Unable to open display or create window. Unable to open /dev/kmem.
 Unable to query window for dimensions. Various X errors.
 .SH BUGS
-This program 
-requires the ability to open and read /dev/kmem. On most systems, this requires
-the suid bit set with root ownership or the sgid bit set and membership in 
-the same group as /dev/kmem. 
+This program requires the ability to open and read the special system
+file \fI/dev/kmem\fP.  Sites that do not allow general access to this file
+should make \fIxlogo\fP belong to the same group as \fI/dev/kmem\fP and
+turn on the \fIset group id\fP permission flag.
 .PP
-Reading /dev/kmem is inherently non-portable.
+Reading /dev/kmem is inherently non-portable.  Therefore, the widget upon
+which this application is based must be ported to each new operating system.
 .PP
 Border color has to be explicitly specified when reverse video is used.
 .SH COPYRIGHT
