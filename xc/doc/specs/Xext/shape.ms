@@ -172,6 +172,11 @@ An InputOnly window can have its bounding region set, but it is a
 .PN Match
 error to attempt to set a clip region on an InputOnly window, or to
 specify its clip region as a source to a request in this extension.
+.LP
+The server must accept changes to the clip region of a root window, but
+the server is permitted to ignore requested changes to the bounding region
+of a root window.  If the server accepts bounding region changes, the contents
+of the screen outside the bounding region are implementation dependent.
 .NH 1
 Types
 .LP
@@ -254,6 +259,9 @@ If known by the client,
 ordering relations on the rectangles can be specified with the ordering 
 argument.
 This may provide faster operation by the server.
+The meanings of the ordering values are the same as in the core protocol
+.PN SetClipRectangles
+request.
 If an incorrect ordering is specified, 
 the server may generate a 
 .PN Match 
@@ -311,6 +319,10 @@ as specified by \fIxOff\fP and \fIyOff\fP.  The resulting region is then
 combined (as specified by the operator \fIop\fP) with the existing client
 region (specified by \fIdestKind\fP) of the destination window, and the result
 is stored as the specified client region of the destination window.
+The source pixmap and destination window must have been created on the same
+screen (or a
+.PN Match
+error results).
 .LP
 .PN "ShapeCombine"
 .IP
@@ -336,6 +348,9 @@ offset as specified by \fIxOff\fP and \fIyOff\fP, is combined with the
 client region (specified by \fIdestKind\fP) of the destination window,
 and the result is stored as the specified client region of the destination
 window.
+The source and destination windows must be on the same screen (or a
+.PN Match
+error results).
 .LP
 .PN "ShapeOffset"
 .IP
@@ -433,14 +448,19 @@ are altered.
 .LP
    =>
 .IP
-rectangles: LISTofRECTANGLE
+\fIrectangles\fP: LISTofRECTANGLE
+.br
+\fIordering\fP\^: {UnSorted, YSorted, YXSorted, YXBanded}
 .IP
 Errors:
 .PN Window,
 .PN Match
 .IP
 This request returns the client region (specified by \fIkind\fP) as a list of
-nonintersecting rectangles.  The order of the rectangles is unspecified.
+nonintersecting rectangles.  The meaning of the \fIordering\fP values
+is the same as in the
+.PN ShapeRectangles
+request.
 .NH 1
 Events
 .LP
@@ -691,7 +711,11 @@ SHAPE_OP
 .R
  =>
 	1	1		Reply
-	1			unused
+	1			ordering
+		0	UnSorted
+		1	YSorted
+		2	YXSorted
+		3	YXBanded
 	2	CARD16		sequence number
 	4	2n		reply length
 	4	CARD32		nrects
@@ -849,7 +873,7 @@ Window window;
 .LP
 XRectangle *
 .br
-XShapeGetRectangles (display, window, kind, count)
+XShapeGetRectangles (display, window, kind, count, ordering)
 .RS
 Display *display;
 .br
@@ -858,5 +882,7 @@ Window window;
 int kind;
 .br
 int *count; /* RETURN */
+.br
+int *ordering; /* RETURN */
 .RE
 .LP
