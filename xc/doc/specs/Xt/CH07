@@ -1,4 +1,4 @@
-.\" $XConsortium: CH07,v 1.10 93/01/28 14:53:01 converse Exp $
+.\" $XConsortium: CH07,v 1.11 94/01/07 19:36:26 converse Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991, 1994
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -44,7 +44,7 @@ The default event loop provided by the \*(xI is
 The event manager is a collection of functions to perform the following tasks:
 .IP \(bu 5
 Add or remove event sources other than X server events (in particular,
-timer interrupts and file input).
+timer interrupts, file input, or POSIX signals).
 .IP \(bu 5
 Query the status of event sources.
 .IP \(bu 5
@@ -58,6 +58,10 @@ for a particular widget.
 Constrain the dispatching of events to a cascade of pop-up widgets.
 .IP \(bu 5
 Register procedures to be called when specific events arrive.
+.IP \(bu 5
+Register procedures to be called when the \*(xI will block.
+.IP \(bu 5
+Enable safe operation in a multi-threaded environment.
 .LP
 Most widgets do not need to call any of the event handler functions explicitly.
 The normal interface to X events is through the higher-level
@@ -169,7 +173,7 @@ Passes the id returned from the corresponding
 .PN XtAppAddInput
 call.
 .LP
-Please refer to Section 15.2.1 for information regarding the use of
+Please refer to Section 7.12 for information regarding the use of
 .Pn XtAppAddInput
 in multiple threads.
 .sp
@@ -192,7 +196,7 @@ The
 function causes the \*(xI read routine to stop watching for events
 from the file source specified by \fIid\fP.
 .LP
-Please refer to Section 15.2.1 for information regarding the use of
+Please refer to Section 7.12 for information regarding the use of
 .PN XtRemoveInput
 in multiple threads.
 
@@ -331,7 +335,7 @@ Passes the id returned from the corresponding
 .PN XtAppAddTimeOut
 call.
 .LP
-Please refer to Section 15.2.1 for information regarding the use of
+Please refer to Section 7.12 for information regarding the use of
 .PN XtAppAddTimeOut
 in multiple threads.
 .sp
@@ -352,7 +356,7 @@ The
 function removes the pending timeout.
 Note that timeouts are automatically removed once they trigger.
 .LP
-Please refer to Section 15.2.1 for information regarding the use of
+Please refer to Section 7.12 for information regarding the use of
 .PN XtRemoveTimeOut
 in multiple threads.
 
@@ -455,15 +459,6 @@ needs to be prepared to be called when there is nothing to do, because
 a signal might be raised just after the \*(xI sets the pending flag to
 .PN False
 but before the callback can get control.
-.LP
-Issue: in a multithreaded environment, it is possible for one thread
-to call 
-.PN XtNoticeSignal
-while another thread is blocked in \fIselect\fP.  Without
-the aid of an actual signal, nothing would wake the \fIselect\fP thread up.
-The result is that, if a threaded client must handle signals,
-handle the signals in the ``event'' thread,
-so that the signal does wake \fIselect\fP up.
 .LP
 To remove a registered signal callback, call
 .PN XtRemoveSignal
@@ -2655,7 +2650,7 @@ structure by
 and sent to the server when event handlers and translations are installed or
 removed on the realized widget.
 
-.NH 2
+.NH 3
 X Extension Event Handlers
 .XS
 \fB\*(SN X Extension Event Handlers\fP
@@ -2725,7 +2720,7 @@ the data pointed to by \fIselect_data\fP are defined by the extension
 selector registered for the specified event type.
 .LP
 In either case the \*(xI are not required to copy the data
-pointed to by \fIselect_data\fP, so the caller must insure that it remains
+pointed to by \fIselect_data\fP, so the caller must ensure that it remains
 valid as long as the event handler remains registered with this value
 of \fIselect_data\fP.
 .LP
@@ -3047,4 +3042,250 @@ returns
 if any event handler was called and
 .PN False
 otherwise.
+
+.NH 2
+Using the \*(xI in a Multi-threaded Environment
+.XS
+\*(SN Using the \*(xI in a Multi-threaded Environment
+.XE
+.LP
+The \*(xI may be used in environments which offer multiple threads
+of execution within the context of a single process.  A multi-threaded 
+application using the \*(xI must explicitly initialize the toolkit 
+for mutually exclusive access by calling
+.PN XtToolkitThreadInitialize .
+
+.NH 3
+Initializing a Multithreaded \*(xI Application
+.XS
+\fB\*(SN Initializing a Multithreaded \*(xI Application\fP
+.XE
+.LP
+To test and initialize \*(xI support for mutually exclusive thread
+access, call
+.PN XtToolkitThreadInitialize .
+.IN "XtToolkitThreadInitialize" "" "@DEF@"
+.FD 0
+Boolean XtToolkitThreadInitialize()
+.FN
+.LP
+.PN XtToolkitThreadInitialize
+returns \fBTrue\fP if the \*(xI support mutually exclusive thread 
+access, otherwise it returns \fBFalse\fP. \fBXtToolkitThreadInitialize\fP
+must be called before
+.PN XtCreateApplicationContext ,
+.PN XtAppInitialize ,
+.PN XtOpenApplication ,
+or
+.PN XtSetLanguageProc
+is called. \fBXtToolkitThreadInitialize\fP may be called more than once;
+however the application writer must ensure that it is not called 
+simultaneously by two or more threads.
+
+.NH 3
+Locking \*(tk Data Structures
+.XS
+\fB\*(SN Locking \*(tk Data Structures\fP
+.XE
+.LP
+The \*(xI employs two levels of locking: application context and
+process.  Locking an application context ensures mutually exclusive
+access by a thread to the state associated with the application context,
+including all displays and widgets associated with it.  Locking a
+process ensures mutually exclusive access by a thread to \*(xI process
+global data.
+.LP
+A client may acquire a lock multiple times--the effect is cumulative--the
+client must ensure that the lock is released an equal number of times in
+order for the lock to be acquired by another thread.
+.LP
+Most application writers will have little need to use locking as the
+\*(xI performs the necessary locking internally.  An exception is
+resource type converters, which require that the application context 
+be locked before calling them directly, e.g.:
+.LP
+.KS
+.Ds
+.TA .5i 2i
+.ta .5i 2i
+	...
+	XtAppLock(app_context);
+	XtCvtStringToPixel(dpy, args, num_args, fromVal, toVal, closure_ret);
+	XtAppUnlock(app_context);
+	...
+.De
+.KE
+.LP
+Application writers who write their own
+utility functions, e.g. retrieving the being_destroyed field from
+a widget instance, must lock the application context before accessing
+widget internal data, e.g.:
+.LP
+.KS
+.Ds
+.TA .5i 2i
+.ta .5i 2i
+#include <X11/CoreP.h>
+Boolean BeingDestroyed (widget)
+	Widget widget;
+{
+	Boolean ret;
+	XtAppLock(XtWidgetToApplicationContext(widget));
+	ret = widget->core.being_destroyed;
+	XtAppUnlock(XtWidgetToApplicationContext(widget));
+	return ret;
+}
+.De
+.KE
+A client that wishes to atomically call two or more \*(xI functions 
+must lock the application context, e.g.:
+.LP
+.KS
+.Ds
+.TA .5i 2i
+.ta .5i 2i
+	...
+	XtAppLock(XtWidgetToApplicationContext(widget));
+	XtUnmanageChild (widget1);
+	XtManageChild (widget2);
+	XtAppUnlock(XtWidgetToApplicationContext(widget));
+	...
+.De
+.KE
+
+.NH 4
+Locking the Application Context
+.XS
+\fB\*(SN Locking the Application Context\fP
+.XE
+.LP
+To ensure mutual exclusion of application context, display, or 
+widget internal state, use
+.PN XtAppLock.
+.IN "XtAppLock" "" "@DEF@"
+.FD 0
+void XtAppLock(\fIapp_context\fP)
+.br
+      XtAppContext \fIapp_context\fP;
+.FN
+.IP \fIapp_context\fP 1i
+Specifies the application context to lock.
+.LP
+\fBXtAppLock\fP blocks until it is able to acquire the lock.  Locking the 
+application context also ensures that only the thread holding the lock 
+makes Xlib calls from within Xt.  An application which makes its own
+direct Xlib calls must either lock the application context around every 
+call, or enable thread locking in Xlib.
+.LP
+To unlock a locked application context, use
+.PN XtAppUnlock.
+.IN "XtAppUnlock" "" "@DEF@"
+.FD 0
+void XtAppUnlock(\fIapp_context\fP)
+.br
+      XtAppContext \fIapp_context\fP;
+.FN
+.IP \fIapp_context\fP 1i
+Specifies the application context which was previously locked.
+
+.NH 4
+Locking the Process
+.XS
+\*(SN Locking the Process
+.XE
+.LP
+To ensure mutual exclusion of \*(tk process global data, a
+widget writer must use
+.PN XtProcessLock.
+.IN "XtProcessLock" "" "@DEF@"
+.FD 0
+void XtProcessLock()
+.FN
+.LP
+\fBXtProcessLock\fP blocks until it is able to acquire the lock.
+Widget writers may use XtProcessLock to guarantee mutually exclusive 
+access to widget static data.
+.LP
+To unlock a locked process, use
+.PN XtProcessUnlock .
+.IN "XtProcessUnlock" "" "@DEF@"
+.FD 0
+void XtProcessUnlock()
+.FN
+.LP
+To lock both an application context and the process at the same 
+time, call
+.PN XtAppLock
+first and then
+.PN XtProcessLock .
+To release both locks, call
+.PN XtProcessUnlock
+first and then
+.PN XtAppUnlock .
+The order is important to avoid deadlock.
+
+.NH 3
+Event Management in a Multi-Threaded Environment
+.XS
+\fB\*(SN Event Management in a Multi-Threaded Environment\fP
+.XE
+.LP
+In a non-threaded environment an application writer could reasonably
+assume that it is safe to exit the application from a quit callback. 
+This assumption may no longer hold true in a multi-threaded environment; 
+therefore it's desirable to provide a mechanism to terminate an event 
+processing loop without necessarily terminating its thread.
+.LP
+To indicate that the event loop should terminate after the current 
+event dispatch has completed, use
+.PN XtAppSetExitFlag .
+.IN "XtAppSetExitFlag" "" "@DEF@"
+.FD 0
+void XtAppSetExitFlag(\fIapp_context\fP)
+.br
+      XtAppContext \fIapp_context\fP;
+.FN
+.IP \fIapp_context\fP 1i
+Specifies the application context.
+.LP
+.PN XtAppMainLoop
+tests the value of the flag and will return if the flag is \fBTrue\fP.
+.LP
+Application writers who implement their own main loop may test the 
+value of the exit flag with
+.PN XtAppGetExitFlag .
+.IN "XtAppGetExitFlag" "" "@DEF@"
+.FD 0
+Boolean XtAppGetExitFlag(\fIapp_context\fP)
+.br
+      XtAppContext \fIapp_context\fP;
+.FN
+.IP \fIapp_context\fP 1i
+Specifies the application context.
+.LP
+.PN XtAppGetExitFlag
+will normally return \fBFalse\fP, indicating that event processing
+may continue.  When
+.PN XtAppGetExitFlag
+returns \fBTrue\fP, the loop must terminate and return to the caller,
+which might then destroy the application context.
+.LP
+Application writers should be aware that if a thread is blocked in 
+.PN XtAppNextEvent , 
+.PN XtAppPeekEvent , 
+or 
+.PN XtAppProcessEvent
+and another thread in the same application context opens a new display, 
+adds an alternate input, or a timeout, that any new source(s) will not 
+normally be "noticed" by the blocked thread.  The new source(s) will be 
+"noticed" the next time one of these functions is called.
+.LP
+The \*(xI manage access to events on a last in, first out basis.  If 
+multiple threads in the same application context block in
+.PN XtAppNextEvent , 
+.PN XtAppPeekEvent , 
+or 
+.PN XtAppProcessEvent ,
+the last thread to call one of these functions will be the first
+thread to return.
 .bp
