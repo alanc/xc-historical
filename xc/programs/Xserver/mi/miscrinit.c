@@ -14,7 +14,7 @@ without express or implied warranty.
 
 */
 
-/* $XConsortium: miscrinit.c,v 5.4 93/07/12 09:29:02 dpw Exp $ */
+/* $XConsortium: miscrinit.c,v 5.5 93/07/12 16:25:29 dpw Exp $ */
 
 #include "X.h"
 #include "servermd.h"
@@ -24,6 +24,21 @@ without express or implied warranty.
 #include "pixmapstr.h"
 #include "mibstore.h"
 #include "dix.h"
+
+/* We use this structure to propogate some information from miScreenInit to
+ * miCreateScreenResources.  miScreenInit allocates the structure, fills it
+ * in, and puts it into pScreen->devPrivate.  miCreateScreenResources 
+ * extracts the info and frees the structure.  We could've accomplished the
+ * same thing by adding fields to the screen structure, but they would have
+ * ended up being redundant, and would have exposed this mi implementation
+ * detail to the whole server.
+ */
+
+typedef struct
+{
+    pointer pbits; /* pointer to framebuffer */
+    int width;    /* delta to add to a framebuffer addr to move one row down */
+} miScreenInitParmsRec, *miScreenInitParmsPtr;
 
 
 /* this plugs into pScreen->ModifyPixmapHeader */
@@ -64,25 +79,49 @@ miCloseScreen (index, pScreen)
     return ((*pScreen->DestroyPixmap)((PixmapPtr)pScreen->devPrivate));
 }
 
+/* With the introduction of pixmap privates, the "screen pixmap" can no
+ * longer be created in miScreenInit, since all the modules that could
+ * possibly ask for pixmap private space have not been initialized at
+ * that time.  pScreen->CreateScreenResources is called after all
+ * possible private-requesting modules have been inited; we create the
+ * screen pixmap here.
+ */
 Bool
 miCreateScreenResources(pScreen)
     ScreenPtr pScreen;
 {
-    PixmapPtr pPixmap;
+    miScreenInitParmsPtr pScrInitParms;
+    pointer value;
 
-    /* create a pixmap with no data, then redirect it to point to the screen
+    pScrInitParms = (miScreenInitParmsPtr)pScreen->devPrivate;
+
+    /* if width is non-zero, pScreen->devPrivate will be a pixmap
+     * else it will just take the value pbits
      */
-    pPixmap = (*pScreen->CreatePixmap)(pScreen, 0, 0, pScreen->rootDepth);
-    if (!pPixmap)
-	return FALSE;
+    if (pScrInitParms->width)
+    {
+	PixmapPtr pPixmap;
 
-    if (!(*pScreen->ModifyPixmapHeader)(pPixmap, pScreen->width,
-		pScreen->height, pScreen->rootDepth, pScreen->rootDepth,
-		PixmapBytePad(pScreen->width, pScreen->rootDepth),
-		pScreen->devPrivate))
-	return FALSE;
-    pScreen->devPrivate = (pointer)pPixmap;
+	/* create a pixmap with no data, then redirect it to point to
+	 * the screen
+	 */
+	pPixmap = (*pScreen->CreatePixmap)(pScreen, 0, 0, pScreen->rootDepth);
+	if (!pPixmap)
+	    return FALSE;
 
+	if (!(*pScreen->ModifyPixmapHeader)(pPixmap, pScreen->width,
+		    pScreen->height, pScreen->rootDepth, pScreen->rootDepth,
+		    PixmapBytePad(pScrInitParms->width, pScreen->rootDepth),
+		    pScrInitParms->pbits))
+	    return FALSE;
+	value = (pointer)pPixmap;
+    }
+    else
+    {
+	value = pScrInitParms->pbits;
+    }
+    xfree(pScreen->devPrivate); /* freeing miScreenInitParmsRec */
+    pScreen->devPrivate = value; /* pPixmap or pbits */
     return TRUE;
 }
 
@@ -110,6 +149,8 @@ miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
     VisualRec *visuals;		/* supported visuals */
     miBSFuncPtr	bsfuncs;	/* backing store functions */
 {
+    miScreenInitParmsPtr pScrInitParms;
+
     pScreen->width = xsize;
     pScreen->height = ysize;
     pScreen->mmWidth = (xsize * 254) / (dpix * 10);
@@ -126,17 +167,15 @@ miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
     /* whitePixel, blackPixel */
     pScreen->ModifyPixmapHeader = miModifyPixmapHeader;
     pScreen->CreateScreenResources = miCreateScreenResources;
-#ifdef MITSHM
-    ShmRegisterFbFuncs(pScreen);
-#endif
-    /* shove pbits in here temporarily, until CreateScreenResources can put
-     * it in the screen pixmap
-     */
-    pScreen->devPrivate = pbits; 
     pScreen->numVisuals = numVisuals;
     pScreen->visuals = visuals;
     if (width)
+    {
+#ifdef MITSHM
+	ShmRegisterFbFuncs(pScreen);
+#endif
 	pScreen->CloseScreen = miCloseScreen;
+    }
     /* else CloseScreen */
     /* QueryBestSize, SaveScreen, GetImage, GetSpans */
     pScreen->PointerNonInterestBox = (void (*)()) 0;
@@ -181,5 +220,16 @@ miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
     pScreen->wakeupData = (pointer)0;
     if (bsfuncs)
 	miInitializeBackingStore (pScreen, bsfuncs);
+
+    /* Stash pbits and width in a short-lived miScreenInitParmsRec attached
+     * to the screen, until CreateScreenResources can put them in the
+     * screen pixmap.
+     */
+    pScrInitParms = (miScreenInitParmsPtr)xalloc(sizeof(miScreenInitParmsRec));
+    if (!pScrInitParms)
+	return FALSE;
+    pScrInitParms->pbits = pbits;
+    pScrInitParms->width = width;
+    pScreen->devPrivate = (pointer)pScrInitParms;
     return TRUE;
 }
