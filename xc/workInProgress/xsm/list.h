@@ -1,4 +1,4 @@
-/* $XConsortium: list.h,v 1.4 94/08/30 17:34:29 mor Exp mor $ */
+/* $XConsortium: list.h,v 1.5 94/12/12 21:31:12 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -28,7 +28,7 @@ in this Software without prior written authorization from the X Consortium.
 typedef struct _List {
     struct _List	*prev;
     struct _List	*next;
-    void	*thing;
+    char		*thing;
 } List;
 
 extern List *ListInit();

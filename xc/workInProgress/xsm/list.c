@@ -1,4 +1,4 @@
-/* $XConsortium: list.c,v 1.5 94/08/17 17:45:24 mor Exp mor $ */
+/* $XConsortium: list.c,v 1.6 94/08/30 17:33:56 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -60,7 +60,7 @@ void
 ListFreeAll(l)
 List *l;
 {
-	void *thing;
+	char *thing;
 	List *next;
 
 	next = l->next;
@@ -94,7 +94,7 @@ List *l;
 List *
 ListAddFirst(l, v)
 List *l;
-void *v;
+char *v;
 {
 	List *e;
 
@@ -113,7 +113,7 @@ void *v;
 List *
 ListAddLast(l, v)
 List *l;
-void *v;
+char *v;
 {
 	List *e;
 
@@ -142,7 +142,7 @@ List *e;
 Status
 ListSearchAndFreeOne(l,thing)
 List *l;
-void *thing;
+char *thing;
 {
     	List *p;
 
