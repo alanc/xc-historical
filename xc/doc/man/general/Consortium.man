@@ -1,4 +1,4 @@
-.\" $XConsortium: Consortium.man,v 1.16 91/09/28 12:58:22 rws Exp $
+.\" $XConsortium: Consortium.man,v 1.17 91/10/22 14:48:50 rws Exp $
 .TH XCONSORTIUM 1 "Release 5"  "X Version 11"
 .SH NAME
 MIT X Consortium \- MIT X Consortium information
@@ -138,6 +138,7 @@ CETIA - Compagnie Europeene des Techniques de l'Ingenierie Assistee
 Chromatics, Inc.
 Codonics, Inc.
 Computer & Communication Research Laboratories
+Data Connection Ltd.
 Frame Technology Corp.
 Gfxbase, Inc.
 GIPSI S.A.
