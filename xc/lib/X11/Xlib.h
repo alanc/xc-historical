@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.230 94/01/20 17:43:17 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.231 94/01/20 17:44:52 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987, 1991 by the Massachusetts Institute of Technology
  *
@@ -237,6 +237,9 @@ typedef struct {
  * implementation dependent.  A Screen should be treated as opaque
  * by application code.
  */
+
+struct _XDisplay;		/* Forward declare before use for C++ */
+
 typedef struct {
 	XExtData *ext_data;	/* hook for extension to hang data */
 	struct _XDisplay *display;/* back pointer to display structure */
@@ -457,6 +460,9 @@ typedef struct {
 #ifndef XLIB_ILLEGAL_ACCESS
 typedef struct _XDisplay Display;
 #endif
+
+struct _XPrivate;		/* Forward declare before use for C++ */
+struct _XrmHashBucketRec;
 
 typedef struct 
 #ifdef XLIB_ILLEGAL_ACCESS
