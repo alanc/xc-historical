@@ -1,5 +1,5 @@
 /*
-* $XConsortium: IntrinsicI.h,v 1.41 90/04/03 10:51:57 swick Exp $
+* $XConsortium: IntrinsicI.h,v 1.42 90/07/26 10:05:52 swick Exp $
 * $oHeader: IntrinsicI.h,v 1.5 88/08/31 16:21:08 asente Exp $
 */
 
@@ -87,9 +87,7 @@ SOFTWARE.
  *
  ****************************************************************/
 
-extern void bcopy();
-extern void bzero();
-extern int bcmp();
+#include <X11/Xfuncs.h>
 
 /* If the alignment characteristics of your machine are right, these may be
    faster */
