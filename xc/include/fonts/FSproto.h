@@ -1,4 +1,4 @@
-/* $XConsortium: FSproto.h,v 1.6 92/05/12 18:07:14 gildea Exp $ */
+/* $XConsortium: FSproto.h,v 1.7 92/07/09 17:33:49 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -28,8 +28,17 @@
 #include	"FS.h"
 #include	<X11/Xmd.h>
 
-#define	sz_fsCharInfo		12
-#define	sz_fsFontHeader		40
+#define sz_fsPropOffset 20
+#define sz_fsPropInfo 8
+#define sz_fsResolution 6
+
+#define sz_fsChar2b 2
+#define sz_fsChar2b_version1 2
+#define sz_fsOffset32 8
+#define sz_fsRange		4
+
+#define	sz_fsXCharInfo		12
+#define	sz_fsXFontInfoHeader		40
 
 #define	sz_fsConnClientPrefix	8
 #define	sz_fsConnSetup		12
@@ -38,6 +47,7 @@
 
 /* request sizes */
 #define	sz_fsReq		4
+#define	sz_fsListExtensionsReq	4
 #define	sz_fsResourceReq	8
 
 #define	sz_fsNoopReq			4
@@ -75,9 +85,9 @@
 #define	sz_fsCreateACReply		12
 #define	sz_fsGetResolutionReply		8
 #define	sz_fsListFontsReply		16
-#define	sz_fsListFontsWithXInfoReply	(12 + sz_fsFontHeader)
+#define	sz_fsListFontsWithXInfoReply	(12 + sz_fsXFontInfoHeader)
 #define	sz_fsOpenBitmapFontReply	16
-#define	sz_fsQueryXInfoReply		(8 + sz_fsFontHeader)
+#define	sz_fsQueryXInfoReply		(8 + sz_fsXFontInfoHeader)
 #define	sz_fsQueryXExtents8Reply	12
 #define	sz_fsQueryXExtents16Reply	12
 #define	sz_fsQueryXBitmaps8Reply	20
@@ -85,6 +95,7 @@
 
 #define	sz_fsError		16
 #define	sz_fsEvent		12
+#define sz_fsKeepAliveEvent 	12
 
 #define	fsTrue	1
 #define	fsFalse	0
@@ -100,6 +111,8 @@ typedef CARD32	fsTimestamp;
 typedef CARD32	fsBitmapFormat;
 typedef CARD32	fsBitmapFormatMask;
 #endif
+ 
+#define sz_fsBitmapFormat	4
 
 typedef struct {
     INT16 	left B16,
@@ -108,7 +121,7 @@ typedef struct {
     INT16 	ascent B16,
                 descent B16;
     CARD16 	attributes B16;
-}           fsCharInfo;
+}           fsXCharInfo;
 
 typedef struct {
     CARD8       high;
@@ -116,23 +129,25 @@ typedef struct {
 }           fsChar2b;
 
 typedef struct {
-    CARD8       low,
-                high;
+    CARD8       low;
+    CARD8       high;
 }           fsChar2b_version1;
 
 typedef struct {
-    fsChar2b    min_char,
-                max_char;
+    CARD8	min_char_high;
+    CARD8	min_char_low;
+    CARD8	max_char_high;
+    CARD8	max_char_low;
 }           fsRange;
 
 typedef struct	{
     CARD32	position B32;
     CARD32	length B32;
-}	    fsOffset;
+}	    fsOffset32;
 
 typedef struct {
-    fsOffset	name;
-    fsOffset	value;
+    fsOffset32	name;
+    fsOffset32	value;
     CARD8 	type;
     BYTE        pad0;
     CARD16	pad1 B16;
@@ -151,19 +166,37 @@ typedef struct {
     CARD16	point_size B16;
 }	    fsResolution;
 
-
+  
 typedef struct {
     CARD32	flags B32;
-    fsRange     char_range;
+    CARD8	char_range_min_char_high;
+    CARD8	char_range_min_char_low;
+    CARD8	char_range_max_char_high;
+    CARD8	char_range_max_char_low;
+
     CARD8	draw_direction;
     CARD8	pad;
-    fsChar2b    default_char;
-    fsCharInfo  min_bounds,
-                max_bounds;
-    INT16 	font_ascent B16,
-                font_descent B16;
+    CARD8	default_char_high;
+    CARD8	default_char_low;
+    INT16	min_bounds_left B16;
+    INT16	min_bounds_right B16;
+
+    INT16	min_bounds_width B16;
+    INT16	min_bounds_ascent B16;
+    INT16	min_bounds_descent B16;
+    CARD16	min_bounds_attributes B16;
+
+    INT16	max_bounds_left B16;
+    INT16	max_bounds_right B16;
+    INT16	max_bounds_width B16;
+    INT16	max_bounds_ascent B16;
+
+    INT16	max_bounds_descent B16;
+    CARD16	max_bounds_attributes B16;
+    INT16	font_ascent B16;
+    INT16	font_descent B16;
     /* propinfo */
-}           fsFontHeader;
+}           fsXFontInfoHeader;
 
 
 /* requests */
@@ -210,6 +243,20 @@ typedef struct {
     CARD16 	length B16;
 }           fsReq;
 
+/*
+ * The fsFakeReq structure is never used in the protocol; it is prepended
+ * to incoming packets when setting up a connection so we can index
+ * through InitialVector.  To avoid alignment problems, it is padded
+ * to the size of a word on the largest machine this code runs on.
+ * Hence no sz_fsFakeReq constant is necessary.
+ */
+typedef struct {
+    CARD8       reqType;
+    CARD8       data;
+    CARD16 	length B16;
+    CARD32	pad B32;	/* to fill out to multiple of 64 bits */
+}           fsFakeReq;
+
 typedef struct {
     CARD8       reqType;
     BYTE        pad;
@@ -234,6 +281,7 @@ typedef struct {
     CARD32 	maxNames B32;
     CARD16 	nbytes B16;
     CARD16 	pad2 B16;
+    /* pattern */
 }	    fsListCataloguesReq;
 
 typedef struct {
@@ -273,7 +321,7 @@ typedef struct {
     CARD8	reqType;
     BYTE	num_resolutions;
     CARD16	length B16;
-    /* data */
+    /* resolutions */
 }	    fsSetResolutionReq;
 
 typedef fsReq	fsGetResolutionReq;
@@ -285,6 +333,7 @@ typedef struct {
     CARD32 	maxNames B32;
     CARD16 	nbytes B16;
     CARD16 	pad2 B16;
+    /* pattern */
 }           fsListFontsReq;
 
 typedef fsListFontsReq fsListFontsWithXInfoReq;
@@ -296,6 +345,7 @@ typedef struct {
     Font 	fid B32;
     fsBitmapFormatMask format_mask B32;
     fsBitmapFormat format_hint B32;
+    /* pattern */
 }           fsOpenBitmapFontReq;
 
 typedef fsResourceReq fsQueryXInfoReq;
@@ -306,6 +356,7 @@ typedef struct {
     CARD16 	length B16;
     Font 	fid B32;
     CARD32	num_ranges B32;
+    /* list of chars */
 }           fsQueryXExtents8Req;
 
 typedef fsQueryXExtents8Req	fsQueryXExtents16Req;
@@ -317,6 +368,7 @@ typedef struct {
     Font 	fid B32;
     fsBitmapFormat format B32;
     CARD32	num_ranges B32;
+    /* list of chars */
 }           fsQueryXBitmaps8Req;
 
 typedef fsQueryXBitmaps8Req	fsQueryXBitmaps16Req;
@@ -414,6 +466,7 @@ typedef struct {
     CARD32 	length B32;
     CARD32	following B32;
     CARD32 	nFonts B32;
+    /* font names */
 }           fsListFontsReply;
 
 /*
@@ -429,7 +482,31 @@ typedef struct {
     CARD16 	sequenceNumber B16;
     CARD32 	length B32;
     CARD32 	nReplies B32;
-    fsFontHeader header;
+    CARD32	font_header_flags B32;
+    CARD8	font_header_char_range_min_char_high;
+    CARD8	font_header_char_range_min_char_low;
+    CARD8	font_header_char_range_max_char_high;
+    CARD8	font_header_char_range_max_char_low;
+    CARD8	font_header_draw_direction;
+    CARD8	font_header_pad;
+    CARD8	font_header_default_char_high;
+    CARD8	font_header_default_char_low;
+    INT16	font_header_min_bounds_left B16;
+    INT16	font_header_min_bounds_right B16;
+    INT16	font_header_min_bounds_width B16;
+    INT16	font_header_min_bounds_ascent B16;
+    INT16	font_header_min_bounds_descent B16;
+    CARD16	font_header_min_bounds_attributes B16;
+    INT16	font_header_max_bounds_left B16;
+    INT16	font_header_max_bounds_right B16;
+    INT16	font_header_max_bounds_width B16;
+    INT16	font_header_max_bounds_ascent B16;
+    INT16	font_header_max_bounds_descent B16;
+    CARD16	font_header_max_bounds_attributes B16;
+    INT16	font_header_font_ascent B16;
+    INT16	font_header_font_descent B16;
+    /* propinfo */
+    /* name */
 }           fsListFontsWithXInfoReply;
     
 typedef struct {
@@ -448,7 +525,30 @@ typedef struct {
     CARD8       pad0;
     CARD16 	sequenceNumber B16;
     CARD32 	length B32;
-    fsFontHeader header;
+    CARD32	font_header_flags B32;
+    CARD8	font_header_char_range_min_char_high;
+    CARD8	font_header_char_range_min_char_low;
+    CARD8	font_header_char_range_max_char_high;
+    CARD8	font_header_char_range_max_char_low;
+    CARD8	font_header_draw_direction;
+    CARD8	font_header_pad;
+    CARD8	font_header_default_char_high;
+    CARD8	font_header_default_char_low;
+    INT16	font_header_min_bounds_left B16;
+    INT16	font_header_min_bounds_right B16;
+    INT16	font_header_min_bounds_width B16;
+    INT16	font_header_min_bounds_ascent B16;
+    INT16	font_header_min_bounds_descent B16;
+    CARD16	font_header_min_bounds_attributes B16;
+    INT16	font_header_max_bounds_left B16;
+    INT16	font_header_max_bounds_right B16;
+    INT16	font_header_max_bounds_width B16;
+    INT16	font_header_max_bounds_ascent B16;
+    INT16	font_header_max_bounds_descent B16;
+    CARD16	font_header_max_bounds_attributes B16;
+    INT16	font_header_font_ascent B16;
+    INT16	font_header_font_descent B16;
+    /* propinfo */
 }           fsQueryXInfoReply;
 
 typedef struct {
@@ -457,6 +557,7 @@ typedef struct {
     CARD16 	sequenceNumber B16;
     CARD32 	length B32;
     CARD32      num_extents B32;
+    /* extents */
 }           fsQueryXExtents8Reply;
 
 typedef fsQueryXExtents8Reply	fsQueryXExtents16Reply;
@@ -469,6 +570,8 @@ typedef struct {
     CARD32	replies_hint B32;
     CARD32 	num_chars B32;
     CARD32	nbytes B32;
+    /* offsets */
+    /* glyphs */
 }           fsQueryXBitmaps8Reply;
 
 typedef fsQueryXBitmaps8Reply	fsQueryXBitmaps16Reply;
@@ -478,13 +581,6 @@ typedef union {
     fsListExtensionsReply extensions;
     fsGetResolutionReply getres;
 }           fsReply;
-
-typedef struct {
-    BYTE	type;
-    BYTE	pad;
-    CARD16	sequenceNumber B16;
-    CARD32 	length B32;
-}	    fsReplyHeader;
 
 /* errors */
 typedef struct {
@@ -694,4 +790,5 @@ typedef fsCatalogueChangeNotifyEvent	fsEvent;
 #undef	Mask
 #undef	Font
 #undef  AccContext
+
 #endif				/* _FS_PROTO_H_ */
