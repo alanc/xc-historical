@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: lex.l,v 1.65 93/07/29 13:29:47 rws Exp $
+ * $XConsortium: lex.l,v 1.66 93/07/29 14:11:25 rws Exp $
  *
  * .twmrc lex file
  *
@@ -46,13 +46,21 @@ extern int ParseError;
 int yylineno;
 
 #undef YY_INPUT
-#define YY_INPUT(buf,result,max_size) \
-	if ( (fgets( buf, max_size, yyin )) == NULL ) { \
-	    if (feof(yyin)) result = 0; \
-	    else YY_FATAL_ERROR( "fgets() in flex scanner failed" ); \
-	} else { \
-	    result = strlen(buf); \
-	    if (buf[result-1] == '\n') yylineno++; }
+#define YY_INPUT(buf,result,size) ((result) = doinput((buf),(size)))
+doinput (buf, size)
+char *buf;
+{
+	int c;
+
+	if (size == 0)
+		return (0);
+
+	if ((c = (*twmInputFunc)()) <= 0)
+		return (0);
+
+	buf[0] = c;
+	return (1);
+}
 #endif
 
 %}
@@ -99,7 +107,7 @@ number				[0-9]+
 				  ParseError = 1;
 				}
 %%
-#ifndef __bsdi__
+#ifndef yywrap
 yywrap() { return(1);}
 #endif
 
