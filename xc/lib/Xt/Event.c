@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Event.c,v 1.61 88/02/26 17:53:31 swick Exp $";
+static char rcsid[] = "$Header: Event.c,v 1.62 88/02/26 19:48:04 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -515,6 +515,15 @@ static GrabRec* OnGrabList (widget)
     return (NULL);
 }
 
+static Boolean OnlyKeyboardGrabs()
+{
+    register GrabRec* gl;
+    for (gl = grabList; gl != NULL; gl = gl->next) {
+	if (gl->keyboard_focus != (Widget)NULL) return False;
+    }
+    return True;
+}
+
 
 void XtDispatchEvent (event)
     XEvent  *event;
@@ -555,9 +564,10 @@ void XtDispatchEvent (event)
 	}
 
     } else if (grabType == remap) {
-        if (gl = OnGrabList(widget)) {
+        if ((mask & (ButtonPressMask|ButtonReleaseMask) && OnlyKeyboardGrabs)
+	    || (gl = OnGrabList(widget))) {
 	    if (mask & (KeyPressMask|KeyReleaseMask) &&
-		gl->keyboard_focus != NULL) {
+		 gl->keyboard_focus != NULL) {
 		/* replace with focus widget iff source widget
 		   is not a child of the focus widget */
 		register Widget w;
@@ -587,8 +597,7 @@ void XtDispatchEvent (event)
 	    }
 	    gl = gl->next;
 	} 
-
-    }  else if (OnGrabList(widget)) {
+    } else if (OnlyKeyboardGrabs || OnGrabList(widget)) {
 	if ShouldDispatch {
 	    DispatchEvent(event, widget, mask);
 	}
