@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Shell.h,v 1.19 89/09/14 10:28:49 swick Exp $
+* $XConsortium: Shell.h,v 1.20 89/09/21 13:09:40 swick Exp $
 * $oHeader: Shell.h,v 1.2 88/08/18 15:56:14 asente Exp $
 */
 /***********************************************************
@@ -50,7 +50,7 @@ SOFTWARE.
 #define XtNvisual "visual"
 #define XtCVisual "Visual"
 #define XtNtitleEncoding "titleEncoding"
-#define XtCEncoding "Encoding"
+#define XtCTitleEncoding "TitleEncoding"
  
 #define XtNsaveUnder "saveUnder"
 #define XtCSaveUnder "SaveUnder"
@@ -62,6 +62,7 @@ SOFTWARE.
 #define XtCTransientFor "TransientFor"
 
 #define XtNiconNameEncoding "iconNameEncoding"
+#define XtCIconNameEncoding "IconNameEncoding"
 
 #define XtNallowShellResize "allowShellResize"
 #define XtCAllowShellResize "AllowShellResize"
