@@ -1,4 +1,4 @@
-/* $XConsortium: sm_client.c,v 1.21 94/03/15 13:40:18 mor Exp $ */
+/* $XConsortium: sm_client.c,v 1.22 94/03/16 15:49:34 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -18,7 +18,7 @@ Author: Ralph Mor, X Consortium
 ******************************************************************************/
 
 #include <X11/SM/SMlib.h>
-#include <X11/SM/SMlibint.h>
+#include "SMlibint.h"
 #include "globals.h"
 #include <locale.h>
 

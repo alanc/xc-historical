@@ -1,4 +1,4 @@
-/* $XConsortium: sm_auth.c,v 1.8 93/12/16 14:51:36 mor Exp $ */
+/* $XConsortium: sm_auth.c,v 1.9 94/02/07 19:21:29 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -18,7 +18,7 @@ Author: Ralph Mor, X Consortium
 ******************************************************************************/
 
 #include <X11/SM/SMlib.h>
-#include <X11/SM/SMlibint.h>
+#include "SMlibint.h"
 
 /*
  * For now, SMlib just supports MIT-MAGIC-COOKIE-1 (defined in ICElib).

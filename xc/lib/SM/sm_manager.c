@@ -1,4 +1,4 @@
-/* $XConsortium: sm_manager.c,v 1.18 94/03/07 17:08:44 mor Exp $ */
+/* $XConsortium: sm_manager.c,v 1.19 94/03/18 10:55:51 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -18,7 +18,7 @@ Author: Ralph Mor, X Consortium
 ******************************************************************************/
 
 #include <X11/SM/SMlib.h>
-#include <X11/SM/SMlibint.h>
+#include "SMlibint.h"
 #include <X11/Xtrans.h>
 
 

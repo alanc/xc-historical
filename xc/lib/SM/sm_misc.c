@@ -1,4 +1,4 @@
-/* $XConsortium: sm_misc.c,v 1.3 93/09/28 10:43:37 mor Exp $ */
+/* $XConsortium: sm_misc.c,v 1.4 93/12/07 11:05:32 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -18,7 +18,7 @@ Author: Ralph Mor, X Consortium
 ******************************************************************************/
 
 #include <X11/SM/SMlib.h>
-#include <X11/SM/SMlibint.h>
+#include "SMlibint.h"
 #include <stdio.h>
 
 /*
