@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.14 88/09/26 11:20:25 jim Exp $
+ * $XConsortium: Mailbox.c,v 1.15 88/09/26 13:10:07 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -80,8 +80,6 @@ static XtResource resources[] = {
 	offset (check_command), XtRString, NULL},
     { XtNvolume, XtCVolume, XtRInt, sizeof(int),
 	offset (volume), XtRString, "33"},
-    { XtNbell, XtCBell, XtRBoolean, sizeof(Boolean),
-	offset (bell), XtRString, "on"},
 
 };
 
@@ -363,7 +361,7 @@ static void check_mailbox (w, force_redraw, reset)
     } else if (mailboxsize != w->mailbox.last_size) {  /* different size */
 	w->mailbox.flag_up = TRUE;
 	force_redraw = TRUE;
-	if (w->mailbox.bell) beep (w);
+	beep (w);
     } 
 
     w->mailbox.last_size = mailboxsize;

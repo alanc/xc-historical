@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xbiff.c,v 1.5 88/09/06 17:25:00 jim Exp $
+ * $XConsortium: xbiff.c,v 1.6 88/09/26 11:19:47 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -31,7 +31,6 @@ static XrmOptionDescRec options[] = {
 { "-update", "*mailbox.update", XrmoptionSepArg, (caddr_t) NULL },
 { "-file",   "*mailbox.file", XrmoptionSepArg, (caddr_t) NULL },
 { "-volume", "*mailbox.volume", XrmoptionSepArg, (caddr_t) NULL },
-{ "-nobell", "*mailbox.bell", XrmoptionNoArg, (caddr_t) "off" },
 };
 
 static void Usage ()
@@ -43,7 +42,6 @@ static void Usage ()
 "    -file file                     file to watch",
 "    -update seconds                how often to check for mail",
 "    -volume percentage             how load to ring the bell",
-"    -nobell                        do not ring the bell",
 "    -bg color                      background color",
 "    -fg color                      foreground color",
 "    -rv                            reverse video",

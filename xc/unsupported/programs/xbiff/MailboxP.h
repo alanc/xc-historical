@@ -1,5 +1,5 @@
 /*
- * $XConsortium: MailboxP.h,v 1.8 88/09/06 18:14:27 jim Exp $
+ * $XConsortium: MailboxP.h,v 1.9 88/09/26 11:20:31 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -39,7 +39,6 @@ typedef struct {			/* new fields for mailbox widget */
     Pixmap flagup_pixmap;		/* for when there is mail */
     Pixmap flagdown_pixmap;		/* for when there isn't mail */
     int volume;				/* bell volume */
-    Boolean bell;			/* t:ring bell, f:don't */
 } MailboxPart;
 
 typedef struct _MailboxRec {		/* full instance record */
