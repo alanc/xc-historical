@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.28 94/03/07 15:21:50 mor Exp $ */
+/* $XConsortium: process.c,v 1.29 94/03/15 13:38:42 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -22,6 +22,37 @@ Author: Ralph Mor, X Consortium
 
 
 /*
+ * Check for bad length
+ */
+
+#define CHECK_SIZE_MATCH(_iceConn, _opcode, _expected_len, _actual_len, _severity) \
+    if ((((_actual_len) - SIZEOF (iceMsg)) >> 3) != _expected_len) \
+    { \
+       _IceErrorBadLength (_iceConn, 0, _opcode, _severity); \
+       return (0); \
+    }
+
+#define CHECK_AT_LEAST_SIZE(_iceConn, _opcode, _expected_len, _actual_len, _severity) \
+    if ((((_actual_len) - SIZEOF (iceMsg)) >> 3) > _expected_len) \
+    { \
+       _IceErrorBadLength (_iceConn, 0, _opcode, _severity); \
+       return (0); \
+    }
+
+#define CHECK_COMPLETE_SIZE(_iceConn, _opcode, _expected_len, _actual_len, _pStart, _severity) \
+    if (((PADDED_BYTES64((_actual_len)) - SIZEOF (iceMsg)) >> 3) \
+        != _expected_len) \
+    { \
+       _IceErrorBadLength (_iceConn, 0, _opcode, _severity); \
+       IceDisposeCompleteMessage (iceConn, _pStart); \
+       return (0); \
+    }
+
+
+
+/*
+ * IceProcessMessages:
+ *
  * If replyWait == NULL, the client is not waiting for a reply.
  *
  * If replyWait != NULL, the client is waiting for a reply...
@@ -95,8 +126,21 @@ IceReplyWaitInfo *replyWait;
 	if (header->majorOpcode == 0 &&
 	    header->minorOpcode == ICE_ByteOrder)
 	{
-	    int byteOrder = ((iceByteOrderMsg *) header)->byteOrder;
+	    char byteOrder = ((iceByteOrderMsg *) header)->byteOrder;
 	    int endian = 1;
+
+	    CHECK_SIZE_MATCH (iceConn, ICE_ByteOrder,
+	        header->length, SIZEOF (iceByteOrderMsg),
+		IceFatalToConnection);
+
+	    if (byteOrder != IceMSBfirst && byteOrder != IceLSBfirst)
+	    {
+		_IceErrorBadValue (iceConn, 0,
+	            ICE_ByteOrder, 2, 1, &byteOrder);
+
+		iceConn->connection_status = IceConnectRejected;
+		return (0);
+	    }
 
 	    iceConn->swap =
 	        (((*(char *) &endian) && byteOrder == IceMSBfirst) ||
@@ -393,9 +437,10 @@ IceConn iceConn;
 
 
 static Bool
-ProcessError (iceConn, swap, replyWait)
+ProcessError (iceConn, length, swap, replyWait)
 
 IceConn		 iceConn;
+unsigned long	 length;
 Bool		 swap;
 IceReplyWaitInfo *replyWait;
 
@@ -404,9 +449,26 @@ IceReplyWaitInfo *replyWait;
     Bool	errorReturned = False;
     iceErrorMsg *message;
     char 	*pData, *pStart;
+    char	severity;
+
+    CHECK_AT_LEAST_SIZE (iceConn, ICE_Error,
+	length, SIZEOF (iceErrorMsg),
+	(iceConn->connect_to_you || iceConn->connect_to_me) ?
+	IceFatalToConnection : IceFatalToProtocol);
 
     IceReadCompleteMessage (iceConn, SIZEOF (iceErrorMsg),
 	iceErrorMsg, message, pStart);
+
+    severity = message->severity;
+
+    if (severity != IceCanContinue && severity != IceFatalToProtocol &&
+	severity != IceFatalToConnection)
+    {
+	_IceErrorBadValue (iceConn, 0,
+	    ICE_Error, 9, 1, &severity);
+	IceDisposeCompleteMessage (iceConn, pStart);
+	return (0);
+    }
 
     pData = pStart;
 
@@ -621,11 +683,12 @@ IceReplyWaitInfo *replyWait;
 
 
 
-static void
-ProcessConnectionSetup (iceConn, swap)
+static
+ProcessConnectionSetup (iceConn, length, swap)
 
-IceConn			iceConn;
-Bool			swap;
+IceConn		iceConn;
+unsigned long	length;
+Bool		swap;
 
 {
     iceConnectionSetupMsg *message;
@@ -641,13 +704,37 @@ Bool			swap;
     int myAuthIndex = 0;
     int hisAuthIndex = 0;
     int accept_setup_now = 0;
-    Bool mustAuthenticate;
+    char mustAuthenticate;
     int	authUsableCount;
     int	authUsableFlags[MAX_ICE_AUTH_NAMES];
     int	authIndices[MAX_ICE_AUTH_NAMES];
 
+    CHECK_AT_LEAST_SIZE (iceConn, ICE_ConnectionSetup,
+	length, SIZEOF (iceConnectionSetupMsg), IceFatalToConnection);
+
     IceReadCompleteMessage (iceConn, SIZEOF (iceConnectionSetupMsg),
 	iceConnectionSetupMsg, message, pStart);
+
+    pData = pStart;
+
+    SKIP_STRING (pData, swap);				     /* vendor */
+    SKIP_STRING (pData, swap);				     /* release */
+    SKIP_LISTOF_STRING (pData, swap, message->authCount);    /* auth names */
+    pData += (message->versionCount * 4);		     /* versions */
+
+    CHECK_COMPLETE_SIZE (iceConn, ICE_ConnectionSetup,
+	length, pData - pStart + SIZEOF (iceConnectionSetupMsg),
+	pStart, IceFatalToConnection);
+
+    mustAuthenticate = message->mustAuthenticate;
+    if (mustAuthenticate != 0 && mustAuthenticate != 1)
+    {
+	_IceErrorBadValue (iceConn, 0,
+	    ICE_ConnectionSetup, 8, 1, &mustAuthenticate);
+	iceConn->connection_status = IceConnectRejected;
+	IceDisposeCompleteMessage (iceConn, pStart);
+	return (0);
+    }
 
     pData = pStart;
 
@@ -699,7 +786,7 @@ Bool			swap;
 	}
 
 	IceDisposeCompleteMessage (iceConn, pStart);
-	return;
+	return (0);
     }
 
     _IceGetPaValidAuthIndices ("ICE", iceConn->connection_string,
@@ -713,7 +800,6 @@ Bool			swap;
     }
 
     myAuthCount = _IceAuthCount;
-    mustAuthenticate = message->mustAuthenticate;
 
     for (i = found = 0; i < myAuthCount && !found; i++)
     {
@@ -838,9 +924,10 @@ Bool			swap;
 
 
 static Bool
-ProcessAuthRequired (iceConn, swap, replyWait)
+ProcessAuthRequired (iceConn, length, swap, replyWait)
 
 IceConn			iceConn;
+unsigned long	 	length;
 Bool			swap;
 IceReplyWaitInfo	*replyWait;
 
@@ -856,6 +943,10 @@ IceReplyWaitInfo	*replyWait;
     IcePointer 		authState;
     int			realAuthIndex;
 
+    CHECK_AT_LEAST_SIZE (iceConn, ICE_AuthRequired,
+	length, SIZEOF (iceAuthRequiredMsg),
+	iceConn->connect_to_you ? IceFatalToConnection : IceFatalToProtocol);
+
     IceReadCompleteMessage (iceConn, SIZEOF (iceAuthRequiredMsg),
 	iceAuthRequiredMsg, message, authData);
 
@@ -863,6 +954,10 @@ IceReplyWaitInfo	*replyWait;
     {
 	message->authDataLength = lswaps (message->authDataLength);
     }
+
+    CHECK_COMPLETE_SIZE (iceConn, ICE_AuthRequired, length,
+	message->authDataLength + SIZEOF (iceAuthRequiredMsg), authData,
+	iceConn->connect_to_you ? IceFatalToConnection : IceFatalToProtocol);
 
     if (iceConn->connect_to_you)
     {
@@ -872,14 +967,16 @@ IceReplyWaitInfo	*replyWait;
 	        &(((_IceReply *) (replyWait->reply))->connection_error);
 
 	    char *tempstr = "Received bad authIndex in the AuthRequired message";
+	    char errIndex = (int) message->authIndex;
+
 	    errorString = (char *) malloc (strlen (tempstr) + 1);
 	    strcpy (errorString, tempstr);
 
 	    errorReply->type = ICE_CONNECTION_ERROR;
 	    errorReply->error_message = errorString;
 
-	    _IceErrorAuthenticationFailed (iceConn,
-		ICE_AuthRequired, errorString);
+	    _IceErrorBadValue (iceConn, 0,
+		ICE_AuthRequired, 2, 1, &errIndex);
 
 	    IceDisposeCompleteMessage (iceConn, authData);
 	    return (1);
@@ -900,14 +997,16 @@ IceReplyWaitInfo	*replyWait;
 	        &(((_IceReply *) (replyWait->reply))->protocol_error);
 
 	    char *tempstr = "Received bad authIndex in the AuthRequired message";
+	    char errIndex = (int) message->authIndex;
+
 	    errorString = (char *) malloc (strlen (tempstr) + 1);
 	    strcpy (errorString, tempstr);
 
 	    errorReply->type = ICE_PROTOCOL_ERROR;
 	    errorReply->error_message = errorString;
 
-	    _IceErrorAuthenticationFailed (iceConn,
-		ICE_AuthRequired, errorString);
+	    _IceErrorBadValue (iceConn, 0,
+		ICE_AuthRequired, 2, 1, &errIndex);
 
 	    IceDisposeCompleteMessage (iceConn, authData);
 	    return (1);
@@ -1014,10 +1113,11 @@ IceReplyWaitInfo	*replyWait;
 
 
 
-static void
-ProcessAuthReply (iceConn, swap)
+static
+ProcessAuthReply (iceConn, length, swap)
 
 IceConn		iceConn;
+unsigned long	length;
 Bool		swap;
 
 {
@@ -1028,6 +1128,10 @@ Bool		swap;
     IcePointer 		authData = NULL;
     char		*errorString = NULL;
 
+    CHECK_AT_LEAST_SIZE (iceConn, ICE_AuthReply,
+	length, SIZEOF (iceAuthReplyMsg),
+	iceConn->connect_to_me ? IceFatalToConnection : IceFatalToProtocol);
+
     IceReadCompleteMessage (iceConn, SIZEOF (iceAuthReplyMsg),
 	iceAuthReplyMsg, message, replyData);
 
@@ -1035,6 +1139,10 @@ Bool		swap;
     {
 	message->authDataLength = lswaps (message->authDataLength);
     }
+
+    CHECK_COMPLETE_SIZE (iceConn, ICE_AuthReply, length,
+	message->authDataLength + SIZEOF (iceAuthReplyMsg), replyData,
+	iceConn->connect_to_me ? IceFatalToConnection : IceFatalToProtocol);
 
     replyDataLen = message->authDataLength;
 
@@ -1250,9 +1358,10 @@ Bool		swap;
 
 
 static Bool
-ProcessAuthNextPhase (iceConn, swap, replyWait)
+ProcessAuthNextPhase (iceConn, length, swap, replyWait)
 
 IceConn		  	iceConn;
+unsigned long	 	length;
 Bool			swap;
 IceReplyWaitInfo	*replyWait;
 
@@ -1267,6 +1376,10 @@ IceReplyWaitInfo	*replyWait;
     IcePoAuthStatus	status;
     IcePointer 		*authState;
 
+    CHECK_AT_LEAST_SIZE (iceConn, ICE_AuthNextPhase,
+	length, SIZEOF (iceAuthNextPhaseMsg),
+	iceConn->connect_to_you ? IceFatalToConnection : IceFatalToProtocol);
+
     IceReadCompleteMessage (iceConn, SIZEOF (iceAuthNextPhaseMsg),
 	iceAuthNextPhaseMsg, message, authData);
 
@@ -1274,6 +1387,10 @@ IceReplyWaitInfo	*replyWait;
     {
 	message->authDataLength = lswaps (message->authDataLength);
     }
+
+    CHECK_COMPLETE_SIZE (iceConn, ICE_AuthNextPhase, length,
+	message->authDataLength + SIZEOF (iceAuthNextPhaseMsg), authData,
+	iceConn->connect_to_you ? IceFatalToConnection : IceFatalToProtocol);
 
     if (iceConn->connect_to_you)
     {
@@ -1369,9 +1486,10 @@ IceReplyWaitInfo	*replyWait;
 
 
 static Bool
-ProcessConnectionReply (iceConn, swap, replyWait)
+ProcessConnectionReply (iceConn, length, swap, replyWait)
 
 IceConn			iceConn;
+unsigned long	 	length;
 Bool			swap;
 IceReplyWaitInfo 	*replyWait;
 
@@ -1380,22 +1498,31 @@ IceReplyWaitInfo 	*replyWait;
     char 			*pData, *pStart;
     Bool			replyReady;
 
+    CHECK_AT_LEAST_SIZE (iceConn, ICE_ConnectionReply,
+	length, SIZEOF (iceConnectionReplyMsg), IceFatalToConnection);
+
     IceReadCompleteMessage (iceConn, SIZEOF (iceConnectionReplyMsg),
 	iceConnectionReplyMsg, message, pStart);
 
     pData = pStart;
 
+    SKIP_STRING (pData, swap);				     /* vendor */
+    SKIP_STRING (pData, swap);				     /* release */
+
+    CHECK_COMPLETE_SIZE (iceConn, ICE_ConnectionReply,
+	length, pData - pStart + SIZEOF (iceConnectionReplyMsg),
+	pStart, IceFatalToConnection);
+
+    pData = pStart;
+
     if (iceConn->connect_to_you)
     {
-	_IceReply *reply = (_IceReply *) (replyWait->reply);
-
-	/*
-	 * If authentication took place, we're done.
-	 * Tell the authentication procedure to clean up.
-	 */
-
 	if (iceConn->connect_to_you->auth_active)
 	{
+	    /*
+	     * Tell the authentication procedure to clean up.
+	     */
+
 	    IcePoAuthProc authProc = _IcePoAuthProcs[
 		iceConn->connect_to_you->my_auth_index];
 
@@ -1405,16 +1532,29 @@ IceReplyWaitInfo 	*replyWait;
 	        0, NULL, NULL, NULL, NULL);
 	}
 
+	if ((int) message->versionIndex >= _IceVersionCount)
+	{
+	    _IceConnectionError *errorReply =
+	        &(((_IceReply *) (replyWait->reply))->connection_error);
+	    char errIndex = message->versionIndex;
 
-	/*
-	 * Now fill in the connection reply message.
-	 */
+	    _IceErrorBadValue (iceConn, 0,
+		ICE_ConnectionReply, 2, 1, &errIndex);
+	    
+	    errorReply->type = ICE_CONNECTION_ERROR;
+	    errorReply->error_message =
+		"Received bad version index in Connection Reply";
+	}
+	else
+	{
+	    _IceReply *reply = (_IceReply *) (replyWait->reply);
 
-	reply->type = ICE_CONNECTION_REPLY;
-        reply->connection_reply.version_index = message->versionIndex;
+	    reply->type = ICE_CONNECTION_REPLY;
+	    reply->connection_reply.version_index = message->versionIndex;
 
-	EXTRACT_STRING (pData, swap, reply->connection_reply.vendor);
-	EXTRACT_STRING (pData, swap, reply->connection_reply.release);
+	    EXTRACT_STRING (pData, swap, reply->connection_reply.vendor);
+	    EXTRACT_STRING (pData, swap, reply->connection_reply.release);
+	}
 
 	replyReady = True;
     }
@@ -1436,11 +1576,12 @@ IceReplyWaitInfo 	*replyWait;
 
 
 
-static void
-ProcessProtocolSetup (iceConn, swap)
+static
+ProcessProtocolSetup (iceConn, length, swap)
 
-IceConn			iceConn;
-Bool			swap;
+IceConn		iceConn;
+unsigned long	length;
+Bool		swap;
 
 {
     iceProtocolSetupMsg	*message;
@@ -1464,6 +1605,9 @@ Bool			swap;
     int			authUsableFlags[MAX_ICE_AUTH_NAMES];
     int			authIndices[MAX_ICE_AUTH_NAMES];
 
+    CHECK_AT_LEAST_SIZE (iceConn, ICE_ProtocolSetup,
+	length, SIZEOF (iceProtocolSetupMsg), IceFatalToProtocol);
+
     if (iceConn->want_to_close)
     {
 	/*
@@ -1480,12 +1624,34 @@ Bool			swap;
 
     pData = pStart;
 
+    SKIP_STRING (pData, swap);				    /* protocol name */
+    SKIP_STRING (pData, swap);				    /* vendor */
+    SKIP_STRING (pData, swap);				    /* release */
+    SKIP_LISTOF_STRING (pData, swap, message->authCount);   /* auth names */
+    pData += (message->versionCount * 4);		    /* versions */
+
+    CHECK_COMPLETE_SIZE (iceConn, ICE_ProtocolSetup,
+	length, pData - pStart + SIZEOF (iceProtocolSetupMsg),
+	pStart, IceFatalToProtocol);
+
+    mustAuthenticate = message->mustAuthenticate;
+
+    if (mustAuthenticate != 0 && mustAuthenticate != 1)
+    {
+	_IceErrorBadValue (iceConn, 0,
+	    ICE_ProtocolSetup, 4, 1, &mustAuthenticate);
+	IceDisposeCompleteMessage (iceConn, pStart);
+	return (0);
+    }
+
+    pData = pStart;
+
     if (iceConn->process_msg_info && iceConn->process_msg_info[
 	message->protocolOpcode - iceConn->his_min_opcode].in_use)
     {
 	_IceErrorMajorOpcodeDuplicate (iceConn, message->protocolOpcode);
 	IceDisposeCompleteMessage (iceConn, pStart);
-	return;
+	return (0);
     }
 
     EXTRACT_STRING (pData, swap, protocolName);
@@ -1501,7 +1667,7 @@ Bool			swap;
 		_IceErrorProtocolDuplicate (iceConn, protocolName);
 		free (protocolName);
 		IceDisposeCompleteMessage (iceConn, pStart);
-		return;
+		return (0);
 	    }
 	}
     }
@@ -1522,7 +1688,7 @@ Bool			swap;
 	_IceErrorUnknownProtocol (iceConn, protocolName);
 	free (protocolName);
 	IceDisposeCompleteMessage (iceConn, pStart);
-	return;
+	return (0);
     }
 
     EXTRACT_STRING (pData, swap, vendor);
@@ -1572,11 +1738,10 @@ Bool			swap;
 	}
 
 	IceDisposeCompleteMessage (iceConn, pStart);
-	return;
+	return (0);
     }
 
     myAuthCount = myProtocol->auth_count;
-    mustAuthenticate = message->mustAuthenticate;
 
     _IceGetPaValidAuthIndices (
 	_IceProtocols[myOpcode - 1].protocol_name,
@@ -1750,9 +1915,10 @@ Bool			swap;
 
 
 static Bool
-ProcessProtocolReply (iceConn, swap, replyWait)
+ProcessProtocolReply (iceConn, length, swap, replyWait)
 
 IceConn		  	iceConn;
+unsigned long	 	length;
 Bool			swap;
 IceReplyWaitInfo 	*replyWait;
 
@@ -1761,23 +1927,31 @@ IceReplyWaitInfo 	*replyWait;
     char		*pData, *pStart;
     Bool		replyReady;
 
+    CHECK_AT_LEAST_SIZE (iceConn, ICE_ProtocolReply,
+	length, SIZEOF (iceProtocolReplyMsg), IceFatalToProtocol);
+
     IceReadCompleteMessage (iceConn, SIZEOF (iceProtocolReplyMsg),
 	iceProtocolReplyMsg, message, pStart);
 
     pData = pStart;
 
+    SKIP_STRING (pData, swap);				     /* vendor */
+    SKIP_STRING (pData, swap);				     /* release */
+
+    CHECK_COMPLETE_SIZE (iceConn, ICE_ProtocolReply,
+	length, pData - pStart + SIZEOF (iceProtocolReplyMsg),
+	pStart, IceFatalToProtocol);
+
+    pData = pStart;
+
     if (iceConn->protosetup_to_you)
     {
-	_IceProtocolReply *reply = 
-	    &(((_IceReply *) (replyWait->reply))->protocol_reply);
-
-	/*
-	 * If authentication took place, we're done.
-	 * Tell the authentication procedure to clean up.
-	 */
-
 	if (iceConn->protosetup_to_you->auth_active)
 	{
+	    /*
+	     * Tell the authentication procedure to clean up.
+	     */
+
 	    _IcePoProtocol *myProtocol = _IceProtocols[
 		iceConn->protosetup_to_you->my_opcode - 1].orig_client;
 
@@ -1790,17 +1964,31 @@ IceReplyWaitInfo 	*replyWait;
 	        0, NULL, NULL, NULL, NULL);
 	}
 
+	if ((int) message->versionIndex >= _IceVersionCount)
+	{
+	    _IceProtocolError *errorReply =
+	        &(((_IceReply *) (replyWait->reply))->protocol_error);
+	    char errIndex = message->versionIndex;
 
-	/*
-	 * Now fill in the protocol reply message.
-	 */
+	    _IceErrorBadValue (iceConn, 0,
+		ICE_ProtocolReply, 2, 1, &errIndex);
+	    
+	    errorReply->type = ICE_PROTOCOL_ERROR;
+	    errorReply->error_message =
+		"Received bad version index in Protocol Reply";
+	}
+	else
+	{
+	    _IceProtocolReply *reply = 
+	        &(((_IceReply *) (replyWait->reply))->protocol_reply);
 
-	reply->type = ICE_PROTOCOL_REPLY;
-	reply->major_opcode = message->protocolOpcode;
-        reply->version_index = message->versionIndex;
+	    reply->type = ICE_PROTOCOL_REPLY;
+	    reply->major_opcode = message->protocolOpcode;
+	    reply->version_index = message->versionIndex;
 
-	EXTRACT_STRING (pData, swap, reply->vendor);
-	EXTRACT_STRING (pData, swap, reply->release);
+	    EXTRACT_STRING (pData, swap, reply->vendor);
+	    EXTRACT_STRING (pData, swap, reply->release);
+	}
 
 	replyReady = True;
     }
@@ -1818,12 +2006,31 @@ IceReplyWaitInfo 	*replyWait;
 
 
 
-static void
-ProcessPingReply (iceConn)
+static
+ProcessPing (iceConn, length)
 
-IceConn iceConn;
+IceConn 	iceConn;
+unsigned long	length;
 
 {
+    CHECK_SIZE_MATCH (iceConn, ICE_Ping,
+	length, SIZEOF (icePingMsg), IceFatalToConnection);
+
+    PingReply (iceConn);
+}
+
+
+
+static
+ProcessPingReply (iceConn, length)
+
+IceConn 	iceConn;
+unsigned long	length;
+
+{
+    CHECK_SIZE_MATCH (iceConn, ICE_PingReply,
+	length, SIZEOF (icePingReplyMsg), IceFatalToConnection);
+
     if (iceConn->ping_waits)
     {
 	_IcePingWait *next = iceConn->ping_waits->next;
@@ -1842,12 +2049,16 @@ IceConn iceConn;
 
 
 
-static void
-ProcessWantToClose (iceConn)
+static
+ProcessWantToClose (iceConn, length)
 
-IceConn iceConn;
+IceConn 	iceConn;
+unsigned long	length;
 
 {
+    CHECK_SIZE_MATCH (iceConn, ICE_WantToClose,
+	length, SIZEOF (iceWantToCloseMsg), IceFatalToConnection);
+
     if (iceConn->want_to_close || iceConn->open_ref_count == 0)
     {
 	/*
@@ -1891,12 +2102,16 @@ IceConn iceConn;
 
 
 
-static void
-ProcessNoClose (iceConn)
+static
+ProcessNoClose (iceConn, length)
 
-IceConn iceConn;
+IceConn 	iceConn;
+unsigned long	length;
 
 {
+    CHECK_SIZE_MATCH (iceConn, ICE_NoClose,
+	length, SIZEOF (iceNoCloseMsg), IceFatalToConnection);
+
     if (iceConn->want_to_close)
     {
 	/*
@@ -1930,62 +2145,62 @@ IceReplyWaitInfo *replyWait;
     {
     case ICE_Error:
 
-	replyReady = ProcessError (iceConn, swap, replyWait);
+	replyReady = ProcessError (iceConn, length, swap, replyWait);
 	break;
 
     case ICE_ConnectionSetup:
 
-	ProcessConnectionSetup (iceConn, swap);
+	ProcessConnectionSetup (iceConn, length, swap);
 	break;
 
     case ICE_AuthRequired:
 
-	replyReady = ProcessAuthRequired (iceConn, swap, replyWait);
+	replyReady = ProcessAuthRequired (iceConn, length, swap, replyWait);
         break;
 
     case ICE_AuthReply:
 
-	ProcessAuthReply (iceConn, swap);
+	ProcessAuthReply (iceConn, length, swap);
 	break;
 
     case ICE_AuthNextPhase:
 
-	replyReady = ProcessAuthNextPhase (iceConn, swap, replyWait);
+	replyReady = ProcessAuthNextPhase (iceConn, length, swap, replyWait);
 	break;
 
     case ICE_ConnectionReply:
 
-	replyReady = ProcessConnectionReply (iceConn, swap, replyWait);
+	replyReady = ProcessConnectionReply (iceConn, length, swap, replyWait);
 	break;
 
     case ICE_ProtocolSetup:
 
-	ProcessProtocolSetup (iceConn, swap);
+	ProcessProtocolSetup (iceConn, length, swap);
 	break;
 
     case ICE_ProtocolReply:
 
-	replyReady = ProcessProtocolReply (iceConn, swap, replyWait);
+	replyReady = ProcessProtocolReply (iceConn, length, swap, replyWait);
 	break;
 
     case ICE_Ping:
 
-	PingReply (iceConn);
+	ProcessPing (iceConn, length);
 	break;
 
     case ICE_PingReply:
 
-	ProcessPingReply (iceConn);
+	ProcessPingReply (iceConn, length);
 	break;
 
     case ICE_WantToClose:
 
-	ProcessWantToClose (iceConn);
+	ProcessWantToClose (iceConn, length);
 	break;
 
     case ICE_NoClose:
 
-	ProcessNoClose (iceConn);
+	ProcessNoClose (iceConn, length);
 	break;
 
     default:
