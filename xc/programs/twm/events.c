@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.184 92/04/29 14:45:16 dave Exp $
+ * $XConsortium: events.c,v 1.185 92/06/11 18:14:34 dave Exp $
  *
  * twm event handling
  *
@@ -2619,7 +2619,7 @@ InstallWindowColormaps (type, tmp)
 
     Scr->cmapInfo.first_req = NextRequest(dpy);
 
-    for ( ; n > 0; maxcwin--) {
+    for ( ; n > 0 && maxcwin >= cwins; maxcwin--) {
 	cmap = (*maxcwin)->colormap;
 	if (cmap->state & CM_INSTALL) {
 	    cmap->state &= ~CM_INSTALL;
