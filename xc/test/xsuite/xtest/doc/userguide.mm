@@ -1,4 +1,4 @@
-.\" $XConsortium: userguide.mm,v 1.6 92/07/03 19:12:02 rws Exp $
+.\" $XConsortium: userguide.mm,v 1.7 92/07/04 13:47:09 rws Exp $
 '
 .ds dD User Guide for the X Test Suite
 .so 00.header
@@ -2068,7 +2068,8 @@ When set to
 or 
 .SM LSB , 
 the X Protocol tests will only be executed with the specified byte sex. 
-When the parameter is not set to one of these values,
+When set to
+.SM BOTH ,
 the X Protocol tests make connections to the X server using
 both the native and reversed byte sex.
 .P
