@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: crcltwdw.m,v 1.5 92/06/11 17:47:41 rws Exp $
  */
 >>TITLE CirculateWindow XPROTO
 >>SET startup protostartup
@@ -53,6 +53,7 @@ xCreateWindowReq *cwr;
 xResourceReq *mwr;
 xCirculateWindowReq *req;
 xEvent *ev;
+Bool haveSecondEvent;
 
 static
 void
@@ -103,7 +104,15 @@ tester()
 		/* do any event checking here */
 		Free_Event(ev);
 	}
-        (void) Expect_Nothing(CLIENT);
+	if ((ev = (xEvent *) Expect_01Event(CLIENT, Expose)) == NULL) {
+		haveSecondEvent = False;
+	}  else  {
+		haveSecondEvent = True;
+		Log_Trace("client %d received second Expose\n", CLIENT);
+		/* do any event checking here */
+		Free_Event(ev);
+	        (void) Expect_Nothing(CLIENT);
+	}
 	Free_Req(mwr);
 
 	Set_Test_Type(CLIENT, test_type);
@@ -113,13 +122,15 @@ tester()
 	switch(test_type) {
 	case GOOD:
 		Log_Trace("client %d sent default CirculateWindow request\n", CLIENT);
-		if ((ev = (xEvent *) Expect_Event(CLIENT, Expose)) == NULL) {
-			Log_Err("client %d failed to receive Expose\n", CLIENT);
-			Exit();
-		}  else  {
-			Log_Trace("client %d received Expose\n", CLIENT);
-			/* do any event checking here */
-			Free_Event(ev);
+		if (!haveSecondEvent) {
+			if ((ev = (xEvent *) Expect_Event(CLIENT, Expose)) == NULL) {
+				Log_Err("client %d failed to receive Expose\n", CLIENT);
+				Exit();
+			}  else  {
+				Log_Trace("client %d received Expose\n", CLIENT);
+				/* do any event checking here */
+				Free_Event(ev);
+			}
 		}
 		(void) Expect_Nothing(CLIENT);
 		break;
