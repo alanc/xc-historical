@@ -26,7 +26,6 @@
 # include <X11/Xlib.h>
 # include <X11/Xresource.h>
 # include <X11/Xmu/CharSet.h>
-# include <X11/Xdmcp/Xdmcp.h>
 
 /* XtOffset() hack for ibmrt BandAidCompiler */
 
@@ -43,6 +42,7 @@ int	flockPidFile;
 char	*remoteAuthDir;
 int	autoRescan;
 int	removeDomainname;
+char	*keyFile;
 
 # define DM_STRING	0
 # define DM_INT		1
@@ -95,6 +95,9 @@ int	removeDomainname;
 #ifndef DEF_AUTH_DIR
 #define DEF_AUTH_DIR	"/tmp"
 #endif
+#ifndef DEF_KEY_FILE
+#define DEF_KEY_FILE	"/usr/lib/X11/xdm/Xkeys"
+#endif
 #define DEF_UDP_PORT	"177"	    /* registered XDMCP port, dont change */
 
 struct dmResources {
@@ -118,13 +121,15 @@ struct dmResources {
 "lockfPidFile",	"LockFPidFile",	DM_BOOL,	(char **) &lockfPidFile,
 				"true",
 "flockPidFile",	"FlockPidFile",	DM_BOOL,	(char **) &flockPidFile,
-				"false",
+				"true",
 "remoteAuthDir","RemoteAuthDir",DM_STRING,	&remoteAuthDir,
 				DEF_REMOTE_AUTH_DIR,
 "autoRescan",	"AutoRescan",	DM_BOOL,	(char **) &autoRescan,
 				"true",
 "removeDomainname","RemoveDomainname",DM_BOOL,	(char **) &removeDomainname,
 				"true",
+"keyFile",	"KeyFile",	DM_STRING,	&keyFile,
+				DEF_KEY_FILE,
 };
 
 # define NUM_DM_RESOURCES	(sizeof DmResources / sizeof DmResources[0])
