@@ -113,7 +113,7 @@ The image that will be displayed as the pointer cursor whenever it is in
 this widget.  The use of this resource is deprecated in favor
 of \fBcursorName\fP.
 ..
-.de Pn \" Simple cursorName
+.de Cn \" Simple cursorName
 .ie 'Bold'\\$1' .IP\fBcursorName\fP 1.5i
 .el .IP cursorName 1.5i
 The name of the symbol to use to represent the pointer cursor.  This resource
