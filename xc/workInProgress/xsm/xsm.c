@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.48 94/07/12 12:34:22 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.49 94/07/12 14:24:38 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -928,6 +928,22 @@ XtInputId	*id;
 
 
 
+SetAllSensitive (on)
+
+Bool on;
+
+{
+    XtSetSensitive (mainWindow, on);
+    XtSetSensitive (savePopup, on);
+    XtSetSensitive (clientInfoPopup, on);
+    XtSetSensitive (clientPropPopup, on);
+
+    if (on)
+	XawListHighlight (clientListWidget, 0);
+}
+
+
+
 /*
  * Install IO error handler.  This will detect clients that break their
  * connection with the SM unexpectidly.
@@ -1003,10 +1019,7 @@ IceConn 	ice_conn;
      */
 
     XtPopdown (savePopup);
-    XtSetSensitive (savePopup, 1);
-    XtSetSensitive (mainWindow, 1);
-    XtSetSensitive (clientInfoPopup, 1);
-    XtSetSensitive (clientPropPopup, 1);
+    SetAllSensitive (1);
 
     longjmp (JumpHere, 1);
 }    
