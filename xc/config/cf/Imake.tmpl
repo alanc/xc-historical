@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.136 91/07/28 22:40:24 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.137 91/07/30 11:31:08 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate <vendor>.cf
 XCOMM configuration files.  Site-specific parameters should be set in the file
@@ -105,6 +105,11 @@ XCOMM
 #ifdef mips
 #undef mips
 #define MipsArchitecture
+#endif
+#if !defined(bsd43) || defined(SYSTYPE_SYSV)
+#define SonySysvArchitecture
+#else
+#define SonyBsdArchitecture
 #endif
 #endif /* sony */
 
