@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.75 89/07/13 09:46:20 jim Exp $
+ * $XConsortium: add_window.c,v 1.76 89/07/13 18:03:35 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.75 89/07/13 09:46:20 jim Exp $";
+"$XConsortium: add_window.c,v 1.76 89/07/13 18:03:35 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -633,10 +633,12 @@ IconMgr *iconp;
 	ButtonPressMask | ButtonReleaseMask |
 	EnterWindowMask | LeaveWindowMask);
 
-    if (tmp_win->title_w)
-	XSelectInput(dpy, tmp_win->title_w, 
-	    KeyPressMask |
-	    ButtonPressMask | ButtonReleaseMask | ExposureMask);
+    if (tmp_win->title_w) {
+	XSelectInput (dpy, tmp_win->title_w, 
+		      KeyPressMask | ButtonPressMask | ButtonReleaseMask |
+		      ExposureMask);
+	XMapWindow (dpy, tmp_win->title_w);
+    }
 
 #ifdef SHAPE
     if (HasShape) {
@@ -995,9 +997,7 @@ TwmWindow *tmp_win;
 {
     unsigned long valuemask;		/* mask for create windows */
     XSetWindowAttributes attributes;	/* attributes for create windows */
-    int x, y;
-    int h = Scr->TitleHeight - (Scr->FramePadding * 2) - Scr->ButtonIndent * 2
-	    - TITLEBUTTON_BORDERWIDTH;
+    int x, y, h;
     GC gc;
     Pixmap iconifyPM, resizePM;
     XGCValues gcv;
@@ -1009,6 +1009,9 @@ TwmWindow *tmp_win;
 	tmp_win->hilite_w = 0;
 	return;
     }
+
+    h = (Scr->TitleHeight - (Scr->FramePadding * 2) - Scr->ButtonIndent * 2 -
+	 TITLEBUTTON_BORDERWIDTH);
 
     if (Scr->iconifyPm == NULL)
     {
