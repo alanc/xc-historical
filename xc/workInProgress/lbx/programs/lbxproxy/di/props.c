@@ -1,4 +1,4 @@
-/* $XConsortium: props.c,v 1.2 94/02/20 11:14:08 dpw Exp $ */
+/* $XConsortium: props.c,v 1.3 94/03/08 20:51:27 dpw Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -263,7 +263,7 @@ FinishGetPropertyReply(client, seqnum, offset, length, ptdp, pdata)
     if (!pdata)
 	pdata = ptdp->data;
 
-    pdata = (char *)pdata + (4 * offset);
+    pdata = (pointer) ((char *)pdata + (4 * offset));
 
     reply.type = X_Reply;
     reply.sequenceNumber = seqnum;
