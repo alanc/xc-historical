@@ -1,5 +1,5 @@
 /*
- * $XConsortium: GetHost.c,v 1.1 89/09/22 12:07:36 jim Exp $
+ * $XConsortium: GetHost.c,v 1.2 90/12/14 19:24:38 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -24,6 +24,11 @@
  *
  * _XGetHostname - similar to gethostname but allows special processing.
  */
+
+#ifdef WIN32
+#define _X86_ _M_IX86
+#include <winsock.h>
+#endif
 
 int XmuGetHostname (buf, maxlen)
     char *buf;
