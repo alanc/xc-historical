@@ -1,4 +1,4 @@
-/* $XConsortium: Xtranstli.c,v 1.17 94/05/02 11:00:54 mor Exp $ */
+/* $XConsortium: Xtranstli.c,v 1.18 94/05/04 15:20:12 mor Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -467,7 +467,7 @@ char		*port;
     if( TRANS(TLIGetAddr)(ciptr) < 0 )
     {
 	PRMSG(1,
-	      "TRANS(TLIOpenCOTSClient): TRANS(TLIGetPeerAddr)() failed: %d\n",
+	      "TRANS(TLIOpenCOTSClient): TRANS(TLIGetAddr)() failed: %d\n",
 	      errno, 0,0 );
 	t_close(ciptr->fd);
 	free(ciptr);
