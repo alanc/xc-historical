@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: misc.h,v 1.60 93/07/12 09:45:01 dpw Exp $ */
+/* $XConsortium: misc.h,v 1.61 93/09/23 15:00:24 rws Exp $ */
 #ifndef MISC_H
 #define MISC_H 1
 /*
@@ -89,6 +89,13 @@ typedef struct _Client *ClientPtr; /* also in dix.h */
 
 #define USE_BACKGROUND_PIXEL 3
 #define USE_BORDER_PIXEL 3
+
+#ifdef MTX
+#define NOSWAP 0
+#define SWAP   1
+#define UNKNOWN 2
+#endif
+
 
 
 /* byte swap a 32-bit literal */

@@ -28,7 +28,7 @@
  *
  ************************************************************************/
 
-/* $XConsortium: xthreads.h,v 1.1 93/11/12 17:03:15 rob Exp $ */
+/* $XConsortium: xthreads.h,v 1.2 93/11/16 10:56:39 rob Exp $ */
 
 #ifndef XTHREADS_H
 #define XTHREADS_H
@@ -74,6 +74,7 @@
 #define X_THREAD_SELF          pthread_self
 #define X_THREAD_YIELD         pthread_yield
 #define X_THREAD_CANCEL        pthread_cancel
+#define X_THREAD_EQUAL         pthread_equal
 
 #ifdef AIXV3
 #define X_KEY_CREATE           pthread_keycreate
