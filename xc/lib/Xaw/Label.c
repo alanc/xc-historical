@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Label.c,v 1.21 87/09/13 13:17:29 newman Locked $";
+static char rcsid[] = "$Header: Label.c,v 1.22 87/09/13 16:43:25 swick Locked $";
 #endif lint
 
 /*
@@ -140,7 +140,8 @@ static void CvtStringToJustify(display, fromVal, toVal)
     if (s == NULL) return;
 
     for (i=0; i<=strlen(s); i++) {
-	lowerName[i] = (char) tolower((char *)fromVal.addr[i]);
+        char c = (char *)fromVal.addr[i];
+	lowerName[i] = isupper(c) ? (char) tolower(c) : c;
     }
 
     q = XrmAtomToQuark(lowerName);
@@ -316,7 +317,7 @@ static void Resize(w)
  * Set specified arguments into widget
  */
 
-static void SetValues(old, new)
+static Boolean SetValues(old, new)
     Widget old, new;
 {
     LabelWidget oldlw = (LabelWidget) old;
@@ -439,5 +440,6 @@ static void SetValues(old, new)
 
     XClearWindow(XtDisplay(oldlw), XtWindow(oldlw));
     *oldlw = *newlw;
-    Redisplay((Widget)oldlw, NULL);
+
+    return( True );		/* want Redisplay */
 }
