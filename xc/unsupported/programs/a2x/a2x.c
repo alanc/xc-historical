@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.80 92/07/22 16:02:06 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.81 92/08/02 16:40:16 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -46,10 +46,10 @@ Syntax of magic values in the input stream:
 	U		top-level window going up
 	O		skip overlapping top-level windows
 	c		closest widget
-	d		top-level widget going down
-	l		top-level widget going left
-	r		top-level widget going right
-	u		top-level widget going up
+	d		widget going down
+	l		widget going left
+	r		widget going right
+	u		widget going up
 	k		require windows that select for key events
 			(with b, means "key or button")
 	b		require windows that select for button events
