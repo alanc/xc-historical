@@ -2,7 +2,7 @@ To: xbugs@expo.lcs.mit.edu
 Subject: [area]: [synopsis]   [replace with actual area and short description]
 
 VERSION:
-    R5, patch-level-0
+    R5, public-patch-0
     [MIT public patches will edit this line to indicate the patch level]
 
 CLIENT MACHINE and OPERATING SYSTEM:
@@ -18,8 +18,9 @@ COMPILER:
     [e.g. native cc, native ANSI cc, gcc 1.39, ...]
 
 AREA:
-    [e.g. server, Xlib, Xt, Xaw, PEX, twm, xterm, xmh, config, ...]
-    [Please only one area per bug report.]
+    [Area of the source tree affected,
+     e.g., server, Xlib, Xt, Xaw, PEX, twm, xterm, xmh, config, ....
+     Please only one area per bug report.]
 
 SYNOPSIS:
     [Brief description of the problem and where it is located]
