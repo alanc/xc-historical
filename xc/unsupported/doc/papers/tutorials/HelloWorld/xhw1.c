@@ -4,7 +4,7 @@
 
 #define STRING	"Hello, world"
 #define BORDER	1
-#define FONT	"vrb-25"
+#define FONT	"fixed"
 #define	ARG_FONT		"font"
 #define	ARG_BORDER_COLOR	"bordercolor"
 #define	ARG_FOREGROUND		"foreground"
