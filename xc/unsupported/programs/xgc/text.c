@@ -14,6 +14,9 @@
 #include <X11/StringDefs.h>
 #include "xgc.h"
 
+void WriteText();
+extern void interpret();
+
 extern XStuff X;
 extern XtAppContext appcontext;
 
@@ -41,9 +44,10 @@ static char *names[NUMTEXTWIDGETS] = {"linewidth ","font ","foreground ",
 ** what string will be displayed and edited, etc.  When the pointer leaves
 ** the widget, the widget does the appropriate thing with the text
 ** inside it; the user doesn't have to press an "enter" button or anything.
+** Returns the text widget which the user will edit.
 */
 
-void create_text_choice(w,type,length,width)
+Widget create_text_choice(w,type,length,width)
      Widget w;
      int type;
      int length, width;
@@ -123,6 +127,8 @@ void create_text_choice(w,type,length,width)
   /* like before, look in the Xt Manual for an explanation */
   XtAppAddActions(appcontext,actionTable,XtNumber(actionTable));
   XtOverrideTranslations(text,XtParseTranslationTable(translationtable));
+
+  return(text);
 }
 
 /* WriteText(w,event,params,num_params)
@@ -132,7 +138,7 @@ void create_text_choice(w,type,length,width)
 */
 
 /*ARGSUSED*/
-void WriteText(w,event,params,num_params)
+static void WriteText(w,event,params,num_params)
      Widget w;
      XEvent *event;
      String *params;
@@ -156,29 +162,16 @@ void WriteText(w,event,params,num_params)
 ** Changes the text in the text widget w of type type to newtext.
 */
 
-
-void change_text(w,type,newtext)
+void change_text(w,newtext)
      Widget w;
-     int type;
-     String newtext;
-{
-  strcpy(textstrings[type],newtext);
-  strcpy(oldtextstrings[type],newtext);
- /* XtTextDisplay(w); */
-}
-
-#ifdef notdef
-
-void change_text(w,type,newtext)
-     Widget w;
-     int type;
      String newtext;
 {
   XawTextBlock text;
   XawTextPosition first, last;
   int length;
+  String oldtext;
   static Arg textargs[] = {
-    {XtNlength, NULL}
+    {XtNstring, NULL}
   };
 
   text.firstPos = 0;
@@ -186,13 +179,12 @@ void change_text(w,type,newtext)
   text.ptr = newtext;
   text.format = FMT8BIT;
 
-  textargs[0].value = (XtArgVal) &length;
+  textargs[0].value = (XtArgVal) &oldtext;
   XtGetValues(w,textargs,XtNumber(textargs));
 
   first = XawTextTopPosition(w);
-  last = (XawTextPosition) length;
+  last = (XawTextPosition) strlen(oldtext)+1;
 
   XawTextReplace(w, first, last, &text);
 }
 
-#endif
