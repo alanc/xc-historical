@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: VTPrsTbl.c,v 1.6 91/04/02 14:11:54 gildea Exp $
+ *	$XConsortium: VTPrsTbl.c,v 1.7 91/05/08 16:58:20 gildea Exp $
  */
 
 /*
@@ -362,7 +362,7 @@ CASE_PRINT,
 CASE_PRINT,
 };
 
-Const int csitable[] =
+Const int csitable[] =		/* ESC [ */
 {
 /*	NUL		SOH		STX		ETX	*/
 CASE_IGNORE,
@@ -686,7 +686,7 @@ CASE_GROUND_STATE,
 CASE_GROUND_STATE,
 };
 
-Const int dectable[] =
+Const int dectable[] =		/* ESC [ ? */
 {
 /*	NUL		SOH		STX		ETX	*/
 CASE_IGNORE,
@@ -1010,7 +1010,7 @@ CASE_GROUND_STATE,
 CASE_GROUND_STATE,
 };
 
-Const int eigtable[] =
+Const int eigtable[] =		/* CASE_ESC_IGNORE */
 {
 /*	NUL		SOH		STX		ETX	*/
 CASE_IGNORE,
@@ -1335,7 +1335,7 @@ CASE_GROUND_STATE,
 CASE_GROUND_STATE,
 };
 
-Const int esctable[] =
+Const int esctable[] =		/* ESC */
 {
 /*	NUL		SOH		STX		ETX	*/
 CASE_IGNORE,
@@ -1659,7 +1659,7 @@ CASE_GROUND_STATE,
 CASE_GROUND_STATE,
 };
 
-Const int iestable[] =
+Const int iestable[] =		/* CASE_IGNORE_ESC */
 {
 /*	NUL		SOH		STX		ETX	*/
 CASE_IGNORE_STATE,
@@ -1983,7 +1983,7 @@ CASE_GROUND_STATE,
 CASE_GROUND_STATE,
 };
 
-Const int igntable[] =
+Const int igntable[] =		/* CASE_IGNORE_STATE */
 {
 /*	NUL		SOH		STX		ETX	*/
 CASE_IGNORE,
@@ -2307,7 +2307,7 @@ CASE_GROUND_STATE,
 CASE_GROUND_STATE,
 };
 
-Const int scrtable[] =
+Const int scrtable[] =		/* ESC # */
 {
 /*	NUL		SOH		STX		ETX	*/
 CASE_IGNORE,
@@ -2631,7 +2631,7 @@ CASE_GROUND_STATE,
 CASE_GROUND_STATE,
 };
 
-Const int scstable[] =
+Const int scstable[] =		/* ESC ( etc. */
 {
 /*	NUL		SOH		STX		ETX	*/
 CASE_IGNORE,

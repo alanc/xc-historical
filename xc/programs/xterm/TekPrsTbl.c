@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: TekPrsTbl.c,v 1.5 91/04/02 14:11:25 gildea Exp $
+ *	$XConsortium: TekPrsTbl.c,v 1.6 91/05/08 17:29:08 gildea Exp $
  */
 
 
@@ -34,7 +34,7 @@
 #define Const /**/
 #endif
 
-Const int Talptable[] =
+Const int Talptable[] =		/* US (^_) normal alpha mode */
 {
 /*	NUL		SOH		STX		ETX	*/
 CASE_IGNORE,
@@ -358,7 +358,7 @@ CASE_PRINT,
 CASE_PRINT,
 };
 
-Const int Tbestable[] =
+Const int Tbestable[] =		/* ESC while in bypass state */
 {
 /*	NUL		SOH		STX		ETX	*/
 CASE_BYP_STATE,
@@ -682,7 +682,7 @@ CASE_BYP_STATE,
 CASE_BYP_STATE,
 };
 
-Const int Tbyptable[] =
+Const int Tbyptable[] =		/* ESC CAN (^X) bypass state */
 {
 /*	NUL		SOH		STX		ETX	*/
 CASE_IGNORE,
@@ -1006,7 +1006,7 @@ CASE_IGNORE,
 CASE_IGNORE,
 };
 
-Const int Tesctable[] =
+Const int Tesctable[] =		/* ESC */
 {
 /*	NUL		SOH		STX		ETX	*/
 CASE_CURSTATE,
@@ -1330,7 +1330,7 @@ CASE_IGNORE,
 CASE_IGNORE,
 };
 
-Const int Tipltable[] =
+Const int Tipltable[] =		/* RS (^^) incremental plot */
 {
 /*	NUL		SOH		STX		ETX	*/
 CASE_IGNORE,
@@ -1654,7 +1654,7 @@ CASE_IGNORE,
 CASE_IGNORE,
 };
 
-Const int Tplttable[] =
+Const int Tplttable[] =		/* GS (^]) graph (plot) mode */
 {
 /*	NUL		SOH		STX		ETX	*/
 CASE_IGNORE,
@@ -1978,7 +1978,7 @@ CASE_IGNORE,
 CASE_IGNORE,
 };
 
-Const int Tpttable[] =
+Const int Tpttable[] =		/* FS (^\) point plot mode */
 {
 /*	NUL		SOH		STX		ETX	*/
 CASE_IGNORE,
@@ -2302,7 +2302,7 @@ CASE_IGNORE,
 CASE_IGNORE,
 };
 
-Const int Tspttable[] =
+Const int Tspttable[] =		/* ESC FS (^\) special point plot */
 {
 /*	NUL		SOH		STX		ETX	*/
 CASE_IGNORE,
