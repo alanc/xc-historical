@@ -941,6 +941,62 @@ Boolean last;
 }
 
 /*
+ * Merge two option tables, allowing the second to over-ride the first,
+ * so that ambiguous abbreviations can be noticed.
+ */
+
+static void
+MergeOptionTables(src1, num_src1, src2, num_src2, dst, num_dst)
+    XrmOptionDescRec *src1, *src2;
+    Cardinal num_src1, num_src2;
+    XrmOptionDescRec **dst;
+    Cardinal *num_dst;
+{
+    XrmOptionDescRec *table, *dstP;
+    register XrmOptionDescRec *opt1, *opt2; 
+    int i1, i2, len1, len2, dst_len;
+    Boolean found;
+
+    *dst = table = (XrmOptionDescRec*)
+	XtMalloc( sizeof(XrmOptionDescRec) * (num_src1 + num_src2) );
+
+    bcopy( src1, table, sizeof(XrmOptionDescRec) * num_src1 );
+    if (num_src2 == 0) {
+	*num_dst = num_src1;
+	return;
+    }
+    dstP = &table[dst_len = num_src1];
+    for (opt2 = src2, i2= 0; i2 < num_src2; opt2++, i2++) {
+	found = False;
+	for (opt1 = table, i1 = 0; i1 < dst_len; opt1++, i1++) {
+	    /* have to walk the entire new table so new list is ordered */
+	    if (strcmp(opt1->option, opt2->option) == 0) {
+		*opt1 = *opt2;
+		found = True;
+		break;
+	    }
+	    len1 = strlen(opt1->option);
+	    len2 = strlen(opt2->option);
+	    if (strncmp(opt1->option, opt2->option, Min(len1, len2)) == 0) {
+		if (len2 < len1) { /* make sure shorter one is found first */
+		    *dstP++ = *opt1;
+		    *opt1 = *opt2;
+		    dst_len++;
+		    found = True;
+		}
+		break;		/* append to end of list */
+	    }
+	}
+	if (!found) {
+	    *dstP++ = *opt2;
+	    dst_len++;
+	}
+    }
+    *num_dst = dst_len;
+}
+
+
+/*
  * This routine creates the desired widget and does the "Right Thing" for
  * the toolkit and for window managers.
  */
@@ -967,6 +1023,8 @@ XtInitialize(name, classname, urlist, num_urs, argc, argv)
 	Widget root;
 	int squish = -1;
 	Boolean dosync = FALSE;
+	XrmOptionDescRec *options;
+	Cardinal num_options;
 
 	if( name == NULL) {
 	  	ptr = rindex(argv[0], '/');
@@ -1052,14 +1110,13 @@ XtInitialize(name, classname, urlist, num_urs, argc, argv)
 	   This routine parses the command line arguments and removes them from
 	   argv.
 	 */
-	XrmParseCommand( &XtDefaultDB,opTable,
-                           XtNumber(opTable), name, argc, argv);
+
+	MergeOptionTables( opTable, XtNumber(opTable), urlist, num_urs,
+			   &options, &num_options );
+
+	XrmParseCommand( &XtDefaultDB, options, num_options, name, argc, argv);
+	XtFree( options );
 	
-	if(num_urs >0) {
-		/* the application has some more defaults */
-		XrmParseCommand( &XtDefaultDB, urlist,
-                           num_urs, name, argc, argv);
-	}
 	/* Resources are initialize and loaded */
 	/* I now must handle geometry specs a compond resource */
 
