@@ -1,4 +1,4 @@
-/* $XConsortium: protosetup.c,v 1.2 93/08/26 17:10:08 mor Exp $ */
+/* $XConsortium: protosetup.c,v 1.3 93/09/10 14:10:56 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include <X11/ICE/ICElibint.h>
 
 
-Status
+IceProtocolSetupStatus
 IceProtocolSetup (iceConn, myOpcode, authCount, authIndices,
     majorVersionRet, minorVersionRet, vendorRet, releaseRet,
     errorLength, errorStringRet)
@@ -59,7 +59,7 @@ char 	*errorStringRet;
     if (myOpcode < 1 || myOpcode > _IceLastMajorOpcode)
     {
 	strncpy (errorStringRet, "myOpcode out of range", errorLength);
-	return (0);
+	return (IceProtocolSetupFailure);
     }
 
     myProtocol = &_IceProtocols[myOpcode - 1];
@@ -68,14 +68,35 @@ char 	*errorStringRet;
     {
 	strncpy (errorStringRet,
 	    "IceRegisterForProtocolSetup was not called", errorLength);
-	return (0);
+	return (IceProtocolSetupFailure);
     }
     else if (authCount > myProtocol->orig_client->auth_count)
     {
 	strncpy (errorStringRet, "authCount is bad", errorLength);
-	return (0);
+	return (IceProtocolSetupFailure);
     }
 
+
+    /*
+     * Make sure this protocol hasn't been activated already.
+     */
+
+    if (iceConn->process_msg_info)
+    {
+	for (i = iceConn->his_min_opcode; i <= iceConn->his_max_opcode; i++)
+	{
+	    if (iceConn->process_msg_info[
+		i - iceConn->his_min_opcode].in_use &&
+                iceConn->process_msg_info[
+		i - iceConn->his_min_opcode ].my_opcode == myOpcode)
+		break;
+	}
+
+	if (i <= iceConn->his_max_opcode)
+	{
+	    return (IceProtocolAlreadyActive);
+	}
+    }
 
     if (!(doFavor = (authCount > 0 && authIndices == NULL)))
 	for (i = 0; i < authCount; i++)
@@ -83,7 +104,7 @@ char 	*errorStringRet;
 	    {
 		strncpy (errorStringRet,
 	            "Bad authentication indices", errorLength);
-		return (0);
+		return (IceProtocolSetupFailure);
 	    }
 
     extra = XPCS_BYTES (myProtocol->protocol_name) +
@@ -235,10 +256,10 @@ char 	*errorStringRet;
 	    iceConn->his_min_opcode].process_msg_cb.orig_client =
 		versionRec->process_msg_cb;
 
-	return (1);
+	return (IceProtocolSetupSuccess);
     }
     else
     {
-	return (0);
+	return (IceProtocolSetupFailure);
     }
 }
