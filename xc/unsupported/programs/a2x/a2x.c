@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.74 92/07/02 12:20:23 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.75 92/07/02 14:23:53 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -66,6 +66,9 @@ Syntax of magic values in the input stream:
 			this must be the last option
 			either <name> or <class> can be empty
 	[ <mult>]	off-axis distance multiplier is <mult> (float)
+^T^L<options>^T
+	s<digit>	save current pointer position as location <digit>
+	w<digit>	warp pointer to location <digit>
 ^T^M			set Meta key for next character
 ^T^P			print debugging info
 ^T^Q			quit moving (mouse or key)
@@ -192,6 +195,11 @@ typedef struct _macro {
     int len;
 } MacroRec;
 
+typedef struct _location {
+    Window window;
+    int x, y;
+} LocationRec;
+
 char *progname;
 Display *dpy;
 Atom MIT_OBJ_CLASS;
@@ -232,6 +240,7 @@ Bool skip_next_control_char = False;
 TriggerRec trigger;
 JumpRec jump;
 MacroRec macros[10];
+LocationRec locations[10];
 #ifdef XTRAP
 XETC *tc;
 #endif
@@ -1407,7 +1416,7 @@ do_jump(buf)
     while (1) {
 	for (screen = 0; RootWindow(dpy, screen) != root; screen++)
 	    ;
-	if (XQueryPointer(dpy, DefaultRootWindow(dpy), &root, &child,
+	if (XQueryPointer(dpy, root, &root, &child,
 			  &jump.rootx, &jump.rooty,
 			  &jump.bestx, &jump.besty, &mask))
 	    break;
@@ -2041,6 +2050,51 @@ do_macro(buf)
 }
 
 void
+do_location(buf)
+    char *buf;
+{
+    int n;
+    Window root, w;
+    unsigned int mask;
+    int screen;
+
+    switch (*buf) {
+    case 's':
+	if (isdigit(buf[1]) && !buf[2]) {
+	    n = buf[1] - '0';
+	    root = DefaultRootWindow(dpy);
+	    while (1) {
+		for (screen = 0; RootWindow(dpy, screen) != root; screen++)
+		    ;
+		if (XQueryPointer(dpy, root, &root, &locations[n].window,
+				  &locations[n].x, &locations[n].y,
+				  &locations[n].x, &locations[n].y, &mask))
+		    break;
+	    }
+	    if (!locations[n].window)
+		locations[n].window = root;
+	    else {
+		w = XmuClientWindow(dpy, locations[n].window);
+		if (w)
+		    locations[n].window = w;
+		XTranslateCoordinates(dpy, root, locations[n].window,
+				      locations[n].x, locations[n].y,
+				      &locations[n].x, &locations[n].y, &w);
+	    }
+	}
+	break;
+    case 'w':
+	if (isdigit(buf[1]) && !buf[2]) {
+	    n = buf[1] - '0';
+	    if (locations[n].window)
+		XWarpPointer(dpy, None, locations[n].window, 0, 0, 0, 0,
+			     locations[n].x, locations[n].y);
+	}
+	break;
+    }
+}
+
+void
 process(buf, n, len)
     char *buf;
     int n;
@@ -2150,6 +2204,9 @@ process(buf, n, len)
 		break;
 	    case '\012': /* control j */
 	    	do_jump(buf + i + 1);
+		break;
+	    case '\014': /* control l */
+	    	do_location(buf + i + 1);
 		break;
 	    case '\022': /* control r */
 		do_display(buf + i + 1);
