@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.75 93/09/12 14:04:16 rws Exp $
+ * $XConsortium: main.c,v 1.76 93/09/13 20:30:13 rws Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -120,11 +120,11 @@ main(argc, argv)
 
 	    nargc = 1;
 	    if ((afd = open(argv[1]+1, O_RDONLY)) < 0)
-		fatalerr("cannot open \"%s\"\n", argv[0]+1);
+		fatalerr("cannot open \"%s\"\n", argv[1]+1);
 	    fstat(afd, &ast);
 	    args = (char *)malloc(ast.st_size + 1);
 	    if ((ast.st_size = read(afd, args, ast.st_size)) < 0)
-		fatalerr("failed to read %s\n", argv[0]+1);
+		fatalerr("failed to read %s\n", argv[1]+1);
 	    args[ast.st_size] = '\0';
 	    close(afd);
 	    for (p = args; *p; p++) {
