@@ -1,6 +1,6 @@
 /*
  * $NCDOr: dispatch.c,v 1.2 1993/11/19 21:28:48 keithp Exp keithp $
- * $NCDId: @(#)dispatch.c,v 1.11 1994/01/22 01:46:57 lemke Exp $
+ * $NCDId: @(#)dispatch.c,v 1.13 1994/02/03 01:48:48 lemke Exp $
  *
  * Copyright 1992 Network Computing Devices
  *
@@ -29,7 +29,6 @@
 #define NEED_EVENTS
 #include "assert.h"
 #include "Xproto.h"
-#include "osstruct.h"
 #include "opaque.h"
 #include "lbx.h"
 #include "lbxdata.h"
@@ -188,8 +187,7 @@ NextAvailableClient(ospriv)
     clients[i] = client = (ClientPtr)xalloc(sizeof(ClientRec));
     if (!client)
 	return (ClientPtr)NULL;
-    client->screenPrivate[0] = MakeLBXStuff();
-    if (!client->screenPrivate[0]) {
+    if (!MakeLBXStuff(client)) {
     	xfree(client);
         return (ClientPtr)NULL;
     }
@@ -402,6 +400,7 @@ CloseDownClient(client)
 		else
 		    dispatchException |= DE_RESET;
 	    }
+	    FreeLBXStuff(client);
 	    xfree(client);
 	}
 	else
@@ -420,6 +419,7 @@ CloseDownClient(client)
 	if (client->index < nextFreeClientID)
 	    nextFreeClientID = client->index;
 	clients[client->index] = NullClient;
+	FreeLBXStuff(client);
         xfree(client);
 	if (nClients == 0)
 	{
