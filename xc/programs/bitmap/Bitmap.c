@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.44 93/09/30 09:28:07 kaleb Exp $
+ * $XConsortium: Bitmap.c,v 1.45 93/09/30 09:33:38 kaleb Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -878,7 +878,7 @@ static void Initialize(wrequest, wnew, argv, argc)
 	    
 	    buffer_data = CreateCleanData(Length(width, height));
 	    
-	    image = CreateBitmapImage(new, image_data, width, height);
+	    image = CreateBitmapImage(new, (char *)image_data, width, height);
 	    buffer = CreateBitmapImage(new, buffer_data, width, height);
 	
 	    TransferImageData(new->bitmap.image, buffer);
@@ -979,7 +979,7 @@ int BWStoreFile(w, filename, basename)
 
 	DestroyBitmapImage(&BW->bitmap.storage);
 	
-	BW->bitmap.storage = CreateBitmapImage(BW, storage_data, width, height);
+	BW->bitmap.storage = CreateBitmapImage(BW, (char *)storage_data, width, height);
 
 	return BitmapSuccess;
     }
@@ -1049,7 +1049,7 @@ int BWReadFile(w, filename, basename) /* ARGSUSED */
 	
 	buffer_data = CreateCleanData(Length(width, height));
 	
-	image = CreateBitmapImage(BW, image_data, width, height);
+	image = CreateBitmapImage(BW, (char *)image_data, width, height);
 	buffer = CreateBitmapImage(BW, buffer_data, width, height);
 	
 	TransferImageData(BW->bitmap.image, buffer);
@@ -1092,7 +1092,7 @@ int BWReadFile(w, filename, basename) /* ARGSUSED */
     return status;
 }
 
-int BWSetImage(w, image)
+void BWSetImage(w, image)
     Widget w;
     XImage *image;
 {
@@ -1766,7 +1766,7 @@ static Boolean SetValues(old, request, new, args, num_args) /* ARGSUSED */
     resize = True;
 
   if (NE(bitmap.filename) || NE(bitmap.basename)  || NE(bitmap.size))
-    BWChangeNotify(old, NULL, NULL);
+    BWChangeNotify(old, NULL, NULL, NULL);
 
   if (NE(bitmap.filename))
     if (newbw->bitmap.filename) {

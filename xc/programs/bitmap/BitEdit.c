@@ -1,5 +1,5 @@
 /*
- * $XConsortium: BitEdit.c,v 1.25 93/08/19 09:12:50 rws Exp $
+ * $XConsortium: BitEdit.c,v 1.26 94/01/17 19:01:27 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -662,7 +662,7 @@ break;
 	break;	
 
     case Quit:
-      DoQuit();
+      DoQuit(bitmap_widget, NULL, NULL, NULL);
       break;	
     } /* don't add anything below this line */
 }
