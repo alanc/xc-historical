@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: os.h,v 1.37 89/07/21 12:56:53 keith Exp $ */
+/* $XConsortium: os.h,v 1.38 89/11/07 11:23:26 rws Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -38,7 +38,11 @@ SOFTWARE.
 #define SCREEN_SAVER_OFF  1
 #define SCREEN_SAVER_FORCER 2
 
+#if defined(stellar)
+#define MAX_REQUEST_SIZE 65535
+#else
 #define MAX_REQUEST_SIZE 16384
+#endif
 
 typedef pointer	FID;
 typedef struct _FontPathRec *FontPathPtr;
@@ -74,7 +78,7 @@ pragma on(alloca);
 /*
  * warning: mips alloca is unsuitable in the server, do not use.
  */
-#if defined(vax) || defined(sun) || defined(apollo)
+#if defined(vax) || defined(sun) || defined(apollo) || defined(stellar)
 /*
  * Some System V boxes extract alloca.o from /lib/libPW.a; if you
  * decide that you don't want to use alloca, you might want to fix 
@@ -83,7 +87,7 @@ pragma on(alloca);
 char *alloca();
 #define ALLOCATE_LOCAL(size) alloca((int)(size))
 #define DEALLOCATE_LOCAL(ptr)  /* as nothing */
-#endif /* vax or sun */
+#endif /* who does alloca */
 #endif /* __GNUC__ */
 
 #endif /* NO_ALLOCA */
