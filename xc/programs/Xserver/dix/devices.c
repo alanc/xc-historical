@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.14 91/05/04 23:08:38 keith Exp $ */
+/* $XConsortium: devices.c,v 5.15 91/05/05 17:30:28 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1384,6 +1384,7 @@ ProcGetMotionEvents(client)
 	    if ((xmin <= coords[i].x) && (coords[i].x < xmax) &&
 		    (ymin <= coords[i].y) && (coords[i].y < ymax))
 	    {
+		coords[nEvents].time = coords[i].time;
 		coords[nEvents].x = coords[i].x - pWin->drawable.x;
 		coords[nEvents].y = coords[i].y - pWin->drawable.y;
 		nEvents++;
