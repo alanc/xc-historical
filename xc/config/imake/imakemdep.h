@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.68 94/02/04 21:36:52 rws Exp $
+ * $XConsortium: imakemdep.h,v 1.69 94/02/04 21:44:33 rws Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.
  * When porting imake, read each of the steps below and add in any necessary
@@ -166,6 +166,9 @@
 #endif
 #ifdef __sxg__
 #define DEFAULT_CPP "/usr/lib/cpp"
+#endif
+#ifdef CRAY
+#define DEFAULT_CPP "/lib/pcpp"
 #endif
 
 /*
