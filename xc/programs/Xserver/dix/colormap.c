@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 5.15 90/09/15 12:18:20 keith Exp $ */
+/* $XConsortium: colormap.c,v 5.16 91/03/14 09:38:47 keith Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -148,7 +148,8 @@ CreateColormap (mid, pScreen, pVisual, ppcmap, alloc, client)
 	*pptr = (Pixel *)NULL;
     if (alloc == AllocAll)
     {
-	pmap->flags |= AllAllocated;
+	if (class & DynamicClass)
+	    pmap->flags |= AllAllocated;
 	for (pent = &pmap->red[size - 1]; pent >= pmap->red; pent--)
 	    pent->refcnt = AllocPrivate;
 	pmap->freeRed = 0;
