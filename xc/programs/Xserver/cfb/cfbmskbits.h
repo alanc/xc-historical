@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: cfbmskbits.h,v 4.19 91/07/05 10:53:09 rws Exp $ */
+/* $XConsortium: cfbmskbits.h,v 4.20 91/12/19 14:17:03 keith Exp $ */
 
 extern unsigned int cfbstarttab[];
 extern unsigned int cfbendtab[];
@@ -86,35 +86,30 @@ extern unsigned int QuartetPixelMaskTable[];
 #define PIM	PLST
 #define PMSK	((1 << PSZ) - 1)
 
-#if PPW == 8
+#if PSZ == 4
+#define PPW	8
 #define PWSH	3
-#define PSZ	4
 #endif
 
-#if PPW == 4
-#define PLST	3
-#define PIM	0x03
+#if PSZ == 8
+#define PPW	4
 #define PWSH	2
-#define PSZ	8
-#define PMSK	0xFF
 #define PIXEL_ADDR
 #define FOUR_BIT_CODE
 #define PixelType   unsigned char
 #endif
-#if PPW == 2
-#define PLST	0
-#define PIM	1
+
+#if PSZ == 16
+#define PPW	2
 #define PWSH	1
-#define PSZ	16
-#define PMSK	0xFFFF
 #define PIXEL_ADDR
 #define PixelType   unsigned short
 #endif
-#if PPW == 1
-#define PLST	0
-#define PIM	0
+
+#if PSZ == 32
+#define PPW	1
 #define PWSH	0
-#define PSZ	32
+#undef PMSK
 #define PMSK	0xFFFFFFFF
 #define PIXEL_ADDR
 #define PixelType   unsigned long

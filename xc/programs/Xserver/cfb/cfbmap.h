@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: cfbmap.h,v 1.1 91/12/19 14:16:37 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -27,16 +27,16 @@
  * Map names around so that multiple depths can be supported simultaneously
  */
 
-#if PPW != 4
-#if PPW == 1
+#if PSZ != 8
+#if PSZ == 32
 #define NAME(subname) CATNAME(cfb32,subname)
 #endif
 
-#if PPW == 2
+#if PSZ == 16
 #define NAME(subname) CATNAME(cfb16,subname)
 #endif
 
-#if PPW == 8
+#if PSZ == 4
 #define NAME(subname) CATNAME(cfb4,subname)
 #endif
 
