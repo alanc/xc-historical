@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ConnDis.c,v 11.103 93/09/29 19:13:51 gildea Exp $
+ * $XConsortium: ConnDis.c,v 11.108 94/01/11 12:34:57 mor Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -104,12 +104,11 @@ _X11TransConnectDisplay (display_name, fullnamep, dpynump, screenp,
     int idisplay;			/* required display number */
     int iscreen = 0;			/* optional screen number */
     int (*connfunc)();			/* method to create connection */
-    int fd = -1;			/* file descriptor to return */
     int len;				/* length tmp variable */
     int retry;				/* retry counter */
     char address[128];			/* final address passed to
 					   X Transport Interface */
-    XtransConnInfo trans_conn;		/* transport connection object */
+    XtransConnInfo trans_conn = NULL;	/* transport connection object */
     int connect_stat;
 #ifdef LOCALCONN
     struct utsname sys;
@@ -273,13 +272,12 @@ _X11TransConnectDisplay (display_name, fullnamep, dpynump, screenp,
 	{
 	if ( (trans_conn = _X11TransOpenCOTSClient(address)) == NULL )
 	    {
-	    fd=-1;
 	    break;
 	    }
 	if ((connect_stat = _X11TransConnect(trans_conn,address)) < 0 )
 	    {
 	    _X11TransClose(trans_conn);
-	    fd=-1;
+	    trans_conn = NULL;
 
 	    if (connect_stat == TRANS_TRY_CONNECT_AGAIN)
 	    {
@@ -289,8 +287,6 @@ _X11TransConnectDisplay (display_name, fullnamep, dpynump, screenp,
 	    else
 		break;
 	    }
-	else
-	    fd = _X11TransGetConnectionNumber (trans_conn);
 
 	_X11TransGetPeerAddr(trans_conn, &family, &saddrlen, &saddr);
 
@@ -303,7 +299,7 @@ _X11TransConnectDisplay (display_name, fullnamep, dpynump, screenp,
 	if( _X11TransConvertAddress(&family, &saddrlen, saddr) < 0 )
 	    {
 	    _X11TransClose(trans_conn);
-	    fd=-1;
+	    trans_conn = NULL;
 	    sleep(1);
 	    if (saddr)
 	    {
@@ -316,12 +312,8 @@ _X11TransConnectDisplay (display_name, fullnamep, dpynump, screenp,
 	break;
 	}
 
-    if( fd < 0 )
+    if( trans_conn == NULL )
       goto bad;
-#if !defined(USE_POLL) && !defined(WIN32)
-    if (fd >= OPEN_MAX)
-	goto bad;
-#endif
 
     /*
      * Set close-on-exec so that programs that fork() doesn't get confused.
@@ -360,7 +352,7 @@ _X11TransConnectDisplay (display_name, fullnamep, dpynump, screenp,
      * error return; make sure everything is cleaned up.
      */
   bad:
-    if (fd >= 0) (void)_X11TransClose(trans_conn);
+    if (trans_conn) (void)_X11TransClose(trans_conn);
     if (saddr) Xfree (saddr);
     if (pprotocol) Xfree (pprotocol);
     if (phostname) Xfree (phostname);
