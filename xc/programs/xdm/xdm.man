@@ -1,4 +1,4 @@
-.\" $XConsortium: xdm.man,v 1.34 94/04/17 20:03:49 gildea Exp $
+.\" $XConsortium: xdm.man,v 1.35 94/07/26 18:45:28 gildea Exp $
 .\" Copyright (c) 1988, 1994  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -989,7 +989,7 @@ Here is a sample \fIXstartup\fP script:
 	# This program is run as root after the user is verified
 	#
 	if [ \-f /etc/nologin ]; then
-		xmessage\0\-file /etc/nologin
+		xmessage\0\-file /etc/nologin\0\-timeout 30\0\-center
 		exit 1
 	fi
 	sessreg\0\-a\0\-l $DISPLAY\0\-x /usr/X11R6/lib/xdm/Xservers $USER
