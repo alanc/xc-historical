@@ -492,6 +492,13 @@ extern void XtMainLoop();
  *
  ****************************************************************/
 
+#define XtINPUT_READ	(1)
+#define XtINPUT_WRITE	(2)
+#define XtINPUT_EXCEPT	(3)
+
+extern Atom XtHasInput;
+extern Atom XtTimerExpired;
+
 extern XtIntervalId XtAddTimeout();
     /* Widget widget; */
     /* unsigned long interval; */

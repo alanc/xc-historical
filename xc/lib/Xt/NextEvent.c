@@ -28,7 +28,7 @@ static char *sccsid = "@(#)NextEvent.c	1.15	2/25/87";
 
 #include <stdio.h>
 #include <errno.h>
-#include "/usr/src/x11/include/Xlib.h"
+#include <X11/Xlib.h>
 #include "Intrinsic.h"
 #include <nlist.h>
 #include <sys/time.h>
@@ -50,12 +50,12 @@ static struct Timer_event {
   	struct timer_interval Te_tim;
 	struct Timer_event *Te_next;
 	Display *Te_dpy;
-	Window	Te_wID;
-	caddr_t	Te_cookie;
+	Widget   Te_wID;
+	XtIntervalId Te_id;
 };
 
 static struct Select_event {
-	Window	Se_wID;
+	Widget	Se_wID;
 	struct	Select_event	*Se_next;
 	XClientMessageEvent	Se_event;
 	struct  Select_event	*Se_oq;
@@ -148,9 +148,9 @@ struct Timer_event *ptr;
  * Public Routines
  */
 
-void XtSetTimeOut(wID, cookie, interval)
-Window wID;
-caddr_t	cookie;
+XtIntervalId
+XtSetTimeOut(wID, interval)
+Widget wID;
 int interval;
 {
 	struct Timer_event *tptr;
@@ -160,40 +160,41 @@ int interval;
 	tptr->Te_tim.ti_interval.tv_sec = interval/1000;
 	tptr->Te_tim.ti_interval.tv_usec = (interval%1000)*1000;
 	tptr->Te_wID = wID;
-	tptr->Te_cookie = cookie;
+	tptr->Te_id = (XtIntervalId) tptr;
+
 	ReQueueTimerEvent(tptr);
+	return(tptr->Te_id);
 }
 
-unsigned long XtGetTimeOut(timer)
-    XtIntervalTimer timer;
+/* this is obsolete */
+
+unsigned long 
+XtGetTimeOut(timer)
+XtIntervalId timer;
 {
 	struct timeval sum, cur_time;
 	struct timezone curzone;
-	register struct Timer_event *tptr;
+	register struct Timer_event *tptr = (struct Timer_event *) timer;
 
 	(void) gettimeofday(&cur_time, &curzone);
 	
-	for(tptr = Timer_queue; tptr; tptr = tptr->Te_next) 
-	  {	
-		  if(wID == tptr->Te_wID && cookie == tptr->Te_cookie){
-		    TIMEDELTA(&sum, &(tptr->Te_tim.ti_value), &cur_time);
-		    return((sum.tv_sec*1000)+(sum.tv_usec/1000));
-		  }
-		  
-	  }
-	return(-1);
+	if(tptr != (struct Timer_event *) tptr->Te_id) {
+		abort();
+	}
+	TIMEDELTA(&sum, &(tptr->Te_tim.ti_value), &cur_time);
+	return((sum.tv_sec*1000)+(sum.tv_usec/1000));
 }
 
-int XtClearTimeOut(wID, cookie)
-Window wID;
-caddr_t cookie;
+void
+XtRemoveTimeOut(iD)
+XtIntervalId iD;
 {
 	register struct Timer_event *tptr,*lptr;
 	lptr = NULL;
 	
 	for(tptr = Timer_queue ;tptr != NULL;tptr = tptr->Te_next) 
 	  {	
-		  if(wID != tptr->Te_wID || cookie != tptr->Te_cookie)
+		  if((struct Timer_event *) iD != tptr)
 		    {
 			    lptr = tptr;
 			    continue;
@@ -206,13 +207,12 @@ caddr_t cookie;
 		      Timer_queue = tptr->Te_next;
 
 		    XtFree((char *) tptr);
-		    return(0);
 		  }
 	  }
-	return(-1);
 }
 
-void XtAddInput(widget,source,condition)
+void 
+XtAddInput(widget,source,condition)
 Widget widget;
 int source;
 int condition;
@@ -224,13 +224,13 @@ int condition;
 	}
 	if(condition&XtINPUT_READ){
 	    sptr = (struct Select_event *)XtMalloc(sizeof (*sptr));
-	    sptr->Se_wID = wID;
+	    sptr->Se_wID = widget;
 	    sptr->Se_next = Select_rqueue[source];
 	    Select_rqueue[source] = sptr;
 	    FD_SET(source, &composite.rmask);
 	    sptr->Se_event.type = ClientMessage;
-	    sptr->Se_event.display = dpy;
-	    sptr->Se_event.window = wID;
+	    sptr->Se_event.display = XtDisplay(widget);
+	    sptr->Se_event.window = widget->core.window;
 	    sptr->Se_event.message_type = XtHasInput;
 	    sptr->Se_event.format = 32;
 	    sptr->Se_event.data.l[0] = (int)source;
@@ -239,13 +239,13 @@ int condition;
 	
 	if(condition&XtINPUT_WRITE) {
 	    sptr = (struct Select_event *) XtMalloc(sizeof (*sptr));
-	    sptr->Se_wID = wID;
+	    sptr->Se_wID = widget;
 	    sptr->Se_next = Select_wqueue[source];
 	    Select_wqueue[source] = sptr;
 	    FD_SET(source, &composite.wmask);
 	    sptr->Se_event.type = ClientMessage;
-	    sptr->Se_event.display = dpy;
-	    sptr->Se_event.window = wID;
+	    sptr->Se_event.display = XtDisplay(widget);
+	    sptr->Se_event.window = widget->core.window;
 	    sptr->Se_event.message_type = XtHasInput;
 	    sptr->Se_event.format = 32;
 	    sptr->Se_event.data.l[0] = (int)source;
@@ -254,13 +254,13 @@ int condition;
 	
 	if(condition&XtINPUT_EXCEPT) {
 	    sptr = (struct Select_event *) XtMalloc(sizeof (*sptr));
-	    sptr->Se_wID = wID;
+	    sptr->Se_wID = widget;
 	    sptr->Se_next = Select_equeue[source];
 	    Select_equeue[source] = sptr;
 	    FD_SET(source, &composite.emask);
 	    sptr->Se_event.type = ClientMessage;
-	    sptr->Se_event.display = dpy;
-	    sptr->Se_event.window = wID;
+	    sptr->Se_event.display = XtDisplay(widget);
+	    sptr->Se_event.window = widget->core.window;
 	    sptr->Se_event.message_type = XtHasInput;
 	    sptr->Se_event.format = 32;
 	    sptr->Se_event.data.l[0] = (int)source;
@@ -271,7 +271,7 @@ int condition;
 }
 
 void XtRemoveInput(wID, source, condition)
-Window wID;
+Widget wID;
 int source;
 int condition;
 {
@@ -382,10 +382,10 @@ XEvent *event;
 		  /* timer has expired */
 		  ev->type = ClientMessage;
 		  ev->display = dpy;
-		  ev->window =  Timer_queue->Te_wID;
+		  ev->window =  Timer_queue->Te_wID->core.window;
 		  ev->message_type = XtTimerExpired;
 		  ev->format = 32;
-		  ev->data.l[0] = (int)Timer_queue->Te_cookie;
+		  ev->data.l[0] = (int)Timer_queue->Te_id;
 		  te_ptr = Timer_queue;
 		  Timer_queue = Timer_queue->Te_next;
 		  te_ptr->Te_next = NULL;
@@ -505,11 +505,11 @@ XEvent *event;
     if(ISAFTER(&cur_time, &(Timer_queue->Te_tim.ti_value))) {
 	ev->type = ClientMessage;
 	ev->display = dpy;
-	ev->window =  Timer_queue->Te_wID;
+	ev->window =  Timer_queue->Te_wID->core.window;
 		  ev->format = 32;
 	ev->message_type = XtTimerExpired;
 	ev->format = 32;
-	ev->data.l[0] = (int)Timer_queue->Te_cookie;
+	ev->data.l[0] = (int)Timer_queue->Te_id;
 	return(1);
     }
     
