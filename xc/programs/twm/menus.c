@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.176 91/05/01 17:33:02 keith Exp $
+ * $XConsortium: menus.c,v 1.177 91/05/07 13:39:59 dave Exp $
  *
  * twm menu code
  *
@@ -59,7 +59,7 @@ MenuRoot *ActiveMenu = NULL;		/* the active menu */
 MenuItem *ActiveItem = NULL;		/* the active menu item */
 int MoveFunction;			/* either F_MOVE or F_FORCEMOVE */
 int WindowMoved = FALSE;
-int menuFromFrameOrWindow = FALSE;
+int menuFromFrameOrWindowOrTitlebar = FALSE;
 
 int ConstMove = FALSE;		/* constrained move variables */
 int ConstMoveDir;
@@ -477,7 +477,7 @@ UpdateMenu()
     while (TRUE)
     {
 	/* block until there is an event */
-        if (!menuFromFrameOrWindow) {
+        if (!menuFromFrameOrWindowOrTitlebar) {
 	  XMaskEvent(dpy,
 		     ButtonPressMask | ButtonReleaseMask |
 		     EnterWindowMask | ExposureMask |
@@ -496,7 +496,7 @@ UpdateMenu()
 	    continue;
 
 	if (Event.type == ButtonRelease || Cancel) {
-	  menuFromFrameOrWindow = FALSE;
+	  menuFromFrameOrWindowOrTitlebar = FALSE;
 	  return;
 	}
 
@@ -1130,8 +1130,8 @@ PopDownMenu()
     ActiveMenu = NULL;
     ActiveItem = NULL;
     MenuDepth = 0;
-    if (Context == C_WINDOW || Context == C_FRAME)
-      menuFromFrameOrWindow = TRUE;
+    if (Context == C_WINDOW || Context == C_FRAME || Context == C_TITLE)
+      menuFromFrameOrWindowOrTitlebar = TRUE;
 }
 
 
@@ -1204,7 +1204,7 @@ static Bool belongs_to_twm_window (t, w)
  *  Returns:
  *	TRUE if should continue with remaining actions else FALSE to abort
  *
- ***********************************************************************
+***********************************************************************
  */
 
 int
@@ -1379,44 +1379,45 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 		0, 0, 0, 0, eventp->xbutton.x_root, eventp->xbutton.y_root);
 
 	if (w != tmp_win->icon_w) {	/* can't resize icons */
-	    /*
-	     * see if this is being done from the titlebar
-	     */
-	    fromtitlebar = belongs_to_twm_window (tmp_win, eventp->xbutton.window);
-
-	    /* Save pointer position so we can tell if it was moved or
-	       not during the resize. */
-	    ResizeOrigX = eventp->xbutton.x_root;
-	    ResizeOrigY = eventp->xbutton.y_root;
-
-	    StartResize (eventp, tmp_win, fromtitlebar);
-
-	    do {
-	    	XMaskEvent(dpy,
-			 ButtonPressMask | ButtonReleaseMask |
-			 EnterWindowMask | LeaveWindowMask |
-			 ButtonMotionMask, &Event);
-
-		if (fromtitlebar && Event.type == ButtonPress) {
-		    fromtitlebar = False;
-		    continue;
-		}
-
-	    	if (Event.type == MotionNotify) {
-		    /* discard any extra motion events before a release */
-		    while(XCheckMaskEvent(dpy,
-			ButtonMotionMask | ButtonReleaseMask, &Event))
-			if (Event.type == ButtonRelease)
-				break;
-	    	}
-
-		if (!DispatchEvent ()) continue;
-
-	    } while (!(Event.type == ButtonRelease || Cancel));
-	    return TRUE;
+	  /*
+	   * see if this is being done from the titlebar
+	   */
+	  fromtitlebar = 
+	    belongs_to_twm_window (tmp_win, eventp->xbutton.window);
+	  
+	  /* Save pointer position so we can tell if it was moved or
+	     not during the resize. */
+	  ResizeOrigX = eventp->xbutton.x_root;
+	  ResizeOrigY = eventp->xbutton.y_root;
+	  
+	  StartResize (eventp, tmp_win, fromtitlebar);
+	  
+	  do {
+	    XMaskEvent(dpy,
+		       ButtonPressMask | ButtonReleaseMask |
+		       EnterWindowMask | LeaveWindowMask |
+		       ButtonMotionMask, &Event);
+	    
+	    if (fromtitlebar && Event.type == ButtonPress) {
+	      fromtitlebar = False;
+	      continue;
+	    }
+	    
+	    if (Event.type == MotionNotify) {
+	      /* discard any extra motion events before a release */
+	      while
+		(XCheckMaskEvent
+		 (dpy, ButtonMotionMask | ButtonReleaseMask, &Event))
+		  if (Event.type == ButtonRelease)
+		    break;
+	    }
+	    
+	    if (!DispatchEvent ()) continue;
+	    
+	  } while (!(Event.type == ButtonRelease || Cancel));
+	  return TRUE;
 	}
 	break;
-
 
     case F_ZOOM:
     case F_HORIZOOM:
@@ -1544,7 +1545,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	 */
 	fromtitlebar = belongs_to_twm_window (tmp_win, eventp->xbutton.window);
 
-	if (menuFromFrameOrWindow) {
+	if (menuFromFrameOrWindowOrTitlebar) {
 	  /* warp the pointer to the middle of the window */
 	  XWarpPointer(dpy, None, Scr->Root, 0, 0, 0, 0, 
 		       origDragX + DragWidth / 2, 
@@ -1554,9 +1555,9 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	
 	while (TRUE)
 	{
-	    long releaseEvent = menuFromFrameOrWindow ? 
+	    long releaseEvent = menuFromFrameOrWindowOrTitlebar ? 
 	                          ButtonPress : ButtonRelease;
-	    long movementMask = menuFromFrameOrWindow ?
+	    long movementMask = menuFromFrameOrWindowOrTitlebar ?
 	                          PointerMotionMask : ButtonMotionMask;
 
 	    /* block until there is an interesting event */
@@ -1578,7 +1579,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	    }
 
 	    /* test to see if we have a second button press to abort move */
-	    if (!menuFromFrameOrWindow)
+	    if (!menuFromFrameOrWindowOrTitlebar)
 	      if (Event.type == ButtonPress && DragWindow != None) {
 		if (Scr->OpaqueMove)
 		  XMoveWindow (dpy, DragWindow, origDragX, origDragY);
@@ -1597,8 +1598,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 		continue;
 	    }
 
-	    if (!menuFromFrameOrWindow)
-	      if (!DispatchEvent ()) continue;
+	    if (!DispatchEvent2 ()) continue;
 
 	    if (Cancel)
 	    {
@@ -1614,6 +1614,10 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 		    ((CurrentDragX != origDragX ||
 		      CurrentDragY != origDragY)))
 		  tmp_win->icon_moved = TRUE;
+		if (!Scr->OpaqueMove && menuFromFrameOrWindowOrTitlebar)
+		  XMoveWindow(dpy, DragWindow, 
+			      Event.xbutton.x_root - DragWidth / 2,
+			      Event.xbutton.y_root - DragHeight / 2);
 		break;
 	    }
 
@@ -1699,7 +1703,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	    else if (DragWindow != None)
 	    {
 		int xl, yt, xr, yb, w, h;
-		if (!menuFromFrameOrWindow) {
+		if (!menuFromFrameOrWindowOrTitlebar) {
 		  xl = eventp->xmotion.x_root - DragX - JunkBW;
 		  yt = eventp->xmotion.y_root - DragY - JunkBW;
 		}
@@ -2403,7 +2407,8 @@ int def_x, def_y;
     {
 	for (t = Scr->TwmRoot.next; t != NULL; t = t->next)
 	{
-	    if (tmp_win->group == t->group && tmp_win->group != t->w)
+	    if (tmp_win->group == t->group && tmp_win->group != t->w &&
+		t->transient)
 	    {
 		if (iconify)
 		{

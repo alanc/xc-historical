@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.176 91/05/01 17:52:13 dave Exp $
+ * $XConsortium: events.c,v 1.177 91/05/07 13:40:32 dave Exp $
  *
  * twm event handling
  *
@@ -52,7 +52,7 @@
 
 extern int iconifybox_width, iconifybox_height;
 extern unsigned int mods_used;
-extern int menuFromFrameOrWindow;
+extern int menuFromFrameOrWindowOrTitlebar;
 
 #define MAX_X_EVENT 256
 event_proc EventHandler[MAX_X_EVENT]; /* event handler jump table */
@@ -252,6 +252,39 @@ Window WindowOfEvent (e)
 /***********************************************************************
  *
  *  Procedure:
+ *	DispatchEvent2 - 
+ *      handle a single X event stored in global var Event
+ *      this rouitine for is for a call during an f.move
+ *
+ ***********************************************************************
+ */
+Bool DispatchEvent2 ()
+{
+    Window w = Event.xany.window;
+    StashEventTime (&Event);
+
+    if (XFindContext (dpy, w, TwmContext, (caddr_t *) &Tmp_win) == XCNOENT)
+      Tmp_win = NULL;
+
+    if (XFindContext (dpy, w, ScreenContext, (caddr_t *)&Scr) == XCNOENT) {
+	Scr = FindScreenInfo (WindowOfEvent (&Event));
+    }
+
+    if (!Scr) return False;
+
+    if (menuFromFrameOrWindowOrTitlebar && Event.type == Expose)
+      HandleExpose();
+
+    if (!menuFromFrameOrWindowOrTitlebar && Event.type>= 0 && Event.type < MAX_X_EVENT) {
+	(*EventHandler[Event.type])();
+    }
+
+    return True;
+}
+
+/***********************************************************************
+ *
+ *  Procedure:
  *	DispatchEvent - handle a single X event stored in global var Event
  *
  ***********************************************************************
@@ -270,7 +303,7 @@ Bool DispatchEvent ()
 
     if (!Scr) return False;
 
-    if (Event.type >= 0 && Event.type < MAX_X_EVENT) {
+    if (Event.type>= 0 && Event.type < MAX_X_EVENT) {
 	(*EventHandler[Event.type])();
     }
 
@@ -1704,7 +1737,7 @@ HandleButtonPress()
 	Cancel = TRUE;
 	CurrentDragX = origDragX;
 	CurrentDragY = origDragY;
-	if (!menuFromFrameOrWindow)
+	if (!menuFromFrameOrWindowOrTitlebar)
 	  if (Scr->OpaqueMove && DragWindow != None) {
 	    XMoveWindow (dpy, DragWindow, origDragX, origDragY);
 	  } else {
@@ -1746,6 +1779,7 @@ HandleButtonPress()
 	for (i = 0, tbw = Tmp_win->titlebuttons; i < nb; i++, tbw++) {
 	    if (Event.xany.window == tbw->window) {
 		if (tbw->info->func == F_MENU) {
+		    Context = C_TITLE;
 		    ButtonEvent = Event;
 		    ButtonWindow = Tmp_win;
 		    do_menu (tbw->info->menuroot, tbw->window);
