@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.22 89/09/28 11:34:43 swick Exp $ */
+/* $XConsortium: InitialI.h,v 1.23 89/09/28 17:09:12 swick Exp $ */
 /* $oHeader: InitializeI.h,v 1.8 88/09/01 11:25:04 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -117,6 +117,9 @@ typedef struct _XtAppStruct {
     Heap heap;
     String * fallback_resources;	/* Set by XtAppSetFallbackResources. */
     struct _ActionHookRec* action_hook_list;
+#ifndef NO_IDENTIFY_WINDOWS
+    Boolean identify_windows;		/* debugging hack */
+#endif
 } XtAppStruct;
 
 extern void _XtSetDefaultErrorHandlers();
