@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.h,v 1.6 90/11/01 19:34:14 dave Exp $
+ * $XConsortium: Bitmap.h,v 1.7 90/12/02 22:46:43 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -64,11 +64,11 @@
  stippled            Stippled           Boolean         True
  proportional        Proportional       Boolean         True
  axes                Axes               Boolean         True
- button1Action       Button1Action      Action          Set  
- button2Action       Button2Action      Action          Invert
- button3Action       Button3Action      Action          Clear
- button4Action       Button4Action      Action          Invert
- button5Action       Button5Action      Action          Invert
+ button1Function     Button1Function    ButtonFunction  Set  
+ button2Function     Button2Function    ButtonFunction  Invert
+ button3Function     Button3Function    ButtonFunction  Clear
+ button4Function     Button4Function    ButtonFunction  Invert
+ button5Function     Button5Function    ButtonFunction  Invert
  filename            Filename           String          "scratch"
  basename            Basename           String          "dummy"
 */
@@ -91,11 +91,11 @@
 #define XtNsquareSize "squareSize"
 #define XtNxHot "xHot"
 #define XtNyHot "yHot"
-#define XtNbutton1Action "button1Action"
-#define XtNbutton2Action "button2Action"
-#define XtNbutton3Action "button3Action"
-#define XtNbutton4Action "button4Action"
-#define XtNbutton5Action "button5Action"
+#define XtNbutton1Function "button1Function"
+#define XtNbutton2Function "button2Function"
+#define XtNbutton3Function "button3Function"
+#define XtNbutton4Function "button4Function"
+#define XtNbutton5Function "button5Function"
 #define XtNfilename "filename"
 #define XtNbasename "basename"
 #define XtNmouseForeground "mouseForeground"
@@ -119,16 +119,18 @@
 #define XtCSquareSize "SquareSize"
 #define XtCXHot "XHot"
 #define XtCYHot "YHot"
-#define XtCButton1Action "Button1Action"
-#define XtCButton2Action "Button2Action"
-#define XtCButton3Action "Button3Action"
-#define XtCButton4Action "Button4Action"
-#define XtCButton5Action "Button5Action"
+#define XtCButton1Function "Button1Function"
+#define XtCButton2Function "Button2Function"
+#define XtCButton3Function "Button3Function"
+#define XtCButton4Function "Button4Function"
+#define XtCButton5Function "Button5Function"
 #define XtCFilename "Filename"
 #define XtCBasename "Basename"
 #define XtCFrame "Frame"
 #define XtCDistance "Distance"
 #define XtCProportional "Proportional"
+
+#define XtRButtonFunction "ButtonFunction"
 
 /* bitmap defines */
 
@@ -139,6 +141,10 @@
 #define Highlight 3
 #define On        True
 #define Off       False
+
+#define XtClear "clear"
+#define XtSet "set"
+#define XtInvert "invert"
 
 #define MarkRequest "MarkRequest"
 #define StoreRequest "StoreRequest"
@@ -187,6 +193,8 @@ extern void BWDrawCircle();
 extern void BWDrawFilledCircle();
 extern void BWFloodFill();
 extern void BWMark();
+extern void BWMarkAll();
+extern void BWUnmark();
 extern void BWSelect();
 extern void BWUnmark();
 extern void BWStore();
@@ -199,8 +207,8 @@ extern void BWGrabSelection();
 extern void BWRequestSelection();
 extern void BWSetChanged();
 extern Boolean BWQueryChanged();
-extern int  BWReadFile();
-extern int  BWWriteFile();
+extern int BWReadFile();
+extern int BWWriteFile();
 extern String BWUnparseStatus();
 extern String BWGetFilename();
 extern String BWGetBasename();
@@ -225,7 +233,6 @@ extern void BWSwitchStippled();
 extern void BWRedrawMark();
 extern Boolean BWQueryAxes();
 extern void BWHighlightAxes();
-extern void CopyImageData();
 extern void BWChangedFilename();
 extern String BWGetFilepath();
 extern void BWZoomOut();
@@ -241,8 +248,6 @@ extern Boolean BWQueryProportional();
 extern void BWSwitchProportional();
 extern void BWDrawGrid();
 extern void BWChangeFilename();
-extern void Notify();
-extern void TransferImageData();
 
 typedef struct _BWRequestRec BWRequestRec;
 typedef char *BWRequest;

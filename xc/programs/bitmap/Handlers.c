@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Handlers.c,v 1.2 90/10/30 17:38:55 dave Exp $
+ * $XConsortium: Handlers.c,v 1.3 90/11/01 19:34:25 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -44,7 +44,7 @@
 
 #include "Requests.h"
 
-static Boolean DEBUG = False;
+extern Boolean DEBUG;
 
 /*****************************************************************************
  *                                  Handlers                                 *
@@ -670,48 +670,5 @@ void DragTwoPointsTerminate(w, status, draw)
 		         ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
 			 FALSE, DragTwoPointsHandler, status);
 }
-
-
-void BWTPaste(w, event)
-    Widget  w;
-    XEvent *event;
-{
-    BitmapWidget BW = (BitmapWidget) w;
-
-    if (!BW->bitmap.selection.own)
-	BWRequestSelection(w, event->xbutton.time, TRUE);
-    else 
-	BWStore(w);
-
-    if (!BWQueryStored(w))
-	return;
-    
-    BWEngageRequest(w, RestoreRequest, False, 
-		    (char *)&(event->xbutton.state), sizeof(int));
-    
-    OnePointHandler(w,
-	       (BWStatus*) BW->bitmap.request_stack[BW->bitmap.current].status,
-	       event);
-}
-
-void BWTMark(w, event)
-    Widget  w;
-    XEvent *event;
-{
-    BitmapWidget BW = (BitmapWidget) w;
-
-    BWEngageRequest(w, MarkRequest, False,
-		    (char *)&(event->xbutton.state), sizeof(int));
-    TwoPointsHandler(w,
-            (BWStatus*) BW->bitmap.request_stack[BW->bitmap.current].status,
-	     event);
-}
-
-void BWTUnmark(w)
-    Widget w;
-{
-    BWUnmark(w);
-}
-
 
 /*****************************************************************************/

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ReqMach.c,v 1.3 90/11/01 19:34:49 dave Exp $
+ * $XConsortium: ReqMach.c,v 1.4 90/11/06 16:49:03 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -43,7 +43,7 @@
 #define max(x, y)                     (((x) > (y)) ? (x) : (y))
 
 
-static Boolean DEBUG = False;
+extern Boolean DEBUG;
 
 /*****************************************************************************\
  * Request Machine: stacks up and handles requests from application calls.   * 

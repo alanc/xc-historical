@@ -1,5 +1,5 @@
 /*
- * $XConsortium: BitmapP.h,v 1.7 90/10/31 18:26:27 dave Exp $
+ * $XConsortium: BitmapP.h,v 1.8 90/12/02 22:46:46 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -104,7 +104,7 @@ typedef struct {
   Boolean          resize;
   Dimension        distance, squareW, squareH, width, height;
   XPoint           hot;
-  int              button_action[5];
+  int              button_function[5];
   String           filename, basename;
   /* private state */
   Position         horizOffset, vertOffset;
@@ -126,6 +126,7 @@ typedef struct {
   caddr_t         *value;
   char             status[80];
   BWSelection      selection;
+  Boolean          stipple_change_expose_event;
 } BitmapPart;
 
 /* Full instance record declaration */
@@ -175,7 +176,7 @@ typedef struct _BitmapRec {
   (((x) >= 0) && ((x) < BW->bitmap.image->width) &&\
    ((y) >= 0) && ((y) < BW->bitmap.image->height))
 
-#define Value(BW, button)   (BW->bitmap.button_action[button - 1])
+#define Value(BW, button)   (BW->bitmap.button_function[button - 1])
 
 #define CreateCleanData(length) XtCalloc(length, sizeof(char))
 XImage *CreateBitmapImage();

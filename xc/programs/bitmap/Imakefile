@@ -29,10 +29,10 @@
 LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
   SYS_LIBRARIES = -lm
            SRCS = BitEdit.c CutAndPaste.c Graphics.c ReqMach.c Bitmap.c \
-                  Dialog.c Handlers.c Scale.c
+                  Dialog.c Handlers.c 
 
            OBJS = BitEdit.o CutAndPaste.o Graphics.o ReqMach.o Bitmap.o \
-                  Dialog.o Handlers.o Scale.o
+                  Dialog.o Handlers.o 
 
        INCLUDES = -I$(TOOLKITSRC) -I$(TOP)
 

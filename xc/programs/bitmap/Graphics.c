@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Graphics.c,v 1.4 90/11/01 19:34:22 dave Exp $
+ * $XConsortium: Graphics.c,v 1.5 90/12/02 22:46:52 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -192,6 +192,7 @@ void BWClearHotSpot(w)
 void BWDrawHotSpot(w, x, y, value)
     Widget w;
     Position x, y;
+    int  value;
 {
     BitmapWidget BW = (BitmapWidget) w;
     
@@ -349,7 +350,7 @@ void BWDrawRectangle(w, from_x, from_y, to_x, to_y, value)
     Widget w;
     Position     from_x, from_y,
 	to_x, to_y;
-    bit          value;
+    int          value;
 {
     register Position i;
     Dimension delta, width, height;
@@ -384,7 +385,7 @@ void BWDrawFilledRectangle(w, from_x, from_y, to_x, to_y, value)
     Widget   w;
     Position from_x, from_y,
 	     to_x, to_y;
-    bit      value;
+    int      value;
 {
     register Position x, y;
 
@@ -400,7 +401,7 @@ void BWDrawCircle(w, origin_x, origin_y, point_x, point_y, value)
     Widget  w;
     Position      origin_x, origin_y,
 	point_x, point_y;
-    bit           value;
+    int           value;
 {
     register Position i, delta;
     Dimension dx, dy, half;
@@ -438,7 +439,7 @@ void BWDrawFilledCircle(w, origin_x, origin_y, point_x, point_y, value)
     Widget  w;
     Position      origin_x, origin_y,
 	          point_x, point_y;
-    bit           value;
+    int           value;
 {
     register Position i, j, delta;
     Dimension dx, dy;
@@ -471,7 +472,7 @@ void BWDrawFilledCircle(w, origin_x, origin_y, point_x, point_y, value)
 void FloodLoop(BW, x, y, value)
     BitmapWidget  BW;
     Position      x, y;
-    bit           value;
+    int           value;
 {
     if (QueryFlood(BW, x, y, value)) {
 	Flood(BW, x, y, value);
@@ -486,7 +487,7 @@ void FloodLoop(BW, x, y, value)
 void FloodLoop(BW, x, y, value)
     BitmapWidget BW;
     Position     x, y;
-    bit          value;
+    int          value;
 {
     Position save_x, save_y, x_left, x_right;
     
@@ -573,7 +574,7 @@ void FloodLoop(BW, x, y, value)
 void BWFloodFill(w, x, y, value)
     Widget  w;
     Position      x, y;
-    bit           value;
+    int           value;
 {
     BitmapWidget BW = (BitmapWidget) w;
     int pixel;
@@ -1235,7 +1236,7 @@ void BWDragMarked(w, at_x, at_y)
 }
 
 void BWDragStored(w, at_x, at_y)
-    Widget w;
+    Widget       w;
     Position     at_x, at_y;
 {
     BitmapWidget BW = (BitmapWidget) w;
@@ -1250,9 +1251,9 @@ void BWDragStored(w, at_x, at_y)
 
 void DrawImageData(BW, image, at_x, at_y, value)
     BitmapWidget BW;
-    XImage *image;
-    Position at_x, at_y;
-    bit value;
+    XImage       *image;
+    Position     at_x, at_y;
+    int          value;
 {
     Position x, y;
     Boolean  C, S, I, H;
@@ -1278,18 +1279,20 @@ void DrawImageData(BW, image, at_x, at_y, value)
 }
 
 void BWRestore(w, at_x, at_y, value)
-    Widget w;
+    Widget       w;
     Position     at_x, at_y;
     int          value;
 {
     BitmapWidget BW = (BitmapWidget) w;
     
-    if (BW->bitmap.storage)
-	DrawImageData(BW, BW->bitmap.storage, at_x, at_y, value);
+    if (BW->bitmap.storage) {
+      DrawImageData(BW, BW->bitmap.storage, at_x, at_y, value);
+      DestroyBitmapImage(&BW->bitmap.storage);
+    }
 }
 
 void BWCopy(w, at_x, at_y, value)
-    Widget w;
+    Widget       w;
     Position     at_x, at_y;
     int          value;
 {
@@ -1450,6 +1453,14 @@ void BWMark(w, from_x, from_y, to_x, to_y)
     }
 }
 
+void BWMarkAll(w)
+    Widget w;
+{
+  BitmapWidget BW = (BitmapWidget) w;
+
+  BWMark(w, 0, 0, BW->bitmap.image->width - 1, BW->bitmap.image->height - 1);
+}
+
 void BWUndo(w)
     Widget w;
 {
@@ -1574,3 +1585,5 @@ XImage *ScaleBitmapImage(BW, src, scale_x, scale_y)
     
     return (dst);
 }
+
+/*****************************************************************************/

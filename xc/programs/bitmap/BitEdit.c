@@ -1,5 +1,5 @@
 /*
- * $XConsortium: BitEdit.c,v 1.12 90/11/06 16:48:40 dave Exp $
+ * $XConsortium: BitEdit.c,v 1.13 90/12/02 22:46:25 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -56,8 +56,6 @@ where options include all standard toolkit options plus:\n\
      -stipple filename\n\
      -hl color\n\
      -fr color\n\
-     -filename filename\n\
-     -basename basename\n\
 \n\
 The default WIDTHxHEIGHT is 16x16.\n";
 
@@ -141,17 +139,7 @@ static XrmOptionDescRec options[] = {
     "-fr", 
     "*frame", 
     XrmoptionSepArg, 
-    NULL},
-  {
-    "-filename", 
-    "*filename", 
-    XrmoptionSepArg, 
-    NULL},
-  {
-    "-basename", 
-    "*basename", 
-    XrmoptionSepArg, 
-    NULL},
+    NULL}
 };
 
 typedef struct {
@@ -162,8 +150,8 @@ typedef struct {
   } ButtonRec;
 
 static ButtonRec file_menu[] = {
-#define NewFile 101
-  {NewFile, "newFile", True},
+#define New 101
+  {New, "new", True},
 #define Load 102
   {Load, "load", True},
 #define Insert 103
@@ -218,6 +206,10 @@ static ButtonRec buttons[] = {
   {Set, "set", False},
 /*#define Invert 3*/
   {Invert, "invert", False},
+#define Mark 26
+  {Mark, "mark", True},
+#define Unmark 27
+  {Unmark, "unmark", False},
 #define CopyImm 4
   {CopyImm, "copy", True},
 #define MoveImm 5
@@ -285,14 +277,51 @@ Time btime;
 String filename = NULL, basename = NULL, format;
 char message[80];
 
-void ShowImage();
+
 void FixMenu();
+void SwitchImage();
+void SwitchGrid();
+void SwitchDashed();
+void SwitchAxes();
+void SwitchStippled();
+void SwitchProportional();
+void SwitchZoom();
+void DoCut();
+void DoCopy();
+void DoPaste();
+void DoNew();
+void DoLoad();
+void DoInsert();
+void DoSave();
+void DoSaveAs();
+void DoResize();
+void DoRescale();
+void DoFilename();
+void DoBasename();
 void DoQuit();
 
 static XtActionsRec actions_table[] = {
-{"image", ShowImage},
-{"fix-menu", FixMenu},
-{"quit", DoQuit}
+  {"fix-menu", FixMenu},
+  {"switch-image", SwitchImage},
+  {"switch-grid", SwitchGrid},
+  {"switch-dashed", SwitchDashed},
+  {"switch-axes", SwitchAxes},
+  {"switch-stippled", SwitchStippled},
+  {"switch-proportional", SwitchProportional},
+  {"switch-zoom", SwitchZoom},
+  {"do-cut", DoCut},
+  {"do-copy", DoCopy},
+  {"do-paste", DoPaste},
+  {"do-new", DoNew},
+  {"do-load", DoLoad},
+  {"do-insert", DoInsert},
+  {"do-save", DoSave},
+  {"do-save-as", DoSaveAs},
+  {"do-resize", DoResize},
+  {"do-rescale", DoRescale},
+  {"do-filename", DoFilename},
+  {"do-basename", DoBasename},
+  {"do-quit", DoQuit}
 };
 
 static Atom wm_delete_window;
@@ -408,285 +437,91 @@ FixStatus()
     XtSetValues(status_widget, wargs, n);
 }
 
-void DoQuit()
-{
-    if (BWQueryChanged(bitmap_widget)) {
-	BWGetFilename(bitmap_widget, &filename);
-    RetryQuit:
-	switch (PopupDialog(qsave_dialog, "Save file before quitting?",
-				filename, &filename, XtGrabExclusive)) {
-	case Yes:
-	    if (BWWriteFile(bitmap_widget, filename, NULL) 
-		!= BitmapSuccess) {
-		sprintf(message, "Can't write file: %s", filename);
-		if (PopupDialog(error_dialog, message, 
-				NULL, NULL, XtGrabExclusive) == Retry) 
-		    goto RetryQuit;
-	    }
-	    break;
-
-	case Cancel:
-	    return;
-	}
-    }
-    exit(0);
-}
-
 static int zero = 0;
 #define Plain  &zero,sizeof(int)
 /* ARGSUSED */
 void TheCallback(w, id)
-     Widget w;
+     Widget w;           /* not used */
      int   *id;
 {
-    char x;
-    int width, height;
     
     switch (*id) {
 	
-    case Load:
-	if (BWQueryChanged(bitmap_widget)) {
-	    BWGetFilename(bitmap_widget, &filename);
-	RetryLoadSave:
-	    switch (PopupDialog(qsave_dialog, "Save file before loading?",
-				filename, &filename, XtGrabExclusive)) {
-	    case Yes:
-		if (BWWriteFile(bitmap_widget, filename, NULL) 
-		    != BitmapSuccess) {
-		    sprintf(message, "Can't write file: %s", filename);
-		    if (PopupDialog(error_dialog, message, 
-				    NULL, NULL, XtGrabExclusive) == Retry) 
-			goto RetryLoadSave;
-		}
+    case New:
+      DoNew();
+      break;
 
-	    case Cancel:
-		return;
-	    }
-	}
-	BWGetFilepath(bitmap_widget, &filename);
-    RetryLoad:
-	if (PopupDialog(input_dialog, "Load file:", 
-			filename, &filename, XtGrabExclusive) == Okay) {
-	    if (BWReadFile(bitmap_widget, filename, NULL) != BitmapSuccess) {
-		sprintf(message, "Can't read file: %s", filename);
-		if (PopupDialog(error_dialog, message, 
-				NULL, NULL, XtGrabExclusive) == Retry)
-		    goto RetryLoad;
-	    }
-	    else {
-		BWChangeNotify(bitmap_widget, NULL, NULL);
-		BWClearChanged(bitmap_widget);
-		FixStatus();
-	    }
-	}
-	break;
+    case Load:
+      DoLoad();
+      break;
 	
     case Insert:
-	BWGetFilepath(bitmap_widget, &filename);
-    RetryInsert:
-	if (PopupDialog(input_dialog, "Insert file:", 
-			filename, &filename, XtGrabExclusive) == Okay) {
-	    if (BWStoreFile(bitmap_widget, filename, NULL) != BitmapSuccess) {
-		sprintf(message, "Can't read file: %s", filename);
-		if (PopupDialog(error_dialog, message, 
-				NULL, NULL, XtGrabExclusive) == Retry)
-		    goto RetryInsert;
-	    }
-	    else {
-		BWEngageRequest(bitmap_widget, RestoreRequest, False, Plain);
-	    }
-	}
-	break;
+      DoInsert();
+      break;
 	
     case Save:
-	if (BWWriteFile(bitmap_widget, NULL, NULL) != BitmapSuccess) {
-	    sprintf(message, "Can't write file: %s", filename);
-	    if (PopupDialog(error_dialog, message, 
-			    NULL, NULL, XtGrabExclusive) == Retry) {
-		BWGetFilename(bitmap_widget, &filename);
-		goto RetrySave;
-	    }
-	}
-	else {
-	    BWClearChanged(bitmap_widget);
-	}
-	break;
+      DoSave();
+      break;
 	
     case SaveAs:
-	BWGetFilename(bitmap_widget, &filename);
-    RetrySave:
-	if (PopupDialog(input_dialog, "Save file:", 
-			filename, &filename, XtGrabExclusive) == Okay) {
-	    if (BWWriteFile(bitmap_widget, filename, NULL) != BitmapSuccess) {
-		sprintf(message, "Can't write file: %s", filename);
-		if (PopupDialog(error_dialog, message, 
-				NULL, NULL, XtGrabExclusive) == Retry)
-		    goto RetrySave;
-	    }
-	    else {
-		BWClearChanged(bitmap_widget);
-		FixStatus();
-	    }
-	}
-	break;
-
-    case NewFile:
-	BWGetFilename(bitmap_widget, &filename);
-	if (PopupDialog(input_dialog, "New file:", 
-			filename, &filename, XtGrabExclusive) == Okay) {
-	    BWChangeFilename(bitmap_widget, filename);
-	    BWChangeBasename(bitmap_widget, filename);
-	    BWStoreToBuffer(bitmap_widget);
-	    BWClear(bitmap_widget);
-	    BWChangeNotify(bitmap_widget, NULL, NULL);
-	    BWClearChanged(bitmap_widget);
-	    FixStatus();
-	}
-	break;
-
-    case Filename:
-	BWGetFilename(bitmap_widget, &filename);
-	if (PopupDialog(input_dialog, "Change filename:", 
-			filename, &filename, XtGrabExclusive) == Okay) {
-	    BWChangeFilename(bitmap_widget, filename);
-	    FixStatus();
-	}
-	break;
-
-    case Basename:
-	BWGetBasename(bitmap_widget, &basename);
-	if (PopupDialog(input_dialog, "Change basename:", 
-			basename, &basename, XtGrabExclusive) == Okay) {
-	    BWChangeBasename(bitmap_widget, basename);
-	    FixStatus();
-	}
-	break;
-	
-    case Quit:
-	DoQuit();
-	break;
-	
-    case Image:
-	if (image_visible) {
-	    XtPopdown(image_shell);
-	    image_visible = False;
-	}
-	else {
-	    Position image_x, image_y;
-	    int n;
-	    Arg wargs[3];
-	    
-	    XtTranslateCoords(bitmap_widget, 
-			      10, 10, &image_x, &image_y);
-
-	    n = 0;
-	    XtSetArg(wargs[n], XtNx, image_x); n++;
-	    XtSetArg(wargs[n], XtNy, image_y); n++;
-	    XtSetValues(image_shell, wargs, n);
-
-	    image_visible = True;
-	    
-	    FixImage();
-	    XtPopup(image_shell, XtGrabNone);
-	    FixImage();
-	}
-    break;
-
-    case Grid:
-	BWSwitchGrid(bitmap_widget);
-	break;
-	
-    case Dashed:
-	BWSwitchDashed(bitmap_widget);
-	break;
-
-    case Axes:
-	BWSwitchAxes(bitmap_widget);
-	break;	
-
-    case Stippled:
-	BWSwitchStippled(bitmap_widget);
-	break;
-	
-    case Proportional:
-	BWSwitchProportional(bitmap_widget);
-	break;
-		
-    case Zoom:
-	if (BWQueryZooming(bitmap_widget)) {
-	    BWZoomOut(bitmap_widget);
-	    BWChangeNotify(bitmap_widget, NULL, NULL);
-	}
-	else {
-	    if (BWQueryMarked(bitmap_widget)) {
-		BWStoreToBuffer(bitmap_widget);
-		BWZoomMarked(bitmap_widget);
-		BWChangeNotify(bitmap_widget, NULL, NULL);
-	    }
-	    else {
- 		BWEngageRequest(bitmap_widget, ZoomInRequest, False, Plain);
-	    }
-	}
-	break;
+      DoSaveAs();
+      break;
 	
     case Resize:
-	format = "";
-    RetryResize:
-	if (PopupDialog(input_dialog, "Resize to WIDTHxHEIGHT:", 
-			format, &format, XtGrabExclusive) == Okay) {
-	    sscanf(format, "%d%c%d", &width, &x, &height);
-	    if ((width >0) && (height > 0) && (x == 'x')) {
-		BWResize(bitmap_widget, (Dimension)width, (Dimension)height);
-		BWChangeNotify(bitmap_widget, NULL, NULL);
-		BWSetChanged(bitmap_widget);
-		FixStatus();
-	    }
-	    else {
-		sprintf(message, "Wrong format: %s", format);
-		if (PopupDialog(error_dialog, message, 
-				NULL, NULL, XtGrabExclusive) == Retry)
-		    goto RetryResize;
-	    }
-	}
-	break;
+      DoResize();
+      break;
 
     case Rescale:
-	format = "";
-    RetryRescale:
-	if (PopupDialog(input_dialog, "Rescale to WIDTHxHEIGHT:", 
-			format,	&format, XtGrabExclusive) == Okay) {
-	    sscanf(format, "%d%c%d", &width, &x, &height);
-	    if ((width >0) && (height > 0) && (x == 'x')) {
-		BWRescale(bitmap_widget, (Dimension)width, (Dimension)height);
-		BWChangeNotify(bitmap_widget, NULL, NULL);
-		BWSetChanged(bitmap_widget);
-		FixStatus();
-	    }
-	    else {
-		sprintf(message, "Wrong format: %s", format);
-		if (PopupDialog(error_dialog, message, 
-				NULL, NULL, XtGrabExclusive) == Retry)
-		    goto RetryRescale;
-	    }
-	}
-	break;
+      DoRescale();
+      break;
 
-    case Copy:
-	BWStore(bitmap_widget);
-	BWUnmark(bitmap_widget);
-	break;
+    case Filename:
+      DoFilename();
+      break;
 
+    case Basename:
+      DoBasename();
+      break;
+	
+    case Image:
+      SwitchImage();
+      break;
+
+    case Grid:
+      SwitchGrid();
+      break;
+	
+    case Dashed:
+      SwitchDashed();
+      break;
+
+    case Axes:
+      SwitchAxes();
+      break;	
+
+    case Stippled:
+      SwitchStippled();
+      break;
+      
+    case Proportional:
+      SwitchProportional();
+      break;
+		
+    case Zoom:
+      SwitchZoom();
+      break;
+      
     case Cut:
-	BWStore(bitmap_widget);
-	BWClearMarked(bitmap_widget);
-	BWUnmark(bitmap_widget);
-	BWChangeNotify(bitmap_widget, NULL, NULL);
-	break;
-
+      DoCut();
+      break;
+      
+    case Copy:
+      DoCopy();
+      break;
+      
     case Paste:
-	/*BWRequestSelection(bitmap_widget, btime, TRUE);*/
-	BWEngageRequest(bitmap_widget, RestoreRequest, False, Plain);
-	break;
+      DoPaste();
+      break;
 	
     case Clear:
 	BWStoreToBuffer(bitmap_widget);
@@ -700,7 +535,7 @@ void TheCallback(w, id)
 	BWSet(bitmap_widget);
 	BWChangeNotify(bitmap_widget, NULL, NULL);
 	BWSetChanged(bitmap_widget);
-	break;
+break;
 	
     case Invert:
 	BWStoreToBuffer(bitmap_widget);
@@ -708,6 +543,15 @@ void TheCallback(w, id)
 	BWChangeNotify(bitmap_widget, NULL, NULL);
 	BWSetChanged(bitmap_widget);
 	break;
+
+    case Mark:
+        BWRemoveAllRequests(bitmap_widget);
+        BWEngageRequest(bitmap_widget, MarkRequest, True, Plain);
+        break;
+
+    case Unmark:
+        BWUnmark(bitmap_widget);
+        break;
 
     case CopyImm:
 	BWRemoveAllRequests(bitmap_widget);
@@ -853,30 +697,308 @@ void TheCallback(w, id)
 	BWChangeNotify(bitmap_widget, NULL, NULL);
 	BWSetChanged(bitmap_widget);
 	break;	
-    }
+
+    case Quit:
+      DoQuit();
+      break;	
+    } /* don't add anything below this line */
 }
 
 /* ARGSUSED */
-void BAPopdownImage(w, call_data, event)
-    Widget  w;
-    caddr_t call_data;
-    XEvent *event;
+
+void SwitchImage()
 {
-    static int image = Image;
+  if (image_visible) {
+    XtPopdown(image_shell);
+    image_visible = False;
+  }
+  else {
+    Position image_x, image_y;
+    int n;
+    Arg wargs[3];
     
-    if ((event->type == ButtonRelease) && image_visible)
-	TheCallback(w, &image);
+    XtTranslateCoords(bitmap_widget,
+		      10, 10, &image_x, &image_y);
+    
+    n = 0;
+    XtSetArg(wargs[n], XtNx, image_x); n++;
+    XtSetArg(wargs[n], XtNy, image_y); n++;
+    XtSetValues(image_shell, wargs, n);
+    
+    image_visible = True;
+    
+    FixImage();
+    XtPopup(image_shell, XtGrabNone);
+    FixImage();
+  }
 }
 
+void SwitchGrid()
+{
+  BWSwitchGrid(bitmap_widget);
+}
 
-void ShowImage(w)
+void SwitchDashed()
+{
+  BWSwitchDashed(bitmap_widget);
+}
+
+void SwitchAxes()
+{
+  BWSwitchAxes(bitmap_widget);
+}
+
+void SwitchStippled()
+{
+  BWSwitchStippled(bitmap_widget); 
+}
+
+void SwitchProportional()
+{
+  BWSwitchProportional(bitmap_widget);
+}
+
+void SwitchZoom()
+{
+  if (BWQueryZooming(bitmap_widget)) {
+    BWZoomOut(bitmap_widget);
+    BWChangeNotify(bitmap_widget, NULL, NULL);
+  }
+  else {
+    if (BWQueryMarked(bitmap_widget)) {
+      BWStoreToBuffer(bitmap_widget);
+      BWZoomMarked(bitmap_widget);
+      BWChangeNotify(bitmap_widget, NULL, NULL);
+    }
+    else {
+      BWEngageRequest(bitmap_widget, ZoomInRequest, False, Plain);
+    }
+  }
+}
+
+void DoCut()
+{
+  BWStore(bitmap_widget);
+  BWStoreToBuffer(bitmap_widget);
+  BWClearMarked(bitmap_widget);
+  BWUnmark(bitmap_widget);
+  BWChangeNotify(bitmap_widget, NULL, NULL);
+  BWSetChanged(bitmap_widget);
+}
+
+void DoCopy()
+{
+  BWStore(bitmap_widget);
+  BWUnmark(bitmap_widget);
+}
+
+void DoPaste()
+{
+  BWRequestSelection(bitmap_widget, btime, TRUE); 
+  BWEngageRequest(bitmap_widget, RestoreRequest, False, Plain);
+}
+
+void DoNew()
+{
+  BWGetFilename(bitmap_widget, &filename);
+  if (PopupDialog(input_dialog, "New file:",
+		  filename, &filename, XtGrabExclusive) == Okay) {
+    BWChangeFilename(bitmap_widget, filename);
+    BWChangeBasename(bitmap_widget, filename);
+    BWStoreToBuffer(bitmap_widget);
+    BWClear(bitmap_widget);
+    BWClearHotSpot(bitmap_widget);
+    BWChangeNotify(bitmap_widget, NULL, NULL);
+    BWClearChanged(bitmap_widget);
+    BWUnmark(bitmap_widget);
+    FixStatus();
+  }
+}
+
+void DoLoad()
+{
+  if (BWQueryChanged(bitmap_widget)) {
+    BWGetFilename(bitmap_widget, &filename);
+  RetryLoadSave:
+    switch (PopupDialog(qsave_dialog, "Save file before loading?",
+			filename, &filename, XtGrabExclusive)) {
+    case Yes:
+      if (BWWriteFile(bitmap_widget, filename, NULL)
+	  != BitmapSuccess) {
+	sprintf(message, "Can't write file: %s", filename);
+	if (PopupDialog(error_dialog, message,
+			NULL, NULL, XtGrabExclusive) == Retry)
+	  goto RetryLoadSave;
+      }
+      break;
+      
+    case Cancel:
+      return;
+    }
+  }
+  BWGetFilepath(bitmap_widget, &filename);
+ RetryLoad:
+  if (PopupDialog(input_dialog, "Load file:",
+		  filename, &filename, XtGrabExclusive) == Okay) {
+    if (BWReadFile(bitmap_widget, filename, NULL) != BitmapSuccess) {
+      sprintf(message, "Can't read file: %s", filename);
+      if (PopupDialog(error_dialog, message,
+		      NULL, NULL, XtGrabExclusive) == Retry)
+	goto RetryLoad;
+    }
+    else {
+      BWChangeNotify(bitmap_widget, NULL, NULL);
+      BWClearChanged(bitmap_widget);
+      FixStatus();
+    }
+  }
+}
+
+void DoInsert()
+{
+  BWGetFilepath(bitmap_widget, &filename);
+ RetryInsert:
+  if (PopupDialog(input_dialog, "Insert file:",
+		  filename, &filename, XtGrabExclusive) == Okay) {
+    if (BWStoreFile(bitmap_widget, filename, NULL) != BitmapSuccess) {
+      sprintf(message, "Can't read file: %s", filename);
+      if (PopupDialog(error_dialog, message,
+		      NULL, NULL, XtGrabExclusive) == Retry)
+	goto RetryInsert;
+    }
+    else {
+      BWEngageRequest(bitmap_widget, RestoreRequest, False, Plain);
+    }
+  }
+}
+
+void DoSave()
+{
+  if (BWWriteFile(bitmap_widget, NULL, NULL) != BitmapSuccess) {
+    sprintf(message, "Can't write file: %s", filename);
+    if (PopupDialog(error_dialog, message,
+		    NULL, NULL, XtGrabExclusive) == Retry) 
+      DoSaveAs();
+  }
+  else {
+    BWClearChanged(bitmap_widget);
+  }
+}
+
+void DoSaveAs()
+{
+  BWGetFilename(bitmap_widget, &filename);
+ RetrySave:
+  if (PopupDialog(input_dialog, "Save file:",
+		  filename, &filename, XtGrabExclusive) == Okay) {
+    if (BWWriteFile(bitmap_widget, filename, NULL) != BitmapSuccess) {
+      sprintf(message, "Can't write file: %s", filename);
+      if (PopupDialog(error_dialog, message,
+		      NULL, NULL, XtGrabExclusive) == Retry)
+	goto RetrySave;
+    }
+    else {
+      BWClearChanged(bitmap_widget);
+      FixStatus();
+    }
+  }
+}
+
+void DoResize()
+{
+  char x;
+  int width, height;
+
+  format = "";
+ RetryResize:
+  if (PopupDialog(input_dialog, "Resize to WIDTHxHEIGHT:",
+		  format, &format, XtGrabExclusive) == Okay) {
+    sscanf(format, "%d%c%d", &width, &x, &height);
+    if ((width >0) && (height > 0) && (x == 'x')) {
+      BWResize(bitmap_widget, (Dimension)width, (Dimension)height);
+      BWChangeNotify(bitmap_widget, NULL, NULL);
+      BWSetChanged(bitmap_widget);
+      FixStatus();
+    }
+    else {
+      sprintf(message, "Wrong format: %s", format);
+      if (PopupDialog(error_dialog, message,
+		      NULL, NULL, XtGrabExclusive) == Retry)
+	goto RetryResize;
+    }
+  }
+}
+
+void DoRescale()
+{
+  char x;
+  int width, height;
+
+  format = "";
+ RetryRescale:
+  if (PopupDialog(input_dialog, "Rescale to WIDTHxHEIGHT:",
+		  format, &format, XtGrabExclusive) == Okay) {
+    sscanf(format, "%d%c%d", &width, &x, &height);
+    if ((width >0) && (height > 0) && (x == 'x')) {
+      BWRescale(bitmap_widget, (Dimension)width, (Dimension)height);
+      BWChangeNotify(bitmap_widget, NULL, NULL);
+      BWSetChanged(bitmap_widget);
+      FixStatus();
+    }
+    else {
+      sprintf(message, "Wrong format: %s", format);
+      if (PopupDialog(error_dialog, message,
+		      NULL, NULL, XtGrabExclusive) == Retry)
+	goto RetryRescale;
+    }
+  }
+}
+
+void DoFilename()
+{
+  BWGetFilename(bitmap_widget, &filename);
+  if (PopupDialog(input_dialog, "Change filename:",
+		  filename, &filename, XtGrabExclusive) == Okay) {
+    BWChangeFilename(bitmap_widget, filename);
+    FixStatus();
+  }
+}
+
+void DoBasename()
+{  
+  BWGetBasename(bitmap_widget, &basename);
+  if (PopupDialog(input_dialog, "Change basename:",
+		  basename, &basename, XtGrabExclusive) == Okay) {
+    BWChangeBasename(bitmap_widget, basename);
+    FixStatus();
+  }
+}
+
+void DoQuit(w)
     Widget w;
 {
-    static int id = Image;
-
-    TheCallback(w, &id);
+  if (BWQueryChanged(bitmap_widget)) {
+    BWGetFilename(bitmap_widget, &filename);
+  RetryQuit:
+    switch (PopupDialog(qsave_dialog, "Save file before quitting?",
+			filename, &filename, XtGrabExclusive)) {
+    case Yes:
+      if (BWWriteFile(bitmap_widget, filename, NULL) 
+	  != BitmapSuccess) {
+	sprintf(message, "Can't write file: %s", filename);
+	if (PopupDialog(error_dialog, message, 
+			NULL, NULL, XtGrabExclusive) == Retry) 
+	  goto RetryQuit;
+	else return;
+      }
+      break;
+      
+    case Cancel:
+      return;
+    }
+  }
+  exit(0);
 }
-
 
 void main(argc, argv)
     int    argc;
@@ -904,7 +1026,9 @@ void main(argc, argv)
 
     XtAddActions(actions_table, XtNumber(actions_table));
     XtOverrideTranslations
-	(top_widget,XtParseTranslationTable ("<Message>WM_PROTOCOLS: quit()"));
+      (top_widget,
+       XtParseTranslationTable("<Message>WM_PROTOCOLS: do-quit()"));
+
     parent_widget = XtCreateManagedWidget("parent", panedWidgetClass,
 					 top_widget, NULL, 0);
 

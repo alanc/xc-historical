@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Dialog.h,v 1.2 90/04/25 08:30:56 dmatic Exp $
+ * $XConsortium: Dialog.h,v 1.3 90/11/01 19:34:20 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *

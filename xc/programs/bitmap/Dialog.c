@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Dialog.c,v 1.5 90/11/01 19:34:18 dave Exp $
+ * $XConsortium: Dialog.c,v 1.6 90/12/02 22:46:49 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,8 +23,6 @@
  * Author:  Davor Matic, MIT X Consortium
  */
 
-
-
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
@@ -36,10 +34,10 @@
 #define min(x, y)                     (((x) < (y)) ? (x) : (y))
 #define max(x, y)                     (((x) > (y)) ? (x) : (y))
 
-static void SetOkay();
+static void SetDialogButton();
 
 static XtActionsRec actions_table[] = {
-  {"set-okay", SetOkay},
+  {"set-dialog-button", SetDialogButton},
 };
 
 static DialogButton dialog_buttons[] = {
@@ -62,13 +60,23 @@ static void SetSelected(w, name)
     
     for (i = 0; i < XtNumber(dialog_buttons); i++) 
 	if (!strcmp(dialog_buttons[i].name, name)) 
-	    selected = dialog_buttons[i].flag;
+	    selected |= dialog_buttons[i].flag;
 }
 
-static void SetOkay(w)
-     Widget w;
+/* ARGSUSED */
+static void SetDialogButton(w, event, argv, argc)
+     Widget w;         /* not used */
+     XEvent *event;    /* not used */
+     String *argv;
+     Cardinal *argc;  
 {
-  SetSelected(w, "okay");
+  String button_name[80];
+  int i;
+
+  for (i = 0; i < *argc; i++) {
+    XmuCopyISOLatin1Lowered (button_name, argv[i]);
+    SetSelected(w, button_name);
+  }
 }
 
 Dialog CreateDialog(top_widget, name, options)
@@ -174,5 +182,5 @@ int PopupDialog(popup, message, suggestion, answer, grab)
 
   PopdownDialog(popup, answer);
 
-  return selected;
+  return (selected & popup->options);
 }

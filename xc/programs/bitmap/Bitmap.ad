@@ -1,4 +1,5 @@
 
+
 ! The App-defaults file for Bitmap.
 
 #if (COLOR)
@@ -32,6 +33,30 @@
 *form*width:              		120
 *form*height:             		15
 
+*translations:#override\
+			Ctrl<Key>c:	do-quit()\n\
+			<Key>q:		do-quit()\n\
+			Ctrl<Key>n:	do-new()\n\
+			Ctrl<Key>f:	do-load()\n\
+			Ctrl<Key>i:	do-insert()\n\
+			Ctrl<Key>s:	do-save()\n\
+			Ctrl<Key>w:	do-save-as()\n\
+			Ctrl<Key>r:	do-resize()\n\
+			Ctrl<Key>x:	do-rescale()\n\
+			Ctrl<Key>e:	do-filename()\n\
+			Ctrl<Key>b:	do-basename()\n\
+			Alt<Key>i:	switch-image()\n\
+			Alt<Key>g:	switch-grid()\n\
+			Alt<Key>d:	switch-dashed()\n\
+			Alt<Key>a:	switch-axes()\n\
+			Alt<Key>s:	switch-stippled()\n\
+			Alt<Key>p:	switch-proportional()\n\
+			Alt<Key>z:	switch-zoom()\n\
+			Alt<Key>c:	do-cut()\n\
+			Alt<Key>w:	do-copy()\n\
+			Alt<Key>y:	do-paste()
+
+
 *Toggle.translations:	<EnterWindow>:		highlight(WhenUnset)\n\
 			<LeaveWindow>:		unhighlight()\n\
 			<Btn1Down>,<Btn1Up>: 	set() notify()
@@ -40,12 +65,15 @@
 			<LeaveWindow>:  	reset()\n\
 			<BtnDown>:  		reset() fix-menu() PopupMenu()
 
-*Dialog.value.translations:#override<Key>Return:set-okay()
-*image.label.translations:#override<Btn1Down>,<Btn1Up>:image()
+*Dialog*translations:#override\
+			<Key>Return:	set-dialog-button(okay, yes, retry)\n\
+			Ctrl<Key>g:	set-dialog-button(cancel, abort)
+*image.label.translations:#override	<Btn1Down>,<Btn1Up>:	switch-image()
 
+*bitmap.distance:			16
 *bitmap.bitmapWidth:			32
 *bitmap.bitmapHeight:			32
-*bitmap.squareSize:			15
+*bitmap.squareSize:			16
 *bitmap.dashes:				Dashes
 *bitmap.dashed:				on
 *bitmap.cursor:           		tcross
@@ -91,27 +119,27 @@
 
 *SmeBSB.HorizontalMargins:		32
 
-*fileMenu.newFile.label:		New File...
-*fileMenu.load.label:			Load...
-*fileMenu.insert.label:			Insert...
-*fileMenu.save.label:			Save
-*fileMenu.saveAs.label:			Save As...
-*fileMenu.resize.label:			Resize...
-*fileMenu.rescale.label:		Rescale...
-*fileMenu.filename.label:		Filename...
-*fileMenu.basename.label:		Basename...
-*fileMenu.quit.label:			Quit
+*fileMenu.new.label:			New (Ctrl-N)...
+*fileMenu.load.label:			Load (Ctrl-F)...   
+*fileMenu.insert.label:			Insert (Ctrl-I)... 
+*fileMenu.save.label:			Save (Ctrl-S)
+*fileMenu.saveAs.label:			Save As (Ctrl-W)...
+*fileMenu.resize.label:			Resize (Ctrl-R)... 
+*fileMenu.rescale.label:		Rescale (Ctrl-X)...
+*fileMenu.filename.label:		Filename (Ctrl-E)...
+*fileMenu.basename.label:		Basename (Ctrl-B)...
+*fileMenu.quit.label:			Quit (Ctrl-C, Q)
 
-*editMenu.image.label:			Image
-*editMenu.grid.label:			Grid
-*editMenu.dashed.label:			Dashed
-*editMenu.axes.label:			Axes
-*editMenu.stippled.label:		Stippled
-*editMenu.proportional.label:		Proportional
-*editMenu.zoom.label:			Zoom
-*editMenu.cut.label:			Cut
-*editMenu.copy.label:			Copy
-*editMenu.paste.label:			Paste
+*editMenu.image.label:			Image (Alt-I)
+*editMenu.grid.label:			Grid (Alt-G)
+*editMenu.dashed.label:			Dashed (Alt-D)
+*editMenu.axes.label:			Axes (Alt-A)
+*editMenu.stippled.label:		Stippled (Alt-S)
+*editMenu.proportional.label:		Proportional (Alt-P)
+*editMenu.zoom.label:			Zoom (Alt-Z)
+*editMenu.cut.label:			Cut (Alt-C)
+*editMenu.copy.label:			Copy (Alt-W)
+*editMenu.paste.label:			Paste (Alt-Y, Ctrl-mb)
 
 *form.clear.label:			Clear
 *form.set.fromVert: 			clear
@@ -119,8 +147,15 @@
 *form.invert.fromVert: 			set
 *form.invert.label:			Invert
 
+*form.mark.vertDistance:		10
+*form.mark.fromVert:			invert
+*form.mark.label:			Mark
+*form.unmark.fromVert:              	mark
+*form.unmark.label:			Unmark
+
 *form.copy.vertDistance:		10
-*form.copy.fromVert: 			invert
+*form.copy.fromVert: 			unmark
+*form.copy.radioGroup:			mark
 *form.copy.label:			Copy
 *form.move.fromVert: 			copy
 *form.move.radioGroup:			copy

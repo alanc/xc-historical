@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.16 90/11/01 19:34:08 dave Exp $
+ * $XConsortium: Bitmap.c,v 1.17 90/12/02 22:46:37 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -42,8 +42,7 @@
 #define min(x, y)                     (((x) < (y)) ? (x) : (y))
 #define max(x, y)                     (((x) > (y)) ? (x) : (y))
 
-
-static Boolean DEBUG = False;
+Boolean DEBUG;
 
 #define DefaultGridTolerance 5
 #define DefaultBitmapWidth   16
@@ -90,16 +89,16 @@ static XtResource resources[] = {
      offset(hot.x), XtRImmediate, (XtPointer) NotSet},
 {XtNyHot, XtCYHot, XtRPosition, sizeof(Position),
      offset(hot.y), XtRImmediate, (XtPointer) NotSet},
-{XtNbutton1Action, XtCButton1Action, XtRInt, sizeof(int),
-     offset(button_action[0]), XtRImmediate, (XtPointer) Set},
-{XtNbutton2Action, XtCButton2Action, XtRInt, sizeof(int),
-     offset(button_action[1]), XtRImmediate, (XtPointer) Invert},
-{XtNbutton3Action, XtCButton3Action, XtRInt, sizeof(int),
-     offset(button_action[2]), XtRImmediate, (XtPointer) Clear},
-{XtNbutton4Action, XtCButton4Action, XtRInt, sizeof(int),
-     offset(button_action[3]), XtRImmediate, (XtPointer) Invert},
-{XtNbutton5Action, XtCButton5Action, XtRInt, sizeof(int),
-     offset(button_action[4]), XtRImmediate, (XtPointer) Invert},
+{XtNbutton1Function, XtCButton1Function, XtRButtonFunction, sizeof(int),
+     offset(button_function[0]), XtRImmediate, (XtPointer) Set},
+{XtNbutton2Function, XtCButton2Function, XtRButtonFunction, sizeof(int),
+     offset(button_function[1]), XtRImmediate, (XtPointer) Invert},
+{XtNbutton3Function, XtCButton3Function, XtRButtonFunction, sizeof(int),
+     offset(button_function[2]), XtRImmediate, (XtPointer) Clear},
+{XtNbutton4Function, XtCButton4Function, XtRButtonFunction, sizeof(int),
+     offset(button_function[3]), XtRImmediate, (XtPointer) Clear},
+{XtNbutton5Function, XtCButton5Function, XtRButtonFunction, sizeof(int),
+     offset(button_function[4]), XtRImmediate, (XtPointer) Clear},
 {XtNfilename, XtCFilename, XtRString, sizeof(String),
      offset(filename), XtRImmediate, (XtPointer) XtNscratch},
 {XtNbasename, XtCBasename, XtRString, sizeof(String),
@@ -130,12 +129,14 @@ void BWInvert();
 void BWUndo();
 void BWRedraw();
 void BWTMark();
+void BWTMarkAll();
 void BWTUnmark();
 void BWTPaste();
 
 static XtActionsRec actions[] =
 {
 {"mark",               BWTMark},
+{"mark-all",           BWTMarkAll},
 {"unmark",             BWTUnmark},
 {"paste",              BWTPaste},
 {"bw-debug",           BWDebug},
@@ -161,9 +162,10 @@ static XtActionsRec actions[] =
 
 static char translations[] =
 "\
- Ctrl<Btn1Down>:   mark()\n\
- Ctrl<Btn2Down>:   paste()\n\
- Ctrl<Btn3Down>:   unmark()\n\
+ Shift<Btn1Down>:  mark()\n\
+ Shift<Btn2Down>:  mark-all()\n\
+ Shift<Btn3Down>:  unmark()\n\
+ Ctrl<BtnDown>:    paste()\n\
  Ctrl<Key>l:       redraw()\n\
  <Key>d:           bw-debug()\n\
  <Key>t:           terminate()\n\
@@ -222,8 +224,7 @@ static char translations[] =
 
 Atom targets[] = {
     XA_BITMAP,
-    XA_PIXMAP,
-    XA_STRING,
+    XA_PIXMAP
 };
 
 #include "Requests.h"
@@ -284,6 +285,7 @@ BitmapClassRec bitmapClassRec = {
 WidgetClass bitmapWidgetClass = (WidgetClass) &bitmapClassRec;
     
 /* ARGSUSED */
+
 void BWDebug(w)
     Widget w;
 {
@@ -481,12 +483,30 @@ void BWSwitchStippled(w)
     Widget w;
 {
     BitmapWidget BW = (BitmapWidget) w;
+    XExposeEvent event;
+
+    event.type = Expose;
+    event.display = XtDisplay(w);
+    event.window = XtWindow(w);
+    event.x = 0;
+    event.y = 0;
+    event.width = BW->core.width;
+    event.height = BW->core.height;
+    event.count = 0;
 
     BWRedrawMark(w);
     
+    BW->bitmap.stipple_change_expose_event = True; 
+
+    XtDispatchEvent(&event);
+
     BW->bitmap.stippled ^= True;
     XSetFillStyle(XtDisplay(BW), BW->bitmap.highlighting_gc,
 		  (BW->bitmap.stippled ? FillStippled : FillSolid));
+
+    XtDispatchEvent(&event);
+
+    BW->bitmap.stipple_change_expose_event = False;
 
     BWRedrawMark(w);
 }
@@ -617,6 +637,51 @@ int XmuWriteBitmapDataToFile (filename, basename,
     return 1;
 }
 
+/*
+ *
+ */
+
+
+static void CvtStringToButtonFunction(args, num_args, from_val, to_val)
+    XrmValuePtr args;		/* not used */
+    Cardinal    *num_args;      /* not used */
+    XrmValuePtr from_val;
+    XrmValuePtr to_val;
+{
+  static button_function;
+  char lower_name[80];
+  int i;
+ 
+  XmuCopyISOLatin1Lowered (lower_name, (char*)from_val->addr);
+  
+  if (!strcmp(lower_name, XtClear)) {
+    button_function = Clear;
+    to_val->addr = (caddr_t) &button_function;
+    to_val->size = sizeof(button_function);
+    return;
+  }
+  
+  if (!strcmp(lower_name, XtSet)) {
+    button_function = Set;
+    to_val->addr = (caddr_t) &button_function;
+    to_val->size = sizeof(button_function);
+    return;
+  }
+
+  if (!strcmp(lower_name, XtInvert)) {
+    button_function = Invert;
+    to_val->addr = (caddr_t) &button_function;
+    to_val->size = sizeof(button_function);
+    return;
+  }
+  
+  XtStringConversionWarning(from_val->addr, XtRButtonFunction);
+  button_function = Clear;
+  to_val->addr = (caddr_t) &button_function;
+  to_val->size = sizeof(button_function);
+  
+}
+
 void Refresh();
 
 static void ClassInitialize()
@@ -630,7 +695,11 @@ static void ClassInitialize()
 
   XtAddConverter(XtRString, XtRBitmap, XmuCvtStringToBitmap,
 		 screenConvertArg, XtNumber(screenConvertArg));
-  
+  XtAddConverter(XtRString, XtRButtonFunction, CvtStringToButtonFunction,
+		 NULL, 0);
+
+    DEBUG = False;
+
 }
 
 /* ARGSUSED */
@@ -643,6 +712,7 @@ static void Initialize(request, new, argv, argc)
     XtGCMask   mask;
     char *image_data, *buffer_data;
 
+    new->bitmap.stipple_change_expose_event = False;
     new->bitmap.notify = NULL;
     new->bitmap.cardinal = 0;
     new->bitmap.current = 0;
@@ -850,7 +920,6 @@ String BWUnparseStatus(w)
     return BW->bitmap.status;
 }
 
-    
 void BWChangeFilename(w, str)
     Widget w;
     String str;
@@ -1356,13 +1425,13 @@ static void Redisplay(BW, event, region)
      XEvent      *event;
      Region       region;
 {
-    if(event->type == Expose) {
-	if (BW->core.visible) {  
-	    Refresh(BW, 
-		    event->xexpose.x, event->xexpose.y,
-		    event->xexpose.width, event->xexpose.height);
-	}
-    }
+  if(event->type == Expose
+     &&
+     BW->core.visible)
+    if (BW->bitmap.stipple_change_expose_event == False)
+      Refresh(BW, 
+	      event->xexpose.x, event->xexpose.y,
+	      event->xexpose.width, event->xexpose.height);
 }
 
 void BWClip(w, from_x, from_y, to_x, to_y)
@@ -1618,3 +1687,52 @@ void BWProportional(w, _switch)
 }
 
 
+void BWTPaste(w, event)
+    Widget  w;
+    XEvent *event;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+
+    BWRequestSelection(w, event->xbutton.time, TRUE);
+
+    if (!BWQueryStored(w))
+	return;
+    
+    BWEngageRequest(w, RestoreRequest, False, 
+		    (char *)&(event->xbutton.state), sizeof(int));
+    
+    OnePointHandler(w,
+	       (BWStatus*) BW->bitmap.request_stack[BW->bitmap.current].status,
+	       event);
+}
+
+void BWTMark(w, event)
+    Widget  w;
+    XEvent *event;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+
+    BWEngageRequest(w, MarkRequest, False,
+		    (char *)&(event->xbutton.state), sizeof(int));
+    TwoPointsHandler(w,
+            (BWStatus*) BW->bitmap.request_stack[BW->bitmap.current].status,
+	     event);
+
+}
+
+void BWTMarkAll(w, event)
+    Widget w;
+    XEvent *event;
+{
+    BWMarkAll(w);
+
+    BWGrabSelection(w, event->xkey.time);
+}
+
+void BWTUnmark(w)
+    Widget w;
+{
+    BWUnmark(w);
+}
+
+/*****************************************************************************/

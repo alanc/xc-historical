@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Requests.h,v 1.3 90/10/30 17:39:01 dave Exp $
+ * $XConsortium: Requests.h,v 1.4 90/11/01 19:34:28 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
