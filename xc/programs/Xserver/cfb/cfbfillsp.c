@@ -287,13 +287,13 @@ int fSorted;
 
     if (pGC->fillStyle == FillTiled)
     {
-	pTile = ((cfbPrivGC *)(pGC->devPriv))->pRotatedTile;
+	pTile = pGC->tile;
 	tlwidth = pTile->devKind >> 2;
 	rop = pGC->alu;
     }
     else
     {
-	pTile = ((cfbPrivGC *)(pGC->devPriv))->pRotatedStipple;
+	pTile = pGC->stipple;
 	tlwidth = pTile->devKind >> 2;
 	rop = pGC->alu;
     }
@@ -493,7 +493,7 @@ int fSorted;
      *		Words per scanline = stwidth
      *		Pointer to pixels = pStipple->devPrivate
      */
-    pStipple = ((cfbPrivGC *)(pGC->devPriv))->pRotatedStipple;
+    pStipple = pGC->stipple;
 
     if (pStipple->drawable.depth != 1) {
 	FatalError( "Stipple depth not equal to 1!\n" );
