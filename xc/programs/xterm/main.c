@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.84 88/09/12 17:03:35 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.85 88/09/12 17:17:52 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -593,11 +593,14 @@ char **argv;
 			get_ty[strlen(get_ty) - 2];
 		ptydev[strlen(ptydev) - 1] = ttydev[strlen(ttydev) - 1] =
 			get_ty[strlen(get_ty) - 1];
+		(void) close (0);	/* stdin */
 		if ((loginpty = open(ptydev, O_RDWR, 0)) < 0) {
 			consolepr("pty open of \"%s\" failed, ttydev \"%s\", get_ty \"%s\"\n",
 				  ptydev, ttydev, get_ty);
 			exit(ERROR_PTYS);
 		}
+		dup2 (0, 1);		/* stdout */
+		dup2 (0, 2);		/* stderr */
 		chown(ttydev, 0, 0);
 		chmod(ttydev, 0622);
 		continue;
