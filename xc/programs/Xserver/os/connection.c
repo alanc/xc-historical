@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.155 93/07/12 09:34:04 dpw Exp $ */
+/* $XConsortium: connection.c,v 1.156 93/09/03 08:20:39 dpw Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -86,7 +86,6 @@ static int unixDomainConnection = -1;
 
 #include <stdio.h>
 #include <sys/uio.h>
-#include "osstruct.h"
 #include "osdep.h"
 #include "opaque.h"
 #include "dixstruct.h"
