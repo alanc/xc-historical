@@ -1,4 +1,4 @@
-/* $XConsortium: uconvRep.c,v 5.3 91/05/04 23:17:44 keith Exp $ */
+/* $XConsortium: uconvRep.c,v 5.4 91/06/14 15:49:48 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -867,7 +867,7 @@ pexGetImpDepConstantsReply  *reply;
     CARD16 *pnames = (CARD16 *)(strmPtr+1);
     CARD32 i;
     CARD32 *ptr = (CARD32 *)(reply+1);
-    FLOAT *pf;
+    PEXFLOAT *pf;
 
     SWAP_CARD16 (reply->sequenceNumber);
     SWAP_CARD32 (reply->length);	/* not 0 */
@@ -908,9 +908,9 @@ pexGetImpDepConstantsReply  *reply;
 	    case PEXIDChromaticityWhiteU:
 	    case PEXIDChromaticityWhiteV:
 	    case PEXIDLuminanceWhite:
-						pf = (FLOAT *)ptr;
-						SWAP_FLOAT((*pf));
-						break;
+		      pf = (PEXFLOAT *)ptr;
+		      SWAP_FLOAT((*pf));
+		break;
 	}
     }
 }
@@ -1057,8 +1057,8 @@ unsigned char	*ptr;
     };
 
     if (im & PEXSCDistance) {
-	SWAP_FLOAT ((*((FLOAT *)sc_data)));
-	sc_data += sizeof(FLOAT);
+	SWAP_FLOAT ((*((PEXFLOAT *)sc_data)));
+	sc_data += sizeof(PEXFLOAT);
     };
 
     if (im & PEXSCCeiling) {
@@ -1312,8 +1312,8 @@ CARD8 	*p_data;
     }
 
     if (itemMask[0] & PEXPCMarkerScale) {
-	SWAP_FLOAT ((*((FLOAT *)ptr)));
-	ptr += sizeof(FLOAT);
+	SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	ptr += sizeof(PEXFLOAT);
     }
 
     if (itemMask[0] & PEXPCMarkerColour) {
@@ -1337,13 +1337,13 @@ CARD8 	*p_data;
     }
 
     if (itemMask[0] & PEXPCCharExpansion) {
-	SWAP_FLOAT ((*((FLOAT *)ptr)));
-	ptr += sizeof(FLOAT);
+	SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	ptr += sizeof(PEXFLOAT);
     }
 
     if (itemMask[0] & PEXPCCharSpacing) {
-	SWAP_FLOAT ((*((FLOAT *)ptr)));
-	ptr += sizeof(FLOAT);
+	SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	ptr += sizeof(PEXFLOAT);
     }
 
     if (itemMask[0] & PEXPCTextColour) {
@@ -1352,15 +1352,15 @@ CARD8 	*p_data;
     }
 
     if (itemMask[0] & PEXPCCharHeight) {
-	SWAP_FLOAT ((*((FLOAT *)ptr)));
-	ptr += sizeof(FLOAT);
+	SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	ptr += sizeof(PEXFLOAT);
     }
 
     if (itemMask[0] & PEXPCCharUpVector) {
-	SWAP_FLOAT ((*((FLOAT *)ptr)));
-	ptr += sizeof(FLOAT);
-	SWAP_FLOAT ((*((FLOAT *)ptr)));
-	ptr += sizeof(FLOAT);
+	SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	ptr += sizeof(PEXFLOAT);
+	SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	ptr += sizeof(PEXFLOAT);
     }
 
     if (itemMask[0] & PEXPCTextPath) {
@@ -1376,15 +1376,15 @@ CARD8 	*p_data;
     }
 
     if (itemMask[0] & PEXPCAtextHeight) {
-	SWAP_FLOAT ((*((FLOAT *)ptr)));
-	ptr += sizeof(FLOAT);
+	SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	ptr += sizeof(PEXFLOAT);
     }
 
     if (itemMask[0] & PEXPCAtextUpVector) {
-	SWAP_FLOAT ((*((FLOAT *)ptr)));
-	ptr += sizeof(FLOAT);
-	SWAP_FLOAT ((*((FLOAT *)ptr)));
-	ptr += sizeof(FLOAT);
+	SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	ptr += sizeof(PEXFLOAT);
+	SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	ptr += sizeof(PEXFLOAT);
     }
 
     if (itemMask[0] & PEXPCAtextPath) {
@@ -1415,8 +1415,8 @@ CARD8 	*p_data;
     }
 
     if (itemMask[0] & PEXPCLineWidth) {
-	SWAP_FLOAT ((*((FLOAT *)ptr)));
-	ptr += sizeof(FLOAT);
+	SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	ptr += sizeof(PEXFLOAT);
     }
 
     if (itemMask[0] & PEXPCLineColour) {
@@ -1427,8 +1427,8 @@ CARD8 	*p_data;
     if (itemMask[0] & PEXPCCurveApproximation) {
 	SWAP_INT16 ((*((INT16 *)ptr)));
 	ptr += sizeof(CARD32);
-	SWAP_FLOAT ((*((FLOAT *)ptr)));
-	ptr += sizeof(FLOAT);
+	SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	ptr += sizeof(PEXFLOAT);
     }
 
     if (itemMask[0] & PEXPCPolylineInterp) {
@@ -1457,16 +1457,16 @@ CARD8 	*p_data;
     }
 
     if (itemMask[0] & PEXPCSurfaceReflAttr) {
-	SWAP_FLOAT ((*((FLOAT *)ptr)));
-	ptr += sizeof(FLOAT);
-	SWAP_FLOAT ((*((FLOAT *)ptr)));
-	ptr += sizeof(FLOAT);
-	SWAP_FLOAT ((*((FLOAT *)ptr)));
-	ptr += sizeof(FLOAT);
-	SWAP_FLOAT ((*((FLOAT *)ptr)));
-	ptr += sizeof(FLOAT);
-	SWAP_FLOAT ((*((FLOAT *)ptr)));
-	ptr += sizeof(FLOAT);
+	SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	ptr += sizeof(PEXFLOAT);
+	SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	ptr += sizeof(PEXFLOAT);
+	SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	ptr += sizeof(PEXFLOAT);
+	SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	ptr += sizeof(PEXFLOAT);
+	SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	ptr += sizeof(PEXFLOAT);
 	ptr = SWAP_FUNC_PREFIX(SwapColourSpecifier) (swapPtr,
 						     (pexColourSpecifier *)ptr);
     }
@@ -1497,16 +1497,16 @@ CARD8 	*p_data;
     }
 
     if (itemMask[1] & PEXPCBfSurfaceReflAttr) {
-	SWAP_FLOAT ((*((FLOAT *)ptr)));
-	ptr += sizeof(FLOAT);
-	SWAP_FLOAT ((*((FLOAT *)ptr)));
-	ptr += sizeof(FLOAT);
-	SWAP_FLOAT ((*((FLOAT *)ptr)));
-	ptr += sizeof(FLOAT);
-	SWAP_FLOAT ((*((FLOAT *)ptr)));
-	ptr += sizeof(FLOAT);
-	SWAP_FLOAT ((*((FLOAT *)ptr)));
-	ptr += sizeof(FLOAT);
+	SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	ptr += sizeof(PEXFLOAT);
+	SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	ptr += sizeof(PEXFLOAT);
+	SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	ptr += sizeof(PEXFLOAT);
+	SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	ptr += sizeof(PEXFLOAT);
+	SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	ptr += sizeof(PEXFLOAT);
 	ptr = SWAP_FUNC_PREFIX(SwapColourSpecifier) (swapPtr,
 						     (pexColourSpecifier *)ptr);
     }
@@ -1524,10 +1524,10 @@ CARD8 	*p_data;
     if (itemMask[1] & PEXPCSurfaceApproximation) {
 	SWAP_INT16 ((*((INT16 *)ptr)));
 	ptr += sizeof(CARD32);
-	SWAP_FLOAT ((*((FLOAT *)ptr)));
-	ptr += sizeof(FLOAT);
-	SWAP_FLOAT ((*((FLOAT *)ptr)));
-	ptr += sizeof(FLOAT);
+	SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	ptr += sizeof(PEXFLOAT);
+	SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	ptr += sizeof(PEXFLOAT);
     }
 
     if (itemMask[1] & PEXPCCullingMode) {
@@ -1540,37 +1540,37 @@ CARD8 	*p_data;
     }
 
     if (itemMask[1] & PEXPCPatternSize) {
-	SWAP_FLOAT ((*((FLOAT *)ptr)));
-	ptr += sizeof(FLOAT);
-	SWAP_FLOAT ((*((FLOAT *)ptr)));
-	ptr += sizeof(FLOAT);
+	SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	ptr += sizeof(PEXFLOAT);
+	SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	ptr += sizeof(PEXFLOAT);
     }
 
     if (itemMask[1] & PEXPCPatternRefPt) {
-	SWAP_FLOAT ((*((FLOAT *)ptr)));
-	ptr += sizeof(FLOAT);
-	SWAP_FLOAT ((*((FLOAT *)ptr)));
-	ptr += sizeof(FLOAT);
-	SWAP_FLOAT ((*((FLOAT *)ptr)));
-	ptr += sizeof(FLOAT);
+	SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	ptr += sizeof(PEXFLOAT);
+	SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	ptr += sizeof(PEXFLOAT);
+	SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	ptr += sizeof(PEXFLOAT);
     }
 
     if (itemMask[1] & PEXPCPatternRefVec1) {
-	SWAP_FLOAT ((*((FLOAT *)ptr)));
-	ptr += sizeof(FLOAT);
-	SWAP_FLOAT ((*((FLOAT *)ptr)));
-	ptr += sizeof(FLOAT);
-	SWAP_FLOAT ((*((FLOAT *)ptr)));
-	ptr += sizeof(FLOAT);
+	SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	ptr += sizeof(PEXFLOAT);
+	SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	ptr += sizeof(PEXFLOAT);
+	SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	ptr += sizeof(PEXFLOAT);
     }
 
     if (itemMask[1] & PEXPCPatternRefVec2) {
-	SWAP_FLOAT ((*((FLOAT *)ptr)));
-	ptr += sizeof(FLOAT);
-	SWAP_FLOAT ((*((FLOAT *)ptr)));
-	ptr += sizeof(FLOAT);
-	SWAP_FLOAT ((*((FLOAT *)ptr)));
-	ptr += sizeof(FLOAT);
+	SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	ptr += sizeof(PEXFLOAT);
+	SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	ptr += sizeof(PEXFLOAT);
+	SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	ptr += sizeof(PEXFLOAT);
     }
 
     if (itemMask[1] & PEXPCInteriorBundleIndex) {
@@ -1589,8 +1589,8 @@ CARD8 	*p_data;
     }
 
     if (itemMask[1] & PEXPCSurfaceEdgeWidth) {
-	SWAP_FLOAT ((*((FLOAT *)ptr)));
-	ptr += sizeof(FLOAT);
+	SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	ptr += sizeof(PEXFLOAT);
     }
 
     if (itemMask[1] & PEXPCSurfaceEdgeColour) {
@@ -1607,8 +1607,8 @@ CARD8 	*p_data;
 	int i, j;
 	for (i=0; i<4; i++)
 	    for (j=0; j<4; j++) {
-		SWAP_FLOAT((*((FLOAT *)ptr)));
-		ptr += sizeof(FLOAT);
+		SWAP_FLOAT((*((PEXFLOAT *)ptr)));
+		ptr += sizeof(PEXFLOAT);
 	    }
     }
 
@@ -1616,8 +1616,8 @@ CARD8 	*p_data;
 	int i, j;
 	for (i=0; i<4; i++)
 	    for (j=0; j<4; j++) {
-		SWAP_FLOAT((*((FLOAT *)ptr)));
-		ptr += sizeof(FLOAT);
+		SWAP_FLOAT((*((PEXFLOAT *)ptr)));
+		ptr += sizeof(PEXFLOAT);
 	    }
     }
 

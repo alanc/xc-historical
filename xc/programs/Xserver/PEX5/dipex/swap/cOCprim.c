@@ -1,4 +1,4 @@
-/* $XConsortium: cOCprim.c,v 5.3 91/05/04 23:17:13 keith Exp $ */
+/* $XConsortium: cOCprim.c,v 5.4 91/06/14 15:48:34 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -288,7 +288,7 @@ pexSwap	*swapPtr;
 pexNurbCurve	*strmPtr;
 {
     int i;
-    FLOAT *pf;
+    PEXFLOAT *pf;
 
     SWAP_CARD16 (strmPtr->curveOrder);
     SWAP_COORD_TYPE (strmPtr->coordType);
@@ -297,7 +297,7 @@ pexNurbCurve	*strmPtr;
     SWAP_CARD32 (strmPtr->numKnots);
     SWAP_CARD32 (strmPtr->numPoints);
 
-    for (i=0, pf=(FLOAT *)(strmPtr+1); i<strmPtr->numKnots; i++, pf++)
+    for (i=0, pf=(PEXFLOAT *)(strmPtr+1); i<strmPtr->numKnots; i++, pf++)
 	SWAP_FLOAT((*pf));
 
     if (strmPtr->coordType == PEXRational) 
@@ -541,7 +541,7 @@ pexSwap	*swapPtr;
 pexNurbSurface	*strmPtr;
 {
     CARD32 i, j, k;
-    FLOAT *pf;
+    PEXFLOAT *pf;
     unsigned char *ptr;
     CARD32 numPoints, numKnots;
     CARD32 numSublists;
@@ -557,7 +557,7 @@ pexNurbSurface	*strmPtr;
     SWAP_CARD16 (strmPtr->nPts);
     SWAP_CARD32 (strmPtr->numLists);
 
-    for (i=0, pf=(FLOAT *)(strmPtr+1); i<strmPtr->numUknots; i++, pf++)
+    for (i=0, pf=(PEXFLOAT *)(strmPtr+1); i<strmPtr->numUknots; i++, pf++)
 	SWAP_FLOAT((*pf));
 
     for (i=0; i<strmPtr->numVknots; i++, pf++)

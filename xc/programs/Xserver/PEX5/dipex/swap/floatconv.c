@@ -1,4 +1,4 @@
-/* $XConsortium: floatconv.c,v 5.2 91/02/16 09:57:18 rws Exp $ */
+/* $XConsortium: floatconv.c,v 5.3 91/05/12 20:03:20 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -114,9 +114,9 @@ SOFTWARE.
  * 	brute force BITMASKS and shifts.
  */
 
-FLOAT 
+PEXFLOAT 
 ConvertVaxToIEEE(VaxnumR)
-    FLOAT *VaxnumR;
+    PEXFLOAT *VaxnumR;
 {
     register CARD32 Vaxnum = *(CARD32 *)VaxnumR;
     CARD32 result=0;
@@ -125,13 +125,13 @@ ConvertVaxToIEEE(VaxnumR)
     {
 	result = MAX_IEEE_POSITIVE |
 	    (((0x00008000)&Vaxnum) ? 0x80000000 : 0L);
-	return *(FLOAT *)(&result);
+	return *(PEXFLOAT *)(&result);
     };
     
     if ((VAX_SIGN_MASK & Vaxnum)==MIN_VAX_POSITIVE)
     {
 	result = MIN_IEEE_POSITIVE;
-	return *(FLOAT *)(&result);
+	return *(PEXFLOAT *)(&result);
     };
 
     /*
@@ -143,7 +143,7 @@ ConvertVaxToIEEE(VaxnumR)
     result |= (((BITMASK(7) & Vaxnum)<<16) |
 	       (((BITMASK(16)<<16) & Vaxnum)>>16));
     result |= ( (0x00008000 & Vaxnum) ? 0x80000000 : 0L);
-    return *(FLOAT *)(&result);
+    return *(PEXFLOAT *)(&result);
 }
 
 /*****************************************************************
@@ -172,9 +172,9 @@ ConvertVaxToIEEE(VaxnumR)
  * 	brute force BITMASKS and shifts.
  */
     
-FLOAT 
+PEXFLOAT 
 ConvertIEEEToVax(IEEEnumR)
-    FLOAT *IEEEnumR;
+    PEXFLOAT *IEEEnumR;
 {
     register CARD32 IEEEnum = *(CARD32 *)IEEEnumR;
     CARD32 result=0;
@@ -183,13 +183,13 @@ ConvertIEEEToVax(IEEEnumR)
     {
 	result = MAX_VAX_POSITIVE |
 	    (0x80000000&IEEEnum)>>16;
-	return *(FLOAT *)(&result);
+	return *(PEXFLOAT *)(&result);
     };
     
     if ((IEEE_SIGN_MASK & IEEEnum)==MIN_IEEE_POSITIVE)
     {
 	result = MIN_VAX_POSITIVE;
-	return *(FLOAT *)(&result);
+	return *(PEXFLOAT *)(&result);
     };
 
     /*
@@ -201,5 +201,5 @@ ConvertIEEEToVax(IEEEnumR)
     result |= ((BITMASK(7)<<16)&IEEEnum)>>16;
     result |= (BITMASK(16)&IEEEnum)<<16;
     result |= (0x80000000&IEEEnum)>>16;
-    return *(FLOAT *)(&result);  /* hopefully the *& will not generate code */
+    return *(PEXFLOAT *)(&result);  /* hopefully the *& will not generate code */
 }
