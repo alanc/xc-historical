@@ -1,4 +1,4 @@
-/* $XConsortium: SMlib.h,v 1.21 94/04/07 18:27:10 mor Exp $ */
+/* $XConsortium: SMlib.h,v 1.22 94/04/17 20:16:50 mor Exp $ */
 
 /*
 
@@ -386,6 +386,8 @@ typedef void (*SmsErrorHandler) (
  * Function Prototypes
  */
 
+_XFUNCPROTOBEGIN
+
 extern SmcConn SmcOpenConnection (
 #if NeedFunctionPrototypes
     char *		/* networkIdsList */,
@@ -652,5 +654,7 @@ extern void SmFreeReasons (
     char **		/* reasonMsgs */
 #endif
 );
+
+_XFUNCPROTOEND
 
 #endif /* _SMLIB_H_ */
