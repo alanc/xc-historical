@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Converters.c,v 1.46 89/10/03 08:31:57 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Converters.c,v 1.47 89/10/05 13:48:12 swick Exp $";
 /* $oHeader: Converters.c,v 1.6 88/09/01 09:26:23 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -144,33 +144,44 @@ static Boolean IsInteger(string, value)
     String string;
     int *value;
 {
-    Boolean found_some = False;
+    Boolean foundDigit = False;
+    Boolean isNegative = False;
+    Boolean isPositive = False;
     int val = 0;
     char ch;
+    /* skip leading whitespace */
+    while ((ch = *string) == ' ' || ch == '\t') string++;
     while (ch = *string++) {
 	if (ch >= '0' && ch <= '9') {
 	    val *= 10;
 	    val += ch - '0';
-	    found_some = True;
+	    foundDigit = True;
 	    continue;
 	}
 	if (ch == ' ' || ch == '\t') {
-	    if (found_some) {
-		/* make sure only trailing whitespace */
-		while (ch = *string++) {
-		    if (ch != ' ' && ch != '\t')
-			return False;
-		}
-		break;
+	    if (!foundDigit) return False;
+	    /* make sure only trailing whitespace */
+	    while (ch = *string++) {
+		if (ch != ' ' && ch != '\t')
+		    return False;
 	    }
-	    /* skip leading whitespace */
-	    while ((ch = *string) == ' ' || ch == '\t') string++;
+	    break;
+	}
+	if (ch == '-' && !foundDigit && !isNegative && !isPositive) {
+	    isNegative = True;
+	    continue;
+	}
+	if (ch == '+' && !foundDigit && !isNegative && !isPositive) {
+	    isPositive = True;
 	    continue;
 	}
 	return False;
     }
     if (ch == '\0') {
-	*value = val;
+	if (isNegative)
+	    *value = -val;
+	else
+	    *value = val;
 	return True;
     }
     return False;
