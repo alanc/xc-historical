@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Scroll.c,v 1.10 87/12/08 11:08:22 swick Locked $";
+static char rcsid[] = "$Header: Scroll.c,v 1.13 87/12/14 09:18:13 swick Locked $";
 #endif lint
 
 /*
@@ -523,10 +523,12 @@ static void DoThumb( gw, event, params, num_params )
 /* Public routines. */
 
 /* Set the scroll bar to the given location. */
-extern void XtScrollBarSetThumb( w, top, shown )
-  ScrollbarWidget w;
+extern void XtScrollBarSetThumb( gw, top, shown )
+  Widget gw;
   float top, shown;
 {
+    ScrollbarWidget w = (ScrollbarWidget)gw;
+
     if (!(top < 0.0 || top > 1.0))	w->scrollbar.top = top;
     if (!(shown < 0.0 || shown > 1.0))	w->scrollbar.shown = shown;
 
