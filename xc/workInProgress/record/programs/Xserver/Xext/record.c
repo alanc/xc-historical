@@ -1,4 +1,4 @@
-/* $XConsortium: record.c,v 1.4 94/01/30 15:59:13 rws Exp $ */
+/* $XConsortium: record.c,v 1.5 94/01/30 19:11:03 rws Exp $ */
 /***************************************************************************
  * Copyright 1994 Network Computing Devices;
  * Portions Copyright 1988 by Digital Equipment Corporation and the
@@ -37,19 +37,25 @@
 #include "record.h"
 #include "recordstr.h"
 
-extern int XRecordRequestVector(
+typedef int (*ReqProc) (
+#if NeedNestedPrototypes
+		ClientPtr /* pClient */
+#endif
+);
+
+extern int XRecordRequest(
 #if NeedFunctionPrototypes
 	ClientPtr client
 #endif
 );
 
-extern int  XRecordEventVector(
+extern int  XRecordEvent(
 #if NeedFunctionPrototypes
 	ClientPtr client,
         xEvent *x_event
 #endif
 );
-extern int XRecordErrorVector(
+extern int XRecordError(
 #if NeedFunctionPrototypes
 	ClientPtr client,
         xError *x_error
@@ -75,8 +81,8 @@ static int      RecordEventBase;
 static int      RecordErrorBase;
 
 static RESTYPE   RTConfig = 0;
-static RESTYPE   XRecordClass;    /* Resource class for this extension */
 static RESTYPE   XRecordDelete;   /* Resource type for intercepted clients */
+static RESTYPE   XRecordGone;   /* Resource type for intercept vectors  */
 
 #define VERIFY_RCONFIG(id, config, client) \
 { \
@@ -108,39 +114,30 @@ static RESTYPE   XRecordDelete;   /* Resource type for intercepted clients */
             	return BadValue; \
 }
 
-
-typedef struct
-{
-  	ClientPtr            client;
-} XRecordEnv;
-
 /*----------------------------*
  *  Global Data Declarations  *
  *----------------------------*/
-globaldef int_function XRecordEventProcVector[128L] = {NULL};
-globaldef int_function EventProcVector[128L] = {NULL};
-globaldef int_function XRecordProcVector[256L] = {XRecordRequestVector};
-static INT16    VectoredEvents[128L]  = {0L};
+int    RecordedEvents[128L]  = {0L};
+
+static int_function *SavedRequestVectors[MAXCLIENTS];
 
 extern int	currentMaxClients;
-extern int (* ProcVector[256L]) ();
+extern int (* ProcVector[256]) ();
 extern int (* InitialVector[3]) ();
 extern void_function EventSwapVector[128L];
 
-typedef struct _RecordInterceptClientList {
-    XID		intercept_id;
-    XID		rec_id;
-    struct _RecordInterceptClientList *next;
-} RecordInterceptClientList;
+typedef struct _RecordIntercept {
+    struct _RecordIntercept *next;
+    XRecordFlags        flags;          /* Protocol to be intercepted */
+    XID			intercept_id;	/* client base */
+    XID			rec_id;		/* client-death resource id */
+} RecordIntercept;
 
 typedef struct 	_RecordConfig
 {
-    ClientPtr		control_client;	/* Control connection */
     ClientPtr		data_client;  	/* Data connection */
     XRecordConfig      	id;		/* config XID */
-    XRecordFlags        flags;          /* Protocol to be intercepted */
-    BOOL		enabled; 	/* Is configuration enabled */
-    RecordInterceptClientList   *pInterceptClients; /* Clients to intercept */
+    RecordIntercept	*pInterceptClients; /* Clients to intercept */
 } RecordConfig, *RecordConfigPtr;
 
 static int		RecordNumConfigs = 0;
@@ -149,7 +146,7 @@ static RecordConfig 	**RecordConfigList = NULL;
 /*----------------------------*
  *  Forward Declarations
  *----------------------------*/
-static void 	RecordSwapClientProto();
+static void 	RecordClientProto();
 static int 	FreeConfig();
 static int 	FreeDelete();
 static void 	_SwapProc ();
@@ -157,93 +154,85 @@ void 		sReplyRecordGetCur();
 void 		sReplyRecordQueryVersion();
 
 /*
-*** Procedures to support config objects
-*/
+ * Procedures to support config objects
+ */
 static int
 FreeConfig(env, id)
     pointer         env;
     XID             id;
 {
-     RecordConfig 	*pConfig = (RecordConfig *)env;
+    RecordConfig 	*pConfig = (RecordConfig *)env;
+    RecordIntercept	*pCur;
+    int i;
 
-     if (RecordConfigList)
-     {
-	int i, found = 0;
-
-        for (i = 0; i < RecordNumConfigs; i++)
-        {
-            if (RecordConfigList[i] == pConfig)
-            {
-		RecordInterceptClientList *pCur, *pPrev;
-		found = i;
-
-    		for (pPrev = NULL, pCur = pConfig->pInterceptClients;
-	 	    pCur;
-	 	    pPrev = pCur, pCur = pCur->next)
-    		{	
-		    RecordSwapClientProto(pCur->intercept_id, pConfig->flags, xTrue);
-                    /* FreeResource(pCur->intercept_id, RT_NONE); */
-	    	    if (pPrev)
-		    	pPrev->next = pCur->next;
-	            else
-		    	pConfig->pInterceptClients = pCur->next;
-	            xfree(pCur);
-                }
-                break;
-    	   }
-        }
-        if (found <= RecordNumConfigs && RecordConfigList[i] == pConfig)
-        {
-            for (i = found; i <= RecordNumConfigs; i++)
-            {
-                RecordConfigList[i] = RecordConfigList[i+1];
-            }
-      	    if(RecordNumConfigs)
-            {
-		RecordNumConfigs--;
-#ifdef VERBOSE
-
-    		ErrorF("%s:  Free config: 0x%1x\n",
-          		XRecordExtName, pConfig);
-#endif
-            }
+    while(pCur = pConfig->pInterceptClients)
+    {
+	if (pCur->rec_id)
+	    FreeResource(pCur->rec_id, RT_NONE);
+	else
+	{
+	    pConfig->pInterceptClients = pCur->next;
+	    xfree(pCur);
 	}
-        while(pConfig->pInterceptClients)
-	    FreeResource(pConfig->pInterceptClients->rec_id, RT_NONE);
+    }
+    for (i = 0; i < RecordNumConfigs; i++)
+    {
+	if (RecordConfigList[i] == pConfig)
+	{
+	    RecordNumConfigs--;
+	    for ( ; i < RecordNumConfigs; i++)
+		RecordConfigList[i] = RecordConfigList[i+1];
+#ifdef VERBOSE
+	    ErrorF("%s:  Free config: 0x%lx\n", XRecordExtName, pConfig);
+#endif
+	    break;
+	}
     }
     xfree(pConfig);
     return Success;
 }
 
-/* MZ:
-Protocol specification currently undefined wrt what happens when
-intercepted client goes away before recording client(s).  In current
-implementation:
-                - protocol is swapped back
-                - config becomes disabled
-*/
+static void
+SendRecordDone(pConfig)
+    RecordConfig *pConfig;
+{
+    xRecordEnableConfigReply 	rep;
+    int 			n;
+
+    if (!pConfig->data_client)
+	return;
+    rep.type		= X_Reply;
+    rep.sequenceNumber 	= pConfig->data_client->sequence;
+    rep.length		= 0;
+    rep.nReplies	= 0;
+
+    if(pConfig->data_client->swapped)
+    {
+	swaps(&rep.sequenceNumber, n);
+	swapl(&rep.length, n);
+    }
+
+    WriteToClient(pConfig->data_client, sizeof(xRecordEnableConfigReply), (char *)&rep);
+    pConfig->data_client 	= NULL;
+}
 
 static int
 FreeInterceptedClient(value, id)
     pointer value; /* must conform to DeleteType */
     XID   id;
 {
-    RecordConfig       		*pConfig = (RecordConfig *)value;
-    RecordInterceptClientList 	*pCur, *pPrev = NULL;
+    RecordConfig   	*pConfig = (RecordConfig *)value;
+    RecordIntercept 	*pCur, **pPrev;
 
-    for (pCur = pConfig->pInterceptClients; pCur; pCur = pCur->next)
+    for (pPrev = &pConfig->pInterceptClients; pCur = *pPrev; pPrev = &pCur->next)
     {
-	if (pCur->intercept_id == id)
+	if (pCur->rec_id == id)
 	{
-	    RecordSwapClientProto(pCur->intercept_id,
-				  pConfig->flags, xTrue);
-            FreeResource(pCur->rec_id, RT_NONE);
-            pConfig->enabled = xFalse;
-	    if (pPrev)
-		pPrev->next = pCur->next;
-	    else
-		pConfig->pInterceptClients = pCur->next;
+	    *pPrev = pCur->next;
+	    RecordClientProto(pCur, xTrue);
 	    xfree(pCur);
+	    if (pConfig->data_client && !pConfig->pInterceptClients)
+		SendRecordDone(pConfig);
 	    break;
 	}
     }
@@ -261,63 +250,96 @@ XRecordCloseDown(extEntry)
     return;
 }
 
+static int
+FreeInterceptVector(value, id)
+    pointer value; /* must conform to DeleteType */
+    XID   id;
+{
+    ReqProc *vec = (ReqProc *)value;
+    SavedRequestVectors[CLIENT_ID(id)] = NULL;
+    xfree(vec);
+    return (Success);
+}
+
+static int
+InitIntercept(client, pCur, pConfig)
+    ClientPtr client;
+    RecordIntercept *pCur;
+    RecordConfig *pConfig;
+{
+    ReqProc *vec;
+
+    if (!SavedRequestVectors[client->index])
+    {
+	vec = (ReqProc *) xalloc(sizeof(ReqProc) * 256);
+	if (!vec)
+	    return BadAlloc;
+	memcpy((char *)vec, (char *)client->requestVector, sizeof(ReqProc) * 256);
+	SavedRequestVectors[client->index] = client->requestVector;
+	client->requestVector = vec;
+	if (!AddResource(FakeClientID(client->index), XRecordGone, (pointer)vec))
+	    return BadAlloc;
+    }
+    pCur->rec_id = FakeClientID(client->index);
+    if (!AddResource(pCur->rec_id, XRecordDelete, (pointer)pConfig))
+	return BadAlloc;
+    RecordClientProto(pCur, xFalse);
+    return Success;
+}
+
 static Bool
-RecordSelectForIntercept(pConfig, client_id, addtolist)
+RecordSelectForIntercept(pConfig, client_id, flags, addtolist)
     RecordConfig *pConfig;
     XID client_id;
+    XRecordFlags *flags;
     Bool addtolist;
 {
-    RecordInterceptClientList *pClients,  *pCur, **pPrev;
+    RecordIntercept *pCur, **pPrev;
     ClientPtr client;
 
     if(addtolist)
     {
-	for (pClients = pConfig->pInterceptClients;
-	    pClients; pClients = pClients->next)
+	for (pPrev = &pConfig->pInterceptClients; pCur = *pPrev; pPrev = &pCur->next)
         {
-	    if (pClients->intercept_id == client_id) /*already there */
+	    if (pCur->intercept_id == client_id) /*already there */
 	    {
-		RecordSwapClientProto(client_id, &pConfig->flags, xFalse);
+		*pPrev = pCur->next;
+		RecordClientProto(pCur, xTrue);
+		pCur->flags = *flags;
+		*pPrev = pCur;
+		RecordClientProto(pCur, xFalse);
 		return Success;
 	    }
         }
         /* add new client to pConfig->pInterceptClients */
-        pClients = (RecordInterceptClientList *) xalloc(sizeof(RecordInterceptClientList));
-        if (!pClients)
+        pCur = (RecordIntercept *) xalloc(sizeof(RecordIntercept));
+        if (!pCur)
 	    return BadAlloc;    	
-        pClients->intercept_id = client_id;
-	pClients->rec_id = 0;
+	pCur->flags = *flags;
+        pCur->intercept_id = client_id;
+	pCur->rec_id = 0;
+        pCur->next = pConfig->pInterceptClients;
+        pConfig->pInterceptClients = pCur;
 	client = clients[CLIENT_ID(client_id)];
         if (client && client->requestVector != InitialVector)
 	{
-	    pClients->rec_id = FakeClientID(client->index);
-	    if (!AddResource(pClients->rec_id, XRecordDelete, pConfig))
-	    {
-		xfree(pClients);
+	    if (!InitIntercept(client, pCur, pConfig))
 		return BadAlloc;
-	    }
 	}
-        pClients->next = pConfig->pInterceptClients;
-        pConfig->pInterceptClients = pClients;
-	RecordSwapClientProto(client_id, &pConfig->flags, xFalse);
         return Success;
-   }
-   else
-   {
-	for (pPrev = &pConfig->pInterceptClients; pCur = *pPrev; pPrev = &pCur->next)
+    }
+    else
+    {
+	for (pCur = pConfig->pInterceptClients; pCur; pCur = pCur->next)
         {
-	    if (pCur->intercept_id == client_id) 			
+	    if (pCur->intercept_id == client_id)
 	    {
-		*pPrev = pCur->next;
-		RecordSwapClientProto(pCur->intercept_id,
-				      pConfig->flags, xTrue);
 		FreeResource(pCur->rec_id, RT_NONE);
-		xfree(pCur);
                 break;
             }
         }
         return Success;
-   }
+    }
 }
 
 XRecordNewClient(client)
@@ -328,22 +350,15 @@ XRecordNewClient(client)
     for(i = 0; i < RecordNumConfigs; i++)
     {
 	RecordConfig *pConfig = RecordConfigList[i];
-    	if(pConfig->enabled)
-        {
-    	    RecordInterceptClientList 	*pCur;
+	RecordIntercept 	*pCur;
 
-    	    for (pCur = RecordConfigList[i]->pInterceptClients;
-		 pCur;  pCur = pCur->next)
-    	    {
-		if (pCur->intercept_id == client->clientAsMask)
-		{
-		    pCur->rec_id = FakeClientID(client->index);
-		    if (!AddResource(pCur->rec_id, XRecordDelete, pConfig))
-			break;
-		    RecordSwapClientProto(pCur->intercept_id, &pConfig->flags,
-					  xFalse);
-		    break;
-		}
+	for (pCur = RecordConfigList[i]->pInterceptClients;
+	     pCur;  pCur = pCur->next)
+	{
+	    if (pCur->intercept_id == client->clientAsMask)
+	    {
+		InitIntercept(client, pCur, pConfig);
+		break;
 	    }
 	}
     }
@@ -351,10 +366,9 @@ XRecordNewClient(client)
 }
 
 static RecordConfig *
-XRecordCreateConfig(client, id, flags)
+XRecordCreateConfig(client, id)
     ClientPtr		client;
     XRecordConfig 	id;
-    XRecordFlags	*flags;
 {
     RecordConfig	*pConfig;
 
@@ -371,10 +385,9 @@ XRecordCreateConfig(client, id, flags)
     pConfig->id = id;
     pConfig->pInterceptClients = NULL;
     pConfig->data_client = (ClientPtr)NULL;
-    pConfig->control_client = (ClientPtr)NULL;
-    pConfig->enabled = xFalse;
-    pConfig->flags = *flags;
 
+    RecordConfigList = (RecordConfig **)xrealloc(
+	RecordConfigList, (RecordNumConfigs+1) * sizeof(RecordConfig *) );
     RecordConfigList[RecordNumConfigs++] = pConfig;
 	
 #ifdef VERBOSE
@@ -383,16 +396,47 @@ XRecordCreateConfig(client, id, flags)
     return pConfig;
 }
 
+static int
+AnyReqsLeft(client, req)
+    ClientPtr client;
+    int req;
+{
+    int i;
+
+    for(i = 0; i < RecordNumConfigs; i++)
+    {
+	RecordConfig *pConfig = RecordConfigList[i];
+    	if(pConfig->data_client)
+        {
+    	    RecordIntercept 	*pCur;
+
+    	    for (pCur = RecordConfigList[i]->pInterceptClients;
+		 pCur;  pCur = pCur->next)
+    	    {
+		if (pCur->intercept_id == client->clientAsMask)
+		{
+		    if( (req >= pCur->flags.core_requests.first &&
+			 req <= pCur->flags.core_requests.last) ||
+		       (req == pCur->flags.ext_requests.ext_major) )
+			return TRUE;
+		    break;
+		}
+	    }
+	}
+    }
+    return FALSE;
+}
+
 static void
-RecordSwapClientProto(id, flags, delete)
-    XID          id;
-    XRecordFlags *flags;
+RecordClientProto(pCur, delete)
+    RecordIntercept *pCur;
     BOOL	delete;
 {
     register ClientPtr client;
+    int incr;
     register int j;
 
-    client = clients[CLIENT_ID(id)];
+    client = clients[CLIENT_ID(pCur->intercept_id)];
     if (!client || client->requestVector == InitialVector)
 	return;
 #ifdef VERBOSE
@@ -401,45 +445,28 @@ RecordSwapClientProto(id, flags, delete)
 #endif
     for(j=0L; j<XRecordMaxExtRequest; j++)
     {
-	if( (j >= flags->core_requests.first &&
-		j <= flags->core_requests.last) ||
-		(j == flags->ext_requests.ext_major) )
-	{ 			                       	
-	     _SwapProc(&XRecordProcVector[j],
-		       &client->requestVector[j] );
+	if( (j >= pCur->flags.core_requests.first &&
+		j <= pCur->flags.core_requests.last) ||
+		(j == pCur->flags.ext_requests.ext_major) )
+	{
+	    if (!delete)
+		client->requestVector[j] = XRecordRequest;
+	    else if (!AnyReqsLeft(client, j))
+		client->requestVector[j] = SavedRequestVectors[client->index][j];
 	}
     }
+    incr = delete ? -1 : 1;
     for(j=0L; j<XRecordMaxEvent; j++)
     {
-	if(flags->events.last)
+	if(pCur->flags.events.last)
 	{
-	    if(j >= flags->events.first && j <= flags->events.last)
-	    {
-		if(!delete)
-		{
-		    if (++(VectoredEvents[j]) == 1L)
-			_SwapProc(&XRecordEventProcVector[j],
-				  &EventProcVector[j]);
-		    else
-			++(VectoredEvents[j]);
-		}
-		else
-		{
-		    if (VectoredEvents[j] == 1L)	
-			_SwapProc(&XRecordEventProcVector[j],
-				  &EventProcVector[j]);
-		    else if(--(VectoredEvents[j]) == 1L)
-			_SwapProc(&XRecordEventProcVector[j],
-				  &EventProcVector[j]);
-		    else
-			--(VectoredEvents[j]);
-		}
-	    }
+	    if(j >= pCur->flags.events.first && j <= pCur->flags.events.last)
+		RecordedEvents[j] += incr;
 	}
     }
 }
 
-int XRecordRequestVector(client)
+int XRecordRequest(client)
     ClientPtr client;
 {
     REQUEST(xResourceReq);
@@ -447,9 +474,9 @@ int XRecordRequestVector(client)
 
     for(i = 0; i < RecordNumConfigs; i++)
     {
-    	if(RecordConfigList[i]->enabled)
+    	if(RecordConfigList[i]->data_client)
         {
-    	    RecordInterceptClientList 	*pCur;
+    	    RecordIntercept 	*pCur;
 
     	    for (pCur = RecordConfigList[i]->pInterceptClients;
 		 pCur;  pCur = pCur->next)
@@ -458,24 +485,23 @@ int XRecordRequestVector(client)
 	        {   	
 		    xRecordEnableConfigReply 	rep;
 
-	  	    rep.hdr.type        	= X_Reply;
-    	            rep.hdr.detail 		= X_RecordEnableConfig;
-    	            rep.hdr.sequenceNumber  	= RecordConfigList[i]->data_client->sequence;
-                    rep.hdr.length      	= (sizeof(xRecordEnableConfigReply) - sizeof(xGenericReply)) >> 2 + client->req_len;
-                    rep.id_base			= pCur->intercept_id;
-                    rep.nReplies		= 1;
-                    rep.client_swapped 		= client->swapped;
-                    rep.client_seq     		= client->sequence;
-               	    rep.direction		= FromClient;
+	  	    rep.type        	= X_Reply;
+    	            rep.sequenceNumber 	= RecordConfigList[i]->data_client->sequence;
+                    rep.length      	= client->req_len;
+                    rep.id_base		= pCur->intercept_id;
+                    rep.nReplies	= 1;
+                    rep.client_swapped 	= client->swapped;
+                    rep.client_seq     	= client->sequence;
+               	    rep.direction	= FromClient;
 	
 #ifdef VERBOSE
-     		    ErrorF("%s:  Client: 0x%lx Config: 0x%lx XRecordRequestVector[%d] (%d - %d)\n",
+     		    ErrorF("%s:  Client: 0x%lx Config: 0x%lx XRecordRequest[%d] (%d - %d)\n",
 		    XRecordExtName,
 		    pCur->intercept_id,
 		    RecordConfigList[i]->id,
                     stuff->reqType,
-                    RecordConfigList[i]->flags.core_requests.first,
-		    RecordConfigList[i]->flags.core_requests.last);
+                    pCur->flags.core_requests.first,
+		    pCur->flags.core_requests.last);
 #endif
    	            WriteToClient(RecordConfigList[i]->data_client,
 			      sizeof(xRecordEnableConfigReply), (char *)&rep);
@@ -486,10 +512,10 @@ int XRecordRequestVector(client)
             }
         }
     }
-    return((*XRecordProcVector[stuff->reqType])(client));
+    return((*SavedRequestVectors[client->index][stuff->reqType])(client));
 }
 
-int XRecordEventVector(client, x_event)
+int XRecordEvent(client, x_event)
     ClientPtr client;
     xEvent    *x_event;
 {
@@ -497,43 +523,42 @@ int XRecordEventVector(client, x_event)
 
     for(i = 0; i < RecordNumConfigs; i++)
     {
-    	if(RecordConfigList[i]->enabled)
+    	if(RecordConfigList[i]->data_client)
         {
     		
-    	    RecordInterceptClientList 	*pCur;
+    	    RecordIntercept 	*pCur;
 
     	    for (pCur = RecordConfigList[i]->pInterceptClients;
 	 	pCur;
 	 	pCur = pCur->next)
     	    {
 		if (pCur->intercept_id == client->clientAsMask &&
-		x_event->u.u.type >= RecordConfigList[i]->flags.events.first &&
-		x_event->u.u.type <= RecordConfigList[i]->flags.events.last)
+		x_event->u.u.type >= pCur->flags.events.first &&
+		x_event->u.u.type <= pCur->flags.events.last)
 	        {
 		    xRecordEnableConfigReply 	rep;
 
 	     	    if(x_event->u.u.type == X_Error &&
-			RecordConfigList[i]->flags.errors.first == 0 &&
-			RecordConfigList[i]->flags.errors.last == 0)
+			pCur->flags.errors.first == 0 &&
+			pCur->flags.errors.last == 0)
                         return;
 
-	  	    rep.hdr.type        	= X_Reply;
-    	            rep.hdr.detail 		= X_RecordEnableConfig;
-    	            rep.hdr.sequenceNumber  	= RecordConfigList[i]->data_client->sequence;
-                    rep.hdr.length      	= (sizeof(xRecordEnableConfigReply) - sizeof(xGenericReply) + sizeof(xEvent)) >> 2;
-                    rep.nReplies		= 1;
-                    rep.id_base			= pCur->intercept_id;
-               	    rep.client_swapped		= client->swapped;
-                    rep.client_seq          	= client->sequence;
-                    rep.direction		= FromServer;
+	  	    rep.type        	= X_Reply;
+    	            rep.sequenceNumber 	= RecordConfigList[i]->data_client->sequence;
+                    rep.length     	= sizeof(xEvent) >> 2;
+                    rep.nReplies	= 1;
+                    rep.id_base		= pCur->intercept_id;
+               	    rep.client_swapped	= client->swapped;
+                    rep.client_seq      = client->sequence;
+                    rep.direction	= FromServer;
 
 #ifdef VERBOSE
-   		    ErrorF("%s:  Client: 0x%lx Config: 0x%lx XRecordEventVector[%d]  (%d - %d)\n",
+   		    ErrorF("%s:  Client: 0x%lx Config: 0x%lx XRecordEvent[%d]  (%d - %d)\n",
 		    	XRecordExtName,
 			pCur->intercept_id,
 			RecordConfigList[i]->id,
 			x_event->u.u.type,
-			RecordConfigList[i]->flags.events.first, RecordConfigList[i]->flags.events.last);
+			pCur->flags.events.first, pCur->flags.events.last);
 #endif
    	            WriteToClient(RecordConfigList[i]->data_client,
 				  sizeof(xRecordEnableConfigReply),
@@ -549,20 +574,21 @@ int XRecordEventVector(client, x_event)
 }
 
 /*
-* ** Initialize the Record extension
-*/
+ * Initialize the Record extension
+ */
 void XRecordExtensionInit()
 {
     register ExtensionEntry 	*extEntry;
-    unsigned int 		i;
-    Atom			a;
 
     RTConfig = CreateNewResourceType(FreeConfig)|RC_NEVERRETAIN;
+    XRecordDelete = CreateNewResourceType(FreeInterceptedClient)|RC_NEVERRETAIN;
+    XRecordGone = CreateNewResourceType(FreeInterceptVector)|RC_NEVERRETAIN;
 
-    if(RTConfig == 0 || (extEntry = AddExtension(XRecordExtName,
-              	XRecordNumEvents, XRecordNumErrors,
-               	ProcRecordDispatch, sProcRecordDispatch,
-                XRecordCloseDown, StandardMinorOpcode)) == NULL)
+    if(RTConfig == 0 || XRecordDelete == 0 ||
+       (extEntry = AddExtension(XRecordExtName,
+				XRecordNumEvents, XRecordNumErrors,
+				ProcRecordDispatch, sProcRecordDispatch,
+				XRecordCloseDown, StandardMinorOpcode)) == NULL)
     {
         ErrorF("%s:  Extension failed to Initialise.\n",
 		XRecordExtName);
@@ -576,56 +602,23 @@ void XRecordExtensionInit()
     RecordErrorBase   = extEntry->errorBase;
     RecordEventBase   = extEntry->eventBase;
 
-    RecordConfigList = (RecordConfig **)xrealloc(
-	RecordConfigList, (RecordNumConfigs+1) * sizeof(RecordConfig *) );
-    if(!RecordConfigList)
-    {
-        ErrorF("%s:  Setup cannot create RecordConfigList\n",
-          XRecordExtName);
-	return;
-    }
-    if ((a = MakeAtom(XRecordExtName,strlen(XRecordExtName),1L)) == None ||
-        (XRecordDelete  = CreateNewResourceType(FreeInterceptedClient)|RC_NEVERRETAIN) == 0L )
-    {
-        ErrorF("%s:  Setup can't create new resource types (%d, %d, %d)\n",
-          XRecordExtName, a, XRecordClass, XRecordDelete);
-        return;
-    }
 #ifdef VERBOSE
-        ErrorF("%s:  Max Events (%d)  Max Requests (%d)\n",
-          XRecordExtName, XRecordMaxEvent, XRecordMaxExtRequest);
-#endif
-
-    for (i=0L; i<=XRecordMaxEvent; i++)
-    {
-        VectoredEvents[i] = 0L;
-        EventProcVector[i] = NULL;
-        XRecordEventProcVector[i] = XRecordEventVector;
-    }
-
-    /* MZ: X_Error == event[0] */
-    EventProcVector[X_Error] = NULL;
-    XRecordEventProcVector[X_Error] = XRecordEventVector;
-
-    for (i=0L; i<XRecordMaxExtRequest; i++)
-    {
-        XRecordProcVector[i] = XRecordRequestVector;
-    }
-#ifdef VERBOSE
+    ErrorF("%s:  Max Events (%d)  Max Requests (%d)\n",
+	   XRecordExtName, XRecordMaxEvent, XRecordMaxExtRequest);
     ErrorF("%s:  Protocol version: %d.%d successfully loaded\n",
-	XRecordExtName, XRecordMajorVersion, XRecordMinorVersion);
+	   XRecordExtName, XRecordMajorVersion, XRecordMinorVersion);
 #endif
 
     return;
 }
 
 /*
-* ** Protocol requests
-*/
+ * Protocol requests
+ */
 
 /*
-* ** Query extension
-*/
+ * Query extension
+ */
 int ProcRecordQueryVersion(client)
     ClientPtr client;
 {
@@ -634,10 +627,9 @@ int ProcRecordQueryVersion(client)
     int 		n;
 
     REQUEST_SIZE_MATCH(xRecordQueryVersionReq);
-    rep.hdr.type        	= X_Reply;
-    rep.hdr.detail 	  	= X_RecordQueryVersion;
-    rep.hdr.sequenceNumber  	= client->sequence;
-    rep.hdr.length          	= 0;
+    rep.type        	= X_Reply;
+    rep.sequenceNumber 	= client->sequence;
+    rep.length         	= 0;
 
     /* if requested version is higher than the version of this extension */
     /* use this extension version */
@@ -664,8 +656,8 @@ int ProcRecordQueryVersion(client)
     }
 
     if(client->swapped) {
-    	swaps(&rep.hdr.sequenceNumber, n);
-    	swapl(&rep.hdr.length, n);
+    	swaps(&rep.sequenceNumber, n);
+    	swapl(&rep.length, n);
 	swaps(&rep.majorVersion, n);
 	swaps(&rep.minorVersion, n);
     }
@@ -676,8 +668,8 @@ int ProcRecordQueryVersion(client)
 }
 
 /*
-* ** Create config
-*/
+ * Create config
+ */
 static int
 ProcRecordCreateConfig(client)
     ClientPtr client;
@@ -687,16 +679,15 @@ ProcRecordCreateConfig(client)
 
     REQUEST_SIZE_MATCH(xRecordCreateConfigReq);
     LEGAL_NEW_RESOURCE(stuff->cid, client);
-    VERIFY_FLAGS(stuff->record_flags);
-    if (!XRecordCreateConfig(client, stuff->cid, &stuff->record_flags))
+    if (!XRecordCreateConfig(client, stuff->cid))
 	return BadAlloc;
 
     return (client->noClientException);
 }
 
 /*
-* ** Destroy a config object
-*/	
+ * Destroy a config object
+ */	
 static int
 ProcRecordFreeConfig(client)
     ClientPtr       client;
@@ -707,7 +698,6 @@ ProcRecordFreeConfig(client)
     REQUEST_SIZE_MATCH(xRecordFreeConfigReq);
     VERIFY_RCONFIG(stuff->cid, pConfig, client);
 
-    pConfig->enabled = xFalse;
     FreeResource(pConfig->id, RT_NONE);
 #ifdef VERBOSE
     ErrorF("%s:  Free resource '0x%lx'\n",
@@ -718,8 +708,8 @@ ProcRecordFreeConfig(client)
 }
 
 /*
-* ** Change a config object
-*/	
+ * Change a config object
+ */	
 static int
 ProcRecordChangeConfig(client)
     ClientPtr client;
@@ -740,11 +730,10 @@ ProcRecordChangeConfig(client)
 	client->errorValue = stuff->id_base;
         return BadMatch;
     }
-    pConfig->flags = stuff->record_flags;
-    pConfig->control_client = client;
 
     /* Create delete resource for intercept_id */
-    status = RecordSelectForIntercept(pConfig, stuff->id_base, stuff->add);
+    status = RecordSelectForIntercept(pConfig, stuff->id_base,
+				      &stuff->record_flags, stuff->add);
     if (status != Success)
 		return status;
 
@@ -752,8 +741,8 @@ ProcRecordChangeConfig(client)
 }
 
 /*
-* ** Get a config object
-*/
+ * Get a config object
+ */
 static int
 ProcRecordGetConfig(client)
     ClientPtr client;
@@ -768,38 +757,19 @@ ProcRecordGetConfig(client)
     REQUEST_SIZE_MATCH(xRecordGetConfigReq);
     VERIFY_RCONFIG(stuff->cid, pConfig, client);
                  	
-    for (i = 0; i < RecordNumConfigs; i++)
-    {
-        if (RecordConfigList[i] == pConfig && pConfig->control_client == NULL)
-	return BadMatch;
-    }
+    rep.type        	= X_Reply;
+    rep.sequenceNumber  = client->sequence;
+    rep.length      	= 0;
+    rep.enabled = (pConfig->data_client != NULL);
 
-    rep.hdr.type        	= X_Reply;
-    rep.hdr.detail 	  	= X_RecordGetConfig;
-    rep.hdr.sequenceNumber  	= client->sequence;
-    rep.hdr.length      	= (sizeof(xRecordGetConfigReply) - sizeof(xGenericReply)) >> 2;
-    rep.record_state.enabled = pConfig->enabled;
-
-    rep.record_state.intercepted = pConfig->flags;
 #ifdef VERBOSE
-    ErrorF("%s:  Config '0x%lx' intercept: '0x%lx' Events: %d %d  Errors: %d %d  Core: %d %d %d %d\n",
-	XRecordExtName, stuff->cid, stuff->id_base,
-	pConfig->flags.events.first, pConfig->flags.events.last,
-	pConfig->flags.errors.first, pConfig->flags.errors.last,
-	pConfig->flags.core_requests.first,
-	pConfig->flags.core_requests.last,
-	pConfig->flags.core_replies.first,
-	pConfig->flags.core_replies.first);
+    ErrorF("%s:  Config '0x%lx' intercept\n", XRecordExtName, stuff->cid);
 #endif
 
     if(client->swapped)
     {
-    	swaps(&rep.hdr.sequenceNumber, n);
-    	swapl(&rep.hdr.length, n);
-        swaps(&rep.record_state.intercepted.ext_requests.ext_minor.first, n);
-        swaps(&rep.record_state.intercepted.ext_requests.ext_minor.last,  n);
-        swaps(&rep.record_state.intercepted.ext_replies.ext_minor.first,  n);
-        swaps(&rep.record_state.intercepted.ext_replies.ext_minor.last,   n);
+    	swaps(&rep.sequenceNumber, n);
+    	swapl(&rep.length, n);
     }
 
     WriteToClient(client, sizeof(xRecordGetConfigReply), (char *)&rep);
@@ -808,63 +778,54 @@ ProcRecordGetConfig(client)
 }
 
 /*
-* ** Enable  a config object
-*/
+ * Enable a config object
+ */
 static int
 ProcRecordEnableConfig(client)
     ClientPtr client;
 {
     REQUEST(xRecordEnableConfigReq);
     RecordConfigPtr 		pConfig;
-    xRecordEnableConfigReply 	rep;
     register int		i;
     int 			n;
 
     REQUEST_SIZE_MATCH(xRecordEnableConfigReq);
     VERIFY_RCONFIG(stuff->cid, pConfig, client);
-    for (i = 0; i < RecordNumConfigs; i++)
-    {
-        if (RecordConfigList[i] == pConfig && pConfig->control_client == NULL)
-	    return BadMatch;
-    }
+    if (pConfig->data_client)
+	return BadMatch;
     pConfig->data_client 	= client;
-    pConfig->control_client 	= client;
-    pConfig->enabled 		= stuff->enable;
 #ifdef VERBOSE
     ErrorF("%s:  Enable config '0x%lx': %d\n",
 	XRecordExtName, stuff->cid, stuff->enable);
 #endif
-    rep.hdr.type        = X_Reply;
-    rep.hdr.detail 	= X_RecordEnableConfig;
-    rep.hdr.sequenceNumber  = client->sequence;
-    rep.hdr.length 	= (sizeof(xRecordEnableConfigReply) - sizeof(xGenericReply)) >> 2 + client->req_len;
-
-    if(stuff->enable)
-        rep.nReplies	= 1;
-    else
-        rep.nReplies	= 0;
-    rep.client_swapped	= client->swapped;
-    rep.client_seq      = client->sequence;
-    rep.direction	= FromServer;
-
-    if(client->swapped)
-    {
-    	swaps(&rep.hdr.sequenceNumber, n);
-    	swapl(&rep.hdr.length, n);
-        swapl(&rep.nReplies, n);
-        swapl(&rep.id_base, n);
-        swapl(&rep.client_seq, n);
-    }
-
-    WriteToClient(client, sizeof(xRecordEnableConfigReply), (char *)&rep);
-    WriteToClient(client, client->req_len, (char *)stuff);
           	
     return(client->noClientException);
 }
 
 /*
-* ** Protocol dispatch procedure
-*/
+ * Disable a config object
+ */
+static int
+ProcRecordDisableConfig(client)
+    ClientPtr client;
+{
+    REQUEST(xRecordDisableConfigReq);
+    RecordConfigPtr 		pConfig;
+
+    REQUEST_SIZE_MATCH(xRecordEnableConfigReq);
+    VERIFY_RCONFIG(stuff->cid, pConfig, client);
+#ifdef VERBOSE
+    ErrorF("%s:  Enable config '0x%lx': %d\n",
+	XRecordExtName, stuff->cid, stuff->enable);
+#endif
+          	
+    SendRecordDone(pConfig);
+    return(client->noClientException);
+}
+
+/*
+ * Protocol dispatch procedure
+ */
 static int ProcRecordDispatch(client)
     ClientPtr client;
 {
@@ -885,6 +846,8 @@ static int ProcRecordDispatch(client)
 	    return ProcRecordGetConfig(client);
 	case X_RecordEnableConfig:
 	    return ProcRecordEnableConfig(client);
+	case X_RecordDisableConfig:
+	    return ProcRecordDisableConfig(client);
        default:
 #ifdef VERBOSE
 	ErrorF("%s:  Invalid Request.  Minor opcode=%d\n",
@@ -896,8 +859,8 @@ static int ProcRecordDispatch(client)
 }
 
 /*
-* ** Procedures to support swapping
-*/
+ * Procedures to support swapping
+ */
 
 static void _SwapProc(f1,f2)
     register int (**f1)(), (**f2)();
@@ -933,10 +896,6 @@ int sProcRecordCreateConfig(client)
     swaps(&stuff->length, n);
     REQUEST_SIZE_MATCH(xRecordCreateConfigReq);
     swapl(&stuff->cid, n);
-    swaps(&stuff->record_flags.ext_requests.ext_minor.first, n);
-    swaps(&stuff->record_flags.ext_requests.ext_minor.last, n);
-    swaps(&stuff->record_flags.ext_replies.ext_minor.first, n);
-    swaps(&stuff->record_flags.ext_replies.ext_minor.last, n);
     return ProcRecordCreateConfig(client);
 }
 
@@ -998,6 +957,19 @@ sProcRecordEnableConfig(request,client)
 }
 
 static int
+sProcRecordDisableConfig(request,client)
+    ClientPtr client;
+{
+    REQUEST(xRecordDisableConfigReq);
+    register char 	n;
+
+    swaps(&stuff->length, n);
+    REQUEST_SIZE_MATCH(xRecordDisableConfigReq);
+    swapl(&stuff->cid, n);
+    return ProcRecordDisableConfig(client);
+}
+
+static int
 sProcRecordDispatch(client)
     ClientPtr client;
 {
@@ -1018,6 +990,8 @@ sProcRecordDispatch(client)
 	    return sProcRecordGetConfig(client);
 	case X_RecordEnableConfig:
 	    return sProcRecordEnableConfig(client);
+	case X_RecordDisableConfig:
+	    return sProcRecordDisableConfig(client);
        default:
 #ifdef VERBOSE
 	ErrorF("%s:  Invalid Request.  Minor opcode=%d\n",

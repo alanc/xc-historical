@@ -1,4 +1,4 @@
-/* $XConsortium: recordstr.h,v 1.1 94/01/29 17:43:53 rws Exp $ */
+/* $XConsortium: recordstr.h,v 1.2 94/01/30 19:11:52 rws Exp $ */
 /***************************************************************************
  * Copyright 1994 Network Computing Devices;
  * Portions Copyright 1988 by Digital Equipment Corporation and the
@@ -78,16 +78,8 @@ typedef struct
     XRecordExtRange16  ext_replies;
     CARD32              pad0 B32;
     CARD32              pad1 B32;
-} XRecordFlags; /* size 32 */
+} XRecordFlags;
 #define sz_XRecordFlags		32
-
-typedef struct
-{
-    BOOL 	       enabled;
-    CARD8              pad0;  
-    CARD16             pad1 B16;
-    XRecordFlags       intercepted;
-} XRecordState; /* size 36 */
 
 typedef struct
 {
@@ -113,9 +105,8 @@ typedef struct
     CARD8     	minor_opcode;
     CARD16    	length B16;
     XRecordConfig cid B32;
-    XRecordFlags  record_flags;
 } xRecordCreateConfigReq;
-#define sz_xRecordCreateConfigReq 	40
+#define sz_xRecordCreateConfigReq 	8
 
 typedef struct
 {
@@ -132,7 +123,7 @@ typedef struct
     CARD8     	minor_opcode;
     CARD16    	length B16;
     XRecordConfig cid B32;
-    CARD32      id_base B32 ;
+    CARD32      id_base B32;
     XRecordFlags  record_flags;
     BOOL	add;
 } xRecordChangeConfigReq;
@@ -153,19 +144,17 @@ typedef struct
     CARD8     	minor_opcode;
     CARD16    	length B16;
     XRecordConfig cid B32;
-    BOOL        enable;
-    CARD8       pad0;
-    CARD16      pad6 B16;
 } xRecordEnableConfigReq;
-#define sz_xRecordEnableConfigReq 	12
+#define sz_xRecordEnableConfigReq 	8
 
 typedef struct
 {
-    CARD8  type;
-    CARD8  detail;
-    CARD16 sequenceNumber B16;
-    CARD32 length B32;
-} XRecordReplyHdr;
+    CARD8     	reqType;
+    CARD8     	minor_opcode;
+    CARD16    	length B16;
+    XRecordConfig cid B32;
+} xRecordDisableConfigReq;
+#define sz_xRecordDisableConfigReq	8
 
 typedef struct
 {
@@ -175,7 +164,10 @@ typedef struct
 
 typedef struct
 {
-    XRecordReplyHdr 	 hdr;
+    CARD8   type;
+    CARD8   pad0;
+    CARD16  sequenceNumber B16;
+    CARD32  length	 B32;
     CARD16  majorVersion B16;
     CARD16  minorVersion B16; 	
     CARD32  pad1	 B32;
@@ -188,43 +180,32 @@ typedef struct
 
 typedef struct
 {
-    XRecordReplyHdr 	 hdr;
-    XRecordState         record_state;
+    CARD8   type;
+    BOOL    enabled;
+    CARD16  sequenceNumber B16;
+    CARD32  length	 B32;
+    CARD32  numClients	 B32;
+    CARD32  pad1	 B32;
+    CARD32  pad2	 B32;
+    CARD32  pad3	 B32;
+    CARD32  pad4	 B32;
+    CARD32  pad5	 B32;
 } xRecordGetConfigReply;
-#define sz_xRecordGetConfigReply  	44
+#define sz_xRecordGetConfigReply  	32
 
 typedef struct
 {
-   union
-   {
-   	xEvent          event;
-   	xResourceReq    req;
-   	xGenericReply   reply;
-   	xError          error;
-   } u;
-} XRecordDatum;
-
-typedef struct
-{
-    XRecordReplyHdr     hdr;
-    CARD32        	nReplies B32;
-    CARD32        	id_base B32;
-    CARD32        	client_seq B32;
-    CARD8         	direction;
-    BOOL          	client_swapped;
-    CARD16		pad0;
-    CARD32		pad1;
-    CARD32		pad2;
+    CARD8  type;
+    CARD8  direction;
+    CARD16 sequenceNumber B16;
+    CARD32 length B32;
+    CARD32 nReplies B32;
+    CARD32 id_base B32;
+    CARD32 client_seq B32;
+    BOOL   client_swapped;
+    CARD8  pad0;
+    CARD16 pad1 B16;
+    CARD32 pad2 B32;
+    CARD32 pad3 B32;
 } xRecordEnableConfigReply;
 #define sz_xRecordEnableConfigReply 	32
-
-typedef struct
-{
-    CARD32        replies_following_hint B32;
-    CARD32        id_base B32;
-    CARD32        client_seq B32;
-    CARD8         direction;
-    BOOL          client_swapped;
-    XRecordDatum    data;
-} XRecordEnableCGReply;
-

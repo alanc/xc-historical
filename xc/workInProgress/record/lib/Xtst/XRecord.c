@@ -1,8 +1,8 @@
 /*
  * Copyright 1988-1993 Network Computing Devices, Inc.  All rights reserved.
  * An unpublished work.
- * 
- * $XConsortium: XRecord.c,v 1.2 94/01/29 18:01:34 rws Exp $
+ *
+ * $XConsortium: XRecord.c,v 1.3 94/01/30 13:58:38 rws Exp $
  */
 
 #include <stdio.h>
@@ -12,12 +12,12 @@
 #include <X11/Xproto.h>
 #include "Xext.h"
 #include "extutil.h"
-#include "recordstr.h" 
+#include "recordstr.h"
 #include "record.h"
 
 extern unsigned long _XSetLastRequestRead();
 
-static XExtensionInfo _xrecord_info_data; 
+static XExtensionInfo _xrecord_info_data;
 static XExtensionInfo *xrecord_info = &_xrecord_info_data;
 static /* const */ char *xrecord_extension_name = XRecordExtName;
 
@@ -54,59 +54,13 @@ static char *xrecord_error_list[] = {
     "BadConfiguration (Invalid configuration)",
 };
 
-XEXT_GENERATE_FIND_DISPLAY (find_display, xrecord_info, 
+XEXT_GENERATE_FIND_DISPLAY (find_display, xrecord_info,
 	xrecord_extension_name, &xrecord_extension_hooks, XRecordNumErrors, NULL)
 
 static XEXT_GENERATE_CLOSE_DISPLAY (close_display, xrecord_info)
 
 static XEXT_GENERATE_ERROR_STRING (error_string, xrecord_extension_name,
                                    XRecordNumErrors, xrecord_error_list)
-
-/*****************************************************************************
- *                                                                           *
- *		    X11R6               			             *
- *                                                                           *
- *****************************************************************************/
-
-typedef struct _CGState {
-    unsigned long attr_seq; 
-    XRecordEnableCGReply *attr;
-} _XCGState;
-
-static Bool
-_XCGHandler(dpy, rep, buf, len, data)
-    register Display *dpy;
-    register xReply *rep;
-    char *buf;
-    int len;
-    XPointer data;
-{
-    register _XCGState 			*state;
-    xRecordEnableConfigReply 		replbuf;
-    register xRecordEnableConfigReply 	*repl;
-    register XRecordEnableCGReply 	*attr;
-
-    state = (_XCGState *)data;
-    if (dpy->last_request_read != state->attr_seq) { 
-	return False;
-    }
-    if (rep->generic.type == X_Error) {
-	state->attr = (XRecordEnableCGReply *)NULL;
-	return False;
-    }
-    repl = (xRecordEnableConfigReply *)
-	_XGetAsyncReply(dpy, (char *)&replbuf, rep, buf, len,
-		     (SIZEOF(xRecordEnableConfigReply) - SIZEOF(xReply)) >> 2,
-			True); 
-    attr = state->attr; 
-    attr->replies_following_hint = repl->nReplies;
-    attr->id_base = repl->id_base;
-    attr->client_seq = repl->client_seq;
-    attr->client_swapped = repl->client_swapped; 
-    attr->direction = repl->direction;
-    memcpy((char *)&attr->data, (char *)&repl->data, sizeof(XRecordDatum)); 
-    return True;
-}
 
 /*****************************************************************************
  *                                                                           *
@@ -118,59 +72,49 @@ Status
 XRecordQueryVersion (dpy, cmajor, cminor, ret)
     Display 	*dpy;
     int 	cmajor, cminor;
-    XRecordQueryVersionReply *ret; 
+    XRecordQueryVersionReply *ret;
 {
     XExtDisplayInfo *info = find_display (dpy);
     register xRecordQueryVersionReq   *req;
     xRecordQueryVersionReply rep;
 
     XRecordCheckExtension (dpy, info, False);
-  
+
     LockDisplay(dpy);
     GetReq(RecordQueryVersion, req);
     req->reqType = info->codes->major_opcode;
-    req->minor_opcode = X_RecordQueryVersion;     
+    req->minor_opcode = X_RecordQueryVersion;
     req->majorVersion = cmajor;
     req->minorVersion = cminor;
-    if (!_XReply(dpy,(xReply *)&rep, 0, True)) { 
+    if (!_XReply(dpy,(xReply *)&rep, 0, True)) {
 	UnlockDisplay(dpy);
 	SyncHandle();
 	return False;
     }
     UnlockDisplay(dpy);
-    SyncHandle(); 
+    SyncHandle();
     ret->majorVersion = rep.majorVersion;
-    ret->minorVersion = rep.minorVersion; 
+    ret->minorVersion = rep.minorVersion;
     return True;
 }
- 
-XRecordConfig 
-XRecordCreateCG(dpy, record_flags)
+
+XRecordConfig
+XRecordCreateCG(dpy)
     Display 		*dpy;
-    XRecordFlags  	*record_flags;
 {
     XExtDisplayInfo *info = find_display (dpy);
-    xRecordCreateConfigReq 	*req; 
- 
+    xRecordCreateConfigReq 	*req;
+
     XRecordCheckExtension (dpy, info, None);
     LockDisplay(dpy);
-    GetReq(RecordCreateConfig, req); 
+    GetReq(RecordCreateConfig, req);
     req->reqType = info->codes->major_opcode;
-    req->minor_opcode = X_RecordCreateConfig;   
-    req->cid =  XAllocID(dpy); 
+    req->minor_opcode = X_RecordCreateConfig;
+    req->cid =  XAllocID(dpy);
 
-    if(record_flags == (XRecordFlags *)NULL)
-    { 
-         bzero((char *)&(req->record_flags), SIZEOF(XRecordFlags));           
-    } 
-    else 
-    {  
- 	memcpy((char *)&(req->record_flags), (char *)record_flags, 
-	SIZEOF(XRecordFlags)); 
-    } 
     UnlockDisplay(dpy);
-    SyncHandle();   
-    return req->cid;          
+    SyncHandle();
+    return req->cid;
 }
 
 Status
@@ -179,17 +123,17 @@ XRecordFreeCG(dpy, config)
     XRecordConfig	config;
 {
     XExtDisplayInfo *info = find_display (dpy);
-    register xRecordFreeConfigReq 	*req;  
+    register xRecordFreeConfigReq 	*req;
 
     XRecordCheckExtension (dpy, info, 0);
     LockDisplay(dpy);
-    GetReq(RecordFreeConfig, req); 
+    GetReq(RecordFreeConfig, req);
     req->reqType = info->codes->major_opcode;
-    req->minor_opcode = X_RecordFreeConfig;   
+    req->minor_opcode = X_RecordFreeConfig;
     req->cid = config;
     UnlockDisplay(dpy);
-    SyncHandle(); 
-    return True;       
+    SyncHandle();
+    return True;
 }
 
 Status
@@ -201,20 +145,19 @@ XRecordChangeCG(dpy, config, id_base, record_flags, add)
     Bool		add;
 {
     XExtDisplayInfo *info = find_display (dpy);
-    register xRecordChangeConfigReq 	*req;  
+    register xRecordChangeConfigReq 	*req;
 
     XRecordCheckExtension (dpy, info, 0);
     LockDisplay(dpy);
-    GetReq(RecordChangeConfig, req); 
+    GetReq(RecordChangeConfig, req);
     req->reqType = info->codes->major_opcode;
-    req->minor_opcode = X_RecordChangeConfig;   
+    req->minor_opcode = X_RecordChangeConfig;
     req->cid = config;
     req->id_base = id_base;
-    memcpy((char *)&(req->record_flags), (char *)record_flags, 
-	SIZEOF(XRecordFlags));
+    req->record_flags = *record_flags;
     req->add = add;
     UnlockDisplay(dpy);
-    SyncHandle();             
+    SyncHandle();
     return True;
 }
 
@@ -222,7 +165,7 @@ Status
 XRecordGetCG(dpy, config, ret)
     Display 		*dpy;
     XRecordConfig	config;
-    XRecordState 	*ret; 
+    XRecordState 	*ret;
 {
     XExtDisplayInfo *info = find_display (dpy);
     register xRecordGetConfigReq   	*req;
@@ -232,72 +175,85 @@ XRecordGetCG(dpy, config, ret)
     LockDisplay(dpy);
     GetReq(RecordGetConfig, req);
     req->reqType = info->codes->major_opcode;
-    req->minor_opcode = X_RecordGetConfig;     
+    req->minor_opcode = X_RecordGetConfig;
     req->cid = config;
-    if (!_XReply(dpy,(xReply *)&rep, 0, True)) { 
+    if (!_XReply(dpy,(xReply *)&rep, 0, True)) {
 	UnlockDisplay(dpy);
 	SyncHandle();
 	return False;
     }
-    bzero((char *)ret, sizeof(XRecordState) );
-    memcpy((char *)ret, (char *)&rep.record_state, sizeof(XRecordState)); 
+    ret->enabled = rep.enabled;
     UnlockDisplay(dpy);
-    SyncHandle();    
+    SyncHandle();
     return True;
 }
 
 Status
-XRecordEnableCG(dpy, config, enable, attr)
+XRecordDisableCG(dpy, config)
     Display 		*dpy;
     XRecordConfig 	config;
-    Bool 		enable;
-    XRecordEnableCGReply *attr;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    xRecordDisableConfigReq 	*req;
+
+    XRecordCheckExtension (dpy, info, None);
+    LockDisplay(dpy);
+    GetReq(RecordDisableConfig, req);
+    req->reqType = info->codes->major_opcode;
+    req->minor_opcode = X_RecordDisableConfig;
+    req->cid =  config;
+
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return True;
+}
+
+Status
+XRecordEnableCG(dpy, config, func, arg)
+    Display 		*dpy;
+    XRecordConfig 	config;
+    void (*func)(
+#if NeedNestedPrototypes
+		 Display*		/* display */,
+		 XRecordInterceptData*	/* attr */,
+		 XPointer		/* arg */
+#endif
+		 );
+    XPointer arg;
 {
     XExtDisplayInfo *info = find_display (dpy);
     register xRecordEnableConfigReq   	*req;
-    xRecordEnableConfigReply 	rep; 
-    Status 				status;
-    _XAsyncHandler 			async;
-    _XCGState 				async_state;
+    xRecordEnableConfigReply 	rep;
+    XRecordInterceptData data;
 
     XRecordCheckExtension (dpy, info, 0);
     LockDisplay(dpy);
     GetReq(RecordEnableConfig, req);
 
     req->reqType = info->codes->major_opcode;
-    req->minor_opcode = X_RecordEnableConfig;    
+    req->minor_opcode = X_RecordEnableConfig;
     req->cid = config;
-    req->enable = enable;
 
-    async_state.attr_seq = dpy->request; 
-    async_state.attr = attr;
-    async.next = dpy->async_handlers;
-    async.handler = _XCGHandler;  /*_XAsyncErrorHandler; */
-    async.data = (XPointer)&async_state;
-    dpy->async_handlers = &async;
-
-    if (!_XReply (dpy, (xReply *)&rep, 0, xTrue) && rep.nReplies == 0) 
+    while (1)
     {
-	DeqAsyncHandler(dpy, &async);
-	UnlockDisplay(dpy);
-	SyncHandle();
-	return (0);
+	if (!_XReply (dpy, (xReply *)&rep, 0, xFalse))
+	{
+	    UnlockDisplay(dpy);
+	    SyncHandle();
+	    return (0);
+	}
+	if (!rep.nReplies)
+	    break;
+	data.id_base = rep.id_base;
+	data.direction = rep.direction;
+	data.client_swapped = rep.client_swapped;
+	data.client_seq = rep.client_seq;
+	data.data = (XRecordDatum *)Xmalloc(rep.length << 2);
+	_XRead (dpy, (char *)data.data, (long) rep.length << 2);
+	(*func)(dpy, &data, arg);
     }
-    DeqAsyncHandler(dpy, &async);
-    if (!async_state.attr) {
-	UnlockDisplay(dpy);
-	SyncHandle();
-	return (0);
-    } 
-    attr->replies_following_hint = rep.nReplies;
-    attr->id_base = rep.id_base;
-    attr->client_seq = rep.client_seq;
-    attr->client_swapped = rep.client_swapped; 
-    attr->direction = rep.direction; 
-    attr->data = rep.data; 
-   
+
     UnlockDisplay(dpy);
-    SyncHandle();     
+    SyncHandle();
     return(1);
 }
-  

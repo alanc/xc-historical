@@ -1,4 +1,4 @@
-/* $XConsortium: xrecord.c,v 1.1 94/01/29 17:46:25 rws Exp $ */
+/* $XConsortium: xrecord.c,v 1.2 94/01/30 14:16:34 rws Exp $ */
 /***************************************************************************
  * Copyright 1994 Network Computing Devices; 
  * Portions Copyright 1988 by Digital Equipment Corporation
@@ -40,9 +40,6 @@
 #include <signal.h>
 #include <X11/Xlib.h> 
 #include <X11/Xmd.h>
-#define NEED_EVENTS
-#define NEED_REPLIES
-#include <X11/Xproto.h>
 #include "recordstr.h" 
 #include "record.h"
 
@@ -71,7 +68,7 @@
 
 char *ProgramName;
 
-extern int XRecordEnableLoop(); 
+extern void Dispatch();
 
 Display *dpy1, *dpy2;          /* 
 				** X connections: 
@@ -79,26 +76,21 @@ Display *dpy1, *dpy2;          /*
 			        **  	dpy2 is data connection 
 				*/
 XRecordConfig			rec_config1; 
-XRecordConfig 			rec_config2; 
-XRecordEnableCGReply    	rec_enable;
-XRecordState                	*rec_state;
 XRecordFlags                    *rec_flags1 = NULL;
-XRecordFlags                	*rec_flags2 = NULL;
 
 Bool GlobalDone = False;
 static void SetGlobalDone()
 {
     GlobalDone = 1L;
     fprintf(stderr,"Process Completed!\n");
-    (void)XRecordEnableCG(dpy2, rec_config1, False, &rec_enable);
+    (void)XRecordDisableCG(dpy2, rec_config1);
+    XSync(dpy2, False);
 
     XRecordFreeCG(dpy1, rec_config1);   
     XCloseDisplay(dpy1); 
     XCloseDisplay(dpy2);
 
     free(rec_flags1);
-    free(rec_flags2);
-    free(rec_state); 
     
     exit(0L); 
 }
@@ -199,55 +191,34 @@ main(argc,argv)
 
     rec_flags1 = (XRecordFlags* )malloc(sizeof(XRecordFlags)); 
     bzero((char *)rec_flags1, sizeof(XRecordFlags)); 
-    rec_config1 = XRecordCreateCG(dpy1, rec_flags1); 
-
-    rec_state = (XRecordState*)malloc(sizeof(XRecordState));
-    bzero((char *)rec_state, sizeof(XRecordState)); 
-
-    if(id)
-    {
-         status = XRecordChangeCG(dpy1, rec_config1, id, rec_flags1, True);
-    } 
-    else 
-    { 
-    	/* First X client (key client) */ 
-    	status = XRecordChangeCG(dpy1, rec_config1, 4194304, rec_flags1, True);
-    }  
+    rec_config1 = XRecordCreateCG(dpy1);
 
     rec_flags1->events.first = X_Error; 
     rec_flags1->events.last = MappingNotify;  
     rec_flags1->core_requests.first = X_CreateWindow;
-    rec_flags1->core_requests.last = X_ListFontsWithInfo; 
+    rec_flags1->core_requests.last = X_NoOperation;
     rec_flags1->core_replies.first = X_CreateWindow;
-    rec_flags1->core_replies.last = X_ConfigureWindow;
+    rec_flags1->core_replies.last = X_NoOperation;
     rec_flags1->errors.first = BadRequest;
     rec_flags1->errors.last = BadImplementation; 
-    rec_flags1->ext_requests.ext_major = 131L;
+    rec_flags1->ext_requests.ext_major = 0;
     rec_flags1->ext_requests.ext_minor.first = 0;
-    rec_flags1->ext_requests.ext_minor.last = 5;
+    rec_flags1->ext_requests.ext_minor.last = 0;
     rec_flags1->ext_replies.ext_major = 0;
     rec_flags1->ext_replies.ext_minor.first = 0;
     rec_flags1->ext_replies.ext_minor.last = 0;
 
-    if(id)
-    { 
-        status = XRecordChangeCG(dpy1, rec_config1, id, rec_flags1, True);
-    } 
-    else
-    {   
-        status = XRecordChangeCG(dpy1, rec_config1, 4194304, rec_flags1, True);
-    } 
+    if (!id)
+	id = 0x400000;
+    status = XRecordChangeCG(dpy1, rec_config1, id, rec_flags1, True);
+    XSync(dpy1, False);
           
-    status = XRecordGetCG(dpy1, rec_config1, rec_state);  
- 
-    status = XRecordEnableCG(dpy2, rec_config1, True, &rec_enable); 
-
-    rec_flags2 = (XRecordFlags* )malloc(sizeof(XRecordFlags)); 
-    bzero((char *)rec_flags2, sizeof(XRecordFlags)); 
-    
     _InitExceptionHandling((void_function)SetGlobalDone); 
-    XRecordEnableLoop(dpy2, &GlobalDone); 
+
+    status = XRecordEnableCG(dpy2, rec_config1, Dispatch, NULL);
+
     _ClearExceptionHandling(); 
   
+    exit(0);
 }
 

@@ -1,4 +1,4 @@
-/* $XConsortium: XRecordTk.c,v 1.1 94/01/29 17:46:18 rws Exp $ */
+/* $XConsortium: XRecordTk.c,v 1.2 94/01/30 14:16:49 rws Exp $ */
 /***************************************************************************
  * Copyright 1994 Network Computing Devices; 
  * Portions Copyright 1988 by Digital Equipment Corporation
@@ -20,10 +20,7 @@
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  **************************************************************************/ 
-#define NEED_EVENTS
-#define NEED_REPLIES
-#include <X11/Xlibint.h>
-#include <X11/Xtrans.h>
+#include <X11/Xlib.h>
 #include <X11/Xos.h>
 
 #include <stdio.h>
@@ -84,108 +81,40 @@ long            n;
     }
 }
 
-static void
-XNCDDispatch(reply)
-    xRecordEnableConfigReply *reply;
+void
+Dispatch(dpy, data, arg)
+    Display *dpy;
+    XRecordInterceptData *data;
+    XPointer arg;
 {
      char *type;
-     type = (reply->direction ? "FromServer" : "FromClient");
+     type = (data->direction ? "FromServer" : "FromClient");
 
      fprintf(stderr, "%s  ", type); 
-     if(reply->direction)
+     if(data->direction)
      {
-        if(reply->data.u.event.u.u.type > X_Reply) 
+        if(data->data->u.event.u.u.type > X_Reply) 
     	    fprintf(stderr, "Event: %d:%d (%d, %d) Client: 0x%lx seq: 0x%lx\n", 
-	    	reply->data.u.event.u.u.type, reply->data.u.event.u.u.detail,
-	    	reply->data.u.event.u.keyButtonPointer.rootX,
-	    	reply->data.u.event.u.keyButtonPointer.rootY,
-	    	reply->id_base, reply->client_seq);
-        else if(reply->data.u.event.u.u.type == X_Error)
+	    	data->data->u.event.u.u.type, data->data->u.event.u.u.detail,
+	    	data->data->u.event.u.keyButtonPointer.rootX,
+	    	data->data->u.event.u.keyButtonPointer.rootY,
+	    	data->id_base, data->client_seq);
+        else if(data->data->u.event.u.u.type == X_Error)
      	    fprintf(stderr, "Error: %d:%d (%d, %d) Client: 0x%lx seq: 0x%lx\n", 
-	    	reply->data.u.event.u.u.type, reply->data.u.event.u.u.detail,
-	    	reply->data.u.event.u.keyButtonPointer.rootX,
-	    	reply->data.u.event.u.keyButtonPointer.rootY,
-	    	reply->id_base, reply->client_seq); 
+	    	data->data->u.event.u.u.type, data->data->u.event.u.u.detail,
+	    	data->data->u.event.u.keyButtonPointer.rootX,
+	    	data->data->u.event.u.keyButtonPointer.rootY,
+	    	data->id_base, data->client_seq); 
 		  
      } 
      else 
      {
-     	fprintf(stderr, "Request: %d  Client: 0x%lx seq: 0x%lx\n", 
-	    reply->data.u.req.reqType, reply->id_base, reply->client_seq);
+	 char buffer[512];
+	 char number[32];
+	sprintf(number, "%d", data->data->u.req.reqType);
+	XGetErrorDatabaseText(dpy, "XRequest", number, "", buffer, sizeof(buffer));
+     	fprintf(stderr, "Request: %d (%s) Client: 0x%lx seq: 0x%lx\n", 
+	    data->data->u.req.reqType, buffer, data->id_base, data->client_seq);
      } 
-}
-
-static int
-XNCDParseConn(dpy)
-    Display	*dpy;
-{
-    int			xfd = ConnectionNumber(dpy); 
-    BYTE		buf[BUFSIZE];
-    int			nbytes = SIZEOF(xRecordEnableConfigReply);
-    register int	len; 
-    BytesReadable_t	numread; 
-    register xRecordEnableConfigReply *reply;   
-
-    if(_X11TransBytesReadable(dpy->trans_conn, &numread) < 0)
-    {
-        perror ("Error while reading input");
-	fprintf(stderr, "IO error on  \"%s\"\n", 
-  	DisplayString(dpy) ); 
-        return -1;   
-    } 
-#ifdef VERBOSE
-    DumpItem("XRECORD data", xfd, buf, numread);
-#endif
-
-    if(numread)
-    {
- 
-        len = numread; 
-        if(len < nbytes)
-	    len = nbytes;
-        if(len > BUFSIZE)
-	    len = BUFSIZE;
-        len = (len/nbytes) * nbytes; 
-
-        _XRead(dpy, buf, (long) len); 
-
-        /* 
-        ** No events or errors should come across the data connection.
-        ** The control connection is used for event loops, resource 
-	** allocation, etc.
-        */
-
-        for(reply = (xRecordEnableConfigReply *)buf; len > 0;)
-        {
-            XNCDDispatch( (xRecordEnableConfigReply *)reply); 
-	    reply++;
-	    len -= nbytes;
-#ifdef VERBOSE 
-            fprintf(stderr, "len=%d\n", len); 
-#endif
-        }
-        return; 
-     }
-     return;  
-}
-
-int 
-XRecordEnableLoop(dpy, done)
-    Display *dpy;
-    Bool *done;
-{
-    int status = True;
-
-    if(done)
-    {
-        while (1) 
-        {      
-            (void)XNCDParseConn(dpy);             
-        } 
-    }
-    else
-    {
-        status = False;
-    }
-   return(status);
+     XFree(data->data);
 }

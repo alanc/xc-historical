@@ -1,4 +1,4 @@
-/* $XConsortium: record.h,v 1.1 94/01/29 17:43:47 rws Exp $ */
+/* $XConsortium: record.h,v 1.2 94/01/29 18:01:55 rws Exp $ */
 /***************************************************************************
  * Copyright 1994 Network Computing Devices;
  * Portions Copyright 1988 by Digital Equipment Corporation and the
@@ -25,19 +25,20 @@
 #define _XRECORD_H_
 
 #define XRecordExtName 			"RECORD"
-#define XRecordMajorVersion   		1L
-#define XRecordMinorVersion   		0L
-#define XRecordLowestMajorVersion   	1L
-#define XRecordLowestMinorVersion   	0L
+#define XRecordMajorVersion   		1
+#define XRecordMinorVersion   		0
+#define XRecordLowestMajorVersion   	1
+#define XRecordLowestMinorVersion   	0
 
-#define X_RecordQueryVersion    0L     /* Must be first request from client */
-#define X_RecordCreateConfig    1L     /* Create client XRecord environment */
-#define X_RecordFreeConfig      2L     /* Free client XRecord environment */
-#define X_RecordChangeConfig    3L     /* Modify client XRecord environment */
-#define X_RecordGetConfig       4L     /* Get client current environment */
-#define X_RecordEnableConfig    5L     /* Enable client XRecord trapping */
+#define X_RecordQueryVersion    0     /* Must be first request from client */
+#define X_RecordCreateConfig    1     /* Create client XRecord environment */
+#define X_RecordFreeConfig      2     /* Free client XRecord environment */
+#define X_RecordChangeConfig    3     /* Modify client XRecord environment */
+#define X_RecordGetConfig       4     /* Get client current environment */
+#define X_RecordEnableConfig    5     /* Enable client XRecord trapping */
+#define X_RecordDisableConfig   6     /* Disable client XRecord trapping */
 
-#define XRecordBadConfiguration  0L     /* Not a valid configuration */
+#define XRecordBadConfiguration  0     /* Not a valid configuration */
 #define XRecordNumErrors         	(XRecordBadConfiguration + 1) 
 
 #define XRecordActive         0L    	/* If sending/receiving between client/ext */
@@ -45,6 +46,38 @@
 #define XRecordNumEvents      1L
 
 #ifndef _XRECORD_SERVER_
+
+typedef struct
+{
+    Bool enabled;
+    int num_intercepts;
+    XRecordFlags *intercepted;
+} XRecordState;
+
+#define NEED_EVENTS
+#define NEED_REPLIES
+#include <X11/Xproto.h>
+
+typedef struct
+{
+   union
+   {
+        CARD8		type;
+   	xEvent          event;
+   	xResourceReq    req;
+   	xGenericReply   reply;
+   	xError          error;
+   } u;
+} XRecordDatum;
+
+typedef struct
+{
+    XID id_base;
+    unsigned long client_seq;
+    int  direction;
+    Bool client_swapped;
+    XRecordDatum    *data;
+} XRecordInterceptData;
 
 _XFUNCPROTOBEGIN
 
@@ -58,6 +91,12 @@ extern Status XRecordQueryVersion(
         int 				/* cmajor */, 
         int 				/* cminor */, 
         XRecordQueryVersionReply* 	/* ret */   
+#endif
+);
+
+extern XRecordConfig XRecordCreateCG(
+#if NeedFunctionPrototypes
+    Display*			/* dpy */
 #endif
 );
 
@@ -90,8 +129,21 @@ extern Status XRecordEnableCG(
 #if NeedFunctionPrototypes
     	Display*		/* dpy */,
         XRecordConfig 		/* config */, 
-        Bool 		        /* enable */,
-	XRecordEnableCGReply*	/* attr */
+	void (*) (
+#if NeedNestedPrototypes
+	       Display*			/* display */,
+	       XRecordInterceptData*	/* attr */,
+               XPointer			/* arg */
+#endif
+             )			/* func */,
+    XPointer			/* arg */
+#endif
+); 
+
+extern Status XRecordDisableCG(
+#if NeedFunctionPrototypes
+    	Display*		/* dpy */,
+        XRecordConfig 		/* config */
 #endif
 ); 
 
