@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.28 91/06/14 10:58:58 rws Exp $ */
+/* $XConsortium: miarc.c,v 5.29 91/06/14 18:09:57 rws Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -441,18 +441,48 @@ typedef struct {
 
 static arcCacheRec arcCache[CACHESIZE];
 static unsigned long lrustamp;
+static RESTYPE cacheType;
+
+/*
+ * External so it can be called when low on memory.
+ * Call with a zero ID in that case.
+ */
+/*ARGSUSED*/
+int
+miFreeArcCache (data, id)
+    pointer	    data;
+    XID		    id;
+{
+    int k;
+    arcCacheRec *cent;
+
+    if (id)
+	cacheType = 0;
+
+    for (k = CACHESIZE, cent = &arcCache[0]; --k >= 0; cent++)
+    {
+	if (cent->spdata)
+	{
+	    cent->lrustamp = 0;
+	    cent->lw = 0;
+	    xfree(cent->spdata);
+	    cent->spdata = NULL;
+	}
+    }
+    lrustamp = 0;
+}
 
 static miArcSpanData *
 miComputeWideEllipse(lw, parc, mustFree)
-    int		lw;
-    xArc	*parc;
-    Bool	*mustFree;
+    int		   lw;
+    register xArc *parc;
+    Bool	  *mustFree;
 {
     miArcSpanData *spdata;
     register miArcSpan *span;
-    arcCacheRec *cent, *lruent;
+    register arcCacheRec *cent, *lruent;
     double w, h, r, xorg;
-    int k;
+    register int k;
     double Hs, Hf, WH, K, Vk, Nk, Fk, Vr, N, Nc, Z, rs;
     double A, T, b, d, x, y, t, inx, outx, hepp, hepm;
     int flip;
@@ -466,15 +496,20 @@ miComputeWideEllipse(lw, parc, mustFree)
 	lruent = &arcCache[0];
 	for (k = CACHESIZE, cent = lruent; --k >= 0; cent++)
 	{
-	    if (cent->width == parc->width &&
-		cent->height == parc->height &&
-		cent->lw == lw)
+	    if (cent->lw == lw &&
+		cent->width == parc->width &&
+		cent->height == parc->height)
 	    {
 		cent->lrustamp = ++lrustamp;
 		return cent->spdata;
 	    }
 	    if (cent->lrustamp < lruent->lrustamp)
 		lruent = cent;
+	}
+	if (!cacheType)
+	{
+	    cacheType = CreateNewResourceType(miFreeArcCache);
+	    (void) AddResource(FakeClientID(0), cacheType, NULL);
 	}
     } else {
 	lruent = &fakeent;
@@ -510,7 +545,11 @@ miComputeWideEllipse(lw, parc, mustFree)
 					 sizeof(miArcSpan) * (k + 1));
 	lruent->spdata = spdata;
 	if (!spdata)
+	{
+	    lruent->lrustamp = 0;
+	    lruent->lw = 0;
 	    return spdata;
+	}
 	spdata->spans = (miArcSpan *)(spdata + 1);
 	spdata->k = k;
     }
@@ -647,7 +686,8 @@ miFillWideEllipse(pDraw, pGC, parc)
     miArcSpanData *spdata;
     Bool mustFree;
     register miArcSpan *span;
-    int xorg, yorg, dy, lw;
+    register int xorg, yorg;
+    int dy, lw;
     register int k, n;
 
     lw = pGC->lineWidth;
