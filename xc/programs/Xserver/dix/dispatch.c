@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.17 87/10/15 09:40:19 rws Locked $ */
+/* $Header: dispatch.c,v 1.18 87/10/15 11:34:40 rws Locked $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -147,7 +147,7 @@ static int	nClients = 0;	/* number active clients */
         if ((pGC->depth != pDraw->depth) || (pGC->pScreen != pDraw->pScreen))\
 	{\
             client->errorValue = stuff->gc;\
-	    client->lastGCID = -1;\
+	    client->lastGCID = INVALID;\
 	    return (BadMatch);\
          }\
     }\
@@ -195,12 +195,13 @@ FlushClientCaches(id)
         return ;
     for (i=0; i<currentMaxClients; i++)
     {
-        if (client == clients[i])
+	client = clients[i];
+        if (client != NullClient)
 	{
             if (client->lastDrawableID == id)
                 client->lastDrawableID = INVALID;
             else if (client->lastGCID == id)
-                client->lastGCID = -1;
+                client->lastGCID = INVALID;
 	}
     }
 }
@@ -3048,7 +3049,7 @@ NextAvailableClient()
     client->lastDrawable = (DrawablePtr) NULL;
     client->lastDrawableID = INVALID;
     client->lastGC = (GCPtr) NULL;
-    client->lastGCID = -1;
+    client->lastGCID = INVALID;
     client->numSaved = 0;
     client->saveSet = (pointer *)NULL;
     client->noClientException = Success;
