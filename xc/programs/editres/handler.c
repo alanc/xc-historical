@@ -21,8 +21,8 @@ extern Widget global_tree_parent;
  * Function Definitions.
  */
 
-extern void SetCommand(), PopupSetValues(), SetMessage();
-extern void _TreeSelect(), _TreeRelabel(), _TreeActivate();
+extern void SetCommand(), PopupSetValues(), SetAndCenterTreeNode();
+extern void _TreeSelect(), _TreeRelabel(), _TreeActivate(), SetMessage();
 
 /*	Function Name: Quit
  *	Description: This function prints a message to stdout.
@@ -65,6 +65,26 @@ XtPointer value, call_data;
 	w = XtParent(w);
 
     SetCommand(w, SendWidgetTree, NULL, NULL);
+}
+
+/*	Function Name: FindWidget
+ *	Description: Maps a widget in the client to one in the currently
+ *                   displayed widget tree.
+ *	Arguments: w - the widget that invoked this action.
+ *                 call_data, client_data ** UNUSED **
+ *	Returns: none
+ */
+
+/* ARGSUSED */
+void
+FindWidget(w, client_data, call_data)
+Widget w;
+XtPointer client_data, call_data;
+{
+    void _FindWidget();
+
+    _FindWidget(XtParent(w));	/* Use parent since it is a "real"
+				   widget not a rect_obj. */
 }
 
 /*	Function Name: InitSetValues

@@ -3,10 +3,11 @@
  * being edited.
  */
 
+#define DEBUG			/* Turn on debugging */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
-#include <X11/StringDefs.h>	/* Get standard string definations. */
+#include <X11/StringDefs.h>	/* Get standard string definitions. */
 #include <X11/Xatom.h>
 #include <X11/cursorfont.h>	/* For crosshair cursor. */
 #include <X11/Xproto.h>
@@ -14,6 +15,8 @@
 #include <X11/Xmu/Error.h>
 
 #include "editresP.h"
+
+#define CURRENT_PROTOCOL_VERSION 2
 
 /*
  * Global variables. 
@@ -23,6 +26,7 @@ extern TreeInfo *global_tree_info;
 extern CurrentClient global_client;
 extern ScreenData global_screen_data;
 extern Widget global_tree_parent;
+extern AppResources global_resources;
 
 /*
  * static Globals.
@@ -39,7 +43,7 @@ static Atom atom_comm, atom_command, atom_resource_editor, atom_client_value;
  */
 
 extern ResIdent GetNewIdent();
-extern void SetMessage(), BuildVisualTree();
+extern void SetMessage(), BuildVisualTree(), DisplayChild();
 extern char * GetFormattedSetValuesError();
 
 static void TellUserAboutMessage();
@@ -83,9 +87,10 @@ XtIntervalId * id;
  *	Returns: a clients window, or None.
  */
 
-static Window 
-GetClientWindow(w)
+Window 
+GetClientWindow(w, x, y)
 Widget w;
+int *x, *y;
 {
     int status;
     Cursor cursor;
@@ -121,6 +126,10 @@ Widget w;
 
 	    if (target_win == None) {
 		target_win = event.xbutton.subwindow; /* window selected */
+		if (x != NULL)
+		    *x = event.xbutton.x_root;
+		if (y != NULL)
+		    *y = event.xbutton.y_root;
 	    }
 	    buttons++;
 	    break;
@@ -141,8 +150,8 @@ Widget w;
     } 
     
     XUngrabPointer(dpy, CurrentTime);      /* Done with pointer */
-    
-    return(target_win);
+
+    return(XmuClientWindow(dpy, target_win));
 }
 
 /*	Function Name: SetCommand
@@ -174,18 +183,14 @@ char * value, * msg;
     SetMessage(global_screen_data.info_label, msg);
 	      
     if (global_client.window == None) {
-	Window win;
-
-	if ( (win = GetClientWindow(w)) == None) 
+	if ( (global_client.window = GetClientWindow(w, NULL, NULL)) == None) 
 	    return;
-
-	global_client.window = XmuClientWindow(dpy, win);
     }
 
     global_client.ident = GetNewIdent();
     
     global_client.command = command;
-    global_client.value = value;
+    global_client.value = XtNewString(value);
     global_client.atom = atom_comm;
 
     if (!XtOwnSelection(w, global_client.atom, CurrentTime, ConvertCommand, 
@@ -196,10 +201,11 @@ char * value, * msg;
     client_event.window = global_client.window;
     client_event.type = ClientMessage;
     client_event.message_type = atom_resource_editor;
-    client_event.format = RES_EDIT_SEND_EVENT_FORMAT;
+    client_event.format = EDITRES_SEND_EVENT_FORMAT;
     client_event.data.l[0] = XtLastTimestampProcessed(dpy);
     client_event.data.l[1] = global_client.atom;
     client_event.data.l[2] = (long) global_client.ident;
+    client_event.data.l[3] = CURRENT_PROTOCOL_VERSION;
 
     global_error_code = NO_ERROR;                 /* Reset Error code. */
     global_old_error_handler = XSetErrorHandler(HandleXErrors);
@@ -250,8 +256,11 @@ ResCommand command;
     case SetValues:
 	str = " asking it to perform SetValues()";
 	break;
-    case GetValues:
-	str = " asking it to perform GetValues()";
+    case GetGeometry:
+	str = " asking it to perform GetGeometry()";
+	break;
+    case FindChild:
+	str = " asking it to find the child Widget.";
 	break;
     default:
 	str = "";
@@ -291,10 +300,16 @@ int * format_ret;
 
     switch(global_client.command) {
     case SendWidgetTree:
-	command_str = SEND_WIDGET_TREE;
+	command_str = EDITRES_SEND_WIDGET_TREE;
 	break;
     case SetValues:
-	command_str = SET_VALUES;
+	command_str = EDITRES_SET_VALUES;
+	break;
+    case GetGeometry:
+	command_str = EDITRES_GET_GEOMETRY;
+	break;
+    case FindChild:
+	command_str = EDITRES_FIND_CHILD;
 	break;
     default:
 	SetMessage(global_screen_data.info_label,
@@ -319,7 +334,7 @@ int * format_ret;
 
     *value_ret = (XtPointer) command;
     *length_ret = strlen(command) + 1;
-    *format_ret = RES_EDITOR_FORMAT;
+    *format_ret = EDITRES_FORMAT;
     
     return(TRUE);
 }
@@ -376,11 +391,11 @@ Atom *selection, *type;
 unsigned long *length;
 int * format;
 {
-    char *string, *local_value, msg[BUFSIZ];
+    char *string, *local_value, msg[BUFSIZ], *error_msg = NULL;
     ResIdent ident;
     ResourceError error;
 
-    if ( (*type != XA_STRING) || (*format != RES_EDITOR_FORMAT) ) 
+    if ( (*type != XA_STRING) || (*format != EDITRES_FORMAT) ) 
 	return;
 
     string = (char *) value;
@@ -394,60 +409,91 @@ int * format;
 	SetMessage(global_screen_data.info_label, msg);
     }
 
-    if ( (error != NoResError) || (ident != global_client.ident)) {
-	if (error == UnformattedResError) {
-	    sprintf(msg, "Error message received from client:\n%s\n", 
-		    local_value);
-	    SetMessage(global_screen_data.info_label, msg);
-	}
-	else if (error == FormattedResError) {
-	    char * error_msg = NULL;
-
-	    switch(global_client.command) {
-	    case SendWidgetTree:
-		sprintf(msg, "Error message received from client:\n%s\n", 
-			local_value);
-		break;
-	    case SetValues:
-		error_msg = GetFormattedSetValuesError(local_value);
-		break;
-	    default:
-		sprintf(msg, "Internal error: Unknown command %d.", 
-			global_client.command);
-		break;
-	    }
-		
-	    if (error_msg == NULL) 
-		SetMessage(global_screen_data.info_label, msg);
-	    else {
-		SetMessage(global_screen_data.info_label, error_msg);
-		XtFree(error_msg);
-	    }
-	}
+	    
+    /*
+     * Ident is bad, reassert selection and wait for correct ident.
+     */
+	
+    if (ident != global_client.ident) {
 #ifdef DEBUG
-	else
-	    printf("Incorrect ident from client.\n");
+	printf("Incorrect ident from client.\n");
 #endif 
-
-	/*
-	 * global state is still active, re-assert selection.
-	 */
-	  
 	if (!XtOwnSelection(w, *selection, CurrentTime, ConvertCommand, 
 			    LoseSelection, NULL))
 	    SetMessage(global_screen_data.info_label,
-		       "Unable to own the Resource Selection");
+		       "Unable to own the Resource Editor Command Selection");
 	return;
-    }	
-
-    switch(global_client.command) {
-    case SendWidgetTree:
-	BuildVisualTree(global_tree_parent, local_value);
-	break;
-    case SetValues:
-	SetMessage(global_screen_data.info_label, local_value);
-	break;
     }
+
+    switch(error) {
+    case NoResError:
+	switch(global_client.command) {
+	case SendWidgetTree:
+	    BuildVisualTree(global_tree_parent, local_value);
+	    break;
+	case SetValues:
+	    SetMessage(global_screen_data.info_label, local_value);
+	    break;
+#ifdef notdef
+	case GetGeometry:
+	    HandleGetGeometry(local_value);
+	    break;
+#endif
+	case FindChild:
+	    DisplayChild(local_value);
+	    break;
+	default:
+	    sprintf(msg, "Internal error: Unknown command %d.", 
+		    global_client.command);
+	    break;
+	}
+	return;
+
+    case UnformattedResError:
+	sprintf(msg, "Error message received from client:\n%s\n", 
+		local_value);
+	SetMessage(global_screen_data.info_label, msg);
+	break;
+
+    case FormattedResError:
+	switch(global_client.command) {
+	case SendWidgetTree:
+	case FindChild:
+	    sprintf(msg, "Error message received from client:\n%s\n", 
+		    local_value);
+	    break;
+	case SetValues:
+	    error_msg = GetFormattedSetValuesError(local_value);
+	    break;
+#ifdef notdef
+	case GetGeometry:
+	    HandleGetGeometry(local_value);
+	    return;
+#endif
+	default:
+	    sprintf(msg, "Internal error: Unknown command %d.", 
+		    global_client.command);
+	    break;
+	}
+	break;
+
+    case ProtocolResError:
+	sprintf(msg, "Error: That client %s %d\nof the editres protocol.", 
+		"does not understand version", CURRENT_PROTOCOL_VERSION);
+	break;
+	
+    default:
+	sprintf(msg, "Internal error: Unknown error code %d.", error);
+	break;
+    }	
+		
+    if (error_msg == NULL) 
+	SetMessage(global_screen_data.info_label, msg);
+    else {
+	SetMessage(global_screen_data.info_label, error_msg);
+	XtFree(error_msg);
+    }
+
 }
 
 /*	Function Name: StripReturnValueFromString
@@ -514,10 +560,10 @@ void
 InternAtoms(dpy)
 Display * dpy;
 {
-    atom_comm = XInternAtom(dpy, RES_EDITOR_COMM_ATOM, False);
-    atom_command = XInternAtom(dpy, RES_EDITOR_COMMAND_ATOM, False);
-    atom_resource_editor = XInternAtom(dpy, RES_EDITOR_NAME, False);
-    atom_client_value = XInternAtom(dpy, RES_EDITOR_CLIENT_VALUE, False);
+    atom_comm = XInternAtom(dpy, EDITRES_COMM_ATOM, False);
+    atom_command = XInternAtom(dpy, EDITRES_COMMAND_ATOM, False);
+    atom_resource_editor = XInternAtom(dpy, EDITRES_NAME, False);
+    atom_client_value = XInternAtom(dpy, EDITRES_CLIENT_VALUE, False);
 }
 
 ResIdent

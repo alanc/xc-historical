@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 #include <X11/Xaw/Cardinals.h>
@@ -148,3 +149,120 @@ Cardinal number;
     return(node);
 }
 
+/*	Function Name: FindWidgetFromWindow
+ *	Description: finds a widget in the current tree given its window id.
+ *	Arguments: tree_info - information about this tree.
+ *                 win - window to search for.
+ *	Returns: node - the node corrosponding to this widget.
+ */
+
+WNode * 
+FindWidgetFromWindow(tree_info, win)
+TreeInfo * tree_info;
+Window win;
+{
+    static WNode * FindWidgetFromWindowGivenNode();
+
+    if (tree_info == NULL)
+	return(NULL);
+
+    return(FindWidgetFromWindowGivenNode(tree_info->top_node, win));
+}
+
+/*	Function Name: FindWidgetFromWindowGivenNode
+ *	Description: finds a widget in the current tree given its window id.
+ *	Arguments: node - current node.
+ *                 win - window to search for.
+ *	Returns: node - the node corrosponding to this widget.
+ */
+
+static WNode *
+FindWidgetFromWindowGivenNode(node, win)
+WNode * node;
+Window win;
+{
+    int i;
+    WNode * ret_node;
+
+    if (node->window == win)
+	return(node);
+
+    for (i = 0; i < node->num_children; i++) {
+	ret_node = FindWidgetFromWindowGivenNode(node->children[i], win);
+	if (ret_node != NULL)
+	    return(ret_node);
+    }
+    return(NULL);
+}
+
+/*	Function Name: NodeToID
+ *	Description: gets the fully specified node id as a string.
+ *	Arguments: node - node to work on.
+ *	Returns: an allocated fully specified node id as a string.
+ */
+
+#define MORE_MEM 200
+
+char * 
+NodeToID(node)
+WNode * node;
+{
+    int t_len = 1, alloc = 0;
+    char * str = NULL;
+
+    for ( ; node != NULL; node = node->parent) {
+	char buf[BUFSIZ], *ptr;
+	Cardinal len;
+	    
+	sprintf(buf, "%c%ld", NAME_SEPARATOR, node->id);
+	
+	len = strlen(buf);
+	
+	if (t_len + len >= alloc) {
+	    alloc += (len > MORE_MEM) ? len : MORE_MEM;
+	    str = XtRealloc(str, sizeof(char) * alloc);
+	}
+	    
+	ptr = str + t_len - 1;
+	strcpy(ptr, buf);
+	
+	t_len += len;
+    }
+    return(str);
+}
+
+/*	Function Name: IDToNode
+ *	Description: gets the node pointer given the id.
+ *	Arguments: top_node - the top_node of this tree.
+ *                 str - string containng the node id.
+ *	Returns: the node pointer of this node.
+ */
+
+WNode * 
+IDToNode(top_node, str)
+WNode * top_node;
+char * str;
+{
+    char **names;
+    int num_names, j;
+    unsigned long * ids;
+    WNode *FindNode(), *node;
+
+    GetAllStrings(str, NAME_SEPARATOR, &names, &num_names);
+    
+    ids = (unsigned long *) XtMalloc(sizeof(unsigned long) * num_names);
+	    
+    /*
+     * Reverse the order, and store as unsigned longs.
+     */
+    
+    for (j = num_names - 1; j >= 0; j--)
+	ids[j] = atol(names[num_names - j - 1]);
+    
+    node = FindNode(top_node, ids, (Cardinal) num_names);
+    
+    XtFree(ids);
+    XtFree(names);
+
+    return(node);
+}

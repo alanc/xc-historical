@@ -1,5 +1,5 @@
 /*
- * $XConsortium: EditResCom.c,v 1.3 90/03/05 17:51:42 kit Exp $
+ * $XConsortium: EditResCom.c,v 1.4 90/03/09 12:08:43 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -33,7 +33,12 @@
 #include <X11/Xatom.h>
 #include <X11/Xaw/Cardinals.h>
 #include <X11/Xaw/EditRes.h>
-#include <X11/Xaw/Text.h>
+
+#ifdef notdef
+#  include <X11/Xaw/Text.h>
+#endif
+
+#define CURRENT_PROTOCOL_VERSION 2L
 
 #define streq(a,b) (strcmp( (a), (b) ) == 0)
 
@@ -41,13 +46,13 @@ static Atom res_editor_command, client_value;
 
 static char * global_selection_command;
 
-typedef struct _ErrorMessage {
+typedef struct _Message {
     char * str;			/* The Error String. */
     int len, alloc;		/*length of message, and amount alloced space*/
     Boolean formatted;		/* is this a formatted error message. */
-} ErrorMessage;
+} Message;
 
-static ErrorMessage * global_error;
+static Message * global_error;
 static char *global_widget_str, *global_resource_name, *global_resource_value;
 static Boolean ParseCommand();
 static void AddError(), ExecuteCommand(), SendReturnCommand();
@@ -89,27 +94,34 @@ Boolean *cont;
 	disp = XtDisplay(w);
 
 	first_time = TRUE;
-	res_editor = XInternAtom(disp, RES_EDITOR_NAME, False);
-	res_editor_command = XInternAtom(disp, RES_EDITOR_COMMAND_ATOM, False);
+	res_editor = XInternAtom(disp, EDITRES_NAME, False);
+	res_editor_command = XInternAtom(disp, EDITRES_COMMAND_ATOM, False);
 
 	/*
 	 * Used in later proceedures. 
 	 */
 
-	client_value = XInternAtom(disp, RES_EDITOR_CLIENT_VALUE, False);
+	client_value = XInternAtom(disp, EDITRES_CLIENT_VALUE, False);
     }
 
     if (event->type == ClientMessage) {
 	XClientMessageEvent * c_event = (XClientMessageEvent *) event;
 
 	if ((c_event->message_type != res_editor) ||
-	    (c_event->format != RES_EDIT_SEND_EVENT_FORMAT))
+	    (c_event->format != EDITRES_SEND_EVENT_FORMAT))
 	    return;
 
 	disp = XtDisplay(w);
 	time = c_event->data.l[0];
 	res_comm = c_event->data.l[1];
 	ident = (ResIdent) c_event->data.l[2];
+	if (c_event->data.l[3] != CURRENT_PROTOCOL_VERSION) {
+	    char buf[BUFSIZ];
+
+	    sprintf(buf, "%ld", CURRENT_PROTOCOL_VERSION);
+	    SendCommand(w, res_comm, ident, ProtocolResError, buf);
+	    return;
+	}
 
 	XtGetSelectionValue(w, res_comm, res_editor_command,
 			    GetCommand, (XtPointer) ident, time);
@@ -136,7 +148,7 @@ int * format;
     char * command, *command_value;
     ResIdent ident = (ResIdent) data;
 
-    if ( (*type != XA_STRING) || (*format != RES_EDITOR_FORMAT) )
+    if ( (*type != XA_STRING) || (*format != EDITRES_FORMAT) )
 	return;
 
     if (ParseCommand(w, *selection, (char *) value, ident,
@@ -193,7 +205,8 @@ char ** command, **value;
 }
 
 /*	Function Name: ExecuteCommand
- *	Description: Executes a command string received from
+ *	Description: Executes a command string received from the 
+ *                   resource editor.
  *	Arguments: w       - a widget.
  *                 command - the command to execute.
  *                 value - the associated with the command.
@@ -210,38 +223,56 @@ Atom sel;
 ResIdent ident;
 char * command, *value;
 {
-    static void LoseReturnCommand();
-    char * DumpWidgets(), *comm_str;
+    Message error_message;
+    char * DumpWidgets(), msg[BUFSIZ];
+    Boolean set_values, ret_val;
 
-    if (streq(SEND_WIDGET_TREE, command)) {
-	comm_str = DumpWidgets(w);
+    if (streq(EDITRES_SEND_WIDGET_TREE, command)) {
+	char * comm_str = DumpWidgets(w);
 
 	SendReturnCommand(w, sel, ident, comm_str);
 	XtFree(comm_str);
     }
-    else if (streq(SET_VALUES, command)) {
+    else if ( (set_values = streq(EDITRES_SET_VALUES, command)) ||
+	      streq(EDITRES_GET_GEOMETRY, command) ) {
 	static void DoSetValues();
-	ErrorMessage error_message;
+	static Boolean DoGetGeometry();
        
-	bzero((char *) &error_message, sizeof(ErrorMessage));
+	bzero((char *) &error_message, sizeof(Message));
 
-	DoSetValues(w, value, &error_message);
-
-	if (error_message.str == NULL) 
-	    SendReturnCommand(w, sel, ident, "SetValues was sucessful.");
+	if (set_values) {
+	    ret_val = TRUE;	/* Do not send error message back 
+				   as acceptable value. */
+	    DoSetValues(w, value, &error_message);
+	}
+	else 
+	    ret_val = DoGetGeometry(w, value, &error_message);
+		
+	if (error_message.str == NULL) {
+	    sprintf(msg, "%s was sucessful.", command);
+	    SendReturnCommand(w, sel, ident, msg);
+	}
 	else {
-	    SendCommand(w, sel, ident, 
-			 ((error_message.formatted) ? FormattedResError 
-			                            :UnformattedResError),
-			 error_message.str);	    
+	    if (!ret_val) 
+		SendReturnCommand(w, sel, ident, error_message.str);
+	    else {
+		SendCommand(w, sel, ident, 
+			    (error_message.formatted ? FormattedResError 
+			                             : UnformattedResError),
+			    error_message.str);	    
+	    }
+
 	    XtFree(error_message.str);
 	}
     }
-    else {
-	char error_buf[BUFSIZ];
+    else if (streq(EDITRES_FIND_CHILD, command)) {
+	static ResourceError DoFindChild();
 
-	sprintf(error_buf, "Unknown Command: %s", command);
-	SendBackError(w, sel, ident, error_buf);
+	SendCommand(w, sel, ident, DoFindChild(w, value, msg), msg);
+    }
+    else {
+	sprintf(msg, "Unknown Command: %s", command);
+	SendBackError(w, sel, ident, msg);
     }
 }
 
@@ -277,7 +308,7 @@ int * format_ret;
 	return(FALSE);
 
     *type_ret = XA_STRING;
-    *format_ret = RES_EDITOR_FORMAT;
+    *format_ret = EDITRES_FORMAT;
 
     *value_ret = (XtPointer) global_selection_command;
     *length_ret = strlen((String) *value_ret) + 1;
@@ -390,6 +421,80 @@ char * str;
 
 /************************************************************
  *
+ * Generic Utility Functions.
+ *
+ ************************************************************/
+
+
+/*	Function Name: FindAllChildren
+ *	Description: Retuns all children (popup, normal and otherwise)
+ *                   of this widget
+ *	Arguments: parent - the parent widget.
+ *                 children - the list of children.
+ *	Returns: the number of children.
+ */
+
+static int
+FindAllChildren(parent, children)
+Widget parent, **children;
+{
+    CompositeWidget cw = (CompositeWidget) parent;
+    int i, current, num_children;
+#ifdef TEXT_WIDGET
+    Arg args[2];
+    Widget sink, source;
+#endif /* TEXT_WIDGET */
+
+    if (!XtIsWidget(parent)) {	/* objects never have children of any kind. */
+	*children = NULL; 
+	return(0);
+    }
+
+    num_children = parent->core.num_popups;
+	
+    if (XtIsComposite(parent)) 
+	num_children += cw->composite.num_children; 
+
+#ifdef TEXT_WIDGET
+	if (XtIsSubclass(parent, textWidgetClass)) {
+	    XtSetArg(args[0], XtNtextSink, &sink);
+	    XtSetArg(args[1], XtNtextSource, &source);
+	    XtGetValues(parent, args, TWO);
+
+	    if (sink != NULL) 
+		num_children++;
+	    if (source != NULL)
+		num_children++;
+	}
+#endif /* TEXT_WIDGET */
+
+    *children =(Widget*) XtMalloc((Cardinal) sizeof(Widget) * num_children);
+
+    if (XtIsComposite(parent))
+	for (i = 0, current= 0; i < cw->composite.num_children; i++,current++) 
+	    (*children)[current] = cw->composite.children[i]; 
+
+    for ( i = 0; i < parent->core.num_popups; i++, current++) 
+	(*children)[current] = parent->core.popup_list[i];
+
+#ifdef TEXT_WIDGET
+	if (XtIsSubclass(w, textWidgetClass)) {
+	    if (sink != NULL) {
+		(*children)[current] = sink;
+		current++;
+	    }
+	    if (source != NULL) {
+		(*children)[current] = source;
+		current++;
+	    }
+	}
+#endif /* TEXT_WIDGET */
+
+    return(num_children);
+}
+
+/************************************************************
+ *
  * Code to Perform SetValues operations.
  *
  ************************************************************/
@@ -406,9 +511,8 @@ static void
 DoSetValues(w, value, error)
 Widget w;
 char * value;
-ErrorMessage * error;
+Message * error;
 {
-    Widget top;
     Cardinal i, num_commands;
     static void ExecuteSetValues();
     register char * ptr, **commands;
@@ -434,10 +538,8 @@ ErrorMessage * error;
 	ptr++;
     }
 
-    for (top = w; XtParent(top) != NULL; top = XtParent(top));
-
     for (i = 0; i < num_commands; i++) {
-	ExecuteSetValues(top, commands[i], error);
+	ExecuteSetValues(w, commands[i], error);
     }
 }
 		
@@ -453,44 +555,28 @@ static Boolean
 IsChild(top, parent, child)
 Widget top, parent, child;
 {
-    Cardinal i;
+    int i, num_children;
+    Widget * children;
 
     if (parent == NULL)
 	return(top == child);
 
-    if (XtIsComposite(parent)) {
-	CompositeWidget cw = (CompositeWidget) parent;
+    num_children = FindAllChildren(parent, &children);
 
-	for (i = 0; i < cw->composite.num_children; i++) 
-	    if (cw->composite.children[i] == child)
-		return(TRUE);
+    for (i = 0; i < num_children; i++) {
+	if (children[i] == child) {
+	    XtFree(children);
+	    return(TRUE);
+	}
     }
 
-    if (!XtIsWidget(parent))
-	return(FALSE);
-
-    for (i = 0; i < parent->core.num_popups; i++) 
-	if (parent->core.popup_list[i] == child)
-	    return(TRUE);
-
-    if (XtIsSubclass(parent, textWidgetClass)) {
-	Arg args[2];
-	Widget sink, source;
-	
-	XtSetArg(args[0], XtNtextSink, &sink);
-	XtSetArg(args[1], XtNtextSource, &source);
-	XtGetValues(parent, args, TWO);
-	
-	if ((sink == child) || (source == child))
-	    return(TRUE);
-    }
-
+    XtFree(children);
     return(FALSE);
 }
 
 /*	Function Name: ExecuteSetValues
  *	Description: Performs a setvalues for a given command.
- *	Arguments: top - top of the widget tree.
+ *	Arguments: w - any widget in the tree.
  *                 command - command to execute.
  *                 error - the error message info.
  *	Returns: NULL if all widgets check out, otherwise an allocated 
@@ -498,40 +584,19 @@ Widget top, parent, child;
  */
 
 static void
-ExecuteSetValues(top, command, error)
-Widget top;
+ExecuteSetValues(w, command, error)
+Widget w;
 char * command;
-ErrorMessage * error;
+Message * error;
 {
     Widget widget;
-    static Boolean VerifyWidget();
+    static Widget VerifyWidget();
     static void HandleToolkitErrors();
     XtErrorMsgHandler old;
-    char buf[100], *begin,* end, *bp, name[100], value[100];
+    char * begin,* end, *bp, name[100], value[100];
 
-    if (!VerifyWidget(top, command, error)) 
+    if ((widget = VerifyWidget(w, command, error, WID_RES_SEPARATOR)) == NULL)
 	return;
-
-    begin = index(command, NAME_SEPARATOR);
-    begin++;
-
-    end = index(begin, NAME_SEPARATOR);
-    if (end == NULL) {
-	end = index(begin, WID_RES_SEPARATOR);
-	if (end == NULL) {
-	    char error_buf[BUFSIZ];
-	    sprintf(error_buf, "Improperly formatted SetValues %s`%c'.", 
-		    "Command, could not find a ", WID_RES_SEPARATOR);
-	    AddError(error, NULL, error_buf);
-	    return;
-	}
-    }
-
-    for ( bp = buf; begin < end; begin++, bp++)
-	*bp = *begin;
-    *bp = '\0';
-
-    widget = (Widget) atol(buf);
 
     begin = index(command, WID_RES_SEPARATOR);
     end = index(command, NAME_VAL_SEPARATOR);
@@ -575,40 +640,46 @@ ErrorMessage * error;
 
 /*	Function Name: VerifyWidget
  *	Description: Makes sure all the widgets still exist.
- *	Arguments: top - the root of the widget tree.
+ *	Arguments: w - any widget in the tree.
  *                 command - the command containing the widget list to verify.
  *                 error - the error message info.
- *	Returns: TRUE of widget exists.
+ *                 c - character that terminates the widget name.
+ *	Returns: the widget id of the leaf if it exists, otherwise NULL.
  */
 
-static Boolean
-VerifyWidget(top, command, error)
-Widget top;
+static Widget
+VerifyWidget(w, command, error, c)
+Widget w;
 char * command;
-ErrorMessage * error;
+Message * error;
+char c;
 {
+    Widget top;
     static Boolean IsChild();
     char buf[BUFSIZ], *ptr, *end;
     Widget parent, child; 
 
     strcpy(buf, command);
 
-    if ((end = index(buf, WID_RES_SEPARATOR)) == NULL) {
-	sprintf(buf, "Formatting error is SetValues, no %d %s",
-		WID_RES_SEPARATOR, "in SetValues command.");
-	AddError(error, command, buf);
-	return(FALSE);
+    if (c != '\0') {
+	if ((end = index(buf, c)) == NULL) {
+	    sprintf(buf, "Formatting error is VerifyWidget, no %d %s",
+		    c, "in command.");
+	    AddError(error, command, buf);
+	    return(NULL);
+	}
+	*end = '\0';
     }
-    
-    *end = '\0';
-    
+
+    for (top = w; XtParent(top) != NULL; top = XtParent(top)) {}
+
     parent = NULL;
     while (TRUE) {
 	if ( (ptr = rindex(buf,  NAME_SEPARATOR)) == NULL) {
-	    sprintf(buf, "Formatting error is SetValues, no %d %s",
-		    NAME_SEPARATOR, "in SetValues command.");
+	    sprintf(buf, "Formatting error is VerifyWidget, no %d %s",
+		    NAME_SEPARATOR, "in command.");
 	    AddError(error, command, buf);
-	    return(FALSE);
+	    return(NULL);
 	}
 
 	*ptr = '\0';
@@ -625,7 +696,7 @@ ErrorMessage * error;
 	
 	parent = child;
     }
-    return(TRUE);
+    return(child);
 }
 
 /************************************************************
@@ -677,9 +748,10 @@ Widget w;
 char *parent_name, **list;
 Cardinal *end, *bytes;
 {
-    int i;
+    int i, num_children;
     char my_name[BUFSIZ * 3];	/* beats me how big it should be... */
     static void DumpName();
+    Widget * children;
 
     DumpName(w, parent_name, list, end, bytes);
 
@@ -690,36 +762,12 @@ Cardinal *end, *bytes;
 	sprintf(my_name, "%s%c%s%c%ld", parent_name, NAME_SEPARATOR,
 		XtName(w), ID_SEPARATOR, (unsigned long) w);
 
-    /*
-     * Recursively call this function on all out children and popup children.
-     */
+    num_children = FindAllChildren(w, &children);
 
-    if (XtIsWidget(w)) {
-	if (XtIsComposite(w)) {
-	    CompositeWidget cw = (CompositeWidget) w;
+    for (i = 0; i < num_children; i++) 
+	DumpChildren(children[i], my_name, list, end, bytes);
 
-	    for (i = 0; i < cw->composite.num_children; i++) 
-		DumpChildren(cw->composite.children[i], my_name, list, 
-			     end, bytes);
-	}
-
-	for (i = 0; i < w->core.num_popups; i++) 
-	    DumpChildren(w->core.popup_list[i], my_name, list, end, bytes);
-
-	if (XtIsSubclass(w, textWidgetClass)) {
-	    Arg args[2];
-	    Widget sink, source;
-	    
-	    XtSetArg(args[0], XtNtextSink, &sink);
-	    XtSetArg(args[1], XtNtextSource, &source);
-	    XtGetValues(w, args, TWO);
-
-	    if (sink != NULL) 
-		DumpChildren(sink, my_name, list, end, bytes);
-	    if (source != NULL)
-		DumpChildren(source, my_name, list, end, bytes);
-	}
-    }
+    XtFree(children);
 }
 
 /*	Function Name: DumpName
@@ -789,10 +837,36 @@ Cardinal *end, *bytes;
  * Error Handling code.
  *
  *************************************************************/
+
+/*	Function Name: _AddMessage
+ *	Description: Adds a message to the message structure.
+ *	Arguments: message - message structure.
+ *                 str - new message to add.
+ *	Returns: none
+ */
+
+static void
+_AddMessage(message, str)
+Message * message;
+char * str;
+{
+    char * ptr;
+    int len = strlen(str) + 1;	/* leave space for extra '\n' */
+
+    if ((message->len + len) >= message->alloc) {
+	message->alloc += ((len + 2) > BUFSIZ) ? (len + 2) : BUFSIZ;
+	message->str = XtRealloc(message->str, message->alloc * sizeof(char));
+    }
+
+    ptr = message->str + message->len;
+    message->len += len;
+
+    sprintf(ptr, "%s\n", str);
+}
  
 /*	Function Name: AddError
  *	Description: Add a string to the error message in the form:
- *                   <widget id> - <message>
+ *                   <widget id>:<message>
  *	Arguments: error - the error structure.
  *                 widget - the string contatining the widget ids.
  *                 str - the message to append to the buffer.
@@ -801,11 +875,10 @@ Cardinal *end, *bytes;
 
 static void
 AddError(error, widget, str) 
-ErrorMessage * error;
+Message * error;
 char * widget, *str;
 {
-    int len;
-    char buf[BUFSIZ], *ptr, *end;
+    char buf[BUFSIZ], *end, *ptr;
 
     error->formatted = TRUE;
 
@@ -830,17 +903,7 @@ char * widget, *str;
 
     strcat(buf, str);
 
-    len = strlen(buf) + 1;	/* leave space for extra '\n' */
-
-    if ((error->len + len) >= error->alloc) {
-	error->alloc += ((len + 2) > BUFSIZ) ? (len + 2) : BUFSIZ;
-	error->str = XtRealloc(error->str, error->alloc * sizeof(char));
-    }
-
-    ptr = error->str + error->len;
-    error->len += len;
-
-    sprintf(ptr, "%s\n", buf);
+    _AddMessage(error, buf);
 }
 
 /*	Function Name: HandleToolkitErrors
@@ -876,4 +939,330 @@ Cardinal * num_params;
 		name, type, class, msg);
 
     AddError(global_error, global_widget_str, buf);
+}
+
+/************************************************************
+ *
+ * Code for getting the geometry of widgets.
+ *
+ ************************************************************/
+
+/*	Function Name: AddReturnMessage
+ *	Description: adds a return message to the GetGeometry message
+ *	Arguments: msg - message structure.
+ *                 error_code - must be 0 or 1.
+ *                 widget - widget id of widget message is associated with.
+ *                 str - message to send.
+ *	Returns: none
+ */
+
+static void
+AddReturnMessage(msg, error_code, widget, str)
+Message * msg;
+int error_code;
+char * widget, * str;
+{
+    char buf[BUFSIZ];
+
+    msg->formatted = TRUE;
+
+    sprintf(buf, "%1d%s%c%s", error_code, widget, 
+	    NAME_VAL_SEPARATOR, str);
+
+    _AddMessage(msg, buf);
+}
+    
+/*	Function Name: 	DoGetGeometry
+ *	Description: retreives the Geometry of each specified widget.
+ *	Arguments: w - a widget in the tree.
+ *                 value - the value part of the set values command.
+ *                 ret_str - return string send to the client.
+ *	Returns: True if Set Value was completely successful.
+ */
+
+static Boolean
+DoGetGeometry(w, value, ret_str)
+Widget w;
+char * value;
+Message * ret_str;
+{
+    Cardinal i, num_commands;
+    static Boolean ExecuteGetGeometry();
+    register char * ptr, **commands;
+    Boolean ret_val = TRUE;
+
+    ptr = value;
+    num_commands = 0;
+    while ((ptr = index(ptr, EOL_SEPARATOR)) != NULL) {
+	ptr++;
+	num_commands++;
+    }
+
+    commands = (char **) XtMalloc(sizeof(char **) * num_commands);
+    
+    for (i = 0, ptr = value; i < num_commands; i++) {
+	commands[i] = ptr;
+	if ( (ptr = index(ptr, EOL_SEPARATOR)) == NULL) {
+	    ret_str->formatted = FALSE;
+	    ret_str->str = XtNewString(
+			      "Internal Client Error: incorrect line count.");
+	    ret_str->len = strlen(ret_str->str);
+	    ret_str->alloc = ret_str->len + 1;
+
+	    return(FALSE);
+	}
+	*ptr = '\0';
+	ptr++;
+    }
+
+    for (i = 0; i < num_commands; i++)
+	ret_val &= ExecuteGetGeometry(w, commands[i], ret_str);
+
+    return(ret_val);
+}
+
+/*	Function Name: ExecuteGetGeometry
+ *	Description: Gets the geometry for each widget specified.
+ *	Arguments: w - any widget in the widget tree.
+ *                 command - widget to execute get geom on.
+ *                 msg - message containing the return values.
+ *	Returns: True if no error occured.
+ */
+
+#define NOT_VIS ("NOT_VISABLE")
+
+static Boolean
+ExecuteGetGeometry(w, command, msg)
+Widget w;
+String command;
+Message * msg;
+{
+    Boolean mapped_when_man;
+    char buf[100];
+    Dimension width, height, border_width;
+    Arg args[8];
+    Cardinal num_args = 0;
+    Position x, y;
+    
+    if ((w = VerifyWidget(w, command, msg, '\0')) == NULL)
+	return(FALSE);
+
+    if ( !XtIsRectObj(w) || (XtIsWidget(w) && !XtIsRealized(w)) ) {
+	AddReturnMessage(msg, 0, command, NOT_VIS);
+	return(TRUE);
+    }
+
+    XtSetArg(args[num_args], XtNwidth, &width); num_args++;
+    XtSetArg(args[num_args], XtNheight, &height); num_args++;
+    XtSetArg(args[num_args], XtNx, &x); num_args++;
+    XtSetArg(args[num_args], XtNy, &y); num_args++;
+    XtSetArg(args[num_args], XtNborderWidth, &border_width); num_args++;
+    XtSetArg(args[num_args], XtNmappedWhenManaged, &mapped_when_man);
+    num_args++;
+    XtGetValues(w, args, num_args);
+
+    if (!(XtIsManaged(w) && mapped_when_man) && XtIsWidget(w)) {
+	XWindowAttributes attrs;
+	
+	/* 
+	 * The toolkit does not maintain mapping state, we have
+	 * to go to the server.
+	 */
+	
+	if (XGetWindowAttributes(XtDisplay(w), XtWindow(w), &attrs) != 0)
+	    if (attrs.map_state != IsViewable) {
+		AddReturnMessage(msg, 0, command, NOT_VIS);
+		return(TRUE);
+	    }
+	    else {
+		AddReturnMessage(msg, 1, 
+				 command, "XGetWindowAttributes failed.");
+		return(FALSE);
+	    }
+    }
+
+    sprintf(buf, "%dx%d%+d%+d%c%d", (int) width, (int) height, (int) x,
+	    (int) y, EDITRES_BORDER_WIDTH_SEPARATOR, (int) border_width);
+    
+    AddReturnMessage(msg, 0, command, buf);
+    return(TRUE);
+}
+
+/************************************************************
+ *
+ * Code for executing FindChild.
+ *
+ ************************************************************/
+
+/*	Function Name: NodeToID
+ *	Description: gets the fully specified node id as a string.
+ *	Arguments: node - node to work on.
+ *                 buf, len - buffer and size of buffer to stuff id into.
+ *	Returns: an allocated fully specified node id as a string.
+ */
+
+static ResourceError
+WidgetToID(w, buf, len)
+Widget w;
+char * buf;
+int len;
+{
+    register int local_len, t_len = 1;
+    register char * ptr, temp[51];
+
+    for (ptr = buf ; w != NULL; w = XtParent(w)) {
+	    
+	sprintf(temp, "%c%ld", NAME_SEPARATOR, (long) w);
+	
+	local_len = strlen(temp);
+
+	if (t_len + local_len >= len) {
+	    sprintf(buf, "%s to fit entire name into buffer of length %d",
+		    "Editres Client: Unable", len);
+	    return(UnformattedResError);
+	}
+	strcpy(ptr, temp);
+	
+	ptr += local_len;
+	t_len += local_len;
+    }
+    return(NoResError);
+}
+
+/*	Function Name: PositionInChild
+ *	Description: returns true if this location is in the child.
+ *	Arguments: child - the child widget to check.
+ *                 x, y - location of point to check in the parent's
+ *                        coord space.
+ *	Returns: TRUE if the position is in this child.
+ */
+
+static Boolean
+PositionInChild(child, x, y)
+Widget child;
+int x, y;
+{
+    Arg args[6];
+    Cardinal num;
+    Dimension width, height, border_width;
+    Position child_x, child_y;
+    Boolean mapped_when_managed;
+
+    if (!XtIsRectObj(child))	/* we must at least be a rect obj. */
+	return(FALSE);
+
+    num = 0;
+    XtSetArg(args[num], XtNmappedWhenManaged, &mapped_when_managed); num++;
+    XtSetArg(args[num], XtNwidth, &width); num++;
+    XtSetArg(args[num], XtNheight, &height); num++;
+    XtSetArg(args[num], XtNx, &child_x); num++;
+    XtSetArg(args[num], XtNy, &child_y); num++;
+    XtSetArg(args[num], XtNborderWidth, &border_width); num++;
+    XtGetValues(child, args, num);
+ 
+    /*
+     * The only way we will know of the widget is mapped is to see if
+     * mapped when managed is True and this is a managed child.  Otherwise
+     * we will have to ask the server if this window is mapped.
+     */
+
+    if (XtIsWidget(child) && !(mapped_when_managed && XtIsManaged(child)) ) {
+	XWindowAttributes attrs;
+
+	if (XGetWindowAttributes(XtDisplay(child), 
+				 XtWindow(child), &attrs) != 0) {
+	    /* oops */
+	}
+	else if (attrs.map_state != IsViewable)
+	    return(FALSE);
+    }
+
+    return( (x >= child_x) && (x <= (child_x + width + 2 * border_width)) &&
+	    (y >= child_y) && (y <= (child_y + height + 2 * border_width)) );
+}
+
+/*	Function Name: FindChild
+ *	Description: Finds the child that actually contatians the point shown.
+ *	Arguments: parent - a widget that is known to contain the point
+ *                 	    specified.
+ *                 x, y - The point in coordinates relative to the 
+ *                        widget specified.
+ *	Returns: none.
+ */
+
+static Widget 
+FindChild(parent, x, y)
+Widget parent;
+int x, y;
+{
+    int i, num_children;
+    Widget * children;
+
+    num_children = FindAllChildren(parent, &children);
+
+    for (i = 0; i < num_children; i++) {
+	if (PositionInChild(children[i], x, y)) {
+	    Widget child = children[i];
+	    
+	    XtFree(children);
+	    return(FindChild(child, x - child->core.x, y - child->core.y));
+	}
+    }
+
+    XtFree(children);
+    return(parent);
+}
+
+/*	Function Name: DoFindChild
+ *	Description: finds the child that contains the location specified.
+ *	Arguments: w - any widget in the widget tree.
+ *                 str - command string.
+ *                 ret_val - a string to stuff the return value into.
+ *	Returns: the error code.
+ */
+
+static ResourceError
+DoFindChild(w, str, ret_val)
+Widget w;
+String str, ret_val;
+{
+    Message msg;
+    char * parse_string;
+    Widget parent, child;
+    static ResourceError WidgetToID();
+    int x_loc, y_loc, mask;
+    unsigned int junk;
+    Position parent_x, parent_y;
+
+    bzero((char *) &msg, sizeof(Message)); /* initialize to zero. */
+
+    if ((parent = VerifyWidget(w, str, &msg, NAME_VAL_SEPARATOR)) == NULL)
+    {
+	strcpy(ret_val, msg.str);
+	XtFree(msg.str);
+	return(UnformattedResError);
+    }
+
+    /*
+     * There should never be NULL returned here, because VerifyWidget()
+     * already checked to make sure a NAME_VAL_SEPARATOR was found.
+     */
+
+    parse_string = index(str, NAME_VAL_SEPARATOR) + 1;
+
+    mask = XParseGeometry(parse_string, &x_loc, &y_loc, &junk, &junk);
+
+    if ( !(mask & XValue) || !(mask & YValue)) {
+	sprintf(ret_val, "%s `%s' %s %s",
+		"The geometry string", parse_string, "passed to the",
+		"client process does not contain an X and Y value.");
+	return(UnformattedResError);
+    }
+
+    XtTranslateCoords(parent, (Position) 0, (Position) 0,
+		      &parent_x, &parent_y);
+    
+    child = FindChild(parent, x_loc - (int) parent_x, y_loc - (int) parent_y);
+    
+    return(WidgetToID(child, ret_val, BUFSIZ));
 }

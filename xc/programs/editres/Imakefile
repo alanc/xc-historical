@@ -4,10 +4,10 @@
 
         DEPLIBS = XawClientDepLibs
 LOCAL_LIBRARIES = XawClientLibs
-           SRCS = actions.c comm.c editres.c handler.c svpopup.c utils.c \
-		  widgets.c wtree.c 
-           OBJS = actions.o comm.o editres.o handler.o svpopup.o utils.o \
-		  widgets.o wtree.o 
+           SRCS = actions.c comm.c editres.c geometry.c handler.c svpopup.c \
+		  utils.c widgets.c wtree.c 
+           OBJS = actions.o comm.o editres.o geometry.o handler.o svpopup.o \
+		  utils.o widgets.o wtree.o 
 
 ComplexProgramTarget(editres)
 

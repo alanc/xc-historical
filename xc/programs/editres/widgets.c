@@ -39,7 +39,7 @@ static Widget CreateTopArea();
 
 extern void PannerCallback(), PortholeCallback();
 extern void Quit(), SendTree(), InitSetValues();
-extern void TreeSelect(), TreeRelabel(), TreeActivate();
+extern void TreeSelect(), TreeRelabel(), TreeActivate(), FindWidget();
 
 /*	Function Name: BuildWidgetTree
  *	Description: Creates all widgets for Editres.
@@ -119,10 +119,6 @@ Widget parent;
 
     menu = XtCreatePopupShell("menu", simpleMenuWidgetClass, button,
 			      NULL, ZERO);
-
-    entry = XtCreateManagedWidget("quit", smeBSBObjectClass, menu,
-				    NULL, ZERO);
-    XtAddCallback(entry, XtNcallback, Quit, NULL);
     
     entry = XtCreateManagedWidget("sendTree", smeBSBObjectClass, menu,
 				    NULL, ZERO);
@@ -131,10 +127,25 @@ Widget parent;
     entry = XtCreateManagedWidget("refreshTree", smeBSBObjectClass, menu,
 				  NULL, ZERO);
     XtAddCallback(entry, XtNcallback, SendTree, (XtPointer) FALSE);
+
+    entry = XtCreateManagedWidget("showClientWidget", smeBSBObjectClass, menu,
+				  NULL, ZERO);
+    XtAddCallback(entry, XtNcallback, FindWidget, NULL);
+
+    entry = XtCreateManagedWidget("line", smeLineObjectClass, menu,
+				  NULL, ZERO);
     
     entry = XtCreateManagedWidget("setValues", smeBSBObjectClass, menu,
 				    NULL, ZERO);
     XtAddCallback(entry, XtNcallback, InitSetValues, NULL);
+
+    entry = XtCreateManagedWidget("line", smeLineObjectClass, menu,
+				  NULL, ZERO);
+
+    entry = XtCreateManagedWidget("quit", smeBSBObjectClass, menu,
+				    NULL, ZERO);
+    XtAddCallback(entry, XtNcallback, Quit, NULL);
+
 }
 
 /*	Function Name: CreateTreeCommandMenu

@@ -21,8 +21,9 @@ extern TreeInfo *global_tree_info;
 
 extern void PrepareToLayoutTree(), LayoutTree();
 
-void _TreeSelectNode(), _TreeActivateNode(), _TreeRelabelNode();
-WNode ** CopyActiveNodes();
+extern void _TreeSelectNode(), _TreeActivateNode(), _TreeRelabelNode();
+extern WNode ** CopyActiveNodes();
+extern char * NodeToID();
 
 /*	Function Name: BuildVisualTree
  *	Description: Creates the Tree and shows it.
@@ -147,45 +148,19 @@ caddr_t node_ptr, state_ptr;
  *	Returns: none.
  */
 
-#define MORE_MEM 200
-
 void
 GetAllActiveTreeEntries(tree_info, entries, num_entries)
 TreeInfo * tree_info;
 char *** entries;
 Cardinal * num_entries;
 {
-    WNode * node;
-    Cardinal i, t_len, alloc;
+    int i;
 
     *num_entries = tree_info->num_nodes;
     *entries = (char **) XtMalloc(sizeof(char *) * (*num_entries));
 
-    for (i = 0; i < *num_entries; i++) {
-	t_len = 1;
-	alloc = 0;
-	node = tree_info->active_nodes[i];
-	(*entries)[i] = NULL;
-
-	for ( ; node != NULL; node = node->parent) {
-	    char buf[BUFSIZ], *ptr;
-	    Cardinal len;
-	    
-	    sprintf(buf, "%c%ld", NAME_SEPARATOR, node->id);
-
-	    len = strlen(buf);
-
-	    if (t_len + len >= alloc) {
-		alloc += (len > MORE_MEM) ? len : MORE_MEM;
-		(*entries)[i] = XtRealloc((*entries)[i], sizeof(char) * alloc);
-	    }
-	    
-	    ptr = (*entries)[i] + t_len - 1;
-	    strcpy(ptr, buf);
-	
-	    t_len += len;
-	}
-    }
+    for (i = 0; i < *num_entries; i++) 
+	(*entries)[i] = NodeToID(tree_info->active_nodes[i]);
 }
 
 /*	Function Name: AddNodeToActiveList
@@ -749,4 +724,59 @@ TreeInfo * tree_info;
 	list[i] = tree_info->active_nodes[i];
 
     return(list);
+}
+
+/*	Function Name: SetAndCenterTreeNode
+ *	Description: Deactivates all nodes, activates the one specified, and
+ *                   and moves the tree to be centered on the current node.
+ *	Arguments: node - node to use.
+ *	Returns: none.
+ */
+
+void
+SetAndCenterTreeNode(node)
+WNode * node;
+{
+    Arg args[5];
+    Cardinal num_args;
+    Position node_x, node_y;
+    Dimension port_width, port_height;
+    Dimension node_width, node_height, node_bw;
+
+    _TreeSelect(node->tree_info, SelectNone); /* Unselect all nodes */
+    _TreeSelectNode(node, SelectAll, FALSE);  /* Select this node */
+
+    /*
+     * Get porthole dimensions.
+     */
+
+    num_args = 0;
+    XtSetArg(args[num_args], XtNwidth, &port_width); num_args++;
+    XtSetArg(args[num_args], XtNheight, &port_height); num_args++;
+    XtGetValues(XtParent(node->tree_info->tree_widget), args, num_args);
+
+    /*
+     * Get node widget dimensions.
+     */
+
+    num_args = 0;
+    XtSetArg(args[num_args], XtNwidth, &node_width); num_args++;
+    XtSetArg(args[num_args], XtNheight, &node_height); num_args++;
+    XtSetArg(args[num_args], XtNborderWidth, &node_bw); num_args++;
+    XtSetArg(args[num_args], XtNx, &node_x); num_args++;
+    XtSetArg(args[num_args], XtNy, &node_y); num_args++;
+    XtGetValues(node->widget, args, num_args);
+
+    /*
+     * reset the node x and y location to be the new x and y location of
+     * the tree relative to the porthole.
+     */
+ 
+    node_x = port_width/2 - (node_x + node_width/2 + node_bw);
+    node_y = port_height/2 - (node_y + node_height/2 + node_bw);
+
+    num_args = 0;
+    XtSetArg(args[num_args], XtNx, node_x); num_args++;
+    XtSetArg(args[num_args], XtNy, node_y); num_args++;
+    XtSetValues(node->tree_info->tree_widget, args, num_args);    
 }

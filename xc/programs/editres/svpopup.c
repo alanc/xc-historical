@@ -22,6 +22,7 @@ extern ScreenData global_screen_data;
 
 extern void SetMessage(), SetCommand(), GetAllActiveTreeEntries();
 extern void GetAllStrings(), AddString();
+extern WNode * IDToNode();
 
 static void _SetField(), PopupCentered(), CreateSetValuesPopup();
 
@@ -391,6 +392,7 @@ caddr_t junk, garbage;
     XtFree(entries);
 
     SetCommand(w, SetValues, command_value, NULL);
+    XtFree(command_value);
 }
 
 /*	Function Name: CancelSetValues
@@ -422,18 +424,14 @@ char * value;
 {
     char buf[BUFSIZ], ** strings, *ret_val;
     int num_strings, i;
-    WNode * FindNode(), *top_node, *node;
-
-    top_node = global_tree_info->top_node;
+    WNode *node;
 
     GetAllStrings(value, EOL_SEPARATOR, &strings, &num_strings);
 
     ret_val = NULL;
 
     for (i = 0; i < num_strings; i++) {
-	char *ptr, **names;
-	int num_names, j;
-	unsigned long * ids;
+	char *ptr;
 
 	ptr = index(strings[i], NAME_VAL_SEPARATOR);
 	if (ptr == NULL) {
@@ -445,23 +443,9 @@ char * value;
 
 	if (ptr != strings[i]) {
 	    *ptr++ = '\0';
-	    GetAllStrings(strings[i], NAME_SEPARATOR, &names, &num_names);
-	    
-	    ids= (unsigned long *) XtMalloc(sizeof(unsigned long) * num_names);
-	    
-	    /*
-	     * Reverse the order, and store as unsigned longs.
-	     */
-	    
-	    for (j = num_names - 1; j >= 0; j--)
-		ids[j] = atol(names[num_names - j - 1]);
-	    
-	    node = FindNode(top_node, ids, (Cardinal) num_names);
+	    node = IDToNode(global_tree_info->top_node, strings[i]);
 	    
 	    sprintf(buf, "%s(0x%lx) - %s\n", node->name, node->id, ptr);
-
-	    XtFree(ids);
-	    XtFree(names);
 	}
 	else
 	    strcpy(buf, (ptr + 1));
