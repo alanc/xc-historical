@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.42 90/09/13 18:27:45 keith Exp $
+ * $XConsortium: dm.c,v 1.43 90/09/14 17:51:36 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -604,7 +604,7 @@ StorePid ()
 		      pidFile);
 	    return -1;
 	}
-	if (fscanf (pidFilePtr, "%d", &oldpid) != 1)
+	if (fscanf (pidFilePtr, "%d\n", &oldpid) != 1)
 	    oldpid = -1;
 	fseek (pidFilePtr, 0l, 0);
 	if (lockPidFile)
@@ -627,8 +627,7 @@ StorePid ()
 	    }
 #endif
 	}
-	close(creat(pidFile, 0666));
-	fprintf (pidFilePtr, "%d\n", getpid ());
+	fprintf (pidFilePtr, "%5d\n", getpid ());
 	(void) fflush (pidFilePtr);
 	RegisterCloseOnFork (pidFd);
     }
