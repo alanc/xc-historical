@@ -1,4 +1,7 @@
-/* $XConsortium: Imakefile,v 1.18 89/10/17 12:41:51 jim Exp $ */
+/* $XConsortium: Imakefile,v 1.19 89/12/02 14:22:38 rws Exp $ */
+#define IHaveSubdirs
+#define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
+
   STD_DEFINES = LibraryDefines ExtensionDefines
   CDEBUGFLAGS = LibraryCDebugFlags
      INCLUDES = -I$(TOP) -I$(INCLUDESRC) -I$(XLIBSRC) -I../include
@@ -7,6 +10,7 @@
          OBJS = globals.o extutil.o XMultibuf.o XShape.o XShm.o \
 		MITMisc.o XTestExt1.o 
      LINTLIBS = $(LINTXLIB)
+      SUBDIRS = xinput
 
 #if DebugLibXext && ProfileLibXext
 DebuggedAndProfiledLibraryObjectRule()
@@ -47,6 +51,9 @@ InstallLibrary(Xext_d,$(USRLIBDIR))
 MergeIntoInstalledLibrary($(USRLIBDIR)/libX11_d.a,libXext_d.a)
 #endif
 #endif
+
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))
 
 DependTarget()
 
