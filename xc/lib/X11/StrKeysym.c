@@ -1,4 +1,4 @@
-/* $XConsortium: XStrKeysym.c,v 11.6 90/07/26 18:31:38 rws Exp $ */
+/* $XConsortium: XStrKeysym.c,v 11.7 90/07/27 08:36:13 rws Exp $ */
 /* Copyright 1985, 1987, 1990 Massachusetts Institute of Technology */
 
 #include "Xlibint.h"
@@ -33,7 +33,8 @@ _XInitKeysymDB()
     {
 	XrmInitialize();
 	keysymdb = XrmGetFileDatabase(KEYSYMDB);
-	Qkeysym[0] = XrmStringToQuark("Keysym");
+	if (keysymdb)
+	    Qkeysym[0] = XrmStringToQuark("Keysym");
 	initialized = True;
     }
     return keysymdb;
