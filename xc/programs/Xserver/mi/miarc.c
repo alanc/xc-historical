@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 1.61 88/10/21 15:58:15 keith Exp $ */
+/* $XConsortium: miarc.c,v 1.62 88/10/21 17:12:44 keith Exp $ */
 /* Author: Keith Packard */
 
 #include "X.h"
@@ -389,13 +389,23 @@ static double
 angleBetween (center, point1, point2)
 	SppPointRec	center, point1, point2;
 {
-	double	atan2 (), a1, a2;
+	double	atan2 (), a1, a2, a;
 	
-	a1 = atan2 (point1.x - center.x, point1.y - center.y);
-	a2 = atan2 (point2.x - center.x, point2.y - center.y);
-	return a2 - a1;
+	/*
+	 * reflect from X coordinates back to elipse
+	 * coordinates -- y increasing upwards
+	 */
+	a1 = atan2 (- (point1.y - center.y), point1.x - center.x);
+	a2 = atan2 (- (point2.y - center.y), point2.x - center.x);
+	a = a2 - a1;
+	if (a < -M_PI)
+		a += 2 * M_PI;
+	else if (a > M_PI)
+		a -= 2 * M_PI;
+	return a;
 }
 
+static
 translateBounds (b, x, y, fx, fy)
 miArcFacePtr	b;
 int		x, y;
@@ -452,7 +462,7 @@ miArcJoin (pDraw, pGC, pLeft, pRight,
 		return;
 	center = pRight->center;
 	if (0 <= (a = angleBetween (center, pRight->clock, pLeft->counterClock))
- 	    && a < M_PI)
+ 	    && a <= M_PI)
  	{
 		corner = pRight->clock;
 		otherCorner = pLeft->counterClock;
@@ -862,7 +872,8 @@ miComputeArcs (parcs, narcs, isDashed, isDoubleDash, pDash, nDashes, dashOffset)
 	struct arcData	*data;
 	miArcDataPtr	arc;
 	xArc		xarc;
-	int		iphase, arcphase, joinphase;
+	int		iphase, prevphase, joinphase;
+	int		arcsJoin;
 
 	int		iDash, dashRemaining;
 	int		iDashStart, dashRemainingStart, iphaseStart;
@@ -919,8 +930,8 @@ miComputeArcs (parcs, narcs, isDashed, isDoubleDash, pDash, nDashes, dashOffset)
 		}
 		iDashStart = iDash;
 		dashRemainingStart = dashRemaining;
-		iphaseStart = iphase;
 	}
+	iphaseStart = iphase;
 
 	for (i = narcs - 1; i >= 0; i--) {
 		j = i + 1;
@@ -981,26 +992,26 @@ miComputeArcs (parcs, narcs, isDashed, isDoubleDash, pDash, nDashes, dashOffset)
 					xarc.angle2 = spanAngle;
 					arc = addArc (&arcs[iphase].arcs, &arcs[iphase].narcs,
  							&arcSize[iphase], xarc);
-					arcphase = iphase;
 					if (!isDoubleDash) {
 						if (prevDashAngle != startAngle) {
-							addCap (&arcs[arcphase].caps,
- 								&arcs[arcphase].ncaps,
- 								&capSize[arcphase], RIGHT_END,
- 								arc - arcs[arcphase].arcs);
+							addCap (&arcs[iphase].caps,
+ 								&arcs[iphase].ncaps,
+ 								&capSize[iphase], RIGHT_END,
+ 								arc - arcs[iphase].arcs);
 							
 						}
 						if (dashAngle != endAngle) {
-							addCap (&arcs[arcphase].caps,
- 								&arcs[arcphase].ncaps,
- 								&capSize[arcphase], LEFT_END,
- 								arc - arcs[arcphase].arcs);
+							addCap (&arcs[iphase].caps,
+ 								&arcs[iphase].ncaps,
+ 								&capSize[iphase], LEFT_END,
+ 								arc - arcs[iphase].arcs);
 						}
 					}
-					arc->cap = arcs[arcphase].ncaps;
-					arc->join = arcs[arcphase].njoins;
+					arc->cap = arcs[iphase].ncaps;
+					arc->join = arcs[iphase].njoins;
 					arc->render = 0;
 				}
+				prevphase = iphase;
 				if (dashRemaining <= 0) {
 					++iDash;
 					if (iDash == nDashes)
@@ -1013,52 +1024,87 @@ miComputeArcs (parcs, narcs, isDashed, isDoubleDash, pDash, nDashes, dashOffset)
 		} else {
 			arc = addArc (&arcs[iphase].arcs, &arcs[iphase].narcs,
  				      &arcSize[iphase], parcs[i]);
-			arcphase = iphase;
+			arc->join = arcs[iphase].njoins;
+			arc->cap = arcs[iphase].ncaps;
+			prevphase = iphase;
 		}
-		k = arcs[arcphase].narcs - 1;
-		nextk = arcs[iphase].narcs;
-		if (nexti == start)
+		if (prevphase == 0 || isDoubleDash)
+			k = arcs[prevphase].narcs - 1;
+		if (iphase == 0 || isDoubleDash)
+			nextk = arcs[iphase].narcs;
+		if (nexti == start) {
 			nextk = 0;
-		if (narcs > 1 &&
- 		    ISEQUAL (data[i].x1, data[j].x0) &&
-		    ISEQUAL (data[i].y1, data[j].y0))
- 		{
-			joinphase = arcphase;
-			/*
-			 * if the join is right at the dash,
-			 * draw the join in foreground
-			 * This is because the background
-			 * arcs are computed first the results
-			 * of which are needed to draw the join
-			 */
-			if (iphase != arcphase)
-				joinphase = 0;
-			if (joinphase == 0 || isDoubleDash) {
-				addJoin (&arcs[joinphase].joins,
- 					 &arcs[joinphase].njoins,
- 					 &joinSize[joinphase],
-	 				 LEFT_END, k, arcphase,
-	 				 RIGHT_END, nextk, iphase);
-			}
-			arc->join = arcs[arcphase].njoins;
-			arc->cap = arcs[arcphase].ncaps;
-			arc->render = 0;
-		} else {
-			if ((arcphase == 0 || isDoubleDash) &&
-			    !data[i].selfJoin)
-				addCap (&arcs[arcphase].caps, &arcs[arcphase].ncaps,
- 					&capSize[arcphase], LEFT_END, k);
-			arc->join = arcs[arcphase].njoins;
-			arc->cap = arcs[arcphase].ncaps;
-			arc->render = 1;
 			if (isDashed) {
 				iDash = iDashStart;
 				iphase = iphaseStart;
 				dashRemaining = dashRemainingStart;
-				nextk = arcs[iphase].narcs;
 			}
+		}
+		arcsJoin = narcs > 1 && 
+	 		    ISEQUAL (data[i].x1, data[j].x0) &&
+			    ISEQUAL (data[i].y1, data[j].y0);
+		if (arcsJoin)
+			arc->render = 0;
+		else
+			arc->render = 1;
+		if (arcsJoin &&
+		    (prevphase == 0 || isDoubleDash) &&
+		    (iphase == 0 || isDoubleDash))
+ 		{
+			joinphase = iphase;
+			if (isDoubleDash) {
+				if (nexti == start)
+					joinphase = iphaseStart;
+				/*
+				 * if the join is right at the dash,
+				 * draw the join in foreground
+				 * This is because the foreground
+				 * arcs are computed second, the results
+				 * of which are needed to draw the join
+				 */
+				if (joinphase != prevphase)
+					joinphase = 0;
+			}
+			if (joinphase == 0 || isDoubleDash) {
+				addJoin (&arcs[joinphase].joins,
+ 					 &arcs[joinphase].njoins,
+ 					 &joinSize[joinphase],
+	 				 LEFT_END, k, prevphase,
+	 				 RIGHT_END, nextk, iphase);
+				arc->join = arcs[prevphase].njoins;
+			}
+		} else {
+			if ((prevphase == 0 || isDoubleDash) &&
+			    !data[i].selfJoin)
+			{
+				addCap (&arcs[prevphase].caps, &arcs[prevphase].ncaps,
+ 					&capSize[prevphase], LEFT_END, k);
+				arc->cap = arcs[prevphase].ncaps;
+			}
+			if (isDashed && !arcsJoin) {
+				iDash = iDashStart;
+				iphase = iphaseStart;
+				dashRemaining = dashRemainingStart;
+			}
+			nextk = arcs[iphase].narcs;
+			if (nexti == start) {
+				nextk = 0;
+				iDash = iDashStart;
+				iphase = iphaseStart;
+				dashRemaining = dashRemainingStart;
+			}
+			/*
+			 * cap the right end of the next arc.  If the
+			 * next arc is actually the first arc, only
+			 * cap it if it joins with this arc.  This
+			 * case will occur when the final dash segment
+			 * of an on/off dash is off.  Of course, this
+			 * cap will be drawn at a strange time, but that
+			 * hardly matters...
+			 */
 			if ((iphase == 0 || isDoubleDash) &&
-			    nexti != start && !data[j].selfJoin)
+			    (nexti != start || arcsJoin && isDashed) &&
+ 			    !data[j].selfJoin)
 				addCap (&arcs[iphase].caps, &arcs[iphase].ncaps,
  					&capSize[iphase], RIGHT_END, nextk);
 		}
@@ -1070,8 +1116,13 @@ miComputeArcs (parcs, narcs, isDashed, isDoubleDash, pDash, nDashes, dashOffset)
 	 * make sure the last section is rendered
 	 */
 	for (iphase = 0; iphase < (isDoubleDash ? 2 : 1); iphase++)
-		if (arcs[iphase].narcs > 0)
+		if (arcs[iphase].narcs > 0) {
 			arcs[iphase].arcs[arcs[iphase].narcs-1].render = 1;
+			arcs[iphase].arcs[arcs[iphase].narcs-1].join =
+			         arcs[iphase].njoins;
+			arcs[iphase].arcs[arcs[iphase].narcs-1].cap =
+			         arcs[iphase].ncaps;
+		}
 	return arcs;
 }
 
@@ -2178,8 +2229,8 @@ findSpan (y)
 		else
 			newMaxy = finalMaxy + change;
 		if (finalSpans) {
-			bcopy (finalSpans,
-	 		       newSpans + (finalMiny-newMiny) * sizeof (struct finalSpan *),
+			bcopy ((char *) finalSpans,
+	 		       ((char *) newSpans) + (finalMiny-newMiny) * sizeof (struct finalSpan *),
 			       finalSize * sizeof (struct finalSpan *));
 			Xfree (finalSpans);
 		}
