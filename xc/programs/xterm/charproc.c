@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.145 91/04/24 15:45:51 gildea Exp $
+ * $XConsortium: charproc.c,v 1.146 91/04/24 18:04:11 gildea Exp $
  */
 
 /*
@@ -70,8 +70,10 @@ static void bitset(), bitclr();
 #define	TEXT_BUF_SIZE	256
 #define TRACKTIMESEC	4L
 #define TRACKTIMEUSEC	0L
+#define BELLSUPPRESSMSEC 200
 
 #define XtNalwaysHighlight	"alwaysHighlight"
+#define XtNbellSuppressTime	"bellSuppressTime"
 #define	XtNboldFont		"boldFont"
 #define	XtNc132			"c132"
 #define XtNcharClass		"charClass"
@@ -114,6 +116,7 @@ static void bitset(), bitclr();
 #define XtNallowSendEvents	"allowSendEvents"
 
 #define XtCAlwaysHighlight	"AlwaysHighlight"
+#define XtCBellSuppressTime	"BellSuppressTime"
 #define	XtCC132			"C132"
 #define XtCCharClass		"CharClass"
 #define	XtCCurses		"Curses"
@@ -173,6 +176,7 @@ extern void HandleKeyPressed(), HandleEightBitKeyPressed();
 extern void HandleStringEvent();
 extern void HandleEnterWindow();
 extern void HandleLeaveWindow();
+extern void HandleBellPropertyChange();
 extern void HandleFocusChange();
 static void HandleKeymapChange();
 extern void HandleInsertSelection();
@@ -204,6 +208,7 @@ static  int	defaultSaveLines   = SAVELINES;
 static	int	defaultScrollLines = SCROLLLINES;
 static  int	defaultNMarginBell = N_MARGINBELL;
 static  int	defaultMultiClickTime = MULTICLICKTIME;
+static  int	defaultBellSuppressTime = BELLSUPPRESSMSEC;
 static	char *	_Font_Selected_ = "yes";  /* string is arbitrary */
 
 /*
@@ -333,6 +338,9 @@ static XtResource resources[] = {
 {XtNalwaysHighlight,XtCAlwaysHighlight,XtRBoolean,
         sizeof(Boolean),XtOffsetOf(XtermWidgetRec, screen.always_highlight),
         XtRBoolean, (caddr_t) &defaultFALSE},
+{XtNbellSuppressTime, XtCBellSuppressTime, XtRInt, sizeof(int),
+        XtOffsetOf(XtermWidgetRec, screen.bellSuppressTime),
+        XtRInt, (XtPointer) &defaultBellSuppressTime},
 {XtNtekGeometry,XtCGeometry, XtRString, sizeof(char *),
 	XtOffsetOf(XtermWidgetRec, misc.T_geometry),
 	XtRString, (caddr_t) NULL},
@@ -1234,8 +1242,10 @@ in_put()
 		    WindowScroll(screen, 0);  /* Scroll to bottom */
 		pty_read_bytes += bcnt;
 		/* stop speed reading at some point to look for X stuff */
-		if (pty_read_bytes > 4096) /* random large number */
+		/* (4096 is just a random large number.) */
+		if (pty_read_bytes > 4096) {
 		    select_mask &= ~pty_mask;
+		}
 		break;
 	    }
 	}
@@ -2119,6 +2129,7 @@ static void VTInitialize (request, new)
    new->screen.TekEmu = request->screen.TekEmu;
    new->misc.re_verse = request->misc.re_verse;
    new->screen.multiClickTime = request->screen.multiClickTime;
+   new->screen.bellSuppressTime = request->screen.bellSuppressTime;
    new->screen.charClass = request->screen.charClass;
    new->screen.cutNewline = request->screen.cutNewline;
    new->screen.cutToBeginningOfLine = request->screen.cutToBeginningOfLine;
@@ -2162,6 +2173,9 @@ static void VTInitialize (request, new)
 		HandleFocusChange, (Opaque)NULL);
    XtAddEventHandler((Widget)new, 0L, TRUE,
 		VTNonMaskableEvent, (Opaque)NULL);
+   XtAddEventHandler((Widget)new, PropertyChangeMask, FALSE,
+		     HandleBellPropertyChange, (Opaque)NULL);
+   new->screen.bellInProgress = FALSE;
 
    set_character_class (new->screen.charClass);
 
