@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: toc.c,v 1.11 88/01/19 14:41:28 swick Exp $";
+static char rcs_id[] = "$Header: toc.c,v 1.12 88/01/25 13:57:13 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -575,15 +575,18 @@ Msg TocMakeNewMsg(toc)
 Toc toc;
 {
     Msg msg;
+    static int looping = False;
     TUEnsureScanIsValidAndOpen(toc);
     msg = TUAppendToc(toc, "####  empty\n");
     if (FileExists(MsgFileName(msg))) {
+	if (looping++) Punt( "Cannot correct scan file" );
         DEBUG1("**** FOLDER %s WAS INVALID!!!\n", toc->foldername)
 	TocForceRescan(toc);
 	return TocMakeNewMsg(toc); /* Try again.  Using recursion here is ugly,
 				      but what the hack ... */
     }
     CopyFileAndCheck("/dev/null", MsgFileName(msg));
+    looping = False;
     return msg;
 }
 
@@ -911,7 +914,8 @@ int msgid;
     if (toc->msgs[h]->msgid == msgid) return toc->msgs[h];
     if (debug) {
 	char str[100];
-	(void)sprintf(str, "TocMsgFromId search failed! hi=%d, lo=%d, msgid=%d",
+	(void)sprintf(str,
+		      "TocMsgFromId search failed! hi=%d, lo=%d, msgid=%d\n",
 		      h, l, msgid);
 	DEBUG( str );
     }
