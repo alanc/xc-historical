@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.228 94/03/18 14:53:05 matt Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.229 94/03/18 17:31:36 matt Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -656,7 +656,7 @@ UnsharedLibReferences(XAW,Xaw,$(AWIDGETSRC))
        XTFSRC = $(LIBSRC)/Xtf
 #if SharedLibXtf
 #ifndef SharedXtfRev
-#define SharedXtfRev 0.4
+#define SharedXtfRev 0.6
 #endif
 SharedLibReferences(XTF,Xtf,$(XTFSRC),SOXTFREV,SharedXtfRev)
 #else
