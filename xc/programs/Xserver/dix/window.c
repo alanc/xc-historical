@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.14 89/07/13 11:27:11 rws Exp $ */
+/* $XConsortium: window.c,v 5.15 89/07/13 17:20:14 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -2086,8 +2086,11 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 
 	anyMarked |= MarkOverlappedWindows(pWin, pFirstChange);
 
-	if (pWin->valdata)
+	if (pWin->valdata && borderVisible)
+ 	{
 	    pWin->valdata->before.borderVisible = borderVisible;
+	    pWin->valdata->before.shrunk = TRUE;
+	}
 
 #ifdef DO_SAVE_UNDERS
 	if (DO_SAVE_UNDERS(pWin))
@@ -2890,6 +2893,7 @@ SetShape(pWin)
 	    (*pScreen->Subtract) (borderVisible,
 				  &pWin->borderClip, &pWin->winSize);
 	    pWin->valdata->before.borderVisible = borderVisible;
+	    pWin->valdata->before.shrunk = TRUE;
 	}
     }
 
@@ -3114,6 +3118,7 @@ MarkWindow(pWin)
     val->before.oldAbsCorner.x = pWin->drawable.x;
     val->before.oldAbsCorner.y = pWin->drawable.y;
     val->before.borderVisible = NullRegion;
+    val->before.shrunk = FALSE;
     pWin->valdata = val;
 }
 
