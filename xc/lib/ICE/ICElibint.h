@@ -1,4 +1,4 @@
-/* $XConsortium: ICElibint.h,v 1.3 93/08/20 17:12:57 rws Exp $ */
+/* $XConsortium: ICElibint.h,v 1.4 93/08/26 17:09:02 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -467,6 +467,17 @@ typedef union {
     _IceProtocolReply	protocol_reply;
     _IceProtocolError	protocol_error;
 } _IceReply;
+
+
+/*
+ * Watch for ICE connection create/destroy.
+ */
+
+typedef struct _IceWatchProc {
+    IceWatchProc		watch_proc;
+    IcePointer			client_data;
+    struct _IceWatchProc	*next;
+} _IceWatchProc;
 
 
 /*
