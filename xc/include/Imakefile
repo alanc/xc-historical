@@ -3,6 +3,7 @@ EXPORTS = \
 	XWDFile.h \
 	Xatom.h \
 	Xmd.h \
+	Xos.h \
 	Xproto.h \
 	Xprotostr.h \
 	copyright.h \
