@@ -1,4 +1,4 @@
-OBJS =	FontObj(courB08) FontObj(courB10) FontObj(courB12) FontObj(courB14) \
+OBJS1 =	FontObj(courB08) FontObj(courB10) FontObj(courB12) FontObj(courB14) \
 	FontObj(courB18) FontObj(courB24) FontObj(courBO08) \
 	FontObj(courBO10) FontObj(courBO12) FontObj(courBO14) \
 	FontObj(courBO18) FontObj(courBO24) FontObj(courO08) \
@@ -25,7 +25,9 @@ OBJS =	FontObj(courB08) FontObj(courB10) FontObj(courB12) FontObj(courB14) \
 	FontObj(timBI24) FontObj(timI08) FontObj(timI10) FontObj(timI12) \
 	FontObj(timI14) FontObj(timI18) FontObj(timI24) FontObj(timR08) \
 	FontObj(timR10) FontObj(timR12) FontObj(timR14) FontObj(timR18) \
-	FontObj(timR24) FontObj(charB08) FontObj(charB10) FontObj(charB12) \
+	FontObj(timR24)
+
+OBJS2 = FontObj(charB08) FontObj(charB10) FontObj(charB12) \
 	FontObj(charB14) FontObj(charB18) FontObj(charB24) FontObj(charBI08) \
 	FontObj(charBI10) FontObj(charBI12) FontObj(charBI14) \
 	FontObj(charBI18) FontObj(charBI24) FontObj(charI08) \
@@ -52,7 +54,7 @@ OBJS =	FontObj(courB08) FontObj(courB10) FontObj(courB12) FontObj(courB14) \
 	FontObj(lubBI19) FontObj(lubI19) FontObj(lubR19) FontObj(lutBS19) \
 	FontObj(lutRS19)
 
-
+OBJS = $(OBJS1) $(OBJS2)
 
 FONTINSTDIR = $(FONTDIR)/100dpi
 
@@ -260,7 +262,8 @@ FontTarget(lutRS19)
 FontTarget(lutRS24)
 
 
-InstallFonts($(FONTINSTDIR))
+InstallFontObjs($(OBJS1),$(FONTINSTDIR))
+InstallFontObjs($(OBJS2),$(FONTINSTDIR))
 InstallFontAliases($(FONTINSTDIR))
 
 depend::
