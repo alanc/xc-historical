@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ibm.cf,v 1.25 91/06/06 14:13:11 rws Exp $
+XCOMM platform:  $XConsortium: ibm.cf,v 1.26 91/07/05 15:46:06 rws Exp $
 
 #ifdef RsArchitecture
 #define OSName		AIX 3.1.5
@@ -87,6 +87,9 @@ XCOMM operating system:  OSName
 #define OSDefines -DBSDrt
 #define OPERATING_SYSTEM BSDrt
 #define BootstrapCFlags -Dibm
+#if OSMajorVersion >= 4 && OSMinorVersion >= 3
+#define SetTtyGroup YES
+#endif
 #endif /* AIXArchitecture */
 
 #define HasVoidSignalReturn    NO
