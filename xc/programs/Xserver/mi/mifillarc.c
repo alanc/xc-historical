@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mifillarc.c,v 5.1 89/10/20 09:20:07 rws Exp $ */
+/* $XConsortium: mifillarc.c,v 5.2 89/10/20 13:14:36 rws Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -37,6 +37,8 @@ miFillArcSetup(arc, info)
     {
 	/* (2x - 2xorg)^2 = d^2 - (2y - 2yorg)^2 */
 	/* even: xorg = yorg = 0   odd:  xorg = .5, yorg = -.5 */
+	info->ym = 8;
+	info->xm = 8;
 	info->y = arc->width >> 1;
 	info->dy = arc->width & 1;
 	info->yorg = arc->y + info->y;
