@@ -1,4 +1,4 @@
-/* $XConsortium: fserve.c,v 1.32 94/01/21 12:54:23 mor Exp $ */
+/* $XConsortium: fserve.c,v 1.33 94/02/03 10:07:12 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -285,6 +285,11 @@ fs_close_conn(conn)
     FSFpePtr	conn;
 {
     FSClientPtr	client, nclient;
+
+    /* XXX - hack.  The right fix is to remember that the font server
+       has gone away when we first discovered it. */
+    if (!conn->trans_conn)
+	return;
 
     (void) _FONTTransClose (conn->trans_conn);
 

@@ -1,4 +1,4 @@
-/* $XConsortium: fsio.c,v 1.33 94/02/03 12:08:54 gildea Exp $ */
+/* $XConsortium: fsio.c,v 1.34 94/02/05 01:51:51 rws Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -395,6 +395,12 @@ _fs_write(conn, data, size)
 
 	return 0;
     }
+
+    /* XXX - hack.  The right fix is to remember that the font server
+       has gone away when we first discovered it. */
+    if (!conn->trans_conn)
+	return -1;
+
     ESET(0);
     while ((bytes_written = _FONTTransWrite(conn->trans_conn,
 	data, (int) size)) != size) {
