@@ -1,4 +1,4 @@
-! $XConsortium: XKeysymDB,v 1.4 92/02/26 15:37:11 rws Exp $
+! $XConsortium: XKeysymDB,v 1.5 92/03/03 17:44:37 rws Exp $
 
 hpmute_acute		:100000A8
 hpmute_grave		:100000A9
@@ -168,3 +168,11 @@ XeroxPointerButton2	:10070002
 XeroxPointerButton3	:10070003
 XeroxPointerButton4	:10070004
 XeroxPointerButton5	:10070005
+
+usldead_acute		:100000A8
+usldead_grave		:100000A9
+usldead_diaeresis	:100000AB
+usldead_asciicircum	:100000AA
+usldead_asciitilde	:100000AC
+usldead_cedilla		:1000FE2C
+usldead_ring		:1000FEB0
