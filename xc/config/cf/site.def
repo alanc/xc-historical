@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.90 93/09/30 15:45:46 rws Exp $
+XCOMM site:  $XConsortium: site.def,v 1.91 93/10/11 09:49:59 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -25,7 +25,7 @@ XCOMM site:  $XConsortium: site.def,v 1.90 93/09/30 15:45:46 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
- *		MIT X Consortium In-House Build Parameters                   *
+ *		  X Consortium In-House Build Parameters                     *
  *			Use at Your Own Risk				     *
  *                                                                           *
  *****************************************************************************/
@@ -71,7 +71,7 @@ XCOMM #define HasGcc2 YES
 #define PreIncDir /opt/gnu/lib/gcc-lib/sparc-sun-solaris2/2.3.3/include
 #endif
 #if defined(SunArchitecture) && !defined(SVR4)
-#define PreIncDir /usr/local/lib/gcc-lib/sparc-sun-sunos4.1.3/2.4.5/include
+#define PreIncDir /usr/local/lib/gcc-lib/sparc-sun-sunos4.1/2.5.2/include
 #endif
 #endif
 
