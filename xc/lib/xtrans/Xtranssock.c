@@ -1,4 +1,4 @@
-/* $XConsortium: Xtranssock.c,v 1.16 94/02/06 18:21:19 mor Exp $ */
+/* $XConsortium: Xtranssock.c,v 1.17 94/02/07 14:45:17 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -61,7 +61,7 @@
 #ifdef SVR4
 #include <sys/filio.h>
 #endif
-#if (defined(SYSV386) && defined(SYSV)) || defined(_SEQUENT_)
+#if (defined(SYSV386) && defined(SYSV) && !defined(SCO)) || defined(_SEQUENT_)
 #if !defined(_SEQUENT_) && !defined(ESIX)
 #include <net/errno.h>
 #endif /* _SEQUENT_  || ESIX */
@@ -1308,7 +1308,7 @@ BytesReadable_t *pend;
 #ifdef WIN32
     return ioctlsocket ((SOCKET) ciptr->fd, FIONREAD, (u_long *) pend);
 #else
-#if (defined(SYSV386) && defined(SYSV)) || defined(_SEQUENT_)
+#if (defined(SYSV386) && defined(SYSV) && !defined(SCO)) || defined(_SEQUENT_)
     return ioctl (ciptr->fd, I_NREAD, (char *) pend);
 #else
     return ioctl (ciptr->fd, FIONREAD, (char *) pend);
