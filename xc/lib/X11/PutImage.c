@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XPutImage.c,v 11.43 88/02/14 10:34:06 rws Exp $ */
+/* $Header: XPutImage.c,v 11.44 88/08/09 15:56:54 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include <stdio.h>
@@ -189,6 +189,25 @@ SwapNibbles (src, dest, srclen, srcinc, destinc, height)
 	for (n = srclen; --n >= 0; ) {
 	    c = *src++;
 	    *dest++ = ((c & 0xf) << 4) | ((c & 0xf0) >> 4);
+	}
+}
+
+static int
+ShiftNibblesLeft (src, dest, srclen, srcinc, destinc, height)
+    register unsigned char *src, *dest;
+    long srclen, srcinc, destinc;
+    unsigned int height;
+{
+    register long h, n;
+    register unsigned char c1, c2;
+
+    srcinc -= srclen;
+    destinc -= srclen;
+    for (h = height; --h >= 0; src += srcinc, dest += destinc)
+	for (n = srclen; --n >= 0; ) {
+	    c1 = *src++;
+	    c2 = *src;
+	    *dest++ = ((c1 & 0x0f) << 4) | ((c2 & 0xf0) >> 4);
 	}
 }
 
@@ -511,6 +530,7 @@ SendZImage(dpy, req, image, req_xoffset, req_yoffset,
 {
     long bytes_per_src, bytes_per_dest, length;
     unsigned char *src, *dest;
+    unsigned char *shifted_src = NULL;
 
     req->leftPad = 0;
     bytes_per_src = ROUNDUP((long)req->width * image->bits_per_pixel, 8) >> 3;
@@ -518,10 +538,17 @@ SendZImage(dpy, req, image, req_xoffset, req_yoffset,
 			     dest_scanline_pad) >> 3;
     length = bytes_per_dest * req->height;
     req->length += (length + 3) >> 2;
-    /* XXX this won't work when bits_per_pixel is 4 and req_xoffset is odd */
+
     src = (unsigned char *)image->data +
 	  (req_yoffset * image->bytes_per_line) +
 	  ((req_xoffset * image->bits_per_pixel) >> 3);
+    if ((image->bits_per_pixel == 4) && ((unsigned int) req_xoffset & 0x01)) {
+	shifted_src = (unsigned char *) Xmalloc(req->height *
+						image->bytes_per_line);
+	ShiftNibblesLeft(src, shifted_src, bytes_per_src,
+		  image->bytes_per_line, image->bytes_per_line, req->height);
+	src = shifted_src;
+    }
 
     /* when req_xoffset > 0, we have to worry about stepping off the
      * end of image->data.
@@ -532,6 +559,8 @@ SendZImage(dpy, req, image, req_xoffset, req_yoffset,
 	((req_xoffset == 0) ||
 	 ((req_yoffset + req->height) < image->height))) {
 	Data(dpy, (char *)src, length);
+	if (shifted_src)
+	    Xfree((char *)shifted_src);
 	return;
     }
 
@@ -561,6 +590,9 @@ SendZImage(dpy, req, image, req_xoffset, req_yoffset,
 	dpy->bufptr += length;
     else
 	_XSend(dpy, (char *)dest, length);
+
+    if (shifted_src)
+        Xfree((char *)shifted_src);
 }
 
 static void
