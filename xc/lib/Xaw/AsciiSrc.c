@@ -1,4 +1,4 @@
-/* $XConsortium: AsciiSrc.c,v 1.52 91/05/05 14:50:21 converse Exp $ */
+/* $XConsortium: AsciiSrc.c,v 1.53 91/06/12 17:08:29 converse Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -980,7 +980,11 @@ Boolean newString;
     }
     
     if (!src->ascii_src.is_tempfile) {
-	if ((file = fopen(src->ascii_src.string, open_mode)) == 0) {
+	if ((file = fopen(src->ascii_src.string, open_mode)) != 0) {
+	    (void) fseek(file, 0L, 2);
+	    src->ascii_src.length = ftell(file);
+	    return file;
+	} else {
 	    String params[2];
 	    Cardinal num_params = 2;
 	    char msg[11];
@@ -992,18 +996,13 @@ Boolean newString;
 		sprintf(msg, "errno=%.4d", errno);
 		params[1] = msg;
 	    }
-	    XtErrorMsg("openError", "asciiSourceCreate", "XawError",
-		       "Cannot open source file %s; %s", params, &num_params);
+	    XtAppWarningMsg(XtWidgetToApplicationContext((Widget)src),
+			    "openError", "asciiSourceCreate", "XawWarning",
+			    "Cannot open file %s; %s", params, &num_params);
 	}
-	(void) fseek(file, 0L, 2);
-	src->ascii_src.length = ftell (file); 
     } 
-    else {
-	src->ascii_src.length = 0;
-	return(NULL);
-    }
-    
-    return(file);
+    src->ascii_src.length = 0;
+    return((FILE *)NULL);
 }
 
 static void
