@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.121 94/03/29 20:24:06 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.122 94/04/07 15:52:11 rws Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -11,10 +11,11 @@ RELEASE = "Release 6beta"
         FONTSDIR = fonts
 #endif
 #ifndef Win32Architecture
+        WIPDIR = WorkInProgress
         DOCSDIR = doc
 #endif
 
-        SUBDIRS = config include lib nls programs WorkInProgress $(FONTSDIR) $(DOCSDIR)
+        SUBDIRS = config include lib nls programs $(WIPDIR) $(FONTSDIR) $(DOCSDIR)
   LNINSTALLDIRS = lib
 
 MakeSubdirs($(SUBDIRS))
