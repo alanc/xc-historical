@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 1.160 88/10/14 08:34:46 rws Exp $ */
+/* $XConsortium: events.c,v 1.161 88/10/14 14:14:34 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1366,6 +1366,8 @@ DeliverGrabbedEvent(xE, thisDev, otherDev, deactivateGrab, isKeyboard)
 	    deliveries = DeliverDeviceEvents(sprite.win, xE, grab, NullWindow);
 	else if (focus && (focus == sprite.win || IsParent(focus, sprite.win)))
 	    deliveries = DeliverDeviceEvents(sprite.win, xE, grab, focus);
+	else if (focus)
+	    deliveries = DeliverDeviceEvents(focus, xE, grab, focus);
     }
     if (!deliveries)
     {
