@@ -1,4 +1,4 @@
-/* $XConsortium: SelectionI.h,v 1.7 89/09/12 16:49:00 swick Exp $ */
+/* $XConsortium: SelectionI.h,v 1.8 89/09/28 11:58:05 swick Exp $ */
 /* $oHeader: SelectionI.h,v 1.3 88/08/19 14:02:44 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -164,8 +164,8 @@ typedef struct {
   SelectionProp list;
 } PropListRec, *PropList;
 
-#define MAX_SELECTION_INCR(dpy) (((65536 < dpy->max_request_size) ? \
-	(65536 << 2)  : (dpy->max_request_size << 2))-100)
+#define MAX_SELECTION_INCR(dpy) (((65536 < XMaxRequestSize(dpy)) ? \
+	(65536 << 2)  : (XMaxRequestSize(dpy) << 2))-100)
 
 #define MATCH_SELECT(event, info) ((event->time == info->time) && \
 	    (event->requestor == XtWindow(info->widget)) && \
