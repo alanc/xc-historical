@@ -1,4 +1,4 @@
-/* $XConsortium: miCellArray.c,v 5.2 91/05/01 14:41:52 hersh Exp $ */
+/* $XConsortium: miCellArray.c,v 5.3 91/07/22 19:44:13 hersh Exp $ */
 
 
 /***********************************************************
@@ -79,10 +79,11 @@ miCellArray(pRend, pExecuteOC)
     miPolylineStruct	*output;
     listofddPoint       *pddolist;
     int			point_size, nGridLines, i;
-    ddPointUnion	in_pt, out_pt, Ppt, Qpt, Rpt;
+    ddPointUnion	in_pt, out_pt, Ppt, Qpt, Rpt, Spt;
     ddpex3rtn		status;
     ddCoord3D		dRpt, dQpt, x_step, y_step, 
 			basept, endpt;
+    ddCoord2D		tempQ, tempR;
 
 
 
@@ -131,9 +132,25 @@ miCellArray(pRend, pExecuteOC)
     output->numLists = nGridLines;
 
     /* Get input points */
-    Ppt.ptr = ddCell->point.ddList->pts.ptr;
-    Qpt.ptr = Ppt.ptr + point_size; 
-    Rpt.ptr = Qpt.ptr + point_size; 
+    if (DD_IsVert3D(input->type))
+    {
+	Ppt.ptr = ddCell->point.ddList->pts.ptr;
+	Rpt.ptr = Ppt.ptr + sizeof(ddCoord3D); 
+	Qpt.ptr = Rpt.ptr + sizeof(ddCoord3D); 
+    }
+    else
+    {
+	Ppt.ptr = ddCell->point.ddList->pts.ptr;
+	Spt.ptr = Ppt.ptr + sizeof(ddCoord2D);
+
+	tempR.x = Spt.p2Dpt->x;
+	tempR.y = Ppt.p2Dpt->y;
+	tempQ.x = Ppt.p2Dpt->x;
+	tempQ.y = Spt.p2Dpt->y;
+
+	Rpt.p2Dpt = &tempR;
+	Qpt.p2Dpt = &tempQ;
+    }
 
     /* Calculate DQ and DR */
     dQpt.x = Qpt.p2Dpt->x - Ppt.p2Dpt->x;
