@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.125 93/09/15 15:42:03 kaleb Exp $ */
+/* $XConsortium: NextEvent.c,v 1.125 93/09/15 17:35:03 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -27,8 +27,9 @@ SOFTWARE.
 #include "IntrinsicI.h"
 #include <stdio.h>
 #include <errno.h>
-
+#ifdef X_NOT_STDC_ENV
 extern int errno;
+#endif
 
 static TimerEventRec* freeTimerRecs;
 static WorkProcRec* freeWorkRecs;

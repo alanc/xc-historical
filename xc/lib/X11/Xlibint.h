@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.114 93/09/15 17:45:54 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.115 93/09/15 18:07:24 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -275,7 +275,9 @@ extern void (*_XUnlockMutex_fn)(
 #define LOCKED 1
 #define UNLOCKED 0
 
+#ifdef X_NOT_STDC_ENV
 extern int errno;			/* Internal system error number. */
+#endif
 
 #ifndef BUFSIZE
 #define BUFSIZE 2048			/* X output buffer size. */
