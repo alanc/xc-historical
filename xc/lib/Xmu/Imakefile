@@ -22,6 +22,7 @@ SRCS = \
 	Atoms.c \
 	ClientWin.c \
 	CloseHook.c \
+	CmapAlloc.c \
 	CrCmap.c \
 	CrPixFBit.c \
 	CvtStdSel.c \
@@ -30,9 +31,8 @@ SRCS = \
 	DrawLogo.c \
 	DrRndRect.c \
 	FToCback.c \
-	GetCmapAlloc.c \
 	GrayPixmap.c \
-	Initializer.c \
+	Initer.c \
 	Lookup.c \
 	LookupCmap.c \
 	Lower.c \
@@ -52,6 +52,7 @@ OBJS = \
 	Atoms.o \
 	ClientWin.o \
 	CloseHook.o \
+	CmapAlloc.o \
 	CrCmap.o \
 	CrPixFBit.o \
 	CvtStdSel.o \
@@ -60,9 +61,9 @@ OBJS = \
 	DrawLogo.o \
 	DrRndRect.o \
 	FToCback.o \
-	GetCmapAlloc.o \
+	GetCmapAll.o \
 	GrayPixmap.o \
-	Initializer.o \
+	Initer.o \
 	Lookup.o \
 	LookupCmap.o \
 	Lower.o \
