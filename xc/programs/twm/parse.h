@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: parse.h,v 1.13 89/12/09 22:21:18 jim Exp $
+ * $XConsortium: parse.h,v 1.14 89/12/14 14:51:25 jim Exp $
  *
  * .twmrc parsing externs
  *
@@ -101,6 +101,7 @@ extern void TwmOutput();
 #define F_FUNCTION		108	/* string */
 #define F_WARPTOSCREEN		109	/* string */
 #define F_COLORMAP		110	/* string */
+#define F_PRIORITY		111	/* string */
 
 #define D_NORTH			1
 #define D_SOUTH			2

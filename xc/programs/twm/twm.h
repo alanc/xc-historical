@@ -27,7 +27,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.73 91/05/08 11:02:33 dave Exp $
+ * $XConsortium: twm.h,v 1.74 91/05/31 17:38:30 dave Exp $
  *
  * twm include file
  *
@@ -307,6 +307,7 @@ extern char *ProgramName;
 extern Display *dpy;
 extern Window ResizeWindow;	/* the window we are resizing */
 extern int HasShape;		/* this server supports Shape extension */
+extern int HasSync;		/* this server supports SYNC extension */
 
 extern int PreviousScreen;
 

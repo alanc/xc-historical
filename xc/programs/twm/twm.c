@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.125 92/05/11 15:04:27 dave Exp $
+ * $XConsortium: twm.c,v 1.126 92/08/24 15:34:01 rws Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -60,6 +60,8 @@ int MultiScreen = TRUE;		/* try for more than one screen? */
 int NumScreens;			/* number of screens in ScreenList */
 int HasShape;			/* server supports shape extension? */
 int ShapeEventBase, ShapeErrorBase;
+int HasSync;			/* server supports SYNC extension? */
+int SyncEventBase, SyncErrorBase;
 ScreenInfo **ScreenList;	/* structures for each screen */
 ScreenInfo *Scr = NULL;		/* the cur and prev screens */
 int PreviousScreen;		/* last screen that we were on */
@@ -199,6 +201,7 @@ main(argc, argv, environ)
     }
 
     HasShape = XShapeQueryExtension (dpy, &ShapeEventBase, &ShapeErrorBase);
+    HasSync = XSyncQueryExtension(dpy,  &SyncEventBase, &SyncErrorBase);
     TwmContext = XUniqueContext();
     MenuContext = XUniqueContext();
     IconManagerContext = XUniqueContext();

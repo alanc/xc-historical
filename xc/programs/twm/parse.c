@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: parse.c,v 1.53 92/05/11 15:05:41 dave Exp $
+ * $XConsortium: parse.c,v 1.54 92/08/24 15:35:51 rws Exp $
  *
  * parse the .twmrc file
  *
@@ -364,6 +364,7 @@ typedef struct _TwmKeyword {
 #define kwn_BorderWidth			7
 #define kwn_IconBorderWidth		8
 #define kwn_TitleButtonBorderWidth	9
+#define kwn_Priority			10
 
 #define kwcl_BorderColor		1
 #define kwcl_IconManagerHighlight	2
@@ -456,6 +457,7 @@ static TwmKeyword keytable[] = {
     { "f.nexticonmgr",		FKEYWORD, F_NEXTICONMGR },
     { "f.nop",			FKEYWORD, F_NOP },
     { "f.previconmgr",		FKEYWORD, F_PREVICONMGR },
+    { "f.priority",		FSKEYWORD, F_PRIORITY },
     { "f.quit",			FKEYWORD, F_QUIT },
     { "f.raise",		FKEYWORD, F_RAISE },
     { "f.raiselower",		FKEYWORD, F_RAISELOWER },
@@ -550,6 +552,7 @@ static TwmKeyword keytable[] = {
     { "pixmaps",		PIXMAPS, 0 },
     { "pointerbackground",	CKEYWORD, kwc_PointerBackground },
     { "pointerforeground",	CKEYWORD, kwc_PointerForeground },
+    { "priority",		NKEYWORD, kwn_Priority },
     { "r",			ROOT, 0 },
     { "randomplacement",	KEYWORD, kw0_RandomPlacement },
     { "resize",			RESIZE, 0 },
@@ -838,6 +841,12 @@ int do_number_keyword (keyword, num)
       case kwn_TitleButtonBorderWidth:
 	if (Scr->FirstTime) Scr->TBInfo.border = num;
 	return 1;
+
+      case kwn_Priority:
+	if (HasSync)
+	{
+	    XSyncSetPriority(dpy, /*self*/ None, num);
+	}
 
     }
 

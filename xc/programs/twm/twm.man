@@ -1,4 +1,4 @@
-.\" $XConsortium: twm.man,v 1.57 92/08/24 15:34:29 rws Exp $
+.\" $XConsortium: twm.man,v 1.58 93/04/20 16:09:31 dave Exp $
 .de EX		\"Begin example
 .ne 5
 .if n .sp 1
@@ -648,6 +648,10 @@ may be specified:
 }
 .EE
 The default for \fITitleHighlight\fP is to use an even stipple pattern.
+.IP "\fBPriority\fP \fIpriority\fP" 8
+This variable sets \fItwm\fP's priority.  \fIpriority\fP should be an
+unquoted, signed number (e.g. 999).  This variable has an effect only 
+if the server supports the SYNC extension.
 .IP "\fBRandomPlacement\fP" 8
 This variable indicates that windows with no specified geometry should 
 be placed in a pseudo-random location instead of having the user drag out
@@ -1010,7 +1014,9 @@ This function iconifies or deiconifies the selected window or icon,
 respectively.
 .IP "\fBf.identify\fP" 8
 This function displays a summary of the name and geometry of the
-selected window.  Clicking the pointer or pressing a key in the window
+selected window.  If the server supports the SYNC extension, the priority
+of the client owning the window is also displayed.
+Clicking the pointer or pressing a key in the window
 will dismiss it.
 .IP "\fBf.lefticonmgr\fI" 8
 This function similar to \fBf.backiconmgr\fP except that wrapping does not
@@ -1042,6 +1048,11 @@ or \fBWindowFunction\fP variables or to introduce blank lines in menus.
 .IP "\fBf.previconmgr\fI" 8
 This function warps the pointer to the previous icon manager containing any
 windows on the current or preceding screens.
+.IP "\fBf.priority\fP \fIstring\fP" 8
+This function sets the priority of the client owning the selected window to
+the numeric value of the argument \fIstring\fP, which should be a signed 
+integer in double quotes (e.g. "999" ).  This function has an effect only 
+if the server supports the SYNC extension.
 .IP "\fBf.quit\fP" 8
 This function causes \fItwm\fP to restore the window's borders and exit.  If
 \fItwm\fP is the first client invoked from \fIxdm\fP, this will result in a

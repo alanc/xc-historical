@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.188 92/04/24 13:18:03 dave Exp $
+ * $XConsortium: menus.c,v 1.189 92/06/11 18:12:59 dave Exp $
  *
  * twm menu code
  *
@@ -2244,6 +2244,15 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
     case F_QUIT:
 	Done();
 	break;
+
+    case F_PRIORITY:
+	if (HasSync)
+	{
+	    if (DeferExecution (context, func, Scr->SelectCursor))
+		return TRUE;
+	    (void)XSyncSetPriority(dpy, tmp_win->w, atoi(action));
+        }
+	break;
     }
 
     if (ButtonPressed == -1) XUngrabPointer(dpy, CurrentTime);
@@ -2389,12 +2398,12 @@ Execute(s)
      * that they were invoked from, unless specifically overridden on
      * their command line.
      */
-    colon = rindex (ds, ':');
+    colon = strrchr (ds, ':');
     if (colon) {			/* if host[:]:dpy */
 	strcpy (buf, "DISPLAY=");
 	strcat (buf, ds);
 	colon = buf + 8 + (colon - ds);	/* use version in buf */
-	dot1 = index (colon, '.');	/* first period after colon */
+	dot1 = strchr (colon, '.');	/* first period after colon */
 	if (!dot1) dot1 = colon + strlen (colon);  /* if not there, append */
 	(void) sprintf (dot1, ".%d", Scr->screen);
 	putenv (buf);
@@ -2631,6 +2640,12 @@ TwmWindow *t;
 		x, y);
 	(void) sprintf(Info[n++], "Border width     = %d", bw);
 	(void) sprintf(Info[n++], "Depth            = %d", depth);
+	if (HasSync)
+	{
+	    int priority;
+	    (void)XSyncGetPriority(dpy, t->w, &priority);
+	    (void) sprintf(Info[n++], "Priority         = %d", priority);
+	}
     }
 
     Info[n++][0] = '\0';
