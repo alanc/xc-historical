@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.9 91/07/19 15:54:31 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.10 91/07/24 18:36:33 keith Exp $
 #if Malloc0ReturnsNull
         DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
@@ -20,8 +20,8 @@ CONN_DEFINES = ConnectionFlags
 
 NormalLibraryTarget(FS,$(OBJS))
 
-SpecialObjectRule(FSlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialObjectRule(FSConnServ.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialCObjectRule(FSlibInt,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialCObjectRule(FSConnServ,$(ICONFIGFILES),$(CONN_DEFINES))
 
 LinkFileList(includes,FSlib.h,../../include,../lib/fs)
 
