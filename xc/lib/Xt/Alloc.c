@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Alloc.c,v 1.24 89/06/16 19:33:51 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Alloc.c,v 1.25 89/09/14 15:19:09 swick Exp $";
 /* $oHeader: Alloc.c,v 1.2 88/08/18 15:33:53 asente Exp $ */
 #endif /* lint */
 
@@ -37,6 +37,14 @@ extern void exit();
 #include <X11/Xlib.h>
 #include "IntrinsicI.h"
 
+void _XtAllocError(type)
+    String type;
+{
+    Cardinal num_params = 1;
+    XtErrorMsg("allocError", type ,"XtToolkitError",
+	       "Cannot perform %s", &type, &num_params);
+}
+
 char *XtMalloc(size)
     unsigned size;
 {
@@ -46,8 +54,8 @@ char *XtMalloc(size)
 #else
     if ((ptr = malloc(size)) == NULL)
 #endif
-        XtErrorMsg("allocError","malloc","XtToolkitError",
-                 "Cannot perform malloc", (String *)NULL, (Cardinal *)NULL);
+        _XtAllocError("malloc");
+
     return(ptr);
 }
 
@@ -61,8 +69,8 @@ char *XtRealloc(ptr, size)
 #else
    else if ((ptr = realloc(ptr, size)) == NULL)
 #endif
-            XtErrorMsg("allocError","realloc","XtToolkitError",
-                "Cannot perform realloc", (String *)NULL, (Cardinal *)NULL);
+	_XtAllocError("realloc");
+
    return(ptr);
 }
 
@@ -75,8 +83,8 @@ char *XtCalloc(num, size)
 #else
     if ((ptr = calloc(num, size)) == NULL)
 #endif
-         XtErrorMsg("allocError","calloc","XtToolkitError",
-                "Cannot perform calloc", (String *)NULL, (Cardinal *)NULL);
+	_XtAllocError("calloc");
+
     return(ptr);
 }
 
