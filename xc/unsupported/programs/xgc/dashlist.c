@@ -57,7 +57,8 @@ create_dashlist_choice(w)
     {XtNwidth,              (XtArgVal) 10},
     {XtNheight,             (XtArgVal) 10},
     {XtNhighlightThickness, (XtArgVal) 1},
-    {XtNstate,              (XtArgVal) False}
+    {XtNstate,              (XtArgVal) False},
+    {XtNlabel,              (XtArgVal) ""}
   };
 
   static Widget label;		/* the label, of course */
@@ -66,6 +67,8 @@ create_dashlist_choice(w)
 				   change_dashlist to tell it which
 				   bit got changed */
   int i;			/* counter */
+
+  char name[11];
 
   /* allocate space for stuff that we don't know the size of yet */
   dashes = (Widget *) malloc(DASHLENGTH * sizeof(Widget));
@@ -96,12 +99,13 @@ create_dashlist_choice(w)
     else
       dashargs[6].value = (XtArgVal) False;
 
+    sprintf(name,"dashlist%d",i);
+
     dashinfo[i] = i;		/* which bit we're on; this is needed
 				   in change_dashlist (the callback) */
     callbacklist[0].closure = (caddr_t) &dashinfo[i];
 
-    /* make the button.  Note it has no name */
-    dashes[i] = XtCreateManagedWidget(NULL,toggleWidgetClass,w,
+    dashes[i] = XtCreateManagedWidget(name,toggleWidgetClass,w,
 				  dashargs,XtNumber(dashargs));
   }
 }
