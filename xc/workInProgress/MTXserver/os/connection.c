@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.170 93/12/06 15:21:13 kaleb Exp $ */
+/* $XConsortium: connection.c,v 1.2 94/01/02 09:18:19 rob Exp $ */
 /***********************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2167,6 +2167,7 @@ CloseDownConnection(client)
 }
 
 
+#ifndef MTX
 AddEnabledDevice(fd)
     int fd;
 {
@@ -2181,6 +2182,7 @@ RemoveEnabledDevice(fd)
     BITCLEAR(EnabledDevices, fd);
     BITCLEAR(AllSockets, fd);
 }
+#endif /* not MTX */
 
 /*****************
  * OnlyListenToOneClient:

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.76 93/09/23 10:51:17 dpw Exp $ */
+/* $XConsortium: io.c,v 1.1 94/01/03 15:04:52 rob Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -842,6 +842,7 @@ SetCriticalOutputPending()
  *    this routine as int.
  *****************/
 
+#ifndef MTX
 int
 WriteToClient (who, count, buf)
     ClientPtr who;
@@ -887,6 +888,7 @@ WriteToClient (who, count, buf)
     
     return(count);
 }
+#endif /* not MTX */
 
 static ConnectionInputPtr
 AllocateInputBuffer()
