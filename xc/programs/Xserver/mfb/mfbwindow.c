@@ -1,4 +1,4 @@
-/* $XConsortium: mfbwindow.c,v 5.10 94/01/07 09:43:39 dpw Exp $ */
+/* $XConsortium: mfbwindow.c,v 5.11 94/01/12 18:05:37 dpw Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -210,8 +210,8 @@ mfbChangeWindowAttributes(pWin, mask)
     if (mask & (CWBackPixmap | CWBackPixel) &&
 	pWin->backgroundState != ParentRelative &&
 	pPrivWin->fastBorder &&
-	pPrivWin->oldRotate.x != pWin->drawable.x ||
-	pPrivWin->oldRotate.y != pWin->drawable.y)
+	(pPrivWin->oldRotate.x != pWin->drawable.x ||
+	 pPrivWin->oldRotate.y != pWin->drawable.y))
     {
 	mfbXRotatePixmap(pPrivWin->pRotatedBorder,
 		      pWin->drawable.x - pPrivWin->oldRotate.x);
