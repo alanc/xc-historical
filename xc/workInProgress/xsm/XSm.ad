@@ -1,4 +1,4 @@
-! $XConsortium: XSm.ad,v 1.18 94/08/17 17:38:53 mor Exp mor $
+! $XConsortium: XSm.ad,v 1.19 94/08/17 20:05:18 mor Exp mor $
 *chooseSessionPopup*font:		12x24
 *chooseSessionLabel.label:		Session Menu
 *chooseSessionMessageLabel.label:	Press button again to confirm...
@@ -8,7 +8,7 @@
 *chooseSessionCancelButton.label:	Cancel
 
 *clientInfoButton.label:	Client List
-*nameSessionButton.label:	Name Session...
+*nameSessionButton.label:	Rename Session...
 *checkPointButton.label:	Checkpoint
 *shutdownButton.label:		Shutdown
 *shutdownSave.label:		With Save
@@ -44,10 +44,9 @@
 
 *saveCancelButton.label:	Cancel
 
-*nameSessionPopup.title:	Name Session
-*nameSessionPopup*font:		10x20
-*nameSessionOkButton.label:	OK
-*nameSessionCancelButton.label:	Cancel
+*nameSessionPopup.title:		Rename Session
+*nameSessionPopup*font:			10x20
+*nameSessionCancelButton.label:		Cancel
 
 *chooseSessionListWidget.Translations: #override\n\
 	<Key>Up:	ChooseSessionUp()\n\
