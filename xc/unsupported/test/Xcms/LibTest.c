@@ -1,4 +1,4 @@
-/* $XConsortium: LibTest.c,v 1.3 91/05/14 15:02:45 dave Exp $ */
+/* $XConsortium: LibTest.c,v 1.4 92/01/26 16:12:46 rws Exp $ */
 
 /*
  *	Copyright 1989 1990, Tektronix, Inc.
@@ -61,6 +61,7 @@
  *              program using this package.
  */
 #include "LibTest.h"
+#define NEED_EVENTS
 #include <X11/Xlibint.h>      
 
 /*
