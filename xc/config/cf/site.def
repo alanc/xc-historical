@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.138 94/11/05 21:49:11 kaleb Exp gildea $
+XCOMM site:  $XConsortium: site.def,v 1.139 94/11/13 15:53:58 gildea Exp kaleb $
 
 /***************************************************************************
  *                                                                         *
@@ -51,7 +51,7 @@ XCOMM site:  $XConsortium: site.def,v 1.138 94/11/05 21:49:11 kaleb Exp gildea $
 
 #ifdef SunArchitecture
 
-#ifdef SVR4
+#ifdef SVR4Architecture
 #if !defined(HasSunCplusplus) && !defined(HasCenterLineCplusplus) && !defined(HasGcc2ForCplusplus)
 #define HasSunCplusplus YES
 #define CplusplusCompilerMajorVersion 4
@@ -65,7 +65,7 @@ XCOMM site:  $XConsortium: site.def,v 1.138 94/11/05 21:49:11 kaleb Exp gildea $
 #define CplusplusDependIncludes -I/obj/CenterLine/clc++/sparc-solaris2/incl
 #endif
 
-#else /* !SVR4 */
+#else /* !SVR4Architecture */
 
 #if !defined(HasSunCplusplus) && !defined(HasCenterLineCplusplus) && !defined(HasGcc2ForCplusplus)
 #define HasSunCplusplus YES
@@ -78,7 +78,7 @@ XCOMM site:  $XConsortium: site.def,v 1.138 94/11/05 21:49:11 kaleb Exp gildea $
 #define CplusplusCmd /obj/CenterLine/bin/CC
 #define CplusplusDependIncludes -I/obj/CenterLine/clc++/sparc-sunos4/incl
 #endif
-#endif /* SVR4 */
+#endif /* SVR4Architecture */
 
 #ifndef BuildFresco
 #define BuildFresco NO
@@ -146,11 +146,11 @@ XCOMM site:  $XConsortium: site.def,v 1.138 94/11/05 21:49:11 kaleb Exp gildea $
 #ifdef Sun3Architecture
 #define PreIncDir /usr/local/lib/gcc-lib/sun3-sunos4.1/2.3.2/include
 #endif
-#if defined(SunArchitecture) && defined(SVR4)
+#if defined(SunArchitecture) && defined(SVR4Architecture)
 			/* change this when gcc is updated on Exert */
 #define PreIncDir /opt/gnu/lib/gcc-lib/sparc-sun-solaris2.3/2.6.1/include
 #endif
-#if defined(SunArchitecture) && !defined(SVR4)
+#if defined(SunArchitecture) && !defined(SVR4Architecture)
 			/* change this when gcc is updated on Alex */
 #define PreIncDir /usr/local/lib/gcc-lib/sparc-sun-sunos4.1.3/2.6.0/include
 #endif
