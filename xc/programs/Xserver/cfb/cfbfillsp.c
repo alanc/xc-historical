@@ -50,7 +50,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbfillsp.c,v 5.7 89/11/24 18:09:00 rws Exp $ */
+/* $XConsortium: cfbfillsp.c,v 5.8 90/01/10 11:50:53 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -402,33 +402,6 @@ int fSorted;
 		psrc = psrcT + rem / PPW;
 	        w = min(tileWidth, width);
 		w = min(w,tileWidth-rem);
-#ifdef notdef
-		if((rem = x % tileWidth) != 0)
-		{
-		    w = min(min(tileWidth - rem, width), PPW);
-		    /* we want to grab from the end of the tile.  Figure
-		     * out where that is.  In general, the start of the last
-		     * word of data on this scanline is tlwidth -1 words 
-		     * away. But if we want to grab more bits than we'll
-		     * find on that line, we have to back up 1 word further.
-		     * On the other hand, if the whole tile fits in 1 word,
-		     * let's skip the work */ 
-		    endinc = tlwidth - 1 - (tileWidth-rem) / PPW;
-
-		    if(endinc)
-		    {
-			if((rem & PIM) + w > tileWidth % PPW)
-			    endinc--;
-		    }
-
-		    getbits(psrc + endinc, rem & PIM, w, tmpSrc);
-		    putbitsrop(tmpSrc, (x & PIM), w, pdst, 
-			pGC->planemask, rop);
-		    if((x & PIM) + w >= PPW)
-			pdst++;
-		}
-		else
-#endif /* notdef */
 		if(((x & PIM) + w) <= PPW)
 		{
 		    getbits(psrc, (rem & PIM), w, tmpSrc);
@@ -661,100 +634,6 @@ int fSorted;
 		width -= w;
 	    }
 	}
-#ifdef	notdef
-	if (*pwidth)
-	{
-	    width = *pwidth;
-	    while(width > 0)
-	    {
-		psrc = psrcS;
-	        w = min(min(stippleWidth, width), PPW);
-		if((rem = x % stippleWidth) != 0)
-		{
-		    w = min(min(stippleWidth - rem, width), PPW);
-		    /* we want to grab from the end of the tile.  Figure
-		     * out where that is.  In general, the start of the last
-		     * word of data on this scanline is stwidth -1 words 
-		     * away. But if we want to grab more bits than we'll
-		     * find on that line, we have to back up 1 word further.
-		     * On the other hand, if the whole tile fits in 1 word,
-		     * let's skip the work */ 
-		    endinc = stwidth - 1 - w / PPW;
-
-		    if(endinc)
-		    {
-			if((rem & 0x1f) + w > stippleWidth % PPW)
-			    endinc--;
-		    }
-
-		    getbits(psrc + endinc, rem & PIM, w, tmpSrc);
-		    putbitsrop(tmpSrc, (x & PIM), w, pdst, 
-			pGC->planemask, rop);
-		    if((x & PIM) + w >= PPW)
-			pdst++;
-		}
-
-		else if(((x & PIM) + w) < PPW)
-		{
-		    getbits(psrc, 0, w, tmpSrc);
-		    putbitsrop(tmpSrc, x & PIM, w, pdst, 
-			pGC->planemask, rop);
-		}
-		else
-		{
-		    maskbits(x, w, startmask, endmask, nlMiddle);
-
-	            if (startmask)
-		        nstart = PPW - (x & PIM);
-	            else
-		        nstart = 0;
-	            if (endmask)
-	                nend = (x + w)  & PIM;
-	            else
-		        nend = 0;
-
-	            srcStartOver = nstart > PLST;
-
-		    if(startmask)
-		    {
-			getbits(psrc, 0, nstart, tmpSrc);
-			putbitsrop(tmpSrc, (x & PIM), nstart, pdst, 
-			    pGC->planemask, rop);
-			pdst++;
-			if(srcStartOver)
-			    psrc++;
-		    }
-		     
-		    while(nlMiddle--)
-		    {
-			/*
-			    getbits(psrc, nstart, PPW, tmpSrc);
-			    putbitsrop( tmpSrc, 0, PPW,
-				pdst, pGC->planemask, rop );
-			*/
-			switch ( pGC->fillStyle ) {
-			    case FillStippled:
-				getstipplepixels( psrc, j, 4, 1, pdst, tmp1 );
-				break;
-			    case FillOpaqueStippled:
-				getstipplepixels( psrc, j, 4, 1, pdst, tmp1 );
-				break;
-			}
-			pdst++;
-			psrc++;
-		    }
-		    if(endmask)
-		    {
-			getbits(psrc, nstart, nend, tmpSrc);
-			putbitsrop(tmpSrc, 0, nend, pdst, 
-			    pGC->planemask, rop);
-		    }
-		 }
-		 x += w;
-		 width -= w;
-	    }
-	}
-#endif
 	ppt++;
 	pwidth++;
     }
@@ -1091,8 +970,8 @@ cfb8Stipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 			 ((short *) (dst))[0] = (fg);)
 		break;
 	    case 14:
-		BitLoop (((char *) (dst))[2] = (fg);)
-		((short *) (dst))[0] = (fg);
+		BitLoop (((char *) (dst))[2] = (fg);
+			 ((short *) (dst))[0] = (fg);)
 		break;
 	    case 15:
 		BitLoop (((long *) (dst))[0] = (fg);)
