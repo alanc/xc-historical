@@ -14,8 +14,8 @@
  * this software for any purpose.  It is provided "as is"
  * without express or implied warranty.
  * 
- * $Header: imake.c,v 1.22 88/02/11 16:46:09 rws Exp $
- * $Locker:  $
+ * $Header: imake.c,v 1.22 88/02/11 16:55:08 rws Exp $
+ * $Locker: rws $
  *
  * Author:
  *	Todd Brunhoff
@@ -735,9 +735,8 @@ KludgeResetRule()
 char *strdup(cp)
 	register char *cp;
 {
-	register int len = strlen(cp) + 1;
-	register char *new = Emalloc(len);
+	register char *new = Emalloc(strlen(cp) + 1);
 
-	bcopy(cp, new, len);
+	strcpy(new, cp);
 	return new;
 }
