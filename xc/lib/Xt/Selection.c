@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Selection.c,v 1.38 89/12/02 17:45:44 swick Exp $";
+    "$XConsortium: Selection.c,v 1.39 89/12/03 15:41:29 swick Exp $";
 #endif
 
 /***********************************************************
@@ -492,7 +492,7 @@ int format;
 	value = ((char*)&size) + sizeof(long) - 4;
 	XChangeProperty(req->ctx->dpy, window, req->property,
 			req->ctx->incremental_atom,
-			32, PropModeReplace, value, 1);
+			32, PropModeReplace, (unsigned char *)value, 1);
 }
 
 static Boolean GetConversion(ctx, event, target, property, widget, incremental)
@@ -628,7 +628,7 @@ XEvent *event;
 		XChangeProperty(ev.display, ev.requestor, 
 			event->xselectionrequest.property, target,
 			format, PropModeReplace, value, (int)length);
-	      XFree(value);
+	      XFree((char *)value);
 	  } else /* not multiple */ {
 	       if (GetConversion(ctx, (XSelectionRequestEvent*)event,
 				 event->xselectionrequest.target,
@@ -739,7 +739,7 @@ static Boolean IsINCRtype(info, window, prop)
     unsigned long length;
     int format;
     Atom type;
-    char *value;
+    unsigned char *value;
 
     (void)XGetWindowProperty(XtDisplay(info->widget), window, prop, 0L, 0L,
 			     False, info->ctx->incremental_atom,
@@ -987,7 +987,7 @@ Atom selection;
 
     if (type == info->ctx->incremental_atom) {
 	unsigned long size = IncrPropSize(widget, value, format, length);
-	XFree(value);
+	XFree((char *)value);
 	HandleIncremental(dpy, widget, property, info, size);
 	return FALSE;
     }
@@ -1053,7 +1053,7 @@ static unsigned long GetSizeOfIncr(widget, ctx, property)
 			      &type, &format, &length, &bytesafter, &value);
 
     size = IncrPropSize(widget, value, format, length);
-    XFree(value);
+    XFree((char *)value);
     return size;
 }
 
