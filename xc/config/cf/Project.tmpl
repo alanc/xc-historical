@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.175 93/08/25 15:01:03 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.176 93/08/25 15:04:51 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -417,6 +417,9 @@ XCOMM X Window System make variables; these need to be coordinated with rules
 #endif
           XLIBSRC = $(LIBSRC)/X
 #if SharedLibX
+#ifndef SharedXlibRev
+#define SharedXlibRev 5.0
+#endif
 SharedLibReferences(XONLY,X11,$(XLIBSRC),SOXLIBREV,SharedXlibRev)
 #else
 UnsharedLibReferences(XONLY,X11,$(XLIBSRC))
@@ -437,6 +440,9 @@ UnsharedLibReferences(XONLY,X11,$(XLIBSRC))
 #endif
       XEXTLIBSRC = $(EXTENSIONSRC)/lib
 #if SharedLibXext
+#ifndef SharedXextRev
+#define SharedXextRev 5.0
+#endif
 SharedLibReferences(EXTENSION,Xext,$(XEXTLIBSRC),SOXEXTREV,SharedXextRev)
 #else
 UnsharedLibReferences(EXTENSION,Xext,$(XEXTLIBSRC))
@@ -459,7 +465,14 @@ LINTEXTENSIONLIB = $(LINTEXTENSION)
 #define ProfileLibXau		NO	/* profiled auth library */
 #endif
          XAUTHSRC = $(LIBSRC)/Xau
+#if SharedLibXau
+#ifndef SharedXauRev
+#define SharedXauRev 1.0
+#endif
+SharedLibReferences(XAUTH,Xau,$(XAUTHSRC),SOXAUTHREV,SharedXauRev)
+#else
 UnsharedLibReferences(XAUTH,Xau,$(XAUTHSRC))
+#endif
 
 #ifndef SharedLibXdmcp
 #define SharedLibXdmcp NO	/* don't need shared form */
@@ -474,7 +487,14 @@ UnsharedLibReferences(XAUTH,Xau,$(XAUTHSRC))
 #define ProfileLibXdmcp		NO	/* profiled XDMCP library */
 #endif
       XDMCPLIBSRC = $(LIBSRC)/Xdmcp
+#if SharedLibXdmcp
+#ifndef SharedXdmcpRev
+#define SharedXdmcpRev 1.0
+#endif
+SharedLibReferences(XDMCP,Xdmcp,$(XDMCPLIBSRC),SOXDMCPREV,SharedXdmcpRev)
+#else
 UnsharedLibReferences(XDMCP,Xdmcp,$(XDMCPLIBSRC))
+#endif
 
 #ifndef SharedLibXmu
 #define SharedLibXmu HasSharedLibraries
@@ -490,6 +510,9 @@ UnsharedLibReferences(XDMCP,Xdmcp,$(XDMCPLIBSRC))
 #endif
            XMUSRC = $(LIBSRC)/Xmu
 #if SharedLibXmu
+#ifndef SharedXmuRev
+#define SharedXmuRev 5.0
+#endif
 SharedDSLibReferences(XMU,Xmu,$(XMUSRC),SOXMUREV,SharedXmuRev)
 #else
 UnsharedLibReferences(XMU,Xmu,$(XMUSRC))
@@ -509,6 +532,9 @@ UnsharedLibReferences(XMU,Xmu,$(XMUSRC))
 #endif
        OLDXLIBSRC = $(LIBSRC)/oldX
 #if SharedOldLibX
+#ifndef SharedOldXRev
+#define SharedOldXRev 5.0
+#endif
 SharedLibReferences(OLDX,oldX,$(OLDXLIBSRC),SOOLDXREV,SharedOldXRev)
 #else
 UnsharedLibReferences(OLDX,oldX,$(OLDXLIBSRC))
@@ -528,6 +554,9 @@ UnsharedLibReferences(OLDX,oldX,$(OLDXLIBSRC))
 #endif
        TOOLKITSRC = $(LIBSRC)/Xt
 #if SharedLibXt
+#ifndef SharedXtRev
+#define SharedXtRev 5.0
+#endif
 SharedDSLibReferences(XTOOL,Xt,$(TOOLKITSRC),SOXTREV,SharedXtRev)
 #else
 UnsharedLibReferences(XTOOL,Xt,$(TOOLKITSRC))
@@ -547,6 +576,9 @@ UnsharedLibReferences(XTOOL,Xt,$(TOOLKITSRC))
 #endif
        AWIDGETSRC = $(LIBSRC)/Xaw
 #if SharedLibXaw
+#ifndef SharedXawRev
+#define SharedXawRev 5.0
+#endif
 SharedDSLibReferences(XAW,Xaw,$(AWIDGETSRC),SOXAWREV,SharedXawRev)
 #else
 UnsharedLibReferences(XAW,Xaw,$(AWIDGETSRC))
@@ -566,6 +598,9 @@ UnsharedLibReferences(XAW,Xaw,$(AWIDGETSRC))
 #endif
          XILIBSRC = $(EXTENSIONSRC)/lib/xinput
 #if SharedLibXinput
+#ifndef SharedXinputRev
+#define SharedXinputRev 5.0
+#endif
 SharedLibReferences(XI,Xi,$(XILIBSRC),SOXINPUTREV,SharedXinputRev)
 #else
 UnsharedLibReferences(XI,Xi,$(XILIBSRC))
@@ -585,6 +620,9 @@ UnsharedLibReferences(XI,Xi,$(XILIBSRC))
 #endif
       XTESTLIBSRC = $(EXTENSIONSRC)/lib/xtest
 #if SharedLibXTest
+#ifndef SharedXTestRev
+#define SharedXTestRev 1.0
+#endif
 SharedLibReferences(XTEST,Xtst,$(XTESTLIBSRC),SOXTESTREV,SharedXTestRev)
 #else
 UnsharedLibReferences(XTEST,Xtst,$(XTESTLIBSRC))
@@ -604,6 +642,9 @@ UnsharedLibReferences(XTEST,Xtst,$(XTESTLIBSRC))
 #endif
         PEXLIBSRC = $(EXTENSIONSRC)/lib/PEXlib
 #if SharedLibPex
+#ifndef SharedPexRev
+#define SharedPexRev 1.0
+#endif
 SharedLibReferences(PEX,PEX5,$(PEXLIBSRC),SOPEXREV,SharedPexRev)
 #else
 UnsharedLibReferences(PEX,PEX5,$(PEXLIBSRC))
@@ -623,6 +664,9 @@ UnsharedLibReferences(PEX,PEX5,$(PEXLIBSRC))
 #endif
         XIELIBSRC = $(EXTENSIONSRC)/lib/XIE
 #if SharedLibXie
+#ifndef SharedXieRev
+#define SharedXieRev 1.0
+#endif
 SharedLibReferences(XIE,XIE,$(XIELIBSRC),SOXIEREV,SharedXieRev)
 #else
 UnsharedLibReferences(XIE,XIE,$(XIELIBSRC))
@@ -636,6 +680,9 @@ UnsharedLibReferences(XIE,XIE,$(XIELIBSRC))
 #endif
       PHIGSLIBSRC = $(EXTENSIONSRC)/lib/PEX
 #if SharedLibPhigs
+#ifndef SharedPhigsRev
+#define SharedPhigsRev 1.0
+#endif
 SharedLibReferences(PHIGS,phigs,$(PHIGSLIBSRC),SOPHIGSREV,SharedPhigsRev)
 #else
 UnsharedLibReferences(PHIGS,phigs,$(PHIGSLIBSRC))
@@ -657,6 +704,9 @@ UnsharedLibReferences(XBSD,Xbsd,$(LIBSRC)/Berk)
 #endif
            ICESRC = $(LIBSRC)/ICE
 #if SharedLibICE
+#ifndef SharedICERev
+#define SharedICERev 1.0
+#endif
 SharedLibReferences(ICE,ICE,$(ICESRC),SOICEREV,SharedICERev)
 #else
 UnsharedLibReferences(ICE,ICE,$(ICESRC))
@@ -676,6 +726,9 @@ UnsharedLibReferences(ICE,ICE,$(ICESRC))
 #endif
             SMSRC = $(LIBSRC)/SM
 #if SharedLibSM
+#ifndef SharedSMRev
+#define SharedSMRev 1.0
+#endif
 SharedLibReferences(SM,SM,$(SMSRC),SOSMREV,SharedSMRev)
 #else
 UnsharedLibReferences(SM,SM,$(SMSRC))
@@ -695,6 +748,9 @@ UnsharedLibReferences(SM,SM,$(SMSRC))
 #endif
          FSLIBSRC = $(FONTSRC)/lib/fs
 #if SharedLibFS
+#ifndef SharedFSRev
+#define SharedFSRev 1.0
+#endif
 SharedLibReferences(FS,FS,$(FSLIBSRC),SOFSREV,SharedFSRev)
 #else
 UnsharedLibReferences(FS,FS,$(FSLIBSRC))
