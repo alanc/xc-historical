@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: Login.c,v 1.26 91/02/20 19:03:14 converse Exp $
+ * $XConsortium: Login.c,v 1.27 91/02/21 23:36:20 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -22,14 +22,13 @@
  * Login.c
  */
 
-# include <stdio.h>
-
 # include <X11/IntrinsicP.h>
 # include <X11/StringDefs.h>
 # include <X11/Quarks.h>
 # include <X11/keysym.h>
 # include <X11/Xfuncs.h>
 
+# include <stdio.h>
 
 # include "LoginP.h"
 
@@ -62,7 +61,7 @@ static XtResource resources[] = {
     {XtNfailFont, XtCFont, XtRFontStruct, sizeof (XFontStruct *),
 	offset (failFont), XtRString,	"*-new century schoolbook-bold-r-normal-*-180-*"},
     {XtNgreeting, XtCGreeting, XtRString, sizeof (char *),
-    	offset(greeting), XtRString, "Welcome to the X Window System"},
+    	offset(greeting), XtRString, "X Window System"},
     {XtNunsecureGreeting, XtCGreeting, XtRString, sizeof (char *),
 	offset(unsecure_greet), XtRString, "This is an unsecure session"},
     {XtNnamePrompt, XtCNamePrompt, XtRString, sizeof (char *),
@@ -70,7 +69,7 @@ static XtResource resources[] = {
     {XtNpasswdPrompt, XtCNamePrompt, XtRString, sizeof (char *),
 	offset(passwdPrompt), XtRString, "Password:  "},
     {XtNfail, XtCFail, XtRString, sizeof (char *),
-	offset(fail), XtRString, "Login failed, please try again."},
+	offset(fail), XtRString, "Login incorrect"},
     {XtNfailTimeout, XtCFailTimeout, XtRInt, sizeof (int),
 	offset(failTimeout), XtRImmediate, (XtPointer) 10},
     {XtNnotifyDone, XtCCallback, XtRFunction, sizeof (XtPointer),
