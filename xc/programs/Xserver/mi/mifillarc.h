@@ -25,7 +25,7 @@ in this Software without prior written authorization from the X Consortium.
 
 ********************************************************/
 
-/* $XConsortium: mifillarc.h,v 5.7 94/04/17 20:27:34 dpw Exp kaleb $ */
+/* $XConsortium: mifillarc.h,v 5.8 95/01/10 20:59:49 kaleb Exp dpw $ */
 
 #define FULLCIRCLE (360 * 64)
 
@@ -198,7 +198,7 @@ extern void miFillArcSetup(
 extern void miFillArcDSetup(
 #if NeedFunctionPrototypes
     xArc * /*arc*/,
-    miFillArcRec * /*info*/
+    miFillArcDRec * /*info*/
 #endif
 );
 
