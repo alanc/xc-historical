@@ -113,6 +113,17 @@
 	    (format t "  duplicate at ~s" db))))
       )))
 
+(defun resource-key (stringable)
+  ;; Ensure STRINGABLE is a keyword.
+  (declare (type stringable stringable))
+  (if (symbolp stringable)
+      (if (keywordp (the symbol stringable))
+	  stringable
+	(kintern (symbol-name (the symbol stringable))))
+    (kintern (#-excl string-upcase
+	      #+excl correct-case
+	      (the string stringable)))))
+
 (defun stringable-equal (a b)
   ;; Compare two stringables.
   ;; Ignore case when comparing to a symbol.
