@@ -864,6 +864,7 @@ you by the MIT X Consortium.  The staff members at MIT responsible
 for this release are:
 Donna Converse (MIT X Consortium),
 Jim Fulton (MIT X Consortium),
+Michelle Leger (MIT X Consortium),
 Keith Packard (MIT X Consortium),
 Chris Peterson (MIT X Consortium),
 Bob Scheifler (MIT X Consortium), and
