@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Quarks.c,v 1.1 87/09/12 12:27:03 swick Locked $";
+static char rcsid[] = "$Header: Quarks.c,v 1.2 87/11/23 11:29:29 swick Locked $";
 #endif lint
 
 /*
@@ -28,7 +28,6 @@ static char rcsid[] = "$Header: Quarks.c,v 1.1 87/09/12 12:27:03 swick Locked $"
 
 /* File: Quarks.c - last edit by */
 
-#include <sys/param.h>
 #include "Xlibint.h"
 #include "Xresource.h"
 #include "Quarks.h"
