@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.57 94/02/04 22:12:15 rws Exp $
+ * $XConsortium: Xos.h,v 1.58 94/03/28 18:20:52 gildea Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -79,6 +79,17 @@
 
 #endif /* X_NOT_STDC_ENV */
 
+/*
+ * strerror()
+ */
+#if defined(SYSV) || (defined(sun) && !defined(SVR4))
+#ifndef strerror
+extern char *sys_errlist[];
+extern int sys_nerr;
+#define strerror(n) \
+    (((n) >= 0 && (n) < sys_nerr) ? sys_errlist[n] : "unknown error")
+#endif
+#endif
 
 /*
  * Get open(2) constants
