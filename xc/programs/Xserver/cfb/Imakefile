@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 5.41 93/09/06 18:37:23 rws Exp kaleb $
+XCOMM $XConsortium: Imakefile,v 5.42 94/11/21 18:29:57 kaleb Exp kaleb $
 #include <Server.tmpl>
 
 #ifndef PixelSize
@@ -10,9 +10,11 @@ XCOMM $XConsortium: Imakefile,v 5.41 93/09/06 18:37:23 rws Exp kaleb $
 PSZSRCS = cfb8bit.c cfbteblt8.c cfbglrop8.c cfbpush8.c cfbrctstp8.c cfb8cppl.c
 PSZOBJS = cfb8bit.o cfbteblt8.o cfbglrop8.o cfbpush8.o cfbrctstp8.o cfb8cppl.o
 #ifdef MipsArchitecture
+#ifndef Mips64Architecture
 STIPPLESRC = stipmips.s stipmipste.s
 STIPPLEOBJ = stipmips.o stipmipste.o
 STIPPLEDEF = -DHAS_STIPPLE_CODE
+#endif
 #endif
 #ifdef SparcArchitecture
 STIPPLESRC = stipsparc.s stipsparcte.s
