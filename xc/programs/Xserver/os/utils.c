@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: utils.c,v 1.56 88/08/16 22:45:12 keith Exp $ */
+/* $Header: utils.c,v 1.57 88/08/18 11:49:00 rws Exp $ */
 #include <stdio.h>
 #include "Xos.h"
 #include "misc.h"
@@ -169,14 +169,23 @@ void UseMsg()
     ErrorF("-logo                  enable logo in screen saver\n");
     ErrorF("nologo                 disable logo in screen saver\n");
 #endif
+#ifdef MULTI_X_HACK
+    ErrorF("-multi                 run server in multi-X mode\n");
+#endif
     ErrorF("-p #                   screen-saver pattern duration (seconds)\n");
     ErrorF("-r                     turns off auto-repeat\n");
     ErrorF("r                      turns on auto-repeat \n");
+#ifdef hpux
+    ErrorF("-rtprio number         set real time priority\n");
+#endif
     ErrorF("-f #                   bell base (0-100)\n");
     ErrorF("-x string              loads named extension at init time \n");
     ErrorF("-help                  prints message with these options\n");
     ErrorF("-s #                   screen-saver timeout (seconds)\n");
     ErrorF("-t #                   mouse threshold (pixels)\n");
+#ifdef hpux
+    ErrorF("-tcbd                  run in topcat braindamage mode\n");
+#endif
     ErrorF("-to #                  connection time out\n");
     ErrorF("v                      video blanking for screen-saver\n");
     ErrorF("-v                     screen-saver without video blanking\n");
