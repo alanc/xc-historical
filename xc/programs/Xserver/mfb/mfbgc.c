@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 5.9 89/08/08 14:35:07 keith Exp $ */
+/* $XConsortium: mfbgc.c,v 5.10 89/08/08 17:17:58 keith Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -64,7 +64,7 @@ static GCOps	whiteTECopyOps = {
 	mfbLineSS,
 	miPolySegment,
 	miPolyRectangle,
-	miPolyArc,
+	miZeroPolyArc,
 	miFillPolygon,
 	mfbPolyFillRect,
 	miPolyFillArc,
@@ -88,7 +88,7 @@ static GCOps	blackTECopyOps = {
 	mfbLineSS,
 	miPolySegment,
 	miPolyRectangle,
-	miPolyArc,
+	miZeroPolyArc,
 	miFillPolygon,
 	mfbPolyFillRect,
 	miPolyFillArc,
@@ -112,7 +112,7 @@ static GCOps	whiteTEInvertOps = {
 	mfbLineSS,
 	miPolySegment,
 	miPolyRectangle,
-	miPolyArc,
+	miZeroPolyArc,
 	miFillPolygon,
 	mfbPolyFillRect,
 	miPolyFillArc,
@@ -136,7 +136,7 @@ static GCOps	blackTEInvertOps = {
 	mfbLineSS,
 	miPolySegment,
 	miPolyRectangle,
-	miPolyArc,
+	miZeroPolyArc,
 	miFillPolygon,
 	mfbPolyFillRect,
 	miPolyFillArc,
@@ -160,7 +160,7 @@ static GCOps	whiteCopyOps = {
 	mfbLineSS,
 	miPolySegment,
 	miPolyRectangle,
-	miPolyArc,
+	miZeroPolyArc,
 	miFillPolygon,
 	mfbPolyFillRect,
 	miPolyFillArc,
@@ -184,7 +184,7 @@ static GCOps	blackCopyOps = {
 	mfbLineSS,
 	miPolySegment,
 	miPolyRectangle,
-	miPolyArc,
+	miZeroPolyArc,
 	miFillPolygon,
 	mfbPolyFillRect,
 	miPolyFillArc,
@@ -208,7 +208,7 @@ static GCOps	whiteInvertOps = {
 	mfbLineSS,
 	miPolySegment,
 	miPolyRectangle,
-	miPolyArc,
+	miZeroPolyArc,
 	miFillPolygon,
 	mfbPolyFillRect,
 	miPolyFillArc,
@@ -232,7 +232,7 @@ static GCOps	blackInvertOps = {
 	mfbLineSS,
 	miPolySegment,
 	miPolyRectangle,
-	miPolyArc,
+	miZeroPolyArc,
 	miFillPolygon,
 	mfbPolyFillRect,
 	miPolyFillArc,
@@ -256,7 +256,7 @@ static GCOps	whiteWhiteCopyOps = {
 	mfbLineSS,
 	miPolySegment,
 	miPolyRectangle,
-	miPolyArc,
+	miZeroPolyArc,
 	miFillPolygon,
 	mfbPolyFillRect,
 	miPolyFillArc,
@@ -280,7 +280,7 @@ static GCOps	blackBlackCopyOps = {
 	mfbLineSS,
 	miPolySegment,
 	miPolyRectangle,
-	miPolyArc,
+	miZeroPolyArc,
 	miFillPolygon,
 	mfbPolyFillRect,
 	miPolyFillArc,
@@ -304,7 +304,7 @@ static GCOps	fgEqBgInvertOps = {
 	mfbLineSS,
 	miPolySegment,
 	miPolyRectangle,
-	miPolyArc,
+	miZeroPolyArc,
 	miFillPolygon,
 	mfbPolyFillRect,
 	miPolyFillArc,
@@ -863,6 +863,10 @@ mfbValidateGC(pGC, changes, pDrawable)
 
     if (new_line || new_fill)
     {
+	if (pGC->lineWidth == 0)
+	    pGC->ops->PolyArc = miZeroPolyArc;
+	else
+	    pGC->ops->PolyArc = miPolyArc;
 	if (pGC->lineStyle == LineSolid)
 	{
 	    if(pGC->lineWidth == 0)
