@@ -1,4 +1,4 @@
-/* $XConsortium: resource.h,v 1.12 91/05/03 17:57:10 keith Exp $ */
+/* $XConsortium: resource.h,v 1.13 93/07/12 09:44:41 dpw Exp $ */
 /***********************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -37,7 +37,13 @@ typedef unsigned long RESTYPE;
 #define RC_VANILLA	((RESTYPE)0)
 #define RC_CACHED	((RESTYPE)1<<31)
 #define RC_DRAWABLE	((RESTYPE)1<<30)
-#define RC_LASTPREDEF	RC_DRAWABLE
+/*  Use class RC_NEVERRETAIN for resources that should not be retained
+ *  regardless of the close down mode when the client dies.  (A client's
+ *  event selections on objects that it doesn't own are good candidates.)
+ *  Extensions can use this too!
+ */
+#define RC_NEVERRETAIN	((RESTYPE)1<<29)
+#define RC_LASTPREDEF	RC_NEVERRETAIN
 #define RC_ANY		(~(RESTYPE)0)
 
 /* types for Resource routines */
@@ -49,9 +55,9 @@ typedef unsigned long RESTYPE;
 #define RT_CURSOR	((RESTYPE)5)
 #define RT_COLORMAP	((RESTYPE)6)
 #define RT_CMAPENTRY	((RESTYPE)7)
-#define RT_OTHERCLIENT	((RESTYPE)8)
-#define RT_PASSIVEGRAB	((RESTYPE)9)
-#define RT_LASTPREDEF	RT_PASSIVEGRAB
+#define RT_OTHERCLIENT	((RESTYPE)8|RC_NEVERRETAIN)
+#define RT_PASSIVEGRAB	((RESTYPE)9|RC_NEVERRETAIN)
+#define RT_LASTPREDEF	((RESTYPE)9)
 #define RT_NONE		((RESTYPE)0)
 
 /* bits and fields within a resource id */
@@ -129,6 +135,12 @@ extern Bool ChangeResourceValue(
     XID /*id*/,
     RESTYPE /*rtype*/,
     pointer /*value*/
+#endif
+);
+
+extern void FreeClientNeverRetainResources(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/
 #endif
 );
 
