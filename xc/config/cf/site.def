@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.132 94/08/17 18:18:30 gildea Exp matt $
+XCOMM site:  $XConsortium: site.def,v 1.133 94/08/18 22:36:35 matt Exp matt $
 
 /***************************************************************************
  *                                                                         *
@@ -135,13 +135,14 @@ XCOMM site:  $XConsortium: site.def,v 1.132 94/08/17 18:18:30 gildea Exp matt $
 
 #ifdef SunArchitecture
 #define HasCodeCenter	YES
-#if defined(SparcArchitecture) && OSMajorVersion == 4
 #define HasTestCenter	YES
 #endif
 #endif
 
 #ifdef __hp9000s800
 #define HasCodeCenter	YES
+#define HasTestCenter	YES
+#endif
 #endif
 
 #if HasGcc2
