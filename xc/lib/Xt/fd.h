@@ -1,5 +1,5 @@
 /*
-* $Header: fd.h,v 6.1 87/11/30 16:21:09 haynes Exp $
+* $Header: fd.h,v 1.4 88/02/02 08:39:07 swick Locked $
 */
 
 /*
@@ -39,18 +39,20 @@
 #define	FD_SETSIZE	256
 #endif
 
+#ifndef FD_SET
 typedef long	fd_mask;
 #define NFDBITS	(sizeof(fd_mask) * NBBY)	/* bits per mask */
 #ifndef howmany
 #define	howmany(x, y)	(((x)+((y)-1))/(y))
 #endif
 
-typedef	struct Fd_set {
+typedef	struct fd_set {
 	fd_mask	fds_bits[howmany(FD_SETSIZE, NFDBITS)];
-} Fd_set;
+} fd_set;
 
 #define	FD_SET(n, p)	((p)->fds_bits[(n)/NFDBITS] |= (1 << ((n) % NFDBITS)))
 #define	FD_CLR(n, p)	((p)->fds_bits[(n)/NFDBITS] &= ~(1 << ((n) % NFDBITS)))
 #define	FD_ISSET(n, p)	((p)->fds_bits[(n)/NFDBITS] & (1 << ((n) % NFDBITS)))
+#endif /* FD_SET */
 
 #endif
