@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $Header: servermd.h,v 1.34 88/07/12 16:26:01 root Exp $ */
+/* $Header: servermd.h,v 1.36 88/07/20 09:38:27 xguest Exp $ */
 
 /*
  * The vendor string identifies the vendor responsible for the
@@ -39,7 +39,7 @@ SOFTWARE.
  * by the vendor.
  */
 #ifndef VENDOR_RELEASE
-#define VENDOR_RELEASE	2
+#define VENDOR_RELEASE	3
 #endif	VENDOR_RELEASE
 
 /*
@@ -127,6 +127,15 @@ SOFTWARE.
 #define GLYPHPADBYTES		1
 #define GETLEFTBITS_ALIGNMENT	4
 
+#      else
+#      ifdef macII
+
+#define IMAGE_BYTE_ORDER      	MSBFirst        /* Values for the MacII only */
+#define BITMAP_BIT_ORDER      	MSBFirst
+#define GLYPHPADBYTES         	4
+#define GETLEFTBITS_ALIGNMENT 	1
+
+#      endif
 #     endif
 #    endif
 #   endif
