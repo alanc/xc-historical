@@ -34,6 +34,11 @@
 #include "gcstruct.h"
 #include "input.h"
 #include "mipointer.h"
+#include <sys/types.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <errno.h>
+#include <sys/param.h>
 
 #define FFB_DEFAULT_WIDTH  1280
 #define FFB_DEFAULT_HEIGHT 1024
@@ -47,11 +52,16 @@ typedef struct
     int depth;
     int bitsPerPixel;
     char *pfbMemory;
+    int sizeInBytes;
+    int mmap_fd;
+    char mmap_file[MAXPATHLEN];
 } ffbScreenInfo, *ffbScreenInfoPtr;
 
 static int ffbNumScreens;
 static ffbScreenInfo ffbScreens[MAXSCREENS];
 static Bool ffbPixmapDepths[33];
+static char *pfbdir = NULL;
+static char scrinfo_filename[MAXPATHLEN];
 
 static void
 ffbInitializePixmapDepths()
@@ -88,13 +98,35 @@ ffbBitsPerPixel(depth)
 }
 
 void
-AbortDDX()
+ddxGiveUp()
 {
+    /* clean up mmaped files for framebuffers */
+    if (pfbdir)
+    {
+	int i;
+
+	if (-1 == unlink(scrinfo_filename))
+	{
+	    perror("unlink");
+	    ErrorF("unlink %s failed, errno %d", scrinfo_filename, errno);
+	}
+
+	for (i = 0; i < ffbNumScreens; i++)
+	{
+	    if (-1 == unlink(ffbScreens[i].mmap_file))
+	    {
+		perror("unlink");
+		ErrorF("unlink %s failed, errno %d",
+		       ffbScreens[i].mmap_file, errno);
+	    }
+	}
+    }
 }
 
 void
-ddxGiveUp()
+AbortDDX()
 {
+    ddxGiveUp();
 }
 
 void
@@ -105,8 +137,9 @@ OsVendorInit()
 void
 ddxUseMsg()
 {
-    ErrorF("-screen <scrnum> <WxHxD>  set screen's width, height, depth\n");
-    ErrorF("-pixdepths <list-of-int>  support given pixmap depths\n");
+    ErrorF("-screen scrn WxHxD  set screen's width, height, depth\n");
+    ErrorF("-pixdepths list-of-int  support given pixmap depths\n");
+    ErrorF("-fbdir directory        put framebuffers in mmap'ed files in directory\n");
 }
 
 int
@@ -164,6 +197,13 @@ ddxProcessArgument (argc, argv, i)
 	    ret++;
 	}
 	return ret;
+    }
+
+    if (strcmp (argv[i], "-fbdir") == 0)	/* -fbdir directory */
+    {
+	if (++i >= argc) UseMsg();
+	pfbdir = argv[i];
+	return 2;
     }
 
     return 0;
@@ -302,20 +342,68 @@ ffbNoopReturnsTrue()
     return TRUE;
 }
 
+#define DUMMY_BUFFER_SIZE 65536
+
 static char *
-ffbAllocateFramebufferMemory(pffb)
-    ffbScreenInfoPtr pffb;
+ffbAllocateFramebufferMemory(screennum)
+    int screennum;
 {
-    if (!pffb->pfbMemory)
+    ffbScreenInfoPtr pffb = &ffbScreens[screennum];
+
+    if (pffb->pfbMemory) return pffb->pfbMemory;
+
+    if (pffb->bitsPerPixel == 1)
+	pffb->sizeInBytes = (pffb->paddedWidth * pffb->height) / 8;
+    else
+	pffb->sizeInBytes = pffb->paddedWidth * pffb->height *
+			    (pffb->bitsPerPixel/8);
+
+    if (pfbdir)
     {
-	int amount;
-	if (pffb->bitsPerPixel == 1)
-	    amount = (pffb->paddedWidth * pffb->height) / 8;
-	else
-	    amount = pffb->paddedWidth * pffb->height * (pffb->bitsPerPixel/8);
-       
-	pffb->pfbMemory = (char *)Xalloc(amount);
+	char dummyBuffer[DUMMY_BUFFER_SIZE];
+	int currentFileSize, writeThisTime;
+
+	sprintf(pffb->mmap_file, "%s/Xffb_screen%d", pfbdir, screennum);
+	if (-1 == (pffb->mmap_fd = open(pffb->mmap_file, O_CREAT|O_RDWR, 0666)))
+	{
+	    perror("open");
+	    ErrorF("open %s failed, errno %d", pffb->mmap_file, errno);
+	    return NULL;
+	}
+
+	bzero(dummyBuffer, DUMMY_BUFFER_SIZE);
+	for (currentFileSize = 0;
+	     currentFileSize < pffb->sizeInBytes;
+	     currentFileSize += writeThisTime)
+	{
+	    writeThisTime = min(DUMMY_BUFFER_SIZE,
+				pffb->sizeInBytes - currentFileSize);
+	    if (-1 == write(pffb->mmap_fd, dummyBuffer, writeThisTime))
+	    {
+		perror("write");
+		ErrorF("write %s failed, errno %d %s", pffb->mmap_file, errno);
+		return NULL;
+	    }
+
+	}
+
+	pffb->pfbMemory = (char *)mmap((caddr_t)NULL, pffb->sizeInBytes,
+				       PROT_READ|PROT_WRITE, MAP_SHARED,
+				       pffb->mmap_fd, 0);
+	if (-1 == (int)pffb->pfbMemory)
+	{
+	    perror("mmap");
+	    ErrorF("mmap %s failed, errno %d %s", pffb->mmap_file, errno);
+	    return NULL;
+	}
     }
+    else /* !pfbdir */
+    {
+	pffb->mmap_fd = 0;
+	sprintf(pffb->mmap_file, "screen %d", screennum);
+	pffb->pfbMemory = (char *)Xalloc(pffb->sizeInBytes);
+    }
+
     return pffb->pfbMemory;
 }
 
@@ -355,7 +443,7 @@ ffbScreenInit(index, pScreen, argc, argv)
 
     pffb->paddedWidth = PixmapBytePad(pffb->width, pffb->depth);
     pffb->bitsPerPixel = ffbBitsPerPixel(pffb->depth);
-    pbits = ffbAllocateFramebufferMemory(pffb); /* XXX free? */
+    pbits = ffbAllocateFramebufferMemory(index);
     if (!pbits) return FALSE;
 
     switch (pffb->bitsPerPixel)
@@ -405,6 +493,7 @@ InitOutput(screenInfo, argc, argv)
 {
     int i;
     int NumFormats = 0;
+    FILE *pf = stderr;
 
     /* initialize pixmap formats */
 
@@ -442,5 +531,33 @@ InitOutput(screenInfo, argc, argv)
 	    FatalError("Couldn't add screen %d", i);
 	}
     }
-}
+
+    /* write screen info stats to file */
+
+    if (pfbdir)
+    {
+	sprintf(scrinfo_filename, "%s/Xffb_scrinfo", pfbdir);
+	if (!(pf = fopen(scrinfo_filename, "w")))
+	{
+	    FatalError("Couldn't open screen info file %s", scrinfo_filename);
+	}
+    }
+
+    for (i = 0; i < ffbNumScreens; i++)
+    {
+	fprintf(pf, "%s w %d padW %d h %d d %d bpp %d sz %d ibo %d bbo %d\n",
+		ffbScreens[i].mmap_file,
+		ffbScreens[i].width,
+		ffbScreens[i].paddedWidth,
+		ffbScreens[i].height,
+		ffbScreens[i].depth,
+		ffbScreens[i].bitsPerPixel,
+		ffbScreens[i].sizeInBytes,
+		IMAGE_BYTE_ORDER,
+		BITMAP_BIT_ORDER);
+    }
+    fflush(pf);
+    if (pfbdir) fclose(pf);
+
+} /* end InitOutput */
 
