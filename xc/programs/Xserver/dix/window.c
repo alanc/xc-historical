@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.26 89/07/18 18:16:35 rws Exp $ */
+/* $XConsortium: window.c,v 5.27 89/07/19 21:24:33 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -121,7 +121,8 @@ static Bool TileScreenSaver();
 
 #define USE_DIX_SAVE_UNDERS	0x40
 
-static numSaveUndersViewable = 0;
+static int numSaveUndersViewable = 0;
+static int deltaSaveUndersViewable = 0;
 
 /*-
  *-----------------------------------------------------------------------
@@ -239,8 +240,10 @@ CheckSaveUnder (pWin)
     RegionRec	rgn;    	/* Extent of siblings with saveUnder */
     Bool	res;
 
-    if (!numSaveUndersViewable)
+    numSaveUndersViewable += deltaSaveUndersViewable;
+    if (!deltaSaveUndersViewable && !numSaveUndersViewable)
 	return FALSE;
+    deltaSaveUndersViewable = 0;
     (* pWin->drawable.pScreen->RegionInit) (&rgn, NullBox, 1);
     res = CheckSubSaveUnder (pWin->parent, pWin->nextSib, &rgn);
     (*pWin->drawable.pScreen->RegionUninit) (&rgn);
@@ -272,8 +275,10 @@ ChangeSaveUnder(pWin, first)
     ScreenPtr	pScreen;
     Bool	res;
 
-    if (!numSaveUndersViewable)
+    numSaveUndersViewable += deltaSaveUndersViewable;
+    if (!deltaSaveUndersViewable && !numSaveUndersViewable)
 	return FALSE;
+    deltaSaveUndersViewable = 0;
     pScreen = pWin->drawable.pScreen;
     (* pScreen->RegionInit) (&rgn, NullBox, 1);
     res = CheckSubSaveUnder (pWin->parent, first, &rgn);
@@ -1064,7 +1069,7 @@ CrushTree(pWin)
 	    pParent = pChild->parent;
 #ifdef DO_SAVE_UNDERS
 	    if (pChild->saveUnder && pChild->viewable)
-		numSaveUndersViewable--;
+		deltaSaveUndersViewable--;
 #endif
 	    pChild->viewable = FALSE;
 	    if (pChild->realized)
@@ -1377,9 +1382,9 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 		 * exposition (hee hee).
 		 */
 		if (pWin->saveUnder)
-		    numSaveUndersViewable--;
+		    deltaSaveUndersViewable--;
 		else
-		    numSaveUndersViewable++;
+		    deltaSaveUndersViewable++;
 		pWin->saveUnder = val;
 		if (ChangeSaveUnder(pWin, pWin->nextSib))
 		    DoChangeSaveUnder(pWin->parent, pWin->nextSib);
@@ -2365,8 +2370,13 @@ ChangeBorderWidth(pWin, width)
 	    }
 	}
 #ifdef DO_SAVE_UNDERS
-	if (pWin->saveUnder && DO_SAVE_UNDERS(pWin))
-	    dosave = ChangeSaveUnder(pWin, pWin->nextSib);
+	if (DO_SAVE_UNDERS(pWin))
+	{
+	    if (pWin->saveUnder)
+		dosave = ChangeSaveUnder(pWin, pWin->nextSib);
+	    else
+		dosave = CheckSaveUnder(pWin);
+	}
 #endif /* DO_SAVE_UNDERS */
 
 	if (anyMarked)
@@ -3289,7 +3299,7 @@ RealizeTree(pWin)
 	    pChild->realized = TRUE;
 #ifdef DO_SAVE_UNDERS
 	    if (pChild->saveUnder)
-		numSaveUndersViewable++;
+		deltaSaveUndersViewable++;
 #endif
 	    pChild->viewable = (pChild->drawable.class == InputOutput);
 	    (* Realize)(pChild);
@@ -3510,7 +3520,7 @@ UnrealizeTree(pWin, fromConfigure)
 	    {
 #ifdef DO_SAVE_UNDERS
 		if (pChild->saveUnder)
-		    numSaveUndersViewable--;
+		    deltaSaveUndersViewable--;
 #endif
 		pChild->viewable = FALSE;
 		if (pChild->backStorage)
@@ -3576,10 +3586,13 @@ UnmapWindow(pWin, fromConfigure)
 	    HandleExposures(pParent);
 	}
 #ifdef DO_SAVE_UNDERS
-	if (pWin->saveUnder && DO_SAVE_UNDERS(pWin))
+	if (DO_SAVE_UNDERS(pWin))
 	{
-	    if (ChangeSaveUnder(pWin, pWin->nextSib))
+	    if (pWin->saveUnder ? ChangeSaveUnder(pWin, pWin->nextSib) :
+				  CheckSaveUnder(pWin))
+	    {
 		DoChangeSaveUnder(pParent, pWin->nextSib);
+	    }
 	}
 	pWin->DIXsaveUnder = FALSE;
 #endif /* DO_SAVE_UNDERS */
@@ -3645,7 +3658,10 @@ UnmapSubwindows(pWin)
 	}
 #ifdef DO_SAVE_UNDERS
 	if (DO_SAVE_UNDERS(pWin))
-	    DoChangeSaveUnder(pWin, pWin->firstChild);
+	{
+	    if (CheckSaveUnder(pWin->firstChild))
+		DoChangeSaveUnder(pWin, pWin->firstChild);
+	}
 #endif /* DO_SAVE_UNDERS */
     }
     if (wasRealized)
