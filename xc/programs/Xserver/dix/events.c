@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.127 87/12/10 14:11:06 rws Locked $ */
+/* $Header: events.c,v 1.128 87/12/10 14:38:01 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -2129,8 +2129,6 @@ ProcGrabPointer(client)
 	rep.status = GrabSuccess;
     }
     WriteReplyToClient(client, sizeof(xGrabPointerReply), &rep);
-    if (cursor)
-	ChangeToCursor(cursor);
     return Success;
 }
 
