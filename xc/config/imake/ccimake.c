@@ -2,6 +2,10 @@
 #define ccflags "-Wc,-Nd4000,-Ns3000 -DSYSV"
 #endif /* hpux */
 
+#ifdef macII
+#define ccflags "-DSYSV"
+#endif /* macII */
+
 #ifdef CRAY
 #define ccflags "-DSYSV"
 #endif /* CRAY */
