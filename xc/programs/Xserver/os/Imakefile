@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.63 93/09/18 15:56:07 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.64 93/09/18 18:26:22 rws Exp $
 #include <Server.tmpl>
 
 #if (SystemV || SystemV4) && !HasSockets
@@ -66,10 +66,11 @@ BOOTSTRAPCFLAGS =
     DBM_DEFINES = NdbmDefines
     ADM_DEFINES = -DADMPATH=\"$(ADMDIR)/X\%smsgs\"
     EXT_DEFINES = ExtensionDefines
-  EXTRA_DEFINES = ServerXdmcpDefines ServerExtraDefines
-        DEFINES = ConnectionFlags $(OS_DEFINES) $(XDMAUTHDEFS) $(RPCDEFS) $(SIGNAL_DEFINES)
+  XDMCP_DEFINES = ServerXdmcpDefines
+  EXTRA_DEFINES = ServerExtraDefines
+        DEFINES = ConnectionFlags $(OS_DEFINES) $(XDMAUTHDEFS) $(RPCDEFS) $(SIGNAL_DEFINES) $(EXTRA_DEFINES)
        INCLUDES = -I.  -I../include -I$(INCLUDESRC) -I$(TOP)/lib/Xau
- DEPEND_DEFINES = $(DBM_DEFINES) $(EXTRA_DEFINES) $(EXT_DEFINES)
+ DEPEND_DEFINES = $(DBM_DEFINES) $(XDMCP_DEFINES) $(EXT_DEFINES)
        LINTLIBS = ../dix/llib-ldix.ln
 
 #ifdef NEED_ALLOCA_FROM_LIBPW
@@ -91,15 +92,15 @@ alloca.o:  $(PWLIB)
 	ar x $(PWLIB) alloca.o
 #endif /* NEED_ALLOCA_FROM_LIBPW */
 
-SpecialCObjectRule(access,$(ICONFIGFILES),$(EXTRA_DEFINES))
-SpecialCObjectRule(auth,$(ICONFIGFILES),$(EXTRA_DEFINES))
-SpecialCObjectRule(xdmauth,$(ICONFIGFILES),$(EXTRA_DEFINES))
-SpecialCObjectRule(xdmcp,$(ICONFIGFILES),$(SOCK_DEFINES) $(EXTRA_DEFINES))
-SpecialCObjectRule(connection,$(ICONFIGFILES),$(SOCK_DEFINES) $(EXTRA_DEFINES))
+SpecialCObjectRule(access,$(ICONFIGFILES),$(XDMCP_DEFINES))
+SpecialCObjectRule(auth,$(ICONFIGFILES),$(XDMCP_DEFINES))
+SpecialCObjectRule(xdmauth,$(ICONFIGFILES),$(XDMCP_DEFINES))
+SpecialCObjectRule(xdmcp,$(ICONFIGFILES),$(SOCK_DEFINES) $(XDMCP_DEFINES))
+SpecialCObjectRule(connection,$(ICONFIGFILES),$(SOCK_DEFINES) $(XDMCP_DEFINES))
 SpecialCObjectRule(osinit,$(ICONFIGFILES),$(ADM_DEFINES))
 SpecialCObjectRule(WaitFor,$(ICONFIGFILES),$(EXT_DEFINES))
 SpecialCObjectRule(io,$(ICONFIGFILES),$(EXT_DEFINES))
-SpecialCObjectRule(utils,$(ICONFIGFILES),$(EXTRA_DEFINES))
+SpecialCObjectRule(utils,$(ICONFIGFILES),$(XDMCP_DEFINES))
 #if defined(SparcArchitecture) && HasGcc && !HasGcc2
 oscolor.o: oscolor.c $(ICONFIGFILES)
 	$(RM) $@
