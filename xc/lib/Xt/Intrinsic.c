@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Intrinsic.c,v 1.107 88/01/25 09:40:43 swick Exp $";
+static char rcsid[] = "$Header: Intrinsic.c,v 1.108 88/01/31 12:11:32 swick Locked $";
 #endif lint
 
 /*
@@ -406,10 +406,11 @@ Widget _XtCreate1(name,widgetClass,parent)
 
     return(widget);
 }
-static void _XtCreate2(widget,args,num_args)
+static void _XtCreate2(widget,args,num_args,is_popup)
     Widget      widget;
     ArgList     args;
     Cardinal    num_args;
+    Boolean	is_popup;
 {
     Widget reqWidget;
     WidgetClass wClass = widget->core.widget_class;
@@ -428,7 +429,8 @@ static void _XtCreate2(widget,args,num_args)
                    (unsigned)wClass->core_class.widget_size);
     RecurseInitialize (reqWidget, widget, args, num_args, wClass);
 
-    if ((widget->core.parent != (Widget)NULL) &&
+    if (!is_popup &&
+	(widget->core.parent != (Widget)NULL) &&
 	XtIsSubclass(widget->core.parent, constraintWidgetClass)) 
        RecurseConstraintInitialize(reqWidget, widget, args, num_args,
                        widget->core.parent->core.widget_class);
@@ -462,7 +464,7 @@ Widget XtCreateWidget(name,widgetClass,parent,args,num_args)
     widget->core.ancestor_sensitive = 
          (widget->core.parent->core.ancestor_sensitive && 
           widget->core.parent->core.sensitive);
-     _XtCreate2(widget,args,num_args);
+     _XtCreate2(widget,args,num_args,False);
 
     if (XtIsComposite(widget->core.parent))
       (*(((CompositeWidgetClass)(widget->core.parent->core.widget_class))
@@ -507,7 +509,7 @@ Widget XtCreatePopupShell(name, widgetClass, parent, args, num_args)
    widget->core.ancestor_sensitive =
          (widget->core.parent->core.ancestor_sensitive &
           widget->core.parent->core.sensitive);
-     _XtCreate2(widget,args,num_args);
+     _XtCreate2(widget,args,num_args,True);
       parent->core.popup_list =
       (WidgetList) XtRealloc((caddr_t) parent->core.popup_list,
                (unsigned) (parent->core.num_popups + 1)*sizeof(Widget));
@@ -529,7 +531,7 @@ Widget XtCreateApplicationShell(name, widgetClass,  args, num_args)
       if (widget->core.depth == 0)
         widget->core.depth = DefaultDepthOfScreen(XtScreen(widget));
      widget->core.ancestor_sensitive = TRUE;
-     _XtCreate2(widget,args,num_args);
+     _XtCreate2(widget,args,num_args,False);
     return(widget);
 }
 
