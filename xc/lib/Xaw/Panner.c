@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.21 90/02/28 18:46:52 jim Exp $
+ * $XConsortium: Panner.c,v 1.22 90/03/01 09:52:21 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,13 +23,14 @@
  * Author:  Jim Fulton, MIT X Consortium
  */
 
-#include <X11/IntrinsicP.h>
-#include <X11/StringDefs.h>
-#include <X11/Xmu/CharSet.h>
-#include <X11/Xaw/XawInit.h>
-#include <X11/Xaw/SimpleP.h>
-#include <X11/Xaw/PannerP.h>
+#include <X11/IntrinsicP.h>		/* for toolkit routines */
+#include <X11/StringDefs.h>		/* for XtN and XtC defines */
+#include <X11/Xmu/CharSet.h>		/* for XmuCompareISOLatin1() */
+#include <X11/Xaw/XawInit.h>		/* for XawInitializeWidgetSet */
+#include <X11/Xaw/SimpleP.h>		/* parent */
+#include <X11/Xaw/PannerP.h>		/* us */
 
+#define MINIMUM(a,b) (((a) < (b)) ? (a) : (b))
 
 static char defaultTranslations[] = 
   "<Btn1Down>:    start() \n\
@@ -279,10 +280,13 @@ static void scale_knob (pw, location, size)  /* set knob size and/or loc */
 	pw->panner.knob_y = (Position) PANNER_VSCALE (pw, pw->panner.slider_y);
     }
     if (size) {
-	pw->panner.knob_width = (Dimension)
-	  PANNER_HSCALE (pw, pw->panner.slider_width);
-	pw->panner.knob_height = (Dimension)
-	  PANNER_VSCALE (pw, pw->panner.slider_height);
+	Dimension width = MINIMUM (pw->panner.slider_width,
+				   pw->panner.canvas_width);
+	Dimension height = MINIMUM (pw->panner.slider_height,
+				    pw->panner.canvas_height);
+
+	pw->panner.knob_width = (Dimension) PANNER_HSCALE (pw, width);
+	pw->panner.knob_height = (Dimension) PANNER_VSCALE (pw, height);
     }
     if (!pw->panner.allow_off) check_knob (pw, TRUE);
     if (pw->panner.shadow) move_shadow (pw);
