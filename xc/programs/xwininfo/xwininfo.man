@@ -4,7 +4,7 @@ xwininfo - window information utility for X
 .SH SYNOPSIS
 .B "xwininfo"
 [-help] [-id \fIid\fP] [-root] [-name \fIname\fP] [-int]
-[-tree] [-stats] [-bits] [-events] [-size] [-wm ] [-all]
+[-tree] [-stats] [-bits] [-events] [-size] [-wm ] [-frame] [-all]
 [-english] [-metric]
 [-display \fIdisplay\fP]
 .SH DESCRIPTION
@@ -94,6 +94,10 @@ This option causes the selected window's window manager hints to be
 displayed.  Information displayed may include whether or not the application
 accepts input, what the window's icon window # and name is, where the window's
 icon should go, and what the window's initial state should be.
+.TP 8
+.B -frame
+This option causes window manager frames not be ignored when manually 
+selecting windows.
 .PP
 .TP 8
 .B -metric
