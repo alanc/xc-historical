@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.112 91/04/15 18:00:36 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.113 91/04/16 09:11:02 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate .cf
 XCOMM configuration files.  Site-wide parameters may be set in the file
@@ -187,16 +187,16 @@ XCOMM
 #endif
 #endif
 
-#ifdef umips
-/* Mips Co. systems, as opposed to someone else's box using a MIPS CPU */
-/* MIPS cpp has no unique symbol; build imake with BOOTSTRAPCFLAGS=-Dumips */
-#define MacroIncludeFile <mips.cf>
-#define MacroFile mips.cf
-#undef umips
-#define UMipsArchitecture
-#undef mips
-#define MipsArchitecture
-#endif
+#ifdef Mips
+#  define MacroIncludeFile "Mips.cf"
+#  define MacroFile Mips.cf
+#  undef Mips
+#  if defined(SYSTYPE_BSD43) || defined(BSD) || defined(BSD43)
+#    define MipsBsdArchitecture
+#  else /* BSD */
+#    define MipsSysvArchitecture
+#  endif /* BSD */
+#endif /* Mips */
 
 #ifndef MacroIncludeFile
 XCOMM WARNING:  Imake.tmpl not configured; guessing at definitions!!!
