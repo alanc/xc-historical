@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.14 91/07/16 23:07:25 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.15 91/12/02 08:48:08 rws Exp $
 /*
  * NOTE: CppSourcesPresent IS NO LONGER TESTED OR SUPPORTED,
  * and is nearly guaranteed to not work.
@@ -24,8 +24,26 @@ XCOMM $XConsortium: Imakefile,v 1.14 91/07/16 23:07:25 gildea Exp $
     OBJS = include.o main.o parse.o pr.o cppsetup.o
 #endif
 
+#if HasGcc && !defined(PreIncDir)
+#define PreIncDir /usr/local/lib/gcc-include
+#endif
+#ifdef PreIncDir
+PREINCDIR = PreIncDir
+PREINC_DEFINES = -DPREINCDIR=\"$(PREINCDIR)\"
+#endif
+#ifndef StdIncDir
+#define StdIncDir /usr/include
+#endif
+STDINCDIR = StdIncDir
+STDINC_DEFINES = -DINCLUDEDIR=\"$(STDINCDIR)\"
+#ifdef PostIncDir
+POSTINCDIR = PostIncDir
+POSTINC_DEFINES = -DPOSTINCDIR=\"$(POSTINCDIR)\"
+#endif
+INC_DEFINES = $(PREINC_DEFINES) $(STDINC_DEFINES) $(POSTINC_DEFINES)
+MAIN_DEFINES = $(INC_DEFINES) $(SIGNAL_DEFINES)
 INCLUDES = -I$(CONFIGSRC)
- DEFINES = $(CPPDEFS) '-DINCLUDEDIR="/usr/include"' $(SIGNAL_DEFINES)
+ DEFINES = $(CPPDEFS)
  DEPLIBS =
 
 #ifdef MacIIArchitecture
@@ -37,6 +55,8 @@ all:: makedepend
 #undef InstallManPage
 #define InstallManPage(file,dest) /* as nothing */
 ComplexProgramTarget(makedepend)
+
+SpecialCObjectRule(main,$(ICONFIGFILES),$(MAIN_DEFINES))
 
 InstallManPageLong(mkdepend,$(MANDIR),makedepend)
 
