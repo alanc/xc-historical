@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.17 89/07/14 13:47:39 rws Exp $ */
+/* $XConsortium: window.c,v 5.18 89/07/16 11:30:59 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -32,6 +32,7 @@ SOFTWARE.
 #include "scrnintstr.h"
 #include "os.h"
 #include "regionstr.h"
+#include "validate.h"
 #include "windowstr.h"
 #include "input.h"
 #include "resource.h"
@@ -61,8 +62,11 @@ typedef struct _ScreenSaverStuff {
 } ScreenSaverStuffRec;
 
 #define SCREEN_IS_BLANKED   0
-#define SCREEN_IS_TILED     1
-#define SCREEN_ISNT_SAVED   2
+#define SCREEN_ISNT_SAVED   1
+#define SCREEN_IS_TILED     2
+#define SCREEN_IS_BLACK	    3
+
+#define HasSaverWindow(v)   ((v) == SCREEN_IS_TILED || (v) == SCREEN_IS_BLACK)
 
 extern int ScreenSaverBlanking, ScreenSaverAllowExposures;
 int screenIsSaved = SCREEN_SAVER_OFF;
@@ -718,8 +722,7 @@ RealChildHead(pWin)
 {
     if (!pWin->parent &&
 	(screenIsSaved == SCREEN_SAVER_ON) &&
-	(savedScreenInfo[pWin->drawable.pScreen->myNum].blanked ==
-	 SCREEN_IS_TILED))
+	(HasSaverWindow (savedScreenInfo[pWin->drawable.pScreen->myNum].blanked)))
 	return (pWin->firstChild);
     else
 	return (NullWindow);
@@ -3416,7 +3419,7 @@ UnmapWindow(pWin, fromConfigure)
     DeliverEvents(pWin, &event, 1, NullWindow);
     if (wasViewable && !fromConfigure)
     {
-	pWin->valdata = (ValidatePtr)1;
+	pWin->valdata = UnmapValData;
 	MarkOverlappedWindows(pWin, pWin->nextSib);
 	MarkWindow(pWin->parent);
     }
@@ -3629,7 +3632,7 @@ SaveScreens(on, mode)
 	       (* screenInfo.screens[i]->SaveScreen) (screenInfo.screens[i],
 						      on);
 	    }
-            else if (savedScreenInfo[i].blanked == SCREEN_IS_TILED)
+            else if (HasSaverWindow (savedScreenInfo[i].blanked))
 	    {
     	        FreeResource(savedScreenInfo[i].wid, RC_NONE);
                 savedScreenInfo[i].pWindow = NullWindow;
@@ -3660,15 +3663,21 @@ SaveScreens(on, mode)
 	    }
             if (ScreenSaverBlanking != DontPreferBlanking)
 	    {
-	       if ((* screenInfo.screens[i]->SaveScreen)
-		   (screenInfo.screens[i], what))
-	       {
-	           savedScreenInfo[i].blanked = SCREEN_IS_BLANKED;
-                   continue;
-	       }
+    	    	if ((* screenInfo.screens[i]->SaveScreen)
+       	       	   (screenInfo.screens[i], what))
+    	    	{
+       	       	   savedScreenInfo[i].blanked = SCREEN_IS_BLANKED;
+       	       	   continue;
+    	    	}
+    	    	if ((ScreenSaverAllowExposures != DontAllowExposures) &&
+		    TileScreenSaver(i, SCREEN_IS_BLACK))
+		{
+		    savedScreenInfo[i].blanked = SCREEN_IS_BLACK;
+		    continue;
+    	    	}
 	    }
-            if ((ScreenSaverAllowExposures != DontAllowExposures) &&
-	        TileScreenSaver(i))
+	    if ((ScreenSaverAllowExposures != DontAllowExposures) &&
+		TileScreenSaver(i, SCREEN_IS_TILED))
             {
 	        savedScreenInfo[i].blanked = SCREEN_IS_TILED;
 	    }
@@ -3680,8 +3689,9 @@ SaveScreens(on, mode)
 }
 
 static Bool
-TileScreenSaver(i)
+TileScreenSaver(i, kind)
     int i;
+    int	kind;
 {
     int j;
     int result;
@@ -3696,16 +3706,24 @@ TileScreenSaver(i)
 
     mask = 0;
     attri = 0;
-    switch (WindowTable[i]->backgroundState) {
-    case BackgroundPixel:
-	attributes[attri++] = WindowTable[i]->background.pixel;
+    switch (kind) {
+    case SCREEN_IS_TILED:
+    	switch (WindowTable[i]->backgroundState) {
+    	case BackgroundPixel:
+	    attributes[attri++] = WindowTable[i]->background.pixel;
+	    mask |= CWBackPixel;
+	    break;
+    	case BackgroundPixmap:
+	    attributes[attri++] = WindowTable[i]->background.pixmap->drawable.id;
+	    mask |= CWBackPixmap;
+	    break;
+    	default:
+	    break;
+    	}
+	break;
+    case SCREEN_IS_BLACK:
+	attributes[attri++] = WindowTable[i]->drawable.pScreen->blackPixel;
 	mask |= CWBackPixel;
-	break;
-    case BackgroundPixmap:
-	attributes[attri++] = WindowTable[i]->background.pixmap->drawable.id;
-	mask |= CWBackPixmap;
-	break;
-    default:
 	break;
     }
 
@@ -3762,7 +3780,7 @@ TileScreenSaver(i)
     pWin->overrideRedirect = TRUE;
     MapWindow(pWin, serverClient);
 #ifndef NOLOGOHACK
-    if (logoScreenSaver)
+    if (kind == SCREEN_IS_TILED && logoScreenSaver)
 	DrawLogo(pWin);
 #endif
     return TRUE;
