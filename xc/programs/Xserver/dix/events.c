@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.125 87/11/27 17:38:29 rws Locked $ */
+/* $Header: events.c,v 1.126 87/12/05 12:32:34 rws Locked $ */
 
 #include "X.h"
 #include "misc.h"
@@ -222,8 +222,9 @@ SetMaskForEvent(mask, event)
 }
 
 static void
-CheckPhysLimits(cursor)
+CheckPhysLimits(cursor, generateEvents)
     CursorPtr cursor;
+    Bool generateEvents;
 {
     HotSpot old;
 
@@ -252,17 +253,19 @@ CheckPhysLimits(cursor)
 	    sprite.hot.y = sprite.physLimits.y2 - 1;
     if ((old.x != sprite.hot.x) || (old.y != sprite.hot.y))
 	(*currentScreen->SetCursorPosition) (
-	    currentScreen, sprite.hot.x, sprite.hot.y, FALSE);
+	    currentScreen, sprite.hot.x, sprite.hot.y, generateEvents);
 }
 
 /*
  * XXX this routine probably wants pointer position changes to be noticed,
- * but we don't seem to be in a position to do that.
+ * but we don't seem to be in a position to do that.  Any callers that
+ * pass in FALSE for generateEvents are suspect.
  */
 static void
-ConfineCursorToWindow(pWin, x, y)
+ConfineCursorToWindow(pWin, x, y, generateEvents)
     WindowPtr pWin;
     int x, y;
+    Bool generateEvents;
 {
     ScreenPtr pScreen = pWin->drawable.pScreen;
 
@@ -281,10 +284,10 @@ ConfineCursorToWindow(pWin, x, y)
 	    y = sprite.hotLimits.y2 - 1;
 	sprite.hot.x = x;
 	sprite.hot.y = y;
-	(* pScreen->SetCursorPosition)(pScreen, x, y, FALSE); /* XXX see above */
+	(* pScreen->SetCursorPosition)(pScreen, x, y, generateEvents);
 	(void) CheckMotion(x, y, TRUE);
     }
-    CheckPhysLimits(sprite.current); /* XXX see above */
+    CheckPhysLimits(sprite.current, generateEvents);
     (* pScreen->ConstrainCursor)(pScreen, &sprite.physLimits);
 }
 
@@ -298,7 +301,7 @@ ChangeToCursor(cursor)
     {
 	if ((sprite.current->xhot != cursor->xhot) ||
 		(sprite.current->yhot != cursor->yhot))
-	    CheckPhysLimits(cursor);
+	    CheckPhysLimits(cursor, FALSE);
 	(*currentScreen->DisplayCursor) (currentScreen, cursor);
 	sprite.current = cursor;
     }
@@ -474,7 +477,7 @@ ActivatePointerGrab(mouse, grab, time, autoGrab)
 				     : sprite.win;
 
     if (grab->u.ptr.confineTo)
-	ConfineCursorToWindow(grab->u.ptr.confineTo, 0, 0);
+	ConfineCursorToWindow(grab->u.ptr.confineTo, 0, 0, FALSE);
     DoEnterLeaveEvents(oldWin, grab->window, NotifyGrab);
     motionHintWindow = NullWindow;
     mouse->grabTime = time;
@@ -502,7 +505,7 @@ DeactivatePointerGrab(mouse)
 	keybd->sync.other = NullGrab;
     DoEnterLeaveEvents(grab->window, sprite.win, NotifyUngrab);
     if (grab->u.ptr.confineTo)
-	ConfineCursorToWindow(ROOT, 0, 0);
+	ConfineCursorToWindow(ROOT, 0, 0, FALSE);
     PostNewCursor();
     ComputeFreezes(keybd, mouse);
 }
@@ -1079,7 +1082,7 @@ NewCurrentScreen(newScreen, x, y)
     int x,y;
 {
     if (newScreen != currentScreen)
-	ConfineCursorToWindow(&WindowTable[newScreen->myNum], x, y);
+	ConfineCursorToWindow(&WindowTable[newScreen->myNum], x, y, TRUE);
 }
 
 int
@@ -1439,7 +1442,7 @@ ProcessPointerEvent (xE, mouse)
     if (moveIt)
 	(*currentScreen->SetCursorPosition)(
 	    currentScreen, xE->u.keyButtonPointer.rootX,
-	    xE->u.keyButtonPointer.rootY, FALSE);
+	    xE->u.keyButtonPointer.rootY, FALSE); /* XXX */
     if (mouse->sync.frozen)
     {
 	EnqueueEvent(mouse, xE);
@@ -2112,7 +2115,7 @@ ProcGrabPointer(client)
 	GrabRec tempGrab;
 
 	if (grab && grab->u.ptr.confineTo && !confineTo)
-	    ConfineCursorToWindow(ROOT, 0, 0);
+	    ConfineCursorToWindow(ROOT, 0, 0, FALSE);
 	tempGrab.u.ptr.cursor = cursor;
 	tempGrab.client = client;
 	tempGrab.ownerEvents = stuff->ownerEvents;
@@ -3714,7 +3717,8 @@ CheckCursorConfinement(pWin)
      */
     if (grab && grab->u.ptr.confineTo &&
 	(pWin->firstChild || (pWin == grab->u.ptr.confineTo)))
-	ConfineCursorToWindow(grab->u.ptr.confineTo, sprite.hot.x, sprite.hot.y);
+	ConfineCursorToWindow(grab->u.ptr.confineTo,
+			      sprite.hot.x, sprite.hot.y, TRUE);
 }
 
 Mask
