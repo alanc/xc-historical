@@ -148,7 +148,7 @@ DisposeFontSizes (fs)
 		if (fs->x_name)
 			free (fs->x_name);
 		if (fs->font)
-			XFree (fs->font);
+			XFree ((char *)fs->font);
 		free ((char *) fs);
 	}
 }

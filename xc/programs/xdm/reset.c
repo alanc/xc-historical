@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: reset.c,v 1.4 89/01/16 17:13:17 keith Exp $
+ * $XConsortium: reset.c,v 1.5 89/11/18 12:43:35 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -50,7 +50,8 @@ Display	*dpy;
 Window	window;
 {
 	Window	root, parent, *children;
-	int	child, nchildren = 0;
+	int	child;
+	unsigned int nchildren = 0;
 	
 	while (XQueryTree (dpy, window, &root, &parent, &children, &nchildren)
 	       && nchildren > 0)
@@ -59,7 +60,7 @@ Window	window;
 			Debug ("XKillClient 0x%x\n", children[child]);
 			XKillClient (dpy, children[child]);
 		}
-		XFree (children);
+		XFree ((char *)children);
 	}
 }
 

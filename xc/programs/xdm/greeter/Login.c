@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: Login.c,v 1.18 89/10/09 14:55:54 keith Exp $
+ * $XConsortium: Login.c,v 1.19 89/12/06 19:35:21 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -588,7 +588,7 @@ InsertChar (ctx, event)
     char strbuf[128];
     int  len;
 
-    len = XLookupString (event, strbuf, sizeof (strbuf), 0, 0);
+    len = XLookupString (&event->xkey, strbuf, sizeof (strbuf), 0, 0);
     strbuf[len] = '\0';
     if (len + ctx->login.cursor >= NAME_LEN - 1)
     	len = NAME_LEN - ctx->login.cursor - 2;

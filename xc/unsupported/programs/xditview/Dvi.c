@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Dvi.c,v 1.7 89/07/16 17:07:42 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Dvi.c,v 1.8 89/07/21 14:22:01 jim Exp $";
 #endif /* lint */
 
 /*
@@ -88,7 +88,7 @@ static XtGeometryResult	QueryGeometry ();
 static void		ShowDvi ();
 static void		CloseFile (), OpenFile ();
 
-static DviClassRec dviClassRec = {
+DviClassRec dviClassRec = {
 {
 	&widgetClassRec,		/* superclass		  */	
 	"Dvi",				/* class_name		  */
