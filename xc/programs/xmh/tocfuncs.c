@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocfuncs.c,v 2.34 91/07/10 19:54:59 converse Exp $
+ * $XConsortium: tocfuncs.c,v 2.35 91/07/12 17:22:26 converse Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -661,10 +661,6 @@ void DoForceRescan(w, client_data, call_data)
     if (app_resources.block_events_on_busy) UnshowBusyCursor();
 }
 
-
-/* Check to see which folders have new mail, and highlight their
-   folderbuttons appropriately. */
-
 /*ARGSUSED*/
 void XmhCheckForNewMail(w, e, p, n)
     Widget w;
@@ -672,41 +668,8 @@ void XmhCheckForNewMail(w, e, p, n)
     String *p;
     Cardinal *n;
 {
-    Toc toc;
-    Scrn scrn;
-    int i, j, hasmail;
-    Boolean mail_waiting = False;
-    static Boolean icon_state = -1;
-
-    for (i=0 ; i<numFolders ; i++) {
-	toc = folderList[i];
-	if (TocCanIncorporate(toc)) {
-	    hasmail = TocCheckForNewMail(toc);
-	    if (hasmail) mail_waiting = True;
-	    for (j=0 ; j<numScrns ; j++) {
-		scrn = scrnList[j];
-		if (scrn->kind == STtocAndView)
-		    /* give visual indication of new mail waiting */
-		    BBoxMailFlag(scrn->folderbuttons, TocName(toc),
-				 hasmail);
-	    }
-	}
-    }
-    if (app_resources.mail_waiting_flag && icon_state != mail_waiting) {
-	Arg args[1];
-	icon_state = mail_waiting;
-	for (j=0; j<numScrns; j++) {
-	    scrn = scrnList[j];
-	    if (scrn->kind == STtocAndView) {
-		XtSetArg(args[0], XtNiconPixmap,
-			 (mail_waiting ? app_resources.new_mail_icon
-			               : app_resources.no_mail_icon));
-		XtSetValues(scrn->parent, args, (Cardinal)1);
-	    }
-	}
-    }
+    TocCheckForNewMail(True);
 }
-
 
 /* Incorporate new mail. */
 
@@ -732,10 +695,24 @@ void DoIncorporateNewMail(w, client_data, call_data)
     XtPointer	call_data;	/* unused */
 {
     Scrn scrn = (Scrn) client_data;
-    if (scrn->toc == NULL) return;
-    TocIncorporate(scrn->toc);
+    Toc toc = scrn->toc;
+    int i;
+
+    if (! toc) return;
+    TocIncorporate(toc);
+
     if (app_resources.new_mail_check)
-	XmhCheckForNewMail(NULL, NULL, NULL, NULL);
+	/* update the folder button */
+	for (i=0; i < numScrns; i++) {
+	    scrn = scrnList[i];
+	    if (scrn->kind == STtocAndView)
+		/* give visual indication of no mail waiting */
+		BBoxMailFlag(scrn->folderbuttons, TocName(toc), False);
+	}
+
+    if (app_resources.mail_waiting_flag)
+	/* update the icon */
+	TocCheckForNewMail(False);
 }
 
 

@@ -1,4 +1,4 @@
-/* $XConsortium: tocintrnl.h,v 2.16 91/07/13 13:27:12 converse Exp $ */
+/* $XConsortium: tocintrnl.h,v 2.17 91/07/13 17:13:14 converse Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -88,6 +88,8 @@ typedef struct _TocRec {
    Boolean	delete_pending;	/* Is a delete folder operation pending? */
    Boolean	force_reset;	/* temporary bug work-around for sequences */
    char		*incfile;	/* Which file to incorporate from (if any). */
+   int		mailpending;	/* True if we're currently displaying
+				   mail pending true for this folder */
    long		lastreaddate;	/* Last time we read or wrote the cache. */
    Stack	sequence_stack;	/* Stack of sequence names. */
 } TocRec;

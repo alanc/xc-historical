@@ -1,5 +1,5 @@
 /*
- * $XConsortium: toc.h,v 2.10 89/11/25 21:07:32 converse Exp $
+ * $XConsortium: toc.h,v 2.11 91/07/10 19:58:26 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -31,7 +31,8 @@
 extern void	TocInit			(/* void */);
 extern Toc	TocCreate		(/* char * */);
 extern Toc	TocCreateFolder		(/* char * */);
-extern int	TocCheckForNewMail	(/* Toc */);
+extern int	TocHasMail		(/* Toc */);
+extern void	TocCheckForNewMail	(/* Boolean */);
 extern Boolean	TocTestAndSetDeletePending(/* Toc */);
 extern void	TocClearDeletePending	(/* Toc */);
 extern void	TocDeleteFolder		(/* Toc */);

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: toc.c,v 2.50 91/07/10 19:56:50 converse Exp $
+ * $XConsortium: toc.c,v 2.51 91/07/13 17:13:52 converse Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -217,7 +217,13 @@ char *foldername;
     return toc;
 }
 
-int TocCheckForNewMail(toc)
+int TocHasMail(toc)
+    Toc toc;
+{
+    return toc->mailpending;
+}
+
+static int CheckForNewMail(toc)
     Toc toc;
 {
     if (toc->incfile)
@@ -239,6 +245,59 @@ int TocCheckForNewMail(toc)
 	return hasmail;
     }
     return False;
+}
+
+/*ARGSUSED*/
+void TocCheckForNewMail(update)
+    Boolean update;	/* if True, actually make the check */
+{
+    Toc toc;
+    Scrn scrn;
+    int i, j, hasmail;
+    Boolean mail_waiting = False;
+
+    if (update) {
+	for (i=0 ; i<numFolders ; i++) {
+	    toc = folderList[i];
+	    if (TocCanIncorporate(toc)) {
+		toc->mailpending = hasmail = CheckForNewMail(toc);
+		if (hasmail) mail_waiting = True;
+		for (j=0 ; j<numScrns ; j++) {
+		    scrn = scrnList[j];
+		    if (scrn->kind == STtocAndView)
+			/* give visual indication of new mail waiting */
+			BBoxMailFlag(scrn->folderbuttons, TocName(toc),
+				     hasmail);
+		}
+	    }
+	}
+    } else {
+	for (i=0; i < numFolders; i++) {
+	    toc = folderList[i];
+	    if (toc->mailpending) {
+		mail_waiting = True;
+		break;
+	    }
+	}
+    }
+
+    if (app_resources.mail_waiting_flag) {
+	Arg args[1];
+	static Boolean icon_state = -1;
+
+	if (icon_state != mail_waiting) {
+	    icon_state = mail_waiting;
+	    for (i=0; i < numScrns; i++) {
+		scrn = scrnList[i];
+		if (scrn->kind == STtocAndView) {
+		    XtSetArg(args[0], XtNiconPixmap,
+			     (mail_waiting ? app_resources.new_mail_icon
+			                   : app_resources.no_mail_icon));
+		    XtSetValues(scrn->parent, args, (Cardinal)1);
+		}
+	    }
+	}
+    }
 }
 
 /* Intended to support mutual exclusion on deleting folders, so that you
@@ -1035,6 +1094,8 @@ Toc toc;
     DeleteFileAndCheck(file);
 
     if (app_resources.block_events_on_busy) UnshowBusyCursor();
+
+    toc->mailpending = False;
 }
 
 

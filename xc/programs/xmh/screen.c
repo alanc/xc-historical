@@ -1,5 +1,5 @@
 /*
- * $XConsortium: screen.c,v 2.57 91/07/05 18:54:06 converse Exp $
+ * $XConsortium: screen.c,v 2.58 91/07/10 19:50:45 converse Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -204,7 +204,6 @@ Scrn scrn;
 	{ XtNselectTypes,	(XtArgVal) sarray},
 	{ XtNdisplayCaret,	(XtArgVal) False}
     };
-    extern void XmhCheckForNewMail();
 
     scrn->mainbuttons   = BBoxCreate(scrn, "menuBox");
     scrn->folderlabel   = CreateTitleBar(scrn, "folderTitlebar");
@@ -233,7 +232,13 @@ Scrn scrn;
 	name = TocName(folderList[i]);
 	if (! IsSubfolder(name))
 	    BBoxAddButton(buttonbox, name, menuButtonWidgetClass, True);
+	if (app_resources.new_mail_check &&
+	    numScrns > 1 &&
+	    TocCanIncorporate(folderList[i]))
+	    BBoxMailFlag(buttonbox, name, TocHasMail(folderList[i]));
     }
+    if (app_resources.new_mail_check && numScrns == 1)
+	TocCheckForNewMail(True);
 
     /* the optional miscellaneous command buttons */
 
@@ -251,9 +256,6 @@ Scrn scrn;
 	WMProtocolsTranslations = 
 	    XtParseTranslationTable("<Message>WM_PROTOCOLS: XmhClose()\n");
     XtOverrideTranslations(scrn->parent, WMProtocolsTranslations);
-
-    if (app_resources.new_mail_check)
-	XmhCheckForNewMail(NULL, NULL, NULL, NULL);
 }
 
 static XtTranslations ViewWMProtocols;
