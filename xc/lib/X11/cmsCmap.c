@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsCmap.c,v 1.6 91/02/11 18:59:41 rws Exp $" */
+/* $XConsortium: XcmsCmap.c,v 1.7 91/02/12 16:12:29 dave Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -321,8 +321,8 @@ _XcmsCopyCmapRecAndFree(dpy, src_cmap, copy_cmap)
     if ((pRec_src = CmapRecForColormap(dpy, src_cmap)) != NULL) {
 	pRec_copy =_XcmsAddCmapRec(dpy, copy_cmap, pRec_src->windowID,
 		pRec_src->visual);
-	if (pRec_copy != NULL) {
-	    pRec_copy->pCCC = (XcmsCCC *)Xcalloc(1, (unsigned) sizeof(XcmsCCC));
+	if (pRec_copy != NULL && pRec_src->pCCC) {
+	    pRec_copy->pCCC = (XcmsCCC *)Xcalloc(1,(unsigned) sizeof(XcmsCCC));
 	    bcopy((char *)pRec_src->pCCC, (char *)pRec_copy->pCCC,
 		    sizeof(XcmsCCC));
 	}
