@@ -42,4 +42,5 @@ SpecialObjectRule(main.o,,$(MAIN_DEFINES))
 
 SingleProgramTarget(resize,$(OBJS2),,-ltermcap)
 InstallProgramWithFlags(resize, $(BINDIR), )
+InstallAppDefaults(XTerm)
 InstallManPage(resize,$(MANDIR))
