@@ -27,15 +27,6 @@ static char rcsid[] = "$Header: Command.c,v 1.26 87/12/04 10:55:55 swick Locked 
 /*
  * Command.c - Command button widget
  *
- * Rewritten for beta toolkit
- * Author:      Mark Ackerman
- *              MIT/Project Athena
- * Date:        August 27, 1987
- *
- * from Command.c (XToolkit, alpha version)
- *              Charles Haynes
- *              Digital Equipment Corporation
- *              Western Software Laboratory
  */
 
 #define XtStrlen(s)	((s) ? strlen(s) : 0)
@@ -49,9 +40,6 @@ static char rcsid[] = "$Header: Command.c,v 1.26 87/12/04 10:55:55 swick Locked 
 #include <ctype.h>
 #include <X/Intrinsic.h>
 #include <X/Atoms.h>
-#include <X/Label.h>
-#include <X/Command.h>
-#include "LabelP.h"
 #include "CommandP.h"
 #include "CommandI.h"
 
@@ -75,6 +63,8 @@ static XtResource resources[] = {
 
    {XtNcallback, XtCCallback, XtRPointer, sizeof(caddr_t), 
       XtOffset(CommandWidget, command.callbacks), XtRPointer, (caddr_t)NULL},
+   {XtNcursor, XtCCursor, XtRCursor, sizeof(Cursor),
+      XtOffset(SimpleWidget, simple.cursor), XtRString, "opendot"},
    {XtNhighlightThickness, XtCThickness, XrmRInt, sizeof(Dimension),
       XtOffset(CommandWidget,command.highlight_thickness), XrmRString,"2"},
    {XtNtranslations, XtCTranslations, XtRTranslationTable,
