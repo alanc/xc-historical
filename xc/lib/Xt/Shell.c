@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.159 94/04/01 15:48:35 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.160 94/04/01 17:41:51 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -582,7 +582,8 @@ static CompositeClassExtensionRec compositeClassExtension = {
     /* record_type	*/	NULLQUARK,
     /* version		*/	XtCompositeExtensionVersion,
     /* record_size	*/	sizeof(CompositeClassExtensionRec),
-    /* accepts_objects	*/	TRUE
+    /* accepts_objects	*/	TRUE,
+    /* allows_change_managed_set */ FALSE
 };
 
 
@@ -700,7 +701,8 @@ static CompositeClassExtensionRec sessionCompositeClassExtension = {
     /* record_type	*/	NULLQUARK,
     /* version		*/	XtCompositeExtensionVersion,
     /* record_size	*/	sizeof(CompositeClassExtensionRec),
-    /* accepts_objects	*/	TRUE
+    /* accepts_objects	*/	TRUE,
+    /* allows_change_managed_set */ FALSE
 };
 
 
