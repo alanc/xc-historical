@@ -1,4 +1,4 @@
-/* $XConsortium: xf86Keymap.h,v 1.5 95/01/06 20:57:38 kaleb Exp kaleb $ */
+/* $XConsortium: xf86Keymap.h,v 1.6 95/01/10 16:00:59 kaleb Exp kaleb $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Keymap.h,v 3.1 1994/12/11 10:54:42 dawes Exp $ */
 /*
  * For Scancodes see notes in atKeynames.h  !!!!
@@ -80,7 +80,7 @@ static KeySym map[NUM_KEYCODES * GLYPHS_PER_KEY] = {
     /* 0x49 */  XK_KP_Prior,	XK_KP_9,	NoSymbol,	NoSymbol,
     /* 0x4a */  XK_KP_Subtract, NoSymbol,	NoSymbol,	NoSymbol,
     /* 0x4b */  XK_KP_Left,	XK_KP_4,	NoSymbol,	NoSymbol,
-    /* 0x4c */  XK_KP_Begin,	XK_KP_5,	NoSymbol,	NoSymbol,
+    /* 0x4c */  NoSymbol,	XK_KP_5,	NoSymbol,	NoSymbol,
     /* 0x4d */  XK_KP_Right,	XK_KP_6,	NoSymbol,	NoSymbol,
     /* 0x4e */  XK_KP_Add,      NoSymbol,	NoSymbol,	NoSymbol,
     /* 0x4f */  XK_KP_End,	XK_KP_1,	NoSymbol,	NoSymbol,
@@ -143,7 +143,7 @@ static KeySym map[NUM_KEYCODES * GLYPHS_PER_KEY] = {
     /* 0x85 */  XK_KP_6,	NoSymbol,	NoSymbol,	NoSymbol,
     /* 0x86 */  XK_KP_1,	NoSymbol,	NoSymbol,	NoSymbol,
     /* 0x87 */  XK_KP_2,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x88 */  XK_KP_4,	NoSymbol,	NoSymbol,	NoSymbol,
+    /* 0x88 */  XK_KP_3,	NoSymbol,	NoSymbol,	NoSymbol,
     /* 0x89 */  XK_KP_0,	NoSymbol,	NoSymbol,	NoSymbol,
     /* 0x8a */  XK_KP_Decimal,	NoSymbol,	NoSymbol,	NoSymbol,
     /* 0x8b */  XK_KP_Home,	NoSymbol,	NoSymbol,	NoSymbol,

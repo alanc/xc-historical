@@ -1,4 +1,4 @@
-/* $XConsortium: atKeynames.h,v 1.4 95/01/05 20:39:33 kaleb Exp kaleb $ */
+/* $XConsortium: atKeynames.h,v 1.5 95/01/06 20:57:26 kaleb Exp kaleb $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/common/atKeynames.h,v 3.1 1994/12/11 10:54:28 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -184,31 +184,6 @@
 #define KEY_KP_Divide    /* Didive                0x68  */  104
 #define KEY_AltLang      /* AtlLang(right)        0x69  */  105
 #define KEY_Break        /* Break                 0x6a  */  106
-#define KEY_LMeta        /* Left Meta             0x6b  */  107
-#define KEY_RMeta        /* Right Meta            0x6c  */  108
-#define KEY_Menu         /* Menu                  0x6d  */  109
-#define KEY_SN_KP_7      /* ServerNumLock 7       0x80  */  128
-#define KEY_SN_KP_8      /* ServerNumLock 8       0x81  */  129
-#define KEY_SN_KP_9      /* ServerNumLock 9       0x82  */  130
-#define KEY_SN_KP_4      /* ServerNumLock 4       0x83  */  131
-#define KEY_SN_KP_5      /* ServerNumLock 5       0x84  */  132
-#define KEY_SN_KP_6      /* ServerNumLock 6       0x85  */  133
-#define KEY_SN_KP_1      /* ServerNumLock 1       0x86  */  134
-#define KEY_SN_KP_2      /* ServerNumLock 2       0x87  */  135
-#define KEY_SN_KP_3      /* ServerNumLock 4       0x88  */  136
-#define KEY_SN_KP_0      /* ServerNumLock 0       0x89  */  137
-#define KEY_SN_KP_Dec    /* ServerNumLock Decimal 0x8a  */  138
-#define KEY_SN_KP_Home   /* ServerNumLock Home    0x8b  */  139
-#define KEY_SN_KP_Up     /* ServerNumLock Up      0x8c  */  140
-#define KEY_SN_KP_Prior  /* ServerNumLock Prior   0x8d  */  141
-#define KEY_SN_KP_Left   /* ServerNumLock Left    0x8e  */  142
-#define KEY_SN_KP_Begin  /* ServerNumLock Begin   0x8f  */  143
-#define KEY_SN_KP_Right  /* ServerNumLock Right   0x90  */  144
-#define KEY_SN_KP_End    /* ServerNumLock End     0x91  */  145
-#define KEY_SN_KP_Down   /* ServerNumLock Down    0x92  */  146
-#define KEY_SN_KP_Next   /* ServerNumLock Next    0x93  */  147
-#define KEY_SN_KP_Ins    /* ServerNumLock Ins     0x94  */  148
-#define KEY_SN_KP_Del    /* ServerNumLock Del     0x95  */  149
 #define KEY_LMeta        /* Left Meta             0x6b  */  107
 #define KEY_RMeta        /* Right Meta            0x6c  */  108
 #define KEY_Menu         /* Menu                  0x6d  */  109
