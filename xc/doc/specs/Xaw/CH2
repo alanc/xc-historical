@@ -657,7 +657,7 @@ For further information,
 see Section 2.1 and the \fI\*(xT\fP.
 .IP 4. 5
 To pass attributes to the widget creation routines
-that will over-ride any site or user customizations,
+that will override any site or user customizations,
 set up argument lists.
 In this document,
 a list of valid argument names that start with 
@@ -825,8 +825,8 @@ As it is currently implemented,
 is a macro that dereferences the first argument twice.
 .NE
 .LP
-The third approach lets you individually set the elements of the argument list array, 
-one piece at a time.
+The third approach lets you individually set the elements of the
+argument list array, one piece at a time.
 For example:
 .LP
 .Ds 0
