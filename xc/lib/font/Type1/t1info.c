@@ -1,4 +1,4 @@
-/* $XConsortium: t1info.c,v 1.6 91/10/10 11:19:35 rws Exp $ */
+/* $XConsortium: t1info.c,v 1.7 91/12/16 18:35:48 keith Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -343,11 +343,19 @@ Type1GetInfoScalable(fpe, pInfo, entry, fontName, fileName, Vals)
     int flags = 0;
     long format = 0;  /* It doesn't matter what format for just info */
     long fmask = 0;
+    int ret;
  
-    Type1OpenScalable(fpe, &pfont, flags, entry, fileName, Vals, format, fmask);
+    ret = Type1OpenScalable(fpe, &pfont, flags, entry, fileName, Vals, format, fmask);
+    if (ret != Successful)
+	return ret;
     *pInfo = pfont->info;
- 
+
+    /* XXX - Set pointers in pfont->info to NULL so they are not freed. */
+    pfont->info.props = NULL;
+    pfont->info.isStringProp = NULL;
+
     Type1CloseFont(pfont);
+    return Successful;
 }
  
 void
