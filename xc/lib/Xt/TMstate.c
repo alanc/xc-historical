@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.78 89/09/20 11:36:03 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.79 89/09/22 17:57:49 swick Exp $";
 /* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
 #endif /* lint */
 /*LINTLIBRARY*/
@@ -598,6 +598,8 @@ static void _XtTranslateEvent (w, closure, event)
     XtBoundActions proc_table = ((XtTM)closure)->proc_table;
     XtBoundAccActions accProcTbl = stateTable->accProcTbl;
     XtTM tm = (XtTM)closure;
+    ActionHook actionHookList
+	= XtWidgetToApplicationContext(w)->action_hook_list;
 
 #ifdef notdef
 /* gross disgusting special case ||| */
@@ -679,9 +681,22 @@ static void _XtTranslateEvent (w, closure, event)
     while (actions != NULL) {
 	/* perform any actions */
         if (actions->index >= 0) {
-           if (proc_table[actions->index] != NULL)
-              (*(proc_table[actions->index]))(
-                w,event, actions->params, &actions->num_params);
+           if (proc_table[actions->index] != NULL) {
+	       ActionHook hook;
+	       for (hook = actionHookList; hook != NULL; hook = hook->next) {
+		   (*hook->proc)( w,
+				  hook->closure,
+				  XrmQuarkToString( stateTable->
+						    quarkTable[actions->index]
+						  ),
+				  event,
+				  actions->params,
+				  &actions->num_params
+				);
+	       }
+	       (*(proc_table[actions->index]))
+		   ( w, event, actions->params, &actions->num_params );
+	  }
         }
         else {
             int temp = -(actions->index+1);
@@ -1558,7 +1573,7 @@ void XtOverrideTranslations(widget, new)
 
     if (cache_ref != NULL) {
 	XtAddCallback( widget, XtNdestroyCallback,
-		       XtCallbackReleaseCacheRef, cache_ref );
+		       XtCallbackReleaseCacheRef, (XtPointer)cache_ref );
     }
 }
 
@@ -1749,7 +1764,7 @@ void XtAugmentTranslations(widget, new)
 
     if (cache_ref != NULL) {
 	XtAddCallback( widget, XtNdestroyCallback,
-		       XtCallbackReleaseCacheRef, cache_ref );
+		       XtCallbackReleaseCacheRef, (XtPointer)cache_ref );
     }
 }
 
@@ -2367,7 +2382,7 @@ void XtCallActionProc(widget, action, event, params, num_params)
     CompiledAction* actionP;
     XrmQuark q = XrmStringToQuark(action);
     Widget w = widget;
-    XtAppContext app;
+    XtAppContext app = XtWidgetToApplicationContext(widget);
     ActionList actionList;
 
     XtCheckSubclass(widget, coreWidgetClass,
@@ -2380,6 +2395,17 @@ void XtCallActionProc(widget, action, event, params, num_params)
 		 actionP->name != NULL; actionP++) {
 
 		if (actionP->signature == q) {
+		    ActionHook hook = app->action_hook_list;
+		    while (hook != NULL) {
+			(*hook->proc)( widget,
+				       hook->closure,
+				       action,
+				       event,
+				       params,
+				       &num_params
+				     );
+			hook= hook->next;
+		    }
 		    (*(XtActionProc)(actionP->value))
 			(widget, event, params, &num_params);
 		    return;
@@ -2390,13 +2416,23 @@ void XtCallActionProc(widget, action, event, params, num_params)
 	w = XtParent(w);
     } while (w != NULL);
 
-    app = XtWidgetToApplicationContext(widget);
     for (actionList = app->action_table;
 	 actionList != NULL;
 	 actionList = actionList->next) {
 
 	for (actionP = actionList->table; actionP->name != NULL; actionP++) {
 	    if (actionP->signature == q) {
+		ActionHook hook = app->action_hook_list;
+		while (hook != NULL) {
+		    (*hook->proc)( widget,
+				   hook->closure,
+				   action,
+				   event,
+				   params,
+				   &num_params
+				 );
+		    hook= hook->next;
+		}
 		(*(XtActionProc)(actionP->value))
 		    (widget, event, params, &num_params);
 		return;
