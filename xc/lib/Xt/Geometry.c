@@ -35,20 +35,48 @@ static char *sccsid = "@(#)Geometry.c	1.7	2/25/87";
 
 /* Public routines */
 
-XtGeometryReturnCode XtMakeGeometryRequest
-                            (widget, requestBox, replyBox)
-    Widget       widget;
-    WindowBox 	*requestBox, *replyBox;
+XtGeometryReturnCode XtMakeGeometryRequest (widget, request, reply)
+    Widget         widget;
+    WidgetGeometry *request, *reply;
 {
     XtGeometryHandler proc;
     int error;
 
-    if (!XtIsSubClassOf(widget->parent,composite)) {
+    if (! XtIsSubClassOf(widget->core.parent, compositeWidgetClass)) {
         XtError("XtMakeGeometryRequest - parent not composite");
         return XtgeometryNo;
+    }
     if (widget->core.being_destroyed || !widget->core.managed)
         return XtgeometryNo;
-    return widget->parent->geometry_manager(widget,requestBox,replyBox);
+    return ((CompositeWidgetClass) (widget->core.parent->core.widget_class))
+    		->compositeClass.geometry_manager (widget, request, reply);
 }
 
+extern void XtResizeWidget(w)
+    Widget w;
+{
+    w->core.widget_class->coreClass.resize(w);
+
+    if (XtWidgetIsRealized(w)) {
+	XWindowChanges changes;
+	changes.width = w->core.width;
+	changes.height = w->core.height;
+	changes.border_width = w->core.border_width;
+	XConfigureWindow(w->core.display, w->core.window,
+	    CWWidth | CWHeight | CWBorderWidth, &changes);
+    }
+} /* XtResizeWidget */
+
+extern void XtMoveWidget(w, x, y)
+    Widget w;
+    Position x, y;
+{
+    if ((w->core.x != x) || (w->core.y != y)) {
+	w->core.x = x;
+	w->core.y = y;
+	if (XtWidgetIsRealized(w)) {
+	    XMoveWindow(w->core.display, w->core.window, w->core.x, w->core.y);
+        }
+    }
+} /* XtWidgetMove */
 
