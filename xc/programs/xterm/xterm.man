@@ -839,10 +839,10 @@ Processes the key in the normal way; i.e. inserts the
 ASCII character code corresponding to the keysym found in the
 keyboard mapping table into the input stream.
 .TP 15
-.B string(\fP[\"]\fIstring\fP[\"]\fB)
+.B string(\fIstring\fB)
 Rebinds the key or key sequence to the string value; that is, inserts the
 string argument into the input stream.
-Quotation is necessary only if the string contains
+Quotation is necessary if the string contains whitespace or
 non-alphanumeric characters.  If the string argument begins with the
 characters ``0x'', it is interpreted
 as a hex character constant and the corresponding character is sent
