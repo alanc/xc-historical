@@ -1,4 +1,4 @@
-/* $XConsortium: SM.h,v 1.6 94/03/07 13:23:11 mor Exp $ */
+/* $XConsortium: SM.h,v 1.7 94/03/18 10:26:35 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -61,6 +61,7 @@ Author: Ralph Mor, X Consortium
 #define SmRestartIfRunning	0
 #define SmRestartAnyway		1
 #define SmRestartImmediately	2
+#define SmRestartNever		3
 
 
 /*
@@ -93,21 +94,24 @@ Author: Ralph Mor, X Consortium
  * SM minor opcodes
  */
 
-#define SM_Error		0
-#define SM_RegisterClient 	1
-#define SM_RegisterClientReply 	2
-#define SM_SaveYourself 	3
-#define SM_SaveYourselfRequest 	4
-#define SM_InteractRequest 	5
-#define SM_Interact 		6
-#define SM_InteractDone 	7
-#define SM_SaveYourselfDone 	8
-#define SM_Die 			9
-#define SM_ShutdownCancelled	10
-#define SM_CloseConnection 	11
-#define SM_SetProperties 	12
-#define SM_DeleteProperties 	13
-#define SM_GetProperties 	14
-#define SM_PropertiesReply 	15
+#define SM_Error			0
+#define SM_RegisterClient 		1
+#define SM_RegisterClientReply 		2
+#define SM_SaveYourself 		3
+#define SM_SaveYourselfRequest 		4
+#define SM_InteractRequest 		5
+#define SM_Interact 			6
+#define SM_InteractDone 		7
+#define SM_SaveYourselfDone 		8
+#define SM_Die 				9
+#define SM_ShutdownCancelled		10
+#define SM_CloseConnection 		11
+#define SM_SetProperties 		12
+#define SM_DeleteProperties 		13
+#define SM_GetProperties 		14
+#define SM_PropertiesReply 		15
+#define SM_SaveYourselfPhase2Request	16
+#define SM_SaveYourselfPhase2		17
+#define SM_SaveComplete			18
 
 #endif /* _SM_H_ */
