@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.164 87/08/26 23:31:56 toddb Locked $ */
+/* $Header: window.c,v 1.165 87/08/31 00:51:51 susan Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -1307,6 +1307,7 @@ ResizeChildrenWinSize(pWin, XYSame, dw, dh, useGravity)
     register short x, y, cwsx, cwsy;
     Bool unmap = FALSE;
     register ScreenPtr pScreen;
+    xEvent event;
 
     pScreen = pWin->drawable.pScreen;
     parentReg = pWin->winSize;
@@ -1360,6 +1361,13 @@ ResizeChildrenWinSize(pWin, XYSame, dw, dh, useGravity)
                    break;
 	    }
 	}
+
+ 	event.u.u.type = GravityNotify;
+ 	event.u.gravity.window = pSib->wid;
+ 	event.u.gravity.x = cwsx;
+ 	event.u.gravity.y = cwsy;
+ 	DeliverEvents (pSib, &event, 1, NullWindow);
+ 
 	box.x1 = x + cwsx;
 	box.y1 = y + cwsy;
 	box.x2 = box.x1 + pSib->clientWinSize.width;
@@ -1389,7 +1397,7 @@ ResizeChildrenWinSize(pWin, XYSame, dw, dh, useGravity)
 	(* pScreen->PositionWindow)(pSib, pSib->absCorner.x, pSib->absCorner.y);
 	pSib->marked = 1;
 	if (pSib->firstChild) 
-            ResizeChildrenWinSize(pSib, XYSame, dw, dh, useGravity);
+            ResizeChildrenWinSize(pSib, XYSame, 0, 0, DONT_USE_GRAVITY);
         if (unmap)
 	{
             UnmapWindow(pSib, DONT_HANDLE_EXPOSURES, SEND_NOTIFICATION,	TRUE);
