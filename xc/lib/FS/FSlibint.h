@@ -1,4 +1,4 @@
-/* $XConsortium: FSlibint.h,v 1.7 92/11/18 21:31:10 gildea Exp $ */
+/* $XConsortium: FSlibint.h,v 1.8 93/02/08 09:50:07 rws Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices;
@@ -51,7 +51,9 @@
 #define NULL 0
 #endif
 
+#ifdef X_NOT_STDC_ENV
 extern int  errno;		/* Internal system error number. */
+#endif
 
 extern      (*_FSIOErrorFunction) ();
 extern      (*_FSErrorFunction) ();

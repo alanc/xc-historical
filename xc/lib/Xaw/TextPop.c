@@ -1,4 +1,4 @@
-/* $XConsortium: TextPop.c,v 1.22 91/07/25 18:10:22 rws Exp $ */
+/* $XConsortium: TextPop.c,v 1.23 93/08/17 15:26:55 rws Exp $ */
 
 /***********************************************************
 Copyright 1989 by the Massachusetts Institute of Technology,
@@ -59,8 +59,10 @@ SOFTWARE.
 #include <stdio.h>
 #include <X11/Xos.h>		/* for O_RDONLY */
 #include <errno.h>
-
-extern int errno, sys_nerr;
+#ifdef X_NOT_STDC_ENV
+extern int errno;
+#endif
+extern int sys_nerr;
 extern char* sys_errlist[];
 
 #define INSERT_FILE ("Enter Filename:")

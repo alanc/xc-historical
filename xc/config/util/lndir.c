@@ -1,4 +1,4 @@
-/* $XConsortium: lndir.c,v 1.5 91/07/21 15:52:11 rws Exp $ */
+/* $XConsortium: lndir.c,v 1.6 92/03/16 17:53:30 gildea Exp $ */
 /* Create shadow link tree (after X11R4 script of the same name)
    Mark Reinhold (mbr@lcs.mit.edu)/3 January 1990 */
 
@@ -53,7 +53,9 @@
 #endif
 #endif
 
+#ifdef X_NOT_STDC_ENV
 extern int errno;
+#endif
 int silent;
 
 void

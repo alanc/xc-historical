@@ -1,4 +1,4 @@
-/* $XConsortium: checktree.c,v 1.1 93/09/04 17:56:34 rws Exp $ */
+/* $XConsortium: checktree.c,v 1.2 93/09/04 18:35:26 rws Exp $ */
 
 /*
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -51,7 +51,9 @@ without express or implied warranty.
 #define fmode_bits_write  0222
 #define dmode_bits_minset 0775
 
+#ifdef X_NOT_STDC_ENV
 extern int errno;
+#endif
 
 int dorcs = 1;
 int do83 = 1;

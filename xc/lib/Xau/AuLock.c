@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: AuLock.c,v 1.9 93/08/16 12:12:23 rws Exp $
+ * $XConsortium: AuLock.c,v 1.10 93/09/03 14:43:11 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -22,8 +22,9 @@
 #include <X11/Xos.h>
 #include <sys/stat.h>
 #include <errno.h>
-
+#ifdef X_NOT_STDC_ENV
 extern int errno;
+#endif
 extern long time ();
 extern unsigned	sleep ();
 

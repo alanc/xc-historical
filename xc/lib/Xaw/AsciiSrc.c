@@ -1,4 +1,4 @@
-/* $XConsortium: AsciiSrc.c,v 1.57 92/05/15 13:56:09 keith Exp $ */
+/* $XConsortium: AsciiSrc.c,v 1.58 93/08/17 21:12:45 rws Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -91,7 +91,10 @@ static void RemoveOldStringOrFile(),  CvtStringToAsciiType();
 static void ClassInitialize(), Initialize(), Destroy(), GetValuesHook();
 static String MyStrncpy(), StorePiecesInString();
 static Boolean SetValues(), WriteToFile();
-extern int errno, sys_nerr;
+#ifdef X_NOT_STDC_ENV
+extern int errno;
+#endif
+extern int sys_nerr;
 extern char* sys_errlist[];
 
 #define superclass		(&textSrcClassRec)
