@@ -1,5 +1,5 @@
 /*
- * $XConsortium: multibuf.h,v 1.8 89/10/04 16:11:44 jim Exp $
+ * $XConsortium: multibuf.h,v 1.9 89/10/05 11:01:39 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -44,17 +44,17 @@
 /*
  * update_action field
  */
-#define MultibufferActionUndefined	0
-#define MultibufferActionBackground	1
-#define MultibufferActionUntouched	2
-#define MultibufferActionCopied		3
+#define MultibufferUpdateActionUndefined	0
+#define MultibufferUpdateActionBackground	1
+#define MultibufferUpdateActionUntouched	2
+#define MultibufferUpdateActionCopied		3
 
 /*
  * update_hint field
  */
-#define MultibufferHintFrequent		0
-#define MultibufferHintIntermittent	1
-#define MultibufferHintStatic		2
+#define MultibufferUpdateHintFrequent		0
+#define MultibufferUpdateHintIntermittent	1
+#define MultibufferUpdateHintStatic		2
 
 /*
  * valuemask fields
