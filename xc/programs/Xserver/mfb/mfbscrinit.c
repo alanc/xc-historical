@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbscrinit.c,v 5.7 89/07/21 18:39:48 keith Exp $ */
+/* $XConsortium: mfbscrinit.c,v 5.8 89/08/20 16:30:43 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"	/* for xColorItem */
@@ -152,6 +152,7 @@ mfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     pScreen->QueryBestSize = mfbQueryBestSize;
     pScreen->GetImage = mfbGetImage;
     pScreen->GetSpans = mfbGetSpans;
+    pScreen->SourceValidate = (void (*)()) 0;
     pScreen->CreateGC = mfbCreateGC;
     pScreen->CreatePixmap = mfbCreatePixmap;
     pScreen->DestroyPixmap = mfbDestroyPixmap;

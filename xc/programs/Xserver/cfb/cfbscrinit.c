@@ -186,6 +186,7 @@ cfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     pScreen->QueryBestSize = mfbQueryBestSize;
     pScreen->GetImage = cfbGetImage;
     pScreen->GetSpans = cfbGetSpans;
+    pScreen->SourceValidate = (void (*)()) 0;
     pScreen->CreateGC = cfbCreateGC;
     pScreen->CreatePixmap = cfbCreatePixmap;
     pScreen->DestroyPixmap = cfbDestroyPixmap;

@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbitblt.c,v 5.7 89/08/23 20:53:57 keith Exp $ */
+/* $XConsortium: mfbbitblt.c,v 5.8 89/08/23 22:22:20 keith Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 
@@ -108,6 +108,10 @@ int dstx, dsty;
     origSource.height = height;
     origDest.x = dstx;
     origDest.y = dsty;
+
+    if ((pSrcDrawable != pDstDrawable) &&
+	pSrcDrawable->pScreen->SourceValidate)
+	(*pSrcDrawable->pScreen->SourceValidate) (pSrcDrawable, srcx, srcy, width, height);
 
     srcx += pSrcDrawable->x;
     srcy += pSrcDrawable->y;
@@ -1122,4 +1126,3 @@ unsigned long plane;
     }
     return prgnExposed;
 }
-

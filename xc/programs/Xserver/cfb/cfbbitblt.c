@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.10 89/09/05 20:10:13 keith Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.11 89/09/06 14:47:56 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -668,6 +668,10 @@ cfbCopyArea(pSrcDrawable, pDstDrawable,
     origDest.x = dstx;
     origDest.y = dsty;
 
+    if ((pSrcDrawable != pDstDrawable) &&
+	pSrcDrawable->pScreen->SourceValidate)
+	(*pSrcDrawable->pScreen->SourceValidate) (pSrcDrawable, srcx, srcy, width, height);
+
     srcx += pSrcDrawable->x;
     srcy += pSrcDrawable->y;
 
@@ -875,8 +879,6 @@ cfbCopyArea(pSrcDrawable, pDstDrawable,
 
 #if (PPW == 4)
 
-static long fgPixel, bgPixel;
-
 cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
     DrawablePtr pSrcDrawable;
     DrawablePtr pDstDrawable;
@@ -927,8 +929,6 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
 	widthDst = (int)(((PixmapPtr)pDstDrawable)->devKind) >> 2;
     }
 
-    if (!cfb8CheckPixels(fgPixel, bgPixel))
-	cfb8SetPixels (fgPixel, bgPixel);
     nbox = REGION_NUM_RECTS(prgnDst);
     pbox = REGION_RECTS(prgnDst);
     while (nbox--)
@@ -1210,8 +1210,8 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
     	if (bitPlane == 1)
 	{
     	    doBitBlt = cfbCopyPlane1to8;
-	    fgPixel = pGC->fgPixel;
-	    bgPixel = pGC->bgPixel;
+	    if (!cfb8CheckPixels(pGC->fgPixel, pGC->bgPixel))
+		cfb8SetPixels (pGC->fgPixel, pGC->bgPixel);
     	    ret = cfbCopyArea (pSrcDrawable, pDstDrawable,
 	    	    pGC, srcx, srcy, width, height, dstx, dsty);
     	    doBitBlt = cfbDoBitblt;
