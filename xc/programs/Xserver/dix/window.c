@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.188 87/12/30 08:11:28 rws Locked $ */
+/* $Header: window.c,v 1.189 88/01/02 16:06:26 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -235,6 +235,7 @@ HandleExposures(pWin)
 extern void NotImplemented();
 #endif
 
+/*ARGSUSED*/
 static void
 InitProcedures(pWin)
     WindowPtr pWin;
@@ -691,7 +692,7 @@ FreeWindowResources(pWin)
     (* pScreen->DestroyPixmap)(pWin->backgroundTile);
 
     if (pWin->cursor != (CursorPtr)None)
-        FreeCursor( pWin->cursor, 0);
+        FreeCursor( pWin->cursor, (Cursor)0);
 
     DeleteAllWindowProperties(pWin);
     /* We SHOULD check for an error value here XXX */
