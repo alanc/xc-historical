@@ -1,4 +1,4 @@
-/* $XConsortium: cursorstr.h,v 1.4 88/09/06 15:47:19 jim Exp $ */
+/* $XConsortium: cursorstr.h,v 1.5 89/07/03 13:20:16 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -41,6 +41,7 @@ typedef struct _CursorBits {
     unsigned char *mask;			/* points to bits */
     unsigned short width, height, xhot, yhot;	/* metrics */
     int refcnt;					/* can be shared */
+    pointer devPriv[MAXSCREENS];		/* set by pScr->RealizeCursor*/
 } CursorBits, *CursorBitsPtr;
 
 typedef struct _Cursor {
