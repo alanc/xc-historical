@@ -1,7 +1,7 @@
 # 
 #  xman - X window system manual page display program.
 # 
-#  $XConsortium: Imakefile,v 1.13 89/11/24 18:02:50 jim Exp $
+#  $XConsortium: Imakefile,v 1.14 90/12/26 11:28:13 rws Exp $
 #  $Athena: Imakefile,v 1.1 88/08/31 21:11:32 kit Locked $
 # 
 #  Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -28,8 +28,6 @@ LOCAL_LIBRARIES = XawClientLibs
                   search.c globals.c main.c misc.c tkfuncs.c
            OBJS = ScrollByL.o handler.o man.o buttons.o help.o \
                   search.o globals.o main.o misc.o tkfuncs.o
-
-       INCLUDES = -I$(TOOLKITSRC) -I$(TOP)
 
 ComplexProgramTarget(xman)
 
