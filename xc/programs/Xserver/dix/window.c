@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.56 90/08/31 14:44:22 rws Exp $ */
+/* $XConsortium: window.c,v 5.57 90/09/24 09:16:00 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -83,7 +83,7 @@ extern void DeleteWindowFromAnyEvents();
 extern Mask EventMaskForClient();
 extern void WindowHasNewCursor();
 extern void RecalculateDeliverableEvents();
-extern long random();
+extern int rand();
 static Bool MarkOverlappedWindows();
 static void SetWinSize(), SetBorderSize();
 static Bool TileScreenSaver();
@@ -3956,8 +3956,8 @@ SaveScreens(on, mode)
 			(*pWin->drawable.pScreen->ClearToBackground)(pWin, 0, 0, 0, 0, FALSE);
 #endif
 	            MoveWindow(pWin,
-			       (short)(-(random() % RANDOM_WIDTH)),
-			       (short)(-(random() % RANDOM_WIDTH)),
+			       (short)(-(rand() % RANDOM_WIDTH)),
+			       (short)(-(rand() % RANDOM_WIDTH)),
 		               pWin->nextSib, VTMove);
 #ifndef NOLOGOHACK
 		    if (logoScreenSaver)
@@ -4263,7 +4263,7 @@ DrawLogo(pWin)
     if (!pGC)
 	return;
 
-    if ((random() % 100) <= 17) /* make the probability for white fairly low */
+    if ((rand() % 100) <= 17) /* make the probability for white fairly low */
 	fore[0] = pScreen->whitePixel;
     else
 	fore[0] = pScreen->blackPixel;
@@ -4298,10 +4298,10 @@ DrawLogo(pWin)
     size = width;
     if (height < width)
 	 size = height;
-    size = RANDOM_WIDTH + random() % (size - RANDOM_WIDTH);
+    size = RANDOM_WIDTH + rand() % (size - RANDOM_WIDTH);
     size &= ~1;
-    x += random() % (width - size);
-    y += random() % (height - size);
+    x += rand() % (width - size);
+    y += rand() % (height - size);
 
 /*
  *           -----
