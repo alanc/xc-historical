@@ -1,4 +1,4 @@
-/* $XConsortium: ICElibint.h,v 1.38 94/03/30 18:05:44 mor Exp $ */
+/* $XConsortium: ICElibint.h,v 1.39 94/03/30 22:10:03 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -122,13 +122,14 @@ struct _IceListenObj {
  * Some internal data structures for processing ICE messages.
  */
 
-typedef Bool (*_IceProcessCoreMsgProc) (
+typedef void (*_IceProcessCoreMsgProc) (
 #if NeedFunctionPrototypes
     IceConn 		/* iceConn */,
     int			/* opcode */,
     unsigned long	/* length */,
     Bool		/* swap */,
-    IceReplyWaitInfo *  /* replyWait */
+    IceReplyWaitInfo *  /* replyWait */,
+    Bool *		/* replyReadyRet */
 #endif
 );
 
@@ -487,8 +488,7 @@ extern char *_IceGetPeerName (
 
 extern void _IceFreeConnection (
 #if NeedFunctionPrototypes
-    IceConn		/* iceConn */,
-    Bool		/* ignoreWatchProcs */
+    IceConn		/* iceConn */
 #endif
 );
 
