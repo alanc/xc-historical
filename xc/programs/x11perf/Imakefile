@@ -9,6 +9,7 @@
 		  do_scroll.o do_copyarea.o
  SYS_LIBRARIES	= -ldnet
     CDEBUGFLAGS = -g
+         LIBSRC = /pmax/src/lib
 
 all: $(PROGRAMS)
 
