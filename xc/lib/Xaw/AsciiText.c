@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: AsciiText.c,v 1.9 88/02/25 12:03:53 swick Exp $";
+static char rcsid[] = "$Header: AsciiText.c,v 1.10 88/03/03 14:39:18 swick Exp $";
 #endif lint
 
 
@@ -164,8 +164,8 @@ static void StringCreateSourceSink(widget, args, num_args)
 {
     AsciiStringWidget w = (AsciiStringWidget)widget;
 
-    w->text.source = XtStringSourceCreate( w->core.parent, args, *num_args );
-    w->text.sink = XtAsciiSinkCreate( w->core.parent, args, *num_args );
+    w->text.source = XtStringSourceCreate( w, args, *num_args );
+    w->text.sink = XtAsciiSinkCreate( w, args, *num_args );
 
 
     if (w->core.height == DEFAULT_TEXT_HEIGHT)
@@ -224,8 +224,8 @@ static void DiskCreateSourceSink(widget, args, num_args)
 {
     AsciiDiskWidget w = (AsciiDiskWidget)widget;
 
-    w->text.source = XtDiskSourceCreate( w->core.parent, args, *num_args );
-    w->text.sink = XtAsciiSinkCreate( w->core.parent, args, *num_args );
+    w->text.source = XtDiskSourceCreate( w, args, *num_args );
+    w->text.sink = XtAsciiSinkCreate( w, args, *num_args );
 
     w->text.lastPos = /* GETLASTPOS */
       (*w->text.source->Scan) ( w->text.source, 0, XtstAll,
