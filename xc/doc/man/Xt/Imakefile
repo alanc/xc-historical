@@ -1,3 +1,5 @@
+XCOMM $XConsortium: Imakefile,v 1.0 94/05/09 13:16:03 kaleb Exp $
+
 MANDIR = $(LIBMANDIR)
 MANSUFFIX = $(LIBMANSUFFIX)
 
