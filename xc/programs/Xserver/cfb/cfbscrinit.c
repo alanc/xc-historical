@@ -42,6 +42,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "mibstore.h"
 
 extern RegionPtr mfbPixmapToRegion();
+extern RegionPtr cfbCopyPlane();
 extern Bool mfbAllocatePrivates();
 
 extern int defaultColorVisualClass;
@@ -252,6 +253,7 @@ cfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     }
     pScreen->rootVisual = visuals[i].vid;
     miInitializeBackingStore (pScreen, &cfbBSFuncRec);
+    mfbRegisterCopyPlaneProc (pScreen, cfbCopyPlane);
 #ifdef MITSHM
     ShmRegisterFbFuncs(pScreen);
 #endif

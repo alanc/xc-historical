@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbimage.c,v 1.2 89/08/20 16:33:15 keith Exp $ */
+/* $XConsortium: cfbimage.c,v 1.3 89/09/14 17:04:35 rws Exp $ */
 
 #include "X.h"
 #include "windowstr.h"
@@ -130,6 +130,29 @@ cfbGetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
     }
     else
     {
-	miGetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
+    	FakePixmap.drawable.type = DRAWABLE_PIXMAP;
+    	FakePixmap.drawable.class = 0;
+    	FakePixmap.drawable.pScreen = pDrawable->pScreen;
+    	FakePixmap.drawable.depth = 1;
+    	FakePixmap.drawable.bitsPerPixel = 1;
+    	FakePixmap.drawable.id = 0;
+    	FakePixmap.drawable.serialNumber = NEXT_SERIAL_NUMBER;
+    	FakePixmap.drawable.x = 0;
+    	FakePixmap.drawable.y = 0;
+    	FakePixmap.drawable.width = w;
+    	FakePixmap.drawable.height = h;
+    	FakePixmap.devKind = PixmapBytePad(w, 1);
+    	FakePixmap.refcnt = 1;
+    	FakePixmap.devPrivate.ptr = (pointer)pdstLine;
+        ptSrc.x = sx + pDrawable->x;
+        ptSrc.y = sy + pDrawable->y;
+        box.x1 = 0;
+        box.y1 = 0;
+        box.x2 = w;
+        box.y2 = h;
+        (*pDrawable->pScreen->RegionInit)(&rgnDst, &box, 1);
+	cfbCopyImagePlane (pDrawable, (DrawablePtr)&FakePixmap, GXcopy, &rgnDst,
+		    &ptSrc, planeMask);
+        (*pDrawable->pScreen->RegionUninit)(&rgnDst);
     }
 }
