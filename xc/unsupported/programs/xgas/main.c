@@ -85,9 +85,7 @@ main( argc, argv )
   Widget frame;
   Widget run, pause, step, quit;	/* Push Buttons */
   Widget lab;
-  Widget help, blank1, blank2;
-  Widget helpShell, helpFrame, helpQuick, helpMan;
-  Widget helpDoc, helpBlank, helpQuit;
+  Widget help;
   LabData labData;
   Arg wargs[3];
   int i;
@@ -116,7 +114,7 @@ main( argc, argv )
   /* QUIT BUTTON */
   quit = XtVaCreateManagedWidget("quit", commandWidgetClass, frame,
 				 NULL);
-  XtAddCallback(quit, XtNcallback, quit_callback, (void*)NULL);
+  XtAddCallback(quit, XtNcallback, quit_callback, (XtPointer)NULL);
   
   /* RUN BUTTON */
   run = XtVaCreateManagedWidget("run", toggleWidgetClass, frame, 
