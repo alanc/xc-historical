@@ -24,6 +24,8 @@
  * Author:  Keith Packard, Network Computing Devices
  */
 
+/* $XConsortium:$ */
+
 #include "X.h"
 #define NEED_REPLIES
 #define NEED_EVENTS

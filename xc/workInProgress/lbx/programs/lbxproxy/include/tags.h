@@ -22,6 +22,8 @@
  * $NCDId: @(#)tags.h,v 1.1 1993/12/01 23:48:34 lemke Exp $
  */
 
+/* $XConsortium:$ */
+
 #ifndef _TAGS_H_
 #define _TAGS_H_
 

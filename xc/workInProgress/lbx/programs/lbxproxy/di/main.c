@@ -24,6 +24,8 @@
  * Author:  Keith Packard, Network Computing Devices
  */
 
+ /* $XConsortium:$ */
+
 #include "X.h"
 #include "Xproto.h"
 #include "input.h"

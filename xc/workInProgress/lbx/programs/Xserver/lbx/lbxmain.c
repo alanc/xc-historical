@@ -841,7 +841,7 @@ int Writev(fd, iov, iovcnt)
      struct iovec *iov;
      int iovcnt;
 {
-    writev(fd, iov, iovcnt);
+    return writev(fd, iov, iovcnt);
 }
 
 int
@@ -1015,7 +1015,9 @@ ProcLbxNewClient(client)
 	!proxy || proxy->lbxClients[stuff->client])
 	return BadLbxClientCode;
     c = stuff->client; /* get it before our request disappears */
-    newClient = AllocNewConnection (ClientConnectionNumber (client), 
+    newClient = AllocNewConnection (
+			((OsCommPtr)client->osPrivate)->trans_conn, 
+				    ClientConnectionNumber (client), 
 				    LbxRead, LbxWritev, LbxCloseClient);
     if (proxy->lzwHandle)
 	StartOutputCompression (newClient, LbxCompressOn, LbxCompressOff);

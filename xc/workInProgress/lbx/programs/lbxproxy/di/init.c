@@ -22,7 +22,9 @@
  *
  * Author:  Keith Packard, Network Computing Devices
  */
- 
+
+ /* $XConsortium:$ */
+
 /* Hook up to an X server and set up a multiplexing LBX encoded connection */
 
 #include <X11/Xlib.h>

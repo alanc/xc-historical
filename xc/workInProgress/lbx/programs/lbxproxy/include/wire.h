@@ -24,6 +24,8 @@
  * Author:  Keith Packard, Network Computing Devices
  */
 
+/* $XConsortium:$ */
+
 #include "lbx.h"
 #include "lbxdeltastr.h"
 

@@ -22,6 +22,8 @@
  * $NCDId: @(#)tags.c,v 1.3 1994/01/21 19:07:44 lemke Exp $
  */
 
+/* $XConsortium:$ */
+
 #include	"cache.h"
 #include	"tags.h"
 #include	"assert.h"

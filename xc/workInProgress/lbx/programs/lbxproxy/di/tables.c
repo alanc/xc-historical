@@ -24,6 +24,8 @@
  * Author:  Keith Packard, Network Computing Devices
  */
 
+/* $XConsortium:$ */
+
 extern int    ProcInitialConnection(), ProcEstablishConnection();
 
 extern int    ProcStandardRequest ();
