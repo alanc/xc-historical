@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.76 89/09/12 16:48:46 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.77 89/09/19 20:20:02 swick Exp $";
 /* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
 #endif /* lint */
 /*LINTLIBRARY*/
@@ -598,11 +598,14 @@ static void _XtTranslateEvent (w, closure, event)
     XtBoundActions proc_table = ((XtTM)closure)->proc_table;
     XtBoundAccActions accProcTbl = stateTable->accProcTbl;
     XtTM tm = (XtTM)closure;
+
+#ifdef notdef
 /* gross disgusting special case ||| */
     if ((event->type == EnterNotify || event->type == LeaveNotify)
         &&( event->xcrossing.detail == NotifyInferior
         ||  event->xcrossing.mode != NotifyNormal) )
 	return;
+#endif
 
     XEventToTMEvent (event, &curEvent);
 
@@ -1908,8 +1911,8 @@ static void GrabAllCorrectKeys(widget, event, grabP)
     GrabActionRec* grabP;
 {
     Display *dpy = XtDisplay(widget);
-    KeyCode *keycodes;
-    int keycount;
+    KeyCode *keycodes, *keycodeP;
+    Cardinal keycount;
     XtKeysymToKeycodeList(
 	    dpy,
 	    (KeySym)event->eventCode,
@@ -1917,39 +1920,46 @@ static void GrabAllCorrectKeys(widget, event, grabP)
 	    &keycount
 			 );
     if (keycount == 0) return;
-    while (keycount--) {
+    for (keycodeP = keycodes; keycount--; keycodeP++) {
 	if (event->standard) {
 	    /* find standard modifiers that produce this keysym */
 	    KeySym keysym;
-	    int std_mods;
+	    int std_mods, least_mod = 1;
 	    Modifiers modifiers_return;
-	    XtTranslateKeycode( dpy, *keycodes, (Modifiers)0,
+	    XtTranslateKeycode( dpy, *keycodeP, (Modifiers)0,
 			        &modifiers_return, &keysym );
-	    if (keysym != event->eventCode) {
-		int least_mod = 1;
-		while ((least_mod & modifiers_return)==0) least_mod <<= 1;
-	        for (std_mods = modifiers_return;
-		     std_mods >= least_mod; std_mods--) {
-		    /* check all useful combinations of 8 modifier bits */
-		    if (modifiers_return & std_mods != 0) {
-			XtTranslateKeycode( dpy, *keycodes,
-					    (Modifiers)std_mods,
-					    &modifiers_return, &keysym );
-			if (keysym == event->eventCode) {
-			    XGrabKey( dpy, *keycodes,
-				      (unsigned)event->modifiers | std_mods,
-				      XtWindow(widget),
-				      grabP->owner_events,
-				      grabP->pointer_mode,
-				      grabP->keyboard_mode
-				    );
-			    break;
-			}
+	    if (keysym == event->eventCode) {
+		XGrabKey( dpy, *keycodeP,
+			  (unsigned)event->modifiers,
+			  XtWindow(widget),
+			  grabP->owner_events,
+			  grabP->pointer_mode,
+			  grabP->keyboard_mode
+			);
+		/* continue; */		/* grab all modifier combinations */
+	    }
+	    while ((least_mod & modifiers_return)==0) least_mod <<= 1;	    
+	    for (std_mods = modifiers_return;
+		 std_mods >= least_mod; std_mods--) {
+		 /* check all useful combinations of modifier bits */
+		if (modifiers_return & std_mods != 0) {
+		    XtTranslateKeycode( dpy, *keycodeP,
+					(Modifiers)std_mods,
+					&modifiers_return, &keysym );
+		    if (keysym == event->eventCode) {
+			XGrabKey( dpy, *keycodeP,
+				  (unsigned)event->modifiers | std_mods,
+				  XtWindow(widget),
+				  grabP->owner_events,
+				  grabP->pointer_mode,
+				  grabP->keyboard_mode
+				);
+			/* break; */	/* grab all modifier combinations */
 		    }
 		}
 	    }
 	} else /* !event->standard */ {
-	    XGrabKey( dpy, *keycodes,
+	    XGrabKey( dpy, *keycodeP,
 		      (unsigned)event->modifiers,
 		      XtWindow(widget),
 		      grabP->owner_events,
@@ -1957,8 +1967,8 @@ static void GrabAllCorrectKeys(widget, event, grabP)
 		      grabP->keyboard_mode
 		    );
 	}
-	keycodes++;
     }
+    XtFree((XtPointer)keycodes);
 }
 
 void _XtRegisterGrabs(widget,tm)
@@ -2048,7 +2058,7 @@ void _XtPopupInitialize(app)
     XtAppAddActions(app, tmActions, XtNumber(tmActions));
     if (grabActionList == NULL)
 	XtRegisterGrabAction( _XtMenuPopupAction, True,
-			      ButtonPressMask | ButtonReleaseMask,
+			      (unsigned)(ButtonPressMask | ButtonReleaseMask),
 			      GrabModeAsync,
 			      GrabModeAsync
 			    );
@@ -2323,6 +2333,7 @@ void XtKeysymToKeycodeList(dpy, keysym, keycodes_return, keycount_return)
 			ALLOCATE_LOCAL((maxcodes*=2)*sizeof(KeyCode));
 		    if (keycodes == NULL) _XtAllocError("alloca");
 		    bcopy( old, keycodes, ncodes*sizeof(KeyCode) );
+		    DEALLOCATE_LOCAL(old);
 		    codeP = &keycodes[ncodes];
 		}
 		*codeP++ = dpy->min_keycode + row;
@@ -2333,8 +2344,13 @@ void XtKeysymToKeycodeList(dpy, keysym, keycodes_return, keycount_return)
 	} /* end-for col */
     } /* end-for row */
 
-    *keycodes_return = (KeyCode*)XtMalloc( (unsigned)ncodes*sizeof(KeyCode) );
-    bcopy( keycodes, *keycodes_return, ncodes*sizeof(KeyCode) );
+    if (ncodes > 0) {
+	*keycodes_return = (KeyCode*)
+	    XtMalloc( (unsigned)ncodes*sizeof(KeyCode) );
+	bcopy( keycodes, *keycodes_return, ncodes*sizeof(KeyCode) );
+    } else
+	*keycodes_return = NULL;
+
     DEALLOCATE_LOCAL(keycodes);
     *keycount_return = ncodes;
 }
