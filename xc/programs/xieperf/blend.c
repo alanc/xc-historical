@@ -1,4 +1,4 @@
-/* $XConsortium: do_blend.c,v 1.1 93/07/19 13:02:05 rws Exp $ */
+/* $XConsortium: blend.c,v 1.2 93/07/19 14:43:32 rws Exp $ */
 
 /**** module do_blend.c ****/
 /******************************************************************************
@@ -84,17 +84,20 @@ int InitBlendMonadic(xp, p, reps)
 			reps = 0;
 	}
 	free( p->data );
+	p->data = NULL;
 	if ( reps && p->finfo.fname3 != ( char * ) NULL )
 	{
 		/* alpha plane */
 
-		if ( ( alpha = GetXIEPhotomap( xp, p, 1 ) ) == ( XiePhotomap ) NULL )
+		if ( ( alpha = GetXIEPhotomap( xp, p, 3 ) ) == ( XiePhotomap ) NULL )
 		{
 			XieDestroyPhotomap( xp->d, XIEPhotomap );
 			reps = 0;
 		}
 	}
-	free( p->data );
+	if (p->data != NULL)
+		free( p->data );
+
 	return( reps );
 }
 
@@ -129,7 +132,7 @@ int InitBlendDyadic(xp, p, reps)
         {
                 /* alpha plane */
 
-                if ( ( alpha = GetXIEPhotomap( xp, p, 1 ) ) == ( XiePhotomap ) NULL )
+                if ( ( alpha = GetXIEPhotomap( xp, p, 3 ) ) == ( XiePhotomap ) NULL )
                 {
                         XieDestroyPhotomap( xp->d, src1 );
                         XieDestroyPhotomap( xp->d, src2 );
@@ -187,7 +190,7 @@ int InitROIBlendMonadic(xp, p, reps)
         {
                 /* alpha plane */
 
-                if ( ( alpha = GetXIEPhotomap( xp, p, 1 ) ) == ( XiePhotomap ) NULL )
+                if ( ( alpha = GetXIEPhotomap( xp, p, 3 ) ) == ( XiePhotomap ) NULL )
                 {
                         XieDestroyPhotomap( xp->d, XIEPhotomap );
 			XieDestroyROI( xp->d, XIERoi );
@@ -224,9 +227,9 @@ int InitROIBlendDyadic(xp, p, reps)
                 for ( i = 0; i < rectsSize; i++ )
                 {
                         rects[ i ].x = i * 100;
-                        rects[ i ].y = i * 100;
+                        rects[ i ].y = 0;
                         rects[ i ].width = 100;
-                        rects[ i ].height = 100;
+                        rects[ i ].height = 200;
                 }
         }
         if ( ( XIERoi = GetXIERoi( xp, p, rects, rectsSize ) ) == ( XieRoi ) NULL )
@@ -256,7 +259,7 @@ int InitROIBlendDyadic(xp, p, reps)
         {
                 /* alpha plane */
 
-                if ( ( alpha = GetXIEPhotomap( xp, p, 1 ) ) == ( XiePhotomap ) NULL )
+                if ( ( alpha = GetXIEPhotomap( xp, p, 3 ) ) == ( XiePhotomap ) NULL )
                 {
                         XieDestroyPhotomap( xp->d, src1 );
                         XieDestroyPhotomap( xp->d, src2 );
