@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xcalc.c,v 1.3 89/05/11 14:23:46 converse Exp $
+ * $XConsortium: xcalc.c,v 1.4 89/06/05 18:42:55 jim Exp $
  *
  * xcalc.c  -  a hand calculator for the X Window system
  * 
@@ -37,6 +37,7 @@
 #include <X11/StringDefs.h>
 #include <X11/Xatom.h>
 #include <X11/Shell.h>
+#include <X11/Xaw/Cardinals.h>
 #include <X11/Xaw/Form.h>
 #include <X11/Xaw/Label.h>
 #include <X11/Xaw/Command.h>
@@ -87,12 +88,12 @@ static Boolean defFalse = False;
 #define offset(field) XtOffset(struct resources *, field)
 
 static XtResource Resources[] = {
-{"rpn", "Rpn", XtRBoolean, sizeof(Boolean), offset(rpn), XtRBoolean, 
-     (caddr_t)&defFalse},
-{"stipple", "Stipple", XtRBoolean, sizeof(Boolean), offset(stipple),
-     XtRBoolean, (caddr_t)&defFalse},
-{"cursor", "Cursor", XtRCursor, sizeof(Cursor), offset(cursor), XtRCursor,
-     (caddr_t)NULL}
+{"rpn",		"Rpn",		XtRBoolean,	sizeof(Boolean),
+     offset(rpn),	XtRBoolean,	(caddr_t)&defFalse},
+{"stipple",	"Stipple",	XtRBoolean,	sizeof(Boolean),
+     offset(stipple),	XtRBoolean,	(caddr_t)&defFalse},
+{"cursor",	"Cursor",	XtRCursor,	sizeof(Cursor),
+     offset(cursor),	XtRCursor,	(caddr_t)NULL}
 };
 
 void main(argc, argv)
@@ -113,11 +114,12 @@ void main(argc, argv)
 			    &argc, argv);
     if (argc != 1) Syntax(argc, argv);
     
-    XtSetArg(args[0], XtNtitle,	"Calculator");
-    XtSetValues(toplevel, args, 1);
+    XtSetArg(args[0], XtNinput, True);
+    XtSetArg(args[1], XtNtitle,	"Calculator");
+    XtSetValues(toplevel, args, TWO);
 
     XtGetApplicationResources(toplevel, (caddr_t)&App_Resources, Resources,
-			      XtNumber(Resources), (ArgList)NULL, 0);
+			      XtNumber(Resources), (ArgList) NULL, ZER0);
 
     create_calculator(toplevel);
 
@@ -139,7 +141,7 @@ void main(argc, argv)
 	     WhitePixelOfScreen(screen), BlackPixelOfScreen(screen),
 	     DefaultDepthOfScreen(screen));
 	XtSetArg(args[0], XtNbackgroundPixmap, backgroundPix);
-	XtSetValues(calculator, args, 1);
+	XtSetValues(calculator, args, ONE);
     }
 
 #ifndef IEEE
@@ -154,7 +156,7 @@ void create_calculator(shell)
 {
     rpn = App_Resources.rpn;
     calculator = XtCreateManagedWidget(rpn ? "hp" : "ti", formWidgetClass,
-				       shell, (ArgList)NULL, (Cardinal)0);
+				       shell, (ArgList) NULL, ZERO);
     create_display(calculator);
     create_keypad(calculator);
     XtSetKeyboardFocus(calculator, LCD);
@@ -174,28 +176,36 @@ void create_display(parent)
 
     /* the frame surrounding the calculator display */
     bevel = XtCreateManagedWidget("bevel", formWidgetClass, parent,
-				  (ArgList)NULL, (Cardinal)0);
+				  (ArgList) NULL, ZERO);
+
     /* the screen of the calculator */
     screen = XtCreateManagedWidget("screen", formWidgetClass, bevel,
-				   (ArgList)NULL, (Cardinal)0);
+				   (ArgList) NULL, ZERO);
+
     /* M - the memory indicator */
     ind[MEMORY] = XtCreateManagedWidget("M", labelWidgetClass, screen,
 					args, XtNumber(args));
+
     /* liquid crystal display */
     LCD = XtCreateManagedWidget("LCD", toggleWidgetClass, screen, args,
 				XtNumber(args));
+
     /* INV - the inverse function indicator */
     ind[INVERSE] = XtCreateManagedWidget("INV", labelWidgetClass, 
 					 screen, args, XtNumber(args));
+
     /* DEG - the degrees switch indicator */
     ind[DEGREE] = XtCreateManagedWidget("DEG", labelWidgetClass, screen,
 					args, XtNumber(args));
+
     /* RAD - the radian switch indicator */
     ind[RADIAN] = XtCreateManagedWidget("RAD", labelWidgetClass, screen,
 					args, XtNumber(args));
+
     /* GRAD - the grad switch indicator */
     ind[GRADAM] = XtCreateManagedWidget("GRAD", labelWidgetClass, screen,
 					args, XtNumber(args));
+
     /* () - the parenthesis indicator */
     ind[PARENTHESIS] = XtCreateManagedWidget("P", labelWidgetClass, screen,
 					     args, XtNumber(args));
@@ -228,7 +238,7 @@ void create_keypad(parent)
 
     for (i=0; i < n; i++)
 	XtCreateManagedWidget(Keyboard[i], commandWidgetClass, parent,
-			      (ArgList)NULL, (Cardinal)0);
+			      (ArgList) NULL, ZERO);
 }
 
 /*
@@ -244,7 +254,7 @@ void draw(string)
     Arg	args[1];
 
     XtSetArg(args[0], XtNlabel, string);
-    XtSetValues(LCD, args, 1);
+    XtSetValues(LCD, args, ONE);
 }
 /*
  *	called by math routines to turn on and off the display indicators.
