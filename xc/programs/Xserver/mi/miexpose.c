@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miexpose.c,v 5.4 89/07/09 15:47:50 rws Exp $ */
+/* $XConsortium: miexpose.c,v 5.5 89/07/12 17:16:57 keith Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -82,9 +82,11 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
 {
     register ScreenPtr pscr = pGC->pScreen;
     RegionPtr prgnSrcClip;	/* drawable-relative source clip */
+    RegionRec rgnSrcRec;
     RegionPtr prgnDstClip;	/* drawable-relative dest clip */
+    RegionRec rgnDstRec;
     BoxRec srcBox;		/* unclipped source */
-    RegionPtr prgnExposed;	/* exposed region, calculated source-
+    RegionRec rgnExposed;	/* exposed region, calculated source-
 				   relative, made dst relative to
 				   intersect with visible parts of
 				   dest and send events to client, 
@@ -129,7 +131,8 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
  	{
 	    if (((*pscr->RectIn)(&pSrcWin->clipList, &TsrcBox)) == rgnIN)
 		return NULL;
-	    prgnSrcClip = (*pscr->RegionCreate)(NullBox, 1);
+	    prgnSrcClip = &rgnSrcRec;
+	    (*pscr->RegionInit)(prgnSrcClip, NullBox, 0);
 	    (*pscr->RegionCopy)(prgnSrcClip, &pSrcWin->clipList);
 	}
 	(*pscr->TranslateRegion)(prgnSrcClip,
@@ -148,7 +151,8 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
 	box.y1 = 0;
 	box.x2 = pSrcDrawable->width;
 	box.y2 = pSrcDrawable->height;
-	prgnSrcClip = (*pscr->RegionCreate)(&box, 1);
+	prgnSrcClip = &rgnSrcRec;
+	(*pscr->RegionInit)(prgnSrcClip, &box, 1);
 	pSrcWin = (WindowPtr)NULL;
     }
 
@@ -164,7 +168,8 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
 	}
 	else
 	{
-	    prgnDstClip = (*pscr->RegionCreate)(NullBox, 1);
+	    prgnDstClip = &rgnDstRec;
+	    (*pscr->RegionInit)(prgnDstClip, NullBox, 0);
 	    (*pscr->RegionCopy)(prgnDstClip,
 				&((WindowPtr)pDstDrawable)->clipList);
 	}
@@ -179,35 +184,36 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
 	box.y1 = 0;
 	box.x2 = pDstDrawable->width;
 	box.y2 = pDstDrawable->height;
-	prgnDstClip = (*pscr->RegionCreate)(&box, 1);
+	prgnDstClip = &rgnDstRec;
+	(*pscr->RegionInit)(&prgnDstClip, &box, 1);
     }
 
     /* drawable-relative source region */
-    prgnExposed = (*pscr->RegionCreate)(&srcBox, 1);
+    (*pscr->RegionInit)(&rgnExposed, &srcBox, 1);
 
     /* now get the hidden parts of the source box*/
-    (*pscr->Subtract)(prgnExposed, prgnExposed, prgnSrcClip);
+    (*pscr->Subtract)(&rgnExposed, &rgnExposed, prgnSrcClip);
 
     if (pSrcWin && pSrcWin->backStorage)
     {
 	/*
 	 * Copy any areas from the source backing store. Modifies
-	 * prgnExposed.
+	 * rgnExposed.
 	 */
 	(* pSrcWin->drawable.pScreen->ExposeCopy) (pSrcDrawable,
 					      pDstDrawable,
 					      pGC,
-					      prgnExposed,
+					      &rgnExposed,
 					      srcx, srcy,
 					      dstx, dsty,
 					      plane);
     }
     
     /* move them over the destination */
-    (*pscr->TranslateRegion)(prgnExposed, dstx-srcx, dsty-srcy);
+    (*pscr->TranslateRegion)(&rgnExposed, dstx-srcx, dsty-srcy);
 
     /* intersect with visible areas of dest */
-    (*pscr->Intersect)(prgnExposed, prgnExposed, prgnDstClip);
+    (*pscr->Intersect)(&rgnExposed, &rgnExposed, prgnDstClip);
 
     /*
      * If we have LOTS of rectangles, we decide to take the extents
@@ -217,7 +223,7 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
      * for windows.
      */
     extents = pGC->graphicsExposures &&
-	      (REGION_NUM_RECTS(prgnExposed) > RECTLIMIT) &&
+	      (REGION_NUM_RECTS(&rgnExposed) > RECTLIMIT) &&
 	      (pDstDrawable->type == DRAWABLE_WINDOW);
 #ifdef SHAPE
     if (pSrcWin)
@@ -238,8 +244,8 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
     {
 	WindowPtr pWin = (WindowPtr)pDstDrawable;
 
-	expBox = *(*pscr->RegionExtents)(prgnExposed);
-	(*pscr->RegionReset)(prgnExposed, &expBox);
+	expBox = *(*pscr->RegionExtents)(&rgnExposed);
+	(*pscr->RegionReset)(&rgnExposed, &expBox);
 	/* need to clear out new areas of backing store */
 	if (pWin->backStorage)
 	    (* pWin->drawable.pScreen->ClearBackingStore)(
@@ -256,31 +262,42 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
 	WindowPtr pWin = (WindowPtr)pDstDrawable;
 
 	/* make the exposed area screen-relative */
-	(*pscr->TranslateRegion)(prgnExposed, 
+	(*pscr->TranslateRegion)(&rgnExposed, 
 				 pDstDrawable->x, pDstDrawable->y);
 
 	if (extents)
 	{
 	    /* PaintWindowBackground doesn't clip, so we have to */
-	    (*pscr->Intersect)(prgnExposed, prgnExposed, &pWin->clipList);
+	    (*pscr->Intersect)(&rgnExposed, &rgnExposed, &pWin->clipList);
 	}
-	(*pWin->drawable.pScreen->PaintWindowBackground)(pDstDrawable, prgnExposed, 
-				       PW_BACKGROUND);
+	(*pWin->drawable.pScreen->PaintWindowBackground)(pDstDrawable,
+							 &rgnExposed, 
+							 PW_BACKGROUND);
 
 	if (extents)
-	    (*pscr->RegionReset)(prgnExposed, &expBox);
+	    (*pscr->RegionReset)(&rgnExposed, &expBox);
 	else
-	    (*pscr->TranslateRegion)(prgnExposed,
+	    (*pscr->TranslateRegion)(&rgnExposed,
 				     -pDstDrawable->x, -pDstDrawable->y);
     }
-    if (prgnDstClip != prgnSrcClip)
+    if (prgnDstClip == &rgnDstRec)
+	(*pscr->RegionUninit)(prgnDstClip);
+    else if (prgnDstClip != prgnSrcClip)
 	(*pscr->RegionDestroy)(prgnDstClip);
-    (*pscr->RegionDestroy)(prgnSrcClip);
+    if (prgnSrcClip == &rgnSrcRec)
+	(*pscr->RegionUninit)(prgnSrcClip);
+    else
+	(*pscr->RegionDestroy)(prgnSrcClip);
     if (pGC->graphicsExposures)
-	return prgnExposed;
+    {
+	/* don't look */
+	RegionPtr exposed = (*pscr->RegionCreate)(NullBox, 0);
+	*exposed = rgnExposed;
+	return exposed;
+    }
     else
     {
-	(*pscr->RegionDestroy) (prgnExposed);
+	(*pscr->RegionUninit) (&rgnExposed);
 	return NULL;
     }
 }
@@ -366,6 +383,7 @@ miWindowExposures(pWin, prgn)
 	register BoxPtr pBox;
 	register int i;
 	RegionPtr exposures = prgn;
+	RegionRec expRec;
 
 	/*
 	 * Restore from backing-store FIRST.
@@ -394,7 +412,8 @@ miWindowExposures(pWin, prgn)
 
 	    box = *(* pWin->drawable.pScreen->RegionExtents)(exposures);
 	    if (exposures == prgn) {
-		exposures = (* pWin->drawable.pScreen->RegionCreate)(&box, 1);
+		exposures = &expRec;
+		(* pWin->drawable.pScreen->RegionInit)(exposures, &box, 1);
 		(* pWin->drawable.pScreen->RegionReset)(prgn, &box);
 	    } else {
 		(* pWin->drawable.pScreen->RegionReset)(exposures, &box);
@@ -441,7 +460,9 @@ miWindowExposures(pWin, prgn)
 	    	DEALLOCATE_LOCAL(pEvent);
 	    }
 	}
-	if (exposures && exposures != prgn)
+	if (exposures == &expRec)
+	    (* pWin->drawable.pScreen->RegionUninit) (exposures);
+	else if (exposures && exposures != prgn)
 	    (* pWin->drawable.pScreen->RegionDestroy) (exposures);
 	(* pWin->drawable.pScreen->RegionEmpty)(prgn);
     }
