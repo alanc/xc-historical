@@ -1,7 +1,7 @@
 /*
  * get_load - get system load
  *
- * $XConsortium: get_load.c,v 1.29 92/03/11 17:49:35 gildea Exp $
+ * $XConsortium: get_load.c,v 1.30 92/08/13 18:18:14 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -416,6 +416,10 @@ void GetLoadPoint( w, closure, call_data )
 #define KERNEL_FILE "/unix"
 #endif
 #endif /* MOTOROLA */
+
+#if defined(sun) && defined(SVR4)
+#define KERNEL_FILE "/kernel/unix"
+#endif
 
 /*
  * provide default for everyone else
