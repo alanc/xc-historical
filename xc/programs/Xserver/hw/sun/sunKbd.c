@@ -1,4 +1,4 @@
-/* $XConsortium: sunKbd.c,v 5.46 94/08/05 19:07:08 kaleb Exp dpw $ */
+/* $XConsortium: sunKbd.c,v 5.47 94/08/16 13:45:30 dpw Exp kaleb $ */
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
  *
@@ -195,6 +195,29 @@ static void ModLight (device, on, led)
  */
 
 #if NeedFunctionPrototypes
+static void bell (
+    int fd,
+    int duration)
+#else
+static void bell (fd, duration)
+    int fd;
+    int duration;
+#endif
+{
+    int		    kbdCmd;   	    /* Command to give keyboard */
+
+    kbdCmd = KBD_CMD_BELL;
+    if (ioctl (fd, KIOCCMD, &kbdCmd) == -1) {
+ 	Error("Failed to activate bell");
+	return;
+    }
+    if (duration) usleep (duration);
+    kbdCmd = KBD_CMD_NOBELL;
+    if (ioctl (fd, KIOCCMD, &kbdCmd) == -1)
+	Error ("Failed to deactivate bell");
+}
+
+#if NeedFunctionPrototypes
 static void sunBell (
     int		    percent,
     DeviceIntPtr    device,
@@ -208,22 +231,13 @@ static void sunBell (percent, device, ctrl, unused)
     int		    unused;
 #endif
 {
-    int		    kbdCmd;   	    /* Command to give keyboard */
     KeybdCtrl*      kctrl = (KeybdCtrl*) ctrl;
     sunKbdPrivPtr   pPriv = (sunKbdPrivPtr) device->public.devicePrivate;
  
     if (percent == 0 || kctrl->bell == 0)
  	return;
 
-    kbdCmd = KBD_CMD_BELL;
-    if (ioctl (pPriv->fd, KIOCCMD, &kbdCmd) == -1) {
- 	Error("Failed to activate bell");
-	return;
-    }
-    usleep (kctrl->bell_duration * 1000);
-    kbdCmd = KBD_CMD_NOBELL;
-    if (ioctl (pPriv->fd, KIOCCMD, &kbdCmd) == -1)
-	Error ("Failed to deactivate bell");
+    bell (pPriv->fd, kctrl->bell_duration * 1000);
 }
 
 static void EnqueueEvent (xE)
@@ -684,7 +698,9 @@ void sunEnqueueAutoRepeat ()
 {
     int	delta;
     int	i, mask;
-    KeybdCtrl* ctrl = &((DeviceIntPtr)LookupKeyboardDevice())->kbdfeed->ctrl;
+    DeviceIntPtr device = (DeviceIntPtr)LookupKeyboardDevice();
+    KeybdCtrl* ctrl = &device->kbdfeed->ctrl;
+    sunKbdPrivPtr   pPriv = (sunKbdPrivPtr) device->public.devicePrivate;
 
     if (ctrl->autoRepeat != AutoRepeatModeOn) {
 	autoRepeatKeyDown = 0;
@@ -719,6 +735,7 @@ void sunEnqueueAutoRepeat ()
     EnqueueEvent (&autoRepeatEvent);
     autoRepeatEvent.u.u.type = KeyPress;
     EnqueueEvent (&autoRepeatEvent);
+    if (ctrl->click) bell (pPriv->fd, 0);
 
     /* Update time of last key down */
     tvplus(autoRepeatLastKeyDownTv, autoRepeatLastKeyDownTv, 
