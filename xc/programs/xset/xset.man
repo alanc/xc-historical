@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: xset.man,v 1.23 92/07/29 18:08:26 rws Exp $
 .TH XSET 1 "Release 5" "X Version 11"
 .SH NAME
 xset - user preference utility for X
@@ -14,7 +14,7 @@ xset - user preference utility for X
 [p \fIpixel\fP \fIcolor\fP]
 [[-]r [keycode]] [r on/off]
 [s [\fIlength\fP [\fIperiod\fP]]] [s blank/noblank]
-[s expose/noexpose] [s on/off] [s default]
+[s expose/noexpose] [s on/off] [s default] [s activate] [s reset]
 [q]
 .SH DESCRIPTION
 This program is used to set various user preference options of the display.
@@ -151,10 +151,14 @@ keycode is enabled or disabled.
 .B s
 The \fBs\fP option lets you set the screen saver parameters.
 This option accepts up to two numerical parameters, a 'blank/noblank'
-flag, an 'expose/noexpose' flag, an 'on/off' flag, or the 'default' flag.
+flag, an 'expose/noexpose' flag, an 'on/off' flag, an 'activate/reset' flag,
+or the 'default' flag.
 If no parameters or the 'default' flag is used, the system will be set
 to its default screen saver characteristics.
 The 'on/off' flags simply turn the screen saver functions on or off.
+The 'activate' flag forces activation of screen saver even if the screen
+saver had been turned off.
+The 'reset' flag forces deactivation of screen saver if it is active.
 The 'blank' flag sets the
 preference to blank the video (if the hardware can do so) rather than
 display a background pattern, while 'noblank' sets the

@@ -1,5 +1,5 @@
 /* 
- * $XConsortium: xset.c,v 1.61 92/07/29 17:40:56 rws Exp $ 
+ * $XConsortium: xset.c,v 1.62 92/07/29 18:15:58 rws Exp $ 
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985	*/
@@ -16,7 +16,7 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
 
-/* $XConsortium: xset.c,v 1.61 92/07/29 17:40:56 rws Exp $ */
+/* $XConsortium: xset.c,v 1.62 92/07/29 18:15:58 rws Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -331,6 +331,14 @@ for (i = 1; i < argc; ) {
       set_saver(dpy, ALL, DEFAULT_TIMEOUT);
       i++;
     } 
+    else if (strcmp(arg, "activate") == 0) { /* force it active */
+	XActivateScreenSaver(dpy);
+	i++;
+    }
+    else if (strcmp(arg, "reset") == 0) { /* force it inactive */
+	XResetScreenSaver(dpy);
+	i++;
+    }
     else if (*arg >= '0' && *arg <= '9') {  /*  Set as user wishes.   */
       set_saver(dpy, TIMEOUT, atoi(arg));
       i++;
@@ -945,6 +953,7 @@ usage (fmt, arg)
     fprintf (stderr, "\t s [timeout [cycle]]  s default    s on\n");
     fprintf (stderr, "\t s blank              s noblank    s off\n");
     fprintf (stderr, "\t s expose             s noexpose\n");
+    fprintf (stderr, "\t s activate           s reset\n");
     fprintf (stderr, "    For status information:  q\n");
     exit(0);
 }
