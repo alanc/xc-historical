@@ -14,14 +14,14 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: sndextevnt.m,v 1.18 94/01/29 15:18:55 rws Exp $
  */
 >>TITLE XSendExtensionEvent XEXTENSIONS
 Status
 XSendExtensionEvent(display, device, w, propagate, count, event_list, event_send)
 Display *display = Dsp;
 XDevice *device;
-Window w = (Window) -1;
+Window w = (Window) 0xffffffff;
 Bool propagate = False;
 int count=1;
 XEventClass *event_list;
@@ -1845,7 +1845,7 @@ Set type member of event to KeyPress.
 Set serial member of event to 0.
 Set send_event member of event to False.
 Ignore display member of event, as it's filled in by Xlib.
-Set window member of event to -1.
+Set window member of event to 0xffffffff.
 Discard all events in the event queue.
 Call XSendExtensionEvent to send event to creator of window.
 Verify that XSendExtensionEvent returned non-zero.
@@ -1895,8 +1895,8 @@ XEventClass noextensioneventclass, cdnc, dmnc, dsnc;
 /* Ignore display member of event, as it's filled in by Xlib. */
 		event_send->xany.display = (Display *) NULL;
 
-/* Set window member of event to -1. */
-		event_send->xany.window = (Window) -1;
+/* Set window member of event to 0xffffffff. */
+		event_send->xany.window = (Window) 0xffffffff;
 
 /* Discard all events in the event queue. */
 		XSync(display, True);
@@ -1962,11 +1962,11 @@ XEventClass noextensioneventclass, cdnc, dmnc, dsnc;
 			CHECK;
 
 /* Verify that window was set to 0. */
-		if (event->window != (Window) -1 &&
+		if (event->window != (Window) 0xffffffff &&
 			 event->type != dmn &&
 			 event->type != cdn &&
 			 event->type != dsn) {
-			report("%s: window set to 0x%x, expected 0x%x", en, event->window, (Window) -1);
+			report("%s: window set to 0x%x, expected 0x%x", en, event->window, (Window) 0xffffffff);
 			FAIL;
 		}
 		else
@@ -2088,7 +2088,7 @@ Verify that XSendExtensionEvent either returned zero and no error occurs,
 int	i;
 int	n;
 int	return_value;
-long	good_event_types[XInputNumEvents];
+int	good_event_types[XInputNumEvents];
 long	bad_event_types[NM_LEN+2];
 XID noextensionevent;
 XEventClass noextensioneventclass;

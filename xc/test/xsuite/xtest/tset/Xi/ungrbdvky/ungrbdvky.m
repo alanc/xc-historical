@@ -14,7 +14,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: ungrbdvky.m,v 1.5 94/01/29 15:18:01 rws Exp $
  */
 >>TITLE XUngrabDeviceKey XEXTENSIONS
 void
@@ -127,7 +127,7 @@ static Bool dgrabbed(dev, win)
 	else
 	    {
 	    XUngrabDevice(client1, dev, CurrentTime);
-	    XSync(client1);
+	    XSync(client1,0);
 	    return(False);
 	    }
 	}

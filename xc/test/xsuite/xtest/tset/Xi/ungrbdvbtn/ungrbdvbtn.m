@@ -14,7 +14,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: ungrbdvbtn.m,v 1.5 94/01/29 15:18:15 rws Exp $
  */
 >>TITLE XUngrabDeviceButton XEXTENSIONS
 void
@@ -137,7 +137,7 @@ static Bool dgrabbed(dev, win)
 	else
 	    {
 	    XUngrabDevice(client1, dev, CurrentTime);
-	    XSync(client1);
+	    XSync(client1,0);
 	    XCloseDisplay(client1);
 	    return(False);
 	    }
