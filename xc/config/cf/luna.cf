@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: luna.cf,v 1.25 93/09/18 13:35:41 rws Exp $
+XCOMM platform:  $XConsortium: luna.cf,v 1.26 93/09/21 11:17:04 rws Exp $
 /*
  *	Please set the values for OSMajorVerion and OSMinorVersion
  *	before making makefiles.	 
@@ -61,6 +61,7 @@ XCOMM operating system:  OSName
 #define ServerExtraDefines -DUNUSE_DRV_TIME -DUNUSE_SIGIO_SIGNAL 
 #endif
 #define HasNdbm			YES
+#define ExtraLibraries		-li18n
 #if HasGcc
 #define CcCmd                   gcc -fstrength-reduce
 #define PreIncDir		/usr/local/lib/gcc/gcc-include
