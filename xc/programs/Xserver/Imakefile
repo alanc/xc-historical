@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.184 94/05/09 13:16:03 dpw Exp kaleb $
+XCOMM $XConsortium: Imakefile,v 1.186 94/11/21 18:25:56 kaleb Exp kaleb $
 /*
  * Server Master Makefile
  */
@@ -630,7 +630,7 @@ Xnon: $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DEPDIRS)
 
 #if XVirtualFramebufferServer
 XCOMM
-XCOMM server with Virtual (malloc'ed) framebuffer
+XCOMM server with Virtual (malloced) framebuffer
 XCOMM
 MFBDIR   = mfb
 CFB8DIR  = cfb
