@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: fsio.h,v 1.7 91/07/15 22:42:46 keith Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -54,6 +54,8 @@ typedef struct _fs_fpe_data {
     int         reqindex;
     int         reqbuffer[REQUEST_LOG_SIZE];
 #endif
+
+    int		attemptReconnect;
 
 /* XXX massive crock to get around stupid #include interferences */
     pointer     blocked_requests;
