@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: EventUtil.c,v 1.3 89/12/15 23:20:25 swick Exp $";
+static char Xrcsid[] = "$XConsortium: EventUtil.c,v 1.4 89/12/19 08:36:09 swick Exp $";
 #endif
 
 /********************************************************
@@ -163,7 +163,7 @@ void _XtFillAncestorList(listPtr, maxElemsPtr, numElemsPtr, start, breakWidget)
 	    /* This should rarely happen, but if it does it'll probably
 	       happen again, so grow the ancestor list */
 	    *maxElemsPtr += CACHESIZE;
-	    trace = (Widget *) XtRealloc(trace, 
+	    trace = (Widget *) XtRealloc((char*)trace,
 					 sizeof(Widget) * (*maxElemsPtr));
 	}
 	trace[i] = w;
