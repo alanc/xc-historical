@@ -1,7 +1,7 @@
 #include "x11perf.h"
 
 static XPoint *points;
-static GC whitegc, blackgc;
+static GC bggc, fggc;
 static Window w;
 
 void InitDots(d, p)
@@ -18,7 +18,7 @@ void InitDots(d, p)
 	    points[i].y = 2*y;
 	    i++;
 	}
-    CreatePerfStuff(d, 1, WIDTH, HEIGHT, &w, &whitegc, &blackgc);
+    CreatePerfStuff(d, 1, WIDTH, HEIGHT, &w, &bggc, &fggc);
 }
 
 void DoDots(d, p)
@@ -28,14 +28,14 @@ void DoDots(d, p)
     GC pgc;
     int i;
 
-    pgc = whitegc;
+    pgc = bggc;
     for (i=0; i < p->reps; i++)
     {
         XDrawPoints(d, w, pgc, points, p->objects, CoordModeOrigin);
-        if (pgc == whitegc)
-            pgc = blackgc;
+        if (pgc == bggc)
+            pgc = fggc;
         else
-            pgc = whitegc;
+            pgc = bggc;
     }
 }
 
@@ -44,8 +44,8 @@ void EndDots(d, p)
     Parms p;
 {
     XDestroyWindow(d, w);
-    XFreeGC(d, whitegc);
-    XFreeGC(d, blackgc);
+    XFreeGC(d, bggc);
+    XFreeGC(d, fggc);
     free(points);
 }
 
