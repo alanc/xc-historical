@@ -1,0 +1,12 @@
+XCOMM $XConsortium: Imakefile,v 1.7 94/02/10 13:36:19 rws Exp $
+
+#define IHaveSubdirs
+#define PassCDebugFlags
+
+SUBDIRS = BDF CTEXT FSProtocol ICCCM Protocol Server X11 XDMCP XLFD \
+          Xaw Xmu Xt Xext Xi fontserver
+
+all::
+
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))
