@@ -1,4 +1,4 @@
-/* $XConsortium: dixfont.h,v 1.5 91/02/20 19:39:21 keith Exp $ */
+/* $XConsortium: dixfont.h,v 1.6 91/02/23 00:34:17 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -52,14 +52,6 @@ typedef enum {
     Linear8Bit, TwoD8Bit, Linear16Bit, TwoD16Bit
 }           FontEncoding;
 
-#endif
-
-#ifdef NOTDEF
-typedef struct _FontData *FontDataPtr;
-
-extern int  OpenFont();
-extern unsigned char *GetFontPath();
-extern int  SetFontPath();
 #endif
 
 #endif				/* DIXFONT_H */
