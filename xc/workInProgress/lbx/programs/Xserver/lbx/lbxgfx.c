@@ -1,4 +1,4 @@
-/* $XConsortium: lbxgfx.c,v 1.6 94/09/13 21:33:06 mor Exp mor $ */
+/* $XConsortium: lbxgfx.c,v 1.7 94/11/08 20:28:44 mor Exp mor $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -453,33 +453,31 @@ register ClientPtr  client;
     if (status != Success)
 	return (status);
 
+    if ((reply = (xLbxGetImageReply *) xalloc (
+	sz_xLbxGetImageReply + uncompLen)) == NULL)
+    {
+	return (!Success);
+    }
+
     if (!((stuff->format == ZPixmap && depth == 8) || depth == 1))
     {
 	status = LBX_IMAGE_COMPRESS_UNSUPPORTED_FORMAT;
     }
-    else if ((reply = (xLbxGetImageReply *) xalloc (
-	sz_xLbxGetImageReply + uncompLen)) == NULL)
+    else if (depth == 1)
     {
-	status = LBX_IMAGE_COMPRESS_BAD_MALLOC;
+	status = LbxImageEncodeFaxG42D ((unsigned char *) theImage,
+	      (unsigned char *) reply + sz_xLbxGetImageReply,
+	      uncompLen, uncompLen, (int) stuff->width, &bytes);
+
+	method = LbxImageCompressFaxG42D;
     }
-    else
+    else /* depth 8 and ZPixmap format */
     {
-	if (depth == 1)
-	{
-	    status = LbxImageEncodeFaxG42D ((unsigned char *) theImage,
-		      (unsigned char *) reply + sz_xLbxGetImageReply,
-		      uncompLen, uncompLen, (int) stuff->width, &bytes);
+	status = LbxImageEncodePackBits ((char *) theImage,
+	      (char *) reply + sz_xLbxGetImageReply, uncompLen,
+	      (int) stuff->height, (int) stuff->width, &bytes);
 
-	    method = LbxImageCompressFaxG42D;
-	}
-	else /* depth 8 and ZPixmap format */
-	{
-	    status = LbxImageEncodePackBits ((char *) theImage,
-		      (char *) reply + sz_xLbxGetImageReply, uncompLen,
-		      (int) stuff->height, (int) stuff->width, &bytes);
-
-	    method = LbxImageCompressPackBits;
-	}
+	method = LbxImageCompressPackBits;
     }
 
     reply->type = X_Reply;
