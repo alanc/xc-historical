@@ -1,4 +1,4 @@
-/* $XConsortium: beach_ball.c,v 5.1 91/02/16 09:32:48 rws Exp $ */
+/* $XConsortium: beach_ball.c,v 5.2 91/02/18 22:03:27 rws Exp $ */
 /***********************************************************
 Copyright 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
 
@@ -68,7 +68,11 @@ extern int	facet_sphere();
 #define TIME_INC       1.0
 #define VELOCITY       0.2
 
+#ifdef SYSV
+#define MAX_RAND    32767
+#else
 #define MAX_RAND    2147483647
+#endif
 #define PFILLAREASET3
 
 #ifndef MIN
@@ -118,18 +122,18 @@ Pvec3 *v;
     Xr = rand();
     Xv = ((float)Xr/(float)MAX_RAND) * (VELOCITY/sqrt(3.0));
     if ( Xr % 2 )
-    Xv = - Xv;
+			Xv = - Xv;
 
     Yr = rand();
     Yv = ((float)Yr/(float)MAX_RAND) * sqrt(V2 - Xv * Xv);
     if ( Yr % 2 )
-    Yv = - Yv;
+			Yv = - Yv;
 
     XYv = sqrt(Xv * Xv + Yv * Yv);
     if ( XYv < VELOCITY ) {
-    Zv = sqrt(V2 - XYv * XYv);
-    if ( rand() % 2 )
-	Zv = - Zv;
+			Zv = sqrt(V2 - XYv * XYv);
+			if ( rand() % 2 )
+				Zv = - Zv;
     }
 
     v->delta_x = Xv;
