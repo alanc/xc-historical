@@ -1,7 +1,7 @@
 /*
- * $XHeader: xdpyinfo.c,v 1.3 88/07/01 15:46:23 jim Exp $
+ * $XHeader: xdpyinfo.c,v 1.4 88/07/07 10:32:47 jim Exp $
  * 
- * xconinfo - print information about X connecton
+ * xdpyinfo - print information about X display connecton
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -25,12 +25,40 @@
 
 char *ProgramName;
 
-#ifdef DisplayPixmapFormats
-#include <warning-obsolete-code>
-#endif
+/*
+ * Until the following are in Xlib; note this means this program may
+ * not be portable to all systems.
+ */
 
-#define DisplayPixmapFormats(dpy) ((dpy)->nformats)
-#define DisplayPixmapDepth(dpy,i) ((dpy)->pixmap_format[i].depth)
+int XDisplayPixmapFormatCount (dpy)
+    Display *dpy;
+{
+    return dpy->nformats;
+}
+
+int XDisplayPixmapDepth (dpy, i)
+    Display *dpy;
+    int i;
+{
+    return dpy->pixmap_format[i].depth;
+}
+
+
+int XDisplayPixmapBitsPerPixel (dpy, i)
+    Display *dpy;
+    int i;
+{
+    return dpy->pixmap_format[i].bits_per_pixel;
+}
+
+
+int XDisplayPixmapScanlinePad (dpy, i)
+    Display *dpy;
+    int i;
+{
+    return dpy->pixmap_format[i].scanline_pad;
+}
+
 
 static void usage ()
 {
@@ -120,11 +148,13 @@ print_display_info (dpy)
     }
     printf ("image byte order:    %s\n", cp);
 
-    n = DisplayPixmapFormats (dpy);
+    n = XDisplayPixmapFormatCount (dpy);
     printf ("number of supported pixmap formats:    %d\n", n);
-    printf ("supported pixmap depths:  ");
+    printf ("supported pixmap formats:  ");
     for (i = 0; i < n; i++) {
-	printf ("  %d", DisplayPixmapDepth (dpy, i));
+	printf ("  <%d,%d,%d>", XDisplayPixmapDepth (dpy, i),
+		XDisplayPixmapBitsPerPixel (dpy, i), 
+		XDisplayPixmapScanlinePad (dpy, i));
     }
     printf ("\n");	
 
