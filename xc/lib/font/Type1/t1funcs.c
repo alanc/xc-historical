@@ -1,4 +1,4 @@
-/* $XConsortium: t1funcs.c,v 1.4 91/10/10 11:19:28 rws Exp $ */
+/* $XConsortium: t1funcs.c,v 1.5 91/12/16 18:35:29 keith Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -811,8 +811,13 @@ void Type1CloseFont(pFont)
                if (type1->glyphs[i].bits != NULL)
                         xfree(type1->glyphs[i].bits);
        xfree(type1);
-       xfree(pFont->info.props);
-       xfree(pFont->info.isStringProp);
+
+       if (pFont->info.props)
+	   xfree(pFont->info.props);
+
+       if (pFont->info.isStringProp)
+	   xfree(pFont->info.isStringProp);
+
        xfree(pFont);
 }
  
