@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 1.87 89/06/09 14:54:50 keith Exp $ */
+/* $XConsortium: colormap.c,v 5.0 89/06/09 14:58:30 keith Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -663,6 +663,86 @@ AllocColor (pmap, pred, pgreen, pblue, pPix, client)
     return (Success);
 }
 
+/*
+ * FakeAllocColor -- fake an AllocColor request by
+ * returning a free pixel if availible, otherwise returning
+ * the closest matching pixel.  This is used by the mi
+ * software sprite code to recolor cursors.  A nice side-effect
+ * is that this routine will never return failure.
+ */
+
+FakeAllocColor (pmap, pred, pgreen, pblue, pPix, read_only)
+    ColormapPtr		pmap;
+    unsigned short 	*pred, *pgreen, *pblue;
+    Pixel		*pPix;
+    Bool		*read_only;
+{
+    Pixel	pixR, pixG, pixB;
+    int		entries;
+    xrgb	rgb;
+    int		class;
+    VisualPtr	pVisual;
+
+
+    pVisual = pmap->pVisual;
+    (*pmap->pScreen->ResolveColor) (pred, pgreen, pblue, pVisual);
+    rgb.red = *pred;
+    rgb.green = *pgreen;
+    rgb.blue = *pblue;
+    class = pmap->class;
+    entries = pVisual->ColormapEntries;
+
+    /* If this is one of the static storage classes, and we're not initializing
+     * it, the best we can do is to find the closest color entry to the
+     * requested one and return that.
+     */
+    switch (class) {
+    case GrayScale:
+    case PseudoColor:
+	if (FindColor(pmap, pmap->red, entries, &rgb, pPix, PSEUDOMAP,
+		      -1, AllComp) == Success)
+	{
+	    break;
+	}
+	/* fall through ... */
+    case StaticColor:
+    case StaticGray:
+	*pPix = pixR = FindBestPixel(pmap->red, entries, &rgb, PSEUDOMAP);
+	*pred = pmap->red[pixR].co.local.red;
+	*pgreen = pmap->red[pixR].co.local.green;
+	*pblue = pmap->red[pixR].co.local.blue;
+	*read_only = TRUE;
+	break;
+
+    case DirectColor:
+	pixR = (*pPix & pVisual->redMask) >> pVisual->offsetRed; 
+	pixG = (*pPix & pVisual->greenMask) >> pVisual->offsetGreen; 
+	pixB = (*pPix & pVisual->blueMask) >> pVisual->offsetBlue; 
+	if (FindColor(pmap, pmap->red, entries, &rgb, &pixR, REDMAP,
+		      -1, RedComp) == Success &&
+	    FindColor(pmap, pmap->green, entries, &rgb, &pixG, GREENMAP,
+		      -1, GreenComp) == Success &&
+	    FindColor(pmap, pmap->blue, entries, &rgb, &pixB, BLUEMAP,
+		      -1, BlueComp) == Success)
+	{
+	    break;
+	}
+	/* fall through ... */
+    case TrueColor:
+	/* Look up each component in its own map, then OR them together */
+	pixR = FindBestPixel(pmap->red, entries, &rgb, REDMAP);
+	pixG = FindBestPixel(pmap->green, entries, &rgb, GREENMAP);
+	pixB = FindBestPixel(pmap->blue, entries, &rgb, BLUEMAP);
+	*pPix = (pixR << pVisual->offsetRed) |
+		(pixG << pVisual->offsetGreen) |
+		(pixB << pVisual->offsetBlue);
+	*pred = pmap->red[pixR].co.local.red;
+	*pgreen = pmap->green[pixG].co.local.green;
+	*pblue = pmap->blue[pixB].co.local.blue;
+	*read_only = TRUE;
+	break;
+    }
+}
 
 static Pixel
 FindBestPixel(pentFirst, size, prgb, channel)
@@ -790,7 +870,8 @@ FindColor (pmap, pentFirst, size, prgb, pPixel, channel, client, comp)
 	return (BadAlloc);
     pent = pentFirst + Free;
     pent->fShared = FALSE;
-    pent->refcnt = 1;
+    if (client != -1)
+	pent->refcnt = 1;
 
     def.flags = 0;
     switch (channel)
@@ -836,7 +917,7 @@ FindColor (pmap, pentFirst, size, prgb, pPixel, channel, client, comp)
     *pPixel = def.pixel;
 
 gotit:
-    if (pmap->flags & BeingCreated)
+    if (pmap->flags & BeingCreated || client == -1)
 	return(Success);
     /* Now remember the pixel, for freeing later */
     switch (channel)

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 1.159 89/06/09 14:56:07 keith Exp $ */
+/* $XConsortium: main.c,v 5.0 89/06/09 14:59:25 keith Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -243,6 +243,7 @@ main(argc, argv)
 	    FreeGCperDepth(i);
 	    FreeDefaultStipple(i);
 	    (* screenInfo.screens[i]->CloseScreen)(i, screenInfo.screens[i]);
+	    xfree(screenInfo.screens[i]->devPrivates);
 	    xfree(screenInfo.screens[i]);
 	    screenInfo.numScreens = i;
 	}

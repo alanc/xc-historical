@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 1.244 89/06/09 14:56:13 keith Exp $ */
+/* $XConsortium: window.c,v 5.0 89/06/09 14:59:29 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -184,6 +184,14 @@ CheckSubSaveUnder(pParent, pFirst, pRegion)
 	if (pSubRegion)
 	    (* pScreen->RegionDestroy) (pSubRegion);
     }
+
+    /*
+     * Never, ever, turn on backing store for save-unders
+     * on the root window
+     */
+
+    if (!pParent->parent)
+	return;
 
     switch ((*pScreen->RectIn) (pRegion,
 				(*pScreen->RegionExtents)(pParent->borderSize)))
@@ -848,10 +856,6 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
     if (visual != wVisual (pParent)) {
 	MakeWindowOptional (pWin);
 	pWin->optional->visual = visual;
-    }
-
-    if ((class == InputOnly) || (visual != wVisual (pParent))) {
-	MakeWindowOptional (pWin);
 	pWin->optional->colormap = None;
     }
 
@@ -976,12 +980,11 @@ FreeWindowResources(pWin)
     if (pWin->backgroundState == BackgroundPixmap)
 	(* pScreen->DestroyPixmap)(pWin->background.pixmap);
 
-    if (wCursor (pWin) != (CursorPtr)None)
-        FreeCursor( wCursor (pWin), (Cursor)0);
-
     DeleteAllWindowProperties(pWin);
     /* We SHOULD check for an error value here XXX */
     (* pScreen->DestroyWindow)(pWin);
+    DisposeWindowOptional (pWin);
+    xfree (pWin->devPrivates);
 }
 
 static void
@@ -1459,23 +1462,24 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 		    pWin->cursorIsNone = TRUE;
 		    if (pWin->optional)
 		    {
+			if (pWin->optional->cursor)
+			    FreeCursor (pWin->optional->cursor);
 			pWin->optional->cursor = (CursorPtr) None;
 			checkOptional = 1;
 		    }
 		} else {
-		    pCursor->refcnt++;
 		    if (!pWin->optional)
 			MakeWindowOptional (pWin);
 		    else if (pWin->parent && pCursor == wCursor (pWin->parent))
 			checkOptional = 1;
+		    if (pWin->optional->cursor != (CursorPtr) None)
+			FreeCursor (pWin->optional->cursor);
 		    pWin->optional->cursor = pCursor;
+		    pCursor->refcnt++;
 		}
     
 	    	/*
-	     	 * patch up child windows so they don't lose
-	     	 * cursors.  Note:  refcnt is not incremented here;
-	     	 * it was incremented when the implicit reference
-	     	 * was built.
+	     	 * patch up child windows so they don't lose cursors.
 	     	 */
     
 	    	for (pChild = pWin->firstChild; pChild; pChild=pChild->nextSib) {
@@ -1485,7 +1489,10 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 			    	pChild->cursorIsNone = TRUE;
 		    	    else {
 			    	MakeWindowOptional (pChild);
+				if (pChild->optional->cursor)
+				    FreeCursor (pChild->optional->cursor);
 			    	pChild->optional->cursor = oCursor;
+				oCursor->refcnt++;
 		    	    }
 			}
 		    } else {
@@ -1493,9 +1500,6 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 			    CheckWindowOptionalNeed (pChild);
 		    }
 	    	}
-    
-	    	if (oCursor != (CursorPtr) None)
-		    FreeCursor(oCursor, None);
     
 	    	WindowHasNewCursor( pWin);
 	    }
@@ -3858,7 +3862,15 @@ MakeWindowOptional (pWin)
 #endif
     parentOptional = FindWindowWithOptional(pWin)->optional;
     optional->visual = parentOptional->visual;
-    optional->cursor = pWin->cursorIsNone ? None : parentOptional->cursor;
+    if (parentOptional->cursor)
+    {
+	optional->cursor = parentOptional->cursor;
+	optional->cursor->refcnt++;
+    }
+    else
+    {
+	optional->cursor = None;
+    }
     optional->colormap = parentOptional->colormap;
     pWin->optional = optional;
     return TRUE;
@@ -3873,7 +3885,13 @@ DisposeWindowOptional (pWin)
      * everything is peachy.  Delete the optional record
      * and clean up
      */
-    pWin->cursorIsNone = pWin->optional->cursor == None;
+    if (pWin->optional->cursor)
+    {
+	FreeCursor (pWin->optional->cursor);
+	pWin->cursorIsNone = FALSE;
+    }
+    else
+	pWin->cursorIsNone = TRUE;
     xfree (pWin->optional);
     pWin->optional = NULL;
 }

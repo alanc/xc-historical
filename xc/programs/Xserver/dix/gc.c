@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 5.0 89/06/09 14:59:18 keith Exp $ */
+/* $XConsortium: gc.c,v 5.1 89/06/12 16:30:31 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -648,7 +648,8 @@ CopyGC(pgcSrc, pgcDst, mask)
 		{
 		    if (pgcDst->stipple == pgcSrc->stipple)
 			break;
-		    (* pgcDst->pScreen->DestroyPixmap)(pgcDst->stipple);
+		    if (pgcDst->stipple)
+			(* pgcDst->pScreen->DestroyPixmap)(pgcDst->stipple);
 		    pgcDst->stipple = pgcSrc->stipple;
     		    pgcDst->stipple->refcnt ++;
 		    break;
@@ -740,9 +741,11 @@ FreeGC(pGC, gid)
 
     if (!pGC->tileIsPixel)
 	(* pGC->pScreen->DestroyPixmap)(pGC->tile.pixmap);
-    (* pGC->pScreen->DestroyPixmap)(pGC->stipple);
+    if (pGC->stipple)
+	(* pGC->pScreen->DestroyPixmap)(pGC->stipple);
 
     (*pGC->funcs->DestroyGC) (pGC);
+    xfree(pGC->devPrivates);
     xfree(pGC->dash);
     xfree(pGC);
     return(Success);
