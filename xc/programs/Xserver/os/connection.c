@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.159 93/09/23 10:51:47 dpw Exp $ */
+/* $XConsortium: connection.c,v 1.160 93/09/23 15:09:30 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -408,7 +408,7 @@ CreateWellKnownSockets()
     WellKnownConnections = 0;
 #ifdef TCPCONN
     if ((request = open_tcp_socket ()) != -1) {
-	WellKnownConnections |= (1L << request);
+	WellKnownConnections |= (((FdMask)1) << request);
 	DefineSelf (request);
     }
     else if (!PartialNetwork) 
@@ -418,7 +418,7 @@ CreateWellKnownSockets()
 #endif /* TCPCONN */
 #ifdef DNETCONN
     if ((request = open_dnet_socket ()) != -1) {
-	WellKnownConnections |= (1L << request);
+	WellKnownConnections |= (((FdMask)1) << request);
 	DefineSelf (request);
     }
     else if (!PartialNetwork) 
@@ -428,7 +428,7 @@ CreateWellKnownSockets()
 #endif /* DNETCONN */
 #ifdef UNIXCONN
     if ((request = open_unix_socket ()) != -1) {
-	WellKnownConnections |= (1L << request);
+	WellKnownConnections |= (((FdMask)1) << request);
 	unixDomainConnection = request;
     }
     else if (!PartialNetwork) 
@@ -491,10 +491,10 @@ ResetWellKnownSockets ()
 	    	unsock.sun_path);
 	    (void) unlink (unsock.sun_path);
 	    (void) close (unixDomainConnection);
-	    WellKnownConnections &= ~(1L << unixDomainConnection);
+	    WellKnownConnections &= ~(((FdMask)1) << unixDomainConnection);
 	    unixDomainConnection = open_unix_socket ();
 	    if (unixDomainConnection != -1)
-		WellKnownConnections |= (1L << unixDomainConnection);
+		WellKnownConnections |= (((FdMask)1) << unixDomainConnection);
 	}
     }
 #endif /* UNIXCONN */
