@@ -1,4 +1,4 @@
-.\" $XConsortium: x11perf.man,v 1.16 92/11/11 16:30:59 rws Exp $
+.\" $XConsortium: x11perf.man,v 1.17 93/08/04 11:47:10 dpw Exp $
 .TH X11PERF 1 "Release 5" "X Version 11"
 .SH NAME
 x11perf \- X11 server performance test program
@@ -921,6 +921,9 @@ X protocol NoOperation.
 .TP 14
 .B \-atom
 GetAtomName.
+.TP 14
+.B \-pointer
+QueryPointer.
 .TP 14
 .B \-prop
 GetProperty.
