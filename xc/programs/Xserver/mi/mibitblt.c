@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mibitblt.c,v 1.73 89/04/27 19:37:54 keith Exp $ */
+/* $XConsortium: mibitblt.c,v 5.0 89/06/09 15:07:50 keith Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -457,7 +457,7 @@ miOpqStipDrawable(pDraw, pGC, prgnSrc, pbits, srcx, w, h, dstx, dsty)
     prgnSrcClip = (*pGCT->pScreen->RegionCreate)(NULL, 0);
     (*pGCT->pScreen->RegionCopy)(prgnSrcClip, prgnSrc);
     (*pGCT->pScreen->TranslateRegion) (prgnSrcClip, srcx, 0);
-    (*pGCT->ops->ChangeClip)(pGCT, CT_REGION, prgnSrcClip, 0);
+    (*pGCT->funcs->ChangeClip)(pGCT, CT_REGION, prgnSrcClip, 0);
     ValidateGC((DrawablePtr)pPixmap, pGCT);
 
     /* Since we know pDraw is always a pixmap, we never need to think
@@ -540,7 +540,7 @@ miOpqStipDrawable(pDraw, pGC, prgnSrc, pbits, srcx, w, h, dstx, dsty)
 
     ValidateGC(pDraw, pGC);
     /* put what we hope is a smaller clip region back in the scratch gc */
-    (*pGCT->ops->ChangeClip)(pGCT, CT_NONE, NULL, 0);
+    (*pGCT->funcs->ChangeClip)(pGCT, CT_NONE, NULL, 0);
     FreeScratchGC(pGCT);
     (*pDraw->pScreen->DestroyPixmap)(pPixmap);
 

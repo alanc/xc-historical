@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 1.30 89/05/19 17:37:24 rws Exp $ */
+/* $XConsortium: mibstore.c,v 5.0 89/06/09 15:07:53 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -593,6 +593,17 @@ miBSCheapCopyGC (pGCSrc, mask, pGCDst)
     (*pGCDst->funcs->CopyGC) (pGCSrc, mask, pGCDst);
 
     CHEAP_FUNC_EPILOGUE (pGCDst);
+}
+
+static void
+miBSCheapDestroyGC (pGC)
+    GCPtr   pGC;
+{
+    CHEAP_FUNC_PROLOGUE (pGC);
+
+    (*pGC->funcs->DestroyGC) (pGC);
+
+    /* leave it unwrapped */
 }
 
 static void
@@ -3459,7 +3470,7 @@ miBSValidateGC (pGC, stateChanges, pDrawable)
 	}
 	else
 	{
-	    (*pBackingGC->ops->ChangeClip) (pBackingGC, CT_REGION, backingCompositeClip, 0);
+	    (*pBackingGC->funcs->ChangeClip) (pBackingGC, CT_REGION, backingCompositeClip, 0);
 	}
 	pPriv->serialNumber = pDrawable->serialNumber;
     }
