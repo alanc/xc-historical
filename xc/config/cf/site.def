@@ -1,4 +1,4 @@
-/**/# site:  $XConsortium: site.def,v 1.6 89/07/26 09:00:05 jim Exp $
+/**/# site:  $XConsortium: site.def,v 1.7 89/08/21 10:10:38 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -64,5 +64,19 @@
 #else
 #define CompatibilityFlags /**/
 #endif
+#endif
+
+
+/*
+ * XXX - for now, turn off shared Xt, Xaw, and Xmu as they are changing
+ */
+#ifndef SharedLibXt
+#define SharedLibXt NO
+#endif
+#ifndef SharedLibXaw
+#define SharedLibXaw NO
+#endif
+#ifndef SharedLibXmu
+#define SharedLibXmu NO
 #endif
 
