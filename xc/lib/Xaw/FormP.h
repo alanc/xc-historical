@@ -1,4 +1,4 @@
-/* $XConsortium: FormP.h,v 1.17 89/07/21 01:51:27 kit Exp $ */
+/* $XConsortium: FormP.h,v 1.18 90/01/09 16:26:06 kit Exp $ */
 /* Copyright	Massachusetts Institute of Technology	1987 */
 
 
@@ -73,6 +73,7 @@ typedef struct _FormPart {
     Boolean	needs_relayout;	    /* next time no_refigure == 0	 */
     Boolean	resize_in_layout;   /* should layout() do geom request?  */
     Dimension	preferred_width, preferred_height; /* cached from layout */
+    Boolean     resize_is_no_op;    /* Causes resize to take not action. */
 } FormPart;
 
 typedef struct _FormRec {
