@@ -2,7 +2,7 @@ SRCS = ctext.tbl.ms
 
 all: ctext.PS
 
-ctext.PS: $(SRCS)
+ctext.PS:
 	$(TBL) $(SRCS) | $(TROFF) $(MSMACROS) 2> index.raw > ctext.PS
 
 clean::
