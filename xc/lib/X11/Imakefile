@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.178 94/03/30 12:06:38 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.179 94/03/30 12:36:11 gildea Exp $
 #define DoNormalLib NormalLibX11
 #define DoSharedLib SharedLibX11
 #define DoDebugLib DebugLibX11
@@ -42,8 +42,8 @@ EXTRA_LIBRARIES = /**/
    POLL_DEFINES = -DUSE_POLL
 #endif
    CONN_DEFINES = ConnectionFlags
-   XTRANS_X_DEFINES = -DX11_t
-   XTRANS_XIM_DEFINES = -DXIM_t
+   XTRANS_X_DEFINES = -DX11_t -DTRANS_CLIENT
+   XTRANS_XIM_DEFINES = -DXIM_t -DTRANS_CLIENT
 #if HasBSD44Sockets
    SOCK_DEFINES = -DBSD44SOCKETS
 #endif
