@@ -1,4 +1,4 @@
-/* $XConsortium: Alloc.c,v 1.38 91/01/02 19:01:27 rws Exp $ */
+/* $XConsortium: Alloc.c,v 1.39 91/01/09 15:36:02 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -31,6 +31,7 @@ SOFTWARE.
  */
 
 #include "IntrinsicI.h"
+#undef _XBCOPYFUNC
 #include <X11/Xlibos.h>
 
 #ifdef _XNEEDBCOPYFUNC
