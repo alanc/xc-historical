@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.72 93/09/20 17:51:53 hersh Exp $
+ * $XConsortium: init.c,v 2.73 93/10/07 15:23:05 gildea Exp swick $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -346,15 +346,17 @@ char **argv;
 
     static Arg shell_args[] = {
 	{XtNinput, (XtArgVal)True},
+	{XtNjoinSession, (XtArgVal)False}, /* join is delayed to end of init */
     };
 
     ptr = strrchr(argv[0], '/');
     if (ptr) progName = ptr + 1;
     else progName = argv[0];
 
-    toplevel = XtAppInitialize(&app, "Xmh", table, XtNumber(table),
-			       &argc, argv, FallbackResources,
-			       NULL, (Cardinal)0);
+    toplevel = XtOpenApplication(&app, "Xmh", table, XtNumber(table),
+				 &argc, argv, FallbackResources,
+				 sessionShellWidgetClass,
+				 NULL, (Cardinal)0);
     if (argc > 1) Syntax(progName);
 
     XSetIOErrorHandler(_IOErrorHandler);
@@ -491,4 +493,7 @@ char **argv;
     DEBUG("done.\n");
 
     MapScrn(scrn);
+
+    XtAddCallback(toplevel, XtNsaveCallback, DoSaveYourself, (XtPointer)NULL);
+    XtVaSetValues(toplevel, XtNjoinSession, (XtArgVal)True);
 }
