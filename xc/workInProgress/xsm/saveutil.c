@@ -1,4 +1,4 @@
-/* $XConsortium: save.c,v 1.6 94/06/14 20:12:11 mor Exp $ */
+/* $XConsortium: save.c,v 1.7 94/06/17 10:13:52 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -30,7 +30,7 @@ in this Software without prior written authorization from the X Consortium.
 extern List	 *PendingList;
 extern ClientRec *ClientList;
 char 		 session_save_file[PATH_MAX];
-static Bool	 getline();
+Bool	 	getline();
 
 
 
@@ -203,7 +203,7 @@ char *sm_id;
 
 
 
-static Bool
+Bool
 getline(pbuf, plen, f)
 char	**pbuf;
 int	*plen;
@@ -217,8 +217,8 @@ FILE	*f;
 	    if(i+2 > *plen) {
 		if(*plen) *plen *= 2;
 		else *plen = BUFSIZ;
-		if(*pbuf) *pbuf = (char *) realloc(*pbuf, *plen);
-		else *pbuf = (char *) malloc(*plen);
+		if(*pbuf) *pbuf = (char *) realloc(*pbuf, *plen + 1);
+		else *pbuf = (char *) malloc(*plen + 1);
 	    }
 	    c = getc(f);
 	    if(c == EOF) break;
