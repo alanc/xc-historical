@@ -1,4 +1,4 @@
-/* $XConsortium: listen.c,v 1.8 94/02/02 20:03:43 mor Exp $ */
+/* $XConsortium: listen.c,v 1.9 94/02/03 09:57:59 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -34,14 +34,14 @@ char		*errorStringRet;
 {
     struct _IceListenObj	*listenObjs;
     char			*networkId;
-    int				fd, transCount, maxTrans, i, j;
+    int				fd, transCount, partial, i, j;
     int				family, addrlen;
     Xtransaddr			*addr;
     Status			status = 1;
     XtransConnInfo		*transConns = NULL;
 
 
-    if ((_ICETransMakeAllCOTSServerListeners (NULL, &maxTrans,
+    if ((_ICETransMakeAllCOTSServerListeners (NULL, &partial,
 	&transCount, &transConns) < 0) || (transCount < 1))
     {
 	*listenObjsRet = NULL;
