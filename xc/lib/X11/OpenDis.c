@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.79 89/03/10 17:47:18 rws Exp $
+ * $XConsortium: XOpenDis.c,v 11.80 89/03/24 14:57:10 jim Exp $
  */
 
 #include "copyright.h"
@@ -323,10 +323,14 @@ Display *XOpenDisplay (display)
  */
 	dpy->vendor = (char *) Xmalloc (u.setup->nbytesVendor + 1);
 	vendorlen = u.setup->nbytesVendor;
-	u.setup += 1;	/* can't touch information in XConnSetup anymore..*/
-	(void) strncpy(dpy->vendor, u.vendor, vendorlen);
+
+ 	u.setup = (xConnSetup *) ((char *) u.setup + sz_xConnSetup);
+  	(void) strncpy(dpy->vendor, u.vendor, vendorlen);
 	dpy->vendor[vendorlen] = '\0';
-	u.vendor += (vendorlen + 3) & ~3;
+ 	vendorlen = (vendorlen + 3) & ~3;	/* round up */
+	bcopy (u.vendor + vendorlen, setup,
+	       setuplength - sz_xConnSetup - vendorlen);
+ 	u.vendor = setup;
 /*
  * Now iterate down setup information.....
  */
@@ -347,7 +351,7 @@ Display *XOpenDisplay (display)
 	    fmt->bits_per_pixel = u.sf->bitsPerPixel;
 	    fmt->scanline_pad = u.sf->scanLinePad;
 	    fmt->ext_data = NULL;
-	    u.sf += 1;
+	    u.sf = (xPixmapFormat *) ((char *) u.sf + sz_xPixmapFormat);
 	}
 
 /*
@@ -384,7 +388,7 @@ Display *XOpenDisplay (display)
 	    sp->root_depth  = u.rp->rootDepth;
 	    sp->ndepths	    = u.rp->nDepths;
 	    sp->ext_data   = NULL;
-	    u.rp += 1;
+	    u.rp = (xWindowRoot *) ((char *) u.rp + sz_xWindowRoot);
 /*
  * lets set up the depth structures.
  */
@@ -402,7 +406,7 @@ Display *XOpenDisplay (display)
 		Depth *dp = &sp->depths[j];
 		dp->depth = u.dp->depth;
 		dp->nvisuals = u.dp->nVisuals;
-		u.dp += 1;
+		u.dp = (xDepth *) ((char *) u.dp + sz_xDepth);
 		if (dp->nvisuals > 0) {
 		    dp->visuals = 
 		      (Visual *)Xmalloc((unsigned)dp->nvisuals*sizeof(Visual));
@@ -422,7 +426,8 @@ Display *XOpenDisplay (display)
 			vp->green_mask	= u.vp->greenMask;
 			vp->blue_mask	= u.vp->blueMask;
 			vp->ext_data	= NULL;
-			u.vp += 1;
+			u.vp = (xVisualType *) (((char *) u.vp) +
+						sz_xVisualType);
 		    }
 		} else {
 		    dp->visuals = (Visual *) NULL;
