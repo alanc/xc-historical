@@ -1,4 +1,4 @@
-/* $XConsortium: XFreeCmap.c,v 11.8 91/02/05 13:37:13 dave Exp $ */
+/* $XConsortium: XFreeCmap.c,v 11.9 91/02/12 16:11:08 dave Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -14,6 +14,8 @@ without express or implied warranty.
 */
 
 #include "Xlibint.h"
+
+extern void _XcmsDeleteCmapRec();
 
 XFreeColormap(dpy, cmap)
 register Display *dpy;
