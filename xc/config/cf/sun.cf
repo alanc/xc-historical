@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.114 94/03/29 17:18:02 matt Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.115 94/03/30 10:39:24 matt Exp $
 
 #ifdef SVR4
 #ifdef i386Architecture
@@ -181,14 +181,20 @@ XCOMM operating system:  OSName
 #else
 #if OSMajorVersion < 5
 #if HasSunC
+#ifndef DefaultCCOptions
 #define DefaultCCOptions -pipe
+#endif
 #endif
 #else 	/* OSMajorVersion */
 #if HasSunC
+#ifndef DefaultCCOptions
 #define DefaultCCOptions -Xc
 #endif
+#endif
 #if HasCenterLineC
+#ifndef DefaultCCOptions
 #define DefaultCCOptions -ansi
+#endif
 #endif 
 #endif	/* OSMajorVersion */
 #endif	/* Sun3Architecture */
