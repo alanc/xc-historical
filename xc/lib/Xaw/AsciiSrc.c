@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.25 89/12/06 15:31:01 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.26 89/12/07 18:35:14 kit Exp $";
 #endif 
 
 /*
@@ -1306,7 +1306,7 @@ Cardinal num_args;
       args[i].name = XtNstring;
 
   src = XtCreateWidget("genericAsciiDisk", asciiSrcObjectClass, parent,
-		       ascii_args, num_args + TWO);
+		       ascii_args, num_args + ONE);
   XtFree(ascii_args);
   return(src);
 }
