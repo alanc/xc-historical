@@ -22,14 +22,14 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: snfread.c,v 1.6 91/05/30 19:06:43 keith Exp $ */
+/* $XConsortium: snfread.c,v 1.7 91/06/04 15:52:22 rws Exp $ */
 
 #include <ctype.h>
 #include "fontfilest.h"
 #include "bitmap.h"
 #include "snfstr.h"
 
-void        snfUnloadFont();
+static void snfUnloadFont();
 
 static int
 snfReadCharInfo(file, charInfo, base)
