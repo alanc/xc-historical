@@ -1,4 +1,4 @@
-/* $XConsortium: Dialog.h,v 1.18 89/08/25 18:35:35 kit Exp $ */
+/* $XConsortium: Dialog.h,v 1.19 89/08/28 12:09:41 kit Exp $ */
 
 
 /***********************************************************
@@ -67,9 +67,9 @@ extern WidgetClass dialogWidgetClass;
 
 extern void XawDialogAddButton(); /* parent, name, function, param */
     /* Widget parent; */
-    /* char *name; */
-    /* void (*function)(); */
-    /* caddr_t param; */
+    /* String name; */
+    /* XtCallback function; */
+    /* XtPointer param; */
 
 extern char *XawDialogGetValueString(); /* w */
     /* Widget w; */

@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.34 89/10/09 16:20:05 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.35 89/11/05 13:18:05 kit Exp $";
 #endif /* lint */
 
 
@@ -337,11 +337,12 @@ Widget w;
 }
 
 
-void XawDialogAddButton(dialog, name, function, param)
+void 
+XawDialogAddButton(dialog, name, function, param)
 Widget dialog;
-char *name;
-void (*function)();
-caddr_t param;
+String name;
+XtCallbackProc function;
+XtPointer param;
 {
 /*
  * Correct Constraints are all set in ConstraintInitialize().
