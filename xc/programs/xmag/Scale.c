@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Scale.c,v 1.15 91/08/26 11:00:15 gildea Exp $
+ * $XConsortium: Scale.c,v 1.16 91/10/21 14:32:29 eswu Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,16 +23,16 @@
  * Author:  Davor Matic, MIT X Consortium
  */
 
+#include <X11/IntrinsicP.h>
+#include <X11/StringDefs.h>
+#include <X11/Xos.h>
+#include <X11/Xaw/XawInit.h>
+
+#include "ScaleP.h"
 
 #include <stdio.h>
 #include <ctype.h>
-#include <string.h> 
 #include <math.h>
-#include <X11/IntrinsicP.h>
-#include <X11/StringDefs.h>
-#include <X11/Xaw/XawInit.h>
-#include "ScaleP.h"
-#include <X11/Xosdefs.h>
 
 #define myrint(x) floor(x + 0.5)
 
