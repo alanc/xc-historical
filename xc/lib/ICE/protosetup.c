@@ -1,4 +1,4 @@
-/* $XConsortium: protosetup.c,v 1.9 93/11/18 16:50:07 mor Exp $ */
+/* $XConsortium: protosetup.c,v 1.10 93/11/22 16:23:29 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -114,8 +114,8 @@ char 	*errorStringRet;
 
     for (i = 0; i < authCount; i++)
     {
-	extra += XPCS_BYTES (myProtocol->orig_client->auth_recs[
-	    doFavor ? i : authIndices[i]].auth_name);
+	extra += XPCS_BYTES (myProtocol->orig_client->auth_names[
+	    doFavor ? i : authIndices[i]]);
     }
 
     extra += (myProtocol->orig_client->version_count * 4);
@@ -137,8 +137,8 @@ char 	*errorStringRet;
 
     for (i = 0; i < authCount; i++)
     {
-	STORE_XPCS (pData, myProtocol->orig_client->auth_recs[
-	    doFavor ? i : authIndices[i]].auth_name);
+	STORE_XPCS (pData, myProtocol->orig_client->auth_names[
+	    doFavor ? i : authIndices[i]]);
     }
 
     for (i = 0; i < myProtocol->orig_client->version_count; i++)
