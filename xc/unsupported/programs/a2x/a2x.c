@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.118 93/04/12 21:32:49 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.119 93/04/13 19:54:43 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -69,6 +69,9 @@ Syntax of magic values in the input stream:
 	[ <mult>]	off-axis distance multiplier is <mult> (float)
 ^T^L<options>^T
 	s<digit>	save current pointer position as location <digit>
+			relative to window origin
+	S<digit>	save current pointer position as location <digit>
+			relative to closest window edges
 	w<digit>	warp pointer to location <digit>
 ^T^M			set Meta key for next device event
 ^T^P			print debugging info
