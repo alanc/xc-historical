@@ -19,13 +19,13 @@ SRCS =	 cfbgc.c cfbrrop.c cfbwindow.c \
 	 cfbply1rctC.c cfbply1rctG.c
 
 #ifdef MipsArchitecture
-STIPPLESRC = stipplemips.s stipplemipste.s
-STIPPLEOBJ = stipplemips.o stipplemipste.o
+STIPPLESRC = stipmips.s stipmipste.s
+STIPPLEOBJ = stipmips.o stipmipste.o
 STIPPLEDEF = -DHAS_STIPPLE_CODE
 #endif
 #ifdef SparcArchitecture
-STIPPLESRC = stipplesparc.s stipplesparcte.s
-STIPPLEOBJ = stipplesparc.o stipplesparcte.o
+STIPPLESRC = stipsparc.s stipsparcte.s
+STIPPLEOBJ = stipsparc.o stipsparcte.o
 STIPPLEDEF = -DHAS_STIPPLE_CODE
 #endif
 
@@ -64,27 +64,27 @@ saber_src:
 #endif
 
 #ifdef MipsArchitecture
-stipplemipste.s: stipplemips.s
+stipmipste.s: stipmips.s
 	$(RM) $@
-	$(LN) stipplemips.s stipplemipste.s
+	$(LN) stipmips.s stipmipste.s
 clean::
-	$(RM) stipplemipste.s
+	$(RM) stipmipste.s
 
-stipplemipste.o: stipplemipste.s
-	$(AS) -o $@ -DTETEXT stipplemipste.s
+stipmipste.o: stipmipste.s
+	$(AS) -o $@ -DTETEXT stipmipste.s
 #endif
 #ifdef SparcArchitecture
-stipplesparcte.s: stipplesparc.s
+stipsparcte.s: stipsparc.s
 	$(RM) $@
-	$(LN) stipplesparc.s stipplesparcte.s
+	$(LN) stipsparc.s stipsparcte.s
 clean::
-	$(RM) stipplesparcte.s
+	$(RM) stipsparcte.s
 
-stipplesparc.o: stipplesparc.s
-	$(CPP) stipplesparc.s | $(AS) -o $@ -
+stipsparc.o: stipsparc.s
+	$(CPP) stipsparc.s | $(AS) -o $@ -
 
-stipplesparcte.o: stipplesparcte.s
-	$(CPP) -DTETEXT stipplesparcte.s | $(AS) -o $@ -
+stipsparcte.o: stipsparcte.s
+	$(CPP) -DTETEXT stipsparcte.s | $(AS) -o $@ -
 #endif
 
 ObjectFromSpecialSource(cfbseg,cfbline,-DPOLYSEGMENT)
