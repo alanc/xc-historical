@@ -50,9 +50,9 @@ static char sccsid[] = "%W %G Copyright 1987 Sun Micro";
 #include    "macII.h"
 #include    "opaque.h"
 
-Bool	    	screenSaved = FALSE;
 int	    	lastEventTime = 0;
 extern int	macIISigIO;
+extern int      screenIsSaved;
 extern void	SaveScreens();
 
 int		consoleFd = 0;
@@ -146,6 +146,8 @@ ProcessInputEvents ()
         /*
          * Error reading events; should do something. XXX
          */
+ /*debug*/
+        ErrorF("ProcessInputEvents: read(windowFd)  n=%d\n",n);
         return;
     }
 
@@ -159,8 +161,8 @@ ProcessInputEvents ()
     }
 
     for (meL = macIIevents + (n/(sizeof macIIevents[0]));  me < meL; me++) {
-        if (screenSaved)
-    	SaveScreens(SCREEN_SAVER_FORCER, ScreenSaverReset);
+        if (screenIsSaved == SCREEN_SAVER_ON)
+            SaveScreens(SCREEN_SAVER_OFF, ScreenSaverReset);
 
 #ifdef USE_TOD_CLOCK
 	{
