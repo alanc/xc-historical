@@ -85,6 +85,11 @@ the x resolution of the default screen in pixels per meter.
 .TP 8
 .B Y_RESOLUTION=num
 the y resolution of the default screen in pixels per meter.
+.TP 8
+.B EXT_\fIname\fP
+A symbol is defined for each protocol extension supported by the server.
+Each hyphen in the extension name is replaced with an underscore, and
+then the name is prefixed with ``EXT_'', e.g., X3D-PEX becomes EXT_X3D_PEX.
 .LP
 Lines that begin with an exclamation mark (!) are ignored and may
 be used as comments.
