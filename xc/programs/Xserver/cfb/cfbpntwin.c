@@ -31,18 +31,8 @@ SOFTWARE.
 
 #include "cfb.h"
 #include "cfbmskbits.h"
-/*
-NOTE
-   PaintArea32() doesn't need to rotate the tile, since
-cfbPositionWIndow() and cfbChangeWIndowAttributes() do it;
-cfbPaintAreaOther(), however, needs to rotate things.
-*/
 
-static void cfbPaintAreaNone(),   cfbPaintAreaPR();
-static void cfbPaintArea32(),	    cfbPaintAreaSolid();
-static void cfbPaintAreaOther();
-
-extern void miPaintWindow();
+static void cfbPaintArea32(), cfbPaintAreaSolid(), cfbPaintAreaOther();
 
 static void cfbTileOddWin();
 
@@ -57,21 +47,22 @@ cfbPaintWindow(pWin, pRegion, what)
 
     pPrivWin = (cfbPrivWin *)(pWin->devPrivates[cfbWindowPrivateIndex].ptr);
     
-    painter = miPaintWindow;
+    painter = cfbPaintAreaOther;
     switch (what) {
     case PW_BACKGROUND:
 	switch (pWin->backgroundState) {
 	case None:
-	    painter = cfbPaintAreaNone;
-	    break;
+	    return;
 	case ParentRelative:
-	    painter = cfbPaintAreaPR;
-	    break;
+	    {
+		pWin = pWin->parent;
+	    } while (pWin->backgroundState == ParentRelative);
+	    (*pWin->drawable.pScreen->PaintWindowBackground)(pWin, pRegion,
+							     what);
+	    return;
 	case BackgroundPixmap:
 	    if (pPrivWin->fastBackground)
 		painter = cfbPaintArea32;
-	    else
-		painter = cfbPaintAreaOther;
 	    break;
 	case BackgroundPixel:
 	    painter = cfbPaintAreaSolid;
@@ -83,46 +74,9 @@ cfbPaintWindow(pWin, pRegion, what)
 	    painter = cfbPaintAreaSolid;
 	else if (pPrivWin->fastBorder)
 	    painter = cfbPaintArea32;
-	else
-	    painter = cfbPaintAreaOther;
 	break;
     }
     (*painter) (pWin, pRegion, what);
-}
-
-/* Paint Area None -- just return */
-/*ARGSUSED*/
-static void
-cfbPaintAreaNone(pWin, pRegion, what)
-    WindowPtr pWin;
-    RegionPtr pRegion;
-    int what;		
-{
-    if ( pWin->drawable.depth != PSZ )
-	FatalError( "cfbPaintAreaNone: invalid depth\n" );
-}
-
-/* Paint Area Parent Relative -- Find first ancestor which isn't parent
- * relative and paint as it would, but with this region */ 
-static void
-cfbPaintAreaPR(pWin, pRegion, what)
-    WindowPtr pWin;
-    RegionPtr pRegion;
-    int what;		
-{
-    WindowPtr pParent;
-
-    if ( pWin->drawable.depth != PSZ )
-	FatalError( "cfbPaintAreaPR: invalid depth\n" );
-
-    pParent = pWin->parent;
-    while(pParent->backgroundState == ParentRelative)
-	pParent = pParent->parent;
-
-    if(what == PW_BORDER)
-        (*pParent->drawable.pScreen->PaintWindowBorder)(pParent, pRegion, what);
-    else
-	(*pParent->drawable.pScreen->PaintWindowBackground)(pParent, pRegion, what);
 }
 
 static void
