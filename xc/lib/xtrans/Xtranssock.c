@@ -1,4 +1,4 @@
-/* $XConsortium: Xtranssock.c,v 1.32 94/11/17 14:16:52 dpw Exp kaleb $ */
+/* $XConsortium: Xtranssock.c,v 1.33 94/12/01 16:33:12 kaleb Exp kaleb $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -97,7 +97,7 @@ from the X Consortium.
 #include <net/errno.h>
 #endif /* _SEQUENT_  || ESIX */
 #include <sys/stropts.h>
-#endif /* SYSV386 ** SYSV || _SEQUENT_ */
+#endif /* i386 && SYSV || _SEQUENT_ */
 #endif /* !WIN32 */
 
 #ifdef WIN32
@@ -1490,11 +1490,11 @@ BytesReadable_t *pend;
 #ifdef WIN32
     return ioctlsocket ((SOCKET) ciptr->fd, FIONREAD, (u_long *) pend);
 #else
-#if (defined(SYSV386) && defined(SYSV) && !defined(SCO)) || defined(_SEQUENT_)
+#if (defined(i386) && defined(SYSV) && !defined(SCO)) || defined(_SEQUENT_)
     return ioctl (ciptr->fd, I_NREAD, (char *) pend);
 #else
     return ioctl (ciptr->fd, FIONREAD, (char *) pend);
-#endif /* SYSV386 && SYSV || _SEQUENT_ */
+#endif /* i386 && SYSV || _SEQUENT_ */
 #endif /* WIN32 */
 }
 
