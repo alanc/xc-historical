@@ -1,4 +1,4 @@
-/* $XConsortium: rgb.c,v 11.18 94/02/20 18:43:58 rws Exp $ */
+/* $XConsortium: rgb.c,v 11.19 94/04/17 20:24:45 rws Exp gildea $ */
 /*
 
 Copyright (c) 1985  X Consortium
@@ -61,14 +61,12 @@ from the X Consortium.
 extern int errno;
 #endif
 
-extern int sys_nerr;
-extern char *sys_errlist[];
-
 char *ProgramName;
 
 char *SysError ()
 {
-    return ((errno >= 0 && errno < sys_nerr) ? sys_errlist[errno] : "?");
+    register char *s = strerror(errno);
+    return s ? s : "?";
 }
 
 main(argc, argv)
