@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$Header: xinit.c,v 11.15 88/08/11 20:09:52 jim Exp $";
+static char *rcsid_xinit_c = "$Header: xinit.c,v 11.16 88/08/19 17:42:51 jim Exp $";
 #endif /* lint */
 #include <X11/copyright.h>
 
@@ -20,6 +20,8 @@ extern int sys_nerr;
 #include <sys/utsname.h>
 #endif
 
+extern char *getenv();
+
 #include <setjmp.h>
 
 #ifdef macII
@@ -36,6 +38,12 @@ extern int sys_nerr;
 #define	ERR_EXIT	1
 char hostname[100] = "unix";
 char client_display[100];
+
+#ifndef XINITRC
+#define XINITRC ".xinitrc"
+#endif
+char *xinitrc = XINITRC;
+char xinitrcbuf[256];
 
 char *bindir = BINDIR;
 char *server_names[] = {
@@ -109,6 +117,7 @@ register char **argv;
 	register char **cptr = client;
 	register char **ptr;
 	int pid, i;
+	int client_args_given = 0;
 
 	program = *argv++;
 	argc--;
@@ -133,7 +142,8 @@ register char **argv;
 	/*
 	 * copy the client args.
 	 */
-	if (argc == 0 || (**argv != '/' && **argv != '.' && !isalpha(**argv))) {
+	if (argc == 0 ||
+	    (**argv != '/' && **argv != '.' && !isalpha(**argv))) {
 		for (ptr = default_client; *ptr; )
 			*cptr++ = *ptr++;
 		strcpy(client_display, hostname);
@@ -150,6 +160,7 @@ register char **argv;
 #endif /* sun */
 	}
 	while (argc && strcmp(*argv, "--")) {
+		client_args_given++;
 		*cptr++ = *argv++;
 		argc--;
 	}
@@ -162,7 +173,8 @@ register char **argv;
 	/*
 	 * Copy the server args.
 	 */
-	if (argc == 0 || (**argv != '/' && **argv != '.' && !isalpha(**argv))) {
+	if (argc == 0 ||
+	    (**argv != '/' && **argv != '.' && !isalpha(**argv))) {
 		*sptr++ = default_server;
 	} else {
 		*sptr++ = *argv++;
@@ -175,6 +187,35 @@ register char **argv;
 	while (--argc >= 0)
 		*sptr++ = *argv++;
 	*sptr = NULL;
+
+	/*
+	 * if no client arguments given, check for a startup file and copy
+	 * that into the argument list
+	 */
+	if (client_args_given == 0) {
+	    char *cp;
+
+	    xinitrcbuf[0] = '\0';
+	    if ((cp = getenv ("XINITRC")) != NULL) {
+		strcpy (xinitrcbuf, cp);
+	    } else if ((cp = getenv ("HOME")) != NULL) {
+		(void) sprintf (xinitrcbuf, "%s/%s", cp, xinitrc);
+	    }
+	    if (xinitrcbuf[0]) {
+		if (access (xinitrcbuf, X_OK) == 0) {
+		    client[0] = xinitrcbuf;
+		    client[1] = NULL;
+		} else if (access (xinitrcbuf, R_OK) == 0) {
+		    client[0] = "sh";
+		    client[1] = xinitrcbuf;
+		    client[2] = NULL;
+		} else {
+		    fprintf (stderr,
+	     "%s:  can't execute or read file %s, ignoring....\n",
+			     program, xinitrcbuf);
+		}
+	    }
+	}
 
 	/*
 	 * Start the server and client.
