@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: maskbits.h,v 1.7 88/03/15 16:15:50 rws Exp $ */
+/* $Header: maskbits.h,v 1.8 88/03/15 18:39:27 xguest Locked $ */
 #include "X.h"
 #include "Xmd.h"
 #include "servermd.h"
@@ -190,8 +190,8 @@ getshiftedleftbits(psrc, offset, w, dst)
 */
 
 #if (BITMAP_BIT_ORDER == MSBFirst)	/* pc/rt, 680x0 */
-#define SCRLEFT(lw, n)	((lw) << (n))
-#define SCRRIGHT(lw, n)	((lw) >> (n))
+#define SCRLEFT(lw, n)	((unsigned int)(lw) << (n))
+#define SCRRIGHT(lw, n)	((unsigned int)(lw) >> (n))
 #else					/* vax, intel */
 #define SCRLEFT(lw, n)	((lw) >> (n))
 #define SCRRIGHT(lw, n)	((lw) << (n))
@@ -231,7 +231,7 @@ else \
 #define putbits(src, x, w, pdst) \
 if ( ((x)+(w)) <= 32) \
 { \
-    int tmpmask; \
+    unsigned int tmpmask; \
     maskpartialbits((x), (w), tmpmask); \
     *(pdst) = (*(pdst) & ~tmpmask) | (SCRRIGHT(src, x) & tmpmask); \
 } \

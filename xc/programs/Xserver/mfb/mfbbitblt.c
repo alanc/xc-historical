@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbbitblt.c,v 1.44 87/11/08 17:20:04 rws Exp $ */
+/* $Header: mfbbitblt.c,v 1.46 88/07/21 13:18:01 xguest Locked $ */
 #include "X.h"
 #include "Xprotostr.h"
 
@@ -198,7 +198,7 @@ int dstx, dsty;
         miHandleExposures(pSrcDrawable, pDstDrawable, pGC,
 		          origSource.x, origSource.y,
 		          origSource.width, origSource.height,
-		          origDest.x, origDest.y);
+		          origDest.x, origDest.y, 0);
 		
     (*pGC->pScreen->RegionDestroy)(prgnDst);
     if (realSrcClip)
@@ -254,7 +254,7 @@ DDXPointPtr pptSrc;
     register unsigned int *pdst;/* pointer to current dst longword */
 
 				/* following used for looping through a line */
-    int startmask, endmask;	/* masks for writing ends of dst */
+    unsigned int startmask, endmask;	/* masks for writing ends of dst */
     int nlMiddle;		/* whole longwords in dst */
     register int nl;		/* temp copy of nlMiddle */
     register unsigned int tmpSrc;

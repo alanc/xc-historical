@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbfillsp.c,v 1.29 87/09/07 19:08:34 toddb Exp $ */
+/* $Header: mfbfillsp.c,v 1.30 88/04/10 17:19:38 xguest Locked $ */
 #include "X.h"
 #include "Xmd.h"
 #include "gcstruct.h"
@@ -759,13 +759,14 @@ int fSorted;
     register int *pwidth;	/* pointer to list of n widths */
     int		*addrlBase;	/* pointer to start of bitmap */
     int		 nlwidth;	/* width in longwords of bitmap */
-    register int *pdst;		/* pointer to current word in bitmap */
-    register int *psrc;		/* pointer to current word in tile */
-    register int startmask;
+    register unsigned int *pdst;/* pointer to current word in bitmap */
+    register unsigned int *psrc;/* pointer to current word in tile */
+    register unsigned int startmask;
     register int nlMiddle;
     PixmapPtr	pTile;		/* pointer to tile we want to fill with */
-    int		w, width, x, xSrc, ySrc, tmpSrc, srcStartOver, nstart, nend;
-    int 	endmask, tlwidth, rem, tileWidth, *psrcT, endinc, rop;
+    int		w, width, x, xSrc, ySrc, srcStartOver, nstart, nend;
+    int 	tlwidth, rem, tileWidth, endinc, rop;
+    unsigned int      tmpSrc, endmask, *psrcT;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
 
