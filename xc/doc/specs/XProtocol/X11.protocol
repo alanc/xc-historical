@@ -1,4 +1,4 @@
-.\" $XConsortium: X11.protocol,v 1.35 94/04/12 14:48:18 rws Exp $
+.\" $XConsortium: X11.protocol,v 1.36 94/04/12 22:08:58 rws Exp $
 .EH ''''
 .OH ''''
 .EF ''''
@@ -878,6 +878,7 @@ and
 .PN Lock 
 modifiers are both off.  In this case, the first
 KEYSYM is used.
+.IP \(bu 5
 The
 .PN Shift 
 modifier is off, and the
