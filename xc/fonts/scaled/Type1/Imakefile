@@ -1,6 +1,9 @@
-XCOMM $XConsortium: Imakefile,v 1.2 91/10/31 13:05:36 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.3 92/03/24 17:56:56 gildea Exp $
 OBJS = UTRG____.pfa UTB_____.pfa UTBI____.pfa UTI_____.pfa \
-      cour.pfa courb.pfa courbi.pfa couri.pfa
+      cour.pfa courb.pfa courbi.pfa couri.pfa \
+ c0648bt_.pfb c0649bt_.pfb c0632bt_.pfb c0633bt_.pfb \
+ c0419bt_.pfb c0582bt_.pfb c0583bt_.pfb c0611bt_.pfb
+
 
 FONTINSTDIR = $(FONTDIR)/Type1
 
