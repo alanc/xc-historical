@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.14 90/11/17 13:32:57 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.15 90/12/06 10:51:17 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -403,6 +403,7 @@ Name						Reference
 "Apple"						[22]
 "Bitstream"					[25]
 "DEC"						[27]
+"Fuji Xerox"					[64]
 "IBM"						[33]
 "MISC"						[8]
 "Panasonic"					[52]
@@ -909,4 +910,11 @@ REFERENCES
 	Tandberg Data A/S
 	PO Box 9
 	Korsvoll, N-0808 OSLO 8
+
+[64]	Masahiko Muramatsu
+	System Techonology Development Center
+	Fuji Xerox Co.,LTD.
+	KSP/R&D Business Park Bldg.
+	100-1, Sakado, Takatsu-ku, Kawasaki-City, Kanagawa-Ken,
+	213 JAPAN
 Sumitomo Electric Workstation Corp.	[77]
