@@ -256,8 +256,8 @@ _default_mapping _default_mappings[] = {
 ?m4(\t\tprogram specified minimum size: $5 by $6\n)\
 ?m5(\t\tprogram specified maximum size: $7 by $8\n)\
 ?m6(\t\tprogram specified resize increment: $9 by $10\n)\
-?m7(\t\tprogram specified minimum ascept ratio: $11/$12\n\
-\t\tprogram specified maximum ascept ratio: $13/$14\n)" },
+?m7(\t\tprogram specified minimum aspect ratio: $11/$12\n\
+\t\tprogram specified maximum aspect ratio: $13/$14\n)" },
 	{ XA_WM_ICON_SIZE, "32cccccc", ":\n\
 \t\tminimum icon size: $0 by $1\n\
 \t\tmaximum icon size: $2 by $3\n\
