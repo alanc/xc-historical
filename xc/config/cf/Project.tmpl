@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.156 93/04/27 16:38:22 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.157 93/06/24 10:51:47 dpw Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -161,6 +161,9 @@ XCOMM $XConsortium: Project.tmpl,v 1.156 93/04/27 16:38:22 rws Exp $
 #endif
 #ifndef ProfileLibPex
 #define ProfileLibPex		NO	/* profiled PEX5 library */
+#endif
+#ifndef ThreadedX
+#define ThreadedX		NO	/* multi-threaded libraries */
 #endif
 #ifndef ManDirectoryRoot
 #ifdef ProjectRoot
