@@ -1,5 +1,5 @@
 
-# $XConsortium: Makefile,v 5.5 91/05/10 19:53:32 hersh Exp $
+# $XConsortium: Makefile,v 5.6 91/07/08 18:19:12 hersh Exp $
 ###################################################################
 # Copyright (c) 1989, 1990, 1991,1990 by Sun Microsystems, Inc. and the X Consortium.
 # 
@@ -51,7 +51,7 @@ SRCDIR = $$INSPEXHOME/tools/pexint
 NEWTDIR = $$INSPEXHOME/tools/newt
 CFLAGS = $(DEBUGOPT) $(I_CFLAGS) $(CPPFLAGS) -I$(XINCDIR) -I$(PEXINCDIR) -I$(SRCDIR)
 LDFLAGS = $(DEBUGOPT) $(I_LDFLAGS) -L$(PEXLIBDIR) -L$(XLIBDIR) 
-LIBS = ../../../../lib/PEX/libphigs.a -lX11 -lm -ll
+LIBS = ../../../../lib/PEX/libphigs.a -lX11 -lm -ll -lXext
 
 SRC = Makefile NewTvararg.h computils.c computils.h computils.m \
 	config.h datautils.c datautils.h datautils.m imath.h \
