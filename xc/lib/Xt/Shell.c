@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Shell.c,v 1.23 88/02/26 09:28:48 swick Exp $";
+static char rcsid[] = "$Header: Shell.c,v 1.24 88/02/27 15:25:24 rws Exp $";
 #endif lint
 
 /***********************************************************
@@ -1084,7 +1084,6 @@ Cardinal mask;
 
 	if (wm) {
 	    hintp = &wmshell->wm.size_hints;
-	    hintp->flags = 0;
 	    hintp->x = w->core.x;
 	    hintp->y = w->core.y;
 	    hintp->width = w->core.width;
