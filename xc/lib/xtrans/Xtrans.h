@@ -1,4 +1,4 @@
-/* $XConsortium: Xtrans.h,v 1.14 94/02/08 20:54:38 mor Exp $ */
+/* $XConsortium: Xtrans.h,v 1.15 94/03/02 12:16:03 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -156,13 +156,17 @@ typedef struct _XtransConnInfo *XtransConnInfo;
  * Return values of Connect (0 is success)
  */
 
-#ifndef TRANS_CONNECT_FAILED
-#define TRANS_CONNECT_FAILED -1
-#endif
-
-#ifndef TRANS_TRY_CONNECT_AGAIN
+#define TRANS_CONNECT_FAILED 	-1
 #define TRANS_TRY_CONNECT_AGAIN -2
-#endif
+
+
+/*
+ * Return values of Accept (0 is success)
+ */
+
+#define TRANS_ACCEPT_BAD_MALLOC			-1
+#define TRANS_ACCEPT_FAILED 			-2
+#define TRANS_ACCEPT_MISC_ERROR			-3
 
 
 /*
@@ -256,7 +260,8 @@ int TRANS(ResetListener)(
 
 XtransConnInfo TRANS(Accept)(
 #if NeedFunctionPrototypes
-    XtransConnInfo	/* ciptr */
+    XtransConnInfo,	/* ciptr */
+    int *		/* status */
 #endif
 );
 

@@ -1,4 +1,4 @@
-/* $XConsortium: Xtranssock.c,v 1.18 94/02/07 22:40:01 rws Exp $ */
+/* $XConsortium: Xtranssock.c,v 1.19 94/03/02 12:16:25 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -960,9 +960,10 @@ XtransConnInfo ciptr;
 #ifdef TCPCONN
 
 static XtransConnInfo
-TRANS(SocketINETAccept) (ciptr)
+TRANS(SocketINETAccept) (ciptr, status)
 
 XtransConnInfo ciptr;
+int	       *status;
 
 {
     XtransConnInfo	newciptr;
@@ -975,6 +976,7 @@ XtransConnInfo ciptr;
 	1, sizeof(struct _XtransConnInfo))) == NULL)
     {
 	PRMSG (1, "TRANS(SocketINETAccept): malloc failed\n", 0, 0, 0);
+	*status = TRANS_ACCEPT_BAD_MALLOC;
 	return NULL;
     }
 
@@ -983,6 +985,7 @@ XtransConnInfo ciptr;
     {
 	PRMSG (1, "TRANS(SocketINETAccept): accept() failed\n", 0, 0, 0);
 	free (newciptr);
+	*status = TRANS_ACCEPT_FAILED;
 	return NULL;
     }
 
@@ -1010,6 +1013,7 @@ XtransConnInfo ciptr;
 	    0, 0, 0);
 	close (newciptr->fd);
 	free (newciptr);
+	*status = TRANS_ACCEPT_MISC_ERROR;
         return NULL;
     }
 
@@ -1021,8 +1025,11 @@ XtransConnInfo ciptr;
 	close (newciptr->fd);
 	if (newciptr->addr) free (newciptr->addr);
 	free (newciptr);
+	*status = TRANS_ACCEPT_MISC_ERROR;
         return NULL;
     }
+
+    *status = 0;
 
     return newciptr;
 }
@@ -1032,9 +1039,10 @@ XtransConnInfo ciptr;
 
 #ifdef UNIXCONN
 static XtransConnInfo
-TRANS(SocketUNIXAccept) (ciptr)
+TRANS(SocketUNIXAccept) (ciptr, status)
 
 XtransConnInfo ciptr;
+int	       *status;
 
 {
     XtransConnInfo	newciptr;
@@ -1047,6 +1055,7 @@ XtransConnInfo ciptr;
 	1, sizeof(struct _XtransConnInfo))) == NULL)
     {
 	PRMSG (1, "TRANS(SocketUNIXAccept): malloc failed\n", 0, 0, 0);
+	*status = TRANS_ACCEPT_BAD_MALLOC;
 	return NULL;
     }
 
@@ -1055,6 +1064,7 @@ XtransConnInfo ciptr;
     {
 	PRMSG (1, "TRANS(SocketUNIXAccept): accept() failed\n", 0, 0, 0);
 	free (newciptr);
+	*status = TRANS_ACCEPT_FAILED;
 	return NULL;
     }
 
@@ -1070,6 +1080,7 @@ XtransConnInfo ciptr;
 	      0, 0, 0);
 	close (newciptr->fd);
 	free (newciptr);
+	*status = TRANS_ACCEPT_BAD_MALLOC;
         return NULL;
     }
 
@@ -1085,11 +1096,14 @@ XtransConnInfo ciptr;
 	close (newciptr->fd);
 	if (newciptr->addr) free (newciptr->addr);
 	free (newciptr);
+	*status = TRANS_ACCEPT_BAD_MALLOC;
         return NULL;
     }
     
     newciptr->peeraddrlen = ciptr->addrlen;
     memcpy (newciptr->peeraddr, ciptr->addr, newciptr->addrlen);
+
+    *status = 0;
 
     return newciptr;
 }

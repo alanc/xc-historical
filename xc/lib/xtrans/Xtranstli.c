@@ -1,4 +1,4 @@
-/* $XConsortium: Xtranstli.c,v 1.9 94/02/09 16:57:57 mor Exp $ */
+/* $XConsortium: Xtranstli.c,v 1.10 94/03/02 12:16:26 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -847,9 +847,10 @@ char		*port;
 
 
 static XtransConnInfo
-TRANS(TLIAccept)(ciptr)
+TRANS(TLIAccept)(ciptr, status)
 
 XtransConnInfo	ciptr;
+int		*status;
 
 {
     struct t_call	*call;
@@ -861,6 +862,7 @@ XtransConnInfo	ciptr;
     if( (call=(struct t_call *)t_alloc(ciptr->fd,T_CALL,T_ALL)) == NULL )
     {
 	PRMSG(1, "TRANS(TLIAccept)() failed to allocate a t_call\n", 0,0,0 );
+	*status = TRANS_ACCEPT_BAD_MALLOC;
 	return NULL;
     }
     
@@ -871,6 +873,7 @@ XtransConnInfo	ciptr;
 	PRMSG(1, "TRANS(TLIAccept)() t_listen() failed\n", 0,0,0 );
 	PRMSG(1, "%s\n", t_errlist[t_errno], 0,0 );
 	t_free(call,T_CALL);
+	*status = TRANS_ACCEPT_MISC_ERROR;
 	return NULL;
     }
     
@@ -884,6 +887,7 @@ XtransConnInfo	ciptr;
     {
 	PRMSG(1, "TRANS(TLIAccept)() failed to open a new endpoint\n", 0,0,0 );
 	t_free(call,T_CALL);
+	*status = TRANS_ACCEPT_MISC_ERROR;
 	return NULL;
     }
     
@@ -895,6 +899,7 @@ XtransConnInfo	ciptr;
 	t_free(call,T_CALL);
 	t_close(newciptr->fd);
 	free(newciptr);
+	*status = TRANS_ACCEPT_MISC_ERROR;
 	return NULL;
     }
     
@@ -909,6 +914,7 @@ XtransConnInfo	ciptr;
 	t_close(newciptr->fd);
 	free(newciptr->addr);
 	free(newciptr);
+	*status = TRANS_ACCEPT_FAILED;
 	return NULL;
     }
     
@@ -921,6 +927,7 @@ XtransConnInfo	ciptr;
 	      errno, 0,0 );
 	t_close(newciptr->fd);
 	free(newciptr);
+	*status = TRANS_ACCEPT_MISC_ERROR;
 	return NULL;
     }
     
@@ -932,6 +939,7 @@ XtransConnInfo	ciptr;
 	t_close(newciptr->fd);
 	free(newciptr->addr);
 	free(newciptr);
+	*status = TRANS_ACCEPT_MISC_ERROR;
 	return NULL;
     }
     
@@ -942,6 +950,7 @@ XtransConnInfo	ciptr;
 	t_close(newciptr->fd);
 	free(newciptr->addr);
 	free(newciptr);
+	*status = TRANS_ACCEPT_MISC_ERROR;
 	return NULL;
     }
     
@@ -952,9 +961,12 @@ XtransConnInfo	ciptr;
 	t_close(newciptr->fd);
 	free(newciptr->addr);
 	free(newciptr);
+	*status = TRANS_ACCEPT_MISC_ERROR;
 	return NULL;
     }
     
+    *status = 0;
+
     return newciptr;
 }
 

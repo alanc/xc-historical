@@ -1,4 +1,4 @@
-/* $XConsortium: Xtrans.c,v 1.15 94/02/07 14:40:41 mor Exp $ */
+/* $XConsortium: Xtrans.c,v 1.16 94/03/02 12:15:59 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -687,16 +687,17 @@ XtransConnInfo	ciptr;
 
 
 XtransConnInfo
-TRANS(Accept) (ciptr)
+TRANS(Accept) (ciptr, status)
 
 XtransConnInfo	ciptr;
+int		*status;
 
 {
     XtransConnInfo	newciptr;
 
     PRMSG (2,"TRANS(Accept) (%d)\n", ciptr->fd, 0, 0);
 
-    newciptr = ciptr->transptr->Accept (ciptr);
+    newciptr = ciptr->transptr->Accept (ciptr, status);
 
     if (newciptr)
 	newciptr->transptr = ciptr->transptr;

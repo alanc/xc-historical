@@ -1,4 +1,4 @@
-/* $XConsortium: Xtranslcl.c,v 1.12 94/02/09 17:54:47 mor Exp $ */
+/* $XConsortium: Xtranslcl.c,v 1.13 94/03/02 12:16:20 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -451,10 +451,11 @@ char		*port;
 }
 
 static int
-TRANS(PTSAccept)(ciptr, newciptr)
+TRANS(PTSAccept)(ciptr, newciptr, status)
 
 XtransConnInfo	ciptr;
 XtransConnInfo	newciptr;
+int		*status;
 
 {
     int			newfd;
@@ -475,6 +476,7 @@ XtransConnInfo	newciptr;
 	"TRANS(PTSAccept)() Error reading incoming connection. errno=%d \n",
 								errno,0,0);
 		}
+	*status = TRANS_ACCEPT_MISC_ERROR;
 	return -1;
     }
 
@@ -488,6 +490,7 @@ XtransConnInfo	newciptr;
 "TRANS(PTSAccept)() Error reading device name for new connection. errno=%d \n",
 								errno,0,0);
 		}
+	*status = TRANS_ACCEPT_MISC_ERROR;
 	return -1;
     }
 
@@ -495,6 +498,7 @@ XtransConnInfo	newciptr;
 
     if( (newfd=open(buf,O_RDWR)) < 0 ) {
 	PRMSG(1, "TRANS(PTSAccept)() Failed to open %s\n",buf,0,0);
+	*status = TRANS_ACCEPT_MISC_ERROR;
 	return -1;
     }
 
@@ -509,6 +513,7 @@ XtransConnInfo	newciptr;
 	PRMSG(1,"TRANS(PTSAccept)() failed to allocate memory for peer addr\n",
 									0,0,0);
 	close(newfd);
+	*status = TRANS_ACCEPT_BAD_MALLOC;
 	return -1;
     }
 
@@ -520,6 +525,7 @@ XtransConnInfo	newciptr;
 									0,0,0);
 	free(newciptr->addr);
 	close(newfd);
+	*status = TRANS_ACCEPT_BAD_MALLOC;
 	return -1;
     }
 
@@ -530,6 +536,8 @@ XtransConnInfo	newciptr;
 #endif
 
     newciptr->peeraddr=(char *)sunaddr;
+
+    *status = 0;
 
     return newfd;
 }
@@ -692,10 +700,11 @@ char		*port;
 }
 
 static int
-TRANS(NAMEDAccept)(ciptr, newciptr)
+TRANS(NAMEDAccept)(ciptr, newciptr, status)
 
 XtransConnInfo	ciptr;
 XtransConnInfo	newciptr;
+int		*status;
 
 {
     struct strrecvfd str;
@@ -704,6 +713,7 @@ XtransConnInfo	newciptr;
 
     if( ioctl(ciptr->fd, I_RECVFD, &str ) < 0 ) {
 	PRMSG(1, "ioctl(I_RECVFD) failed, errno=%d\n", errno, 0,0 );
+	*status = TRANS_ACCEPT_MISC_ERROR;
 	return(-1);
     }
 
@@ -717,6 +727,7 @@ XtransConnInfo	newciptr;
 	      "TRANS(NAMEDAccept)() failed to allocate memory for peer addr\n",
 									0,0,0);
 	close(str.fd);
+	*status = TRANS_ACCEPT_BAD_MALLOC;
 	return -1;
     }
 
@@ -729,10 +740,13 @@ XtransConnInfo	newciptr;
 									0,0,0);
 	free(newciptr->addr);
 	close(str.fd);
+	*status = TRANS_ACCEPT_BAD_MALLOC;
 	return -1;
     }
 
     memcpy(newciptr->peeraddr,newciptr->addr,newciptr->peeraddrlen);
+
+    *status = 0;
 
     return str.fd;
 }
@@ -1001,10 +1015,11 @@ char		*port;
 }
 
 static int
-TRANS(ISCAccept)(ciptr, newciptr)
+TRANS(ISCAccept)(ciptr, newciptr, status)
 
 XtransConnInfo	ciptr;
 XtransConnInfo	newciptr;
+int		*status;
 
 {
     struct strrecvfd str;
@@ -1014,6 +1029,7 @@ XtransConnInfo	newciptr;
     while (ioctl(ciptr->fd, I_RECVFD, &str) < 0) {
 	if (errno != EAGAIN) {
 	    PRMSG(1,"TRANS(ISCAccept): Can't read fildes", 0,0,0 );
+	    *status = TRANS_ACCEPT_MISC_ERROR;
 	    return(-1);
 	}
     }
@@ -1028,6 +1044,7 @@ XtransConnInfo	newciptr;
 	      "TRANS(ISCAccept)() failed to allocate memory for peer addr\n",
 	      0,0,0);
 	close(str.fd);
+	*status = TRANS_ACCEPT_BAD_MALLOC;
 	return -1;
     }
     
@@ -1040,11 +1057,14 @@ XtransConnInfo	newciptr;
 	      0,0,0);
 	free(newciptr->addr);
 	close(str.fd);
+	*status = TRANS_ACCEPT_BAD_MALLOC;
 	return -1;
     }
     
     memcpy(newciptr->peeraddr,newciptr->addr,newciptr->peeraddrlen);
     
+    *status = 0;
+
     return(str.fd);
 }
 
@@ -1188,10 +1208,11 @@ char		*port;
 }
 
 static int
-TRANS(SCOAccept)(ciptr, newciptr)
+TRANS(SCOAccept)(ciptr, newciptr, status)
 
 XtransConnInfo	ciptr;
 XtransConnInfo	newciptr;
+int		*status;
 
 {
     char	c;
@@ -1201,17 +1222,20 @@ XtransConnInfo	newciptr;
     
     if (read(ciptr->fd, &c, 1) < 0) {
 	PRMSG(1,"TRANS(SCOAccept): can't read from client",0,0,0);
+	*status = TRANS_ACCEPT_MISC_ERROR;
 	return(-1);
     }
     
     if( (fd = open(DEV_SPX, O_RDWR)) < 0 ) {
 	PRMSG(1,"TRANS(SCOAccept)(): can't open \"%s\"",DEV_SPX, 0,0 );
+	*status = TRANS_ACCEPT_MISC_ERROR;
 	return(-1);
     }
     
     if (connect_spipe(ciptr->fd, fd) < 0) {
 	PRMSG(1,"TRANS(SCOAccept)(): can't connect pipes", 0,0,0 );
 	(void) close(fd);
+	*status = TRANS_ACCEPT_MISC_ERROR;
 	return(-1);
     }
     
@@ -1225,6 +1249,7 @@ XtransConnInfo	newciptr;
 	      "TRANS(SCOAccept)() failed to allocate memory for peer addr\n",
 	      0,0,0);
 	close(fd);
+	*status = TRANS_ACCEPT_BAD_MALLOC;
 	return -1;
     }
     
@@ -1237,11 +1262,14 @@ XtransConnInfo	newciptr;
 	      0,0,0);
 	free(newciptr->addr);
 	close(fd);
+	*status = TRANS_ACCEPT_BAD_MALLOC;
 	return -1;
     }
     
     memcpy(newciptr->peeraddr,newciptr->addr,newciptr->peeraddrlen);
     
+    *status = 0;
+
     return(fd);
 }
 
@@ -1444,7 +1472,7 @@ typedef struct _LOCALtrans2dev {
 
     int	(*devaccept)(
 #if NeedFunctionPrototypes
-	XtransConnInfo, XtransConnInfo
+	XtransConnInfo, XtransConnInfo, int *
 #endif
 );
 
@@ -1922,9 +1950,10 @@ char *port;
 }
 
 static XtransConnInfo
-TRANS(LocalAccept)(ciptr)
+TRANS(LocalAccept)(ciptr, status)
 
 XtransConnInfo ciptr;
+int	       *status;
 
 {
     XtransConnInfo	newciptr;
@@ -1938,10 +1967,11 @@ XtransConnInfo ciptr;
     {
 	PRMSG(1,"TRANS(LocalAccept)() calloc(1,%d) failed\n",
 	      sizeof(struct _XtransConnInfo),0,0 );
+	*status = TRANS_ACCEPT_BAD_MALLOC;
 	return NULL;
     }
     
-    newciptr->fd=transptr->devaccept(ciptr,newciptr);
+    newciptr->fd=transptr->devaccept(ciptr,newciptr,status);
     
     if( newciptr->fd < 0 )
     {
@@ -1952,6 +1982,8 @@ XtransConnInfo ciptr;
     newciptr->priv=(char *)transptr;
     newciptr->index = ciptr->index;
     
+    *status = 0;
+
     return newciptr;
 }
 

@@ -1,4 +1,4 @@
-/* $XConsortium: Xtransint.h,v 1.13 94/02/10 10:26:17 rws Exp $ */
+/* $XConsortium: Xtransint.h,v 1.14 94/03/02 12:16:17 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -221,7 +221,8 @@ typedef struct _Xtransport {
 
     XtransConnInfo (*Accept)(
 #if NeedNestedPrototypes
-	XtransConnInfo		/* connection */
+	XtransConnInfo,		/* connection */
+        int *			/* status */
 #endif
     );
 

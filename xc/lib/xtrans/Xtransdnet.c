@@ -1,4 +1,4 @@
-/* $XConsortium: Xtransdnet.c,v 1.8 94/02/09 16:23:52 mor Exp $ */
+/* $XConsortium: Xtransdnet.c,v 1.9 94/03/02 12:16:04 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -371,9 +371,10 @@ char		*port;
 
 
 static XtransConnInfo
-TRANS(DNETAccept) (ciptr)
+TRANS(DNETAccept) (ciptr, status)
 
 XtransConnInfo	ciptr;
+int		*status;
 
 {
     XtransConnInfo	newciptr;
@@ -386,6 +387,7 @@ XtransConnInfo	ciptr;
 	1, sizeof (struct _XtransConnInfo))) == NULL)
     {
 	PRMSG (1, "TRANS(DNETAccept): malloc failed\n", 0, 0, 0);
+	*status = TRANS_ACCEPT_BAD_MALLOC;
 	return NULL;
     }
 
@@ -395,6 +397,7 @@ XtransConnInfo	ciptr;
 	PRMSG (1, "TRANS(DNETAccept): accept() failed\n", 0, 0, 0);
 
 	free (newciptr);
+	*status = TRANS_ACCEPT_FAILED;
 	return NULL;
     }
 
@@ -409,6 +412,7 @@ XtransConnInfo	ciptr;
 	"TRANS(DNETAccept): TRANS(DNETGetAddr)() failed:\n", 0, 0, 0);
 	close (newciptr->fd);
 	free (newciptr);
+	*status = TRANS_ACCEPT_MISC_ERROR;
         return NULL;
     }
 
@@ -420,8 +424,11 @@ XtransConnInfo	ciptr;
 	close (newciptr->fd);
 	if (newciptr->addr) free (newciptr->addr);
 	free (newciptr);
+	*status = TRANS_ACCEPT_MISC_ERROR;
         return NULL;
     }
+
+    *status = 0;
 
     return newciptr;
 }
