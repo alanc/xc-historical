@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.109 93/09/07 21:33:15 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.110 93/09/13 11:40:57 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -121,6 +121,7 @@ struct _XDisplay
 	struct _XIMFilter *im_filters;
 	struct _XSQEvent *qfree; /* unallocated event queue elements */
 	unsigned long next_event_serial_num; /* inserted into next queue elt */
+	struct _XPreFlush *flushes; /* Flush hooks */
 };
 
 /*
