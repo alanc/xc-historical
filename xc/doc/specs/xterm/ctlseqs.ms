@@ -1,6 +1,6 @@
 .\"#! troff -ms $1		-*- Nroff -*-
 .\" "Xterm Control Sequences" document
-.\" $XConsortium: ctlseqs.ms,v 1.11 94/04/17 14:21:50 gildea Exp $
+.\" $XConsortium: ctlseqs.ms,v 1.12 94/04/17 18:51:41 rws Exp $
 .\"
 .\" Copyright 1991, 1994 X Consortium
 .\"
@@ -203,7 +203,7 @@ Stephen Gildea
 .AI
 X Consortium
 
-.am NP
+.am BT                  \" add page numbers after first page
 .ds CF %
 ..
 .SH
