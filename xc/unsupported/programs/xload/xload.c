@@ -1,6 +1,10 @@
-#ifndef lint
-static char rcsid[] = "$XConsortium: xload.c,v 1.26 89/12/11 15:53:27 kit Exp $";
-#endif /* lint */
+/*
+ * xload - display system load average in a window
+ *
+ * Copyright 1989 Massachusetts Institute of Technology
+ *
+ * $XConsortium: xload.c,v 1.27 90/04/30 16:53:44 converse Exp $
+ */
 
 #include <stdio.h> 
 #include <X11/Intrinsic.h>
@@ -109,6 +113,13 @@ void main(argc, argv)
     XLoadResources resources;
 
     ProgramName = argv[0];
+
+    /* For security reasons, we reset our uid/gid after doing the necessary
+       system initialization and before calling any X routines. */
+    InitLoadPoint();
+    setuid(getuid());
+    setgid(getgid());
+
     toplevel = XtInitialize(NULL, "XLoad", options, XtNumber(options),
 			    (Cardinal *) &argc, argv);
       
