@@ -1,4 +1,4 @@
-/* $XConsortium: DECkeysym.h,v 1.1 88/02/09 13:17:25 rws Exp $ */
+/* $XConsortium: DECkeysym.h,v 1.2 88/09/06 15:55:54 jim Exp $ */
 
 /***********************************************************
 Copyright 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -23,5 +23,22 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+
+/*
+ * DEC private keysyms
+ * (29th bit set)
+ */
+
+/* two-key compose sequence initiators, chosen to map to Latin1 characters */
+
+#define DXK_ring_accent         0x1000FEB0
+#define DXK_circumflex_accent   0x1000FE5E
+#define DXK_cedilla_accent      0x1000FE2C
+#define DXK_acute_accent        0x1000FE27
+#define DXK_grave_accent        0x1000FE60
+#define DXK_tilde               0x1000FE7E
+#define DXK_diaeresis           0x1000FE22
+
+/* special keysym for LK2** "Remove" key on editing keypad */
 
 #define DXK_Remove	0x1000FF00   /* Remove */
