@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: parse.c,v 1.36 89/12/09 22:21:53 jim Exp $
+ * $XConsortium: parse.c,v 1.37 89/12/10 17:47:13 jim Exp $
  *
  * parse the .twmrc file
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: parse.c,v 1.36 89/12/09 22:21:53 jim Exp $";
+"$XConsortium: parse.c,v 1.37 89/12/10 17:47:13 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -117,7 +117,7 @@ int ParseTwmrc (filename)
     int i;
     char *home = NULL;
     int homelen = 0;
-    char *cp;
+    char *cp = NULL;
     char tmpfilename[257];
 
     /*

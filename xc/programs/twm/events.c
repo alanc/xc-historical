@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.122 89/12/09 22:21:47 jim Exp $
+ * $XConsortium: events.c,v 1.123 89/12/10 17:47:06 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.122 89/12/09 22:21:47 jim Exp $";
+"$XConsortium: events.c,v 1.123 89/12/10 17:47:06 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -258,10 +258,10 @@ Bool DispatchEvent ()
     Window w = Event.xany.window;
     StashEventTime (&Event);
 
-    if (XFindContext (dpy, w, TwmContext, &Tmp_win) == XCNOENT)
+    if (XFindContext (dpy, w, TwmContext, (caddr_t *) &Tmp_win) == XCNOENT)
       Tmp_win = NULL;
 
-    if (XFindContext (dpy, w, ScreenContext, &Scr) == XCNOENT) {
+    if (XFindContext (dpy, w, ScreenContext, (caddr_t *)&Scr) == XCNOENT) {
 	Scr = FindScreenInfo (WindowOfEvent (&Event));
     }
 
@@ -296,7 +296,7 @@ HandleEvents()
 		&(Event.xmotion.x_root), &(Event.xmotion.y_root),
 		&(Event.xmotion.x), &(Event.xmotion.y),
 		&JunkMask);
-	    XFindContext(dpy, Event.xany.window, ScreenContext, &Scr);
+	    XFindContext(dpy, Event.xany.window, ScreenContext, (caddr_t *)&Scr);
 
 	    (*EventHandler[MotionNotify])();
 	}
@@ -341,14 +341,14 @@ HandleColormapNotify()
     int i, j, n, number_cwins;
     extern TwmColormap *CreateTwmColormap();
 
-    if (XFindContext(dpy, cevent->window, ColormapContext, &cwin) == XCNOENT)
+    if (XFindContext(dpy, cevent->window, ColormapContext, (caddr_t *)&cwin) == XCNOENT)
 	return;
     cmap = cwin->colormap;
 
     if (cevent->new)
     {
 	if (XFindContext(dpy, cevent->colormap, ColormapContext,
-			 &cwin->colormap) == XCNOENT)
+			 (caddr_t *)&cwin->colormap) == XCNOENT)
 	    cwin->colormap = CreateTwmColormap(cevent->colormap);
 	else
 	    cwin->colormap->refcnt++;
@@ -469,7 +469,7 @@ HandleVisibilityNotify()
     ColormapWindow *cwin;
     TwmColormap *cmap;
 
-    if (XFindContext(dpy, vevent->window, ColormapContext, &cwin) == XCNOENT)
+    if (XFindContext(dpy, vevent->window, ColormapContext, (caddr_t *)&cwin) == XCNOENT)
 	return;
     
     cmap = cwin->colormap;
@@ -662,11 +662,12 @@ HandlePropertyNotify()
 {
     char *prop = NULL;
     Atom actual = None;
-    int junk1, junk2, len;
+    int actual_format;
+    unsigned long nitems, bytesafter;
     unsigned long valuemask;		/* mask for create windows */
     XSetWindowAttributes attributes;	/* attributes for create windows */
     Pixmap pm;
-    unsigned long supplied;
+    long supplied;
 
     /* watch for standard colormap changes */
     if (Event.xproperty.window == Scr->Root) {
@@ -690,14 +691,15 @@ HandlePropertyNotify()
 
     if (!Tmp_win) return;		/* unknown window */
 
-#define MAX_NAME_LEN 200		/* truncate to this many */
-#define MAX_ICON_NAME_LEN 200		/* ditto */
+#define MAX_NAME_LEN 200L		/* truncate to this many */
+#define MAX_ICON_NAME_LEN 200L		/* ditto */
 
     switch (Event.xproperty.atom) {
       case XA_WM_NAME:
-	if (XGetWindowProperty (dpy, Tmp_win->w, Event.xproperty.atom, 0, 
+	if (XGetWindowProperty (dpy, Tmp_win->w, Event.xproperty.atom, 0L, 
 				MAX_NAME_LEN, False, XA_STRING, &actual,
-				&junk1, &junk2, &len, &prop) != Success ||
+				&actual_format, &nitems, &bytesafter,
+				(unsigned char **) &prop) != Success ||
 	    actual == None)
 	  return;
 	if (!prop) prop = NoName;
@@ -728,7 +730,8 @@ HandlePropertyNotify()
       case XA_WM_ICON_NAME:
 	if (XGetWindowProperty (dpy, Tmp_win->w, Event.xproperty.atom, 0, 
 				MAX_ICON_NAME_LEN, False, XA_STRING, &actual,
-				&junk1, &junk2, &len, &prop) != Success ||
+				&actual_format, &nitems, &bytesafter,
+				(unsigned char **) &prop) != Success ||
 	    actual == None)
 	  return;
 	if (!prop) prop = NoName;
@@ -739,7 +742,7 @@ HandlePropertyNotify()
 	break;
 
       case XA_WM_HINTS:
-	if (Tmp_win->wmhints) XFree (Tmp_win->wmhints);
+	if (Tmp_win->wmhints) XFree ((char *) Tmp_win->wmhints);
 	Tmp_win->wmhints = XGetWMHints(dpy, Event.xany.window);
 
 	if (Tmp_win->wmhints && (Tmp_win->wmhints->flags & WindowGroupHint))
@@ -752,8 +755,8 @@ HandlePropertyNotify()
 	if (Tmp_win->icon_w && !Tmp_win->forced && Tmp_win->wmhints &&
 	    (Tmp_win->wmhints->flags & IconPixmapHint)) {
 	    if (!XGetGeometry (dpy, Tmp_win->wmhints->icon_pixmap, &JunkRoot,
-			       &JunkX, &JunkY, &Tmp_win->icon_width, 
-			       &Tmp_win->icon_height, &JunkBW, &JunkDepth)) {
+			       &JunkX, &JunkY, (unsigned int *)&Tmp_win->icon_width, 
+			       (unsigned int *)&Tmp_win->icon_height, &JunkBW, &JunkDepth)) {
 		return;
 	    }
 
@@ -908,7 +911,7 @@ HandleExpose()
     MenuRoot *tmp;
     static void flush_expose();
 
-    if (XFindContext(dpy, Event.xany.window, MenuContext, &tmp) == 0)
+    if (XFindContext(dpy, Event.xany.window, MenuContext, (caddr_t *)&tmp) == 0)
     {
 	PaintMenu(tmp, &Event);
 	return;
@@ -1125,7 +1128,7 @@ HandleMapRequest()
     int zoom_save;
 
     Event.xany.window = Event.xmaprequest.window;
-    stat = XFindContext(dpy, Event.xany.window, TwmContext, &Tmp_win);
+    stat = XFindContext(dpy, Event.xany.window, TwmContext, (caddr_t *)&Tmp_win);
     if (stat == XCNOENT)
 	Tmp_win = NULL;
 
@@ -1258,7 +1261,7 @@ HandleUnmapNotify()
     {
 	Event.xany.window = Event.xunmap.window;
 	if (XFindContext(dpy, Event.xany.window,
-	    TwmContext, &Tmp_win) == XCNOENT)
+	    TwmContext, (caddr_t *)&Tmp_win) == XCNOENT)
 	    Tmp_win = NULL;
     }
 
@@ -1315,7 +1318,7 @@ HandleMotionNotify()
 {
     if (ResizeWindow != NULL)
     {
-	XFindContext(dpy, ResizeWindow, TwmContext, &Tmp_win);
+	XFindContext(dpy, ResizeWindow, TwmContext, (caddr_t *)&Tmp_win);
 	DoResize(Event.xmotion.x_root, Event.xmotion.y_root, Tmp_win);
     }
 }
@@ -1338,7 +1341,7 @@ HandleButtonRelease()
     {
 	MoveOutline(Scr->Root, 0, 0, 0, 0, 0, 0);
 
-	XFindContext(dpy, DragWindow, TwmContext, &Tmp_win);
+	XFindContext(dpy, DragWindow, TwmContext, (caddr_t *)&Tmp_win);
 	if (DragWindow == Tmp_win->frame)
 	{
 	    xl = Event.xbutton.x_root - DragX - Tmp_win->frame_bw;
@@ -1640,7 +1643,7 @@ HandleButtonPress()
 
 	    if (Event.xany.window == 0 ||
 		(XFindContext(dpy, Event.xany.window, TwmContext,
-		    &Tmp_win) == XCNOENT))
+			      (caddr_t *)&Tmp_win) == XCNOENT))
 	    {
 		RootFunction = NULL;
 		XBell(dpy, 0);
@@ -1801,7 +1804,7 @@ HandleEnterNotify()
     /*
      * Find the menu that we are dealing with now; punt if unknown
      */
-    if (XFindContext (dpy, ewp->window, MenuContext, &mr) != XCSUCCESS) return;
+    if (XFindContext (dpy, ewp->window, MenuContext, (caddr_t *)&mr) != XCSUCCESS) return;
 
     mr->entered = TRUE;
     if (ActiveMenu && mr == ActiveMenu->prev && RootFunction == NULL) {
@@ -2093,7 +2096,7 @@ static void
 ReinstallWindowColormaps ()
 {
     int i, j, n, number_cwins, state;
-    ColormapWindow **cwins, *cwin, **maxcwin;
+    ColormapWindow **cwins, *cwin, **maxcwin = NULL;
     TwmColormap *cmap;
     char *row;
 
@@ -2144,7 +2147,7 @@ InstallWindowColormaps (type, opaque)
     char *opaque;
 {
     int i, n, number_cwins, state;
-    ColormapWindow **cwins, *cwin, **maxcwin;
+    ColormapWindow **cwins, *cwin, **maxcwin = NULL;
     TwmColormap *cmap;
     TwmWindow *tmp_win;
 

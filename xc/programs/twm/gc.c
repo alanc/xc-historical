@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: gc.c,v 1.18 89/10/27 14:01:15 jim Exp $
+ * $XConsortium: gc.c,v 1.19 89/11/19 15:34:05 jim Exp $
  *
  * Open the fonts and create the GCs
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: gc.c,v 1.18 89/10/27 14:01:15 jim Exp $";
+"$XConsortium: gc.c,v 1.19 89/11/19 15:34:05 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>

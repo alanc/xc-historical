@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.54 89/12/09 22:21:23 jim Exp $
+ * $XConsortium: twm.h,v 1.55 89/12/10 17:46:24 jim Exp $
  *
  * twm include file
  *
@@ -141,7 +141,7 @@ typedef struct _TitleButton {
     char *name;				/* bitmap name in case of deferal */
     Pixmap bitmap;			/* image to display in button */
     int srcx, srcy;			/* from where to start copying */
-    int width, height;			/* size of pixmap */
+    unsigned int width, height;		/* size of pixmap */
     int dstx, dsty;			/* to where to start copying */
     int func;				/* function to execute */
     char *action;			/* optional action arg */
@@ -317,11 +317,7 @@ extern Window JunkRoot;
 extern Window JunkChild;
 extern int JunkX;
 extern int JunkY;
-extern int JunkWidth;
-extern int JunkHeight;
-extern int JunkDepth;
-extern int JunkBW;
-extern int JunkMask;
+extern unsigned int JunkWidth, JunkHeight, JunkBW, JunkDepth, JunkMask;
 extern XGCValues Gcv;
 extern int InfoLines;
 extern char Info[][INFO_SIZE];

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.101 89/12/09 22:21:14 jim Exp $
+ * $XConsortium: twm.c,v 1.102 89/12/10 17:46:16 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.101 89/12/09 22:21:14 jim Exp $";
+"$XConsortium: twm.c,v 1.102 89/12/10 17:46:16 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -103,11 +103,7 @@ Window JunkRoot;		/* junk window */
 Window JunkChild;		/* junk window */
 int JunkX;			/* junk variable */
 int JunkY;			/* junk variable */
-int JunkWidth;			/* junk variable */
-int JunkHeight;			/* junk variable */
-int JunkDepth;			/* junk variable */
-int JunkBW;			/* junk variable */
-int JunkMask;			/* junk variable */
+unsigned int JunkWidth, JunkHeight, JunkBW, JunkDepth, JunkMask;
 
 char *ProgramName;
 int Argc;
@@ -132,7 +128,8 @@ main(argc, argv, environ)
     char **environ;
 {
     Window root, parent, *children;
-    int nchildren, i, j;
+    unsigned int nchildren;
+    int i, j;
     char *display_name = NULL;
     unsigned long valuemask;	/* mask for create windows */
     XSetWindowAttributes attributes;	/* attributes for create windows */
@@ -304,7 +301,7 @@ main(argc, argv, environ)
 	Scr->d_depth = DefaultDepth(dpy, scrnum);
 	Scr->d_visual = DefaultVisual(dpy, scrnum);
 	Scr->Root = RootWindow(dpy, scrnum);
-	XSaveContext (dpy, Scr->Root, ScreenContext, Scr);
+	XSaveContext (dpy, Scr->Root, ScreenContext, (caddr_t) Scr);
 
 	Scr->TwmRoot.number_cwins = 1;
 	Scr->TwmRoot.cwins =
@@ -658,8 +655,8 @@ CreateFonts ()
 RestoreWithdrawnLocation (tmp)
     TwmWindow *tmp;
 {
-    int gravx, gravy, bw;
-    unsigned int mask;
+    int gravx, gravy;
+    unsigned int bw, mask;
     XWindowChanges xwc;
 
     if (XGetGeometry (dpy, tmp->w, &JunkRoot, &xwc.x, &xwc.y, 

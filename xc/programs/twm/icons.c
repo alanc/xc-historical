@@ -21,7 +21,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: icons.c,v 1.12 89/11/22 16:07:27 jim Exp $
+ * $XConsortium: icons.c,v 1.13 89/12/10 17:46:28 jim Exp $
  *
  * Icon releated routines
  *
@@ -261,7 +261,7 @@ int grav1, grav2;
     ir->stepy = stepy;
     ir->x = ir->y = ir->w = ir->h = 0;
 
-    mask = XParseGeometry(geom, &ir->x, &ir->y, &ir->w, &ir->h);
+    mask = XParseGeometry(geom, &ir->x, &ir->y, (unsigned int *)&ir->w, (unsigned int *)&ir->h);
 
     if (mask & XNegative)
 	ir->x += Scr->MyDisplayWidth - ir->w;
@@ -349,7 +349,7 @@ int def_x, def_y;
 	if (bm != NULL)
 	{
 	    XGetGeometry(dpy, bm, &JunkRoot, &JunkX, &JunkY,
-		&tmp_win->icon_width, &tmp_win->icon_height,
+		(unsigned int *) &tmp_win->icon_width, (unsigned int *)&tmp_win->icon_height,
 		&JunkBW, &JunkDepth);
 
 	    pm = XCreatePixmap(dpy, Scr->Root, tmp_win->icon_width,
@@ -373,7 +373,7 @@ int def_x, def_y;
     
 	XGetGeometry(dpy,   tmp_win->wmhints->icon_pixmap,
              &JunkRoot, &JunkX, &JunkY,
-	     &tmp_win->icon_width, &tmp_win->icon_height, &JunkBW, &JunkDepth);
+	     (unsigned int *)&tmp_win->icon_width, (unsigned int *)&tmp_win->icon_height, &JunkBW, &JunkDepth);
 
 	pm = XCreatePixmap(dpy, Scr->Root,
 			   tmp_win->icon_width, tmp_win->icon_height,
@@ -409,7 +409,7 @@ int def_x, def_y;
 	if (bm != NULL)
 	{
 	    XGetGeometry(dpy, bm, &JunkRoot, &JunkX, &JunkY,
-		&tmp_win->icon_width, &tmp_win->icon_height,
+		(unsigned int *)&tmp_win->icon_width, (unsigned int *)&tmp_win->icon_height,
 		&JunkBW, &JunkDepth);
 
 	    pm = XCreatePixmap(dpy, Scr->Root, tmp_win->icon_width,
@@ -471,7 +471,7 @@ int def_x, def_y;
 	tmp_win->icon_w = tmp_win->wmhints->icon_window;
 	if (tmp_win->forced ||
 	    XGetGeometry(dpy, tmp_win->icon_w, &JunkRoot, &JunkX, &JunkY,
-		     &tmp_win->icon_w_width, &tmp_win->icon_w_height,
+		     (unsigned int *)&tmp_win->icon_w_width, (unsigned int *)&tmp_win->icon_w_height,
 		     &JunkBW, &JunkDepth) == 0)
 	{
 	    tmp_win->icon_w = NULL;
@@ -540,8 +540,8 @@ int def_x, def_y;
     tmp_win->iconified = TRUE;
 
     XMapSubwindows(dpy, tmp_win->icon_w);
-    XSaveContext(dpy, tmp_win->icon_w, TwmContext, tmp_win);
-    XSaveContext(dpy, tmp_win->icon_w, ScreenContext, Scr);
+    XSaveContext(dpy, tmp_win->icon_w, TwmContext, (caddr_t)tmp_win);
+    XSaveContext(dpy, tmp_win->icon_w, ScreenContext, (caddr_t)Scr);
     XDefineCursor(dpy, tmp_win->icon_w, Scr->IconCursor);
     XFreePixmap (dpy, pm);
     return;

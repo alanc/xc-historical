@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.60 89/12/08 19:18:32 jim Exp $
+ * $XConsortium: resize.c,v 1.61 89/12/10 17:46:46 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.60 89/12/08 19:18:32 jim Exp $";
+"$XConsortium: resize.c,v 1.61 89/12/10 17:46:46 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -138,7 +138,7 @@ TwmWindow *tmp_win;
 Bool fromtitlebar;
 {
     Window      junkRoot;
-    int         junkbw, junkDepth;
+    unsigned int junkbw, junkDepth;
 
     ResizeWindow = tmp_win->frame;
     XGrabServer(dpy);
@@ -148,7 +148,7 @@ Bool fromtitlebar;
         Scr->Root, Scr->ResizeCursor, CurrentTime);
 
     XGetGeometry(dpy, (Drawable) tmp_win->frame, &junkRoot,
-        &dragx, &dragy, &dragWidth, &dragHeight, &junkbw,
+        &dragx, &dragy, (unsigned int *)&dragWidth, (unsigned int *)&dragHeight, &junkbw,
                  &junkDepth);
     dragx += tmp_win->frame_bw;
     dragy += tmp_win->frame_bw;
@@ -419,7 +419,7 @@ EndResize()
     XUnmapWindow(dpy, Scr->SizeWindow);
     MoveOutline(Scr->Root, 0, 0, 0, 0, 0, 0);
 
-    XFindContext(dpy, ResizeWindow, TwmContext, &tmp_win);
+    XFindContext(dpy, ResizeWindow, TwmContext, (caddr_t *)&tmp_win);
 
     ConstrainSize (tmp_win, &dragWidth, &dragHeight);
 
@@ -433,7 +433,7 @@ EndResize()
     if (tmp_win->iconmgr)
     {
 	int ncols = tmp_win->iconmgrp->cur_columns;
-	if (ncols == 0) ncols == 1;
+	if (ncols == 0) ncols = 1;
 
 	tmp_win->iconmgrp->width = (int) ((dragWidth *
 					   (long) tmp_win->iconmgrp->columns)
@@ -777,10 +777,10 @@ TwmWindow *tmp_win;
 int flag;
 {
     Window      junkRoot;
-    int         junkbw, junkDepth;
+    unsigned int junkbw, junkDepth;
 
     XGetGeometry(dpy, (Drawable) tmp_win->frame, &junkRoot,
-        &dragx, &dragy, &dragWidth, &dragHeight, &junkbw,
+        &dragx, &dragy, (unsigned int *)&dragWidth, (unsigned int *)&dragHeight, &junkbw,
         &junkDepth);
 
         if (tmp_win->zoomed == flag)

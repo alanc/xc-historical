@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.134 89/12/09 22:21:35 jim Exp $
+ * $XConsortium: menus.c,v 1.135 89/12/10 17:46:50 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.134 89/12/09 22:21:35 jim Exp $";
+"$XConsortium: menus.c,v 1.135 89/12/10 17:46:50 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -484,7 +484,7 @@ UpdateMenu()
 	XQueryPointer( dpy, ActiveMenu->w, &JunkRoot, &JunkChild,
 	    &x_root, &y_root, &x, &y, &JunkMask);
 
-	XFindContext(dpy, ActiveMenu->w, ScreenContext, &Scr);
+	XFindContext(dpy, ActiveMenu->w, ScreenContext, (caddr_t *)&Scr);
 
 	if (x < 0 || y < 0 ||
 	    x >= ActiveMenu->width || y >= ActiveMenu->height)
@@ -804,8 +804,8 @@ MenuRoot *mr;
 			       valuemask, &attributes);
 
 
-	XSaveContext(dpy, mr->w, MenuContext, mr);
-	XSaveContext(dpy, mr->w, ScreenContext, Scr);
+	XSaveContext(dpy, mr->w, MenuContext, (caddr_t)mr);
+	XSaveContext(dpy, mr->w, ScreenContext, (caddr_t)Scr);
 
 	mr->mapped = UNMAPPED;
     }
@@ -1363,7 +1363,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	DragWindow = None;
 
 	XGetGeometry(dpy, w, &JunkRoot, &origDragX, &origDragY,
-	    &DragWidth, &DragHeight, &JunkBW,
+	    (unsigned int *)&DragWidth, (unsigned int *)&DragHeight, &JunkBW,
 	    &JunkDepth);
 
 	origX = eventp->xbutton.x_root;
@@ -2236,7 +2236,8 @@ static void Identify (t)
 TwmWindow *t;
 {
     int i, n, twidth, width, height;
-    int x, y, wwidth, wheight, bw, depth;
+    int x, y;
+    unsigned int wwidth, wheight, bw, depth;
     Window junk;
     int px, py, dummy;
     unsigned udummy;
@@ -2315,11 +2316,11 @@ Bool GetWMState (w, statep, iwp)
 {
     Atom actual_type;
     int actual_format;
-    long nitems, bytesafter;
+    unsigned long nitems, bytesafter;
     unsigned long *datap = NULL;
     Bool retval = False;
 
-    if (XGetWindowProperty (dpy, w, _XA_WM_STATE, 0, 2, False, _XA_WM_STATE,
+    if (XGetWindowProperty (dpy, w, _XA_WM_STATE, 0L, 2L, False, _XA_WM_STATE,
 			    &actual_type, &actual_format, &nitems, &bytesafter,
 			    (unsigned char **) &datap) != Success || !datap)
       return False;
@@ -2447,7 +2448,7 @@ void WarpAlongRing (ev, forward)
 	WarpToWindow (r);
 
 	if (p && p->mapped &&
-	    XFindContext (dpy, ev->window, TwmContext, &t) == XCSUCCESS &&
+	    XFindContext (dpy, ev->window, TwmContext, (caddr_t *)&t) == XCSUCCESS &&
 	    p == t) {
 	    p->ring.cursor_valid = True;
 	    p->ring.curs_x = ev->x_root - t->frame_x;
@@ -2505,7 +2506,7 @@ static void send_clientmessage (w, a, timestamp)
     ev.format = 32;
     ev.data.l[0] = a;
     ev.data.l[1] = timestamp;
-    XSendEvent (dpy, w, False, 0, &ev);
+    XSendEvent (dpy, w, False, 0L, (XEvent *) &ev);
 }
 
 SendDeleteWindowMessage (tmp, timestamp)

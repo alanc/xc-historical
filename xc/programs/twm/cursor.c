@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: cursor.c,v 1.7 89/12/09 22:21:26 jim Exp $
+ * $XConsortium: cursor.c,v 1.8 89/12/10 17:46:30 jim Exp $
  *
  * cursor creation code
  *
@@ -147,8 +147,8 @@ char *source, *mask;
 {
     XColor fore, back;
     int hotx, hoty;
-    int sx, sy, sw, sh;
-    int mx, my, mw, mh;
+    int sx, sy, mx, my;
+    unsigned int sw, sh, mw, mh;
     Pixmap spm, mpm;
     Colormap cmap = Scr->TwmRoot.cwins[0]->colormap->c;
 
@@ -164,8 +164,8 @@ char *source, *mask;
 
     /* make sure they are the same size */
 
-    XGetGeometry(dpy, spm, &JunkRoot, &sx, &sy, &sw, &sh, &JunkBW, &JunkDepth);
-    XGetGeometry(dpy, mpm, &JunkRoot, &mx, &my, &mw, &mh, &JunkBW, &JunkDepth);
+    XGetGeometry(dpy, spm, &JunkRoot, &sx, &sy, &sw, &sh, &JunkBW,&JunkDepth);
+    XGetGeometry(dpy, mpm, &JunkRoot, &mx, &my, &mw, &mh, &JunkBW,&JunkDepth);
     if (sw != mw || sh != mh)
     {
 	fprintf (stderr, 

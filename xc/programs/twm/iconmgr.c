@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: iconmgr.c,v 1.36 89/11/27 14:19:36 jim Exp $
+ * $XConsortium: iconmgr.c,v 1.37 89/12/10 17:47:17 jim Exp $
  *
  * Icon Manager routines
  *
@@ -82,7 +82,7 @@ void CreateIconManagers()
     for (p = &Scr->iconmgr; p != NULL; p = p->next)
     {
 	mask = XParseGeometry(p->geometry, &JunkX, &JunkY,
-		  &p->width, &p->height);
+			      (unsigned int *) &p->width, (unsigned int *)&p->height);
 
 	if (mask & XNegative)
 	    JunkX = Scr->MyDisplayWidth - p->width - 
@@ -528,11 +528,11 @@ WList *AddIconManager(tmp_win)
     PackIconManager(ip);
     XMapWindow(dpy, tmp->w);
 
-    XSaveContext(dpy, tmp->w, IconManagerContext, tmp);
-    XSaveContext(dpy, tmp->w, TwmContext, tmp_win);
-    XSaveContext(dpy, tmp->w, ScreenContext, Scr);
-    XSaveContext(dpy, tmp->icon, TwmContext, tmp_win);
-    XSaveContext(dpy, tmp->icon, ScreenContext, Scr);
+    XSaveContext(dpy, tmp->w, IconManagerContext, (caddr_t) tmp);
+    XSaveContext(dpy, tmp->w, TwmContext, (caddr_t) tmp_win);
+    XSaveContext(dpy, tmp->w, ScreenContext, (caddr_t) Scr);
+    XSaveContext(dpy, tmp->icon, TwmContext, (caddr_t) tmp_win);
+    XSaveContext(dpy, tmp->icon, ScreenContext, (caddr_t) Scr);
     tmp_win->list = tmp;
 
     if (!ip->twm_win->icon)

@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.125 89/12/09 22:52:51 jim Exp $
+ * $XConsortium: add_window.c,v 1.126 89/12/10 17:46:37 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.125 89/12/09 22:52:51 jim Exp $";
+"$XConsortium: add_window.c,v 1.126 89/12/10 17:46:37 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -141,8 +141,10 @@ IconMgr *iconp;
     XEvent event;
     unsigned long valuemask;		/* mask for create windows */
     XSetWindowAttributes attributes;	/* attributes for create windows */
-    int width, height, len;		/* tmp variable */
-    int junk1, junk2, junk3;
+    int width, height;			/* tmp variable */
+    Atom actual_type;
+    int actual_format;
+    unsigned long nitems, bytesafter;
     XWindowChanges xwc;		/* change window structure */
     unsigned int xwcm;		/* change window mask */
     int ask_user;		/* don't know where to put the window */
@@ -553,8 +555,9 @@ IconMgr *iconp;
     tmp_win->name_width = XTextWidth(Scr->TitleBarFont.font, tmp_win->name,
 				     namelen);
 
-    if (XGetWindowProperty(dpy, tmp_win->w, XA_WM_ICON_NAME, 0, 200, False,
-	XA_STRING, &junk1, &junk2, &junk3, &len, &tmp_win->icon_name))
+    if (XGetWindowProperty (dpy, tmp_win->w, XA_WM_ICON_NAME, 0L, 200L, False,
+			    XA_STRING, &actual_type, &actual_format, &nitems,
+			    &bytesafter,(unsigned char **)&tmp_win->icon_name))
 	tmp_win->icon_name = tmp_win->name;
 
     if (tmp_win->icon_name == NULL)
@@ -744,27 +747,27 @@ IconMgr *iconp;
 
     (void) AddIconManager(tmp_win);
 
-    XSaveContext(dpy, tmp_win->w, TwmContext, tmp_win);
-    XSaveContext(dpy, tmp_win->w, ScreenContext, Scr);
-    XSaveContext(dpy, tmp_win->frame, TwmContext, tmp_win);
-    XSaveContext(dpy, tmp_win->frame, ScreenContext, Scr);
+    XSaveContext(dpy, tmp_win->w, TwmContext, (caddr_t) tmp_win);
+    XSaveContext(dpy, tmp_win->w, ScreenContext, (caddr_t) Scr);
+    XSaveContext(dpy, tmp_win->frame, TwmContext, (caddr_t) tmp_win);
+    XSaveContext(dpy, tmp_win->frame, ScreenContext, (caddr_t) Scr);
     if (tmp_win->title_height)
     {
 	int i;
 	int nb = Scr->TBInfo.nleft + Scr->TBInfo.nright;
 
-	XSaveContext(dpy, tmp_win->title_w, TwmContext, tmp_win);
-	XSaveContext(dpy, tmp_win->title_w, ScreenContext, Scr);
+	XSaveContext(dpy, tmp_win->title_w, TwmContext, (caddr_t) tmp_win);
+	XSaveContext(dpy, tmp_win->title_w, ScreenContext, (caddr_t) Scr);
 	for (i = 0; i < nb; i++) {
 	    XSaveContext(dpy, tmp_win->titlebuttons[i].window, TwmContext,
-			 tmp_win);
+			 (caddr_t) tmp_win);
 	    XSaveContext(dpy, tmp_win->titlebuttons[i].window, ScreenContext,
-			 Scr);
+			 (caddr_t) Scr);
 	}
 	if (tmp_win->hilite_w)
 	{
-	    XSaveContext(dpy, tmp_win->hilite_w, TwmContext, tmp_win);
-	    XSaveContext(dpy, tmp_win->hilite_w, ScreenContext, Scr);
+	    XSaveContext(dpy, tmp_win->hilite_w, TwmContext, (caddr_t)tmp_win);
+	    XSaveContext(dpy, tmp_win->hilite_w, ScreenContext, (caddr_t)Scr);
 	}
     }
 
@@ -1259,7 +1262,7 @@ CreateColormapWindow(w, creating_parent, property_window)
 	}
 
 	if (XFindContext(dpy, attributes.colormap,  ColormapContext,
-		&cwin->colormap) == XCNOENT) {
+		(caddr_t *)&cwin->colormap) == XCNOENT) {
 	    cwin->colormap = cmap = CreateTwmColormap(attributes.colormap);
 	    if (!cmap) {
 		XDeleteContext(dpy, w, ColormapContext);
@@ -1303,7 +1306,7 @@ FetchWmColormapWindows (tmp)
     register int i, j;
     Window *cmap_windows;
     int number_cmap_windows;
-    ColormapWindow **cwins;
+    ColormapWindow **cwins = NULL;
     int previously_installed;
     extern void free_cwins();
 
@@ -1343,7 +1346,7 @@ FetchWmColormapWindows (tmp)
 		 */
 		if (j == tmp->number_cwins)
 		    if (XFindContext(dpy, cmap_windows[i], ColormapContext,
-				     &cwins[i]) == XCNOENT) {
+				     (caddr_t *)&cwins[i]) == XCNOENT) {
 			if ((cwins[i] = CreateColormapWindow(cmap_windows[i],
 				    (Bool) tmp->number_cwins == 0,
 				    True)) == NULL) {
@@ -1366,7 +1369,7 @@ FetchWmColormapWindows (tmp)
 	number_cmap_windows = 1;
 
 	cwins = (ColormapWindow **) malloc(sizeof(ColormapWindow *));
-	if (XFindContext(dpy, tmp->w, ColormapContext, &cwins[0]) == XCNOENT)
+	if (XFindContext(dpy, tmp->w, ColormapContext, (caddr_t *)&cwins[0]) == XCNOENT)
 	    cwins[0] = CreateColormapWindow(tmp->w,
 			    (Bool) tmp->number_cwins == 0, False);
 	else

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: util.c,v 1.33 89/12/09 22:22:03 jim Exp $
+ * $XConsortium: util.c,v 1.34 89/12/10 17:47:23 jim Exp $
  *
  * utility routines for twm
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: util.c,v 1.33 89/12/09 22:22:03 jim Exp $";
+"$XConsortium: util.c,v 1.34 89/12/10 17:47:23 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -202,8 +202,8 @@ void
 Zoom(wf, wt)
     Window wf, wt;
 {
-    int fx, fy, fw, fh;
-    int tx, ty, tw, th;
+    int fx, fy, tx, ty;
+    unsigned int fw, fh, tw, th;
     int xl, yt, xr, yb;
     int dx, dy, dw, dh;
     int w, h, i;
@@ -352,10 +352,10 @@ void
 GetUnknownIcon(name)
 char *name;
 {
-    if ((Scr->UnknownPm = GetBitmap(name)) != NULL)
+    if ((Scr->UnknownPm = GetBitmap(name)) != None)
     {
 	XGetGeometry(dpy, Scr->UnknownPm, &JunkRoot, &JunkX, &JunkY,
-	    &Scr->UnknownWidth, &Scr->UnknownHeight, &JunkBW, &JunkDepth);
+	    (unsigned int *)&Scr->UnknownWidth, (unsigned int *)&Scr->UnknownHeight, &JunkBW, &JunkDepth);
     }
 }
 
@@ -377,7 +377,7 @@ char *name;
 
 Pixmap FindBitmap (name, widthp, heightp)
     char *name;
-    int *widthp, *heightp;
+    unsigned int *widthp, *heightp;
 {
     char *bigname;
     Pixmap pm;
@@ -743,11 +743,12 @@ putenv(s)
 
 
 static Pixmap CreateXLogoPixmap (widthp, heightp)
-    int *widthp, *heightp;
+    unsigned int *widthp, *heightp;
 {
     int h = Scr->TBInfo.width - Scr->TBInfo.border * 2;
+    if (h < 0) h = 0;
 
-    *widthp = *heightp = h;
+    *widthp = *heightp = (unsigned int) h;
     if (Scr->tbpm.xlogo == None) {
 	GC gc, gcBack;
 
@@ -777,11 +778,12 @@ static Pixmap CreateXLogoPixmap (widthp, heightp)
 
 
 static Pixmap CreateResizePixmap (widthp, heightp)
-    int *widthp, *heightp;
+    unsigned int *widthp, *heightp;
 {
     int h = Scr->TBInfo.width - Scr->TBInfo.border * 2;
+    if (h < 0) h = 0;
 
-    *widthp = *heightp = h;
+    *widthp = *heightp = (unsigned int) h;
     if (Scr->tbpm.resize == None) {
 	XSegment segs[4];
 	GC gc;
@@ -822,7 +824,7 @@ static char questionmark_bits[] = {
    0x38, 0x7c, 0x64, 0x30, 0x18, 0x00, 0x18, 0x18};
 
 static Pixmap CreateQuestionPixmap (widthp, heightp)
-    int *widthp, *heightp;
+    unsigned int *widthp, *heightp;
 {
     *widthp = questionmark_width;
     *heightp = questionmark_height;
