@@ -1,4 +1,4 @@
-/* $Header: opaque.h,v 1.1 87/09/01 17:20:05 toddb Locked $ */
+/* $Header: opaque.h,v 1.2 87/09/01 17:20:34 swick Locked $ */
 
 extern char *defaultFontPath;
 extern char *defaultTextFont;
@@ -18,5 +18,6 @@ extern int	TimeOutValue;
 extern long ScreenSaverTime;
 extern long ScreenSaverInterval;
 extern int  ScreenSaverBlanking;
+extern int  ScreenSaverAllowExposures;
 extern int argcGlobal;
 extern char **argvGlobal;
