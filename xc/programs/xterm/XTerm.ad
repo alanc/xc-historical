@@ -44,7 +44,7 @@ XTerm*fontMenu.Label:  VT Fonts
 XTerm*fontMenu*fontdefault*Label:	Default Font
 !font0 is overridden to control the normal font
 XTerm*fontMenu*font1*Label:	Tiny
-XTerm*VT100*font1:		5x8
+XTerm*VT100*font1:		nil2
 XTerm*fontMenu*font2*Label:	Small
 XTerm*VT100*font2:		6x10
 XTerm*fontMenu*font3*Label:	Medium
