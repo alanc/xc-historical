@@ -61,7 +61,6 @@ static void 	  	macIIMouseDoneEvents();
 
 static macIIMsPrivRec	macIIMousePriv;
 static PtrPrivRec 	sysMousePriv = {
-    -1,				/* Descriptor to device */
     macIIMouseProcessEvent,	/* Function to process an event */
     macIIMouseDoneEvents,		/* When all the events have been */
 				/* handled, this function will be */
