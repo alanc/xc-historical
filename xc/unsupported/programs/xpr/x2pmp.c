@@ -1,10 +1,10 @@
 /*
- *	$Source: /local/X/clients/xpr/RCS/x2pmp.c,v $
- *	$Header: x2pmp.c,v 1.1 87/10/05 16:50:35 swick Locked $
+ *	$Source: /orpheus/u1/X11/clients/xpr/RCS/x2pmp.c,v $
+ *	$Header: x2pmp.c,v 1.2 87/10/21 16:34:52 swick Locked $
  */
 
 #ifndef lint
-static char *rcsid_x2pmp_c = "$Header: x2pmp.c,v 1.1 87/10/05 16:50:35 swick Locked $";
+static char *rcsid_x2pmp_c = "$Header: x2pmp.c,v 1.2 87/10/21 16:34:52 swick Locked $";
 #endif	lint
 
 /* x2pmp.c: Translate xwd window dump format into PMP format for the
@@ -117,11 +117,9 @@ int invert;
 #else /* X11 */
     width = header.pixmap_width;
     height = header.pixmap_height;
-    fixed_width = byte_width = header.bytes_per_line;
+    fixed_width = 8 * (byte_width = header.bytes_per_line);
 #ifdef notdef
     fixed_width = (width + 7) & ~0x3; /* round up to nearest byte boundary */
-#else
-    fixed_width = 8*byte_width;
 #endif
     one_plane_size = byte_width * height;
     buffer_size = one_plane_size *
