@@ -163,7 +163,14 @@ application \fInumFlashes\fP (three by default) times in the
 	C	Show Class Names	Relabel(class)
 	I	Show Widget IDs	Relabel(id)
 	W	Show Widget Windows	Relabel(window)
+	T	Toggle Widget/Class Name	Relabel(toggle)
 .fi
+.sp
+Clicking button 1 on a widget adds it to the set of selected widgets.
+Clicking button 2 on a widget deselects all other widgets and then
+selects just that widget.
+Clicking button 3 on a widget toggles its label between the widget's
+instance name the widget's class name.
 .sp
 .SH USING THE RESOURCE BOX
 The resource box contains five different areas.  Each of the areas,
