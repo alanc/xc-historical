@@ -20,16 +20,7 @@
 #define XtNpadding		"padding"       /* Int: amount of space around outside of clock */
 #define XtNfont			"font"          /* Font for digital clock */
 
-/* New fields for the Clock widget class record */
-typedef struct {
-   char dummy;
-  } ClockClass;
-
-/* Full class record declaration. */
-typedef struct {
-   CoreClass core_class;
-   ClockClass clock_class;
- } ClockWidgetClassData, *ClockWidgetClass;
+typedef struct _ClockWidgetClassData ClockWidgetClassData;
 
 extern ClockWidgetClassData clockWidgetClassData;
 #define clockWidgetClass (&clockWidgetClassData)
