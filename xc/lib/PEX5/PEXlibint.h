@@ -1,4 +1,4 @@
-/* $XConsortium: PEXlibint.h,v 1.14 94/03/18 10:37:33 mor Exp $ */
+/* $XConsortium: PEXlibint.h,v 1.15 94/03/30 16:49:22 rws Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -28,6 +28,7 @@ SOFTWARE.
 #ifndef _PEXLIBINT_H_
 #define _PEXLIBINT_H_
 
+#define NEED_REPLIES
 #include <X11/Xlibint.h>
 #include <X11/Xfuncs.h>
 #include "PEXproto.h"
