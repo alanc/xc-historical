@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Simple.c,v 1.21 89/10/09 16:20:22 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Simple.c,v 1.22 89/12/07 20:19:38 kit Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -140,7 +140,8 @@ static Boolean SetValues(current, request, new)
     SimpleWidget s_new = (SimpleWidget) new;
 
     if ( XtIsSensitive(current) != XtIsSensitive(new) )
-	ChangeSensitive( new );
+	(*((SimpleWidgetClass)XtClass(new))->
+	     simple_class.change_sensitive) ( new );
 
     if ( (s_old->simple.cursor != s_new->simple.cursor) && XtIsRealized(new))
         XDefineCursor(XtDisplay(new), XtWindow(new), s_new->simple.cursor);
