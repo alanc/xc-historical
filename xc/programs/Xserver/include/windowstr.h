@@ -1,4 +1,4 @@
-/* $XConsortium: windowstr.h,v 5.12 89/10/03 19:50:51 rws Exp $ */
+/* $XConsortium: windowstr.h,v 5.13 89/10/04 10:27:15 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -170,5 +170,23 @@ extern int UnmapSubwindow();
 extern RegionPtr NotClippedByChildren();
 extern void SendVisibilityNotify();
 
-#endif /* WINDOWSTRUCT_H */
+typedef struct _ScreenSaverStuff {
+    WindowPtr pWindow;
+    XID       wid;
+    char      blanked;
+    Bool      (*ExternalScreenSaver)();	
+} ScreenSaverStuffRec, *ScreenSaverStuffPtr;
 
+#define SCREEN_IS_BLANKED   0
+#define SCREEN_ISNT_SAVED   1
+#define SCREEN_IS_TILED     2
+#define SCREEN_IS_BLACK	    3
+
+#define HasSaverWindow(i)   (savedScreenInfo[i].pWindow != NullWindow)
+
+extern int ScreenSaverBlanking, ScreenSaverAllowExposures;
+extern int screenIsSaved;
+
+extern ScreenSaverStuffRec savedScreenInfo[MAXSCREENS];
+
+#endif /* WINDOWSTRUCT_H */
