@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: file.c,v 1.12 89/12/07 20:29:34 keith Exp $
+ * $XConsortium: file.c,v 1.13 90/09/14 17:51:31 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -25,9 +25,6 @@
 # include	"dm.h"
 # include	<ctype.h>
 # include	<signal.h>
-
-extern void	free ();
-extern char	*malloc (), *realloc ();
 
 DisplayTypeMatch (d1, d2)
 DisplayType	d1, d2;

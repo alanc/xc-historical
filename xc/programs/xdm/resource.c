@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: resource.c,v 1.38 90/12/10 15:45:41 keith Exp $
+ * $XConsortium: resource.c,v 1.39 91/01/09 17:29:14 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -244,7 +244,7 @@ GetResource (name, class, valueType, valuep, default_value)
 {
     char	*type;
     XrmValue	value;
-    char	*string, *new_string, *strncpy (), *malloc ();
+    char	*string, *new_string;
     char	str_buf[50];
     int	len;
     extern char **parseArgs();
