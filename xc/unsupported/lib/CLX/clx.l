@@ -513,6 +513,18 @@
 (def-clx-class (pixmap (:include drawable) (:copier nil))
   )
 
+(defstruct (visual-info (:copier nil) (:predicate nil))
+  (id 0 :type resource-id)
+  (class :static-gray :type (member :static-gray :static-color :true-color
+				    :gray-scale :pseudo-color :direct-color))
+  (red-mask 0 :type pixel)
+  (green-mask 0 :type pixel)
+  (blue-mask 0 :type pixel)
+  (bits-per-rgb 1 :type card8)
+  (colormap-entries 0 :type card16)
+  (plist nil :type list)			; Extension hook
+  )
+
 (def-clx-class (colormap (:copier nil))
   (id 0 :type resource-id)
   (display nil :type (or null display))
@@ -717,18 +729,6 @@
 	   ,boole-andc1 ,boole-2 ,boole-xor ,boole-ior
 	   ,boole-nor ,boole-eqv ,boole-c2 ,boole-orc2
 	   ,boole-c1 ,boole-orc1 ,boole-nand ,boole-set))
-
-(defstruct (visual-info (:copier nil) (:predicate nil))
-  (id 0 :type resource-id)
-  (class :static-gray :type (member :static-gray :static-color :true-color
-				    :gray-scale :pseudo-color :direct-color))
-  (red-mask 0 :type pixel)
-  (green-mask 0 :type pixel)
-  (blue-mask 0 :type pixel)
-  (bits-per-rgb 1 :type card8)
-  (colormap-entries 0 :type card16)
-  (plist nil :type list)			; Extension hook
-  )
 
 (defstruct (screen (:copier nil) (:predicate nil))
   (root nil :type (or null window))
