@@ -1,5 +1,5 @@
-.\" $Header$
-.TH XDPR 1 "9 May 1988" "X Version 11"
+.\" $Header: xdpr.man,v 1.7 88/05/09 16:02:49 swick Exp $
+.TH XDPR 1 "10 May 1988" "X Version 11"
 .SH NAME
 xdpr \- dump an X window directly to a printer
 .SH SYNOPSIS
@@ -17,14 +17,14 @@ xdpr \- dump an X window directly to a printer
 [
 .B \-device
 .I printer_device
-] 
+]
 [
 option ...
 ]
 
 .SH DESCRIPTION
 .IR Xdpr
-runs the commands 
+uses the commands 
 .IR xwd (1),
 .IR xpr (1), 
 and
@@ -35,14 +35,14 @@ to get a printout of a window.  \fIXdpr\fP by default will print the
 largest possible representation of the window on the output page.
 .PP
 The options for \fIxdpr\fP are the same as those for \fIxpr\fP,
-\fIxwd\fP, and \fIlpr\fP.  The most common options are described
+\fIxwd\fP, and \fIlpr\fP.  The most commonly-used options are described
 below; see the manual pages for these commands for
-a more detailed description of the many options available.
+more detailed descriptions of the many options available.
 .PP
 .TP
 .IB filename
-Specifies a file containing a window dump to be used
-as input instead of an X window.
+Specifies a file containing a window dump (created by \fIxwd\fP) to be
+printed instead of selecting an X window.
 .TP
 .B -P\fIprinter\fP
 Specifies a printer to send the output to.  If a printer name is not
@@ -61,9 +61,9 @@ One can, however, specify them explicitly; see \fIX\fP(1).
 .TP
 .B -device \fIprinter-device\fP
 Specifies the device type of the printer.  Available printer devices
-are "ln03" for the DEC LN03, "pp" for the IBM 3812 PagePringer, and
+are "ln03" for the DEC LN03, "pp" for the IBM 3812 PagePrinter, and
 "ps" for any postscript printer (e.g. DEC LN03R or LPS40).  The
-default is "LN03".
+default is "ln03".
 .TP
 .B -help
 This option displays the list of options known to xdpr.
@@ -79,6 +79,8 @@ commands as appropriate for each.
 xwd(1), xpr(1), lpr(1), xwud(1), X(1)
 .SH ENVIRONMENT
 DISPLAY - for which display to use by default.
+.br
+PRINTER - for which printer to use by default.
 .SH COPYRIGHT
 Copyright 1985, 1988, Massachusetts Institute of Technology.
 .br
