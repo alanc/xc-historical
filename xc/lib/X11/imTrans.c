@@ -1,4 +1,4 @@
-/* $XConsortium: imTrans.c,v 1.1 94/02/03 18:04:04 mor Exp $ */
+/* $XConsortium: imTrans.c,v 1.2 94/02/05 00:51:53 rws Exp $ */
 /******************************************************************
 
            Copyright 1992 by Sun Microsystems, Inc.
@@ -56,16 +56,16 @@ _XimTransConnect(im)
 
     for (retry = XIM_CONNECTION_RETRIES; retry >= 0; retry--)
     {
-	if ((spec->trans_conn = _XIMTransOpenCOTSClient (
+	if ((spec->trans_conn = _XimXTransOpenCOTSClient (
 	    spec->address)) == NULL)
 	{
 	    break;
 	}
 
-	if ((connect_stat = _XIMTransConnect (
+	if ((connect_stat = _XimXTransConnect (
 	    spec->trans_conn, spec->address)) < 0)
 	{
-	    _XIMTransClose (spec->trans_conn);
+	    _XimXTransClose (spec->trans_conn);
 	    spec->trans_conn = NULL;
 
 	    if (connect_stat == TRANS_TRY_CONNECT_AGAIN)
@@ -83,7 +83,7 @@ _XimTransConnect(im)
     if (spec->trans_conn == NULL)
 	return False;
 
-    spec->fd = _XIMTransGetConnectionNumber (spec->trans_conn);
+    spec->fd = _XimXTransGetConnectionNumber (spec->trans_conn);
 
     if (!(window = XCreateSimpleWindow(im->core.display,
 		DefaultRootWindow(im->core.display), 0, 0, 1, 1, 1, 0, 0)))
@@ -105,8 +105,8 @@ _XimTransShutdown(im)
 {
     TransSpecRec *spec = (TransSpecRec *)im->private.proto.spec;
 
-    _XIMTransDisconnect(spec->trans_conn);
-    (void)_XIMTransClose(spec->trans_conn);
+    _XimXTransDisconnect(spec->trans_conn);
+    (void)_XimXTransClose(spec->trans_conn);
     _XimFreeTransIntrCallback(im);
     _XUnregisterInternalConnection(im->core.display, spec->fd);
     _XUnregisterFilter(im->core.display, spec->window,
@@ -243,7 +243,7 @@ _XimTransSend(im, len, data)
     register int	 nbyte;
 
     while (len > 0) {
-	if ((nbyte = _XIMTransWrite(spec->trans_conn, buf, len)) <= 0)
+	if ((nbyte = _XimXTransWrite(spec->trans_conn, buf, len)) <= 0)
 	    return False;
 	len -= nbyte;
 	buf += nbyte;
@@ -269,7 +269,7 @@ _XimTransRecv(im, recv_buf, recv_point, min_len, buf_len, ret_len, arg)
 	return False;
 
     while(recv_point < min_len) {
-	if ((len = _XIMTransRead(spec->trans_conn, &recv_buf[recv_point],
+	if ((len = _XimXTransRead(spec->trans_conn, &recv_buf[recv_point],
 						(buf_len - recv_point))) <= 0)
 	    return False;
 	recv_point += len;
