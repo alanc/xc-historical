@@ -1,3 +1,5 @@
+#include <Server.tmpl>
+
 /*
  * If you have any extra files to be put into the library, define them here.
  * Note that System V boxes should use os/sysV to get Berklib.c.
@@ -28,8 +30,6 @@ BOOTSTRAPCFLAGS =
                   osfonts.o osinit.o utils.o auth.o mitauth.o\
  		  xdmcp.o OtherObjects
    FONT_DEFINES = FontDefines FontFilters
-    STD_DEFINES = ServerDefines
-    CDEBUGFLAGS = ServerCDebugFlags
 #if SpecialMalloc
      OS_DEFINES = -DSPECIAL_MALLOC
 #else

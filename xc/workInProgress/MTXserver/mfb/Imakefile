@@ -1,3 +1,5 @@
+#include <Server.tmpl>
+
 SRCS1 =	 mfbgc.c mfbwindow.c mfbfont.c \
 	 mfbfillrct.c mfbpntwin.c maskbits.c mfbpixmap.c \
 	 mfbimage.c mfbline.c mfbbres.c mfbhrzvert.c mfbbresd.c \
@@ -19,8 +21,6 @@ OBJS =   mfbgc.o mfbwindow.o mfbfont.o \
 	 mfbpawhite.o mfbpablack.o mfbpainv.o mfbtile.o \
          mfbtewhite.o mfbteblack.o mfbmisc.o mfbbstore.o
 
-STD_DEFINES = ServerDefines
-CDEBUGFLAGS = ServerCDebugFlags
 INCLUDES = -I. -I../mi -I../../include -I$(INCLUDESRC)
 LINTDEFS = -DMFBPOLYGLYPHBLT=mfbPolyGlyphBltWhite \
 	   -DMFBIMAGEGLYPHBLT=mfbImageGlyphBltWhite \

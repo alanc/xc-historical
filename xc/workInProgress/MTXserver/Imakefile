@@ -2,11 +2,8 @@
  * Server Master Makefile
  */
 
-#define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)' 'CC=$(CC)' 'CCOPTIONS=$(CCOPTIONS)'
+#include <Server.tmpl>
 
-      CCOPTIONS = ServerCCOptions
-    STD_DEFINES = ServerDefines
-    CDEBUGFLAGS = ServerCDebugFlags
      EXTENSIONS = $(EXTENSIONSRC)/server/libext.a
          EXTDIR = $(EXTENSIONSRC)/server
     FONTUTILDIR = $(FONTSRC)/mkfontdir

@@ -1,3 +1,5 @@
+#include <Server.tmpl>
+
 SRCS =  mivaltree.c mipolyseg.c mipolyrect.c \
 	mipoly.c mipolycon.c mipolygen.c mipolyutil.c \
 	mifillrct.c milines.c miarc.c mizerarc.c mifillarc.c \
@@ -16,9 +18,6 @@ OBJS =	mivaltree.o mipolyseg.o mipolyrect.o \
 	midash.o miwidedash.o mibstore.o miinitext.o \
 	mipointer.o misprite.o midispcur.o
 
-STD_DEFINES = ServerDefines
-CDEBUGFLAGS = ServerCDebugFlags
-EXT_DEFINES = ExtensionDefines
 INCLUDES = -I. -I../../include -I$(INCLUDESRC)
 LINTLIBS = ../../dix/llib-ldix.ln ../../os/4.2bsd/llib-los.ln
 

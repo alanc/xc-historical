@@ -1,3 +1,5 @@
+#include <Server.tmpl>
+
 SRCS =	\
 	macIIInit.c \
 	macIIMono.c \
@@ -26,8 +28,6 @@ OBJS = \
 	macIIUtils.o \
 	macIIKMap.o
 
-STD_DEFINES = ServerDefines
-CDEBUGFLAGS = ServerCDebugFlags
    INCLUDES = -I.  -I../../include -I../mi -I../mfb -I../../dix -I$(INCLUDESRC)
    LINTLIBS = ../../dix/llib-ldix.ln ../../os/4.2bsd/llib-los.ln \
 	      ../mfb/llib-lmfb.ln ../mi/llib-lmi.ln ../cfb/llib-lcfb.ln
