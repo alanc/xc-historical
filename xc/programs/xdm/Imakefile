@@ -1,3 +1,6 @@
+#define IHaveSubdirs
+#define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
+   XDMCONFIGDIR = config/default
 LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
            SRCS = buf.c display.c displaylist.c dm.c error.c\
 		  file.c greet.c resource.c\
@@ -5,5 +8,13 @@ LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
            OBJS = buf.o display.o displaylist.o dm.o error.o\
 		  file.o greet.o resource.o\
 		  session.o socket.o verify.o Login.o
+        SUBDIRS = $(XDMCONFIGDIR)
+
+MakeSubdirs($(SUBDIRS))
+
+install::
+	-mkdir $(XDMDIR)
+	cd $(XDMCONFIGDIR); make install
 
 ComplexProgramTarget(xdm)
+
