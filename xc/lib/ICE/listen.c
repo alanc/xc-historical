@@ -1,4 +1,4 @@
-/* $XConsortium: listen.c,v 1.7 94/01/31 10:43:47 mor Exp $ */
+/* $XConsortium: listen.c,v 1.8 94/02/02 20:03:43 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -34,15 +34,15 @@ char		*errorStringRet;
 {
     struct _IceListenObj	*listenObjs;
     char			*networkId;
-    int				fd, count, max, i, j;
+    int				fd, transCount, maxTrans, i, j;
     int				family, addrlen;
     Xtransaddr			*addr;
     Status			status = 1;
-    XtransConnInfo		*trans_conns = NULL;
+    XtransConnInfo		*transConns = NULL;
 
 
-    if ((_ICETransMakeAllCOTSServerListeners (NULL, &max,
-	&count, &trans_conns) < 0) || (count < 1))
+    if ((_ICETransMakeAllCOTSServerListeners (NULL, &maxTrans,
+	&transCount, &transConns) < 0) || (transCount < 1))
     {
 	*listenObjsRet = NULL;
 	*countRet = 0;
@@ -54,19 +54,19 @@ char		*errorStringRet;
     }
 
     if ((listenObjs = (struct _IceListenObj *) malloc (
-	count * sizeof (struct _IceListenObj))) == NULL)
+	transCount * sizeof (struct _IceListenObj))) == NULL)
     {
-	for (i = 0; i < count; i++)
-	    _ICETransClose (trans_conns[i]);
-	free ((char *) trans_conns);
+	for (i = 0; i < transCount; i++)
+	    _ICETransClose (transConns[i]);
+	free ((char *) transConns);
 	return (0);
     }
 
     *countRet = 0;
 
-    for (i = 0; i < count; i++)
+    for (i = 0; i < transCount; i++)
     {
-	_ICETransGetMyAddr (trans_conns[i], &family, &addrlen, &addr);
+	_ICETransGetMyAddr (transConns[i], &family, &addrlen, &addr);
 
 	networkId = _ICETransGetMyNetworkId (family, addrlen, addr);
 
@@ -74,7 +74,7 @@ char		*errorStringRet;
 
 	if (networkId)
 	{
-	    listenObjs[*countRet].trans_conn = trans_conns[i];
+	    listenObjs[*countRet].trans_conn = transConns[i];
 	    listenObjs[*countRet].network_id = networkId;
 		
 	    (*countRet)++;
@@ -139,12 +139,12 @@ char		*errorStringRet;
     }
     else
     {
-	for (i = 0; i < count; i++)
-	    _ICETransClose (trans_conns[i]);
+	for (i = 0; i < transCount; i++)
+	    _ICETransClose (transConns[i]);
     }
 
     free ((char *) listenObjs);
-    free ((char *) trans_conns);
+    free ((char *) transConns);
 
     return (status);
 }
