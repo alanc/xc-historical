@@ -1,5 +1,5 @@
 /*
- * $XConsortium: folder.c,v 2.28 89/12/10 20:20:34 converse Exp $
+ * $XConsortium: folder.c,v 2.29 89/12/11 16:32:18 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -36,6 +36,7 @@
 #include "bboxint.h"
 #include "tocintrnl.h"
 #include <X11/Xaw/Cardinals.h>
+extern void exit();
 
 typedef struct {	/* client data structure for callbacks */
     Scrn	scrn;		/* the xmh scrn of action */
@@ -59,9 +60,7 @@ void DoClose(widget, client_data, call_data)
     Scrn	scrn = (Scrn) client_data;
     register int i, count;
     Toc		toc;
-    Display	*dpy;
     XtCallbackRec	confirm_callbacks[2];
-    extern void exit();
 
     count = 0;
     for (i=0 ; i<numScrns ; i++)
@@ -97,9 +96,9 @@ void DoClose(widget, client_data, call_data)
  *		CmdSetSequence(toc, "cur", MakeSingleMsgList(toc->curmsg));
  *	}
  */
-	dpy = XtDisplay(scrn->parent);
 	XtUnmapWidget(scrn->parent);
-	XCloseDisplay(dpy);
+	XtDestroyApplicationContext
+	    (XtWidgetToApplicationContext(scrn->parent));
 	exit(0);
     }
     else {
@@ -283,7 +282,7 @@ static void CreateFolder(widget, client_data, call_data)
 		BBoxAddButton(scrnList[i]->folderbuttons, name,
 			      menuButtonWidgetClass, True);
 	}
-    DestroyPopup(widget, XtParent(dialog), (XtPointer) NULL);
+    DestroyPopup(widget, (XtPointer) XtParent(dialog), (XtPointer) NULL);
 }
 
 
@@ -426,9 +425,7 @@ void CheckAndDeleteFolder(widget, client_data, call_data)
 
 	    if (IsSubfolder(foldername)) {
 		char parent_folder[300];
-		char *c;
-		strcpy(parent_folder, foldername);
-		c = index(parent_folder, '/');
+		char *c = index( strcpy(parent_folder, foldername), '/');
 		*c = '\0';
 
 /* Since menus are built upon demand, and are a per-screen resource, 
@@ -608,8 +605,8 @@ static void AddFolderMenuEntry(button, entryname)
      * the widget name of the subfolder's menu entry must be unique.
      */
     label = entryname;
-    strcpy(tmpname, entryname);
-    if (c = index(tmpname, '/')) {
+    c = index( strcpy(tmpname, entryname), '/');
+    if (c) {
 	*c = '\0';
 	label = ++c;
 	if (strcmp(tmpname, c) == 0) {
@@ -627,10 +624,10 @@ static void AddFolderMenuEntry(button, entryname)
 
 /* Function name:	CreateFolderMenu
  * Description:	
- *	Menus are created for folder
- *	buttons if the folder has at least one subfolder.  For the directory
- *	given by the concatentation of app_resources.mail_path, '/', and the
- *	name of the button, CreateFolderMenu creates the menu whose entries are
+ *	Menus are created for folder buttons if the folder has at least one
+ *	subfolder.  For the directory given by the concatentation of 
+ *	app_resources.mail_path, '/', and the name of the button, 
+ *	CreateFolderMenu creates the menu whose entries are
  *	the subdirectories which do not begin with '.' and do not have
  *	names which are all digits, and do not have names which are a '#'
  *	followed by all digits.  The first entry is always the name of the
@@ -658,11 +655,8 @@ static void CreateFolderMenu(button)
 	return;
     }
 
-    /* Create the menu widget, allowing the menu to show entry changes. */
-    /* %%% memory leak.  We don't free entry callback closures when
-     * the entire menu is destroyed; there should be a destroy callback. */
-
-    CreateMenu(button, True);
+    button->menu = XtCreatePopupShell("menu", simpleMenuWidgetClass,
+				      button->widget, (ArgList) NULL, ZERO);
 	
     /* The first entry is always the parent folder */
 
@@ -675,10 +669,10 @@ static void CreateFolderMenu(button)
     directory[length++] = '/';
     for (i=0; i < n; i++) {
 	(void) strcpy(directory + length, namelist[i]->d_name);
-	XtFree((char *) namelist[i]);
+	free((char *) namelist[i]);
 	AddFolderMenuEntry(button, directory);
     }
-    XtFree((char *) namelist);
+    free((char *) namelist);
 }
 
 
@@ -707,8 +701,8 @@ static void DeleteFolderMenuEntry(button, foldername)
 	return;
     }
 
-    strcpy(tmpname, foldername);
-    if (c = index(tmpname, '/')) {
+    c = index( strcpy(tmpname, foldername), '/');
+    if (c) {
 	*c = '\0';
 	subfolder = ++c;
 	if (strcmp(button->name, subfolder) == 0) {
