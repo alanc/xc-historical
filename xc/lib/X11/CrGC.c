@@ -1,4 +1,4 @@
-/* $XConsortium: XCrGC.c,v 11.35 91/01/06 11:44:54 rws Exp $ */
+/* $XConsortium: XCrGC.c,v 11.36 91/04/14 13:53:01 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -47,6 +47,8 @@ static XGCValues Const initial_GC = {
     4		/* dashes (list [4,4]) */
 };
 
+static void _XGenerateGCList();
+
 GC XCreateGC (dpy, d, valuemask, values)
      register Display *dpy;
      Drawable d;		/* Window or Pixmap for which depth matches */
@@ -90,10 +92,10 @@ GC XCreateGC (dpy, d, valuemask, values)
 
 /*
  * GenerateGCList looks at the GC dirty bits, and appends all the required
- * long words to the request being generated.  Clears the dirty bits in
- * the GC.
+ * long words to the request being generated.
  */
 
+static void
 _XGenerateGCList (dpy, gc, req)
     register Display *dpy;
     xReq *req;
@@ -145,7 +147,6 @@ _XGenerateGCList (dpy, gc, req)
 
     nvalues <<= 2;
     Data32 (dpy, (long *) values, nvalues);
-    gc->dirty = 0L;
 
     }
 
@@ -318,6 +319,7 @@ _XFlushGCCache(dpy, gc)
 		if (ext->flush_GC != NULL) (*ext->flush_GC)(dpy, gc, &ext->codes);
 		ext = ext->next;
 	}    
+	gc->dirty = 0L; /* allow extensions to see dirty bits */
     }
 }
 
