@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miregion.c,v 1.46 89/07/12 13:45:25 rws Exp $ */
+/* $XConsortium: miregion.c,v 1.47 89/07/13 08:58:24 rws Exp $ */
 
 #include <stdio.h>
 #include "miscstruct.h"
@@ -146,6 +146,19 @@ if (!(pReg)->data || (((pReg)->data->numRects + (n)) > (pReg)->data->size)) \
     ADDRECT(pNextRect,nx1,ny1,nx2,ny2);					\
     pReg->data->numRects++;						\
     assert(pReg->data->numRects<=pReg->data->size);			\
+}
+
+
+#define DOWNSIZE(reg,numRects)						 \
+if (((numRects) < ((reg)->data->size >> 1)) && ((reg)->data->size > 50)) \
+{									 \
+    RegDataPtr NewData;							 \
+    NewData = (RegDataPtr)xrealloc((reg)->data, REGION_SZOF(numRects));	 \
+    if (NewData)							 \
+    {									 \
+	NewData->size = (numRects);					 \
+	(reg)->data = NewData;						 \
+    }									 \
 }
 
 
@@ -772,29 +785,20 @@ miRegionOp(newReg, reg1, reg2, overlapFunc, appendNon1, appendNon2)
     if (oldData)
 	xfree(oldData);
 
-    if (!newReg->data->numRects)
+    if (!(numRects = newReg->data->numRects))
     {
 	xfreeData(newReg);
 	newReg->data = &EmptyData;
     }
-    else if (newReg->data->numRects == 1)
+    else if (numRects == 1)
     {
 	newReg->extents = *REGION_BOXPTR(newReg);
 	xfreeData(newReg);
 	newReg->data = (RegDataPtr)NULL;
     }
-    else if ((newReg->data->numRects < (newReg->data->size >> 1)) &&
-	     (newReg->data->size > 50))
+    else
     {
-	RegDataPtr data;
-
-	data = (RegDataPtr)xrealloc(newReg->data,
-				    REGION_SZOF(newReg->data->numRects));
-	if (data)
-	{
-	    data->size = data->numRects;
-	    newReg->data = data;
-	}
+	DOWNSIZE(newReg, numRects);
     }
 
     return overlap;
@@ -948,7 +952,14 @@ miIntersect(newReg, reg1, reg2)
 	newReg->extents.y2 = min(reg1->extents.y2, reg2->extents.y2);
 	xfreeData(newReg);
 	newReg->data = (RegDataPtr)NULL;
-    /* Add case for one rectangle covering list? */
+    }
+    else if (!reg2->data && SUBSUMES(&reg2->extents, &reg1->extents))
+    {
+	miRegionCopy(newReg, reg1);
+    }
+    else if (!reg1->data && SUBSUMES(&reg1->extents, &reg2->extents))
+    {
+	miRegionCopy(newReg, reg2);
     }
     else if (reg1 == reg2)
     {
@@ -1364,23 +1375,12 @@ miRegionValidate(badreg)
     numRects = badreg->data->numRects;
     if (!numRects)
     {
-	if (badreg->data->size)
-	{
-	    xfreeData(badreg);
-	    badreg->data = &EmptyData;
-	}
-	good(badreg);
-	return FALSE;
-    }
-    if (numRects == 1)
-    {
-	xfreeData(badreg);
-	badreg->data = (RegDataPtr)NULL;
 	good(badreg);
 	return FALSE;
     }
     if (badreg->extents.x1 < badreg->extents.x2)
     {
+	DOWNSIZE(badreg, numRects);
 	good(badreg);
 	return FALSE;
     }
