@@ -10,6 +10,6 @@ CONN_DEFINES = ConnectionFlags
 NormalLibraryObjectRule()
 NormalLibraryTarget(os,$(OBJS))
 
-SpecialObjectRule(connection.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialObjectRule(connection.o,$(ICONFIGFILES),$(CONN_DEFINES) $(SIGNAL_DEFINES))
 
 DependTarget()
