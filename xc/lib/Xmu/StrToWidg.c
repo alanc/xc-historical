@@ -1,6 +1,6 @@
-/* $XConsortium: StrToWidg.c,v 1.6 91/07/22 18:04:26 ackerman Exp $ */
+/* $XConsortium: StrToWidg.c,v 1.7 91/07/22 23:43:29 converse Exp $ */
 
-/* Copyright 1988 Massachusetts Institute of Technology
+/* Copyright 1988, 1991 Massachusetts Institute of Technology
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -30,8 +30,8 @@
  * or popup) of the parent.  If none match, compares string to classname
  * & returns first match.  Case is significant.
  */
-#include <X11/StringDefs.h>
 #include <X11/IntrinsicP.h>
+#include <X11/StringDefs.h>
 #include <X11/ObjectP.h>
 
 #define	done(address, type) \
@@ -39,25 +39,6 @@
 	  toVal->addr = (XPointer) address; \
 	  return; \
 	}
-
-#define	newDone(type, value) \
-	{							\
-	    if (toVal->addr != NULL) {				\
-		if (toVal->size < sizeof(type)) {		\
-		    toVal->size = sizeof(type);			\
-		    return False;				\
-		}						\
-		*(type*)(toVal->addr) = (value);		\
-	    }							\
-	    else {						\
-		static type static_val;				\
-		static_val = (value);				\
-		toVal->addr = (XtPointer)&static_val;		\
-	    }							\
-	    toVal->size = sizeof(type);				\
-	    return True;					\
-	}
-
 
 /* ARGSUSED */
 void XmuCvtStringToWidget(args, num_args, fromVal, toVal)
@@ -113,15 +94,35 @@ void XmuCvtStringToWidget(args, num_args, fromVal, toVal)
 	    done(&widget, Widget);
 	}
     }
-    XtStringConversionWarning(fromVal->addr, "Widget");
+    XtStringConversionWarning(fromVal->addr, XtRWidget);
     toVal->addr = NULL;
     toVal->size = 0;
 }
 
+#undef done
+
+#define	newDone(type, value) \
+	{							\
+	    if (toVal->addr != NULL) {				\
+		if (toVal->size < sizeof(type)) {		\
+		    toVal->size = sizeof(type);			\
+		    return False;				\
+		}						\
+		*(type*)(toVal->addr) = (value);		\
+	    }							\
+	    else {						\
+		static type static_val;				\
+		static_val = (value);				\
+		toVal->addr = (XtPointer)&static_val;		\
+	    }							\
+	    toVal->size = sizeof(type);				\
+	    return True;					\
+	}
+
 
 /*ARGSUSED*/
 Boolean XmuNewCvtStringToWidget(dpy, args, num_args, fromVal, toVal, 
-			     converter_data)
+				converter_data)
      Display *dpy;
      XrmValue *args;		/* parent */
      Cardinal *num_args;	/* 1 */
@@ -137,7 +138,7 @@ Boolean XmuNewCvtStringToWidget(dpy, args, num_args, fromVal, toVal,
 	XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
 			"wrongParameters","cvtStringToWidget","xtToolkitError",
 			"String To Widget conversion needs parent argument",
-			(String *)NULL, (Cardinal*)NULL);
+			(String *)NULL, (Cardinal *)NULL);
 
     parent = *(Widget*)args[0].addr;
     /* try to match names of normal children */
@@ -168,8 +169,8 @@ Boolean XmuNewCvtStringToWidget(dpy, args, num_args, fromVal, toVal,
     i = parent->core.num_popups;
     for (widgetP = parent->core.popup_list; i; i--, widgetP++) {
 	if ((*widgetP)->core.widget_class->core_class.xrm_class == name)
-		newDone(Widget, *widgetP);
+	    newDone(Widget, *widgetP);
     }
-    XtDisplayStringConversionWarning(dpy, (String) fromVal->addr, XtRWidget);
+    XtDisplayStringConversionWarning(dpy, (String)fromVal->addr, XtRWidget);
     return False;
 }
