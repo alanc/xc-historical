@@ -1,4 +1,4 @@
-/* $XConsortium: pl_pick.c,v 1.1 92/05/08 15:13:40 mor Exp $ */
+/* $XConsortium: pl_pick.c,v 1.2 92/05/11 13:13:55 mor Exp $ */
 
 /************************************************************************
 Copyright 1992 by ShoGraphics, Inc., Mountain View, California,
@@ -131,7 +131,7 @@ INPUT PEXPickMeasure	pm;
 }
 
 
-PEXPickMeasureAttributes *
+PEXPMAttributes *
 PEXGetPickMeasure (display, pm, valueMask)
 
 INPUT Display			*display;
@@ -141,7 +141,7 @@ INPUT unsigned long		valueMask;
 {
     pexGetPickMeasureReq	*req;
     pexGetPickMeasureReply	rep;
-    PEXPickMeasureAttributes	*ppmi;
+    PEXPMAttributes		*ppmi;
     unsigned long		*pv;
     unsigned long		f;
     int				i, tmp;
@@ -184,10 +184,11 @@ INPUT unsigned long		valueMask;
      * Allocate a buffer for the replies to pass back to the client.
      */
 
-    ppmi = (PEXPickMeasureAttributes *)
-	PEXAllocBuf ((unsigned) (sizeof (PEXPickMeasureAttributes)));
+    ppmi = (PEXPMAttributes *)
+	PEXAllocBuf ((unsigned) (sizeof (PEXPMAttributes)));
 
-    ppmi->picked_prim.element = NULL;
+    ppmi->pick_path.count = 0;
+    ppmi->pick_path.elements = NULL;
 
     for (i = 0; i < (PEXPMMaxShift + 1); i++)
     {
@@ -197,18 +198,18 @@ INPUT unsigned long		valueMask;
 	    switch (f)
 	    {
 	    case PEXPMStatus:
-		ppmi->pick_status = *(CARD16 *) pv;
+		ppmi->status = *(CARD16 *) pv;
 		pv++;
 		break;
 	    case PEXPMPath:
 		tmp = *(int *) pv;
 		pv++;
-		ppmi->picked_prim.count = tmp;
+		ppmi->pick_path.count = tmp;
 		tmp *= sizeof (PEXPickElementRef);
-		ppmi->picked_prim.element =
+		ppmi->pick_path.elements =
 		    (PEXPickElementRef *) PEXAllocBuf ((unsigned) tmp);
 		COPY_AREA ((char *) pv,
-		    (char *) (ppmi->picked_prim.element), tmp);
+		    (char *) (ppmi->pick_path.elements), tmp);
 		pv += NUMWORDS (tmp);
 		break;
 	    }
@@ -270,7 +271,7 @@ INPUT PEXPickRecord	*pick_record;
 }
 
 
-PEXPickDeviceAttributes *
+PEXPDAttributes *
 PEXGetPickDevice (display, wks, devType, valueMask)
 
 INPUT Display			*display;
@@ -281,7 +282,7 @@ INPUT unsigned long		valueMask;
 {
     pexGetPickDeviceReq		*req;
     pexGetPickDeviceReply	rep;
-    PEXPickDeviceAttributes	*ppdi;
+    PEXPDAttributes		*ppdi;
     unsigned long		*pv;
     unsigned long		f;
     int				i, tmp;
@@ -325,10 +326,11 @@ INPUT unsigned long		valueMask;
      * Allocate a buffer for the replies to pass back to the client.
      */
 
-    ppdi = (PEXPickDeviceAttributes *)
-	PEXAllocBuf ((unsigned) (sizeof (PEXPickDeviceAttributes)));
+    ppdi = (PEXPDAttributes *)
+	PEXAllocBuf ((unsigned) (sizeof (PEXPDAttributes)));
 
-    ppdi->path.element = NULL;
+    ppdi->path.count = 0;
+    ppdi->path.elements = NULL;
 
     for (i = 0; i < (PEXPDMaxShift + 1); i++)
     {
@@ -346,9 +348,9 @@ INPUT unsigned long		valueMask;
 		pv++;
 		ppdi->path.count = tmp;
 		tmp *= sizeof (PEXPickElementRef);
-		ppdi->path.element = (PEXPickElementRef *)
+		ppdi->path.elements = (PEXPickElementRef *)
 		    PEXAllocBuf ((unsigned) tmp);
-		COPY_AREA ((char *) pv, (char *) (ppdi->path.element), tmp);
+		COPY_AREA ((char *) pv, (char *) (ppdi->path.elements), tmp);
 		pv += NUMWORDS (tmp);
 		break;
 	    case PEXPDPickPathOrder:
@@ -400,11 +402,11 @@ INPUT unsigned long		valueMask;
 void
 PEXChangePickDevice (display, wks, devType, valueMask, values)
 
-INPUT Display			*display;
-INPUT PEXWorkstation		wks;
-INPUT int			devType;
-INPUT unsigned long		valueMask;
-INPUT PEXPickDeviceAttributes	*values;
+INPUT Display		*display;
+INPUT PEXWorkstation	wks;
+INPUT int		devType;
+INPUT unsigned long	valueMask;
+INPUT PEXPDAttributes	*values;
 
 {
     pexChangePickDeviceReq	*req;
@@ -461,7 +463,7 @@ INPUT PEXPickDeviceAttributes	*values;
 		tmp = *((unsigned long *) pv) = values->path.count;
 		pv++;
 		tmp *= sizeof (PEXPickElementRef);
-		COPY_AREA ((char *) (values->path.element), (char *) pv, tmp);
+		COPY_AREA ((char *) (values->path.elements), (char *) pv, tmp);
 		pv += NUMWORDS (tmp);
 		break;
 	    case PEXPDPickPathOrder:
@@ -638,6 +640,7 @@ OUTPUT int			*undetectable_return;
     pexEndPickOneReq		*req;
     pexEndPickOneReply		rep;
     PEXPickPath			*pathRet;
+    unsigned int		size;
 
 
     /*
@@ -667,15 +670,24 @@ OUTPUT int			*undetectable_return;
 
     /*
      * Allocate a buffer for the path to pass back to the client.
+     * If possible, use the pick path cache.
      */
 
-    pathRet = (PEXPickPath *) PEXAllocBuf ((unsigned) sizeof (PEXPickPath));
+    size = sizeof (PEXPickPath) + 
+	rep.numPickElRefs * sizeof (PEXPickElementRef);
 
-    pathRet->element = (PEXPickElementRef *) PEXAllocBuf (
-	(unsigned) (rep.numPickElRefs * sizeof (PEXPickElementRef)));
+    if (!PickCacheInUse && size <= PickCacheSize)
+    {
+	pathRet = PickCache;
+	PickCacheInUse = 1;
+    }
+    else
+	pathRet = (PEXPickPath *) PEXAllocBuf ((unsigned) size);
+
+    pathRet->elements = (PEXPickElementRef *) (pathRet + 1);
     pathRet->count = rep.numPickElRefs;
 
-    _XRead (display, (char *) (pathRet->element), (long) (rep.length << 2));
+    _XRead (display, (char *) (pathRet->elements), (long) (rep.length << 2));
 
 
     /*
@@ -706,7 +718,7 @@ OUTPUT int			*undetectable_return;
 {
     pexPickOneReq	*req;
     pexPickOneReply	rep;
-    unsigned int 	rec_size;
+    unsigned int 	rec_size, size;
     int			convertFP;
     PEXEnumTypeIndex	*ptr;
     PEXPickPath		*pathRet;
@@ -750,15 +762,24 @@ OUTPUT int			*undetectable_return;
 
     /*
      * Allocate a buffer for the path to pass back to the client.
+     * If possible, use the pick path cache.
      */
 
-    pathRet = (PEXPickPath *) PEXAllocBuf ((unsigned) sizeof (PEXPickPath));
+    size = sizeof (PEXPickPath) + 
+	rep.numPickElRefs * sizeof (PEXPickElementRef);
 
-    pathRet->element = (PEXPickElementRef *) PEXAllocBuf (
-	(unsigned) (rep.numPickElRefs * sizeof (PEXPickElementRef)));
+    if (!PickCacheInUse && size <= PickCacheSize)
+    {
+	pathRet = PickCache;
+	PickCacheInUse = 1;
+    }
+    else
+	pathRet = (PEXPickPath *) PEXAllocBuf ((unsigned) size);
+
+    pathRet->elements = (PEXPickElementRef *) (pathRet + 1);
     pathRet->count = rep.numPickElRefs;
 
-    _XRead (display, (char *) (pathRet->element), (long) (rep.length << 2));
+    _XRead (display, (char *) (pathRet->elements), (long) (rep.length << 2));
 
 
     /*
@@ -842,11 +863,11 @@ OUTPUT unsigned long	*count_return;
     pexEndPickAllReq		*req;
     pexEndPickAllReply		rep;
     PEXPickPath			*psp, *pspRet;
-    char			*prep;
+    char			*prep, *prep_save;
     PEXPickElementRef		*per;
     int				i;
     int				numElements;
-    unsigned int		size;
+    unsigned int		total_size, size;
 
 
     /*
@@ -887,21 +908,44 @@ OUTPUT unsigned long	*count_return;
 
     /*
      * Allocate a buffer for the replies to pass back to the client.
+     * If possible, use the pick path cache.
      */
 
-    psp = pspRet = (PEXPickPath *)
-	PEXAllocBuf ((unsigned) (rep.numPicked * sizeof (PEXPickPath)));
+    prep_save = prep;
+    total_size = rep.numPicked * sizeof (PEXPickPath);
 
     for (i = 0; i < rep.numPicked; i++)
     {
 	numElements = *((CARD32 *) prep);
 	prep += sizeof (CARD32);
 	size = numElements * sizeof (PEXPickElementRef);
-	per = (PEXPickElementRef *) PEXAllocBuf ((unsigned) size);
+	prep += size;
+	total_size += size;
+    }
+
+    if (!PickCacheInUse && total_size <= PickCacheSize)
+    {
+	pspRet = PickCache;
+	PickCacheInUse = 1;
+    }
+    else
+	pspRet = (PEXPickPath *) PEXAllocBuf ((unsigned) total_size);
+
+    psp = pspRet;
+    prep = prep_save;
+    per = (PEXPickElementRef *) ((char *) psp +
+	rep.numPicked * sizeof (PEXPickPath));
+
+    for (i = 0; i < rep.numPicked; i++)
+    {
+	numElements = *((CARD32 *) prep);
+	prep += sizeof (CARD32);
+	size = numElements * sizeof (PEXPickElementRef);
 	COPY_AREA (prep, (char *) per, size);
 	psp->count = numElements;
-	psp->element = per;
+	psp->elements = per;
 	psp++;
+	per += numElements;
 	prep += size;
     }
 
@@ -937,10 +981,10 @@ OUTPUT unsigned long	*count_return;
     pexPickAllReq		*req;
     pexPickAllReply		rep;
     PEXPickPath			*psp, *pspRet;
-    char			*prep;
+    char			*prep, *prep_save;
     PEXPickElementRef		*per;
     int				numElements, i;
-    unsigned int		rec_size, size;
+    unsigned int		rec_size, total_size, size;
     int				convertFP;
     PEXEnumTypeIndex		*ptr;
 
@@ -994,21 +1038,44 @@ OUTPUT unsigned long	*count_return;
 
     /*
      * Allocate a buffer for the replies to pass back to the client.
+     * If possible, use the pick path cache.
      */
 
-    psp = pspRet = (PEXPickPath *)
-	PEXAllocBuf ((unsigned) (rep.numPicked * sizeof (PEXPickPath)));
+    prep_save = prep;
+    total_size = rep.numPicked * sizeof (PEXPickPath);
 
     for (i = 0; i < rep.numPicked; i++)
     {
 	numElements = *((CARD32 *) prep);
 	prep += sizeof (CARD32);
 	size = numElements * sizeof (PEXPickElementRef);
-	per = (PEXPickElementRef *) PEXAllocBuf ((unsigned) size);
+	prep += size;
+	total_size += size;
+    }
+
+    if (!PickCacheInUse && total_size <= PickCacheSize)
+    {
+	pspRet = PickCache;
+	PickCacheInUse = 1;
+    }
+    else
+	pspRet = (PEXPickPath *) PEXAllocBuf ((unsigned) total_size);
+
+    psp = pspRet;
+    prep = prep_save;
+    per = (PEXPickElementRef *) ((char *) psp +
+	rep.numPicked * sizeof (PEXPickPath));
+
+    for (i = 0; i < rep.numPicked; i++)
+    {
+	numElements = *((CARD32 *) prep);
+	prep += sizeof (CARD32);
+	size = numElements * sizeof (PEXPickElementRef);
 	COPY_AREA (prep, (char *) per, size);
 	psp->count = numElements;
-	psp->element = per;
+	psp->elements = per;
 	psp++;
+	per += numElements;
 	prep += size;
     }
 
