@@ -2,7 +2,7 @@
  *  Hacked from Tony Della Fera's much hacked clock program.
  */
 #ifndef lint
-static char rcsid[] = "$Header: xclock.c,v 1.14 88/02/21 16:24:20 swick Exp $";
+static char rcsid[] = "$Header: xclock.c,v 1.15 88/02/23 15:17:09 rws Exp $";
 #endif  lint
 
 #include <X11/Xatom.h>
@@ -43,7 +43,7 @@ Syntax(call)
 	(void) printf ("       [-fg <color>] [-bg <color>] [-hd <color>]\n");
 	(void) printf ("       [-hl <color>] [-bd <color>]\n");
 	(void) printf ("       [-fn <font_name>] [-help] [-padding <pixels>]\n");
-	(void) printf ("       [-rv] [-update <seconds>] [-d [<host>]:[<vs>]]\n");
+	(void) printf ("       [-rv] [-update <seconds>] [-display [<host>]:[<vs>]]\n");
 	(void) printf ("       [-g =[<width>][x<height>][<+-><xoff>[<+-><yoff>]]]\n\n");
 	exit(1);
 }
