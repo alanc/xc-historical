@@ -1,4 +1,4 @@
-/* $XConsortium: TranslateI.h,v 1.7 88/09/06 16:29:26 jim Exp $ */
+/* $XConsortium: TranslateI.h,v 1.8 89/09/26 18:05:39 swick Exp $ */
 /* $oHeader: TranslateI.h,v 1.2 88/08/18 15:56:37 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -129,7 +129,7 @@ typedef struct _EventSeqRec {
 typedef EventSeqRec EventRec;
 typedef EventSeqPtr EventPtr;
 typedef struct _TMEventRec {
-    Display *dpy;
+    XEvent *xev;
     Event event;
 }TMEventRec,*TMEventPtr;
 
@@ -159,10 +159,17 @@ typedef struct _ActionHookRec {
     XtPointer closure;
 } ActionHookRec, *ActionHook;
 
+typedef struct _TMContext {
+    XEvent *event;
+    KeySym keysym;
+    Modifiers modifiers;
+} TMContextRec, *TMContext;
+
 extern Boolean _XtLookupModifier(); /*name,lookupStyle,valueP */
 extern Boolean _XtMatchUsingStandardMods();
 extern Boolean _XtMatchUsingDontCareMods();
 extern Boolean _XtRegularMatch();
+extern Boolean _XtMatchAtom();
 extern void _XtConvertCase();
 extern ModToKeysymTable* _XtBuildModsToKeysymTable();
 extern void  _XtBuildKeysymTable();
