@@ -1,3 +1,6 @@
+XCOMM platform:  $XConsortium: sony.cf,v 1.7 90/12/26 11:40:20 rws Exp $
+XCOMM operating system:  OSName
+
 /*
  * SET VERSION NUMBERS BEFORE MAKING MAKEFILES
  */
@@ -7,15 +10,8 @@
 #define OSMinorVersion    3
 #define BuildServer       NO
 #define HasInputExtension YES
-
-XCOMM platform:  $XConsortium: sony.cf,v 1.6 90/11/30 11:14:32 rws Exp $
-XCOMM operating system:  OSName
-
-/*****************************************************************************
- *			  Platform-specfic parameters                        *
- *****************************************************************************/
-
 #define UnalignedReferencesAllowed NO	       /* if arbitrary deref is okay */
 #define SetTtyGroup YES
 #define HasBsearch YES
+#define HasVoidSignalReturn NO
 
