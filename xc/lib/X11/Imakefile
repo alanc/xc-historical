@@ -291,6 +291,19 @@ DependTarget()
 BandAidLibraryMake()
 #endif
 
+/* MIPS uses sysv awk & needs ";" after BEGIN stmt */
+#if defined(MipsArchitecture) && defined(SYSTYPE_SYSV)
+ks_names.h: $(INCLUDESRC)/keysymdef.h
+	@echo "generating $@"; \
+	awk 'BEGIN { \
+		printf("/*\n * This is a machine generated file."); \
+		printf(" * Do not put under source control.\n */\n"); \
+	}; \
+	/^#define/ { \
+		len = length($$2)-3; \
+		printf("{ \"%s\", %s },\n", substr($$2,4,len), $$3); \
+	}' < $? > $@
+#else
 ks_names.h: $(INCLUDESRC)/keysymdef.h
 	@echo "generating $@"; \
 	awk 'BEGIN { \
@@ -301,6 +314,7 @@ ks_names.h: $(INCLUDESRC)/keysymdef.h
 		len = length($$2)-3; \
 		printf("{ \"%s\", %s },\n", substr($$2,4,len), $$3); \
 	}' < $? > $@
+#endif /* MipsArchitecture && SYSTYPE_SYSV */
 
 clean::
 	$(RM) ks_names.h
