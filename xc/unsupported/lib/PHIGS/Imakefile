@@ -1,5 +1,5 @@
 ##
-# $XConsortium: Imakefile,v 5.16 91/05/06 19:21:55 rws Exp $
+# $XConsortium: Imakefile,v 5.17 91/05/09 12:29:49 rws Exp $
 ##
 ## 
 ## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -46,7 +46,7 @@ CDEBUGFLAGS = PexPhigsCDebugFlags
      AREXT = ar xl
 #endif
      LIBDIRS = archive c_binding css cp error input pex util ws ws_type
-     SUBDIRS = include $(LIBDIRS)
+     SUBDIRS = include $(LIBDIRS) lib
 
      ALL_OBJ = archive/ar*.o c_binding/cb*.o \
 		cp/cp*.o cp/psl.o css/css*.o \
@@ -69,7 +69,7 @@ CDEBUGFLAGS = PexPhigsCDebugFlags
 
     LINTLIBS =
 
-all:: include libphigs.a phigsmon lib lib/PHIGSerr.txt lib/PHIGSfnc.txt lib/phigsmon
+all:: include libphigs.a lib
 
 libphigs.a: $(LIBDIRS) $(ALL_DONE) $(SWAPDIR) $(SWAPLIB)
 	$(RM) $@
@@ -78,28 +78,6 @@ libphigs.a: $(LIBDIRS) $(ALL_DONE) $(SWAPDIR) $(SWAPLIB)
 	$(RM) $(SWAPOBJS)
 	$(ARADD) $@ $(ALL_OBJ)
 	RanLibrary($@)
-
-lib:
-	-mkdir $@
-
-phigsmon:
-	@cd cp ; echo "making phigsmon in $(CURRENT_DIR)/cp..."; \
-	$(MAKE) $(MFLAGS) PassCDebugFlags phigsmon
-
-lib/phigsmon: cp/phigsmon
-	$(RM) $@
-	cd lib; $(LN) ../cp/phigsmon phigsmon
-
-lib/PHIGSerr.txt: include/PHIGSerr.txt
-	$(RM) $@
-	cd lib; $(LN) ../include/PHIGSerr.txt PHIGSerr.txt
-
-include/PHIGSerr.txt:
-	cd include; $(MAKE) $(MFLAGS) PHIGSerr.txt
-
-lib/PHIGSfnc.txt: include/PHIGSfnc.txt
-	$(RM) $@
-	cd lib; $(LN) ../include/PHIGSfnc.txt PHIGSfnc.txt
 
 lintlib lint-library: FRC
 	(cd c_binding; $(MAKE) $(MFLAGS) lint-library)
@@ -128,9 +106,6 @@ $(SUBDIRS) $(SWAPDIR): FRC
 	$(MAKE) $(MFLAGS) PassCDebugFlags all
 
 InstallLibrary(phigs,$(USRLIBDIR))
-InstallProgram(lib/phigsmon,$(PEXAPIDIR))
-InstallNonExecFile(lib/PHIGSerr.txt,$(PEXAPIDIR))
-InstallNonExecFile(lib/PHIGSfnc.txt,$(PEXAPIDIR))
 
 #ifdef HPArchitecture
 NormalLibraryObjectRule()
@@ -138,8 +113,5 @@ SpecialObjectRule(hppex.o, $(IRULESRC)/$(MACROFILE), $(EXT_DEFINES))
 #endif
 
 DependSubdirs($(SUBDIRS))
-
-clean::
-	$(RM) lib/phigsmon lib/PHIGSerr.txt lib/PHIGSfnc.txt
 
 FRC:
