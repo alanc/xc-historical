@@ -17,7 +17,7 @@ without any express or implied warranty.
 
 /* EXPERIMENTAL! THIS HAS NO OFFICIAL X CONSORTIUM BLESSING */
 
-/* $XConsortium: shm.c,v 1.8 91/05/12 17:54:53 rws Exp $ */
+/* $XConsortium: shm.c,v 1.9 91/06/01 12:09:17 rws Exp $ */
 
 #include <sys/types.h>
 #include <sys/ipc.h>
@@ -56,6 +56,10 @@ char *shmat();
 #endif
 static void miShmPutImage(), fbShmPutImage();
 static PixmapPtr fbShmCreatePixmap();
+ExtensionEntry *AddExtension();
+static int ProcShmDispatch(), SProcShmDispatch();
+static int ShmDetachSegment();
+static void ShmResetProc(), SShmCompletionEvent();
 
 static unsigned char ShmReqCode;
 static int ShmCompletionCode;
@@ -100,10 +104,7 @@ static ShmFuncs fbFuncs = {fbShmCreatePixmap, fbShmPutImage};
 void
 ShmExtensionInit()
 {
-    ExtensionEntry *extEntry, *AddExtension();
-    static int ProcShmDispatch(), SProcShmDispatch();
-    static int ShmDetachSegment();
-    static void ShmResetProc(), SShmCompletionEvent();
+    ExtensionEntry *extEntry;
     int i;
 
     sharedPixmaps = xTrue;
