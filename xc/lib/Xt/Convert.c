@@ -1,4 +1,4 @@
-/* $XConsortium: Convert.c,v 1.45 90/11/30 18:31:23 rws Exp $ */
+/* $XConsortium: Convert.c,v 1.46 90/12/12 14:50:38 rws Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -41,11 +41,13 @@ typedef struct _ConverterRec {
     XrmRepresentation	from, to;
     XtTypeConverter	converter;
     XtDestructor	destructor;
-    XtConvertArgList    convert_args;
-    Cardinal		num_args;
-    Boolean		new_style;
-    XtCacheType		cache_type;
+    unsigned short	num_args;
+    int			do_ref_count:1;
+    int			new_style:1;
+    char		cache_type;
 } ConverterRec;
+
+#define ConvertArgs(p) ((XtConvertArgList)((p)+1))
 
 /* used for old-style type converter cache only */
 static Heap globalHeap = {NULL, NULL, 0};
@@ -60,15 +62,20 @@ void _XtSetDefaultConverterTable(table)
 	XtCalloc(CONVERTHASHSIZE, (unsigned)sizeof(ConverterPtr));
     _XtAddDefaultConverters(*table);
 
-    if (globalConverterTable != (ConverterTable)NULL) {
+    if (globalConverterTable) {
 	ConverterPtr rec;
 	int i;
-	for (i = CONVERTHASHSIZE; i; i--, globalConverterTable++) {
-	    for (rec = *globalConverterTable; rec != NULL; rec = rec->next)
+	XtCacheType cache_type;
+	for (i = CONVERTHASHSIZE; --i >- 0; ) {
+	    for (rec = *globalConverterTable++; rec; rec = rec->next) {
+		cache_type = rec->cache_type;
+		if (rec->do_ref_count)
+		    cache_type |= XtCacheRefCount;
 	       _XtTableAddConverter(*table, rec->from, rec->to, rec->converter,
-				    rec->convert_args, rec->num_args,
-				    rec->new_style, rec->cache_type,
+				    ConvertArgs(rec), rec->num_args,
+				    rec->new_style, cache_type,
 				    rec->destructor);
+	    }
   	}
     }
 }
@@ -80,9 +87,8 @@ void _XtFreeConverterTable(table)
 	register ConverterPtr p;
 
 	for (i = 0; i < CONVERTHASHSIZE; i++) {
-	    for (p = table[i]; p != NULL;) {
+	    for (p = table[i]; p; ) {
 		register ConverterPtr next = p->next;
-		if (p->num_args) XtFree((char*)p->convert_args);
 		XtFree((char*)p);
 		p = next;
 	    }
@@ -99,8 +105,7 @@ typedef struct _CacheRec {
     XtPointer	tag;
     int		hash;
     XtTypeConverter converter;
-    XrmValue	*args;
-    short	num_args;
+    unsigned short num_args;
     short	flags;
 #define		CONVERSION_SUCCEEDED	0x01
 #define		HAS_DESTRUCTOR		0x02
@@ -108,13 +113,18 @@ typedef struct _CacheRec {
 #define		MUST_BE_FREED		0x08
     XrmValue	from;
     XrmValue	to;
-    struct _CacheRecExt {
-	CachePtr	prev;
-	XtDestructor	destructor;
-	XtPointer	closure;
-	long		ref_count;
-    } more;
 } CacheRec;
+
+typedef struct _CacheRecExt {
+    CachePtr	*prev;
+    XtDestructor destructor;
+    XtPointer	 closure;
+    long	 ref_count;
+} CacheRecExt;
+
+#define HasRecExt(p) ((p)->flags & (HAS_DESTRUCTOR|IS_REFCOUNTED))
+#define CEXT(p) ((CacheRecExt *)((p)+1))
+#define CARGS(p) (HasRecExt(p) ? (XrmValue *)(CEXT(p)+1) : (XrmValue *)((p)+1))
 
 #define CACHEHASHSIZE	256
 #define CACHEHASHMASK	255
@@ -132,42 +142,38 @@ void _XtTableAddConverter(table, from_type, to_type, converter, convert_args, nu
     XtCacheType		cache_type;
     XtDestructor	destructor;
 {
-    register ConverterPtr	*pHashEntry;
+    register ConverterPtr	*pp;
     register ConverterPtr	p;
-    XtDestructor nullProc = NULL;
+    XtConvertArgList args;
 
-    pHashEntry= &table[ProcHash(from_type, to_type) & CONVERTHASHMASK];
- 
-    for (p = *pHashEntry; p != NULL; p = p->next) {
-	if (p->from == from_type && p->to == to_type) break;
-    }
+    pp= &table[ProcHash(from_type, to_type) & CONVERTHASHMASK];
+    while ((p = *pp) && (p->from != from_type || p->to != to_type))
+	pp = &p->next;
 
-    if (p == NULL) {
-	p = (ConverterPtr) XtMalloc((unsigned)sizeof(ConverterRec));
-	p->next	    = *pHashEntry;
-	*pHashEntry     = p;
-	p->from	    = from_type;
-	p->to	    = to_type;
-    }
+    if (p)
+	XtFree((char *)p);
+
+    p = (ConverterPtr) XtMalloc(sizeof(ConverterRec) +
+				sizeof(XtConvertArgRec) * num_args);
+    p->next	    = *pp;
+    *pp = p;
+    p->from	    = from_type;
+    p->to	    = to_type;
     p->converter    = converter;
     p->destructor   = destructor;
     p->num_args     = num_args;	
-    if (num_args) {
-	XtConvertArgList args =
-	    p->convert_args = (XtConvertArgList)
-		XtMalloc( num_args*sizeof(XtConvertArgRec) );
-	while (num_args--) {
-	    *args++ = *convert_args++;
-	}
-    }
-    else {
-	p->convert_args = NULL;
-    }
+    args = ConvertArgs(p);
+    while (num_args--)
+	*args++ = *convert_args++;
     p->new_style    = new_style;
-    if (destructor != nullProc || ((cache_type & 0xff) != XtCacheNone))
-	p->cache_type = cache_type;
-    else
+    p->do_ref_count = False;
+    if (destructor || (cache_type & 0xff)) {
+	p->cache_type = cache_type & 0xff;
+	if (cache_type & XtCacheRefCount)
+	    p->do_ref_count = True;
+    } else {
 	p->cache_type = XtCacheNone;
+    }
 }
 
 #if NeedFunctionPrototypes
@@ -195,14 +201,14 @@ void XtSetTypeConverter(from_type, to_type, converter, convert_args, num_args, c
     XrmRepresentation from = XrmStringToRepresentation(from_type);
     XrmRepresentation to = XrmStringToRepresentation(to_type);
 
-    if (process->globalConverterTable == (ConverterTable)NULL) {
+    if (!process->globalConverterTable) {
 	process->globalConverterTable = (ConverterTable)
 	    XtCalloc(CONVERTHASHSIZE, (unsigned)sizeof(ConverterPtr));
     }
     _XtTableAddConverter(process->globalConverterTable, from, to,
 			 converter, convert_args,
 			 num_args, True, cache_type, destructor);
-    while (app != (XtAppContext)NULL) {
+    while (app) {
 	_XtTableAddConverter(app->converterTable, from, to,
 			     converter, convert_args,
 			     num_args, True, cache_type, destructor);
@@ -261,14 +267,14 @@ void XtAddConverter(from_type, to_type, converter, convert_args, num_args)
     XrmRepresentation from = XrmStringToRepresentation(from_type);
     XrmRepresentation to = XrmStringToRepresentation(to_type);
 
-    if (process->globalConverterTable == (ConverterTable)NULL) {
+    if (!process->globalConverterTable) {
 	process->globalConverterTable = (ConverterTable)
 	    XtCalloc(CONVERTHASHSIZE, (unsigned)sizeof(ConverterPtr));
     }
     _XtTableAddConverter(process->globalConverterTable, from, to,
 			 (XtTypeConverter)converter, convert_args, num_args,
 			 False, XtCacheAll, (XtDestructor)NULL);
-    while (app != (XtAppContext)NULL) {
+    while (app) {
 	_XtTableAddConverter(app->converterTable, from, to,
 			     (XtTypeConverter)converter, convert_args,
 			     num_args, False, XtCacheAll, (XtDestructor)NULL);
@@ -320,31 +326,30 @@ CacheEnter(heap, converter, args, num_args, from, to, succeeded, hash,
     register	CachePtr *pHashEntry;
     register	CachePtr p;
     register    Cardinal i;
-    XtDestructor nullProc = NULL; /* some compilers broken */
-    Boolean	has_destructor = (destructor != nullProc);
 
     pHashEntry = &cacheHashTable[hash & CACHEHASHMASK];
 
-    if (has_destructor || (flags & IS_REFCOUNTED)) {
-	p = (CachePtr) _XtHeapAlloc(heap, (Cardinal)sizeof(CacheRec));
-	p->more.prev = NULL;
-	p->more.ref_count = 1;
+    if (destructor || (flags & IS_REFCOUNTED)) {
+	p = (CachePtr) _XtHeapAlloc(heap, (sizeof(CacheRec) +
+					   sizeof(CacheRecExt) +
+					   num_args * sizeof(XrmValue)));
+	CEXT(p)->prev = pHashEntry;
+	CEXT(p)->ref_count = 1;
     }
     else {
-	p = (CachePtr)_XtHeapAlloc(heap,
-		  (Cardinal)(sizeof(CacheRec) - sizeof(struct _CacheRecExt)));
+	p = (CachePtr)_XtHeapAlloc(heap, (sizeof(CacheRec) +
+					  num_args * sizeof(XrmValue)));
     }
-    if (has_destructor) {
-	p->flags = HAS_DESTRUCTOR | CONVERSION_SUCCEEDED | flags;
-	p->more.destructor = destructor;
-	p->more.closure = closure;
+    p->flags = CONVERSION_SUCCEEDED | flags;
+    if (destructor) {
+	p->flags |= HAS_DESTRUCTOR;
+	CEXT(p)->destructor = destructor;
+	CEXT(p)->closure = closure;
     }
-    else
-	p->flags = CONVERSION_SUCCEEDED | flags; 
 
     p->next	    = *pHashEntry;
-    if (p->next != NULL && (p->next->flags & HAS_DESTRUCTOR))
-	p->next->more.prev = p;
+    if (p->next && HasRecExt(p->next))
+	CEXT(p->next)->prev = &p->next;
 
     *pHashEntry     = p;
     p->tag	    = (XtPointer)heap;
@@ -354,18 +359,16 @@ CacheEnter(heap, converter, args, num_args, from, to, succeeded, hash,
     p->from.addr = (caddr_t)_XtHeapAlloc(heap, from->size);
     XtBCopy(from->addr, p->from.addr, from->size);
     p->num_args = num_args;
-    if (num_args == 0) {
-	p->args = NULL;
-    } else {
-	p->args = (XrmValuePtr) _XtHeapAlloc(heap, num_args * sizeof(XrmValue));
+    if (num_args) {
+	XrmValue *pargs = CARGS(p);
 	for (i = 0; i < num_args; i++) {
-	    p->args[i].size = args[i].size;
-	    p->args[i].addr = (caddr_t)_XtHeapAlloc(heap, args[i].size);
-	    XtBCopy(args[i].addr, p->args[i].addr, args[i].size);
+	    pargs[i].size = args[i].size;
+	    pargs[i].addr = (caddr_t)_XtHeapAlloc(heap, args[i].size);
+	    XtBCopy(args[i].addr, pargs[i].addr, args[i].size);
 	}
     }
     p->to.size  = to->size;
-    if (succeeded && to->addr != NULL) {
+    if (succeeded && to->addr) {
 	p->to.addr  = (caddr_t)_XtHeapAlloc(heap, to->size);
 	XtBCopy(to->addr, p->to.addr, to->size);
     }
@@ -376,28 +379,23 @@ CacheEnter(heap, converter, args, num_args, from, to, succeeded, hash,
     return p;
 }
 
+static void _XtFreeCacheRec();
 
 void _XtCacheFlushTag(app, tag)
     XtAppContext app;
     XtPointer	tag;
 {
     int i;
-    extern void _XtFreeCacheRec();
-    for (i = CACHEHASHSIZE; i;) {
-	register CachePtr* prev = &cacheHashTable[--i];
-	register CachePtr rec = *prev;
-	while (rec != NULL) {
-	    while (rec != NULL && rec->tag == tag) {
-		CachePtr next = rec->next;
-		_XtFreeCacheRec( app, (XtCacheRef)rec );
-		rec = next;
-	    }
-	    *prev = rec;
-	    if (rec == NULL) break;
-	    do {
+    register CachePtr *prev;
+    register CachePtr rec;
+
+    for (i = CACHEHASHSIZE; --i >= 0;) {
+	prev = &cacheHashTable[i];
+	while (rec = *prev) {
+	    if (rec->tag == tag)
+		_XtFreeCacheRec(app, rec, prev);
+	    else
 		prev = &rec->next;
-		rec = *prev;
-	    } while (rec != NULL && rec->tag != tag);
 	}
     }
 }
@@ -411,14 +409,14 @@ void CacheStats()
 
     for (i = 0; i < CACHEHASHSIZE; i++) {
 	p = cacheHashTable[i];
-	if (p != NULL) {
-	    for (entries = 0; p != NULL; p = p->next) {
+	if (p) {
+	    for (entries = 0; p; p = p->next) {
 		entries++;
 	    }
 	    (void) fprintf(stdout, "Index: %4d  Entries: %d\n", i, entries);
-	    for (p = cacheHashTable[i]; p != NULL; p = p->next) {
+	    for (p = cacheHashTable[i]; p; p = p->next) {
 		(void) fprintf(stdout, "    Size: %3d  Refs: %3d  '",
-			       p->from.size, p->more.ref_count);
+			       p->from.size, CEXT(p)->ref_count);
 		(void) fwrite(
 		    p->from.addr, 1, MIN( (int)p->from.size, 48), stdout);
 		(void) fprintf(stdout, "'\n");
@@ -438,9 +436,7 @@ static Boolean ResourceQuarkToOffset(widget_class, name, offset)
     register Cardinal        i;
     register XrmResourceList res, *resources;
 
-    for (wc = widget_class;
-	wc != NULL;
-	wc = wc->core_class.superclass) {
+    for (wc = widget_class; wc; wc = wc->core_class.superclass) {
 	resources = (XrmResourceList*) wc->core_class.resources;
 	for (i = 0; i < wc->core_class.num_resources; i++, resources++) {
 	    res = *resources;
@@ -484,7 +480,7 @@ static void ComputeArgs(widget, convert_args, num_args, args)
 	    break;
 
 	case XtWidgetBaseOffset:
-	    if (ancestor == NULL) {
+	    if (!ancestor) {
 		if (XtIsWidget(widget))
 		    ancestor = widget;
 		else
@@ -560,20 +556,23 @@ void XtDirectConvert(converter, args, num_args, from, to)
     hash = ((int)(converter) >> 2) + from->size + *((char *) from->addr);
     if (from->size > 1) hash += ((char *) from->addr)[1];
     
-    for (p = cacheHashTable[hash & CACHEHASHMASK]; p != NULL; p = p->next) {
+    for (p = cacheHashTable[hash & CACHEHASHMASK]; p; p = p->next) {
 	if ((p->hash == hash)
 	 && (p->converter == (XtTypeConverter)converter)
 	 && (p->from.size == from->size)
 	 && (! XtBCmp(p->from.addr, from->addr, from->size))
          && (p->num_args == num_args)) {
-	    /* Are all args the same data ? */
-	    for (i = 0; i < num_args; i++) {
-		if (   p->args[i].size != args[i].size
-		    || XtBCmp(p->args[i].addr, args[i].addr, args[i].size)) {
-		    break;
+	    if (i = num_args) {
+		XrmValue *pargs = CARGS(p);
+		/* Are all args the same data ? */
+		while (i) {
+		    i--; /* do not move to while test, broken compilers */
+		    if (pargs[i].size != args[i].size ||
+			XtBCmp(pargs[i].addr, args[i].addr, args[i].size))
+			break;
 		}
 	    }
-	    if (i == num_args) {	 
+	    if (!i) {
 		/* Perfect match */
 		(*to) = p->to;
 		return;
@@ -604,9 +603,9 @@ static ConverterPtr GetConverterEntry( app, converter )
     register ConverterPtr cP;
     ConverterTable converterTable = app->converterTable;
     cP = NULL;
-    for (entry = 0; entry < CONVERTHASHSIZE && cP == NULL; entry++) {
+    for (entry = 0; (entry < CONVERTHASHSIZE) && !cP; entry++) {
 	cP = converterTable[entry];
-	while (cP != NULL && cP->converter != converter) cP = cP->next;
+	while (cP && (cP->converter != converter)) cP = cP->next;
     }
     return cP;
 }
@@ -645,12 +644,10 @@ _XtCallConverter(dpy, converter,
     register CachePtr   p;
     register int	hash;
     register Cardinal   i;
-    XtDestructor nullProc = NULL; /* some compilers broken */
 
-    if (cP == NULL
-     || ((cP->cache_type == XtCacheNone) && (cP->destructor == nullProc))) {
+    if (!cP || ((cP->cache_type == XtCacheNone) && !cP->destructor)) {
 	XtPointer closure;
-	if (cache_ref_return != NULL) *cache_ref_return = NULL;
+	if (cache_ref_return) *cache_ref_return = NULL;
 	return (*(XtTypeConverter)converter)
 	    (dpy, args, &num_args, from, to, &closure);
     }
@@ -659,38 +656,41 @@ _XtCallConverter(dpy, converter,
     hash = ((int)(converter) >> 2) + from->size + *((char *) from->addr);
     if (from->size > 1) hash += ((char *) from->addr)[1];
     
-    if ((cP->cache_type & 0xff) != XtCacheNone) {
-	for (p = cacheHashTable[hash & CACHEHASHMASK]; p != NULL; p = p->next){
+    if (cP->cache_type != XtCacheNone) {
+	for (p = cacheHashTable[hash & CACHEHASHMASK]; p; p = p->next){
 	    if ((p->hash == hash)
 	     && (p->converter == converter)
 	     && (p->from.size == from->size)
 	     && (! XtBCmp(p->from.addr, from->addr, from->size))
 	     && (p->num_args == num_args)) {
-		/* Are all args the same data ? */
-		for (i = 0; i < num_args; i++) {
-		    if (p->args[i].size != args[i].size
-		     || XtBCmp(p->args[i].addr, args[i].addr, args[i].size)) {
-			break;
+		if (i = num_args) {
+		    XrmValue *pargs = CARGS(p);
+		    /* Are all args the same data ? */
+		    while (i) {
+			i--; /* do not move to while test, broken compilers */
+			if (pargs[i].size != args[i].size ||
+			    XtBCmp(pargs[i].addr, args[i].addr, args[i].size))
+			    break;
 		    }
 		}
-		if (i == num_args) {	 
+		if (!i) {
 		    /* Perfect match */
 		    if (p->flags & CONVERSION_SUCCEEDED) {
-			if (to->addr != NULL) {	/* new-style call */
+			if (to->addr) {	/* new-style call */
 			    XtBCopy(p->to.addr, to->addr, to->size);
 			}
 			else	/* old-style call */
 			    *to = p->to;
 		    }
 		    if (p->flags & IS_REFCOUNTED) {
-			p->more.ref_count++;
-			if (cache_ref_return != NULL)
+			CEXT(p)->ref_count++;
+			if (cache_ref_return)
 			    *cache_ref_return = (XtCacheRef)p;
 			else
 			    p->flags &= ~IS_REFCOUNTED;
 		    }
 		    else {
-			if (cache_ref_return != NULL)
+			if (cache_ref_return)
 			    *cache_ref_return = NULL;
 		    }
 		    return (p->flags & CONVERSION_SUCCEEDED);
@@ -703,17 +703,15 @@ _XtCallConverter(dpy, converter,
     {
 	Heap *heap;
 	XtPointer closure;
-	XtCacheType cache_type = cP->cache_type & 0xff;
 	int ref_flags =
-	    ((cP->cache_type & XtCacheRefCount) && (cache_ref_return != NULL))
-		? IS_REFCOUNTED : 0;
+	    (cP->do_ref_count && cache_ref_return) ? IS_REFCOUNTED : 0;
 	Boolean retval =
 	    (*(XtTypeConverter)converter)(dpy, args, &num_args, from, to, &closure);
-	if ((cache_type == XtCacheNone) || (ref_flags & IS_REFCOUNTED)) {
+	if ((cP->cache_type == XtCacheNone) || (ref_flags & IS_REFCOUNTED)) {
 	    heap = NULL;
 	    ref_flags |= MUST_BE_FREED;
 	}
-	else if (cache_type == XtCacheByDisplay)
+	else if (cP->cache_type == XtCacheByDisplay)
 	    heap = &_XtGetPerDisplay(dpy)->heap;
 	else
 	    heap = &XtDisplayToApplicationContext(dpy)->heap;
@@ -722,7 +720,7 @@ _XtCallConverter(dpy, converter,
 		       hash, ref_flags, cP->destructor, closure);
 	if (ref_flags & IS_REFCOUNTED)
 	    *cache_ref_return = (XtCacheRef)p;
-	else if (cache_ref_return != NULL)
+	else if (cache_ref_return)
 	    *cache_ref_return = NULL;
 
 	return retval;
@@ -744,7 +742,7 @@ Boolean _XtConvert(widget, from_type, from, to_type, to, cache_ref_return)
 
     /* Look for type converter */
     p = app->converterTable[ProcHash(from_type, to_type) & CONVERTHASHMASK];
-    for (; p != NULL; p = p->next) {
+    for (; p; p = p->next) {
 	if (from_type == p->from && to_type == p->to) {
 	    Boolean retval;
 	    /* Compute actual arguments from widget and arg descriptor */
@@ -752,8 +750,8 @@ Boolean _XtConvert(widget, from_type, from, to_type, to, cache_ref_return)
 	    if (num_args != 0) {
 		args = (XrmValue*)
 		    ALLOCATE_LOCAL( num_args * sizeof (XrmValue) );
-		if (args == NULL) _XtAllocError("alloca");
-		ComputeArgs(widget, p->convert_args, num_args, args);
+		if (!args) _XtAllocError("alloca");
+		ComputeArgs(widget, ConvertArgs(p), num_args, args);
 	    } else args = NULL;
 	    if (p->new_style) {
 		retval =
@@ -765,12 +763,12 @@ Boolean _XtConvert(widget, from_type, from, to_type, to, cache_ref_return)
 		XrmValue tempTo;
 		XtDirectConvert((XtConverter)p->converter, args, num_args,
 				from, &tempTo);
-		if (cache_ref_return != NULL)
+		if (cache_ref_return)
 		    *cache_ref_return = NULL;
-		if (tempTo.addr != NULL) {
-		    if (to->addr != NULL) { /* new-style call */
+		if (tempTo.addr) {
+		    if (to->addr) { /* new-style call */
 			static XrmRepresentation QString = NULLQUARK;
-			if (QString == NULLQUARK)
+			if (!QString)
 			    QString = XrmPermStringToQuark(XtRString);
 			if (to_type == QString)
 			    *(String*)(to->addr) = tempTo.addr;
@@ -782,7 +780,7 @@ Boolean _XtConvert(widget, from_type, from, to_type, to, cache_ref_return)
 		    retval = True;
 		} else retval = False;
 	    }
-	    if (args != NULL) DEALLOCATE_LOCAL( (XtPointer)args );
+	    if (args) DEALLOCATE_LOCAL( (XtPointer)args );
 	    return retval;
 	}
     }
@@ -830,7 +828,7 @@ void XtConvert(widget, from_type_str, from, to_type_str, to)
 	to->size = 0;
 	_XtConvert(widget, from_type, from, to_type, to, /*&ref*/ NULL);
 	/*
-	if (ref != NULL) {
+	if (ref) {
 	    XtAddCallback( widget, XtNdestroyCallback,
 			   XtCallbackReleaseCacheRef, (XtPointer)ref );
 	}
@@ -867,8 +865,8 @@ Boolean XtConvertAndStore(object, from_type_str, from, to_type_str, to)
 	XtCacheRef ref;
 	Boolean local = False;
 	do {
-	    if (to->addr == NULL) {
-		if (local_valueP == NULL)
+	    if (!to->addr) {
+		if (!local_valueP)
 		    local_valueP = _XtHeapAlloc(&globalHeap, local_valueS);
 		to->addr = local_valueP;
 		to->size = local_valueS;
@@ -888,14 +886,14 @@ Boolean XtConvertAndStore(object, from_type_str, from, to_type_str, to)
 		    return False;
 		}
 	    }
-	    if (ref != NULL) {
+	    if (ref) {
 		XtAddCallback( object, XtNdestroyCallback,
 			       XtCallbackReleaseCacheRef, (XtPointer)ref );
 	    }
 	    return True;
 	} while (local /* && local_valueS < to->size */);
     }
-    if (to->addr != NULL) {
+    if (to->addr) {
 	if (to->size < from->size) {
 	    to->size = from->size;
 	    return False;
@@ -907,29 +905,34 @@ Boolean XtConvertAndStore(object, from_type_str, from, to_type_str, to)
     return True;
 }
 
-void _XtFreeCacheRec(app, p)
+static void _XtFreeCacheRec(app, p, prev)
     XtAppContext app;
     CachePtr p;
+    CachePtr *prev;
 {
-    if (p->flags & HAS_DESTRUCTOR) {
-	Cardinal num_args = p->num_args;
-	(*p->more.destructor) (app, &p->to, p->more.closure, p->args,
-			       &num_args);
-	if (p->more.prev)
-	    p->more.prev->next = p->next;
-	else
-	    cacheHashTable[p->hash & CACHEHASHMASK] = p->next;
+    if (HasRecExt(p)) {
+	if (p->flags & HAS_DESTRUCTOR) {
+	    Cardinal num_args = p->num_args;
+	    XrmValue *args = NULL;
+	    if (num_args)
+		args = CARGS(p);
+	    (*CEXT(p)->destructor) (app, &p->to, CEXT(p)->closure, args,
+				    &num_args);
+	}
+	*(CEXT(p)->prev) = p->next;
+	if (p->next && HasRecExt(p->next))
+	    CEXT(p->next)->prev = CEXT(p)->prev;
+    } else {
+	*prev = p->next;
     }
-    if ((p->next != NULL) && (p->next->flags & HAS_DESTRUCTOR))
-	p->next->more.prev = p->more.prev;
-
     if (p->flags & MUST_BE_FREED) {
 	register int i;
 	XtFree(p->from.addr);
-	for (i = p->num_args; i;) {
-	    XtFree(p->args[--i].addr);
+	if (i = p->num_args) {
+	    XrmValue *pargs = CARGS(p);
+	    while (i--)
+		XtFree(pargs[i].addr);
 	}
-	XtFree((char*)p->args);
 	XtFree(p->to.addr);
 	XtFree((char*)p);
     }
@@ -941,10 +944,11 @@ void XtAppReleaseCacheRefs(app, refs)
     XtCacheRef *refs;
 {
     register CachePtr *r;
-    for (r = (CachePtr*)refs; *r != NULL; r++) {
-	register CachePtr p = *r;
-	if ((p->flags & IS_REFCOUNTED) && --(p->more.ref_count) == 0) {
-	    _XtFreeCacheRec( app, p );
+    register CachePtr p;
+
+    for (r = (CachePtr*)refs; p = *r; r++) {
+	if ((p->flags & IS_REFCOUNTED) && --(CEXT(p)->ref_count) == 0) {
+	    _XtFreeCacheRec(app, p, NULL);
 	}
     }
 }
