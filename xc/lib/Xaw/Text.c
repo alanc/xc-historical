@@ -1,6 +1,4 @@
-#if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.164 90/12/26 16:35:03 rws Exp $";
-#endif /* lint && SABER */
+/* $XConsortium: Text.c,v 1.165 90/12/27 10:02:10 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -787,7 +785,7 @@ Boolean force_rebuild;
   int lines = 0; 
   Cardinal size;
 
-  if (ctx->core.height > VMargins(ctx)) {
+  if ((int)ctx->core.height > VMargins(ctx)) {
     height = ctx->core.height - VMargins(ctx);
     lines = XawTextSinkMaxLines(ctx->text.sink, height);
   }
@@ -982,8 +980,8 @@ TextWidget ctx;
   if (ctx->text.scroll_horiz == XawtextScrollNever) return;
 
   if (ctx->text.vbar != NULL) 
-    widest = (ctx->core.width - ctx->text.vbar->core.width -
-	      ctx->text.vbar->core.border_width);
+    widest = (int)(ctx->core.width - ctx->text.vbar->core.width -
+		   ctx->text.vbar->core.border_width);
   else
     widest = ctx->core.width;
   widest /= (last = GetWidestLine(ctx));
@@ -1196,7 +1194,7 @@ caddr_t closure, callData; /* closure = TextWidget, callData = percent. */
   new_left -= (Position) (*percent * GetWidestLine(ctx));
   move = old_left - new_left;
 
-  if (abs(move) < ctx->core.width) {
+  if (abs(move) < (int)ctx->core.width) {
     HScroll(w, (caddr_t) ctx, move);
     return;
   }
@@ -1225,7 +1223,7 @@ Position left, right;
   int width, height, local_left, local_width;
   XawTextLineTableEntry * lt = ctx->text.lt.info + line;
 
-  if ( ((lt->textWidth + ctx->text.margin.left) < left) ||
+  if ( ((int)(lt->textWidth + ctx->text.margin.left) < left) ||
        ( ctx->text.margin.left > right ) )
     return;			/* no need to update. */
 
@@ -1355,7 +1353,7 @@ static Boolean
 ConvertSelection(w, selection, target, type, value, length, format)
 Widget w;
 Atom *selection, *target, *type;
-caddr_t *value;
+XtPointer *value;
 unsigned long *length;
 int *format;
 {
@@ -1480,7 +1478,7 @@ int *format;
   }
 
   if (XmuConvertStandardSelection(w, ctx->text.time, selection, target, type,
-				  value, length, format))
+				  (caddr_t *)value, length, format))
     return True;
   
   /* else */
@@ -1904,7 +1902,8 @@ XawTextPosition pos1, pos2;
 
     x = (Position) ctx->text.margin.left;
     y = ctx->text.lt.info[i + 1].y;
-    if ( done_painting || (y >= ctx->core.height - ctx->text.margin.bottom) )
+    if ( done_painting
+	 || (y >= (int)(ctx->core.height - ctx->text.margin.bottom)) )
       break;
   }
   ctx->text.single_char = FALSE;
@@ -2196,8 +2195,11 @@ TextWidget ctx;
     XawTextLineTableEntry *lt;
     rbox.width = 0;
     for (lt = ctx->text.lt.info; 
-	 IsValidLine(ctx, line) && (line < ctx->text.lt.lines) ; line++, lt++) 
-      AssignMax(rbox.width, lt->textWidth + ctx->text.margin.left);
+	 IsValidLine(ctx, line) && (line < ctx->text.lt.lines);
+	 line++, lt++) {
+      if ((int)(lt->textWidth + ctx->text.margin.left) > (int)rbox.width)
+	  rbox.width = lt->textWidth + ctx->text.margin.left;
+    }
     
     rbox.width += ctx->text.margin.right;
     if (rbox.width > ctx->core.width) { /* Only get wider. */
@@ -2222,7 +2224,7 @@ TextWidget ctx;
   rbox.request_mode = CWHeight;
   rbox.height = XawTextSinkMaxHeight(ctx->text.sink, line + 1) + VMargins(ctx);
   
-  if (rbox.height < old_height) return; /* It will only get taller. */
+  if ((int)rbox.height < old_height) return; /* It will only get taller. */
 
   if (XtMakeGeometryRequest(w, &rbox, &return_geom) == XtGeometryAlmost)
     if (XtMakeGeometryRequest(w, &return_geom, NULL) != XtGeometryYes)
