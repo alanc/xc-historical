@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miexpose.c,v 5.14 90/11/11 19:08:06 keith Exp $ */
+/* $XConsortium: miexpose.c,v 5.15 92/03/13 16:03:50 eswu Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -389,9 +389,22 @@ miWindowExposures(pWin, prgn, other_exposed)
     WindowPtr pWin;
     register RegionPtr prgn, other_exposed;
 {
-    if ((prgn && !REGION_NIL(prgn)) || other_exposed)
+    RegionPtr   exposures = prgn;
+    if (pWin->backStorage && prgn)
+	/*
+	 * in some cases, backing store will cause a different
+	 * region to be exposed than needs to be repainted
+	 * (like when a window is mapped).  RestoreAreas is
+	 * allowed to return a region other than prgn,
+	 * in which case this routine will free the resultant
+	 * region.  If exposures is null, then no events will
+	 * be sent to the client; if prgn is empty
+	 * no areas will be repainted.
+	 */
+	exposures = (*pWin->drawable.pScreen->RestoreAreas)(pWin, prgn);
+    if ((prgn && !REGION_NIL(prgn)) || 
+	(exposures && !REGION_NIL(exposures)) || other_exposed)
     {
-	RegionPtr   exposures = prgn;
 	RegionRec   expRec;
 	int	    clientInterested;
 
@@ -399,18 +412,6 @@ miWindowExposures(pWin, prgn, other_exposed)
 	 * Restore from backing-store FIRST.
 	 */
 	clientInterested = (pWin->eventMask|wOtherEventMasks(pWin)) & ExposureMask;
- 	if (pWin->backStorage && prgn)
-	    /*
-	     * in some cases, backing store will cause a different
-	     * region to be exposed than needs to be repainted
-	     * (like when a window is mapped).  RestoreAreas is
-	     * allowed to return a region other than prgn,
-	     * in which case this routine will free the resultant
-	     * region.  If exposures is null, then no events will
-	     * be sent to the client; if prgn is empty
-	     * no areas will be repainted.
-	     */
-	    exposures = (*pWin->drawable.pScreen->RestoreAreas)(pWin, prgn);
 	if (other_exposed)
 	{
 	    if (exposures)
@@ -466,6 +467,8 @@ miWindowExposures(pWin, prgn, other_exposed)
 	if (prgn)
 	    (* pWin->drawable.pScreen->RegionEmpty)(prgn);
     }
+    else if (exposures && exposures != prgn)
+	(* pWin->drawable.pScreen->RegionDestroy) (exposures);
 }
 
 
