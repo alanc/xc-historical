@@ -1,4 +1,4 @@
-/* $XConsortium: List.c,v 1.32 91/04/04 20:59:54 converse Exp $ */
+/* $XConsortium: List.c,v 1.33 91/05/22 16:31:34 converse Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -862,7 +862,7 @@ Widget current, request, new;
     }
 
     if (cl->list.list != rl->list.list)
-      nl->list.highlight = NO_HIGHLIGHT;
+	nl->list.is_highlighted = nl->list.highlight = NO_HIGHLIGHT;
 
     if ((cl->core.sensitive != rl->core.sensitive) ||
 	(cl->core.ancestor_sensitive != rl->core.ancestor_sensitive)) {
