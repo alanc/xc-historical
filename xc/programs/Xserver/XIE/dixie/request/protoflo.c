@@ -1,4 +1,4 @@
-/* $XConsortium: protoflo.c,v 1.7 94/01/12 19:57:09 rws Exp $ */
+/* $XConsortium: protoflo.c,v 1.8 94/04/17 20:33:57 rws Exp $ */
 /**** module protoflo.c ****/
 /****************************************************************************
 
@@ -552,7 +552,7 @@ int ProcQueryPhotoflo(client)
   
   /* Fill in the reply header
    */
-  shorts = (imCnt + 1 & ~1) + (exCnt + 1 & ~1) << 1;
+  shorts = (imCnt + 1 & ~1) + (exCnt + 1 & ~1);
   rep.type           = X_Reply;
   rep.sequenceNum    = client->sequence;
   rep.length         = shorts >> 1;
