@@ -1,5 +1,5 @@
 /*
- * $XConsortium: stipsparc.s,v 1.6 91/06/12 17:03:24 keith Exp $
+ * $XConsortium: stipsparc32.s,v 1.1 91/12/19 14:17:39 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -77,8 +77,16 @@
 #define ForEachBits	LY4
 #define NextBits	LY5
 
+#ifdef SVR4
+#ifdef TETEXT
+#define	_cfb32StippleStack	cfb32StippleStackTE
+#else
+#define	_cfb32StippleStack	cfb32StippleStack
+#endif
+#else
 #ifdef TETEXT
 #define	_cfb32StippleStack	_cfb32StippleStackTE
+#endif
 #endif
 
 	.seg	"text"
