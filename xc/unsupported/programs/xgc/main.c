@@ -20,6 +20,26 @@
 #include "parse.h"
 #include "main.h"
 
+void fill_up_commandform();
+extern void run_test();
+void quit();
+void clear_test_window();
+void clear_result_window();
+extern void start_playback();
+extern void read_from_keyboard();
+extern void toggle_recordbutton();
+void set_foreground_and_background();
+extern ChoiceDesc *create_choice();
+extern void line_up_labels();
+extern Widget create_text_choice();
+extern void create_planemask_choice();
+extern void create_dashlist_choice();
+extern void create_testfrac_choice();
+extern void GC_change_foreground();
+extern void GC_change_background();
+extern void GC_change_font();
+extern void close_file_if_recording();
+
 XStuff X;
 char resultstring[80] = "";
 Boolean recording = FALSE;
@@ -32,6 +52,7 @@ static Widget bigdaddy;		/* the top level widget */
        Widget GCform;		/* form in which you choose the GC */
 static Widget Testform;		/* form in which you choose the test */
        Widget testchoiceform;   /* form inside that */
+  ChoiceDesc *testchoicedesc;
 static Widget commandform;	/* form with run, quit, clear, etc. */
        Widget test;		/* where the test is run */
        Widget result;           /* where the results are displayed */
@@ -43,12 +64,18 @@ static Widget playbackbutton;	/* playback from file */
 static Widget keyinputbutton;	/* start reading from keyboard */
 static Widget GCchoices[NUMCHOICES]; /* all the forms that contain stuff
 				        for changing GC's*/
+  ChoiceDesc *GCdescs[NUMCHOICES]; /* record of the widgets inside
+				      the choice widgets */
        Widget planemaskchoice;	/* form for choosing the plane mask */
        Widget dashlistchoice;	/* form for choosing the dash list */
 static Widget linewidthchoice;	/* form for choosing line width */
+       Widget linewidthtext;	/* text widget within that */
 static Widget fontchoice;	/* form for choosing the font */
-       Widget foregroundchoice;	/* form for choosing foreground */
+       Widget fonttext;		/* text widget within that */
+static Widget foregroundchoice;	/* form for choosing foreground */
+       Widget foregroundtext;	/* text widget within that */
 static Widget backgroundchoice;	/* form for choosing background */
+       Widget backgroundtext;	/* text widget within that */
 static Widget percentchoice;	/* form for choosing percentage of test */
 
 void main(argc,argv)
@@ -61,7 +88,7 @@ void main(argc,argv)
 
   static Arg commandformargs[] = {
     {XtNfromVert,    (XtArgVal) NULL}, /* put it under GCform */
-    {XtNfromHoriz,   (XtArgVal) NULL} /* and to the right of Testform */
+    {XtNfromHoriz,   (XtArgVal) NULL}  /* and to the right of Testform */
   };
 
   static Arg testargs[] = {
@@ -119,7 +146,7 @@ void main(argc,argv)
 					 gcchoiceargs,XtNumber(gcchoiceargs));
 
     /* now fill up that form */
-    create_choice(GCchoices[i],Everything[i]);
+    GCdescs[i] = create_choice(GCchoices[i],Everything[i]);
   }
 
   /* put the planemask choice under the bottom GC choice */
@@ -141,24 +168,24 @@ void main(argc,argv)
   linewidthchoice = XtCreateManagedWidget("Choice",formWidgetClass,GCform,
 				  gcchoiceargs,XtNumber(gcchoiceargs));
   /* fill it up */
-  create_text_choice(linewidthchoice,TLineWidth,2,30);
+  linewidthtext = create_text_choice(linewidthchoice,TLineWidth,2,30);
 
   /* put the font choice under the linewidth choice */
   gcchoiceargs[0].value = (XtArgVal) linewidthchoice;
   fontchoice = XtCreateManagedWidget("Choice",formWidgetClass,GCform,
 				     gcchoiceargs,XtNumber(gcchoiceargs));
   /* fill it up */
-  create_text_choice(fontchoice,TFont,80,300);
+  fonttext = create_text_choice(fontchoice,TFont,80,300);
 
   gcchoiceargs[0].value = (XtArgVal) fontchoice;
   foregroundchoice = XtCreateManagedWidget("Choice",formWidgetClass,GCform,
 				   gcchoiceargs,XtNumber(gcchoiceargs));
-  create_text_choice(foregroundchoice,TForeground,4,50);
+  foregroundtext = create_text_choice(foregroundchoice,TForeground,4,50);
 
   gcchoiceargs[1].value = (XtArgVal) foregroundchoice;
   backgroundchoice = XtCreateManagedWidget("Choice",formWidgetClass,GCform,
 				   gcchoiceargs,XtNumber(gcchoiceargs));
-  create_text_choice(backgroundchoice,TBackground,4,50);
+  backgroundtext = create_text_choice(backgroundchoice,TBackground,4,50);
   
   gcchoiceargs[1].value = (XtArgVal) NULL;
   gcchoiceargs[0].value = (XtArgVal) foregroundchoice;
@@ -168,7 +195,7 @@ void main(argc,argv)
   create_testfrac_choice(percentchoice,&X.percent);
 
   /* make all the labels inside the choices line up nicely */
-  line_up_labels(GCform,NUMCHOICES+4);
+  line_up_labels(GCdescs,(int) XtNumber(GCdescs));
 
   /* put the test form under the GC form */
   testformargs[0].value = (XtArgVal) GCform;
@@ -177,7 +204,7 @@ void main(argc,argv)
   
   testchoiceform = XtCreateManagedWidget("testchoiceform",formWidgetClass,
 			     Testform,testchoiceargs,XtNumber(testchoiceargs));
-  create_choice(testchoiceform,Everything[CTest]);
+  testchoicedesc = create_choice(testchoiceform,Everything[CTest]);
 
   commandformargs[0].value = (XtArgVal) GCform;
   commandformargs[1].value = (XtArgVal) Testform;
@@ -215,13 +242,13 @@ void main(argc,argv)
     
   /* Act like the user picked the first choice in each group */
 
-  choose_defaults(GCform,NUMCHOICES);
-  choose_defaults(Testform,1);
+  choose_defaults(GCdescs,(int)XtNumber(GCdescs));
+  choose_defaults(&testchoicedesc,1);
   
   XtAppMainLoop(appcontext);
 }
 
-void fill_up_commandform(w)
+static void fill_up_commandform(w)
      Widget w;
 {
   static XtCallbackRec runcallbacklist[] = { /* called by the runbutton */
@@ -323,28 +350,23 @@ void fill_up_commandform(w)
 ** Leave the program nicely.
 */
 
-void quit()
+static void quit()
 {
   close_file_if_recording();
   exit(0);
 }
 
-void clear_test_window()
+static void clear_test_window()
 {
   XClearWindow(X.dpy,XtWindow(test));
 }
 
-void clear_result_window()
+static void clear_result_window()
 {
   XClearWindow(X.dpy,XtWindow(result));
 }
 
-typedef struct {
-  Pixel foreground;
-  Pixel background;
-} ColorResources;
-  
-void set_foreground_and_background()
+static void set_foreground_and_background()
 {
   static XtResource resources[] = {
     {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
@@ -360,5 +382,5 @@ void set_foreground_and_background()
   X.gcv.background = X.background;
 
   X.fontname = "6x10";
-  GC_change_font(X.fontname);
+  GC_change_font(X.fontname,FALSE);
 }
