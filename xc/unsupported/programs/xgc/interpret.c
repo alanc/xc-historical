@@ -5,8 +5,31 @@
 */
 
 #include "stdio.h"
-#include <X11/IntrinsicP.h>
+#include <X11/Intrinsic.h>
+#include <X11/StringDefs.h>
 #include "xgc.h"
+
+void change_text();
+void GC_change_function();
+void GC_change_foreground();
+void GC_change_background();
+void GC_change_linewidth();
+void GC_change_linestyle();
+void GC_change_capstyle();
+void GC_change_joinstyle();
+void GC_change_fillstyle();
+void GC_change_fillrule();
+void GC_change_arcmode();
+void GC_change_dashlist();
+void GC_change_planemask();
+void GC_change_font();
+void change_test();
+
+extern void update_dashlist();
+extern void update_planemask();
+extern void select_button();
+extern void run_test();
+extern void print_if_recording();
 
 extern XgcStuff TestStuff;
 extern XgcStuff FunctionStuff;
@@ -18,13 +41,17 @@ extern XgcStuff FillruleStuff;
 extern XgcStuff ArcmodeStuff;
 
 extern XStuff X;
+extern ChoiceDesc *GCdescs[];
+extern ChoiceDesc *testchoicedesc;
 extern Widget test;
 extern Widget GCform;
-extern Widget foregroundchoice;
+extern Widget foregroundtext;
+extern Widget backgroundtext;
+extern Widget linewidthtext;
+extern Widget fonttext;
 extern Widget dashlistchoice;
 extern Widget planemaskchoice;
 extern Widget testchoiceform;
-extern void change_text();
 
 /* interpret(string)
 ** -----------------
@@ -119,7 +146,7 @@ void interpret(string)
     else if (!strcmp(word1,"dashlist"))
       GC_change_dashlist(atoi(word2),FALSE);
     else if (!strcmp(word1,"font"))
-      GC_change_font(word2);
+      GC_change_font(word2,FALSE);
     else if (!strcmp(word1,"foreground"))
       GC_change_foreground((unsigned int) atoi(word2),FALSE);
     else if (!strcmp(word1,"background"))
@@ -128,10 +155,9 @@ void interpret(string)
   }
 }
 
-#define select_correct_button(x,n) \
-select_button(((CompositeWidget) \
-((CompositeWidget)GCform)->composite.children[x])->composite.children[n+1], \
-(caddr_t) NULL, (caddr_t) NULL);
+#define select_correct_button(which,number) \
+  select_button(GCdescs[(which)],(number));
+
 
 void GC_change_function(function,feedback)
      int function;
@@ -150,26 +176,40 @@ void GC_change_foreground(foreground,feedback)
 
   XSetForeground(X.dpy,X.gc,foreground);
   X.gcv.foreground = foreground;
-  sprintf(text,"%d",foreground);
-  change_text(foregroundchoice,TForeground,text);
+  if (feedback) {
+    sprintf(text,"%d",foreground);
+    change_text(foregroundtext,text);
+  }
 }
 
 void GC_change_background(background,feedback)
      unsigned long background;
      Boolean feedback;
 {
+  char text[40];
+
   XSetBackground(X.dpy,X.gc,background);
   X.gcv.background = background;
   XSetWindowBackground(X.dpy,XtWindow(test),background);
   XClearWindow(X.dpy,XtWindow(test));
+  if (feedback) {
+    sprintf(text,"%d",background);
+    change_text(backgroundtext,text);
+  }
 }
 
 void GC_change_linewidth(linewidth,feedback)
      int linewidth;
      Boolean feedback;
 {
+  char text[40];
+
   X.gcv.line_width = linewidth;
   XChangeGC(X.dpy,X.gc,GCLineWidth,&X.gcv);
+  if (feedback) {
+    sprintf(text,"%d",linewidth);
+    change_text(linewidthtext,text);
+  }
 }
 
 void GC_change_linestyle(linestyle,feedback)
@@ -275,7 +315,7 @@ void GC_change_planemask(planemask,feedback)
 {
   XSetPlaneMask(X.dpy,X.gc,planemask);
   X.gcv.plane_mask = planemask;
-  if (feedback) update_planemask(planemaskchoice,planemask);
+  if (feedback) update_planemask(planemaskchoice,(long)planemask);
 }
 
 void change_test(test,feedback) 
@@ -283,20 +323,21 @@ void change_test(test,feedback)
      Boolean feedback;
 {
   X.test = test;
-  if (feedback) select_button(((CompositeWidget) testchoiceform)
-			      ->composite.children[test+1],
-			      (caddr_t) NULL, (caddr_t) NULL);
+  if (feedback) select_button(testchoicedesc,test);
 }
 
-void GC_change_font(str)
+void GC_change_font(str,feedback)
      String str;
+     Boolean feedback;
 {
   int num_fonts;		/* number of fonts that match the string
 				  ( will be 1 or 0) */
 
   XListFonts(X.dpy,str,1,&num_fonts); /* see if the font exists */
 
-  if (num_fonts) XSetFont(X.dpy,X.gc,XLoadFont(X.dpy,str));
-
+  if (num_fonts) {
+    XSetFont(X.dpy,X.gc,XLoadFont(X.dpy,str));
+    if (feedback) change_text(fonttext,str);
+  }
 }
 
