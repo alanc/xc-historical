@@ -22,15 +22,13 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: atom.c,v 1.21 87/06/11 23:09:45 sue Exp $ */
+/* $Header: atom.c,v 1.21 87/09/11 07:18:24 rws Locked $ */
 
 #include "X.h"
 #include "Xatom.h"
 #include "misc.h"
 
 #define InitialTableSize 100
-
-char *Xalloc();
 
 typedef struct _Node {
     struct _Node   *left,   *right;
