@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.h,v 1.4 93/07/26 14:40:49 rws Exp $ */
+/* $XConsortium: xieperf.h,v 1.5 93/07/27 14:31:47 rws Exp $ */
 
 /**** module xieperf.h ****/
 /******************************************************************************
@@ -186,7 +186,7 @@ typedef struct _Parms {
     int         buffer_size; /* size when sending/reading data from xie */
     char        *data;       /* image data */
     XIEifile 	finfo;      /* image file info */	
-    caddr_t	ts;	    /* test specifics */		
+    XPointer	ts;	    /* test specifics */		
 } ParmRec, *Parms;
 
 /*
