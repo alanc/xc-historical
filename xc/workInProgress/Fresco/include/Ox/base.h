@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: base.h,v 1.6 94/08/17 19:06:19 matt Exp matt $ */
 /*
  * Copyright (c) 1993 Silicon Graphics, Inc.
  * Copyright (c) 1993 Fujitsu, Ltd.
@@ -93,7 +93,7 @@ typedef unsigned long ULongLong;
 #else
 typedef long Long;
 typedef unsigned long ULong;
-#if defined(sgi)
+#if defined(__sgi)
 /* compiler supports long long */
 typedef long long LongLong;
 typedef unsigned long long ULongLong;

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: transport.cxx,v 1.2 94/03/07 15:34:20 matt Exp $
+ * $XConsortium: transport.cxx,v 1.4 94/04/01 16:52:46 matt Exp matt $
  */
  
 /*
@@ -28,7 +28,7 @@
 
 #include <X11/Fresco/Ox/marshal.h>
 #include <X11/Fresco/Ox/transport.h>
-#if defined(sgi)
+#if defined(__sgi)
 #include <rpc/rpc.h>
 #endif
 #if defined(sun) && defined(SVR4)
@@ -48,7 +48,7 @@ int oxCall(const char* hostname, long port, void* b) {
 	xdrproc_t(&oxMarshal), (char*)b, xdrproc_t(&oxUnmarshal), (char*)b
     );
 #else
-#if defined(sgi)
+#if defined(__sgi)
     return callrpc(
 	hostname, port, 0, 1,
 	xdrproc_t(&oxMarshal), b, xdrproc_t(&oxUnmarshal), b
@@ -61,7 +61,7 @@ int oxCall(const char* hostname, long port, void* b) {
 }
 
 int oxMarshal(XDR* xdrsp, MarshalBuffer* b) {
-#if defined(sgi) || defined(sun)
+#if defined(__sgi) || defined(sun)
     b->make_out_in();
     long* p = b->cur();
     long n = b->end() - p;
@@ -77,7 +77,7 @@ int oxMarshal(XDR* xdrsp, MarshalBuffer* b) {
 }
 
 int oxUnmarshal(XDR* xdrsp, MarshalBuffer* b) {
-#if defined(sgi) || defined(sun)
+#if defined(__sgi) || defined(sun)
     if (xdrsp->x_op == XDR_DECODE) {
 	b->reset();
 	long n, v;

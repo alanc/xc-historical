@@ -1,5 +1,5 @@
 /*
- * $XConsortium: os.cxx,v 1.10 94/06/03 21:38:55 matt Exp matt $
+ * $XConsortium: os.cxx,v 1.11 94/08/17 19:01:30 matt Exp matt $
  */
 
 /*
@@ -472,7 +472,7 @@ Boolean DirectoryImpl::ifdir(const char* path) {
 
 /* class File */
 
-#ifdef sgi
+#ifdef __sgi
 #include <sys/mman.h>
 #endif
 
@@ -529,7 +529,7 @@ void File::close() {
     FileInfo* i = rep_;
     if (i->fd_ >= 0) {
 	if (i->map_ != nil) {
-#ifdef sgi
+#ifdef __sgi
 	    munmap(i->map_, int(i->info_.st_size));
 #endif
 	}
@@ -575,7 +575,7 @@ long InputFile::read(const char*& start) {
     if (i->limit_ != 0 && len > i->limit_) {
 	len = i->limit_;
     }
-#ifdef sgi
+#ifdef __sgi
     i->map_ = (char*)mmap(
 	0, (int)len, PROT_READ, MAP_PRIVATE, i->fd_, i->pos_
     );

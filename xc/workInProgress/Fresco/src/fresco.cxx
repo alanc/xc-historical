@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fresco.cxx,v 1.7 94/08/17 19:01:09 matt Exp matt $
+ * $XConsortium: fresco.cxx,v 1.8 94/08/17 21:39:51 matt Exp matt $
  */
 
 /*
@@ -45,7 +45,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if defined(sgi)
+#if defined(__sgi)
 #include <malloc.h>
 #endif
 
@@ -79,7 +79,7 @@ static Option standard_options[] = {
     { "-visual", "*visual", Option::value },
     { "-visual_id", "*visual_id", Option::value },
     { "-xrm", nil, Option::path_value },
-#ifdef sgi
+#ifdef __sgi
     { "-malloc", "*malloc_debug", Option::implicit, "on" },
 #endif
     { nil }
@@ -323,7 +323,7 @@ FrescoImpl::FrescoImpl(
     create_root_style(name, argc, argv, options);
 
     init_types();
-#if defined(sgi)
+#if defined(__sgi)
     if (style_->is_on(Fresco::tmp_string_ref("malloc_debug"))) {
 	mallopt(M_DEBUG, 1);
     }
