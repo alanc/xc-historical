@@ -50,8 +50,8 @@
 #define	XaedServer /* as nothing */
 #endif
 
-ALL = XqvssServer XqdssServer XsunServer XapolloServer Xapa16Server XaedServer \
-	XHPServer
+# for now, don't split this across lines, because imake will keep a trailing slash
+ALL = XqvssServer XqdssServer XsunServer XapolloServer Xapa16Server XaedServer XHPServer
 
 #
 # This turns off the default rule for compiling .c files because
