@@ -1,4 +1,4 @@
-/* $XConsortium: info.c,v 1.5 94/07/15 10:05:25 mor Exp $ */
+/* $XConsortium: info.c,v 1.6 94/07/22 10:39:27 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -52,10 +52,14 @@ XtPointer 	callData;
 
     if (client->numProps > 0)
     {
-	char buffer[1024];
+	char buffer[1024];		/* ugh, gotta fix this */
 	char number[10];
 
 	buffer[0] = '\0';
+
+	strcat (buffer, "*** ID = ");
+	strcat (buffer, client->clientId);
+	strcat (buffer, " ***\n\n");
 
 	for (i = 0; i < client->numProps; i++)
 	{
