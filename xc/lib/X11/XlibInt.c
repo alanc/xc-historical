@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.92 89/03/22 15:14:14 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.93 89/03/24 14:57:04 jim Exp $
  */
 
 #include "copyright.h"
@@ -121,7 +121,10 @@ _XFlush (dpy)
 #endif
 #ifdef EMSGSIZE
 	    } else if (errno == EMSGSIZE) {
-		todo >>= 1;
+		if (todo > 1) 
+		  todo >>= 1;
+		else
+		  _XWaitForWritable(dpy);
 #endif
 	    } else {
 		/* Write failed! */
@@ -466,25 +469,46 @@ _XSend (dpy, data, size)
            /* XText8 and XText16 require that the padding bytes be zero! */
 
 	long skip = 0;
-	long total = (dpy->bufptr - dpy->buffer) + ((size + 3) & ~3);
+	long dpybufsize = (dpy->bufptr - dpy->buffer);
+	long padsize = padlength[size & 3];
+	long total = dpybufsize + size + padsize;
 	long todo = total;
 
+	/*
+	 * There are 3 pieces that may need to be written out:
+	 *
+	 *     o  whatever is in the display buffer
+	 *     o  the data passed in by the user
+	 *     o  any padding needed to 32bit align the whole mess
+	 *
+	 * This loop looks at all 3 pieces each time through.  It uses skip
+	 * to figure out whether or not a given piece is needed.
+	 */
 	while (total) {
-	    long before = skip;
-	    long remain = todo;
+	    long before = skip;		/* amount of whole thing written */
+	    long remain = todo;		/* amount to try this time, <= total */
 	    int i = 0;
 	    long len;
 
-	/* You could be very general here and have "in" and "out" iovecs
-	 * and write a loop without using a macro, but what the heck
-	 */
-
+	    /* You could be very general here and have "in" and "out" iovecs
+	     * and write a loop without using a macro, but what the heck.  This
+	     * translates to:
+	     *
+	     *     how much of this piece is new?
+	     *     if more new then we are trying this time, clamp
+	     *     if nothing new
+	     *         then bump down amount already written, for next piece
+	     *         else put new stuff in iovec, will need all of next piece
+	     *
+	     * Note that todo had better be at least 1 or else we'll end up
+	     * writing 0 iovecs.
+	     */
 #define InsertIOV(pointer, length) \
 	    len = (length) - before; \
 	    if (len > remain) \
 		len = remain; \
 	    if (len <= 0) { \
-		before = -len; \
+		before = (-len); \
 	    } else { \
 		iov[i].iov_len = len; \
 		iov[i].iov_base = (pointer) + before; \
@@ -493,10 +517,9 @@ _XSend (dpy, data, size)
 		before = 0; \
 	    }
 
-	    InsertIOV(dpy->buffer, dpy->bufptr - dpy->buffer)
-	    InsertIOV(data, size)
-	    /* Provide 32-bit aligned padding as necessary */
-	    InsertIOV(pad, padlength[size & 3])
+	    InsertIOV (dpy->buffer, dpybufsize)
+	    InsertIOV (data, size)
+	    InsertIOV (pad, padsize)
     
 	    errno = 0;
 	    if ((len = WritevToServer(dpy->fd, iov, i)) >= 0) {
@@ -513,7 +536,10 @@ _XSend (dpy, data, size)
 #endif
 #ifdef EMSGSIZE
 	    } else if (errno == EMSGSIZE) {
-		todo = todo >> 1;
+		if (todo > 1) 
+		  todo >>= 1;
+		else 
+		  _XWaitForWritable(dpy);
 #endif
 	    } else {
 		(*_XIOErrorFunction)(dpy);
