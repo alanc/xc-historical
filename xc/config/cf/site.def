@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.86 93/09/18 16:06:48 rws Exp $
+XCOMM site:  $XConsortium: site.def,v 1.87 93/09/20 13:20:54 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -117,7 +117,6 @@ clean::									@@\
 #endif
 
 #ifdef SonyArchitecture
-#define BuildFontServer YES
 #ifdef SonyBsdArchitecture
 #undef HasSecureRPC
 #endif
@@ -134,7 +133,6 @@ clean::									@@\
 #endif
 
 #ifdef i860SVR4Architecture
-#define BuildFontServer YES
 #define NormalLibX YES
 #endif
 
