@@ -185,7 +185,7 @@ ProcessInputEvents ()
 	    if (lastType == Kbd) {
     		(* kbdPriv->DoneEvents) (pKeyboard);
 	    }
-    	    macIIMouseProcessEvent(pPointer,me);
+    	    (* ptrPriv->ProcessEvent) (pPointer,me);
 	    me += 2;
 	    lastType = Ptr;
 	}
@@ -193,20 +193,20 @@ ProcessInputEvents ()
 	    if (lastType == Kbd) {
     		(* kbdPriv->DoneEvents) (pKeyboard);
 	    }
-    	    macIIMouseProcessEvent(pPointer,me);
+    	    (* ptrPriv->ProcessEvent) (pPointer,me);
 	    lastType = Ptr;
 	}
 	else {
 	    if (lastType == Ptr) {
-    		(* ptrPriv->DoneEvents) (pPointer);
+    		(* ptrPriv->DoneEvents) (pPointer, FALSE);
 	    }
-    	    macIIKbdProcessEvent(pKeyboard,me);
+    	    (* kbdPriv->ProcessEvent) (pKeyboard,me);
 	    lastType = Kbd;
         }
     }
 
     (* kbdPriv->DoneEvents) (pKeyboard);
-    (* ptrPriv->DoneEvents) (pPointer);
+    (* ptrPriv->DoneEvents) (pPointer, FALSE);
 
     macIIRestoreCursor();
 

@@ -51,7 +51,6 @@ static char sccsid[] = "%W %G Copyright 1987 Sun Micro";
 #include    "macII.h"
 
 typedef struct {
-    int	    bmask;	    /* Current button state */
     Bool    mouseMoved;	    /* Mouse has moved */
 } macIIMsPrivRec, *macIIMsPrivPtr;
 
@@ -110,7 +109,6 @@ macIIMouseProc (pMouse, what)
 	    sysMousePriv.x = sysMousePriv.pScreen->width / 2;
 	    sysMousePriv.y = sysMousePriv.pScreen->height / 2;
 
-	    macIIMousePriv.bmask = 0;
 	    macIIMousePriv.mouseMoved = FALSE;
 
 	    pMouse->devicePrivate = (pointer) &sysMousePriv;
@@ -279,7 +277,7 @@ macIIMouseProcessEvent(pMouse,me)
 	     * as well as DIX before sending a button event along.
 	     */
 	    if (pmacIIPriv->mouseMoved) {
-		macIIMouseDoneEvents (pMouse, FALSE);
+		(* pPriv->DoneEvents) (pMouse, FALSE);
 	    }
     	    xE.u.keyButtonPointer.rootX = pPriv->x;
     	    xE.u.keyButtonPointer.rootY = pPriv->y;
@@ -331,7 +329,7 @@ macIIMouseProcessEvent(pMouse,me)
 	     * as well as DIX before sending a button event along.
 	     */
 	    if (pmacIIPriv->mouseMoved) {
-		macIIMouseDoneEvents (pMouse, FALSE);
+		(* pPriv->DoneEvents) (pMouse, FALSE);
 	    }
 	    (* pMouse->processInputProc) (&xE, pMouse);
 	}

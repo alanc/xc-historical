@@ -54,10 +54,6 @@ static char sccsid[] = "%W %G Copyright 1987 Sun Micro";
 #include "keysym.h"
 #include "inputstr.h"
 
-typedef struct {
-    int	    	  trans;          	/* Original translation form */
-} macIIKbPrivRec, *macIIKbPrivPtr;
-
 extern CARD8 *macIIModMap[];
 extern KeySymsRec macIIKeySyms[];
 extern CARD16 keyModifiersList[];
@@ -74,14 +70,13 @@ long 		  autoRepeatLastKeyDownTv;
 long 		  autoRepeatDeltaTv;
 static KeybdCtrl  sysKbCtrl;
 
-static macIIKbPrivRec	macIIKbPriv;  
 static KbPrivRec  	sysKbPriv = {
     -1,				/* Type of keyboard */
     -1,				/* Descriptor open to device */
     macIIKbdProcessEvent,		/* Function to process an event */
     macIIKbdDoneEvents,		/* Function called when all events */
 				/* have been handled. */
-    (pointer)&macIIKbPriv,	/* Private to keyboard device */
+    (pointer) NULL,		/* Private to keyboard device */
     (Bool)0,			/* Mapped queue */
     0,				/* offset for device keycodes */
     &sysKbCtrl,                 /* Initial full duration = .25 sec. */
@@ -141,7 +136,7 @@ macIIKbdProc (pKeyboard, what)
 	     * ensure that the keycodes on the wire are >= MIN_KEYCODE
 	     */
 
-	    sysKbPriv.type = KBTYPE_MACII;  /* XXX ioctl to detect type XXX */
+	    sysKbPriv.type = KBTYPE_MACII;  
 
 	    if (macIIKeySyms[sysKbPriv.type].minKeyCode < MIN_KEYCODE) {
 		int offset = MIN_KEYCODE -macIIKeySyms[sysKbPriv.type].minKeyCode;
@@ -179,9 +174,7 @@ macIIKbdProc (pKeyboard, what)
     return (Success);
 }
 
-#include <sys/stropts.h>
 #include <sys/termio.h>
-#include <sys/video.h>
 
 static struct termio d_tio = {
 	(BRKINT|IGNPAR|ISTRIP|ICRNL|IXON)&(~IGNBRK)&(~PARMRK)&(~INPCK)&(~INLCR)&

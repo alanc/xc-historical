@@ -12,7 +12,7 @@
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- *	"$Header: macII.h,v 1.4 88/03/07 12:54:22 x Locked $ SPRITE (Berkeley)"
+ *	"$Header: macII.h,v 1.5 88/03/07 13:04:24 x Locked $ SPRITE (Berkeley)"
  */
 #ifndef _MACII_H_
 #define _MACII_H_
@@ -27,6 +27,8 @@
 #endif USE_TOD_CLOCK
 #include    <sys/file.h>
 #include    <sys/signal.h>
+#include    <sys/stropts.h>
+#include    <sys/video.h>
 
 #include    "X.h"
 #include    "Xproto.h"
@@ -68,16 +70,6 @@
  *	devPrivate is private to the specific keyboard.
  *	map_q is TRUE if the event queue for the keyboard is memory mapped.
  */
-typedef struct macIIFirm_event {
-    int			  id;
-    int			  value;
-#ifdef USE_TOD_CLOCK
-    struct timeval	  time;
-#else
-    long		  time;
-#endif USE_TOD_CLOCK
-} Firm_event;
-
 #define KEY_DETAIL(e) ((e) & 0x7f)
 #define KEY_UP(e)     ((e) & 0x80)
 
@@ -172,9 +164,6 @@ typedef struct crPrivate {
 
 /*
  * Frame-buffer-private info.
- *	fd  	  	file opened to the frame buffer device.
- *	info	  	description of the frame buffer -- type, height, depth,
- *	    	  	width, etc.
  *	fb  	  	pointer to the mapped image of the frame buffer. Used
  *	    	  	by the driving routines for the specific frame buffer
  *	    	  	type.
@@ -187,16 +176,15 @@ typedef struct crPrivate {
  *	    	  	called with the GC as an argument...
  *	mapped	  	flag set true by the driver when the frame buffer has
  *	    	  	been mapped in.
+ *	fd  	  	file opened to the frame buffer device.
+ *	info	  	description of the frame buffer -- type, height, depth,
+ *	    	  	width, etc.
  *	fbPriv	  	Data private to the frame buffer type.
  */
 
 #define FBTYPE_MACII 0
-typedef struct fbtype {
-    int			fb_type;
-    int			fb_width;
-    int			fb_height;
-    int			fb_pitch;
-};
+
+typedef struct video_data fbtype;
 
 typedef struct {
     pointer 	  	fb; 	    /* Frame buffer itself */
@@ -211,9 +199,11 @@ typedef struct {
     void		(*EnterLeave)();
     Bool    	  	mapped;	    /* TRUE if frame buffer already mapped */
     int	    	  	fd; 	    /* Descriptor open to frame buffer */
-    struct fbtype 	info;	    /* Frame buffer characteristics */
+    fbtype 		info;	    /* Frame buffer characteristics */
     pointer 	  	fbPriv;	    /* Frame-buffer-dependent data */
 } fbFd;
+
+extern fbFd 	  macIIFbs[];
 
 /*
  * Data describing each type of frame buffer. The probeProc is called to
@@ -269,8 +259,6 @@ extern unsigned int *macIIGetSpans();
 extern int	  isItTimeToYield;
 extern int  	  macIICheckInput;    /* Non-zero if input is available */
 
-extern fbFd 	  macIIFbs[];
-
 extern int  	  lastEventTime;    /* Time (in ms.) of last event */
 extern void 	  SetTimeSinceLastInputEvent();
 
@@ -287,6 +275,13 @@ extern int	autoRepeatDebug;		/* TRUE if debugging */
 extern long autoRepeatLastKeyDownTv;
 extern long autoRepeatDeltaTv;
 
+#ifdef USE_TOD_CLOCK
+/*-
+ * TVTOMILLI(tv)
+ *	Given a struct timeval, convert its time into milliseconds...
+ */
+#define TVTOMILLI(tv)	(((tv).tv_usec/1000)+((tv).tv_sec*1000))
+
 #define tvminus(tv, tv1, tv2) /* tv = tv1 - tv2 */ \
               if ((tv1).tv_usec < (tv2).tv_usec) { \
                       (tv1).tv_usec += 1000000; \
@@ -302,6 +297,7 @@ extern long autoRepeatDeltaTv;
                       (tv).tv_usec -= 1000000; \
                       (tv).tv_sec += 1; \
               }
+#endif USE_TOD_CLOCK
 
 /*
  * 	Extensions:
@@ -315,11 +311,5 @@ extern void	  macIIBW2TiledYZoids();
 extern void	  macIIBW2StipXZoids();
 extern void	  macIIBW2StipYZoids();
 #endif ZOIDS
-
-/*-
- * TVTOMILLI(tv)
- *	Given a struct timeval, convert its time into milliseconds...
- */
-#define TVTOMILLI(tv)	(((tv).tv_usec/1000)+((tv).tv_sec*1000))
 
 #endif _MACII_H_

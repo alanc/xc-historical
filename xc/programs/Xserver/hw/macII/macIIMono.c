@@ -83,6 +83,7 @@ macIIBW2SaveScreen (pScreen, on)
     } else {
 /*	state = FBVIDEO_OFF; */
     }
+/* XXX fd is closed??!! XXX */
 /*    (void) ioctl(macIIFbs[pScreen->myNum].fd, FBIOSVIDEO, &state); */
     return TRUE;
 }
@@ -228,8 +229,12 @@ macIIBW2Init (index, pScreen, argc, argv)
      */
     if (!mfbScreenInit(index, pScreen,
 			   macIIFbs[index].fb,
-			   macIIFbs[index].info.fb_width,
-			   macIIFbs[index].info.fb_height, 76, 76))
+			   macIIFbs[index].info.v_right -
+			   macIIFbs[index].info.v_left + 1,
+			   macIIFbs[index].info.v_bottom -
+			   macIIFbs[index].info.v_top + 1, 
+			   macIIFbs[index].info.v_hres, 
+			   macIIFbs[index].info.v_vres))
 	return (FALSE);
 
     /* macII screens may have extra video memory to the right of the visible
@@ -238,7 +243,7 @@ macIIBW2Init (index, pScreen, argc, argv)
      * So we fix it here. */
 
     pPixmap = (PixmapPtr)(pScreen->devPrivate);
-    pPixmap->devKind =  macIIFbs[index].info.fb_pitch >> 3; /* bytes per scan line */
+    pPixmap->devKind =  macIIFbs[index].info.v_rowbytes;
 
     pScreen->SaveScreen = macIIBW2SaveScreen;
     pScreen->ResolveColor = macIIBW2ResolveColor;
@@ -316,7 +321,7 @@ macIIBW2Probe(pScreenInfo, index, fbNum, argc, argv)
 
     if (macIIFbData[fbNum].probeStatus == neverProbed) {
 	int         fd;
-	struct fbtype fbType;
+	fbtype fbType;
 
 	if ((fd = macIIOpenFrameBuffer(FBTYPE_MACII, &fbType, index, fbNum,
 				     argc, argv)) < 0) {
@@ -325,11 +330,8 @@ macIIBW2Probe(pScreenInfo, index, fbNum, argc, argv)
 	}
 
 	{
-#include 	<sys/stropts.h>
-#include	<sys/video.h>
 		static char *video_virtaddr = 0x0;
 		struct video_map vmap;
-		struct video_data vdata;
 		struct strioctl ctl; /* Streams ioctl control structure */
 
 		/* map to next 8MB segment boundary */
@@ -347,19 +349,8 @@ macIIBW2Probe(pScreenInfo, index, fbNum, argc, argv)
 			return (FALSE);
 		}
 
-		ctl.ic_cmd = VIDEO_DATA;
-		ctl.ic_timout = -1;
-		ctl.ic_len = sizeof(vdata);
-		ctl.ic_dp = (char *)&vdata;
-		if (ioctl(fd, I_STR, &ctl) == -1) {
-			FatalError ("ioctl I_STR VIDEO_DATA failed");
-			(void) close (fd);
-			return (FALSE);
-		}
-
-
     		macIIFbs[index].fb = 
-		    (pointer)(video_virtaddr + vdata.v_baseoffset); 
+		    (pointer)(video_virtaddr + fbType.v_baseoffset); 
 		(void) close(fd);
 	}
 
