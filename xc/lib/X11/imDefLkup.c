@@ -1,4 +1,4 @@
-/* $XConsortium: imDefLkup.c,v 1.1 93/09/17 13:25:59 rws Exp $ */
+/* $XConsortium: imDefLkup.c,v 1.2 93/09/18 10:14:21 rws Exp $ */
 /******************************************************************
 
            Copyright 1992, 1993 by FUJITSU LIMITED
@@ -377,7 +377,7 @@ _XimRegisterTriggerkey(im, buf)
 
     if (!(key = (CARD32 *)Xmalloc(len)))
 	return False;
-    bcopy(buf, key, len);
+    memcpy(key, buf, len);
     im->private.proto.im_onkeylist	     = key;
 
     MARK_DYNAMIC_EVENT_FLOW(im);
@@ -393,7 +393,7 @@ _XimRegisterTriggerkey(im, buf)
     if (!(key = (CARD32 *)Xmalloc(len)))
 	return False;
 
-    bcopy(buf, key, len);
+    memcpy(key, buf, len);
     im->private.proto.im_offkeylist = key;
 
     return True;
@@ -516,7 +516,7 @@ _XimProcCommit(d, ic, ev, buf)
     if (!(commit = Xmalloc(len + 1)))
 	return False;
 
-    bcopy(&buf[1], commit, len);
+    memcpy(commit, &buf[1], len);
     commit[len] = 0;
     ic->private.proto.xim_commit = commit;
     MARK_FABLICATED(ic);
@@ -653,7 +653,7 @@ _XimError(im, ic, error_code, detail_length, type, detail)
 
     if (detail_length && detail) {
 	len = detail_length;
-	bcopy(detail, &buf_s[6], len);
+	memcpy(&buf_s[6], detail, len);
 	XIM_SET_PAD(&buf_s[6], len);
     }
 

@@ -1,4 +1,4 @@
-/* $XConsortium: imRmAttr.c,v 1.1 93/09/17 13:27:47 rws Exp $ */
+/* $XConsortium: imRmAttr.c,v 1.2 93/09/18 10:14:31 rws Exp $ */
 /******************************************************************
 
            Copyright 1992, 1993 by FUJITSU LIMITED
@@ -414,7 +414,7 @@ _XimValueToAttribute(ic, res, buf, buf_size, value, is_window, len, mode)
 	if (buf_size < *len)
 	    return False;
 
-	bcopy((char *)value, (char *)buf, *len);
+	memcpy((char *)buf, (char *)value, *len);
 	break;
 
     case XimType_Window:
@@ -494,7 +494,7 @@ _XimValueToAttribute(ic, res, buf, buf_size, value, is_window, len, mode)
 		return False;
 
 	    buf[0] = (INT16)length;		/* length of Base font name */
-	    bcopy(base_name, (char *)&buf[1], length);
+	    memcpy((char *)&buf[1], base_name, length);
 						/* Base font name list */
 	    break;
 	}
@@ -1006,7 +1006,7 @@ _XimGetAttributeID(im, buf)
     buf = bufp;
     for (i = 0; i < n; i++) {
 	len = buf[2];
-	bcopy((char *)&buf[3], names, len);
+	memcpy(names, (char *)&buf[3], len);
 	names[len] = '\0';
 	res[i].resource_name = names;
 	res[i].resource_size = buf[1];
@@ -1050,7 +1050,7 @@ _XimGetAttributeID(im, buf)
     buf = bufp;
     for (i = 0; i < n; i++) {
 	len = buf[2];
-	bcopy((char *)&buf[3], names, len);
+	memcpy(names, (char *)&buf[3], len);
 	names[len] = '\0';
 	res[i].resource_name = names;
 	res[i].resource_size = buf[1];

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: imEvToWire.c,v 1.1 93/09/17 13:26:20 rws Exp $ */
 /***********************************************************
 Copyright 1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 
@@ -136,8 +136,8 @@ Bool sw;         /* swap byte? */
 	      case KeymapNotify:
 		{
 			register XKeymapEvent *ev = (XKeymapEvent *) re;
-			bcopy ( &ev->key_vector[1], 
-				(char *)(((xKeymapEvent *) event)->map),
+			memcpy((char *)(((xKeymapEvent *) event)->map),
+			       &ev->key_vector[1], 
 			       sizeof (((xKeymapEvent *) event)->map));
 		}
 		break;
@@ -516,8 +516,8 @@ Bool sw;                /* swap byte? */
 		{
 			register XKeymapEvent *ev = (XKeymapEvent *) re;
 			ev->window	= None;
-			bcopy ((char *)((xKeymapEvent *) event)->map,
-			       &ev->key_vector[1], 
+			memcpy(&ev->key_vector[1], 
+			       (char *)((xKeymapEvent *) event)->map,
 			       sizeof (((xKeymapEvent *) event)->map));
 		}
 		break;

@@ -1,4 +1,4 @@
-/* $XConsortium: imTrX.c,v 1.1 93/09/17 13:29:16 rws Exp $ */
+/* $XConsortium: imTrX.c,v 1.2 93/09/18 10:14:43 rws Exp $ */
 /******************************************************************
 
            Copyright 1992 by Sun Microsystems, Inc.
@@ -61,7 +61,7 @@ _GetReadData(im, event, len, data, prop)
 	*prop = (Atom)0;
 	if (!(reply_data = (XPointer)Xmalloc(reply_length)))
 	    return False;
-	bcopy(event->xclient.data.b, reply_data, reply_length);
+	memcpy(reply_data, event->xclient.data.b, reply_length);
     } else {
 	length = (unsigned long)event->xclient.data.l[0];
 	*prop = (Atom)event->xclient.data.l[1];
@@ -81,7 +81,7 @@ _GetReadData(im, event, len, data, prop)
 	    XFree(buf);
 	    return False;
 	}
-	bcopy(buf, reply_data, reply_length);
+	memcpy(reply_data, buf, reply_length);
 	XFree(buf);
     }
 
@@ -220,7 +220,7 @@ _XimXSend(im, len, data)
     } else {
 	event.xclient.format = 8;
 	p = (CARD8 *)&event.xclient.data.b[0];
-	bcopy(data, p, len);
+	memcpy(p, data, len);
     }
 
     XSendEvent(im->core.display, spec->ims_connect_wid,

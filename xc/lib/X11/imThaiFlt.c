@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: imThaiFlt.c,v 1.1 93/09/17 13:28:07 rws Exp $ */
 /***********************************************************
 Copyright 1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -926,7 +926,7 @@ XThaiTranslateKeySym(dpy, symbol, lsym, usym, modifiers, buffer, nbytes)
 	if (((modifiers & AllMods) == p->state) && (symbol == p->key)) {
 	    length = p->len;
 	    if (length > nbytes) length = nbytes;
-	    bcopy (p->string, buffer, length);
+	    memcpy (buffer, p->string, length);
 	    return length;
 	}
     }

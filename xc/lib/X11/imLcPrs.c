@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: imLcPrs.c,v 1.1 93/09/17 13:27:20 rws Exp $ */
 /******************************************************************
 
               Copyright 1992 by Oki Technosystems Laboratory, Inc.
@@ -439,7 +439,7 @@ parseline(fp, top)
 	Xfree( rhs_string_mb );
 	return( 0 );
     }
-    bcopy( local_wc_buf, rhs_string_wc, (l + 1) * sizeof(wchar_t) );
+    memcpy(rhs_string_wc,  local_wc_buf, (l + 1) * sizeof(wchar_t) );
 
     for (i = 0; i < n; i++) {
 	for (p = *top; p; p = p->next) {

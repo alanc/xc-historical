@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: imLcLkup.c,v 1.1 93/09/17 13:27:13 rws Exp $ */
 /******************************************************************
 
               Copyright 1992 by Fuji Xerox Co., Ltd.
@@ -90,7 +90,7 @@ _XimLocalMbLookupString(ic, ev, buffer, bytes, keysym, status)
 	    if(status) *status = XBufferOverflow;
 	    return(ret);
 	}
-	bcopy(ic->private.local.composed->mb, buffer, ret);
+	memcpy(buffer, ic->private.local.composed->mb, ret);
 	if(keysym) *keysym = NoSymbol;
 	if(status) *status = XLookupChars;
 	return (ret);
@@ -135,7 +135,7 @@ _XimLocalWcLookupString(ic, ev, buffer, wlen, keysym, status)
 	    if(status) *status = XBufferOverflow;
 	    return (ret);
 	}
-	bcopy(ic->private.local.composed->wc, buffer, ret * sizeof(wchar_t));
+	memcpy(buffer, ic->private.local.composed->wc, ret * sizeof(wchar_t));
 	if(keysym) *keysym = NoSymbol;
 	if(status) *status = XLookupChars;
 	return (ret);
