@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.46 93/09/26 15:40:51 gildea Exp $
+ * $XConsortium: process.c,v 1.1 93/12/30 11:58:27 mor Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -1336,7 +1336,7 @@ cant_add:
     if (auth)
     {
 	if (auth->protocol_name)
-	    free ();
+	    free (auth->protocol_name);
 	if (auth->protocol_data)
 	    free (auth->protocol_data);
 	if (auth->address)
