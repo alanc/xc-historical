@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.171 93/08/23 09:51:01 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.172 93/08/23 13:45:12 kaleb Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -64,12 +64,6 @@ XCOMM $XConsortium: Project.tmpl,v 1.171 93/08/23 09:51:01 rws Exp $
 #endif
 #ifndef BuildXIE
 #define BuildXIE		YES
-#endif
-#ifndef BuildXTrapExt
-#define BuildXTrapExt		NO
-#endif
-#ifndef BuildXTrapLib
-#define BuildXTrapLib		NO
 #endif
 #ifndef BuildScreenSaverExt
 #define BuildScreenSaverExt	NO	/* not released yet */
@@ -189,13 +183,6 @@ XCOMM $XConsortium: Project.tmpl,v 1.171 93/08/23 09:51:01 rws Exp $
 #define XInputDefines /**/
 #endif
 #endif
-#ifndef XTrapDefines
-#if BuildXTrapExt
-#define XTrapDefines -DXTRAP
-#else
-#define XTrapDefines /**/
-#endif
-#endif
 #ifndef ScreenSaverDefines
 #if BuildScreenSaverExt
 #define ScreenSaverDefines -DSCREENSAVER
@@ -211,7 +198,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.171 93/08/23 09:51:01 rws Exp $
 #endif
 #endif
 #ifndef BaseExtensionDefines
-#define BaseExtensionDefines -DSHAPE -DMULTIBUFFER -DMITMISC -DXTEST -DBIGREQS PexDefines ShmDefines XInputDefines XTrapDefines ScreenSaverDefines XIEdefines
+#define BaseExtensionDefines -DSHAPE -DMULTIBUFFER -DMITMISC -DXTEST -DBIGREQS PexDefines ShmDefines XInputDefines ScreenSaverDefines XIEdefines
 #endif
 #define ExtensionDefines BaseExtensionDefines ExtensionOSDefines
 #endif
@@ -699,19 +686,6 @@ UnsharedLibReferences(FS,FS,$(FSLIBSRC))
 
          FONTLIBSRC = $(FONTSRC)/lib/font
 UnsharedLibReferences(FONT,font,$(FONTLIBSRC))
-
-#ifndef SharedLibXTrap
-#define SharedLibXTrap 	HasSharedLibaries
-#endif
-#ifndef NormalLibXTrap
-#define NormalLibXTrap 	(!SharedLibXTrap | ForceNormalLib)
-#endif
-#ifndef DebugLibXTrap
-#define DebugLibXTrap		NO	/* debugged XTrap library */
-#endif
-#ifndef ProfileLibXTrap
-#define ProfileLibXTrap		NO	/* profiled XTrap library */
-#endif
 
 #ifndef XawClientDepLibs
 #define XawClientDepLibs $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
