@@ -1,4 +1,4 @@
-/* $XConsortium: Convert.c,v 1.46 90/12/12 14:50:38 rws Exp $ */
+/* $XConsortium: Convert.c,v 1.47 90/12/30 16:44:26 rws Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -42,8 +42,8 @@ typedef struct _ConverterRec {
     XtTypeConverter	converter;
     XtDestructor	destructor;
     unsigned short	num_args;
-    int			do_ref_count:1;
-    int			new_style:1;
+    unsigned int	do_ref_count:1;
+    unsigned int	new_style:1;
     char		cache_type;
 } ConverterRec;
 
