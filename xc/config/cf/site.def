@@ -1,4 +1,4 @@
-/**/# site:  $XConsortium: site.def,v 1.3 89/05/11 18:06:58 jim Exp $
+/**/# site:  $XConsortium: site.def,v 1.4 89/05/16 19:14:40 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -37,10 +37,24 @@
 #ifndef ExtensionDefines
 #define ExtensionDefines -DSHAPE
 #endif
-#ifndef CompatibilityFlags
-#define CompatibilityFlags -DXAW_BC	/* temp hack until Imakefiles fixed */
-#endif
 
 #ifndef NeedDefaultDepLibs
 #define NeedDefaultDepLibs YES
 #endif
+
+
+/*
+ * Set the following to YES until you have converted your Xaw programs to use
+ * the new naming scheme.
+ */
+#ifndef InstallOldHeaderFiles
+#define InstallOldHeaderFiles NO	/* set to YES for compat with R3 Xaw */
+#endif
+#ifndef CompatibilityFlags
+#if InstallOldHeaderFiles
+#define CompatibilityFlags -DXAW_BC
+#else
+#define CompatibilityFlags /**/
+#endif
+#endif
+
