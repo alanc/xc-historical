@@ -2,7 +2,7 @@
 #define _Xct_h
 
 /* 
- * $XConsortium: Xct.h,v 1.1 89/05/09 09:53:42 rws Exp $
+ * $XConsortium: Xct.h,v 1.2 89/10/09 12:30:38 rws Exp $
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -24,7 +24,7 @@ typedef unsigned char *XctString;
 typedef enum {
     XctUnspecified,
     XctLeftToRight,
-    XctRightToLeft,
+    XctRightToLeft
 } XctHDirection;
 
 typedef unsigned long XctFlags;
