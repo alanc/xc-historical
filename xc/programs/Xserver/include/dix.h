@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dix.h,v 1.81 94/11/17 19:23:03 mor Exp mor $ */
+/* $XConsortium: dix.h,v 1.83 94/12/02 16:31:32 mor Exp $ */
 
 #ifndef DIX_H
 #define DIX_H
@@ -188,14 +188,22 @@ extern ClientPtr requestingClient;
 extern ClientPtr *clients;
 extern ClientPtr serverClient;
 extern int currentMaxClients;
-extern long *checkForInput[2];
+
+#ifndef __alpha
+typedef long HWEventQueueType;
+#else
+typedef int HWEventQueueType;
+#endif
+typedef HWEventQueueType* HWEventQueuePtr;
+
+extern HWEventQueuePtr checkForInput[2];
 
 /* dispatch.c */
 
 extern void SetInputCheck(
 #if NeedFunctionPrototypes
-    long* /*c0*/,
-    long* /*c1*/
+    HWEventQueuePtr /*c0*/,
+    HWEventQueuePtr /*c1*/
 #endif
 );
 
