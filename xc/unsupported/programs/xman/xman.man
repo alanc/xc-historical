@@ -146,89 +146,90 @@ Sets the size and location of the Top Menu with the three buttons in it.
 Sets the size and location of all the Manual Pages.
 .PP
 .SH WIDGETS
-The widgets used by xman are listed below.  Widgets are listed by
-name and class.  Consult the \fIAthena Widget Set\fP or the \fPX Toolkit
-Intrinsics\fP for the each widget's list of settable resources.
+In order to specify resources, it is useful to know the hierarchy of
+the widgets which compose \fIxman\fR.  In the notation below,
+indentation indicates hierarchical structure.  The widget class name
+is given first, followed by the widget instance name.
 .sp
 .nf
 .ta .5i 1.0i 1.5i 2.0i 2.5i 3.0i 3.5i
-xman - Xman (This widget is never used)
-	topbox - TopLevelShell
-		form - Form
-			topLabel - Label
-			helpButton - Command
-			quitButton - Command
-			manpageButton - Command
-		search - TransientShell
-			dialog - DialogWidgetClass
-				label - Label
-				value - Text
-				manualPage - Command
-				apropos - Command
-				cancel - Command
-		pleaseStandBy - TransientShell
-			label - Label
-	manualBrowser - TopLevelShell
-		Manpage_Vpane - Paned
-			horizPane - Paned
-				options - MenuButton
-				sections - MenuButton
-				manualBrowser - Label
-			directory - Viewport
-				directory - List	
-				directory - List	
+Xman (This widget is never used)  xman
+	TopLevelShell  topbox
+		Form  form
+			Label  topLabel
+			Command  helpButton
+			Command  quitButton
+			Command  manpageButton
+		TransientShell  search
+			DialogWidgetClass  dialog
+				Label  label
+				Text  value
+				Command  manualPage
+				Command  apropos
+				Command  cancel
+		TransientShell  pleaseStandBy
+			Label  label
+	TopLevelShell  manualBrowser
+		Paned  Manpage_Vpane
+			Paned  horizPane
+				MenuButton  options
+				MenuButton  sections
+				Label  manualBrowser
+			Viewport  directory
+				List  directory	
+				List  directory	
 				.
 				. (one for each section, 
 				.  created "on the fly")
 				.
-			manualPage - ScrollByLine
-		optionMenu - SimpleMenu
-			displayDirectory - SmeBSB
-			displayManualPage - SmeBSB
-			help - SmeBSB
-			search - SmeBSB
-			showBothScreens - SmeBSB
-			removeThisManpage - SmeBSB
-			openNewManpage - SmeBSB
-			showVersion - SmeBSB
-			quit - SmeBSB
-		sectionMenu - SimpleMenu
-			<name of section> - SmeBSB
+			ScrollByLine  manualPage
+		SimpleMenu  optionMenu
+			SmeBSB  displayDirectory
+			SmeBSB  displayManualPage
+			SmeBSB  help
+			SmeBSB  search
+			SmeBSB  showBothScreens
+			SmeBSB  removeThisManpage
+			SmeBSB  openNewManpage
+			SmeBSB  showVersion
+			SmeBSB  quit
+		SimpleMenu  sectionMenu
+			SmeBSB  <name of section>
 			 	.
 				. (one for each section)
 				.
-		search - TransientShell
-			dialog - DialogWidgetClass
-				label - Label
-				value - Text
-				manualPage - Command
-				apropos - Command
-				cancel - Command
-		pleaseStandBy - TransientShell
-			label - Label
-		likeToSave - TransientShell
-			dialog - Dialog
-				label - Label
-				value - Text
-				yes - Command
-				no - Command
-	help - TopLevelShell
-		Manpage_Vpane - Paned
-			horizPane - Paned
-				options - MenuButton
-				sections - MenuButton
-				manualBrowser - Label
-			manualPage - ScrollByLine
-		optionMenu - SimpleMenu
-			displayDirectory - SmeBSB
-			displayManualPage - SmeBSB
-			help - SmeBSB
-			search - SmeBSB
-			showBothScreens - SmeBSB
-			removeThisManpage - SmeBSB
-			openNewManpage - SmeBSB
-			showVersion - SmeBSB
-			quit - SmeBSB
+		TransientShell  search
+			DialogWidgetClass  dialog
+				Label  label
+				Text  value
+				Command  manualPage
+				Command  apropos
+				Command  cancel
+		TransientShell  pleaseStandBy
+			Label  label
+		TransientShell  likeToSave
+			Dialog  dialog
+				Label  label
+				Text  value
+				Command  yes
+				Command  no
+	TopLevelShell  help
+		Paned  Manpage_Vpane
+			Paned  horizPane
+				MenuButton  options
+				MenuButton  sections
+				Label  manualBrowser
+			ScrollByLine  manualPage
+		SimpleMenu  optionMenu
+			SmeBSB  displayDirectory
+			SmeBSB  displayManualPage
+			SmeBSB  help
+			SmeBSB  search
+			SmeBSB  showBothScreens
+			SmeBSB  removeThisManpage
+			SmeBSB  openNewManpage
+			SmeBSB  showVersion
+			SmeBSB  quit
 
 .fi
 .SH "APPLICATION RESOURCES"
