@@ -1,4 +1,4 @@
-/* $XConsortium: cb_stru.c,v 5.2 91/07/12 20:20:57 hersh Exp $ */
+/* $XConsortium: cb_stru.c,v 5.3 92/02/05 12:16:01 mor Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -874,6 +874,9 @@ Pint	        	*tot_len;	/* OUT length of list in PHIGS	*/
 
     if ( ! CB_ENTRY_CHECK(phg_cur_cph, 0, Pfn_INQUIRY)) {
 	*error_ind = ERR2;
+
+    } else if ( ceil < 1 || ceil > sp->num_elem_refs ) {
+	*error_ind = ERR204;
 
     } else {
 	args->ref_pt = *ref;
