@@ -1,5 +1,5 @@
 /*
- * $Header: charproc.c,v 1.29 88/04/06 17:08:40 jim Exp $
+ * $Header: charproc.c,v 1.30 88/04/12 16:43:10 jim Exp $
  */
 
 
@@ -118,7 +118,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$Header: charproc.c,v 1.29 88/04/06 17:08:40 jim Exp $";
+static char rcs_id[] = "$Header: charproc.c,v 1.30 88/04/12 16:43:10 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -1864,9 +1864,6 @@ static void VTInitialize (request, new)
    /* create it, but don't realize it */
    ScrollBarOn (new, TRUE, FALSE);
 
-   new->screen.scrollbar = new->misc.scrollbar ?
-	new->screen.scrollWidget->core.width : 0;
-
    return;
 }
 
@@ -1889,6 +1886,7 @@ XSetWindowAttributes *values;
 	XSizeHints		sizehints;
 	XWMHints		wmhints;
 	extern int		VTgcFontMask;
+	int scrollbar_width;
 
 	if(failed)
 		return;
@@ -1941,7 +1939,9 @@ XSetWindowAttributes *values;
 	    }
 	}
 
-	i = 2 * screen->border + screen->scrollbar;
+	scrollbar_width = (term->misc.scrollbar ? 
+			   screen->scrollWidget->core.width : 0);
+	i = 2 * screen->border + scrollbar_width;
 	j = 2 * screen->border;
 
 
@@ -1963,7 +1963,7 @@ XSetWindowAttributes *values;
 			- height - (term->core.parent->core.border_width * 2);
 
 	/* set up size hints for window manager */
-	sizehints.min_width = 2 * screen->border + screen->scrollbar;
+	sizehints.min_width = 2 * screen->border + scrollbar_width;
 	sizehints.min_height = 2 * screen->border;
 	sizehints.width_inc = FontWidth(screen);
 	sizehints.height_inc = FontHeight(screen);
