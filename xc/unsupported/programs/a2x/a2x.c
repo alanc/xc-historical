@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.125 93/05/19 19:15:37 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.126 93/08/04 18:24:32 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -542,8 +542,22 @@ Strtol(nptr, endptr, base)
 void
 usage()
 {
-    printf("%s: [-d <display>] [-c] [-e] [-E] [-a] [-b] [-B] [-bs] [-C <char>] [-U] [-u <undofile>] [-h <keysym>] [-w <name>] [-f] [-g <geometry>] [-p]\n",
-	   progname);
+    printf("usage: %s [-display host:dpy] option ...\n", progname);
+    printf("    -c\t\t\tclears the screen at startup\n");
+    printf("    -e\t\t\techoes all characters typed (for debugging)\n");
+    printf("    -E\t\t\tforce fake echo to help DOS telnet\n");
+    printf("    -a\t\t\tuse Alt instead of Meta\n");
+    printf("    -b\t\t\tdon't translate Backspace into Delete\n");
+    printf("    -B\t\t\tPC switches Backspace and Delete\n");
+    printf("    -bs\t\t\ttranslate Backspace into BackSpace\n");
+    printf("    -C <char>\t\tmake the control sequence char control-<char>\n");
+    printf("    -U\t\t\tturn off undo interpretation\n");
+    printf("    -u <undofile>\tuse the named undo file\n");
+    printf("    -h <keysym>\t\thotkey for DESQview/X\n");
+    printf("    -w <name>\t\tname of DESQview/X DOS window\n");
+    printf("    -f\t\t\tDOS window should not receive synthetic focus\n");
+    printf("    -g <geometry>\tgeometry to make DOS window\n");
+    printf("    -p\t\t\tquery pointer position before every pointer motion\n");
     exit(1);
 }
 
@@ -2864,7 +2878,7 @@ main(argc, argv)
 		usage();
 	    control_char = controlify(**argv);
 	    control_end = control_char + '\200';
-	} else if (!strcmp(*argv, "-d")) {
+	} else if (!strcmp(*argv, "-d") || !strcmp(*argv, "-display")) {
 	    argc--; argv++;
 	    if (!argc)
 		usage();
