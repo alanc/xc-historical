@@ -1,5 +1,5 @@
 /*
- * $XConsortium: EditresCom.c,v 1.27 91/07/30 15:44:00 rws Exp $
+ * $XConsortium: EditresCom.c,v 1.28 92/11/22 09:32:46 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -1377,7 +1377,7 @@ ProtocolStream* stream;
   /* get the resource of the widget asked for by the */
   /* resource editor and insert it into the stream */
   XtSetArg(warg[0], gv_event->name, &res_value);
-  _XtGetStringValues(gv_event->widgets[0].ids[0], warg, 1);
+  /*_XtGetStringValues(gv_event->widgets[0].ids[0], warg, 1);*/
   if (!res_value) res_value = "NoValue";
   _XEditResPutString8(stream, res_value);
   return(NULL);
