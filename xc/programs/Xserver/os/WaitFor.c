@@ -64,6 +64,12 @@ extern void SaveScreens();
 
 extern int errno;
 
+#ifdef apollo
+extern long apInputMask[];
+
+static long LastWriteMask[mskcnt];
+#endif
+
 #ifdef XTESTEXT1
 /*
  * defined in xtestext1dd.c
@@ -173,6 +179,9 @@ WaitForSomething(pClientsReady)
 	else
 	    wt = NULL;
 	COPYBITS(AllSockets, LastSelectMask);
+#ifdef apollo
+        COPYBITS(apInputMask, LastWriteMask);
+#endif
 	BlockHandler((pointer)&wt, (pointer)LastSelectMask);
 	if (NewOutputPending)
 	    FlushAllOutput();
@@ -193,8 +202,13 @@ WaitForSomething(pClientsReady)
 			(int *)clientsWritable, (int *) NULL, wt);
 	}
 	else
+#ifdef apollo
+	    i = select (MAXSOCKS, (int *)LastSelectMask,
+			(int *)LastWriteMask, (int *) NULL, wt);
+#else
 	    i = select (MAXSOCKS, (int *)LastSelectMask,
 			(int *) NULL, (int *) NULL, wt);
+#endif
 	selecterr = errno;
 	WakeupHandler((unsigned long)i, (pointer)LastSelectMask);
 #ifdef XTESTEXT1
