@@ -1,5 +1,5 @@
 /*
-** $XConsortium$
+** $XConsortium: tests.c,v 1.18 91/04/03 20:35:51 gildea Exp $
 **
 */
 
@@ -135,8 +135,15 @@ copyplane_test()
   long totaltime;
   char buf[80];
 
+  if(!X.gcv.plane_mask || (X.gcv.plane_mask & (X.gcv.plane_mask - 1))) {
+    show_result("exactly one bit in plane mask must be set for this test");
+    return;
+  }
+
+
   num_copies *= X.percent;
 
+  XSetPlaneMask(X.dpy, X.gc, ~0L);
   XSetFillStyle(X.dpy,X.miscgc,FillTiled);
   XFillRectangle(X.dpy,X.win,X.miscgc,0,0,400,400);
 
@@ -147,6 +154,7 @@ copyplane_test()
 	      200,200,200-i,i,X.gcv.plane_mask);
   XSync(X.dpy,0);
   totaltime = timer(EndTimer);
+  XSetPlaneMask(X.dpy, X.gc, X.gcv.plane_mask);
 
   sprintf(buf,"%.2f seconds.",(double)totaltime/1000000.);
   show_result(buf);
