@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.134 89/09/29 12:09:58 swick Exp $";
+static char Xrcsid[] = "$XConsortium: SetValues.c,v 1.1 89/09/29 14:01:50 swick Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -246,24 +246,14 @@ void XtSetValues(w, args, num_args)
             if (redisplay && XtIsRealized(w))
                 XClearArea (XtDisplay(w), XtWindow(w), 0, 0, 0, 0, TRUE);
         } else { /*non-window object */
-	  if (redisplay || reconfigured) {
-	      Widget pw = w;
-	      RectObj r = (RectObj) oldw;
-	      while ((pw!=NULL) && ( ! XtIsWidget(pw) ))
-		  pw = pw->core.parent;
-	      if ((pw!=NULL) && XtIsRealized (pw)) {
+	  if (redisplay && ! reconfigured) {
+	      Widget pw = _XtWindowedAncestor(w);
+	      if (XtIsRealized(pw)) {
+		  RectObj r = (RectObj)w;
 		  int bw2 = r->rectangle.border_width << 1;
 		  XClearArea (XtDisplay (pw), XtWindow (pw),
 		      r->rectangle.x, r->rectangle.y,
 		      r->rectangle.width + bw2,r->rectangle.height + bw2,TRUE);
-		  if (reconfigured) {
-		      r = (RectObj) w;
-		      bw2 = r->rectangle.border_width << 1;
-		      XClearArea (XtDisplay (pw), XtWindow (pw),
-			  r->rectangle.x,r->rectangle.y,
-			  r->rectangle.width + bw2,r->rectangle.height + bw2,
-			  TRUE);
-		  }
 	      }
 	  }
         }
