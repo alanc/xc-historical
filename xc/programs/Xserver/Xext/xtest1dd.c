@@ -1,4 +1,4 @@
-/* $XConsortium: mbuf.c,v 1.20 94/01/07 09:45:59 dpw Exp $ */
+/* $XConsortium: xtest1dd.c,v 1.10 94/02/23 16:55:41 dpw Exp $ */
 /*
  *	File: xtest1dd.c
  *
@@ -774,7 +774,7 @@ XTestStealKeyData(keycode, keystate, dev_type, locx, locy)
 /*
  * which key/button moved
  */
-u_char	keycode;
+CARD8	keycode;
 /*
  * whether the key/button was pressed or released
  */
@@ -1605,5 +1605,5 @@ ClientPtr	client;
 	rep.size_return = ACTION_ARRAY_SIZE;
 	WriteReplyToClient(client,
 			   sizeof(xTestQueryInputSizeReply),
-			   (caddr_t) &rep);		
+			   (pointer) &rep);		
 }		
