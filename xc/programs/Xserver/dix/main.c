@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: main.c,v 1.117 87/08/21 15:26:54 toddb Locked $ */
+/* $Header: main.c,v 1.120 87/08/29 21:12:15 drewry Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -206,10 +206,12 @@ main(argc, argv)
 	Dispatch();
 
 	/* Now free up whatever must be freed */
+	CloseDownExtensions();
 	FreeAllResources();
 	for ( i = 0; i < screenInfo.numScreens; i++)
         {
 	    FreeGCperDepth(i);
+	    FreeDefaultStipple(i);
 	}
 	CloseDownDevices(argc, argv);
 	for (i = 0; i < screenInfo.numScreens; i++)
@@ -397,9 +399,6 @@ AddScreen(pfnInit, argc, argv)
 	    screenInfo.arraySize * sizeof(ScreenRec));
     }
 
-    for (j = 0; j < MAXFORMATS+1; j++)
- 	screenInfo.screen[i].GCperDepth[j] = (GCPtr)NULL;
-
 #ifdef DEBUG
 	    for (jNI = &screenInfo.screen[i].QueryBestSize; 
 		 jNI < (void (**) ()) &screenInfo.screen[i].RegionExtents; 
@@ -412,7 +411,7 @@ AddScreen(pfnInit, argc, argv)
      * This loop gets run once for every Screen that gets added,
      * but thats ok.  If the ddx layer initializes the formats
      * one at a time calling AddScreen() after each, then each
-     * iteration will make it a little more acurate.  Worst case
+     * iteration will make it a little more accurate.  Worst case
      * we do this loop N * numPixmapFormats where N is # of screens.
      * Anyway, this must be called after InitOutput and before the
      * screen init routine is called.
@@ -437,10 +436,12 @@ AddScreen(pfnInit, argc, argv)
        multiple screens. 
     */ 
     screenInfo.screen[i].rgf = ~0;  /* there are no scratch GCs yet*/
+    screenInfo.screen[i].myNum = i;
     if ((*pfnInit)(i, &screenInfo.screen[i], argc, argv))
     {
 	screenInfo.numScreens++;
         CreateGCperDepthArray(i);
+	CreateDefaultStipple(i);
     }
     else
 	ErrorF("screen %d failed initialization\n", i);
