@@ -7,8 +7,8 @@
           SRCS2 = xcutsel.c
           OBJS2 = xcutsel.o
        PROGRAMS = xclipboard xcutsel
-        DEPLIBS = $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
-LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
+        DEPLIBS = XawClientDepLibs
+LOCAL_LIBRARIES = XawClientLibs
 
 ComplexProgramTarget_1(xclipboard,$(LOCAL_LIBRARIES),/**/)
 ComplexProgramTarget_2(xcutsel,$(LOCAL_LIBRARIES),/**/)

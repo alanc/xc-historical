@@ -5,7 +5,7 @@
 # 
 #  xman - X window system manual page display program.
 # 
-#  $XConsortium: Imakefile,v 1.11 89/10/03 15:57:43 kit Exp $
+#  $XConsortium: Imakefile,v 1.12 89/10/09 09:44:56 rws Exp $
 #  $Athena: Imakefile,v 1.1 88/08/31 21:11:32 kit Locked $
 # 
 #  Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -26,8 +26,8 @@
 #  Original idea borrowed from an X10 implementation created by Barry Shein
 #
         DEFINES = -DHELPFILE=\"$(LIBDIR)$(PATHSEP)xman.help\"
-        DEPLIBS = $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
-LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
+        DEPLIBS = XawClientDepLibs
+LOCAL_LIBRARIES = XawClientLibs
            SRCS = ScrollByL.c handler.c man.c buttons.c help.c \
                   search.c globals.c main.c misc.c tkfuncs.c
            OBJS = ScrollByL.o handler.o man.o buttons.o help.o \

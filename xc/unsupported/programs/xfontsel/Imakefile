@@ -1,6 +1,7 @@
            SRCS = xfontsel.c
            OBJS = xfontsel.o
-LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
+        DEPLIBS = XawClientDepLibs
+LOCAL_LIBRARIES = XawClientLibs
 
 ComplexProgramTarget(xfontsel)
 

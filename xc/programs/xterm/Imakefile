@@ -46,10 +46,10 @@
           SRCS2 = resize.c
           OBJS2 = resize.o
        PROGRAMS = resize xterm
-       DEPLIBS1 = $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
+       DEPLIBS1 = XawClientDepLibs
        DEPLIBS2 = 
 
-ComplexProgramTarget_1(xterm,$(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB),-ltermcap $(PTYLIB))
+ComplexProgramTarget_1(xterm,XawClientLibs,-ltermcap $(PTYLIB))
 SpecialObjectRule(main.o,,$(MAIN_DEFINES))
 
 SingleProgramTarget(resize,$(OBJS2),,-ltermcap)
