@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: WaitFor.c,v 1.50 91/02/14 19:36:26 keith Exp $ */
+/* $XConsortium: WaitFor.c,v 1.51 91/02/20 09:16:47 rws Exp $ */
 
 /*****************************************************************
  * OS Depedent input routines:
@@ -269,8 +269,7 @@ WaitForSomething(pClientsReady)
     return nready;
 }
 
-/* XXX should be if (mskcnt>4), but font server says otherwise */
-#if (NOFILE>128)
+#if (mskcnt>4)
 #ifdef ANYSET
 #undef ANYSET
 #endif
