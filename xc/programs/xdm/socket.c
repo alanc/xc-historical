@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: socket.c,v 1.26 91/05/06 23:53:43 gildea Exp $
+ * $XConsortium: socket.c,v 1.27 91/07/15 15:58:55 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -25,13 +25,14 @@
 #include "dm.h"
 
 #ifdef XDMCP
+#ifndef STREAMSCONN
 
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <sys/un.h>
 #include <netdb.h>
 
-extern int	socketFd;
+extern int	xdmcpFd;
 extern int	chooserFd;
 
 extern FD_TYPE	WellKnownSocketsMask;
@@ -45,28 +46,28 @@ CreateWellKnownSockets ()
     if (request_port == 0)
 	    return;
     Debug ("creating socket %d\n", request_port);
-    socketFd = socket (AF_INET, SOCK_DGRAM, 0);
-    if (socketFd == -1) {
+    xdmcpFd = socket (AF_INET, SOCK_DGRAM, 0);
+    if (xdmcpFd == -1) {
 	LogError ("socket creation failed\n");
 	return;
     }
     name = localHostname ();
     registerHostname (name, strlen (name));
-    RegisterCloseOnFork (socketFd);
+    RegisterCloseOnFork (xdmcpFd);
     /* zero out the entire structure; this avoids 4.4 incompatibilities */
     bzero ((char *) &sock_addr, sizeof (sock_addr));
     sock_addr.sin_family = AF_INET;
     sock_addr.sin_port = htons ((short) request_port);
     sock_addr.sin_addr.s_addr = htonl (INADDR_ANY);
-    if (bind (socketFd, &sock_addr, sizeof (sock_addr)) == -1)
+    if (bind (xdmcpFd, &sock_addr, sizeof (sock_addr)) == -1)
     {
 	LogError ("error binding socket address %d\n", request_port);
-	close (socketFd);
-	socketFd = -1;
+	close (xdmcpFd);
+	xdmcpFd = -1;
 	return;
     }
-    WellKnownSocketsMax = socketFd;
-    FD_SET (socketFd, &WellKnownSocketsMask);
+    WellKnownSocketsMax = xdmcpFd;
+    FD_SET (xdmcpFd, &WellKnownSocketsMask);
 
     chooserFd = socket (AF_INET, SOCK_STREAM, 0);
     Debug ("Created chooser socket %d\n", chooserFd);
@@ -88,4 +89,5 @@ GetChooserAddr (addr, lenp)
     return getsockname (chooserFd, addr, lenp);
 }
 
+#endif /* !STREAMSCONN */
 #endif /* XDMCP */
