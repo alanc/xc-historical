@@ -15,8 +15,6 @@
 #include    <servermd.h>
 #include    "mipointer.h"
 
-extern void ProcessInputEvents();
-
 /*
  * The following struct is from win_cursor.h.  This file can't be included 
  * directly, because it drags in all of the SunView attribute stuff along 
@@ -62,3 +60,35 @@ sunInitCursor ()
 #endif SUN_WINDOWS
     }
 }
+
+
+#ifdef SUN_WINDOWS
+/*
+ * We need to find out when dix warps the mouse so we can
+ * keep SunWindows in sync.
+ */
+
+Bool (*realSetCursorPosition)();
+extern int sunIgnoreEvent;
+
+
+Bool
+sunSetCursorPosition(pScreen, x, y, generateEvent)
+	ScreenPtr pScreen;
+	int x, y;
+	Bool generateEvent;
+{
+	(*realSetCursorPosition)(pScreen, x, y, generateEvent);
+	if (sunUseSunWindows())
+	    if (!sunIgnoreEvent)
+		win_setmouseposition(windowFd, x, y);
+	return TRUE;
+}
+#endif
+
+
+
+
+
+
+
