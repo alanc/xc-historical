@@ -1,5 +1,5 @@
 /* 
- * $XConsortium: xset.c,v 1.67 94/03/04 18:06:25 rws Exp $ 
+ * $XConsortium: xset.c,v 1.68 94/04/17 20:24:16 rws Exp mor $ 
  */
 
 /*
@@ -29,7 +29,7 @@ in this Software without prior written authorization from the X Consortium.
 
 */
 
-/* $XConsortium: xset.c,v 1.67 94/03/04 18:06:25 rws Exp $ */
+/* $XConsortium: xset.c,v 1.68 94/04/17 20:24:16 rws Exp mor $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -67,6 +67,8 @@ in this Software without prior written authorization from the X Consortium.
 		break; \
 
 char *progName;
+
+int error_status = 0;
 
 int local_xerror();
 
@@ -426,7 +428,7 @@ if (numpixels)
 
 XCloseDisplay (dpy);
 
-exit(0);    /*  Done.  We can go home now.  */
+exit(error_status);    /*  Done.  We can go home now.  */
 }
 
 
@@ -1006,5 +1008,8 @@ int local_xerror (dpy, rep)
 	}
     } else
 	XmuPrintDefaultErrorMessage (dpy, rep, stderr);
+
+    error_status = -1;
+
     return (0);
 }
