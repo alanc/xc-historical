@@ -1,4 +1,4 @@
-/* $XConsortium: Atoms.c,v 1.12 90/12/19 18:19:19 converse Exp $
+/* $XConsortium: Atoms.c,v 1.13 90/12/19 19:58:30 converse Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -35,7 +35,7 @@
  */
 
 #include <X11/Intrinsic.h>
-#include <X11/Xmu/Atoms.h>
+#include "Atoms.h"
 
 typedef struct _DisplayRec {
     struct _DisplayRec* next;
