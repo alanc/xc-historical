@@ -1,10 +1,20 @@
 #include "copyright.h"
 
-/* $XConsortium: XImText16.c,v 11.13 87/09/01 14:52:38 toddb Exp $ */
+/* $XConsortium: XImText16.c,v 11.14 88/09/06 16:08:40 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
 
+#if NeedFunctionPrototypes
+XDrawImageString16(
+    register Display *dpy,
+    Drawable d,
+    GC gc,
+    int x,
+    int y,
+    const XChar2b *string,
+    int length)
+#else
 XDrawImageString16(dpy, d, gc, x, y, string, length)
     register Display *dpy;
     Drawable d;
@@ -12,9 +22,10 @@ XDrawImageString16(dpy, d, gc, x, y, string, length)
     int x, y;
     XChar2b *string;
     int length;
+#endif
 {   
     register xImageText16Req *req;
-    XChar2b *CharacterOffset = string;
+    XChar2b *CharacterOffset = (XChar2b *)string;
     int FirstTimeThrough = True;
     int lastX = 0;
 
