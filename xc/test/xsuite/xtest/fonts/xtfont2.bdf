@@ -1,4 +1,5 @@
 STARTFONT 2.1
+COMMENT $XConsortium$
 COMMENT Selected parts of the font found on the X distribution for testing
 COMMENT the 2 byte fonts.
 COMMENT characters in the ranges:

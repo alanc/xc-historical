@@ -1,4 +1,5 @@
 STARTFONT 2.1
+COMMENT $XConsortium$
 COMMENT xtfont6 - 16 byte font. variable width, reverse, chars (0,0)-(1,255)
 COMMENT Based on t7 font tf16_varrv:
 COMMENT Created by onxtobdf

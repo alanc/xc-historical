@@ -1,4 +1,5 @@
 STARTFONT 2.1
+COMMENT $XConsortium$
 COMMENT xtfont1 - font with chars: 0-127
 COMMENT Based on font from X distribution:
 COMMENT  Designed by Stephen Gildea <gildea@bbn.com> from original designs

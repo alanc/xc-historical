@@ -1,4 +1,5 @@
 STARTFONT 2.1
+COMMENT $XConsortium$
 COMMENT  xtfont5 - font with large characters, chars 0-3
 COMMENT Based on t7 font tf_big3:
 COMMENT        This font describes a few fairly big characters.
