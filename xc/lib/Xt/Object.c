@@ -1,4 +1,4 @@
-/* $XConsortium: Object.c,v 1.20 93/08/27 16:29:33 kaleb Exp $ */
+/* $XConsortium: Object.c,v 1.21 93/10/06 17:31:44 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -220,8 +220,6 @@ static void ObjectDestroy (widget)
 	    ((char *) widget - (*offsets)->xrm_offset - 1);
 	if (cl) XtFree((char *) cl);
     }
-
-    XtFree((char *) widget);
     UNLOCK_PROCESS;
 } /* ObjectDestroy */
 
