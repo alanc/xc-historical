@@ -2,22 +2,23 @@
  * generic imake template
  */
 
-/**/###########################################################################
-/**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.80 90/06/30 18:22:38 rws Exp $
-/**/#
-/**/# Platform-specific parameters may be set in the appropriate .cf
-/**/# configuration files.  Site-wide parameters may be set in the file
-/**/# site.def.  Full rebuilds are recommended if any parameters are changed.
-/**/#
-/**/# If your C preprocessor does not define any unique symbols, you will need
-/**/# to set BOOTSTRAPCFLAGS when rebuilding imake (usually when doing
-/**/# "make Makefile", "make Makefiles", or "make World").
-/**/#
-/**/# If you absolutely cannot get imake to work, you will need to set the 
-/**/# variables at the top of each Makefile as well as the dependencies at the
-/**/# bottom (makedepend will do this automatically).
-/**/#
+#define XCOMM #
+XCOMM -------------------------------------------------------------------------
+XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
+XCOMM $XConsortium: Imake.tmpl,v 1.81 90/07/11 08:27:41 rws Exp $
+XCOMM
+XCOMM Platform-specific parameters may be set in the appropriate .cf
+XCOMM configuration files.  Site-wide parameters may be set in the file
+XCOMM site.def.  Full rebuilds are recommended if any parameters are changed.
+XCOMM
+XCOMM If your C preprocessor does not define any unique symbols, you will need
+XCOMM to set BOOTSTRAPCFLAGS when rebuilding imake (usually when doing
+XCOMM "make Makefile", "make Makefiles", or "make World").
+XCOMM
+XCOMM If you absolutely cannot get imake to work, you will need to set the 
+XCOMM variables at the top of each Makefile as well as the dependencies at the
+XCOMM bottom (makedepend will do this automatically).
+XCOMM
 
 
 #define	YES	1
@@ -192,8 +193,8 @@
 #endif
 
 #ifndef MacroIncludeFile
-/**/# WARNING:  Imake.tmpl not configured; guessing at definitions!!!
-/**/# This might mean that BOOTSTRAPCFLAGS was not set when building imake.
+XCOMM WARNING:  Imake.tmpl not configured; guessing at definitions!!!
+XCOMM This might mean that BOOTSTRAPCFLAGS was not set when building imake.
 #define MacroIncludeFile <generic.cf>
 #define MacroFile generic.cf
 #endif
@@ -205,8 +206,8 @@
  *****************************************************************************/
 
 
-/**/###########################################################################
-/**/# platform-specific configuration parameters - edit MacroFile to change
+XCOMM -------------------------------------------------------------------------
+XCOMM platform-specific configuration parameters - edit MacroFile to change
 #include MacroIncludeFile
 
 /* It is a kludge to put these two macros here,
@@ -235,8 +236,8 @@
 #endif
 #endif
 
-/**/###########################################################################
-/**/# site-specific configuration parameters - edit site.def to change
+XCOMM -------------------------------------------------------------------------
+XCOMM site-specific configuration parameters - edit site.def to change
 #include <site.def>
 
 /*
@@ -704,12 +705,12 @@
 
 #include <Imake.rules>
 
-/**/###########################################################################
-/**/# start of Imakefile
+XCOMM -------------------------------------------------------------------------
+XCOMM start of Imakefile
 #include INCLUDE_IMAKEFILE
 
-/**/###########################################################################
-/**/# common rules for all Makefiles - do not edit
+XCOMM -------------------------------------------------------------------------
+XCOMM common rules for all Makefiles - do not edit
 /*
  * These need to be here so that rules in Imakefile occur first;  the blank
  * all is to make sure that an empty Imakefile does not default to make clean.
@@ -729,16 +730,16 @@ MakefileAdditions()
 
 #if HasSaberC
 saber:
-	/**/#load $(ALLDEFINES) $(SRCS)
+	XCOMM load $(ALLDEFINES) $(SRCS)
 
 osaber:
-	/**/#load $(ALLDEFINES) $(OBJS)
+	XCOMM load $(ALLDEFINES) $(OBJS)
 #endif
 
 
 #ifdef IHaveSubdirs
-/**/###########################################################################
-/**/# rules for building in SUBDIRS - do not edit
+XCOMM -------------------------------------------------------------------------
+XCOMM rules for building in SUBDIRS - do not edit
 
 InstallSubdirs($(SUBDIRS))
 InstallManSubdirs($(SUBDIRS))
@@ -748,8 +749,8 @@ MakefileSubdirs($(SUBDIRS))
 IncludesSubdirs($(SUBDIRS))
 
 #else
-/**/###########################################################################
-/**/# empty rules for directories that do not have SUBDIRS - do not edit
+XCOMM -------------------------------------------------------------------------
+XCOMM empty rules for directories that do not have SUBDIRS - do not edit
 
 install::
 	@echo "install in $(CURRENT_DIR) done"
@@ -763,5 +764,5 @@ includes::
 
 #endif /* if subdirectory rules are needed */
 
-/**/###########################################################################
-/**/# dependencies generated by makedepend
+XCOMM -------------------------------------------------------------------------
+XCOMM dependencies generated by makedepend
