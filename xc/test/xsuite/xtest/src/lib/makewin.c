@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: makewin.c,v 1.16 92/06/11 15:42:12 rws Exp $
  */
 
 #include	"stdlib.h"
@@ -128,6 +128,7 @@ char	*dboride;
 		break;
 	}
 
+	regid(disp, (union regtypes *) &cmap, REG_COLORMAP);
 	atts.colormap = cmap;
 
 	w = XCreateWindow(disp
