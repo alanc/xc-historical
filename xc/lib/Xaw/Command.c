@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Command.c,v 1.49 89/03/30 16:53:29 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Command.c,v 1.50 89/05/11 01:04:56 kit Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -32,19 +32,12 @@ SOFTWARE.
  *
  */
 
-#define XtStrlen(s)	((s) ? strlen(s) : 0)
-
-  /* The following are defined for the reader's convenience.  Any
-     Xt..Field macro in this code just refers to some field in
-     one of the substructures of the WidgetRec.  */
-
 #include <stdio.h>
-#include <ctype.h>
+/* #include <ctype.h> */
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 #include <X11/Xmu/Misc.h>
 #include <X11/Xaw/CommandP.h>
-#include "CommandI.h"
 
 /****************************************************************
  *
@@ -69,6 +62,19 @@ static XtResource resources[] = {
       offset(command.highlight_thickness), XtRImmediate, (caddr_t)2},
 };
 #undef offset
+
+static void Initialize();
+static void Redisplay();
+static Boolean SetValues();
+static void Set();
+static void Reset();
+static void Notify();
+static void Unset();
+static void Highlight();
+static void Unhighlight();
+static void Unset();
+static void Destroy();
+static void PaintCommandWidget();
 
 static XtActionsRec actionsList[] =
 {
@@ -147,64 +153,75 @@ WidgetClass commandWidgetClass = (WidgetClass) &commandClassRec;
  *
  ****************************************************************/
 
-static GC Get_GC(cbw, fg, bg)
-    CommandWidget cbw;
-    Pixel fg, bg;
+static GC 
+Get_GC(cbw, fg, bg)
+CommandWidget cbw;
+Pixel fg, bg;
 {
-    XGCValues	values;
-
-    values.foreground   = fg;
-    values.background	= bg;
-    values.font		= ComWfont->fid;
-    values.line_width   = ComWhighlightThickness > 1
-			  ? ComWhighlightThickness : 0;
-
-    return XtGetGC((Widget)cbw,
-		   GCForeground | GCBackground | GCFont | GCLineWidth,
-		   &values);
+  XGCValues	values;
+  
+  values.foreground   = fg;
+  values.background	= bg;
+  values.font		= cbw->label.font->fid;
+  
+  if (cbw->command.highlight_thickness > 1 )
+    values.line_width   = cbw->command.highlight_thickness;
+  else 
+    values.line_width   = 0;
+  
+  return XtGetGC((Widget)cbw,
+		 GCForeground | GCBackground | GCFont | GCLineWidth,
+		 &values);
 }
 
 
 /* ARGSUSED */
-static void Initialize(request, new)
- Widget request, new;
+static void 
+Initialize(request, new)
+Widget request, new;
 {
-    CommandWidget cbw = (CommandWidget) new;
+  CommandWidget cbw = (CommandWidget) new;
+  
+  cbw->command.normal_GC = Get_GC(cbw, cbw->label.foreground, 
+				  cbw->core.background_pixel);
+  cbw->command.inverse_GC = Get_GC(cbw, cbw->core.background_pixel, 
+				   cbw->label.foreground);
+  XtReleaseGC(new, cbw->label.normal_GC);
+  cbw->label.normal_GC = cbw->command.normal_GC;
 
-    ComWnormalGC = Get_GC(cbw, ComWforeground, ComWbackground);
-    ComWinverseGC = Get_GC(cbw, ComWbackground, ComWforeground);
-    XtReleaseGC(new, ComWlabelGC);
-    ComWlabelGC = ComWnormalGC;
-
-    ComWset = FALSE;
-    ComWhighlighted = HighlightNone;
+  cbw->command.set = FALSE;
+  cbw->command.highlighted = HighlightNone;
 }
 
-static Region HighlightRegion(cbw)
-    CommandWidget cbw;
+static Region 
+HighlightRegion(cbw)
+CommandWidget cbw;
 {
-    static Region outerRegion = NULL, innerRegion, emptyRegion;
-    XRectangle rect;
+  static Region outerRegion = NULL, innerRegion, emptyRegion;
+  XRectangle rect;
 
-    if (outerRegion == NULL) {
-	/* save time by allocating scratch regions only once. */
-	outerRegion = XCreateRegion();
-	innerRegion = XCreateRegion();
-	emptyRegion = XCreateRegion();
-    }
+  if (cbw->command.highlight_thickness > Min(cbw->core.width,
+					     cbw->core.height)/2)
+    return(NULL);
 
-    rect.x = rect.y = 0;
-    rect.width = cbw->core.width;
-    rect.height = cbw->core.height;
-    XUnionRectWithRegion( &rect, emptyRegion, outerRegion );
-    rect.x = rect.y = ComWhighlightThickness;
-    rect.width -= ComWhighlightThickness * 2;
-    rect.height -= ComWhighlightThickness * 2;
-    XUnionRectWithRegion( &rect, emptyRegion, innerRegion );
-    XSubtractRegion( outerRegion, innerRegion, outerRegion );
-    return outerRegion;
+  if (outerRegion == NULL) {
+    /* save time by allocating scratch regions only once. */
+    outerRegion = XCreateRegion();
+    innerRegion = XCreateRegion();
+    emptyRegion = XCreateRegion();
+  }
+
+  rect.x = rect.y = 0;
+  rect.width = cbw->core.width;
+  rect.height = cbw->core.height;
+  XUnionRectWithRegion( &rect, emptyRegion, outerRegion );
+  rect.x = rect.y = cbw->command.highlight_thickness;
+  rect.width -= cbw->command.highlight_thickness * 2;
+  rect.height -= cbw->command.highlight_thickness * 2;
+  XUnionRectWithRegion( &rect, emptyRegion, innerRegion );
+  XSubtractRegion( outerRegion, innerRegion, outerRegion );
+  return outerRegion;
 }
-
 
 /***************************
 *
@@ -213,107 +230,120 @@ static Region HighlightRegion(cbw)
 ***************************/
 
 /* ARGSUSED */
-static void Set(w,event,params,num_params)
-     Widget w;
-     XEvent *event;
-     String *params;		/* unused */
-     Cardinal *num_params;	/* unused */
+static void 
+Set(w,event,params,num_params)
+Widget w;
+XEvent *event;
+String *params;		/* unused */
+Cardinal *num_params;	/* unused */
 {
   CommandWidget cbw = (CommandWidget)w;
-  if (!ComWset) {
-      ComWset = TRUE;
-      ComWlabelGC = ComWinverseGC;
-      if (XtIsRealized(w))
-	Redisplay(w, (XEvent *) NULL, (Region) NULL);
+
+  if (cbw->command.set)
+    return;
+
+  cbw->command.set= TRUE;
+  if (XtIsRealized(w))
+    PaintCommandWidget(w, (Region) NULL, TRUE);
+}
+
+/* ARGSUSED */
+static void
+Unset(w,event,params,num_params)
+Widget w;
+XEvent *event;
+String *params;		/* unused */
+Cardinal *num_params;
+{
+  CommandWidget cbw = (CommandWidget)w;
+
+  if (!cbw->command.set)
+    return;
+
+  cbw->command.set = FALSE;
+  if (XtIsRealized(w)) {
+    XClearWindow(XtDisplay(w), XtWindow(w));
+    PaintCommandWidget(w, (Region) NULL, TRUE);
   }
 }
 
 /* ARGSUSED */
-static void Unset(w,event,params,num_params)
-     Widget w;
-     XEvent *event;
-     String *params;		/* unused */
-     Cardinal *num_params;
+static void 
+Reset(w,event,params,num_params)
+Widget w;
+XEvent *event;
+String *params;		/* unused */
+Cardinal *num_params;   /* unused */
 {
   CommandWidget cbw = (CommandWidget)w;
-  if (ComWset) {
-      ComWset = FALSE;
-      ComWlabelGC = ComWnormalGC;
-      if (XtIsRealized(w))
-	XClearArea(XtDisplay(w), XtWindow(w), 0, 0, 
-		   w->core.width, w->core.height, TRUE);
+
+  if (cbw->command.set) {
+    cbw->command.highlighted = HighlightNone;
+    Unset(w, event, params, num_params);
   }
+  else
+    Unhighlight(w, event, params, num_params);
 }
 
 /* ARGSUSED */
-static void Reset(w,event,params,num_params)
-     Widget w;
-     XEvent *event;
-     String *params;		/* unused */
-     Cardinal *num_params;
+static void 
+Highlight(w,event,params,num_params)
+Widget w;
+XEvent *event;
+String *params;		
+Cardinal *num_params;	
 {
   CommandWidget cbw = (CommandWidget)w;
-  if (ComWset) {
-      ComWhighlighted = HighlightNone;
-      Unset(w,event,params,num_params);
-  }
-  else {
-      Unhighlight(w,event,params,num_params);
-  }
-}
 
-/* ARGSUSED */
-static void Highlight(w,event,params,num_params)
-     Widget w;
-     XEvent *event;
-     String *params;		
-     Cardinal *num_params;	
-{
-  CommandWidget cbw = (CommandWidget)w;
   if ( *num_params == (Cardinal) 0) 
-    ComWhighlighted = HighlightWhenUnset;
+    cbw->command.highlighted = HighlightWhenUnset;
   else {
     if ( *num_params != (Cardinal) 1) 
       XtWarning("Too many parameters passed to highlight action table.");
     switch (params[0][0]) {
     case 'A':
     case 'a':
-      ComWhighlighted = HighlightAlways;
+      cbw->command.highlighted = HighlightAlways;
       break;
     default:
-      ComWhighlighted = HighlightWhenUnset;
+      cbw->command.highlighted = HighlightWhenUnset;
       break;
     }
   }
 
   if (XtIsRealized(w))
-    Redisplay(w, (XEvent *) NULL, HighlightRegion(cbw));
+    PaintCommandWidget(w, HighlightRegion(cbw), TRUE);
 }
 
 /* ARGSUSED */
-static void Unhighlight(w,event,params,num_params)
-     Widget w;
-     XEvent *event;
-     String *params;		/* unused */
-     Cardinal *num_params;	/* unused */
+static void 
+Unhighlight(w,event,params,num_params)
+Widget w;
+XEvent *event;
+String *params;		/* unused */
+Cardinal *num_params;	/* unused */
 {
   CommandWidget cbw = (CommandWidget)w;
-  ComWhighlighted = HighlightNone;
+
+  cbw->command.highlighted = HighlightNone;
   if (XtIsRealized(w))
-    Redisplay(w, (XEvent *) NULL, HighlightRegion(cbw));
+    PaintCommandWidget(w, HighlightRegion(cbw), TRUE);
 }
 
 /* ARGSUSED */
-static void Notify(w,event,params,num_params)
-     Widget w;
-     XEvent *event;
-     String *params;		/* unused */
-     Cardinal *num_params;	/* unused */
+static void 
+Notify(w,event,params,num_params)
+Widget w;
+XEvent *event;
+String *params;		/* unused */
+Cardinal *num_params;	/* unused */
 {
   CommandWidget cbw = (CommandWidget)w; 
-  if (ComWset)              /*  Why is this code here??? */
+
+  if (cbw->command.set)              /*  Why is this code here??? */
     XtCallCallbacks(w, XtNcallback, NULL);
 }
+
 /*
  * Repaint the widget window
  */
@@ -325,119 +355,134 @@ static void Notify(w,event,params,num_params)
 ************************/
 
 /* ARGSUSED */
-static void Redisplay(w, event, region)
-    Widget w;
-    XEvent *event;
-    Region region;
+static void 
+Redisplay(w, event, region)
+Widget w;
+XEvent *event;
+Region region;
 {
-   CommandWidget cbw = (CommandWidget) w;
-   Boolean very_thick = ComWhighlightThickness > Min(ComWwidth,ComWheight)/2;
-   GC norm_gc, rev_gc;
+  PaintCommandWidget(w, region, FALSE);
+}
 
-/* 
- * This should probabally be more sophisticated, but it works. 
- *
- * Current behavior causesd the command widget to be less efficient when
- * set.
+/*	Function Name: PaintCommandWidget
+ *	Description: Paints the command widget.
+ *	Arguments: w - the command widget.
+ *                 region - region to paint (passed to the superclass).
+ *                 change - did it change either set or highlight state?
+ *	Returns: none
  */
+
+static void 
+PaintCommandWidget(w, region, change)
+Widget w;
+Region region;
+Boolean change;
+{
+  CommandWidget cbw = (CommandWidget) w;
+  Boolean very_thick;
+  GC norm_gc, rev_gc;
    
-   if (ComWset) {
-     XFillRectangle(XtDisplay(w), XtWindow(w), ComWnormalGC,
-		    0, 0, ComWwidth, ComWheight);
-     region = NULL;
-   }
+  very_thick = cbw->command.highlight_thickness > Min(cbw->core.width,
+						      cbw->core.height)/2;
 
-   if (ComWhighlightThickness > 0) {
-     switch (ComWhighlighted) {
-     case HighlightNone:
-       if (ComWset) {
-	 norm_gc = ComWinverseGC;
-	 rev_gc = ComWnormalGC;
-       }
-       else {
-	 norm_gc = ComWnormalGC;
-	 rev_gc = ComWinverseGC;
-       }
-       break;
-     case HighlightWhenUnset:
-     case HighlightAlways:
-       if (ComWset) {
-	 norm_gc = ComWnormalGC;
-	 rev_gc = ComWinverseGC;
-       }
-       else {
-	 norm_gc = ComWinverseGC;
-	 rev_gc = ComWnormalGC;
-       }
-       break;
-     default:
-       XtError("Unknown Highlight state in Command Widget Redisplay.\n");
-     }
-     if ( !((ComWhighlighted == HighlightWhenUnset) && ComWset) ) {
-       if (very_thick) {
-	 ComWlabelGC = norm_gc;
-	 XFillRectangle(XtDisplay(w),XtWindow(w), rev_gc,
-			0, 0, ComWwidth, ComWheight);
-       }
-       else {
-	 /* wide lines are centered on the path, so indent it */
-	 int offset = ComWhighlightThickness/2;
-	 XDrawRectangle(XtDisplay(w),XtWindow(w), rev_gc, offset,
-			offset, ComWwidth - ComWhighlightThickness,
-			ComWheight - ComWhighlightThickness);
-       }
-     }
-   }
+  cbw->label.normal_GC = cbw->command.normal_GC;
 
-   (*SuperClass->core_class.expose) (w, event, region);
+  if (cbw->command.set) {
+    cbw->label.normal_GC = cbw->command.inverse_GC;
+    XFillRectangle(XtDisplay(w), XtWindow(w), cbw->command.normal_GC,
+		   0, 0, cbw->core.width, cbw->core.height);
+    region = NULL;		/* Force label to repaint text. */
+  }
+
+  if (cbw->command.highlight_thickness <= 0)
+    (*SuperClass->core_class.expose) (w, (XEvent *) NULL, region);
+
+/*
+ * If we are set then use the same colors as if we are not highlighted. 
+ */
+
+  if (cbw->command.set == (cbw->command.highlighted == HighlightNone)) {
+    norm_gc = cbw->command.inverse_GC;
+    rev_gc = cbw->command.normal_GC;
+  }
+  else {
+    norm_gc = cbw->command.normal_GC;
+    rev_gc = cbw->command.inverse_GC;
+  }
+
+  if ( !( (!change && (cbw->command.highlighted == HighlightNone)) ||
+	  ((cbw->command.highlighted == HighlightWhenUnset) &&
+	   (cbw->command.set))) ) {
+    if (very_thick) {
+      cbw->label.normal_GC = norm_gc; /* Give the label the right GC. */
+      XFillRectangle(XtDisplay(w),XtWindow(w), rev_gc,
+		     0, 0, cbw->core.width, cbw->core.height);
+    }
+    else {
+      /* wide lines are centered on the path, so indent it */
+      int offset = cbw->command.highlight_thickness/2;
+      XDrawRectangle(XtDisplay(w),XtWindow(w), rev_gc, offset, offset, 
+		     cbw->core.width - cbw->command.highlight_thickness,
+		     cbw->core.height - cbw->command.highlight_thickness);
+    }
+  }
+  (*SuperClass->core_class.expose) (w, (XEvent *) NULL, region);
 }
 
 
 /* ARGSUSED */
-static void Destroy(w)
-    Widget w;
+static void 
+Destroy(w)
+Widget w;
 {
-    CommandWidget cbw = (CommandWidget)w;
-    ComWlabelGC = ComWnormalGC;	/* so Label can release it */
-    XtReleaseGC( w, ComWinverseGC );
+  CommandWidget cbw = (CommandWidget) w;
+
+  /* so Label can release it */
+  if (cbw->label.normal_GC == cbw->command.normal_GC)
+    XtReleaseGC( w, cbw->command.inverse_GC );
+  else
+    XtReleaseGC( w, cbw->command.normal_GC );
 }
 
 
 /*
  * Set specified arguments into widget
  */
+
 /* ARGSUSED */
-static Boolean SetValues (current, request, new)
-    Widget current, request, new;
+static Boolean 
+SetValues (current, request, new)
+Widget current, request, new;
 {
-    CommandWidget oldcbw = (CommandWidget) current;
-    CommandWidget cbw = (CommandWidget) new;
-    Boolean redisplay = False;
+  CommandWidget oldcbw = (CommandWidget) current;
+  CommandWidget cbw = (CommandWidget) new;
+  Boolean redisplay = False;
 
-    if (XtCField(oldcbw,sensitive) != ComWsensitive && !ComWsensitive) {
-	/* about to become insensitive */
-	ComWset = FALSE;
-	ComWhighlighted = HighlightNone;
-    }
+  if ( oldcbw->core.sensitive != cbw->core.sensitive && !cbw->core.sensitive) {
+    /* about to become insensitive */
+    cbw->command.set = FALSE;
+    cbw->command.highlighted = HighlightNone;
+    redisplay = TRUE;
+  }
+  
+  if ( (oldcbw->label.foreground != cbw->label.foreground)           ||
+       (oldcbw->core.background_pixel != cbw->core.background_pixel) ||
+       (oldcbw->command.highlight_thickness != 
+                                   cbw->command.highlight_thickness) ||
+       (oldcbw->label.font != cbw->label.font) ) 
+  {
+    if (cbw->command.set)		/* Label has release one of these */
+      XtReleaseGC(new, cbw->command.normal_GC);
+    else
+      XtReleaseGC(new, cbw->command.inverse_GC);
+    cbw->command.normal_GC = Get_GC(cbw, cbw->label.foreground, 
+				    cbw->core.background_pixel);
+    cbw->command.inverse_GC = Get_GC(cbw, cbw->core.background_pixel, 
+				     cbw->label.foreground);
+    XtReleaseGC(new, cbw->label.normal_GC);
+    
+    redisplay = True;
+  }
 
-    if (XtLField(oldcbw,foreground) != ComWforeground ||
-	XtCField(oldcbw, background_pixel) != ComWbackground ||
-	XtCBField(oldcbw,highlight_thickness) != ComWhighlightThickness ||
-	XtLField(oldcbw,font) != ComWfont)
-    {
-	if (ComWset)		/* Label has release one of these */
-	    XtReleaseGC(new, ComWnormalGC);
-	else
-	    XtReleaseGC(new, ComWinverseGC);
-	ComWnormalGC = Get_GC(cbw, ComWforeground, ComWbackground);
-	ComWinverseGC = Get_GC(cbw, ComWbackground, ComWforeground);
-	redisplay = True;
-    }
-
-    ComWlabelGC = ComWset ? ComWinverseGC : ComWnormalGC;
-
-    return (redisplay ||
-	    XtCField(oldcbw, sensitive) != ComWsensitive ||
-	    XtCBField(oldcbw, set) != ComWset ||
-	    XtCBField(oldcbw, highlighted) != ComWhighlighted);
+  return (redisplay);
 }
