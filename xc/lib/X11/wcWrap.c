@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XwcWrap.c,v 11.1 91/04/01 18:13:55 gildea Exp $
+ * $XConsortium: XwcWrap.c,v 11.1 91/04/06 13:18:57 rws Exp $
  */
 
 /*
@@ -73,8 +73,8 @@ XwcDrawString(dpy, d, font_set, gc, x, y, text, text_len)
     wchar_t            *text;
     int                 text_len;
 {
-    (*font_set->methods->wc_draw_string) (dpy, d, font_set, gc, x, y,
-					  text, text_len);
+    (void)(*font_set->methods->wc_draw_string) (dpy, d, font_set, gc, x, y,
+						text, text_len);
 }
 
 void

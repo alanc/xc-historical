@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XmbWrap.c,v 11.1 91/04/01 18:13:55 gildea Exp $
+ * $XConsortium: XmbWrap.c,v 11.1 91/04/06 13:18:54 rws Exp $
  */
 
 /*
@@ -86,8 +86,8 @@ XmbDrawString(dpy, d, font_set, gc, x, y, text, text_len)
     int                 text_len;
 #endif
 {
-    (*font_set->methods->mb_draw_string) (dpy, d, font_set, gc, x, y,
-					  (char *)text, text_len);
+    (void)(*font_set->methods->mb_draw_string) (dpy, d, font_set, gc, x, y,
+						(char *)text, text_len);
 }
 
 
