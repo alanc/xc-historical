@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.175 94/03/28 16:52:34 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.176 94/03/31 14:14:55 dpw Exp $
 /*
  * Server Master Makefile
  */
@@ -219,6 +219,39 @@ ServerTarget(Xsun_md,$(SUNMDDIRS),$(SUNMDOBJS),$(SUNMDLIBS),$(SYSLIBS))
 #define ServerToInstall Xsun_md
 #endif
 #endif /* XsunMultiDepthServer */
+
+
+#if XsunAmoebaServer
+XCOMM
+XCOMM Sun server for Amoeba
+XCOMM
+MFBDIR = mfb
+CFB8DIR = cfb
+DDXDIR1 = hw/sunAmoeba
+SUNDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
+SUNOBJS = hw/sunAmoeba/sunInitColor.o
+SUNLIBS = hw/sunAmoeba/libsun.a CFB8Libs
+ServerTarget(Xsun,$(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(SYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall Xsun
+#endif
+#endif /* XsunAmoebaServer */
+
+
+#if XsunAmoebaMonoServer
+XCOMM
+XCOMM Sun monochrome server for Amoeba
+XCOMM
+MFBDIR = mfb
+DDXDIR1 = hw/sunAmoeba
+SUNDIRS = $(STDDIRS) $(MFBDIR) $(DDXDIR1) $(DEPDIRS)
+SUNMOBJS = hw/sunAmoeba/sunInitMono.o hw/sun/sunInExMono.o
+SUNMLIBS = hw/sunAmoeba/libsun.a MFBBareLibs $(OTHEREXTS)
+ServerTarget(XsunMono,$(SUNMDIRS),$(SUNMOBJS),$(SUNMLIBS),$(SYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall XsunMono
+#endif
+#endif /* XsunAmoebaMonoServer */
 
 
 #if XibmServer
