@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.42 91/01/04 15:40:32 rws Exp $
+ * $XConsortium: main.c,v 1.43 91/01/04 19:59:45 gildea Exp $
  */
 #ifdef SVR4
 #define _POSIX_SOURCE
@@ -127,6 +127,8 @@ main(argc, argv)
 			symp++;
 			break;
 		case 'I':
+			if (incp >= includedirs + MAXDIRS)
+			    fatal("Too many -I flags.\n");
 			*incp++ = argv[0]+2;
 			if (**(incp-1) == '\0') {
 				*(incp-1) = *(++argv);
@@ -193,10 +195,16 @@ main(argc, argv)
 		}
 	}
 #ifdef __GNUC__
+	if (incp >= includedirs + MAXDIRS)
+	    fatal("Too many -I flags.\n");
 	*incp++ = "/usr/local/lib/gcc-include";
 #endif
+	if (incp >= includedirs + MAXDIRS)
+	    fatal("Too many -I flags.\n");
 	*incp++ = INCLUDEDIR;
 #ifdef CRAY
+	if (incp >= includedirs + MAXDIRS)
+	    fatal("Too many -I flags.\n");
 	*incp++ = "/usr/include/stdc";
 #endif
 
