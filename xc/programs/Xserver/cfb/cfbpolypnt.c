@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbpolypnt.c,v 5.11 91/04/10 11:41:53 keith Exp $ */
+/* $XConsortium: cfbpolypnt.c,v 5.12 91/05/28 14:59:08 keith Exp $ */
 
 #include "X.h"
 #include "gcstruct.h"
@@ -55,7 +55,7 @@ cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
 {
     register long   pt;
     register long   c1, c2;
-    register long   ClipMask = 0x80008000;
+    register unsigned long   ClipMask = 0x80008000;
     register unsigned long   xor;
 #if PPW == 4
     register unsigned char   *addrb;
@@ -103,6 +103,13 @@ cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
 	    nbwidth = ffs(nbwidth) - 1;
 	    PointLoop(*(addrb + (intToY(pt) << nbwidth) + intToX(pt)) = xor;)
 	}
+#ifdef sun
+	else if (nbwidth == 1152)
+	{
+	    register int    y;
+	    PointLoop(y = intToY(pt); *(addrb + (y << 10) + (y << 7) + intToX(pt)) = xor;)
+	}
+#endif
 	else
 	{
 	    PointLoop(*(addrb + intToY(pt) * nbwidth + intToX(pt)) = xor;)
