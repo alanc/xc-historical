@@ -159,13 +159,11 @@ Real/**/target:								@@\
 DoServerSubdirList(depend)
 DoServerSubdirList(install)
 DoServerSubdirList(lintlib)
+DoServerSubdirList(lint)
 
 $(EXTDIR) $(SUBDIRS): FRC
 	@cd $@ ; echo "making $@"; \
 	$(MAKE) $(MFLAGS) PassCDebugFlags all
-
-lint:
-	lint dix/?*.ln os/4.2bsd/?*.ln ddx/mi/?*.ln ddx/mfb/?*.ln > lint.out
 
 clean::
 	rm -f $(ALLPOSSIBLE)
