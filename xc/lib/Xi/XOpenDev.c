@@ -1,4 +1,4 @@
-/* $XConsortium: XOpenDev.c,v 1.5 90/05/18 11:23:46 rws Exp $ */
+/* $XConsortium: XOpenDev.c,v 1.6 91/07/23 12:28:39 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -32,8 +32,8 @@ SOFTWARE.
 
 #include "XI.h"
 #include "XIproto.h"
-#include "XInput.h"
 #include "Xlibint.h"
+#include "XInput.h"
 #include "extutil.h"
 
 XDevice
