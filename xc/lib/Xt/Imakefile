@@ -7,9 +7,10 @@
 
 /* config options */
 
- XFILESEARCHPATHDEFAULT = XFileSearchPathDefault
-          XTERRORPREFIX = XtErrorPrefix
-        XTWARNINGPREFIX = XtWarningPrefix
+XFILESEARCHPATHDEFAULT = XFileSearchPathDefault
+/* don't place spaces at the beginning of these lines, hp bug */
+XTERRORPREFIX = XtErrorPrefix
+XTWARNINGPREFIX = XtWarningPrefix
 
 #if UnalignedReferencesAllowed
   ALIGN_DEFINES = -DUNALIGNED
