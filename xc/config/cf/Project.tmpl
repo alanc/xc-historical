@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.191 93/09/17 15:12:37 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.191 93/09/17 15:57:29 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -88,6 +88,13 @@ XCOMM $XConsortium: Project.tmpl,v 1.191 93/09/17 15:12:37 rws Exp $
 #define ThreadedX		YES	/* multi-threaded libraries */
 #else
 #define ThreadedX		NO
+#endif
+#endif
+#ifndef HasWChar32
+#if SystemV4
+#define HasWChar32		YES
+#else
+#define HasWChar32		NO
 #endif
 #endif
 #ifndef HasXdmAuth
