@@ -224,17 +224,14 @@ macIIBW2Init (index, pScreen, argc, argv)
     ColormapPtr pColormap;
     PixmapPtr   pPixmap;
 
-    /*
-     * Dots per inch {x,y} is 76 on the monochrome screen, less on color!
-     */
     if (!mfbScreenInit(index, pScreen,
 			   macIIFbs[index].fb,
 			   macIIFbs[index].info.v_right -
-			   macIIFbs[index].info.v_left + 1,
+			   macIIFbs[index].info.v_left,
 			   macIIFbs[index].info.v_bottom -
-			   macIIFbs[index].info.v_top + 1, 
-			   macIIFbs[index].info.v_hres, 
-			   macIIFbs[index].info.v_vres))
+			   macIIFbs[index].info.v_top, 
+			   macIIFbs[index].info.v_hres >> 16, 
+			   macIIFbs[index].info.v_vres >> 16))
 	return (FALSE);
 
     /* macII screens may have extra video memory to the right of the visible
