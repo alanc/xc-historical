@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xfd.c,v 1.21 90/05/11 15:32:52 jim Exp $
+ * $XConsortium: xfd.c,v 1.22 90/10/26 16:42:48 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -235,10 +235,6 @@ static void SelectChar (w, closure, data)
     XFontStruct *fs = p->thefont;
     unsigned n = ((((unsigned) p->thechar.byte1) << 8) |
 		  ((unsigned) p->thechar.byte2));
-    unsigned minn = ((((unsigned) fs->min_byte1) << 8) |
-		     ((unsigned) fs->min_char_or_byte2));
-    unsigned maxn = ((((unsigned) fs->max_byte1) << 8) |
-		     ((unsigned) fs->max_char_or_byte2));
     int direction, fontascent, fontdescent;
     XCharStruct metrics;
     char buf[256];
@@ -246,7 +242,11 @@ static void SelectChar (w, closure, data)
 
     XtSetArg (arg, XtNlabel, buf);
 
-    if (n < minn || n > maxn) {
+    if ((!fs->min_byte1 && !fs->max_byte1) ?
+	(n < fs->min_char_or_byte2 || n > fs->max_char_or_byte2) :
+	(p->thechar.byte1 < fs->min_byte1 || p->thechar.byte1 > fs->max_byte1 ||
+	 p->thechar.byte2 < fs->min_char_or_byte2 ||
+	 p->thechar.byte2 > fs->max_char_or_byte2)) {
 	sprintf (buf, xfd_resources.nochar_format,
 		 (unsigned) p->thechar.byte1, (unsigned) p->thechar.byte2,
 		 (unsigned) p->thechar.byte1, (unsigned) p->thechar.byte2);
