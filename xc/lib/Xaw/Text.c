@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.157 90/06/29 16:00:10 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.158 90/07/03 14:18:12 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -2516,6 +2516,7 @@ _XawTextShowPosition(ctx)
 TextWidget ctx;
 {
   int x, y, lines, number;
+  Boolean no_scroll;
   XawTextPosition max_pos, top, first;
 
   if ( (!XtIsRealized((Widget)ctx)) || (ctx->text.lt.lines <= 0) )
@@ -2542,6 +2543,7 @@ TextWidget ctx;
     return;
 
   first = ctx->text.lt.top;
+  no_scroll = FALSE;
 
   if (ctx->text.insertPos < first) { /* We need to scroll down. */
       top = SrcScan(ctx->text.source, ctx->text.insertPos,
@@ -2576,7 +2578,7 @@ TextWidget ctx;
 	  lines = number;
       }
       else
-	  lines = 0;
+	  no_scroll = TRUE;
   }
   else {			/* We need to Scroll up */
       top = SrcScan(ctx->text.source, ctx->text.insertPos,
@@ -2585,15 +2587,16 @@ TextWidget ctx;
       if (top < max_pos) 
 	  lines = LineForPosition(ctx, top);
       else 
-	  lines = 0;
+	  no_scroll = TRUE;
   }
 
-  if (lines != 0)
-      _XawTextVScroll(ctx, lines);
-  else {
+  if (no_scroll) {
       _XawTextBuildLineTable(ctx, top, FALSE);      
       DisplayTextWindow((Widget)ctx);
   }
+  else 
+      _XawTextVScroll(ctx, lines);
+
   _XawTextSetScrollBars(ctx);
 }
 
