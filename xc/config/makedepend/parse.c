@@ -1,7 +1,10 @@
 /*
- * $Header: parse.c,v 1.1 87/04/08 16:40:53 rich Exp $
+ * $Header: parse.c,v 1.1 87/09/11 08:13:35 xswick Locked $
  *
  * $Log:	parse.c,v $
+ * Revision 1.1  87/09/11  08:13:35  toddb
+ * Initial revision
+ * 
  * Revision 1.1  87/04/08  16:40:53  rich
  * Initial revision
  * 
@@ -88,6 +91,8 @@ find_includes(filep, file, file_red, recursion)
 		case INCLUDEDOT:
 			add_include(file, file_red, line, TRUE);
 			break;
+		case PRAGMA:
+			break;
 		case -1:
 			log("%s, line %d: unknown directive == \"%s\"\n",
 				file_red->i_file, filep->f_line, line);
@@ -128,6 +133,7 @@ gobble(filep, file, file_red)
 		case UNDEF:
 		case INCLUDE:
 		case INCLUDEDOT:
+		case PRAGMA:
 			break;
 		case -1:
 			log("%s, line %d: unknown directive == \"%s\"\n",
@@ -228,6 +234,7 @@ deftype(line, filep, file_red, file, parse_it)
 		break;
 	case ELSE:
 	case ENDIF:
+	case PRAGMA:
 		debug0("%s, line %d: #%s\n",
 			file->i_file, filep->f_line, directives[ret]);
 		/*

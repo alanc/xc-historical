@@ -1,7 +1,10 @@
 /*
- * $Header: main.c,v 1.11 88/05/04 13:35:32 jim Exp $
+ * $Header: main.c,v 1.12 88/05/04 14:39:50 xswick Locked $
  *
  * $Log:	main.c,v $
+ * Revision 1.12  88/05/04  14:39:50  jim
+ * fixed problem with makedepend misinterpretting cc flags
+ * 
  * Revision 1.11  88/05/04  13:35:32  jim
  * fix from bug #120; added vax predefine
  * 
@@ -66,6 +69,7 @@ char	*directives[] = {
 	"undef",
 	"include",
 	"line",
+	"pragma",
 	NULL
 };
 
