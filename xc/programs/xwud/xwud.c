@@ -1,7 +1,7 @@
 /* 
- * $Locker:  $ 
+ * $Locker: chariot $ 
  */ 
-static char	*rcsid = "$Header: xwud.c,v 1.4 87/06/13 06:34:25 dkk Exp $";
+static char	*rcsid = "$Header: xwud.c,v 1.6 87/06/23 14:41:07 chariot Locked $";
 #include <X11/copyright.h>
 
 /* Copyright 1985, 1986, Massachusetts Institute of Technology */
@@ -32,7 +32,7 @@ static char	*rcsid = "$Header: xwud.c,v 1.4 87/06/13 06:34:25 dkk Exp $";
  */
 
 #ifndef lint
-static char *rcsid_xwud_c = "$Header: xwud.c,v 1.4 87/06/13 06:34:25 dkk Exp $";
+static char *rcsid_xwud_c = "$Header: xwud.c,v 1.6 87/06/23 14:41:07 chariot Locked $";
 #endif
 
 #include <X11/Xlib.h>
@@ -40,7 +40,7 @@ static char *rcsid_xwud_c = "$Header: xwud.c,v 1.4 87/06/13 06:34:25 dkk Exp $";
 #include <strings.h>
 #include <sys/types.h>
 extern char *calloc();
-#include "jdisplay.h"
+#include "dsimple.h"
 
 #include <X11/XWDFile.h>   /*  Note:  XWDFile.h (in xwd now) 
 			        must be moved to include (or linked) %%*/
