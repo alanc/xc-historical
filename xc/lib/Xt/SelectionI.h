@@ -1,4 +1,4 @@
-/* $XConsortium: SelectionI.h,v 1.15 89/12/01 09:57:48 swick Exp $ */
+/* $XConsortium: SelectionI.h,v 1.16 89/12/01 11:40:53 swick Exp $ */
 /* $oHeader: SelectionI.h,v 1.3 88/08/19 14:02:44 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -48,7 +48,6 @@ typedef struct _RequestRec {
    int offset;
    XtIntervalId timeout;
    XSelectionRequestEvent event; /* for XtGetSelectionRequest */
-   Boolean incr_callback;
    Boolean allSent;
    Boolean anySent;
 } RequestRec;
