@@ -1,4 +1,4 @@
-/* $XConsortium: miWks.c,v 5.11 92/12/21 10:16:32 mor Exp $ */
+/* $XConsortium: miWks.c,v 5.12 93/01/26 19:14:40 hersh Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -35,6 +35,11 @@ SOFTWARE.
 #include "Xprotostr.h"
 #include "gcstruct.h"
 #include "resource.h"
+
+#ifdef MULTIBUFFER
+#define _MULTIBUF_SERVER_
+#include <X11/extensions/multibuf.h>
+#endif
 
 /*  Level 4 Workstation Support */
 /* PHIGS Workstation Procedures */
