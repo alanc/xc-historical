@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.33 91/01/29 13:45:45 rws Exp $
+ * $XConsortium: process.c,v 1.34 91/02/12 15:37:17 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -40,7 +40,7 @@ extern Bool nameserver_timedout;
 #define DEFAULT_PROTOCOL "MIT-MAGIC-COOKIE-1"
 #endif
 
-#define SECURERPC "SECURE-RPC"
+#define SECURERPC "SUN-DES-1"
 
 #define XAUTH_DEFAULT_RETRIES 2		/* just a few times */
 #define XAUTH_DEFAULT_TIMEOUT 2		/* in seconds, be quick */
