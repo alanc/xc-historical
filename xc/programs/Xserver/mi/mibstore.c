@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.10 89/07/12 17:17:04 keith Exp $ */
+/* $XConsortium: mibstore.c,v 5.11 89/07/13 17:16:08 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2846,8 +2846,6 @@ miBSSaveDoomedAreas(pWin, pObscured, dx, dy)
     int		       dx, dy;
 {
     miBSWindowPtr 	pBackingStore;
-    BoxRec		winBox;
-    RegionPtr		prgnDoomed;
     ScreenPtr	  	pScreen;
     
 
@@ -2866,41 +2864,15 @@ miBSSaveDoomedAreas(pWin, pObscured, dx, dy)
 	return;
     }
 
-    if (!(*pScreen->RegionNotEmpty)(pObscured))
-	return;
-
     /* Don't even pretend to save anything for a virtual background None */
     if ((pBackingStore->status == StatusVirtual) &&
 	(pBackingStore->backgroundState == None))
 	return;
 
-    /*
-     * When a window shrinks, the obscured region will be larger than the
-     * window actually is. To avoid wasted effort, therefore, we trim the
-     * region to save to be within the boundaries of the window. We don't
-     * bother with resizing the pixmap now, because....we don't feel like it.
-     */
-    winBox.x1 = 0;
-    winBox.y1 = 0;
-    winBox.x2 = pWin->drawable.width;
-    winBox.y2 = pWin->drawable.height;
-    prgnDoomed = (* pScreen->RegionCreate) (&winBox, 1);
-#ifdef SHAPE
-    if (wBoundingShape (pWin))
-	(*pScreen->Intersect) (prgnDoomed, prgnDoomed, wBoundingShape (pWin));
-    if (wClipShape (pWin))
-	(*pScreen->Intersect) (prgnDoomed, prgnDoomed, wClipShape (pWin));
-#endif
-    (* pScreen->TranslateRegion)(prgnDoomed, 
-				 pWin->drawable.x,
-				 pWin->drawable.y);
-    (* pScreen->Intersect) (prgnDoomed, prgnDoomed, pObscured);
-    (* pScreen->TranslateRegion)(prgnDoomed, 
-				 -pWin->drawable.x,
-				 -pWin->drawable.y);
-
     if ((*pScreen->RegionNotEmpty)(pObscured))
     {
+	(*pScreen->TranslateRegion) (pObscured,
+				     -pWin->drawable.x, -pWin->drawable.y);
 	/*
 	 * only save the bits if we've actually
 	 * started using backing store
@@ -2915,15 +2887,16 @@ miBSSaveDoomedAreas(pWin, pObscured, dx, dy)
 
 	    if (pBackingStore->pBackingPixmap)
 		(* pScreenPriv->funcs->SaveAreas) (pBackingStore->pBackingPixmap,
-						   prgnDoomed,
+						   pObscured,
 						   pWin->drawable.x - dx,
 						   pWin->drawable.y - dy);
 	}
 	(* pScreen->Union)(&pBackingStore->pSavedRegion,
 			   &pBackingStore->pSavedRegion,
-			   prgnDoomed);
+			   pObscured);
+	(*pScreen->TranslateRegion) (pObscured,
+				     pWin->drawable.x, pWin->drawable.y);
     }
-    (* pScreen->RegionDestroy) (prgnDoomed);
 }
 
 /*-

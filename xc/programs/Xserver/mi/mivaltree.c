@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char rcsid[] =
-"$Header: mivaltree.c,v 5.8 89/07/13 10:15:12 keith Exp $ SPRITE (Berkeley)";
+"$Header: mivaltree.c,v 5.9 89/07/13 17:19:43 keith Exp $ SPRITE (Berkeley)";
 #endif lint
 
 #include    <stdio.h>
@@ -102,6 +102,7 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
     RegionPtr		childUnion;
     Bool		overlap;
     RegionPtr		borderVisible;
+    Bool		shrunk;
     
     /*
      * Figure out the new visibility of this window.
@@ -139,6 +140,7 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
     dx = pParent->drawable.x - pParent->valdata->before.oldAbsCorner.x;
     dy = pParent->drawable.y - pParent->valdata->before.oldAbsCorner.y;
     borderVisible = pParent->valdata->before.borderVisible;
+    shrunk = pParent->valdata->before.shrunk;
     
     (* pScreen->RegionInit) (&pParent->valdata->after.borderExposed, NullBox, 0);
     (* pScreen->RegionInit) (&pParent->valdata->after.exposed, NullBox, 0);
@@ -287,7 +289,7 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
     if (pParent->backStorage)
     {
 	(* pScreen->Subtract) (exposed, &pParent->clipList, universe);
-	if ((*pScreen->RegionNotEmpty) (exposed))
+	if (shrunk && (*pScreen->RegionNotEmpty) (exposed))
 	{
 	    RegionPtr	temp, CreateUnclippedWinSize();
 	    
