@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.37 94/06/07 12:08:28 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.38 94/06/17 10:14:34 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -91,9 +91,12 @@ Widget		    mainWindow;
 
 Widget		        listButton;
 Widget			saveButton;
-Widget			propButton;
 Widget			pingButton;
 Widget			startButton;
+
+Widget		    listPopup;
+
+Widget			listClientsWidget;
 
 Widget		    savePopup;
 
@@ -687,20 +690,77 @@ ListClientsXtProc (w, client_data, callData)
 
 {
     ClientRec *client = ClientList;
+    String *clientNames;
+    char *progName;
+    int i, j, k;
 
-    printf ("\n");
-    if (client == NULL) {
-	printf ("There are no clients registered with the SM\n");
-    } else {
-	printf ("The following client IDs are registered with the SM:\n");
-	printf ("\n");
+    clientNames = (String *) malloc (numClients * sizeof (String));
+
+    for (i = 0; i < numClients; i++, client = client->next)
+    {
+	progName = NULL;
+
+	for (j = 0; j < client->numProps && !progName; j++)
+	    if (strcmp (client->props[j]->name, SmProgram) == 0)
+	    {
+		char *temp = client->props[j]->vals[0].value;
+		char *lastSlash = NULL;
+
+		for (k = 0; k < strlen (temp); k++)
+		    if (temp[k] == '/')
+			lastSlash = &temp[k];
+
+		if (lastSlash)
+		    temp = lastSlash + 1;
+
+		progName = (String) XtMalloc (
+		    strlen (client->clientHostname) + strlen (temp) + 4);
+		sprintf (progName, "%s : %s", client->clientHostname, temp);
+	    }
+
+	clientNames[i] = progName;
     }
-    while (client) {
-	printf ("  Host = %s, ID = %s\n",
-	    client->clientHostname, client->clientId);
+
+    XawListChange (listClientsWidget, clientNames, numClients, 0, True);
+    XawListHighlight (listClientsWidget, 0);
+
+    XtPopup (listPopup, XtGrabNone);
+}
+
+
+
+void
+GetClientInfoXtProc (w, client_data, callData)
+
+Widget		w;
+XtPointer 	client_data;
+XtPointer 	callData;
+
+{
+    ClientRec *client = ClientList;
+    XawListReturnStruct *current;
+    int client_index;
+
+    current = XawListShowCurrent (listClientsWidget);
+    client_index = current->list_index;
+    XtFree ((char *) current);
+
+    while (client_index > 0)
+    {
 	client = client->next;
+	client_index--;
     }
-    printf ("\n");
+
+    if (client->numProps == 0) {
+	printf("Client Id = %s, no properties are set\n", client->clientId);
+    } else {
+	int i;
+
+	printf ("Client Id = %s, the following properties are set:\n",
+		client->clientId);
+	for (i = 0; i < client->numProps; i++)
+	    print_prop(client->props[i]);
+    }
 }
 
 
@@ -949,39 +1009,6 @@ XtPointer 	callData;
 {
     XtPopdown (shutdownPopup);
     XtSetSensitive (mainWindow, 1);
-}
-
-
-
-void
-ListPropXtProc (w, client_data, callData)
-
-Widget		w;
-XtPointer 	client_data;
-XtPointer 	callData;
-
-{
-    ClientRec *client = ClientList;
-
-    if (client == NULL) {
-	printf ("There are no clients registered with the SM\n");
-	return;
-    }
-
-    while (client) {
-	if (client->numProps == 0) {
-	    printf("Client Id = %s, no properties are set\n",
-		   client->clientId);
-	} else {
-	    int i;
-
-	    printf ("Client Id = %s, the following properties are set:\n",
-		    client->clientId);
-	    for (i = 0; i < client->numProps; i++)
-		print_prop(client->props[i]);
-	}
-	client = client->next;
-    }
 }
 
 
@@ -1354,7 +1381,7 @@ main(argc, argv)
 
     listButton = XtVaCreateManagedWidget (
 	"listButton", commandWidgetClass, mainWindow,
-	XtNlabel, "List all registered clients",
+	XtNlabel, "Client Info",
 	NULL);
 
     XtAddCallback (listButton, XtNcallback, ListClientsXtProc, 0);
@@ -1368,27 +1395,41 @@ main(argc, argv)
 
     if (app_resources.debug)
     {
-	propButton = XtVaCreateManagedWidget (
-	    "propButton", commandWidgetClass, mainWindow,
-	    XtNlabel, "List properties of each client",
+	pingButton = XtVaCreateManagedWidget (
+	    "pingButton", commandWidgetClass, mainWindow,
+	    XtNlabel, "Ping all clients",
 	    NULL);
 
-	XtAddCallback (propButton, XtNcallback, ListPropXtProc, 0);
+	XtAddCallback (pingButton, XtNcallback, PingXtProc, 0);
+
+	startButton = XtVaCreateManagedWidget (
+	    "startButton", commandWidgetClass, mainWindow,
+	    XtNlabel, "Start a new xsmclient",
+	    NULL);
+
+	XtAddCallback (startButton, XtNcallback, StartXtProc, 0);
     }
 
-    pingButton = XtVaCreateManagedWidget (
-	"pingButton", commandWidgetClass, mainWindow,
-	XtNlabel, "Ping all clients",
+
+    /*
+     * Pop up for List Clients button.
+     */
+
+    listPopup = XtVaCreatePopupShell (
+	"listPopup", transientShellWidgetClass, topLevel,
+	XtNtitle, "List Clients",
+	XtNallowShellResize, True,
+	NULL);
+    
+
+    listClientsWidget = XtVaCreateManagedWidget (
+	"listClientsWidget", listWidgetClass, listPopup,
+        XtNdefaultColumns, 1,
+	XtNforceColumns, True,
 	NULL);
 
-    XtAddCallback (pingButton, XtNcallback, PingXtProc, 0);
+    XtAddCallback (listClientsWidget, XtNcallback, GetClientInfoXtProc, 0);
 
-    startButton = XtVaCreateManagedWidget (
-	"startButton", commandWidgetClass, mainWindow,
-	XtNlabel, "Start a new xsmclient",
-	NULL);
-
-    XtAddCallback (startButton, XtNcallback, StartXtProc, 0);
 
 
     /*
