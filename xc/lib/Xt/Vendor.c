@@ -1,4 +1,4 @@
-/* $XConsortium: Vendor.c,v 1.41 91/05/03 15:31:07 rws Exp $ */
+/* $XConsortium: Vendor.c,v 1.42 91/05/10 20:50:16 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -32,10 +32,7 @@ SOFTWARE.
 #include "ShellP.h"
 #include "Vendor.h"
 #include "VendorP.h"
-
-#include <pwd.h>
 #include <stdio.h>
-
 
 /***************************************************************************
  *

@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.113 91/07/23 13:56:07 rws Exp $ */
+/* $XConsortium: Shell.c,v 1.114 91/07/23 13:59:18 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -38,7 +38,6 @@ SOFTWARE.
 #include "VendorP.h"
 #include <X11/Xatom.h>
 #include <X11/Xlocale.h>
-#include <pwd.h>
 #include <stdio.h>
 
 #define WM_CONFIGURE_DENIED(w) (((WMShellWidget) (w))->wm.wm_configure_denied)
