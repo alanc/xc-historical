@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: sin_ws.c,v 5.1 91/02/16 09:49:44 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -360,6 +360,8 @@ phg_sin_ws_break( ws )
         }
         SIN_DISABLE_BREAK( ws);
 	scratch_event.dev_class = SIN_TO_PHIGS_CLASS( dev->class);
+	scratch_event.wsid = dev->wsid;
+	scratch_event.dev_num = dev->num;
 	(*ws->ops.send_request)( ws->wsh, &scratch_event, 1);
     } 
 
