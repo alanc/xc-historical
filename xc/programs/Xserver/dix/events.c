@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.106 87/09/03 19:02:19 swick Locked $ */
+/* $Header: events.c,v 1.107 87/09/08 13:35:59 swick Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -252,7 +252,7 @@ CheckPhysLimits(cursor)
 	    sprite.hot.y = sprite.physLimits.y2 - 1;
     if ((old.x != sprite.hot.x) || (old.y != sprite.hot.y))
 	(*currentScreen->SetCursorPosition) (
-	    currentScreen, sprite.hot.x, sprite.hot.y);
+	    currentScreen, sprite.hot.x, sprite.hot.y, FALSE);
 }
 
 static void
@@ -278,8 +278,7 @@ ChangeToCursor(cursor)
 	if ((sprite.current->xhot != cursor->xhot) ||
 		(sprite.current->yhot != cursor->yhot))
 	    CheckPhysLimits(cursor);
-	(*currentScreen->DisplayCursor) (
-	   currentScreen, cursor, sprite.hot.x, sprite.hot.y);
+	(*currentScreen->DisplayCursor) (currentScreen, cursor);
 	sprite.current = cursor;
     }
 }
@@ -1030,11 +1029,10 @@ DefineInitialRootWindow(win)
     (*currentScreen->CursorLimits) (
 	currentScreen, win->cursor, &sprite.hotLimits, &sprite.physLimits);
     (*currentScreen->SetCursorPosition) (
-	currentScreen, sprite.hot.x, sprite.hot.y);
+	currentScreen, sprite.hot.x, sprite.hot.y, FALSE);
     (*currentScreen->ConstrainCursor) (
 	currentScreen, &sprite.physLimits);
-    (*currentScreen->DisplayCursor) (
-	currentScreen, c, sprite.hot.x, sprite.hot.y);
+    (*currentScreen->DisplayCursor) (currentScreen, c);
 }
 
 /*
@@ -1067,9 +1065,9 @@ int
 ProcWarpPointer(client)
     ClientPtr client;
 {
-    WindowPtr  dest = NULL;
-    xEvent MotionEvent;		/* Event that is sent to ProcessPointerEvent
-					saying the pointer moved. */
+    WindowPtr	dest = NULL;
+    int		x, y;
+
     REQUEST(xWarpPointerReq);
 
     REQUEST_SIZE_MATCH(xWarpPointerReq);
@@ -1116,25 +1114,18 @@ ProcWarpPointer(client)
 			     dest->absCorner.x + stuff->dstX,
 			     dest->absCorner.y + stuff->dstY);
     
-	MotionEvent.u.keyButtonPointer.rootX = dest->absCorner.x + stuff->dstX;
-	MotionEvent.u.keyButtonPointer.rootY = dest->absCorner.y + stuff->dstY;
+	x = dest->absCorner.x + stuff->dstX;
+	y = dest->absCorner.y + stuff->dstY;
 
     } else {
-	MotionEvent.u.keyButtonPointer.rootX = sprite.hot.x + stuff->dstX;
-	MotionEvent.u.keyButtonPointer.rootY = sprite.hot.y + stuff->dstY;
+	x = sprite.hot.x + stuff->dstX;
+	y = sprite.hot.y + stuff->dstY;
     }
  
     /* Send a pointer motion event to ProcessPointerEvent, just as the
 	device dependent driver does when the hardware moves the pointer. */
 
-    (*currentScreen->SetCursorPosition)( currentScreen,
-	    MotionEvent.u.keyButtonPointer.rootX,
-	    MotionEvent.u.keyButtonPointer.rootY);
-
-    MotionEvent.u.keyButtonPointer.time = currentTime.milliseconds;
-    MotionEvent.u.u.type = MotionNotify;
-
-    ProcessPointerEvent(&MotionEvent, inputInfo.pointer);
+    (*currentScreen->SetCursorPosition)( currentScreen, x, y, TRUE);
 
     return Success;
 }
@@ -1430,7 +1421,7 @@ ProcessPointerEvent (xE, mouse)
     if (moveIt)
 	(*currentScreen->SetCursorPosition)(
 	    currentScreen, xE->u.keyButtonPointer.rootX,
-	    xE->u.keyButtonPointer.rootY);
+	    xE->u.keyButtonPointer.rootY, FALSE);
     if (mouse->sync.frozen)
     {
 	EnqueueEvent(mouse, xE);
