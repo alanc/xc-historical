@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: hp.cf,v 1.68 94/06/03 21:38:44 matt Exp gildea $
+XCOMM platform:  $XConsortium: hp.cf,v 1.69 94/10/22 01:31:09 gildea Exp dpw $
 
 #define OSName                 HP-UX 9.1
 XCOMM operating system:  OSName
@@ -79,9 +79,11 @@ XCOMM operating system:  OSName
 #define ExpandManNames         YES
 #define HasPutenv              YES
 #define HasNdbm		       YES
+#define DBMLibrary	       /usr/lib/libdbm.a
 #define PrimaryScreenResolution	91
 #define ExtensionOSDefines     -DHPINPUT -DXTESTEXT1
 #define XhpServer              YES
+#define ServerExtraSysLibs     -ldld
 #ifndef BuildXInputExt
 #define BuildXInputExt         YES
 #endif
