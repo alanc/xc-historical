@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.12 89/08/20 12:14:35 rws Exp $ */
+/* $XConsortium: dispatch.c,v 5.13 89/08/31 19:15:09 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1517,7 +1517,7 @@ ProcClearToBackground(client)
     if (pWin->drawable.class == InputOnly)
     {
 	client->errorValue = stuff->window;
-	return (BadWindow);
+	return (BadMatch);
     }		    
     if ((stuff->exposures != xTrue) && (stuff->exposures != xFalse))
     {
