@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: util.c,v 1.28 89/11/19 15:33:50 jim Exp $
+ * $XConsortium: util.c,v 1.29 89/11/20 17:22:34 jim Exp $
  *
  * utility routines for twm
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: util.c,v 1.28 89/11/19 15:33:50 jim Exp $";
+"$XConsortium: util.c,v 1.29 89/11/20 17:22:34 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -320,13 +320,18 @@ char *name;
 {
     char *newname;
 
-    if (name[0] != '~')
-	return (name);
+    if (name[0] != '~') return name;
 
-    newname = (char *)malloc(HomeLen + strlen(name) + 2);
-    sprintf(newname, "%s/%s", Home, &name[1]);
+    newname = (char *) malloc (HomeLen + strlen(name) + 2);
+    if (!newname) {
+	fprintf (stderr, 
+		 "%s:  unable to allocate %d bytes to expand filename %s/%s\n",
+		 ProgramName, HomeLen + strlen(name) + 2, Home, &name[1]);
+    } else {
+	sprintf (newname, "%s/%s", Home, &name[1]);
+    }
 
-    return (newname);
+    return newname;
 }
 
 /***********************************************************************
@@ -376,12 +381,14 @@ Pixmap FindBitmap (name, widthp, heightp)
 
     if (name == NULL) return None;
 
-    bigname = ExpandFilename (name);
-    if (!bigname) {
-	fprintf (stderr, "%s:  unable to expand bitmap filename \"%s\"\n",
-		 ProgramName, name);
-	return None;
+    if (name[0] == ':') {
+	/*
+	 * Attempt to create a hardcoded bitmap; if no size is given then
+	 * default to *widthp x *heightp
+	 */
     }
+    bigname = ExpandFilename (name);
+    if (!bigname) return None;
 
     pm = XmuLocateBitmapFile (ScreenOfDisplay(dpy, Scr->screen), bigname,
 			      NULL, 0, widthp, heightp, &HotX, &HotY);

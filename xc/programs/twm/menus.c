@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.123 89/11/24 18:36:24 jim Exp $
+ * $XConsortium: menus.c,v 1.124 89/11/27 16:45:20 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.123 89/11/24 18:36:24 jim Exp $";
+"$XConsortium: menus.c,v 1.124 89/11/27 16:45:20 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1704,30 +1704,27 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 
     case F_CUTFILE:
 	ptr = XFetchBytes(dpy, &count);
-	if (count != 0)
-	{
-	    if (sscanf(ptr, "%s", tmp) == 1)
-	    {
+	if (ptr) {
+	    if (sscanf (ptr, "%s", tmp) == 1) {
+		XFree (ptr);
 		ptr = ExpandFilename(tmp);
-		fd = open(ptr, 0);
-		if (fd >= 0)
-		{
-		    count = read(fd, buff, MAX_FILE_SIZE - 1);
-		    if (count > 0)
-			XStoreBytes(dpy, buff, count);
-
-		    close(fd);
-		}
-		else
-		{
-		    fprintf (stderr, "%s:  unable to open cut file \"%s\"\n", 
-			     ProgramName, tmp);
-		}
+		if (ptr) {
+		    fd = open (ptr, 0);
+		    if (fd >= 0) {
+			count = read (fd, buff, MAX_FILE_SIZE - 1);
+			if (count > 0) XStoreBytes (dpy, buff, count);
+			close(fd);
+		    } else {
+			fprintf (stderr, 
+				 "%s:  unable to open cut file \"%s\"\n", 
+				 ProgramName, tmp);
+		    }
+		    if (ptr != tmp) free (ptr);
+		} 
+	    } else {
+		XFree(ptr);
 	    }
-	    XFree(ptr);
-	}
-	else
-	{
+	} else {
 	    fprintf(stderr, "%s:  cut buffer is empty\n", ProgramName);
 	}
 	break;
@@ -1853,18 +1850,24 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	len = strlen(action);
 	if (len == 0)
 	    ptr = InitFile;
-	else
-	{
-	    ptr = (char *)malloc(len+1);
-	    if (ptr == NULL)
-	    {
+	else {
+	    char *actiontmp;
+
+	    ptr = (char *) malloc (len + 1);
+	    if (!ptr) {
 		fprintf (stderr, 
 		 "%s:  unable to allocate %d bytes to source file \"%s\"\n", 
 			 ProgramName, len+1, action);
-		exit(1);
+		break;
 	    }
-	    strcpy(ptr, action);
-	    ptr = ExpandFilename(ptr);
+	    strcpy (ptr, action);
+	    actiontmp = ExpandFilename (ptr);
+	    if (!actiontmp) {
+		free (ptr);
+		break;
+	    }
+	    if (actiontmp != ptr) free (ptr);
+	    ptr = actiontmp;
 	}
 
 	oldScr = Scr;
@@ -1916,6 +1919,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	    FirstScreen = FALSE;
 	}
 
+	if (ptr != InitFile) free (ptr);
 	Scr = oldScr;
 	break;
 
