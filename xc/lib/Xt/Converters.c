@@ -1,4 +1,4 @@
-/* "$XConsortium: Converters.c,v 1.62 91/01/10 21:20:25 converse Exp $"; */
+/* "$XConsortium: Converters.c,v 1.63 91/02/05 16:58:04 gildea Exp $"; */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -326,8 +326,10 @@ static Boolean CvtStringToBool(dpy, args, num_args, fromVal, toVal, closure_ret)
 }
 
 XtConvertArgRec Const colorConvertArgs[] = {
-    {XtWidgetBaseOffset, (XtPointer)XtOffset(Widget, core.screen),  sizeof(Screen *)},
-    {XtWidgetBaseOffset, (XtPointer)XtOffset(Widget, core.colormap),sizeof(Colormap)}
+    {XtWidgetBaseOffset, (XtPointer)XtOffsetOf(WidgetRec, core.screen),
+     sizeof(Screen *)},
+    {XtWidgetBaseOffset, (XtPointer)XtOffsetOf(WidgetRec, core.colormap),
+     sizeof(Colormap)}
 };
 
 
@@ -471,7 +473,8 @@ static void FreePixel(app, toVal, closure, args, num_args)
 
 /* no longer used by Xt, but it's in the spec */
 XtConvertArgRec Const screenConvertArg[] = {
-    {XtWidgetBaseOffset, (XtPointer)XtOffset(Widget, core.screen), sizeof(Screen *)}
+    {XtWidgetBaseOffset, (XtPointer)XtOffsetOf(WidgetRec, core.screen),
+     sizeof(Screen *)}
 };
 
 /*ARGSUSED*/
@@ -1136,8 +1139,10 @@ CvtStringToInitialState(dpy, args, num_args, fromVal, toVal, closure_ret)
 }
 
 XtConvertArgRec Const visualConvertArgs[] = {
-    {XtWidgetBaseOffset, (XtPointer)XtOffset(Widget, core.screen), sizeof(Screen *)},
-    {XtWidgetBaseOffset, (XtPointer)XtOffset(Widget, core.depth), sizeof(Cardinal)}
+    {XtWidgetBaseOffset, (XtPointer)XtOffsetOf(WidgetRec, core.screen),
+     sizeof(Screen *)},
+    {XtWidgetBaseOffset, (XtPointer)XtOffsetOf(WidgetRec, core.depth),
+     sizeof(Cardinal)}
 };
 
 /*ARGSUSED*/
