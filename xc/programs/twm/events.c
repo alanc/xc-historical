@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.109 89/11/15 21:19:12 jim Exp $
+ * $XConsortium: events.c,v 1.110 89/11/16 21:04:18 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.109 89/11/15 21:19:12 jim Exp $";
+"$XConsortium: events.c,v 1.110 89/11/16 21:04:18 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1053,6 +1053,13 @@ HandleMapNotify()
     if (Tmp_win == NULL)
 	return;
 
+    /*
+     * Need to do the grab to avoid race condition of having server send
+     * MapNotify to client before the frame gets mapped; this is bad because
+     * the client would think that the window has a chance of being viewable
+     * when it really isn't.
+     */
+    XGrabServer (dpy);
     if (Tmp_win->icon_w)
 	XUnmapWindow(dpy, Tmp_win->icon_w);
     if (Tmp_win->title_w)
@@ -1062,6 +1069,8 @@ HandleMapNotify()
 	XUnmapWindow(dpy, Tmp_win->hilite_w);
 
     XMapWindow(dpy, Tmp_win->frame);
+    XUngrabServer (dpy);
+    XFlush (dpy);
     Tmp_win->mapped = TRUE;
     Tmp_win->icon = FALSE;
     Tmp_win->icon_on = FALSE;
