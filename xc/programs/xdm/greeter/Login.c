@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: Login.c,v 1.25 91/01/31 22:02:41 gildea Exp $
+ * $XConsortium: Login.c,v 1.26 91/02/20 19:03:14 converse Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -50,7 +50,7 @@ static XtResource resources[] = {
     {XtNpromptColor, XtCForeground, XtRPixel, sizeof(Pixel),
         offset(promptpixel), XtRString,	XtDefaultForeground},
     {XtNgreetColor, XtCForeground, XtRPixel, sizeof(Pixel),
-        offset(greetpixel), XtRString	XtDefaultForeground},
+        offset(greetpixel), XtRString,	XtDefaultForeground},
     {XtNfailColor, XtCForeground, XtRPixel, sizeof (Pixel),
 	offset(failpixel), XtRString,	XtDefaultForeground},
     {XtNfont, XtCFont, XtRFontStruct, sizeof (XFontStruct *),
