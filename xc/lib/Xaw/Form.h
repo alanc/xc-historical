@@ -1,7 +1,4 @@
-/* $Header$ */
-/*
- *	sccsid:	@(#)Form.h	1.4	5/18/87
- */
+/* $Header: Form.h,v 1.1 87/09/11 07:59:26 toddb Exp $ */
 
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -82,6 +79,10 @@ typedef enum {
 } XtJustify;
 #endif _XtJustify_e
 
+typedef struct _FormClassRec	*FormWidgetClass;
+typedef struct _FormRec		*FormWidget;
+
+extern WidgetClass formWidgetClass;
  
 extern Window XtFormCreate(); /* parent, args, argCount */
     /* Window   parent;     */
