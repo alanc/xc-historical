@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.84 89/09/29 12:10:31 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.85 89/09/29 13:59:13 swick Exp $";
 /* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
 #endif /* lint */
 /*LINTLIBRARY*/
@@ -1983,7 +1983,7 @@ static Widget _XtFindPopup(widget, name)
     return NULL;
 }
 
-static void _XtMenuPopupAction(widget, event, params, num_params)
+void XtMenuPopupAction(widget, event, params, num_params)
     Widget widget;
     XEvent *event;
     String *params;
@@ -2000,12 +2000,14 @@ static void _XtMenuPopupAction(widget, event, params, num_params)
 	return;
     }
 
-    if (event->type == ButtonPress) spring_loaded = True;
-    else if (event->type == EnterNotify) spring_loaded = False;
+    if (event->type == ButtonPress)
+	spring_loaded = True;
+    else if (event->type == KeyPress || event->type == EnterNotify)
+	spring_loaded = False;
     else {
 	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
 		"invalidPopup","unsupportedOperation","XtToolkitError",
-"Pop-up menu creation is only supported on ButtonPress or EnterNotify events.",
+"Pop-up menu creation is only supported on ButtonPress, KeyPress or EnterNotify events.",
                   (String *)NULL, (Cardinal *)NULL);
 	spring_loaded = False;
     }
@@ -2014,7 +2016,7 @@ static void _XtMenuPopupAction(widget, event, params, num_params)
     if (popup_shell == NULL) {
 	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
 			"invalidPopup","xtMenuPopup","XtToolkitError",
-			"Can't find popup widget \"%s\" in _XtMenuPopup",
+			"Can't find popup widget \"%s\" in XtMenuPopup",
 			params, num_params);
 	return;
     }
@@ -2040,7 +2042,7 @@ static void _XtMenuPopdownAction(widget, event, params, num_params)
 	if (popup_shell == NULL) {
             XtAppWarningMsg(XtWidgetToApplicationContext(widget),
 			    "invalidPopup","xtMenuPopup","XtToolkitError",
-			    "Can't find popup widget \"%s\" in XtMenuPopup",
+			    "Can't find popup widget \"%s\" in XtMenuPopdown",
 			    params, num_params);
 	    return;
 	}
@@ -2193,9 +2195,9 @@ void _XtRegisterGrabs(widget,tm)
 }
 
 static XtActionsRec tmActions[] = {
-    {"XtMenuPopup", _XtMenuPopupAction},
+    {"XtMenuPopup", XtMenuPopupAction},
     {"XtMenuPopdown", _XtMenuPopdownAction},
-    {"MenuPopup", _XtMenuPopupAction}, /* old & obsolete */
+    {"MenuPopup", XtMenuPopupAction}, /* old & obsolete */
     {"MenuPopdown", _XtMenuPopdownAction}, /* ditto */
 };
 
@@ -2205,7 +2207,7 @@ void _XtPopupInitialize(app)
 {
     XtAppAddActions(app, tmActions, XtNumber(tmActions));
     if (grabActionList == NULL)
-	XtRegisterGrabAction( _XtMenuPopupAction, True,
+	XtRegisterGrabAction( XtMenuPopupAction, True,
 			      (unsigned)(ButtonPressMask | ButtonReleaseMask),
 			      GrabModeAsync,
 			      GrabModeAsync
