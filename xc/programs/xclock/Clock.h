@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Clock.h,v 1.16 88/08/30 17:32:47 swick Exp $
+* $XConsortium: Clock.h,v 1.17 88/09/04 12:31:03 swick Exp $
 */
 
 
@@ -63,6 +63,8 @@ SOFTWARE.
 */
 
 
+#include <X11/Xmu.h>
+
 /* Resource names used to the clock widget */
 
 #define XtNupdate		"update"
@@ -79,11 +81,6 @@ SOFTWARE.
 		/* Boolean:  */
 #define XtNpadding		"padding"
 		/* Int: amount of space around outside of clock */
-
-#define XtCBackingStore		"BackingStore"
-#define XtCReverseVideo		"ReverseVideo"
-
-#define XtRBackingStore		"BackingStore"
 
 typedef struct _ClockRec *ClockWidget;  /* completely defined in ClockPrivate.h */
 typedef struct _ClockClassRec *ClockWidgetClass;    /* completely defined in ClockPrivate.h */
