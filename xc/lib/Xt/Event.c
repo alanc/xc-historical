@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.117 90/07/27 13:49:45 swick Exp $ */
+/* $XConsortium: Event.c,v 1.3 90/10/06 15:28:01 rws Exp $ */
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 
 /***********************************************************
@@ -282,140 +282,183 @@ void XtAddRawEventHandler(widget, eventMask, other, proc, closure)
 		    proc, closure, XtListTail, FALSE, TRUE);
 }
 
-typedef struct _HashRec *HashPtr;
+typedef struct _WWPair {
+    struct _WWPair *next;
+    Window window;
+    Widget widget;
+} *WWPair;
 
-typedef struct _HashRec {
-    Display	*display;
-    Window	window;
-    Widget	widget;
-    HashPtr	next;
-} HashRec;
+typedef struct _WWTable {
+    unsigned int mask;		/* size of hash table - 1 */
+    unsigned int rehash;	/* mask - 2 */
+    unsigned int occupied;	/* number of occupied entries */
+    unsigned int fakes;		/* number occupied by WWfake */
+    Widget *entries;		/* the entries */
+    WWPair pairs;		/* bogus entries */
+} *WWTable;
 
-typedef struct {
-    unsigned int	size;
-    unsigned int	count;
-    HashPtr		entries[1];
-} HashTableRec, *HashTable;
+static Const WidgetRec WWfake;	/* placeholder for deletions */
 
-static HashTable table = NULL;
+#define WWHASH(tab,win) ((win) & tab->mask)
+#define WWREHASHVAL(tab,win) ((((win) % tab->rehash) + 2) | 1)
+#define WWREHASH(tab,idx,rehash) idx = ((idx + rehash) & tab->mask)
+#define WWTABLE(display) (_XtGetPerDisplay(display)->WWtable)
 
-static void ExpandTable();
+static void ExpandWWTable();
 
 void _XtRegisterWindow(window, widget)
-    Window window;
-    Widget widget;
+    register Window window;
+    register Widget widget;
 {
-    register HashPtr hp, *hpp;
+    register WWTable tab;
+    register int idx, rehash;
+    register Widget entry;
 
-    if ((table->count + (table->count / 4)) >= table->size) ExpandTable();
-
-    hpp = &table->entries[(unsigned int)window & (table->size-1)];
-    hp = *hpp;
-
-    while (hp != NULL) {
-        if (hp->window == window && hp->display == XtDisplay(widget)) {
-	    if (hp->widget != widget)
-		XtAppWarningMsg(XtWidgetToApplicationContext(widget),
-			"registerWindowError","xtRegisterWindow",
-                         XtCXtToolkitError,
-                        "Attempt to change already registered window.",
-                          (String *)NULL, (Cardinal *)NULL);
-	    return;
-	}
-        hpp = &hp->next;
-	hp = *hpp;
+    tab = WWTABLE(XtDisplay(widget));
+    if (window != XtWindow(widget)) {
+	WWPair pair;
+	pair = XtNew(struct _WWPair);
+	pair->next = tab->pairs;
+	pair->window = window;
+	pair->widget = widget;
+	tab->pairs = pair;
+	return;
     }
+    if ((tab->occupied + (tab->occupied >> 2)) > tab->mask)
+	ExpandWWTable(tab);
 
-    hp = *hpp = XtNew(HashRec);
-    hp->display = XtDisplay(widget);
-    hp->window = window;
-    hp->widget = widget;
-    hp->next = NULL;
-    table->count++;
+    idx = WWHASH(tab, window);
+    if ((entry = tab->entries[idx]) && entry != &WWfake) {
+	rehash = WWREHASHVAL(tab, window);
+	do {
+	    idx = WWREHASH(tab, idx, rehash);
+	} while ((entry = tab->entries[idx]) && entry != &WWfake);
+    }
+    if (!entry)
+	tab->occupied++;
+    tab->entries[idx] = widget;
 }
-
 
 void _XtUnregisterWindow(window, widget)
-    Window window;
-    Widget widget;
+    register Window window;
+    register Widget widget;
 {
-    HashPtr hp, *hpp;
+    register WWTable tab;
+    register int idx, rehash;
+    register Widget entry;
 
-    hpp = &table->entries[(unsigned int)window  & (table->size-1)];
-    hp = *hpp;
+    tab = WWTABLE(XtDisplay(widget));
+    if (window != XtWindow(widget)) {
+	WWPair *prev, pair;
 
-    while (hp != NULL) {
-        if (hp->window == window && hp->display == XtDisplay(widget)) {
-	    if (hp->widget != widget) {
-                XtAppWarningMsg(XtWidgetToApplicationContext(widget),
-			"registerWindowError","xtUnregisterWindow",
-                         XtCXtToolkitError,
-                        "Attempt to unregister invalid window.",
-                          (String *)NULL, (Cardinal *)NULL);
-
-                return;
-                }
-             else /* found entry to delete */
-                  (*hpp) = hp->next;
-                  XtFree((char*)hp);
-                  table->count--;
-                  return;
+	prev = &tab->pairs;
+	while ((pair = *prev) && pair->window != window)
+	    prev = &pair->next;
+	if (pair) {
+	    *prev = pair->next;
+	    XtFree((char *)pair);
 	}
-        hpp = &hp->next;
-	hp = *hpp;
+	return;
     }
-    
+    idx = WWHASH(tab, window);
+    if (entry = tab->entries[idx]) {
+	if (entry != widget) {
+	    rehash = WWREHASHVAL(tab, window);
+	    do {
+		idx = WWREHASH(tab, idx, rehash);
+		if (!(entry = tab->entries[idx]))
+		    return;
+	    } while (entry != widget);
+	}
+	tab->entries[idx] = (Widget)&WWfake;
+	tab->fakes++;
+    }
 }
 
-static void ExpandTable()
+static void ExpandWWTable(tab)
+    register WWTable tab;
 {
-    HashTable	oldTable = table;
-    unsigned int i;
+    unsigned int oldmask;
+    register Widget *oldentries, *entries;
+    register int oldidx, newidx, rehash;
+    register Widget entry;
 
-    i = oldTable->size * 2;
-    table = (HashTable) XtCalloc((Cardinal)1,
-	    (unsigned) sizeof(HashTableRec)+i*sizeof(HashPtr));
-
-    table->size = i;
-    table->count = 0;
-    for (i = 0; i<oldTable->size; i++) {
-	HashPtr hp;
-	hp = oldTable->entries[i];
-	while (hp != NULL) {
-	    HashPtr temp = hp;
-	    _XtRegisterWindow(hp->window, hp->widget);
-	    hp = hp->next;
-	    XtFree((char *) temp);
+    oldmask = tab->mask;
+    oldentries = tab->entries;
+    tab->occupied -= tab->fakes;
+    tab->fakes = 0;
+    if ((tab->occupied + (tab->occupied >> 2)) > tab->mask) {
+	tab->mask = (tab->mask << 1) + 1;
+	tab->rehash = tab->mask - 2;
+    }
+    entries = tab->entries = (Widget *) XtCalloc(tab->mask+1, sizeof(Widget));
+    for (oldidx = 0; oldidx <= oldmask; oldidx++) {
+	if ((entry = oldentries[oldidx]) && entry != &WWfake) {
+	    newidx = WWHASH(tab, XtWindow(entry));
+	    if (entries[newidx]) {
+		rehash = WWREHASHVAL(tab, XtWindow(entry));
+		do {
+		    newidx = WWREHASH(tab, newidx, rehash);
+		} while (entries[newidx]);
+	    }
+	    entries[newidx] = entry;
 	}
     }
-    XtFree((char *)oldTable);
+    XtFree((char *)oldentries);
 }
 
-
-/*ARGSUSED*/
 Widget XtWindowToWidget(display, window)
-    Display *display;
-    Window window;
+    register Display *display;
+    register Window window;
 {
-    register HashPtr hp;
+    register WWTable tab;
+    register int idx, rehash;
+    register Widget entry;
+    WWPair pair;
 
-    for (hp = table->entries[(unsigned int)window & (table->size-1)];
-	    hp != NULL; hp = hp->next) {
-	if (hp->window == window && hp->display == display) return hp->widget;
+    tab = WWTABLE(display);
+    idx = WWHASH(tab, window);
+    if ((entry = tab->entries[idx]) && XtWindow(entry) != window) {
+	rehash = WWREHASHVAL(tab, window);
+	do {
+	    idx = WWREHASH(tab, idx, rehash);
+	} while ((entry = tab->entries[idx]) && XtWindow(entry) != window);
     }
-
+    if (entry)
+	return entry;
+    for (pair = tab->pairs; pair; pair = pair->next) {
+	if (pair->window == window)
+	    return pair->widget;
+    }
     return NULL;
 }
 
-static void InitializeHash()
+void _XtAllocWWTable(pd)
+    XtPerDisplay pd;
 {
-    int size = sizeof(HashTableRec)+1024*sizeof(HashPtr);
+    register WWTable tab;
 
-    table = (HashTable) XtMalloc((unsigned) size);
-    bzero((char *) table, size);
+    tab = (WWTable) XtMalloc(sizeof(struct _WWTable));
+    tab->mask = 0x7f;
+    tab->rehash = tab->mask - 2;
+    tab->entries = (Widget *) XtCalloc(tab->mask+1, sizeof(Widget));
+    tab->occupied = 0;
+    tab->fakes = 0;
+    tab->pairs = NULL;
+    pd->WWtable = tab;
+}
 
-    table->size = 1024;
-    table->count = 0;
+void _XtFreeWWTable(pd)
+    register XtPerDisplay pd;
+{
+    register WWPair pair, next;
+
+    for (pair = pd->WWtable->pairs; pair; pair = next) {
+	next = pair->next;
+	XtFree((char *)pair);
+    }
+    XtFree((char *)pd->WWtable->entries);
+    XtFree((char *)pd->WWtable);
 }
 
 static Region nullRegion;
@@ -1031,7 +1074,6 @@ void _XtEventInitialize()
     initialized = TRUE;
 
     nullRegion = XCreateRegion();
-    InitializeHash();
 }
 
 void XtAddExposureToRegion(event, region)
