@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.36 88/05/17 12:02:17 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.37 88/05/18 10:28:04 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -384,7 +384,6 @@ char **argv;
 			get_ty[strlen(get_ty) - 1];
 		loginpty = open( t_ptydev, O_RDWR, 0 );
 #ifdef SYSV
-#ifdef broken
 		/* use the same tty name that everyone else will use
 		** (from ttyname)
 		*/
@@ -397,7 +396,6 @@ char **argv;
 				(void) strcpy(t_ptydev, ptr);
 			}
 		}
-#endif /* broken */
 #endif /* SYSV */
 		loginpty = open( t_ptydev, O_RDWR, 0 );
 		dup2( loginpty, 4);
@@ -860,7 +858,6 @@ spawn ()
 		ptydev[strlen(ptydev) - 1] = ttydev[strlen(ttydev) - 1] =
 			passedPty[1];
 
-#ifdef broken
 		/* use the same tty name that everyone else will use
 		** (from ttyname)
 		*/
@@ -869,7 +866,6 @@ spawn ()
 			ttydev = malloc((unsigned) (strlen(ptr) + 1));
 			(void) strcpy(ttydev, ptr);
 		}
-#endif /* broken */
 #ifndef SYSV
 		if((tslot = ttyslot()) <= 0)
 			SysError(ERROR_TSLOT2);
@@ -1268,10 +1264,6 @@ spawn ()
 		setgid (screen->gid);
 		setuid (screen->uid);
 
-		/* close any extra open (stray) file descriptors */
-		for (i = 3; i < NOFILE; i++)
-			(void) close(i);
-
 		if (command_to_exec) {
 			execvp(*command_to_exec, command_to_exec);
 			/* print error message on screen */
@@ -1486,7 +1478,7 @@ consolepr(fmt,x0,x1,x2,x3,x4,x5,x6,x7,x8,x9)
 char *fmt;
 {
 	extern int errno;
-	extern char *sys_errlist[];
+	extern char *SysErrorMsg();
 	int oerrno;
 	int f;
  	char buf[ BUFSIZ ];
@@ -1495,7 +1487,7 @@ char *fmt;
  	strcpy(buf, "xterm: ");
  	sprintf(buf+strlen(buf), fmt, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9);
  	strcat(buf, ": ");
- 	strcat(buf, sys_errlist[oerrno]);
+ 	strcat(buf, SysErrorMsg (oerrno));
  	strcat(buf, "\n");	
 	f = open("/dev/console",O_WRONLY);
 	write(f, buf, strlen(buf));
