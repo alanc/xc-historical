@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: omron.h,v 1.1 91/06/29 13:48:51 xguest Exp $
  *
  * Copyright 1991 by OMRON Corporation
  * 
@@ -129,7 +129,9 @@ extern void omronEnqueueTEvents();
 #endif
 
 /* libc */
+#ifdef X_NOT_STDC_ENV
 extern int errno;
+#endif
 
 /* os */
 extern long EnabledDevices[];
