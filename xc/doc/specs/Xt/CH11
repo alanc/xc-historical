@@ -1,4 +1,4 @@
-.\" $XConsortium: CH11,v 1.14 94/04/18 15:36:56 converse Exp $
+.\" $XConsortium: CH11,v 1.15 94/04/18 15:57:31 kaleb Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991, 1994
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -854,7 +854,7 @@ when it is done with it.
 .IP \fIlength\fP 1i
 Specifies the number of elements in \fIvalue\fP.
 .IP \fIformat\fP 1i
-Specifies the size in bits of the data in the elements of \fIvalue\fP.
+Specifies the size in bits of the data in each element of \fIvalue\fP.
 .LP
 This procedure is called by the \*(xI selection mechanism to deliver the
 requested selection to the requestor.
