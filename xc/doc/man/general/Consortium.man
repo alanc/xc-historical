@@ -1,4 +1,4 @@
-.TH XCONSORTIUM 1 "Release 5beta"  "X Version 11"
+.TH XCONSORTIUM 1 "Release 5"  "X Version 11"
 .SH NAME
 MIT X Consortium
 .SH SYNOPSIS
@@ -20,7 +20,7 @@ and administrative leadership required to make this work.  The
 Consortium is financially self-supporting, with membership open to any
 organization.  There are two categories of membership, Member (for
 large organizations) and Affiliate (for smaller organizations).
-A list of members as of the release of X11R5beta is given below.
+A list of members as of the release of X11R5 is given below.
 .PP
 The Director of the X Consortium acts as the ultimate architect for all X
 specifications and software.  The activities of the Consortium are overseen
@@ -45,7 +45,7 @@ The MIT staff of the Consortium also maintains a software and
 documentation collection, containing both Consortium-developed and
 user-contributed materials, and endeavors to make periodic distributions
 of this collection available to the public without license and for a
-minimal fee.  X11R4 is the fourth such distribution.
+minimal fee.  X11R5 is the fifth such distribution.
 The Consortium also sponsors an annual conference, open to
 the public, to promote the exchange of technical information about X.
 .SH STAFF
@@ -102,6 +102,7 @@ NCR Corporation
 NEC Corporation
 Network Computing Devices
 Nippon Telegraph and Telephone Corporation
+Oki Electric Industry Co., Ltd.
 Olivetti D.O.R.
 OMRON Corporation
 Prime Computer, Inc.
