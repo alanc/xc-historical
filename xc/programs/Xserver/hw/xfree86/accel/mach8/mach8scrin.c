@@ -1,4 +1,4 @@
-/* $XConsortium: mach8scrin.c,v 1.2 94/04/17 20:31:01 dpw Exp kaleb $ */
+/* $XConsortium: mach8scrin.c,v 1.3 95/01/06 20:57:10 kaleb Exp kaleb $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8scrin.c,v 3.1 1994/12/10 03:00:30 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
@@ -41,8 +41,6 @@ Modified for the Mach-8 by Rickard E. Faith (faith@cs.unc.edu)
 
 ********************************************************/
 
-
-/* $XConsortium: mach8scrin.c,v 1.2 94/04/17 20:31:01 dpw Exp kaleb $ */
 
 #include "X.h"
 #include "Xmd.h"

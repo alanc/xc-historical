@@ -1,4 +1,4 @@
-/* $XConsortium: xf86Io.c,v 1.4 94/12/14 14:25:59 kaleb Exp kaleb $ */
+/* $XConsortium: xf86Io.c,v 1.5 95/01/06 20:57:35 kaleb Exp kaleb $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.3 1994/12/17 10:06:11 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -452,3 +452,4 @@ GetTimeInMillis()
     return(tp.tv_sec * 1000) + (tp.tv_usec / 1000);
 }
 #endif /* !AMOEBA && !(sun || SVR4) && !MINIX */
+
