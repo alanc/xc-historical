@@ -1,4 +1,4 @@
-.\" $XConsortium: xdm.man,v 1.24 91/07/31 15:59:50 gildea Exp $
+.\" $XConsortium: xdm.man,v 1.25 91/07/31 18:16:03 gildea Exp $
 .TH XDM 1 "Release 5" "X Version 11"
 .SH NAME
 xdm \- X Display Manager with support for XDMCP
@@ -691,9 +691,13 @@ Resources for this program
 can be put into the file named by
 \fBDisplayManager.DISPLAY.resources\fP.
 .SH "SERVER SPECIFICATION"
-Each
-entry indicates a display which should constantly be managed and which is
-not using XDMCP.  Each entry consists of at least three parts:  a display
+The resource \fBDisplayManager.servers\fP gives a server specification
+or, if the values starts with a slash (/), the name of a file
+containing server specifications, one per line.
+.PP
+Each specification
+indicates a display which should constantly be managed and which is
+not using XDMCP.  Each consists of at least three parts:  a display
 name, a display class, a display type, and (for local servers) a command
 line to start the server.  A typical entry for local display number 0 would
 be:
@@ -710,7 +714,7 @@ local		local display: \fIxdm\fP must run the server
 foreign		remote display: \fIxdm\fP opens an X connection to a running server
 
 .fi
-.IP
+.PP
 The display name must be something that can be passed in the \fB\-display\fP
 option to an X program.  This string is used to generate the display-specific
 resource names, so be careful to match the
