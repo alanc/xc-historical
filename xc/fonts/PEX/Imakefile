@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.9 91/07/19 11:28:15 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.10 91/08/22 14:17:19 rws Exp $
 XCOMM 
 XCOMM Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
 XCOMM 
@@ -21,15 +21,6 @@ XCOMM CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
 XCOMM USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
 XCOMM OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 XCOMM PERFORMANCE OF THIS SOFTWARE.
-
-#if defined(i386SVR3Architecture) && HasGcc
-XCOMM We are told gcc 1.40 is a loser on System V/386 R3.2, xeyes gets a
-XCOMM floating point exception.  Why we bother with silly workarounds
-XCOMM like this is beyond me.
-CC = cc
-CCOPTIONS =
-EXTRA_LOAD_FLAGS = /usr/local/lib/gcc-gnulib
-#endif
 
 #define PassCDebugFlags
 
