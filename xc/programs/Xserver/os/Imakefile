@@ -35,10 +35,10 @@ DESSCRS =
 BOOTSTRAPCFLAGS = 
            SRCS = WaitFor.c access.c connection.c fonttype.c io.c oscolor.c \
                   osfonts.c osinit.c utils.c auth.c mitauth.c $(DESSRCS) \
- 		  xdmcp.c OtherSources
+ 		  xdmcp.c decompress.c OtherSources
            OBJS = WaitFor.o access.o connection.o fonttype.o io.o oscolor.o \
                   osfonts.o osinit.o utils.o auth.o mitauth.o $(DESOBJS) \
- 		  xdmcp.o OtherObjects
+ 		  xdmcp.o decompress.o OtherObjects
    FONT_DEFINES = FontDefines FontFilters
 #if SpecialMalloc
      OS_DEFINES = -DSPECIAL_MALLOC
