@@ -14,7 +14,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: closdev.m,v 1.5 94/01/29 15:22:04 rws Exp $
  */
 
 >>TITLE XCloseDevice XEXTENSIONS
@@ -258,7 +258,7 @@ int Min_KeyCode, Max_KeyCode, numkeys;
 	    untested("%s: No input extension key device.\n", TestName);
 	    return;
 	    }
-	if (noext())
+	if (noext(0))
 	    return;
 	device = Devs.Key;
 	client1 = opendisplay();

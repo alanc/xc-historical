@@ -14,7 +14,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: slextevnt.m,v 1.12 94/01/29 15:17:45 rws Exp $
  */
 >>TITLE XSelectExtensionEvent XEXTENSIONS
 void
@@ -465,7 +465,7 @@ XID dkp;
 	    untested("%s: No input extension key device.\n", TestName);
 	    return;
 	    }
-	if (noext())
+	if (noext(0))
 	    return;
 	DeviceKeyPress(Devs.Key, dkp, dkpclass);
 /* Create client1. */
