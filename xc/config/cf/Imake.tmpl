@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.107 91/03/25 10:48:47 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.108 91/03/25 10:50:20 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate .cf
 XCOMM configuration files.  Site-wide parameters may be set in the file
@@ -346,6 +346,9 @@ XCOMM site-specific configuration parameters - edit site.def to change
 #define HasShm			NO
 #endif
 #endif
+#ifndef NeedConstPrototypes
+#define NeedConstPrototypes	NO
+#endif
 #ifndef NeedVarargsPrototypes
 #define NeedVarargsPrototypes	NO
 #endif
@@ -663,14 +666,22 @@ XCOMM site-specific configuration parameters - edit site.def to change
 /*
  * The following supports forcing of function prototypes
  */
-#if NeedFunctionPrototypes
-#if NeedVarargsPrototypes
-#define _funcprotodef -DFUNCPROTO=2
+#if NeedFunctionPrototypes && NeedVarargsPrototypes && NeedConstPrototypes
+#define _funcprotodef -DFUNCPROTO=7
 #else
+#if NeedFunctionPrototypes && NeedVarargsPrototypes
+#define _funcprotodef -DFUNCPROTO=3
+#else
+#if NeedFunctionPrototypes && NeedConstPrototypes
+#define _funcprotodef -DFUNCPROTO=5
+#else
+#if NeedFunctionPrototypes
 #define _funcprotodef -DFUNCPROTO
-#endif
 #else
 #define _funcprotodef /**/
+#endif
+#endif
+#endif
 #endif
 #if NeedWidePrototypes
 #define _wideprotodef /**/
