@@ -1,4 +1,4 @@
-/* $XConsortium: record.h,v 1.3 94/01/30 23:47:45 rws Exp $ */
+/* $XConsortium: record.h,v 1.4 94/02/04 14:47:39 rws Exp $ */
 /***************************************************************************
  * Copyright 1994 Network Computing Devices;
  * Portions Copyright 1988 by Digital Equipment Corporation and the
@@ -44,6 +44,8 @@
 #define XRecordActive         0L    	/* If sending/receiving between client/ext */
 
 #define XRecordNumEvents      1L
+
+typedef unsigned long XRecordConfig;
 
 #ifndef _XRECORD_SERVER_
 
