@@ -9,7 +9,7 @@
  * LibName, SoRev, HasSharedData, and optionally HugLibrary and IncSubdir
  */
 
-XCOMM $XConsortium: Library.tmpl,v 1.21 93/09/05 13:39:02 rws Exp $
+XCOMM $XConsortium: Library.tmpl,v 1.22 93/09/05 17:22:57 rws Exp $
 
 #ifndef LibraryCcCmd
 #if DoSharedLib && defined(SharedLibraryCcCmd)
@@ -133,6 +133,9 @@ CenterLoadTarget(debug_src,basename.c,NullParameter,$(ALLDEFINES) options)
 LIBNAME = LibName
 
 LibraryObjectRule()
+
+#undef _LinkBuildLibrary
+#define _LinkBuildLibrary(lib) LinkBuildLibrary(lib)
 
 #if DoSharedLib
 SharedLibraryTarget($(LIBNAME),$(SoRev),$(OBJS),.,.)
