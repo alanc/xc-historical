@@ -177,5 +177,137 @@ o Numerous Allegro specific changes in support of Allegro CL version 4.0.
 
 R4.5 changes:
 
-o COMPILE-CLX changed to get compiler switches for #+mips right.
+o Fixed READ-VECTOR-CARD8 and WRITE-VECTOR-CARD8 to work with arbitrary vectors.
 
+o Changed COMPILE-CLX and LOAD-CLX to use the verbose mode of COMPILE-FILE and LOAD.
+
+o Added a conditional for HPUX to COMPILE-CLX.
+
+o Changed DISPLAY-CONNECT to save the default colormap ID in the ID database.
+
+o Added new keyword arguments :PROGRAM-SPECIFIED-POSITION-P and :PROGRAM-SPECIFIED-SIZE-P
+  to SET-WM-PROPERTIES and corresponsing slots in the WM-SIZE-HINTS structure.
+  These control the appropriate flags in the size hints.  The old way of controlling these
+  flags, with the :X, :Y, :WIDTH, and :HEIGHT arguments, is now obsolete due to changes
+  in the ICCCM.
+
+o Removed bogus declarations from the SETF expander for WM-NAME.
+
+o Defined a proper SETF function for CUT-BUFFER when in ANSI Lisp.
+
+o Fix the encoding of the revert-to argument to SET-INPUT-FOCUS.
+
+o Fix a fencepost error in STORE-COLORS.
+
+o Fix TEXT-EXTENTS and TEXT-WIDTH to handle font changes properly.
+
+o Fix TEXT-EXTENTS-LOCAL to handle negative ascents and descents properly.
+
+o Fix DRAW-IMAGE-GLYPHS to not try to write more than 255 glyphs.
+
+o Added conditionalizations for Minima, a new operating system under development at Symbolics.
+
+o Some gratuitous changes in the Symbolics-specific code.
+
+o Removed *EVENT-LOOP-VERSION* and support for pre-R4.1 compiled code.
+
+o In Lucid, fixed HOLDING-LOCK to clean up on timeout.
+
+o Gcontexts and fonts without associated displays now print correctly.
+
+Requests that send "strings" of two byte font indices can *not* assume that
+the two byte objects are being written on two byte boundaries.  The simplest
+fix was just to modify the write-*-card16 functions to use a new macro that
+writes one half of the object at a time.  The only undesirable affect of
+this is that CLIENT-MESSAGE and CHANGE-PROPERTY are slightly slower for
+card16 data than they were before.
+    NEW macro
+	-- write-card16-by-bytes			bufmac.l
+    CHANGED functions:
+	-- write-list-card16				buffer.l
+	-- write-list-card16-with-transform		""
+	-- write-simple-array-card16			""
+	-- write-simple-array-card16-with-transform	""
+	-- write-vector-card16				""
+	-- write-vector-card16-with-transform		""
+
+Print functions changed to use write-string instead of princ where
+possible.  This allows for much cleaner printing when *print-circle* is
+true -- princ is required to use *print-circle*, even for strings!
+Write-string is, of course, not so burdened.
+	-- print-color					clx.l
+	-- print-display				""
+	-- print-drawable				""
+	-- print-visual-info				""
+	-- print-colormap				""
+	-- print-cursor					""
+	-- print-gcontext				""
+	-- print-screen					""
+	-- print-font					""
+	-- print-resource-database			resource.l
+	-- print-image					image.l
+
+Changes to display tracing: In a multiprocessing system is it very helpful
+to know what process wrote or read certain requests.  Thus I have modified
+the format of the trace-history list.  It is now an alist of: ((id .
+more-info) .  byte-vector).  (more-info is a list returned by the
+trace-more-info function).  Also added the ability to suspend and resume
+tracing without destroying the trace history.  Renamed 'display-trace' to
+'show-trace' to avoid confusion.  (Having both 'trace-display and
+'display-trace wasn't such a hot idea).
+	-- lots-o-stuff					debug/trace.l
+
+Image-glyph functions had a different argument order than non-image glyph
+functions.  Image-glyph functions changed to be compatible with others.
+Declarations in draw-glyphs* functions were wrong.
+	-- draw-image-glyphs				text.l
+	-- draw-image-glyphs8				text.l
+	-- draw-image-glyphs16				text.l
+	-- draw-glyphs8					text.l
+	-- draw-glyphs16				text.l
+
+Quote #.'ed arrays to accomodate CLTL1 lisps
+	-- empty-data constants				image.l
+
+Set-input-focus fix wasn't finished
+	-- set-input-focus				requests.l
+
+Standardized strange integer type specifier in keysym macro
+	-- keysym					translate.l
+
+===============================================================================
+Franz specific changes, applicable to Allegro and Extended Common Lisps:
+(note that all these changes are #+excl or #+allegro, so if you're not
+ using our product these changes are "commented" out)
+-----------------------------------------------------------------------
+Atom-cache hash table type changed to #'equal.  Resource-id-map has table
+type changed to #'equal.
+    NEW macro
+	-- atom-cache-map-test				depdefs.l
+    CHANGED def-clx-class
+	-- display					clx.l
+    CHANGED macro
+	-- resource-id-map-test				depdefs.l
+
+Don't bother to import require, provide, since we're using the CLTL1
+package.  Also put the requires and provides inside eval-when to make the
+compiler happy.  Don't redefine typep, instead push our customizations onto
+the typep handling list.
+	-- toplevel forms				excldep.l
+
+Old code removed from file
+	-- removed some cmacros				exclcmac.l
+
+Allegro >=4.0 now does support with-standard-io-syntax and
+print-unreadable-object.
+	-- with-standard-io-syntax{,-function}		dependent.l
+	-- print-unreadable-object{,-function}		depdefs.l
+
+Conditionalizations in Makefile cleaned up.
+	-- 						exclMakefile
+
+Descriptive comment added to holding-lock
+	-- holding-lock					dependent.l
+
+Added typep transformers for all CLX types.
+	--						excldep.cl

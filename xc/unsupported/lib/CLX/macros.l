@@ -381,7 +381,7 @@
        (ecase format
 	 ((card8 int8)
 	  (maker 4))
-	 ((card16 int16)
+	 ((card16 int16 char2b)
 	  (maker 2))
 	 ((card32 int32)
 	  (maker 1)))))))

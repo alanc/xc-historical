@@ -64,6 +64,11 @@
 #-(or clx-ansi-common-lisp lcl3.0)
 (declaim (declaration dynamic-extent))
 
+;;; IGNORABLE var -- Tells the compiler that the variable might or might not be used.
+
+#-clx-ansi-common-lisp
+(declaim (declaration ignorable))
+
 ;;; ARRAY-REGISTER var1 var2 ... -- The variables mentioned are locals (not
 ;;; args) that hold vectors.  
 
@@ -127,7 +132,11 @@
 
 (defmacro resource-id-map-test ()
   #+excl '#'equal
-  #-excl '#'eql)		    ; (eq fixnum fixnum) is not guaranteed.
+  #-excl '#'eql)
+					; (eq fixnum fixnum) is not guaranteed.
+(defmacro atom-cache-map-test ()
+  #+excl '#'equal
+  #-excl '#'eq)
 
 (defmacro keysym->character-map-test ()
   #+excl '#'equal
@@ -136,7 +145,7 @@
 ;;; You must define this to match the real byte order.  It is used by
 ;;; overlapping array and image code.
 
-#+(or lispm vax little-endian)
+#+(or lispm vax little-endian Minima)
 (eval-when (eval compile load)
   (pushnew :clx-little-endian *features*))
 
@@ -385,157 +394,119 @@
 )
 
 (defmacro def-clx-class ((name &rest options) &body slots)
-  (let ((clos-package (or (find-package :clos)
-			  (find-package :pcl)
-			  (let ((lisp-pkg
-				  (find-package
-				    #-clx-ansi-common-lisp :lisp
-				    #+clx-ansi-common-lisp :common-lisp)))
-			    (and (find-symbol (string 'defclass) lisp-pkg)
-				 lisp-pkg)))))
-    (if (and clos-package
-	     (or (not (listp *def-clx-class-use-defclass*))
-		 (member name *def-clx-class-use-defclass*)))
-	(let ((constructor t)
-	      (constructor-args t)
-	      (include nil)
-	      (print-function nil)
-	      (copier t)
-	      (predicate t))
-	  (dolist (option options)
-	    (ecase (pop option)
-	      (:constructor
-		(setf constructor (pop option))
-		(setf constructor-args (if (null option) t (pop option))))
-	      (:include
-		(setf include (pop option)))
-	      (:print-function
-		(setf print-function (pop option)))
-	      (:copier
-		(setf copier (pop option)))
-	      (:predicate
-		(setf predicate (pop option)))))
-	  (flet ((cintern (&rest symbols)
-		   (intern (apply #'concatenate 'simple-string
-				  (mapcar #'symbol-name symbols))
-			   *package*))
-		 (kintern (symbol)
-		   (intern (symbol-name symbol) (find-package :keyword)))
-		 (closintern (symbol)
-		   (intern (symbol-name symbol) clos-package)))
-	    (when (eq constructor t)
-	      (setf constructor (cintern 'make- name)))
-	    (when (eq copier t)
-	      (setf copier (cintern 'copy- name)))
-	    (when (eq predicate t)
-	      (setf predicate (cintern name '-p)))
-	    (when include
-	      (setf slots (append (get include 'def-clx-class) slots)))
-	    (let* ((n-slots (length slots))
-		   (slot-names (make-list n-slots))
-		   (slot-initforms (make-list n-slots))
-		   (slot-types (make-list n-slots)))
-	      (dotimes (i n-slots)
-		(let ((slot (elt slots i)))
-		  (setf (elt slot-names i) (pop slot))
-		  (setf (elt slot-initforms i) (pop slot))
-		  (setf (elt slot-types i) (getf slot :type t))))
-	      `(progn
+  (if (or (not (listp *def-clx-class-use-defclass*))
+	  (member name *def-clx-class-use-defclass*))
+      (let ((clos-package #+clx-ansi-common-lisp
+			  (find-package :common-lisp)
+			  #-clx-ansi-common-lisp
+			  (or (find-package :clos)
+			      (find-package :pcl)
+			      (let ((lisp-pkg (find-package :lisp)))
+				(and (find-symbol (string 'defclass) lisp-pkg)
+				     lisp-pkg))))
+	    (constructor t)
+	    (constructor-args t)
+	    (include nil)
+	    (print-function nil)
+	    (copier t)
+	    (predicate t))
+	(dolist (option options)
+	  (ecase (pop option)
+	    (:constructor
+	      (setf constructor (pop option))
+	      (setf constructor-args (if (null option) t (pop option))))
+	    (:include
+	      (setf include (pop option)))
+	    (:print-function
+	      (setf print-function (pop option)))
+	    (:copier
+	      (setf copier (pop option)))
+	    (:predicate
+	      (setf predicate (pop option)))))
+	(flet ((cintern (&rest symbols)
+		 (intern (apply #'concatenate 'simple-string
+				(mapcar #'symbol-name symbols))
+			 *package*))
+	       (kintern (symbol)
+			(intern (symbol-name symbol) (find-package :keyword)))
+	       (closintern (symbol)
+		 (intern (symbol-name symbol) clos-package)))
+	  (when (eq constructor t)
+	    (setf constructor (cintern 'make- name)))
+	  (when (eq copier t)
+	    (setf copier (cintern 'copy- name)))
+	  (when (eq predicate t)
+	    (setf predicate (cintern name '-p)))
+	  (when include
+	    (setf slots (append (get include 'def-clx-class) slots)))
+	  (let* ((n-slots (length slots))
+		 (slot-names (make-list n-slots))
+		 (slot-initforms (make-list n-slots))
+		 (slot-types (make-list n-slots)))
+	    (dotimes (i n-slots)
+	      (let ((slot (elt slots i)))
+		(setf (elt slot-names i) (pop slot))
+		(setf (elt slot-initforms i) (pop slot))
+		(setf (elt slot-types i) (getf slot :type t))))
+	    `(progn
 
-		 (eval-when (compile load eval)
-		   (setf (get ',name 'def-clx-class) ',slots))
+	       (eval-when (compile load eval)
+		 (setf (get ',name 'def-clx-class) ',slots))
 
-		 ;; From here down are the system-specific expansions:
+	       ;; From here down are the system-specific expansions:
 
-		 ,(cond (clos-package
-			 `(within-definition (,name def-clx-class)
-			    (,(closintern 'defclass)
-			     ,name ,(and include `(,include))
-			     (,@(map 'list
-				     #'(lambda (slot-name slot-initform slot-type)
-					 `(,slot-name
-					   :initform ,slot-initform :type ,slot-type
-					   :accessor ,(cintern name '- slot-name)
-					   ,@(when (and constructor
-							(or (eq constructor-args t)
-							    (member slot-name
-								    constructor-args)))
-					       `(:initarg ,(kintern slot-name)))
-					   ))
-				     slot-names slot-initforms slot-types)))
-			    ,(when constructor
-			       (if (eq constructor-args t)
-				   `(defun ,constructor (&rest args)
-				      (apply #',(closintern 'make-instance)
-					     ',name args))
-				   `(defun ,constructor ,constructor-args
-				      (,(closintern 'make-instance) ',name
-				       ,@(mapcan #'(lambda (slot-name)
-						     (and (member slot-name slot-names)
-							  `(,(kintern slot-name) ,slot-name)))
-						 constructor-args)))))
-			    ,(when predicate
-			       #+allegro
-			       `(progn
-				  (defmethod ,predicate (object)
-				    (declare (ignore object))
-				    nil)
-				  (defmethod ,predicate ((object ,name))
-				    t))
-			       #-allegro
-			       `(defun ,predicate (object)
-				  (typep object ',name)))
-			    ,(when copier
-			       `(,(closintern 'defmethod) ,copier ((.object. ,name))
-				 (,(closintern 'with-slots) ,slot-names .object.
-				  (,(closintern 'make-instance) ',name
-				   ,@(mapcan #'(lambda (slot-name)
-						 `(,(kintern slot-name) ,slot-name))
-					     slot-names)))))
-			    ,(when print-function
-			       `(,(closintern 'defmethod)
-				 ,(closintern 'print-object)
-				 ((object ,name) stream)
-				 (,print-function object stream 0)))))
-
-			#+Genera
-			(t
-			 `(within-definition (,name def-clx-class)
-			    (flavor:defflavor ,name
-				    (,@(map 'list
-					    #'(lambda (slot-name slot-initform)
-						`(,slot-name ,slot-initform))
-					    slot-names slot-initforms))
-				    ,(and include `(,include))
-			      :initable-instance-variables
-			      :locatable-instance-variables
-			      :readable-instance-variables
-			      :writable-instance-variables
-			      ,(if constructor
-				   `(:constructor ,constructor
-				     ,(if (eq constructor-args t)
-					  `(&key ,@slot-names)
-					  constructor-args))
-				   :abstract-flavor))
-			    ,(when predicate
-			       `(defun ,predicate (object)
-				  (typep object ',name)))
-			    ,(when copier
-			       `(flavor:defmethod (,copier ,name) ()
-				  (flavor:make-instance
-				    ',name
-				    ,@(mapcan #'(lambda (slot-name)
-						  `(,(kintern (symbol-name slot-name))
-						    ,slot-name))
-					      slot-names))))
-			    ,(when print-function
-			       `(flavor:defmethod (sys:print-self ,name)
-						  (stream depth *print-escape*)
-				  (,print-function sys:self stream depth)))
-			    (flavor:compile-flavor-methods ,name))))))))
-	`(within-definition (,name def-clx-class)
-	   (defstruct (,name ,@options)
-	     ,@slots)))))
+	       (within-definition (,name def-clx-class)
+		 (,(closintern 'defclass)
+		  ,name ,(and include `(,include))
+		  (,@(map 'list
+			  #'(lambda (slot-name slot-initform slot-type)
+			      `(,slot-name
+				:initform ,slot-initform :type ,slot-type
+				:accessor ,(cintern name '- slot-name)
+				,@(when (and constructor
+					     (or (eq constructor-args t)
+						 (member slot-name
+							 constructor-args)))
+				    `(:initarg ,(kintern slot-name)))
+				))
+			  slot-names slot-initforms slot-types)))
+		 ,(when constructor
+		    (if (eq constructor-args t)
+			`(defun ,constructor (&rest args)
+			   (apply #',(closintern 'make-instance)
+				  ',name args))
+			`(defun ,constructor ,constructor-args
+			   (,(closintern 'make-instance) ',name
+			    ,@(mapcan #'(lambda (slot-name)
+					  (and (member slot-name slot-names)
+					       `(,(kintern slot-name) ,slot-name)))
+				      constructor-args)))))
+		 ,(when predicate
+		    #+allegro
+		    `(progn
+		       (defmethod ,predicate (object)
+			 (declare (ignore object))
+			 nil)
+		       (defmethod ,predicate ((object ,name))
+			 t))
+		    #-allegro
+		    `(defun ,predicate (object)
+		       (typep object ',name)))
+		 ,(when copier
+		    `(,(closintern 'defmethod) ,copier ((.object. ,name))
+		      (,(closintern 'with-slots) ,slot-names .object.
+		       (,(closintern 'make-instance) ',name
+			,@(mapcan #'(lambda (slot-name)
+				      `(,(kintern slot-name) ,slot-name))
+				  slot-names)))))
+		 ,(when print-function
+		    `(,(closintern 'defmethod)
+		      ,(closintern 'print-object)
+		      ((object ,name) stream)
+		      (,print-function object stream 0))))))))
+      `(within-definition (,name def-clx-class)
+	 (defstruct (,name ,@options)
+	   ,@slots))))
 
 #+Genera
 (progn
@@ -604,7 +575,7 @@
 ;; Printing routines.
 ;;-----------------------------------------------------------------------------
 
-#-(and (not allegro-v4.0) (or clx-ansi-common-lisp Genera))
+#-(or clx-ansi-common-lisp Genera)
 (defun print-unreadable-object-function (object stream type identity function)
   (declare #+lispm
 	   (sys:downward-funarg function))
@@ -629,7 +600,7 @@
   (princ ">" stream)
   nil)
   
-#-(and (not allegro-v4.0) (or clx-ansi-common-lisp Genera))
+#-(or clx-ansi-common-lisp Genera)
 (defmacro print-unreadable-object
 	  ((object stream &key type identity) &body body)
   (if body

@@ -1040,8 +1040,6 @@
 	(setf (display-new-events display) (reply-next event))))
     (values event nil)))
 
-(defvar *event-loop-version* 0)
-
 (defun dequeue-event (display event)
   (declare (type display display)
 	   (type reply-buffer event)
@@ -1086,19 +1084,14 @@
     (declare (type (or null reply-buffer) next))
     (when (symbol-value current-event-discarded-p-symbol)
       (setf (symbol-value current-event-discarded-p-symbol) nil)
-      (ecase *event-loop-version*
-	;; in version 0 discard-current-event dequeues the event.
-	(0 )
-	;; in version 1 event-loop-step-after dequeues the event.
-	(1 (setq next (dequeue-event display event))))
+      (setq next (dequeue-event display event))
       (deallocate-event event))
     (setf (symbol-value current-event-symbol) next)))
 
 (defmacro event-loop ((display event timeout force-output-p discard-p) &body body)
   ;; Bind EVENT to the events for DISPLAY.
   ;; This is the "GUTS" of process-event and event-case.
-  `(let ((*event-loop-version* 1)
-	 (.display. ,display)
+  `(let ((.display. ,display)
 	 (.timeout. ,timeout)
 	 (.force-output-p. ,force-output-p)
 	 (.discard-p. ,discard-p))
@@ -1149,12 +1142,6 @@
     (declare (type list symbols)
 	     (type (or null reply-buffer) event))
     (unless (null event)
-      (ecase *event-loop-version*
-	;; in version 0 discard-current-event dequeues the event.
-	(0 (setf (reply-next (the reply-buffer event))
-		 (dequeue-event display event)))
-	;; in version 1 event-loop-step-after dequeues the event.
-	(1 ))
       ;; Set the discarded-p flag
       (let ((current-event-discarded-p-symbol (second symbols)))
 	(declare (type symbol current-event-discarded-p-symbol))

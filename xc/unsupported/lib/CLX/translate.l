@@ -62,7 +62,7 @@
 	   (type list bytes)
 	   (values keysym))
   (typecase keysym
-    ((integer 0)
+    ((integer 0 *)
      (dolist (b bytes keysym) (setq keysym (+ (ash keysym 8) b))))
     (otherwise
      (or (car (character->keysyms keysym))

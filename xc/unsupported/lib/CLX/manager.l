@@ -26,8 +26,6 @@
   (get-property window :WM_NAME :type :STRING :result-type 'string :transform #'card8->char))
 
 (defsetf wm-name (window) (name)
-  (declare (type window window))
-  (declare (values string))
   `(set-string-property ,window :WM_NAME ,name))
 
 (defun set-string-property (window property string)
@@ -227,7 +225,6 @@
 ;; WM_SIZE_HINTS
 
 (def-clx-class (wm-size-hints)
-  ;; Defaulted T to put the burden of remembering these on widget programmers.
   (user-specified-position-p nil :type boolean) ;; True when user specified x y
   (user-specified-size-p nil :type boolean)     ;; True when user specified width height
   (x nil :type (or null int16))			;; Obsolete
@@ -244,7 +241,10 @@
   (max-aspect nil :type (or null number))
   (base-width nil :type (or null card16))
   (base-height nil :type (or null card16))
-  (win-gravity nil :type (or null win-gravity)))
+  (win-gravity nil :type (or null win-gravity))
+  (program-specified-position-p nil :type boolean) ;; True when program specified x y
+  (program-specified-size-p nil :type boolean)     ;; True when program specified width height
+  )
 
 
 (defun wm-normal-hints (window)
@@ -280,114 +280,104 @@
   (declare (type (or null (simple-vector *)) vector))
   (declare (values (or null wm-size-hints)))
   (when vector
-    (let ((usposition 0)		;User Specified position
-	  (ussize 1)			;User Specified size
-	  (pposition 2)			;Program specified position
-	  (psize 3)			;Program specified size
-	  (pminsize 4)			;Program specified minimum size
-	  (pmaxsize 5)			;Program specified maximum size
-	  (presizeinc 6)		;Program specified resize increments
-	  (paspect 7)			;Program specfied min and max aspect ratios
-	  (pbasesize 8)			;Program specified base size
-	  (pwingravity 9)		;Program specified window gravity
-	  )
-      (let ((flags (aref vector 0))
-	    (hints (make-wm-size-hints)))
-	(declare (type card16 flags)
-		 (type wm-size-hints hints))
-	(when (or (logbitp usposition flags)
-		  (logbitp pposition flags))
-	  (setf (wm-size-hints-user-specified-position-p hints) (logbitp usposition flags)
-		(wm-size-hints-x hints) (aref vector 1)
-		(wm-size-hints-y hints) (aref vector 2)))
-	(when (or (logbitp ussize flags)
-		  (logbitp psize flags))
-	  (setf (wm-size-hints-user-specified-size-p hints) (logbitp usposition flags)
-		(wm-size-hints-width hints) (aref vector 3)
-		(wm-size-hints-height hints) (aref vector 4)))
-	(when (logbitp pminsize flags)
-	  (setf (wm-size-hints-min-width hints) (aref vector 5)
-		(wm-size-hints-min-height hints) (aref vector 6)))
-	(when (logbitp pmaxsize flags)
-	  (setf (wm-size-hints-max-width hints) (aref vector 7)
-		(wm-size-hints-max-height hints) (aref vector 8)))
-	(when (logbitp presizeinc flags)
-	  (setf (wm-size-hints-width-inc hints) (aref vector 9)
-		(wm-size-hints-height-inc hints) (aref vector 10)))
-  	(when (logbitp paspect flags)
- 	  (setf (wm-size-hints-min-aspect hints) (/ (aref vector 11) (aref vector 12))
- 		(wm-size-hints-max-aspect hints) (/ (aref vector 13) (aref vector 14))))
- 	(when (> (length vector) 15)
- 	  ;; This test is for backwards compatibility since old Xlib programs
- 	  ;; can set a size-hints structure that is too small.  See ICCCM.
-  	  (when (logbitp pbasesize flags)
-  	    (setf (wm-size-hints-base-width hints) (aref vector 15)
-  		  (wm-size-hints-base-height hints) (aref vector 16)))
-  	  (when (logbitp pwingravity flags)
-  	    (setf (wm-size-hints-win-gravity hints)
- 	      (decode-type (member-vector *win-gravity-vector*) (aref vector 17)))))
-	hints))))
+    (let ((flags (aref vector 0))
+	  (hints (make-wm-size-hints)))
+      (declare (type card16 flags)
+	       (type wm-size-hints hints))
+      (setf (wm-size-hints-user-specified-position-p hints) (logbitp 0 flags))
+      (setf (wm-size-hints-user-specified-size-p hints) (logbitp 1 flags))
+      (setf (wm-size-hints-program-specified-position-p hints) (logbitp 2 flags))
+      (setf (wm-size-hints-program-specified-size-p hints) (logbitp 3 flags))
+      (when (logbitp 4 flags)
+	(setf (wm-size-hints-min-width hints) (aref vector 5)
+	      (wm-size-hints-min-height hints) (aref vector 6)))
+      (when (logbitp 5 flags)
+	(setf (wm-size-hints-max-width hints) (aref vector 7)
+	      (wm-size-hints-max-height hints) (aref vector 8)))
+      (when (logbitp 6 flags)
+	(setf (wm-size-hints-width-inc hints) (aref vector 9)
+	      (wm-size-hints-height-inc hints) (aref vector 10)))
+      (when (logbitp 7 flags)
+	(setf (wm-size-hints-min-aspect hints) (/ (aref vector 11) (aref vector 12))
+	      (wm-size-hints-max-aspect hints) (/ (aref vector 13) (aref vector 14))))
+      (when (> (length vector) 15)
+	;; This test is for backwards compatibility since old Xlib programs
+	;; can set a size-hints structure that is too small.  See ICCCM.
+	(when (logbitp 8 flags)
+	  (setf (wm-size-hints-base-width hints) (aref vector 15)
+		(wm-size-hints-base-height hints) (aref vector 16)))
+	(when (logbitp 9 flags)
+	  (setf (wm-size-hints-win-gravity hints)
+		(decode-type (member-vector *win-gravity-vector*) (aref vector 17)))))
+      ;; Obsolete fields
+      (when (or (logbitp 0 flags) (logbitp 2 flags))
+	(setf (wm-size-hints-x hints) (aref vector 1)
+	      (wm-size-hints-y hints) (aref vector 2)))
+      (when (or (logbitp 1 flags) (logbitp 3 flags))
+	(setf (wm-size-hints-width hints) (aref vector 3)
+	      (wm-size-hints-height hints) (aref vector 4)))
+      hints)))
 
 (defun encode-wm-size-hints (hints)
   (declare (type wm-size-hints hints))
   (declare (values simple-vector))
-  (let ((usposition  #b1)		;User Specified position
-	(ussize      #b10)		;User Specified size
-	(pposition   #b100)		;Program specified position
-	(psize       #b1000)		;Program specified size
-	(pminsize    #b10000)		;Program specified minimum size
-	(pmaxsize    #b100000)		;Program specified maximum size
-	(presizeinc  #b1000000)		;Program specified resize increments
-	(paspect     #b10000000)	;Program specfied min and max aspect ratios
-	(pbasesize   #b100000000)	;Program specfied base size
-	(pwingravity #b1000000000)	;Program specfied window gravity
-	)
-    (let ((vector (make-array 18 :initial-element 0))
-	  (flags  (if (wm-size-hints-user-specified-position-p hints) usposition pposition)))
-      (declare (type (simple-vector 18) vector)
-	       (type card16 flags)) 
-      (when (and (wm-size-hints-x hints) (wm-size-hints-y hints)) 
-	(setf (aref vector 1) (wm-size-hints-x hints)
-	      (aref vector 2) (wm-size-hints-y hints)))
-      (setf flags (logior flags (if (wm-size-hints-user-specified-position-p hints) ussize psize)))
-      (when (and (wm-size-hints-width hints) (wm-size-hints-height hints))
-	(setf (aref vector 3) (wm-size-hints-width hints)
-	      (aref vector 4) (wm-size-hints-height hints)))
-      
-      (when (and (wm-size-hints-min-width hints) (wm-size-hints-min-height hints))
-	(setf flags (logior flags pminsize)
-	      (aref vector 5) (wm-size-hints-min-width hints)
-	      (aref vector 6) (wm-size-hints-min-height hints)))
-      (when (and (wm-size-hints-max-width hints) (wm-size-hints-max-height hints))
-	(setf flags (logior flags pmaxsize)
-	      (aref vector 7) (wm-size-hints-max-width hints)
-	      (aref vector 8) (wm-size-hints-max-height hints)))
-      (when (and (wm-size-hints-width-inc hints) (wm-size-hints-height-inc hints))
-	(setf flags (logior flags presizeinc)
-	      (aref vector 9) (wm-size-hints-width-inc hints)
-	      (aref vector 10) (wm-size-hints-height-inc hints)))
-      (let ((min-aspect (wm-size-hints-min-aspect hints))
-	    (max-aspect (wm-size-hints-max-aspect hints)))
-	(when (and min-aspect max-aspect)
-	  (setf flags (logior flags paspect)
-		min-aspect (rationalize min-aspect)
-		max-aspect (rationalize max-aspect)
-		(aref vector 11) (numerator min-aspect)
-		(aref vector 12) (denominator min-aspect)
-		(aref vector 13) (numerator max-aspect)
-		(aref vector 14) (denominator max-aspect))))
-      (when (and (wm-size-hints-base-width hints)
-		 (wm-size-hints-base-height hints))
-	(setf flags (logior flags pbasesize)
-	      (aref vector 15) (wm-size-hints-base-width hints)
-	      (aref vector 16) (wm-size-hints-base-height hints)))
-      (when (wm-size-hints-win-gravity hints)
-	(setf flags (logior flags pwingravity)
-	      (aref vector 17) (encode-type
-				(member-vector *win-gravity-vector*)
-				(wm-size-hints-win-gravity hints))))
-      (setf (aref vector 0) flags)
-      vector)))
+  (let ((vector (make-array 18 :initial-element 0))
+	(flags 0))
+    (declare (type (simple-vector 18) vector)
+	     (type card16 flags)) 
+    (when (wm-size-hints-user-specified-position-p hints)
+      (setf (ldb (byte 1 0) flags) 1))
+    (when (wm-size-hints-user-specified-size-p hints)
+      (setf (ldb (byte 1 1) flags) 1))
+    (when (wm-size-hints-program-specified-position-p hints)
+      (setf (ldb (byte 1 2) flags) 1))
+    (when (wm-size-hints-program-specified-size-p hints)
+      (setf (ldb (byte 1 3) flags) 1))
+    (when (and (wm-size-hints-min-width hints) (wm-size-hints-min-height hints))
+      (setf (ldb (byte 1 4) flags) 1
+	    (aref vector 5) (wm-size-hints-min-width hints)
+	    (aref vector 6) (wm-size-hints-min-height hints)))
+    (when (and (wm-size-hints-max-width hints) (wm-size-hints-max-height hints))
+      (setf (ldb (byte 1 5) flags) 1
+	    (aref vector 7) (wm-size-hints-max-width hints)
+	    (aref vector 8) (wm-size-hints-max-height hints)))
+    (when (and (wm-size-hints-width-inc hints) (wm-size-hints-height-inc hints))
+      (setf (ldb (byte 1 6) flags) 1
+	    (aref vector 9) (wm-size-hints-width-inc hints)
+	    (aref vector 10) (wm-size-hints-height-inc hints)))
+    (let ((min-aspect (wm-size-hints-min-aspect hints))
+	  (max-aspect (wm-size-hints-max-aspect hints)))
+      (when (and min-aspect max-aspect)
+	(setf (ldb (byte 1 7) flags) 1
+	      min-aspect (rationalize min-aspect)
+	      max-aspect (rationalize max-aspect)
+	      (aref vector 11) (numerator min-aspect)
+	      (aref vector 12) (denominator min-aspect)
+	      (aref vector 13) (numerator max-aspect)
+	      (aref vector 14) (denominator max-aspect))))
+    (when (and (wm-size-hints-base-width hints)
+	       (wm-size-hints-base-height hints))
+      (setf (ldb (byte 1 8) flags) 1
+	    (aref vector 15) (wm-size-hints-base-width hints)
+	    (aref vector 16) (wm-size-hints-base-height hints)))
+    (when (wm-size-hints-win-gravity hints)
+      (setf (ldb (byte 1 9) flags) 1
+	    (aref vector 17) (encode-type
+			       (member-vector *win-gravity-vector*)
+			       (wm-size-hints-win-gravity hints))))
+    ;; Obsolete fields
+    (when (and (wm-size-hints-x hints) (wm-size-hints-y hints)) 
+      (unless (wm-size-hints-user-specified-position-p hints)
+	(setf (ldb (byte 1 2) flags) 1))
+      (setf (aref vector 1) (wm-size-hints-x hints)
+	    (aref vector 2) (wm-size-hints-y hints)))
+    (when (and (wm-size-hints-width hints) (wm-size-hints-height hints))
+      (unless (wm-size-hints-user-specified-size-p hints)
+	(setf (ldb (byte 1 3) flags) 1))
+      (setf (aref vector 3) (wm-size-hints-width hints)
+	    (aref vector 4) (wm-size-hints-height hints)))
+    (setf (aref vector 0) flags)
+    vector))
 
 ;;-----------------------------------------------------------------------------
 ;; Icon_Size
@@ -470,8 +460,10 @@
 			  name icon-name resource-name resource-class command
 			  client-machine hints normal-hints zoom-hints
 			  ;; the following are used for wm-normal-hints
-			  user-specified-position-p
-			  user-specified-size-p
+			  (user-specified-position-p nil usppp)
+			  (user-specified-size-p nil usspp)
+			  (program-specified-position-p nil psppp)
+			  (program-specified-size-p nil psspp)
 			  x y width height min-width min-height max-width max-height
 			  width-inc height-inc min-aspect max-aspect
 			  base-width base-height win-gravity
@@ -484,6 +476,7 @@
 		   client-machine hints normal-hints
 		   ;; the following are used for wm-normal-hints
 		   user-specified-position-p user-specified-size-p
+		   program-specified-position-p program-specified-size-p
 		   min-width min-height max-width max-height
 		   width-inc height-inc min-aspect max-aspect
 		   base-width base-height win-gravity
@@ -495,7 +488,8 @@
 	   (type (or null list) command)
 	   (type (or null wm-hints) hints)
 	   (type (or null wm-size-hints) normal-hints zoom-hints)
-	   (type (or null boolean) user-specified-position-p user-specified-size-p)
+	   (type boolean user-specified-position-p user-specified-size-p)
+	   (type boolean program-specified-position-p program-specified-size-p)
 	   (type (or null int16) x y)
 	   (type (or null card16) width height min-width min-height max-width max-height width-inc height-inc base-width base-height)
 	   (type (or null win-gravity) win-gravity)
@@ -532,6 +526,7 @@
   (if (dolist (arg '(:x :y :width :height :min-width :min-height :max-width :max-height
 			:width-inc :height-inc :min-aspect :max-aspect
 			:user-specified-position-p :user-specified-size-p
+			:program-specified-position-p :program-specified-size-p
 			:base-width :base-height :win-gravity))
 	(when (getf options arg) (return t)))
       (let ((size (if normal-hints (copy-wm-size-hints normal-hints) (make-wm-size-hints))))
@@ -550,10 +545,14 @@
 	(when base-width (setf (wm-size-hints-base-width size) base-width))
 	(when base-height (setf (wm-size-hints-base-height size) base-height))
 	(when win-gravity (setf (wm-size-hints-win-gravity size) win-gravity))
-	(when user-specified-position-p (setf (wm-size-hints-user-specified-position-p size)
-					      user-specified-position-p))
-	(when user-specified-size-p (setf (wm-size-hints-user-specified-size-p size)
-					  user-specified-size-p))
+	(when usppp
+	  (setf (wm-size-hints-user-specified-position-p size) user-specified-position-p))
+	(when usspp
+	  (setf (wm-size-hints-user-specified-size-p size) user-specified-size-p))
+	(when psppp
+	  (setf (wm-size-hints-program-specified-position-p size) program-specified-position-p))
+	(when psspp
+	  (setf (wm-size-hints-program-specified-size-p size) program-specified-size-p))
 	(setf (wm-normal-hints window) size))
       (when normal-hints (setf (wm-normal-hints window) normal-hints)))
   (when zoom-hints (setf (wm-zoom-hints window) zoom-hints))
@@ -724,6 +723,7 @@
 ;;			        (transform #'char->card8) (start 0) end) (data)
 ;; In order to avoid having to pass positional parameters to set-cut-buffer,
 ;; We've got to do the following.  WHAT A PAIN...
+#-clx-ansi-common-lisp
 (define-setf-method cut-buffer (display &rest option-list)
   (declare (dynamic-extent option-list))
   (do* ((options (copy-list option-list))
@@ -745,8 +745,11 @@
       (push (cadr option) values)
       (setf (cadr option) x))))
 
-(defun set-cut-buffer (data display &key (buffer 0) (type :STRING) (format 8)
-		       (start 0) end (transform #'char->card8))
+(defun
+  #+clx-ansi-common-lisp (setf cut-buffer)
+  #-clx-ansi-common-lisp set-cut-buffer
+  (data display &key (buffer 0) (type :STRING) (format 8)
+	(start 0) end (transform #'char->card8))
   (declare (type sequence data)
 	   (type display display)
 	   (type (integer 0 7) buffer)
@@ -757,7 +760,7 @@
 	   (type (or null (function (integer) t)) transform))
   (let* ((root (screen-root (first (display-roots display))))
 	 (property (aref '#(:CUT_BUFFER0 :CUT_BUFFER1 :CUT_BUFFER2 :CUT_BUFFER3
-			    :CUT_BUFFER4 :CUT_BUFFER5 :CUT_BUFFER6 :CUT_BUFFER7)
+					 :CUT_BUFFER4 :CUT_BUFFER5 :CUT_BUFFER6 :CUT_BUFFER7)
 			 buffer)))
     (change-property root property data type format :transform transform :start start :end end)
     data))

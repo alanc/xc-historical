@@ -22,55 +22,95 @@
 ;; id is the request number for writes, :reply for replies, :event for events and
 ;; :error for errors.  The alist is kept in reverse order (most recent first)
 
+;; In a multiprocessing system is it very helpful to know what process wrote or
+;; read certain requests.  Thus I have modified the format of the trace-history
+;; list.  It is now an alist of: ((id . more-info) . byte-vector).
+;; (more-info is a list returned by the trace-more-info function).
+;; Also added the ability to suspend and resume tracing without destroying the
+;; trace history.  Renamed 'display-trace' to 'show-trace' to avoid confusion.
+;; 7feb91 -- jdi
+
 ;;; Created 09/14/87 by LaMott G. OREN
 
 (in-package :xlib)
 
-(export '(trace-display
-	  untrace-display
-	  display-trace
-	  describe-request
-	  describe-event
-	  describe-reply
-	  describe-error
-	  describe-trace))
+(eval-when (load eval)
+  (export '(trace-display
+	    suspend-display-tracing
+	    resume-display-tracing
+	    untrace-display
+	    show-trace
+	    display-trace		; for backwards compatibility
+	    describe-request
+	    describe-event
+	    describe-reply
+	    describe-error
+	    describe-trace)))
 
 (defun trace-display (display)
   "Start a trace on DISPLAY.
  If display is already being traced, this discards previous history.
- See display-trace and describe-trace."  
+ See show-trace and describe-trace."  
   (declare (type display display))
   (unless (getf (display-plist display) 'write-function)
-    (let ((write-function (display-write-function display))
-	  (input-function (display-input-function display)))
-      ;; Save origional write/input functions so we can untrace
-      (setf (getf (display-plist display) 'write-function) write-function)
-      (setf (getf (display-plist display) 'input-function) input-function)
-      ;; Set new write/input functions that will record what's sent to the server
-      (setf (display-write-function display)
-	    #'(lambda (vector display start end)
-		(trace-write-hook vector display start end)
-		(funcall write-function vector display start end)))
-      (setf (display-input-function display)
-	    #'(lambda (display vector start end timeout)
-		(let ((result (funcall input-function display vector start end timeout)))
-		  (unless result
-		    (trace-read-hook display vector start end))
-		  result)))))
+    (bind-io-hooks display))
   (setf (display-trace-history display) nil)
   t)
 
+(defun suspend-display-tracing (display)
+  "Tracing is suspended, but history is not cleared."
+  (if (getf (display-plist display) 'suspend-display-tracing)
+      (warn "Tracing is already suspend for ~s" display)
+    (progn
+      (unbind-io-hooks display)
+      (setf (getf (display-plist display) 'suspend-display-tracing) t))))
+
+(defun resume-display-tracing (display)
+  "Used to resume tracing after suspending"
+  (if (getf (display-plist display) 'suspend-display-tracing)
+      (progn
+	(bind-io-hooks display)
+	(remf (display-plist display) 'suspend-display-tracing))
+    (warn "Tracing was not suspended for ~s" display)))
+  
 (defun untrace-display (display)
   "Stop tracing DISPLAY."
   (declare (type display display))
+  (if (not (getf (display-plist display) 'suspend-display-tracing))
+      (unbind-io-hooks display)
+    (remf (display-plist display) 'suspend-display-tracing))
+  (setf (display-trace-history display) nil))
+
+;; Assumes tracing is not already on.
+(defun bind-io-hooks (display)
+  (let ((write-function (display-write-function display))
+	(input-function (display-input-function display)))
+    ;; Save origional write/input functions so we can untrace
+    (setf (getf (display-plist display) 'write-function) write-function)
+    (setf (getf (display-plist display) 'input-function) input-function)
+    ;; Set new write/input functions that will record what's sent to the server
+    (setf (display-write-function display)
+      #'(lambda (vector display start end)
+	  (trace-write-hook vector display start end)
+	  (funcall write-function vector display start end)))
+    (setf (display-input-function display)
+      #'(lambda (display vector start end timeout)
+	  (let ((result (funcall input-function
+				 display vector start end timeout)))
+	    (unless result
+	      (trace-read-hook display vector start end))
+	    result)))))
+
+(defun unbind-io-hooks (display)
   (let ((write-function (getf (display-plist display) 'write-function))
 	(input-function (getf (display-plist display) 'input-function)))
-    (when write-function (setf (display-write-function display) write-function))
-    (when input-function (setf (display-input-function display) input-function))
+    (when write-function
+      (setf (display-write-function display) write-function))
+    (when input-function
+      (setf (display-input-function display) input-function))
     (remf (display-plist display) 'write-function)
-    (remf (display-plist display) 'input-function)
-    (setf (display-trace-history display) nil)))
-
+    (remf (display-plist display) 'input-function)))
+  
 
 (defun byte-ref16 (vector index)
   #+clx-little-endian
@@ -112,22 +152,24 @@
 
 (defun trace-write-hook (vector display start end)
   ;; Called only by buffer-flush.  Start should always be 0
-  (unless (zerop start) (format *debug-io* "write-called with non-zero start: ~d" start))
+  (unless (zerop start)
+    (format *debug-io* "write-called with non-zero start: ~d" start))
   (let* ((history (display-trace-history display))
 	 (request-number (display-request-number display))
 	 (last-history (car history)))
-    ;; There may be several requests in the buffer, and the last one may be incomplete.
-    ;; The first one may be the completion of a previous request.
-    ;; We can detect incomplete requests by comparing the expected length of the last request
-    ;; with the actual length.
-    (when (and last-history (numberp (car last-history)))
+    ;; There may be several requests in the buffer, and the last one may be
+    ;; incomplete.  The first one may be the completion of a previous request.
+    ;; We can detect incomplete requests by comparing the expected length of
+    ;; the last request with the actual length.
+    (when (and last-history (numberp (caar last-history)))
       (let* ((last-length (index* 4 (byte-ref16 (cdr last-history) 2)))
 	     (append-length (min (- last-length (length (cdr last-history)))
 				 (- end start))))
 	(when (plusp append-length)
 	  ;; Last history incomplete - append to last
-	  (setf (cdr last-history) (concatenate '(vector card8) (cdr last-history)
-					      (subseq vector start (+ start append-length))))
+	  (setf (cdr last-history)
+	    (concatenate '(vector card8) (cdr last-history)
+			 (subseq vector start (+ start append-length))))
 	  (index-incf start append-length))))
     ;; Copy new requests into the history
     (do* ((new-history nil)
@@ -137,7 +179,7 @@
 	 ((>= i end)
 	  ;; add in sequence numbers
 	  (dolist (entry new-history)
-	    (setf (car entry) request-number)
+	    (setf (caar entry) request-number)
 	    (decf request-number))
 	  (setf (display-trace-history display)
 		(nconc new-history history)))
@@ -146,11 +188,12 @@
       (when (zerop length)
 	(warn "Zero length in buffer")
 	(return nil))
-      (push (cons 0 (subseq vector i (min (+ i length) end))) new-history)
+      (push (cons (cons 0 (trace-more-info display request vector
+					   i (min (+ i length) end)))
+		  (subseq vector i (min (+ i length) end))) new-history)
       (when (zerop request)
 	(warn "Zero length in buffer")
-	(return nil))
-      )))
+	(return nil)))))
 
 (defun trace-read-hook (display vector start end)
   ;; Reading is done with an initial length of 32 (with start = 0)
@@ -158,26 +201,34 @@
   (let* ((history (display-trace-history display))
 	 (last-history (car history))
 	 (length (- end start)))
-    (when (and history (eq (car last-history) :reply))
+    (when (and history (eq (caar last-history) :reply))
       (let* ((last-length (index+ 32 (index* 4 (byte-ref32 (cdr last-history) 4))))
 	     (append-length (min (- last-length (length (cdr last-history)))
 				 (- end start))))
 	(when (plusp append-length)
-	  (setf (cdr last-history) (concatenate '(vector card8) (cdr last-history)
-						(subseq vector start (+ start append-length))))
+	  (setf (cdr last-history)
+	    (concatenate '(vector card8) (cdr last-history)
+			 (subseq vector start (+ start append-length))))
 	  (index-incf start append-length)
 	  (index-decf length append-length))))
     
     ;; Copy new requests into the history
     (when (plusp length)
-      (push (cons (case (aref vector start)
-		    (0 :error)
-		    (1 :reply)
-		    (otherwise :event))
-		  (subseq vector start (+ start length)))
-	    (display-trace-history display)))))
+      (let ((reply-type (case (aref vector start) (0 :error) (1 :reply)
+			      (otherwise :event))))
+	(push (cons (cons reply-type
+			  (trace-more-info display reply-type vector start
+					   (+ start length)))
+		    (subseq vector start (+ start length)))
+	    (display-trace-history display))))))
 
-(defun display-trace (display &optional length)
+(defun trace-more-info (display request-id vector start end)
+  ;; Currently only returns current process.
+  #+allegro
+  (list mp::*current-process*))
+
+
+(defun show-trace (display &key length show-process)
   "Display the trace history for DISPLAY.
  The default is to show ALL history entries.
  When the LENGTH parameter is used, only the last LENGTH entries are
@@ -185,34 +236,48 @@
   (declare (type display display))
   (dolist (hist (reverse (subseq (display-trace-history display)
 				 0 length)))
-    (let* ((id (car hist))
+    (let* ((id (caar hist))
+	   (more-info (cdar hist))
 	   (vector (cdr hist))
 	   (length (length vector))
 	   (request (aref vector 0)))
       (format t "~%~5d " id)
       (case id
 	(:error
-	 (trace-error-print display vector))
+	 (trace-error-print display more-info vector))
 	(:event
 	 (format t "~a (~d) Sequence ~d"
 		 (if (< request (length *event-key-vector*))
 		     (aref *event-key-vector* request)
 		   "Unknown")
 		 request
-		 (byte-ref16 vector 2)))
+		 (byte-ref16 vector 2))
+	 (when show-process
+	   #+allegro
+	   (format t ", Proc ~a" (mp::process-name (car more-info)))))
 	(:reply
 	 (format t "To ~d length ~d"
 		 (byte-ref16 vector 2) length)
 	 (let ((actual-length (index+ 32 (index* 4 (byte-ref32 vector 4)))))
 	   (unless (= length actual-length)
-	     (format t " Should be ~d **************" actual-length))))
+	     (format t " Should be ~d **************" actual-length)))
+	 (when show-process
+	   #+allegro
+	   (format t ", Proc ~a" (mp::process-name (car more-info)))))
 	(otherwise
 	 (format t "~a (~d) length ~d"
-		 (request-name request) request length))))))
+		 (request-name request) request length)
+	 (when show-process
+	   #+allegro
+	   (format t ", Proc ~a" (mp::process-name (car more-info)))))))))
+
+;; For backwards compatibility
+(defun display-trace (&rest args)
+  (apply 'show-trace args))
 
 (defun find-trace (display type sequence &optional (number 0))
   (dolist (history (display-trace-history display))
-    (when (and (symbolp (car history))
+    (when (and (symbolp (caar history))
 	       (= (logandc2 (aref (cdr history) 0) 128) type)
 	       (= (byte-ref16 (cdr history) 2) sequence)
 	       (minusp (decf number)))
@@ -224,10 +289,11 @@
     (if vector
 	(progn
 	  (terpri)
-	  (trace-error-print display vector))
+	  (trace-error-print display nil vector))
       (format t "Error with sequence ~d not found." sequence))))
 
-(defun trace-error-print (display vector &optional (stream *standard-output*))
+(defun trace-error-print (display more-info vector
+			  &optional (stream *standard-output*))
   (let ((event (allocate-event)))
     ;; Copy into event from reply buffer
     (buffer-replace (reply-ibuf8 event)
@@ -262,7 +328,7 @@
 	type
 	(let ((condition 
 		(apply #+lispm #'si:make-condition
-		       #+allegro #'excl::make-condition
+		       #+allegro #'make-condition
 		       #-(or lispm allegro) #'make-condition
 		       error-key
 		       :error-key error-key
@@ -279,7 +345,9 @@
 (defun describe-request (display sequence)
   "Describe the request with sequence number SEQUENCE"
   #+ti (si:load-if "clx:debug;describe")
-  (let ((request (assoc sequence (display-trace-history display))))
+  (let ((request (assoc sequence (display-trace-history display)
+		       :test #'(lambda (item key)
+				 (eql item (car key))))))
     (if (null request)
 	(format t "~%Request number ~d not found in trace history" sequence)
       (let* ((vector (cdr request))
@@ -364,7 +432,7 @@ If there is more than one event, return NUMBER in the sequence."
       (format t "~%~5d " id)
       (case id
 	(:error
-	 (trace-error-print display vector))
+	 (trace-error-print display nil vector))
 	(:event
 	 (let ((event (trace-event-print display vector)))
 	   (when event (format t "from ~d ~{ ~s~}"

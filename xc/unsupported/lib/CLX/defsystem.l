@@ -23,6 +23,7 @@
 ;;;   clx-ansi-common-lisp
 ;;;   lispm
 ;;;   genera
+;;;   minima
 ;;;   lucid
 ;;;   lcl3.0
 ;;;   apollo
@@ -30,12 +31,16 @@
 ;;;   ibcl
 ;;;   excl
 
-#-clx-ansi-common-lisp 
-(lisp:in-package :user)
+#+(or Genera Minima)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (common-lisp:pushnew :clx-ansi-common-lisp common-lisp:*features*))
 
 #+(and Genera clx-ansi-common-lisp)
-(eval-when (compile load eval)
+(eval-when (:compile-toplevel :load-toplevel :execute)
   (setf *readtable* si:*ansi-common-lisp-readtable*))
+
+#-clx-ansi-common-lisp 
+(lisp:in-package :user)
 
 #+clx-ansi-common-lisp
 (common-lisp:in-package :common-lisp-user)
@@ -337,7 +342,9 @@
 			:type      nil
 			:version   (pathname-version   source-path)))
 	 (binary-path (merge-pathnames binary-pathname-defaults
-				       path)))
+				       path))
+	 #+clx-ansi-common-lisp (*compile-verbose* t)
+	 (*load-verbose* t))
 				       
     ;; Make sure source-path and binary-path file types are distinct so
     ;; we don't accidently overwrite the source files.  NIL should be an
@@ -348,7 +355,7 @@
 	(error "Source and binary pathname defaults have same type ~s ~s"
 	       source-path binary-path))
 
-    (format t ";;; Default paths: ~s ~s~%" source-path binary-path)
+    (format t "~&;;; Default paths: ~s ~s~%" source-path binary-path)
 
     ;; In lucid make sure we're using the compiler in production mode.
     #+lcl3.0
@@ -383,10 +390,12 @@
 		      (obj  (merge-pathnames o-filename binary-path))
 		      (args (list "-c" (namestring src)
 				  "-o" (namestring obj)
-				  #+mips "-G" #+mips "0"
+				  #+mips "-G 0"
 				  #+(or hp sysv) "-DSYSV"
 				  #+(and mips (not dec)) "-I/usr/include/bsd"
-				  #-(and mips (not dec)) "-DUNIXCONN")))
+				  #-(and mips (not dec)) "-DUNIXCONN"
+				  #+(and lucid pa) "-DHPUX -DHPUX7.0"
+				  )))
 		 (format t ";;; cc~{ ~A~}~%" args)
 		 (unless
 		   (zerop 
@@ -451,10 +460,10 @@
 ;;; modules, so a pathname needs to be supplied).
 
 ;;; The REQUIRE should find a file that does
-;;;		(in-package :user)
-;;;		(provide :clx)
-;;;		(load <clx-defsystem-file>)
-;;;		(load-clx <binary-specific-clx-directory>)
+;;;		(IN-PACKAGE 'XLIB :USE '(LISP))
+;;;		(PROVIDE 'CLX)
+;;;		(LOAD <clx-defsystem-file>)
+;;;		(LOAD-CLX <binary-specific-clx-directory>)
 
 #-(or lispm allegro)
 (defun load-clx (&optional (binary-pathname-defaults "")
@@ -469,7 +478,8 @@
 			:type      nil
 			:version   (pathname-version   source-path)))
 	 (binary-path (merge-pathnames binary-pathname-defaults
-				       path)))
+				       path))
+	 (*load-verbose* t))
 
     (flet ((load-binary (filename)
 	     (let ((binary (merge-pathnames filename binary-path)))

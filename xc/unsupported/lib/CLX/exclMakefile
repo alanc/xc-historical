@@ -57,6 +57,7 @@ L_SRC	= defsystem.cl package.cl excldep.cl depdefs.cl clx.cl \
 
 # default and aliases
 all:	no-clos
+# all:	partial-clos
 compile-CLX-for-CLUE:	compile-partial-clos-CLX
 clue:	partial-clos
 
@@ -87,7 +88,7 @@ compile-no-clos-CLX:	$(C_OBJS)
 	$(ECHO) " \
 	(set-case-mode :case-sensitive-lower) \
 	(proclaim '(optimize (speed $(SPEED)) (safety $(SAFETY)))) \
- 	#+allegro-v4.0 (pushnew :clx-ansi-common-lisp *features*) \
+	#+(version>= 4 0) (pushnew :clx-ansi-common-lisp *features*) \
 	(load \"defsystem\") \
 	#+allegro (compile-system :clx) \
 	#-allegro (compile-clx) \
@@ -106,7 +107,7 @@ compile-partial-clos-CLX:	$(C_OBJS)
 	    (provide :pcl) \
 	    (gc) (gc) \
 	    (setf (sys:gsgc-parameter :generation-spread) spread))) \
-	#+allegro-v4.0 (pushnew :clx-ansi-common-lisp *features*) \
+	#+(version>= 4 0) (pushnew :clx-ansi-common-lisp *features*) \
 	(load \"defsystem\") \
 	(load \"package\") \
 	(setq xlib::*def-clx-class-use-defclass* '(xlib:window xlib:pixmap xlib:drawable)) \
@@ -127,7 +128,7 @@ compile-full-clos-CLX:	$(C_OBJS)
 	    (provide :pcl) \
 	    (gc) (gc) \
 	    (setf (sys:gsgc-parameter :generation-spread) spread))) \
-	#+allegro-v4.0 (pushnew :clx-ansi-common-lisp *features*) \
+	#+(version>= 4 0) (pushnew :clx-ansi-common-lisp *features*) \
 	(load \"defsystem\") \
 	(load \"package\") \
 	(setq xlib::*def-clx-class-use-defclass* t) \

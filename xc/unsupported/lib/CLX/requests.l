@@ -750,10 +750,10 @@
 (defun set-input-focus (display focus revert-to &optional time)
   (declare (type display display)
 	   (type (or (member :none :pointer-root) window) focus)
-	   (type (member :none :parent :pointer-root) revert-to)
+	   (type (member :none :pointer-root :parent) revert-to)
 	   (type timestamp time))
   (with-buffer-request (display *x-setinputfocus*)
-    ((data (member :none :parent :pointer-root)) revert-to)
+    ((data (member :none :pointer-root :parent)) revert-to)
     ((or window (member :none :pointer-root)) focus)
     ((or null card32) time)))
 
@@ -1028,18 +1028,14 @@
 	   (type boolean red-p green-p blue-p))
   (etypecase specs
     (list
-     (do* ((spec specs (cddr spec))
-	   (pixel (car spec) (car spec))
-	   (color (cadr spec) (cadr spec)))
+      (do ((spec specs (cddr spec)))
 	  ((endp spec))
-       (store-color colormap pixel color :red-p red-p :green-p green-p :blue-p blue-p)))
+	(store-color colormap (car spec) (cadr spec) :red-p red-p :green-p green-p :blue-p blue-p)))
     (vector
-     (do* ((i 0 (+ i 2))
-	   (len (length specs))
-	   (pixel (aref specs i) (aref specs i))
-	   (color (aref specs (1+ i)) (aref specs (1+ i))))
+      (do ((i 0 (+ i 2))
+	   (len (length specs)))
 	  ((>= i len))
-       (store-color colormap pixel color :red-p red-p :green-p green-p :blue-p blue-p)))))
+	(store-color colormap (aref specs i) (aref specs (1+ i)) :red-p red-p :green-p green-p :blue-p blue-p)))))
 
 (defun query-colors (colormap pixels &key (result-type 'list))
   (declare (type colormap colormap)

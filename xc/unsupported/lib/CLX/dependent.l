@@ -830,7 +830,7 @@
 
 ;;; MAKE-PROCESS-LOCK: Creating a process lock.
 
-#-(or LispM excl)
+#-(or LispM excl Minima)
 (defun make-process-lock (name)
   (declare (ignore name))
   nil)
@@ -847,6 +847,10 @@
 (defun make-process-lock (name)
   (process:make-lock name :flavor 'clx-lock))
 
+#+Minima
+(defun make-process-lock (name)
+  (minima:make-lock name))
+
 ;;; HOLDING-LOCK: Execute a body of code with a lock held.
 
 ;;; The holding-lock macro takes a timeout keyword argument.  EVENT-LISTEN
@@ -855,7 +859,7 @@
 
 ;; If you're not sharing DISPLAY objects within a multi-processing
 ;; shared-memory environment, this is sufficient
-#-(or lispm excl lcl3.0)
+#-(or lispm excl lcl3.0 Minima)
 (defmacro holding-lock ((locator display &optional whostate &key timeout) &body body)
   (declare (ignore locator display whostate timeout))
   `(progn ,@body))
@@ -917,7 +921,11 @@
 			  t)
 			 ((lcl:process-wait-with-timeout ,whostate .timeout.
 			    #'(lambda ()
-				(conditional-store ,locator nil lcl:*current-process*)))))
+				(conditional-store ,locator nil lcl:*current-process*))))
+			 ;; abort the PROCESS-UNLOCK if actually timing out
+			 (t
+			  (setf .have-lock. :abort)
+			  nil))
 	       ,@body)
 	   (unless .have-lock. 
 	     (lcl:process-unlock ,locator))))
@@ -945,6 +953,11 @@
 			 (return-from .hl-doit. nil))
 		  `(mp::process-lock .hl-lock. .hl-curproc.
 				     ,@(when whostate `(,whostate))))
+	       ;; There is an apparent race condition here.  However, there is
+	       ;; no actual race condition -- our implementation of mp:process-
+	       ;; lock guarantees that the lock will still be held when it
+	       ;; returns, and no interrupt can happen between that and the
+	       ;; execution of the next form.  -- jdi 2/27/91
 	       (setq .hl-obtained-lock. t)))
 	   ,@body)
        (if (and .hl-obtained-lock.
@@ -954,6 +967,13 @@
 		;; throw out (or is it throw up?).
 		(eq (mp::process-lock-locker .hl-lock.) .hl-curproc.))
 	   (mp::process-unlock .hl-lock. .hl-curproc.)))))
+
+#+Minima
+(defmacro holding-lock ((locator display &optional whostate &key timeout)
+			&body body)
+  (declare (ignore display whostate))
+  `(minima:with-lock (,locator)
+     ,@body))
 
 
 ;;; WITHOUT-ABORTS
@@ -984,7 +1004,7 @@
 ;;; Caller guarantees that PROCESS-WAKEUP will be called after the predicate's
 ;;; value changes.
 
-#-(or lispm excl lcl3.0)
+#-(or lispm excl lcl3.0 Minima)
 (defun process-block (whostate predicate &rest predicate-args)
   (declare (ignore whostate))
   (or (apply predicate predicate-args)
@@ -1020,11 +1040,17 @@
   (declare (dynamic-extent predicate-args))
   (apply #'lcl:process-wait whostate predicate predicate-args))
 
+#+Minima
+(defun process-block (whostate predicate &rest predicate-args)
+  (declare (type function predicate)
+	   (dynamic-extent predicate))
+  (apply #'minima:process-wait whostate predicate predicate-args))
+
 ;;; PROCESS-WAKEUP: Check some other process' wait function.
 
 (declaim (inline process-wakeup))
 
-#-(or excl Genera)
+#-(or excl Genera Minima)
 (defun process-wakeup (process)
   (declare (ignore process))
   nil)
@@ -1044,6 +1070,10 @@
 (defun process-wakeup (process)
   (process:wakeup process))
 
+#+Minima
+(defun process-wakeup (process)
+  (minima:process-wakeup process))
+
 ;;; CURRENT-PROCESS: Return the current process object for input locking and
 ;;; for calling PROCESS-WAKEUP.
 
@@ -1051,7 +1081,7 @@
 
 ;;; Default return NIL, which is acceptable even if there is a scheduler.
 
-#-(or lispm excl lcl3.0)
+#-(or lispm excl lcl3.0 Minima)
 (defun current-process ()
   nil)
 
@@ -1068,9 +1098,13 @@
 (defun current-process ()
   lcl:*current-process*)
 
+#+Minima
+(defun current-process ()
+  minima:*current-process*)
+
 ;;; WITHOUT-INTERRUPTS -- provide for atomic operations.
 
-#-(or lispm excl lcl3.0)
+#-(or lispm excl lcl3.0 Minima)
 (defmacro without-interrupts (&body body)
   `(progn ,@body))
 
@@ -1085,6 +1119,10 @@
 #+LCL3.0
 (defmacro without-interrupts (&body body)
   `(lcl:with-scheduling-inhibited ,@body))
+
+#+Minima
+(defmacro without-interrupts (&body body)
+  `(minima:with-no-other-processes ,@body))
 
 ;;; CONDITIONAL-STORE:
 
@@ -1158,7 +1196,7 @@
 ;;; OPEN-X-STREAM - create a stream for communicating to the appropriate X
 ;;; server
 
-#-(or explorer Genera lucid kcl ibcl excl)
+#-(or explorer Genera lucid kcl ibcl excl Minima)
 (defun open-x-stream (host display protocol)
   host display protocol ;; unused
   (error "OPEN-X-STREAM not implemented yet."))
@@ -1259,6 +1297,11 @@
       (error "Failed to connect to server: ~A ~D" host display))
     fd))
 
+#+Minima
+(defun open-x-stream (host display protocol)
+  (declare (ignore protocol));; unused
+  (minima:open-tcp-stream nil (cdr (host-address host)) (+ *x-tcp-port* display)))
+
 ;;; BUFFER-READ-DEFAULT - read data from the X stream
 
 #+(or Genera explorer)
@@ -1333,12 +1376,37 @@
 	(with-underlying-stream (stream stream display input)
 	  (eq (lcl:read-array stream vector start end nil :eof) :eof)))))
 
+#+Minima
+(defun buffer-read-default (display vector start end timeout)
+  ;; returns non-NIL if EOF encountered
+  ;; Returns :TIMEOUT when timeout exceeded
+  (declare (type display display)
+	   (type buffer-bytes vector)
+	   (type array-index start end)
+	   (type (or null number) timeout))
+  #.(declare-buffun)
+  (let ((stream (display-input-stream display)))
+    (or (cond ((null stream))
+	      ((listen stream) nil)
+	      ((eql timeout 0) :timeout)
+	      ((buffer-input-wait-default display timeout)))
+	(loop while (< start end) do
+	  (multiple-value-bind (buffer bstart bend)
+	      (minima:get-input-buffer stream nil)
+	    (when (null buffer) (return t))
+	    (let ((n (min (- end start) (- bend bstart))))
+	      (replace vector buffer
+		       :start1 start :end1 (incf start n)
+		       :start2 bstart :end2 (incf bstart n)))
+	    (minima:advance-input-buffer stream bstart)))
+	nil)))
+
 ;;; WARNING:
 ;;;	CLX performance will suffer if your lisp uses read-byte for
 ;;;	receiving all data from the X Window System server.
 ;;;	You are encouraged to write a specialized version of
 ;;;	buffer-read-default that does block transfers.
-#-(or Genera explorer excl lcl3.0)
+#-(or Genera explorer excl lcl3.0 Minima)
 (defun buffer-read-default (display vector start end timeout)
   (declare (type display display)
 	   (type buffer-bytes vector)
@@ -1399,13 +1467,31 @@
       (with-underlying-stream (stream stream display output)
 	(lcl:write-array stream vector start end)))))
 
+#+Minima
+(defun buffer-write-default (vector display start end)
+  ;; The default buffer write function for use with common-lisp streams
+  (declare (type buffer-bytes vector)
+	   (type display display)
+	   (type array-index start end))
+  #.(declare-buffun)
+  (let ((stream (display-output-stream display)))
+    (declare (type (or null stream) stream))
+    (unless (null stream) 
+      (loop while (< start end) do
+	(multiple-value-bind (buffer bstart bend)
+	    (minima:get-output-buffer stream)
+	  (let ((n (min (- end start) (- bend bstart))))
+	    (replace buffer vector
+		     :start1 bstart :end1 (incf bstart n) :start2 start :end2 (incf start n) ))
+	    (minima:advance-output-buffer stream bstart))))))
+
 ;;; WARNING:
 ;;;	CLX performance will be severely degraded if your lisp uses
 ;;;	write-byte to send all data to the X Window System server.
 ;;;	You are STRONGLY encouraged to write a specialized version
 ;;;	of buffer-write-default that does block transfers.
 
-#-(or Genera explorer excl lcl3.0)
+#-(or Genera explorer excl lcl3.0 Minima)
 (defun buffer-write-default (vector display start end)
   ;; The default buffer write function for use with common-lisp streams
   (declare (type buffer-bytes vector)
@@ -1827,7 +1913,7 @@
 ;;; This controls macro expansion, and isn't changable at run-time You will
 ;;; probably want to set this to nil if you want good performance at
 ;;; production time.
-(defconstant *type-check?* #+Genera nil #-Genera t)
+(defconstant *type-check?* #+(or Genera Minima) nil #-(or Genera Minima) t)
 
 ;; TYPE? is used to allow the code to do error checking at a different level from
 ;; the declarations.  It also does some optimizations for systems that don't have
@@ -1840,11 +1926,11 @@
       `(typep ,object ,type)
     (progn
       (setq type (eval type))
-      #+(or Genera explorer)
+      #+(or Genera explorer Minima)
       (if *type-check?*
 	  `(locally (declare (optimize safety)) (typep ,object ',type))
 	`(typep ,object ',type))
-      #-(or Genera explorer)
+      #-(or Genera explorer Minima)
       (let ((predicate (assoc type
 			      '((drawable drawable-p) (window window-p)
 				(pixmap pixmap-p) (cursor cursor-p)
@@ -2082,7 +2168,7 @@
 ;;  HOST hacking
 ;;-----------------------------------------------------------------------------
 
-#-(or explorer Genera)
+#-(or explorer Genera Minima)
 (defun host-address (host &optional (family :internet))
   ;; Return a list whose car is the family keyword (:internet :DECnet :Chaos)
   ;; and cdr is a list of network address bytes.
@@ -2138,6 +2224,29 @@
 		    ((:chaos :DECnet)
 		     (list family (ldb (byte 8 0) address) (ldb (byte 8 8) address))))))))))
 
+#+Minima
+(defun host-address (host &optional (family :internet))
+  ;; Return a list whose car is the family keyword (:internet :DECnet :Chaos)
+  ;; and cdr is a list of network address bytes.
+  (declare (type (or stringable list) host)
+	   (type (or null (member :internet :decnet :chaos) card8) family))
+  (declare (values list))
+  (check-type family (member :internet))
+  (or (loop with (num delim)
+	    repeat 4
+	    for idx = 0 then (1+ delim)
+	    when (and delim (or (= delim (length host))
+				(char-not-equal (char host delim) #\.)))
+	      return nil
+	    do (multiple-value-setq (num delim)
+	         (parse-integer host :start idx :junk-allowed t))
+	    when (or (null num) (< num 0) (> num 255))
+	      return nil
+	    else collect num into nums
+	    finally (return (when (= delim (length host))
+			      (cons :internet nums))))
+      (error "Invalid internet address [~A]." host)))
+
 #+explorer ;; This isn't required, but it helps make sense of the results from access-hosts
 (defun get-host (host-object)
   ;; host-object is a list whose car is the family keyword (:internet :DECnet :Chaos)
@@ -2192,7 +2301,8 @@
 ;;; want to make this expand to T, as it makes the code more compact.
 
 (defmacro use-closures ()
-  #+lispm t #-lispm nil)
+  #+(or lispm Minima) t
+  #-(or lispm Minima) nil)
 
 
 ;;-----------------------------------------------------------------------------
@@ -2214,7 +2324,7 @@
 
 (defun resources-pathname ()
   (when #+unix t #-unix (search "Unix" (software-type) :test #'char-equal)
-    (or #+(or excl lcl3.0)
+    (or #+(or excl (and lcl3.0 (not vax-vms)))
 	(let ((string (#+excl sys:getenv
 		       #+lcl3.0 lcl:environment-variable
 		       "XENVIRONMENT")))
@@ -2255,7 +2365,7 @@
 ;; WITH-STANDARD-IO-SYNTAX equivalent, used in (SETF WM-COMMAND)
 ;;-----------------------------------------------------------------------------
 
-#-(and (not allegro-v4.0) (or clx-ansi-common-lisp Genera))
+#-(or clx-ansi-common-lisp Genera)
 (defun with-standard-io-syntax-function (function)
   (declare #+lispm
 	   (sys:downward-funarg function))
@@ -2277,7 +2387,7 @@
 	#+lucid (lucid::*print-structure* t))
     (funcall function)))
 
-#-(and (not allegro-v4.0) (or clx-ansi-common-lisp Genera))
+#-(or clx-ansi-common-lisp Genera)
 (defmacro with-standard-io-syntax (&body body)
   `(flet ((.with-standard-io-syntax-body. () ,@body))
      (with-standard-io-syntax-function #'.with-standard-io-syntax-body.)))
@@ -2350,12 +2460,11 @@
   '(unsigned-byte 16))
 
 (deftype pixarray-24-element-type ()
-  #-Genera '(unsigned-byte 24)
-  #+Genera 'fixnum)
+  '(unsigned-byte 24))
 
 (deftype pixarray-32-element-type ()
-  #-Genera '(unsigned-byte 32)
-  #+Genera 'fixnum)
+  #-(or Genera Minima) '(unsigned-byte 32)
+  #+(or Genera Minima) 'fixnum)
 
 (deftype pixarray-1  ()
   '(array pixarray-1-element-type (* *)))

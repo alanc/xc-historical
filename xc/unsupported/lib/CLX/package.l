@@ -218,7 +218,7 @@
 ;;; The ANSI Common Lisp way
 
 #+(and Genera clx-ansi-common-lisp)
-(eval-when (compile load eval)
+(eval-when (:compile-toplevel :load-toplevel :execute)
   (setf *readtable* si:*ansi-common-lisp-readtable*))
 
 #+clx-ansi-common-lisp

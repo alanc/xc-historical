@@ -2275,8 +2275,8 @@
 			  name icon-name resource-name resource-class command
 			  hints normal-hints
 			  ;; the following are used for wm-normal-hints
-			  user-specified-position-p
-			  user-specified-size-p
+			  user-specified-position-p user-specified-size-p
+			  program-specified-position-p program-specified-size-p
 			  min-width min-height max-width max-height
 			  width-inc height-inc min-aspect max-aspect
 			  base-width base-height win-gravity
@@ -2289,7 +2289,8 @@
 	   (type (or null list) command)
 	   (type (or null wm-hints) hints)
 	   (type (or null wm-size-hints) normal-hints)
-	   (type (or null boolean) user-specified-position-p user-specified-size-p)
+	   (type boolean user-specified-position-p user-specified-size-p)
+	   (type boolean program-specified-position-p program-specified-size-p)
 	   (type (or null card16) min-width min-height max-width max-height width-inc height-inc base-width base-height win-gravity)
 	   (type (or null number) min-aspect max-aspect)
 	   (type (or null (member :off :on)) input)

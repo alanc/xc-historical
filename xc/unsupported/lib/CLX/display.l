@@ -343,6 +343,7 @@
 		    (string-get vendor-length 0 :reply-buffer reply-buffer))
 	      ;; Initialize the pixmap formats
 	      (dotimes (i num-formats) ;; loop gathering pixmap formats
+		(declare (ignorable i))
 		(buffer-input display buffer-bbuf 0 8)
 		(push (make-pixmap-format :depth (card8-get 0)
 					  :bits-per-pixel (card8-get 1)
@@ -353,12 +354,14 @@
 		    (nreverse (display-pixmap-formats display)))
 	      ;; Initialize the screens
 	      (dotimes (i num-roots)
+		(declare (ignorable i))
 		(buffer-input display buffer-bbuf 0 40)
-		(let* ((root (make-window :id (card32-get 0) :display display))
+		(let* ((root-id (card32-get 0))
+		       (root (make-window :id root-id :display display))
 		       (root-visual (card32-get 32))
+		       (default-colormap-id (card32-get 4))
 		       (default-colormap
-			 (make-colormap :id (card32-get 4)
-					:display display))
+			 (make-colormap :id default-colormap-id :display display))
 		       (screen
 			 (make-screen
 			   :root root
@@ -378,14 +381,17 @@
 		       (num-depths (card8-get 39))
 		       (depths nil))
 		  ;; Save root window for event reporting
-		  (save-id display (window-id root) root)
+		  (save-id display root-id root)
+		  (save-id display default-colormap-id default-colormap)
 		  ;; Create the depth AList for a screen, (depth . visual-infos)
 		  (dotimes (j num-depths)
+		    (declare (ignorable j))
 		    (buffer-input display buffer-bbuf 0 8)
 		    (let ((depth (card8-get 0))
 			  (num-visuals (card16-get 2))
 			  (visuals nil)) ;; 4 bytes unused
 		      (dotimes (k num-visuals)
+			(declare (ignorable k))
 			(buffer-input display buffer-bbuf 0 24)
 			(let* ((visual (card32-get 0))
 			       (visual-info (make-visual-info

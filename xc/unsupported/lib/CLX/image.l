@@ -51,18 +51,18 @@
 	   (ignore depth))
   (print-unreadable-object (image stream :type t)
     (when (image-name image)
-      (princ (image-name image) stream)
-      (princ " " stream))
+      (write-string (string (image-name image)) stream)
+      (write-string " " stream))
     (prin1 (image-width image) stream)
-    (princ "x" stream)
+    (write-string "x" stream)
     (prin1 (image-height image) stream)
-    (princ "x" stream)
+    (write-string "x" stream)
     (prin1 (image-depth image) stream)))
 
-(defconstant *empty-data-x* #.(make-sequence '(array card8 (*)) 0))
+(defconstant *empty-data-x* '#.(make-sequence '(array card8 (*)) 0))
 
 (defconstant *empty-data-z*
-	     #.(make-array '(0 0) :element-type 'pixarray-1-element-type))
+	     '#.(make-array '(0 0) :element-type 'pixarray-1-element-type))
 
 (def-clx-class (image-x (:include image) (:copier nil)
 			(:print-function print-image))

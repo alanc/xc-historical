@@ -38,9 +38,9 @@
   (declare (type resource-database database)
 	   (ignore depth))
   (print-unreadable-object (database stream :type t)
-    (princ (resource-database-name database) stream)
+    (write-string (string (resource-database-name database)) stream)
     (when (resource-database-value database)
-      (princ " " stream)
+      (write-string " " stream)
       (prin1 (resource-database-value database) stream))))
 
 ;; The value slot of the top-level resource-database structure is used for a

@@ -16,16 +16,14 @@
 (in-package :xlib)
 
 (eval-when (compile load eval)
-  (when (find-package :cltl1)
-    (import '(cltl1:require cltl1:provide))))
+  (require :foreign)
+  (require :process)			; Needed even if scheduler is not
+					; running.  (Must be able to make
+					; a process-lock.)
+  )
 
 (eval-when (load)
   (provide :clx))
-
-(require :foreign)
-(require :process)			; Needed even if scheduler is not
-					; running.  (Must be able to make
-					; a process-lock.)
 
 
 #-(or little-endian big-endian)
@@ -53,25 +51,55 @@
 
 
 (defconstant type-pred-alist
-  '(
-    (card8  . card8p)
-    (card16 . card16p)
-    (card29 . card29p)
-    (card32 . card32p)
-    (int8   . int8p)
-    (int16  . int16p)
-    (int32  . int32p)
-    (mask16 . card16p)
-    (mask32 . card32p)
-    (pixel  . card32p)
-    (resource-id . card29p)
-    (keysym . card32p)
-    (angle  . anglep)
-    ))
+    '(#-(version>= 4 1 devel 16)
+      (card8  . card8p)
+      #-(version>= 4 1 devel 16)
+      (card16 . card16p)
+      #-(version>= 4 1 devel 16)
+      (card29 . card29p)
+      #-(version>= 4 1 devel 16)
+      (card32 . card32p)
+      #-(version>= 4 1 devel 16)
+      (int8   . int8p)
+      #-(version>= 4 1 devel 16)
+      (int16  . int16p)
+      #-(version>= 4 1 devel 16)
+      (int32  . int32p)
+      #-(version>= 4 1 devel 16)
+      (mask16 . card16p)
+      #-(version>= 4 1 devel 16)
+      (mask32 . card32p)
+      #-(version>= 4 1 devel 16)
+      (pixel  . card32p)
+      #-(version>= 4 1 devel 16)
+      (resource-id . card29p)
+      #-(version>= 4 1 devel 16)
+      (keysym . card32p)
+      (angle  . anglep)
+      (color  . color-p)
+      (bitmap-format . bitmap-format-p)
+      (pixmap-format . pixmap-format-p)
+      (display  . display-p)
+      (drawable . drawable-p)
+      (window   . window-p)
+      (pixmap   . pixmap-p)
+      (visual-info . visual-info-p)
+      (colormap . colormap-p)
+      (cursor . cursor-p)
+      (gcontext .  gcontext-p)
+      (screen . screen-p)
+      (font . font-p)
+      (image-x . image-x-p)
+      (image-xy . image-xy-p)
+      (image-z . image-z-p)
+      (wm-hints . wm-hints-p)
+      (wm-size-hints . wm-size-hints-p)
+      ))
 
 ;; This (if (and ...) t nil) stuff has a purpose -- it lets the old 
 ;; sun4 compiler opencode the `and'.
 
+#-(version>= 4 1 devel 16)
 (defun card8p (x)
   (declare (optimize (speed 3) (safety 0))
 	   (fixnum x))
@@ -79,6 +107,7 @@
       t
     nil))
 
+#-(version>= 4 1 devel 16)
 (defun card16p (x)
   (declare (optimize (speed 3) (safety 0))
 	   (fixnum x))
@@ -86,6 +115,7 @@
       t
     nil))
 
+#-(version>= 4 1 devel 16)
 (defun card29p (x)
   (declare (optimize (speed 3) (safety 0)))
   (if (or (and (excl:fixnump x) (>= (the fixnum x) 0))
@@ -94,6 +124,7 @@
       t
     nil))
 
+#-(version>= 4 1 devel 16)
 (defun card32p (x)
   (declare (optimize (speed 3) (safety 0)))
   (if (or (and (excl:fixnump x) (>= (the fixnum x) 0))
@@ -102,6 +133,7 @@
       t
     nil))
 
+#-(version>= 4 1 devel 16)
 (defun int8p (x)
   (declare (optimize (speed 3) (safety 0))
 	   (fixnum x))
@@ -109,6 +141,7 @@
       t
     nil))
 
+#-(version>= 4 1 devel 16)
 (defun int16p (x)
   (declare (optimize (speed 3) (safety 0))
 	   (fixnum x))
@@ -116,6 +149,7 @@
       t
     nil))
 
+#-(version>= 4 1 devel 16)
 (defun int32p (x)
   (declare (optimize (speed 3) (safety 0)))
   (if (or (excl:fixnump x)
@@ -124,6 +158,9 @@
       t
     nil))
 
+;; This one can be handled better by knowing a little about what we're
+;; testing for.  Plus this version can handle (single-float pi), which
+;; is otherwise larger than pi!
 (defun anglep (x)
   (declare (optimize (speed 3) (safety 0)))
   (if (or (and (excl::fixnump x) (>= (the fixnum x) #.(truncate (* -2 pi)))
@@ -137,22 +174,12 @@
       t
     nil))
 
-(comp::def-tr comp::new-tr-typep typep (form type)
-   (let (ent)
-      (excl:if* (and (consp type)
-		     (eq 'quote (car type))
-		     (consp (cdr type)))
-	 then (setq ent (franz:assq (cadr type) type-pred-alist)))
-      (excl:if* ent
-	 then `(,(cdr ent) ,form)
-	 else (excl:if* (and (consp type)
-			     (eq 'quote (car type))
-			     (consp (cdr type)))
-		 then (setq ent (franz:assq (cadr type)
-					    excl::type-pred-alist)))
-	      (excl:if* ent
-		 then `(,(cdr ent) ,form)
-		 else (comp::no-transform)))))
+(eval-when (load eval)
+  #+(version>= 4 1 devel 16)
+  (mapcar #'(lambda (elt) (excl:add-typep-transformer (car elt) (cdr elt)))
+	  type-pred-alist)
+  #-(version>= 4 1 devel 16)
+  (nconc excl::type-pred-alist type-pred-alist))
 
 
 ;; Return t if there is a character available for reading or on error,
@@ -221,101 +248,6 @@
 		       :allow-other-keys t
 		       :arguments (fixnum fixnum))))
 
-
-#-allegro
-(defmacro without-interrupts (&body body)
-  `(let ((excl::*without-interrupts* t)) ,@body))
-
-
-(in-package :excl)
-
-#-allegro
-(defun type-array-element-type-to-array (type &aux temp) 
-   ;; type is a type descriptor, return a descriptor which tells
-   ;; the array code what kind of array to make
-
-   ; convert the given element type to one of the symbols which
-   ; is in the car of the array-descriptors list
-   ;(msg "beginning type is " type 'N)
-   (excl:if* (symbolp type)
-      then (excl:if* (franz:memq type '(t bit string-char fixnum))
-	      thenret	; it is ok as it is
-	      else (let ((temp (get type 'deftype-expander)))
-		     (excl:if* temp
-			then
-			     (return-from type-array-element-type-to-array
-			       (type-array-element-type-to-array
-				(funcall temp (list type))))
-			else
-			     (setq type (case type
-					  (standard-char 'string-char)
-					  ((single-float short-float) 'single-float)
-					  ((double-float long-float) 'double-float)
-					  (t t))))))
-    elseif (consp type)
-      then (setq type
-		 (case (car type)
-		    (mod (excl:if* (integerp (setq temp (cadr type)))
-			    then (cond ((< temp 1) t)
-				       ((<= temp 2) 'bit)
-				       ((<= temp 256) 'ubyte)
-				       ((<= temp 65536) 'uword)
-				       ((<= temp 4294967296) 'ulong)
-				       (t t))
-			    else t))
-		    (signed-byte
-		       (excl:if* (integerp (setq temp (cadr type)))
-			  then (cond ((<= temp 0) t)
-				     ((<= temp 8) 'byte)
-				     ((<= temp 16) 'word)
-				     ((<= temp 29) 'fixnum)
-				     ((<= temp 32) 'long)
-				     (t  t))
-			  else t))
-		    (unsigned-byte
-		       (excl:if* (integerp (setq temp (cadr type)))
-			  then (cond ((<= temp 0) t)
-				     ((<= temp 8) 'ubyte)
-				     ((<= temp 16) 'uword)
-				     ((<= temp 32) 'ulong)
-				     (t  t))
-			  else t))
-		    (t t)))
-      else (setq type t))
-   ; type is now one of the valid types.  We return a descriptor
-   ; based on that name
-   ;(msg "resulting type is " type 'N)
-   (let ((res (franz:assq type array-descriptors)))
-      ;(msg " resulting decriptor " res 'N)
-      res))
-
-#-allegro
-(defun make-sequence (type length &rest rest &key initial-element)
-  "Returns a sequence of the given Type and Length, with elements initialized
-  to :Initial-Element."
-  (declare (fixnum length)
-	   (ignore initial-element))
-  (case (type-specifier type)
-    (list (apply #'make-list length rest))
-    ((simple-string string)
-     (apply #'make-string length rest))
-    ((array simple-array vector simple-vector)
-     (excl:if* (listp type)
-	 then (apply #'make-array length :element-type (cadr type) rest)
-	 else (apply #'make-array length rest)))
-    ((bit-vector simple-bit-vector)
-     (apply #'make-array length :element-type 'bit rest))
-    (t
-     ;; Now, we can either have a user-defined type symbol, or an error.
-     (excl:if* (symbolp type)
-	then (let ((temp (get type 'excl::deftype-expander)))
-	       (excl:if* temp
-		  then (cond (rest (return-from make-sequence
-				     (make-sequence (funcall temp (list type)) length
-						   :initial-element (cadr rest))))
-			      (t (return-from make-sequence (make-sequence
-				   (funcall temp (list type)) length)))))))
-     (error "~s is a bad type specifier for sequences." type ))))
 
 ;; special patch for CLX (various process fixes)
 ;; patch1000.2
