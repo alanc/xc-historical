@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.95 92/01/19 17:32:49 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.96 92/01/30 10:22:57 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -97,6 +97,7 @@ struct _XDisplay {
 	KeySym lock_meaning;	   /* for XLookupString */
 	XPointer lock;		/* is someone in critical section? */
 	struct _XInternalAsync *async_handlers; /* for internal async */
+	unsigned long bigreq_size; /* max size of big requests */
 	/* things above this line should not move, for binary compatibility */
 	struct _XKeytrans *key_bindings; /* for XLookupString */
 	Font cursor_font;	   /* for XCreateFontCursor */
@@ -378,6 +379,39 @@ extern int errno;			/* Internal system error number. */
 	dpy->request++
 #endif
 
+#ifdef WORD64
+    { \
+    char _BRdat[4]; \
+    unsigned long _BRlen = req->length - 1; \
+    req->length = 0; \
+    bcopy(((char *)req) + (_BRlen << 2), _BRdat, 4);
+    bcopy(((char *)req) + 4, ((char *)req) + 8, _BRlen << 2); \
+    bcopy(_BRdat, ((char *)req) + 4, 4);
+    Data32(dpy, (long *)&_BRdat, 4); \
+    }
+#else
+#define MakeBigReq(req,n) \
+    { \
+    long _BRdat; \
+    unsigned long _BRlen = req->length - 1; \
+    req->length = 0; \
+    _BRdat = ((long *)req)[_BRlen]; \
+    bcopy(((char *)req) + 4, ((char *)req) + 8, _BRlen << 2); \
+    ((unsigned long *)req)[1] = _BRlen + n + 2; \
+    Data32(dpy, &_BRdat, 4); \
+    }
+#endif
+
+#define SetReqLen(req,n,badlen) \
+    if ((req->length + n) > (unsigned)65535) { \
+	if (dpy->bigreq_size) { \
+	    MakeBigReq(req,n) \
+	} else { \
+	    n = badlen; \
+	    req->length += n; \
+	} \
+    } else \
+	req->length += n
 
 #define SyncHandle() \
 	if (dpy->synchandler) (*dpy->synchandler)(dpy)
