@@ -22,14 +22,14 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: access.c,v 1.33 89/06/21 16:38:05 rws Exp $ */
+/* $XConsortium: access.c,v 1.34 89/06/21 17:47:46 rws Exp $ */
 
+#include "Xos.h"
 #include "X.h"
 #include "Xproto.h"
 #include "misc.h"
 #include "site.h"
 #include <errno.h>
-#include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 
