@@ -35,7 +35,7 @@ extern XStuff X;
 extern Boolean recording;
 extern Widget recordbutton;
 
-extern char *filename;		/* name of the file we're recording to */
+extern char filename[];		/* name of the file we're recording to */
 
 void cancel_record();
 void done_choosing_filename();
