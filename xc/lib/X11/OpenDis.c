@@ -1,6 +1,6 @@
 #include "copyright.h"
 #ifndef lint
-static char *rcsid_xopendisplay_c = "$Header: XOpenDis.c,v 11.50 87/08/29 20:05:23 jg Exp $";
+static char *rcsid_xopendisplay_c = "$Header: XOpenDis.c,v 11.53 87/08/30 12:36:39 jg Exp $";
 #endif
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 
@@ -19,6 +19,10 @@ int _Xdebug = 0;
 static xReq _dummy_request = {
 	0, 0, 0
 };
+
+/* head of the linked list of open displays */
+Display *_XHeadOfDisplayList = NULL;
+
 extern _XWireToEvent();
 extern _XUnknownNativeEvent();
 extern _XUnknownWireEvent();
@@ -151,6 +155,7 @@ Display *XOpenDisplay (display)
  * We succeeded at authorization, so let us move the data into
  * the display structure.
  */
+	dpy->next		= (Display *) NULL;
 	dpy->proto_major_version= prefix.majorVersion;
 	dpy->proto_minor_version= prefix.minorVersion;
 	dpy->release 		= u.setup->release;
@@ -362,6 +367,11 @@ Display *XOpenDisplay (display)
  * forced synchronize
  */
 	(void) XSynchronize(dpy, _Xdebug);
+/*
+ * chain this stucture onto global list.
+ */
+	dpy->next = _XHeadOfDisplayList;
+	_XHeadOfDisplayList = dpy;
 	UnlockDisplay(dpy);
 	UnlockMutex(&lock);
 /*
@@ -373,15 +383,14 @@ Display *XOpenDisplay (display)
 	    unsigned long nitems;
 	    long leftover;
 	    if (XGetWindowProperty(dpy, RootWindow(dpy, 0), 
-		XA_RESOURCE_MANAGER, 0L, 1073725440L, False, XA_STRING,
+		XA_RESOURCE_MANAGER, 0L, 100000000L, False, XA_STRING,
 		&actual_type, &actual_format, &nitems, &leftover, 
 		&dpy->xdefaults) != Success) {
 			dpy->xdefaults = (char *) NULL;
 		}
 	    else {
 	    if ( (actual_type != XA_STRING) ||  (actual_format != 8) ) {
-		Xfree ( dpy->xdefaults );
-		dpy->xdefaults = (char *) NULL;
+		if (dpy->xdefaults != NULL) Xfree ( dpy->xdefaults );
 		}
 	    }
 	}

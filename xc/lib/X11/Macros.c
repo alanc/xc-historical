@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XMacros.c,v 11.15 87/07/14 16:31:08 jg Exp $ */
+/* $Header: XMacros.c,v 11.15 87/09/01 14:55:55 toddb Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1987	*/
 
 #include "Xlibint.h"
@@ -30,15 +30,15 @@ GC XDefaultGC(dpy, scr)
     Display *dpy; int scr;
 	{	return (DefaultGC(dpy,scr)); }
 
-long XBlackPixel(dpy, scr) 
+unsigned long XBlackPixel(dpy, scr) 
     Display *dpy; int scr; 
 	{	return (BlackPixel(dpy, scr)); }
 
-long XWhitePixel(dpy, scr) 
+unsigned long XWhitePixel(dpy, scr) 
     Display *dpy; int scr; 
 	{	return (WhitePixel(dpy,scr)); }
 
-long XAllPlanes() { return AllPlanes; }
+unsigned long XAllPlanes() { return AllPlanes; }
 
 int XQLength(dpy) Display *dpy; { return (QLength(dpy)); }
 
@@ -93,6 +93,46 @@ int XBitmapBitOrder(dpy) Display *dpy; { return (BitmapBitOrder(dpy)); }
 int XBitmapPad(dpy) Display *dpy; { return (BitmapPad(dpy)); }
 
 int XImageByteOrder(dpy) Display *dpy; { return (ImageByteOrder(dpy)); }
+
+/* screen oriented macros (toolkit) */
+Screen *XScreenOfDisplay(dpy, scr) Display *dpy; int scr;
+	{ return (ScreenOfDisplay(dpy, scr)); }
+
+Screen *XDefaultScreenOfDisplay(dpy) Display *dpy;
+	{ return (DefaultScreenOfDisplay(dpy)); }
+
+Display *XDisplayOfScreen(s) Screen *s; { return (DisplayOfScreen(s)); }
+
+Window XRootWindowOfScreen(s) Screen *s; { return (RootWindowOfScreen(s)); }
+
+unsigned long XBlackPixelOfScreen(s) Screen *s; 
+	{ return (BlackPixelOfScreen(s)); }
+
+unsigned long XWhitePixelOfScreen(s) Screen *s; 
+	{ return (WhitePixelOfScreen(s)); }
+
+Colormap XDefaultColormapOfScreen(s) Screen *s; 
+	{ return (DefaultColormapOfScreen(s)); }
+
+int XDefaultDepthOfScreen(s) Screen *s; { return (DefaultDepthOfScreen(s)); }
+
+GC XDefaultGCOfScreen(s) Screen *s; { return (DefaultGCOfScreen(s)); }
+
+Visual *XDefaultVisualOfScreen(s) Screen *s; 
+	{ return (DefaultVisualOfScreen(s)); }
+
+int XWidthOfScreen(s) Screen *s; { return (WidthOfScreen(s)); }
+
+int XHeightOfScreen(s) Screen *s; { return (HeightOfScreen(s)); }
+
+int XWidthMMOfScreen(s) Screen *s; { return (WidthMMOfScreen(s)); }
+
+int XHeightMMOfScreen(s) Screen *s; { return (HeightMMOfScreen(s)); }
+
+int XPlanesOfScreen(s) Screen *s; { return (PlanesOfScreen(s)); }
+
+int XCellsOfScreen(s) Screen *s; { return (CellsOfScreen(s)); }
+
 /*
  * These macros are used to give some sugar to the image routines so that
  * naive people are more comfortable with them.
