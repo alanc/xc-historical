@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: util.c,v 1.27 91/05/22 15:19:50 gildea Exp $
+ *	$XConsortium: util.c,v 1.28 91/05/23 18:27:55 gildea Exp $
  */
 
 /*
@@ -726,7 +726,7 @@ register TScreen *screen;
 					screen->scrolls--;
 			}
 			if (reply.type == GraphicsExpose)
-				HandleExposure (screen, (XExposeEvent *) &reply);
+			    HandleExposure (screen, (XExposeEvent *) &reply);
 
 			if ((reply.type == NoExpose) ||
 			    ((XExposeEvent *)rep)->count == 0) {
@@ -753,9 +753,19 @@ copy_area(screen, src_x, src_y, width, height, dest_x, dest_y)
     unsigned int width, height;
     int dest_x, dest_y;
 {
-    if (screen->incopy)
+    /* wait for previous CopyArea to complete unless
+       multiscroll is enabled and active */
+    if (screen->incopy  &&  screen->scrolls == 0)
 	CopyWait(screen);
     screen->incopy = -1;
+
+    /* save for translating Expose events */
+    screen->copy_src_x = src_x;
+    screen->copy_src_y = src_y;
+    screen->copy_width = width;
+    screen->copy_height = height;
+    screen->copy_dest_x = dest_x;
+    screen->copy_dest_y = dest_y;
 
     XCopyArea(screen->display, 
 	      TextWindow(screen), TextWindow(screen),
@@ -817,25 +827,70 @@ scrolling_copy_area(screen, firstline, nlines, amount)
 }
 
 /*
- * This routine handles exposure events
+ * Handler for Expose events on the VT widget.
+ * Returns 1 iff the area where the cursor was got refreshed.
  */
 HandleExposure (screen, reply)
-register TScreen *screen;
-register XExposeEvent *reply;
+    register TScreen *screen;
+    register XExposeEvent *reply;
+{
+    if (!screen->incopy)
+	return handle_translated_exposure (screen, reply->x, reply->y,
+					   reply->width, reply->height);
+    else {
+	/* compute intersection of area being copied with
+	   area being exposed. */
+	int both_x1 = Max(screen->copy_src_x, reply->x);
+	int both_y1 = Max(screen->copy_src_y, reply->y);
+	int both_x2 = Min(screen->copy_src_x+screen->copy_width,
+			  reply->x+reply->width);
+	int both_y2 = Min(screen->copy_src_y+screen->copy_height,
+			  reply->y+reply->height);
+	int value = 0;
+
+	/* was anything copied affected? */
+	if(both_x2 > both_x1  && both_y2 > both_y1) {
+	    /* do the copied area */
+	    value = handle_translated_exposure
+		(screen, reply->x + screen->copy_dest_x - screen->copy_src_x,
+		 reply->y + screen->copy_dest_y - screen->copy_src_y,
+		 reply->width, reply->height);
+	}
+	/* was anything not copied affected? */
+	if(reply->x < both_x1 || reply->y < both_y1
+	   || reply->x+reply->width > both_x2
+	   || reply->y+reply->height > both_y2)
+	    value = handle_translated_exposure (screen, reply->x, reply->y,
+						reply->width, reply->height);
+
+	return value;
+    }
+}
+
+/*
+ * Called by the ExposeHandler to do the actual repaint after the coordinates
+ * have been translated to allow for any CopyArea in progress.
+ * The rectangle passed in is pixel coordinates.
+ */
+handle_translated_exposure (screen, rect_x, rect_y, rect_width, rect_height)
+    register TScreen *screen;
+    register int rect_x, rect_y;
+    register unsigned int rect_width, rect_height;
 {
 	register int toprow, leftcol, nrows, ncols;
 	extern Bool waiting_for_initial_map;
 
-	if((toprow = (reply->y - screen->border) /
-	 FontHeight(screen)) < 0)
+	toprow = (rect_y - screen->border) / FontHeight(screen);
+	if(toprow < 0)
 		toprow = 0;
-	if((leftcol = (reply->x - screen->border - screen->scrollbar)
-	 / FontWidth(screen)) < 0)
+	leftcol = (rect_x - screen->border - screen->scrollbar)
+	    / FontWidth(screen);
+	if(leftcol < 0)
 		leftcol = 0;
-	nrows = (reply->y + reply->height - 1 - screen->border) / 
+	nrows = (rect_y + rect_height - 1 - screen->border) / 
 		FontHeight(screen) - toprow + 1;
 	ncols =
-	 (reply->x + reply->width - 1 - screen->border - screen->scrollbar) /
+	 (rect_x + rect_width - 1 - screen->border - screen->scrollbar) /
 			FontWidth(screen) - leftcol + 1;
 	toprow -= screen->scrolls;
 	if (toprow < 0) {

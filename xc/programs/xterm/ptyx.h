@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.55 91/05/11 15:56:29 gildea Exp $
+ *	$XConsortium: ptyx.h,v 1.56 91/05/17 18:35:48 gildea Exp $
  */
 
 /*
@@ -274,6 +274,12 @@ typedef struct {
 	int		incopy;		/* 0 idle; 1 XCopyArea issued;
 					    -1 first GraphicsExpose seen,
 					    but last not seen		*/
+	int		copy_src_x;	/* params from last XCopyArea ... */
+	int		copy_src_y;
+	unsigned int	copy_width;
+	unsigned int	copy_height;
+	int		copy_dest_x;
+	int		copy_dest_y;
 	Boolean		c132;		/* allow change to 132 columns	*/
 	Boolean		curses;		/* cludge-ups for more and vi	*/
 	Boolean		marginbell;	/* true if margin bell on	*/
