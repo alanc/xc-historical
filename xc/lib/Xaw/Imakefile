@@ -164,6 +164,8 @@ OBJS = \
 
 LibraryObjectRule()
 
+SpecialObjectRule(AllWidgets.o,,$(SHLIBDEF))
+
 #if DoSharedLib
 #if DoNormalLib
 SharedLibraryTarget(Xaw,$(SOXAWREV),$(OBJS),shared,..)
