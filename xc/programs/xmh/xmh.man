@@ -1,4 +1,4 @@
-.\" $XConsortium: xmh.man,v 1.33 94/04/14 12:18:39 dpw Exp $
+.\" $XConsortium: xmh.man,v 1.34 94/04/17 20:24:06 dpw Exp gildea $
 .\" Copyright (c) 1989, 1991, 1994  X Consortium
 .\" Copyright 1988, 1989, Digital Equipment Corporation.
 .\" 
@@ -27,7 +27,7 @@
 .\" from the X Consortium.
 .TH XMH 1 "Release 6" "X Version 11"
 .SH NAME
-\fIxmh\fR \- send and read mail with an X interface to MH
+xmh \- send and read mail with an X interface to MH
 .SH SYNOPSIS
 .B xmh
 [\-path \fImailpath\fR] [\-initial \fIfoldername\fR] [\-flag] [\-\fItoolkitoption\fR ...]
