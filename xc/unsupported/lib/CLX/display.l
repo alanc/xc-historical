@@ -448,15 +448,14 @@
   ;; request.  Default value is nil.  Can be set, for example, to
   ;; #'display-force-output or #'display-finish-output.
 
+(defvar *inside-display-after-function* nil)
+
 (defun display-invoke-after-function (display)
   ; Called after every protocal request is generated
-  (declare (type display display)
-	   (special *inside-display-after-function*))
+  (declare (type display display))
   (when (and (display-after-function display)
-	     (not (and (boundp '*inside-display-after-function*)
-		       *inside-display-after-function*)))
+	     (not *inside-display-after-function*))
     (let ((*inside-display-after-function* t)) ;; Ensure no recursive calls
-      (declare (special *inside-display-after-function*))
       (funcall (display-after-function display) display))))
 
 (defun display-finish-output (display)
