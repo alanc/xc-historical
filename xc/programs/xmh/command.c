@@ -1,4 +1,4 @@
-/* $XConsortium: command.c,v 2.36 91/02/08 10:48:32 rws Exp $ */
+/* $XConsortium: command.c,v 2.38 91/03/20 11:47:14 gildea Exp $ */
 
 /*
  *			  COPYRIGHT 1987, 1989
@@ -29,7 +29,7 @@
 
 #include "xmh.h"
 #include <sys/ioctl.h>
-#include <sys/signal.h>
+#include <signal.h>
 #ifndef SYSV
 #include <sys/wait.h>
 #endif	/* SYSV */
@@ -126,7 +126,10 @@ static void ReadStderr(closure, fd, id)
 
 static int childdone;		/* Gets nonzero when the child process
 				   finishes. */
-ChildDone()
+/* ARGSUSED */
+static void
+ChildDone(n)
+    int n;
 {
     childdone++;
 }
