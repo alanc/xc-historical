@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: commands.c,v 1.17 88/09/16 14:42:40 swick Exp $";
+static char rcs_id[] = "$XConsortium: commands.c,v 1.18 88/10/07 15:56:27 swick Exp $";
 #endif
 
 /*
@@ -240,7 +240,7 @@ setLoadedFile(name)
   char *name;
 {
     if(loadedfile) free(loadedfile);
-    loadedfile = malloc(strlen(name));
+    loadedfile = malloc((unsigned)(strlen(name) + 1));
     strcpy(loadedfile, name);
 }
 
@@ -249,7 +249,7 @@ setSavedFile(name)
   char *name;
 {
     if(savedfile) free(savedfile);
-    savedfile = malloc(strlen(name));
+    savedfile = malloc((unsigned)(strlen(name) + 1));
     strcpy(savedfile, name);
 }
 
