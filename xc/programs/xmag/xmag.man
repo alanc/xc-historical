@@ -23,7 +23,7 @@ resizes the magnification area.  Xmag also preserves colormaps, visuals, and
 window depth from the target magnification area.
 .SH WIDGETS
 Xmag uses the X Toolkit Intrinsics and the Athena Widget Set.
-The main part of the toplevel is Scale widget described below.  
+The main part of the toplevel is the Scale widget described below.  
 For more information, see the Athena Widget Set documentation.
 Below is the widget structure of the xmag application.
 Indentation indicates hierarchical  structure.  The widget class
