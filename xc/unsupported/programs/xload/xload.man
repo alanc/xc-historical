@@ -3,17 +3,12 @@
 xload - X window system load average display
 .SH SYNOPSIS
 .B xload
-[ option ] ...
+[-option ...]
 .SH DESCRIPTION
 The 
 .I xload 
-program continuously displays the system load average under the
-.I X
-window system.  It
-creates a window in which the load average is represented as a bar graph
-with n divisions. Each division represents one unit of load average.
-The name of the host is displayed in the upper left corner.  This program
-is nothing more than a wrapper around the Athena Load widget.
+program displays a periodically updating histogram of the system load average.
+This program is nothing more than a wrapper around the Athena Load widget.
 .SH OPTIONS
 .PP
 .I Xload
@@ -22,22 +17,19 @@ additional options listed below:
 .PP
 .TP 8
 .B \-scale \fIinteger\fP
-This option specifies the minimum number of divisions on the graph (default 1).
-.I Xload
-is free to use more divisions if the load gets too high to display,
-but it will never use fewer divisions than this.
+This option specifies the minimum number of tick marks in the histogram,
+where one division represents on load average point.  If the load goes
+above this number, \fIxload\fP will create more divisions, but it will never
+use fewer than this number.  The default is 1.
 .PP
 .TP 8
 .B \-update \fIseconds\fP
-This option specifies the frequency in seconds with which
+This option specifies the frequency in seconds at which
 .I xload
-updates its display (except if the
-.I xload
-window is obscured and then exposed, immediate redisplay occurs).  The default
-update frequency is 5 seconds.  Specification of a frequency
-less than 5 seconds is ignored and the default frequency is used instead.
+updates its display.  Expose events will cause automatic updating.  The minimum
+as well as default time is 5 seconds.
 .PP
-The following standard X toolkit arguments are commonly used
+The following standard X Toolkit arguments are commonly used
 with \fIxload\fP.
 .PP
 .TP 8
@@ -52,9 +44,8 @@ The default color is ``white''.
 .PP
 .TP 8
 .B \-bw \fIpixels\fP
-This option specifies the width in pixels of the border around the
-.I xload
-window. The default value is 3 pixels.
+This option specifies the width in pixels of the border around the window.
+The default value is 2.
 .PP
 .TP 8
 .B \-fg \fIcolor\fP
@@ -63,45 +54,27 @@ The default color is ``black''.
 .PP
 .TP 8
 .B \-fn \fIfontname\fP
-The hostname will be displayed in the specified font (if none
-is specified, this defaults to 6x10).
+This option specifies the font to be used in displaying the name of the 
+host whose load is being monitored.  The default is ``6x10.''
 .PP
 .TP 8
 .B \-rv
-The foreground and background colors
-are reversed.
+This option indicates that reverse video should be simulated by swapping the
+foreground and background colors.
 .PP
 .TP 8
 .B \-geometry \fIgeometry\fP
-The load graph window is created with the specified
-size and location
-determined
-by the supplied geometry specification.
-See \fIX(1)\fP for a full explanation.
+This option specifies the prefered size and postion of the window.
 .PP
 .TP 8
 .B \-display \fIhost\fP:\fIdisplay\fP
-Normally,
-.I xload
-gets the host and display number to use from the environment
-variable ``DISPLAY''.  Either or both can be specified with this option.
-.I host
-specifies which machine to create the
-.I xload
-window on, and
-.I display
-specifies the display number.
-For example,
-``xload -display nehi:0'' creates an
-.I xload
-on display 0 on machine nehi. Either value can be defaulted
-by omission but ``:'' is necessary to specify one or both.
+This option specifies the X server to contact.
 .PP
 .TP 8
 .B \-xrm \fIresourcestring\fP
-This option can be used to set resources that do not have command line
-arguments.
-.SH X DEFAULTS
+This option specifies a resource string to be used.  This is especially
+useful for setting resources that do not have separate command line options.
+.SH "X DEFAULTS"
 .PP
 This program uses the 
 .I Load
@@ -152,10 +125,12 @@ X(1), xrdb(1), X(8C), mem(4), select(2)
 Unable to open display or create window. Unable to open /dev/kmem.
 Unable to query window for dimensions. Various X errors.
 .SH BUGS
-.I xload
+This program 
 requires the ability to open and read /dev/kmem. On most systems, this requires
 the suid bit set with root ownership or the sgid bit set and membership in 
 the same group as /dev/kmem. 
+.PP
+Reading /dev/kmem is inherently non-portable.
 .PP
 Border color has to be explicitly specified when reverse video is used.
 .SH AUTHORS
