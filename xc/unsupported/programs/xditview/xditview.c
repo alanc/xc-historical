@@ -5,7 +5,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$XConsortium: xditview.c,v 1.19 90/12/02 18:16:57 keith Exp $";
+static char rcsid[] = "$XConsortium: xditview.c,v 1.20 91/01/10 17:03:49 gildea Exp $";
 #endif /* lint */
 
 #include <X11/Xatom.h>
@@ -177,7 +177,6 @@ void main(argc, argv)
 	Syntax(argv[0]);
 
     XtAppAddActions(xtcontext, xditview_actions, XtNumber (xditview_actions));
-    XtAppAddActions(xtcontext, xditview_actions, XtNumber(xditview_actions));
     XtOverrideTranslations
 	(toplevel, XtParseTranslationTable ("<Message>WM_PROTOCOLS: Quit()"));
 
