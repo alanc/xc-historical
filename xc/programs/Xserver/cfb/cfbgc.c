@@ -417,11 +417,11 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
 	    new_fillspans = TRUE;
 	    break;
 	case GCLineStyle:
-	    break;
 	case GCLineWidth:
-	case GCCapStyle:
 	case GCJoinStyle:
 	    new_line = TRUE;
+	    break;
+	case GCCapStyle:
 	    break;
 	case GCFillStyle:
 	    new_text = TRUE;
