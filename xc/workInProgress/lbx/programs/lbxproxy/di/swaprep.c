@@ -1,5 +1,5 @@
 /*
- * $XConsortium: swaprep.c,v 1.3 94/12/01 20:53:19 mor Exp $
+ * $XConsortium: swaprep.c,v 1.4 95/04/04 21:14:14 dpw Exp mor $
  *
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -315,14 +315,14 @@ SwapKeymapReply(rep)
 }
 
 void
-SwapGetImageReply (rep)
+SwapGetImageReply(rep)
     xGetImageReply *rep;
 {
     char n;
 
-    swaps (&rep->sequenceNumber, n);
-    swapl (&rep->length, n);
-    swapl (&rep->visual, n);
+    swaps(&rep->sequenceNumber, n);
+    swapl(&rep->length, n);
+    swapl(&rep->visual, n);
 }
 
 void
@@ -331,8 +331,8 @@ SwapQueryExtensionReply(rep)
 {
     char n;
 
-    swaps (&rep->sequenceNumber, n);
-    swapl (&rep->length, n);
+    swaps(&rep->sequenceNumber, n);
+    swapl(&rep->length, n);
 }
 
 static void
@@ -352,6 +352,23 @@ SwapCharInfo(pInfo)
 static void
 SwapFontInfo(pr)
     xQueryFontReply *pr;
+{
+    register char n;
+
+    swaps(&pr->minCharOrByte2, n);
+    swaps(&pr->maxCharOrByte2, n);
+    swaps(&pr->defaultChar, n);
+    swaps(&pr->nFontProps, n);
+    swaps(&pr->fontAscent, n);
+    swaps(&pr->fontDescent, n);
+    SwapCharInfo(&pr->minBounds);
+    SwapCharInfo(&pr->maxBounds);
+    swapl(&pr->nCharInfos, n);
+}
+
+static void
+SwapLbxFontInfo(pr)
+    xLbxFontInfo *pr;
 {
     register char n;
 
@@ -403,4 +420,39 @@ SwapFont(pr, native)
     pxci = (xCharInfo *) pby;
     for (i = 0; i < nchars; i++, pxci++)
 	SwapCharInfo(pxci);
+}
+
+void
+LbxSwapFontInfo(pr, compressed)
+    xLbxFontInfo *pr;
+    Bool	compressed;
+{
+    unsigned    i;
+    xCharInfo  *pxci;
+    unsigned    nchars,
+                nprops;
+    char       *pby;
+    register char n;
+
+    SwapLbxFontInfo(pr);
+    nchars = pr->nCharInfos;
+    nprops = pr->nFontProps;
+    pby = (char *) &pr[1];
+    /*
+     * Font properties are an atom and either an int32 or a CARD32, so they
+     * are always 2 4 byte values
+     */
+    for (i = 0; i < nprops; i++) {
+	swapl(pby, n);
+	pby += 4;
+	swapl(pby, n);
+	pby += 4;
+    }
+    pxci = (xCharInfo *) pby;
+    if (!compressed) {
+	for (i = 0; i < nchars; i++, pxci++)
+	    SwapCharInfo(pxci);
+    } else {
+	SwapLongs((CARD32 *) pxci, nchars);
+    }
 }
