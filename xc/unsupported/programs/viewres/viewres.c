@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.42 90/02/23 16:54:26 jim Exp $
+ * $XConsortium: viewres.c,v 1.43 90/02/26 12:01:28 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -35,7 +35,7 @@
 #include <X11/Xaw/SmeBSB.h>
 #include <X11/Xaw/SmeLine.h>
 #include <X11/Xaw/Paned.h>
-#include <X11/Xaw/Viewport.h>
+#include <X11/Xaw/Porthole.h>
 #include <X11/Xaw/Toggle.h>
 #include <X11/Xaw/Text.h>
 #include <X11/Xaw/List.h>
@@ -107,8 +107,6 @@ static XtResource Resources[] = {
 
 
 static char *fallback_resources[] = {
-    "*Viewport.allowHoriz: true",
-    "*Viewport.allowVert: true",
     "*allowShellResize: true",
     NULL
 };
@@ -175,7 +173,7 @@ static struct _nametable {
     { "forward", 1 },
 };
 
-static Widget treeWidget, viewportWidget, pannerWidget;
+static Widget treeWidget, portholeWidget, pannerWidget;
 static Widget quitButton, viewButton, viewMenu, selectButton, selectMenu;
 static Widget view_widgets[VIEW_number];
 static Widget select_widgets[SELECT_number];
@@ -664,13 +662,17 @@ static void panner_callback (gw, closure, data)
     caddr_t data;			/* report */
 {
     XawPannerReport *rep = (XawPannerReport *) data;
+    Arg args[2];
 
-    if (viewportWidget)
-      XawViewportSetCoordinates (viewportWidget, rep->inner_x, rep->inner_y);
+    if (portholeWidget) {
+	XtSetArg (args[0], XtNx, -rep->inner_x);
+	XtSetArg (args[1], XtNy, -rep->inner_y);
+	XtSetValues (treeWidget, args, TWO);
+    }
 }
 
 /* ARGSUSED */
-static void viewport_callback (gw, closure, data)
+static void porthole_callback (gw, closure, data)
     Widget gw;
     caddr_t closure;			/* undefined */
     caddr_t data;			/* report */
@@ -820,13 +822,13 @@ main (argc, argv)
     pannerWidget = XtCreateManagedWidget ("panner", pannerWidgetClass, box,
 					  args, THREE);
 
-    callback_rec[0].callback = (XtCallbackProc) viewport_callback;
+    callback_rec[0].callback = (XtCallbackProc) porthole_callback;
     callback_rec[0].closure = (caddr_t) NULL;
-    viewportWidget = XtCreateManagedWidget ("viewport", viewportWidgetClass,
+    portholeWidget = XtCreateManagedWidget ("porthole", portholeWidgetClass,
 					    pane, args, ONE);
 
     treeWidget = XtCreateManagedWidget ("tree", treeWidgetClass,
-					viewportWidget, NULL, ZERO);
+					portholeWidget, NULL, ZERO);
 
     set_labeltype_menu (Appresources.show_variable, FALSE);
     set_orientation_menu ((Boolean)(orient == XtorientHorizontal), FALSE);
