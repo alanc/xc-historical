@@ -12,7 +12,7 @@
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- *	"$Header: macII.h,v 1.2 88/02/29 16:13:09 x Exp $ SPRITE (Berkeley)"
+ *	"$Header: macII.h,v 1.3 88/02/29 18:24:14 x Locked $ SPRITE (Berkeley)"
  */
 #ifndef _MACII_H_
 #define _MACII_H_
@@ -280,7 +280,7 @@ extern void 	  SetTimeSinceLastInputEvent();
 /*
  * We signal autorepeat events with the unique id AUTOREPEAT_EVENTID.
  */
-#define AUTOREPEAT_EVENTID      (0x7f)          /* AutoRepeat id */
+#define AUTOREPEAT_EVENTID      (0x7d)          /* AutoRepeat id */
 
 extern int	autoRepeatKeyDown;		/* TRUE if key down */
 extern int	autoRepeatReady;		/* TRUE if time out */
