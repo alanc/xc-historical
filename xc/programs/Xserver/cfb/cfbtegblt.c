@@ -1,4 +1,4 @@
-/* $Header: cfbtegblt.c,v 1.1 88/01/08 16:26:45 liuho Exp $ */
+/* $XConsortium: cfbtegblt.c,v 1.1 88/02/01 20:37:53 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.

@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $Header: cfbmskbits.h,v 4.4 88/05/21 17:55:58 rws Exp $ */
+/* $XConsortium: cfbmskbits.h,v 4.5 88/08/14 14:20:33 rws Exp $ */
 
 extern int cfbstarttab[];
 extern int cfbendtab[];
