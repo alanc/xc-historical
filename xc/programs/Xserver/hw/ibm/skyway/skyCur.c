@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyIO.c,v 1.1 91/05/10 09:09:03 jap Exp $
+ * $XConsortium: skyCur.c,v 1.3 91/07/16 13:14:04 jap Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -44,7 +44,6 @@
 
 #include "ibmScreen.h"
 #include "skyHdwr.h"
-#include "skyReg.h"
 #include "ibmTrace.h"
 
 extern int lastEventTime ;
@@ -173,12 +172,12 @@ skyDisplayCursor( pScr, pCurs )
        return 0;
 
     /* disable the cursor in the DAC */
-    SKYWAY_SINDEX_REG(index) = CursLo_Plane0;
-    SKYWAY_SINDEX_REG(index) = CursCntl_Plane0 | DAC_disable;
+    SKY_SINDEX_REG(index) = CursLo_Plane0;
+    SKY_SINDEX_REG(index) = CursCntl_Plane0 | DAC_disable;
 
     /* load cursor starting at 0,0 */
-    SKYWAY_SINDEX_REG(index) = CursLo_Plane0;
-    SKYWAY_SINDEX_REG(index) = CursHi_Plane0;
+    SKY_SINDEX_REG(index) = CursLo_Plane0;
+    SKY_SINDEX_REG(index) = CursHi_Plane0;
 
     /* ASSUME cursor source & mask padded to 32 bit boundary.  May have to
        mask off pad bits, if not zero already */
@@ -197,19 +196,19 @@ skyDisplayCursor( pScr, pCurs )
               src_byte = *src++;
               mask_byte = *mask++ & ~src_byte;
 
-	      SKYWAY_SINDEX_REG(index) = CursImg_Plane0 | mask_byte;
-	      SKYWAY_SINDEX_REG(index) = CursImg_Plane1 | src_byte;
+	      SKY_SINDEX_REG(index) = CursImg_Plane0 | mask_byte;
+	      SKY_SINDEX_REG(index) = CursImg_Plane1 | src_byte;
 	 }
 	else {
-	      SKYWAY_SINDEX_REG(index) = CursImg_Plane0; /* 0 in data byte */
-	      SKYWAY_SINDEX_REG(index) = CursImg_Plane1;
+	      SKY_SINDEX_REG(index) = CursImg_Plane0; /* 0 in data byte */
+	      SKY_SINDEX_REG(index) = CursImg_Plane1;
 	    }
       }
     }
 
     /* enable the cursor in the DAC */
-    SKYWAY_SINDEX_REG(index) = CursLo_Plane0;
-    SKYWAY_SINDEX_REG(index) = CursCntl_Plane0 | DAC_enable;
+    SKY_SINDEX_REG(index) = CursLo_Plane0;
+    SKY_SINDEX_REG(index) = CursCntl_Plane0 | DAC_enable;
 
     /* try recoloring the cursor */
     skyRecolorCursor( pScr, pCurs, TRUE );
@@ -236,19 +235,19 @@ int  index  =  ibmCurrentScreen;
     y = y + yc_correct2 - ibmCursorHotY(index);
 
     /* disable the cursor in the DAC */
-    SKYWAY_SINDEX_REG(index) = CursLo_Plane0;
-    SKYWAY_SINDEX_REG(index) = CursCntl_Plane0 | DAC_disable;
+    SKY_SINDEX_REG(index) = CursLo_Plane0;
+    SKY_SINDEX_REG(index) = CursCntl_Plane0 | DAC_disable;
 
     /* specify low order byte of x */
-    SKYWAY_SINDEX_REG(index) = CursLo_Plane0 | 0x0001;
-    SKYWAY_SINDEX_REG(index) = CursCntl_Plane0 | (x & 0x00FF);
-    SKYWAY_SINDEX_REG(index) = CursCntl_Plane0 |  x >> 8;
-    SKYWAY_SINDEX_REG(index) = CursCntl_Plane0 | (y & 0x00FF);
-    SKYWAY_SINDEX_REG(index) = CursCntl_Plane0 |  y >> 8;
+    SKY_SINDEX_REG(index) = CursLo_Plane0 | 0x0001;
+    SKY_SINDEX_REG(index) = CursCntl_Plane0 | (x & 0x00FF);
+    SKY_SINDEX_REG(index) = CursCntl_Plane0 |  x >> 8;
+    SKY_SINDEX_REG(index) = CursCntl_Plane0 | (y & 0x00FF);
+    SKY_SINDEX_REG(index) = CursCntl_Plane0 |  y >> 8;
 
     /* enable the cursor in the DAC */
-    SKYWAY_SINDEX_REG(index) = CursLo_Plane0;
-    SKYWAY_SINDEX_REG(index) = CursCntl_Plane0 | DAC_enable;
+    SKY_SINDEX_REG(index) = CursLo_Plane0;
+    SKY_SINDEX_REG(index) = CursCntl_Plane0 | DAC_enable;
 
     return;
 }
@@ -266,7 +265,8 @@ skyRecolorCursor (pScr, pCurs, visible)
   volatile unsigned char *dptr;       /* pointer to palette datab reg*/
   volatile unsigned short *io_idata;  /* pointer to control index reg*/
 
-  TRACE(("skyRecolorCursor(pScr = 0x%x, pCurs = 0x%x, visible = %d)\n", pScr, pCurs, visible));
+  TRACE(("skyRecolorCursor(pScr = 0x%x, pCurs = 0x%x, visible = %d)\n",
+  pScr, pCurs, visible));
 
   TRACE (("\tforeground=(%d,%d,%d) background=(%d,%d,%d)\n",
           pCurs->foreRed >> 8, pCurs->foreGreen >> 8, pCurs->foreBlue >> 8, 
@@ -277,13 +277,13 @@ skyRecolorCursor (pScr, pCurs, visible)
   if ( ! visible ) return;
 
   /* disable the cursor in the DAC */
-  SKYWAY_SINDEX_REG(index) = CursLo_Plane0;
-  SKYWAY_SINDEX_REG(index) = CursCntl_Plane0 | DAC_disable;
+  SKY_SINDEX_REG(index) = CursLo_Plane0;
+  SKY_SINDEX_REG(index) = CursCntl_Plane0 | DAC_disable;
 
   /* Initialize the pointers to the index and data_b registers.        */
-  io_idata = (unsigned short *) (IOREG[index] + INDEX_OFF);
-  rptr = (uchar *) (IOREG[index] + INDEX_OFF);
-  dptr = (uchar *) (IOREG[index] + DATA_B_OFF);
+  io_idata = (unsigned short *) &IOREG[index]->index;
+  rptr = (uchar *) &IOREG[index]->index;
+  dptr = (uchar *) &IOREG[index]->data_b;
 
   /* Load the colormap onto the RGB hardware:			       */
   /*	 io_idata  defines the cursor colormap hardware address. The   */
@@ -303,8 +303,8 @@ skyRecolorCursor (pScr, pCurs, visible)
     *dptr = pCurs->foreBlue >> 8;
 
     /* enable the cursor in the DAC */
-    SKYWAY_SINDEX_REG(index) = CursLo_Plane0;
-    SKYWAY_SINDEX_REG(index) = CursCntl_Plane0 | DAC_enable;
+    SKY_SINDEX_REG(index) = CursLo_Plane0;
+    SKY_SINDEX_REG(index) = CursCntl_Plane0 | DAC_enable;
 
   return;
 
@@ -326,23 +326,23 @@ skyRemoveCursor( pScr, pCurs )
        return;
 
     /* disable the cursor in the DAC */
-    SKYWAY_SINDEX_REG(index) = CursLo_Plane0;
-    SKYWAY_SINDEX_REG(index) = CursCntl_Plane0 | DAC_disable;
+    SKY_SINDEX_REG(index) = CursLo_Plane0;
+    SKY_SINDEX_REG(index) = CursCntl_Plane0 | DAC_disable;
 
     /* load cursor starting at 0,0 */
-    SKYWAY_SINDEX_REG(index) = CursLo_Plane0;
-    SKYWAY_SINDEX_REG(index) = CursHi_Plane0;
+    SKY_SINDEX_REG(index) = CursLo_Plane0;
+    SKY_SINDEX_REG(index) = CursHi_Plane0;
 
     /* move source & mask to skyway.  skyway cursor is 64x64 */
     for ( i=0; i<64*8; i++ )
     {
-      SKYWAY_SINDEX_REG(index) = CursImg_Plane0; /* 0 in data byte */
-      SKYWAY_SINDEX_REG(index) = CursImg_Plane1;
+      SKY_SINDEX_REG(index) = CursImg_Plane0; /* 0 in data byte */
+      SKY_SINDEX_REG(index) = CursImg_Plane1;
     }
 
     /* enable the cursor in the DAC */
-    SKYWAY_SINDEX_REG(index) = CursLo_Plane0;
-    SKYWAY_SINDEX_REG(index) = CursCntl_Plane0 | DAC_enable;
+    SKY_SINDEX_REG(index) = CursLo_Plane0;
+    SKY_SINDEX_REG(index) = CursCntl_Plane0 | DAC_enable;
 
     return;
 }
