@@ -43,7 +43,7 @@ OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 5.26 93/11/18 20:35:12 rob Exp $ */
+/* $XConsortium: gc.c,v 1.1 93/12/15 16:06:30 rob Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -61,8 +61,8 @@ OF THIS SOFTWARE.
 #include "mtxlock.h"
 
 #ifdef MTX
-extern MTX_MUTEX_TYPE FontLockMutex;
-extern MTX_MUTEX_TYPE ScratchGCMutex;
+extern X_MUTEX_TYPE FontLockMutex;
+extern X_MUTEX_TYPE ScratchGCMutex;
 #endif /* MTX */
 
 extern XID clientErrorValue;
