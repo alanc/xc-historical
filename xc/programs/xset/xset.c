@@ -1,12 +1,12 @@
 /* 
- * $XConsortium: xset.c,v 1.53 89/10/08 19:47:20 rws Exp $ 
+ * $XConsortium: xset.c,v 1.54 89/12/10 17:40:29 rws Exp $ 
  */
 #include <X11/copyright.h>
 
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$XConsortium: xset.c,v 1.53 89/10/08 19:47:20 rws Exp $";
+static char *rcsid_xset_c = "$XConsortium: xset.c,v 1.54 89/12/10 17:40:29 rws Exp $";
 #endif
 
 #include <stdio.h>
@@ -54,8 +54,9 @@ int percent;
 int acc_num, acc_denom, threshold;
 int key, auto_repeat_mode;
 XKeyboardControl values;
-unsigned long pixels[512];
-caddr_t colors[512];
+#define MAX_PIXEL_COUNT 512
+unsigned long pixels[MAX_PIXEL_COUNT];
+caddr_t colors[MAX_PIXEL_COUNT];
 int numpixels = 0;
 char *disp = NULL;
 Display *dpy;
@@ -252,7 +253,8 @@ for (i = 1; i < argc; ) {
       i++;
     } 
     else if (*arg >= '0' && *arg <= '9') {
-      acc_num = atoi(arg);  /* Set acceleration to user's tastes.  */
+      acc_denom = 1;
+      sscanf(arg, "%d/%d", &acc_num, &acc_denom);
       i++;
       if (i >= argc) {
 	set_mouse(dpy, acc_num, acc_denom, threshold);
@@ -264,7 +266,7 @@ for (i = 1; i < argc; ) {
 	i++;
       }
     }
-      set_mouse(dpy, acc_num, acc_denom, threshold);
+    set_mouse(dpy, acc_num, acc_denom, threshold);
   } 
   else if (strcmp(arg, "s") == 0) {
     if (i >= argc) {
@@ -349,6 +351,8 @@ for (i = 1; i < argc; ) {
     if (i + 1 >= argc)
       usage ("missing argument to p", NULL);
     arg = argv[i];
+    if (numpixels >= MAX_PIXEL_COUNT)
+	usage ("more than %d pixels specified", MAX_PIXEL_COUNT);
     if (*arg >= '0' && *arg <= '9')
       pixels[numpixels] = atoi(arg);
     else
@@ -661,8 +665,8 @@ int key, auto_repeat_mode;
 
 set_pixels(dpy, pixels, colors, numpixels)
 Display *dpy;
-unsigned long pixels[512];
-caddr_t colors[512];
+unsigned long *pixels;
+caddr_t *colors;
 int numpixels;
 {
   XColor def;
@@ -796,8 +800,7 @@ printf ("  bell percent:  %d    bell pitch:  %d    bell duration:  %d\n",
 	values.bell_percent, values.bell_pitch, values.bell_duration);
 
 printf ("Pointer Control:\n");
-printf ("  acceleration:  %d = %d / %d    threshold:  %d\n",
-	acc_denom != 0 ? (acc_num / acc_denom) : 0,
+printf ("  acceleration:  %d/%d    threshold:  %d\n",
 	acc_num, acc_denom, threshold);
 
 printf ("Screen Saver:\n");
@@ -881,7 +884,7 @@ usage (fmt, arg)
     fprintf (stderr, "\t-led [1-32]         led off\n");
     fprintf (stderr, "\t led [1-32]         led on\n");
     fprintf (stderr, "    To set mouse acceleration and threshold:\n");
-    fprintf (stderr, "\t m [acc [thr]]    m default\n");
+    fprintf (stderr, "\t m [acc_mult[/acc_div] [thr]]    m default\n");
     fprintf (stderr, "    To set pixel colors:\n");
     fprintf (stderr, "\t p pixel_value color_name\n");
     fprintf (stderr, "    To turn auto-repeat off or on:\n");
@@ -891,7 +894,7 @@ usage (fmt, arg)
     fprintf (stderr, "\t s [timeout [cycle]]  s default    s on\n");
     fprintf (stderr, "\t s blank              s noblank    s off\n");
     fprintf (stderr, "\t s expose             s noexpose\n");
-    fprintf (stderr, "    For status information:  q   or  query\n");
+    fprintf (stderr, "    For status information:  q\n");
     exit(0);
 }
 
