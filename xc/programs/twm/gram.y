@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.84 89/12/14 14:52:03 jim Exp $
+ * $XConsortium: gram.y,v 1.85 90/03/08 15:44:49 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -280,14 +280,14 @@ key		: META			{ mods |= Mod1Mask; }
 		| SHIFT			{ mods |= ShiftMask; }
 		| LOCK			{ mods |= LockMask; }
 		| CONTROL		{ mods |= ControlMask; }
-		| number		{ if ($1 < 1 || $1 > 5) {
+		| META number		{ if ($2 < 1 || $2 > 5) {
 					     twmrc_error_prefix();
 					     fprintf (stderr, 
 				"bad modifier number (%d), must be 1-5\n",
-						      $1);
+						      $2);
 					     ParseError = 1;
 					  } else {
-					     mods |= (Mod1Mask << ($1 - 1));
+					     mods |= (Mod1Mask << ($2 - 1));
 					  }
 					}
 		| OR			{ }

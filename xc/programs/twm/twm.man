@@ -806,8 +806,10 @@ keysym name; buttons are given as the keywords \fBButton1\fP-\fBButton5\fP:
 \fBButton1\fP	= \fImodlist\fP : \fIcontext\fP : \fIfunction\fP
 .EE
 The \fImodlist\fP is any combination of the modifier names \fBshift\fP,
-\fBcontrol\fP, and \fBmeta\fP (which may be abbreviated as 
-\fBs\fP, \fBc\fP, and \fBm\fP respectively) separated by a vertical bar (\(or).
+\fBcontrol\fP, \fBlock\fP, \fBmeta\fP, \fBmod1\fP, \fBmod2\fP, \fBmod3\fP,
+\fBmod4\fP, or \fBmod1\fP (which may be abbreviated as 
+\fBs\fP, \fBc\fP, \fBl\fP, \fBm\fP, \fBm1\fP, \fBm2\fP, \fBm3\fP, \fBm4\fP, 
+\fBm5\fP, respectively) separated by a vertical bar (\(or).
 Similarly, the \fIcontext\fP is any combination of 
 \fBwindow\fP,
 \fBtitle\fP,
