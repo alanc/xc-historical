@@ -1,5 +1,5 @@
 /*
- * $XConsortium: chooser.c,v 1.15 93/09/20 18:03:28 hersh Exp $
+ * $XConsortium: chooser.c,v 1.16 93/09/29 17:18:14 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -515,7 +515,7 @@ RegisterHostname (name)
 
 	/* address as hex string, e.g., "12180022" (depreciated) */
 	if (strlen(name) == 8 &&
-	    FromHex(name, &in_addr.sin_addr, strlen(name)) == 0)
+	    FromHex(name, (char *)&in_addr.sin_addr, strlen(name)) == 0)
 	{
 	    in_addr.sin_family = AF_INET;
 	}
@@ -584,7 +584,7 @@ InitXDMCP (argv)
 	return 0;
 #ifdef SO_BROADCAST
     soopts = 1;
-    if (setsockopt (socketFD, SOL_SOCKET, SO_BROADCAST, &soopts, sizeof (soopts)) < 0)
+    if (setsockopt (socketFD, SOL_SOCKET, SO_BROADCAST, (char *)&soopts, sizeof (soopts)) < 0)
 	perror ("setsockopt");
 #endif
     
