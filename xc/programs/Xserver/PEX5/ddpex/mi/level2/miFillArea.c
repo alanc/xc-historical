@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miFillArea.c,v 5.1 91/02/16 09:55:13 rws Exp $ */
 
 
 /***********************************************************
@@ -526,6 +526,13 @@ miClipFillArea(pddc, input_vert, input_fct, output_vert, output_fct, clip_mode)
 
 }
 
+/* calls */
+ddpex3rtn		miApply_Lighting();
+static ddpex3rtn	Complete_FillArea_Facetlist();
+static ddpex3rtn	Calculate_FillArea_Facet_Normal();
+static ddpex3rtn	Calculate_FillArea_Vertex_Color_and_Normal();
+       ddpex3rtn	miFilterPath();
+
 /*++
  |
  |  miLightFillArea(pRend, pddc, input_vert, input_fct, output_vert, output_fct)
@@ -543,12 +550,6 @@ miLightFillArea(pRend, pddc, input_vert, input_fct, output_vert, output_fct)
     miListHeader	**output_vert;  /* output vertex data */
     listofddFacet	**output_fct;   /* output facet data */
 {
-/* calls */
-    ddpex3rtn		miApply_Lighting();
-    static ddpex3rtn	Complete_FillArea_Facetlist();
-    static ddpex3rtn	Calculate_FillArea_Facet_Normal();
-    static ddpex3rtn	Calculate_FillArea_Vertex_Color_and_Normal();
-	   ddpex3rtn	miFilterPath();
 
 /* uses */
     listofddFacet		*fct_list;
@@ -725,8 +726,6 @@ miCullFillArea(pddc, input_vert, input_fct, output_vert, output_fct)
     miListHeader	**output_vert;  /* output vertex data */
     listofddFacet	**output_fct;   /* output facet data */
 {
-/* calls */
-    static ddpex3rtn	Calculate_FillArea_Facet_Normal();
 
 /* uses */
     miListHeader		*out_vert;
@@ -1078,7 +1077,7 @@ Complete_FillArea_Facetlist(pddc, input_vert, input_fct, output_fct)
 	  vert3 = ((ddCoord3D *)in_pt);
 	  in_pt += point_size;
 
-	  numPoints =- 3;
+	  numPoints -= 3;
 	
 	  CROSS_PRODUCT(vert1, vert2, vert3, &(out_fct->normal));
 	  NORMALIZE_VECTOR(&(out_fct->normal), length);
@@ -1118,7 +1117,7 @@ Complete_FillArea_Facetlist(pddc, input_vert, input_fct, output_fct)
  |	Add facet normals to a facet list.
  |
  --*/
-ddpex3rtn
+static ddpex3rtn
 Calculate_FillArea_Facet_Normal(pddc, input_vert, input_fct, output_fct)
     miDDContext		*pddc;
     miListHeader	*input_vert;    /* input vertex data */
@@ -1241,8 +1240,6 @@ Calculate_FillArea_Vertex_Color_and_Normal(pddc, input_vert, input_fct,
     listofddFacet	*input_fct;	/* input facet data */
     miListHeader	**output_vert;  /* output vertex data */
 {
-    static ddpex3rtn		Calculate_FillArea_Facet_Normal();
-
     miListHeader		*out_vert;
     listofddFacet		*fct_list;
     ddRgbFloatNormal		*out_fct;

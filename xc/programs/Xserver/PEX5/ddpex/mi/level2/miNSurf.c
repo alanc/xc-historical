@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miNSurf.c,v 5.1 91/02/16 09:55:52 rws Exp $ */
 
 #define TRIMING 1
 
@@ -50,6 +50,10 @@ SOFTWARE.
 
 #define xin(_a,_b,_x) ((_x) >= (_a) && (_x) <= (_b))
 
+/* calls */
+ddpex3rtn		build_surf_reps();
+static void		nurb_surf_state_free();
+
 /*++
  |
  |  Function Name:	miNurbsSurface
@@ -99,9 +103,6 @@ miNurbsSurface(pRend, pExecuteOC)
     ddRendererPtr       pRend;	  /* renderer handle */
     miGenericStr       *pExecuteOC;
 {
-/* calls */
-    ddpex3rtn		build_surf_reps();
-    static void		nurb_surf_state_free();
     extern ocTableType	InitExecuteOCTable[];
 
 /* Local variable definitions */
@@ -380,6 +381,11 @@ exit:
 
 #define NEED_NORMALS(_st) ( (_st)->reps.facets )
 
+/* calls */
+static ddpex3rtn compute_adaptive_surf_interval();
+static void determine_reps_required();
+static ddpex3rtn compute_nurb_surface();
+
 /*++
  |
  |  Function Name:      build_surf_reps
@@ -398,11 +404,6 @@ build_surf_reps( pddc, surface, state, trans )
     Nurb_surf_state	*state;
     ddFLOAT		*trans;
 {
-    /* calls */
-    static void compute_adaptive_surf_interval();
-    static void determine_reps_required();
-    static ddpex3rtn compute_nurb_surface();
-
     /* uses */
     ddpex3rtn		status = Success;	/* assume success */
 
@@ -449,6 +450,9 @@ build_surf_reps( pddc, surface, state, trans )
 
 
 
+/*  calls  */
+double	sqrt();
+
 /*++
  |
  |  Function Name:      compute_adaptive_surf_interval
@@ -475,9 +479,6 @@ compute_adaptive_surf_interval( pddc, surface, state, trans )
     Nurb_surf_state	*state;
     ddFLOAT		*trans;
 {
-/*  calls  */
-    double	sqrt();
-
 /*  uses  */
     ddFLOAT	uval, vval, a_coeff, b_coeff, c_coeff, denom,
 		z1, z2, z3;
@@ -750,6 +751,19 @@ determine_reps_required( pddc, surface, state )
 
 
 
+
+/*  calls */
+static ddpex3rtn build_facets();
+static ddpex3rtn build_control_polygon();
+static ddpex3rtn build_surf_markers();
+static ddpex3rtn span_grids();
+#ifdef TRIMING
+ddpex3rtn phg_nt_install_trim_loops();
+#endif
+static void compute_edge_point_normals();
+static void build_edge_reps();
+static void make_edge_segments();
+
 /*++
  |
  |  Function Name:      compute_nurb_surface
@@ -767,17 +781,6 @@ compute_nurb_surface( pddc, surface, state )
     miNurbSurfaceStruct *surface;
     Nurb_surf_state	*state;
 {
-
-/*  calls */
-    static ddpex3rtn build_facets();
-    static ddpex3rtn build_control_polygon();
-    static ddpex3rtn build_surf_markers();
-    static ddpex3rtn span_grids();
-    static ddpex3rtn phg_nt_install_trim_loops();
-    static void compute_edge_point_normals();
-    static void build_edge_reps();
-    static void make_edge_segments();
-
 /*  uses  */
     ddpex3rtn		status = Success;
     int			i;
@@ -853,6 +856,9 @@ abort:
 
 
 
+/*  calls  */
+static void span_evaluation_points();
+
 /*++
  |
  |  Function Name:      span_grids
@@ -873,9 +879,6 @@ span_grids( state, surface )
     Nurb_surf_state	*state;
     miNurbSurfaceStruct *surface;
 {
-/*  calls  */
-    static void span_evaluation_points();
-
 /*  uses */
     double		*uvals = 0, 
 			*vvals = 0; /* need double precision */
@@ -1013,6 +1016,9 @@ span_evaluation_points( knots, span, tmin, tmax, apxval, num_vals, vals )
 
 #define GRID_LIST_CHUNK		5
 
+/*  calls  */
+void phg_ns_evaluate_surface_in_span();
+
 /*++
  |
  |  Function Name:      add_grid
@@ -1033,9 +1039,6 @@ add_grid( state, surface, ucount, vcount, uvals, vvals,
     int			num_uspans, num_vspans; 
     int			*uspans, *vspans;
 {
-/*  calls  */
-    void phg_ns_evaluate_surface_in_span();
-
 /*  uses  */
     int			uspan, vspan;
     int			i, j;
