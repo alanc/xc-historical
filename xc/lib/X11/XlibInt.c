@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.99 89/04/20 20:29:58 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.100 89/05/08 15:57:33 jim Exp $
  */
 
 #include "copyright.h"
@@ -416,7 +416,13 @@ _XReadPad (dpy, data, size)
 	iov[1].iov_len = padlength[size & 3];
 	iov[1].iov_base = pad;
 	size += iov[1].iov_len;
-
+#ifdef apollo /* stupid sr10.1 bug */
+	if (size >= 131072) {
+	    _XRead (dpy, data, size - iov[1].iov_len);
+	    if (iov[1].iov_len) _XRead (dpy, pad, iov[1].iov_len);
+	    return;
+	}
+#endif
 	errno = 0;
 	while ((bytes_read = ReadvFromServer (dpy->fd, iov, 2)) != size) {
 
