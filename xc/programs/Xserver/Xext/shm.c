@@ -17,7 +17,7 @@ without any express or implied warranty.
 
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
 
-/* $XConsortium: shm.c,v 1.14 91/12/17 19:43:41 keith Exp $ */
+/* $XConsortium: shm.c,v 1.15 92/05/10 17:26:46 rws Exp $ */
 
 #include <sys/types.h>
 #include <sys/ipc.h>
@@ -198,6 +198,7 @@ ProcShmQueryVersion(client)
     rep.length = 0;
     rep.sequenceNumber = client->sequence;
     rep.sharedPixmaps = sharedPixmaps;
+    rep.pixmapFormat = pixmapFormat;
     rep.majorVersion = SHM_MAJOR_VERSION;
     rep.minorVersion = SHM_MINOR_VERSION;
     rep.uid = geteuid();
