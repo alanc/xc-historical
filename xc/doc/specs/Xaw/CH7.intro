@@ -67,7 +67,7 @@ widget.
 It is very often the case than an application will have a special need
 for a certain set of functions and that many copies of these functions
 will be needed.  For example, when converting an older application to use
-the Toolkit, it may be desireable to have a "Window Widget" class that
+the Toolkit, it may be desirable to have a "Window Widget" class that
 might have the following semantics:
 .IP \(bu 3
 Allocate 2 drawing colors in addition to a background color.

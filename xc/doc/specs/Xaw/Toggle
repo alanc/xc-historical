@@ -9,9 +9,13 @@ Toggle Widget
 .ta 2.0i
 .sp
 Application Header file	<Xaw/Toggle.h>
+.IN "Toggle.h" ""
 Class Header file	<Xaw/ToggleP.h>
+.IN "ToggleP.h" ""
 Class		toggleWidgetClass
+.IN "toggleWidgetClass" ""
 Class Name	Toggle
+.IN "Toggle widget" "class name"
 Superclass 	Command
 .sp
 .De
@@ -31,13 +35,19 @@ colors, and releasing the button has no effect.  This behavior allows
 the user to cancel an action.
 .LP
 Toggle buttons may also be part of a radio group.  A radio group is a
+.IN "Radio group" ""
+.IN "Radio button" ""
+.IN "Toggle widget" "used in Radio groups"
 list of Toggle buttons in which no more than one Toggle may be set at
 any time.  A radio group is identified by the widget ID of any one of
 its members.  The convenience routine \fBXawToggleGetCurrent\fP will
 return information about the Toggle button in the radio group.
 .LP
 When creating a Toggle widget instance, the following resources are
-retrieved from the argument list or from the resource database: 
+retrieved from the argument list or from the resource database:
+.NH 3
+Resources
+.IN "Toggle widget" "resources"
 .ps 9
 .nr PS 9
 .vs 11
@@ -146,6 +156,7 @@ Specifies whether the Toggle widget is set (\fBTrue\fP) or unset
 .Xy
 .NH 3
 Toggle Actions
+.IN "Toggle actions" ""
 .LP
 The Toggle widget supports the following actions:
 .IP \(bu 5
@@ -159,7 +170,8 @@ and unhighlighted states with \fBhighlight\fP and \fBunhighlight\fP
 .LE
 .LP
 The following are the default translation bindings used by the
-Toggle widget: 
+Toggle widget:
+.IN "Toggle widget" "default translation bindings"
 .LP
 .sp
 .Ds 0
@@ -216,13 +228,16 @@ multi-plane pixmap.
 .NE
 .NH 3
 Radio Groups
+.IN "Radio groups"
 .LP
 There are typically two types of radio groups desired by applications.
 The default translations for the Toggle widget implement a "zero or one
+.IN "Radio groups" "zero or one of many"
 of many" radio group.  This means that there may be no more than one
 button active, but there need not be any buttons active.
 .LP
 The other type of radio group is "one of many" and has the more strict
+.IN "Radio groups" "one of many"
 policy that there will always be exactly one radio button active.
 Toggle widgets can be used to provide this interface with a slight
 modification to the translation table of each Toggle in the group.

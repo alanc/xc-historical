@@ -6,6 +6,7 @@
 \s+1\fBChapter 3\fP\s-1
 
 \s+1\fBSimple Widgets\fP\s-1
+.IN "Simple widgets" ""
 .sp 2
 .nr H1 3
 .nr H2 0
@@ -24,26 +25,34 @@ be used as leaves of the widget tree.  These widgets display information or
 handle small amounts of user input.
 .sp
 .IP \fBCommand\fP 1i
+.IN "Command" ""
 A push button that, when selected, may cause a specific action
 to take place.  This widget can display a multi-line string or a bitmap image.
 .IP \fBGrip\fP 1i
+.IN "Grip" ""
 A rectangle that, when selected, will cause an action to take place.
 .IP \fBLabel\fP 1i
+.IN "Label" ""
 A rectangle that may contain one or more lines of text or a bitmap image.
 .IP \fBList\fP 1i
+.IN "List" ""
 A list of text strings presented in row column format that may be
 individually selected.  When an element is selected an action may take
 place. 
 .IP \fBScrollbar\fP
+.IN "Scrollbar" ""
 A rectangular area containing a \fIthumb\fP that when slid along one
 dimension may cause a specific action to take place.  The Scrollbar may
 be oriented horizontally or vertically.
 .IP \fBSimple\fP 1i
+.IN "Simple" ""
 The base class for most of the simple widgets.  Provides a rectangular
 area with a settable mouse cursor and special border.
 .IP \fBStripChart\fP 1i
+.IN "StripChart" ""
 A real time data graph that will automatically update and scroll.
 .IP \fBToggle\fP 1i
+.IN "Toggle" ""
 A push button (see Command) that contains state information.  Toggles
 may also be used as radio buttons to implement a "one of many" group
 of buttons. 

@@ -9,9 +9,13 @@ Command Widget
 .ta 2.0i
 .sp
 Application header file	<X11/Xaw/Command.h>
+.IN "Command.h" ""
 Class header file	<X11/Xaw/CommandP.h>
+.IN "CommandP.h" ""
 Class	commandWidgetClass
+.IN "commandWidgetClass" ""
 Class Name	Command
+.IN "Command widget" "class name"
 Superclass	Label
 .sp
 .De
@@ -32,6 +36,9 @@ action.
 .LP
 When creating a Command widget instance, the following resources are
 retrieved from the argument list or from the resource database:
+.NH 3
+Resources
+.IN "Command widget" "resources"
 .ps 9
 .nr PS 9
 .vs 11
@@ -118,6 +125,8 @@ _
 .Xy
 .NH 3
 Command Actions
+.IN "Command actions" ""
+.IN "Command widget" "Command actions"
 .LP
 The Command widget supports the following actions:
 .IP \(bu 5
@@ -130,6 +139,7 @@ Switching the internal border between highlighted
 and unhighlighted states with \fBhighlight\fP and \fBunhighlight\fP
 .LE
 .LP
+.IN "Command widget" "translation bindings"
 The following are the default translation bindings used by the
 Command widget: 
 .LP

@@ -9,9 +9,13 @@ StripChart Widget
 .ta 2.0i
 .sp
 Application Header file	<Xaw/StripChart.h>
+.IN "StripChart.h" ""
 Class Header file	<Xaw/StripCharP.h>
+.IN "StripCharP.h" ""
 Class		stripChartWidgetClass
+.IN "stripChartWidgetClass" "" 
 Class Name	StripChart
+.IN "StripChart widget" "class name"
 Superclass	Simple
 .sp
 .De
@@ -22,7 +26,10 @@ load graph.  It will read data from an application, and update
 the chart at the \fBupdate\fP interval specified.
 .LP
 When creating a StripChart widget instance, the following resources are
-retrieved from the argument list or from the resource database: 
+retrieved from the argument list or from the resource database:
+.NH 3
+Resources
+.IN "StripChart widget" "resources"
 .ps 9
 .nr PS 9
 .vs 11
@@ -117,6 +124,7 @@ and this point will be added to the right end of the StripChart.
 .Xy
 .NH 3
 Getting The StripChart Value
+.IN "StripChart widget" "getting the value"
 .LP
 The StripChart widget will call the application routine passed to it
 as the \fBgetValue\fP callback function every \fBupdate\fP seconds to

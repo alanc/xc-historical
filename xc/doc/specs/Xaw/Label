@@ -9,9 +9,13 @@ Label Widget
 .ta 2.0i
 .sp
 Application header file	<X11/Xaw/Label.h>
+.IN "Label.h" ""
 Class header file	<X11/Xaw/LabelP.h>
-Class	labelWidgetClass
+.IN "LabelP.h" ""
+Class	
+.IN "labelWidgetClass" ""
 Class Name	Label
+.IN "Label widget" "class name"
 Superclass	Simple
 .sp
 .De
@@ -24,7 +28,10 @@ can be neither selected nor directly edited by the user.  It is
 intended for use as an output device only.
 .LP
 When creating a Label widget instance, the following resources are
-retrieved from the argument list or from the resource database: 
+retrieved from the argument list or from the resource database:
+.NH 3
+Resources
+.IN "Label widget" "resources"
 .ps 9
 .nr PS 9
 .vs 11

@@ -10,9 +10,13 @@ Scrollbar Widget
 .ta 2.0i
 .sp
 Application header file	<X11/Xaw/Scrollbar.h>
+.IN "Scrollbar.h" ""
 Class header file	<X11/Xaw/ScrollbarP.h>
+.IN "ScrollbarP.h" ""
 Class		scrollbarWidgetClass
+.IN "scrollbarWidgetClass" ""
 Class Name	Scrollbar
+.IN "Scrollbar widget" "class name"
 Superclass	Core
 .sp
 .De
@@ -57,6 +61,8 @@ callback procedure is responsible for moving the thumb.
 .LP
 When creating a Scrollbar widget instance, the following resources are
 retrieved from the argument list or from the resource database:
+.NH 3
+Resources
 .IN "Scrollbar widget" "resources"
 .ps 9
 .nr PS 9
@@ -184,6 +190,7 @@ a Form widget constraint resource, and had to be changed.
 .Xy
 .NH 3 
 Scrollbar Actions
+.IN "Scrollbar widget" "Scrollbar actions"
 .LP
 The actions supported by the Scrollbar widget are:
 .IP \fBStartScroll\fP(\fIvalue\fP) 1.5i
@@ -210,6 +217,7 @@ pointer as a percentage of the scroll bar length.
 .LP
 .sp
 The default bindings for Scrollbar are:
+.IN "Scrollbar widget" "default translation tables"
 .LP
 .Ds 0
 .TA .5i 1.75i
@@ -235,6 +243,7 @@ resource file are:
 .De
 .NH 3
 Scrollbar Callbacks
+.IN "Scrollbar widget" "Scrollbar callbacks"
 .LP
 There are two callback lists provided by the Scrollbar widget.
 The procedural interface for these functions is described here.
@@ -242,7 +251,7 @@ The procedural interface for these functions is described here.
 The calling interface to the \fBscrollProc\fP callback procedure is:
 .IN "ScrollProc" "" "@DEF@"
 .FD 0
-void \fIScrollProc\fP(\fIscrollbar\fP, \fIclient_data\fP, \fIposition\fP)
+void ScrollProc(\fIscrollbar\fP, \fIclient_data\fP, \fIposition\fP)
 .br
      Widget \fIscrollbar\fP;
 .br
@@ -270,7 +279,7 @@ be greater than the length of the Scrollbar.
 The calling interface to the \fBjumpProc\fP callback procedure is:
 .IN "JumpProc" "" "@DEF@"
 .FD 0
-void \fIJumpProc\fP(\fIscrollbar\fP, \fIclient_data\fP, \fIpercent\fP)
+void JumpProc(\fIscrollbar\fP, \fIclient_data\fP, \fIpercent\fP)
 .br
      Widget \fIscrollbar\fP;
 .br
@@ -335,6 +344,7 @@ Values greater than 1.0 are truncated to 1.0.
 If called from \fBjumpProc\fP, \fBXawScrollbarSetThumb\fP has no effect.
 .NH 3
 Setting Float Resources
+.IN "Float resources" "setting"
 .LP
 The \fBshown\fP and \fBtopOfThumb\fP resources are of type
 \fIfloat\fP.  These resources can be difficult to get into an
