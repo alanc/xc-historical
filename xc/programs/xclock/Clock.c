@@ -12,9 +12,9 @@ static char *sccsid = "@(#)Clock.c	1.0	2/25/87";
 #include "Xlib.h"
 #include "Xutil.h"
 #include "Intrinsic.h"
-#include "Atoms.h"
 #include "Clock.h"
 #include "ClockPrivate.h"
+#include "Atoms.h"
 
 extern long time();
 static void clock_tic(), DrawHand(), DrawSecond(), SetSeg(), DrawClockFace();
@@ -68,12 +68,12 @@ static Resource resources[] = {
 
 #undef offset
 
-static void Initialize(), Realize(), Resize(), Redisplay(), SetValues();
+extern void Initialize(), Realize(), Resize(), Redisplay(), SetValues();
 
 ClockWidgetClassData clockWidgetClassData = {
-  { /* core fields */
-    /* superclass */ 	&widgetClassData,
-    /* class_name */ 	"Clock",
+    { /* core fields */
+    /* superclass */ 	(WidgetClass) &widgetClassData,
+    /* class_name */    "Clock",
     /* size */		sizeof(ClockWidgetClassData),
     /* initialize */	Initialize,
     /* realize */	Realize,
@@ -112,7 +112,7 @@ static void Resize (w)
     ClockWidget w;
 {
     /* don't do this computation if window hasn't been realized yet. */
-    if(w->core.window && w->clock.analog) {
+    if (XtWidgetIsRealized(w) && w->clock.analog) {
         w->clock.radius = (min(w->core.width, w->core.height)-(2 * w->clock.padding)) / 2;
         w->clock.second_hand_length = ((SECOND_HAND_FRACT * w->clock.radius) / 100);
         w->clock.minute_hand_length = ((MINUTE_HAND_FRACT * w->clock.radius) / 100);
@@ -183,7 +183,7 @@ static void Realize (w, valueMask, attrs)
      ValueMask valueMask;
      XSetWindowAttributes *attrs;
 {
-     w->core.window = XCreateWindow (w->core.display, w->core.parent->core.window,
+     w->core.window = XCreateWindow (XtDisplay(w), w->core.parent->core.window,
 	  w->core.x, w->core.y, w->core.width, w->core.height, w->core.border_width,
           CopyFromParent, InputOutput, CopyFromParent, valueMask, attrs);
      Resize(w);
@@ -198,7 +198,8 @@ static void clock_tic(w)
 	long	time_value;
 	char	time_string[28];
 	char	*time_ptr = time_string;
-        register Display *dpy = w->core.display;
+        register Display *dpy = XtDisplay(w);
+        register Window win = XtWindow(w);
 
 	(void) time(&time_value);
 	tm = *localtime(&time_value);
@@ -220,7 +221,7 @@ static void clock_tic(w)
 	if( w->clock.analog == FALSE ) {
 	    time_ptr = asctime(&tm);
 	    time_ptr[strlen(time_ptr) - 1] = 0;
-	    XDrawImageString (dpy, w->core.window, w->clock.myGC,
+	    XDrawImageString (dpy, win, w->clock.myGC,
 			     2+w->clock.padding, 2+w->clock.font->ascent+w->clock.padding,
 			     time_ptr, strlen(time_ptr));
 	} else {
@@ -243,14 +244,14 @@ static void clock_tic(w)
 			 */
 			if(w->clock.numseg > 0) {
 			    if (w->clock.show_second_hand == TRUE) {
-				XDrawLines(dpy, w->core.window,
+				XDrawLines(dpy, win,
 					w->clock.EraseGC,
 					w->clock.sec,
 					VERTICES_IN_HANDS-1,
 					CoordModeOrigin);
 				if(w->clock.Hdpixel != w->core.background_pixel) {
 				    XFillPolygon(dpy,
-					w->core.window, w->clock.EraseGC,
+					win, w->clock.EraseGC,
 					w->clock.sec,
 					VERTICES_IN_HANDS-2,
 					Convex, CoordModeOrigin
@@ -260,25 +261,25 @@ static void clock_tic(w)
 			    if(	tm.tm_min != w->clock.otm.tm_min ||
 				tm.tm_hour != w->clock.otm.tm_hour ) {
 				XDrawLines( dpy,
-					   w->core.window,
+					   win,
 					   w->clock.EraseGC,
 					   w->clock.segbuff,
 					   VERTICES_IN_HANDS,
 					   CoordModeOrigin);
 				XDrawLines( dpy,
-					   w->core.window,
+					   win,
 					   w->clock.EraseGC,
 					   w->clock.hour,
 					   VERTICES_IN_HANDS,
 					   CoordModeOrigin);
 				if(w->clock.Hdpixel != w->core.background_pixel) {
 				    XFillPolygon( dpy,
-					w->core.window, w->clock.EraseGC,
+					win, w->clock.EraseGC,
 					w->clock.segbuff, VERTICES_IN_HANDS,
 					Convex, CoordModeOrigin
 				    );
 				    XFillPolygon(dpy,
-					w->core.window, w->clock.EraseGC,
+					win, w->clock.EraseGC,
 					w->clock.hour,
 					VERTICES_IN_HANDS,
 					Convex, CoordModeOrigin
@@ -304,12 +305,12 @@ static void clock_tic(w)
 			    );
 			    if(w->clock.Hdpixel != w->core.background_pixel)
 				XFillPolygon( dpy,
-				    w->core.window, w->clock.HandGC,
+				    win, w->clock.HandGC,
 				    w->clock.segbuff, VERTICES_IN_HANDS,
 				    Convex, CoordModeOrigin
 				);
 			    XDrawLines( dpy,
-				w->core.window, w->clock.HighGC,
+				win, w->clock.HighGC,
 				w->clock.segbuff, VERTICES_IN_HANDS,
 				       CoordModeOrigin);
 			    w->clock.hour = w->clock.segbuffptr;
@@ -320,14 +321,14 @@ static void clock_tic(w)
 			    );
 			    if(w->clock.Hdpixel != w->core.background_pixel) {
 			      XFillPolygon(dpy,
-					   w->core.window, w->clock.HandGC,
+					   win, w->clock.HandGC,
 					   w->clock.hour,
 					   VERTICES_IN_HANDS,
 					   Convex, CoordModeOrigin
 					   );
 			    }
 			    XDrawLines( dpy,
-				       w->core.window, w->clock.HighGC,
+				       win, w->clock.HighGC,
 				       w->clock.hour, VERTICES_IN_HANDS,
 				       CoordModeOrigin );
 
@@ -343,13 +344,13 @@ static void clock_tic(w)
 			    );
 			    if(w->clock.Hdpixel != w->core.background_pixel)
 				XFillPolygon( dpy,
-				    w->core.window, w->clock.HandGC,
+				    win, w->clock.HandGC,
 				    w->clock.sec,
 				    VERTICES_IN_HANDS -2,
 				    Convex, CoordModeOrigin
 			    );
 			    XDrawLines( dpy,
-				       w->core.window, w->clock.HighGC,
+				       win, w->clock.HighGC,
 				       w->clock.sec,
 				       VERTICES_IN_HANDS-1,
 				       CoordModeOrigin
@@ -557,7 +558,7 @@ ClockWidget w;
 	register int i;
 	register int delta = (w->clock.radius - w->clock.second_hand_length) / 3;
 	
-	XClearWindow(w->core.display, w->core.window);
+	XClearWindow(XtDisplay(w), XtWindow(w));
 	w->clock.segbuffptr = w->clock.segbuff;
 	w->clock.numseg = 0;
 	for (i = 0; i < 60; i++)
@@ -566,7 +567,7 @@ ClockWidget w;
 	/*
 	 * Go ahead and draw it.
 	 */
-	XDrawSegments(w->core.display, w->core.window,
+	XDrawSegments(XtDisplay(w), XtWindow(w),
 		      w->clock.myGC, (XSegment *) &(w->clock.segbuff[0]),
 		      w->clock.numseg/2);
 	
@@ -657,7 +658,7 @@ static void SetValues (w, newvals)
      (*w->core.widget_class->coreClass.superclass->coreClass.set_values)(w, newvals);
 
      if(redisplay) {
-	XClearWindow(w->core.display, w->core.window);
+	XClearWindow(XtDisplay(w), XtWindow(w));
 	Redisplay(w);
         }
 }
