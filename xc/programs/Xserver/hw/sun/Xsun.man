@@ -1,4 +1,4 @@
-.\" $XConsortium: Xsun.man,v 1.22 94/04/13 18:20:00 gildea Exp $
+.\" $XConsortium: Xsun.man,v 1.23 94/04/17 20:29:32 gildea Exp $
 .\" Copyright 1988 Sun Microsystems, Inc.
 .\" Copyright (c) 1993, 1994  X Consortium
 .\" 
@@ -27,7 +27,7 @@
 .\" from the X Consortium.
 .TH XSUN 1 "Release 6" "X Version 11"
 .SH NAME
-Xsun, XsunMono \- Sun server for X Version 11
+Xsun, XsunMono, Xsun24 \- Sun server for X Version 11
 .SH SYNOPSIS
 .B Xsun
 [ option ] ...
@@ -39,10 +39,14 @@ that runs the program \fIxinit(1)\fP.
 .SH CONFIGURATIONS
 .PP
 .I Xsun
-supports both color and monochrome screens.
+supports 8-bit color and 1-bit monochrome screens.
 .I XsunMono
 is configured to support only monochrome screens, for low-end systems 
 with limited memory.
+Like Xsun,
+.I Xsun24
+supports 8-bit color and 1-bit monochrome screens in addition to the
+cgeight 24-bit color screen.
 .PP
 If specific framebuffer device files aren't specified on the command 
 line with the \fI\-dev\fP switch or in the \fIXDEVICE\fP environment
@@ -50,15 +54,15 @@ variable, the server will search for all installed frame buffers and
 will use all those that it finds. The following framebuffer types are 
 supported:
 .TP 8
-.B bwtwo, cgtwo, cgthree, cgfour, and cgsix.
+\fBbwtwo, cgtwo, cgthree, cgfour, cgsix, and cgeight.\fP
 .PP
 Finally, if no specific framebuffers are found, the generic framebuffer 
 interface \fI/dev/fb\fP is used.
 .PP
 .SH KEYBOARDS
 .PP
-Xsun and XsunMono support the Type-2, Type-3, and many variations of the 
-Type-4 and Type-5 keyboards.
+Xsun, Xsun24, and XsunMono support the Type-2, Type-3, and many variations 
+of the Type-4 and Type-5 keyboards.
 .PP
 Type-4 and Type-5 keyboards feature a key labeled \fIAltGraph\fP which 
 is a mode-shift key. The mode-shift key is used to generate the symbols 
@@ -124,6 +128,10 @@ into non-blocking mode.
 .B "\-dev \fIfilename[:filename]...\fP"
 This option specifies the colon separated names of the framebuffer device 
 files to be used.
+.TP 8
+.B "\-fbinfo
+This option indicates that the server should enumerate the available
+frame buffers that it will use.
 .SH ENVIRONMENT
 .TP 8
 \fBXDEVICE\fP
