@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.32 90/07/31 10:31:55 rws Exp $
+ * $XConsortium: process.c,v 1.33 91/01/29 13:45:45 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -39,6 +39,8 @@ extern Bool nameserver_timedout;
 #ifndef DEFAULT_PROTOCOL		/* for protocol abbreviation */
 #define DEFAULT_PROTOCOL "MIT-MAGIC-COOKIE-1"
 #endif
+
+#define SECURERPC "SECURE-RPC"
 
 #define XAUTH_DEFAULT_RETRIES 2		/* just a few times */
 #define XAUTH_DEFAULT_TIMEOUT 2		/* in seconds, be quick */
@@ -896,7 +898,10 @@ static int dump_entry (inputfilename, lineno, auth, data)
 	fwrite (auth->name, sizeof (char), auth->name_length, fp);
 	putc (' ', fp);
 	putc (' ', fp);
-	fprintfhex (fp, auth->data_length, auth->data);
+	if (!strncmp(auth->name, SECURERPC, auth->name_length))
+	    fwrite (auth->data, sizeof (char), auth->data_length, fp);
+	else
+	    fprintfhex (fp, auth->data_length, auth->data);
 	putc ('\n', fp);
     }
     return 0;
@@ -1375,12 +1380,22 @@ static int do_add (inputfilename, lineno, argc, argv)
     protoname = argv[2];
     hexkey = argv[3];
 
-    len = cvthexkey (hexkey, &key);
-    if (len < 0) {
-	prefix (inputfilename, lineno);
-	fprintf (stderr,
-		 "key contains odd number of or non-hex characters\n");
-	return 1;
+    len = strlen(hexkey);
+    if (hexkey[0] == '"' && hexkey[len-1] == '"') {
+	key = malloc(len-1);
+	strncpy(key, hexkey+1, len-2);
+	len -= 2;
+    } else if (!strcmp(protoname, SECURERPC)) {
+	key = malloc(len+1);
+	strcpy(key, hexkey);
+    } else {
+	len = cvthexkey (hexkey, &key);
+	if (len < 0) {
+	    prefix (inputfilename, lineno);
+	    fprintf (stderr,
+		     "key contains odd number of or non-hex characters\n");
+	    return 1;
+	}
     }
 
     auth = (Xauth *) malloc (sizeof (Xauth));
