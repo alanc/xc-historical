@@ -120,9 +120,11 @@ cfbCreatePixmap (pScreen, width, height, depth)
     int size;
 
     if (depth != 1 && depth != PSZ)
-	return (PixmapPtr)NULL;
+	return NullPixmap;
 
-    pPixmap = (PixmapPtr)Xalloc(sizeof(PixmapRec));
+    pPixmap = (PixmapPtr)xalloc(sizeof(PixmapRec));
+    if (!pPixmap)
+	return NullPixmap;
     pPixmap->drawable.type = DRAWABLE_PIXMAP;
     pPixmap->drawable.pScreen = pScreen;
     pPixmap->drawable.depth = depth;
@@ -133,13 +135,12 @@ cfbCreatePixmap (pScreen, width, height, depth)
     pPixmap->refcnt = 1;
     size = height * pPixmap->devKind;
 
-    if ( !(pPixmap->devPrivate = (pointer)Xalloc(size)))
+    if ( !(pPixmap->devPrivate = (pointer)xalloc(size)))
     {
-	Xfree(pPixmap);
-	return (PixmapPtr)NULL;
+	xfree(pPixmap);
+	return NullPixmap;
     }
-    else
-        bzero((char *)pPixmap->devPrivate, size);
+    bzero((char *)pPixmap->devPrivate, size);
     return pPixmap;
 }
 
@@ -152,8 +153,8 @@ cfbDestroyPixmap(pPixmap)
 
     if(--pPixmap->refcnt)
 	return TRUE;
-    Xfree(pPixmap->devPrivate);
-    Xfree(pPixmap);
+    xfree(pPixmap->devPrivate);
+    xfree(pPixmap);
     return TRUE;
 }
 
@@ -166,7 +167,9 @@ cfbCopyPixmap(pSrc)
     register int	*pDstPriv, *pSrcPriv, *pDstMax;
     int		size;
 
-    pDst = (PixmapPtr) Xalloc(sizeof(PixmapRec));
+    pDst = (PixmapPtr) xalloc(sizeof(PixmapRec));
+    if (!pDst)
+	return NullPixmap;
     pDst->drawable.type = pSrc->drawable.type;
     pDst->drawable.pScreen = pSrc->drawable.pScreen;
     pDst->width = pSrc->width;
@@ -177,14 +180,13 @@ cfbCopyPixmap(pSrc)
 
     size = pDst->height * pDst->devKind;
     pDstPriv = (int *) Xalloc(size);
-    pDst->devPrivate = (pointer) pDstPriv;
-    if (!(pDstPriv))
+    if (!pDstPriv)
     {
-	Xfree(pDst);
+	xfree(pDst);
 	return NullPixmap;
     }
-    else
-	bzero((char *) pDstPriv, size);
+    bzero((char *) pDstPriv, size);
+    pDst->devPrivate = (pointer) pDstPriv;
     pSrcPriv = (int *)pSrc->devPrivate;
     pDstMax = pDstPriv + (size >> 2);
     /* Copy words */
@@ -336,7 +338,9 @@ cfbXRotatePixmap(pPix, rw)
     }
     else
     {
-	pwNew = (long *) Xalloc( pPix->height * pPix->devKind);
+	pwNew = (long *) xalloc( pPix->height * pPix->devKind);
+	if (!pwNew)
+	    return;
 
 	/* o.k., divide pw (the pixmap) in two vertically at (w - rw)
 	 * pick up the part on the left and make it the right of the new
@@ -350,7 +354,7 @@ cfbXRotatePixmap(pPix, rw)
         cfbQuickBlt(pw, pwNew, pPix->width - rw, 0, 0, 0, rw, pPix->height,
 	            size, size);
 	pPix->devPrivate = (pointer) pwNew;
-	Xfree((char *) pw);
+	xfree((char *) pw);
 
     }
 
