@@ -1,4 +1,4 @@
-/* $XConsortium: XLookAssoc.c,v 10.15 88/09/06 16:09:35 jim Exp $ */
+/* $XConsortium: XLookAssoc.c,v 10.16 91/01/06 12:09:24 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 /*
@@ -23,7 +23,7 @@ without express or implied warranty.
  * in the table the routine will return a NULL pointer.  All XId's are relative
  * to the currently active Display.
  */
-caddr_t XLookUpAssoc(dpy, table, x_id)
+XPointer XLookUpAssoc(dpy, table, x_id)
         register Display *dpy;
 	register XAssocTable *table;	/* XAssocTable to search in. */
 	register XID x_id;			/* XId to search for. */

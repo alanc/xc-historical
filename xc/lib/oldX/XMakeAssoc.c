@@ -1,4 +1,4 @@
-/* $XConsortium: XMakeAssoc.c,v 10.18 91/01/06 12:09:28 rws Exp $ */
+/* $XConsortium: XMakeAssoc.c,v 10.19 92/04/15 09:43:17 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 /*
@@ -26,7 +26,7 @@ XMakeAssoc(dpy, table, x_id, data)
 	register Display *dpy;
 	register XAssocTable *table;
 	register XID x_id;
-	register caddr_t data;
+	register XPointer data;
 {
 	int hash;
 	register XAssoc *bucket;
