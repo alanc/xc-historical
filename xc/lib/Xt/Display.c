@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Display.c,v 1.31 89/09/22 17:50:18 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Display.c,v 1.32 89/09/26 13:05:23 swick Exp $";
 /* $oHeader: Display.c,v 1.9 88/09/01 11:28:47 asente Exp $ */
 #endif /*lint*/
 
@@ -237,6 +237,7 @@ XtDisplayInitialize(app, dpy, name, classname, urlist, num_urs, argc, argv)
 	pd->xa_wm_colormap_windows = None; /* Initialize this to None unless
 					      we need to use it.*/
 	pd->last_timestamp = 0;
+	pd->tm_context = NULL;
 	_XtHeapInit(&pd->heap);
 
 	_XtDisplayInitialize(dpy, pd, name, classname, urlist, 
