@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.61 91/04/24 10:11:16 rws Exp $
+ * $XConsortium: Xrm.c,v 1.62 91/04/26 11:59:14 rws Exp $
  */
 
 /***********************************************************
@@ -1077,6 +1077,7 @@ static void GetDatabase(db, str, filename)
 
 	if (c == '#') { /* Directive */
 	    /* remove extra whitespace */
+	    only_pcs = True;
 	    while (is_space(bits = next_char(c, str))) {};
 	    /* only "include" directive is currently defined */
 	    if (!strncmp(str, "include", 7)) {
@@ -1086,20 +1087,30 @@ static void GetDatabase(db, str, filename)
 		/* must have a starting " */
 		if (c == '"') {
 		    char *fname = str+1;
+		    len = 0;
 		    do {
-			bits = next_char(c, str);
+			if (only_pcs) {
+			    bits = next_char(c, str);
+			    if (is_nonpcs(bits))
+				only_pcs = False;
+			}
+			if (!only_pcs)
+			    bits = next_mbchar(c, len, str);
 		    } while (c != '"' && !is_EOL(bits));
 		    /* must have an ending " */
 		    if (c == '"')
-			GetIncludeFile(db, filename, fname, str - fname);
+			GetIncludeFile(db, filename, fname, str - len - fname);
 		}
 	    }
 	    /* spin to next newline */
-	    if (is_simple(bits))
-		while (is_simple(bits = next_char(c, str))) {}
-	    if (is_EOL(bits))
-		continue;
-	    while (!is_EOL(bits = next_mbchar(c, len, str))) {}
+	    if (only_pcs) {
+		while (is_simple(bits))
+		    bits = next_char(c, str);
+		if (is_EOL(bits))
+		    continue;
+	    }
+	    while (!is_EOL(bits))
+		bits = next_mbchar(c, len, str);
 	    str--;
 	    continue;		/* start a new line. */
 	}
@@ -1193,8 +1204,8 @@ static void GetDatabase(db, str, filename)
 	     * a new_line can still be escaped with a '\'.
 	     */
 
-	    if (is_normal(bits))
-		while (is_normal(bits = next_char(c, str))) {}
+	    while (is_normal(bits))
+		bits = next_char(c, str);
 	    if (is_EOL(bits))
 		continue;
 	    bits = next_mbchar(c, len, str);
