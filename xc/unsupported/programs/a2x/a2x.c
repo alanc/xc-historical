@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.66 92/04/24 11:45:55 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.67 92/04/24 11:57:35 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -171,6 +171,7 @@ typedef struct _undo {
     int undo_len;
 } UndoRec;
 
+char *progname;
 Display *dpy;
 Atom MIT_OBJ_CLASS;
 int maxfd;
@@ -253,7 +254,7 @@ generate_warp(screen, x, y)
 void
 usage()
 {
-    printf("a2x: [-d display] [-e] [-b] [-u <undofile>]\n");
+    printf("%s: [-d display] [-e] [-b] [-u <undofile>]\n", progname);
     exit(1);
 }
 
@@ -2009,6 +2010,7 @@ main(argc, argv)
     char buf[1024];
     char fbuf[1024];
 
+    progname = argv[0];
     bzero((char *)fdmask, sizeof(fdmask));
     for (argc--, argv++; argc > 0; argc--, argv++) {
 	if (argv[0][0] != '-')
@@ -2063,12 +2065,12 @@ main(argc, argv)
     dpy = XOpenDisplay(dname);
     if (!dpy) {
 	fprintf(stderr, "%s: unable to open display '%s'\n",
-		argv[0], XDisplayName(dname));
+		progname, XDisplayName(dname));
 	quit(1);
     }
     if (!XTestQueryExtension(dpy, &eventb, &errorb, &vmajor, &vminor)) {
 	fprintf(stderr, "%s: display '%s' does not support XTEST extension\n",
-		argv[0], DisplayString(dpy));
+		progname, DisplayString(dpy));
 	quit(1);
     }	
     if (!undofile) {
