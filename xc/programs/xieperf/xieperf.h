@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.h,v 1.2 93/10/26 10:07:37 rws Exp $ */
+/* $XConsortium: xieperf.h,v 1.3 93/10/26 14:34:11 rws Exp $ */
 
 /**** module xieperf.h ****/
 /******************************************************************************
@@ -516,6 +516,7 @@ extern Test test[];
 XiePhotomap GetXIEPhotomap();
 XieRoi GetXIERoi();
 XieLut GetXIELut();
+Display *GetDisplay();
 
 /*****************************************************************************
 
