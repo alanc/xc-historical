@@ -449,17 +449,15 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
 	case GCFillRule:
 	    break;
 	case GCTile:
-	    if (pGC->tile == (PixmapPtr) NULL)
-		break;
-	    if ((pGC->tile->width <= 32) &&
-		!(pGC->tile->width & (pGC->tile->width - 1)))
+	    if (pGC->tile)
 	    {
+		int width = pGC->tile->width * PSZ;
 		PixmapPtr ntile;
 
-		ntile = cfbCopyPixmap(pGC->tile);
-		if (ntile)
+		if ((width <= 32) && !(width & (width - 1)) &&
+		    (ntile = cfbCopyPixmap(pGC->tile)))
 		{
-		    cfbPadPixmap(ntile);
+		    (void)cfbPadPixmap(ntile);
 		    cfbDestroyPixmap(pGC->tile);
 		    pGC->tile = ntile;
 		}
@@ -471,17 +469,15 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
 	    break;
 
 	case GCStipple:
-	    if (pGC->stipple == (PixmapPtr) NULL)
-		break;
-	    if ((pGC->stipple->width <= 32) &&
-		!(pGC->stipple->width & (pGC->stipple->width - 1)))
+	    if (pGC->stipple)
 	    {
+		int width = pGC->stipple->width * PSZ;
 		PixmapPtr nstipple;
 
-		nstipple = cfbCopyPixmap(pGC->stipple);
-		if (nstipple)
+		if ((width <= 32) && !(width & (width - 1)) &&
+		    (nstipple = cfbCopyPixmap(pGC->stipple)))
 		{
-		    cfbPadPixmap(nstipple);
+		    (void)cfbPadPixmap(nstipple);
 		    cfbDestroyPixmap(pGC->stipple);
 		    pGC->stipple = nstipple;
 		}
