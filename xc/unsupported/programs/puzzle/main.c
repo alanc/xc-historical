@@ -185,7 +185,7 @@ unsigned int w, h;
 RepaintTitle(method)
 int method;
 {
-    int Twidth,Theight, Box_x,Box_y;
+    int Twidth,Theight;
     int i,j, startColor,color2,tinyBoxSize;
     int Tx, Ty;
 
@@ -270,7 +270,6 @@ int method;
  */
 RepaintBar()
 {
-    int pixel;
     XFillRectangle(dpy, PuzzleRoot, gc,
 		   0, TitleWinHeight,
 		   PuzzleWinInfo.width, BoundaryHeight);
@@ -375,7 +374,6 @@ char *geom;
 int argc;
 char *argv[];
 {
-    Cursor ArrowCrossCursor;
     int minwidth, minheight;
     Pixmap PictureSetup();
     Visual visual;
@@ -466,7 +464,9 @@ char *argv[];
 #endif /* USE_PICTURE */
 
 	if(strlen(geom)) {
-	    flags = XParseGeometry(geom, &x, &y, &width, &height);
+	    flags = XParseGeometry(geom, &x, &y,
+				   (unsigned int *)&width,
+				   (unsigned int *)&height);
 	    if(WidthValue & flags) {
 		sizehints.flags |= USSize;
 		if (width > sizehints.min_width)
@@ -577,8 +577,7 @@ SizeChanged()
 
 Reset()
 {
-    int width,height,Box_x,Box_y;
-    int i,j;
+    int Box_x,Box_y;
     int TileBgPixel;
     
     /** TileWindow is that portion of PuzzleRoot that contains
@@ -835,7 +834,7 @@ XExposeEvent *event;
 	    else if (event->window == PuzzleRoot)
 		bar++;
 	}
-	loop = XCheckMaskEvent(dpy, ExposureMask, event);
+	loop = XCheckMaskEvent(dpy, ExposureMask, (XEvent *)event);
     }
 
     if (SizeChanged())
@@ -906,13 +905,13 @@ XEvent *event;
 {
     switch(event->type) {
       case ButtonPress:
-	ProcessButton(event);
+	ProcessButton(&event->xbutton);
 	break;
       case Expose:
-	ProcessExpose(event);
+	ProcessExpose(&event->xexpose);
 	break;
       case VisibilityNotify:
-	ProcessVisibility(event);
+	ProcessVisibility(&event->xvisibility);
 	break;
       default:
 	break;
@@ -923,7 +922,7 @@ main(argc,argv)
 int argc;
 char *argv[];
 {
-   int i, count;
+   int i;
    char *ServerName, *Geometry;
    char *puzzle_size = NULL;
    char *option;
