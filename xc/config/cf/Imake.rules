@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.153 93/08/24 18:49:43 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.154 93/08/25 09:41:42 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -92,6 +92,8 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.153 93/08/24 18:49:43 rws Exp $
  * ObjectFromSpecialSource	(dst,src,flags)
  * SpecialObjectRule		(objs,depends,options)
  * SpecialCObjectRule		(basename,depends,options)
+ * LexFile			(file)
+ * YaccFile			(file,flags)
  * MakeLibrary			(libname,objlist)
  * NormalLibraryTarget		(libname,objlist)
  * NormalLibraryTarget2		(libname,objlist1,objlist2)
@@ -1020,6 +1022,28 @@ depend::  dst.c								@@\
 clean::									@@\
 	RemoveFile(dst.c)
 #endif /* ObjectFromSpecialSource */
+
+
+#ifndef LexFile
+#define LexFile(file)							@@\
+depend:: file.c								@@\
+									@@\
+clean::									@@\
+	RemoveFiles(lex.yy.c file.c)
+#endif /* LexFile */
+
+#ifndef YaccFile
+#define YaccFile(file,flags)						@@\
+depend:: file.c								@@\
+									@@\
+file.h file.c: file.y							@@\
+	$(YACC) flags file.y						@@\
+	$(MV) y.tab.c file.c						@@\
+	$(MV) y.tab.h file.h						@@\
+									@@\
+clean::									@@\
+	RemoveFiles(y.tab.c y.tab.h file.h file.c)
+#endif /* YaccFile */
 
 #ifndef MakeLibrary
 #define MakeLibrary(libname,objlist) $(AR) libname objlist
