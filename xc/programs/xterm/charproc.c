@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.58 88/10/07 11:01:47 jim Exp $
+ * $XConsortium: charproc.c,v 1.59 88/10/07 13:24:56 jim Exp $
  */
 
 
@@ -132,7 +132,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.58 88/10/07 11:01:47 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.59 88/10/07 13:24:56 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -2246,6 +2246,7 @@ ShowCursor()
 	register int x, y, flags;
 	char c;
 	GC	currentGC;
+	Boolean	in_selection;
 
 	if (eventMode != NORMAL) return;
 
@@ -2257,8 +2258,20 @@ ShowCursor()
 	if (c == 0)
 		c = ' ';
 
+	if (screen->cur_row > screen->endHRow ||
+	    (screen->cur_row == screen->endHRow &&
+	     screen->cur_col >= screen->endHCol) ||
+	    screen->cur_row < screen->startHRow ||
+	    (screen->cur_row == screen->startHRow &&
+	     screen->cur_col < screen->startHCol))
+	    in_selection = False;
+	else
+	    in_selection = True;
+
 	if(screen->select || screen->always_highlight) {
-		if(flags & INVERSE) { /* is reverse video */
+		if (( (flags & INVERSE) && !in_selection) ||
+		    (!(flags & INVERSE) &&  in_selection)){
+		    /* text is reverse video */
 		    if (screen->cursorGC) {
 			currentGC = screen->cursorGC;
 		    } else {
@@ -2280,7 +2293,9 @@ ShowCursor()
 		    }
 		}
 	} else { /* not selected */
-		if(flags & INVERSE) { /* is reverse video */
+		if (( (flags & INVERSE) && !in_selection) ||
+		    (!(flags & INVERSE) &&  in_selection)) {
+		    /* text is reverse video */
 			currentGC = screen->reverseGC;
 		} else { /* normal video */
 			currentGC = screen->normalGC;
@@ -2320,13 +2335,25 @@ HideCursor()
 	GC	currentGC;
 	register int x, y, flags;
 	char c;
+	Boolean	in_selection;
 
 	if(screen->cursor_row - screen->topline > screen->max_row)
 		return;
 	c = screen->buf[y = 2 * screen->cursor_row][x = screen->cursor_col];
 	flags = screen->buf[y + 1][x];
 
-	if(flags & INVERSE) {
+	if (screen->cursor_row > screen->endHRow ||
+	    (screen->cursor_row == screen->endHRow &&
+	     screen->cursor_col >= screen->endHCol) ||
+	    screen->cursor_row < screen->startHRow ||
+	    (screen->cursor_row == screen->startHRow &&
+	     screen->cursor_col < screen->startHCol))
+	    in_selection = False;
+	else
+	    in_selection = True;
+
+	if (( (flags & INVERSE) && !in_selection) ||
+	    (!(flags & INVERSE) &&  in_selection)) {
 		if(flags & BOLD) {
 			currentGC = screen->reverseboldGC;
 		} else {
