@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.211 94/02/09 23:18:45 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.212 94/02/20 15:36:59 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -1536,6 +1536,8 @@ _XReply (dpy, rep, extra, discard)
 	   XThread_Self(), cvl);
 #endif
 
+    dpy->flags |= XlibDisplayReply;
+    _XFlushInt(dpy, cvl ? cvl->cv : NULL);
     /* if it is not our turn to read a reply off the wire,
      * wait til we're at head of list.  if there is an event waiter,
      * and our reply hasn't been read, they'll be in select and will
@@ -1546,8 +1548,6 @@ _XReply (dpy, rep, extra, discard)
 	(!dpy->lock->reply_was_read && dpy->lock->event_awaiters))) {
 	ConditionWait(dpy, cvl->cv);
     }
-    _XFlushInt(dpy, cvl ? cvl->cv : NULL);
-    dpy->flags |= XlibDisplayReply;
 #else /* XTHREADS else */
     _XFlush(dpy);
 #endif
