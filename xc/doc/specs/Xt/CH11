@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: CH11,v 1.6 91/07/31 20:24:37 swick Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -52,6 +52,7 @@ Handle errors.
 Set the WM_COLORMAP_WINDOWS property.
 .IP \(bu 5
 Locate files by name with string substitutions.
+
 .NH 2
 Determining the Number of Elements in an Array
 .XS
@@ -351,7 +352,7 @@ Sharing Graphics Contexts
 \fB\*(SN Sharing Graphics Contexts\fP
 .XE
 .LP
-The \*(xI provide a mechanism whereby cooperating clients can share a
+The \*(xI provide a mechanism whereby cooperating objects can share a
 graphics context (GC), thereby reducing both the number of GCs
 created and the total number of server calls in any given application.
 The mechanism is a simple caching scheme
@@ -574,6 +575,7 @@ If
 selectionTimeout
 is not specified,
 the default is five seconds.
+
 .NH 3
 Using Atomic Transfers
 .XS
@@ -1652,6 +1654,7 @@ returns without an error and without modifying \fIregion\fP.
 .LP
 This function is used by the exposure compression mechanism;
 see Section 7.9.3.
+
 .NH 2
 Translating Widget Coordinates
 .XS
@@ -1691,6 +1694,7 @@ is similar to the Xlib
 .PN XTranslateCoordinates 
 function, it does not generate a server request because all the required
 information already is in the widget's data structures.
+
 .NH 2
 Translating a Window to a Widget
 .XS
@@ -2407,19 +2411,17 @@ If
 is not defined, an implementation-specific default path will be used
 which contains at least 6 entries.  These entries
 must contain the following substitutions:
-.IP 1. 3
-%C, %N, %S, %T, %L or    %C, %N, %S, %T, %l, %t, %c
-.IP 2. 3
-%C, %N, %S, %T, %l
-.IP 3. 3
-%C, %N, %S, %T
-.IP 4. 3
-%N, %S, %T, %L or    %N, %S, %T, %l, %t, %c
-.IP 5. 3
-%N, %S, %T, %l
-.IP 6. 3
-%N, %S, %T
-.LP
+
+.nf
+.ta .3i 2i 2.5i
+1.	%C, %N, %S, %T, %L	or	%C, %N, %S, %T, %l, %t, %c
+2.	%C, %N, %S, %T, %l
+3.	%C, %N, %S, %T
+4.	%N, %S, %T, %L	or	%N, %S, %T, %l, %t, %c
+5.	%N, %S, %T, %l
+6.	%N, %S, %T
+.fi
+
 The order of these six entries within the path must be as given above.
 The order and use of substitutions within a given entry is implementation
 dependent.
@@ -2455,7 +2457,7 @@ The customization string is obtained by querying the resource database
 currently associated with the display (the database returned by
 .PN XrmGetDatabase )
 for the resource \fIapplication_name\fP.customization, class
-f\Iapplication_class\fP.Customization where \fIapplication_name\fP
+\fIapplication_class\fP.Customization where \fIapplication_name\fP
 and \fIapplication_class\fP are the values returned by
 .PN XtGetApplicationNameAndClass .
 If no value is specified in the database, the empty string is used.
