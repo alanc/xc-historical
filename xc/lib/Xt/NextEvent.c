@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.93 90/12/03 16:30:42 converse Exp $ */
+/* $XConsortium: NextEvent.c,v 1.94 90/12/12 14:52:35 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -657,7 +657,7 @@ static Boolean CallWorkProc(app)
 
 	if (delete) {
 	    w->next = freeWorkRecs;
-	    freeWorkRecs = w->next;
+	    freeWorkRecs = w;
 	}
 	else {
 	    w->next = app->workQueue;
