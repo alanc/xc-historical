@@ -1,6 +1,6 @@
 #ifndef lint
-static char rcsid[] = "$Header: Text.c,v 1.26 88/02/06 15:10:28 swick Locked $";
-#endif lint
+static char rcsid[] = "$Header: Text.c,v 1.27 88/02/08 15:08:47 swick Exp $";
+#endif
 
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -1331,6 +1331,7 @@ static void Resize(w)
  * This routine allow the application program to Set attributes.
  */
 
+/*ARGSUSED*/
 static Boolean SetValues(current, request, new)
 Widget current, request, new;
 {
@@ -1547,6 +1548,7 @@ void XtTextInvalidate(w, from, to)
         _XtTextExecuteUpdate(ctx);
 }
 
+/*ARGSUSED*/
 void XtTextDisableRedisplay(w, d)
     Widget w;
     int d;
@@ -1618,12 +1620,13 @@ static EndAction(ctx)
     _XtTextExecuteUpdate(ctx);
 }
 
-/*ARGSUSED*/
+#ifdef notdef
 static DoFeep(ctx)
     TextWidget ctx;
 {
     XBell(XtDisplay(ctx), 50);
 }
+#endif
 
 static DeleteOrKill(ctx, from, to, kill)
     TextWidget	   ctx;
@@ -2336,11 +2339,13 @@ static void DoInsert(w, closure, call_data)
     }
 }
 
+/*ARGSUSED*/
 static void TextFocusIn (ctx, event)
   TextWidget ctx;
    XEvent *event;
 { ctx->text.hasfocus = TRUE; }
 
+/*ARGSUSED*/
 static void TextFocusOut(ctx, event)
   TextWidget ctx;
    XEvent *event;
@@ -2383,7 +2388,9 @@ static void InsertFile(w, event)
     TextWidget ctx = (TextWidget)w;
     register struct _dialog *dialog, *prev;
     char *ptr;
+#ifdef notdef
     XtTextBlock text;
+#endif
     register Widget popup;
     static Arg popup_args[] = {
 	{XtNx, NULL},
@@ -2420,7 +2427,7 @@ static void InsertFile(w, event)
 	XtFree(ptr);
 	EndAction(ctx);
 	return;
-#endif notdef
+#endif
     }
     else {
 	ptr = "";
