@@ -1,4 +1,4 @@
-/* $XConsortium: xf86Events.c,v 1.1 94/10/05 13:34:15 kaleb Exp $ */
+/* $XConsortium: xf86Events.c,v 1.3 94/10/12 20:33:21 kaleb Exp kaleb $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.0 1994/05/08 05:20:49 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -377,7 +377,7 @@ xf86PostKbdEvent(key)
   }
 
   else if (
-#if defined(__386BSD__) || defined(__NetBSD__) || defined(__FreeBSD__)
+#ifdef CSRG_BASED
            (xf86Info.consType == PCCONS || xf86Info.consType == SYSCONS) &&
 #endif
            (xf86Info.scanPrefix == KEY_Prefix0)) {
@@ -401,6 +401,9 @@ xf86PostKbdEvent(key)
     case KEY_Slash:       scanCode = KEY_KP_Divide; break;  /* keyp divide */
     case KEY_Alt:         scanCode = KEY_AltLang;   break;  /* right alt */
     case KEY_ScrollLock:  scanCode = KEY_Break;     break;  /* curs break */
+    case 0x5b:            scanCode = KEY_LMeta;     break;
+    case 0x5c:            scanCode = KEY_RMeta;     break;
+    case 0x5d:            scanCode = KEY_Menu;      break;
       /*
        * Ignore virtual shifts (E0 2A, E0 AA, E0 36, E0 B6)
        */
@@ -447,7 +450,7 @@ xf86PostKbdEvent(key)
 	if (down) xf86ZoomViewport(xf86Info.currentScreen,  1);
 	return;
 
-#if defined(linux) || defined(__386BSD__) || defined(__NetBSD__) || defined(__FreeBSD__)
+#if defined(linux) || defined(CSRG_BASED)
 	/*
 	 * Under Linux, the raw keycodes are consumed before the kernel
 	 * does any processing on them, so we must emulate the vt switching
@@ -721,7 +724,7 @@ xf86PostKbdEvent(key)
    * normal, non-keypad keys
    */
   if (scanCode < KEY_KP_7 || scanCode > KEY_KP_Decimal) {
-#if !defined(__BSD__) && !defined(MACH386) && !defined(MINIX) && !defined(__OSF__)
+#if !defined(__bsdi__) && !defined(MACH386) && !defined(MINIX) && !defined(__OSF__)
     /*
      * magic ALT_L key on AT84 keyboards for multilingual support
      */
@@ -732,7 +735,7 @@ xf86PostKbdEvent(key)
 	UsePrefix = TRUE;
 	Direction = TRUE;
       }
-#endif /* !MACH386 && !__BSD__ && !MINIX && !__OSF__ */
+#endif /* !bsdi && !MACH386 && !MINIX && !__OSF__ */
   }
 
 
