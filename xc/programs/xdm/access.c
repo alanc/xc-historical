@@ -1,5 +1,5 @@
 /*
- * $XConsortium: access.c,v 1.11 91/07/18 19:29:00 rws Exp $
+ * $XConsortium: access.c,v 1.12 92/03/20 13:33:50 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -36,6 +36,7 @@
 # include   <X11/Xdmcp.h>
 # include   <X11/X.h>
 # include   <stdio.h>
+# include   <ctype.h>
 # include   <netinet/in.h>
 # include   <netdb.h>
 # include   <sys/socket.h>
@@ -472,8 +473,8 @@ scanHostlist (h, clientAddress, connectionType, function, closure, depth, broadc
     return haveLocalhost;
 }
 
-/* returns non-0 iff string is matched by pattern */
-
+/* Returns non-0 iff string is matched by pattern.  Does case folding.
+ */
 static int
 patternMatch (string, pattern)
     char    *string, *pattern;
@@ -504,6 +505,8 @@ patternMatch (string, pattern)
 	    p = *pattern++;
 	    /* fall through */
 	default:
+	    if (isupper(p)) p = tolower(p);
+	    if (isupper(s)) s = tolower(s);
 	    if (p != s)
 		return 0;
 	}
