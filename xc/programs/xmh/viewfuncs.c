@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewfuncs.c,v 2.19 89/12/16 03:33:58 converse Exp $
+ * $XConsortium: viewfuncs.c,v 2.20 90/01/22 17:37:35 swick Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -232,12 +232,19 @@ void DoPrintView(w, client_data, call_data)
     XtPointer	call_data;
 {
     Scrn	scrn = (Scrn) client_data;
-    char str[200];
+    char	**argv;
+    char	str[200];
 
-    if (scrn->msg == NULL) return;
+    if (! scrn->msg) return;
     (void) sprintf(str, "%s %s", app_resources.print_command,
 		   MsgFileName(scrn->msg));
-    (void) system(str);
+    argv = MakeArgv(3);
+    argv[0] = "/bin/sh";
+    argv[1] = "-c";	/* commands are read from the next argument */
+    argv[2] = str;
+    (void) DoCommand(argv, (char*)NULL, (char*)NULL);
+    /* a "notice" popup should appear with any stderr output */
+    XtFree((char*)argv);
 }
 
 
