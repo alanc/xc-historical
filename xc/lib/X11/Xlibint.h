@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.103 93/04/30 15:39:22 gildea Exp $ */
+/* $XConsortium: Xlibint.h,v 11.104 93/06/25 16:29:00 gildea Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -210,8 +210,8 @@ extern void (*_XLockMutex_fn)();
 extern void (*_XUnlockMutex_fn)();
 
 /* used in very few places */
-#define LockMutex(m)		if (_XLockMutex_fn) (*_XLockMutex_fn)()
-#define UnlockMutex(m)		if (_XUnlockMutex_fn) (*_XUnlockMutex_fn)()
+#define LockMutex()		if (_XLockMutex_fn) (*_XLockMutex_fn)()
+#define UnlockMutex()		if (_XUnlockMutex_fn) (*_XUnlockMutex_fn)()
 
 /* used everywhere, so must be fast if not using threads */
 #define LockDisplay(d)	     if ((d)->lock_fns) (*(d)->lock_fns->lock_display)((d),__FILE__,__LINE__)
@@ -219,13 +219,13 @@ extern void (*_XUnlockMutex_fn)();
 
 extern void _XLockMutex(
 #if NeedFunctionPrototypes
-    mutex_t
+    void
 #endif
 );
 
 extern void _XUnlockMutex(
 #if NeedFunctionPrototypes
-    mutex_t
+    void
 #endif
 );
 
@@ -256,8 +256,8 @@ extern void _XUnlockDisplay(
 
 #else /* XTHREADS */
 #define LockDisplay(dis)
-#define LockMutex(mutex)
-#define UnlockMutex(mutex)
+#define LockMutex()
+#define UnlockMutex()
 #define UnlockDisplay(dis)
 #endif
 
