@@ -1,4 +1,4 @@
-.\" $XConsortium: xmh.man,v 1.28 91/08/01 01:20:41 converse Exp $
+.\" $XConsortium: xmh.man,v 1.29 92/08/03 12:04:44 converse Exp $
 .TH XMH 1 "Release 5" "X Version 11"
 .SH NAME
 \fIxmh\fR \- send and read mail with an X interface to MH
@@ -971,7 +971,7 @@ The following resources are defined:
 .TP 8
 .B banner
 A short string that is the default label of the folder, Table of Contents,
-and view.  The default is "xmh    MIT X Consortium    R5".
+and view.  The default is "xmh    X Consortium    R6".
 .PP
 .TP 8
 .B blockEventsOnBusy

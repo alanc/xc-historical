@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.71 91/07/23 17:42:19 converse Exp $
+ * $XConsortium: init.c,v 2.72 93/09/20 17:51:53 hersh Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -30,6 +30,7 @@
 
 #include "xmh.h"
 #include "actions.h"
+#include "version.h"
 #include <errno.h>
 
 #define MIN_APP_DEFAULTS_VERSION 1
@@ -155,7 +156,7 @@ static XtResource resources[] = {
     {"appDefaultsVersion", "AppDefaultsVersion", XtRInt, sizeof(int),
 	 Offset(app_defaults_version), XtRImmediate, (XtPointer)0},
     {"banner", "Banner", XtRString, sizeof(char *),
-	 Offset(banner), XtRString, "xmh    MIT X Consortium    R5"},
+	 Offset(banner), XtRString, XMH_VERSION},
     {"wmProtocolsTranslations", "WMProtocolsTranslations", 
 	 XtRTranslationTable, sizeof(XtTranslations),
 	 Offset(wm_protocols_translations), XtRString,
