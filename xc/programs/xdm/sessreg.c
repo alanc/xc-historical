@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sessreg.c,v 1.5 91/01/31 22:03:38 gildea Exp $
+ * $XConsortium: sessreg.c,v 1.6 91/04/03 17:14:30 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -265,7 +265,7 @@ long		date;
 		bzero (u->ut_name, sizeof (u->ut_name));
 #ifdef SYSV
 	if (line) {
-		int	i, j;
+		int	i;
 		/*
 		 * this is a bit crufty, but
 		 * follows the apparent conventions in
@@ -274,14 +274,11 @@ long		date;
 		 * name are written into it, left justified.
 		 */
 		i = strlen (line);
-		if (i >= sizeof (u->ut_id)) {
-			i = i - sizeof (u->ut_id);
-			j = 0;
-		} else {
+		if (i >= sizeof (u->ut_id))
+			i -= sizeof (u->ut_id);
+		else
 			i = 0;
-			j = sizeof (u->ut_id) - i;
-		}
-		(void) strncpy (u->ut_id + j, line + i, sizeof (u->ut_id) - j);
+		(void) strncpy (u->ut_id, line + i, sizeof (u->ut_id));
 	} else
 		bzero (u->ut_id, sizeof (u->ut_id));
 	if (addp) {
