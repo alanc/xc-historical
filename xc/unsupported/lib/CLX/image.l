@@ -1242,7 +1242,7 @@
 			  bits-per-pixel
 			  unit byte-lsb-first-p bit-lsb-first-p)
   (declare (type buffer-bytes bbuf)
-	   (type array-index index bytes-per-line padded-bytes-per-line)
+	   (type array-index index padded-bytes-per-line)
 	   (type pixarray pixarray)
 	   (type card16 x y width height)
 	   (type (member 1 4 8 16 24 32) bits-per-pixel)
@@ -1264,7 +1264,8 @@
 	   (index* (index-ceiling bits-per-line1 *image-pad*) *image-pad*))
 	 (padded-bytes-per-line1
 	   (index-ceiling padded-bits-per-line1 8)))
-      (declare (type array-index xbits xbits1 x1 x bits-per-line1
+      (declare (type array-index xbits xbits1 x1 x
+		     bits-per-line1 bytes-per-line1
 		     padded-bits-per-line1 padded-bytes-per-line1))
       (with-image-data-buffer (buf (index* height padded-bytes-per-line1))
 	(image-swap-z
@@ -1305,8 +1306,7 @@
 	     (index* (index-ceiling image-bits-per-line *image-pad*)
 		     *image-pad*)
 	     bits-per-pixel)))
-    (declare (type array-index bits-per-line bytes-per-line
-		   image-bits-per-line image-pixels-per-line))
+    (declare (type array-index image-bits-per-line image-pixels-per-line))
     (unless data
       (setq data
 	    (make-array
@@ -2422,33 +2422,38 @@
   (with-open-file (fstream pathname :direction :input)
     (let ((line "")
 	  (properties nil)
-	  (*package* (find-package 'keyword)))
+	  (name nil)
+	  (name-end nil)
+	  (*package* (find-package 'keyword))
+	  (*read-base* 10))
       (declare (type string line)
 	       (type stringable name)
-	       (type list properties)
-	       (type (or null array-index) start))
+	       (type list properties))
       (with-vector (line string)
 	;; Get properties
-	(let (name start end indicator value)
-	  (loop
-	    (setq line (read-line fstream))
-	    (unless (char= (aref line 0) #\#) (return))
-	    (setq start 8
-		  end (position #\_ line :test #'char= :start start)
-		  name (read-from-string
-			 (string-upcase (subseq line start end))))
-	    (unless (eq name :image)
-	      (setf (getf properties :name) name))
-	    (setq start (index1+ end)
-		  end (position #\Space line :test #'char= :start start)
-		  indicator (read-from-string
-			      (substitute
-				#\- #\_ (string-upcase (subseq line start end))
-				:test #'char=)))
-	    (setq start (index1+ end)
-		  end nil
-		  value (parse-integer line :start start :end end))
-	    (setf (getf properties indicator) value)))
+	(loop
+	  (setq line (read-line fstream))
+	  (unless (char= (aref line 0) #\#) (return))
+	  (flet ((read-token (line start end)
+		   (let ((*package* (find-package 'keyword))
+			 (*read-base* 10))
+		     (read-from-string
+		       (substitute
+			 #\- #\_
+			 (string-upcase (subseq line start end))
+			 :test #'char=)))))
+	    (when (null name)
+	      (setq name-end (position #\_ line :test #'char= :from-end t)
+		    name (read-token line 8 name-end))
+	      (unless (eq name :image)
+		(setf (getf properties :name) name)))
+	    (let* ((ind-start (index1+ name-end))
+		   (ind-end (position #\Space line :test #'char=
+				      :start ind-start))
+		   (ind (read-token line ind-start ind-end))
+		   (val-start (index1+ ind-end))
+		   (val (read-token line val-start nil)))
+	      (setf (getf properties ind) val))))
 	;; Calculate sizes
 	(multiple-value-bind (width height depth left-pad)
 	    (flet ((extract-property (ind &rest default)
@@ -2480,7 +2485,7 @@
 		 (line-base 0)
 		 (byte 0))
 	    (declare (type array-index bits-per-line bytes-per-line
-			   padded-bits-per-line pad padded-bytes-per-line
+			   padded-bits-per-line padded-bytes-per-line
 			   line-base byte)
 		     (type buffer-bytes data))
 	    (with-vector (data buffer-bytes)
@@ -2504,8 +2509,12 @@
 		    (incf byte))
 		  (setq byte 0
 			line-base (index+ line-base padded-bytes-per-line)))))
+	    ;; Compensate for left-pad in width and x-hot
+	    (index-decf width left-pad)
+	    (when (getf properties :x-hot)
+	      (index-decf (getf properties :x-hot) left-pad))
 	    (create-image
-	      :width (index- width left-pad) :height height
+	      :width width :height height
 	      :depth depth :bits-per-pixel bits-per-pixel
 	      :data data :plist properties :format :z-pixmap
 	      :bytes-per-line padded-bytes-per-line
@@ -2544,6 +2553,12 @@
 	     (type image-depth depth)
 	     (type array-index bits-per-line bytes-per-line
 		   padded-bits-per-line padded-bytes-per-line count last))
+    ;; Move x-hot by left-pad, if there is an x-hot, so image readers that
+    ;; don't know about left pad get the hot spot in the right place.  We have
+    ;; already increased width by left-pad.
+    (when (getf plist :x-hot)
+      (setq plist (copy-list plist))
+      (index-incf (getf plist :x-hot) left-pad))
     (with-image-data-buffer (data last)
       (if (index> bits-per-pixel 1)
 	  (image-swap-z
