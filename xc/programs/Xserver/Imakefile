@@ -144,13 +144,13 @@ ServerTarget(Xplx,$(EXTDIR) $(FONTUTILDIR) $(PLXDIRS),$(PLXOBJS),$(PLXLIBS),$(PL
 HPDIRS = dix ddx/snf ddx/mi ddx/hp/hp ddx/hp/cfb ddx/hp/mfb \
          ddx/hp/topcat os/4.2bsd os/bsdemul
 HPOBJS = ddx/hp/hp/init.o $(FONTUTIL)
-HPLIBS = $(DIX) $(EXTENSIONS) $(HP) \
+HPLIBS = $(DIX) $(HP) \
           ddx/hp/topcat/libtopcat.a \
           ddx/hp/hp/libcrtstub.a \
 	  $(HP) \
           ddx/hp/cfb/libcfb.a \
           ddx/hp/mfb/libmfb.a \
-          $(BSD) $(SNF) $(MI) $(BSDEMUL)
+          $(BSD) $(SNF) $(MI) $(EXTENSIONS) $(BSDEMUL)
 #if ServerMallocLib
 HPMALLOCLIB = -lmalloc
 #endif
