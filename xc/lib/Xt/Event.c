@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Event.c,v 1.44 88/01/20 18:48:19 swick Locked $";
+static char rcsid[] = "$Header: Event.c,v 1.45 88/01/20 19:47:21 swick Locked $";
 #endif lint
 
 /*
@@ -350,6 +350,7 @@ static void DispatchEvent(event, widget, mask)
 	}
 	if (exposeRegion != NULL) {
 	  XRectangle rect;
+	  XtAddExposureToRegion(event, exposeRegion);
 	  XClipBox(exposeRegion, &rect);
 	  switch (event->type) {
 	    case Expose:
