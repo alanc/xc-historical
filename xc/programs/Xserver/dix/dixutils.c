@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $Header: dixutils.c,v 1.27 88/04/30 12:01:38 rws Exp $ */
+/* $Header: dixutils.c,v 1.28 88/05/24 13:32:49 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -32,7 +32,8 @@ SOFTWARE.
 #include "dixstruct.h"
 #include "pixmapstr.h"
 #include "scrnintstr.h"
-
+#define  XK_LATIN1
+#include "keysymdef.h"
 
 /*
  * CompareTimeStamps returns -1, 0, or +1 depending on if the first
@@ -79,6 +80,34 @@ ClientTimeToServerTime(c)
 	    ts.months += 1;
     }
     return ts;
+}
+
+/*
+ * ISO Latin-1 case conversion routine
+ *
+ * this routine always null-terminates the result, so
+ * beware of too-small buffers
+ */
+
+void
+CopyISOLatin1Lowered(dest, source, length)
+    register unsigned char *dest, *source;
+    int length;
+{
+    register int i;
+
+    for (i = 0; i < length; i++, source++, dest++)
+    {
+	if ((*source >= XK_A) && (*source <= XK_Z))
+	    *dest = *source + (XK_a - XK_A);
+	else if ((*source >= XK_Agrave) && (*source <= XK_Odiaeresis))
+	    *dest = *source + (XK_agrave - XK_Agrave);
+	else if ((*source >= XK_Ooblique) && (*source <= XK_Thorn))
+	    *dest = *source + (XK_oslash - XK_Ooblique);
+	else
+	    *dest = *source;
+    }
+    *dest = '\0';
 }
 
 WindowPtr
