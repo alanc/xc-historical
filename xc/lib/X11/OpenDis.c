@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.75 89/02/08 11:19:36 jim Exp $
+ * $XConsortium: XOpenDis.c,v 11.76 89/03/03 09:44:10 jim Exp $
  */
 
 #include "copyright.h"
@@ -546,10 +546,10 @@ Display *XOpenDisplay (display)
 		&actual_type, &actual_format, &nitems, &leftover, 
 		(unsigned char **) &dpy->xdefaults) != Success) {
 			dpy->xdefaults = (char *) NULL;
-		}
-	    else {
-	    if ( (actual_type != XA_STRING) ||  (actual_format != 8) ) {
-		if (dpy->xdefaults != NULL) Xfree ( dpy->xdefaults );
+	    } else if ((actual_type != XA_STRING) ||  (actual_format != 8)) {
+		if (dpy->xdefaults != NULL) {
+		    Xfree (dpy->xdefaults);
+		    dpy->xdefaults = (char *) NULL;
 		}
 	    }
 	}
