@@ -1,4 +1,4 @@
-/* $XConsortium: wire.c,v 1.6 94/03/13 12:45:42 dpw Exp $ */
+/* $XConsortium: wire.c,v 1.7 94/03/27 14:01:53 dpw Exp mor $ */
 /*
  * $NCDOr: wire.c,v 1.2 1993/11/19 21:29:10 keithp Exp keithp $
  * $NCDId: @(#)wire.c,v 1.36 1994/03/24 17:54:36 lemke Exp $
@@ -130,6 +130,30 @@ WriteToServer(client, len, buf)
     }
     DBG(DBG_IO, (stderr, "downstream %d len %d\n", client->index, len));
     WriteToClient(server->serverClient, len, buf);
+}
+
+UncompressWriteToServer(client, len, buf)
+    ClientPtr   client;
+    int         len;
+    char       *buf;
+{
+    XServerPtr  server = client->server;
+
+    if (server->serverClient->clientGone)
+	return;
+    if (server->send != client) {
+	xLbxSwitchReq s;
+
+	DBG(DBG_SWITCH, (stderr, "switch downstream to %d\n", client->index));
+	s.reqType = server->lbxReq;
+	s.lbxReqType = X_LbxSwitch;
+	s.length = 2;
+	s.client = client->index;
+	UncompressWriteToClient(server->serverClient, sizeof(s), &s);
+	server->send = client;
+    }
+    DBG(DBG_IO, (stderr, "downstream %d len %d\n", client->index, len));
+    UncompressWriteToClient(server->serverClient, len, buf);
 }
 
 /* all these requests may need to be swapped back to the order of
@@ -351,6 +375,44 @@ SendGetProperty(client, win, prop, type, delete, off, len)
     }
 
     WriteToServer(client, sizeof(req), (char *) &req);
+}
+
+
+SendGetImage (client, drawable, x, y, width, height, planeMask, format)
+
+ClientPtr     client;
+Drawable      drawable;
+int	      x;
+int	      y;
+unsigned int  width;
+unsigned int  height;
+unsigned long planeMask;
+int	      format;
+
+{
+    xLbxGetImageReq req;
+    XServerPtr  server = client->server;
+
+    if (client->server->serverClient == client)
+	return;
+
+    req.reqType = server->lbxReq;
+    req.lbxReqType = X_LbxGetImage;
+    req.length = 6;
+    req.drawable = drawable;
+    req.x = x;
+    req.y = y;
+    req.width = width;
+    req.height = height;
+    req.planeMask = planeMask;
+    req.format = format;
+
+    if (client->swapped)
+    {
+    	SwapGetImage (&req);
+    }
+
+    WriteToServer (client, sizeof (req), (char *) &req);
 }
 
 SendQueryTag(client, tag)
