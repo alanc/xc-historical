@@ -1,4 +1,4 @@
-/* $XConsortium: MultiSrc.c,v 1.0 94/01/01 00:00:00 kaleb Exp $ */
+/* $XConsortium: MultiSrc.c,v 1.1 94/01/31 09:52:28 kaleb Exp $ */
 
 /*
  * Copyright 1991 by OMRON Corporation
@@ -46,6 +46,7 @@
 #include <X11/Xmu/Misc.h>
 #include <X11/Xmu/CharSet.h>
 #include "XawI18n.h"
+#include <X11/Xos.h>
 
 /****************************************************************
  *
