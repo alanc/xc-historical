@@ -4,6 +4,15 @@
 #define DoProfileLib ProfileLibX
 #include <Library.tmpl>
 
+#ifndef BuildXimp
+#define BuildXimp NO
+#endif
+#ifndef BuildXsi
+#if !BuildXimp
+#define BuildXsi YES
+#endif
+#endif
+
 #if Malloc0ReturnsNull
         DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
@@ -335,7 +344,49 @@ OBJS3 = \
 	XwcWrap.o \
 	XFilterEv.o \
 	XRegstFlt.o \
+	XSetLocale.o \
 	$(LCOBJS)
+
+#if BuildXsi
+
+LCSRCS = \
+	XIMlibint.h \
+	XIMproto.h \
+	Xi18nint.h \
+	Xlocaleint.h \
+	wcharint.h \
+	ProtoFlt.c \
+	TextBody.c \
+	TextEscBd.c \
+	TextExtBd.c \
+	TextPerBd.c \
+	XCnvCTToWC.c \
+	XCnvMBToCT.c \
+	XCnvWCToMB.c \
+	XCnvToStr.c \
+	XConnIM.c \
+	XCrFntSet.c \
+	XCrIC.c \
+	XGetIMVal.c \
+	XICFocus.c \
+	XICGetVal.c \
+	XICSetVal.c \
+	XIMKeyBind.c \
+	XIMProto.c \
+	XIMQueue.c \
+	XInitCT.c \
+	XOpenIM.c \
+	XParseCT.c \
+	XlcAccess.c \
+	XlcLoad.c \
+	XmbDeGlyph.c \
+	XmbText.c \
+	XmbTextExt.c \
+	XmbTextPer.c \
+	XwcDeGlyph.c \
+	XwcText.c \
+	XwcTextExt.c \
+	XwcTextPer.c
 
 LCOBJS = \
 	ProtoFlt.o \
@@ -356,7 +407,6 @@ LCOBJS = \
 	XInitCT.o \
 	XOpenIM.o \
 	XParseCT.o \
-	XSetLocale.o \
 	XlcAccess.o \
 	XlcLoad.o \
 	XmbDeGlyph.o \
@@ -368,6 +418,128 @@ LCOBJS = \
 	XwcTextExt.o \
 	XwcTextPer.o
 
+#define LCRules()							@@\
+LinkSourceFile(XIMlibint.h,Xsi)						@@\
+LinkSourceFile(XIMproto.h,Xsi)						@@\
+LinkSourceFile(Xi18nint.h,Xsi)						@@\
+LinkSourceFile(Xlocaleint.h,Xsi)					@@\
+LinkSourceFile(wcharint.h,Xsi)						@@\
+LinkSourceFile(ProtoFlt.c,Xsi)						@@\
+LinkSourceFile(TextBody.c,Xsi)						@@\
+LinkSourceFile(TextEscBd.c,Xsi)						@@\
+LinkSourceFile(TextExtBd.c,Xsi)						@@\
+LinkSourceFile(TextPerBd.c,Xsi)						@@\
+LinkSourceFile(XCnvCTToWC.c,Xsi)					@@\
+LinkSourceFile(XCnvMBToCT.c,Xsi)					@@\
+LinkSourceFile(XCnvWCToMB.c,Xsi)					@@\
+LinkSourceFile(XCnvToStr.c,Xsi)						@@\
+LinkSourceFile(XConnIM.c,Xsi)						@@\
+LinkSourceFile(XCrFntSet.c,Xsi)						@@\
+LinkSourceFile(XCrIC.c,Xsi)						@@\
+LinkSourceFile(XGetIMVal.c,Xsi)						@@\
+LinkSourceFile(XICFocus.c,Xsi)						@@\
+LinkSourceFile(XICGetVal.c,Xsi)						@@\
+LinkSourceFile(XICSetVal.c,Xsi)						@@\
+LinkSourceFile(XIMKeyBind.c,Xsi)					@@\
+LinkSourceFile(XIMProto.c,Xsi)						@@\
+LinkSourceFile(XIMQueue.c,Xsi)						@@\
+LinkSourceFile(XInitCT.c,Xsi)						@@\
+LinkSourceFile(XOpenIM.c,Xsi)						@@\
+LinkSourceFile(XParseCT.c,Xsi)						@@\
+LinkSourceFile(XlcAccess.c,Xsi)						@@\
+LinkSourceFile(XlcLoad.c,Xsi)						@@\
+LinkSourceFile(XmbDeGlyph.c,Xsi)					@@\
+LinkSourceFile(XmbText.c,Xsi)						@@\
+LinkSourceFile(XmbTextExt.c,Xsi)					@@\
+LinkSourceFile(XmbTextPer.c,Xsi)					@@\
+LinkSourceFile(XwcDeGlyph.c,Xsi)					@@\
+LinkSourceFile(XwcText.c,Xsi)						@@\
+LinkSourceFile(XwcTextExt.c,Xsi)					@@\
+LinkSourceFile(XwcTextPer.c,Xsi)					@@\
+SpecialLibObjectRule(XConnIM.o,$(ICONFIGFILES),$(CONN_DEFINES))		@@\
+SpecialLibObjectRule(XlcLoad.o,$(ICONFIGFILES),$(NLS_DEFINES))
+
+#endif /* BuildXsi */
+
+#if BuildXimp
+
+LCSRCS = \
+	XIMProto.h \
+	XimpMCov.h \
+	Ximplc.h \
+	XimpCallbk.c \
+	XimpConv.c \
+	XimpCrFS.c \
+	XimpIC.c \
+	XimpIM.c \
+	XimpLCUtil.c \
+	XimpLCd.c \
+	XimpLdFt.c \
+	XimpLkup.c \
+	XimpMCT.c \
+	XimpMDrS.c \
+	XimpMEsc.c \
+	XimpMExt.c \
+	XimpSLC.c \
+	XimpTDrw.c \
+	XimpTExt.c \
+	XimpTWth.c \
+	XimpWCT.c \
+	XimpWDrS.c \
+	XimpWEsc.c \
+	XimpWExt.c
+
+LCOBJS = \
+	XimpCallbk.o \
+	XimpConv.o \
+	XimpCrFS.o \
+	XimpIC.o \
+	XimpIM.o \
+	XimpLCUtil.o \
+	XimpLCd.o \
+	XimpLdFt.o \
+	XimpLkup.o \
+	XimpMCT.o \
+	XimpMDrS.o \
+	XimpMEsc.o \
+	XimpMExt.o \
+	XimpSLC.o \
+	XimpTDrw.o \
+	XimpTExt.o \
+	XimpTWth.o \
+	XimpWCT.o \
+	XimpWDrS.o \
+	XimpWEsc.o \
+	XimpWExt.o
+
+#define LCRules()							@@\
+LinkSourceFile(XIMProto.h,Ximp)						@@\
+LinkSourceFile(XimpMCov.h,Ximp)						@@\
+LinkSourceFile(Ximplc.h,Ximp)						@@\
+LinkSourceFile(XimpCallbk.c,Ximp)					@@\
+LinkSourceFile(XimpConv.c,Ximp)						@@\
+LinkSourceFile(XimpCrFS.c,Ximp)						@@\
+LinkSourceFile(XimpIC.c,Ximp)						@@\
+LinkSourceFile(XimpIM.c,Ximp)						@@\
+LinkSourceFile(XimpLCUtil.c,Ximp)					@@\
+LinkSourceFile(XimpLCd.c,Ximp)						@@\
+LinkSourceFile(XimpLdFt.c,Ximp)						@@\
+LinkSourceFile(XimpLkup.c,Ximp)						@@\
+LinkSourceFile(XimpMCT.c,Ximp)						@@\
+LinkSourceFile(XimpMDrS.c,Ximp)						@@\
+LinkSourceFile(XimpMEsc.c,Ximp)						@@\
+LinkSourceFile(XimpMExt.c,Ximp)						@@\
+LinkSourceFile(XimpSLC.c,Ximp)						@@\
+LinkSourceFile(XimpTDrw.c,Ximp)						@@\
+LinkSourceFile(XimpTExt.c,Ximp)						@@\
+LinkSourceFile(XimpTWth.c,Ximp)						@@\
+LinkSourceFile(XimpWCT.c,Ximp)						@@\
+LinkSourceFile(XimpWDrS.c,Ximp)						@@\
+LinkSourceFile(XimpWEsc.c,Ximp)						@@\
+LinkSourceFile(XimpWExt.c,Ximp)
+
+#endif /* BuildXimp */
+
 OBJS = $(OBJS1) $(OBJS2) $(OBJS3)
 
 LibraryObjectRule()
@@ -376,13 +548,13 @@ SpecialLibObjectRule(XErrDes.o,$(ICONFIGFILES),$(EDB_DEFINES))
 SpecialLibObjectRule(XStrKeysym.o,$(ICONFIGFILES),$(KDB_DEFINES))
 SpecialLibObjectRule(XConnDis.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialLibObjectRule(XOpenDis.o,$(ICONFIGFILES),$(DESDEFS) $(RPCDEFS) $(CONN_DEFINES))
-SpecialLibObjectRule(XConnIM.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialLibObjectRule(Encrypt.o,$(ICONFIGFILES),$(DESDEFS))
 SpecialLibObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialLibObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialLibObjectRule(XcmsColNm.o,$(ICONFIGFILES),$(CMS_DEFINES))
-SpecialLibObjectRule(XlcLoad.o,$(ICONFIGFILES),$(NLS_DEFINES))
 SpecialLibObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
+
+LCRules()
 
 #if DoSharedLib
 #if DoNormalLib
@@ -422,24 +594,22 @@ LinkSourceFile(des.h,$(XDMCPLIBSRC))
 LinkSourceFile(Encrypt.c,$(XDMCPLIBSRC))
 LinkSourceFile(Crypt.c,$(XDMCPLIBSRC))
 
-ks_tables.h: $(INCLUDESRC)/keysymdef.h makekeys.C
-	$(RM) $@ makekeys.c makekeys
-	$(LN) makekeys.C makekeys.c
-	-$(CC) -o makekeys makekeys.c $(CFLAGS) $(LOCAL_LDFLAGS) $(LDLIBS) $(EXTRA_LOAD_FLAGS)
-	$(RM) makekeys.c
+ks_tables.h: $(INCLUDESRC)/keysymdef.h util/makekeys.c
+	$(RM) $@ makekeys
+	-$(CC) -o makekeys util/makekeys.c $(CFLAGS) $(LOCAL_LDFLAGS) $(LDLIBS) $(EXTRA_LOAD_FLAGS)
 	./makekeys < $(INCLUDESRC)/keysymdef.h > ks_tables_h
 	$(MV) ks_tables_h $@
 	$(RM) makekeys ks_tables_h
 
-includes:: ks_tables.h des.h $(DESSRCS)
+includes:: ks_tables.h des.h $(AUTHSRCS) $(DESSRCS) $(LCSRCS)
 
-depend:: ks_tables.h des.h $(AUTHSRCS) $(DESSRCS)
-
-clean::
-	$(RM) ks_tables_h ks_tables.h makekeys.c makekeys
+depend:: ks_tables.h des.h $(AUTHSRCS) $(DESSRCS) $(LCSRCS)
 
 clean::
-	$(RM) $(AUTHSRCS) $(DESSRCS)
+	$(RM) ks_tables_h ks_tables.h makekeys
+
+clean::
+	$(RM) $(AUTHSRCS) $(DESSRCS) $(LCSRCS)
 
 DependTarget()
 
