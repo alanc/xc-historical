@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium:$";
+    "$XConsortium: VarGet.c,v 1.1 89/11/08 17:47:10 swick Exp $";
 #endif
 /*
 
@@ -208,6 +208,7 @@ XtVaGetValues(widget, va_alist)
         args = (ArgList)XtMalloc((unsigned)((total_count - typed_count) 
 				* sizeof(Arg)));
     }
+    else args = NULL;		/* for lint; really unused */
 
     for(attr = va_arg(var, String), count = 0 ; attr != NULL;
 			attr = va_arg(var, String)) {
