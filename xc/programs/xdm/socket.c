@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: socket.c,v 1.14 89/12/06 19:38:08 keith Exp $
+ * $XConsortium: socket.c,v 1.15 89/12/13 15:24:29 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -802,19 +802,6 @@ manage (from, fromlen, length)
 	    d->fromlen = fromlen;
 	    d->displayNumber = pdpy->displayNumber;
 	    d->authorization = pdpy->fileAuthorization;
-	    if (d->authorization)
-		d->authorize = TRUE;
-	    if (remoteAuthDir)
-	    {
-		int len;
-
-		len = strlen (remoteAuthDir) + 12;
-		if (d->authFile)
-		    free (d->authFile);
-		d->authFile = malloc ((unsigned) len);
-		sprintf (d->authFile, "%s/AuthXXXXXX", remoteAuthDir);
-		(void) mktemp (d->authFile);
-	    }
 	    pdpy->fileAuthorization = 0;
 	    DisposeProtoDisplay (pdpy);
 	    Debug ("Starting display %s,%s\n", d->name, d->class);

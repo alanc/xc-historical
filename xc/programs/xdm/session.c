@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.28 89/12/19 19:50:18 rws Exp $
+ * $XConsortium: session.c,v 1.29 90/02/07 18:47:19 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -99,7 +99,7 @@ ErrorHandler(dpy, event)
 ManageSession (d)
 struct display	*d;
 {
-    int			pid;
+    int			pid, code;
     Display		*dpy, *InitGreet ();
 
     Debug ("ManageSession %s\n", d->name);
@@ -110,18 +110,17 @@ struct display	*d;
      * Step 5: Load system default Resources
      */
     LoadXloginResources (d);
-    Debug ("name now %s\n", d->name);
     dpy = InitGreet (d);
-    if (d->authorization && d->authFile)
-    {
-	Debug ("Done with authorization file %s, removing\n", d->authFile);
-	(void) unlink (d->authFile);
-    }
     for (;;) {
 	/*
 	 * Greet user, requesting name/password
 	 */
-	Greet (d, &greet);
+	code = Greet (d, &greet);
+	if (code != 0)
+	{
+	    CloseGreet (d);
+	    SessionExit (d, code);
+	}
 	/*
 	 * Verify user
 	 */
@@ -129,7 +128,6 @@ struct display	*d;
 		break;
 	else
 		FailedLogin (d, &greet);
-	Debug ("after verify, name %s\n", d->name);
     }
     DeleteXloginResources (d, dpy);
     CloseGreet (d);
@@ -203,7 +201,7 @@ struct display	*d;
     char	cmd[1024];
 
     if (d->resources[0] && access (d->resources, 4) == 0) {
-	if (d->authorization && d->authFile && d->authFile[0]) {
+	if (d->authFile) {
 	    sprintf (cmd, "XAUTHORITY=%s %s -display %s -load %s",
 			    d->authFile,
 			    d->xrdb, d->name, d->resources);

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: greet.c,v 1.17 89/11/17 18:43:09 keith Exp $
+ * $XConsortium: greet.c,v 1.18 89/12/06 19:35:57 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -36,7 +36,7 @@
 extern Display	*dpy;
 
 extern void	exit ();
-static int	done;
+static int	done, code;
 static char	name[128], password[128];
 static Widget		toplevel;
 static Widget		login;
@@ -69,17 +69,24 @@ GreetDone (w, data, status)
 	case NOTIFY_OK:
 		strcpy (name, data->name);
 		strcpy (password, data->passwd);
+		code = 0;
 		done = 1;
 		break;
 	case NOTIFY_ABORT:
 		Debug ("RESERVER_DISPLAY\n");
-		exit (RESERVER_DISPLAY);
+		code = RESERVER_DISPLAY;
+		done = 1;
+		break;
 	case NOTIFY_RESTART:
 		Debug ("REMANAGE_DISPLAY\n");
-		exit (REMANAGE_DISPLAY);
+		code = REMANAGE_DISPLAY;
+		done = 1;
+		break;
 	case NOTIFY_ABORT_DISPLAY:
 		Debug ("UNMANAGE_DISPLAY\n");
-		exit (UNMANAGE_DISPLAY);
+		code = UNMANAGE_DISPLAY;
+		done = 1;
+		break;
 	}
 }
 
@@ -173,11 +180,15 @@ struct greet_info	*greet;
 	}
 	XFlush (XtDisplay (toplevel));
 	Debug ("Done dispatch %s\n", d->name);
-	greet->name = name;
-	greet->password = password;
-	XtSetArg (arglist[0], XtNsessionArgument, (char *) &(greet->string));
-	XtGetValues (login, arglist, 1);
-	Debug ("sessionArgument: %s\n", greet->string ? greet->string : "<NULL>");
+	if (code == 0)
+	{
+	    greet->name = name;
+	    greet->password = password;
+	    XtSetArg (arglist[0], XtNsessionArgument, (char *) &(greet->string));
+	    XtGetValues (login, arglist, 1);
+	    Debug ("sessionArgument: %s\n", greet->string ? greet->string : "<NULL>");
+	}
+	return code;
 }
 
 

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: verify.c,v 1.8 89/04/12 19:38:08 rws Exp $
+ * $XConsortium: verify.c,v 1.9 89/12/12 13:58:18 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -112,6 +112,8 @@ char	*user, *home;
 	env = setEnv (env, "USER", user);
 	env = setEnv (env, "PATH", d->systemPath);
 	env = setEnv (env, "SHELL", d->systemShell);
+	if (d->authFile)
+		env = setEnv (env, "XAUTHORITY", d->authFile);
 	return env;
 }
 

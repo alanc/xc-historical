@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: server.c,v 1.5 89/12/06 19:38:39 keith Exp $
+ * $XConsortium: server.c,v 1.6 90/02/07 18:47:25 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -69,7 +69,7 @@ struct display	*d;
     switch (pid = fork ()) {
     case 0:
 	CleanUpChild ();
-	if (d->authorization) {
+	if (d->authFile) {
 	    sprintf (arg, "-auth %s", d->authFile);
 	    argv = parseArgs (argv, arg);
 	}

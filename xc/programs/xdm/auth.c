@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.16 89/12/13 15:24:56 keith Exp $
+ * $XConsortium: auth.c,v 1.17 89/12/14 09:42:18 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -172,6 +172,53 @@ SetProtoDisplayAuthorization (pdpy,
     }
 }
 
+static
+CleanUpFileName (src, dst, len)
+char	*src, *dst;
+int	len;
+{
+    while (*src) {
+	if (--len <= 0)
+		break;
+	switch (*src & 0x7f)
+	{
+	case '/':
+	    *dst++ = '_';
+	    break;
+	case '-':
+	    *dst++ = '.';
+	    break;
+	default:
+	    *dst++ = (*src & 0x7f);
+	}
+	++src;
+    }
+    *dst = '\0';
+}
+
+MakeServerAuthFile (d)
+    struct display  *d;
+{
+    int len;
+#ifdef SYSV
+#define NAMELEN	14
+#else
+#define NAMELEN	255
+#endif
+    char    cleanname[NAMELEN];
+
+    CleanUpFileName (d->name, cleanname, NAMELEN - 8);
+    len = strlen (authDir) + strlen (cleanname) + 12;
+    if (d->authFile)
+	free (d->authFile);
+    d->authFile = malloc ((unsigned) len);
+    if (!d->authFile)
+	return FALSE;
+    sprintf (d->authFile, "%s/A%s-XXXXXX", authDir, cleanname);
+    (void) mktemp (d->authFile);
+    return TRUE;
+}
+
 SaveServerAuthorization (d, auth)
     struct display  *d;
     Xauth	    *auth;
@@ -181,11 +228,16 @@ SaveServerAuthorization (d, auth)
     int		ret;
 
     mask = umask (0077);
+    if (!d->authFile && !MakeServerAuthFile (d))
+	return FALSE;
     (void) unlink (d->authFile);
     auth_file = fopen (d->authFile, "w");
     umask (mask);
     if (!auth_file) {
+	Debug ("Can't creat auth file %s\n", d->authFile);
 	LogError ("Cannot open server authorization file %s\n", d->authFile);
+	free (d->authFile);
+	d->authFile = NULL;
 	ret = FALSE;
     }
     else
@@ -196,6 +248,8 @@ SaveServerAuthorization (d, auth)
 	    LogError ("Cannot write server authorization file %s\n",
 		       d->authFile);
 	    ret = FALSE;
+	    free (d->authFile);
+	    d->authFile = NULL;
     	}
 	else
 	    ret = TRUE;

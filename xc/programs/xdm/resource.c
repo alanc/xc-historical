@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: resource.c,v 1.28 89/12/13 15:25:42 keith Exp $
+ * $XConsortium: resource.c,v 1.29 89/12/15 20:12:26 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -38,7 +38,7 @@ char	*errorLogFile;
 int	daemonMode;
 char	*pidFile;
 int	lockPidFile;
-char	*remoteAuthDir;
+char	*authDir;
 int	autoRescan;
 int	removeDomainname;
 char	*keyFile;
@@ -82,14 +82,11 @@ char	*keyFile;
 #ifndef DEF_XDM_AUTH_GEN
 #define DEF_XDM_AUTH_GEN "/usr/lib/X11/xdm/xdmauthgen"
 #endif
-#ifndef DEF_AUTH_FILE
-#define DEF_AUTH_FILE	"/usr/lib/X11/xdm/auth-server"
-#endif
 #ifndef DEF_AUTH_NAME
 #define DEF_AUTH_NAME	"MIT-MAGIC-COOKIE-1"
 #endif
-#ifndef DEF_REMOTE_AUTH_DIR
-#define DEF_REMOTE_AUTH_DIR "/usr/lib/X11/xdm"
+#ifndef DEF_AUTH_DIR
+#define DEF_AUTH_DIR "/usr/lib/X11/xdm"
 #endif
 #ifndef DEF_AUTH_DIR
 #define DEF_AUTH_DIR	"/tmp"
@@ -119,8 +116,8 @@ struct dmResources {
 				"",
 "lockPidFile",	"LockPidFile",	DM_BOOL,	(char **) &lockPidFile,
 				"true",
-"remoteAuthDir","RemoteAuthDir",DM_STRING,	&remoteAuthDir,
-				DEF_REMOTE_AUTH_DIR,
+"authDir",	"authDir",	DM_STRING,	&authDir,
+				DEF_AUTH_DIR,
 "autoRescan",	"AutoRescan",	DM_BOOL,	(char **) &autoRescan,
 				"true",
 "removeDomainname","RemoveDomainname",DM_BOOL,	(char **) &removeDomainname,
@@ -181,8 +178,6 @@ struct displayResources {
 				"true",
 "authName",	"AuthName",	DM_STRING,	boffset(authName),
 				DEF_AUTH_NAME,
-"authFile",	"AuthFile",	DM_STRING,	boffset(authFile),
-				DEF_AUTH_FILE,
 "resetForAuth",	"ResetForAuth",	DM_BOOL,	boffset(resetForAuth),
 				"false",
 "userAuthDir",	"UserAuthDir",	DM_STRING,	boffset(userAuthDir),
@@ -206,9 +201,6 @@ GetResource (name, class, valueType, valuep, default_value)
     char	str_buf[50];
     int	len;
 
-    if (valueType == DM_STRING && *valuep)
-	return;
-
     if (DmResourceDB && XrmGetResource (DmResourceDB,
 	name, class,
 	&type, &value))
@@ -221,7 +213,17 @@ GetResource (name, class, valueType, valuep, default_value)
 	string = default_value;
 	len = strlen (string);
     }
-    Debug ("%s/%s value %s\n", name, class, string);
+
+    Debug ("%s/%s value %*.*s\n", name, class, len, len, string);
+
+    if (valueType == DM_STRING && *valuep)
+    {
+	if (strlen (*valuep) == len && !strncmp (*valuep, string, len))
+	    return;
+	else
+	    free (*valuep);
+    }
+
     switch (valueType) {
     case DM_STRING:
 	new_string = malloc ((unsigned) (len+1));
@@ -389,3 +391,4 @@ struct display	*d;
 			      DisplayResources[i].default_value);
 	}
 }
+
