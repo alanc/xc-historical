@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.170 91/06/17 14:48:53 converse Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.171 91/07/05 09:52:54 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -2501,7 +2501,16 @@ extern Boolean XtCvtStringToCursor(
 #endif
 );
 
-#define XtCvtStringToDimension XtCvtStringToShort
+extern Boolean XtCvtStringToDimension(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */,
+    XrmValuePtr /* args */,	/* none */
+    Cardinal*   /* num_args */,	
+    XrmValuePtr	/* fromVal */,
+    XrmValuePtr	/* toVal */,
+    XtPointer*	/* closure_ret */
+#endif
+);
 
 extern Boolean XtCvtStringToDisplay(
 #if NeedFunctionPrototypes
