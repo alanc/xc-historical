@@ -1,4 +1,4 @@
-/* $XConsortium: action.c,v 1.4 93/09/28 20:16:45 rws Exp $ */
+/* $XConsortium: action.c,v 1.1 94/04/02 17:04:49 erik Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -780,7 +780,7 @@ XkbMessageAction *	act;
 			uWarning("An action message can hold only 6 bytes\n");
 			uAction("Extra %d bytes ignored\n",len-6);
 		    }
-		    strncpy(act->message,rtrn.str,6);
+		    strncpy((char *)act->message,rtrn.str,6);
 		}
 		return True;
 	    }
@@ -843,7 +843,7 @@ ExprResult	rtrn;
 			uAction("Extra %d bytes ignored\n",len-6);
 			return False;
 		    }
-		    strncpy(action->data,rtrn.str,7);
+		    strncpy((char *)action->data,rtrn.str,7);
 		}
 		return True;
 	    }
