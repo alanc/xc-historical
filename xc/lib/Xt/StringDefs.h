@@ -1,5 +1,5 @@
 /*
-* $Header: Atoms.h,v 1.20 87/12/02 08:56:07 swick Locked $
+* $Header: Atoms.h,v 1.21 87/12/02 15:54:50 swick Locked $
 */
 
 /*
@@ -191,6 +191,7 @@
 #define XtRFloat		XrmRFloat
 #define XtRFont			XrmRFont
 #define XtRFontStruct		XrmRFontStruct
+#define XtRFunction		"Function"
 #define XtRJustify		"Justify"
 #define XtRGeometry		XrmRGeometry
 #define XtRInt			XrmRInt
