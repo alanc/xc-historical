@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.56 89/07/06 17:49:08 jim Exp $
+ * $XConsortium: twm.c,v 1.57 89/07/06 18:34:53 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.56 89/07/06 17:49:08 jim Exp $";
+"$XConsortium: twm.c,v 1.57 89/07/06 18:34:53 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -93,7 +93,6 @@ XGCValues Gcv;
 
 char Version[100];		/* place to build the version string */
 
-Bool verbose = True;
 char *Home;			/* the HOME environment variable */
 int HomeLen;			/* length of Home */
 int ParseError;			/* error parsing the .twmrc file */
@@ -172,12 +171,10 @@ main(argc, argv, environ)
 	    MultiScreen = FALSE;
 	else if (strncmp(argv[i], "-f", 2) == 0)
 	    InitFile = argv[++i];
-	else if (strncmp(argv[i], "-q", 2) == 0)
-	    verbose = False;
 	else
 	{
 	    fprintf(stderr,
-	     "Usage:  twm [-display display] [-f file] [-s] [-q]\n");
+	     "Usage:  twm [-display display] [-f file] [-s]\n");
 	    exit(1);
 	}
     }

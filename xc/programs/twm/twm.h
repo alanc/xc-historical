@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.30 89/06/22 16:46:22 jim Exp $
+ * $XConsortium: twm.h,v 1.31 89/06/30 19:33:30 jim Exp $
  *
  * twm include file
  *
@@ -227,7 +227,6 @@ extern XContext ScreenContext;
 
 extern char Version[100];
 
-extern Bool verbose;
 extern char *Home;
 extern int HomeLen;
 extern int ParseError;
