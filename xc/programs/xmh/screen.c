@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcs_id[] =
-    "$XConsortium: screen.c,v 2.26 88/08/26 13:26:36 swick Exp $";
+    "$XConsortium: screen.c,v 2.27 88/09/02 17:04:33 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -191,7 +191,7 @@ Scrn scrn;
     scrn->seqbuttons = BBoxRadioCreate(scrn, 4, "seqButtons", &scrn->curseq);
     scrn->tocbuttons = BBoxCreate(scrn, 5, "tocButtons");
     scrn->viewlabel = CreateTitleBar(scrn, 6);
-    scrn->viewwidget = CreateTextSW(scrn, 7, "view", 0 /* %%% wordBreak */);
+    scrn->viewwidget = CreateTextSW(scrn, 7, "view", wordBreak);
     scrn->viewbuttons = BBoxCreate(scrn, 8, "viewButtons");
 
     buttonbox = scrn->folderbuttons;
@@ -274,7 +274,7 @@ MakeView(scrn)
 Scrn scrn;
 {
     scrn->viewlabel = CreateTitleBar(scrn, 0);
-    scrn->viewwidget = CreateTextSW(scrn, 1, "view", 0 /* %%% wordBreak */);
+    scrn->viewwidget = CreateTextSW(scrn, 1, "view", wordBreak);
     scrn->viewbuttons = BBoxCreate(scrn, 2, "viewButtons");
     FillViewButtons(scrn);
 }
@@ -284,7 +284,7 @@ MakeComp(scrn)
 Scrn scrn;
 {
     scrn->viewlabel = CreateTitleBar(scrn, 0);
-    scrn->viewwidget = CreateTextSW(scrn, 1, "comp", 0 /* %%% wordBreak */);
+    scrn->viewwidget = CreateTextSW(scrn, 1, "comp", wordBreak);
     scrn->viewbuttons = BBoxCreate(scrn, 2, "compButtons");
     FillCompButtons(scrn);
 }
