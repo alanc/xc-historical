@@ -751,7 +751,7 @@ static void ParseTranslationTableProduction(w, compiledActionTable, str)
     /* make sure the event is registered in the event table */
     for (esp=eventSeq; esp!=NULL; esp=esp->next) {
 	esp->eventType = events[esp->eventType].eventType;
-	XtSetEventHandler(
+	XtAddEventHandler(
 	    w,
 	    events[esp->eventType].mask,
 	    (Boolean) (events[esp->eventType].mask == 0),
@@ -760,10 +760,10 @@ static void ParseTranslationTableProduction(w, compiledActionTable, str)
 	/* double click needs to make sure that you have selected on both
 	    button down and up. */
         if (events[esp->eventType].mask & ButtonPressMask)
-	    XtSetEventHandler(
+	    XtAddEventHandler(
 		w, ButtonReleaseMask, FALSE, TranslateEvent, NULL);
         if (events[esp->eventType].mask & ButtonReleaseMask)
-	    XtSetEventHandler(
+	    XtAddEventHandler(
 		w, ButtonPressMask, FALSE, TranslateEvent, NULL);
 #endif
 	if (esp->next == NULL) {
