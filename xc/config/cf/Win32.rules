@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.rules,v 1.11 93/08/16 13:55:15 rws Exp $
+XCOMM platform:  $XConsortium: Win32.rules,v 1.12 93/08/17 16:13:53 rws Exp $
 
 #define ProgramTargetName(target) target.exe
 
@@ -201,6 +201,17 @@ ProgramTargetName($(IMAKE)):						@@\
 	cd $(IMAKESRC:/=\)						@@\
 	if exist Makefile $(MAKE) all					@@\
 	if not exist Makefile $(MAKE) -f Makefile.ini BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)" @@\
+<<
+#endif
+
+#ifndef UseInstalled
+#define DependDependency() 						@@\
+depend:: ProgramTargetName($(DEPEND))					@@\
+									@@\
+ProgramTargetName($(DEPEND)):						@@\
+	<<tmp.bat							@@\
+	cd $(DEPENDSRC:/=\)						@@\
+	$(MAKE)								@@\
 <<
 #endif
 
