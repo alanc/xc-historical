@@ -1,4 +1,4 @@
-/* $XConsortium: lbxgfx.c,v 1.4 94/09/12 20:28:06 mor Exp mor $ */
+/* $XConsortium: lbxgfx.c,v 1.5 94/09/13 17:16:32 mor Exp mor $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -274,7 +274,7 @@ register ClientPtr  client;
     {
 	len = ImageDecodeFaxG42D (
 	    (unsigned char *) in, (unsigned char *) &xreq[1],
-	    (long) ((stuff->xLength << 2) - sz_xPutImageReq),
+	    (int) ((stuff->xLength << 2) - sz_xPutImageReq),
 	    (int) stuff->width);
     }
     else
