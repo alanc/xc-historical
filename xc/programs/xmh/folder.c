@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: folder.c,v 2.3 88/01/25 20:16:35 swick Exp $";
+static char rcs_id[] = "$Header: folder.c,v 2.4 88/02/22 10:35:02 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -159,19 +159,6 @@ Scrn scrn;
 	    BBoxDeleteButton(BBoxFindButtonNamed(scrnList[i]->folderbuttons,
 						 foldername));
 }
-
-
-
-			/* Debugging stuff only. */
-void ExecSyncOn()
-{
-    (void) XSynchronize(theDisplay, TRUE);
-}
-void ExecSyncOff()
-{
-    (void) XSynchronize(theDisplay, FALSE);
-}
-
 
 
 /* Create a new folder with the given name. */
