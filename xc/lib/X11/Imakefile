@@ -97,7 +97,6 @@ OBJS1 =\
 	XFillPoly.o \
 	XFillRect.o \
 	XFillRects.o \
-	XFindFile.o \
 	XFlush.o \
 	XFont.o \
 	XFontNames.o \
