@@ -1,7 +1,7 @@
-XCOMM $XConsortium: Imakefile,v 1.6 91/09/07 11:57:37 keith Exp $
+XCOMM $XConsortium: Imakefile,v 1.7 92/11/20 15:30:47 gildea Exp $
 #include <Server.tmpl>
 
-        INCLUDES = -I$(FONTSRC)/include -I../include -I$(FONTSERVERSRC)/include
+        INCLUDES = -I$(FONTSRC)/include -I../include -I$(FONTSERVERSRC)/include -I$(SERVERSRC)/include
          HEADERS = 
 #ifdef FontFormatDefines
      FORMAT_DEFS = FontFormatDefines

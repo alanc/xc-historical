@@ -1,7 +1,7 @@
-XCOMM $XConsortium: Imakefile,v 1.7 91/07/17 16:05:31 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.8 91/07/22 22:20:01 rws Exp $
 #include <Server.tmpl>
 
-        INCLUDES = -I$(FONTSRC)/include -I../include -I$(FONTSERVERSRC)/include
+        INCLUDES = -I$(FONTSRC)/include -I../include -I$(FONTSERVERSRC)/include -I$(SERVERSRC)/include
          HEADERS = 
       SPEEDOSRCS = do_char.c do_trns.c out_bl2d.c out_blk.c \
 		   out_scrn.c out_util.c reset.c set_spcs.c set_trns.c 
