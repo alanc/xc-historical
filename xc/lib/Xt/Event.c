@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.132 91/07/05 15:04:37 rws Exp $ */
+/* $XConsortium: Event.c,v 1.133 91/07/12 12:16:54 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1135,7 +1135,7 @@ void XtAddGrab(widget, exclusive, spring_loaded)
 
     if (spring_loaded && !exclusive) {
 	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
-		"grabError", "grabDestroyCallback", XtCXtToolkitError,
+		"grabError", "xtAddGrab", XtCXtToolkitError,
 		"XtAddGrab requires exclusive grab if spring_loaded is TRUE",
 		(String *) NULL, (Cardinal *) NULL);
 	exclusive = TRUE;
