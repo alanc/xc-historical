@@ -1,5 +1,5 @@
 /*
- * $XConsortium: gethost.c,v 1.3 88/12/12 13:58:37 jim Exp $
+ * $XConsortium: gethost.c,v 1.4 88/12/12 15:22:04 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -168,6 +168,7 @@ char *get_address_info (family, fulldpyname, prefix, host, lenp)
 #ifdef DNETCONN
     struct dn_naddr dnaddr;
 #endif
+    char buf[255];
 
     /*
      * based on the family, set the pointer src to the start of the address
@@ -175,8 +176,21 @@ char *get_address_info (family, fulldpyname, prefix, host, lenp)
      */
     switch (family) {
       case FamilyLocal:			/* hostname/unix:0 */
-	src = fulldpyname;
-	len = prefix;
+					/* handle unix:0 and :0 specially */
+	if (prefix == 0 && (strncmp (fulldpyname, "unix:", 5) == 0 ||
+			    fulldpyname[0] == ':')) {
+	    extern char *get_local_hostname();
+
+	    if (!get_local_hostname (buf, sizeof buf)) {
+		len = 0;
+	    } else {
+		src = buf;
+		len = strlen (buf);
+	    }
+	} else {
+	    src = fulldpyname;
+	    len = prefix;
+	}
 	break;
       case FamilyInternet:		/* host:0 */
 	if (!get_inet_address (host, &hostinetaddr)) return NULL;
