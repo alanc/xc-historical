@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: cfbmskbits.h,v 4.13 89/11/21 15:30:46 keith Exp $ */
+/* $XConsortium: cfbmskbits.h,v 4.15 90/03/29 18:32:57 keith Exp $ */
 
 extern int cfbstarttab[];
 extern int cfbendtab[];
@@ -345,6 +345,41 @@ else \
     t2 = DoRop(rop, t1, *((pdst) + 1)); \
     *((pdst)+1) = (*((pdst)+1) & (cfbstarttab[n] | ~pm)) | \
 	(t2 & (cfbendtab[n] & pm)); \
+}
+
+/*
+ * Use these macros only when you're using the MergeRop stuff
+ * in ../mfb/mergerop.h
+ */
+
+/* useful only when not spanning destination longwords */
+#define putbitsmropshort(src,x,w,pdst) {\
+    unsigned long   _tmpmask; \
+    unsigned long   _t1; \
+    maskpartialbits ((x), (w), _tmpmask); \
+    _t1 = SCRRIGHT((src), (x)); \
+    *pdst = DoMaskMergeRop(_t1, *pdst, _tmpmask); \
+}
+
+/* useful only when spanning destination longwords */
+#define putbitsmroplong(src,x,w,pdst) { \
+    unsigned long   _startmask, _endmask; \
+    int		    _m; \
+    unsigned long   _t1; \
+    _m = PPW - (x); \
+    _startmask = cfbstarttab[x]; \
+    _endmask = cfbendtab[(w) - _m]; \
+    _t1 = SCRRIGHT((src), (x)); \
+    pdst[0] = DoMaskMergeRop(_t1,pdst[0],_startmask); \
+    _t1 = SCRLEFT ((src),_m); \
+    pdst[1] = DoMaskMergeRop(_t1,pdst[1],_endmask); \
+}
+
+#define putbitsmrop(src,x,w,pdst) \
+if ((x) + (w) <= PPW) {\
+    putbitsmropshort(src,x,w,pdst); \
+} else { \
+    putbitsmroplong(src,x,w,pdst); \
 }
 
 #if GETLEFTBITS_ALIGNMENT == 1
