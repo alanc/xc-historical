@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.146 93/08/15 16:15:06 converse Exp $ */
+/* $XConsortium: Event.c,v 1.148 93/08/15 17:34:00 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -843,6 +843,9 @@ static Boolean _XtDispatchEventToWidget(event, widget, mask, pd)
     return (was_dispatched|call_tm);
 }
 
+#define KnownButtons (Button1MotionMask|Button2MotionMask|Button3MotionMask|\
+		      Button4MotionMask|Button5MotionMask)
+
 #if NeedFunctionPrototypes
 Boolean XtDispatchEventToWidget(
     Widget widget,
@@ -853,10 +856,15 @@ Boolean XtDispatchEventToWidget(widget, event)
     XEvent* event;
 #endif
 {
-    return (_XtDispatchEventToWidget(event, widget,
-				     _XtConvertTypeToMask(event->xany.type),
-				     _XtGetPerDisplay(event->xany.display))
-	    ? True : False);
+    EventMask	mask;
+    Boolean	was_dispatched;
+
+    mask = _XtConvertTypeToMask(event->xany.type);
+    if (event->xany.type == MotionNotify)
+	mask |= (event->xmotion.state & KnownButtons);
+    was_dispatched = _XtDispatchEventToWidget(event, widget, mask, 
+				     _XtGetPerDisplay(event->xany.display));
+    return was_dispatched;
 }
 
 /*
@@ -1183,14 +1191,9 @@ static Boolean DecideToDispatch(event)
       case ButtonPress:
       case ButtonRelease:	grabType = remap;
 				break;
-
       case MotionNotify:	grabType = ignore;
-#define XKnownButtons (Button1MotionMask|Button2MotionMask|Button3MotionMask|\
-                       Button4MotionMask|Button5MotionMask)
-	                        mask |= (event->xmotion.state & XKnownButtons);
-#undef XKnownButtons
+	                        mask |= (event->xmotion.state & KnownButtons);
 				break;
-
       case EnterNotify:		grabType = ignore;
 	                        break;
     }
