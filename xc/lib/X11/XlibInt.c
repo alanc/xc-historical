@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.197 93/10/23 17:23:29 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.198 93/10/24 15:51:27 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -1300,7 +1300,7 @@ _XIDHandler(dpy)
 	else {
 	    GetReq(XCMiscGetVersion, vreq);
 	    vreq->reqType = qrep.major_opcode;
-	    vreq->miscReqType = X_XCMiscGetXIDRange;
+	    vreq->miscReqType = X_XCMiscGetVersion;
 	    vreq->majorVersion = XCMiscMajorVersion;
 	    vreq->minorVersion = XCMiscMinorVersion;
 	    if (!_XReply (dpy, (xReply *)&vrep, 0, xTrue))
