@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER))
-  static char Xrcs_id[] = "$XConsortium: List.c,v 1.10 88/10/23 12:45:31 swick Exp $";
+  static char Xrcs_id[] = "$XConsortium: List.c,v 1.12 89/02/14 14:06:55 kit Exp $";
   static char rcsid_module_c[] = "$oHeader: List.c,v 1.4 88/08/30 16:36:03 kit Exp $";
 #endif
 
@@ -12,7 +12,7 @@
  *	By:		Chris D. Peterson
  *                      MIT - Project Athena
  *
- *      $Author: swick $
+ *      $Author: kit $
  *	
  */
 
@@ -775,16 +775,13 @@ String * params;
 Cardinal *num_params;
 {
   int item;
-
-  XtListUnhighlight(w);		/* Unhighlight current item. */
-
-/* Find item and if out of range then return. */
+  ListWidget lw = (ListWidget) w;
 
   if ( (CvtToItem(w, event->xbutton.x, event->xbutton.y, &item))
       == OUT_OF_RANGE)
-    return;
-
-  XtListHighlight(w, item);	/* Highlight new item. */
+    XtListUnhighlight(w);		        /* Unhighlight current item. */
+  else if ( lw->list.is_highlighted != item )   /* If this item is not */
+    XtListHighlight(w, item);	                /* highlighted then do it. */
 }
 
 /*
