@@ -1,5 +1,5 @@
 
-/* $XConsortium$ */
+/* $XConsortium: miUtils.c,v 5.1 91/02/16 09:56:19 rws Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -133,14 +133,14 @@ ddFLOAT		b[][4];
      result = &(m[0][0]);
      for (i = 0; i < 4; i++) {
 	for (j = 0; j < 4; j++) {
-	  *result = 0.0;
-	  col_ptr = &(b[i][0]);
-	  row_ptr = &(a[0][j]);
-	  for (k = 0; k < 4; k++) {
-	    *result += *row_ptr * *(col_ptr++);
-	    row_ptr += 4;
-	  }
-	  result++;
+		*result = 0.0;
+		col_ptr = &(b[i][0]);
+		row_ptr = &(a[0][j]);
+		for (k = 0; k < 4; k++) {
+			*result += *row_ptr * *(col_ptr++);
+			row_ptr += 4;
+		}
+		result++;
 	}
      }
     } else {
@@ -149,17 +149,17 @@ ddFLOAT		b[][4];
      result = &(t[0][0]);
      for (i = 0; i < 4; i++) {
 	for (j = 0; j < 4; j++) {
-	  *result = 0.0;
-	  col_ptr = &(b[i][0]);
-	  row_ptr = &(a[0][j]);
-	  for (k = 0; k < 4; k++) {
-	    *result += *row_ptr * *(col_ptr++);
-	    row_ptr += 4;
-	  }
-	  result++;
+		*result = 0.0;
+		col_ptr = &(b[i][0]);
+		row_ptr = &(a[0][j]);
+		for (k = 0; k < 4; k++) {
+			*result += *row_ptr * *(col_ptr++);
+			row_ptr += 4;
+		}
+		result++;
 	}
      }
-     bcopy( t, m, 16*sizeof(float));
+     bcopy( (char *)t, (char *)m, 16*sizeof(float));
     }
 }
 
@@ -250,12 +250,43 @@ miListHeader    *vinput;
 
 /*++
  |
+ |  Function Name:	miTransformVector
+ |
+ |  Function Description: Transform a 3D point by the 3x3
+ |  portion of a 4x4 matrix
+ |  Added 4/8/91 by JSH. 
+ |
+ --*/
+void
+miTransformVector (p3, matrix, xp3)
+/* in */
+ddVector3D   *p3;
+ddFLOAT     matrix[4][4];
+/* out */
+ddVector3D	*xp3;
+{
+
+    xp3->x = matrix[0][0]*p3->x;
+    xp3->x += matrix[0][1]*p3->y;
+    xp3->x += matrix[0][2]*p3->z;
+
+    xp3->y =  matrix[1][0]*p3->x;
+    xp3->y +=  matrix[1][1]*p3->y;
+    xp3->y +=  matrix[1][2]*p3->z;
+
+    xp3->z =  matrix[2][0]*p3->x;
+    xp3->z +=  matrix[2][1]*p3->y;
+    xp3->z +=  matrix[2][2]*p3->z;
+
+}
+
+/*++
+ |
  |  Function Name:	miTransformPoint
  |
  |  Function Description: Transform a 4D point by a 4x4 matrix
  |
  --*/
-
 void
 miTransformPoint (p4, matrix, xp4)
 /* in */
@@ -264,27 +295,26 @@ ddFLOAT     matrix[4][4];
 /* out */
 ddCoord4D	*xp4;
 {
-    ddFLOAT	*f = &(matrix[0][0]);
 
-    xp4->x = (*f++)*p4->x;
-    xp4->x += (*f++)*p4->y;
-    xp4->x += (*f++)*p4->z;
-    xp4->x += (*f++)*p4->w;
+    xp4->x = matrix[0][0]*p4->x;
+    xp4->x += matrix[0][1]*p4->y;
+    xp4->x += matrix[0][2]*p4->z;
+    xp4->x += matrix[0][3]*p4->w;
 
-    xp4->y =  (*f++)*p4->x;
-    xp4->y +=  (*f++)*p4->y;
-    xp4->y +=  (*f++)*p4->z;
-    xp4->y +=  (*f++)*p4->w;
+    xp4->y =  matrix[1][0]*p4->x;
+    xp4->y +=  matrix[1][1]*p4->y;
+    xp4->y +=  matrix[1][2]*p4->z;
+    xp4->y +=  matrix[1][3]*p4->w;
 
-    xp4->z =  (*f++)*p4->x;
-    xp4->z +=  (*f++)*p4->y;
-    xp4->z +=  (*f++)*p4->z;
-    xp4->z +=  (*f++)*p4->w;
+    xp4->z =  matrix[2][0]*p4->x;
+    xp4->z +=  matrix[2][1]*p4->y;
+    xp4->z +=  matrix[2][2]*p4->z;
+    xp4->z +=  matrix[2][3]*p4->w;
 
-    xp4->w =  (*f++)*p4->x;
-    xp4->w +=  (*f++)*p4->y;
-    xp4->w +=  (*f++)*p4->z;
-    xp4->w +=  (*f)*p4->w;
+    xp4->w =  matrix[3][0]*p4->x;
+    xp4->w +=  matrix[3][1]*p4->y;
+    xp4->w +=  matrix[3][2]*p4->z;
+    xp4->w +=  matrix[3][3]*p4->w;
 }
 
 /*++
@@ -366,10 +396,10 @@ miMatInverse( a )
 	    a[colum][l] /= pivot[i];
 	for (j = 0; j < 4; j++)
 	    if (j != colum) {
-		themax = a[j][colum];
-		a[j][colum] = 0.0;
-		for (l = 0; l < 4; l++)
-		    a[j][l] -= a[colum][l] * themax;
+	      themax = a[j][colum];
+	      a[j][colum] = 0.0;
+	      for (l = 0; l < 4; l++)
+		a[j][l] -= a[colum][l] * themax;
 	    }
     }
 
