@@ -71,19 +71,33 @@ InstallManPage(X,$(MANDIR))
 
 /**/# don't name your log file make.log when you run this ...
 World::
-	@echo Beginning full build of the X Window System.
-	date
+	@echo ""
+	@echo "Building Release 3 of the X Window System"
+	@echo ""
+	@echo "**************************************************************"
+	@echo "* Did you remember to check the configuration parameters in  *
+	@echo "* the directory util/imake.includes and set BOOTSTRAPCFLAGS? *"
+	@echo "**************************************************************"
+	@echo ""
+	@echo "Making imake; BOOTSTRAPCFLAGS better be right..."
+	@date
 	cd $(IMAKESRC); $(MAKE) clean; $(MAKE) BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)"
 	-$(MV) Makefile Makefile.bak
+	@echo "Making new, system-dependent makefiles from Imakefiles"
+	@date
 	$(MAKE) -f Makefile.bak Makefile
 	$(MAKE) Makefiles
+	@echo "Doing make clean to get rid of any previous build."
+	@date
 	$(MAKE) clean
+	@echo "Appending dependencies to Makefiles"
+	@date
 	$(MAKE) depend
-	@echo Starting full compile.
-	date
+	@echo "Starting compile of core distribution."
+	@date
 	$(MAKE) $(WORLDOPTS)
-	@echo Build of the X Window System complete.
-	date
+	@echo "Build of the X Window System complete."
+	@date
 
 Everything::
 	cd $(IMAKESRC); $(MAKE) BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)"
