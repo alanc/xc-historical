@@ -26,7 +26,7 @@
  ********************************************************/
 
 #include "xkbcomp.h"
-#include "xkbio.h"
+#include "xkbfile.h"
 #include "tokens.h"
 #include "expr.h"
 
@@ -134,7 +134,8 @@ register int i;
 		    new->groupWidth[i]= 0;
 		    return False;
 		}
-		memcpy(new->syms[i],old->syms[i],width*sizeof(KeySym));
+		memcpy((char *)new->syms[i],(char *)old->syms[i],
+						width*sizeof(KeySym));
 	    }
 	    if (old->acts[i]!=NULL) {
 		new->acts[i]= uTypedCalloc(width,XkbAction);
@@ -142,7 +143,8 @@ register int i;
 		    new->acts[i]= NULL;
 		    return False;
 		}
-		memcpy(new->acts[i],old->acts[i],width*sizeof(XkbAction));
+		memcpy((char *)new->acts[i],(char *)old->acts[i],
+						width*sizeof(XkbAction));
 	    }
 	}
     }
@@ -291,26 +293,23 @@ MergeKeyGroups(info,into,from,group,clobber,report)
 {
 KeySym	*	resultSyms;
 XkbAction *	resultActs;
-int		nMerge,resultWidth;
+int		resultWidth;
 register int	i;
 
     report= report&&(into->fileID==from->fileID);
     if (into->groupWidth[group]>=from->groupWidth[group]) {
 	resultSyms= into->syms[group];
 	resultActs= into->acts[group];
-	nMerge= from->groupWidth[group];
 	resultWidth= into->groupWidth[group];
     }
     else {
 	resultSyms= from->syms[group];
 	resultActs= from->acts[group];
-	nMerge= into->groupWidth[group];
 	resultWidth= from->groupWidth[group];
     }
     if (resultSyms==NULL) {
 	resultSyms= uTypedCalloc(resultWidth,KeySym);
 	if (!resultSyms) {
-
 	    uInternalError("Couldn't allocate symbols for group merge\n");
 	    uAction("Group %d of key %s not merged\n",group,
 						longText(into->name));
@@ -320,28 +319,31 @@ register int	i;
     if ((resultActs==NULL)&&(into->acts[group]||from->acts[group])) {
 	resultActs= uTypedCalloc(resultWidth,XkbAction);
 	if (!resultActs) {
-
 	    uInternalError("Couldn't allocate actions for group merge\n");
 	    uAction("Group %d of key %s not merged\n",group,
 						longText(into->name));
 	    return False;
 	}
     }
-    for (i=0;i<nMerge;i++) {
+    for (i=0;i<resultWidth;i++) {
 	KeySym fromSym,toSym;
-	fromSym= (from->syms[group]?from->syms[group][i]:NoSymbol);
-	toSym= (into->syms[group]?into->syms[group][i]:NoSymbol);
+	if (from->syms[group] && (i<from->groupWidth[group]))
+	     fromSym= from->syms[group][i];
+	else fromSym= NoSymbol;
+	if (into->syms[group] && (i<into->groupWidth[group]))
+	     toSym= into->syms[group][i];
+	else toSym= NoSymbol;
 	if ((fromSym==NoSymbol)||(fromSym==toSym))
 	    resultSyms[i]= toSym;
 	else if (toSym==NoSymbol)
 	    resultSyms[i]= fromSym;
 	else {
-	    if (report) {
+	    if ((report)&&(warningLevel>0)) {
 		uWarning("Multiple symbols for level %d/group %d on key %s\n",
 						i,group,longText(into->name));
 		uAction("Using %s, ignoring %s\n",
-				keysymText(clobber?fromSym:toSym),
-				keysymText(clobber?toSym:fromSym));
+			XkbKeysymText(clobber?fromSym:toSym,XkbMessage),
+			XkbKeysymText(clobber?toSym:fromSym,XkbMessage));
 	    }
 	    if (clobber)	resultSyms[i]= fromSym;
 	    else		resultSyms[i]= toSym;
@@ -359,7 +361,7 @@ register int	i;
 		resultActs[i]= *fromAct;
 	    }
 	    else {
-		if (report) {
+		if ((report)&&(warningLevel>0)) {
 		  uWarning("Multiple actions for level %d/group %d on key %s\n",
 						  i,group,longText(into->name));
 		  uAction("Using %s, ignoring %s\n",
@@ -375,6 +377,7 @@ register int	i;
 	uFree(into->syms[group]);
     if ((from->syms[group]!=NULL)&&(resultSyms!=from->syms[group]))
 	uFree(from->syms[group]);
+    into->groupWidth[group]= resultWidth;
     into->syms[group]= resultSyms;
     from->syms[group]= NULL;
     into->symsDefined|= (1<<group);
@@ -408,6 +411,14 @@ register int i;
 		MergeKeyGroups(info,into,from,i,clobber,report);
 	    }
 	}
+    }
+    if (clobber) {
+	if (from->behavior.type!=XkbKB_Default)
+	    into->behavior= from->behavior;
+	if (from->repeat!=RepeatUndefined)
+	    into->repeat= from->repeat;
+	if (from->type!=NullStringToken)
+	    into->type= from->type;
     }
     return True;
 }
@@ -458,9 +469,10 @@ ModMapEntry *	mm;
 		    ignore= new->modifier;
 		}
 		uError("Symbol %s added to map for multiple modifiers\n",
-					keysymText(new->u.keySym,XkbMessage));
-		uAction("Using %s, ",modIndexText(use,XkbMessage));
-		uInformation("ignoring %s\n",modIndexText(ignore,XkbMessage));
+				XkbKeysymText(new->u.keySym,XkbMessage));
+		uAction("Using %s, ",XkbModIndexText(use,XkbMessage));
+		uInformation("ignoring %s\n",
+					XkbModIndexText(ignore,XkbMessage));
 		mm->modifier= use;
 	    }
 	    return True;
@@ -479,8 +491,9 @@ ModMapEntry *	mm;
 		}
 		uError("Key <%s> added to map for multiple modifiers\n",
 						longText(new->u.keyName));
-		uAction("Using %s, ",modIndexText(use,XkbMessage));
-		uInformation("ignoring %s\n",modIndexText(ignore,XkbMessage));
+		uAction("Using %s, ",XkbModIndexText(use,XkbMessage));
+		uInformation("ignoring %s\n",
+				     XkbModIndexText(ignore,XkbMessage));
 		mm->modifier= use;
 	    }
 	    return True;
@@ -490,7 +503,7 @@ ModMapEntry *	mm;
     if (mm==NULL) {
 	uInternalError("Couldn't allocate modifier map entry\n");
 	uAction("Modifier map for %s will be incomplete\n",
-					modIndexText(new->modifier,XkbMessage));
+				XkbModIndexText(new->modifier,XkbMessage));
 	return False;
     }
     *mm= *new;
@@ -657,7 +670,8 @@ ExprResult	tmp;
 	return False;
     }
     key->symsDefined|= (1<<ndx);
-    memcpy(key->syms[ndx],value->value.list.syms,nSyms*sizeof(KeySym));
+    memcpy((char *)key->syms[ndx],(char *)value->value.list.syms,
+							nSyms*sizeof(KeySym));
     uFree(value->value.list.syms);
     value->value.list.syms= NULL;
     return True;
@@ -683,9 +697,11 @@ XkbAnyAction *	toAct;
 	return False;
 
     if (!info->allowActions) {
-	uWarning("Alternate symbol sets cannot define key actions\n");
-	uAction("Ignoring actions assigned to group %d of key <%s>\n",ndx,
+	if (warningLevel>0) {
+	    uWarning("Alternate symbol sets cannot define key actions\n");
+	    uAction("Ignoring actions assigned to group %d of key <%s>\n",ndx,
 							  longText(key->name));
+	}
 	return False;
     }
     if (value==NULL) {
@@ -772,11 +788,11 @@ Bool 		ok= True;
 ExprResult	tmp;
 
     if (uStrCaseCmp(field,"type")==0) {
-	if (arrayNdx!=NULL) {
+	if ((arrayNdx!=NULL)&&(warningLevel>0)) {
 	    uWarning("The type field of a key symbol map is not an array\n");
 	    uAction("Illegal subscript ignored\n");
 	}
-	if (!ExprResolveString(value,&tmp,NULL,NULL)) {
+	if ((!ExprResolveString(value,&tmp,NULL,NULL))&&(warningLevel>0)) {
 	    uWarning("The type field of a key symbol map must be a string\n");
 	    uAction("Ignoring illegal type definition\n");
 	}
@@ -960,7 +976,7 @@ Bool 		ok;
 	else {
 	    uError("Modmap entries may contain only key names or keysyms\n");
 	    uAction("Illegal definition for %s modifier ignored\n",
-					modIndexText(tmp.modifier,XkbMessage));
+				XkbModIndexText(tmp.modifier,XkbMessage));
 	    continue;
 	}
 
@@ -1013,8 +1029,6 @@ ParseCommon	*stmt;
 		if (!HandleModMapDef((ModMapDef *)stmt,xkb,mergeMode,info))
 		    info->errorCount++;
 		break;
-		uInternalError("modifier mappings not implemented yet...\n");
-		break;
 	    default:
 		uInternalError(
 			"Unexpected statement type %d in HandleSymbolsFile\n",
@@ -1035,9 +1049,9 @@ Bool
 FindNamedKey(xkb,name,kc_rtrn)
     XkbDescPtr		xkb;
     unsigned long	name;
-    int	*		kc_rtrn;
+    unsigned int *	kc_rtrn;
 {
-register int n;
+register unsigned n;
 
     if (xkb&&xkb->names&&xkb->names->keys) {
 	for (n=xkb->min_key_code;n<=xkb->max_key_code;n++) {
@@ -1056,7 +1070,7 @@ Bool
 FindKeyForSymbol(xkb,sym,kc_rtrn)
     XkbDescPtr		xkb;
     KeySym		sym;
-    int	*		kc_rtrn;
+    unsigned int *	kc_rtrn;
 {
 register int 	i, j;
 register Bool	gotOne;
@@ -1064,7 +1078,7 @@ register Bool	gotOne;
     j= 0;
     do {
         gotOne= False;
-        for (i = xkb->min_key_code; i <= xkb->max_key_code; i++) {
+        for (i = xkb->min_key_code; i <= (int)xkb->max_key_code; i++) {
             if ( j<(int)XkbKeyNumSyms(xkb,i) ) {
                 gotOne = True;
                 if ((XkbKeySym(xkb,i,j)==sym)) {
@@ -1084,7 +1098,7 @@ FindNamedType(xkb,name,type_rtrn)
     StringToken		name;
     unsigned *		type_rtrn;
 {
-register int n;
+register unsigned n;
 
     if (xkb&&xkb->map&&xkb->map->types) {
 	for (n=0;n<xkb->map->num_types;n++) {
@@ -1099,7 +1113,7 @@ register int n;
 
 static Bool
 CopySymbolsDef(result,key)
-    XkbFileResult *	result;
+    XkbFileInfo *	result;
     KeyInfo *		key;
 {
 register int	i;
@@ -1112,9 +1126,11 @@ XkbDescPtr	xkb;
 
     xkb= &result->xkb;
     if (!FindNamedKey(xkb,key->name,&kc)) {
-	uWarning("Key <%s> not found in %s keycodes\n",longText(key->name),
+	if (warningLevel>=5) {
+	    uWarning("Key <%s> not found in %s keycodes\n",longText(key->name),
 						stText(xkb->names->keycodes));
-	uAction("Symbols ignored\n");
+	    uAction("Symbols ignored\n");
+	}
 	return False;
     }
 
@@ -1139,26 +1155,32 @@ XkbDescPtr	xkb;
 	    else tmp= XkbTwoLevelIndex;
 	}
 	else {
-	    uWarning("No automatic type for keys with %d symbols\n",width);
-	    uAction("Using TWO_LEVEL for the <%s> key (keycode %d)\n",
+	    if (warningLevel>=5) {
+		uWarning("No automatic type for keys with %d symbols\n",width);
+		uAction("Using TWO_LEVEL for the <%s> key (keycode %d)\n",
 							longText(key->name),kc);
+	    }
 	    tmp= XkbTwoLevelIndex;
 	}
     }
     else if (!FindNamedType(xkb,key->type,&tmp)) {
-	uWarning("Type \"%s\" is not defined\n",stText(key->type));
-	uAction("Using TWO_LEVEL for the <%s> key (keycode %d)\n",
+	if (warningLevel>=3) {
+	    uWarning("Type \"%s\" is not defined\n",stText(key->type));
+	    uAction("Using TWO_LEVEL for the <%s> key (keycode %d)\n",
 							longText(key->name),kc);
+	}
 	tmp= XkbTwoLevelIndex;
     }
     else xkb->server->explicit[kc]|= XkbExplicitKeyTypeMask;
 
     type= &xkb->map->types[tmp];
     if (type->group_width<width) {
-	uWarning("Type \"%s\" has group_width %d, but <%s> has %d symbols\n",
+	if (warningLevel>0) {
+	    uWarning("Type \"%s\" has %d levels, but <%s> has %d symbols\n",
 					stText(type->name),type->group_width,
 					longText(key->name),width);
-	uAction("Ignoring extra symbols\n");
+	    uAction("Ignoring extra symbols\n");
+	}
 	width= type->group_width;
     }
     else if (type->group_width>width)
@@ -1205,7 +1227,7 @@ XkbDescPtr	xkb;
 	xkb->server->explicit[kc]|= XkbExplicitBehaviorMask;
     }
     if (key->repeat!=RepeatUndefined) {
-	result->defined|=PerKeyRepeatDefined;
+	result->defined|=XkbPerKeyRepeatDefined;
 	if (key->repeat==RepeatYes)
 	     result->repeat[kc/8]|= (1<<(kc%8));
 	else result->repeat[kc/8]&= ~(1<<(kc%8));
@@ -1216,7 +1238,7 @@ XkbDescPtr	xkb;
 
 static Bool
 CopyModMapDef(result,entry)
-    XkbFileResult *	result;
+    XkbFileInfo *	result;
     ModMapEntry *	entry;
 {
 unsigned	kc;
@@ -1224,22 +1246,26 @@ XkbDescPtr	xkb;
 
     xkb= &result->xkb;
     if ((!entry->haveSymbol)&&(!FindNamedKey(xkb,entry->u.keyName,&kc))) {
-	uWarning("Key <%s> not found in %s keycodes\n",
+	if (warningLevel>=5) {
+	    uWarning("Key <%s> not found in %s keycodes\n",
 						longText(entry->u.keyName),
 						stText(xkb->names->keycodes));
-	uAction("Modifier map entry for %s not updated\n",
-				modIndexText(entry->modifier,XkbMessage));
+	    uAction("Modifier map entry for %s not updated\n",
+				XkbModIndexText(entry->modifier,XkbMessage));
+	}
 	return False;
     }
     else if (entry->haveSymbol&&(!FindKeyForSymbol(xkb,entry->u.keySym,&kc))) {
-	uWarning("Symbol %s not found in the %s symbol map\n",
-					keysymText(entry->u.keySym,XkbMessage),
-					stText(xkb->names->symbols));
-	uAction("Modifier map entry for %s not updated\n",
-				modIndexText(entry->modifier,XkbMessage));
+	if (warningLevel>5) {
+	    uWarning("Symbol %s not found in the %s symbol map\n",
+				XkbKeysymText(entry->u.keySym,XkbMessage),
+				stText(xkb->names->symbols));
+	    uAction("Modifier map entry for %s not updated\n",
+				XkbModIndexText(entry->modifier,XkbMessage));
+	}
 	return False;
     }
-    result->defined|= ModMapDefined;
+    result->defined|= XkbModMapDefined;
     result->modmap[kc]|= (1<<entry->modifier);
     return True;
 }
@@ -1247,7 +1273,7 @@ XkbDescPtr	xkb;
 Bool
 CompileSymbols(file,result,mergeMode,allowActions)
     XkbFile *		file;
-    XkbFileResult *	result;
+    XkbFileInfo *	result;
     unsigned	 	mergeMode;
     Bool	 	allowActions;
 {
