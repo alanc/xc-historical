@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: ws_color.c,v 1.2 91/05/15 18:06:58 rws Exp $ */
+/* $XConsortium: ws_color.c,v 1.3 91/07/08 11:16:31 keith Exp $ */
 
 /* 
  * ws_color.c - device specific color routines, stored in screen
@@ -31,62 +31,6 @@ SOFTWARE.
  * 		Cambridge Research Laboratory
  * Date:	Sat January 24 1990
  */
-
-/* $Log:	ws_color.c,v $
- * Revision 1.2  91/05/15  18:06:58  rws
- * put cfbExpandDirectColors into StoreColors
- * 
- * Revision 1.1  91/05/11  10:51:14  rws
- * Initial revision
- * 
- * Revision 1.8  90/12/12  12:33:44  edg
- * Added trick to wsInstallColormap() so that 8-bit TrueColor visual
- * works on color frame buffer machines.  Merged in this change with
- * earlier changes from WSE so all servers will work.
- * 
- * Revision 1.7  90/12/04  17:18:28  edg
- * Added extra test so that StaticGray visuals get installed correctly.
- * This is actually a work around for changes made by Joel G. for
- * TurboChannel mfb.
- * 
- * Revision 1.6  90/11/27  13:55:58  kalmin
- * in store colors, masked off pixel bit to create index for ioctl
- * 
- * Revision 1.5  90/11/26  15:25:16  kalmin
- * added code to support 24 planes to InstallColormap
- * 
- * Revision 1.4  90/10/02  12:09:29  gringort
- * fixed colormap init problems on monochrome screens
- * 
- * Revision 1.3  90/06/21  18:55:33  gringort
- * added wsMotionEvents
- * 
- * Revision 1.2  90/05/11  16:57:11  gringort
- *  snapshot works with monochrome
- * 
- * Revision 1.1  90/04/23  14:48:00  gringort
- * Initial revision
- * 
- * Revision 1.6  90/02/27  18:24:30  jg
- * fix for screen numbering, so that skipped screens should work.
- * 
- * Revision 1.5  90/02/25  12:59:49  jg
- * more code cleanup.
- * 
- * Revision 1.3  90/02/19  17:50:18  jg
- * fix implementation of StoreColors.
- * 
- * Revision 1.2  90/02/17  19:08:18  jg
- * clean up naming.
- * 
- * Revision 1.1  90/02/16  16:55:56  jg
- * Initial revision
- *
- */
-
-
-
-static char rcs_ident[] = "$Header: ws_color.c,v 1.2 91/05/15 18:06:58 rws Exp $";
 
 #include <stdio.h>
 #include <sys/types.h>
