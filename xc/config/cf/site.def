@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.81 93/09/04 21:40:09 rws Exp $
+XCOMM site:  $XConsortium: site.def,v 1.82 93/09/04 21:43:35 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -98,7 +98,7 @@ clean::									@@\
 #ifdef InstallCmd
 #undef InstallCmd
 #endif
-#define InstallCmd $(SCRIPTSRC)/syminst.sh -DIR /x11/$(CURRENT_DIR)
+#define InstallCmd $(CONFIGSRC)/util/syminst.sh -DIR /x11/$(CURRENT_DIR)
 #endif
 
 #if defined(VaxArchitecture) || defined(PegasusArchitecture)
