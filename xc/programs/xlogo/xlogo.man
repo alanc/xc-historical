@@ -16,23 +16,18 @@ following:
 This option indicates that the logo window should be shaped rather than
 rectangular.
 .SH RESOURCES
+The default width and the default height are each 100 pixels.
 This program uses the \fILogo\fP widget in the Athena widget set.  It
-understands all of the core resource names and classes as well as:
-.TP 8
-.B width (\fPclass\fB Width)
-Specifies the width of the logo.  The default width is 100 pixels.
-.TP 8
-.B height (\fPclass\fB Height)
-Specifies the height of the logo.  The default height is 100 pixels.
+understands all of the Simple widget resource names and classes as well as:
 .TP 8
 .B foreground (\fPclass\fB Foreground)
 Specifies the color for the logo.  The default is depends on whether
 \fIreverseVideo\fP is specified.  If \fIreverseVideo\fP is specified
-the default is \fIlwhite\fP, otherwise the default is \fIblack\fP.
+the default is \fIXtDefaultForeground\fP, otherwise the default is 
+\fIXtDefaultBackground\fP.
 .TP 8
-.B reverseVideo (\fPclass\fB ReverseVideo)
-This option indicates that reverse video should be simulated, changing the
-default value for the foreground, background and border colors.
+.B shapeWindow (\fPclass\fB ShapeWindow) 
+Specifies that the window is shaped to the X logo.  The default is False.
 .SH WIDGETS
 In order to specify resources, it is useful to know the hierarchy of
 the widgets which compose \fIxlogo\fR.  In the notation below,
