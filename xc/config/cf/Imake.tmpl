@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.72 89/12/06 09:11:07 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.73 89/12/06 20:20:53 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -283,6 +283,9 @@
 #endif
 #ifndef HasNdbm
 #define HasNdbm			NO
+#endif
+#ifndef HasDESLibrary
+#define HasDESLibrary		NO	/* if you have any DES library */
 #endif
 
 #ifndef HasSunOSSharedLibraries
