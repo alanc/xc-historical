@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: tsource.c,v 2.16 89/08/31 19:11:28 converse Exp $";
+    "$XConsortium: tsource.c,v 2.17 89/09/01 17:36:42 kit Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -294,23 +294,24 @@ Boolean include;
     }
     return index;
 }
-
-static XawTextPosition 
-Search(w, direction, block)
+/*ARGSUSED*/
+static XawTextPosition Search(w, position, direction, block)
 Widget			w;
+XawTextPosition		position;
 XawTextScanDirection	direction;
-XawTextBlock		block;
+XawTextBlock		*block;
 {
-    TocSourceWidget source = (TocSourceWidget) w;
-    Toc toc = source->toc_source.toc;
-
+    /* TocSourceWidget source = (TocSourceWidget) w;
+     * Toc toc = source->toc_source.toc;
+     * not implemented
+     */
     return XawTextSearchError;
 }
 
 /* Public definitions. */
 
-static void
-Initialize(request, new)
+/* ARGSUSED*/
+static void Initialize(request, new)
 Widget request, new;
 {
     Toc toc;
