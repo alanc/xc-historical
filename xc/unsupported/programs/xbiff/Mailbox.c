@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.18 89/03/31 09:47:33 jim Exp $
+ * $XConsortium: Mailbox.c,v 1.19 89/04/11 19:21:26 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -87,13 +87,13 @@ static XtResource resources[] = {
 	offset (volume), XtRString, "33"},
     { XtNonceOnly, XtCBoolean, XtRBoolean, sizeof(Boolean),
 	offset (once_only), XtRImmediate, (caddr_t)False },
-    { XtNfullPixmap, XtCFullPixmap, XtRPixmap, sizeof(Pixmap),
+    { XtNfullPixmap, XtCPixmap, XtRPixmap, sizeof(Pixmap),
 	offset (full_bitmap), XtRString, "flagup" },
-    { XtNfullPixmapMask, XtCFullPixmapMask, XtRPixmap, sizeof(Pixmap),
+    { XtNfullPixmapMask, XtCPixmapMask, XtRPixmap, sizeof(Pixmap),
 	offset (full_bitmap_mask), XtRPixmap, (caddr_t) &nopix },
-    { XtNemptyPixmap, XtCFullPixmap, XtRPixmap, sizeof(Pixmap),
+    { XtNemptyPixmap, XtCPixmap, XtRPixmap, sizeof(Pixmap),
 	offset (empty_bitmap), XtRString, "flagdown" },
-    { XtNemptyPixmap, XtCFullPixmap, XtRPixmap, sizeof(Pixmap),
+    { XtNemptyPixmap, XtCPixmapMask, XtRPixmap, sizeof(Pixmap),
 	offset (empty_bitmap_mask), XtRPixmap, (caddr_t) &nopix },
     { XtNflip, XtCFlip, XtRBoolean, sizeof(Boolean),
 	offset (flip), XtRString, "true" },

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.h,v 1.13 89/03/30 16:05:44 jim Exp $
+ * $XConsortium: Mailbox.h,v 1.14 89/04/11 19:21:30 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -38,10 +38,8 @@
 
 #define XtCCheckCommand		"CheckCommand"
 #define XtCVolume		"Volume"
-#define XtCFullPixmap		"FullPixmap"
-#define XtCFullPixmapMask	"FullPixmapMask"
-#define XtCEmptyPixmap		"EmptyPixmap"
-#define XtCEmptyPixmapMask	"EmptyPixmapMask"
+#define XtCPixmap		"Pixmap"
+#define XtCPixmapMask		"PixmapMask"
 #define XtCFlip			"Flip"
 
 
