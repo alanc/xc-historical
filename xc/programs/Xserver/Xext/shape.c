@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shape.c,v 1.9 89/04/13 13:29:09 keith Exp $ */
+/* $XConsortium: shape.c,v 1.10 89/04/18 13:23:14 rws Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -102,14 +102,15 @@ ExtensionEntry	*extEntry;
 }
 
 static
-RegionOperate (pWin, destRgnp, srcRgn, op, xoff, yoff, create)
+RegionOperate (client, pWin, kind, destRgnp, srcRgn, op, xoff, yoff, create)
+    ClientPtr	client;
     WindowPtr	pWin;
+    int		kind;
     RegionPtr	*destRgnp, srcRgn;
     int		op;
     int		xoff, yoff;
     RegionPtr	(*create)();	/* creates a reasonable *destRgnp */
 {
-    int	ret = Success;
     ScreenPtr	pScreen = pWin->drawable.pScreen;
 
     if (xoff || yoff)
@@ -145,18 +146,23 @@ RegionOperate (pWin, destRgnp, srcRgn, op, xoff, yoff, create)
 	    (*pScreen->Subtract) (*destRgnp, srcRgn, *destRgnp);
 	break;
     default:
-	ret = BadValue;
+	client->errorValue = op;
+	return BadValue;
     }
     if (srcRgn)
 	(*pScreen->RegionDestroy) (srcRgn);
-    return ret;
+    SetShape (pWin);
+    SendShapeNotify (pWin, kind);
+    return Success;
 }
 
+/*ARGSUSED*/
 static RegionPtr
-RectsToRegion (pScreen, nrects, prect)
+RectsToRegion (pScreen, nrects, prect, ctype)
     ScreenPtr	pScreen;
     int		nrects;
     xRectangle	*prect;
+    int		ctype;
 {
     RegionPtr	result, thisrect;
     BoxRec	box;
@@ -180,6 +186,7 @@ RectsToRegion (pScreen, nrects, prect)
     return result;
 }
 
+/*ARGSUSED*/
 static RegionPtr
 BitmapToRegion (pScreen, pPixmap)
     ScreenPtr	pScreen;
@@ -254,11 +261,10 @@ ProcShapeRectangles (client)
     ScreenPtr		pScreen;
     REQUEST(xShapeRectanglesReq);
     xRectangle		*prects;
-    int		        nrects;
+    int		        nrects, ctype;
     RegionPtr		srcRgn;
     RegionPtr		*destRgn;
     RegionPtr		(*createDefault)();
-    int			ret;
 
     REQUEST_AT_LEAST_SIZE (xShapeRectanglesReq);
     pWin = LookupWindow (stuff->dest, client);
@@ -274,22 +280,28 @@ ProcShapeRectangles (client)
 	createDefault = CreateClipShape;
 	break;
     default:
+	client->errorValue = stuff->destKind;
 	return BadValue;
+    }
+    if ((stuff->ordering != Unsorted) && (stuff->ordering != YSorted) &&
+	(stuff->ordering != YXSorted) && (stuff->ordering != YXBanded))
+    {
+	client->errorValue = stuff->ordering;
+        return BadValue;
     }
     pScreen = pWin->drawable.pScreen;
     nrects = ((stuff->length  << 2) - sizeof(xShapeRectanglesReq));
     if (nrects & 4)
-	return(BadLength);
+	return BadLength;
     nrects >>= 3;
     prects = (xRectangle *) &stuff[1];
-    srcRgn = RectsToRegion (pScreen, nrects, prects);
-    ret = RegionOperate (pWin, destRgn, srcRgn, (int)stuff->op,
-			 stuff->xOff, stuff->yOff, createDefault);
-    if (ret == Success) {
-	SetShape (pWin);
-	SendShapeNotify (pWin, (int)stuff->destKind);
-    }
-    return ret;
+    ctype = VerifyRectOrder(nrects, prects, (int)stuff->ordering);
+    if (ctype < 0)
+	return BadMatch;
+    srcRgn = RectsToRegion (pScreen, nrects, prects, ctype);
+    return RegionOperate (client, pWin, (int)stuff->destKind,
+			  destRgn, srcRgn, (int)stuff->op,
+			  stuff->xOff, stuff->yOff, createDefault);
 }
 
 /**************
@@ -306,7 +318,6 @@ ProcShapeMask (client)
     RegionPtr		*destRgn;
     PixmapPtr		pPixmap;
     RegionPtr		(*createDefault)();
-    int			ret;
 
     REQUEST_SIZE_MATCH (xShapeMaskReq);
     pWin = LookupWindow (stuff->dest, client);
@@ -322,6 +333,7 @@ ProcShapeMask (client)
 	createDefault = CreateClipShape;
 	break;
     default:
+	client->errorValue = stuff->destKind;
 	return BadValue;
     }
     pScreen = pWin->drawable.pScreen;
@@ -335,13 +347,9 @@ ProcShapeMask (client)
 	    return BadMatch;
 	srcRgn = BitmapToRegion (pScreen, pPixmap);
     }
-    ret = RegionOperate (pWin, destRgn, srcRgn, (int)stuff->op,
-			 stuff->xOff, stuff->yOff, createDefault);
-    if (ret == Success) {
-	SetShape (pWin);
-	SendShapeNotify (pWin, (int)stuff->destKind);
-    }
-    return ret;
+    return RegionOperate (client, pWin, (int)stuff->destKind,
+			  destRgn, srcRgn, (int)stuff->op,
+			  stuff->xOff, stuff->yOff, createDefault);
 }
 
 /************
@@ -360,7 +368,6 @@ ProcShapeCombine (client)
     RegionPtr		(*createDefault)();
     RegionPtr		(*createSrc)();
     RegionPtr		tmp;
-    int			ret;
 
     REQUEST_SIZE_MATCH (xShapeCombineReq);
     pDestWin = LookupWindow (stuff->dest, client);
@@ -376,6 +383,7 @@ ProcShapeCombine (client)
 	createDefault = CreateClipShape;
 	break;
     default:
+	client->errorValue = stuff->destKind;
 	return BadValue;
     }
     pScreen = pDestWin->drawable.pScreen;
@@ -393,6 +401,7 @@ ProcShapeCombine (client)
 	createSrc = CreateClipShape;
 	break;
     default:
+	client->errorValue = stuff->srcKind;
 	return BadValue;
     }
     if (pSrcWin->drawable.pScreen != pScreen)
@@ -405,13 +414,9 @@ ProcShapeCombine (client)
     } else
 	srcRgn = (*createSrc) (pSrcWin);
 
-    ret = RegionOperate (pDestWin, destRgn, srcRgn, (int)stuff->op,
-			 stuff->xOff, stuff->yOff, createDefault);
-    if (ret == Success) {
-	SetShape (pDestWin);
-	SendShapeNotify (pDestWin, (int)stuff->destKind);
-    }
-    return ret;
+    return RegionOperate (client, pDestWin, (int)stuff->destKind,
+			  destRgn, srcRgn, (int)stuff->op,
+			  stuff->xOff, stuff->yOff, createDefault);
 }
 
 /*************
@@ -439,6 +444,7 @@ ProcShapeOffset (client)
 	srcRgn = pWin->clipShape;
 	break;
     default:
+	client->errorValue = stuff->destKind;
 	return BadValue;
     }
     pScreen = pWin->drawable.pScreen;
@@ -644,6 +650,7 @@ ProcShapeSelectInput (client)
 	}
 	break;
     default:
+	client->errorValue = stuff->enable;
 	return BadValue;
     }
     return Success;
@@ -785,6 +792,7 @@ ProcShapeGetRectangles (client)
 	region = pWin->clipShape;
 	break;
     default:
+	client->errorValue = stuff->kind;
 	return BadValue;
     }
     if (!region) {
