@@ -1,4 +1,4 @@
-/* $XConsortium: phigs.h,v 5.6 91/06/26 17:03:49 hersh Exp $ */
+/* $XConsortium: phigs.h,v 5.7 91/07/12 20:24:23 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -963,7 +963,6 @@ typedef struct {
     Pfloat	specular_coef;	/* specular reflectance coefficient */
     Pgcolr	specular_colr;/* specular colour */
     Pfloat	specular_exp;	/* specular exponent */
-    Pfloat	transpar_coef;	/* transparency coefficient */
 } Prefl_props;
 
 typedef struct {
