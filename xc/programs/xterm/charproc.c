@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.106 89/10/30 14:50:19 jim Exp $
+ * $XConsortium: charproc.c,v 1.107 89/10/30 17:14:48 jim Exp $
  */
 
 
@@ -140,7 +140,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.106 89/10/30 14:50:19 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.107 89/10/30 17:14:48 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -2052,7 +2052,6 @@ XSetWindowAttributes *values;
 {
 	unsigned int width, height;
 	register TScreen *screen = &term->screen;
-	register int i, j;
 	int xpos, ypos, pr;
 	extern char *malloc();
 	XGCValues		xgcv;
@@ -2092,22 +2091,20 @@ XSetWindowAttributes *values;
 	  recolor_cursor (screen->pointer_cursor, 
 			  screen->mousecolor, screen->mousecolorback);
 
-	scrollbar_width = (term->misc.scrollbar ?  /* ||| */
-			   screen->scrollWidget->core.width : 0);  /* ||| */
-	i = 2 * screen->border + scrollbar_width;  /* ||| */
-	j = 2 * screen->border;		/* ||| */
+	scrollbar_width = (term->misc.scrollbar ?
+			   screen->scrollWidget->core.width : 0);
 
 
 	/* set defaults */
 	xpos = 1; ypos = 1; width = 80; height = 24;
-
 	pr = XParseGeometry (term->misc.geo_metry, &xpos, &ypos,
 			     &width, &height);
-	screen->max_col = width;	/* units in character cells */
-	screen->max_row = height;	/* units in character cells */
+	screen->max_col = (width - 1);	/* units in character cells */
+	screen->max_row = (height - 1);	/* units in character cells */
+	update_font_info (&term->screen, False);
 
-	width = (width * screen->fullVwin.f_width) + i;  /* ||| */
-	height = (height * screen->fullVwin.f_height) + j;  /* ||| */
+	width = screen->fullVwin.fullwidth;
+	height = screen->fullVwin.fullheight;
 
 	if ((pr & XValue) && (XNegative&pr)) 
 	  xpos += DisplayWidth(screen->display, DefaultScreen(screen->display))
@@ -2168,11 +2165,6 @@ XSetWindowAttributes *values;
 	XSetWMNormalHints (XtDisplay(term), term->core.parent->core.window,
 			   &sizehints);
 
-        screen->fullVwin.fullwidth = width;  /* ||| */
-        screen->fullVwin.fullheight = height;  /* ||| */
-        screen->fullVwin.width = width - i;  /* ||| */
-        screen->fullVwin.height = height - j;  /* ||| */
-
 	values->bit_gravity = NorthWestGravity;
 	term->screen.fullVwin.window = term->core.window =
 	  XCreateWindow(XtDisplay(term), XtWindow(term->core.parent),
@@ -2196,8 +2188,8 @@ XSetWindowAttributes *values;
 
 	XDefineCursor(screen->display, VShellWindow, screen->pointer_cursor);
 
-        screen->cur_col = screen->cur_row = 0;	/* ||| */
-	screen->max_col = Width(screen)/screen->fullVwin.f_width - 1; /* ||| */
+        screen->cur_col = screen->cur_row = 0;
+	screen->max_col = Width(screen)/screen->fullVwin.f_width - 1;
 	screen->top_marg = 0;
 	screen->bot_marg = screen->max_row = Height(screen) /
 				screen->fullVwin.f_height - 1;
@@ -2213,7 +2205,6 @@ XSetWindowAttributes *values;
 
 	screen->do_wrap = NULL;
 	screen->scrolls = screen->incopy = 0;
-/*	free((char *)fInfo);	*/
 	set_vt_box (screen);
 
 	screen->savedlines = 0;
