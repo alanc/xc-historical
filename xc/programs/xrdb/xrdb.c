@@ -1,7 +1,7 @@
 /*
  * xrdb - X resource manager database utility
  *
- * $XConsortium: xrdb.c,v 11.62 92/09/14 18:54:49 rws Exp $
+ * $XConsortium: xrdb.c,v 11.63 92/09/17 17:17:21 rws Exp $
  */
 
 /*
@@ -486,7 +486,7 @@ DoScreenDefines(display, scrno, defs)
     Screen *screen;
     Visual *visual;
     XVisualInfo vinfo, *vinfos;
-    int nv;
+    int nv, i, j;
     char name[50];
     
     screen = ScreenOfDisplay(display, scrno);
@@ -511,10 +511,17 @@ DoScreenDefines(display, scrno, defs)
 	    AddSimpleDef(defs, "COLOR");
 	    break;
     }
-    while (--nv >= 0) {
-	sprintf(name, "CLASS_%s_%d",
-		ClassNames[vinfos[nv].class], vinfos[nv].depth);
-	AddNum(defs, name, vinfos[nv].visualid);
+    for (i = 0; i < nv; i++) {
+	for (j = i; --j >= 0; ) {
+	    if (vinfos[j].class == vinfos[i].class &&
+		vinfos[j].depth == vinfos[i].depth)
+		break;
+	}
+	if (j < 0) {
+	    sprintf(name, "CLASS_%s_%d",
+		    ClassNames[vinfos[i].class], vinfos[i].depth);
+	    AddNum(defs, name, vinfos[i].visualid);
+	}
     }
     XFree((char *)vinfos);
 }
