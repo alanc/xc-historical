@@ -40,6 +40,8 @@
 142 35 35		Firebrick
 165 42 42		brown
 165 42 42		Brown
+244 164 96		Sandy Brown
+244 164 96		sandybrown
 204 127 50		gold
 204 127 50		Gold
 219 219 112		goldenrod
