@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.91 89/01/16 14:03:07 rws Exp $ */
+/* $XConsortium: connection.c,v 1.92 89/01/16 17:12:47 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -631,6 +631,7 @@ CloseDownConnection(client)
 	FlushClient(client, oc, (char *)NULL, 0);
     ConnectionTranslation[oc->fd] = 0;
     CloseDownFileDescriptor(oc);
+    client->osPrivate = (pointer)NULL;
 }
 
 
