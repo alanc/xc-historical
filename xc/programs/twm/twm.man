@@ -1,4 +1,4 @@
-.\" $XConsortium: twm.man,v 1.56 92/05/11 15:05:36 dave Exp $
+.\" $XConsortium: twm.man,v 1.57 92/08/24 15:34:29 rws Exp $
 .de EX		\"Begin example
 .ne 5
 .if n .sp 1
@@ -740,7 +740,7 @@ titlebuttons.  This is typically set to 0 to allow titlebuttons to take up as
 much space as possible and to not have a border.
 The default is 1.
 .IP "\fBTitleFont\fP \fIstring\fP" 8
-This variable specifies the font to used for displaying window names in
+This variable specifies the font to be used for displaying window names in
 titlebars.  The default is "variable".
 .IP "\fBTitleForeground\fP \fIstring\fP [{ \fIwin-list\fP }]" 8
 This variable specifies the foreground color used in titlebars, and
