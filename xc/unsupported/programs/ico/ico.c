@@ -1,4 +1,4 @@
-/* $XConsortium: ico.c,v 1.23 89/10/05 21:09:01 jim Exp $ */
+/* $XConsortium: ico.c,v 1.24 89/10/06 11:42:41 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -138,6 +138,7 @@ static char *help_message[] = {
 "    -softdbl                     use software double buffering",
 "    -noedges                     don't draw wire frame edges",
 "    -faces                       draw faces",
+"    -copy                        copy multibuffer frames instead of clearing",
 "    -lw number                   line width to use",
 "    -i                           invert",
 "    -sleep number                seconds to sleep in between draws",
@@ -176,7 +177,9 @@ char **argv;
 	char *delta_geom = NULL;
 	int icodeltax2, icodeltay2;
 	extern int _Xdebug;
-
+#ifdef MULTIBUFFER
+	int update_action = MultibufferUpdateActionBackground;
+#endif
 	ProgramName = argv[0];
 
 	/* Process arguments: */
@@ -200,7 +203,11 @@ char **argv;
 			numcolors = argv - colornames;
 			--argv;
 		}
-		else if (!strcmp (*argv, "-lw"))
+		else if (!strcmp (*argv, "-copy")) {
+#ifdef MULTIBUFFER
+			update_action = MultibufferUpdateActionCopied;
+#endif
+		} else if (!strcmp (*argv, "-lw"))
 			linewidth = atoi(*++argv);
 		else if (!strcmp (*argv, "-dbl"))
 #ifdef MULTIBUFFER
@@ -359,8 +366,7 @@ char **argv;
 
 #ifdef MULTIBUFFER
 	if (multibuf) {
-	    if (XmbufCreateBuffers (dpy, draw_window, 2,
-				    MultibufferUpdateActionBackground,
+	    if (XmbufCreateBuffers (dpy, draw_window, 2, update_action,
 				    MultibufferUpdateHintFrequent,
 				    multibuffers) == 2) {
 		XCopyArea (dpy, draw_window, multibuffers[1],
