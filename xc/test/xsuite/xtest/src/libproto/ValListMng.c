@@ -12,23 +12,14 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: ValueListMng.c,v 1.7 92/06/11 15:53:38 rws Exp $
  */
 /*
  *	Purpose:  routines to edit value lists in requests
  *
- *
- *	$Log:	ValueListMng.c,v $
- * Revision 1.6  89/04/17  14:13:49  lizh
- * *** empty log message ***
- * 
- *
- *	
- *
  */
 
 /*
- *	$Copyright:	$
  * Copyright (c) 1984, 1985, 1986, 1987, 1988, 1989 
  * Sequent Computer Systems, Inc.   All rights reserved.
  *  
