@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Toggle.h,v 1.11 91/02/17 13:21:39 rws Exp $
+ * $XConsortium: Toggle.h,v 1.12 91/02/18 09:26:20 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -93,7 +93,9 @@
 #define XtCRadioGroup "RadioGroup"
 #define XtCRadioData "RadioData"
 
+#ifndef _XtStringDefs_h_
 #define XtRWidget "Widget"
+#endif
 
 #define XtNstate "state"
 #define XtNradioGroup "radioGroup"

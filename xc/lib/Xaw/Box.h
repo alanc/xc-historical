@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Box.h,v 1.19 89/11/06 10:51:21 swick Exp $
+* $XConsortium: Box.h,v 1.20 90/04/20 17:07:41 kit Exp $
 */
 
 
@@ -59,8 +59,10 @@ SOFTWARE.
 
 
 /* New fields */
+#ifndef _XtStringDefs_h_
 #define XtNhSpace "hSpace"
 #define XtNvSpace "vSpace"
+#endif
 
 /* Class record constants */
 

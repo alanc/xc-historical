@@ -1,4 +1,4 @@
-/* $XConsortium: Text.h,v 1.37 91/02/20 17:58:11 converse Exp $ */
+/* $XConsortium: Text.h,v 1.38 91/04/09 19:54:35 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -101,22 +101,25 @@ typedef struct {
 #define XtNdialogVOffset "dialogVOffset"
 #define XtNdisplayCaret "displayCaret"
 #define XtNdisplayPosition "displayPosition"
-#define XtNinsertPosition "insertPosition"
 #define XtNleftMargin "leftMargin"
-#define XtNresize "resize"
 #define XtNrightMargin "rightMargin"
 #define XtNscrollVertical "scrollVertical"
 #define XtNscrollHorizontal "scrollHorizontal"
 #define XtNselectTypes "selectTypes"
-#define XtNselection "selection"
 #define XtNtopMargin "topMargin"
 #define XtNwrap "wrap"
 
 #define XtCAutoFill "AutoFill"
-#define XtCResize "Resize"
 #define XtCScroll "Scroll"
 #define XtCSelectTypes "SelectTypes"
 #define XtCWrap "Wrap"
+
+#ifndef _XtStringDefs_h_
+#define XtNinsertPosition "insertPosition"
+#define XtNresize "resize"
+#define XtNselection "selection"
+#define XtCResize "Resize"
+#endif
 
 /* Return Error code for XawTextSearch */
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Viewport.h,v 1.17 90/04/30 17:06:04 converse Exp $
+ * $XConsortium: Viewport.h,v 1.18 90/05/08 15:18:25 converse Exp $
  * Public definitions for Viewport widget
  */
 
@@ -57,11 +57,13 @@ SOFTWARE.
 */
 
 /* fields added to Form */
+#ifndef _XtStringDefs_h_
 #define XtNforceBars "forceBars"
 #define XtNallowHoriz "allowHoriz"
 #define XtNallowVert "allowVert"
 #define XtNuseBottom "useBottom"
 #define XtNuseRight "useRight"
+#endif
 
 extern WidgetClass viewportWidgetClass;
 

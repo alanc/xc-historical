@@ -1,4 +1,4 @@
-/* $XConsortium: Form.h,v 1.26 90/12/01 13:02:10 rws Exp $ */
+/* $XConsortium: Form.h,v 1.27 91/02/17 13:13:56 rws Exp $ */
 
 
 /***********************************************************
@@ -72,9 +72,12 @@ SOFTWARE.
 */
 
 
+#ifndef _XtStringDefs_h_
+#define XtNtop "top"
+#define XtRWidget "Widget"
+#endif
 
 #define XtNdefaultDistance "defaultDistance"
-#define XtNtop "top"
 #define XtNbottom "bottom"
 #define XtNleft "left"
 #define XtNright "right"
@@ -86,8 +89,6 @@ SOFTWARE.
 
 #define XtCEdge "Edge"
 #define XtCWidget "Widget"
-
-#define XtRWidget "Widget"
 
 #ifndef _XawEdgeType_e
 #define _XawEdgeType_e

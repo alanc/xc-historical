@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.h,v 1.19 90/03/09 14:13:28 jim Exp $
+ * $XConsortium: Panner.h,v 1.20 90/03/09 15:44:08 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -61,6 +61,11 @@
  *****************************************************************************/
 
 					/* new instance and class names */
+#ifndef _XtStringDefs_h_
+#define XtNresize "resize"
+#define XtCResize "Resize"
+#endif
+
 #define XtNallowOff "allowOff"
 #define XtCAllowOff "AllowOff"
 #define XtNbackgroundStipple "backgroundStipple"
@@ -75,8 +80,6 @@
 #define XtCInternalSpace "InternalSpace"
 #define XtNlineWidth "lineWidth"
 #define XtCLineWidth "LineWidth"
-#define XtNresize "resize"
-#define XtCResize "Resize"
 #define XtNrubberBand "rubberBand"
 #define XtCRubberBand "RubberBand"
 #define XtNshadowThickness "shadowThickness"

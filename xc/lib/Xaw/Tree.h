@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.h,v 1.9 90/04/19 13:52:40 jim Exp $
+ * $XConsortium: Tree.h,v 1.10 91/02/17 13:22:34 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -63,21 +63,24 @@
  *****************************************************************************/
 
                                         /* new instance field names */
-#define XtNautoReconfigure "autoReconfigure"
+#ifndef _XtStringDefs_h_
 #define XtNhSpace "hSpace"
+#define XtNvSpace "vSpace"
+#define XtCHSpace "HSpace"
+#define XtCVSpace "VSpace"
+#endif
+
+#define XtNautoReconfigure "autoReconfigure"
 #define XtNlineWidth "lineWidth"
 #define XtNtreeGC "treeGC"
 #define XtNtreeParent "treeParent"
-#define XtNvSpace "vSpace"
 #define XtNgravity "gravity"
 
                                         /* new class field names */
 #define XtCAutoReconfigure "AutoReconfigure"
-#define XtCHSpace "HSpace"
 #define XtCLineWidth "LineWidth"
 #define XtCTreeGC "TreeGC"
 #define XtCTreeParent "TreeParent"
-#define XtCVSpace "VSpace"
 #define XtCGravity "Gravity"
 
 #define XtRGC "GC"

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: StripChart.h,v 1.2 89/08/24 11:52:00 kit Exp $
+* $XConsortium: StripChart.h,v 1.3 90/10/22 14:37:17 converse Exp $
 */
 
 
@@ -59,15 +59,18 @@ SOFTWARE.
 
 #define DEFAULT_JUMP -1
 
+#ifndef _XtStringDefs_h_
+#define XtNhighlight "highlight"
+#define XtNupdate "update"
+#endif
+
 #define XtCJumpScroll "JumpScroll"
 #define XtCScale "Scale"
 
 #define XtNgetValue "getValue"
-#define XtNhighlight "highlight"
 #define XtNjumpScroll "jumpScroll"
 #define XtNminScale "minScale"
 #define XtNscale "scale"
-#define XtNupdate "update"
 #define XtNvmunix "vmunix"
  
 typedef struct _StripChartRec *StripChartWidget;
