@@ -1,4 +1,4 @@
-/* $XConsortium: TranslateI.h,v 1.32 91/02/07 19:13:37 converse Exp $ */
+/* $XConsortium: TranslateI.h,v 1.33 91/02/07 20:14:27 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -406,6 +406,13 @@ extern Boolean _XtMatchAtom(
 #endif
 );
 
+extern void _XtTranslateEvent(
+#if NeedFunctionPrototypes
+    Widget		/* widget */,
+    XEvent*		/* event */
+#endif
+);
+
 extern void _XtConvertCase(
 #if NeedFunctionPrototypes
     Display*		/* display */,
@@ -424,8 +431,8 @@ extern void  _XtDisplayTranslations(
     XEvent*		/* event */,
     String*		/* params */,
     Cardinal*		/* num_params */
-);
 #endif 
+);
 
 extern void  _XtDisplayAccelerators(
 #if NeedFunctionPrototypes
@@ -529,10 +536,28 @@ extern void _XtInstallTranslations(
 #endif
 );
 
+extern void _XtRemoveTranslations(
+#if NeedFunctionPrototypes
+    Widget		/* widget */
+#endif
+);
+
+extern void _XtDestroyTMData(
+#if NeedFunctionPrototypes
+    Widget		/* widget */
+#endif
+);
+
 extern void _XtMergeTranslations(
 #if NeedFunctionPrototypes
     Widget		/* widget */,
     XtTranslations	/* newXlations */
+#endif
+);
+
+extern void _XtActionInitialize(
+#if NeedFunctionPrototypes
+    XtAppContext	/* app */
 #endif
 );
 
