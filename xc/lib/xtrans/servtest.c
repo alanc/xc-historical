@@ -53,7 +53,7 @@ int	argc;
 char	*argv[];
 {
 int	loop,i;
-int	count, max;
+int	count, partial;
 XtransConnInfo *ciptrs, newciptr;
 char	buf[128];
 int	family;
@@ -64,7 +64,7 @@ char	*port="transtest";
 if( argc > 1 )
 	port=argv[1];
 	
-if (_TESTTransMakeAllCOTSServerListeners(port,&max, &count,&ciptrs) < 0)
+if (_TESTTransMakeAllCOTSServerListeners(port,&partial, &count,&ciptrs) < 0)
     exit (1);
 
 for(i=0;i<count;i++)

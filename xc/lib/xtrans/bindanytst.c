@@ -47,11 +47,11 @@ int	i;
 int	family;
 int	addrlen;
 Xtransaddr	*addr;
-int	count, max;
+int	count, partial;
 XtransConnInfo *ciptrs;
 
 /* bind to any port */
-if (_TESTTransMakeAllCOTSServerListeners(NULL,&max,&count,&ciptrs) < 0)
+if (_TESTTransMakeAllCOTSServerListeners(NULL,&partial,&count,&ciptrs) < 0)
     exit (1);
 
 for(i=0;i<count;i++)
