@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocutil.c,v 2.38 89/11/30 19:58:06 converse Exp $
+ * $XConsortium: tocutil.c,v 2.39 89/12/10 17:30:54 converse Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -423,8 +423,10 @@ void TULoadTocFile(toc)
 		    msg->position = toc->msgs[j]->position;
 		    msg->visible = TRUE;
 		    ptr = toc->msgs[j]->buf;
+		    l = toc->msgs[j]->length;
 		    *(toc->msgs[j]) = *msg;
 		    toc->msgs[j]->buf = ptr;
+		    toc->msgs[j]->length = l;
 		    scrnList[i]->msg = toc->msgs[j];
 		    break;
 		}
