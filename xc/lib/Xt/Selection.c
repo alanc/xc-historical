@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.87 94/01/19 11:23:13 kaleb Exp $ */
+/* $XConsortium: Selection.c,v 1.88 94/02/05 18:21:54 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1649,7 +1649,7 @@ Atom *properties;
 	}
 	info = MakeInfo(ctx, passed_callbacks, closures, count, widget,
 			time, incremental, properties);
-	XtStackFree((char*) passed_callbacks, stack_cbs);
+	XtStackFree((XtPointer) passed_callbacks, stack_cbs);
 	  
 	info->target = (Atom *)XtMalloc((unsigned) ((count+1) * sizeof(Atom)));
         (*info->target) = ctx->prop_list->indirect_atom;
@@ -1702,7 +1702,7 @@ Time time;
       GetSelectionValues(widget, selection, targets, count, &callback, 1,
 			 closures, time, incremental, NULL);
     }
-    XtStackFree(incremental, incremental_values);
+    XtStackFree((XtPointer) incremental, incremental_values);
     UNLOCK_APP(app);
 }
 
@@ -1732,7 +1732,7 @@ Time time;
       GetSelectionValues(widget, selection, targets, count,
 			 &callback, 1, closures, time, TRUE, NULL);
     }
-    XtStackFree(incremental, incremental_values);
+    XtStackFree((XtPointer) incremental, incremental_values);
     UNLOCK_APP(app);
 }
 
@@ -2065,11 +2065,11 @@ extern void XtSendSelectionRequest(widget, selection, time)
 			   cbs, count, closures, time, incrs, props);
 
 	/* Free */
-	XtStackFree((char*) targets, t);
-	XtStackFree((char*) cbs, c);
-	XtStackFree((char*) closures, cs);
-	XtStackFree((char*) incrs, ins);
-	XtStackFree((char*) props, p);
+	XtStackFree((XtPointer) targets, t);
+	XtStackFree((XtPointer) cbs, c);
+	XtStackFree((XtPointer) closures, cs);
+	XtStackFree((XtPointer) incrs, ins);
+	XtStackFree((XtPointer) props, p);
       }
     } 
   }
