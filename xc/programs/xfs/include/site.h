@@ -38,7 +38,6 @@
 
 #define	DEFAULT_TIMEOUT	60
 
-#define	DEFAULT_CONFIG_FILE		"/u14/lemke/fontserver/config"
-
 #define	DEFAULT_CLIENT_LIMIT	20
-#endif				/* _SITE_H_ */
+
+#endif /* _SITE_H_ */
