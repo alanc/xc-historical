@@ -35,7 +35,7 @@ SOFTWARE.
 
 #include "cfb.h"
 #include "cfbmskbits.h"
-
+#include <mergerop.h>
 
 /* cfbSetScanline -- copies the bits from psrc to the drawable starting at
  * (xStart, y) and continuing to (xEnd, y).  xOrigin tells us where psrc 
@@ -63,7 +63,9 @@ cfbSetScanline(y, xOrigin, xStart, xEnd, psrc, alu, pdstBase, widthDst, planemas
     register int	nend; 		/* " " last partial word */
     int			offSrc;
     int		startmask, endmask, nlMiddle, nl;
+    DeclareMergeRop()
 
+    InitializeMergeRop(alu,planemask);
     pdst = pdstBase + (y * widthDst) + (xStart >> PWSH); 
     psrc += (xStart - xOrigin) >> PWSH;
     offSrc = (xStart - xOrigin) & PIM;
@@ -72,47 +74,46 @@ cfbSetScanline(y, xOrigin, xStart, xEnd, psrc, alu, pdstBase, widthDst, planemas
 
     if (dstBit + w <= PPW) 
     { 
-	getbits(psrc, offSrc, w, tmpSrc);
-	putbitsrop(tmpSrc, dstBit, w, pdst, planemask, alu); 
+	maskpartialbits(dstBit, w, startmask);
+	endmask = 0;
+	nlMiddle = 0;
     } 
     else 
     { 
-
 	maskbits(xStart, w, startmask, endmask, nlMiddle);
-	if (startmask) 
-	    nstart = PPW - dstBit; 
-	else 
-	    nstart = 0; 
-	if (endmask) 
-	    nend = xEnd & PIM; 
-	else 
-	    nend = 0; 
-	if (startmask) 
-	{ 
-	    getbits(psrc, offSrc, nstart, tmpSrc);
-	    putbitsrop(tmpSrc, dstBit, nstart, pdst, planemask, alu);
-	    pdst++; 
-	    offSrc += nstart;
-	    if (offSrc > PLST)
-	    {
-		psrc++;
-		offSrc -= PPW;
-	    }
-	} 
-	nl = nlMiddle; 
-	while (nl--) 
-	{ 
-	    getbits(psrc, offSrc, PPW, tmpSrc);
-	    putbitsrop(tmpSrc, 0, PPW, pdst, planemask, alu );
-	    pdst++; 
-	    psrc++; 
-	} 
-	if (endmask) 
-	{ 
-	    getbits(psrc, offSrc, nend, tmpSrc);
-	    putbitsrop(tmpSrc, 0, nend, pdst, planemask, alu);
-	} 
-	 
+    }
+    if (startmask) 
+	nstart = PPW - dstBit; 
+    else 
+	nstart = 0; 
+    if (endmask) 
+	nend = xEnd & PIM; 
+    else 
+	nend = 0; 
+    if (startmask) 
+    { 
+	getbits(psrc, offSrc, nstart, tmpSrc);
+	putbitsmropshort(tmpSrc, dstBit, nstart, pdst);
+	pdst++; 
+	offSrc += nstart;
+	if (offSrc > PLST)
+	{
+	    psrc++;
+	    offSrc -= PPW;
+	}
+    } 
+    nl = nlMiddle; 
+    while (nl--) 
+    { 
+	getbits(psrc, offSrc, PPW, tmpSrc);
+	*pdst = DoMergeRop(tmpSrc, *pdst);
+	pdst++; 
+	psrc++; 
+    } 
+    if (endmask) 
+    { 
+	getbits(psrc, offSrc, nend, tmpSrc);
+	putbitsmropshort(tmpSrc, 0, nend, pdst);
     } 
 }
 
