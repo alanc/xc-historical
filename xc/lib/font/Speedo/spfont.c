@@ -203,13 +203,11 @@ pack_sp_glyphs(pfont, format, flags, num_ranges, range, tsize, num_glyphs,
                 scanlineunit,
                 mappad;
     int         bpr,
-                skiprows = 0,
-		width;
+                skiprows = 0;
     fsRange    *rp;
     FontInfoPtr pinfo = &pfont->info;
     SpeedoFontPtr spf = (SpeedoFontPtr) pfont->fontPrivate;
     SpeedoMasterFontPtr master = spf->master;
-    int         min_left = pinfo->minbounds.leftSideBearing;
     int         err;
     int         src_glyph_pad;
     int         src_bit_order;
@@ -283,9 +281,6 @@ pack_sp_glyphs(pfont, format, flags, num_ranges, range, tsize, num_glyphs,
 	break;
     }
     /* finally do the work */
-    width = pinfo->maxbounds.rightSideBearing - min_left;
-    bpr = GLWIDTHBYTESPADDED (width, scanlinepad);
-
     for (i = 0, rp = range; i < num_ranges; i++, rp++) {
 	/*
 	 * compute start & end.  if all_glyphs is set, we still have them
