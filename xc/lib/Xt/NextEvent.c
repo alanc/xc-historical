@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.74 89/10/18 16:25:41 swick Exp $";
+static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.75 89/12/02 12:29:29 jim Exp $";
 /* $oHeader: NextEvent.c,v 1.4 88/09/01 11:43:27 asente Exp $ */
 #endif /* lint */
 
@@ -666,7 +666,7 @@ static void _RefreshMapping(event)
 	if (pd->mapping_callbacks != NULL)
 	    _XtCallCallbacks( &pd->mapping_callbacks, (XtPointer)event );
     }
-    XRefreshKeyboardMapping(event);
+    XRefreshKeyboardMapping(&event->xmapping);
 }
 
 void XtAppNextEvent(app, event)
