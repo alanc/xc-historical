@@ -1,4 +1,4 @@
-/* $XConsortium: miCopy.c,v 5.2 91/04/02 16:46:42 hersh Exp $ */
+/* $XConsortium: miCopy.c,v 5.3 91/07/12 17:54:49 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -697,7 +697,7 @@ OC_COPY_FUNC_HEADER(ExtFillAreaSet)
     dstFill->pFacets = (listofddFacet *)(dstFill+1);
     dstFill->points.ddList = (listofddPoint *)((dstFill->pFacets)+1);
 
-    facetPtr = (ddPointer)(dstFill->points.ddList + 1);
+    facetPtr = (ddPointer)(dstFill->points.ddList + dstFill->points.numLists);
     if (facetSize == 0)
 	dstFill->pFacets->facets.pNoFacet = 0;
     else
