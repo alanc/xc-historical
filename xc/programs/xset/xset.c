@@ -1,5 +1,5 @@
 /* 
- * $XConsortium: xset.c,v 1.60 92/06/12 15:09:16 rws Exp $ 
+ * $XConsortium: xset.c,v 1.61 92/07/29 17:40:56 rws Exp $ 
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985	*/
@@ -16,7 +16,7 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
 
-/* $XConsortium: xset.c,v 1.60 92/06/12 15:09:16 rws Exp $ */
+/* $XConsortium: xset.c,v 1.61 92/07/29 17:40:56 rws Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -132,11 +132,15 @@ for (i = 1; i < argc; ) {
     percent = SERVER_DEFAULT;		/* Set bell to default. */
     if (i >= argc) {
 	set_bell_vol (dpy, percent);	/* set bell to default */
+	set_bell_pitch(dpy,percent);    /* set pitch to default */
+	set_bell_dur(dpy,percent);      /* set duration to default */
 	break;
     }
     arg = nextarg(i, argv);
     if (strcmp(arg, "on") == 0) {               /* Let it stay that way.  */
-      set_bell_vol(dpy, DEFAULT_ON);
+      set_bell_vol(dpy, DEFAULT_ON);  /* set bell on */
+      set_bell_pitch(dpy,percent);    /* set pitch to default */
+      set_bell_dur(dpy,percent);      /* set duration to default */
       i++;
     } 
     else if (strcmp(arg, "off") == 0) {
