@@ -12,7 +12,7 @@
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- *	"$Header: macII.h,v 1.1 88/02/29 14:41:43 x Exp $ SPRITE (Berkeley)"
+ *	"$Header: macII.h,v 1.2 88/02/29 16:13:09 x Exp $ SPRITE (Berkeley)"
  */
 #ifndef _MACII_H_
 #define _MACII_H_
@@ -285,8 +285,8 @@ extern void 	  SetTimeSinceLastInputEvent();
 extern int	autoRepeatKeyDown;		/* TRUE if key down */
 extern int	autoRepeatReady;		/* TRUE if time out */
 extern int	autoRepeatDebug;		/* TRUE if debugging */
-extern struct timeval autoRepeatLastKeyDownTv;
-extern struct timeval autoRepeatDeltaTv;
+extern long autoRepeatLastKeyDownTv;
+extern long autoRepeatDeltaTv;
 
 #define tvminus(tv, tv1, tv2) /* tv = tv1 - tv2 */ \
               if ((tv1).tv_usec < (tv2).tv_usec) { \

@@ -109,14 +109,11 @@ extern int consoleFd;
  *-----------------------------------------------------------------------
  */
 
-#define       TR_UNDEFINED (TR_NONE-1)
 int
 macIIKbdProc (pKeyboard, what)
     DevicePtr	  pKeyboard;	/* Keyboard to manipulate */
     int	    	  what;	    	/* What to do to it */
 {
-    static int          deviceOffKbdState = TR_UNDEFINED;
-
     switch (what) {
 	case DEVICE_INIT:
 	    if (pKeyboard != LookupKeyboardDevice()) {
@@ -307,17 +304,15 @@ macIIBell (loudness, pKeyboard)
 {
     KbPrivPtr   pPriv = (KbPrivPtr) pKeyboard->devicePrivate;
     struct strioctl ctl;
+    long countdown;
 
     if (loudness == 0) {
       return;
     }
 
-    /*
-     * Leave the bell on for a while == duration (ms) proportional to
-     * loudness desired with a 10 thrown in to convert from ms to usecs.
-     */
+    countdown = (long)pPriv->ctrl->bell_duration * 100;
     ctl.ic_len = sizeof(long);
-    ctl.ic_data = (long)(pPriv->ctrl->bell_duration * 1000);
+    ctl.ic_dp = (char *)&countdown;
     ctl.ic_cmd = VIDEO_BELL;
     if (ioctl(consoleFd, I_STR, &ctl) < 0) {
 	    ErrorF("Failed to ioctl I_STR VIDEO_BELL.\n");
@@ -442,15 +437,6 @@ macIIKbdProcessEvent(pKeyboard,me)
     xE.u.keyButtonPointer.rootY = ptrPriv->y;
     xE.u.u.type = (KEY_UP(*me) ? KeyRelease : KeyPress);
     xE.u.u.detail = key;
-
-#ifdef notdef
-    if (keyModifiers & LockMask) {
-	if (xE.u.u.type == KeyRelease)
-	    return; /* this assumes autorepeat is not desired */
-	if (((DeviceIntPtr)pKeyboard)->down[key>>3] & (1 << (key & 7)))
-	    xE.u.u.type = KeyRelease;
-    }
-#endif
 
     if ((xE.u.u.type == KeyPress) && (keyModifiers == 0)) {
 	  /* initialize new AutoRepeater event & mark AutoRepeater on */
