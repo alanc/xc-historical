@@ -11,7 +11,7 @@
 
 \s+1\fBMIT X Consortium Standard\fP\s-1
 
-\s+1\fBX Version 11, Release 5\fP\s-1
+\s+1\fBX Version 11, Release 6\fP\s-1
 .sp 6
 .ce 5
 \s-1Robert W. Scheifler
@@ -111,8 +111,8 @@ Massachusetts Institute of Technology
 Laboratory for Computer Science
 .De
 .bp 1
-.EH '\fBX Protocol\fP''\fBX11, Release 5\fP'
-.OH '\fBX Protocol\fP''\fBX11, Release 5\fP'
+.EH '\fBX Protocol\fP''\fBX11, Release 6\fP'
+.OH '\fBX Protocol\fP''\fBX11, Release 6\fP'
 .EF ''\fB % \fP''
 .OF ''\fB % \fP''
 .NH 1
