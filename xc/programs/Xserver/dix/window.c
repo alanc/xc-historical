@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 1.238 89/04/07 16:55:52 rws Exp $ */
+/* $XConsortium: window.c,v 1.239 89/04/09 16:05:50 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -1653,6 +1653,7 @@ MoveWindow(pWin, x, y, pNextSib)
     if (WasViewable)
     {
 
+        pBox = (* pScreen->RegionExtents)(pWin->borderSize);
         anyMarked = MarkSiblingsBelowMe(windowToValidate, pBox) || anyMarked;
 #ifdef DO_SAVE_UNDERS
 	if (DO_SAVE_UNDERS(pWin))
@@ -1931,6 +1932,7 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 	if (pWin->backStorage && (pWin->backingStore != NotUseful))
 	    (*pScreen->RegionCopy) (pRegion, pWin->clipList);
 
+        pBox = (* pScreen->RegionExtents)(pWin->borderSize);
 	anyMarked = MarkSiblingsBelowMe(pFirstChange, pBox) || anyMarked;
 #ifdef DO_SAVE_UNDERS
 	if (DO_SAVE_UNDERS(pWin))
@@ -2764,6 +2766,9 @@ SetShape(pWin)
 
     if (WasViewable)
     {
+        pBox = (* pScreen->RegionExtents)(pWin->borderSize);
+	anyMarked = MarkSiblingsBelowMe(pWin, pBox) || anyMarked;
+
 #ifdef DO_SAVE_UNDERS
 	if (DO_SAVE_UNDERS(pWin))
 	{
