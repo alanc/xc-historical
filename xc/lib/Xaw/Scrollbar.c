@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Scroll.c,v 1.43 88/09/26 12:50:20 swick Exp $";
+    "$XConsortium: Scroll.c,v 1.44 88/09/26 13:35:29 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -403,15 +403,15 @@ static void Resize( gw )
     /* ForgetGravity has taken care of background, but thumb may
      * have to move as a result of the new size. */
     SetDimensions( (ScrollbarWidget)gw );
-    Redisplay( gw, (XEvent*)NULL );
+    Redisplay( gw, (XEvent*)NULL, (Region)NULL );
 }
 
 
 /* ARGSUSED */
 static void Redisplay( gw, event, region )
    Widget gw;
-   XEvent *event;		/* unused, NULL if called from Resize() */
-   Region region;		/* unused, NULL if called from Resize() */
+   XEvent *event;
+   Region region;
 {
     ScrollbarWidget w = (ScrollbarWidget) gw;
     int x, y;
@@ -429,12 +429,13 @@ static void Redisplay( gw, event, region )
 	height = w->scrollbar.shownLength;
     }
 
-    if (XRectInRegion(region, x, y, width, height) != RectangleOut) {
-	XSetRegion( XtDisplay(w), w->scrollbar.gc, region );
+    if (region == NULL ||
+	  XRectInRegion(region, x, y, width, height) != RectangleOut) {
+	if (region != NULL) XSetRegion(XtDisplay(w), w->scrollbar.gc, region);
 	/* Forces entire thumb to be painted. */
 	w->scrollbar.topLoc = -(w->scrollbar.length + 1);
 	PaintThumb( w ); 
-	XSetClipMask( XtDisplay(w), w->scrollbar.gc, None );
+	if (region != NULL) XSetClipMask(XtDisplay(w), w->scrollbar.gc, None);
     }
 }
 
