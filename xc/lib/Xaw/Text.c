@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.107 89/08/17 19:18:25 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.108 89/08/18 14:32:19 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -492,8 +492,8 @@ Widget request, new;
     if ( (ctx->text.resize == XawtextResizeHeight) ||
      	 (ctx->text.resize == XawtextResizeBoth) ) {
       sprintf(error_buf, "Text Widget (%s):\n %s %s.", ctx->core.name,
-	      "Horizontal scrolling not allowed with width resize.\n",
-	      "Horizontal scrolling has been DEACTIVATED.");
+	      "Vertical scrolling not allowed with height resize.\n",
+	      "Vertical scrolling has been DEACTIVATED.");
       XtAppWarning(XtWidgetToApplicationContext(new), error_buf);
       ctx->text.scroll_vert = XawtextScrollNever;
     }
