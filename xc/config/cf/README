@@ -39,6 +39,7 @@ Imake.tmpl provides defaults for the following variables:
 	HasSharedLibraries	boolean for system has shared libraries
 	HasShm			boolean for System V shared memory
 	HasSockets		boolean for system has BSD sockets
+	HasBSD44Sockets		boolean for system has BSD4.4 sockets
 	HasVFork		boolean for system has vfork()
 	HasVoidSignalReturn	boolean for POSIX signal() procs
 	IncRoot			parent of X11 include directory
