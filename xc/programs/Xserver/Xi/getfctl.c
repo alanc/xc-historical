@@ -1,4 +1,4 @@
-/* $XConsortium: xgetfctl.c,v 1.4 89/10/10 16:09:58 gms Exp $ */
+/* $XConsortium: xgetfctl.c,v 1.5 89/12/02 15:20:55 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -132,7 +132,7 @@ ProcXGetFeedbackControl(client)
 
     if (total_length == 0)
 	{
-	SendErrorToClient(client, IReqCode, X_ChangeFeedbackControl, 0, 
+	SendErrorToClient(client, IReqCode, X_GetFeedbackControl, 0, 
 		BadMatch);
 	return Success;
 	}
