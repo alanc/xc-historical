@@ -1,5 +1,5 @@
 /*
- * $XConsortium: toc.c,v 2.48 91/07/10 13:35:23 converse Exp $
+ * $XConsortium: toc.c,v 2.49 91/07/10 14:25:36 converse Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -217,46 +217,29 @@ char *foldername;
     return toc;
 }
 
-
-/* Check to see if what folders have new mail, and highlight their
-   folderbuttons appropriately. */
-
-void TocCheckForNewMail()
-{
+int TocCheckForNewMail(toc)
     Toc toc;
-    Scrn scrn;
-    int i, j, hasmail;
-    static Arg arglist[] = {XtNiconPixmap, (XtArgVal) None};
+{
+    if (toc->incfile)
+	return (GetFileLength(toc->incfile) > 0);
+    else if (toc == InitialFolder) {
+	char **argv;
+	char *result;
+	int hasmail;
 
-    if (!app_resources.new_mail_check) return;
-
-    for (i=0 ; i<numFolders ; i++) {
-	toc = folderList[i];
-	if (toc->incfile) {
-	    hasmail =  (GetFileLength(toc->incfile) > 0);
-	    if (hasmail != toc->mailpending) {
-
-		toc->mailpending = hasmail;
-		for (j=0 ; j<numScrns ; j++) {
-		    scrn = scrnList[j];
-		    if (scrn->kind == STtocAndView) {
-
-			if (app_resources.mail_waiting_flag
-			    && toc == InitialFolder) {
-			    arglist[0].value = (XtArgVal)
-				(hasmail ? NewMailPixmap : NoMailPixmap);
-			    XtSetValues(scrn->parent,
-					arglist, XtNumber(arglist));
-			} 
-			/* give visual indication of new mail waiting */
-			
-		    }
-		}
-	    }
-	}
+	argv = MakeArgv(4);
+	argv[0] = "msgchk";
+	argv[1] = "-nonotify";
+	argv[2] = "nomail";
+	argv[3] = "-nodate";
+	result = DoCommandToString(argv);
+	hasmail = (*result != '\0');
+	XtFree(result);
+	XtFree((char*)argv);
+	return hasmail;
     }
+    return False;
 }
-
 
 /* Intended to support mutual exclusion on deleting folders, so that you
  * cannot have two confirm popups at the same time on the same folder.
