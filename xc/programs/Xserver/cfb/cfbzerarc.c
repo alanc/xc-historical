@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbzerarc.c,v 5.5 89/09/10 15:59:37 rws Exp $ */
+/* $XConsortium: cfbzerarc.c,v 5.6 89/09/10 16:23:09 rws Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -245,14 +245,19 @@ cfbZeroPolyArcSS8Copy(pDraw, pGC, narcs, parcs)
     cclip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
     for (arc = parcs, i = narcs; --i >= 0; arc++)
     {
-	box.x1 = arc->x + pDraw->x;
-	box.y1 = arc->y + pDraw->y;
-	box.x2 = box.x1 + (int)arc->width + 1;
-	box.y2 = box.y1 + (int)arc->height + 1;
-	if ((*pDraw->pScreen->RectIn)(cclip, &box) == rgnIN)
-	    cfbZeroArcSS8Copy(pDraw, pGC, arc);
+	if (miCanZeroArc(arc))
+	{
+	    box.x1 = arc->x + pDraw->x;
+	    box.y1 = arc->y + pDraw->y;
+	    box.x2 = box.x1 + (int)arc->width + 1;
+	    box.y2 = box.y1 + (int)arc->height + 1;
+	    if ((*pDraw->pScreen->RectIn)(cclip, &box) == rgnIN)
+		cfbZeroArcSS8Copy(pDraw, pGC, arc);
+	    else
+		miZeroPolyArc(pDraw, pGC, 1, arc);
+	}
 	else
-	    miZeroPolyArc(pDraw, pGC, 1, arc);
+	    miPolyArc(pDraw, pGC, 1, arc);
     }
 }
 
