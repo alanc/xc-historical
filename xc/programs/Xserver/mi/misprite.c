@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.31 91/01/27 13:01:34 keith Exp $ */
+/* $XConsortium: misprite.c,v 5.32 91/04/07 18:12:47 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -504,6 +504,8 @@ miSpriteStoreColors (pMap, ndef, pdef)
     ScreenPtr		pScreen = pMap->pScreen;
     miSpriteScreenPtr	pPriv;
     int			i;
+    int			updated;
+    VisualPtr		pVisual;
 
     pPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
 
@@ -515,19 +517,57 @@ miSpriteStoreColors (pMap, ndef, pdef)
 
     if (pPriv->pColormap == pMap)
     {
-	for (i = 0; i < ndef; i++)
-	    /*
-	     * XXX direct color will affect pixels other than
-	     * pdef[i].pixel -- this will be more difficult...
-	     */
-	    if (pdef[i].pixel == pPriv->colors[SOURCE_COLOR].pixel ||
-	        pdef[i].pixel == pPriv->colors[MASK_COLOR].pixel)
+	updated = 0;
+	pVisual = pMap->pVisual;
+	if (pVisual->class == DirectColor)
+	{
+	    /* Direct color - match on any of the subfields */
+
+#define MaskMatch(a,b,mask) ((a) & (pVisual->mask) == (b) & (pVisual->mask))
+
+#define UpdateDAC(plane,dac,mask) {\
+    if (MaskMatch (pPriv->colors[plane].pixel,pdef[i].pixel,mask)) {\
+	pPriv->colors[plane].dac = pdef[i].dac; \
+	updated = 1; \
+    } \
+}
+
+#define CheckDirect(plane) \
+	    UpdateDAC(plane,red,redMask) \
+	    UpdateDAC(plane,green,greenMask) \
+	    UpdateDAC(plane,blue,blueMask)
+
+	    for (i = 0; i < ndef; i++)
 	    {
-		pPriv->checkPixels = TRUE;
-		if (pPriv->isUp && pPriv->shouldBeUp)
-		    miSpriteRemoveCursor (pScreen);
-		break;
+		CheckDirect (SOURCE_COLOR)
+		CheckDirect (MASK_COLOR)
 	    }
+	}
+	else
+	{
+	    /* PseudoColor/GrayScale - match on exact pixel */
+	    for (i = 0; i < ndef; i++)
+	    {
+	    	if (pdef[i].pixel == pPriv->colors[SOURCE_COLOR].pixel)
+	    	{
+		    pPriv->colors[SOURCE_COLOR] = pdef[i];
+		    if (++updated == 2)
+		    	break;
+	    	}
+	    	if (pdef[i].pixel == pPriv->colors[MASK_COLOR].pixel)
+	    	{
+		    pPriv->colors[MASK_COLOR] = pdef[i];
+		    if (++updated == 2)
+		    	break;
+	    	}
+	    }
+	}
+    	if (updated)
+    	{
+	    pPriv->checkPixels = TRUE;
+	    if (pPriv->isUp && pPriv->shouldBeUp)
+	    	miSpriteRemoveCursor (pScreen);
+    	}
     }
 }
 
