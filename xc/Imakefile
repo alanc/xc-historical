@@ -13,8 +13,11 @@
 #if BuildServer
 SERVERDIRSTOMAKE = server fonts rgb
 #endif
+#if BuildExamples
+EXAMPLESDIRS = examples
+#endif
         SUBDIRS = config include lib extensions $(SERVERDIRSTOMAKE) \
-			clients demos examples util doc
+			clients demos $(EXAMPLESDIRS) util doc
   LNINSTALLDIRS = $(EXTENSIONSRC) $(LIBSRC)
 
 MakeSubdirs($(SUBDIRS))
@@ -76,7 +79,7 @@ InstallManPage(X,$(MANDIR))
 /**/# don't name your log file make.log when you run this ...
 World::
 	@echo ""
-	@echo "Building Release 4beta of the X Window System"
+	@echo "Building Release 4 of the X Window System"
 	@echo ""
 	@echo "##############################################################"
 	@echo "# Did you remember to check the configuration parameters in  #"
@@ -96,12 +99,12 @@ World::
 	@echo ""
 	@date
 	@echo ""
-	@echo "Build of the X Window System complete."
+	@echo "Full build of Release 4 of the X Window System complete."
 	@echo ""
 
 Everything::
 	@echo ""
-	@echo "Rebuilding Release 4beta of the X Window System"
+	@echo "Rebuilding Release 4 of the X Window System"
 	@echo ""
 	@echo "##############################################################"
 	@echo "# Did you remember to check the configuration parameters in  #"
@@ -120,7 +123,7 @@ Everything::
 	@echo ""
 	@date
 	@echo ""
-	@echo "Build of the X Window System complete."
+	@echo "Rebuild of Release 4 of the X Window System complete."
 	@echo ""
 
 CHANGES.ALL::
