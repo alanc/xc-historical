@@ -11,7 +11,7 @@ SRCS =	 cfbgc.c cfbrrop.c cfbwindow.c \
 	 cfbfillarcC.c cfbfillarcG.c \
 	 cfbtegblt.c cfbbstore.c cfb8cppl.c \
 	 cfbbltC.c cfbbltX.c cfbbltO.c cfbbltG.c \
-	 cfb8bit.c cfbteblt8.c cfbglblt8.c cfbglrop8.c \
+	 cfb8bit.c cfbteblt8.c cfbglblt8.c cfbglrop8.c cfbigblt8.c \
  	 cfbpush8.c cfbrctstp8.c cfbpolypnt.c \
 	 cfb8lineCO.c cfb8lineX.c cfb8lineG.c cfb8lineCP.c \
  	 cfb8segC.c cfb8segX.c cfb8segG.c cfb8segCS.c \
@@ -27,7 +27,7 @@ OBJS =   cfbgc.o cfbrrop.o cfbwindow.o \
 	 cfbcmap.o cfbzerarcC.o cfbzerarcX.o cfbzerarcG.o \
 	 cfbfillarcC.o cfbfillarcG.o \
 	 cfbtegblt.o cfbbstore.o cfb8cppl.o \
-	 cfb8bit.o cfbteblt8.o cfbglblt8.o cfbglrop8.o \
+	 cfb8bit.o cfbteblt8.o cfbglblt8.o cfbglrop8.o cfbigblt8.o \
  	 cfbrctstp8.o cfbpolypnt.o \
  	 cfb8segCS.o cfb8segX.o cfb8segG.o cfb8segC.o \
 	 cfb8lineCO.o cfb8lineX.o cfb8lineG.o cfb8lineCP.o \

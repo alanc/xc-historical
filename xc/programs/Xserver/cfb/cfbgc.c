@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.40 90/06/12 17:04:25 keith Exp $ */
+/* $XConsortium: cfbgc.c,v 5.43 90/11/19 17:27:57 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -50,6 +50,7 @@ extern void cfbTile32FS();
 #if PPW == 4
 extern void cfb8Stipple32FS(), cfb8OpaqueStipple32FS();
 extern void cfb8LineSS1Rect(), cfb8SegmentSS1Rect ();
+extern void cfbImageGlyphBlt8();
 #endif
 
 extern void cfbSolidSpansCopy(), cfbSolidSpansXor (), cfbSolidSpansGeneral();
@@ -143,7 +144,7 @@ static GCOps	cfbNonTEOps1Rect = {
     miPolyText16,
     miImageText8,
     miImageText16,
-    miImageGlyphBlt,
+    cfbImageGlyphBlt8,
     cfbPolyGlyphBlt8,
     cfbPushPixels8,
     NULL,
@@ -172,11 +173,12 @@ static GCOps	cfbNonTEOps = {
     miPolyText16,
     miImageText8,
     miImageText16,
-    miImageGlyphBlt,
 #if PPW == 4
+    cfbImageGlyphBlt8,
     cfbPolyGlyphBlt8,
     cfbPushPixels8,
 #else
+    miImageGlyphBlt,
     miPolyGlyphBlt,
     mfbPushPixels,
 #endif
@@ -766,7 +768,13 @@ cfbValidateGC(pGC, changes, pDrawable)
 #endif
 	    }
             else
+	    {
+#if PPW == 4
+		pGC->ops->ImageGlyphBlt = cfbImageGlyphBlt8;
+#else
                 pGC->ops->ImageGlyphBlt = miImageGlyphBlt;
+#endif
+	    }
         }
     }    
 
