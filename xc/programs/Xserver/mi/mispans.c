@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: mispans.c,v 5.2 91/12/17 19:39:12 keith Exp $ */
+/* $XConsortium: mispans.c,v 5.3 93/09/03 08:07:57 dpw Exp $ */
 
 #include "misc.h"
 #include "pixmapstr.h"
@@ -59,7 +59,7 @@ void miSubtractSpans (spanGroup, sub)
     int		i, subCount, spansCount;
     int		ymin, ymax, xmin, xmax;
     Spans	*spans;
-    DDXPointPtr	subPt, subPtNext, spansPt, spansPtNext;
+    DDXPointPtr	subPt, spansPt;
     int		*subWid, *spansWid;
     int		extra;
 
@@ -398,6 +398,7 @@ void miFillUniqueSpanGroup(pDraw, pGC, spanGroup)
 	    xfree (yspans);
 	    xfree (ysizes);
 	    miDisposeSpanGroup (spanGroup);
+	    return;
 	}
 	
 	for (i = 0; i != ylength; i++) {
