@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: resize.c,v 1.12 91/01/06 12:48:22 rws Exp $
+ *	$XConsortium: resize.c,v 1.14 91/01/07 15:21:47 gildea Exp $
  */
 
 /*
@@ -62,6 +62,12 @@
 
 #include <signal.h>
 #include <pwd.h>
+
+#ifdef SIGNALRETURNSINT
+#define SIGNAL_T int
+#else
+#define SIGNAL_T void
+#endif
 
 #ifdef USE_SYSV_TERMIO
 extern struct passwd *getpwent();
@@ -145,6 +151,8 @@ char *wsize[EMULATIONS] = {
 
 char *strindex (), *index (), *rindex();
 
+SIGNAL_T onintr();
+
 main (argc, argv)
 char **argv;
 /*
@@ -177,7 +185,6 @@ char **argv;
 #endif	/* TIOCSWINSZ */
 #endif	/* sun */
 	char *getenv();
-	int onintr();
 	char *name_of_tty;
 #ifdef CANT_OPEN_DEV_TTY
 	extern char *ttyname();
@@ -439,7 +446,7 @@ register char *buf;
 char *str;
 {
 	register int i, last;
-	int timeout();
+	SIGNAL_T timeout();
 #ifndef USG
 	struct itimerval it;
 #endif
@@ -475,12 +482,14 @@ Usage()
 	exit(1);
 }
 
+SIGNAL_T
 timeout()
 {
 	fprintf(stderr, "%s: Time out occurred\r\n", myname);
 	onintr();
 }
 
+SIGNAL_T
 onintr()
 {
 #ifdef USE_SYSV_TERMIO
