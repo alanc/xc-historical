@@ -1,4 +1,4 @@
-/* $XConsortium: XmbWMProps.c,v 1.1 91/04/01 20:18:31 gildea Exp $ */
+/* $XConsortium: XmbWMProps.c,v 1.1 91/04/13 16:59:08 rws Exp $ */
 
 /*
 
@@ -65,7 +65,7 @@ void XmbSetWMProperties (dpy, w, windowName, iconName, argv, argc, sizeHints,
 	Xfree((char *)wname.value);
     if (iprop)
 	Xfree((char *)iname.value);
-    locale = setlocale(LC_CTYPE, "");
+    locale = setlocale(LC_CTYPE, (char *)NULL);
     if (locale)
 	XChangeProperty (dpy, w, XInternAtom(dpy, "WM_LOCALE_NAME", False),
 			 XA_STRING, 8, PropModeReplace,
