@@ -1,5 +1,5 @@
 ##
-# $XConsortium: Imakefile,v 5.14 91/04/04 14:11:57 gildea Exp $
+# $XConsortium: Imakefile,v 5.14 91/04/04 18:08:39 gildea Exp $
 ##
 ## 
 ## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -89,29 +89,32 @@ phigsmon:
 
 lib/phigsmon: cp/phigsmon
 	$(RM) $@
-	(cd lib; $(LN) ../cp/phigsmon phigsmon)
+	cd lib; $(LN) ../cp/phigsmon phigsmon
 
 lib/PHIGSerr.txt: include/PHIGSerr.txt
 	$(RM) $@
-	(cd lib; $(LN) ../include/PHIGSerr.txt PHIGSerr.txt)
+	cd lib; $(LN) ../include/PHIGSerr.txt PHIGSerr.txt
+
+include/PHIGSerr.txt:
+	cd include; $(MAKE) $(MFLAGS) PHIGSerr.txt
 
 lib/PHIGSfnc.txt: include/PHIGSfnc.txt
 	$(RM) $@
-	(cd lib; $(LN) ../include/PHIGSfnc.txt PHIGSfnc.txt)
+	cd lib; $(LN) ../include/PHIGSfnc.txt PHIGSfnc.txt
 
 lintlib lint-library: FRC
-	(cd c_binding; $(MAKE) lint-library)
+	(cd c_binding; $(MAKE) $(MFLAGS) lint-library)
 
 lintlibs:
 	-for i in ${SUBDIRS}; do \
 	    ( 	echo in $$i; cd $$i; \
-		$(MAKE) lintlib  \
+		$(MAKE) $(MFLAGS) lintlib  \
 	    ); done
 
 lint lint-x: lintlibs
 	-for i in ${SUBDIRS}; do \
 	    ( 	echo in $$i; cd $$i; \
-		$(MAKE) $@  \
+		$(MAKE) $(MFLAGS) $@  \
 	    ); done
 
 extract: FRC
