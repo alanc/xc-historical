@@ -1,4 +1,4 @@
-/* $XConsortium: s3.h,v 1.1 94/10/05 13:32:36 kaleb Exp $ */
+/* $XConsortium: s3.h,v 1.2 94/10/12 20:07:37 kaleb Exp kaleb $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.13 1994/09/26 15:31:41 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -33,7 +33,7 @@
 #ifndef _S3_H_
 #define _S3_H_
 
-#define S3_PATCHLEVEL "0"
+#define S3_PATCHLEVEL "2"
 
 #ifndef LINKKIT
 #include "s3name.h"
