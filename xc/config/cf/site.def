@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.80 93/09/04 20:26:33 rws Exp $
+XCOMM site:  $XConsortium: site.def,v 1.81 93/09/04 21:40:09 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -59,9 +59,6 @@ XCOMM #define HasGcc2 YES
 #define PreIncDir /opt/gnu/lib/gcc-lib/sparc-sun-solaris2/2.3.3/include
 #endif
 #endif
-
-#define BuildScreenSaverExt	YES
-#define BuildScreenSaverLib	YES
 
 #ifdef SGIArchitecture
 /* this is to disable dynamic loading without changing ddx Imakefiles */
