@@ -1,4 +1,4 @@
-/* $XConsortium: Xresource.h,v 1.19 89/12/09 13:45:20 jim Exp $ */
+/* $XConsortium: Xresource.h,v 1.20 89/12/09 18:54:27 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -27,10 +27,6 @@ SOFTWARE.
 #ifndef _Xresource_h
 #define _Xresource_h
 
-#ifdef __cplusplus
-extern "C" {					/* for C++ V2.0 */
-#endif
-
 /****************************************************************
  ****************************************************************
  ***                                                          ***
@@ -57,6 +53,10 @@ extern "C" {					/* for C++ V2.0 */
 #else
 #include <sys/types.h>
 #endif /* CRAY or USG */
+
+#ifdef __cplusplus			/* do not leave open across includes */
+extern "C" {					/* for C++ V2.0 */
+#endif
 
 #ifndef NeedFunctionPrototypes
 #if defined(__STDC__) || defined(__cplusplus)
