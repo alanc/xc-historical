@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: Xtransam.c,v 1.1 94/03/30 10:39:50 mor Exp $ */
 
 /* Copyright (c) 1994 Vrije Universiteit Amsterdam, Netherlands
  * Copyright 1994 by the Massachusetts Institute of Technology
@@ -1921,25 +1921,6 @@ XtransConnInfo	ciptr;
 }
 
 
-static
-TRANS(AMNameToAddr)(ciptr)
-XtransConnInfo	ciptr;
-{
-    PRMSG(1, "TRANS(AMNameToAddr)(%x->%d)\n", ciptr, ciptr->fd, 0 );
-    /* TODO */
-    return -1;
-}
-
-
-static
-TRANS(AMAddrToName)(ciptr) 
-XtransConnInfo	ciptr;
-{
-    PRMSG(1, "TRANS(AMAddrToName)(%x->%d)\n", ciptr, ciptr->fd, 0 );
-    /* TODO */
-    return -1;
-}
-
 Xtransport	TRANS(AmConnFuncs) = {
 	/* Combined AMOEBA RPC/TCP Interface; maybe we should split this  */
 	"amcon",
@@ -1960,6 +1941,4 @@ Xtransport	TRANS(AmConnFuncs) = {
 	TRANS(AMWritev),
 	TRANS(AMDisconnect),
 	TRANS(AMClose),
-	TRANS(AMNameToAddr),
-	TRANS(AMAddrToName),
 };

@@ -1,4 +1,4 @@
-/* $XConsortium: Xtrans.c,v 1.17 94/03/15 13:19:07 mor Exp $ */
+/* $XConsortium: Xtrans.c,v 1.18 94/03/30 10:37:44 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -844,17 +844,6 @@ XtransConnInfo	ciptr;
 
     return ret;
 }
-
-#ifdef not_yet
-TRANS(NameToAddr) (XtransConnInfo ciptr /*???what else???*/)
-{
-}
-
-TRANS(AddrToName) (XtransConnInfo ciptr /*???what else???*/)
-{
-}
-#endif
-
 
 int
 TRANS(IsLocal) (ciptr)

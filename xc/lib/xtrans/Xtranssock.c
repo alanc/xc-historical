@@ -1,4 +1,4 @@
-/* $XConsortium: Xtranssock.c,v 1.21 94/03/29 14:26:52 mor Exp $ */
+/* $XConsortium: Xtranssock.c,v 1.22 94/03/30 10:38:54 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -1578,26 +1578,6 @@ XtransConnInfo ciptr;
 #endif /* UNIXCONN */
 
 
-static int
-TRANS(SocketNameToAddr) (ciptr /*???what else???*/)
-
-XtransConnInfo ciptr;
-
-{
-    return -1;
-}
-
-
-static int
-TRANS(SocketAddrToName) (ciptr /*???what else???*/)
-
-XtransConnInfo ciptr;
-
-{
-    return -1;
-}
-
-
 #ifdef TCPCONN
 Xtransport	TRANS(SocketINETFuncs) = {
 	/* Socket Interface */
@@ -1624,8 +1604,6 @@ Xtransport	TRANS(SocketINETFuncs) = {
 	TRANS(SocketDisconnect),
 	TRANS(SocketINETClose),
 	TRANS(SocketINETClose),
-	TRANS(SocketNameToAddr),
-	TRANS(SocketAddrToName),
 	};
 
 Xtransport	TRANS(SocketTCPFuncs) = {
@@ -1653,8 +1631,6 @@ Xtransport	TRANS(SocketTCPFuncs) = {
 	TRANS(SocketDisconnect),
 	TRANS(SocketINETClose),
 	TRANS(SocketINETClose),
-	TRANS(SocketNameToAddr),
-	TRANS(SocketAddrToName),
 	};
 #endif /* TCPCONN */
 
@@ -1684,8 +1660,6 @@ Xtransport	TRANS(SocketUNIXFuncs) = {
 	TRANS(SocketDisconnect),
 	TRANS(SocketUNIXClose),
 	TRANS(SocketUNIXCloseForCloning),
-	TRANS(SocketNameToAddr),
-	TRANS(SocketAddrToName),
 	};
 
 #if !defined(LOCALCON)
@@ -1714,8 +1688,6 @@ Xtransport	TRANS(SocketLocalFuncs) = {
 	TRANS(SocketDisconnect),
 	TRANS(SocketUNIXClose),
 	TRANS(SocketUNIXCloseForCloning),
-	TRANS(SocketNameToAddr),
-	TRANS(SocketAddrToName),
 	};
 #endif /* !LOCALCONN */
 #endif /* UNIXCONN */

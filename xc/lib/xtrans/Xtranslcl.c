@@ -1,4 +1,4 @@
-/* $XConsortium: Xtranslcl.c,v 1.14 94/03/15 13:24:56 mor Exp $ */
+/* $XConsortium: Xtranslcl.c,v 1.15 94/03/22 11:30:46 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -2131,21 +2131,6 @@ XtransConnInfo ciptr;
     return ret;
 }
 
-static
-TRANS(LocalNameToAddr)(ciptr /* ???what else??? */)
-
-XtransConnInfo ciptr;
-
-{
-}
-
-static
-TRANS(LocalAddrToName)(ciptr /* ???what else??? */)
-
-XtransConnInfo ciptr;
-
-{
-}
 
 /*
  * MakeAllCOTSServerListeners() will go through the entire Xtransports[]
@@ -2182,8 +2167,6 @@ Xtransport	TRANS(LocalFuncs) = {
 	TRANS(LocalDisconnect),
 	TRANS(LocalClose),
 	TRANS(LocalCloseForCloning),
-	TRANS(LocalNameToAddr),
-	TRANS(LocalAddrToName),
 };
 
 Xtransport	TRANS(PTSFuncs) = {
@@ -2211,8 +2194,6 @@ Xtransport	TRANS(PTSFuncs) = {
 	TRANS(LocalDisconnect),
 	TRANS(LocalClose),
 	TRANS(LocalCloseForCloning),
-	TRANS(LocalNameToAddr),
-	TRANS(LocalAddrToName),
 };
 
 Xtransport	TRANS(NAMEDFuncs) = {
@@ -2240,8 +2221,6 @@ Xtransport	TRANS(NAMEDFuncs) = {
 	TRANS(LocalDisconnect),
 	TRANS(LocalClose),
 	TRANS(LocalCloseForCloning),
-	TRANS(LocalNameToAddr),
-	TRANS(LocalAddrToName),
 };
 
 Xtransport	TRANS(ISCFuncs) = {
@@ -2269,8 +2248,6 @@ Xtransport	TRANS(ISCFuncs) = {
 	TRANS(LocalDisconnect),
 	TRANS(LocalClose),
 	TRANS(LocalCloseForCloning),
-	TRANS(LocalNameToAddr),
-	TRANS(LocalAddrToName),
 };
 Xtransport	TRANS(SCOFuncs) = {
 	/* Local Interface */
@@ -2297,6 +2274,4 @@ Xtransport	TRANS(SCOFuncs) = {
 	TRANS(LocalDisconnect),
 	TRANS(LocalClose),
 	TRANS(LocalCloseForCloning),
-	TRANS(LocalNameToAddr),
-	TRANS(LocalAddrToName),
 };

@@ -1,4 +1,4 @@
-/* $XConsortium: Xtranstli.c,v 1.11 94/03/15 13:22:57 mor Exp $ */
+/* $XConsortium: Xtranstli.c,v 1.12 94/03/29 19:12:27 matt Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -1237,24 +1237,6 @@ XtransConnInfo	ciptr;
 }
 
 
-static
-TRANS(TLINameToAddr)(ciptr)
-
-XtransConnInfo	ciptr;
-
-{
-}
-
-
-static
-TRANS(TLIAddrToName)(ciptr) 
-
-XtransConnInfo	ciptr;
-
-{
-}
-
-
 Xtransport	TRANS(TLIINETFuncs) = {
 	/* TLI Interface */
 	"inet",
@@ -1280,8 +1262,6 @@ Xtransport	TRANS(TLIINETFuncs) = {
 	TRANS(TLIDisconnect),
 	TRANS(TLIClose),
 	TRANS(TLICloseForCloning),
-	TRANS(TLINameToAddr),
-	TRANS(TLIAddrToName),
 };
 
 Xtransport	TRANS(TLITCPFuncs) = {
@@ -1309,8 +1289,6 @@ Xtransport	TRANS(TLITCPFuncs) = {
 	TRANS(TLIDisconnect),
 	TRANS(TLIClose),
 	TRANS(TLICloseForCloning),
-	TRANS(TLINameToAddr),
-	TRANS(TLIAddrToName),
 };
 
 Xtransport	TRANS(TLITLIFuncs) = {
@@ -1338,6 +1316,4 @@ Xtransport	TRANS(TLITLIFuncs) = {
 	TRANS(TLIDisconnect),
 	TRANS(TLIClose),
 	TRANS(TLICloseForCloning),
-	TRANS(TLINameToAddr),
-	TRANS(TLIAddrToName),
 };

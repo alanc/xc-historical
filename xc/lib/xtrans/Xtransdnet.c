@@ -1,4 +1,4 @@
-/* $XConsortium: Xtransdnet.c,v 1.10 94/03/15 13:20:57 mor Exp $ */
+/* $XConsortium: Xtransdnet.c,v 1.11 94/03/29 14:28:44 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -583,26 +583,6 @@ XtransConnInfo	ciptr;
 }
 
 
-static int
-TRANS(DNETNameToAddr) (ciptr)
-
-XtransConnInfo	ciptr;
-
-{
-    return -1;
-}
-
-
-static int
-TRANS(DNETAddrToName) (ciptr)
-
-XtransConnInfo	ciptr;
-
-{
-    return -1;
-}
-
-
 Xtransport	TRANS(DNETFuncs) = {
     /* DNET Interface */
     "decnet",
@@ -628,6 +608,4 @@ Xtransport	TRANS(DNETFuncs) = {
     TRANS(DNETDisconnect),
     TRANS(DNETClose),
     TRANS(DNETClose),
-    TRANS(DNETNameToAddr),
-    TRANS(DNETAddrToName),
 };
