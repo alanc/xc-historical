@@ -1,5 +1,5 @@
 
-/* $XConsortium$ */
+/* $XConsortium: wdt5.c,v 5.1 91/02/16 10:01:21 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -337,8 +337,6 @@ verify_curve_surface_facilities()
 	Pcurvsurf_facs facil;
 	Pint total_c,total_s,total_tc,total_ps;
 
-	facil.ppc_types.ints = intbuf1;
-	facil.pps_types.ints = intbuf2;
 	facil.cat_types.ints = intbuf3;
 	facil.sat_types.ints = intbuf4;
 	facil.tcat_types.ints = intbuf5;
@@ -351,26 +349,10 @@ verify_curve_surface_facilities()
 	if (facil.max_bsp_order != max_nurb_order)
 		tfprintf("failed: max non-uniform B-spline order = %d, expected %d\n",
 			facil.max_bsp_order, max_nurb_order);
-	if (facil.max_pp_order != max_para_poly_order)
-		tfprintf("failed: max parametric polynomial order = %d, expected %d\n",
-			facil.max_pp_order, max_para_poly_order);
 	if (facil.max_tc_order != max_trim_curve_order)
 		tfprintf("failed: max trim curve order = %d, expected %d\n",
 			facil.max_tc_order, max_trim_curve_order);
 
-	if (facil.num_pred_inds != num_pred_para_surface_idx)
-		tfprintf("failed: # of predefined parametric surface idx = %d, expected %d\n",
-			facil.num_pred_inds,num_pred_para_surface_idx);
-
-	exptype.num_ints = num_para_poly_curve_type;
-	exptype.ints = list_para_poly_curve_type;
-	if (! i_compare_Pint_list(facil.ppc_types,exptype))
-		tfprintf("failed: list of parametric polynomial curve types != expected\n");
-
-	exptype.num_ints = num_para_poly_surface_type;
-	exptype.ints = list_para_poly_surface_type;
-	if (! i_compare_Pint_list(facil.ppc_types,exptype))
-		tfprintf("failed: list of parametric polynomial surface types != expected\n");
 
 	exptype.num_ints = num_curve_approx_type;
 	exptype.ints = list_curve_approx_type;

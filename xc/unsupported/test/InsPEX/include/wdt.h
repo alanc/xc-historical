@@ -1,5 +1,5 @@
 
-/* $XConsortium: wdt.h,v 5.1 91/02/16 10:04:34 rws Exp $ */
+/* $XConsortium: wdt.h,v 5.2 91/07/08 18:14:42 hersh Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -121,7 +121,7 @@ Pint num_pred_view_idx = 6;
 
 /* number and list of available line types */
 Pint num_line_type = 4;
-Pint list_line_type[] = { PLINE_SOLID, PLINE_DASH, PLINE_DOT, PLINE_DOT_DASH };
+Pint list_line_type[] = { PLINE_SOLID, PLINE_DASH, PLINE_DOT, PLINE_DASH_DOT };
 
 
 /* number of available, nominal, minimum and maximum linewidths */
@@ -217,7 +217,7 @@ Pint num_pred_pattern_idx = 0;
 
 /* number and list of available edge types */
 Pint num_edge_type = 4;
-Pint list_edge_type[] = { PLINE_SOLID, PLINE_DASH, PLINE_DOT, PLINE_DOT_DASH };
+Pint list_edge_type[] = { PLINE_SOLID, PLINE_DASH, PLINE_DOT, PLINE_DASH_DOT };
 
 
 /* number of available, nominal, minimum and maximum edge widths */
@@ -358,7 +358,7 @@ Pint list_pred_line_idx[] = {1,2,3,4,5};
 Pline_bundle pred_line_reps[] = { {PLINE_SOLID, 1.0, 1} ,
                                   {PLINE_DASH, 1.0, 1} ,
                                   {PLINE_DOT, 1.0, 1} ,
-                                  {PLINE_DOT_DASH, 1.0, 1} ,
+                                  {PLINE_DASH_DOT, 1.0, 1} ,
                                   {PLINE_SOLID, 2.0, 1} 
 				};
 
@@ -410,7 +410,7 @@ Pint list_pred_edge_idx[] = {1,2,3,4,5};
 Pedge_bundle pred_edge_reps[] = { {PEDGE_ON, PLINE_SOLID, 1.0, 1},
                                   {PEDGE_ON, PLINE_DASH, 1.0, 1},
                                   {PEDGE_ON, PLINE_DOT, 1.0, 1},
-                                  {PEDGE_ON, PLINE_DOT_DASH, 1.0, 1},
+                                  {PEDGE_ON, PLINE_DASH_DOT, 1.0, 1},
                                   {PEDGE_ON, PLINE_SOLID, 3.0, 1}
 				};
 
@@ -998,7 +998,7 @@ Pline_bundle_plus pred_line_reps_plus[5];
 	pred_line_reps_plus[4] = pred_line_reps_plus[0];\
 	pred_line_reps_plus[1].type = PLINE_DASH;\
 	pred_line_reps_plus[2].type = PLINE_DOT;\
-	pred_line_reps_plus[3].type = PLINE_DOT_DASH;\
+	pred_line_reps_plus[3].type = PLINE_DASH_DOT;\
 	pred_line_reps_plus[4].width = 2.0;\
 	}
 
@@ -1123,7 +1123,7 @@ Pedge_bundle_plus pred_edge_reps_plus[5];
 	pred_edge_reps_plus[4] = pred_edge_reps_plus[0];\
 	pred_edge_reps_plus[1].type = PLINE_DASH;\
 	pred_edge_reps_plus[2].type = PLINE_DOT;\
-	pred_edge_reps_plus[3].type = PLINE_DOT_DASH;\
+	pred_edge_reps_plus[3].type = PLINE_DASH_DOT;\
 	pred_edge_reps_plus[4].width = 2.0;\
 	}
 
