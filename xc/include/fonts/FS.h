@@ -1,4 +1,4 @@
-/* $XConsortium: FS.h,v 1.5 92/05/12 18:07:12 gildea Exp $ */
+/* $XConsortium: FS.h,v 1.6 94/04/11 12:05:55 rws Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -11,6 +11,9 @@
  * documentation, and that the names of Network Computing Devices, Digital or
  * M.I.T. not be used in advertising or publicity pertaining to distribution
  * of the software without specific, written prior permission.
+ * Network Computing Devices, Digital, and M.I.T. make no representations 
+ * about the suitability of this software for any purpose.  It is provided 
+ * "as is" without express or implied warranty.
  *
  * NETWORK COMPUTING DEVICES, DIGITAL AND M.I.T. DISCLAIM ALL WARRANTIES WITH
  * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF

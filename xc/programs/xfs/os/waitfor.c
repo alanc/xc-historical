@@ -1,4 +1,4 @@
-/* $XConsortium: waitfor.c,v 1.10 93/09/22 16:59:17 rws Exp $ */
+/* $XConsortium: waitfor.c,v 1.11 93/12/06 15:20:33 kaleb Exp $ */
 /*
  * waits for input
  */
@@ -7,14 +7,17 @@
  * Portions Copyright 1987 by Digital Equipment Corporation and the
  * Massachusetts Institute of Technology
  *
- * Permission to use, copy, modify, and distribute this protoype software
- * and its documentation to Members and Affiliates of the MIT X Consortium
- * any purpose and without fee is hereby granted, provided
- * that the above copyright notice appear in all copies and that both that
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
- * documentation, and that the names of Network Computing Devices, Digital or
- * MIT not be used in advertising or publicity pertaining to distribution of
- * the software without specific, written prior permission.
+ * documentation, and that the names of M.I.T., Network Computing Devices,
+ * or Digital not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission.  M.I.T. Network Computing Devices, or Digital
+ * make no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
  *
  * NETWORK COMPUTING DEVICES, DIGITAL AND MIT DISCLAIM ALL WARRANTIES WITH
  * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
