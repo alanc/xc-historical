@@ -1,4 +1,4 @@
-/* $XConsortium: ICElibint.h,v 1.16 93/09/27 11:44:46 mor Exp $ */
+/* $XConsortium: ICElibint.h,v 1.17 93/11/02 11:00:46 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -265,7 +265,7 @@ typedef struct {
     else \
     { \
 	_pData = (char *) malloc ((unsigned) _bytes); \
-        if (_pData)
+        if (_pData) \
 	    _IceRead (_iceConn, _bytes, _pData); \
         else \
 	    _IceReadSkip (_iceConn, _bytes); \
