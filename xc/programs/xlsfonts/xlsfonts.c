@@ -22,8 +22,7 @@ FontList	*font_list;
 
 usage()
 {
-	fprintf (stderr,"usage:  %s [-options] [-fn pattern]\n", program_name,
-		 program_name);
+	fprintf (stderr,"usage:  %s [-options] [-fn pattern]\n", program_name);
 	fprintf (stderr, "where options include:\n");
 	fprintf (stderr,
 	"    -l                       give long info about each font\n");
