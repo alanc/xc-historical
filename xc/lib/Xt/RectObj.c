@@ -1,6 +1,6 @@
 /* LINTLIBRARY */
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: RectObj.c,v 1.5 88/09/06 16:28:30 jim Exp $";
+static char Xrcsid[] = "$XConsortium: RectObj.c,v 1.6 88/10/18 10:46:59 swick Exp $";
 /* $oHeader: RectObj.c,v 1.2 88/08/18 15:51:21 asente Exp $ */
 #endif lint
 
@@ -56,7 +56,7 @@ static XtResource resources[] = {
          XtOffset(RectObj,rectangle.sensitive), XtRImmediate, (caddr_t) True}
     };
 
-void RectObjInitialize();
+static void RectObjInitialize();
 static void RectClassPartInitialize();
 static void RectSetValuesAlmost();
 
