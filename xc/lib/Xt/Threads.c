@@ -402,6 +402,9 @@ void XtProcessUnlock()
 Boolean XtToolkitThreadInitialize()
 {
 #ifdef XTHREADS
+#ifdef xthread_init
+    xthread_init();
+#endif
     InitProcessLock();
     _XtProcessLock = ProcessLock;
     _XtProcessUnlock = ProcessUnlock;
