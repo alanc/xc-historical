@@ -1,4 +1,4 @@
-/* $XConsortium: io.c,v 1.13 94/02/03 15:43:05 mor Exp $ */
+/* $XConsortium: io.c,v 1.14 94/02/09 12:06:21 mor Exp $ */
 /*
  * i/o functions
  */
@@ -179,7 +179,7 @@ ReadRequest(client)
 	    oci->bufcnt = gotnow;
 	}
 	/* fill 'er up */
-	result = _FONTTransRead(oc->trans_conn, oci->buffer + oci->bufcnt,
+	result = _FontTransRead(oc->trans_conn, oci->buffer + oci->bufcnt,
 		      oci->size - oci->bufcnt);
 	if (result <= 0) {
 	    if ((result < 0) && ETEST(errno)) {
@@ -392,7 +392,7 @@ FlushClient(client, oc, extraBuf, extraCount, padsize)
 	InsertIOV(padBuffer, padsize);
 
 	errno = 0;
-	if ((len = _FONTTransWritev(oc->trans_conn, iov, i)) >= 0) {
+	if ((len = _FontTransWritev(oc->trans_conn, iov, i)) >= 0) {
 	    written += len;
 	    notWritten -= len;
 	    todo = notWritten;
@@ -427,7 +427,7 @@ FlushClient(client, oc, extraBuf, extraCount, padsize)
 		obuf = (unsigned char *) fsrealloc(oco->buf,
 					      notWritten + OutputBufferSize);
 		if (!obuf) {
-		    _FONTTransClose(oc->trans_conn);
+		    _FontTransClose(oc->trans_conn);
 		    oc->trans_conn = NULL;
 		    MarkClientException(client);
 		    oco->count = 0;
@@ -451,7 +451,7 @@ FlushClient(client, oc, extraBuf, extraCount, padsize)
 #endif
 	else
 	{
-	    _FONTTransClose(oc->trans_conn);
+	    _FontTransClose(oc->trans_conn);
 	    oc->trans_conn = NULL;
 	    MarkClientException(client);
 	    oco->count = 0;
@@ -536,7 +536,7 @@ write_to_client_internal(client, count, buf, padBytes)
 	if ((oco = FreeOutputs) != (ConnectionOutputPtr) 0) {
 	    FreeOutputs = oco->next;
 	} else if (!(oco = AllocateOutputBuffer())) {
-	    _FONTTransClose(oc->trans_conn);
+	    _FontTransClose(oc->trans_conn);
 	    oc->trans_conn = NULL;
 	    MarkClientException(client);
 	    return -1;

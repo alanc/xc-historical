@@ -1,4 +1,4 @@
-/* $XConsortium: osglue.c,v 1.6 93/09/20 18:08:56 hersh Exp $ */
+/* $XConsortium: osglue.c,v 1.7 94/03/02 12:17:13 mor Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -320,7 +320,7 @@ CloneMyself()
 	    int trans_id, fd;
 	    char *port;
 
-	    if (!_FONTTransGetReopenInfo (ListenTransConns[i],
+	    if (!_FontTransGetReopenInfo (ListenTransConns[i],
 		&trans_id, &fd, &port))
 		continue;
 
