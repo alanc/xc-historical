@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.2 90/02/09 15:24:31 jim Exp $
+ * $XConsortium: Panner.c,v 1.3 90/02/12 11:55:59 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -25,6 +25,7 @@
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
+#include <X11/Xmu/CharSet.h>
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/SimpleP.h>
 /* #include <X11/Xaw/PannerP.h> */
@@ -32,20 +33,22 @@
 
 
 static char defaultTranslations[] = 
-  "<Btn1Down>:    set() \n\
+  "<Btn1Down>:    start() \n\
    <Btn1Motion>:  move() \n\
-   <Btn1Up>:      notify() unset() \n\
-   <Btn2Down>:    abort()";
+   <Btn1Up>:      notify() stop() \n\
+   <Btn2Down>:    abort() \n\
+   <Key>KP_Enter: set(dynamic,toggle) ";
 
-static void ActionSet(), ActionUnset(), ActionAbort(), ActionMove();
-static void ActionNotify();
+static void ActionStart(), ActionStop(), ActionAbort(), ActionMove();
+static void ActionNotify(), ActionSet();
 
 static XtActionsRec actions[] = {
-    { "set", ActionSet },		/* start tmp graphics */
-    { "unset", ActionUnset },		/* stop tmp graphics */
+    { "start", ActionStart },		/* start tmp graphics */
+    { "stop", ActionStop },		/* stop tmp graphics */
     { "abort", ActionAbort },		/* punt */
     { "move", ActionMove },		/* move tmp graphics on Motion event */
     { "notify", ActionNotify },		/* callback new position */
+    { "set", ActionSet },		/* set various parameters */
 };
 
 
@@ -54,6 +57,8 @@ static XtActionsRec actions[] = {
  */
 #define poff(field) XtOffset(PannerWidget, panner.field)
 static XtResource resources[] = {
+    { XtNallowOff, XtCAllowOff, XtRBoolean, sizeof(Boolean),
+	poff(allow_off), XtRImmediate, FALSE },
     { XtNcallback, XtCCallback, XtRCallback, sizeof(XtPointer),
 	poff(callbacks), XtRCallback, (XtPointer) NULL },
     { XtNdefaultScale, XtCDefaultScale, XtRDimension, sizeof(Dimension),
@@ -198,34 +203,30 @@ static void reset_xor_gc (pw)		/* used when resources change */
     }
 }
 
-static void scale_knob (pw, location, size)  /* set knob size and/or loc */
-    PannerWidget pw;
-    Boolean location, size;
+static void check_knob (pw, knob)
+    register PannerWidget pw;
+    Boolean knob;
 {
-    if (location) {
-	pw->panner.knob_x = (Position)
-	  PANNER_HSCALE (pw, pw->panner.slider_x);
-	pw->panner.knob_y = (Position)
-	  PANNER_VSCALE (pw, pw->panner.slider_y);
-    }
-    if (size) {
-	pw->panner.knob_width = (Dimension)
-	  PANNER_HSCALE (pw, pw->panner.slider_width);
-	pw->panner.knob_height = (Dimension)
-	  PANNER_VSCALE (pw, pw->panner.slider_height);
-    }
-}
+    Position maxx = (Position) (((long) pw->core.width) -
+				((long) pw->panner.knob_width));
+    Position maxy = (Position) (((long) pw->core.height) -
+				((long) pw->panner.knob_height));
+    Position *x = (knob ? &pw->panner.knob_x : &pw->panner.tmp.x);
+    Position *y = (knob ? &pw->panner.knob_y : &pw->panner.tmp.y);
 
-static void rescale (pw)
-    PannerWidget pw;
-{
-    if (pw->panner.canvas_width < 1) pw->panner.canvas_width = 1;
-    if (pw->panner.canvas_height < 1) pw->panner.canvas_height = 1;
-    pw->panner.haspect = (((float) pw->core.width) /
-			  ((float) pw->panner.canvas_width));
-    pw->panner.vaspect = (((float) pw->core.height) /
-			  ((float) pw->panner.canvas_height));
-    scale_knob (pw, TRUE, TRUE);
+    if (*x < 0) *x = 0;
+    if (*x > maxx) *x = maxx;
+
+    if (*y < 0) *y = 0;
+    if (*y > maxy) *y = maxy;
+
+    if (knob) {
+	pw->panner.slider_x = (Position) (((float) pw->panner.knob_x) /
+					  pw->panner.haspect);
+	pw->panner.slider_y = (Position) (((float) pw->panner.knob_y) /
+					  pw->panner.vaspect);
+	pw->panner.last_x = pw->panner.last_y = PANNER_OUTOFRANGE;
+    }
 }
 
 
@@ -253,6 +254,39 @@ static void move_shadow (pw)
 	pw->panner.shadow_valid = FALSE;
     }
 }
+
+static void scale_knob (pw, location, size)  /* set knob size and/or loc */
+    PannerWidget pw;
+    Boolean location, size;
+{
+    if (location) {
+	pw->panner.knob_x = (Position)
+	  PANNER_HSCALE (pw, pw->panner.slider_x);
+	pw->panner.knob_y = (Position)
+	  PANNER_VSCALE (pw, pw->panner.slider_y);
+    }
+    if (size) {
+	pw->panner.knob_width = (Dimension)
+	  PANNER_HSCALE (pw, pw->panner.slider_width);
+	pw->panner.knob_height = (Dimension)
+	  PANNER_VSCALE (pw, pw->panner.slider_height);
+    }
+    if (!pw->panner.allow_off) check_knob (pw, TRUE);
+    if (pw->panner.shadow) move_shadow (pw);
+}
+
+static void rescale (pw)
+    PannerWidget pw;
+{
+    if (pw->panner.canvas_width < 1) pw->panner.canvas_width = 1;
+    if (pw->panner.canvas_height < 1) pw->panner.canvas_height = 1;
+    pw->panner.haspect = (((float) pw->core.width) /
+			  ((float) pw->panner.canvas_width));
+    pw->panner.vaspect = (((float) pw->core.height) /
+			  ((float) pw->panner.canvas_height));
+    scale_knob (pw, TRUE, TRUE);
+}
+
 
 
 static Boolean get_event_xy (event, x, y)
@@ -330,10 +364,9 @@ static void Initialize (greq, gnew)
     new->panner.xor_gc = NULL;
     reset_xor_gc (new);			/* foreground ^ background */
 
-    rescale (new);
+    rescale (new);			/* does a position check */
     new->panner.tmp.doing = FALSE;
     new->panner.tmp.showing = FALSE;
-    move_shadow (new);
 }
 
 static void Destroy (gw)
@@ -409,6 +442,10 @@ static Boolean SetValues (gcur, greq, gnew, args, num_args)
 	move_shadow (new);
 	redisplay = TRUE;
     }
+    if (cur->panner.dynamic != new->panner.dynamic) {
+	reset_xor_gc (new);
+	if (new->panner.tmp.doing) redisplay = TRUE;
+    }
 
     if (cur->panner.canvas_width != new->panner.canvas_width ||
 	cur->panner.canvas_height != new->panner.canvas_height) {
@@ -419,7 +456,9 @@ static Boolean SetValues (gcur, greq, gnew, args, num_args)
 		       cur->panner.slider_y != new->panner.slider_y);
 	Boolean siz = (cur->panner.slider_width != new->panner.slider_width ||
 		       cur->panner.slider_height != new->panner.slider_height);
-	if (loc || siz) {
+	if (loc || siz ||
+	    (cur->panner.allow_off != new->panner.allow_off &&
+	     new->panner.allow_off)) {
 	    scale_knob (new, loc, siz);
 	    redisplay = TRUE;
 	}
@@ -456,7 +495,7 @@ static XtGeometryResult QueryGeometry (gw, intended, pref)
  *                                                                           *
  *****************************************************************************/
 
-static void ActionSet (gw, event, params, num_params)
+static void ActionStart (gw, event, params, num_params)
     Widget gw;
     XEvent *event;
     String *params;			/* unused */
@@ -477,10 +516,11 @@ static void ActionSet (gw, event, params, num_params)
     pw->panner.tmp.dy = (((Position) y) - pw->panner.knob_y);
     pw->panner.tmp.x = pw->panner.knob_x;
     pw->panner.tmp.y = pw->panner.knob_y;
+    pw->panner.last_x = pw->panner.last_y = PANNER_OUTOFRANGE;
     if (!pw->panner.dynamic) DRAW_TMP (pw);
 }
 
-static void ActionUnset (gw, event, params, num_params)
+static void ActionStop (gw, event, params, num_params)
     Widget gw;
     XEvent *event;
     String *params;			/* unused */
@@ -492,6 +532,7 @@ static void ActionUnset (gw, event, params, num_params)
     if (get_event_xy (event, &x, &y)) {
 	pw->panner.tmp.x = ((Position) x) - pw->panner.tmp.dx;
 	pw->panner.tmp.y = ((Position) y) - pw->panner.tmp.dy;
+	if (!pw->panner.allow_off) check_knob (pw, FALSE);
     }
     if (!pw->panner.dynamic) UNDRAW_TMP (pw);
     pw->panner.tmp.doing = FALSE;
@@ -541,8 +582,9 @@ static void ActionMove (gw, event, params, num_params)
     pw->panner.tmp.y = ((Position) y) - pw->panner.tmp.dy;
 
     if (pw->panner.dynamic) {
-	ActionNotify (gw, event, params, num_params);
+	ActionNotify (gw, event, params, num_params);  /* does a check */
     } else {
+	if (!pw->panner.allow_off) check_knob (pw, FALSE);
 	DRAW_TMP (pw);
     }
 }
@@ -557,16 +599,53 @@ static void ActionNotify (gw, event, params, num_params)
 
     if (!pw->panner.tmp.doing) return;
 
+    if (!pw->panner.allow_off) check_knob (pw, FALSE);
     pw->panner.knob_x = pw->panner.tmp.x;
     pw->panner.knob_y = pw->panner.tmp.y;
     if (pw->panner.shadow) move_shadow (pw);
 
+    pw->panner.last_x = pw->panner.slider_x;
+    pw->panner.last_y = pw->panner.slider_y;
     pw->panner.slider_x = (Position) (((float) pw->panner.knob_x) /
 				      pw->panner.haspect);
     pw->panner.slider_y = (Position) (((float) pw->panner.knob_y) /
 				      pw->panner.vaspect);
-    Redisplay (gw);
 
-    /* call callback */
+    if (pw->panner.last_x != pw->panner.slider_x ||
+	pw->panner.last_y != pw->panner.slider_y) {
+	Redisplay (gw);
+	/* call callback */
+    }
 }
 
+static void ActionSet (gw, event, params, num_params)
+    Widget gw;
+    XEvent *event;			/* unused */
+    String *params;			/* unused */
+    Cardinal *num_params;		/* unused */
+{
+    PannerWidget pw = (PannerWidget) gw;
+    Boolean dyn;
+
+    if (*num_params < 2 || XmuCompareISOLatin1 (params[0], "dynamic") != 0) {
+	XBell (XtDisplay(gw), 0);
+	return;
+    }
+
+    if (XmuCompareISOLatin1 (params[1], "on") == 0) {
+	dyn = TRUE;
+    } else if (XmuCompareISOLatin1 (params[1], "off") == 0) {
+	dyn = FALSE;
+    } else if (XmuCompareISOLatin1 (params[1], "toggle") == 0) {
+	dyn = !pw->panner.dynamic;
+    } else {
+	XBell (XtDisplay(gw), 0);
+	return;
+    }
+
+    if (dyn != pw->panner.dynamic) {
+	Arg args[1];
+	XtSetArg (args[0], XtNdynamic, dyn);
+	XtSetValues (gw, args, (Cardinal) 1);
+    }
+}

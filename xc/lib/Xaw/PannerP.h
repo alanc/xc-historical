@@ -1,5 +1,5 @@
 /*
- * $XConsortium: PannerP.h,v 1.2 90/02/09 15:24:35 jim Exp $
+ * $XConsortium: PannerP.h,v 1.3 90/02/12 11:56:03 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -43,6 +43,7 @@ typedef struct {			/* new fields in widget */
     /* resources... */
     XtCallbackList callbacks;		/* callback/Callback */
     Boolean shadow;			/* shadow/Shadow */
+    Boolean allow_off;			/* allowOff/AllowOff */
     Pixel foreground;			/* foreground/Foreground */
     Pixel slider_color;			/* sliderColor/sliderColor */
     Dimension default_scale;		/* defaultScale/DefaultScale */
@@ -70,6 +71,7 @@ typedef struct {			/* new fields in widget */
     Dimension knob_width, knob_height;	/* real size of knob in canvas */
     Boolean shadow_valid;		/* true if rects are valid */
     XRectangle shadow_rects[2];		/* location of shadows */
+    Position last_x, last_y;		/* previous location of slider */
 } PannerPart;
 
 typedef struct _PannerRec {
@@ -84,6 +86,8 @@ typedef struct _PannerRec {
 #define PANNER_DSCALE(pw,val) (Dimension)  \
   ((((unsigned long) (val)) * (unsigned long) pw->panner.default_scale) / 100L)
 #define PANNER_DEFAULT_SCALE 10		/* in percent */
+
+#define PANNER_OUTOFRANGE -30000
 
 /*
  * external declarations

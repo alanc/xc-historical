@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.h,v 1.2 90/02/09 15:24:33 jim Exp $
+ * $XConsortium: Panner.h,v 1.3 90/02/12 11:56:02 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -37,6 +37,7 @@
  *  Name		Class		Type		Default
  *  ----		-----		----		-------
  * 
+ *  allowOff		AllowOff	Boolean		FALSE
  *  background		Background	Pixel		XtDefaultBackground
  *  callback		Callback	XtCallbackList	NULL
  *  canvasWidth		CanvasWidth	Dimension	0
@@ -55,6 +56,8 @@
  *****************************************************************************/
 
 					/* new instance and class names */
+#define XtNallowOff "allowOff"
+#define XtCAllowOff "AllowOff"
 #define XtNdefaultScale "defaultScale"
 #define XtCDefaultScale "DefaultScale"
 #define XtNcanvasWidth "canvasWidth"
