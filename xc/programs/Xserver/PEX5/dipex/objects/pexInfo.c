@@ -1,4 +1,4 @@
-/* $XConsortium: pexInfo.c,v 5.2 92/03/04 14:16:15 hersh Exp $ */
+/* $XConsortium: pexInfo.c,v 5.3 93/05/07 16:15:31 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -77,7 +77,7 @@ pexGetExtensionInfoReq	*strmPtr;
     reply->lengthName = strlen(PEX_VENDOR);
     reply->length = LWORDS(reply->lengthName);
     reply->subsetInfo = PEX_SUBSET;
-    bcopy(PEX_VENDOR, (char *)(reply+1), (int)(reply->lengthName));
+    memcpy( (char *)(reply+1), PEX_VENDOR, (int)(reply->lengthName));
 
     WritePEXReplyToClient(  cntxtPtr, strmPtr,
 			    sizeof(pexGetExtensionInfoReply) + reply->lengthName,

@@ -1,4 +1,4 @@
-/* $XConsortium: pexRndr.c,v 5.24 93/05/07 16:12:48 hersh Exp $ */
+/* $XConsortium: pexRndr.c,v 5.25 93/08/30 16:10:28 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -837,7 +837,7 @@ pexGetRendererAttributesReq 	*strmPtr;
 	CHK_PEX_BUF(size, sizeof(CARD32) + num_bytes,
 		    reply, pexGetRendererAttributesReply, ptr);
 	PACK_CARD32(prend->clipList->numObj, ptr);
-	bcopy((char *)(prend->clipList->pList), (char *)ptr, num_bytes);
+	memcpy( (char *)ptr, (char *)(prend->clipList->pList), num_bytes);
 	ptr += num_bytes;
     }
 

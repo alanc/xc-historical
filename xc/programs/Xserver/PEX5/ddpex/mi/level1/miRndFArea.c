@@ -1,4 +1,4 @@
-/* $XConsortium: miRndFArea.c,v 5.2 91/07/24 17:57:52 hersh Exp $ */
+/* $XConsortium: miRndFArea.c,v 5.3 92/12/03 19:46:02 hersh Exp $ */
 
 
 /***********************************************************
@@ -400,7 +400,7 @@ miRenderFillArea(pRend, pddc, input_list, input_facet, shape, noedges)
 	        (*GetGCValue(pGC, ops->FillPolygon)) 
 			     (pRend->pDrawable,
 			     pGC, 
-			     shape,
+			     shape != PEXUnknownShape ? shape : PEXComplex,
 			     CoordModeOrigin, 
 			     pddlist->numPoints, 
 			     pddlist->pts.p2DSpt);
@@ -446,7 +446,7 @@ miRenderFillArea(pRend, pddc, input_list, input_facet, shape, noedges)
 	        (*GetGCValue(pGC, ops->FillPolygon)) 
 			     (pRend->pDrawable,
 			     pGC, 
-			     shape,
+			     shape != PEXUnknownShape ? shape : PEXComplex,
 			     CoordModeOrigin, 
 			     pddlist->numPoints, 
 			     pddlist->pts.p2DSpt);

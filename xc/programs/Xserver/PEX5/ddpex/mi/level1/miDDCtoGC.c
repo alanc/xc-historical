@@ -1,4 +1,4 @@
-/* $XConsortium: miDDCtoGC.c,v 5.3 92/11/09 18:52:44 hersh Exp $ */
+/* $XConsortium: miDDCtoGC.c,v 5.4 92/12/03 19:45:16 hersh Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -139,7 +139,7 @@ GCPtr		pgc;	/* X GC handle */
 	       pgc->dash = (unsigned char *)Xalloc(MAX_LINE_DASH_LENGTH_SIZE);
 	       pddc->Static.misc.flags &= ~NOLINEDASHFLAG;
 	     }
-	     bcopy ((char *)mi_line_dashed, (char *)(pgc->dash),
+	     memcpy( (char *)(pgc->dash), (char *)mi_line_dashed, 
 		    sizeof(mi_line_dashed));
 
 	   } else if (pgc->dash != mi_line_dashed) {
@@ -149,7 +149,7 @@ GCPtr		pgc;	/* X GC handle */
 	       pgc->dash = (unsigned char *)Xalloc(MAX_LINE_DASH_LENGTH_SIZE);
 	       pddc->Static.misc.flags &= ~NOLINEDASHFLAG;
 	     }
-	     bcopy ((char *)mi_line_dashed, (char *)(pgc->dash),
+	     memcpy( (char *)(pgc->dash), (char *)mi_line_dashed, 
 		    sizeof(mi_line_dashed));
 	   }
 	   break;
@@ -163,7 +163,7 @@ GCPtr		pgc;	/* X GC handle */
 	       pgc->dash = (unsigned char *)Xalloc(MAX_LINE_DASH_LENGTH_SIZE);
 	       pddc->Static.misc.flags &= ~NOLINEDASHFLAG;
 	     }
-	     bcopy ((char *)mi_line_dotted, (char *)(pgc->dash),
+	     memcpy( (char *)(pgc->dash), (char *)mi_line_dotted, 
 		    sizeof(mi_line_dotted));
 
 	   } else if (pgc->dash != mi_line_dotted) {
@@ -173,7 +173,7 @@ GCPtr		pgc;	/* X GC handle */
 	       pgc->dash = (unsigned char *)Xalloc(MAX_LINE_DASH_LENGTH_SIZE);
 	       pddc->Static.misc.flags &= ~NOLINEDASHFLAG;
 	     }
-	     bcopy ((char *)mi_line_dotted, (char *)pgc->dash,
+	     memcpy( (char *)(pgc->dash), (char *)mi_line_dotted, 
 		    sizeof(mi_line_dotted));
 	   }
 	   break;
@@ -187,7 +187,7 @@ GCPtr		pgc;	/* X GC handle */
 	       pgc->dash = (unsigned char *)Xalloc(MAX_LINE_DASH_LENGTH_SIZE);
 	       pddc->Static.misc.flags &= ~NOLINEDASHFLAG;
 	     }
-	     bcopy ((char *)mi_line_dashdot, (char *)(pgc->dash),
+	     memcpy( (char *)(pgc->dash), (char *)mi_line_dashdot, 
 		    sizeof(mi_line_dashdot));
 
 	   } else if (pgc->dash != mi_line_dashdot) {
@@ -197,7 +197,7 @@ GCPtr		pgc;	/* X GC handle */
 	       pgc->dash = (unsigned char *)Xalloc(MAX_LINE_DASH_LENGTH_SIZE);
 	       pddc->Static.misc.flags &= ~NOLINEDASHFLAG;
 	     }
-	     bcopy ((char *)mi_line_dashdot, (char *)(pgc->dash),
+	     memcpy( (char *)(pgc->dash), (char *)mi_line_dashdot, 
 		    sizeof(mi_line_dashdot));
 	   }
 	   break;
@@ -320,7 +320,7 @@ GCPtr		pgc;	/* X GC handle */
 	       pgc->dash = (unsigned char *)Xalloc(MAX_LINE_DASH_LENGTH_SIZE);
 	       pddc->Static.misc.flags &= ~NOLINEDASHFLAG;
 	     }
-	     bcopy ((char *)mi_line_dashed, (char *)(pgc->dash),
+	     memcpy( (char *)(pgc->dash), (char *)mi_line_dashed, 
 		    sizeof(mi_line_dashed));
 
 	   } else if (pgc->dash != mi_line_dashed) {
@@ -330,7 +330,7 @@ GCPtr		pgc;	/* X GC handle */
 	       pgc->dash = (unsigned char *)Xalloc(MAX_LINE_DASH_LENGTH_SIZE);
 	       pddc->Static.misc.flags &= ~NOLINEDASHFLAG;
 	     }
-	     bcopy ((char *)mi_line_dashed, (char *)(pgc->dash),
+	     memcpy( (char *)(pgc->dash), (char *)mi_line_dashed, 
 		    sizeof(mi_line_dashed));
 	   }
 	   break;
@@ -344,7 +344,7 @@ GCPtr		pgc;	/* X GC handle */
 	       pgc->dash = (unsigned char *)Xalloc(MAX_LINE_DASH_LENGTH_SIZE);
 	       pddc->Static.misc.flags &= ~NOLINEDASHFLAG;
 	     }
-	     bcopy ((char *)mi_line_dotted, (char *)(pgc->dash),
+	     memcpy( (char *)(pgc->dash), (char *)mi_line_dotted, 
 		    sizeof(mi_line_dotted));
 
 	   } else if (pgc->dash != mi_line_dotted) {
@@ -354,7 +354,7 @@ GCPtr		pgc;	/* X GC handle */
 	       pgc->dash = (unsigned char *)Xalloc(MAX_LINE_DASH_LENGTH_SIZE);
 	       pddc->Static.misc.flags &= ~NOLINEDASHFLAG;
 	     }
-	     bcopy ((char *)mi_line_dotted, (char *)pgc->dash,
+	     memcpy( (char *)(pgc->dash), (char *)mi_line_dotted, 
 		    sizeof(mi_line_dotted));
 	   }
 	   break;
@@ -368,7 +368,7 @@ GCPtr		pgc;	/* X GC handle */
 	       pgc->dash = (unsigned char *)Xalloc(MAX_LINE_DASH_LENGTH_SIZE);
 	       pddc->Static.misc.flags &= ~NOLINEDASHFLAG;
 	     }
-	     bcopy ((char *)mi_line_dashdot, (char *)(pgc->dash),
+	     memcpy( (char *)(pgc->dash), (char *)mi_line_dashdot, 
 		    sizeof(mi_line_dashdot));
 
 	   } else if (pgc->dash != mi_line_dashdot) {
@@ -378,7 +378,7 @@ GCPtr		pgc;	/* X GC handle */
 	       pgc->dash = (unsigned char *)Xalloc(MAX_LINE_DASH_LENGTH_SIZE);
 	       pddc->Static.misc.flags &= ~NOLINEDASHFLAG;
 	     }
-	     bcopy ((char *)mi_line_dashdot, (char *)(pgc->dash),
+	     memcpy( (char *)(pgc->dash), (char *)mi_line_dashdot, 
 		    sizeof(mi_line_dashdot));
 	   }
 	   break;

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miClip.h,v 5.1 91/02/16 09:54:53 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -216,10 +216,12 @@ SOFTWARE.
 #define MI_VCLIP 1
 
 
+/* JSH - assuming copy may overlap */
 #define COPY_POINT(in_pt, out_pt, point_size)                           \
-        bcopy( (in_pt).ptr, (out_pt).ptr, (point_size) )
+        memmove( (out_pt).ptr, (in_pt).ptr, (point_size) )
 
+/* JSH - assuming copy may overlap */
 #define COPY_FACET(in_fct, out_fct, facet_size)                         \
-        bcopy( (in_fct), (out_fct), (facet_size) )
+        memmove( (out_fct), (in_fct), (facet_size) )
 
 

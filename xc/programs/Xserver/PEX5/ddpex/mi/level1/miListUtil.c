@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miListUtil.c,v 5.1 91/02/16 09:55:05 rws Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -82,8 +82,8 @@ miCopyPath(pddc, vinput, voutput, flags)
       MI_ALLOCLISTOFDDPOINT(pddolist,(pddilist->numPoints+1),point_size);
       if (!pddolist->pts.p4Dpt) return(BadAlloc);
 
-      bcopy((char *)pddilist->pts.p4Dpt, 
-	    (char *)pddolist->pts.p4Dpt, 
+      memcpy( (char *)pddolist->pts.p4Dpt, 
+	    (char *)pddilist->pts.p4Dpt, 
 	    ((int)(pddilist->numPoints))*point_size);
 
       pddilist++;
@@ -200,15 +200,15 @@ miFilterPath(pddc, vinput, voutput, fields)
       in_pt = (char *)pddilist->pts.p4Dpt;
 
       for (i = 0; i < pddilist->numPoints; i++) {
-	 if (fields & VERTEX_FLAG) bcopy(in_pt, out_pt, vertex_size);
-	 if (fields & COLOR_FLAG) bcopy((in_pt + color_offset), 
-					(out_pt+ color_offset), 
+	 if (fields & VERTEX_FLAG) memcpy( out_pt, in_pt, vertex_size);
+	 if (fields & COLOR_FLAG) memcpy( (out_pt+ color_offset), 
+					(in_pt + color_offset), 
 					color_size);
-	 if (fields & NORMAL_FLAG) bcopy((in_pt + normal_offset), 
-					(out_pt+ color_offset), 
+	 if (fields & NORMAL_FLAG) memcpy( (out_pt+ color_offset), 
+					(in_pt + normal_offset), 
 					sizeof(ddVector3D));
-	 if (fields & EDGE_FLAG) bcopy((in_pt + edge_offset), 
-					(out_pt+ color_offset), 
+	 if (fields & EDGE_FLAG) memcpy( (out_pt+ color_offset), 
+					(in_pt + edge_offset), 
 					sizeof(ddULONG));
 	 in_pt += in_point_size;
 	 out_pt += out_point_size;

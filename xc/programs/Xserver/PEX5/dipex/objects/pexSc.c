@@ -1,4 +1,4 @@
-/* $XConsortium: pexSc.c,v 5.6 92/12/01 17:17:51 hersh Exp $ */
+/* $XConsortium: pexSc.c,v 5.7 93/01/06 13:57:17 mor Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -334,7 +334,7 @@ pexCopySearchContextReq *strmPtr;
 						 sizeof(ddNSPair)));
 	if (! dst->normal.pPairs) PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
 
-	bcopy ((char *)(src->normal.pPairs), (char *)(dst->normal.pPairs),
+	memcpy( (char *)(dst->normal.pPairs), (char *)(src->normal.pPairs), 
 		(int)(src->normal.numPairs * sizeof(ddNSPair)));
 	dst->normal.numPairs = src->normal.numPairs;
 	dst->normal.maxPairs = src->normal.maxPairs;
@@ -348,7 +348,7 @@ pexCopySearchContextReq *strmPtr;
 						 sizeof(ddNSPair)));
 	if (! dst->inverted.pPairs) PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
 
-	bcopy ((char *)(src->inverted.pPairs), (char *)(dst->inverted.pPairs),
+	memcpy( (char *)(dst->inverted.pPairs), (char *)(src->inverted.pPairs),
 		(int)(src->inverted.numPairs * sizeof(ddNSPair)));
 	dst->inverted.numPairs = src->inverted.numPairs;
 	dst->inverted.maxPairs = src->inverted.maxPairs;

@@ -1,4 +1,4 @@
-/* $XConsortium: mipex.h,v 5.2 91/12/03 16:57:33 hersh Exp $ */
+/* $XConsortium: mipex.h,v 5.3 91/12/26 17:52:06 hersh Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -113,8 +113,9 @@ typedef void	(*destroyTableType)();
 		  (format!=PEXRgbInt16Colour) )
 		 */
 
+/* JSH - assuming copy may overlap */
 #define mibcopy(pfrom, pto, size)		\
-	bcopy((char *)(pfrom), (char *)(pto), (int)(size))
+	memmove( (char *)(pto), (char *)(pfrom), (int)(size))
 
 extern int PexErrorBase;
 #define PEXERR( pexerrnum )  (pexerrnum) + PexErrorBase 

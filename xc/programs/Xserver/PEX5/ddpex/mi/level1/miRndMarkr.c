@@ -1,4 +1,4 @@
-/* $XConsortium: miRndMarkr.c,v 5.3 91/04/23 17:13:09 hersh Exp $ */
+/* $XConsortium: miRndMarkr.c,v 5.4 92/05/06 16:32:45 hersh Exp $ */
 
 
 /***********************************************************
@@ -189,8 +189,8 @@ render_marker:
 	    * by the (now DC) marker position specified in the input
 	    * vertex list.
 	    */
-	   bcopy((char *) ident4x4, 
-		 (char *) marker_trans, 16 * sizeof(ddFLOAT));
+	   memcpy( (char *) marker_trans, 
+		 (char *) ident4x4, 16 * sizeof(ddFLOAT));
 	   marker_trans[0][0] = pddc->Static.attrs->markerScale;
 	   marker_trans[1][1] = pddc->Static.attrs->markerScale;
 
