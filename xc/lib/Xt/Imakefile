@@ -80,7 +80,11 @@ SRCS = \
 	SetWMCW.c \
 	Shell.c \
 	StringDefs.c \
+	TMaction.c \
+	TMgrab.c \
+	TMkey.c \
 	TMparse.c \
+	TMprint.c \
 	TMstate.c \
 	VarCreate.c \
 	VarGet.c \
@@ -129,7 +133,11 @@ OBJS = \
 	SetWMCW.o \
 	Shell.o \
 	StringDefs.o \
+	TMaction.o \
+	TMgrab.o \
+	TMkey.o \
 	TMparse.o \
+	TMprint.o \
 	TMstate.o \
 	VarCreate.o \
 	VarGet.o \
