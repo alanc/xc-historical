@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XLockDis.c,v 1.1 93/06/21 15:35:26 gildea Exp $
+ * $XConsortium: XLockDis.c,v 1.1 93/06/21 17:27:18 gildea Exp $
  *
  * Copyright 1993 Massachusetts Institute of Technology
  *
@@ -25,26 +25,10 @@
  * XLockDis.c - multi-thread application-level locking routines
  */
 
-#ifdef MULTI_THREADED
+#ifdef XTHREADS
 
 #include "Xlibint.h"
 #include "locking.h"
-
-/* prototypes - move to Xlib.h */
-
-extern Status XLockDisplay(
-#if NeedFunctionPrototypes
-    Display*		/* display */
-#endif
-);
-
-extern Status XUnlockDisplay(
-#if NeedFunctionPrototypes
-    Display*		/* display */
-#endif
-);
-
-/* end of decls */
 
 static void _XFancyLockDisplay();
 static void _XDisplayLockWait();
@@ -123,6 +107,6 @@ static void _XFancyLockDisplay(dpy, file, line)
     _XDisplayLockWait(dpy);
 }
 
-#else /* MULTI_THREADED */
+#else /* XTHREADS */
 static int unused;		/* always create a symbol table */
-#endif /* MULTI_THREADED */
+#endif /* XTHREADS */
