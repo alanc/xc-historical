@@ -1,4 +1,4 @@
-.\" $XConsortium: CH11,v 1.18 94/04/18 18:48:32 rws Exp $
+.\" $XConsortium: CH11,v 1.19 94/04/18 20:20:49 rws Exp $
 .\" Copyright \(co 1985, 1986, 1987, 1988, 1991, 1994
 .\" X Consortium
 .\" 
@@ -1856,7 +1856,8 @@ involving the property is made.  \*(cI
 .LP
 This function returns an atom that may be used as a property name in
 conversion requests from widget \fIw\fP.
-The atom returned is unique to the client.
+The atom returned is unique with respect to all other reserved atoms
+for the widget.
 .sp
 .FD 0
 void XtReleasePropertyAtom(\fIw\fP, \fIatom\fP)
@@ -1871,8 +1872,6 @@ Specifies the widget used to reserve the atom.
 The atom whose reservation is to be released.
 .LP
 If the property exists on the widget's window, it is deleted.
-If the property was created on some other window, it is the client's
-responsibility to delete the property.
 
 .NH 3
 Retrieving the Most Recent Timestamp
