@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.100 91/07/03 14:04:58 keith Exp $ */
+/* $XConsortium: utils.c,v 1.101 91/07/03 14:08:07 keith Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -176,10 +176,10 @@ void UseMsg()
     ErrorF("-logo                  enable logo in screen saver\n");
     ErrorF("nologo                 disable logo in screen saver\n");
 #endif
-    ErrorF("-p #                   screen-saver pattern duration (seconds)\n");
+    ErrorF("-p #                   screen-saver pattern duration (minutes)\n");
     ErrorF("-r                     turns off auto-repeat\n");
     ErrorF("r                      turns on auto-repeat \n");
-    ErrorF("-s #                   screen-saver timeout (seconds)\n");
+    ErrorF("-s #                   screen-saver timeout (minutes)\n");
     ErrorF("-su                    disable any save under support\n");
     ErrorF("-t #                   mouse threshold (pixels)\n");
     ErrorF("-to #                  connection time out\n");
@@ -360,7 +360,7 @@ char	*argv[];
 	{
 	    if(++i < argc)
 	        defaultScreenSaverInterval = ((long)atoi(argv[i])) *
-					     MILLI_PER_SECOND;
+					     MILLI_PER_MIN;
 	    else
 		UseMsg();
 	}
@@ -371,8 +371,7 @@ char	*argv[];
 	else if ( strcmp( argv[i], "-s") == 0)
 	{
 	    if(++i < argc)
-	        defaultScreenSaverTime = ((long)atoi(argv[i])) *
-					 MILLI_PER_SECOND;
+	        defaultScreenSaverTime = ((long)atoi(argv[i])) * MILLI_PER_MIN;
 	    else
 		UseMsg();
 	}
