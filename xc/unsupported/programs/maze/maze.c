@@ -39,6 +39,7 @@
 #include  <stdio.h>
 #include  <X11/Xlib.h>
 #include  <X11/Xutil.h>
+#include  <X11/bitmaps/gray1>
 
 #define LOGOSIZE	7
 #define MIN_MAZE_SIZE	3
@@ -76,8 +77,10 @@
 #define	border_y        (0)
 #define	MIN_W	        200
 #define	MIN_H	        200
-#define	DEF_W	        500
-#define	DEF_H	        500
+
+#define	DEF_W	        636
+#define	DEF_H	        456
+char *defgeo = "636x456+10+10";
   
 #define	get_random(x)	(random() % (x))
   
@@ -108,13 +111,12 @@ Window	iwin;
 GC	gc, cgc;
 XWindowAttributes win_attr;
 int	screen;
-char	*defgeo = "=500x500+10+10" ;
 long	background;
 Pixmap	logo_map;
 int	reverse = 0;
 
 int	width = DEF_W, height = DEF_H ;
-int	x = 10, y = 10, restart = 0, stop = 1, state = 1;
+int	x = 0, y = 0, restart = 0, stop = 1, state = 1;
 
 
 main(argc,argv)                                               /* main module */
@@ -132,6 +134,7 @@ main(argc,argv)                                               /* main module */
   Pixmap	backmap, bdrmap;
   XSizeHints size_hints;
   XWindowAttributes	wind_info;
+  Pixmap gray;
   int bw = 2;
   int flags;
 
@@ -189,6 +192,9 @@ main(argc,argv)                                               /* main module */
   gc = XCreateGC(dpy, win, 0, 0);
   cgc = XCreateGC(dpy, win, 0, 0);
   
+  gray = XCreateBitmapFromData (dpy, win, gray1_bits, 
+				gray1_width, gray1_height);
+
   if (reverse)	{
       XSetForeground(dpy, gc, WhitePixel(dpy, screen));
       XSetBackground(dpy, gc, BlackPixel(dpy, screen));
@@ -202,7 +208,9 @@ main(argc,argv)                                               /* main module */
       XSetForeground(dpy, cgc, WhitePixel(dpy, screen)); 
       XSetBackground(dpy, cgc, BlackPixel(dpy, screen)); 
       XSetWindowBackground(dpy, win, WhitePixel(dpy, screen)); 
-    }
+  }
+  XSetStipple (dpy, cgc, gray);
+  XSetFillStyle (dpy, cgc, FillOpaqueStippled);
   
   if  (!(logo_map = XCreateBitmapFromData(dpy, win, logo_bits,
 					  logo_width, logo_height))) {
