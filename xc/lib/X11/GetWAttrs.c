@@ -1,4 +1,4 @@
-/* $XConsortium: XGetWAttrs.c,v 11.23 91/01/06 11:46:21 rws Exp $ */
+/* $XConsortium: XGetWAttrs.c,v 11.24 92/01/20 12:30:57 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -105,6 +105,11 @@ Status XGetWindowAttributes(dpy, w, attr)
 	return (0);
 	}
     DeqAsyncHandler(dpy, &async);
+    if (!async_state.attr) {
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return (0);
+    }
     attr->x = cvtINT16toInt (rep.x);
     attr->y = cvtINT16toInt (rep.y);
     attr->width = rep.width;
