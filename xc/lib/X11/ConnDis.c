@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.82 91/05/11 16:58:28 gildea Exp $
+ * $XConsortium: XConnDis.c,v 11.83 91/05/12 10:58:33 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -35,6 +35,10 @@
 #ifdef DNETCONN
 #include <netdnet/dn.h>
 #include <netdnet/dnetdb.h>
+#endif
+
+#ifdef USL_COMPAT
+#define select _XSelect
 #endif
 
 #ifndef X_CONNECTION_RETRIES		/* number retries on ECONNREFUSED */
