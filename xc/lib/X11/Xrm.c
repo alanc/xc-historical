@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.66 91/05/06 20:35:39 rws Exp $
+ * $XConsortium: Xrm.c,v 1.67 91/07/13 20:52:32 rws Exp $
  */
 
 /***********************************************************
@@ -1249,6 +1249,7 @@ static void GetDatabase(db, str, filename)
 	ptr = value_str;
 	ptr_max = ptr + alloc_chars - 4;
 	only_pcs = True;
+	len = 1;
 
 	for(;;) {
 
@@ -1365,7 +1366,7 @@ static void GetDatabase(db, str, filename)
 	     * many characters into the buffer after a backslash has occured.
 	     */
 
-	    if (ptr >= ptr_max) {
+	    if (ptr + len > ptr_max) {
 		char * temp_str;
 
 		alloc_chars += BUFSIZ/10;		
