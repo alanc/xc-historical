@@ -1,4 +1,4 @@
-/* $XConsortium: xnestDisplay.c,v 1.1 93/06/23 16:23:28 dmatic Exp $ */
+/* $XConsortium: Display.c,v 1.1 93/07/12 15:28:06 rws Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -12,6 +12,11 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
+
+#ifdef _XSERVER64
+#undef _XSERVER64
+#endif
+
 #include "X.h"
 #include "Xproto.h"
 #include "screenint.h"
@@ -49,14 +54,14 @@ Pixmap xnestIconBitmap;
 Pixmap xnestScreenSaverPixmap;
 XlibGC xnestBitmapGC;
 Window xnestConfineWindow;
-Mask xnestEventMask;
+unsigned long xnestEventMask;
 
 void xnestOpenDisplay(argc, argv)
      int argc;
      char *argv[];
 {
   XVisualInfo vi;
-  Mask mask;
+  long mask;
   int i, j;
 
   if (!xnestDoFullGeneration) return;

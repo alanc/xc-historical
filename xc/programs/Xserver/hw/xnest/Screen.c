@@ -1,4 +1,4 @@
-/* $XConsortium: Screen.c,v 1.2 93/07/19 18:21:59 rws Exp $ */
+/* $XConsortium: Screen.c,v 1.3 93/09/29 17:40:17 dpw Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -113,7 +113,7 @@ Bool xnestOpenScreen(index, pScreen, argc, argv)
   DepthPtr depths;
   int numVisuals, numDepths;
   int i, j, depthIndex;
-  Mask valuemask;
+  unsigned long valuemask;
   XSetWindowAttributes attributes;
   XSizeHints sizeHints;
 

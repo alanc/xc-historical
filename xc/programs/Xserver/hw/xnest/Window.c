@@ -1,4 +1,4 @@
-/* $XConsortium: Window.c,v 1.2 93/09/03 08:13:55 dpw Exp $ */
+/* $XConsortium: Window.c,v 1.3 94/01/07 09:52:50 dpw Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -71,7 +71,7 @@ WindowPtr xnestWindowPtr(window)
 Bool xnestCreateWindow(pWin)
      WindowPtr pWin;
 {
-  Mask mask;
+  unsigned long mask;
   XSetWindowAttributes attributes;
   Visual *visual;
   ColormapPtr pCmap;
@@ -266,7 +266,7 @@ void xnestConfigureWindow(pWin, mask)
 
 Bool xnestChangeWindowAttributes(pWin, mask)
      WindowPtr pWin;
-     Mask mask;
+     unsigned long mask;
 {
   XSetWindowAttributes attributes;
   

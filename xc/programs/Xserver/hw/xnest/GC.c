@@ -1,4 +1,4 @@
-/* $XConsortium: GC.c,v 1.3 93/09/20 20:18:41 dpw Exp $ */
+/* $XConsortium: GC.c,v 1.4 94/01/07 09:52:40 dpw Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -90,7 +90,7 @@ Bool xnestCreateGC(pGC)
 
 void xnestValidateGC(pGC, changes, pDrawable)
      GCPtr pGC;
-     Mask changes;
+     unsigned long changes;
      DrawablePtr pDrawable;
 {
   pGC->lastWinOrg.x = pDrawable->x;
@@ -99,7 +99,7 @@ void xnestValidateGC(pGC, changes, pDrawable)
 
 void xnestChangeGC(pGC, mask)
      GC *pGC;
-     Mask mask;
+     unsigned long mask;
 {
   XGCValues values;
   
@@ -184,7 +184,7 @@ void xnestChangeGC(pGC, mask)
 
 void xnestCopyGC(pGCSrc, mask, pGCDst)
      GCPtr pGCSrc;
-     Mask mask;
+     unsigned long mask;
      GCPtr pGCDst;
 {
   XCopyGC(xnestDisplay, xnestGC(pGCSrc), mask, xnestGC(pGCDst));
