@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.c,v 1.19 93/12/02 13:22:45 kaleb Exp $
+ * $XConsortium: locking.c,v 1.20 93/12/09 15:02:00 kaleb Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -265,7 +265,7 @@ static void _XPopReader(dpy, list, tail)
 	   xthread_self(), front);
 #endif
 
-    if (dpy->in_process_conni)
+    if (dpy->flags & XlibDisplayProcConni)
 	/* we never added ourself in the first place */
 	return;
 
