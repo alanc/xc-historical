@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.15 89/10/04 16:23:36 keith Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.16 89/10/13 17:04:02 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -66,14 +66,14 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 				/* following used for looping through a line */
     unsigned int startmask, endmask;	/* masks for writing ends of dst */
     int nlMiddle;		/* whole longwords in dst */
-    register int nl;		/* temp copy of nlMiddle */
-    register unsigned int tmp, bits;
 #ifdef FAST_CONSTANT_OFFSET_MODE
     register unsigned int bits1;
 #endif
 				/* place to store full source word */
     int xoffSrc, xoffDst;
     register int leftShift, rightShift;
+    register unsigned int bits, tmp;
+    register int nl;		/* temp copy of nlMiddle */
 
     int nstart;			/* number of ragged bits at start of dst */
     int nend;			/* number of ragged bits at end of dst */
@@ -885,15 +885,15 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
     DDXPointPtr pptSrc;
 {
     int	srcx, srcy, dstx, dsty, width, height;
-    unsigned int bits, tmp;
     int xoffSrc, xoffDst;
-    int leftShift, rightShift;
     unsigned int *psrcBase, *pdstBase;
     int	widthSrc, widthDst;
     unsigned int *psrcLine, *pdstLine;
     register unsigned int *psrc, *pdst;
+    register unsigned int bits, tmp;
+    register int leftShift, rightShift;
     unsigned int startmask, endmask;
-    register int nlMiddle, nl;
+    register int nl, nlMiddle;
     int firstoff, secondoff;
     int nbox;
     BoxPtr  pbox;
