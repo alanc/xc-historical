@@ -40,6 +40,15 @@
 #endif
 #endif /* X11_t */
 
+#ifdef XSERV_t
+#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#define TRANS(func) _XSERVTrans##func
+#else
+#define TRANS(func) _XSERVTrans/**/func
+#endif
+#define X11_t
+#endif /* X11_t */
+
 #ifdef XIM_t
 #if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
 #define TRANS(func) _XIMTrans##func
