@@ -1,4 +1,4 @@
-/* $XConsortium: logical.c,v 1.3 93/10/27 21:52:28 rws Exp $ */
+/* $XConsortium: logical.c,v 1.5 93/11/06 15:04:31 rws Exp $ */
 
 /**** module logical.c ****/
 /******************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -53,14 +53,11 @@ terms and conditions:
 
 static XiePhotomap XIEPhotomap1;
 static XiePhotomap XIEPhotomap2;
+static XiePhotomap ControlPlane;
+static XieLut XIELut;
 static XieRoi XIERoi;
 static XIEimage *image1, *image2;
 
-static XieLTriplet levels;
-static XieConstrainTechnique tech = xieValConstrainClipScale;
-static XieClipScaleParam *parms;
-static XieConstant in_low,in_high;
-static XieLTriplet out_low,out_high;
 static int monoflag = 0;
 
 static XiePhotoflo flo;
@@ -77,12 +74,13 @@ int InitLogical(xp, p, reps)
         int i, idx;
 	XieProcessDomain domain;
         unsigned int bandMask;
-        Bool useROI;
+        int useDomain;
 	unsigned long logicalOp;
         int numROIs, src1, src2;
 	XieConstant logicalConstant;
 
-        useROI = ( ( LogicalParms * )p->ts )->useROI;
+	XIELut = ( XieLut ) NULL;
+        useDomain = ( ( LogicalParms * )p->ts )->useDomain;
         numROIs = ( ( LogicalParms * )p->ts )->numROIs;
         bandMask = ( ( LogicalParms * )p->ts )->logicalBandMask;
 	logicalOp = ( ( LogicalParms * )p->ts )->logicalOp;
@@ -104,25 +102,26 @@ int InitLogical(xp, p, reps)
         else
                 flo_elements = 3;
 
-        if ( useROI == True )
+        if ( useDomain == DomainROI || useDomain == DomainCtlPlane )
                 flo_elements++;
 
+	ControlPlane = ( XiePhotomap ) NULL;
 	monoflag = 0;
-        parms = ( XieClipScaleParam * ) NULL;
 
-        if ( xp->vinfo.depth != 8 )
+        if ( xp->screenDepth != image1->depth[ 0 ] )
         {
 		monoflag = 1;
-		flo_elements++;
-		if ( SetupClipScale( xp, p, image1, levels, in_low, 
-			in_high, out_low, out_high, &parms ) == 0 )
+		flo_elements+=2;
+                if ( ( XIELut = CreatePointLut( xp, p,
+                        1 << image1->depth[ 0 ], 1 << xp->screenDepth, False ) )
+                        == ( XieLut ) NULL )
 		{
 			return( 0 );
 		}
         }
 
 	rects = ( XieRectangle * ) NULL;
-	if ( useROI == True )
+	if ( useDomain == DomainROI )
 	{
 		rects = (XieRectangle *)
 			malloc( numROIs * sizeof( XieRectangle ) );
@@ -139,6 +138,12 @@ int InitLogical(xp, p, reps)
 			}
 		}
         }
+	else if ( useDomain == DomainCtlPlane )
+	{
+		ControlPlane = GetControlPlane( xp, 2 );
+		if ( ControlPlane == ( XiePhotomap ) NULL )
+			reps = 0;
+	}
 
 	flograph = ( XiePhotoElement * ) NULL;
 	XIEPhotomap1 = XIEPhotomap2 = ( XiePhotomap ) NULL;
@@ -166,7 +171,7 @@ int InitLogical(xp, p, reps)
 			}
 		}
 
-		if ( useROI == True )
+		if ( useDomain == DomainROI )
 		{
 			if ( ( XIERoi = GetXIERoi( xp, p, rects, numROIs ) ) ==
 				( XieRoi ) NULL )
@@ -174,6 +179,12 @@ int InitLogical(xp, p, reps)
 				reps = 0;
 			}
 		}
+               	else if ( useDomain == DomainCtlPlane )
+                {
+                        ControlPlane = GetControlPlane( xp, 2 );
+                        if ( ControlPlane == ( XiePhotomap ) NULL )
+                                reps = 0;
+                }
 	}
 	if ( reps )
 	{
@@ -182,12 +193,19 @@ int InitLogical(xp, p, reps)
 		domain.offset_x = 0;
 		domain.offset_y = 0;
 
-		if ( useROI == True )
+		if ( useDomain == DomainROI )
 		{
 			XieFloImportROI(&flograph[idx], XIERoi);
 			idx++;
 			domain.phototag = idx;
 		}
+                else if ( useDomain == DomainCtlPlane )
+                {
+                        XieFloImportPhotomap(&flograph[idx], ControlPlane, False
+);
+                        idx++;
+                        domain.phototag = idx;
+                }
                 else
                 {
                         domain.phototag = 0;
@@ -219,13 +237,19 @@ int InitLogical(xp, p, reps)
 
 		if ( monoflag )
 		{
-			XieFloConstrain( &flograph[ idx ],
-				idx,
-				levels,
-				tech,
-				( char * ) parms
-			);
-			idx++;
+                        XieFloImportLUT(&flograph[idx], XIELut );
+                        idx++;
+
+                        domain.phototag = 0;
+                        domain.offset_x = 0;
+                        domain.offset_y = 0;
+                        XieFloPoint(&flograph[idx],
+                                idx-1,
+                                &domain,
+                                idx,
+                                0x7
+                        );
+                        idx++;
 		}
 
                 XieFloExportDrawable(&flograph[idx],
@@ -284,6 +308,12 @@ Parms	p;
 		XieDestroyPhotomap( xp->d, XIEPhotomap2 );
 		XIEPhotomap1 = ( XiePhotomap ) NULL;
 	}
+        if ( ControlPlane != ( XiePhotomap ) NULL && IsPhotomapInCache( ControlPlane ) == False )
+        {
+                XieDestroyPhotomap( xp->d, ControlPlane );
+                ControlPlane = ( XiePhotomap ) NULL;
+        }
+
 	if ( rects )
 	{
 		free( rects );
@@ -294,10 +324,10 @@ Parms	p;
 		XieDestroyROI( xp->d, XIERoi );
 		XIERoi = ( XieRoi ) NULL;
 	}
-	if ( parms )
+	if ( XIELut )
 	{
-		free( parms );
-		parms = ( XieClipScaleParam * ) NULL;
+		XieDestroyLUT( xp->d, XIELut );
+		XIELut = ( XieLut ) NULL;
 	}
 	if ( flo )
 	{

@@ -1,4 +1,4 @@
-/* $XConsortium: encode.c,v 1.2 93/10/26 20:58:29 rws Exp $ */
+/* $XConsortium: encode.c,v 1.4 93/11/05 17:58:36 rws Exp $ */
 /**** module encode.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -68,7 +68,7 @@ extern Bool WMSafe;
 extern Bool dontClear;
 static XStandardColormap stdCmap;
 extern Window drawableWindow;
-static int type, interleave;
+static int visclass, type, interleave;
 
 int 
 InitEncodePhotomap(xp, p, reps)
@@ -84,7 +84,6 @@ int     reps;
 	int needconstrain;
 	float bias;
 	XieConstant c1;
-	int visclass;
 	XIEimage *image;
         GeometryParms gp;
 	Bool exportClient;
@@ -97,6 +96,7 @@ int     reps;
 	XieEncodeJPEGBaselineParam *JPEGB; 
 	int doYCbCr = True;
 	unsigned char scale;
+	int atom;
 
 	needconstrain = 0;
 	decodeTechParms = ( char * ) NULL;
@@ -120,19 +120,32 @@ int     reps;
 	if ( type == xieValTripleBand && IsDISServer() )
 		return( 0 ); 
 
-	if ( type == xieValTripleBand && !IsColorVisual( visclass ) )
+	if ( type == xieValTripleBand && xp->screenDepth == 1 )
 		return( 0 );
 
-	if ( reps && type == xieValTripleBand && GetStandardColormap( xp, 
-		&stdCmap, XA_RGB_BEST_MAP ) == False )
+	if ( IsGrayVisual( visclass ) )
+		atom = XA_RGB_GRAY_MAP;
+	else
+		atom = XA_RGB_BEST_MAP;
+	if ( !IsStaticVisual( visclass ) && type == xieValTripleBand && !IsTrueColorOrDirectColor( visclass ) )
 	{
-                fprintf( stderr, "Couldn't get a standard colormap\n" );
-        	return( 0 );
-        }
+		if ( !GetStandardColormap( xp, &stdCmap, atom ) )
+			return( 0 );
+		InstallThisColormap( xp, stdCmap.colormap );
+	}
+	else if ( type == xieValTripleBand )
+	{
+		if ( !IsStaticVisual( visclass ) )
+			InstallColorColormap( xp );
+		CreateStandardColormap( xp, &stdCmap, atom );
+	}	
 
 	XIEPhotomap2 = XieCreatePhotomap( xp->d );
 	if ( XIEPhotomap2 == ( XiePhotomap ) NULL )
+	{
+		InstallGrayColormap( xp );
 		return( 0 );
+	}
 
 	width[ 0 ] = image->width[ 0 ];
 	width[ 1 ] = image->width[ 1 ];
@@ -143,15 +156,15 @@ int     reps;
 
 	if ( type == xieValSingleBand )
 	{
-               	gp.geoType = GEO_TYPE_SCALE;
-		gp.geoHeight = 512;
-		gp.geoWidth = 512;
-		gp.geoXOffset = 0;
-		gp.geoYOffset = 0;
-		gp.geoTech = xieValGeomNearestNeighbor;
-
 		if ( IsFaxImage( image->decode ) )
 		{
+			gp.geoType = GEO_TYPE_SCALE;
+			gp.geoHeight = 512;
+			gp.geoWidth = 512;
+			gp.geoXOffset = 0;
+			gp.geoYOffset = 0;
+			gp.geoTech = xieValGeomNearestNeighbor;
+
 			width[ 0 ] = 512;
 			width[ 1 ] = 0;
 			width[ 2 ] = 0;
@@ -159,27 +172,37 @@ int     reps;
 			height[ 1 ] = 0;
 			height[ 2 ] = 0;
 
-			XIEPhotomap = GetXIEGeometryPhotomap( xp, p, &gp, 1 );
 			GetXIEGeometryWindow( xp, p, xp->w, &gp, 1 );
+			XIEPhotomap = GetXIEGeometryPhotomap( xp, p, &gp, 1 );
 		}
 		else
 		{
-			XIEPhotomap = GetXIEPhotomap( xp, p, 1 );
 			GetXIEWindow( xp, p, xp->w, 1 );
+			XIEPhotomap = GetXIEPhotomap( xp, p, 1 );
 		}
-		if ( image->depth[ 0 ] != xp->vinfo.depth )
+		if ( image->depth[ 0 ] != xp->screenDepth )
 			needconstrain = 1;
 	}
 	else 
 	{
-		XIEPhotomap = GetXIETriplePhotomap( xp, p, 1 );
 
-		levels[ 0 ] = stdCmap.red_max + 1;
-		levels[ 1 ] = stdCmap.green_max + 1;
-		levels[ 2 ] = stdCmap.blue_max + 1;
-	
+		if ( IsTrueColorOrDirectColor( visclass ) )
+		{
+			levels[ 0 ] = TripleTrueOrDirectLevels( xp );
+			levels[ 1 ] = TripleTrueOrDirectLevels( xp );
+			levels[ 2 ] = TripleTrueOrDirectLevels( xp );
+		}
+		else
+		{
+			levels[ 0 ] = stdCmap.red_max + 1;
+			levels[ 1 ] = stdCmap.green_max + 1;
+			levels[ 2 ] = stdCmap.blue_max + 1;
+		}
+		
 		GetXIEDitheredStdTripleWindow( xp, p, xp->w, 1,
 			xieValDitherDefault, 0, levels, &stdCmap );
+
+		XIEPhotomap = GetXIETriplePhotomap( xp, p, 1 );
 	}
 
 	if ( XIEPhotomap == ( XiePhotomap ) NULL )
@@ -190,19 +213,16 @@ int     reps;
 
 	if ( reps && needconstrain == 1 )
 	{
-		if ( type == xieValSingleBand )
-		{
-			XIELut = CreatePointLut( xp, p, image->depth[ 0 ],
-				xp->vinfo.depth );
-		}
+		XIELut = CreatePointLut( xp, p, 1 << image->depth[ 0 ],
+			1 << xp->screenDepth, False );
 	}
+
+	encodeTech = ( ( EncodeParms * )p->ts )->encode;	
+	encodeTechParms = ( ( EncodeParms * )p->ts )->parms;
+	exportClient = ( ( EncodeParms * )p->ts )->exportClient;
 
 	if ( reps )
 	{
-		encodeTech = ( ( EncodeParms * )p->ts )->encode;	
-		encodeTechParms = ( ( EncodeParms * )p->ts )->parms;
-		exportClient = ( ( EncodeParms * )p->ts )->exportClient;
-
 		/* determine flo size */
 	
 		flo1_elements = 2;
@@ -210,7 +230,7 @@ int     reps;
 
 		if ( type == xieValTripleBand ) 
 			flo2_elements+=2;
-		if ( needconstrain == 1 && type == xieValSingleBand )
+		if ( needconstrain == 1 )
 			flo2_elements+=2;
 		if ( type == xieValTripleBand &&
 			encodeTech == xieValEncodeJPEGBaseline &&
@@ -223,22 +243,21 @@ int     reps;
 		flograph1 = XieAllocatePhotofloGraph(flo1_elements);
 		flograph2 = XieAllocatePhotofloGraph(flo2_elements);
 		if ( flograph1 == ( XiePhotoElement * ) NULL || 
-		 flograph2 == ( XiePhotoElement * ) NULL )
+			flograph2 == ( XiePhotoElement * ) NULL )
 		{
 			fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
 			reps = 0;
 		}
 	}
 
+	idx = 0;
 	if ( reps )
 	{
-		idx = 0;
-
                 XieFloImportPhotomap(&flograph1[idx], XIEPhotomap, False);
 		idx++;
 
-		if ( type == xieValTripleBand &&
-		     encodeTech == xieValEncodeJPEGBaseline )
+		if ( type == xieValTripleBand && 
+			encodeTech == xieValEncodeJPEGBaseline )
 		{
 			if ( doYCbCr == True ) 
 			{
@@ -255,7 +274,7 @@ int     reps;
 				/* XXX check for error return */
 				XieFloConvertFromRGB( &flograph1[idx],
 					idx,
-					xieValYCbCr,
+					xieValRGBToYCbCr,
 					(char *) RGBToYCbCrParm
 				);
 				idx++;
@@ -293,6 +312,7 @@ int     reps;
 		}
 		else
 		{
+			JPEGB = ( XieEncodeJPEGBaselineParam * ) encodeTechParms;
 			XieFloExportPhotomap(&flograph1[idx],
 				idx,
 				XIEPhotomap2,
@@ -324,16 +344,12 @@ int     reps;
 				/* XXX check for error return */
 				XieFloConvertToRGB( &flograph2[idx],
 					idx,
-					xieValYCbCr,
+					xieValYCbCrToRGB,
 					(char *) YCbCrToRGBParm
 				);
 				idx++;
 			}
 
-			levels[ 0 ] = ( long ) stdCmap.red_max + 1;
-			levels[ 0 ] = ( long ) stdCmap.red_max + 1;
-			levels[ 1 ] = ( long ) stdCmap.green_max + 1;
-			levels[ 2 ] = ( long ) stdCmap.blue_max + 1;
 			XieFloDither(&flograph2[idx],
 				idx,
 				0x7,
@@ -346,15 +362,15 @@ int     reps;
 			c1[ 0 ] = stdCmap.red_mult;
 			c1[ 1 ] = stdCmap.green_mult;
 			c1[ 2 ] = stdCmap.blue_mult;
-			
+		
 			bias = ( float ) stdCmap.base_pixel;
 
-        		XieFloBandExtract( &flograph2[idx], idx, 
+			XieFloBandExtract( &flograph2[idx], idx, 
 				1 << xp->vinfo.depth, bias, c1 ); 
 			idx++;
 		}
 
-		if ( needconstrain && type == xieValSingleBand )
+		if ( needconstrain )
 		{
 		     	XieFloImportLUT(&flograph2[idx], XIELut );
                         idx++;
@@ -367,7 +383,7 @@ int     reps;
 				idx - 1,
 				&domain,
 				idx,
-				0x01
+				0x07
 			);
 			idx++;
 		}
@@ -389,8 +405,6 @@ int     reps;
 	else 
 	{
 		dontClear = True;
-		if ( type == xieValTripleBand )
-			InstallThisColormap( xp, stdCmap.colormap );
                	XMoveWindow( xp->d, drawableWindow, WIDTH + 10, 0 );
                 XMapRaised( xp->d, drawableWindow );
                 XSync( xp->d, 0 );
@@ -475,7 +489,8 @@ char	**dparms;
 		*decode = xieValDecodeJPEGBaseline;
 		*dparms = ( char * ) XieTecDecodeJPEGBaseline(
 			JPEGB->interleave,
-			JPEGB->band_order
+			JPEGB->band_order,
+			True
 			);
 		interleave = JPEGB->interleave;
 		break;
@@ -558,7 +573,8 @@ void EndEncodePhotomap(xp, p)
 XParms  xp;
 Parms   p;
 {
-	InstallCustomColormap( xp );
+	if ( type == xieValTripleBand && !IsStaticVisual( visclass ) )
+		InstallGrayColormap( xp );
 	XUnmapWindow( xp->d, drawableWindow );
         dontClear = False;
 	FreeEncodePhotomapStuff( xp, p );

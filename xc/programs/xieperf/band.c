@@ -1,4 +1,4 @@
-/* $XConsortium: band.c,v 1.2 93/10/27 21:51:52 rws Exp $ */
+/* $XConsortium: band.c,v 1.3 93/11/05 17:08:18 rws Exp $ */
 /**** module band.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -56,13 +56,12 @@ terms and conditions:
 static XiePhotomap XIEPhotomap1;
 static XiePhotomap XIEPhotomap2;
 static XiePhotomap XIEPhotomap3;
-static XieColorList clist;
+static XieLut XIELut;
 
 static XiePhotoElement *flograph;
 static int flo_notify;
 static XiePhotoflo flo;
 static int flo_elements;
-static int colorclass;
 static int cclass;
 
 static XStandardColormap stdCmap;
@@ -78,77 +77,89 @@ int     reps;
 	XieLTriplet levels;
 	int cube;
 	int which;
+	int type;
+	int atom;
 
 	which = (( BandParms * )p->ts)->which;
+	type = p->finfo.image1->bandclass;
 
 #if     defined(__cplusplus) || defined(c_plusplus)
     	cclass = xp->vinfo.c_class;
 #else
     	cclass = xp->vinfo.class;
 #endif
-	clist = ( XieColorList ) NULL;
 	XIEPhotomap1 = ( XiePhotomap ) NULL;
 	XIEPhotomap2 = ( XiePhotomap ) NULL;
 	XIEPhotomap3 = ( XiePhotomap ) NULL;
+	XIELut = ( XieLut ) NULL;
 	flograph = ( XiePhotoElement * ) NULL;
 	flo = ( XiePhotoflo ) NULL;
 
-	if ( xp->vinfo.depth < 4 || ( IsColorVisual( cclass ) && IsStaticVisual( cclass ) ) )
+	if ( xp->vinfo.depth < 4 ) 
 		return( 0 );
-	colorclass = 0;
+
+	if ( IsColorVisual( cclass ) )
+		atom = XA_RGB_BEST_MAP;
+	else
+		atom = XA_RGB_GRAY_MAP;
+	if ( !IsStaticVisual( cclass ) && type == xieValTripleBand && !IsTrueColorOrDirectColor( cclass ) )
+	{
+		if ( !GetStandardColormap( xp, &stdCmap, atom ) )
+		{
+			fprintf( stderr, "Couldn't get a standard colormap\n" );
+			reps = 0;
+		}
+		else
+			InstallThisColormap( xp, stdCmap.colormap );
+	}
+	else if ( type == xieValTripleBand ) 
+	{
+		if ( !IsStaticVisual( cclass ) )
+			InstallColorColormap( xp );
+		CreateStandardColormap( xp, &stdCmap, atom );
+	}
+	else
+		cube = icbrt( xp->vinfo.colormap_size );
+
 	if ( reps )
 	{
-		cube = icbrt( 1 << xp->vinfo.depth );
-	
-		if ( IsColorVisual( cclass ) )
+		if ( IsTrueColorOrDirectColor( cclass ) &&
+			type == xieValTripleBand )	
 		{
-			colorclass = 1;
-			levels[ 0 ] = cube;
-			levels[ 1 ] = cube;
-			levels[ 2 ] = cube;
+			levels[ 0 ] = TripleTrueOrDirectLevels( xp );
+			levels[ 1 ] = levels[ 2 ] = levels[ 0 ];
 		}
 		else
 		{
-			levels[ 0 ] = 1 << xp->vinfo.depth;
-			levels[ 1 ] = 1 << xp->vinfo.depth;
-			levels[ 2 ] = 1 << xp->vinfo.depth;
+			levels[ 0 ] = stdCmap.red_max + 1;
+			levels[ 1 ] = stdCmap.green_max + 1;
+			levels[ 2 ] = stdCmap.blue_max + 1;
 		}
-
-		if (!( clist = XieCreateColorList( xp->d ) ) )
-			reps = 0;
 	}
 	if ( reps )
 	{
 		XIEPhotomap1 = GetXIEDitheredTriplePhotomap( xp, p, 1,
 			xieValDitherDefault, 0, levels );
+
 		if ( XIEPhotomap1 == ( XiePhotomap ) NULL )
 		{
 			reps = 0;
 		}	 
 	}
 
-	if ( reps && colorclass )
+	if ( reps ) 
 	{
-		InstallDefaultColormap( xp );
-		if ( !CreateColorBandSelectExtractFlo( xp, p, cube ) )
+		if ( !CreateColorBandSelectExtractFlo( xp, p ) )
 		{
 			fprintf( stderr, "CreateColorBandSelectFlo failed\n" );
-			reps = 0;
-		}
-	}
-	else if ( reps )
-	{
-		if ( !CreateGrayBandSelectExtractFlo( xp, p, cube ) )
-		{
-			fprintf( stderr, "CreateGrayBandSelectFlo failed\n" );
 			reps = 0;
 		}
 	}
 
 	if ( !reps )
 	{
-		if ( colorclass )
-			InstallCustomColormap( xp );
+		if ( !IsStaticVisual( cclass ) )
+			InstallGrayColormap( xp );
 		FreeBandStuff( xp, p );
 	}
 	return( reps );
@@ -172,20 +183,31 @@ int     reps;
 #else
     	cclass = xp->vinfo.class;
 #endif
-	clist = ( XieColorList ) NULL;
+
+	if ( ( IsStaticVisual( cclass ) || IsTrueColorOrDirectColor( cclass ) )
+		&& useStdCmap == True )
+		return( 0 );
 	XIEPhotomap1 = ( XiePhotomap ) NULL;
+	XIELut = ( XieLut ) NULL;
 	flograph = ( XiePhotoElement * ) NULL;
 	flo = ( XiePhotoflo ) NULL;
 
 	if ( useStdCmap == True )
 	{
 		atom = ( ( BandParms * )p->ts )->atom;
+		if ( IsGrayVisual( cclass ) )
+		{
+			fprintf( stderr, "Switching to XA_RGB_GRAY_MAP\n" );
+			atom = XA_RGB_GRAY_MAP; 
+		}
 		if ( GetStandardColormap( xp, &stdCmap, atom ) == False )
 		{
 			fprintf( stderr, "Couldn't get a standard colormap\n" );
 			fflush( stderr );
 			reps = 0;
 		}
+		else
+			InstallThisColormap( xp, stdCmap.colormap );
 	}
 
 	if ( reps )
@@ -198,9 +220,9 @@ int     reps;
 		}
 		else
 		{
-			levels[ 0 ] = 1 << xp->vinfo.depth;
-			levels[ 1 ] = 1 << xp->vinfo.depth;
-			levels[ 2 ] = 1 << xp->vinfo.depth;
+			levels[ 0 ] = xp->vinfo.colormap_size;
+			levels[ 1 ] = xp->vinfo.colormap_size;
+			levels[ 2 ] = xp->vinfo.colormap_size;
 		}
 
 		XIEPhotomap1 = GetXIEDitheredTriplePhotomap( xp, p, 1,
@@ -223,9 +245,9 @@ int     reps;
 	if ( !reps )
 	{
 		FreeBandStuff( xp, p );
+		if ( useStdCmap == True )
+                	InstallGrayColormap( xp );
 	}
-        else if ( useStdCmap == True )
-		InstallThisColormap( xp, stdCmap.colormap );
 
 	return( reps );
 }
@@ -239,7 +261,16 @@ Bool	useStdCmap;
 	int idx, decode_notify;
 	unsigned int mylevels;
 	XieConstant c1;
-	float bias;
+	float bias = 0.0;
+	int pointflag = 0;
+	XieProcessDomain domain;
+	int	cclass;
+
+#if     defined(__cplusplus) || defined(c_plusplus)
+        cclass = xp->vinfo.c_class;
+#else
+        cclass = xp->vinfo.class;
+#endif
 
 	idx = 0;
 	if ( useStdCmap == True )
@@ -257,13 +288,27 @@ Bool	useStdCmap;
 		bias = 0.0;
 	}
 
-	mylevels = ( 1 << xp->vinfo.depth );
+	mylevels = xp->vinfo.colormap_size;
 
 	flo_elements = 3;
 
+	if ( IsTrueColorOrDirectColor( cclass ) )
+	{
+	       	pointflag++;
+                flo_elements+=2;
+                if ( ( XIELut = CreatePointLut( xp, p,
+                        xp->vinfo.colormap_size, 
+			1 << xp->screenDepth, False ) )
+                        == ( XieLut ) NULL )
+                {
+                        return( 0 );
+                }
+        }
+		
+
         flograph = XieAllocatePhotofloGraph( flo_elements );
         if ( flograph == ( XiePhotoElement * ) NULL )
-        {
+	{
                 fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
                 return( 0 );
         }
@@ -274,6 +319,23 @@ Bool	useStdCmap;
 	idx++;
 
 	XieFloBandExtract( &flograph[idx], idx, mylevels, bias, c1 ); idx++;
+
+        if ( pointflag )
+        {
+                XieFloImportLUT(&flograph[idx], XIELut );
+                idx++;
+
+                domain.phototag = 0;
+                domain.offset_x = 0;
+                domain.offset_y = 0;
+                XieFloPoint(&flograph[idx],
+                        idx-1,
+                        &domain,
+                        idx,
+                        0x7
+                );
+                idx++;
+        }
 
        	XieFloExportDrawable(&flograph[idx],
 		idx,              /* source phototag number */
@@ -300,10 +362,8 @@ int     reps;
 #else
     	cclass = xp->vinfo.class;
 #endif
-	if ( xp->vinfo.depth < 4 || IsStaticVisual( cclass ) )
-		return( 0 );
 
-	clist = ( XieColorList ) NULL;
+	XIELut = ( XieLut ) NULL;
 	XIEPhotomap1 = ( XiePhotomap ) NULL;
 	XIEPhotomap2 = ( XiePhotomap ) NULL;
 	XIEPhotomap3 = ( XiePhotomap ) NULL;
@@ -326,7 +386,7 @@ int     reps;
 
 	if ( reps )
 	{
-		if ( !CreateBandCombineFlo( xp, p ) )
+		if ( !CreateBandCombineFlo( xp, p, cclass ) )
 		{
 			fprintf( stderr, "CreateBandCombineFlo failed\n" );
 			reps = 0;
@@ -341,19 +401,38 @@ int     reps;
 }
 
 int
-CreateBandCombineFlo( xp, p )
+CreateBandCombineFlo( xp, p, cclass )
 XParms	xp;
 Parms	p;
+int	cclass;
 {
 	int idx, decode_notify;
 	float bias;
 	XieConstant c;
+	XieProcessDomain domain;
 	unsigned int mylevels;
+	int	pointflag;
+	XIEimage *image;
 
-	mylevels = 1 << xp->vinfo.depth;
+	pointflag = 0;
+
+	mylevels = 1 << xp->screenDepth;
 
 	idx = 0;
+	image = p->finfo.image1;
+
 	flo_elements = 6;
+	if ( 1 << image->depth[ 0 ] != mylevels )
+	{
+		pointflag++;
+		flo_elements+=2;
+
+	       	if ( ( XIELut = CreatePointLut( xp, p, 1 << image->depth[ 0 ], 
+			mylevels, False ) ) == ( XieLut ) NULL )
+                {
+                        return( 0 );
+                }
+	}	
 
 	c[ 0 ] = ( ( BandParms * )p->ts )->c1[ 0 ];
 	c[ 1 ] = ( ( BandParms * )p->ts )->c1[ 1 ];
@@ -380,7 +459,24 @@ Parms	p;
 
 	XieFloBandCombine( &flograph[ idx ], idx - 2, idx - 1, idx ); idx++;
 
-	XieFloBandExtract( &flograph[idx], idx, mylevels, bias, c ); idx++;
+	XieFloBandExtract( &flograph[idx], idx, 1 << image->depth[ 0 ], bias, c ); idx++;
+
+	if ( pointflag )
+	{
+		XieFloImportLUT(&flograph[idx], XIELut );
+		idx++;
+
+		domain.phototag = 0;
+		domain.offset_x = 0;
+		domain.offset_y = 0;
+		XieFloPoint(&flograph[idx],
+			idx-1,
+			&domain,
+			idx,
+			0x7
+		);
+		idx++;
+	}
 
        	XieFloExportDrawable(&flograph[idx],
 		idx,              /* source phototag number */
@@ -397,17 +493,14 @@ Parms	p;
 }
 
 int
-CreateColorBandSelectExtractFlo( xp, p, cube )
+CreateColorBandSelectExtractFlo( xp, p )
 XParms	xp;
 Parms	p;
-int 	cube;
 {
 	int idx, which, decode_notify;
-	XieColorAllocAllParam *color_param = NULL;
 	unsigned int mylevels;
-	XWindowAttributes xwa;
 	XieConstant c1, c2, c3;
-	float bias;
+	float bias = 0.0;
 	XIEimage *image;
 
 	which = (( BandParms * )p->ts)->which;
@@ -440,35 +533,18 @@ int 	cube;
                 return( 0 );
         }
 
-	color_param = XieTecColorAllocAll( 123 ); 
-	if ( color_param == ( XieColorAllocAllParam * ) NULL )
-	{
-		fprintf( stderr, "XieTecColorAllocAll failed\n" );
-		XieFreePhotofloGraph(flograph,3);
-		return( 0 );
-	}
-
 	decode_notify = False;
 
         XieFloImportPhotomap(&flograph[idx],XIEPhotomap1,decode_notify);
 	idx++;
 
-	if ( IsColorVisual( cclass ) )
+	if ( which == BandExtract && IsTrueColorOrDirectColor( cclass ) )
 	{
-		XGetWindowAttributes( xp->d, DefaultRootWindow( xp->d ), &xwa );
-		XSetWindowColormap( xp->d, xp->w, xwa.colormap );
-		XSync( xp->d, 0 );
-	}
-	else
-	{
-		XGetWindowAttributes( xp->d, xp->w, &xwa );
-	}	
-
-	if ( which == BandExtract )
-	{
-		mylevels = cube;
+		mylevels = stdCmap.red_max + 1;
 		XieFloBandExtract( &flograph[idx], 1, mylevels, bias, c1 ); idx++;
+		mylevels = stdCmap.green_max + 1;
 		XieFloBandExtract( &flograph[idx], 1, mylevels, bias, c2 ); idx++;
+		mylevels = stdCmap.blue_max + 1;
 		XieFloBandExtract( &flograph[idx], 1, mylevels, bias, c3 ); idx++;
 	}
 	else
@@ -480,88 +556,16 @@ int 	cube;
 
 	XieFloBandCombine( &flograph[ idx ], idx - 2, idx - 1, idx ); idx++;
 
-	XieFloConvertToIndex(&flograph[idx],
-		idx,
-		xwa.colormap,	
-		clist,	
-		False,
-		xieValColorAllocAll,
-		(char *)color_param
-	);
+        c1[ 0 ] = stdCmap.red_mult; 
+        c1[ 1 ] = stdCmap.green_mult;
+	c1[ 2 ] = stdCmap.blue_mult;
+	bias = ( float ) stdCmap.base_pixel; 
+
+	XieFloBandExtract( &flograph[ idx ], idx,
+		1 << xp->vinfo.depth, bias, c1 );
 	idx++;
 
        	XieFloExportDrawable(&flograph[idx],
-		idx,              /* source phototag number */
-		xp->w,
-		xp->fggc,
-		0,       /* x offset in window */
-		0        /* y offset in window */
-	);
-
-	flo = XieCreatePhotoflo( xp->d, flograph, flo_elements );
-	XSync( xp->d, 0 );
-	if ( color_param )
-		free( color_param );
-	flo_notify = False;
-	return( 1 );
-}
-
-int
-CreateGrayBandSelectExtractFlo( xp, p, cube )
-XParms	xp;
-Parms	p;
-int cube;
-{
-	int decode_notify;
-	unsigned int mylevels;
-	XieLTriplet levels;
-	XieConstant c1;
-	int idx;
-	float bias;
-	int which;
-
-	which = (( BandParms * )p->ts)->which;
-	idx = 0;
-
-	if ( which == BandExtract )
-	{
-		bias = (( BandParms * )p->ts)->bias;
-		c1[ 0 ] = (( BandParms * )p->ts)->c1[ 0 ];
-		c1[ 1 ] = (( BandParms * )p->ts)->c1[ 1 ];
-		c1[ 2 ] = (( BandParms * )p->ts)->c1[ 2 ];
-	}
-
-	mylevels = 1 << xp->vinfo.depth; 
-
-	flo_elements = 4;
-
-        flograph = XieAllocatePhotofloGraph( flo_elements );
-        if ( flograph == ( XiePhotoElement * ) NULL )
-        {
-                fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
-                return( 0 );
-        }
-
-	decode_notify = False;
-
-        XieFloImportPhotomap( &flograph[idx],XIEPhotomap1,decode_notify );
-	idx++;
-
-	if ( which == BandExtract )
-		XieFloBandExtract( &flograph[idx], 1, mylevels, bias, c1 ); 
-	else
-		XieFloBandSelect( &flograph[idx], 1, 0 );
-	idx++;
-
-	levels[ 0 ] = 1 << xp->vinfo.depth; 
-	levels[ 1 ] = 0;
-	levels[ 2 ] = 0;
-
-	XieFloDither( &flograph[idx], idx, 1, levels, xieValDitherDefault, 
-		NULL );
-	idx++;
-
-	XieFloExportDrawable(&flograph[idx],
 		idx,              /* source phototag number */
 		xp->w,
 		xp->fggc,
@@ -601,7 +605,7 @@ XParms	xp;
 Parms	p;
 {
 	if ( useStdCmap == True )
-		InstallCustomColormap( xp );
+		InstallGrayColormap( xp );
 	FreeBandStuff( xp, p );
 }
 
@@ -610,7 +614,7 @@ XParms  xp;
 Parms   p;
 {
 	if ( IsColorVisual( cclass ) )
-		InstallCustomColormap( xp );
+		InstallGrayColormap( xp );
 	FreeBandStuff( xp, p );
 }
 
@@ -637,10 +641,10 @@ Parms	p;
 		XIEPhotomap3 = ( XiePhotomap ) NULL;
 	}
 
-	if ( clist )
+	if ( XIELut )
 	{
-		XieDestroyColorList( xp->d, clist );
-		clist = ( XieColorList ) NULL;
+		XieDestroyLUT(xp->d, XIELut);
+		XIELut = ( XieLut ) NULL;
 	}
 
         if ( flograph )

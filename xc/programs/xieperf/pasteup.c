@@ -1,4 +1,4 @@
-/* $XConsortium: pasteup.c,v 1.3 93/10/27 21:52:37 rws Exp $ */
+/* $XConsortium: pasteup.c,v 1.6 93/11/06 15:05:29 rws Exp $ */
 
 /**** module pasteup.c ****/
 /******************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -56,6 +56,7 @@ terms and conditions:
 
 static int BuildPasteUpFlograph();
 
+static XieLut XIELut;
 static XiePhotomap XIEPhotomap;
 static XiePhotomap segments[NTILES];		
 static XieTile	tiles[NTILES];
@@ -64,11 +65,6 @@ static XiePhotoflo	flo;
 static int	flo_elements;
 static XieConstant constant = { 0.0, 0.0, 0.0 };
 
-static XieLTriplet levels;
-static XieConstrainTechnique tech = xieValConstrainClipScale;
-static XieClipScaleParam *parms;
-static XieConstant in_low,in_high;
-static XieLTriplet out_low,out_high;
 static int monoflag = 0;
 
 static int pasteUpIdx;
@@ -80,9 +76,9 @@ int InitPasteUp(xp, p, reps)
 {	
 	XIEimage *image;
 
-	parms = ( XieClipScaleParam * ) NULL;
         flograph = ( XiePhotoElement * ) NULL;
         flo = ( XiePhotoflo ) NULL;
+	XIELut = ( XieLut ) NULL;
 	XIEPhotomap = ( XiePhotomap ) NULL;
 	InitSegments();
 
@@ -93,11 +89,13 @@ int InitPasteUp(xp, p, reps)
 	if ( reps )
 	{
 		monoflag = 0;
-		if ( xp->vinfo.depth != image->depth[ 0 ] )
+		if ( xp->screenDepth != image->depth[ 0 ] )
 		{
 			monoflag = 1;
-			if ( SetupClipScale( xp, p, image, levels, in_low, 
-				in_high, out_low, out_high, &parms ) == 0 )
+			if ( ( XIELut = CreatePointLut( xp, p,
+				1 << image->depth[0], 
+				1 << xp->screenDepth, False ) )
+				== ( XieLut ) NULL )
 			{
 				reps = 0;
 			}
@@ -277,13 +275,14 @@ int	height;
 {
 	int	i, flo_elements;
 	int	tile_width, tile_height;
+        XieProcessDomain domain;
 
 	tile_width = width / split;
 	tile_height = height / split;
 
 	flo_elements = size + 2;	
 	if ( monoflag )
-		flo_elements++;
+		flo_elements+=2;
 
 	*flograph = XieAllocatePhotofloGraph(flo_elements);	
 	if ( *flograph == ( XiePhotoElement * ) NULL )
@@ -315,12 +314,17 @@ int	height;
 	
         if ( monoflag )
         {
-                XieFloConstrain(&(*flograph)[size + 1],
-                        size + 1,
-                        levels,
-                        tech,
-                        (char *)parms
-                );
+	        XieFloImportLUT(&(*flograph)[size + 1], XIELut );
+
+		domain.phototag = 0;
+		domain.offset_x = 0;
+		domain.offset_y = 0;
+		XieFloPoint(&(*flograph)[size + 2],
+			size + 1,
+			&domain,
+			size + 2,
+			0x7
+		);
         }
 
 	XieFloExportDrawable(&(*flograph)[flo_elements - 1],
@@ -469,11 +473,12 @@ Parms	p;
 {
 	XieFreePasteUpTiles(&flograph[ pasteUpIdx ] );
 
-	if ( parms )
+	if ( XIELut ) 
 	{
-		free( parms );
-		parms = ( XieClipScaleParam * ) NULL;
+		XieDestroyLUT( xp->d, XIELut );
+		XIELut = ( XieLut ) NULL;
 	}
+
 	if ( XIEPhotomap && IsPhotomapInCache( XIEPhotomap ) == False )
 	{
 		XieDestroyPhotomap( xp->d, XIEPhotomap );

@@ -1,4 +1,4 @@
-/* $XConsortium: point.c,v 1.5 93/11/05 17:07:54 rws Exp $ */
+/* $XConsortium: point.c,v 1.4 93/10/30 16:25:56 rws Exp $ */
 
 /**** module point.c ****/
 /******************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -56,6 +56,7 @@ static int monoflag = 0;
 
 static XiePhotomap XIEPhotomap;
 static XiePhotomap XIEPhotomap2;
+static XiePhotomap ControlPlane;
 static XieLut XIELut;
 static XieLut ClipLut;
 static XieRoi XIERoi;
@@ -76,19 +77,21 @@ int InitPoint(xp, p, reps)
 	int src1, src2, levelsIn, levelsOut;
         XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
         char *encode_params=NULL;
-        Bool useROI, photoDest;
+        Bool photoDest;
+	int useDomain;
 	XieRectangle rect;
 	unsigned int bandMask;
         XieProcessDomain domain;
         int decode_notify;
 
         photoDest = ( ( PointParms * )p->ts )->photoDest;
-        useROI = ( ( PointParms * )p->ts )->useROI;
+        useDomain = ( ( PointParms * )p->ts )->useDomain;
         bandMask = ( ( PointParms * )p->ts )->bandMask;
 
         flograph = ( XiePhotoElement * ) NULL;
         XIEPhotomap = ( XiePhotomap ) NULL;
         XIEPhotomap2 = ( XiePhotomap ) NULL;
+        ControlPlane = ( XiePhotomap ) NULL;
         XIERoi = ( XieRoi ) NULL;
 	XIELut = ClipLut = ( XieLut ) NULL;
         flo = ( XiePhotoflo ) NULL;
@@ -99,10 +102,11 @@ int InitPoint(xp, p, reps)
 	monoflag = 0;
 	levelsIn = (( PointParms * ) p->ts )->levelsIn;
 	levelsOut = (( PointParms * ) p->ts )->levelsOut;
-        if ( xp->vinfo.depth != levelsOut && photoDest == False )
+        if ( xp->screenDepth != levelsOut && photoDest == False )
         {
                 monoflag = 1;
-		if ( ( ClipLut = CreatePointLut( xp, p, levelsOut, xp->vinfo.depth ) ) == ( XieLut ) NULL )
+                if ( ( ClipLut = CreatePointLut( xp, p, 1 << levelsOut, 
+                        1 << xp->screenDepth, False ) ) == ( XieLut ) NULL )
                 {
 			reps = 0;
                 }
@@ -111,12 +115,12 @@ int InitPoint(xp, p, reps)
 	if ( reps )
 	{
 		flo_elements = 4;
-		if ( useROI == True )
+		if ( useDomain == DomainROI || useDomain == DomainCtlPlane )
 			flo_elements++;
 		if ( monoflag )
 			flo_elements+=2;
 
-		if ( useROI == True && levelsIn != levelsOut )
+		if ( useDomain == DomainROI && levelsIn != levelsOut )
 		{
 			fprintf( stderr, 
 				"levelsIn must equal levelsOut with ROIs\n" );
@@ -124,12 +128,9 @@ int InitPoint(xp, p, reps)
 		}
 	}
 
-	/* XXX only support 8 levels or 1 level in, 8 levels 
-	   or 1 level out. I could be more general here... */
-
+	lutSize = 1 << levelsIn;
 	if ( reps )
 	{
-		lutSize = 1 << levelsIn;
 		lut = (unsigned char *)
 			malloc( lutSize * sizeof( unsigned char ) );
 		if ( lut == ( unsigned char * ) NULL )
@@ -163,7 +164,7 @@ int InitPoint(xp, p, reps)
 	{
 		if ( levelsIn == 1 && IsDISServer() )
 		{
-			XIEPhotomap = GetXIEPointPhotomap( xp, p, 1, 1 );
+			XIEPhotomap = GetXIEPointPhotomap( xp, p, 1, 2, False );
 		}	
 		else if ( levelsIn == 1 )
 		{
@@ -197,7 +198,7 @@ int InitPoint(xp, p, reps)
 		}
 		else
 		{
-			if ( useROI == True )
+			if ( useDomain == DomainROI )
 			{
 				rect.x = ( ( PointParms * )p->ts )->x;
 				rect.y = ( ( PointParms * )p->ts )->y;
@@ -209,6 +210,12 @@ int InitPoint(xp, p, reps)
 				{
 					reps = 0;
 				}
+			}
+			else if ( useDomain == DomainCtlPlane )
+			{
+				ControlPlane = GetControlPlane( xp, 2 );
+				if ( ControlPlane == ( XiePhotomap ) NULL )
+					reps = 0;
 			}
 		}
 	}
@@ -224,9 +231,16 @@ int InitPoint(xp, p, reps)
 		domain.offset_x = 0;
 		domain.offset_y = 0;
 
-                if ( useROI == True )
+                if ( useDomain == DomainROI )
                 {
                         XieFloImportROI(&flograph[idx], XIERoi);
+                        idx++;
+                        domain.phototag = idx;
+                }
+                else if ( useDomain == DomainCtlPlane )
+                {
+                        XieFloImportPhotomap(&flograph[idx], ControlPlane, False
+);
                         idx++;
                         domain.phototag = idx;
                 }
@@ -324,11 +338,19 @@ Parms	p;
 		XieDestroyPhotomap( xp->d, XIEPhotomap );
 		XIEPhotomap = ( XiePhotomap ) NULL;
 	}
+
+        if ( ControlPlane != ( XiePhotomap ) NULL && IsPhotomapInCache( ControlPlane ) == False )
+        {
+                XieDestroyPhotomap( xp->d, ControlPlane );
+                ControlPlane = ( XiePhotomap ) NULL;
+        }
+
 	if ( XIEPhotomap2 )
 	{
 		XieDestroyPhotomap( xp->d, XIEPhotomap2 );
 		XIEPhotomap2 = ( XiePhotomap ) NULL;
 	}
+
 	if ( XIELut )
 	{
 		XieDestroyLUT( xp->d, XIELut );
@@ -363,7 +385,7 @@ int InitTriplePoint(xp, p, reps)
 {
 	int lutSize, idx; 
 	int i, src1, src2;
-        Bool useROI;
+        int useDomain;
 	XieRectangle rect;
 	unsigned int bandMask;
         XieProcessDomain domain;
@@ -393,7 +415,7 @@ int InitTriplePoint(xp, p, reps)
 
 	fprintf( stderr, "Standard cmap found: dithering input to levels %d, %d, %d\n", stdCmap.red_max + 1, stdCmap.green_max + 1, stdCmap.blue_max + 1 );
 	fflush( stderr );
-        useROI = ( ( TriplePointParms * )p->ts )->useROI;
+        useDomain = ( ( TriplePointParms * )p->ts )->useDomain;
         bandMask = ( ( TriplePointParms * )p->ts )->bandMask;
 	levels[ 0 ] = stdCmap.red_max + 1; 
 	levels[ 1 ] = stdCmap.green_max + 1; 
@@ -403,17 +425,18 @@ int InitTriplePoint(xp, p, reps)
 
         flograph = ( XiePhotoElement * ) NULL;
         XIEPhotomap = ( XiePhotomap ) NULL;
+        ControlPlane = ( XiePhotomap ) NULL;
         XIERoi = ( XieRoi ) NULL;
 	XIELut = ( XieLut ) NULL;
         flo = ( XiePhotoflo ) NULL;
 
 	flo_elements = 4;
-	if ( useROI == True )
+	if ( useDomain == DomainROI || useDomain == DomainCtlPlane )
 		flo_elements++;
 
+	lutSize = 1 << xp->vinfo.depth;
 	if ( reps )
 	{
-		lutSize = 1 << xp->vinfo.depth;
 		lut = (unsigned char *)
 			malloc( lutSize * sizeof( unsigned char ) );
 		if ( lut == ( unsigned char * ) NULL )
@@ -452,7 +475,7 @@ int InitTriplePoint(xp, p, reps)
 		}
 		else
 		{
-			if ( useROI == True )
+			if ( useDomain == DomainROI )
 			{
 				rect.x = ( ( TriplePointParms * )p->ts )->x;
 				rect.y = ( ( TriplePointParms * )p->ts )->y;
@@ -464,6 +487,12 @@ int InitTriplePoint(xp, p, reps)
 				{
 					reps = 0;
 				}
+			}
+			else if ( useDomain == DomainCtlPlane )
+			{
+				ControlPlane = GetControlPlane( xp, 2 );
+				if ( ControlPlane == ( XiePhotomap ) NULL )
+					reps = 0;
 			}
 		}
 	}
@@ -479,12 +508,19 @@ int InitTriplePoint(xp, p, reps)
 		domain.offset_x = 0;
 		domain.offset_y = 0;
 
-                if ( useROI == True )
+                if ( useDomain == DomainROI )
                 {
                         XieFloImportROI(&flograph[idx], XIERoi);
                         idx++;
                         domain.phototag = idx;
                 }
+		else if ( useDomain == DomainCtlPlane )
+		{
+			XieFloImportPhotomap(&flograph[idx], 
+				ControlPlane, False);
+			idx++;
+			domain.phototag = idx;
+		}
                 else
                 {
                         domain.phototag = 0;
@@ -537,7 +573,7 @@ void EndTriplePoint(xp, p)
     XParms  xp;
     Parms   p;
 {
-	InstallCustomColormap( xp );
+	InstallGrayColormap( xp );
 	FreeTriplePointStuff( xp, p );
 }
 
@@ -551,6 +587,13 @@ Parms	p;
 		XieDestroyPhotomap( xp->d, XIEPhotomap );
 		XIEPhotomap = ( XiePhotomap ) NULL;
 	}
+
+        if ( ControlPlane != ( XiePhotomap ) NULL && IsPhotomapInCache( ControlPlane ) == False )
+        {
+                XieDestroyPhotomap( xp->d, ControlPlane );
+                ControlPlane = ( XiePhotomap ) NULL;
+        }
+
 	if ( XIELut )
 	{
 		XieDestroyLUT( xp->d, XIELut );

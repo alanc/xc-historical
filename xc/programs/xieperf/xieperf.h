@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.h,v 1.6 93/11/05 17:58:33 rws Exp $ */
+/* $XConsortium: xieperf.h,v 1.12 93/11/06 15:11:39 rws Exp $ */
 
 /**** module xieperf.h ****/
 /******************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -120,6 +120,14 @@ typedef unsigned char Version;		/* ditto */
 #define	GEO_TYPE_DEFAULT	7
 #define GEO_TYPE_SCALEDROTATE   8
 
+/* for the tests which can have ROIs and control planes, these are the  
+   options. Cannot support ROIs and Control Planes at same time, so these
+   are mutually exclusive choices */ 
+
+#define DomainNone      0
+#define DomainROI       1
+#define DomainCtlPlane  2
+
 /* capabilities masks */
 
 /* the low 8 bits of the short are for test requirements. Bit positions not
@@ -142,6 +150,9 @@ typedef unsigned char Version;		/* ditto */
 #define IsColorVisual( visclass ) ( visclass == StaticColor || visclass == \
 	PseudoColor || visclass == DirectColor || visclass == TrueColor ? 1 : 0 )
 
+#define IsTrueColorOrDirectColor( visclass ) ( visclass == TrueColor || \
+	visclass == DirectColor )
+
 #define IsGrayVisual( visclass ) ( !IsColorVisual( visclass ) )
 
 #define IsStaticVisual( visclass ) ( visclass == StaticColor || visclass == TrueColor\
@@ -157,12 +168,17 @@ typedef unsigned char Version;		/* ditto */
 #define SUBSET_MASK	0xff00
 #define	SUBSET_FULL	( xieValFull << 8 )
 #define SUBSET_DIS	( xieValDIS << 8 )
-#define	NOTBORING	0x8000
+
+#ifndef MAX
+#define MAX( a, b ) ( a > b ? a : b )
+#endif
+#ifndef MIN
+#define MIN( a, b ) ( a < b ? a : b )
+#endif
 
 #define	IsFull( x ) ( x & SUBSET_FULL ? 1 : 0 )
 #define IsDIS( x ) ( x & SUBSET_DIS ? 1 : 0 )
 #define IsDISAndFull( x ) ( IsFullTest( x ) && IsDISTest( x ) )
-#define IsNotBoring( x ) ( notBoring == True ? ( x & NOTBORING ? 1 : 0 ) : 1 )
 
 /*
  * configuration shared by all tests 
@@ -191,12 +207,13 @@ typedef struct _Image {
     char        *data;       /* image data */
 } XIEimage;
 
-/* a file represents an image. 3 files per test are supported */
+/* a file represents an image. 4 files per test are supported */
 
 typedef struct _XIEfile {
     XIEimage	*image1;	
     XIEimage	*image2;	
     XIEimage	*image3;	
+    XIEimage	*image4;	
 } XIEifile;
 
 /* test parameters */
@@ -274,7 +291,7 @@ typedef struct _blendParms {
     XieConstant constant;
     XieFloat 	alphaConstant;
     int		bandMask;
-    Bool        useROI;
+    int         useDomain;
     int         numROIs;
 } BlendParms;
 
@@ -307,7 +324,7 @@ typedef struct _exportClParms {
 	
     /* following are for ExportClientHistogram with ROIs */
 
-    Bool		useROI;
+    int			useDomain;
     short		x;
     short		y;
     short		width;
@@ -329,7 +346,7 @@ typedef struct _logicalParms {
     XieConstant	logicalConstant;
     unsigned long logicalOp;
     int		logicalBandMask;
-    Bool	useROI;
+    int		useDomain;
     int		numROIs;
 } LogicalParms;
 
@@ -363,7 +380,7 @@ typedef struct _pointParms {
     Bool	photoDest;
     int		levelsIn;
     int		levelsOut;
-    Bool 	useROI;
+    int 	useDomain;
     short	x;
     short	y;
     short	width;
@@ -384,7 +401,7 @@ typedef struct _funnyEncodeParms {
 } FunnyEncodeParms;
     
 typedef struct _triplePointParms {
-    Bool 	useROI;
+    int 	useDomain;
     short	x;
     short	y;
     short	width;
@@ -408,7 +425,7 @@ typedef struct _compareParms {
     XieConstant		constant;
     Bool		combine;
     unsigned int	bandMask;
-    Bool		useROI;
+    int			useDomain;
     short		x;
     short		y;
     short		width;
@@ -419,7 +436,7 @@ typedef struct _arithmeticParms {
     XieArithmeticOp	op;
     XieConstant		constant;
     unsigned int	bandMask;
-    Bool		useROI;
+    int			useDomain;
     short		x;
     short		y;
     short		width;
@@ -434,7 +451,7 @@ typedef struct _mathParms {
     XieMathOp		*ops;
     int			nops; 
     unsigned int	bandMask;
-    Bool		useROI;
+    int			useDomain;
     short		x;
     short		y;
     short		width;
@@ -448,7 +465,7 @@ typedef struct _mathParms {
 typedef struct _convolveParms {
     Bool		photoDest;
     unsigned int	bandMask;
-    Bool		useROI;
+    int			useDomain;
     short		x;
     short		y;
     short		width;
@@ -470,7 +487,7 @@ typedef struct _matchHistogramParms {
     double		sigma;
     double		constant;
     Bool		shape_factor;
-    Bool		useROI;
+    int			useDomain;
     short		x;
     short		y;
     short		width;
@@ -489,6 +506,7 @@ typedef struct _XParms {
     XVisualInfo     vinfo;
     Bool	    pack;
     Version	    version;
+    int		    screenDepth;	/* effective depth of drawables */
 } XParmRec, *XParms;
 
 typedef int TestType;

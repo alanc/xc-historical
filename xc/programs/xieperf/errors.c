@@ -1,4 +1,4 @@
-/* $XConsortium: errors.c,v 1.5 93/10/30 16:26:19 rws Exp $ */
+/* $XConsortium: errors.c,v 1.6 93/11/05 17:08:25 rws Exp $ */
 /**** module errors.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -265,8 +265,8 @@ XParms	xp;
 Parms	p;
 int	reps;
 {
-        Bool    merge;
-        XieLTriplet start;
+	Bool merge;
+	XieLTriplet start;
 
         flograph = ( XiePhotoElement * ) NULL;
         flo = ( XiePhotoflo ) NULL;
@@ -284,10 +284,10 @@ int	reps;
 		XIELut = XieCreateLUT( xp->d );
                 XieFloImportLUT(&flograph[0], XIELut );
 
-                merge = False;
-                start[ 0 ] = 0;
-                start[ 1 ] = 0;
-                start[ 2 ] = 0;
+		merge = False;
+		start[ 0 ] = 0;
+		start[ 1 ] = 0;
+		start[ 2 ] = 0;
 
                 XieFloExportLUT(&flograph[1],
                         1,              /* source phototag number */
@@ -326,6 +326,7 @@ int	reps;
 	which = ( ( ErrorParms * ) p->ts )->error;
 	errcnt = 0;
         photospace = ( XiePhotospace ) NULL;
+	retval = 0;
 	switch( which )
 	{
 	case xieErrNoFloAccess :
@@ -387,10 +388,6 @@ int	reps;
 	case xieErrNoFloImplementation :
 		fprintf( stderr, "Sorry - cannot reliably test for FloImplementation errors\n" );
 		fflush( stderr );
-		retval = 0;
-		break;
-	default:
-		retval = 0;
 		break;
 	}
 	if ( retval )
@@ -779,7 +776,7 @@ int     reps;
 
 	if ( !reps )
 	{
-		InstallCustomColormap( xp );
+		InstallGrayColormap( xp );
 		FreeErrorWithPhotomapStuff( xp, p );
 	}
 	return( reps );
@@ -1438,7 +1435,7 @@ Parms	p;
 		FreeErrorWithPhotomapStuff( xp, p );
 		break;
 	case xieErrNoFloColorList :
-		InstallCustomColormap( xp );
+		InstallGrayColormap( xp );
 		FreeErrorWithPhotomapStuff( xp, p );
 		break;
 	case xieErrNoFloDomain :   

@@ -1,4 +1,4 @@
-/* $XConsortium: redefine.c,v 1.3 93/10/27 21:52:44 rws Exp $ */
+/* $XConsortium: redefine.c,v 1.5 93/11/06 15:06:33 rws Exp $ */
 
 /**** module redefine.c ****/
 /******************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -81,12 +81,13 @@ int InitRedefine(xp, p, reps)
 	else
 	{
 		monoflag = 0;
-		if ( xp->vinfo.depth != image->depth[ 0 ] )
+		if ( xp->screenDepth != image->depth[ 0 ] )
 		{
 			flo_elements = 4;
 			monoflag = 1;
-			if ( ( XIELut = CreatePointLut( xp, p, image->depth[ 0 ],
-				xp->vinfo.depth ) ) == ( XieLut ) NULL )
+			if ( ( XIELut = CreatePointLut( xp, p, 
+				1 << image->depth[ 0 ],
+				1 << xp->screenDepth, False ) ) == ( XieLut ) NULL )
 			{
 				reps = 0;
 			}

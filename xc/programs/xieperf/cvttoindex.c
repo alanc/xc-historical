@@ -1,4 +1,4 @@
-/* $XConsortium: cvttoindex.c,v 1.4 93/11/05 17:07:48 rws Exp $ */
+/* $XConsortium: cvttoindex.c,v 1.6 93/11/06 15:02:20 rws Exp $ */
 
 /**** module cvttoindex.c ****/
 /******************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -87,9 +87,17 @@ int     reps;
 	if ( !IsColorVisual( cclass ) || IsStaticVisual( cclass ) )
 		return( 0 );
 	cube = icbrt( 1 << xp->vinfo.depth );
-	levels[ 0 ] = cube;
-	levels[ 1 ] = cube;
-	levels[ 2 ] = cube;
+	if ( IsTrueColorOrDirectColor( cclass ) )
+	{
+		levels[ 0 ] = TripleTrueOrDirectLevels( xp );
+		levels[ 1 ] = levels[ 2 ] = levels[ 0 ];
+	}
+	else
+	{
+		levels[ 0 ] = cube;
+		levels[ 1 ] = cube;
+		levels[ 2 ] = cube;
+	}
 	clist1 = ( XieColorList ) NULL;
 	clist2 = ( XieColorList ) NULL;
 	ditheredPhotomap = ( XiePhotomap ) NULL;
@@ -292,7 +300,7 @@ XParms  xp;
 Parms   p;
 {
 	if ( ( ( CvtToIndexParms * ) p->ts )->useDefaultCmap == True )
-		InstallCustomColormap( xp );
+		InstallGrayColormap( xp );
 	if ( ( ( CvtToIndexParms * ) p->ts )->addCvtFromIndex == True )
 	{
 	        XUnmapWindow( xp->d, drawableWindow );

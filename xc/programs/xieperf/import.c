@@ -1,4 +1,4 @@
-/* $XConsortium: import.c,v 1.3 93/10/27 21:52:22 rws Exp $ */
+/* $XConsortium: import.c,v 1.5 93/11/06 15:03:47 rws Exp $ */
 
 /**** module import.c ****/
 /******************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -100,7 +100,7 @@ int InitImportDrawablePixmap(xp, p, reps)
 			0,
 			WIDTH,
 			HEIGHT,
-			0,
+			50,
 			False
 		);	
 
@@ -146,7 +146,7 @@ int InitImportDrawableWindow(xp, p, reps)
 			0,
 			WIDTH,
 			HEIGHT,
-			0,
+			50,
 			False
 		);	
 
@@ -397,14 +397,9 @@ int InitImportPhotoExportDrawable(xp, p, reps)
 	flograph = ( XiePhotoElement * ) NULL;
 	image = p->finfo.image1;
 
-	if ( xp->vinfo.depth != image->depth[ 0 ] && IsDISServer() )
+	if ( xp->screenDepth != image->depth[ 0 ] )
 	{
-		XIEPhotomap = GetXIEPointPhotomap( xp, p, 1, xp->vinfo.depth );
-	}
-	else if ( xp->vinfo.depth != image->depth[ 0 ] )
-	{
-		XIEPhotomap = GetXIEDitheredPhotomap( xp, p, 1,
-			( 1 << xp->vinfo.depth ) );
+		XIEPhotomap = GetXIEPointPhotomap( xp, p, 1, 1 << xp->screenDepth, False );
 	}
 	else
 	{
@@ -474,7 +469,7 @@ InitImportLUT(xp, p, reps)
 	}
 	else
 	{
-		lutSize = ( 1 << xp->vinfo.depth ) * sizeof( unsigned char );
+		lutSize = xp->vinfo.colormap_size * sizeof( unsigned char );
 		lut = (unsigned char *)malloc( lutSize );
 		if ( lut == ( unsigned char * ) NULL )
 		{
@@ -486,7 +481,7 @@ InitImportLUT(xp, p, reps)
 			{
 				if ( i % 5 == 0 )
 				{
-					lut[ i ] = ( ( 1 << xp->vinfo.depth ) - 1 ) - i;
+					lut[ i ] = (  xp->vinfo.colormap_size - 1 ) - i;
 				}
 				else
 				{

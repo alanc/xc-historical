@@ -1,4 +1,4 @@
-/* $XConsortium: convolve.c,v 1.1 93/10/26 10:08:04 rws Exp $ */
+/* $XConsortium: convolve.c,v 1.2 93/10/27 21:52:02 rws Exp $ */
 
 /**** module convolve.c ****/
 /******************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -54,6 +54,8 @@ terms and conditions:
 static XiePhotomap XIEPhotomap;
 static XiePhotomap XIEPhotomap2;
 static XieRoi XIERoi;
+static XieLut XIELut;
+static XiePhotomap ControlPlane;
 
 static XIEimage	*image;
 static int flo_notify;
@@ -61,7 +63,6 @@ static XiePhotoElement *flograph;
 static XiePhotoflo flo;
 static int flo_elements;
 static float *data;
-static XieClipScaleParam *parms;
 
 #define	DATA( n, i, j ) ( float * ) ( *data + ( i * n ) ) + j
 
@@ -73,16 +74,13 @@ InitConvolve(xp, p, reps)
 {
 	XieProcessDomain domain;
 	unsigned int bandMask;
-	Bool useROI;
+	int useDomain;
 	int idx, n, src;
 	XieRectangle rect;
 	XieConvolveTechnique tech;
-	char *tech_parm;
+	char *tech_parm = ( char * ) NULL;
 	XieConstant constant;
 	int ( * kfunc )();
-        XieLTriplet levels;
-        XieConstant in_low,in_high;
-        XieLTriplet out_low,out_high;
 	int monoflag = 0;
 	Bool photoDest;
         XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
@@ -90,7 +88,7 @@ InitConvolve(xp, p, reps)
 
 
 	photoDest = ( ( ConvolveParms * )p->ts )->photoDest;
-	useROI = ( ( ConvolveParms * )p->ts )->useROI;
+	useDomain = ( ( ConvolveParms * )p->ts )->useDomain;
 	tech = ( ( ConvolveParms * )p->ts )->tech;
 	bandMask = ( ( ConvolveParms * )p->ts )->bandMask;
 	kfunc = ( ( ConvolveParms * )p->ts )->kfunc;
@@ -98,7 +96,7 @@ InitConvolve(xp, p, reps)
 	constant[ 1 ] = ( ( ConvolveParms * )p->ts )->constant[ 1 ]; 
 	constant[ 2 ] = ( ( ConvolveParms * )p->ts )->constant[ 2 ]; 
 
-	if ( useROI == True )
+	if ( useDomain == DomainROI || useDomain == DomainCtlPlane )
 		flo_elements = 4;
 	else
 		flo_elements = 3; 
@@ -106,10 +104,11 @@ InitConvolve(xp, p, reps)
 	data = ( float * ) NULL;
         XIEPhotomap = ( XiePhotomap ) NULL;
         XIEPhotomap2 = ( XiePhotomap ) NULL;
+        ControlPlane = ( XiePhotomap ) NULL;
+        XIELut = ( XieLut ) NULL;
         XIERoi = ( XieRoi ) NULL;
         flograph = ( XiePhotoElement * ) NULL;
         flo = ( XiePhotoflo ) NULL;
-	parms = ( XieClipScaleParam * ) NULL;
 
 	if ( !kfunc )
 		return( 0 );
@@ -130,12 +129,14 @@ InitConvolve(xp, p, reps)
 
 	if ( reps )
 	{
-		if ( xp->vinfo.depth != 8 && photoDest == False )
+		if ( xp->screenDepth != image->depth[0] && photoDest == False )
 		{
 			monoflag = 1;
-			flo_elements++;
-		        if ( SetupClipScale( xp, p, image, levels, in_low,
-                        	in_high, out_low, out_high, &parms ) == 0 )
+			flo_elements+=2;
+			if ( ( XIELut = CreatePointLut( xp, p,
+				1 << image->depth[0], 
+				1 << xp->screenDepth, False ) )
+				== ( XieLut ) NULL )
 			{
 				reps = 0;
 			}
@@ -157,7 +158,7 @@ InitConvolve(xp, p, reps)
 	if ( reps )
 	{
 		XIEPhotomap2 = XieCreatePhotomap( xp->d );
-		if ( useROI == True )
+		if ( useDomain == DomainROI )
 		{
 			rect.x = ( ( ConvolveParms * )p->ts )->x;
 			rect.y = ( ( ConvolveParms * )p->ts )->y;
@@ -170,6 +171,12 @@ InitConvolve(xp, p, reps)
 				reps = 0;
 			}
 		}
+		else if ( useDomain == DomainCtlPlane )
+		{
+			ControlPlane = GetControlPlane( xp, 2 );
+			if ( ControlPlane == ( XiePhotomap ) NULL )
+				reps = 0;
+		}
 	}
 
 	if ( reps )
@@ -177,7 +184,6 @@ InitConvolve(xp, p, reps)
 		switch ( tech )
 		{
 		case xieValConvolveDefault:	
-			tech_parm = ( char * ) NULL;
 			break;
 		case xieValConvolveConstant:	
 			tech_parm = ( char * ) 
@@ -204,9 +210,15 @@ InitConvolve(xp, p, reps)
 		domain.offset_x = 0;
 		domain.offset_y = 0;
 
-		if ( useROI == True )
+		if ( useDomain == DomainROI )
 		{
 	        	XieFloImportROI(&flograph[idx], XIERoi);
+			idx++;
+			domain.phototag = idx;
+		}
+		else if ( useDomain == DomainCtlPlane )
+		{
+			XieFloImportPhotomap(&flograph[idx], ControlPlane, False);
 			idx++;
 			domain.phototag = idx;
 		}
@@ -234,11 +246,17 @@ InitConvolve(xp, p, reps)
 		{	
 			if ( monoflag )
 			{
-				XieFloConstrain( &flograph[ idx ],
+				XieFloImportLUT(&flograph[idx], XIELut );
+				idx++;
+
+				domain.phototag = 0;
+				domain.offset_x = 0;
+				domain.offset_y = 0;
+				XieFloPoint(&flograph[idx],
+					idx-1,
+					&domain,
 					idx,
-					levels,
-					xieValConstrainClipScale,
-					( char * ) parms
+					0x7
 				);
 				idx++;
 			}
@@ -301,17 +319,17 @@ FreeConvolveStuff( xp, p )
 XParms	xp;
 Parms	p;
 {
-        if ( parms )
-        {
-                free( parms );
-                parms = ( XieClipScaleParam * ) NULL;
-        }
-
 	if ( data )
 	{
 		free( data );
 		data = ( float * ) NULL;
 	}
+
+        if ( XIELut )
+        {
+                XieDestroyLUT( xp->d, XIELut );
+                XIELut = ( XieLut ) NULL;
+        }
 
         if ( XIERoi )
         {
@@ -323,6 +341,12 @@ Parms	p;
         {
                 XieDestroyPhotomap( xp->d, XIEPhotomap );
                 XIEPhotomap = ( XiePhotomap ) NULL;
+        }
+
+        if ( ControlPlane != ( XiePhotomap ) NULL && IsPhotomapInCache( ControlPlane ) == False )
+        {
+                XieDestroyPhotomap( xp->d, ControlPlane );
+                ControlPlane = ( XiePhotomap ) NULL;
         }
 
         if ( XIEPhotomap2 != ( XiePhotomap ) NULL ) 

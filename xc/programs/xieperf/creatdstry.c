@@ -1,4 +1,4 @@
-/* $XConsortium: creatdstry.c,v 1.2 93/10/26 10:05:45 rws Exp $ */
+/* $XConsortium: creatdstry.c,v 1.4 93/11/06 15:01:59 rws Exp $ */
 
 /**** module creatdstry.c ****/
 /******************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -71,6 +71,7 @@ int InitCreateDestroyPhotoflo(xp, p, reps)
 	flo_elements = 2;
         flograph = XieAllocatePhotofloGraph(flo_elements);
 
+	lutSize = xp->vinfo.colormap_size;
         if ( flograph == ( XiePhotoElement * ) NULL )
         {
                 fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
@@ -78,7 +79,6 @@ int InitCreateDestroyPhotoflo(xp, p, reps)
         }
 	else
 	{
-		lutSize = 1 << xp->vinfo.depth;
 		lut1 = (unsigned char *)
 			malloc( lutSize * sizeof( unsigned char ) );
 		if ( lut1 == ( unsigned char * ) NULL )

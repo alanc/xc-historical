@@ -1,4 +1,4 @@
-/* $XConsortium: purgecolst.c,v 1.1 93/10/26 10:06:55 rws Exp $ */
+/* $XConsortium: purgecolst.c,v 1.2 93/11/06 15:06:03 rws Exp $ */
 
 /**** module purgecolst.c ****/
 /******************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO

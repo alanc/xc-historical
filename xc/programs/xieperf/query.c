@@ -1,4 +1,4 @@
-/* $XConsortium: query.c,v 1.3 93/10/27 21:52:42 rws Exp $ */
+/* $XConsortium: query.c,v 1.6 93/11/06 15:06:19 rws Exp $ */
 
 /**** module query.c ****/
 /******************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -113,6 +113,8 @@ int InitQueryPhotoflo(xp, p, reps)
 
 	flo_elements = 2;
         flograph = XieAllocatePhotofloGraph(flo_elements);
+	lutSize = ( ( QueryParms * ) p->ts )->lutSize;
+	lutLevels = ( ( QueryParms * ) p->ts )->lutLevels;
         if ( flograph == ( XiePhotoElement * ) NULL )
         {
                 fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
@@ -120,8 +122,6 @@ int InitQueryPhotoflo(xp, p, reps)
         }
 	else
 	{
-		lutSize = ( ( QueryParms * ) p->ts )->lutSize;
-		lutLevels = ( ( QueryParms * ) p->ts )->lutLevels;
 		lut1 = (unsigned char *)
 			malloc( lutSize * sizeof( unsigned char ) );
 		if ( lut1 == ( unsigned char * ) NULL )

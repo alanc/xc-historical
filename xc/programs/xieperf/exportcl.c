@@ -1,4 +1,4 @@
-/* $XConsortium: exportcl.c,v 1.6 93/10/28 11:51:52 rws Exp $ */
+/* $XConsortium: exportcl.c,v 1.10 93/11/06 15:03:11 rws Exp $ */
 
 /**** module exportcl.c ****/
 /******************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -52,6 +52,7 @@ terms and conditions:
 #include <stdio.h>
 
 static XiePhotomap XIEPhotomap;
+static XiePhotomap ControlPlane;
 static XieLut	XIELut;
 static XieRoi	XIERoi;
 static unsigned char *lut;
@@ -66,9 +67,8 @@ static XiePhotoElement *flograph;
 static XiePhotoflo flo;
 static XieHistogramData *histos;
 static int flo_elements;
-static Bool useROI;
+static int useDomain;
 static int histoSrc;
-static XieClipScaleParam *clipParms;
 
 extern Window monitorWindow;
 extern Bool dontClear;
@@ -121,9 +121,17 @@ int InitExportClientPhoto(xp, p, reps)
 			}
 			else
 			{
+				unsigned char h_samples[3];
+				unsigned char v_samples[3];
+
+				h_samples[0] = h_samples[1] = h_samples[2] = 1;
+				v_samples[0] = v_samples[1] = v_samples[2] = 1;
+
 				encode_params = ( char * ) XieTecEncodeJPEGBaseline(
 					image->interleave,
 					image->band_order,
+					h_samples,
+					v_samples,
 					( char * ) NULL,
 					0,
 					( char * ) NULL,
@@ -294,8 +302,8 @@ int InitExportClientLUT(xp, p, reps)
 	flo = ( XiePhotoflo ) NULL;
 
 	histos = ( XieHistogramData * ) malloc( sizeof( XieHistogramData ) *
-		1 << xp->vinfo.depth );
-	lutSize = ( 1 << xp->vinfo.depth ) * sizeof( unsigned char );
+		xp->vinfo.colormap_size );
+	lutSize = ( xp->vinfo.colormap_size ) * sizeof( unsigned char );
 	lut = (unsigned char *) malloc( lutSize );
 	data = (char *) malloc( lutSize );
 	if ( lut == ( unsigned char * ) NULL || data == ( char * ) NULL ||
@@ -307,7 +315,7 @@ int InitExportClientLUT(xp, p, reps)
 	{
 		for ( i = 0; i < lutSize; i++ )
 		{
-			lut[ i ] = ( 1 << xp->vinfo.depth ) - i - 1;
+			lut[ i ] = ( xp->vinfo.colormap_size ) - i - 1;
 		}
 		if ( ( XIELut = GetXIELut( xp, p, lut, lutSize, lutSize ) ) ==
 			( XieLut ) NULL )
@@ -329,7 +337,7 @@ int InitExportClientLUT(xp, p, reps)
 	{
 		XieFloImportLUT(&flograph[0], XIELut);
 
-		length[ 0 ] = 1 << xp->vinfo.depth;
+		length[ 0 ] = xp->vinfo.colormap_size;
 		length[ 1 ] = 0;
 		length[ 2 ] = 0;
 
@@ -439,24 +447,22 @@ InitExportClientHistogram(xp, p, reps)
 	int	idx, src;
         XieRectangle    rect;
 	ExportClParms	*parms;
-	XieLTriplet levels;
-	XieConstrainTechnique tech = xieValConstrainClipScale;
-	XieConstant in_low,in_high;
-	XieLTriplet out_low,out_high;
 	XIEimage *image;
 	int constrainflag = 0;
 
 	parms = ( ExportClParms * )p->ts;
-	clipParms = ( XieClipScaleParam * ) NULL;
+	XIELut = ( XieLut ) NULL;
 	XIERoi = ( XieRoi ) NULL;
 	XIEPhotomap = ( XiePhotomap ) NULL;
+	ControlPlane = ( XiePhotomap ) NULL;
 	histos = ( XieHistogramData * ) NULL;
 	flograph = ( XiePhotoElement * ) NULL;
 	flo = ( XiePhotoflo ) NULL;
+
 	if ( parms )	
-        	useROI = parms->useROI;
+        	useDomain = parms->useDomain;
 	else
-		useROI = False;
+		useDomain = DomainNone;
 
 	flo_elements = 3;
 
@@ -466,18 +472,20 @@ InitExportClientHistogram(xp, p, reps)
 		reps = 0;
 	}
 
-	if ( reps && xp->vinfo.depth != image->depth[ 0 ] )
+	if ( reps && ( xp->screenDepth != image->depth[ 0 ] ) )
         {
-		flo_elements++;
+		flo_elements+=2;
                 constrainflag = 1;
-                if ( !SetupClipScale( xp, p, image, levels, in_low,
-                        in_high, out_low, out_high, &clipParms ) )
+                if ( ( XIELut = CreatePointLut( xp, p,
+                        1 << image->depth[ 0 ], 
+			1 << xp->screenDepth, False ) )
+                        == ( XieLut ) NULL )
                 {
                         reps = 0;
                 }
         }
 
-	if ( reps && useROI == True )
+	if ( reps && useDomain == DomainROI )
 	{
                 rect.x = parms->x;
                 rect.y = parms->y;
@@ -489,7 +497,14 @@ InitExportClientHistogram(xp, p, reps)
                 {
 			reps = 0;
 		}
-		flo_elements++;
+		flo_elements+=1;
+	}
+	else if ( reps && useDomain == DomainCtlPlane )
+	{
+		ControlPlane = GetControlPlane( xp, 2 );
+		if ( ControlPlane == ( XiePhotomap ) NULL )
+			reps = 0;
+		flo_elements+=1;
 	}
 
 	if ( reps )
@@ -520,14 +535,22 @@ InitExportClientHistogram(xp, p, reps)
 			domain.phototag = 0;
 
 			idx = 0;
-			if ( useROI == True )
+			if ( useDomain == DomainROI )
 			{
 				XieFloImportROI(&flograph[idx], XIERoi);
 				idx++;
 				domain.phototag = idx;
 			}
+			else if ( useDomain == DomainCtlPlane )
+			{
+				XieFloImportPhotomap(&flograph[idx], 
+					ControlPlane, False);
+				idx++;
+				domain.phototag = idx;
+			}
 			
-			XieFloImportPhotomap(&flograph[idx], XIEPhotomap, False );
+			XieFloImportPhotomap(&flograph[idx], 
+				XIEPhotomap, False );
 			idx++;
 			src = idx;
 
@@ -541,12 +564,19 @@ InitExportClientHistogram(xp, p, reps)
 	
 			if ( constrainflag )
 			{
-				XieFloConstrain(&flograph[idx],
-                                	src,
-					levels,
-					tech,
-					(char *)clipParms
-				); idx++;
+				XieFloImportLUT(&flograph[idx], XIELut );
+				idx++;
+
+				domain.phototag = 0;
+				domain.offset_x = 0;
+				domain.offset_y = 0;
+				XieFloPoint(&flograph[idx],
+					src,
+					&domain,
+					idx,
+					0x7
+				);
+				idx++;
 				src = idx;
 			}	
 
@@ -586,7 +616,8 @@ void DoExportClientPhotoCSum(xp, p, reps)
     	for (i = 0; i != reps; i++) {
 		XieExecutePhotoflo( xp->d, flo, flo_notify );
 		XSync( xp->d, 0 );
-		if ( image->bandclass == xieValTripleBand && image->interleave == xieValBandByPlane )
+		if ( image->bandclass == xieValTripleBand && 
+			image->interleave == xieValBandByPlane )
 		{
 			ReadNotifyExportTripleData( xp, p, 0, flo, 2, 1, 
 				image->fsize, &data, &done );
@@ -678,7 +709,7 @@ int     reps;
                         break;
                 }
 		DrawHistogram( xp, monitorWindow, ( XieHistogramData * ) histos,
-			lutSize, 1 << xp->vinfo.depth ); 
+			lutSize, xp->vinfo.colormap_size ); 
     	}
 }
 
@@ -864,12 +895,6 @@ FreeExportClientHistogramStuff( xp, p )
 XParms	xp;
 Parms	p;
 {
-        if ( clipParms )
-        {
-                free( clipParms );
-                clipParms = ( XieClipScaleParam * ) NULL;
-        }
-
         if ( XIERoi )
         {
                 XieDestroyROI( xp->d, XIERoi );
@@ -879,6 +904,16 @@ Parms	p;
 	{
 		XieDestroyPhotomap( xp->d, XIEPhotomap );
 		XIEPhotomap = ( XiePhotomap ) NULL;
+	}
+	if ( ControlPlane && IsPhotomapInCache( ControlPlane ) == False )
+	{
+		XieDestroyPhotomap( xp->d, ControlPlane );
+		ControlPlane = ( XiePhotomap ) NULL;
+	}
+	if ( XIELut )
+	{
+                XieDestroyLUT( xp->d, XIELut );
+                XIELut = ( XieLut ) NULL;
 	}
 	if ( histos )
 	{

@@ -1,4 +1,4 @@
-/* $XConsortium: cache.c,v 1.1 93/10/26 10:08:51 rws Exp $ */
+/* $XConsortium: cache.c,v 1.2 93/10/26 14:34:00 rws Exp $ */
 
 /**** module cache.c ****/
 /******************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -53,7 +53,7 @@ terms and conditions:
 #include "xieperf.h"
 #include <stdio.h>
 
-int	CacheSizeMax = 3;	/* cache size, can be changed with -cache arg */
+int	CacheSizeMax = 4;	/* cache size, can be increased with -cache arg */
 
 /* cache list element definition */
 

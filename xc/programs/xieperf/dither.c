@@ -1,4 +1,4 @@
-/* $XConsortium: dither.c,v 1.1 93/10/26 10:05:59 rws Exp $ */
+/* $XConsortium: dither.c,v 1.5 93/11/06 15:02:26 rws Exp $ */
 
 /**** module dither.c ****/
 /******************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -76,7 +76,8 @@ int InitDither(xp, p, reps)
 	parms = ( XieClipScaleParam * ) NULL; 
 	dithertech_parms = ( char * ) NULL;
 	flograph = ( XiePhotoElement * ) NULL; 
-	maxlevels = xp->vinfo.depth;
+	maxlevels = DepthFromLevels( xp->vinfo.colormap_size ); 
+	threshold = ( ( DitherParms * )p->ts )->threshold;
 
 	if ( ( ( DitherParms * ) p->ts )->dither != xieValDitherDefault )
 	{
@@ -100,17 +101,16 @@ int InitDither(xp, p, reps)
 	if ( reps )
 	{
 		photospace = XieCreatePhotospace(xp->d);
-		threshold = ( ( DitherParms * )p->ts )->threshold;
 		decode_notify = False;
 		levels[ 0 ] = levels[ 1 ] = levels[ 2 ] = 0;
 		in_low[ 0 ] = in_low[ 1 ] = in_low[ 2 ] = 0.0;
 		out_low[ 0 ] = out_low[ 1 ] = out_low[ 2 ] = 0;
 		out_high[ 0 ] = out_high[ 1 ] = out_high[ 2 ] = 0;
 		if ( ( ( DitherParms * )p->ts )->drawable == Drawable )
-			out_high[ 0 ] = ( 1 << xp->vinfo.depth ) - 1;
+			out_high[ 0 ] = ( 1 << xp->screenDepth ) - 1;
 		else
 			out_high[ 0 ] = 1;
-		flo_elements = 4;
+		flo_elements = 5;
 		flograph = XieAllocatePhotofloGraph(flo_elements);	
 		if ( flograph == ( XiePhotoElement * ) NULL )
 		{
@@ -149,10 +149,12 @@ void DoDither(xp, p, reps)
 {
 	int	i, j, idx;
 	char    *tech_parms=NULL;
+	XieLut	XIELut;
+	XieProcessDomain domain;
 
 	j = 0;
     	for (i = 0; i != reps; i++) {
-
+		XIELut = ( XieLut ) NULL;
 		idx = 1;
 		flo_id = i + 1;		
 		if ( ( ( DitherParms * ) p->ts )->drawable == Drawable )
@@ -189,21 +191,29 @@ void DoDither(xp, p, reps)
 			return;
 		}
 
-		if ( levels[ 0 ] != xp->vinfo.depth && 
+		if ( DepthFromLevels( levels[ 0 ] ) != xp->screenDepth && 
 			( ( DitherParms * ) p->ts )->drawable == Drawable )
 		{
-			if ( ( ( DitherParms * ) p->ts )->drawable == Drawable )
-				levels[ 0 ] = 1 << xp->vinfo.depth;
-			else
-				levels[ 0 ] = 2;
+			if ( ( XIELut = CreatePointLut( xp, p, levels[ 0 ],
+				1 << xp->screenDepth, False ) )
+				== ( XieLut ) NULL )
+			{
+				reps = 0;
+			}
 
-			XieFloConstrain( &flograph[idx], 
-				idx,
-				levels,
-				xieValConstrainClipScale,
-				tech_parms
-			);
-			idx++;
+                        XieFloImportLUT(&flograph[idx], XIELut );
+                        idx++;
+
+                        domain.phototag = 0;
+                        domain.offset_x = 0;
+                        domain.offset_y = 0;
+                        XieFloPoint(&flograph[idx],
+                                idx-1,
+                                &domain,
+                                idx,
+                                0x7
+                        );
+                        idx++;
 		}
 
 		if ( ( ( DitherParms * ) p->ts )->drawable == Drawable )
@@ -230,6 +240,10 @@ void DoDither(xp, p, reps)
                		idx    		/* number of elements */
        		);
 		XSync( xp->d, 0 );
+		if ( XIELut )
+		{
+			XieDestroyLUT( xp->d, XIELut );
+		}
     	}
 	if ( tech_parms )
 	{

@@ -1,4 +1,4 @@
-/* $XConsortium: abort.c,v 1.2 93/10/26 10:05:20 rws Exp $ */
+/* $XConsortium: abort.c,v 1.5 93/11/06 15:01:05 rws Exp $ */
 
 /**** module abort.c ****/
 /******************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO

@@ -1,4 +1,4 @@
-/* $XConsortium: events.c,v 1.4 93/10/30 15:28:27 rws Exp $ */
+/* $XConsortium: events.c,v 1.5 93/11/05 17:08:22 rws Exp $ */
 /**** module events.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -68,13 +68,11 @@ static int timeout = 60;        /* in seconds */
 
 static XiePhotomap XIEPhotomap;
 static XiePhotomap XIEPhotomap2;
-static XieRoi XIERoi;
 static XieLut XIELut;
 
 static XiePhotoElement *flograph;
 static XiePhotoflo flo;
 static int flo_elements;
-static XieRectangle *rects;
 static char *data;
 
 static int size;
@@ -158,8 +156,10 @@ Bool	verbose;
 	Bool done;
 #ifdef WIN32
 	fd_set rd;
+#define FDCAST fdset
 #else
 	unsigned int rd;
+#define FDCAST unsigned int
 #endif
 
 	retval = 1;
@@ -195,7 +195,7 @@ Bool	verbose;
 #else
 			rd = 1 << Xsocket;
 #endif
-			select( Xsocket + 1, &rd, NULL, NULL, &tv );
+			select( Xsocket + 1, ( int * ) &rd, ( int * ) NULL, ( int * ) NULL, &tv );
 			continue;
 		}	
 		xie_event = event.type - xieInfo->first_event;
@@ -407,11 +407,11 @@ int	reps;
         flograph = ( XiePhotoElement * ) NULL;
         flo = ( XiePhotoflo ) NULL;
 
+	image = p->finfo.image1; 
 	if ( !GetImageData( xp, p, 1  ) )
 		reps = 0;
 	else
 	{
-		image = p->finfo.image1; 
 		if ( !image )
 			reps = 0;
 		else
@@ -529,7 +529,7 @@ XParms	xp;
 Parms	p;
 int	reps;
 {
-	int	i, lutSize;
+	int	lutSize;
 	char	*lut;
 	XieLTriplet start, length;
 

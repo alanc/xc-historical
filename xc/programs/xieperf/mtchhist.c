@@ -1,4 +1,4 @@
-/* $XConsortium: mtchhist.c,v 1.1 93/10/26 10:07:44 rws Exp $ */
+/* $XConsortium: mtchhist.c,v 1.2 93/10/27 21:52:35 rws Exp $ */
 
 /**** module mtchhist.c ****/
 /******************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -54,6 +54,8 @@ terms and conditions:
 
 static XiePhotomap XIEPhotomap;
 static XieRoi XIERoi;
+static XieLut XIELut;
+static XiePhotomap ControlPlane;
 
 static XIEimage	*image;
 static int flo_notify;
@@ -63,7 +65,6 @@ static char *shape_parms;
 static XieHistogramData *histos;
 static int flo_elements;
 static int histo1, histo2;
-static XieClipScaleParam *parms;
 
 extern Window monitorWindow;
 extern Window monitor2Window;
@@ -81,25 +82,25 @@ InitMatchHistogram(xp, p, reps)
 	double	mean, sigma;
 	double	constant;
 	Bool	shape_factor;	
-	Bool	useROI;
+	int	useDomain;
 	XieRectangle rect;
 	int	idx;
 	int	src1, src2;
-	XieLTriplet levels;
-	XieConstant in_low,in_high;
-	XieLTriplet out_low,out_high;
 	int	monoflag;
 
 	XIEPhotomap = ( XiePhotomap ) NULL;
+	ControlPlane = ( XiePhotomap ) NULL;
         flograph = ( XiePhotoElement * ) NULL;
         flo = ( XiePhotoflo ) NULL;
+	XIELut = ( XieLut ) NULL;
 	XIERoi = ( XieRoi ) NULL;
 	histos = ( XieHistogramData * ) NULL;
 	shape_parms = ( char * ) NULL;	
-	parms = ( XieClipScaleParam * ) NULL;
 	monoflag = 0;
 
-	useROI = ( ( MatchHistogramParms * )p->ts )->useROI;
+	useDomain = ( ( MatchHistogramParms * )p->ts )->useDomain;
+	shape = ( ( MatchHistogramParms * )p->ts )->shape;
+
 	image = p->finfo.image1;
 	flo_elements = 6;
 	if ( !image )
@@ -114,12 +115,14 @@ InitMatchHistogram(xp, p, reps)
 	}
 	if ( reps )
 	{
-		if ( xp->vinfo.depth != 8 )
+		if ( xp->screenDepth != image->depth[ 0 ] )
 		{
-			flo_elements += 2;
+			flo_elements += 4;
 	                monoflag = 1;
-			if ( !SetupClipScale( xp, p, image, levels, in_low,
-				in_high, out_low, out_high, &parms ) )
+			if ( ( XIELut = CreatePointLut( xp, p,
+				1 << image->depth[0], 
+				1 << xp->screenDepth, False ) )
+				== ( XieLut ) NULL )
 			{
 				reps = 0;
 			}
@@ -127,7 +130,7 @@ InitMatchHistogram(xp, p, reps)
 	}
 	if ( reps )
 	{
-		if ( useROI == True )
+		if ( useDomain == DomainROI )
 		{
 			flo_elements++;
 			rect.x = (( MatchHistogramParms *)p->ts )->x;
@@ -140,11 +143,16 @@ InitMatchHistogram(xp, p, reps)
 				reps = 0;
 			}
 		}
+                else if ( useDomain == DomainCtlPlane )
+                {
+			flo_elements++;
+                        ControlPlane = GetControlPlane( xp, 2 );
+                        if ( ControlPlane == ( XiePhotomap ) NULL )
+                                reps = 0;
+                }
 	}
 	if ( reps )
 	{
-		shape = ( ( MatchHistogramParms * )p->ts )->shape;
-
 		if ( shape == xieValHistogramFlat )
 			shape_parms = ( char * ) NULL;
 		else if ( shape == xieValHistogramGaussian )
@@ -199,9 +207,16 @@ InitMatchHistogram(xp, p, reps)
 			domain.offset_x = 0;
 			domain.offset_y = 0;
 			domain.phototag = 0;
-			if ( useROI == True )
+			if ( useDomain == DomainROI )
 			{
 				XieFloImportROI(&flograph[idx], XIERoi);
+				idx++;
+				domain.phototag = idx;
+			}
+			else if ( useDomain == DomainCtlPlane )
+			{
+				XieFloImportPhotomap(&flograph[idx], 
+					ControlPlane, False);
 				idx++;
 				domain.phototag = idx;
 			}
@@ -238,23 +253,37 @@ InitMatchHistogram(xp, p, reps)
 
 			if ( monoflag )
 			{
-				XieFloConstrain(&flograph[idx],
+				XieFloImportLUT(&flograph[idx], XIELut );
+				idx++;
+
+				domain.phototag = 0;
+				domain.offset_x = 0;
+				domain.offset_y = 0;
+				XieFloPoint(&flograph[idx],
 					src1,
-					levels,
-					xieValConstrainClipScale,
-					(char *)parms
-				); idx++;
+					&domain,
+					idx,
+					0x7
+				);
+				idx++;
 				src1 = idx;
 			}
 
 			if ( monoflag )
 			{
-				XieFloConstrain(&flograph[idx],
+				XieFloImportLUT(&flograph[idx], XIELut );
+				idx++;
+
+				domain.phototag = 0;
+				domain.offset_x = 0;
+				domain.offset_y = 0;
+				XieFloPoint(&flograph[idx],
 					src2,
-					levels,
-					xieValConstrainClipScale,
-					(char *)parms
-				); idx++;
+					&domain,
+					idx,
+					0x7
+				);
+				idx++;
 				src2 = idx;
 			}
 
@@ -341,16 +370,18 @@ FreeMatchHistogramStuff( xp, p )
 XParms	xp;
 Parms	p;
 {
-        if ( parms )
-        {
-                free( parms );
-                parms = ( XieClipScaleParam * ) NULL;
-        }
         if ( XIEPhotomap && IsPhotomapInCache( XIEPhotomap ) == False )
         {
                 XieDestroyPhotomap( xp->d, XIEPhotomap );
                 XIEPhotomap = ( XiePhotomap ) NULL;
         }
+
+        if ( ControlPlane != ( XiePhotomap ) NULL && IsPhotomapInCache( ControlPlane ) == False )
+        {
+                XieDestroyPhotomap( xp->d, ControlPlane );
+                ControlPlane = ( XiePhotomap ) NULL;
+        }
+
         if ( flograph )
         {
                 XieFreePhotofloGraph(flograph,flo_elements);
@@ -360,6 +391,11 @@ Parms	p;
         {
                 XieDestroyPhotoflo( xp->d, flo );
                 flo = ( XiePhotoflo ) NULL;
+        }
+        if ( XIELut )
+        {
+                XieDestroyLUT( xp->d, XIELut );
+                XIELut = ( XieLut ) NULL;
         }
         if ( XIERoi )
         {

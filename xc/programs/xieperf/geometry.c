@@ -1,4 +1,4 @@
-/* $XConsortium: geometry.c,v 1.4 93/10/27 21:52:18 rws Exp $ */
+/* $XConsortium: geometry.c,v 1.8 93/11/06 15:03:28 rws Exp $ */
 
 /**** module geometry.c ****/
 /******************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -56,7 +56,7 @@ terms and conditions:
 #endif
 
 static XiePhotomap XIEPhotomap;
-static XieLut	XIELut;
+static XieLut	XIELut, XIELut2;
 
 static int constrainflag = 0;
 static int drawableplaneflag = 0;
@@ -80,11 +80,11 @@ int InitGeometry(xp, p, reps)
     int     reps;
 {
 	int     band_mask = 1;
-	int	idx;
+	int	idx = 0;
 	float	coeffs[ 6 ];
 	static XieConstant constant = { 0.0, 0.0, 0.0 };
 	XieProcessDomain domain;
-	XieGeometryTechnique geo_tech;
+	XieGeometryTechnique geo_tech = ( XieGeometryTechnique ) NULL;
 	char	*geo_tech_params = NULL;
 
 	XIELut = ( XieLut ) NULL;
@@ -101,30 +101,30 @@ int InitGeometry(xp, p, reps)
 		return 0;
 
 	constrainflag = drawableplaneflag = 0;
-	if ( xp->vinfo.depth == 1 && !IsFaxImage( image->decode ) )
+	if ( xp->screenDepth == 1 && !IsFaxImage( image->decode ) )
 	{
 		constrainflag = 1;
-                if ( ( XIELut = CreatePointLut( xp, p, image->depth[ 0 ],
-                        xp->vinfo.depth ) ) == ( XieLut ) NULL )
+                if ( ( XIELut = CreatePointLut( xp, p, 1 << image->depth[ 0 ],
+                        1 << xp->screenDepth, False ) ) == ( XieLut ) NULL )
                 {
                         reps = 0;
                 }
 	}	
-	else if ( xp->vinfo.depth != 1 && IsFaxImage( image->decode ) 
+	else if ( xp->screenDepth != 1 && IsFaxImage( image->decode ) 
 		&& ( ( GeometryParms * ) p->ts )->geoTech == xieValGeomAntialias )
 	{
 		constrainflag = 1;
-                if ( ( XIELut = CreatePointLut( xp, p, image->depth[ 0 ],
-                        xp->vinfo.depth ) ) == ( XieLut ) NULL )
+                if ( ( XIELut = CreatePointLut( xp, p, 1 << image->depth[ 0 ],
+                        1 << xp->screenDepth, False ) ) == ( XieLut ) NULL )
                 {
                         reps = 0;
                 }
 	}
-	else if ( xp->vinfo.depth != image->depth[ 0 ] )
+	else if ( xp->screenDepth != image->depth[ 0 ] )
 	{
 		constrainflag = 1;
-                if ( ( XIELut = CreatePointLut( xp, p, image->depth[ 0 ],
-                        xp->vinfo.depth ) ) == ( XieLut ) NULL )
+                if ( ( XIELut = CreatePointLut( xp, p, 1 << image->depth[ 0 ],
+                        1 << xp->screenDepth, False ) ) == ( XieLut ) NULL )
                 {
                         reps = 0;
                 }
@@ -157,12 +157,11 @@ int InitGeometry(xp, p, reps)
 			reps = 0;
 		}
 
-		idx = 0;
 		XieFloImportPhotomap(&flograph[idx], XIEPhotomap, False); idx++;
 
 		geo_tech = ( ( GeometryParms * ) p->ts )->geoTech;
 
-		if ( !SetCoefficients( xp, p, (GeometryParms*)p->ts, coeffs ) )
+		if ( !SetCoefficients( xp, p, 1, (GeometryParms*)p->ts, coeffs ) )
 			reps = 0;
 	}
 	if ( reps )
@@ -231,15 +230,15 @@ int InitGeometryFAX(xp, p, reps)
     int     reps;
 {
 	int     band_mask = 1;
-	int	idx;
+	int	idx = 0;
 	Bool radiometric;
 	float	coeffs[ 6 ];
 	static XieConstant constant = { 0.0, 0.0, 0.0 };
         XieLTriplet width, height, mylevels;
-	XieGeometryTechnique geo_tech;
+	XieGeometryTechnique geo_tech = ( XieGeometryTechnique ) NULL;
 	char	*geo_tech_params = NULL;
 	XieProcessDomain domain;
-	char	*decode_tech;
+	char	*decode_tech = ( char * ) NULL;
 
         if ( TechniqueSupported( xp, xieValGeometry,
                 ( ( GeometryParms * ) p->ts )->geoTech ) == False )
@@ -260,20 +259,28 @@ int InitGeometryFAX(xp, p, reps)
 	TIFF2decode_params = ( XieDecodeTIFF2Param * ) NULL;
 	XIEPhotomap = ( XiePhotomap ) NULL;
 	XIELut = ( XieLut ) NULL;
+	XIELut2 = ( XieLut ) NULL;
 	flograph = ( XiePhotoElement * ) NULL;
 	flo = ( XiePhotoflo ) NULL;
 	constrainflag = drawableplaneflag = 0;
-	if ( xp->vinfo.depth != 1 && ( ( GeometryParms * ) p->ts )->geoTech 
+
+	if ( xp->screenDepth != 1 && ( ( GeometryParms * ) p->ts )->geoTech 
 		== xieValGeomAntialias )
 	{
 		constrainflag = 1;
-                if ( ( XIELut = CreatePointLut( xp, p, image->depth[ 0 ],
-                        xp->vinfo.depth ) ) == ( XieLut ) NULL )
+                if ( ( XIELut = CreatePointLut( xp, p, 1 << image->depth[ 0 ],
+                        256, True ) ) == ( XieLut ) NULL )
+                {
+                        reps = 0;
+                }
+                if ( ( XIELut2 = CreatePointLut( xp, p, 256,
+                        1 << xp->screenDepth, False ) ) == ( XieLut ) NULL )
                 {
                         reps = 0;
                 }
 	}
-	else if ( xp->vinfo.depth != 1 
+
+	if ( xp->screenDepth != 1 
 		&& ((GeometryParms *) p->ts )->geoTech != xieValGeomAntialias)
 		drawableplaneflag = 1;
 
@@ -343,7 +350,7 @@ int InitGeometryFAX(xp, p, reps)
 	if ( reps )
 	{
 		if ( constrainflag )
-			flo_elements = 5;
+			flo_elements = 7;
 		else
 			flo_elements = 3;
        		flograph = XieAllocatePhotofloGraph(flo_elements);
@@ -359,7 +366,6 @@ int InitGeometryFAX(xp, p, reps)
 		height[ 0 ] = image->height[ 0 ];
 		mylevels[ 0 ] = image->levels[ 0 ];
 
-		idx = 0;
 		XieFloImportClientPhoto(&flograph[idx],
 			image->bandclass,
 			width, height, mylevels,
@@ -370,7 +376,7 @@ int InitGeometryFAX(xp, p, reps)
 
 		geo_tech = ( ( GeometryParms * ) p->ts )->geoTech;
 
-		if ( !SetCoefficients( xp, p, (GeometryParms*)p->ts, coeffs ) )
+		if ( !SetCoefficients( xp, p, 1, (GeometryParms*)p->ts, coeffs ) )
 			reps = 0;
 	}
 	
@@ -403,6 +409,23 @@ int InitGeometryFAX(xp, p, reps)
 			geo_tech,
 			geo_tech_params
 		); idx++;
+
+		if ( constrainflag )
+		{
+	                XieFloImportLUT(&flograph[idx], XIELut2 );
+			idx++;
+
+			domain.phototag = 0;
+			domain.offset_x = 0;
+			domain.offset_y = 0;
+			XieFloPoint(&flograph[idx],
+				idx-1,
+				&domain,
+				idx,
+				0x7
+			);
+			idx++;
+		}	
 
 		if ( drawableplaneflag ) {
 			XieFloExportDrawablePlane(&flograph[idx],
@@ -447,9 +470,10 @@ void DoGeometryFAX(xp, p, reps)
 }
 
 int
-SetCoefficients( xp, p, gp, coeffs )
+SetCoefficients( xp, p, which, gp, coeffs )
 XParms	xp;
 Parms	p;
+int	which;
 GeometryParms *gp;
 float	coeffs[];
 {
@@ -457,7 +481,24 @@ float	coeffs[];
 	XIEimage *image;
 	int type;
 
-	image = p->finfo.image1;
+	switch( which )
+	{
+	case 1:
+		image = p->finfo.image1;
+		break;
+	case 2:
+		image = p->finfo.image2;
+		break;
+	case 3:
+		image = p->finfo.image3;
+		break;
+	case 4:
+		image = p->finfo.image4;
+		break;
+	default:
+		image = ( XIEimage * ) NULL;
+		return( 0 );	
+	}
 	type = gp->geoType;
 	if ( !image || !gp )
 	{
@@ -593,6 +634,12 @@ Parms	p;
 	{
 		XieDestroyLUT( xp->d, XIELut );
 		XIELut = ( XieLut ) NULL;
+	}
+
+	if ( XIELut2 )
+	{
+		XieDestroyLUT( xp->d, XIELut2 );
+		XIELut2 = ( XieLut ) NULL;
 	}
 
         if ( XIEPhotomap )

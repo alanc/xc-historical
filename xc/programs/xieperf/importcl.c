@@ -1,4 +1,4 @@
-/* $XConsortium: importcl.c,v 1.4 93/10/27 21:52:25 rws Exp $ */
+/* $XConsortium: importcl.c,v 1.7 93/11/06 15:04:14 rws Exp $ */
 
 /**** module importcl.c ****/
 /******************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -139,7 +139,8 @@ int InitImportClientPhoto(xp, p, reps)
 		{
 			decode_params = ( char * ) XieTecDecodeJPEGBaseline(
 				image->interleave,
-				image->band_order
+				image->band_order,
+				True
 			);
 		}
 		else if ( image->decode == xieValDecodeJPEGLossless )
@@ -248,26 +249,31 @@ int InitImportClientPhotoExportDrawable(xp, p, reps)
     int     reps;
 {
 	XIEimage *image;
-        int decode_notify;
-        XieLTriplet width, height, levels, clipLevels;
+        int decode_notify = 0;
+        XieProcessDomain domain;
+        XieLTriplet width, height, levels;
 	XieDecodeUncompressedSingleParam *decode_params=NULL;
-	XieClipScaleParam *parms;
-	XieConstant in_low,in_high;
-	XieLTriplet out_low,out_high;
-	int monoflag, idx;
+	int monoflag = 0;
+	int idx;
+        int cclass;
 
+#if     defined(__cplusplus) || defined(c_plusplus)
+        cclass = xp->vinfo.c_class;
+#else
+        cclass = xp->vinfo.class;
+#endif
         flograph = ( XiePhotoElement * ) NULL;
         flo = ( XiePhotoflo ) NULL;
 	XIEPhotomap = ( XiePhotomap ) NULL;
-	parms = ( XieClipScaleParam * ) NULL;
+	XIELut = ( XieLut ) NULL;
 
+	image = p->finfo.image1;
 	if (!GetImageData( xp, p, 1 ))
 		reps = 0;
 	else
 		XIEPhotomap = XieCreatePhotomap(xp->d);
 	if ( reps )
 	{
-		image = p->finfo.image1;
 		if ( !image )
 		{
 			reps = 0;
@@ -275,12 +281,14 @@ int InitImportClientPhotoExportDrawable(xp, p, reps)
 		decode_notify = False;
 		flo_elements = 2;
 		monoflag = 0;
-		if ( xp->vinfo.depth != 8 )
+		if ( IsTrueColorOrDirectColor( cclass ) || xp->screenDepth != image->depth[ 0 ] )
 		{
 			monoflag = 1;
-			flo_elements++;
-	                if ( !SetupClipScale( xp, p, image, clipLevels, in_low,
-       		        	in_high, out_low, out_high, &parms ) )
+			flo_elements+=2;
+			if ( ( XIELut = CreatePointLut( xp, p, 
+				1 << image->depth[ 0 ], 
+				1 << xp->screenDepth, False ) )
+				== ( XieLut ) NULL )
 			{
 				reps = 0;
 			}
@@ -320,12 +328,19 @@ int InitImportClientPhotoExportDrawable(xp, p, reps)
 
 			if ( monoflag )
 			{
-				XieFloConstrain(&flograph[idx],
+				XieFloImportLUT(&flograph[idx], XIELut );
+				idx++;
+
+				domain.phototag = 0;
+				domain.offset_x = 0;
+				domain.offset_y = 0;
+				XieFloPoint(&flograph[idx],
+					idx-1,
+					&domain,
 					idx,
-					clipLevels,
-					xieValConstrainClipScale,
-					(char *)parms
-				); idx++;
+					0x7
+				);
+				idx++;
 			}
 
 			XieFloExportDrawable(&flograph[idx],
@@ -342,8 +357,6 @@ int InitImportClientPhotoExportDrawable(xp, p, reps)
 	}
 	if ( decode_params )
 		free( decode_params );
-	if ( parms )
-		free( parms );
 	if ( !reps )
 	{
 		FreeImportClientPhotoStuff( xp, p );
@@ -366,7 +379,7 @@ int InitImportClientLUT(xp, p, reps)
 	flograph = ( XiePhotoElement * ) NULL;
 	flo = ( XiePhotoflo ) NULL;
 
-	lutSize = ( 1 << xp->vinfo.depth ) * sizeof( unsigned char );
+	lutSize = xp->vinfo.colormap_size * sizeof( unsigned char );
 	lut = (unsigned char *) malloc( lutSize );
 
 	if ( lut == ( unsigned char * ) NULL )
@@ -377,7 +390,7 @@ int InitImportClientLUT(xp, p, reps)
 	{
 		for ( i = 0; i < lutSize; i++ )
 		{
-			lut[ i ] = ( ( 1 << xp->vinfo.depth ) - 1 ) - i;
+			lut[ i ] = ( xp->vinfo.colormap_size - 1 ) - i;
 		}
 
 		if ( ( XIELut = XieCreateLUT(xp->d) ) == ( XieLut ) NULL )
@@ -395,10 +408,10 @@ int InitImportClientLUT(xp, p, reps)
 		{
 			cclass = xieValSingleBand;
 			band_order = xieValLSFirst;
-			length[ 0 ] = 1 << xp->vinfo.depth;
+			length[ 0 ] = xp->vinfo.colormap_size;
 			length[ 1 ] = 0;
 			length[ 2 ] = 0;
-			levels[ 0 ] = 1 << xp->vinfo.depth;
+			levels[ 0 ] = xp->vinfo.colormap_size;
 			levels[ 1 ] = 0;
 			levels[ 2 ] = 0;
 
@@ -590,6 +603,12 @@ FreeImportClientPhotoStuff( xp, p )
 XParms	xp;
 Parms	p;
 {
+        if ( XIELut )
+        {
+                XieDestroyLUT( xp->d, XIELut );
+                XIELut = ( XieLut ) NULL;
+        }
+
         if ( XIEPhotomap )
         {
                 XieDestroyPhotomap( xp->d, XIEPhotomap );

@@ -1,4 +1,4 @@
-/* $XConsortium: math.c,v 1.1 93/10/26 10:08:10 rws Exp $ */
+/* $XConsortium: math.c,v 1.2 93/10/27 21:52:30 rws Exp $ */
 
 /**** module math.c ****/
 /******************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -52,7 +52,9 @@ terms and conditions:
 #include <stdio.h>
 
 static XiePhotomap XIEPhotomap;
+static XiePhotomap ControlPlane;
 static XieRoi XIERoi;
+static XieLut XIELut;
 
 static int flo_notify;
 static XiePhotoElement *flograph;
@@ -60,6 +62,7 @@ static XiePhotoflo flo;
 static int flo_elements;
 
 static XieClipScaleParam *parms;
+static int monoflag;
 
 int 
 InitMath(xp, p, reps)
@@ -71,7 +74,7 @@ InitMath(xp, p, reps)
 	XieArithmeticOp	*ops;
 	int		nops;
 	unsigned int	bandMask;
-	Bool		useROI;
+	Bool		useDomain;
 	Bool		constrain;
 	XieConstrainTechnique constrainTech;
 	int		idx;
@@ -81,8 +84,17 @@ InitMath(xp, p, reps)
         XieConstant in_low,in_high;
         XieLTriplet out_low,out_high;
 	XIEimage *image;
+        int     cclass;
 
-	useROI = ( ( MathParms * )p->ts )->useROI;
+#if     defined(__cplusplus) || defined(c_plusplus)
+        cclass = xp->vinfo.c_class;
+#else
+        cclass = xp->vinfo.class;
+#endif
+
+        monoflag = 0;
+
+	useDomain = ( ( MathParms * )p->ts )->useDomain;
 	constrain = ( ( MathParms * )p->ts )->constrain;
 	constrainTech = ( ( MathParms * )p->ts )->constrainTech;
 	ops = ( ( MathParms * )p->ts )->ops;
@@ -93,8 +105,10 @@ InitMath(xp, p, reps)
 	in_low[ 1 ] = in_low[ 2 ] = 0.0;
 	in_high[ 1 ] = in_high[ 2 ] = 0.0;
 
+	XIELut = ( XieLut ) NULL;
 	XIERoi = ( XieRoi ) NULL;
 	XIEPhotomap = ( XiePhotomap ) NULL;
+	ControlPlane = ( XiePhotomap ) NULL;
 	flo = ( XiePhotoflo ) NULL;
 	flograph = ( XiePhotoElement * ) NULL;
 	parms = ( XieClipScaleParam * ) NULL;
@@ -125,21 +139,33 @@ InitMath(xp, p, reps)
 	if ( !image )
 		return ( 0 );
 
-	if ( ( constrain == False && xp->vinfo.depth != image->depth[ 0 ] ) || 
-	     ( constrain == True && 
-	       constrainTech == xieValConstrainHardClip && 
-	       xp->vinfo.depth != image->depth[ 0 ] ) )
+	if ( ( constrain == False && xp->screenDepth != image->depth[ 0 ] ) ) 
 	{
-		in_low[ 0 ] = 0.0;
-		in_high[ 0 ] = ( 1 << image->depth[ 0 ] ) - 1.0;  
-		constrainTech = xieValConstrainClipScale;
-		constrain = True;
+                monoflag = 1;
+                if ( ( XIELut = CreatePointLut( xp, p,
+                        1 << image->depth[ 0 ], 1 << xp->screenDepth, False ) )
+                        == ( XieLut ) NULL )
+                {
+                        reps = 0;
+                }
 	}
+        else if ( IsTrueColorOrDirectColor( cclass ) && constrain == True )
+        {
+                monoflag = 1;
+                if ( ( XIELut = CreatePointLut( xp, p,
+                        xp->vinfo.colormap_size, 1 << xp->screenDepth, False ) )
+                        == ( XieLut ) NULL )
+                {
+                        reps = 0;
+                }
+        }
 
 	flo_elements = 2 + nops;
-	if ( useROI == True )
+	if ( useDomain == DomainROI || useDomain == DomainCtlPlane )
 		flo_elements++;
 	if ( constrain == True )
+		flo_elements += 2;
+	if ( monoflag )
 		flo_elements += 2;
 
 	flograph = XieAllocatePhotofloGraph( flo_elements );	
@@ -153,7 +179,7 @@ InitMath(xp, p, reps)
 	{
 		reps = 0;
 	}
-	else if ( useROI == True )
+	else if ( useDomain == DomainROI )
 	{
 		rect.x = ( ( MathParms * )p->ts )->x;
 		rect.y = ( ( MathParms * )p->ts )->y;
@@ -166,6 +192,12 @@ InitMath(xp, p, reps)
 			reps = 0;
 		}
 	}
+	else if ( useDomain == DomainCtlPlane )
+	{
+		ControlPlane = GetControlPlane( xp, 13 );
+		if ( ControlPlane == ( XiePhotomap ) NULL )
+			reps = 0;
+	}
 
 	if ( reps )
 	{
@@ -174,12 +206,19 @@ InitMath(xp, p, reps)
 		domain.offset_x = 0;
 		domain.offset_y = 0;
 
-		if ( useROI == True )
+		if ( useDomain == DomainROI )
 		{
 	        	XieFloImportROI(&flograph[idx], XIERoi);
 			idx++;
 			domain.phototag = idx;
 		}
+                else if ( useDomain == DomainCtlPlane )
+                {
+                        XieFloImportPhotomap(&flograph[idx], ControlPlane, 
+				False);
+                        idx++;
+                        domain.phototag = idx;
+                }
 		else
 		{
 			domain.phototag = 0;
@@ -207,16 +246,16 @@ InitMath(xp, p, reps)
 
 		if ( constrain == True )
 		{
-		        levels[ 0 ] = 1 << xp->vinfo.depth;
+		        levels[ 0 ] = xp->vinfo.colormap_size;
 			levels[ 1 ] = 0;
 			levels[ 2 ] = 0;
 
-/* XXX */		if ( constrainTech == xieValConstrainHardClip )
+			if ( constrainTech == xieValConstrainHardClip )
 				parms = ( XieClipScaleParam * ) NULL;
 			else if ( constrainTech == xieValConstrainClipScale )
 			{
 				out_low[ 0 ] = 0;
-				out_high[ 0 ] = ( 1 << xp->vinfo.depth ) - 1;
+				out_high[ 0 ] = xp->vinfo.colormap_size - 1;
 
 				parms = ( XieClipScaleParam * ) 
 					XieTecClipScale( in_low, 
@@ -244,7 +283,24 @@ InitMath(xp, p, reps)
 				idx++;
 			}
 		}
-		
+	
+		if ( reps && monoflag )
+		{
+                        XieFloImportLUT(&flograph[idx], XIELut );
+                        idx++;
+
+                        domain.phototag = 0;
+                        domain.offset_x = 0;
+                        domain.offset_y = 0;
+                        XieFloPoint(&flograph[idx],
+                                idx-1,
+                                &domain,
+                                idx,
+                                0x7
+                        );
+                        idx++;
+		}
+
 		if ( reps )	
 		{
 			XieFloExportDrawable(&flograph[idx],
@@ -299,6 +355,11 @@ Parms	p;
 		free( parms );
 		parms = ( XieClipScaleParam * ) NULL;
 	}
+	if ( XIELut )
+	{
+                XieDestroyLUT( xp->d, XIELut );
+                XIELut = ( XieLut ) NULL;
+	}
 	if ( XIERoi )
 	{
                 XieDestroyROI( xp->d, XIERoi );
@@ -309,6 +370,12 @@ Parms	p;
 		XieDestroyPhotomap(xp->d, XIEPhotomap);
 		XIEPhotomap = ( XiePhotomap ) NULL;
 	}
+        if ( ControlPlane != ( XiePhotomap ) NULL && IsPhotomapInCache( ControlPlane ) == False )
+        {
+                XieDestroyPhotomap( xp->d, ControlPlane );
+                ControlPlane = ( XiePhotomap ) NULL;
+        }
+
 	if ( flo )
 	{
 		XieDestroyPhotoflo( xp->d, flo );

@@ -1,4 +1,4 @@
-/* $XConsortium: rgb.c,v 1.2 93/10/27 21:52:46 rws Exp $ */
+/* $XConsortium: rgb.c,v 1.3 93/11/05 17:08:30 rws Exp $ */
 
 /**** module rgb.c ****/
 /******************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -55,12 +55,14 @@ terms and conditions:
 #include <math.h>
 
 static XiePhotomap XIEPhotomap;
-static XieColorList clist;
 
 static XiePhotoElement *flograph;
 static int flo_notify;
 static XiePhotoflo flo;
 static int flo_elements;
+static int cclass;
+static XStandardColormap stdCmap;
+static int imageLevels;
 
 int 
 InitRGB(xp, p, reps)
@@ -68,25 +70,46 @@ XParms  xp;
 Parms   p;
 int     reps;
 {
-	int cclass;
+	static XIEimage *image;
+	int atom;
+
 
 #if     defined(__cplusplus) || defined(c_plusplus)
     	cclass = xp->vinfo.c_class;
 #else
     	cclass = xp->vinfo.class;
 #endif
-	if ( !IsColorVisual( cclass ) )
+
+	if ( xp->screenDepth == 1 )
 		return( 0 );
-	clist = ( XieColorList ) NULL;
+
+	/* for now, do this */
+
+	image = p->finfo.image1;
+	imageLevels = image->levels[ 0 ];
+
 	XIEPhotomap = ( XiePhotomap ) NULL;
 	flograph = ( XiePhotoElement * ) NULL;
 	flo = ( XiePhotoflo ) NULL;
 
-	InstallDefaultColormap( xp );
-	
-	if ( !( clist = XieCreateColorList( xp->d ) ) )
-		reps = 0;
-
+	if ( IsGrayVisual( cclass ) )
+		atom = XA_RGB_GRAY_MAP;
+	else
+		atom = XA_RGB_BEST_MAP;
+	if ( !IsStaticVisual( cclass ) && !IsTrueColorOrDirectColor( cclass ) )
+	{
+		if ( !GetStandardColormap( xp, &stdCmap, atom ) )
+			reps = 0;
+		else
+			InstallThisColormap( xp, stdCmap.colormap );
+	}
+	else 
+	{
+		if ( !IsStaticVisual( cclass ) )
+			InstallColorColormap( xp );
+		CreateStandardColormap( xp, &stdCmap, atom );
+	}
+		
 	if ( reps )
 	{
 		XIEPhotomap = GetXIETriplePhotomap( xp, p, 1 ); 
@@ -107,7 +130,8 @@ int     reps;
 
 	if ( !reps )
 	{
-		InstallCustomColormap( xp );
+		if ( !IsStaticVisual( cclass ) )
+			InstallGrayColormap( xp );
 		FreeRGBStuff( xp, p );
 	}
 	return( reps );
@@ -131,9 +155,7 @@ Parms	p;
 	XieCIEXYZToRGBParam *CIEXYZToRGBParm;
 	XieYCbCrToRGBParam *YCbCrToRGBParm;
 	XieYCCToRGBParam *YCCToRGBParm;
-	XieColorAllocAllParam *convertToIndexParms;
 	XieColorspace colorSpace;
-	XWindowAttributes xwa;
 	XieMatrix toMatrix, fromMatrix;
 	XieWhiteAdjustTechnique whiteAdjust;
 	double ycc_scale = 1.402;
@@ -143,22 +165,23 @@ Parms	p;
         XieLTriplet out_low,out_high;
 	char *ditherTech;
 	int retval;
+        XieConstant c1;
+        float bias;
 
 	retval = 1;
 	idx = 0;
-	levels[ 0 ] = ( 1 << xp->vinfo.depth );
-	levels[ 1 ] = ( 1 << xp->vinfo.depth );
-	levels[ 2 ] = ( 1 << xp->vinfo.depth );
+	levels[ 0 ] = xp->vinfo.colormap_size;
+	levels[ 1 ] = xp->vinfo.colormap_size;
+	levels[ 2 ] = xp->vinfo.colormap_size;
 	colorSpace = rgb->colorspace;
 	memcpy( toMatrix, rgb->toMatrix, sizeof( XieMatrix ) );
 	memcpy( fromMatrix, rgb->fromMatrix, sizeof( XieMatrix ) );
 	whiteAdjust = rgb->whiteAdjust;
 	gamut = rgb->gamut;
-	cube = icbrt( 1 << xp->vinfo.depth );
+	cube = icbrt( xp->vinfo.colormap_size );
 
 	whiteAdjustParm = ( char * ) NULL;
 	gamutParm = ( char * ) NULL;
-	convertToIndexParms = ( XieColorAllocAllParam * ) NULL;
 	colorParm1 = ( char * ) NULL;
 	colorParm2 = ( char * ) NULL;
 	techParms = ( char * ) NULL;
@@ -184,21 +207,21 @@ Parms	p;
 
 	switch ( colorSpace )
 	{
-	case xieValCIELab:
+	case xieValRGBToCIELab:
 		RGBToCIELabParm = XieTecRGBToCIELab( 
 			toMatrix,
 			whiteAdjust,
 			whiteAdjustParm );
 		colorParm1 = ( char * ) RGBToCIELabParm;
 		break;
-	case xieValCIEXYZ:
+	case xieValRGBToCIEXYZ:
 		RGBToCIEXYZParm = XieTecRGBToCIEXYZ( 
 			toMatrix,
 			whiteAdjust,
 			whiteAdjustParm );
 		colorParm1 = ( char * ) RGBToCIEXYZParm;
 		break;
-	case xieValYCbCr:
+	case xieValRGBToYCbCr:
 		rgblevels[0] = rgb->RGBLevels[0];
 		rgblevels[1] = rgb->RGBLevels[1];
 		rgblevels[2] = rgb->RGBLevels[2];
@@ -210,7 +233,7 @@ Parms	p;
 			rgb->bias ); 
 		colorParm1 = ( char * )  RGBToYCbCrParm;
 		break;
-	case xieValYCC:
+	case xieValRGBToYCC:
 		rgblevels[0] = rgb->RGBLevels[0];
 		rgblevels[1] = rgb->RGBLevels[1];
 		rgblevels[2] = rgb->RGBLevels[2];
@@ -227,10 +250,6 @@ Parms	p;
 		fflush( stderr );
 		return( 0 );
 	}
-
-	XGetWindowAttributes( xp->d, DefaultRootWindow( xp->d ), &xwa );
-	XSetWindowColormap( xp->d, xp->w, xwa.colormap );
-	XSync( xp->d, 0 );
 
 	decode_notify = False;
 
@@ -252,7 +271,7 @@ Parms	p;
 
 	switch( colorSpace )
 	{
-	case xieValCIELab:
+	case xieValCIELabToRGB:
 		CIELabToRGBParm = XieTecCIELabToRGB( 
 			fromMatrix,
 			whiteAdjust,
@@ -261,7 +280,7 @@ Parms	p;
 			gamutParm );
 		colorParm2 = ( char * ) CIELabToRGBParm;
 		break;
-	case xieValCIEXYZ:
+	case xieValCIEXYZToRGB:
 		CIEXYZToRGBParm = XieTecCIEXYZToRGB( 
 			fromMatrix,
 			whiteAdjust,
@@ -270,7 +289,7 @@ Parms	p;
 			gamutParm );
 		colorParm2 = ( char * ) CIEXYZToRGBParm;
 		break;
-	case xieValYCbCr:
+	case xieValYCbCrToRGB:
 		YCbCrToRGBParm = XieTecYCbCrToRGB( 
 			levels,
 			(double) rgb->luma[ 0 ],
@@ -281,7 +300,7 @@ Parms	p;
 			gamutParm );
 		colorParm2 = ( char * ) YCbCrToRGBParm;
 		break;
-	case xieValYCC:
+	case xieValYCCToRGB:
 		YCCToRGBParm = XieTecYCCToRGB( 
 			levels,
 			(double) rgb->luma[ 0 ],
@@ -307,12 +326,14 @@ Parms	p;
 	idx++;
 
 	techParms = ( char * ) NULL;
-	if (rgb->which == RGB_FF)
+	if (rgb->which == RGB_FF )
 	{
 		/* or perhaps clipscale with in_high == 255.0 */
-		hclevels[ 0 ] = ( 1 << xp->vinfo.depth );
-		hclevels[ 1 ] = ( 1 << xp->vinfo.depth );
-		hclevels[ 2 ] = ( 1 << xp->vinfo.depth );
+
+		hclevels[ 0 ] = imageLevels;
+		hclevels[ 1 ] = imageLevels;
+		hclevels[ 2 ] = imageLevels;
+
 		XieFloConstrain( &flograph[idx],
 			idx,
 			hclevels,
@@ -327,15 +348,16 @@ Parms	p;
 		in_high[ 0 ] = in_high[ 1 ] = in_high[ 2 ] = 1.0;
 		out_low[ 0 ] = out_low[ 1 ] = out_low[ 2 ] = 0;
 
-		out_high[ 0 ] = ( 1 << xp->vinfo.depth ) - 1;
-		out_high[ 1 ] = ( 1 << xp->vinfo.depth ) - 1;
-		out_high[ 2 ] = ( 1 << xp->vinfo.depth ) - 1;
+		out_high[ 0 ] = ( xp->vinfo.colormap_size ) - 1;
+		out_high[ 1 ] = ( xp->vinfo.colormap_size ) - 1;
+		out_high[ 2 ] = ( xp->vinfo.colormap_size ) - 1;
+
 		techParms = (char *) ( XieClipScaleParam * ) 
 			XieTecClipScale( in_low, in_high, out_low, out_high);
 
-		hclevels[ 0 ] = ( 1 << xp->vinfo.depth );
-		hclevels[ 1 ] = ( 1 << xp->vinfo.depth );
-		hclevels[ 2 ] = ( 1 << xp->vinfo.depth );
+		hclevels[ 0 ] = out_high[ 0 ] + 1; 
+		hclevels[ 1 ] = out_high[ 1 ] + 1; 
+		hclevels[ 2 ] = out_high[ 2 ] + 1; 
 		XieFloConstrain( &flograph[idx],
 			idx,
 			hclevels,
@@ -345,9 +367,18 @@ Parms	p;
 		idx++;
 	}
 
-	levels[ 0 ] = cube;
-	levels[ 1 ] = cube;
-	levels[ 2 ] = cube;
+	if ( IsTrueColorOrDirectColor( cclass ) )
+	{
+		levels[ 0 ] = TripleTrueOrDirectLevels( xp );
+		levels[ 1 ] = levels[ 2 ] = levels[ 0 ];
+	}
+	else
+	{
+		levels[ 0 ] = stdCmap.red_max + 1;
+		levels[ 1 ] = stdCmap.green_max + 1;
+		levels[ 2 ] = stdCmap.blue_max + 1;
+	}
+
 	ditherTech = ( char * ) NULL;
 	XieFloDither( &flograph[ idx ],
 		idx,
@@ -358,17 +389,13 @@ Parms	p;
 	);
 	idx++;
 
-	convertToIndexParms = XieTecColorAllocAll( 123 );
+        c1[ 0 ] = stdCmap.red_mult;
+        c1[ 1 ] = stdCmap.green_mult;
+        c1[ 2 ] = stdCmap.blue_mult;
+        bias = ( float ) stdCmap.base_pixel;
 
-        XieFloConvertToIndex(&flograph[idx],
-                idx,
-                xwa.colormap,
-                clist,
-                False,
-                xieValColorAllocAll,
-                (char *)convertToIndexParms
-        );
-        idx++;
+        XieFloBandExtract(&flograph[idx], idx, 1 << xp->vinfo.depth, bias, c1);
+	idx++;
 
         XieFloExportDrawable(&flograph[idx],
                 idx,              /* source phototag number */
@@ -390,8 +417,6 @@ out:
 		free( colorParm2 );
 	if ( techParms )
 		free( techParms );
-	if ( convertToIndexParms )
-		free( convertToIndexParms );
 	if ( ditherTech )
 		free( ditherTech );
 	flo_notify = False;
@@ -416,7 +441,7 @@ void EndRGB(xp, p)
 XParms  xp;
 Parms   p;
 {
-	InstallCustomColormap( xp );
+	InstallGrayColormap( xp );
 	FreeRGBStuff( xp, p );
 }
 
@@ -429,12 +454,6 @@ Parms	p;
 	{
 		XieDestroyPhotomap(xp->d, XIEPhotomap);
 		XIEPhotomap = ( XiePhotomap ) NULL;
-	}
-
-	if ( clist )
-	{
-		XieDestroyColorList( xp->d, clist );
-		clist = ( XieColorList ) NULL;
 	}
 
         if ( flograph )

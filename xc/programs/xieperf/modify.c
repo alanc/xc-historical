@@ -1,4 +1,4 @@
-/* $XConsortium: modify.c,v 1.6 93/10/30 13:03:36 rws Exp $ */
+/* $XConsortium: modify.c,v 1.8 93/11/06 15:05:12 rws Exp $ */
 
 /**** module modify.c ****/
 /******************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -89,11 +89,11 @@ int InitModifyROI(xp, p, reps)
 	image = p->finfo.image1;
 	if ( !image )
 		reps = 0;
-	else if ( xp->vinfo.depth != image->depth[ 0 ] )
+	else if ( xp->screenDepth != image->depth[ 0 ] )
         {
 		monoflag = 1;
-	        if ( ( XIELut = CreatePointLut( xp, p, image->depth[ 0 ],
-			xp->vinfo.depth ) ) == ( XieLut ) NULL )
+	        if ( ( XIELut = CreatePointLut( xp, p, 1 << image->depth[ 0 ],
+			1 << xp->screenDepth, False ) ) == ( XieLut ) NULL )
 		{
 			reps = 0;
 		}
@@ -312,7 +312,7 @@ int InitModifyPoint(xp, p, reps)
 	if ( !image )
 		return( 0 );
 
-        lutSize = 1 << xp->vinfo.depth;
+        lutSize = xp->vinfo.colormap_size;
         lut = (unsigned char *)malloc( lutSize * sizeof( unsigned char ) );
         if ( lut == ( unsigned char * ) NULL )
 		reps = 0;
@@ -345,7 +345,7 @@ int InitModifyPoint(xp, p, reps)
 
 	if ( reps )
 	{
-		if ( image->depth[ 0 ] == xp->vinfo.depth )
+		if ( image->depth[ 0 ] == xp->screenDepth )
 		{
 			XIEPhotomap = GetXIEPhotomap( xp, p, 1 );	
 		} 
@@ -356,7 +356,7 @@ int InitModifyPoint(xp, p, reps)
 		else 
 		{
 			XIEPhotomap = GetXIEPointPhotomap( xp, p, 1,
-				xp->vinfo.depth );
+				xp->screenDepth, False );
 		}
 		if ( XIEPhotomap == ( XiePhotomap ) NULL )
 		{
@@ -514,11 +514,11 @@ int InitModifySimple(xp, p, reps)
 	image = p->finfo.image1;
         if ( !image )
 		reps = 0;
-        else if ( xp->vinfo.depth != image->depth[ 0 ] )
+        else if ( xp->screenDepth != image->depth[ 0 ] )
         {
 		monoflag = 1;
-        	if ( ( XIELut = CreatePointLut( xp, p, image->depth[ 0 ],
-			xp->vinfo.depth ) ) == ( XieLut ) NULL )
+        	if ( ( XIELut = CreatePointLut( xp, p, 1 << image->depth[ 0 ],
+			1 << xp->screenDepth, False ) ) == ( XieLut ) NULL )
 		{
 			reps = 0;
 		}
@@ -686,11 +686,11 @@ int InitModifyLong1(xp, p, reps)
 	image = p->finfo.image1;
         if ( !image )
 		reps = 0;
-        else if ( xp->vinfo.depth != image->depth[ 0 ] )
+        else if ( xp->screenDepth != image->depth[ 0 ] )
         {
 		monoflag = 1;
-        	if ( ( XIELut = CreatePointLut( xp, p, image->depth[ 0 ],
-			xp->vinfo.depth ) ) == ( XieLut ) NULL )
+        	if ( ( XIELut = CreatePointLut( xp, p, 1 << image->depth[ 0 ],
+			1 << xp->screenDepth, False ) ) == ( XieLut ) NULL )
 		{
 			reps = 0;
 		}
@@ -885,11 +885,11 @@ int InitModifyLong2(xp, p, reps)
 	image = p->finfo.image1;
         if ( !image )
 		reps = 0;
-        else if ( xp->vinfo.depth != image->depth[ 0 ] )
+        else if ( xp->screenDepth != image->depth[ 0 ] )
         {
 		monoflag = 1;
-        	if ( ( XIELut = CreatePointLut( xp, p, image->depth[ 0 ],
-			xp->vinfo.depth ) ) == ( XieLut ) NULL )
+        	if ( ( XIELut = CreatePointLut( xp, p, 1 << image->depth[ 0 ],
+			1 << xp->screenDepth, False ) ) == ( XieLut ) NULL )
 		{
 			reps = 0;
 		}
@@ -990,7 +990,7 @@ XiePhotoElement **flograph;
 	gp.geoYOffset = 0;
 	gp.geoTech = xieValGeomNearestNeighbor;
 
-        SetCoefficients( xp, p, &gp, coeffs );
+        SetCoefficients( xp, p, 1, &gp, coeffs );
         XieFloGeometry(&(*flograph)[idx],
                 idx,
                 gp.geoWidth,
@@ -1045,7 +1045,7 @@ void DoModifyLong2(xp, p, reps)
 		gp.geoXOffset = x;
 		gp.geoYOffset = y;
 
-        	SetCoefficients( xp, p, &gp, coeffs );
+        	SetCoefficients( xp, p, 1, &gp, coeffs );
         	XieFloGeometry(&flograph[flo_elements - 2],
                 	flo_elements - 2,
                 	gp.geoWidth,

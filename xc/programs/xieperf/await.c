@@ -1,4 +1,4 @@
-/* $XConsortium: await.c,v 1.3 93/10/30 13:49:13 rws Exp $ */
+/* $XConsortium: await.c,v 1.8 93/11/06 15:01:20 rws Exp $ */
 
 /**** module await.c ****/
 /******************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO

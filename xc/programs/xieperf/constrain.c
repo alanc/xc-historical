@@ -1,4 +1,4 @@
-/* $XConsortium: constrain.c,v 1.2 93/10/27 21:52:00 rws Exp $ */
+/* $XConsortium: constrain.c,v 1.6 93/11/06 15:01:51 rws Exp $ */
 
 /**** module constrain.c ****/
 /******************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -51,6 +51,7 @@ terms and conditions:
 #include "xieperf.h"
 #include <stdio.h>
 
+static XieLut XIELut;
 static XiePhotomap XIEPhotomap;
 static XiePhotomap XIEPhotomap2;
 static int flo_notify;
@@ -58,13 +59,13 @@ static XiePhotoElement *flograph;
 static XiePhotoflo flo;
 static int flo_elements;
 static XieClipScaleParam *parms;
+static int monoflag;
 
 int InitConstrain(xp, p, reps)
     XParms  xp;
     Parms   p;
     int     reps;
 {
-
 	XieLTriplet levels;
 	XieConstrainTechnique tech;
 	char *tech_parms=NULL;
@@ -72,13 +73,23 @@ int InitConstrain(xp, p, reps)
         XieLTriplet out_low,out_high;
 	int InClampDelta = 0;
 	int OutClampDelta = 0;
-	int decode_notify;
+	int decode_notify = 0;
 	XIEimage *image;
 	Bool photoDest;
         XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
         char *encode_params=NULL;
+        XieProcessDomain domain;
+	int	cclass;
 
+#if     defined(__cplusplus) || defined(c_plusplus)
+        cclass = xp->vinfo.c_class;
+#else
+        cclass = xp->vinfo.class;
+#endif
+
+	monoflag = 0;
 	image = p->finfo.image1;
+        XIELut = ( XieLut ) NULL;
         XIEPhotomap = ( XiePhotomap ) NULL;
         XIEPhotomap2 = ( XiePhotomap ) NULL;
         parms = ( XieClipScaleParam * ) NULL;
@@ -92,13 +103,6 @@ int InitConstrain(xp, p, reps)
 
         if ( TechniqueSupported( xp, xieValConstrain, tech ) == False )
                 reps = 0;
-	else if ( xp->vinfo.depth < 8 && tech == xieValConstrainHardClip )
-	{
-		if ( ( XIEPhotomap = GetXIEDitheredPhotomap( xp, p, 1, 
-			1 << xp->vinfo.depth ) ) == 
-				( XiePhotomap ) NULL )
-			reps = 0;
-	}
 	else 
 	{
 		if ( ( XIEPhotomap = GetXIEPhotomap( xp, p, 1 ) ) == 
@@ -107,13 +111,12 @@ int InitConstrain(xp, p, reps)
 	}
 	if ( reps )
 	{
-		decode_notify = False;
 		flo_elements = 3;
 
-		levels[ 0 ] = 1 << xp->vinfo.depth;
+		levels[ 0 ] = xp->vinfo.colormap_size;
 		levels[ 1 ] = 0;
 		levels[ 2 ] = 0;
-		out_high[ 0 ] = ( 1 << xp->vinfo.depth ) - 1;
+		out_high[ 0 ] = xp->vinfo.colormap_size - 1;
 		out_high[ 1 ] = 0; 
 		out_high[ 2 ] = 0; 
 
@@ -148,7 +151,21 @@ int InitConstrain(xp, p, reps)
 		out_high[ 0 ] = out_high[ 0 ] - OutClampDelta;
 		out_high[ 1 ] = 0; 
 		out_high[ 2 ] = 0; 
+	}
 
+	if ( reps && IsTrueColorOrDirectColor( cclass ) == True )
+	{
+                monoflag = 1;
+                flo_elements+=2;
+                if ( ( XIELut = CreatePointLut( xp, p, levels[ 0 ], 
+			1 << xp->screenDepth, False ) ) == ( XieLut ) NULL )
+                {
+                        reps = 0;
+                }
+        }
+
+	if ( reps )
+	{
 		flograph = XieAllocatePhotofloGraph( flo_elements );	
 		if ( flograph == ( XiePhotoElement * ) NULL )
 		{
@@ -156,14 +173,15 @@ int InitConstrain(xp, p, reps)
 			reps = 0;
 		}
 	}
+
 	if ( reps )
 	{
 		XieFloImportPhotomap(&flograph[0],XIEPhotomap,decode_notify);
 
 		if ( photoDest == False )
 		{
-			XieFloExportDrawable(&flograph[2],
-				2,              /* source phototag number */
+			XieFloExportDrawable(&flograph[flo_elements - 1],
+				flo_elements - 1, /* source phototag number */
 				xp->w,
 				xp->fggc,
 				0,       /* x offset in window */
@@ -172,8 +190,8 @@ int InitConstrain(xp, p, reps)
 		}
 		else
 		{
-                        XieFloExportPhotomap(&flograph[2],
-                                2,              /* source phototag number */
+                        XieFloExportPhotomap(&flograph[flo_elements - 1],
+                                flo_elements - 1, /* source phototag number */
                                 XIEPhotomap2,
                                 encode_tech,
                                 encode_params
@@ -205,11 +223,27 @@ int InitConstrain(xp, p, reps)
 			tech,
 			tech_parms
 		);
+	}
+	if ( reps && monoflag )
+	{
+		XieFloImportLUT(&flograph[flo_elements - 3], XIELut );
 
+		domain.phototag = 0;
+		domain.offset_x = 0;
+		domain.offset_y = 0;
+		XieFloPoint(&flograph[flo_elements - 2],
+			flo_elements - 3,
+			&domain,
+			flo_elements - 2,
+			0x7
+		);
+	}
+	if ( reps )
+	{
 		flo_notify = False;	
 		flo = XieCreatePhotoflo( xp->d, flograph, flo_elements ); 
 	}
-	if ( !reps )
+	else
 		FreeConstrainStuff( xp, p );
 	return( reps );
 }
@@ -242,6 +276,12 @@ Parms	p;
         {
                 XieDestroyPhotomap( xp->d, XIEPhotomap );
                 XIEPhotomap = ( XiePhotomap ) NULL;
+        }
+
+        if ( XIELut ) 
+        {
+                XieDestroyLUT( xp->d, XIELut );
+                XIELut = ( XieLut ) NULL;
         }
 
         if ( XIEPhotomap2 ) 

@@ -1,4 +1,4 @@
-/* $XConsortium: getnext.c,v 1.3 93/10/27 21:52:20 rws Exp $ */
+/* $XConsortium: getnext.c,v 1.4 93/11/05 17:08:36 rws Exp $ */
 
 /**** module getnext.c ****/
 /******************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -60,7 +60,7 @@ FILE	*fp;
 int	*repeat;
 int	*reps;
 {
-	int	i, j, len, max;
+	int	i, j, len, max, start;
 	char	line[ 256 ];
 	char	*args[ MAXARGS ];
 
@@ -75,11 +75,20 @@ otravez:				/* Spanish for 'once again'. */
 		return( -1 );
 	len = strlen( line ) - 1;
 	line[ len ] = '\0';
+	for ( i = 0; i <= len; i++ )
+	{
+		if ( line[ i ] == '#' )
+		{
+			line[ i ] = '\0';
+			break;
+		}
+	}
+
+	if ( ( len = strlen( line ) ) == 0 )
+		goto otravez;
+
 	if ( fp != stdin )
 		printf( "%s\n", line );
-
-	if ( len <= 0 )
-		return( -1 );
 
 	if ( line[ 0 ] == '?' )
 	{
@@ -90,14 +99,27 @@ otravez:				/* Spanish for 'once again'. */
 		fflush( stderr );
 		goto otravez;
 	}
-	else if ( line[ 0 ] == '#' )
-		goto otravez;
 
 	/* grab up to MAXARGS */ 
 
 	max = 0;
+	for ( i = 0; i < MAXARGS; i++ )
+		args[ i ] = ( char * ) NULL;
+
 	args[ 0 ] = line;
-	for ( i = 1, j = 0; j < len && i < MAXARGS; i++ )
+
+	/* get rid of leading spaces */
+
+	i = 0;
+	while ( i < len && isspace( line[ i ] ) ) i++;
+	start = i;
+	args[ 0 ] = &line[ start ];
+	if ( args[ 0 ] == ( char * ) NULL )
+		goto otravez;
+	else if ( strlen( args[ 0 ] ) == 0 )
+		goto otravez;
+
+	for ( i = 1, j = start; j < len && i < MAXARGS; i++ )
 	{
 		while ( j < len && !isspace( line[ j ] ) ) j++;
 		if ( j != len ) 

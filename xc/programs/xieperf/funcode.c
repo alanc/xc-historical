@@ -1,4 +1,4 @@
-/* $XConsortium: funcode.c,v 1.1 93/10/26 10:08:44 rws Exp $ */
+/* $XConsortium: funcode.c,v 1.2 93/11/05 17:08:33 rws Exp $ */
 
 /**** module funcode.c ****/
 /******************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -66,9 +66,10 @@ static XieLut XIELut;
 static char **encode_parms;
 static int testSize;
 static int type;
-char *parms;
-static XStandardColormap stdCmap;
+static char *parms;
 extern Bool WMSafe;
+static XStandardColormap stdCmap;
+static int cclass;
 
 void EndFunnyEncode();
 
@@ -78,24 +79,27 @@ XParms  xp;
 Parms   p;
 int     reps;
 {
-	int decode_notify, i, idx;
+	int decode_notify = 0;
+	int i, idx;
 	XIEimage *image;
 	extern Window drawableWindow;
 	XieProcessDomain domain;
-	XieEncodeTechnique encode_tech;
+	XieEncodeTechnique encode_tech = ( XieEncodeTechnique ) NULL;
 	XieEncodeUncompressedSingleParam *encode_single;
 	XieEncodeUncompressedTripleParam *encode_triple;
 	extern Bool dontClear;
 	XieLTriplet levels;
-	int cclass;
 	int techParmOffset, floIdx;
 	FunnyEncodeParms *ptr;
 	int depthmismatch;
         XieConstant in_low,in_high;
         XieLTriplet out_low,out_high;
+	XieLTriplet mult;
 	XieConstant c1;
-	float bias;
+	float bias = 0.0;
+	int constrainFlag = 0;
         GeometryParms gp;
+	int atom;
 
 	depthmismatch = 0;
 	parms = ( char * ) NULL;
@@ -108,7 +112,7 @@ int     reps;
 #endif
 	ptr = ( FunnyEncodeParms * ) p->ts; 
 
-        if ( type == xieValTripleBand && !IsColorVisual( cclass ) )
+        if ( type == xieValTripleBand && xp->screenDepth == 1 )
                 return( 0 );
 
 	if ( IsDISServer() )
@@ -124,67 +128,36 @@ int     reps;
 
 	/* check for match errors in the ED */
 
-	if ( type == xieValSingleBand )
-	{	
-		/* for single band, insert point element */
-
-		if ( ptr->useMyLevelsPlease && ptr->myBits[ 0 ] != xp->vinfo.depth )
-		{
-			depthmismatch = 1;
-			XIELut = CreatePointLut( xp, p, ptr->myBits[ 0 ], 
-				xp->vinfo.depth );
-		}
-		else if ( xp->vinfo.depth != image->depth[ 0 ] )
-		{
-			depthmismatch = 1;
-			XIELut = CreatePointLut( xp, p, image->depth[ 0 ],
-                                xp->vinfo.depth ); 
-		}
+	if ( type == xieValSingleBand && xp->screenDepth != image->depth[ 0 ] )
+	{
+		depthmismatch = 1;
+		XIELut = CreatePointLut( xp, p, 1 << image->depth[ 0 ],
+                	1 << xp->screenDepth, False ); 
 	}	
-	
-	if ( type == xieValTripleBand )
+
+	if ( IsGrayVisual( cclass ) )
+		atom = XA_RGB_GRAY_MAP;
+	else
+		atom = XA_RGB_BEST_MAP;
+	if ( type == xieValTripleBand && !IsTrueColorOrDirectColor( cclass ) && !IsStaticVisual( cclass ) )
 	{
-	        if ( GetStandardColormap( xp, &stdCmap, XA_RGB_BEST_MAP ) == False )
-                {
-                        fprintf( stderr, "Couldn't get a standard colormap\n" );
-                        fflush( stderr );
+		if ( !GetStandardColormap( xp, &stdCmap, atom ) )
 			reps = 0;
-                }
+		else
+			InstallThisColormap( xp, stdCmap.colormap );
 	}
-	if ( reps && type == xieValTripleBand )
+	else if ( type == xieValTripleBand )
 	{
-		InstallThisColormap( xp, stdCmap.colormap );
+		if ( !IsStaticVisual( cclass ) )
+			InstallColorColormap( xp );
+		CreateStandardColormap( xp, &stdCmap, atom );
 	}
 
 	if ( reps )
 	{
 		if ( type == xieValSingleBand ) 
 		{
-			if ( ptr->useMyLevelsPlease == True )
-			{
-				levels[ 0 ] = 1 << ptr->myBits[ 0 ];
-				levels[ 1 ] = 1 << ptr->myBits[ 1 ];
-				levels[ 2 ] = 1 << ptr->myBits[ 2 ];
-				in_low[ 0 ] = 0;
-				in_low[ 1 ] = 0;
-				in_low[ 2 ] = 0;
-				in_high[ 0 ] = ( 1 << image->depth[ 0 ] ) - 1;
-				in_high[ 1 ] = ( 1 << image->depth[ 1 ] ) - 1;
-				in_high[ 2 ] = ( 1 << image->depth[ 2 ] ) - 1;
-				out_low[ 0 ] = 0.0;
-				out_low[ 1 ] = 0.0;
-				out_low[ 2 ] = 0.0;
-				out_high[ 0 ] = ( float ) ( ( 1 << ptr->myBits[ 0 ] ) - 1 );
-				out_high[ 1 ] = ( float ) ( ( 1 << ptr->myBits[ 1 ] ) - 1 );
-				out_high[ 2 ] = ( float ) ( ( 1 << ptr->myBits[ 2 ] ) - 1 );
-				XIEPhotomap = GetXIEConstrainedPhotomap( xp, p, 1,
-					levels, xieValConstrainClipScale,
-					in_low, in_high, out_low, out_high );
-			}
-			else
-			{
-				XIEPhotomap = GetXIEPhotomap( xp, p, 1 );
-			}
+			XIEPhotomap = GetXIEPhotomap( xp, p, 1 );
 			encode_tech = xieValEncodeUncompressedSingle;
 		}
 		else
@@ -203,6 +176,7 @@ int     reps;
 				levels[ 0 ] = 1 << ptr->myBits[ 0 ];
 				levels[ 1 ] = 1 << ptr->myBits[ 1 ];
 				levels[ 2 ] = 1 << ptr->myBits[ 2 ];
+
 				out_high[ 0 ] = ( float ) ( ( 1 << ptr->myBits[ 0 ] ) - 1 );
 				out_high[ 1 ] = ( float ) ( ( 1 << ptr->myBits[ 1 ] ) - 1 );
 				out_high[ 2 ] = ( float ) ( ( 1 << ptr->myBits[ 2 ] ) - 1 );
@@ -230,7 +204,8 @@ int     reps;
 	if ( reps )
 	{
 		XIEPhotomap2 = XieCreatePhotomap( xp->d ); 
-		if ( XIEPhotomap == ( XiePhotomap ) NULL || XIEPhotomap2 == ( XiePhotomap ) NULL )
+		if ( XIEPhotomap == ( XiePhotomap ) NULL || 
+			XIEPhotomap2 == ( XiePhotomap ) NULL )
 		{
 			reps = 0;
 		}
@@ -249,7 +224,7 @@ int     reps;
 				flo1_elements = 2;
 				flo2_elements = 4;
 			}
-			if ( depthmismatch == 1 && type == xieValSingleBand )
+			if ( depthmismatch == 1 && type == xieValSingleBand  )
 				flo2_elements+=2;
 
 			flograph1 = XieAllocatePhotofloGraph(flo1_elements);	
@@ -298,13 +273,13 @@ int     reps;
 		}
 	}
 
-	if ( reps )
+	if ( reps && type == xieValTripleBand )
 	{
 		in_low[ 0 ] = 0.0;
 		in_low[ 1 ] = 0.0;
 		in_low[ 2 ] = 0.0;
 		if ( ptr->useMyLevelsPlease == True )
-		{
+		{	
 			in_high[ 0 ] = ( float ) ( 1 << ptr->myBits[ 0 ] ) - 1;
 			in_high[ 1 ] = ( float ) ( 1 << ptr->myBits[ 1 ] ) - 1;
 			in_high[ 2 ] = ( float ) ( 1 << ptr->myBits[ 2 ] ) - 1;
@@ -318,13 +293,40 @@ int     reps;
 		out_low[ 0 ] = 0; 
 		out_low[ 1 ] = 0;
 		out_low[ 2 ] = 0;
-		out_high[ 0 ] = stdCmap.red_max; 
-		out_high[ 1 ] = stdCmap.green_max;
-		out_high[ 2 ] = stdCmap.blue_max;
-		parms = ( char * ) XieTecClipScale( in_low, in_high,
-                                out_low, out_high);
-		if ( parms == ( char * ) NULL )
-			reps = 0;
+
+		if ( IsTrueColorOrDirectColor( cclass ) )
+		{
+			out_high[ 0 ] = TripleTrueOrDirectLevels( xp ) - 1;
+			out_high[ 1 ] = out_high[ 2 ] = out_high[ 0 ];
+
+			/* make a fake StandardColormap */
+
+			mult[ 0 ] = stdCmap.red_mult;
+			mult[ 1 ] = stdCmap.green_mult;
+			mult[ 2 ] = stdCmap.blue_mult;
+			bias = ( float ) stdCmap.base_pixel;
+		}
+		else
+		{
+			mult[ 0 ] = stdCmap.red_mult;
+			mult[ 1 ] = stdCmap.green_mult;
+			mult[ 2 ] = stdCmap.blue_mult;
+			bias = ( float ) stdCmap.base_pixel;
+
+			out_high[ 0 ] = stdCmap.red_max;
+			out_high[ 1 ] = stdCmap.green_max;
+			out_high[ 2 ] = stdCmap.blue_max;
+		}
+
+		if ( in_high[ 0 ] < out_high[ 0 ] ||
+			in_high[ 1 ] < out_high[ 1 ] ||
+			in_high[ 2 ] < out_high[ 2 ] )
+		{
+			constrainFlag = 1;
+                	parms = ( char * ) XieTecClipScale( in_low, in_high, out_low, out_high);
+		}
+		else
+			constrainFlag = 0;
 	}
 
 	if ( reps )	
@@ -383,7 +385,7 @@ int     reps;
 				decode_notify);
 			idx++; 
 
-			if ( type == xieValSingleBand && depthmismatch == 1 )
+			if ( type == xieValSingleBand && depthmismatch == 1 ) 
 			{
 				XieFloImportLUT(&flograph2[idx], XIELut );
 				idx++;
@@ -396,48 +398,63 @@ int     reps;
 					idx - 1,
 					&domain,
 					idx,
-					0x01
+					0x7
 				);
 				idx++;	
 			}
-			else if ( type == xieValTripleBand )
+			else if (type == xieValTripleBand)
 			{
-				levels[ 0 ] = ( long ) stdCmap.red_max + 1;
-				levels[ 1 ] = ( long ) stdCmap.green_max + 1;
-				levels[ 2 ] = ( long ) stdCmap.blue_max + 1;
+				levels[ 0 ] = ( long ) out_high[ 0 ] + 1;
+				levels[ 1 ] = ( long ) out_high[ 1 ] + 1;
+				levels[ 2 ] = ( long ) out_high[ 2 ] + 1;
 
-				XieFloConstrain(&flograph2[idx],
-					1, 
-					levels,
-					xieValConstrainClipScale,
-					parms
-				);
+				if ( constrainFlag )
+				{
+					XieFloConstrain( &flograph2[idx],
+						idx,
+						levels,
+						xieValConstrainClipScale,
+						parms
+					);
+				}
+				else
+				{
+					XieFloDither(&flograph2[idx],
+						idx, 
+						0x07,
+						levels,
+						xieValDitherDefault,
+						( char * ) NULL
+					);
+				}
 				idx++;
 			}
 
 			if ( type == xieValTripleBand )
 			{
-				c1[ 0 ] = stdCmap.red_mult; 
-				c1[ 1 ] = stdCmap.green_mult; 
-				c1[ 2 ] = stdCmap.blue_mult;
-				bias = ( float ) stdCmap.base_pixel;
-				
+				c1[ 0 ] = mult[ 0 ]; 
+				c1[ 1 ] = mult[ 1 ]; 
+				c1[ 2 ] = mult[ 2 ];
+
 			        XieFloBandExtract( &flograph2[idx], idx, 
 					1 << xp->vinfo.depth, bias, c1 ); 
 				idx++;
 			}
 
-			XieFloExportDrawable(&flograph2[idx],
-				idx,           /* source phototag number */
-				drawableWindow,
-				xp->fggc,
-				0,
-				0
-			);
-			flo[floIdx] = XieCreatePhotoflo( xp->d, flograph1, flo1_elements );
-			floIdx++;
-			flo[floIdx] = XieCreatePhotoflo( xp->d, flograph2, flo2_elements );
-			floIdx++;
+			if ( reps )
+			{
+				XieFloExportDrawable(&flograph2[idx],
+					idx,     /* source phototag number */
+					drawableWindow,
+					xp->fggc,
+					0,
+					0
+				);
+				flo[floIdx] = XieCreatePhotoflo( xp->d, flograph1, flo1_elements );
+				floIdx++;
+				flo[floIdx] = XieCreatePhotoflo( xp->d, flograph2, flo2_elements );
+				floIdx++;
+			}
 		}
 	}
 
@@ -451,14 +468,13 @@ int     reps;
 
 		if ( type == xieValSingleBand )
 		{
-			GetXIEDitheredWindow( xp, p, xp->w, 1,
-				1 << xp->vinfo.depth );
+			GetXIEWindow( xp, p, xp->w, 1 );
 		}
-		else
+		else 
 		{
-			levels[ 0 ] = stdCmap.red_max + 1;
-			levels[ 1 ] = stdCmap.green_max + 1;
-                        levels[ 2 ] = stdCmap.blue_max + 1;
+			levels[ 0 ] = out_high[ 0 ] + 1;
+			levels[ 1 ] = out_high[ 1 ] + 1;
+                        levels[ 2 ] = out_high[ 2 ] + 1;
 
 			GetXIEDitheredStdTripleWindow( xp, p, xp->w, 1,
 				xieValDitherDefault, 0, levels, &stdCmap );
@@ -499,8 +515,8 @@ Parms   p;
 	extern Bool dontClear;
 
 	dontClear = False;
-	if ( type == xieValTripleBand )
-                InstallCustomColormap( xp );
+	if ( type == xieValTripleBand && !IsStaticVisual( cclass ) )
+                InstallGrayColormap( xp );
 
         XUnmapWindow( xp->d, drawableWindow );
 	FreeFunnyEncodeStuff( xp, p );
@@ -564,5 +580,4 @@ Parms	p;
                 flograph2 = ( XiePhotoElement * ) NULL;
         }
 }
-
 

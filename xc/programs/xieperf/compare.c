@@ -1,4 +1,4 @@
-/* $XConsortium: compare.c,v 1.1 93/10/26 10:07:57 rws Exp $ */
+/* $XConsortium: compare.c,v 1.2 93/10/27 21:51:57 rws Exp $ */
 
 /**** module compare.c ****/
 /******************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -54,6 +54,7 @@ terms and conditions:
 static XiePhotomap XIEPhotomap1;
 static XiePhotomap XIEPhotomap2;
 static XieRoi XIERoi;
+static XiePhotomap ControlPlane;
 
 static XIEimage	*image1, *image2;
 static int flo_notify;
@@ -72,12 +73,12 @@ InitCompare(xp, p, reps)
 	XieConstant	constant;
 	Bool		combine;
 	unsigned int	bandMask;
-	Bool		useROI;
+	int		useDomain;
 	int		idx;
 	int		src1, src2;
 	XieRectangle	rect;
 
-	useROI = ( ( CompareParms * )p->ts )->useROI;
+	useDomain = ( ( CompareParms * )p->ts )->useDomain;
 	op = ( ( CompareParms * )p->ts )->op;
 	constant[ 0 ] = ( ( CompareParms * )p->ts )->constant[ 0 ];
 	constant[ 1 ] = ( ( CompareParms * )p->ts )->constant[ 1 ];
@@ -88,6 +89,7 @@ InitCompare(xp, p, reps)
         XIERoi = ( XieRoi ) NULL;
         XIEPhotomap1 = ( XiePhotomap ) NULL;
         XIEPhotomap2 = ( XiePhotomap ) NULL;
+        ControlPlane = ( XiePhotomap ) NULL;
         flograph = ( XiePhotoElement * ) NULL;
         flo = ( XiePhotoflo ) NULL;
 
@@ -121,7 +123,7 @@ InitCompare(xp, p, reps)
 		flo_elements = 4;
 	else
 		flo_elements = 3;
-	if ( useROI == True )
+	if ( useDomain == DomainROI || useDomain == DomainCtlPlane )
 		flo_elements++;
 
 	flograph = XieAllocatePhotofloGraph( flo_elements );	
@@ -144,7 +146,7 @@ InitCompare(xp, p, reps)
 		}
 	}
 
-	if ( useROI == True )
+	if ( useDomain == DomainROI )
 	{
 		rect.x = ( ( CompareParms * )p->ts )->x;
 		rect.y = ( ( CompareParms * )p->ts )->y;
@@ -157,6 +159,12 @@ InitCompare(xp, p, reps)
 			reps = 0;
 		}
 	}
+        else if ( useDomain == DomainCtlPlane )
+	{
+		ControlPlane = GetControlPlane( xp, 13 );
+		if ( ControlPlane == ( XiePhotomap ) NULL )
+			reps = 0;
+	}
 
 	if ( reps )
 	{
@@ -166,12 +174,19 @@ InitCompare(xp, p, reps)
 		domain.offset_y = 0;
 
 
-		if ( useROI == True )
+		if ( useDomain == DomainROI )
 		{
 	        	XieFloImportROI(&flograph[idx], XIERoi);
 			idx++;
 			domain.phototag = idx;
 		}
+                else if ( useDomain == DomainCtlPlane )
+                {
+                        XieFloImportPhotomap(&flograph[idx], ControlPlane, False
+);
+                        idx++;
+                        domain.phototag = idx;
+                }
 		else
 		{
 			domain.phototag = 0;
@@ -257,6 +272,12 @@ Parms	p;
         {
                 XieDestroyPhotomap( xp->d, XIEPhotomap1 );
                 XIEPhotomap1 = ( XiePhotomap ) NULL;
+        }
+
+	if ( ControlPlane != ( XiePhotomap ) NULL && IsPhotomapInCache( ControlPlane ) == False )
+        {
+                XieDestroyPhotomap( xp->d, ControlPlane );
+                ControlPlane = ( XiePhotomap ) NULL;
         }
 
         if ( XIEPhotomap2 != ( XiePhotomap ) NULL && IsPhotomapInCache( XIEPhotomap2 ) == False )

@@ -1,4 +1,4 @@
-/* $XConsortium: uconstrain.c,v 1.1 93/10/26 10:07:22 rws Exp $ */
+/* $XConsortium: uconstrain.c,v 1.4 93/11/06 15:08:02 rws Exp $ */
 
 /**** module uconstrain.c ****/
 /******************************************************************************
@@ -17,7 +17,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -53,25 +53,37 @@ terms and conditions:
 #include <stdio.h>
 
 static XiePhotomap XIEPhotomap;
+static XieLut XIELut;
 static int flo_notify;
 static XiePhotoElement *flograph;
 static XiePhotoflo flo;
 static XieClipScaleParam *parms;
+static int flo_elements;
 
 int InitUnconstrain(xp, p, reps)
     XParms  xp;
     Parms   p;
     int     reps;
 {
-	int decode_notify;
+	int decode_notify = 0;
 	XieLTriplet levels;
-	XieConstrainTechnique tech;
+	XieProcessDomain domain;
+	XieConstrainTechnique tech = ( XieConstrainTechnique ) NULL;
 	char *tech_parms=NULL;
         XieConstant in_low,in_high;
         XieLTriplet out_low,out_high;
 	XIEimage *image;
+	Bool pointFlag = False;
+	int	cclass;
+	int	idx = 0;
 
 	image = p->finfo.image1;
+
+#if     defined(__cplusplus) || defined(c_plusplus)
+    	cclass = xp->vinfo.c_class;
+#else
+    	cclass = xp->vinfo.class;
+#endif
 
 	flo = ( XiePhotoflo ) NULL;
 	flograph = ( XiePhotoElement * ) NULL;
@@ -84,16 +96,21 @@ int InitUnconstrain(xp, p, reps)
 	{
 		tech = ( ( UnconstrainParms * )p->ts )->constrain;
 		decode_notify = False;
-		levels[ 0 ] = 1 << xp->vinfo.depth;
-		levels[ 1 ] = 1 << xp->vinfo.depth;
-		levels[ 2 ] = 1 << xp->vinfo.depth;
+
+		if ( xp->screenDepth != image->depth[ 0 ] )
+		{
+			pointFlag = True;
+		}
+		
+		levels[ 0 ] = 1 << image->depth[ 0 ];
+		levels[ 1 ] = levels[ 2 ] = levels[ 0 ];
 
 		in_low[ 0 ] = 0.0;
 		in_low[ 1 ] = 0.0;
 		in_low[ 2 ] = 0.0;
-		in_high[ 0 ] = (1<<image->depth[ 0 ]) - 1.0;
-		in_high[ 1 ] = (1<<image->depth[ 1 ]) - 1.0; 
-		in_high[ 2 ] = (1<<image->depth[ 2 ]) - 1.0; 
+		in_high[ 0 ] = (levels[ 0 ]) - 1.0;
+		in_high[ 1 ] = (levels[ 1 ]) - 1.0; 
+		in_high[ 2 ] = (levels[ 2 ]) - 1.0; 
 		out_low[ 0 ] = 0;
 		out_low[ 1 ] = 0;
 		out_low[ 2 ] = 0;
@@ -119,7 +136,12 @@ int InitUnconstrain(xp, p, reps)
 	}
 	if ( reps )
 	{
-		flograph = XieAllocatePhotofloGraph(4);	
+		if ( pointFlag )
+			flo_elements = 6;
+		else
+			flo_elements = 4;
+
+		flograph = XieAllocatePhotofloGraph(flo_elements);	
 		if ( flograph == ( XiePhotoElement * ) NULL )
 		{
 			fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
@@ -128,26 +150,61 @@ int InitUnconstrain(xp, p, reps)
 	}
 	if ( reps )
 	{
-		XieFloImportPhotomap(&flograph[0],XIEPhotomap,decode_notify);
+		XieFloImportPhotomap(&flograph[idx],XIEPhotomap,decode_notify);
+		idx++;
 
-		XieFloUnconstrain(&flograph[1], 1 );
+		XieFloUnconstrain(&flograph[idx], idx );
+		idx++;	
 
-		XieFloConstrain( &flograph[2], 
-			2,
+	}
+	if ( reps )
+	{
+		XieFloConstrain( &flograph[idx], 
+			idx,
 			levels,
 			tech,
 			tech_parms
 		);
-					
-		XieFloExportDrawable(&flograph[3],
-			3,              /* source phototag number */
+		idx++;
+
+		if ( pointFlag )
+		{
+			if ((XIELut = CreatePointLut(xp, p, levels[ 0 ],
+               			1 << xp->screenDepth, False)) == (XieLut) NULL)
+			{
+				reps = 0;
+			}
+			else
+			{
+				XieFloImportLUT(&flograph[idx], XIELut );
+				idx++;
+
+				domain.phototag = 0;
+				domain.offset_x = 0;
+				domain.offset_y = 0;
+				XieFloPoint(&flograph[idx],
+					idx - 1,
+					&domain,
+					idx,
+					0x7
+				);
+				idx++;
+			}
+		}
+	}
+	
+	if ( reps )
+	{
+		XieFloExportDrawable(&flograph[idx],
+			idx,     /* source phototag number */
 			xp->w,
 			xp->fggc,
 			0,       /* x offset in window */
 			0        /* y offset in window */
 		);
+		idx++;
 
-		flo = XieCreatePhotoflo( xp->d, flograph, 4 );
+		flo = XieCreatePhotoflo( xp->d, flograph, flo_elements );
 
 		flo_notify = False;
 	}
@@ -193,8 +250,13 @@ Parms	p;
 	}	
 	if ( flograph )
 	{
-		XieFreePhotofloGraph(flograph,4);	
+		XieFreePhotofloGraph(flograph,flo_elements);	
 		flograph = ( XiePhotoElement * ) NULL;
+	}
+	if ( XIELut ) 
+	{
+		XieDestroyLUT(xp->d, XIELut);
+		XIELut = ( XieLut ) NULL;
 	}
 	if ( XIEPhotomap && IsPhotomapInCache( XIEPhotomap ) == False )
 	{
