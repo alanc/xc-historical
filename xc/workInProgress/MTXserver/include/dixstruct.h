@@ -1,6 +1,5 @@
 /***********************************************************
-Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
-and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
+Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
 
                         All Rights Reserved
 
@@ -8,7 +7,7 @@ Permission to use, copy, modify, and distribute this software and its
 documentation for any purpose and without fee is hereby granted,
 provided that the above copyright notice appear in all copies and that
 both that copyright notice and this permission notice appear in
-supporting documentation, and that the names of Digital or MIT not be
+supporting documentation, and that the name of Digital not be
 used in advertising or publicity pertaining to distribution of the
 software without specific, written prior permission.
 
@@ -21,7 +20,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dixstruct.h,v 1.30 94/02/20 10:38:44 dpw Exp $ */
+/* $XConsortium: dixstruct.h,v 1.1 94/03/17 11:35:22 dpw Exp $ */
 
 #ifndef DIXSTRUCT_H
 #define DIXSTRUCT_H
