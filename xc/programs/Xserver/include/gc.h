@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: gc.h,v 1.45 87/08/17 18:13:00 drewry Exp $ */
+/* $Header: gc.h,v 1.45 87/09/11 07:49:43 toddb Exp $ */
 
 #ifndef GC_H
 #define GC_H 
@@ -54,6 +54,12 @@ SOFTWARE.
 
 typedef struct _GCInterest *GCInterestPtr;
 typedef struct _GC    *GCPtr;
+extern void  ValidateGC();
+extern int ChangeGC();
+extern GCPtr CreateGC();
+extern void CopyGC();
+extern void FreeGC();
+extern void SetGCMask();
 extern GCPtr GetScratchGC();
 extern void  FreeScratchGC();
 #endif /* GC_H */

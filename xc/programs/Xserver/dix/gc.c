@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: gc.c,v 1.99 87/10/15 11:37:39 rws Locked $ */
+/* $Header: gc.c,v 1.100 87/11/05 16:15:37 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -604,6 +604,7 @@ CopyGC(pgcSrc, pgcDst, mask)
  *   does the diX part of freeing the characteristics in the GC 
  ***************/
 
+/*ARGSUSED*/
 void
 FreeGC(pGC, gid)
     GC *pGC;
