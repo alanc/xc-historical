@@ -62,6 +62,7 @@
     (pixel  . card32p)
     (resource-id . card29p)
     (keysym . card32p)
+    (angle  . anglep)
     ))
 
 ;; This (if (and ...) t nil) stuff has a purpose -- it lets the old 
@@ -116,6 +117,20 @@
   (if (or (excl:fixnump x)
 	  (and (excl:bignump x) (> #.(expt 2 31) (the bignum x))
 	       (>= (the bignum x) #.(expt -2 31))))
+      t
+    nil))
+
+(defun anglep (x)
+  (declare (optimize (speed 3) (safety 0))
+	   (:explain :calls :types))
+  (if (or (and (excl::fixnump x) (>= (the fixnum x) #.(truncate (* -2 pi)))
+	       (<= (the fixnum x) #.(truncate (* 2 pi))))
+	  (and (excl::single-float-p x)
+	       (>= (the single-float x) #.(float (* -2 pi) 0.0s0))
+	       (<= (the single-float x) #.(float (* 2 pi) 0.0s0)))
+	  (and (excl::double-float-p x)
+	       (>= (the double-float x) #.(float (* -2 pi) 0.0d0))
+	       (<= (the double-float x) #.(float (* 2 pi) 0.0d0))))
       t
     nil))
 
