@@ -1,7 +1,7 @@
 /*
  * xrdb - X resource manager database utility
  *
- * $XConsortium: xrdb.c,v 11.65 92/12/18 19:19:41 gildea Exp $
+ * $XConsortium: xrdb.c,v 11.66 93/02/06 16:29:11 rws Exp $
  */
 
 /*
@@ -611,7 +611,7 @@ void EditFile(new, in, out)
     int i;
 
     InitBuffer(&b);
-    for (;;) {
+    while (in) {
 	b.used = 0;
 	while (1) {
 	    buff[0] ='\0';
@@ -1019,21 +1019,6 @@ Process(scrno, doScreen, execute)
 	char template[100], old[100];
 
 	input = fopen(editFile, "r");
-	if (!input) {
-	    input = fopen (editFile, "w");
-	    if (!input) {
-		fatal ("%s:  unable to create file '%s' for editing\n",
-		       ProgramName, editFile);
-		/* doesn't return */
-	    }
-	    (void) fclose (input);
-	    input = fopen (editFile, "r");
-	    if (!input) {
-		fatal ("%s:  unable to open file '%s' for editing\n",
-		       ProgramName, editFile);
-		/* doesn't return */
-	    }
-	}
 	strcpy(template, editFile);
 	strcat(template, "XXXXXX");
 	(void) mktemp(template);
@@ -1042,7 +1027,8 @@ Process(scrno, doScreen, execute)
 	    fatal("%s: can't open temporary file '%s'\n", ProgramName, template);
 	GetEntriesString(&newDB, xdefs);
 	EditFile(&newDB, input, output);
-	fclose(input);
+	if (input)
+	    fclose(input);
 	fclose(output);
 	strcpy(old, editFile);
 	strcat(old, backup_suffix);
@@ -1060,7 +1046,9 @@ Process(scrno, doScreen, execute)
 	    unlink (template);
 	} else {
 	    rename (editFile, old);
-	    rename (template, editFile);
+	    if (rename (template, editFile))
+		fatal("%s: can't rename file '%s' to '%s'\n", ProgramName,
+		      template, editFile);
 	}
     } else {
 	if (oper == OPMERGE || oper == OPOVERRIDE)
