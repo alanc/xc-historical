@@ -1,5 +1,5 @@
 
-/* $XConsortium$ */
+/* $XConsortium: pexapi.m,v 5.1 91/02/16 10:00:03 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989, 1990, 1991,1990 by Sun Microsystems, Inc. and the X Consortium.
@@ -727,7 +727,7 @@ pinq_gdp3(Pint,Pint,Pint*,Pint*,Pattrs*)
 void
 pinq_gdp(Pint,Pint,Pint*,Pint*,Pattrs*)
 void
-pinq_gse(Pint,Pint,Pint,Pint*,Pint_list*,Pint*)
+pinq_list_avail_gse(Pint,Pint,Pint,Pint*,Pint_list*,Pint*)
 void
 pinq_ws_st_table(Pint,Pint*,Pws_st_tables*)
 void
