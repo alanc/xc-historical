@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.151 93/08/16 15:26:51 converse Exp $ */
+/* $XConsortium: Event.c,v 1.152 93/08/17 13:18:49 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -66,7 +66,9 @@ EventMask XtBuildEventMask(widget)
 {
     XtEventTable ev;
     EventMask	mask = 0L;
+    XtAppContext app = WidgetToAppContext(widget);
 
+    LockApp(app);
     for (ev = widget->core.event_table; ev != NULL; ev = ev->next)
 	if (ev->select) {
 	    if (!ev->has_type_specifier)
@@ -80,14 +82,18 @@ EventMask XtBuildEventMask(widget)
 		}
 	    }
 	}
+    LockProcess();
     if (widget->core.widget_class->core_class.expose != NULL)
 	mask |= ExposureMask;
     if (widget->core.widget_class->core_class.visible_interest) 
 	mask |= VisibilityChangeMask;
+    UnlockProcess();
     if (widget->core.tm.translations)
 	mask |= widget->core.tm.translations->eventMask;
 
-    return mask & ~NonMaskableMask;
+    mask =  mask & ~NonMaskableMask;
+    UnlockApp(app);
+    return mask;
 }
 
 static void CallExtensionSelector(widget, rec, forceCall)
@@ -346,8 +352,11 @@ void XtRemoveEventHandler(widget, eventMask, other, proc, closure)
     XtPointer	    closure;
 #endif
 {
+    XtAppContext app = WidgetToAppContext(widget);
+    LockApp(app);
     RemoveEventHandler(widget, (XtPointer) &eventMask, 0, FALSE,
 		       other, proc, closure, FALSE);
+    UnlockApp(app);
 }
 
 #if NeedFunctionPrototypes
@@ -367,8 +376,11 @@ void XtAddEventHandler(widget, eventMask, other, proc, closure)
     XtPointer	    closure;
 #endif
 {
+    XtAppContext app = WidgetToAppContext(widget);
+    LockApp(app);
     AddEventHandler(widget, (XtPointer) &eventMask, 0, FALSE, other, 
 		    proc, closure, XtListTail, FALSE, FALSE);
+    UnlockApp(app);
 }
 
 #if NeedFunctionPrototypes
@@ -390,8 +402,11 @@ void XtInsertEventHandler(widget, eventMask, other, proc, closure, position)
     XtListPosition  position;
 #endif
 {
+    XtAppContext app = WidgetToAppContext(widget);
+    LockApp(app);
     AddEventHandler(widget, (XtPointer) &eventMask, 0, FALSE, other, 
 		    proc, closure, position, TRUE, FALSE);
+    UnlockApp(app);
 }
 
 #if NeedFunctionPrototypes
@@ -411,8 +426,11 @@ void XtRemoveRawEventHandler(widget, eventMask, other, proc, closure)
     XtPointer	    closure;
 #endif
 {
+    XtAppContext app = WidgetToAppContext(widget);
+    LockApp(app);
     RemoveEventHandler(widget, (XtPointer) &eventMask, 0, FALSE,
 		       other, proc, closure, TRUE);
+    UnlockApp(app);
 }
 
 #if NeedFunctionPrototypes
@@ -434,8 +452,11 @@ void XtInsertRawEventHandler(widget, eventMask, other, proc, closure, position)
     XtListPosition  position;
 #endif
 {
+    XtAppContext app = WidgetToAppContext(widget);
+    LockApp(app);
     AddEventHandler(widget, (XtPointer) &eventMask, 0, FALSE, other, 
 		    proc, closure, position, TRUE, TRUE);
+    UnlockApp(app);
 }
 
 #if NeedFunctionPrototypes
@@ -475,8 +496,11 @@ void XtRemoveEventTypeHandler(widget, type, select_data, proc, closure)
     XtPointer	    closure;
 #endif
 {
+    XtAppContext app = WidgetToAppContext(widget);
+    LockApp(app);
     RemoveEventHandler(widget, select_data, type, TRUE,
 		       FALSE, proc, closure, FALSE);
+    UnlockApp(app);
 }
 
 #if NeedFunctionPrototypes
@@ -497,8 +521,11 @@ void XtInsertEventTypeHandler(widget, type, select_data, proc, closure, position
     XtListPosition  position;
 #endif
 {
+    XtAppContext app = WidgetToAppContext(widget);
+    LockApp(app);
     AddEventHandler(widget, select_data, type, TRUE, FALSE,
 		    proc, closure, position, TRUE, FALSE);
+    UnlockApp(app);
 }
 
 typedef struct _WWPair {
@@ -534,7 +561,10 @@ void XtRegisterDrawable(display, drawable, widget)
     int idx, rehash;
     Widget entry;
     Window window = (Window) drawable;
+    XtAppContext app = WidgetToAppContext(widget);
 
+    LockApp(app);
+    LockProcess();
     tab = WWTABLE(display);
     if (window != XtWindow(widget)) {
 	WWPair pair;
@@ -543,6 +573,8 @@ void XtRegisterDrawable(display, drawable, widget)
 	pair->window = window;
 	pair->widget = widget;
 	tab->pairs = pair;
+	UnlockProcess();
+	UnlockApp(app);
 	return;
     }
     if ((tab->occupied + (tab->occupied >> 2)) > tab->mask)
@@ -560,6 +592,8 @@ void XtRegisterDrawable(display, drawable, widget)
     else if (entry == &WWfake)
 	tab->fakes--;
     tab->entries[idx] = widget;
+    UnlockProcess();
+    UnlockApp(app);
 }
 
 void XtUnregisterDrawable(display, drawable)
@@ -571,9 +605,12 @@ void XtUnregisterDrawable(display, drawable)
     Widget entry;
     Window window = (Window) drawable;
     Widget widget = XtWindowToWidget (display, window);
+    XtAppContext app = DisplayToAppContext(display);
 
     if (widget == NULL) return;
 
+    LockApp(app);
+    LockProcess();
     tab = WWTABLE(display);
     if (window != XtWindow(widget)) {
 	WWPair *prev, pair;
@@ -585,6 +622,8 @@ void XtUnregisterDrawable(display, drawable)
 	    *prev = pair->next;
 	    XtFree((char *)pair);
 	}
+	UnlockProcess();
+	UnlockApp(app);
 	return;
     }
     idx = WWHASH(tab, window);
@@ -593,13 +632,18 @@ void XtUnregisterDrawable(display, drawable)
 	    rehash = WWREHASHVAL(tab, window);
 	    do {
 		idx = WWREHASH(tab, idx, rehash);
-		if (!(entry = tab->entries[idx]))
+		if (!(entry = tab->entries[idx])) {
+		    UnlockProcess();
+		    UnlockApp(app);
 		    return;
+		}
 	    } while (entry != widget);
 	}
 	tab->entries[idx] = (Widget)&WWfake;
 	tab->fakes++;
     }
+    UnlockProcess();
+    UnlockApp(app);
 }
 
 static void ExpandWWTable(tab)
@@ -610,6 +654,7 @@ static void ExpandWWTable(tab)
     register int oldidx, newidx, rehash;
     register Widget entry;
 
+    LockProcess();
     oldmask = tab->mask;
     oldentries = tab->entries;
     tab->occupied -= tab->fakes;
@@ -632,6 +677,7 @@ static void ExpandWWTable(tab)
 	}
     }
     XtFree((char *)oldentries);
+    UnlockProcess();
 }
 
 Widget XtWindowToWidget(display, window)
@@ -642,8 +688,12 @@ Widget XtWindowToWidget(display, window)
     register int idx, rehash;
     register Widget entry;
     WWPair pair;
+    XtAppContext app = DisplayToAppContext(display);
 
     if (!window) return NULL;
+
+    LockApp(app);
+    LockProcess();
     tab = WWTABLE(display);
     idx = WWHASH(tab, window);
     if ((entry = tab->entries[idx]) && XtWindow(entry) != window) {
@@ -652,12 +702,21 @@ Widget XtWindowToWidget(display, window)
 	    idx = WWREHASH(tab, idx, rehash);
 	} while ((entry = tab->entries[idx]) && XtWindow(entry) != window);
     }
-    if (entry)
+    if (entry) {
+    	UnlockProcess();
+    	UnlockApp(app);
 	return entry;
-    for (pair = tab->pairs; pair; pair = pair->next) {
-	if (pair->window == window)
-	    return pair->widget;
     }
+    for (pair = tab->pairs; pair; pair = pair->next) {
+	if (pair->window == window) {
+	    entry = pair->widget;
+	    UnlockProcess();
+    	    UnlockApp(app);
+	    return entry;
+	}
+    }
+    UnlockProcess();
+    UnlockApp(app);
     return NULL;
 }
 
@@ -730,6 +789,19 @@ static Boolean CallEventHandlers(widget, event, mask)
 	    numprocs++;
 	}
     }
+/* FUNCTIONS CALLED THROUGH POINTER proc: 
+		Selection.c:ReqCleanup,
+		"Shell.c":EventHandler,
+		PassivGrab.c:ActiveHandler,
+		PassivGrab.c:RealizeHandler,
+		Keyboard.c:QueryEventMask,
+		_XtHandleFocus,
+		Selection.c:HandleSelectionReplies,
+		Selection.c:HandleGetIncrement,
+		Selection.c:HandleIncremental,
+		Selection.c:HandlePropertyGone,
+		Selection.c:HandleSelectionEvents
+		*/
     for (i = 0; i < numprocs && cont_to_disp; i++)
 	(*(proc[i]))(widget, closure[i], event, &cont_to_disp);
     if (numprocs > EHMAXSIZE)
@@ -738,6 +810,7 @@ static Boolean CallEventHandlers(widget, event, mask)
 }
 
 static Region nullRegion;
+/* READ-ONLY VARIABLES: nullRegion */
 static void CompressExposures();
 
 #define KnownButtons (Button1MotionMask|Button2MotionMask|Button3MotionMask|\
@@ -762,11 +835,15 @@ Boolean XtDispatchEventToWidget(widget, event)
     Boolean call_tm = False;
     Boolean cont_to_disp;
     EventMask mask;
+    XtAppContext app = WidgetToAppContext(widget);
+
+    LockApp(app);
 
     mask = _XtConvertTypeToMask(event->type);
     if (event->type == MotionNotify)
 	mask |= (event->xmotion.state & KnownButtons);
 
+    LockProcess();
     if ( (mask == ExposureMask) ||
 	 ((event->type == NoExpose) && NO_EXPOSE) ||
 	 ((event->type == GraphicsExpose) && GRAPHICS_EXPOSE) ) {
@@ -809,6 +886,7 @@ Boolean XtDispatchEventToWidget(widget, event)
 		    break;
 	    }
 	}
+    UnlockProcess();
 
     /* to maintain "copy" semantics we check TM now but call later */
     if (widget->core.tm.translations &&
@@ -843,6 +921,19 @@ Boolean XtDispatchEventToWidget(widget, event)
 		    int i;
 		    for (i = 0; i < numprocs && cont_to_disp; i++)
 			(*(proc[i]))(widget, closure[i], event, &cont_to_disp);
+/* FUNCTIONS CALLED THROUGH POINTER proc: 
+		Selection.c:ReqCleanup,
+		"Shell.c":EventHandler,
+		PassivGrab.c:ActiveHandler,
+		PassivGrab.c:RealizeHandler,
+		Keyboard.c:QueryEventMask,
+		_XtHandleFocus,
+		Selection.c:HandleSelectionReplies,
+		Selection.c:HandleGetIncrement,
+		Selection.c:HandleIncremental,
+		Selection.c:HandlePropertyGone,
+		Selection.c:HandleSelectionEvents
+		*/
 		}
 		was_dispatched = True;
 	    }
@@ -854,6 +945,7 @@ Boolean XtDispatchEventToWidget(widget, event)
     }
     if (call_tm && cont_to_disp)
 	_XtTranslateEvent(widget, event);
+    UnlockApp(app);
     return (was_dispatched|call_tm);
 }
 
@@ -893,19 +985,24 @@ XEvent * event;
     int count;
     Display* dpy = XtDisplay (widget);
     XtPerDisplay pd = _XtGetPerDisplay(dpy);
+    XtEnum comp_expose_type;
 
     XtAddExposureToRegion(event, pd->region);
 
     if ( GetCount(event) != 0 )
 	return;
 
-    if ( (COMP_EXPOSE_TYPE == XtExposeCompressSeries) ||
-	 (XEventsQueued(dpy, QueuedAfterReading) == 0) ) {
+    LockProcess();
+    comp_expose_type = COMP_EXPOSE_TYPE;
+    UnlockProcess();
+
+    if ( (comp_expose_type == XtExposeCompressSeries) ||
+	(XEventsQueued(dpy, QueuedAfterReading) == 0) ) {
 	SendExposureEvent(event, widget, pd);
 	return;
     }
 
-    if (COMP_EXPOSE & XtExposeGraphicsExposeMerged) {
+    if (comp_expose_type & XtExposeGraphicsExposeMerged) {
 	info.type1 = Expose;
 	info.type2 = GraphicsExpose;
     }
@@ -913,7 +1010,7 @@ XEvent * event;
 	info.type1 = event->type;
 	info.type2 = 0;
     }
-    info.maximal =(COMP_EXPOSE_TYPE == XtExposeCompressMaximal) ? True : False;
+    info.maximal =(comp_expose_type == XtExposeCompressMaximal) ? True : False;
     info.non_matching = FALSE;
     info.window = XtWindow(widget);
 
@@ -974,7 +1071,7 @@ XEvent * event;
 Widget widget;
 XtPerDisplay pd;
 {
-    XtExposeProc expose = widget->core.widget_class->core_class.expose;
+    XtExposeProc expose;
     XRectangle rect;
 
     XClipBox(pd->region, &rect);
@@ -990,6 +1087,10 @@ XtPerDisplay pd;
 	event->xgraphicsexpose.width = rect.width;
 	event->xgraphicsexpose.height = rect.height;
     }
+
+    LockProcess();
+    expose = widget->core.widget_class->core_class.expose;
+    UnlockProcess();
     (*expose)(widget, event, pd->region);
     (void) XIntersectRegion(nullRegion, pd->region, pd->region);
 }
@@ -1160,10 +1261,14 @@ static Boolean DefaultDispatcher(event)
     XtPerDisplayInput pdi;
     XtGrabList  grabList;
     Boolean	was_dispatched = False;
+    XtAppContext app;
 
     /* the default dispatcher discards all extension events */
     if (event->type >= LASTEvent)
 	return False;
+
+    app = DisplayToAppContext(event->xany.display);
+    LockApp(app);
 
     switch (event->type) {
       case KeyPress:
@@ -1229,7 +1334,7 @@ static Boolean DefaultDispatcher(event)
 	    }
 	}
     }
-
+    UnlockApp(app);
     return was_dispatched;
 }
 
@@ -1237,13 +1342,18 @@ Boolean XtDispatchEvent (event)
     XEvent  *event;
 {
     Boolean was_dispatched;
-    XtAppContext app = XtDisplayToApplicationContext(event->xany.display);
-    int dispatch_level = ++app->dispatch_level;
-    int starting_count = app->destroy_count;
-    XtPerDisplay pd = _XtGetPerDisplay(event->xany.display);
+    XtAppContext app;
+    int dispatch_level;
+    int starting_count;
+    XtPerDisplay pd;
     Time	time = 0;
     XtEventDispatchProc dispatch = DefaultDispatcher;
     void _XtRefreshMapping();
+
+    app = XtDisplayToApplicationContext(event->xany.display);
+    LockApp(app);
+    dispatch_level = ++app->dispatch_level;
+    starting_count = app->destroy_count;
 
     switch (event->type) {
       case KeyPress:
@@ -1258,6 +1368,7 @@ Boolean XtDispatchEvent (event)
 
       case MappingNotify:  _XtRefreshMapping(event, True);	break;
     }
+    pd = _XtGetPerDisplay(event->xany.display);
     if (time) pd->last_timestamp = time;
     pd->last_event = *event;
 
@@ -1283,7 +1394,7 @@ Boolean XtDispatchEvent (event)
 	if (_XtDpyDestroyCount != 0) _XtCloseDisplays();
 	if (app->free_bindings) _XtDoFreeBindings(app);
     }
-    
+    UnlockApp(app);
     return was_dispatched;
 }
 
@@ -1328,11 +1439,11 @@ void XtAddGrab(widget, exclusive, spring_loaded)
 {
     register    XtGrabList gl;
     XtGrabList	*grabListPtr;
+    XtAppContext app = WidgetToAppContext(widget);
 
-    grabListPtr = 
-      _XtGetGrabList(_XtGetPerDisplayInput(XtDisplay(widget)));
-      
-					 
+    LockApp(app);
+    LockProcess();
+    grabListPtr = _XtGetGrabList(_XtGetPerDisplayInput(XtDisplay(widget)));
 
     if (spring_loaded && !exclusive) {
 	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
@@ -1348,6 +1459,8 @@ void XtAddGrab(widget, exclusive, spring_loaded)
 
     XtAddCallback (widget, XtNdestroyCallback, 
 	    GrabDestroyCallback, (XtPointer) NULL);
+    UnlockProcess();
+    UnlockApp(app);
 }
 
 void XtRemoveGrab(widget)
@@ -1356,10 +1469,13 @@ void XtRemoveGrab(widget)
     register XtGrabList gl;
     register Boolean done;
     XtGrabList	*grabListPtr;
+    XtAppContext app = WidgetToAppContext(widget);
 
-    grabListPtr = 
-      _XtGetGrabList(_XtGetPerDisplayInput(XtDisplay(widget)));
-      
+    LockApp(app);
+    LockProcess();
+
+    grabListPtr = _XtGetGrabList(_XtGetPerDisplayInput(XtDisplay(widget)));
+
     for (gl = *grabListPtr; gl != NULL; gl = gl->next) {
 	if (gl->widget == widget) break;
     }
@@ -1369,6 +1485,8 @@ void XtRemoveGrab(widget)
 		       "grabError","xtRemoveGrab",XtCXtToolkitError,
 		       "XtRemoveGrab asked to remove a widget not on the list",
 		       (String *)NULL, (Cardinal *)NULL);
+	    UnlockProcess();
+    	    UnlockApp(app);
 	    return;
 	}	
 
@@ -1380,6 +1498,8 @@ void XtRemoveGrab(widget)
 		GrabDestroyCallback, (XtPointer)NULL);
 	XtFree((char *)gl);
     } while (! done);
+    UnlockProcess();
+    UnlockApp(app);
     return;
 }
 
@@ -1393,20 +1513,33 @@ void XtAppMainLoop(app)
 {
     XEvent event;
 
-    for (;;) {
+    LockApp(app);
+    do {
     	XtAppNextEvent(app, &event);
+	assert(app == XtDisplayToApplicationContext(event.xany.display));
 	XtDispatchEvent(&event);
-    }
+    } while(app->exit_flag == FALSE);
+    UnlockApp(app);
 }
 
 
 void _XtEventInitialize()
 {
     static Boolean initialized = FALSE;
-    if (initialized) return;
+/* VARIABLES PROTECTED BY _XtLock::mutex: initialized */
+
+    LockProcess();
+    if (initialized) {
+	UnlockProcess();
+	return;
+    }
     initialized = TRUE;
 
+#ifndef __lock_lint
     nullRegion = XCreateRegion();
+#endif
+
+    UnlockProcess();
 }
 
 void XtAddExposureToRegion(event, region)
@@ -1452,18 +1585,29 @@ void _XtFreeEventTable(event_table)
 Time XtLastTimestampProcessed(dpy)
     Display *dpy;
 {
-    return _XtGetPerDisplay(dpy)->last_timestamp;
+    Time time;
+    XtAppContext app = DisplayToAppContext(dpy);
+
+    LockApp(app);
+    LockProcess();
+    time =  _XtGetPerDisplay(dpy)->last_timestamp;
+    UnlockProcess();
+    UnlockApp(app);
+    return(time);
 }
  
 XEvent* XtLastEventProcessed(dpy)
     Display* dpy;
 {
-    XEvent* le = &_XtGetPerDisplay(dpy)->last_event;
-
-    if (le->xany.serial)
-	return le;
-    else
-	return NULL;
+    XEvent* le = NULL;
+    XtAppContext app = DisplayToAppContext(dpy);
+    
+    LockApp(app);
+    le = &_XtGetPerDisplay(dpy)->last_event;
+    if (!le->xany.serial)
+	le =  NULL;
+    UnlockApp(app);
+    return le;
 }
 
 void _XtSendFocusEvent(child, type)
@@ -1515,7 +1659,10 @@ XtEventDispatchProc XtSetEventDispatcher(dpy, event_type, proc)
     XtEventDispatchProc *list;
     XtEventDispatchProc old_proc;
     register XtPerDisplay pd;
+    XtAppContext app = DisplayToAppContext(dpy);
 
+    LockApp(app);
+    LockProcess();
     pd = _XtGetPerDisplay(dpy);
 
     list = pd->dispatcher_list;
@@ -1526,6 +1673,8 @@ XtEventDispatchProc XtSetEventDispatcher(dpy, event_type, proc)
     old_proc = list[event_type];
     list[event_type] = proc;
     if (old_proc == NULL) old_proc = DefaultDispatcher;
+    UnlockProcess();
+    UnlockApp(app);
     return old_proc;
 }
 
@@ -1550,12 +1699,16 @@ void XtRegisterExtensionSelector(dpy, min_event_type, max_event_type,
     ExtSelectRec *e;
     XtPerDisplay pd;
     int i;
+    XtAppContext app;
 
     if (dpy == NULL) XtErrorMsg("nullDisplay",
 		"xtRegisterExtensionSelector", XtCXtToolkitError,
 		"XtRegisterExtensionSelector requires a non-NULL display",
 		(String *) NULL, (Cardinal *) NULL);
 
+    app = DisplayToAppContext(dpy);
+    LockApp(app);
+    LockProcess();
     pd = _XtGetPerDisplay(dpy);
 
     for (i = 0; i < pd->ext_select_count; i++) {
@@ -1571,6 +1724,8 @@ void XtRegisterExtensionSelector(dpy, min_event_type, max_event_type,
 		       XtCXtToolkitError,
 	"Attempt to register multiple selectors for one extension event type",
 		       (String *) NULL, (Cardinal *) NULL);
+	    UnlockProcess();
+	    UnlockApp(app);      
 	    return;
 	}
     }
@@ -1587,15 +1742,25 @@ void XtRegisterExtensionSelector(dpy, min_event_type, max_event_type,
     pd->ext_select_list[i].max = max_event_type;
     pd->ext_select_list[i].proc = proc;
     pd->ext_select_list[i].client_data = client_data;
+    UnlockProcess();
+    UnlockApp(app);
 }
 
 void _XtExtensionSelect(widget)
     Widget widget;
 {
     int i;
-    XtPerDisplay pd = _XtGetPerDisplay(XtDisplay(widget));
-    
+    XtPerDisplay pd;
+    XtAppContext app = WidgetToAppContext(widget);
+
+    LockApp(app);
+    LockProcess();
+
+    pd = _XtGetPerDisplay(XtDisplay(widget));
+
     for (i = 0; i < pd->ext_select_count; i++) {
 	CallExtensionSelector(widget, pd->ext_select_list+i, FALSE);
     }
+    UnlockProcess();
+    UnlockApp(app);
 }
