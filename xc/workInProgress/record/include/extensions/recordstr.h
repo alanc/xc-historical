@@ -1,4 +1,4 @@
-/* $XConsortium: recordstr.h,v 1.2 94/01/30 19:11:52 rws Exp $ */
+/* $XConsortium: recordstr.h,v 1.3 94/01/30 23:48:01 rws Exp $ */
 /***************************************************************************
  * Copyright 1994 Network Computing Devices;
  * Portions Copyright 1988 by Digital Equipment Corporation and the
@@ -46,7 +46,7 @@ typedef void (*void_function)();
 #define FromClient                    0
 #define FromServer                    1
 
-typedef XID XRecordConfig;
+#define XRecordConfig CARD32
 
 typedef struct
 {
@@ -209,3 +209,5 @@ typedef struct
     CARD32 pad3 B32;
 } xRecordEnableConfigReply;
 #define sz_xRecordEnableConfigReply 	32
+
+#undef XRecordConfig
