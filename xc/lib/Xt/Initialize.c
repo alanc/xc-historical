@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.146 89/10/08 13:35:08 rws Exp $";
+static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.147 89/10/08 14:25:04 jim Exp $";
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 #endif /* lint */
 
@@ -42,6 +42,18 @@ SOFTWARE.
 #include "CoreP.h"
 #include "ShellP.h"
 #include "Quarks.h"
+
+#ifdef SUNSHLIB
+/*
+ * If used as a shared library, generate code under a different name so that
+ * the stub routines in sharedlib.c get loaded into the application binary.
+ */
+#define _XtInherit __XtInherit
+#define XtToolkitInitialize _XtToolkitInitialize
+#define XtAppInitialize _XtAppInitialize
+#define XtInitialize _XtInitialize
+#endif /* SUNSHLIB */
+
 
 #ifdef hpux
 #define USE_UNAME
@@ -121,33 +133,17 @@ static int _XtGetHostname (buf, maxlen)
 }
 
 
-#ifdef SUNSHLIB
-#define _XtInherit __XtInherit
-#endif
-
 void _XtInherit()
 {
-#ifdef SUNSHLIB
-#undef _XtInherit
-#endif
-
     XtErrorMsg("invalidProcedure","inheritanceProc","XtToolkitError",
             "Unresolved inheritance operation",
               (String *)NULL, (Cardinal *)NULL);
 }
 
 
-#ifdef SUNSHLIB
-#define XtToolkitInitialize _XtToolkitInitialize
-#endif
-
 void XtToolkitInitialize()
 {
     extern void _XtResourceListInitialize();
-
-#ifdef SUNSHLIB
-#undef XtToolkitInitialize
-#endif
 
     /* Resource management initialization */
     XrmInitialize();
@@ -628,10 +624,6 @@ String *specification_list;
  *	Returns: The shell widget.
  */
 	
-#ifdef SUNSHLIB
-#define XtAppInitialize _XtAppInitialize
-#endif
-
 Widget
 XtAppInitialize(app_context_return, application_class, options, num_options,
 		argc_in_out, argv_in_out, fallback_resources, 
@@ -651,10 +643,6 @@ ArgList args_in;
     Arg args[3], *merged_args;
     Cardinal num = 0;
     
-#ifdef SUNSHLIB
-#undef XtAppInitialize
-#endif
-
     XtToolkitInitialize();
     
 /*
@@ -708,10 +696,6 @@ ArgList args_in;
  *	Returns: a shell widget.
  */
 	
-#ifdef SUNSHLIB
-#define XtInitialize _XtInitialize
-#endif
-
 /*ARGSUSED*/
 Widget 
 XtInitialize(name, classname, options, num_options, argc, argv)
@@ -723,10 +707,6 @@ String *argv;
     Widget root;
     XtAppContext app_con;
     register ProcessContext process = _XtGetProcessContext();
-
-#ifdef SUNSHLIB
-#undef XtInitialize
-#endif
 
     root = XtAppInitialize(&app_con, classname, options, num_options,
 			   argc, argv, NULL, NULL, (Cardinal) 0);
