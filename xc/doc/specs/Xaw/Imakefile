@@ -1,12 +1,13 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.4 91/07/17 16:02:09 gildea Exp $
 EVERYWHERE=../util/macros.t strings.mit strings.xaw
 CHAPTER1=CH1
 CHAPTER2=CH2
-CHAPTER3=CH3.intro Command Grip Label List Scrollbar Simple StripChart Toggle 
+CHAPTER3=CH3.intro Command Grip Label List Panner Repeater \
+	 Scrollbar Simple StripChart Toggle
 CHAPTER4=CH4.intro SimpleMenu SmeBSB SmeLine Sme MenuButton
 CHAPTER5=CH5.intro TextActions TextFuncs AsciiText AsciiSource AsciiSink \
 	 TextCustom Text TextSource TextSink
-CHAPTER6=CH6.intro Box Dialog Form Paned Viewport
+CHAPTER6=CH6.intro Box Dialog Form Paned Porthole Tree Viewport
 CHAPTER7=CH7.intro Template
 
 SRCS = \
