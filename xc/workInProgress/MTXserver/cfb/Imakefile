@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 6.1 94/01/11 18:33:42 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 6.2 94/01/23 02:07:57 rob Exp $
 #define DoThreadedServer XServerThreaded
 #include <Server.tmpl>
 
@@ -128,7 +128,6 @@ LinkSourceFile(cfbtile32.c,LinkDirectory)
 #endif
 LinkSourceFile(cfbwindow.c,LinkDirectory)
 LinkSourceFile(cfbzerarc.c,LinkDirectory)
-LinkSourceFile(cfb8bit.h,LinkDirectory)
 #if PixelSize == 8
 #ifndef LinkNonThreadedOnly
 LinkSourceFile(cfb8bit.c,LinkDirectory)
