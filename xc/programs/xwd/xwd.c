@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$XConsortium: xwd.c,v 1.50 89/07/16 15:35:15 jim Exp $";
+static char *rcsid_xwd_c = "$XConsortium: xwd.c,v 1.51 89/12/10 16:49:07 rws Exp $";
 #endif
 
 /*%
@@ -63,6 +63,7 @@ typedef unsigned long Pixel;
 
 int format = ZPixmap;
 Bool nobdrs = False;
+Bool on_root = False;
 Bool standard_out = True;
 Bool debug = False;
 long add_pixel_value = 0;
@@ -122,6 +123,10 @@ main(argc, argv)
 	}
 	if (!strcmp(argv[i], "-xy")) {
 	    format = XYPixmap;
+	    continue;
+	}
+	if (!strcmp(argv[i], "-screen")) {
+	    on_root = True;
 	    continue;
 	}
 	if (!strcmp(argv[i], "-add")) {
@@ -254,7 +259,10 @@ Window_Dump(window, out)
 
     x = absx - win_info.x;
     y = absy - win_info.y;
-    image = XGetImage (dpy, window, x, y, width, height, AllPlanes, format);
+    if (on_root)
+	image = XGetImage (dpy, RootWindow(dpy, screen), absx, absy, width, height, AllPlanes, format);
+    else
+	image = XGetImage (dpy, window, x, y, width, height, AllPlanes, format);
     if (!image) {
 	fprintf (stderr, "%s:  unable to get image at %dx%d+%d+%d\n",
 		 program_name, width, height, x, y);
@@ -403,7 +411,7 @@ Error(string)
 int Image_Size(image)
      XImage *image;
 {
-    if (format != ZPixmap)
+    if (image->format != ZPixmap)
       return(image->bytes_per_line * image->height * image->depth);
 
     return(image->bytes_per_line * image->height);
