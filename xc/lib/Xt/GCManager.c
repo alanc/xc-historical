@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: GCManager.c,v 1.33 89/06/16 19:34:41 jim Exp $";
+static char Xrcsid[] = "$XConsortium: GCManager.c,v 1.34 89/07/21 17:14:07 swick Exp $";
 /* $oHeader: GCManager.c,v 1.4 88/08/19 14:19:51 asente Exp $ */
 #endif /* lint */
 
@@ -116,9 +116,9 @@ GC XtGetGC(widget, valueMask, values)
 	     GCptr      prev;
     register GCptr      cur;
     register Cardinal   depth   = widget->core.depth;
-    register Screen     *screen = XtScreen(widget);
+    register Screen     *screen = XtScreenOfObject(widget);
 	     Drawable   drawable;
-	     XtPerDisplay pd = _XtGetPerDisplay(XtDisplay(widget));
+	     XtPerDisplay pd = _XtGetPerDisplay(DisplayOfScreen(screen));
 
     /* Search for existing GC that matches exactly */
     for (cur = pd->GClist, prev = NULL; cur != NULL; prev = cur, cur = cur->next) {
@@ -146,7 +146,8 @@ GC XtGetGC(widget, valueMask, values)
     cur->ref_count  = 1;
     cur->valueMask  = valueMask;
     if (values != NULL) cur->values = *values;
-    if (XtWindow(widget) == NULL) {
+
+    if ((drawable = XtWindowOfObject(widget)) == NULL) {
 	/* Have to find a Drawable to identify the depth for the GC */
 	if (depth >= pd->drawable_count) {
 	    int i;
@@ -166,8 +167,6 @@ GC XtGetGC(widget, valueMask, values)
 		drawable = XCreatePixmap(DisplayOfScreen(screen), screen->root, 1, 1, depth);
 	    pd->drawables[depth] = drawable;
         }
-    } else {
-	drawable = XtWindow(widget);
     }
     cur->gc = XCreateGC(DisplayOfScreen(screen), drawable, valueMask, values);
     return cur->gc;
@@ -178,7 +177,7 @@ void  XtReleaseGC(widget, gc)
     GC      gc;
 {
     register GCptr cur, prev;
-    XtPerDisplay pd = _XtGetPerDisplay(XtDisplay(widget));
+    XtPerDisplay pd = _XtGetPerDisplay(XtDisplayOfObject(widget));
     
     for (cur = pd->GClist, prev = NULL; cur != NULL; prev = cur, cur = cur->next) {
 	if (cur->gc == gc) {
