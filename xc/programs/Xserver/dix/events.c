@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.140 88/02/02 10:48:01 rws Exp $ */
+/* $Header: events.c,v 1.141 88/02/02 11:55:23 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -2105,7 +2105,12 @@ ProcGrabPointer(client)
     rep.length = 0;
     if ((grab) && (grab->client != client))
 	rep.status = AlreadyGrabbed;
-    else if (!pWin->realized)
+    else if ((!pWin->realized) ||
+	     (confineTo &&
+		!(confineTo->realized &&
+		  /* XXX violates spec, but spec isn't adequate */
+		  (* confineTo->drawable.pScreen->RegionNotEmpty)
+			(confineTo->borderSize))))
 	rep.status = GrabNotViewable;
     else if (device->sync.frozen &&
 	     ((device->sync.other && (device->sync.other->client != client)) ||
@@ -3765,14 +3770,21 @@ CheckCursorConfinement(pWin)
     WindowPtr pWin;
 {
     GrabPtr grab = inputInfo.pointer->grab;
+    WindowPtr confineTo;
 
-    /* We could traverse the tree rooted at pWin to see if it contained confineTo,
-     * and only then call ConfineCursorToWindow, but it hardly seems worth it.
-     */
-    if (grab && grab->u.ptr.confineTo &&
-	(pWin->firstChild || (pWin == grab->u.ptr.confineTo)))
-	ConfineCursorToWindow(grab->u.ptr.confineTo,
-			      sprite.hot.x, sprite.hot.y, TRUE);
+    if (grab && (confineTo = grab->u.ptr.confineTo))
+    {
+	/* XXX violates spec, but spec isn't adequate */
+	if (!(* confineTo->drawable.pScreen->RegionNotEmpty)
+			(confineTo->borderSize))
+	    DeactivatePointerGrab(inputInfo.pointer);
+	/* We could traverse the tree rooted at pWin to see if it contained
+	 * confineTo, and only then call ConfineCursorToWindow, but it hardly
+	 * seems worth it.
+	 */
+	else if (pWin->firstChild || (pWin == confineTo))
+	    ConfineCursorToWindow(confineTo, sprite.hot.x, sprite.hot.y, TRUE);
+    }
 }
 
 Mask
