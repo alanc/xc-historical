@@ -1,4 +1,4 @@
-/* $XConsortium: XInput.h,v 1.6 89/10/12 17:02:23 gms Exp $ */
+/* $XConsortium: XInput.h,v 1.1 89/10/13 17:10:49 jim Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -426,7 +426,7 @@ typedef struct {
 } XKbdFeedbackControl;
 
 typedef struct {
-    XID     slass;
+    XID     class;
     int     length;
     int     num_keysyms;
     KeySym  *syms_to_display;
