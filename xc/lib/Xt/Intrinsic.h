@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.189 94/01/18 19:36:20 converse Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.190 94/01/19 21:31:45 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -2053,9 +2053,6 @@ extern Widget XtSessionInitialize(
 #define XtSessionCheckpoint	0
 #define XtSessionInteract	1
 
-#define XtSessionSaveSuccess	0
-#define XtSessionSaveFailure	1
-
 typedef struct _XtCheckpointTokenRec *XtCheckpointToken;
 
 typedef void (*XtInteractProc)(
@@ -2072,7 +2069,7 @@ typedef struct _XtCheckpointTokenRec {
     int		interact_style;
     Boolean	shutdown;
     Boolean	fast;
-    Boolean		status;			/* return */
+    Bool		save_success;		/* return */
     XtInteractProc	interact_proc;		/* return */
     XtPointer		interact_client_data;	/* return */
     int			interact_dialog_type;	/* return */
@@ -2906,6 +2903,17 @@ extern Boolean XtCvtStringToPixel(
 #if NeedFunctionPrototypes
     Display*	/* dpy */,
     XrmValuePtr /* args */,	/* Screen, Colormap */
+    Cardinal*   /* num_args */,	
+    XrmValuePtr	/* fromVal */,
+    XrmValuePtr	/* toVal */,
+    XtPointer*	/* closure_ret */
+#endif
+);
+
+extern Boolean XtCvtStringToRestartStyle(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */,
+    XrmValuePtr /* args */,	/* none */
     Cardinal*   /* num_args */,	
     XrmValuePtr	/* fromVal */,
     XrmValuePtr	/* toVal */,
