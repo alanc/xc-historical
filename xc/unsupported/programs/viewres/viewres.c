@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.38 90/02/13 12:45:31 jim Exp $
+ * $XConsortium: viewres.c,v 1.39 90/02/13 14:10:27 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -698,15 +698,12 @@ main (argc, argv)
     MAKE_SELECT (SELECT_SHOWN_RESOURCES, "selectShownResources");
 #undef MAKE_SELECT
 
-    dummy = XtCreateManagedWidget ("pannerbox", boxWidgetClass, pane,
-				   NULL, ZERO);
-
     XtSetArg (args[0], XtNreportCallback, callback_rec);
     callback_rec[0].callback = (XtCallbackProc) panner_callback;
     callback_rec[0].closure = (caddr_t) NULL;
     XtSetArg (args[1], XtNallowResize, TRUE);
     XtSetArg (args[2], XtNresize, TRUE);
-    pannerWidget = XtCreateManagedWidget ("panner", pannerWidgetClass, dummy,
+    pannerWidget = XtCreateManagedWidget ("panner", pannerWidgetClass, box,
 					  args, THREE);
 
     callback_rec[0].callback = (XtCallbackProc) viewport_callback;
