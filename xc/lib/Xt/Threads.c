@@ -1,4 +1,4 @@
-/* $XConsortium: Threads.c,v 1.6 93/09/06 09:49:52 rws Exp $ */
+/* $XConsortium: Threads.c,v 1.8 93/09/09 16:01:50 kaleb Exp $ */
 
 /************************************************************
 Copyright 1993 by Sun Microsystems, Inc. Mountain View, CA.
@@ -42,7 +42,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 typedef struct _LockRec {
     xthread_t holder;
     xmutex_t mutex;
-    int recursion;
+    int level;
     xcondition_t cond;
 } LockRec;
 
@@ -67,7 +67,7 @@ InitProcessLock()
     	xmutex_init(process_lock->mutex);
     	xcondition_init(process_lock->cond);
 
-    	process_lock->recursion = 0;
+    	process_lock->level = 0;
     	xthread_clear_id(process_lock->holder);
     }
 }
@@ -86,7 +86,7 @@ ProcessLock()
     }
     
     if (xthread_equal(process_lock->holder,this_thread)) {
-	process_lock->recursion++;
+	process_lock->level++;
 	xmutex_unlock(process_lock->mutex);
 	return;
     }
@@ -104,8 +104,8 @@ ProcessUnlock()
 {
     xmutex_lock(process_lock->mutex);
     assert(xthread_equal(process_lock->holder, ThrSelf()));
-    if (process_lock->recursion != 0) {
-	process_lock->recursion--;
+    if (process_lock->level != 0) {
+	process_lock->level--;
 	xmutex_unlock(process_lock->mutex);
 	return;
     }
@@ -139,7 +139,7 @@ AppLock(app)
     }
     
     if (xthread_equal(app_lock->holder, this_thread)) {
-	app_lock->recursion++;
+	app_lock->level++;
 	xmutex_unlock(app_lock->mutex);
 	return;
     }
@@ -166,8 +166,8 @@ AppUnlock(app)
 
     xmutex_lock(app_lock->mutex);
     assert(xthread_equal(app_lock->holder, xthread_self()));
-    if (app_lock->recursion != 0) {
-	app_lock->recursion--;
+    if (app_lock->level != 0) {
+	app_lock->level--;
 	xmutex_unlock(app_lock->mutex);
 	return;
     }
@@ -189,21 +189,21 @@ YieldAppLock(app)
 {
     LockPtr app_lock = app->lock_info;
     int i =0;
-    int r = -1;
+    int level = -1;
     xthread_t this_thread = xthread_self();
     
     xmutex_lock(app_lock->mutex);
 
     assert(xthread_equal(app_lock->holder, this_thread));
 
-    r = app_lock->recursion;
+    level = app_lock->level;
 
-    app_lock->recursion = 0;
+    app_lock->level = 0;
     xthread_clear_id(app_lock->holder);
 
     xcondition_signal(app_lock->cond);
     xmutex_unlock(app_lock->mutex);
-    return r;
+    return level;
 }
 
 
@@ -211,11 +211,11 @@ static void
 #if NeedFunctionPrototypes
 RestoreAppLock(
     XtAppContext app, 
-    int r)
+    int level)
 #else
-RestoreAppLock(app, r)
+RestoreAppLock(app, level)
     XtAppContext app;
-    int r;
+    int level;
 #endif
 {
     xthread_t this_thread = xthread_self();
@@ -226,7 +226,7 @@ RestoreAppLock(app, r)
 	xcondition_wait(app_lock->cond, app_lock->mutex);
 
     app_lock->holder = this_thread;
-    app_lock->recursion = r;
+    app_lock->level = level;
     assert(xthread_equal(app_lock->holder, this_thread)); 
 
     xmutex_unlock(app_lock->mutex);
@@ -344,7 +344,7 @@ InitAppLock(app)
     app->lock_info->cond = xcondition_malloc();
     xmutex_init(app->lock_info->mutex);
     xcondition_init(app->lock_info->cond);
-    app->lock_info->recursion = 0;
+    app->lock_info->level = 0;
     xthread_clear_id(app->lock_info->holder);
    
     app->stack = XtNew(ThreadStack);
@@ -402,13 +402,15 @@ void XtProcessUnlock()
 Boolean XtToolkitThreadInitialize()
 {
 #ifdef XTHREADS
+    if (_XtProcessLock == NULL) {
 #ifdef xthread_init
-    xthread_init();
+	xthread_init();
 #endif
-    InitProcessLock();
-    _XtProcessLock = ProcessLock;
-    _XtProcessUnlock = ProcessUnlock;
-    _XtInitAppLock = InitAppLock;
+	InitProcessLock();
+	_XtProcessLock = ProcessLock;
+	_XtProcessUnlock = ProcessUnlock;
+	_XtInitAppLock = InitAppLock;
+    }
     return True;
 #else
     return False;
