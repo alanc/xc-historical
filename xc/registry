@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.30 90/07/09 08:54:56 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.5 90/07/09 09:35:17 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -15,6 +15,7 @@ Name						Reference
 "IBM"						[33]
 "ICS"						[31]
 "IXI"						[20]
+"LJK"						[56]
 "MIT"						[8]
 "MOTIF"						[7]
 "OMRON"						[45]
@@ -820,4 +821,9 @@ REFERENCES
 	FXD/Telerate, Inc.
 	2091 Landings Drive
 	Mountain View, CA 94043
+
+[56]	Lawrence J. Kilgallen
+	Box 81
+	MIT Station
+	Cambridge, MA 02139-0901
 Sumitomo Electric Workstation Corp.	[77]
