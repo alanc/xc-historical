@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.51 88/09/13 16:23:29 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.52 88/09/13 17:01:30 swick Exp $";
 #endif
 
 
@@ -1077,14 +1077,23 @@ static CheckResizeOrOverflow(ctx)
 	}
 	else
 	    if ((options & resizeHeight) && (line + 1 != ctx->text.lt.lines)) {
+		int oldHeight = ctx->core.height;
 		rbox.request_mode = CWHeight;
 		rbox.height = (*ctx->text.sink->MaxHeight)
 				(ctx, line + 1) + (2*yMargin)+2;
 		reply = XtMakeGeometryRequest(ctx, &rbox, &rbox);
 		if (reply == XtGeometryAlmost)
 		    reply = XtMakeGeometryRequest((Widget)ctx, &rbox, NULL);
-		if (reply == XtGeometryYes)
+		if (reply == XtGeometryYes) {
 		    BuildLineTable(ctx, ctx->text.lt.top);
+		    if (!(options & wordBreak) /* if NorthEastGravity */
+			&& rbox.height < oldHeight) {
+			(*ctx->text.sink->ClearToBackground)
+			    (ctx, ctx->text.leftmargin,
+			     ctx->text.lt.info[ctx->text.lt.lines].y,
+			     (int)ctx->core.width, oldHeight - rbox.height);
+		    }
+		}
 	    }
     }
 }
@@ -1860,7 +1869,8 @@ static void MoveNextLine(ctx, event)
    StartAction(ctx, event);
     _XtTextShowPosition(ctx);
     line = LineForPosition(ctx, ctx->text.insertPos);
-    if (line == ctx->text.lt.lines - 1) {
+    if (line == ctx->text.lt.lines - 1 &&
+	ctx->text.lt.info[ctx->text.lt.lines].position <= ctx->text.lastPos) {
 	_XtTextScroll(ctx, 1);
 	line = LineForPosition(ctx, ctx->text.insertPos);
     }
