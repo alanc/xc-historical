@@ -1,9 +1,6 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.4 91/07/16 23:08:26 gildea Exp $
 # 
 #  xgas
-# 
-#  $XConsortium: 
-#  $Athena: 
 # 
 #  Copyright 1987, 1988 Massachusetts Institute of Technology
 # 
@@ -36,9 +33,10 @@ LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
 
        INCLUDES = -I$(TOOLKITSRC) -I$(TOP)
 
-ComplexProgramTarget(xgas)
-
 depend:: $(SRCS) $(DOCNS)
 
 $(DOCSRCS):: $(DOCNS)
+
+ComplexProgramTarget(xgas)
+InstallAppDefaults(XGas)
 
