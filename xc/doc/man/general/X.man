@@ -326,7 +326,7 @@ resize(1), uwm(1), wm(1), x10tox11(1), xbiff(1), xcalc(1),
 xclock(1), xedit(1), xfd(1), xhost(1), xinit(1), xload(1),
 xlogo(1), xlsfonts(1), xmh(1), xmodmap(1), xpr(1), xprkbd(1),
 xprop(1), xrdb(1), xrefresh(1), xset(1), xsetroot(1), xwd(1),
-xwininfo(1), xwud(1), Xserver(1), Xapollo(1), Xqvss(1), Xsun(1),
+xwininfo(1), xwud(1), Xserver(1), Xapollo(1), Xqdss(1), Xqvss(1), Xsun(1),
 kbd_mode(1), todm(1), tox(1), biff(1), init(8), ttys(5),
 .I "Xlib \- C Language X Interface,"
 .I "X Toolkit Intrinsics - C Language X Interface"

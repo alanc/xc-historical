@@ -211,7 +211,7 @@ Unix domain socket
 Error log file
 .SH "SEE ALSO"
 X(1), xinit(1), xterm(1), xwm(1), xhost(1), xset(1), xsetroot(1), init(8),
-Xqvss(1), Xsun(1), Xapollo(1),
+Xqdss(1), Xqvss(1), Xsun(1), Xapollo(1),
 .I "X Window System Protocol,"
 .I "Definition of the Porting Layer for the X v11 Sample Server,"
 .I "Strategies for Porting the X v11 Sample Server,"
