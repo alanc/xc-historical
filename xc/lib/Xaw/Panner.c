@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.29 90/03/07 18:30:00 jim Exp $
+ * $XConsortium: Panner.c,v 1.30 90/03/07 18:38:33 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -538,16 +538,17 @@ static void Redisplay (gw, event, region)
     Display *dpy = XtDisplay(gw);
     Window w = XtWindow(gw);
     int pad = pw->panner.internal_border;
+    Dimension lw = (pw->panner.line_width < 1 ? 1 : pw->panner.line_width);
+    Dimension extra = pw->shadow_thickness + lw * 2;
     int kx = pw->panner.knob_x + pad, ky = pw->panner.knob_y + pad;
 
     pw->panner.tmp.showing = FALSE;
     XClearArea (XtDisplay(pw), XtWindow(pw), 
-		(int) pw->panner.last_x - pw->panner.line_width + pad, 
-		(int) pw->panner.last_y - pw->panner.line_width + pad, 
-		(unsigned int) (pw->panner.knob_width + 2 +
-				pw->panner.line_width * 2), 
-		(unsigned int) (pw->panner.knob_height + 2 +
-				pw->panner.line_width * 2), False);
+		(int) pw->panner.last_x - ((int) lw) + pad, 
+		(int) pw->panner.last_y - ((int) lw) + pad, 
+		(unsigned int) (pw->panner.knob_width + extra),
+		(unsigned int) (pw->panner.knob_height + extra),
+		False);
     pw->panner.last_x = pw->panner.knob_x;
     pw->panner.last_y = pw->panner.knob_y;
 
