@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.64 90/01/30 15:14:35 jim Exp $
+ *	$XConsortium: misc.c,v 1.65 90/03/12 10:30:17 jim Exp $
  */
 
 
@@ -58,7 +58,7 @@ static void DoSpecialEnterNotify();
 static void DoSpecialLeaveNotify();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: misc.c,v 1.64 90/01/30 15:14:35 jim Exp $";
+static char rcs_id[] = "$XConsortium: misc.c,v 1.65 90/03/12 10:30:17 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -368,9 +368,9 @@ Redraw()
 	        event.window = VWindow(screen);
 		event.width = term->core.width;
 		event.height = term->core.height;
-		(*term->core.widget_class->core_class.expose)(term, &event, NULL);
+		(*term->core.widget_class->core_class.expose)((Widget)term, (XEvent *)&event, NULL);
 		if(screen->scrollbar) 
-			(*screen->scrollWidget->core.widget_class->core_class.expose)(screen->scrollWidget, &event, NULL);
+			(*screen->scrollWidget->core.widget_class->core_class.expose)(screen->scrollWidget, (XEvent *)&event, NULL);
 		}
 
 	if(TWindow(screen) && screen->Tshow) {

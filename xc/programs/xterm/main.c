@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.147 90/03/14 17:05:16 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.148 90/03/20 14:22:26 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -671,10 +671,11 @@ char **argv;
 	/* Init the Toolkit. */
 	toplevel = XtAppInitialize (&app_con, "XTerm", 
 				    optionDescList, XtNumber(optionDescList), 
-				    &argc, argv, fallback_resources, 
-				    NULL, 0);
+				    (Cardinal *) &argc, argv,
+				    fallback_resources, NULL, 0);
 
-	XtGetApplicationResources( toplevel, &resource, application_resources,
+	XtGetApplicationResources( toplevel, (XtPointer) &resource,
+				  application_resources,
 				   XtNumber(application_resources), NULL, 0 );
 
 	waiting_for_initial_map = resource.wait_for_map;

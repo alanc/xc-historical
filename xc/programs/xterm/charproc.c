@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.122 90/03/05 11:46:46 keith Exp $
+ * $XConsortium: charproc.c,v 1.123 90/03/12 10:30:21 jim Exp $
  */
 
 
@@ -149,7 +149,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.122 90/03/05 11:46:46 keith Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.123 90/03/12 10:30:21 jim Exp $";
 #endif	/* lint */
 
 static int nparam;
@@ -2064,7 +2064,7 @@ static void VTInitialize (request, new)
 		HandleLeaveWindow, (Opaque)NULL);
    XtAddEventHandler(XtParent(new), FocusChangeMask, FALSE,
 		HandleFocusChange, (Opaque)NULL);
-   XtAddEventHandler(new, 0L, TRUE,
+   XtAddEventHandler((Widget)new, 0L, TRUE,
 		VTNonMaskableEvent, (Opaque)NULL);
 
    set_character_class (new->screen.charClass);
@@ -2573,7 +2573,7 @@ static void HandleKeymapChange(w, event, params, param_count)
     (void) sprintf( mapName, "%sKeymap", params[0] );
     (void) strcpy( mapClass, mapName );
     if (islower(mapClass[0])) mapClass[0] = toupper(mapClass[0]);
-    XtGetSubresources( w, &keymap, mapName, mapClass,
+    XtGetSubresources( w, (XtPointer)&keymap, mapName, mapClass,
 		       resources, (Cardinal)1, NULL, (Cardinal)0 );
     if (keymap != NULL)
 	XtOverrideTranslations(w, keymap);
@@ -2641,7 +2641,8 @@ void FindFontSelection (atom_name, justprobe)
 	if (strcmp(atom_name, XmuNameOfAtom(*pAtom)) == 0) break;
     }
     if (!a) {
-	atoms = (AtomPtr*) XtRealloc (atoms, sizeof(AtomPtr)*(atomCount+1));
+	atoms = (AtomPtr*) XtRealloc ((char *)atoms,
+				      sizeof(AtomPtr)*(atomCount+1));
 	*(pAtom = &atoms[atomCount++]) = XmuMakeAtom(atom_name);
     }
 
@@ -2650,7 +2651,7 @@ void FindFontSelection (atom_name, justprobe)
 	term->screen.menu_font_names[fontMenu_fontsel] = 
 	  XGetSelectionOwner(XtDisplay(term), target) ? _Font_Selected_ : NULL;
     } else {
-	XtGetSelectionValue(term, target, XA_STRING,
+	XtGetSelectionValue((Widget)term, target, XA_STRING,
 			    DoSetSelectedFont, NULL,
 			    XtLastTimestampProcessed(XtDisplay(term)));
     }
@@ -2946,9 +2947,11 @@ set_cursor_gcs (screen)
 	new_reversecursorGC = (GC) 0;
 	new_cursoroutlineGC = (GC) 0;
     }
-    if (screen->cursorGC) XtReleaseGC (term, screen->cursorGC);
-    if (screen->reversecursorGC) XtReleaseGC (term, screen->reversecursorGC);
-    if (screen->cursoroutlineGC) XtReleaseGC (term, screen->cursoroutlineGC);
+    if (screen->cursorGC) XtReleaseGC ((Widget)term, screen->cursorGC);
+    if (screen->reversecursorGC)
+	XtReleaseGC ((Widget)term, screen->reversecursorGC);
+    if (screen->cursoroutlineGC)
+	XtReleaseGC ((Widget)term, screen->cursoroutlineGC);
     screen->cursorGC = new_cursorGC;
     screen->reversecursorGC = new_reversecursorGC;
     screen->cursoroutlineGC = new_cursoroutlineGC;

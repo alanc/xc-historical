@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: scrollbar.c,v 1.31 89/12/10 20:44:50 jim Exp $
+ *	$XConsortium: scrollbar.c,v 1.32 89/12/15 11:45:51 kit Exp $
  */
 
 #include <X11/copyright.h>
@@ -46,7 +46,7 @@
 extern void bcopy();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.31 89/12/10 20:44:50 jim Exp $";
+static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.32 89/12/15 11:45:51 kit Exp $";
 #endif	/* lint */
 
 /* Event handlers */
@@ -185,7 +185,7 @@ static Widget CreateScrollBar(xw, x, y, height)
 	argList[3].value = (XtArgVal) xw->misc.re_verse;
 
 	scrollWidget = XtCreateWidget("scrollbar", scrollbarWidgetClass, 
-	  xw, argList, XtNumber(argList));
+	  (Widget)xw, argList, XtNumber(argList));
         XtAddCallback (scrollWidget, XtNscrollProc, ScrollTextUpDownBy, 0);
         XtAddCallback (scrollWidget, XtNjumpProc, ScrollTextTo, 0);
 	return (scrollWidget);
