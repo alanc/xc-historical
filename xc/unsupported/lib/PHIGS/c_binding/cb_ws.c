@@ -1,4 +1,4 @@
-/* $XConsortium: cb_ws.c,v 5.2 91/04/04 17:05:21 hersh Exp $ */
+/* $XConsortium: cb_ws.c,v 5.3 91/07/12 19:54:04 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1045,6 +1045,14 @@ pset_int_rep_plus( wsid, index, rep )
 		    ? rep->back_colr.val.ind : 1) < 0) {
 	    ERR_REPORT( phg_cur_cph->erh, ERR113);
 
+        } else if ((rep->refl_props.specular_colr.type == PINDIRECT
+             ? rep->refl_props.specular_colr.val.ind : 1) < 0) {
+             ERR_REPORT( phg_cur_cph->erh, ERR113);
+ 
+        } else if ((rep->back_refl_props.specular_colr.type == PINDIRECT
+             ? rep->back_refl_props.specular_colr.val.ind : 1) < 0) {
+             ERR_REPORT( phg_cur_cph->erh, ERR113);
+
 	} else if ( !phg_cb_int_in_list( (Pint)rep->style,
 					dt->out_dt.num_interior_styles,
 					(Pint*)dt->out_dt.interior_styles) ||
@@ -1058,7 +1066,12 @@ pset_int_rep_plus( wsid, index, rep )
 	    ERR_REPORT( phg_cur_cph->erh, ERR112);
 
 	} else if (!CB_COLOUR_MODEL_SUPPORTED(rep->colr.type) ||
-		   !CB_COLOUR_MODEL_SUPPORTED(rep->back_colr.type)) {
+		   !CB_COLOUR_MODEL_SUPPORTED(rep->back_colr.type) ||
+		   !CB_COLOUR_MODEL_SUPPORTED(
+			  rep->refl_props.specular_colr.type) ||
+		   !CB_COLOUR_MODEL_SUPPORTED(
+			  rep->back_refl_props.specular_colr.type)) {
+	    
 	    ERR_REPORT( phg_cur_cph->erh, ERR110);
 
 	} else if (!CB_INT_SHADING_SUPPORTED(rep->shad_meth) ||
