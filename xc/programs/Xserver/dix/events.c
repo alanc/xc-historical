@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.42 91/07/11 20:57:38 keith Exp $ */
+/* $XConsortium: events.c,v 5.43 91/07/19 23:18:22 keith Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -3013,7 +3013,8 @@ ProcSendEvent(client)
 		return Success;
 	    if (pWin == effectiveFocus)
 		return Success;
-	    stuff->eventMask &= ~wDontPropagateMask(pWin);
+	    if (stuff->eventMask & wDontPropagateMask(pWin))
+		break;
 	}
     }
     else
