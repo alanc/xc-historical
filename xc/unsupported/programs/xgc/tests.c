@@ -19,8 +19,8 @@
 #define PI 3.14159265
 #endif
 
-#ifdef SYSV
-#define random rand
+#if defined(SYSV) || defined(SVR4)
+#define random lrand48
 #endif
 
 extern long random();
