@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.18 93/08/20 11:43:24 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.19 93/08/24 18:54:50 gildea Exp $
 #undef ServerDefines
 #include <Server.tmpl>
 #define	IHaveSubdirs
@@ -30,8 +30,6 @@ all:: fs config $(MFSDIRS)
 ServerTarget(fs,$(FSDIRS),NullParameter,$(FSLIBS),$(SYSLIBS))
 
 CppFileTarget(config,config.cpp,$(SITE_CONFIG),$(ICONFIGFILES))
-
-InstallProgram(fs,$(BINDIR))
 
 InstallManPage(fs,$(MANDIR))
 
@@ -66,8 +64,5 @@ DependSubdirs($(SUBDIRS))
 $(SUBDIRS):	FRC
 	@cd $@; echo "making $@" ;	\
 	$(MAKE) $(MFLAGS) PassCDebugFlags all
-
-clean::
-	$(RM) fs
 
 FRC:

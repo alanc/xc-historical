@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.156 93/08/08 13:20:14 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.157 93/08/23 19:43:13 rws Exp $
 /*
  * Server Master Makefile
  */
@@ -463,8 +463,6 @@ Xnon: $(SUBDIRS0) $(DEPDIRS)
 
 SUBDIRS = $(SUBDIRS0) $(SUBDIRS1) $(SUBDIRS2) $(SUBDIRS3) $(SUBDIRS4)
 
-InstallMultipleFlags($(ALL),$(BINDIR),$(INSTPGMFLAGS))
-
 install::
 	-(cd $(DESTDIR)$(BINDIR); $(RM) X; $(LN) $(ALL1) X)
 
@@ -475,8 +473,5 @@ MakeLintLibSubdirs($(SUBDIRS))
 LintSubdirs($(SUBDIRS))
 
 ForceSubdirs($(DEPDIRS) $(SUBDIRS))
-
-clean::
-	$(RM) $(ALL)
 
 InstallManPage(Xserver,$(MANDIR))
