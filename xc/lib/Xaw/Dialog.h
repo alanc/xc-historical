@@ -1,4 +1,4 @@
-/* $Header: Dialog.h,v 1.5 88/02/14 13:59:11 rws Exp $ */
+/* $Header: Dialog.h,v 1.7 88/08/12 14:08:21 swick Exp $ */
 
 
 /***********************************************************
@@ -57,8 +57,10 @@ SOFTWARE.
 
 #include <X11/Form.h>
 
-#define XtNgrabFocus	"grabFocus"
-#define XtCGrabFocus	"GrabFocus"
+#define XtNgrabFocus		"grabFocus"
+#define XtNmaximumLength	"maximumLength"
+#define XtCGrabFocus		"GrabFocus"
+#define XtCMax			"Max"
 
 typedef struct _DialogClassRec	*DialogWidgetClass;
 typedef struct _DialogRec	*DialogWidget;

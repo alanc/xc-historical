@@ -1,4 +1,4 @@
-/* $Header: Form.h,v 1.9 88/02/26 09:11:09 swick Exp $ */
+/* $Header: Form.h,v 1.11 88/08/12 13:23:28 swick Exp $ */
 
 
 /***********************************************************
@@ -84,6 +84,9 @@ SOFTWARE.
 #define XtNresizable		"resizable"
 
 #define XtCEdge			"Edge"
+#define XtCWidget		"Widget"
+
+#define XtRWidget		"Widget"
 
 #ifndef _XtEdgeType_e
 #define _XtEdgeType_e
