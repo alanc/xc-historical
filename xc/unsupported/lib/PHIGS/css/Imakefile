@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.8 91/05/06 19:42:44 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.9 91/07/12 17:42:01 rws Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -53,10 +53,7 @@ LINTOPTS = -uv
 LINT_LIBS = ../error/llib-lerr.ln
 XLINT_LIBS = $(LINTXLIB)
 
-all:: DONE
-
-DONE: ${OBJS}
-	touch DONE
+SubdirLibraryRule($(OBJS))
 
 extract : $(SRCS)
 
@@ -79,6 +76,3 @@ SpecialObjectRule(hpext.o, $(IRULESRC)/$(MACROFILE), $(EXT_DEFINES))
 #endif
 
 DependTarget()
-
-clean::
-	$(RM) DONE

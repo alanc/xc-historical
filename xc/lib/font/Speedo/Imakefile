@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.7 91/07/17 16:05:31 gildea Exp $
 #include <Server.tmpl>
 
         INCLUDES = -I$(FONTSRC)/include -I../include -I$(FONTSERVERSRC)/include
@@ -15,9 +15,8 @@ XCOMM $XConsortium$
 		spencode.o \
 		$(SPEEDOOBJS)
 
+SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
-all:: $(OBJS)
 NormalLintTarget($(SRCS))
 
 DependTarget()
-

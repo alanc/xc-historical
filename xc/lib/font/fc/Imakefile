@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.8 91/07/16 23:04:38 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.9 91/07/19 15:49:32 rws Exp $
 #
 # Make file for font handling routines
 #
@@ -11,10 +11,9 @@ XCOMM $XConsortium: Imakefile,v 1.8 91/07/16 23:04:38 gildea Exp $
          DEFINES = $(SIGNAL_DEFINES)
     CONN_DEFINES = ConnectionFlags
 
+SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
 SpecialObjectRule(fsio.o,$(ICONFIGFILES),$(CONN_DEFINES))
-
-all:: $(OBJS)
 
 NormalLintTarget($(SRCS))
 

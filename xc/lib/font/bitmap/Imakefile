@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.4 91/07/17 16:05:15 gildea Exp $
 #include <Server.tmpl>
 
         INCLUDES = -I$(FONTSRC)/include -I../include -I$(FONTSERVERSRC)/include
@@ -14,8 +14,8 @@ XCOMM $XConsortium$
 		   bitmapfuncs.o fsfuncs.o pcfread.o pcfwrite.o snfread.o \
 		   fontink.o
 
+SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
-all:: $(OBJS)
 NormalLintTarget($(SRCS))
 
 DependTarget()
