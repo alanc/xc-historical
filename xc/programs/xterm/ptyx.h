@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.56 91/05/17 18:35:48 gildea Exp $
+ *	$XConsortium: ptyx.h,v 1.57 91/05/30 16:45:45 gildea Exp $
  */
 
 /*
@@ -83,7 +83,7 @@
 #ifdef hpux
 #define PTYCHAR1	"zyxwvutsrqp"
 #else	/* !hpux */
-#define	PTYCHAR1	"pqrstuvwxyz"
+#define	PTYCHAR1	"pqrstuvwxyzPQRSTUVWXYZ"
 #endif	/* !hpux */
 #endif	/* !PTYCHAR1 */
 
