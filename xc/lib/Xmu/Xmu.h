@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xmu.h,v 1.22 89/06/07 16:48:24 jim Exp $
+ * $XConsortium: Xmu.h,v 1.23 89/06/07 16:50:58 jim Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -22,119 +22,23 @@
 #ifndef _XMU_H_
 #define _XMU_H_
 
+/*
+ * This include file is obsolete.  Callers should use the appropriate 
+ * specific include file.  If you add any Xmu includes, please keep them
+ * in alphabetical order.
+ */
 #include <X11/Intrinsic.h>
 
-typedef struct _AtomRec* AtomPtr;
-
-#ifdef  _Atoms_c_
-#define globalref
-#else
-#define globalref extern
-#endif /*_Atoms_c_*/
-
-globalref AtomPtr
-    _XA_TEXT, _XA_TIMESTAMP, _XA_LIST_LENGTH, _XA_LENGTH,
-    _XA_TARGETS, _XA_CHARACTER_POSITION, _XA_DELETE, _XA_HOSTNAME,
-    _XA_IP_ADDRESS, _XA_DECNET_ADDRESS, _XA_USER, _XA_CLASS,
-    _XA_NAME, _XA_CLIENT_WINDOW, _XA_ATOM_PAIR, _XA_SPAN,
-    _XA_NET_ADDRESS, _XA_NULL, _XA_FILENAME, _XA_OWNER_OS, _XA_CLIPBOARD;
-
-/*
- * types and constants
- */
-typedef enum {
-    XtJustifyLeft,       /* justify text to left side of button   */
-    XtJustifyCenter,     /* justify text in center of button      */
-    XtJustifyRight       /* justify text to right side of button  */
-} XtJustify;
-
-typedef enum {XtorientHorizontal, XtorientVertical} XtOrientation;
-
-#define XtNbackingStore		"backingStore"
-
-#define XtCBackingStore		"BackingStore"
-
-#define XtRBackingStore		"BackingStore"
-
-#define XtRLong "Long"
-
-/* BackingStore constants */
-#define XtEnotUseful		"notUseful"
-#define XtEwhenMapped		"whenMapped"
-#define XtEalways		"always"
-#define XtEdefault		"default"
-
-/* Justify constants */
-#define XtEleft			"left"
-#define XtEcenter		"center"
-#define XtEright		"right"
-
-/* display close hook opaque type */
-typedef caddr_t CloseHook;
-
-/*
- * public entry points
- */
-Window XmuClientWindow();
-Boolean XmuConvertStandardSelection( /* Widget, Time, Atom*, ... */ );
-void XmuCopyISOLatin1Lowered();
-void XmuDrawRoundedRectangle();
-void XmuDrawLogo();
-Pixmap XmuCreatePixmapFromBitmap();
-Pixmap XmuCreateStippledPixmap();
-void XmuCvtFunctionToCallback();
-void XmuCvtStringToBackingStore();
-void XmuCvtStringToCursor();
-void XmuCvtStringToJustify();
-void XmuCvtStringToLong();
-void XmuCvtStringToOrientation();
-void XmuCvtStringToPixmap();
-void XmuCvtStringToWidget();
-void XmuCallInitializers(/* XtAppContext */);
-void XmuAddInitializer(/* (*void)(), caddr_t */);
-AtomPtr XmuMakeAtom( /* char* */ );
-Atom XmuInternAtom( /* Display*, AtomPtr */ );
-void XmuInternStrings( /* Display*, String*, Cardinal, Atom* */);
-char *XmuGetAtomName( /* Display*, Atom */ );
-char *XmuNameOfAtom( /* AtomPtr */ );
-int XmuReadBitmapData(), XmuReadBitmapDataFromFile();
-int XmuPrintDefaultErrorMessage();
-CloseHook XmuAddCloseDisplayHook (/* Display *, int (*)(), caddr_t */);
-Bool XmuRemoveCloseDisplayHook (/* Display *,CloseHook,int (*)(),caddr_t */);
-Bool XmuLookupCloseDisplayHook (/* Display *,CloseHook,int (*)(),caddr_t */);
-
-Status XmuAllStandardColormaps( /* Display* */ );
-Status XmuCreateColormap( /* Display*, XStandardColormap* */ );
-void   XmuDeleteStandardColormap( /* Display*, int, Atom */ );
-Status XmuGetColormapAllocation( /* XVisualInfo*, Atom, unsigned long, ... */);
-Status XmuLookupColormap( /* Display*, int, VisualID, ... */ );
-XStandardColormap *XmuStandardColormap( /* Display*, int, VisualID, ... */ );
-Status XmuVisualStandardColormaps( /* Display*, int, VisualID, ... */ );
-
-
-#ifndef _Atoms_c_
-#define XA_ATOM_PAIR(d)		XmuInternAtom(d, _XA_ATOM_PAIR)
-#define XA_CHARACTER_POSITION(d) XmuInternAtom(d, _XA_CHARACTER_POSITION)
-#define XA_CLASS(d)		XmuInternAtom(d, _XA_CLASS)
-#define XA_CLIENT_WINDOW(d)	XmuInternAtom(d, _XA_CLIENT_WINDOW)
-#define XA_CLIPBOARD(d)		XmuInternAtom(d, _XA_CLIPBOARD)
-#define XA_DECNET_ADDRESS(d)	XmuInternAtom(d, _XA_DECNET_ADDRESS)
-#define XA_DELETE(d)		XmuInternAtom(d, _XA_DELETE)
-#define XA_FILENAME(d)		XmuInternAtom(d, _XA_FILENAME)
-#define XA_HOSTNAME(d)		XmuInternAtom(d, _XA_HOSTNAME)
-#define XA_IP_ADDRESS(d)	XmuInternAtom(d, _XA_IP_ADDRESS)
-#define XA_LENGTH(d)		XmuInternAtom(d, _XA_LENGTH)
-#define XA_LIST_LENGTH(d)	XmuInternAtom(d, _XA_LIST_LENGTH)
-#define XA_NAME(d)		XmuInternAtom(d, _XA_NAME)
-#define XA_NET_ADDRESS(d)	XmuInternAtom(d, _XA_NET_ADDRESS)
-#define XA_NULL(d)		XmuInternAtom(d, _XA_NULL)
-#define XA_OWNER_OS(d)		XmuInternAtom(d, _XA_OWNER_OS)
-#define XA_SPAN(d)		XmuInternAtom(d, _XA_SPAN)
-#define XA_TARGETS(d)		XmuInternAtom(d, _XA_TARGETS)
-#define XA_TEXT(d)		XmuInternAtom(d, _XA_TEXT)
-#define XA_TIMESTAMP(d)		XmuInternAtom(d, _XA_TIMESTAMP)
-#define XA_USER(d)		XmuInternAtom(d, _XA_USER)
-#endif /*_Atoms_c_*/
+#include <X11/Xmu/Atoms.h>
+#include <X11/Xmu/CharSet.h>
+#include <X11/Xmu/CloseHook.h>
+#include <X11/Xmu/Converters.h>
+#include <X11/Xmu/Drawing.h>
+#include <X11/Xmu/Error.h>
+#include <X11/Xmu/Initer.h>
+#include <X11/Xmu/StdSel.h>
+#include <X11/Xmu/StdCmap.h>
+#include <X11/Xmu/WindowUtil.h>
 
 #endif /* _XMU_H_ */
 
