@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shape.c,v 5.0 89/06/09 15:10:47 keith Exp $ */
+/* $XConsortium: shape.c,v 5.1 89/07/03 19:46:45 rws Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -156,48 +156,6 @@ RegionOperate (client, pWin, kind, destRgnp, srcRgn, op, xoff, yoff, create)
     return Success;
 }
 
-/*ARGSUSED*/
-static RegionPtr
-RectsToRegion (pScreen, nrects, prect, ctype)
-    ScreenPtr	pScreen;
-    int		nrects;
-    xRectangle	*prect;
-    int		ctype;
-{
-    RegionPtr	result, thisrect;
-    BoxRec	box;
-
-    result = (*pScreen->RegionCreate) ((BoxPtr) NULL, 0);
-    thisrect = (*pScreen->RegionCreate) ((BoxPtr) NULL, 0);
-    while (nrects--) {
-	box.x1 = prect->x;
-	box.y1 = prect->y;
-	box.x2 = box.x1 + prect->width;
-	box.y2 = box.y1 + prect->height;
-	if (box.x2 < box.x1)
-	    box.x2 = box.x1;
-	if (box.y2 < box.y1)
-	    box.y2 = box.y1;
-	(*pScreen->RegionReset) (thisrect, &box);
-	(*pScreen->Union) (result, result, thisrect);
-	++prect;
-    }
-    (*pScreen->RegionDestroy) (thisrect);
-    return result;
-}
-
-/*ARGSUSED*/
-static RegionPtr
-BitmapToRegion (pScreen, pPixmap)
-    ScreenPtr	pScreen;
-    PixmapPtr	pPixmap;
-{
-    extern RegionPtr	mfbPixmapToRegion ();
-    
-    /* XXX this assumes that mfb is being used for 1-bit pixmaps */
-    return mfbPixmapToRegion (pPixmap);
-}
-
 static RegionPtr
 CreateBoundingShape (pWin)
     WindowPtr	pWin;
@@ -300,7 +258,7 @@ ProcShapeRectangles (client)
     ctype = VerifyRectOrder(nrects, prects, (int)stuff->ordering);
     if (ctype < 0)
 	return BadMatch;
-    srcRgn = RectsToRegion (pScreen, nrects, prects, ctype);
+    srcRgn = (*pScreen->RectsToRegion)(nrects, prects, ctype);
 
     if (!pWin->optional)
 	MakeWindowOptional (pWin);
@@ -358,7 +316,7 @@ ProcShapeMask (client)
 	    return BadPixmap;
 	if (pPixmap->drawable.pScreen != pScreen)
 	    return BadMatch;
-	srcRgn = BitmapToRegion (pScreen, pPixmap);
+	srcRgn = (*pScreen->BitmapToRegion)(pPixmap);
     }
 
     if (!pWin->optional)
@@ -846,17 +804,19 @@ ProcShapeGetRectangles (client)
 	    break;
 	}
     } else {
-	nrects = region->numRects;
+	BoxPtr box;
+	nrects = REGION_NUM_RECTS(region);
+	box = REGION_RECTS(region);
 	rects = (xRectangle *) ALLOCATE_LOCAL (nrects * sizeof (xRectangle));
-	if (!rects)
+	if (!rects && nrects)
 	    return BadAlloc;
-	for (i = 0; i < nrects; i++) {
-	    rects[i].x = region->rects[i].x1;
-	    rects[i].y = region->rects[i].y1;
-	    rects[i].width = region->rects[i].x2 - region->rects[i].x1;
-	    rects[i].height = region->rects[i].y2 - region->rects[i].y1;
+	for (i = 0; i < nrects; i++, box++) {
+	    rects[i].x = box->x1;
+	    rects[i].y = box->y1;
+	    rects[i].width = box->x2 - box->x1;
+	    rects[i].height = box->y2 - box->y1;
 	}
-	DEALLOCATE_LOCAL ((pointer) rects);
+	DEALLOCATE_LOCAL (rects);
     }
     rep.type = X_Reply;
     rep.sequenceNumber = client->sequence;
