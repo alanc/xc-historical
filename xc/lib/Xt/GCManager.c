@@ -1,4 +1,4 @@
-/* $XConsortium: GCManager.c,v 1.39 90/10/20 14:14:59 rws Exp $ */
+/* $XConsortium: GCManager.c,v 1.40 91/01/06 13:32:15 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988, 1990 by Digital Equipment Corporation, Maynard,
@@ -35,13 +35,16 @@ typedef struct _GCrec {
     Pixmap	  clip_mask;	/* Clip_mask value */
     Cardinal	  ref_count;    /* # of shareholders */
     GC		  gc;		/* The GC itself. */
+    XtGCMask	  dynamic_mask;	/* Writable values */
+    XtGCMask	  unused_mask;	/* Unused values */
     struct _GCrec *next;	/* Next GC for this widgetkind. */
 } GCrec, *GCptr;
 
 #define GCVAL(bit,mask,val,default) ((bit&mask) ? val : default)
 
 #define CHECK(bit,comp,default) \
-    if (GCVAL(bit,valueMask,v->comp,default) != gcv.comp) return False
+    if ((readOnlyMask & bit) && \
+	(GCVAL(bit,valueMask,v->comp,default) != gcv.comp)) return False
 
 #define ALLGCVALS (GCFunction | GCPlaneMask | GCForeground | \
 		   GCBackground | GCLineWidth | GCLineStyle | \
@@ -52,14 +55,20 @@ typedef struct _GCrec {
 		   GCClipXOrigin | GCClipYOrigin | GCDashOffset | \
 		   GCArcMode)
 
-static Bool Matches(dpy, ptr, valueMask, v)
+static Bool Matches(dpy, ptr, valueMask, v, readOnlyMask, dynamicMask)
     Display *dpy;
     GCptr ptr;
-    register XtValueMask valueMask;
+    register XtGCMask valueMask;
     register XGCValues *v;
+    XtGCMask readOnlyMask;
+    XtGCMask dynamicMask;
 {
     XGCValues gcv;
 
+    if (readOnlyMask & ptr->dynamic_mask)
+	return False;
+    if (((ptr->dynamic_mask|ptr->unused_mask) & dynamicMask) != dynamicMask)
+	return False;
     if (!XGetGCValues(dpy, ptr->gc, ALLGCVALS, &gcv))
 	return False;
     CHECK(GCForeground, foreground, 0);
@@ -87,6 +96,10 @@ static Bool Matches(dpy, ptr, valueMask, v)
     CHECK(GCClipMask, clip_mask, None);
     gcv.dashes = ptr->dashes;
     CHECK(GCDashList, dashes, 4);
+    ptr->unused_mask &= ~dynamicMask;
+    ptr->dynamic_mask |= dynamicMask;
+    if (valueMask & dynamicMask)
+	XChangeGC(dpy, ptr->gc, valueMask & dynamicMask, v);
     return True;
 } /* Matches */
 
@@ -118,32 +131,37 @@ void _XtGClistFree(dpy, pd)
  * Return a read-only GC with the given values.  
  */
 
-GC XtGetGC(widget, valueMask, values)
+GC XtAllocateGC(widget, depth, valueMask, values, dynamicMask, unusedMask)
     register Widget widget;
+    Cardinal	    depth;
     XtGCMask        valueMask;
     XGCValues       *values;
+    XtGCMask        dynamicMask;
+    XtGCMask        unusedMask;
 {
     register GCptr *prev;
     register GCptr cur;
-    Cardinal depth;
     Screen *screen;
     register Display *dpy;
     register XtPerDisplay pd;
     Drawable drawable;
     Drawable *pixmaps;
+    XtGCMask readOnlyMask;
 
     if (!XtIsWidget(widget))
 	widget = _XtWindowedAncestor(widget);
-    depth = widget->core.depth;
+    if (!depth)
+	depth = widget->core.depth;
     screen = XtScreen(widget);
     dpy = DisplayOfScreen(screen);
     pd = _XtGetPerDisplay(dpy);
+    readOnlyMask = ~(dynamicMask | unusedMask);
 
     /* Search for existing GC that matches exactly */
     for (prev = &pd->GClist; cur = *prev; prev = &cur->next) {
 	if (cur->depth == depth &&
 	    ScreenOfDisplay(dpy, cur->screen) == screen &&
-	    Matches(dpy, cur, valueMask, values)) {
+	    Matches(dpy, cur, valueMask, values, readOnlyMask, dynamicMask)) {
             cur->ref_count++;
 	    /* Move this GC to front of list */
 	    *prev = cur->next;
@@ -158,9 +176,13 @@ GC XtGetGC(widget, valueMask, values)
     cur->screen = XScreenNumberOfScreen(screen);
     cur->depth = depth;
     cur->ref_count = 1;
+    cur->dynamic_mask = dynamicMask;
+    cur->unused_mask = (unusedMask & ~dynamicMask);
     cur->dashes = GCVAL(GCDashList, valueMask, values->dashes, 4);
     cur->clip_mask = GCVAL(GCClipMask, valueMask, values->clip_mask, None);
-    drawable = XtWindow(widget);
+    drawable = 0;
+    if (depth == widget->core.depth)
+	drawable = XtWindow(widget);
     if (!drawable && depth == DefaultDepthOfScreen(screen))
 	drawable = RootWindowOfScreen(screen);
     if (!drawable) {
@@ -192,6 +214,18 @@ GC XtGetGC(widget, valueMask, values)
     cur->next = pd->GClist;
     pd->GClist = cur;
     return cur->gc;
+} /* XtAllocateGC */
+
+/* 
+ * Return a read-only GC with the given values.  
+ */
+
+GC XtGetGC(widget, valueMask, values)
+    register Widget widget;
+    XtGCMask        valueMask;
+    XGCValues       *values;
+{
+    return XtAllocateGC(widget, 0, valueMask, values, 0, 0);
 } /* XtGetGC */
 
 void  XtReleaseGC(widget, gc)
