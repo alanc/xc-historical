@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: miregion.c,v 1.29 87/11/18 10:19:12 rws Exp $ */
+/* $Header: miregion.c,v 1.30 88/01/28 16:52:19 rws Exp $ */
 
 #include "miscstruct.h"
 #include "regionstr.h"
@@ -343,7 +343,6 @@ miRegionOp(newReg, reg1, reg2, overlapFunc,  nonOverlap1Func, nonOverlap2Func)
     register short  	ybot;	    	    	/* Bottom of intersection */
     register short  	ytop;	    	    	/* Top of intersection */
     BoxPtr  	  	oldRects;   	    	/* Old rects for newReg */
-    int	    	  	oldSize;    	    	/* Old size of newReg */
     int	    	  	prevBand;   	    	/* Index of start of
 						 * previous band in newReg */
     int	    	  	curBand;    	    	/* Index of start of current
@@ -367,7 +366,6 @@ miRegionOp(newReg, reg1, reg2, overlapFunc,  nonOverlap1Func, nonOverlap2Func)
     r1End = r1 + reg1->numRects;
     r2End = r2 + reg2->numRects;
     
-    oldSize = newReg->size;
     oldRects = newReg->rects;
     
     EMPTY_REGION(newReg);
