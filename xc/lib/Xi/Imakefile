@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.12 92/06/28 17:49:27 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.13 93/07/22 13:27:04 gildea Exp $
 #define DoNormalLib NormalLibXinput
 #define DoSharedLib SharedLibXinput
 #define DoDebugLib DebugLibXinput
@@ -17,7 +17,7 @@ REQUIREDLIBS = SharedXinputReqs
 ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
 
-  MTX_DEFINES = XlibMTDefines
+  MTX_DEFINES = XMTDefines
 
  DEFINES = $(ALLOC_DEFINES) $(MTX_DEFINES)
 INCLUDES = -I$(TOP) -I$(INCLUDESRC) -I$(XLIBSRC) -I../../include
