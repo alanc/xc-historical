@@ -1,4 +1,4 @@
-/* $XConsortium: pl_free.c,v 1.3 92/05/26 11:08:46 mor Exp $ */
+/* $XConsortium: pl_free.c,v 1.4 92/06/12 13:46:45 mor Exp $ */
 
 /************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology,
@@ -492,7 +492,7 @@ INPUT PEXOCData		*oc_data;
 	    pCon = oc->data.SetOfFillAreaSets.connectivity;
 	    for (j = 0; j < oc->data.SetOfFillAreaSets.set_count; j++, pCon++)
 	    {
-		for (k = 0; k < pCon->count; k++)
+		for (k = 0; k < (int) pCon->count; k++)
 		    CHECK_AND_FREE ((char *) pCon->lists[k].shorts);
 		CHECK_AND_FREE ((char *) pCon->lists);
 	    }
@@ -508,7 +508,7 @@ INPUT PEXOCData		*oc_data;
 	    pTrim = oc->data.NURBSurface.trim_curves;
 	    for (j = 0; j < oc->data.NURBSurface.curve_count; j++, pTrim++)
 	    {
-		for (k = 0; k < pTrim->count; k++)
+		for (k = 0; k < (int) pTrim->count; k++)
 		{
 		    CHECK_AND_FREE ((char *) pTrim->curves[k].knots.floats);
 		    CHECK_AND_FREE ((char *)

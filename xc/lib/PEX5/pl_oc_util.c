@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_util.c,v 1.5 92/06/30 14:25:50 mor Exp $ */
+/* $XConsortium: pl_oc_util.c,v 1.6 92/06/30 15:40:55 mor Exp $ */
 
 /************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology,
@@ -1295,7 +1295,7 @@ INPUT char		*encoded_ocs;
 
 	    enc = (pexMonoEncoding *) (oc + 1);
 
-	    for (i = 0; i < oc->numEncodings; i++)
+	    for (i = 0; i < (int) oc->numEncodings; i++)
 	    {
 		enc = (pexMonoEncoding *) ((char *) enc +
 	            sizeof (pexMonoEncoding) + PADDED_BYTES (enc->numChars));
@@ -1316,7 +1316,7 @@ INPUT char		*encoded_ocs;
 
 	    enc = (pexMonoEncoding *) (oc + 1);
 
-	    for (i = 0; i < oc->numEncodings; i++)
+	    for (i = 0; i < (int) oc->numEncodings; i++)
 	    {
 		enc = (pexMonoEncoding *) ((char *) enc +
 	            sizeof (pexMonoEncoding) + PADDED_BYTES (enc->numChars));
@@ -1337,7 +1337,7 @@ INPUT char		*encoded_ocs;
 
 	    enc = (pexMonoEncoding *) (oc + 1);
 
-	    for (i = 0; i < oc->numEncodings; i++)
+	    for (i = 0; i < (int) oc->numEncodings; i++)
 	    {
 		enc = (pexMonoEncoding *) ((char *) enc +
 	            sizeof (pexMonoEncoding) + PADDED_BYTES (enc->numChars));
@@ -1358,7 +1358,7 @@ INPUT char		*encoded_ocs;
 
 	    enc = (pexMonoEncoding *) (oc + 1);
 
-	    for (i = 0; i < oc->numEncodings; i++)
+	    for (i = 0; i < (int) oc->numEncodings; i++)
 	    {
 		enc = (pexMonoEncoding *) ((char *) enc +
 	            sizeof (pexMonoEncoding) + PADDED_BYTES (enc->numChars));
@@ -1577,7 +1577,7 @@ INPUT char		*encoded_ocs;
 	    if (oc->edgeAttributes)
 		ptr += PADDED_BYTES (oc->numEdges * sizeof (CARD8));
 	
-	    for (i = 0; i < oc->numFAS; i++)
+	    for (i = 0; i < (int) oc->numFAS; i++)
 	    {
 		count = *((CARD16 *) ptr);
 		ptr += sizeof (CARD16);

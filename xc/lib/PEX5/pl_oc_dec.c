@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_dec.c,v 1.2 92/06/30 14:00:08 mor Exp $ */
+/* $XConsortium: pl_oc_dec.c,v 1.3 92/06/30 15:41:05 mor Exp $ */
 
 /************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology,
@@ -755,7 +755,7 @@ PEXOCData	*ocDest;
     srcEnc = (pexMonoEncoding *) (oc + 1);
     destEnc = ocDest->data.EncodedText.encoded_text;
 
-    for (i = 0; i < oc->numEncodings; i++, destEnc++)
+    for (i = 0; i < (int) oc->numEncodings; i++, destEnc++)
     {
 	destEnc->character_set = srcEnc->characterSet;
 	destEnc->character_set_width = srcEnc->characterSetWidth;
@@ -796,7 +796,7 @@ PEXOCData	*ocDest;
     srcEnc = (pexMonoEncoding *) (oc + 1);
     destEnc = ocDest->data.EncodedText2D.encoded_text;
 
-    for (i = 0; i < oc->numEncodings; i++, destEnc++)
+    for (i = 0; i < (int) oc->numEncodings; i++, destEnc++)
     {
 	destEnc->character_set = srcEnc->characterSet;
 	destEnc->character_set_width = srcEnc->characterSetWidth;
@@ -841,7 +841,7 @@ PEXOCData	*ocDest;
     srcEnc = (pexMonoEncoding *) (oc + 1);
     destEnc = ocDest->data.EncodedAnnoText.encoded_text;
 
-    for (i = 0; i < oc->numEncodings; i++, destEnc++)
+    for (i = 0; i < (int) oc->numEncodings; i++, destEnc++)
     {
 	destEnc->character_set = srcEnc->characterSet;
 	destEnc->character_set_width = srcEnc->characterSetWidth;
@@ -884,7 +884,7 @@ PEXOCData	*ocDest;
     srcEnc = (pexMonoEncoding *) (oc + 1);
     destEnc = ocDest->data.EncodedAnnoText2D.encoded_text;
 
-    for (i = 0; i < oc->numEncodings; i++, destEnc++)
+    for (i = 0; i < (int) oc->numEncodings; i++, destEnc++)
     {
 	destEnc->character_set = srcEnc->characterSet;
 	destEnc->character_set_width = srcEnc->characterSetWidth;
@@ -1362,14 +1362,14 @@ PEXOCData	*ocDest;
     ocDest->data.SetOfFillAreaSets.connectivity = pCon = (PEXConnectivityData *)
 	PEXAllocBuf ((unsigned) (oc->numFAS * sizeof (PEXConnectivityData)));
 
-    for (i = 0; i < oc->numFAS; i++, pCon++)
+    for (i = 0; i < (int) oc->numFAS; i++, pCon++)
     {
 	pCon->count = *((CARD16 *) pData);
 	pData += sizeof (CARD16);
 	pCon->lists = pList = (PEXListOfUShort *)
 	    PEXAllocBuf ((unsigned) pCon->count * sizeof (PEXListOfUShort));
 
-	for (j = 0; j < pCon->count; j++, pList++)
+	for (j = 0; j < (int) pCon->count; j++, pList++)
 	{
 	    pList->count = *((CARD16 *) pData);
 	    pData += sizeof (CARD16);
@@ -1443,7 +1443,7 @@ PEXOCData	*ocDest;
 	pList->curves = trimDest = (PEXTrimCurve *)
 	    PEXAllocBuf (pList->count * sizeof (PEXTrimCurve));
 
-	for (j = 0; j < pList->count; j++, trimDest++)
+	for (j = 0; j < (int) pList->count; j++, trimDest++)
 	{
 	    trimSrc = (pexTrimCurve *) pData;
 	    pData += sizeof (pexTrimCurve);
