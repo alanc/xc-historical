@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $Header: glyphcurs.c,v 1.11 88/01/18 17:29:26 rws Locked $ */
+/* $Header: glyphcurs.c,v 1.12 88/01/18 18:04:25 rws Locked $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -145,7 +145,7 @@ CursorMetricsFromGlyph( pfont, ch, cm)
     unsigned		ch;
     register CursorMetricPtr cm;
 {
-    register CharInfoPtr 	pci = ADDRXTHISCHARINFO(pfont, ch);
+    register CharInfoPtr 	pci;
 
     if (   ch < pfont->pFI->chFirst
 	|| ch >= pfont->pFI->chFirst + n1dChars(pfont->pFI))
@@ -156,6 +156,7 @@ CursorMetricsFromGlyph( pfont, ch, cm)
 	cm->yhot = 0;
 	return FALSE;
     }
+    pci = ADDRXTHISCHARINFO(pfont, ch);
     cm->xhot = - pci->metrics.leftSideBearing;
     cm->yhot =   pci->metrics.ascent;
     cm->width = pci->metrics.rightSideBearing + cm->xhot;
