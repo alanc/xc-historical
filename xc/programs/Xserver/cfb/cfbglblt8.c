@@ -16,7 +16,7 @@ without specific, written prior permission.  M.I.T. makes no
 representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
-/* $XConsortium: cfbglblt8.c,v 5.19 91/05/03 20:00:51 keith Exp $ */
+/* $XConsortium: cfbglblt8.c,v 5.20 91/06/02 09:48:51 rws Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -195,9 +195,9 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	xoff = x + pci->metrics.leftSideBearing;
 	dstLine = pdstBase +
 	          (y - pci->metrics.ascent) * widthDst + (xoff >> 2);
+	x += pci->metrics.characterWidth;
 	if (hTmp = pci->metrics.descent + pci->metrics.ascent)
 	{
-	    x += pci->metrics.characterWidth;
 	    xoff &= 0x3;
 #ifdef STIPPLE
 	    STIPPLE(dstLine,glyphBits,pixel,bwidthDst,hTmp,xoff);
