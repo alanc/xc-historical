@@ -24,6 +24,9 @@
  */
 
 #include <X11/Xfuncproto.h>
+#ifdef WIN32
+#define _WILLWINSOCK_
+#endif
 #include <X11/Xos.h>
 /*
  * Set the functions names according to where this code is being compiled.
@@ -155,6 +158,11 @@ struct iovec {
 #else
 #include <sys/uio.h>
 #endif /* NEEDIOVEC */
+
+#ifndef NULL
+#define NULL 0
+#endif
+
 
 /*
  * Function prototypes for the exposed interface
@@ -294,16 +302,28 @@ void TRANS(MakeAllCLTSServerListeners)(
 /*
  * Function Prototypes for Utility Functions.
  */
-int TRANS(MakeConnection)(
+
+#ifdef ICE
+
+char *
+TRANS(GetMyNetworkId)(
 #if NeedFunctionPrototypes
-    char *,		/* host */
-    char *,		/* port */
-    int, 		/* retries */
-    int *,		/* familyp */
-    int *,		/* addrlenp */
-    Xtransaddr **	/* addrp */
+    int,		/* family */
+    int,		/* addrlen */
+    Xtransaddr *	/* addr */
 #endif
 );
+
+char *
+TRANS(GetPeerNetworkId)(
+#if NeedFunctionPrototypes
+    int,		/* family */
+    int,		/* addrlen */
+    Xtransaddr *	/* addr */
+#endif
+);
+
+#endif
 
 int TRANS(ConvertAddress)(
 #if NeedFunctionPrototypes

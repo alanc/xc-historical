@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <X11/Xlib.h>
 
-char	*displays[] = {
+char	*test_displays[] = {
 	":0",
 	":1",
 	":2",
@@ -27,7 +27,7 @@ char	*displays[] = {
 	"tcp/"THISHOST":2",
 	"inet/"THISHOST":0",
 	"inet/"THISHOST":1",
-#ifdef TLICONN
+#ifdef STREAMSCONN
 	"tli/"THISHOST":0",
 	"tli/"THISHOST":1",
 #endif
@@ -55,17 +55,33 @@ char	*displays[] = {
 #endif
 	};
 
-#define NUMDISPLAYS	(sizeof(displays)/sizeof(char *))
+#define NUMDISPLAYS	(sizeof(test_displays)/sizeof(char *))
 
 int	numpassed=0;
 int	numfailed=0;
 
-main()
-{
-int	i;
-Display	*disp;
+main(argc, argv)
 
-for( i=0; i<NUMDISPLAYS; i++ )
+int argc;
+char *argv[];
+
+{
+int	i, count;
+Display	*disp;
+char **displays;
+
+if (argc > 1)
+{
+   count = argc - 1;
+   displays = &argv[1];
+}
+else
+{
+   count = NUMDISPLAYS;
+   displays = test_displays;
+}
+
+for( i=0; i<count; i++ )
 	{
 /*
 	fprintf(stderr,"** Opening %s\n",displays[i]);

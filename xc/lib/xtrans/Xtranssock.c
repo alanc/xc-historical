@@ -3,7 +3,10 @@
  * 4.2bsd-based systems
  */
 #include <sys/socket.h>
+
+#ifdef UNIXCONN
 #include <sys/un.h>
+#endif
 
 #ifdef hpux
 #define NO_TCP_H
@@ -20,19 +23,35 @@
 #include <netinet/tcp.h>
 #endif /* !NO_TCP_H */
 #include <sys/ioctl.h>
+#if defined(TCPCONN) || defined(UNIXCONN) || defined(DNETCONN)
 #include <netinet/in.h>
-#include <sys/ioctl.h>
+#else
+#ifdef ESIX
+#include <lan/in.h>
+#endif
+#endif
+#if defined(TCPCONN) || defined(UNIXCONN) || defined(DNETCONN)
 #include <netdb.h>
+#endif
 #ifdef SVR4
 #include <sys/filio.h>
 #endif
 #if (defined(SYSV386) && defined(SYSV)) || defined(_SEQUENT_)
-#ifndef _SEQUENT_
+#if !defined(_SEQUENT_) && !defined(ESIX)
 #include <net/errno.h>
-#endif /* _SEQUENT_ */
+#endif /* _SEQUENT_  || ESIX */
 #include <sys/stropts.h>
 #endif /* SYSV386 ** SYSV || _SEQUENT_ */
 #endif /* !WIN32 */
+
+#ifdef WIN32
+#undef close
+#define close closesocket
+#define EGET() WSAGetLastError()
+#else
+#define EGET() errno
+#endif
+
 
 /*
  * This is the Socket implementation of the X Transport service layer
@@ -97,7 +116,8 @@ PRMSG(3,"TRANS(SocketGetAddr)(%x)\n", ciptr, 0,0 );
 
 if( getsockname(ciptr->fd,(struct sockaddr *)&sockname,&namelen) < 0 )
 	{
-	PRMSG(1,"TRANS(SocketGetAddr): getsockname() failed: %d\n", errno, 0,0);
+	PRMSG(1,"TRANS(SocketGetAddr): getsockname() failed: %d\n",
+	    						EGET(),0,0);
 	return -1;
 	}
 
@@ -134,7 +154,7 @@ PRMSG(3,"TRANS(SocketGetPeerAddr)(%x)\n", ciptr, 0,0 );
 if( getpeername(ciptr->fd,(struct sockaddr *)&sockname,&namelen) < 0 )
 	{
 	PRMSG(1,"TRANS(SocketGetPeerAddr): getpeername() failed: %d\n",
-						errno, 0,0 );
+						EGET(), 0,0 );
 	return -1;
 	}
 
@@ -401,7 +421,7 @@ PRMSG(2, "TRANS(SocketINETCreateListener)(%s)\n", port, 0,0 );
  * regular port number for IM.
  */
 
-ret=sscanf(port,"%d",&tmpport);
+ret=sscanf(port,"%hd",&tmpport);
 
 if( ret == 1 && tmpport < 1024 ) /* IP_RESERVED */
 	sprintf(portbuf,"%d", X_TCP_PORT+tmpport );
@@ -413,7 +433,7 @@ port=portbuf;
 if( port && *port )
 	{
 	/* Check to see if the port string is just a number (handles X11) */
-	ret=sscanf(port,"%d",&tmpport);
+	ret=sscanf(port,"%hd",&tmpport);
 	if( ret != 1 )
 		{
 		if( (servp=getservbyname(port,"tcp")) == NULL)
@@ -460,39 +480,49 @@ if( TRANS(SocketGetAddr)(ciptr) < 0 )
 }
 #endif /* SOCKCONN */
 
+
 #ifdef UNIXCONN
 
-#if defined(X11)
 #ifdef hpux
+
+#if defined(X11)
 #define UNIX_PATH "/usr/spool/sockets/X11/"
 #define UNIX_DIR "/usr/spool/sockets/X11"
-#else
-#define UNIX_PATH "/tmp/.X11-unix/X"
-#define UNIX_DIR "/tmp/.X11-unix"
-#endif /* hpux */
 #endif /* X11 */
 #if defined(FS)
-#ifdef hpux
 #define UNIX_PATH "/usr/spool/sockets/fontserv/"
 #define UNIX_DIR "/usr/spool/sockets/fontserv"
-#else
-#define UNIX_PATH "/tmp/.font-unix/fs"
-#define UNIX_DIR "/tmp/.font-unix"
-#endif /* hpux */
 #endif /* FS */
 #if defined(ICE)
-#ifdef hpux
 #define UNIX_PATH "/usr/spool/sockets/ICE/"
 #define UNIX_DIR "/usr/spool/sockets/ICE"
-#else
+#endif /* ICE */
+#if defined(TEST)
+#define UNIX_PATH "/usr/spool/sockets/xtrans_test/"
+#define UNIX_DIR "/usr/spool/sockets/xtrans_test"
+#endif
+
+#else /* !hpux */
+
+#if defined(X11)
+#define UNIX_PATH "/tmp/.X11-unix/X"
+#define UNIX_DIR "/tmp/.X11-unix"
+#endif /* X11 */
+#if defined(FS)
+#define UNIX_PATH "/tmp/.font-unix/fs"
+#define UNIX_DIR "/tmp/.font-unix"
+#endif /* FS */
+#if defined(ICE)
 #define UNIX_PATH "/tmp/.ICE-unix/"
 #define UNIX_DIR "/tmp/.ICE-unix"
-#endif /* hpux */
 #endif /* ICE */
 #if defined(TEST)
 #define UNIX_PATH "/tmp/.Test-unix/test"
 #define UNIX_DIR "/tmp/.Test-unix"
 #endif
+
+#endif /* hpux */
+
 
 static
 TRANS(SocketUNIXCreateListener)(XtransConnInfo *ciptr, int fd, char *port)
@@ -523,7 +553,7 @@ if( port && *port ) {
 
 #ifdef BSD44SOCKETS
 sockname.sun_len=strlen(sockname.sun_path);
-namelen = SUN_LEN(*sockname);
+namelen = SUN_LEN(&sockname);
 #else
 namelen = strlen(sockname.sun_path) + sizeof(sockname.sun_family);
 #endif
@@ -563,6 +593,8 @@ return 0;
 }
 #endif /* UNIXCONN */
 
+
+#ifdef TCPCONN
 static XtransConnInfo *
 TRANS(SocketINETAccept)(XtransConnInfo *ciptr, int fd)
 {
@@ -611,7 +643,10 @@ if( TRANS(SocketGetPeerAddr)(newciptr) < 0 )
 
 return newciptr;
 }
+#endif /* TCPCONN */
 
+
+#ifdef UNIXCONN
 static XtransConnInfo *
 TRANS(SocketUNIXAccept)(XtransConnInfo *ciptr, int fd)
 {
@@ -635,8 +670,10 @@ if( (newciptr->fd=accept(fd,(struct sockaddr *)&sockname, &namelen)) < 0 )
 	}
 
 /*
- * Get the socket name from the listener socket.
+ * Get the socket name and the peer name from the listener socket,
+ * since this is unix domain.
  */
+
 if( (newciptr->addr=(char *)malloc(ciptr->addrlen)) == NULL )
         {
         PRMSG(1,
@@ -647,13 +684,11 @@ if( (newciptr->addr=(char *)malloc(ciptr->addrlen)) == NULL )
         return NULL;
         }
 
+
 newciptr->addrlen=ciptr->addrlen;
 memcpy(newciptr->addr,ciptr->addr,newciptr->addrlen);
 
-/*
- * Get the socket peer name from the sockaddr that came back from accept().
- */
-if( (newciptr->peeraddr=(char *)malloc(namelen)) == NULL )
+if( (newciptr->peeraddr=(char *)malloc(ciptr->addrlen)) == NULL )
         {
         PRMSG(1,
         "TRANS(SocketUNIXAccept): Can't allocate space for the addr\n",
@@ -664,11 +699,13 @@ if( (newciptr->peeraddr=(char *)malloc(namelen)) == NULL )
         return NULL;
         }
 
-newciptr->peeraddrlen=namelen;
-memcpy(newciptr->peeraddr,&sockname,newciptr->peeraddrlen);
+newciptr->peeraddrlen=ciptr->addrlen;
+memcpy(newciptr->peeraddr,ciptr->addr,newciptr->addrlen);
 
 return newciptr;
 }
+#endif /* UNIXCONN */
+
 
 #ifdef TCPCONN
 static int
@@ -700,7 +737,7 @@ PRMSG(2,"TRANS(SocketINETConnect)(%d,%s,%s)\n", fd, host, port );
  * regular port number for IM.
  */
 
-ret=sscanf(port,"%d",&tmpport);
+ret=sscanf(port,"%hd",&tmpport);
 
 if( ret == 1 && tmpport < 1024 ) /* IP_RESERVED */
 	sprintf(portbuf,"%d", X_TCP_PORT+tmpport );
@@ -758,7 +795,7 @@ else
  */
 
 /* Check for number in the port string */
-ret=sscanf(port,"%d",&tmpport);
+ret=sscanf(portbuf,"%hd",&tmpport);
 if( ret != 1 )
 	{
 	if( (servp=getservbyname(portbuf,"tcp")) == NULL)
@@ -784,7 +821,7 @@ PRMSG(4,"TRANS(SocketINETConnect) sockname.sin_port=%d\n",
 if( connect(fd,(struct sockaddr *)&sockname,namelen) < 0 )
 	{
 	PRMSG(1,"TRANS(SocketINETConnect)() can't connect: errno=%d\n",
-								errno,0,0 );
+								EGET(),0,0 );
 	return -1;
 	}
 
@@ -850,30 +887,17 @@ sockname.sun_len=strlen(sockname.sun_path);
 if( connect(fd,(struct sockaddr *)&sockname,namelen) < 0 )
 	{
 	PRMSG(1,"TRANS(SocketUNIXConnect)() can't connect: errno=%d\n",
-								errno,0,0 );
+								EGET(),0,0 );
 	return -1;
 	}
 
 /*
- * The socket name is bound inside the connect(), the only way we have
- * to get the socketname is to call TRANS(SocketGetAddr) which will call
- * getsockname().
+ * Get the socket name and the peer name from the connect socket,
+ * since this is unix domain.
  */
 
-if( TRANS(SocketGetAddr)(ciptr) < 0 )
-	{
-	PRMSG(1,
-	"TRANS(SocketUNIXConnect): TRANS(SocketGetAddr)() failed:\n", 0,0,0 );
-	return -1;
-	}
-
-/*
- * Avoid calling getpeername since it is broken on some systems.
- */
-
-namelen=sizeof(sockname); /* this will always make it the same size */
-
-if( (ciptr->peeraddr=(char *)malloc(namelen)) == NULL )
+if( (ciptr->addr=(char *)malloc(namelen)) == NULL ||
+    (ciptr->peeraddr=(char *)malloc(namelen)) == NULL)
         {
         PRMSG(1,
 	"TRANS(SocketUNIXCreateListener): Can't allocate space for the addr\n",
@@ -881,7 +905,10 @@ if( (ciptr->peeraddr=(char *)malloc(namelen)) == NULL )
         return -1;
         }
 
+ciptr->family=AF_UNIX;
+ciptr->addrlen=namelen;
 ciptr->peeraddrlen=namelen;
+memcpy(ciptr->addr,&sockname,ciptr->addrlen);
 memcpy(ciptr->peeraddr,&sockname,ciptr->peeraddrlen);
 
 return 0;

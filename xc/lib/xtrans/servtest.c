@@ -78,7 +78,7 @@ for(loop=0;loop<30;loop++)
 			}
 		}
 	fprintf(stderr,"\n");
-	select(32,&readfds,NULL,NULL,NULL);
+	select(32,(int *)&readfds,NULL,NULL,NULL);
 	for(i=0;i<32;i++)
 		{
 		if(FD_ISSET(i,&readfds))

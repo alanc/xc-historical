@@ -784,12 +784,18 @@ TRANS(LocalInitTransports)(char *protocol)
 PRMSG(3,"TRANS(LocalInitTransports)(%s)\n", protocol, 0,0 );
 
 if( strcmp(protocol,"local") && strcmp(protocol,"LOCAL") )
-	workingXLOCAL=freeXLOCAL=strdup(protocol);
+{
+	workingXLOCAL=freeXLOCAL=malloc (strlen (protocol) + 1);
+	if (workingXLOCAL)
+	    strcpy (workingXLOCAL, protocol);
+    }
 else {
 	XLOCAL=(char *)getenv("XLOCAL");
 	if(XLOCAL==NULL)
 		XLOCAL="UNIX:PTS:NAMED:ISC:SCO";
-	workingXLOCAL=freeXLOCAL=strdup(XLOCAL);
+	workingXLOCAL=freeXLOCAL=malloc (strlen (XLOCAL) + 1);
+	if (workingXLOCAL)
+	    strcpy (workingXLOCAL, XLOCAL);
 	}
 }
 

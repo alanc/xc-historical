@@ -9,7 +9,7 @@
 #if defined(TCPCONN) || defined(UNIXCONN)
 #include "Xtranssock.c"
 #endif
-#ifdef TLICONN
+#ifdef STREAMSCONN
 #include "Xtranstli.c"
 #endif
 #include "Xtrans.c"

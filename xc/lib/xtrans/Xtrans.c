@@ -8,11 +8,11 @@
 
 static
 Xtransport	*Xtransports[] = {
-#if defined(TLICONN)
+#if defined(STREAMSCONN)
 	&TRANS(TLIINETFuncs),
 	&TRANS(TLITCPFuncs),
 	&TRANS(TLITLIFuncs),
-#endif /* TLICONN */
+#endif /* STREAMSCONN */
 #if defined(UNIXCONN)
 	&TRANS(SocketUNIXFuncs),
 #if !defined(LOCALCONN)
@@ -48,6 +48,15 @@ static
 XtransConnInfo **TRANS(conninfo) = NULL; /* Gets initialized at run time */
 
 #define GetConnectionInfo(fd)		TRANS(conninfo)[fd]
+
+#ifdef WIN32
+#define ESET(val) WSASetLastError(val)
+#define ioctl ioctlsocket
+#else
+#define ESET(val) errno = val
+#endif
+
+
 
 /*
  * These a few utility function used by the public interface functions.
@@ -112,7 +121,7 @@ PRMSG(3,"TRANS(SelectTransport)(%s)\n",protocol, 0, 0);
 
 strncpy(protobuf,protocol,PROTOBUFSIZE);
 
-for(i=0;i<PROTOBUFSIZE&&protobuf[i]!=NULL;i++)
+for(i=0;i<PROTOBUFSIZE&&protobuf[i]!='\0';i++)
 	protobuf[i]=tolower(protobuf[i]);
 
 /* Look at all of the configured protocols */
@@ -147,7 +156,8 @@ PRMSG(3,"TRANS(ParseAddress)(%s)\n",address, 0, 0);
 
 /* Copy the string so it can be changed */
 
-tmpptr=mybuf=strdup(address);
+tmpptr=mybuf=(char *) malloc (strlen (address) + 1);
+strcpy (mybuf, address);
 
 /* Parse the string to get each component */
 
@@ -241,7 +251,7 @@ _port=mybuf;
  * string space for them.
  */
 
-if( (*protocol=strdup(_protocol)) == NULL )
+if( (*protocol=(char *) malloc(strlen (_protocol) + 1)) == NULL )
 	{
 	/* Malloc failed */
 	*port=NULL;
@@ -250,8 +260,10 @@ if( (*protocol=strdup(_protocol)) == NULL )
 	free(tmpptr);
 	return 0;
 	}
+else
+        strcpy (*protocol, _protocol);
 
-if( (*host=strdup(_host)) == NULL )
+if( (*host=(char *) malloc (strlen (_host) + 1)) == NULL )
 	{
 	/* Malloc failed */
 	*port=NULL;
@@ -261,8 +273,10 @@ if( (*host=strdup(_host)) == NULL )
 	free(tmpptr);
 	return 0;
 	}
+else
+        strcpy (*host, _host);
 
-if( (*port=strdup(_port)) == NULL )
+if( (*port=(char *) malloc (strlen (_port) + 1)) == NULL )
 	{
 	/* Malloc failed */
 	*port=NULL;
@@ -273,6 +287,8 @@ if( (*port=strdup(_port)) == NULL )
 	free(tmpptr);
 	return 0;
 	}
+else
+        strcpy (*port, _port);
 
 return 1;
 }
@@ -435,7 +451,7 @@ switch(option)
             				ioctl(fd, FIOSNBIO, &arg);
         			}
 #else
-#if (defined(AIXV3) || defined(uniosu)) && defined(FIONBIO)
+#if (defined(AIXV3) || defined(uniosu) || defined(WIN32)) && defined(FIONBIO)
         			{
             				int arg;
             				arg = 1;

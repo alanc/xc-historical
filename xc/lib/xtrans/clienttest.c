@@ -26,7 +26,7 @@ struct connectioninfo	connections[] = {
 	"INET/153.78.17.16","transtest",AF_INET,HOSTADDR,
 	"inet/"THISHOST,"transtest",AF_INET,HOSTADDR,
 	"tcp/"THISHOST,"transtest",AF_INET,HOSTADDR,
-#ifdef TLICONN
+#ifdef STREAMSCONN
 	"tli/","transtest",AF_UNIX,HOSTADDR,
 	"tli/"THISHOST,"transtest",AF_UNIX,HOSTADDR,
 #endif
@@ -106,6 +106,7 @@ char		buf[128];
 int		family;
 int		addrlen;
 Xtransaddr	*addr;
+char	addrbuf[1024]; /* What size ??? */
 char	*port="transtest";
 
 if( argc > 1 )
@@ -115,12 +116,10 @@ for(i=0;i<NUMDISPLAYS;i++)
 	{
 	fprintf(stderr,"**Trying to open connection for %s:%s\n",
 				connections[i].host, port);
-	if( (fd=_TESTTransMakeConnection(connections[i].host,
-					 port,
-					 3,
-					 &family,
-					 &addrlen,
-					 &addr)) < 0 )
+	sprintf(addrbuf,"%s:%s",connections[i].host, port);
+
+	if( (fd=_TESTTransOpenCOTSClient(addrbuf)) < 0 ||
+	   _TESTTransConnect (fd, addrbuf) < 0)
 		{
 		fprintf(stderr,"%%%%Failed to open connection for %s:%s\n",
 				connections[i].host, port);
