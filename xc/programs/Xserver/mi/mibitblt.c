@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mibitblt.c,v 1.46 87/08/31 01:24:43 todd Exp $ */
+/* $Header: mibitblt.c,v 1.46 87/09/01 16:54:17 toddb Locked $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -62,7 +62,7 @@ miCopyArea(pSrcDrawable, pDstDrawable,
     			/* non-0 if we've created a src clip */
     int 		realSrcClip = 0;
     int			srcx, srcy, dstx, dsty, i, j, y, width, height,
-    			xMin, xMax, yMin, yMax, dx, dy;
+    			xMin, xMax, yMin, yMax;
 
     /* clip the left and top edges of the source */
     if (xIn < 0)
@@ -539,12 +539,13 @@ miCopyPlane(pSrcDrawable, pDstDrawable,
  * two different strategies are used, depending on whether we're getting the
  * image in Z format or XY format
  * Z format:
- * IF there are 0 bits in the planemask, do a CopyArea from the source
- * to a temporary pixmap with the planemask; this zeros the appropriate
- * bits, providing we have written 0 to the temporary first.  make this
- * temporary the source.
  * Line at a time, GetSpans a line and bcopy it to the destination
- * buffer.
+ * buffer, except that if the planemask is not all ones, we create a
+ * temporary pixmap and do a SetSpans into it (to get bits turned off)
+ * and then another GetSpans to get stuff back (because pixmaps are
+ * opaque, and we are passed in the memory to write into).  This is
+ * completely ugly and slow but works, but the interfaces just aren't
+ * designed for this case.  Life is hard.
  * XY format:
  * get the single plane specified in planemask
  */
@@ -556,13 +557,11 @@ miGetImage(pDraw, sx, sy, w, h, format, planeMask, pdstLine)
     unsigned long 	planeMask;
     pointer             pdstLine;
 {
-    DrawablePtr		psrc;
     int			depth, i, linelength, width, srcx, srcy;
     DDXPointRec		pt;
-    unsigned long	*pbits, fg;
+    unsigned long	*pbits;
     long		gcv[2];
     PixmapPtr		pPixmap = (PixmapPtr)NULL;
-    xRectangle		rect;
     GCPtr		pGC;
     unsigned long *     pDst = (unsigned long *)pdstLine;
 
@@ -576,30 +575,14 @@ miGetImage(pDraw, sx, sy, w, h, format, planeMask, pdstLine)
 	    pGC = GetScratchGC(depth, pDraw->pScreen);
             pPixmap = (PixmapPtr)(*pDraw->pScreen->CreatePixmap)
 			       (pDraw->pScreen, w, h, depth);
-	    fg = pGC->fgPixel;
-
-	    rect.x = 0;
-	    rect.y = 0;
-	    rect.width = w;
-	    rect.height = h;
 	    gcv[0] = GXcopy;
-	    gcv[1] = 0;
-	    DoChangeGC(pGC, GCFunction | GCForeground, gcv, 0);
+	    gcv[1] = planeMask;
+	    DoChangeGC(pGC, GCPlaneMask | GCFunction, gcv, 0);
 	    ValidateGC(pPixmap, pGC);
-	    (*pGC->PolyFillRect)(pPixmap, pGC, 1, &rect);
-
-	    gcv[0] = planeMask;
-	    gcv[1] = fg;
-	    DoChangeGC(pGC, GCPlaneMask | GCForeground, gcv, 0);
-	    ValidateGC(pPixmap, pGC);
-            (*pGC->CopyArea) (pDraw, pPixmap, pGC, sx, sy, w, h, 0, 0);
-	    psrc = (DrawablePtr)pPixmap;
 	}
-	else
-	    psrc = (DrawablePtr)pDraw;
 
         linelength = PixmapBytePad(w, depth);
-	if(psrc->type == DRAWABLE_WINDOW)
+	if(pDraw->type == DRAWABLE_WINDOW)
 	{
 	    srcx = ((WindowPtr)pDraw)->absCorner.x;
 	    srcy = ((WindowPtr)pDraw)->absCorner.y;
@@ -612,7 +595,17 @@ miGetImage(pDraw, sx, sy, w, h, format, planeMask, pdstLine)
 	    pt.y = srcy + i;
 	    width = w;
             pbits = (unsigned long *)
-	        (*psrc->pScreen->GetSpans)(psrc, w, &pt, &width, 1);
+	        (*pDraw->pScreen->GetSpans)(pDraw, w, &pt, &width, 1);
+	    if (pPixmap)
+	    {
+	       pt.x = 0;
+	       pt.y = 0;
+	       width = w;
+	       (*pGC->SetSpans)(pPixmap, pGC, pbits, &pt, &width, 1, TRUE);
+	       Xfree(pbits);
+	       pbits = (unsigned long *)
+		  (*pDraw->pScreen->GetSpans)(pPixmap, w, &pt, &width, 1);
+	    }
 	    bcopy(pbits, (char *)pDst, linelength);
 	    pDst += linelength / sizeof(long);
 	    Xfree(pbits);
