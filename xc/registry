@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.74 92/09/29 12:00:39 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.75 93/01/04 09:28:04 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -254,6 +254,7 @@ String						Reference
 "Snitily Graphics Consulting Services"		[83]
 "Sony Corporation"				[37]
 "Stellar Computer Inc."				[28]
+"Sun Microsystems, Inc."			[101]
 "VIT-Visual Information Technologies, Inc (VITec)"	[46]
 "Wyse Technology Inc."				[68]
 "X11/NeWS - Sun Microsystems, Inc."		[58]
@@ -1275,3 +1276,9 @@ REFERENCES
 	Information Equipment Engineering Dept.
 	Omika Works, Hitatchi Ltd.
 	5-2-1 Omika-cho, Hitachi-shi, Ibaraki-ken, 319-12 Japan
+
+[101]	Milind Pansare
+	Mailstop MTV21-228
+	Sun Microsystems, Inc.
+	2550 Garcia Ave.,
+	Mountain View CA. 94043
