@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char rcsid[] =
-"$Header: mivaltree.c,v 5.20 89/09/23 17:02:52 rws Exp $ SPRITE (Berkeley)";
+"$Header: mivaltree.c,v 5.21 89/09/24 15:41:25 rws Exp $ SPRITE (Berkeley)";
 #endif
 
 #include    "X.h"
@@ -165,6 +165,10 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
 						      dx, dy);
 			(* pScreen->TranslateRegion) (&pChild->clipList,
 						      dx, dy);
+			pChild->drawable.serialNumber = NEXT_SERIAL_NUMBER;
+			if (clipNotify)
+			    (* clipNotify) (pChild, dx, dy);
+
 		    }
 		    if (pChild->valdata)
 		    {
@@ -185,9 +189,6 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
 		    break;
 		pChild = pChild->nextSib;
 	    }
-	    pParent->drawable.serialNumber = NEXT_SERIAL_NUMBER;
-	    if (clipNotify)
-		(* clipNotify) (pParent, dx, dy);
 	    return;
 	}
 	/* fall through */
