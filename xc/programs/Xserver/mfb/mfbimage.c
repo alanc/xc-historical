@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbimage.c,v 5.3 89/09/14 16:26:42 rws Exp $ */
+/* $XConsortium: mfbimage.c,v 5.4 91/12/28 15:00:41 keith Exp $ */
 
 #include "X.h"
 
@@ -59,6 +59,7 @@ SOFTWARE.
  */
 
 
+
 /*ARGSUSED*/
 void
 mfbPutImage(dst, pGC, depth, x, y, w, h, leftPad, format, pImage)
@@ -69,7 +70,7 @@ mfbPutImage(dst, pGC, depth, x, y, w, h, leftPad, format, pImage)
     unsigned int format;
     int 	*pImage;
 {
-    PixmapRec	FakePixmap;
+    PixmapPtr	pPixmap;
 
     if (!(pGC->planemask & 1))
 	return;
@@ -80,26 +81,18 @@ mfbPutImage(dst, pGC, depth, x, y, w, h, leftPad, format, pImage)
     if ((w == 0) || (h == 0))
 	return;
 
-    FakePixmap.drawable.type = DRAWABLE_PIXMAP;
-    FakePixmap.drawable.class = 0;
-    FakePixmap.drawable.pScreen = dst->pScreen;
-    FakePixmap.drawable.depth = 1;
-    FakePixmap.drawable.bitsPerPixel = 1;
-    FakePixmap.drawable.id = 0;
-    FakePixmap.drawable.serialNumber = NEXT_SERIAL_NUMBER;
-    FakePixmap.drawable.x = 0;
-    FakePixmap.drawable.y = 0;
-    FakePixmap.drawable.width = w+leftPad;
-    FakePixmap.drawable.height = h;
-    FakePixmap.devKind = BitmapBytePad(FakePixmap.drawable.width);
-    FakePixmap.refcnt = 1;
-    FakePixmap.devPrivate.ptr = (pointer)pImage;
+    pPixmap = GetScratchPixmapHeader(dst->pScreen, w+leftPad, h, 1, 1,
+				BitmapBytePad(w+leftPad), (pointer)pImage);
+    if (!pPixmap)
+	return;
+
     ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->fExpose = FALSE;
     if (format != XYBitmap)
-	(*pGC->ops->CopyArea)(&FakePixmap, dst, pGC, leftPad, 0, w, h, x, y);
+	(*pGC->ops->CopyArea)(pPixmap, dst, pGC, leftPad, 0, w, h, x, y);
     else
-	(*pGC->ops->CopyPlane)(&FakePixmap, dst, pGC, leftPad, 0, w, h, x, y, 1);
+	(*pGC->ops->CopyPlane)(pPixmap, dst, pGC, leftPad, 0, w, h, x, y, 1);
     ((mfbPrivGC*)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->fExpose = TRUE;
+    FreeScratchPixmapHeader(pPixmap);
 }
 
 
@@ -121,37 +114,32 @@ mfbGetImage( pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
     unsigned long planeMask;
     pointer	pdstLine;
 {
-    PixmapRec FakePixmap;
+    PixmapPtr pPixmap;
     BoxRec box;
     DDXPointRec ptSrc;
     RegionRec rgnDst;
 
     if (planeMask & 0x1)
     {
-	FakePixmap.drawable.type = DRAWABLE_PIXMAP;
-	FakePixmap.drawable.class = 0;
-	FakePixmap.drawable.pScreen = pDrawable->pScreen;
-	FakePixmap.drawable.depth = 1;
-	FakePixmap.drawable.bitsPerPixel = 1;
-	FakePixmap.drawable.id = 0;
-	FakePixmap.drawable.serialNumber = NEXT_SERIAL_NUMBER;
-	FakePixmap.drawable.x = 0;
-	FakePixmap.drawable.y = 0;
-	FakePixmap.drawable.width = w;
-	FakePixmap.drawable.height = h;
-	FakePixmap.devKind = BitmapBytePad(w);
-	FakePixmap.refcnt = 1;
-	FakePixmap.devPrivate.ptr = pdstLine;
+	ScreenPtr pScreen = pDrawable->pScreen;
+	PixmapPtr pPixmap;
+
+	pPixmap = GetScratchPixmapHeader(pScreen, w, h, /*depth*/ 1, /*bpp*/ 1,
+					 BitmapBytePad(w), (pointer)pdstLine);
+	if (!pPixmap)
+	    return;
+
         ptSrc.x = sx + pDrawable->x;
         ptSrc.y = sy + pDrawable->y;
         box.x1 = 0;
         box.y1 = 0;
         box.x2 = w;
         box.y2 = h;
-        (*pDrawable->pScreen->RegionInit)(&rgnDst, &box, 1);
-        mfbDoBitblt(pDrawable, (DrawablePtr)&FakePixmap,
+        (*pScreen->RegionInit)(&rgnDst, &box, 1);
+        mfbDoBitblt(pDrawable, (DrawablePtr)pPixmap,
 		    GXcopy, &rgnDst, &ptSrc);
-        (*pDrawable->pScreen->RegionUninit)(&rgnDst);
+        (*pScreen->RegionUninit)(&rgnDst);
+	FreeScratchPixmapHeader(pPixmap);
     }
     else
     {
