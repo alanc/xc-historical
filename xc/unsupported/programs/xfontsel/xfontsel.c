@@ -1,4 +1,4 @@
-/* $XConsortium: xfontsel.c,v 1.22 91/01/24 17:06:34 gildea Exp $
+/* $XConsortium: xfontsel.c,v 1.23 91/02/17 16:01:53 dave Exp $
 
 Copyright 1985, 1986, 1987, 1988, 1989 by the
 Massachusetts Institute of Technology
@@ -937,7 +937,7 @@ void EnableOtherValues(w, closure, callData)
 	    }
 	}
     }
-    XtFree(font_in_set);
+    XtFree((char *)font_in_set);
     if (enabledMenuIndex < field)
 	EnableMenu((XtPointer)field);
 }
