@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: xkbStubs.c,v 1.1 93/09/26 21:12:52 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -62,8 +62,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 void
 DDXUpdateIndicators(pXDev,old,new)
     DeviceIntPtr  pXDev;
-    unsigned long old;
-    unsigned long new;
+    CARD32 old;
+    CARD32 new;
 {
     if (pXDev->kbdfeed) {
 	pXDev->kbdfeed->ctrl.leds= new;
