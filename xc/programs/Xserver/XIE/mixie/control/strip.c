@@ -1,4 +1,4 @@
-/* $XConsortium: strip.c,v 1.6 94/01/12 20:07:00 rws Exp $ */
+/* $XConsortium: strip.c,v 1.7 94/04/17 20:34:13 rws Exp $ */
 /**** module strip.c ****/
 /*****************************************************************************
 
@@ -368,8 +368,8 @@ static int export_data(flo,ped,band,maxLen,term)
 static int query_data(flo,list,pending,available)
      floDefPtr         flo;
      xieTypPhototag **list;
-     CARD32       *pending;
-     CARD32     *available;
+     CARD16       *pending;
+     CARD16     *available;
 {
   peDefPtr ped;
   pedLstPtr lst = ListEmpty(&flo->optDAG) ? &flo->defDAG : &flo->optDAG;
