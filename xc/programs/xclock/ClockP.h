@@ -1,5 +1,5 @@
 /*
-* $XConsortium: ClockP.h,v 1.20 90/04/11 17:27:28 jim Exp $
+* $XConsortium: ClockP.h,v 1.21 90/10/22 14:43:22 converse Exp $
 */
 
 
@@ -31,7 +31,7 @@ SOFTWARE.
 #define _XawClockP_h
 
 #include <X11/Xos.h>		/* Needed for struct tm. */
-#include <X11/Xaw/Clock.h>
+#include "Clock.h"
 #include <X11/Xaw/SimpleP.h>
 
 #define SEG_BUFF_SIZE		128

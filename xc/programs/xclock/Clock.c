@@ -1,4 +1,4 @@
-/* $XConsortium: Clock.c,v 1.65 91/08/14 12:12:56 rws Exp $ */
+/* $XConsortium: Clock.c,v 1.66 91/10/16 21:30:24 eswu Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -28,7 +28,7 @@ SOFTWARE.
 #include <X11/StringDefs.h>
 #include <X11/IntrinsicP.h>
 #include <X11/Xaw/XawInit.h>
-#include <X11/Xaw/ClockP.h>
+#include "ClockP.h"
 #include <X11/Xosdefs.h>
 
 #if __STDC__

@@ -1,4 +1,4 @@
-/* $XConsortium: xclock.c,v 1.31 91/01/10 21:30:43 gildea Exp $ */
+/* $XConsortium: xclock.c,v 1.32 91/04/19 13:46:20 converse Exp $ */
 
 /*
  * xclock --  Hacked from Tony Della Fera's much hacked clock program.
@@ -29,7 +29,7 @@
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
-#include <X11/Xaw/Clock.h>
+#include "Clock.h"
 #include <X11/Xaw/Cardinals.h>
 #include "clock.bit"
 #include "clmask.bit"
