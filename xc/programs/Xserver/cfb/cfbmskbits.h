@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: cfbmskbits.h,v 4.15 90/03/29 18:32:57 keith Exp $ */
+/* $XConsortium: cfbmskbits.h,v 4.16 90/12/09 16:02:27 keith Exp $ */
 
 extern int cfbstarttab[];
 extern int cfbendtab[];
@@ -386,7 +386,7 @@ if ((x) + (w) <= PPW) {\
 #define getleftbits(psrc, w, dst)	dst = *((unsigned int *) psrc)
 #endif /* GETLEFTBITS_ALIGNMENT == 1 */
 
-#define getglyphbits (psrc, x, w, dst) \
+#define getglyphbits(psrc, x, w, dst) \
 { \
     dst = BitLeft((unsigned) *(psrc), (x)); \
     if ( ((x) + (w)) > 32) \
@@ -398,7 +398,7 @@ if ((x) + (w) <= PPW) {\
 	if ( ((int)(psrc)) & 0x01 ) \
 		getglyphbits( ((unsigned int *)(((char *)(psrc))-1)), 8, (w), (dst) ); \
 	else \
-		getglyphbits(psrc, 0, w, dst);
+		dst = *((unsigned int *) psrc); \
     }
 #endif /* GETLEFTBITS_ALIGNMENT == 2 */
 
@@ -407,7 +407,7 @@ if ((x) + (w) <= PPW) {\
     { \
 	int off, off_b; \
 	off_b = (off = ( ((int)(psrc)) & 0x03)) << 3; \
-	getbits( \
+	getglyphbits( \
 		(unsigned int *)( ((char *)(psrc)) - off), \
 		(off_b), (w), (dst) \
 	       ); \
