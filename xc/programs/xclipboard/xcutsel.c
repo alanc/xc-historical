@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xcutsel.c,v 1.15 91/02/17 12:05:27 dave Exp $
+ * $XConsortium: xcutsel.c,v 1.16 92/06/11 19:52:53 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -60,7 +60,7 @@ static XtResource resources[] = {
     {"selection", "Selection", XtRString, sizeof(String),
        Offset(selection_name), XtRString, "PRIMARY"},
     {"cutBuffer", "CutBuffer", XtRInt, sizeof(int),
-       Offset(buffer), XtRImmediate, (caddr_t)0},
+       Offset(buffer), XtRImmediate, (XtPointer)0},
 };
 
 #undef Offset
@@ -119,7 +119,7 @@ static Boolean ConvertSelection(w, selection, target,
 	Atom* std_targets;
 	unsigned long std_length;
 	XmuConvertStandardSelection(w, req->time, selection, target, type,
-				   (caddr_t*)&std_targets, &std_length, format);
+				   (XPointer*)&std_targets, &std_length, format);
 	*value = XtMalloc(sizeof(Atom)*(std_length + 4));
 	targetP = *(Atom**)value;
 	*length = std_length + 4;
@@ -147,7 +147,7 @@ static Boolean ConvertSelection(w, selection, target,
     if (*target == XA_LIST_LENGTH(d)) {
 	long *temp = (long *) XtMalloc (sizeof(long));
 	*temp = 1L;
-	*value = (caddr_t) temp;
+	*value = (XtPointer) temp;
 	*type = XA_INTEGER;
 	*length = 1;
 	*format = 32;
@@ -156,7 +156,7 @@ static Boolean ConvertSelection(w, selection, target,
     if (*target == XA_LENGTH(d)) {
 	long *temp = (long *) XtMalloc (sizeof(long));
 	*temp = options.length;
-	*value = (caddr_t) temp;
+	*value = (XtPointer) temp;
 	*type = XA_INTEGER;
 	*length = 1;
 	*format = 32;
@@ -167,7 +167,7 @@ static Boolean ConvertSelection(w, selection, target,
 	long *temp = (long *) XtMalloc (2 * sizeof(long));
 	temp[0] = ctx->text.s.left + 1;
 	temp[1] = ctx->text.s.right;
-	*value = (caddr_t) temp;
+	*value = (XtPointer) temp;
 	*type = XA_SPAN(d);
 	*length = 2;
 	*format = 32;
@@ -175,7 +175,7 @@ static Boolean ConvertSelection(w, selection, target,
     }
 #endif /* notdef */
     if (XmuConvertStandardSelection(w, req->time, selection, target, type,
-				    (caddr_t *)value, length, format))
+				    (XPointer *)value, length, format))
 	return True;
 
     /* else */
@@ -268,7 +268,7 @@ void main(argc, argv)
 
     if (argc != 1) Syntax(argv[0]);
 
-    XtGetApplicationResources( shell, (caddr_t)&options,
+    XtGetApplicationResources( shell, (XtPointer)&options,
 			       resources, XtNumber(resources),
 			       NULL, ZERO );
 
