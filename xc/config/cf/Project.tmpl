@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.142 92/01/25 16:44:02 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.143 92/04/15 10:01:25 keith Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -490,6 +490,12 @@ XCOMM $XConsortium: Project.tmpl,v 1.142 92/01/25 16:44:02 rws Exp $
 #ifndef NormalLibXTrap
 #define NormalLibXTrap 	(!SharedLibXTrap | ForceNormalLib)
 #endif
+#ifndef SharedLibPex
+#define SharedLibPex HasSharedLibraries
+#endif
+#ifndef NormalLibPex
+#define NormalLibPex (!SharedLibPex | ForceNormalLib)
+#endif
 #ifndef SharedLibPhigs
 #define SharedLibPhigs NO	/* XXX - haven't made it sharable yet */
 #endif
@@ -597,6 +603,7 @@ XCOMM X Window System make variables; this need to be coordinated with rules
      EXTENSIONSRC = $(TOP)/extensions
          XILIBSRC = $(EXTENSIONSRC)/lib/xinput
       XTESTLIBSRC = $(EXTENSIONSRC)/lib/xtest
+        PEXLIBSRC = $(EXTENSIONSRC)/lib/PEXlib
       PHIGSLIBSRC = $(EXTENSIONSRC)/lib/PEX
 
 /*
@@ -647,6 +654,7 @@ XCOMM X Window System make variables; this need to be coordinated with rules
       SOXINPUTREV = SharedXinputRev
        SOXTESTREV = SharedXTestRev
        SOXTRAPREV = SharedXTrapRev
+         SOPEXREV = SharedPexRev
 #endif
 
 #if !SharedLibXext
@@ -685,6 +693,10 @@ XCOMM X Window System make variables; this need to be coordinated with rules
      DEPXTESTLIB = _UseCat($(USRLIBDIR),$(XTESTLIBSRC),/libXtst.a)
         XTESTLIB = LoaderLibPrefix _Use(-lXtst,$(DEPXTESTLIB))
 #endif
+#if !SharedLibPex
+       DEPPEXLIB = _UseCat($(USRLIBDIR),$(PEXLIBSRC),/libPEX5.a)
+          PEXLIB = LoaderLibPrefix _Use(-lPEX5,$(DEPPEXLIB))
+#endif
 #if !SharedLibPhigs
         DEPPHIGSLIB = _UseCat($(USRLIBDIR),$(PHIGSLIBSRC),/libphigs.a)
            PHIGSLIB = LoaderLibPrefix _Use(-lphigs,$(DEPPHIGSLIB))
@@ -698,6 +710,7 @@ XCOMM X Window System make variables; this need to be coordinated with rules
         LINTXTOOL = _UseCat($(LINTLIBDIR),$(TOOLKITSRC),/llib-lXt.ln)
           LINTXAW = _UseCat($(LINTLIBDIR),$(AWIDGETSRC),/llib-lXaw.ln)
            LINTXI = _UseCat($(LINTLIBDIR),$(XILIBSRC),/llib-lXi.ln)
+          LINTPEX = _UseCat($(LINTLIBDIR),$(PEXLIBSRC),/llib-lPEX5.ln)
         LINTPHIGS = _UseCat($(LINTLIBDIR),$(PHIGSLIBSRC),/llib-lphigs.ln)
 
 #ifndef XawClientDepLibs
