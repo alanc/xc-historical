@@ -1,4 +1,4 @@
-/* $Header: XTextExt16.c,v 11.10 87/08/22 11:49:19 ham Exp $ */
+/* $Header: XTextExt16.c,v 11.10 87/08/22 11:49:19 toddb Locked $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -30,18 +30,17 @@ SOFTWARE.
 /* text support routines. Three different access methods, a */
 /* charinfo array builder, and a bounding box calculator */
 /*ARGSUSED*/
-static
-XCharStruct *GetCS16(min_bounds, pCS, firstCol, numCols, firstRow, numRows, 
-		     ind, chars, chDefault)
+static XCharStruct *GetCS16(min_bounds, pCS, firstCol, numCols, 
+		firstRow, numRows, ind, chars, chDefault)
     XCharStruct *min_bounds;
     XCharStruct pCS[];
     unsigned int firstCol, numCols, firstRow, numRows, ind, chDefault;
-    char *chars;
+    XChar2b *chars;
 {
     XCharStruct *cs;
     unsigned int c;
 
-    c = ((unsigned short *)chars)[ind] - firstCol;
+    c = (chars[ind].byte1 << 8 + chars[ind].byte2) - firstCol;
     if (c < numCols) {
 	if ( pCS == NULL ) return min_bounds;
 	cs = &pCS[c];
@@ -62,13 +61,13 @@ XCharStruct *GetCS162d(min_bounds, pCS, firstCol, numCols, firstRow, numRows,
     XCharStruct *min_bounds;
     XCharStruct pCS[];
     unsigned int firstCol, numCols, firstRow, numRows, ind, chDefault;
-    char *chars;
+    XChar2b *chars;
 {
     XCharStruct *cs;
     unsigned int row, col, c;
 
-    row = (((unsigned short *)chars)[ind] >> 8)-firstRow;
-    col = (((unsigned short *)chars)[ind] & 0xff)-firstCol;
+    row = chars[ind].byte1 - firstRow;
+    col = chars[ind].byte2 - firstCol;
     if ((row < numRows) && (col < numCols)) {
 	if ( pCS == NULL ) return min_bounds;
         c = row*numCols + col;
@@ -90,7 +89,7 @@ static void
 GetGlyphs(font, count, chars, getGlyph, glyphcount, glyphs)
     XFontStruct *font;
     int count;
-    unsigned short *chars;
+    XChar2b *chars;
     XCharStruct *(*getGlyph)();
     unsigned int *glyphcount;	/* RETURN */
     XCharStruct *glyphs[];	/* RETURN */
@@ -116,7 +115,7 @@ GetGlyphs(font, count, chars, getGlyph, glyphcount, glyphs)
 XTextExtents16 (fontstruct, string, nchars, dir, font_ascent, font_descent,
 	           overall)
     XFontStruct *fontstruct;
-    unsigned short *string;
+    XChar2b *string;
     register int nchars;
     int *dir;
     int *font_ascent, *font_descent;
@@ -179,7 +178,7 @@ XTextExtents16 (fontstruct, string, nchars, dir, font_ascent, font_descent,
 
 int XTextWidth16 (fontstruct, string, count)
     XFontStruct *fontstruct;
-    unsigned short *string;
+    XChar2b *string;
     int count;
 {
     int	i, width;
