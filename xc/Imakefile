@@ -1,14 +1,14 @@
-XCOMM $XConsortium: Imakefile,v 1.110 93/09/04 15:53:34 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.111 93/09/06 11:52:45 rws Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
       WORLDOPTS = -k
 
 #if BuildFonts
-        FONTDIR = fonts
+        FONTSDIR = fonts
 #endif
 
-        SUBDIRS = config include lib nls programs $(FONTDIR)
+        SUBDIRS = config include lib nls programs $(FONTSDIR)
   LNINSTALLDIRS = $(LIBSRC) $(EXTENSIONSRC)
 
 MakeSubdirs($(SUBDIRS))
