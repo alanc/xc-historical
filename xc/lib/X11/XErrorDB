@@ -1,4 +1,4 @@
-! $XConsortium: XErrorDB,v 1.22 93/10/30 15:12:39 rws Exp $
+! $XConsortium: XErrorDB,v 1.23 94/01/30 15:48:51 rws Exp $
 ! these are used in XGetErrorMessage.
 XlibMessage.XError: X Error of failed request
 XlibMessage.MajorCode: Major opcode of failed request:  %d
@@ -530,4 +530,5 @@ XRequest.RECORD.2: XRecordFreeConfig
 XRequest.RECORD.3: XRecordChangeConfig
 XRequest.RECORD.4: XRecordGetConfig
 XRequest.RECORD.5: XRecordEnableConfig
+XRequest.RECORD.6: XRecordDisableConfig
 XProtoError.RECORD.0: XRecordBadConfiguration
