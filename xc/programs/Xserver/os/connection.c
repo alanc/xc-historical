@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.119 89/11/11 14:21:10 rws Exp $ */
+/* $XConsortium: connection.c,v 1.120 89/11/13 11:53:33 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -970,6 +970,7 @@ DontListenToAnybody()
 	GrabInProgress = TRUE;
 	reallyGrabbed = FALSE;
     } else {
+	grabbingClient = ((OsCommPtr)clients[GrabInProgress]->osPrivate)->fd;
 	reallyGrabbed = TRUE;
     }
     CLEARBITS(ClientsWithInput);
