@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.c,v 1.7 93/10/30 11:07:31 rws Exp $ */
+/* $XConsortium: xieperf.c,v 1.8 93/10/30 11:12:44 rws Exp $ */
 
 int   verbosity_Group_xielib ;
 int   verbosity_Group_xielib_user_level ;
@@ -152,9 +152,8 @@ struct timezone {
 static int firsttime = True;
 static vms_time basetime;
 
-int gettimeofday(tp, tzp)
+int gettimeofday(tp)
     struct timeval *tp;
-    struct timezone *tzp;
 {
     vms_time current_time, resultant;
     unsigned long mumble, foo;
@@ -189,17 +188,24 @@ void PrintTime()
 
 void InitTimes ()
 {
+#if defined(SVR4) || defined(WIN32) || defined(VMS)
+    gettimeofday(&start);
+#else
     struct timezone foo;
     gettimeofday(&start, &foo);
+#endif
 }
 
 double ElapsedTime(correction)
     double correction;
 {
     struct timeval stop;
+#if defined(SVR4) || defined(WIN32) || defined(VMS)
+    gettimeofday(&stop);
+#else
     struct timezone foo;
-    
     gettimeofday(&stop, &foo);
+#endif
     if (stop.tv_usec < start.tv_usec) {
         stop.tv_usec += 1000000;
 	stop.tv_sec -= 1;
