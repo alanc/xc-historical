@@ -318,7 +318,7 @@
 ;;#\circle-cross same as #\circle-x
   )
 
-#+symbolics
+#+genera
 (progn
 ;;#\network
 ;;#\symbol-help

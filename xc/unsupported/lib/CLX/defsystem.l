@@ -30,7 +30,7 @@
 (unless (find-package "XLIB")
   (make-package "XLIB" :use '("LISP")))
 
-#+(and lispm (not symbolics))
+#+(and lispm (not genera))
 (defsystem CLX
   (:pathname-default "clx:clx;")
   (:patchable "clx:patch;" clx-ti)
@@ -100,7 +100,7 @@
   )
 
 
-#+symbolics
+#+genera
 (defsystem CLX
     (:default-pathname "CLX:CLX;"
      :default-package "XLIB"

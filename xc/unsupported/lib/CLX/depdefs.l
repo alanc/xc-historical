@@ -46,18 +46,12 @@
   #+excl '#'equal
   #-excl (if #.(> #x1fffffff most-positive-fixnum) '#'eql '#'eq))
 
-;;; This is a bit of a crock, but I'm told some systems barf at numbers as features.
-#+symbolics
-(eval-when (eval compile load)
-  (when (member 3600 *features*)
-    (pushnew :symbolics-3600 *features*)))
-
 ;;; If you use overlapping-arrays, you must define this to match the
 ;;; real byte order (which probably means uncommenting it).  Otherwise,
 ;;; you can choose the byte order to match the byte order of the servers
 ;;; you talk to most frequently.
 
-#+(or explorer symbolics-3600)
+#+(or explorer genera)
 (eval-when (eval compile load)
   (pushnew :clx-little-endian *features*))
 
@@ -74,7 +68,7 @@
 (eval-when (eval compile load)
   (pushnew :clx-overlapping-arrays *features*))
 
-#+(and clx-overlapping-arrays symbolics-3600)
+#+(and clx-overlapping-arrays genera)
 (progn
 (deftype overlap16 () '(unsigned-byte 16))
 (deftype overlap32 () '(signed-byte 32))
@@ -125,11 +119,11 @@
 
 ;;; CLtL Page 96 -Slyme loses
 (defmacro index-incf (place &optional (delta 1))
-  #+symbolics-3600 `(setf ,place (index+ ,place ,delta))
-  #-symbolics-3600 `(incf (the array-index ,place) (the array-index ,delta)))
+  #+genera `(setf ,place (index+ ,place ,delta))
+  #-genera `(incf (the array-index ,place) (the array-index ,delta)))
 (defmacro index-decf (place &optional (delta 1))
-  #+symbolics-3600 `(setf ,place (index- ,place ,delta))
-  #-symbolics-3600 `(decf (the array-index ,place) (the array-index ,delta)))
+  #+genera `(setf ,place (index- ,place ,delta))
+  #-genera `(decf (the array-index ,place) (the array-index ,delta)))
 
 (defmacro index-min (&rest numbers)
   `(the array-index (min ,@(mapcar #'make-index-typed numbers))))
@@ -191,12 +185,12 @@
 (defmacro declare-values (&rest vals)
   `(declare (values ,@vals)))
 
-#+symbolics-3600
+#+genera
 (defmacro declare-array (type &rest vars)
   `(declare (type ,type ,@vars)
 	    (sys:array-register ,@vars)))
 
-#-symbolics-3600
+#-genera
 (defmacro declare-array (type &rest vars)
   `(declare (type ,type ,@vars)))
 
@@ -209,18 +203,18 @@
 (defmacro declare-funarg (type &rest vars)
   `(declare (type ,type ,@vars)))
 
-#+symbolics-3600
+#+genera
 (defmacro with-vector ((var type) &body body)
   `(let ((,var ,var))
      (declare-array ,type ,var)
      ,@body))
 
-#-symbolics-3600
+#-genera
 (defmacro with-vector ((var type) &body body)
   (declare (ignore var type))
   `(progn ,@body))
 
-#+symbolics-3600
+#+genera
 (defmacro within-definition ((name type) &body body)
   `(sys:local-declare
      ((sys:function-parent ,name ,type))
@@ -234,7 +228,7 @@
      (sys:record-source-file-name ',name ',type)
      ,@body))
 
-#-(or symbolics-3600 explorer)
+#-(or genera explorer)
 (defmacro within-definition ((name type) &body body)
   (declare (ignore name type))
   `(progn ,@body))

@@ -102,7 +102,7 @@
   (declare-buffun)
   (the card16 (ldb (byte 16 0) x)))
 
-#-symbolics-3600
+#-genera
 (defun card32->int32 (x)
   (declare (type card32 x))
   (declare-values int32)
@@ -111,7 +111,7 @@
 		 (the int32 (- x #x100000000))
 		 x)))
 
-#+symbolics-3600
+#+genera
 (defun card32->int32 (x)
   (macrolet ((signify (x)
 	       ;; 7.1 is defective
@@ -162,7 +162,7 @@
 (proclaim '(inline aref-card16 aref-int16 aref-card32 aref-int32 aref-card29
 		   aset-card16 aset-int16 aset-card32 aset-int32 aset-card29))
 
-#+(and clx-overlapping-arrays symbolics-3600)
+#+(and clx-overlapping-arrays genera)
 (progn
 
 (defun aref-card16 (a i)
@@ -644,11 +644,21 @@
 (defun make-process-lock ()
   (mp:make-process-lock))
 
-#-excl
+#+imach
+(defun make-process-lock ()
+  (process:make-lock "CLX Lock" :recursive t))
+
+#-(or excl imach)
 (defun make-process-lock ()
   nil)
 
-#+lispm
+#+imach
+(defmacro holding-lock ((locator &optional whostate) &body body)
+  whostate
+  `(process:with-lock (,locator)
+     ,@body))
+
+#+(and lispm (not imach))
 (defmacro holding-lock ((locator &optional whostate) &body body)
   ; This macro is for use in a multi-process environment.
   (let ((lock (gensym)) (have-lock (gensym)))
@@ -718,13 +728,21 @@
   locator whostate ;; not used
   `(progn ,@body))
 
-#+lispm
+#+(and lispm (not imach))
 (defmacro atomic-push (item reference)
   `(sys:without-interrupts (push ,item ,reference)))
 
-#+lispm
+#+(and lispm (not imach))
 (defmacro atomic-pop (list)
   `(sys:without-interrupts (pop ,list)))
+
+#+imach
+(defmacro atomic-push (item reference)
+  `(process:atomic-push ,item ,reference))
+
+#+imach
+(defmacro atomic-pop (reference)
+  `(process:atomic-pop ,reference))
 
 ;; If you don't have multi-processing or push is atomic, this is sufficient
 #-lispm
@@ -779,12 +797,12 @@
 ;;; open-x-stream - create a stream for communicating to the appropriate X
 ;;; server
 
-#-(or explorer symbolics-3600 lucid kcl excl)
+#-(or explorer genera lucid kcl excl)
 (defun open-x-stream (host display protocol)
   host display protocol ;; unused
   (error "OPEN-X-STREAM not implemented yet."))
 
-#+symbolics-3600
+#+genera
 (progn
 
 ;;; TCP and DNA are both layered products, so try to work with either one.
@@ -800,7 +818,7 @@
     stream))
 )
 
-#+symbolics-3600
+#+genera
 (defun open-x-stream (host display protocol)
   (setf host (net:parse-host host))
   ;; If PROTOCOL is NIL (the default), we use the generic network system to choose a network
@@ -871,7 +889,7 @@
 
 ;;; buffer-read-default - read data from the X stream
 
-#+(or symbolics-3600 explorer)
+#+(or genera explorer)
 (defun buffer-read-default (display vector start end timeout)
   ;; returns non-NIL if EOF encountered
   ;; Returns :TIMEOUT when timeout exceeded
@@ -969,7 +987,7 @@
 ;;;	receiving all data from the X Window System server.
 ;;;	You are encouraged to write a specialized version of
 ;;;	buffer-read-default that does block transfers.
-#-(or symbolics-3600 explorer excl)
+#-(or genera explorer excl)
 (defmacro CL-read-bytes (stream vector start end)
   `(do* ((i ,start (index+ i 1))
 	 (c nil))
@@ -982,10 +1000,10 @@
 	 (return t))))
 
 ;; Poll for input every *buffer-read-polling-time* SECONDS.
-#-(or symbolics-3600 explorer excl)
+#-(or genera explorer excl)
 (defparameter *buffer-read-polling-time* 0.5)
 
-#-(or symbolics-3600 explorer excl)
+#-(or genera explorer excl)
 (defun buffer-read-default (display vector start end timeout)
   (declare (type display display)
 	   (type buffer-bytes vector)
@@ -1014,7 +1032,7 @@
 
 ;;; buffer-write--default - write data to the X stream
 
-#+(or symbolics-3600 explorer)
+#+(or genera explorer)
 (defun buffer-write-default (vector display start end)
   ;; The default buffer write function for use with common-lisp streams
   (declare (type buffer-bytes vector)
@@ -1039,7 +1057,7 @@
 ;;;	You are STRONGLY encouraged to write a specialized version
 ;;;	of buffer-write-default that does block transfers.
 
-#-(or symbolics-3600 explorer excl)
+#-(or genera explorer excl)
 (defun buffer-write-default (vector display start end)
   ;; The default buffer write function for use with common-lisp streams
   (declare (type buffer-bytes vector)
@@ -1351,17 +1369,17 @@
     `(within-definition (,name define-condition)
        (zl:defflavor ,name ,slots ,parents
 	 :initable-instance-variables
-	 #-symbolics
+	 #-genera
 	 (:accessor-prefix ,conc-name)
-	 #+symbolics
+	 #+genera
 	 (:conc-name ,conc-name)
-	 #-symbolics
+	 #-genera
 	 (:outside-accessible-instance-variables ,@slots)
-	 #+symbolics
+	 #+genera
 	 (:readable-instance-variables ,@slots))
        ,(when reporter ;; when no reporter, parent's is inherited
-	  `(zl:defmethod #-symbolics-3600 (,name :report)
-	                 #+symbolics-3600 (:report ,name) (stream)
+	  `(zl:defmethod #-genera (,name :report)
+	                 #+genera (:report ,name) (stream)
 	      ,(if (stringp reporter)
 		   `(write-string ,reporter stream)
 		 `(,reporter global:self stream))
@@ -1428,7 +1446,7 @@
 			       (symbol-package type))))
     (apply make-function slot-initializations)))
 
-#-(or explorer symbolics-3600)
+#-(or explorer genera)
 (defun host-address (host &optional (family :internet))
   ;; Return a list whose car is the family keyword (:internet :DECnet :Chaos)
   ;; and cdr is a list of network address bytes.
@@ -1461,7 +1479,7 @@
 	     (ldb (byte 8 0) addr)
 	     (ldb (byte 8 8) addr))))))
 
-#+symbolics-3600
+#+genera
 (defun host-address (host &optional (family :internet))
   ;; Return a list whose car is the family keyword (:internet :DECnet :Chaos)
   ;; and cdr is a list of network address bytes.
@@ -1507,7 +1525,7 @@
       (values (and host (funcall host :name)) family))))
 
 ;;; This isn't required, but it helps make sense of the results from access-hosts
-#+symbolics-3600
+#+genera
 (defun get-host (host-object)
   ;; host-object is a list whose car is the family keyword (:internet :DECnet :Chaos)
   ;; and cdr is a list of network address bytes.
