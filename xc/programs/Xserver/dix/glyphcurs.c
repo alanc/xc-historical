@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: glyphcurs.c,v 5.4 91/02/20 19:40:07 keith Exp $ */
+/* $XConsortium: glyphcurs.c,v 5.5 91/05/10 11:42:58 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -127,10 +127,24 @@ CursorMetricsFromGlyph( pfont, ch, cm)
     CharInfoPtr 	pci;
     int			nglyphs;
     CARD8		chs[2];
+    CARD32		encoding;
 
     chs[0] = ch >> 8;
     chs[1] = ch;
-    (*pfont->get_glyphs) (pfont, 1, chs, Linear16Bit, &nglyphs, &pci);
+    encoding = (FONTLASTROW(pfont) == 0) ? Linear16Bit : TwoD16Bit;
+    if (encoding == Linear16Bit)
+    {
+	if (ch < pfont->info.firstCol || pfont->info.lastCol < ch)
+	    return FALSE;
+    }
+    else
+    {
+	if (chs[0] < pfont->info.firstRow || pfont->info.lastRow < chs[0])
+	    return FALSE;
+	if (chs[1] < pfont->info.firstCol || pfont->info.lastCol < chs[1])
+	    return FALSE;
+    }
+    (*pfont->get_glyphs) (pfont, 1, chs, encoding, &nglyphs, &pci);
     if (nglyphs == 0)
 	return FALSE;
     cm->width = pci->metrics.rightSideBearing - pci->metrics.leftSideBearing;
