@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.37 91/05/28 22:12:04 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.39 91/05/29 08:46:33 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -686,6 +686,7 @@ Value	Name					Reference
 3	Silicon Graphics Computer Systems	[6]
 4	Evans & Sutherland			[75]
 5	Sun Microsystems, Inc.			[76]
+6	Sumitomo Electric Workstation Corp.	[77]
 
 
 REFERENCES
@@ -1035,4 +1036,9 @@ REFERENCES
 	Sun Microsystems
 	2550 Garcia Ave.
 	Mountain View, CA.  94043-1100
-Sumitomo Electric Workstation Corp.	[77]
+
+[77]	Junichi Hiramoto
+	Manager, Engineering Department
+	Sumitomo Electric Workstation Corp.
+	No. 30 Kowa Bldg.  2-4-5 Roppongi, Minato-ku
+	Tokyo, 106 Japan
