@@ -21,8 +21,7 @@ the window.  This box is located in the upper left area of the window.
 .PP
 Although both windows may be displayed at the same time, one of them is 
 considered the ``active'' window for receiving keyboard input and terminal
-output.  This is the window that contains the text cursor and whose border 
-highlights whenever the pointer is in either window.
+output.  This is the window that contains the text cursor.
 The active window can be chosen through escape sequences,
 the ``Modes'' menu in the VT102 window, and the ``Tektronix''
 menu in the 4014 window.
@@ -48,7 +47,7 @@ window will resize appropriately.
 .B \-ah
 This option indicates that 
 .I xterm
-should always highlight the text cursor and borders.  By default,
+should always highlight the text cursor.  By default,
 .I xterm
 will display a hollow text cursor whenever the focus is lost or the 
 pointer leaves the window.
@@ -56,7 +55,7 @@ pointer leaves the window.
 .B \+ah
 This option indicates that
 .I xterm
-should do text cursor highlighting.
+should do text cursor highlighting based on focus.
 .TP 8
 .BI \-b " number"
 This option specifies the size of the inner border (the distance between
@@ -410,6 +409,11 @@ in \fI/etc/utmp\fP.
 Specifies whether or not Sun Function Key escape codes should be generated for
 function keys instead of standard escape sequences.
 .\".in -1in
+.TP 8
+.B "waitForMap (\fPclass\fB WaitForMap)"
+Specifies whether or not \fIxterm\fP should wait for the initial window map
+before starting the subprocess.  The default is ``false.''
+.\".in 11in
 .sp
 .PP
 The following resources are specified as part of the \fIvt100\fP widget (class
@@ -520,7 +524,7 @@ Specifies whether or not asynchronous scrolling is allowed.  The default is
 ``false.''
 .TP 8
 .B "multiClickTime (\fPclass\fB MultiClickTime)"
-Specifies the maximum time in milliseconds between multi-clock select
+Specifies the maximum time in milliseconds between multi-click select
 events.  The default is 250 milliseconds.
 .TP 8
 .B "multiScroll (\fPclass\fB MultiScroll)"
@@ -608,11 +612,6 @@ strings'', etc.  See \fBACTIONS\fP below.
 .B "visualBell (\fPclass\fB VisualBell)"
 Specifies whether or not a visible bell (i.e. flashing) should be used instead
 of an audible bell when Control-G is received.  The default is ``false.''
-.TP 8
-.B "waitForMap (\fPclass\fB WaitForMap)"
-Specifies whether or not \fIxterm\fP should wait for the initial window map
-before starting the subprocess.  The default is ``false.''
-.\".in 11in
 .sp
 .PP
 The following resources are specified as part of the \fItek4014\fP widget
@@ -632,7 +631,7 @@ Specifies the large font to use in the Tektronix window.
 Specifies font number 2 to use in the Tektronix window.
 .TP 8
 .B "font3 (\fPclass\fB Font)"
-Specifies font number 2 font to use in the Tektronix window.
+Specifies font number 3 to use in the Tektronix window.
 .TP 8
 .B "fontSmall (\fPclass\fB Font)"
 Specifies the small font to use in the Tektronix window.
@@ -1380,7 +1379,7 @@ It is also invoked from the \fItekcopy\fP entry in \fItekMenu\fP.
 The Tektronix window also has the following action:
 .TP 8
 .B "gin-press(\fIl/L/m/M/r/R\fP)"
-This action send the indicated graphics input code.
+This action sends the indicated graphics input code.
 .PP
 The default bindings in the VT102 window are:
 .sp
@@ -1456,11 +1455,11 @@ keys for entering commonly-typed works:
 .in -4
 .SH "OTHER FEATURES"
 .I Xterm
-automatically highlights the window border and text cursor when the
-pointer enters the window (selected) and unhighlights them when the pointer
+automatically highlights the text cursor when the
+pointer enters the window (selected) and unhighlights it when the pointer
 leaves the window (unselected).
-If the window is the focus window, then the window is highlighted no matter
-where the pointer is.
+If the window is the focus window, then the text cursor is
+highlighted no matter where the pointer is.
 .PP
 In VT102 mode, there are escape sequences to activate and deactivate
 an alternate screen buffer, which is the same size as the display area
