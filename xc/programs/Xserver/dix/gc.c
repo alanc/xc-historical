@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 1.116 89/03/17 16:36:44 rws Exp $ */
+/* $XConsortium: gc.c,v 1.116 89/03/17 16:41:29 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -541,18 +541,17 @@ CreateGC(pDrawable, mask, pval, pStatus)
     pGC->stipple->refcnt++;
 
     pGC->stateChanges = (1 << GCLastBit+1) - 1;
-    (*pGC->pScreen->CreateGC)(pGC);
-    if(mask)
-    {
+    if (!(*pGC->pScreen->CreateGC)(pGC))
+	*pStatus = BadAlloc;
+    else if (mask)
         *pStatus = ChangeGC(pGC, mask, pval);
-	if (*pStatus != Success)
-	{
-	    FreeGC(pGC, (GContext)0);
-	    pGC = (GCPtr)NULL;
-	}
-    }
     else
 	*pStatus = Success;
+    if (*pStatus != Success)
+    {
+	FreeGC(pGC, (GContext)0);
+	pGC = (GCPtr)NULL;
+    }
 
     return (pGC);
 }
@@ -833,7 +832,11 @@ CreateScratchGC(pScreen, depth)
     pGC->dash[1] = 4;
 
     pGC->stateChanges = (1 << GCLastBit+1) - 1;
-    (*pScreen->CreateGC)(pGC);
+    if (!(*pScreen->CreateGC)(pGC))
+    {
+	FreeGC(pGC, (GContext)0);
+	pGC = (GCPtr)NULL;
+    }
     return pGC;
 }
 
