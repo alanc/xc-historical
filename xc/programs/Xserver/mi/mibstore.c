@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.49 91/07/03 10:26:21 rws Exp $ */
+/* $XConsortium: mibstore.c,v 5.50 91/07/10 19:06:50 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -3690,7 +3690,7 @@ miBSExposeCopy (pSrc, pDst, pGC, prgnExposed, srcx, srcy, dstx, dsty, plane)
     int	    	  	dstx, dsty;
     unsigned long 	plane;
 {
-    RegionPtr	  	tempRgn;
+    RegionRec	  	tempRgn;
     miBSWindowPtr	pBackingStore;
     RegionPtr	  	(*copyProc)();
     GCPtr		pScratchGC;
@@ -3707,10 +3707,10 @@ miBSExposeCopy (pSrc, pDst, pGC, prgnExposed, srcx, srcy, dstx, dsty, plane)
 	(pBackingStore->status == StatusBadAlloc))
     	return;
 
-    tempRgn = (* pGC->pScreen->RegionCreate) (NULL, 1);
-    (* pGC->pScreen->Intersect) (tempRgn, prgnExposed,
+    (* pGC->pScreen->RegionInit) (&tempRgn, NullBox, 0);
+    (* pGC->pScreen->Intersect) (&tempRgn, prgnExposed,
 				 &pBackingStore->SavedRegion);
-    (* pGC->pScreen->Subtract) (prgnExposed, prgnExposed, tempRgn);
+    (* pGC->pScreen->Subtract) (prgnExposed, prgnExposed, &tempRgn);
 
     if (plane != 0) {
 	copyProc = pGC->ops->CopyPlane;
@@ -3734,7 +3734,7 @@ miBSExposeCopy (pSrc, pDst, pGC, prgnExposed, srcx, srcy, dstx, dsty, plane)
 	    	gcMask |= GCPlaneMask;
 	    if (gcMask)
 	    	CopyGC (pGC, pScratchGC, gcMask);
-	    miBSFillVirtualBits (pDst, pScratchGC, tempRgn, dx, dy,
+	    miBSFillVirtualBits (pDst, pScratchGC, &tempRgn, dx, dy,
 				 (int) pBackingStore->backgroundState,
 				 pBackingStore->background,
 				 ~0L);
@@ -3742,7 +3742,7 @@ miBSExposeCopy (pSrc, pDst, pGC, prgnExposed, srcx, srcy, dstx, dsty, plane)
 	}
 	break;
     case StatusContents:
-	for (i = REGION_NUM_RECTS(tempRgn), pBox = REGION_RECTS(tempRgn);
+	for (i = REGION_NUM_RECTS(&tempRgn), pBox = REGION_RECTS(&tempRgn);
 	     --i >= 0;
 	     pBox++)
 	{
@@ -3754,4 +3754,5 @@ miBSExposeCopy (pSrc, pDst, pGC, prgnExposed, srcx, srcy, dstx, dsty, plane)
 	}
 	break;
     }
+    (* pGC->pScreen->RegionUninit) (&tempRgn);
 }
