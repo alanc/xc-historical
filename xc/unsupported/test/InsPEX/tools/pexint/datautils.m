@@ -1,5 +1,5 @@
 
-/* $XConsortium$ */
+/* $XConsortium: datautils.m,v 5.1 91/02/16 10:00:01 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989, 1990, 1991,1990 by Sun Microsystems, Inc. and the X Consortium.
@@ -57,7 +57,8 @@ Pelem_ref_list*	IA_Pelem_ref_list(int,VARARG)
 Pelem_ref*		IA_Pelem_ref(int,VARARG)
 Pfilter*		IA_Pfilter(int,VARARG)
 Par_file*		IA_Par_file(int,VARARG)
-Ppick_path_elem*	IA_Ppick_path_elem(int,VARARG)
+Ppick_path*		IA_Ppick_path(int,VARARG)
+Ppick_path_elem*	IA_Ppick_path_elem(Pint,VARARG)
 
 /* initialize array of data:
    IA_...(number, union_type,list of data whose format depends on union_type) */
@@ -85,6 +86,8 @@ Ptrimcurve_list   	I_Ptrimcurve_list(Pint,Ptrimcurve*);
 Pparal			I_Pparal(Ppoint3,Ppoint3,Ppoint3)
 Ppoint_list3		I_Ppoint_list3(Pint,Ppoint3*)
 Ppoint_list		I_Ppoint_list(Pint,Ppoint*)
+Ppoint_list_list3	I_Ppoint_list_list3(Pint,Ppoint_list3*)
+Ppoint_list_list	I_Ppoint_list_list(Pint,Ppoint_list*)
 Pelem_type_list		I_Pelem_type_list(Pint,Pelem_type*)
 Par_file_list 		I_Par_file_list(Pint,Par_file*)
 Pint_list 		I_Pint_list(int,Pint*)
@@ -98,7 +101,7 @@ Pvec			I_Pvec(Pfloat,Pfloat)
 Pint_size			I_Pint_size(Pint,Pint)
 Phalf_space3		I_Phalf_space3(Ppoint3,Pvec3)
 Phalf_space		I_Phalf_space(Ppoint,Pvec)
-Ptext_align		I_Ptext_align(Phor_align,Pvert_align)
+Ptext_align		I_Ptext_align(Phor_text_align,Pvert_text_align)
 Pint_list_list 		I_Pint_list_list(int,Pint_list*)
 /*Ppcs_limit  		I_Ppcs_limit(Pfloat,Pfloat,Pfloat,Pfloat)*/
 Plimit3  		I_Plimit3(Pfloat,Pfloat,Pfloat,Pfloat,Pfloat,Pfloat)
