@@ -1,4 +1,4 @@
-/* $XConsortium: xstubs.c,v 1.2 89/11/10 11:58:20 rws Exp $ */
+/* $XConsortium: xstubs.c,v 1.7 91/02/22 17:58:34 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -249,4 +249,27 @@ SetDeviceValuators (client, dev, valuators, first_valuator, num_valuators)
     int		num_valuators;
     {
     return BadMatch;
+    }
+
+/****************************************************************************
+ *
+ * Caller:	ProcXChangeDeviceControl
+ *
+ * Change the specified device controls on an extension input device.
+ *
+ */
+
+int
+ChangeDeviceControl (client, dev, control)
+    register	ClientPtr	client;
+    DeviceIntPtr dev;
+    xDeviceCtl	*control;
+    {
+    switch (control->control)
+	{
+	case DEVICE_RESOLUTION:
+	    return (BadMatch);
+	default:
+	    return (BadMatch);
+	}
     }
