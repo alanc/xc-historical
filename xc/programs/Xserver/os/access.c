@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: access.c,v 1.50 91/04/03 10:17:36 rws Exp $ */
+/* $XConsortium: access.c,v 1.51 91/07/09 15:13:16 rws Exp $ */
 
 #include "Xos.h"
 #include "X.h"
@@ -264,6 +264,15 @@ DefineSelf (fd)
 	     * If this isn't an Internet Address, don't register it.
 	     */
 	    if (family != FamilyInternet)
+		continue;
+
+	    /*
+ 	     * ignore 'localhost' entries as they're not useful
+	     * on the other end of the wire
+	     */
+	    if (len == 4 &&
+		addr[0] == 127 && addr[1] == 0 &&
+		addr[2] == 0 && addr[3] == 1)
 		continue;
 
 	    XdmcpRegisterConnection (family, (char *)addr, len);
