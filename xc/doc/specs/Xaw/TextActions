@@ -13,7 +13,7 @@ The Actions supported by the text widgets are:
 .Ds 0
 .TA .5i	2.5i 3i
 .ta .5i 2.5i 3i
-Cursor Movement	Delete
+Insert Point Movement	Delete
 	forward-character		delete-next-character
 	backward-character		delete-previous-character
 	forward-word		delete-next-word
@@ -62,20 +62,20 @@ The Movement Actions\fP
 .br
 .ns
 .IP backward-character(\|) 2.0i
-These actions move the cursor forward or backward one
-character in the file.  If the cursor is at the end or beginning of a
-line this action will move the cursor to the next (or previous) line.
+These actions move the insert point forward or backward one
+character in the file.  If the insert point is at the end or beginning of a
+line this action will move the insert point to the next (or previous) line.
 .IP forward-word(\|) 2.0i
 .br
 .ns
 .IP backward-word(\|) 2.0i
-These actions move the cursor to the next or previous word boundary.
+These actions move the insert point to the next or previous word boundary.
 A word boundary is defined as a Space, Tab or Carriage Return.
 .IP forward-paragraph(\|) 2.0i
 .br
 .ns
 .IP backward-paragraph(\|) 2.0i
-These actions move the cursor to the next or previous paragraph boundary.
+These actions move the insert point to the next or previous paragraph boundary.
 A paragraph boundary is defined as two Carriage Returns in a row with only
 Spaces or Tabs between them.
 .IP beginning-of-line(\|) 2.0i
@@ -83,39 +83,39 @@ Spaces or Tabs between them.
 .ns
 .IP end-of-line(\|) 2.0i
 These actions move to the beginning or end of the current line.  If the
-cursor is already at the end or beginning of the line then no action is taken.
+insert point is already at the end or beginning of the line then no action is taken.
 .IP next-line(\|) 2.0i
 .br
 .ns
 .IP previous-line(\|) 2.0i
-These actions move the cursor up or down one line.  If the cursor is
+These actions move the insert point up or down one line.  If the insert point is
 currently N characters from the beginning of the line then it will
 be N characters from the beginning of the next or previous line.  This
 currently causes problems with tabs.  If N is past the end of the line
-the the cursor is placed at the end of the line.
+the the insert point is placed at the end of the line.
 .IP next-page(\|) 2.0i
 .br
 .ns
 .IP previous-page(\|) 2.0i
-These actions move the cursor up or down one page in the file.  One page
+These actions move the insert point up or down one page in the file.  One page
 is defined as the current height of the text widget.  So in a text
 widget that is 10 lines high, one page is 10 lines.  The
-cursor is always placed at the first character of a line by this action.
+insert point is always placed at the first character of a line by this action.
 .IP beginnig-of-file(\|) 2.0i
 .br
 .ns
 .IP end-of-file(\|) 2.0i
-These actions place the cursor at the beginning or end of the
+These actions place the insert point at the beginning or end of the
 current text buffer.  The text widget is then scrolled the minimum
-amount necessary to make the new cursor location visible.
+amount necessary to make the new insert point location visible.
 .IP scroll-one-line-up(\|) 2.0i
 .br
 .ns
 .IP scroll-one-line-down(\|) 2.0i
 These actions scroll the current text field up or down by one line.  They
-do not move the cursor.  Other than the scrollbars this is the only
-way that the cursor may be moved off of the visible text area.  The widget
-will be scrolled so that the cursor is back on the screen as soon as some
+do not move the insert point.  Other than the scrollbars this is the only
+way that the insert point may be moved off of the visible text area.  The widget
+will be scrolled so that the insert point is back on the screen as soon as some
 other action is executed.
 .NH 3
 The Delete Actions
@@ -126,13 +126,13 @@ The Delete Actions
 .ns
 .IP delete-previous-character(\|) 2.0i
 These actions remove the character immediately before or after the 
-cursor.  If a Carriage Return is removed then the next line is
+insert point.  If a Carriage Return is removed then the next line is
 appended to the end of the current line.
 .IP delete-next-word(\|) 2.0i
 .br
 .ns
 .IP delete-previous-word(\|) 2.0i
-These actions remove all characters between the cursor location and
+These actions remove all characters between the insert point location and
 the next word boundary.  Word boundary is defined in the 
 \fIforward-word\fP action.
 .IP delete-selection(\|) 2.0i
@@ -143,12 +143,12 @@ The Selection Actions
 .LP
 .sp
 .IP select-word(\|) 2.0i
-This action will select the word the cursor is currently on.  If the cursor is
+This action will select the word the insert point is currently on.  If the insert point is
 between words then it will select the previous word.
 .IP select-all(\|) 2.0i
 This action selects the entire text buffer.
 .IP select-start(\|) 2.0i
-This action will set the cursor location to location in the window where
+This action will set the insert point location to location in the window where
 the event occurred.  If this event is bound to a mouse button then the \fImouse
 pointer\fP location is used.  It will then begin a selection at this location.
 If many of these selection actions occur quickly in sucession then the
@@ -182,7 +182,7 @@ names are given, PRIMARY is asserted.
 .IP insert-selection(\fIname\fP[,\fIname\fP,...]) 2.0i
 Retrieves the value of the first (left-most) named selection that
 exists or the cut buffer that is not empty and inserts it into the
-text widget at the current cursor location. A \fIname\fP can be a
+text widget at the current insert point location. A \fIname\fP can be a
 selection (e.g. \fBPRIMARY\fP) or a cut buffer (e.g
 \fBCUT_BUFFER0\fP).  Note that case is important.
 .NH 3
@@ -194,9 +194,9 @@ This action inserts a newline into the text and adds spaces to
 that line to indent it to match the previous line [ This action is
 still a bit buggy ].
 .IP newline-and-backup(\|) 2.0i
-This action inserts a newline into the text \fIafter\fP the cursor.
+This action inserts a newline into the text \fIafter\fP the insert point.
 .IP newline(\|) 2.0i
-This action inserts a newline into the text \fIbefore\fP the cursor.
+This action inserts a newline into the text \fIbefore\fP the insert point.
 .NH 3
 Kill and Actions
 .LP
@@ -212,14 +212,14 @@ killed into the kill buffer (X Cut Buffer 1).
 This action deletes the current selection and stuffs the results into
 the kill buffer (X Cut Buffer 1).
 .IP kill-to-end-of-line(\|) 2.0i
-This action deletes the entire line to the right of the cursor position.
+This action deletes the entire line to the right of the insert point position.
 It then stuffs this result into the kill buffer (X Cut Buffer 1).
 .IP kill-paragraph(\|) 2.0i
 This action deletes the current paragraph, and if between paragraphs deletes
-the paragraph above the cursor.
+the paragraph above the insert point.
 It then stuffs the deleted text into the kill buffer (X Cut Buffer 1).
 .IP kill-to-end-of-paragraph(\|) 2.0i
-This action deletes everything between the current cursor location and
+This action deletes everything between the current insert point location and
 the next paragraph boundary.
 It then stuffs the deleted text into the kill buffer (X Cut Buffer 1).
 .NH 3
@@ -228,7 +228,7 @@ Miscellaneous Actions
 .sp 1
 .IP redraw-display(\|) 2.0i
 This action recomputes the location of all the text lines on the
-display, scrolls the text to vertically center the line containing the cursor
+display, scrolls the text to vertically center the line containing the insert point
 on the screen, clears the entire screen, and redisplays it.
 .IP insert-file([\fIfilename\fP]) 2.0i
 This action activates the insert file popup.  The \fIfilename\fP
@@ -239,16 +239,16 @@ at startup.
 This action may only be attached to a key event. It
 calls XLookupString to translate the event into a (rebindable) Latin-1
 character (sequence) and inserts that sequence into the text at the 
-cursor position.
+insert point position.
 .IP insert-string(\fIstring\fP[,\fIstring\fP,...]) 2.0i
 This action inserts each \fIstring\fP into the text at the
-cursor position.  Any \fIstring\fP beginning with the characters "0x" 
+insert point position.  Any \fIstring\fP beginning with the characters "0x" 
 and containing only
 valid hexadecimal digits in the remainder is interpreted as a hexadecimal
 constant and the corresponding single character is inserted instead.
 .IP display-caret(\fIstate\fP,\fIwhen\fP) 2.0i
-This action allows the cursor to be turned on and off.
-The \fIstate\fP argument specifies the desired state of the cursor.
+This action allows the insert point to be turned on and off.
+The \fIstate\fP argument specifies the desired state of the insert point.
 This value may be any of the string
 values accepted for Boolean resources (e.g. \fBon\fP, \fBTrue\fP,
 \fBoff\fP, \fBFalse\fP, etc.).  If no arguments are specified, the
@@ -297,7 +297,7 @@ at all possible.  This action will currently only work with text widgets
 that use ASCII text.
 .IP transpose-characters(\|) 2.0i
 This action will swap the position of the character to the left of the
-cursor with the character to the right of the cursor.  The cursor will then
+insert point with the character to the right of the insert point.  The insert point will then
 be advanced one character.  
 .IP no-op([\fIaction\fP]) 2.0i
 The no-op action makes no change to the text widget, and is mainly useful

@@ -9,7 +9,8 @@ Ascii Text Widget
 .Ds 0
 .TA 2.0i
 .ta 2.0i
-Header file	AsciiText.h
+Application Header file	<X11/Xaw/AsciiText.h>
+ClassHeader file	<X11/Xaw/AsciiTextP.h>
 Class		asciiTextWidgetClass
 Class Name	Text
 Superclass	Text
@@ -35,63 +36,63 @@ widget creation time, or via \fBXtSetValues\fP.
 .vs 11
 .nr VS 11
 .TS H
-lw(1.5i) lw(1i) lw(1i) lw(2i).
+lw(1.5i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
 .sp 3p
 .TB
-Name	Class	Type	Default Value
+Name	Class	Type	Notes	Default Value
 .sp 3p
 _
 .TH
 .R
 .sp 3p
-accelerators	Accelerators	AcceleratorTable	NULL
-ancestorSensitive	AncestorSensitive	Boolean	True
-autoFill	AutoFill	Boolean	False
-background	Background	Pixel	XtDefaultBackground
-backgroundPixmap	Pixmap	Pixmap	XtUnspecifiedPixmap
-borderColor	BorderColor	Pixel	XtDefaultForeground
-borderPixmap	Pixmap	Pixmap	XtUnspecifiedPixmap
-borderWidth	BorderWidth	Dimension	1
-bottomMargin	Margin	Position	2
-callback	Callback	XtCallbackList	NULL
-colormap	Colormap	Pointer	Parent's Colormap
-cursor	Cursor	Cursor	XC_xterm
-dataCompression	DataCompression	Boolean	True
-depth	Depth	int	Parent's Depth
-destroyCallback	Callback	XtCallbackList	NULL
-displayCaret	Output	Boolean	True
-displayNonprinting	Output	Boolean	True
-displayPosition	TextPosition	XawTextPosition	0
-echo	Output	Boolean	True
-editType	EditType	XawEditType	XawtextRead
-font	Font	XFontStruct*	XtDefaultFont
-foreground	Foreground	Pixel	XtDefaultForeground
-height	Height	Dimension	Font height + margins
-insensitiveBorder	Insensitive	Pixmap	GreyPixmap
-insertPosition	TextPosition	int	0
-leftMargin	Margin	Dimension	2
-length	Length	int	length of \fBstring\fP
-mappedWhenManaged	MappedWhenManaged	Boolean	True
-pieceSize	PieceSize	XawTextPosition	BUFSIZ
-resize	Resize	XawTextResizeMode	XawtextResizeNever
-rightMargin	Margin	Position	2
-screen	Screen	Pointer	Parent's Screen
-scrollHorizontal	Scroll	XawTextScrollMode	XawtextScrollNever
-scrollVertical	Scroll	XawTextScrollMode	XawtextScrollNever
-selectTypes	SelectTypes	XtTextSelectType*	See above
-sensitive	Sensitive	Boolean	True
-string	String	String	NULL
-textSink	TextSink	Widget	An AsciiSink
-textSource	TextSource	Widget	An AsciiSource
-topMargin	Position	2	Top margin in pixels
-translations	Translations	TranslationTable	See above
-type	Type	XawAsciiType	XawAsciiString
-useStringInPlace	UseStringInPlace	Boolean	False
-width	Width	Dimension	100
-wrap	Wrap	WrapMode	XawtextWrapNever
-x	X	Position	0
-y	Y	Position	0
+accelerators	Accelerators	AcceleratorTable		NULL
+ancestorSensitive	AncestorSensitive	Boolean	D	True
+autoFill	AutoFill	Boolean		False
+background	Background	Pixel		XtDefaultBackground
+backgroundPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
+borderColor	BorderColor	Pixel		XtDefaultForeground
+borderPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
+borderWidth	BorderWidth	Dimension		1
+bottomMargin	Margin	Position		2
+callback	Callback	XtCallbackList		NULL
+colormap	Colormap	Pointer		Parent's Colormap
+cursor	Cursor	Cursor		XC_xterm
+dataCompression	DataCompression	Boolean		True
+depth	Depth	int	C	Parent's Depth
+destroyCallback	Callback	XtCallbackList		NULL
+displayCaret	Output	Boolean		True
+displayNonprinting	Output	Boolean		True
+displayPosition	TextPosition	XawTextPosition		0
+echo	Output	Boolean		True
+editType	EditType	XawEditType		XawtextRead
+font	Font	XFontStruct*		XtDefaultFont
+foreground	Foreground	Pixel		XtDefaultForeground
+height	Height	Dimension	A	Font height + margins
+insensitiveBorder	Insensitive	Pixmap		GreyPixmap
+insertPosition	TextPosition	int		0
+leftMargin	Margin	Dimension		2
+length	Length	int	A	length of \fBstring\fP
+mappedWhenManaged	MappedWhenManaged	Boolean		True
+pieceSize	PieceSize	XawTextPosition		BUFSIZ
+resize	Resize	XawTextResizeMode		XawtextResizeNever
+rightMargin	Margin	Position		2
+screen	Screen	Pointer	R	Parent's Screen
+scrollHorizontal	Scroll	XawTextScrollMode		XawtextScrollNever
+scrollVertical	Scroll	XawTextScrollMode		XawtextScrollNever
+selectTypes	SelectTypes	XtTextSelectType*		See above
+sensitive	Sensitive	Boolean		True
+string	String	String		NULL
+textSink	TextSink	Widget		An AsciiSink
+textSource	TextSource	Widget		An AsciiSource
+topMargin	Margin	Position		2		
+translations	Translations	TranslationTable		See above
+type	Type	XawAsciiType		XawAsciiString
+useStringInPlace	UseStringInPlace	Boolean		False
+width	Width	Dimension		100
+wrap	Wrap	WrapMode		XawtextWrapNever
+x	X	Position		0
+y	Y	Position		0
 .sp 3p
 _
 .TE
@@ -99,223 +100,44 @@ _
 .nr PS 11
 .vs 13
 .nr VS 13
-.IP accelerators 1.5i
-A list of actions to be executed by this widget, even though the
-event occurred in another widget.  See section 10.4 in the \fI\*(xT\fP.
-.IP ancestorSensitive 1.5i
-The sensitivity state of the ancestors of this widget.  A widget is
-insensitive if either it or any of its ancestors is insensitive.
-This resource should not be changed with \fBXtSetValues\fP.  It may,
-however, be queried.
-.IP autoFill 1.5i
-If this resource is \fBTrue\fP the text widget will automatically break a line
-when the user attempts to type into the right margin.  The attribute has
-no effect on files or text inserted into the text widget.  It only
-checks to see if the action should be taken when a user enters a new
-character via the \fIinsert-character\fP action.
-.IP background 1.5i
-An index into this widget's colormap specifying the background color of the
-widget's window.
-.IP backgroundPixmap 1.5i
-The background pixmap of this widget.  If this resource is set to
-anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
-used instead of the background color.
-.IP bitmap 1.5i
-A bitmap to display instead of a label.  The default size of the
-Label will be just large enough to contain the bitmap and the widget's
-internal width and height.  The resource converter for this resource
-converts a filename into a bitmap.  See \fBConverting Bitmaps\fP for
-details on the string to bitmap conversion.  If this bitmap is one bit
-deep then the 1's will be rendered in the foreground color, and the
-0's in the background color.  Support is also provided to copy this
-pixmap directly into the window with \fBXCopyArea\fP if \fBbitmap\fP
-has a depth greater than 1.
-.IP borderColor 1.5i
-An index into this widget's colormap specifying the border color of the
-widget's window.
-.IP borderPixmap 1.5i
-The border pixmap of this widget.  If this resource is set to
-anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
-used instead of the border color.
-.IP borderWidth 1.5i
-This is the width of this widget's border.
-.IP bottomMargin 1.5i
-.br
-.ns
-.IP leftMargin 1.5i
-.br
-.ns
-.IP rightMargin 1.5i
-.br
-.ns
-.IP topMargin 1.5i
-The amount of space, in pixels, between the edge of the window
-and the corresponding edge of the text within the window.  If there is
-a scrollbar active on this edge, then this is the space between the text and
-the scrollbar. 
-.IP callback 1.5i
-The callbacks registered on this resource will be called every time the
-text buffer changes.  This is an AsciiSource Resource.
-.IP colormap 1.5i
-The colormap that this widget wants for its window.
-.IP cursor 1.5i
-The cursor that will be displayed as the mouse pointer, whenever the mouse
-pointer is in this widget.
-.IP dataCompression 1.5i
-The AsciiSource uses an algorithm that may cause the text buffer to grow
-to about twice the size of the actual text over time, as the text is
-edited.  On systems where time is cheaper than memory, it is helpful to
-spend some extra time to compress this buffer back to its minimum size.
-If this resource is \fBTrue\fP, the AsciiSource will compress its data
-to the minimum size required every time the text string is saved, or the
-value of the string is queried.  This is an AsciiSource resource.
-.IP depth 1.5i
-The depth of this widget's window.
-.IP destroyCallback 1.5i
-All callback functions on this list are called when this widget is destroyed.
-.IP displayCaret 1.5i
-Specifies whether or not to display the text insert cursor.  
-.IP displayNonprinting 1.5i
-If \fBTrue\fP the text widget will display all non-printable
-characters as the string \fI^@\fP.  If \fBFalse\fP the text widget
-will just leave a blank space where a non-printable character exists
-in the text buffer.  This is an AsciiSink resource.
-.IP displayPosition 1.5i
-The position in the text buffer of the character that is currently
-displayed in the upper left hand corner of the text display.
-.IP echo 1.5i
-Whether or not to echo characters to the screen.  You can still edit
-the buffer, but nothing is displayed.  This mode can be useful for
-entering passwords and other sensitive information.  This is an
-AsciiSink resource.
-.IP editType 1.5i
-This is the type of editing that will be allowed in this text widget.
-Acceptable values are \fBXawtextRead\fP, \fBXawtextEdit\fP, and
-\fBXawtextAppend\fP.  A type converter is registered that will convert
-the strings \fBread\fP, \fBedit\fP, and \fBappend\fP to the proper
-\fBXawEditType\fP.  This is an AsciiSource resource.
-.IP font 1.5i
-The font for rendering all text.  This font must be a character cell
-font.  This is an AsciiSink resource.
-.IP foreground 1.5i
-The foreground color of all text displayed in this widget.  This is an
-AsciiSink resource. 
-.IP height 1.5i
-.br
-.ns
-.IP width 1.5i
-The height and width of this widget in pixels.
-.IP insensitiveBorder 1.5i
-This pixmap will be tiled into the widget's border if it becomes insensitive.
-.IP insertPosition 1.5i
-This is the location of the insert cursor.  It is expressed in
-characters from the beginning of the file.  The cursor will always be
-forced to be on the screen.  This resource may therefore be used to
-scroll the text display to a certain character position.
-.IP length 1.5i
-If the \fBuseStringInPlace\fP resource is \fBFalse\fP this attribute has no
-effect.  If that resource is \fBTrue\fP, however, then the \fBlength\fP
-resource specifies the length of the buffer passed to the text widget
-in the \fBstring\fP resource.  This is an AsciiSource Resource.
-.IP mappedWhenManaged 1.5i
-If this resource is \fBTrue\fP then the widget's window will automatically be
-mapped by the Toolkit when it is realized and managed.
-.IP pieceSize 1.5i
-This is the size of the internal chunks that the text is broken down
-into for memory management.  The larger this value the less segmented
-your memory will be, but the slower your editing will be.  The text
-widgets will always allocate a chunk of memory this size to stuff the
-\fBstring\fP into, so when using small strings, having this buffer
-large can waste memory.  This resource has no effect if
-\fBuseStringInPlace\fP is \fBTrue\fP.  This is an AsciiSource resource.
-.IP resize 1.5i
-Controls whether the text widget attempts to resize itself when it is
-no longer able to display the full text buffer in the window it
-currently has.  This attempt is subject to the geometry manager of the
-text widget's parent, of course.  The values \fBXawtextResizeNever\fP,
-\fBXawtextResizeWidth\fP, \fBXawtextResizeHeight\fP, and
-\fBXawtextResizeBoth\fP are all acceptable for this resource.  A type
-converter has been registered to accept the strings \fBnever\fP,
-\fBwidth\fP, \fBheight\fP, and \fBboth\fP for this resource, when
-specified in the resource database.
-.IP screen 1.5i
-The screen that this widget is displayed on.  This is not a settable resource.
-.IP scrollHorizontal 1.5i
-.br
-.ns
-.IP scrollVertical 1.5i
-These resources control the placement of scrollbars on the left and
-bottom edge of the text widget.  These resources accept
-values \fBXawtextScrollAlways\fP, \fBXawtextScrollWhenNeeded\fP, and
-\fBXawtextScrollNever\fP.  A type converter is registered to convert
-the values \fBalways\fP, \fBwhenNeeded\fP, and \fBnever\fP to the proper
-\fBXawScrollMode\fP.  If \fBwhenNeeded\fP is specified the appropriate
-scrollbar will only appear when there is text in the buffer that is
-not able to fit within the bounds of the current window.  The
-scrollbar will disappear when the text once again fits within the window.
-.IP selectTypes 1.5i
-Specifies the selection type array that is used when
-multi-click is activated (see \fBText Selections for Application
-Programmers\fP for details).  This resource is used in place, and must
-not be freed until the AsciiText widget is destroyed.  There is no
-type converter registered for this resource, so it may not be set from
-the resource manager. 
-.IP sensitive 1.5i
-Whether or not the toolkit will pass events to this widget.  The
-widget will not get events if either \fBancestorSensitive\fP or 
-\fBsensitive\fP is \fBFalse\fP.
-.IP string 1.5i
-If the AsciiText widget is of type \fBXawAsciiString\fP then this string
-contains the buffer to be displayed in the AsciiText widget. 
-If the AsciiText widget is of type \fBXawAsciiFile\fP then the
-string contains the name of the file to be displayed.  This string is
-normally copied by the text widget into internal memory, but
-may be used in place by setting the \fBuseStringInPlace\fP resource.
-As of X11R4 this is a settable resource.  This is an
-AsciiSource resource.
-.IP textSink 1.5i
-.br
-.ns
-.IP textSource 1.5i
-The widget pointer to the TextSink or TextSource object that this widget is
-currently using.  The AsciiText widget initializes these resources to point
-to an AsciiSink and AsciiSource respectively.
-.IP translations 1.5i
-The event bindings associated with this widget.
-.IP type 1.5i
-This resource may be either \fBXawAsciiString\fP or
-\fBXawAsciiFile\fP.  The value of this resource determines whether the
-\fBstring\fP contains the name of a file to be opened or a buffer to
-be displayed by the text widget.  A converter has been registered for
-this resource and accepts the values \fBstring\fP and \fBfile\fP.
-This is an AsciiSource resource.
-.IP useStringInPlace 1.5i
-While having the AsciiText widget perform dynamic memory management
-makes the programmer's job much easier, and is very helpful for most
-tasks, there are times when it just gets in the way.  For these cases,
-setting this resource to \fBTrue\fP will force the AsciiText widget to
-use the \fBstring\fP in place.  Be sure to set the \fBtype\fP resource
-to the size of the buffer allocated by the application.  If the
-\fBstring\fP is used in place then it must exist for the lifetime of the
-text widget, or until it has been reset.  This is an AsciiSource
-resource.
-.IP wrap 1.5i
-When the text in any one line is wider than the window there are several
-possible actions.  This resource allows the user to decide what will
-happen.  The accepted values for this resource are
-\fBXawtextWrapNever\fP, \fBXawtextWrapLine\fP, and
-\fBXawtextWrapWord\fP.  With \fBXawtextWrapLine\fP is enabled all text
-that is too long to fit on a line will be dropped onto the next line.
-The break will occur at the window edge.  With \fBXawtextWrapWord\fP the
-same action occurs but the text is broken at a word boundary if at all
-possible.  If no wrapping is enabled then the text will just extend off
-the edge of the window, and a small rectangle will be painted in the
-right margin to alert the user to the fact that the line is too long.  A
-type converter is registered that accepts \fBnever\fP, \fBword\fP, and
-\fBline\fP as good values for this resource.
-.IP x 1.5i
-.br
-.ns
-.IP y 1.5i
-The location of the upper left corner of this widget in its parent.
+.Ac
+.As
+.Af
+.Bg
+.Gp
+.Bc
+.Bp
+.Bw
+.Tm
+.Oc AsciiText
+.Cm
+.Cu
+.Od AsciiText
+.De
+.Dc
+.Sd AsciiText	
+.Dp
+.Oe AsciiText
+.Se AsciiText
+.Sf AsciiText
+.Sg AsciiText
+.Hw
+.Ib
+.Ti
+.Ol AsciiText
+.Mm
+.Op AsciiText
+.Tz
+.Sc
+.Ts
+.St
+.Se
+.Os AsciiText
+.To
+.Tr
+.Ot AsciiText
+.Ou AsciiText
+.Tw
+.Xy
+
 

@@ -1,79 +1,3 @@
-.LP
-.NH 2
-Ascii Sink Object
-.LP
-.XS
-\*(SN AsciiSink Object
-.XE
-.IN "AsciiSink object" "" "@DEF@"
-.LP
-.Ds 0
-.TA 2.0i
-.ta 2.0i
-Header file	AsciiSink.h
-Class		asciiSinkObjectClass
-Class Name	AsciiSink
-Superclass	TextSink
-.sp 1
-.LP
-The AsciiSink object is used by a text widget to render the text.  It
-will display all Latin1 Characters in an 8 bit font, Tab and
-Carriage Return.  The name may be a bit misleading, but is left this
-way for compatability.  This object also reports the text window
-metrics to the text widgets.
-.De
-.LP
-.IN "AsciiSink object" "resources"
-.ps 9
-.nr PS 9
-.vs 11
-.nr VS 11
-.TS H
-lw(1.5i) lw(1i) lw(1i) lw(2i).
-_
-.sp 3p
-.TB
-Name	Class	Type	Default Value
-.sp 3p
-_
-.TH
-.R
-.sp 3p
-background	Background	Pixel	XtDefaultBackground
-destroyCallback	Callback	XtCallbackList	NULL
-displayNonprinting	Output	Boolean	True
-echo	Output	Boolean	True
-font	Font	XFontStruct*	XtDefaultFont
-foreground	Foreground	Pixel	XtDefaultForground
-.sp 3p
-_
-.TE
-.ps 11
-.nr PS 11
-.vs 13
-.nr VS 13
-.IP background 1.5i
-An index into the parent's colormap specifing the color that will be
-used for the background.  I have
-added this resource to the AsciiSink instead of just stealing if from the
-Text widget for completeness.
-.IP destroyCallback 1.5i
-All callback functions on this list are called when this object is destroyed.
-.IP \fBdisplayNonprinting\fP 1.5i
-If \fBTrue\fP all non-printable characters will be displayed as the
-string \fI^@\fP.  If \fBFalse\fP blank space will be left where a non
-printable character exists in the text buffer.
-.IP \fBecho\fP 1.5i
-Whether or not to echo characters to the screen.  You can still edit
-the buffer, but nothing is displayed.  This mode can be useful for
-entering passwords and other sensitive information.  
-.IP font 1.5i
-The font for rendering all text.  This font must be a character cell,
-(fixed width) font.
-.IP foreground 1.5i
-An index into the parent's colormap specifing the color that will be
-used to display the text's forground.
-.LP
 .NH 2
 TextSink Object
 .LP
@@ -85,7 +9,8 @@ TextSink Object
 .Ds 0
 .TA 2.0i
 .ta 2.0i
-Header file	TextSink.h
+Application Header file	<X11/Xaw/TextSink.h>
+Class Header file	<X11/Xaw/TextSinkP.h>
 Class		textSinkObjectClass
 Class Name	TextSink
 Superclass	Object
@@ -104,20 +29,20 @@ common the TextSink defines a few new resources.
 .vs 11
 .nr VS 11
 .TS H
-lw(1.5i) lw(1i) lw(1i) lw(2i).
+lw(1.5i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
 .sp 3p
 .TB
-Name	Class	Type	Default Value
+Name	Class	Type	Notes	Default Value
 .sp 3p
 _
 .TH
 .R
 .sp 3p
-background	Background	Pixel	XtDefaultBackground
-destroyCallback	Callback	XtCallbackList	NULL
-font	Font	XFontStruct*	XtDefaultFont
-foreground	Foreground	Pixel	XtDefaultForground
+background	Background	Pixel		XtDefaultBackground
+destroyCallback	Callback	XtCallbackList		NULL
+font	Font	XFontStruct*		XtDefaultFont
+foreground	Foreground	Pixel		XtDefaultForground
 .sp 3p
 _
 .TE
@@ -125,21 +50,11 @@ _
 .nr PS 11
 .vs 13
 .nr VS 13
-.IP \fBbackground\fP 1.5i
-An index into the parent's colormap specifing a foreground color.  One
-foreground color is provided in TextSink.
-.IP destroyCallback 1.5i
-All callback functions on this list are called when this object is destroyed.
-.IP \fBfont\fP 1.5i
-The font for rendering all text.  Although the current AsciiSink
-requires character cell fonts new TextSinks need not have this
-restriction.   This resource is included, as it is assumed that all
-TextSinks will need at least one font.  Subclasses of the TextSink are
-free to use this resource as they see fit.
-.IP \fBforeground\fP 1.5i
-.IP foreground 1.5i
-An index into the parent's colormap specifing a foreground color.  One
-foreground color is provided in TextSink, as at least one will be required.
+.Bg Bold
+One foreground color is provided in TextSink.
+.Dc
+.Sf Bold
+.Sg Bold
 .NH 3
 Subclassing the TextSink
 .IN "TextSink object" "Subclassing" "@DEF@"
@@ -201,7 +116,7 @@ void DisplayText(\fIw\fP, \fIx\fP, \fIy\fP, \fIpos1\fP, \fIpos2\fP, \fIhighlight
       Boolean \fIhighlight\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget ID of the TextSink object.
+Specifies the TextSink object.
 .IP \fIx\fP 1i
 Specifies the x location to start drawing the text.
 .IP \fIy\fP 1i
@@ -213,7 +128,7 @@ to be printed.
 Specifies the location within the text source of the last character
 to be printed.
 .IP \fIhighlight\fP 1i
-If this is \fBTrue\fP, paint the text region highlighted.
+Specifies whether or not to paint the text region highlighted.
 .LP
 The text widget will only pass one line at a time to the text sink so this
 function does not need to know how to line feed the text.  It is
@@ -237,7 +152,7 @@ void InsertCursor(\fIw\fP, \fIx\fP, \fIy\fP, \fIstate\fP)
       XawTextInsertState \fIstate\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget ID of the TextSink object.
+Specifies the TextSink object.
 .IP \fIx\fP 1i
 Specifies the x location of the cursor in Pixels.
 .IP \fIy\fP 1i
@@ -272,7 +187,7 @@ void ClearToBackground(\fIw\fP, \fIx\fP, \fIy\fP, \fIwidth\fP, \fIheight\fP)
       Dimension \fIwidth\fP, \fIheight\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget ID of the TextSink object.
+Specifies the TextSink object.
 .IP \fIx\fP 1i
 Specifies the x location, in pixels, of the Region to clear.
 .IP \fIy\fP 1i
@@ -290,7 +205,7 @@ To find the text character position that will be rendered at a given x
 location the text widget uses the function \fBFindPosition\fP.
 .IN "TextSink" "FindPosition" "@DEF@"
 .FD 0
-void FindPosition(\fIw\fP, \fIfromPos\fP, \fIfromX\fP, \fIwidth\fP, \fIstopAtWordBreak\fP, \fIresPos\fP, \fIresWidth\fP, \fIresHeight\fP)
+void FindPosition(\fIw\fP, \fIfromPos\fP, \fIfromX\fP, \fIwidth\fP, \fIstopAtWordBreak\fP, \fIpos_return\fP, \fIwidth_return\fP, \fIheight_return\fP)
 .br
       Widget \fIw\fP;
 .br
@@ -300,12 +215,12 @@ void FindPosition(\fIw\fP, \fIfromPos\fP, \fIfromX\fP, \fIwidth\fP, \fIstopAtWor
 .br
       Boolean \fIstopAtWordBreak\fP;
 .br
-      XawTextPosition \fI*resPos\fP;
+      XawTextPosition \fI*pos_return\fP;
 .br
-      int \fI*resWidth\fP, \fI*resHeight\fP;
+      int \fI*width_return\fP, \fI*height_return\fP;
 .FN
 .IP \fIw\fP 1.25i
-Specifies the widget ID of the TextSink object.
+Specifies the TextSink object.
 .IP \fIfromPos\fP 1.25i
 Specifies a reference position, usually the first character in this line.
 This character is always to the left of the desired character location.
@@ -317,19 +232,18 @@ reference position.
 Specifies the distance, in pixels, from the reference position to the
 desired character position.
 .IP \fIstopAtWordBreak\fP 1.25i
-If the position that we have specified is not on a word break and 
-this value is \fBTrue\fP then return the word break closest to the new
-character position, but between this position and the reference position.
-.IP \fIresPos\fP 1.25i
-\fI*resPos\fP will contain the character position that corresponds to the
-location that we have specified, or the closest white space if
-\fIstopAtWordBreak\fP is \fBTrue\fP.
-.IP \fIresWidth\fP 1.25i
-\fI*resWidth\fP will contain the actual distance between \fIfromPos\fP
-and \fI*resPos\fI.
-.IP \fIresHeight\fP 1.25i
-\fI*resHeight\fP will contain the maxium height of the text between
-\fIfromPos\fP and \fI*resPos\fI.
+Specifies whether or not the position that we return should be forced
+to be on a word boundry.
+.IP \fIpos_return\fP 1.25i
+Returns the character position that corresponds to the
+location that we have specified, or the work break immediately to the
+left of the position if \fIstopAtWordBreak\fP is \fBTrue\fP.
+.IP \fIwidth_return\fP 1.25i
+Returns the actual distance between \fIfromPos\fP
+and \fIpos_return\fI.
+.IP \fIheight_return\fP 1.25i
+Returns the maxium height of the text between
+\fIfromPos\fP and \fIpos_return\fI.
 .LP
 This function need make no attempt to deal with line feeds.  The text
 widget will only call it one line at a time.
@@ -339,7 +253,7 @@ Another means of finding a text position is provided by the \fBResolve\fP
 functions
 .IN "TextSink" "Resolve" "@DEF@"
 .FD 0
-void Resolve(\fIw\fP, \fIfromPos\fP, \fIfromX\fP, \fIwidth\fP, \fIresPos\fP)
+void Resolve(\fIw\fP, \fIfromPos\fP, \fIfromX\fP, \fIwidth\fP, \fIpos_return\fP)
 .br
       Widget \fIw\fP;
 .br
@@ -347,10 +261,10 @@ void Resolve(\fIw\fP, \fIfromPos\fP, \fIfromX\fP, \fIwidth\fP, \fIresPos\fP)
 .br
       int \fIfromX\fP, \fIwidth\fP;
 .br
-      XawTextPosition \fI*resPos\fP;
+      XawTextPosition \fI*pos_return\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget ID of the TextSink object.
+Specifies the TextSink object.
 .IP \fIfromPos\fP 1i
 Specifies a reference position, usually the first character in this line.
 This character is always to the left of the desired character location.
@@ -361,10 +275,10 @@ reference position.
 .IP \fIwidth\fP 1i
 Specifies the distance, in pixels, from the reference position to the
 desired character position.
-.IP \fIresPos\fP 1i
-\fI*resPos\fP will contain the character position that corresponds to the
-location that we have specified, or the closest white space if
-\fIstopAtWordBreak\fP is \fBTrue\fP.
+.IP \fIpos_return\fP 1i
+Returnd the character position that corresponds to the
+location that we have specified, or the word break immediately to the left
+if \fIstopAtWordBreak\fP is \fBTrue\fP.
 .LP
 This function need make no attempt to deal with line feeds.  The text
 widget will only call it one line at a time.  This is a more convenient
@@ -377,7 +291,7 @@ To find the distance in pixels between two text positions on the same
 line use the function \fBFindDistance\fP.
 .IN "TextSink" "FindDistance" "@DEF@"
 .FD 0
-void FindDistance(\fIw\fP, \fIfromPos\fP, \fIfromX\fP, \fItoPos\fP, \fIresWidth\fP, \fIresPos\fP, \fIresHeight\fP)
+void FindDistance(\fIw\fP, \fIfromPos\fP, \fIfromX\fP, \fItoPos\fP, \fIwidth_return\fP, \fIpos_return\fP, \fIheight_return\fP)
 .br
       Widget \fIw\fP;
 .br
@@ -385,12 +299,12 @@ void FindDistance(\fIw\fP, \fIfromPos\fP, \fIfromX\fP, \fItoPos\fP, \fIresWidth\
 .br
       int \fIfromX\fP;
 .br
-      XawTextPosition \fI*resPos\fP;
+      XawTextPosition \fI*pos_return\fP;
 .br
-      int \fI*resWidth\fP, \fI*resHeight\fP;
+      int \fI*width_return\fP, \fI*height_return\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget ID of the TextSink object.
+Specifies the TextSink object.
 .IP \fIfromPos\fP 1i
 Specifies the text buffer position, in characters, of the first position.
 .IP \fIfromX\fP 1i
@@ -400,18 +314,18 @@ reference position.
 .IP \fItoPos\fP 1i
 Specifies the text buffer position, in characters, of the second position.
 .IP \fIresWidth\fP 1i
-\fI*resWidth\fP will contain the actual distance between \fIfromPos\fP
-and \fI*resPos\fI.
+Return the actual distance between \fIfromPos\fP
+and \fIpos_return\fI.
 .IP \fIresPos\fP 1i
-\fI*resPos\fP will contain the character position that corresponds to the
+Returns the character position that corresponds to the
 actual character position used for \fItoPos\fP in the calculations.  This
 may be differnt than \fItoPos\fP, for example if \fIfromPos\fP and
 \fItoPos\fP are on different lines in the file.
-.IP \fIresHeight\fP 1i 
-\fI*resHeight\fP will contain the maxium height of the text between
-\fIfromPos\fP and \fI*resPos\fI.
+.IP \fIheight_return\fP 1i 
+Returns the maxium height of the text between
+\fIfromPos\fP and \fIpos_return\fP.
 .LP
-This function need make no attempt to deal with line feeds.  The text
+This function need make no attempt to deal with line feeds.  The Text
 widget will only call it one line at a time.
 .NH 4
 Finding the Size of the Drawing area
@@ -429,9 +343,9 @@ int MaxLines(\fIw\fP, \fIheight\fP)
       Dimension \fIheight\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget ID of the TextSink object.
+Specifies the TextSink object.
 .IP \fIheight\fP 1i
-Height of the current drawing area.
+Spectifies the height of the current drawing area.
 .LP
 Returns the maximum number of lines that will fit in \fIheight\fP.
 .LP
@@ -449,9 +363,9 @@ int MaxHeight(\fIw\fP, \fIlines\fP)
       int \fIlines\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget ID of the TextSink object.
+Specifies the TextSink object.
 .IP \fIheight\fP 1i
-Height of the current drawing area.
+Specifies the height of the current drawing area.
 .LP
 Returns the height that will be taken up by the number of lines passed.
 .NH 4
@@ -470,11 +384,11 @@ void SetTabs(\fIw\fP, \fItab_count\fP, \fItabs\fP)
       int \fItab_count\fP, \fI*tabs\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget ID of the TextSink object.
+Specifies the TextSink object.
 .IP \fItab_count\fP 1i
-The number of tabs passed in \fItabs\fP.
+Specifies the number of tabs passed in \fItabs\fP.
 .IP \fItabs\fP 1i
-The position, in characters, of the tab stops.  
+Specifies the position, in characters, of the tab stops.  
 .LP
 This function is responsible for the converting character positions passed
 to it into whatever internal positions the TextSink uses for tab placement.
@@ -485,16 +399,16 @@ To get the size and location of the text cursor use the
 \fBGetCursorBounds\fP function.
 .IN "TextSink" "GetCursorBounds" "@DEF@"
 .FD 0
-void GetCursorBounds(\fIw\fP, \fIrect\fP)
+void GetCursorBounds(\fIw\fP, \fIrect_return\fP)
 .br
 Widget \fIw\fP;
 .br
-XRectangle \fI*rect\fP;
+XRectangle \fI*rect_return\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget ID of the TextSink object.
-.IP \fIrect\fP 1i
-This must be a pointer to a valid XRectangle Structure.  It will
-contain the location and size of the text cursor when this function returns.
+Specifies the TextSinkObject.
+.IP \fIrect_return\fP 1i
+Returns the location and size of the text cursor when this function returns.
 .LP
-\fIRect\fP is filled with the current size and location of the text cursor.
+\fIRect\fP will be filled with the current size and location of the
+text cursor.

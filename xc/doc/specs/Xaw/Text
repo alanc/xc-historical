@@ -27,51 +27,51 @@ Text widget, and explains the functionality provided by each.
 .vs 11
 .nr VS 11
 .TS H
-lw(1.5i) lw(1i) lw(1i) lw(2i).
+lw(1.5i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
 .sp 3p
 .TB
-Name	Class	Type	Default Value
+Name	Class	Type	Notes	Default Value
 .sp 3p
 _
 .TH
 .R
 .sp 3p
-accelerators	Accelerators	AcceleratorTable	NULL
-ancestorSensitive	AncestorSensitive	Boolean	True
-autoFill	AutoFill	Boolean	False
-background	Background	Pixel	XtDefaultBackground
-backgroundPixmap	Pixmap	Pixmap	XtUnspecifiedPixmap
-borderColor	BorderColor	Pixel	XtDefaultForeground
-borderPixmap	Pixmap	Pixmap	XtUnspecifiedPixmap
-borderWidth	BorderWidth	Dimension	1
-bottomMargin	Margin	Position	2
-colormap	Colormap	Pointer	Parent's Colormap
-cursor	Cursor	Cursor	XC_xterm
-depth	Depth	int	Parent's Depth
-destroyCallback	Callback	XtCallbackList	NULL
-displayCaret	Output	Boolean	True
-displayPosition	TextPosition	XawTextPosition	0
-height	Height	Dimension	Font height + margins
-insensitiveBorder	Insensitive	Pixmap	GreyPixmap
-insertPosition	TextPosition	int	0
-leftMargin	Margin	Dimension	2
-mappedWhenManaged	MappedWhenManaged	Boolean	True
-resize	Resize	XawTextResizeMode	XawtextResizeNever
-rightMargin	Margin	Position	2
-screen	Screen	Pointer	Parent's Screen
-scrollHorizontal	Scroll	XawTextScrollMode	XawtextScrollNever
-scrollVertical	Scroll	XawTextScrollMode	XawtextScrollNever
-selectTypes	SelectTypes	XtTextSelectType*	See above
-sensitive	Sensitive	Boolean	True
-textSink	TextSink	Widget	NULL
-textSource	TextSource	Widget	NULL
-topMargin	Position	2	Top margin in pixels
-translations	Translations	TranslationTable	See above
-width	Width	Dimension	100
-wrap	Wrap	WrapMode	XawtextWrapNever
-x	X	Position	0
-y	Y	Position	0
+accelerators	Accelerators	AcceleratorTable		NULL
+ancestorSensitive	AncestorSensitive	Boolean	D	True
+autoFill	AutoFill	Boolean		False
+background	Background	Pixel		XtDefaultBackground
+backgroundPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
+borderColor	BorderColor	Pixel		XtDefaultForeground
+borderPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
+borderWidth	BorderWidth	Dimension		1
+bottomMargin	Margin	Position		2
+colormap	Colormap	Pointer		Parent's Colormap
+cursor	Cursor	Cursor		XC_xterm
+depth	Depth	int	C	Parent's Depth
+destroyCallback	Callback	XtCallbackList		NULL
+displayCaret	Output	Boolean		True
+displayPosition	TextPosition	XawTextPosition		0
+height	Height	Dimension	A	Font height + margins
+insensitiveBorder	Insensitive	Pixmap		GreyPixmap
+insertPosition	TextPosition	int		0
+leftMargin	Margin	Dimension		2
+mappedWhenManaged	MappedWhenManaged	Boolean		True
+resize	Resize	XawTextResizeMode		XawtextResizeNever
+rightMargin	Margin	Position		2
+screen	Screen	Pointer	R	Parent's Screen
+scrollHorizontal	Scroll	XawTextScrollMode		XawtextScrollNever
+scrollVertical	Scroll	XawTextScrollMode		XawtextScrollNever
+selectTypes	SelectTypes	XtTextSelectType*		See above
+sensitive	Sensitive	Boolean		True
+textSink	TextSink	Widget		NULL
+textSource	TextSource	Widget		NULL
+topMargin	Margin	Position		2		
+translations	Translations	TranslationTable		See above
+width	Width	Dimension		100
+wrap	Wrap	WrapMode		XawtextWrapNever
+x	X	Position		0
+y	Y	Position		0
 .sp 3p
 _
 .TE
@@ -79,134 +79,30 @@ _
 .nr PS 11
 .vs 13
 .nr VS 13
-.IP accelerators 1.5i
-A list of actions to be executed by this widget, even though the
-event occurred in another widget.  See section 10.4 in the \fI\*(xT\fP.
-.IP ancestorSensitive 1.5i
-The sensitivity state of the ancestors of this widget.  A widget is
-insensitive if either it or any of its ancestors is insensitive.
-This resource should not be changed with \fBXtSetValues\fP.  It may,
-however, be queried.
-.IP background 1.5i
-An index into this widget's colormap specifing the background color of the
-widget's window.
-.IP backgroundPixmap 1.5i
-The background pixmap of this widget.  If this resource is set to
-anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
-used instead of the background color.
-.IP borderColor 1.5i
-An index into this widget's colormap specifing the border color of the
-widget's window.
-.IP borderPixmap 1.5i
-The border pixmap of this widget.  If this resource is set to
-anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
-used instead of the border color.
-.IP borderWidth 1.5i
-This is the width of this widget's border.
-.IP \fBbottomMargin\fP 1.5i
-.br
-.ns
-.IP \fBleftMargin\fP 1.5i
-.br
-.ns
-.IP \fBrightMargin\fP 1.5i
-.br
-.ns
-.IP \fBtopMargin\fP 1.5i
-The amount of space, in pixels, between the edge of the window
-and the corresponding edge of the text within the window.  If there is
-a scrollbar active on this edge, then this is the space between the text and
-the scrollbar. 
-.IP colormap 1.5i
-The colormap that this widget wants for its window.
-.IP cursor 1.5i
-The cursor that will be displayed as the mouse pointer, whenever the mouse
-pointer is in this widget.
-.IP depth 1.5i
-The depth of this widgets window.
-.IP destroyCallback 1.5i
-All callback functions on this list are called when this widget is destroyed.
-.IP \fBdisplayCaret\fP 1.5i
-Specifies whether or not to display the text insert cursor.  
-.IP \fBdisplayPosition\fP 1.5i
-The position in the text buffer of the character that is currently
-displayed in the upper left hand corner of the text display.
-.IP height 1.5i
-.br
-.ns
-.IP width 1.5i
-The height and width of this widget in pixels.
-.IP insensitiveBorder 1.5i
-This pixmap will be tiled into the widget's border if it becomes insensitive.
-.IP \fBinsertPosition\fP 1.5i
-This is the location of the insert cursor.  It is expressed in
-characters from the beginning of the file.  The cursor will always be
-forced to be on the screen.  This resource may therefore be used to
-scroll the text display to a certain character position.
-.IP mappedWhenManaged 1.5i
-If this resource is \fBTrue\fP then the widget's window will automatically be
-mapped by the Toolkit when it is realized and managed.
-.IP \fBresize\fP 1.5i
-Controls whether the text widget attempts to resize itself when it is
-no longer able to display the full text buffer in the window it
-currently has.  This attempt is subject to the geometry manager of the
-text widget's parent, of course.  The values \fBXawtextResizeNever\fP,
-\fBXawtextResizeWidth\fP, \fBXawtextResizeHeight\fP, and
-\fBXawtextResizeBoth\fP are all acceptable for this resource.  A type
-converter has been registered to accept the strings \fBnever\fP,
-\fBwidth\fP, \fBheight\fP, and \fBboth\fP for this resource, when
-specified in the resource database.
-.IP screen 1.5i
-The screen that this widget is displayed on.  This is not a settable resource.
-.IP \fBscrollHorizontal\fP 1.5i
-.br
-.ns
-.IP \fBscrollVertical\fP 1.5i
-These resources control the placement of scrollbars on the left and
-bottom edge of the text widget.  These resources accept
-values \fBXawtextScrollAlways\fP, \fBXawtextScrollWhenNeeded\fP, and
-\fBXawtextScrollNever\fP.  A type converter is registered to convert
-the values \fBalways\fP, \fBwhenNeeded\fP, and \fBnever\fP to the proper
-\fBXawScrollMode\fP.  If \fBwhenNeeded\fP is specified the appropriate
-scrollbar will only appear when there is text in the buffer that is
-not able to fit within the bounds of the current window.  The
-scrollbar will disappear when the text once again fits within the window.
-.IP \fBselectTypes\fP 1.5i
-Specifies the selection type array that is used when
-multi click is activated (see \fBText Selections for Application
-Programmers\fP for details).  This resource is used in place, and must
-not be freed until the Text widget is destroyed.  There is no
-type converter registered for this resource, so it may not be set from
-the resource manager. 
-.IP sensitive 1.5i
-Whether or not the toolkit will pass events to this widget.  The
-widget will not get events if either \fBancestorSensitive\fP or 
-\fBsensitive\fP is \fBFalse\fP.
-.IP \fBtextSink\fP 1.5i
-.br
-.ns
-.IP \fBtextSink\fP 1.5i
-The widget pointer to the TextSink or TextSource object that this widget is
-currently using.  These resources must be set to a valid source and
-sink before the Text widget is realized.
-.IP translations 1.5i
-The event bindings associated with this widget.
-.IP \fBwrap\fP 1.5i
-When the text in any one line is wider than the window there are
-several possible actions.  This resource allows the user to decide
-what will happen.  The accepted values for this resource
-are \fBXawtextWrapNever\fP, \fBXawtextWrapLine\fP, and \fBXawtextWrapWord\fP.
-With \fBXawtextWrapLine\fP is enabled all text that is too long to fit
-on a line will be dropped onto the next line.  The break will occur
-at the window edge.  With \fBXawtextWrapWord\fP the same action
-occures but the text is broken at a word boundary if at all possible.
-If no wrapping is enabled then the text will just extend off the edge
-of the window, and a small rectangle will be painted in the right
-margin to alert the user to the fact that the line is too long.
-A type converter is registered that accepts \fBnever\fP, \fBword\fP, and
-\fBline\fP as good values for this resource.
-.IP x 1.5i
-.br
-.ns
-.IP y 1.5i
-The location of the upper left corner of this widget in its parent.
+.Ac
+.As
+.Af Bold
+.Bg
+.Gp
+.Bc
+.Bp
+.Bw
+.Tm Bold
+.Cm
+.Cu
+.De
+.Dc
+.Dp
+.Hw
+.Ib
+.Ti Bold
+.Mm
+.Tz Bold
+.Sc
+.Ts
+.St Bold
+.Se
+.To Bold
+.Tr
+.Tw Bold
+.Xy

@@ -19,7 +19,7 @@ void XawTextSetSelection(\fIw\fP, \fIleft\fP, \fIright\fP)
      XawTextPosition \fIleft\fP, \fIright\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget ID of the text widget.
+Specifies the Text widget.
 .IP \fIleft\fP 1i
 Specifies the character position at which the selection begins.
 .IP \fIright\fP 1i
@@ -41,7 +41,7 @@ void XawTextUnsetSelection(\fIw\fP)
      Widget \fIw\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget ID of the text widget.
+Specifies the Text widget.
 .NH 3
 Getting Current Text Selection
 .LP
@@ -49,19 +49,18 @@ To enable the application to retrieve the text that has been selected by this
 text widget use \fBXawTextGetSelectionPos\fP.
 .IN "XawTextGetSelectionPos" "" "@DEF@"
 .FD 0
-void XawTextGetSelectionPos(\fIw\fP, \fIbeginning\fP, \fIend\fP)
+void XawTextGetSelectionPos(\fIw\fP, \fIbegin_return\fP, \fIend_return\fP)
 .br
      Widget \fIw\fP;
 .br
-     XawTextPosition *\fIbeginning\fP, *\fIend\fP; 
+     XawTextPosition *\fIbegin_return\fP, *\fIend_return\fP; 
 .FN
 .IP \fIw\fP 1i
-Specifies the widget ID of the text widget.
-.IP \fIbeginning\fP 1i
-\fI*beginning\fP will contain the beginning of the text selection when this
-function returns.  
-.IP \fIend\fP 1i
-\fI*end\fP will contain the beginning of the text selection when this
+Specifies the Text widget.
+.IP \fIbegin_return\fP 1i
+Returns the beginning of the text selection.
+.IP \fIend_return\fP 1i
+Returns the end of the text selection.
 function returns.  
 .LP
 If the returned values are equal, no text is currently selected.
@@ -80,7 +79,7 @@ int XawTextReplace(\fIw\fP, \fIstart\fP, \fIend\fP, \fItext\fP)
      XawTextBlock *\fItext\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget ID of the text widget.
+Specifies the Text widget.
 .IP \fIstart\fP 1i
 Specifies the starting character position of the text replacement.
 .IP \fIend\fP 1i
@@ -117,14 +116,14 @@ typedef struct {
 .De
 .LP
 .IP \fIfirstPos\fP 1.0i
-This field is the starting point to use within the ptr field.
+The starting point to use within the ptr field.
 The value is usually zero.  
 .IP \fIlength\fP 1.0i
-This field is the number of characters that are transferred from the
+The number of characters that are transferred from the
 ptr field.  The number of characters transferred is usually the number
 of characters in ptr.
 .IP \fIptr\fP 1.0i
-This field contains the string to insert into the text widget.
+Contains the string to insert into the text widget.
 .IP \fIformat\fP 1.0i
 This field is not currently used, but should be specified as
 \fBFMT8BIT\fP.  
@@ -153,7 +152,7 @@ XawTextPosition XawTextSearch(\fIw\fP, \fIdir\fP, \fItext\fP)
       XawTextBlock * \fItext\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget ID of the Text widget.
+Specifies the Text widget.
 .IP \fIdir\fP 1i
 Specifies the direction to search in.  Acceptable values are
 \fBXawsdLeft\fP and \fBXawsdRight\fP.
@@ -161,7 +160,7 @@ Specifies the direction to search in.  Acceptable values are
 Specifies a text block structure (see \fBXawTextReplace\fP for the
 definition) that contains the text to search for.
 .LP
-The function will begin at the cursor location and search in the
+The function will begin at the insert point location and search in the
 direction specified for a string that matches the one passed in 
 \fItext\fP.  If the string is found the location of the first
 character in the string is returned.  If the string could not be
@@ -179,7 +178,7 @@ void XawTextInvalidate(\fIw\fP, \fIfrom\fP, \fIto\fP)
       XawTextPosition \fIfrom\fP, \fIto\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget ID of the text widget.
+Specifies the Text widget.
 .IP \fIfrom\fP 1i
 Specifies the start of the text to redisplay.
 .IP \fIto\fP 1i
@@ -199,7 +198,7 @@ void XawTextEnableRedisplay(\fIw\fP)
       Widget \fIw\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget ID of the text widget.
+Specifies the Text widget.
 .LP
 The \fBXawTextEnableRedisplay\fP function flushes any changes due to
 batched updates when \fBXawTextDisableRedisplay\fP
@@ -215,7 +214,7 @@ void XawTextDisableRedisplay(\fIw\fP)
        Widget \fIw\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget ID of the text widget.
+Specifies the Text widget.
 .LP
 The \fBXawTextDisableRedisplay\fP function causes all changes to be
 batched until \fBXawTextDisplay\fP or \fBXawTextEnableRedisplay\fP
@@ -230,7 +229,7 @@ void XawTextDisplay(\fIw\fP)
      Widget \fIw\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget ID of the text widget.
+Specifies the Text widget.
 .LP
 The \fBXawTextDisplay\fP function forces any accumulated updates to be
 displayed. 
@@ -247,7 +246,7 @@ XawTextPosition XawTextTopPosition(\fIw\fP)
       Widget \fIw\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget ID of the text widget.
+Specifies the Text widget.
 .LP
 .sp 1
 To assign a new selection array to a text widget use
@@ -261,7 +260,7 @@ XawTextPosition XawTextSetSelectionArray(\fIw\fP, \fIsarray\fP)
       SelectionType * \fIsarray\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget ID of the text widget.
+Specifies the Text widget.
 .IP \fIsarray\fP 1i
 Specifies a selection array as defined in the section called \fBText
 Selections for Application Programmers\fP.
@@ -270,7 +269,7 @@ The result is equivalent to setting the value of the
 \fBXtNselectionTypes\fP resource. 
 .LP
 .sp 1
-To move the cursor to the specified source position, use
+To move the insert point to the specified source position, use
 \fBXawTextSetInsertionPoint\fP 
 .IN "XawTextSetInsertionPoint" "" "@DEF@"
 .FD 0
@@ -281,16 +280,16 @@ void XawTextSetInsertionPoint(\fIw\fP, \fIposition\fP)
       XawTextPosition \fIposition\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget ID of the text widget.
+Specifies the Text widget.
 .IP \fIposition\fP 1i
-Specifies the new position for the cursor.
+Specifies the new position for the insert point.
 .LP
 The text will be scrolled vertically if necessary to make the line
-containing the cursor visible.
+containing the insert point visible.
 The result is equivalent to setting the \fBXtNinsertPosition\fP resource.
 .LP
 .sp 1
-To obtain the current position of the cursor, use
+To obtain the current position of the insert point, use
 \fBXawTextGetInsertionPoint\fP. 
 .IN "XawTextGetInsertionPoint" "" "@DEF@"
 .FD 0
@@ -299,7 +298,7 @@ XawTextPosition XawTextGetInsertionPoint(\fIw\fP)
       Widget \fIw\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget ID of the text widget.
+Specifies the Text widget.
 .LP
 The result is equivalent to retrieving the value of the
 \fBXtNinsertPosition\fP resource. 
@@ -317,9 +316,9 @@ void XawTextSetSource(\fIw\fP, \fIsource\fP, \fIposition\fP)
       XawTextPosition \fIposition\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget ID of the text widget.
+Specifies the Text widget.
 .IP \fIsource\fP 1i
-Specifies the widget ID of the Source.
+Specifies the text source object.
 .IP \fIposition\fP 1i
 Specifies character position that will become the upper left hand corner
 of the displayed text.  This is usually set to zero.
@@ -336,10 +335,13 @@ Widget XawTextGetSource(\fIw\fP)
       Widget \fIw\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget ID of the text widget.
+Specifies the Text widget.
+.LP
+This function returns the text source that this Text widget is currently
+using.
 .LP
 .sp
-To enable and disable the cursor, use
+To enable and disable the insert point, use
 \fBXawTextDisplayCaret\fP. 
 .IN "XawTextDisplayCaret" "" "@DEF@"
 .FD 0
@@ -350,11 +352,11 @@ void XawTextDisplayCaret(\fIw\fP, \fIvisible\fP)
       Boolean \fIvisible\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget ID of the Text widget.
+Specifies the Text widget.
 .IP \fIvisible\fP 1i
 Specifies whether or not the caret should be displayed.
 .LP
-If \fIvisible\fP is \fBFalse\fP the cursor will be disabled.
+If \fIvisible\fP is \fBFalse\fP the insert point will be disabled.
 The marker is re-enabled either by setting \fIvisible\fP to \fBTrue\fP, by
 calling \fBXtSetValues\fP, or by executing the \fIdisplay-caret\fP
 action routine.
