@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: xedit.c,v 1.10 87/09/11 08:22:18 toddb Exp $";
+static char rcs_id[] = "$Header: xedit.c,v 1.11 88/02/23 21:06:16 rws Exp $";
 #endif
 
 /*
@@ -152,7 +152,7 @@ static XtResource resources[] = {
    {"editInPlace", "EditInPlace", XtRBoolean, sizeof(int),
          (Cardinal)&editInPlace, XtRString, "False"},
    {"enableBackups", "EnableBackups", XtRBoolean, sizeof(int),
-         (XtArgVal)&enableBackups, XtRString, "FALSE"},
+         (Cardinal)&enableBackups, XtRString, "FALSE"},
    {"backupNamePrefix", "BackupNamePrefix", XtRString, sizeof(char *),
          (Cardinal)&backupNamePrefix,XtRString, ""},
    {"backupNameSuffix", "BackupNameSuffix", XtRString, sizeof(char *),
