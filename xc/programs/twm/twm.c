@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.89 89/11/21 16:41:43 jim Exp $
+ * $XConsortium: twm.c,v 1.90 89/11/24 16:32:09 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.89 89/11/21 16:41:43 jim Exp $";
+"$XConsortium: twm.c,v 1.90 89/11/24 16:32:09 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -609,6 +609,7 @@ InitVariables()
     Scr->LastRegion = NULL;
     Scr->FirstTime = TRUE;
     Scr->HaveFonts = FALSE;		/* i.e. not loaded yet */
+    Scr->CaseSensitive = TRUE;
 
     /* setup default fonts; overridden by defaults from system.twmrc */
 #define DEFAULT_NICE_FONT "variable"

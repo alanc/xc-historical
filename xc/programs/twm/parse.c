@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: parse.c,v 1.21 89/11/20 17:23:06 jim Exp $
+ * $XConsortium: parse.c,v 1.22 89/11/21 16:41:35 jim Exp $
  *
  * parse the .twmrc file
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: parse.c,v 1.21 89/11/20 17:23:06 jim Exp $";
+"$XConsortium: parse.c,v 1.22 89/11/21 16:41:35 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -278,6 +278,7 @@ typedef struct _TwmKeyword {
 #define kw0_RandomPlacement		20
 #define kw0_DecorateTransients		21
 #define kw0_ShowIconManager		22
+#define kw0_NoCaseSensitive		23
 
 #define kws_UsePPosition		1
 #define kws_IconFont			2
@@ -453,6 +454,7 @@ static TwmKeyword keytable[] = {
     { "move",			MOVE, 0 },
     { "movedelta",		NKEYWORD, kwn_MoveDelta },
     { "nobackingstore",		KEYWORD, kw0_NoBackingStore },
+    { "nocasesensitive",	KEYWORD, kw0_NoCaseSensitive },
     { "nodefaults",		KEYWORD, kw0_NoDefaults },
     { "nograbserver",		KEYWORD, kw0_NoGrabServer },
     { "nohighlight",		NO_HILITE, 0 },
@@ -627,6 +629,10 @@ int do_single_keyword (keyword)
 
       case kw0_ShowIconManager:
 	Scr->ShowIconManager = TRUE;
+	return 1;
+
+      case kw0_NoCaseSensitive:
+	Scr->CaseSensitive = FALSE;
 	return 1;
     }
 

@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: iconmgr.c,v 1.33 89/11/20 17:22:52 jim Exp $
+ * $XConsortium: iconmgr.c,v 1.34 89/11/22 15:36:43 jim Exp $
  *
  * Icon Manager routines
  *
@@ -36,6 +36,8 @@
 #include "screen.h"
 #include "add_window.h"
 #include "siconify.bm"
+#include <X11/Xos.h>
+#include <X11/Xmu/CharSet.h>
 
 int iconmgr_textx = siconify_width+11;
 WList *Active = NULL;
@@ -560,6 +562,7 @@ TwmWindow *tmp_win;
 {
     WList *tmp1;
     int added;
+    int (*compar)() = (Scr->CaseSensitive ? strcmp : XmuCompareISOLatin1);
 
     added = FALSE;
     if (ip->first == NULL)
@@ -573,7 +576,7 @@ TwmWindow *tmp_win;
     {
 	for (tmp1 = ip->first; tmp1 != NULL; tmp1 = tmp1->next)
 	{
-	    if (strcmp(tmp_win->icon_name, tmp1->twm->icon_name) < 0)
+	    if ((*compar)(tmp_win->icon_name, tmp1->twm->icon_name) < 0)
 	    {
 		tmp->next = tmp1;
 		tmp->prev = tmp1->prev;
@@ -708,6 +711,7 @@ IconMgr *ip;
 {
     WList *tmp1, *tmp2;
     int done;
+    int (*compar)() = (Scr->CaseSensitive ? strcmp : XmuCompareISOLatin1);
 
     if (ip == NULL)
 	ip = Active->iconmgr;
@@ -722,7 +726,7 @@ IconMgr *ip;
 		done = TRUE;
 		break;
 	    }
-	    if (strcmp(tmp1->twm->icon_name, tmp2->twm->icon_name) > 0)
+	    if ((*compar)(tmp1->twm->icon_name, tmp2->twm->icon_name) > 0)
 	    {
 		/* take it out and put it back in */
 		RemoveFromIconManager(ip, tmp2);

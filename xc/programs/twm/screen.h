@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: screen.h,v 1.51 89/11/16 14:35:04 jim Exp $
+ * $XConsortium: screen.h,v 1.52 89/11/21 16:41:40 jim Exp $
  *
  * twm per-screen data include file
  *
@@ -216,6 +216,7 @@ typedef struct ScreenInfo
     short SqueezeTitle;		/* make title as small as possible */
     short HaveFonts;		/* set if fonts have been loaded */
     short FirstTime;		/* first time we've read .twmrc */
+    short CaseSensitive;	/* be case-sensitive when sorting names */
 
     FuncKey FuncKeyRoot;
 } ScreenInfo;
