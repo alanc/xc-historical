@@ -299,6 +299,11 @@ static void SetValues(old, new)
 
 	}
 
+    /* note that there is no way to change the label and force the window */
+    /* to keep it's current size (and possibly clip the text) perhaps we */
+    /* should make the user set width and height to 0 when they set the */
+    /* label if they want the label to recompute size based on the new */
+    /* label? */
     if (oldlw->label.label != newlw->label.label) {
         if (newlw->label.label != NULL) {
 	    newlw->label.label = strcpy(
@@ -352,11 +357,43 @@ static void SetValues(old, new)
 	}
     }
 
+    if (newlw->core.depth != oldlw->core.depth) {
+	XtWarning("SetValues: Attempt to change existing widget depth.");
+	newlw->core.depth = oldlw->core.depth;
+    }
+
+    if ((oldlw->core.background_pixel != newlw->core.background_pixel)
+	|| (oldlw->core.border_pixel != newlw->core.border_pixel)) {
+
+	Mask valueMask = 0;
+	XSetWindowAttributes attributes;
+
+	if (oldlw->core.background_pixel != newlw->core.background_pixel) {
+	    valueMask |= CWBackPixel;
+	    attributes.background_pixel = newlw->core.background_pixel;
+	}
+	if (oldlw->core.border_pixel != newlw->core.border_pixel) {
+	    valueMask |= CWBorderPixel;
+	    attributes.border_pixel = newlw->core.border_pixel;
+	}
+	XChangeWindowAttributes(
+	    XtDisplay(newlw), newlw->core.window, valueMask, &attributes);
+    }
+
+    if (oldlw->core.sensitive != newlw->core.sensitive) {
+	XtWarning("Setting Label sensitivity not implemented.");
+    }
+
     if (oldlw->label.foreground != newlw->label.foreground
 	|| oldlw->label.font->fid != newlw->label.font->fid) {
 
 	XtDestroyGC(oldlw->label.gc);
 	GetGC(newlw);
+    }
+
+    if ((oldlw->label.internalWidth != newlw->label.internalWidth)
+        || (oldlw->label.internalHeight != newlw->label.internalHeight)) {
+	Resize(newlw);
     }
 
     XClearWindow(XtDisplay(oldlw), XtWindow(oldlw));
