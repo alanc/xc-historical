@@ -1,4 +1,4 @@
-/* $XConsortium: spfont.c,v 1.8 91/07/15 18:18:05 keith Exp $ */
+/* $XConsortium: spfont.c,v 1.10 91/07/16 20:17:52 keith Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -177,7 +177,7 @@ get_sp_extents(client, pfont, flags, num_ranges, range, num_extents, data)
 
 static int
 pack_sp_glyphs(pfont, format, flags, num_ranges, range, tsize, num_glyphs,
-	       offsets, data)
+	       offsets, data, freeData)
     FontPtr     pfont;
     int         format;
     Mask        flags;
@@ -187,6 +187,7 @@ pack_sp_glyphs(pfont, format, flags, num_ranges, range, tsize, num_glyphs,
     unsigned long *num_glyphs;
     fsOffset  **offsets;
     pointer    *data;
+    int		*freeData;
 {
     unsigned long start,
                 end;
@@ -226,6 +227,7 @@ pack_sp_glyphs(pfont, format, flags, num_ranges, range, tsize, num_glyphs,
     if (!spf->pDefault)
 	spf->pDefault = &junkDefault;
 
+    *freeData = TRUE;
     firstChar = master->first_char_id;
     /* special case for all glyphs first */
     if (flags & LoadAll) {
@@ -256,7 +258,8 @@ pack_sp_glyphs(pfont, format, flags, num_ranges, range, tsize, num_glyphs,
     gd = gdata = (pointer) xalloc(size);
     if (!gdata)
 	return AllocError;
-    bzero((char *) gdata, size);
+    if (mappad == BitmapFormatImageRectMax)
+	bzero((char *) gdata, size);
 
     /* get space for glyph offsets */
     l = lengths = (fsOffset *) xalloc(sizeof(fsOffset) *
@@ -293,20 +296,27 @@ pack_sp_glyphs(pfont, format, flags, num_ranges, range, tsize, num_glyphs,
 	for (ch = start; ch <= end; ch++) {
 	    CharInfoPtr ci;
 	    xCharInfo  *cim;
-	    long        newch;
-	    int         src_bitoffset;
 	    int         srcbpr;
-	    pointer     gstart;
+	    unsigned char	*src, *dst;
+	    unsigned int	bits1, bits2;
 	    int         r,
-	                shift = 0,
-			width;
+			lshift = 0,
+			rshift = 0,
+			width,
+			w,
+			src_extra,
+			dst_extra;
 
-	    /* save the offset */
-	    (*l).position = (gd - gdata);
-	    gstart = gd;
+	    l->position = gd - gdata;
+	    ci = &spf->encoding[ch - firstChar];
 
-	    if (!ci)		/* ignore missing chars */
+	    /* ignore missing chars */
+	    if (!ci) 
+	    {
+		l->length = 0;
+		l++;
 		continue;
+	    }
 
 	    cim = &ci->metrics;
 
@@ -331,30 +341,19 @@ pack_sp_glyphs(pfont, format, flags, num_ranges, range, tsize, num_glyphs,
 		skiprows = bpr * (max_descent - cim->descent);
 		/* fall thru */
 	    case BitmapFormatImageRectMaxWidth:
-		shift = cim->leftSideBearing - min_left;
+		rshift = cim->leftSideBearing - min_left;
+		lshift = 8 - lshift;
 		break;
-	    default:
-		assert(0);
 	    }
+	    src = (unsigned char *) ci->bits;
+	    dst = gd;
 
-#define	access_type	unsigned char *
-#define access_size	(sizeof (unsigned char) * 8)
-/* XXX
- * this would best be a larger size (long), but that causes unaligned
- * refs on (at least) SPARC
- *
- * this whole mess should be rewritten by someone who understands bitblt...
- */
+	    width = srcbpr;
+	    if (srcbpr > bpr)
+		width = bpr;
+	    src_extra = srcbpr - width;
+	    dst_extra = bpr - width;
 
-	    width = cim->rightSideBearing - cim->leftSideBearing;
-	    width = width + (access_size - 1);
-	    width = width / access_size;
-	    for (r = 0; r < (cim->ascent + cim->descent); r++) {
-		access_type row = (access_type) (src_bitoffset + (r * srcbpr));
-		access_type r2 = (access_type) (gd + (r * bpr));
-		int         db;
-		for (db = 0; db < width; db++)
-		{
 #if (DEFAULTBITORDER == MSBFirst)
 #define BitLeft(b,c)	((b) << (c))
 #define BitRight(b,c)	((b) >> (c))
@@ -362,16 +361,45 @@ pack_sp_glyphs(pfont, format, flags, num_ranges, range, tsize, num_glyphs,
 #define BitLeft(b,c)	((b) >> (c))
 #define BitRight(b,c)	((b) << (c))
 #endif
-		    r2[db] = BitRight(row[db],shift);
-		    if (db && shift)	/* get the leftovers from above */
-			r2[db] |= BitLeft(row[db - 1], access_size - shift);
+
+	    if (!rshift)
+	    {
+		if (srcbpr == bpr)
+		{
+		    r = (cim->ascent + cim->descent) * width;
+		    bcopy (src, dst, r);
+		    dst += r;
+		}
+		else
+		{
+		    for (r = cim->ascent + cim->descent; r; r--)
+		    {
+			for (w = width; w; w--)
+			    *dst++ = *src++;
+			dst += dst_extra;
+			src += src_extra;
+		    }
 		}
 	    }
-	    /* skip the amount we just filled in */
-	    gd += (cim->descent + cim->ascent) * bpr
-		+ skiprows;	/* leave the last rows blank */
-
-	    (*l).length = gd - gstart;
+	    else
+	    {
+		for (r = cim->ascent + cim->descent; r; r--)
+		{
+		    bits2 = 0;
+		    for (w = width; w; w--)
+		    {
+			bits1 = *src++;
+			*dst++ = BitRight(bits1, rshift) |
+				 BitLeft (bits2, lshift);
+			bits2 = bits1;
+		    }
+		    dst += dst_extra;
+		    src += src_extra;
+		}
+	    }
+	    dst += skiprows;
+	    l->length = dst - gd;
+	    gd = dst;
 	    l++;
 	}
     }
@@ -401,7 +429,7 @@ pack_sp_glyphs(pfont, format, flags, num_ranges, range, tsize, num_glyphs,
 /* ARGSUSED */
 static int
 get_sp_bitmaps(client, pfont, format, flags, num_ranges, range,
-	       size, num_glyphs, offsets, data)
+	       size, num_glyphs, offsets, data, freeData)
     pointer     client;
     FontPtr     pfont;
     fsBitmapFormat format;
@@ -412,12 +440,13 @@ get_sp_bitmaps(client, pfont, format, flags, num_ranges, range,
     unsigned long *num_glyphs;
     fsOffset  **offsets;
     pointer    *data;
+    int		*freeData;
 {
     *size = 0;
     *data = (pointer) 0;
     *num_glyphs = 0;
     return pack_sp_glyphs(pfont, format, flags,
-			  num_ranges, range, size, num_glyphs, offsets, data);
+		  num_ranges, range, size, num_glyphs, offsets, data, freeData);
 }
 
 static int
