@@ -1,5 +1,5 @@
 /*
- *	$Header: main.c,v 1.3 88/02/12 08:59:24 jim Exp $
+ *	$Header: main.c,v 1.4 88/02/12 09:52:18 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* main.c */
 
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.3 88/02/12 08:59:24 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.4 88/02/12 09:52:18 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xos.h>
@@ -113,7 +113,6 @@ static struct  ltchars d_ltc = {
 static int d_disipline = NTTYDISC;
 static long int d_lmode = LCRTBS|LCRTERA|LCRTKIL|LCTLECH;
 #endif	/* !SYSV */
-static char display[256];
 #ifdef SYSV
 extern struct utmp *getutent();
 extern struct utmp *getutid();
@@ -494,7 +493,6 @@ gettimeofday(&initT, &tz);
 */
 
 	/* Parse the rest of the command line */
-	display[0] = '\0';
 	for (argc--, argv++ ; argc > 0 ; argc--, argv++) {
 	    if(**argv != '-') Syntax (*argv);
 
@@ -1237,7 +1235,8 @@ spawn ()
 			bzero((char *)&utmp, sizeof(struct utmp));
 			(void) strcpy(utmp.ut_line, ttydev + strlen("/dev/"));
 			(void) strcpy(utmp.ut_name, pw->pw_name);
-			(void) strcpy(utmp.ut_host, XDisplayName(display));
+			(void) strcpy(utmp.ut_host, 
+				      XDisplayString (screen->display));
 			time(&utmp.ut_time);
 			lseek(i, (long)(tslot * sizeof(struct utmp)), 0);
 			write(i, (char *)&utmp, sizeof(struct utmp));
@@ -1338,7 +1337,7 @@ spawn ()
 		 (int)VWindow(screen));
 		Setenv ("WINDOWID=", buf);
 		/* put the display into the environment of the shell*/
-		Setenv ("DISPLAY=", XDisplayName(display));
+		Setenv ("DISPLAY=", XDisplayString (screen->display));
 
 		signal(SIGTERM, SIG_DFL);
 #if !defined(SYSV) || defined(JOBCONTROL)
