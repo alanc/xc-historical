@@ -468,6 +468,9 @@ SpecialLibObjectRule(XlcLoad.o,$(ICONFIGFILES),$(NLS_DEFINES))
 
 #if BuildXimp
 
+XFILESEARCHPATHDEFAULT = XFileSearchPathDefault
+SRCH_DEFINES = -DXFILESEARCHPATHDEFAULT=\"$(XFILESEARCHPATHDEFAULT)\"
+
 LCSRCS = \
 	XIMProto.h \
 	XimpMCov.h \
@@ -541,7 +544,8 @@ LinkSourceFile(XimpTWth.c,Ximp)						@@\
 LinkSourceFile(XimpWCT.c,Ximp)						@@\
 LinkSourceFile(XimpWDrS.c,Ximp)						@@\
 LinkSourceFile(XimpWEsc.c,Ximp)						@@\
-LinkSourceFile(XimpWExt.c,Ximp)
+LinkSourceFile(XimpWExt.c,Ximp)						@@\
+SpecialLibObjectRule(XimpLCUtil.o,$(ICONFIGFILES),$(SRCH_DEFINES))
 
 #endif /* BuildXimp */
 
