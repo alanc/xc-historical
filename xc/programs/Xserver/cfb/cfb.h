@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cfb.h,v 5.25 92/01/31 18:27:59 gildea Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -27,12 +27,14 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
+#include "X.h"
 #include "pixmap.h"
 #include "region.h"
 #include "gc.h"
 #include "colormap.h"
 #include "miscstruct.h"
 #include "servermd.h"
+#include "windowstr.h"
 #include "mfb.h"
 
 #include "cfbmap.h"
@@ -197,10 +199,14 @@ extern int cfbScreenPrivateIndex;
 #define cfbGetScreenPixmap(s)	((PixmapPtr) (s)->devPrivate)
 #endif
 
-#define cfbGetWindowPixmap(d)	cfbGetScreenPixmap((d)->pScreen)
+#ifdef PIXMAP_PER_WINDOW
+#define cfbGetWindowPixmap(d)	((PixmapPtr) ((WindowPtr) d)->devPrivates[frameWindowPrivateIndex].ptr)
+#else
+#define cfbGetWindowPixmap(d) cfbGetScreenPixmap((d)->pScreen)
+#endif
 
 #define cfbGetTypedWidth(pDrawable,wtype) (\
-    (((pDrawable)->type == DRAWABLE_WINDOW) ? \
+    (((pDrawable)->type != DRAWABLE_PIXMAP) ? \
      (int) (cfbGetWindowPixmap(pDrawable)->devKind) : \
      (int)(((PixmapPtr)pDrawable)->devKind)) / sizeof (wtype))
 
@@ -212,7 +218,7 @@ extern int cfbScreenPrivateIndex;
     
 #define cfbGetTypedWidthAndPointer(pDrawable, width, pointer, wtype, ptype) {\
     PixmapPtr   _pPix; \
-    if ((pDrawable)->type == DRAWABLE_WINDOW) \
+    if ((pDrawable)->type != DRAWABLE_PIXMAP) \
 	_pPix = cfbGetWindowPixmap(pDrawable); \
     else \
 	_pPix = (PixmapPtr) (pDrawable); \
