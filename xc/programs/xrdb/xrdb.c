@@ -1,7 +1,7 @@
 /*
  * xrdb - X resource manager database utility
  *
- * $XConsortium: xrdb.c,v 11.53 92/09/07 14:53:24 rws Exp $
+ * $XConsortium: xrdb.c,v 11.54 92/09/10 20:38:34 rws Exp $
  */
 
 /*
@@ -239,7 +239,9 @@ void GetEntries(entries, buff, dosort)
 	    continue;
 	if (*str == '#') {
 	    int dummy;
-	    if (sscanf (str, "# %d", &dummy) == 1) lineno = dummy - 1;
+	    if (sscanf (str, "# %d", &dummy) == 1 ||
+		sscanf (str, "# line %d", &dummy) == 1)
+		lineno = dummy - 1;
 	    continue;
 	}
 	for (temp = str; 
