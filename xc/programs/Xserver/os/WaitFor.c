@@ -64,21 +64,12 @@ extern void SaveScreens();
 
 extern int errno;
 
-#ifdef MULTI_X_HACK
-extern int XMulti;
-extern int sigwindow_handler();
-#endif /* MULTI_X_HACK */
-
 #ifdef XTESTEXT1
 /*
  * defined in xtestext1dd.c
  */
 extern int playback_on;
 #endif /* XTESTEXT1 */
-
-#ifdef SERVER_XDMCP
-extern void XdmcpBlockHandler(), XdmcpWakeupHandler();
-#endif
 
 /*****************
  * WaitForSomething:
@@ -133,141 +124,135 @@ WaitForSomething(pClientsReady)
 #endif /* hpux */
 
     CLEARBITS(clientsReadable);
-    if (! (ANYSET(ClientsWithInput)))
+    /* We need a while loop here to handle 
+       crashed connections and the screen saver timeout */
+    while (1)
     {
-	/* We need a while loop here to handle 
-	   crashed connections and the screen saver timeout */
-	while (1)
-        {
-            if (ScreenSaverTime)
+	if (ANYSET(ClientsWithInput))
+	{
+	    COPYBITS(ClientsWithInput, clientsReadable);
+	    break;
+	}
+	if (ScreenSaverTime)
+	{
+	    timeout = ScreenSaverTime - TimeSinceLastInputEvent();
+	    if (timeout <= 0) /* may be forced by AutoResetServer() */
 	    {
-                timeout = ScreenSaverTime - TimeSinceLastInputEvent();
-	        if (timeout <= 0) /* may be forced by AutoResetServer() */
-	        {
-		    long timeSinceSave;
+		long timeSinceSave;
 
-		    timeSinceSave = -timeout;
-	            if ((timeSinceSave >= timeTilFrob) && (timeTilFrob >= 0))
-                    {
-		        SaveScreens(SCREEN_SAVER_ON, ScreenSaverActive);
-			if (ScreenSaverInterval)
-			    /* round up to the next ScreenSaverInterval */
-			    timeTilFrob = ScreenSaverInterval *
-				    ((timeSinceSave + ScreenSaverInterval) /
-					    ScreenSaverInterval);
-			else
-			    timeTilFrob = -1;
-		    }
-    	            timeout = timeTilFrob - timeSinceSave;
-    	        }
- 		else
- 		{
-		    if (timeout > ScreenSaverTime)
-		        timeout = ScreenSaverTime;
-	            timeTilFrob = 0;
-		}
-		if (timeTilFrob >= 0)
+		timeSinceSave = -timeout;
+		if ((timeSinceSave >= timeTilFrob) && (timeTilFrob >= 0))
 		{
-		    waittime.tv_sec = timeout / MILLI_PER_SECOND;
-		    waittime.tv_usec = (timeout % MILLI_PER_SECOND) *
-					    (1000000 / MILLI_PER_SECOND);
-		    wt = &waittime;
+		    SaveScreens(SCREEN_SAVER_ON, ScreenSaverActive);
+		    if (ScreenSaverInterval)
+			/* round up to the next ScreenSaverInterval */
+			timeTilFrob = ScreenSaverInterval *
+				((timeSinceSave + ScreenSaverInterval) /
+					ScreenSaverInterval);
+		    else
+			timeTilFrob = -1;
 		}
-		else
-		{
-		    wt = NULL;
-		}
+		timeout = timeTilFrob - timeSinceSave;
 	    }
-            else
-                wt = NULL;
-#ifdef MULTI_X_HACK
-	    if (XMulti) {
-		ipc_block_handler();
-		signal(SIGWINDOW,sigwindow_handler);
+	    else
+	    {
+		if (timeout > ScreenSaverTime)
+		    timeout = ScreenSaverTime;
+		timeTilFrob = 0;
 	    }
-#endif /* MULTI_X_HACK */
-	    COPYBITS(AllSockets, LastSelectMask);
-#ifdef SERVER_XDMCP
-	    XdmcpBlockHandler(&wt, LastSelectMask);
-#endif /* SERVER_XDMCP */
-	    BlockHandler((pointer)&wt, (pointer)LastSelectMask);
-	    if (NewOutputPending)
-	    	FlushAllOutput();
-#ifdef XTESTEXT1
-	    /* XXX how does this interact with new write block handling? */
-	    if (playback_on) {
+	    if (timeTilFrob >= 0)
+	    {
+		waittime.tv_sec = timeout / MILLI_PER_SECOND;
+		waittime.tv_usec = (timeout % MILLI_PER_SECOND) *
+					(1000000 / MILLI_PER_SECOND);
 		wt = &waittime;
-		XTestComputeWaitTime (&waittime);
-	    }
-#endif /* XTESTEXT1 */
-	    /* keep this check close to select() call to minimize race */
-	    if (dispatchException)
-		i = -1;
-	    else if (AnyClientsWriteBlocked)
-	    {
-		COPYBITS(ClientsWriteBlocked, clientsWritable);
-		i = select (MAXSOCKS, (int *)LastSelectMask,
-			    (int *)clientsWritable, (int *) NULL, wt);
 	    }
 	    else
-		i = select (MAXSOCKS, (int *)LastSelectMask,
-			    (int *) NULL, (int *) NULL, wt);
-	    selecterr = errno;
-#ifdef SERVER_XDMCP
-	    XdmcpWakeupHandler(i, LastSelectMask);
-#endif /* SERVER_XDMCP */
-	    WakeupHandler((unsigned long)i, (pointer)LastSelectMask);
-#ifdef XTESTEXT1
-	    if (playback_on) {
-		i = XTestProcessInputAction (i, &waittime);
-	    }
-#endif /* XTESTEXT1 */
-	    if (i <= 0) /* An error or timeout occurred */
-            {
-		if (dispatchException)
-		    return 0;
-		CLEARBITS(clientsWritable);
-		if (i < 0) 
-		    if (selecterr == EBADF)    /* Some client disconnected */
-		    {
-	            	CheckConnections ();
-			if (! ANYSET (AllClients))
-			    return 0;
-		    }
-		    else if (selecterr != EINTR)
-			ErrorF("WaitForSomething(): select: errno=%d\n",
-			    selecterr);
-    	    }
-	    else
 	    {
- 		if (AnyClientsWriteBlocked && ANYSET (clientsWritable))
- 		{
- 		    NewOutputPending = TRUE;
- 		    ORBITS(OutputPending, clientsWritable, OutputPending);
- 		    UNSETBITS(ClientsWriteBlocked, clientsWritable);
- 		    if (! ANYSET(ClientsWriteBlocked))
- 			AnyClientsWriteBlocked = FALSE;
- 		}
- 
-#ifdef	hpux
-		ready_inputs = (LastSelectMask[0] & EnabledDevices);
-
-		if (ready_inputs > 0)  store_inputs (ready_inputs);
-			/* call the HIL driver to gather inputs. 	*/
-#endif /* hpux */
-
- 		MASKANDSETBITS(clientsReadable, LastSelectMask, AllClients); 
-		if (LastSelectMask[0] & WellKnownConnections) 
-		    EstablishNewConnections();
-		if ((LastSelectMask[0] & EnabledDevices) 
-		    || (ANYSET (clientsReadable)))
-			    break;
+		wt = NULL;
 	    }
 	}
-    }
-    else
-    {
-       COPYBITS(ClientsWithInput, clientsReadable);
+	else
+	    wt = NULL;
+	COPYBITS(AllSockets, LastSelectMask);
+	BlockHandler((pointer)&wt, (pointer)LastSelectMask);
+	if (NewOutputPending)
+	    FlushAllOutput();
+#ifdef XTESTEXT1
+	/*
+	 * can this be put in a block handler?
+	 */
+	/* XXX how does this interact with new write block handling? */
+	if (playback_on) {
+	    wt = &waittime;
+	    XTestComputeWaitTime (&waittime);
+	}
+#endif /* XTESTEXT1 */
+	/* keep this check close to select() call to minimize race */
+	if (dispatchException)
+	    i = -1;
+	else if (AnyClientsWriteBlocked)
+	{
+	    COPYBITS(ClientsWriteBlocked, clientsWritable);
+	    i = select (MAXSOCKS, (int *)LastSelectMask,
+			(int *)clientsWritable, (int *) NULL, wt);
+	}
+	else
+	    i = select (MAXSOCKS, (int *)LastSelectMask,
+			(int *) NULL, (int *) NULL, wt);
+	selecterr = errno;
+	WakeupHandler((unsigned long)i, (pointer)LastSelectMask);
+#ifdef XTESTEXT1
+	/* can this be put into a wakeup handler? */
+	if (playback_on) {
+	    i = XTestProcessInputAction (i, &waittime);
+	}
+#endif /* XTESTEXT1 */
+	if (i <= 0) /* An error or timeout occurred */
+	{
+	    if (dispatchException)
+		return 0;
+	    CLEARBITS(clientsWritable);
+	    if (i < 0) 
+		if (selecterr == EBADF)    /* Some client disconnected */
+		{
+		    CheckConnections ();
+		    if (! ANYSET (AllClients))
+			return 0;
+		}
+		else if (selecterr != EINTR)
+		    ErrorF("WaitForSomething(): select: errno=%d\n",
+			selecterr);
+	}
+	else
+	{
+	    if (AnyClientsWriteBlocked && ANYSET (clientsWritable))
+	    {
+		NewOutputPending = TRUE;
+		ORBITS(OutputPending, clientsWritable, OutputPending);
+		UNSETBITS(ClientsWriteBlocked, clientsWritable);
+		if (! ANYSET(ClientsWriteBlocked))
+		    AnyClientsWriteBlocked = FALSE;
+	    }
+
+#ifdef	hpux
+	    /*
+	     * this should be put in an HPUX specific
+	     * wakeup handler
+	     */
+	    ready_inputs = (LastSelectMask[0] & EnabledDevices);
+
+	    if (ready_inputs > 0)  store_inputs (ready_inputs);
+		    /* call the HIL driver to gather inputs. 	*/
+#endif /* hpux */
+
+	    MASKANDSETBITS(clientsReadable, LastSelectMask, AllClients); 
+	    if (LastSelectMask[0] & WellKnownConnections) 
+		EstablishNewConnections();
+	    if ((LastSelectMask[0] & EnabledDevices) 
+		|| (ANYSET (clientsReadable)))
+			break;
+	}
     }
 
     nready = 0;
