@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.162 94/09/14 18:20:50 mor Exp mor $
+ * $XConsortium: add_window.c,v 1.163 94/10/04 19:59:13 mor Exp mor $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -174,6 +174,8 @@ IconMgr *iconp;
     Bool restore_iconified = 0;
     Bool restore_icon_info_present = 0;
     int restoredFromPrevSession;
+    Bool width_ever_changed_by_user;
+    Bool height_ever_changed_by_user;
 
 #ifdef DEBUG
     fprintf(stderr, "AddWindow: w = 0x%x\n", w);
@@ -206,16 +208,28 @@ IconMgr *iconp;
     if (GetWindowConfig (tmp_win,
 	&saved_x, &saved_y, &saved_width, &saved_height,
 	&restore_iconified, &restore_icon_info_present,
-	&restore_icon_x, &restore_icon_y))
+	&restore_icon_x, &restore_icon_y,
+	&width_ever_changed_by_user, &height_ever_changed_by_user))
     {
 	tmp_win->attr.x = saved_x;
 	tmp_win->attr.y = saved_y;
-	tmp_win->attr.width = saved_width;
-	tmp_win->attr.height = saved_height;
+
+	tmp_win->widthEverChangedByUser = width_ever_changed_by_user;
+	tmp_win->heightEverChangedByUser = height_ever_changed_by_user;
+	
+	if (width_ever_changed_by_user)
+	    tmp_win->attr.width = saved_width;
+
+	if (height_ever_changed_by_user)
+	    tmp_win->attr.height = saved_height;
+
 	restoredFromPrevSession = 1;
     }
     else
     {
+	tmp_win->widthEverChangedByUser = False;
+	tmp_win->heightEverChangedByUser = False;
+
 	restoredFromPrevSession = 0;
     }
 
