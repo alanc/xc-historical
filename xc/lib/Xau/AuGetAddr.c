@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: AuGetAddr.c,v 1.5 89/06/14 15:18:15 jim Exp $
+ * $XConsortium: AuGetAddr.c,v 1.6 89/08/15 14:34:04 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -86,13 +86,13 @@ char	*name;
 	if ((family == FamilyWild || entry->family == FamilyWild ||
 	     (entry->family == family &&
 	      address_length == entry->address_length &&
-	      binaryEqual (entry->address, address, address_length))) &&
+	      binaryEqual (entry->address, address, (int)address_length))) &&
 	    (number_length == 0 || entry->number_length == 0 ||
 	     (number_length == entry->number_length &&
-	      binaryEqual (entry->number, number, number_length))) &&
+	      binaryEqual (entry->number, number, (int)number_length))) &&
 	    (name_length == 0 || entry->name_length == 0 ||
 	     (entry->name_length == name_length &&
- 	      binaryEqual (entry->name, name, name_length))))
+ 	      binaryEqual (entry->name, name, (int)name_length))))
 	    break;
 	XauDisposeAuth (entry);
     }
