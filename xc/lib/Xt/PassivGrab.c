@@ -490,7 +490,7 @@ static void DestroyPassiveList(passiveListPtr)
 void _XtDestroyServerGrabs(w, pwi, call_data)
     Widget		w;
     XtPerWidgetInput	pwi;
-    caddr_t		call_data;
+    XtPointer		call_data;
 {
     XtPerDisplayInput		pdi;
     
@@ -607,7 +607,7 @@ static void  MakeGrab(grab, passiveListPtr, isKeyboard, pdi, pwi)
       {
 	  XtAddEventHandler(grab->widget, mask, FALSE,
 			    ActiveHandler,
-			    (caddr_t)pdi);
+			    (XtPointer)pdi);
 	  pwi->active_handler_added = TRUE;
       }
 	
@@ -679,7 +679,7 @@ static void  RealizeHandler (widget, pwi, event)
     MakeGrabs(&pwi->ptrList, POINTER, pdi);
  
     XtRemoveEventHandler(widget, StructureNotifyMask,
-			 False, RealizeHandler, (caddr_t)pwi);
+			 False, RealizeHandler, (XtPointer)pwi);
     pwi->realize_handler_added = FALSE;
 }
 
@@ -742,7 +742,7 @@ void  GrabKeyOrButton (widget, keyOrButton, modifiers, owner_events,
 	    {
 		XtAddEventHandler(widget, StructureNotifyMask, FALSE,
 				  RealizeHandler,
-				  (caddr_t)pwi);
+				  (XtPointer)pwi);
 		pwi->realize_handler_added = TRUE;
 	    }
 	
@@ -999,7 +999,7 @@ void   XtUngrabKeyboard(widget, time)
  */
 int XtGrabPointer (widget, owner_events, event_mask,
 		   pointer_mode, keyboard_mode, 
-		   confine_to, cursor, time, isKeyboard)
+		   confine_to, cursor, time)
     Widget	widget;
     Boolean	owner_events;
     unsigned int event_mask;
@@ -1008,7 +1008,6 @@ int XtGrabPointer (widget, owner_events, event_mask,
     Window 	confine_to;
     Cursor 	cursor;
     Time	time;
-    Boolean	isKeyboard;
 {
     return (GrabDevice (widget, owner_events,
 			pointer_mode, keyboard_mode, 
