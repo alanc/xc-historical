@@ -1,4 +1,4 @@
-/* $XConsortium: registry,v 1.101 94/07/28 18:29:33 rws Exp rws $ */
+/* $XConsortium: registry,v 1.102 94/08/08 19:20:25 rws Exp rws $ */
 
 				  X Registry
 
@@ -951,6 +951,15 @@ Value	Name					Reference
 18	Hitachi, Ltd.				[100]
 19	Megatek Corporation			[112]
 20	The XFree86 Project, Inc		[113]
+
+
+22. XIM ENCODING
+
+For text exchanged in the Input Method Protocol.  See XIM_ENCODING_NEGOTIATION
+in section 4.6 of the XIM standard.
+
+"COMPOUND_TEXT"					[104]
+
 
 REFERENCES
 
