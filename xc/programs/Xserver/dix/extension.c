@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: extension.c,v 1.39 87/11/27 10:02:12 rws Locked $ */
+/* $Header: extension.c,v 1.40 87/12/05 11:07:24 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -42,7 +42,8 @@ ScreenProcEntry AuxillaryScreenProcs[MAXSCREENS];
 static ExtensionEntry **extensions = (ExtensionEntry **)NULL;
 extern int (* ProcVector[]) ();
 extern int (* SwappedProcVector[]) ();
-extern int (* ReplySwapVector[256]) ();
+extern void (* ReplySwapVector[256]) ();
+extern void WriteEventsToClient();
 
 int lastEvent = EXTENSION_EVENT_BASE;
 static int lastError = FirstExtensionError;
