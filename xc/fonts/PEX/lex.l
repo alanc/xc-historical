@@ -1,5 +1,5 @@
 %{
-/* $XConsortium$ */
+/* $XConsortium: lex.l,v 5.1 91/02/16 09:46:35 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -28,7 +28,7 @@ SOFTWARE.
 
 #include <ctype.h>
 #include <math.h>
-#include "y.tab.h"
+#include "to_wfont.h"
 
 %}
 %%
