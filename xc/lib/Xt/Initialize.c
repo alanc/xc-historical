@@ -641,7 +641,7 @@ Widget root;
 	     Create the top level widget.
 	 */
 	root = TopLevelCreate(name, topLevelWidgetClass,
-			      dpy->screens[dpy->default_screen],
+			      &(dpy->screens[dpy->default_screen]),
 			       args, argCount);
 
 	w = (TopLevelWidget) root;
