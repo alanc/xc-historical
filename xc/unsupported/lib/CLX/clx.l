@@ -909,6 +909,8 @@
 ;  (declare (type font font)
 ;	   (values <type>)))
 
+(eval-when (eval compile) ;; I'd rather use macrolet, but Symbolics doesn't like it...
+
 (defmacro make-font-info-accessors (useless-name &body fields)
   `(within-definition (,useless-name make-font-info-accessors)
      ,@(mapcan
@@ -924,7 +926,7 @@
 		   (,accessor (font-font-info font))))))
 	 fields)))
 
-(eval-when (eval compile) ;; I'd rather use macrolet, but Symbolics doesn't like it...
+) ;; End eval-when
 
 (make-font-info-accessors ignore
   (direction draw-direction)
@@ -941,8 +943,6 @@
   (ascent int16)
   (descent int16)
   (properties font-props))
-
-) ;; End eval-when
 
 
 (defun font-property (font name)
