@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.65 88/09/05 14:34:55 rws Exp $ */
+/* $XConsortium: dispatch.c,v 1.66 88/09/06 15:40:33 jim Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -3201,7 +3201,6 @@ CloseDownClient(client)
 	nextFreeClientID = client->index;
 	clients[client->index] = NullClient;
         xfree(client);
-	--nClients;
     }
     else
     {
