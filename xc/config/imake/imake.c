@@ -14,7 +14,7 @@
  * this software for any purpose.  It is provided "as is"
  * without express or implied warranty.
  * 
- * $Header: imake.c,v 1.13 87/08/08 15:37:50 toddb Locked $
+ * $Header: imake.c,v 1.14 87/08/08 17:10:22 toddb Locked $
  * $Locker: toddb $
  *
  * Author:
@@ -237,7 +237,8 @@ init()
 	if (p = getenv("IMAKEMAKE"))
 		make = p;
 
-	signal(SIGINT, catch);
+	if (signal(SIGINT, SIG_IGN) != SIG_IGN)
+		signal(SIGINT, catch);
 }
 
 AddMakeArg(arg)
