@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 5.11 89/09/21 19:21:38 keith Exp $ */
+/* $XConsortium: gc.c,v 5.12 89/10/08 15:14:29 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -38,10 +38,6 @@ SOFTWARE.
 #include "dix.h"
 
 extern XID clientErrorValue;
-
-#ifdef DEBUG
-extern void NotImplemented();
-#endif
 
 static Bool CreateDefaultTile();
 
@@ -485,9 +481,6 @@ CreateGC(pDrawable, mask, pval, pStatus)
 {
     register GCPtr pGC;
     extern FontPtr defaultFont;
-#ifdef DEBUG
-    void 	(**j)();
-#endif /* DEBUG */
 
     pGC = AllocateGC(pDrawable->pScreen);
     if (!pGC)
@@ -495,13 +488,6 @@ CreateGC(pDrawable, mask, pval, pStatus)
 	*pStatus = BadAlloc;
 	return (GCPtr)NULL;
     }
-
-#ifdef DEBUG
-    for(j = &pGC->FillSpans;
-        j < &pGC->PushPixels;
-        j++ )
-        *j = NotImplemented;
-#endif /* DEBUG */
 
     pGC->pScreen = pDrawable->pScreen;
     pGC->depth = pDrawable->depth;
@@ -836,20 +822,10 @@ CreateScratchGC(pScreen, depth)
 {
     register GCPtr pGC;
     extern FontPtr defaultFont;
-#ifdef DEBUG
-    void 	(**j)();
-#endif /* DEBUG */
 
     pGC = AllocateGC(pScreen);
     if (!pGC)
 	return (GCPtr)NULL;
-
-#ifdef DEBUG
-    for(j = &pGC->FillSpans;
-        j < &pGC->PushPixels;
-        j++ )
-        *j = NotImplemented;
-#endif /* DEBUG */
 
     pGC->pScreen = pScreen;
     pGC->depth = depth;
