@@ -17,6 +17,7 @@ LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
           SRCS2 = xdmshell.c 
           OBJS2 = xdmshell.o 
        PROGRAMS = xdm xdmshell
+        DEFINES = -DBINDIR=\"$(BINDIR)\" -DXDMDIR=\"$(XDMDIR)\" 
 
 #ifdef IHaveSubdirs
 MakeSubdirs($(SUBDIRS))
