@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: xload.c,v 1.22 89/08/23 18:20:15 kit Exp $";
+static char rcsid[] = "$XConsortium: xload.c,v 1.23 89/08/24 11:52:25 kit Exp $";
 #endif /* lint */
 
 #include <stdio.h> 
@@ -12,6 +12,7 @@ static char rcsid[] = "$XConsortium: xload.c,v 1.22 89/08/23 18:20:15 kit Exp $"
 #include <X11/Xaw/Label.h>
 #include <X11/Xaw/Paned.h>
 #include <X11/Xaw/StripChart.h>
+#include <X11/Xmu/SysUtil.h>
 
 #include "xload.bit"
 
@@ -130,7 +131,7 @@ void main(argc, argv)
       XtGetValues(label_wid, args, ONE);
       
       if ( strcmp("label", label) == 0 ) {
-        (void) gethostname (host, 255);
+	(void) XmuGetHostname (host, 255);
 	XtSetArg (args[0], XtNlabel, host);
 	XtSetValues (label_wid, args, ONE);
       }
