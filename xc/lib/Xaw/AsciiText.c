@@ -1,4 +1,4 @@
-/* $XConsortium: AsciiText.c,v 1.42 91/02/17 15:45:58 rws Exp $ */
+/* $XConsortium: AsciiText.c,v 1.44 91/07/11 18:09:54 converse Exp $ */
 
 /*
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -55,7 +55,7 @@ SOFTWARE.
 
 #define TAB_COUNT 32
 
-static void Initialize(), CreateSourceSink(), Destroy();
+static void Initialize(), Destroy();
 
 AsciiTextClassRec asciiTextClassRec = {
   { /* core fields */
@@ -66,7 +66,7 @@ AsciiTextClassRec asciiTextClassRec = {
     /* class_part_init  */	NULL,
     /* class_inited     */      FALSE,
     /* initialize       */      Initialize,
-    /* initialize_hook  */	CreateSourceSink,
+    /* initialize_hook  */	NULL,
     /* realize          */      XtInheritRealize,
     /* actions          */      NULL,
     /* num_actions      */      0,
@@ -103,32 +103,26 @@ AsciiTextClassRec asciiTextClassRec = {
 
 WidgetClass asciiTextWidgetClass = (WidgetClass)&asciiTextClassRec;
 
-/* ARGSUSED */
+
 static void
-Initialize(request, new)
+Initialize(request, new, args, num_args)
 Widget request, new;
+ArgList args;
+Cardinal *num_args;
 {
+  AsciiWidget w = (AsciiWidget) new;
+  int i;
+  int tabs[TAB_COUNT], tab;
+
   /* superclass Initialize can't set the following,
    * as it didn't know the source or sink when it was called */
   if (request->core.height == DEFAULT_TEXT_HEIGHT)
     new->core.height = DEFAULT_TEXT_HEIGHT;
 
-}
-
-static void 
-CreateSourceSink(widget, args, num_args)
-Widget widget;
-ArgList args;
-Cardinal *num_args;
-{
-  AsciiWidget w = (AsciiWidget) widget;
-  int i;
-  int tabs[TAB_COUNT], tab;
-  
   w->text.source = XtCreateWidget( "textSource", asciiSrcObjectClass,
-				   widget, args, *num_args );
+				  new, args, *num_args );
   w->text.sink = XtCreateWidget( "textSink", asciiSinkObjectClass,
-				 widget, args, *num_args );
+				new, args, *num_args );
 
   if (w->core.height == DEFAULT_TEXT_HEIGHT)
     w->core.height = VMargins(w) + XawTextSinkMaxHeight(w->text.sink, 1);
@@ -138,8 +132,8 @@ Cardinal *num_args;
   
   XawTextSinkSetTabs(w->text.sink, TAB_COUNT, tabs);
 
-  XawTextDisableRedisplay(widget);
-  XawTextEnableRedisplay(widget);
+  XawTextDisableRedisplay(new);
+  XawTextEnableRedisplay(new);
 }
 
 static void 
