@@ -1,5 +1,5 @@
 /*
- * $XConsortium: pr.c,v 1.4 88/08/21 14:07:35 rws Exp $
+ * $XConsortium: pr.c,v 1.5 88/09/06 17:53:54 jim Exp $
  */
 #include "def.h"
 
@@ -101,6 +101,9 @@ void catch()
 	log_fatal("got signal\n");
 }
 #else /* not (mips && SYSTYPE_SYSV) */
+#ifdef ultrix
+void
+#endif
 catch(n)
 {
 	fflush(stdout);

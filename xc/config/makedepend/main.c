@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.17 88/09/22 13:30:52 martin Exp $
+ * $XConsortium: main.c,v 1.17 88/09/22 13:52:43 jim Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -65,7 +65,11 @@ boolean	show_where_not = FALSE;
 #if defined (mips) && defined (SYSTYPE_SYSV)
 void  catch();
 #else /* !(mips && SYSTYPE_SYSV) */
+#ifdef ultrix
+void  catch();
+#else
 int   catch();
+#endif
 
 struct sigvec sig_vec = {
 	catch,
