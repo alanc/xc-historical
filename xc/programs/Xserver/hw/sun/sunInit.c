@@ -1,4 +1,4 @@
-/* $XConsortium: sunInit.c,v 5.43 93/12/13 11:58:52 kaleb Exp $ */
+/* $XConsortium: sunInit.c,v 5.42 93/11/14 13:37:09 kaleb Exp $ */
 /*
  * sunInit.c --
  *	Initialization functions for screen/keyboard/mouse, etc.
@@ -45,6 +45,13 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 *******************************************************/
 
 #include    "sun.h"
+#include    "gcstruct.h"
+#include    "mibstore.h"
+
+/* maximum pixmap depth */
+#ifndef SUNMAXDEPTH
+#define SUNMAXDEPTH 8
+#endif
 
 #ifdef i386 /* { */
 #define BW2I NULL
@@ -59,7 +66,7 @@ extern Bool sunBW2Init(
 );
 #define BW2I sunBW2Init
 #endif /* } */
-#ifdef MONO_ONLY /* { */
+#if SUNMAXDEPTH == 1 /* { */
 #define CG2I NULL
 #define CG3I NULL
 #define CG4I NULL
@@ -155,7 +162,7 @@ sunFbDataRec sunFbData[FBTYPE_LASTPLUSONE] = {
  * a list of devices to try if there is no environment or command
  * line list of devices
  */
-#ifdef MONO_ONLY /* { */
+#if SUNMAXDEPTH == 1 /* { */
 static char *fallbackList[] = {
     BWTWO0DEV, BWTWO1DEV
 };
@@ -183,10 +190,13 @@ static char *fallbackList[] = {
 fbFd sunFbs[MAXSCREENS];
 
 static PixmapFormatRec	formats[] = {
-    { 1, 1, BITMAP_SCANLINE_PAD	}, /* 1-bit deep */
-    { 8, 8, BITMAP_SCANLINE_PAD	}, /* 8-bit deep */
-#ifdef notdef
-    { 24, 32, BITMAP_SCANLINE_PAD } /* 24-bit deep */
+    { 1, 1, BITMAP_SCANLINE_PAD	} /* 1-bit deep */
+#if SUNMAXDEPTH > 1
+    ,{ 8, 8, BITMAP_SCANLINE_PAD} /* 8-bit deep */
+#if SUNMAXDEPTH > 8
+    ,{ 12, 24, BITMAP_SCANLINE_PAD } /* 12-bit deep */
+    ,{ 24, 32, BITMAP_SCANLINE_PAD } /* 24-bit deep */
+#endif
 #endif
 };
 #define NUMFORMATS	(sizeof formats)/(sizeof formats[0])
@@ -375,8 +385,8 @@ void OsVendorInit(
 	struct rlimit rl;
 
 	/* 
-	 * one per client, one per screen, one per connection block,
-	 * keyboard, mouse, & stderr
+	 * one per client, one per screen, one per listen endpoint,
+	 * keyboard, mouse, and stderr
 	 */
 	int maxfds = MAXCLIENTS + MAXSCREENS + 5;
 
@@ -534,3 +544,230 @@ void InitInput(argc, argv)
 	}
     }
 }
+
+
+#if SUNMAXDEPTH == 8
+
+Bool
+sunCfbSetupScreen(pScreen, pbits, xsize, ysize, dpix, dpiy, width, bpp)
+    register ScreenPtr pScreen;
+    pointer pbits;		/* pointer to screen bitmap */
+    int xsize, ysize;		/* in pixels */
+    int dpix, dpiy;		/* dots per inch */
+    int width;			/* pixel width of frame buffer */
+    int	bpp;			/* bits per pixel of root */
+{
+    return cfbSetupScreen(pScreen, pbits, xsize, ysize, dpix, dpiy,
+			  width);
+}
+
+Bool
+sunCfbFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width, bpp)
+    register ScreenPtr pScreen;
+    pointer pbits;		/* pointer to screen bitmap */
+    int xsize, ysize;		/* in pixels */
+    int dpix, dpiy;		/* dots per inch */
+    int width;			/* pixel width of frame buffer */
+    int bpp;			/* bits per pixel of root */
+{
+    return cfbFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy,
+			       width);
+}
+
+Bool
+sunCfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width, bpp)
+    register ScreenPtr pScreen;
+    pointer pbits;		/* pointer to screen bitmap */
+    int xsize, ysize;		/* in pixels */
+    int dpix, dpiy;		/* dots per inch */
+    int width;			/* pixel width of frame buffer */
+    int bpp;			/* bits per pixel of root */
+{
+    return cfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width);
+}
+
+#else /* SUNMAXDEPTH != 8 */
+#if SUNMAXDEPTH == 32
+
+static Bool
+sunCfbCreateGC(pGC)
+    GCPtr   pGC;
+{
+    if (pGC->depth == 1)
+    {
+	return mfbCreateGC (pGC);
+    }
+    else if (pGC->depth <= 8)
+    {
+	return cfbCreateGC (pGC);
+    }
+    else if (pGC->depth <= 16)
+    {
+	return cfb16CreateGC (pGC);
+    }
+    else if (pGC->depth <= 32)
+    {
+	return cfb32CreateGC (pGC);
+    }
+    return FALSE;
+}
+
+static void
+sunCfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
+    DrawablePtr		pDrawable;	/* drawable from which to get bits */
+    int			wMax;		/* largest value of all *pwidths */
+    register DDXPointPtr ppt;		/* points to start copying from */
+    int			*pwidth;	/* list of number of bits to copy */
+    int			nspans;		/* number of scanlines to copy */
+    char		*pdstStart;	/* where to put the bits */
+{
+    switch (pDrawable->bitsPerPixel) {
+    case 1:
+	mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
+	break;
+    case 8:
+	cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
+	break;
+    case 16:
+	cfb16GetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
+	break;
+    case 32:
+	cfb32GetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
+	break;
+    }
+    return;
+}
+
+static void
+sunCfbGetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
+    DrawablePtr pDrawable;
+    int		sx, sy, w, h;
+    unsigned int format;
+    unsigned long planeMask;
+    char	*pdstLine;
+{
+    switch (pDrawable->bitsPerPixel)
+    {
+    case 1:
+	mfbGetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
+	break;
+    case 8:
+	cfbGetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
+	break;
+    case 16:
+	cfb16GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
+	break;
+    case 32:
+	cfb32GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
+	break;
+    }
+}
+
+Bool
+sunCfbSetupScreen(pScreen, pbits, xsize, ysize, dpix, dpiy, width, bpp)
+    register ScreenPtr pScreen;
+    pointer pbits;		/* pointer to screen bitmap */
+    int xsize, ysize;		/* in pixels */
+    int dpix, dpiy;		/* dots per inch */
+    int width;			/* pixel width of frame buffer */
+    int	bpp;			/* bits per pixel of root */
+{
+    extern int		cfbWindowPrivateIndex;
+    extern int		cfbGCPrivateIndex;
+    int ret;
+
+    switch (bpp) {
+    case 8:
+	ret = cfbSetupScreen(pScreen, pbits, xsize, ysize, dpix, dpiy, width);
+	break;
+    case 16:
+	ret = cfb16SetupScreen(pScreen, pbits, xsize, ysize, dpix, dpiy, width);
+	break;
+    case 32:
+	ret = cfb32SetupScreen(pScreen, pbits, xsize, ysize, dpix, dpiy, width);
+	break;
+    default:
+	return FALSE;
+    }
+    pScreen->CreateGC = sunCfbCreateGC;
+    pScreen->GetImage = sunCfbGetImage;
+    pScreen->GetSpans = sunCfbGetSpans;
+    return ret;
+}
+
+extern miBSFuncRec	cfbBSFuncRec, cfb16BSFuncRec, cfb32BSFuncRec;
+extern int  cfb16ScreenPrivateIndex, cfb32ScreenPrivateIndex;
+extern Bool cfbCloseScreen(), cfb16CloseScreen(), cfb32CloseScreen();
+
+Bool
+sunCfbFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width, bpp)
+    register ScreenPtr pScreen;
+    pointer pbits;		/* pointer to screen bitmap */
+    int xsize, ysize;		/* in pixels */
+    int dpix, dpiy;		/* dots per inch */
+    int width;			/* pixel width of frame buffer */
+    int bpp;
+{
+    int		i;
+    pointer	oldDevPrivate;
+    VisualPtr	visuals;
+    int		nvisuals;
+    DepthPtr	depths;
+    int		ndepths;
+    VisualID	defaultVisual;
+    int		rootdepth = 0;
+    miBSFuncPtr	bsFuncs;
+
+    if (!cfbInitVisuals(&visuals, &depths, &nvisuals, &ndepths,
+			&rootdepth, &defaultVisual, 1 << (bpp - 1), 8))
+	return FALSE;
+    oldDevPrivate = pScreen->devPrivate;
+    if (! miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
+			rootdepth, ndepths, depths,
+			defaultVisual, nvisuals, visuals,
+			(miBSFuncPtr) 0))
+	return FALSE;
+    switch (bpp)
+    {
+    case 8:
+	pScreen->CloseScreen = cfbCloseScreen;
+	bsFuncs = &cfbBSFuncRec;
+	break;
+    case 16:
+	pScreen->CloseScreen = cfb16CloseScreen;
+	pScreen->devPrivates[cfb16ScreenPrivateIndex].ptr =
+	    pScreen->devPrivate;
+	pScreen->devPrivate = oldDevPrivate;
+	bsFuncs = &cfb16BSFuncRec;
+	break;
+    case 32:
+	pScreen->CloseScreen = cfb32CloseScreen;
+	pScreen->devPrivates[cfb32ScreenPrivateIndex].ptr =
+	    pScreen->devPrivate;
+	pScreen->devPrivate = oldDevPrivate;
+	bsFuncs = &cfb32BSFuncRec;
+	break;
+    }
+    miInitializeBackingStore (pScreen, bsFuncs);
+    return TRUE;
+}
+
+
+Bool
+sunCfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width, bpp)
+    register ScreenPtr pScreen;
+    pointer pbits;		/* pointer to screen bitmap */
+    int xsize, ysize;		/* in pixels */
+    int dpix, dpiy;		/* dots per inch */
+    int width;			/* pixel width of frame buffer */
+    int bpp;
+{
+    if (!sunCfbSetupScreen(pScreen, pbits, xsize, ysize, dpix, dpiy,
+			   width, bpp))
+	return FALSE;
+    return sunCfbFinishScreenInit(pScreen, pbits, xsize, ysize, dpix,
+				  dpiy, width, bpp);
+}
+
+#endif  /* SUNMAXDEPTH == 32 */
+#endif  /* SUNMAXDEPTH */
