@@ -10,7 +10,8 @@ OTHERSUBDIRS = xdm xhost
 #endif
 
 SUBDIRS = \
-	appres bitmap listres oclock twm xauth xbiff xcalc xclipboard xclock \
+	appres bitmap editres listres oclock twm viewres \
+	xauth xbiff xcalc xclipboard xclock \
 	xditview xdpyinfo xedit xfd xinit xkill xload xlogo \
 	xlsatoms xlsclients xlsfonts xlswins xmag xman xmh \
 	xmodmap xpr xprop xrdb xrefresh xfontsel $(OTHERSUBDIRS) \
