@@ -1,4 +1,4 @@
-/* $XConsortium: cp_priv.h,v 5.3 91/02/18 11:11:49 rws Exp $ */
+/* $XConsortium: cp_priv.h,v 5.4 91/03/29 15:01:45 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -26,7 +26,7 @@ SOFTWARE.
 #ifndef PHG_CP_INTERNAL_H_INCLUDED
 #define PHG_CP_INTERNAL_H_INCLUDED
 
-#ifndef SVR4
+#if !defined(SVR4) && !defined(sgi)
 extern char	*shmat();
 #endif
 
