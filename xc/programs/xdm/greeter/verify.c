@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: verify.c,v 1.15 91/02/12 15:34:18 keith Exp $
+ * $XConsortium: verify.c,v 1.16 91/04/01 10:29:56 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -33,7 +33,9 @@
 #ifdef SVR4
 # include	<shadow.h>
 #endif
-
+#ifdef X_NOT_STDC_ENV
+char *getenv();
+#endif
 
 struct passwd joeblow = {
 	"Nobody", "***************"
@@ -114,7 +116,6 @@ char **
 defaultEnv ()
 {
     char    **env, **exp, *value;
-    char    *getenv();
 
     env = 0;
     for (exp = exportList; exp && *exp; ++exp)
