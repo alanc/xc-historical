@@ -1,4 +1,4 @@
-/* $XConsortium: FSlibos.h,v 1.4 91/06/20 15:52:07 keith Exp $ */
+/* $XConsortium: FSlibos.h,v 1.5 91/06/21 18:15:49 keith Exp $ */
 /* @(#)FSlibos.h	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -9,6 +9,11 @@
  * FSlib networking & os include file
  */
 
+/* Sorry, we do not really support streams yet */
+#ifdef STREAMSCONN
+#undef STREAMSCONN
+#endif
+
 #ifdef STREAMSCONN
 #ifdef SYSV
 /*
@@ -17,9 +22,6 @@
 #include <sys/stropts.h>
 #define MALLOC_0_RETURNS_NULL
 #include <sys/ioctl.h>
-#include <sys/param.h>
-#define MAXSOCKS (NOFILES_MAX)
-#define MSKCNT ((MAXSOCKS + 31) / 32)
 #endif
 #else
 /*
@@ -29,14 +31,45 @@
 #include <sys/ioctl.h>
 #include <netdb.h>
 #include <sys/uio.h>
-#include <sys/param.h>
 #ifdef SVR4
 #include <sys/filio.h>
 #endif
 
-#define MSKCNT ((NOFILE + 31) / 32)	/* size of bit array */
+#if defined(SYSV386) && defined(SYSV)
+#include <net/errno.h>
+#include <sys/stropts.h>
+#define BytesReadable(fd,ptr) ioctl((fd), I_NREAD, (ptr))
+#else
+#define BytesReadable(fd, ptr) ioctl ((fd), FIONREAD, (ptr))
+#endif
 #endif				/* streams else tcp */
 
+#ifndef X_NOT_POSIX
+#ifdef _POSIX_SOURCE
+#include <limits.h>
+#else
+#define _POSIX_SOURCE
+#include <limits.h>
+#undef _POSIX_SOURCE
+#endif
+#endif
+#ifndef OPEN_MAX
+#include <sys/param.h>
+#ifndef OPEN_MAX
+#ifdef NOFILE
+#define OPEN_MAX NOFILE
+#else
+#define OPEN_MAX NOFILES_MAX
+#endif
+#endif
+#endif
+
+#if OPEN_MAX > 256
+#undef OPEN_MAX
+#define OPEN_MAX 256
+#endif
+
+#define MSKCNT ((OPEN_MAX + 31) / 32)
 
 #if (MSKCNT==1)
 #define BITMASK(i) (1 << (i))
