@@ -1,5 +1,5 @@
 .\" Use -ms
-.\" $XConsortium: a2x.ms,v 1.40 93/08/04 17:35:59 rws Exp $
+.\" $XConsortium: a2x.ms,v 1.42 93/08/05 19:05:10 rws Exp $
 .de Ds
 .RS
 .nf
@@ -1209,6 +1209,13 @@ Turns on fake echoing.  At least one DOS telnet program (PC-NFS Advanced
 Telnet) transmits characters very slowly unless \fBa2x\fP echoes something
 back each time it receives characters.  This option causes \fBa2x\fP to send
 back a rubout character each time it reads characters.
+.LP
+.B \-p
+.IP
+Some versions of the XTestExtension1 do not handle relative pointer motion
+correctly; if you physically move the mouse and then try to move the mouse
+with \fBa2x\fP, the pointer will move to the wrong position.  Use this option
+to work around this problem.
 .LP
 .B \-f
 .IP
