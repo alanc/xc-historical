@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dix.h,v 1.56 89/08/20 12:14:05 rws Exp $ */
+/* $XConsortium: dix.h,v 1.57 91/02/14 19:36:03 keith Exp $ */
 
 #ifndef DIX_H
 #define DIX_H
@@ -135,6 +135,7 @@ extern ClientPtr requestingClient;
 extern ClientPtr *clients;
 extern ClientPtr serverClient;
 extern int currentMaxClients;
+extern long *checkForInput[2];
 
 extern int ProcAllowEvents();
 extern int ProcBell();
