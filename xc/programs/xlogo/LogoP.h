@@ -1,5 +1,5 @@
 /*
-* $XConsortium: LogoP.h,v 1.8 90/04/17 18:02:45 jim Exp $
+* $XConsortium: LogoP.h,v 1.9 90/10/22 14:45:51 converse Exp $
 */
 
 /*
@@ -21,7 +21,7 @@ without express or implied warranty.
 #ifndef _XawLogoP_h
 #define _XawLogoP_h
 
-#include <X11/Xaw/Logo.h>
+#include "Logo.h"
 #include <X11/Xaw/SimpleP.h>
 
 typedef struct {

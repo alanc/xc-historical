@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xlogo.c,v 1.15 91/01/10 12:27:35 converse Exp $
+ * $XConsortium: xlogo.c,v 1.16 91/10/30 10:28:15 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,7 +23,7 @@
  */
 
 #include <X11/Intrinsic.h>
-#include <X11/Xaw/Logo.h>
+#include "Logo.h"
 #include <X11/Xaw/Cardinals.h>
 
 extern void exit();

@@ -1,4 +1,4 @@
-/* $XConsortium: Logo.c,v 1.26 91/10/16 21:35:53 eswu Exp $ */
+/* $XConsortium: Logo.c,v 1.27 91/10/30 13:35:31 converse Exp $ */
 
 /*
 Copyright 1988 by the Massachusetts Institute of Technology
@@ -19,7 +19,7 @@ without express or implied warranty.
 #include <X11/StringDefs.h>
 #include <X11/IntrinsicP.h>
 #include <X11/Xaw/XawInit.h>
-#include <X11/Xaw/LogoP.h>
+#include "LogoP.h"
 #include <X11/extensions/shape.h>
 
 static XtResource resources[] = {
