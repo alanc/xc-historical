@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.147 90/04/30 17:46:25 converse Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.148 90/05/08 15:15:45 converse Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -835,7 +835,7 @@ int line;
        (ctx->text.wrap == XawtextWrapNever) )
     width = BIGNUM;
   else 
-    width = Max(0, (ctx->core.width - HMargins(ctx)));
+    width = Max(0, ((int)ctx->core.width - (int)HMargins(ctx)));
 
   y = ( (line == 0) ? ctx->text.margin.top : lt->y );
 
@@ -1098,7 +1098,7 @@ caddr_t callData;		/* #pixels */
 {
   TextWidget ctx = (TextWidget) closure;
   Widget tw = (Widget) ctx;
-  Position old_left, pixels = (Position) callData;
+  Position old_left, pixels = (Position)(int) callData;
   XRectangle rect, t_rect;
   
   _XawTextPrepareToUpdate(ctx);
