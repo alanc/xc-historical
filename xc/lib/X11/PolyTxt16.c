@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XPolyTxt16.c,v 11.15 87/09/01 15:02:47 jim Locked $ */
+/* $Header: XPolyTxt16.c,v 11.16 88/02/06 15:37:34 jim Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -130,7 +130,7 @@ XDrawText16(dpy, d, gc, x, y, items, nitems)
 			char *DummyChar;
 		        BufAlloc(char *, DummyChar, nbytes);
 #ifdef lint
-			DummyChar = DummyChar
+			DummyChar = DummyChar;
 #endif
 		    }
 		}
@@ -163,7 +163,7 @@ XDrawText16(dpy, d, gc, x, y, items, nitems)
 			char *DummyChar;
 		        BufAlloc(char *, DummyChar, nbytes);
 #ifdef lint
-			DummyChar = DummyChar
+			DummyChar = DummyChar;
 #endif
 		    }
 		}
