@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: spheres.c,v 5.1 91/02/16 09:32:49 rws Exp $ */
 
 /***********************************************************
 Copyright 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -40,6 +40,14 @@ SOFTWARE.
 #include <phigs/phigs.h>
 
 #include <math.h>
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+char *malloc();
+#endif
+#if defined(macII) && !defined(__STDC__)  /* stdlib.h fails to define these */
+char *malloc();
+#endif /* macII */
 
 #define MAXLAT 100    /*max number of horiz and vert. divisions of sphere*/
 #define MAXLONG 100
