@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.36 89/08/23 18:47:37 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.37 89/08/24 10:40:17 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -94,7 +94,7 @@
 #define SHELLPATH -DSHELLPATH=\"/bin/sh\"
 #endif
 #ifndef ZBDFTOSNFFILT
-#define ZBDFTOSNFFILT -DZBDFTOSNFFILT=\"UNCOMPRESSPATH" | $(BINDIR)/bdftosnf $(FCFLAGS)\""
+#define ZBDFTOSNFFILT -DZBDFTOSNFFILT=\"UNCOMPRESSPATH" | $(BINDIR)/bdftosnf $(FONTCFLAGS)\""
 #endif
 #ifndef FontFilters
 #define FontFilters UNCOMPRESSFILT BDFTOSNFFILT SHELLPATH ZBDFTOSNFFILT
@@ -306,7 +306,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.36 89/08/23 18:47:37 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.37 89/08/24 10:40:17 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -343,7 +343,7 @@ Berklib.c: sysV/Berklib.c					@@\
          SOXMUREV = SharedXmuRev
         SOXEXTREV = SharedXextRev
 #endif
-          FCFLAGS = FontCompilerFlags
+       FONTCFLAGS = FontCompilerFlags
 
      INSTAPPFLAGS = $(INSTDATFLAGS)	/* XXX - this should go away - XXX */
 
@@ -355,7 +355,7 @@ Berklib.c: sysV/Berklib.c					@@\
            DEPEND = DependCmd
 #endif
               RGB = $(RGBSRC)/rgb
-               FC = $(BDFTOSNFSRC)/bdftosnf
+            FONTC = $(BDFTOSNFSRC)/bdftosnf
         MKFONTDIR = $(MKFONTDIRSRC)/mkfontdir
         MKDIRHIER = BourneShell $(SCRIPTSRC)/mkdirhier.sh
 

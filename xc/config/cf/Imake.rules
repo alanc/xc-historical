@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.55 89/08/31 17:44:57 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.56 89/09/19 09:13:01 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1375,7 +1375,7 @@ install::  fonts.alias							@@\
 #ifndef FontTarget
 #define FontTarget(basename)						@@\
 basename.snf:  basename.bdf						@@\
-	$(FC) $(FCFLAGS) $? >$@
+	$(FONTC) $(FONTCFLAGS) $? >$@
 #endif /* FontTarget */
 
 
@@ -1386,7 +1386,7 @@ basename.snf:  basename.bdf						@@\
 #ifndef CompressedFontTarget
 #define CompressedFontTarget(basename)					@@\
 basename.snf.Z:  basename.bdf						@@\
-	$(FC) $(FCFLAGS) $? >basename.snf				@@\
+	$(FONTC) $(FONTCFLAGS) $? >basename.snf				@@\
 	$(COMPRESS) basename.snf					@@\
 	rm -f basename.snf
 #endif /* CompressedFontTarget */
