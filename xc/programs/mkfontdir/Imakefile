@@ -1,0 +1,6 @@
+LOCAL_LIBRARIES = $(FONTSRC)/lib/libfont.a
+INCLUDES = -I$(FONTSRC)/include -I$(FONTSRC)/lib
+SRCS = mkfontdir.c
+OBJS = mkfontdir.o
+
+ComplexProgramTarget(mkfontdir)

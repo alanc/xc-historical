@@ -1,0 +1,6 @@
+LOCAL_LIBRARIES = $(FONTSRC)/lib/libfont.a
+INCLUDES = -I$(FONTSRC)/include -I$(FONTSRC)/lib
+SRCS = bdftopcf.c
+OBJS = bdftopcf.o
+
+ComplexProgramTarget(bdftopcf)
