@@ -106,9 +106,7 @@ SpecialObjectRule(Initialize.o,$(IRULESRC)/Imake.tmpl,$(APP_DEFINES))
 NormalLibraryTarget(Xt,$(OBJS))
 LintLibraryTarget(Xt,$(SRCS))
 InstallLibrary(Xt,$(USRLIBDIR))
-#if InstallLintLibs
 InstallLintLibrary(Xt,$(LINTLIBDIR))
-#endif
 
 #if ProfileLibXt
 ProfiledLibraryTarget(Xt,$(OBJS))

@@ -103,9 +103,7 @@ NormalLibraryObjectRule()
 NormalLibraryTarget(Xaw,$(OBJS))
 LintLibraryTarget(Xaw,$(SRCS))
 InstallLibrary(Xaw,$(USRLIBDIR))
-#if InstallLintLibs
 InstallLintLibrary(Xaw,$(LINTLIBDIR))
-#endif
 
 #if ProfileLibXaw
 ProfiledLibraryTarget(Xaw,$(OBJS))

@@ -1,4 +1,4 @@
-# $Header: Imakefile,v 1.5 88/02/20 11:48:01 rws Exp $
+# $Header: Imakefile,v 1.6 88/02/20 11:50:22 rws Exp $
        INCLUDES = -I$(TOP) -I$(INCLUDESRC) -I$(XLIBSRC) -I../include
            SRCS = XFillZoids.c XBezier.c
            OBJS = XFillZoids.o XBezier.o
@@ -21,9 +21,7 @@ NormalLibraryObjectRule()
 NormalLibraryTarget(Xext,$(OBJS))
 LintLibraryTarget(Xext,$(SRCS))
 InstallLibrary(Xext,$(USRLIBDIR))
-#if InstallLintLibs
 InstallLintLibrary(Xext,$(LINTLIBDIR))
-#endif
 
 #if ProfileLibXext
 ProfiledLibraryTarget(Xext,$(OBJS))
