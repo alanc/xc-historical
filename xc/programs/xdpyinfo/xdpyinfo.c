@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xdpyinfo.c,v 1.28 94/04/17 20:25:18 rws Exp $
+ * $XConsortium: xdpyinfo.c,v 1.30 94/07/12 18:29:15 dpw Exp dpw $
  * 
  * xdpyinfo - print information about X display connecton
  *
@@ -710,6 +710,7 @@ print_marked_extensions(dpy)
     {
 	if (known_extensions[i].printit)
 	{
+	    printf("\n");
 	    if (! (*known_extensions[i].printfunc)(dpy,
 					known_extensions[i].extname))
 	    {
