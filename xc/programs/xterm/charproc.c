@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.119 89/12/10 20:45:03 jim Exp $
+ * $XConsortium: charproc.c,v 1.120 89/12/15 18:17:48 jim Exp $
  */
 
 
@@ -149,7 +149,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.119 89/12/10 20:45:03 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.120 89/12/15 18:17:48 jim Exp $";
 #endif	/* lint */
 
 static int nparam;
@@ -1127,7 +1127,7 @@ in_put()
 	for( ; ; ) {
 #ifdef        CRAY
 		trackTimeOut.tv_sec = 0;
-		trackTimeOut.tv_usec = 1;
+		trackTimeOut.tv_usec = 0;
 		(void) select(max_plus1, &select_mask, (int *) NULL,
 		    (int *)NULL, &trackTimeOut);
 #endif        /* CRAY */

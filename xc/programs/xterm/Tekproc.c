@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.73 89/12/13 16:36:17 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.74 89/12/15 18:17:54 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -110,7 +110,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.73 89/12/13 16:36:17 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.74 89/12/15 18:17:54 jim Exp $";
 #endif	/* lint */
 
 extern Widget toplevel;
@@ -658,7 +658,7 @@ again:
 #ifdef CRAY
 			struct timeval crocktimeout;
 			crocktimeout.tv_sec = 0;
-			crocktimeout.tv_usec = 1;
+			crocktimeout.tv_usec = 0;
 			(void) select (max_plus1, &Tselect_mask, (int *) NULL,
 				       (int *) NULL, &crocktimeout);
 #endif
