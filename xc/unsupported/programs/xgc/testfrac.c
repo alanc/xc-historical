@@ -19,7 +19,7 @@ static Widget slider;		/* the scrollbar */
 static Widget percent;	/* label with chosen percentage */
 
 /*ARGSUSED*/
-void slider_jump(w, data, position)
+static void slider_jump(w, data, position)
      Widget w;
      caddr_t data;
      caddr_t position;
@@ -41,7 +41,7 @@ void slider_jump(w, data, position)
 }
 
 /*ARGSUSED*/
-void slider_scroll(w, data, position)
+static void slider_scroll(w, data, position)
      Widget w;
      caddr_t data;
      caddr_t position;

@@ -17,6 +17,9 @@
 #include <X11/StringDefs.h>
 #include "xgc.h"
 
+void choose_plane();
+extern void interpret();
+
 extern XStuff X;
 
 static unsigned long planemask;
@@ -89,7 +92,7 @@ void create_planemask_choice(w)
 }
 
 /*ARGSUSED*/
-void choose_plane(w,closure,call_data)
+static void choose_plane(w,closure,call_data)
      Widget w;
      caddr_t closure;
      caddr_t call_data;
@@ -121,12 +124,12 @@ void choose_plane(w,closure,call_data)
   XtSetValues(w,args,XtNumber(args));
 
   (void) sprintf(buf,"planemask %d\n",planemask);
-  interpret(buf,FALSE);
+  interpret(buf);
 }
 
 void update_planemask(w, mask)
      Widget w;
-     int mask;
+     long mask;
 {
   int i;
   Widget maskwidget;

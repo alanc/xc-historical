@@ -18,6 +18,8 @@
 
 extern XStuff X;
 extern Widget result;
+
+extern void print_if_recording();
 void show_result();
 
 /* timer(flag)
@@ -30,7 +32,7 @@ void show_result();
 ** from our timer, and just concentrate on the time used in the X calls.
 */
 
-long timer(flag)
+static long timer(flag)
      int flag;
 {
   static struct timeval starttime;  /* starting time for gettimeofday() */

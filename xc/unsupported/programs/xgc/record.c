@@ -14,6 +14,13 @@
 
 #include "xgc.h"
 
+void start_recording();
+void stop_recording();
+void print_out_gc_values();
+void chose_playback_filename();
+void cancel_playback();
+extern void get_filename();
+
 extern XgcStuff TestStuff;
 extern XgcStuff FunctionStuff;
 extern XgcStuff LinestyleStuff;
@@ -61,22 +68,21 @@ void toggle_recordbutton(w,closure,call_data)
   XtSetValues(recordbutton,recordargs,XtNumber(recordargs));
 }
 
-void start_recording() 
+static void start_recording() 
 {
   get_filename(done_choosing_filename,cancel_record);
 }
 
-
-void stop_recording() 
+static void stop_recording() 
 {
   fclose(recordfile);
 }
 
-void cancel_record() 
+static void cancel_record() 
 {
 }
 
-void done_choosing_filename() 
+static void done_choosing_filename() 
 {
   static Arg recordargs[] = {
     {XtNlabel,        (XtArgVal) NULL}
@@ -107,7 +113,7 @@ void close_file_if_recording()
     fclose(recordfile);
 }
 
-void print_out_gc_values()
+static void print_out_gc_values()
 {
   int i;
   for (i=0;i<NUM_TESTS;++i) {
@@ -181,11 +187,11 @@ void start_playback()
   get_filename(chose_playback_filename,cancel_playback);
 }
 
-void cancel_playback()
+static void cancel_playback()
 {
 }
 
-void chose_playback_filename()
+static void chose_playback_filename()
 {
   if (playbackfile = fopen(filename,"r")) {
     yyin = playbackfile;
