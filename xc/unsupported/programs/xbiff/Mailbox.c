@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.56 91/04/17 09:51:33 rws Exp $
+ * $XConsortium: Mailbox.c,v 1.57 91/05/22 16:01:05 converse Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -380,6 +380,8 @@ static void Realize (gw, valuemaskp, attr)
 			 w->mailbox.update * 1000, clock_tic, (XtPointer) w);
 
     w->mailbox.shape_cache.mask = None;
+
+    check_mailbox (w, TRUE, FALSE);
 
     return;
 }
