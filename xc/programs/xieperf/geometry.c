@@ -1,6 +1,6 @@
-/* $XConsortium: geometry.c,v 1.2 93/07/19 14:43:55 rws Exp $ */
+/* $XConsortium: geometry.c,v 1.3 93/07/20 20:51:09 rws Exp $ */
 
-/**** module do_logical.c ****/
+/**** module geometry.c ****/
 /******************************************************************************
 				NOTICE
                               
@@ -43,7 +43,7 @@ terms and conditions:
      Logic, Inc.
 *****************************************************************************
   
-	do_logical.c -- logical flo element tests 
+	geometry.c -- geometry flo element tests 
 
 	Syd Logan -- AGE Logic, Inc. July, 1993 - MIT Alpha release
   
@@ -63,6 +63,7 @@ static XieClipScaleParam *parms;
 static XieConstant in_low,in_high;
 static XieLTriplet out_low,out_high;
 static int constrainflag = 0;
+static int drawableplaneflag = 0;
 
 static XieDecodeG42DParam *G42Ddecode_params=NULL;
 static XiePhotoElement *flograph;
@@ -74,6 +75,7 @@ int InitGeometry(xp, p, reps)
     Parms   p;
     int     reps;
 {
+	constrainflag = drawableplaneflag = 0;
 	if ( xp->vinfo.depth == 1 && !IsFaxImage( p->decode ) )
 	{
 		constrainflag = 1;
@@ -83,7 +85,8 @@ int InitGeometry(xp, p, reps)
 			reps = 0;
 		}
 	}	
-	else if ( xp->vinfo.depth != 1 && IsFaxImage( p->decode ) )
+	else if ( xp->vinfo.depth != 1 && IsFaxImage( p->decode ) 
+		&& p->geo.geoTech == xieValGeomAntialias )
 	{
 		constrainflag = 1;
 		if ( !SetupFaxClipScale( xp, p, levels, in_low, 
@@ -92,6 +95,9 @@ int InitGeometry(xp, p, reps)
 			reps = 0;
 		}
 	}
+	if ( xp->vinfo.depth != 1 && IsFaxImage( p->decode ) 
+		&& p->geo.geoTech != xieValGeomAntialias )
+		drawableplaneflag = 1;
 
 	if ( reps )
 	{
@@ -191,6 +197,7 @@ int InitGeometryFAX(xp, p, reps)
     Parms   p;
     int     reps;
 {
+	constrainflag = drawableplaneflag = 0;
 	if ( xp->vinfo.depth == 1 && !IsFaxImage( p->decode ) )
 	{
 		constrainflag = 1;
@@ -200,7 +207,8 @@ int InitGeometryFAX(xp, p, reps)
 			reps = 0;
 		}
 	}	
-	else if ( xp->vinfo.depth != 1 && IsFaxImage( p->decode ) )
+	else if ( xp->vinfo.depth != 1 && IsFaxImage( p->decode ) 
+		&& p->geo.geoTech == xieValGeomAntialias )
 	{
 		constrainflag = 1;
 		if ( !SetupFaxClipScale( xp, p, levels, in_low, 
@@ -209,6 +217,10 @@ int InitGeometryFAX(xp, p, reps)
 			reps = 0;
 		}
 	}
+
+	if ( xp->vinfo.depth != 1 && IsFaxImage( p->decode ) 
+		&& p->geo.geoTech != xieValGeomAntialias )
+		drawableplaneflag = 1;
 
 	if ( reps )	
         	if ( !GetImageData( xp, p, 1 ) )
@@ -302,13 +314,25 @@ void DoGeometryFAX(xp, p, reps)
 		geo_tech_params
 	); idx++;
 
-	XieFloExportDrawable(&flograph[idx],
-		idx, 		/* source phototag number */
-		xp->w,
-		xp->fggc,
-		p->dst_x,       /* x offset in window */
-		p->dst_y        /* y offset in window */
-	); idx++;
+	if ( drawableplaneflag ) {
+		XieFloExportDrawablePlane(&flograph[idx],
+			idx, 		/* source phototag number */
+			xp->w,
+			xp->fggc,
+			p->dst_x,       /* x offset in window */
+			p->dst_y        /* y offset in window */
+		); idx++;
+	}
+	else {
+		XieFloExportDrawable(&flograph[idx],
+			idx, 		/* source phototag number */
+			xp->w,
+			xp->fggc,
+			p->dst_x,       /* x offset in window */
+			p->dst_y        /* y offset in window */
+		); idx++;
+	}
+
 
 	flo_notify = True;	
 	flo_id = 1;
