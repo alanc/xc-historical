@@ -20,7 +20,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  * $NCDId: @(#)swap.h,v 1.1 1994/03/24 17:55:15 lemke Exp $
- * $XConsortium: utils.c,v 1.5 94/03/17 19:46:39 dpw Exp $
+ * $XConsortium: swap.h,v 1.1 94/03/27 14:27:25 dpw Exp mor $
  */
 
 #ifndef _SWAP_H_
@@ -36,6 +36,9 @@ extern void SwapGetKeyboardMapping();
 extern void SwapQueryFont();
 extern void SwapChangeProperty();
 extern void SwapGetProperty();
+extern void SwapPutImage();
+extern void SwapGetImage();
+extern void SwapGetImageReply();
 extern void SwapInvalidateTag();
 extern void SwapQueryTag();
 extern void SwapTagData();
