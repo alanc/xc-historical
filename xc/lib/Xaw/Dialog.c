@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Dialog.c,v 1.10 88/02/26 11:57:37 swick Exp $";
+static char rcsid[] = "$Header: Dialog.c,v 1.11 88/03/03 14:40:58 swick Exp $";
 #endif lint
 
 
@@ -43,7 +43,7 @@ SOFTWARE.
 #include <X11/DialogP.h>
 
 
-XtResource resources[] = {
+static XtResource resources[] = {
   {XtNlabel, XtCLabel, XtRString, sizeof(String),
      XtOffset(DialogWidget, dialog.label), XtRString, NULL},
   {XtNvalue, XtCValue, XtRString, sizeof(String),
