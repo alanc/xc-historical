@@ -1,4 +1,4 @@
-/* $XConsortium: cpx_ar.c,v 5.1 91/02/16 09:48:20 rws Exp $ */
+/* $XConsortium: cpx_ar.c,v 5.2 91/02/18 21:02:02 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -24,8 +24,6 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include <sys/types.h>
-#include <sys/stat.h>
 #include "phg.h"
 #include "cp.h"
 #include "ws.h"
@@ -34,6 +32,12 @@ SOFTWARE.
 #include "PEXprotost.h"
 #include "PEXproto.h"
 #include "PEX.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+
+#ifdef X_NOT_POSIX
+off_t lseek();
+#endif
 
 #ifndef L_XTND
 #define  L_XTND      2  /* relative to end of file */
@@ -94,7 +98,6 @@ Phg_ret *ret;
     Phg_args_ar_open *args = &(cp_args->data.ar_open);
     struct stat	      finfo;
     FILE	     *fp = NULL;
-    off_t		lseek();
     
     ret->err = !0;
     
