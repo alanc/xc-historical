@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.3 94/02/09 09:45:59 matt Exp $
+XCOMM $XConsortium: Imakefile,v 1.2 94/02/10 11:54:26 matt Exp $
 #define DoNormalLib NormalLibFresco
 #define DoSharedLib SharedLibFresco
 #define DoDebugLib DebugLibFresco
@@ -34,25 +34,25 @@ SRCS =  Xdisplay.CCsuf \
 	viewers.CCsuf \
 	widgets.CCsuf
 
-OBJS =  Xdisplay.Osuf \
-	Xdrawing.Osuf \
-	Xraster.Osuf \
-	Xwindow.Osuf \
-	figures.Osuf \
-	fresco.Osuf \
-	glyphs.Osuf \
-	inits.Osuf \
-	layouts.Osuf \
-	objects.Osuf \
-	os.Osuf \
-	ox-ids.Osuf \
-	stubs1.Osuf \
-	stubs2.Osuf \
-	threads.Osuf \
-	transport.Osuf \
-	types.Osuf \
-	viewers.Osuf \
-	widgets.Osuf
+OBJS =  Xdisplay.o \
+	Xdrawing.o \
+	Xraster.o \
+	Xwindow.o \
+	figures.o \
+	fresco.o \
+	glyphs.o \
+	inits.o \
+	layouts.o \
+	objects.o \
+	os.o \
+	ox-ids.o \
+	stubs1.o \
+	stubs2.o \
+	threads.o \
+	transport.o \
+	types.o \
+	viewers.o \
+	widgets.o
 
 #define CplusplusSource
 
