@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Fill.c,v 1.5 93/08/17 15:34:53 rws Exp $
+ * $XConsortium: Fill.c,v 1.6 93/08/18 15:11:50 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,6 +23,11 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
+#include <X11/Xos.h>
+#include <X11/X.h>
+#include <X11/Xmd.h>
+#include <X11/Xdmcp.h>
+
 #ifdef STREAMSCONN
 #include <tiuser.h>
 #else
@@ -34,11 +39,6 @@
 #include <sys/socket.h>
 #endif
 #endif
-
-#include <X11/Xos.h>
-#include <X11/X.h>
-#include <X11/Xmd.h>
-#include <X11/Xdmcp.h>
 
 int
 XdmcpFill (fd, buffer, from, fromlen)
