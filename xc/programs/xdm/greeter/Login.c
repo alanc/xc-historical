@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: Login.c,v 1.15 89/05/11 18:22:29 kit Exp $
+ * $XConsortium: Login.c,v 1.16 89/07/16 16:11:36 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -628,6 +628,8 @@ static void Initialize (greq, gnew)
     LoginWidget w = (LoginWidget)gnew;
     XtGCMask	valuemask;
     XGCValues	myXGCV;
+    Arg		position[2];
+    Position	x, y;
 
     myXGCV.foreground = w->login.textpixel;
     myXGCV.background = w->core.background_pixel;
@@ -689,11 +691,11 @@ static void Initialize (greq, gnew)
 
 	w->core.height = fy + pady;	/* for stupid compilers */
     }
-    if (w->core.x == -1)
-	w->core.x = (WidthOfScreen (XtScreen (w)) - w->core.width) / 2;
-    if (w->core.y == -1)
-	w->core.y = (HeightOfScreen (XtScreen (w)) - w->core.height) / 3;
-    XtMoveWidget (XtParent (w), w->core.x, w->core.y); 
+    x = (WidthOfScreen (XtScreen (w)) - w->core.width) / 2;
+    y = (HeightOfScreen (XtScreen (w)) - w->core.height) / 3;
+    XtSetArg (position[0], XtNx, x);
+    XtSetArg (position[1], XtNy, y);
+    XtSetValues (XtParent (w), position, (Cardinal) 2);
 }
 
  
