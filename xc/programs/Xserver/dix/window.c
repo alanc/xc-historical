@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.74 91/07/11 21:12:07 keith Exp $ */
+/* $XConsortium: window.c,v 5.76 91/07/20 20:52:21 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -68,7 +68,7 @@ typedef struct _ScreenSaverStuff {
 #define SCREEN_IS_TILED     2
 #define SCREEN_IS_BLACK	    3
 
-#define HasSaverWindow(v)   ((v) == SCREEN_IS_TILED || (v) == SCREEN_IS_BLACK)
+#define HasSaverWindow(i)   (savedScreenInfo[i].pWindow != NullWindow)
 
 extern int ScreenSaverBlanking, ScreenSaverAllowExposures;
 int screenIsSaved = SCREEN_SAVER_OFF;
@@ -798,7 +798,7 @@ RealChildHead(pWin)
 {
     if (!pWin->parent &&
 	(screenIsSaved == SCREEN_SAVER_ON) &&
-	(HasSaverWindow (savedScreenInfo[pWin->drawable.pScreen->myNum].blanked)))
+	(HasSaverWindow (pWin->drawable.pScreen->myNum)))
 	return (pWin->firstChild);
     else
 	return (NullWindow);
@@ -3936,7 +3936,7 @@ NotClippedByChildren(pWin)
     pReg = (* pScreen->RegionCreate)(NullBox, 1);
     if (pWin->parent ||
 	screenIsSaved != SCREEN_SAVER_ON ||
-	!HasSaverWindow (savedScreenInfo[pWin->drawable.pScreen->myNum].blanked))
+	!HasSaverWindow (pWin->drawable.pScreen->myNum))
     {
 	(* pScreen->Intersect) (pReg, &pWin->borderClip, &pWin->winSize);
     }
@@ -3995,10 +3995,10 @@ SaveScreens(on, mode)
 	       (* screenInfo.screens[i]->SaveScreen) (screenInfo.screens[i],
 						      what);
 	    }
-            else if (HasSaverWindow (savedScreenInfo[i].blanked))
+            else if (HasSaverWindow (i))
 	    {
-    	        FreeResource(savedScreenInfo[i].wid, RT_NONE);
                 savedScreenInfo[i].pWindow = NullWindow;
+    	        FreeResource(savedScreenInfo[i].wid, RT_NONE);
 	    }
 	    continue;
         }
