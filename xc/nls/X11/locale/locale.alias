@@ -1,4 +1,4 @@
-#	$XConsortium: locale.alias,v 1.7 94/05/05 14:32:17 kaleb Exp $
+#	$XConsortium: locale.alias,v 1.8 94/06/30 14:37:13 kaleb Exp kaleb $
 #
 #	This file contains alias name of locale.
 #	Each alias name is described within one line.
@@ -98,6 +98,8 @@ iw		iw_IL.ISO8859-8
 iw_IL		iw_IL.ISO8859-8
 ja		ja_JP.eucJP
 ja_JP		ja_JP.eucJP
+ja_JP.ujis	ja_JP.eucJP
+ja_JP.eucJP	ja_JP.eucJP
 Ja_JP		ja_JP.eucJP
 Jp_JP		ja_JP.eucJP
 Jp_JP.IBM-932	ja_JP.eucJP
@@ -106,6 +108,7 @@ ja_JP.EUC	ja_JP.eucJP
 ja_JP.ISO-2022-JP	ja_JP.JIS7
 ja_JP.JIS	ja_JP.JIS7
 ja_JP.jis7	ja_JP.JIS7
+ja_JP.mscode	ja_JP.SJIS
 ja_JP.SJIS	ja_JP.SJIS
 ko		ko_KR.eucKR
 ko_KR		ko_KR.eucKR
