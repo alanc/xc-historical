@@ -1,0 +1,38 @@
+.TH XCLIPBOARD 1 "14 October 1988" "X Version 11"
+.SH NAME
+xclipboard - X clipboard client
+.SH SYNTAX
+\fBxclipboard\fP [ \fI-toolkitoption\fP ...]
+.SH OPTIONS
+.I Xclipboard
+accepts all of the standard X Toolkit command line options.
+.SH DESCRIPTION
+.I Xclipboard
+provides a window to hold the (text) contents of any selection sent
+to the CLIP_BOARD by another client.
+.SH X DEFAULTS
+For
+.I xclipboard,
+the available class identifiers are:
+.sp
+.nf
+Command
+Scrollbar
+Text   
+.fi
+.PP
+For
+.I xclipboard,
+the available name identifiers are:
+.sp
+.nf
+quit
+text
+xclipboard
+.fi
+.sp
+.LP
+.SH AUTHOR
+Ralph R. Swick, DEC/MIT Project Athena
+.SH COPYRIGHT
+Copyright 1988, Massachusetts Institute of Technology

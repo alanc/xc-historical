@@ -1,0 +1,40 @@
+.TH XCUTSEL 1 "14 October 1988" "X Version 11"
+.SH NAME
+xcutsel - X cutsel client
+.SH SYNTAX
+\fBxcutsel\fP [ \fI-toolkitoption\fP ...] [-atom \fIselection\fP] [-buffer #]
+.SH OPTIONS
+.I Xcutsel
+accepts all of the standard X Toolkit command line options.
+.SH DESCRIPTION
+.I Xcutsel
+provides a trivial interface to copy the contents of a selection into
+a cut buffer and vice-versa.
+.PP
+The default selection
+.SH X DEFAULTS
+For
+.I xcutsel,
+the available class identifiers are:
+.sp
+.nf
+Command
+Scrollbar
+Text   
+.fi
+.PP
+For
+.I xcutsel,
+the available name identifiers are:
+.sp
+.nf
+quit
+text
+xcutsel
+.fi
+.sp
+.LP
+.SH AUTHOR
+Ralph R. Swick, DEC/MIT Project Athena
+.SH COPYRIGHT
+Copyright 1988, Massachusetts Institute of Technology
