@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: resize.c,v 1.29 93/09/20 17:42:18 hersh Exp kaleb $
+ *	$XConsortium: resize.c,v 1.30 94/11/21 18:24:54 kaleb Exp kaleb $
  */
 
 /*
@@ -32,7 +32,7 @@
 #include <stdio.h>
 #include <ctype.h>
 
-#if defined(att) || (defined(SYSV) && defined(SYSV386))
+#if defined(att) || (defined(SYSV) && defined(i386))
 #define ATT
 #endif
 
@@ -92,9 +92,9 @@ char *getenv();
 
 #ifdef USE_SYSV_TERMIO
 #ifdef X_NOT_POSIX
-#ifndef SYSV386
+#ifndef i386
 extern struct passwd *getpwuid(); 	/* does ANYBODY need this? */
-#endif /* SYSV386 */
+#endif /* i386 */
 #endif /* X_NOT_POSIX */
 #define	bzero(s, n)	memset(s, 0, n)
 #endif	/* USE_SYSV_TERMIO */
