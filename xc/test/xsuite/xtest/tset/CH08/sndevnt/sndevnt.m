@@ -12,13 +12,13 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: sndevnt.m,v 1.19 92/06/11 17:25:24 rws Exp $
  */
 >>TITLE XSendEvent CH08
 Status
 XSendEvent(display, w, propagate, event_mask, event_send)
 Display *display = Dsp;
-Window w = (Window) -1;
+Window w = (Window) 0xffffffff;
 Bool propagate = False;
 long event_mask = NoEventMask;
 XEvent	*event_send = &_event;
@@ -1773,7 +1773,7 @@ Set type member of event to KeyPress.
 Set serial member of event to 0.
 Set send_event member of event to False.
 Ignore display member of event, as it's filled in by Xlib.
-Set window member of event to -1.
+Set window member of event to 0xffffffff.
 Discard all events in the event queue.
 Call XSendEvent to send event to creator of window.
 Verify that XSendEvent returned non-zero.
@@ -1782,7 +1782,7 @@ Verify that type was set to KeyPress.
 Verify that serial was not set to 0.
 Verify that send_event was not set to False.
 Check display member of event was filled in by Xlib properly.
-Verify that window was set to 0.
+Verify that window was set to 0xffffffff.
 Repeat for each event-type.
 >>CODE
 int	i;
@@ -1812,8 +1812,8 @@ int	return_value;
 /* Ignore display member of event, as it's filled in by Xlib. */
 		event_send->xany.display = (Display *) NULL;
 
-/* Set window member of event to -1. */
-		event_send->xany.window = (Window) -1;
+/* Set window member of event to 0xffffffff. */
+		event_send->xany.window = (Window) 0xffffffff;
 
 /* Discard all events in the event queue. */
 		XSync(display, True);
@@ -1878,11 +1878,11 @@ int	return_value;
 		else
 			CHECK;
 
-/* Verify that window was set to 0. */
-		if (event->window != (Window) -1 &&
+/* Verify that window was set to 0xffffffff. */
+		if (event->window != (Window) 0xffffffff &&
 			 event->type != MappingNotify &&
 			 event->type != KeymapNotify) {
-			report("%s: window set to 0x%x, expected 0x%x", en, event->window, (Window) -1);
+			report("%s: window set to 0x%lx, expected 0x%lx", en, event->window, (Window) 0xffffffff);
 			FAIL;
 		}
 		else
@@ -1995,16 +1995,17 @@ union is
 an array of 10 shorts.
 >>STRATEGY
 Set type to ClientMessage.
-Verify that the size of the s member of the data union is 20 bytes.
+Verify that the size of the s member of the data union is 10 shorts.
 >>CODE
 XClientMessageEvent *event;
 
 	event = (XClientMessageEvent *) event_send;
 /* Set type to ClientMessage. */
 	event->type = ClientMessage;
-/* Verify that the size of the s member of the data union is 20 bytes. */
-	if (sizeof(event->data.s) != 20) {
-		report("Size %d, expected %d", sizeof(event->data.s), 20);
+/* Verify that the size of the s member of the data union is 10 shorts. */
+	if (sizeof(event->data.s) != 10*sizeof(short)) {
+		report("Size %d, expected %d", sizeof(event->data.s),
+		       10*sizeof(short));
 		FAIL;
 	}
 	else
@@ -2019,16 +2020,17 @@ union is
 an array of 5 longs.
 >>STRATEGY
 Set type to ClientMessage.
-Verify that the size of the l member of the data union is 20 bytes.
+Verify that the size of the l member of the data union is 5 longs.
 >>CODE
 XClientMessageEvent *event;
 
 	event = (XClientMessageEvent *) event_send;
 /* Set type to ClientMessage. */
 	event->type = ClientMessage;
-/* Verify that the size of the l member of the data union is 20 bytes. */
-	if (sizeof(event->data.l) != 20) {
-		report("Size %d, expected %d", sizeof(event->data.l), 20);
+/* Verify that the size of the l member of the data union is 5 longs. */
+	if (sizeof(event->data.l) != 5*sizeof(long)) {
+		report("Size %d, expected %d", sizeof(event->data.l),
+		       5*sizeof(long));
 		FAIL;
 	}
 	else
