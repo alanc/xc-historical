@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.97 92/12/29 14:41:54 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.99 93/01/04 17:29:41 gildea Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -27,7 +27,8 @@ without express or implied warranty.
 
 #include <X11/Xlib.h>
 
-struct _XGC {
+struct _XGC
+{
     XExtData *ext_data;	/* hook for extension to hang data */
     GContext gid;	/* protocol ID for graphics context */
     Bool rects;		/* boolean: TRUE if clipmask is list of rectangles */
@@ -116,6 +117,8 @@ struct _XDisplay
 				  /* linked list of XcmsIntensityMap */
 	} cms;
 	struct _XIMFilter *im_filters;
+	struct _XSQEvent *qfree; /* unallocated event queue elements */
+	unsigned long next_event_serial_num; /* inserted into next queue element */
 };
 
 /*
@@ -129,9 +132,11 @@ struct _XDisplay
 /*
  * _QEvent datatype for use in input queueing.
  */
-typedef struct _XSQEvent {
+typedef struct _XSQEvent
+{
     struct _XSQEvent *next;
     XEvent event;
+    unsigned long qserial_num;	/* so multi-threaded code can find new ones */
 } _XQEvent;
 #endif
 
