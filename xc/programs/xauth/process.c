@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.12 88/12/11 19:13:03 jim Exp $
+ * $XConsortium: process.c,v 1.13 88/12/12 12:57:35 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -743,7 +743,7 @@ int auth_finalize ()
 
     if (dieing) {
 	if (xauth_modified && verbose) {
-	    printf ("Aborting changes authority file %s\n",
+	    printf ("Aborting changes to authority file %s\n",
 		    xauth_filename);
 	}
     } else if (xauth_modified) {
@@ -1402,10 +1402,10 @@ static int do_info (inputfilename, lineno, argc, argv)
 	badcommandline (argv[0]);
 	return 1;
     }
-    printf ("Authority file:     %s\n",
+    printf ("authority filename:    %s\n",
 	    xauth_filename ? xauth_filename : "(none)");
-    printf ("Has been modified:  %s\n", xauth_modified ? "yes" : "no");
-    printf ("Input line:         %s:%d\n", inputfilename, lineno);
+    printf ("modified:              %s\n", xauth_modified ? "yes" : "no");
+    printf ("input from:            %s:%d\n", inputfilename, lineno);
     return 0;
 }
 
