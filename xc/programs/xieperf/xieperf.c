@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.c,v 1.7 93/08/22 10:12:58 rws Exp $ */
+/* $XConsortium: xieperf.c,v 1.8 93/08/22 10:21:01 rws Exp $ */
 
 int   verbosity_Group_xielib ;
 int   verbosity_Group_xielib_user_level ;
@@ -936,9 +936,13 @@ main(argc, argv)
     XGetScreenSaver(xparms.d, &ssTimeout, &ssInterval, &ssPreferBlanking,
 	&ssAllowExposures);
     (void) signal(SIGINT, Cleanup); /* ^C */
+#ifdef SIGQUIT
     (void) signal(SIGQUIT, Cleanup);
+#endif
     (void) signal(SIGTERM, Cleanup);
+#ifdef SIGHUP
     (void) signal(SIGHUP, Cleanup);
+#endif
     XSetScreenSaver(xparms.d, 8 * 3600, ssInterval, ssPreferBlanking, 
 	ssAllowExposures);
 
@@ -1224,6 +1228,8 @@ char *arg;
 
 static int sigFloFinishedSeen, sigExportClientSeen;
 
+#ifdef SIGALRM
+
 #ifdef SIGNALRETURNSINT
 int
 #else
@@ -1245,6 +1251,7 @@ SigExportClientHandler(sig)
 {
 	sigExportClientSeen = 1;
 }
+#endif
 
 int
 WaitForFloToFinish( xp, flo_id )
@@ -1262,8 +1269,10 @@ int	flo_id;
 	/* if we don't see the event after, say, 1 minute then 
 	   something is wrong */
 
+#ifdef SIGALRM
 	signal( SIGALRM, SigFloFinishedHandler );
 	alarm( timeout );
+#endif
 	sigFloFinishedSeen = 0;
 	while ( 1 )
 	{
@@ -1288,8 +1297,9 @@ int	flo_id;
 	}
 
 	/* turn off the signal */
-
+#ifdef SIGALRM
 	alarm( 0 );
+#endif
 	sigFloFinishedSeen = 0;
 	return( retval );
 }
@@ -1310,8 +1320,10 @@ XiePhototag element;
 	   something is ( terribly ) wrong */
 
 	retval = 1;
+#ifdef SIGALRM
 	signal( SIGALRM, SigExportClientHandler );
 	alarm( timeout );
+#endif
 	sigExportClientSeen = 0;
 	while ( 1 )
 	{
@@ -1338,8 +1350,9 @@ XiePhototag element;
 	}
 
 	/* turn off the signal */
-
+#ifdef SIGALRM
 	alarm( 0 );
+#endif
 	sigExportClientSeen = 0;
 	return( retval );
 }
@@ -1453,7 +1466,7 @@ int	which;
         if ( flograph == ( XiePhotoElement * ) NULL )
         {
                 fprintf( stderr, "GetXIEFAXPhotomap: XieAllocatePhotofloGraph failed\n" );
-		XieDestroyPhotomap( xp->d, NULL );
+		XieDestroyPhotomap( xp->d, tmp );
                 return( XiePhotomap ) NULL;
         }
 
@@ -1562,7 +1575,7 @@ int	which;
         if ( flograph == ( XiePhotoElement * ) NULL )
         {
                 fprintf( stderr, "GetXIETriplePhotomap: XieAllocatePhotofloGraph failed\n" );
-		XieDestroyPhotomap( xp->d, NULL );
+		XieDestroyPhotomap( xp->d, tmp );
                 return( XiePhotomap ) NULL;
         }
 
@@ -1665,7 +1678,7 @@ int	which;
         if ( flograph == ( XiePhotoElement * ) NULL )
         {
                 fprintf( stderr, "GetXIEPhotomap: XieAllocatePhotofloGraph failed\n" );
-		XieDestroyPhotomap( xp->d, NULL );
+		XieDestroyPhotomap( xp->d, tmp );
                 return( XiePhotomap ) NULL;
         }
 
