@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Shell.c,v 1.15 88/02/13 16:04:17 swick Exp $";
+static char rcsid[] = "$Header: Shell.c,v 1.16 88/02/14 18:41:45 swick Exp $";
 #endif lint
 
 /*
@@ -1007,7 +1007,7 @@ XtWidgetGeometry *reply;
 	    if (request->request_mode & CWBorderWidth) {
 		wid->core.x = wid->core.y = -request->border_width;
 	    }
-	    return XtGeometryDone;
+	    return XtGeometryYes;
 	} else return XtGeometryNo;
 }
 
