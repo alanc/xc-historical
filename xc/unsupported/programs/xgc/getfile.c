@@ -22,7 +22,7 @@ Widget filename_text_widget;	/* Widget containing the name of
 				   the file the user has selected */
 extern XtAppContext appcontext;
 
-void kill_popup_shell();
+static void kill_popup_shell();
 
 void
 get_filename(success,failure) 

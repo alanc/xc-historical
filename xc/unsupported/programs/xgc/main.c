@@ -19,15 +19,15 @@
 #include "tile"
 #include "main.h"
 
-void fill_up_commandform();
+static void fill_up_commandform();
 extern void run_test();
-void quit();
-void clear_test_window();
-void clear_result_window();
+static void quit();
+static void clear_test_window();
+static void clear_result_window();
 extern void start_playback();
 extern void read_from_keyboard();
 extern void toggle_recordbutton();
-void set_foreground_and_background();
+static void set_foreground_and_background();
 extern ChoiceDesc *create_choice();
 extern void choose_defaults();
 extern void line_up_labels();

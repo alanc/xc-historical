@@ -64,7 +64,7 @@ slider_jump(w, data, position)
 
   if (newpercent > 1.0) {
     newpercent = 1.0;
-    XawScrollBarSetThumb( slider, 1.0 - SLIDER_LENGTH, SLIDER_LENGTH);
+    XawScrollbarSetThumb( slider, 1.0 - SLIDER_LENGTH, SLIDER_LENGTH);
   }
 
   /* Store the position of the silder where it can be found */
@@ -192,7 +192,7 @@ create_testfrac_choice(w)
 
   /* Start the thumb out at 100% */
 
-  XawScrollBarSetThumb(slider, 1.0 - SLIDER_LENGTH, SLIDER_LENGTH);
+  XawScrollbarSetThumb(slider, 1.0 - SLIDER_LENGTH, SLIDER_LENGTH);
 }
 
 void
@@ -200,5 +200,5 @@ update_slider(newpercent)
      int newpercent;
 {
   fraction = (float) newpercent / 100.0;
-  XawScrollBarSetThumb(slider, fraction / (1.0-SLIDER_LENGTH), SLIDER_LENGTH);
+  XawScrollbarSetThumb(slider, fraction / (1.0-SLIDER_LENGTH), SLIDER_LENGTH);
 }

@@ -15,7 +15,7 @@
 
 #include "xgc.h"
 
-void print_text_to_buffer();
+static void print_text_to_buffer();
 extern void interpret();
 
 extern XStuff X;

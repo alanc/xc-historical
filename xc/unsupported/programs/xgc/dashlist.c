@@ -16,7 +16,7 @@
 #include <X11/StringDefs.h>
 #include "xgc.h"
 
-void change_dashlist();
+static void change_dashlist();
 extern void interpret();
 
 extern XStuff X;

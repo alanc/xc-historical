@@ -16,7 +16,7 @@
 #include <X11/StringDefs.h>
 #include "xgc.h"
 
-void choose_plane();
+static void choose_plane();
 extern void interpret();
 
 extern XStuff X;

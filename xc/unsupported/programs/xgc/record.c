@@ -15,11 +15,11 @@
 
 #include "xgc.h"
 
-void start_recording();
-void stop_recording();
-void print_out_gc_values();
-void chose_playback_filename();
-void cancel_playback();
+static void start_recording();
+static void stop_recording();
+static void print_out_gc_values();
+static void chose_playback_filename();
+static void cancel_playback();
 extern void get_filename();
 
 extern XgcStuff TestStuff;
@@ -35,8 +35,8 @@ extern XStuff X;
 extern Boolean recording;
 extern Widget filename_text_widget, recordbutton;
 
-void cancel_record();
-void done_choosing_filename();
+static void cancel_record();
+static void done_choosing_filename();
 
 FILE *recordfile;		/* the file we're recording to */
 FILE *playbackfile;		/* the file we're playing back from */

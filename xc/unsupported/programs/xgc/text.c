@@ -15,7 +15,7 @@
 #include <X11/StringDefs.h>
 #include "xgc.h"
 
-void WriteText();
+static void WriteText();
 extern void interpret();
 
 extern XStuff X;
