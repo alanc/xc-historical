@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.178 89/12/12 12:13:33 jim Exp $ */
+/* $XConsortium: Xlib.h,v 11.179 89/12/12 13:57:19 jim Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -489,9 +489,9 @@ typedef struct _XDisplay {
 	int proto_major_version;/* maj. version of server's X protocol */
 	int proto_minor_version;/* minor version of servers X protocol */
 	char *vendor;		/* vendor of the server hardware */
-        long resource_base;	/* resource ID base */
-	long resource_mask;	/* resource ID mask bits */
-	long resource_id;	/* allocator current ID */
+        XID resource_base;	/* resource ID base */
+	XID resource_mask;	/* resource ID mask bits */
+	XID resource_id;	/* allocator current ID */
 	int resource_shift;	/* allocator shift to correct bits */
 	XID (*resource_alloc)(); /* allocator function */
 	int byte_order;		/* screen byte order, LSBFirst, MSBFirst */
