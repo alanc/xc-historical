@@ -1,14 +1,14 @@
-XCOMM $XConsortium: Imakefile,v 1.5 93/08/23 13:48:33 kaleb Exp $
-#define DoNormalLib NormalLibXTest
-#define DoSharedLib SharedLibXTest
-#define DoDebugLib DebugLibXTest
-#define DoProfileLib ProfileLibXTest
+XCOMM $XConsortium: Imakefile,v 1.6 93/09/04 16:41:54 rws Exp $
+#define DoNormalLib NormalLibXtst
+#define DoSharedLib SharedLibXtst
+#define DoDebugLib DebugLibXtst
+#define DoProfileLib ProfileLibXtst
 #define LibName Xtst
 #define SoRev SOXTESTREV
 #define LibHeaders NO
 
-#ifdef SharedXTestReqs
-REQUIREDLIBS = SharedXTestReqs
+#ifdef SharedXtstReqs
+REQUIREDLIBS = SharedXtstReqs
 #endif
 
  DEFINES = XMTDefines
