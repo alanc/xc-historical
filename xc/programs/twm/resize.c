@@ -26,7 +26,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.23 89/06/22 18:32:07 jim Exp $
+ * $XConsortium: resize.c,v 1.24 89/06/22 18:54:34 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.23 89/06/22 18:32:07 jim Exp $";
+"$XConsortium: resize.c,v 1.24 89/06/22 18:54:34 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -64,6 +64,8 @@ static int clampTop;
 static int clampBottom;
 static int clampLeft;
 static int clampRight;
+static int clampDX;
+static int clampDY;
 
 static int last_width;
 static int last_height;
@@ -82,12 +84,15 @@ static int last_height;
  */
 
 void
-StartResize(ev, tmp_win)
+StartResize(ev, tmp_win, autoclamp)
 XEvent ev;
 TwmWindow *tmp_win;
+Bool autoclamp;
 {
     Window      junkRoot;
     int         junkbw, junkDepth;
+    int		x, y;
+    unsigned int junkMask;
 
     ResizeWindow = tmp_win->frame;
     XGrabServer(dpy);
@@ -105,13 +110,39 @@ TwmWindow *tmp_win;
     origy = dragy;
     origWidth = dragWidth;
     origHeight = dragHeight;
-    clampTop = clampBottom = clampLeft = clampRight = 0;
+    clampTop = clampBottom = clampLeft = clampRight = clampDX = clampDY = 0;
+
+    if (autoclamp && XQueryPointer (dpy, Scr->Root, &junkRoot, &junkRoot,
+				    &x, &y, &junkbw, &junkbw, &junkMask)) {
+	int h = ((x - dragx) / (dragWidth / 3));
+	int v = ((y - dragy - tmp_win->title_height) / (dragHeight / 3));
+	
+	if (h <= 0) {
+	    clampLeft = 1;
+	    clampDX = (x - dragx);
+	} else if (h >= 2) {
+	    clampRight = 1;
+	    clampDX = (x - dragx - dragWidth);
+	}
+
+	if (v <= 0) {
+	    clampTop = 1;
+	    clampDY = (y - dragy);
+	} else if (v >= 2) {
+	    clampBottom = 1;
+	    clampDY = (y - dragy - dragWidth);
+	}
+    }
 
     XMoveWindow(dpy, Scr->SizeWindow, 0, 0);
     XMapRaised(dpy, Scr->SizeWindow);
     last_width = 0;
     last_height = 0;
     DisplaySize(tmp_win, origWidth, origHeight);
+    MoveOutline (Scr->Root, dragx - tmp_win->frame_bw,
+		 dragy - tmp_win->frame_bw, dragWidth + 2 * tmp_win->frame_bw,
+		 dragHeight + 2 * tmp_win->frame_bw,
+		 tmp_win->frame_bw, tmp_win->title_height);
 }
 
 /***********************************************************************
@@ -145,7 +176,7 @@ int x, y, w, h;
     origy = dragy;
     dragWidth = origWidth = w - 2 * (tmp_win->bw + tmp_win->frame_bw);
     dragHeight = origHeight = h - 2 * (tmp_win->bw + tmp_win->frame_bw);
-    clampTop = clampBottom = clampLeft = clampRight = 0;
+    clampTop = clampBottom = clampLeft = clampRight = clampDX = clampDY = 0;
 
     XMoveWindow(dpy, Scr->SizeWindow, 0, Scr->InitialFont.height + 4 + BW);
     XMapRaised(dpy, Scr->SizeWindow);
@@ -178,6 +209,9 @@ TwmWindow *tmp_win;
 
     action = 0;
 
+    x_root -= clampDX;
+    y_root -= clampDY;
+
     if (clampTop) {
         int         delta = y_root - dragy;
         if (dragHeight - delta < MINHEIGHT) {
@@ -195,6 +229,7 @@ TwmWindow *tmp_win;
             y_root;
         clampBottom = 0;
         clampTop = 1;
+	clampDY = 0;
         action = 1;
     }
     if (clampLeft) {
@@ -214,6 +249,7 @@ TwmWindow *tmp_win;
             x_root;
         clampRight = 0;
         clampLeft = 1;
+	clampDX = 0;
         action = 1;
     }
     if (clampBottom) {
@@ -232,6 +268,7 @@ TwmWindow *tmp_win;
         dragHeight = 1 + y_root - dragy;
         clampTop = 0;
         clampBottom = 1;
+	clampDY = 0;
         action = 1;
     }
     if (clampRight) {
@@ -250,8 +287,10 @@ TwmWindow *tmp_win;
         dragWidth = 1 + x_root - origx;
         clampLeft = 0;
         clampRight = 1;
+	clampDX = 0;
         action = 1;
     }
+
     if (action) {
         ConstrainSize (tmp_win, &dragWidth, &dragHeight);
         if (clampLeft)
