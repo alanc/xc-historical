@@ -1,4 +1,4 @@
-/* $XConsortium: Converters.c,v 1.95 94/02/08 20:59:52 converse Exp $ */
+/* $XConsortium: Converters.c,v 1.96 94/04/01 19:15:09 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -1499,12 +1499,16 @@ Boolean XtCvtStringToDirectoryString(dpy, args, num_args, fromVal, toVal,
 
     str = (String)fromVal->addr;
     if (CompareISOLatin1(str, "XtCurrentDirectory")) {
+#ifdef X_NOT_POSIX
+	return False;
+#else
 	str = getcwd(directory, PATH_MAX + 1);
 	if (!str) {
 	    if (errno == EACCES)
 		errno = 0;	    /* reset errno */
 	    return False;
 	}
+#endif
     }
     done(String, str);	/* core dumps, don't use this converter yet */
 }
