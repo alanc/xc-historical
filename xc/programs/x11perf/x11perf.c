@@ -91,33 +91,60 @@ void InitTimes ()
     gettimeofday(&start, &foo);
 }
 
-void GetTime (usec)
-    int *usec;
+double ElapsedTime()
 {
     struct timeval stop;
     struct timezone foo;
     
     gettimeofday(&stop, &foo);
-    if (stop.tv_usec < start.tv_usec)
-    {
+    if (stop.tv_usec < start.tv_usec) {
         stop.tv_usec += 1000000;
 	stop.tv_sec -= 1;
     }
-    *usec = stop.tv_usec - start.tv_usec +
-            (1000000 * (stop.tv_sec - start.tv_sec));
+    return  (double)(stop.tv_usec - start.tv_usec) +
+            (1000000.0 * (double)(stop.tv_sec - start.tv_sec));
 }
 
-void ReportTimes(usec, n, str)
-    int usec;
-    int n;
-    char *str;
+double RoundTo3Digits(d)
+    double d;
 {
-    int usecperobj, objpersec;
+    /* It's kind of silly to print out things like ``193658.4/sec'' so just
+       junk all but 3 most significant digits. */
 
-    usecperobj = (usec * 10) / n;
-    objpersec = (int) ((double) n * 1000000.0 / (double) usec + 0.5);
-    printf("%6d reps @ %2d.%04d msec (%4d/sec): %s\n", 
-	n, usecperobj/10000, usecperobj%10000, objpersec, str);
+    double exponent;
+
+    exponent = 1.0;
+    if (d >= 1000.0) {
+	do {
+	    exponent *= 10.0;
+	} while (d/exponent >= 1000.0);
+	d = (double)((int) (d/exponent + 0.5));
+	d *= exponent;
+    } else {
+	while (d*exponent < 100.0) {
+	    exponent *= 10.0;
+	}
+	d = (double)((int) (d*exponent + 0.5));
+	d /= exponent;
+    }
+    return d;
+}
+
+
+void ReportTimes(usecs, n, str)
+    double  usecs;
+    int     n;
+    char    *str;
+{
+    double msecsperobj, objspersec;
+
+    msecsperobj = usecs / (1000.0 * (double)n);
+    objspersec = (double) n * 1000000.0 / usecs;
+    /* Round obj/sec to 3 significant digits.  Leave msec untouched, to allow
+	averaging results from several repetitions. */
+    objspersec =  RoundTo3Digits(objspersec);
+    printf("%6d reps @ %7.4f msec (%6.1f/sec): %s\n", 
+	n, msecsperobj, objspersec, str);
 }
 
 /*					generic X stuff */
@@ -212,12 +239,12 @@ NULL};
     exit (1);
 }
 
-void EndSync(d, w)
+void HardwareSync(d, w)
     Display *d;
     Window  w;
 {
     if (w == NULL) {
-	XSync (d, 0);
+	XSync (d, True);
     } else {
 	/*
 	 * Some graphics hardware allows the server to claim it is done,
@@ -239,16 +266,16 @@ DoTest(d, test, label)
     Test *test;
     char *label;
 {
-    int     r;
+    double  time;
     int     ret_width, ret_height;
 
-    XSync (d, True);
+    HardwareSync (d, perfWindow);
     InitTimes ();
     (*test->proc) (d, &test->parms);
-    EndSync(d, perfWindow);
+    HardwareSync(d, perfWindow);
 
-    GetTime (&r);
-    ReportTimes (r, test->parms.reps * test->parms.objects, label);
+    time = ElapsedTime();
+    ReportTimes (time, test->parms.reps * test->parms.objects, label);
     if (drawToGPX)
         XQueryBestSize(d, TileShape, tileToQuery,
 		       32, 32, &ret_width, &ret_height);
@@ -306,8 +333,8 @@ Bool CalibrateTest(d, test, seconds)
     Test *test;
     int seconds;
 {
-    int usecs;
-    int reps, exponent;
+    double  usecs;
+    int     reps, exponent;
 
     /* Attempt to get an idea how long each rep lasts by first getting enough
        reps to last more than a second.  Then set p->reps to run long
@@ -328,11 +355,11 @@ Bool CalibrateTest(d, test, seconds)
 		CreateClipWindows(d, test->clips);
 	    }
 	}
-	XSync(d, 0);
+	HardwareSync(d, perfWindow);
 	InitTimes();
 	(*test->proc) (d, &test->parms);
-	EndSync(d, perfWindow);
-	GetTime(&usecs);
+	HardwareSync(d, perfWindow);
+	usecs = ElapsedTime();
 	if (test->passCleanup != NULL)
 	    (*test->passCleanup) (d, &test->parms);
 	if (test->cleanup != NullProc)
@@ -345,21 +372,20 @@ Bool CalibrateTest(d, test, seconds)
 	    return True;
 	}
 	/* Did we go long enough? */
-	if (usecs >= 1000000) break;
+	if (usecs >= 1000000.0) break;
 
 	/* Assume that it took 1/100 sec if we didn't get a clock tick. */
-	if (usecs == 0) usecs = 10000;
+	if (usecs == 0.0) usecs = 10000.0;
 
 	/* Try to get up to 1.5 seconds. */
-	reps = (int) (1500000.0 * (double)reps / (double)usecs) + 1;
+	reps = (int) (1500000.0 * (double)reps / usecs) + 1;
 
     }
 
-    reps = (int) ((double)seconds * 1000000.0 * (double)reps 
-		    / (double)usecs) + 1;
+    reps = (int) ((double)seconds * 1000000.0 * (double)reps / usecs) + 1;
 
-    /* Now round reps up to 1 digit accuracy, so we don't get really weird
-       numbers coming out */
+    /* Now round reps up to 1 digit accuracy, so we don't get stupid-looking
+       numbers of repetitions. */
     reps--;
     exponent = 1;
     while (reps > 9) {
@@ -597,7 +623,6 @@ main(argc, argv)
 		    }
 		} else {
 		    /* Test failed to initialize properly */
-		    printf("FAILED TEST: %s\n", test[i].label);
 		}
 		printf ("\n");
 		if (!test[i].children)
