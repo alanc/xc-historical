@@ -1,4 +1,4 @@
-/* $XConsortium: XChgFCtl.c,v 1.3 89/09/25 16:19:43 gms Exp $ */
+/* $XConsortium: XChgFCtl.c,v 1.4 89/12/06 20:31:25 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -44,8 +44,7 @@ XChangeFeedbackControl (dpy, dev, mask, f)
     unsigned	long		mask;
     XFeedbackControl		*f;
     {
-    char			*t;
-    int				length;
+    int length;
     xChangeFeedbackControlReq	*req;
     XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
@@ -77,7 +76,9 @@ XChangeFeedbackControl (dpy, dev, mask, f)
 	k.key = K->key;
 	k.auto_repeat_mode = K->auto_repeat_mode;
 	length = ((k.length + 3) >> 2);
-	t = (char *) &k;
+	req->length += length;
+	length <<= 2;
+	Data (dpy, (char *) &k, length);
 	}
     else if (f->class == PtrFeedbackClass)
 	{
@@ -91,7 +92,9 @@ XChangeFeedbackControl (dpy, dev, mask, f)
 	p.denom = P->accelDenom;
 	p.thresh = P->threshold;
 	length = ((p.length + 3) >> 2);
-	t = (char *) &p;
+	req->length += length;
+	length <<= 2;
+	Data (dpy, (char *) &p, length);
 	}
     else if (f->class == IntegerFeedbackClass)
 	{
@@ -103,7 +106,9 @@ XChangeFeedbackControl (dpy, dev, mask, f)
 	i.length = sizeof (xIntegerFeedbackCtl);
 	i.int_to_display = I->int_to_display;
 	length = ((i.length + 3) >> 2);
-	t = (char *) &i;
+	req->length += length;
+	length <<= 2;
+	Data (dpy, (char *) &i, length);
 	}
     else if (f->class == StringFeedbackClass)
 	{
@@ -112,10 +117,14 @@ XChangeFeedbackControl (dpy, dev, mask, f)
 
 	S = (XStringFeedbackControl *) f;
 	s.class = StringFeedbackClass;
-	s.length = sizeof (xStringFeedbackCtl);
+	s.length = sizeof (xStringFeedbackCtl) + 
+		(S->num_keysyms * sizeof (KeySym));
 	s.num_keysyms = S->num_keysyms;
-	length = ((s.length + 3) >> 2);
-	t = (char *) &s;
+	req->length += ((s.length + 3) >> 2);
+	length = sizeof (xStringFeedbackCtl);
+	Data (dpy, (char *) &s, length);
+	length = (s.num_keysyms * sizeof (KeySym));
+	Data (dpy, (char *) S->syms_to_display, length);
 	}
     else if (f->class == BellFeedbackClass)
 	{
@@ -129,7 +138,9 @@ XChangeFeedbackControl (dpy, dev, mask, f)
 	b.pitch = B->pitch;
 	b.duration = B->duration;
 	length = ((b.length + 3) >> 2);
-	t = (char *) &b;
+	req->length += length;
+	length <<= 2;
+	Data (dpy, (char *) &b, length);
 	}
     else if (f->class == LedFeedbackClass)
 	{
@@ -142,7 +153,9 @@ XChangeFeedbackControl (dpy, dev, mask, f)
 	l.led_mask = L->led_mask;
 	l.led_values = L->led_values;
 	length = ((l.length + 3) >> 2);
-	t = (char *) &l;
+	req->length += length;
+	length <<= 2;
+	Data (dpy, (char *) &l, length);
 	}
     else
 	{
@@ -151,11 +164,11 @@ XChangeFeedbackControl (dpy, dev, mask, f)
 	u.class = f->class;
 	u.length = f->length - sizeof (int);
 	length = ((u.length + 3) >> 2);
-	t = (char *) &u;
+	req->length += length;
+	length <<= 2;
+	Data (dpy, (char *) &u, length);
 	}
 
-    req->length += length;
-    Data (dpy, (char *) t, length<<2);
     UnlockDisplay(dpy);
     SyncHandle();
     return (Success);
