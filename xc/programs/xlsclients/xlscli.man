@@ -1,4 +1,15 @@
-.\" $XConsortium: xlscli.man,v 1.5 92/06/03 11:53:12 converse Exp $
+.\" $XConsortium: xlscli.man,v 1.6 94/04/11 14:28:31 gildea Exp $
+.\" Copyright 1991 Massachusetts Institute of Technology
+.\"
+.\" Permission to use, copy, modify, distribute, and sell this software and
+.\" its documentation for any purpose is hereby granted without fee, provided
+.\" that the above copyright notice appear in all copies and that both that
+.\" copyright notice and this permission notice appear in supporting
+.\" documentation, and that the name of M.I.T. not be used in advertising or
+.\" publicity pertaining to distribution of the software without specific,
+.\" written prior permission.  M.I.T. makes no representations about the
+.\" suitability of this software for any purpose.  It is provided "as is"
+.\" without express or implied warranty.
 .TH XLSCLIENTS 1 "Release 6" "X Version 11"
 .SH NAME
 xlsclients - list client applications running on a display
@@ -35,9 +46,5 @@ print out.  The default is 10000.
 To get the default host, display number, and screen.
 .SH "SEE ALSO"
 X(1), xwininfo(1), xprop(1)
-.SH COPYRIGHT
-Copyright 1989, Massachusetts Institute of Technology.
-.br
-See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHOR
 Jim Fulton, MIT X Consortium

@@ -1,4 +1,15 @@
-.\" $XConsortium: xmag.man,v 1.6 91/07/31 22:40:50 dave Exp $
+.\" $XConsortium: xmag.man,v 1.7 94/04/11 14:27:27 gildea Exp $
+.\" Copyright 1991 Massachusetts Institute of Technology
+.\"
+.\" Permission to use, copy, modify, distribute, and sell this software and
+.\" its documentation for any purpose is hereby granted without fee, provided
+.\" that the above copyright notice appear in all copies and that both that
+.\" copyright notice and this permission notice appear in supporting
+.\" documentation, and that the name of M.I.T. not be used in advertising or
+.\" publicity pertaining to distribution of the software without specific,
+.\" written prior permission.  M.I.T. makes no representations about the
+.\" suitability of this software for any purpose.  It is provided "as is"
+.\" without express or implied warranty.
 .TH XMAG 1 "Release 6" "X Version 11"
 .SH NAME
 xmag \- magnify parts of the screen
@@ -71,9 +82,5 @@ an area of the screen.
 .TP 15
 .B \-mag\fI integer\fP
 This option indicates the magnification to be used.  5 is the default.
-.SH COPYRIGHT
-Copyright 1991, Massachusetts Institute of Technology.
-.br
-See \fIX\fP(1) for a full statement of rights and permissions.
 .SH AUTHORS
 Dave Sternlicht and Davor Matic, MIT X Consortium.
