@@ -64,6 +64,7 @@ SRCS = \
 	Simple.c \
 	StringSrc.c \
 	Text.c \
+	Vendor.c \
 	Viewport.c \
 	VPaned.c \
 	XDrawLogo.c
@@ -88,6 +89,7 @@ OBJS = \
 	Simple.o \
 	StringSrc.o \
 	Text.o \
+	Vendor.o \
 	Viewport.o \
 	VPaned.o \
 	XDrawLogo.o
