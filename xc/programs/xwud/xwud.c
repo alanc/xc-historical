@@ -1,7 +1,7 @@
 /* 
  * $Locker: jim $ 
  */ 
-static char	*rcsid = "$Header: xwud.c,v 1.17 88/01/31 16:05:46 jim Locked $";
+static char	*rcsid = "$Header: xwud.c,v 1.18 88/02/09 12:07:17 jim Exp $";
 #include <X11/copyright.h>
 
 /* Copyright 1985, 1986, Massachusetts Institute of Technology */
@@ -32,7 +32,7 @@ static char	*rcsid = "$Header: xwud.c,v 1.17 88/01/31 16:05:46 jim Locked $";
  */
 
 #ifndef lint
-static char *rcsid_xwud_c = "$Header: xwud.c,v 1.17 88/01/31 16:05:46 jim Locked $";
+static char *rcsid_xwud_c = "$Header: xwud.c,v 1.18 88/02/09 12:07:17 jim Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -48,7 +48,7 @@ extern int errno;
 
 usage()
 {
-    outl("usage: %s [display host:dpy] [-help] [-debug] [-inverse] [-in <file>]\n",
+    outl("usage: %s [-display host:dpy] [-help] [-debug] [-inverse] [-in <file>]\n",
 	 program_name);
     exit(1);
 }
