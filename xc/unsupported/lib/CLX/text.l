@@ -536,8 +536,10 @@
   (declare-values (or null array-index) (or null int32))
   (unless end (setq end (length sequence)))
   (ecase size
-    ((:default 8) (draw-glyphs8 drawable gcontext x y sequence start end translate width))
-    (16 (draw-glyphs16 drawable gcontext x y sequence start end translate width))))
+    ((:default 8) (draw-glyphs8 drawable gcontext x y sequence start end
+				(or translate #'translate-default) width))
+    (16 (draw-glyphs16 drawable gcontext x y sequence start end
+		       (or translate #'translate-default) width))))
 
 (defun draw-glyphs8 (drawable gcontext x y sequence start end translate width)
   ;; First result is new start, if end was not reached.  Second result is
@@ -586,7 +588,7 @@
 		   (type boolean stop-p))
 	  (setq src-chunk (index-min length *max-string-size*))
 	  (multiple-value-bind (new-start new-font translated-width)
-	      (funcall (or translate #'translate-default)
+	      (funcall translate
 		       sequence src-start (index+ src-start src-chunk)
 		       font buffer-bbuf (index+ boffset 2))
 	    (setq dst-chunk (index- new-start src-start)
@@ -678,7 +680,7 @@
 		   (type boolean stop-p))
 	  (setq src-chunk (index-min length *max-string-size*))
 	  (multiple-value-bind (new-start new-font translated-width)
-	      (funcall (or translate #'translate-default)
+	      (funcall translate
 		       sequence src-start (index+ src-start src-chunk)
 		       font buffer 0)
 	    (setq dst-chunk (index- new-start src-start)
