@@ -1614,9 +1614,9 @@
   (declare (type cursor cursor)
 	   (type color foreground background)))
 
-(defun query-best-cursor (width height display)
+(defun query-best-cursor (width height drawable)
   (declare (type card16 width height)
-	   (type display display)
+	   (type drawable display)
 	   (values width height)))
 
 (defun query-best-tile (width height drawable)
