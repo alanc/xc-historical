@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.27 88/01/02 12:02:36 rws Locked $ */
+/* $Header: dispatch.c,v 1.28 88/01/02 14:46:35 rws Locked $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -50,7 +50,7 @@ extern char *NameForAtom();
 extern void SaveScreens();
 extern void ReleaseActiveGrabs();
 extern void QueryFont();
-extern int NotImplemented();
+extern void NotImplemented();
 
 Selection *CurrentSelections = (Selection *)NULL;
 int NumCurrentSelections = 0;
@@ -2914,12 +2914,12 @@ InitProcVectors()
 	if(!ProcVector[i])
 	{
             ProcVector[i] = SwappedProcVector[i] = ProcBadRequest;
-	    ReplySwapVector[i] = (void (*)())NotImplemented;
+	    ReplySwapVector[i] = NotImplemented;
 	}
     }
     for(i = LASTEvent; i < 128; i++)
     {
-	EventSwapVector[i] = (void (*)())NotImplemented;
+	EventSwapVector[i] = NotImplemented;
     }
     
 }

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: main.c,v 1.127 87/12/05 11:10:48 rws Locked $ */
+/* $Header: main.c,v 1.128 88/01/02 14:09:23 rws Locked $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -67,11 +67,10 @@ unsigned long *minfree;
 
 static int restart = 0;
 
-int
+void
 NotImplemented()
 {
     FatalError("Not implemented");
-    /*NOTREACHED*/
 }
 
 /*
@@ -422,7 +421,7 @@ AddScreen(pfnInit, argc, argv)
 	    for (jNI = &screenInfo.screen[i].QueryBestSize; 
 		 jNI < (void (**) ()) &screenInfo.screen[i].RegionExtents; 
 		 jNI++)
-		*jNI = (void (*) ())NotImplemented;
+		*jNI = NotImplemented;
 #endif /* DEBUG */
 
 

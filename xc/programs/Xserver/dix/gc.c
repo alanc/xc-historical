@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: gc.c,v 1.101 87/12/31 17:27:02 rws Locked $ */
+/* $Header: gc.c,v 1.102 88/01/02 13:48:56 rws Locked $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -37,7 +37,9 @@ SOFTWARE.
 
 #include "dix.h"
 
-extern int NotImplemented();
+#ifdef DEBUG
+extern void NotImplemented();
+#endif
 
 /* written by drewry august 1986 */
 
@@ -374,7 +376,7 @@ CreateGC(pDrawable, mask, pval, pStatus)
     for(j = &pGC->FillSpans;
         j < &pGC->PushPixels;
         j++ )
-        *j = (void (*) ())NotImplemented;
+        *j = NotImplemented;
 #endif /* DEBUG */
 
     pGC->pScreen = pDrawable->pScreen;
@@ -679,7 +681,7 @@ CreateScratchGC(pScreen, depth)
     for(j = &pGC->FillSpans;
         j < &pGC->PushPixels;
         j++ )
-        *j = (void (*) ())NotImplemented;
+        *j = NotImplemented;
 #endif /* DEBUG */
 
     pGC->pScreen = pScreen;
