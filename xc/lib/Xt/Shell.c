@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.90 90/06/25 14:34:30 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.91 90/06/26 11:36:17 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif /* lint */
 
@@ -1119,13 +1119,13 @@ static void _popup_set_prop(w)
 	window_name.value = (unsigned char*)wmshell->wm.title;
 	window_name.encoding = wmshell->wm.title_encoding;
 	window_name.format = 8;
-	window_name.nitems = strlen(window_name.value) + 1;
+	window_name.nitems = strlen((char *)window_name.value) + 1;
 
 	if (XtIsTopLevelShell((Widget)w)) {
 	    icon_name.value = (unsigned char*)tlshell->topLevel.icon_name;
 	    icon_name.encoding = tlshell->topLevel.icon_name_encoding;
 	    icon_name.format = 8;
-	    icon_name.nitems = strlen(icon_name.value) + 1;
+	    icon_name.nitems = strlen((char *)icon_name.value) + 1;
 	}
 
 	EvaluateWMHints(wmshell);
@@ -1925,7 +1925,7 @@ static Boolean TopLevelSetValues(oldW, refW, newW, args, num_args)
 	    icon_name.value = (unsigned char *)new->topLevel.icon_name;
 	    icon_name.encoding = new->topLevel.icon_name_encoding;
 	    icon_name.format = 8;
-	    icon_name.nitems = strlen(icon_name.value) + 1;
+	    icon_name.nitems = strlen((char *)icon_name.value) + 1;
 	    XSetWMIconName(XtDisplay(newW), XtWindow(newW), &icon_name);
 	}
     }
