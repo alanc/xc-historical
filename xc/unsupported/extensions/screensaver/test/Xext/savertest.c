@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: savertest.c,v 1.1 92/02/13 16:08:52 keith Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -71,7 +71,7 @@ int ignoreError (dpy, error)
 }
 
 char *stateNames[] = { "Off", "On", "Cycle" };
-char *typeNames[] = { "Blanked", "Internal", "External" };
+char *kindNames[] = { "Blanked", "Internal", "External" };
 
 main(argc, argv)
     int argc;
@@ -110,9 +110,9 @@ main(argc, argv)
 	fatal ("QueryInfo");
     printf ("window: 0x%x\n", info->window);
     printf ("state: %s\n", stateNames[info->state]);
-    printf ("type: %s\n", typeNames[info->type]);
-    printf ("tilOrSince: %d\n", info->tilOrSince);
-    printf ("tilCycle: %d\n", info->tilCycle);
+    printf ("kind: %s\n", kindNames[info->kind]);
+    printf ("til_or_since: %d\n", info->til_or_since);
+    printf ("idle: %d\n", info->idle);
     printf ("eventMask: 0x%x\n", info->eventMask);
     saver = info->window;
     XFree (info);
@@ -136,11 +136,11 @@ main(argc, argv)
 	    printf ("window: %x\n", se->window);
 	    printf ("root: %x\n", se->root);
 	    printf ("state: %s\n", stateNames[se->state]);
-	    printf ("type: %s\n", typeNames[se->saverType]);
+	    printf ("kind: %s\n", kindNames[se->kind]);
 	    printf ("forced: %d\n", se->forced);
 	    printf ("time: %d\n", se->time);
 	    if (se->state == ScreenSaverOn && 
-		se->saverType == ScreenSaverExternal)
+		se->kind == ScreenSaverExternal)
 	    {
 /*		XSetErrorHandler (ignoreError); */
 		XDrawString (dpy, saver, gc, 100, 100, "Screen Saver Test", 17);
