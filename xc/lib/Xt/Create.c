@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Create.c,v 1.61 89/10/03 12:35:02 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Create.c,v 1.62 89/10/11 13:18:27 swick Exp $";
 /* $oHeader: Create.c,v 1.5 88/09/01 11:26:22 asente Exp $ */
 #endif /*lint*/
 
@@ -451,7 +451,7 @@ Widget XtCreateApplicationShell(name, widget_class, args, num_args)
     Display *dpy = _XtDefaultAppContext()->list[0];
     XrmClass class = _XtGetPerDisplay(dpy)->class;
 
-    return XtAppCreateShell(NULL, XrmQuarkToString((XrmQuark)class),
+    return XtAppCreateShell((String)NULL, XrmQuarkToString((XrmQuark)class),
 			    widget_class, dpy, args, num_args);
 }
 
