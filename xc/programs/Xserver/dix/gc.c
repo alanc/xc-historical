@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 5.3 89/07/09 15:38:37 rws Exp $ */
+/* $XConsortium: gc.c,v 5.4 89/07/12 09:39:15 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -1035,10 +1035,11 @@ VerifyRectOrder(nrects, prects, ordering)
 	      for(i = 1, prectP = prects, prectN = prects + 1;
 		  i < nrects;
 		  i++, prectP++, prectN++)
-		  if((prectN->y < prectP->y) ||
-		      ( (prectN->y == prectP->y) &&
-		        (  (prectN->x < (prectP->x + prectP->height))   ||
-		           (prectN->height != prectP->height) ) ) )
+		  if((prectN->y != prectP->y &&
+ 		      prectN->y < prectP->y + (int) prectP->height) ||
+		     ((prectN->y == prectP->y) &&
+		      (prectN->height != prectP->height ||
+		       prectN->x < prectP->x + (int) prectP->width)))
 		      return -1;
 	  }
 	  return CT_YXBANDED;
