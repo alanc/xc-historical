@@ -1,4 +1,4 @@
-/* $XConsortium: XawI18n.h,v 1.7 94/04/01 10:17:17 rws Exp $ */
+/* $XConsortium: XawI18n.h,v 1.8 94/04/02 15:57:58 kaleb Exp $ */
 
 /************************************************************
 Copyright 1993 by The Massachusetts Institute of Technology
@@ -58,7 +58,7 @@ extern int _Xaw_iswspace(wchar_t);
 #define wcslen(c) _Xwcslen(c)
 #define wcscpy(d,s) _Xwcscpy(d,s)
 #define wcsncpy(d,s,l) _Xwcsncpy(d,s,l)
-#ifdef macII
+#if defined(macII) || defined(__sxg__)
 #define mbtowc(wc,s,l) _Xmbtowc(wc,s,l)
 #endif
 #endif
