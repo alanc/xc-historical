@@ -1,5 +1,5 @@
 /*
- * $XConsortium: BitEdit.c,v 1.1 90/03/30 06:24:19 dmatic Exp $
+ * $XConsortium: Bit.c,v 1.3 90/03/30 06:20:30 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
