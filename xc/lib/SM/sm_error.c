@@ -1,4 +1,4 @@
-/* $XConsortium: sm_error.c,v 1.6 93/12/07 11:05:31 mor Exp $ */
+/* $XConsortium: sm_error.c,v 1.7 93/12/14 10:53:07 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -113,7 +113,35 @@ SmPointer 	values;
     switch (errorClass)
     {
         case IceBadValue:
+        {
+	    int offset, length, val;
+
+	    EXTRACT_CARD32 (pData, swap, offset);
+	    EXTRACT_CARD32 (pData, swap, length);
+
+	    fprintf (stderr,
+		"             BadValue Offset           = %d\n", offset);
+	    fprintf (stderr,
+		"             BadValue Length           = %d\n", length);
+
+	    if (length <= 4)
+	    {
+		if (length == 1)
+		    val = (int) *pData;
+		else if (length == 2)
+		{
+		    EXTRACT_CARD16 (pData, swap, val);
+		}
+		else
+		{
+		    EXTRACT_CARD32 (pData, swap, val);
+		}
+
+		fprintf (stderr,
+	            "             BadValue                  = %d\n", val);
+	    }
             break;
+	}
 
 	default:
 	    break;
@@ -190,7 +218,7 @@ SmPointer 	values;
 	    str = "???";
     }
 
-    fprintf (stderr, "            Error class               = %s\n", str);
+    fprintf (stderr, "             Error class               = %s\n", str);
 
     if (severity == IceCanContinue)
 	str = "CanContinue";
@@ -201,12 +229,40 @@ SmPointer 	values;
     else
 	str = "???";
 
-    fprintf (stderr, "            Severity                  = %s\n", str);
+    fprintf (stderr, "             Severity                  = %s\n", str);
 
     switch (errorClass)
     {
         case IceBadValue:
+        {
+	    int offset, length, val;
+
+	    EXTRACT_CARD32 (pData, swap, offset);
+	    EXTRACT_CARD32 (pData, swap, length);
+
+	    fprintf (stderr,
+		"             BadValue Offset           = %d\n", offset);
+	    fprintf (stderr,
+		"             BadValue Length           = %d\n", length);
+
+	    if (length <= 4)
+	    {
+		if (length == 1)
+		    val = (int) *pData;
+		else if (length == 2)
+		{
+		    EXTRACT_CARD16 (pData, swap, val);
+		}
+		else
+		{
+		    EXTRACT_CARD32 (pData, swap, val);
+		}
+
+		fprintf (stderr,
+	            "             BadValue                  = %d\n", val);
+	    }
             break;
+	}
 
 	default:
 	    break;
