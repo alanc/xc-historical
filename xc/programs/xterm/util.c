@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: util.c,v 1.22 91/02/05 19:44:11 gildea Exp $
+ *	$XConsortium: util.c,v 1.23 91/04/22 13:43:58 gildea Exp $
  */
 
 /*
@@ -945,7 +945,7 @@ ReverseVideo (term)
 	 screen->max_col + 1, False);
 	if(screen->Tshow) {
 	    XClearWindow(screen->display, tek);
-	    TekExpose((XExposeEvent *) NULL);
+	    TekExpose((Widget)NULL, (XEvent *)NULL, (Region)NULL);
 	}
 	update_reversevideo();
 }
