@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbgc.c,v 1.119 88/02/02 14:31:07 rws Exp $ */
+/* $Header: mfbgc.c,v 1.119 88/02/02 17:00:44 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -398,12 +398,11 @@ mfbValidateGC(pGC, pQ, changes, pDrawable)
 	    new_rrop = TRUE;	/* for opaque stipples */
 	    break;
 	  case GCLineStyle:
-	    new_line = TRUE;
-	    break;
 	  case GCLineWidth:
-	  case GCCapStyle:
 	  case GCJoinStyle:
 	    new_line = TRUE;
+	    break;
+	  case GCCapStyle:
 	    break;
 	  case GCFillStyle:
 	    new_fill = TRUE;
