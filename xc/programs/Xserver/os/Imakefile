@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.65 93/09/18 18:35:42 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.66 93/09/18 18:38:54 rws Exp $
 #include <Server.tmpl>
 
 #if (SystemV || SystemV4) && !HasSockets
@@ -59,16 +59,14 @@ BOOTSTRAPCFLAGS =
                   osinit.o utils.o auth.o mitauth.o $(XDMAUTHOBJS) \
  		  $(RPCOBJS) xdmcp.o decompress.o OtherObjects
 #if SpecialMalloc
-     OS_DEFINES = -DSPECIAL_MALLOC
-#else
-     OS_DEFINES =
+     MEM_DEFINES = -DSPECIAL_MALLOC
 #endif /* SpecialMalloc */
     DBM_DEFINES = NdbmDefines
     ADM_DEFINES = -DADMPATH=\"$(ADMDIR)/X\%smsgs\"
     EXT_DEFINES = ExtensionDefines
   XDMCP_DEFINES = ServerXdmcpDefines
-   XTRA_DEFINES = ServerExtraDefines
-        DEFINES = ConnectionFlags $(OS_DEFINES) $(XDMAUTHDEFS) $(RPCDEFS) $(SIGNAL_DEFINES) $(XTRA_DEFINES)
+     OS_DEFINES = ServerOSDefines
+        DEFINES = ConnectionFlags $(MEM_DEFINES) $(XDMAUTHDEFS) $(RPCDEFS) $(SIGNAL_DEFINES) $(OS_DEFINES)
        INCLUDES = -I.  -I../include -I$(INCLUDESRC) -I$(TOP)/lib/Xau
  DEPEND_DEFINES = $(DBM_DEFINES) $(XDMCP_DEFINES) $(EXT_DEFINES)
        LINTLIBS = ../dix/llib-ldix.ln
