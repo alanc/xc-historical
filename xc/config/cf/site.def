@@ -1,4 +1,4 @@
-/**/# site:  $XConsortium: site.def,v 1.14 89/10/10 18:55:18 jim Exp $
+/**/# site:  $XConsortium: site.def,v 1.15 89/10/11 18:55:07 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -69,6 +69,11 @@
 #define NeedDefaultDepLibs YES
 #endif
 
+#ifdef ATHENA
+#ifndef DoInstallExtensionsIntoXlib
+#define DoInstallExtensionsIntoXlib YES		/* for Makefile hosers */
+#endif
+#endif
 
 /*
  * Set the following to YES until you have converted your Xaw programs to use
