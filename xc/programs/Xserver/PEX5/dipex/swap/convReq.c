@@ -1,4 +1,4 @@
-/* $XConsortium: convReq.c,v 5.4 91/05/09 18:56:06 hersh Exp $ */
+/* $XConsortium: convReq.c,v 5.5 91/05/10 19:41:00 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -492,6 +492,7 @@ pexGetElementInfoReq	*strmPtr;
 {
     pexSwap *swapPtr = cntxtPtr->swap;
     SWAP_CARD16 (strmPtr->length);
+    SWAP_CARD16 (strmPtr->fpFormat);
     SWAP_STRUCTURE (strmPtr->sid);
 
     SwapElementRange (swapPtr, &strmPtr->range);
@@ -594,10 +595,11 @@ pexElementSearchReq	*strmPtr;
     SWAP_CARD32 (strmPtr->numIncls);
     SWAP_CARD32 (strmPtr->numExcls);
 
-    for (i=0, pc = (CARD16 *)(strmPtr+1); i< strmPtr->numIncls; i++, pc++)
+    pc = (CARD16 *)(strmPtr+1);
+    for (i=0; i< strmPtr->numIncls; i++, pc++)
 	SWAP_CARD16((*pc));
 
-    for (i=0, pc = (CARD16 *)(strmPtr+1); i< strmPtr->numExcls; i++, pc++)
+    for (i=0; i< strmPtr->numExcls; i++, pc++)
 	SWAP_CARD16((*pc));
 
     CALL_REQUEST;
@@ -872,6 +874,7 @@ pexRedrawClipRegionReq	*strmPtr;
     SWAP_CARD32 (strmPtr->numRects);
 
     SwapDeviceRects (swapPtr, strmPtr->numRects, (pexDeviceRect *)(strmPtr+1));
+    CALL_REQUEST;
 }
 
 /*
@@ -1020,6 +1023,7 @@ pexPostStructureReq	*strmPtr;
 {
     pexSwap *swapPtr = cntxtPtr->swap;
     SWAP_CARD16 (strmPtr->length);
+    SWAP_CARD16 (strmPtr->fpFormat);
     SWAP_PHIGS_WKS (strmPtr->wks);
     SWAP_STRUCTURE (strmPtr->sid);
     SWAP_FLOAT (strmPtr->priority);
@@ -1108,10 +1112,38 @@ SWAP_FUNC_PREFIX(PEXUpdatePickMeasure) (cntxtPtr, strmPtr)
 pexContext		*cntxtPtr;
 pexUpdatePickMeasureReq	*strmPtr;
 {
+
+    extern FLOAT SwapFLOAT();
+
     pexSwap *swapPtr = cntxtPtr->swap;
     SWAP_CARD16 (strmPtr->length);
     SWAP_PICK_MEASURE (strmPtr->pm);
     SWAP_CARD32 (strmPtr->numBytes);
+    /* SWAP the input data record for the registered devices */
+    if (strmPtr->numBytes == 8) {
+      unsigned char *ptr = (unsigned char *)(strmPtr+1);
+      SWAP_CARD16 ((*((CARD16 *)ptr)));
+      ptr += sizeof(CARD16);
+      SWAP_CARD16 ((*((CARD16 *)ptr)));
+      ptr += sizeof(CARD16);
+      SWAP_FLOAT ((*((FLOAT *)ptr)));
+
+    } else if (strmPtr->numBytes == 24) {
+      unsigned char *ptr = (unsigned char *)(strmPtr+1);
+      SWAP_FLOAT ((*((FLOAT *)ptr)));
+      ptr += sizeof(FLOAT);
+      SWAP_FLOAT ((*((FLOAT *)ptr)));
+      ptr += sizeof(FLOAT);
+      SWAP_FLOAT ((*((FLOAT *)ptr)));
+      ptr += sizeof(FLOAT);
+      SWAP_FLOAT ((*((FLOAT *)ptr)));
+      ptr += sizeof(FLOAT);
+      SWAP_FLOAT ((*((FLOAT *)ptr)));
+      ptr += sizeof(FLOAT);
+      SWAP_FLOAT ((*((FLOAT *)ptr)));
+      ptr += sizeof(FLOAT);
+    } else
+      return(BadLength); 
     CALL_REQUEST;
 }
 
@@ -1171,6 +1203,7 @@ pexQueryTextExtentsReq	*strmPtr;
 {
     pexSwap *swapPtr = cntxtPtr->swap;
     SWAP_CARD16 (strmPtr->length);
+    SWAP_CARD16 (strmPtr->fpFormat);
     SWAP_CARD16 (strmPtr->textPath);
     SWAP_CARD16 (strmPtr->fontGroupIndex);
     SWAP_CARD32 (strmPtr->id);
@@ -1463,6 +1496,7 @@ pexLineBundleEntry  *p_data;
     SWAP_CURVE_APPROX (p_data->curveApprox);
     ptr = SWAP_FUNC_PREFIX(SwapColourSpecifier)(swapPtr, &(p_data->lineColour));
 
+    return (ptr);
 }
 
 unsigned char *
@@ -2049,7 +2083,7 @@ unsigned char	*pdata;
     };
 
     if (im & PEXPDPickPromptEchoType) {
-	SWAP_ENUM_TYPE_INDEX ((*ptr));
+	SWAP_INT16 ((*((INT16 *)ptr)));
 	ptr += sizeof(CARD32);
     };
 
