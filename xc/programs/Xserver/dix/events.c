@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.4 89/07/09 15:37:47 rws Exp $ */
+/* $XConsortium: events.c,v 5.5 89/07/16 17:22:43 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -265,7 +265,7 @@ ConfineToShape(shape, px, py)
 	return;
     box = *(*sprite.hot.pScreen->RegionExtents)(shape);
     /* this is rather crude */
-    {
+    do {
 	x += incx;
 	if (x >= box.x2)
 	{
