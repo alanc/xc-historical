@@ -147,7 +147,7 @@
   (declare-values (or null resource-id))
   (gethash (if (keywordp atom)
 	       atom
-	       (intern (string atom) 'keyword))
+	       (kintern atom))
 	   (display-atom-cache display)))
 
 (defun set-atom-id (atom display id)
@@ -158,7 +158,7 @@
   (declare-values resource-id)
   (setf (gethash (if (keywordp atom)
 		     atom
-		     (intern (string atom) 'keyword))
+		     (kintern atom))
 		 (display-atom-cache display))
 	id))
 
