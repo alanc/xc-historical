@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: regions.h,v 1.2 91/10/10 11:19:06 rws Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991
@@ -96,8 +96,8 @@ void t1_UnJumble();           /* sort the edges and reset the jumbled flag    */
 }
  
  
-#define    MINPEL    (-1<<(8*sizeof(pel)-1))  /* smallest value fitting in a pel */
-#define    MAXPEL    ((1<<(8*sizeof(pel)-1))-1)/* largest value fitting in a pel */
+#define MINPEL ((pel)(-1<<(8*sizeof(pel)-1)))  /* smallest value fitting in a pel */
+#define MAXPEL ((pel)((1<<(8*sizeof(pel)-1))-1))/* largest value fitting in a pel */
  
 /*
 The "Unique"-type macro is different (unique?) for regions, because some
