@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: util.c,v 1.18 89/12/09 17:39:43 jim Exp $
+ *	$XConsortium: util.c,v 1.19 89/12/10 20:44:15 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* util.c */
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: util.c,v 1.18 89/12/09 17:39:43 jim Exp $";
+static char rcs_id[] = "$XConsortium: util.c,v 1.19 89/12/10 20:44:15 jim Exp $";
 #endif	/* lint */
 
 #include <stdio.h>
@@ -582,7 +582,14 @@ register int n;
 	
 		cx = CursorX (screen, screen->cur_col);
 		cy = CursorY (screen, screen->cur_row);
-		XCopyArea(
+
+		/*
+		 * prevent InsertChar from shifting the end of a line over
+		 * if it is being appended to
+		 */
+		if (non_blank_line (screen->buf, screen->cur_row, 
+				    screen->cur_col, screen->max_col + 1)) {
+		  XCopyArea(
 		    screen->display,
 		    TextWindow(screen), TextWindow(screen),
 		    screen->normalGC,
@@ -591,6 +598,9 @@ register int n;
 		        - (screen->cur_col + n) * FontWidth(screen),
 		    (unsigned) FontHeight(screen), 
 		    cx + width, cy);
+		} else
+			screen->incopy = 0;
+
 		XFillRectangle(
 		    screen->display,
 		    TextWindow(screen), 

@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: screen.c,v 1.15 89/12/09 16:24:20 jim Exp $
+ *	$XConsortium: screen.c,v 1.16 89/12/10 20:44:52 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* screen.c */
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: screen.c,v 1.15 89/12/09 16:24:20 jim Exp $";
+static char rcs_id[] = "$XConsortium: screen.c,v 1.16 89/12/10 20:44:52 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xlib.h>
@@ -555,3 +555,17 @@ unsigned *flags;
 	return (0);
 }
 
+Bool
+non_blank_line(sb, row, col, len)
+ScrnBuf sb;
+register int row, col, len;
+{
+	register int	i;
+	register Char *ptr = sb [2 * row];
+
+	for (i = col; i < len; i++)	{
+		if (ptr[i])
+			return True;
+	}
+	return False;
+}
