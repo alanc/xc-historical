@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.46 89/05/15 17:21:49 jim Exp $
+ * $XConsortium: twm.c,v 1.47 89/05/16 10:11:30 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.46 89/05/15 17:21:49 jim Exp $";
+"$XConsortium: twm.c,v 1.47 89/05/16 10:11:30 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -612,10 +612,11 @@ void
 Reborder ()
 {
     TwmWindow *tmp;			/* temp twm window structure */
-    unsigned x, y;
+    int x, y;
     XWindowChanges xwc;		/* change window structure */
     unsigned int xwcm;		/* change window mask */
     int scrnum;
+    int xoff, yoff;
 
     /* put a border back around all windows */
 
@@ -634,8 +635,16 @@ Reborder ()
 	    xwc.y = y;
 
 	    if (JunkBW != tmp->old_bw) {
-	    	xwc.x = x - tmp->old_bw;
-	    	xwc.y = y - tmp->old_bw;
+		/*
+		 * restore the window position if gravitated
+		 */
+		if (!Scr->ClientBorderWidth)
+		  GetGravityOffsets (tmp, &xoff, &yoff);
+		else
+		  xoff = yoff = 0;
+
+	    	xwc.x = x - (xoff + 1) * tmp->old_bw;
+	    	xwc.y = y - (yoff + 1) * tmp->old_bw;
 	    	xwc.border_width = tmp->old_bw;
 		xwcm |= CWBorderWidth;
 	    }
