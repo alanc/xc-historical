@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.69 92/05/03 14:36:25 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.70 92/05/04 09:35:13 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -107,11 +107,16 @@ released automatically at next button or non-modifier key.
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 #include <X11/extensions/shape.h>
-#ifndef XTRAP
+#ifdef XTEST
 #include <X11/extensions/XTest.h>
-#else
+#endif
+#ifdef XTRAP
 #include <X11/extensions/xtraplib.h>
 #include <X11/extensions/xtraplibp.h>
+#endif
+#ifdef XTESTEXT1
+#include <X11/Xmd.h>
+#include <X11/extensions/xtestext1.h>
 #endif
 #include <X11/Xos.h>
 #include <X11/keysym.h>
@@ -220,7 +225,7 @@ XETC *tc;
 
 void process();
 
-#ifdef XTRAP
+#if defined(XTRAP) || defined(XTESTEXT1)
 void
 delay_time() /* we have to approximate the delay */
 {
@@ -238,11 +243,15 @@ generate_key(key, press)
     int key;
     Bool press;
 {
-#ifndef XTRAP
+#ifdef XTEST
     XTestFakeKeyEvent(dpy, key, press, time_delay);
-#else
+#endif
+#ifdef XTRAP
     delay_time();
     XESimulateXEventRequest(tc, press ? KeyPress : KeyRelease, key, 0, 0, 0);
+#endif
+#ifdef XTESTEXT1
+    XTestPressKey(dpy, 1, time_delay, key, press ? XTestPRESS : XTestRELEASE);
 #endif
     time_delay = 0;
 }
@@ -252,12 +261,17 @@ generate_button(button, press)
     int button;
     Bool press;
 {
-#ifndef XTRAP
+#ifdef XTEST
     XTestFakeButtonEvent(dpy, button, press, time_delay);
-#else
+#endif
+#ifdef XTRAP
     delay_time();
     XESimulateXEventRequest(tc, press ? ButtonPress : ButtonRelease,
 			    button, 0, 0, 0);
+#endif
+#ifdef XTESTEXT1
+    XTestPressButton(dpy, 2, time_delay, button,
+		     press ? XTestPRESS : XTestRELEASE);
 #endif
     time_delay = 0;
 }
@@ -266,9 +280,10 @@ void
 generate_motion(dx, dy)
     int dx, dy;
 {
-#ifndef XTRAP
+#ifdef XTEST
     XTestFakeRelativeMotionEvent(dpy, dx, dy, time_delay);
-#else
+#endif
+#if defined(XTRAP) || defined(XTESTEXT1)
     delay_time();
     XWarpPointer(dpy, None, None, 0, 0, 0, 0, dx, dy);
 #endif
@@ -279,15 +294,20 @@ void
 generate_warp(screen, x, y)
     int screen, x, y;
 {
-#ifndef XTRAP
+#ifdef XTEST
 #ifdef __OSF1__
     XTestFakeMotionEvent(dpy, screen, x, y - 1, time_delay);
     time_delay = 0;
 #endif
     XTestFakeMotionEvent(dpy, screen, x, y, time_delay);
-#else
+#endif
+#ifdef XTRAP
     delay_time();
     XESimulateXEventRequest(tc, MotionNotify, 0, x, y, 0);
+#endif
+#ifdef XTESTEXT1
+    delay_time();
+    XWarpPointer(dpy, None, DefaultRootWindow(dpy), 0, 0, 0, 0, x, y);
 #endif
     time_delay = 0;
 }
@@ -1554,6 +1574,9 @@ do_trigger(buf)
     if (!wait || !trigger.type)
 	return;
     while (trigger.type) {
+#ifdef XTESTEXT1
+	XTestFlush(dpy);
+#endif
 	if (XPending(dpy)) {
 	    process_events();
 	    continue;
@@ -1881,10 +1904,14 @@ init_display(dname)
     char *dname;
 {
     Display *ndpy;
-#ifndef XTRAP
+#ifdef XTEST
     int eventb, errorb, vmajor, vminor;
-#else
+#endif
+#ifdef XTRAP
     XETC *ntc;
+#endif
+#ifdef XTESTEXT1
+    int majop, eventb, errorb;
 #endif
 
     ndpy = XOpenDisplay(dname);
@@ -1893,16 +1920,19 @@ init_display(dname)
 		progname, XDisplayName(dname));
 	return False;
     }
-#ifndef XTRAP
+#ifdef XTEST
     if (!XTestQueryExtension(ndpy, &eventb, &errorb, &vmajor, &vminor)) {
-	fprintf(stderr, "%s: display '%s' does not support XTEST extension\n",
+	fprintf(stderr,
+		"%s: display '%s' does not support XTEST extension\n",
 		progname, DisplayString(ndpy));
 	return False;
     }	
-#else
+#endif
+#ifdef XTRAP
     if (!(ntc = XECreateTC(ndpy, 0L, NULL)))
     {
-	fprintf(stderr, "%s: display '%s' does not support XTRAP extension\n",
+	fprintf(stderr,
+		"%s: display '%s' does not support DEC-XTRAP extension\n",
 		progname, DisplayString(ndpy));
 	return False;
     }
@@ -1910,6 +1940,15 @@ init_display(dname)
 	XEFreeTC(tc);      
     (void)XEStartTrapRequest(ntc);
     tc = ntc;
+#endif
+#ifdef XTESTEXT1
+    if (!XQueryExtension(ndpy, XTestEXTENSION_NAME,
+			 &majop, &eventb, &errorb)) {
+	fprintf(stderr,
+		"%s: display '%s' does not support %s extension\n",
+		progname, DisplayString(ndpy), XTestEXTENSION_NAME);
+	return False;
+    }
 #endif
     if (dpy)
 	XCloseDisplay(dpy);
@@ -2142,6 +2181,9 @@ main(argc, argv)
     }
     get_undofile();
     while (1) {
+#ifdef XTESTEXT1
+	XTestFlush(dpy);
+#endif
 	if (XPending(dpy)) {
 	    process_events();
 	    continue;
