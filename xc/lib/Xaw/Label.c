@@ -84,20 +84,23 @@ static void Redisplay();
 static void SetValues();
 static void ClassInitialize();
 
-LabelWidgetClassData labelWidgetClassData = {
+LabelClassRec labelClassRec = {
 /* core fields */	
-    /* superclass	*/	(WidgetClass) &widgetClassData,
+    /* superclass	*/	(WidgetClass) &widgetClassRec,
     /* class_name	*/	"Label",
-    /* size		*/	sizeof(LabelWidgetClassData),
+    /* size		*/	sizeof(LabelClassRec),
     /* class init proc  */      ClassInitialize,
     /* class init'ed    */	FALSE,
     /* initialize	*/	Initialize,
     /* realize		*/	Realize,
     /* actions		*/	NULL,
+				0,
     /* resources	*/	resources,
     /* resource_count	*/	XtNumber(resources),
-    /* xrm_extra	*/	NULL,
+
     /* xrm_class	*/	NULLQUARK,
+				FALSE,
+				FALSE,
     /* visible_interest	*/	FALSE,
     /* destroy		*/	NULL,
     /* resize		*/	Resize,
@@ -175,7 +178,7 @@ static void SetTextWidthAndHeight(lw)
 	fs, lw->label.label, lw->label.labelLen);
 }
 
-static void GetGC(lw)
+static void GetnormalGC(lw)
     LabelWidget lw;
 {
     XGCValues	values;
@@ -183,7 +186,24 @@ static void GetGC(lw)
     values.foreground	= lw->label.foreground;
     values.font		= lw->label.font->fid;
 
-    lw->label.gc = XtGetGC(lw, GCForeground | GCFont, &values);
+    lw->label.normalGC = XtGetGC(lw, GCForeground | GCFont, &values);
+}
+
+static void GetgrayGC(lw)
+    LabelWidget lw;
+{
+    XGCValues	values;
+    
+    lw->label.grayPixmap = XtGrayPixmap(XtScreen((Widget)lw));
+
+    values.foreground	= lw->label.foreground;
+    values.font		= lw->label.font->fid;
+    values.tile       = lw->label.grayPixmap;
+    values.fill_style = FillTiled;
+
+    lw->label.normalGC = XtGetGC(lw, 
+				 GCForeground | GCFont | GCTile | GCFillStyle, 
+				 &values);
 }
 
 static void Initialize(w)
@@ -197,7 +217,8 @@ static void Initialize(w)
 	(void) strcpy(lw->label.label, lw->core.name);
     }
 
-    GetGC(lw);
+    GetnormalGC(lw);
+    GetgrayGC(lw);
 
     SetTextWidthAndHeight(lw);
     Resize(lw);
@@ -210,6 +231,8 @@ static void Initialize(w)
 /* labels want exposure compression !!! */
 /*     lw->core.compress_expose = TRUE; */
 
+    lw->label.displaySensitive = FALSE;
+
 } /* Initialize */
 
 
@@ -218,6 +241,8 @@ static void Realize(w, valueMask, attributes)
     Mask valueMask;
     XSetWindowAttributes *attributes;
 {
+  LabelWidget lw = (LabelWidget)w;
+
     valueMask |= CWBitGravity;
     switch (((LabelWidget)w)->label.justify) {
 	case XtjustifyLeft:	attributes->bit_gravity = WestGravity;   break;
@@ -225,6 +250,16 @@ static void Realize(w, valueMask, attributes)
 	case XtjustifyRight:	attributes->bit_gravity = EastGravity;   break;
     }
     
+    if (w->core.sensitive) 
+      {
+	  /* change border to gray */
+	lw->core.border_pixmap = lw->label.grayPixmap;
+	attributes->border_pixmap = lw->label.grayPixmap;
+	valueMask |= CWBorderPixmap;
+	lw->label.displaySensitive = TRUE;
+      }
+    
+
     w->core.window =
 	  XCreateWindow(
 		XtDisplay(w), w->core.parent->core.window,
@@ -246,7 +281,7 @@ static void Redisplay(w)
    LabelWidget lw = (LabelWidget) w;
 
    XDrawString(
-	XtDisplay(w), XtWindow(w), lw->label.gc,
+	XtDisplay(w), XtWindow(w), lw->label.normalGC,
 	lw->label.labelX, lw->label.labelY,
 	lw->label.label, lw->label.labelLen);
 }
@@ -387,7 +422,7 @@ static void SetValues(old, new)
     if (oldlw->label.foreground != newlw->label.foreground
 	|| oldlw->label.font->fid != newlw->label.font->fid) {
 
-	XtDestroyGC(oldlw->label.gc);
+	XtDestroyGC(oldlw->label.normalGC);
 	GetGC(newlw);
     }
 
