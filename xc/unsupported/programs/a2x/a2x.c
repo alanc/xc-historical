@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.18 92/03/23 19:33:03 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.19 92/03/23 20:12:02 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -16,8 +16,6 @@ without express or implied warranty.
 */
 
 /*
-
-Command line:  a2x [-d display] [-e] [-b]
 
 Syntax of magic values in the input stream:
 
@@ -44,6 +42,7 @@ released automatically at next button or non-modifier key.
 */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <X11/Xlib.h>
 #include <X11/extensions/XTest.h>
 #include <X11/Xos.h>
@@ -100,7 +99,7 @@ Bool need_bs = False;
 void
 usage()
 {
-    printf("a2x: [-d display] [-e] [-b]\n");
+    printf("a2x: [-d display] [-e] [-b] [-u <undofile>]\n");
     exit(1);
 }
 
@@ -530,6 +529,8 @@ do_backspace(c)
 		/* do it */
 		history_end -= u->seq_len;
 		curbscount -= u->bscount;
+		if (!u->undo_len)
+		    return NULL;
 		return u;
 	    }
 	}
@@ -537,6 +538,72 @@ do_backspace(c)
     if (!partial)
 	undo_backspaces();
     return NULL;
+}
+
+char *
+parse_string(buf, ip, lenp)
+    char *buf;
+    int *ip;
+    int *lenp;
+{
+    int i, j;
+    char c;
+    char *seq;
+
+    j = 0;
+    for (i = *ip; (c = buf[i]) && (c != ':'); i++) {
+	if (c == '^') {
+	    c = buf[++i];
+	    if (c == '?')
+		buf[j++] = '\177';
+	    else {
+		if (c >= 'a' && c <= 'z')
+		    i -= 'a' - 'A';
+		buf[j++] = c - '@';
+	    }
+	} else if (c == '\\')
+	    buf[j++] = buf[++i];
+	else
+	    buf[j++] = c;
+    }
+    if (c != ':')
+	return NULL;
+    *ip = i + 1;
+    *lenp = j;
+    seq = malloc(j + 1);
+    bcopy(buf, seq, j);
+    seq[j] = '\0';
+    return seq;
+}
+
+void
+get_undofile(undofile)
+    char *undofile;
+{
+    FILE *fp;
+    char buf[1024];
+    int i, len;
+    undo *up;
+    int idx;
+
+    fp = fopen(undofile, "r");
+    if (!fp)
+	return;
+    up = (undo *)malloc(sizeof(undo));
+    idx = 0;
+    while (fgets(buf, sizeof(buf), fp)) {
+	up = (undo *)realloc((char *)up, (idx + 2) * sizeof(undo));
+	i = 0;
+	if (!(up[idx].seq = parse_string(buf, &i, &up[idx].seq_len)))
+	    break;
+	if (!(up[idx].undo = parse_string(buf, &i, &up[idx].undo_len)))
+	    break;
+	up[idx].bscount = atoi(buf+i);
+	idx++;
+    }
+    up[idx].bscount = 0;
+    fclose(fp);
+    undos = up;
 }
 
 main(argc, argv)
@@ -555,6 +622,7 @@ main(argc, argv)
     int mask[10];
     struct timeval timeout;
     undo *u;
+    char *undofile = NULL;
 
     timeout.tv_sec = 0;
     timeout.tv_usec = 1000 * 100;
@@ -575,6 +643,12 @@ main(argc, argv)
 	case 'b':
 	    bs_is_del = False;
 	    break;
+	case 'u':
+	    argc--; argv++;
+	    if (!argc)
+		usage();
+	    undofile = *argv;
+	    break;
 	default:
 	    usage();
 	}
@@ -590,6 +664,12 @@ main(argc, argv)
 		argv[0], DisplayString(dpy));
 	exit(1);
     }	
+    if (!undofile) {
+	strcpy(buf, getenv("HOME"));
+	strcat(buf, "/.a2x");
+	undofile = buf;
+    }
+    get_undofile(undofile);
     signal(SIGPIPE, SIG_IGN);
     if (tcgetattr(0, &term) >= 0) {
 	istty = True;
