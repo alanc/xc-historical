@@ -1677,8 +1677,8 @@ Within a group, which KEYSYM to use is also determined by modifier state.  The
 first KEYSYM is used when the Shift and Lock modifiers are off.  The second
 KEYSYM is used when the Shift modifier is on, or when the Lock modifier is on
 and the second KEYSYM is uppercase alphabetic, or when the Lock modifier is on
-and is interpreted as ShiftLock.  When the Lock modifier is on and is
-interpreted as CapsLock, the state of the Shift modifier is applied first to
+and is interpreted as ShiftLock.  Otherwise, when the Lock modifier is on and
+is interpreted as CapsLock, the state of the Shift modifier is applied first to
 select a KEYSYM, but if that KEYSYM is lowercase alphabetic, then the
 corresponding uppercase KEYSYM is used instead.
 .LP
