@@ -1,4 +1,4 @@
-/* $XConsortium: VisCmap.c,v 1.2 89/03/20 14:55:25 converse Exp $ */
+/* $XConsortium: VisCmap.c,v 1.3 89/03/24 16:30:02 converse Exp $ */
 
 /* 
  * Copyright 1989 by the Massachusetts Institute of Technology
@@ -27,7 +27,7 @@ static void best_allocation();
 /* To determine the best allocation of reds, greens, and blues in a 
  * standard colormap, use XmuGetColormapAllocation.
  *	property	specifies one of the standard colormap property names
- * 	vinfo		specifies visual information
+ * 	vinfo		specifies visual information for a chosen visual
  * 	rmax		returns maximum red value 
  *      gmax 		returns maximum green value
  * 	bmax 		returns maximum blue value
@@ -86,11 +86,11 @@ unsigned long	*rmax, *gmax, *bmax;
  * classes, provided that the size of the colormap is not too small.
  *
  *	DirectColor and PseudoColor
+ *	    RGB_DEFAULT_MAP
  *	    RGB_BEST_MAP
  *	    RGB_RED_MAP
  *	    RGB_GREEN_MAP
  * 	    RGB_BLUE_MAP
- *	    RGB_DEFAULT_MAP
  *          RGB_GRAY_MAP
  *
  *	TrueColor and StaticColor
@@ -242,6 +242,7 @@ static void best_allocation(vinfo, red, green, blue)
 	 * the allocation by "dealing" the bits, first to green, then red, then
 	 * blue.  If not, find the maximum integral red, green, and blue values
 	 * which, when multiplied together, do not exceed the number of 
+
 	 * colormap entries.
 	 */
 	if (n == vinfo->colormap_size)
