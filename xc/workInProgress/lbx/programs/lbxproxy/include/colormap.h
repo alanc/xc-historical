@@ -1,4 +1,4 @@
-/* $XConsortium: colormap.h,v 1.3 94/02/20 11:12:51 dpw Exp $ */
+/* $XConsortium: colormap.h,v 1.4 94/03/08 20:51:16 dpw Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -7,9 +7,9 @@
  * that the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the name Network Computing Devices, Inc. not be
- * used in advertising or publicity pertaining to distribution of this 
+ * used in advertising or publicity pertaining to distribution of this
  * software without specific, written prior permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED `AS-IS'.  NETWORK COMPUTING DEVICES, INC.,
  * DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING WITHOUT
  * LIMITATION ALL IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
@@ -20,7 +20,7 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * 
- * $NCDId: @(#)colormap.h,v 1.2 1994/02/09 19:25:28 lemke Exp $
+ * $NCDId: @(#)colormap.h,v 1.5 1994/03/24 17:55:00 lemke Exp $
  */
 
 #ifndef COLORMAP_H_
@@ -58,5 +58,7 @@ extern int  CreateColormap();
 extern int  FreeColormap();
 extern int  CopyAndFreeColormap();
 extern void FreeColors();
+extern int DestroyColormap();
+extern int FreeClientPixels();
 
 #endif				/* COLORMAP_H_ */

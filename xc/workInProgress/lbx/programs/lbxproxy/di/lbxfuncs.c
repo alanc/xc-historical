@@ -6,9 +6,9 @@
  * that the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the name Network Computing Devices, Inc. not be
- * used in advertising or publicity pertaining to distribution of this 
+ * used in advertising or publicity pertaining to distribution of this
  * software without specific, written prior permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED `AS-IS'.  NETWORK COMPUTING DEVICES, INC.,
  * DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING WITHOUT
  * LIMITATION ALL IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
@@ -19,13 +19,28 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * 
- * $NCDId: @(#)lbxfuncs.c,v 1.26 1994/03/04 02:32:32 dct Exp $
+ * $NCDId: @(#)lbxfuncs.c,v 1.31 1994/03/24 17:54:54 lemke Exp $
  */
 
-/* $XConsortium: lbxfuncs.c,v 1.3 94/02/20 11:13:43 dpw Exp $ */
+/* $XConsortium: lbxfuncs.c,v 1.4 94/03/08 20:51:22 dpw Exp $ */
 
 /*
  * top level LBX request & reply handling
+ */
+
+/*
+ * XXX
+ *
+ * byte swapping is ugly -- might be better to call SwapFooReply()
+ * twice in short-circuiting stuff, rather than swap out what we care
+ * about.  same for requests.  probably depends on how reencoding falls
+ * out.
+ *
+ * requests copy out interesting stuff and then swap so original data
+ * is left alone as much as possible
+ *
+ * replied data is copied yet again before swapping because the data
+ * may be stored as a tag result and we don't want to change that.
  */
 
 
@@ -44,6 +59,7 @@
 #include	"lbx.h"		/* gets dixstruct.h */
 #include	"resource.h"
 #include	"wire.h"
+#include	"swap.h"
 #define _XLBX_SERVER_
 #include	"lbxstr.h"	/* gets dixstruct.h */
 
@@ -53,15 +69,17 @@
 
 #define	server_resource(client, xid)	(CLIENT_ID(xid) == 0)
 
-extern int xMajorVersion;
-extern int xMinorVersion;
+extern int  xMajorVersion;
+extern int  xMinorVersion;
 
 void
 FinishSetupReply(client, setup_len, setup_data, changes, majorVer, minorVer)
     ClientPtr   client;
-    int		setup_len;
-    xConnSetup  *setup_data;
-    pointer	changes;
+    int         setup_len;
+    xConnSetup *setup_data;
+    pointer     changes;
+    CARD16      majorVer,
+                minorVer;
 {
     xConnSetupPrefix reply;
 
@@ -71,9 +89,15 @@ FinishSetupReply(client, setup_len, setup_data, changes, majorVer, minorVer)
     reply.length = setup_len >> 2;
 
     GetConnectionInfo(client, setup_data, changes);
-
+    if (client->swapped) {
+	SwapConnSetupPrefix(&reply);
+    }
     WriteToClient(client, sizeof(xConnSetupPrefix), &reply);
-    WriteToClient(client, setup_len, setup_data);
+    if (client->swapped) {
+	WriteSConnectionInfo(client, setup_len, (char *) setup_data);
+    } else {
+	WriteToClient(client, setup_len, setup_data);
+    }
 }
 
 static void
@@ -82,14 +106,19 @@ get_tagged_setup_reply(client, data)
     char       *data;
 {
     register xLbxConnSetupPrefix *rep;
-    TagData	td;
+    TagData     td;
     pointer     tag_data;
-    pointer	change_list = NULL;
+    pointer     change_list = NULL;
     int         len;
     QueryTagRec qt;
 
     rep = (xLbxConnSetupPrefix *) data;
+    if (client->swapped) {
+	char        n;
 
+	SwapLbxConnSetupPrefix(rep);
+	swaps(&rep->length, n);
+    }
     len = (rep->length - 1) << 2;
     if (rep->tag) {
 	if (!rep->tagOnly) {	/* first time, set tag */
@@ -97,7 +126,11 @@ get_tagged_setup_reply(client, data)
 #ifdef LBX_STATS
 	    getsetup_full++;
 #endif
+
 	    tag_data = (pointer) &rep[1];
+	    if (client->swapped) {
+		SwapConnectionInfo((xConnSetup *) tag_data);
+	    }
 	    if (!TagStoreData(global_cache, rep->tag, len,
 			      LbxTagTypeConnInfo, tag_data)) {
 		/* tell server we lost it */
@@ -106,35 +139,44 @@ get_tagged_setup_reply(client, data)
 	} else {
 	    td = TagGetTag(global_cache, rep->tag);
 	    if (!td) {
-                qt.tag = rep->tag;
-                qt.tagtype = LbxTagTypeConnInfo;
+		qt.tag = rep->tag;
+		qt.tagtype = LbxTagTypeConnInfo;
 		qt.typedata.setup.majorVersion = rep->majorVersion;
 		qt.typedata.setup.minorVersion = rep->minorVersion;
-		qt.typedata.setup.changes = (pointer)xalloc(len);
+		qt.typedata.setup.changes = (pointer) xalloc(len);
 		if (!qt.typedata.setup.changes)
 		    CloseDownClient(client);
-		bcopy((char *)&rep[1], qt.typedata.setup.changes, len);
+		bcopy((char *) &rep[1], qt.typedata.setup.changes, len);
 		/* lost data -- ask again for tag value */
 		QueryTag(client, &qt);
 
 		/* XXX what is the right way to stack Queries? */
 		return;
 	    }
+
 #ifdef LBX_STATS
 	    getsetup_tag++;
-            tag_bytes_unsent += td->size - len;
+	    tag_bytes_unsent += td->size - len;
 #endif
+
 	    tag_data = td->tdata;
 	    len = td->size;
 	    change_list = (pointer) &rep[1];
+	    if (client->swapped) {
+		SwapLongs((CARD32 *) change_list, 2);
+	    }
 	}
     } else {
 
 #ifdef LBX_STATS
 	getsetup_full++;
 #endif
+
 	/* server didn't send us a tag for some reason -- just pass on data */
 	tag_data = (pointer) &rep[1];
+	if (client->swapped) {
+	    SwapConnectionInfo((xConnSetup *) tag_data);
+	}
     }
 
     FinishSetupReply(client, len, tag_data, change_list,
@@ -152,20 +194,23 @@ intern_atom_req(client, data)
     char       *s;
     Atom        atom,
                 a;
-    int         len;
     xInternAtomReply reply;
     ReplyStuffPtr nr;
+    char        n;
+    CARD16      nbytes;
 
     req = (xInternAtomReq *) data;
 
-    if (req->nbytes > MAX_ATOM_LENGTH)
+    nbytes = req->nbytes;
+    if (client->swapped) {
+	swaps(&nbytes, n);
+    }
+    if (nbytes > MAX_ATOM_LENGTH)
 	return REQ_NOCHANGE;
-
-    len = req->nbytes + sizeof(xInternAtomReq);
 
     s = data + sizeof(xInternAtomReq);
 
-    atom = LbxMakeAtom(s, req->nbytes, &a, FALSE);
+    atom = LbxMakeAtom(s, nbytes, a, FALSE);
     if (atom != None) {
 	/* found preset atom */
 	if (LBXCacheSafe(client)) {
@@ -173,6 +218,9 @@ intern_atom_req(client, data)
 	    reply.length = 0;
 	    reply.sequenceNumber = LBXSequenceNumber(client);
 	    reply.atom = atom;
+	    if (client->swapped) {
+		SwapInternAtomReply(&reply);
+	    }
 	    WriteToClient(client, sizeof(xInternAtomReply), &reply);
 
 #ifdef LBX_STATS
@@ -181,11 +229,11 @@ intern_atom_req(client, data)
 
 	    return REQ_YANK;
 	}
-    } else if (req->nbytes < MAX_ATOM_LENGTH) {
+    } else if (nbytes < MAX_ATOM_LENGTH) {
 	nr = NewReply(client);
 	if (nr) {
-	    strncpy(nr->request_info.lbxatom.str, s, req->nbytes);
-	    nr->request_info.lbxatom.len = req->nbytes;
+	    strncpy(nr->request_info.lbxatom.str, s, nbytes);
+	    nr->request_info.lbxatom.len = nbytes;
 	    nr->sequenceNumber = LBXSequenceNumber(client);
 	    nr->request = X_InternAtom;
 	}
@@ -208,15 +256,19 @@ intern_atom_reply(client, data)
     xInternAtomReply *reply;
     int         len;
     ReplyStuffPtr nr;
+    char        n;
 
     reply = (xInternAtomReply *) data;
 
-    atom = reply->atom;
     nr = GetReply(client);
     assert(nr);
     str = nr->request_info.lbxatom.str;
     len = nr->request_info.lbxatom.len;
 
+    atom = reply->atom;
+    if (client->swapped) {
+	swapl(&atom, n);
+    }
     if (atom != None) {
 	/* make sure it gets stuffed in the DB */
 	(void) LbxMakeAtom(str, len, atom, TRUE);
@@ -234,10 +286,16 @@ get_atom_name_req(client, data)
     xGetAtomNameReply reply;
     int         len;
     ReplyStuffPtr nr;
+    char        n;
+    Atom        id;
 
     req = (xResourceReq *) data;
 
-    str = NameForAtom(req->id);
+    id = req->id;
+    if (client->swapped) {
+	swapl(&id, n);
+    }
+    str = NameForAtom(id);
 
     if (str) {
 	/* found the value */
@@ -248,6 +306,9 @@ get_atom_name_req(client, data)
 	    reply.length = (len + 3) >> 2;
 	    reply.sequenceNumber = LBXSequenceNumber(client);
 	    reply.nameLength = len;
+	    if (client->swapped) {
+		SwapGetAtomNameReply(&reply);
+	    }
 	    WriteToClient(client, sizeof(xGetAtomNameReply), &reply);
 	    WriteToClientPad(client, len, str);
 
@@ -260,7 +321,7 @@ get_atom_name_req(client, data)
     } else {
 	nr = NewReply(client);
 	if (nr) {
-	    nr->request_info.lbxatom.atom = req->id;
+	    nr->request_info.lbxatom.atom = id;
 	    nr->sequenceNumber = LBXSequenceNumber(client);
 	    nr->request = X_GetAtomName;
 	}
@@ -287,7 +348,7 @@ get_atom_name_reply(client, data)
     reply = (xGetAtomNameReply *) data;
 
     if ((reply->length << 2) > MAX_ATOM_LENGTH)
-	return;
+	return FALSE;
 
     len = (reply->length << 2) + sizeof(xGetAtomNameReply);
 
@@ -313,18 +374,25 @@ lookup_color_req(client, data)
     ReplyStuffPtr nr;
     RGBEntryPtr rgbe;
     int         len;
+    char        n;
+    Colormap    cmap;
 
     req = (xLookupColorReq *) data;
 
     len = req->nbytes;
+    cmap = req->cmap;
+    if (client->swapped) {
+	swapl(&cmap, n);
+	swaps(&len, n);
+    }
     if (len > MAX_COLORNAME_LENGTH)
 	return REQ_NOCHANGE;
 
 /* XXX for now, ignore attempts to anything but default colormaps */
-    if (!server_resource(client, req->cmap))
+    if (!server_resource(client, cmap))
 	return REQ_NOCHANGE;
 
-    rgbe = FindColorName((char *) &req[1], len, req->cmap);
+    rgbe = FindColorName((char *) &req[1], len, cmap);
 
     if (rgbe) {
 	/* found the value */
@@ -341,6 +409,9 @@ lookup_color_req(client, data)
 	    reply.screenBlue = rgbe->vblue;
 	    reply.screenGreen = rgbe->vgreen;
 
+	    if (client->swapped) {
+		SwapLookupColorReply(&reply);
+	    }
 	    WriteToClient(client, sizeof(xLookupColorReply), &reply);
 
 #ifdef LBX_STATS
@@ -355,7 +426,7 @@ lookup_color_req(client, data)
 	    strncpy(nr->request_info.lbxlookupcolor.name,
 		    (char *) &req[1], len);
 	    nr->request_info.lbxlookupcolor.namelen = len;
-	    nr->request_info.lbxlookupcolor.cmap = req->cmap;
+	    nr->request_info.lbxlookupcolor.cmap = cmap;
 	    nr->sequenceNumber = LBXSequenceNumber(client);
 	    nr->request = X_LookupColor;
 	}
@@ -374,9 +445,9 @@ lookup_color_reply(client, data)
     char       *data;
 {
     xLookupColorReply *reply;
-    int         len;
     ReplyStuffPtr nr;
     RGBEntryRec rgbe;
+    char        n;
 
     reply = (xLookupColorReply *) data;
 
@@ -391,7 +462,15 @@ lookup_color_reply(client, data)
     rgbe.vgreen = reply->screenGreen;
 
     rgbe.cmap = nr->request_info.lbxlookupcolor.cmap;
-
+    if (client->swapped) {
+	swapl(&rgbe.cmap, n);
+	swaps(&rgbe.xred, n);
+	swaps(&rgbe.xgreen, n);
+	swaps(&rgbe.xblue, n);
+	swaps(&rgbe.vred, n);
+	swaps(&rgbe.xgreen, n);
+	swaps(&rgbe.xblue, n);
+    }
     AddColorName(nr->request_info.lbxlookupcolor.name,
 		 nr->request_info.lbxlookupcolor.namelen,
 		 &rgbe);
@@ -405,17 +484,31 @@ alloc_color_req(client, data)
 {
     xAllocColorReq *req;
     xAllocColorReply reply;
-    Pixel       pix;
     Entry      *pent;
     ReplyStuffPtr nr;
+    Colormap    cmap;
+    CARD16      red,
+                green,
+                blue;
+    char        n;
 
     req = (xAllocColorReq *) data;
 
-    FindPixel(client, req->cmap, (int) req->red, (int) req->green,
-	      (int) req->blue, &pent);
+    cmap = req->cmap;
+    red = req->red;
+    green = req->green;
+    blue = req->blue;
+    if (client->swapped) {
+	swapl(&cmap, n);
+	swaps(&red, n);
+	swaps(&green, n);
+	swaps(&blue, n);
+    }
+    FindPixel(client, cmap, (int) red, (int) green,
+	      (int) blue, &pent);
     if (pent) {
 	/* always inc the pixel, so our refcounts match the server's */
-	IncrementPixel(client, req->cmap, pent);
+	IncrementPixel(client, cmap, pent);
 
 	/* found the value */
 	if (LBXCacheSafe(client)) {
@@ -432,6 +525,9 @@ alloc_color_req(client, data)
 	    reply.blue = pent->rep_blue;
 	    reply.pixel = pent->pixel;
 
+	    if (client->swapped) {
+		SwapAllocColorReply(&reply);
+	    }
 	    WriteToClient(client, sizeof(xAllocColorReply), &reply);
 
 #ifdef LBX_STATS
@@ -443,10 +539,10 @@ alloc_color_req(client, data)
     } else {
 	nr = NewReply(client);
 	if (nr) {
-	    nr->request_info.lbxalloccolor.cmap = req->cmap;
-	    nr->request_info.lbxalloccolor.red = req->red;
-	    nr->request_info.lbxalloccolor.green = req->green;
-	    nr->request_info.lbxalloccolor.blue = req->blue;
+	    nr->request_info.lbxalloccolor.cmap = cmap;
+	    nr->request_info.lbxalloccolor.red = red;
+	    nr->request_info.lbxalloccolor.green = green;
+	    nr->request_info.lbxalloccolor.blue = blue;
 	    nr->sequenceNumber = LBXSequenceNumber(client);
 	    nr->request = X_AllocColor;
 	}
@@ -466,12 +562,27 @@ alloc_color_reply(client, data)
 {
     xAllocColorReply *reply;
     ReplyStuffPtr nr;
+    CARD32      pixel;
+    char        n;
+    CARD16      red,
+                green,
+                blue;
 
     reply = (xAllocColorReply *) data;
 
     nr = GetReply(client);
     assert(nr);
 
+    pixel = reply->pixel;
+    red = reply->red;
+    green = reply->green;
+    blue = reply->blue;
+    if (client->swapped) {
+	swapl(&pixel, n);
+	swaps(&red, n);
+	swaps(&green, n);
+	swaps(&blue, n);
+    }
     /*
      * save requested color, since they're more likely to ask for the same
      * thing again.  also have to store reply RGB.
@@ -480,8 +591,8 @@ alloc_color_reply(client, data)
 	       nr->request_info.lbxalloccolor.red,
 	       nr->request_info.lbxalloccolor.green,
 	       nr->request_info.lbxalloccolor.blue,
-	       (int) reply->red, (int) reply->green, (int) reply->blue,
-	       reply->pixel);
+	       (int) red, (int) green, (int) blue, pixel);
+
     return TRUE;
 }
 
@@ -492,28 +603,36 @@ alloc_named_color_req(client, data)
 {
     xAllocNamedColorReq *req;
     xAllocNamedColorReply reply;
-    Pixel       pix;
     Entry      *pent;
     RGBEntryPtr rgbe;
     ReplyStuffPtr nr;
+    CARD16      nbytes;
+    Colormap    cmap;
+    char        n;
 
     req = (xAllocNamedColorReq *) data;
 
-    if (req->nbytes > MAX_COLORNAME_LENGTH)
+    cmap = req->cmap;
+    nbytes = req->nbytes;
+    if (client->swapped) {
+	swapl(&cmap, n);
+	swaps(&nbytes, n);
+    }
+    if (nbytes > MAX_COLORNAME_LENGTH)
 	return REQ_NOCHANGE;
 
-    FindNamedPixel(client, req->cmap, (char *) &req[1], req->nbytes, &pent);
-    rgbe = FindColorName((char *) &req[1], req->nbytes, req->cmap);
+    FindNamedPixel(client, cmap, (char *) &req[1], nbytes, &pent);
+    rgbe = FindColorName((char *) &req[1], nbytes, cmap);
 
     /* better get both if we got one... */
     if (pent && rgbe) {
 	/* always inc the pixel, so our refcounts match the server's */
-	IncrementPixel(client, req->cmap, pent);
+	IncrementPixel(client, cmap, pent);
 	/* found the value */
 	if (LBXCacheSafe(client)) {
 
 	    /* must tell server to bump refcnt */
-	    SendIncrementPixel(client, req->cmap, pent->pixel);
+	    SendIncrementPixel(client, cmap, pent->pixel);
 
 	    reply.type = X_Reply;
 	    reply.length = 0;
@@ -528,6 +647,9 @@ alloc_named_color_req(client, data)
 
 	    reply.pixel = pent->pixel;
 
+            if (client->swapped) {
+		SwapAllocNamedColorReply(&reply);
+            }
 	    WriteToClient(client, sizeof(xAllocNamedColorReply), &reply);
 
 #ifdef LBX_STATS
@@ -539,10 +661,10 @@ alloc_named_color_req(client, data)
     } else {
 	nr = NewReply(client);
 	if (nr) {
-	    nr->request_info.lbxallocnamedcolor.cmap = req->cmap;
+	    nr->request_info.lbxallocnamedcolor.cmap = cmap;
 	    strncpy(nr->request_info.lbxallocnamedcolor.name, (char *) &req[1],
-		    req->nbytes);
-	    nr->request_info.lbxallocnamedcolor.namelen = req->nbytes;
+		    nbytes);
+	    nr->request_info.lbxallocnamedcolor.namelen = nbytes;
 
 	    nr->sequenceNumber = LBXSequenceNumber(client);
 	    nr->request = X_AllocNamedColor;
@@ -563,19 +685,44 @@ alloc_named_color_reply(client, data)
 {
     xAllocNamedColorReply *reply;
     ReplyStuffPtr nr;
+    CARD16      xred,
+                xgreen,
+                xblue,
+                vred,
+                vgreen,
+                vblue;
+    CARD32      pixel;
+    char        n;
 
     reply = (xAllocNamedColorReply *) data;
 
     nr = GetReply(client);
     assert(nr);
 
+    xred = reply->exactRed;
+    xgreen = reply->exactGreen;
+    xblue = reply->exactBlue;
+    vred = reply->screenRed;
+    vgreen = reply->screenGreen;
+    vblue = reply->screenBlue;
+    pixel = reply->pixel;
+
+    if (client->swapped) {
+	swapl(&pixel, n);
+	swaps(&xred, n);
+	swaps(&xgreen, n);
+	swaps(&xblue, n);
+	swaps(&vred, n);
+	swaps(&vgreen, n);
+	swaps(&vblue, n);
+    }
     StoreNamedPixel(client,
 		    nr->request_info.lbxallocnamedcolor.cmap,
 		    nr->request_info.lbxallocnamedcolor.name,
 		    nr->request_info.lbxallocnamedcolor.namelen,
-      (int) reply->exactRed, (int) reply->exactGreen, (int) reply->exactBlue,
-    (int) reply->screenRed, (int) reply->screenGreen, (int) reply->screenBlue,
-		    reply->pixel);
+		    (int) xred, (int) xgreen, (int) xblue,
+		    (int) vred, (int) vgreen, (int) vblue,
+		    pixel);
     return TRUE;
 }
 
@@ -585,9 +732,15 @@ free_colormap_req(client, data)
     char       *data;
 {
     xResourceReq *req;
+    Colormap    cmap;
+    char        n;
 
     req = (xResourceReq *) data;
-    FreeColormap(req->id);
+    cmap = req->id;
+    if (client->swapped) {
+	swapl(&cmap, n);
+    }
+    FreeColormap(client, cmap);
 
     return REQ_NOCHANGE;
 }
@@ -598,11 +751,25 @@ create_colormap_req(client, data)
     char       *data;
 {
     xCreateColormapReq *req;
+    Window      win;
+    Colormap    cmap;
+    VisualID    vis;
+    char        n;
 
     req = (xCreateColormapReq *) data;
-    if (!req->alloc)		/* AllocAll are read/write, so ignore */
-	CreateColormap(client, req->mid, req->window, req->visual);
 
+    /* AllocAll are read/write, so ignore */
+    if (req->alloc) {
+	win = req->window;
+	cmap = req->mid;
+	vis = req->visual;
+	if (client->swapped) {
+	    swapl(&win, n);
+	    swapl(&cmap, n);
+	    swapl(&vis, n);
+	}
+	CreateColormap(client, cmap, win, vis);
+    }
     return REQ_NOCHANGE;
 }
 
@@ -612,12 +779,23 @@ copy_colormap_and_free_req(client, data)
     char       *data;
 {
     xCopyColormapAndFreeReq *req;
+    Colormap    cmap,
+                srcmap;
+    char        n;
 
     req = (xCopyColormapAndFreeReq *) data;
-    CopyAndFreeColormap(client, req->mid, req->srcCmap);
+
+    cmap = req->mid;
+    srcmap = req->srcCmap;
+    if (client->swapped) {
+	swapl(&cmap, n);
+	swapl(&srcmap, n);
+    }
+    CopyAndFreeColormap(client, cmap, srcmap);
 
     return REQ_NOCHANGE;
 }
+
 
 static int
 free_colors_req(client, data)
@@ -627,16 +805,40 @@ free_colors_req(client, data)
     xFreeColorsReq *req;
     int         num;
     Pixel      *pixels;
+    CARD32      mask;
+    Colormap    cmap;
+    Bool        freepix = FALSE;
+    char        n;
 
     req = (xFreeColorsReq *) data;
+    mask = req->planeMask;
+    cmap = req->cmap;
 
+    if (client->swapped) {
+	swapl(&cmap, n);
+	swapl(&mask, n);
+    }
     num = ((req->length << 2) - sizeof(xFreeColorsReq)) >> 2;
-    pixels = (Pixel *) &req[1];
 
-    FreePixels(client, req->cmap, num, pixels);
+    if (client->swapped) {
+	pixels = (Pixel *) ALLOCATE_LOCAL(num * sizeof(Pixel));
+	if (pixels) {
+	    bcopy((char *) &req[1], (char *) pixels, (num * sizeof(Pixel)));
+	    SwapLongs((CARD32 *) pixels, num);
+	}
+	freepix = TRUE;
+    } else
+	pixels = (Pixel *) &req[1];
+
+    /* XXX handle mask */
+    FreePixels(client, cmap, num, pixels);
+
+    if (freepix)
+	DEALLOCATE_LOCAL(pixels);
     return REQ_NOCHANGE;
 }
 
+/* ARGSUSED */
 static int
 get_mod_map_req(client, data)
     ClientPtr   client;
@@ -649,7 +851,7 @@ get_mod_map_req(client, data)
 	nr->sequenceNumber = LBXSequenceNumber(client);
 	nr->request = X_LbxGetModifierMapping;
 	nr->lbx_req = TRUE;
-        nr->extension = client->server->lbxReq;
+	nr->extension = client->server->lbxReq;
 
 	/*
 	 * this expects a reply.  since we write the data here, we have to be
@@ -677,7 +879,9 @@ FinishModmapReply(client, seqnum, kpm, data)
     reply.numKeyPerModifier = kpm;
     reply.sequenceNumber = seqnum;
     reply.length = len >> 2;
-
+    if (client->swapped) {
+	SwapModmapReply(&reply);
+    }
     WriteToClient(client, sizeof(xGetModifierMappingReply), &reply);
     WriteToClientPad(client, len, data);
 }
@@ -687,18 +891,23 @@ get_mod_map_reply(client, data)
     ClientPtr   client;
     char       *data;
 {
-    xGetModifierMappingReply reply;
     xLbxGetModifierMappingReply *rep;
     int         len;
     pointer     tag_data;
     ReplyStuffPtr nr;
     QueryTagRec qt;
+    CARD32      tag;
+    char        n;
 
     rep = (xLbxGetModifierMappingReply *) data;
 
     nr = GetReply(client);
     assert(nr);
 
+    tag = rep->tag;
+    if (client->swapped) {
+	swapl(&tag, n);
+    }
     len = rep->keyspermod << 3;
     if (rep->tag) {
 	if (rep->length) {	/* first time, set tag */
@@ -708,26 +917,27 @@ get_mod_map_reply(client, data)
 #endif
 
 	    tag_data = (pointer) &rep[1];
-	    if (!TagStoreData(global_cache, rep->tag, len,
+	    if (!TagStoreData(global_cache, tag, len,
 			      LbxTagTypeModmap, tag_data)) {
 		/* tell server we lost it */
-		SendInvalidateTag(client, rep->tag);
+		SendInvalidateTag(client, tag);
 	    }
 	} else {
-	    tag_data = TagGetData(global_cache, rep->tag);
+	    tag_data = TagGetData(global_cache, tag);
 	    if (!tag_data) {
-                qt.tag = rep->tag;
-                qt.tagtype = LbxTagTypeModmap;
-                qt.typedata.modmap.keyspermod = rep->keyspermod;
+		qt.tag = tag;
+		qt.tagtype = LbxTagTypeModmap;
+		qt.typedata.modmap.keyspermod = rep->keyspermod;
 		/* lost data -- ask again for tag value */
 		QueryTag(client, &qt);
 
 		/* XXX what is the right way to stack Queries? */
 		return TRUE;
 	    }
+
 #ifdef LBX_STATS
 	    getmodmap_tag++;
-            tag_bytes_unsent += (rep->keyspermod << 3);
+	    tag_bytes_unsent += (rep->keyspermod << 3);
 #endif
 	}
     } else {
@@ -741,7 +951,7 @@ get_mod_map_reply(client, data)
     }
 
     FinishModmapReply(client, rep->sequenceNumber, (int) rep->keyspermod,
-			tag_data);
+		      tag_data);
 
     return TRUE;
 }
@@ -760,7 +970,7 @@ get_key_map_req(client, data)
 	nr->sequenceNumber = LBXSequenceNumber(client);
 	nr->request = X_LbxGetKeyboardMapping;
 	nr->lbx_req = TRUE;
-        nr->extension = client->server->lbxReq;
+	nr->extension = client->server->lbxReq;
 	nr->request_info.lbxgetkeymap.count = req->count;
 	nr->request_info.lbxgetkeymap.first = req->firstKeyCode;
 
@@ -791,15 +1001,31 @@ FinishKeymapReply(client, seqnum, kpk, first, count, data)
 {
     xGetKeyboardMappingReply reply;
     int         len = (kpk * count) << 2;
+    char	*sdata;
+    Bool	freedata = FALSE;
 
     reply.type = X_Reply;
     reply.keySymsPerKeyCode = kpk;
     reply.sequenceNumber = seqnum;
     reply.length = len >> 2;
 
-    WriteToClient(client, sizeof(xGetKeyboardMappingReply), &reply);
     data += kpk * (first - LBXMinKeyCode(client));
-    WriteToClientPad(client, len, data);
+    if (client->swapped) {
+	SwapKeymapReply(&reply);
+	/* have to copy data because we could be handed the tag storage */
+	sdata = (char *)ALLOCATE_LOCAL(len);
+	if (sdata) {
+	    bcopy(data, sdata, len);
+	    SwapLongs((CARD32 *) sdata, len / 4);
+	    freedata = TRUE;
+	}
+    } else {
+	sdata = data;
+    }
+    WriteToClient(client, sizeof(xGetKeyboardMappingReply), &reply);
+    WriteToClientPad(client, len, sdata);
+    if (freedata)
+	DEALLOCATE_LOCAL(sdata);
 }
 
 
@@ -808,19 +1034,23 @@ get_key_map_reply(client, data)
     ClientPtr   client;
     char       *data;
 {
-    xGetKeyboardMappingReply reply;
     xLbxGetKeyboardMappingReply *rep;
     int         len;
     pointer     tag_data;
     ReplyStuffPtr nr;
-    QueryTagRec	qt;
+    QueryTagRec qt;
+    CARD32      tag;
+    char        n;
 
     rep = (xLbxGetKeyboardMappingReply *) data;
 
     nr = GetReply(client);
     assert(nr);
-
-    if (rep->tag) {
+    tag = rep->tag;
+    if (client->swapped) {
+	swapl(&tag, n);
+    }
+    if (tag) {
 	if (rep->length) {	/* first time, set tag */
 
 #ifdef LBX_STATS
@@ -830,30 +1060,35 @@ get_key_map_reply(client, data)
 	    tag_data = (pointer) &rep[1];
 	    len = rep->keysperkeycode *
 		(LBXMaxKeyCode(client) - LBXMinKeyCode(client) + 1) * 4;
-	    if (!TagStoreData(global_cache, rep->tag, len,
+	    /* data always swapped, because reswapped when written */
+	    if (client->swapped) {
+		SwapLongs((CARD32 *) tag_data, len / 4);
+	    }
+	    if (!TagStoreData(global_cache, tag, len,
 			      LbxTagTypeKeymap, tag_data)) {
 		/* tell server we lost it */
-		SendInvalidateTag(client, rep->tag);
+		SendInvalidateTag(client, tag);
 	    }
 	} else {
-	    tag_data = TagGetData(global_cache, rep->tag);
+	    tag_data = TagGetData(global_cache, tag);
 	    if (!tag_data) {
 		/* lost data -- ask again for tag value */
 
-                qt.tag = rep->tag;
-                qt.tagtype = LbxTagTypeKeymap;
-                qt.typedata.keymap.keyspercode = rep->keysperkeycode;
-                qt.typedata.keymap.count = nr->request_info.lbxgetkeymap.count;
-                qt.typedata.keymap.first = nr->request_info.lbxgetkeymap.first;
+		qt.tag = tag;
+		qt.tagtype = LbxTagTypeKeymap;
+		qt.typedata.keymap.keyspercode = rep->keysperkeycode;
+		qt.typedata.keymap.count = nr->request_info.lbxgetkeymap.count;
+		qt.typedata.keymap.first = nr->request_info.lbxgetkeymap.first;
 		QueryTag(client, &qt);
 
 		/* XXX what is the right way to stack Queries? */
 		return TRUE;
 	    }
+
 #ifdef LBX_STATS
 	    getkeymap_tag++;
-            tag_bytes_unsent += (rep->keysperkeycode *
-		(LBXMaxKeyCode(client) - LBXMinKeyCode(client) + 1) * 4);
+	    tag_bytes_unsent += (rep->keysperkeycode *
+		    (LBXMaxKeyCode(client) - LBXMinKeyCode(client) + 1) * 4);
 #endif
 	}
     } else {
@@ -864,12 +1099,18 @@ get_key_map_reply(client, data)
 
 	/* server didn't send us a tag for some reason -- just pass on data */
 	tag_data = (pointer) &rep[1];
+	/* data always swapped, because reswapped when written */
+	if (client->swapped) {
+	    len = rep->keysperkeycode *
+		(LBXMaxKeyCode(client) - LBXMinKeyCode(client) + 1) * 4;
+	    SwapLongs((CARD32 *) tag_data, len / 4);
+	}
     }
 
     FinishKeymapReply(client, rep->sequenceNumber, (int) rep->keysperkeycode,
-			nr->request_info.lbxgetkeymap.first,
-			nr->request_info.lbxgetkeymap.count,
-			tag_data);
+		      nr->request_info.lbxgetkeymap.first,
+		      nr->request_info.lbxgetkeymap.count,
+		      tag_data);
 
     return TRUE;
 }
@@ -881,21 +1122,27 @@ queryfont_req(client, data)
 {
     ReplyStuffPtr nr;
     xResourceReq *req;
+    Font        fid;
+    char        n;
 
     req = (xResourceReq *) data;
+    fid = req->id;
+    if (client->swapped) {
+	swapl(&fid, n);
+    }
     nr = NewReply(client);
     if (nr) {
 	nr->sequenceNumber = LBXSequenceNumber(client);
 	nr->request = X_LbxQueryFont;
 	nr->lbx_req = TRUE;
-        nr->extension = client->server->lbxReq;
+	nr->extension = client->server->lbxReq;
 
 	/*
 	 * this expects a reply.  since we write the data here, we have to be
 	 * sure the seq number is in sync first
 	 */
 	ForceSequenceUpdate(client);
-	SendQueryFont(client, req->id);
+	SendQueryFont(client, fid);
 
 	return REQ_REPLACE;
     } else
@@ -906,19 +1153,27 @@ void
 FinishQueryFontReply(client, seqnum, length, data)
     ClientPtr   client;
     int         seqnum;
-    int		length;
+    int         length;
     pointer     data;
 {
-    xQueryFontReply *reply = (xQueryFontReply *)data;
+    xQueryFontReply *reply;
 
-    /* patch up certain fields */
-    reply->type = X_Reply;
-    reply->sequenceNumber = seqnum;
-    reply->length = (length - sizeof(xGenericReply)) >> 2;
+    reply = (xQueryFontReply *) ALLOCATE_LOCAL(length);
+    if (reply) {
+	bcopy((char *) data, (char *) reply, length);
+	/* patch up certain fields */
+	reply->type = X_Reply;
+	reply->sequenceNumber = seqnum;
+	reply->length = (length - sizeof(xGenericReply)) >> 2;
 
-    length -= sizeof(xQueryFontReply);
-    WriteToClient(client, sizeof(xQueryFontReply), reply);
-    WriteToClient(client, length, reply + 1);
+	length -= sizeof(xQueryFontReply);
+	if (client->swapped) {
+	    SwapFont(reply, TRUE);
+	}
+	WriteToClient(client, sizeof(xQueryFontReply), reply);
+	WriteToClient(client, length, reply + 1);
+	DEALLOCATE_LOCAL(reply);
+    }
 }
 
 
@@ -927,20 +1182,25 @@ get_queryfont_reply(client, data)
     ClientPtr   client;
     char       *data;
 {
-    xQueryFontReply reply;
     xLbxQueryFontReply *rep;
     int         len;
     pointer     tag_data;
-    TagData	td;
+    TagData     td;
     ReplyStuffPtr nr;
-    QueryTagRec	qt;
+    QueryTagRec qt;
+    CARD32      tag;
+    char        n;
 
     rep = (xLbxQueryFontReply *) data;
 
     nr = GetReply(client);
     assert(nr);
 
-    if (rep->tag) {
+    tag = rep->tag;
+    if (client->swapped) {
+	swapl(&tag, n);
+    }
+    if (tag) {
 	if (rep->length) {	/* first time, set tag */
 
 #ifdef LBX_STATS
@@ -948,29 +1208,33 @@ get_queryfont_reply(client, data)
 #endif
 
 	    tag_data = (pointer) &rep[1];
-            len = rep->length << 2;
-	    if (!TagStoreData(global_cache, rep->tag, len,
+	    len = rep->length << 2;
+	    if (client->swapped) {
+		SwapFont((xQueryFontReply *) tag_data, FALSE);
+	    }
+	    if (!TagStoreData(global_cache, tag, len,
 			      LbxTagTypeFont, tag_data)) {
 		/* tell server we lost it */
-		SendInvalidateTag(client, rep->tag);
+		SendInvalidateTag(client, tag);
 	    }
 	} else {
-	    td = TagGetTag(global_cache, rep->tag);
+	    td = TagGetTag(global_cache, tag);
 	    if (!td) {
 		/* lost data -- ask again for tag value */
 
-                qt.tag = rep->tag;
-                qt.tagtype = LbxTagTypeFont;
+		qt.tag = tag;
+		qt.tagtype = LbxTagTypeFont;
 		QueryTag(client, &qt);
 
 		/* XXX what is the right way to stack Queries? */
 		return TRUE;
 	    }
-            len = td->size;
-            tag_data = td->tdata;
+	    len = td->size;
+	    tag_data = td->tdata;
+
 #ifdef LBX_STATS
 	    queryfont_tag++;
-            tag_bytes_unsent += len;
+	    tag_bytes_unsent += len;
 #endif
 	}
     } else {
@@ -981,7 +1245,10 @@ get_queryfont_reply(client, data)
 
 	/* server didn't send us a tag for some reason -- just pass on data */
 	tag_data = (pointer) &rep[1];
-        len = rep->length << 2;
+	if (client->swapped) {
+	    SwapFont((xQueryFontReply *) tag_data, FALSE);
+	}
+	len = rep->length << 2;
     }
 
     FinishQueryFontReply(client, rep->sequenceNumber, len, tag_data);
@@ -1135,6 +1402,7 @@ FinishLBXRequest(client, yank)
     int         yank;
 {
     REQUEST(xReq);
+    char        n;
 
 #define	yankable(y)	(((y) == REQ_YANK) || ((y) == REQ_REPLACE))
 
@@ -1175,8 +1443,12 @@ FinishLBXRequest(client, yank)
 	    (LBXSequenceLost(client) >= MAX_SEQUENCE_LOST)) {
 	BumpSequence(client);
     }
+    /* put request length in proxy byte order */
+    if (client->swapped) {
+	swaps(&stuff->length, n);
+    }
     if (yank == REQ_NOCHANGE) {
-	WriteReqToServer(client, stuff->length << 2, stuff);
+	WriteReqToServer(client, stuff->length << 2, (char *) stuff);
     }
     return Success;
 }
@@ -1187,45 +1459,52 @@ FinishLBXRequest(client, yank)
  * QueryFont regularly hits this in normal operation
  */
 static int
-patchup_error(err, nr)
+patchup_error(client, err, nr)
+    ClientPtr   client;
     xError     *err;
     ReplyStuffPtr nr;
 {
     QueryTagPtr qtp;
-    int		retval = 0;
+    int         retval = 0;
+    CARD16      minor_code;
+    char        n;
 
-    switch (err->minorCode) {
+    minor_code = err->minorCode;
+    if (client->swapped) {
+	swaps(&minor_code, n);
+    }
+    switch (minor_code) {
     case X_LbxGetModifierMapping:
-	err->minorCode = X_GetModifierMapping;
+	minor_code = X_GetModifierMapping;
 	break;
     case X_LbxGetKeyboardMapping:
-	err->minorCode = X_GetKeyboardMapping;
+	minor_code = X_GetKeyboardMapping;
 	break;
     case X_LbxGetProperty:
-	err->minorCode = X_GetProperty;
+	minor_code = X_GetProperty;
 	break;
     case X_LbxQueryFont:
-	err->minorCode = X_QueryFont;
+	minor_code = X_QueryFont;
 	break;
     case X_LbxQueryTag:
 	qtp = &(nr->request_info.lbxquerytag.info);
 	switch (qtp->tagtype) {
 	case LbxTagTypeModmap:
-	    err->minorCode = X_GetModifierMapping;
+	    minor_code = X_GetModifierMapping;
 	    break;
 	case LbxTagTypeKeymap:
-	    err->minorCode = X_GetKeyboardMapping;
+	    minor_code = X_GetKeyboardMapping;
 	    break;
 	case LbxTagTypeProperty:
-	    err->minorCode = X_GetProperty;
+	    minor_code = X_GetProperty;
 	    break;
 	case LbxTagTypeFont:
-	    err->minorCode = X_QueryFont;
+	    minor_code = X_QueryFont;
 	    break;
 	case LbxTagTypeConnInfo:
 	    /*
-	     * What do we do now?!?!?  For now, return -1 so that caller
-	     * can shut down the client.
+	     * What do we do now?!?!?  For now, return -1 so that caller can
+	     * shut down the client.
 	     */
 	    retval = -1;
 	default:
@@ -1237,18 +1516,29 @@ patchup_error(err, nr)
 	assert(0);
 	break;
     }
+    if (client->swapped) {
+	swaps(&minor_code, n);
+    }
+    err->minorCode = minor_code;
     return retval;
 }
 
 static Bool
-error_matches(client,nr, err)
-    ClientPtr	client;
+error_matches(client, nr, err)
+    ClientPtr   client;
     ReplyStuffPtr nr;
     xError     *err;
 {
+    CARD16      mc;
+    char        n;
+
+    mc = err->minorCode;
+    if (client->swapped) {
+	swaps(&mc, n);
+    }
     if (nr && (err->sequenceNumber == (nr->sequenceNumber & 0xffff))) {
 	if (err->majorCode == client->server->lbxReq &&
-		(err->minorCode == nr->request)) {
+		(mc == nr->request)) {
 	    return TRUE;
 	} else if (err->majorCode == nr->request) {
 	    return TRUE;
@@ -1258,16 +1548,10 @@ error_matches(client,nr, err)
 }
 
 /*
- * NOTE
- *
-#ifdef notyet
- * data coming in may not be on a word boundary, so it has to be
- * shuffled up
-#endif
- *
  * returns TRUE if data (possibly modified) is to be sent on to client,
  * FALSE if data is replaced
  */
+/* ARGSUSED */
 Bool
 DoLBXReply(client, data, len)
     ClientPtr   client;
@@ -1275,47 +1559,39 @@ DoLBXReply(client, data, len)
     int         len;
 {
     xGenericReply *reply;
-    int         rlen;
     xError     *err;
     ReplyStuffPtr nr;
     Bool        remove_it = TRUE;
     Bool        ret = TRUE;
     extern Bool lbxUseTags;
+    char        n;
 
 #ifdef PROTOCOL_RAW
     return;
 #endif
 
-    /* make sure data is on word boundary */
-
-#ifdef notyet
-    bcopy(data, temp_buffer, len);
-    reply = (xGenericReply *) temp_buffer;
-#else
     reply = (xGenericReply *) data;
-#endif
 
     if (client->awaitingSetup) {
 	xConnSetupPrefix *prefix = (xConnSetupPrefix *) reply;
+
 	AttendClient(client);
 	if (prefix->success) {
 	    if (lbxUseTags) {
-		get_tagged_setup_reply(client, reply);
+		get_tagged_setup_reply(client, (char *) reply);
 		return FALSE;
-	    }
-	    else {
-		GetConnectionInfo(client, &prefix[1], NULL);
+	    } else {
+		if (client->swapped) {
+		    SwapConnectionInfo((xConnSetup *) & prefix[1]);
+		}
+		GetConnectionInfo(client, (xConnSetup *) &prefix[1], NULL);
 	    }
 	}
 	return TRUE;
     }
-
-#ifdef old
-    rlen = reply_length(client, reply);
-
-    if (len != rlen)
-	fprintf(stderr, "HELP -- reply length not the same as buffer length\n");
-#endif
+    if (client->swapped) {	/* swap sequence number */
+	swaps(&reply->sequenceNumber, n);
+    }
 
 #ifdef DEBUG
     if (reply->sequenceNumber < LBXLastReply(client))
@@ -1339,9 +1615,9 @@ DoLBXReply(client, data, len)
 	if (reply->type == X_Error) {
 	    err = (xError *) reply;
 	    nr = GetReply(client);
-            if (error_matches(client, nr, err)) {
-                if (err->majorCode == client->server->lbxReq) {
-		    if (patchup_error(err, nr) < 0) {
+	    if (error_matches(client, nr, err)) {
+		if (err->majorCode == client->server->lbxReq) {
+		    if (patchup_error(client, err, nr) < 0) {
 			CloseDownClient(client);
 			return FALSE;
 		    }
@@ -1365,13 +1641,13 @@ DoLBXReply(client, data, len)
 
 	    err->sequenceNumber = LBXLastReply(client);
 
-#ifdef notyet
-	    /* move the changed value into the proper place */
-	    bcopy(temp_buffer, data, len);
-#endif
 	}
 	if (reply->type == MotionNotify) {
 	    AllowMotion(client, 1);
+	}
+	if (client->swapped) {	/* put seq & length back */
+	    swaps(&reply->sequenceNumber, n);
+	    swapl(&reply->length, n);
 	}
 	return TRUE;
     }
@@ -1414,57 +1690,61 @@ DoLBXReply(client, data, len)
     if (!nr->extension) {
 	switch (nr->request) {
 	case X_InternAtom:
-	    remove_it = intern_atom_reply(client, reply);
+	    remove_it = intern_atom_reply(client, (char *) reply);
 	    break;
 	case X_GetAtomName:
-	    remove_it = get_atom_name_reply(client, reply);
+	    remove_it = get_atom_name_reply(client, (char *) reply);
 	    break;
 	case X_LookupColor:
-	    remove_it = lookup_color_reply(client, reply);
+	    remove_it = lookup_color_reply(client, (char *) reply);
 	    break;
 	case X_AllocColor:
-	    remove_it = alloc_color_reply(client, reply);
+	    remove_it = alloc_color_reply(client, (char *) reply);
 	    break;
 	case X_AllocNamedColor:
-	    remove_it = alloc_named_color_reply(client, reply);
+	    remove_it = alloc_named_color_reply(client, (char *) reply);
 	    break;
 	default:
 	    break;
 	}
     } else if (nr->lbx_req) {
-        /* handle various extensions we know about */
+	/* handle various extensions we know about */
 	switch (nr->request) {
 	case X_LbxGetModifierMapping:
-	    remove_it = get_mod_map_reply(client, reply);
+	    remove_it = get_mod_map_reply(client, (char *) reply);
 	    ret = FALSE;
 	    break;
 	case X_LbxGetKeyboardMapping:
-	    remove_it = get_key_map_reply(client, reply);
+	    remove_it = get_key_map_reply(client, (char *) reply);
 	    ret = FALSE;
 	    break;
 	case X_LbxGetProperty:
-	    remove_it = GetLbxGetPropertyReply(client, reply);
+	    remove_it = GetLbxGetPropertyReply(client, (char *) reply);
 	    ret = FALSE;
 	    break;
 	case X_LbxChangeProperty:
-	    remove_it = GetLbxChangePropertyReply(client, reply);
+	    remove_it = GetLbxChangePropertyReply(client, (char *) reply);
 	    ret = FALSE;
 	    break;
 	case X_LbxQueryFont:
-	    remove_it = get_queryfont_reply(client, reply);
+	    remove_it = get_queryfont_reply(client, (char *) reply);
 	    ret = FALSE;
 	    break;
 	case X_LbxQueryTag:
-	    remove_it = GetQueryTagReply(client, reply);
+	    remove_it = GetQueryTagReply(client, (char *) reply);
 	    ret = FALSE;
 	    break;
 	default:
 	    break;
 	}
     } else {
-    	/* XXX handle any other extensions we may know about */
+	/* XXX handle any other extensions we may know about */
     }
     if (remove_it)
 	RemoveReply(client);
+    if (client->swapped) {	/* put seq & length back */
+	swaps(&reply->sequenceNumber, n);
+	swapl(&reply->length, n);
+    }
     return ret;
 }

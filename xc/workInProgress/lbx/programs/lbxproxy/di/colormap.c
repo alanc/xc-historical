@@ -1,4 +1,4 @@
-/* $XConsortium: colormap.c,v 1.4 94/02/20 11:12:46 dpw Exp $ */
+/* $XConsortium: colormap.c,v 1.5 94/03/08 20:51:14 dpw Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -7,9 +7,9 @@
  * that the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the name Network Computing Devices, Inc. not be
- * used in advertising or publicity pertaining to distribution of this 
+ * used in advertising or publicity pertaining to distribution of this
  * software without specific, written prior permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED `AS-IS'.  NETWORK COMPUTING DEVICES, INC.,
  * DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING WITHOUT
  * LIMITATION ALL IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
@@ -19,8 +19,8 @@
  * OR PROFITS, EVEN IF ADVISED OF THE POSSIBILITY THEREOF, AND REGARDLESS OF
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- * 
- * $NCDId: @(#)colormap.c,v 1.9 1994/03/07 22:54:30 lemke Exp $
+ *
+ * $NCDId: @(#)colormap.c,v 1.10 1994/03/24 17:54:51 lemke Exp $
  */
 /*
  * XXX
@@ -126,7 +126,7 @@ Bool
 AddColorName(name, len, rgbe)
     char       *name;
     int         len;
-    RGBEntryRec rgbe;
+    RGBEntryRec *rgbe;
 {
     RGBCacheEntryPtr ce,
                 new;
@@ -145,7 +145,7 @@ AddColorName(name, len, rgbe)
 	while (ce->next) {
 
 #ifdef DEBUG
-	    if ((rgbe.cmap == ce->color.cmap) &&
+	    if ((rgbe->cmap == ce->color.cmap) &&
 		    (len == ce->color.namelen) &&
 		    !strncmp(name, ce->color.name, len)) {
 		fprintf(stderr, "resetting color name\n");
@@ -156,7 +156,7 @@ AddColorName(name, len, rgbe)
 	}
 	ce->next = new;
     }
-    new->color = rgbe;
+    new->color = *rgbe;
     new->color.name = strnalloc(name, len);
     new->color.namelen = len;
     new->next = NULL;
@@ -272,6 +272,7 @@ find_named_pixel(pent, num, name, namelen, pe)
     return 0;
 }
 
+/* ARGSUSED */
 int
 FindPixel(client, cmap, red, green, blue, pent)
     ClientPtr   client;
@@ -282,7 +283,6 @@ FindPixel(client, cmap, red, green, blue, pent)
     Entry     **pent;
 {
     ColormapPtr pmap;
-    int         i;
     Entry      *pe;
 
     *pent = (Entry *) 0;
@@ -299,7 +299,6 @@ FindPixel(client, cmap, red, green, blue, pent)
 	    return 1;
 	}
 	return 0;
-	break;
     case PseudoColor:
     case GrayScale:
 	if (find_matching_pixel(pmap->red, pmap->size,
@@ -308,18 +307,18 @@ FindPixel(client, cmap, red, green, blue, pent)
 	    return 1;
 	}
 	return 0;
-	break;
     case TrueColor:
     case DirectColor:
 	/* XXX */
 	return 0;
-	break;
     default:
 	assert(0);
 	break;
     }
+    return 0;
 }
 
+/* ARGSUSED */
 int
 FindNamedPixel(client, cmap, name, namelen, pent)
     ClientPtr   client;
@@ -330,8 +329,6 @@ FindNamedPixel(client, cmap, name, namelen, pent)
 {
     Entry      *pe;
     ColormapPtr pmap;
-    int         i;
-    Pixel       pix;
 
     *pent = (Entry *) 0;
     pmap = (ColormapPtr) LookupIDByType(cmap, RT_COLORMAP);
@@ -346,7 +343,6 @@ FindNamedPixel(client, cmap, name, namelen, pent)
 	    return 1;
 	}
 	return 0;
-	break;
     case PseudoColor:
     case GrayScale:
 	if (find_named_pixel(pmap->red, pmap->size, name, namelen, &pe)) {
@@ -354,16 +350,15 @@ FindNamedPixel(client, cmap, name, namelen, pent)
 	    return 1;
 	}
 	return 0;
-	break;
     case TrueColor:
     case DirectColor:
 	/* XXX */
 	return 0;
-	break;
     default:
 	assert(0);
 	break;
     }
+    return 0;
 }
 
 int
@@ -380,7 +375,6 @@ StorePixel(client, cmap, red, green, blue, rep_red, rep_green, rep_blue, pixel)
 {
     ColormapPtr pmap;
     Entry      *pent;
-    int         size;
 
     pmap = (ColormapPtr) LookupIDByType(cmap, RT_COLORMAP);
     if (!pmap) {
@@ -406,16 +400,15 @@ StorePixel(client, cmap, red, green, blue, rep_red, rep_green, rep_blue, pixel)
 	IncrementPixel(client, cmap, &pent[pixel]);
 
 	return 1;
-	break;
     case TrueColor:
     case DirectColor:
 	/* XXX */
 	return 0;
-	break;
     default:
 	assert(0);
 	break;
     }
+    return 0;
 }
 
 int
@@ -436,7 +429,6 @@ StoreNamedPixel(client, cmap, name, namelen, xred, xgreen, xblue,
     ColormapPtr pmap;
     Entry      *pent;
     RGBEntryRec rgbe;
-    int         size;
 
     pmap = (ColormapPtr) LookupIDByType(cmap, RT_COLORMAP);
     if (!pmap) {
@@ -450,13 +442,14 @@ StoreNamedPixel(client, cmap, name, namelen, xred, xgreen, xblue,
 	pent = pmap->red;
 
 	if (pent[pixel].refcnt) {
+
 #ifdef DEBUG
 	    fprintf(stderr, "Changing existing pixel name from %s to %s\n",
-            		pent[pixel].name, name);
+		    pent[pixel].name, name);
 #endif
-            xfree(pent[pixel].name);
-        }
 
+	    xfree(pent[pixel].name);
+	}
 	pent[pixel].red = xred;
 	pent[pixel].green = xgreen;
 	pent[pixel].blue = xblue;
@@ -487,8 +480,10 @@ StoreNamedPixel(client, cmap, name, namelen, xred, xgreen, xblue,
     rgbe.vgreen = vgreen;
     rgbe.cmap = cmap;
     AddColorName(name, namelen, &rgbe);
+    return 1;
 }
 
+/* ARGSUSED */
 static void
 FreeCell(pmap, pixel, channel)
     ColormapPtr pmap;
@@ -530,6 +525,7 @@ FreeAllClientPixels(pmap, client)
     /* XXX add Direct and True color stuff */
 }
 
+/* ARGSUSED */
 int
 FreeClientPixels(pcr, id)
     colorResource *pcr;
@@ -590,7 +586,6 @@ FreePixels(client, cmap, num, pixels)
     Pixel       pixels[];
 {
     ColormapPtr pmap;
-    Entry      *pent;
     Pixel       pix;
     int         i,
                 zapped = 0,
@@ -646,7 +641,6 @@ FreePixels(client, cmap, num, pixels)
 	    }
 	}
 	return 1;
-	break;
     case TrueColor:
     case DirectColor:
 	/* XXX */
@@ -655,6 +649,7 @@ FreePixels(client, cmap, num, pixels)
 	assert(0);
 	break;
     }
+    return 0;
 }
 
 static      ColormapPtr
@@ -677,7 +672,7 @@ create_colormap(cmap, win, visual)
     pmap = (ColormapPtr) xalloc(tsize);
     if (!pmap)
 	return pmap;
-    bzero((char *)pmap, tsize);
+    bzero((char *) pmap, tsize);
     pmap->size = size;
     pmap->id = cmap;
     pmap->window = win;
@@ -700,6 +695,7 @@ create_colormap(cmap, win, visual)
     return pmap;
 }
 
+/* ARGSUSED */
 int
 CreateColormap(client, cmap, win, visual)
     ClientPtr   client;
@@ -718,6 +714,8 @@ CreateColormap(client, cmap, win, visual)
     return 1;
 }
 
+/* ARGSUSED */
+int
 DestroyColormap(pmap, id)
     ColormapPtr pmap;
     Colormap    id;
@@ -727,6 +725,7 @@ DestroyColormap(pmap, id)
     xfree(pmap);
 }
 
+/* ARGSUSED */
 int
 FreeColormap(client, cmap)
     ClientPtr   client;
@@ -739,11 +738,13 @@ FreeColormap(client, cmap)
 	return 0;
     }
     FreeResource(cmap, RT_NONE);
+    return 1;
 }
 
 /*
  * this one is real ugly.  just nuke everything for now
  */
+/* ARGSUSED */
 int
 CopyAndFreeColormap(client, new, old)
     ClientPtr   client;
@@ -768,6 +769,7 @@ CopyAndFreeColormap(client, new, old)
     if (!AddResource(new, RT_COLORMAP, (pointer) newmap)) {
 	return 0;
     }
+    return 1;
 }
 
 void
@@ -785,6 +787,6 @@ FreeColors()
 	    xfree(ce);
 	    ce = nce;
 	}
-        rgb_cache[i] = 0;
+	rgb_cache[i] = 0;
     }
 }

@@ -1,4 +1,4 @@
-/* $XConsortium: cache.c,v 1.2 94/02/20 11:12:37 dpw Exp $ */
+/* $XConsortium: cache.c,v 1.3 94/03/08 20:51:11 dpw Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -21,7 +21,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDId: @(#)cache.c,v 1.4 1994/03/04 00:06:31 lemke Exp $
+ * $NCDId: @(#)cache.c,v 1.5 1994/03/24 17:54:50 lemke Exp $
  *
  */
 #include	"cachestr.h"
@@ -86,11 +86,11 @@ CacheInit(maxsize)
 
 void
 CacheFreeCache(cid)
-    Cache	cid;
+    Cache       cid;
 {
-    CachePtr cache = caches[cid];
+    CachePtr    cache = caches[cid];
 
-    CacheReset(cid, 0);
+    CacheReset(cid);
     caches[cid] = 0;
     xfree(cache->entries);
     xfree(cache);
@@ -98,7 +98,7 @@ CacheFreeCache(cid)
 
 static int
 hash(cid, id)
-    Cache	cid;
+    Cache       cid;
     CacheID     id;
 {
     CachePtr    cache = caches[cid];
@@ -107,27 +107,27 @@ hash(cid, id)
 
 #ifdef DEBUG			/* only need this if INITHASHSIZE < 6 */
     case 2:
-	return ((int) (0x03 & (cid ^ (cid >> 2) ^ (cid >> 8))));
+	return ((int) (0x03 & (id ^ (id >> 2) ^ (id >> 8))));
     case 3:
-	return ((int) (0x07 & (cid ^ (cid >> 3) ^ (cid >> 9))));
+	return ((int) (0x07 & (id ^ (id >> 3) ^ (id >> 9))));
     case 4:
-	return ((int) (0x0F & (cid ^ (cid >> 4) ^ (cid >> 10))));
+	return ((int) (0x0F & (id ^ (id >> 4) ^ (id >> 10))));
     case 5:
-	return ((int) (0x01F & (cid ^ (cid >> 5) ^ (cid >> 11))));
+	return ((int) (0x01F & (id ^ (id >> 5) ^ (id >> 11))));
 #endif
 
     case 6:
-	return ((int) (0x03F & (cid ^ (cid >> 6) ^ (cid >> 12))));
+	return ((int) (0x03F & (id ^ (id >> 6) ^ (id >> 12))));
     case 7:
-	return ((int) (0x07F & (cid ^ (cid >> 7) ^ (cid >> 13))));
+	return ((int) (0x07F & (id ^ (id >> 7) ^ (id >> 13))));
     case 8:
-	return ((int) (0x0FF & (cid ^ (cid >> 8) ^ (cid >> 16))));
+	return ((int) (0x0FF & (id ^ (id >> 8) ^ (id >> 16))));
     case 9:
-	return ((int) (0x1FF & (cid ^ (cid >> 9))));
+	return ((int) (0x1FF & (id ^ (id >> 9))));
     case 10:
-	return ((int) (0x3FF & (cid ^ (cid >> 10))));
+	return ((int) (0x3FF & (id ^ (id >> 10))));
     case 11:
-	return ((int) (0x7FF & (cid ^ (cid >> 11))));
+	return ((int) (0x7FF & (id ^ (id >> 11))));
     }
     return -1;
 }
@@ -178,29 +178,30 @@ rebuild_cache(cache)
  * throws out all existing entries
  */
 void
-CacheReset()
+CacheReset(cid)
+    Cache       cid;
 {
-    CacheEntryPtr cp, ocp;
+    CacheEntryPtr cp,
+                ocp;
     CachePtr    cache;
-    int         i,
-                j;
+    int         i;
 
-    for (j = 0; j < num_caches; j++) {
-	cache = caches[j];
-	if (!cache)
-	    continue;
-	for (i = 0; i < cache->buckets; i++) {
-	    for (cp = cache->entries[i]; cp; cp = ocp) {
-		cache->elements--;
-		cache->cursize -= cp->size;
-		(*cp->free_func) (cp->id, cp->data, CacheWasReset);
-                ocp = cp->next;
-		xfree(cp);
-	    }
-	    cache->entries[i] = (CacheEntryPtr) 0;
-	}
-	assert(cache->cursize == 0);
+    cache = caches[cid];
+    if (!cache) {
+	assert(0);
+	return;
     }
+    for (i = 0; i < cache->buckets; i++) {
+	for (cp = cache->entries[i]; cp; cp = ocp) {
+	    cache->elements--;
+	    cache->cursize -= cp->size;
+	    (*cp->free_func) (cp->id, cp->data, CacheWasReset);
+	    ocp = cp->next;
+	    xfree(cp);
+	}
+	cache->entries[i] = (CacheEntryPtr) 0;
+    }
+    assert(cache->cursize == 0);
 }
 
 static void
@@ -322,6 +323,7 @@ CacheFetchMemory(cid, id, update)
 	if (cp->id == id) {
 	    if (update) {
 		cp->timestamp = GetTimeInMillis();
+
 #ifdef bogus
 /* XXX this gets the damn thing circular -- why is it even here? */
 		if (cp != *head) {	/* put it in the front */

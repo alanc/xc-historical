@@ -22,8 +22,8 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: globals.c,v 1.1 94/02/10 20:08:47 dpw Exp $ */
-/* $NCDId: @(#)globals.c,v 1.2 1994/03/04 00:11:47 lemke Exp $ */
+/* $XConsortium: globals.c,v 1.2 94/03/08 20:51:19 dpw Exp $ */
+/* $NCDId: @(#)globals.c,v 1.3 1994/03/24 17:54:39 lemke Exp $ */
   
 #include "X.h"
 #include "Xmd.h"
@@ -40,18 +40,12 @@ int  currentMaxClients;   /* current size of clients array */
 unsigned long globalSerialNumber = 0;
 unsigned long serverGeneration = 0;
 
-/* these next four are initialized in main.c */
-long ScreenSaverTime;
-long ScreenSaverInterval;
-int  ScreenSaverBlanking;
-int  ScreenSaverAllowExposures;
-
 ClientPtr requestingClient;	/* XXX this should be obsolete now, remove? */
 
 TimeStamp currentTime;
 TimeStamp lastDeviceEventTime;
 
-long TimeOutValue = DEFAULT_TIMEOUT * MILLI_PER_SECOND;
+CARD32 TimeOutValue = DEFAULT_TIMEOUT * MILLI_PER_SECOND;
 
 char *defaultDisplayClass = "foo";
 

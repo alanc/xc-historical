@@ -1,7 +1,7 @@
-/* $XConsortium: dispatch.c,v 1.4 94/02/20 11:12:52 dpw Exp $ */
+/* $XConsortium: dispatch.c,v 1.5 94/03/08 20:51:17 dpw Exp $ */
 /*
  * $NCDOr: dispatch.c,v 1.2 1993/11/19 21:28:48 keithp Exp keithp $
- * $NCDId: @(#)dispatch.c,v 1.18 1994/03/04 02:32:48 dct Exp $
+ * $NCDId: @(#)dispatch.c,v 1.21 1994/03/24 17:54:33 lemke Exp $
  *
  * Copyright 1992 Network Computing Devices
  *
@@ -39,18 +39,17 @@
 #include "servermd.h"
 #define _XLBX_SERVER_
 #include "lbxstr.h"
+#include "swap.h"
 
 extern int (* InitialVector[3]) ();
 extern int (* ProcVector[256]) ();
 extern int (* SwappedProcVector[256]) ();
 extern void (* EventSwapVector[128]) ();
 extern void (* ReplySwapVector[256]) ();
-extern void Swap32Write(), SLHostsExtend(), SQColorsExtend(), WriteSConnectionInfo();
 extern void WriteSConnSetupPrefix();
 extern char *ClientAuthorized();
 extern Bool InsertFakeRequest();
 static void KillAllClients();
-static void DeleteClientFromAnySelections();
 extern void ProcessWorkQueue();
 extern Bool lbxUseTags;
 
@@ -259,13 +258,12 @@ ProcInitialConnection(client)
 	(!(*(char *) &whichbyte) && (prefix->byteOrder == 'l')))
     {
 	client->swapped = TRUE;
-/*	SwapConnClientPrefix(prefix); */
+	SwapConnClientPrefix(prefix);
     }
     stuff->reqType = 2;
     stuff->length += ((prefix->nbytesAuthProto + 3) >> 2) +
 		     ((prefix->nbytesAuthString + 3) >> 2);
-    if (client->swapped)
-    {
+    if (client->swapped) {
 	swaps(&stuff->length, whichbyte);
     }
     ResetCurrentRequest(client);
@@ -276,28 +274,33 @@ int
 ProcEstablishConnection(client)
     register ClientPtr client;
 {
-    char *reason, *auth_proto, *auth_string;
+    char       *reason,
+               *auth_proto,
+               *auth_string;
     register xLbxConnClientPrefix *prefix;
     register xWindowRoot *root;
     register int i;
+    int         len;
+
     REQUEST(xReq);
 
-    prefix = (xLbxConnClientPrefix *)((char *)stuff + sz_xReq);
-    auth_proto = (char *)prefix + sz_xConnClientPrefix;
+    prefix = (xLbxConnClientPrefix *) ((char *) stuff + sz_xReq);
+    auth_proto = (char *) prefix + sz_xConnClientPrefix;
     auth_string = auth_proto + ((prefix->nbytesAuthProto + 3) & ~3);
     if ((prefix->majorVersion != X_PROTOCOL) ||
-	(prefix->minorVersion != X_PROTOCOL_REVISION))
+	    (prefix->minorVersion != X_PROTOCOL_REVISION))
 	reason = "Protocol version mismatch";
     else
 	reason = ClientAuthorized(client,
-				  (unsigned short)prefix->nbytesAuthProto,
+				  (unsigned short) prefix->nbytesAuthProto,
 				  auth_proto,
-				  (unsigned short)prefix->nbytesAuthString,
+				  (unsigned short) prefix->nbytesAuthString,
 				  auth_string);
-    if (reason)
-    {
+
+#ifdef notyet
+    if (reason) {
 	xConnSetupPrefix csp;
-	char pad[3];
+	char        pad[3];
 
 	csp.success = xFalse;
 	csp.lengthReason = strlen(reason);
@@ -305,74 +308,49 @@ ProcEstablishConnection(client)
 	csp.majorVersion = X_PROTOCOL;
 	csp.minorVersion = X_PROTOCOL_REVISION;
 	if (client->swapped)
-/*	    WriteSConnSetupPrefix(client, &csp) */;
+	    WriteSConnSetupPrefix(client, &csp);
 	else
-	    (void)WriteToClient(client, sz_xConnSetupPrefix, (char *) &csp);
-        (void)WriteToClient(client, (int)csp.lengthReason, reason);
+	    (void) WriteToClient(client, sz_xConnSetupPrefix, (char *) &csp);
+	(void) WriteToClient(client, (int) csp.lengthReason, reason);
 	if (csp.lengthReason & 3)
-	    (void)WriteToClient(client, (int)(4 - (csp.lengthReason & 3)),
-				pad);
+	    (void) WriteToClient(client, (int) (4 - (csp.lengthReason & 3)),
+				 pad);
 	return (client->noClientException = -1);
     }
+#endif
 
     nClients++;
-/*    client->requestVector = client->swapped ? SwappedProcVector : ProcVector; */
+/*
+    client->requestVector = client->swapped ? SwappedProcVector : ProcVector;
+*/
     client->requestVector = ProcVector;
     client->sequence = 0;
     LBXSequenceNumber(client) = 0;
     /* wait for X server to kill client */
     client->closeDownMode = RetainPermanent;
 
-    /* 
-     * NewClient outputs the LbxNewClient request header - have to
-     * follow it up with the setup connection info.
+    /*
+     * NewClient outputs the LbxNewClient request header - have to follow it
+     * up with the setup connection info.
      */
-    if (!NewClient (client, (stuff->length << 2) - sz_xReq))
+    /* length is still swapped */
+    if (client->swapped) {
+	swaps(&stuff->length, i);
+	/* put data back to the way server will expect it */
+	SwapConnClientPrefix((xConnClientPrefix *) prefix);
+    }
+    len = (stuff->length << 2) - sz_xReq;
+    if (!NewClient(client, len))
 	return (client->noClientException = -1);
     prefix->useTag = lbxUseTags;
-    WriteToServer (clients[0], (stuff->length << 2) - sz_xReq, prefix);
+    WriteToServer(clients[0], len, (char *) prefix);
 
     /*
-     * Can't allow any requests to be passed on to the server until
-     * the connection setup reply has been received.
+     * Can't allow any requests to be passed on to the server until the
+     * connection setup reply has been received.
      */
-    IgnoreClient (client);
+    IgnoreClient(client);
 
-#ifdef NOTDEF
-    ((xConnSetup *)ConnectionInfo)->ridBase = client->clientAsMask;
-    ((xConnSetup *)ConnectionInfo)->ridMask = RESOURCE_ID_MASK;
-    /* fill in the "currentInputMask" */
-    root = (xWindowRoot *)(ConnectionInfo + connBlockScreenStart);
-    for (i=0; i<screenInfo.numScreens; i++) 
-    {
-	register int j;
-	register xDepth *pDepth;
-
-        root->currentInputMask = WindowTable[i]->eventMask |
-			         wOtherEventMasks (WindowTable[i]);
-	pDepth = (xDepth *)(root + 1);
-	for (j = 0; j < root->nDepths; j++)
-	{
-	    pDepth = (xDepth *)(((char *)(pDepth + 1)) +
-				pDepth->nVisuals * sizeof(xVisualType));
-	}
-	root = (xWindowRoot *)pDepth;
-    }
-    if (client->swapped)
-    {
-	WriteSConnSetupPrefix(client, &connSetupPrefix);
-	WriteSConnectionInfo(client,
-			     (unsigned long)(connSetupPrefix.length << 2),
-			     ConnectionInfo);
-    }
-    else
-    {
-	(void)WriteToClient(client, sizeof(xConnSetupPrefix),
-			    (char *) &connSetupPrefix);
-	(void)WriteToClient(client, (int)(connSetupPrefix.length << 2),
-			    ConnectionInfo);
-    }
-#endif
     return (client->noClientException);
 }
 
@@ -391,22 +369,8 @@ CloseDownClient(client)
 {
     if (!client->clientGone)
     {
-#ifdef NOTDEF
-	/* ungrab server if grabbing client dies */
-	if (grabbingClient &&  (onlyClient == client))
-	{
-	    grabbingClient = FALSE;
-	    ListenToAllClients();
-	}
-#endif
 	CloseClient (client);
 	
-	/* clean up after client */
-#ifdef NOTDEF
-	DeleteClientFromAnySelections(client);
-	ReleaseActiveGrabs(client);
-	DeleteClientFontStuff(client);
-#endif
 	
 	/* X server is telling us this client is dead */
 	if (client->closeDownMode == DestroyAll)
@@ -479,13 +443,14 @@ KillAllClients()
 ProcStandardRequest (client)
     ClientPtr	client;
 {
-    REQUEST (xReq);
-    
+    REQUEST(xReq);
+
     MakeLBXReply(client);
-    WriteReqToServer (client, stuff->length << 2, stuff);
+    WriteReqToServer(client, stuff->length << 2, (char *) stuff);
     return Success;
 }
 
+/* ARGSUSED */
 ProcBadRequest (client)
     ClientPtr	client;
 {

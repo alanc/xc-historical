@@ -1,4 +1,4 @@
-/* $XConsortium: atomcache.c,v 1.3 94/02/20 11:12:33 dpw Exp $ */
+/* $XConsortium: atomcache.c,v 1.4 94/03/08 20:51:03 dpw Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -20,7 +20,7 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * 
- * $NCDId: @(#)atomcache.c,v 1.5 1994/03/04 00:08:00 lemke Exp $
+ * $NCDId: @(#)atomcache.c,v 1.7 1994/03/24 17:55:05 lemke Exp $
  */
 /*
  * Original Author:  Keith Packard, MIT X Consortium
@@ -137,6 +137,7 @@ ResizeReverseMap()
     bzero((char *)reverseMap, (reverseMapSize * sizeof(AtomListPtr)));
     if (!reverseMap)
 	return FALSE;
+    return TRUE;
 }
 
 static

@@ -1,7 +1,7 @@
-/* $XConsortium: main.c,v 1.4 94/02/20 11:14:04 dpw Exp $ */
+/* $XConsortium: main.c,v 1.5 94/03/08 20:51:26 dpw Exp $ */
 /*
  * $NCDOr$
- * $NCDId: @(#)main.c,v 1.13 1994/03/04 00:12:28 lemke Exp $
+ * $NCDId: @(#)main.c,v 1.15 1994/03/24 17:54:31 lemke Exp $
  *
  * Copyright 1992 Network Computing Devices
  *
@@ -36,10 +36,11 @@
 #include "servermd.h"
 #include "site.h"
 #include "wire.h"
+#include "atomcache.h"
+#include "colormap.h"
+#include "tags.h"
 
 char	*display = "10";
-
-CARD32	ScreenSaverTime = 0;
 
 extern Bool NoticeServer ();
 
@@ -79,6 +80,7 @@ main (argc, argv)
 	    serverClient->clientAsMask = (Mask)0;
 	    serverClient->noClientException = Success;
             serverClient->awaitingSetup = FALSE;
+            serverClient->swapped = FALSE;
 
 	}
 	TagsInit();
@@ -98,6 +100,7 @@ main (argc, argv)
     exit (0);
 }
 
+/* ARGSUSED */
 void
 MarkClientException (client)
     ClientPtr	client;
