@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Atoms.h,v 1.3 89/12/08 12:03:56 rws Exp $
+ * $XConsortium: Atoms.h,v 1.4 90/12/19 18:09:36 converse Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -18,7 +18,6 @@
  * The interfaces described by this header file are for miscellaneous utilities
  * and are not part of the Xlib standard.
  */
-
 
 #ifndef _XMU_ATOMS_H_
 #define _XMU_ATOMS_H_
@@ -93,10 +92,10 @@ extern Atom XmuInternAtom(
 
 extern void XmuInternStrings(
 #if NeedFunctionPrototypes
-    Display *			/* dpy */,
-    _Xconst char * _Xconst *	/* names */,
-    Cardinal    		/* count */,
-    Atom *			/* atoms_return */
+    Display *		/* dpy */,
+    String *		/* names */,
+    Cardinal    	/* count */,
+    Atom *		/* atoms_return */
 #endif
 );
 
