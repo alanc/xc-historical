@@ -1,4 +1,4 @@
-/* $XConsortium: mpcfromi.c,v 1.1 93/10/26 09:48:19 rws Exp $ */
+/* $XConsortium: mpcfromi.c,v 1.2 93/10/31 09:48:07 dpw Exp $ */
 /**** module mpcfromi.c ****/
 /******************************************************************************
 				NOTICE
@@ -122,8 +122,8 @@ typedef struct _mpcfromi {
   Pixel         *pixLst;
   xrgb          *rgbLst;
   CARD32	 width;
-  void		*ibuf;
-  void		*obuf[xieValMaxBands];
+  pointer	ibuf;
+  pointer	obuf[xieValMaxBands];
 } mpCfromIRec, *mpCfromIPtr;
 
 /* action routines
@@ -256,10 +256,10 @@ static int DoSingleCfromI(flo,ped,pet)	/* one band out */
   bandPtr    iband = ddx->iband;
   bandPtr    oband = ddx->oband;
   CARD32     width = iband->format->width;
-  void *src, *dst;
+  pointer src, dst;
   
-  if((src = GetCurrentSrc(void,flo,pet,iband)) &&
-     (dst = GetCurrentDst(void,flo,pet,oband)))
+  if((src = GetCurrentSrc(pointer,flo,pet,iband)) &&
+     (dst = GetCurrentDst(pointer,flo,pet,oband)))
     do {
       if(ddx->ibuf) src = bitexpand(src,ddx->ibuf,width,(char)1,(char)0);
 
@@ -267,8 +267,8 @@ static int DoSingleCfromI(flo,ped,pet)	/* one band out */
 
       if(ddx->obuf[0]) bitshrink(ddx->obuf[0],dst,width,(char)1);
 
-      src = GetNextSrc(void,flo,pet,iband,FLUSH);
-      dst = GetNextDst(void,flo,pet,oband,FLUSH);
+      src = GetNextSrc(pointer,flo,pet,iband,FLUSH);
+      dst = GetNextDst(pointer,flo,pet,oband,FLUSH);
     } while(src && dst);
     
   FreeData(flo,pet,iband,iband->current);
@@ -285,12 +285,12 @@ static int DoTripleCfromI(flo,ped,pet)	/* three bands out */
   bandPtr    iband = ddx->iband;
   bandPtr    oband = ddx->oband;
   CARD32     width = iband->format->width;
-  void *src, *dstR, *dstG, *dstB;
+  pointer src, dstR, dstG, dstB;
   
-  src  = GetCurrentSrc(void,flo,pet,iband);
-  dstR = GetCurrentDst(void,flo,pet,oband); oband++;
-  dstG = GetCurrentDst(void,flo,pet,oband); oband++;
-  dstB = GetCurrentDst(void,flo,pet,oband); oband -=2;
+  src  = GetCurrentSrc(pointer,flo,pet,iband);
+  dstR = GetCurrentDst(pointer,flo,pet,oband); oband++;
+  dstG = GetCurrentDst(pointer,flo,pet,oband); oband++;
+  dstB = GetCurrentDst(pointer,flo,pet,oband); oband -=2;
 
   while(src && dstR && dstG && dstB) {
         
@@ -305,10 +305,10 @@ static int DoTripleCfromI(flo,ped,pet)	/* three bands out */
     if(ddx->obuf[1]) bitshrink(ddx->obuf[1],dstG,width,(char)1);
     if(ddx->obuf[2]) bitshrink(ddx->obuf[2],dstB,width,(char)1);
 
-    src  = GetNextSrc(void,flo,pet,iband,FLUSH);
-    dstR = GetNextDst(void,flo,pet,oband,FLUSH); oband++;
-    dstG = GetNextDst(void,flo,pet,oband,FLUSH); oband++;
-    dstB = GetNextDst(void,flo,pet,oband,FLUSH); oband -=2;
+    src  = GetNextSrc(pointer,flo,pet,iband,FLUSH);
+    dstR = GetNextDst(pointer,flo,pet,oband,FLUSH); oband++;
+    dstG = GetNextDst(pointer,flo,pet,oband,FLUSH); oband++;
+    dstB = GetNextDst(pointer,flo,pet,oband,FLUSH); oband -=2;
   }
   FreeData(flo,pet,iband,iband->current);
 
@@ -328,10 +328,10 @@ static int ResetCfromI(flo,ped)
 
   if(ddx->pixLst ) ddx->pixLst  = (Pixel*) XieFree(ddx->pixLst );
   if(ddx->rgbLst ) ddx->rgbLst  = (xrgb *) XieFree(ddx->rgbLst );
-  if(ddx->ibuf   ) ddx->ibuf    = (void *) XieFree(ddx->ibuf   );
-  if(ddx->obuf[0]) ddx->obuf[0] = (void *) XieFree(ddx->obuf[0]);
-  if(ddx->obuf[1]) ddx->obuf[1] = (void *) XieFree(ddx->obuf[1]);
-  if(ddx->obuf[2]) ddx->obuf[2] = (void *) XieFree(ddx->obuf[2]);
+  if(ddx->ibuf   ) ddx->ibuf    = (pointer ) XieFree(ddx->ibuf   );
+  if(ddx->obuf[0]) ddx->obuf[0] = (pointer ) XieFree(ddx->obuf[0]);
+  if(ddx->obuf[1]) ddx->obuf[1] = (pointer ) XieFree(ddx->obuf[1]);
+  if(ddx->obuf[2]) ddx->obuf[2] = (pointer ) XieFree(ddx->obuf[2]);
 
   ResetReceptors(ped);
   ResetEmitter(ped);
@@ -365,7 +365,7 @@ static int DestroyCfromI(flo,ped)
 
 #define DO_SINGLE_CFROMI(fn_do,itype,otype)			\
 static int fn_do(ddx,SRC,DST)					\
-  mpCfromIPtr ddx; void *SRC; void *DST;			\
+  mpCfromIPtr ddx; pointer SRC; pointer DST;			\
 {								\
   itype *s = (itype *)SRC;					\
   otype *d = (otype *)DST;					\
@@ -405,7 +405,7 @@ DO_SINGLE_CFROMI(CfromI_1QP,QuadPixel,PairPixel)
 
 #define DO_TRIPLE_CFROMI(fn_do,itype,otype)			\
 static int fn_do(ddx,SRC,DSTR,DSTG,DSTB)			\
-    mpCfromIPtr ddx; void *SRC, *DSTR, *DSTG, *DSTB;		\
+    mpCfromIPtr ddx; pointer SRC, DSTR, DSTG, DSTB;		\
 {								\
   itype  *s = (itype *)SRC;					\
   otype  *r = (otype *)DSTR;					\
