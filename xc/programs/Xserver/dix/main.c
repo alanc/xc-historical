@@ -244,6 +244,7 @@ main(argc, argv)
 	InitAtoms();
 	InitEvents();
 	InitGlyphCaching();
+	ResetClientPrivates();
 	ResetScreenPrivates();
 	ResetWindowPrivates();
 	ResetGCPrivates();
@@ -256,6 +257,8 @@ main(argc, argv)
 	if (screenInfo.numScreens < 1)
 	    FatalError("no screens found");
 	InitExtensions(argc, argv);
+	if (!InitClientPrivates(serverClient))
+	    FatalError("failed to allocate serverClient devprivates");
 	for (i = 0; i < screenInfo.numScreens; i++)
 	{
 	    ScreenPtr pScreen = screenInfo.screens[i];
@@ -308,8 +311,8 @@ main(argc, argv)
 	    screenInfo.numScreens = i;
 	}
 	xfree(WindowTable);
-
 	FreeFonts ();
+	xfree(serverClient->devPrivates);
 
 	if (dispatchException & DE_TERMINATE)
 	{
