@@ -1,4 +1,4 @@
-/* $XConsortium: css_plain.c,v 5.2 91/10/24 18:39:46 hersh Exp $ */
+/* $XConsortium: css_plain.c,v 5.3 91/12/26 18:05:02 hersh Exp $ */
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
 
@@ -152,6 +152,7 @@ copyCSS_Plain(pSrcCSSElement, pDestStruct, ppDestCSSElement)
 	return (Success);
 }
 
+ddpex4rtn
 replaceCSS_Plain(pStruct, pCSSElement, pPEXOC)
 	diStructHandle  pStruct;
 	miGenericElementPtr pCSSElement;
