@@ -427,6 +427,11 @@ Specifies whether or not Tektronix mode should be disallowed.  The default is
 Specifies whether or not \fIxterm\fP should start up in Tektronix mode.
 The default is ``false.''
 .TP 8
+.B "titeInhibit (\fPclass\fB TiteInhibit)"
+Specifies whether or not \fIxterm\fP should remove remove \fIti\fP or \fIte\fP
+termcap entries (used to switch between alternate screens on startup of many
+screen-oriented programs) from the TERMCAP string.
+.TP 8
 .B "visualBell (\fPclass\fB VisualBell)"
 Specifies whether or not a visible bell (i.e. flashing) should be used instead
 of an audible bell when Control-G is received.  The default is ``false.''
