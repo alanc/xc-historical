@@ -1,4 +1,4 @@
-/* $XConsortium: k5auth.c,v 1.1 93/09/26 15:41:19 gildea Exp $ */
+/* $XConsortium: k5auth.c,v 1.2 93/09/28 01:34:28 gildea Exp $ */
 /*
  * Kerberos V5 authentication scheme
  *
@@ -17,6 +17,9 @@
 #endif
 #include <arpa/inet.h>
 #include <krb5/krb5.h>
+/* 9/93: krb5.h leaks some symbols */
+#undef BITS32
+#undef xfree
 #include <krb5/los-proto.h>
 #include "X.h"
 #include "os.h"
@@ -200,17 +203,17 @@ XID K5Check(data_length, data, client)
     client->requestVector = k5_Vector; /* hack in our dispatch vector */
     if (ccname)
     {
-	client->osPrivate->authstate.srvcreds = (pointer)creds; /* save tgt creds */
-	client->osPrivate->authstate.ktname = NULL;
-	client->osPrivate->authstate.srvname = NULL;
+	((OsCommPtr)client->osPrivate)->authstate.srvcreds = (pointer)creds; /* save tgt creds */
+	((OsCommPtr)client->osPrivate)->authstate.ktname = NULL;
+	((OsCommPtr)client->osPrivate)->authstate.srvname = NULL;
     }
     if (srvname)
     {
-	client->osPrivate->authstate.srvcreds = NULL;
-	client->osPrivate->authstate.ktname = (pointer)ktname;
-	client->osPrivate->authstate.srvname = (pointer)srvname;
+	((OsCommPtr)client->osPrivate)->authstate.srvcreds = NULL;
+	((OsCommPtr)client->osPrivate)->authstate.ktname = (pointer)ktname;
+	((OsCommPtr)client->osPrivate)->authstate.srvname = (pointer)srvname;
     }
-    client->osPrivate->authstate.stageno = 1; /* next stage is 1 */
+    ((OsCommPtr)client->osPrivate)->authstate.stageno = 1; /* next stage is 1 */
     return krb5_id;
 }
 
@@ -246,7 +249,7 @@ int k5_stage1(client)
     xReq prefix;
     krb5_principal cprinc;
     krb5_data buf;
-    krb5_creds *creds = (krb5_creds *)client->osPrivate->authstate.srvcreds;
+    krb5_creds *creds = (krb5_creds *)((OsCommPtr)client->osPrivate)->authstate.srvcreds;
     krb5_keyblock *skey;
     krb5_address cli_addr, **localaddrs = NULL;
     krb5_tkt_authent *authdat;
@@ -256,7 +259,7 @@ int k5_stage1(client)
     char *cachename = NULL, *rc_type = NULL, *rc_base = "rcX", *kt = NULL;
     REQUEST(xReq);
 
-    if (client->osPrivate->authstate.stageno != 1)
+    if (((OsCommPtr)client->osPrivate)->authstate.stageno != 1)
     {
 	client->requestVector = InitialVector;
 	if (creds)
@@ -409,11 +412,11 @@ int k5_stage1(client)
 			     &authdat);
 	krb5_free_creds(creds);
     }
-    else if (kt = (char *)client->osPrivate->authstate.ktname)
+    else if (kt = (char *)((OsCommPtr)client->osPrivate)->authstate.ktname)
     {
 	retval = krb5_rd_req(&buf, srvname, &cli_addr, kt, NULL, NULL,
 			     rcache, &authdat);
-	client->osPrivate->authstate.ktname = NULL;
+	((OsCommPtr)client->osPrivate)->authstate.ktname = NULL;
     }
     else
     {
@@ -497,7 +500,7 @@ int k5_stage1(client)
 	    WriteToClient(client, buf.length, buf.data);
 	    free(buf.data);
 	    krb5_free_tkt_authent(authdat);
-	    client->osPrivate->authstate.stageno = 3; /* expect stage3 packet */
+	    ((OsCommPtr)client->osPrivate)->authstate.stageno = 3; /* expect stage3 packet */
 	    return(Success);
 	}
 	else
@@ -534,7 +537,7 @@ int k5_stage3(client)
 {
     REQUEST(xReq);
 
-    if (client->osPrivate->authstate.stageno != 3)
+    if (((OsCommPtr)client->osPrivate)->authstate.stageno != 3)
     {
 	client->requestVector = InitialVector;
 	return(SendConnSetup(client, "expected Krb5 stage3 packet"));
@@ -547,11 +550,11 @@ k5_bad(client)
     register ClientPtr client;
 {
     client->requestVector = InitialVector;
-    if (client->osPrivate->authstate.creds)
-	krb5_free_creds((krb5_creds *)client->osPrivate->authstate.creds);
+    if (((OsCommPtr)client->osPrivate)->authstate.srvcreds)
+	krb5_free_creds((krb5_creds *)((OsCommPtr)client->osPrivate)->authstate.srvcreds);
     sprintf(kerror, "unrecognized Krb5 auth packet %d, expecting %d",
 	    ((xReq *)client->requestBuffer)->reqType,
-	    client->osPrivate->authstate.stageno);
+	    ((OsCommPtr)client->osPrivate)->authstate.stageno);
     return(SendConnSetup(client, kerror));
 }
 
