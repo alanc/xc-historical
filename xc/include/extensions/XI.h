@@ -1,4 +1,4 @@
-/* $XConsortium: XI.h,v 1.5 90/05/18 11:36:27 rws Exp $ */
+/* $XConsortium: XI.h,v 1.6 90/05/18 15:25:03 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -25,6 +25,8 @@ SOFTWARE.
 ********************************************************/
 
 /* Definitions used by the server, library and client */
+
+#ifndef _XI_H_
 
 #define _XI_H_
 
@@ -194,3 +196,4 @@ typedef struct {
         short	major_version;
         short	minor_version;
 } XExtensionVersion;
+#endif /* _XI_H_ */

@@ -1,4 +1,4 @@
-/* $XConsortium: XInput.h,v 1.8 90/05/18 15:17:40 rws Exp $ */
+/* $XConsortium: XInput.h,v 1.9 90/05/18 15:23:42 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -25,6 +25,9 @@ SOFTWARE.
 ********************************************************/
 
 /* Definitions used by the library and client */
+
+#ifndef _XINPUT_H_
+#define _XINPUT_H_
 
 #ifndef _XLIB_H_
 #include <X11/Xlib.h>
@@ -691,3 +694,4 @@ XFeedbackState         *XGetFeedbackControl();
 XExtensionVersion      *XGetExtensionVersion();
 XDeviceState           *XQueryDeviceState();
 XEventClass            *XGetDeviceDontPropagateList();
+#endif /* _XINPUT_H_ */
