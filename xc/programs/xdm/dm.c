@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.67 93/12/06 15:19:40 kaleb Exp $
+ * $XConsortium: dm.c,v 1.68 94/02/02 08:42:16 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -70,11 +70,13 @@ extern FILE    *fdopen();
 #endif
 
 static void	RescanServers ();
+static void	ScanServers ();
 int		Rescan;
 static long	ServersModTime, ConfigModTime, AccessFileModTime;
 static SIGVAL	StopAll (), RescanNotify ();
 void		StopDisplay ();
 static void	RestartDisplay ();
+static void	StartDisplays ();
 
 int nofork_session = 0;
 
@@ -140,6 +142,7 @@ char	**argv;
     system(cmdbuf);
 
 #ifdef XDMCP
+    init_session_id ();
     CreateWellKnownSockets ();
 #else
     Debug ("xdm: not compiled for XDMCP\n");
@@ -197,6 +200,7 @@ RescanNotify (n)
 #endif
 }
 
+static void
 ScanServers ()
 {
     char	lineBuf[10240];
@@ -537,11 +541,13 @@ struct display	*d;
     }
 }
 
+static void
 StartDisplays ()
 {
     ForEachDisplay (CheckDisplayStatus);
 }
 
+void
 StartDisplay (d)
 struct display	*d;
 {
