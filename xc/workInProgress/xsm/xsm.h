@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.h,v 1.15 94/07/15 10:01:28 mor Exp $ */
+/* $XConsortium: xsm.h,v 1.16 94/07/15 14:11:50 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -69,6 +69,7 @@ extern FILE *fdopen(int, char const *);
 #include "list.h"
 
 #define DEFAULT_SESSION_NAME "Default"
+#define FAILSAFE_SESSION_NAME "Fail Safe"
 
 #define MAX_PROPS 50
 
@@ -82,7 +83,9 @@ typedef struct _ClientRec {
     char		*clientHostname;
     Bool		interactPending;
     int			numProps;
-    SmProp *		props[MAX_PROPS];
+    SmProp		*props[MAX_PROPS];
+    char		*discardCommand;
+    char		*saveDiscardCommand;
     struct _ClientRec	*next;
 } ClientRec;
 
@@ -122,11 +125,14 @@ extern int		saveDoneCount;
 
 extern int		interactCount;
 extern Bool		shutdownInProgress;
+extern Bool	        saveInProgress;
 extern Bool		shutdownCancelled;
 extern Bool		shutdownDialogUp;
 
 extern int		sessionNameCount;
 extern String		*sessionNames;
+
+extern Bool		issued_checkpoint;
 
 extern Widget		topLevel;
 
