@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: RA8.c,v 1.1 89/09/14 17:11:15 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -45,7 +45,7 @@ XdmcpReadARRAY8 (buffer, array)
     array->data = (CARD8 *) Xalloc (array->length * sizeof (CARD8));
     if (!array->data)
 	return FALSE;
-    for (i = 0; i < array->length; i++)
+    for (i = 0; i < (int)array->length; i++)
     {
 	if (!XdmcpReadCARD8 (buffer, &array->data[i]))
 	{

@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: Whead.c,v 1.1 89/09/14 17:11:27 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -35,7 +35,7 @@ XdmcpWriteHeader (buffer, header)
 {
     BYTE    *newData;
 
-    if (buffer->size < 6 + header->length)
+    if ((int)buffer->size < 6 + (int)header->length)
     {
 	newData = (BYTE *) Xalloc (XDM_MAX_MSGLEN * sizeof (BYTE));
 	if (!newData)

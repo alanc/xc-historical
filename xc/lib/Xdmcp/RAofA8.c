@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: RAofA8.c,v 1.1 89/09/14 17:11:17 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -45,7 +45,7 @@ XdmcpReadARRAYofARRAY8 (buffer, array)
     array->data = (ARRAY8 *) Xalloc (array->length * sizeof (ARRAY8));
     if (!array->data)
 	return FALSE;
-    for (i = 0; i < array->length; i++)
+    for (i = 0; i < (int)array->length; i++)
     {
 	if (!XdmcpReadARRAY8 (buffer, &array->data[i]))
 	{

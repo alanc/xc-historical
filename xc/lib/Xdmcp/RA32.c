@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: RA32.c,v 1.1 89/09/14 17:11:14 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -45,7 +45,7 @@ XdmcpReadARRAY32 (buffer, array)
     array->data = (CARD32 *) Xalloc (array->length * sizeof (CARD32));
     if (!array->data)
 	return FALSE;
-    for (i = 0; i < array->length; i++)
+    for (i = 0; i < (int)array->length; i++)
     {
 	if (!XdmcpReadCARD32 (buffer, &array->data[i]))
 	{

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: WAofA8.c,v 1.1 89/09/14 17:11:25 keith Exp $
+ * $XConsortium: WAofA8.c,v 1.2 90/07/31 09:52:42 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -37,7 +37,7 @@ XdmcpWriteARRAYofARRAY8 (buffer, array)
 
     if (!XdmcpWriteCARD8 (buffer, array->length))
 	return FALSE;
-    for (i = 0; i < array->length; i++)
+    for (i = 0; i < (int)array->length; i++)
 	if (!XdmcpWriteARRAY8 (buffer, &array->data[i]))
 	    return FALSE;
     return TRUE;
