@@ -1,4 +1,4 @@
-/* $XConsortium: Simple.h,v 1.11 91/07/26 19:38:53 converse Exp $ */
+/* $XConsortium: Simple.h,v 1.12 94/01/31 10:53:51 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -57,18 +57,18 @@ SOFTWARE.
 
 */
 
-#define XtNcursor		"cursor"
-#define XtNcursorName		"cursorName"
-#define XtNinsensitiveBorder	"insensitiveBorder"
+#define XtNcursor "cursor"
+#define XtNcursorName "cursorName"
+#define XtNinsensitiveBorder "insensitiveBorder"
 
-#define XtCInsensitive		"Insensitive"
+#define XtCInsensitive "Insensitive"
 
 #ifndef XtCInternational
-#define XtCInternational	"International"
+#define XtCInternational "International"
 #endif
 
 #ifndef XtNinternational
-#define XtNinternational	"international"
+#define XtNinternational "international"
 #endif
 
 typedef struct _SimpleClassRec	*SimpleWidgetClass;
