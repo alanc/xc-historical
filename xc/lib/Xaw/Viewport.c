@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Viewport.c,v 1.10 88/01/22 20:34:47 swick Locked $";
+static char rcsid[] = "$Header: Viewport.c,v 1.11 88/01/28 09:32:04 swick Locked $";
 #endif lint
 
 /*
@@ -595,13 +595,17 @@ static XtGeometryResult GeometryManager(child, request, reply)
 			     (rHeight ? request->height : w->core.height) );
 
     if (rWidth && w->core.width != request->width) {
-	if (!w->viewport.allowhoriz) {
+	if (!w->viewport.allowhoriz
+	    || request->width < w->core.width)
+	{
 	    allowed.width = w->core.width;
 	    result = XtGeometryAlmost;
 	}
     }
     if (rHeight && w->core.height != request->height) {
-	if (!w->viewport.allowvert) {
+	if (!w->viewport.allowvert
+	    || request->height < w->core.height)
+	{
 	    allowed.height = w->core.height;
 	    result = XtGeometryAlmost;
 	}
