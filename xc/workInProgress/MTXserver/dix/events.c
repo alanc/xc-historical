@@ -43,7 +43,7 @@ OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: events.c,v 1.2 94/01/06 23:02:59 rob Exp $ */
+/* $XConsortium: events.c,v 1.3 94/01/11 20:45:58 rob Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1054,14 +1054,14 @@ ReleaseActiveGrabs(client)
 
 /* MTX note:
  *	In almost cases in this file after the definition, MTX version
- *	should call LockedLockedTryClientEvents instead of LockedTryClientEvents
+ *	should call LockedTryClientEvents instead of TryClientEvents
  *	since the devices are already locked.
  *	Similarly, LockedClientEvents is a static
  */
 
 #ifdef XTHREADS
 static int
-LockedLockedTryClientEvents(client, pEvents, count, mask, filter, grab)
+LockedTryClientEvents(client, pEvents, count, mask, filter, grab)
 #else /* XTHREADS */
 #define LockedTryClientEvents TryClientEvents
 int
@@ -1145,7 +1145,7 @@ TryClientEvents(client, pEvents, count, mask, filter, grab)
 
 #ifdef XTHREADS
 int
-LockedTryClientEvents(client, pEvents, count, mask, filter, grab)
+TryClientEvents(client, pEvents, count, mask, filter, grab)
     ClientPtr client;
     GrabPtr grab;
     xEvent *pEvents;
@@ -1155,12 +1155,12 @@ LockedTryClientEvents(client, pEvents, count, mask, filter, grab)
     int ret;
 
     MTX_LOCK_DEVICES();
-    ret = LockedLockedTryClientEvents(client, pEvents, count, mask, filter, grab);
+    ret = LockedTryClientEvents(client, pEvents, count, mask, filter, grab);
     MTX_UNLOCK_DEVICES();
     return ret;
 }
 
-#define LockedTryClientEvents LockedLockedTryClientEvents
+/* #define TryClientEvents LockedTryClientEvents */
 #endif /* XTHREADS */
 
 
