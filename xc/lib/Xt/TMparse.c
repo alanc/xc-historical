@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.140 94/04/17 20:14:53 kaleb Exp $ */
+/* $XConsortium: TMparse.c,v 1.141 94/06/01 15:36:09 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -521,34 +521,6 @@ static Cardinal LookupTMEventType(eventStr,error)
     return (Cardinal) i;
 }
 
-/***********************************************************************
- * _XtLookupTableSym
- * Given a table and string, it fills in the value if found and returns
- * status
- ***********************************************************************/
-
-static Boolean _XtLookupTableSym(table, name, valueP)
-    NameValueTable	table;
-    String name;
-    Value *valueP;
-{
-/* ||| should implement via hash or something else faster than linear search */
-
-    register int i;
-    register XrmQuark signature = StringToQuark(name);
-
-    for (i=0; table[i].name != NULL; i++)
-	if (table[i].signature == signature) {
-	    *valueP = table[i].value;
-	    return TRUE;
-	}
-
-    return FALSE;
-}
-
-
-
-
 static void StoreLateBindings(keysymL,notL,keysymR,notR,lateBindings)
 
     KeySym  keysymL;
@@ -1025,7 +997,8 @@ static String ParseTable(str, closure, event,error)
     Boolean* error;
 {
     register String start = str;
-    Value detail;
+    register XrmQuark signature;
+    NameValueTable table = (NameValueTable) closure;
     char tableSymName[100];
 
     event->event.eventCode = 0L;
@@ -1038,15 +1011,17 @@ static String ParseTable(str, closure, event,error)
     }
     (void) memmove(tableSymName, start, str-start);
     tableSymName[str-start] = '\0';
-    if (! _XtLookupTableSym((NameValueTable)closure, tableSymName, &detail)) {
-	Syntax("Unknown Detail Type:  ",tableSymName);
-        *error = TRUE;
-        return PanicModeRecovery(str);
-    }
-    event->event.eventCode = detail;
-    event->event.eventCodeMask = ~0L;
+    signature = StringToQuark(tableSymName);
+    for (; table->signature != NULLQUARK; table++)
+	if (table->signature == signature) {
+	    event->event.eventCode = table->value;
+	    event->event.eventCodeMask = ~0L;
+	    return str;
+	}
 
-    return str;
+    Syntax("Unknown Detail Type:  ", tableSymName);
+    *error = TRUE;
+    return PanicModeRecovery(str);
 }
 
 /*ARGSUSED*/
