@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.5 89/08/01 09:20:27 rws Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.6 89/08/15 00:44:46 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -34,6 +34,47 @@ Author: Keith Packard
 #include	"cfbmskbits.h"
 
 #include	"cfb8bit.h"
+
+#undef Duff
+
+#define Duff(counter, block)	    \
+    switch (counter & 15) {	    \
+    do {			    \
+	{ block; }		    \
+    case 15:			    \
+	{ block; }		    \
+    case 14:			    \
+	{ block; }		    \
+    case 13:			    \
+	{ block; }		    \
+    case 12:			    \
+	{ block; }		    \
+    case 11:			    \
+	{ block; }		    \
+    case 10:			    \
+	{ block; }		    \
+    case 9:			    \
+	{ block; }		    \
+    case 8:			    \
+	{ block; }		    \
+    case 7:			    \
+	{ block; }		    \
+    case 6:			    \
+	{ block; }		    \
+    case 5:			    \
+	{ block; }		    \
+    case 4:			    \
+	{ block; }		    \
+    case 3:			    \
+	{ block; }		    \
+    case 2:			    \
+	{ block; }		    \
+    case 1:			    \
+	{ block; }		    \
+    case 0:			    \
+	;			    \
+    } while ((counter -= 16) >= 0);  \
+}
 
 cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
     DrawablePtr	    pSrc, pDst;
@@ -276,13 +317,53 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 			    	pdst++;
 			    }
 			    nl = nlMiddle;
-			    while (nl--)
- 			    {
-			    	tmp = BitLeft(bits, leftShift);
-			    	bits = *psrc++;
-			    	tmp |= BitRight(bits, rightShift);
-			    	*pdst++ = tmp;
-			    }
+
+#define doitup(n)	loop(psrc[n], pdst[n])
+			    
+#define caseitup(n) case n: doitup(n)
+
+#ifdef NOTDEF
+    caseitup(15)    caseitup(14)    caseitup(13)    caseitup(12)    \
+    caseitup(11)    caseitup(10)    caseitup( 9)    caseitup( 8)    \
+    caseitup( 7)    caseitup( 6)    caseitup( 5)    caseitup( 4)    \
+	doitup(8)   doitup(9)	doitup(10)  doitup(11)	\
+	doitup(12)  doitup(13)	doitup(14)  doitup(15)	\
+	doitup(4)   doitup(5)	doitup(6)   doitup(7)	\
+
+#endif
+
+#define UpStore						\
+    switch (nl & 3) {					\
+    caseitup( 3)    caseitup( 2)    caseitup( 1)	\
+    }							\
+    while ((nl -= 4) >= 0) {				\
+	doitup(0)   doitup(1)	doitup(2)   doitup(3)	\
+	psrc += 4;					\
+	pdst += 4;					\
+    }
+
+#define doitdn(n)   loop(psrc[-(n+1)], pdst[-(n+1)])
+
+#define caseitdn(n) case n: doitdn(n)
+
+#define DownStore					\
+    switch (nl & 3) {					\
+    caseitdn( 3)    caseitdn( 2)    caseitdn( 1)	\
+    }							\
+    while ((nl -= 4) >= 0) {				\
+	doitdn(0)   doitdn(1)	doitdn(2)   doitdn(3)	\
+	psrc -= 4;					\
+	pdst -= 4;					\
+    }
+
+#define loop(from,to) \
+    tmp = BitLeft(bits, leftShift);	    \
+    bits = from;			    \
+    to = tmp | BitRight(bits, rightShift);
+
+			    UpStore
+#undef loop
+
 			    if (endmask)
 			    {
 			    	tmp = BitLeft(bits, leftShift);
@@ -317,13 +398,15 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 			    	tmp = BitLeft(bits, leftShift);
 			    }
 			    nl = nlMiddle;
-			    while (nl--)
-			    {
-			    	bits = *psrc++;
-			    	tmp |= BitRight(bits, rightShift);
-			    	*pdst++ = tmp;
-			    	tmp = BitLeft (bits, leftShift);
-			    }
+
+#define loop(from,to) \
+    bits = from;			    \
+    to = tmp | BitRight(bits, rightShift);  \
+    tmp = BitLeft (bits, leftShift);
+
+			    UpStore
+#undef loop
+
 			    if (endmask)
 			    {
 			    	if (BitLeft (endmask, rightShift))
@@ -350,8 +433,11 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 			    	pdst++;
 			    }
 			    nl = nlMiddle;
-			    while (nl--)
-				    *pdst++ = *psrc++;
+#define loop(from,to) \
+    to = from;
+			    UpStore
+#undef loop
+
 			    if (endmask)
 			    	*pdst = (*pdst & ~endmask) | (*psrc++ & endmask);
 		    	}
@@ -384,13 +470,14 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 			    	tmp = BitRight(bits, rightShift);
 			    }
 			    nl = nlMiddle;
-			    while (nl--)
-			    {
-			    	bits = *--psrc;
-			    	tmp |= BitLeft (bits, leftShift);
-			    	*--pdst = tmp;
-			    	tmp = BitRight (bits, rightShift);
-			    }
+#define loop(from,to) \
+    bits = from;			    \
+    to = tmp | BitLeft(bits, leftShift);    \
+    tmp = BitRight(bits, rightShift);
+
+			    DownStore
+#undef loop
+
 			    if (startmask)
 			    {
 			    	if (BitRight (startmask, leftShift))
@@ -425,13 +512,15 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 				    	(tmp & endmask);
 			    }
 			    nl = nlMiddle;
-			    while (nl--)
-			    {
-			    	tmp = BitRight (bits, rightShift);
-			    	bits = *--psrc;
-			    	tmp |= BitLeft (bits, leftShift);
-			    	*--pdst = tmp;
-			    }
+
+#define loop(from,to) \
+    tmp = BitRight(bits, rightShift);		\
+    bits = from;				\
+    to = tmp | BitLeft (bits, leftShift);
+
+			    DownStore
+#undef loop
+
 			    if (startmask)
 			    {
 			    	tmp = BitRight(bits, rightShift);
@@ -460,8 +549,10 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 			    	*pdst = (*pdst & ~endmask) | (*--psrc & endmask);
 			    }
 			    nl = nlMiddle;
-			    while (nl--)
-			    	*--pdst = *--psrc;
+#define loop(from,to)	\
+    to = from;
+			    DownStore
+#undef loop
 			    if (startmask)
 			    {
 			    	--pdst;
