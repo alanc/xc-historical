@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Selection.c,v 1.35 89/12/01 12:38:58 swick Exp $";
+    "$XConsortium: Selection.c,v 1.38 89/12/02 17:45:44 swick Exp $";
 #endif
 
 /***********************************************************
@@ -525,11 +525,14 @@ Boolean *incremental;
 	 *incremental = True;
 	 return(TRUE);
     }
+    ctx->req = req;
     if ((*ctx->convert)(ctx->widget, &event->selection, &target,
 			    &targetType, &value, &length, &format) == FALSE) {
 	XtFree((XtPointer)req);
+	ctx->req = NULL;
 	return(FALSE);
     }
+    ctx->req = NULL;
     if (BYTELENGTH(length,format) <= MAX_SELECTION_INCR(ctx->dpy)) {
 	if (ctx->notify != NULL) {
 		  req->target = target;
@@ -992,6 +995,14 @@ Atom selection;
     XDeleteProperty(dpy, XtWindow(widget), property);
     (*info->callback)(widget, closure, &selection, 
 			  &type, value, &length, &format);
+
+    if (info->incremental) {
+	/* let requestor know the whole thing has been received */
+	value = (unsigned char*)XtMalloc((unsigned)1);
+	length = 0;
+	(*info->callback)(widget, closure, &selection,
+			  &type, value, &length, &format);
+    }
     return TRUE;
 }
 
@@ -1150,7 +1161,6 @@ Boolean incremental;
     int format;
     Atom resulttype;
     int totallength = 0;
-    Boolean first = TRUE;
 
 	req->event.target = target;
 
@@ -1163,8 +1173,8 @@ Boolean incremental;
 	   }
 	   else {
 		if (incremental) {
-	          while (length || first) {
-		      first = FALSE;
+		  Boolean allSent = FALSE;
+	          while (!allSent) {
 	    	      if (ctx->notify && (value != NULL)) {
               	        int bytelength = BYTELENGTH(length,format);
 	                /* both sides think they own this storage */
@@ -1178,14 +1188,21 @@ Boolean incremental;
 		     if (value == NULL) value = XtMalloc((unsigned)1);
 		     (*callback)(widget, closure, &selection, 
 			&resulttype, value, &length, &format);
-		     if (ctx->notify) 
-			 (*ctx->notify)(ctx->widget, &selection, &target, 
-				       (XtRequestId*)&req, ctx->owner_closure);
-		     if (length)
+		     if (length) {
+			 /* should owner be notified on end-of-piece?
+			  * Spec is unclear, but non-local transfers don't.
+			  */
+			 if (ctx->notify) 
+			     (*ctx->notify)(ctx->widget, &selection, &target, 
+					    (XtRequestId*)&req,
+					    ctx->owner_closure);
+			 value = NULL;
 			 (*ctx->convert)(ctx->widget, &selection, &target,
 					 &resulttype, &value, &length, &format,
 					 &size, ctx->owner_closure,
 					 (XtRequestId*)&req);
+		     }
+		     else allSent = TRUE;
 		  }
 	        } else {
 	          while (length) {
@@ -1408,7 +1425,7 @@ XSelectionRequestEvent *XtGetSelectionRequest( widget, selection, id )
     }
 
     if (req == NULL) {
-	/* non-incremental local owner; only one request can be
+	/* non-incremental owner; only one request can be
 	 * outstanding at a time, so its safe to keep ptr in ctx */
 	req = ctx->req;
     }
