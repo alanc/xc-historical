@@ -1,5 +1,5 @@
 /* 
- * $XConsortium: Xct.c,v 1.3 89/05/09 09:33:26 rws Exp $
+ * $XConsortium: Xct.c,v 1.4 89/05/09 09:54:10 rws Exp $
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -422,7 +422,6 @@ XctNextItem(data)
 	    if (c == 0x5d) {
 		if ((data->item_length == 3) &&
 		    ((data->item[1] == 0x31) || (data->item[1] == 0x32))) {
-		    priv->flags |= UsedDirection;
 		    data->horz_depth++;
 		    if (priv->dirsize < data->horz_depth) {
 			priv->dirsize += 10;
@@ -441,6 +440,10 @@ XctNextItem(data)
 			data->horizontal = XctLeftToRight;
 		    else
 			data->horizontal = XctRightToLeft;
+		    if ((priv->flags & UsedGraphic) &&
+			!(priv->flags & UsedDirection))
+			return XctError;
+		    priv->flags |= UsedDirection;
 		    if (data->flags & XctHideDirection)
 			continue;
 		    return XctHorizontal;
