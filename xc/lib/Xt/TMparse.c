@@ -433,11 +433,13 @@ static unsigned int StrToHex(str)
     char c;
     int	val = 0;
 
-    while (c = *str)
+    while (c = *str) {
 	if ('0' <= c && c <= '9') val = val*16+c-'0';
 	else if ('a' <= c && c <= 'z') val = val*16+c-'a'+10;
 	else if ('A' <= c && c <= 'Z') val = val*16+c-'A'+10;
 	else return -1;
+	str++;
+    }
 
     return val;
 }
@@ -448,8 +450,10 @@ static unsigned int StrToOct(str)
     char c;
     int	val = 0;
 
-    while (c = *str)
+    while (c = *str) {
         if ('0' <= c && c <= '7') val = val*8+c-'0'; else return -1;
+	str++;
+    }
 
     return val;
 }
@@ -466,9 +470,11 @@ static unsigned int StrToNum(str)
 	else return StrToOct(str);
     }
 
-    while (c = *str)
+    while (c = *str) {
 	if ('0' <= c && c <= '9') val = val*10+c-'0';
 	else return -1;
+	str++;
+    }
 
     return val;
 }
