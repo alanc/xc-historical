@@ -10,7 +10,13 @@
 #define OSMinorVersion    0
 #define HasSaberC	  YES		/* for machines that have it */
 #define XsunServer Xsun
-#define HasGcc NO			/* very useful for server, though */
+
+/* #define HasGcc YES */		/* very useful for server, though */
+#ifdef mc68000
+#define HasGcc YES			/* XXX - turn this off for R4 */
+#else
+#define HasGcc NO
+#endif
 
 #define SystemV           NO
 #define HasPutenv YES
@@ -35,6 +41,11 @@
 #define i386Architecture
 #endif
 
+#if HasGcc
+#define ServerCcCmd gcc -DNOSTDHDRS -fstrength-reduce -fpcc-struct-return 
+#define CcCmd cc
+#endif
+
 #if !HasGcc
 #ifdef mc68000
 #define DefaultCCOptions -f68881 -pipe		/* remove in R4 */
@@ -48,10 +59,8 @@
 /* see below for ServerDefines */
 
 
-/**/# platform:  $XConsortium: sun.cf,v 1.31 89/10/10 14:27:21 jim Exp $
+/**/# platform:  $XConsortium: sun.cf,v 1.32 89/10/11 18:54:52 jim Exp $
 /**/# operating system:  OSName
-
-#if SunOSPlatform
 
 #if OSMajorVersion == 3 && OSMinorVersion <= 2
 #define OptimizedCDebugFlags /* as nothing */
@@ -79,5 +88,3 @@
 #if OSMajorVersion >= 4 && OSMinorVersion >= 0
 #define SetTtyGroup YES
 #endif
-
-#endif /* SunOSPlatform */
