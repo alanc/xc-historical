@@ -5,7 +5,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$XConsortium: xditview.c,v 1.3 89/03/05 19:37:49 keith Exp $";
+static char rcsid[] = "$XConsortium: xditview.c,v 1.5 89/03/20 16:07:10 keith Exp $";
 #endif  lint
 
 #include <X11/Xatom.h>
@@ -13,7 +13,7 @@ static char rcsid[] = "$XConsortium: xditview.c,v 1.3 89/03/05 19:37:49 keith Ex
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
-#include <X11/VPaned.h>
+#include <X11/Paned.h>
 #include <X11/Viewport.h>
 #include <X11/Box.h>
 #include <X11/Command.h>
@@ -54,7 +54,7 @@ Syntax(call)
 }
 
 static void	NewFile ();
-static Widget	toplevel, vpaned, viewport, dvi;
+static Widget	toplevel, paned, viewport, dvi;
 static Widget	page;
 
 static char menuString[] = "\
@@ -91,9 +91,9 @@ void main(argc, argv)
 			{XtNheight, 800},   /* neither is this */
 			{XtNshowGrip, False},
     };
-    static Arg	    vPanedArgs[] = {
+    static Arg	    panedArgs[] = {
 			{XtNallowResize, True},
-/*			{XtNskipAdjust, True}, */
+			{XtNskipAdjust, True},
     };
     static Arg	    labelArgs[] = {
 			{XtNlabel, (int) pageLabel},
@@ -125,14 +125,13 @@ void main(argc, argv)
 
     menu = XawMenuCreate ("menu", menuWidgetClass, toplevel, menuString,
 			    "<Btn1Down>", menuCallback);
-    vpaned = XtCreateManagedWidget("vpaned", vPanedWidgetClass, toplevel,
-				    vPanedArgs, XtNumber (vPanedArgs));
-    page = XtCreateManagedWidget ("Page", labelWidgetClass, vpaned,
-					labelArgs, XtNumber (labelArgs));
-    viewport = XtCreateManagedWidget("viewport", viewportWidgetClass, vpaned,
+    paned = XtCreateManagedWidget("paned", panedWidgetClass, toplevel,
+				    panedArgs, XtNumber (panedArgs));
+    viewport = XtCreateManagedWidget("viewport", viewportWidgetClass, paned,
 				     viewportArgs, XtNumber (viewportArgs));
     dvi = XtCreateManagedWidget ("dvi", dviWidgetClass, viewport, NULL, 0);
-
+    page = XtCreateManagedWidget ("Page", labelWidgetClass, paned,
+					labelArgs, XtNumber (labelArgs));
     if (file_name)
 	NewFile (file_name);
     XtRealizeWidget (toplevel);
@@ -238,14 +237,14 @@ menuCall (mw, closure, data)
 	resetSelection = 1;
 	break;
     case MenuSelectPage:
-	MakePrompt (page, "Page number", SelectPage, "");
+	MakePrompt (toplevel, "Page number", SelectPage, "");
 	break;
     case MenuOpenFile:
 	if (current_file_name[0])
 	    strcpy (fileBuf, current_file_name);
 	else
 	    fileBuf[0] = '\0';
-	MakePrompt (page, "File to open:", NewFile, fileBuf);
+	MakePrompt (toplevel, "File to open:", NewFile, fileBuf);
 	resetSelection = 1;
 	break;
     case MenuQuit:
@@ -283,8 +282,8 @@ void TellPrompt(widget, client_data, call_data)
     DestroyPromptWidget(widget, client_data, call_data);
 }
 
-MakePrompt(cw, prompt, func, def)
-Widget	cw;
+MakePrompt(centerw, prompt, func, def)
+Widget	centerw;
 char *prompt;
 void (*func)();
 char	*def;
@@ -296,20 +295,16 @@ char	*def;
     };
     Arg valueArgs[1];
     static Arg shellArgs[] = {
-	{XtNx, 0},
-	{XtNy, 0},
 	{XtNallowShellResize, TRUE},
     };
+    Arg centerArgs[2];
     XWindowAttributes	xwa;
+    int	source_x, source_y;
     int	dest_x, dest_y, child_return;
+    Dimension center_width, center_height;
+    Dimension prompt_width, prompt_height;
     Widget  valueWidget;
     
-    XGetWindowAttributes (XtDisplay (cw), XtWindow (cw), &xwa);
-    XTranslateCoordinates (XtDisplay (cw), XtWindow (cw), xwa.root,
-			    0, xwa.height * 2,
-			    &dest_x, &dest_y, &child_return);
-    shellArgs[0].value = dest_x;
-    shellArgs[1].value = dest_y;
     DestroyPromptWidget((Widget)NULL, (caddr_t)0, NULL);
     promptShell = XtCreatePopupShell ("promptShell", transientShellWidgetClass,
 		    toplevel, shellArgs, XtNumber (shellArgs));
@@ -326,6 +321,22 @@ char	*def;
     XtSetValues (valueWidget, valueArgs, 1);
     XtSetKeyboardFocus(promptDialog, valueWidget);
     XtRealizeWidget(promptShell);
+    XtSetArg (centerArgs[0], XtNwidth, &center_width);
+    XtSetArg (centerArgs[1], XtNheight, &center_height);
+    XtGetValues (centerw, centerArgs, 2);
+    XtSetArg (centerArgs[0], XtNwidth, &prompt_width);
+    XtSetArg (centerArgs[1], XtNheight, &prompt_height);
+    XtGetValues (promptShell, centerArgs, 2);
+    source_x = (center_width - prompt_width) / 2;
+    source_y = (center_height - prompt_height) / 3;
+    XTranslateCoordinates (XtDisplay (centerw),
+			    XtWindow (centerw),
+			    RootWindowOfScreen (XtScreen (centerw)),
+			    source_x, source_y,
+			    &dest_x, &dest_y, &child_return);
+    XtSetArg (centerArgs[0], XtNx, dest_x);
+    XtSetArg (centerArgs[1], XtNy, dest_y);
+    XtSetValues (promptShell, centerArgs, 2);
     XtMapWidget(promptShell);
     promptfunction = func;
 }
