@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.5 92/03/12 09:51:07 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.6 92/03/12 11:25:00 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -12,6 +12,28 @@ publicity pertaining to distribution of the software without specific,
 written prior permission.  M.I.T. makes no representations about the
 suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
+
+*/
+
+/*
+
+Syntax:
+
+^T^B<number>^T		toggle button <number> state (press or release)
+^T^C			Control key for next character
+^T^D			slow down moving mouse
+^T^M			Meta key for next character
+^T^Q			quit moving mouse
+^T^S			Shift key for next character
+^T^T			^T
+^T^X<number>^T		move mouse <number> pixels horizontally
+^T^Y<number>^T		move mouse <number> pixels vertically
+^Texit^T		exit the program
+^T<hexnumber>^T		press and release key with numeric keysym <hexnumber>
+^Tname^T		press and release key with keysym named <name>
+
+Note: if key is attached to a modifier, pressing it is temporary, will be
+released automatically at next non-modifier key.
 
 */
 
