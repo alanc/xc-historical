@@ -1,11 +1,15 @@
-XCOMM $XConsortium: Imakefile,v 1.6 92/08/06 19:04:08 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.7 92/08/28 19:15:02 rws Exp $
 
 #define BuildWithXTest
 
 #ifdef BuildWithXTest
 DEFINES = -DXTEST
+#ifdef NormalLibXTest /* test if pre-R6 config files */
 GENLIB = $(XTESTLIB)
 GENDEPLIB = $(DEPXTESTLIB)
+#else
+GENLIB = -lXtst
+#endif
 #endif
 #ifdef BuildWithXTrap
 DEFINES = -DXTRAP
@@ -26,3 +30,9 @@ LOCAL_LIBRARIES = $(XMULIB) $(GENLIB) $(XLIB)
 SimpleProgramTarget(a2x)
 
 InstallNamedProg(DragonDictate,DragonDictate,$(BINDIR))
+
+a2x.PS: a2x.ms
+	$(TROFF) $(MSMACROS) a2x.ms > $@
+
+clean::
+	$(RM) a2x.PS
