@@ -1,4 +1,4 @@
-.\" $XConsortium: Consortium.man,v 1.24 92/03/19 11:41:15 rws Exp $
+.\" $XConsortium: Consortium.man,v 1.25 92/06/29 11:11:28 rws Exp $
 .TH XCONSORTIUM 1 "Release 5"  "X Version 11"
 .SH NAME
 MIT X Consortium \- MIT X Consortium information
@@ -138,13 +138,13 @@ Bitstream, Inc.
 CETIA - Compagnie Europeene des Techniques de l'Ingenierie Assistee
 Chromatics, Inc.
 Codonics, Inc.
-Computer & Communication Research Laboratories
 Data Connection Ltd.
 Frame Technology Corp.
 Gfxbase, Inc.
 GIPSI S.A.
 HaL Computer Systems, Inc.
 Hummingbird Communications Ltd.
+Industrial Technology Research Institute
 Institute for Information Industry
 Integrated Computer Solutions, Inc.
 Ithaca Software
