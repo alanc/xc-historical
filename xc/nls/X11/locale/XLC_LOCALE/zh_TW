@@ -1,4 +1,4 @@
-XCOMM  $XConsortium$
+XCOMM  $XConsortium: zh_TW,v 1.2 93/09/17 16:30:12 rws Exp $
 XCOMM  XLocale Database Sample for zh_TW
 XCOMM 
 
@@ -6,18 +6,36 @@ XCOMM
 XCOMM 	XLC_FONTSET category
 XCOMM 
 XLC_FONTSET
-XCOMM 	cs0 class (7 bit ASCII)
-cs0	ISO8859-1:GL; CNS11643-0:GL
-XCOMM 	cs1 class
-cs1	CNS11643-1:GL
-XCOMM 	cs2 class
-cs2	CNS11643-2:GL
-XCOMM 	cs3 class 
-cs3	CNS11643-14:GL
-XCOMM 	cs4 class 
-cs4	CNS11643-15:GL
-XCOMM 	cs5 class 
-cs5	CNS11643-16:GL
+XCOMM 	fs0 class (7 bit ASCII)
+fs0	{
+	charset		ISO8859-1:GL
+	font		ISO8859-1:GL; CNS11643-0:GL
+}
+XCOMM 	fs1 class
+fs1	{
+	charset		CNS11643-1:GL
+	font		CNS11643-1:GL
+}
+XCOMM 	fs2 class
+fs2	{
+	charset		CNS11643-2:GL
+	font		CNS11643-2:GL
+}
+XCOMM 	fs3 class 
+fs3	{
+	charset		CNS11643-14:GL
+	font		CNS11643-14:GL
+}
+XCOMM 	fs4 class 
+fs4	{
+	charset		CNS11643-15:GL
+	font		CNS11643-15:GL
+}
+XCOMM 	fs5 class 
+fs5	{
+	charset		CNS11643-16:GL
+	font		CNS11643-16:GL
+}
 END XLC_FONTSET
 
 XCOMM 
