@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.70 88/11/22 16:10:54 jim Exp $
+ * $XConsortium: XOpenDis.c,v 11.71 88/11/22 18:41:12 jim Exp $
  */
 
 #include "copyright.h"
@@ -176,7 +176,7 @@ Display *XOpenDisplay (display)
 	    conn_auth_datalen = xauth_datalen;
 	    conn_auth_data = xauth_data;
 	} else {
-	    authptr = XauGetAuthByAddr ((char) conn_family,
+	    authptr = XauGetAuthByAddr ((unsigned short) conn_family,
 					(unsigned short) server_addrlen,
 					server_addr,
 					(unsigned short) dpy_numlen,

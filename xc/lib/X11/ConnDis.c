@@ -1,5 +1,5 @@
 #include "copyright.h"
-/* $XConsortium: XConnDis.c,v 11.38 88/11/23 11:38:02 jim Exp $ */
+/* $XConsortium: XConnDis.c,v 11.39 88/11/23 13:45:33 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 #define NEED_EVENTS
 /*
@@ -254,7 +254,7 @@ int _XConnectDisplay (display_name, expanded_name, prop_name, screen_num,
 		/*
 		 * This is a hack and is not part of the protocol
 		 */
-		tmpfamily = FamilyLocal;  /* 255 */
+		tmpfamily = FamilyLocal;
 		{
 		    char tmpbuf[1024];
 
@@ -348,7 +348,7 @@ int _XConnectDisplay (display_name, expanded_name, prop_name, screen_num,
 			 * other machines.  So, we convert it to FamilyLocal.
 			 * This is a hack and is not part of the protocol
 			 */
-			tmpfamily = FamilyLocal;  /* 255 */
+			tmpfamily = FamilyLocal;
 			tmp_server_addrlen = get_host_name (tmpbuf, sizeof tmpbuf);
 			cp = tmpbuf;
 		    }
