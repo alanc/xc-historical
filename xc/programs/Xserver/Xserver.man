@@ -6,8 +6,8 @@ X - X window system server
 displaynumber [-option ...] ttyname
 .SH DESCRIPTION
 .I X
-is the window system server.  On systems derived from 4.3bsd, it is run
-automatically run \fIinit(8)\fP, otherwise it is started from the
+is the window system server.  On operating systems derived from 4.3bsd, it is 
+run automatically run \fIinit(8)\fP, otherwise it is started from the
 \fIxinit(1)\fP program.  The \fIdisplaynumber\fP argument is used
 by clients in their DISPLAY environment variables to indicate which server
 to contact (large machines may have several displays attached).  This
@@ -15,83 +15,107 @@ number is usually in the range of 0-6 and is also used to determine the
 names of various startup files.  The \fIttyname\fP argument is passed in
 by \fIinit\fP and isn't used.
 .PP
-The \fIX\fP that gets invoked in either of these ways is actually one
-of a range of servers configured for the hardware you are running
-on.  Their individual peculiarites are documented in separate
-manual pages in this section.
+The executable that is invoked when \fIX\fP is run
+is actually one of a collection of programs based on the hardware
+that is installed on the machine.  Any additional features are described in
+the documentation for that server.
 .PP
-The sample server currently supports connections using the TCP/IP, Berkeley
-Unix domain, and DECnet protocols (depending on the configuration of the
-machine on which the server is running).
-Unix domain connections are through \fI/dev/X*\fP,
-where * is the display number.
-TCP connections are through ports 6000+N (VAX byte order),
-where N is the display number.  DECnet
-connections are through object name ``X*'', where * is the display number.
+The sample server has support for the following protocols:
+.TP 8
+.B TCP\/IP
+.br
+The server listens on port htons(6000+N), where N is the display number.
+.TP 8
+.B "Unix Domain"
+The file name for the socket is X_UNIX_PATH* where X_UNIX_PATH
+is a configuration parameter (/tmp/.X11-unix/X in the standard release) and
+"*" is the display number.
+.TP 8
+.B "DECnet"
+.br
+The server responds to connections to object ``X*'', where "*''
+is the display number.
+.PP
+When the sample server starts up, it takes over the display.  If you 
+are running on a workstation whose console is the display, you cannot log into
+the console while the server is running.
 .SH OPTIONS
 The following options can be given on the command line to any X server, usually
 when it is
 started by \fIinit(1)\fP using information stored in the file \fI/etc/ttys\fP.
 (see \fIttys(5)\fP for details):
-.TP
-\fB-a\fP #
-sets mouse acceleration (pixels)
-.TP
-\fB-c\fP
-turns off key-click
-.TP
-\fBc\fP #
-sets key-click volume (0-8)
-.TP
-\fB-f\fP #
-sets feep(bell) volume (0-7)
-.TP
-\fB-p\fP #
-sets screen-saver pattern cycle time (minutes)
-.TP
-\fB-r\fP
-turns off auto-repeat
-.TP
-\fBr\fP	
-turns on auto-repeat
-.TP
-\fB-s\fP #
-sets screen-saver timeout (minutes)
-.TP
-\fB-t\fP #
-sets mouse threshold (pixels)
-.TP
-\fB-to\fP \fItimeout\fP
-sets default screensaver timeout
-.TP
-\fBv\fP
-sets video-on screen-saver preference
-.TP
-\fB-v\fP
+.TP 8
+.B \-a \fInumber\fP
+sets pointer acceleration (i.e. the ratio of how much is reported to how much
+the user actually moved the pointer).
+.TP 8
+.B \-c
+turns off key-click.
+.TP 8
+.B c \fIvolume\fP
+sets key-click volume (allowable range: 0-8).
+.TP 8
+.B \-f \fIvolume\fP
+sets feep (bell) volume (allowable range: 0-7).
+.TP 8
+.B \-p \fIminutes\fP
+sets screen-saver pattern cycle time in minutes.
+.TP 8
+.B \-r
+turns off auto-repeat.
+.TP 8
+.B r
+turns on auto-repeat.
+.TP 8
+.B \-s \fIminutes\fP
+sets screen-saver timeout time in minutes.
+.TP 8
+.B \-t \fInumbers\fP
+sets pointer acceleration threshold in pixels (i.e. after how many pixels
+pointer acceleration should take effect).
+.TP 8
+.B \-to \fIseconds\fP
+sets default screensaver timeout in seconds.
+.TP 8
+.B v
+sets video-on screen-saver preference.
+.TP 8
+.B \-v
 sets video-off screen-saver preference
-.TP
-\fB-co\fP \fIrgbdb\fP
-sets RGB database file
-.TP
-\fB-help\fP
+.TP 8
+.B \-co \fIfilename\fP
+sets name of RGB color database
+.TP 8
+.B \-help
 prints a usage message
-.TP
-\fB-fp\fP \fIfontPath\fP
+.TP 8
+.B \-fp \fIfontPath
 sets the search path for fonts
-.TP
-\fB-fc\fP \fIcursorFont\fP
+.TP 8
+.B \-fc \fIcursorFont\fP
 sets default cursor font
-.TP
-\fB-fn\fP \fIfont\fP
+.TP 8
+.B \-fn \fIfont\fP
 sets the default font
 .PP
-Specific implementations may have other command-line options.
-.SH INITIALIZATION
+Specific implementations may have other command line options.
+.SH "RUNNING FROM INIT"
 .PP
-\fIX(1)\fP and your first \fIxterm(1)\fP are normally started by the 
-\fIinit(8)\fP program.
-.sp
-A typical line in \fI/etc/ttys\fP might be:
+On operating systems such as 4.3bsd and Ultrix, the server and your login 
+window are normally started automatically by 
+\fI\/etc\/init\fP.
+.PP
+By convention, the pseudoterminal with the
+highest minor device number (e.g. \fI\/dev\/ttyqf\fP and \fI\/dev\/ptyqf\fP)
+is renamed for
+the lowest display number (e.g. \fI\/dev\/ttyv0\fP and \fI\/dev\/ptyv0\fP).
+Machines that have more than one
+display can repeat this process using \fIttyqe\fP for \fIttyv1\fP, and 
+so on.
+.PP
+With this done, you can set up \fI\/etc\/ttys\fP to run \fIX\fP and \fIxterm\fP
+by adding the following entry (the \\'s is to make the lines fit on this 
+manual page, the real entries have to occupy just one line):
 .sp
 .nf
 	ttyv0 "/etc/xterm -L -geometry -1+1 -display :0" xterm on \\
@@ -107,57 +131,84 @@ However, if you want the xterm to run on a different machine, you might have:
 on the server machine and
 .sp
 .nf
-	ttyv0 "/exe/xterm -L -geometry -1+1 -display expo:0" xterm on secure
+	ttyv0 "/exe/xterm -L -geometry -1+1 -display server:0" \\
+		xterm on secure
 .fi
 .sp
-on the client machine.
-.sp
+on the client machine.  
+.PP
+Important note:  some versions of \fIinit\fP have relatively small
+program name buffer sizes, so you may find that you can't list many 
+\fIxterm\fP options.
+In addition, some \fIinit\fP's will treat the sharp signs that are used in
+specifying colors (such as for window backgrounds) as comments for the whole 
+line.  If you run into problems
+with this you may want to write a small program that just exec's 
+\fIxterm\fP with the proper arguments and have \fIinit\fP run that instead.
+.PP
+If all else fails, set the display up to be a dumb terminal and use the
+\fIxinit\fP program after logging in.
+.SH "SECURITY"
 .I X
-maintains an access control list for accepting connections.  The host where
-the server runs is initially on the list.
-In addition, hosts listed the file
-\fI/etc/X*.hosts\fP,
-where \fI*\fP is the display number, are also initially on the list.
-The format of this file is a list of host names, one per line.  DECnet hosts
-are distinguished from Internet hosts by the existence of a trailing ``::'' in
-the name.  
-The access control list can be manipulated with \fIxhost(1)\fP.
-.sp
+maintains an access control list for deciding whether or not to accept a
+connection from a given cleint.  This list
+initially consists of the machine on which the server is running, and any
+hosts listed in the file
+\fI/etc/X*.hosts\fP
+(where \fI*\fP is the display number).  This file should contain one line
+per host name, with no white space.  If a name ends in ``::'', it is assumed
+to be a DECnet host, otherwise it is interpreted as an Internet host.
+.PP
+The user can manipulate this list using the \fIxhost(1)\fP program from
+the same machine as the server.
+.PP
+Unlike some window systems, \fIX\fP does not have any notion of 
+window operation permissions or
+place any restrictions on what a client can do; if
+a program can connect to a display, it has full run of the screen.  There
+is support for using 
+authentication services on connection startup beyond the simple host name
+check, but it is not used in the standard distribution.
+.SH "SIGNALS"
 .I X
 will catch the SIGHUP signal sent by \fIinit(8)\fP
 after the initial process (usually
 the login \fIxterm(1)\fP) started on the display terminates.
 This signal causes all connections to be closed (thereby ``disowning'' the
 terminal), all resources to be freed, and all defaults restored.
-.sp
-The X protocol is documented doc/X/Protocol/.
-Note that while X is running, all access to the display must be through
-the window system.
-.SH "SEE ALSO"
-X(1), xinit(1), xterm(1), bitmap(1), xwm(1), xhost(1), xload(1), xset(1), init(8),
-Xqvss(8c), Xqdss(8c), Xsun(8c), Xapollo(8c), Xapa16(8c)
 .SH DIAGNOSTICS
 Are too numerous to list them all.
 If run from \fIinit(8)\fP, errors are logged in the file \fI/usr/adm/X*msgs\fP,
 .SH FILES
-.ta \w'/usr/new/lib/X/s-code   'u
-/etc/X*.hosts	Initial access control list
+/etc/X*.hosts                Initial access control list
 .br
-/usr/lib/X11/fonts	Font directory
+/usr/lib/X11/fonts           Font directory
 .br
-/dev/X*	Unix domain socket (if configured)
+/usr/lib/X11/rgb.txt         Color database
 .br
-/usr/adm/X*msgs	Error log file
+/tmp/.X11-unix/X*            Unix domain socket
+.br
+/usr/adm/X*msgs              Error log file
+.SH "SEE ALSO"
+X(1), xinit(1), xterm(1), bitmap(1), xwm(1), xhost(1), xload(1), xset(1), init(8),
+Xqvss(8c), Xqdss(8c), Xsun(8c), Xapollo(8c), Xapa16(8c), doc/X/Protocol/.
 .SH BUGS
 The option syntax is inconsistent with itself and \fIxset(1)\fP.
-.sp
+.PP
+The acceleration option should take a numerator and a denominator like the
+protocol.
+.PP
 If
 .I X
 dies before its clients, new clients won't be able to connect until all
 existing connections have their TCP TIME_WAIT timers expire.
+.PP
+The color database is missing a large number of colors.  However, there
+doesn't seem to be a better one available that can generate RGB values.
 .SH AUTHORS
-Copyright 1984, 1985, 1986, 1987, 1988, Massachusetts Institute of Technology.
+Copyright 1987, 1988, Massachusetts Institute of Technology.
 .br
+The sample server was written by
 Susan Angebranndt, Raymond Drewry, Philip Karlton, and Todd Newman,
-supported by a cast of thouands.  (See the protocl and Xlib
-documents for complete acknowledgements.)
+with support from a cast of thouands.  See the protocol and Xlib
+documents as well as the file doc/contributors for complete acknowledgements.
