@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.69 94/01/07 09:41:17 dpw Exp $ */
+/* $XConsortium: events.c,v 5.70 94/01/30 14:23:47 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -45,7 +45,7 @@ SOFTWARE.
 extern WindowPtr *WindowTable;
 
 #ifdef XRECORD 
-extern int (* EventProcVector[128]) ();
+extern int RecordedEvents[128];
 #endif 
 extern void (* EventSwapVector[128]) ();
 extern void (* ReplySwapVector[256]) ();
@@ -1035,7 +1035,7 @@ TryClientEvents (client, pEvents, count, mask, filter, grab)
 #ifdef XRECORD 
     for (i = 0; i < count; i++)
     {
-	if ( (EventProcVector[pEvents[i].u.u.type & 0177]) && 
+	if ( (RecordedEvents[pEvents[i].u.u.type & 0177]) && 
 		!(pEvents[i].u.u.type & EXTENSION_EVENT_BASE) )
 	{ 
 #ifdef DEBUG
@@ -1044,8 +1044,7 @@ TryClientEvents (client, pEvents, count, mask, filter, grab)
 	    pEvents->u.u.type, pEvents->u.u.detail, mask, client->index);
 #endif
 
-	    (*EventProcVector[pEvents[i].u.u.type & 0177])(client,
-		&(pEvents[i]));
+	    XRecordEvent(client, &pEvents[i]);
         }
     }
 #endif 
@@ -3561,7 +3560,7 @@ WriteEventsToClient(pClient, count, events)
     {
       eventFrom = &events[i];
 
-      if ( (EventProcVector[eventFrom->u.u.type]) && 
+      if ( (RecordedEvents[eventFrom->u.u.type]) && 
 	(eventFrom->u.u.type & EXTENSION_EVENT_BASE 
 		|| eventFrom->u.u.type == X_Error) )
       { 
@@ -3570,8 +3569,7 @@ WriteEventsToClient(pClient, count, events)
 	    "WriteEventsToClient trapped event [%d, %d], client=%d\n",
 	    eventFrom->u.u.type, eventFrom->u.u.detail, pClient->index);
 #endif 
-	    (*EventProcVector[eventFrom->u.u.type])(pClient,
-		eventFrom); 
+	    XRecordEvent(pClient, eventFrom);
       }
     }
 #endif
