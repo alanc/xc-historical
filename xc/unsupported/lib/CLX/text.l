@@ -816,7 +816,7 @@
 	;; Should metrics-p be T?  Don't want to pass a NIL font into translate...
 	(font (gcontext-font gcontext t))
 	(font-change nil)
-	new-start translated-width chunk)
+	(new-start) (translated-width) (chunk))
        (nil) ;; forever
     (declare (type display display)
 	     (type array-index length)
