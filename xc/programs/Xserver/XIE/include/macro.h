@@ -1,4 +1,4 @@
-/* $XConsortium: macro.h,v 1.1 93/10/26 10:04:05 rws Exp $ */
+/* $XConsortium: macro.h,v 1.2 93/10/31 09:48:59 dpw Exp $ */
 /**** module macro.h ****/
 /******************************************************************************
 				NOTICE
@@ -99,9 +99,9 @@ terms and conditions:
 /* swap a pair of pointers
  */
 #define SwapPtr(p1,p2,pt) \
-        	(*((void**)&(pt)) = (void*)(p1), \
-		 *((void**)&(p1)) = (void*)(p2), \
-		 *((void**)&(p2)) = (void*)(pt))
+        	(*((pointer *)&(pt)) = (pointer )(p1), \
+		 *((pointer *)&(p1)) = (pointer )(p2), \
+		 *((pointer *)&(p2)) = (pointer )(pt))
 
 
 /* compute the minimum number of bits ('depth') required to represent 'levels'
