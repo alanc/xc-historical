@@ -1,4 +1,4 @@
-/* $XConsortium: lbxgfx.c,v 1.7 94/11/08 20:28:44 mor Exp mor $ */
+/* $XConsortium: lbxgfx.c,v 1.8 94/11/09 21:21:23 mor Exp mor $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -385,7 +385,6 @@ int *imageBytes;
 	linesPerBuf = 0;
     else
 	linesPerBuf = height;
-    length = linesPerBuf * widthBytesLine;
 
     if(!(pBuf = *theImage = (char *) malloc(length + 4)))
         return (BadAlloc);
