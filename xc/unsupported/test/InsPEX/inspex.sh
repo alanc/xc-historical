@@ -1,5 +1,5 @@
 #!/bin/sh 
-# $XConsortium: inspex.sh,v 5.2 91/02/16 10:04:49 rws Exp $
+# $XConsortium: inspex.sh,v 5.3 91/02/18 20:54:20 hersh Exp $
 ###################################################################
 # Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
 # 
@@ -556,6 +556,7 @@ i_compile()
 	shift   # so that any remaining args (make flags) are $*
 
 	# don't crowd the log file with successful make commands
+	pwd
 	make_cmd="make $test_basename $* PEXINCDIR=$PEXINCDIR PEXLIBDIR=$PEXLIBDIR XINCDIR=$XINCDIR XLIBDIR=$XLIBDIR I_CFLAGS=$I_CFLAGS I_LDFLAGS=$I_LDFLAGS"
 	echo "cd $INSPEXDEST/tmp ; $make_cmd"
 	if sh -c "$make_cmd" > make.out 2>&1
@@ -971,7 +972,7 @@ fi
 
 if [ ! "$PEXLIBDIR" ]
 then
-	default=../../../lib/PEX
+	default=../../lib/PEX
 	if [ -d $default ]
 	then
 		# get an absolute path
@@ -994,7 +995,7 @@ then
 	default=$PEXINCDIR
 	if [ -d $default ]
 	then
-		if [ -d $default/X11 ]
+		if [ -d $default ]
 		then
 			# it's good -get an absolute path
 			XINCDIR=`cd $default; pwd`; export XINCDIR
@@ -1007,7 +1008,7 @@ then
 	     exit 1
 	fi
 else  			# make sure X11 directory exists
-	if [ ! -d $XINCDIR/X11 ]
+	if [ ! -d $XINCDIR ]
 	then
 	    echolog ERROR - value for XINCDIR incorrect - no directory X11 found under $XINCDIR
 	    exit 1
