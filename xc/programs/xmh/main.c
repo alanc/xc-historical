@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 2.18 90/08/08 14:53:17 swick Exp $
+ * $XConsortium: main.c,v 2.19 91/01/10 12:15:03 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -119,4 +119,11 @@ char **argv;
 	}
 	XtDispatchEvent( &ev );
     }
+#ifdef DEBUG_CLEANUP
+    XtDestroyApplicationContext(appCtx);
+#ifdef XTTRACEMEMORY
+    _XtPrintMemory("/tmp/xmh.mem");	/* not a standard Xt interface */
+#endif
+    exit(0);
+#endif    
 }
