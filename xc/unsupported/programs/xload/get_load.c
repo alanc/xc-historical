@@ -1,7 +1,7 @@
 /*
  * get_load - get system load
  *
- * $XConsortium: get_load.c,v 1.25 91/07/15 11:19:26 rws Exp $
+ * $XConsortium: get_load.c,v 1.26 91/07/25 14:20:25 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -106,6 +106,18 @@ struct lavnum {
 #else
 #include <sys/param.h>
 #endif
+#endif
+
+#ifdef __osf__
+/*
+ * Use the table(2) interface; it doesn't require setuid root.
+ *
+ * Select 0, 1, or 2 for 5, 30, or 60 second load averages.
+ */
+#ifndef WHICH_AVG
+#define WHICH_AVG 1
+#endif
+#include <sys/table.h>
 #endif
 
 #ifdef SVR4
@@ -330,6 +342,30 @@ void GetLoadPoint( w, closure, call_data )
 }
 
 #else /* not LOADSTUB */
+
+#ifdef __osf__
+
+void InitLoadPoint()
+{
+}
+
+/*ARGSUSED*/
+void GetLoadPoint( w, closure, call_data )
+     Widget   w;              /* unused */
+     caddr_t  closure;        /* unused */
+     caddr_t  call_data;      /* pointer to (double) return value */
+{
+    double *loadavg = (double *)call_data;
+    struct tbl_loadavg load_data;
+
+    if (table(TBL_LOADAVG, 0, (char *)&load_data, 1, sizeof(load_data)) < 0)
+	xload_error("error reading load average", "");
+    *loadavg = (load_data.tl_lscale == 0) ?
+	load_data.tl_avenrun.d[WHICH_AVG] :
+	load_data.tl_avenrun.l[WHICH_AVG] / (double)load_data.tl_lscale;
+}
+
+#else /* not __osf__ */
 
 #ifndef KMEM_FILE
 #define KMEM_FILE "/dev/kmem"
@@ -709,6 +745,7 @@ void GetLoadPoint( w, closure, call_data )
 #endif /* sun else */
 	return;
 }
+#endif /* __osf__ else */
 #endif /* LOADSTUB else */
 #endif /* KVM_ROUTINES else */
 #endif /* SYSV && SYSV386 else */
