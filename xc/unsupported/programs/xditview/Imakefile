@@ -1,23 +1,16 @@
-XCOMM $XConsortium$
-#define IHaveSubdirs
+XCOMM $XConsortium: Imakefile,v 1.10 91/07/17 00:48:20 gildea Exp $
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
-        XDVISRC = libXdvi
-        XDVILIB = $(XDVISRC)/libXdvi.a
-     DEPXDVILIB = $(XDVILIB)
-        DEPLIBS = $(DEPXDVILIB) XawClientDepLibs
-LOCAL_LIBRARIES = $(XDVILIB) XawClientLibs
+        DEPLIBS = XawClientDepLibs
+LOCAL_LIBRARIES = XawClientLibs
   SYS_LIBRARIES = -lm
-          SRCS1 = xditview.c
-          OBJS1 = xditview.o
-          SRCS2 = xtotroff.c
-          OBJS2 = xtotroff.o
-       PROGRAMS = xditview xtotroff
-        SUBDIRS = libXdvi
+        BITMAPS = ldblarrow rdblarrow
+           SRCS = xditview.c Dvi.c draw.c font.c lex.c page.c parse.c\
+	   	  XFontName.c DviChar.c
+           OBJS = xditview.o Dvi.o draw.o font.o lex.o page.o parse.o\
+	   	  XFontName.o DviChar.o
 
-MakeSubdirs($(SUBDIRS))
-
-ComplexProgramTarget_1(xditview,$(LOCAL_LIBRARIES),NullParameter)
-SingleProgramTarget(xtotroff,$(OBJS2),$(LOCAL_LIBRARIES),NullParameter)
+ComplexProgramTarget(xditview)
+BuildIncludes($(BITMAPS),bitmaps,..)
 InstallAppDefaults(Xditview)
-
-DependSubdirs($(SUBDIRS))
+INSTALLFLAGS = $(INSTINCFLAGS)
+InstallMultiple($(BITMAPS),$(INCDIR)/bitmaps)

@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: draw.c,v 1.3 91/07/25 21:34:07 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -43,6 +43,9 @@
 #include <ctype.h>
 #include <math.h>
 #include "DviP.h"
+#ifndef M_PI
+#define M_PI 3.14159265358979323846264338327950
+#endif
 
 /*	the following are for use in the spline approximation algorithm */
 
@@ -68,28 +71,28 @@ HorizontalMove(dw, delta)
 	DviWidget	dw;
 	int		delta;
 {
-	dw->dvi.state->x += delta;
+    dw->dvi.state->x += delta;
 }
 
 HorizontalGoto(dw, NewPosition)
 	DviWidget	dw;
 	int		NewPosition;
 {
-	dw->dvi.state->x = NewPosition;
+    dw->dvi.state->x = NewPosition;
 }
 
 VerticalMove(dw, delta)
 	DviWidget	dw;
 	int		delta;
 {
-	dw->dvi.state->y += delta;
+    dw->dvi.state->y += delta;
 }
 
 VerticalGoto(dw, NewPosition)
 	DviWidget	dw;
 	int		NewPosition;
 {
-	dw->dvi.state->y = NewPosition;
+    dw->dvi.state->y = NewPosition;
 }
 
 FlushCharCache (dw)
@@ -116,61 +119,43 @@ FlushCharCache (dw)
 ClearPage (dw)
 	DviWidget	dw;
 {
+    if (dw->dvi.display_enable)
 	XClearWindow (XtDisplay (dw), XtWindow (dw));
-}
-
-static void setGC (dw)
-	DviWidget	dw;
-{
-	int	lw;
-
-	if (dw->dvi.state->line_style != dw->dvi.line_style ||
-	    dw->dvi.state->line_width != dw->dvi.line_width)
-	{
-		lw = ToX(dw, dw->dvi.state->line_width);
-		if (lw == 1)
-		    lw = 0;
-		XSetLineAttributes (XtDisplay (dw), dw->dvi.normal_GC,
-				    lw,
-				    LineSolid,
-				    CapButt,
-				    JoinMiter
-				    );
-		dw->dvi.line_style = dw->dvi.state->line_style;
-		dw->dvi.line_width = dw->dvi.state->line_width;
-	}
 }
 
 DrawLine (dw, x, y)
 	DviWidget	dw;
 	int		x, y;
 {
+    if (dw->dvi.display_enable)
 	XDrawLine (XtDisplay (dw), XtWindow (dw), dw->dvi.normal_GC,
 		   ToX(dw, dw->dvi.state->x), ToX(dw, dw->dvi.state->y),
 		   ToX(dw, dw->dvi.state->x + x), ToX(dw,dw->dvi.state->y + y));
-	dw->dvi.state->x += x;
-	dw->dvi.state->y += y;
+    dw->dvi.state->x += x;
+    dw->dvi.state->y += y;
 }
 
 DrawCircle (dw, diameter)
 	DviWidget	dw;
 	int		diameter;
 {
-	XDrawArc (XtDisplay (dw), XtWindow (dw), dw->dvi.normal_GC,
-		  ToX(dw, dw->dvi.state->x),
- 		  ToX(dw, dw->dvi.state->y - (diameter / 2)),
-		  ToX(dw, diameter), ToX(dw, diameter), 0, 360 * 64);
-	dw->dvi.state->x += diameter;
+    if (dw->dvi.display_enable)
+    	XDrawArc (XtDisplay (dw), XtWindow (dw), dw->dvi.normal_GC,
+	      	  ToX(dw, dw->dvi.state->x),
+	      	  ToX(dw, dw->dvi.state->y - (diameter / 2)),
+	      	  ToX(dw, diameter), ToX(dw, diameter), 0, 360 * 64);
+    dw->dvi.state->x += diameter;
 }
 
 DrawEllipse (dw, a, b)
 	DviWidget	dw;
 	int		a, b;
 {
+    if (dw->dvi.display_enable)
 	XDrawArc (XtDisplay (dw), XtWindow (dw), dw->dvi.normal_GC,
 		  ToX(dw, dw->dvi.state->x), ToX(dw, dw->dvi.state->y - (b / 2)),
 		  ToX(dw,a), ToX(dw,b), 0, 360 * 64);
-	dw->dvi.state->x += a;
+    dw->dvi.state->x += a;
 }
 
 
@@ -179,26 +164,28 @@ DrawEllipse (dw, a, b)
 ConvertAngle(theta)
 int theta;
 {
-	return(theta * 64);
+    return(theta * 64);
 }
 
 DrawArc (dw, x0, y0, x1, y1)
 	DviWidget	dw;
 	int		x0, y0, x1, y1;
 {
-	int	xc, yc, x2, y2, r;
-	int	angle1, angle2;
-/*
-	(void)fprintf(stderr, "\nDrawArc (x0 %d, y0 %d, x1 %d, y1 %d)\n",
-		x0, y0, x1, y1);
-*/
-	/* centre */
-	xc = dw->dvi.state->x + x0;
-	yc = dw->dvi.state->y + y0;
+    int	xc, yc, x2, y2, r;
+    int	angle1, angle2;
 
-	/* to */
-	x2 = xc + x1;
-	y2 = yc + y1;
+    /* centre */
+    xc = dw->dvi.state->x + x0;
+    yc = dw->dvi.state->y + y0;
+
+    /* to */
+    x2 = xc + x1;
+    y2 = yc + y1;
+
+    dw->dvi.state->x = x2;
+    dw->dvi.state->y = y2;
+
+    if (dw->dvi.display_enable) {
 
 	/* radius */
 	r = (int)sqrt((float) x1 * x1 + (float) y1 * y1);
@@ -248,8 +235,7 @@ DrawArc (dw, x0, y0, x1, y1)
 		  ToX(dw, xc - r), ToX(dw, yc - r),
 		  ToX(dw, 2 * r), ToX(dw, 2 * r),
 		  angle1, angle2);
-	dw->dvi.state->x = x2;
-	dw->dvi.state->y = y2;
+    }
 }
 
 /* copy next non-blank string from p to temp, update p */
@@ -257,44 +243,27 @@ DrawArc (dw, x0, y0, x1, y1)
 char *getstr(p, temp)
 char *p, *temp;
 {
-	while (*p == ' ' || *p == '\t' || *p == '\n')
-		p++;
-	if (*p == '\0') {
-		temp[0] = 0;
-		return((char *)NULL);
-	}
-	while (*p != ' ' && *p != '\t' && *p != '\n' && *p != '\0')
-		*temp++ = *p++;
-	*temp = '\0';
-	return(p);
+    while (*p == ' ' || *p == '\t' || *p == '\n')
+	p++;
+    if (*p == '\0') {
+	temp[0] = 0;
+	return((char *)NULL);
+    }
+    while (*p != ' ' && *p != '\t' && *p != '\n' && *p != '\0')
+	*temp++ = *p++;
+    *temp = '\0';
+    return(p);
 }
 
 
-/*	Draw a spline by approximating with short lines.  The original */
-/*	version (with LINES defined), just joined the dots!	       */
+/*	Draw a spline by approximating with short lines.      */
 
+/*ARGSUSED*/
 DrawSpline (dw, s, len)
 	DviWidget	dw;
 	char		*s;
 	int		len;
 {
-#ifdef	LINES
-    double	x, y;
-    char	*p = s, d[10];
-
-    /* approximate spline by joining the points with line segments */
-    while (p && *p) {
-	if ((p = getstr(p, d)) != (char *)NULL)
-	    x = atof(d);
-	else
-	    break;
-	if ((p = getstr(p, d)) != (char *)NULL)
-	    y = atof(d);
-	else
-	    break;
-	DrawLine (dw, x, y);
-    }
-#else
     int		n;
 
     /* get coordinate pairs into spline linked list */
@@ -304,7 +273,6 @@ DrawSpline (dw, s, len)
     ApproxSpline(n);
 
     DrawSplineSegments(dw);
-#endif	LINES
 }
 
 
@@ -312,7 +280,7 @@ DrawSpline (dw, s, len)
 /*	as its head.  Return the number of coordinate pairs found.    */
 
 GetSpline(s)
-char *s;
+    char *s;
 {
     double	x, y, x1, y1;
     int		n = 0;
@@ -344,27 +312,6 @@ char *s;
 
     return(n);
 }
-
-#ifdef	DEBUG
-/*	Print the points of the spline from p1 to p2. e.g. (spline,NULL). */
-
-PrintPoints(p1, p2)
-Point *p1, *p2;
-{
-    Point *pt;
-    int i;
-
-    (void)fprintf(stderr, "\n");
-    for (pt = p1, i = 0; pt != NULL; pt = pt->next, i++) {
-	(void)fprintf(stderr,"point %d = (%lf,%lf)\n", i, pt->x, pt->y);
-	if (pt == p2)
-		break;
-	if (pt->next != (Point *)NULL)
-	    (void)fprintf(stderr,"length: %lf\n", length(pt,pt->next));
-    }
-    (void)fprintf(stderr, "\n");
-}
-#endif
 
 /*	Approximate a spline by lines generated by iterations of the	  */
 /*	approximation algorithm from the original n points in the spline. */
@@ -418,6 +365,7 @@ int n;
 /*	in the linked list, delete the first of the two used (unless it   */
 /*	is the first for this curve).  Repeat this ITERATIONS times.	  */
 
+/*ARGSUSED*/
 LineApprox(p1, p2, p3)
 Point	*p1, *p2, *p3;
 {
@@ -445,35 +393,32 @@ DviWidget dw;
 {
     Point	*p, *q;
     double	x1, y1;
-    int		dx, dy;
+    double	dx, dy;
     double	xpos, ypos;
-
-#ifdef	DEBUG
-    PrintPoints(spline,(Point *)NULL);
-#endif
 
     p = spline;
     dx = dy = 0;
 
     /* save the start position */
 
-    xpos = (double)(dw->dvi.state->x);
-    ypos = (double)(dw->dvi.state->y);
+    xpos = dw->dvi.state->x;
+    ypos = dw->dvi.state->y;
 
     x1 = y1 = 0.0;
 
     while (p != (Point *)NULL) {
-	dx = (int)rint(p->x - x1);
-	dy = (int)rint(p->y - y1);
+	dx = (int)(p->x - x1 + 0.5);
+	dy = (int)(p->y - y1 + 0.5);
 	DrawLine (dw, dx, dy);
 
-	/* where we have *actually* moved to - subject to rounding errors */
-	x1 = (double)(dw->dvi.state->x) - xpos;
-	y1 = (double)(dw->dvi.state->y) - ypos;
+	x1 = p->x;
+	y1 = p->y;
+	dw->dvi.state->x = xpos + x1;
+	dw->dvi.state->y = ypos + y1;
 
 	q = p;
 	p = p->next;
-	free((char *)q);
+	XtFree((char *)q);
     }
     spline = (Point *)NULL;
 }
@@ -486,12 +431,8 @@ Point *MakePoint(x, y)
 double x, y;
 {
     Point	*p;
-    char	*malloc();
 
-    if ((p = (Point *)malloc(sizeof(Point))) == (Point *)NULL) {
-	(void)fprintf(stderr, "malloc failed in MakePoint\n");
-	exit(1);
-    }
+    p = (Point *) XtMalloc (sizeof (Point));
     p->x = x;
     p->y = y;
     p->next = (Point *)NULL;
@@ -505,11 +446,6 @@ double x, y;
 InsertPoint(p, q)
 Point *p, *q;
 {
-    if (p == (Point *)NULL) {
-	(void)fprintf(stderr, "NULL pointer passed to InsertPoint\n");
-	exit(1);
-    }
-
     /* point q to the next point */
     q->next = p->next;
 
@@ -524,15 +460,10 @@ Point	*p;
 {
     Point	*tmp;
 
-    if (p->next == (Point *)NULL) {
-	(void)fprintf(stderr, "warning: cannot delete point for spline approximation\n");
-	return;
-    }
-
     tmp = p->next;
     p->x = p->next->x;
     p->y = p->next->y;
     p->next = p->next->next;
-    free((char *)tmp);
+    XtFree((char *)tmp);
 }
 

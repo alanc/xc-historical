@@ -36,8 +36,11 @@
      Ctrl<Key>P:    Noop()\n\
      Ctrl<Key>Z:    Noop()\n\
      Meta<Key>Z:    Noop()\n\
-     Ctrl<Key>V:    Noop()\n\
-     Meta<Key>V:    Noop()
+     Ctrl<Key>v:    NextPage()\n\
+     Meta<Key>v:    PreviousPage()\n\
+     <Key>Next:	    NextPage()\n\
+     <Key>Prior:    PreviousPage()\n\
+     <Key>Find:	    OpenFile()
 *pageNumber*editType:	edit
 
 *nextButton.bitmap:		rdblarrow

@@ -1,4 +1,4 @@
-/* $XConsortium: xditview.c,v 1.24 91/04/02 15:07:36 gildea Exp $ */
+/* $XConsortium: xditview.c,v 1.25 91/07/25 21:34:47 keith Exp $ */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -44,7 +44,7 @@
 #include <X11/Xaw/SmeBSB.h>
 #include <X11/Xaw/AsciiText.h>
 
-#include "libXdvi/Dvi.h"
+#include "Dvi.h"
 
 #include "xdit.bm"
 #include "xdit_mask.bm"
@@ -85,6 +85,7 @@ Syntax(call)
 }
 
 static void	NewFile ();
+static void	DisplayPageNumber ();
 static Widget	toplevel, paned, form, panner, porthole, dvi;
 static Widget	popupMenu;
 static Widget	menuBar;
@@ -283,7 +284,7 @@ void main(argc, argv)
 }
 
 static void
-SetPageNumber (number)
+DisplayPageNumber ()
 {
     Arg	arg[2];
     int	actual_number, last_page;
@@ -292,8 +293,6 @@ SetPageNumber (number)
     char	    value[128];
     char	    *cur;
 
-    XtSetArg (arg[0], XtNpageNumber, number);
-    XtSetValues (dvi, arg, 1);
     XtSetArg (arg[0], XtNpageNumber, &actual_number);
     XtSetArg (arg[1], XtNlastPageNumber, &last_page);
     XtGetValues (dvi, arg, 2);
@@ -314,9 +313,18 @@ SetPageNumber (number)
 }
 
 static void
+SetPageNumber (number)
+{
+    Arg	arg[1];
+
+    XtSetArg (arg[0], XtNpageNumber, number);
+    XtSetValues (dvi, arg, 1);
+    DisplayPageNumber ();
+}
+
+static void
 UpdatePageNumber ()
 {
-    Widget  src;
     char    *string;
     Arg	    arg[1];
 
@@ -364,9 +372,9 @@ char	*name;
 	n = name;
     XtSetArg (arg[1], XtNiconName, n);
     XtSetValues (toplevel, arg, 2);
-    SetPageNumber (1);
     strcpy (current_file_name, name);
     current_file = new_file;
+    DisplayPageNumber ();
 }
 
 static char fileBuf[1024];
@@ -380,6 +388,7 @@ ResetMenuEntry (entry)
     XtSetValues (XtParent(entry) , arg, (Cardinal) 1);
 }
 
+/*ARGSUSED*/
 static void
 NextPage (entry, name, data)
     Widget  entry;
@@ -400,6 +409,7 @@ NextPageAction ()
     SetPageNumber (number+1);
 }
 
+/*ARGSUSED*/
 static void
 PreviousPage (entry, name, data)
     Widget  entry;
@@ -420,6 +430,7 @@ PreviousPageAction ()
     SetPageNumber (number-1);
 }
 
+/*ARGSUSED*/
 static void
 OpenFile (entry, name, data)
     Widget  entry;
@@ -439,6 +450,7 @@ OpenFileAction ()
     MakePrompt (toplevel, "File to open:", NewFile, fileBuf);
 }
 
+/*ARGSUSED*/
 static void
 RevisitFile (entry, name, data)
     Widget  entry;
@@ -455,6 +467,7 @@ RevisitFileAction ()
 	NewFile (current_file_name);
 }
 
+/*ARGSUSED*/
 static void
 Quit (entry, closure, data)
     Widget  entry;
@@ -511,7 +524,6 @@ char *prompt;
 void (*func)();
 char	*def;
 {
-    static Boolean true = TRUE;
     static Arg dialogArgs[] = {
 	{XtNlabel, NULL},
 	{XtNvalue, NULL},

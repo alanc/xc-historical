@@ -1,4 +1,4 @@
-/* $XConsortium: parse.c,v 1.5 91/02/19 19:30:47 converse Exp $ */
+/* $XConsortium: parse.c,v 1.6 91/07/25 21:34:24 keith Exp $ */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -37,6 +37,8 @@
 static int StopSeen = 0;
 static ParseDrawFunction(), ParseDeviceControl();
 static push_env(), pop_env();
+
+extern char *GetWord(), *GetLine ();
 
 #define HorizontalMove(dw, delta)	((dw)->dvi.state->x += (delta))
 
@@ -107,7 +109,9 @@ ParseInput(dw)
 			    {
 		    	    	c = DviCharIndex (map, Buffer);
 				if (c == -1)
-				    if (ligature = DviCharIsLigature (map, Buffer)) {
+				{
+				    ligature = DviCharIsLigature (map, Buffer);
+				    if (ligature) {
 					savex = dw->dvi.state->x;
 					while (c = *ligature++) {
 					    if (PutCharacter (dw, c))
@@ -117,7 +121,8 @@ ParseInput(dw)
 					}
 					dw->dvi.state->x = savex;
 					break;
-				    }
+   				    }
+				}
 			    }
 	    	    	    if (c == -1) {
 			    	for (i = 1; map = QueryFontMap (dw, i); i++)
@@ -199,7 +204,7 @@ push_env(dw)
 {
 	DviState	*new;
 
-	new = (DviState *) malloc (sizeof (*new));
+	new = (DviState *) XtMalloc (sizeof (*new));
 	if (dw->dvi.state)
 		*new = *(dw->dvi.state);
 	else {
@@ -222,7 +227,7 @@ pop_env(dw)
 
 	old = dw->dvi.state;
 	dw->dvi.state = old->next;
-	free ((char *) old);
+	XtFree ((char *) old);
 }
 
 static
@@ -248,6 +253,8 @@ SetFont (dw)
 CharacterWidth (dw, c)
     DviWidget	dw;
 {
+    if (!dw->dvi.display_enable)
+	return 0;
     if (dw->dvi.cache.font_size != dw->dvi.state->font_size ||
 	dw->dvi.cache.font_number != dw->dvi.state->font_number)
     {
@@ -260,10 +267,8 @@ PutCharacter (dw, c)
     DviWidget	dw;
     int		c;
 {
-    int	prevFont;
     int	xx, yx;
     int	fx;
-    int	w;
 
     xx = ToX(dw, dw->dvi.state->x);
     yx = ToX(dw, dw->dvi.state->y);
@@ -278,7 +283,6 @@ PutCharacter (dw, c)
     {
 	register XFontStruct	*font;
 	register XTextItem		*text;
-	int	spaceWidth;
 
 	if (!dw->dvi.display_enable)
 	    return FALSE;
@@ -366,7 +370,7 @@ static
 ParseDeviceControl(dw)				/* Parse the x commands */
 	DviWidget	dw;
 {
-        char str[20], str1[50], buf[50];
+        char str[20], str1[50];
 	int c, n;
 	extern int LastPage, CurrentPage;
 

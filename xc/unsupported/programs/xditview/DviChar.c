@@ -1,4 +1,4 @@
-/* $XConsortium: DviChar.c,v 1.4 91/01/10 17:00:34 gildea Exp $ */
+/* $XConsortium: DviChar.c,v 1.5 91/07/25 21:33:56 keith Exp $ */
 
 /*
  * DviChar.c
@@ -7,9 +7,10 @@
  * font indexes and back
  */
 
+# include   <X11/Intrinsic.h>
 # include   "DviChar.h"
 
-# define allocHash()	((DviCharNameHash *) malloc (sizeof (DviCharNameHash)))
+# define allocHash()	((DviCharNameHash *) XtMalloc (sizeof (DviCharNameHash)))
 
 struct map_list {
 	struct map_list	*next;
@@ -49,7 +50,7 @@ DviRegisterMap (map)
 		if (!strcmp (m->map->encoding, map->encoding))
 			break;
 	if (!m) {
-		m = (struct map_list *) malloc (sizeof *m);
+		m = (struct map_list *) XtMalloc (sizeof *m);
 		m->next = world;
 		world = m;
 	}
@@ -70,7 +71,7 @@ dispose_hash (map)
 	for (i = 0; i < DVI_HASH_SIZE; i++) {
 		for (h = buckets[i]; h; h=next) {
 			next = h->next;
-			free (h);
+			XtFree ((char *) h);
 		}
 	}
 }
@@ -118,7 +119,7 @@ DviCharIndex (map, name)
 	DviCharNameMap	*map;
 	char		*name;
 {
-	int		c, s, i;
+	int		i;
 	DviCharNameHash	*h;
 
 	i = hash_name (name) % DVI_HASH_SIZE;

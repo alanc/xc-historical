@@ -1,5 +1,5 @@
 /*
- * $XConsortium: DviP.h,v 1.5 89/07/22 19:44:08 keith Exp $
+ * $XConsortium: DviP.h,v 1.6 91/07/25 21:34:02 keith Exp $
  */
 
 /* 
@@ -186,9 +186,9 @@ typedef struct {
 	(dw->dvi.ungot = 1),\
 	ungetc (c, dw->dvi.file)))
 
-#define ToX(dw,device)		    ((device) * (dw)->dvi.scale + 0.5)
-#define ToDevice(dw,x)		    ((x) / (dw)->dvi.scale + 0.5)
-#define FontSizeInPixels(dw,size)   ((size) * (dw)->dvi.screen_resolution / 72)
+#define ToX(dw,device)		    ((int) ((device) * (dw)->dvi.scale + 0.5))
+#define ToDevice(dw,x)		    ((int) ((x) / (dw)->dvi.scale + 0.5))
+#define FontSizeInPixels(dw,size)   ((int) ((size) * (dw)->dvi.screen_resolution / 72))
 
 /*
  * Full widget declaration

@@ -1,4 +1,4 @@
-/* $XConsortium: Dvi.c,v 1.14 91/07/24 12:16:16 dave Exp $ */
+/* $XConsortium: Dvi.c,v 1.15 91/07/25 21:33:21 keith Exp $ */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -287,18 +287,16 @@ SetValues (current, request, new)
 	DviWidget current, request, new;
 {
 	Boolean		redisplay = FALSE;
-	extern char	*malloc ();
 	char		*new_map;
 	int		cur, req;
 
 	req = request->dvi.requested_page;
 	cur = current->dvi.requested_page;
 	if (cur != req) {
-		if (!request->dvi.file)
-		    req = 0;
-		else {
-		    if (req < 1)
-			    req = 1;
+		if (req < 1)
+		    req = 1;
+		if (request->dvi.file)
+		{
 		    if (current->dvi.last_page != 0 &&
 			req > current->dvi.last_page)
 			    req = current->dvi.last_page;
@@ -309,13 +307,13 @@ SetValues (current, request, new)
 	}
 	
 	if (current->dvi.font_map_string != request->dvi.font_map_string) {
-		new_map = malloc (strlen (request->dvi.font_map_string) + 1);
+		new_map = XtMalloc (strlen (request->dvi.font_map_string) + 1);
 		if (new_map) {
 			redisplay = TRUE;
 			strcpy (new_map, request->dvi.font_map_string);
 			new->dvi.font_map_string = new_map;
 			if (current->dvi.font_map_string)
-				free (current->dvi.font_map_string);
+				XtFree (current->dvi.font_map_string);
 			current->dvi.font_map_string = 0;
 			ParseFontMap (new);
 		}
@@ -358,25 +356,28 @@ SetValuesHook (dw, args, num_argsp)
 static void CloseFile (dw)
 	DviWidget	dw;
 {
-	if (dw->dvi.tmpFile)
-		fclose (dw->dvi.tmpFile);
-	ForgetPagePositions (dw);
+    if (dw->dvi.file_map)
+	dw->dvi.requested_page = 1;
+    if (dw->dvi.tmpFile)
+	fclose (dw->dvi.tmpFile);
+    ForgetPagePositions (dw);
 }
 
 static void OpenFile (dw)
 	DviWidget	dw;
 {
-	char	tmpName[sizeof ("/tmp/dviXXXXXX")];
+    char	tmpName[sizeof ("/tmp/dviXXXXXX")];
 
-	dw->dvi.tmpFile = 0;
-	if (!dw->dvi.seek) {
-		strcpy (tmpName, "/tmp/dviXXXXXX");
-		mktemp (tmpName);
-		dw->dvi.tmpFile = fopen (tmpName, "w+");
-		unlink (tmpName);
-	}
+    dw->dvi.tmpFile = 0;
+    if (!dw->dvi.seek) {
+	strcpy (tmpName, "/tmp/dviXXXXXX");
+	mktemp (tmpName);
+	dw->dvi.tmpFile = fopen (tmpName, "w+");
+	unlink (tmpName);
+    }
+    if (dw->dvi.requested_page < 1)
 	dw->dvi.requested_page = 1;
-	dw->dvi.last_page = 0;
+    dw->dvi.last_page = 0;
 }
 
 static XtGeometryResult

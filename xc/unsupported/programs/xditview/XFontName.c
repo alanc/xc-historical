@@ -5,6 +5,7 @@
  */
 
 # include	<X11/Xlib.h>
+# include	<X11/Intrinsic.h>
 # include	"XFontName.h"
 #include	<ctype.h>
 
@@ -188,6 +189,7 @@ XFormatFontName (fontName, fontNameAttributes, fontNameString)
 	PutString (CharSetEncoding, FontNameCharSetEncoding)
 	*name = '\0';
 	strcpy (fontNameString, tmp);
+	return True;
 }
 
 Bool

@@ -1,4 +1,4 @@
-/* $XConsortium: loadData.c,v 1.3 91/02/17 14:48:54 dave Exp $ */
+/* $XConsortium: page.c,v 1.4 91/04/01 21:23:58 gildea Exp $ */
 
 /*
  * page.c
@@ -37,7 +37,7 @@ DestroyFileMap (m)
 
 	for (; m; m = next) {
 		next = m->next;
-		free ((char *) m);
+		XtFree ((char *) m);
 	}
 }
 
@@ -55,7 +55,7 @@ RememberPagePosition(dw, number)
 	DviFileMap	*m;
 
 	if (!(m = MapPageNumberToFileMap (dw, number))) {
-		m = (DviFileMap *) malloc (sizeof *m);
+		m = (DviFileMap *) XtMalloc (sizeof *m);
 		m->page_number = number;
 		m->next = dw->dvi.file_map;
 		dw->dvi.file_map = m;
