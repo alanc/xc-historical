@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGetProp.c,v 11.10 87/08/10 18:23:39 jg Exp $ */
+/* $Header: XGetProp.c,v 11.10 87/09/11 08:04:23 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -18,7 +18,7 @@ XGetWindowProperty(dpy, w, property, offset, length, delete,
     int *actual_format;  /* 8, 16, or 32 */
     long offset, length;
     unsigned long *nitems;  /* # of 8-, 16-, or 32-bit entities */
-    long *bytesafter;
+    unsigned long *bytesafter;
     unsigned char **prop;
     {
     int errorstatus;
