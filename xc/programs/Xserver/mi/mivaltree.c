@@ -37,7 +37,7 @@
 
 #ifndef lint
 static char rcsid[] =
-"$Header: mivaltree.c,v 1.52 89/05/20 15:19:12 keith Exp $ SPRITE (Berkeley)";
+"$Header: mivaltree.c,v 5.0 89/06/09 15:08:45 keith Exp $ SPRITE (Berkeley)";
 #endif lint
 
 #include    <stdio.h>
@@ -143,8 +143,8 @@ miComputeClips (pParent, pScreen, universe, kind)
      * avoid computations when dealing with simple operations
      */
 
-    dx = pParent->drawable.x - pParent->oldAbsCorner.x;
-    dy = pParent->drawable.y - pParent->oldAbsCorner.y;
+    dx = pParent->drawable.x - pParent->valdata->oldAbsCorner.x;
+    dy = pParent->drawable.y - pParent->valdata->oldAbsCorner.y;
     
     switch (kind) {
     case VTMap:
@@ -255,8 +255,8 @@ miComputeClips (pParent, pScreen, universe, kind)
 		    	borderBox.x2 = x2;
 		    	borderBox.y2 = y2;
 		    	(* pScreen->RegionReset) (borderRegion, &borderBox);
-		    	(* pScreen->Union) (pParent->borderExposed,
-					    pParent->borderExposed,
+		    	(* pScreen->Union) (pParent->valdata->borderExposed,
+					    pParent->valdata->borderExposed,
 					    borderRegion);
 		    }
 	    	}
@@ -275,8 +275,8 @@ miComputeClips (pParent, pScreen, universe, kind)
 		    	borderBox.x2 = x2;
 		    	borderBox.y2 = y2;
 		    	(* pScreen->RegionReset) (borderRegion, &borderBox);
-		    	(* pScreen->Union) (pParent->borderExposed,
-					    pParent->borderExposed,
+		    	(* pScreen->Union) (pParent->valdata->borderExposed,
+					    pParent->valdata->borderExposed,
 					    borderRegion);
 		    }
 	    	}
@@ -286,14 +286,15 @@ miComputeClips (pParent, pScreen, universe, kind)
 	     	 * To make sure we don't expose a border that's supposed to
 	     	 * be clipped, clip the regions we just added to borderExposed...
 	     	 */
-	    	(* pScreen->Intersect) (pParent->borderExposed, universe,
-				    	pParent->borderExposed);
+	    	(* pScreen->Intersect) (pParent->valdata->borderExposed,
+					universe,
+				    	pParent->valdata->borderExposed);
 	    }
     	}
     }
 
-    pParent->oldAbsCorner.x = pParent->drawable.x;
-    pParent->oldAbsCorner.y = pParent->drawable.y;
+    pParent->valdata->oldAbsCorner.x = pParent->drawable.x;
+    pParent->valdata->oldAbsCorner.y = pParent->drawable.y;
 
     /*
      * Since the borderClip must not be clipped by the children, we do
@@ -309,10 +310,11 @@ miComputeClips (pParent, pScreen, universe, kind)
     	(* pScreen->Subtract) (exposed, universe, pParent->borderClip);
     	(* pScreen->Subtract) (exposed, exposed, pParent->winSize);
     
-    	(* pScreen->Union) (pParent->borderExposed, pParent->borderExposed,
+    	(* pScreen->Union) (pParent->valdata->borderExposed,
+			    pParent->valdata->borderExposed,
 			    exposed);
     } else
-	(* pScreen->RegionEmpty) (pParent->borderExposed);
+	(* pScreen->RegionEmpty) (pParent->valdata->borderExposed);
 
     (* pScreen->RegionCopy) (pParent->borderClip, universe);
 
@@ -346,7 +348,7 @@ miComputeClips (pParent, pScreen, universe, kind)
 		 * from the current universe, but we only re-clip it if
 		 * it's been marked.
 		 */
-		if (pChild->marked) {
+		if (pChild->valdata) {
 		    /*
 		     * Figure out the new universe from the child's
 		     * perspective and recurse.
@@ -365,7 +367,7 @@ miComputeClips (pParent, pScreen, universe, kind)
 		    (* pScreen->Subtract)
 			(universe, universe, pChild->borderSize);
 	    } else {
-		if (pChild->marked) {
+		if (pChild->valdata) {
 		    /*
 		     * Create an empty universe for the child and recurse
 		     */
@@ -389,9 +391,10 @@ miComputeClips (pParent, pScreen, universe, kind)
 
     if (pParent->viewable) {
     	(* pScreen->Subtract) (exposed, universe, pParent->clipList);
-    	(* pScreen->Union) (pParent->exposed, pParent->exposed, exposed);
+    	(* pScreen->Union) (pParent->valdata->exposed,
+			    pParent->valdata->exposed, exposed);
     } else
-	(*pScreen->RegionEmpty) (pParent->exposed);
+	(*pScreen->RegionEmpty) (pParent->valdata->exposed);
 
     /*
      * One last thing: backing storage. We have to find out what parts of
@@ -413,7 +416,6 @@ miComputeClips (pParent, pScreen, universe, kind)
     (* pScreen->RegionCopy) (pParent->clipList, universe);
 
     pParent->drawable.serialNumber = NEXT_SERIAL_NUMBER;
-    pParent->marked = 0;
 
     if (clipNotify)
 	(* clipNotify) (pParent, dx, dy);
@@ -446,8 +448,8 @@ miTreeObscured(pParent)
  *	each marked window are altered.
  *
  * Notes:
- *	This routine assumes that all affected windows have had their
- *	marked fields set true and their winSize and borderSize regions
+ *	This routine assumes that all affected windows have been marked
+ *	(valdata created) and their winSize and borderSize regions
  *	adjusted to correspond to their new positions. The borderClip and
  *	clipList regions should not have been touched.
  *
@@ -464,12 +466,11 @@ miTreeObscured(pParent)
  */
 /*ARGSUSED*/
 int
-miValidateTree (pParent, pChild, kind, anyMarked)
+miValidateTree (pParent, pChild, kind)
     WindowPtr	  	pParent;    /* Parent to validate */
     WindowPtr	  	pChild;     /* First child of pParent that was
 				     * affected */
     VTKind    	  	kind;       /* What kind of configuration caused call */
-    Bool    	  	anyMarked;  /* any child windows marked */
 {
     RegionPtr	  	totalClip;  /* Total clipping region available to
 				     * the marked children. pParent's clipList
@@ -479,10 +480,6 @@ miValidateTree (pParent, pChild, kind, anyMarked)
 				     * child */
     register ScreenPtr	pScreen;
     register WindowPtr	pWin;
-
-
-    if (!anyMarked)
-	return (1);
 
     pScreen = pParent->drawable.pScreen;
     if (pChild == NullWindow)
@@ -501,7 +498,7 @@ miValidateTree (pParent, pChild, kind, anyMarked)
     totalClip = (* pScreen->RegionCreate) (NULL, 200);
     for (pWin = pChild; pWin != NullWindow; pWin = pWin->nextSib)
     {
-	if (pWin->marked)
+	if (pWin->valdata)
 	    /* (* pScreen->RegionAppend) */
 	    miRegionAppend (totalClip, pWin->borderClip);
     }
@@ -523,7 +520,7 @@ miValidateTree (pParent, pChild, kind, anyMarked)
 	 pWin = pWin->nextSib)
     {
 	if (pWin->viewable) {
-	    if (pWin->marked) {
+	    if (pWin->valdata) {
 		(* pScreen->Intersect) (childClip,
 					totalClip,
  					pWin->borderSize);
@@ -535,7 +532,7 @@ miValidateTree (pParent, pChild, kind, anyMarked)
 		miTreeObscured(pWin);
 	    }
 	} else {
-	    if (pWin->marked) {
+	    if (pWin->valdata) {
 	    	/*
 	     	 * Make sure the child is no longer marked (Windows being
 	     	 * unmapped are marked but unviewable...)
@@ -568,7 +565,8 @@ miValidateTree (pParent, pChild, kind, anyMarked)
 	 * clipList.
 	 */
 	(* pScreen->Subtract) (exposed, totalClip, pParent->clipList);
-	(* pScreen->Union) (pParent->exposed, pParent->exposed, exposed);
+	(* pScreen->Union) (pParent->valdata->exposed,
+			    pParent->valdata->exposed, exposed);
 	/* fall through */
     case VTMap:
 	if (pParent->backStorage) {
@@ -586,6 +584,5 @@ miValidateTree (pParent, pChild, kind, anyMarked)
     }
 
     (* pScreen->RegionDestroy) (totalClip);
-    pParent->marked = 0;
     return (1);
 }
