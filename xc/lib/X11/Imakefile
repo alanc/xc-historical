@@ -1,4 +1,7 @@
-      CCOPTIONS = LibraryCCOptions
+#if HasSunOSSharedLibraries && SharedXlib
+         SOOPTS = -pic
+#endif
+      CCOPTIONS = LibraryCCOptions $(SOOPTS)
     STD_DEFINES = LibraryDefines
     CDEBUGFLAGS = LibraryCDebugFlags
        INCLUDES = -I. -I$(TOP) -I$(INCLUDESRC)
@@ -266,10 +269,20 @@ OBJS2 =\
 OBJS =\
 	$(OBJS1) $(OBJS2)
 
+
+/*
+ * Support for SunOS 4.0 shared libraries.  Version numbers are ugly.
+ */
+#if HasSunOSSharedLibraries && SharedXlib
+NormalSharedLibraryTarget(X11,$(SOXLIBREV),$(OBJS))
+InstallSharedLibrary(X11,$(SOXLIBREV),$(USRLIBDIR))
+#else
 NormalLibraryTarget2(X11,$(OBJS1),$(OBJS2))
+InstallLibrary(X11,$(USRLIBDIR))
+#endif
+
 
 LintLibraryTarget(X11,*.c)
-InstallLibrary(X11,$(USRLIBDIR))
 
 /*
  * Uncomment the following two lines if you need compatibility for
