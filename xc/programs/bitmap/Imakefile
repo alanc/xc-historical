@@ -43,10 +43,10 @@ LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
                   Dialog.c Handlers.c 
           OBJS1 = BitEdit.o CutPaste.o Graphics.o ReqMach.o Bitmap.o \
                   Dialog.o Handlers.o 
-	  SRCS2 = bmtoa.c
-	  OBJS2 = bmtoa.o
+          SRCS2 = bmtoa.c
+          OBJS2 = bmtoa.o
           SRCS3 = atobm.c
-	  OBJS3 = atobm.o
+          OBJS3 = atobm.o
        INCLUDES = -I$(TOOLKITSRC) -I$(TOP)
        PROGRAMS = bitmap bmtoa atobm
 
