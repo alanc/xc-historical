@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbrrop.h,v 1.1 90/01/31 12:32:10 keith Exp $
+ * $XConsortium: mergerop.h,v 1.1 90/02/22 18:48:56 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,11 +23,12 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
+#ifndef _MERGEROP_H_
+#define _MERGEROP_H_
+
 #ifndef GXcopy
 #include "X.h"
 #endif
-
-/* AND has higher precedence than XOR */
 
 typedef struct _mergeRopBits {
     unsigned long   ca1, cx1, ca2, cx2;
@@ -58,6 +59,8 @@ extern mergeRopRec	mergeRopBits[16];
     _cx2 = _bits->cx2; \
 }
 #endif
+
+/* AND has higher precedence than XOR */
 
 #define DoMergeRop(src, dst) \
     ((dst) & ((src) & _ca1 ^ _cx1) ^ ((src) & _ca2 ^ _cx2))
@@ -94,12 +97,28 @@ extern mergeRopRec	mergeRopBits[16];
 #define MROP_NAME(prefix)	MROP_NAME_CAT(prefix,Copy)
 #endif
 
+#if (MROP) == McopyInverted
+#define MROP_DECLARE(register)
+#define MROP_INITIALIZE(alu,pm)
+#define MROP_SOLID(src,dst)	(~(src))
+#define MROP_MASK(src,dst,mask)	((dst) & ~(mask) | (~(src)) & (mask))
+#define MROP_NAME(prefix)	MROP_NAME_CAT(prefix,CopyInverted)
+#endif
+
 #if (MROP) == Mxor
 #define MROP_DECLARE(register)
 #define MROP_INITIALIZE(alu,pm)
 #define MROP_SOLID(src,dst)	((src) ^ (dst))
 #define MROP_MASK(src,dst,mask)	(((src) & (mask)) ^ (dst))
 #define MROP_NAME(prefix)	MROP_NAME_CAT(prefix,Xor)
+#endif
+
+#if (MROP) == Mor
+#define MROP_DECLARE(register)
+#define MROP_INITIALIZE(alu,pm)
+#define MROP_SOLID(src,dst)	((src) | (dst))
+#define MROP_MASK(src,dst,mask)	(((src) & (mask)) | (dst))
+#define MROP_NAME(prefix)	MROP_NAME_CAT(prefix,Or)
 #endif
 
 #if (MROP) == (Mcopy|Mxor|MandReverse|Mor)
@@ -129,4 +148,6 @@ extern mergeRopRec	mergeRopBits[16];
 #define MROP_NAME_CAT(prefix,suffix)	prefix##suffix
 #else
 #define MROP_NAME_CAT(prefix,suffix)	prefix/**/suffix
+#endif
+
 #endif

@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbitblt.c,v 5.14 90/02/08 13:29:24 rws Exp $ */
+/* $XConsortium: mfbbitblt.c,v 5.15 90/02/22 18:52:03 keith Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 
@@ -72,7 +72,8 @@ destination.  this is a simple translation.
  
 extern int  mfbDoBitbltCopy();
 extern int  mfbDoBitbltXor();
-extern int  mfbDoBitbltCopyXorAndReverseOr();
+extern int  mfbDoBitbltCopyInverted();
+extern int  mfbDoBitbltOr();
 extern int  mfbDoBitbltGeneral();
 
 mfbDoBitblt (pSrc, pDst, alu, prgnDst, pptSrc, planemask)
@@ -129,12 +130,14 @@ int dstx, dsty;
     case GXcopy:
 	localDoBitBlt = mfbDoBitbltCopy;
 	break;
+    case GXcopyInverted:
+	localDoBitBlt = mfbDoBitbltCopyInverted;
+	break;
     case GXxor:
 	localDoBitBlt = mfbDoBitbltXor;
 	break;
-    case GXandReverse:
     case GXor:
-	localDoBitBlt = mfbDoBitbltCopyXorAndReverseOr;
+	localDoBitBlt = mfbDoBitbltOr;
 	break;
     default:
 	localDoBitBlt = mfbDoBitbltGeneral;

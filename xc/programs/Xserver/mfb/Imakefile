@@ -6,7 +6,7 @@ SRCS1 =	 mfbgc.c mfbwindow.c mfbfont.c \
 	 mfbpushpxl.c mfbzerarc.c mfbfillarc.c \
          mfbfillsp.c mfbsetsp.c mfbscrinit.c mfbscrclse.c mfbclip.c \
          mfbbitblt.c mfbgetsp.c mfbpolypnt.c \
-	 mfbbltC.c mfbbltX.c mfbbltCXARO.c mfbbltG.c \
+	 mfbbltC.c mfbbltX.c mfbbltCI.c mfbbltO.c mfbbltG.c \
 	 mfbcmap.c mfbtile.c mfbmisc.c mfbbstore.c
 
 SRCS =	 $(SRCS1) mfbplygblt.c mfbimggblt.c mfbpntarea.c mfbtegblt.c
@@ -17,7 +17,7 @@ OBJS =   mfbgc.o mfbwindow.o mfbfont.o \
 	 mfbpushpxl.o mfbzerarc.o mfbfillarc.o \
 	 mfbfillsp.o mfbsetsp.o mfbscrinit.o mfbscrclse.o mfbclip.o \
          mfbbitblt.o mfbgetsp.o mfbpolypnt.o \
-	 mfbbltC.o mfbbltX.o mfbbltCXARO.o mfbbltG.o \
+	 mfbbltC.o mfbbltX.o mfbbltCI.o mfbbltO.o mfbbltG.o \
 	 mfbpgbwht.o mfbpgbblak.o mfbpgbinv.o \
 	 mfbigbwht.o mfbigbblak.o mfbcmap.o \
 	 mfbpawhite.o mfbpablack.o mfbpainv.o mfbtile.o \
@@ -69,7 +69,9 @@ MultiObj(mfbbltC,mfbblt,-DMROP=Mcopy)
 
 MultiObj(mfbbltX,mfbblt,-DMROP=Mxor)
 
-MultiObj(mfbbltCXARO,mfbblt,'-DMROP=Mcopy|Mxor|MandReverse|Mor')
+MultiObj(mfbbltCI,mfbblt,-DMROP=McopyInverted)
+
+MultiObj(mfbbltO,mfbblt,'-DMROP=Mor')
 
 MultiObj(mfbbltG,mfbblt,-DMROP=0)
 
