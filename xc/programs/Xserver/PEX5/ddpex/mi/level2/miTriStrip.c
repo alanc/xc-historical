@@ -1,4 +1,4 @@
-/* $XConsortium: miTriStrip.c,v 5.6 91/12/03 16:55:03 hersh Exp $ */
+/* $XConsortium: miTriStrip.c,v 5.7 92/05/06 16:35:39 hersh Exp $ */
 
 
 /***********************************************************
@@ -1242,7 +1242,8 @@ miLightTriStrip(pRend, pddc, input_vert, input_fct, output_vert, output_fct)
         if (!out_vert->ddList) return(BadAlloc);
  
         out_vert->type = DD_RGBFLOAT_POINT4D;
-        if (pddc->Static.attrs->edges != PEXOff) {
+        if (pddc->Static.attrs->edges != PEXOff &&
+	    DD_IsVertEdge(input_vert->type)) {
             DD_SetVertEdge(out_vert->type);
         }
         out_vert->numLists = input_vert->numLists;
@@ -1764,8 +1765,9 @@ Calculate_TriStrip_Vertex_Color_and_Normal(pRend, input_vert, input_fct,
     if (!out_vert->ddList) return(BadAlloc);
  
     out_vert->type = DD_RGBFLOAT_NORM_POINT4D;
-    if (pddc->Static.attrs->edges != PEXOff) {
-      DD_SetVertEdge(out_vert->type);
+    if (pddc->Static.attrs->edges != PEXOff &&
+	DD_IsVertEdge(input_vert->type)) {
+	DD_SetVertEdge(out_vert->type);
     }
     out_vert->numLists = input_vert->numLists;
     out_vert->flags =  input_vert->flags;
@@ -1787,11 +1789,12 @@ Calculate_TriStrip_Vertex_Color_and_Normal(pRend, input_vert, input_fct,
       input_fct = fct_list;
     }
  
-    if ((input_fct) && (input_fct->numFacets > 0))
-      in_fct = input_fct->facets;
+    if ((input_fct) && (input_fct->numFacets > 0)) {
+	in_fct = input_fct->facets;
+	DDFacetSIZE(input_fct->type, facet_size);
+    }
     else in_fct.pNoFacet = 0;
  
-    DDFacetSIZE(input_fct->type, facet_size);
 
     for(i = 0; i < input_vert->numLists; i++) { 
       pddolist->numPoints = pddilist->numPoints;
