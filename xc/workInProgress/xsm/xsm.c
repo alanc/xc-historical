@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.68 94/12/06 14:40:53 mor Exp mor $ */
+/* $XConsortium: xsm.c,v 1.69 94/12/12 19:54:33 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -77,7 +77,6 @@ Atom wmStateAtom;
 
 static char *cmd_line_display = NULL;
 
-
 /*
  * Forward declarations
  */
@@ -133,7 +132,7 @@ char **argv;
 		cmd_line_display = (char *) XtNewString (argv[i]);
 		continue;
 
-	    case 'n':					/* -name */
+	    case 's':					/* -session */
 		if (++i >= argc) goto usage;
 		session_name = XtNewString (argv[i]);
 		continue;
@@ -146,7 +145,7 @@ char **argv;
 
     usage:
 	fprintf (stderr,
-	    "usage: %s [-display display] [-name session_name] [-verbose]\n",
+	    "usage: %s [-display display] [-session session_name] [-verbose]\n",
 	    argv[0]);
 	exit (1);
     }
@@ -156,6 +155,7 @@ char **argv;
     topLevel = XtVaAppInitialize (&appContext, "XSm", NULL, 0,
 	&argc, argv, NULL,
 	XtNmappedWhenManaged, False,
+	XtNwindowRole, "xsm main window",
 	NULL);
 	
     wmStateAtom = XInternAtom (XtDisplay (topLevel), "WM_STATE", False);
@@ -284,23 +284,31 @@ char **argv;
      * names for the user to choose from.
      */
 
-    success = GetSessionNames (True, &sessionNameCount,
-	&sessionNames, &sessionLocked);
+    success = GetSessionNames (&sessionNameCount,
+	&sessionNamesShort, &sessionNamesLong, &sessionsLocked);
 
     found_command_line_name = 0;
     if (success && session_name)
     {
 	for (i = 0; i < sessionNameCount; i++)
-	    if (strcmp (session_name, sessionNames[i]) == 0)
+	    if (strcmp (session_name, sessionNamesShort[i]) == 0)
 	    {
 		found_command_line_name = 1;
+
+		if (sessionsLocked[i])
+		{
+		    fprintf (stderr, "Session '%s' is locked\n", session_name);
+		    exit (1);
+		}
+
 		break;
 	    }
     }
 
     if (!success || found_command_line_name)
     {
-	FreeSessionNames (sessionNameCount, sessionNames, sessionLocked);
+	FreeSessionNames (sessionNameCount,
+	    sessionNamesShort, sessionNamesLong, sessionsLocked);
 
 	if (!found_command_line_name)
 	    session_name = XtNewString (DEFAULT_SESSION_NAME);
@@ -1059,8 +1067,7 @@ CloseDownClient (client)
 ClientRec *client;
 
 {
-    int  index_deleted, i;
-    List *cl;
+    int index_deleted;
 
     if (verbose) {
 	printf ("ICE Connection closed, IceConn fd = %d\n",
@@ -1085,12 +1092,37 @@ ClientRec *client;
 	}
     }
 
-    for (cl = ListFirst (RunningList); cl; cl = ListNext (cl))
+    ListSearchAndFreeOne (RunningList, client);
+
+    if (saveInProgress)
     {
-	if (((ClientRec *) cl->thing) == client)
+	Status delStatus = ListSearchAndFreeOne (WaitForSaveDoneList, client);
+
+	if (delStatus)
 	{
-	    ListFreeOne (cl);
-	    break;
+	    ListAddLast (FailedSaveList, client);
+	    client->freeAfterBadSavePopup = True;
+	}
+
+	ListSearchAndFreeOne (WaitForInteractList, client);
+	ListSearchAndFreeOne (WaitForPhase2List, client);
+
+	if (delStatus && ListCount (WaitForSaveDoneList) == 0)
+	{
+	    if (ListCount (FailedSaveList) > 0)
+		PopupBadSave ();
+	    else
+		FinishUpSave ();
+	}
+	else if (ListCount (WaitForInteractList) > 0 &&
+	    OkToEnterInteractPhase ())
+	{
+	    LetClientInteract (ListFirst (WaitForInteractList));
+	}
+	else if (!phase2InProgress &&
+	    ListCount (WaitForPhase2List) > 0 && OkToEnterPhase2 ())
+	{
+	    StartPhase2 ();
 	}
     }
 
@@ -1104,7 +1136,7 @@ ClientRec *client;
     {
 	ListAddLast (RestartAnywayList, client);
     }
-    else
+    else if (!client->freeAfterBadSavePopup)
     {
 	FreeClient (client, True /* free props */);
     }
@@ -1204,6 +1236,8 @@ char 		**failureReasonRet;
     newClient->clientHostname = NULL;
     newClient->restarted = False; /* wait till RegisterClient for true value */
     newClient->userIssuedCheckpoint = False;
+    newClient->receivedDiscardCommand = False;
+    newClient->freeAfterBadSavePopup = False;
     newClient->props = ListInit ();
     newClient->discardCommand = NULL;
     newClient->saveDiscardCommand = NULL;
@@ -1382,12 +1416,8 @@ IceConn 	ice_conn;
 
 
     /*
-     * We can't return.  Must do a long jump.  Make sure any
-     * popups are uppopped.
+     * We can't return.  Must do a long jump.
      */
-
-    XtPopdown (savePopup);
-    SetAllSensitive (1);
 
     longjmp (JumpHere, 1);
 }    
