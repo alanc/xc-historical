@@ -148,8 +148,6 @@ CHANGES.ALL::
 	done) >$@
 
 
-InstallSubdirs(config)
-
 /*
  * This section used for generating distributions will not be useful to most
  * people.
