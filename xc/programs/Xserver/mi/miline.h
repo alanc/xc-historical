@@ -1,4 +1,4 @@
-/* $XConsortium: copyright.h,v 1.11 94/03/01 12:07:38 gildea Exp $ */
+/* $XConsortium: miline.h,v 1.2 94/03/06 18:32:06 dpw Exp $ */
 
 /*
 
@@ -57,7 +57,7 @@ in this Software without prior written authorization from the X Consortium.
 {  register int _t = i;  i = j;  j = _t; }
 
 #define SWAPPT(i, j) \
-{  DDXPointRec _t = i;  i = j; j = _t; }
+{  DDXPointRec _t; _t = i;  i = j; j = _t; }
 
 #define SWAPINT_PAIR(x1, y1, x2, y2)\
 {   int t = x1;  x1 = x2;  x2 = t;\
