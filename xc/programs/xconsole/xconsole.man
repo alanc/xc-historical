@@ -4,7 +4,7 @@ xconsole - monitor system console messages
 .SH SYNOPSIS
 .ta 8n
 \fBxconsole\fP	[-\fItoolkitoption\fP ...] [-file \fIfile-name\fP]
-[-notify] [-stripNonprint] [-daemon] [-verbose]
+[-notify] [-stripNonprint] [-daemon] [-verbose] [-exitOnFail]
 .SH DESCRIPTION
 The
 .I xconsole 
@@ -32,11 +32,16 @@ to place itself in the background, using fork/exit.
 When set, this option directs
 .I xconsole
 to display an informative message in the first line of the text buffer.
+.TP 8
+.B \-exitOnFail
+When set, this option directs
+.I xconsole
+to exit when it is unable to redirect the console output.
 .SH X DEFAULTS
 This program uses the 
 .I Athena Text
 widget, look in the
-.I Atena Widget Set
+.I Athena Widget Set
 documentation for controlling it.
 .SH WIDGETS
 In order to specify resources, it is useful to know the hierarchy of
