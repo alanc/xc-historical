@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.156 93/08/25 14:43:17 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.157 93/08/26 14:41:05 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -25,6 +25,8 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.156 93/08/25 14:43:17 rws Exp $
  * SaberProgramTarget		(program,srclist,objlist,locallibs,syslibs)
  * PurifyLinkTarget		(step,program,linklist)
  * PurifyProgramTarget		(program,deplist,linklist)
+ * ProofLinkTarget		(step,program,linklist)
+ * ProofProgramTarget		(program,deplist,linklist)
  * RemoveTargetProgram		(program)
  * MakeDir			(dir)
  * BuildIncludes		(srclist,dstsubdir,dstupdir)
@@ -284,6 +286,34 @@ clean::									@@\
 #endif
 #endif /* PurifyProgramTarget */
 
+#ifndef ProofLinkTarget
+#if HasTestCenter
+#define ProofLinkTarget(step,program,linklist)				@@\
+ProgramTargetName(step.tc):						@@\
+	RemoveTargetProgram($@)						@@\
+	$(CCENVSETUP) $(PROOF) $(PROOFOPTIONS) $(CC) -o program.tc linklist
+#else
+#define ProofLinkTarget(step,program,linklist) /**/
+#endif
+#endif /* ProofLinkTarget */
+
+/*
+ * ProofProgramTarget - generate rules to make Proof'ed image
+ */
+#ifndef ProofProgramTarget
+#if HasTestCenter
+#define	ProofProgramTarget(program,deplist,linklist)			@@\
+ProgramTargetName(program.tc): deplist				@@\
+	RemoveTargetProgram($@)						@@\
+	$(CCENVSETUP) $(PROOF) $(PROOFOPTIONS) $(CC) -o $@ linklist	@@\
+									@@\
+clean::									@@\
+	RemoveFile(program.tc)
+#else
+#define	ProofProgramTarget(program,deplist,linklist) /**/
+#endif
+#endif /* ProofProgramTarget */
+
 #ifndef RemoveTargetProgram
 #if RemoveTargetProgramByMoving
 #define RemoveTargetProgram(program) \
@@ -328,6 +358,7 @@ ProgramTargetName(program): objects deplibs				@@\
 	LinkRule($@,$(LDOPTIONS),objects,locallibs $(LDLIBS) syslibs)	@@\
 									@@\
 PurifyProgramTarget(program,objects deplibs,objects $(LDOPTIONS) locallibs $(LDLIBS) syslibs $(EXTRA_LOAD_FLAGS)) @@\
+ProofProgramTarget(program,objects deplibs,objects $(LDOPTIONS) locallibs $(LDLIBS) syslibs $(EXTRA_LOAD_FLAGS)) @@\
 									@@\
 clean::									@@\
 	RemoveFile(ProgramTargetName(program))
@@ -370,6 +401,7 @@ ProgramTargetName(program): $(objs) $(deplib)				@@\
 									@@\
 SaberProgramTarget(program,$(srcs),$(objs),locallib,syslib)		@@\
 PurifyProgramTarget(program,$(objs) $(deplib),$(LDOPTIONS) $(objs) locallib $(LDLIBS) syslib $(EXTRA_LOAD_FLAGS)) @@\
+ProofProgramTarget(program,$(objs) $(deplib),$(LDOPTIONS) $(objs) locallib $(LDLIBS) syslib $(EXTRA_LOAD_FLAGS)) @@\
 									@@\
 InstallProgram(program,$(BINDIR))					@@\
 InstallManPage(program,$(MANDIR))
@@ -470,6 +502,8 @@ Concat(load,server):							@@\
 									@@\
 PurifyProgramTarget(server,subdirs objects libs,$(CDEBUGFLAGS) $(CCOPTIONS) objects libs $(EXTRA_LIBRARIES) syslibs $(EXTRA_LOAD_FLAGS)) @@\
 PurifyLinkTarget(Concat(load,server),server,$(CDEBUGFLAGS) $(CCOPTIONS) objects libs $(EXTRA_LIBRARIES) syslibs $(EXTRA_LOAD_FLAGS)) @@\
+ProofProgramTarget(server,subdirs objects libs,$(CDEBUGFLAGS) $(CCOPTIONS) objects libs $(EXTRA_LIBRARIES) syslibs $(EXTRA_LOAD_FLAGS)) @@\
+ProofLinkTarget(Concat(load,server),server,$(CDEBUGFLAGS) $(CCOPTIONS) objects libs $(EXTRA_LIBRARIES) syslibs $(EXTRA_LOAD_FLAGS)) @@\
 									@@\
 InstallProgram(server,$(BINDIR))					@@\
 									@@\
