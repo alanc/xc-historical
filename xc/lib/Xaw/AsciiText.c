@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: AsciiText.c,v 1.3 88/01/27 09:24:13 swick Locked $";
+static char rcsid[] = "$Header: AsciiText.c,v 1.4 88/02/05 23:18:28 swick Locked $";
 #endif lint
 
 /* Copyright	Massachusetts Institute of Technology	1987 */
@@ -145,7 +145,7 @@ static void StringCreateSourceSink(widget, args, num_args)
 
 
     if (w->core.height == DEFAULTVALUE)
-        w->core.height += (*w->text.sink->MaxHeight)(w, 1);
+        w->core.height = (2*yMargin) + 2 + (*w->text.sink->MaxHeight)(w, 1);
 
     w->text.lastPos = /* GETLASTPOS */
       (*w->text.source->Scan) ( w->text.source, 0, XtstAll,
@@ -208,7 +208,7 @@ static void DiskCreateSourceSink(widget, args, num_args)
 			        XtsdRight, 1, TRUE );
 
     if (w->core.height == DEFAULTVALUE)
-        w->core.height += (*w->text.sink->MaxHeight)(w, 1);
+        w->core.height = (2*yMargin) + 2 + (*w->text.sink->MaxHeight)(w, 1);
 
     ForceBuildLineTable( (TextWidget)w );
 }
