@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.14 93/09/04 16:24:19 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.15 94/01/31 11:48:05 mor Exp $
 #define DoNormalLib NormalLibFS
 #define DoSharedLib SharedLibFS
 #define DoDebugLib DebugLibFS
@@ -29,7 +29,7 @@ OBJS =	FSClServ.o FSCloseFt.o FSConnServ.o FSErrDis.o FSErrHndlr.o \
 	FSQGlyphs.o FSQXExt.o FSQXInfo.o FSQuExt.o FSServName.o \
 	FSSetCats.o FSSync.o FSSynchro.o FSlibInt.o transport.o
 
-CONN_DEFINES = ConnectionFlags -DFS
+CONN_DEFINES = ConnectionFlags -DFS_t
 #if HasBSD44Sockets
 SOCK_DEFINES = -DBSD44SOCKETS
 #endif
