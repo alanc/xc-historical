@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.12 91/07/22 22:30:24 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.13 91/07/22 23:15:24 rws Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -47,7 +47,9 @@ LINTLIBS = ../pex/llib-lpex.ln
 
 SubdirLibraryRule($(OBJS))
 
-NormalLintTarget(ut,$(SRCS))
+NormalLintTarget($(SRCS))
+
+NormalLintLibraryTarget(ut,$(SRCS))
 
 SpecialObjectRule(ut_path.o,$(ICONFIGFILES),$(API_DEFINES))
 
