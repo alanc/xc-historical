@@ -1,7 +1,6 @@
 /*
-* $XConsortium: IntrinsicI.h,v 1.43 90/12/26 16:37:33 rws Exp $
-* $oHeader: IntrinsicI.h,v 1.5 88/08/31 16:21:08 asente Exp $
-*/
+ * $XConsortium: IntrinsicI.h,v 1.45 91/03/15 15:11:48 gildea Exp $
+ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -32,6 +31,7 @@ SOFTWARE.
 
 #include "Xtos.h"
 #include "IntrinsicP.h"
+#include <X11/Xos.h>
 
 #include "Object.h"
 #include "RectObj.h"
