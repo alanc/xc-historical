@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dpylist.c,v 1.24 91/04/02 11:55:00 rws Exp $
+ * $XConsortium: dpylist.c,v 1.25 91/05/06 23:53:46 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -94,9 +94,9 @@ FindDisplayBySessionID (sessionID)
 
 struct display *
 FindDisplayByAddress (addr, addrlen, displayNumber)
-    struct sockaddr *addr;
-    int		    addrlen;
-    CARD16	    displayNumber;
+    XdmcpNetaddr addr;
+    int		 addrlen;
+    CARD16	 displayNumber;
 {
     struct display  *d;
 
