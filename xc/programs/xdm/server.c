@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: server.c,v 1.12 91/02/13 19:15:18 rws Exp $
+ * $XConsortium: server.c,v 1.13 91/04/01 10:29:05 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -265,7 +265,7 @@ GetRemoteAddress (d, fd)
     d->peerlen = 0;
     if (len)
     {
-	d->peer = (struct sockaddr *) malloc (len);
+	d->peer = (XdmcpNetaddr) malloc (len);
 	if (d->peer)
 	{
 	    bcopy (buf, (char *) d->peer, len);
@@ -290,6 +290,17 @@ WaitForServer (d)
 	    Debug ("Before XOpenDisplay(%s)\n", d->name);
 	    errno = 0;
 	    dpy = XOpenDisplay (d->name);
+#ifdef STREAMSCONN
+	    {
+		/* For some reason, the next XOpenDisplay we do is
+		   going to fail, so we might as well get that out
+		   of the way.  There is something broken here. */
+		Display *bogusDpy = XOpenDisplay (d->name);
+		Debug ("bogus XOpenDisplay %s\n",
+		       bogusDpy ? "succeeded" : "failed");
+		if (bogusDpy) XCloseDisplay(bogusDpy); /* just in case */
+	    }
+#endif
 	    (void) alarm ((unsigned) 0);
 	    (void) Signal (SIGALRM, SIG_DFL);
 	    Debug ("After XOpenDisplay(%s)\n", d->name);
