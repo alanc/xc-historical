@@ -4,7 +4,7 @@ xrdb - Server Resource Database Utility.
 .SH SYNOPSIS
 .B xrdb
 [
-.B \-options
+.B \-options \.\.\.
 ] [
 .I filename
 ] 
@@ -17,18 +17,17 @@ your .login script.
 The resource manager (used by the Xlib routine XGetDefault and the
 Xtk toolkit) uses the RESOURCE_MANAGER property to get user preferences about 
 color, fonts, and so on for applications.  Having this information in
-the server, where it is available to all clients, 
-solves the problem in Version 10 of X which required you to 
+the server (where it is available to all clients) instead of on disk,
+addresses the problem present in previous versions of X that required you to 
 maintain up to date default files on all of the machines you
-used in your network.
+used in your network.  In addition, since different defaults can be loaded
+dynamically, this makes it easy set up different sets of defaults for 
+different environments (e.g. if you login to different types of servers 
+from the same place).
 .LP
-Although the defaults file may be named 
-.I \.Xdefaults,
-this is no longer a requirement.
-This allows you have to have different defaults files for different situations.
-If there is no RESOURCE_MANAGER property (either because xrdb was not run
-or if the property was removed), the resource manager will look for a file
-called 
+For compatibility, if there is no RESOURCE_MANAGER property defined (either 
+because xrdb was not run or if the property was removed), the resource manager
+will look for a file called 
 .I \.Xdefaults
 in your home directory.
 .LP
@@ -100,7 +99,13 @@ but not with the options that change the RESOURCE_MANAGER property.
 .TP
 .B \-query
 This option indicates that the current contents of the RESOURCE_MANAGER 
-property should be printed onto the standard output.
+property should be printed onto the standard output.  Note that since
+preprocessor commands in the input resource file are part of the input
+file, not part of the property, they won't appear in the output from this
+option.  The
+.B \-edit
+option can be used to merge the contents property back into the input resource
+file without damaging preprocessor commands.
 .TP
 .B \-load
 This option indicates that the input should be loaded as the new value
@@ -109,7 +114,11 @@ the old contents are deleted).  This is the default action.
 .TP
 .B \-merge
 This option indicates that the input should be merged with, instead of
-replacing, the current contents of the RESOURCE_MANAGER property.
+replacing, the current contents of the RESOURCE_MANAGER property.  Since
+.B xrdb
+can read the standard input, this option can be used to
+the change the contents of the RESOURCE_MANAGER property directly from
+a terminal or from a shell script.
 .TP
 .B \-remove
 This option indicates that the RESOUCE_MANAGER property should be removed
