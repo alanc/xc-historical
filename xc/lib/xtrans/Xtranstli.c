@@ -1,4 +1,4 @@
-/* $XConsortium: Xtranstli.c,v 1.16 94/04/17 20:23:06 mor Exp $ */
+/* $XConsortium: Xtranstli.c,v 1.17 94/05/02 11:00:54 mor Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -155,6 +155,9 @@ XtransConnInfo	ciptr;
 	      errno, 0,0 );
 	return -1;
     }
+    
+    PRMSG(4,"TRANS(TLIGetAddr): got family %d len %d\n",
+	  ((struct sockaddr *) &sockname)->sa_family ,netbuf.len, 0 );
     
     /*
      * Everything looks good: fill in the XtransConnInfo structure.
@@ -1048,18 +1051,6 @@ struct t_call	*sndcall;
     
     t_free((char *)sndcall,T_CALL);
     
-    if( ioctl(ciptr->fd, I_POP,"timod") < 0 )
-    {
-	PRMSG(1, "TRANS(TLIConnect)() failed to pop timod\n", 0,0,0 );
-	return -1;
-    }
-    
-    if( ioctl(ciptr->fd, I_PUSH,"tirdwr") < 0 )
-    {
-	PRMSG(1, "TRANS(TLIConnect)() failed to push tirdwr\n", 0,0,0 );
-	return -1;
-    }
-    
     /*
      * Sync up the address fields of ciptr.
      */
@@ -1077,6 +1068,20 @@ struct t_call	*sndcall;
 	PRMSG(1,
 	      "TRANS(TLIConnect): TRANS(TLIGetPeerAddr)() failed: %d\n",
 	      errno, 0,0 );
+	return -1;
+    }
+    
+    if( ioctl(ciptr->fd, I_POP,"timod") < 0 )
+    {
+	PRMSG(1, "TRANS(TLIConnect)() ioctl(I_POP,\"timod\") failed %d\n",
+	      errno,0,0 );
+	return -1;
+    }
+    
+    if( ioctl(ciptr->fd, I_PUSH,"tirdwr") < 0 )
+    {
+	PRMSG(1, "TRANS(TLIConnect)() ioctl(I_PUSH,\"tirdwr\") failed %d\n",
+	      errno,0,0 );
 	return -1;
     }
     
