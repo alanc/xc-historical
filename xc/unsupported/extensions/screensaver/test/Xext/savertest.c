@@ -1,5 +1,5 @@
 /*
- * $XConsortium: savertest.c,v 1.1 92/02/13 16:08:52 keith Exp $
+ * $XConsortium: savertest.c,v 1.2 92/02/28 18:11:18 keith Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -70,7 +70,7 @@ int ignoreError (dpy, error)
     printf ("ignoring error\n");
 }
 
-char *stateNames[] = { "Off", "On", "Cycle" };
+char *stateNames[] = { "Off", "On", "Cycle", "Disable" };
 char *kindNames[] = { "Blanked", "Internal", "External" };
 
 main(argc, argv)
@@ -79,7 +79,7 @@ main(argc, argv)
 
 {
     XEvent pe;
-    XScreenSaverEvent *se;
+    XScreenSaverNotifyEvent *se;
     Window root, saver;
     int	screen;
     int majorVersion, minorVersion;
@@ -129,8 +129,8 @@ main(argc, argv)
 	XNextEvent(dpy, &pe);
 	if (pe.type == event_base)
 	{
-	    se = (XScreenSaverEvent *) &pe;
-	    printf ("ScreenSaverEvent\n");
+	    se = (XScreenSaverNotifyEvent *) &pe;
+	    printf ("ScreenSaverNotifyEvent\n");
 	    printf ("serial: %d\n", se->serial);
 	    printf ("send_event: %d\n", se->send_event);
 	    printf ("window: %x\n", se->window);
