@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.173 93/08/23 19:44:54 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.174 93/08/23 20:31:42 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -657,7 +657,7 @@ UnsharedLibReferences(XBSD,Xbsd,$(LIBSRC)/Berk)
 #endif
            ICESRC = $(LIBSRC)/ICE
 #if SharedLibICE
-SharedDSLibReferences(ICE,ICE,$(ICESRC),SOICEREV,SharedICERev)
+SharedLibReferences(ICE,ICE,$(ICESRC),SOICEREV,SharedICERev)
 #else
 UnsharedLibReferences(ICE,ICE,$(ICESRC))
 #endif
@@ -676,13 +676,29 @@ UnsharedLibReferences(ICE,ICE,$(ICESRC))
 #endif
             SMSRC = $(LIBSRC)/SM
 #if SharedLibSM
-SharedDSLibReferences(SM,SM,$(SMSRC),SOSMREV,SharedSMRev)
+SharedLibReferences(SM,SM,$(SMSRC),SOSMREV,SharedSMRev)
 #else
 UnsharedLibReferences(SM,SM,$(SMSRC))
 #endif
 
+#ifndef SharedLibFS
+#define SharedLibFS		NO	/* for now */
+#endif
+#ifndef NormalLibFS
+#define NormalLibFS (!SharedLibFS | ForceNormalLib)
+#endif
+#ifndef DebugLibFS
+#define DebugLibFS		NO	/* debugged FS library */
+#endif
+#ifndef ProfileLibFS
+#define ProfileLibFS		NO	/* profiled FS library */
+#endif
          FSLIBSRC = $(FONTSRC)/lib/fs
+#if SharedLibSM
+SharedLibReferences(FS,FS,$(FSLIBSRC),SOFSREV,SharedFSRev)
+#else
 UnsharedLibReferences(FS,FS,$(FSLIBSRC))
+#endif
 
          FONTLIBSRC = $(FONTSRC)/lib/font
 UnsharedLibReferences(FONT,font,$(FONTLIBSRC))
