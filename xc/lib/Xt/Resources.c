@@ -1,4 +1,4 @@
-/* $XConsortium: Resources.c,v 1.105 91/06/10 15:08:07 converse Exp $ */
+/* $XConsortium: Resources.c,v 1.106 91/06/11 20:08:14 converse Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -554,11 +554,11 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 		from_type = StringToQuark(arg->type);
 		from_val.size = arg->size;
 		if ((from_type == QString) || (arg->size > sizeof(XtArgVal)))
-		    from_val.addr = (caddr_t)arg->value;
+		    from_val.addr = (XPointer)arg->value;
 		else
-		    from_val.addr = (caddr_t)&arg->value;
+		    from_val.addr = (XPointer)&arg->value;
 		to_val.size = sizeof(Screen*);
-		to_val.addr = (caddr_t)&widget->core.screen;
+		to_val.addr = (XPointer)&widget->core.screen;
 		found[j] = _XtConvert(widget, from_type, &from_val,
 				      QScreen, &to_val, cache_base);
 		if (cache_base && *cache_base)
@@ -569,7 +569,7 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 				      &rawType, &value)) {
 		    if (rawType != QScreen) {
 			convValue.size = sizeof(Screen*);
-			convValue.addr = (caddr_t)&widget->core.screen;
+			convValue.addr = (XPointer)&widget->core.screen;
 			(void)_XtConvert(widget, rawType, &value,
 					 QScreen, &convValue, cache_base);
 			if (cache_base && *cache_base)
@@ -615,7 +615,7 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 			QInitialResourcesPersistent, &rawType, &value)) {
 		if (rawType != QBoolean) {
 		    convValue.size = sizeof(Boolean);
-		    convValue.addr = (caddr_t)&persistent_resources;
+		    convValue.addr = (XPointer)&persistent_resources;
 		    (void)_XtConvert(widget, rawType, &value, QBoolean,
 				     &convValue, NULL);
 		}
@@ -648,9 +648,9 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 		from_type = StringToQuark(arg->type);
     		from_val.size = arg->size;
 		if ((from_type == QString) || (arg->size > sizeof(XtArgVal)))
-        	    from_val.addr = (caddr_t)arg->value;
+        	    from_val.addr = (XPointer)arg->value;
 	        else
-            	    from_val.addr = (caddr_t)&arg->value;
+            	    from_val.addr = (XPointer)&arg->value;
 		to_val.size = rx->xrm_size;
 		to_val.addr = base - rx->xrm_offset - 1;
 		converted = _XtConvert(widget, from_type, &from_val,
@@ -699,7 +699,7 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 			rx->xrm_name, rx->xrm_class, &rawType, &value)) {
 		    if (rawType != xrm_type) {
 			convValue.size = rx->xrm_size;
-			convValue.addr = (caddr_t)(base - rx->xrm_offset - 1);
+			convValue.addr = (XPointer)(base - rx->xrm_offset - 1);
 			already_copied = have_value =
 			    _XtConvert(widget, rawType, &value,
 				       xrm_type, &convValue, cache_ptr);
@@ -732,21 +732,21 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 			    value.addr = rx->xrm_default_addr;
 			} else if (rx->xrm_size == sizeof(int)) {
 			    int_val = (int)(long)rx->xrm_default_addr;
-			    value.addr = (caddr_t) &int_val;
+			    value.addr = (XPointer) &int_val;
 			} else if (rx->xrm_size == sizeof(short)) {
 			    short_val = (short)(long)rx->xrm_default_addr;
-			    value.addr = (caddr_t) &short_val;
+			    value.addr = (XPointer) &short_val;
 			} else if (rx->xrm_size == sizeof(char)) {
 			    char_val = (char)(long)rx->xrm_default_addr;
-			    value.addr = (caddr_t) &char_val;
+			    value.addr = (XPointer) &char_val;
 			} else if (rx->xrm_size == sizeof(long)) {
 			    long_val = (long)rx->xrm_default_addr;
-			    value.addr = (caddr_t) &long_val;
+			    value.addr = (XPointer) &long_val;
 			} else if (rx->xrm_size == sizeof(char*)) {
 			    char_ptr = (char*)rx->xrm_default_addr;
-			    value.addr = (caddr_t) &char_ptr;
+			    value.addr = (XPointer) &char_ptr;
 			} else {
-			    value.addr = (caddr_t) &(rx->xrm_default_addr);
+			    value.addr = (XPointer) &(rx->xrm_default_addr);
 			}
 		    } else if (xrm_default_type == xrm_type) {
 			value.addr = rx->xrm_default_addr;
@@ -758,7 +758,7 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 			    value.size = sizeof(XtPointer);
 			}
 			convValue.size = rx->xrm_size;
-			convValue.addr = (caddr_t)(base - rx->xrm_offset - 1);
+			convValue.addr = (XPointer)(base - rx->xrm_offset - 1);
 			already_copied =
 			    _XtConvert(widget, xrm_default_type, &value,
 				       xrm_type, &convValue, cache_ptr);
@@ -808,7 +808,7 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 				  QTranslations, &rawType, &value)) {
 	    if (rawType != QTranslationTable) {
 		convValue.size = sizeof(XtTranslations);
-		convValue.addr = (caddr_t)&widget->core.tm.current_state;
+		convValue.addr = (XPointer)&widget->core.tm.current_state;
 		(void)_XtConvert(widget, rawType, &value,
 				 QTranslationTable, &convValue, cache_ptr);
 		if (cache_ptr && *cache_ptr)
