@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.51 90/12/11 11:10:27 rws Exp $
+ * $XConsortium: Xrm.c,v 1.52 90/12/12 09:20:18 rws Exp $
  */
 
 /***********************************************************
@@ -88,8 +88,6 @@ Bob Scheifler
 */
 
 typedef unsigned long Signature;
-
-extern void bzero();
 
 static XrmQuark XrmQString, XrmQANY;
 
@@ -191,7 +189,7 @@ typedef struct _EClosure {
 } EClosureRec, *EClosure;
 
 /* predicate to determine when to resize a hash table */
-#define GrowthPred(n,m) ((n) > (((m) + 1) << 2))
+#define GrowthPred(n,m) ((unsigned)(n) > (((m) + 1) << 2))
 
 #define GROW(prev) \
     if (GrowthPred((*prev)->entries, (*prev)->mask)) \
@@ -938,6 +936,8 @@ void XrmQPutStringResource(pdb, bindings, quarks, str)
 #define LIST_SIZE 101
 #define BUFFER_SIZE 100
 
+static void GetIncludeFile();
+
 static void GetDatabase(db, str, filename)
     XrmDatabase db;
     register char *str;
@@ -956,7 +956,6 @@ static void GetDatabase(db, str, filename)
     XrmQuark quarks[LIST_SIZE];
     XrmBinding bindings[LIST_SIZE];
     XrmValue value;
-    static void GetIncludeFile();
 
     if (!db)
 	return;
@@ -1716,15 +1715,15 @@ static void PrintBindingQuarkList(bindings, quarks, stream)
 
 /* output out the entry in correct file syntax */
 /*ARGSUSED*/
-static Bool DumpEntry(db, bindings, quarks, type, value, stream)
+static Bool DumpEntry(db, bindings, quarks, type, value, data)
     XrmDatabase		*db;
     XrmBindingList      bindings;
     XrmQuarkList	quarks;
     XrmRepresentation   *type;
     XrmValuePtr		value;
-    FILE		*stream;
+    caddr_t		data;
 {
-
+    FILE			*stream = (FILE *)data;
     register unsigned int	i;
     register char		*s;
     register char		c;

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: CvtCache.h,v 1.3 89/11/30 18:21:42 rws Exp $
+ * $XConsortium: CvtCache.h,v 1.4 90/12/19 18:12:30 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -53,4 +53,4 @@ extern XmuCvtCache *_XmuCCLookupDisplay(
 }						/* for C++ V2.0 */
 #endif
 
-#endif _XMU_CVTCACHE_H_
+#endif /* _XMU_CVTCACHE_H_ */

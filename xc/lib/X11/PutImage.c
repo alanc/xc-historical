@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XPutImage.c,v 11.52 90/06/15 17:17:50 rws Exp $ */
+/* $XConsortium: XPutImage.c,v 11.53 90/12/11 11:08:27 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include <stdio.h>
@@ -278,7 +278,7 @@ ShiftNibblesLeft (src, dest, srclen, srcinc, destinc, height)
 	for (n = srclen; --n >= 0; ) {
 	    c1 = *src++;
 	    c2 = *src;
-	    *dest++ = ((c1 & 0x0f) << 4) | ((c2 & 0xf0) >> 4);
+	    *dest++ = ((c1 & 0x0f) << 4) | ((c2 & (unsigned)0xf0) >> 4);
 	}
 }
 
@@ -544,7 +544,7 @@ SendXYImage(dpy, req, image, req_xoffset, req_yoffset)
 
     total_xoffset = image->xoffset + req_xoffset;
     req->leftPad = total_xoffset & (dpy->bitmap_unit - 1);
-    total_xoffset = (total_xoffset - req->leftPad) >> 3;
+    total_xoffset = (unsigned)(total_xoffset - req->leftPad) >> 3;
     /* The protocol requires left-pad of zero on all ZPixmap, even
      * though the 1-bit case is identical to bitmap format.  This is a
      * bug in the protocol, caused because 1-bit ZPixmap was added late
@@ -553,8 +553,8 @@ SendXYImage(dpy, req, image, req_xoffset, req_yoffset)
      */
     if ((req->leftPad != 0) && (req->format == ZPixmap))
 	req->format = XYPixmap;
-    bytes_per_dest = ROUNDUP((long)req->width + req->leftPad,
-			     dpy->bitmap_pad) >> 3;
+    bytes_per_dest = (unsigned long)ROUNDUP((long)req->width + req->leftPad,
+					    dpy->bitmap_pad) >> 3;
     bytes_per_dest_plane = bytes_per_dest * req->height;
     length = bytes_per_dest_plane * image->depth;
     req->length += (length + 3) >> 2;
@@ -579,7 +579,7 @@ SendXYImage(dpy, req, image, req_xoffset, req_yoffset)
 	(((total_xoffset == 0) &&
 	  ((image->depth == 1) || (image->height == req->height))) ||
 	 ((image->depth == 1) &&
-	  ((req_yoffset + req->height) < image->height)))) {
+	  ((req_yoffset + req->height) < (unsigned)image->height)))) {
 	Data(dpy, src, length);
 	return;
     }
@@ -594,7 +594,7 @@ SendXYImage(dpy, req, image, req_xoffset, req_yoffset)
     else
 	buf = dpy->bufptr;
 
-    bytes_per_src = ((long)req->width + req->leftPad + 7) >> 3;
+    bytes_per_src = (req->width + req->leftPad + (unsigned)7) >> 3;
     bytes_per_line = image->bytes_per_line;
     bytes_per_src_plane = bytes_per_line * image->height;
     total_xoffset &= (image->bitmap_unit - 1) >> 3;
@@ -703,7 +703,7 @@ SendZImage(dpy, req, image, req_xoffset, req_yoffset,
 	 (image->bits_per_pixel == 8)) &&
 	((long)image->bytes_per_line == bytes_per_dest) &&
 	((req_xoffset == 0) ||
-	 ((req_yoffset + req->height) < image->height))) {
+	 ((req_yoffset + req->height) < (unsigned)image->height))) {
 	Data(dpy, (char *)src, length);
 	if (shifted_src)
 	    Xfree((char *)shifted_src);
