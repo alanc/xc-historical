@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XGetDflt.c,v 1.25 91/03/27 17:55:10 gildea Exp $
+ * $XConsortium: XGetDflt.c,v 1.26 91/04/01 18:10:25 gildea Exp $
  */
 
 /***********************************************************
@@ -45,7 +45,9 @@ static char *GetHomeDir (dest)
 #else
 	int uid;
 	extern int getuid();
+#ifndef SYSV386
 	extern struct passwd *getpwuid(), *getpwnam();
+#endif
 #endif
 	struct passwd *pw;
 	register char *ptr;
