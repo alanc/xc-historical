@@ -1,4 +1,4 @@
-/* $XConsortium: Text.c,v 1.171 91/03/11 17:05:25 converse Exp $ */
+/* $XConsortium: Text.c,v 1.172 91/03/12 10:23:39 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -2708,7 +2708,18 @@ Cardinal *num_args;
     newtw->text.showposition = TRUE;
     redisplay = TRUE;
   }
-  
+
+  if (oldtw->core.ancestor_sensitive != newtw->core.ancestor_sensitive ||
+      oldtw->core.sensitive != newtw->core.sensitive) {
+      Arg args[1];
+      XtSetArg(args[0], XtNancestorSensitive, 
+	       (newtw->core.ancestor_sensitive && newtw->core.sensitive));
+      if (newtw->text.vbar)
+	  XtSetValues(newtw->text.vbar, args, ONE);
+      if (newtw->text.hbar)
+	  XtSetValues(newtw->text.hbar, args, ONE);
+  }
+
   _XawTextExecuteUpdate(newtw);
   if (redisplay)
     _XawTextSetScrollBars(newtw);
