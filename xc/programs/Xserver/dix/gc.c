@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: gc.c,v 1.94 87/09/03 14:41:26 toddb Locked $ */
+/* $Header: gc.c,v 1.95 87/09/03 15:52:13 rws Locked $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -530,7 +530,7 @@ CopyGC(pgcSrc, pgcDst, mask)
 		}
 	    case GCStipple:
 		{
-		    if (pgcDst->stipple = pgcSrc->stipple)
+		    if (pgcDst->stipple == pgcSrc->stipple)
 			break;
 		    (* pgcDst->pScreen->DestroyPixmap)(pgcDst->stipple);
 		    pgcDst->stipple = pgcSrc->stipple;
