@@ -21,7 +21,7 @@ case $dir in
 esac
 
 if [ $intree != yes ]; then
-	echo "Must be underneath /x11"
+	echo "$0:  Must be underneath $tree"
 	exit 1
 fi
 
