@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Resources.c,v 1.71 89/09/28 11:42:32 swick Exp $";
+    "$XConsortium: Resources.c,v 1.72 89/09/29 13:55:40 swick Exp $";
 /* $oHeader: Resources.c,v 1.6 88/09/01 13:39:14 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -266,7 +266,11 @@ void  XrmCompileResourceList(resources, num_resources)
     	xrmres->xrm_class	 = StringToClass(resources->resource_class);
     	xrmres->xrm_type	 = StringToQuark(resources->resource_type);
 /*	xrmres->xrm_size	 = resources->resource_size; */
+#ifdef CRAY
+	xrmres->xrm_offset = -(resources->resource_offset * sizeof(long) + 1);
+#else
         xrmres->xrm_offset	 = -resources->resource_offset - 1;
+#endif
     	xrmres->xrm_default_type = StringToQuark(resources->default_type);
 /*	xrmres->xrm_default_addr = resources->default_addr; */
     }
@@ -580,8 +584,13 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 		    /* Convert default value to proper type */
 		    xrm_default_type = rx->xrm_default_type;
 		    if (xrm_default_type == QCallProc) {
+#ifdef CRAY
+ 			(*(XtProc)(((int)(rx->xrm_default_addr))<<2))(
+ 			      widget,-(rx->xrm_offset+1), pv);
+#else
 			(*(XtProc)(rx->xrm_default_addr))(
 			      widget,-(rx->xrm_offset+1), pv);
+#endif
 		    } else if (xrm_default_type == QImmediate) {
 			if (rx->xrm_size == sizeof(int)) {
 			    int_val = (int)rx->xrm_default_addr;
