@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: StripChart.c,v 1.13 89/12/12 18:17:17 keith Exp $";
+static char Xrcsid[] = "$XConsortium: StripChart.c,v 1.14 90/02/08 13:49:39 jim Exp $";
 #endif
 
 /***********************************************************
@@ -325,12 +325,13 @@ int left, width;
 
 	/* Draw data point lines. */
 	for (i = left; i < width; i++) {
-	    int height = (int) (w->strip_chart.valuedata[i] *
-				w->core.height) / w->strip_chart.scale;
+	    int y = (int) (w->core.height -
+			   (w->core.height * w->strip_chart.valuedata[i]) /
+			   w->strip_chart.scale);
 
 	    XFillRectangle(dpy, win, w->strip_chart.fgGC, 
-			   i, ((int) w->core.height) - height, 
-			   (unsigned int) 1, (unsigned int) w->core.height);
+			   i, y, (unsigned int) 1,
+			   (unsigned int) (w->core.height - y));
 	}
 
 	/* Draw graph reference lines */
