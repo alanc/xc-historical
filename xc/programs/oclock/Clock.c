@@ -33,9 +33,15 @@ static XtResource resources[] = {
 	offset (reverse_video), XtRString, "FALSE"},
     {XtNbackingStore, XtCBackingStore, XtRBackingStore, sizeof (int),
     	offset (backing_store), XtRString, "default"},
+    {XtNborderSize, XtCBorderSize, XtRFloat, sizeof (float),
+	offset (border_size), XtRString, "0.1"},
+    {XtNjewelSize, XtCBorderSize, XtRFloat, sizeof (float),
+	offset (jewel_size), XtRString, "0.075"},
 #ifdef SHAPE
     {XtNshapeWindow, XtCShapeWindow, XtRBoolean, sizeof (Boolean),
 	offset (shape_window), XtRString, "TRUE"},
+    {XtNtransparent, XtCTransparent, XtRBoolean, sizeof (Boolean),
+	offset (transparent), XtRString, "FALSE"},
 #endif
 };
 
@@ -44,16 +50,16 @@ static XtResource resources[] = {
 
 static void Initialize(), Realize(), Destroy(), Redisplay(), Resize();
 
-# define BORDER_WIDTH	(0.1)
-# define WINDOW_WIDTH	(2.0 - BORDER_WIDTH*2)
-# define WINDOW_HEIGHT	(2.0 - BORDER_WIDTH*2)
-# define MINUTE_WIDTH	(BORDER_WIDTH / 2.0)
-# define HOUR_WIDTH	(BORDER_WIDTH / 2.0)
-# define JEWEL_SIZE	(BORDER_WIDTH * 0.75)
-# define MINUTE_LENGTH	(0.8)
-# define HOUR_LENGTH	(0.5)
-# define JEWEL_X	(0.0)
-# define JEWEL_Y	(1.0 - (BORDER_WIDTH + JEWEL_SIZE))
+# define BORDER_SIZE(w)    ((w)->clock.border_size)
+# define WINDOW_WIDTH(w)    (2.0 - BORDER_SIZE(w)*2)
+# define WINDOW_HEIGHT(w)   (2.0 - BORDER_SIZE(w)*2)
+# define MINUTE_WIDTH(w)    (0.05)
+# define HOUR_WIDTH(w)	    (0.05)
+# define JEWEL_SIZE(w)	    ((w)->clock.jewel_size)
+# define MINUTE_LENGTH(w)   (JEWEL_Y(w) - JEWEL_SIZE(w) / 2.0)
+# define HOUR_LENGTH(w)	    (MINUTE_LENGTH(w) * 0.6)
+# define JEWEL_X(w)	    (0.0)
+# define JEWEL_Y(w)	    (1.0 - (BORDER_SIZE(w) + JEWEL_SIZE(w)))
 
 static void ClassInitialize();
 
@@ -111,20 +117,28 @@ static void Initialize (greq, gnew)
     int shape_event_base, shape_error_base;
 #endif
 
-    valuemask = GCForeground | GCBackground;
-    myXGCV.background = w->core.background_pixel;
+    valuemask = GCForeground;
 
-    myXGCV.foreground = w->clock.minute;
-    w->clock.minuteGC = XtGetGC(gnew, valuemask, &myXGCV);
+#ifdef SHAPE
+    if (w->clock.transparent)
+    {
+	;
+    }
+    else
+#endif
+    {
+    	myXGCV.foreground = w->clock.minute;
+    	w->clock.minuteGC = XtGetGC(gnew, valuemask, &myXGCV);
 
-    myXGCV.foreground = w->clock.hour;
-    w->clock.hourGC = XtGetGC(gnew, valuemask, &myXGCV);
+    	myXGCV.foreground = w->clock.hour;
+    	w->clock.hourGC = XtGetGC(gnew, valuemask, &myXGCV);
 
-    myXGCV.foreground = w->clock.jewel;
-    w->clock.jewelGC = XtGetGC (gnew, valuemask, &myXGCV);
-
-    myXGCV.foreground = w->core.background_pixel;
-    w->clock.eraseGC = XtGetGC(gnew, valuemask, &myXGCV);
+    	myXGCV.foreground = w->clock.jewel;
+    	w->clock.jewelGC = XtGetGC(gnew, valuemask, &myXGCV);
+    
+    	myXGCV.foreground = w->core.background_pixel;
+    	w->clock.eraseGC = XtGetGC(gnew, valuemask, &myXGCV);
+    }
 
     /* wait for Realize to add the timeout */
     w->clock.interval_id = 0;
@@ -154,7 +168,7 @@ static void Resize (w)
     Pixmap	shape_mask;
 #endif
 
-    if (!XtIsRealized(w))
+    if (!XtIsRealized((Widget) w))
 	return;
 
     /*
@@ -167,8 +181,8 @@ static void Resize (w)
 		  -1.0, 1.0,
  		  -1.0, 1.0);
 
-    face_width = abs (Xwidth (BORDER_WIDTH, BORDER_WIDTH, &w->clock.maskt));
-    face_height = abs (Xheight (BORDER_WIDTH, BORDER_WIDTH, &w->clock.maskt));
+    face_width = abs (Xwidth (BORDER_SIZE(w), BORDER_SIZE(w), &w->clock.maskt));
+    face_height = abs (Xheight (BORDER_SIZE(w), BORDER_SIZE(w), &w->clock.maskt));
 
     /*
      *  shape the windows and borders
@@ -180,15 +194,27 @@ static void Resize (w)
 	SetTransform (&w->clock.t,
 			face_width, w->core.width - face_width,
 			w->core.height - face_height, face_height,
-			-WINDOW_WIDTH/2, WINDOW_WIDTH/2,
-			-WINDOW_HEIGHT/2, WINDOW_HEIGHT/2);
+			-WINDOW_WIDTH(w)/2, WINDOW_WIDTH(w)/2,
+			-WINDOW_HEIGHT(w)/2, WINDOW_HEIGHT(w)/2);
     
 	/*
 	 * allocate a pixmap to draw shapes in
 	 */
 
-    	shape_mask = XCreatePixmap (XtDisplay (w), XtWindow (w),
+	if (w->clock.shape_mask &&
+	    (w->clock.shape_width != w->core.width ||
+	     w->clock.shape_height != w->core.height))
+	{
+	    XFreePixmap (XtDisplay (w), w->clock.shape_mask);
+	    w->clock.shape_mask = NULL;
+	}
+	
+	if (!w->clock.shape_mask)
+	{
+	    w->clock.shape_mask = XCreatePixmap (XtDisplay (w), XtWindow (w),
 				    w->core.width, w->core.height, 1);
+	}
+	shape_mask = w->clock.shape_mask;
     	if (!w->clock.shapeGC)
             w->clock.shapeGC = XCreateGC (XtDisplay (w), shape_mask, 0, &xgcv);
 
@@ -203,11 +229,30 @@ static void Resize (w)
 	 * eliminates extra exposure events.
 	 */
 
-	TFillArc (XtDisplay (w), shape_mask,
-			w->clock.shapeGC, &w->clock.maskt,
-			-1.0, -1.0,
-			2.0, 2.0,
-			0, 360 * 64);
+	if (w->clock.border_size > 0.0 || !w->clock.transparent)
+	{
+	    TFillArc (XtDisplay (w), shape_mask,
+			    w->clock.shapeGC, &w->clock.maskt,
+			    -1.0, -1.0,
+			    2.0, 2.0,
+			    0, 360 * 64);
+	}
+
+	if (w->clock.transparent)
+	{
+	    if (w->clock.border_size > 0.0)
+	    {
+	    	XSetForeground (XtDisplay (w), w->clock.shapeGC, 0);
+	    	TFillArc (XtDisplay (w), shape_mask,
+			    	w->clock.shapeGC, &w->clock.t,
+			    	-WINDOW_WIDTH(w)/2, -WINDOW_HEIGHT(w)/2,
+			    	WINDOW_WIDTH(w), WINDOW_HEIGHT(w),
+			    	0, 360 * 64);
+	    	XSetForeground (XtDisplay (w), w->clock.shapeGC, 1);
+	    }
+	    paint_jewel (w, shape_mask, w->clock.shapeGC);
+	    paint_hands (w, shape_mask, w->clock.shapeGC, w->clock.shapeGC);
+	}
 	/*
 	 * Find the highest enclosing widget and shape it
 	 */
@@ -232,16 +277,22 @@ static void Resize (w)
 	 * draw the clip shape
 	 */
 
-	TFillArc (XtDisplay (w), shape_mask,
-			w->clock.shapeGC, &w->clock.t,
-			-WINDOW_WIDTH/2, -WINDOW_HEIGHT/2,
-			WINDOW_WIDTH, WINDOW_HEIGHT,
-			0, 360 * 64);
+	if (w->clock.transparent)
+	{
+	    paint_jewel (w, shape_mask, w->clock.shapeGC);
+	    paint_hands (w, shape_mask, w->clock.shapeGC, w->clock.shapeGC);
+	}
+	else
+	{
+	    TFillArc (XtDisplay (w), shape_mask,
+			    w->clock.shapeGC, &w->clock.t,
+			    -WINDOW_WIDTH(w)/2, -WINDOW_HEIGHT(w)/2,
+			    WINDOW_WIDTH(w), WINDOW_HEIGHT(w),
+			    0, 360 * 64);
+	}
 
 	XShapeCombineMask (XtDisplay (w), XtWindow (w), ShapeClip, 
 		    0, 0, shape_mask, ShapeSet);
-
-	XFreePixmap (XtDisplay (w), shape_mask);
 
     } else
 #endif
@@ -264,8 +315,8 @@ static void Resize (w)
     	SetTransform (&w->clock.t,
 	    0, xwc.width,
 	    xwc.height, 0,
-	    -WINDOW_WIDTH/2, WINDOW_WIDTH/2,
-	    -WINDOW_HEIGHT/2, WINDOW_HEIGHT/2);
+	    -WINDOW_WIDTH(w)/2, WINDOW_WIDTH(w)/2,
+	    -WINDOW_HEIGHT(w)/2, WINDOW_HEIGHT(w)/2);
     }
 }
  
@@ -275,16 +326,27 @@ static void Realize (gw, valueMask, attrs)
      XSetWindowAttributes *attrs;
 {
      ClockWidget	w = (ClockWidget)gw;
-     static int		new_time();
+     static void 	new_time();
 
     if (w->clock.backing_store != Always + WhenMapped + NotUseful) {
      	attrs->backing_store = w->clock.backing_store;
 	*valueMask |= CWBackingStore;
     }
+#ifdef SHAPE
+    if (w->clock.transparent)
+    {
+	attrs->background_pixel = w->clock.minute;
+	*valueMask |= CWBackPixel;
+	*valueMask &= ~CWBackPixmap;
+    }
+#endif
     XtCreateWindow( gw, (unsigned)InputOutput, (Visual *)CopyFromParent,
 		     *valueMask, attrs );
-    Resize (w);
-    new_time ((caddr_t) gw, 0);
+#ifdef SHAPE
+    if (!w->clock.transparent)
+#endif
+	Resize (w);
+    new_time ((XtPointer) gw, 0);
 }
 
 static void Destroy (gw)
@@ -297,6 +359,8 @@ static void Destroy (gw)
 #ifdef SHAPE
      if (w->clock.shapeGC)
 	XtDestroyGC (w->clock.shapeGC);
+    if (w->clock.shape_mask)
+	XFreePixmap (XtDisplay (w), w->clock.shape_mask);
 #endif
 }
 
@@ -309,8 +373,11 @@ static void Redisplay(gw, event, region)
     ClockWidget	w;
 
     w = (ClockWidget) gw;
-    paint_jewel (w, XtWindow (w), w->clock.jewelGC);
-    paint_hands (w, XtWindow (w), w->clock.minuteGC, w->clock.hourGC);
+    if (!w->clock.transparent)
+    {
+    	paint_jewel (w, XtWindow (w), w->clock.jewelGC);
+    	paint_hands (w, XtWindow (w), w->clock.minuteGC, w->clock.hourGC);
+    }
 }
 
 /*
@@ -335,14 +402,17 @@ double	clock;
 }
 
 /* ARGSUSED */
-static int new_time (client_data, id)
-     caddr_t client_data;
-     XtIntervalId id;		/* unused */
+static void new_time (client_data, id)
+     XtPointer client_data;
+     XtIntervalId *id;		/* unused */
 {
         ClockWidget	w = (ClockWidget)client_data;
 	long		now;
 	struct tm	*localtime (), *tm;
 	
+#ifdef SHAPE
+	if (!w->clock.transparent)
+#endif
 	if (w->clock.polys_valid) {
 		paint_hands (w, XtWindow (w), w->clock.eraseGC, w->clock.eraseGC);
 		check_jewel (w, XtWindow (w), w->clock.jewelGC);
@@ -363,7 +433,12 @@ static int new_time (client_data, id)
 	w->clock.interval_id = XtAddTimeOut ((60 - tm->tm_sec) * 1000, new_time,
 				client_data);
 	compute_hands (w);
-	paint_hands (w, XtWindow (w), w->clock.minuteGC, w->clock.hourGC);
+#ifdef SHAPE
+	if (w->clock.transparent)
+	    Resize (w);
+	else
+#endif
+	    paint_hands (w, XtWindow (w), w->clock.minuteGC, w->clock.hourGC);
 } /* new_time */
 
 paint_jewel (w, d, gc)
@@ -371,9 +446,13 @@ ClockWidget w;
 Drawable    d;
 GC	    gc;
 {
+    if (JEWEL_SIZE(w) > 0.0)
+    {
 	TFillArc (XtDisplay (w), d, gc, &w->clock.t,
-			JEWEL_X - JEWEL_SIZE / 2.0, JEWEL_Y - JEWEL_SIZE / 2.0,
- 			JEWEL_SIZE, JEWEL_SIZE, 0, 360 * 64);
+			JEWEL_X(w) - JEWEL_SIZE(w) / 2.0,
+ 			JEWEL_Y(w) - JEWEL_SIZE(w) / 2.0,
+ 			JEWEL_SIZE(w), JEWEL_SIZE(w), 0, 360 * 64);
+    }
 }
 
 #define sqr(x)	((x)*(x))
@@ -386,26 +465,33 @@ check_jewel_poly (w, poly)
 ClockWidget	w;
 TPoint		poly[POLY_SIZE];
 {
-	double	a2, b2, c2, d2;
-	int	i;
+    double	a2, b2, c2, d2;
+    double	x, y, size;
+    int	i;
 
+    if (JEWEL_SIZE(w) > 0.0)
+    {
+	x = JEWEL_X(w);
+	y = JEWEL_Y(w);
+	size = JEWEL_SIZE(w);
 	/*
 	 * check each side of the polygon to see if the
 	 * distance from the line to the center of the
 	 * circular jewel is less than the radius.
 	 */
 	for (i = 0; i < POLY_SIZE-1; i++) {
-		a2 = sqr (poly[i].x - JEWEL_X) + sqr (poly[i].y - JEWEL_Y);
-		b2 = sqr (poly[i+1].x - JEWEL_X) + sqr (poly[i+1].y - JEWEL_Y);
+		a2 = sqr (poly[i].x - x) + sqr (poly[i].y - y);
+		b2 = sqr (poly[i+1].x - x) + sqr (poly[i+1].y - y);
 		c2 = sqr (poly[i].x - poly[i+1].x) + sqr (poly[i].y - poly[i+1].y);
 		d2 = a2 + b2 - c2;
-		if (d2 <= sqr (JEWEL_SIZE) &&
+		if (d2 <= sqr (size) &&
 		    a2 <= 2 * c2 && b2 <= 2 * c2 ||
- 		    a2 <= sqr (JEWEL_SIZE) ||
-		    b2 <= sqr (JEWEL_SIZE))
+ 		    a2 <= sqr (size) ||
+		    b2 <= sqr (size))
 			return 1;
 	}
-	return 0;
+    }
+    return 0;
 }
 
 check_jewel (w, d, gc)
@@ -413,11 +499,11 @@ ClockWidget	w;
 Drawable	d;
 GC		gc;
 {
-	if (!w->clock.polys_valid)
+	if (!w->clock.polys_valid || JEWEL_SIZE(w) <= 0.0)
 		return;
-	if ((MINUTE_LENGTH >= (JEWEL_Y - JEWEL_SIZE/2.0) &&
+	if ((MINUTE_LENGTH(w) >= (JEWEL_Y(w) - JEWEL_SIZE(w)/2.0) &&
 	     check_jewel_poly (w, w->clock.minute_poly)) ||
-	    (HOUR_LENGTH >= (JEWEL_Y - JEWEL_SIZE/2.0) &&
+	    (HOUR_LENGTH(w) >= (JEWEL_Y(w) - JEWEL_SIZE(w)/2.0) &&
 	     check_jewel_poly (w, w->clock.minute_poly)))
 	{
 		paint_jewel (w, d, gc);
@@ -456,9 +542,9 @@ compute_hands (w)
 ClockWidget	w;
 {
 	compute_hand (w, w->clock.minute_angle,
-		MINUTE_LENGTH, MINUTE_WIDTH, w->clock.minute_poly);
+		MINUTE_LENGTH(w), MINUTE_WIDTH(w), w->clock.minute_poly);
 	compute_hand (w, w->clock.hour_angle,
-		HOUR_LENGTH, HOUR_WIDTH, w->clock.hour_poly);
+		HOUR_LENGTH(w), HOUR_WIDTH(w), w->clock.hour_poly);
 	w->clock.polys_valid = 1;
 }
 

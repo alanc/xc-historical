@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Clock.h,v 1.3 89/05/02 18:04:54 keith Exp $
+ * $XConsortium: Clock.h,v 1.4 89/07/21 13:44:44 jim Exp $
  */
 
 #ifndef _XtClock_h
@@ -36,7 +36,13 @@
 #ifdef SHAPE
 #define XtNshapeWindow	"shapeWindow"
 #define XtCShapeWindow	"ShapeWindow"
+#define XtNtransparent	"transparent"
+#define XtCTransparent	"Transparent"
 #endif
+
+#define XtNjewelSize	"jewelSize"
+#define XtNborderSize	"borderSize"
+#define XtCBorderSize	"BorderSize"
 
 typedef struct _ClockRec *ClockWidget;  /* completely defined in ClockPrivate.h */
 typedef struct _ClockClassRec *ClockWidgetClass;    /* completely defined in ClockPrivate.h */

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: oclock.c,v 1.7 89/07/23 11:40:34 rws Exp $";
+static char rcsid[] = "$XConsortium: oclock.c,v 1.8 89/12/10 15:59:06 rws Exp $";
 #endif /* lint */
 
 #include <X11/Intrinsic.h>
@@ -46,6 +46,7 @@ static XrmOptionDescRec options[] = {
 #ifdef SHAPE
 {"-shape",	"*clock.shapeWindow",	XrmoptionNoArg,		"TRUE"},
 {"-noshape",	"*clock.shapeWindow",	XrmoptionNoArg,		"FALSE"},
+{"-transparent","*clock.transparent",	XrmoptionNoArg,		"TRUE"},
 #endif
 };
 
@@ -59,7 +60,7 @@ void main(argc, argv)
     int	i;
     
     toplevel = XtInitialize("main", "Clock", options, XtNumber (options),
-				    &argc, argv);
+				    (Cardinal *) &argc, argv);
       
     if (argc != 1) usage();
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ClockP.h,v 1.4 89/05/02 18:04:53 keith Exp $
+ * $XConsortium: ClockP.h,v 1.5 89/07/21 13:44:45 jim Exp $
  */
 
 #ifndef _ClockP_h
@@ -13,13 +13,13 @@
 
 /* New fields for the clock widget instance record */
 typedef struct {
-	Pixel		minute;		/* minute hand pixel */
-	Pixel		hour;		/* hour hand pixel */
-	Pixel		jewel;		/* jewel pixel */
-	GC		minuteGC;	/* pointer to GraphicsContext */
-	GC		hourGC;		/* pointer to GraphicsContext */
-	GC		jewelGC;	/* pointer to GraphicsContext */
-	GC		eraseGC;	/* pointer to GraphicsContext */
+	Pixel		minute;
+	Pixel		hour;
+	Pixel		jewel;
+	GC		minuteGC;
+	GC		hourGC;
+	GC		jewelGC;
+	GC		eraseGC;
 #ifdef SHAPE
 	GC		shapeGC;	/* pointer to GraphicsContext */
 #endif
@@ -28,7 +28,10 @@ typedef struct {
 	Boolean		reverse_video;	/* swap fg and bg pixels */
 #ifdef SHAPE
 	Boolean		shape_window;	/* use SetWindowShapeMask */
+	Boolean		transparent;	/* make window transparent */
 #endif
+	float		border_size;
+	float		jewel_size;
 	XtIntervalId	interval_id;
 	Transform	t;
 	Transform	maskt;
