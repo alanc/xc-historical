@@ -720,7 +720,7 @@ XtransConnInfo ciptr;
     int status = TRANS_RESET_NOOP;
     void TRANS(FreeConnInfo)();
 
-    PRMSG(3, "TRANS(SocketUNIXResetListener)(%x,%d)\n", ciptr, fd, 0 );
+    PRMSG(3, "TRANS(SocketUNIXResetListener)(%x,%d)\n", ciptr, ciptr->fd, 0 );
 
     if (stat (unsock->sun_path, &statb) == -1 ||
         (statb.st_mode & S_IFMT) != S_IFSOCK)
