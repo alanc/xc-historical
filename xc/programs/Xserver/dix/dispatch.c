@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.26 91/03/01 16:05:37 keith Exp $ */
+/* $XConsortium: dispatch.c,v 5.27 91/03/11 09:30:34 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -67,7 +67,7 @@ extern int  defaultScreenSaverBlanking;
 extern int  defaultScreenSaverAllowExposures;
 static ClientPtr onlyClient;
 static Bool grabbingClient = FALSE;
-static long *checkForInput[2];
+long	*checkForInput[2];
 extern int connBlockScreenStart;
 
 extern int (* InitialVector[3]) ();
