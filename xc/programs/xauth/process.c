@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.42 92/02/18 18:05:00 gildea Exp $
+ * $XConsortium: process.c,v 1.43 93/08/16 13:55:43 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -801,7 +801,11 @@ int auth_finalize ()
 			 ProgramName, tmpnam);
 	    } else {
 		(void) unlink (xauth_filename);
+#ifdef WIN32
+		if (rename(tmpnam, xauth_filename) == -1) {
+#else
 		if (link (tmpnam, xauth_filename) == -1) {
+#endif
 		    fprintf (stderr,
 		     "%s:  unable to link authority file %s, use %s\n",
 			     ProgramName, xauth_filename, tmpnam);

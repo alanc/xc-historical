@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XGetDflt.c,v 1.28 93/08/14 16:47:53 rws Exp $
+ * $XConsortium: XGetDflt.c,v 1.29 93/08/16 11:54:40 rws Exp $
  */
 
 /***********************************************************
@@ -50,11 +50,10 @@ static char *GetHomeDir (dest, destlen)
 	if (ptr = getenv("HOME"))
 		(void) strcpy(dest, ptr);
 	else {
-		(void) strcpy (dest, "/users/");
-		if (ptr = getenv("USERNAME"))
+		if (ptr = getenv("USERNAME")) {
+			(void) strcpy (dest, "/users/");
 			(void) strcat (dest, ptr);
-		else
-			(void) GetUserName(dest + 7, destlen - 7);
+		}
 	}
 	return dest;
 #else
