@@ -52,6 +52,8 @@ o Code compiled with the R4 and R4.1 CLX will work with the R4.2 CLX, provided
 
 R4.3 changes:
 
+o Changed the ansi-common-lisp feature to clx-ansi-common-lisp.
+
 o A new package.l file has been introduced.  All the package operations that
   were in the other files have been moved to package.l.  Because of this, 
   the compile-clx and load-clx functions which are defined in the defsystem.l
