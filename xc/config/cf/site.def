@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.33 91/07/28 11:52:30 rws Exp $
+XCOMM site:  $XConsortium: site.def,v 1.34 91/07/28 23:58:52 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -43,4 +43,8 @@ clean::									@@\
 
 #ifndef UseInstalled
 #define InstallCmd $(SCRIPTSRC)/syminst.sh -DIR /x11/$(CURRENT_DIR)
+#endif
+
+#if defined(ATTArchitecture) || defined(VaxArchitecture) || defined(PegasusArchitecture)
+#define BuildFonts NO
 #endif
