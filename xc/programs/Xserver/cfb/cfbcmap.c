@@ -77,15 +77,13 @@ cfbUninstallColormap(pmap)
 
     if(pmap == curpmap)
     {
-        /* Uninstall pmap */
-	WalkTree(pmap->pScreen, TellLostMap, (char *)&pmap->mid);
-	curpmap = (ColormapPtr) LookupIDByType(pmap->pScreen->defColormap,
-					       RT_COLORMAP);
-	/* Install default map */
-	InstalledMaps[index] = curpmap;
-	WalkTree(pmap->pScreen, TellGainedMap, (char *)&curpmap->mid);
+	if (pmap->mid != pmap->pScreen->defColormap)
+	{
+	    curpmap = (ColormapPtr) LookupIDByType(pmap->pScreen->defColormap,
+						   RT_COLORMAP);
+	    (*pmap->pScreen->InstallColormap)(curpmap);
+	}
     }
-	
 }
 
 #endif

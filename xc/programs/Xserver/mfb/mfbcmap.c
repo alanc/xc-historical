@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbcmap.c,v 5.1 89/07/09 15:57:58 rws Exp $ */
+/* $XConsortium: mfbcmap.c,v 5.2 89/07/16 17:25:27 rws Exp $ */
 #include "X.h"
 #include "scrnintstr.h"
 #include "colormapst.h"
@@ -84,15 +84,13 @@ mfbUninstallColormap(pmap)
 
     if(pmap == curpmap)
     {
-        /* Uninstall pmap */
-	WalkTree(pmap->pScreen, TellLostMap, (pointer)&pmap->mid);
-	curpmap = (ColormapPtr) LookupIDByType(pmap->pScreen->defColormap,
-					       RT_COLORMAP);
-	/* Install default map */
-	InstalledMaps[index] = curpmap;
-	WalkTree(pmap->pScreen, TellGainedMap, (pointer)&curpmap->mid);
+	if (pmap->mid != pmap->pScreen->defColormap)
+	{
+	    curpmap = (ColormapPtr) LookupIDByType(pmap->pScreen->defColormap,
+						   RT_COLORMAP);
+	    (*pmap->pScreen->InstallColormap)(curpmap);
+	}
     }
-	
 }
 
 /*ARGSUSED*/
