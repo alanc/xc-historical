@@ -1,4 +1,4 @@
-.\" $XConsortium: userguide.mm,v 1.5 92/07/03 17:35:31 rws Exp $
+.\" $XConsortium: userguide.mm,v 1.6 92/07/03 19:12:02 rws Exp $
 '
 .ds dD User Guide for the X Test Suite
 .so 00.header
@@ -1161,6 +1161,10 @@ pmake comp_pcf
 .cE
 or
 .cS
+pmake comp_dxpcf
+.cE
+or
+.cS
 pmake comp_fb
 .cE
 .LI
@@ -1172,6 +1176,10 @@ pmake install_snf
 or
 .cS
 pmake install_pcf
+.cE
+or
+.cS
+pmake install_dxpcf
 .cE
 or
 .cS

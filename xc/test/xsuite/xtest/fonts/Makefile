@@ -12,7 +12,7 @@
 #  make no representations about the suitability of this software for any
 #  purpose.  It is provided "as is" without express or implied warranty.
 # 
-# $XConsortium: Makefile,v 1.7 92/06/30 21:08:21 rws Exp $
+# $XConsortium: Makefile,v 1.8 92/07/02 11:44:50 rws Exp $
 #
 
 ##########################################################################
@@ -91,6 +91,14 @@ comp_snf:
 	done
 	mkfontdir
 
+comp_dxpcf:
+	@ echo "These commands are system dependent - See User Guide"
+	@ for f in $(FONTSRCS) ;\
+	do \
+		(set -x; dxfc -t $$f.bdf > $$f.pcf); \
+	done
+	dxmkfontdir
+
 comp_fb:
 	@ echo "These commands are system dependent - See User Guide"
 	@ for f in $(FONTSRCS) ;\
@@ -99,7 +107,7 @@ comp_fb:
 	done
 	bldfamily -d .
 
-install_pcf:
+install_pcf install_dxpcf:
 	@ echo "These commands are system dependent - See User Guide"
 	@ if [ -d $(XTESTFONTDIR) ]; then set +x; \
 		else (set -x; mkdir $(XTESTFONTDIR)); fi
