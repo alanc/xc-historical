@@ -51,7 +51,6 @@ SOFTWARE.
 #include "bitmap.h"
 
 extern int  bitmapGetGlyphs(), bitmapGetMetrics();
-extern int  bitmapGetBitmaps(), bitmapGetExtents();
 void        MacFontUnloadFont();
 
 int
@@ -149,8 +148,6 @@ MacFontRenderFont(pFont, entry, vals, bit, byte, glyph, scan)
 
     MacFontComputedProps(fullName, vals, &(pFont->info), pMacPriv);
 
-    pFont->get_bitmaps = bitmapGetBitmaps;
-    pFont->get_extents = bitmapGetExtents;
     pFont->get_glyphs = bitmapGetGlyphs;
     pFont->get_metrics = bitmapGetMetrics;
     pFont->unload_font = MacFontUnloadFont;
