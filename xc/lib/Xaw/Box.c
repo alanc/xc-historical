@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Box.c,v 1.21 88/01/22 20:20:47 swick Locked $";
+static char rcsid[] = "$Header: Box.c,v 1.23 88/01/29 14:37:55 swick Locked $";
 #endif lint
 
 /*
@@ -29,7 +29,7 @@ static char rcsid[] = "$Header: Box.c,v 1.21 88/01/22 20:20:47 swick Locked $";
  * 
  */
 
-#include	<X/Intrinsic.h>
+#include	"IntrinsicP.h"
 #include	<X/Atoms.h>
 #include	<X/Misc.h>
 #include	"BoxP.h"
@@ -40,11 +40,13 @@ static char rcsid[] = "$Header: Box.c,v 1.21 88/01/22 20:20:47 swick Locked $";
  *
  ****************************************************************/
 
+static int defFour = 4;
+
 static XtResource resources[] = {
-    {XtNhSpace, XtCHSpace, XrmRInt, sizeof(int),
-	 XtOffset(BoxWidget, box.h_space), XtRString, "4"},
-    {XtNvSpace, XtCVSpace, XrmRInt, sizeof(int),
-	 XtOffset(BoxWidget, box.v_space), XtRString, "4"},
+    {XtNhSpace, XtCHSpace, XtRInt, sizeof(int),
+	 XtOffset(BoxWidget, box.h_space), XtRInt, (caddr_t)&defFour},
+    {XtNvSpace, XtCVSpace, XtRInt, sizeof(int),
+	 XtOffset(BoxWidget, box.v_space), XtRInt, (caddr_t)&defFour},
 };
 
 /****************************************************************
@@ -69,8 +71,10 @@ BoxClassRec boxClassRec = {
     /* class_name         */    "Box",
     /* widget_size        */    sizeof(BoxRec),
     /* class_initialize   */    ClassInitialize,
+    /* class_part_init    */	NULL,
     /* class_inited       */	FALSE,
     /* initialize         */    Initialize,
+    /* initialize_hook    */	NULL,
     /* realize            */    Realize,
     /* actions            */    NULL,
     /* num_actions	  */	0,
@@ -79,14 +83,19 @@ BoxClassRec boxClassRec = {
     /* xrm_class          */    NULLQUARK,
     /* compress_motion	  */	TRUE,
     /* compress_exposure  */	TRUE,
+    /* compress_enterleave*/	TRUE,
     /* visible_interest   */    FALSE,
     /* destroy            */    NULL,
     /* resize             */    Resize,
     /* expose             */    NULL,
     /* set_values         */    SetValues,
+    /* set_values_hook    */	NULL,
+    /* set_values_almost  */    XtInheritSetValuesAlmost,
+    /* get_values_hook    */	NULL,
     /* accept_focus       */    NULL,
+    /* version            */	XtVersion,
     /* callback_private   */    NULL,
-    /* reserved_private   */    NULL,
+    /* tm_table           */    NULL,
   },{
 /* composite_class fields */
     /* geometry_manager   */    GeometryManager,
@@ -326,7 +335,8 @@ static XtGeometryResult GeometryManager(w, request, reply)
     BoxWidget bbw;
 
     /* Position request always denied */
-    if (request->request_mode & (CWX | CWY))
+    if ((request->request_mode & CWX && request->x != w->core.x) ||
+	(request->request_mode & CWY && request->y != w->core.y))
         return (XtGeometryNo);
 
     /* Size changes must see if the new size can be accomodated */
@@ -387,10 +397,8 @@ static void ChangeManaged(w)
 }
 
 /* ARGSUSED */
-static void Initialize(request, new, args, num_args)
+static void Initialize(request, new)
     Widget request, new;
-    ArgList args;
-    Cardinal *num_args;
 {
     BoxWidget newbbw = (BoxWidget)new;
 
@@ -399,14 +407,12 @@ static void Initialize(request, new, args, num_args)
 
     if (newbbw->core.width == 0)
         newbbw->core.width = ((newbbw->box.h_space != 0)
-			      ? newbbw->box.h_space : 10);
+			      ? newbbw->box.h_space : defFour);
     if (newbbw->core.height == 0)
 	newbbw->core.height = ((newbbw->box.v_space != 0)
-			       ? newbbw->box.v_space : 10);
+			       ? newbbw->box.v_space : defFour);
 } /* Initialize */
 
-/* ||| Should Realize just return a modified mask and attributes?  Or will some
-   of the other parameters change from class to class? */
 static void Realize(w, valueMask, attributes)
     register Widget w;
     Mask *valueMask;
@@ -419,23 +425,13 @@ static void Realize(w, valueMask, attributes)
 		    *valueMask, attributes);
 } /* Realize */
 
-/*
- *
- * Set Values
- *
- */
-
 /* ARGSUSED */
-static Boolean SetValues (current, request, new, last)
+static Boolean SetValues(current, request, new)
     Widget current, request, new;
-    Boolean last;
 {
-    /* ||| Old code completely bogus, need background, etc. then relayout */
+   /* need to relayout if h_space or v_space change */
 
-    XtSetValuesGeometryRequest( current, new, (XtWidgetGeometry *)NULL );
-
-    /* ||| should handle XtGeometryAlmost */
-
-    return (FALSE);
+    return False;
 }
 
+    
