@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: misc.c,v 1.16 89/08/30 18:53:05 kit Exp $
+ * $XConsortium: misc.c,v 1.17 89/10/04 14:55:12 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -24,12 +24,9 @@
 #endif
 
 #include "globals.h"
-#include <X11/Xos.h> 		/* sys/types.h included in here. */
+#include <X11/Xos.h> 		/* sys/types.h and unistd.h included in here */
 #include <sys/stat.h>
 #include <errno.h>
-#ifdef CRAY
-#  include <sys/unistd.h>
-#endif /* CRAY */
 
 static FILE * Uncompress();
 static Boolean UncompressNamed(), UncompressUnformatted();
