@@ -1,4 +1,4 @@
-/* $XConsortium: accept.c,v 1.17 93/12/28 11:41:54 mor Exp $ */
+/* $XConsortium: accept.c,v 1.18 94/01/31 10:45:42 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -23,22 +23,27 @@ Author: Ralph Mor, X Consortium
 
 
 IceConn
-IceAcceptConnection (listenObj)
+IceAcceptConnection (listenObj, statusRet)
 
-IceListenObj listenObj;
+IceListenObj 	listenObj;
+IceAcceptStatus	*statusRet;
 
 {
     IceConn    		iceConn;
     XtransConnInfo	newconn;
     iceByteOrderMsg 	*pMsg;
-    int   		endian;
+    int   		endian, status;
 
     /*
      * Accept the connection.
      */
 
-    if ((newconn = _ICETransAccept (listenObj->trans_conn)) == 0)
+    if ((newconn = _ICETransAccept (listenObj->trans_conn, &status)) == 0)
     {
+	if (status == TRANS_ACCEPT_BAD_MALLOC)
+	    *statusRet = IceAcceptBadMalloc;
+	else
+	    *statusRet = IceAcceptFailure;
 	return (NULL);
     }
 
@@ -50,6 +55,7 @@ IceListenObj listenObj;
     if ((iceConn = (IceConn) malloc (sizeof (struct _IceConn))) == NULL)
     {
 	_ICETransClose (newconn);
+	*statusRet = IceAcceptBadMalloc;
 	return (NULL);
     }
 
@@ -60,7 +66,8 @@ IceListenObj listenObj;
     iceConn->my_ice_version_index = 0;
 
     iceConn->trans_conn = newconn;
-    iceConn->sequence = 0;
+    iceConn->send_sequence = 0;
+    iceConn->receive_sequence = 0;
 
     iceConn->connection_string = (char *) malloc (
 	strlen (listenObj->network_id) + 1);
@@ -69,6 +76,7 @@ IceListenObj listenObj;
     {
 	_ICETransClose (newconn);
 	free ((char *) iceConn);
+	*statusRet = IceAcceptBadMalloc;
 	return (NULL);
     }
     else
@@ -86,6 +94,7 @@ IceListenObj listenObj;
     {
 	_ICETransClose (newconn);
 	free ((char *) iceConn);
+	*statusRet = IceAcceptBadMalloc;
 	return (NULL);
     }
 
@@ -99,6 +108,7 @@ IceListenObj listenObj;
 	_ICETransClose (newconn);
 	free (iceConn->inbuf);
 	free ((char *) iceConn);
+	*statusRet = IceAcceptBadMalloc;
 	return (NULL);
     }
 
@@ -147,6 +157,8 @@ IceListenObj listenObj;
 
 	_IceConnectionOpened (iceConn);
     }
+
+    *statusRet = IceAcceptSuccess;
 
     return (iceConn);
 }
