@@ -2,7 +2,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
 
 #ifndef lint
-static char rcsid[] = "$Header: XlibInt.c,v 11.58 88/01/31 10:05:47 rws Exp $";
+static char rcsid[] = "$Header: XlibInt.c,v 11.59 88/02/03 20:45:01 rws Exp $";
 #endif
 
 /*
@@ -94,28 +94,24 @@ _XEventsQueued (dpy, mode)
 	char buf[BUFSIZE];
 	register xReply *rep;
 	
-	switch (mode) {
-	    case QueuedAlready:
-		break;
-	    case QueuedAfterFlush:
-		_XFlush(dpy);	/* note deliberate fall through! */
-	    case QueuedAfterReading:
-		if (BytesReadable(dpy->fd, (char *) &pend) < 0)
-		    (*_XIOErrorFunction)(dpy);
-		if ((len = pend) < sizeof(xReply)) {
-		    return(dpy->qlen);
-		    }
-		else if (len > BUFSIZE)
-		    len = BUFSIZE;
-		len /= sizeof(xReply);
-		pend = len * sizeof(xReply);
-		_XRead (dpy, buf, (long) pend);
-		for (rep = (xReply *) buf; len > 0; rep++, len--) {
-		    if (rep->generic.type == X_Error)
-			_XError(dpy, (xError *)rep);
-		    else   /* must be an event packet */
-			_XEnq(dpy, (xEvent *) rep);
-		}
+	if (dpy->qlen || (mode == QueuedAlready))
+	    return(dpy->qlen);
+	if (mode == QueuedAfterFlush)
+	    _XFlush(dpy);
+	if (BytesReadable(dpy->fd, (char *) &pend) < 0)
+	    (*_XIOErrorFunction)(dpy);
+	if ((len = pend) < sizeof(xReply))
+	    return(0);
+	else if (len > BUFSIZE)
+	    len = BUFSIZE;
+	len /= sizeof(xReply);
+	pend = len * sizeof(xReply);
+	_XRead (dpy, buf, (long) pend);
+	for (rep = (xReply *) buf; len > 0; rep++, len--) {
+	    if (rep->generic.type == X_Error)
+		_XError(dpy, (xError *)rep);
+	    else   /* must be an event packet */
+		_XEnq(dpy, (xEvent *) rep);
 	}
 	return(dpy->qlen);
 }
