@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: access.c,v 1.44 89/11/12 15:38:59 rws Exp $ */
+/* $XConsortium: access.c,v 1.45 91/02/11 18:33:46 keith Exp $ */
 
 #include "Xos.h"
 #include "X.h"
@@ -42,6 +42,9 @@ SOFTWARE.
 #  include <net/if.h>
 # endif
 #else
+#ifdef SVR4
+# include <sys/utsname.h>
+#endif
 # include <net/if.h>
 #endif /* hpux */
 
@@ -141,10 +144,10 @@ AccessUsingXdmcp ()
 
 #define FAMILIES ((sizeof familyMap)/(sizeof familyMap[0]))
 
-#if defined (hpux) && ! defined (HAS_IFREQ)
+#if defined(SVR4) || (defined (hpux) && ! defined (HAS_IFREQ))
 /* Define this host for access control.  Find all the hosts the OS knows about 
  * for this fd and add them to the selfhosts list.
- * HPUX version - hpux does not have SIOCGIFCONF ioctl;
+ * hpux and SVR4 do not have SIOCGIFCONF ioctl;
  */
 DefineSelf (fd)
     int fd;
