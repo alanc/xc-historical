@@ -1,6 +1,6 @@
 /**********************************************************************
  *
- * $XConsortium: icons.h,v 1.1 89/04/12 18:58:29 jim Exp $
+ * $XConsortium: icons.h,v 1.2 89/04/13 15:48:22 jim Exp $
  *
  * Icon releated definitions
  *
@@ -16,14 +16,13 @@ typedef struct IconRegion
     struct IconRegion	*next;
     int			x, y, w, h;
     int			grav1, grav2;
-    struct IconEntry	*first;
-    struct IconEntry	*last;
+    int			stepx, stepy;	/* allocation granularity */
+    struct IconEntry	*entries;
 } IconRegion;
 
 typedef struct IconEntry
 {
     struct IconEntry	*next;
-    struct IconEntry	*prev;
     int			x, y, w, h;
     TwmWindow		*twm_win;
     short 		used;

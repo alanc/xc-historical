@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.54 89/05/04 19:39:56 keith Exp $
+ * $XConsortium: menus.c,v 1.55 89/05/05 15:31:16 jim Exp $
  *
  * twm menu code
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.54 89/05/04 19:39:56 keith Exp $";
+"$XConsortium: menus.c,v 1.55 89/05/05 15:31:16 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -2149,8 +2149,10 @@ TwmWindow *tmp_win;
 		    XMapRaised(dpy, t->frame);
 		SetMapStateProp(t, NormalState);
 
-		if (t->icon_w)
+		if (t->icon_w) {
 		    XUnmapWindow(dpy, t->icon_w);
+		    IconDown (t);
+		}
 		XUnmapWindow(dpy, t->list->icon);
 		t->icon = FALSE;
 		t->icon_on = FALSE;
@@ -2185,8 +2187,10 @@ TwmWindow *tmp_win;
 	XMapRaised(dpy, tmp_win->frame);
     SetMapStateProp(tmp_win, NormalState);
 
-    if (tmp_win->icon_w)
+    if (tmp_win->icon_w) {
 	XUnmapWindow(dpy, tmp_win->icon_w);
+	IconDown (tmp_win);
+    }
     if (tmp_win->list)
 	XUnmapWindow(dpy, tmp_win->list->icon);
     if (Scr->WarpCursor && tmp_win->icon)
@@ -2212,6 +2216,8 @@ int def_x, def_y;
     {
 	if (tmp_win->icon_w == NULL)
 	    CreateIconWindow(tmp_win, def_x, def_y);
+	else
+	    IconUp(tmp_win);
 	XMapRaised(dpy, tmp_win->icon_w);
     }
     if (tmp_win->list)

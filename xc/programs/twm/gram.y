@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.34 89/05/04 15:51:28 jim Exp $
+ * $XConsortium: gram.y,v 1.35 89/05/04 19:02:40 keith Exp $
  *
  * .twmrc command grammer
  *
@@ -35,7 +35,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.34 89/05/04 15:51:28 jim Exp $";
+"$XConsortium: gram.y,v 1.35 89/05/04 19:02:40 keith Exp $";
 
 #include <stdio.h>
 #include "twm.h"
@@ -120,7 +120,8 @@ stmts		: /* Empty */
 
 stmt		: error
 		| FORCE_ICON		{ if (Scr->FirstTime) Scr->ForceIcon = TRUE; }
-		| ICON_REGION string grav grav { AddIconRegion($2, $3, $4); }
+		| ICON_REGION string grav grav number number
+					{ AddIconRegion($2, $3, $4, $5, $6); }
 		| ICON_FONT string	{   Scr->IconFont.name = $2;
 					    GetFont(&Scr->IconFont);
 					}
