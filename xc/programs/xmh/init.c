@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: init.c,v 1.19 87/08/06 13:21:50 toddb Locked $";
+static char rcs_id[] = "$Header: init.c,v 1.20 87/08/06 13:22:04 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -114,6 +114,12 @@ char **argv;
     }
 }
 
+static char *defaultFile[] = { "%s/xmh.Xdefaults",	/* LIBDIR */
+			       "%s/xmh.X11defaults",	/* LIBDIR */
+			       "%s/.Xdefaults",		/* homeDir */
+			       "%s/.X11defaults"	/* homeDir */
+			     };
+
 /* All the start-up initialization goes here. */
 
 InitializeWorld(argc, argv)
@@ -124,11 +130,13 @@ char **argv;
     Position x, y;
     Dimension width, height;
     FILEPTR fid;
-    XrmResourceDataBase db, db2;
+    XrmResourceDataBase db = NULL, db2;
     char str[500], str2[500], *ptr;
     XrmNameList names;
     XrmClassList classes;
     Scrn scrn;
+    int defaultIndex;
+
     XtInitialize();
     ProcessCommandLine(argc, argv);
     theDisplay = XOpenDisplay(displayName);
@@ -140,25 +148,19 @@ char **argv;
     homeDir = MallocACopy(getenv("HOME"));
 
     (void) XrmInitialize();
-#ifdef X11
-    (void) sprintf(str, "%s/xmh.X11defaults", LIBDIR);
-#endif
-#ifdef X10
-    (void) sprintf(str, "%s/xmh.Xdefaults", LIBDIR);
-#endif
-    fid = myfopen(str, "r");
-    if (fid) {
-	XrmGetDataBase(fid, &db);
-	(void)myfclose(fid);
-    } else db = NULL;
-    (void) sprintf(str, "%s/.Xdefaults", homeDir);
-    fid = myfopen(str, "r");
-    if (fid) {
-	XrmGetDataBase(fid, &db2);
-	(void)myfclose(fid);
-	if (db) XrmMergeDataBases(db2, &db);
-	else db = db2;
+
+    for (defaultIndex=0; defaultIndex<XtNumber(defaultFile); defaultIndex++) {
+        (void) sprintf( str, defaultFile[defaultIndex],
+		        (defaultIndex<2 ? LIBDIR : homeDir) );
+	fid = myfopen(str, "r");
+	if (fid) {
+	    XrmGetDataBase(fid, &db2);
+	    (void)myfclose(fid);
+	    if (db) XrmMergeDataBases(db2, &db);
+	       else db = db2;
+	}
     }
+
     if (db) XrmSetCurrentDataBase(db);
 
     (void) sprintf(str, "%s/.mh_profile", homeDir);
