@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.88 92/08/18 19:04:43 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.89 92/08/18 20:18:04 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -258,6 +258,7 @@ char *hotwinname = "a2x";
 Window hotwin = None;
 char *hotkeyname = NULL;
 char *hotwingeom = NULL;
+Bool hotwinfocus = True;
 KeyCode hotkey = 0;
 #ifdef XTRAP
 XETC *tc;
@@ -352,7 +353,7 @@ generate_warp(screen, x, y)
 void
 usage()
 {
-    printf("%s: [-d <display>] [-e] [-b] [-u <undofile>] [-h <keysym>] [-w <name>] [-g <geometry>]\n",
+    printf("%s: [-d <display>] [-e] [-b] [-u <undofile>] [-h <keysym>] [-w <name>] [-f] [-g <geometry>]\n",
 	   progname);
     exit(1);
 }
@@ -538,6 +539,15 @@ reset_mapping()
 	if (hotwin) {
 	    XGrabKey(dpy, hotkey, 0, DefaultRootWindow(dpy), False,
 		     GrabModeAsync, GrabModeAsync);
+	    if (hotwinfocus) {
+		XEvent ev;
+		ev.xfocus.type = FocusIn;
+		ev.xfocus.serial = 0;
+		ev.xfocus.window = hotwin;
+		ev.xfocus.mode = NotifyNormal;
+		ev.xfocus.detail = NotifyAncestor;
+		XSendEvent(dpy, hotwin, False, FocusChangeMask, &ev);
+	    }
 	    if (hotwingeom &&
 		XGetGeometry(dpy, w, &root, &x, &y, &width, &height,
 			     &bwidth, &depth) &&
@@ -2407,6 +2417,9 @@ main(argc, argv)
 	    if (!argc)
 		usage();
 	    hotwinname = *argv;
+	    break;
+	case 'f':
+	    hotwinfocus = False;
 	    break;
 	case 'g':
 	    argc--; argv++;
