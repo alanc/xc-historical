@@ -9,7 +9,10 @@ SRCS1 =	 mfbgc.c mfbwindow.c mfbfont.c \
 	 mfbbltC.c mfbbltX.c mfbbltCI.c mfbbltO.c mfbbltG.c \
 	 mfbcmap.c mfbtileC.c mfbtileG.c mfbmisc.c mfbbstore.c
 
-SRCS =	 $(SRCS1) mfbplygblt.c mfbimggblt.c mfbpntarea.c mfbtegblt.c
+SRCS =	 $(SRCS1) mfbseg.c mfbpgbwht.c mfbpgbblak.c mfbpgbinv.c mfbigbwht.c \
+	 mfbigbblak.c mfbpawhite.c mfbpablack.c mfbpainv.c mfbtewhite.c \
+	 mfbteblack.c mfbbltC.c mfbbltX.c mfbbltCI.c mfbbltO.c mfbbltG.c \
+	 mfbtileC.c mfbtileG.c
 
 OBJS =   mfbgc.o mfbwindow.o mfbfont.o \
 	 mfbfillrct.o mfbpntwin.o maskbits.o mfbpixmap.o \
@@ -34,50 +37,41 @@ NormalLibraryTarget(mfb,$(OBJS))
 LintLibraryTarget(mfb,$(SRCS1))
 NormalLintTarget($(LINTDEFS) $(SRCS1))
 
-#define MultiObj(dst,src,flag)						@@\
-dst.c:									@@\
-	$(LN) src.c dst.c						@@\
-dst.o: src.c dst.c							@@\
-	$(CC) flag $(CFLAGS) -c dst.c					@@\
-depend:: dst.c								@@\
-clean::									@@\
-	$(RM) dst.c
+ObjectFromSpecialSource(mfbseg,mfbline,-DPOLYSEGMENT)
 
-MultiObj(mfbseg,mfbline,-DPOLYSEGMENT)
+ObjectFromSpecialSource(mfbpgbwht,mfbplygblt,-DMFBPOLYGLYPHBLT=mfbPolyGlyphBltWhite -DOPEQ=\|=)
 
-MultiObj(mfbpgbwht,mfbplygblt,-DMFBPOLYGLYPHBLT=mfbPolyGlyphBltWhite -DOPEQ=\|=)
+ObjectFromSpecialSource(mfbpgbblak,mfbplygblt,-DMFBPOLYGLYPHBLT=mfbPolyGlyphBltBlack -DOPEQ=\&=\~)
 
-MultiObj(mfbpgbblak,mfbplygblt,-DMFBPOLYGLYPHBLT=mfbPolyGlyphBltBlack -DOPEQ=\&=\~)
+ObjectFromSpecialSource(mfbpgbinv,mfbplygblt,-DMFBPOLYGLYPHBLT=mfbPolyGlyphBltInvert -DOPEQ=\^=)
 
-MultiObj(mfbpgbinv,mfbplygblt,-DMFBPOLYGLYPHBLT=mfbPolyGlyphBltInvert -DOPEQ=\^=)
+ObjectFromSpecialSource(mfbigbwht,mfbimggblt,-DMFBIMAGEGLYPHBLT=mfbImageGlyphBltWhite -DOPEQ=\|=)
 
-MultiObj(mfbigbwht,mfbimggblt,-DMFBIMAGEGLYPHBLT=mfbImageGlyphBltWhite -DOPEQ=\|=)
+ObjectFromSpecialSource(mfbigbblak,mfbimggblt,-DMFBIMAGEGLYPHBLT=mfbImageGlyphBltBlack -DOPEQ=\&=\~)
 
-MultiObj(mfbigbblak,mfbimggblt,-DMFBIMAGEGLYPHBLT=mfbImageGlyphBltBlack -DOPEQ=\&=\~)
+ObjectFromSpecialSource(mfbpawhite,mfbpntarea,-DMFBSOLIDFILLAREA=mfbSolidWhiteArea -DMFBSTIPPLEFILLAREA=mfbStippleWhiteArea -DOPEQ=\|= -DEQWHOLEWORD=\=\~0)
 
-MultiObj(mfbpawhite,mfbpntarea,-DMFBSOLIDFILLAREA=mfbSolidWhiteArea -DMFBSTIPPLEFILLAREA=mfbStippleWhiteArea -DOPEQ=\|= -DEQWHOLEWORD=\=\~0)
+ObjectFromSpecialSource(mfbpablack,mfbpntarea,-DMFBSOLIDFILLAREA=mfbSolidBlackArea -DMFBSTIPPLEFILLAREA=mfbStippleBlackArea -DOPEQ=\&=\~ -DEQWHOLEWORD=\=0)
 
-MultiObj(mfbpablack,mfbpntarea,-DMFBSOLIDFILLAREA=mfbSolidBlackArea -DMFBSTIPPLEFILLAREA=mfbStippleBlackArea -DOPEQ=\&=\~ -DEQWHOLEWORD=\=0)
+ObjectFromSpecialSource(mfbpainv,mfbpntarea,-DMFBSOLIDFILLAREA=mfbSolidInvertArea -DMFBSTIPPLEFILLAREA=mfbStippleInvertArea -DOPEQ=\^= -DEQWHOLEWORD=\^=\~0)
 
-MultiObj(mfbpainv,mfbpntarea,-DMFBSOLIDFILLAREA=mfbSolidInvertArea -DMFBSTIPPLEFILLAREA=mfbStippleInvertArea -DOPEQ=\^= -DEQWHOLEWORD=\^=\~0)
+ObjectFromSpecialSource(mfbtewhite,mfbtegblt,-DMFBTEGLYPHBLT=mfbTEGlyphBltWhite -DOP= -DCLIPTETEXT=mfbImageGlyphBltWhite)
 
-MultiObj(mfbtewhite,mfbtegblt,-DMFBTEGLYPHBLT=mfbTEGlyphBltWhite -DOP= -DCLIPTETEXT=mfbImageGlyphBltWhite)
+ObjectFromSpecialSource(mfbteblack,mfbtegblt,-DMFBTEGLYPHBLT=mfbTEGlyphBltBlack -DOP=\~ -DCLIPTETEXT=mfbImageGlyphBltBlack)
 
-MultiObj(mfbteblack,mfbtegblt,-DMFBTEGLYPHBLT=mfbTEGlyphBltBlack -DOP=\~ -DCLIPTETEXT=mfbImageGlyphBltBlack)
+ObjectFromSpecialSource(mfbbltC,mfbblt,-DMROP=Mcopy)
 
-MultiObj(mfbbltC,mfbblt,-DMROP=Mcopy)
+ObjectFromSpecialSource(mfbbltX,mfbblt,-DMROP=Mxor)
 
-MultiObj(mfbbltX,mfbblt,-DMROP=Mxor)
+ObjectFromSpecialSource(mfbbltCI,mfbblt,-DMROP=McopyInverted)
 
-MultiObj(mfbbltCI,mfbblt,-DMROP=McopyInverted)
+ObjectFromSpecialSource(mfbbltO,mfbblt,'-DMROP=Mor')
 
-MultiObj(mfbbltO,mfbblt,'-DMROP=Mor')
+ObjectFromSpecialSource(mfbbltG,mfbblt,-DMROP=0)
 
-MultiObj(mfbbltG,mfbblt,-DMROP=0)
+ObjectFromSpecialSource(mfbtileC,mfbtile,-DMROP=Mcopy)
 
-MultiObj(mfbtileC,mfbtile,-DMROP=Mcopy)
-
-MultiObj(mfbtileG,mfbtile,-DMROP=0)
+ObjectFromSpecialSource(mfbtileG,mfbtile,-DMROP=0)
 
 DependTarget()
 
