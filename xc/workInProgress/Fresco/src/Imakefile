@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.9 94/03/30 12:07:57 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.10 94/06/03 22:46:06 matt Exp matt $
 #define DoNormalLib NormalLibFresco
 #define DoSharedLib SharedLibFresco
 #define DoDebugLib DebugLibFresco
@@ -9,6 +9,10 @@ XCOMM $XConsortium: Imakefile,v 1.9 94/03/30 12:07:57 gildea Exp $
 
 #ifdef SharedFrescoReqs
 REQUIREDLIBS = SharedFrescoReqs
+#endif
+
+#ifdef HasPoll
+POLL_DEFINES = -DUSE_POLL
 #endif
 
 
@@ -77,6 +81,7 @@ OBJS =  \
 #include <Library.tmpl>
 
 SpecialCplusplusLibObjectRule(Xdisplay,$(ICONFIGFILES),$(FRESCO_DEFINES))
+SpecialCplusplusLibObjectRule(fresco,$(ICONFIGFILES),$(POLL_DEFINES))
 
 ALLDEFINES = $(CXXDEFINES)
 
