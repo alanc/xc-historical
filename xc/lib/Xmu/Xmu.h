@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xmu.h,v 1.4 88/09/13 12:23:30 jim Exp $
+ * $XConsortium: Xmu.h,v 1.5 88/09/29 18:54:48 swick Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -36,6 +36,7 @@ void XmuCvtStringToCursor();
 void XmuCvtStringToJustify();
 void XmuCvtStringToOrientation();
 void XmuCvtStringToPixmap();
+void XmuCvtStringToWidget();
 void XmuDeclareAtom( /* AtomPtr*, char* */ );
 Atom XmuInternAtom( /* Display*, AtomPtr */ );
 char *XmuGetAtomName( /* Display*, Atom */ );
