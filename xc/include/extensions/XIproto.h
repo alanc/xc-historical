@@ -1,4 +1,4 @@
-/* $Header: XIproto.h,v 1.8 90/05/18 14:04:10 rws Exp $ */
+/* $Header: XIproto.h,v 1.15 90/02/22 13:26:01 gms Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -137,8 +137,8 @@ struct tmask
 typedef struct {
     CARD8 	reqType;       /* input extension major code   */
     CARD8 	ReqType;       /* always X_GetExtensionVersion */
-    CARD16 	length;
-    CARD16 	nbytes;
+    CARD16 	length B16;
+    CARD16 	nbytes B16;
     CARD8 	pad1, pad2;
 } xGetExtensionVersionReq;
 
@@ -147,8 +147,8 @@ typedef struct {
     CARD8 	RepType;       	/* always X_GetExtensionVersion */
     CARD16 	sequenceNumber B16;
     CARD32 	length B32;
-    CARD16 	major_version;
-    CARD16 	minor_version;
+    CARD16 	major_version B16;
+    CARD16 	minor_version B16;
     BOOL 	present;
     CARD8 	pad1, pad2, pad3;
     CARD32 	pad01 B32;
@@ -166,7 +166,7 @@ typedef struct {
 typedef struct {
     CARD8 	reqType;	/* input extension major code	*/
     CARD8 	ReqType;	/* always X_ListInputDevices 	*/
-    CARD16 	length;
+    CARD16 	length B16;
 } xListInputDevicesReq;
 
 typedef struct {
@@ -193,7 +193,7 @@ typedef struct _xAnyClassinfo {
     } xAnyClassInfo;
 
 typedef struct _xDeviceInfo {
-    CARD32	type;
+    CARD32	type B32;
     CARD8	id;
     CARD8 	num_classes;
     CARD8 	use;
@@ -207,7 +207,7 @@ typedef struct _xKeyInfo {
     CARD8 	length;
     KeyCode 	min_keycode; 
     KeyCode 	max_keycode; 
-    CARD16 	num_keys;
+    CARD16 	num_keys B16;
     CARD8	pad1, pad2;
     } xKeyInfo;
 
@@ -216,7 +216,7 @@ typedef struct _xButtonInfo *xButtonInfoPtr;
 typedef struct _xButtonInfo {
     CARD8 	class;
     CARD8 	length;
-    CARD16 	num_buttons;
+    CARD16 	num_buttons B16;
     } xButtonInfo;
 
 typedef struct _xValuatorInfo *xValuatorInfoPtr;
@@ -226,15 +226,15 @@ typedef struct _xValuatorInfo {
     CARD8 	length;
     CARD8 	num_axes;
     CARD8 	mode;
-    CARD32 	motion_buffer_size;
+    CARD32 	motion_buffer_size B32;
     } xValuatorInfo;
 
 typedef struct _xAxisInfo *xAxisInfoPtr;
 
 typedef struct _xAxisInfo {
-    CARD32 	resolution;
-    CARD32 	min_value;
-    CARD32 	max_value;
+    CARD32 	resolution B32;
+    CARD32 	min_value B32;
+    CARD32 	max_value B32;
     } xAxisInfo;
 
 /*********************************************************
@@ -293,7 +293,7 @@ typedef struct {
 typedef struct {
     CARD8 	reqType;	/* input extension major code	*/
     CARD8 	ReqType;     	/* always X_SetDeviceMode 	*/
-    CARD16 	length;
+    CARD16 	length B16;
     CARD8       deviceid;
     CARD8       mode;
     BYTE 	pad1, pad2;
@@ -325,7 +325,7 @@ typedef struct {
     CARD16 	length B16;
     Window 	window B32;
     CARD16	count B16;
-    CARD16	pad00;
+    CARD16	pad00 B16;
 } xSelectExtensionEventReq;
 
 /*********************************************************
@@ -641,7 +641,7 @@ typedef struct {
 typedef struct {
     CARD8 	reqType;        /* input extension major code   */
     CARD8 	ReqType;        /* always X_GetDeviceFocus 	*/
-    CARD16 	length;
+    CARD16 	length B16;
     CARD8 	deviceid;
     BYTE 	pad1, pad2, pad3;
 } xGetDeviceFocusReq;
@@ -669,12 +669,12 @@ typedef struct {
 typedef struct {
     CARD8 	reqType;        /* input extension major code   */
     CARD8 	ReqType;        /* always X_SetDeviceFocus 	*/
-    CARD16 	length;
+    CARD16 	length B16;
     Window 	focus B32;
     Time   	time B32;
     CARD8  	revertTo;
     CARD8  	device;
-    CARD16 	pad01;
+    CARD16 	pad01 B16;
 } xSetDeviceFocusReq;
 
 /*********************************************************
@@ -696,81 +696,79 @@ typedef struct {
     CARD8  	RepType;        /* always X_GetFeedbackControl 	*/
     CARD16 	sequenceNumber B16;
     CARD32 	length B32;
-    CARD16	num_feedbacks;
-    CARD16	pad01;
-    CARD32	pad02;
-    CARD32	pad03;
-    CARD32	pad04;
-    CARD32	pad05;
-    CARD32	pad06;
+    CARD16	num_feedbacks B16;
+    CARD16	pad01 B16;
+    CARD32	pad02 B32;
+    CARD32	pad03 B32;
+    CARD32	pad04 B32;
+    CARD32	pad05 B32;
+    CARD32	pad06 B32;
 } xGetFeedbackControlReply;
 
 typedef struct {
     CARD8  	class; 		/* feedback class		*/
-    CARD8  	length; 	/* feedback length		*/
     CARD8  	id; 		/* feedback id    		*/
+    CARD16  	length B16; 	/* feedback length		*/
 } xFeedbackState;
 
 typedef struct {
     CARD8   class;
-    CARD8   length;
     CARD8   id;
-    CARD8   percent;
-    CARD16  pitch;
-    CARD16  duration;
-    CARD32  led_mask;
-    CARD32  led_values;
+    CARD16  length B16;
+    CARD16  pitch B16;
+    CARD16  duration B16;
+    CARD32  led_mask B32;
+    CARD32  led_values B32;
     BOOL    global_auto_repeat;
     CARD8   click;
-    BYTE    pad1, pad2;
+    CARD8   percent;
+    BYTE    pad;
     BYTE    auto_repeats[32];
 } xKbdFeedbackState;
 
 typedef struct {
     CARD8   class;
-    CARD8   length;
     CARD8   id;
-    CARD8   pad1,pad2,pad3;
-    CARD16  accelNum;
-    CARD16  accelDenom;
-    CARD16  threshold;
+    CARD16  length B16;
+    CARD8   pad1,pad2;
+    CARD16  accelNum B16;
+    CARD16  accelDenom B16;
+    CARD16  threshold B16;
 } xPtrFeedbackState;
 
 typedef struct {
     CARD8  	class;  	/* feedback class id		*/
-    CARD8  	length; 	/* feedback length  		*/
     CARD8   	id;
-    BYTE	pad;
-    CARD32	resolution;
-    CARD32	min_value;
-    CARD32	max_value;
+    CARD16  	length B16; 	/* feedback length  		*/
+    CARD32	resolution B32;
+    CARD32	min_value B32;
+    CARD32	max_value B32;
 } xIntegerFeedbackState;
 
 typedef struct {
     CARD8  	class;  	/* feedback class id		*/
-    CARD8  	length; 	/* feedback length  		*/
     CARD8   	id;
-    BYTE	pad;
-    CARD16	max_symbols;
-    CARD16	num_syms_supported;
+    CARD16  	length B16; 	/* feedback length  		*/
+    CARD16	max_symbols B16;
+    CARD16	num_syms_supported B16;
 } xStringFeedbackState;
 
 typedef struct {
     CARD8  	class;  	/* feedback class id		*/
-    CARD8  	length; 	/* feedback length  		*/
     CARD8	id;
+    CARD16  	length B16; 	/* feedback length  		*/
     CARD8	percent;
-    CARD16	pitch;
-    CARD16	duration;
+    BYTE	pad1, pad2, pad3;
+    CARD16	pitch B16;
+    CARD16	duration B16;
 } xBellFeedbackState;
 
 typedef struct {
     CARD8  	class;  	/* feedback class id		*/
-    CARD8  	length; 	/* feedback length  		*/
     CARD8	id;
-    BYTE	pad;
-    CARD32	led_mask;
-    CARD32	led_values;
+    CARD16  	length B16; 	/* feedback length  		*/
+    CARD32	led_mask B32;
+    CARD32	led_values B32;
 } xLedFeedbackState;
 
 /*********************************************************
@@ -783,7 +781,7 @@ typedef struct {
     CARD8	reqType;	/* input extension major code	*/
     CARD8 	ReqType;        /* X_ChangeFeedbackControl  	*/
     CARD16 	length B16;
-    CARD32	mask;
+    CARD32	mask B32;
     CARD8  	deviceid;
     CARD8  	feedbackid;
     BYTE	pad1, pad2;
@@ -791,67 +789,65 @@ typedef struct {
 
 typedef struct {
     CARD8  	class;  	/* feedback class id		*/
-    CARD8  	length; 	/* feedback length  		*/
     CARD8  	id; 		/* feedback id      		*/
+    CARD16  	length B16; 	/* feedback length  		*/
 } xFeedbackCtl;
 
 typedef struct {
     CARD8  	class;  	/* feedback class id		*/
-    CARD8  	length; 	/* feedback length  		*/
     CARD8  	id; 		/* feedback length  		*/
+    CARD16  	length B16; 	/* feedback length  		*/
     KeyCode 	key; 
     CARD8	auto_repeat_mode;
     INT8	click;
     INT8	percent;
-    CARD8	pad;
-    INT16	pitch;
-    INT16	duration;
-    CARD32	led_mask;
-    CARD32	led_values;
+    INT16	pitch B16;
+    INT16	duration B16;
+    CARD32	led_mask B32;
+    CARD32	led_values B32;
 } xKbdFeedbackCtl;
 
 typedef struct {
     CARD8  	class;  	/* feedback class id		*/
-    CARD8  	length; 	/* feedback length  		*/
     CARD8  	id; 		/* feedback id      		*/
-    CARD8  	pad1,pad2,pad3;
-    INT16	num;
-    INT16	denom;
-    INT16	thresh;
+    CARD16  	length B16; 	/* feedback length  		*/
+    CARD8  	pad1,pad2;
+    INT16	num B16;
+    INT16	denom B16;
+    INT16	thresh B16;
 } xPtrFeedbackCtl;
 
 typedef struct {
     CARD8  	class;  	/* feedback class id		*/
-    CARD8  	length; 	/* feedback length  		*/
     CARD8  	id; 		/* feedback id      		*/
-    BYTE	pad;
-    INT32	int_to_display;
+    CARD16  	length B16; 	/* feedback length  		*/
+    INT32	int_to_display B32;
 } xIntegerFeedbackCtl;
 
 typedef struct {
     CARD8  	class;  	/* feedback class id		*/
-    CARD8  	length; 	/* feedback length  		*/
     CARD8  	id; 		/* feedback id      		*/
-    CARD8  	pad1,pad2,pad3;
-    CARD16	num_keysyms;
+    CARD16  	length B16; 	/* feedback length  		*/
+    CARD8  	pad1,pad2;
+    CARD16	num_keysyms B16;
 } xStringFeedbackCtl;
 
 typedef struct {
     CARD8  	class;  	/* feedback class id		*/
-    CARD8  	length; 	/* feedback length  		*/
     CARD8  	id; 		/* feedback id      		*/
+    CARD16  	length B16; 	/* feedback length  		*/
     INT8	percent;
-    INT16	pitch;
-    INT16	duration;
+    BYTE	pad1, pad2, pad3;
+    INT16	pitch B16;
+    INT16	duration B16;
 } xBellFeedbackCtl;
 
 typedef struct {
     CARD8  	class;  	/* feedback class id		*/
-    CARD8  	length; 	/* feedback length  		*/
     CARD8  	id; 		/* feedback id      		*/
-    BYTE	pad;
-    CARD32	led_mask;
-    CARD32	led_values;
+    CARD16  	length B16; 	/* feedback length  		*/
+    CARD32	led_mask B32;
+    CARD32	led_values B32;
 } xLedFeedbackCtl;
 
 /*********************************************************
@@ -1085,7 +1081,7 @@ typedef struct {
     Window	destination B32;
     CARD8   	deviceid;
     BOOL   	propagate;
-    CARD16	count;
+    CARD16	count B16;
     CARD8	num_events;
     BYTE	pad1,pad2,pad3;
 } xSendExtensionEventReq;
@@ -1106,7 +1102,12 @@ typedef struct
     KeyButMask  device_state B16;
     CARD8	num_valuators;
     CARD8       first_valuator;
-    CARD32 	valuators[6] B32;
+    INT32 	valuator0 B32;
+    INT32 	valuator1 B32;
+    INT32 	valuator2 B32;
+    INT32 	valuator3 B32;
+    INT32 	valuator4 B32;
+    INT32 	valuator5 B32;
     }  deviceValuator;
 
 /**********************************************************
@@ -1178,7 +1179,9 @@ typedef struct
     CARD8       classes_reported;
     CARD8       buttons[4];
     CARD8       keys[4];
-    CARD32	valuators[3];
+    CARD32	valuator0 B32;
+    CARD32	valuator1 B32;
+    CARD32	valuator2 B32;
     }  deviceStateNotify;
 
 /**********************************************************

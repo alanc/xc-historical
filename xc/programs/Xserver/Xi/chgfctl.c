@@ -1,4 +1,4 @@
-/* $XConsortium: xchgfctl.c,v 1.7 90/05/18 14:04:51 rws Exp $ */
+/* $XConsortium: xchgfctl.c,v 1.8 90/05/18 15:20:04 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -170,6 +170,7 @@ ChangeKbdFeedback (client, dev, mask, k, f)
 
     if (client->swapped)
 	{
+	swaps(&f->length,n);
 	swaps(&f->pitch,n);
 	swaps(&f->duration,n);
 	swapl(&f->led_mask,n);
@@ -322,6 +323,7 @@ ChangePtrFeedback (client, dev, mask, p, f)
 
     if (client->swapped)
 	{
+	swaps(&f->length,n);
 	swaps(&f->num,n);
 	swaps(&f->denom,n);
 	swaps(&f->thresh,n);
@@ -401,6 +403,7 @@ ChangeIntegerFeedback (client, dev, mask, i, f)
 
     if (client->swapped)
 	{
+	swaps(&f->length,n);
 	swapl(&f->int_to_display,n);
 	}
 
@@ -450,6 +453,7 @@ ChangeStringFeedback (client, dev, mask, s, f)
 
     if (client->swapped)
 	{
+	swaps(&f->length,n);
 	swaps(&f->num_keysyms,n);
 	p = (long *) (f+1);
 	for (i=0; i<f->num_keysyms; i++)
@@ -485,6 +489,7 @@ ChangeBellFeedback (client, dev, mask, b, f)
 
     if (client->swapped)
 	{
+	swaps(&f->length,n);
 	swaps(&f->pitch,n);
 	swaps(&f->duration,n);
 	}
@@ -557,6 +562,7 @@ ChangeLedFeedback (client, dev, mask, l, f)
 
     if (client->swapped)
 	{
+	swapl(&f->length,n);
 	swapl(&f->led_values,n);
 	swapl(&f->led_mask,n);
 	}

@@ -1,4 +1,4 @@
-/* $XConsortium: xgetfctl.c,v 1.8 90/05/18 15:19:21 rws Exp $ */
+/* $XConsortium: xgetfctl.c,v 1.9 90/05/18 15:30:08 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -202,6 +202,7 @@ CopySwapKbdFeedback (client, k, buf)
 	k2->auto_repeats[i] = k->ctrl.autoRepeats[i];
     if (client->swapped)
 	{
+	swaps(&k2->length,n);
 	swaps(&k2->pitch,n);
 	swaps(&k2->duration,n);
 	swapl(&k2->led_mask,n);
@@ -234,6 +235,7 @@ CopySwapPtrFeedback (client, p, buf)
     p2->threshold = p->ctrl.threshold;
     if (client->swapped)
 	{
+	swaps(&p2->length,n);
 	swaps(&p2->accelNum,n);
 	swaps(&p2->accelDenom,n);
 	swaps(&p2->threshold,n);
@@ -265,6 +267,7 @@ CopySwapIntegerFeedback (client, i, buf)
     i2->max_value = i->ctrl.max_value;
     if (client->swapped)
 	{
+	swapl(&i2->length,n);
 	swapl(&i2->resolution,n);
 	swapl(&i2->min_value,n);
 	swapl(&i2->max_value,n);
@@ -302,6 +305,7 @@ CopySwapStringFeedback (client, s, buf)
 	*kptr++ = *(s->ctrl.symbols_supported+i);
     if (client->swapped)
 	{
+	swaps(&s2->length,n);
 	swaps(&s2->max_symbols,n);
 	swaps(&s2->num_syms_supported,n);
         kptr = (KeySym *) (*buf);
@@ -333,6 +337,7 @@ CopySwapLedFeedback (client, l, buf)
     l2->led_values = l->ctrl.led_values;
     if (client->swapped)
 	{
+	swapl(&l2->length,n);
 	swapl(&l2->led_values,n);
 	swapl(&l2->led_mask,n);
 	}
@@ -363,6 +368,7 @@ CopySwapBellFeedback (client, b, buf)
     b2->duration = b->ctrl.duration;
     if (client->swapped)
 	{
+	swaps(&b2->length,n);
 	swaps(&b2->pitch,n);
 	swaps(&b2->duration,n);
 	}

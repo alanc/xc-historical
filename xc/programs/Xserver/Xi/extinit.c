@@ -1,4 +1,4 @@
-/* $XConsortium: xextinit.c,v 1.8 90/05/18 11:37:05 rws Exp $ */
+/* $XConsortium: xextinit.c,v 1.9 90/05/18 15:26:00 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -472,13 +472,15 @@ SEventDeviceValuator (from, to)
     {
     register char	n;
     register int	i;
+    INT32 *ip B32;
 
     *to = *from;
     swaps(&to->sequenceNumber,n);
     swaps(&to->device_state,n);
+    ip = &to->valuator0;
     for (i=0; i<6; i++)
 	{
-        swapl(&to->valuators[i],n);	/* macro - braces are required	    */
+        swapl((ip+i),n);	/* macro - braces are required	    */
 	}
     }
 
@@ -500,14 +502,16 @@ SDeviceStateNotifyEvent (from, to)
     {
     register int	i;
     register char	n;
+    CARD32 *ip B32;
 
     *to = *from;
     swaps(&to->sequenceNumber,n);
     swapl(&to->time, n);
     swapl(&to->classes_reported, n);
+    ip = &to->valuator0;
     for (i=0; i<3; i++)
 	{
-        swapl(&to->valuators[i],n);	/* macro - braces are required	    */
+        swapl((ip+i),n);	/* macro - braces are required	    */
 	}
     }
 

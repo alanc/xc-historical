@@ -1,4 +1,4 @@
-/* $XConsortium: XExtToWire.c,v 1.5 90/05/18 11:08:33 rws Exp $ */
+/*      $Header: XExtToWire.c,v 1.8 90/04/05 17:49:26 gms Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -55,6 +55,7 @@ XInputEventToWire(dpy, re, event, count)
 	    register XDeviceKeyEvent *ev = (XDeviceKeyEvent*) re;
 	    register deviceKeyButtonPointer *kev;
 	    register deviceValuator *vev;
+	    INT32 *ip B32;
 
 	    *count = 2;
 	    kev = (deviceKeyButtonPointer *) Xmalloc (*count * sizeof (xEvent));
@@ -85,8 +86,9 @@ XInputEventToWire(dpy, re, event, count)
 		vev->device_state = ev->device_state;
 		vev->first_valuator = 0;
 		vev->num_valuators = ev->axes_count;
+		ip = &vev->valuator0;
 		for (i=0; i<vev->num_valuators; i++)
-		    vev->valuators[i] = ev->axis_data[i];
+		    *(ip+i) = ev->axis_data[i];
 		}
 	    break;
 	    }
@@ -97,6 +99,7 @@ XInputEventToWire(dpy, re, event, count)
 		(XProximityNotifyEvent *) re;
 	    register deviceKeyButtonPointer *pev;
 	    register deviceValuator *vev;
+	    INT32 *ip B32;
 
 	    *count = 2;
 	    pev = (deviceKeyButtonPointer *) Xmalloc (*count * sizeof (xEvent));
@@ -126,8 +129,9 @@ XInputEventToWire(dpy, re, event, count)
 		vev->device_state = ev->device_state;
 		vev->first_valuator = 0;
 		vev->num_valuators = ev->axes_count;
+	        ip = &vev->valuator0;
 		for (i=0; i<vev->num_valuators; i++)
-		    vev->valuators[i] = ev->axis_data[i];
+		    *(ip+i) = ev->axis_data[i];
 		}
 	    break;
 	    }
@@ -138,6 +142,7 @@ XInputEventToWire(dpy, re, event, count)
 		(XDeviceButtonEvent *) re;
 	    register deviceKeyButtonPointer *bev;
 	    register deviceValuator *vev;
+	    INT32 *ip B32;
 
 	    *count = 2;
 	    bev = (deviceKeyButtonPointer *) Xmalloc (*count * sizeof (xEvent));
@@ -168,8 +173,9 @@ XInputEventToWire(dpy, re, event, count)
 		vev->device_state = ev->device_state;
 		vev->first_valuator = 0;
 		vev->num_valuators = ev->axes_count;
+	        ip = &vev->valuator0;
 		for (i=0; i<vev->num_valuators; i++)
-		    vev->valuators[i] = ev->axis_data[i];
+		    *(ip+i) = ev->axis_data[i];
 		}
 	    break;
 	    }
@@ -179,6 +185,7 @@ XInputEventToWire(dpy, re, event, count)
 		(XDeviceMotionEvent *)re;
 	    register deviceKeyButtonPointer *mev;
 	    register deviceValuator *vev;
+	    INT32 *ip B32;
 
 	    *count = 2;
 	    mev = (deviceKeyButtonPointer *) Xmalloc (*count * sizeof (xEvent));
@@ -209,8 +216,9 @@ XInputEventToWire(dpy, re, event, count)
 		vev->device_state = ev->device_state;
 		vev->first_valuator = 0;
 		vev->num_valuators = ev->axes_count;
+	        ip = &vev->valuator0;
 		for (i=0; i<vev->num_valuators; i++)
-		    vev->valuators[i] = ev->axis_data[i];
+		    *(ip+i) = ev->axis_data[i];
 		}
 	    break;
 	    }
@@ -346,14 +354,16 @@ XInputEventToWire(dpy, re, event, count)
 		else if (any->class == ValuatorClass)
 		    {
 		    int	j;
+		    INT32 *ip B32;
 		    XValuatorStatus *val = (XValuatorStatus *) any;
 		    register deviceValuator *vev;
 
 		    sev->classes_reported |= (1 << ValuatorClass);
 		    sev->num_valuators = val->num_valuators < 3 ?
 					 val->num_valuators : 3;
+	            ip = &vev->valuator0;
 		    for (j=0; j<val->num_valuators && j<3; j++)
-			sev->valuators[j] = val->valuators[j];
+			*(ip+j) = val->valuators[j];
 		    if (val->num_valuators > 3)
 			{
 		        vev = (deviceValuator *) tev++;
@@ -364,8 +374,9 @@ XInputEventToWire(dpy, re, event, count)
 		        vev->num_valuators = val->num_valuators - 3;
 		        *sav_id |= MORE_EVENTS;
 			sav_id = &(vev->deviceid);
+	                ip = &vev->valuator0;
 			for (j=3; j<val->num_valuators; j++)
-			    vev->valuators[j-3] = val->valuators[j];
+			    *(ip+j-3) = val->valuators[j];
 		        }
 		    }
 		any = (XInputClass *) ((char *) any + any->length);
