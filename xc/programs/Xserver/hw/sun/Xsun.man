@@ -1,5 +1,5 @@
-.\" $XConsortium: Xsun.man,v 1.11 89/10/12 13:15:41 jim Exp $
-.TH XSUN 1 "Release 4" "X Version 11"
+.\" $XConsortium: Xsun.man,v 1.12 89/12/21 10:06:58 rws Exp $
+.TH XSUN 1 "Release 5" "X Version 11"
 .SH NAME
 Xsun \- Sun server for X Version 11
 .SH SYNOPSIS
@@ -12,9 +12,7 @@ It will normally be started by the \fIxdm(1)\fP daemon or by a script
 that runs the program \fIxinit(1)\fP.
 .SH CONFIGURATIONS
 .PP
-.I Xsun
-operates under SunOS versions 3.2, 3.4, and 4.0, on the Sun-2, Sun-3, Sun-4,
-and SPARCstation architectures.  If a specific framebuffer device file isn't
+If a specific framebuffer device file isn't
 specified on the command line with the \fI\-dev\fP switch, the server will look
 for the following framebuffers (the \fIconstype(1)\fP program may be used
 to tell which type of display is attached as the console):
@@ -82,44 +80,6 @@ put its standard input,  output and error files into non-blocking mode.
 .B "\-dev \fIfilename\fP"
 This option specifies the name of the framebuffer device file to be used
 instead of the built-in defaults described above.
-.SH "STARTING THE SERVER WITH XDM"
-.PP
-If X is to be used all of the time, the \fIxdm(1)\fP display manager should
-be used to start the server.  In addition to the normal configuration, the
-\fIXreset\fP script for the display should run the \fIkbd_mode\fP program
-to restore the keyboard should something happen to the server.  This can be
-done by editing the following line to the \fIxdm-config\fP file (usually
-found in the directory \fI/usr/lib/X11/xdm\fP, this is the file that is
-specified to \fIxdm\fP with the \fI-config\fP switch):
-.sp
-.in +0.5in
-.nf
-DisplayManager..0.reset:  /usr/lib/X11/xdm/Xreset.sun
-.fi
-.in -0.5in
-.sp
-and then copying the \fIXreset\fP script to \fI/usr/lib/X11/Xreset.sun\fP
-and adding the following line at the bottom:
-.sp
-.in +0.5in
-.nf
-kbd_mode -a
-.fi
-.in -0.5in
-.sp
-.SH "STARTING THE SERVER WITH XINIT"
-.PP
-If other window systems besides X are used, the system administrator should
-provide a script (such as \fI/usr/bin/X11/startx\fP) that runs the \fIxinit\fP 
-program to start the server.  This script will generally have the form:
-.sp
-.in +0.5in
-.nf
-xinit $firstclienttorun -- $serverarguments
-kbd_mode -a
-.ni
-.in -0.5in
-.sp
 .SH "USE WITH SUNWINDOWS OR NeWS"
 .PP
 The server can be run from outside 
@@ -163,11 +123,6 @@ desktop.
 .PP
 X(1), Xserver(1), xdm(1), xinit(1)
 .SH BUGS
-If the server crashes,  it may leave the keyboard in a non-blocking mode,
-requiring the \fIkbd_mode -a\fP program be run as root.  This is usually
-put into the \fIxdm\fP reset script or the end of the \fIxinit\fP script
-used to start the server.
-.PP
 The auto-configuration depends on there being appropriate
 special files in the
 .I /dev
