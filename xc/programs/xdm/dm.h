@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.51 91/09/19 16:28:35 keith Exp $
+ * $XConsortium: dm.h,v 1.52 91/10/31 09:45:48 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -56,8 +56,10 @@
 #endif
 #ifndef NGROUPS_MAX
 # include	<sys/param.h>
+#ifndef NGROUPS_MAX
 #ifdef NGROUPS
 #define NGROUPS_MAX NGROUPS
+#endif
 #endif
 #endif
 
