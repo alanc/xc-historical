@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cppsetup.c,v 1.3 88/08/21 14:07:25 rws Exp $
+ * $XConsortium: cppsetup.c,v 1.4 88/09/06 17:53:45 jim Exp $
  */
 #include "def.h"
 
@@ -97,4 +97,4 @@ yyerror(s)
 {
 	log_fatal("Fatal error: %s\n", s);
 }
-#endif	CPP
+#endif /* CPP */

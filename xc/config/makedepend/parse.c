@@ -1,5 +1,5 @@
 /*
- * $XConsortium: parse.c,v 1.8 88/09/22 13:52:51 jim Exp $
+ * $XConsortium: parse.c,v 1.9 89/06/02 17:30:57 jim Exp $
  */
 #include "def.h"
 #include	<sys/signal.h>
@@ -378,9 +378,9 @@ zero_value(exp, filep, file_red)
 {
 #ifdef	CPP
 	return (cppsetup(exp, filep, file_red) == 0);
-#else	CPP
+#else
 	return(TRUE);
-#endif	CPP
+#endif /* CPP */
 }
 
 define(def, file)

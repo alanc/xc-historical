@@ -1,11 +1,13 @@
 /*
- * $XConsortium: main.c,v 1.27 89/06/02 17:29:51 jim Exp $
+ * $XConsortium: main.c,v 1.28 89/06/13 18:35:04 jim Exp $
  */
 #include "def.h"
 #ifdef hpux
-#define sigvec sigvector
+I#define sigvec sigvector
 #endif /* hpux */
-#include	<sys/signal.h>
+
+#include <signal.h>
+
 
 #ifdef DEBUG
 int	debug;
@@ -94,14 +96,14 @@ int	width = 78;
 boolean	printed = FALSE;
 boolean	verbose = FALSE;
 boolean	show_where_not = FALSE;
-#if defined (mips) && defined (SYSTYPE_SYSV)
+#if USG
 void  catch();
-#else /* !(mips && SYSTYPE_SYSV) */
+#else 
 #if defined(ultrix) || defined(sun)
 void  catch();
 #else
 int   catch();
-#endif
+#endif /* ultrix or sun; should use SignalReturnProcType */
 
 struct sigvec sig_vec = {
 	catch,
@@ -115,7 +117,7 @@ struct sigvec sig_vec = {
 	|(1<<(SIGSYS-1)),
 	0
 };
-#endif /* mips && SYSTYPE_SYSV */
+#endif /* USG */
 
 main(argc, argv)
 	int	argc;
@@ -237,7 +239,7 @@ main(argc, argv)
 	/*
 	 * catch signals.
 	 */
-#if defined (mips) && defined (SYSTYPE_SYSV)
+#ifdef USG
 /*  should really reset SIGINT to SIG_IGN if it was.  */
 	signal (SIGHUP, catch);
 	signal (SIGINT, catch);
@@ -246,7 +248,7 @@ main(argc, argv)
 	signal (SIGBUS, catch);
 	signal (SIGSEGV, catch);
 	signal (SIGSYS, catch);
-#else /* not (mips && SYSTYPE_SYSV) */
+#else
 	sigvec(SIGHUP, &sig_vec, (struct sigvec *)0);
 	sigvec(SIGINT, &sig_vec, (struct sigvec *)0);
 	sigvec(SIGQUIT, &sig_vec, (struct sigvec *)0);
@@ -254,7 +256,7 @@ main(argc, argv)
 	sigvec(SIGBUS, &sig_vec, (struct sigvec *)0);
 	sigvec(SIGSEGV, &sig_vec, (struct sigvec *)0);
 	sigvec(SIGSYS, &sig_vec, (struct sigvec *)0);
-#endif /* mips && SYSTYPE_SYSV */
+#endif
 
 	/*
 	 * now peruse through the list of files.
@@ -415,6 +417,20 @@ char *basename(file)
 	return(file);
 }
 
+#ifdef USG
+int rename (from, to)
+    char *from, *to;
+{
+    (void) unlink (to);
+    if (link (from, to) == 0) {
+	unlink (from);
+	return 0;
+    } else {
+	return -1;
+    }
+}
+#endif /* USG */
+
 redirect(line, makefile)
 	char	*line,
 		*makefile;
@@ -465,9 +481,9 @@ redirect(line, makefile)
 		puts(line); /* same as fputs(fdout); but with newline */
 	}
 	fflush(fdout);
-#if defined (mips) && defined (SYSTYPE_SYSV)
+#if USG
 	chmod(makefile, st.st_mode);
-#else /* not (mips && SYSTYPE_SYSV) */
+#else
         fchmod(fileno(fdout), st.st_mode);
-#endif /* mips && SYSTYPE_SYSV */
+#endif /* USG */
 }
