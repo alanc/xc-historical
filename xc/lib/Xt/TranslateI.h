@@ -1,4 +1,4 @@
-/* $XConsortium: TranslateI.h,v 1.41 91/05/11 21:10:55 converse Exp $ */
+/* $XConsortium: TranslateI.h,v 1.42 91/06/14 17:58:41 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -59,6 +59,7 @@ typedef struct _ModToKeysymTable {
 typedef struct _LateBindings {
     unsigned int knot:1;
     unsigned int pair:1;
+    unsigned short ref_count;	/* garbage collection */
     KeySym keysym;
 } LateBindings, *LateBindingsPtr;
 
