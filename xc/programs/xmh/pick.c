@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: pick.c,v 1.14 88/01/19 14:39:07 swick Exp $";
+static char rcs_id[] = "$Header: pick.c,v 1.15 88/01/21 16:44:55 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -133,6 +133,8 @@ static ExecuteUpdate(form)
   FormBox form;
 {
     XtFormDoLayout(form->inner, TRUE);
+    XtManageChild(form->inner);
+    XtManageChild(form->outer);
 }
 
 static void AddLabel(row, text, usestd)
@@ -162,15 +164,13 @@ static void AddButton(row, text, func, hilite)
   int hilite;
 {
     FormEntry entry;
-    static XtCallbackRec callback[] = { {NULL, NULL}, {NULL, NULL} };
-    Arg args[1];
+    static Arg args[] = {
+	{XtNlabel, NULL},
+    };
 
-    XtSetArg( args[0], XtNlabel, text );
+    args[0].value = (XtArgVal)text;
     entry = CreateWidget( row, WTbutton, args, XtNumber(args) );
-    callback[0].callback = func;
-    callback[0].closure = (caddr_t)entry;
-    XtSetArg( args[0], XtNcallback, callback );
-    XtSetValues( entry->widget, args, XtNumber(args) );
+    XtAddCallback( entry->widget, XtNcallback, func, (caddr_t)entry );
     entry->hilite = hilite;
     if (hilite) PickFlipColors(entry->widget);
 }
@@ -379,7 +379,7 @@ char *str;
 
     DestroyErrorWidget(pick);
     XtSetArg( args[0], XtNlabel, str );
-    pick->errorwidget = XtCreateWidget( NULL, dialogWidgetClass,
+    pick->errorwidget = XtCreateWidget( "error", dialogWidgetClass,
 				        pick->scrn->widget,
 				        args, XtNumber(args) );
 
@@ -620,8 +620,8 @@ static Group AddGroup(form)
 	arglist[1].value = (XtArgVal)form->glist[form->numgroups - 2]->widget;
     else
 	arglist[1].value = (XtArgVal)NULL;
-    group->widget = XtCreateManagedWidget( NULL, formWidgetClass, form->inner,
-					   arglist, XtNumber(arglist) );
+    group->widget = XtCreateWidget( NULL, formWidgetClass, form->inner,
+				    arglist, XtNumber(arglist) );
     return group;
 }
 
@@ -644,6 +644,7 @@ static AddDetailGroup(form)
 	(void) AddRow(group, type);
     row =  AddRow(group, RTignore);
     AddButton(row, "- Or -", ExecGroupOr, FALSE);
+    XtManageChild(group->widget);
 }
 
 
@@ -651,27 +652,29 @@ static AddGeneralGroup(form)
   FormBox form;
 {
     Group group;
-    RowList row;
+    RowList row, rowList[4];
     group = AddGroup(form);
-    row =  AddRow(group, RTignore);
+    rowList[0] = row =  AddRow(group, RTignore);
     AddLabel(row, "Creating sequence:", FALSE);
     AddTextEntry(row, "");
     AddLabel(row, "with msgs from sequence:", FALSE);
     AddTextEntry(row, "");
-    row =  AddRow(group, RTignore);
+    rowList[1] = row =  AddRow(group, RTignore);
     AddLabel(row, "Date range:", FALSE);
     AddTextEntry(row, "");
     AddLabel(row, " - ", FALSE);
     AddTextEntry(row, "");
     AddLabel(row, "Date field:", FALSE);
     AddTextEntry(row, "");
-    row =  AddRow(group, RTignore);
+    rowList[2] = row =  AddRow(group, RTignore);
     AddLabel(row, "Clear old entries from sequence?", FALSE);
     AddButton(row, "Yes", ExecYesNo, TRUE);
     AddButton(row, "No", ExecYesNo, FALSE);
-    row =  AddRow(group, RTignore);
+    rowList[3] = row =  AddRow(group, RTignore);
     AddButton(row, "OK", ExecOK, FALSE);
     AddButton(row, "Cancel", ExecCancel, FALSE);
+    XtManageChildren(rowList, XtNumber(rowList));
+    XtManageChild(group->widget);
 }
 
 
@@ -723,11 +726,11 @@ int position;
     };
     FormBox result;
     result = (FormBox) XtMalloc(sizeof(FormBoxRec));
-    result->outer = XtCreateManagedWidget( "pick", viewportWidgetClass,
-					   pick->scrn->widget,
-					   arglist1, XtNumber(arglist1) );
-    result->inner = XtCreateManagedWidget(NULL, formWidgetClass, result->outer,
-					  arglist2, XtNumber(arglist2));
+    result->outer = XtCreateWidget( "pick", viewportWidgetClass,
+				    pick->scrn->widget,
+				    arglist1, XtNumber(arglist1) );
+    result->inner = XtCreateWidget( "form", formWidgetClass, result->outer,
+				    arglist2, XtNumber(arglist2) );
     result->pick = pick;
     result->numgroups = 0;
     result->glist = (Group *) XtMalloc(1);
@@ -761,19 +764,21 @@ AddPick(scrn, toc, fromseq, toseq)
 	pick->general = general = MakeAForm(pick, 2);
 	FindStdWidth();
 
+	XtPanedSetRefigureMode(scrn->widget, False);
 	PrepareToUpdate(details);
 	AddDetailGroup(details);
 	ExecuteUpdate(details);
 	PrepareToUpdate(general);
 	AddGeneralGroup(general);
 	ExecuteUpdate(general);
-	height = general->inner->core.height;
 #ifdef notdef
+	height = general->inner->core.height;
 	if (general->inner->core.width > scrn->widget->core.width)
 	    height += XtScrollMgrGetThickness(general->outer);
 	XtPanedSetMinMax(scrn->widget, general->outer, height, height);
 	XtPanedSetMinMax(scrn->widget, general->outer, 10, 10000);
 #endif notdef
+	XtPanedSetRefigureMode(scrn->widget, True);
     }
     pick->toc = toc;
     InitGeneral(pick, fromseq, toseq);
