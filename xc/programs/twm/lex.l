@@ -26,7 +26,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: lex.l,v 1.24 89/04/12 18:55:49 jim Exp $
+ * $XConsortium: lex.l,v 1.25 89/04/13 10:01:20 jim Exp $
  *
  * .twmrc lex file
  *
@@ -35,7 +35,7 @@
  ***********************************************************************/
 
 static char RCSinfo[]=
-"$XConsortium: lex.l,v 1.24 89/04/12 18:55:49 jim Exp $";
+"$XConsortium: lex.l,v 1.25 89/04/13 10:01:20 jim Exp $";
 
 #include <stdio.h>
 #include "gram.h"
@@ -252,7 +252,7 @@ t.move				{ return F_MOVE; }
 [Ii][Cc][Oo][Nn][Mm][Aa][Nn][Aa][Gg][Ee][Rr][Dd][Oo][Nn][Tt][Ss][Hh][Oo][Ww] { return ICONMGR_NOSHOW; }
 [Ii][Cc][Oo][Nn][Mm][Aa][Nn][Aa][Gg][Ee][Rr][Ss][Hh][Oo][Ww] { return ICONMGR_SHOW; }
 [Nn][Oo][Bb][Aa][Cc][Kk][Ii][Nn][Gg][Ss][Tt][Oo][Rr][Ee] { return NO_BACKINGSTORE; }
-[Nn][Oo][Ss][Aa][Vv][Ee][Uu][Nn][Dd][Ee][Rr] { return NO_SAVEUNDER; }
+[Nn][Oo][Ss][Aa][Vv][Ee][Uu][Nn][Dd][Ee][Rr][Ss]? { return NO_SAVEUNDER; }
 [Rr][Aa][Nn][Dd][Oo][Mm][Pp][Ll][Aa][Cc][Ee][Mm][Ee][Nn][Tt] { return RANDOM_PLACEMENT; }
 {string}			{ yylval.ptr = (char *)yytext; return STRING; }
 {number}			{ (void)sscanf(yytext, "%d", &yylval.num);
