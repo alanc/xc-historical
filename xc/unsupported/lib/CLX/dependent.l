@@ -24,6 +24,9 @@
 	  default-error-handler
 	  define-condition))
 
+#+explorer
+(zwei:define-indentation event-case (1 1))
+
 ;;; Number of seconds to wait for a reply to a server request
 (defparameter *reply-timeout* nil) 
 
@@ -603,10 +606,16 @@
        (unwind-protect 
 	   (progn (unless ,have-lock
 		    ;; Redundant, but saves time if not locked.
-		    (or (sys:store-conditional ,lock nil sys:current-process)
+		    (or #+explorer
+			(si:%store-conditional ,lock nil sys:current-process)
+			#-explorer
+			(sys:store-conditional ,lock nil sys:current-process)
 			(sys:process-lock ,lock ,@(when whostate `(nil ,whostate)))))
 		  ,@body)
 	 (unless ,have-lock
+	   #+explorer
+	   (si:%store-conditional ,lock sys:current-process nil)
+	   #-explorer
 	   (sys:store-conditional ,lock sys:current-process nil))))))
 
 #+excl
@@ -701,12 +710,45 @@
   (error "OPEN-X-STREAM not implemented yet."))
 
 #+symbolics-3600
+(progn
+
+;;; TCP and DNA are both layered products, so try to work with either one.
+
+(when (fboundp 'tcp:add-tcp-port-for-protocol)
+  (tcp:add-tcp-port-for-protocol :x-window-system 6000))
+
+(when (fboundp 'dna:add-dna-contact-id-for-protocol)
+  (dna:add-dna-contact-id-for-protocol :x-window-system "X0"))
+
+(net:define-protocol :x-window-system (:x-window-system :byte-stream)
+  (:invoke-with-stream ((stream :characters nil :ascii-translation nil))
+    stream))
+)
+
+#+symbolics-3600
 (defun open-x-stream (host display protocol)
-  protocol ;; unused
-  (tcp:open-tcp-stream host (+ *x-tcp-port* display) nil
-		       :direction :io
-		       :characters nil
-		       :ascii-translation nil))
+  (setf host (net:parse-host host))
+  ;; If PROTOCOL is NIL (the default), we use the generic network system to choose a network
+  ;; protocol. Since the GNS has no way to communicate the display number, this only works for
+  ;; display 0.  For other displays, we blindly default to TCP.
+  ;;
+  ;; To take advantage of this, add a service triple to the service host such as:
+  ;;   X-WINDOW-SYSTEM TCP X-WINDOW-SYSTEM
+  ;; or
+  ;;   X-WINDOW-SYSTEM DNA X-WINDOW-SYSTEM
+  (when (and (null protocol) (zerop display))
+    (return-from open-x-stream
+      (let ((neti:*invoke-service-automatic-retry* t))
+	(net:invoke-service-on-host :x-window-system host))))
+  (ccase protocol
+    ((:tcp nil)
+     (tcp:open-tcp-stream host (+ *x-tcp-port* display) nil
+			  :direction :io
+			  :characters nil
+			  :ascii-translation nil))
+    ((:dna)
+     (dna:open-dna-bidirectional-stream host (format nil "X~D" display)
+					:characters nil :ascii-translation nil))))
 
 #+explorer
 (defun open-x-stream (host display protocol)
@@ -833,28 +875,48 @@
 ;;;	receiving all data from the X Window System server.
 ;;;	You are encouraged to write a specialized version of
 ;;;	buffer-read-default that does block transfers.
+#-(or symbolics-3600 explorer excl)
+(defmacro CL-read-bytes (stream vector start end)
+  `(do* ((i ,start (index+ i 1))
+	 (c nil))
+	((index>= i ,end) nil)
+     (declare (type array-index i)
+	      (type (or null card8) c))
+     (setq c (read-byte ,stream nil nil))
+     (if c
+	 (setf (aref ,vector i) c)
+	 (return t))))
+
+;; Poll for input every *buffer-read-polling-time* SECONDS.
+#-(or symbolics-3600 explorer excl)
+(defparameter *buffer-read-polling-time* 0.5)
 
 #-(or symbolics-3600 explorer excl)
 (defun buffer-read-default (display vector start end timeout)
   (declare (type display display)
 	   (type buffer-bytes vector)
 	   (type array-index start end)
-	   (type (or null number) timeout))
+	   (type (or null (rational 0 *) (float 0.0 *)) timeout))
   (declare-buffun)
-  (declare (ignore timeout))
   (let ((stream (display-input-stream display)))
     (declare (type stream stream))
-    (if (and timeout (zerop timeout) (null (listen stream)))
-	:timeout
-	(do* ((i start (index+ i 1))
-	      (c nil))
-	     ((index>= i end) nil)
-	  (declare (type array-index i)
-		   (type (or null card8) c))
-	  (setq c (read-byte stream nil nil))
-	  (if c
-	      (setf (aref vector i) c)
-	      (return t))))))
+    (cond ((or (null timeout)			; timeout = NIL
+	       (listen stream))			; OR input waiting
+	   (cl-read-bytes stream vector start end))
+	  ((zerop timeout)			; timeout = 0 
+	   :timeout)				; no input (we listened above)
+	  (t					; timeout > 0, so poll until time is up.
+	   (multiple-value-bind (npoll fraction)
+	       (truncate timeout *buffer-read-polling-time*)
+	     (if (or (listen stream)		; listen first
+		     (dotimes (i npoll)		; Sleep for a time, then listen again
+		       (sleep *buffer-read-polling-time*)
+		       (when (listen stream) (return t)))
+		     (when (plusp fraction)
+		       (sleep fraction)		; Sleep a fraction of a second
+		       (listen stream)))	; and listen one last time
+		 (cl-read-bytes stream vector start end)
+		 :timeout))))))
 
 ;;; buffer-write--default - write data to the X stream
 
