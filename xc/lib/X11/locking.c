@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.c,v 1.9 93/08/22 17:56:00 rws Exp $
+ * $XConsortium: locking.c,v 1.10 93/08/26 08:56:58 rws Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -47,7 +47,6 @@ _Xthread_self()
     xthread_t me;
 
     if (!(me = TlsGetValue(_X_TlsIndex))) {
-	printf("initializing\n");
 	me = (xthread_t)xmalloc(sizeof(struct _xthread_t));
 	me->sem = CreateSemaphore(NULL, 0, 1, NULL);
 	me->next = NULL;
