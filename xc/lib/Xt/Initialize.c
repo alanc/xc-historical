@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.143 89/09/29 12:08:59 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.144 89/10/03 13:07:38 swick Exp $";
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 #endif /* lint */
 
@@ -259,12 +259,11 @@ static XrmDatabase GetUserDefaults(dpy)
 {
 	char *dpy_defaults = XResourceManagerString(dpy);
 	XrmDatabase rdb;
-	char	filenamebuf[MAXPATHLEN];
-	char	*filename = &filenamebuf[0];
 
 	if (dpy_defaults != NULL) {
 	    rdb = XrmGetStringDatabase(dpy_defaults);
 	} else {
+	    char filename[MAXPATHLEN];
 	    (void) XtGetRootDirName(filename);
 	    (void) strcat(filename, ".Xdefaults");
 	    rdb = XrmGetFileDatabase(filename);
@@ -282,7 +281,7 @@ static XrmDatabase GetEnvironmentDefaults()
 
 	if ((filename = getenv("XENVIRONMENT")) == NULL) {
 	    int len;
-	    (void) XtGetRootDirName(filename = &filenamebuf[0]);
+	    (void) XtGetRootDirName(filename = filenamebuf);
 	    (void) strcat(filename, ".Xdefaults-");
 	    len = strlen(filename);
 	    (void) _XtGetHostname (filename+len, MAXPATHLEN-len);
