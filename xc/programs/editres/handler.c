@@ -14,7 +14,7 @@
 
 extern void SetCommand(), PopupSetValues(), SetAndCenterTreeNode();
 extern void _TreeSelect(), _TreeRelabel(), _TreeActivate(), SetMessage();
-extern void _FlashActiveWidgets();
+extern void _FlashActiveWidgets(), _DumpTreeToFile(), _PopupFileDialog();
 
 /*	Function Name: Quit
  *	Description: This function prints a message to stdout.
@@ -207,4 +207,21 @@ Widget w;
 XtPointer junk, garbage;
 {
     _FlashActiveWidgets(global_tree_info);
+}
+
+/*	Function Name: DumpTreeToFile
+ *	Description: Dumps all widgets in the tree to a file.
+ *	Arguments: w - the widget that activated this callback.
+ *                 junk, garbage - ** NOT USED **.
+ *	Returns: none.
+ */
+
+/* ARGSUSED */
+void 
+DumpTreeToFile(w, junk, garbage)
+Widget w;
+XtPointer junk, garbage;
+{
+    _PopupFileDialog(XtParent(w), "Enter the filename:",
+		     _DumpTreeToFile, (XtPointer) global_tree_info);
 }

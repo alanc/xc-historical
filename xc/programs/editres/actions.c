@@ -1,5 +1,5 @@
 /*
- * $XConsortium: actions.c,v 1.1 90/03/14 17:09:45 kit Exp $
+ * $XConsortium: actions.c,v 1.2 90/03/14 17:20:38 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -144,6 +144,52 @@ Cardinal * num_params;
     }
 }
 
+/*	Function Name: PopdownFileDialogAction
+ *	Description: Pops down the file dialog widget.
+ *                   and calls the approipriate handler.
+ *	Arguments: w - any child of the dialog widget.
+ *                 event - the event that caused this action.
+ *                 params, num_params - params passed to the action routine.
+ * RETURNED        none.
+ */
+
+/* ARGSUSED */
+
+static void
+PopdownFileDialogAction(w, event, params, num_params)
+Widget w;
+XEvent * event;
+String * params;
+Cardinal * num_params;
+{
+    char buf[BUFSIZ];
+    Boolean val;
+
+    if (*num_params != 1) {
+	sprintf(buf, "Action `%s' must have exactly one argument.", 
+		"PopdownFileDialog");
+
+	SetMessage(global_screen_data.info_label, buf);
+	return;
+    }
+
+    XmuCopyISOLatin1Lowered(buf, params[0]);
+
+    if (streq(buf, "cancel"))
+	val = FALSE;
+    else if (streq(buf, "okay"))
+	val = TRUE;
+    else {
+	sprintf(buf, "Action %s's argument must be either `cancal' or `okay'.",
+		"PopdownFileDialog");
+
+	SetMessage(global_screen_data.info_label, buf);
+	return;
+    }
+
+    _PopdownFileDialog(w, (XtPointer) val, NULL);
+}
+
 /*	Function Name: SetApplicationActions
  *	Description: Sets my application actions.
  *	Arguments: app_con - the application context.
@@ -156,6 +202,7 @@ static XtActionsRec actions[] = {
   {"Select",            SelectAction},
   {"SVActiveEntry",     ModifySVEntry},
   {"Relabel",      	RelabelAction}, 
+  {"PopdownFileDialog", PopdownFileDialogAction},
 };
 
 void
@@ -246,3 +293,4 @@ Widget w;
 	return((WNode *) data_return);
     return(NULL);
 }
+

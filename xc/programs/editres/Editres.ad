@@ -1,5 +1,5 @@
 
-! The App-defaults file for Resedit.
+! The App-defaults file for Editres.
 
 Editres.Geometry:			500x600
 
@@ -18,12 +18,14 @@ Editres.Geometry:			500x600
 
 ! Menu Entry Names
 
-*SimpleMenu*quit.Label:			Quit
 *SimpleMenu*sendTree.Label:		Get Widget Tree
 *SimpleMenu*refreshTree.Label:		Refresh Current Widget Tree
 *SimpleMenu*showClientWidget.Label:	Select Widget in Client
-*SimpleMenu*flashActiveWidgets.Label:	Show Active Widgets
 *SimpleMenu*setValues.Label:		Set Values
+*SimpleMenu*dumpTreeToFile.Label:	Dump Widget Tree to a File
+*SimpleMenu*flashActiveWidgets.Label:	Show Active Widgets
+*SimpleMenu*quit.Label:			Quit
+
 
 *SimpleMenu*selectAll.Label:		Select All
 *SimpleMenu*unselectAll.Label:		Unselect All
@@ -45,6 +47,13 @@ Editres.Geometry:			500x600
 *hPane.Panner.height:			100
 *hPane.Panner.preferredPaneSize:	100
 *Paned*showGrip:			False
+
+! For the Filename popup dialog.
+
+*fileDialog*value:		
+*fileDialog*allowShellResize:		True
+*fileDialog*Text.Translations:		#override \n\
+	<Key>Return:		PopdownFileDialog(okay)
 
 ! For the SetValuesPopup widget
 

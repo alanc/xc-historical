@@ -782,3 +782,30 @@ WNode * node;
     XtSetArg(args[num_args], XtNy, node_y); num_args++;
     XtSetValues(node->tree_info->tree_widget, args, num_args);    
 }
+
+/*	Function Name: PerformTreeToFileDump
+ *	Description: Dumps the contents of the current widget tree to
+ *                   the file specified. 
+ *	Arguments: node - node to dump.
+ *                 num_tabs - number of spaces to indent.
+ *                 fp - pointer to the file to write to.
+ *	Returns: none.
+ */
+
+void
+PerformTreeToFileDump(node, num_tabs, fp)
+WNode * node;
+int num_tabs;
+FILE * fp;
+{
+    int i;
+
+    for (i = 0; i < num_tabs; i++) 
+	fprintf(fp, "\t");
+    fprintf(fp, "%s  %s\n", node->class, node->name);
+
+    num_tabs++;
+    for (i = 0; i < node->num_children; i++)
+	PerformTreeToFileDump(node->children[i], num_tabs, fp);
+}
+
