@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.24 89/03/22 15:23:06 jim Exp $
+ *	$XConsortium: ptyx.h,v 1.25 89/03/23 09:56:10 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -305,9 +305,6 @@ typedef struct {
 	Pixel		Tcursorcolor;	/* Cursor color			*/
 	Pixmap		Tbgndtile;	/* background tile pixmap	*/
 	int		Tcolor;		/* colors used			*/
-	Boolean		planeused;	/* is xorplane being used	*/
-	Boolean		cellsused;	/* are color cells being used	*/
-	XColor		colorcells[3];	/* color cells for Tek		*/
 	Boolean		Vshow;		/* VT window showing		*/
 	Boolean		Tshow;		/* Tek window showing		*/
 	Boolean		waitrefresh;	/* postpone refresh		*/

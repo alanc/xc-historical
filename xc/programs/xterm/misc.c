@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.30 89/03/01 20:00:34 jim Exp $
+ *	$XConsortium: misc.c,v 1.31 89/03/02 12:05:10 jim Exp $
  */
 
 
@@ -54,7 +54,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: misc.c,v 1.30 89/03/01 20:00:34 jim Exp $";
+static char rcs_id[] = "$XConsortium: misc.c,v 1.31 89/03/02 12:05:10 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -231,16 +231,6 @@ register int flag;
 		if(!Ttoggled)
 			TCursorToggle(TOGGLE);
 		screen->select |= flag;
-#ifdef obsolete
-		if(screen->cellsused) {
-			screen->colorcells[2].pixel =
-			 screen->Tcursorcolor;
-			XStoreColor(screen->display, 
-			 DefaultColormap(screen->display,
-				DefaultScreen(screen->display)),
-			 &screen->colorcells[2]);
-		}
-#endif /* obsolete */
 		if(!Ttoggled)
 			TCursorToggle(TOGGLE);
 		return;
@@ -269,17 +259,6 @@ register int flag;
 	if(!Ttoggled) TCursorToggle(TOGGLE);
 	screen->select &= ~flag;
 	TekUnselect();
-#ifdef obsolete
-			if(screen->cellsused) {
-				i = (term->flags & REVERSE_VIDEO) == 0;
-				screen->colorcells[i].pixel =
-				 screen->Tcursorcolor;
-				XStoreColor(screen->display, 
-			         DefaultColormap(screen->display,
-					       DefaultScreen(screen->display)),
-				 &screen->colorcells[i]);
-			}
-#endif /* obsolete */
 	if(!Ttoggled) TCursorToggle(TOGGLE);
     } else {
 	screen->select &= ~flag;
