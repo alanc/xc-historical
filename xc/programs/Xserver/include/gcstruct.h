@@ -1,4 +1,4 @@
-/* $XConsortium: gcstruct.h,v 5.5 92/12/24 12:34:18 rws Exp $ */
+/* $XConsortium: gcstruct.h,v 5.4 93/07/12 09:45:04 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -103,7 +103,7 @@ typedef struct _GCOps {
 		GCPtr /*pGC*/,
 		int /*nInit*/,
 		DDXPointPtr /*pptInit*/,
-		int */*pwidthInit*/,
+		int * /*pwidthInit*/,
 		int /*fSorted*/
 #endif
 );
@@ -112,9 +112,9 @@ typedef struct _GCOps {
 #if NeedNestedPrototypes
 		DrawablePtr /*pDrawable*/,
 		GCPtr /*pGC*/,
-		unsigned int */*psrc*/,
+		char * /*psrc*/,
 		DDXPointPtr /*ppt*/,
-		int */*pwidth*/,
+		int * /*pwidth*/,
 		int /*nspans*/,
 		int /*fSorted*/
 #endif
@@ -131,7 +131,7 @@ typedef struct _GCOps {
 		int /*h*/,
 		int /*leftPad*/,
 		int /*format*/,
-		char */*pBits*/
+		char * /*pBits*/
 #endif
 );
 
@@ -188,7 +188,7 @@ typedef struct _GCOps {
 		DrawablePtr /*pDrawable*/,
 		GCPtr /*pGC*/,
 		int /*nseg*/,
-		xSegment */*pSegs*/
+		xSegment * /*pSegs*/
 #endif
 );
 
@@ -197,7 +197,7 @@ typedef struct _GCOps {
 		DrawablePtr /*pDrawable*/,
 		GCPtr /*pGC*/,
 		int /*nrects*/,
-		xRectangle */*pRects*/
+		xRectangle * /*pRects*/
 #endif
 );
 
@@ -206,7 +206,7 @@ typedef struct _GCOps {
 		DrawablePtr /*pDrawable*/,
 		GCPtr /*pGC*/,
 		int /*narcs*/,
-		xArc */*parcs*/
+		xArc * /*parcs*/
 #endif
 );
 
@@ -226,7 +226,7 @@ typedef struct _GCOps {
 		DrawablePtr /*pDrawable*/,
 		GCPtr /*pGC*/,
 		int /*nrectFill*/,
-		xRectangle */*prectInit*/
+		xRectangle * /*prectInit*/
 #endif
 );
 
@@ -235,7 +235,7 @@ typedef struct _GCOps {
 		DrawablePtr /*pDrawable*/,
 		GCPtr /*pGC*/,
 		int /*narcs*/,
-		xArc */*parcs*/
+		xArc * /*parcs*/
 #endif
 );
 
@@ -246,7 +246,7 @@ typedef struct _GCOps {
 		int /*x*/,
 		int /*y*/,
 		int /*count*/,
-		char */*chars*/
+		char * /*chars*/
 #endif
 );
 
@@ -257,7 +257,7 @@ typedef struct _GCOps {
 		int /*x*/,
 		int /*y*/,
 		int /*count*/,
-		unsigned short */*chars*/
+		unsigned short * /*chars*/
 #endif
 );
 
@@ -268,7 +268,7 @@ typedef struct _GCOps {
 		int /*x*/,
 		int /*y*/,
 		int /*count*/,
-		char */*chars*/
+		char * /*chars*/
 #endif
 );
 
@@ -279,7 +279,7 @@ typedef struct _GCOps {
 		int /*x*/,
 		int /*y*/,
 		int /*count*/,
-		unsigned short */*chars*/
+		unsigned short * /*chars*/
 #endif
 );
 
@@ -290,8 +290,8 @@ typedef struct _GCOps {
 		int /*x*/,
 		int /*y*/,
 		unsigned int /*nglyph*/,
-		CharInfoPtr */*ppci*/,
-		char */*pglyphBase*/
+		CharInfoPtr * /*ppci*/,
+		pointer /*pglyphBase*/
 #endif
 );
 
@@ -302,8 +302,8 @@ typedef struct _GCOps {
 		int /*x*/,
 		int /*y*/,
 		unsigned int /*nglyph*/,
-		CharInfoPtr */*ppci*/,
-		char */*pglyphBase*/
+		CharInfoPtr * /*ppci*/,
+		pointer /*pglyphBase*/
 #endif
 );
 
@@ -319,7 +319,10 @@ typedef struct _GCOps {
 #endif
 );
 
+#ifdef NEED_LINEHELPER
     void	(* LineHelper)();
+#endif
+
     DevUnion	devPrivate;
 } GCOps;
 
