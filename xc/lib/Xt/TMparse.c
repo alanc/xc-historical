@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcsid[] =
-    "$XConsortium: TMparse.c,v 1.66 88/09/04 15:28:33 swick Exp $";
+    "$XConsortium: TMparse.c,v 1.67 88/09/05 14:11:36 swick Exp $";
 /* $oHeader: TMparse.c,v 1.4 88/09/01 17:30:39 asente Exp $ */
 #endif lint
 
@@ -33,6 +33,10 @@ SOFTWARE.
 #include "StringDefs.h"
 #include <stdio.h>
 #include "IntrinsicI.h"
+#ifndef NOTASCII
+#define XK_LATIN1
+#include <X11/keysymdef.h>
+#endif
 
 /* Private definitions. */
 #define LF 0x0a
@@ -734,6 +738,15 @@ static KeySym StringToKeySym(str)
     KeySym k;
 
     if (str == NULL || *str == '\0') return (KeySym) 0;
+
+#ifndef NOTASCII
+    /* special case single character ASCII, for speed */
+    if (*(str+1) == '\0') {
+	/* XXX why are handling A-Z, but not upper case in general??? */
+	if ('A' <= *str && *str <= 'Z') return XK_a + (*str - 'A' + 'a');
+	if (' ' <= *str && *str <= '~') return XK_space + (*str - ' ');
+    }
+#endif
 
     k = XStringToKeysym(str);
     if (k != NoSymbol) return k;
