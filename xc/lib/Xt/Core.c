@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Core.c,v 1.31 89/10/04 08:45:00 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Core.c,v 1.32 89/10/04 19:50:42 swick Exp $";
 /* $oHeader: Core.c,v 1.2 88/08/18 15:37:59 asente Exp $ */
 #endif /* lint */
 
@@ -45,13 +45,13 @@ SOFTWARE.
 externaldef(xtinherittranslations) int _XtInheritTranslations = NULL;
 
 static XtResource resources[] = {
-    {XtNscreen, XtCScreen, XtRPointer, sizeof(int),
+    {XtNscreen, XtCScreen, XtRScreen, sizeof(int),
       XtOffset(CoreWidget,core.screen), XtRCallProc, (XtPointer)XtCopyScreen},
 /*XtCopyFromParent does not work for screen because the Display
 parameter is not passed through to the XtRCallProc routines */
     {XtNdepth, XtCDepth, XtRInt,sizeof(int),
          XtOffset(CoreWidget,core.depth), XtRCallProc, (XtPointer)XtCopyFromParent},
-    {XtNcolormap, XtCColormap, XtRPointer, sizeof(Colormap),
+    {XtNcolormap, XtCColormap, XtRColormap, sizeof(Colormap),
       XtOffset(CoreWidget,core.colormap), XtRCallProc,(XtPointer)XtCopyFromParent},
     {XtNbackground, XtCBackground, XtRPixel,sizeof(Pixel),
          XtOffset(CoreWidget,core.background_pixel),
