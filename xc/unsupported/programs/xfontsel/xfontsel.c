@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: xfontsel.c,v 1.13 89/11/15 08:58:58 swick Exp $";
+static char Xrcsid[] = "$XConsortium: xfontsel.c,v 1.14 89/11/16 18:47:34 swick Exp $";
 #endif
 
 /*
@@ -59,7 +59,6 @@ void Quit();
 void OwnSelection();
 void SelectField();
 void ParseFontNames();
-void XFreeFontNames();
 void MakeFieldMenu();
 void SelectValue();
 void AnyValue();
