@@ -1,5 +1,5 @@
 /*
-* $XConsortium: StringDefs.h,v 1.46 89/07/21 12:03:40 swick Exp $
+* $XConsortium: StringDefs.h,v 1.47 89/09/12 16:48:08 swick Exp $
 * $oHeader: StringDefs.h,v 1.3 88/08/19 16:39:44 asente Exp $
 */
 
@@ -44,6 +44,7 @@ SOFTWARE.
 #define XtNborderPixmap "borderPixmap"
 #define XtNborderWidth "borderWidth"
 #define XtNcallback "callback"
+#define XtNchildren "children"
 #define XtNcolormap "colormap"
 #define XtNdepth "depth"
 #define XtNdestroyCallback "destroyCallback"
@@ -77,6 +78,7 @@ SOFTWARE.
 #define XtNmenuEntry "menuEntry"
 #define XtNname "name"
 #define XtNnotify "notify"
+#define XtNnumChildren "numChildren"
 #define XtNorientation "orientation"
 #define XtNparameter "parameter"
 #define XtNpixmap "pixmap"
@@ -154,6 +156,7 @@ SOFTWARE.
 #define XtCParameter "Parameter"
 #define XtCPixmap "Pixmap"
 #define XtCPosition "Position"
+#define XtCReadOnly "ReadOnly"
 #define XtCResize "Resize"
 #define XtCReverseVideo "ReverseVideo"
 #define XtCScreen "Screen"
@@ -191,6 +194,7 @@ SOFTWARE.
 #define XtRBoolean "Boolean"
 #define XtRCallback "Callback"
 #define XtRCallProc "CallProc"
+#define XtRCardinal "Cardinal"
 #define XtRColor "Color"
 #define XtRCursor "Cursor"
 #define XtRDimension "Dimension"
@@ -220,6 +224,7 @@ SOFTWARE.
 #define XtRTranslationTable "TranslationTable"
 #define XtRVisual "Visual"
 #define XtRWidget "Widget"
+#define XtRWidgetList "WidgetList"
 #define XtRWindow "Window"
 
 
