@@ -990,13 +990,19 @@
 #+Genera
 (defun process-block (whostate predicate &rest predicate-args)
   (declare (type function predicate)
-	   (downward-funarg predicate))
+	   #+clx-ansi-common-lisp
+	   (dynamic-extent predicate)
+	   #-clx-ansi-common-lisp
+	   (sys:downward-funarg predicate))
   (apply #'process:block-process whostate predicate predicate-args))
 
 #+(and lispm (not Genera))
 (defun process-block (whostate predicate &rest predicate-args)
   (declare (type function predicate)
-	   (downward-funarg predicate))
+	   #+clx-ansi-common-lisp
+	   (dynamic-extent predicate)
+	   #-clx-ansi-common-lisp 
+	   (sys:downward-funarg predicate))
   (apply #'global:process-wait whostate predicate predicate-args))
 
 #+excl
@@ -2248,7 +2254,8 @@
 
 #-(or clx-ansi-common-lisp Genera)
 (defun with-standard-io-syntax-function (function)
-  (declare (downward-funarg function))
+  (declare #+lispm
+	   (sys:downward-funarg function))
   (let ((*package* (find-package :user))
 	(*print-array* t)
 	(*print-base* 10)

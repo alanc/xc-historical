@@ -26,7 +26,6 @@
 (import
   '(
     sys:arglist
-    sys:downward-funarg
     sys:with-stack-list
     sys:with-stack-list*
     ))
@@ -235,8 +234,7 @@
   #+Genera (:import-from zwei indentation)
   #+lcl3.0 (:import-from lcl arglist)
   #+lispm (:import-from lisp char-bit)
-  #+lispm (:import-from sys arglist downward-funarg with-stack-list
-			with-stack-list*)
+  #+lispm (:import-from sys arglist with-stack-list with-stack-list*)
   (:export
     *version* access-control access-error access-hosts
     activate-screen-saver add-access-host add-resource add-to-save-set

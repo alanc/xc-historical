@@ -57,15 +57,6 @@
 #-(or lispm lcl3.0)
 (declaim (declaration arglist))
 
-;;; DOWNWARD-FUNARG name1 name2 ... -- Tells callers of this function that
-;;; closures passed in as the argument named by name can be consed on the
-;;; stack, as they have dynamic extent.  In Genera keyword args can't be named
-;;; this way.  Instead use * to specify all functional args have dynamic
-;;; extent.
-
-#-lispm
-(declaim (declaration downward-funarg))
-
 ;;; DYNAMIC-EXTENT var -- Tells the compiler that the rest arg var has
 ;;; dynamic extent and therefore can be kept on the stack and not copied to
 ;;; the heap, even though the value is passed out of the function.
@@ -596,7 +587,8 @@
 
 #-(or clx-ansi-common-lisp Genera)
 (defun print-unreadable-object-function (object stream type identity function)
-  (declare (downward-funarg function))
+  (declare #+lispm
+	   (sys:downward-funarg function))
   (princ "#<" stream)
   (when type
     (let ((type (type-of object))

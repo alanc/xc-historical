@@ -388,7 +388,10 @@
 	   (type boolean force-output-p)
 	   (dynamic-extent predicate-args))
   (declare (type function predicate)
-	   (downward-funarg predicate))
+	   #+clx-ansi-common-lisp
+	   (dynamic-extent predicate)
+	   #+(and lispm (not clx-ansi-common-lisp))
+	   (sys:downward-funarg predicate))
   (let ((reply-buffer nil)
 	(token (or (current-process) (cons nil nil))))
     (declare (type (or null reply-buffer) reply-buffer))
@@ -416,7 +419,10 @@
 			    (declare (type display display)
 				     (dynamic-extent predicate-args)
 				     (type function predicate)
-				     (downward-funarg predicate))
+				     #+clx-ansi-common-lisp
+				     (dynamic-extent predicate)
+				     #+(and lispm (not clx-ansi-common-lisp))
+				     (sys:downward-funarg predicate))
 			    (or (apply predicate predicate-args)
 				(null (display-input-in-progress display))
 				(not (null (display-dead display)))))
@@ -754,7 +760,10 @@
 	     (declare (type display display)
 		      (type reply-buffer event))
 	     (declare (type function handler)
-		      (downward-funarg handler))
+		      #+clx-ansi-common-lisp
+		      (dynamic-extent handler)
+		      #+(and lispm (not clx-ansi-common-lisp))
+		      (sys:downward-funarg handler))
 	     (reading-event (event :display display :sizes (8 16 ,@get-sizes))
 	       (funcall handler
 			:display display
@@ -1178,7 +1187,10 @@
 	   (type (or null number) timeout)
 	   (type boolean peek-p discard-p force-output-p))
   (declare (type t handler)
-	   (downward-funarg #+Genera * #-Genera handler))
+	   #+clx-ansi-common-lisp
+	   (dynamic-extent handler)
+	   #+(and lispm (not clx-ansi-common-lisp))
+	   (sys:downward-funarg #+Genera * #-Genera handler))
   (event-loop (display event timeout force-output-p discard-p)
     (let* ((event-code (event-code event)) ;; Event decoder defined by DECLARE-EVENT
 	   (event-decoder (and (index< event-code (length *event-handler-vector*))

@@ -110,7 +110,10 @@
   (declare (type sequence sequence)
 	   (type (or font gcontext) font))
   (declare (type (or null translation-function) translate)
-	   (downward-funarg #+Genera * #-Genera translate))
+	   #+clx-ansi-common-lisp
+	   (dynamic-extent translate)
+	   #+(and lispm (not clx-ansi-common-lisp))
+	   (sys:downward-funarg #+Genera * #-Genera translate))
   (declare (values width ascent descent left right
 		  font-ascent font-descent direction
 		  (or null array-index)))
@@ -212,7 +215,10 @@
 	   (type array-index start)
 	   (type (or null array-index) end))
   (declare (type (or null translation-function) translate)
-	   (downward-funarg #+Genera * #-Genera translate))
+	   #+clx-ansi-common-lisp
+	   (dynamic-extent translate)
+	   #+(and lispm (not clx-ansi-common-lisp))
+	   (sys:downward-funarg #+Genera * #-Genera translate))
   (declare (values integer (or null integer)))
   (when (type? font 'gcontext)
     (force-gcontext-changes font)
@@ -465,7 +471,10 @@
 	   (type (or null int32) width)
 	   (type index-size size))
   (declare (type (or null translation-function) translate)
-	   (downward-funarg #+Genera * #-Genera translate))
+	   #+clx-ansi-common-lisp
+	   (dynamic-extent translate)
+	   #+(and lispm (not clx-ansi-common-lisp))
+	   (sys:downward-funarg #+Genera * #-Genera translate))
   (declare (values boolean (or null int32)))
   (let* ((display (gcontext-display gcontext))
 	 (result t)
@@ -513,7 +522,10 @@
 	   (type (or null int32) width)
 	   (type index-size size))
   (declare (type (or null translation-function) translate)
-	   (downward-funarg #+Genera * #-Genera translate))
+	   #+clx-ansi-common-lisp
+	   (dynamic-extent translate)
+	   #+(and lispm (not clx-ansi-common-lisp))
+	   (sys:downward-funarg #+Genera * #-Genera translate))
   (declare (values (or null array-index) (or null int32)))
   (unless end (setq end (length sequence)))
   (ecase size
@@ -532,7 +544,10 @@
 	   (type sequence sequence))
   (declare (values (or null array-index) (or null int32)))
   (declare (type translation-function translate)
-	   (downward-funarg translate)) 
+	   #+clx-ansi-common-lisp
+	   (dynamic-extent translate)
+	   #+(and lispm (not clx-ansi-common-lisp))
+	   (sys:downward-funarg translate)) 
   (let* ((src-start start)
 	 (src-end (or end (length sequence)))
 	 (next-start nil)
@@ -631,7 +646,10 @@
 	   (type sequence sequence))
   (declare (values (or null array-index) (or null int32)))
   (declare (type translation-function translate)
-	   (downward-funarg translate))
+	   #+clx-ansi-common-lisp
+	   (dynamic-extent translate)
+	   #+(and lispm (not clx-ansi-common-lisp))
+	   (sys:downward-funarg translate))
   (let* ((src-start start)
 	 (src-end (or end (length sequence)))
 	 (next-start nil)
@@ -733,7 +751,10 @@
 	   (type (or null int32) width)
 	   (type index-size size))
   (declare (type (or null translation-function) translate)
-	   (downward-funarg #+Genera * #-Genera translate))
+	   #+clx-ansi-common-lisp
+	   (dynamic-extent translate)
+	   #+(and lispm (not clx-ansi-common-lisp))
+	   (sys:downward-funarg #+Genera * #-Genera translate))
   (declare (values boolean (or null int32)))
   (let* ((display (gcontext-display gcontext))
 	 (result t)
@@ -786,7 +807,10 @@
 	   (type (or null int32) width)
 	   (type index-size size))
   (declare (type (or null translation-function) translate)
-	   (downward-funarg #+Genera * #-Genera translate))
+	   #+clx-ansi-common-lisp
+	   (dynamic-extent translate)
+	   #+(and lispm (not clx-ansi-common-lisp))
+	   (sys:downward-funarg #+Genera * #-Genera translate))
   (declare (values (or null array-index) (or null int32)))
   (unless end (setq end (length sequence)))
   (ecase size
@@ -811,7 +835,10 @@
 	   (type (or null array-index) end)
 	   (type (or null int32) width)) 
   (declare (type (or null translation-function) translate)
-	   (downward-funarg translate))
+	   #+clx-ansi-common-lisp
+	   (dynamic-extent translate)
+	   #+(and lispm (not clx-ansi-common-lisp))
+	   (sys:downward-funarg translate))
   (declare (values (or null array-index) (or null int32)))
   (do* ((display (gcontext-display gcontext))
 	(length (index- end start))
@@ -874,7 +901,10 @@
 	   (type (or null array-index) end)
 	   (type (or null int32) width))
   (declare (type (or null translation-function) translate)
-	   (downward-funarg translate))
+	   #+clx-ansi-common-lisp
+	   (dynamic-extent translate)
+	   #+(and lispm (not clx-ansi-common-lisp))
+	   (sys:downward-funarg translate))
   (declare (values (or null array-index) (or null int32)))
   (do* ((display (gcontext-display gcontext))
 	(length (index- end start))

@@ -529,7 +529,10 @@
 
 (defun mask-get (index type-values body-function)
   (declare (type function body-function)
-	   (downward-funarg body-function))
+	   #+clx-ansi-common-lisp
+	   (dynamic-extent body-function)
+	   #+(and lispm (not clx-ansi-common-lisp))
+	   (sys:downward-funarg body-function))
   ;; This is a function, because it must return more than one form (called by get-put-items)
   ;; Functions that use this must have a binding for %MASK
   (let* ((bit 0)
@@ -560,7 +563,10 @@
 
 (defun mask-put (index type-values body-function)
   (declare (type function body-function)
-	   (downward-funarg body-function))
+	   #+clx-ansi-common-lisp
+	   (dynamic-extent body-function)
+	   #+(and lispm (not clx-ansi-common-lisp))
+	   (sys:downward-funarg body-function))
   ;; The MASK type writes a 32 bit mask with 1 bits for each non-nil value in TYPE-VALUES
   ;; A 32 bit value follows for each non-nil value.
   `((let ((%mask 0)
@@ -621,7 +627,10 @@
 
 (defun get-put-items (index type-args putp &optional body-function)
   (declare (type (or null function) body-function)
-	   (downward-funarg body-function))
+	   #+clx-ansi-common-lisp
+	   (dynamic-extent body-function)
+	   #+(and lispm (not clx-ansi-common-lisp))
+	   (sys:downward-funarg body-function))
   ;; Given a lists of the form (type item item ... item)
   ;; Calls body-function with four arguments, a function name,
   ;; index, item name, and optional arguments.

@@ -216,7 +216,10 @@
   (declare (type display display)
 	   (type (or null number) timeout)
 	   (type function function)
-	   (downward-funarg function))
+	   #+clx-ansi-common-lisp
+	   (dynamic-extent function)
+	   #+(and lispm (not clx-ansi-common-lisp))
+	   (sys:downward-funarg function))
   (with-event-queue (display :timeout timeout :inline t)
     (funcall function)))
 
