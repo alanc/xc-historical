@@ -11,12 +11,13 @@
 #ifdef VaxArchitecture
 #define XqvssServer Xqvss
 /* #define XqdssServer Xqdss */
+#define ServerOSDefines -DNOSTDHDRS -DX11R4
 #define HasSaberC YES
 #endif
 
 #define HasVoidSignalReturn NO
 
-XCOMM platform:  $XConsortium: bsd.cf,v 1.8 89/12/23 14:19:17 jim Exp $
+XCOMM platform:  $XConsortium: bsd.cf,v 1.9 90/11/30 11:13:48 rws Exp $
 XCOMM operating system:  OSName
 
 /*****************************************************************************
