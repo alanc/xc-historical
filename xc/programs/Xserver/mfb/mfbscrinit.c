@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbscrinit.c,v 5.1 89/06/16 16:58:02 keith Exp $ */
+/* $XConsortium: mfbscrinit.c,v 5.2 89/07/03 14:45:32 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"	/* for xColorItem */
@@ -33,9 +33,11 @@ SOFTWARE.
 #include "mfb.h"
 #include "mistruct.h"
 #include "dix.h"
+#include "mi.h"
 #include "mibstore.h"
-
 #include "servermd.h"
+
+extern RegionPtr mfbPixmapToRegion();
 
 /*ARGSUSED*/
 static
@@ -151,8 +153,10 @@ mfbScreenInit(index, pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     pScreen->DestroyColormap = mfbDestroyColormap;
 
     pScreen->RegionCreate = miRegionCreate;
+    pScreen->RegionInit = miRegionInit;
     pScreen->RegionCopy = miRegionCopy;
     pScreen->RegionDestroy = miRegionDestroy;
+    pScreen->RegionUninit = miRegionUninit;
     pScreen->Intersect = miIntersect;
     pScreen->Inverse = miInverse;
     pScreen->Union = miUnion;
@@ -165,6 +169,10 @@ mfbScreenInit(index, pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     pScreen->RegionNotEmpty = miRegionNotEmpty;
     pScreen->RegionEmpty = miRegionEmpty;
     pScreen->RegionExtents = miRegionExtents;
+    pScreen->RegionAppend = miRegionAppend;
+    pScreen->RegionValidate = miRegionValidate;
+    pScreen->BitmapToRegion = mfbPixmapToRegion;
+    pScreen->RectsToRegion = miRectsToRegion;
     pScreen->SendGraphicsExpose = miSendGraphicsExpose;
 
     pScreen->BlockHandler = NoopDDA;
