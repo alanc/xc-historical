@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.108 91/10/21 14:29:15 eswu Exp $
+ * $XConsortium: Tekproc.c,v 1.109 91/10/31 09:32:49 rws Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -74,7 +74,7 @@ extern long time();		/* included in <time.h> by Xos.h */
 
 #define TekColormap DefaultColormap( screen->display, \
 				    DefaultScreen(screen->display) )
-#define DefaultGCID DefaultGC(screen->display, DefaultScreen(screen->display))->gid
+#define DefaultGCID XGContextFromGC(DefaultGC(screen->display, DefaultScreen(screen->display)))
 
 /* Tek defines */
 
