@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.113 90/08/09 09:00:15 swick Exp $ */
+/* $XConsortium: TMstate.c,v 1.114 90/08/17 15:20:33 swick Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -2075,10 +2075,14 @@ void _XtFreeTranslations(app, toVal, closure, args, num_args)
 
     translateData = *(XtTranslations*)toVal->addr;
     stateTable = translateData->stateTable;
+#ifdef REFCNT_TRANSLATIONS
     for (i = stateTable->numEvents, eventObj = stateTable->eventObjTbl; i;) {
 	XtFree( (char*)eventObj->event.lateModifiers );
 	i--; eventObj++;
     }
+#else
+    /* %%% This leaks memory in XtDestroyAppContext */
+#endif
     XtFree( (char*)stateTable->eventObjTbl );
     XtFree( (char*)stateTable->quarkTable );
     XtFree( (char*)stateTable->accQuarkTable );
@@ -2087,10 +2091,14 @@ void _XtFreeTranslations(app, toVal, closure, args, num_args)
 	nextState = state->forw;
 	for (action = state->actions; action;) {
 	    ActionPtr nextAction = action->next;
+#ifdef REFCNT_TRANSLATIONS
 	    for (i = action->num_params; i;) {
 		XtFree( action->params[--i] );
 	    }
 	    XtFree( (char*)action->params );
+#else
+    /* %%% This leaks memory in XtDestroyAppContext */
+#endif
 	    XtFree( (char*)action );
 	    action = nextAction;
 	}
