@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $Header: servermd.h,v 1.30 88/05/17 13:41:01 rws Exp $ */
+/* $Header: servermd.h,v 1.31 88/06/03 12:33:16 matt Exp $ */
 
 /*
  * The vendor string identifies the vendor responsible for the
@@ -119,8 +119,25 @@ SOFTWARE.
 #define	GLYPHPADBYTES		2
 #define	GETLEFTBITS_ALIGNMENT	4
 
-#    endif
+#    else
+#     ifdef M4310
 
+#define IMAGE_BYTE_ORDER	MSBFirst        /* Values for Pegasus only */
+#define BITMAP_BIT_ORDER	MSBFirst
+#define GLYPHPADBYTES		1
+#define GETLEFTBITS_ALIGNMENT	4
+
+#     else
+#      ifdef M4330
+
+#define IMAGE_BYTE_ORDER	MSBFirst        /* Values for TNT/Crystal */
+#define BITMAP_BIT_ORDER	MSBFirst
+#define GLYPHPADBYTES		1
+#define GETLEFTBITS_ALIGNMENT	4
+
+#      endif
+#     endif
+#    endif
 #   endif
 #  endif
 # endif
