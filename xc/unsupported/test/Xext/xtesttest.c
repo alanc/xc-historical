@@ -1,4 +1,4 @@
-/* $XConsortium: xtesttest.c,v 1.0 91/04/16 15:03:32 rws Exp $ */
+/* $XConsortium: xtesttest.c,v 1.1 92/01/27 11:24:57 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -92,7 +92,7 @@ main (argc, argv)
     XWarpPointer(dpy, None, w, 0, 0, 0, 0, 10, 10);
     if (!XTestCompareCurrentCursorWithWindow(dpy, w))
 	printf("error: window cursor is not the displayed one\n");
-    XDefineCursor(dpy, w, None);
+    XUndefineCursor(dpy, w);
     if (!XTestCompareCursorWithWindow(dpy, w, None))
 	printf("error: window cursor is not the expected None\n");
     gc = DefaultGC(dpy, DefaultScreen(dpy));
