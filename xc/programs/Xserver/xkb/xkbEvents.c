@@ -1,4 +1,4 @@
-/* $XConsortium: xkbEvents.c,v 1.3 93/09/28 19:26:20 rws Exp $ */
+/* $XConsortium: xkbEvents.c,v 1.4 93/09/28 19:47:37 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -601,20 +601,38 @@ DeviceIntPtr pXDev = (DeviceIntPtr)LookupKeyboardDevice();
 	for (i=0;i<nEvents;i++) {
 	    type= xE[i].u.u.type;
 	    if ( (type>=KeyPress)&&(type<=MotionNotify) ) {
-		unsigned old = xE[i].u.keyButtonPointer.state;
+		CARD16 old;
+		char n;
+		if (pClient->swapped) {
+		    swaps(&xE[i].u.keyButtonPointer.state, n);
+		}
+		old = xE[i].u.keyButtonPointer.state;
 		xE[i].u.keyButtonPointer.state&= 0x1F00;
 		if ((old&0xE0FF)==(xkb->lookupState&0xE0FF))
 		     xE[i].u.keyButtonPointer.state|= 
 						(xkb->compatLookupState&0xff);
 		else xE[i].u.keyButtonPointer.state|= 
 						(xkb->compatGrabState&0xFF);
+		if (pClient->swapped) {
+		    swaps(&old, n);
+		    swaps(&xE[i].u.keyButtonPointer.state, n);
+		}
 		(void)WriteToClient(pClient,sizeof(xEvent),(char *)&xE[i]);
 		xE[i].u.keyButtonPointer.state= old;
 	    }
 	    else if ((type==EnterNotify)||(type==LeaveNotify)) {
-		unsigned old = xE->u.enterLeave.state;
+		CARD16 old;
+		char n;
+		if (pClient->swapped) {
+		    swaps(&xE[i].u.enterLeave.state, n);
+		}
+		old= xE->u.enterLeave.state;
 		xE->u.enterLeave.state&= 0x1F00;
 		xE->u.enterLeave.state|= (xkb->compatGrabState&0xFF);
+		if (pClient->swapped) {
+		    swaps(&old, n);
+		    swaps(&xE[i].u.enterLeave.state, n);
+		}
 		(void)WriteToClient(pClient,sizeof(xEvent),(char *)&xE[i]);
 		xE->u.enterLeave.state= old;
 	    }
