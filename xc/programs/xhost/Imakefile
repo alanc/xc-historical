@@ -1,7 +1,12 @@
+#if HasSecureRPC
+RPC_DEFINES = -DSECURE_RPC
+#else
+RPC_DEFINES = 
+#endif
         DEPLIBS = $(DEPXMULIB) $(DEPXLIB)
 LOCAL_LIBRARIES = $(XMULIB) $(XLIB)
            SRCS = xhost.c 
            OBJS = xhost.o 
-        DEFINES = ConnectionFlags $(SIGNAL_DEFINES)
+        DEFINES = ConnectionFlags $(SIGNAL_DEFINES) $(RPC_DEFINES)
 
 ComplexProgramTarget(xhost)
