@@ -1,4 +1,4 @@
-/* $XConsortium: pexRndr.c,v 5.15 92/11/10 18:58:33 hersh Exp $ */
+/* $XConsortium: pexRndr.c,v 5.16 92/11/17 17:27:58 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -198,8 +198,8 @@ pexCreateRendererReq    *strmPtr;
 	Xfree((pointer)(prend->pickstr.pseudoPM));
 	PEX_ERR_EXIT(err,0,cntxtPtr);	
     }
+    /* the fakepm resource gets added at the end of this routine now */
 
-    ADDRESOURCE(fakepm, PEXPickType, prend->pickstr.pseudoPM);
 
     /* create listoflist for doing Pick All */
     prend->pickstr.list = puCreateList(DD_LIST_OF_LIST);
@@ -217,7 +217,7 @@ pexCreateRendererReq    *strmPtr;
 	Xfree((pointer)(fakeStr));
 	PEX_ERR_EXIT(err,0,cntxtPtr);
     }
-    ADDRESOURCE(fakeStrID, PEXStructType, fakeStr);
+    /* the fakeStr resource gets added at the end of this routine now */
 
     /* Now create 2 ddPickPaths, one for the fakeStrlist and the other
        for maintaining the correspondence between the user supplied 
@@ -447,6 +447,8 @@ pexCreateRendererReq    *strmPtr;
     };
 
     ADDRESOURCE(strmPtr->rdr, PEXRendType, prend);
+    ADDRESOURCE(fakepm, PEXPickType, prend->pickstr.pseudoPM);
+    ADDRESOURCE(fakeStrID, PEXStructType, fakeStr);
     return( err );
 
 } /* end-PEXCreateRenderer() */
