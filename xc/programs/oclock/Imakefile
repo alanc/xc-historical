@@ -2,7 +2,7 @@
 #include BandAidCompiler
 #endif
 
-DEFINES = -DSHAPE
+DEFINES = ExtensionDefines
 INCLUDES = -I$(TOP) -I$(TOP)/X11
 SYS_LIBRARIES = -lm
 DEPLIBS = XawClientDepLibs
