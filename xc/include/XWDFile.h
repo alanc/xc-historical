@@ -2,7 +2,7 @@
 
 /* Copyright 1985, 1986, Massachusetts Institute of Technology */
 
-/* $Header: XWDFile.h,v 1.4 87/07/16 22:55:35 rws Locked $ */
+/* $Header: XWDFile.h,v 1.5 87/09/09 20:24:02 rws Exp $ */
 /*
  * XWDFile.h	MIT Project Athena, X Window system window raster
  *		image dumper, dump file format header file.
@@ -14,30 +14,34 @@
  *              18-Nov-86  - version 6 for saving/restoring color maps
  */
 
+typedef unsigned long xwdval;
+
 #define XWD_FILE_VERSION 7
 
 typedef struct _xwd_file_header {
-	int header_size;	/* Size of the entire file header (bytes). */
-	int file_version;	/* XWD_FILE_VERSION */
-	int pixmap_format;	/* Pixmap format. */
-	int pixmap_depth;	/* Pixmap depth. */
-	int pixmap_width;	/* Pixmap width. */
-	int pixmap_height;	/* Pixmap height. */
-	int xoffset;            /* Bitmap x offset. */
-	int byte_order;         /* MSBFirst, LSBFirst */
-	int bitmap_unit;        /* Bitmap unit. */
-	int bitmap_bit_order;   /* MSBFirst, LSBFirst */
-	int bitmap_pad;         /* Bitmap scanline pad. */
-	int bits_per_pixel;     /* Bits per pixel. */
-	int bytes_per_line;     /* Bytes per scanline. */
-	int red_mask;           /* Z red mask. */
-	int green_mask;         /* Z green mask. */
-	int blue_mask;          /* Z blue mask. */
-	short window_width;	/* Window width. */
-	short window_height;	/* Window height. */
-	short window_x;		/* Window upper left X coordinate. */
-	short window_y;		/* Window upper left Y coordinate. */
-	short window_bdrwidth;	/* Window border width. */
-	short window_ncolors;   /* number of Color entries in this window */
+	xwdval header_size;	  /* Size of the entire file header (bytes). */
+	xwdval file_version;	  /* XWD_FILE_VERSION */
+	xwdval pixmap_format;	  /* Pixmap format */
+	xwdval pixmap_depth;	  /* Pixmap depth */
+	xwdval pixmap_width;	  /* Pixmap width */
+	xwdval pixmap_height;	  /* Pixmap height */
+	xwdval xoffset;           /* Bitmap x offset */
+	xwdval byte_order;        /* MSBFirst, LSBFirst */
+	xwdval bitmap_unit;       /* Bitmap unit */
+	xwdval bitmap_bit_order;  /* MSBFirst, LSBFirst */
+	xwdval bitmap_pad;	  /* Bitmap scanline pad */
+	xwdval bits_per_pixel;	  /* Bits per pixel */
+	xwdval bytes_per_line;	  /* Bytes per scanline */
+	xwdval visual_class;	  /* Class of colormap */
+	xwdval red_mask;	  /* Z red mask */
+	xwdval green_mask;	  /* Z green mask */
+	xwdval blue_mask;	  /* Z blue mask */
+	xwdval bits_per_rgb;	  /* Log base 2 of distinct color values */
+	xwdval colormap_entries;  /* Number of entries in colormap */
+	xwdval ncolors;		  /* Number of Color structures */
+	xwdval window_width;	  /* Window width */
+	xwdval window_height;	  /* Window height */
+	long window_x;		  /* Window upper left X coordinate */
+	long window_y;		  /* Window upper left Y coordinate */
+	xwdval window_bdrwidth;	  /* Window border width */
 } XWDFileHeader;
-
