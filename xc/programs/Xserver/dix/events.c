@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 1.179 89/04/05 10:48:46 rws Exp $ */
+/* $XConsortium: events.c,v 1.180 89/04/05 13:30:40 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -2556,6 +2556,7 @@ InitAndStartDevices(argc, argv)
     keyButtonState = 0;
     buttonsDown = 0;
     buttonMotionMask = 0;
+    filters[MotionNotify] = PointerMotionMask;
         
     for (i = 0; i < inputInfo.numDevices; i++)
     {
