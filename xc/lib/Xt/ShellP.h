@@ -1,4 +1,4 @@
-/* $XConsortium: ShellP.h,v 1.33 94/01/21 19:11:33 converse Exp $ */
+/* $XConsortium: ShellP.h,v 1.34 94/02/04 21:36:55 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -317,16 +317,15 @@ typedef struct {
     String*         shutdown_command;
     String*         environment;
     String          current_dir;
+    String          program_path;
     unsigned char   restart_style;
     /* session client resources */
+    Boolean         join_session;
     XtCallbackList  save_callbacks;
     XtCallbackList  interact_callbacks;
     XtCallbackList  cancel_callbacks;
     XtCallbackList  die_callbacks;
-    /* private session properties */
-    String	    user_id;
-    String	    program_name;
-    /* private widget state */
+    /* implementation dependent, private widget state */
     int             interact_state;
     int             save_tokens;
     int             interact_tokens;
