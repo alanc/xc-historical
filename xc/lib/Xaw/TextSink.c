@@ -1,4 +1,4 @@
-/* $XConsortium: TextSink.c,v 1.14 91/02/17 16:25:32 converse Exp $ */
+/* $XConsortium: TextSink.c,v 1.15 91/03/10 18:40:26 converse Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -450,7 +450,7 @@ short *tabs;
  */
 
   XA_FIGURE_WIDTH = XInternAtom(XtDisplayOfObject(w), "FIGURE_WIDTH", FALSE);
-  if ( (XA_FIGURE_WIDTH != NULL) && 
+  if ( XA_FIGURE_WIDTH != None && 
        ( (!XGetFontProperty(font, XA_FIGURE_WIDTH, &figure_width)) ||
 	 (figure_width == 0)) ) 
     if (font->per_char && font->min_char_or_byte2 <= '$' &&
@@ -783,7 +783,7 @@ int tab_count, *tabs;
     for (i = tab_count, tab = char_tabs; i; i--) *tab++ = (short)*tabs++;
 
     (*class->text_sink_class.SetTabs)(w, tab_count, char_tabs);
-    XtFree((XtPointer)char_tabs);
+    XtFree((char *)char_tabs);
   }
 }
 						  
