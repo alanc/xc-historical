@@ -1,5 +1,5 @@
 #include "copyright.h"
-/* $Header: XConnDis.c,v 11.16 87/08/21 13:00:26 newman Locked $ */
+/* $Header: XConnDis.c,v 11.17 87/08/21 13:06:06 newman Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 #define NEED_EVENTS
 /*
@@ -19,7 +19,7 @@
 void bcopy();
 /* 
  * Attempts to connect to server, given display name. Returns file descriptor
- * (network socket) or 0 if connection fails. The expanded display name
+ * (network socket) or -1 if connection fails. The expanded display name
  * of the form hostname:number.screen ("::" if DECnet) is returned in a result
  * parameter. The screen number to use is also returned.
  */
