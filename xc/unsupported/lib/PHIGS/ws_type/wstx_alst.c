@@ -1,4 +1,4 @@
-/* $XConsortium: wstx_alst.c,v 5.2 91/03/29 17:43:21 rws Exp $ */
+/* $XConsortium: wstx_alst.c,v 5.3 91/04/11 12:05:07 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -655,7 +655,7 @@ static va_list		valist_skip_value();
 Phg_attr_avlist
 phg_attr_copy_valist(dest, valist) 
 register Phg_attr_avlist	dest;
-register va_list	valist;
+va_list	valist;
 {
    register Phg_attr_attribute	attr;
    register unsigned int		cardinality;
@@ -747,7 +747,7 @@ register va_list	valist;
 static va_list
 valist_skip_value(attr, valist)
 register Phg_attr_attribute	 attr;
-register va_list	valist;
+va_list	valist;
 { 
     switch (PHG_ATTR_LIST_TYPE(attr)) {
         case PHG_ATTR_NULL:
@@ -799,7 +799,7 @@ va_list valist;
 
 static int
 valist_count_recursive(valist, last_attr) 
-register va_list	valist; 
+va_list	valist; 
 register Phg_attr_attribute	last_attr;
 {
    register Phg_attr_attribute	attr;
