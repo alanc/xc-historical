@@ -1,9 +1,11 @@
 #include "copyright.h"
 
-/* $XConsortium: XFillArcs.c,v 11.11 88/08/11 14:54:57 jim Exp $ */
+/* $XConsortium: XFillArcs.c,v 11.12 88/09/06 16:07:08 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
+
+#define arc_scale (SIZEOF(xArc) / 4)
 
 XFillArcs(dpy, d, gc, arcs, n_arcs)
 register Display *dpy;
@@ -13,20 +15,27 @@ XArc *arcs;
 int n_arcs;
 {
     register xPolyFillArcReq *req;
-    register long nbytes;
+    long len;
+    int n;
 
     LockDisplay(dpy);
     FlushGC(dpy, gc);
     GetReq(PolyFillArc, req);
-    req->drawable = d;
-    req->gc = gc->gid;
-
-    /* SIZEOF(xArc) will be a multiple of 4 */
-    req->length += n_arcs * (SIZEOF(xArc) / 4);
-    
-    nbytes = n_arcs * SIZEOF(xArc);
-
-    Data16 (dpy, (short *) arcs, nbytes);
+    while (n_arcs) {
+	req->drawable = d;
+	req->gc = gc->gid;
+	n = n_arcs;
+	len = ((long)n) * arc_scale;
+	if (len > (dpy->max_request_size - req->length)) {
+	    n = (dpy->max_request_size - req->length) / arc_scale;
+	    len = ((long)n) * arc_scale;
+	}
+	req->length += len;
+	len <<= 2; /* watch out for macros... */
+	Data16 (dpy, (short *) arcs, len);
+	n_arcs -= n;
+	arcs += n;
+    }
     UnlockDisplay(dpy);
     SyncHandle();
 }

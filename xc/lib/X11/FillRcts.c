@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XFillRects.c,v 11.11 88/08/11 14:55:02 jim Exp $ */
+/* $XConsortium: XFillRects.c,v 11.12 88/09/06 16:11:41 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -13,20 +13,27 @@ XRectangle *rectangles;
 int n_rects;
 {
     register xPolyFillRectangleReq *req;
-    register long nbytes;
+    long len;
+    int n;
 
     LockDisplay(dpy);
     FlushGC(dpy, gc);
-    GetReq(PolyFillRectangle, req);
-    req->drawable = d;
-    req->gc = gc->gid;
-
-    /* SIZEOF(xRectangle) will be a multiple of 4 */
-    req->length += n_rects * (SIZEOF(xRectangle) / 4);
-
-    nbytes = n_rects * SIZEOF(xRectangle);
-
-    Data16 (dpy, (short *) rectangles, nbytes);
+    while (n_rects) {
+	GetReq(PolyFillRectangle, req);
+	req->drawable = d;
+	req->gc = gc->gid;
+	n = n_rects;
+	len = ((long)n) << 1;
+	if (len > (dpy->max_request_size - req->length)) {
+	    n = (dpy->max_request_size - req->length) >> 1;
+	    len = ((long)n) << 1;
+	}
+	req->length += len;
+	len <<= 2; /* watch out for macros... */
+	Data16 (dpy, (short *) rectangles, len);
+	n_rects -= n;
+	rectangles += n;
+    }
     UnlockDisplay(dpy);
     SyncHandle();
 }

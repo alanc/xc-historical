@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XDrSegs.c,v 11.10 88/08/11 14:55:16 jim Exp $ */
+/* $XConsortium: XDrSegs.c,v 11.11 88/09/06 16:06:57 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -13,17 +13,27 @@ XDrawSegments (dpy, d, gc, segments, nsegments)
     int nsegments;
 {
     register xPolySegmentReq *req;
-    long nbytes;
+    long len;
+    int n;
 
     LockDisplay(dpy);
     FlushGC(dpy, gc);
-    GetReq (PolySegment, req);
-    req->drawable = d;
-    req->gc = gc->gid;
-    req->length += nsegments<<1;
-       /* each segment is 4 16-bit integers, i.e. 2*32 bits */
-    nbytes = nsegments << 3;		/* watch out for macros... */
-    Data16 (dpy, (short *) segments, nbytes);
+    while (nsegments) {
+	GetReq (PolySegment, req);
+	req->drawable = d;
+	req->gc = gc->gid;
+	n = nsegments;
+	len = ((long)n) << 1;
+	if (len > (dpy->max_request_size - req->length)) {
+	    n = (dpy->max_request_size - req->length) >> 1;
+	    len = ((long)n) << 1;
+	}
+	req->length += len;
+	len <<= 2; /* watch out for macros... */
+	Data16 (dpy, (short *) segments, len);
+	nsegments -= n;
+	segments += n;
+    }
     UnlockDisplay(dpy);
     SyncHandle();
 }
