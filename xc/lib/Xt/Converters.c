@@ -1,4 +1,4 @@
-/* $XConsortium: Converters.c,v 1.78 91/06/26 18:12:09 converse Exp $ */
+/* $XConsortium: Converters.c,v 1.79 91/06/27 13:58:21 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -1255,7 +1255,7 @@ CvtStringToGeometry(dpy, args, num_args, fromVal, toVal, closure_ret)
 }
 #endif
 
-#ifdef MOTIFBUG
+#ifdef MOTIFBC
 void LowerCase(source, dest)
     register char  *source, *dest;
 {
