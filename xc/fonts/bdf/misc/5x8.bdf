@@ -1,11 +1,31 @@
 STARTFONT 2.1
-COMMENT The X10 name for this font was "5x8"
+COMMENT Copyright 1989 Cognition Corp.
+COMMENT
+COMMENT Permission to use, copy, modify, and distribute this software and its
+COMMENT documentation for any purpose and without fee is hereby granted,
+COMMENT provided that the above copyright notice appear in all copies and that
+COMMENT both that copyright notice and this permission notice appear in
+COMMENT supporting documentation, and that the name of Cognition Corp. not be
+COMMENT used in advertising or publicity pertaining to distribution of the
+COMMENT software without specific, written prior permission.  Cognition Corp.
+COMMENT makes no representations about the suitability of this software for any
+COMMENT purpose.  It is provided "as is" without express or implied warranty.
+COMMENT
+COMMENT COGNITION CORP. DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+COMMENT INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+COMMENT EVENT SHALL COGNITION CORP.  BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+COMMENT CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
+COMMENT USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+COMMENT OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+COMMENT PERFORMANCE OF THIS SOFTWARE.
 FONT 5x8
 SIZE 11 75 75
 FONTBOUNDINGBOX 5 8 0 0
-STARTPROPERTIES 2
+STARTPROPERTIES 4
 FONT_DESCENT 1
 FONT_ASCENT 7
+COPYRIGHT "Copyright 1987 by Cognition Corp."
+DEFAULT_CHAR 0
 ENDPROPERTIES
 CHARS 128
 STARTCHAR C000
