@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.14 87/09/07 18:51:31 rws Locked $ */
+/* $Header: dispatch.c,v 1.15 87/09/09 13:10:48 sun Locked $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1358,7 +1358,7 @@ ProcCopyGC(client)
     REQUEST_SIZE_MATCH(xCopyGCReq);
     VERIFY_GC( pGC, stuff->srcGC, client);
     VERIFY_GC( dstGC, stuff->dstGC, client);
-    if (dstGC->pScreen != pGC->pScreen)
+    if ((dstGC->pScreen != pGC->pScreen) || (dstGC->depth != pGC->depth))
         return (BadMatch);    
     CopyGC(pGC, dstGC, stuff->mask);
     return (client->noClientException);
