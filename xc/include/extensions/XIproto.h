@@ -1,4 +1,4 @@
-/* $Header: XIproto.h,v 1.17 91/05/05 18:26:09 rws Exp $ */
+/* $Header: XIproto.h,v 1.18 91/05/19 09:28:47 gildea Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -44,6 +44,9 @@ SOFTWARE.
 
 #define MORE_EVENTS	0x80
 #define DEVICE_BITS	0x7F
+
+#define InputClassBits	0x3F	/* bits in mode field for input classes */
+#define ModeBitsShift	6	/* amount to shift the remaining bits   */
 
 #define numInputClasses 7
 
@@ -1213,6 +1216,10 @@ typedef struct
 /**********************************************************
  *
  * DeviceStateNotify.
+ *
+ * Note that the two high-order bits in the classes_reported
+ * field are the proximity state (InProximity or OutOfProximity),
+ * and the device mode (Absolute or Relative), respectively.
  *
  */
 

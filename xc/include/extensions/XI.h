@@ -1,4 +1,4 @@
-/* $Header: XI.h,v 1.10 91/04/14 13:07:06 rws Exp $ */
+/* $Header: XI.h,v 1.11 91/05/05 18:26:52 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -168,8 +168,13 @@ SOFTWARE.
 
 #define DvInteger               (1L << 0)
 
+#define DeviceMode              (1L << 0)
 #define Relative                0
 #define Absolute                1
+
+#define ProximityState          (1L << 1)
+#define InProximity             (0L << 1)
+#define OutOfProximity          (1L << 1)
 
 #define AddToList               0
 #define DeleteFromList          1
