@@ -1,5 +1,5 @@
 /*
- * $XConsortium: RC8.c,v 1.1 89/09/14 17:11:19 keith Exp $
+ * $XConsortium: RC8.c,v 1.2 91/01/23 22:14:07 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -33,7 +33,7 @@ XdmcpReadCARD8 (buffer, valuep)
     XdmcpBufferPtr  buffer;
     CARD8Ptr	    valuep;
 {
-    if (buffer->pointer >= buffer->size)
+    if (buffer->pointer >= buffer->count)
 	return FALSE;
     *valuep = (CARD8) buffer->data[buffer->pointer++];
     return TRUE;
