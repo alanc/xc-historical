@@ -1,4 +1,4 @@
-.\" $XConsortium: X.man,v 1.64 94/04/11 21:39:46 gildea Exp $
+.\" $XConsortium: X.man,v 1.65 94/04/15 18:13:53 dpw Exp $
 .\" Copyright (c) 1994  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining a
@@ -1059,10 +1059,14 @@ X Window System is a trademark of X Consortium, Inc.
 Fresco is a registered trademark of X Consortium, Inc.
 .SH AUTHORS
 .PP
-A cast of thousands, literally.  The X Consortium Release 6
+A cast of thousands, literally.  The Release 6
 distribution is brought to you by X Consortium, Inc.  The names of all
 people who made it a reality will be found in the individual documents
 and source files.  The staff members at the X Consortium responsible
-for this release are: Matt Landau, Donna Converse, Gary Cutbill,
-Stephen Gildea, Jay Hersh, Kaleb Keithley, Ralph Mor, Janet
+for this release are: Donna Converse, Gary Cutbill,
+Stephen Gildea, Jay Hersh, Kaleb Keithley, Matt Landau, Ralph Mor, Janet
 O'Halloran, Bob Scheifler, Ralph Swick, and Dave Wiggins.
+.PP
+The X Window System standard was originally developed at the
+Laboratory for Computer Science at the Massachusetts Institute of Technology,
+and all rights thereto were assigned to the X Consortium on January 1, 1994.
