@@ -327,6 +327,17 @@ OBJS3 = \
 	XcmsStCol.o \
 	XcmsStCols.o \
 	XcmsXRGB.o \
+	XFSWrap.o \
+	XICWrap.o \
+	XIMWrap.o \
+	XlcWrap.o \
+	XmbWrap.o \
+	XwcWrap.o \
+	XFilterEv.o \
+	XRegstFlt.o \
+	$(LCOBJS)
+
+LCOBJS = \
 	ProtoFlt.o \
 	XCloseIM.o \
 	XCnvCTToWC.o \
@@ -337,7 +348,6 @@ OBJS3 = \
 	XCrFntSet.o \
 	XCrIC.o \
 	XDestIC.o \
-	XFilterEv.o \
 	XFontSet.o \
 	XGetIMVal.o \
 	XICFocus.o \
@@ -350,20 +360,16 @@ OBJS3 = \
 	XInitCT.o \
 	XOpenIM.o \
 	XParseCT.o \
-	XRegstFlt.o \
 	XSetLcMod.o \
 	XSetLocale.o \
-	XSptLocale.o \
 	XlcAccess.o \
 	XlcLoad.o \
 	XlcMisc.o \
 	XmbDeGlyph.o \
-	XmbPolyTxt.o \
 	XmbText.o \
 	XmbTextExt.o \
 	XmbTextPer.o \
 	XwcDeGlyph.o \
-	XwcPolyTxt.o \
 	XwcText.o \
 	XwcTextExt.o \
 	XwcTextPer.o
