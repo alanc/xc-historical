@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ultrix.cf,v 1.40 91/07/03 14:39:12 rws Exp $
+XCOMM platform:  $XConsortium: ultrix.cf,v 1.41 91/07/19 23:22:54 keith Exp $
 
 #define OSName            Ultrix-32 4.2
 XCOMM operating system:  OSName
@@ -12,11 +12,13 @@ XCOMM operating system:  OSName
 #define LintOpts -ax
 
 #ifdef VaxArchitecture
+#define XqdssServer YES
 #define XqvssServer YES
-#define BuildPexExt NO
 #define UnalignedReferencesAllowed YES	       /* if arbitrary deref is okay */
 /* #define HasGcc YES */
-#if !HasGcc
+#if HasGcc
+#define BuildPexExt XqdssServer
+#else
 #define BuildPex NO /* compiler runs out of table space */
 #endif
 #define BuildFonts NO		/* XXX remove in R5 */
