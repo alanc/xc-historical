@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $XConsortium: dixutils.c,v 1.37 91/02/14 19:35:29 keith Exp $ */
+/* $XConsortium: dixutils.c,v 1.38 91/06/13 08:54:21 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -268,6 +268,7 @@ pointer pReadmask;	/* nor how it represents the set of descriptors */
 	    }
 	    else
 		i++;
+	handlerDeleted = FALSE;
     }
     --inHandler;
 }
@@ -298,6 +299,7 @@ pointer pReadmask;	/* the resulting descriptor mask */
 	    }
 	    else
 		i++;
+	handlerDeleted = FALSE;
     }
     --inHandler;
 }
@@ -326,6 +328,7 @@ RegisterBlockAndWakeupHandlers (blockHandler, wakeupHandler, blockData)
     handlers[numHandlers].BlockHandler = blockHandler;
     handlers[numHandlers].WakeupHandler = wakeupHandler;
     handlers[numHandlers].blockData = blockData;
+    handlers[numHandlers].deleted = FALSE;
     numHandlers = numHandlers + 1;
     return TRUE;
 }
@@ -498,9 +501,22 @@ ClientWakeup (client)
 	{
 	    *prev = q->next;
 	    xfree (q);
-	    AttendClient (client);
+	    if (!client->clientGone)
+		AttendClient (client);
 	    break;
 	}
 	prev = &q->next;
     }
+}
+
+Bool
+ClientIsAsleep (client)
+    ClientPtr	client;
+{
+    SleepQueuePtr   q;
+
+    for (q = sleepQueue; q; q = q->next)
+	if (q->client == client)
+	    return TRUE;
+    return FALSE;
 }
