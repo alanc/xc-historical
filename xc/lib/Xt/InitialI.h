@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.3 89/07/20 14:37:47 swick Exp $ */
+/* $XConsortium: InitialI.h,v 1.13 89/07/21 12:05:13 swick Exp $ */
 /* $oHeader: InitializeI.h,v 1.8 88/09/01 11:25:04 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -148,6 +148,8 @@ typedef struct _XtPerDisplayStruct {
     XrmName name;		       /* resolved app name */
     XrmClass class;		       /* R2 compatibility only */
     Heap heap;
+    Drawable* drawables;	       /* for XtGetGC */
+    Cardinal drawable_count;	       /* num entries in above list */
 } XtPerDisplayStruct, *XtPerDisplay;
 
 extern void _XtPerDisplayInitialize();
