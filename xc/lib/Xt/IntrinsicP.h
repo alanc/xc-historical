@@ -1,4 +1,4 @@
-/* $XConsortium: IntrinsicP.h,v 1.57 91/06/26 19:33:20 converse Exp $ */
+/* $XConsortium: IntrinsicP.h,v 1.58 93/08/27 16:22:46 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -29,13 +29,18 @@ SOFTWARE.
 
 #include <X11/Intrinsic.h>
 
+/*
+ * Field sizes and offsets of XrmResource must match those of XtResource.
+ * Type long is used instead of XrmQuark here because XrmQuark and String
+ * are not the same size on all systems.
+ */
 typedef struct {
-    XrmQuark	xrm_name;	  /* Resource name quark		*/
-    XrmQuark	xrm_class;	  /* Resource class quark		*/
-    XrmQuark	xrm_type;	  /* Resource representation type quark */
+    long	xrm_name;	  /* Resource name quark		*/
+    long	xrm_class;	  /* Resource class quark		*/
+    long	xrm_type;	  /* Resource representation type quark */
     Cardinal	xrm_size;	  /* Size in bytes of representation	*/
-    long int	xrm_offset;	  /* -offset-1				*/
-    XrmQuark	xrm_default_type; /* Default representation type quark	*/
+    int		xrm_offset;	  /* -offset-1				*/
+    long	xrm_default_type; /* Default representation type quark	*/
     XtPointer	xrm_default_addr; /* Default resource address		*/
 } XrmResource, *XrmResourceList;
 
