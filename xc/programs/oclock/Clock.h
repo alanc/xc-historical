@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Exp $
+ * $XConsortium: Clock.h,v 1.1 89/02/10 17:57:01 keith Exp $
  */
 
 #ifndef _XtClock_h
@@ -34,9 +34,11 @@
 #define XtNminute	"minute"
 #define XtNhour		"hour"
 #define XtNjewel	"jewel"
-#define XtNshapeWindow	"shapeWindow"
 
+#ifdef SHAPE
+#define XtNshapeWindow	"shapeWindow"
 #define XtCShapeWindow	"ShapeWindow"
+#endif
 
 typedef struct _ClockRec *ClockWidget;  /* completely defined in ClockPrivate.h */
 typedef struct _ClockClassRec *ClockWidgetClass;    /* completely defined in ClockPrivate.h */

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Exp $
+ * $XConsortium: ClockP.h,v 1.2 89/03/28 16:46:27 keith Exp $
  */
 
 #ifndef _ClockP_h
@@ -22,17 +22,23 @@ typedef struct {
 	GC		hourGC;		/* pointer to GraphicsContext */
 	GC		jewelGC;	/* pointer to GraphicsContext */
 	GC		eraseGC;	/* pointer to GraphicsContext */
+#ifdef SHAPE
 	GC		shapeGC;	/* pointer to GraphicsContext */
+#endif
 /* start of graph stuff */
 	int		backing_store;	/* backing store variety */
 	Boolean		reverse_video;	/* swap fg and bg pixels */
+#ifdef SHAPE
 	Boolean		shape_window;	/* use SetWindowShapeMask */
+#endif
 	XtIntervalId	interval_id;
 	Transform	t;
 	Transform	maskt;
+#ifdef SHAPE
 	Pixmap		shape_mask;	/* window shape */
 	int		shape_width;	/* window width when shape last made */
 	int		shape_height;	/* window height when shape last made */
+#endif
 	double		hour_angle;	/* hour hand position */
 	double		minute_angle;	/* minute hand position */
 	int		polys_valid;	/* polygons contain good data */

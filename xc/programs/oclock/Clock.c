@@ -11,7 +11,9 @@
 # include <X11/Xmu.h>
 # include "ClockP.h"
 # include <math.h>
+#ifdef SHAPE
 # include <X11/extensions/shape.h>
+#endif
 
 #define offset(field) XtOffset(ClockWidget,clock.field)
 #define goffset(field) XtOffset(Widget,core.field)
@@ -33,8 +35,10 @@ static XtResource resources[] = {
 	offset (reverse_video), XtRString, "FALSE"},
     {XtNbackingStore, XtCBackingStore, XtRBackingStore, sizeof (int),
     	offset (backing_store), XtRString, "default"},
+#ifdef SHAPE
     {XtNshapeWindow, XtCShapeWindow, XtRBoolean, sizeof (Boolean),
 	offset (shape_window), XtRString, "TRUE"},
+#endif
 };
 
 #undef offset
@@ -155,12 +159,14 @@ static void Initialize (greq, gnew)
     /* wait for Realize to add the timeout */
     w->clock.interval_id = 0;
 
+#ifdef  SHAPE
     if (w->clock.shape_window && !XShapeQueryExtension (XtDisplay (w)))
 	w->clock.shape_window = False;
     w->clock.shape_mask = 0;
     w->clock.shapeGC = 0;
     w->clock.shape_width = 0;
     w->clock.shape_height = 0;
+#endif
     w->clock.polys_valid = 0;
 }
 
@@ -172,7 +178,9 @@ static void Resize (w)
     XWindowChanges	xwc;
     int		face_width, face_height;
     int		x, y;
+#ifdef SHAPE
     Pixmap	shape_mask;
+#endif
 
     if (!XtIsRealized(w))
 	return;
@@ -194,6 +202,7 @@ static void Resize (w)
      *  shape the windows and borders
      */
 
+#ifdef SHAPE
     if (w->clock.shape_window) {
 
 	SetTransform (&w->clock.t,
@@ -262,7 +271,9 @@ static void Resize (w)
 
 	XFreePixmap (XtDisplay (w), shape_mask);
 
-    } else {
+    } else
+#endif
+    {
     	/*
      	 * reconfigure the widget to split the availible
      	 * space between the window and the border
@@ -314,8 +325,10 @@ static void Destroy (gw)
      XtDestroyGC (w->clock.faceGC);
      XtDestroyGC (w->clock.minuteGC);
      XtDestroyGC (w->clock.hourGC);
+#ifdef SHAPE
      if (w->clock.shapeGC)
 	XtDestroyGC (w->clock.shapeGC);
+#endif
 }
 
 /* ARGSUSED */
