@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 1.73 89/03/24 15:27:59 keith Exp $ */
+/* $XConsortium: miarc.c,v 1.74 89/04/03 19:30:50 keith Exp $ */
 /* Author: Keith Packard */
 
 #include "X.h"
@@ -643,7 +643,7 @@ miPolyFillArc(pDraw, pGC, narcs, parcs)
     int	i, cpt;
     SppPointPtr pPts;
     SppArcRec	sppArc;
-    int		angle1, angle2;
+    int		angle1, angle2, a;
 
     for(i = 0; i < narcs; i++)
     {
@@ -666,8 +666,28 @@ miPolyFillArc(pDraw, pGC, narcs, parcs)
 	/* We do this test every time because a full circle PieSlice isn't
 	 * really a slice, but a full pie, and the Chord code (below) should
 	 * handle it better */
-        if(pGC->arcMode == ArcPieSlice && parcs[i].angle2 < FULLCIRCLE)
+        if(pGC->arcMode == ArcPieSlice && abs (angle2) < FULLCIRCLE)
 	{
+	    /*
+	     * more than half a circle isn't convex anymore,
+	     * split the arc into two pieces.
+	     */
+	    if (abs (angle2) > FULLCIRCLE / 2) {
+		pPts = (SppPointPtr) NULL;
+		a = angle2 > 0 ? FULLCIRCLE / 2 : - FULLCIRCLE / 2;
+		sppArc.angle2 = torad (a);
+		if (cpt = miGetArcPts(&sppArc, 0, &pPts))
+		    miFillSppPoly(pDraw, pGC, cpt, pPts, 0, 0, 0.0, 0.0);
+		xfree (pPts);
+		angle1 += a;
+		if (angle1 >= FULLCIRCLE)
+		    angle1 -= FULLCIRCLE;
+		else if (angle1 <= -FULLCIRCLE)
+		    angle1 += FULLCIRCLE;
+		angle2 -= a;
+		sppArc.angle1 = torad(angle1);
+		sppArc.angle2 = torad(angle2);
+	    }
 	    if (!(pPts = (SppPointPtr)xalloc(sizeof(SppPointRec))))
 		return;
 	    if(cpt = miGetArcPts(&sppArc, 1, &pPts))
@@ -689,6 +709,8 @@ miPolyFillArc(pDraw, pGC, narcs, parcs)
 }
 
 #define REALLOC_STEP 10		/* how often to realloc */
+#define NOARCCOMPRESSION	/* don't bother with this stuff */
+
 /* MIGETARCPTS -- Converts an arc into a set of line segments -- a helper
  * routine for filled arc and line (round cap) code.
  * Returns the number of points in the arc.  Note that it takes a pointer
