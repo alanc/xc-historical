@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: greet.c,v 1.9 88/12/07 18:23:15 keith Exp $
+ * $XConsortium: greet.c,v 1.10 89/01/16 17:10:02 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -23,14 +23,16 @@
  *
  */
 
-# include <X11/Xlib.h>
 # include <X11/Intrinsic.h>
 # include <X11/StringDefs.h>
-# include <X11/Xmu.h>
-# include "Login.h"
 # include <X11/Shell.h>
-# include <X11/Command.h>
-# include <X11/Logo.h>
+
+# include <X11/Xmu/Xmu.h>
+
+# include <X11/Xaw/Command.h>
+# include <X11/Xaw/Logo.h>
+
+# include "Login.h"
 # include "dm.h"
 
 extern Display	*dpy;

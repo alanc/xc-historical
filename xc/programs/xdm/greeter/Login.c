@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: Login.c,v 1.13 88/12/15 18:31:45 keith Exp $
+ * $XConsortium: Login.c,v 1.14 89/01/16 17:07:16 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -22,11 +22,12 @@
  * Login.c
  */
 
-# include <X11/Xos.h>
 # include <stdio.h>
+
 # include <X11/IntrinsicP.h>
 # include <X11/StringDefs.h>
-# include <X11/Xmu.h>
+
+# include <X11/Xmu/Xmu.h>
 # include "LoginP.h"
 
 extern void	bcopy ();
