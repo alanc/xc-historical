@@ -1,4 +1,4 @@
-/* $XConsortium: saveutil.c,v 1.4 94/04/17 21:15:18 mor Exp $ */
+/* $XConsortium: save.c,v 1.8 94/07/28 13:30:00 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -26,189 +26,599 @@ in this Software without prior written authorization from the X Consortium.
 ******************************************************************************/
 
 #include "xsm.h"
+#include "saveutil.h"
 
-extern List	 *PendingList;
-extern ClientRec *ClientList;
-char 		 session_save_file[PATH_MAX];
-static Bool	 getline();
+#define SAVE_NONE -1
+
+
+static int saveTypeData[] = {
+	SAVE_NONE,
+	SmSaveLocal,
+	SmSaveGlobal,
+	SmSaveBoth
+};
+
+static int interactStyleData[] = {
+	SmInteractStyleNone,
+	SmInteractStyleErrors,
+	SmInteractStyleAny
+};
+
+static Bool interactDisabled = False;
 
 
 
-void
-read_save()
+static void
+SaveTypeNoneToggleXtProc (w, client_data, callData)
+
+Widget		w;
+XtPointer 	client_data;
+XtPointer 	callData;
+
 {
-    char		*buf;
-    int			buflen;
-    char		*p;
-    char		*q;
-    PendingClient	*c;
-    PendingProp		*prop;
-    PendingValue	*val;
-    FILE		*f;
-    int			state;
-
-    PendingList = ListInit();
-    if(!PendingList) nomem();
-
-    p = (char *) getenv("HOME");
-    if(!p) p = ".";
-    strcpy(session_save_file, p);
-    strcat(session_save_file, "/.SM-save");
-
-    f = fopen(session_save_file, "r");
-    if(!f) {
-	if (app_resources.verbose)
-	    printf("No session save file.\n");
-	return;
-    }
-    if (app_resources.verbose)
-	printf("Reading session save file...\n");
-
-    buf = NULL;
-    buflen = 0;
-    state = 0;
-    while(getline(&buf, &buflen, f)) {
-	if(p = strchr(buf, '\n')) *p = '\0';
-	for(p = buf; *p && isspace(*p); p++) /* LOOP */;
-	if(*p == '#') continue;
-
-	if(!*p) {
-	    state = 0;
-	    continue;
-	}
-
-	if(!isspace(buf[0])) {
-	    switch(state) {
-		case 0:
-		    c = (PendingClient *)malloc(sizeof *c);
-		    if(!c) nomem();
-
-		    c->clientId = XtNewString(p);
-		    c->clientHostname = NULL;  /* set in next state */
-
-		    c->props = ListInit();
-		    if(!c->props) nomem();
-
-		    if(!ListAddLast(PendingList, (void *)c)) nomem();
-
-		    state = 1;
-		    break;
-
-		case 1:
-		    c->clientHostname = XtNewString(p);
-                    state = 2;
-                    break;
-
-		case 2:
-		case 4:
-		    prop = (PendingProp *)malloc(sizeof *prop);
-		    if(!prop) nomem();
-
-		    prop->name = XtNewString(p);
-		    prop->values = ListInit();
-		    if(!prop->values) nomem();
-
-		    prop->type = NULL;
-
-		    if(!ListAddLast(c->props, (void *)prop)) nomem();
-
-		    state = 3;
-		    break;
-
-		case 3:
-		    prop->type = XtNewString(p);
-		    state = 4;
-		    break;
-
-		default:
-		    fprintf(stderr, "state %d\n", state);
-		    fprintf(stderr,
-			    "Corrupt save file line ignored:\n%s\n", buf);
-		    continue;
-	    }
-	} else {
-	    if (state != 4) {
-		fprintf(stderr, "Corrupt save file line ignored:\n%s\n", buf);
-		continue;
-	    }
-	    val = (PendingValue *)malloc(sizeof *val);
-	    if(!val) nomem();
-
-	    val->length = strlen(p);
-	    /* NEEDSWORK:  Binary data */
-	    val->value = XtNewString(p);
-
-	    if(!ListAddLast(prop->values, (void *)val)) nomem(); 
-	}
-    }
-    fclose(f);
-}
-
-
-
-void
-write_save()
-{
-    FILE *f;
-    ClientRec *client;
-    SmProp *prop;
-    int i, j;
-
-    f = fopen(session_save_file, "w");
-    if(!f)
+    if (!interactDisabled)
     {
-	perror("open session save file for write");
-    } else {
-	for(client = ClientList; client; client = client->next)
-	{
-	    fprintf(f, "%s\n", client->clientId);
-	    fprintf(f, "%s\n", client->clientHostname);
-	    for(i = 0; i < client->numProps; i++) {
-		prop = client->props[i];
-		fprintf(f, "%s\n", prop->name);
-		fprintf(f, "%s\n", prop->type);
-		if (strcmp (prop->type, SmCARD8) == 0)
-		{
-		    char *card8 = prop->vals->value;
-		    int value = *card8;
-		    fprintf(f, "\t%d\n", value);
-		}
-		else
-		{
-		    for(j = 0; j < prop->num_vals; j++)
-			fprintf(f, "\t%s\n", prop->vals[j].value);
-		}
-	    }
-	    fprintf(f, "\n");
-	}
-	fclose(f);
+	XtSetSensitive (interactStyleLabel, 0);
+	XtSetSensitive (interactStyleNone, 0);
+	XtSetSensitive (interactStyleErrors, 0);
+	XtSetSensitive (interactStyleAny, 0);
+	interactDisabled = True;
+    }
+}
+
+
+static void
+SaveTypeOtherToggleXtProc (w, client_data, callData)
+
+Widget		w;
+XtPointer 	client_data;
+XtPointer 	callData;
+
+{
+    if (interactDisabled)
+    {
+	XtSetSensitive (interactStyleLabel, 1);
+	XtSetSensitive (interactStyleNone, 1);
+	XtSetSensitive (interactStyleErrors, 1);
+	XtSetSensitive (interactStyleAny, 1);
+	interactDisabled = False;
     }
 }
 
 
 
-static Bool
-getline(pbuf, plen, f)
-char	**pbuf;
-int	*plen;
-FILE	*f;
-{
-	int c;
-	int i;
+/*
+ * NOTE!!!!!!!!!!!!!!!!!!!!!!!!!!
+ *
+ * This save yourself code must be re-written.  A new client may try to
+ * connect in the middle of this routine.
+ */
 
-	i = 0;
-	while(1) {
-	    if(i+2 > *plen) {
-		if(*plen) *plen *= 2;
-		else *plen = BUFSIZ;
-		if(*pbuf) *pbuf = (char *) realloc(*pbuf, *plen);
-		else *pbuf = (char *) malloc(*plen);
-	    }
-	    c = getc(f);
-	    if(c == EOF) break;
-	    (*pbuf)[i++] = c;
-	    if(c == '\n') break;
+static void
+SaveOkXtProc (w, client_data, callData)
+
+Widget		w;
+XtPointer 	client_data;
+XtPointer 	callData;
+
+{
+    ClientRec	*client;
+    XtPointer	ptr;
+    int		saveType;
+    int		interactStyle;
+    Bool	fast = False;
+    char	*_saveType;
+    char	*_shutdown;
+    char	*_interactStyle;
+
+    ptr = XawToggleGetCurrent (saveTypeLocal /* just 1 of the group */);
+    saveType = *((int *) ptr);
+
+    ptr = XawToggleGetCurrent (interactStyleNone /* just 1 of the group */);
+    interactStyle = *((int *) ptr);
+
+    if (saveType == SAVE_NONE)
+	goto finish_up;
+    else if (saveType == SmSaveLocal)
+	_saveType = "Local";
+    else if (saveType == SmSaveGlobal)
+	_saveType = "Global";
+    else
+	_saveType = "Both";
+
+    if (wantShutdown)
+	_shutdown = "True";
+    else
+	_shutdown = "False";
+
+    if (interactStyle == SmInteractStyleNone)
+	_interactStyle = "None";
+    else if (interactStyle == SmInteractStyleErrors)
+	_interactStyle = "Errors";
+    else
+	_interactStyle = "Any";
+
+    XtSetSensitive (savePopup, 0);
+
+    saveInProgress = True;
+    saveDoneCount = 0;
+    interactCount = 0;
+    phase2RequestCount = 0;
+
+    for (client = ClientList; client; client = client->next)
+    {
+	client->wantsPhase2 = False;
+
+	SmsSaveYourself (client->smsConn,
+	    saveType, wantShutdown, interactStyle, fast);
+
+	if (verbose) {
+	    printf ("Client Id = %s, sent SAVE YOURSELF [", client->clientId);
+	    printf ("Save Type = %s, Shutdown = %s, ", _saveType, _shutdown);
+	    printf ("Interact Style = %s, Fast = False]\n", _interactStyle);
 	}
-	(*pbuf)[i] = '\0';
-	return i;
+    }
+
+    if (!wantShutdown)
+    {
+	for (client = ClientList; client; client = client->next)
+	    client->userIssuedCheckpoint = True;
+    }
+
+    if (verbose) {
+	printf ("\n");
+	printf ("Sent SAVE YOURSELF to all clients.  Waiting for\n");
+	printf ("SAVE YOURSELF DONE, INTERACT REQUEST, or\n");
+	printf ("SAVE YOURSELF PHASE 2 REQUEST from each client.\n");
+	printf ("\n");
+    }
+
+    while (saveDoneCount + interactCount + phase2RequestCount < numClients) {
+	XtAppProcessEvent (appContext, XtIMAll);
+    }
+
+    if (verbose) {
+	printf ("\n");
+	printf ("Received %d SAVE YOURSELF DONEs, %d INTERACT REQUESTS\n",
+		saveDoneCount, interactCount);
+	printf ("	%d SAVE YOURSELF PHASE 2 REQUESTS\n",
+		phase2RequestCount);
+    }
+
+    if (interactCount == 0 &&
+	(saveDoneCount + phase2RequestCount) != numClients) {
+	if (verbose) {
+	    printf ("\n");
+	    printf ("INTERNAL ERROR IN XSM!  EXITING!\n");
+	}
+	exit (1);
+    }
+
+    if (interactCount > 0) {
+	
+	if (verbose)
+	    printf ("\n");
+
+	client = ClientList;
+	while (client) {
+	    if (shutdownCancelled) {
+		break;
+	    }
+	    else if (client->interactPending) {
+		SmsInteract (client->smsConn);
+		if (verbose) {
+		    printf ("Client Id = %s, sent INTERACT\n",
+			    client->clientId);
+		}
+		while (client->interactPending) {
+		    XtAppProcessEvent (appContext, XtIMAll);
+		}
+	    }
+	    client = client->next;
+	}
+
+	if (verbose) {
+	    if (shutdownCancelled)
+		printf ("\nThe shutdown was cancelled by a user\n\n");
+	    else
+		printf ("\nDone interacting with all clients\n\n");
+	}
+    }
+
+    if (!shutdownCancelled)
+    {
+	while ((saveDoneCount + phase2RequestCount) < numClients)
+	    XtAppProcessEvent (appContext, XtIMAll);
+
+	for (client = ClientList; client; client = client->next)
+	    if (client->wantsPhase2)
+	    {
+		SmsSaveYourselfPhase2 (client->smsConn);
+		client->wantsPhase2 = False;
+	    }
+    }
+
+    while (saveDoneCount < numClients)
+	XtAppProcessEvent (appContext, XtIMAll);
+
+    if (verbose)
+	printf ("\nAll clients issued SAVE YOURSELF DONE\n\n");
+
+
+    saveInProgress = False;
+
+    if (!shutdownCancelled)
+    {
+	/*
+	 * Now execute discard commands
+	 */
+
+	for (client = ClientList; client; client = client->next)
+	{
+	    if (client->discardCommand)
+	    {
+		system (client->discardCommand);
+		XtFree (client->discardCommand);
+		client->discardCommand = NULL;
+	    }
+	    
+	    if (client->saveDiscardCommand)
+	    {
+		client->discardCommand = client->saveDiscardCommand;
+		client->saveDiscardCommand = NULL;
+	    }
+	}
+
+
+	/*
+	 * Write the save file
+	 */
+
+	WriteSave (sm_id);
+    }
+
+ finish_up:
+
+    if (wantShutdown && shutdownCancelled)
+    {
+	shutdownCancelled = False;
+    }
+    else if (wantShutdown)
+    {
+	if (saveType == SAVE_NONE)
+	{
+	    /*
+	     * For any client that was not restarted by the session
+	     * manager (previous ID was NULL), if we did not issue a
+	     * checkpoint to this client, remove the client's checkpoint
+	     * file using the discard command.
+	     */
+
+	    client = ClientList;
+	    while (client)
+	    {
+		if (!client->restarted &&
+		    !client->userIssuedCheckpoint &&
+		     client->discardCommand)
+		{
+		    system (client->discardCommand);
+		    XtFree (client->discardCommand);
+		    client->discardCommand = NULL;
+		}
+		client = client->next;
+	    }
+	}
+
+	shutdownInProgress = True;
+
+	client = ClientList;
+	while (client)
+	{
+	    SmsDie (client->smsConn);
+	    if (verbose)
+		printf ("Client Id = %s, sent DIE\n", client->clientId);
+	    client = client->next;
+	}
+    }
+    else
+    {
+	client = ClientList;
+	while (client)
+	{
+	    SmsSaveComplete (client->smsConn);
+	    if (verbose)
+		printf ("Client Id = %s, sent SAVE COMPLETE\n",
+		    client->clientId);
+	    client = client->next;
+	}
+    }
+
+    if (!shutdownInProgress)
+    {
+	XtPopdown (savePopup);
+	SetAllSensitive (1);
+    }
+}
+
+
+
+static void
+SaveCancelXtProc (w, client_data, callData)
+
+Widget		w;
+XtPointer 	client_data;
+XtPointer 	callData;
+
+{
+    XtPopdown (savePopup);
+    SetAllSensitive (1);
+}
+
+
+
+/*
+ * Add toggle button
+ */
+
+static Widget
+AddToggle (widgetName, parent, state, radioGroup, radioData,
+    fromHoriz, fromVert)
+
+char 		*widgetName;
+Widget 		parent;
+int 		state;
+Widget 		radioGroup;
+XtPointer 	radioData;
+Widget 		fromHoriz;
+Widget 		fromVert;
+
+{
+    Widget toggle;
+
+    toggle = XtVaCreateManagedWidget (
+	widgetName, toggleWidgetClass, parent,
+        XtNstate, state,
+        XtNradioGroup, radioGroup,
+        XtNradioData, radioData,
+        XtNfromHoriz, fromHoriz,
+        XtNfromVert, fromVert,
+        NULL);
+
+    return (toggle);
+}
+
+
+
+void
+create_save_popup ()
+
+{
+    /*
+     * Pop up for Save Yourself button.
+     */
+
+    savePopup = XtVaCreatePopupShell (
+	"savePopup", transientShellWidgetClass, topLevel,
+	XtNallowShellResize, True,
+	NULL);
+    
+    saveForm = XtCreateManagedWidget (
+	"saveForm", formWidgetClass, savePopup, NULL, 0);
+
+    saveTypeLabel = XtVaCreateManagedWidget (
+	"saveTypeLabel", labelWidgetClass, saveForm,
+        XtNfromHoriz, NULL,
+        XtNfromVert, NULL,
+        XtNborderWidth, 0,
+	NULL);
+
+    saveTypeNone = AddToggle (
+	"saveTypeNone", 			/* widgetName */
+	saveForm,				/* parent */
+	0,					/* state */
+        NULL,					/* radioGroup */
+        (XtPointer) &saveTypeData[0],		/* radioData */
+        saveTypeLabel,				/* fromHoriz */
+        NULL					/* fromVert */
+    );
+
+    saveTypeLocal = AddToggle (
+	"saveTypeLocal", 			/* widgetName */
+	saveForm,				/* parent */
+	0,					/* state */
+        saveTypeNone,				/* radioGroup */
+        (XtPointer) &saveTypeData[1],		/* radioData */
+        saveTypeNone,				/* fromHoriz */
+        NULL					/* fromVert */
+    );
+
+    saveTypeGlobal = AddToggle (
+	"saveTypeGlobal", 			/* widgetName */
+	saveForm,				/* parent */
+	0,					/* state */
+        saveTypeNone,				/* radioGroup */
+        (XtPointer) &saveTypeData[2],		/* radioData */
+        saveTypeLocal,				/* fromHoriz */
+        NULL					/* fromVert */
+    );
+
+    saveTypeBoth = AddToggle (
+	"saveTypeBoth", 			/* widgetName */
+	saveForm,				/* parent */
+	1,					/* state */
+        saveTypeNone,				/* radioGroup */
+        (XtPointer) &saveTypeData[3],		/* radioData */
+        saveTypeGlobal,				/* fromHoriz */
+        NULL					/* fromVert */
+    );
+
+    XtAddCallback (saveTypeNone, XtNcallback, SaveTypeNoneToggleXtProc, 0);
+    XtAddCallback (saveTypeLocal, XtNcallback, SaveTypeOtherToggleXtProc, 0);
+    XtAddCallback (saveTypeGlobal, XtNcallback, SaveTypeOtherToggleXtProc, 0);
+    XtAddCallback (saveTypeBoth, XtNcallback, SaveTypeOtherToggleXtProc, 0);
+
+
+    interactStyleLabel = XtVaCreateManagedWidget (
+	"interactStyleLabel", labelWidgetClass, saveForm,
+        XtNfromHoriz, NULL,
+        XtNfromVert, saveTypeLabel,
+        XtNborderWidth, 0,
+	NULL);
+
+    interactStyleNone = AddToggle (
+	"interactStyleNone", 			/* widgetName */
+	saveForm,				/* parent */
+	0,					/* state */
+        NULL,					/* radioGroup */
+        (XtPointer) &interactStyleData[0],	/* radioData */
+        saveTypeLabel,				/* fromHoriz */
+        saveTypeLabel				/* fromVert */
+    );
+
+    interactStyleErrors = AddToggle (
+	"interactStyleErrors", 			/* widgetName */
+	saveForm,				/* parent */
+	0,					/* state */
+        interactStyleNone,			/* radioGroup */
+        (XtPointer) &interactStyleData[1],	/* radioData */
+        interactStyleNone,			/* fromHoriz */
+        saveTypeLabel				/* fromVert */
+    );
+
+    interactStyleAny = AddToggle (
+	"interactStyleAny", 			/* widgetName */
+	saveForm,				/* parent */
+	1,					/* state */
+        interactStyleNone,			/* radioGroup */
+        (XtPointer) &interactStyleData[2],	/* radioData */
+        interactStyleErrors,			/* fromHoriz */
+        saveTypeLabel				/* fromVert */
+    );
+
+
+    saveOkButton = XtVaCreateManagedWidget (
+	"saveOkButton",	commandWidgetClass, saveForm,
+        XtNfromHoriz, NULL,
+        XtNfromVert, interactStyleLabel,
+        XtNvertDistance, 30,
+        NULL);
+    
+    XtAddCallback (saveOkButton, XtNcallback, SaveOkXtProc, 0);
+
+    saveCancelButton = XtVaCreateManagedWidget (
+	"saveCancelButton", commandWidgetClass, saveForm,
+        XtNfromHoriz, saveOkButton,
+        XtNfromVert, interactStyleLabel,
+        XtNvertDistance, 30,
+        NULL);
+
+    XtAddCallback (saveCancelButton, XtNcallback, SaveCancelXtProc, 0);
+}
+
+
+
+void
+PopupSaveDialog ()
+
+{
+    static Bool did_first_popup = 0;
+
+    if (!did_first_popup)
+    {
+	Position x, y, rootx, rooty;
+
+	XtVaGetValues (mainWindow, XtNx, &x, XtNy, &y, NULL);
+	XtTranslateCoords (mainWindow, x, y, &rootx, &rooty);
+
+	XtMoveWidget (savePopup, rootx + 25, rooty + 100);
+
+	did_first_popup = 1;
+    }
+
+    XtSetSensitive (mainWindow, 0);
+    XtSetSensitive (clientInfoPopup, 0);
+    XtSetSensitive (clientPropPopup, 0);
+
+    XawToggleSetCurrent (saveTypeBoth,
+	(XtPointer) &saveTypeData[3]);
+    XawToggleSetCurrent (interactStyleAny,
+	(XtPointer) &interactStyleData[2]);
+
+    XtVaSetValues (savePopup,
+	XtNtitle, wantShutdown ? "Shutdown" : "Checkpoint",
+	NULL);
+
+    if (wantShutdown)
+    {
+	XtManageChild (saveTypeNone);
+
+	XtVaSetValues (saveTypeLocal,
+            XtNfromHoriz, saveTypeNone,
+	    NULL);
+    }
+    else
+    {
+	XtUnmanageChild (saveTypeNone);
+
+	XtVaSetValues (saveTypeLocal,
+            XtNfromHoriz, saveTypeLabel,
+	    NULL);
+    }
+
+    if (interactDisabled)
+    {
+	XtSetSensitive (interactStyleLabel, 1);
+	XtSetSensitive (interactStyleNone, 1);
+	XtSetSensitive (interactStyleErrors, 1);
+	XtSetSensitive (interactStyleAny, 1);
+	interactDisabled = False;
+    }
+
+    XtPopup (savePopup, XtGrabNone);
+}
+
+
+
+
+void
+CheckPointXtProc (w, client_data, callData)
+
+Widget		w;
+XtPointer 	client_data;
+XtPointer 	callData;
+
+{
+    if (need_to_name_session)
+    {
+	checkpoint_after_name = True;
+	PopupNameSessionDialog ();
+    }
+    else
+    {
+	wantShutdown = False;
+	PopupSaveDialog ();
+    }
+}
+
+
+
+
+void
+ShutdownXtProc (w, client_data, callData)
+
+Widget		w;
+XtPointer 	client_data;
+XtPointer 	callData;
+
+{
+    if (need_to_name_session)
+    {
+	shutdown_after_name = True;
+	PopupNameSessionDialog ();
+    }
+    else
+    {
+	wantShutdown = True;
+	PopupSaveDialog ();
+    }
 }
