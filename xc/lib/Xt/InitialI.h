@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.7 88/09/06 16:27:58 jim Exp $ */
+/* $XConsortium: InitialI.h,v 1.8 88/10/19 08:35:49 swick Exp $ */
 /* $oHeader: InitializeI.h,v 1.8 88/09/01 11:25:04 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -107,10 +107,11 @@ extern void _XtCloseDisplays();
 extern int _XtAppDestroyCount;
 extern int _XtDpyDestroyCount;
 
-extern int _XtwaitForSomething(); /* ignoreTimers, ignoreInputs, block, 
-					howlong, dset */
+extern int _XtwaitForSomething(); /* ignoreTimers, ignoreInputs, ignoreEvents,
+				     block, howlong, appContext */
     /* Boolean ignoreTimers; */
     /* Boolean ignoreInputs; */
+    /* Boolean ignoreEvents; */
     /* Boolean block; */
     /* unsigned long *howlong; */
     /* XtAppContext app */
