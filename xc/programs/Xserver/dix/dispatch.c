@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.68 88/10/11 20:49:46 rws Exp $ */
+/* $XConsortium: dispatch.c,v 1.69 88/11/22 16:29:45 keith Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -207,21 +207,19 @@ FlushClientCaches(id)
 
 Dispatch()
 {
-    ClientPtr	        *clientReady;     /* mask of request ready clients */
-    ClientPtr	        *newClients;      /* mask of new clients */ 
+    register int        *clientReady;     /* array of request ready clients */
     int			result;
-    xReq		*request;
+    register xReq	*request;
     int			ErrorStatus;
-    ClientPtr		client;
-    int			nready, nnew;
+    register ClientPtr	client;
+    register int	nready;
 
     nextFreeClientID = 1;
     InitSelections();
     nClients = 0;
     clientsDoomed = FALSE;
 
-    clientReady = (ClientPtr *) ALLOCATE_LOCAL(sizeof(ClientPtr) * MaxClients);
-    newClients = (ClientPtr *)ALLOCATE_LOCAL(sizeof(ClientPtr) * MaxClients);
+    clientReady = (int *) ALLOCATE_LOCAL(sizeof(int) * MaxClients);
     request = (xReq *)NULL;
 
     while (1) 
@@ -231,29 +229,16 @@ Dispatch()
 	    FlushIfCriticalOutputPending();
 	}
 
-	WaitForSomething(clientReady, &nready, newClients, &nnew);
-
-	/*****************
-	 *  Establish any new connections
-	 *****************/
-
-	while (nnew--)
-        {
-	    client = newClients[nnew];
-	    client->requestLogIndex = 0;
-	    InitClientResources(client);
-	    SendConnectionSetupInfo(client);
-	    nClients++;
-	}
+	nready = WaitForSomething(clientReady);
 
        /***************** 
 	*  Handle events in round robin fashion, doing input between 
 	*  each round 
 	*****************/
 
-	while ((nready--) > 0)
+	while (--nready >= 0)
 	{
-	    client = clientReady[nready];
+	    client = clients[clientReady[nready]];
 	    if (! client)
 	    {
 		/* KillClient can cause this to happen */
@@ -323,7 +308,6 @@ Dispatch()
     }
     if (clientsDoomed)
         KillAllClients();
-    DEALLOCATE_LOCAL(newClients);
     DEALLOCATE_LOCAL(clientReady);
 }
 
@@ -3255,14 +3239,15 @@ CloseDownRetainedResources()
 }
 
 /************************
- * int NextAvailableClientID()
+ * int NextAvailableClient(swapped)
  *
- * OS depedent portion can't assign client id's because of CloseDownModes.
- * Returns NULL if the there are no free clients.
+ * OS dependent portion can't assign client id's because of CloseDownModes.
+ * Returns NULL if there are no free clients.
  *************************/
 
 ClientPtr
-NextAvailableClient()
+NextAvailableClient(swapped)
+    int swapped;
 {
     register int i;
     register ClientPtr client;
@@ -3300,6 +3285,10 @@ NextAvailableClient()
     client->numSaved = 0;
     client->saveSet = (pointer *)NULL;
     client->noClientException = Success;
+    client->requestLogIndex = 0;
+    client->swapped = swapped;
+    nClients++;
+    InitClientResources(client);
 
     return(client);
 }
