@@ -1,4 +1,4 @@
-/* $XConsortium: Resources.c,v 1.106 91/06/11 20:08:14 converse Exp $ */
+/* $XConsortium: Resources.c,v 1.107 91/06/13 19:03:09 converse Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -656,7 +656,6 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 		converted = _XtConvert(widget, from_type, &from_val,
 				       xrm_type, &to_val, cache_ptr);
 		if (converted) {
-		    char *vp;
 
 		    /* Copy the converted value back into the typed argument.
 		     * normally the data should be <= sizeof(XtArgVal) and
@@ -674,13 +673,13 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 		     */
 
 		    if(rx->xrm_size > sizeof(XtArgVal)) {
-			arg->value = (XtArgVal)(vp = XtMalloc(rx->xrm_size));
+			arg->value = (XtArgVal) XtMalloc(rx->xrm_size);
 			arg->size = -(arg->size);
 		    } else { /* will fit - copy directly into value field */
-			vp = (char *)&arg->value;
+			arg->value = (XtArgVal) NULL;
 		    }
-
-		    XtBCopy((char *)(base - rx->xrm_offset - 1), vp, rx->xrm_size);
+		    _XtCopyToArg((char *)(base - rx->xrm_offset - 1),
+				 &arg->value, rx->xrm_size);
 
 		} else {
 		   /* Conversion failed. Get default value. */
