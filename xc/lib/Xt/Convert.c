@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Convert.c,v 1.36 89/12/15 21:51:19 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Convert.c,v 1.37 89/12/19 16:21:42 rws Exp $";
 /* $oHeader: Convert.c,v 1.4 88/09/01 11:10:44 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -102,7 +102,7 @@ void _XtFreeConverterTable(table)
 typedef struct _CacheRec *CachePtr;
 
 typedef struct _CacheRec {
-    CachePtr	next;		/* must remain first */
+    CachePtr	next;
     XtPointer	tag;
     int		hash;
     XtTypeConverter converter;
@@ -286,20 +286,27 @@ CacheEnter(heap, converter, args, num_args, from, to, succeeded, hash,
 
     pHashEntry = &cacheHashTable[hash & CACHEHASHMASK];
 
-    if (has_destructor) {
+    if (has_destructor || (flags & IS_REFCOUNTED)) {
 	p = (CachePtr) _XtHeapAlloc(heap, (Cardinal)sizeof(CacheRec));
-	p->flags = HAS_DESTRUCTOR | CONVERSION_SUCCEEDED | flags;
+	p->more.prev = NULL;
+	p->more.ref_count = 1;
     }
     else {
 	p = (CachePtr)_XtHeapAlloc(heap,
 		  (Cardinal)(sizeof(CacheRec) - sizeof(struct _CacheRecExt)));
-	p->flags = CONVERSION_SUCCEEDED | flags;
     }
+    if (has_destructor) {
+	p->flags = HAS_DESTRUCTOR | CONVERSION_SUCCEEDED | flags;
+	p->more.destructor = destructor;
+	p->more.closure = closure;
+    }
+    else
+	p->flags = CONVERSION_SUCCEEDED | flags; 
+
     p->next	    = *pHashEntry;
     if (p->next != NULL && (p->next->flags & HAS_DESTRUCTOR))
 	p->next->more.prev = p;
-    if (has_destructor)
-	p->more.prev = (CachePtr)pHashEntry;
+
     *pHashEntry     = p;
     p->tag	    = (XtPointer)heap;
     p->hash	    = hash;
@@ -327,11 +334,6 @@ CacheEnter(heap, converter, args, num_args, from, to, succeeded, hash,
 	p->to.addr = NULL;
 	p->flags &= ~CONVERSION_SUCCEEDED;
     }
-    if (has_destructor) {
-	p->more.destructor   = destructor;
-	p->more.closure = closure;
-	p->more.ref_count = 1;
-    }
     return p;
 }
 
@@ -347,8 +349,9 @@ void _XtCacheFlushTag(app, tag)
 	register CachePtr rec = *prev;
 	while (rec != NULL) {
 	    while (rec != NULL && rec->tag == tag) {
+		CachePtr next = rec->next;
 		_XtFreeCacheRec( app, (XtCacheRef)rec );
-		rec = rec->next;
+		rec = next;
 	    }
 	    *prev = rec;
 	    if (rec == NULL) break;
@@ -835,8 +838,11 @@ void _XtFreeCacheRec(app, p)
 	Cardinal num_args = p->num_args;
 	(*p->more.destructor) (app, &p->to, p->more.closure, p->args,
 			       &num_args);
+	if (p->more.prev)
+	    p->more.prev->next = p->next;
+	else
+	    cacheHashTable[p->hash & CACHEHASHMASK] = p->next;
     }
-    p->more.prev->next = p->next;
     if ((p->next != NULL) && (p->next->flags & HAS_DESTRUCTOR))
 	p->next->more.prev = p->more.prev;
 
