@@ -1,3 +1,4 @@
+/* $XConsortium: cfbpolypnt.c,v 5.16 94/03/16 16:53:04 dpw Exp $ */
 /* THIS FILE GENERATED AUTOMATICALLY BY XKBCOMP */
 #ifndef DFLT_H
 #define DFLT_H 1
