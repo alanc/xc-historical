@@ -1,3 +1,5 @@
+/* $XConsortium$ */
+
 /*
  * Copyright (c) 1992-1993 Silicon Graphics, Inc.
  *
