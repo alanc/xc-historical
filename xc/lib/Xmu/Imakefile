@@ -158,6 +158,13 @@ SpecialObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(CSSDEFS))
 
 #if SharedLibXmu
 NormalSharedLibraryTarget(Xmu,$(SOXMUREV),$(OBJS))
+
+SpecialSharedObjectRule(sharedlib.o,,-I$(TOOLKITSRC))
+depend:: xtsharedlib.c
+xtsharedlib.c: $(TOOLKITSRC)/sharedlib.c
+	$(RM) $@
+	$(LN) $? $@
+
 NormalSharedLibraryDataTarget(Xmu,$(SOXMUREV),$(UNSHAREDOBJS))
 InstallSharedLibrary(Xmu,$(SOXMUREV),$(USRLIBDIR))
 InstallSharedLibraryData(Xmu,$(SOXMUREV),$(USRLIBDIR))
