@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: miexpose.c,v 1.25 87/07/15 15:51:25 todd Exp $ */
+/* $Header: miexpose.c,v 1.25 87/09/11 07:19:01 rws Locked $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -86,9 +86,16 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
 
     if (pSrcDrawable->type == DRAWABLE_WINDOW)
     {
-	prgnSrcClip = (*pscr->RegionCreate)(NullBox, 1);
-	(*pscr->RegionCopy)(prgnSrcClip,
-			    ((WindowPtr)pSrcDrawable)->clipList);
+	if (pGC->subWindowMode == IncludeInferiors)
+	{
+	    prgnSrcClip = NotClippedByChildren((WindowPtr)pSrcDrawable);
+	}
+	else
+	{
+	    prgnSrcClip = (*pscr->RegionCreate)(NullBox, 1);
+	    (*pscr->RegionCopy)(prgnSrcClip,
+				((WindowPtr)pSrcDrawable)->clipList);
+	}
 	(*pscr->TranslateRegion)(prgnSrcClip,
 				 -((WindowPtr)pSrcDrawable)->absCorner.x,
 				 -((WindowPtr)pSrcDrawable)->absCorner.y);
@@ -104,7 +111,11 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
 	prgnSrcClip = (*pscr->RegionCreate)(&box, 1);
     }
 
-    if (pDstDrawable->type == DRAWABLE_WINDOW)
+    if (pDstDrawable == pSrcDrawable)
+    {
+	prgnDstClip = prgnSrcClip;
+    }
+    else if (pDstDrawable->type == DRAWABLE_WINDOW)
     {
 	prgnDstClip = (*pscr->RegionCreate)(NullBox, 1);
 	(*pscr->RegionCopy)(prgnDstClip,
@@ -198,7 +209,8 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
 	(*pWin->PaintWindowBackground)(pDstDrawable, prgnExposed, 
 				       PW_BACKGROUND);
     }
-    (*pscr->RegionDestroy)(prgnDstClip);
+    if (prgnDstClip != prgnSrcClip)
+	(*pscr->RegionDestroy)(prgnDstClip);
     (*pscr->RegionDestroy)(prgnSrcClip);
     (*pscr->RegionDestroy)(prgnSrc);
     (*pscr->RegionDestroy)(prgnExposed);
