@@ -1,4 +1,4 @@
-/* $XConsortium: pl_pc.c,v 1.1 92/05/08 15:13:37 mor Exp $ */
+/* $XConsortium: pl_pc.c,v 1.2 92/05/11 13:12:33 mor Exp $ */
 
 /************************************************************************
 Copyright 1987,1991,1992 by Digital Equipment Corporation, Maynard,
@@ -65,9 +65,9 @@ INPUT PEXPCAttributes	*values;
 
     PEXGetFPReq (CreatePipelineContext, req, convertFP);
     req->pc = pc;
-    req->itemMask[0] = valueMask[0];
-    req->itemMask[1] = valueMask[1];
-    req->itemMask[2] = valueMask[2];
+    req->itemMask0 = valueMask[0];
+    req->itemMask1 = valueMask[1];
+    req->itemMask2 = valueMask[2];
 
     if (valueMask[0] != 0 || valueMask[1] != 0 || valueMask[2] != 0)
     {
@@ -145,9 +145,9 @@ INPUT PEXPipelineContext	destPc;
     PEXGetReq (CopyPipelineContext, req);
     req->src = srcPc;
     req->dst = destPc;
-    req->itemMask[0] = valueMask[0];
-    req->itemMask[1] = valueMask[1];
-    req->itemMask[2] = valueMask[2];
+    req->itemMask0 = valueMask[0];
+    req->itemMask1 = valueMask[1];
+    req->itemMask2 = valueMask[2];
 
 
     /*
@@ -187,9 +187,9 @@ INPUT unsigned long		*valueMask;
 
     PEXGetFPReq (GetPipelineContext, req, convertFP);
     req->pc = pc;
-    req->itemMask[0] = valueMask[0];
-    req->itemMask[1] = valueMask[1];
-    req->itemMask[2] = valueMask[2];
+    req->itemMask0 = valueMask[0];
+    req->itemMask1 = valueMask[1];
+    req->itemMask2 = valueMask[2];
 
     if (_XReply (display, &rep, 0, xFalse) == 0)
     {
@@ -254,9 +254,9 @@ INPUT PEXPCAttributes		*pcAttributes;
 
     PEXGetFPReq (ChangePipelineContext, req, convertFP);
     req->pc = pc;
-    req->itemMask[0] = valueMask[0];
-    req->itemMask[1] = valueMask[1];
-    req->itemMask[2] = valueMask[2];
+    req->itemMask0 = valueMask[0];
+    req->itemMask1 = valueMask[1];
+    req->itemMask2 = valueMask[2];
 
     _PEXGeneratePCList (display, (pexReq *) req, valueMask, pcAttributes);
 
@@ -291,6 +291,8 @@ INPUT PEXPCAttributes	  *values;
     int			sizeColor;
     long		size;
     Bool		bitSet;
+    int 		pscType;
+    INT16		*pint;
 
 
     /*
@@ -305,11 +307,11 @@ INPUT PEXPCAttributes	  *values;
 	f += values->model_clip_volume.count * sizeof (pexHalfSpace);
 
     if (valueMask[1] & 1L << (PEXPCLightState - PEXPCBFInteriorStyleIndex))
-	f += values->light_state.count * sizeof (pexTableIndex);
+	f += PADDED_BYTES (values->light_state.count * sizeof (pexTableIndex));
 
     pv = pvSend = (long *) _XAllocScratch (display, (unsigned long) f);
 
-    for (n = 0; n < (PEXPCMaxIndex + 1); n++)
+    for (n = 0; n < (PEXPCMaxShift + 1); n++)
     {
 	bitSet = valueMask[n >> 5] & (1L << (n & 0x1f));
 	if (bitSet != 0)
@@ -422,12 +424,10 @@ INPUT PEXPCAttributes	  *values;
 		pv += NUMWORDS (sizeof (pexColourSpecifier) + sizeColor); 
 		break;
             case PEXPCCurveApprox:
-#ifdef WORD64
-#else
-		*((pexCurveApprox *) pv) =
-		    *(pexCurveApprox *) &(values->curve_approx);
-#endif
-		pv += LENOF (pexCurveApprox); 
+		*pv = values->curve_approx.method;
+		pv++;
+		*((float *) pv) = values->curve_approx.tolerance;
+		pv++;
 		break;
             case PEXPCPolylineInterp:
 		*pv = values->polyline_interp;
@@ -512,12 +512,12 @@ INPUT PEXPCAttributes	  *values;
 		pv++;
 		break;
             case PEXPCSurfaceApprox:
-#ifdef WORD64
-#else
-		*((pexSurfaceApprox *) pv) =
-		    *(pexSurfaceApprox *) &(values->surface_approx);
-#endif
-		pv += LENOF (pexSurfaceApprox);
+		*pv = values->surface_approx.method;
+		pv++;
+		*((float *) pv) = values->surface_approx.u_tolerance;
+		pv++;
+		*((float *) pv) = values->surface_approx.v_tolerance;
+		pv++;
 		break;
             case PEXPCCullingMode:
 		*pv = values->culling_mode;
@@ -602,7 +602,7 @@ INPUT PEXPCAttributes	  *values;
 		*((long *) pv) = size;
 		pv++;
 		size *= sizeof (pexHalfSpace);
-		COPY_AREA ((char *) values->model_clip_volume.half_space,
+		COPY_AREA ((char *) values->model_clip_volume.half_spaces,
 		    (char *) pv, size);
 		pv += NUMWORDS (size);
 		break;
@@ -615,7 +615,7 @@ INPUT PEXPCAttributes	  *values;
 		*((long *) pv) = size;
 		pv++;
 		size *= sizeof (pexTableIndex);
-		COPY_AREA ((char *) values->light_state.light_index,
+		COPY_AREA ((char *) values->light_state.indices,
 		    (char *) pv, size);
 		pv += NUMWORDS (size);
 		break;
@@ -636,9 +636,9 @@ INPUT PEXPCAttributes	  *values;
 		pv += LENOF (pexNameSet);
 		break;
             case PEXPCASFValues:
-		*((unsigned long *) pv) = values->enables;
+		*((unsigned long *) pv) = values->asf_enables;
 		pv++;
-		*((unsigned long *) pv) = values->values;
+		*((unsigned long *) pv) = values->asf_values;
 		pv++;
 		break;
 	    case PEXPCColorApproxIndex:
@@ -650,16 +650,40 @@ INPUT PEXPCAttributes	  *values;
 		pv++;
 		break;
 	    case PEXPCParaSurfCharacteristics:
-#if 0
-		((PEXPSCData *) pv)->characteristics = 
-		    values->para_surf_char.characteristics;
-		((PEXPSCData *) pv)->length =
-		    values->para_surf_char.length;
-		pv += NUMWORDS (sizeof (PEXPSCData) - sizeof (char *));
-		COPY_AREA (&(values->para_surf_char.psc),
-		    (char *) pv, values->para_surf_char.length);
-		pv += NUMWORDS (values->para_surf_char.length);
-#endif
+		pscType = values->para_surf_char.type;
+		pint = (INT16 *) pv;
+
+		if (pscType == PEXPSCIsoCurves)
+		{
+		    size = sizeof (PEXPSCIsoparametricCurves);
+		    *(pint++) = PEXPSCIsoCurves;
+		    *(pint++) = size;
+		    pv = (long *) pint;
+
+		    COPY_AREA (&(values->para_surf_char.psc.iso_curves),
+		       (char *) pv, sizeof (PEXPSCIsoparametricCurves));
+		    pv = (long *) ((char *) pv +
+			sizeof (PEXPSCIsoparametricCurves));
+		}
+		else if (pscType == PEXPSCMCLevelCurves ||
+		    pscType == PEXPSCWCLevelCurves)
+		{
+		    int param_size = sizeof (PEXCoord) *
+			 values->para_surf_char.psc.level_curves.count;
+		    size = sizeof (pexPSC_LevelCurves) + param_size;
+
+		    *(pint++) = pscType;
+		    *(pint++) = size;
+		    pv = (long *) pint;
+
+		    COPY_AREA (&(values->para_surf_char.psc.level_curves),
+		       (char *) pv, sizeof (pexPSC_LevelCurves));
+		    pv = (long *) ((char *) pv + sizeof (pexPSC_LevelCurves));
+		    COPY_AREA ((char *)
+			values->para_surf_char.psc.level_curves.parameters,
+			(char *) pv, param_size);
+		    pv = (long *) ((char *) pv + param_size);
+		}
 		break;
 	    }
 	}
@@ -668,7 +692,7 @@ INPUT PEXPCAttributes	  *values;
     length = pv - pvSend;
     req->length += length;
 
-    Data (display, (char *)pvSend, (length << 2));
+    Data (display, (char *) pvSend, (length << 2));
 }
 
 
@@ -687,24 +711,29 @@ OUTPUT PEXPCAttributes			*ppca;
 {
     Bool			bitSet;
     int				sizeColor;
-    int				size, n;
+    int				size, n, pscType;
+    INT16			*pint;
 
 
     /*
      * PEXFreePCAttributes will check for NULL before freeing.
      */
 
-    ppca->model_clip_volume.half_space = NULL;
-    ppca->light_state.light_index = NULL;
-    ppca->para_surf_char.psc.level_curves.parameter = NULL;
-    ppca->para_surf_char.psc.data.ch = NULL;
+    ppca->model_clip_volume.count = 0;
+    ppca->model_clip_volume.half_spaces = NULL;
+    ppca->light_state.count = 0;
+    ppca->light_state.indices = NULL;
+    ppca->para_surf_char.psc.level_curves.count = 0;
+    ppca->para_surf_char.psc.level_curves.parameters = NULL;
+    ppca->para_surf_char.psc.imp_dep.length = 0;
+    ppca->para_surf_char.psc.imp_dep.data = NULL;
 
 
     /*
      * Fill in the PC attributes.
      */
 
-    for (n = 0; n < (PEXPCMaxIndex + 1); n++)
+    for (n = 0; n < (PEXPCMaxShift + 1); n++)
     {
 	bitSet = valueMask[n >> 5] & (1L << (n & 0x1f));
 
@@ -754,7 +783,10 @@ OUTPUT PEXPCAttributes			*ppca;
 		pv++;
 		break;
             case PEXPCCharUpVector:
+#ifdef WORD64
+#else
 		ppca->char_up_vector = *((PEXVector2D *) pv);
+#endif
 		pv += LENOF (pexVector2D); 
 		break;
             case PEXPCTextPath:
@@ -762,7 +794,10 @@ OUTPUT PEXPCAttributes			*ppca;
 		pv++;
 		break;
             case PEXPCTextAlignment:
+#ifdef WORD64
+#else
 		ppca->text_alignment = *((PEXTextAlignment *)pv);
+#endif
 		pv += LENOF (pexTextAlignmentData);
 		break;
             case PEXPCATextHeight:
@@ -770,7 +805,10 @@ OUTPUT PEXPCAttributes			*ppca;
 		pv++;
 		break;
             case PEXPCATextUpVector:
+#ifdef WORD64
+#else
 		ppca->atext_up_vector = *((PEXVector2D *) pv);
+#endif
 		pv += LENOF (pexVector2D); 
 		break;
             case PEXPCATextPath:
@@ -778,7 +816,10 @@ OUTPUT PEXPCAttributes			*ppca;
 		pv++;
 		break;
             case PEXPCATextAlignment:
+#ifdef WORD64
+#else
 		ppca->atext_alignment = *((PEXTextAlignment *) pv);
+#endif
 		pv += LENOF (pexTextAlignmentData);
 		break;
             case PEXPCATextStyle:
@@ -802,8 +843,10 @@ OUTPUT PEXPCAttributes			*ppca;
 		pv += NUMWORDS (sizeof (pexColourSpecifier) + sizeColor); 
 		break;
             case PEXPCCurveApprox:
-		ppca->curve_approx = *((PEXCurveApprox *) pv);
-		pv += LENOF (pexCurveApprox);
+		ppca->curve_approx.method = *pv;
+		pv++;
+		ppca->curve_approx.tolerance = *((float *) pv);
+		pv++;
 		break;
             case PEXPCPolylineInterp:
 		ppca->polyline_interp = *pv;
@@ -886,8 +929,12 @@ OUTPUT PEXPCAttributes			*ppca;
 		pv++;
 		break;
             case PEXPCSurfaceApprox:
-		ppca->surface_approx = *((PEXSurfaceApprox *) pv);
-		pv += LENOF (pexSurfaceApprox);
+		ppca->surface_approx.method = *pv;
+		pv++;
+		ppca->surface_approx.u_tolerance = *((float *) pv);
+		pv++;
+		ppca->surface_approx.v_tolerance = *((float *) pv);
+		pv++;
 		break;
             case PEXPCCullingMode:
 		ppca->culling_mode = *pv;
@@ -898,19 +945,31 @@ OUTPUT PEXPCAttributes			*ppca;
 		pv++;
 		break;
             case PEXPCPatternSize:
+#ifdef WORD64
+#else
 		ppca->pattern_size = *((PEXCoord2D *) pv);
+#endif
 		pv += LENOF (pexCoord2D);
 		break;
             case PEXPCPatternRefPoint:
+#ifdef WORD64
+#else
 		ppca->pattern_ref_point = *((PEXCoord *) pv);
+#endif
 		pv += LENOF (pexCoord3D);
 		break;
             case PEXPCPatternRefVec1:
+#ifdef WORD64
+#else
 		ppca->pattern_ref_vec1 = *((PEXVector *) pv);
+#endif
 		pv += LENOF (pexVector3D); 
 		break;
             case PEXPCPatternRefVec2:
+#ifdef WORD64
+#else
 		ppca->pattern_ref_vec2 = *((PEXVector *) pv);
+#endif
 		pv += LENOF (pexVector3D); 
 		break;
             case PEXPCInteriorBundleIndex:
@@ -957,10 +1016,10 @@ OUTPUT PEXPCAttributes			*ppca;
 		pv++;
 		ppca->model_clip_volume.count = size;
 		size *= sizeof (PEXHalfSpace);
-		ppca->model_clip_volume.half_space =
+		ppca->model_clip_volume.half_spaces =
 		    (PEXHalfSpace *) PEXAllocBuf ((unsigned) size);
 		COPY_AREA ((char *)pv,
-		    (char *) (ppca->model_clip_volume.half_space), size);
+		    (char *) (ppca->model_clip_volume.half_spaces), size);
 		pv += NUMWORDS (size);
 		break;
             case PEXPCViewIndex:
@@ -972,10 +1031,10 @@ OUTPUT PEXPCAttributes			*ppca;
 		pv++;
 		ppca->light_state.count = size;
 		size *= sizeof (PEXTableIndex);
-		ppca->light_state.light_index =
+		ppca->light_state.indices =
 		    (PEXTableIndex *) PEXAllocBuf ((unsigned) size);
 		COPY_AREA ((char *) pv,
-		    (char *) (ppca->light_state.light_index), size);
+		    (char *) (ppca->light_state.indices), size);
 		pv += NUMWORDS (size);
 		break;
             case PEXPCDepthCueIndex:
@@ -995,9 +1054,9 @@ OUTPUT PEXPCAttributes			*ppca;
 		pv += LENOF (pexNameSet);
 		break;
             case PEXPCASFValues:
-		ppca->enables = *((CARD32 *) pv);
+		ppca->asf_enables = *((CARD32 *) pv);
 		pv++;
-		ppca->values = *((CARD32 *) pv);
+		ppca->asf_values = *((CARD32 *) pv);
 		pv++;
 		break;
 	    case PEXPCColorApproxIndex:
@@ -1009,17 +1068,34 @@ OUTPUT PEXPCAttributes			*ppca;
 		pv++;
 		break;
 	    case PEXPCParaSurfCharacteristics:
-#if 0
-/* THIS HAS TO BE CHANGED !!! */
-		ppca->para_surf_char.characteristics =
-			((PEXPSCData *) pv)->characteristics;
-		ppca->para_surf_char.length = size =
-			((PEXPSCData *) pv)->length;
-		pv += NUMWORDS (sizeof (PEXPSCData) - sizeof (char *));
-		ppca->para_surf_char.pscData = (char *) PEXAllocBuf (size);
-		COPY_AREA ((char *) pv, (char *) (ppca->psc.pscData), size);
-		pv += NUMWORDS (size); 
-#endif
+		pint = (INT16 *) pv;
+		ppca->para_surf_char.type = pscType = *(pint++);
+		pv++;
+		if (pscType == PEXPSCIsoCurves)
+		{
+		    COPY_AREA ((char *) pv,
+			(char *) &(ppca->para_surf_char.psc.iso_curves),
+			sizeof (PEXPSCIsoparametricCurves));
+		    pv = (unsigned long *) ((char *) pv +
+			sizeof (PEXPSCIsoparametricCurves));
+		}
+		else if (pscType == PEXPSCMCLevelCurves ||
+		    pscType == PEXPSCWCLevelCurves)
+		{
+		    int param_size = *pint - sizeof (pexPSC_LevelCurves);
+
+		    COPY_AREA ((char *) pv,
+		        (char *) &(ppca->para_surf_char.psc.level_curves),
+		        sizeof (pexPSC_LevelCurves));
+		    pv = (unsigned long *) ((char *) pv +
+			sizeof (pexPSC_LevelCurves));
+		    ppca->para_surf_char.psc.level_curves.parameters = 
+		        (float *) PEXAllocBuf ((unsigned) param_size);
+		    COPY_AREA ((char *) pv, (char *)
+			(ppca->para_surf_char.psc.level_curves.parameters),
+		        param_size);
+		    pv = (unsigned long *) ((char *) pv + *pint);
+		}
 		break;
 	    }
 	}
