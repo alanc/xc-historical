@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Resources.c,v 1.69 89/09/26 10:57:21 swick Exp $";
+    "$XConsortium: Resources.c,v 1.70 89/09/26 18:00:58 swick Exp $";
 /* $oHeader: Resources.c,v 1.6 88/09/01 13:39:14 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -574,6 +574,7 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 		}
 		if (!have_value
 		    && ((rx->xrm_default_type == QImmediate)
+			|| (rx->xrm_default_type == xrm_type)
 			|| (rx->xrm_default_addr != NULL))) {
 		    /* Convert default value to proper type */
 		    xrm_default_type = rx->xrm_default_type;
@@ -1142,6 +1143,7 @@ void XtSetValues(w, args, num_args)
 			  (String *)NULL, (Cardinal *)NULL);
 		    break;
 		}
+		if (result == XtGeometryNo) geoReply.request_mode = 0;
 		(*(wc->core_class.set_values_almost))
 		    (oldw, w, &geoReq, &geoReply);
 	    } while (geoReq.request_mode != 0);
@@ -1158,27 +1160,27 @@ void XtSetValues(w, args, num_args)
              the server will cause an expose on resize */
             if (redisplay && XtIsRealized(w))
                 XClearArea (XtDisplay(w), XtWindow(w), 0, 0, 0, 0, TRUE);
-        }else { /*non-window object */
-        if ((redisplay || reconfigured) && XtIsManaged (w)) {
-            Widget pw = w;
-            RectObj r = (RectObj) oldw;
-            while ((pw!=NULL) && ( ! XtIsWidget(pw) ))
-                pw = pw->core.parent;
-            if ((pw!=NULL) && XtIsRealized (pw)) {
-                int bw2 = r->rectangle.border_width << 1;
-                XClearArea (XtDisplay (pw), XtWindow (pw),
-                    r->rectangle.x,r->rectangle.y,
-                    r->rectangle.width + bw2,r->rectangle.height + bw2,TRUE);
-                if (reconfigured) {
-                    r = (RectObj) w;
-                    bw2 = r->rectangle.border_width << 1;
-                    XClearArea (XtDisplay (pw), XtWindow (pw),
-                        r->rectangle.x,r->rectangle.y,
-                        r->rectangle.width + bw2,r->rectangle.height + bw2,
-                        TRUE);
-                }
-            }
-        }
+        } else { /*non-window object */
+	  if (redisplay || reconfigured) {
+	      Widget pw = w;
+	      RectObj r = (RectObj) oldw;
+	      while ((pw!=NULL) && ( ! XtIsWidget(pw) ))
+		  pw = pw->core.parent;
+	      if ((pw!=NULL) && XtIsRealized (pw)) {
+		  int bw2 = r->rectangle.border_width << 1;
+		  XClearArea (XtDisplay (pw), XtWindow (pw),
+		      r->rectangle.x, r->rectangle.y,
+		      r->rectangle.width + bw2,r->rectangle.height + bw2,TRUE);
+		  if (reconfigured) {
+		      r = (RectObj) w;
+		      bw2 = r->rectangle.border_width << 1;
+		      XClearArea (XtDisplay (pw), XtWindow (pw),
+			  r->rectangle.x,r->rectangle.y,
+			  r->rectangle.width + bw2,r->rectangle.height + bw2,
+			  TRUE);
+		  }
+	      }
+	  }
         }
     }
 
