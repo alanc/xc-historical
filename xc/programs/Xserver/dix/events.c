@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.18 89/11/21 14:31:03 rws Exp $ */
+/* $XConsortium: events.c,v 5.19 89/11/27 17:29:50 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -2194,7 +2194,7 @@ EnterNotifies(ancestor, child, mode, detail)
 
 /* dies horribly if ancestor is not an ancestor of child */
 static void
-LeaveNotifies(child, ancestor, mode, detail, doAncestor)
+LeaveNotifies(child, ancestor, mode, detail)
     WindowPtr child, ancestor;
     int detail, mode;
 {
@@ -2204,8 +2204,6 @@ LeaveNotifies(child, ancestor, mode, detail, doAncestor)
 	return;
     for (pWin = child->parent; pWin != ancestor; pWin = pWin->parent)
 	EnterLeaveEvent(LeaveNotify, mode, detail, pWin);
-    if (doAncestor)
-	EnterLeaveEvent(LeaveNotify, mode, detail, ancestor);
 }
 
 static void
@@ -2224,7 +2222,7 @@ DoEnterLeaveEvents(fromWin, toWin, mode)
     else if (IsParent(toWin, fromWin))
     {
 	EnterLeaveEvent(LeaveNotify, mode, NotifyAncestor, fromWin);
-	LeaveNotifies(fromWin, toWin, mode, NotifyVirtual, FALSE);
+	LeaveNotifies(fromWin, toWin, mode, NotifyVirtual);
 	EnterLeaveEvent(EnterNotify, mode, NotifyInferior, toWin);
     }
     else
@@ -2232,20 +2230,8 @@ DoEnterLeaveEvents(fromWin, toWin, mode)
 	WindowPtr common = CommonAncestor(toWin, fromWin);
 	/* common == NullWindow ==> different screens */
 	EnterLeaveEvent(LeaveNotify, mode, NotifyNonlinear, fromWin);
-	if (common)
-	{
-	    LeaveNotifies(fromWin, common, mode,
-			  NotifyNonlinearVirtual, FALSE);
-	    EnterNotifies(common, toWin->parent, mode, NotifyNonlinearVirtual);
-	}
-	else
-	{
-	    LeaveNotifies(fromWin,
-			  WindowTable[fromWin->drawable.pScreen->myNum], mode,
-			  NotifyNonlinearVirtual, TRUE);
-	    EnterNotifies(WindowTable[toWin->drawable.pScreen->myNum],
-			  toWin->parent, mode, NotifyNonlinearVirtual);
-	}
+	LeaveNotifies(fromWin, common, mode, NotifyNonlinearVirtual);
+	EnterNotifies(common, toWin->parent, mode, NotifyNonlinearVirtual);
 	EnterLeaveEvent(EnterNotify, mode, NotifyNonlinear, toWin);
     }
 }
