@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.60 89/10/17 11:59:34 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.61 89/10/20 09:38:55 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -278,6 +278,9 @@
 #ifndef HasFortran
 #define HasFortran		NO
 #endif
+#ifndef HasNdbm
+#define HasNdbm			NO
+#endif
 
 #ifndef HasSunOSSharedLibraries
 #define HasSunOSSharedLibraries NO
@@ -488,6 +491,13 @@
 #define StandardDefines -DSYSV
 #else
 #define StandardDefines /**/
+#endif
+#endif
+#ifndef NdbmDefines
+#if HasNdbm
+#define NdbmDefines -DNDBM
+#else
+#define NdbmDefines /**/
 #endif
 #endif
 #ifndef ExtraLibraries

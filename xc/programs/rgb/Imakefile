@@ -1,4 +1,5 @@
       DEPLIBS = 
+      DEFINES = NdbmDefines
      INCLUDES = -I$(TOP) -I$(SERVERSRC)/include
  INSTALLFLAGS = $(INSTLIBFLAGS)
         SRCS1 = rgb.c

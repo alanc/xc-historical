@@ -9,6 +9,7 @@
 #define OSMinorVersion     0
 #define HasSaberC	   YES		/* a useful program to buy... */
 #define HasBsearch	   YES
+#define HasNdbm		   YES
 
 #define BuildServer YES
 
@@ -29,7 +30,7 @@
 #define XtekServer Xtek
 
 
-/**/# platform:  $XConsortium: pegasus.cf,v 1.9 89/10/10 14:27:27 jim Exp $
+/**/# platform:  $XConsortium: pegasus.cf,v 1.10 89/10/11 18:55:05 jim Exp $
 /**/# operating system:  OSName
 
 /*

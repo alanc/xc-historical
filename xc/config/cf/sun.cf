@@ -9,6 +9,7 @@
 #define OSMajorVersion    4
 #define OSMinorVersion    0
 #define HasSaberC	  YES		/* for machines that have it */
+#define HasNdbm		  YES
 #define XsunServer Xsun
 
 /* #define HasGcc YES */		/* very useful for server, though */
@@ -59,7 +60,7 @@
 /* see below for ServerDefines */
 
 
-/**/# platform:  $XConsortium: sun.cf,v 1.33 89/10/20 11:23:49 jim Exp $
+/**/# platform:  $XConsortium: sun.cf,v 1.34 89/10/20 16:10:12 rws Exp $
 /**/# operating system:  OSName
 
 #if OSMajorVersion == 3 && OSMinorVersion <= 2
