@@ -1,3 +1,5 @@
+XCOMM $XConsortium$
+XCOMM
 XCOMM! /bin/sh
 
 XCOMM Copyright (c) 1993 Quarterdeck Office Systems

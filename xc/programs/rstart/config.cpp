@@ -1,4 +1,5 @@
-
+XCOMM $XConsortium$
+XCOMM
 XCOMM Copyright (c) 1993 Quarterdeck Office Systems
 XCOMM
 XCOMM Permission to use, copy, modify, distribute, and sell this software

@@ -1,3 +1,5 @@
+XCOMM $XConsortium$
+XCOMM
 XCOMM Copyright (c) 1993 Quarterdeck Office Systems
 XCOMM
 XCOMM Permission to use, copy, modify, distribute, and sell this software
@@ -20,7 +22,7 @@ XCOMM PROFITS, EVEN IF ADVISED OF THE POSSIBILITY THEREOF, AND REGARDLESS
 XCOMM OF WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT
 XCOMM OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-XCOMM $XConsortium: Imakefile,v 1.4 94/02/05 15:00:20 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.5 94/02/06 14:35:36 rws Exp $
 
 XCOMM Having had to change the name once, I don't want it to be tough
 XCOMM the next time...
