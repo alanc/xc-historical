@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.211 94/01/18 15:21:19 rws Exp $";
+static char *rid="$XConsortium: main.c,v 1.213 94/02/02 11:28:43 kaleb Exp $";
 #endif /* lint */
 
 /*
@@ -157,6 +157,8 @@ static Bool IsPts = False;
 #endif
 #ifdef hpux
 #define HAS_BSD_GROUPS
+#define USE_SYSV_UTMP
+#define HAS_UTMP_UT_HOST
 #include <sys/ptyio.h>
 #endif /* hpux */
 #ifdef sgi
