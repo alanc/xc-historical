@@ -814,7 +814,7 @@ is a crock, and always uses cut buffer zero).
 .PP
 For example, helpers for dbx on a Sun:
 .sp
-.in +10
+.in +4
 .nf
 *VT100.translations: #override <Key>L7: keymap(dbx)
 *VT100.dbxKeymap.translations: \\
@@ -824,7 +824,49 @@ For example, helpers for dbx on a Sun:
 	<Key>L8: string("print ") selection(PRIMARY)
 .fi
 .sp
-.in -10
+.in -4
+.SH "STARTING XTERM FROM INIT"
+.PP
+\fBWarning, this feature is now obsolete and may not be supported in 
+future releases.  Sites using this method should switch to \fIxdm\fP 
+instead.\fR
+.PP
+On operating systems such as 4.3bsd and Ultrix, the server and initial login 
+window are normally started automatically by 
+\fIinit(8)\fP.
+.PP
+By convention, the pseudoterminal with the
+highest minor device number (e.g. \fI\/dev\/ttyqf\fP and \fI\/dev\/ptyqf\fP)
+is renamed for
+the lowest display number (e.g. \fI\/dev\/ttyv0\fP and \fI\/dev\/ptyv0\fP).
+Machines that have more than one
+display can repeat this process using \fIttyqe\fP for \fIttyv1\fP, and 
+so on.
+.PP
+Once the pseudoterminals are in place, a line similar to the following may be 
+added to \fI/etc/ttys\fP (replacing \fIXqvss\fP with the appropriate server
+and putting it all on one line):
+.sp
+.in +4
+.nf
+ttyv0 "/usr/bin/X11/xterm -L -geom 80x24+1+1 -display :0" 
+	xterm on secure window="/usr/bin/X11/Xqvss :0"
+.fi
+.in -4
+.PP
+Sites that used to run X10 should note that the colon in the server display
+number is required.
+.PP
+Although the release will install both the X server and 
+\fIxterm\fP in /usr/bin/X11 by default, many sites choose to make a copy of
+both of these programs on the root partition (usually in /etc) so that they
+may still be used even if the partition containing /usr/bin/X11 isn't mounted.
+.PP
+Some versions of \fIinit\fP have relatively small program name buffer 
+sizes and treat all sharp signs as comment delimiters.  Sites that wish to
+list large numbers of options on the xterm line will need to write a small
+shell script to exec the long xterm line.  The best solution, of course, is
+to use \fIxdm\fP.
 .SH "OTHER FEATURES"
 .I Xterm
 automatically highlights the window border and text cursor when the
