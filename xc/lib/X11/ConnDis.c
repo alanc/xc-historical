@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.76 91/03/29 15:20:17 rws Exp $
+ * $XConsortium: XConnDis.c,v 11.77 91/04/04 18:57:12 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -291,8 +291,11 @@ int _XConnectDisplay (display_name, fullnamep, dpynump, screenp,
 #endif /* O_NONBLOCK */
 #endif /* hpux */
 
+#ifdef FD_CLOEXEC
+    (void) fcntl (fd, F_SETFD, FD_CLOEXEC);
+#else
     (void) fcntl (fd, F_SETFD, 1);
-
+#endif
 
     /*
      * Build the expanded display name:
