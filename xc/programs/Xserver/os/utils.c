@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.89 89/12/13 09:10:53 rws Exp $ */
+/* $XConsortium: utils.c,v 1.90 90/06/12 14:08:16 keith Exp $ */
 #include <stdio.h>
 #include "Xos.h"
 #include "misc.h"
@@ -655,7 +655,7 @@ DumpMemoryInUse (time)
 
     for (head = MemoryInUse; head; head = head->next)
 	if (head->time >= time)
-	    printf ("0x%08x %5d %6d\n", head,
+	    fprintf (stderr, "0x%08x %5d %6d\n", head,
 					head->amount,
 					head->time);
 }
