@@ -1,5 +1,5 @@
 /*
- *  $XConsortium: globals.h,v 2.17 89/05/31 10:28:54 swick Exp $
+ *  $XConsortium: globals.h,v 2.18 89/06/29 16:31:34 swick Exp $
  */
 
 /*
@@ -86,6 +86,8 @@ ext Scrn	*scrnList;	/* Array of scrns in use. */
 ext int		numScrns;	/* Number of scrns in above array. */
 
 ext Button	LastButtonPressed;
+
+ext Widget	NoMenuForButton;	/* Flag menu widget value: no menu */
 
 ext XawTextSource NullSource;
 

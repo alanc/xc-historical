@@ -1,5 +1,5 @@
 /*
- * $XConsortium: externs.h,v 2.11 89/05/11 19:26:54 converse Exp $
+ * $XConsortium: externs.h,v 2.12 89/07/05 18:41:46 converse Exp $
  */
 
 /*
@@ -68,12 +68,15 @@ extern Scrn LastButtonScreen();
 
 extern char *Version();
 
-XawTextSource TSourceCreate();
+extern XawTextSource TSourceCreate();
+extern XawTextSource CreateFileSource();
 
 extern void IconInit();
 
 extern void OpenFolder();
 extern void OpenSequence();
+extern void FolderMenu();
+extern void FolderButton();
 
 extern int GetWidth();
 extern int GetHeight();

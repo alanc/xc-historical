@@ -1,7 +1,7 @@
-#ifndef lint
+#if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: init.c,v 2.24 89/06/30 15:19:17 kit Exp $";
-#endif lint
+    "$XConsortium: init.c,v 2.25 89/06/30 15:34:51 swick Exp $";
+#endif
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -37,6 +37,8 @@ extern char* _XLowerCase();
 /* Xmh-specific resources. */
 static Boolean defFalse = False;
 static Boolean defTrue = True;
+
+static Boolean static_variable;
 
 #define offset(field) XtOffset(struct _resources *, field)
 
@@ -117,7 +119,7 @@ Syntax(call)
 
 static char *FixUpGeometry(geo, defwidth, defheight)
 char *geo;
-int defwidth, defheight;
+Dimension defwidth, defheight;
 {
     int gbits;
     int x, y, width, height;
@@ -167,6 +169,8 @@ char **argv;
     static XtActionsRec actions[] = {
 	{"open-folder", OpenFolder},
 	{"open-sequence", OpenSequence},
+        {"folder-menu", FolderMenu},
+        {"folder-button", FolderButton},
     };
     static Arg shell_args[] = {
 	{XtNinput, (XtArgVal)True},
@@ -253,6 +257,7 @@ char **argv;
     numScrns = 0;
     scrnList = (Scrn *) XtMalloc((unsigned) 1);
     LastButtonPressed = NULL;
+    NoMenuForButton = (Widget) &static_variable;
 
     TocInit();
     InitPick();

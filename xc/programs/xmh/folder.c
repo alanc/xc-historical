@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: folder.c,v 2.9 89/06/28 16:19:23 converse Exp $";
+    "$XConsortium: folder.c,v 2.10 89/07/05 18:42:28 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -208,7 +208,7 @@ Scrn scrn;
 	if (scrnList[i]->folderbuttons) {
 	    if (IsSubFolder(foldername)) {
 		char *parentfolder = GetParentFolderName(foldername);
-		BBoxDeleteMenuButtonEntry
+		BBoxDeleteMenuEntry
 		    (BBoxFindButtonNamed(scrnList[i]->folderbuttons,
 					 parentfolder), foldername);
 		XtFree(parentfolder);
