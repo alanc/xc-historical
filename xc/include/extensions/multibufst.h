@@ -1,5 +1,5 @@
 /*
- * $XConsortium: multibufst.h,v 1.5 89/10/04 16:11:48 jim Exp $
+ * $XConsortium: multibufst.h,v 1.6 89/11/01 09:10:00 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -148,20 +148,20 @@ typedef struct {
 
 typedef struct {
     CARD8	reqType;	/* always codes->major_opcode */
-    CARD8	mbufReqType;	/* always X_MbufSetMultiBufferAttributes */
+    CARD8	mbufReqType;	/* always X_MbufSetMBufferAttributes */
     CARD16	length B16;
     CARD32	window B32;	/* associated window */
     CARD32	valueMask B32;	/* modified entries */
-} xMbufSetMultiBufferAttributesReq;	/* followed by values */
-#define sz_xMbufSetMultiBufferAttributesReq 12
+} xMbufSetMBufferAttributesReq;	/* followed by values */
+#define sz_xMbufSetMBufferAttributesReq 12
 
 typedef struct {
     CARD8	reqType;	/* always codes->major_opcode */
-    CARD8	mbufReqType;	/* always X_MbufGetMultiBufferAttributes */
+    CARD8	mbufReqType;	/* always X_MbufGetMBufferAttributes */
     CARD16	length B16;
     CARD32	window B32;	/* associated window */
-} xMbufGetMultiBufferAttributesReq;
-#define sz_xMbufGetMultiBufferAttributesReq 8
+} xMbufGetMBufferAttributesReq;
+#define sz_xMbufGetMBufferAttributesReq 8
 
 typedef struct {
     BYTE	type;			/* X_Reply */
@@ -178,8 +178,8 @@ typedef struct {
     CARD32	unused3 B32;
     CARD32	unused4 B32;
     CARD32	unused5 B32;
-} xMbufGetMultiBufferAttributesReply;
-#define sz_xMbufGetMultiBufferAttributesReply 32
+} xMbufGetMBufferAttributesReply;
+#define sz_xMbufGetMBufferAttributesReply 32
 
 typedef struct {
     CARD8	reqType;	/* always codes->major_opcode */
