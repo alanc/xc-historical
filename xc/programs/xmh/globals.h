@@ -1,5 +1,5 @@
 /*
- *	rcs_id[] = "$Header: globals.h,v 1.7 87/10/09 14:01:33 weissman Exp $";
+ *	rcs_id[] = "$Header: globals.h,v 1.8 87/12/24 10:14:50 swick Exp $";
  */
 
 /*
@@ -82,7 +82,7 @@ ext int		numScrns;	/* Number of scrns in above array. */
 
 ext Button	LastButtonPressed;
 
-ext DwtTextSource NullSource;
+ext XtTextSource NullSource;
 
 ext Dimension	rootwidth;	/* Dimensions of root window.  */
 ext Dimension	rootheight;
