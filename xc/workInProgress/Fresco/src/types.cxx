@@ -1,5 +1,5 @@
 /*
- * $XConsortium: types.cxx,v 1.7 94/04/07 11:29:38 matt Exp matt $
+ * $XConsortium: types.cxx,v 1.8 94/09/01 18:45:46 matt Exp matt $
  */
 
 /*
@@ -515,6 +515,10 @@ void RegionImpl::bounds(Vertex& lower, Vertex& upper) {
 	lower = lower_;
 	upper = upper_;
     }
+    else {
+	lower.x = lower.y = lower.z = 0;
+	upper.x = upper.y = upper.z = 0;
+    }
 }
 
 //+ RegionImpl(Region::origin)
@@ -524,7 +528,11 @@ void RegionImpl::origin(Vertex& v) {
 	v.y = span_origin(lower_.y, upper_.y, yalign_);
 	v.z = span_origin(lower_.z, upper_.z, zalign_);
     }
+    else {
+	v.x = v.y = v.z = 0;
+    }
 }
+
 
 Coord RegionImpl::span_origin(Coord lower, Coord upper, Coord align) {
     Coord orig;
@@ -558,6 +566,11 @@ void RegionImpl::span(Axis a, Region::BoundingSpan& s) {
 	}
 	s.length = s.end - s.begin;
 	s.origin = s.begin + s.align * s.length;
+    }
+    else {
+	s.begin = s.end = s.length = 0;
+	s.align = 0;
+	s.origin = 0;
     }
 }
 
