@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.33 88/12/30 13:59:19 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.31 88/12/22 11:06:25 swick Exp $";
 #endif lint
 
 
@@ -615,7 +615,7 @@ static XtGeometryResult GeometryManager(child, request, reply)
     ViewportWidget w = (ViewportWidget)child->core.parent;
     Boolean rWidth = (Boolean)(request->request_mode & CWWidth);
     Boolean rHeight = (Boolean)(request->request_mode & CWHeight);
-    XtWidgetGeometry allowed, myrequest;
+    XtWidgetGeometry allowed;
     XtGeometryResult result;
     Boolean reconfigured;
     Dimension height_remaining;
@@ -670,42 +670,13 @@ static XtGeometryResult GeometryManager(child, request, reply)
 	}
     }
 
-    *reply = allowed;
-    if (allowed.width != request->width || allowed.height != request->height)
+    if (allowed.width != request->width || allowed.height != request->height) {
+	*reply = allowed;
 	result = XtGeometryAlmost;
+    }
     else {
-	Boolean needs_horiz = False, needs_vert = False;
 	if (rWidth)  child->core.width = request->width;
 	if (rHeight) child->core.height = request->height;
-	myrequest.request_mode = 0;
-	if (child->core.width > w->core.width) needs_horiz = True;
-	if (child->core.height > w->core.height) needs_vert = True;
-	if (needs_horiz
-	    && w->viewport.horiz_bar == (Widget)NULL
-	    && XtIsRealized((Widget)w))
-	{
-	    Widget bar = CreateScrollbar( w, True );
-	    reconfigured = True;
-	    if ((myrequest.height = 2*bar->core.height) > w->core.height)
-		myrequest.request_mode |= CWHeight;
-	}
-	if (needs_vert
-	    && w->viewport.vert_bar == (Widget)NULL
-	    && XtIsRealized((Widget)w))
-	{
-	    Widget bar = CreateScrollbar( w, False );
-	    reconfigured = True;
-	    if ((myrequest.width = 2*bar->core.width) > w->core.width)
-		myrequest.request_mode |= CWWidth;
-	}
-	if (myrequest.request_mode) {
-	    XtGeometryResult ans =
-		XtMakeGeometryRequest( (Widget)w, &myrequest, &myrequest );
-	    if (ans == XtGeometryAlmost)
-		ans = XtMakeGeometryRequest( (Widget)w, &myrequest, NULL );
-	    if (ans == XtGeometryYes)
-		reconfigured = True;
-	}
 	result = XtGeometryYes;
     }
 
