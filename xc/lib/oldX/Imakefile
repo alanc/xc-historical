@@ -15,20 +15,32 @@ OBJS =\
 	XLookAssoc.o \
 	XMakeAssoc.o
 
-#if DebugOldLibX && ProfileOldLibX
-DebuggedAndProfiledLibraryObjectRule()
-#else
+#if SharedOldLibX
 # if DebugOldLibX
-DebuggedLibraryObjectRule()
+SharedAndDebuggedLibraryObjectRule()
 # else
-#  if ProfileOldLibX
-ProfiledLibraryObjectRule()
+SharedLibraryObjectRule()
+# endif
+#else
+# if DebugOldLibX && ProfileOldLibX
+DebuggedAndProfiledLibraryObjectRule()
+# else
+#  if DebugOldLibX
+DebuggedLibraryObjectRule()
 #  else
+#   if ProfileOldLibX
+ProfiledLibraryObjectRule()
+#   else
 NormalLibraryObjectRule()
+#   endif
 #  endif
 # endif
 #endif
 
+#if SharedOldLibX
+NormalSharedLibraryTarget(oldX,$(SOOLDXREV),$(OBJS),)
+InstallSharedLibrary(oldX,$(SOOLDXREV),$(USRLIBDIR))
+#endif
 NormalLibraryTarget(oldX,$(OBJS))
 LintLibraryTarget(oldX,*.c)
 
