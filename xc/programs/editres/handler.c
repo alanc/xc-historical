@@ -1,5 +1,5 @@
 /*
- * $XConsortium: handler.c,v 1.20 91/05/22 16:27:57 gildea Exp $
+ * $XConsortium: handler.c,v 1.21 91/07/08 10:31:55 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -497,11 +497,13 @@ XtPointer node_ptr, junk;
     }
 		
     strcat(buf, GetResourceName(res_box));
+    len = strlen(buf) + 2; /* Leave space for ':' and '\0' */
 
+#ifdef notdef
     XtSetArg(args[0], XtNstring, &temp);
     XtGetValues(res_box->value_wid, args, ONE);
-    
-    len = strlen(buf) + strlen(temp) + 2; /* Leave space for ':' and '\0' */
+    len += strlen(temp);
+#endif
 
     if (len > malloc_size) {
 	malloc_string = XtRealloc(malloc_string, sizeof(char) * len);
@@ -510,7 +512,9 @@ XtPointer node_ptr, junk;
     
     strcpy(malloc_string, buf);
     strcat(malloc_string, ":");
+#ifdef notdef
     strcat(malloc_string, temp);
+#endif
 
     XtSetArg(args[0], XtNlabel, malloc_string);
     XtSetValues(res_box->res_label, args, ONE);
