@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.123 90/12/03 16:04:12 keith Exp $ */
+/* $XConsortium: connection.c,v 1.124 91/01/08 08:26:02 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -900,6 +900,7 @@ IgnoreClient (client)
     BITCLEAR(ClientsWithInput, connection);
     BITCLEAR(AllSockets, connection);
     BITCLEAR(AllClients, connection);
+    BITCLEAR(LastSelectMask, connection);
     if (GrabInProgress)
     {
     	if (GETBIT (SavedClientsWithInput, connection))
@@ -927,6 +928,7 @@ AttendClient (client)
     {
     	BITSET(AllClients, connection);
     	BITSET(AllSockets, connection);
+	BITSET(LastSelectMask, connection);
     	if (GETBIT (IgnoredClientsWithInput, connection))
 	    BITSET(ClientsWithInput, connection);
     }
