@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocutil.c,v 2.51 91/07/09 12:03:04 converse Exp $
+ * $XConsortium: tocutil.c,v 2.52 91/07/12 17:24:08 converse Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -231,9 +231,11 @@ void TURedisplayToc(scrn)
 	    }
 	    XawTextDisableRedisplay(scrn->tocwidget);
 	    source = XawTextGetSource(scrn->tocwidget);
-	    if (source != toc->source)
+	    if (toc->force_reset || source != toc->source) {
 		XawTextSetSource(scrn->tocwidget, toc->source,
 				 (XawTextPosition) 0);
+		toc->force_reset = False; /* %%% temporary */
+	    }
 	    TocSetCurMsg(toc, TocGetCurMsg(toc));
 	    XawTextEnableRedisplay(scrn->tocwidget);
 	    TUCheckSequenceMenu(toc);
