@@ -12,8 +12,8 @@
 \s+1\fBProtocol Encoding\fP\s-1
 .sp 2
 .LP
-.EH '\s+2\fBX Protocol\fP''\fBX11, Release 4\fP\s-2'
-.OH '\s+2\fBX Protocol\fP''\fBX11, Release 4\fP\s-2'
+.EH '\s+2\fBX Protocol\fP''\fBX11, Release 5\fP\s-2'
+.OH '\s+2\fBX Protocol\fP''\fBX11, Release 5\fP\s-2'
 .EF ''\fB % \fP''
 .OF ''\fB % \fP''
 .\"The sections in this appendix correspond to their number counterparts
@@ -881,7 +881,7 @@ KEYCODE values are always greater than 7 (and less than 256).
 KEYSYM values with the bit #x10000000 set are reserved as vendor-specific.
 .LP
 The names and encodings of the standard KEYSYM values are contained in 
-Appendix B, Keysym Encoding.
+Appendix A, Keysym Encoding.
 .SH
 Pointers
 .LP
