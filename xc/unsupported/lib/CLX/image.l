@@ -304,10 +304,12 @@
 		 (do ((plane 0 (1+ plane))
 		      (bytes-per-plane (* bytes-per-line height))
 		      (start 0 (+ start bytes-per-plane))
+		      (end (length data))
 		      (result nil))
-		     ((>= plane depth)
+		     ((or (>= plane depth)
+			  (>= start end))
 		      (create-image :width width :height height
-				    :depth depth :data (nreverse result)
+				    :depth plane :data (nreverse result)
 				    ))
 		   (push (z-format-pixarray data start bytes-per-line 1 1
 					    0 0 width height)
