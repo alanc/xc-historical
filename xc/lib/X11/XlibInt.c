@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.118 89/12/06 18:16:50 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.119 89/12/12 11:50:18 jim Exp $
  */
 
 #include "copyright.h"
@@ -1141,24 +1141,24 @@ register xEvent *event;	/* wire protocol event */
 			   break;
 			case 16:
 			   ev->message_type = event->u.clientMessage.u.s.type;
-			   ev->data.s[0] = event->u.clientMessage.u.s.shorts0;
-			   ev->data.s[1] = event->u.clientMessage.u.s.shorts1;
-			   ev->data.s[2] = event->u.clientMessage.u.s.shorts2;
-			   ev->data.s[3] = event->u.clientMessage.u.s.shorts3;
-			   ev->data.s[4] = event->u.clientMessage.u.s.shorts4;
-			   ev->data.s[5] = event->u.clientMessage.u.s.shorts5;
-			   ev->data.s[6] = event->u.clientMessage.u.s.shorts6;
-			   ev->data.s[7] = event->u.clientMessage.u.s.shorts7;
-			   ev->data.s[8] = event->u.clientMessage.u.s.shorts8;
-			   ev->data.s[9] = event->u.clientMessage.u.s.shorts9;
+			   ev->data.s[0] = cvtINT16toShort(event->u.clientMessage.u.s.shorts0);
+			   ev->data.s[1] = cvtINT16toShort(event->u.clientMessage.u.s.shorts1);
+			   ev->data.s[2] = cvtINT16toShort(event->u.clientMessage.u.s.shorts2);
+			   ev->data.s[3] = cvtINT16toShort(event->u.clientMessage.u.s.shorts3);
+			   ev->data.s[4] = cvtINT16toShort(event->u.clientMessage.u.s.shorts4);
+			   ev->data.s[5] = cvtINT16toShort(event->u.clientMessage.u.s.shorts5);
+			   ev->data.s[6] = cvtINT16toShort(event->u.clientMessage.u.s.shorts6);
+			   ev->data.s[7] = cvtINT16toShort(event->u.clientMessage.u.s.shorts7);
+			   ev->data.s[8] = cvtINT16toShort(event->u.clientMessage.u.s.shorts8);
+			   ev->data.s[9] = cvtINT16toShort(event->u.clientMessage.u.s.shorts9);
 			   break;
 			case 32:
 			   ev->message_type = event->u.clientMessage.u.l.type;
-			   ev->data.l[0] = event->u.clientMessage.u.l.longs0;
-			   ev->data.l[1] = event->u.clientMessage.u.l.longs1;
-			   ev->data.l[2] = event->u.clientMessage.u.l.longs2;
-			   ev->data.l[3] = event->u.clientMessage.u.l.longs3;
-			   ev->data.l[4] = event->u.clientMessage.u.l.longs4;
+			   ev->data.l[0] = cvtINT32toLong(event->u.clientMessage.u.l.longs0);
+			   ev->data.l[1] = cvtINT32toLong(event->u.clientMessage.u.l.longs1);
+			   ev->data.l[2] = cvtINT32toLong(event->u.clientMessage.u.l.longs2);
+			   ev->data.l[3] = cvtINT32toLong(event->u.clientMessage.u.l.longs3);
+			   ev->data.l[4] = cvtINT32toLong(event->u.clientMessage.u.l.longs4);
 			   break;
 			default: /* XXX should never occur */
 				break;
