@@ -64,7 +64,7 @@ static int fivesecond = 5000;
  * Shell class record
  *
  ***************************************************************************/
-static Pixmap unspecified = ~0;
+static Pixmap unspecified = 2;	/* copied from Core.c */
 #define Offset(x)	(XtOffset(ShellWidget, x))
 static XtResource shellResources[]=
 {
@@ -80,8 +80,6 @@ static XtResource shellResources[]=
 	    Offset(shell.save_under), XtRBoolean, (caddr_t) &false},
 	{ XtNpopupCallback, XtCCallback, XtRCallback, sizeof(caddr_t),
 	    Offset(shell.popup_callback), XtRCallback, (caddr_t) NULL},
-        { XtNbackgroundPixmap, XtCBackground, XtRPixmap, sizeof(Pixmap),
-           XtOffset(Widget,core.background_pixmap), XtRPixmap, (caddr_t)&unspecified},
 	{ XtNpopdownCallback, XtCCallback, XtRCallback, sizeof(caddr_t),
 	    Offset(shell.popdown_callback), XtRCallback, (caddr_t) NULL},
 	{ XtNoverrideRedirect, XtCOverrideRedirect,
@@ -614,7 +612,7 @@ static void Realize(wid, vmask, attr)
 			    break;
 		    }
 		}
-		if (child->core.background_pixmap) {
+		if (child->core.background_pixmap != unspecified) {
 		    mask &= ~(CWBackPixel);
 		    mask |= CWBackPixmap;
 		    attr->background_pixmap = child->core.background_pixmap;
