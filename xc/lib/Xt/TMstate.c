@@ -1,5 +1,6 @@
 #ifndef lint
-static char rcsid[] = "$Header: TMstate.c,v 1.47 88/02/21 12:37:38 swick Exp $";
+static char rcsid[] = "$xHeader: TMstate.c,v 1.3 88/08/29 14:58:11 asente Exp $";
+/* $oHeader: TMstate.c,v 1.3 88/08/29 14:58:11 asente Exp $ */
 #endif lint
 /*LINTLIBRARY*/
 
@@ -30,14 +31,13 @@ SOFTWARE.
 /* TMstate.c -- maintains the state table of actions for the translation 
  *              manager.
  */
-
+#define XK_LATIN1
 #include <X11/Xlib.h>
-#include <X11/Xos.h>
-#include <X11/StringDefs.h>
+#include <X11/keysymdef.h>
+#include <strings.h>
+#include "StringDefs.h"
 #include <stdio.h>
 #include "IntrinsicI.h"
-#include "TMprivate.h"
-#include <X11/Convert.h>
 
 
 #define StringToAction(string)	((XtAction) StringToQuark(string))
@@ -187,9 +187,164 @@ static String PrintActions(str, actions, quarkTable)
     return str;
 }
 
+static Boolean ComputeLateBindings(event,eventSeq,computed,computedMask)
+    Event *event;
+    TMEventPtr eventSeq;
+    Modifiers *computed,*computedMask;
+{
+    int i,j,ref;
+    ModToKeysymTable* temp;
+    XtPerDisplay perDisplay;
+    Display *dpy;
+    Boolean found;
+    KeySym tempKeysym = NoSymbol;
+    dpy = eventSeq->dpy;
+    perDisplay = _XtGetPerDisplay(dpy);
+    if (perDisplay == NULL) {
+        XtWarningMsg("displayError","invalidDisplay","XtToolkitError",
+            "Can't find display structure",
+            (String *)NULL, (Cardinal *)NULL);
+         return FALSE;
+    }
+    if (perDisplay->modsToKeysyms == NULL) {
+        _XtBuildKeysymTable(dpy,perDisplay); /* perDisplay->keysyms*/
+        perDisplay ->modsToKeysyms =
+            _XtBuildModsToKeysymTable(dpy,perDisplay);
+    }
+    for (ref=0;event->lateModifiers[ref].keysym != NULL;ref++) {
+        found = FALSE;
+        for (i=0;i<8;i++) {
+            temp = &(perDisplay->modsToKeysyms[i]);
+            for (j=0;j<temp->count;j++){
+                if (perDisplay->modKeysyms[temp->index+j] ==
+                      event->lateModifiers[ref].keysym) {
+                    *computedMask = *computedMask | temp->mask;
+                    if (!event->lateModifiers[ref].knot)
+                        *computed |= temp->mask;
+                    tempKeysym = event->lateModifiers[ref].keysym;
+                    found = TRUE; break;
+                }
+            }
+            if (found) break;
+        }
+        if (!found  && !event->lateModifiers[ref].knot)
+            if (!event->lateModifiers[ref].pair && (tempKeysym == NoSymbol))
+                return FALSE;
+        /* if you didn't find the modifier and the modifier must be
+           asserted then return FALSE. If you didn't find the modifier
+           and the modifier must be off, then it is OK . Don't
+           return FALSE if this is the first member of a pair or if
+           it is the second member of a pair when the first member
+           was bound to a modifier */
+    if (!event->lateModifiers[ref].pair) tempKeysym = NoSymbol;
+    }
+    return TRUE;
+}
+
+Boolean _XtRegularMatch(event,eventSeq)
+    Event *event;
+    TMEventPtr eventSeq;
+{
+    Modifiers computed =0;
+    Modifiers computedMask =0;
+    Boolean resolved = TRUE;
+    if (event->eventCode != (eventSeq->event.eventCode &
+               event->eventCodeMask)) return FALSE;
+    if (event->lateModifiers != NULL)
+        resolved = ComputeLateBindings(event,eventSeq,&computed,&computedMask);
+    if (!resolved) return FALSE;
+    computed |= event->modifiers;
+    computedMask |= event->modifierMask;
+
+    return ( (computed & computedMask) ==
+          (eventSeq->event.modifiers & computedMask));
+
+}
+
+
+Boolean _XtMatchUsingDontCareMods(event,eventSeq)
+    Event *event;
+    TMEventPtr eventSeq;
+{
+    Modifiers modifiers_return;
+    KeySym keysym_return;
+    Modifiers temp;
+    int i;
+    Modifiers computed = 0;
+    Modifiers computedMask = 0;
+    Boolean resolved = TRUE;
+
+    if (event->lateModifiers != NULL)
+        resolved = ComputeLateBindings(event,eventSeq,&computed,&computedMask);
+    if (!resolved) return FALSE;
+    computed |= event->modifiers;
+    computedMask |= event->modifierMask;
+
+    if ( (computed & computedMask) ==
+        (eventSeq->event.modifiers & computedMask) ) {
+        XtTranslateKeycode(eventSeq->dpy,(KeyCode) eventSeq->event.eventCode,
+            0,&modifiers_return,&keysym_return);
+        if ((keysym_return & event->eventCodeMask)  == event->eventCode ) 
+             return TRUE;
+        temp = ~computedMask & modifiers_return;
+        if (temp == 0) return FALSE;
+        for (i=1;i<256;i++) /* all combinations of 8 modifier bits */
+            if  (temp & i != 0) {
+                 XtTranslateKeycode(eventSeq->dpy,(KeyCode)eventSeq->event.eventCode,
+                    (Modifiers) i,&modifiers_return,&keysym_return);
+                 if (keysym_return  ==
+                     (event->eventCode &  event->eventCodeMask)) return TRUE;
+            }
+     }
+    return FALSE;
+
+}
+void XtConvertCase(dpy,keysym,lower_return,upper_return)
+    Display *dpy;
+    KeySym keysym;
+    KeySym* lower_return,*upper_return;
+{
+    XtPerDisplay perDisplay;
+    perDisplay = _XtGetPerDisplay(dpy);
+    if (perDisplay != NULL && perDisplay->defaultCaseConverter != NULL)
+        (*perDisplay->defaultCaseConverter)(dpy,keysym,
+            lower_return,upper_return);
+}
+
+Boolean _XtMatchUsingStandardMods (event,eventSeq)
+    Event *event;
+    TMEventPtr eventSeq;
+{
+    Modifiers modifiers_return;
+    KeySym keysym_return;
+    Modifiers computed= 0;
+    Modifiers computedMask = 0;
+    Boolean resolved = TRUE;
+
+    XtTranslateKeycode (eventSeq->dpy,(KeyCode) eventSeq->event.eventCode,
+        (Modifiers)(eventSeq->event.modifiers&StandardMask),
+        &modifiers_return,&keysym_return);
+
+    if ((event->eventCode & event->eventCodeMask) ==
+             (keysym_return & event->eventCodeMask)) {
+        if (event->lateModifiers != NULL) 
+            resolved = ComputeLateBindings(event,
+                eventSeq,&computed,&computedMask);
+        if (!resolved) return FALSE;
+        computed |= event->modifiers;
+        computedMask |= event->modifierMask;
+
+        return (
+            ((computed & computedMask) ==
+             (eventSeq->event.modifiers & ~modifiers_return &
+              computedMask))) ;
+    }
+    return FALSE;
+}
+
 static int MatchEvent(translations, eventSeq) 
   XtTranslations translations;
-  register EventSeqPtr eventSeq;
+  register TMEventPtr eventSeq;
 {
     register EventObjPtr eventTbl = translations->eventObjTbl;
     register int i;
@@ -208,20 +363,49 @@ static int MatchEvent(translations, eventSeq)
  * order"
  */
     for (i=0; i < translations->numEvents; i++) {
-        if (
-	       (eventTbl[i].event.eventType ==
-	        (eventSeq->event.eventType & 0x7f)) /* stip send-event bit */
-	    && (eventTbl[i].event.eventCode ==
-		(eventTbl[i].event.eventCodeMask & eventSeq->event.eventCode))
-	    && ((eventTbl[i].event.modifiers
-		          & eventTbl[i].event.modifierMask)
-		    == (eventSeq->event.modifiers
-		          & eventTbl[i].event.modifierMask))
-	   )
-		return(i);
-   }
-    return(-1);
+        if (eventTbl[i].event.eventType ==
+                (eventSeq->event.eventType & 0x7f)
+            && (eventTbl[i].event.matchEvent != NULL) 
+            && ((*eventTbl[i].event.matchEvent)(
+                       &eventTbl[i].event,eventSeq)))
+                    return i;
+            
+    }    
+    return (-1);
 }
+
+static Boolean IsModifier(event)
+    TMEventPtr event;
+{
+    Display *dpy = event->dpy;
+    XtPerDisplay pd = _XtGetPerDisplay(dpy);
+    int i,j,index;
+    int k =0;
+    KeySym keysym;
+    ModToKeysymTable* temp;
+
+    if (pd != NULL) {
+        if (pd->modsToKeysyms == NULL) {
+            _XtBuildKeysymTable(dpy,pd); /* pd->keysyms*/
+            pd ->modsToKeysyms =
+            _XtBuildModsToKeysymTable(dpy,pd);
+        }
+        for (;k <pd->keysyms_per_keycode;k++) {
+            index = ((event->event.eventCode-dpy->min_keycode)*
+                             pd->keysyms_per_keycode)+k;
+            keysym = pd->keysyms[index];
+
+            for (i=0;i<8;i++) {
+                temp = &(pd->modsToKeysyms[i]);
+                for (j=0;j<temp->count;j++){
+                    if (pd->modKeysyms[temp->index+j] == keysym) return TRUE;
+                }
+            }
+        }
+    }
+    return FALSE;
+}
+
 
 
 /*
@@ -229,10 +413,12 @@ static int MatchEvent(translations, eventSeq)
  * in the same state.
  */
 static Boolean Ignore(event)
-  EventSeqPtr event;   
+    TMEventPtr event;
 {
-    if (
-           event->event.eventType == MotionNotify
+    if (event->event.eventType == MotionNotify
+        ||( (event->event.eventType == KeyPress
+           || event->event.eventType == KeyRelease)
+           && IsModifier(event))
 /*
         || event->event.eventType == ButtonPress
 	|| event->event.eventType == ButtonRelease
@@ -246,22 +432,24 @@ static Boolean Ignore(event)
 
 static void XEventToTMEvent(event, tmEvent)
     register XEvent *event;
-    register EventPtr tmEvent;
+    register TMEventPtr tmEvent;
 {
+    tmEvent->dpy = event->xany.display;
     tmEvent->event.eventCodeMask = 0;
     tmEvent->event.eventCode = 0;
     tmEvent->event.modifierMask = 0;
     tmEvent->event.modifiers = 0;
     tmEvent->event.eventType = event->type;
+    tmEvent->event.lateModifiers = NULL;
+    tmEvent->event.matchEvent = NULL;
+    tmEvent->event.standard = FALSE;
 
     switch (event->type) {
 
 	case KeyPress:
 	case KeyRelease:
 	    tmEvent->event.modifiers = event->xkey.state;
-	    event->xkey.state = 0;
-	    tmEvent->event.eventCode = XLookupKeysym(&event->xkey, 0);
-	    event->xkey.state = tmEvent->event.modifiers;
+            tmEvent->event.eventCode = event->xkey.keycode;
 	    break;
 
 	case ButtonPress:
@@ -290,7 +478,7 @@ static void XEventToTMEvent(event, tmEvent)
 
 
 static unsigned long GetTime(tm, event)
-    TMRec* tm;
+    XtTM tm;
     register XEvent *event;
 {
     switch (event->type) {
@@ -303,16 +491,6 @@ static unsigned long GetTime(tm, event)
 	case ButtonRelease:
 	    return event->xbutton.time;
 
-#ifdef notdef
-        case EnterWindow:
-	case LeaveWindow:
-	    return event->xcrossing.time;
-#endif
-
-#ifdef notdef
-	case MotionNotify:
-	    return tm->lastEventTime;
-#endif
 	default:
 	    return tm->lastEventTime;
 
@@ -324,40 +502,32 @@ static unsigned long GetTime(tm, event)
 /* ARGSUSED */
 static void _XtTranslateEvent (w, closure, event)
     Widget w;
-    caddr_t closure;
+    Opaque closure;
     register    XEvent * event;
 {
-    register XtTranslations stateTable = ((TMRec*)closure)->translations;
+    register XtTranslations stateTable = ((XtTM)closure)->translations;
     StatePtr oldState;
-    EventRec curEvent;
-    StatePtr current_state = ((TMRec*)closure)->current_state;
+    TMEventRec curEvent;
+    StatePtr current_state = ((XtTM)closure)->current_state;
     int     index;
     register ActionPtr actions;
-    XtActionProc* proc_table = ((TMRec*)closure)->proc_table;
-    TMRec* tm = (TMRec*)closure;
+    XtBoundActions proc_table = ((XtTM)closure)->proc_table;
+    XtBoundAccActions accProcTbl = stateTable->accProcTbl;
+    XtTM tm = (XtTM)closure;
 /* gross disgusting special case ||| */
     if ((event->type == EnterNotify || event->type == LeaveNotify)
-        && event->xcrossing.detail == NotifyInferior)
+        &&( event->xcrossing.detail == NotifyInferior
+        ||  event->xcrossing.mode != NotifyNormal) )
 	return;
 
     XEventToTMEvent (event, &curEvent);
 
-#ifdef notdef
-    if (event->type == ButtonPress
-	    && stateTable->buttonUp
-	    && stateTable->curState != NULL)
-	if (
-		(tm->lastEventTime + stateTable->clickTime)
-		< event->xbutton.time
-	    )
-	    stateTable->curState = NULL;
-
-    if (event->type == ButtonRelease)
-	stateTable->buttonUp = TRUE;
-    else if (event->type != MotionNotify)
-        stateTable->buttonUp = FALSE;
-#endif
-
+    if (stateTable == NULL) {
+        XtWarningMsg("translationError","nullTable","XtToolkitError",
+            "Can't translate event thorugh NULL table",
+            (String *)NULL, (Cardinal *)NULL);
+       return ;
+    }
     index = MatchEvent (stateTable, &curEvent);
     if (index == -1)
 	/* some event came in that we don't have any states for */
@@ -420,25 +590,60 @@ static void _XtTranslateEvent (w, closure, event)
     actions = current_state->actions;
     while (actions != NULL) {
 	/* perform any actions */
-     if (proc_table[actions->index] != NULL)
-        (*(proc_table[actions->index]))(
-		w, event, actions->params, &actions->num_params);
+        if (actions->index >= 0) {
+           if (proc_table[actions->index] != NULL)
+              (*(proc_table[actions->index]))(
+                w,event, actions->params, &actions->num_params);
+        }
+        else {
+            int temp = -(actions->index+1);
+            if (accProcTbl[temp].proc != NULL &&
+                    accProcTbl[temp].widget != 0)
+              (*(accProcTbl[temp].proc))(
+                accProcTbl[temp].widget,
+                event, actions->params, &actions->num_params);
+        }
+
 	actions = actions->next;
     }
 
     /* move into successor state */
-    ((TMRec*)tm)->current_state = current_state->nextLevel;
+    ((XtTM)tm)->current_state = current_state->nextLevel;
 }
 
 static Boolean EqualEvents(event1, event2)
     Event *event1, *event2;
 {
-    return (
-	   event1->eventType     == event2->eventType
+    int i = 0;
+    int j = 0;
+    int index1,index2;
+    if (event1->eventType     == event2->eventType
 	&& event1->eventCode     == event2->eventCode
 	&& event1->eventCodeMask == event2->eventCodeMask
 	&& event1->modifiers     == event2->modifiers
-	&& event1->modifierMask  == event2->modifierMask);
+	&& event1->modifierMask  == event2->modifierMask) {
+        if (event1->lateModifiers != NULL || event2->lateModifiers != NULL) {
+            if (event1->lateModifiers != NULL)
+                for (;event1->lateModifiers[i].keysym != NoSymbol;i++) {}
+            if (event2->lateModifiers != NULL)
+                for (;event2->lateModifiers[j].keysym != NoSymbol;j++) {}
+            if (i != j) return FALSE;
+            for (index1=0;index1<i;index1++) {
+                for (index2=0;index2<i;index2++) {            
+                    if( (event1->lateModifiers[index1].keysym ==
+                        event2->lateModifiers[index2].keysym)
+                       && (event1->lateModifiers[index1].knot ==
+                         event2->lateModifiers[index2].knot) ){
+                           j--; break;
+                     } /*if*/
+                }/*for*/
+            }/*for*/
+            if (j != 0) return FALSE;
+        }
+        return TRUE;
+    }
+    return FALSE;
+
 }
 
 static int GetEventIndex(stateTable, event)
@@ -577,8 +782,30 @@ static EventMask masks[] = {
     };
 
     /* Events sent with XSendEvent will have high bit set. */
+    /* !!! This isn't true anymore... fix this ||| */
     unsigned long eventType = event->event.eventType & 0x7f;
-
+    if (eventType == MotionNotify) {
+        Modifiers modifierMask = event->event.modifierMask;
+        EventMask returnMask = 0;
+        Modifiers tempMask;
+        if (modifierMask == 0)
+             return (PointerMotionMask | ButtonMotionMask);
+        tempMask = modifierMask & ( Button1Mask | Button2Mask |
+            Button3Mask | Button4Mask | Button5Mask);
+        if (tempMask == 0)
+            return PointerMotionMask;
+        if ((tempMask & Button1Mask)!=0)
+            returnMask |= Button1MotionMask;
+        if ((tempMask & Button2Mask) != 0)
+            returnMask |= Button2MotionMask;
+        if ((tempMask & Button3Mask)!= 0)
+            returnMask |= Button3MotionMask;
+        if ((tempMask & Button4Mask)!= 0)
+            returnMask |= Button4MotionMask;
+        if ((tempMask & Button5Mask)!= 0)
+            returnMask |= Button5MotionMask;
+        return returnMask;
+    }
     return ((eventType >= XtNumber(masks)) ?  0 : masks[eventType]);
 }
 /*** Public procedures ***/
@@ -590,39 +817,12 @@ void _XtInstallTranslations(widget, stateTable)
     register EventMask	eventMask = 0;
     register Boolean	nonMaskable = FALSE;
     register Cardinal	i;
-    static struct {
-        unsigned long	modifier;
-	EventMask	mask;
-      } buttonMotionMask[] = {
-	{Button1Mask, Button1MotionMask}, 
-	{Button2Mask, Button2MotionMask}, 
-	{Button3Mask, Button3MotionMask}, 
-	{Button4Mask, Button4MotionMask}, 
-	{Button5Mask, Button5MotionMask},
-      };
 
 /*    widget->core.translations = stateTable; */
     if (stateTable == NULL) return;
 
     for (i = 0; i < stateTable->numEvents; i++) {
-	register EventObjPtr eventObj = &stateTable->eventObjTbl[i];
-	register EventMask mask = EventToMask(eventObj);
-	unsigned long modifiers = eventObj->event.modifiers;
-
-	if ((eventObj->event.eventType == MotionNotify)
-	    && (modifiers & AnyButtonModifier)) {
-	    /* optimize traffic when PointerMotion only with button down */
-	    if (modifiers == AnyButtonModifier)
-	        mask = ButtonMotionMask;
-	    else {
-	        int mod;
-	        mask = 0;
-		for (mod = 0; mod < XtNumber(buttonMotionMask); mod++) {
-		    if (modifiers & buttonMotionMask[mod].modifier)
-		        mask |= buttonMotionMask[mod].mask;
-		}
-	    }
-	}
+	register EventMask mask = EventToMask(&stateTable->eventObjTbl[i]);
 
 	eventMask |= mask;
 	nonMaskable |= (mask == 0);
@@ -636,9 +836,22 @@ void _XtInstallTranslations(widget, stateTable)
 
     XtAddEventHandler(
         widget, eventMask, nonMaskable,
-             _XtTranslateEvent, (caddr_t)&widget->core.tm);
+             _XtTranslateEvent, (Opaque)&widget->core.tm);
 
 }
+
+void XtUninstallTranslations(widget)
+    Widget widget;
+{
+    XtRemoveEventHandler(widget,~0L,TRUE,_XtTranslateEvent,
+                     (Opaque)&widget->core.tm);
+    widget->core.tm.translations = NULL;
+    if (widget->core.tm.proc_table != NULL)
+        XtFree((char *)widget->core.tm.proc_table);
+    widget->core.tm.proc_table = NULL;
+    widget->core.tm.current_state = NULL;
+}
+
 
 typedef struct _ActionListRec *ActionList;
 typedef struct _ActionListRec {
@@ -646,10 +859,8 @@ typedef struct _ActionListRec {
     CompiledActionTable table;
 } ActionListRec;
 
-static ActionList globalActionList = NULL;
-
 static void ReportUnboundActions(tm, stateTable)
-    TMRec* tm;
+    XtTM tm;
     XtTranslations stateTable;
 {
     Cardinal num_unbound;
@@ -674,12 +885,14 @@ static void ReportUnboundActions(tm, stateTable)
 	}
     }
     message[num_chars] = '\0';
-    if (num_unbound != 0) XtWarning(message);
+    if (num_unbound != 0)
+        XtWarningMsg("translationError","unboundActions","XtToolkitError",
+                  message, (String *)NULL, (Cardinal *)NULL);
 }
 
 
 static int BindActions(tm, compiledActionTable,index)
-    TMRec* tm;
+    XtTM tm;
     CompiledActionTable compiledActionTable;
     Cardinal index;
 {
@@ -693,7 +906,41 @@ static int BindActions(tm, compiledActionTable,index)
            register XrmQuark q = stateTable->quarkTable[index];
            for (i = 0; compiledActionTable[i].name != NULL; i++) {
                if (compiledActionTable[i].signature == q) {
-                   tm->proc_table[index] =
+		   tm->proc_table[index] = 
+                     (XtActionProc) compiledActionTable[i].value;
+                   unbound--;
+                   break;
+               }
+           }
+       } else {
+           /* already bound, leave it alone */
+           unbound--;
+       }
+     }
+     return(unbound);
+}
+
+
+
+static int BindAccActions(widget,stateTable,
+                          compiledActionTable,index,accBindings)
+    Widget widget;
+    XtTranslations stateTable;
+    CompiledActionTable compiledActionTable;
+    Cardinal index;
+    XtBoundAccActions accBindings;
+{
+    int unbound = stateTable->accNumQuarks;
+    int i;
+
+    for ( ; index < stateTable->accNumQuarks; index++) {
+       if (accBindings[index].proc == NULL) {
+           /* attempt to bind it */
+           register XrmQuark q = stateTable->accQuarkTable[index];
+           for (i = 0; compiledActionTable[i].name != NULL; i++) {
+               if (compiledActionTable[i].signature == q) {
+                   accBindings[index].widget =widget;
+		   accBindings[index].proc=
                      (XtActionProc) compiledActionTable[i].value;
                    unbound--;
                    break;
@@ -710,7 +957,7 @@ static int BindActions(tm, compiledActionTable,index)
 
 void _XtBindActions(widget,tm,index)
     Widget	    widget;
-    TMRec*          tm;
+    XtTM          tm;
     Cardinal        index;
 {
     XtTranslations  stateTable=tm->translations;
@@ -718,29 +965,29 @@ void _XtBindActions(widget,tm,index)
     register WidgetClass    class;
     register ActionList     actionList;
     int unbound = -1; /* initialize to non-zero */
+    XtAppContext app;
 
 /* ||| Kludge error that Leo depends upon */
-w = widget;
-if (stateTable == NULL) return;
-if (tm->proc_table == NULL) 
-    tm->proc_table= (XtActionProc*) XtCalloc(
-                      stateTable->numQuarks,sizeof(XtActionProc));
-do {
-/* ||| */
-    class = w->core.widget_class;
+    w = widget;
+    if (stateTable == NULL) return;
+    tm->proc_table= (XtBoundActions) XtCalloc(
+                      stateTable->numQuarks,sizeof(XtBoundActions));
     do {
-        if (class->core_class.actions != NULL)
-         unbound = BindActions(
-	    tm,(CompiledActionTable)class->core_class.actions, index);
-	class = class->core_class.superclass;
-    } while (unbound != 0 && class != NULL);
+/* ||| */
+        class = w->core.widget_class;
+        do {
+            if (class->core_class.actions != NULL)
+             unbound = BindActions(
+	        tm,(CompiledActionTable)class->core_class.actions, index);
+	    class = class->core_class.superclass;
+        } while (unbound != 0 && class != NULL);
 /* ||| Kludge error that Leo depends upon */
-w = w->core.parent;
-} while (unbound != 0 && w != NULL);
+    w = w->core.parent;
+    } while (unbound != 0 && w != NULL);
 /* ||| */
 
-    actionList = globalActionList;
-    for (actionList = globalActionList; 
+    app = XtWidgetToApplicationContext(widget);
+    for (actionList = app->action_table;
 	 unbound != 0 && actionList != NULL;
 	 actionList = actionList->next) {
 	unbound = BindActions(tm, actionList->table,index);
@@ -748,16 +995,68 @@ w = w->core.parent;
     if (unbound != 0) ReportUnboundActions(tm, stateTable);
 }
 
+void _XtBindAccActions(widget,stateTable,index,accBindings)
+    Widget	    widget;
+    XtTranslations  stateTable;
+    Cardinal        index;
+    XtBoundAccActions *accBindings;
+{
+    register Widget	    w;
+    register WidgetClass    class;
+    register ActionList     actionList;
+    int unbound = -1; /* initialize to non-zero */
+    XtBoundAccActions accTemp;
+    XtAppContext app;
+
+/* ||| Kludge error that Leo depends upon */
+    w = widget;
+    if (stateTable == NULL) return;
+    accTemp = (XtBoundAccActions) XtCalloc(
+                      stateTable->accNumQuarks,sizeof(XtBoundAccActionRec));
+do {
+/* ||| */
+    class = w->core.widget_class;
+    do {
+        if (class->core_class.actions != NULL)
+         unbound = BindAccActions(widget,
+	    stateTable,(CompiledActionTable)class->core_class.actions,
+                         index,accTemp);
+	class = class->core_class.superclass;
+    } while (unbound != 0 && class != NULL);
+/* ||| Kludge error that Leo depends upon */
+w = w->core.parent;
+} while (unbound != 0 && w != NULL);
+/* ||| */
+
+    app = XtWidgetToApplicationContext(widget);
+    for (actionList = app->action_table;
+	 unbound != 0 && actionList != NULL;
+	 actionList = actionList->next) {
+	unbound = BindAccActions(widget,stateTable, actionList->table,
+                                index, (XtBoundAccActions) accBindings);
+    }
+/*    if (unbound != 0) ReportUnboundActions(tm, stateTable);*/
+    (*accBindings) = accTemp;
+}
+
 void XtAddActions(actions, num_actions)
+    XtActionList actions;
+    Cardinal num_actions;
+{
+    XtAppAddActions(_XtDefaultAppContext(), actions, num_actions);
+}
+
+void XtAppAddActions(app, actions, num_actions)
+    XtAppContext app;
     XtActionList actions;
     Cardinal num_actions;
 {
     register ActionList rec;
 
     rec = XtNew(ActionListRec);
-    rec->next = globalActionList;
-    globalActionList = rec;
-    rec->table = (CompiledActionTable)_CompileActionTable(actions, num_actions);
+    rec->next = app->action_table;
+    app->action_table = rec;
+    rec->table = (CompiledActionTable) _CompileActionTable(actions, num_actions);
 }
 
 void _XtInitializeStateTable(pStateTable)
@@ -766,15 +1065,20 @@ void _XtInitializeStateTable(pStateTable)
     register XtTranslations  stateTable;
 
     (*pStateTable) = stateTable = XtNew(TranslationData);
+    stateTable->operation = XtTableReplace;
     stateTable->numEvents = 0;
     stateTable->eventTblSize = 0;
     stateTable->eventObjTbl = NULL;
     stateTable->clickTime = 200; /* ||| need some way of setting this !!! */
     stateTable->head = NULL;
     stateTable->quarkTable =
-        (XrmQuark *)XtCalloc((unsigned)sizeof(XrmQuark), 20);
+        (XrmQuark *)XtCalloc(20,(unsigned)sizeof(XrmQuark));
     stateTable->quarkTblSize = 20;
     stateTable->numQuarks = 0;
+    stateTable->accNumQuarks = 0;
+    stateTable->accQuarkTable = NULL;
+    stateTable->accProcTbl= NULL;
+    stateTable->accQuarkTblSize = 0;
 }
 
 void _XtAddEventSeqToStateTable(eventSeq, stateTable)
@@ -806,7 +1110,10 @@ void _XtAddEventSeqToStateTable(eventSeq, stateTable)
 
 	if (eventSeq->actions != NULL) {
 	    if ((*state)->actions != NULL) {
-		XtWarning ("Overriding earlier translation manager actions.");
+		XtWarningMsg ("translationError","ambigiousActions", 
+                           "XtToolkitError",
+                           "Overriding earlier translation manager actions.",
+                            (String *)NULL, (Cardinal *)NULL);
 		FreeActions((*state)->actions);
 	    }
 	    (*state)->actions = eventSeq->actions;
@@ -852,10 +1159,10 @@ typedef struct _StateMapRec {
 } StateMapRec;
 
 static void MergeStates(old, new, override, indexMap,
-                           quarkIndexMap, oldTable, stateMap)
+                           quarkIndexMap, accQuarkIndexMap,oldTable, stateMap)
     register StatePtr *old, new;
     Boolean override;
-    Cardinal *indexMap, *quarkIndexMap;
+    Cardinal *indexMap, *quarkIndexMap,*accQuarkIndexMap;
     XtTranslations oldTable;
     StateMap stateMap;
 {
@@ -900,7 +1207,10 @@ static void MergeStates(old, new, override, indexMap,
         while (b != NULL) {
            a = XtNew(ActionRec); 
            a->token = NULL;
-           a->index = quarkIndexMap[b->index];
+           if (b->index >= 0)
+               a->index = quarkIndexMap[b->index];
+           else
+               a->index = -(accQuarkIndexMap[-(b->index+1)]+1);
            a->params = b->params;
            a->num_params=b->num_params;
            a->next = NULL;
@@ -919,9 +1229,11 @@ static void MergeStates(old, new, override, indexMap,
 		temp=stateMap;
 		temp->new != new->nextLevel;
 		temp=temp->next)
-	        if (temp == NULL) XtError(
+	        if (temp == NULL)
+                     XtErrorMsg("translationError","mergingTablesWithCycles",
+                             "XtToolkitError",
 "Trying to merge translation tables with cycles, and can't resolve this cycle."
-);
+			     , (String *)NULL, (Cardinal *)NULL);
 	    (*old)->nextLevel = temp->old;
 	} else if (! (*old)->cycle || override) {
 	    if ((*old)->cycle) (*old)->nextLevel = NULL;
@@ -929,7 +1241,7 @@ static void MergeStates(old, new, override, indexMap,
 	        &(*old)->nextLevel,
 		new->nextLevel,
 		override,
-		indexMap,quarkIndexMap,
+		indexMap,quarkIndexMap,accQuarkIndexMap,
 		oldTable,
 		stateMap);
 	}
@@ -944,16 +1256,19 @@ static void MergeStates(old, new, override, indexMap,
 }
 
 
-static void MergeTables(old, new, override)
+static void MergeTables(old, new, override,accProcTbl)
     register XtTranslations old, new;
     Boolean override;
+    XtBoundAccActions accProcTbl;
 {
-    register Cardinal i;
-    Cardinal *indexMap,*quarkIndexMap;
+    register Cardinal i,j,k;
+    Cardinal *indexMap,*quarkIndexMap,*accQuarkIndexMap;
 
     if (new == NULL) return;
     if (old == NULL) {
-	XtWarning("Old translation table was null, cannot modify.");
+	XtWarningMsg("translationError","mergingNullTable","XtToolkitError",
+            "Old translation table was null, cannot modify.",
+	    (String *)NULL, (Cardinal *)NULL);
 	return;
     }
 
@@ -1003,20 +1318,48 @@ static void MergeTables(old, new, override)
         }
         quarkIndexMap[i] = j;
     }
+/* merge accelerator quark tables */
+  accQuarkIndexMap = (Cardinal *)XtCalloc(
+      new->accQuarkTblSize, sizeof(Cardinal));
+    k = old->accNumQuarks;
 
+    for (i=0,j=old->accNumQuarks; i < new->accNumQuarks; ) {
+        if (j == old->accQuarkTblSize) {
+            old->accQuarkTblSize += 20;
+            old->accQuarkTable = (XrmQuark*) XtRealloc(
+                (char *)old->accQuarkTable,
+                old->accQuarkTblSize*sizeof(int));
+         }
+         old->accQuarkTable[j]=new->accQuarkTable[i];
+         old->accNumQuarks++;
+         accQuarkIndexMap[i++] = j++;
+    }
 
+/* merge accelerator action bindings */
 
+    if (old->accProcTbl == NULL) {
+        old->accProcTbl = (XtBoundAccActionRec*)XtCalloc(
+            old->accQuarkTblSize,sizeof(XtBoundAccActionRec) );
+    }
+    else old->accProcTbl = (XtBoundAccActionRec*)XtRealloc(
+        (char *)old->accProcTbl,
+	old->accQuarkTblSize*sizeof(XtBoundAccActionRec) );
+    for (i=0/*,k=k*/;i<new->accNumQuarks;){
+        old->accProcTbl[k].widget = accProcTbl[i].widget;
+        old->accProcTbl[k++].proc = accProcTbl[i++].proc;
+    }
 
     for (i=0; i < new->numEvents; i++)
 	MergeStates(
 	    &old->eventObjTbl[indexMap[i]].state,
 	    new->eventObjTbl[i].state,
 	    override,
-	    indexMap,quarkIndexMap,
+	    indexMap,quarkIndexMap,accQuarkIndexMap,
 	    old,
 	    (StateMap) NULL);
    XtFree((char *)indexMap);
    XtFree((char *)quarkIndexMap);
+   XtFree((char *)accQuarkIndexMap);
 }
 
 
@@ -1024,12 +1367,11 @@ void _XtOverrideTranslations(old, new,merged)
     XtTranslations old, new,*merged;
 {
     XtTranslations temp;
-
     _XtInitializeStateTable(&temp);
     temp->clickTime = new->clickTime;
     /* merge in new table, overriding any existing bindings from old */
-    MergeTables(temp, new, FALSE);
-    MergeTables(temp, old, FALSE);
+    MergeTables(temp, new, FALSE,new->accProcTbl);
+    MergeTables(temp, old, FALSE,old->accProcTbl);
     *merged= temp;
 }
 
@@ -1041,13 +1383,13 @@ void _XtAugmentTranslations(old, new,merged)
     XtTranslations temp;
     _XtInitializeStateTable(&temp);
     temp->clickTime = old->clickTime;
-    MergeTables(temp, old, FALSE);
-    MergeTables(temp, new, FALSE);
+    MergeTables(temp, old, FALSE,old->accProcTbl);
+    MergeTables(temp, new, FALSE,new->accProcTbl);
     *merged= temp;
 }
 
-/* ARGSUSED */
-void _MergeTranslations (args, num_args, from, to)
+/*ARGSUSED*/
+static void _MergeTranslations (args, num_args, from, to)
     XrmValuePtr args;
     Cardinal    *num_args;
     XrmValuePtr from,to;
@@ -1057,7 +1399,9 @@ void _MergeTranslations (args, num_args, from, to)
     TMkind operation;
 
     if (*num_args != 0)
-	XtWarning("MergeTM to TranslationTable needs no extra arguments");
+	XtWarningMsg("invalidParameters","mergeTranslations","XtToolkitError",
+             "MergeTM to TranslationTable needs no extra arguments",
+               (String *)NULL, (Cardinal *)NULL);
 
     old = ((TMConvertRec*)from->addr)->old;
     new = ((TMConvertRec*)from->addr)->new;
@@ -1078,45 +1422,138 @@ void XtOverrideTranslations(widget, new)
 /*
     MergeTables(widget->core.translations, new, TRUE);
 */
-     Cardinal  numQuarks =0;
     XrmValue from,to;
     TMConvertRec foo;
+    XtTranslations newTable;
     from.addr = (caddr_t)&foo;
     from.size = sizeof(TMConvertRec);
     foo.old = widget->core.tm.translations;
     foo.new = new;
     foo.operation = override;
-     if (widget->core.tm.translations != NULL)
-      numQuarks = widget->core.tm.translations->numQuarks;
+
     XtDirectConvert((XtConverter) _MergeTranslations, (XrmValuePtr) NULL,
 	    0, &from, &to);
 /*    _XtOverrideTranslations(widget->core.tm.translations, new);*/
-      widget->core.tm.translations =(*(XtTranslations*)to.addr);
-     if (XtIsRealized(widget))
-        _XtBindActions(widget,&widget->core.tm,numQuarks);
+      newTable = (*(XtTranslations*)to.addr);
+     if (XtIsRealized(widget)) {
+            XtUninstallTranslations((Widget)widget);
+           ((WindowObj)widget)->win_obj.tm.translations = newTable;
+           _XtBindActions(widget,&((WindowObj)widget)->win_obj.tm,0);
+           _XtInstallTranslations((Widget)widget,newTable);
+    }
+    else ((WindowObj)widget)->win_obj.tm.translations = newTable;
+
+}
+/* ARGSUSED */
+static void RemoveAccelerators(widget,closure,data)
+    Widget widget;
+    Opaque closure,data;
+{
+    int i;
+    XtTranslations table = (XtTranslations)closure;
+    if (table == NULL) {
+        XtWarningMsg("translation error","nullTable","XtToolkitError",
+            "Can't remove accelerators from NULL table",
+            (String *)NULL, (Cardinal *)NULL);
+        return;
+    }
+    if (table->accProcTbl == NULL) {
+        XtWarningMsg("translation error","nullTable","XtToolkitError",
+            "Tried to remove non-existant accelerators",
+            (String *)NULL, (Cardinal *)NULL);
+        return;
+    }
+    for (i=0;i<table->accNumQuarks;i++) {
+        if (table->accProcTbl[i].widget == widget)
+            table->accProcTbl[i].widget = 0;
+    }
+
+}
         
+
+void XtInstallAccelerators(destination,source)
+    Widget destination,source;
+{
+    char str[100];
+    XtTranslations temp;
+    XtBoundAccActions accBindings;
+    if ((!XtIsWindowObject(source)) ||
+        source->core.accelerators == NULL) return;
+    if (source->core.accelerators != NULL 
+        && source->core.accelerators->accProcTbl == NULL)
+        _XtBindAccActions(source,source->core.accelerators,0,&accBindings);
+    _XtInitializeStateTable(&temp);
+    temp->clickTime = source->core.accelerators->clickTime;
+    if (source->core.accelerators->operation == XtTableOverride) {
+        MergeTables(temp,source->core.accelerators,FALSE,accBindings);
+        MergeTables(temp, destination->core.tm.translations,FALSE,
+               destination->core.tm.translations->accProcTbl);
+    }
+    else { 
+        MergeTables(temp, destination->core.tm.translations,FALSE,
+               destination->core.tm.translations->accProcTbl);
+        MergeTables(temp,source->core.accelerators,FALSE,accBindings);
+    }
+    destination->core.tm.translations = temp;
+    if (XtIsRealized(destination))
+        _XtInstallTranslations(destination,
+             destination->core.tm.translations);
+    XtAddCallback(source, XtNdestroyCallback,
+        RemoveAccelerators,(Opaque)temp);
+    if (XtClass(source)->core_class.display_accelerator != NULL){
+         str[0] = '\0';
+         (void) PrintEvent(&str[0],
+                &source->core.tm.translations->eventObjTbl[0].event);
+         (*(XtClass(source)->core_class.display_accelerator))(source,str);
+    }
+}         
+void XtInstallAllAccelerators(destination,source)
+    Widget destination,source;
+{
+    register int i;
+    CompositeWidget cw;
+
+    /* Recurse down normal children */
+    if (XtIsComposite(source)) {
+        cw = (CompositeWidget) source;
+        for (i = 0; i < cw->composite.num_children; i++) {
+            XtInstallAllAccelerators(destination,cw->composite.children[i]);
+        }
+    }
+
+    /* Recurse down popup children */
+    if (XtIsWindowObject(source)) {
+        for (i = 0; i < source->core.num_popups; i++) {
+            XtInstallAllAccelerators(destination,source->core.popup_list[i]);
+        }
+    }
+    /* Finally, apply procedure to this widget */
+    XtInstallAccelerators(destination,source);
 }
 
 void XtAugmentTranslations(widget, new)
     Widget widget;
     XtTranslations new;
 {
-    Cardinal  numQuarks =0;
     XrmValue from,to;
     TMConvertRec foo;
+    XtTranslations newTable;
     from.addr = (caddr_t)&foo;
     from.size = sizeof(TMConvertRec);
     foo.old = widget->core.tm.translations;
     foo.new = new;
     foo.operation = augment;
-     if (widget->core.tm.translations != NULL)
-      numQuarks = widget->core.tm.translations->numQuarks;
+
     XtDirectConvert((XtConverter) _MergeTranslations, (XrmValuePtr) NULL,
 	    0, &from, &to);
-/*    _XtAugmentTranslations(widget->core.tm.translations, new);*/
-     widget->core.tm.translations = (*(XtTranslations*)to.addr);
-     if (XtIsRealized(widget)) 
-        _XtBindActions(widget,&widget->core.tm,numQuarks);
+    newTable = (*(XtTranslations*)to.addr);
+    if (XtIsRealized(widget)) {
+        XtUninstallTranslations((Widget)widget);
+        ((WindowObj)widget)->win_obj.tm.translations = newTable;
+        _XtBindActions(widget,&((WindowObj)widget)->win_obj.tm,0);
+        _XtInstallTranslations((Widget)widget,newTable);
+    }
+    else ((WindowObj)widget)->win_obj.tm.translations = newTable;
 
 }
 
@@ -1180,23 +1617,6 @@ static void TranslateTablePrint(translations)
  *
  ***********************************************************************/
 
-static Boolean XtConvertStringToBoolean(s, bP)
-    String s;
-    Boolean *bP;
-{
-    XrmValue fromVal, toVal;
-
-    fromVal.addr = s;
-    fromVal.size = strlen(s)+1;
-
-    XtConvert((Widget) NULL, XtRString, &fromVal, XtRBoolean, &toVal);
-    if (toVal.addr == NULL) return FALSE;
-
-    *bP = (Boolean) *(int *)toVal.addr;
-
-    return TRUE;
-}
-
 static Widget _XtFindPopup(widget, name)
     Widget widget;
     String name;
@@ -1215,50 +1635,37 @@ static Widget _XtFindPopup(widget, name)
     return NULL;
 }
 
-/*ARGSUSED*/
-static void _XtMenuPopup(widget, event, params, num_params)
-    Widget widget;
-    XEvent *event;
-    String *params;
-    Cardinal num_params;
-{
-    Boolean spring_loaded;
-    register Widget popup_shell;
-
-    if (num_params != 2)
-	XtError("_XtMenuPopup called with num_params != 2.");
-
-    if (! XtConvertStringToBoolean(params[1], &spring_loaded))
-	XtError("Bad first parameter to _XtMenuPopup.");
-
-    popup_shell = _XtFindPopup(widget, params[0]);
-    if (popup_shell == NULL) XtError("Can't find popup in _XtMenuPopup");
-
-    if (spring_loaded) _XtPopup(popup_shell, XtGrabExclusive, TRUE);
-    else _XtPopup(popup_shell, XtGrabNonexclusive, FALSE);
-}
-
 static void _XtMenuPopupAction(widget, event, params, num_params)
     Widget widget;
     XEvent *event;
     String *params;
     Cardinal *num_params;
 {
-    String newParams[2];
+    Boolean spring_loaded;
+    register Widget popup_shell;
 
-    if (*num_params != 1) XtError("MenuPopup wants exactly one argument.");
+    if (*num_params != 1)
+           XtErrorMsg("invalidParameters","xtMenuPopupAction","XtToolkitError",
+           "MenuPopup wants exactly one argument",
+	   (String *)NULL, (Cardinal *)NULL);
 
-    newParams[0] = params[0];
-    if (event->type == ButtonPress) newParams[1] = "True";
-    else if (event->type == EnterNotify) newParams[1] = "False";
+    if (event->type == ButtonPress) spring_loaded = True;
+    else if (event->type == EnterNotify) spring_loaded = False;
     else {
-	XtWarning(
-"Pop-up menu creation is only supported on ButtonPress or EnterNotify events."
-);
-	newParams[1] = "True";
+	XtWarningMsg("invalidPopup","unsupportedOperation","XtToolkitError",
+"Pop-up menu creation is only supported on ButtonPress or EnterNotify events.",
+                  (String *)NULL, (Cardinal *)NULL);
+	spring_loaded = False;
     }
 
-    _XtMenuPopup(widget, event, newParams, 2);
+    popup_shell = _XtFindPopup(widget, params[0]);
+    if (popup_shell == NULL)
+            XtErrorMsg("invalidPopup","xtMenuPopup","XtToolkitError",
+                   "Can't find popup in _XtMenuPopup",
+		   (String *)NULL, (Cardinal *)NULL);
+
+    if (spring_loaded) _XtPopup(popup_shell, XtGrabExclusive, TRUE);
+    else _XtPopup(popup_shell, XtGrabNonexclusive, FALSE);
 }
 
 
@@ -1269,13 +1676,28 @@ static void _XtMenuPopdownAction(widget, event, params, num_params)
     String *params;
     Cardinal *num_params;
 {
-    XtPopdown(widget);
+    Widget popup_shell;
+
+    if (*num_params == 0) {
+	XtPopdown(widget);
+    } else if (*num_params == 1) {
+	popup_shell = _XtFindPopup(widget, params[0]);
+	if (popup_shell == NULL)
+            XtErrorMsg("invalidPopup","xtMenuPopup","XtToolkitError",
+                   "Can't find popup in _XtMenuPopup",
+		   (String *)NULL, (Cardinal *)NULL);
+	    XtPopdown(popup_shell);
+    } else {
+	XtErrorMsg("invalidParameters","xtmenuPopdown","XtToolkitError",
+               "XtMenuPopdown called with num_params != 0 or 1",
+	       (String *)NULL, (Cardinal *)NULL);
+    }
 }
 
 
 void _XtRegisterGrabs(widget,tm)
     Widget widget;
-    TMRec*  tm;
+    XtTM  tm;
 {
     XtTranslations stateTable=tm->translations;
     unsigned int count;
@@ -1310,8 +1732,8 @@ void _XtRegisterGrabs(widget,tm)
 			    case ButtonRelease:
 				XGrabButton(
 				    XtDisplay(widget),
-				    event->eventCode,
-				    event->modifiers,
+				    (unsigned) event->eventCode,
+				    (unsigned) event->modifiers,
 				    XtWindow(widget),
 				    TRUE,
 				    NULL,
@@ -1326,18 +1748,19 @@ void _XtRegisterGrabs(widget,tm)
 			    case KeyRelease:
 				XGrabKey(
 				    XtDisplay(widget),
-				    event->eventCode,
-				    event->modifiers,
+				    (int) event->eventCode,
+				    (unsigned) event->modifiers,
 				    XtWindow(widget),
 				    TRUE,
-				    NULL,
 				    GrabModeAsync,
 				    GrabModeAsync
 				);
 				break;
 	    
-			    default: XtWarning(
-	       "Popping up menus is only supported on key and button events.");
+			    default:
+              XtWarningMsg("invalidPopup","unsupportedOperation","XtToolkitError",
+"Pop-up menu creation is only supported on ButtonPress or EnterNotify events.",
+                  (String *)NULL, (Cardinal *)NULL);
 			    break;
 			}
 		    }
@@ -1354,3 +1777,208 @@ static XtActionsRec tmActions[] = {
 
 
 void _XtPopupInitialize() { XtAddActions(tmActions, XtNumber(tmActions)); }
+
+ModToKeysymTable *_XtBuildModsToKeysymTable(dpy,pd)
+    Display *dpy;
+    XtPerDisplay pd;
+{
+    ModToKeysymTable *table;
+    int maxCount,i,j,k,tempCount,index;
+    KeySym keysym,tempKeysym;
+    XModifierKeymap* modKeymap;
+    KeyCode keycode;
+#define KeysymTableSize 16
+    pd->modKeysyms = (KeySym*)XtMalloc(KeysymTableSize*sizeof(KeySym));
+    maxCount = KeysymTableSize;
+    tempCount = 0;
+
+
+    table = (ModToKeysymTable*)XtMalloc(8*sizeof(ModToKeysymTable));
+
+    table[0].mask = ShiftMask;
+    table[1].mask = LockMask;
+    table[2].mask = ControlMask;
+    table[3].mask = Mod1Mask;
+    table[4].mask = Mod2Mask;
+    table[5].mask = Mod3Mask;
+    table[6].mask = Mod4Mask;
+    table[7].mask = Mod5Mask;
+    tempKeysym = 0;
+
+    modKeymap = XGetModifierMapping(dpy);
+    for (i=0;i<8;i++) {
+        table[i].index = tempCount;
+        table[i].count = 0;
+        for (j=0;j<modKeymap->max_keypermod;j++) {
+            keycode = modKeymap->modifiermap[i*modKeymap->max_keypermod+j];
+            if (keycode != 0) {
+                for (k=0; k<pd->keysyms_per_keycode;k++) {
+                    index = ((keycode-dpy->min_keycode)*
+                             pd->keysyms_per_keycode)+k;
+                    keysym = pd->keysyms[index];
+                    if (keysym != 0 && keysym != tempKeysym ){
+                        if (tempCount==maxCount) {
+                            maxCount += KeysymTableSize;
+                            pd->modKeysyms = (KeySym*)XtRealloc(
+                                (char*)pd->modKeysyms,
+                                (unsigned) (maxCount*sizeof(KeySym)) );
+                        }
+                        pd->modKeysyms[tempCount++] = keysym;
+                        table[i].count++;
+                        tempKeysym = keysym;
+                    }
+                }
+            }
+        }
+    }
+    return table;
+
+}
+
+
+void _XtBuildKeysymTable(dpy,pd)
+    Display* dpy;
+    XtPerDisplay pd;
+{
+    int count;
+    KeySym lower_return, upper_return,nbd,*bd;
+
+    count = dpy->max_keycode-dpy->min_keycode+1;
+    pd->keysyms = XGetKeyboardMapping(
+        dpy,dpy->min_keycode,count,&pd->keysyms_per_keycode);
+    if (pd->keysyms_per_keycode > 1)
+        nbd = (dpy->max_keycode - dpy->min_keycode + 1) 
+            * pd->keysyms_per_keycode;
+        for (bd = pd->keysyms; bd < (pd->keysyms + nbd);
+             bd += pd->keysyms_per_keycode) {
+            if ((*(bd+1)) == NoSymbol) {
+                XtConvertCase(dpy,*bd, &lower_return, &upper_return);
+                *bd = lower_return;
+                *(bd+1) = upper_return;                
+            }
+       }
+}
+
+void XtTranslateKeycode (dpy, keycode, modifiers,
+                            modifiers_return, keysym_return)
+
+    Display *dpy;
+    KeyCode keycode;
+    Modifiers modifiers;
+    Modifiers *modifiers_return;
+    KeySym *keysym_return;
+
+{
+    XtPerDisplay perDisplay;
+    perDisplay = _XtGetPerDisplay(dpy);
+    if (perDisplay != NULL && perDisplay->defaultKeycodeTranslator != NULL)
+        (*perDisplay->defaultKeycodeTranslator)(
+            dpy,keycode,modifiers,modifiers_return,keysym_return);
+}
+KeySym _XtKeyCodeToKeySym(dpy,pd,keycode,col)
+    Display* dpy;
+    XtPerDisplay pd;
+    KeyCode keycode;
+    int col;
+{
+/* copied from Xlib */
+    int ind;
+     if (col < 0 || col >= pd->keysyms_per_keycode) return (NoSymbol);
+     if (keycode < dpy->min_keycode || keycode > dpy->max_keycode)
+       return(NoSymbol);
+
+     ind = (keycode - dpy->min_keycode) * pd->keysyms_per_keycode + col;
+     return (pd->keysyms[ind]);
+}
+
+
+
+
+
+
+
+void XtTranslateKey(dpy, keycode, modifiers,
+                            modifiers_return, keysym_return)
+    Display *dpy;
+    KeyCode keycode;
+    Modifiers modifiers;
+    Modifiers *modifiers_return;
+    KeySym *keysym_return;
+
+{
+    XtPerDisplay perDisplay;
+    perDisplay = _XtGetPerDisplay(dpy);
+    if (modifiers == 0) {
+        *modifiers_return = 0;
+        *keysym_return =_XtKeyCodeToKeySym(dpy,perDisplay,keycode,0);
+        return;
+    }
+    if (modifiers & ShiftMask != 0){
+          *modifiers_return =ShiftMask;
+          *keysym_return =_XtKeyCodeToKeySym(dpy,perDisplay,keycode,1);
+          return;
+    }
+    if (modifiers & LockMask != 0) {
+          *modifiers_return = LockMask;
+          *keysym_return =_XtKeyCodeToKeySym(dpy,perDisplay,keycode,1);
+          return;
+    }
+
+    *modifiers_return = 0;
+    *keysym_return = NoSymbol;
+        
+}
+
+void XtSetKeyTranslator(dpy, translator)
+
+    Display *dpy;
+    XtKeyProc translator;
+
+{
+    XtPerDisplay perDisplay;
+    perDisplay = _XtGetPerDisplay(dpy);
+    if (perDisplay != NULL) 
+      perDisplay->defaultKeycodeTranslator = translator;
+}
+
+/* ARGSUSED */
+void XtRegisterCaseConverter(dpy, proc, start, stop)
+
+    Display *dpy;
+    XtCaseProc proc;
+    KeySym start;
+    KeySym stop;
+
+{
+    XtPerDisplay perDisplay;
+    perDisplay = _XtGetPerDisplay(dpy);
+    if (perDisplay != NULL)
+         perDisplay->defaultCaseConverter = proc;
+}
+/* ARGSUSED */
+void _XtConvertCase(dpy, keysym, lower_return, upper_return)
+
+    Display *dpy;
+    KeySym keysym;
+    KeySym *lower_return;
+    KeySym *upper_return;
+
+{
+    if ((keysym >= XK_a && keysym <= XK_z) ||
+       (keysym >= XK_ssharp && keysym <= XK_odiaeresis) || 
+       (keysym >= XK_oslash && keysym <= XK_ydiaeresis)) {
+       *lower_return = keysym;
+       *upper_return = keysym-0x20;
+       return;
+    }
+    if ((keysym >= XK_A && keysym <= XK_Z) ||
+         (keysym >= XK_Agrave && keysym <= XK_Odiaeresis) || 
+         (keysym >= XK_Ooblique && keysym <= XK_Thorn)) {
+        *upper_return = keysym;
+        *lower_return = keysym+0x20;
+        return;
+        }
+    *lower_return = keysym;
+    *upper_return = keysym;
+
+}
