@@ -1,4 +1,4 @@
-/* $XConsortium: Text.c,v 1.175 91/03/27 14:26:36 converse Exp $ */
+/* $XConsortium: Text.c,v 1.176 91/04/16 17:59:48 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -30,7 +30,6 @@ SOFTWARE.
 #include <X11/Shell.h>
 #include <X11/Xatom.h>
 
-#include <X11/Xmu/Atoms.h>
 #include <X11/Xmu/CharSet.h>
 #include <X11/Xmu/Converters.h>
 #include <X11/Xmu/StdSel.h>
@@ -2265,14 +2264,18 @@ String *list;
 Cardinal nelems;
 {
   Atom * sel = ctx->text.s.selections;
+  Display *dpy = XtDisplay((Widget) ctx);
+  int n;
 
   if (nelems > ctx->text.s.array_size) {
     sel = (Atom *) XtRealloc((char *) sel, sizeof(Atom) * nelems);
     ctx->text.s.array_size = nelems;
+    ctx->text.s.selections = sel;
   }
-  XmuInternStrings(XtDisplay((Widget)ctx), list, nelems, sel);
+  for (n=nelems; --n >= 0; sel++, list++)
+    *sel = XInternAtom(dpy, *list, False);
   ctx->text.s.atom_count = nelems;
-  return(ctx->text.s.selections = sel);
+  return ctx->text.s.selections;
 }
 
 /*	Function Name: SetSelection
