@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.43 89/07/16 15:24:08 jim Exp $
+ *	$XConsortium: misc.c,v 1.44 89/07/18 11:56:58 jim Exp $
  */
 
 
@@ -44,8 +44,6 @@
 
 #include "data.h"
 #include "error.h"
-#include "wait.ic"
-#include "waitmask.ic"
 #include "menu.h"
 
 extern char *malloc();
@@ -55,7 +53,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: misc.c,v 1.43 89/07/16 15:24:08 jim Exp $";
+static char rcs_id[] = "$XConsortium: misc.c,v 1.44 89/07/18 11:56:58 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -267,87 +265,6 @@ register int flag;
 	if(screen->cursor_state)
 	  ShowCursor();
     }
-}
-
-Pixmap Make_tile(width, height, bits, foreground, background, depth)
-	unsigned int width, height, depth;
-	Pixel foreground, background;
-	char *bits;
-{
-	register GC gc;
-	register Pixmap pix;
-	register TScreen *screen = &term->screen;
-	XGCValues gcVals;
-	XImage tileimage;
-
-        pix = (Pixmap)XCreatePixmap(screen->display, 
-	  DefaultRootWindow(screen->display), width, height, depth);
-	gcVals.foreground = foreground;
-	gcVals.background = background;
-	gc = XCreateGC(screen->display, (Drawable) pix, 
-	  GCForeground+GCBackground, &gcVals);
-	tileimage.height = height;
-	tileimage.width = width;
-	tileimage.xoffset = 0;
-	tileimage.format = XYBitmap;
-	tileimage.data = bits;
-	tileimage.byte_order = LSBFirst;
-	tileimage.bitmap_unit = 8;
-	tileimage.bitmap_bit_order = LSBFirst;
-	tileimage.bitmap_pad = 8;
-	tileimage.bytes_per_line = (width+7)>>3;
-	tileimage.depth = 1;
-        XPutImage(screen->display, pix, gc, &tileimage, 0, 0, 0, 0, width, height);
-        XFreeGC (screen->display, gc);
-	return(pix);
-}
-
-
-/* ARGSUSED */
-Cursor make_tcross(fg, bg)
-Pixel fg, bg;
-{
-	return (make_colored_cursor (XC_tcross, fg, bg));
-}
-
-static XColor background = { 0L, 65535, 65535, 65535 };
-static XColor foreground = { 0L,    0,     0,     0 };
-
-Cursor make_wait(fg, bg)
-Pixel fg, bg;
-{
-	register TScreen *screen = &term->screen;
-	register Display *dpy = screen->display;
-	Pixmap source, mask;
-	XColor foreback[2];
-
-	source = Make_tile(wait_width, wait_height, wait_bits, 1L, 0L, 1);
-	mask = Make_tile(waitmask_width, waitmask_height, waitmask_bits, 
-	 1L, 0L, 1);
-
-	foreback[0].pixel = fg;
-	foreback[1].pixel = bg;
-	XQueryColors (dpy, DefaultColormap (dpy, DefaultScreen (dpy)),
-		      foreback, 2);
-
-	return (XCreatePixmapCursor (dpy, source, mask, foreback, foreback+1,
-	 wait_x_hot, wait_y_hot));
-}
-
-/* ARGSUSED */
-Cursor make_arrow(fg, bg)
-unsigned long fg, bg;
-
-{
-	return (make_colored_cursor (XC_left_ptr, fg, bg));
-}
-
-/* ARGSUSED */
-Cursor make_xterm(fg, bg)
-unsigned long fg, bg;
-
-{
-	return (make_colored_cursor (XC_xterm, fg, bg));
 }
 
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.86 89/06/22 19:06:30 jim Exp $
+ * $XConsortium: charproc.c,v 1.87 89/07/13 14:47:54 jim Exp $
  */
 
 
@@ -54,6 +54,7 @@
 #include <X11/Xutil.h>
 #include "error.h"
 #include "main.h"
+#include <X11/cursorfont.h>
 #include <X11/StringDefs.h>
 #include "menu.h"
 
@@ -121,7 +122,6 @@ static void VTallocbuf();
 #define XtCMultiClickTime	"MultiClickTime"
 #define	XtCMultiScroll		"MultiScroll"
 #define	XtCColumn		"Column"
-#define	XtCReverseVideo		"ReverseVideo"
 #define	XtCReverseWrap		"ReverseWrap"
 #define XtCSaveLines		"SaveLines"
 #define	XtCScrollBar		"ScrollBar"
@@ -139,7 +139,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.86 89/06/22 19:06:30 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.87 89/07/13 14:47:54 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -2079,9 +2079,9 @@ XSetWindowAttributes *values;
 	    }
 
 	    if (!screen->pointer_cursor) 
-	    	screen->pointer_cursor = make_xterm (fg, bg);
+	      screen->pointer_cursor = make_colored_cursor (XC_xterm, fg, bg);
 	    else 
-	        recolor_cursor (screen->pointer_cursor, fg, bg);
+	      recolor_cursor (screen->pointer_cursor, fg, bg);
 	}
 
 	scrollbar_width = (term->misc.scrollbar ? 

@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.30 89/05/26 18:10:49 jim Exp $
+ *	$XConsortium: ptyx.h,v 1.31 89/05/30 19:01:18 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -303,7 +303,6 @@ typedef struct {
 	Pixel		Tforeground;	/* foreground color		*/
 	Pixel		Tbackground;	/* Background color		*/
 	Pixel		Tcursorcolor;	/* Cursor color			*/
-	Pixmap		Tbgndtile;	/* background tile pixmap	*/
 	int		Tcolor;		/* colors used			*/
 	Boolean		Vshow;		/* VT window showing		*/
 	Boolean		Tshow;		/* Tek window showing		*/
@@ -491,7 +490,4 @@ typedef struct Tek_Link
 #define	I_SIGNAL	0x02
 #define	I_TEK		0x04
 
-extern Cursor make_tcross();
-extern Cursor make_xterm();
-extern Cursor make_wait();
-extern Cursor make_arrow();
+extern Cursor make_colored_cursor();

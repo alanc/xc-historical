@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.58 89/06/12 12:09:08 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.59 89/07/16 15:24:18 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -34,14 +34,13 @@
 /* Tekproc.c */
 
 #include <X11/Xos.h>
-#include <X11/Xlib.h>
-#include <X11/Intrinsic.h>
+#include "ptyx.h"
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
+#include <X11/cursorfont.h>
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
 #include <X11/Xmu/CharSet.h>
-#include "ptyx.h"
 #include "Tekparse.h"
 #include <stdio.h>
 #ifdef umips
@@ -111,7 +110,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.58 89/06/12 12:09:08 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.59 89/07/16 15:24:18 jim Exp $";
 #endif	/* lint */
 
 extern Widget toplevel;
@@ -327,13 +326,11 @@ Tekparse()
 			/* Do Tek GIN mode */
 			screen->TekGIN = &TekRecord->ptr[-1];
 				/* Set cross-hair cursor raster array */
-			if(GINcursor = make_tcross(
-			    screen->mousecolor,
-			    term->core.background_pixel))
-				XDefineCursor(
-				    screen->display,
-				    TShellWindow,
-				    GINcursor);
+			if (GINcursor =
+			    make_colored_cursor (XC_tcross, screen->mousecolor,
+						 term->core.background_pixel))
+				XDefineCursor (screen->display, TShellWindow,
+					       GINcursor);
 			Tparsestate = Tbyptable;	/* Bypass mode */
 			break;
 
@@ -747,7 +744,8 @@ dorefresh()
 	static Cursor wait_cursor = None;
 
 	if (wait_cursor == None)
-            wait_cursor = make_wait(screen->mousecolor, term->core.background_pixel);
+            wait_cursor = make_colored_cursor (XC_watch, screen->mousecolor,
+					       term->core.background_pixel);
         XDefineCursor(screen->display, TShellWindow, wait_cursor);
 	XFlush(screen->display);
 	if(!setjmp(Tekjump))

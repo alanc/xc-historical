@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.121 89/07/13 18:00:51 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.122 89/07/21 10:58:26 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -40,6 +40,7 @@ SOFTWARE.
 
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
+#include <X11/cursorfont.h>
 #include <pwd.h>
 #include <ctype.h>
 
@@ -921,7 +922,7 @@ get_terminal ()
 	    bg = (screen->mousecolor == term->core.background_pixel) ?
 		screen->foreground : term->core.background_pixel;
 
-	    screen->arrow = make_arrow (fg, bg);
+	    screen->arrow = make_colored_cursor (XC_left_ptr, fg, bg);
 	}
 }
 
