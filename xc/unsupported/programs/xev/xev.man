@@ -9,7 +9,7 @@ xev - print contents of X events
 \fIXev\fP creates a window and then asks the X server to send it notices called
 \fIevents\fP whenever anything happens to the window (such as being moved,
 resized, typed in, clicked in, etc.).  It is useful for seeing what causes
-events to occur and to to display the information that they contain.
+events to occur and to display the information that they contain.
 .SH OPTIONS
 .TP 8
 .B \-display \fIdisplay\fP
@@ -22,5 +22,7 @@ X(1), xwininfo(1), xdpyinfo(1), Xlib Programmers Manual, X Protocol
 Specification
 .SH COPYRIGHT
 Copyright 1988, Massachusetts Institute of Technology.
+.br
+See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHOR
 Jim Fulton, MIT X Consortium
