@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.38 90/04/11 17:20:26 jim Exp $
+ * $XConsortium: Mailbox.c,v 1.39 90/04/26 17:35:28 converse Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -439,10 +439,12 @@ static void check_mailbox (w, force_redraw, reset)
 	  case 0:
 	    mailboxsize = w->mailbox.last_size + 1;
 	    break;
-	  /* case 1 is no change */
 	  case 2:
 	    mailboxsize = 0;
-	  /* treat everything else as no change */
+	    break;
+	  case 1:	/* case 1 is no change */
+	  default:	/* treat everything else as no change */
+	    mailboxsize = w->mailbox.last_size;
 	}
     }
     else {
@@ -479,8 +481,8 @@ static void check_mailbox (w, force_redraw, reset)
     } else if (mailboxsize != w->mailbox.last_size) {  /* different size */
 	if (!w->mailbox.once_only || !w->mailbox.flag_up)
 	    beep(w); 
-	w->mailbox.flag_up = TRUE;
-	force_redraw = TRUE;
+	if (!w->mailbox.flag_up)
+	    force_redraw = w->mailbox.flag_up = TRUE;
     } 
 
     w->mailbox.last_size = mailboxsize;
