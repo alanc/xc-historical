@@ -1,4 +1,4 @@
-# $XConsortium$
+# $XConsortium: Imakefile,v 1.5 91/02/16 10:06:44 rws Exp $
 #
 ##
 ## Copyright 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -22,14 +22,8 @@
 ## OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 ## PERFORMANCE OF THIS SOFTWARE.
 
-#
-# $Header: Imakefile,v 1.5 91/01/25 17:30:41 mikec Exp $
-#
-INCLUDES = -I. -I${TOP} -I${INCLUDESRC} -I../../../include/PEX \
-		-I../../../lib/PEX/include
-
-PEXLIB = ../../../lib/PEX/libphigs.a
-LOCAL_LIBRARIES = $(PEXLIB) $(XMULIB) $(XLIB)
+LOCAL_LIBRARIES = $(PHIGSLIB) $(XMULIB) $(XLIB)
+        DEPLIBS = $(DEPPHIGSLIB) $(DEPXMULIB) $(DEPXLIB)
 
 SYS_LIBRARIES = -lm
 
@@ -50,7 +44,6 @@ OBJS =   basestat.o bif_lex.o bifbuild.o bifconfig.o bifparse.o bld_prim.o \
 # USING_PHIGS Build gpc for PHIGS_API
 # HAVEPIXELS  Turns on code not particular to the SI, used in conjuction
 #		with specialized GDP's or GSE's not supported by PEX_API
-# RCS_ID      Used by the rcs code management system.
 
 DEFINES = -DUSING_PHIGS 
 
