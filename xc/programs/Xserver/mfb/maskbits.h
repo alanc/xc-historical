@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: maskbits.h,v 1.13 88/11/11 10:36:11 rws Exp $ */
+/* $XConsortium: maskbits.h,v 1.14 89/03/16 14:46:34 jim Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "servermd.h"
@@ -315,13 +315,13 @@ else \
 #ifdef vax
 #define FASTGETBITS(psrc,x,w,dst) \
     asm ("extzv %1,%2,%3,%0" \
-	 : "g" (dst) \
+	 : "=g" (dst) \
 	 : "g" (x), "g" (w), "m" (*(char *)(psrc)))
 #define getbits(psrc,x,w,dst) FASTGETBITS(psrc,x,w,dst)
 
 #define FASTPUTBITS(src, x, w, pdst) \
     asm ("insv %3,%1,%2,%0" \
-	 : "m" (*(char *)(pdst)) \
+	 : "=m" (*(char *)(pdst)) \
 	 : "g" (x), "g" (w), "g" (src))
 #define putbits(src, x, w, pdst) FASTPUTBITS(src, x, w, pdst)
 #endif vax
