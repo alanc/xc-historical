@@ -1,4 +1,4 @@
-/* $XConsortium: xhost.c,v 11.36 89/12/16 20:42:36 rws Exp $ */
+/* $XConsortium: xhost.c,v 11.37 91/01/09 17:26:35 rws Exp $ */
  
 /*
 
@@ -545,7 +545,7 @@ print_streams_hostnames (list, nhosts)
      free(retptr);
 }
 
-char *get_streams_hostname (ha)
+static char *get_streams_hostname (ha)
     XHostAddress *ha;
 {
   static char buf[128];
