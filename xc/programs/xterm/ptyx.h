@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.49 91/04/22 13:43:41 gildea Exp $
+ *	$XConsortium: ptyx.h,v 1.50 91/04/24 14:27:01 gildea Exp $
  */
 
 /*
@@ -324,6 +324,8 @@ typedef struct {
 	int		pen;		/* current Tektronix pen 0=up, 1=dn */
 	char		*TekGIN;	/* nonzero if Tektronix GIN mode*/
 	int		multiClickTime;	 /* time between multiclick selects */
+	int		bellSuppressTime; /* msecs after Bell before another allowed */
+	Boolean		bellInProgress; /* still ringing/flashing prev bell? */
 	char		*charClass;	/* for overriding word selection */
 	Boolean		cutNewline;	/* whether or not line cut has \n */
 	Boolean		cutToBeginningOfLine;  /* line cuts to BOL? */
