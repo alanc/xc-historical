@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: xmodmap.c,v 1.10 88/07/11 14:29:39 jim Exp $
+ * $XConsortium: xmodmap.c,v 1.11 88/09/06 17:33:44 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -48,13 +48,10 @@ static char *help_message[] = {
 "    -n                           don't execute changes, just show like make",
 "    -e expression                execute string",
 "    -p                           print modifier map",
+"    -k                           print keymap table",
 "    -grammar                     print out short help on allowable input",
 "    -                            read standard input",
 "",
-"The following options are included for compatibility with the old version:",
-"    -[SLC#]                      clear shift, lock, control, or mod#",
-"    -[slc] keysym                remove shift, lock, or control = keysym",
-"    +[slc#] keysym               add shift, lock, control, or mod# = keysym",
 NULL};
 
 
@@ -115,6 +112,7 @@ main (argc, argv)
     char *filename = NULL;
     int status, errors;
     Bool printMap = False;
+    Bool printKeyTable = False;
     Bool didAnything = False;
 
     ProgramName = argv[0];
@@ -172,6 +170,10 @@ main (argc, argv)
 		continue;
 	      case 'p':			/* -p */
 		printMap = True;
+		continue;
+	      case 'k':			/* -k */
+		didAnything = True;
+		printKeyTable = True;
 		continue;
 	      case 'g':			/* -grammar */
 		grammar_usage ();
@@ -288,6 +290,10 @@ main (argc, argv)
 
     if (printMap) {
 	print_modifier_map ();
+    }
+
+    if (printKeyTable) {
+	print_key_table ();
     }
 
     Exit (status < 0 ? 1 : 0);

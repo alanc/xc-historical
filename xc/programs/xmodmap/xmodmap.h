@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: xmodmap.h,v 1.2 88/07/11 14:29:13 jim Exp $
+ * $XConsortium: xmodmap.h,v 1.3 88/09/06 17:33:45 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -34,3 +34,5 @@ extern void print_opcode ();
 extern void print_work_queue ();
 extern int execute_work_queue ();
 extern void print_modifier_map ();
+extern void print_key_table ();
+

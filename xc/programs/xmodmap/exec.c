@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: exec.c,v 1.4 88/09/06 17:33:26 jim Exp $
+ * $XConsortium: exec.c,v 1.5 88/09/30 13:28:30 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  * Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
@@ -181,6 +181,47 @@ PrintModifierMapping (map, fp)
 	fprintf(fp, "\n");
     }
     fprintf (fp, "\n");
+    return;
+}
+
+
+PrintKeyTable (fp)
+    FILE *fp;
+{
+    int         i;
+    int min_keycode, max_keycode, keysyms_per_keycode;
+    KeySym *keymap, *origkeymap;
+
+    XDisplayKeycodes (dpy, &min_keycode, &max_keycode);
+    origkeymap = XGetKeyboardMapping (dpy, min_keycode,
+				      (max_keycode - min_keycode + 1),
+				      &keysyms_per_keycode);
+
+    if (!origkeymap) {
+	fprintf (stderr, "%s:  unable to get keyboard mapping table.\n",
+		 ProgramName);
+	return;
+    }
+    fprintf (fp, 
+	   "There are %d KeySyms per KeyCode; KeyCodes range from %d to %d.\n", 
+	    keysyms_per_keycode, min_keycode, max_keycode);
+    fprintf (fp, "KeyCode\tKeysym\tKeysym\t...\n");
+    fprintf (fp, "Value  \tValue \tName  \t...\n\n");
+
+    keymap = origkeymap;
+    for (i = min_keycode; i <= max_keycode; i++) {
+	int         j;
+
+	printf("%-3d\t", i);
+	for (j = 0; j < keysyms_per_keycode; j++) {
+	    register KeySym ks = *keymap++;
+	    if (ks != NoSymbol)
+		fprintf (fp, "0x%x\t%s\t", ks, XKeysymToString(ks));
+	}
+	fprintf (fp, "\n");
+    }
+
+    XFree ((char *) origkeymap);
     return;
 }
 
