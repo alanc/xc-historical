@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osdep.h,v 1.35 93/09/24 12:19:07 rws Exp $ */
+/* $XConsortium: osdep.h,v 1.36 93/09/26 15:41:18 gildea Exp $ */
 
 #define BOTIMEOUT 200 /* in milliseconds */
 #define BUFSIZE 4096
@@ -212,6 +212,7 @@ typedef struct _osComm {
     k5_state	authstate;	/* state of setup auth conversation */
 #endif
     CARD32 conn_time;		/* timestamp if not established, else 0  */
+    struct _XtransConnInfo *trans_conn; /* transport connection object */
 } OsCommRec, *OsCommPtr;
 
 extern int FlushClient(
