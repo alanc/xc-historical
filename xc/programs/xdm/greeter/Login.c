@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: Login.c,v 1.36 93/09/20 18:03:02 hersh Exp $
+ * $XConsortium: Login.c,v 1.37 94/02/03 08:22:01 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -141,8 +141,6 @@ static XtResource resources[] = {
 static void Initialize(), Realize(), Destroy(), Redisplay();
 static Boolean SetValues();
 static void draw_it ();
-
-static void ClassInitialize();
 
 static int max (a,b) { return a > b ? a : b; }
 
