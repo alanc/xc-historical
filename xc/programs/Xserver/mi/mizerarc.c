@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.c,v 5.6 89/09/05 00:45:04 keith Exp $ */
+/* $XConsortium: mizerarc.c,v 5.7 89/09/05 08:21:34 rws Exp $ */
 
 #include <math.h>
 #include "X.h"
@@ -27,38 +27,35 @@ without any express or implied warranty.
 #include "mizerarc.h"
 
 void
-miZeroCircleSetup(arc, info)
+miZeroArcSetup(arc, info)
     register xArc *arc;
-    register miZeroCircleRec *info;
+    register miZeroArcRec *info;
 {
+    int l, h;
     int angle1, angle2;
     int startseg, endseg;
     int startAngle, endAngle;
-    int i, r, overlap;
+    int i, overlap;
 
-    r = arc->width >> 1;
-    info->y = r;
-    info->xorg = arc->x + info->y;
-    info->xorgo = info->xorg;
-    info->yorg = arc->y + info->y;
-    info->yorgo = info->yorg;
-    if (arc->width & 1)
-    {
-	info->xorgo++;
-	info->yorgo++;
-	info->x = 1;
-	info->y++;
-	info->d = 7 - (int)(arc->width << 1);
-	info->dn = 4;
-	info->dp = 6;
-    }
-    else
-    {
-	info->x = 0;
-	info->d = 3 - (int)arc->width;
-	info->dn = 6;
-	info->dp = 10;
-    }
+    info->alpha = (arc->width * arc->width) << 2;
+    info->beta = (arc->height * arc->height) << 2;
+    l = arc->width & 1;
+    info->k1 = -(info->beta << 1);
+    info->k3 = info->k1 - (info->alpha << 1);
+    info->b = info->beta * (3 - l);
+    info->a = (info->alpha * arc->height) - info->b;
+    info->d = info->b - (info->a >> 1) - ((info->beta >> 2) * (2 + l)) +
+	     (info->alpha >> 2);
+    info->x = 1;
+    info->y = 0;
+    info->dx1 = 1;
+    info->dy1 = 0;
+    info->w = (arc->width + 1) >> 1;
+    info->h = arc->height >> 1;
+    info->xorg = arc->x + (arc->width >> 1);
+    info->yorg = arc->y;
+    info->xorgo = info->xorg + l;
+    info->yorgo = info->yorg + arc->height;
     angle1 = arc->angle1;
     angle2 = arc->angle2;
     if (angle2 > FULLCIRCLE)
@@ -89,94 +86,158 @@ miZeroCircleSetup(arc, info)
     {
 	info->startx = -1;
 	info->endx = -1;
+	info->starty = -1;
 	if (angle2)
-	    info->initialMask = 0xff;
+	{
+	    info->initialMask = 0xf;
+	    info->endy = info->h;
+	}
 	else
+	{
 	    info->initialMask = 0;
+	    info->endy = 0;
+	}
 	return;
     }
-    startseg = startAngle / EIGHTH;
+    startseg = startAngle / OCTANT;
     if ((startseg + 1) & 2)
-	info->startx = Dcos((double)startAngle/64.0) * r;
+    {
+	info->startx = Dcos((double)startAngle/64.0) * (arc->width / 2.0);
+	if (info->startx < 0)
+	    info->startx = -info->startx;
+	info->starty = -1;
+    }
     else
-	info->startx = Dsin((double)startAngle/64.0) * r;
-    if (info->startx < 0)
-	info->startx = -info->startx;
-    endseg = endAngle / EIGHTH;
+    {
+	info->starty = Dsin((double)startAngle/64.0) * (arc->height / 2.0);
+	if (info->starty < 0)
+	    info->starty = -info->starty;
+	info->starty = info->h - info->starty;
+	info->startx = 65536;
+    }
+    endseg = endAngle / OCTANT;
     if ((endseg + 1) & 2)
-	info->endx = Dcos((double)endAngle/64.0) * r;
+    {
+	info->endx = Dcos((double)endAngle/64.0) * (arc->width / 2.0);
+	if (info->endx < 0)
+	    info->endx = -info->endx;
+	info->endy = -1;
+    }
     else
-	info->endx = Dsin((double)endAngle/64.0) * r;
-    if (info->endx < 0)
-	info->endx = -info->endx;
+    {
+	info->endy = Dsin((double)endAngle/64.0) * (arc->height / 2.0);
+	if (info->endy < 0)
+	    info->endy = -info->endy;
+	info->endy = info->h - info->endy;
+	info->endx = 65536;
+    }
     info->initialMask = 0;
-    for (i = 0; i < 8; i++)
+    for (i = 0; i < 4; i++)
     {
 	if ((endAngle < startAngle) ?
-	    ((i * EIGHTH <= endAngle) || ((i + 1) * EIGHTH > startAngle)) :
-	    ((i * EIGHTH <= endAngle) && ((i + 1) * EIGHTH > startAngle)))
+	    ((i * QUADRANT <= endAngle) || ((i + 1) * QUADRANT > startAngle)) :
+	    ((i * QUADRANT <= endAngle) && ((i + 1) * QUADRANT > startAngle)))
 	    info->initialMask |= (1 << i);
     }
     info->startMask = info->initialMask;
     info->endMask = info->initialMask;
+    startseg >>= 1;
+    endseg >>= 1;
     overlap = (endseg == startseg) && (endAngle < startAngle);
     if (startseg & 1)
     {
-	info->startMask &= ~(1 << startseg);
-	if ((info->startx < info->endx) && !overlap)
+	if  (!overlap)
+	    info->initialMask &= ~(1 << startseg);
+	if (info->startx > info->endx || info->starty > info->endy)
 	    info->endMask &= ~(1 << startseg);
     }
     else
     {
-	if (info->startx > info->endx)
+	info->startMask &= ~(1 << startseg);
+	if ((info->startx < info->endx || info->starty < info->endy ||
+	    (info->startx == info->endx && info->starty == info->endy)) &&
+	    !overlap)
 	    info->endMask &= ~(1 << startseg);
-	if  (!overlap)
-	    info->initialMask &= ~(1 << startseg);
     }
     if (endseg & 1)
     {
-	if (info->startx < info->endx)
+	info->endMask &= ~(1 << endseg);
+	if ((info->startx > info->endx || info->starty > info->endy) &&
+	    !overlap)
 	    info->startMask &= ~(1 << endseg);
-	if (!overlap)
-	    info->initialMask &= ~(1 << endseg);
     }
     else
     {
-	info->endMask &= ~(1 << endseg);
-	if ((info->startx > info->endx) && !overlap)
+	if (!overlap)
+	    info->initialMask &= ~(1 << endseg);
+	if (info->startx < info->endx || info->starty < info->endy)
 	    info->startMask &= ~(1 << endseg);
     }
-    if ((arc->width & 1) && !info->startx)
-    {
-	if (!info->endx)
-	    info->startMask = info->endMask;
-	info->startx = 1;
-    }
+    if (!info->startx)
+	info->initialMask = info->startMask;
 }
 
-static DDXPointPtr
-miZeroCirclePts(arc, pts)
-    register xArc *arc;
+DDXPointPtr
+miZeroArcPts(arc, pts)
+    xArc *arc;
     register DDXPointPtr pts;
 {
-    register int x, y, d, dn, dp;
-    register int mask;
-    miZeroCircleRec info;
+    miZeroArcRec info;
+    register int x, y, a, b, d, mask;
+    register int k1, k3, dx1, dy1;
 
-    miZeroCircleSetup(arc, &info);
+    miZeroArcSetup(arc, &info);
+    x = info.x;
     y = info.y;
+    k1 = info.k1;
+    k3 = info.k3;
+    a = info.a;
+    b = info.b;
     d = info.d;
-    dn = info.dn;
-    dp = info.dp;
+    dx1 = info.dx1;
+    dy1 = info.dy1;
     mask = info.initialMask;
-    for (x = info.x; x <= y; x++)
+    if (!(arc->width & 1))
     {
-	if (x == info.startx)
+	if (mask & 1)
+	{
+	    pts->x = info.xorg;
+	    pts->y = info.yorg;
+	    pts++;
+	}
+	if (mask & 4)
+	{
+	    pts->x = info.xorg;
+	    pts->y = info.yorgo;
+	    pts++;
+	}
+    }
+    if (!info.endx)
+	mask = info.endMask;
+    while (y < info.h)
+    {
+	if (a < 0)
+	{
+	    dx1 = 0;
+	    dy1 = 1;
+	    k1 = info.alpha << 1;
+	    k3 = -k3;
+	    b = b + a - info.alpha;
+	    d = b - (a >> 1) - d + (k3 >> 3);
+	    a = (info.alpha - info.beta) - a;
+	}
+	if ((x == info.startx) || (y == info.starty))
 	    mask = info.startMask;
 	if (mask & 1)
 	{
-	    pts->x = info.xorg + y;
-	    pts->y = info.yorgo - x;
+	    pts->x = info.xorg + x;
+	    pts->y = info.yorg + y;
+	    pts++;
+	}
+	if (mask & 2)
+	{
+	    pts->x = info.xorgo - x;
+	    pts->y = info.yorg + y;
 	    pts++;
 	}
 	if (mask & 4)
@@ -185,57 +246,58 @@ miZeroCirclePts(arc, pts)
 	    pts->y = info.yorgo - y;
 	    pts++;
 	}
-	if (mask & 16)
+	if (mask & 8)
 	{
-	    pts->x = info.xorgo - y;
-	    pts->y = info.yorg + x;
+	    pts->x = info.xorg + x;
+	    pts->y = info.yorgo - y;
 	    pts++;
 	}
-	if (mask & 64)
+	if ((x == info.endx) || (y == info.endy))
+	    mask = info.endMask;
+	b -= k1;
+	if (d < 0)
+	{
+	    x += dx1;
+	    y += dy1;
+	    a += k1;
+	    d += b;
+	}
+	else
+	{
+	    x++;
+	    y++;
+	    a += k3;
+	    d -= a;
+	}
+    }
+    for (; x <= info.w; x++)
+    {
+	if (mask & 1)
 	{
 	    pts->x = info.xorg + x;
 	    pts->y = info.yorg + y;
 	    pts++;
 	}
-	if (x == y)
-	    break;
-	if (x)
+	if (mask & 2)
 	{
-	    if (mask & 2)
+	    pts->x = info.xorgo - x;
+	    pts->y = info.yorg + y;
+	    pts++;
+	}
+	if (arc->height & 1)
+	{
+	    if (mask & 4)
 	    {
-		pts->x = info.xorg + x;
+		pts->x = info.xorgo - x;
 		pts->y = info.yorgo - y;
 		pts++;
 	    }
 	    if (mask & 8)
 	    {
-		pts->x = info.xorgo - y;
-		pts->y = info.yorgo - x;
+		pts->x = info.xorg + x;
+		pts->y = info.yorgo - y;
 		pts++;
 	    }
-	    if (mask & 32)
-	    {
-		pts->x = info.xorgo - x;
-		pts->y = info.yorg + y;
-		pts++;
-	    }
-	    if (mask & 128)
-	    {
-		pts->x = info.xorg + y;
-		pts->y = info.yorg + x;
-		pts++;
-	    }
-	}
-	if (x == info.endx)
-	    mask = info.endMask;
-	if (d < 0)
-	{
-	    d += (x << 2) + dn;
-	}
-	else
-	{
-	    d += ((x - y) << 2) + dp;
-	    y--;
 	}
     }
     return pts;
@@ -250,55 +312,91 @@ miZeroCirclePts(arc, pts)
     }
 
 static void
-miZeroCircleDashPts(pGC, arc, points, evenPts, oddPts)
+miZeroArcDashPts(pGC, arc, points, max, evenPts, oddPts)
     GCPtr pGC;
     register xArc *arc;
+    int max;
     register DDXPointPtr points, *evenPts, *oddPts;
 {
-    register int x, y, d, dn, dp;
-    register int mask;
-    miZeroCircleRec info;
+    miZeroArcRec info;
+    register int x, y, a, b, d, mask;
+    register int k1, k3, dx1, dy1;
     unsigned char *pDash;
     int numInDashList, dashIndex, dashOffset, dashRemaining;
-    DDXPointPtr circPts[8];
+    DDXPointPtr circPts[4];
+    DDXPointPtr startPt, oldPt;
     DDXPointPtr pt, lastPt, *pts;
-    int i, delta, ptsdelta, seg;
+    int i, delta, ptsdelta, seg, startseg;
 
-    miZeroCircleSetup(arc, &info);
-    for (i = 0; i < 8; i++)
-	circPts[i] = points + (i * arc->width);
+    for (i = 0; i < 4; i++)
+	circPts[i] = points + (i * max);
+    miZeroArcSetup(arc, &info);
+    x = info.x;
     y = info.y;
+    k1 = info.k1;
+    k3 = info.k3;
+    a = info.a;
+    b = info.b;
     d = info.d;
-    dn = info.dn;
-    dp = info.dp;
+    dx1 = info.dx1;
+    dy1 = info.dy1;
     mask = info.initialMask;
-    for (x = info.x; x <= y; x++)
+    if (!(arc->width & 1))
     {
-	if (x == info.startx)
-	    mask = info.startMask;
-	DoPix(0, info.xorg + y, info.yorgo - x);
-	DoPix(2, info.xorgo - x, info.yorgo - y);
-	DoPix(4, info.xorgo - y, info.yorg + x);
-	DoPix(6, info.xorg + x, info.yorg + y);
-	if (x == y)
-	    break;
-	if (x)
+	DoPix(0, info.xorg, info.yorg);
+	DoPix(2, info.xorg, info.yorgo);
+    }
+    startseg = info.startAngle / QUADRANT;
+    startPt = circPts[startseg];
+    if (!info.endx)
+	mask = info.endMask;
+    while (y < info.h)
+    {
+	if (a < 0)
 	{
-	    DoPix(1, info.xorg + x, info.yorgo - y);
-	    DoPix(3, info.xorgo - y, info.yorgo - x);
-	    DoPix(5, info.xorgo - x, info.yorg + y);
-	    DoPix(7, info.xorg + y, info.yorg + x);
+	    dx1 = 0;
+	    dy1 = 1;
+	    k1 = info.alpha << 1;
+	    k3 = -k3;
+	    b = b + a - info.alpha;
+	    d = b - (a >> 1) - d + (k3 >> 3);
+	    a = (info.alpha - info.beta) - a;
 	}
-	if (x == info.endx)
+	if ((x == info.startx) || (y == info.starty))
+	{
+	    mask = info.startMask;
+	    startPt = circPts[info.startAngle / QUADRANT];
+	}
+	DoPix(0, info.xorg + x, info.yorg + y);
+	DoPix(1, info.xorgo - x, info.yorg + y);
+	DoPix(2, info.xorgo - x, info.yorgo - y);
+	DoPix(3, info.xorg + x, info.yorgo - y);
+	if ((x == info.endx) || (y == info.endy))
 	    mask = info.endMask;
+	b -= k1;
 	if (d < 0)
 	{
-	    d += (x << 2) + dn;
+	    x += dx1;
+	    y += dy1;
+	    a += k1;
+	    d += b;
 	}
 	else
 	{
-	    d += ((x - y) << 2) + dp;
-	    y--;
+	    x++;
+	    y++;
+	    a += k3;
+	    d -= a;
+	}
+    }
+    for (; x <= info.w; x++)
+    {
+	DoPix(0, info.xorg + x, info.yorg + y);
+	DoPix(1, info.xorgo - x, info.yorg + y);
+	if (arc->height & 1)
+	{
+	    DoPix(2, info.xorgo - x, info.yorgo - y);
+	    DoPix(3, info.xorg + x, info.yorgo - y);
 	}
     }
     pDash = (unsigned char *) pGC->dash;
@@ -308,20 +406,45 @@ miZeroCircleDashPts(pGC, arc, points, evenPts, oddPts)
     miStepDash(pGC->dashOffset, &dashIndex, pDash,
 	       numInDashList, &dashOffset);
     dashRemaining = pDash[dashIndex] - dashOffset;
-    for (i = 0; i < 8; i++)
+    oldPt = circPts[startseg];
+    for (i = 0; i < 5; i++)
     {
-	seg = ((info.startAngle / EIGHTH) + i) & 7;
+	seg = (startseg + i) & 3;
+	pt = points + (seg * max);
+	if (seg == startseg)
+	{
+	    if (seg & 1)
+	    {
+		if (i == 0)
+		    pt = startPt;
+		else if (oldPt == startPt)
+		    break;
+		else
+		    circPts[seg] = startPt;
+	    }
+	    else
+	    {
+		if (i == 0)
+		    circPts[startseg] = startPt;
+		else if (oldPt == startPt)
+		    break;
+		else
+		{
+		    pt = startPt;
+		    circPts[startseg] = oldPt;
+		}
+	    }
+	}
 	if (seg & 1)
 	{
-	    lastPt = points + (seg * arc->width) - 1;
-	    pt = circPts[seg] - 1;
-	    delta = -1;
+	    lastPt = circPts[seg];
+	    delta = 1;
 	}
 	else
 	{
-	    pt = points + (seg * arc->width);
-	    lastPt = circPts[seg];
-	    delta = 1;
+	    lastPt = pt - 1;
+	    pt = circPts[seg] - 1;
+	    delta = -1;
 	}
 	while (pt != lastPt)
 	{
@@ -358,8 +481,8 @@ miZeroPolyArc(pDraw, pGC, narcs, parcs)
     int		narcs;
     xArc	*parcs;
 {
-    int maxWidth = 0;
-    int n;
+    int maxPts = 0;
+    int n, max;
     register xArc *arc;
     register int i;
     DDXPointPtr points, pts, oddPts;
@@ -371,21 +494,28 @@ miZeroPolyArc(pDraw, pGC, narcs, parcs)
 
     for (arc = parcs, i = narcs; --i >= 0; arc++)
     {
-	if (arc->width != arc->height)
+	if (arc->width > 800 || arc->height > 800)
 	    miPolyArc(pDraw, pGC, 1, arc);
-	else if (arc->width > maxWidth)
-	    maxWidth = arc->width;
+	else
+	{
+	    if (arc->width > arc->height)
+		n = arc->width + (arc->height >> 1);
+	    else
+		n = arc->height + (arc->width >> 1);
+	    if (n > maxPts)
+		maxPts = n;
+	}
     }
-    if (!maxWidth)
+    if (!maxPts)
 	return;
-    numPts = maxWidth << 3;
+    numPts = maxPts << 2;
     dospans = (pGC->lineStyle != LineSolid) || (pGC->fillStyle != FillSolid);
     if (dospans)
     {
 	widths = (int *)ALLOCATE_LOCAL(sizeof(int) * numPts);
 	if (!widths)
 	    return;
-	maxWidth = 0;
+	max = 0;
     }
     if (pGC->lineStyle != LineSolid)
 	numPts <<= 1;
@@ -400,25 +530,25 @@ miZeroPolyArc(pDraw, pGC, narcs, parcs)
     }
     for (arc = parcs, i = narcs; --i >= 0; arc++)
     {
-	if (arc->width == arc->height)
+	if (arc->width <= 800 && arc->height <= 800)
 	{
 	    if (pGC->lineStyle == LineSolid)
-		pts = miZeroCirclePts(arc, points);
+		pts = miZeroArcPts(arc, points);
 	    else
 	    {
 		pts = points;
 		oddPts = &points[(numPts >> 1) - 1];
-		miZeroCircleDashPts(pGC, arc, oddPts + 1, &pts, &oddPts);
+		miZeroArcDashPts(pGC, arc, oddPts + 1, maxPts, &pts, &oddPts);
 	    }
 	    n = pts - points;
 	    if (!dospans)
 		(*pGC->ops->PolyPoint)(pDraw, pGC, CoordModeOrigin, n, points);
 	    else
 	    {
-		if (n > maxWidth)
+		if (n > max)
 		{
-		    while (maxWidth < n)
-			widths[maxWidth++] = 1;
+		    while (max < n)
+			widths[max++] = 1;
 		}
 		if (pGC->miTranslate)
 		{
@@ -445,10 +575,10 @@ miZeroPolyArc(pDraw, pGC, narcs, parcs)
 		(*pGC->ops->PolyPoint)(pDraw, pGC, CoordModeOrigin, n, oddPts);
 	    else
 	    {
-		if (n > maxWidth)
+		if (n > max)
 		{
-		    while (maxWidth < n)
-			widths[maxWidth++] = 1;
+		    while (max < n)
+			widths[max++] = 1;
 		}
 		if (pGC->miTranslate)
 		{
@@ -474,4 +604,3 @@ miZeroPolyArc(pDraw, pGC, narcs, parcs)
     }
     DEALLOCATE_LOCAL(points);
 }
-
