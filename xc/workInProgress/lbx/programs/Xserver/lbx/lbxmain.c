@@ -1,4 +1,4 @@
-/* $XConsortium: lbxmain.c,v 1.19 95/05/03 21:11:46 mor Exp mor $ */
+/* $XConsortium: lbxmain.c,v 1.20 95/05/11 17:44:13 mor Exp mor $ */
 /*
  * $NCDId: @(#)lbxmain.c,v 1.61 1994/11/18 20:32:36 lemke Exp $
  * $NCDOr: lbxmain.c,v 1.4 1993/12/06 18:47:18 keithp Exp keithp $
@@ -280,7 +280,7 @@ LbxMakeContiguous (proxy, iov, num, contlen)
 	return iov[0].iov_base;
     for (i = 0, offset = 0; i < num; i++) {
 	len = min(iov[i].iov_len, contlen);
-	bcopy(iov[i].iov_base, &proxy->tempDeltaBuf[offset], len);
+	memcpy(&proxy->tempDeltaBuf[offset], iov[i].iov_base, len);
 	offset += len;
 	if ((contlen -= len) == 0)
 	    break;
@@ -1681,7 +1681,7 @@ ProcLbxNewClient(client)
     setupbuf = (char *)xalloc (len);
     if (!setupbuf)
 	return BadAlloc;
-    bcopy ((char *)&stuff[1], setupbuf, len);
+    memcpy (setupbuf, (char *)&stuff[1], len);
 
     newClient = AllocPiggybackConnection (client,
 				    LbxRead, LbxWritev, LbxCloseClient);
@@ -1805,7 +1805,7 @@ ProcLbxDelta(client)
      * Maybe some day do this copying on a case by case basis,
      * since not all requests are guilty of this.
      */
-    bcopy(buf, proxy->tempDeltaBuf, len);
+    memmove(proxy->tempDeltaBuf, buf, len);
 
     client->requestBuffer = proxy->tempDeltaBuf;
     client->req_len = len >> 2;

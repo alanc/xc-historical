@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.5 95/04/04 21:39:53 dpw Exp $ */
+/* $XConsortium: io.c,v 1.6 95/05/17 18:25:37 dpw Exp mor $ */
 /*****************************************************************
  * i/o functions
  *
@@ -799,7 +799,7 @@ LbxFlushClient(who, oc, extraBuf, extraCount)
 	    MarkClientException(who);
 	    return(-1);
 	}
-	bcopy(extraBuf, (char *)oco->buf + oco->count, extraCount);
+	memmove((char *)oco->buf + oco->count, extraBuf, extraCount);
 	oco->count = newlen;
     }
 
@@ -955,7 +955,7 @@ UncompressWriteToClient (who, count, buf)
 	    return -1;
 	}
     }
-    bcopy(buf, (char *)oco->buf + oco->count, count);
+    memmove((char *)oco->buf + oco->count, buf, count);
     oco->count += paddedLen;
 
     if (oc->ofirst) {

@@ -1,4 +1,4 @@
-/* $XConsortium: gfx.c,v 1.14 95/04/04 21:12:01 dpw Exp $ */
+/* $XConsortium: gfx.c,v 1.15 95/05/17 18:26:41 dpw Exp mor $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -105,7 +105,7 @@ push(cache, xid)
     XID         cache[GFX_CACHE_SIZE];
     XID         xid;
 {
-    bcopy(cache, cache + 1, (GFX_CACHE_SIZE - 1) * sizeof(cache[0]));
+    memmove(cache + 1, cache, (GFX_CACHE_SIZE - 1) * sizeof(cache[0]));
     cache[0] = xid;
 }
 
@@ -119,7 +119,7 @@ use(cache, i)
     if (i == 0)
 	return;
     tmp = cache[i];
-    bcopy(cache, cache + 1, i * sizeof(cache[0]));
+    memmove(cache + 1, cache, i * sizeof(cache[0]));
     cache[0] = tmp;
 }
 
@@ -159,20 +159,20 @@ match(cache, xid)
     _dcache = match (LBXDrawableCache(client), _drawable); \
     if (_dcache == GFXCacheNone) \
     { \
-	bcopy (&stuff->drawable, after, 4); \
+	memcpy (after, &stuff->drawable, 4); \
 	after += 4; \
     } \
     _gcache = match (LBXGContextCache(client), _gcontext); \
     if (_gcache == GFXCacheNone) \
     { \
-	bcopy (&stuff->gc, after, 4); \
+	memcpy (after, &stuff->gc, 4); \
 	after += 4; \
     } \
 }
 
 #define GFX_SETUP_SRC_DST_DRAWABLE_AND_GC(after) {\
     Drawable	tmpDrawableCache[GFX_CACHE_SIZE]; \
-    bcopy (LBXDrawableCache(client), tmpDrawableCache, sizeof (LBXDrawableCache(client))); \
+    memcpy (tmpDrawableCache, LBXDrawableCache(client), sizeof (LBXDrawableCache(client))); \
     _srcDrawable = stuff->srcDrawable; \
     _dstDrawable = stuff->dstDrawable; \
     _gcontext = stuff->gc; \
@@ -185,7 +185,7 @@ match(cache, xid)
     _srcDcache = match (LBXDrawableCache(client), _srcDrawable); \
     if (_srcDcache == GFXCacheNone) \
     { \
-	bcopy (&stuff->srcDrawable, after, 4); \
+	memcpy (after, &stuff->srcDrawable, 4); \
 	after += 4; \
 	push (tmpDrawableCache, _srcDrawable); \
     } else \
@@ -193,13 +193,13 @@ match(cache, xid)
     _dstDcache = match (tmpDrawableCache, _dstDrawable); \
     if (_dstDcache == GFXCacheNone) \
     { \
-	bcopy (&stuff->dstDrawable, after, 4); \
+	memcpy (after, &stuff->dstDrawable, 4); \
 	after += 4; \
     } \
     _gcache = match (LBXGContextCache(client), _gcontext); \
     if (_gcache == GFXCacheNone) \
     { \
-	bcopy (&stuff->gc, after, 4); \
+	memcpy (after, &stuff->gc, 4); \
 	after += 4; \
     } \
 }
@@ -698,7 +698,7 @@ ProcLBXPolyText(client)
     if (bytes == 0)
 	goto bail;
     /* copy the text elements */
-    bcopy((char *) &stuff[1], after + bytes, len - sz_xPolyTextReq);
+    memcpy(after + bytes, (char *) &stuff[1], len - sz_xPolyTextReq);
     bytes += len - sz_xPolyTextReq;
     FinishLBXRequest(client, REQ_PASSTHROUGH);
     newreq->reqType = server->lbxReq;
@@ -744,7 +744,7 @@ ProcLBXImageText(client)
     if (bytes == 0)
 	goto bail;
     /* copy the text elements */
-    bcopy((char *) &stuff[1], after + bytes, len - sz_xImageTextReq);
+    memcpy(after + bytes, (char *) &stuff[1], len - sz_xImageTextReq);
     bytes += len - sz_xImageTextReq;
     FinishLBXRequest(client, REQ_PASSTHROUGH);
     newreq->reqType = server->lbxReq;
