@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.85 91/07/19 23:07:39 gildea Exp $
+ * $XConsortium: XConnDis.c,v 11.86 91/09/09 18:54:35 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -358,6 +358,9 @@ int _XConnectDisplay (display_name, fullnamep, dpynump, screenp,
 #endif
 #endif
 #ifndef NO_TCP_H
+#ifdef __OSF1__
+#include <sys/param.h>
+#endif
 #include <netinet/tcp.h>
 #endif
 #endif /* NEED_BSDISH */
