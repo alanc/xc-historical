@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.68 92/09/02 13:44:54 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.69 92/09/07 17:39:28 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -796,7 +796,7 @@ Value	Name					Reference
 14	Tektronix, Inc.				[86]
 15	FUJITSU LIMITED				[87]
 16	International Business Machines		[33]
-17	Kubota Pacific				[95]
+17	Kubota Pacific Computer			[95]
 
 
 REFERENCES
@@ -1240,7 +1240,7 @@ REFERENCES
 	Cambridge, MA 02139
 
 [95]	Greg Stiehl
-	Kubota Pacific
+	Kubota Pacific Computer
 	2630 Walsh Avenue
 	Santa Clara, CA 95051-0905
 
