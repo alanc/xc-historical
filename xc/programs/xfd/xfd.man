@@ -115,6 +115,14 @@ Specifies the font to be used for the messages at the bottom of the window.
 Specifies that the title of the displayed window should be \fItitle\fP.
 .PP
 .TP 8
+.B \-in \fIiconname\fP
+Specifies that the name of the icon should be \fIiconname\fP.
+.PP
+.TP 8
+.B \-icon \fIfilename\fP
+Specifies that the bitmap in file \fIfilename\fP should be used for the icon.
+.PP
+.TP 8
 .B \-verbose
 Specifies that verbose mode should be used.
 .PP
@@ -164,6 +172,14 @@ Set the color of the border.
 Set the font to be used in the body of the window.  (I.e., for messages, etc.)
 This is not the font that \fIXfd\fP displays, just the font it uses
 to display information about the font being displayed.
+.PP
+.TP 8
+.B IconName
+Set the name of the icon.
+.PP
+.TP 8
+.B IconBitmap
+Set the file we should look in to get the bitmap for the icon.
 .PP
 .TP 8
 .B Title
