@@ -1,5 +1,5 @@
 /*
- * $XConsortium: saver.c,v 1.7 92/03/19 18:34:48 rws Exp $
+ * $XConsortium: saver.c,v 1.8 93/07/08 14:03:04 dpw Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -75,7 +75,7 @@ typedef struct _ScreenSaverEvent {
     CARD32		mask;
 } ScreenSaverEventRec;
 
-static void ScreenSaverFreeEvents();
+static int ScreenSaverFreeEvents();
 
 /*
  * when a client sets the screen saver attributes, a resource is
@@ -101,7 +101,7 @@ typedef struct _ScreenSaverAttr {
     unsigned long   *values;
 } ScreenSaverAttrRec, *ScreenSaverAttrPtr;
 
-static void ScreenSaverFreeAttr ();
+static int ScreenSaverFreeAttr ();
 
 typedef struct _ScreenSaverScreenPrivate {
     ScreenSaverEventPtr	    events;
@@ -287,37 +287,42 @@ FreeScreenAttr (pAttr)
     xfree (pAttr);
 }
 
-static void
-ScreenSaverFreeEvents (pOld, id)
-    ScreenSaverEventPtr	pOld;
+static int
+ScreenSaverFreeEvents (value, id)
+    pointer value;
+    XID id;
 {
+    ScreenSaverEventPtr	pOld = (ScreenSaverEventPtr)value;
     ScreenPtr pScreen = pOld->screen;
     SetupScreen (pScreen);
     ScreenSaverEventPtr	pEv, *pPrev;
 
     if (!pPriv)
-	return;
+	return TRUE;
     for (pPrev = &pPriv->events; pEv = *pPrev; pPrev = &pEv->next)
 	if (pEv == pOld)
 	    break;
     if (!pEv)
-	return;
+	return TRUE;
     *pPrev = pEv->next;
     xfree (pEv);
     CheckScreenPrivate (pScreen);
+    return TRUE;
 }
 
-static void
-ScreenSaverFreeAttr (pOldAttr, id)
-    ScreenSaverAttrPtr	pOldAttr;
+static int
+ScreenSaverFreeAttr (value, id)
+    pointer value;
+    XID id;
 {
+    ScreenSaverAttrPtr	pOldAttr = (ScreenSaverAttrPtr)value;
     ScreenPtr	pScreen = pOldAttr->screen;
     SetupScreen (pScreen);
 
     if (!pPriv)
-	return;
+	return TRUE;
     if (pPriv->attr != pOldAttr)
-	return;
+	return TRUE;
     FreeScreenAttr (pOldAttr);
     pPriv->attr = NULL;
     if (pPriv->hasWindow)
@@ -326,6 +331,7 @@ ScreenSaverFreeAttr (pOldAttr, id)
 	SaveScreens (SCREEN_SAVER_FORCER, ScreenSaverActive);
     }
     CheckScreenPrivate (pScreen);
+    return TRUE;
 }
 
 static void
