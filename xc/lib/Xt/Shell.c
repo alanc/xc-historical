@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.89 90/06/25 14:27:52 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.90 90/06/25 14:34:30 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif /* lint */
 
@@ -1607,10 +1607,15 @@ static XtGeometryResult RootGeometryManager(gw, request, reply)
     if (XtIsWMShell(gw)) {
 	wm = True;
 	hintp = &((WMShellWidget)w)->wm.size_hints;
+	/* for draft-ICCCM wm's, need to make sure hints reflect
+	   (current) reality so client can move and size separately. */
+  	hintp->x = w->core.x;
+  	hintp->y = w->core.y;
+  	hintp->width = w->core.width;
+   	hintp->height = w->core.height;
     } else
 	wm = False;
     
-
     oldx = w->core.x;
     oldy = w->core.y;
     oldwidth = w->core.width;
