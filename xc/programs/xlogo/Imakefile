@@ -1,8 +1,8 @@
-XCOMM $XConsortium: Imakefile,v 1.6 91/07/16 23:05:24 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.7 91/07/22 19:04:46 gildea Exp $
         DEPLIBS = XawClientDepLibs
 LOCAL_LIBRARIES = XawClientLibs
-           SRCS = xlogo.c
-           OBJS = xlogo.o
+           SRCS = xlogo.c Logo.c
+           OBJS = xlogo.o Logo.o
 
 ComplexProgramTarget(xlogo)
 InstallAppDefaults(XLogo)
