@@ -1,4 +1,4 @@
-/* $XConsortium: PEXproto.h,v 1.1 92/05/08 15:12:45 mor Exp $ */
+/* $XConsortium: PEXproto.h,v 1.2 92/05/20 21:28:13 mor Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -348,7 +348,7 @@ typedef struct {
     pexDynamicType	lineBundle;
     pexDynamicType	interiorBundle;
     pexDynamicType	edgeBundle;
-    pexDynamicType	colourTable;
+    pexDynamicType	colorTable;
     pexDynamicType	patternTable;
     pexDynamicType	wksTransform;
     pexDynamicType	highlightFilter;
@@ -362,7 +362,7 @@ typedef struct {
     pexDynamicType	bufferModify;
     pexDynamicType	lightTable;
     pexDynamicType	depthCueTable;
-    pexDynamicType	colourApproxTable;
+    pexDynamicType	colorApproxTable;
     CARD8		pad[3];
     } pexGetWorkstationDynamicsReply;
 
@@ -1093,10 +1093,10 @@ typedef struct {
     pexLookupTable	lineBundle B32;
     pexLookupTable	interiorBundle B32;
     pexLookupTable	edgeBundle B32;
-    pexLookupTable	colourTable B32;
+    pexLookupTable	colorTable B32;
     pexLookupTable	depthCueTable B32;
     pexLookupTable	lightTable B32;
-    pexLookupTable	colourApproxTable B32;
+    pexLookupTable	colorApproxTable B32;
     pexLookupTable	patternTable B32;
     pexLookupTable	textFontTable B32;
     pexNameSet		highlightIncl B32;
@@ -1390,9 +1390,9 @@ typedef struct {
     CARD32	numBytes B32;
     /* LISTof CARD8( numBytes ) -- don't swap */
     /* pad( numBytes ) */
-} pexOpenFontReq;
+} pexLoadFontReq;
 
-typedef pexResourceReq pexCloseFontReq;
+typedef pexResourceReq pexUnloadFontReq;
 
 typedef struct {
     CARD8		reqType;
@@ -1462,26 +1462,26 @@ typedef struct {
     CARD16		pad B16;
 } pexMarkerBundleIndex;
 
-typedef pexMarkerBundleIndex  pexMarkerColourIndex;
-typedef pexMarkerBundleIndex  pexTextColourIndex;
-typedef pexMarkerBundleIndex  pexLineColourIndex;
-typedef pexMarkerBundleIndex  pexSurfaceColourIndex;
-typedef pexMarkerBundleIndex  pexBfSurfaceColourIndex;
-typedef pexMarkerBundleIndex  pexSurfaceEdgeColourIndex;
+typedef pexMarkerBundleIndex  pexMarkerColorIndex;
+typedef pexMarkerBundleIndex  pexTextColorIndex;
+typedef pexMarkerBundleIndex  pexLineColorIndex;
+typedef pexMarkerBundleIndex  pexSurfaceColorIndex;
+typedef pexMarkerBundleIndex  pexBfSurfaceColorIndex;
+typedef pexMarkerBundleIndex  pexSurfaceEdgeColorIndex;
 
 typedef pexMarkerBundleIndex pexTextFontIndex;
 
 typedef struct {
     pexElementInfo	head;
-    pexColourSpecifier	colourSpec;
-    /* SINGLE COLOUR() */
-} pexMarkerColour;
+    pexColorSpecifier	colorSpec;
+    /* SINGLE COLOR() */
+} pexMarkerColor;
 
-typedef pexMarkerColour pexTextColour;
-typedef pexMarkerColour pexLineColour;
-typedef pexMarkerColour pexSurfaceColour;
-typedef pexMarkerColour pexBfSurfaceColour;
-typedef pexMarkerColour pexSurfaceEdgeColour;
+typedef pexMarkerColor pexTextColor;
+typedef pexMarkerColor pexLineColor;
+typedef pexMarkerColor pexSurfaceColor;
+typedef pexMarkerColor pexBfSurfaceColor;
+typedef pexMarkerColor pexSurfaceEdgeColor;
 
 typedef struct {
     pexElementInfo	head;
@@ -1497,7 +1497,7 @@ typedef pexMarkerBundleIndex pexBfInteriorStyleIndex;
 typedef pexMarkerBundleIndex pexEdgeBundleIndex;
 typedef pexMarkerBundleIndex pexViewIndex;
 typedef pexMarkerBundleIndex pexDepthCueIndex;
-typedef pexMarkerBundleIndex pexColourApproxIndex;
+typedef pexMarkerBundleIndex pexColorApproxIndex;
 
 typedef struct {
     pexElementInfo	head;
@@ -1715,7 +1715,7 @@ typedef struct {
     pexElementInfo	head;
     pexEnumTypeIndex	model B16;
     CARD16		pad B16;
-} pexRenderingColourModel;
+} pexRenderingColorModel;
 
 typedef struct {
     pexElementInfo	head;
@@ -1815,10 +1815,10 @@ typedef struct {
 
 typedef struct {
     pexElementInfo	head;
-    pexColourType	colourType B16;
+    pexColorType	colorType B16;
     pexBitmaskShort	vertexAttribs B16;
     CARD32		numLists B32;
-    /* LISTof CLISTof pexVertex( numLists, vertexAttribs, colourType ) */
+    /* LISTof CLISTof pexVertex( numLists, vertexAttribs, colorType ) */
 } pexPolylineSet;
 
 typedef struct {
@@ -1854,11 +1854,11 @@ typedef struct {
     CARD16		shape B16;
     pexSwitch		ignoreEdges;
     CARD8		unused;
-    pexColourType	colourType B16;
+    pexColorType	colorType B16;
     pexBitmaskShort	facetAttribs B16;
     pexBitmaskShort	vertexAttribs B16;
     CARD16		unused2 B16;
-    /* SINGLE Facet( facetAttribs, vertexAttribs, colourType ) */
+    /* SINGLE Facet( facetAttribs, vertexAttribs, colorType ) */
 } pexExtFillArea;
 
 typedef struct {
@@ -1885,44 +1885,44 @@ typedef struct {
     CARD16		shape B16;
     pexSwitch		ignoreEdges;
     CARD8		contourHint;
-    pexColourType	colourType B16;
+    pexColorType	colorType B16;
     pexBitmaskShort	facetAttribs B16;
     pexBitmaskShort	vertexAttribs B16;
     CARD16		unused2 B16;
     CARD32		numLists B32;
     /* pexOptData( facetAttribs ) */
-    /* LISTof CLISTof  pexVertex( numLists, vertexAttribs, colourType ) */
+    /* LISTof CLISTof  pexVertex( numLists, vertexAttribs, colorType ) */
 } pexExtFillAreaSet;
 
 typedef struct {
     pexElementInfo	head;
-    pexColourType	colourType B16;
+    pexColorType	colorType B16;
     pexBitmaskShort	facetAttribs B16;
     pexBitmaskShort	vertexAttribs B16;
     CARD16		unused B16;
     CARD32		numVertices B32;
     /* number of OptData is numVert - 2 */
-    /* LISTof pexOptData( facetAttribs, colourType ) */
-    /* LISTof pexVertex( numVertices, vertexAttribs, colourType ) */
+    /* LISTof pexOptData( facetAttribs, colorType ) */
+    /* LISTof pexVertex( numVertices, vertexAttribs, colorType ) */
 } pexTriangleStrip;
 
 typedef struct {
     pexElementInfo	head;
-    pexColourType	colourType B16;
+    pexColorType	colorType B16;
     CARD16		mPts B16;
     CARD16		nPts B16;
     pexBitmaskShort	facetAttribs B16;
     pexBitmaskShort	vertexAttribs B16;
     CARD16		shape B16;
     /* actually, there are (mPts-1)*(nPts-1) opt data entries */
-    /* LISTof pexOptData( facetAttribs, colourType ) */
-    /* LISTof pexVertex( mPts, nPts, vertexAttribs, colourType ) */
+    /* LISTof pexOptData( facetAttribs, colorType ) */
+    /* LISTof pexVertex( mPts, nPts, vertexAttribs, colorType ) */
 } pexQuadrilateralMesh;
 
 typedef struct {
     pexElementInfo	head;
     CARD16		shape B16;
-    pexColourType	colourType B16;
+    pexColorType	colorType B16;
     CARD16		FAS_Attributes B16;
     CARD16		vertexAttributes B16;
     CARD16		edgeAttributes B16;
@@ -1980,14 +1980,14 @@ typedef struct {
 
 typedef struct {
     pexElementInfo	head;
-    pexColourType	colourType B16;
+    pexColorType	colorType B16;
     CARD16		unused B16;
     pexCoord3D		point1;
     pexCoord3D		point2;
     pexCoord3D		point3;
     CARD32		dx B32;
     CARD32		dy B32;
-    /* LISTof pexColourSpecifier( dx, dy ) */
+    /* LISTof pexColorSpecifier( dx, dy ) */
 } pexExtCellArray;
 
 typedef struct {
