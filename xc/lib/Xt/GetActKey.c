@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: ClickTime.c,v 1.1 89/09/26 17:58:10 swick Exp $";
+static char Xrcsid[] = "$XConsortium: GetActKey.c,v 1.1 89/09/28 13:15:19 swick Exp $";
 #endif /* lint */
 /*LINTLIBRARY*/
 
@@ -40,7 +40,10 @@ KeySym XtGetActionKeysym(event, modifiers_return)
     if (event->xany.type != KeyPress && event->xany.type != KeyRelease)
 	return NoSymbol;
 
-    if (tm_context != NULL && event == tm_context->event) {
+    if (tm_context != NULL
+	&& event == tm_context->event
+	&& event->xany.serial == tm_context->serial ) {
+
 	if (modifiers_return != NULL)
 	    *modifiers_return = tm_context->modifiers;
 	return tm_context->keysym;
