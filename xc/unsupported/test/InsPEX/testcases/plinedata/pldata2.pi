@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pldata2.pi,v 5.1 91/02/16 10:03:36 rws Exp $ */
 /*****************************************************************
 Copyright (c) 1989, 1990, 1991,1990 by Sun Microsystems, Inc. and the X Consortium.
 
@@ -108,7 +108,7 @@ foreach @linewidth @widthname (0.0; "thin";
 	ppolyline_set3_data(PVERT_COORD_COLOUR, PMODEL_RGB, 2, set_lower_left);
 
 	# dotdash in lower right
-	pset_linetype(PLINE_DOT_DASH);
+	pset_linetype(PLINE_DASH_DOT);
 	ppolyline_set3_data(PVERT_COORD_COLOUR, PMODEL_RGB, 2, set_lower_right);
 
 	# compose the image name and description, compare images
