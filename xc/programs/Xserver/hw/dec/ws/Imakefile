@@ -1,0 +1,20 @@
+#include <Server.tmpl>
+
+SRCS = init.c ws_io.c ws_color.c cfbinit.c ext_device.c acc_none.c acc_2da.c \
+	acc_3d.c
+OBJS = init.o ws_io.o ws_color.o cfbinit.o ext_device.o acc_none.o acc_2da.o \
+	acc_3d.o
+INCLUDES = -I. -I../../mfb -I../../mi -I../../../include -I$(INCLUDESRC) \
+		-I$(EXTENSIONSRC)/include
+LINTLIBS = ../../../dix/llib-ldix.ln ../../../os/4.2bsd/llib-los.ln \
+	   ../../mfb/llib-lmfb.ln ../../mi/llib-lmi.ln
+
+all: $(OBJS)
+
+NormalLibraryObjectRule()
+NormalLintTarget($(SRCS))
+
+lintlib:
+
+DependTarget()
+InstallManPage(Xws,$(MANDIR))
