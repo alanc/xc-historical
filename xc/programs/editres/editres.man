@@ -1,9 +1,9 @@
-.\" $XConsortium: editres.man,v 1.8 94/04/11 14:28:52 gildea Exp $
+.\" $XConsortium: editres.man,v 1.9 94/04/11 16:03:24 matt Exp $
 .TH EDITRES 1 "Release 6" "X Version 11"
 .SH NAME
-editres - a dynamic resource editor for X Toolkit applications
+editres \- a dynamic resource editor for X Toolkit applications
 .SH SYNTAX
-\fBeditres\fP [ \fI-toolkitoption\fP ...]
+\fBeditres\fP [ \fI\-toolkitoption\fP .\|.\|. ]
 .SH OPTIONS
 .I Editres
 accepts all of the standard X Toolkit command line
@@ -11,8 +11,8 @@ options (see \fIX(1)\fP).  The order of the command line options is
 not important.
 .SH DESCRIPTION
 Editres is a tool that allows users and application developers to view
-the full widget hierarchy of any X Toolkit client that speaks the
-Editres protocol.  In addition editres will help the user construct
+the full widget hierarchy of any X Toolkit application that speaks the
+Editres protocol.  In addition, editres will help the user construct
 resource specifications, allow the user to apply the resource to
 the application and view the results dynamically.  Once the user is
 happy with a resource specification editres will append the resource
@@ -28,13 +28,13 @@ The panner allows a more intuitive way to scroll the application tree display.
 Displays information to the user about the action that editres expects 
 of her.
 .IP "Application Widget Tree" 25
-This area will be used to display the selected client's widget tree.
+This area will be used to display the selected application's widget tree.
 .LP
 To begin an editres session select the \fBGet Widget Tree\fP menu item from
 the command menu.  This will change the pointer cursor to cross hair.
 You should now select the application you wish look at by clicking on
 any of its windows.  If this application understands the editres
-protocol then editres will display the client's widget tree in its
+protocol then editres will display the application's widget tree in its
 tree window.  If
 the application does not understand the editres protocol editres will
 inform you of this fact in the message area after a few seconds delay.
@@ -43,15 +43,16 @@ Once you have a widget tree you may now select any of the other menu
 options. The effect of each of these is described below.  
 .SH COMMANDS
 .IP "Get Widget Tree" 8
-Allows the user to click on any client that speaks the editres
+Allows the user to click on any application that speaks the editres
 protocol and receive its widget tree.
 .IP "Refresh Current Widget Tree" 
 Editres only knows about the widgets that exist at the present time.
-Many applications create and destroy widgets "on-the-fly".  Selecting
+Many applications create and destroy widgets on the fly.  Selecting
 this menu item will cause editres to ask the application to resend its
 widget tree, thus updating its information to the new state of the application.
-.IP "Example"
-Xman only creates the widgets for its \fItopbox\fP when it
+.IP
+For example,
+xman only creates the widgets for its \fItopbox\fP when it
 starts up.  None of the widgets for the manual page window are created
 until the user actually clicks on the \fIManual Page\fP button.  If
 you retrieved 
@@ -60,19 +61,19 @@ wish to refresh the widget tree after the manual page has been
 displayed.  This will allow you to also edit the manual page's resources.
 .IP "Dump Widget Tree to a File"
 For documenting applications it is often useful to be able to
-dump the entire application widget tree to an ascii file.  This file
+dump the entire application widget tree to an ASCII file.  This file
 can then be included in the manual page.  When this menu item is selected
 a popup dialog is activated.  Type the name of the file in this
 dialog, and either select \fIokay\fP, or type a carriage-return.  Editres
-will now dump the widget tree to this file.  To cancel the file dialog
-just select the \fIcancel\fP button.
+will now dump the widget tree to this file.  To cancel the file dialog,
+select the \fIcancel\fP button.
 .IP "Show Resource Box"
-This command will popup a resource box for the current client.  This
+This command will popup a resource box for the current application.  This
 resource box (described in detail below) will allow the user to see
 exactly which resources can be set for the widget that is currently
 selected in the widget tree display.  Only one widget may be currently
-selected, if greater or fewer are selected editres will refuse to
-pop up the resource box, and put an error message in the \fBMessage Area\fP.
+selected; if greater or fewer are selected editres will refuse to
+pop up the resource box and put an error message in the \fBMessage Area\fP.
 .IP "Set Resource"
 This command will popup a simple dialog box for setting an arbitrary
 resource on all selected widgets.  You must type in the resource name,
@@ -84,15 +85,15 @@ Exits editres.
 The \fBTree\fP menu contains several commands that allow operations to
 be performed on the widget tree.
 .IP "Select Widget in Client"
-This menu item allows you to select any widget in the application, editres
-will then highlight the corrosponding element the widget tree display.
+This menu item allows you to select any widget in the application; editres
+will then highlight the corresponding element the widget tree display.
 Once
 this menu item is selected the pointer cursor will again turn to a
 crosshair, and you must click any pointer button in the widget you
 wish to have displayed.  Since some widgets are fully obscured by
 their children, it is not possible to get to every widget this way,
 but this mechanism does give very useful feedback between the elements
-in the widget tree and those in the actual client.
+in the widget tree and those in the actual application.
 .IP "Select All" 
 .br
 .ns 
@@ -195,7 +196,7 @@ matches zero or more levels.
 .IP ""
 The initial state of this area is the most restrictive, using the
 resource names and the dot separator.  By selecting the other buttons
-in this are you can ease the restrictions to allow more and more widgets
+in this area you can ease the restrictions to allow more and more widgets
 to match the specification.  The extreme case is to select all the 
 \fBAny Widget Chain\fP buttons, which will match every widget in the
 application.   As you select different buttons the tree display will update
@@ -225,13 +226,13 @@ specifying \\000.
 .sp
 \\\\ - This will compress to a single backslash.
 .IP "Command Area"
-This area contains several command buttons that I will describe in
+This area contains several command buttons, described in
 this section.
 .IP "Set Save File"
 This button allows the user to modify file that the resources
 will be saved to.  This button will bring up a dialog box that will
-ask you for a filename, once the filename has been entered, either hit
-carriage-return or click on the \fIokay\fP button.  To popdown the
+ask you for a filename; once the filename has been entered, either hit
+carriage-return or click on the \fIokay\fP button.  To pop down the
 dialog box without changing the save file, click the \fIcancel\fP button.
 .IP "Save"
 This button will append the \fBresource line\fP described above to the
@@ -243,14 +244,15 @@ that match the \fBresource line\fP described above.  The value specified
 is applied directly to all matching widgets.  This behavior is an attempt
 to give a dynamic feel to the resource editor.  Since this feature allows
 users to put an application in states it may not be willing to handle,
-a hook has been provided to allow specific clients block these SetValues
+a hook has been provided to allow specific applications to
+block these SetValues
 requests (see \fBBlocking Editres Requests\fP below).
 .IP ""
 Unfortunately due to design constraints imposed on the widgets by the X
 Toolkit and the Resource Manager, trying to coerce an inherently
 static system into dynamic behavior can cause strange results.  There
 is no guarantee that the results of an apply will be the same as what
-will happen when you save the value, and restart the application.
+will happen when you save the value and restart the application.
 This functionality is provided to try to give you a rough feel for what
 your changes will accomplish, and the results obtained should be considered
 suspect at best.  Having said that, this is one of the neatest
@@ -263,45 +265,45 @@ one button.
 This button will remove the resource box from the display.
 .SH BLOCKING EDITRES REQUESTS
 The editres protocol has been built into the Athena Widget set.  This allows
-all application that are linked against Xaw to be able to speak to the
-resource editor.  While this provides great flexability, and is a
+all applications that are linked against Xaw to be able to speak to the
+resource editor.  While this provides great flexibility, and is a
 useful tool, it can quite easily be abused.  It is therefore possible
-for any Xaw client to specify a value for the \fBeditresBlock\fP
+for any Xaw application to specify a value for the \fBeditresBlock\fP
 resource described below, to keep editres from divulging information
 about its internals, or to disable the \fBSetValues\fP part of the protocol.
 .TP 8
 .B editresBlock (\fPClass\fB EditresBlock)
-Specifies which type of blocking this client wishes to impose on the
+Specifies which type of blocking this application wishes to impose on the
 editres protocol.  
 .LP
 The accepted values are:
 .IP all 15
 Block all requests.
 .IP setValues 
-Block all setvalues request, this is the only editres request that
+Block all SetValues requests.  As this is the only editres request that
 actually modifies the application, this is in effect stating that the
-applicaion is read-only.
+application is read-only.
 .IP none
 Allow all editres requests.
 .LP
-Remember that these resources are set on any Xaw client, \fBnot
-editres\fP.  They allow individual clients to keep all or some
+Remember that these resources are set on any Xaw application, \fBnot
+editres\fP.  They allow individual applications to keep all or some
 of the requests editres makes from ever succeeding.  Of course,
-editres is also an Xaw client, so it may also be viewed and modified
+editres is also an Xaw application, so it may also be viewed and modified
 by editres (rather recursive, I know), these commands can be blocked
 by setting the \fBeditresBlock\fP resource on editres itself.
 .SH RESOURCES
 For \fIeditres\fP the available application resources are:
 .TP 8
 .B numFlashes (\fPClass\fB NumFlashes)
-Specifies the number of times the widgets in the client application
+Specifies the number of times the widgets in the application
 will be flashed when the \fBShow Active Widgets\fP command in invoked.
 .TP 8
 .B flashTime (\fPClass\fB FlashTime)
 Amount of time between the flashes described above.
 .TP 8
 .B flashColor (\fPClass\fB flashColor)
-Specifies the color used to flash client widgets.  A bright color
+Specifies the color used to flash application widgets.  A bright color
 should be used that will immediately draw your attention to the area being
 flashed, such as red or yellow.
 .TP 8
@@ -353,7 +355,7 @@ Editres  editres
 			Grip  grip
 		Porthole  porthole
 			Tree  tree
-				Toggle  <name of widget in client>
+				Toggle  <name of widget in application>
 					.
 					.
 					.
