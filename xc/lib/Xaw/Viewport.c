@@ -1,4 +1,4 @@
-/* $XConsortium: Viewport.c,v 1.66 91/07/23 13:52:11 converse Exp $ */
+/* $XConsortium: Viewport.c,v 1.67 91/07/23 16:21:15 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -787,10 +787,10 @@ static void ThumbProc(widget, closure, percent)
 
 static XtGeometryResult
 TestSmaller(w, request, reply_return)
-     Widget w; XtWidgetGeometry *request, *reply_return;
+     ViewportWidget w; XtWidgetGeometry *request, *reply_return;
 {
   if (request->width < w->core.width || request->height < w->core.height)
-    return XtMakeGeometryRequest(w, request, reply_return);
+    return XtMakeGeometryRequest((Widget)w, request, reply_return);
   else
     return XtGeometryYes;  
 }
