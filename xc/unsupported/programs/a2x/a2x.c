@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.62 92/04/17 08:57:35 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.63 92/04/17 10:03:18 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -120,8 +120,7 @@ typedef struct {
 
 typedef struct {
     char dir;
-    double xmult;
-    double ymult;
+    double mult;
     Screen *screen;
     int rootx, rooty;
     Mask input;
@@ -860,7 +859,7 @@ compute_best_right(univ, cx, cy)
     maxy = HeightOfScreen(jump.screen) - jump.rooty;
     if (jump.rooty > maxy)
 	maxy = jump.rooty;
-    i = sqrt(jump.best_dist / jump.ymult);
+    i = sqrt(jump.best_dist / jump.mult);
     if (i < maxy)
 	maxy = i;
     maxx = WidthOfScreen(jump.screen) - jump.rootx;
@@ -873,7 +872,7 @@ compute_best_right(univ, cx, cy)
     for (Y = cy; Y <= maxy; Y++) {
 	Y2 = Y * Y;
 	for (y = cy; y <= Y; y++) {
-	    x = sqrt(jump.ymult * (Y2 - y*y));
+	    x = sqrt(jump.mult * (Y2 - y*y));
 	    if (x < cx)
 		break;
 	    if (XRectInRegion(univ, jump.rootx, jump.rooty - y,
@@ -883,7 +882,7 @@ compute_best_right(univ, cx, cy)
 		if (!XPointInRegion(univ, jump.rootx + i, jump.rooty - y) &&
 		    !XPointInRegion(univ, jump.rootx + i, jump.rooty + y))
 		    continue;
-		return i * i + jump.ymult * y * y;
+		return i * i + jump.mult * y * y;
 	    }
 	}
     }
@@ -905,7 +904,7 @@ compute_best_left(univ, cx, cy)
     maxy = HeightOfScreen(jump.screen) - jump.rooty;
     if (jump.rooty > maxy)
 	maxy = jump.rooty;
-    i = sqrt(jump.best_dist / jump.ymult);
+    i = sqrt(jump.best_dist / jump.mult);
     if (i < maxy)
 	maxy = i;
     maxx = jump.rootx;
@@ -918,7 +917,7 @@ compute_best_left(univ, cx, cy)
     for (Y = cy; Y <= maxy; Y++) {
 	Y2 = Y * Y;
 	for (y = cy; y <= Y; y++) {
-	    x = sqrt(jump.ymult * (Y2 - y*y));
+	    x = sqrt(jump.mult * (Y2 - y*y));
 	    if (x < cx)
 		break;
 	    if (XRectInRegion(univ, jump.rootx - x, jump.rooty - y,
@@ -928,7 +927,7 @@ compute_best_left(univ, cx, cy)
 		if (!XPointInRegion(univ, jump.rootx - i, jump.rooty - y) &&
 		    !XPointInRegion(univ, jump.rootx - i, jump.rooty + y))
 		    continue;
-		return i * i + jump.ymult * y * y;
+		return i * i + jump.mult * y * y;
 	    }
 	}
     }
@@ -950,7 +949,7 @@ compute_best_up(univ, cx, cy)
     maxx = WidthOfScreen(jump.screen) - jump.rootx;
     if (jump.rootx > maxx)
 	maxx = jump.rootx;
-    i = sqrt(jump.best_dist / jump.xmult);
+    i = sqrt(jump.best_dist / jump.mult);
     if (i < maxx)
 	maxx = i;
     maxy = jump.rooty;
@@ -963,7 +962,7 @@ compute_best_up(univ, cx, cy)
     for (X = cx; X <= maxx; X++) {
 	X2 = X * X;
 	for (x = cx; x <= X; x++) {
-	    y = sqrt(jump.xmult * (X2 - x*x));
+	    y = sqrt(jump.mult * (X2 - x*x));
 	    if (y < cy)
 		break;
 	    if (XRectInRegion(univ, jump.rootx - x, jump.rooty - y,
@@ -973,7 +972,7 @@ compute_best_up(univ, cx, cy)
 		if (!XPointInRegion(univ, jump.rootx - x, jump.rooty - i) &&
 		    !XPointInRegion(univ, jump.rootx + x, jump.rooty - i))
 		    continue;
-		return jump.xmult * x * x + i * i;
+		return jump.mult * x * x + i * i;
 	    }
 	}
     }
@@ -995,7 +994,7 @@ compute_best_down(univ, cx, cy)
     maxx = WidthOfScreen(jump.screen) - jump.rootx;
     if (jump.rootx > maxx)
 	maxx = jump.rootx;
-    i = sqrt(jump.best_dist / jump.xmult);
+    i = sqrt(jump.best_dist / jump.mult);
     if (i < maxx)
 	maxx = i;
     maxy = HeightOfScreen(jump.screen) - jump.rooty;
@@ -1008,7 +1007,7 @@ compute_best_down(univ, cx, cy)
     for (X = cx; X <= maxx; X++) {
 	X2 = X * X;
 	for (x = cx; x <= X; x++) {
-	    y = sqrt(jump.xmult * (X2 - x*x));
+	    y = sqrt(jump.mult * (X2 - x*x));
 	    if (y < cy)
 		break;
 	    if (XRectInRegion(univ, jump.rootx - x, jump.rooty,
@@ -1018,7 +1017,7 @@ compute_best_down(univ, cx, cy)
 		if (!XPointInRegion(univ, jump.rootx - x, jump.rooty + i) &&
 		    !XPointInRegion(univ, jump.rootx + x, jump.rooty + i))
 		    continue;
-		return jump.xmult * x * x + i * i;
+		return jump.mult * x * x + i * i;
 	    }
 	}
     }
@@ -1062,7 +1061,7 @@ compute_distance(univ)
 	else
 	    y = jump.rooty;
 	if (((x - jump.rootx) * (x - jump.rootx) +
-	     jump.ymult * (y - jump.rooty) * (y - jump.rooty)) >=
+	     jump.mult * (y - jump.rooty) * (y - jump.rooty)) >=
 	    jump.best_dist)
 	    return -1;
 	if (jump.dir == 'R')
@@ -1082,7 +1081,7 @@ compute_distance(univ)
 	    y = box.y1;
 	else
 	    y = jump.rooty;
-	if ((jump.xmult * (x - jump.rootx) * (x - jump.rootx) +
+	if ((jump.mult * (x - jump.rootx) * (x - jump.rootx) +
 	     (y - jump.rooty) * (y - jump.rooty)) >= jump.best_dist)
 	    return -1;
 	if (jump.dir == 'U')
@@ -1304,24 +1303,6 @@ do_jump(buf)
 	default:
 	    return;
 	}
-    }
-    switch (jump.dir) {
-    case 'U':
-    case 'D':
-	jump.xmult = mult;
-	jump.ymult = 1.0;
-	break;
-    case 'R':
-    case 'L':
-	jump.xmult = 1.0;
-	jump.ymult = mult;
-	break;
-    case 'C':
-	jump.xmult = 1.0;
-	jump.ymult = 1.0;
-	break;
-    default:
-	return;
     }
     root = DefaultRootWindow(dpy);
     while (1) {
@@ -2023,25 +2004,6 @@ main(argc, argv)
 	    usage();
 	}
     }
-    if (!dname && !*(XDisplayName(dname)))
-	dname = ":0";
-    dpy = XOpenDisplay(dname);
-    if (!dpy) {
-	fprintf(stderr, "%s: unable to open display '%s'\n",
-		argv[0], XDisplayName(dname));
-	exit(1);
-    }
-    if (!XTestQueryExtension(dpy, &eventb, &errorb, &vmajor, &vminor)) {
-	fprintf(stderr, "%s: display '%s' does not support XTEST extension\n",
-		argv[0], DisplayString(dpy));
-	exit(1);
-    }	
-    if (!undofile) {
-	strcpy(fbuf, getenv("HOME"));
-	strcat(fbuf, "/.a2x");
-	undofile = fbuf;
-    }
-    get_undofile();
     signal(SIGPIPE, SIG_IGN);
     if (tcgetattr(0, &term) >= 0) {
 	istty = True;
@@ -2064,6 +2026,25 @@ main(argc, argv)
 	oldioerror = XSetIOErrorHandler(ioerror);
 	olderror = XSetErrorHandler(error);
     }
+    if (!dname && !*(XDisplayName(dname)))
+	dname = ":0";
+    dpy = XOpenDisplay(dname);
+    if (!dpy) {
+	fprintf(stderr, "%s: unable to open display '%s'\n",
+		argv[0], XDisplayName(dname));
+	quit(1);
+    }
+    if (!XTestQueryExtension(dpy, &eventb, &errorb, &vmajor, &vminor)) {
+	fprintf(stderr, "%s: display '%s' does not support XTEST extension\n",
+		argv[0], DisplayString(dpy));
+	quit(1);
+    }	
+    if (!undofile) {
+	strcpy(fbuf, getenv("HOME"));
+	strcat(fbuf, "/.a2x");
+	undofile = fbuf;
+    }
+    get_undofile();
     init_display();
     while (1) {
 	if (XPending(dpy)) {
