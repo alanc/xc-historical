@@ -18,6 +18,7 @@
 #define TtyDef -DUSE_TTY_GROUP
 #else
 #define TtyDef /**/
+#endif
 
 /* add -DWTMP and -DLASTLOG if you want them */
         DEFINES = -DMODEMENU -DUTMP -DBcopy=bcopy TtyDef
