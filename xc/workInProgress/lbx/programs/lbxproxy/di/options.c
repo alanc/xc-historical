@@ -1,4 +1,4 @@
-/* $XConsortium: options.c,v 1.2 95/04/04 21:41:07 dpw Exp $ */
+/* $XConsortium: options.c,v 1.3 95/05/17 18:26:41 dpw Exp mor $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -191,7 +191,7 @@ static int
 LbxProxyDeltaReq(buf)
     unsigned char *buf;
 {
-    bcopy((char *)&proxyDeltaOpt, buf, sizeof(struct deltaOpt));
+    memcpy(buf, (char *)&proxyDeltaOpt, sizeof(struct deltaOpt));
     return LBX_OPT_DELTA_REQLEN;
 }
 
@@ -199,7 +199,7 @@ static int
 LbxServerDeltaReq(buf)
     unsigned char *buf;
 {
-    bcopy((char *)&serverDeltaOpt, buf, sizeof(struct deltaOpt));
+    memcpy(buf, (char *)&serverDeltaOpt, sizeof(struct deltaOpt));
     return LBX_OPT_DELTA_REQLEN;
 }
 
@@ -285,7 +285,7 @@ LbxStreamCompReq(buf)
 	int typelen = LbxStreamComp[i].typelen;
 
 	*buf++ = typelen;
-	bcopy(LbxStreamComp[i].type, buf, typelen);
+	memcpy(buf, LbxStreamComp[i].type, typelen);
 	buf += typelen;
 	reqlen += 1 + typelen;
 
@@ -319,7 +319,7 @@ OptLzwReq(buf)
     unsigned char *buf;
 {
     *buf++ = sizeof(lzwCodeSizes);
-    bcopy(lzwCodeSizes, buf, sizeof(lzwCodeSizes));
+    memcpy(buf, lzwCodeSizes, sizeof(lzwCodeSizes));
     return (1 + sizeof(lzwCodeSizes));
 }
 

@@ -1,4 +1,4 @@
-/* $XConsortium: extensions.c,v 1.2 95/04/04 21:15:16 dpw Exp $ */
+/* $XConsortium: extensions.c,v 1.3 95/05/17 18:26:41 dpw Exp mor $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -148,8 +148,8 @@ AddExtension(client, name, reply, rep_mask, ev_mask)
 	strcpy(eip->name, name);
 
 	if (reply->numReqs) {
-	    bcopy((char *) rep_mask, (char *) eip->rep_mask, req_mask_len);
-	    bcopy((char *) ev_mask, (char *) eip->ev_mask, req_mask_len);
+	    memcpy((char *) eip->rep_mask, (char *) rep_mask, req_mask_len);
+	    memcpy((char *) eip->ev_mask, (char *) ev_mask, req_mask_len);
 	}
 	eip->num_reqs = reply->numReqs;
 
@@ -197,7 +197,7 @@ remove_user(eip, client)
 		eip->num_users--;
 		if ((eip->num_users - i) > 0) {
 		    /* collapse list if not at end */
-		    bcopy((char *) eip->users[i + 1], (char *) eip->users[i],
+		    memcpy((char *) eip->users[i], (char *) eip->users[i + 1],
 			  sizeof(ClientPtr) * (eip->num_users - i));
 		}
 		/* shrink it */
@@ -423,7 +423,7 @@ query_extension_req(client, data)
     ename = (char *) xalloc(nlen + 1);
     if (!ename)
 	return BadAlloc;
-    bcopy((char *) &xreq[1], ename, nlen);
+    memcpy(ename, (char *) &xreq[1], nlen);
     ename[nlen] = '\0';
 
     req.reqType = client->server->lbxReq;

@@ -1,4 +1,4 @@
-/* $XConsortium: props.c,v 1.6 94/12/01 20:42:57 mor Exp $ */
+/* $XConsortium: props.c,v 1.8 95/05/17 18:26:41 dpw Exp mor $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -74,7 +74,7 @@ propTagStoreData(tid, dlen, swapit, ptdp)
 	return FALSE;
     *new = *ptdp;
     new->data = (pointer) (new + 1);
-    bcopy((char *) ptdp->data, (char *) new->data, dlen);
+    memcpy((char *) new->data, (char *) ptdp->data, dlen);
     /* save data in proxy format */
     if (swapit) {
 	switch (new->format) {
@@ -166,7 +166,7 @@ change_property_req(client, data)
     datacopy = (pointer) xalloc(size);
     if (!datacopy)
 	return REQ_NOCHANGE;
-    bcopy((char *) &req[1], (char *) datacopy, size);
+    memcpy((char *) datacopy, (char *) &req[1], size);
 
     nr = NewReply(client);
     if (!nr) {
@@ -412,7 +412,7 @@ GetLbxGetPropertyReply(client, data)
 		 * and we don't want to alter the tag database.
 		 */
 		pdata = (pointer) ALLOCATE_LOCAL(ptdp->length);
-		bcopy((char *) ptdp->data, (char *) pdata, ptdp->length);
+		memcpy((char *) pdata, (char *) ptdp->data, ptdp->length);
 	    }
 
 #ifdef LBX_STATS
@@ -435,7 +435,7 @@ GetLbxGetPropertyReply(client, data)
 	    ptd.data = (pointer) &rep[1];
 	if (client->swapped) {
 	    pdata = (pointer) ALLOCATE_LOCAL(ptdp->length);
-	    bcopy((char *) ptd.data, (char *) pdata, ptdp->length);
+	    memcpy((char *) pdata, (char *) ptd.data, ptdp->length);
 	    if (pdata) {
 		switch (rep->format) {
 		case 32:

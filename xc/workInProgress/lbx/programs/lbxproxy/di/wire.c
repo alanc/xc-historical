@@ -1,4 +1,4 @@
-/* $XConsortium: wire.c,v 1.11 95/04/04 21:11:20 dpw Exp $ */
+/* $XConsortium: wire.c,v 1.12 95/05/17 18:26:41 dpw Exp mor $ */
 /*
  * $NCDOr: wire.c,v 1.1 1994/10/18 17:43:32 keithp Exp keithp $
  * $NCDId: @(#)wire.c,v 1.44 1994/11/18 20:39:50 lemke Exp $
@@ -447,7 +447,7 @@ SendTagData(client, tag, len, data)
     req_len = 3 + ((len + 3) >> 2);
     if (DELTA_CACHEABLE(&server->outdeltas, req_len << 2)) {
 	reqp = (xLbxTagDataReq *) xalloc(req_len << 2);
-	bcopy(data, (pointer) (reqp + 1), len);
+	memcpy((pointer) (reqp + 1), data, len);
     } else {
 	reqp = &req;
     }
@@ -623,7 +623,7 @@ ServerProcStandardEvent(sc)
 			     delta->diffs, delta->cindex, &rep);
 
 	/* Make local copy in case someone writes to the request buffer */
-	bcopy((char *) rep, tempdeltabuf, len);
+	memcpy(tempdeltabuf, (char *) rep, len);
 	rep = (xReply *) tempdeltabuf;
 
 	cacheable = FALSE;

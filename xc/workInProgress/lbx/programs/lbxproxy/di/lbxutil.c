@@ -1,4 +1,4 @@
-/* $XConsortium: lbxutil.c,v 1.6 94/12/01 20:52:12 mor Exp $ */
+/* $XConsortium: lbxutil.c,v 1.9 95/05/17 18:26:41 dpw Exp mor $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -199,7 +199,7 @@ SaveReplyData(client, rep, len, data)
 	    xfree(new);
 	    return FALSE;
 	} else {
-	    bcopy((char *) data, (char *) new->data, len);
+	    memcpy((char *) new->data, (char *) data, len);
 	}
     }
     new->reply = *rep;
