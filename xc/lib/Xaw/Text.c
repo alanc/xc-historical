@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.62 88/09/26 12:51:58 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.63 88/09/27 16:29:42 swick Exp $";
 #endif
 
 
@@ -28,15 +28,16 @@ SOFTWARE.
 ******************************************************************/
 
 #include <X11/IntrinsicP.h>
-#include <X11/Label.h>
-#include <X11/Command.h>
-#include <X11/Dialog.h>
-#include <X11/Scroll.h>
-#include <X11/Shell.h>
 #include <X11/StringDefs.h>
-#include <X11/Xos.h>
-#include <X11/TextP.h>
-#include <X11/Cardinals.h>
+#include <X11/Shell.h>
+#include <X11/Xatom.h>
+#include <X11/Xmu.h>
+#include "Cardinals.h"
+#include "Label.h"
+#include "Command.h"
+#include "Dialog.h"
+#include "Scroll.h"
+#include "TextP.h"
 
 Atom FMT8BIT = NULL;
 
@@ -657,11 +658,129 @@ static void ThumbProc (w, closure, callData)
 }
 
 
+static Boolean ConvertSelection(w, selection, target,
+				type, value, length, format)
+  Widget w;
+  Atom *selection, *target, *type;
+  caddr_t *value;
+  unsigned long *length;
+  int *format;
+{
+    Display* d = XtDisplay(w);
+    TextWidget ctx = (TextWidget)w;
+
+    if (*selection != XA_PRIMARY) return False;
+
+    if (*target == XA_TARGETS(d)) {
+	Atom* targetP;
+	Atom* std_targets;
+	unsigned long std_length;
+	if (ctx->text.source->ConvertSelection == NULL ||
+	    !(*ctx->text.source->
+	      ConvertSelection) (d, ctx->text.source, selection, target,
+				 type, value, length, format)) {
+	    *value = NULL;
+	    *length = 0;
+	}
+	XmuConvertStandardSelection(w, ctx->text.time, selection, target, type,
+				   (caddr_t)&std_targets, &std_length, format);
+	*value = XtRealloc(*value, sizeof(Atom)*(std_length + 6 + *length));
+	targetP = *(Atom**)value + *length;
+	*length += std_length + 6;
+	*targetP++ = XA_STRING;
+	*targetP++ = XA_TEXT(d);
+	*targetP++ = XA_LENGTH(d);
+	*targetP++ = XA_LIST_LENGTH(d);
+	*targetP++ = XA_CHARACTER_POSITION(d);
+	*targetP++ = XA_DELETE(d);
+	while (std_length)
+	    *targetP++ = std_targets[--std_length];
+	XtFree((char*)std_targets);
+	*type = XA_ATOM;
+	*format = 32;
+	return True;
+    }
+
+    if (ctx->text.source->ConvertSelection != NULL &&
+	(*ctx->text.source->
+	 ConvertSelection) (d, ctx->text.source, selection,
+			    target, type, value, length, format))
+	return True;
+
+    if (*target == XA_STRING || *target == XA_TEXT(d)) {
+	*type = XA_STRING;
+	*value = _XtTextGetText(ctx, ctx->text.s.left, ctx->text.s.right);
+	*length = strlen(*value);
+	*format = 8;
+	return True;
+    }
+    if (*target == XA_LIST_LENGTH(d)) {
+	*value = XtMalloc(4);
+	if (sizeof(long) == 4)
+	    *(long*)*value = 1;
+	else {
+	    long temp = 1;
+	    bcopy( ((char*)&temp)+sizeof(long)-4, (char*)*value, 4);
+	}
+	*type = XA_INTEGER;
+	*length = 1;
+	*format = 32;
+	return True;
+    }
+    if (*target == XA_LENGTH(d)) {
+	*value = XtMalloc(4);
+	if (sizeof(long) == 4)
+	    *(long*)*value = ctx->text.s.right - ctx->text.s.left;
+	else {
+	    long temp = ctx->text.s.right - ctx->text.s.left;
+	    bcopy( ((char*)&temp)+sizeof(long)-4, (char*)*value, 4);
+	}
+	*type = XA_INTEGER;
+	*length = 1;
+	*format = 32;
+	return True;
+    }
+    if (*target == XA_CHARACTER_POSITION(d)) {
+	*value = XtMalloc(8);
+	(*(long**)value)[0] = ctx->text.s.left;
+	(*(long**)value)[1] = ctx->text.s.right;
+	*type = XA_SPAN(d);
+	*length = 2;
+	*format = 32;
+	return True;
+    }
+    if (*target == XA_DELETE(d)) {
+	void KillCurrentSelection();
+	KillCurrentSelection(ctx, (XEvent*)NULL);
+	*value = NULL;
+	*type = XA_NULL(d);
+	*length = 0;
+	*format = 32;
+	return True;
+    }
+    if (XmuConvertStandardSelection(w, ctx->text.time, selection, target, type,
+				    value, length, format))
+	return True;
+
+    /* else */
+    return False;
+}
+
+
+static void LoseSelection(w, selection)
+  Widget w;
+  Atom *selection;
+{
+    XtTextUnsetSelection(w);
+}
+
+
 static int _XtTextSetNewSelection(ctx, left, right)
   TextWidget ctx;
   XtTextPosition left, right;
 {
     XtTextPosition pos;
+    void (*nullProc)() = NULL;
 
     if (left < ctx->text.s.left) {
 	pos = min(right, ctx->text.s.left);
@@ -682,6 +801,15 @@ static int _XtTextSetNewSelection(ctx, left, right)
 
     ctx->text.s.left = left;
     ctx->text.s.right = right;
+    if (ctx->text.source->SetSelection != nullProc) {
+	(*ctx->text.source->SetSelection) (ctx->text.source, XA_PRIMARY,
+					   left, right);
+    }
+    if (right > left)
+	XtOwnSelection((Widget)ctx, XA_PRIMARY, ctx->text.time,
+		       ConvertSelection, LoseSelection, NULL);
+    else
+	XtDisownSelection((Widget)ctx, XA_PRIMARY, ctx->text.time);
 }
 
 
@@ -1702,11 +1830,40 @@ static StartAction(ctx, event)
    XEvent *event;
 {
     _XtTextPrepareToUpdate(ctx);
-    if (event) {
-    /* this code is wrong if actions bound to non-button events! */
-	ctx->text.time = event->xbutton.time;
-	ctx->text.ev_x = event->xbutton.x;
-	ctx->text.ev_y = event->xbutton.y;
+    if (event != NULL) {
+	switch (event->type) {
+	  case ButtonPress:
+	  case ButtonRelease:
+				    ctx->text.time = event->xbutton.time;
+				    ctx->text.ev_x = event->xbutton.x;
+				    ctx->text.ev_y = event->xbutton.y;
+				    break;
+	  case KeyPress:
+	  case KeyRelease:
+				    ctx->text.time = event->xkey.time;
+				    ctx->text.ev_x = event->xkey.x;
+				    ctx->text.ev_y = event->xkey.y;
+				    break;
+	  case MotionNotify:
+				    ctx->text.time = event->xmotion.time;
+				    ctx->text.ev_x = event->xmotion.x;
+				    ctx->text.ev_y = event->xmotion.y;
+				    break;
+	  case EnterNotify:
+	  case LeaveNotify:
+				    ctx->text.time = event->xcrossing.time;
+				    ctx->text.ev_x = event->xcrossing.x;
+				    ctx->text.ev_y = event->xcrossing.y;
+				    break;
+	  default:
+				    ctx->text.ev_x = 0;
+				    ctx->text.ev_y = 0;
+	}
+
+    }
+    else {
+	ctx->text.ev_x = 0;
+	ctx->text.ev_y = 0;
     }
 }
 
