@@ -12,13 +12,13 @@
 #  make no representations about the suitability of this software for any
 #  purpose.  It is provided "as is" without express or implied warranty.
 # 
-# $XConsortium$
+# $XConsortium: Makefile,v 1.2 92/06/11 15:26:22 rws Exp $
 
 #
 # Makefile for building the TET and the X test suite libraries/utilities.
 #
 # For full details on what needs to be built and how to build, refer
-# to the User Guide in file user_guide.mm in the directory xtest/doc.
+# to the User Guide in file userguide.mm in the directory xtest/doc.
 # This Makefile just performs some of the required steps more easily.
 #
 # First, work through the instructions in the section entitled 
