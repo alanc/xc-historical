@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.158 90/07/03 14:18:12 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.159 90/07/06 11:09:21 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -1718,7 +1718,7 @@ Cardinal count;
 			    selection, XA_STRING, 8, PropModeAppend, 
 			    tptr, amount);
 	}
-	XtFree (ptr);
+	XtFree ((char *)ptr);
       }
       else			/* This is a real selection. */
 	XtOwnSelection(w, selection, ctx->text.time,
