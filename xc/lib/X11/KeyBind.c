@@ -1,4 +1,4 @@
-/* $XConsortium: KeyBind.c,v 11.78 94/04/02 17:38:45 erik Exp $ */
+/* $XConsortium: KeyBind.c,v 11.79 94/04/17 20:20:03 erik Exp $ */
 /* 
 
 Copyright (c) 1985, 1987,  X Consortium
@@ -37,6 +37,7 @@ in this Software without prior written authorization from the X Consortium.
 #define XK_LATIN3
 #define XK_LATIN4
 #define XK_CYRILLIC
+#define XK_GREEK
 #define XK_XKB_KEYS
 #include <X11/keysymdef.h>
 #include <stdio.h>
@@ -177,12 +178,10 @@ ResetModMap(dpy)
 	    } else if (sym == XK_Shift_Lock) {
 		dpy->lock_meaning = XK_Shift_Lock;
 	    }
-#ifdef	XK_ISO_Lock
 	    else if (sym == XK_ISO_Lock) {
 		dpy->lock_meaning = XK_Caps_Lock;
 		break;
 	    }
-#endif
 	}
     }
     /* Now find any Mod<n> modifier acting as the Group or Numlock modifier */
@@ -289,7 +288,7 @@ XConvertCase(sym, lower, upper)
     *lower = sym;
     *upper = sym;
     switch(sym >> 8) {
-    case 0:
+    case 0: /* Latin 1 */
 	if ((sym >= XK_A) && (sym <= XK_Z))
 	    *lower += (XK_a - XK_A);
 	else if ((sym >= XK_a) && (sym <= XK_z))
@@ -303,8 +302,7 @@ XConvertCase(sym, lower, upper)
 	else if ((sym >= XK_oslash) && (sym <= XK_thorn))
 	    *upper -= (XK_oslash - XK_Ooblique);
 	break;
-#ifdef XK_LATIN2
-    case 1:
+    case 1: /* Latin 2 */
 	/* Assume the KeySym is a legal value (ignore discontinuities) */
 	if (sym == XK_Aogonek)
 	    *lower = XK_aogonek;
@@ -327,9 +325,7 @@ XConvertCase(sym, lower, upper)
 	else if (sym >= XK_racute && sym <= XK_tcedilla)
 	    *upper -= (XK_racute - XK_Racute);
 	break;
-#endif
-#ifdef XK_LATIN3
-    case 2:
+    case 2: /* Latin 3 */
 	/* Assume the KeySym is a legal value (ignore discontinuities) */
 	if (sym >= XK_Hstroke && sym <= XK_Hcircumflex)
 	    *lower += (XK_hstroke - XK_Hstroke);
@@ -344,9 +340,7 @@ XConvertCase(sym, lower, upper)
 	else if (sym >= XK_cabovedot && sym <= XK_scircumflex)
 	    *upper -= (XK_cabovedot - XK_Cabovedot);
 	break;
-#endif
-#ifdef XK_LATIN4
-    case 3:
+    case 3: /* Latin 4 */
 	/* Assume the KeySym is a legal value (ignore discontinuities) */
 	if (sym >= XK_Rcedilla && sym <= XK_Tslash)
 	    *lower += (XK_rcedilla - XK_Rcedilla);
@@ -361,9 +355,7 @@ XConvertCase(sym, lower, upper)
 	else if (sym >= XK_amacron && sym <= XK_umacron)
 	    *upper -= (XK_amacron - XK_Amacron);
 	break;
-#endif
-#ifdef XK_CYRILLIC
-    case 6:
+    case 6: /* Cyrillic */
 	/* Assume the KeySym is a legal value (ignore discontinuities) */
 	if (sym >= XK_Serbian_DJE && sym <= XK_Serbian_DZE)
 	    *lower -= (XK_Serbian_DJE - XK_Serbian_dje);
@@ -374,7 +366,20 @@ XConvertCase(sym, lower, upper)
 	else if (sym >= XK_Cyrillic_yu && sym <= XK_Cyrillic_hardsign)
 	    *upper += (XK_Cyrillic_YU - XK_Cyrillic_yu);
         break;
-#endif
+    case 7: /* Greek */
+	/* Assume the KeySym is a legal value (ignore discontinuities) */
+	if (sym >= XK_Greek_ALPHAaccent && sym <= XK_Greek_OMEGAaccent)
+	    *lower += (XK_Greek_alphaaccent - XK_Greek_ALPHAaccent);
+	else if (sym >= XK_Greek_alphaaccent && sym <= XK_Greek_omegaaccent &&
+		 sym != XK_Greek_iotaaccentdieresis &&
+		 sym != XK_Greek_upsilonaccentdieresis)
+	    *upper -= (XK_Greek_alphaaccent - XK_Greek_ALPHAaccent);
+	else if (sym >= XK_Greek_ALPHA && sym <= XK_Greek_OMEGA)
+	    *lower += (XK_Greek_alpha - XK_Greek_ALPHA);
+	else if (sym >= XK_Greek_alpha && sym <= XK_Greek_omega &&
+		 sym != XK_Greek_finalsmallsigma)
+	    *upper -= (XK_Greek_alpha - XK_Greek_ALPHA);
+        break;
     }
 }
 
