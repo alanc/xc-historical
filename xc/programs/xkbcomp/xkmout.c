@@ -1,4 +1,4 @@
-/* $XConsortium: xkmout.c,v 1.2 94/04/02 17:33:32 erik Exp $ */
+/* $XConsortium: xkmout.c,v 1.4 93/09/28 20:16:45 rws Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -257,6 +257,7 @@ XkbDescPtr	xkb;
     for (i=0,type=xkb->map->types;i<xkb->map->num_types;i++,type++) {
 	size+= SIZEOF(xkmKeyTypeDesc);
 	size+= SIZEOF(xkmKTMapEntryDesc)*type->map_count;
+	size+= xkmSizeCountedString(stGetString(type->name));
 	if (type->preserve)
 	    size+= SIZEOF(xkmKTPreserveDesc)*type->map_count;
 	if (type->lvl_names) {
@@ -304,13 +305,14 @@ StringToken *		names;
 	    wire_entry.virtualMods= entry->vmods;
 	    fwrite(&wire_entry,SIZEOF(xkmKTMapEntryDesc),1,file);
 	}
+	xkmPutCountedString(file,stGetString((StringToken)type->name));
 	if (type->preserve) {
 	    xkmKTPreserveDesc	p_entry;
 	    XkbKTPreservePtr	pre;
 	    for (n=0,pre=type->preserve;n<type->map_count;n++,pre++) {
 		p_entry.realMods= pre->real_mods;
 		p_entry.virtualMods= pre->vmods;
-		fwrite(&wire_entry,SIZEOF(xkmKTPreserveDesc),1,file);
+		fwrite(&p_entry,SIZEOF(xkmKTPreserveDesc),1,file);
 	    }
 	}
 	if (type->lvl_names!=NULL) {
@@ -640,6 +642,7 @@ Bool			(*writer)();
 int			(*getTOC)();
 int			size_toc,i;
 unsigned		hdr;
+xkmFileInfo		fileInfo;
 xkmSectionInfo		toc[MAX_TOC];
 
     switch (type) {
@@ -678,11 +681,13 @@ xkmSectionInfo		toc[MAX_TOC];
     for (i=0;i<size_toc;i++) {
 	toc[i].offset+= (8+(size_toc*SIZEOF(xkmSectionInfo)));;
     }
-    hdr= (('x'<<24)|('k'<<16)|('m'<<8)|'0');
+    hdr= (('x'<<24)|('k'<<16)|('m'<<8)|XkmFileVersion);
     xkmPutCARD32(out,hdr);
-    xkmPutCARD8(out,type);
-    xkmPutCARD8(out,size_toc);
-    xkmPutCARD16(out,toc[size_toc-1].offset+toc[size_toc-1].size);
+    fileInfo.type= type;
+    fileInfo.min_kc= xkb->min_key_code;
+    fileInfo.max_kc= xkb->max_key_code;
+    fileInfo.num_toc= size_toc;
+    fwrite(&fileInfo,SIZEOF(xkmFileInfo),1,out);
     fwrite(toc,SIZEOF(xkmSectionInfo),size_toc,out);
     ok= (*writer)(out,result,size_toc,toc,&info);
     fclose(out);
