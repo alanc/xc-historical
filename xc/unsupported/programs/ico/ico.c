@@ -1,4 +1,4 @@
-/* $XConsortium: ico.c,v 1.13 89/10/04 17:22:43 jim Exp $ */
+/* $XConsortium: ico.c,v 1.14 89/10/04 17:27:26 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -54,6 +54,8 @@ typedef double Transform3D[4][4];
 #define MIN_ICO_HEIGHT 5
 #define DEFAULT_ICO_WIDTH 150
 #define DEFAULT_ICO_HEIGHT 150
+#define DEFAULT_DELTAX 13
+#define DEFAULT_DELTAY 9
 
 #include "polyinfo.h"	/* define format of one polyhedron */
 
@@ -96,12 +98,14 @@ Display *dpy;
 Window win, draw_window;
 int winX, winY, winW, winH;
 int icoW = 0, icoH = 0;
+int icoDeltaX = DEFAULT_DELTAX, icoDeltaY = DEFAULT_DELTAY;
 Colormap cmap;
 GC gc;
 int multibuf = 0;
 #ifdef MULTIBUFFER
-int mbuf_event_base, mbuf_error_base;
+int mbevbase, mberrbase;
 Multibuffer multibuffers[2];
+Window icowin;
 #endif /* MULTIBUFFER */
 
 char *Primaries[] = {"red", "green", "blue", "yellow", "cyan", "magenta"};
@@ -122,7 +126,8 @@ static char *help_message[] = {
 "where options include:",
 "    -display host:dpy            X server to use",
 "    -geometry geom               geometry of window to use",
-"    -size geom                   size of object to rotate",
+"    -size WxH                    size of object to rotate",
+"    -delta +X+Y                  amount by which to move object",
 "    -r                           draw in the root window",
 "    -d number                    dashed line pattern for wire frames",
 "    -bg color                    background color",
@@ -131,6 +136,7 @@ static char *help_message[] = {
 "    -dbl                         use double buffering (extension if present)",
 "    -softdbl                     use software double buffering",
 "    -noedges                     don't draw wire frame edges",
+"    -move                        use a moving subwindow for double buffering",
 "    -faces                       draw faces",
 "    -lw number                   line width to use",
 "    -i                           invert",
@@ -152,6 +158,7 @@ char **argv;
 	char *display = NULL;
 	char *geom = NULL;
 	int useRoot = 0;
+	int moveico = 0;
 	int fg, bg;
 	int invert = 0;
 	int dash = 0;
@@ -159,7 +166,6 @@ char **argv;
 	XWindowAttributes xwa;
 	Polyinfo *poly;		/* the poly to draw */
 	int icoX, icoY;
-	int icoDeltaX, icoDeltaY;
 	XEvent xev;
 	Bool blocking = False;
 	unsigned long vmask;
@@ -168,6 +174,8 @@ char **argv;
 	char *background_colorname = NULL;
 	unsigned long backpixel;
 	char *ico_geom = NULL;
+	char *delta_geom = NULL;
+	int icodeltax2, icodeltay2;
 
 	ProgramName = argv[0];
 
@@ -215,12 +223,16 @@ char **argv;
 			background_colorname = *++argv;
 		else if (!strcmp(*argv, "-noedges"))
 			doedges = 0;
+		else if (!strcmp(*argv, "-move"))
+			moveico = 1;
 		else if (!strcmp(*argv, "-faces"))
 			dofaces = 1;
 		else if (!strcmp(*argv, "-i"))
 			invert = 1;
 		else if (!strcmp(*argv, "-size"))
 			ico_geom = *++argv;
+		else if (!strcmp(*argv, "-delta"))
+			delta_geom = *++argv;
 		else if (!strcmp (*argv, "-sleep"))
 			sleepcount = atoi(*++argv);
 		else if (!strcmp (*argv, "-obj"))
@@ -318,23 +330,51 @@ char **argv;
 		winH = xwa.height;
 		}
 
+	if (ico_geom) 
+	  XParseGeometry (ico_geom, &icoX, &icoY, &icoW, &icoH);
+	if (icoW <= 0) icoW = DEFAULT_ICO_WIDTH;
+	if (icoH <= 0) icoH = DEFAULT_ICO_HEIGHT;
+	if (icoW < MIN_ICO_WIDTH) icoW = MIN_ICO_WIDTH;
+	if (icoH < MIN_ICO_HEIGHT) icoH = MIN_ICO_HEIGHT;
+
+	if (delta_geom) {
+	    int junk;
+
+	    XParseGeometry (delta_geom, &icoDeltaX, &icoDeltaY, &junk, &junk);
+	    if (icoDeltaX == 0 && icoDeltaY == 0) {
+		icoDeltaX = DEFAULT_DELTAX;
+		icoDeltaY = DEFAULT_DELTAY;
+	    }
+	}
+
 	win = None;
 
 #ifdef MULTIBUFFER
 	if (multibuf) {
-	    if (XmbufQueryExtension (dpy, &mbuf_event_base, &mbuf_error_base)
-		&& (XmbufCreateBuffers (dpy, draw_window, 2,
+	    if (XmbufQueryExtension (dpy, &mbevbase, &mberrbase)) {
+		if (useRoot || !moveico) 
+		  icowin = None;
+		else {
+		    xswa.background_pixel = bg;
+		    icowin = XCreateWindow (dpy, draw_window, 0, 0, 
+					    icoW, icoH, 0, CopyFromParent,
+					    InputOutput, CopyFromParent,
+					    CWBackPixel, &xswa);
+		    XMapWindow (dpy, icowin);
+		}
+		if (XmbufCreateBuffers (dpy, icowin ? icowin : draw_window, 2,
 					MultibufferActionBackground,
 					MultibufferHintFrequent,
-					multibuffers) == 2)) {
-		win = multibuffers[0];
+					multibuffers) == 2) {
+		    win = multibuffers[0];
 #ifdef notimplementedyet
-		XmbufClearBuffer (dpy, multibuffers[0], 0, 0, 0, 0, False);
-		XmbufClearBuffer (dpy, multibuffers[1], 0, 0, 0, 0, False);
+		    XmbufClearBuffer (dpy, multibuffers[0], 0, 0, 0, 0, False);
+		    XmbufClearBuffer (dpy, multibuffers[1], 0, 0, 0, 0, False);
 #endif
-	    } else {
-		multibuf = 0;
-	    }
+		} else 
+		  icoFatal ("unable to obtain 2 buffers");
+	    } else
+	      multibuf = 0;
 	    dblbuf = 1;
 	}
 #endif /* MULTIBUFFER */
@@ -370,13 +410,6 @@ char **argv;
 	}
 #endif
 
-	if (ico_geom) 
-	  XParseGeometry (ico_geom, &icoX, &icoY, &icoW, &icoH);
-	if (icoW <= 0) icoW = DEFAULT_ICO_WIDTH;
-	if (icoH <= 0) icoH = DEFAULT_ICO_HEIGHT;
-	if (icoW < MIN_ICO_WIDTH) icoW = MIN_ICO_WIDTH;
-	if (icoH < MIN_ICO_HEIGHT) icoH = MIN_ICO_HEIGHT;
-
 	if (dofaces && numcolors>=1) {
 	    int i,t,bits;
 		bits = 0;
@@ -401,12 +434,12 @@ char **argv;
 	srandom((int) time(0) % 231);
 	icoX = ((winW - icoW) * (random() & 0xFF)) >> 8;
 	icoY = ((winH - icoH) * (random() & 0xFF)) >> 8;
-	icoDeltaX = 13;
-	icoDeltaY = 9;
 
 
 	/* Bounce the box in the window: */
 
+	icodeltax2 = icoDeltaX * 2;
+	icodeltay2 = icoDeltaY * 2;
 	for (;;)
 		{
 		int prevX;
@@ -419,6 +452,8 @@ char **argv;
 		      case ConfigureNotify:
 			winW = xev.xconfigure.width;
 			winH = xev.xconfigure.height;
+			icoX = 1;
+			icoY = 1;
 			break;
 		      case MapNotify:
 			blocking = False;
@@ -435,14 +470,16 @@ char **argv;
 		icoX += icoDeltaX;
 		if (icoX < 0 || icoX + icoW > winW)
 			{
-			icoX -= (icoDeltaX << 1);
+			icoX -= icodeltax2;
 			icoDeltaX = - icoDeltaX;
+			icodeltax2 = icoDeltaX * 2;
 			}
 		icoY += icoDeltaY;
 		if (icoY < 0 || icoY + icoH > winH)
 			{
-			icoY -= (icoDeltaY << 1);
+			icoY -= icodeltay2;
 			icoDeltaY = - icoDeltaY;
+			icodeltay2 = icoDeltaY * 2;
 			}
 
 		drawPoly(poly, win, gc, icoX, icoY, icoW, icoH, prevX, prevY);
@@ -568,6 +605,11 @@ int prevX, prevY;
 	buffer = !buffer;
 	PartialNonHomTransform(NV, xform, xv[!buffer], xv[buffer]);
 
+
+	if (icowin) {
+	    XMoveWindow (dpy, icowin, icoX, icoY);
+	    icoX = icoY = 0;
+	}
 
 	/* Convert 3D coordinates to 2D window coordinates: */
 
