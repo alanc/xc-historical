@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.160 93/09/28 23:04:17 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.161 93/09/29 19:13:14 gildea Exp $
 #define DoNormalLib NormalLibX
 #define DoSharedLib SharedLibX
 #define DoDebugLib DebugLibX
@@ -917,9 +917,11 @@ LinkSourceFile(AuRead.c,$(XAUTHSRC))
 #if HasKrb5
 LinkSourceFile(k5encode.c,$(XAUTHSRC))
 #endif
+#if HasXdmAuth
 LinkSourceFile(Wrap.h,$(XDMCPLIBSRC))
 LinkSourceFile(Wrap.c,$(XDMCPLIBSRC))
 LinkSourceFile(Wraphelp.c,$(XDMCPLIBSRC))
+#endif
 
 MAKEKEYS = ./makekeys
 
