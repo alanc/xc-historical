@@ -1,30 +1,35 @@
 /*
- * $XConsortium: sessreg.c,v 1.12 94/10/11 00:19:24 gildea Exp gildea $
+ * $XConsortium: sessreg.c,v 1.13 94/10/28 20:41:37 gildea Exp gildea $
  *
-Copyright (c) 1990  X Consortium
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
-AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-Except as contained in this notice, the name of the X Consortium shall not be
-used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+ * Copyright (c) 1990  X Consortium
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included
+ * in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+ * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ * OTHER DEALINGS IN THE SOFTWARE.
+ * 
+ * Except as contained in this notice, the name of the X Consortium shall
+ * not be used in advertising or otherwise to promote the sale, use or
+ * other dealings in this Software without prior written authorization
+ * from the X Consortium.
  *
  * Author:  Keith Packard, MIT X Consortium
+ * Lastlog support and dynamic utmp entry allocation
+ *   by Andreas Stolcke <stolcke@icsi.berkeley.edu>
  */
 
 /*
@@ -49,10 +54,10 @@ in this Software without prior written authorization from the X Consortium.
 # include	<utmp.h>
 
 #ifdef SYSV
-#define NO_LL
+#define NO_LASTLOG
 #endif
 
-#ifndef NO_LL
+#ifndef NO_LASTLOG
 # include	<lastlog.h>
 # include	<pwd.h>
 #endif
@@ -67,7 +72,7 @@ in this Software without prior written authorization from the X Consortium.
 #ifndef UTMP_FILE
 # define UTMP_FILE	"/etc/utmp"
 #endif
-#ifndef NO_LL
+#ifndef NO_LASTLOG
 #ifndef LLOG_FILE
 # define LLOG_FILE	"/usr/adm/lastlog"
 #endif
@@ -103,7 +108,7 @@ int	slot_number;
 char	*xservers_file, *ttys_file;
 char	*user_name;
 int	aflag, dflag;
-#ifndef NO_LL
+#ifndef NO_LASTLOG
 char	*llog_file;
 int	llog_none, Lflag;
 #endif
@@ -227,7 +232,7 @@ char	**argv;
 		wtmp_file = WTMP_FILE;
 	if (!uflag)
 		utmp_file = UTMP_FILE;
-#ifndef NO_LL
+#ifndef NO_LASTLOG
 	if (!Lflag)
 		llog_file = LLOG_FILE;
 #endif
@@ -276,15 +281,17 @@ char	**argv;
 			close (wtmp);
 		}
 	}
-#ifndef NO_LL
+#ifndef NO_LASTLOG
 	if (aflag && !llog_none) {
-		int llog = open (llog_file, O_WRONLY);
+	        int llog;
+	        struct passwd *pwd = getpwnam(user_name);
+
+	        sysnerr( pwd != NULL, "get user id");
+	        llog = open (llog_file, O_WRONLY);
+
 		if (llog != -1) {
 			int	user_id;
-			struct passwd *pwd = getpwnam(user_name);
 			struct lastlog ll;
-
-			sysnerr( pwd != NULL, "get user id");
 
 			bzero((char *)&ll, sizeof(ll));
 			ll.ll_time = current_time;
@@ -361,13 +368,13 @@ Time_t		date;
  * that the display appears on in Xservers.  This is a poor
  * design, but is limited by the non-existant interface to utmp.
  * If host_name is non-NULL, assume it contains the display name,
- * otherwise use the display_name argument (i.e., the tty name).
+ * otherwise use the tty_line argument (i.e., the tty name).
  */
 
-Xslot (ttys_file, servers_file, display_name, host_name, addp)
+Xslot (ttys_file, servers_file, tty_line, host_name, addp)
 char	*ttys_file;
 char	*servers_file;
-char	*display_name;
+char	*tty_line;
 char	*host_name;
 int	addp;
 {
@@ -381,7 +388,7 @@ int	addp;
 	char	*pos;
 
 	/* remove screen number from the display name */
-	strcpy(disp_name, host_name ? host_name : display_name);
+	strcpy(disp_name, host_name ? host_name : tty_line);
 	pos = strrchr(disp_name, ':');
 	if (pos) {
 	    pos = strchr(pos, '.');
@@ -418,7 +425,7 @@ int	addp;
 	/*
 	 * display not found in Xservers file - allocate utmp entry dinamically
 	 */
-	return findslot (display_name, host_name, addp, slot);
+	return findslot (tty_line, host_name, addp, slot);
 }
 
 /*
