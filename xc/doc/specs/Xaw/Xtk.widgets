@@ -5114,6 +5114,8 @@ might have the following semantics:
 .IP \(bu 3
 Allocate 2 drawing colors in addition to a background color.
 .IP \(bu 3
+Allocate a text font.
+.IP \(bu 3
 Execute an application-supplied function to handle exposure events.
 .IP \(bu 3
 Execute an application-supplied function to handle user input events.
@@ -5171,18 +5173,22 @@ an instance of the class, to perform an
 .PN XtSetValues
 operation, or to call a public routine implemented by the widget class.
 .LP
-The contents of the Template public header file are:
+The contents of the Template public header file,
+.Pn < X11/Template.h >,
+are:
 .de CB
 .sp
 .ps 9
 .nr PS 9
 .vs 10
 .Ds 0
-.TA .25i 1.25i 2.75i 3.5i
-.ta .25i 1.25i 2.75i 3.5i
+.in +.25i
+.TA .25i 1.4i 2.4i 2.75i 3.5i
+.ta .25i 1.4i 2.4i 2.75i 3.5i
 ..
 .de CE
 .De
+.\".in -.25i
 .ps 11
 .nr PS 11
 .vs 13
@@ -5191,7 +5197,7 @@ The contents of the Template public header file are:
 .\".so ../../lib/Xaw/Template.h
 #include <X11/copyright.h>
 
-/* $XConsortium: Template.h,v 1.1 88/10/23 14:32:46 swick Exp $ */
+/* $XConsortium: Xtk.widgets,v 1.10 88/10/24 20:32:03 swick Exp $ */
 /* Copyright Massachusetts Institute of Technology 1987, 1988 */
 
 #ifndef _Template_h
@@ -5205,15 +5211,15 @@ The contents of the Template public header file are:
 
 /* Resources:
 
- Name	Class	RepType	Default Value
- ----		-----	-------	-------------
- background	Background	Pixel	XtDefaultBackground
- border	BorderColor	Pixel	XtDefaultForeground
- borderWidth	BorderWidth	Dimension	1
- destroyCallback	Callback	Pointer	NULL
- height	Height	Dimension	0
+ Name	Class		RepType	Default Value
+ ----		-----		-------	-------------
+ background	Background		Pixel	XtDefaultBackground
+ border	BorderColor		Pixel	XtDefaultForeground
+ borderWidth	BorderWidth		Dimension	1
+ destroyCallback	Callback		Pointer	NULL
+ height	Height		Dimension	0
  mappedWhenManaged	MappedWhenManaged	Boolean	True
- sensitive	Sensitive	Boolean	True
+ sensitive	Sensitive		Boolean	True
  width	Width		Dimension	0
  x		Position		Position	0
  y		Position		Position	0
@@ -5240,32 +5246,48 @@ and classes are defined and where the widget class datatypes and class
 record pointer are declared.
 .LP
 For the "WindowWidget", we want 2 drawing colors and an
-\fBexposeCallback\fP callback list, so we need to add
+\fBXtNexposeCallback\fP callback list, and we will declare three
+convenience procedures, so we need to add
 .LP
 .sp
 .CB
-#define XtNdrawingColor1	"drawingColor1"
-#define XtNdrawingColor2	"drawingColor2"
-#define XtNexposeCallback	"exposeCallback"
-.CE
+/* Resources:
+	...
+ callback	Callback	Callback	NULL
+ drawingColor1	Color	Pixel		XtDefaultForeground
+ drawingColor2	Color	Pixel		XtDefaultForeground
+ exposeCallback	Callback	Callback	NULL
+ font		Font	XFontStruct*	XtDefaultFont
+	...
+ */
 
+#define XtNdrawingColor1		"drawingColor1"
+#define XtNdrawingColor2		"drawingColor2"
+#define XtNexposeCallback	"exposeCallback"
+
+extern Pixel WindowColor1(\|/* Widget */\|);
+extern Pixel WindowColor2(\|/* Widget */\|);
+extern Font\ \ WindowFont(\|/* Widget */\|);
+.CE
 .NH 3
 Private Header File
 .LP
 The private header file contains the complete declaration of the class
-and instance structure for the widget and any additional private data
+and instance structures for the widget and any additional private data
 that will be required by anticipated subclasses of the widget.
 Information in the private header file is normally hidden from the
-application and is designed to be accessed only by other public
+application and is designed to be accessed only through other public
 procedures; e.g.
 .PN XtSetValues .
 .LP
-The contents of the Template private header file are:
+The contents of the Template private header file,
+.Pn < X11/TemplateP.h >,
+are:
 .CB
 .\".so ../../lib/Xaw/TemplateP.h
 #include <X11/copyright.h>
 
-/* $XConsortium: TemplateP.h,v 1.1 88/10/23 14:32:59 swick Exp $ */
+/* $XConsortium: Xtk.widgets,v 1.10 88/10/24 20:32:03 swick Exp $ */
 /* Copyright Massachusetts Institute of Technology 1987, 1988 */
 
 #ifndef _TemplateP_h
@@ -5309,14 +5331,15 @@ It may not always be advantageous to do this; your own project
 development style will dictate the appropriate level of detail to expose
 in each module.
 .LP
-The "WindowWidget" needs to declare 2 fields in its instance structure to
-hold the drawing colors and a field for the expose and user input
-callback lists:
+The "WindowWidget" needs to declare two fields in its instance structure to
+hold the drawing colors, a resource field for the font and a field for the
+expose and user input callback lists:
 .CB
 typedef struct {
 	/* resources */
 	Pixel color_1;
 	Pixel color_2;
+	XFontStruct* font;
 	XtCallbackList expose_callback;
 	XtCallbackList input_callback;
 	/* private state */
@@ -5326,12 +5349,14 @@ typedef struct {
 .NH 3
 Widget Source File
 .LP
-The source code file implements the widget class itself.  The most
-important part of this file is the declaration and initialization of the
+The source code file implements the widget class itself.  The unique
+part of this file is the declaration and initialization of the
 widget class record structure and the declaration of all resources and
 action routines added by the widget class.
 .LP
-The contents of the Template implementation file are:
+The contents of the Template implementation file,
+.Pn < X11/Template.c >,
+are:
 .CB
 .\".so ../../lib/Xaw/Template.c
 /* Copyright Massachusetts Institute of Technology 1987, 1988 */
@@ -5353,12 +5378,12 @@ static void Template(/* Widget, String*, Cardinal* */);
 
 static XtActionsRec actions[] =
 {
-	/* {name, procedure}, */
+	/* {name,	procedure}, */
 	{"template",	Template},
 };
 
 static char translations[] =
-"<Key>:	template() \\n\\
+"	<Key>:	template() \\n\\
 ";
 
 TemplateClassRec templateClassRec = {
@@ -5372,49 +5397,49 @@ TemplateClassRec templateClassRec = {
 	/* initialize	*/	NULL,
 	/* initialize_hook	*/	NULL,
 	/* realize	*/	XtInheritRealize,
-	/* actions		*/	actions,
-	/* num_actions		*/	XtNumber(actions),
-	/* resources		*/	resources,
+	/* actions	*/	actions,
+	/* num_actions	*/	XtNumber(actions),
+	/* resources	*/	resources,
 	/* num_resources	*/	XtNumber(resources),
-	/* xrm_class		*/	NULLQUARK,
+	/* xrm_class	*/	NULLQUARK,
 	/* compress_motion	*/	TRUE,
 	/* compress_exposure	*/	TRUE,
-	/* compress_enterleave	*/	TRUE,
+	/* compress_enterleave */	TRUE,
 	/* visible_interest	*/	FALSE,
-	/* destroy		*/	NULL,
-	/* resize		*/	NULL,
-	/* expose		*/	NULL,
-	/* set_values		*/	NULL,
+	/* destroy	*/	NULL,
+	/* resize	*/	NULL,
+	/* expose	*/	NULL,
+	/* set_values	*/	NULL,
 	/* set_values_hook	*/	NULL,
 	/* set_values_almost	*/	XtInheritSetValuesAlmost,
 	/* get_values_hook	*/	NULL,
-	/* accept_focus		*/	NULL,
-	/* version		*/	XtVersion,
+	/* accept_focus	*/	NULL,
+	/* version	*/	XtVersion,
 	/* callback_private	*/	NULL,
-	/* tm_table		*/	translations,
+	/* tm_table	*/	translations,
 	/* query_geometry	*/	XtInheritQueryGeometry,
 	/* display_accelerator	*/	XtInheritDisplayAccelerator,
-	/* extension		*/	NULL
+	/* extension	*/	NULL
   },
   { /* template fields */
-	/* empty		*/	0
+	/* empty	*/	0
   }
 };
 
 WidgetClass templateWidgetClass = (WidgetClass)&templateClassRec;
 
 .CE
-.LP
-.sp
 The resource list for the "WindowWidget" might look like the following:
 .CB
 static XtResource resources[] = {
 #define offset(field) XtOffset(WindowWidget, window.field)
 	/* {name, class, type, size, offset, default_type, default_addr}, */
-	{ XtNdrawingColor1, XtCPixel, XtRPixel, sizeof(Pixel),
+	{ XtNdrawingColor1, XtCColor, XtRPixel, sizeof(Pixel),
 		  offset(color_1), XtRString, XtDefaultForeground },
-	{ XtNdrawingColor2, XtCPixel, XtRPixel, sizeof(Pixel),
+	{ XtNdrawingColor2, XtCColor, XtRPixel, sizeof(Pixel),
 		  offset(color_2), XtRString, XtDefaultForeground },
+	{ XtNfont, XtCFont, XtRFontStruct, sizeof(XFontStruct*),
+		  offset(font), XtRString, XtDefaultFont },
 	{ XtNexposeCallback, XtCCallback, XtRCallback, sizeof(XtCallbackList),
 		  offset(expose_callback), XtRCallback, NULL },
 	{ XtNcallback, XtCCallback, XtRCallback, sizeof(XtCallbackList),
@@ -5425,19 +5450,18 @@ static XtResource resources[] = {
 .LP
 The user input callback will be implemented by an action procedure which
 is declared as:
-.LP
 .CB
 static void InputAction(w, params, num_params)
 	Widget w;
-	String *params;
-	Cardinal *num_params;
+	String *params;		/* unused */
+	Cardinal *num_params;	/* unused */
 {
 	XtCallCallbacks(w, XtNcallback, NULL);
 }
 
 static XtActionsRec actions[] =
 {
-	/* {name, procedure}, */
+	/* {name,	procedure}, */
 	{"input",	InputAction},
 };
 .CE
@@ -5449,21 +5473,23 @@ and
 .LP
 .CB
 static char translations[] =
-"<Key>:		input() \\n\\
- <BtnDown>:	input() \\
+"	<Key>:	input() \\n\\
+ 	<BtnDown>:	input() \\
 ";
 .CE
 .LP
 In the class record declaration and initialization, the only field that
-is different from the Template is the expose method:
+is different from the Template is the expose procedure:
 .CB
 static void Redisplay(w, event, region)
 	Widget w;
-	XEvent *event;
+	XEvent *event;	/* unused */
 	Region region;
 {
 	XtCallCallbacks(w, XtNexposeCallback, (caddr_t)region);
 }
+
+WindowClassRec windowClassRec = {
 
 	...
 
@@ -5471,9 +5497,9 @@ static void Redisplay(w, event, region)
 .CE
 .LP
 .sp
-The "WindowWidget" will also declare two public procedures to return the
-drawing colors, saving the application the effort of constructing an
-argument list for a call to
+The "WindowWidget" will also declare three public procedures to return the
+drawing colors and the font id, saving the application the effort of
+constructing an argument list for a call to
 .PN XtGetValues :
 .LP
 .CB
@@ -5487,6 +5513,12 @@ Pixel WindowColor2(w)
 	Widget w;
 {
 	return ((WindowWidget)w)->window.color_2;
+}
+
+Font WindowFont(w)
+	Widget w;
+{
+	return ((WindowWidget)w)->window.font->fid;
 }
 .CE
 .LP
