@@ -1,6 +1,6 @@
-/* $Header: Converters.c,v 1.10 88/02/03 23:04:22 swick Locked $ */
+/* $Header: Converters.c,v 1.11 88/02/03 23:05:42 swick Locked $ */
 #ifndef lint
-static char rcsid[] = "$Header: Converters.c,v 1.10 88/02/03 23:04:22 swick Locked $";
+static char rcsid[] = "$Header: Converters.c,v 1.11 88/02/03 23:05:42 swick Locked $";
 #endif lint
 
 /*
@@ -385,7 +385,7 @@ static void CvtStringToCursor(args, num_args, fromVal, toVal)
 	cursor = None;		/* absolute fall-back for failed conversion */
 	done(&cursor, Cursor);
     }
-    strcat( filename, "Mask" );
+    (void) strcat( filename, "Mask" );
     if (XReadBitmapFile( DisplayOfScreen(screen), RootWindowOfScreen(screen),
 			 filename, &width, &height, &mask, &width, &height )
 	!= BitmapSuccess) {
