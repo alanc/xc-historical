@@ -1,4 +1,4 @@
-/* $XConsortium: XInput.h,v 1.17 94/02/07 23:44:43 rws Exp $ */
+/* $XConsortium: XInput.h,v 1.18 94/02/21 10:38:50 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -1174,6 +1174,12 @@ extern XDeviceTimeCoord	*XGetDeviceMotionEvents(
 extern int	XFreeDeviceMotionEvents(
 #if NeedFunctionPrototypes
     XDeviceTimeCoord*	/* events */
+#endif
+);
+
+extern int	XFreeDeviceControl(
+#if NeedFunctionPrototypes
+    XDeviceControl*	/* control */
 #endif
 );
 
