@@ -719,8 +719,9 @@ static void RemoveGrab(widget, keyboard_focus)
     }
 
     if (gl == NULL) {
-      XtWarning("XtRemoveGrab asked to remove a widget not on the grab list");
-      return;
+	if (!keyboard_focus)
+	    XtWarning("XtRemoveGrab asked to remove a widget not on the grab list");
+	return;
     }
 
     focus_widget = gl->keyboard_focus;
@@ -835,53 +836,84 @@ static void HandleFocus(widget, client_data, event)
 }
 
 
+static void AddForwardingHandler(widget, descendant)
+    Widget widget, descendant;
+{
+    Window win, root, child;
+    int root_x, root_y, win_x, win_y;
+    unsigned int mask;
+    EventMask eventMask;
+
+    eventMask = _XtBuildEventMask(descendant);
+    eventMask &= KeyPressMask | KeyReleaseMask;
+    if (eventMask != 0) {
+	XtAddEventHandler
+	    (
+	     widget,
+	     eventMask,
+	     False,
+	     ForwardEvent,
+	     (caddr_t)descendant
+	    );
+	/* is the pointer already inside? */
+	XQueryPointer( XtDisplay(widget), XtWindow(widget),
+		       &root, &child, &root_x, &root_y,
+		       &win_x, &win_y, &mask );
+	if (win_x >= 0 && win_x < widget->core.width &&
+	    win_y >= 0 && win_y < widget->core.height) {
+	    if (InsertKeyboardGrab( widget, descendant ))
+		SendFocusNotify( descendant, FocusIn );
+	}
+    }
+}
+
+/* ARGSUSED */
+static void QueryEventMask(widget, client_data, event)
+    Widget widget;		/* child who gets focus */
+    caddr_t client_data;	/* ancestor giving it */
+    XEvent *event;
+{
+    if (event->type == MapNotify) {
+	AddForwardingHandler((Widget)client_data, widget);
+	XtRemoveEventHandler( widget, XtAllEvents, True,
+			      QueryEventMask, client_data );
+    }
+}
+
+
 void XtSetKeyboardFocus(widget, descendant)
     Widget widget;
     Widget descendant;
 {
-    EventMask eventMask;
-
     if (descendant == (Widget)None) {
 	XtRemoveEventHandler(widget, XtAllEvents, True, HandleFocus, NULL);
 	RemoveGrab( widget, True );
     }
     else {
-	eventMask = _XtBuildEventMask(descendant);
-	eventMask &= KeyPressMask | KeyReleaseMask;
-	if (eventMask != 0) {
+	XtAddEventHandler
+	    (
+	     widget,
+	     /* shells are always occluded by their children */
+	     FocusChangeMask |
+		 ((widget == XtParent(descendant) &&
+		   XtIsSubclass(widget, shellWidgetClass))
+		      ? 0 : EnterWindowMask | LeaveWindowMask),
+	     False,
+	     HandleFocus,
+	     (caddr_t)descendant
+	    );
+	if (XtIsRealized(descendant)) {	/* are his translations installed? */
+	    AddForwardingHandler(widget, descendant);
+	}
+	else {			/* we'll have to wait 'till later */
 	    XtAddEventHandler
 		(
-		 widget,
-		 eventMask,
+		 descendant,
+		 StructureNotifyMask,
 		 False,
-		 ForwardEvent,
-		 (caddr_t)descendant
+		 QueryEventMask,
+		 (caddr_t)widget
 		);
-	    XtAddEventHandler
-		(
-		 widget,
-		 /* shells are always occluded by their children */
-		 FocusChangeMask |
-		     (XtIsSubclass(widget, shellWidgetClass)
-			 ? 0 : EnterWindowMask | LeaveWindowMask),
-		 False,
-		 HandleFocus,
-		 (caddr_t)descendant
-		);
-	    if (XtIsRealized(widget)) {
-		/* is the pointer already inside? */
-		Window win, root, child;
-		int root_x, root_y, win_x, win_y;
-		unsigned int mask;
-		XQueryPointer( XtDisplay(widget), XtWindow(widget),
-			       &root, &child, &root_x, &root_y,
-			       &win_x, &win_y, &mask );
-		if (win_x >= 0 && win_x < widget->core.width &&
-		    win_y >= 0 && win_y < widget->core.height) {
-		    if (InsertKeyboardGrab( widget, descendant ))
-			SendFocusNotify( descendant, FocusIn );
-		}
-	    }
 	}
     }
 }
