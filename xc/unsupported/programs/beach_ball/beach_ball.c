@@ -1,4 +1,4 @@
-/* $XConsortium: beach_ball.c,v 5.2 91/02/18 22:03:27 rws Exp $ */
+/* $XConsortium: beach_ball.c,v 5.3 91/04/01 19:35:32 hersh Exp $ */
 /***********************************************************
 Copyright 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
 
@@ -30,6 +30,7 @@ SOFTWARE.
 #include <stdio.h>
 #include <errno.h>
 #include <ctype.h>
+#include <stdlib.h>
 #include <math.h>
 #ifdef PEX_SI_PHIGS
 #include <X11/Xlib.h>
@@ -111,7 +112,6 @@ static void
 random_velocity(v)
 Pvec3 *v;
 {
-    extern int  rand();
 
     int	    Xr, Yr;
     Pfloat  Xv, Yv, Zv, XYv, V2;
