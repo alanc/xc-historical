@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.128 93/09/20 20:11:38 dpw Exp $ */
+/* $XConsortium: utils.c,v 1.129 93/09/23 17:06:44 rws Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -41,8 +41,8 @@ SOFTWARE.
 
 extern char *display;
 
-extern long defaultScreenSaverTime;	/* for parsing command line */
-extern long defaultScreenSaverInterval;
+extern CARD32 defaultScreenSaverTime;	/* for parsing command line */
+extern CARD32 defaultScreenSaverInterval;
 extern int defaultScreenSaverBlanking;
 extern int defaultBackingStore;
 extern Bool disableBackingStore;
@@ -445,7 +445,7 @@ char	*argv[];
 	else if ( strcmp( argv[i], "-p") == 0)
 	{
 	    if(++i < argc)
-	        defaultScreenSaverInterval = ((long)atoi(argv[i])) *
+	        defaultScreenSaverInterval = ((CARD32)atoi(argv[i])) *
 					     MILLI_PER_MIN;
 	    else
 		UseMsg();
@@ -459,7 +459,8 @@ char	*argv[];
 	else if ( strcmp( argv[i], "-s") == 0)
 	{
 	    if(++i < argc)
-	        defaultScreenSaverTime = ((long)atoi(argv[i])) * MILLI_PER_MIN;
+	        defaultScreenSaverTime = ((CARD32)atoi(argv[i])) *
+					 MILLI_PER_MIN;
 	    else
 		UseMsg();
 	}
