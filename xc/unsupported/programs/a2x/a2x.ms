@@ -1,4 +1,4 @@
-$XConsortium: a2x.doc,v 1.11 92/08/15 18:33:21 rws Exp $
+$XConsortium: a2x.doc,v 1.12 92/08/15 18:47:36 rws Exp $
 
 				Using a2x
 
@@ -932,7 +932,7 @@ will be "a2x".  You want this name to be unique across all windows on your
 display.  The <geometry-spec> should be a complete geometry specification,
 with x, y, width and height all specified; the width and height are numbers
 of characters.  To contain full DragonDictate dialogue boxes, you will need
-a width of at least 57 and a height of at least 18.
+a width of at least 56 and a height of at least 19.
 
 You will need a key on your X keyboard to act as the DragonDictate HOTKEY.
 By default, DragonDictate uses the keypad '+' key, which is the X keysym
