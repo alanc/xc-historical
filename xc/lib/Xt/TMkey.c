@@ -1,4 +1,4 @@
-/* $XConsortium: TMkey.c,v 1.1 91/01/10 14:12:59 converse Exp $ */
+/* $XConsortium: TMkey.c,v 1.2 91/01/10 17:16:15 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -123,7 +123,7 @@ Boolean _XtComputeLateBindings(lateModifiers,eventSeq,computed,computedMask)
          return FALSE;
     }
     _InitializeKeysymTables(dpy, perDisplay);
-    for (ref=0;lateModifiers[ref].keysym != NULL;ref++) {
+    for (ref=0; lateModifiers[ref].keysym; ref++) {
         found = FALSE;
         for (i=0;i<8;i++) {
             temp = &(perDisplay->modsToKeysyms[i]);
