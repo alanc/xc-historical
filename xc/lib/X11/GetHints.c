@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGetHints.c,v 11.16 87/09/09 15:42:48 newman Locked $ */
+/* $Header: XGetHints.c,v 11.17 87/10/20 16:17:25 newman Locked $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -237,10 +237,8 @@ XGetClassHint(dpy, w, classhint)
     if (XGetWindowProperty(dpy, w, XA_WM_CLASS, 0L, (long)BUFSIZ, False,
         XA_STRING, 
 	&actual_type,
-	&actual_format, &nitems, &leftover, &data) != Success) {
-	classhint = NULL;
-	return (0);
-	}
+	&actual_format, &nitems, &leftover, &data) != Success)
+           return (0);
 	
    if ( (actual_type == XA_STRING) && (actual_format == 8) ) {
 	len_name = strlen(data);
@@ -252,7 +250,6 @@ XGetClassHint(dpy, w, classhint)
 	Xfree( (char *) data);
 	return(Success);
 	}
-    classhint = NULL;
     if (data) Xfree( (char *) data);
     return(0);
 }
