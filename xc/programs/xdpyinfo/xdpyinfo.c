@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xdpyinfo.c,v 1.25 92/10/16 14:19:27 rws Exp $
+ * $XConsortium: xdpyinfo.c,v 1.26 93/09/14 18:55:41 rws Exp $
  * 
  * xdpyinfo - print information about X display connecton
  *
@@ -99,7 +99,7 @@ print_display_info (dpy)
 	    ProtocolVersion (dpy), ProtocolRevision (dpy));
     printf ("vendor string:    %s\n", ServerVendor (dpy));
     printf ("vendor release number:    %d\n", VendorRelease (dpy));
-    printf ("maximum request size:  %ld bytes\n", XMaxRequestSize (dpy) * 4);
+    printf ("maximum request size:  %ld bytes\n", XExtendedMaxRequestSize (dpy) * 4);
     printf ("motion buffer size:  %d\n", XDisplayMotionBufferSize (dpy));
 
     switch (BitmapBitOrder (dpy)) {
