@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.50 89/06/09 16:19:14 jim Exp $
+ * $XConsortium: add_window.c,v 1.51 89/06/12 15:32:23 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.50 89/06/09 16:19:14 jim Exp $";
+"$XConsortium: add_window.c,v 1.51 89/06/12 15:32:23 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -368,15 +368,34 @@ IconMgr *iconp;
 
 		    AddingX = event.xbutton.x_root;
 		    AddingY = event.xbutton.y_root;
-		    XMaskEvent(dpy, ButtonReleaseMask, &junk);
+		    if (!Scr->AutoRelativeResize)
+		      XMaskEvent(dpy, ButtonReleaseMask, &junk);
 		    break;
 		}
 	    }
 
 	    if (event.xbutton.button == Button2)
 	    {
-		XWarpPointer(dpy, None, Scr->Root, 0, 0, 0, 0,
-		    AddingX + AddingW/2, AddingY + AddingH/2);
+		if (Scr->AutoRelativeResize) {
+		    int dx = (AddingW / 5);  /* get away from left edge */
+		    int dy = (AddingH / 5);  /* get away from top edge */
+		    
+#define HALF_AVE_CURSOR_SIZE 8		/* so that it is visible */
+		    if (dx < HALF_AVE_CURSOR_SIZE) dx = HALF_AVE_CURSOR_SIZE;
+		    if (dy < HALF_AVE_CURSOR_SIZE) dy = HALF_AVE_CURSOR_SIZE;
+#undef HALF_AVE_CURSOR_SIZE
+		    dx += (tmp_win->frame_bw + 1);
+		    dy += (tmp_win->frame_bw * 2 + tmp_win->title_height + 1);
+		    if (AddingX + dx >= Scr->MyDisplayWidth)
+		      dx = Scr->MyDisplayWidth - AddingX - 1;
+		    if (AddingY + dy >= Scr->MyDisplayHeight)
+		      dy = Scr->MyDisplayHeight - AddingY - 1;
+		    if (dx > 0 && dy > 0)
+		      XWarpPointer (dpy, None, None, 0, 0, 0, 0, dx, dy);
+		} else {
+		    XWarpPointer (dpy, None, Scr->Root, 0, 0, 0, 0,
+				  AddingX + AddingW/2, AddingY + AddingH/2);
+		}
 		AddStartResize(tmp_win, AddingX, AddingY, AddingW, AddingH);
 
 		while (TRUE)
