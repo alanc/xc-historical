@@ -1,4 +1,4 @@
-/* $XConsortium: pexPc.c,v 5.3 91/09/06 17:55:41 hersh Exp $ */
+/* $XConsortium: pexPc.c,v 5.4 91/10/01 02:34:18 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1110,8 +1110,7 @@ pexGetPipelineContextReq 	*strmPtr;
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCLineBundleIndex) {
 	CHK_PEX_BUF(size, sizeof(CARD32), reply, pexGetPipelineContextReply,
 		    replyPtr);
-	PACK_CARD16 ( pca->lineIndex, replyPtr);
-	SKIP_PADDING (replyPtr, 2);
+	PACK_CARD32 ( pca->lineIndex, replyPtr);
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCInteriorStyle) {
