@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Geometry.c,v 1.34 89/06/16 19:34:43 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Geometry.c,v 1.35 89/09/11 17:43:00 swick Exp $";
 /* $oHeader: Geometry.c,v 1.3 88/08/23 11:37:50 asente Exp $ */
 #endif /* lint */
 
@@ -88,7 +88,11 @@ XtGeometryResult XtMakeGeometryRequest (widget, request, reply)
     if (request->request_mode & CWStackMode
 	&& request->stack_mode != XtSMDontChange) {
 	    changeMask |= CWStackMode;
-	    if (request->request_mode & CWSibling) changeMask |= CWSibling;
+	    if (request->request_mode & CWSibling) {
+		XtCheckSubclass(request->sibling, rectObjClass,
+				"XtMakeGeometryRequest");
+		changeMask |= CWSibling;
+	    }
     }
     if (request->request_mode & CWX
 	&& widget->core.x != request->x) changeMask |= CWX;
@@ -151,7 +155,7 @@ XtGeometryResult XtMakeGeometryRequest (widget, request, reply)
 	    changes.border_width = widget->core.border_width;
 	if (changeMask & CWStackMode) {
 	    changes.stack_mode = request->stack_mode;
-	    if (changeMask & CWSibling) 
+	    if (changeMask & CWSibling)
 		changes.sibling = XtWindow(request->sibling);
 	}
 
