@@ -1,5 +1,5 @@
-DEFINES = ConnectionFlags -DTEST -DTHISHOST=\"`hostname`\"
-XCOMM	DEFINES = -DTCPCONN -DUNIXCONN -DTEST -DTHISHOST=\"`hostname`\"
+DEFINES = ConnectionFlags -DTEST_t -DTHISHOST=\"`hostname`\"
+XCOMM	DEFINES = -DTCPCONN -DUNIXCONN -DTEST_t -DTHISHOST=\"`hostname`\"
 XCOMM	CDEBUGFLAGS = -g
 XCOMM	SYS_LIBRARIES = -ldbmalloc
 LOCAL_LIBRARIES = XawClientLibs
