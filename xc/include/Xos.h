@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.18 89/11/14 10:23:19 rws Exp $
+ * $XConsortium: Xos.h,v 1.19 89/11/19 16:18:38 jim Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -49,6 +49,7 @@
  *	hpux
  * 	macII
  *	CRAY
+ *	stellar
  *	USG
  * 
  * all of which happen to define SYSV as well.
@@ -79,19 +80,16 @@
  */
 
 #ifdef SYSV
-#if defined(sgi) || defined(CRAY2)
-#include <sys/time.h>				/* SYSV && (sgi || CRAY2) */
+#if defined(sgi) || defined(CRAY2) || defined(stellar)
+#include <sys/time.h>				/* SYSV sys/time.h */
 #ifdef CRAY2
 #define __TIMEVAL__
 #endif
 #else
-#include <time.h>				/* SYSV */
+#include <time.h>				/* else SYSV time.h */
 #endif
 
 #ifdef USG
-#ifdef umips
-#include <bsd/sys/time.h>			/* SYSV && umips */
-#else
 #ifndef __TIMEVAL__
 #define __TIMEVAL__
 struct timeval {
@@ -102,8 +100,7 @@ struct timezone {
     int tz_minuteswest;
     int tz_dsttime;
 };
-#endif
-#endif /* umips or not */
+#endif /* __TIMEVAL__ */
 #endif /* USG */
 
 #ifdef macII
@@ -111,7 +108,7 @@ struct timezone {
 #endif
 
 #else
-#include <sys/time.h>				/* bsd */
+#include <sys/time.h>				/* else bsd */
 #endif
 
 /*
@@ -134,13 +131,5 @@ struct timezone {
 #ifdef hpux
 #define sigvec sigvector
 #endif
-
-#ifdef umips
-#ifdef USG
-#include <bsd/sys/ioctl.h>
-#include <bsd/sys/file.h>
-#endif
-#endif
-
 
 #endif /* _XOS_H_ */
