@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.153 89/11/09 18:00:04 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.154 89/12/11 18:42:58 swick Exp $";
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 #endif /* lint */
 
@@ -201,7 +201,7 @@ static XrmDatabase GetAppSystemDefaults(dpy)
     XrmDatabase rdb;
 
     if ((filename = XtResolvePathname(dpy, "app-defaults",
-				      NULL, NULL, NULL, NULL))
+				      NULL, NULL, NULL, NULL, 0, NULL))
 	== NULL) {
 	return NULL;
     }
@@ -241,7 +241,7 @@ static XrmDatabase GetAppUserDefaults(dpy)
 	deallocate = True;
     }
 
-    if ((filename = XtResolvePathname(dpy, NULL, NULL, NULL, path, NULL))
+    if ((filename = XtResolvePathname(dpy, NULL, NULL, NULL, path, NULL, 0, NULL))
 	== NULL)
 	rdb = NULL;
     else {
