@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.70 89/03/06 11:02:01 jim Exp $
+ * $XConsortium: charproc.c,v 1.71 89/03/11 09:57:50 rws Exp $
  */
 
 
@@ -138,7 +138,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.70 89/03/06 11:02:01 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.71 89/03/11 09:57:50 rws Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -1920,6 +1920,7 @@ static void VTInitialize (request, new)
    new->screen.always_highlight = request->screen.always_highlight;
    new->screen.pointer_cursor = request->screen.pointer_cursor;
    new->screen.eight_bits = request->screen.eight_bits;
+   new->screen.allowSendEvents = request->screen.allowSendEvents;
    new->misc.titeInhibit = request->misc.titeInhibit;
 
     /*
