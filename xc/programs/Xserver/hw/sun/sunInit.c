@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: sunInit.c,v 5.27 92/01/31 17:34:03 gildea Exp $ */
 /*
  * sunInit.c --
  *	Initialization functions for screen/keyboard/mouse, etc.
@@ -289,7 +289,6 @@ InitInput(argc, argv)
     if (!p || !k)
 	FatalError("failed to create input devices in InitInput");
 
-    SetTimeSinceLastInputEvent();
     RegisterPointerDevice(p);
     RegisterKeyboardDevice(k);
     miRegisterPointerDevice(screenInfo.screens[0], p);
@@ -323,9 +322,7 @@ sunSaveScreen (pScreen, on)
 {
     int		state;
 
-    if (on == SCREEN_SAVER_FORCER)
-	SetTimeSinceLastInputEvent();
-    else
+    if (on != SCREEN_SAVER_FORCER)
     {
 	if (on == SCREEN_SAVER_ON)
 	    state = 0;
