@@ -41,6 +41,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "cfbmskbits.h"
 #include "mibstore.h"
 
+extern RegionPtr mfbPixmapToRegion();
+
 extern int defaultColorVisualClass;
 
 #define _BP 8
@@ -88,6 +90,7 @@ miBSFuncRec cfbBSFuncRec = {
     (PixmapPtr (*)()) 0,
 };
 
+/*ARGSUSED*/
 static Bool
 cfbCloseScreen (index, pScreen)
     int		index;
@@ -182,8 +185,10 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     pScreen->ResolveColor = cfbResolveColor;
 
     pScreen->RegionCreate = miRegionCreate;
+    pScreen->RegionInit = miRegionInit;
     pScreen->RegionCopy = miRegionCopy;
     pScreen->RegionDestroy = miRegionDestroy;
+    pScreen->RegionUninit = miRegionUninit;
     pScreen->Intersect = miIntersect;
     pScreen->Inverse = miInverse;
     pScreen->Union = miUnion;
@@ -196,6 +201,10 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     pScreen->RegionNotEmpty = miRegionNotEmpty;
     pScreen->RegionEmpty = miRegionEmpty;
     pScreen->RegionExtents = miRegionExtents;
+    pScreen->RegionAppend = miRegionAppend;
+    pScreen->RegionValidate = miRegionValidate;
+    pScreen->BitmapToRegion = mfbPixmapToRegion;
+    pScreen->RectsToRegion = miRectsToRegion;
     pScreen->SendGraphicsExpose = miSendGraphicsExpose;
 
     pScreen->BlockHandler = NoopDDA;
