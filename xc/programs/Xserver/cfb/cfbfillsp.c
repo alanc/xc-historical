@@ -252,6 +252,7 @@ int fSorted;
     register int nlMiddle;
     PixmapPtr	pTile;		/* pointer to tile we want to fill with */
     int		w, width, x, tmpSrc, srcStartOver, nstart, nend;
+    int		xSrc, ySrc;
     int 	endmask, tlwidth, rem, tileWidth, *psrcT, rop;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
@@ -303,17 +304,29 @@ int fSorted;
 		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate);
 	nlwidth = (int)
 		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
+        xSrc = ((WindowPtr)pDrawable)->absCorner.x;
+        ySrc = ((WindowPtr)pDrawable)->absCorner.y;
     }
     else
     {
 	addrlBase = (int *)(((PixmapPtr)pDrawable)->devPrivate);
 	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
+        xSrc = ySrc = 0;
     }
 
     tileWidth = pTile->width;
+
+    /* this replaces rotating the tile. Instead we just adjust the offset
+     * at which we start grabbing bits from the tile.
+     * Ensure that ppt->x - xSrc >= 0 and ppt->y - ySrc >= 0,
+     * so that iline and xrem always stay within the tile bounds.
+     */
+    xSrc += (pGC->patOrg.x % tileWidth) - tileWidth;
+    ySrc += (pGC->patOrg.y % pTile->height) - pTile->height;
+
     while (n--)
     {
-	iline = ppt->y % pTile->height;
+	iline = (ppt->y - ySrc) % pTile->height;
         pdst = addrlBase + (ppt->y * nlwidth) + (ppt->x >> PWSH);
         psrcT = (int *) pTile->devPrivate + (iline * tlwidth);
 	x = ppt->x;
@@ -323,7 +336,7 @@ int fSorted;
 	    width = *pwidth;
 	    while(width > 0)
 	    {
-		rem = x % tileWidth;
+		rem = (x - xSrc) % tileWidth;
 		psrc = psrcT + rem / PPW;
 	        w = min(tileWidth, width);
 		w = min(w,tileWidth-rem);
@@ -378,16 +391,17 @@ int fSorted;
 
 		    if(startmask)
 		    {
-			getbits(psrc, rem & PIM, nstart, tmpSrc);
+			getbits(psrc, 0, nstart, tmpSrc);
 			putbitsrop(tmpSrc, x & PIM, nstart, pdst, 
 			    pGC->planemask, rop);
 			pdst++;
-			psrc++;
+			if(srcStartOver)
+			    psrc++;
 		    }
 		     
 		    while(nlMiddle--)
 		    {
-			    getbits(psrc, 0, PPW, tmpSrc);
+			    getbits(psrc, nstart, PPW, tmpSrc);
 			    putbitsrop( tmpSrc, 0, PPW,
 				pdst, pGC->planemask, rop );
 			    pdst++;
@@ -395,7 +409,7 @@ int fSorted;
 		    }
 		    if(endmask)
 		    {
-			getbits(psrc, 0, nend, tmpSrc);
+			getbits(psrc, nstart, nend, tmpSrc);
 			putbitsrop(tmpSrc, 0, nend, pdst, 
 			    pGC->planemask, rop);
 		    }
@@ -510,6 +524,14 @@ int fSorted;
 	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
         xSrc = ySrc = 0;
     }
+
+    /* this replaces rotating the stipple. Instead we just adjust the offset
+     * at which we start grabbing bits from the stipple.
+     * Ensure that ppt->x - xSrc >= 0 and ppt->y - ySrc >= 0,
+     * so that iline and xrem always stay within the stipple bounds.
+     */
+    xSrc += (pGC->patOrg.x % stippleWidth) - stippleWidth;
+    ySrc += (pGC->patOrg.y % pStipple->height) - pStipple->height;
 
     while (n--)
     {
