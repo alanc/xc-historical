@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.42 89/07/13 14:23:01 jim Exp $
+ *	$XConsortium: misc.c,v 1.43 89/07/16 15:24:08 jim Exp $
  */
 
 
@@ -55,7 +55,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: misc.c,v 1.42 89/07/13 14:23:01 jim Exp $";
+static char rcs_id[] = "$XConsortium: misc.c,v 1.43 89/07/16 15:24:08 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -761,23 +761,15 @@ register XErrorEvent *ev;
 }
 
 /*ARGSUSED*/
-xioerror(d)
-Display *d;
+xioerror(dpy)
+Display *dpy;
 {
-	/* Perror(3) writes to fd 2.  What we want to do is
-	** to write to stderr's fd.  Since the original code used
-	** perror which uses write(2), let's not use fprintf(3).
-	*/
-	int oerrno = errno;
-	char *msg = SysErrorMsg (oerrno);
-	int stderrfd = fileno (stderr);
-	
-	write(stderrfd, xterm_name, strlen(xterm_name));
-	write(stderrfd, ": ", 2);
-	write(stderrfd, msg, strlen (msg));
-	write(stderrfd, "\n", 1);
+    (void) fprintf (stderr, 
+		    "%s:  fatal IO error %d (%s) or KillClient on X server \"%s\"\r\n",
+		    xterm_name, errno, SysErrorMsg (errno),
+		    DisplayString (dpy));
 
-	Exit(ERROR_XIOERROR);
+    Exit(ERROR_XIOERROR);
 }
 
 XStrCmp(s1, s2)
