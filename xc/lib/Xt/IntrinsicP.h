@@ -1,5 +1,5 @@
 /*
-* $XConsortium: IntrinsicP.h,v 1.39 89/09/13 14:27:31 swick Exp $
+* $XConsortium: IntrinsicP.h,v 1.40 89/09/13 15:45:27 swick Exp $
 * $oHeader: IntrinsicP.h,v 1.4 88/08/26 14:49:52 asente Exp $
 */
 
@@ -121,6 +121,9 @@ typedef struct _XtTMRec {
     StatePtr        current_state;      /* Translation Manager state ptr     */
     unsigned long   lastEventTime;
 } XtTMRec, *XtTM;
+
+extern Widget _XtWindowedAncestor(); /* internal */
+   /* Object object; */
 
 #include "CoreP.h"
 #include "CompositeP.h"

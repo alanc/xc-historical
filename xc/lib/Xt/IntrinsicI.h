@@ -1,5 +1,5 @@
 /*
-* $XConsortium: IntrinsicI.h,v 1.33 89/09/12 16:46:48 swick Exp $
+* $XConsortium: IntrinsicI.h,v 1.34 89/09/13 15:12:42 swick Exp $
 * $oHeader: IntrinsicI.h,v 1.5 88/08/31 16:21:08 asente Exp $
 */
 
@@ -128,14 +128,6 @@ extern int bcmp();
 #ifndef ERRORDB
 #define ERRORDB "/usr/lib/X11/XtErrorDB"
 #endif
-
-/*************************************************************
- *
- * Misc
- ************************************************************/
-
-extern Widget _XtWindowedAncestor();
-   /* Object object; */
 
 #endif /* _XtintrinsicI_h */
 /* DON'T ADD STUFF AFTER THIS #endif */
