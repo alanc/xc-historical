@@ -1,4 +1,4 @@
-/* $XConsortium: TMaction.c,v 1.2 91/01/10 17:15:46 converse Exp $ */
+/* $XConsortium: TMaction.c,v 1.3 91/01/10 17:42:45 rws Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -51,16 +51,24 @@ typedef struct _CompiledAction{
 ? (((TMClassCache)wc->core_class.actions)->actions) \
 : NULL)
 
-static CompiledActionTable CompileActionTable(actions, count)
+static CompiledActionTable CompileActionTable(actions, count, copy)
     register struct _XtActionsRec *actions;
     register Cardinal count;
+    Boolean copy;	/* if True, copy before compiling in place */
 {
     CompiledActionTable cActions = (CompiledActionTable)actions;
     register int i;
 
-    for (i=0; i<count; i++) {
-	cActions[i].signature = XrmPermStringToQuark(actions[i].string);
+    if (copy) {
+	cActions = (CompiledActionTable) XtMalloc(count * 
+						  sizeof(CompiledAction));
+	for (i=0; i < count; i++)
+	    cActions[i].proc = actions[i].proc;
     }
+
+    for (i=0; i<count; i++)
+	cActions[i].signature = XrmPermStringToQuark(actions[i].string);
+
     return cActions;
 }
 
@@ -289,7 +297,7 @@ XtPointer _XtInitializeActionData(actions, count)
     TMClassCache	classCache;
 
     classCache = XtNew(TMClassCacheRec);
-    classCache->actions = CompileActionTable(actions, count);
+    classCache->actions = CompileActionTable(actions, count, False);
     classCache->bindCache = NULL;
     return (XtPointer)classCache;
 }
@@ -369,8 +377,8 @@ static void RemoveFromBindCache(w,procs)
 	    {
 		if (--bindCache->status.refCount == 0)
 		  {
-		      TMShortCard	j;
 #ifdef TRACE_TM	
+		      TMShortCard	j;
 		      Boolean		found = False;
 		      TMBindCache	*tbl = _XtGlobalTM.bindCacheTbl;
 
@@ -595,13 +603,14 @@ void _XtRemoveBindProcsByIndex(w, bindData, ndx)
       bindProcs[i] = bindProcs[i+1];
 }
 #endif /* notdef */
+
 /*
- * used to free the global actions from DestroyAppContext
+ * used to free all copied action tables, called from DestroyAppContext
  */
 void _XtFreeActions(actions)
-    ActionListRec	*actions;
+    ActionList	actions;
 {
-    ActionListRec	*curr = actions, *next;
+    ActionList	curr, next;
 
     for (curr = actions; curr;) {
 	next = curr->next;
@@ -628,7 +637,7 @@ void XtAppAddActions(app, actions, num_actions)
     rec = XtNew(ActionListRec);
     rec->next = app->action_table;
     app->action_table = rec;
-    rec->table = CompileActionTable(actions, num_actions);
+    rec->table = CompileActionTable(actions, num_actions, True);
     rec->count = num_actions;
 }
 
@@ -728,8 +737,6 @@ static void _XtMenuPopdownAction(widget, event, params, num_params)
     }
 }
 
-static CompiledActionTable tmActionsCompiled;
-
 static XtActionsRec RConst tmActions[] = {
     {"XtMenuPopup", XtMenuPopupAction},
     {"XtMenuPopdown", _XtMenuPopdownAction},
@@ -748,17 +755,10 @@ void _XtActionInitialize(app)
 {
     register ActionList rec;
 
-    /* making a copy is better for shared libraries than writing in place? */
-    if (!tmActionsCompiled) {
-	XtActionList copy;
-	copy = (XtActionList)XtMalloc(sizeof(tmActions));
-	bcopy((char *)tmActions, (char *)copy, sizeof(tmActions));
-	tmActionsCompiled = CompileActionTable(copy, XtNumber(tmActions));
-    }
     rec = XtNew(ActionListRec);
     rec->next = app->action_table;
     app->action_table = rec;
-    rec->table = tmActionsCompiled;
+    rec->table = CompileActionTable(tmActions, XtNumber(tmActions), True);
     rec->count = XtNumber(tmActions);
 }
 
