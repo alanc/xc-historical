@@ -1,4 +1,4 @@
-/* $XConsortium: TekHVCGcVC.c,v 1.7 91/06/27 10:52:21 dave Exp $" */
+/* $XConsortium: TekHVCGcVC.c,v 1.8 91/07/25 01:08:07 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -192,6 +192,7 @@ XcmsTekHVCClipVC (ccc, pColors_in_out, nColors, i, pCompressed)
 	    }
 	    retval = _XcmsDIConvertColors(&myCCC, pColor,
 		    &myCCC.pPerScrnInfo->screenWhitePt, 1, XcmsCIEXYZFormat);
+	    return (retval);
 	}
 
 	/* return the closest point on the upper part of the hue leaf. */
