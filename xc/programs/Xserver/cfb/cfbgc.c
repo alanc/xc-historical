@@ -451,7 +451,19 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
 	case GCTile:
 	    if (pGC->tile == (PixmapPtr) NULL)
 		break;
-	    cfbPadPixmap(pGC->tile);
+	    if ((pGC->tile->width <= 32) &&
+		!(pGC->tile->width & (pGC->tile->width - 1)))
+	    {
+		PixmapPtr ntile;
+
+		ntile = cfbCopyPixmap(pGC->tile);
+		if (ntile)
+		{
+		    cfbPadPixmap(ntile);
+		    cfbDestroyPixmap(pGC->tile);
+		    pGC->tile = ntile;
+		}
+	    }
 #ifdef CFBROTPIX
 	    fRotate = TRUE;
 #endif
@@ -461,7 +473,19 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
 	case GCStipple:
 	    if (pGC->stipple == (PixmapPtr) NULL)
 		break;
-	    cfbPadPixmap(pGC->stipple);
+	    if ((pGC->stipple->width <= 32) &&
+		!(pGC->stipple->width & (pGC->stipple->width - 1)))
+	    {
+		PixmapPtr nstipple;
+
+		nstipple = cfbCopyPixmap(pGC->stipple);
+		if (nstipple)
+		{
+		    cfbPadPixmap(nstipple);
+		    cfbDestroyPixmap(pGC->stipple);
+		    pGC->stipple = nstipple;
+		}
+	    }
 #ifdef CFBROTPIX
 	    fRotate = TRUE;
 #endif
