@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.58 90/03/15 11:11:49 jim Exp $
+ * $XConsortium: viewres.c,v 1.59 90/03/15 12:15:57 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -526,6 +526,7 @@ static void do_resources (node, op, updatewidget)
 	if (XtIsManaged (d->resource_lw)) {
 	    NumberShowing--;
 	    XtUnmanageChild (d->resource_lw);
+	    XawListUnhighlight (d->resource_lw);
 	    if (updatewidget) remove_from_selected_list (node, TRUE);
 	}				/* else ignore it */
     }
