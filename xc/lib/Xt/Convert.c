@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Convert.c,v 1.34 89/11/15 10:37:31 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Convert.c,v 1.35 89/12/13 12:54:07 swick Exp $";
 /* $oHeader: Convert.c,v 1.4 88/09/01 11:10:44 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -394,15 +394,16 @@ static Boolean ResourceQuarkToOffset(widget_class, name, offset)
 {
     register WidgetClass     wc;
     register Cardinal        i;
-    register XrmResourceList resources;
+    register XrmResourceList res, *resources;
 
     for (wc = widget_class;
 	wc != NULL;
 	wc = wc->core_class.superclass) {
-	resources = (XrmResourceList) wc->core_class.resources;
+	resources = (XrmResourceList*) wc->core_class.resources;
 	for (i = 0; i < wc->core_class.num_resources; i++, resources++) {
-	    if (resources->xrm_name == name) {
-		*offset = -resources->xrm_offset - 1;
+	    res = *resources;
+	    if (res->xrm_name == name) {
+		*offset = -res->xrm_offset - 1;
 		return True;
 	    }
 	} /* for i in resources */
