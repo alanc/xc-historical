@@ -548,7 +548,7 @@ typedef struct _LbxQueryExtension {
 } xLbxQueryExtensionReq;
 #define	sz_xLbxQueryExtensionReq	8
 
-typedef struct {
+typedef struct _LbxQueryExtensionReply {
     BYTE	type;			/* X_Reply */
     CARD8	numReqs;
     CARD16	sequenceNumber B16;
