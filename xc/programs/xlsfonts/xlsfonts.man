@@ -20,12 +20,9 @@ being expanded by the shell.
 This option specifies the X server to contact.
 .PP
 .TP 8
-.B \-l
-This option indicates that a long listing should be generated for each font.
-.TP 8
-.B \-L
-This option indicates that a very long listing showing the individual character 
-metrics should be printed.
+.B \-l[l[l]]
+This option indicates that medium, long, and very long listings, respectively,
+should be generated for each font.
 .TP 8
 .B \-m
 This option indicates that long listings should also print the minimum and
