@@ -1,7 +1,7 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Create.c,v 1.50 89/06/09 08:12:33 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Create.c,v 1.2 89/07/20 14:37:34 swick Exp $";
 /* $oHeader: Create.c,v 1.5 88/09/01 11:26:22 asente Exp $ */
-#endif /* lint */
+#endif /*lint*/
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -357,12 +357,13 @@ Widget XtAppCreateShell(name, class, widgetClass, display, args, num_args)
 	name = XrmNameToString(_XtGetPerDisplay(display)->name);
 
     return _XtCreate(name, class, widgetClass, (Widget)NULL,
-	    DefaultScreenOfDisplay(display),
+	    (Screen*)DefaultScreenOfDisplay(display),
 	    args, num_args, (ConstraintWidgetClass) NULL);
 } /* XtAppCreateShell */
 
+/* ARGSUSED */
 Widget XtCreateApplicationShell(name, widgetClass, args, num_args)
-    String      name;		/* unused in R3 */
+    String      name;		/* unused in R3 and later */
     WidgetClass widgetClass;
     ArgList     args;
     Cardinal    num_args;

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.89 89/06/09 08:16:35 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.3 89/07/20 14:37:55 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -70,6 +70,11 @@ typedef unsigned long   XtGCMask;   /* Mask of values that are used by widget*/
 typedef unsigned long   Pixel;	    /* Index into colormap	        */
 typedef short		Position;   /* Offset from 0 coordinate	        */
 typedef ShortCard	Dimension;  /* Size in pixels		        */
+typedef int		XtCacheType;
+#define			XtCacheNone	  0x001
+#define			XtCacheAll	  0x002
+#define			XtCacheByDisplay  0x003
+#define			XtCacheRefCount	  0x100
 
 /****************************************************************
  *
@@ -555,7 +560,7 @@ extern Boolean XtIsSensitive();
 extern Widget XtParent();
     /* Widget	widget; */
 
-#endif /* _XtIntrinsicP_h */
+#endif /*_XtIntrinsicP_h*/
 
 #define XtMapWidget(widget)	XMapWindow(XtDisplay(widget), XtWindow(widget))
 #define XtUnmapWidget(widget)	\
@@ -1075,6 +1080,6 @@ extern void XtCallbackReleaseCacheRefList(); /* widget, closure, call_data */
     /* caddr_t closure; */	/* XtCacheRef* */
     /* caddr_t call_data */
 
-#endif /* _XtIntrinsic_h */
+#endif /*_XtIntrinsic_h*/
 /* DON'T ADD STUFF AFTER THIS #endif */
 

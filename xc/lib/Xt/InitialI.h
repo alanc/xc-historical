@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.11 89/06/09 08:15:20 swick Exp $ */
+/* $XConsortium: InitialI.h,v 1.3 89/07/20 14:37:47 swick Exp $ */
 /* $oHeader: InitializeI.h,v 1.8 88/09/01 11:25:04 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -167,4 +167,5 @@ extern void _XtDisplayInitialize();
     /* 	char *argv[];  */
 
 extern void _XtCacheFlushTag();
-    /*	caddr_t tag;	*/
+    /*  XtAppContext app; */
+    /*	caddr_t tag;	  */

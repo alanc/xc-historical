@@ -1,8 +1,8 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Resources.c,v 1.59 89/06/09 08:17:44 swick Exp $";
+    "$XConsortium: Resources.c,v 1.3 89/07/20 14:38:00 swick Exp $";
 /* $oHeader: Resources.c,v 1.6 88/09/01 13:39:14 asente Exp $ */
-#endif /* lint */
+#endif /*lint*/
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -35,6 +35,7 @@ SOFTWARE.
 #include "ShellP.h"
 #include "StringDefs.h"
 static XrmClass	QBoolean, QString, QCallProc, QImmediate;
+static XrmName QinitialResourcesPersistent, QInitialResourcesPersistent;
 
 void XtCopyFromParent(widget, offset, value)
     Widget      widget;
@@ -445,6 +446,8 @@ static XtCacheRef *GetResources(widget, base, names, classes,
     XtCacheRef	    cache_ref[400];
     int		    cache_ref_size = 0;
     Display	    *dpy;
+    Boolean	    persistent_resources = True;
+    Boolean	    found_persistence = False;
 
     if ((args == NULL) && (num_args != 0)) {
     	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
@@ -481,6 +484,11 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 	register XrmResourceList *res;
 	for (arg = args, i = 0; i < num_args; i++, arg++) {
 	    argName = quark_args[i];
+	    if (argName == QinitialResourcesPersistent) {
+		persistent_resources = (Boolean)arg->value;
+		found_persistence = True;
+		break;
+	    }
 	    for (j = 0, res = table; j < num_resources; j++, res++) {
 		rx = *res;
 		if (argName == rx->xrm_name) {
@@ -505,7 +513,7 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 	searchList = NULL;
 	do {
 	    searchList = (XrmHashTable*)
-		XtRealloc(searchList,
+		XtRealloc((char*)searchList,
 			  sizeof(XrmHashTable) * (searchListSize *= 2));
 	    status = XrmQGetSearchList(dpy->db, names, classes,
 				       searchList, searchListSize);
@@ -530,9 +538,25 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 	long	long_val;
 	char*	char_ptr;
 
+	if (!found_persistence) {
+	    if (XrmQGetSearchResource(searchList, QinitialResourcesPersistent,
+			QInitialResourcesPersistent, &rawType, &value)) {
+		if (rawType != QBoolean) {
+		    rawValue = value;
+		    value.size = sizeof(Boolean);
+		    value.addr = &persistent_resources;
+		    if (!_XtConvert(widget, rawType, &rawValue, QBoolean,
+				    &value, NULL))
+			persistent_resources = *(Boolean*)value.addr;
+		}
+		else
+		    persistent_resources = *(Boolean*)value.addr;
+	    }
+	}
 	for (res = table, j = 0; j < num_resources; j++, res++) {
 	    if (! found[j]) {
 		Boolean	already_copied = False;
+		Boolean have_value = False;
 		rx = *res;
 		xrm_type = rx->xrm_type;
 		if (XrmQGetSearchResource(searchList,
@@ -541,15 +565,17 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 			rawValue = *pv;
 			value.size = rx->xrm_size;
 			value.addr = base - rx->xrm_offset - 1;
-			already_copied =
+			already_copied = have_value =
 			    _XtConvert(widget, rawType, &rawValue,
 				       xrm_type, &value,
-				       &cache_ref[cache_ref_size]);
-			if (cache_ref[cache_ref_size] != NULL)
+				       persistent_resources ?
+				          NULL : &cache_ref[cache_ref_size]);
+			if ((persistent_resources == False)
+			  && cache_ref[cache_ref_size] != NULL)
 			    cache_ref_size++;
-		    }
+		    } else have_value = True;
 		}
-		if (!already_copied && rx->xrm_default_addr != NULL) {
+		if (!have_value && rx->xrm_default_addr != NULL) {
 		    /* Convert default value to proper type */
 		    xrm_default_type = rx->xrm_default_type;
 		    if (xrm_default_type == QCallProc) {
@@ -609,7 +635,7 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 	    }
 	}
     }
-    if (searchList != stackSearchList) XtFree(searchList);
+    if (searchList != stackSearchList) XtFree((char*)searchList);
     if (cache_ref_size > 0) {
 	XtCacheRef *refs =
 	    (XtCacheRef*)XtMalloc(sizeof(XtCacheRef)*(cache_ref_size+1));
@@ -1197,5 +1223,7 @@ void _XtResourceListInitialize()
     QString = StringToClass(XtCString);
     QCallProc = XrmStringToRepresentation(XtRCallProc);
     QImmediate = XrmStringToRepresentation(XtRImmediate);
+    QinitialResourcesPersistent = StringToName(XtNinitialResourcesPersistent);
+    QInitialResourcesPersistent = StringToName(XtCInitialResourcesPersistent);
 }
 

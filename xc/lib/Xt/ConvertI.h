@@ -1,4 +1,4 @@
-/* $XConsortium: ConvertI.h,v 1.1 89/06/01 14:33:58 swick Exp $ */
+/* $XConsortium: ConvertI.h,v 1.3 89/07/20 14:37:19 swick Exp $ */
 /* $oHeader: ConvertI.h,v 1.3 88/08/31 16:11:04 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -35,9 +35,12 @@ extern void _XtTableAddConverter();
     /* ConverterTable	    table;	    */
     /* XrmRepresentation    from_type;      */
     /* XrmRepresentation    to_type;        */
-    /* XtConverter      converter;      */
+    /* XtConverter          converter;      */
     /* XtConvertArgList     convert_args;   */
     /* Cardinal             num_args;       */
+    /* Boolean              new_style;      */
+    /* XtCacheType	    cache_type;	    */
+    /* XtDestructor         destructor;     */
 
 extern Boolean _XtConvert();
     /* Widget               widget;         */

@@ -1,7 +1,7 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMparse.c,v 1.1 89/06/01 14:34:09 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMparse.c,v 1.4 89/07/20 14:38:11 swick Exp $";
 /* $oHeader: TMparse.c,v 1.4 88/09/01 17:30:39 asente Exp $ */
-#endif lint
+#endif /*lint*/
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -39,9 +39,9 @@ SOFTWARE.
 #include <X11/keysymdef.h>
 
 #ifndef NOCACHE_TRANSLATIONS
-#define CACHED True
+#define CACHED XtCacheNone
 #else
-#define CACHED False
+#define CACHED XtCacheAll | XtRefCount
 #endif
 
 /* Private definitions. */
@@ -1872,14 +1872,14 @@ _XtAddTMConverters(table)
 	     q = XrmStringToRepresentation(XtRString), 
 	     XrmStringToRepresentation(XtRTranslationTable), 
  	     CvtStringToTranslations, (XtConvertArgList) NULL,
-	     (Cardinal)0, _XtFreeTranslations, True, CACHED);
+	     (Cardinal)0, True, CACHED, _XtFreeTranslations);
      _XtTableAddConverter(table, q,
 	     XrmStringToRepresentation(XtRAcceleratorTable),
  	     CvtStringToAccelerators, (XtConvertArgList) NULL,
-	     (Cardinal)0, (XtDestructor)_XtFreeTranslations, True, CACHED);
+	     (Cardinal)0, True, CACHED, (XtDestructor)_XtFreeTranslations);
      _XtTableAddConverter(table,
 	     XrmStringToRepresentation( "_XtTranslationTablePair" ),
 	     XrmStringToRepresentation(XtRTranslationTable), 
  	     _XtCvtMergeTranslations, (XtConvertArgList) NULL,
-	     (Cardinal)0, _XtFreeTranslations, True, CACHED);
+	     (Cardinal)0, True, CACHED, _XtFreeTranslations);
 }

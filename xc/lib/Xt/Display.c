@@ -1,7 +1,7 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Display.c,v 1.19 89/06/09 08:14:10 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Display.c,v 1.3 89/07/20 14:37:39 swick Exp $";
 /* $oHeader: Display.c,v 1.9 88/09/01 11:28:47 asente Exp $ */
-#endif /* lint */
+#endif /*lint*/
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -269,7 +269,7 @@ static void DestroyAppContext(app)
 	while (app->count-- > 0) XtCloseDisplay(app->list[app->count]);
 	if (app->list != NULL) XtFree((char *)app->list);
 	_XtFreeConverterTable(app->converterTable);
-	_XtCacheFlushTag((caddr_t)&app->heap);
+	_XtCacheFlushTag(app, (caddr_t)&app->heap);
 	_XtHeapFree(&app->heap);
 	while (*prev_app != app) prev_app = &(*prev_app)->next;
 	*prev_app = app->next;
@@ -349,8 +349,7 @@ XtPerDisplay _XtGetPerDisplay(dpy)
 XtAppContext XtDisplayToApplicationContext(dpy)
 	Display *dpy;
 {
-	XtPerDisplay pd = _XtGetPerDisplay(dpy);
-	return pd->appContext;
+	return _XtGetPerDisplay(dpy)->appContext;
 }
 
 static void _XtHeapInit(heap)
@@ -367,15 +366,24 @@ char* _XtHeapAlloc(heap, bytes)
     register char* heap_loc;
     if (heap == NULL) return XtMalloc(bytes);
     if (heap->bytes_remaining < bytes) {
-	heap_loc = XtMalloc(HEAP_SEGMENT_SIZE);
+	int segment_size = ((bytes + sizeof(char*)) > HEAP_SEGMENT_SIZE)
+			    ? bytes + sizeof(char*) : HEAP_SEGMENT_SIZE;
+	heap_loc = XtMalloc(segment_size);
 	*(char**)heap_loc = heap->start;
 	heap->start = heap_loc;
 	heap->current = heap_loc + sizeof(char*);
-	heap->bytes_remaining = HEAP_SEGMENT_SIZE - sizeof(char*);
+	heap->bytes_remaining = segment_size - sizeof(char*);
     }
+#ifdef WORD64
+    /* round to nearest 8-byte boundary */
+    bytes = (bytes + 7) & (~7);
+#else
+    /* round to nearest 4-byte boundary */
+    bytes = (bytes + 3) & (~3);
+#endif /* WORD64 */
     heap_loc = heap->current;
     heap->current += bytes;
-    heap->bytes_remaining -= bytes;
+    heap->bytes_remaining -= bytes; /* can be negative */
     return heap_loc;
 }
 
@@ -441,10 +449,10 @@ static void CloseDisplay(dpy)
             xtpd->modKeysyms = NULL;
             xtpd->modsToKeysyms = NULL;
 	    XDestroyRegion(xtpd->region);
-	    _XtCacheFlushTag((caddr_t)&xtpd->heap);
+	    _XtCacheFlushTag(xtpd->appContext, (caddr_t)&xtpd->heap);
 	    _XtHeapFree(&xtpd->heap);
         }
-	XtFree(pd);
+	XtFree((char*)pd);
 	XrmDestroyDatabase(dpy->db);
 	dpy->db = NULL;
 	XCloseDisplay(dpy);
@@ -482,8 +490,6 @@ void _XtCloseDisplays()
 XtAppContext XtWidgetToApplicationContext(w)
 	Widget w;
 {
-	XtPerDisplay pd;
-
 	while (w != NULL && !XtIsWindowObject(w)) w = XtParent(w);
 	if (w == NULL) {
 	    XtErrorMsg("noAppContext", "widgetToApplicationContext",
@@ -491,6 +497,5 @@ XtAppContext XtWidgetToApplicationContext(w)
 		    "Couldn't find ancestor with display information",
 		    (String *) NULL, (Cardinal *)NULL);
 	}
-	pd = _XtGetPerDisplay(XtDisplay(w));
-	return pd->appContext;
+	return _XtGetPerDisplay(XtDisplay(w))->appContext;
 }
