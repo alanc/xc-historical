@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.186 94/04/01 17:39:58 dpw Exp $ */
+/* $XConsortium: connection.c,v 1.187 94/04/17 20:26:56 dpw Exp $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -281,7 +281,7 @@ CreateWellKnownSockets()
     }
 
     if (WellKnownConnections == 0)
-        FatalError ("Cannot establish any listening sockets");
+        FatalError ("Cannot establish any listening sockets - Make sure an X server isn't already running");
 
     OsSignal (SIGPIPE, SIG_IGN);
     OsSignal (SIGHUP, AutoResetServer);
