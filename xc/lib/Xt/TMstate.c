@@ -233,6 +233,7 @@ EventObjPtr EventMapObjectCreate(translations, eventSeq)
     new = &translations->eventObjTbl[translations->numEvents];
 
     new->eventType	= eventSeq->eventType;
+    new->eventCodeMask	= eventSeq->eventCodeMask;
     new->eventCode	= eventSeq->eventCode;
     new->modifierMask	= eventSeq->modifierMask;
     new->modifiers	= eventSeq->modifiers;
@@ -285,7 +286,9 @@ void TranslateEvent(w, closure, event)
 
     oldState = 0;
     specialCase = FALSE;
+    curEvent.eventCodeMask = 0;
     curEvent.eventCode = 0;
+    curEvent.modifierMask = 0;
     curEvent.modifiers = 0;
     curEvent.eventType = event->type;
     switch (event->type) {
@@ -385,9 +388,10 @@ int EventIndex(translations, eventSeq)
 
     for (i=0; i < translations->numEvents; i++) {
         if ((eventTbl[i].eventType == eventSeq->eventType) &&
-            (eventTbl[i].eventCode == eventSeq->eventCode) &&
+            (eventTbl[i].eventCode ==
+		(eventTbl[i].eventCodeMask & eventSeq->eventCode)) &&
 	    (eventTbl[i].modifiers ==
-		(eventSeq->modifierMask & eventSeq->modifiers))
+		(eventTbl[i].modifierMask & eventSeq->modifiers))
 	   ) 
 		return(i);
    }
