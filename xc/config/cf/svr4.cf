@@ -1,4 +1,4 @@
-XCOMM $XConsortium: svr4.cf,v 1.1 94/03/29 15:34:47 gildea Exp $
+XCOMM $XConsortium: svr4.cf,v 1.2 94/03/30 15:07:31 gildea Exp $
 /*
  * A default OS name
  */
@@ -89,7 +89,7 @@ XCOMM $XConsortium: svr4.cf,v 1.1 94/03/29 15:34:47 gildea Exp $
 #if HasGcc2
 #define DefaultCDebugFlags -O2
 #else
-#define DefalutCDebugFlags -O
+#define DefaultCDebugFlags -O
 #endif
 #endif
 #ifndef ServerOSDefines
