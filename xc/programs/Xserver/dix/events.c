@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.103 87/09/02 03:38:32 toddb Locked $ */
+/* $Header: events.c,v 1.104 87/09/02 03:48:45 toddb Locked $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1128,6 +1128,11 @@ ProcWarpPointer(client)
     (*currentScreen->SetCursorPosition)( currentScreen,
 	    MotionEvent.u.keyButtonPointer.rootX,
 	    MotionEvent.u.keyButtonPointer.rootY);
+
+    MotionEvent.u.keyButtonPointer.time = currentTime.milliseconds;
+    MotionEvent.u.u.type = MotionNotify;
+
+    ProcessPointerEvent(&MotionEvent, inputInfo.pointer);
 
     return Success;
 }
