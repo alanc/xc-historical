@@ -1,5 +1,5 @@
 /*
- * $XConsortium: include.c,v 1.8 89/12/12 12:44:20 jim Exp $
+ * $XConsortium: include.c,v 1.9 91/02/20 19:42:28 rws Exp $
  */
 #include "def.h"
 
@@ -85,16 +85,8 @@ struct inclist *inc_path(file, include, dot)
 				warning("\tnot in %s\n", path);
 		}
 
-	if (!found) {
-		/*
-		 * If we've announced where it's not include it anyway so
-		 * it gets on the dependency list.
-		 */
-		if (show_where_not)
-			ip = newinclude(include, include);
-		else
-			ip = NULL;
-	}
+	if (!found)
+		ip = NULL;
 	return(ip);
 }
 
