@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.46 90/03/01 13:02:24 jim Exp $
+ * $XConsortium: viewres.c,v 1.48 90/03/01 13:41:53 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -664,23 +664,21 @@ static void panner_porthole_callback (gw, closure, data)
     caddr_t closure;			/* unused */
     caddr_t data;			/* report */
 {
-    static Boolean in_report = FALSE;
     XawPannerReport *rep;
     Arg args[6];
     Cardinal n;
-    Widget target;
+    Widget target = NULL;
 
-    if (in_report) return;
     rep = (XawPannerReport *) data;
     n = TWO;
 
     if (gw == pannerWidget) {
-	if (!(target = treeWidget)) return;
+	target = treeWidget;
 
 	XtSetArg (args[0], XtNx, -rep->slider_x);
 	XtSetArg (args[1], XtNy, -rep->slider_y);
     } else if (gw == portholeWidget) {
-	if (!(target = pannerWidget)) return;
+	target = pannerWidget;
 
 	XtSetArg (args[0], XtNsliderX, rep->slider_x);
 	XtSetArg (args[1], XtNsliderY, rep->slider_y);
@@ -691,12 +689,10 @@ static void panner_porthole_callback (gw, closure, data)
 	    XtSetArg (args[5], XtNcanvasHeight, rep->canvas_height);
 	    n = SIX;
 	}
-    } else
-      return;
+    }
 
-    in_report = TRUE;
+    if (!target) return;
     XtSetValues (target, args, n);
-    in_report = FALSE;
     return;
 }
 
@@ -825,9 +821,10 @@ main (argc, argv)
     pannerWidget = XtCreateManagedWidget ("panner", pannerWidgetClass, box,
 					  args, THREE);
 
-    /* use same callback arg */
+    /* use same callback arg[0] */
+    XtSetArg (args[1], XtNbackgroundPixmap, None);  /* faster updates */
     portholeWidget = XtCreateManagedWidget ("porthole", portholeWidgetClass,
-					    pane, args, ONE);
+					    pane, args, TWO);
 
     treeWidget = XtCreateManagedWidget ("tree", treeWidgetClass,
 					portholeWidget, (ArgList) NULL, ZERO);
