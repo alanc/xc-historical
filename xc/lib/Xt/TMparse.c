@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.126 92/02/27 17:01:53 converse Exp $ */
+/* $XConsortium: TMparse.c,v 1.127 92/03/04 17:56:26 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1046,6 +1046,7 @@ static String ParseAtom(str, closure, event,error)
 static ModifierMask buttonModifierMasks[] = {
     0, Button1Mask, Button2Mask, Button3Mask, Button4Mask, Button5Mask
 };
+static String ParseRepeat();
 
 static String ParseEvent(str, event, reps, plus, error)
     register String str;
@@ -1055,7 +1056,6 @@ static String ParseEvent(str, event, reps, plus, error)
     Boolean* error;
 {
     Cardinal	tmEvent;
-    static String ParseRepeat();
 
     str = ParseModifiers(str, event,error);
     if (*error) return str;
