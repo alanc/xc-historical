@@ -1,5 +1,5 @@
 /*
- * $XConsortium: WinUtil.h,v 1.1 89/07/14 17:51:57 jim Exp $
+ * $XConsortium: WinUtil.h,v 1.2 89/09/22 11:52:20 jim Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -24,5 +24,6 @@
 
 extern Window XmuClientWindow();
 extern Bool XmuUpdateMapHints();
+extern Screen *XmuScreenOfWindow();
 
 #endif /* _XMU_WINDOWUTIL_H_ */
