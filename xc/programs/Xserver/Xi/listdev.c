@@ -1,4 +1,4 @@
-/* $Header: xlistdev.c,v 1.11 91/01/24 16:38:35 rws Exp $ */
+/* $Header: xlistdev.c,v 1.12 91/07/17 16:37:42 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -140,7 +140,9 @@ SizeDeviceInfo (d, namesize, size)
     int *namesize;
     int *size;
     {
-    *namesize += strlen (d->name) + 1;
+    *namesize += 1;
+    if (d->name)
+	*namesize += strlen (d->name);
     if (d->key != NULL)
 	*size += sizeof (xKeyInfo);
     if (d->button != NULL)
@@ -201,9 +203,17 @@ CopyDeviceName (namebuf, name)
     {
     char *nameptr = (char *) *namebuf;
 
-    *nameptr++ = strlen (name);
-    strcpy (nameptr, name);
-    *namebuf += (strlen (name)+1);
+    if (name)
+	{
+	*nameptr++ = strlen (name);
+	strcpy (nameptr, name);
+	*namebuf += (strlen (name)+1);
+	}
+    else
+	{
+	*nameptr++ = 0;
+	*namebuf += 1;
+	}
     }
 
 /***********************************************************************
