@@ -1,5 +1,5 @@
 /*
- * $XConsortium: chooser.c,v 1.18 94/03/31 23:17:51 rws Exp $
+ * $XConsortium: chooser.c,v 1.19 94/04/17 20:03:34 rws Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -75,6 +75,13 @@ in this Software without prior written authorization from the X Consortium.
 #include    <sys/socket.h>
 #include    <netinet/in.h>
 #include    <sys/ioctl.h>
+#if defined(STREAMSCONN)
+#if defined(NCR)
+#include    <netinet/ip.h>
+#endif
+#include    <stropts.h>
+#include    <tiuser.h>
+#endif
 
 #define BROADCAST_HOSTNAME  "BROADCAST"
 
@@ -472,6 +479,38 @@ RegisterHostname (name)
 
     if (!strcmp (name, BROADCAST_HOSTNAME))
     {
+#if defined(STREAMSCONN) && defined(NCR)
+    int                 ipfd;
+    struct ifconf       *ifcp;
+    struct strioctl     ioc;
+
+	ifcp = (struct ifconf *)buf;
+	ifcp->ifc_buf = buf+4;
+	ifcp->ifc_len = sizeof (buf) - 4;
+
+	if ((ipfd=open( "/dev/ip", O_RDONLY )) < 0 )
+	    {
+	    t_error( "RegisterHostname() t_open(/dev/ip) failed" );
+	    return;
+	    }
+
+	ioc.ic_cmd = IPIOC_GETIFCONF;
+	ioc.ic_timout = 60;
+	ioc.ic_len = sizeof( buf );
+	ioc.ic_dp = (char *)ifcp;
+
+	if (ioctl (ipfd, (int) I_STR, (char *) &ioc) < 0)
+	    {
+	    perror( "RegisterHostname() ioctl(I_STR(IPIOC_GETIFCONF)) failed" );
+	    close( ipfd );
+	    return;
+	    }
+
+	for (ifr = ifcp->ifc_req,
+n = ifcp->ifc_len / sizeof (struct ifreq);
+	    --n >= 0;
+	    ifr++)
+#else
 	ifc.ifc_len = sizeof (buf);
 	ifc.ifc_buf = buf;
 	if (ioctl (socketFD, (int) SIOCGIFCONF, (char *) &ifc) < 0)
@@ -486,6 +525,7 @@ RegisterHostname (name)
 	     , n = ifc.ifc_len / sizeof (struct ifreq); --n >= 0; ifr++
 #endif
 	     )
+#endif /* STREAMSCONN && NCR */
 	{
 	    if (ifr->ifr_addr.sa_family != AF_INET)
 		continue;
@@ -498,13 +538,31 @@ RegisterHostname (name)
 		struct ifreq    broad_req;
     
 		broad_req = *ifr;
+#if defined(STREAMSCONN) && defined(NCR)
+		ioc.ic_cmd = IPIOC_GETIFFLAGS;
+		ioc.ic_timout = 0;
+		ioc.ic_len = sizeof( broad_req );
+		ioc.ic_dp = (char *)&broad_req;
+
+		if (ioctl (ipfd, I_STR, (char *) &ioc) != -1 &&
+#else
 		if (ioctl (socketFD, SIOCGIFFLAGS, (char *) &broad_req) != -1 &&
+#endif
 		    (broad_req.ifr_flags & IFF_BROADCAST) &&
 		    (broad_req.ifr_flags & IFF_UP)
 		    )
 		{
 		    broad_req = *ifr;
+#if defined(STREAMSCONN) && defined(NCR)
+		    ioc.ic_cmd = IPIOC_GETIFBRDADDR;
+		    ioc.ic_timout = 0;
+		    ioc.ic_len = sizeof( broad_req );
+		    ioc.ic_dp = (char *)&broad_req;
+
+		    if (ioctl (ipfd, I_STR, (char *) &ioc) != -1)
+#else
 		    if (ioctl (socketFD, SIOCGIFBRDADDR, &broad_req) != -1)
+#endif
 			broad_addr = broad_req.ifr_addr;
 		    else
 			continue;
@@ -592,8 +650,14 @@ InitXDMCP (argv)
 	header.length += 2 + AuthenticationNames.data[i].length;
     XdmcpWriteHeader (&directBuffer, &header);
     XdmcpWriteARRAYofARRAY8 (&directBuffer, &AuthenticationNames);
+#if defined(STREAMSCONN)
+    if ((socketFD = t_open ("/dev/udp", O_RDWR, 0)) < 0)
+        return 0;
+    t_bind( socketFD, NULL, NULL );
+#else
     if ((socketFD = socket (AF_INET, SOCK_DGRAM, 0)) < 0)
 	return 0;
+#endif
 #ifdef SO_BROADCAST
     soopts = 1;
     if (setsockopt (socketFD, SOL_SOCKET, SO_BROADCAST, (char *)&soopts, sizeof (soopts)) < 0)
@@ -626,6 +690,9 @@ Choose (h)
 	char		buf[1024];
 	XdmcpBuffer	buffer;
 	char		*xdm;
+#if defined(STREAMSCONN)
+        struct  t_call  call, rcv;
+#endif
 
 	xdm = (char *) app_resources.xdmAddress->data;
 	family = (xdm[0] << 8) + xdm[1];
@@ -641,6 +708,36 @@ Choose (h)
 	    len = sizeof (in_addr);
 	    break;
 	}
+#if defined(STREAMSCONN)
+	if ((fd = t_open ("/dev/tcp", O_RDWR, NULL)) == -1)
+	{
+	    fprintf (stderr, "Cannot create response endpoint\n");
+	    fflush(stderr);
+	    exit (REMANAGE_DISPLAY);
+	}
+	if (t_bind (fd, NULL, NULL) == -1)
+	{
+	    fprintf (stderr, "Cannot bind response endpoint\n");
+	    fflush(stderr);
+	    t_close (fd);
+	    exit (REMANAGE_DISPLAY);
+	}
+	call.addr.buf=(char *)addr;
+	call.addr.len=len;
+	call.addr.maxlen=len;
+	call.opt.len=0;
+	call.opt.maxlen=0;
+	call.udata.len=0;
+	call.udata.maxlen=0;
+	if (t_connect (fd, &call, NULL) == -1)
+	{
+	    t_error ("Cannot connect to xdm\n");
+	    fflush(stderr);
+	    t_unbind (fd);
+	    t_close (fd);
+	    exit (REMANAGE_DISPLAY);
+	}
+#else
 	if ((fd = socket (family, SOCK_STREAM, 0)) == -1)
 	{
 	    fprintf (stderr, "Cannot create response socket\n");
@@ -651,6 +748,7 @@ Choose (h)
 	    fprintf (stderr, "Cannot connect to xdm\n");
 	    exit (REMANAGE_DISPLAY);
 	}
+#endif
 	buffer.data = (BYTE *) buf;
 	buffer.size = sizeof (buf);
 	buffer.pointer = 0;
@@ -658,8 +756,24 @@ Choose (h)
 	XdmcpWriteARRAY8 (&buffer, app_resources.clientAddress);
 	XdmcpWriteCARD16 (&buffer, (CARD16) app_resources.connectionType);
 	XdmcpWriteARRAY8 (&buffer, &h->hostaddr);
+#if defined(STREAMSCONN)
+	if( t_snd (fd, (char *)buffer.data, buffer.pointer, 0) < 0 )
+	{
+	    fprintf (stderr, "Cannot send to xdm\n");
+	    fflush(stderr);
+	    t_unbind (fd);
+	    t_close (fd);
+	    exit (REMANAGE_DISPLAY);
+	}
+	sleep(5);	/* Hack because sometimes the connection gets
+			   closed before the data arrives on the other end. */
+	t_snddis (fd,NULL);
+	t_unbind (fd);
+	t_close (fd);
+#else
 	write (fd, (char *)buffer.data, buffer.pointer);
 	close (fd);
+#endif
     }
     else
     {

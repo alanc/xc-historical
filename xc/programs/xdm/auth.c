@@ -1,4 +1,4 @@
-/* $XConsortium: auth.c,v 1.53 94/04/01 16:43:00 gildea Exp $ */
+/* $XConsortium: auth.c,v 1.54 94/04/17 20:03:33 gildea Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -666,32 +666,85 @@ DefineLocal (file, auth)
 	writeAddr (FamilyLocal, strlen (displayname), displayname, file, auth);
 }
 
-#ifdef STREAMSCONN
 
+#ifdef NCR
+
+#include <sys/un.h>
+#include <stropts.h>
 #include <tiuser.h>
 
-/* Define this host for access control.  Find all the hosts the OS knows about 
- * for this fd and add them to the selfhosts list.
- * TLI version, written without sufficient documentation.
- */
+#include <sys/stream.h>
+#include <net/if.h>
+#include <netinet/ip.h>
+#include <netinet/ip_var.h>
+#include <netinet/in.h>
+#include <netinet/in_var.h>
+
 static
 DefineSelf (fd, file, auth)
     int fd;
     FILE	*file;
     Xauth	*auth;
 {
-    struct netbuf	netb;
-    char		addrret[1024]; /* easier than t_alloc */
-    
-    netb.maxlen = sizeof(addrret);
-    netb.buf = addrret;
-    if (t_getname (fd, &netb, LOCALNAME) == -1)
-	t_error ("t_getname");
-    /* what a kludge */
-    writeAddr (FamilyInternet, 4, netb.buf+4, file, auth);
+    /*
+     * The Wolongong drivers used by NCR SVR4/MP-RAS don't understand the
+     * socket IO calls that most other drivers seem to like. Because of
+     * this, this routine must be special cased for NCR. Eventually,
+     * this will be cleared up.
+     */
+
+    struct ipb ifnet;
+    struct in_ifaddr ifaddr;
+    struct strioctl str;
+    unsigned char *addr;
+    int	family, len, ipfd;
+
+    if ((ipfd = open ("/dev/ip", O_RDWR, 0 )) < 0)
+        LogError ("Getting interface configuration");
+
+    /* Indicate that we want to start at the begining */
+    ifnet.ib_next = (struct ipb *) 1;
+
+    while (ifnet.ib_next)
+    {
+	str.ic_cmd = IPIOC_GETIPB;
+	str.ic_timout = 0;
+	str.ic_len = sizeof (struct ipb);
+	str.ic_dp = (char *) &ifnet;
+
+	if (ioctl (ipfd, (int) I_STR, (char *) &str) < 0)
+	{
+	    close (ipfd);
+	    LogError ("Getting interface configuration");
+	}
+
+	ifaddr.ia_next = (struct in_ifaddr *) ifnet.if_addrlist;
+	str.ic_cmd = IPIOC_GETINADDR;
+	str.ic_timout = 0;
+	str.ic_len = sizeof (struct in_ifaddr);
+	str.ic_dp = (char *) &ifaddr;
+
+	if (ioctl (ipfd, (int) I_STR, (char *) &str) < 0)
+	{
+	    close (ipfd);
+	    LogError ("Getting interface configuration");
+	}
+
+	/*
+	 * Ignore the 127.0.0.1 entry.
+	 */
+	if (IA_SIN(&ifaddr)->sin_addr.s_addr == htonl(0x7f000001) )
+		continue;
+
+	writeAddr (FamilyInternet, 4, &(IA_SIN(&ifaddr)->sin_addr), file, auth);
+ 
+    }
+    close(ipfd);
+
 }
 
-#else /* STREAMSCONN */
+#else /* NCR */
+
 #ifdef SIOCGIFCONF
 
 /* Define this host for access control.  Find all the hosts the OS knows about 
@@ -811,7 +864,9 @@ DefineSelf (fd, file, auth)
 }
 
 #endif /* SIOCGIFCONF else */
-#endif /* STREAMSCONN else */
+
+#endif /* NCR */
+
 
 static
 setAuthNumber (auth, name)
@@ -853,6 +908,13 @@ writeLocalAuth (file, auth, name)
 
     Debug ("writeLocalAuth: %s %.*s\n", name, auth->name_length, auth->name);
     setAuthNumber (auth, name);
+#ifdef STREAMSCONN
+    fd = t_open ("/dev/tcp", O_RDWR, 0);
+    t_bind(fd, NULL, NULL);
+    DefineSelf (fd, file, auth);
+    t_unbind (fd);
+    t_close (fd);
+#endif
 #ifdef TCPCONN
     fd = socket (AF_INET, SOCK_STREAM, 0);
     DefineSelf (fd, file, auth);

@@ -1,4 +1,4 @@
-/* $XConsortium: streams.c,v 1.3 92/10/17 13:47:01 rws Exp $ */
+/* $XConsortium: streams.c,v 1.4 94/04/17 20:03:47 rws Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -75,7 +75,7 @@ CreateWellKnownSockets ()
     xdmcpFd = t_open(nconf->nc_device, O_RDWR, NULL);
     if (xdmcpFd == -1) {
 	LogError ("XDMCP stream creation failed\n");
-	t_error ("t_open");
+	t_error ("CreateWellKnownSockets(xdmcpFd): t_open failed");
 	return;
     }
     name = localHostname ();
@@ -91,12 +91,13 @@ CreateWellKnownSockets ()
     bind_addr.qlen = 5;
     bind_addr.addr.buf = servaddrs->n_addrs[0].buf;
     bind_addr.addr.len = servaddrs->n_addrs[0].len;
+    bind_addr.addr.maxlen = servaddrs->n_addrs[0].len;
     it = t_bind(xdmcpFd, &bind_addr, &bind_addr);
     netdir_free((char *)servaddrs, ND_ADDRLIST);
     if (it < 0)
     {
 	LogError ("error binding STREAMS address %d\n", request_port);
-	t_error("t_bind");	/* also goes to log file */
+	t_error("CreateWellKNowSocket(xdmcpFd): t_bind failed");
 	t_close (xdmcpFd);
 	xdmcpFd = -1;
 	return;
@@ -109,9 +110,17 @@ CreateWellKnownSockets ()
     if (chooserFd == -1)
     {
 	LogError ("chooser stream creation failed\n");
-	t_error("t_open chooser");
+	t_error("CreateWellKnowSockets(chooserFd): t_open failed");
 	return;
     }
+    bind_addr.qlen = 5;
+    bind_addr.addr.len = 0;
+    bind_addr.addr.maxlen = 0;
+    if( t_bind( chooserFd, &bind_addr, NULL ) < 0 )
+    {
+        t_error("CreateWellKnowSockets(chooserFd): t_bind failed");
+    }
+
     if (chooserFd > WellKnownSocketsMax)
 	WellKnownSocketsMax = chooserFd;
     FD_SET (chooserFd, &WellKnownSocketsMask);
@@ -125,8 +134,9 @@ GetChooserAddr (addr, lenp)
     int retval;
 
     nbuf.buf = addr;
+    nbuf.len = *lenp;
     nbuf.maxlen = *lenp;
-    retval = t_getname (chooserFd, nbuf, LOCALNAME);
+    retval = t_getname (chooserFd, &nbuf, LOCALNAME);
     if (retval < 0) {
 	if (debugLevel > 0)
 	    t_error("t_getname on chooser fd");
