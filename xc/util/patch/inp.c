@@ -1,6 +1,9 @@
-/* $Header: inp.c,v 2.0.1.1 88/06/03 15:06:13 lwall Locked $
+/* $Header: inp.c,v 3.0 88/06/03 15:06:13 lwall Locked $
  *
  * $Log:	inp.c,v $
+ * Revision 3.0  88/06/03  15:06:13  lwall
+ * patch 2.0.12u9
+ * 
  * Revision 2.0.1.1  88/06/03  15:06:13  lwall
  * patch10: made a little smarter about sccs files
  * 
@@ -89,6 +92,13 @@ char *filename;
 	makedirs(filename, TRUE);
 	close(creat(filename, 0666));
 	statfailed = stat(filename, &filestat);
+    } else if (!statfailed && ok_to_create_file) {
+	/* ok_to_create_file means the file either doesn't exist
+	   or is zero-length.  Since there is no context in the patch,
+	   avoid doubling the file if the patch has already been applied
+	   by bailing out here if these conditions are not met. */
+	if (filestat.st_size != 0)
+	    fatal2("supposedly new file \"%s\" already exists\n", filename);
     }
     /* For nonexistent or read-only files, look for RCS or SCCS versions.  */
     if (statfailed
