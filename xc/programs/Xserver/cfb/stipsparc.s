@@ -1,5 +1,5 @@
 /*
- * $XConsortium: stipplesparc.s,v 1.3 90/12/02 09:39:44 keith Exp $
+ * $XConsortium: stipplesparc.s,v 1.4 90/12/09 13:11:34 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -95,11 +95,8 @@ _stipplestack:
 	sub	lshift, shift, lshift		/*  stipple of remaining bits */
 #ifdef LITTLE_ENDIAN
 	inc	CASE_SIZE, shift		/* first shift for LSB */
-#endif
-	inc	28-CASE_SIZE, shift		/* first shift for MSB */
 #else
-	mov	CASE_SIZE,stemp
-	sub	stemp, shift, shift
+	inc	28-CASE_SIZE, shift		/* first shift for MSB */
 #endif
 	/* do ... while (--count > 0); */
 ForEachLine:
