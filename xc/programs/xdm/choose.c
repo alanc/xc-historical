@@ -1,5 +1,5 @@
 /*
- * $XConsortium: choose.c,v 1.11 93/09/20 18:03:21 hersh Exp $
+ * $XConsortium: choose.c,v 1.12 94/02/02 08:42:22 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -236,9 +236,10 @@ IndirectChoice (clientAddress, connectionType)
     for (c = choices; c; c = next)
     {
 	next = c->next;
+	Debug ("Choice checking timeout: %d >? %d\n", now - c->time, choiceTimeout);
 	if (now - c->time > (Time_t)choiceTimeout)
 	{
-	    Debug ("Timeout choice\n");
+	    Debug ("Timeout choice %d > %d\n", now - c->time, choiceTimeout);
 	    if (prev)
 		prev->next = next;
 	    else
