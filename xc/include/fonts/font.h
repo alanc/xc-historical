@@ -1,4 +1,4 @@
-/* $XConsortium: font.h,v 1.5 91/05/13 16:45:48 gildea Exp $ */
+/* $XConsortium: font.h,v 1.7 91/07/16 20:34:07 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -90,8 +90,6 @@ extern int  ListFonts( /* client, length, pattern, maxNames */ );
 extern FontNamesPtr MakeFontNamesRecord( /* size */ );
 extern void FreeFontNames();
 extern int  AddFontNamesName();
-
-extern void CopyCharInfo();
 
 extern int  FontToFSError();
 
