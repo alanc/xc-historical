@@ -1,4 +1,4 @@
-/* $XConsortium: Resources.c,v 1.104 91/05/09 18:09:19 swick Exp $ */
+/* $XConsortium: Resources.c,v 1.105 91/06/10 15:08:07 converse Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -46,7 +46,7 @@ char *Cjumpp = (char *) Cjump;
 void Cjump() {}
 #endif
 
-void XtCopyFromParent(widget, offset, value)
+void _XtCopyFromParent(widget, offset, value)
     Widget      widget;
     int		offset;
     XrmValue    *value;
@@ -59,49 +59,9 @@ void XtCopyFromParent(widget, offset, value)
         value->addr = NULL;
         return;
     }
-    value->addr = (caddr_t)(((char *)widget->core.parent) + offset);
-} /* XtCopyFromParent */
+    value->addr = (XPointer)(((char *)widget->core.parent) + offset);
+} /* _XtCopyFromParent */
 
-/*ARGSUSED*/
-void XtCopyScreen(widget, offset, value)
-    Widget      widget;
-    int		offset;
-    XrmValue    *value;
-{
-    value->addr = (caddr_t)(&widget->core.screen);
-} /* XtCopyScreen */
-
-/*ARGSUSED*/
-void XtCopyDefaultColormap(widget, offset, value)
-    Widget      widget;
-    int		offset;
-    XrmValue    *value;
-{
-    value->addr = (caddr_t)(&DefaultColormapOfScreen(XtScreenOfObject(widget)));
-} /* XtCopyDefaultColormap */
-
-
-/*ARGSUSED*/
-void XtCopyAncestorSensitive(widget, offset, value)
-    Widget      widget;
-    int		offset;
-    XrmValue    *value;
-{
-    static Boolean  sensitive;
-	   Widget   parent = widget->core.parent;
-
-    sensitive = (parent->core.ancestor_sensitive & parent->core.sensitive);
-    value->addr = (caddr_t)(&sensitive);
-} /* XtCopyAncestorSensitive */
-
-/*ARGSUSED*/
-void XtCopyDefaultDepth(widget, offset, value)
-    Widget      widget;
-    int		offset;
-    XrmValue    *value;
-{
-    value->addr = (caddr_t)(&DefaultDepthOfScreen(XtScreenOfObject(widget)));
-} /* XtCopyDefaultDepth */
 
 /* If the alignment characteristics of your machine are right, these may be
    faster */
