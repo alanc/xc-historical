@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: resize.c,v 1.23 91/05/10 16:57:35 gildea Exp $
+ *	$XConsortium: resize.c,v 1.24 91/06/24 15:19:54 gildea Exp $
  */
 
 /*
@@ -90,7 +90,9 @@ char *getenv();
 
 #ifdef USE_SYSV_TERMIO
 #ifdef X_NOT_POSIX
-extern struct passwd *getpwuid();
+#ifndef SYSV386
+extern struct passwd *getpwuid(); 	/* does ANYBODY need this? */
+#endif /* SYSV386 */
 #endif /* X_NOT_POSIX */
 #define	bzero(s, n)	memset(s, 0, n)
 #endif	/* USE_SYSV_TERMIO */
@@ -412,10 +414,10 @@ main (argc, argv)
 		printf ("%sTERMCAP='%s'\n",
 		 setname, termcap);
 #else /* else not USE_TERMCAP */
-#ifndef TIOCGWINSZ		/* don't set env on SVR4 */
+#ifndef SVR4
 		printf ("%sCOLUMNS=%d;\nLINES=%d;\nexport COLUMNS LINES;\n",
 			setname, cols, rows);
-#endif /* !TIOCGWINSZ */
+#endif /* !SVR4 */
 #endif	/* USE_SYSV_TERMCAP */
 
 	} else {		/* not Bourne shell */
@@ -424,10 +426,10 @@ main (argc, argv)
 		printf ("set noglob;\n%ssetenv TERMCAP '%s';\nunset noglob;\n",
 		 setname, termcap);
 #else /* else not USE_TERMCAP */
-#ifndef TIOCGWINSZ		/* don't set env on SVR4 */
+#ifndef SVR4
 		printf ("set noglob;\n%ssetenv COLUMNS '%d';\nsetenv LINES '%d';\nunset noglob;\n",
 			setname, cols, rows);
-#endif /* !TIOCGWINSZ */
+#endif /* !SVR4 */
 #endif	/* USE_TERMCAP */
 	}
 	exit(0);
