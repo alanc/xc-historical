@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-# $XConsortium: run_InsPEX,v 5.3 91/02/18 19:57:01 hersh Exp $
+# $XConsortium: run_InsPEX,v 5.4 91/02/19 20:46:27 hersh Exp $
 #
 # Copyright 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
 # 
@@ -40,7 +40,6 @@ setenv XINCDIR `cd $XHOME/X11; pwd`
 setenv XLIBDIR `cd $XHOME/lib; pwd`
 #	Path to X utility programs gets added here
 set path=($path /usr/bin/X11)
-setenv DISPLAY localhost:0.0
 
 # SET the following to run the tests using client-side structure storage
 ##setenv I_CLIENT_SIDE 1
@@ -56,8 +55,11 @@ setenv INSPEXHOME $cwd
 
 # prepare destination test result area
 mkdir $INSPEXDEST >& /dev/null
-mv $INSPEXDEST/ilog* /tmp >& /dev/null
+# this is sooo stupid
+#mv $INSPEXDEST/ilog* /tmp >& /dev/null
 
 if (! -x newpgrp )  cc -o newpgrp newpgrp.c
 
-newpgrp sh inspex.sh -clean_all
+# newpgrp 
+sh inspex.sh 
+#-clean_all
