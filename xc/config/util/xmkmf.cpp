@@ -3,7 +3,7 @@ XCOMM!/bin/sh
 XCOMM
 XCOMM generate a Makefile from an Imakefile from inside or outside the sources
 XCOMM 
-XCOMM $XConsortium: xmkmf.cpp,v 1.17 91/08/17 13:09:52 rws Exp $
+XCOMM $XConsortium: xmkmf.cpp,v 1.18 91/08/22 11:08:01 rws Exp $
 
 usage="usage:  $0 [-a] [top_of_sources_pathname [current_directory]]"
 
@@ -37,7 +37,7 @@ fi
 if [ "$topdir" = "" ]; then
     args="-DUseInstalled "CONFIGDIRSPEC
 else
-    args="-I$topdir/config -DTOPDIR=$topdir -DCURDIR=$curdir"
+    args="-I$topdir/config/cf -DTOPDIR=$topdir -DCURDIR=$curdir"
 fi
 
 echo imake $args
