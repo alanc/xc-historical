@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XSetHints.c,v 11.27 88/09/12 15:12:07 jim Exp $ */
+/* $XConsortium: XSetHints.c,v 11.28 88/10/22 10:15:25 jim Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -161,7 +161,6 @@ XSetCommand (dpy, w, argv, argc)
 	for (i = 0, nbytes = 0; i < argc; i++) {
 		nbytes += safestrlen(argv[i]) + 1;
 	}
-	if (nbytes == 0) return;
 	bp = buf = Xmalloc(nbytes);
 	/* copy arguments into single buffer */
 	for (i = 0; i < argc; i++) {
