@@ -2098,89 +2098,114 @@ arcSpan (y, def, bounds, acc)
 static double	arcXcenter, arcYcenter;
 static int	arcXoffset, arcYoffset;
 
-static struct finalSpan	*firstSpan;
+static struct finalSpan	**finalSpans;
+static int		finalMiny, finalMaxy;
+static int		finalSize;
+
 static int		nspans;		/* total spans, not just y coords */
 
 struct finalSpan {
 	struct finalSpan	*next;
-	int			y;
-	struct xrange {
-		struct xrange	*next;
-		int		min, max;
-	}			*spans;
+	int			min, max;	/* x values */
 };
 
 fillSpans (pDrawable, pGC)
     DrawablePtr	pDrawable;
     GCPtr	pGC;
 {
-	struct finalSpan	*f, *next;
-	struct xrange		*x, *nextx;
+	struct finalSpan	**f;
+	struct finalSpan	*span, *nextspan;
 	DDXPointPtr		xSpans, xSpan;
 	int			*xWidths, *xWidth;
 	int			i;
+	int			spany;
 
 	if (nspans == 0)
 		return;
 	xSpan = xSpans = (DDXPointPtr) Xalloc (nspans * sizeof (DDXPointRec));
 	xWidth = xWidths = (int *) Xalloc (nspans * sizeof (int));
 	i = 0;
-	for (f = firstSpan; f; f=next) {
-		next = f->next;
-		for (x = f->spans; x; x=nextx) {
-			nextx = x->next;
-			if (x->max > x->min) {
-				xSpan->x = x->min;
-				xSpan->y = f->y;
+	f = finalSpans;
+	for (spany = finalMiny; spany < finalMaxy; spany++, f++) {
+		for (span = *f; span; span=nextspan) {
+			nextspan = span->next;
+			if (span->max > span->min) {
+				xSpan->x = span->min;
+				xSpan->y = spany;
 				++xSpan;
-				*xWidth++ = x->max - x->min;
+				*xWidth++ = span->max - span->min;
 				++i;
 			}
-			Xfree (x);
+			Xfree (span);
 		}
-		Xfree (f);
 	}
+	Xfree (finalSpans);
 	(*pGC->FillSpans) (pDrawable, pGC, i, xSpans, xWidths, TRUE);
 	Xfree (xSpans);
 	Xfree (xWidths);
-	firstSpan = 0;
+	finalSpans = 0;
+	finalMiny = 0;
+	finalMaxy = 0;
+	finalSize = 0;
 	nspans = 0;
 }
 
-struct finalSpan *
+# define SPAN_REALLOC	2048
+
+struct finalSpan **
 findSpan (y)
 {
-	struct finalSpan	*f, *new, *prev;
+	struct finalSpan	**newSpans;
+	int			newSize, newMiny, newMaxy;
+	int			i;
+	int			change;
 
-	prev = 0;
-	for (f = firstSpan; f; f=f->next) {
-		if (f->y == y)
-			return f;
-		if (f->y > y)
-			break;
-		prev = f;
+	if (y < finalMiny || y >= finalMaxy) {
+		if (y < finalMiny)
+			change = finalMiny - y;
+		else
+			change = y - finalMaxy;
+		if (change > SPAN_REALLOC)
+			change += SPAN_REALLOC;
+		else
+			change = SPAN_REALLOC;
+		newSize = finalSize + change;
+		newSpans = (struct finalSpan **) Xalloc
+ 					(newSize * sizeof (struct finalSpan *));
+		newMiny = finalMiny;
+		newMaxy = finalMaxy;
+		if (y < finalMiny)
+			newMiny = finalMiny - change;
+		else
+			newMaxy = finalMaxy + change;
+		if (finalSpans) {
+			bcopy (finalSpans,
+	 		       newSpans + (finalMiny-newMiny) * sizeof (struct finalSpan *),
+			       finalSize * sizeof (struct finalSpan *));
+			Xfree (finalSpans);
+		}
+		for (i = newMiny; i < finalMiny; i++)
+			newSpans[i-newMiny] = 0;
+		for (i = finalMaxy; i < newMaxy; i++)
+			newSpans[i-newMiny] = 0;
+		finalSpans = newSpans;
+		finalMaxy = newMaxy;
+		finalMiny = newMiny;
+		finalSize = newSize;
 	}
-	new = (struct finalSpan *) Xalloc (sizeof (struct finalSpan));
-	new->y = y;
-	new->spans = 0;
-	new->next = f;
-	if (prev)
-		prev->next = new;
-	else
-		firstSpan = new;
-	return new;
+	return &finalSpans[y - finalMiny];
 }
 
 newFinalSpan (y, xmin, xmax)
 {
-	struct finalSpan	*f;
-	struct xrange		*x, *oldx, *prev;
+	struct finalSpan	**f;
+	struct finalSpan	*x, *oldx, *prev;
 
 	f = findSpan (y);
 	oldx = 0;
 	for (;;) {
 		prev = 0;
-		for (x = f->spans; x; x=x->next) {
+		for (x = *f; x; x=x->next) {
 			if (x == oldx) {
 				prev = x;
 				continue;
@@ -2192,9 +2217,9 @@ newFinalSpan (y, xmin, xmax)
 					if (prev)
 						prev->next = x->next;
 					else
-						f->spans = x->next;
+						*f = x->next;
 					--nspans;
-					free (x);
+					Xfree (x);
 				} else {
 					x->min = min (x->min, xmin);
 					x->max = max (x->max, xmax);
@@ -2210,11 +2235,11 @@ newFinalSpan (y, xmin, xmax)
 			break;
 	}
 	if (!oldx) {
-		x = (struct xrange *) Xalloc (sizeof (struct xrange));
+		x = (struct finalSpan *) Xalloc (sizeof (struct finalSpan));
 		x->min = xmin;
 		x->max = xmax;
-		x->next = f->spans;
-		f->spans = x;
+		x->next = *f;
+		*f = x;
 		++nspans;
 	}
 }
