@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: colormap.c,v 1.55 87/11/06 08:33:27 rws Locked $ */
+/* $Header: colormap.c,v 1.56 87/11/11 11:59:10 rws Locked $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -367,24 +367,6 @@ TellNoMap (pwin, pmid)
     return (WT_WALKCHILDREN);
 }
 
-/* Tell window that it has inherited a new colormap */
-int
-TellNewMap (pwin, pxE)
-    WindowPtr	pwin;
-    xEvent 	*pxE;
-{
-    if (pwin->colormap == CopyFromParent)
-    {
-	/* This should be call to DeliverEvent */
-	pxE->u.colormap.window = pwin->wid;
-	DeliverEvents(pwin, pxE, 1);
-    }
-
-    return (WT_WALKCHILDREN);
-}
-
-
-  
 /* Tell window that pmid got uninstalled */
 int
 TellLostMap (pwin, pmid)
