@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fresco.cxx,v 1.6 94/06/03 21:38:54 matt Exp matt $
+ * $XConsortium: fresco.cxx,v 1.7 94/08/17 19:01:09 matt Exp matt $
  */
 
 /*
@@ -277,31 +277,18 @@ void Fresco::unref(BaseObjectRef r) {
     }
 }
 
-#if defined(sgi)
+#if defined(USE_POLL)
 
-extern "C" int sginap(long);
+#include <sys/poll.h>
 
 Boolean Fresco::delay(Float seconds) {
-    long n = long(100.0 * seconds + 0.5);
-    if (n <= 2) {
-	n = 3;
-    }
-    return sginap(n) == 0;
+    return poll(NULL, 0, int(1000.0 * seconds + 0.5)) == 0;
 }
 
 #else
 
 #include <X11/Fresco/OS/types.h>
 #include <sys/time.h>
-
-#if defined(AIXV3) || defined(sony)
-#include <sys/select.h>
-#endif
-
-#if defined(sony) || defined(__osf__)
-/* Sony and DEC OSF/1 have select, but no prototype in /usr/include */
-extern "C" int select(int, fd_set*, fd_set*, fd_set*, struct timeval*);
-#endif
 
 Boolean Fresco::delay(Float seconds) {
     struct timeval tv;
