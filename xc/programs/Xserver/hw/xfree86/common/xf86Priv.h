@@ -1,4 +1,4 @@
-/* $XConsortium: xf86Priv.h,v 1.1 94/10/05 13:34:15 kaleb Exp $ */
+/* $XConsortium: xf86Priv.h,v 1.2 94/10/12 20:33:21 kaleb Exp kaleb $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.1 1994/07/24 11:49:20 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -80,9 +80,11 @@ typedef struct {
   Bool          chordMiddle;
   int           mouseFlags;        /* Flags to Clear after opening mouse dev */
 
+#ifndef CSRG_BASED
   /* xque part */
   int           xqueFd;
   int           xqueSema;
+#endif
 
   /* event handler part */
   int           lastEventTime;
@@ -95,10 +97,8 @@ typedef struct {
   /* graphics part */
   Bool          sharedMonitor;
   ScreenPtr     currentScreen;
-#if defined(__BSD__)
+#ifdef CSRG_BASED
   int           screenFd;	/* fd for memory mapped access to vga card */
-#endif
-#ifdef __BSD__
   int		consType;	/* Which console driver? */
 #endif
 #if defined(AMOEBA)
@@ -119,7 +119,7 @@ extern xf86InfoRec xf86Info;
 #define XCOMP	((unsigned long) 0x00008000)
 
 /* 386BSD console driver types (consType) */
-#ifdef __BSD__
+#ifdef CSRG_BASED
 #define PCCONS		   0
 #define CODRV011	   1
 #define CODRV01X	   2
