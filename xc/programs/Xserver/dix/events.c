@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.47 91/08/21 15:38:34 keith Exp $ */
+/* $XConsortium: events.c,v 5.48 91/11/22 12:19:11 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -132,7 +132,7 @@ Mask EventMaskForClient();
 void WriteEventsToClient();
 Bool CheckDeviceGrabs();
 void NewCurrentScreen();
-static void EnqueueEvent();
+void EnqueueEvent();
 
 extern void MaybeStopHint();
 
@@ -483,7 +483,7 @@ NoticeEventTime(xE)
  *            The following procedures deal with synchronous events       *
  **************************************************************************/
 
-static void
+void
 EnqueueEvent(xE, device, count)
     xEvent		*xE;
     DeviceIntPtr	device;
@@ -567,7 +567,7 @@ FreezeThaw(dev, frozen)
 {
     dev->sync.frozen = frozen;
     if (frozen)
-	dev->public.processInputProc = EnqueueEvent;
+	dev->public.processInputProc = dev->public.enqueueInputProc;
     else
 	dev->public.processInputProc = dev->public.realInputProc;
 }
