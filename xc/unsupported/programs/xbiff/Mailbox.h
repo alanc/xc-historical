@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.h,v 1.8 88/09/06 18:14:22 jim Exp $
+ * $XConsortium: Mailbox.h,v 1.9 88/09/26 11:20:29 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -25,8 +25,8 @@
 
 /* resource names used by mailbox widget that aren't defined in StringDefs.h */
 
-#define XtNupdate "update"		/* Int: how often to check mail */
-#define XtNfile "file"			/* String:  file name to check */
+#define XtNupdate		"update"
+#define XtNfile			"file"
 #define XtNcheckCommand "checkCommand"	/* command to exec for mail check */
 #define XtNvolume "volume"		/* Int: volume for bell */
 #define XtNbell "bell"			/* Boolean: t:ring bell, f:don't */
