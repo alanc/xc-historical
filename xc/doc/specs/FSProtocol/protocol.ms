@@ -1,4 +1,4 @@
-.\" $XConsortium: protocol.ms,v 1.10 93/12/20 16:37:55 gildea Exp $
+.\" $XConsortium: protocol.ms,v 1.11 93/12/28 14:31:16 gildea Exp $
 .\" Use tbl, -ms, and macros.t
 .EH ''''
 .OH ''''
@@ -14,7 +14,7 @@
 \fBVersion 2.0\fP
 \fBMIT X Consortium Standard\fR
 .sp
-\fBX Version 11, Release 5\fR
+\fBX Version 11, Release 6\fR
 .sp 6
 Jim Fulton
 Network Computing Devices, Inc.
@@ -180,10 +180,10 @@ font.
 An event mechanism similar to that used in the X protocol is provided for
 asynchronous notification of clients by the server.
 .LP
-Clients may provide authorization data for the server to used in determining
+Clients may provide authorization data for the server to be used in determining
 (according to the server's licensing policy) whether or not access should be
 granted to particular fonts.  This is particularly useful for clients whose
-authorization changes over side (such as an X server that can verify the
+authorization changes over time (such as an X server that can verify the
 identity of the user).
 .LP
 Implementations that wish to provide additional requests or events may use the
