@@ -1,5 +1,5 @@
 /*
-* $Header: CoreP.h,v 6.14 88/01/28 18:03:38 asente Exp $
+* $Header: CoreP.h,v 1.2 88/02/03 15:06:04 swick Exp $
 */
 
 /*
@@ -27,6 +27,9 @@
 
 #ifndef XtCoreP_h
 #define XtCoreP_h
+
+#define UnspecifiedPixmap ((Pixmap)2)
+
 typedef struct _StateRec *StatePtr;
 
 typedef struct _TMRec {
