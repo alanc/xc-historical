@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.35 91/07/22 19:58:08 keith Exp $
+ * $XConsortium: Bitmap.c,v 1.36 91/07/22 20:43:38 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -699,27 +699,15 @@ void Refresh();
 
 static void ClassInitialize()
 {
-  static XtConvertArgRec screenConvertArg[] = {
-  {XtWidgetBaseOffset, (caddr_t) XtOffset(Widget, core.screen),
-       sizeof(Screen *)}
-  };
-  int len1 = strlen(translations1);
-  int len2 = strlen(translations2);
-  char *tm_table = XtMalloc(len1 + len2 + 1);
-  char *ptr = tm_table;
-  strcpy(ptr, translations1);	ptr += len1;
-  strcpy(ptr, translations2);	
+  char *tm_table = XtMalloc(strlen(translations1) + strlen(translations2) + 1);
+  strcpy(tm_table, translations1);
+  strcat(tm_table, translations2);
   bitmapClassRec.core_class.tm_table = tm_table;
 
   XawInitializeWidgetSet();
-
-  XtAddConverter(XtRString, XtRBitmap, XmuCvtStringToBitmap,
-		 screenConvertArg, XtNumber(screenConvertArg));
   XtAddConverter(XtRString, XtRButtonFunction, CvtStringToButtonFunction,
 		 NULL, 0);
-
-    DEBUG = False;
-
+  DEBUG = False;
 }
 
 static void SetSizeFromSizeResource(bw)
