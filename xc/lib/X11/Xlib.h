@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.191 91/04/01 17:07:51 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.192 91/04/02 21:26:16 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -47,6 +47,7 @@
 #define _XLIB_REMOVE_POSIX
 #endif
 #include <X11/Xosdefs.h>
+#undef _XOSDEFS_H_
 #ifdef X_NOT_STDC_ENV
 #define _XLIB_REMOVE_STDC_ENV
 #endif
