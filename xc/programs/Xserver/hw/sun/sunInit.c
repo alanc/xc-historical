@@ -109,13 +109,12 @@ SigIOHandler(sig, code, scp)
 sunFbDataRec sunFbData[] = {
 #ifndef MONO_ONLY
     sunBW2Probe,  	"/dev/bwtwo0",	    sunBW2Create,
-#ifdef m68000
-    sunCG2CProbe,  	"/dev/cgtwo0",	    sunCG2CCreate,
-    sunCG4CProbe,  	"/dev/cgfour0",	    sunCG4CCreate,
-#endif
     sunCG3CProbe,  	"/dev/cgthree0",    sunCG3CCreate,
 #ifdef sparc
     sunCG6CProbe,	"/dev/cgsix0",	    sunCG6CCreate,
+#else
+    sunCG2CProbe,  	"/dev/cgtwo0",	    sunCG2CCreate,
+    sunCG4CProbe,  	"/dev/cgfour0",	    sunCG4CCreate,
 #endif
 #endif
     sunBW2Probe,  	"/dev/bwtwo0",	    sunBW2Create,
