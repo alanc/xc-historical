@@ -26,8 +26,9 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shape.c,v 1.7 89/04/09 17:24:59 rws Exp $ */
+/* $XConsortium: shape.c,v 1.8 89/04/11 09:53:14 rws Exp $ */
 #define NEED_REPLIES
+#define NEED_EVENTS
 #include <stdio.h>
 #include "X.h"
 #include "Xproto.h"
@@ -715,7 +716,7 @@ SendShapeNotify (pWin, which)
 	    swapl (&se.time, n);
 	}
 	if (client != serverClient && !client->clientGone)
-	    WriteEventsToClient (client, 1, &se);
+	    (void) WriteToClient (client, sizeof (xEvent), (char *) &se);
     }
 }
 
