@@ -2118,7 +2118,7 @@
 ;;; a resource manager isn't running.
 
 (defun default-resources-pathname ()
-  (when (search "Unix" (software-type) :test #'char-equal)
+  (when #+unix t #-unix (search "Unix" (software-type) :test #'char-equal)
     (merge-pathnames (user-homedir-pathname) (pathname ".Xdefaults"))))
 
 
@@ -2127,7 +2127,7 @@
 ;;; defaults have been loaded.
 
 (defun resources-pathname ()
-  (when (search "Unix" (software-type) :test #'char-equal)
+  (when #+unix t #-unix (search "Unix" (software-type) :test #'char-equal)
     (or #+(or excl lcl3.0)
 	(let ((string (#+excl sys:getenv
 		       #+lcl3.0 lcl:environment-variable
