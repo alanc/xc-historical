@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.133 94/01/17 11:20:52 kaleb Exp $ */
+/* $XConsortium: Xlibint.h,v 11.134 94/01/20 17:47:40 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -208,6 +208,7 @@ struct _XLockPtrs {
     void (*pop_reader)();
     struct _XCVList *(*push_reader)();
     void (*condition_wait)();
+    void (*internal_lock_display)();
     /* used in XlibInt.c and locking.c */
     void (*condition_signal)();
     /* used in XlibInt.c and XLockDis.c */
@@ -343,6 +344,7 @@ extern int errno;			/* Internal system error number. */
 #define XlibDisplayPrivSync	(1L << 3)
 #define XlibDisplayProcConni	(1L << 4) /* in _XProcessInternalConnection */
 #define XlibDisplayReadEvents	(1L << 5) /* in _XReadEvents */
+#define XlibDisplayReply	(1L << 5) /* in _XReply */
 
 /*
  * X Protocol packetizing macros.
