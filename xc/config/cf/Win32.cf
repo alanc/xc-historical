@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.cf,v 1.3 93/08/10 22:07:13 rws Exp $
+XCOMM platform:  $XConsortium: Win32.cf,v 1.4 93/08/11 09:03:39 rws Exp $
 
 #define OSName			Microsoft Windows NT 3.1beta
 XCOMM operating system:  OSName
@@ -18,5 +18,8 @@ XCOMM operating system:  OSName
 #define LdCmd link32
 #define HasSymLinks		NO
 #define HasPutenv		YES
+#ifndef UseInstalled
+#define ImakeCmd $(IMAKESRC:/=\)\imake
+#endif
 
 #include <Win32.rules>
