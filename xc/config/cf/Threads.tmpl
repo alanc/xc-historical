@@ -1,6 +1,27 @@
-XCOMM $XConsortium: Threads.tmpl,v 1.1 94/03/28 15:24:38 gildea Exp $
+XCOMM $XConsortium: Threads.tmpl,v 1.2 94/03/28 17:13:39 matt Exp $
 
-XCOMM included by application Imakefile if application is multi-threaded
+/*
+ * For a multi-threaded application or library,
+ * Define LocalThreadsDefines in your Imakefile (unless you like the
+ * project default), then include this file.
+ * Everything else should be automatic. 
+ */
+
+#ifndef LocalThreadsDefines
+#ifdef ProjectThreadsDefines
+#define LocalThreadsDefines ProjectThreadsDefines
+#else
+#define LocalThreadsDefines /**/
+#endif
+#endif
+
+#ifndef LocalThreads
+#ifdef ThreadedProject
+#define LocalThreads ThreadedProject
+#else
+#define LocalThreads YES
+#endif
+#endif
 
 #ifndef ThreadTypeDefines
 #if HasCThreads
@@ -35,14 +56,14 @@ XCOMM included by application Imakefile if application is multi-threaded
 #define ThreadsCplusplusLoadFlags ThreadsCplusplusCompileFlags
 #endif
 
-#if ThreadedX
+#if LocalThreads
     THREADS_CFLAGS = ThreadsCompileFlags
-   THREADS_DEFINES = XThreadsDefines ThreadTypeDefines
+   THREADS_DEFINES = LocalThreadsDefines ThreadTypeDefines SystemMTDefines
    THREADS_LDFLAGS = ThreadsLoadFlags
       THREADS_LIBS = ThreadsLibraries
 
   THREADS_CXXFLAGS = ThreadsCplusplusCompileFlags
-THREADS_CXXDEFINES = XCplusplusThreadsDefines ThreadTypeDefines
+THREADS_CXXDEFINES = LocalThreadsDefines ThreadTypeDefines CplusplusSystemMTDefines
 THREADS_CXXLDFLAGS = ThreadsCplusplusLoadFlags
    THREADS_CXXLIBS = ThreadsCplusplusLibraries
 #endif
