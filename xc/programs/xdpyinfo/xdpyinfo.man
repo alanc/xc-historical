@@ -7,11 +7,11 @@ xdpyinfo - display information utility for X
 .SH DESCRIPTION
 .PP
 .I Xdpyinfo
-is a utility for displaying the connection setup information that a one
-receives from an X Window System server.  It is used to examine the
+is a utility for displaying information about an X server.  It is used to 
+examine the
 capabilities of a server, the predefined values for various parameters used
 in communicating between clients and the server, and the different types of
-screens and visuals that are provided.
+screens and visuals that are available.
 .SH EXAMPLE
 .PP
 The following shows a sample produced by
@@ -86,8 +86,9 @@ To get the default host, display number, and screen.
 .SH "SEE ALSO"
 X(1), xwininfo(1), xprop(1), xrdb(1)
 .SH BUGS
-There is currently no way to access the Pixmap Format information returned
-by the server in the connection setup.
+Due to a bug in the Xlib interface,
+there is currently no portable way to determine the depths of pixmap images
+that are supported by the server.
 .SH COPYRIGHT
 Copyright 1988, Massachusetts Institute of Technology.
 .br
