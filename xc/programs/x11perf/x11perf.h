@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: x11perf.h,v 2.10 92/11/11 16:59:59 rws Exp $ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -89,6 +89,8 @@ typedef struct _XParms {
     XVisualInfo     vinfo;
     Bool	    pack;
     Version	    version;
+    Bool	    save_under;
+    int		    backing_store;
 } XParmRec, *XParms;
 
 typedef enum {

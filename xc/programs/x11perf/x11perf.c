@@ -1,4 +1,4 @@
-/* $XConsortium: x11perf.c,v 2.40 93/01/15 13:35:01 rws Exp $ */
+/* $XConsortium: x11perf.c,v 2.41 93/07/26 18:34:52 rws Exp $ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -367,6 +367,8 @@ void usage()
 "    -subs <s0 s1 ...>         a list of the number of sub-windows to use",
 "    -v1.2                     perform only v1.2 tests using old semantics",
 "    -v1.3                     perform only v1.3 tests using old semantics",
+"    -su                       request save unders on windows",
+"    -bs <backing_store_hint>  WhenMapped or Always (default = NotUseful)",
 NULL};
 
     fflush(stdout);
@@ -462,8 +464,8 @@ static Window CreatePerfWindow(xp, x, y, width, height)
     xswa.border_pixel = xp->foreground;
     xswa.colormap = cmap;
     xswa.override_redirect = True;
-    xswa.backing_store = False;
-    xswa.save_under = False;
+    xswa.backing_store = xp->backing_store;
+    xswa.save_under = xp->save_under;
     w = XCreateWindow(xp->d, DefaultRootWindow(xp->d), x, y, width, height, 1,
         xp->vinfo.depth, CopyFromParent, xp->vinfo.visual,
 	CWBackPixel | CWBorderPixel | CWColormap | CWOverrideRedirect 
@@ -809,6 +811,8 @@ main(argc, argv)
 
     xparms.pack = False;
     xparms.version = VERSION1_4;
+    xparms.save_under = False;
+    xparms.backing_store = NotUseful;
 
     /* Count number of tests */
     ForEachTest(numTests);
@@ -934,6 +938,17 @@ main(argc, argv)
 	    xparms.version = VERSION1_2;
 	} else if (strcmp(argv[i], "-v1.3") == 0) {
 	    xparms.version = VERSION1_3;
+	} else if (strcmp(argv[i], "-su") == 0) {
+	    xparms.save_under = True;
+	} else if (strcmp(argv[i], "-bs") == 0) {
+	    i++;
+	    if (argc <= i)
+		usage ();
+	    if (strcmp(argv[i], "WhenMapped") == 0) {
+	      xparms.backing_store = WhenMapped;
+	    } else if (strcmp(argv[i], "Always") == 0) {
+	      xparms.backing_store = Always;
+	    } else usage ();
 	} else {
 	    int len,found;
 	    ForEachTest (j) {

@@ -1,4 +1,4 @@
-.\" $XConsortium: x11perf.man,v 1.15 92/11/11 16:12:34 rws Exp $
+.\" $XConsortium: x11perf.man,v 1.16 92/11/11 16:30:59 rws Exp $
 .TH X11PERF 1 "Release 5" "X Version 11"
 .SH NAME
 x11perf \- X11 server performance test program
@@ -203,6 +203,15 @@ Perform only x11perf Version 1.2 tests using Version 1.2 semantics.
 .TP 14
 .B \-v1.3
 Perform only x11perf Version 1.3 tests using Version 1.3 semantics.
+.TP 14
+.B \-su
+Set the save_under window attribute to True on all windows created by x11perf.
+Default is False.
+.TP 14
+.B \-bs <backing_store_hint>
+Set the backing_store window attribute to the given value on all windows 
+created by x11perf. <backing_store_hint> can be WhenMapped or 
+Always.  Default is NotUseful.
 .TP 14
 .B \-dot
 Dot.
