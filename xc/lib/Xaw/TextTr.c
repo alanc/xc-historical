@@ -1,12 +1,13 @@
-/* $XConsortium: TextTr.c,v 1.6 89/07/06 16:55:22 jim Exp $ */
+/* $XConsortium: TextTr.c,v 1.7 89/07/12 14:53:37 kit Exp $ */
 
 char *_XawDefaultTextTranslations1 =
 "\
-Ctrl<Key>F:	forward-character() \n\
+Ctrl<Key>A:	beginning-of-line() \n\
 Ctrl<Key>B:	backward-character() \n\
 Ctrl<Key>D:	delete-next-character() \n\
-Ctrl<Key>A:	beginning-of-line() \n\
 Ctrl<Key>E:	end-of-line() \n\
+Ctrl<Key>F:	forward-character() \n\
+Ctrl<Key>G:     multiply(Reset) \n\
 Ctrl<Key>H:	delete-previous-character() \n\
 Ctrl<Key>J:	newline-and-indent() \n\
 Ctrl<Key>K:	kill-to-end-of-line() \n\
@@ -15,8 +16,9 @@ Ctrl<Key>M:	newline() \n\
 Ctrl<Key>N:	next-line() \n\
 Ctrl<Key>O:	newline-and-backup() \n\
 Ctrl<Key>P:	previous-line() \n\
-Ctrl<Key>R:	search(left) \n\
-Ctrl<Key>S:	search(right) \n\
+Ctrl<Key>R:	search(backward) \n\
+Ctrl<Key>S:	search(forward) \n\
+Ctrl<Key>U:	multiply(4) \n\
 Ctrl<Key>V:	next-page() \n\
 Ctrl<Key>W:	kill-selection() \n\
 Ctrl<Key>Y:	unkill() \n\
