@@ -1,4 +1,4 @@
-/* $XConsortium: RectObj.c,v 1.13 91/02/17 14:07:56 converse Exp $ */
+/* $XConsortium: RectObj.c,v 1.14 91/06/11 20:11:45 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -56,7 +56,6 @@ static XtResource resources[] = {
 	 (XtPointer)True}
     };
 
-static void RectObjInitialize();
 static void RectClassPartInitialize();
 static void RectSetValuesAlmost();
 
@@ -68,7 +67,7 @@ externaldef(rectobjclassrec) RectObjClassRec rectObjClassRec = {
     /* class_initialize   */    NULL,
     /* class_part_initialize*/	RectClassPartInitialize,
     /* class_inited       */	FALSE,
-    /* initialize	  */	RectObjInitialize,
+    /* initialize	  */	NULL,
     /* initialize_hook    */	NULL,		
     /* realize		  */	NULL,
     /* actions		  */	NULL,
@@ -147,15 +146,13 @@ static void RectClassPartInitialize(wc)
     }
 }
 
-/* ARGSUSED */
-static void RectObjInitialize(requested_widget, new_widget, args, num_args)
-    Widget   requested_widget;
-    register Widget new_widget;
-    ArgList args;
-    Cardinal *num_args;
-{
-    ((RectObj)new_widget)->rectangle.managed = FALSE;
-}
+/* 
+ * Why there isn't an Initialize Method:
+ *
+ * Initialization of the RectObj non-Resource field is done by the
+ * intrinsics in _XtCreateWidget in order that the field is initialized
+ * for use by converters during instance resource resolution.
+ */
 
 /*ARGSUSED*/
 static void RectSetValuesAlmost(old, new, request, reply)

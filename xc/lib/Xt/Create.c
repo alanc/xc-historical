@@ -1,4 +1,4 @@
-/* $XConsortium: Create.c,v 1.94 93/10/06 17:10:37 kaleb Exp $ */
+/* $XConsortium: Create.c,v 1.95 93/10/15 15:00:48 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -248,10 +248,17 @@ static Widget _XtCreate(
 	widget->core.constraints = (XtPointer)((char *)widget + wsize);
     else
 	widget->core.constraints = NULL;
+    if (XtIsRectObj(widget)) {
+	widget->core.managed = FALSE;
+    }
     if (XtIsWidget(widget)) {
 	widget->core.name = XrmNameToString(widget->core.xrm_name);
         widget->core.screen = default_screen;
         widget->core.tm.translations = NULL;
+	widget->core.window = (Window) 0;
+	widget->core.visible = TRUE;
+	widget->core.popup_list = NULL;
+	widget->core.num_popups = 0;
     };
     LOCK_PROCESS;
     if (XtIsApplicationShell(widget)) {

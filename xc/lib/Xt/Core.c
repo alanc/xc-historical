@@ -1,4 +1,4 @@
-/* $XConsortium: Core.c,v 1.59 93/09/28 11:17:26 kaleb Exp $ */
+/* $XConsortium: Core.c,v 1.60 93/10/06 17:09:38 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -241,11 +241,7 @@ static void CoreInitialize(requested_widget, new_widget, args, num_args)
     Cardinal *num_args;
 {
     XtTranslations save1, save2;
-    new_widget->core.window = (Window) NULL;
-    new_widget->core.visible = TRUE;
     new_widget->core.event_table = NULL;
-    new_widget->core.popup_list = NULL;
-    new_widget->core.num_popups = 0;
     new_widget->core.tm.proc_table = NULL;
     new_widget->core.tm.lastEventTime = 0;
     /* magic semi-resource fetched by GetResources */
