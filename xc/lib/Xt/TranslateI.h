@@ -1,4 +1,4 @@
-/* $XConsortium: TranslateI.h,v 1.26 90/12/27 09:47:08 rws Exp $ */
+/* $XConsortium: TranslateI.h,v 1.27 90/12/29 12:15:47 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -39,9 +39,7 @@ SOFTWARE.
 #define _XtRStateTablePair "_XtStateTablePair"
 
 typedef Boolean (*MatchProc)();
-  /* Event parsed;
-     XEvent incoming;
-  */
+	/* Event *parsed, TMEventPtr incoming */
 
 typedef struct _ModToKeysymTable {
     Modifiers mask;
@@ -117,6 +115,7 @@ typedef struct _XtBoundAccActionRec {
 typedef struct _TranslationData {
     StateTablePtr	 stateTable;
     XtBoundAccActionRec* accProcTbl;
+    EventMask		 eventMask;
 } TranslationData;
 
 typedef struct _TMConvertRec {
@@ -180,13 +179,11 @@ extern Boolean _XtRegularMatch();
 extern Boolean _XtMatchAtom();
 extern void _XtConvertCase();
 extern void _XtBuildKeysymTables();
-
 extern void _XtPopupInitialize();
 
 extern void _XtInstallTranslations(
 #if NeedFunctionPrototypes
-    Widget		/* widget */,
-    XtTranslations	/* stateTable */
+    Widget		/* widget */
 #endif
 );
 
@@ -262,5 +259,12 @@ void _XtFreeTranslations(
     XtPointer    /* closure */,
     XrmValuePtr  /* args */,
     Cardinal*	 /* num_args */
+#endif
+);
+
+void _XtTranslateEvent (
+#if NeedFunctionPrototypes
+    Widget	/* w */,
+    XEvent*	/* event */
 #endif
 );
