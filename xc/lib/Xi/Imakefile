@@ -1,5 +1,6 @@
-# $XConsortium: Imakefile,v 1.1 89/10/13 16:55:52 jim Exp $
+# $XConsortium: Imakefile,v 1.1 89/10/13 17:09:15 jim Exp $
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
+    STD_DEFINES = LibraryDefines ExtensionDefines
        INCLUDES = -I$(TOP) -I$(INCLUDESRC) -I$(XLIBSRC) -I../../include
            SRCS = XAllowDv.c \
 		  XChgFCtl.c \
