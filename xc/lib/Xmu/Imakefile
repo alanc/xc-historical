@@ -20,6 +20,7 @@ HEADERS = \
 	CharSet.h \
 	CloseHook.h \
 	Converters.h \
+	CurUtil.h \
 	Drawing.h \
 	Error.h \
 	Initer.h \
@@ -37,6 +38,7 @@ SRCS = \
 	CmapAlloc.c \
 	CrCmap.c \
 	CrPixFBit.c \
+	CursorName.c \
 	CvtStdSel.c \
 	DefErrMsg.c \
 	DelCmap.c \
@@ -67,6 +69,7 @@ OBJS = \
 	CmapAlloc.o \
 	CrCmap.o \
 	CrPixFBit.o \
+	CursorName.o \
 	CvtStdSel.o \
 	DefErrMsg.o \
 	DelCmap.o \
