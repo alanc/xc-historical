@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.2 89/05/25 14:14:15 jim Exp $
+ *	$XConsortium: misc.c,v 1.40 89/05/25 15:12:17 jim Exp $
  */
 
 
@@ -44,7 +44,6 @@
 
 #include "data.h"
 #include "error.h"
-#include "gray.ic"
 #include "wait.ic"
 #include "waitmask.ic"
 #include "menu.h"
@@ -56,7 +55,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: misc.c,v 1.2 89/05/25 14:14:15 jim Exp $";
+static char rcs_id[] = "$XConsortium: misc.c,v 1.40 89/05/25 15:12:17 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -303,12 +302,6 @@ Pixmap Make_tile(width, height, bits, foreground, background, depth)
 	return(pix);
 }
 
-
-Pixmap make_gray(fg, bg, depth)
-Pixel fg, bg;
-{
-	return(Make_tile(gray_width, gray_height, gray_bits, fg, bg, depth));
-}
 
 /* ARGSUSED */
 Cursor make_tcross(fg, bg)

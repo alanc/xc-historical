@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.116 89/05/26 14:36:10 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.117 89/05/26 14:51:58 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -122,7 +122,6 @@ SOFTWARE.
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
 
-extern Pixmap make_gray();
 extern char *malloc();
 extern char *calloc();
 extern char *realloc();
@@ -915,11 +914,6 @@ get_terminal ()
 {
 	register TScreen *screen = &term->screen;
 	
-	screen->graybordertile = make_gray(term->core.border_pixel,
-		term->core.background_pixel,
-		DefaultDepth(screen->display, DefaultScreen(screen->display)));
-
-
 	{
 	    unsigned long fg, bg;
 

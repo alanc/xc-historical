@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.29 89/05/25 15:12:21 jim Exp $
+ *	$XConsortium: ptyx.h,v 1.30 89/05/26 18:10:49 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -214,8 +214,6 @@ typedef struct {
 	Pixel		cursorcolor;	/* Cursor color			*/
 	Pixel		mousecolor;	/* Mouse color			*/
 	int		border;		/* inner border			*/
-	Pixmap		graybordertile;	/* tile pixmap for border when
-						window is unselected	*/
 	Cursor		arrow;		/* arrow cursor			*/
 	unsigned short	send_mouse_pos;	/* user wants mouse transition  */
 					/* and position information	*/
