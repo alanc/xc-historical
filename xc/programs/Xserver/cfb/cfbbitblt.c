@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.14 89/09/19 15:36:19 keith Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.15 89/10/04 16:23:36 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -891,9 +891,9 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
     unsigned int *psrcBase, *pdstBase;
     int	widthSrc, widthDst;
     unsigned int *psrcLine, *pdstLine;
-    unsigned int *psrc, *pdst;
+    register unsigned int *psrc, *pdst;
     unsigned int startmask, endmask;
-    int nlMiddle, nl;
+    register int nlMiddle, nl;
     int firstoff, secondoff;
     int nbox;
     BoxPtr  pbox;
@@ -971,7 +971,7 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
 	}
 	leftShift = xoffSrc;
 	rightShift = 32 - leftShift;
-	if (rop == GXcopy && (planemask & PIM) == PIM)
+	if (rop == GXcopy && (planemask & PMSK) == PMSK)
 	{
 	    while (height--)
 	    {
@@ -1114,6 +1114,8 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
 	}
 	else
 	{
+	    register unsigned int   src;
+
 	    planemask = PFILL(planemask);
 	    while (height--)
 	    {
@@ -1135,8 +1137,9 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
 			    tmp |= BitRight (bits, secondoff);
 		    	}
 		    }
+		    src = GetFourPixels (tmp);
 		    *pdst = *pdst & ~(startmask & planemask) |
-			    DoRop (rop, *pdst, GetFourPixels(tmp)) &
+			    DoRop (rop, src, *pdst) &
  			    (startmask & planemask);
 		    pdst++;
 	    	}
@@ -1152,8 +1155,9 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
 		    i = 8;
 		    while (i--)
 		    {
+			src = GetFourPixels (tmp);
 		    	*pdst = *pdst & ~planemask |
-			    	DoRop(rop, *pdst, GetFourPixels(tmp)) & planemask;
+			    	DoRop(rop, src, *pdst) & planemask;
 		    	pdst++;
 		    	NextFourBits(tmp);
 		    }
@@ -1172,15 +1176,19 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
 		    }
 		    while (nl--)
 		    {
+			src = GetFourPixels (tmp);
 		    	*pdst = *pdst & ~planemask |
-			    	DoRop(rop, *pdst, GetFourPixels(tmp)) & planemask;
+			    	DoRop(rop, src, *pdst) & planemask;
 		    	pdst++;
 			NextFourBits(tmp);
 		    }
 		    if (endmask)
+		    {
+			src = GetFourPixels (tmp);
 			*pdst = *pdst & ~(endmask & planemask) |
-				DoRop (rop, *pdst, GetFourPixels(tmp)) &
+				DoRop (rop, src, *pdst) &
 				(endmask & planemask);
+		    }
 	    	}
 	    }
 	}
