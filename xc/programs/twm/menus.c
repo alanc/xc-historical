@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.186 91/07/17 13:58:00 dave Exp $
+ * $XConsortium: menus.c,v 1.187 91/10/21 14:31:57 eswu Exp $
  *
  * twm menu code
  *
@@ -1319,6 +1319,22 @@ void resizeFromCenter(w, tmp_win)
  ***********************************************************************
  */
 
+/* for F_WARPTO */
+#define true 1
+#define false 0
+int
+WarpThere(t) 
+    TwmWindow* t; 
+{
+    if (Scr->WarpUnmapped || t->mapped) {
+        if (!t->mapped) DeIconify (t);
+        if (!Scr->NoRaiseWarp) XRaiseWindow (dpy, t->frame);
+        WarpToWindow (t); 
+        return true; 
+    }    
+    return false;
+}
+
 int
 ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
     int func;
@@ -2094,28 +2110,24 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	    len = strlen(action);
 
 	    for (t = Scr->TwmRoot.next; t != NULL; t = t->next) {
-		if (!strncmp(action, t->class.res_name, len)) break;
+		if (!strncmp(action, t->name, len)) 
+                    if (WarpThere(t)) break;
 	    }
 	    if (!t) {
 		for (t = Scr->TwmRoot.next; t != NULL; t = t->next) {
-		    if (!strncmp(action, t->class.res_name, len)) break;
+		    if (!strncmp(action, t->class.res_name, len)) 
+                        if (WarpThere(t)) break;
 		}
 		if (!t) {
 		    for (t = Scr->TwmRoot.next; t != NULL; t = t->next) {
-			if (!strncmp(action, t->class.res_class, len)) break;
+			if (!strncmp(action, t->class.res_class, len)) 
+                            if (WarpThere(t)) break;
 		    }
 		}
 	    }
 
-	    if (t) {
-		if (Scr->WarpUnmapped || t->mapped) {
-		    if (!t->mapped) DeIconify (t);
-		    if (!Scr->NoRaiseWarp) XRaiseWindow (dpy, t->frame);
-		    WarpToWindow (t);
-		}
-	    } else {
+	    if (!t) 
 		XBell (dpy, 0);
-	    }
 	}
 	break;
 
