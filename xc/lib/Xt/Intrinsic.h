@@ -1,5 +1,5 @@
 /*
-* $Header: Intrinsic.h,v 1.61 87/12/04 10:30:17 swick Locked $
+* $Header: Intrinsic.h,v 1.62 87/12/14 09:26:43 swick Locked $
 */
 
 /*
@@ -392,7 +392,7 @@ extern WidgetClass XtNameToClass(); /* name */
  *
  * Composite widget Procedures
  *
- **********************************************************\
+ **********************************************************/
 
 
 extern void XtManageChildren ();
