@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.7 89/01/18 10:19:36 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.8 89/01/18 11:47:48 jim Exp $
 
 /*
  * MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -579,25 +579,25 @@ MakeMakeSubdirs(dirs,Makefiles)						@@\
 MakeNsubdirMakefiles()
 
 #if ExecableScripts		/* can use #! instead of colon */
-#define CppScriptTarget(name,defs,deplist)				@@\
-name::  name.cpp deplist						@@\
+#define CppScriptTarget(dst,src,defs,deplist)				@@\
+dst::  src deplist							@@\
 	$(RM) $@							@@\
-	$(CPP) $(STD_CPP_DEFINES) defs <$@.cpp | \			@@\
+	$(CPP) $(STD_CPP_DEFINES) defs <src | \				@@\
 		sed -e '/^#  *[0-9][0-9]*  *.*$$/d' >$@			@@\
 	chmod a+x $@
 #else
-#define CppScriptTarget(name,defs,deplist)				@@\
-name::  name.cpp deplist						@@\
+#define CppScriptTarget(dst,src,defs,deplist)				@@\
+dst::  src deplist							@@\
 	$(RM) $@							@@\
 	echo \: >$@							@@\
-	sed '1d' $@.cpp | \						@@\
+	sed '1d' src | \						@@\
 		$(CPP) $(STD_CPP_DEFINES) defs  | \			@@\
 		sed -e '/^#  *[0-9][0-9]*  *.*$$/d' >>$@		@@\
 	chmod a+x $@
 #endif
 
 #define MakeScriptFromCpp(name,defs)					@@\
-CppScriptTarget(name,defs,)
+CppScriptTarget(name,name.cpp,defs,)
 
 
 #define MakeDirectories(step,dirs)					@@\
