@@ -1,5 +1,5 @@
-/* $XConsortium: $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64pcach.c,v 3.2 1994/12/05 03:45:46 dawes Exp $ */
+/* $XConsortium: mach64pcach.c,v 1.1 94/12/14 15:04:34 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64pcach.c,v 3.3 1995/01/15 10:31:13 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -176,7 +176,12 @@ mach64CacheInit(w, h)
     if (!mach64CacheInfo) {
        cache_sets = lines / 256;
        switch (cache_sets) {
-       case 0:			/* Assume at least 256 lines reserved */
+       case 0:
+	  First256Slot = -1;
+	  First128Slot = -1;
+	  First64Slot  = -1;
+	  MaxSlots     = -1;
+	  break;
        case 1:
 	  First256Slot = -1;
 	  First128Slot =  1;
@@ -201,6 +206,7 @@ mach64CacheInit(w, h)
 
        switch (cache_sets) {
        case 0:
+	  break;
        case 1:
 				/* No 256x256 pixel cache */
 	  for (i = First128Slot; i < First64Slot; i++) {
@@ -329,7 +335,9 @@ FindCacheSlot(pix)
     return 0;
 #endif
 
-    if (First256Slot == -1) {
+    if (MaxSlots == -1) {
+	return 0;
+    } else if (First256Slot == -1) {
        if (pix->drawable.width > 128 || pix->drawable.height > 128)
 	     return 0;
     } else {

@@ -1,5 +1,5 @@
-/* $XConsortium: mach32.c,v 1.3 95/01/05 20:27:25 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.26 1994/12/29 09:47:18 dawes Exp $ */
+/* $XConsortium: mach32.c,v 1.4 95/01/06 20:57:01 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.28 1995/01/15 10:30:52 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -67,12 +67,19 @@ extern Bool xf86Verbose, xf86Resetting, xf86Exiting, xf86ProbeFailed;
 unsigned short mach32MemorySize = 0;
 extern char *xf86VisualNames[];
 
+static Bool mach32ValidMode(
+#if NeedFunctionPrototypes 
+    DisplayModePtr 
+#endif
+);
+
 ScrnInfoRec mach32InfoRec = {
     FALSE,		/* Bool configured */
     -1,			/* int tmpIndex */
     -1,			/* int scrnIndex */
     mach32Probe,      	/* Bool (* Probe)() */
     mach32Initialize,	/* Bool (* Init)() */
+    mach32ValidMode,	/* Bool (* ValidMode)() */
     mach32EnterLeaveVT,/* void (* EnterLeaveVT)() */
     (void (*)())NoopDDA,		/* void (* EnterLeaveMonitor)() */
     (void (*)())NoopDDA,		/* void (* EnterLeaveCursor)() */
@@ -1173,3 +1180,15 @@ mach32ClockSelect(no)
   }
   return(TRUE);
 }
+
+/*
+ * mach32ValidMode --
+ *
+ */
+static Bool
+mach32ValidMode(mode)
+DisplayModePtr mode;
+{
+return TRUE;
+}
+

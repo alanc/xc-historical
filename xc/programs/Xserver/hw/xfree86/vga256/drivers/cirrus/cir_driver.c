@@ -1,5 +1,5 @@
-/* $XConsortium: cir_driver.c,v 1.3 95/01/05 20:47:57 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.25 1995/01/04 04:42:21 dawes Exp $ */
+/* $XConsortium: cir_driver.c,v 1.4 95/01/06 20:58:37 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.28 1995/01/15 10:35:22 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -195,6 +195,7 @@ static char *   cirrusIdent();
 static Bool     cirrusClockSelect();
 static void     cirrusEnterLeave();
 static Bool     cirrusInit();
+static Bool     cirrusValidMode();
 static void *   cirrusSave();
 static void     cirrusRestore();
 static void     cirrusAdjust();
@@ -223,6 +224,7 @@ vgaVideoChipRec CIRRUS = {
   cirrusIdent,			/* ChipIdent(); */
   cirrusEnterLeave,		/* ChipEnterLeave() */
   cirrusInit,			/* ChipInit() */
+  cirrusValidMode,		/* ChipValidMode() */
   cirrusSave,			/* ChipSave() */
   cirrusRestore,		/* ChipRestore() */
   cirrusAdjust,			/* ChipAdjust() */
@@ -1051,11 +1053,6 @@ cirrusProbe()
 		       vga256InfoRec.clock[i] =
 		          CLOCKVAL(cirrusClockTab[i].numer, cirrusClockTab[i].denom);
 		   }
-	       else
-	           if (xf86Verbose)
-                       ErrorF("%s %s: %s: Using programmable clocks\n",
-	                   XCONFIG_PROBED, vga256InfoRec.name,
-	                   vga256InfoRec.chipset);
 	       }
      else
           if (vga256InfoRec.clocks > cirrusClockNo)
@@ -1176,6 +1173,12 @@ cirrusFbInit()
       }
 
 #endif
+
+    if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions))
+        if (xf86Verbose)
+            ErrorF("%s %s: %s: Using programmable clocks\n",
+	        XCONFIG_PROBED, vga256InfoRec.name,
+	        vga256InfoRec.chipset);
 
   /*
    * Report the internal MCLK value of the card, and change it if the
@@ -1416,7 +1419,8 @@ nolinear:
 #ifdef CIRRUS_SUPPORT_MMIO
     /* Optional Memory-Mapped I/O. */
     /* Register is set in init function. */
-    if (HAVE543X() && OFLG_ISSET(OPTION_MMIO, &vga256InfoRec.options)) {
+    if ((HAVE543X() || cirrusChip == CLGD5429)
+    && OFLG_ISSET(OPTION_MMIO, &vga256InfoRec.options)) {
         cirrusUseMMIO = TRUE;
         /* We can't set cirrusMMIOBase, since vgaBase hasn't been */
         /* mapped yet. For now we do that in the init function. */
@@ -1465,10 +1469,12 @@ nolinear:
 	        cfb16TEOps.PolyFillRect = CirrusPolyFillRect;
 	        cfb16NonTEOps1Rect.PolyFillRect = CirrusPolyFillRect;
 	        cfb16NonTEOps.PolyFillRect = CirrusPolyFillRect;
+#if 0
 	        cfb16TEOps1Rect.PolyRectangle = Cirrus16PolyRectangle;
 	        cfb16TEOps.PolyRectangle = Cirrus16PolyRectangle;
 	        cfb16NonTEOps1Rect.PolyRectangle = Cirrus16PolyRectangle;
 	        cfb16NonTEOps.PolyRectangle = Cirrus16PolyRectangle;
+#endif
             }
             else { /* vgaBitsPerPixel == 32 */
 		cfb32TEOps1Rect.ImageGlyphBlt = CirrusMMIOImageGlyphBlt;
@@ -1481,10 +1487,12 @@ nolinear:
 	        cfb32TEOps.PolyFillRect = CirrusPolyFillRect;
 	        cfb32NonTEOps1Rect.PolyFillRect = CirrusPolyFillRect;
 	        cfb32NonTEOps.PolyFillRect = CirrusPolyFillRect;
+#if 0
 	        cfb32TEOps1Rect.PolyRectangle = Cirrus32PolyRectangle;
 	        cfb32TEOps.PolyRectangle = Cirrus32PolyRectangle;
 	        cfb32NonTEOps1Rect.PolyRectangle = Cirrus32PolyRectangle;
 	        cfb32NonTEOps.PolyRectangle = Cirrus32PolyRectangle;
+#endif
             }
         }
     }
@@ -1913,6 +1921,17 @@ cirrusInit(mode)
 #endif
 #endif
 
+  if (mode->VTotal >= 1024 && !(mode->Flags & V_INTERLACE)
+  && !mode->CrtcVAdjusted) {
+      /* For non-interlaced vertical timing >= 1024, the vertical timings */
+      /* are divided by 2 and VGA CRTC 0x17 bit 2 is set. */
+      mode->CrtcVDisplay >>= 1;
+      mode->CrtcVSyncStart >>= 1;
+      mode->CrtcVSyncEnd >>= 1;
+      mode->CrtcVTotal >>= 1;
+      mode->CrtcVAdjusted = TRUE;
+  }
+
   if (!vgaHWInit(mode,sizeof(vgacirrusRec)))
     return(FALSE);
 
@@ -2192,6 +2211,10 @@ cirrusInit(mode)
          new->SR7 |= 0x0E << 4;	/* Map at 14Mb. */
 #endif
 
+     if (mode->VTotal >= 1024 && !(mode->Flags & V_INTERLACE))
+         /* For non-interlaced vertical timing >= 1024, the pogrammed */
+         /* vertical timings are multiplied by 2 by setting this bit. */
+         new->std.CRTC[0x17] |= 0x04;
 
 				/* Fill up all the overflows - ugh! */
 #ifdef DEBUG_CIRRUS
@@ -2347,3 +2370,15 @@ cirrusAdjust(x, y)
 	outb(0x3C0, tmp | lsb);
 #endif
 }
+
+/*
+ * cirrusValidMode --
+ *
+ */
+static Bool
+cirrusValidMode(mode)
+DisplayModePtr mode;
+{
+return TRUE;
+}
+

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.15 1995/01/04 04:41:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.18 1995/01/12 12:06:13 dawes Exp $ */
 /*
  * Copyright 1994 and 1995 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -232,6 +232,7 @@ static char *   ATIIdent();
 static Bool     ATIClockSelect();
 static void     ATIEnterLeave();
 static Bool     ATIInit();
+static Bool     ATIValidMode();
 static void *   ATISave();
 static void     ATIRestore();
 static void     ATIAdjust();
@@ -265,6 +266,7 @@ vgaVideoChipRec ATI =
         ATIIdent,               /* Ident */
         ATIEnterLeave,          /* EnterLeave */
         ATIInit,                /* Init */
+        ATIValidMode,           /* ValidMode */
         ATISave,                /* Save */
         ATIRestore,             /* Restore */
         ATIAdjust,              /* Adjust */
@@ -942,7 +944,7 @@ probe_clocks:
          * widespread, at times causing otherwise inexplicable results.  So,
          * attempt to normalize the clocks to known (specification) values.
          */
-        if ((!vga256InfoRec.clocks) ||
+        if ((!vga256InfoRec.clocks) || xf86ProbeOnly ||
             (OFLG_ISSET(OPTION_PROBE_CLKS, &vga256InfoRec.options)))
         {
                 /*
@@ -1969,7 +1971,7 @@ Bool enter;
 
         if (enter == entered)
                 return;
-        entered == enter;
+        entered = enter;
 
         if (enter == ENTER)
         {
@@ -2143,7 +2145,7 @@ Bool enter;
                 tmp = ATIGetExtReg(0xB6);
                 ATIPutExtReg(0xB6, (saved_b6 & 0x22) | (tmp & 0xDD));
                 tmp = ATIGetExtReg(0xB8);
-                ATIPutExtReg(0xB8, (saved_b8 & 0x3F) | (tmp & 0xC0));
+                ATIPutExtReg(0xB8, (saved_b8 & 0x03) | (tmp & 0xC0));
                 tmp = ATIGetExtReg(0xB9);
                 ATIPutExtReg(0xB9, (saved_b9 & 0x80) | (tmp & 0x7F));
                 if (ATIChip != ATI_CHIP_18800)
@@ -2764,4 +2766,16 @@ DisplayModePtr mode;
                 mode->VSyncEnd >>= -ShiftCount;
                 mode->VTotal >>= -ShiftCount;
         }
+}
+
+/*
+ * ATIValidMode --
+ *
+ * This is only a dummy place-holder for now.
+ */
+static Bool
+ATIValidMode(mode)
+DisplayModePtr mode;
+{
+        return (TRUE);
 }

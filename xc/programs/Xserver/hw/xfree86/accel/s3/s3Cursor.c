@@ -1,6 +1,6 @@
 /*
- * $XConsortium: s3Cursor.c,v 1.1 94/10/05 13:32:36 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.8 1994/08/31 04:29:46 dawes Exp $
+ * $XConsortium: s3Cursor.c,v 1.3 94/10/12 20:07:37 kaleb Exp kaleb $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.10 1995/01/12 12:03:08 dawes Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -424,11 +424,15 @@ s3MoveCursor(pScr, x, y)
      int   x, y;
 {
    unsigned char xoff, yoff;
+   extern int s3AdjustCursorXPos;
+
+   if (!xf86VTSema)
+      return;
 
    if (s3BlockCursor)
       return;
 
-   x -= s3InfoRec.frameX0;
+   x -= s3InfoRec.frameX0 - s3AdjustCursorXPos;
    y -= s3InfoRec.frameY0;
 
    if (!S3_x64_SERIES(s3ChipId) && !S3_805_I_SERIES(s3ChipId)) 

@@ -1,5 +1,5 @@
-.\" $XConsortium: XF86_Acc.man,v 1.5 95/01/05 20:53:30 kaleb Exp kaleb $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.19 1994/12/17 09:48:21 dawes Exp $
+.\" $XConsortium: XF86_Acc.man,v 1.6 95/01/06 20:56:32 kaleb Exp kaleb $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.22 1995/01/15 10:28:52 dawes Exp $
 .TH XF86_Accel 1 "Version 3.1.1"  "XFree86"
 .SH NAME
 XF86_Accel - accelerated X Window System servers for
@@ -13,6 +13,9 @@ or 8514/A accelerator board
 [:displaynumber] [ option ] ...
 .LP
 .B XF86_Mach32
+[:displaynumber] [ option ] ...
+.LP
+.B XF86_Mach64
 [:displaynumber] [ option ] ...
 .LP
 .B XF86_P9000
@@ -73,6 +76,9 @@ ATI Mach8, ATI Mach32
 .TP 13
 XF86_Mach32:
 ATI Mach32
+.TP 13
+XF86_Mach64:
+ATI Mach64
 .TP 13
 XF86_P9000:
 Diamond Viper VLB, Diamond Viper PCI, Orchid P9000, and some clones
@@ -154,7 +160,7 @@ s3_generic
 (for a standard IO driven server) 
 .TP 12
 mmio_928
-(for a memory mapped IO driven server on 86C928 boards)
+(for a memory mapped IO driven server on 86C928, 86C864 and 86C964 boards)
 .RE
 .RS 8
 .PP
@@ -243,10 +249,10 @@ ibm8514
 .TP 8
 .B Clocks \fIclock ...\fP
 For boards with non-programmable clock chips, the clocks can be specified
-here (see \fIXF86Config(4/5)\fP).  The P9000 server uses a programamble
-clock generator, and, unlike the others servers in this situation, it
-requires a \fBClocks\fP line to specify those frequencies which will be
-available.  Note, clocks over 110\ Mhz are not recommended or supported
+here (see \fIXF86Config(4/5)\fP).  The P9000 server now no longer requires
+a \fBClocks\fP line.  It will now work the same way as other servers with
+a programmable clock chip (i.e., use the clocks as specified in the
+Modes).  Note, clocks over 110\ Mhz are not recommended or supported
 by the P9000 server.
 .TP 8
 .B ClockChip \fI"clockchip-type"\fP
@@ -381,6 +387,8 @@ is ignored for the 864 and 964 chips.
 .sp
 \fBnoaccel\fP - (P9000) disable hardware acceleration.
 .sp
+\fBvram_128\fP - (P9000) when memory probe fails, use if you have 128Kx8 VRAMs
+.sp
 \fBnolinear\fP - (S3 and Mach32) disable use of a linear-mapped framebuffer.
 .sp
 \fBti3020_curs\fP - (S3) Enables the Ti3020's internal HW cursor. (Default)
@@ -460,6 +468,9 @@ The 8-bit color X server for Mach8
 .TP 30
 <XRoot>/bin/XF86_Mach32
 The 8, and 16-bit color X server for Mach32
+.TP 30
+<XRoot>/bin/XF86_Mach64
+The 8, 16, and 24-bit color X server for Mach64
 .TP 30
 <XRoot>/bin/XF86_P9000
 The 8, 16, and 24-bit color X server for the P9000
@@ -556,6 +567,13 @@ Development and improvement of the Mach32 specific code.
 .RE
 .PP
 .nf
+Kevin Martin,       \fImartin@cs.unc.edu\fP
+.fi
+.RS 8
+Development of the Mach64 specific code.
+.RE
+.PP
+.nf
 Erik Nygren,        \fInygren@mit.edu\fP
 Harry Langenbacher, \fIharry@brain.jpl.nasa.gov\fP
 Chris Mason,        \fImason@mail.csh.rit.edu\fP
@@ -596,7 +614,7 @@ maximum clock speed, but some of their bt485's are not rated that
 high.  If you do not have a 135 MHz bt485 on your Viper, contact
 Diamond tech support and they will send you an RMA number to replace
 the board.  Acceleration is being added in slowly.  At the present,
-only CopyArea and MoveWindow are implemented.  Other accelerated
+only CopyArea and MoveWindow and DrawLine are implemented.  Other accelerated
 features are being tested and may be available in the next release.
 There seems to be a problem with olvwm when used with xdm and VT
 switching.  The cursor will be messed up when you return to a VT

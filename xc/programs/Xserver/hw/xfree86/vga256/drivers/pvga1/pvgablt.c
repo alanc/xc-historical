@@ -1,5 +1,5 @@
-/* $XConsortium: pvgablt.c,v 1.3 94/10/13 13:26:38 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvgablt.c,v 3.0 1994/07/24 11:57:05 dawes Exp $ */
+/* $XConsortium: pvgablt.c,v 1.4 95/01/13 20:07:41 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvgablt.c,v 3.1 1995/01/14 10:49:00 dawes Exp $ */
 /*
  * cfb copy area
  */
@@ -227,7 +227,7 @@ pvgacfbDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 			ROP_SRC >> 8,
 			planemask,
 			BLT_SRC_COLR,
-			NULL);
+			0);
 	  break;
 	case WD90C33:
 	  wd90c33BitBlt((unsigned char *)psrcBase, (unsigned char *)pdstBase,
@@ -239,7 +239,7 @@ pvgacfbDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 			ROP_SRC >> 8,
 			planemask,
 			COLOR_FORMAT,
-			NULL);
+			0);
 	  break;
 	}
 

@@ -1,5 +1,5 @@
-/* $XConsortium: s3init.c,v 1.3 94/12/27 11:29:42 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.42 1994/12/29 10:06:58 dawes Exp $ */
+/* $XConsortium: s3init.c,v 1.4 95/01/06 20:57:20 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.45 1995/01/12 12:03:12 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -355,7 +355,7 @@ Bool
 s3Init(mode)
      DisplayModePtr mode;
 {
-   short i, m;
+   short i, m, n;
    int   interlacedived = mode->Flags & V_INTERLACE ? 2 : 1;
    unsigned char tmp, tmp1, tmp2, CR5C;
    unsigned int itmp;
@@ -1844,16 +1844,24 @@ s3Init(mode)
       }
       outb(vgaCRReg, tmp);
 
+      n = 255;
       outb(vgaCRIndex, 0x54);
       if (S3_x64_SERIES(s3ChipId)) {
-	 int clock;
+	 int clock,mclk;
 	 clock = s3InfoRec.clock[mode->Clock] * s3Bpp;
+	 if (s3InfoRec.s3MClk > 0) 
+	    mclk = s3InfoRec.s3MClk;
+	 else
+	    mclk = 60000;  /* 60 MHz, limit for 864 */
 	 if (s3InfoRec.videoRam < 2048) clock *= 2;
-	 if (clock > 230*1000) m = 0;
-	 else m = (int)(5384.18/(clock/1000.0+39)-21.1543);
+	 m = (int)((mclk/1000.0*.72+16.867)*89.736/(clock/1000.0+39)-21.1543);
 	 if (s3InfoRec.videoRam < 2048) m /= 2;
-	 if (m < 0) m = 0;
-	 else if (m > 31) m = 31;
+	 m -= s3InfoRec.s3Madjust;
+	 if (m > 31) m = 31;
+	 else if (m < 0) {
+	    m = 0;
+	    n = 16;
+	 }
       }
       else if (s3InfoRec.videoRam == 512 || mode->HDisplay > 1200) /* XXXX */
 	 m = 0;
@@ -1861,19 +1869,17 @@ s3Init(mode)
          m = 2;
       else
 	 m = 20;
-      if (s3InfoRec.s3Madjust != 0) {
-	 int old_m = m;
-	 m -= s3InfoRec.s3Madjust;
-	 if (m < 0) m = 0;
-	 else if (m > 31) m = 31;
-	 ErrorF("%s %s: adjusting M from %d to %d\n", XCONFIG_GIVEN,
-		s3InfoRec.name, old_m, m);
-      }
       if (OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options))
 	s3Port54 = 0x7F;
       else s3Port54 = m << 3;
       outb(vgaCRReg, s3Port54);
       
+      n -= s3InfoRec.s3Nadjust;
+      if (n < 0) n = 0;
+      else if (n > 255) n = 255;
+      outb(vgaCRIndex, 0x60);
+      outb(vgaCRReg, n);
+
       outb(vgaCRIndex, 0x55);
       tmp = inb(vgaCRReg) & 0x08;       /* save the external serial bit  */
       outb(vgaCRReg, tmp | 0x40);	/* remove mysterious dot at 60Hz */
@@ -1908,6 +1914,12 @@ s3Init(mode)
 	  ((((mode->CrtcHSyncStart >> 3) - 1) & 0x100) >> 6) |
 	  ((mode->CrtcHSyncStart & 0x800) >> 7);
 
+      if ((mode->CrtcHSyncEnd >> 3) - (mode->CrtcHSyncStart >> 3) > 32)
+	 i |= 0x20;   /* add another 32 DCLKs to hsync pulse width */
+
+      if ((mode->CrtcHSyncEnd >> 3) - (mode->CrtcHSyncStart >> 3) > 64)
+	 i |= 0x08;   /* add another 64 DCLKs to blank pulse width */
+
       outb(vgaCRIndex, 0x3b);
       itmp = (  new->CRTC[0] + ((i&0x01)<<8)
 	      + new->CRTC[4] + ((i&0x10)<<4) + 1) / 2;
@@ -1918,19 +1930,7 @@ s3Init(mode)
 
       outb(vgaCRIndex, 0x5d);
       tmp = inb(vgaCRReg);
-      outb(vgaCRReg, (tmp & ~0x57) | i);
-
-      i = 255;
-      if (s3InfoRec.s3Nadjust != 0) {
-	 int old_n = i;
-	 i -= s3InfoRec.s3Nadjust;
-	 if (i < 0) i = 0;
-	 else if (i > 255) i = 255;
-	 ErrorF("%s %s: adjusting N from %d to %d\n", XCONFIG_GIVEN,
-		s3InfoRec.name, old_n, i);
-      }
-      outb(vgaCRIndex, 0x60);
-      outb(vgaCRReg, i);
+      outb(vgaCRReg, (tmp & 0x80) | i);
 
       if (s3InfoRec.videoRam > 1024 && S3_x64_SERIES(s3ChipId)) 
 	 i = mode->HDisplay * s3Bpp / 8 + 1;
@@ -1950,21 +1950,51 @@ s3Init(mode)
    }
 
    if (S3_964_SERIES(s3ChipId) && DAC_IS_BT485_SERIES) {
+      if (OFLG_ISSET(OPTION_DIAMOND, &s3InfoRec.options)) {
+	 /* 
+	  * some Diamond Stealth 64 VRAM cards have a problem with VRAM timing,
+	  * increase -RAS low timing from 3.5 MCLKs to 4.5 MCLKs 
+	  */ 
+	 outb(vgaCRIndex, 0x68);
+	 tmp = inb(vgaCRReg);
+	 if (tmp & 0x30 == 0x30) 		/* 3.5 MCLKs */
+	    outb(vgaCRReg, tmp & 0xef);		/* 4.5 MCLKs */
+      }
       if (OFLG_ISSET(OPTION_S3_964_BT485_VCLK, &s3InfoRec.options)) {
 	 /*
 	  * This is the design alert from S3 with Bt485A and Vision 964. 
 	  */
-	 int i,last,tmp,cr55,cr67;
+	 int i,j,last,tmp,cr55,cr67;
+	 int port, bit;
 
-	 outb(vgaCRIndex, 0x55);
-	 cr55 = inb(vgaCRReg);
-	 outb(vgaCRReg, cr55 | 0x04); /* enable rad of general input */
+#define VerticalRetraceWait() \
+	 { \
+	      while ((inb(vgaIOBase + 0x0A) & 0x08) == 0x00) ; \
+	      while ((inb(vgaIOBase + 0x0A) & 0x08) == 0x08) ; \
+	      while ((inb(vgaIOBase + 0x0A) & 0x08) == 0x00) ; \
+	}
+
+	 if (OFLG_ISSET(OPTION_DIAMOND, &s3InfoRec.options)) {
+	    port = 0x3c2;
+	    bit  = 0x10;
+	 }
+	 else {  /* MIRO 20SV Rev.2 */
+	    port = 0x3c8;
+	    bit  = 0x04;
+	 }
+
+	 if (port == 0x3c8) {
+	    outb(vgaCRIndex, 0x55);
+	    cr55 = inb(vgaCRReg);
+	    outb(vgaCRReg, cr55 | 0x04); /* enable rad of general input */
+	 }
 	 outb(vgaCRIndex, 0x67);
 	 cr67 = inb(vgaCRReg);
 
-	 for(last=i=0; i<20; i++) {
-	    usleep(20*1000);
-	    if ((inb(0x3c8) & 0x04) == 0) { /* if GD2 is low then */
+	 for(last=i=30; --i;) {
+	    VerticalRetraceWait();
+	    VerticalRetraceWait();
+	    if ((inb(port) & bit) == 0) { /* if GD2 is low then */
 	       last = i;
 	       outb(vgaCRIndex, 0x67);
 	       tmp = inb(vgaCRReg);
@@ -1973,18 +2003,28 @@ s3Init(mode)
 	       ErrorF("inverted VCLK %d  to 0x%02x\n",i,tmp ^ 0x01);
 #endif
 	    }
-	    if (i-last > 4) break;
+	    if (last-i > 4) break;
 	 }
-	 outb(vgaCRIndex, 0x55);
-	 outb(vgaCRReg, cr55); 
+	 if (!i) {  /* didn't get stable input, restore original CR67 value */
+	    outb(vgaCRIndex, 0x67);
+	    outb(vgaCRReg, cr67);
+	 }
+	 if (port == 0x3c8) {
+	    outb(vgaCRIndex, 0x55);
+	    outb(vgaCRReg, cr55); 
+	 }
+#if 0
 	 outb(vgaCRIndex, 0x67);
 	 tmp = inb(vgaCRReg);
-#if 0
 	 /* if ((cr67 ^ tmp) & 0x01)  */ 
 	 ErrorF("VCLK has been inverted %d times from 0x%02x to 0x%02x now\n",i,cr67,tmp);
 #endif
       }
    }
+
+   if (OFLG_ISSET(CLOCK_OPTION_ICS2595, &s3InfoRec.clockOptions))
+         (void) (s3ClockSelectFunc)(mode->SynthClock);
+         /* fixes the ICS2595 initialisation problems */
 
 #ifdef REG_DEBUG
    for (i=0; i<10; i++) {

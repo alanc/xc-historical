@@ -1,5 +1,5 @@
-/* $XConsortium: ibm8514.c,v 1.3 95/01/05 20:25:39 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.9 1994/12/29 09:45:10 dawes Exp $ */
+/* $XConsortium: ibm8514.c,v 1.4 95/01/06 20:56:57 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.11 1995/01/15 10:30:27 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -55,12 +55,19 @@
 
 extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed, xf86Verbose;
 
+static Bool ibm8514ValidMode(
+#if NeedFunctionPrototypes 
+    DisplayModePtr 
+#endif
+);
+
 ScrnInfoRec ibm8514InfoRec = {
     FALSE,		/* Bool configured */
     -1,			/* int tmpIndex */
     -1,			/* int scrnIndex */
     ibm8514Probe,      	/* Bool (* Probe)() */
     ibm8514Initialize,	/* Bool (* Init)() */
+    ibm8514ValidMode,	/* Bool (* ValidMode)() */
     ibm8514EnterLeaveVT,/* void (* EnterLeaveVT)() */
     (void (*)())NoopDDA,/* void (* EnterLeaveMonitor)() */
     (void (*)())NoopDDA,/* void (* EnterLeaveCursor)() */
@@ -414,3 +421,15 @@ ibm8514SaveScreen (pScreen, on)
     }
     return(TRUE);
 }
+
+/*
+ * ibm8514ValidMode --
+ *
+ */
+static Bool
+ibm8514ValidMode(mode)
+DisplayModePtr mode;
+{
+return TRUE;
+}
+

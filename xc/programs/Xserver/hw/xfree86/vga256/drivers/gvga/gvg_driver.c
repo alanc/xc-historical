@@ -1,5 +1,5 @@
-/* $XConsortium: gvg_driver.c,v 1.1 94/10/05 13:54:21 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/gvga/gvg_driver.c,v 3.3 1994/09/11 00:52:50 dawes Exp $ */
+/* $XConsortium: gvg_driver.c,v 1.2 94/10/13 13:24:59 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/gvga/gvg_driver.c,v 3.4 1995/01/10 10:31:39 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -56,6 +56,7 @@ static char *   GVGAIdent();
 static Bool     GVGAClockSelect();
 static void     GVGAEnterLeave();
 static Bool     GVGAInit();
+static Bool     GVGAValidMode();
 static void *   GVGASave();
 static void     GVGARestore();
 static void     GVGAAdjust();
@@ -68,6 +69,7 @@ vgaVideoChipRec GVGA = {
   GVGAIdent,
   GVGAEnterLeave,
   GVGAInit,
+  GVGAValidMode,
   GVGASave,
   GVGARestore,
   GVGAAdjust,
@@ -329,4 +331,15 @@ GVGAAdjust(x, y)
 
   outw(vgaIOBase + 4, (Base & 0x00FF00)      | 0x0C);
   outw(vgaIOBase + 4, ((Base & 0x00FF) << 8) | 0x0D);
+}
+
+/*
+ * GVGAValidMode --
+ *
+ */
+static Bool
+GVGAValidMode(mode)
+DisplayModePtr mode;
+{
+return TRUE;
 }

@@ -1,5 +1,5 @@
-/* $XConsortium: mach8.c,v 1.5 95/01/05 20:28:29 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.13 1994/12/29 10:03:20 dawes Exp $ */
+/* $XConsortium: mach8.c,v 1.6 95/01/06 20:57:07 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.15 1995/01/15 10:31:37 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -63,12 +63,19 @@
 extern int mach8MaxClock;
 extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed, xf86Verbose;
 
+static Bool mach8ValidMode(
+#if NeedFunctionPrototypes 
+    DisplayModePtr 
+#endif
+);
+
 ScrnInfoRec mach8InfoRec = {
     FALSE,		/* Bool configured */
     -1,			/* int tmpIndex */
     -1,			/* int scrnIndex */
     mach8Probe,      	/* Bool (* Probe)() */
     mach8Initialize,	/* Bool (* Init)() */
+    mach8ValidMode,	/* Bool (* ValidMode)() */
     mach8EnterLeaveVT,	/* void (* EnterLeaveVT)() */
     (void (*)())NoopDDA,/* void (* EnterLeaveMonitor)() */
     (void (*)())NoopDDA,/* void (* EnterLeaveCursor)() */
@@ -807,3 +814,15 @@ mach8ClockSelect(no)
   }
   return(TRUE);
 }
+
+/*
+ * mach8ValidMode --
+ *
+ */
+static Bool
+mach8ValidMode(mode)
+DisplayModePtr mode;
+{
+return TRUE;
+}
+

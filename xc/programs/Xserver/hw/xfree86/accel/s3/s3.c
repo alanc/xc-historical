@@ -1,5 +1,5 @@
-/* $XConsortium: s3.c,v 1.4 94/12/27 11:29:42 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.56 1994/12/29 10:06:54 dawes Exp $ */
+/* $XConsortium: s3.c,v 1.5 95/01/06 20:57:15 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.61 1995/01/15 10:32:52 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -33,8 +33,6 @@
  * Id: s3.c,v 2.6 1993/08/09 06:17:57 jon Exp jon
  */
 
-#define ICS2595
-
 #include "misc.h"
 #include "cfb.h"
 #include "pixmapstr.h"
@@ -61,6 +59,12 @@ void (*vgaSaveScreenFunc)() = (void (*)())NoopDDA;
 
 extern int defaultColorVisualClass;
 
+static Bool s3ValidMode(
+#if NeedFunctionPrototypes 
+    DisplayModePtr 
+#endif
+);
+
 ScrnInfoRec s3InfoRec =
 {
    FALSE,			/* Bool configured */
@@ -68,6 +72,7 @@ ScrnInfoRec s3InfoRec =
    -1,				/* int scrnIndex */
    s3Probe,			/* Bool (* Probe)() */
    (Bool (*)())NoopDDA,		/* Bool (* Init)() */
+   s3ValidMode,			/* Bool (* ValidMode)() */
    (void (*)())NoopDDA,		/* void (* EnterLeaveVT)() */
    (void (*)())NoopDDA,		/* void (* EnterLeaveMonitor)() */
    (void (*)())NoopDDA,		/* void (* EnterLeaveCursor)() */
@@ -173,6 +178,7 @@ static Bool s3ClockSelect();
 static Bool icd2061ClockSelect();
 static Bool s3GendacClockSelect();
 static Bool ti3025ClockSelect();
+static Bool ch8391ClockSelect();
 ScreenPtr s3savepScreen;
 Bool  s3Localbus = FALSE;
 Bool  s3LinearAperture = FALSE;
@@ -225,6 +231,7 @@ Bool s3Bt485PixMux = FALSE;
 Bool s3ATT498PixMux = FALSE;
 static int maxRawClock = 0;
 static Bool clockDoublingPossible = FALSE;
+int s3AdjustCursorXPos = 0;
 
 /*
  * s3PrintIdent -- print identification message
@@ -295,6 +302,30 @@ static int s3DetectMIRO_20SV_Rev(int BIOSbase)
 	    }
       }
    return -4;
+}
+
+static int check_SPEA_bios(int BIOSbase)
+{
+#define BIOS_BSIZE 1024
+#define BIOS_BASE  0xc0000
+
+   long addr = BIOSbase>0 ? BIOSbase : BIOS_BASE;
+
+   unsigned char bios[BIOS_BSIZE];
+   char *match = " SPEA/Video";
+   int i,l;
+
+   if (xf86ReadBIOS(BIOSbase, 0, bios, BIOS_BSIZE) != BIOS_BSIZE)
+      return -1;
+
+   if ((bios[0] != 0x55) || (bios[1] != 0xaa))
+      return -2;
+
+   l = strlen(match);
+   for (i=0; i<BIOS_BSIZE-l; i++)
+      if (bios[i] == match[0] && !memcmp(&bios[i],match,l))
+         return 1;
+   return 0;
 }
 
 
@@ -523,13 +554,11 @@ s3Probe()
    /* ELSA_W1000PRO isn't really required any more */
    OFLG_SET(OPTION_ELSA_W1000PRO, &validOptions);
    OFLG_SET(OPTION_ELSA_W2000PRO, &validOptions);
-#if 0
-   /* These aren't needed any more */
-   OFLG_SET(OPTION_STEALTH64, &validOptions);
-#endif
+   OFLG_SET(OPTION_DIAMOND, &validOptions);
    if (S3_928_P(s3ChipId))
       OFLG_SET(OPTION_PCI_HACK, &validOptions);
    OFLG_SET(OPTION_POWER_SAVER, &validOptions);
+   OFLG_SET(OPTION_S3_964_BT485_VCLK, &validOptions);
    xf86VerifyOptions(&validOptions, &s3InfoRec);
 
    if (S3_x64_SERIES(s3ChipId))
@@ -1015,7 +1044,67 @@ s3Probe()
    if (s3RamdacType == UNKNOWN_DAC) {
       s3RamdacType = NORMAL_DAC;
    }
-   
+  
+   if (!OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions) &&
+       !OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options) &&
+       (s3InfoRec.ramdac == NULL)) { /* ensure that autodetection can be */
+                                     /* overwritten 			 */	
+     card_id = check_SPEA_bios(s3InfoRec.BIOSbase); 
+     if (card_id > 0) {
+
+       switch (s3RamdacType) {
+       case BT485_DAC: 
+       case ATT20C505_DAC: 
+          if (S3_928_ONLY(s3ChipId)) {
+             /* SPEA Mercury */
+             ErrorF("%s %s: SPEA Mercury detected.\n",
+             XCONFIG_PROBED, s3InfoRec.name);
+             OFLG_SET(OPTION_SPEA_MERCURY, &s3InfoRec.options);
+             OFLG_SET(CLOCK_OPTION_SC11412, &s3InfoRec.clockOptions);
+             OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
+             s3ClockSelectFunc = icd2061ClockSelect;
+             numClocks = 3;
+             clockchip_probed = XCONFIG_PROBED; 
+          } else if  (S3_964_SERIES(s3ChipId)) { 
+             /* SPEA Mercury P64 */ 
+             ErrorF("%s %s: SPEA Mercury P64 detected.\n",
+             XCONFIG_PROBED, s3InfoRec.name);
+             OFLG_SET(OPTION_SPEA_MERCURY, &s3InfoRec.options);
+             OFLG_SET(CLOCK_OPTION_ICD2061A, &s3InfoRec.clockOptions);
+             OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
+             s3ClockSelectFunc = icd2061ClockSelect;
+             numClocks = 3;
+             clockchip_probed = XCONFIG_PROBED;
+          } 
+          break;
+       case ATT20C498_DAC: 
+          if (S3_864_SERIES(s3ChipId)) { 
+            /* SPEA MirageP64 Bios 3.xx */
+            ErrorF("%s %s: SPEA Mirage P64 detected.\n",
+            XCONFIG_PROBED, s3InfoRec.name);
+            OFLG_SET(CLOCK_OPTION_ICS2595, &s3InfoRec.clockOptions);
+            OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
+            s3ClockSelectFunc = icd2061ClockSelect;
+            numClocks = 3;
+            clockchip_probed = XCONFIG_PROBED;
+          }
+          break;
+       case S3_SDAC_DAC:
+          if (S3_864_SERIES(s3ChipId)) 
+            /* SPEA Mirage P64 Bios 4.xx */
+            ErrorF("%s %s: SPEA Mirage P64 detected.\n",
+            XCONFIG_PROBED, s3InfoRec.name);
+          break;
+       case S3_GENDAC_DAC:
+          if (S3_801_SERIES(s3ChipId))
+            /* SPEA Mirage Bios 5.x */
+            ErrorF("%s %s: SPEA Mirage with BIOS 5.x detected.\n",
+            XCONFIG_PROBED, s3InfoRec.name);
+          break;
+      } 
+     }
+    }   /* end SPEA autodetect */
+
    /* make sure s3InfoRec.ramdac is set correctly */
    s3InfoRec.ramdac = xf86TokenToString(s3DacTable, s3RamdacType);
 
@@ -1225,10 +1314,14 @@ s3Probe()
       }
    } else if (s3ATT498PixMux) {
       pixMuxPossible = TRUE;
-      if (S3_864_SERIES(s3ChipId) && !DAC_IS_ATT22C498)
-	 nonMuxMaxClock = 95000; /* 864 DCLK limit */
-      else if (S3_805_I_SERIES(s3ChipId) && !DAC_IS_ATT22C498)
-	 nonMuxMaxClock = 90000;  /* XXXX just a guess, who has 805i docs? */
+      if (DAC_IS_ATT20C498 && !DAC_IS_ATT22C498) {
+	 if (S3_864_SERIES(s3ChipId))
+	    nonMuxMaxClock = 95000; /* 864 DCLK limit */
+	 else if (S3_805_I_SERIES(s3ChipId))
+	    nonMuxMaxClock = 90000;  /* XXXX just a guess, who has 805i docs? */
+	 else
+	    nonMuxMaxClock = 67500;
+      }
       else
 	 nonMuxMaxClock = 67500;
       allowPixMuxInterlace = FALSE;
@@ -1342,14 +1435,20 @@ s3Probe()
       }
       numClocks = 3;
    } else if (OFLG_ISSET(CLOCK_OPTION_ICS2595, &s3InfoRec.clockOptions)) {
-#ifdef ICS2595
       s3ClockSelectFunc = icd2061ClockSelect;
       if (xf86Verbose)
 	 ErrorF("%s %s: Using ICS2595 programmable clock\n",
 		XCONFIG_GIVEN, s3InfoRec.name);
       numClocks = 3;
+   } else if (OFLG_ISSET(CLOCK_OPTION_CH8391, &s3InfoRec.clockOptions)) {
+#ifdef CH8391
+      s3ClockSelectFunc = ch8391ClockSelect;
+      if (xf86Verbose)
+	 ErrorF("%s %s: Using Chrontel 8391 programmable clock\n",
+		XCONFIG_GIVEN, s3InfoRec.name);
+      numClocks = 3;
 #else
-      ErrorF("ICS2595 clock chip support is not yet included\n");
+      ErrorF("CH8391 clock chip support is not yet included\n");
       xf86DisableIOPorts(s3InfoRec.scrnIndex);
       return(FALSE);
 #endif
@@ -1387,10 +1486,10 @@ s3Probe()
 	 maxRawClock = 110000;
       } else if (OFLG_ISSET(CLOCK_OPTION_TI3025, &s3InfoRec.clockOptions)) {
 	 maxRawClock = s3InfoRec.dacSpeed; /* Is this right?? */
-#ifdef ICS2595
       } else if (OFLG_ISSET(CLOCK_OPTION_ICS2595, &s3InfoRec.clockOptions)) {
 	 maxRawClock = 145000; /* This is what is in common_hw/ICS2595.h */
-#endif
+      } else if (OFLG_ISSET(CLOCK_OPTION_CH8391, &s3InfoRec.clockOptions)) {
+	 maxRawClock = 135000;
       } else {
 	 /* Shouldn't get here */
 	 maxRawClock = 0;
@@ -2180,24 +2279,22 @@ icd2061ClockSelect(freq)
 	    AltICD2061SetClock(freq, 2);
 	 } else if (OFLG_ISSET(CLOCK_OPTION_SC11412, &s3InfoRec.clockOptions)) {
 	    result = SC11412SetClock((long)freq/1000);
-#ifdef ICS2595
 	 } else if (OFLG_ISSET(CLOCK_OPTION_ICS2595, &s3InfoRec.clockOptions)) {
 	    result = ICS2595SetClock((long)freq/1000);
 	    result = ICS2595SetClock((long)freq/1000);
-	    result = ICS2595SetClock((long)freq/1000);
-#endif
 	 } else { /* Should never get here */
 	    result = FALSE;
 	    break;
 	 }
+
 	 if (!OFLG_ISSET(CLOCK_OPTION_ICS2595, &s3InfoRec.clockOptions)) {
 	    outb(vgaCRIndex, 0x42);/* select the clock */
 	    if (OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options) &&
-                S3_964_SERIES(s3ChipId)) /* for the SPEA Mercury P64 */
-                 outb(vgaCRReg, 0x0a);   /* for some unknown reason  */
+                S3_964_SERIES(s3ChipId)) /* SPEA Mercury P64 uses bit3  */
+                 outb(vgaCRReg, 0x0a);   /* for synchronizing reasons   */
             else outb(vgaCRReg, 0x02); 
+            usleep(150000);
 	 }
-	 usleep(150000);
 	 /* Do the clock doubler selection in s3Init() */
       }
    }
@@ -2269,4 +2366,48 @@ ti3025ClockSelect(freq)
    }
    LOCK_SYS_REGS;
    return(result);
+}
+
+static Bool
+ch8391ClockSelect(freq)
+     int   freq;
+
+{
+   Bool result = TRUE;
+ 
+   UNLOCK_SYS_REGS;
+   
+   switch(freq)
+   {
+   case CLK_REG_SAVE:
+   case CLK_REG_RESTORE:
+      result = s3ClockSelect(freq);
+      break;
+   default:
+      {
+	 /* Check if clock frequency is within range */
+	 /* XXXX Check this elsewhere */
+	 if (freq < 8500 || freq > 135000) {
+	    ErrorF("%s %s: Specified dot clock (%.3f) out of range for Chrontel 8391",
+		   XCONFIG_PROBED, s3InfoRec.name, freq / 1000.0);
+	    result = FALSE;
+	    break;
+	 }
+#ifdef CH8391
+	 (void) Chrontel8391SetClock(freq, 2); /* can't fail */
+#endif
+	 outb(vgaCRIndex, 0x42);/* select the clock */
+	 outb(vgaCRReg, 0x02);
+	 usleep(150000);
+      }
+   }
+   LOCK_SYS_REGS;
+   return(result);
+}
+
+static Bool
+s3ValidMode(mode)
+     DisplayModePtr mode;
+{
+   return(TRUE);
 }

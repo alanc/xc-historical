@@ -1,6 +1,6 @@
 /*
- * $XConsortium: xf86Config.c,v 1.4 95/01/05 20:39:33 kaleb Exp kaleb $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.32 1994/12/29 10:07:25 dawes Exp $
+ * $XConsortium: xf86Config.c,v 1.5 95/01/06 20:57:28 kaleb Exp kaleb $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.34 1995/01/11 03:50:32 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -976,6 +976,7 @@ configServerFlagsSection()
   int            i, j;
       
   xf86Info.dontZap       = FALSE;
+  xf86Info.dontZoom      = FALSE;
 
   while ((token = getToken(ServerFlagsTab)) != ENDSECTION) {
     switch (token) {
@@ -984,6 +985,9 @@ configServerFlagsSection()
       break;
     case DONTZAP:
       xf86Info.dontZap = TRUE;
+      break;
+    case DONTZOOM:
+      xf86Info.dontZoom = TRUE;
       break;
     case EOF:
       FatalError("Unexpected EOF (missing EndSection?)");
@@ -2594,6 +2598,18 @@ xf86LookupMode(target, driver)
       target->CrtcVTotal *= 2;
       target->CrtcVAdjusted = TRUE;
     }
+
+    /* I'm not sure if this is the best place for this in the
+     * new XF86Config organization. - SRA
+     */
+    if (found_mode)
+      if ((driver->ValidMode)(target) == FALSE)
+        {
+         ErrorF("%s %s: Unable to support mode \"%s\"\n",
+              XCONFIG_GIVEN,driver->name, target->name );
+         return(FALSE);
+        }
+
     if (xf86Verbose)
     {
       ErrorF("%s %s: Mode \"%s\": mode clock = %7.3f",

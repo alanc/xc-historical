@@ -1,5 +1,5 @@
-/* $XConsortium: cpq_driver.c,v 1.2 94/10/13 13:23:01 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/compaq/cpq_driver.c,v 3.4 1994/12/11 10:57:06 dawes Exp $ */
+/* $XConsortium: cpq_driver.c,v 1.3 95/01/06 20:58:48 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/compaq/cpq_driver.c,v 3.5 1995/01/10 10:31:10 dawes Exp $ */
 /*
  * Copyright 1993 Hans Oey <hans@mo.hobby.nl>
  *
@@ -67,6 +67,7 @@ static char *   COMPAQIdent();
 static Bool     COMPAQClockSelect();
 static void     COMPAQEnterLeave();
 static Bool     COMPAQInit();
+static Bool     COMPAQValidMode();
 static void *   COMPAQSave();
 static void     COMPAQRestore();
 static void     COMPAQAdjust();
@@ -80,6 +81,7 @@ vgaVideoChipRec COMPAQ = {
 	COMPAQIdent,
 	COMPAQEnterLeave,
 	COMPAQInit,
+	COMPAQValidMode,
 	COMPAQSave,
 	COMPAQRestore,
 	COMPAQAdjust,
@@ -428,4 +430,15 @@ int mode;
 		outw(0x3ce, regsave[nest_depth].PR1 << 8 | 0x46);
 		outw(0x3ce, regsave[nest_depth].PR0 << 8 | 0x45);
 	}
+}
+
+/*
+ * COMPAQValidMode --
+ *
+ */
+static Bool
+COMPAQValidMode(mode)
+DisplayModePtr mode;
+{
+return TRUE;
 }

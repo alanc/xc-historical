@@ -1,6 +1,6 @@
 /*
- * $XConsortium: ali_driver.c,v 1.2 95/01/06 20:58:25 kaleb Exp kaleb $ 
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ali/ali_driver.c,v 3.1 1995/01/02 05:01:42 dawes Exp $
+ * $XConsortium: ali_driver.c,v 1.3 95/01/13 20:02:21 kaleb Exp kaleb $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ali/ali_driver.c,v 3.3 1995/01/10 10:30:21 dawes Exp $
  */
 
 #include "X.h"
@@ -63,6 +63,7 @@ static Bool     LegendClockSelect();
  */
 static void     ALIEnterLeave();
 static Bool     ALIInit();	/* 2nd most important routine */
+static Bool     ALIValidMode();
 static void *   ALISave();
 static void     ALIRestore();
 static void     ALIAdjust();
@@ -84,6 +85,7 @@ vgaVideoChipRec ALI = {
 	ALIIdent,
 	ALIEnterLeave,
 	ALIInit,
+	ALIValidMode,
 	ALISave,
 	ALIRestore,
 	ALIAdjust,
@@ -156,10 +158,11 @@ vgaVideoChipRec ALI = {
 
 #define new ((vgaALIPtr)vgaNewVideoState)
 
-#define ALI2301         0	/* ALI 2301 chip */
-#define ALI2302         1	/* ALI 2302 chip */
-#define ALI2308         2	/* ALI 2308 chip */
-#define ALI2401         3	/* ALI 2401 chip */
+#define ALI2228         0	/* ALI 2228 chip */
+#define ALI2301         1	/* ALI 2301 chip */
+#define ALI2302         2	/* ALI 2302 chip */
+#define ALI2308         3	/* ALI 2308 chip */
+#define ALI2401         4	/* ALI 2401 chip */
 
 static int ALIchipset;
 
@@ -177,7 +180,8 @@ static char *
 ALIIdent(n)
      int n;
 {
-  static char *chipsets[] = {"ali2301","ali2302","ali2308","ali2401"};
+  static char *chipsets[] = {"ali2228", "ali2301", "ali2302", "ali2308",
+			     "ali2401"};
 
   if (n + 1 > sizeof(chipsets) / sizeof(char *))
     return(NULL);
@@ -280,12 +284,14 @@ ALIProbe()
       }
 #endif
       if (!StrCaseCmp(vga256InfoRec.chipset, ALIIdent(0)))
-              ALIchipset = ALI2301;
+              ALIchipset = ALI2228;
       else if (!StrCaseCmp(vga256InfoRec.chipset, ALIIdent(1)))
-              ALIchipset = ALI2302;
+              ALIchipset = ALI2301;
       else if (!StrCaseCmp(vga256InfoRec.chipset, ALIIdent(2)))
-              ALIchipset = ALI2308;
+              ALIchipset = ALI2302;
       else if (!StrCaseCmp(vga256InfoRec.chipset, ALIIdent(3)))
+              ALIchipset = ALI2308;
+      else if (!StrCaseCmp(vga256InfoRec.chipset, ALIIdent(4)))
               ALIchipset = ALI2401;
       else
               return(FALSE);
@@ -552,6 +558,17 @@ ALIAdjust(x, y)
    exceeds 0xFFFF to fix the 640x480 screen scrolling back problem. */
 
   outw(vgaIOBase + 4, ((Base & 0x070000) >> 8) | 0x20);
+}
+
+/*
+ * ALIValidMode --
+ *
+ */
+static Bool
+ALIValidMode(mode)
+DisplayModePtr mode;
+{
+return TRUE;
 }
 
 

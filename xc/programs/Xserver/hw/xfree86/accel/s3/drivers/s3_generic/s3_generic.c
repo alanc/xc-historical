@@ -1,5 +1,5 @@
-/* $XConsortium: s3_generic.c,v 1.1 94/10/05 13:33:36 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/s3_generic/s3_generic.c,v 3.0 1994/09/23 10:10:20 dawes Exp $ */
+/* $XConsortium: s3_generic.c,v 1.2 94/10/12 20:12:09 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/s3_generic/s3_generic.c,v 3.2 1995/01/10 10:55:15 dawes Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *

@@ -1,5 +1,5 @@
-/* $XConsortium: gen_driver.c,v 1.1 94/10/05 13:48:57 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga2/drivers/generic/gen_driver.c,v 3.5 1994/09/11 00:51:50 dawes Exp $ */
+/* $XConsortium: gen_driver.c,v 1.2 94/10/12 21:17:22 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga2/drivers/generic/gen_driver.c,v 3.6 1995/01/10 10:29:23 dawes Exp $ */
 
 /*
  * Generic VGA driver for mono operation.  This driver doesn't do much since
@@ -30,6 +30,7 @@ static char *   GENERICIdent();
 static Bool     GENERICClockSelect();
 static void     GENERICEnterLeave();
 static Bool     GENERICInit();
+static Bool     GENERICValidMode();
 static void *   GENERICSave();
 static void     GENERICRestore();
 static void     GENERICAdjust();
@@ -39,6 +40,7 @@ vgaVideoChipRec GENERIC = {
   GENERICIdent,
   GENERICEnterLeave,
   GENERICInit,
+  GENERICValidMode,
   GENERICSave,
   GENERICRestore,
   GENERICAdjust,
@@ -272,3 +274,15 @@ GENERICAdjust(x, y)
   outw(vgaIOBase + 4, ((Base & 0x00FF) << 8) | 0x0D);
   outw(vgaIOBase + 4, ((Base & 0x030000) >> 8) | 0x33);
 }
+
+/*
+ * GENERICValidMode --
+ *
+ */
+static Bool
+GENERICValidMode(mode)
+DisplayModePtr mode;
+{
+return TRUE;
+}
+

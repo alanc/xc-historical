@@ -1,5 +1,5 @@
-/* $XConsortium: mach32.h,v 1.3 94/10/14 17:24:16 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.h,v 3.7 1994/11/26 12:41:39 dawes Exp $ */
+/* $XConsortium: mach32.h,v 1.4 95/01/05 20:27:25 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.h,v 3.9 1995/01/15 10:30:54 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *

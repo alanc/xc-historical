@@ -1,5 +1,5 @@
-/* $XConsortium: xf86_Option.h,v 1.3 95/01/05 20:40:37 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.16 1994/12/29 10:07:33 dawes Exp $ */
+/* $XConsortium: xf86_Option.h,v 1.4 95/01/06 20:57:42 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.18 1995/01/15 10:33:13 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -92,13 +92,13 @@ typedef struct {
 #define OPTION_BT482_CURS       55 /* Use Bt482 RAMDAC cursor */
 #define OPTION_S3_964_BT485_VCLK	56 /* probe/invert VCLK for 964 + Bt485 */
 
-/* Vendor specific pixmux enabling options */
+/* Vendor specific options */
 #define OPTION_SPEA_MERCURY	70 /* pixmux for SPEA Mercury (S3) */
 #define OPTION_NUMBER_NINE	71 /* pixmux for #9 with Bt485 (S3) */
 #define OPTION_STB_PEGASUS	72 /* pixmux for STB Pegasus (S3) */
 #define OPTION_ELSA_W1000PRO	73 /* pixmux for ELSA Winner 1000PRO (S3) */
 #define OPTION_ELSA_W2000PRO	74 /* pixmux for ELSA Winner 2000PRO (S3) */
-#define OPTION_STEALTH64	75 /* pixmux for Diamond Stealth 64 (S3) */
+#define OPTION_DIAMOND		75 /* Diamond boards (S3) */
 
 /* Misc options */
 #define OPTION_CSYNC		90 /* Composite sync */
@@ -135,6 +135,7 @@ typedef struct {
 #define CLOCK_OPTION_TI3025      5 /* use TI3025 programmable clocks */
 #define CLOCK_OPTION_ICS2595     6 /* use TI3025 programmable clocks */
 #define CLOCK_OPTION_CIRRUS      7 /* use Cirrus programmable clocks */
+#define CLOCK_OPTION_CH8391      8 /* use Chrontel 8391 programmable clocks */
 
 /*
  * Table to map option strings to tokens.
@@ -193,7 +194,7 @@ OptFlagRec xf86_OptionTab[] = {
   { "elsa_w1000pro",	OPTION_ELSA_W1000PRO },
   { "elsa_w1000isa",	OPTION_ELSA_W1000PRO }, /* These are treated the same */
   { "elsa_w2000pro",	OPTION_ELSA_W2000PRO },
-  { "stealth64",	OPTION_STEALTH64 },
+  { "diamond",		OPTION_DIAMOND },
 
   { "composite",	OPTION_CSYNC },
   { "secondary",	OPTION_SECONDARY },
@@ -235,6 +236,7 @@ OptFlagRec xf86_ClockOptionTab [] = {
   { "ti3025",		CLOCK_OPTION_TI3025 },    /* TI3025 */
   { "ics2595",		CLOCK_OPTION_ICS2595 },   /* ICS2595 */
   { "cirrus",		CLOCK_OPTION_CIRRUS }, 	  /* Cirrus built-in */
+  { "ch8391",		CLOCK_OPTION_CH8391 }, 	  /* Chrontel 8391  */
   { "",			-1 },
 };
 

@@ -1,5 +1,5 @@
-/* $XConsortium: xf86_Config.h,v 1.3 95/01/05 20:40:37 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.18 1994/12/29 10:07:32 dawes Exp $ */
+/* $XConsortium: xf86_Config.h,v 1.4 95/01/06 20:57:39 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.19 1995/01/11 03:50:39 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -211,12 +211,14 @@ static SymTabRec FilesTab[] = {
 
 #define NOTRAPSIGNALS	1050
 #define DONTZAP		1051
+#define DONTZOOM	1052
 
 #ifdef INIT_CONFIG
 static SymTabRec ServerFlagsTab[] = {
   { ENDSECTION, "endsection"},
   { NOTRAPSIGNALS, "notrapsignals" },
   { DONTZAP,	"dontzap" },
+  { DONTZOOM,	"dontzoom" },
   { -1,         "" },
 };
 #endif /* INIT_CONFIG */

@@ -1,7 +1,7 @@
 <!doctype linuxdoc system>
 <article>
 
-<!-- TitleS information -->
+<!-- Titles information -->
 
 <title>Information for SVR4 Users
 <author>The XFree86 Project, Inc
@@ -153,9 +153,9 @@ compatibility.<p>
    <tt>idtune</tt>, or editing <tt>/etc/conf/cf.d/stune</tt>, and 
    rebuilding the kernel with <tt>idbuild</tt>):
 <quote>
-        <tt>[HS]FNOLIM</tt>..... hard/soft limit for number of open files<p>
-        <tt>MAXUP</tt>............... max number of processes per user<p>
-        <tt>ARG_MAX</tt>........... max length of an arg list<p>
+        <tt>[HS]FNOLIM         </tt>hard/soft limit for number of open files<p>
+        <tt>MAXUP              </tt>max number of processes per user<p>
+        <tt>ARG_MAX            </tt>max length of an arg list<p>
 </quote>
 <item>Choose which mouse driver you will use.  For SVR4 the best choice
    depends on which version you are using.  If you have a bus mouse then
@@ -419,7 +419,7 @@ workaround for this problem, and giving us permission to release the
 information.<p>
 
 <verb>
-$XConsortium: $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SVR4.sgml,v 3.1 1994/12/26 11:03:39 dawes Exp $
+$XConsortium: SVR4.sgml,v 1.1 95/01/06 20:29:55 kaleb Exp kaleb $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SVR4.sgml,v 3.2 1995/01/15 10:34:24 dawes Exp $
 </verb>
 </article>

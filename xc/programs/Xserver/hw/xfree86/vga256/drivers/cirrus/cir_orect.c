@@ -1,5 +1,5 @@
-/* $XConsortium: $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_orect.c,v 3.1 1995/01/04 04:42:29 dawes Exp $ */
+/* $XConsortium: cir_orect.c,v 1.1 95/01/06 20:37:49 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_orect.c,v 3.2 1995/01/07 04:12:06 dawes Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -250,7 +250,8 @@ CirrusPolyRectangle (pDrawable, pGC, nRectsInit, pRectsInit)
             	if (pGC->alu == GXcopy && cirrusUseLinear) {
 		    unsigned char *destp;
 	    	    int fg;
-	    	    destp = clippedY1 * destpitch + clippedX2 + base;
+	    	    destp = clippedY1 * destpitch + clippedX2 * (PSZ / 8)
+	    	        + base;
 	    	    fg = pGC->fgPixel;
 		    do { BLTBUSY(busy); } while (busy);
 		    LinearFramebufferVerticalLine(destp, fg, height,
@@ -291,7 +292,7 @@ drawbottomedge:
 		/*
 		 * Corrected for decreased clippedY2.
 		 */
-	    	destaddr = (clippedY2 + 1) * destpitch + clippedX1 + (PSZ / 8);
+	    	destaddr = (clippedY2 + 1) * destpitch + clippedX1 * (PSZ / 8);
 		do { BLTBUSY(busy); } while (busy);
 		SETDESTADDR(destaddr);
 		SETWIDTH(width * (PSZ / 8));

@@ -1,5 +1,5 @@
-/* $XConsortium: $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/cards.c,v 3.0 1995/01/02 05:02:58 dawes Exp $ */
+/* $XConsortium: cards.c,v 1.1 95/01/06 20:53:10 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/cards.c,v 3.1 1995/01/12 12:06:39 dawes Exp $ */
 
 /*
  *  Functions to manipulate card database.
@@ -193,7 +193,20 @@ int parse_database() {
 			card[lastcard].flags |= UNSUPPORTED;
 			continue;
 		}
-	}
+		/* test for missing required fields */
+		if (card[lastcard].server == NULL) {
+		    fprintf(stderr, "Warning SERVER specification missing "
+			    "in Card database entry %s.\n", 
+			    card[lastcard].name);
+		    card[lastcard].server = "unknown";
+		}
+		if (card[lastcard].chipset == NULL) {
+		    fprintf(stderr, "Warning CHIPSET specification missing "
+			    "in Card database entry %s.\n", 
+			    card[lastcard].name);
+		    card[lastcard].chipset = "unknown";
+		}
+	    }
 
 	fclose(f);
 

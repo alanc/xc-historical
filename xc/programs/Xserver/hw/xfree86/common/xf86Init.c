@@ -1,6 +1,6 @@
 /*
- * $XConsortium: xf86Init.c,v 1.6 95/01/06 20:57:34 kaleb Exp kaleb $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.13 1994/12/29 10:07:29 dawes Exp $
+ * $XConsortium: xf86Init.c,v 1.7 95/01/10 14:42:18 kaleb Exp kaleb $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.14 1995/01/07 04:07:28 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -50,6 +50,7 @@ Bool xf86ScreensOpen = FALSE;
 Bool xf86Verbose = TRUE;
 Bool xf86fpFlag = FALSE;
 Bool xf86coFlag = FALSE;
+Bool xf86ProbeOnly = FALSE;
 char xf86ConfigFile[PATH_MAX] = "";
 int  xf86bpp = -1;
 xrgb xf86weight = { 0, 0, 0 } ;	/* RGB weighting at 16 bpp */
@@ -67,7 +68,6 @@ extern void xf86UnlockServer();
 
 xf86InfoRec xf86Info;
 int         xf86ScreenIndex;
-static Bool ProbeOnly = FALSE;
 
 /*
  * InitOutput --
@@ -178,7 +178,7 @@ InitOutput(pScreenInfo, argc, argv)
       else
         ErrorF(
          "\n *** A configured device found, but display modes could not be resolved.***\n\n");
-    if (ProbeOnly)
+    if (xf86ProbeOnly)
     {
       extern void AbortDDX();
       xf86VTSema = FALSE;
@@ -333,6 +333,7 @@ InitInput(argc, argv)
 void
 OsVendorInit()
 {
+  extern Bool OsDelayInitColors;
 #ifdef USE_XF86_SERVERLOCK
   extern void xf86LockServer();
   static Bool been_here = FALSE;
@@ -342,6 +343,7 @@ OsVendorInit()
     been_here = TRUE;
   }
 #endif
+  OsDelayInitColors = TRUE;
 }
 
 /*
@@ -439,7 +441,7 @@ ddxProcessArgument (argc, argv, i)
   }
   if (!strcmp(argv[i],"-probeonly"))
   {
-    ProbeOnly = TRUE;
+    xf86ProbeOnly = TRUE;
     xf86Verbose = TRUE;
     return 1;
   }
