@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyIO.c,v 1.1 91/05/10 09:09:03 jap Exp $
+ * $XConsortium: aixKeybd.c,v 1.3 91/07/16 13:00:11 jap Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -77,9 +77,11 @@ rtChangeKeyboardControl(pDevice,ctrl)
 /***============================================================***/
 
 static void
-rtBell(loud, pDevice)
+rtBell(loud, pDevice, ctrl, what)
     int loud;
-    DevicePtr pDevice;
+    DeviceIntPtr pDevice;
+    pointer ctrl;
+    int what;
 {
 
     TRACE(("rtBell(loud= %d, pDev= 0x%x)\n",loud,pDevice));
@@ -158,11 +160,9 @@ CARD8 *pModMap;
 /***============================================================***/
 
 int
-AIXKeybdProc(pDev, onoff, argc, argv)
+AIXKeybdProc(pDev, onoff)
     DevicePtr 	 pDev;
     int 	 onoff;
-    int		 argc;
-    char	*argv[];
 {
     KeySymsRec		keySyms;
     CARD8 		modMap[MAP_LENGTH];
