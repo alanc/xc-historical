@@ -132,6 +132,13 @@ Specifies the background color to use.
 .TP 14
 .B \-xor
 Use GXxor mode to draw, rather than GXcopy.
+This option only affects graphics
+benchmarks in which the graphics function is actually used.
+.TP 14
+.B \-both
+First use GXcopy, then use GXxor mode to draw.
+This option only affects graphics
+benchmarks in which the graphics function is actually used.
 .TP 14
 .B \-dot
 Dot.
@@ -148,16 +155,16 @@ Dot.
 .B \-rect500
 500x500 solid-filled rectangle.
 .TP 14
-.B \-tsrect1
+.B \-srect1
 1x1 transparent stippled rectangle, 8x8 stipple pattern.
 .TP 14
-.B \-tsrect10
+.B \-srect10
 10x10 transparent stippled rectangle, 8x8 stipple pattern.
 .TP 14
-.B \-tsrect100
+.B \-srect100
 100x100 transparent stippled rectangle, 8x8 stipple pattern.
 .TP 14
-.B \-tsrect500
+.B \-srect500
 500x500 transparent stippled rectangle, 8x8 stipple pattern.
 .TP 14
 .B \-osrect
@@ -218,13 +225,13 @@ Dot.
 100-pixel line segment (3 obscuring rectangles).
 .TP 14
 .B \-dseg10
-10-pixel dashed segment.
+10-pixel dashed segment (3 on, 2 off).
 .TP 14
 .B \-dseg100
-100-pixel dashed segment.
+100-pixel dashed segment (3 on, 2 off).
 .TP 14
 .B \-ddseg100
-100-pixel double-dashed segment.
+100-pixel double-dashed segment (3 fg, 2 bg).
 .TP 14
 .B \-line1
 1-pixel line.
@@ -239,13 +246,13 @@ Dot.
 500-pixel line.
 .TP 14
 .B \-dline10
-10-pixel dashed line.
+10-pixel dashed line (3 on, 2 off).
 .TP 14
 .B \-dline100
-100-pixel dashed line.
+100-pixel dashed line (3 on, 2 off).
 .TP 14
 .B \-ddline100
-100-pixel double-dashed line.
+100-pixel double-dashed line (3 fg, 2 bg).
 .TP 14
 .B \-wline10
 10-pixel line, line width 1.
@@ -257,10 +264,10 @@ Dot.
 500-pixel line, line width 50.
 .TP 14
 .B \-wdline100
-100-pixel dashed line, line width 10.
+100-pixel dashed line, line width 10 (30 on, 20 off).
 .TP 14
 .B \-wddline100
-100-pixel double-dashed line, line width 10.
+100-pixel double-dashed line, line width 10 (30 fg, 20 bg).
 .TP 14
 .B \-circle1
 1-pixel diameter circle.
@@ -275,10 +282,10 @@ Dot.
 500-pixel diameter circle.
 .TP 14
 .B \-dcircle100
-100-pixel diameter dashed circle.
+100-pixel diameter dashed circle (3 on, 2 off).
 .TP 14
 .B \-dcircle100
-100-pixel diameter double-dashed circle.
+100-pixel diameter double-dashed circle (3 fg, 2 bg).
 .TP 14
 .B \-wcircle10
 10-pixel diameter circle, line width 1.
@@ -290,22 +297,42 @@ Dot.
 500-pixel diameter circle, line width 50.
 .TP 14
 .B \-wdcircle100
-100-pixel diameter dashed circle, line width 10.
+100-pixel diameter dashed circle, line width 10 (30 on, 20 off).
 .TP 14
 .B \-wddcircle100
-100-pixel diameter dashed circle, line width 10.
+100-pixel diameter double-dashed circle, line width 10 (30 fg, 20 bg).
+.TP 14
+.B \-pcircle10
+10-pixel diameter partial circle,
+orientation and arc angle evenly distributed.
+.TP 14
+.B \-pcircle100
+100-pixel diameter partial circle,
+orientation and arc angle evenly distributed.
 .TP 14
 .B \-fcircle1
-1-pixel diameter solid circle.
+1-pixel diameter filled circle.
 .TP 14
 .B \-fcircle10
-10-pixel diameter solid circle.
+10-pixel diameter filled circle.
 .TP 14
 .B \-fcircle100
-100-pixel diameter solid circle.
+100-pixel diameter filled circle.
 .TP 14
 .B \-fcircle500
-500-pixel diameter solid circle.
+500-pixel diameter filled circle.
+.TP 14
+.B \-fcpcircle10
+10-pixel diameter partial filled circle, chord fill.
+.TP 14
+.B \-fcpcircle100
+100-pixel diameter partial filled circle, chord fill.
+.TP 14
+.B \-fspcircle10
+10-pixel diameter partial filled circle, pie slice fill.
+.TP 14
+.B \-fspcircle100
+100-pixel diameter partial filled circle, pie slice fill.
 .TP 14
 .B \-ellipse10
 10-pixel diameter ellipse.
@@ -317,10 +344,10 @@ Dot.
 500-pixel diameter ellipse.
 .TP 14
 .B \-dellipse100
-100-pixel diameter dashed ellipse.
+100-pixel diameter dashed ellipse (3 on, 2 off).
 .TP 14
 .B \-ddellipse100
-100-pixel diameter double-dashed ellipse.
+100-pixel diameter double-dashed ellipse (3 fg, 2 bg).
 .TP 14
 .B \-wellipse10
 10-pixel diameter ellipse, line width 1.
@@ -332,10 +359,15 @@ Dot.
 500-pixel diameter ellipse, line width 50.
 .TP 14
 .B \-wdellipse100
-100-pixel diameter dashed ellipse, line width 10.
+100-pixel diameter dashed ellipse, line width 10 (30 on, 20 off).
 .TP 14
 .B \-wddellipse100
-100-pixel diameter double-dashed ellipse, line width 10.
+100-pixel diameter double-dashed ellipse, line width 10 (30 fg, 20 bg).
+.B \-pellipse10
+10-pixel diameter partial ellipse.
+.TP 14
+.B \-pellipse100
+100-pixel diameter partial ellipse.
 .TP 14
 .B \-fellipse10
 10-pixel diameter filled ellipse.
@@ -345,6 +377,18 @@ Dot.
 .TP 14
 .B \-fellipse500
 500-pixel diameter filled ellipse.
+.TP 14
+.B \-fcpellipse10
+10-pixel diameter partial filled ellipse, chord fill.
+.TP 14
+.B \-fcpellipse100
+100-pixel diameter partial filled ellipse, chord fill.
+.TP 14
+.B \-fspellipse10
+10-pixel diameter partial filled ellipse, pie slice fill.
+.TP 14
+.B \-fspellipse100
+100-pixel diameter partial filled ellipse, pie slice fill.
 .TP 14
 .B \-triangle1
 Fill 1-pixel/side triangle.
@@ -371,22 +415,22 @@ Fill 100-pixel/side complex polygons.
 Character in 80-char line (6x13).
 .TP 14
 .B \-tr10text
-Character in 80-char line (TR 10).
+Character in 80-char line (Times-Roman 10).
 .TP 14
 .B \-tr24text
-Character in 30-char line (TR 24).
+Character in 30-char line (Times-Roman 24).
 .TP 14
 .B \-polytext
-Character in 20/40/20 line (6x13, TR 10).
+Character in 20/40/20 line (6x13, Times-Roman 10, 6x13).
 .TP 14
 .B \-fitext
 Character in 80-char image line (6x13).
 .TP 14
 .B \-tr10itext
-Character in 80-char image line (TR 10).
+Character in 80-char image line (Times-Roman 10).
 .TP 14
 .B \-tr24itext
-Character in 30-char image line (TR 24).
+Character in 30-char image line (Times-Roman 24).
 .TP 14
 .B \-scroll10
 Scroll 10x10 pixels.
@@ -463,7 +507,7 @@ GetAtomName.
 GetProperty.
 .TP 14
 .B \-gc
-Graphics context validation.
+Change graphics context.
 .TP 14
 .B \-create
 Create and map subwindows.
