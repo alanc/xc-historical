@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.142 91/04/15 13:53:20 gildea Exp $
+ * $XConsortium: charproc.c,v 1.142 91/04/15 16:54:20 gildea Exp $
  */
 
 /*
@@ -205,23 +205,26 @@ static	char *	_Font_Selected_ = "yes";  /* string is arbitrary */
  */
 static char defaultTranslations[] =
 "\
-  Shift <KeyPress> Prior:	scroll-back(1,halfpage) \n\
-  Shift <KeyPress> Next:	scroll-forw(1,halfpage) \n\
-  Shift <KeyPress> Select:	select-cursor-start() select-cursor-end(PRIMARY, CUT_BUFFER0) \n\
-  Shift <KeyPress> Insert:	insert-selection(PRIMARY, CUT_BUFFER0) \n\
-       ~Meta<KeyPress>: 	insert-seven-bit()	\n\
-        Meta<KeyPress>: 	insert-eight-bit()	\n\
- Ctrl ~Meta<Btn1Down>:          popup-menu(mainMenu) \n\
-      ~Meta <Btn1Down>:		select-start()	\n\
-      ~Meta <Btn1Motion>:	select-extend() \n\
- Ctrl ~Meta <Btn2Down>:         popup-menu(vtMenu) \n\
-~Ctrl ~Meta <Btn2Down>:		ignore()	\n\
-~Ctrl ~Meta <Btn2Up>:		insert-selection(PRIMARY, CUT_BUFFER0) \n\
- Ctrl ~Meta <Btn3Down>:         popup-menu(fontMenu) \n\
-~Ctrl ~Meta <Btn3Down>:		start-extend()	\n\
-      ~Meta <Btn3Motion>:	select-extend()	\n\
-~Ctrl ~Meta <BtnUp>:		select-end(PRIMARY, CUT_BUFFER0) \n\
-	    <BtnDown>:		bell(0)		\
+ Shift <KeyPress> Prior:scroll-back(1,halfpage) \n\
+  Shift <KeyPress> Next:scroll-forw(1,halfpage) \n\
+Shift <KeyPress> Select:select-cursor-start() select-cursor-end(PRIMARY, CUT_BUFFER0) \n\
+Shift <KeyPress> Insert:insert-selection(PRIMARY, CUT_BUFFER0) \n\
+       ~Meta <KeyPress>:insert-seven-bit() \n\
+        Meta <KeyPress>:insert-eight-bit() \n\
+       !Ctrl <Btn1Down>:popup-menu(mainMenu) \n\
+  !Lock Ctrl <Btn1Down>:popup-menu(mainMenu) \n\
+       ~Meta <Btn1Down>:select-start() \n\
+     ~Meta <Btn1Motion>:select-extend() \n\
+       !Ctrl <Btn2Down>:popup-menu(vtMenu) \n\
+  !Lock Ctrl <Btn2Down>:popup-menu(vtMenu) \n\
+ ~Ctrl ~Meta <Btn2Down>:ignore() \n\
+   ~Ctrl ~Meta <Btn2Up>:insert-selection(PRIMARY, CUT_BUFFER0) \n\
+       !Ctrl <Btn3Down>:popup-menu(fontMenu) \n\
+  !Lock Ctrl <Btn3Down>:popup-menu(fontMenu) \n\
+ ~Ctrl ~Meta <Btn3Down>:start-extend() \n\
+     ~Meta <Btn3Motion>:select-extend()	\n\
+    ~Ctrl ~Meta <BtnUp>:select-end(PRIMARY, CUT_BUFFER0) \n\
+	      <BtnDown>:bell(0) \
 ";
 
 static XtActionsRec actionsList[] = { 
