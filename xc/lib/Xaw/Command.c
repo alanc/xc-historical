@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Command.c,v 1.25 87/12/01 15:27:34 swick Locked $";
+static char rcsid[] = "$Header: Command.c,v 1.26 87/12/04 10:55:55 swick Locked $";
 #endif lint
 
 /*
@@ -332,6 +332,12 @@ static Boolean SetValues (current, request, new, last)
 {
     CommandWidget cbw = (CommandWidget) current;
     CommandWidget newcbw = (CommandWidget) new;
+
+    if (XtCField(newcbw,sensitive) != ComWsensitive &&
+	!XtCField(newcbw,sensitive)) {  /* about to become insensitive? */
+	XtCBField(newcbw,set) = FALSE;	/* yes, then anticipate unset */
+	XtCBField(newcbw,highlighted) = FALSE;
+    }
 
      if (XtLField(newcbw,foreground) != ComWforeground)
        {
