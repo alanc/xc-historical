@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.140 89/12/13 11:23:57 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.141 89/12/13 16:26:26 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -927,8 +927,8 @@ int *pty;
 #else /* not (umips && SYSTYPE_SYSV) */
 #ifdef CRAY
 	for (; devindex < 256; devindex++) {
-	    sprintf (ttydev, "/dev/ttyp%3d", devindex);
-	    sprintf (ptydev, "/dev/pty/%3d", devindex);
+	    sprintf (ttydev, "/dev/ttyp%03d", devindex);
+	    sprintf (ptydev, "/dev/pty/%03d", devindex);
 
 	    if ((*pty = open (ptydev, O_RDWR)) >= 0) {
 		/* We need to set things up for our next entry
