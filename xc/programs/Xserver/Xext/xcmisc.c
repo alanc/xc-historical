@@ -1,4 +1,4 @@
-/* $XConsortium: xcmisc.c,v 1.1 93/10/21 10:09:35 rws Exp $ */
+/* $XConsortium: xcmisc.c,v 1.2 93/10/23 12:04:41 rws Exp $ */
 /*
 
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -26,6 +26,7 @@ without express or implied warranty.
 static unsigned char XCMiscCode;
 static int ProcXCMiscDispatch(), SProcXCMiscDispatch();
 static void XCMiscResetProc();
+extern void Swap32Write(); /* XXX should be in header file */
 
 void
 XCMiscExtensionInit()
@@ -94,6 +95,43 @@ ProcXCMiscGetXIDRange(client)
 }
 
 static int
+ProcXCMiscGetXIDList(client)
+    register ClientPtr client;
+{
+    REQUEST(xXCMiscGetXIDListReq);
+    xXCMiscGetXIDListReply rep;
+    register int n;
+    XID *pids;
+    unsigned int count;
+
+    REQUEST_SIZE_MATCH(xXCMiscGetXIDListReq);
+
+    pids = (XID *)ALLOCATE_LOCAL(stuff->count * sizeof(XID));
+    if (!pids)
+    {
+	return BadAlloc;
+    }
+    count = GetXIDList(client, stuff->count, pids);
+    rep.type = X_Reply;
+    rep.sequenceNumber = client->sequence;
+    rep.length = count;
+    rep.count = count;
+    if (client->swapped) {
+    	swaps(&rep.sequenceNumber, n);
+	swapl(&rep.length, n);
+	swapl(&rep.count, n);
+    }
+    WriteToClient(client, sizeof(xXCMiscGetXIDListReply), (char *)&rep);
+    if (count)
+    {
+    	client->pSwapReplyFunc = Swap32Write;
+	WriteSwappedDataToClient(client, count * sizeof(XID), pids);
+    }
+    DEALLOCATE_LOCAL(pids);
+    return(client->noClientException);
+}
+
+static int
 ProcXCMiscDispatch (client)
     register ClientPtr	client;
 {
@@ -104,6 +142,8 @@ ProcXCMiscDispatch (client)
 	return ProcXCMiscGetVersion(client);
     case X_XCMiscGetXIDRange:
 	return ProcXCMiscGetXIDRange(client);
+    case X_XCMiscGetXIDList:
+	return ProcXCMiscGetXIDList(client);
     default:
 	return BadRequest;
     }
@@ -135,6 +175,18 @@ SProcXCMiscGetXIDRange(client)
 }
 
 static int
+SProcXCMiscGetXIDList(client)
+    register ClientPtr	client;
+{
+    register int n;
+    REQUEST(xXCMiscGetXIDListReq);
+
+    swaps(&stuff->length, n);
+    swapl(&stuff->count, n);
+    return ProcXCMiscGetXIDList(client);
+}
+
+static int
 SProcXCMiscDispatch (client)
     register ClientPtr	client;
 {
@@ -145,6 +197,8 @@ SProcXCMiscDispatch (client)
 	return SProcXCMiscGetVersion(client);
     case X_XCMiscGetXIDRange:
 	return SProcXCMiscGetXIDRange(client);
+    case X_XCMiscGetXIDList:
+	return SProcXCMiscGetXIDList(client);
     default:
 	return BadRequest;
     }
