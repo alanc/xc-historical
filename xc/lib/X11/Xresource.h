@@ -1,4 +1,4 @@
-/* $XConsortium: Xresource.h,v 1.18 89/12/08 18:29:24 converse Exp $ */
+/* $XConsortium: Xresource.h,v 1.19 89/12/09 13:45:20 jim Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -187,12 +187,6 @@ typedef XrmHashBucket *XrmHashTable;
 typedef XrmHashTable XrmSearchList[];
 typedef struct _XrmHashBucketRec *XrmDatabase;
 
-
-extern void XrmInitialize(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
 
 extern void XrmDestroyDatabase(
 #if NeedFunctionPrototypes
