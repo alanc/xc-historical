@@ -15,7 +15,7 @@ xdm \- X Display Manager
 .SH DESCRIPTION
 .PP
 .I Xdm
-manages a collection of X displays, both local and possibly remote \(em the
+manages a collection of X displays, both local and/or remote \(em the
 emergence of X terminals guided the design of several parts of this system,
 along with the development of the X Consortium standard XDMCP, the
 \fIX Display Manager Control Protocol\fP).
@@ -28,17 +28,11 @@ traditional character-based terminal world, it is the user's login shell
 process.  In the
 .I xdm
 context, it is an arbitrary session manager.  This is because in a windowing
-environment, a user's login shell process would not necessarily have any
+environment, a user's login shell process does not necessarily have any
 terminal-like interface with which to connect.
-.PP
-Until real session managers become widely available, the typical
-.I xdm
-substitute would be either a window manager with an exit option, or a
-terminal emulator running a shell - with the condition that
-the lifetime of the terminal emulator is the lifetime of the shell process
-that it is running - 
-thus degenerating the X session to an emulation of the
-character-based terminal session.
+When a real session manager is not available, a window manager or terminal
+emulator is typically used as the ``session manager'', meaning that
+termination of this process terminates the user's session.
 .PP
 When the session is terminated,
 .I xdm
@@ -172,9 +166,9 @@ include the class string.
 This indicates the UDP port number which
 .I xdm
 uses to listen for incoming XDMCP requests.  Unless you need to debug the
-system, leave this with it's default value of 177.
+system, leave this with its default value of 177.
 .IP "\fBDisplayManager.errorLogFile\fP"
-Error output is normally directed at the system console.  To redirect it simply
+Error output is normally directed at the system console.  To redirect it
 set this resource to any file name.  A method to send these messages to
 syslog should be developed for systems which support it; however the
 wide variety of "standard" interfaces precludes any system-independent
