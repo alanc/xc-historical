@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.75 92/07/02 14:23:53 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.76 92/07/02 17:25:19 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -235,6 +235,7 @@ char *undofile = NULL;
 #define UNDO_SIZE 256
 UndoRec *undos[UNDO_SIZE];
 int curbscount = 0;
+UndoRec *curbsmatch = NULL;
 Bool in_control_seq = False;
 Bool skip_next_control_char = False;
 TriggerRec trigger;
@@ -1722,6 +1723,17 @@ undo_stroke()
 }
 
 void
+undo_curbsmatch()
+{
+    if (curbsmatch) {
+	history_end -= curbsmatch->seq_len;
+	curbscount -= curbsmatch->bscount;
+	process(curbsmatch->undo, curbsmatch->undo_len, 0);
+	curbsmatch = NULL;
+    }
+}
+
+void
 do_backspace()
 {
     UndoRec *u;
@@ -1738,16 +1750,16 @@ do_backspace()
 			  u->seq_len)) {
 		    if (curbscount < u->bscount)
 			partial = True;
-		    else {
-			history_end -= u->seq_len;
-			curbscount -= u->bscount;
-			process(u->undo, u->undo_len, 0);
-			return;
-		    }
+		    else
+			curbsmatch = u;
 		}
 	    }
 	    if (partial)
 		return;
+	    if (curbsmatch) {
+		undo_curbsmatch();
+		return;
+	    }
 	}
 	undo_stroke();
     }
@@ -2108,6 +2120,7 @@ process(buf, n, len)
 		do_backspace();
 		continue;
 	    } else if (curbscount) {
+		undo_curbsmatch();
 		while (curbscount)
 		    undo_stroke();
 	    } else if (in_control_seq)
