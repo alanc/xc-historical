@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.c,v 1.22 90/02/08 10:04:43 jim Exp $
+ * $XConsortium: Tree.c,v 1.23 90/02/08 10:53:11 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -713,6 +713,9 @@ static void new_layout (tw, insetvalues)
     TreeWidget tw;
     Boolean insetvalues;
 {
+    int i;
+    Dimension *dp;
+
     /*
      * Do a depth-first search computing the width and height of the bounding
      * box for the tree at that position (and below).  Then, walk again using
@@ -723,6 +726,8 @@ static void new_layout (tw, insetvalues)
 	return;
 
     tw->tree.maxwidth = tw->tree.maxheight = 0;
+    for (i = 0, dp = tw->tree.largest; i < tw->tree.n_largest; i++, dp++)
+      *dp = 0;
     initialize_dimensions (&tw->tree.largest, &tw->tree.n_largest, 
 			   tw->tree.n_largest);
     compute_bounding_box_subtree (tw, tw->tree.tree_root, 0);
