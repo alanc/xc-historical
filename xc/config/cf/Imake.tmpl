@@ -4,7 +4,7 @@
 
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.165 93/05/19 17:33:36 gildea Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.166 93/07/12 19:50:52 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate <vendor>.cf
 XCOMM configuration files.  Site-specific parameters should be set in the file
@@ -921,15 +921,21 @@ XCOMM the platform-specific parameters - edit site.def to change
        ALLDEFINES = $(ALLINCLUDES) $(STD_DEFINES) $(EXTRA_DEFINES) $(PROTO_DEFINES) $(DEFINES)
            CFLAGS = $(CDEBUGFLAGS) $(CCOPTIONS) $(ALLDEFINES)
         LINTFLAGS = $(LINTOPTS) -DLINT $(ALLDEFINES) $(DEPEND_DEFINES)
-#if AlternateUsrLibDir && !defined(UseInstalled)
+#if AlternateUsrLibDir && !defined(UseInstalled) && !HasLdRunPath
            LDLIBS = -L$(USRLIBDIR) $(SYS_LIBRARIES) $(EXTRA_LIBRARIES)
 #else
            LDLIBS = $(SYS_LIBRARIES) $(EXTRA_LIBRARIES)
 #endif
-#if AlternateUsrLibDir && defined(UseInstalled)
+#if AlternateUsrLibDir && defined(UseInstalled) && !HasLdRunPath
         LDOPTIONS = $(CDEBUGFLAGS) $(CCOPTIONS) $(EXTRA_LDOPTIONS) $(LOCAL_LDFLAGS) -L$(USRLIBDIR)
 #else
         LDOPTIONS = $(CDEBUGFLAGS) $(CCOPTIONS) $(EXTRA_LDOPTIONS) $(LOCAL_LDFLAGS)
+#endif
+#if AlternateUsrLibDir && HasLdRunPath
+       CCENVSETUP = LD_RUN_PATH=$(USRLIBDIR)
+           CCLINK = $(CCENVSETUP) $(CC)
+#else
+           CCLINK = $(CC)
 #endif
    LDCOMBINEFLAGS = LdCombineFlags
       DEPENDFLAGS = DependFlags
