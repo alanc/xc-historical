@@ -4,7 +4,7 @@
  * machine independent cursor display routines
  */
 
-/* $XConsortium: midispcur.c,v 5.5 89/07/13 20:23:42 keith Exp $ */
+/* $XConsortium: midispcur.c,v 5.6 89/07/18 18:02:49 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -149,25 +149,34 @@ miDCRealizeCursor (pScreen, pCursor)
     ScreenPtr	pScreen;
     CursorPtr	pCursor;
 {
+    pCursor->devPriv[pScreen->myNum] = (pointer)NULL;
+    return TRUE;
+}
+
+static miDCCursorPtr
+miDCRealize (pScreen, pCursor)
+    ScreenPtr	pScreen;
+    CursorPtr	pCursor;
+{
     miDCCursorPtr   pPriv;
     GCPtr	    pGC;
     XID		    gcvals[3];
 
     pPriv = (miDCCursorPtr) xalloc (sizeof (miDCCursorRec));
     if (!pPriv)
-	return FALSE;
+	return (miDCCursorPtr)NULL;
     pPriv->sourceBits = (*pScreen->CreatePixmap) (pScreen, pCursor->bits->width, pCursor->bits->height, 1);
     if (!pPriv->sourceBits)
     {
 	xfree ((pointer) pPriv);
-	return FALSE;
+	return (miDCCursorPtr)NULL;
     }
     pPriv->maskBits =  (*pScreen->CreatePixmap) (pScreen, pCursor->bits->width, pCursor->bits->height, 1);
     if (!pPriv->maskBits)
     {
 	(*pScreen->DestroyPixmap) (pPriv->sourceBits);
 	xfree ((pointer) pPriv);
-	return FALSE;
+	return (miDCCursorPtr)NULL;
     }
     pCursor->devPriv[pScreen->myNum] = (pointer) pPriv;
 
@@ -177,7 +186,7 @@ miDCRealizeCursor (pScreen, pCursor)
     if (!pGC)
     {
 	(void) miDCUnrealizeCursor (pScreen, pCursor);
-	return FALSE;
+	return (miDCCursorPtr)NULL;
     }
 
     ValidateGC ((DrawablePtr)pPriv->sourceBits, pGC);
@@ -205,7 +214,7 @@ miDCRealizeCursor (pScreen, pCursor)
 			   0, 0, pCursor->bits->width, pCursor->bits->height,
  			   0, XYPixmap, pCursor->bits->source);
     FreeScratchGC (pGC);
-    return TRUE;
+    return pPriv;
 }
 
 static Bool
@@ -216,9 +225,13 @@ miDCUnrealizeCursor (pScreen, pCursor)
     miDCCursorPtr   pPriv;
 
     pPriv = (miDCCursorPtr) pCursor->devPriv[pScreen->myNum];
-    (*pScreen->DestroyPixmap) (pPriv->sourceBits);
-    (*pScreen->DestroyPixmap) (pPriv->maskBits);
-    xfree ((pointer) pPriv);
+    if (pPriv)
+    {
+	(*pScreen->DestroyPixmap) (pPriv->sourceBits);
+	(*pScreen->DestroyPixmap) (pPriv->maskBits);
+	xfree ((pointer) pPriv);
+	pCursor->devPriv[pScreen->myNum] = (pointer)NULL;
+    }
     return TRUE;
 }
 
@@ -264,6 +277,12 @@ miDCPutUpCursor (pScreen, pCursor, x, y, source, mask)
     XID		    gcvals[2];
 
     pPriv = (miDCCursorPtr) pCursor->devPriv[pScreen->myNum];
+    if (!pPriv)
+    {
+	pPriv = miDCRealize(pScreen, pCursor);
+	if (!pPriv)
+	    return FALSE;
+    }
     pScreenPriv = (miDCScreenPtr) pScreen->devPrivates[miDCScreenIndex].ptr;
     pWin = WindowTable[pScreen->myNum];
     if (!pScreenPriv->pSourceGC)
@@ -380,6 +399,12 @@ miDCMoveCursor (pScreen, pCursor, x, y, w, h, dx, dy, source, mask)
     PixmapPtr	    pTemp;
 
     pPriv = (miDCCursorPtr) pCursor->devPriv[pScreen->myNum];
+    if (!pPriv)
+    {
+	pPriv = miDCRealize(pScreen, pCursor);
+	if (!pPriv)
+	    return FALSE;
+    }
     pScreenPriv = (miDCScreenPtr) pScreen->devPrivates[miDCScreenIndex].ptr;
     pWin = WindowTable[pScreen->myNum];
     pTemp = pScreenPriv->pTemp;
