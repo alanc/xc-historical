@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.62 89/10/26 17:31:38 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.63 89/11/01 09:57:00 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -521,6 +521,9 @@
 #ifndef CURDIR
 #define CURDIR .
 #endif
+#ifndef FilesToClean
+#define FilesToClean *.CKP *.ln *.BAK *.bak *.o core errs ,* *~ *.a .emacs_* tags TAGS make.log MakeOut 
+#endif
 
             SHELL = BourneShell
 
@@ -599,8 +602,7 @@
         LDOPTIONS = $(CDEBUGFLAGS) $(CCOPTIONS) 
 
         MACROFILE = MacroFile
-           RM_CMD = $(RM) *.CKP *.ln *.BAK *.bak *.o core errs ,* *~ *.a \
-			.emacs_* tags TAGS make.log MakeOut
+           RM_CMD = $(RM) FilesToClean
 
     IMAKE_DEFINES = /* leave blank, for command line use only */
 #ifdef UseInstalled
@@ -612,7 +614,7 @@
 #endif
      ICONFIGFILES = $(IRULESRC)/Imake.tmpl $(IRULESRC)/Imake.rules \
 			$(IRULESRC)/Project.tmpl $(IRULESRC)/site.def \
-			$(IRULESRC)/$(MACROFILE)
+			$(IRULESRC)/$(MACROFILE) $(EXTRA_ICONFIGFILES)
 
 
 /*
