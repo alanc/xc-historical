@@ -106,6 +106,7 @@
 #define XtCEventBindings	"EventBindings"
 #define XtCFile			"File"
 #define XtCFont			"Font"
+#define XtCForeground		"Foreground"
 #define XtCFraction		"Fraction"
 #define XtCFunction		"Function"
 #define XtCHeight		"Height"
