@@ -1,4 +1,4 @@
-! $XConsortium: XFontSel.ad,v 1.6 91/06/22 11:21:58 rws Exp $
+! $XConsortium: XFontSel.ad,v 1.7 91/06/22 15:06:52 rws Exp $
 !
 ! app-defaults for XFontSel
 !
@@ -25,9 +25,6 @@
 
 *pixelSizeList: 7, 30, 40, 50, 60
 *pointSizeList: 250, 300, 350, 400
-
-! this it the average width field
-*field11.SimpleMenu*font: -misc-fixed-medium-r-normal--8-*-*-*-c-*-iso8859-1
 
 XFontSel.cursor:	left_ptr
 *allowShellResize:	true
@@ -99,6 +96,8 @@ XFontSel.cursor:	left_ptr
 
 !*fieldBox*field11.Sensitive: False
 *fieldBox*field11.menu.Options.ShowUnselectable: False
+*fieldBox*field11.menu*font: -misc-fixed-medium-r-normal--8-*-*-*-c-*-iso8859-1
+
 
 !*field1*menu*courier.Font:
 
