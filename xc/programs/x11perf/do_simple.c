@@ -58,6 +58,22 @@ void DoGetAtom(xp, p, reps)
     }
 }
 
+void DoQueryPointer(xp, p, reps)
+    XParms  xp;
+    Parms   p;
+    int     reps;
+{
+    char    *atom;
+    int     i;
+    Window  w;
+    int     x;
+    unsigned int m;
+
+    for (i = 0; i != reps; i++) {
+	XQueryPointer (xp->d, xp->w, &w, &w, &x, &x, &x, &x, &m);
+    }
+}
+
 int InitGetProperty(xp, p, reps)
     XParms  xp;
     Parms   p;
