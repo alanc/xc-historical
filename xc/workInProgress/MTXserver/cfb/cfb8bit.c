@@ -30,7 +30,7 @@
  *
  */
 
-/* $XConsortium: cfb8bit.c,v 1.2 94/01/04 00:01:53 rob Exp $ */
+/* $XConsortium: cfb8bit.c,v 1.3 94/01/11 20:42:31 rob Exp $ */
 
 #if PSZ == 8
 
@@ -256,8 +256,8 @@ cfb8SetOpaqueStipple (alu, fg, bg, planemask
     MTX_STIPPLE(cfb8StippleFg) = fg & PMSK;
     MTX_STIPPLE(cfb8StippleBg) = bg & PMSK;
     MTX_STIPPLE(cfb8StipplePm) = planemask & PMSK;
-    rropfg = cfbReduceRasterOp (alu, cfb8StippleFg, cfb8StipplePm, &andfg, &xorfg);
-    rropbg = cfbReduceRasterOp (alu, cfb8StippleBg, cfb8StipplePm, &andbg, &xorbg);
+    rropfg = cfbReduceRasterOp (alu, MTX_STIPPLE(cfb8StippleFg), MTX_STIPPLE(cfb8StipplePm), &andfg, &xorfg);
+    rropbg = cfbReduceRasterOp (alu, MTX_STIPPLE(cfb8StippleBg), MTX_STIPPLE(cfb8StipplePm), &andbg, &xorbg);
     if (rropfg == rropbg)
 	MTX_STIPPLE(cfb8StippleRRop) = rropfg;
     else
