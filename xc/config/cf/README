@@ -113,6 +113,7 @@ Imake.tmpl provides defaults for the following variables:
 	DebuggableCDebugFlags	C compiler -I's and -D's to turn on debug info
 	DefaultCCOptions	default special C compiler options
 	DefaultCDebugFlags	debug/optimize flags for programs
+	DependFlags		extra makedepend flags
 	DestDir			prefix to root directory when installed
 	ExecableScripts		boolean for systems that can exec() #!/bin/sh
 	ExtraLibraries		system-specific libraries need to link
