@@ -199,4 +199,10 @@
 #define XtEvertical		"vertical"
 #define XtEhorizontal		"horizontal"
 
+/* text edit enumeration constants */
+
+#define XtEtextRead		"read"
+#define XtEtextAppend		"append"
+#define XtEtextEdit		"edit"
+
 #endif _XtAtom_h_
