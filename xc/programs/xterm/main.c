@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.92 88/09/26 12:03:19 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.93 88/10/07 11:01:41 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -1269,7 +1269,6 @@ spawn ()
 		ts.ts_lines = screen->max_row + 1;
 		ts.ts_cols = screen->max_col + 1;
 	}
-	ioctl  (screen->respond, TIOCSSIZE, &ts);
 #endif	/* TIOCSSIZE */
 #else	/* not sun */
 #ifdef TIOCSWINSZ
@@ -1285,7 +1284,6 @@ spawn ()
 		ws.ws_xpixel = FullWidth(screen);
 		ws.ws_ypixel = FullHeight(screen);
 	}
-	ioctl (screen->respond, TIOCSWINSZ, (char *)&ws);
 #endif	/* TIOCSWINSZ */
 #endif	/* sun */
 
