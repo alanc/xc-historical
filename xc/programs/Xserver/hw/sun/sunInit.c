@@ -81,7 +81,7 @@ static int autoRepeatHandlersInstalled;	/* FALSE each time InitOutput called */
  *	Signal handler for SIGIO - input is available.
  *
  * Results:
- *	isItTimeToYield is set - ProcessInputEvents() will be called soon.
+ *	sunSigIO is set - ProcessInputEvents() will be called soon.
  *
  * Side Effects:
  *	None
@@ -95,8 +95,7 @@ SigIOHandler(sig, code, scp)
     int		sig;
     struct sigcontext *scp;
 {
-    sunSigIO++;
-    isItTimeToYield++;
+    sunSigIO = 1;
 }
 
 /*
@@ -277,7 +276,7 @@ InitInput(argc, argv)
     miRegisterPointerDevice(screenInfo.screens[0], p);
     signal(SIGIO, SigIOHandler);
 
-    SetInputCheck (&zero, &isItTimeToYield);
+    SetInputCheck (&zero, &sunSigIO);
 }
 
 /*-
