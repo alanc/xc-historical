@@ -121,10 +121,6 @@ typedef struct _labData {
 
 /* Forward references */
 /* in dynamics.c: */
-	static void inertia();
-	static void collide();
-	static double hit();
-	static double hitHole();
 	void findNextCollision();
 	void dynamics();
 	void doTimestep();
@@ -137,8 +133,6 @@ typedef struct _labData {
 	void labResize();
 	void labExpose();
 	void addMolecules();
-	static void initWall();
-	static void getLabDimensions();
 	void changeTemp();
 	float vEquilibrium();
 	float frand();
