@@ -1,4 +1,4 @@
-.\" $XConsortium: xrdb.man,v 11.36 94/04/12 18:52:53 gildea Exp $
+.\" $XConsortium: xrdb.man,v 11.37 94/04/17 20:24:12 gildea Exp $
 .\" Copyright 1991, Digital Equipment Corporation.
 .\" Copyright (c) 1991, 1994  X Consortium
 .\" 
@@ -274,7 +274,7 @@ This option specifies a suffix to be appended to the filename used with
 .B \-edit
 to generate a backup file.
 .TP 8
-.B \-D\fIname\[=value\]\fP
+.B \-D\fIname[=value]\fP
 This option is passed through to the preprocessor and is used to define 
 symbols for use with conditionals such as
 .I# ifdef.
