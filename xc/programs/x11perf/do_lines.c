@@ -23,7 +23,8 @@ SOFTWARE.
 
 #include "x11perf.h"
 
-static XPoint *points;
+static XPoint   *points;
+static GC       pgc;
 
 Bool InitLines(xp, p)
     XParms  xp;
@@ -40,6 +41,8 @@ Bool InitLines(xp, p)
     int x1inc, y1inc;   /* How to get to next x1, y1			*/
     int minorphase;     /* # iterations left with current x1inc, y1inc  */
     int majorphase;     /* count 0..3 for which type of x1inc, y1inc    */
+
+    pgc = xp->fggc;
 
     size = p->special;
     half = (size + 19) / 20;
@@ -223,10 +226,8 @@ void DoLines(xp, p)
     XParms  xp;
     Parms   p;
 {
-    GC pgc;
     int i;
 
-    pgc = xp->fggc;
     for (i = 0; i != p->reps; i++)
     {
         XDrawLines(xp->d, xp->w, pgc, points, p->objects+1, CoordModeOrigin);

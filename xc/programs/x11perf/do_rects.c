@@ -23,7 +23,8 @@ SOFTWARE.
 
 #include "x11perf.h"
 
-static XRectangle *rects;
+static XRectangle   *rects;
+static GC	    pgc;
 
 static unsigned char bitmap8x8[] = {
     0xCC, 0x66, 0x33, 0x99, 0xCC, 0x66, 0x33, 0x99
@@ -306,6 +307,8 @@ Bool InitRects(xp, p)
     int x, y;
     int rows;
 
+    pgc = xp->fggc;
+
     rects = (XRectangle *)malloc(p->objects * sizeof(XRectangle));
     x = 0;
     y = 0;
@@ -382,10 +385,8 @@ void DoRects(xp, p)
     XParms  xp;
     Parms   p;
 {
-    GC  pgc;
     int i;
 
-    pgc = xp->fggc;
     for (i = 0; i != p->reps; i++) {
         XFillRectangles(xp->d, xp->w, pgc, rects, p->objects);
         if (pgc == xp->bggc)

@@ -25,6 +25,7 @@ SOFTWARE.
 
 #define NUM_POINTS 3   /* 3 points to a triangle */
 static XPoint *points;
+static GC     pgc;
 
 extern double sin();
 extern double cos();
@@ -41,6 +42,8 @@ Bool InitTriangles(xp, p)
     int     size, iradius;
     double  phi, radius, delta, phi2;
     XPoint  *curPoint;
+
+    pgc = xp->fggc;
 
     size = p->special;
     phi = 0.0;
@@ -81,11 +84,9 @@ void DoTriangles(xp, p)
     XParms  xp;
     Parms   p;
 {
-    GC      pgc;
     int     i, j;
     XPoint  *curPoint;
 
-    pgc = xp->fggc;
     for (i = 0; i != p->reps; i++) {
         curPoint = points;
         for (j = 0; j != p->objects; j++) {

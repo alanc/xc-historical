@@ -25,6 +25,7 @@ SOFTWARE.
 
 #define NUM_POINTS 4   /* 4 points to a trapezoid */
 static XPoint *points;
+static GC      pgc;
 
 Bool InitTrapezoids(xp, p)
     XParms  xp;
@@ -35,6 +36,8 @@ Bool InitTrapezoids(xp, p)
     int     x, y;
     int     size, skew;
     XPoint  *curPoint;
+
+    pgc = xp->fggc;
 
     size = p->special;
     numPoints = (p->objects) * NUM_POINTS;  
@@ -76,11 +79,9 @@ void DoTrapezoids(xp, p)
     XParms  xp;
     Parms   p;
 {
-    GC      pgc;
     int     i, j;
     XPoint  *curPoint;
 
-    pgc = xp->fggc;
     for (i = 0; i != p->reps; i++) {
         curPoint = points;
         for (j = 0; j != p->objects; j++) {

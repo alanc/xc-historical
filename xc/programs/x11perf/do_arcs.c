@@ -24,6 +24,7 @@ SOFTWARE.
 #include "x11perf.h"
 
 static XArc *arcs;
+static GC   pgc;
 
 Bool InitCircles(xp, p)
     XParms  xp;
@@ -35,6 +36,8 @@ Bool InitCircles(xp, p)
     int     xorg, yorg; /* Used to get from column to column or row to row  */
     int     size;
     int     half;
+
+    pgc = xp->fggc;
 
     size = p->special;
     half = (size + 19) / 20;
@@ -179,6 +182,8 @@ Bool InitEllipses(xp, p)
     int     x, y;	    /* base of square to draw ellipse in	    */
     int     vsize, vsizeinc;
     int     dir;
+
+    pgc = xp->fggc;
 
     size = p->special;
     half = (size + 19) / 20;
@@ -326,10 +331,8 @@ void DoArcs(xp, p)
     XParms  xp;
     Parms   p;
 {
-    GC pgc;
     int i;
 
-    pgc = xp->fggc;
     for (i = 0; i != p->reps; i++) {
         XDrawArcs(xp->d, xp->w, pgc, arcs, p->objects);
         if (pgc == xp->bggc)
@@ -343,10 +346,8 @@ void DoFilledArcs(xp, p)
     XParms  xp;
     Parms   p;
 {
-    GC pgc;
     int i;
 
-    pgc = xp->fggc;
     for (i = 0; i != p->reps; i++) {
         XFillArcs(xp->d, xp->w, pgc, arcs, p->objects);
         if (pgc == xp->bggc)

@@ -23,13 +23,16 @@ SOFTWARE.
 
 #include "x11perf.h"
 
-static XPoint *points;
+static XPoint   *points;
+static GC       pgc;
 
 Bool InitDots(xp, p)
     XParms  xp;
     Parms   p;
 {
     int i;
+
+    pgc = xp->fggc;
 
     points = (XPoint *)malloc(p->objects * sizeof(XPoint));
 
@@ -44,10 +47,8 @@ void DoDots(xp, p)
     XParms  xp;
     Parms   p;
 {
-    GC      pgc;
     int     i;
 
-    pgc = xp->fggc;
     for (i = 0; i != p->reps; i++) {
         XDrawPoints(xp->d, xp->w, pgc, points, p->objects, CoordModeOrigin);
         if (pgc == xp->bggc)
