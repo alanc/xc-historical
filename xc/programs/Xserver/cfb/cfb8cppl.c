@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfb8cppl.c,v 1.6 91/12/19 14:15:32 keith Exp $
+ * $XConsortium: cfb8cppl.c,v 1.7 91/12/19 18:36:56 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -33,6 +33,7 @@
 #include "windowstr.h"
 #include "cfb.h"
 #undef PSZ /* for maskbits.h */
+#undef PixelType
 #include "maskbits.h"
 #include "mergerop.h"
 
@@ -76,7 +77,7 @@ cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 {
     int			    srcx, srcy, dstx, dsty, width, height;
     unsigned char	    *psrcBase;
-    unsigned long	    *pdstBase;
+    PixelType		    *pdstBase;
     int			    widthSrc, widthDst;
     unsigned char	    *psrcLine;
     unsigned long	    *pdstLine;
@@ -85,8 +86,8 @@ cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
     register int	    curBit;
     register int	    bitPos;
     register unsigned long  bits;
-    register unsigned long  *pdst;
-    unsigned long	    startmask, endmask;
+    register PixelType	    *pdst;
+    PixelType		    startmask, endmask;
     int			    niStart, niEnd;
     int			    bitStart, bitEnd;
     int			    nl, nlMiddle;
@@ -102,7 +103,7 @@ cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 
     cfbGetByteWidthAndPointer (pSrcDrawable, widthSrc, psrcBase)
 
-    mfbGetLongWidthAndPointer (pDstDrawable, widthDst, pdstBase)
+    mfbGetPixelWidthAndPointer (pDstDrawable, widthDst, pdstBase)
 
     bitPos = ffs (bitPlane) - 1;
 
