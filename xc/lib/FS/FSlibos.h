@@ -57,10 +57,12 @@
 #endif
 #ifndef OPEN_MAX
 #include <sys/param.h>
+#ifndef OPEN_MAX
 #ifdef NOFILE
 #define OPEN_MAX NOFILE
 #else
 #define OPEN_MAX NOFILES_MAX
+#endif
 #endif
 #endif
 

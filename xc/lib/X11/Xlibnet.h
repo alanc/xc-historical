@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibnet.h,v 1.11 91/05/08 17:36:28 rws Exp $ */
+/* $XConsortium: Xlibnet.h,v 1.12 91/05/12 10:46:19 rws Exp $ */
 
 /*
 Copyright 1991 Massachusetts Institute of Technology
@@ -72,10 +72,12 @@ without express or implied warranty.
 #endif
 #ifndef OPEN_MAX
 #include <sys/param.h>
+#ifndef OPEN_MAX
 #ifdef NOFILE
 #define OPEN_MAX NOFILE
 #else
 #define OPEN_MAX NOFILES_MAX
+#endif
 #endif
 #endif
 
