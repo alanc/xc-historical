@@ -1,3 +1,5 @@
+/* $XConsortium$ */
+
 /* Puzzle - (C) Copyright 1987, 1988 Don Bennett.
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -515,6 +517,9 @@ char *argv[];
 
     XSetStandardProperties(dpy, PuzzleRoot,"puzzle","Puzzle",
 			   None, argv, argc, &sizehints);
+
+   if (CreateNewColormap)
+       XSetWindowColormap(dpy, PuzzleRoot, PuzzleColormap);
 
     xgcv.foreground = FgPixel;
     xgcv.background = BgPixel;
