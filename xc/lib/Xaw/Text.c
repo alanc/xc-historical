@@ -36,7 +36,7 @@ static char rcsid[] = "$Header: Text.c,v 1.9 87/12/23 16:27:24 swick Locked $";
 #include <X/Xos.h>
 #include "TextP.h"
 
-Atom FMT8BIT;
+Atom FMT8BIT = NULL;
 
 extern void bcopy();
 extern void _XLowerCase();
@@ -52,6 +52,8 @@ extern void _XLowerCase();
 #define zeroPosition ((XtTextPosition) 0)
 
 static void BuildLineTable ();
+static void ScrollUpDownProc();
+static void ThumbProc();
 
 /****************************************************************
  *
@@ -59,36 +61,46 @@ static void BuildLineTable ();
  *
  ****************************************************************/
 
-extern caddr_t defaultTextTranslations;
+static XtTextSelectType defaultSelectTypes[] = {
+	XtselectPosition,
+	XtselectWord,
+	XtselectLine,
+	XtselectParagraph,
+	XtselectAll,
+	XtselectNull
+};
 
+static caddr_t defaultSelectTypesPtr = (caddr_t)defaultSelectTypes;
+extern caddr_t defaultTextTranslations;	/* fwd ref */
+
+#define offset(field) XtOffset(TextWidget, field)
 static XtResource resources[] = {
     {XtNwidth, XtCWidth, XrmRInt, sizeof(int),
-        XtOffset(TextWidget, core.width), XrmRString, "100"},
+        offset(core.width), XrmRString, "100"},
     {XtNheight, XtCHeight, XrmRInt, sizeof(int),
-        XtOffset(TextWidget,core.height),XrmRString, "-9999" /*DEFAULTVALUE*/},
+        offset(core.height), XrmRString, "-9999" /*DEFAULTVALUE*/},
     {XtNtextOptions, XtCTextOptions, XrmRInt, sizeof (int),
-        XtOffset(TextWidget, text.options), XrmRString, "0"},
+        offset(text.options), XrmRString, "0"},
     {XtNdisplayPosition, XtCTextPosition, XrmRInt,
-	 sizeof (XtTextPosition), XtOffset(TextWidget, text.lt.top), 
-	 XrmRString, "0"},
-    {XtNinsertPosition, XtCTextPosition, XtRInt, 
-        sizeof(XtTextPosition), XtOffset(TextWidget, text.insertPos), 
-	XrmRString, "0"},
-    {XtNleftMargin, XtCMargin, XrmRInt, sizeof (int), 
-        XtOffset(TextWidget, text.leftmargin), XrmRString, "2"},
-    {XtNselectionArray, XtCSelectionArray, XrmRPointer, 
-        sizeof(XtTextSelectionArray), XtOffset(TextWidget, text.sarray[0]), 
-	XrmRPointer, NULL},
-    {XtNtextSource, XtCTextSource, XrmRPointer, sizeof (caddr_t), 
-         XtOffset(TextWidget, text.source), XrmRPointer, NULL},
+	 sizeof (XtTextPosition), offset(text.lt.top), XrmRString, "0"},
+    {XtNinsertPosition, XtCTextPosition, XtRInt,
+        sizeof(XtTextPosition), offset(text.insertPos), XrmRString, "0"},
+    {XtNleftMargin, XtCMargin, XrmRInt, sizeof (int),
+        offset(text.client_leftmargin), XrmRString, "2"},
+    {XtNselectTypes, XtCSelectTypes, XrmRPointer,
+        sizeof(XtTextSelectType*), offset(text.sarray),
+	XrmRPointer, (caddr_t)&defaultSelectTypesPtr},
+    {XtNtextSource, XtCTextSource, XrmRPointer, sizeof (caddr_t),
+         offset(text.source), XrmRPointer, NULL},
     {XtNtextSink, XtCTextSink, XrmRPointer, sizeof (caddr_t),
-         XtOffset(TextWidget, text.sink), XrmRPointer, NULL},
+         offset(text.sink), XrmRPointer, NULL},
     {XtNselection, XtCSelection, XrmRPointer, sizeof(caddr_t),
-	 XtOffset(TextWidget, text.s), XrmRPointer, NULL},
+	 offset(text.s), XrmRPointer, NULL},
     {XtNtranslations, XtCTranslations, XtRTranslationTable,
-        sizeof(XtTranslations), XtOffset(TextWidget, core.translations), 
+        sizeof(XtTranslations), offset(core.translations),
 	XtRTranslationTable, (caddr_t)&defaultTextTranslations},
 };
+#undef offset
 
   
 #define done(address, type) \
@@ -135,8 +147,6 @@ static void CvtStringToEditMode(screen, fromVal, toVal)
 
 static void ClassInitialize()
 {
-    FMT8BIT	  = XrmAtomToQuark("FMT8BIT");
-
     XtQTextRead   = XrmAtomToQuark(XtEtextRead);
     XtQTextAppend = XrmAtomToQuark(XtEtextAppend);
     XtQTextEdit   = XrmAtomToQuark(XtEtextEdit);
@@ -153,6 +163,9 @@ static void Initialize(request, new, args, num_args)
 {
     TextWidget ctx = (TextWidget) new;
 
+    if (!FMT8BIT)
+        FMT8BIT = XInternAtom(XtDisplay(new), "FMT8BIT", False);
+
     if (ctx->core.height == DEFAULTVALUE) {
         ctx->core.height = (2*yMargin) + 2;
         if (ctx->text.sink)
@@ -164,12 +177,6 @@ static void Initialize(request, new, args, num_args)
     ctx->text.s.left = ctx->text.s.right = 0;
     ctx->text.s.type = XtselectPosition;
     ctx->text.sbar = ctx->text.outer = NULL;
-    ctx->text.sarray[0] = XtselectPosition;
-    ctx->text.sarray[1] = XtselectWord;
-    ctx->text.sarray[2] = XtselectLine;
-    ctx->text.sarray[3] = XtselectParagraph;
-    ctx->text.sarray[4] = XtselectAll;
-    ctx->text.sarray[5] = XtselectNull;
     ctx->text.lasttime = 0; /* ||| correct? */
     ctx->text.time = 0; /* ||| correct? */
     ctx->text.showposition = TRUE;
@@ -180,26 +187,32 @@ static void Initialize(request, new, args, num_args)
     ctx->text.numranges = ctx->text.maxranges = 0;
     ctx->text.gc = DefaultGCOfScreen(XtScreen(ctx));
     ctx->text.hasfocus = FALSE;
+    ctx->text.leftmargin = ctx->text.client_leftmargin;
 #ifdef notdef
     if (ctx->text.sink)
       BuildLineTable(ctx, ctx->text.lt.top);
 #endif
 
-/* what about this ugly scrollbar stuff?
     if (ctx->text.options & scrollVertical) {
-	scrollMgrArgs[0].value =
-	    scrollBarArgs[0].value = (caddr_t)(XtWindow(ctx));
-	ctx->text.outer = 
-	   XtScrollMgrCreate(ctx->core.display, parent, scrollMgrArgs, XtNumber(scrollMgrArgs));
-	XtWindow(ctx) = XtScrollMgrGetChild(ctx->core.display, ctx->text.outer);
-	ctx->text.sbar =
-	    XtCreateWidget("scrollbar", scrollbarWidgetClass, ctx->text.outer,
-	       scrollBarArgs, XtNumber(scrollBarArgs));
-	XMapSubwindows(ctx->core.display, ctx->text.outer);
-	(void) XtSetEventHandler(ctx->core.display, ctx->text.outer, ProcessTextEvent,
-	 StructureNotifyMask, (caddr_t) ctx);
+	static XtCallbackRec scrollCallback[] = { {NULL, NULL}, {NULL, NULL} };
+	static XtCallbackRec thumbCallback[] = { {NULL, NULL}, {NULL, NULL} };
+	static Arg args[] = {
+	    {XtNheight, NULL},
+	    {XtNscrollProc, (XtArgVal)scrollCallback},
+	    {XtNthumbProc, (XtArgVal)thumbCallback},
+	};
+	Dimension bw;
+	Widget sbar;
+	XtSetCallback( scrollCallback[0], ScrollUpDownProc, ctx );
+	XtSetCallback( thumbCallback[0], ThumbProc, ctx );
+        args[0].value = (XtArgVal)ctx->core.height;
+	ctx->text.sbar = sbar =
+	    XtCreateWidget("scrollbar", scrollbarWidgetClass, ctx,
+			   args, XtNumber(args));
+	ctx->text.leftmargin +=
+	    sbar->core.width + (bw = sbar->core.border_width);
+	XtMoveWidget( sbar, -bw, -bw );
     }
-*/
 }
 
 static void Realize( w, valueMask, attributes )
@@ -211,7 +224,11 @@ static void Realize( w, valueMask, attributes )
 
    XtCreateWindow( w, (unsigned)InputOutput, (Visual *)CopyFromParent,
 		   *valueMask, attributes);
-   if (ctx->text.sbar) XtRealizeWidget(ctx->text.sbar);
+
+   if (ctx->text.sbar) {
+       XtRealizeWidget(ctx->text.sbar);
+       XtMapWidget(ctx->text.sbar);
+   }
 }
 
 /* Utility routines for support of Text */
@@ -429,10 +446,12 @@ static void BuildLineTable (ctx, position)
     if (ctx->text.lt.info == NULL) {
 	ctx->text.lt.info = (XtTextLineTableEntry *)
 	    XtCalloc((unsigned)lines + 1, (unsigned)sizeof(XtTextLineTableEntry));
+#ifdef notdef
 	for (line = 0; line < lines; line++) {
 	    ctx->text.lt.info[line].position = 0;
 	    ctx->text.lt.info[line].y = 0;
 	}
+#endif
 	rebuild = TRUE;
     }
     else
@@ -560,19 +579,19 @@ _XtTextScroll(ctx, n)
  * positive, move up; otherwise, move down.
 */
 /*ARGSUSED*/ /* keep lint happy */
-static int ScrollUpDownProc (w, data, pix)
-  Widget w;
-  int data;
-  int pix;
+static void ScrollUpDownProc (w, closure, callData)
+    Widget w;
+    caddr_t closure;		/* TextWidget */
+    caddr_t callData;		/* #pixels */
 {
-    TextWidget ctx = (TextWidget)w;
+    TextWidget ctx = (TextWidget)closure;
     int     apix, line;
     _XtTextPrepareToUpdate(ctx);
-    apix = abs(pix);
+    apix = abs((int)callData);
     for (line = 1;
 	    line < ctx->text.lt.lines && apix > ctx->text.lt.info[line + 1].y;
 	    line++);
-    if (pix >= 0)
+    if (((int)callData) >= 0)
 	_XtTextScroll(ctx, line);
     else
 	_XtTextScroll(ctx, -line);
@@ -588,28 +607,27 @@ static int ScrollUpDownProc (w, data, pix)
  * the start of the line containing the position.
 */
 /*ARGSUSED*/ /* keep lint happy */
-static int ThumbProc (w, data, where)
-  Widget w;
-  int data;
-  float where;
+static void ThumbProc (w, closure, callData)
+    Widget w;
+    caddr_t closure;		/* TextWidget */
+    float callData;
   /* BUG/deficiency: The normalize to line portion of this routine will
    * cause thumbing to always position to the start of the source.
    */
 {
-  
-    TextWidget ctx= (TextWidget)w;
+    TextWidget ctx= (TextWidget)closure;
     XtTextPosition position;
     _XtTextPrepareToUpdate(ctx);
-    position = where * ctx->text.lastPos;
-    position = (*ctx->text.source->Scan)(ctx->text.source, position, XtstEOL, XtsdLeft,
-	    1, FALSE);
+    position = callData * ctx->text.lastPos;
+    position = (*ctx->text.source->
+		Scan)(ctx->text.source, position, XtstEOL, XtsdLeft, 1, FALSE);
     BuildLineTable(ctx, position);
     DisplayTextWindow(ctx);
     _XtTextExecuteUpdate(ctx);
 }
 
 
-int _XtTextSetNewSelection(ctx, left, right)
+static int _XtTextSetNewSelection(ctx, left, right)
   TextWidget ctx;
   XtTextPosition left, right;
 {
@@ -979,7 +997,7 @@ DisplayTextWindow (w)
 
 /*
  * This routine checks to see if the window should be resized (grown or
- * shrunk) or scrolled then text to be painted overflows to the right or
+ * shrunk) or scrolled when text to be painted overflows to the right or
  * the bottom of the window. It is used by the keyboard input routine.
 */
 static CheckResizeOrOverflow(ctx)
@@ -1260,6 +1278,11 @@ static void Resize(w)
 {
     TextWidget ctx = (TextWidget) w;
 
+    if (ctx->text.sbar) {
+	Widget sbar = ctx->text.sbar;
+	XtResizeWidget( sbar, sbar->core.width, ctx->core.height,
+		        sbar->core.border_width );
+    }
     _XtTextPrepareToUpdate(ctx);
     ForceBuildLineTable(ctx);
     _XtTextExecuteUpdate(ctx);
@@ -1477,7 +1500,7 @@ int XtTextGetOptions(w)
  	return ctx->text.options;
 }
 
-void XtTextSetNewSelection (w, left, right)
+void XtTextSetSelection (w, left, right)
     Widget	    w;
     XtTextPosition left, right;
 {
@@ -1501,16 +1524,6 @@ void XtTextInvalidate(w, from, to)
         _XtTextExecuteUpdate(ctx);
 }
 
-
-/* Returns the window actually containing the text (which is not the same
-   as the given window if the text window has scrollbars.) */
-
-Window XtTextGetInnerWindow(w)
-    Widget	    w;
-{
-    TextWidget ctx = (TextWidget) w;
-	return XtWindow(ctx);
-}
 
 /* The following used to be a separate file, TextActs.c, but
    is included here because textActionsTable can't be external
@@ -2385,7 +2398,7 @@ XtActionsRec textActionsTable [] = {
 
 Cardinal textActionsTableCount = XtNumber(textActionsTable); /* for subclasses */
 
-static char *defaultTextEventBindings[] = {
+char *defaultTextEventBindings[] = {
 /* motion bindings */
     "Ctrl<Key>F:		forward-character()",
     "<Key>0xff53:		forward-character()", 
@@ -2445,12 +2458,13 @@ static char *defaultTextEventBindings[] = {
     "<Btn3Up>:			extend-end()",
 /* default character handling */
     "<Key>:			insert-char()",
+    "Shift<Key>:		insert-char()",
     
     NULL
 };
 
 /* grodyness needed because Xrm wants pointer to thing, not thing... */
-caddr_t defaultTextTranslations = (caddr_t)defaultTextEventBindings;
+static caddr_t defaultTextTranslations = (caddr_t)defaultTextEventBindings;
 
 TextClassRec textClassRec = {
   { /* core fields */
@@ -2473,7 +2487,7 @@ TextClassRec textClassRec = {
     /* resize           */      Resize,
     /* expose           */      ProcessExposeRegion,
     /* set_values       */      SetValues,
-    /* accept_focus     */      TextAcceptFocus,
+    /* accept_focus     */      NULL,
     /* callback_private */      NULL,
     /* reserved_private */      NULL
   },
