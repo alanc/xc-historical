@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xmu.h,v 1.23 89/06/07 16:50:58 jim Exp $
+ * $XConsortium: Drawing.h,v 1.1 89/07/14 17:51:54 jim Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -26,6 +26,7 @@ void XmuDrawRoundedRectangle();
 void XmuDrawLogo();
 Pixmap XmuCreatePixmapFromBitmap();
 Pixmap XmuCreateStippledPixmap();
+Pixmap XmuLocateBitmapFile();
 int XmuReadBitmapData(), XmuReadBitmapDataFromFile();
 
 #endif /* _XMU_DRAWING_H_ */
