@@ -537,6 +537,11 @@ DragEH(w, closure, event, continue_to_dispatch) /* ARGSUSED */
     break;
   case ButtonRelease:		/* end drag mode */
     if (event->xbutton.button == Button1) { /* get image */
+      /* Problem: You can't get bits with XGetImage outside of its window.
+       *          xmag will only do a GetImage on the actual window in the case
+       *          where the depth of the window does not match the depth of
+       *          the root window.
+       */
       GetImageAndAttributes(FindWindow(event->xmotion.x_root, 
 			  event->xmotion.y_root),
 	       event->xbutton.x_root, 
@@ -656,20 +661,41 @@ static void
 GetImageAndAttributes(w, x, y, width, height, data)
      Window w; int x, y, width, height; hlPtr data;
 {
-  /* avoid off screen pixels */
-  if (x < 0) x = 0; if (y < 0) y = 0;
-  if (x + width > DisplayWidth(dpy,scr)) x = DisplayWidth(dpy,scr) - width;
-  if (y + height > DisplayHeight(dpy,scr)) y = DisplayHeight(dpy,scr) - height;
-  data->x = x; data->y = y;
   /* get parameters of window being magnified */
   XGetWindowAttributes(dpy, w, &data->win_info);
-  /* get image pixels */
-  data->image = XGetImage (dpy,
-		     RootWindow(dpy, scr),
-		     x, y,
-		     width, height,
-		     AllPlanes, ZPixmap);
 
+  if (data->win_info.depth == DefaultDepth(dpy, scr)) {
+    /* avoid off screen pixels */
+    if (x < 0) x = 0; if (y < 0) y = 0;
+    if (x + width > DisplayWidth(dpy,scr)) x = DisplayWidth(dpy,scr) - width;
+    if (y + height > DisplayHeight(dpy,scr)) 
+      y = DisplayHeight(dpy,scr) - height;
+    data->x = x; data->y = y;
+    /* get image pixels */
+    data->image = XGetImage (dpy,
+			     RootWindow(dpy, scr),
+			     x, y,
+			     width, height,
+			     AllPlanes, ZPixmap);
+  }
+  else {
+    int xInWin, yInWin; Window childWin;
+    XTranslateCoordinates(dpy, DefaultRootWindow(dpy), w, x, y, 
+			  &xInWin, &yInWin, &childWin);
+    /* avoid off screen pixels */
+    if (x + data->win_info.x < 0) x = abs(data->win_info.x);
+    if (y + data->win_info.y < 0) y = abs(data->win_info.y);
+    if (x + width > DisplayWidth(dpy,scr)) x = DisplayWidth(dpy,scr) - width;
+    if (y + height > DisplayHeight(dpy,scr))
+      y = DisplayHeight(dpy,scr) - height;
+    data->x = x; data->y = y;
+    data->image = XGetImage (dpy,
+			     w,
+			     xInWin, yInWin,
+			     width, height,
+			     AllPlanes, ZPixmap);
+    
+  }
 }
 
 
@@ -866,12 +892,13 @@ RedoOldScale(data)
      hlPtr data;
 {
   Arg wargs[3]; int n; Dimension scaleWidth, scaleHeight;
-  Visual *oldVis; int oldDepth;
+  Visual *oldVis; int oldDepth; Colormap oldCmap;
   n=0;
   XtSetArg(wargs[n], XtNvisual, &oldVis); n++;
   XtSetArg(wargs[n], XtNdepth, &oldDepth); n++;
   XtGetValues(data->scaleInstance, wargs, n);  
-  if (oldVis == data->win_info.visual && oldDepth == data->win_info.depth) {
+  if (oldVis == data->win_info.visual && oldDepth == data->win_info.depth
+      && oldCmap == data->win_info.colormap) {
     SWSetImage(data->scaleInstance, data->image);    
     return;
   }

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Scale.c,v 1.7 91/03/11 18:49:14 dave Exp $
+ * $XConsortium: Scale.c,v 1.8 91/03/21 13:58:08 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -406,7 +406,9 @@ void ScaleImage(sw, drawable, img_x, img_y, dst_x, dst_y, img_width,img_height)
 	dst_y = dst_y - sw->scale.table.y[(int) img_y];
 
 	gc = XCreateGC(XtDisplay(sw), drawable, 0, NULL);
-	XCopyGC(XtDisplay(sw), sw->scale.gc, ~0L, gc);
+
+	gcv.function = GXcopy;
+	XChangeGC(XtDisplay(sw), gc, GCFunction, &gcv);
 
 	/* make sure gc knows the right background */
 	gcv.background = sw->core.background_pixel;
