@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: xgetselev.c,v 1.9 90/05/18 15:35:21 rws Exp $ */
+/* $XConsortium: xgetselev.c,v 1.10 92/11/14 10:47:20 rws Exp $ */
 
 /***********************************************************************
  *
@@ -163,5 +163,5 @@ SRepXGetSelectedExtensionEvents (client, size, rep)
     swapl(&rep->length, n);
     swaps(&rep->this_client_count, n);
     swaps(&rep->all_clients_count, n);
-    WriteToClient(client, size, rep);
+    WriteToClient(client, size, (char *)rep);
     }

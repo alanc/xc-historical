@@ -1,4 +1,4 @@
-/* $XConsortium: xgetvers.c,v 1.5 90/05/18 15:35:29 rws Exp $ */
+/* $XConsortium: xgetvers.c,v 1.6 92/11/14 10:47:23 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -122,5 +122,5 @@ SRepXGetExtensionVersion (client, size, rep)
     swapl(&rep->length, n);
     swaps(&rep->major_version, n);
     swaps(&rep->minor_version, n);
-    WriteToClient(client, size, rep);
+    WriteToClient(client, size, (char *)rep);
     }

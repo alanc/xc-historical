@@ -1,4 +1,4 @@
-/* $XConsortium: xgetfocus.c,v 1.4 89/12/02 15:20:58 rws Exp $ */
+/* $XConsortium: xgetfocus.c,v 1.5 90/05/18 14:14:43 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -125,5 +125,5 @@ SRepXGetDeviceFocus (client, size, rep)
     swapl(&rep->length, n);
     swapl(&rep->focus, n);
     swapl(&rep->time, n);
-    WriteToClient(client, size, rep);
+    WriteToClient(client, size, (char *)rep);
     }

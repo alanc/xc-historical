@@ -1,4 +1,4 @@
-/* $XConsortium: xgetdctl.c,v 1.1 91/07/24 15:50:52 rws Exp $ */
+/* $XConsortium: xgetdctl.c,v 1.2 92/11/14 10:47:14 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -197,6 +197,6 @@ SRepXGetDeviceControl (client, size, rep)
 
     swaps(&rep->sequenceNumber, n);
     swapl(&rep->length, n);
-    WriteToClient(client, size, rep);
+    WriteToClient(client, size, (char *)rep);
     }
 

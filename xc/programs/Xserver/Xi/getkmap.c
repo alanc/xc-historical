@@ -1,4 +1,4 @@
-/* $XConsortium: xgetkmap.c,v 1.4 89/12/02 15:21:00 rws Exp $ */
+/* $XConsortium: xgetkmap.c,v 1.5 92/11/14 11:02:00 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -144,6 +144,6 @@ SRepXGetDeviceKeyMapping (client, size, rep)
 
     swaps(&rep->sequenceNumber, n);
     swapl(&rep->length, n);
-    WriteToClient(client, size, rep);
+    WriteToClient(client, size, (char *)rep);
     }
 

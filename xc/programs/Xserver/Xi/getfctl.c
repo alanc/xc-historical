@@ -1,4 +1,4 @@
-/* $XConsortium: xgetfctl.c,v 1.13 91/05/14 12:21:12 rws Exp $ */
+/* $XConsortium: xgetfctl.c,v 1.14 92/10/20 17:11:42 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -395,5 +395,5 @@ SRepXGetFeedbackControl (client, size, rep)
     swaps(&rep->sequenceNumber, n);
     swapl(&rep->length, n);
     swaps(&rep->num_feedbacks, n);
-    WriteToClient(client, size, rep);
+    WriteToClient(client, size, (char *)rep);
     }

@@ -1,4 +1,4 @@
-/* $XConsortium: xgetbmap.c,v 1.3 89/10/10 16:09:40 gms Exp $ */
+/* $XConsortium: xgetbmap.c,v 1.4 89/12/02 15:20:53 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -121,5 +121,5 @@ SRepXGetDeviceButtonMapping (client, size, rep)
 
     swaps(&rep->sequenceNumber, n);
     swapl(&rep->length, n);
-    WriteToClient(client, size, rep);
+    WriteToClient(client, size, (char *)rep);
     }

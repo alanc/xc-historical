@@ -1,4 +1,4 @@
-/* $XConsortium: xgetprop.c,v 1.8 92/10/20 17:11:46 rws Exp $ */
+/* $XConsortium: xgetprop.c,v 1.9 92/11/14 10:47:17 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -181,5 +181,5 @@ SRepXGetDeviceDontPropagateList (client, size, rep)
     swaps(&rep->sequenceNumber, n);
     swapl(&rep->length, n);
     swaps(&rep->count, n);
-    WriteToClient(client, size, rep);
+    WriteToClient(client, size, (char *)rep);
     }
