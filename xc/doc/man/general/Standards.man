@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: Standards.man,v 1.5 91/08/15 18:16:09 rws Exp $
 .TH XSTANDARDS 1 "Release 5"  "X Version 11"
 .SH NAME
 X Standards \- MIT X Consortium Standards
@@ -127,7 +127,7 @@ Nonrectangular Window Shape Extension standard.
 <X11/extensions/shape.h>
 .fi
 .PP
-The following include files are part of the X Toolkit Intrinsics standard.
+The following include files are part of the X Input Extension standard.
 .nf
 
 <X11/extensions/XI.h>
