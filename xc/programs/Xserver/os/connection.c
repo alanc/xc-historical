@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: connection.c,v 1.60 87/08/26 23:51:15 rws Locked $ */
+/* $Header: connection.c,v 1.61 87/09/07 12:07:24 rws Locked $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -402,7 +402,7 @@ ClientAuthorized(conn, pswapped, reason)
     if ((xccp.majorVersion != X_PROTOCOL) ||
 	(xccp.minorVersion != X_PROTOCOL_REVISION))
     {        
-#define STR "Not a beta release library"
+#define STR "Protocol version mismatch"
         *reason = (char *)Xalloc(strlen(STR) + 1);
         strcpy(*reason, STR);
 	if (debug_conns)
