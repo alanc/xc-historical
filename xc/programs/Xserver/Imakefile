@@ -1,5 +1,6 @@
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)' 'CC=$(CC)'
 
+        SUBDIRS = dix $(ALLDDXDIRS) $(ALLOSDIRS)
     CDEBUGFLAGS = ServerCDebugFlags
      EXTENSIONS = $(EXTENSIONSRC)/server/libext.a
          EXTDIR = $(EXTENSIONSRC)/server
@@ -41,13 +42,7 @@
 #define	XaedServer /* as nothing */
 #endif
 
-            ALL = \
-		XqvssServer \
-		XqdssServer \
-		XsunServer \
-		XapolloServer \
-		Xapa16Server \
-		XaedServer
+ALL = XqvssServer XqdssServer XsunServer XapolloServer Xapa16Server XaedServer
 
 #
 # This turns off the default rule for compiling .c files because
@@ -124,7 +119,7 @@ ServerTarget(Xaed,$(EXTDIR) $(AEDDIRS),$(AEDOBJS),$(AEDLIBS),$(SYSLIBS))
 #
 APOLLODIRS = dix ddx/mi ddx/mfb ddx/apollo os/4.2bsd
 APOLLOOBJS = ddx/apollo/init.o ddx/apollo/apollo_io.o \
-		ddx/apollo/gpr_tmgr.o ddx/apollo/apolloGC.o \
+
 		/sys/traits/io_traits
 APOLLOLIBS = $(DIX) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
 XapolloDIRS = $(APOLLODIRS)
@@ -138,26 +133,30 @@ CleanSubdirs($(SUBDIRS))
 TagSubdirs($(SUBDIRS))
 MakefileSubdirs($(SUBDIRS))
 InstallMultiple($(ALL),$(BINDIR))
-MakeLintLibSubdirs($(SERVERDIRS))
 
 #
 # Gad, but I wish this wasn't so complicated.  All this because
 # If we are making two servers, then there may be two lists of
-# directories to depend, most of which are duplicates
+# directories to depend or whatever, most of which are duplicates
 #
-depend:
-	@for i in $(ALL); do \
-		dirs="$$dirs \$$($${i}DIRS)"; \
-	done; \
-	$(MAKE) $(MFLAGS) DependServerSubdirs \
-		"SERVERSUBDIRS=$$dirs"
-
-DependServerSubdirs:
-	@subdirs=`ls -d $(SERVERSUBDIRS) | sort -u`; \
-	for i in $$subdirs; do \
-		echo "depending $$i"; \
-		(cd $$i ; $(MAKE) $(MFLAGS) depend ); \
+#define DoServerSubdirList(target)					@@\
+target::								@@\
+	@for i in $(ALL); do \						@@\
+		dirs="$$dirs \$$($${i}DIRS)"; \				@@\
+	done; \								@@\
+	$(MAKE) $(MFLAGS) Real/**/target \				@@\
+		"SERVERSUBDIRS=$$dirs"					@@\
+									@@\
+Real/**/target:								@@\
+	@subdirs=`ls -d $(SERVERSUBDIRS) | sort -u`; \			@@\
+	for i in $$subdirs; do \					@@\
+		echo "target/**/ing $$i"; \				@@\
+		(cd $$i ; $(MAKE) $(MFLAGS) target ); \			@@\
 	done
+
+DoServerSubdirList(depend)
+DoServerSubdirList(install)
+DoServerSubdirList(lintlib)
 
 $(EXTDIR) $(SUBDIRS): FRC
 	@cd $@ ; echo "making $@"; \
