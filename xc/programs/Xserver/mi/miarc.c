@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.22 90/08/20 09:33:37 rws Exp $ */
+/* $XConsortium: miarc.c,v 5.23 90/08/20 10:10:16 rws Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -295,7 +295,8 @@ miFillWideCircle(pDraw, pGC, parc)
     if (inslw > 0)
     {
 	MIWIDEARCSETUP(inx, iny, dy, inslw, ine, inxk, inex);
-    }
+    } else
+	doinner--;
     if (pGC->miTranslate)
     {
 	xorg += pDraw->x;
@@ -510,7 +511,7 @@ miFillWideEllipse(pDraw, pGC, parc)
 	if (d >= 0) {
 	    d = sqrt(d);
 	    y = (b + d) / 2;
-	    if ((y >= 0.0) && (y < hepp)) {
+	    if (y < hepp) {
 		if (y > hepm)
 		    y = h;
 		t = y / h;
@@ -519,7 +520,7 @@ miFillWideEllipse(pDraw, pGC, parc)
 		inx = x - sqrt(rs - (t * t));
 	    }
 	    y = (b - d) / 2;
-	    if ((y >= 0.0) && (y < hepp)) {
+	    if (y >= 0.0) {
 		if (y > hepm)
 		    y = h;
 		t = y / h;
@@ -552,54 +553,57 @@ miFillWideEllipse(pDraw, pGC, parc)
 	}
 	if (inx <= 0.0)
 	{
-	    pts->x = ICEIL(xorg - outx);
-	    pts->y = yorg - k;
-	    *wids = ICEIL(xorg + outx) - pts->x;
-	    (pts+1)->x = pts->x;
-	    (pts+1)->y = yorg + k + dy;
-	    *(wids+1) = *wids;
+	    pts[0].x = ICEIL(xorg - outx);
+	    pts[0].y = yorg - k;
+	    wids[0] = ICEIL(xorg + outx) - pts[0].x;
+	    pts[1].x = pts[0].x;
+	    pts[1].y = yorg + k + dy;
+	    wids[1] = wids[0];
 	    pts += 2;
 	    wids += 2;
 	}
 	else
 	{
-	    pts->x = ICEIL(xorg - outx);
-	    pts->y = yorg - k;
-	    *wids = ICEIL(xorg - inx) - pts->x;
-	    (pts+1)->x = ICEIL(xorg + inx);
-	    (pts+1)->y = pts->y;
-	    *(wids+1) = ICEIL(xorg + outx) - (pts+1)->x;
-	    (pts+2)->x = pts->x;
-	    (pts+2)->y = yorg + k + dy;
-	    *(wids+2) = *wids;
-	    (pts+3)->x = (pts+1)->x;
-	    (pts+3)->y = (pts+2)->y;
-	    *(wids+3) = *wids;
+	    pts[0].x = ICEIL(xorg - outx);
+	    pts[0].y = yorg - k;
+	    wids[0] = ICEIL(xorg - inx) - pts[0].x;
+	    pts[1].x = ICEIL(xorg + inx);
+	    pts[1].y = pts[0].y;
+	    wids[1] = ICEIL(xorg + outx) - pts[1].x;
+	    pts[2].x = pts[0].x;
+	    pts[2].y = yorg + k + dy;
+	    wids[2] = wids[0];
+	    pts[3].x = pts[1].x;
+	    pts[3].y = pts[2].y;
+	    wids[3] = wids[0];
 	    pts += 4;
 	    wids += 4;
 	}
     }
     if (!(parc->height & 1)) {
 	outx = w + r;
-	inx = w - r;
-	if ((Nk < 0.0) && (-Nk < Hs))
+	if (r >= h)
+	    inx = 0.0;
+	else if (Nk < 0.0 && -Nk < Hs)
 	    inx = w * sqrt(1 + Nk / Hs) - sqrt(rs + Nk);
+	else
+	    inx = w - r;
 	if (inx <= 0.0)
 	{
-	    pts->x = ICEIL(xorg - outx);
-	    pts->y = yorg;
-	    *wids = ICEIL(xorg + outx) - pts->x;
+	    pts[0].x = ICEIL(xorg - outx);
+	    pts[0].y = yorg;
+	    wids[0] = ICEIL(xorg + outx) - pts[0].x;
 	    pts++;
 	    wids++;
 	}
 	else
 	{
-	    pts->x = ICEIL(xorg - outx);
-	    pts->y = yorg;
-	    *wids = ICEIL(xorg - inx) - pts->x;
-	    (pts+1)->x = ICEIL(xorg + inx);
-	    (pts+1)->y = pts->y;
-	    *(wids+1) = ICEIL(xorg + outx) - (pts+1)->x;
+	    pts[0].x = ICEIL(xorg - outx);
+	    pts[0].y = yorg;
+	    wids[0] = ICEIL(xorg - inx) - pts[0].x;
+	    pts[1].x = ICEIL(xorg + inx);
+	    pts[1].y = pts[0].y;
+	    wids[1] = ICEIL(xorg + outx) - pts[1].x;
 	    pts += 2;
 	    wids += 2;
 	}
@@ -654,8 +658,9 @@ miPolyArc(pDraw, pGC, narcs, parcs)
     {
 	if ((pGC->lineStyle == LineSolid) && narcs)
 	{
-	    while ((parcs->angle2 >= FULLCIRCLE) ||
-		   (parcs->angle2 <= -FULLCIRCLE))
+	    while (parcs->width && parcs->height &&
+		   (parcs->angle2 >= FULLCIRCLE ||
+		    parcs->angle2 <= -FULLCIRCLE))
 	    {
 		if (parcs->width == parcs->height)
 		    miFillWideCircle(pDraw, pGC, parcs);
