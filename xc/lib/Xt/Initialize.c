@@ -1,4 +1,4 @@
-/* "$XConsortium: Initialize.c,v 1.168 90/12/22 09:02:30 rws Exp $"; */
+/* $XConsortium: Initialize.c,v 1.170 90/12/28 14:42:32 gildea Exp $ */
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 
 /***********************************************************
@@ -28,11 +28,6 @@ SOFTWARE.
 /* Make sure all wm properties can make it out of the resource manager */
 
 #include <pwd.h>
-#include <sys/param.h>
-
-#ifdef pegasus
-#undef dirty			/* some bozo put this in sys/param.h */
-#endif /* pegasus */
 
 #include <stdio.h>
 #include "IntrinsicI.h"
@@ -167,11 +162,15 @@ void XtToolkitInitialize()
 static String XtGetRootDirName(buf)
      String buf;
 {
+#ifdef _POSIX_SOURCE
+     uid_t uid;
+#else
      int uid;
-     extern char *getenv();
      extern int getuid();
      extern struct passwd *getpwuid();
      extern struct passwd *getpwnam();
+#endif
+     extern char *getenv();
      struct passwd *pw;
      static char *ptr = NULL;
 
