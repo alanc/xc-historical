@@ -46,7 +46,7 @@
 /* see below for ServerDefines */
 
 
-/**/# platform:  $XConsortium: sun.cf,v 1.18 89/05/16 18:45:25 jim Exp $
+/**/# platform:  $XConsortium: sun.cf,v 1.19 89/07/12 08:38:08 rws Exp $
 /**/# operating system:  OSName
 
 #if SunOSPlatform
@@ -70,7 +70,7 @@
 #define HWOSDefines /* as nothing */
 #endif
 
-#define ServerDefines SunWindowsDefines ExtensionDefines HWOSDefines -DPURDUE
+#define ServerDefines SunWindowsDefines ExtensionDefines HWOSDefines
 
 #if OSMajorVersion >= 4 && OSMinorVersion >= 0
 #define SetTtyGroup YES
