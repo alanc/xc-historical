@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Converters.c,v 1.50 89/12/07 20:24:41 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Converters.c,v 1.52 89/12/13 15:55:31 swick Exp $";
 /* $oHeader: Converters.c,v 1.6 88/09/01 09:26:23 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -444,7 +444,7 @@ static void FetchDisplayArg(widget, size, value)
 		   (String*)NULL, (Cardinal*)NULL);
     }
     value->size = sizeof(Display*);
-    value->addr = (caddr_t)DisplayOfScreen(XtScreenOfObject(widget));
+    value->addr = (caddr_t)&DisplayOfScreen(XtScreenOfObject(widget));
 }
 
 static XtConvertArgRec displayConvertArg[] = {
@@ -555,7 +555,7 @@ static Boolean CvtStringToCursor(dpy, args, num_args, fromVal, toVal, closure_re
 
     for (i=0, nP=cursor_names; i < XtNumber(cursor_names); i++, nP++ ) {
 	if (strcmp(name, nP->name) == 0) {
-	    Display *display = (Display*)args[0].addr;
+	    Display *display = *(Display**)args[0].addr;
 	    Cursor cursor = XCreateFontCursor(display, nP->shape );
 	    done(Cursor, cursor);
 	}
@@ -580,7 +580,7 @@ static void FreeCursor(app, toVal, closure, args, num_args)
              "Free Cursor requires display argument",
               (String *)NULL, (Cardinal *)NULL);
 
-    display = (Display*)args[0].addr;
+    display = *(Display**)args[0].addr;
     XFreeCursor( display, *(Cursor*)toVal->addr );
 }
 
@@ -692,7 +692,7 @@ static Boolean CvtStringToFont(dpy, args, num_args, fromVal, toVal, closure_ret)
              "String to font conversion needs display argument",
               (String *) NULL, (Cardinal *)NULL);
 
-    display = (Display*)args[0].addr;
+    display = *(Display**)args[0].addr;
 
     if (CompareISOLatin1((String)fromVal->addr, XtDefaultFont) != 0) {
 	f = XLoadFont(display, (char *)fromVal->addr);
@@ -760,7 +760,7 @@ static void FreeFont(app, toVal, closure, args, num_args)
              "Free Font needs display argument",
               (String *) NULL, (Cardinal *)NULL);
 
-    display = (Display*)args[0].addr;
+    display = *(Display**)args[0].addr;
     XUnloadFont( display, *(Font*)toVal->addr );
 }
 
@@ -801,7 +801,7 @@ CvtStringToFontStruct(dpy, args, num_args, fromVal, toVal, closure_ret)
              "String to font conversion needs display argument",
               (String *) NULL, (Cardinal *)NULL);
 
-    display = (Display*)args[0].addr;
+    display = *(Display**)args[0].addr;
 
     if (CompareISOLatin1((String)fromVal->addr, XtDefaultFont) != 0) {
 	f = XLoadQueryFont(display, (char *)fromVal->addr);
@@ -872,7 +872,7 @@ static void FreeFontStruct(app, toVal, closure, args, num_args)
              "Free FontStruct requires display argument",
               (String *) NULL, (Cardinal *)NULL);
 
-    display = (Display*)args[0].addr;
+    display = *(Display**)args[0].addr;
     XFreeFont( display, *(XFontStruct**)toVal->addr );
 }
 
@@ -1167,7 +1167,7 @@ CvtStringToAtom(dpy, args, num_args, fromVal, toVal, closure_ret)
                    (String *) NULL, (Cardinal *)NULL);
 
     
-    atom =  XInternAtom( (Display*)args->addr, (char*)fromVal->addr, False );
+    atom =  XInternAtom( *(Display**)args->addr, (char*)fromVal->addr, False );
     done(Atom, atom);
 }
 
@@ -1254,6 +1254,7 @@ _XtAddDefaultConverters(table)
     Add2(XtQString,  XtQCursor,	    CvtStringToCursor,
 	displayConvertArg, XtNumber(displayConvertArg),
 	XtCacheByDisplay, FreeCursor);
+
     Add(XtQString,  XtQDimension,   CvtStringToShort,	NULL, 0, XtCacheNone);
     Add(XtQString,  XtQDisplay,	    CvtStringToDisplay, NULL, 0, XtCacheAll);
     Add2(XtQString, XtQFile,	    CvtStringToFile,	NULL, 0,
