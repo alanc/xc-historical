@@ -1,4 +1,4 @@
-/* $XConsortium: XImUtil.c,v 11.43 91/04/04 18:57:34 gildea Exp $ */
+/* $XConsortium: XImUtil.c,v 11.44 91/04/10 15:45:26 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -66,9 +66,13 @@ static unsigned char Const _himask[0x09] = { 0xff, 0xfe, 0xfc, 0xf8, 0xf0, 0xe0,
  *	XCreateImage	Creates a default XImage data structure
  *	_XDestroyImage	Deletes an XImage data structure
  *	_XGetPixel	Reads a pixel from an image data structure
+ *	_XGetPixel32	Reads a pixel from a 32-bit Z image data structure
+ *	_XGetPixel16	Reads a pixel from a 16-bit Z image data structure
  *	_XGetPixel8	Reads a pixel from an 8-bit Z image data structure
  *	_XGetPixel1	Reads a pixel from an 1-bit image data structure
  *	_XPutPixel	Writes a pixel into an image data structure
+ *	_XPutPixel32	Writes a pixel into a 32-bit Z image data structure
+ *	_XPutPixel16	Writes a pixel into a 16-bit Z image data structure
  *	_XPutPixel8	Writes a pixel into an 8-bit Z image data structure
  *	_XPutPixel1	Writes a pixel into an 1-bit image data structure
  *	_XSubImage	Clones a new (sub)image from an existing one
@@ -408,6 +412,63 @@ static unsigned long _XGetPixel (ximage, x, y)
 	  return (pixel & low_bits_table[ximage->depth]);
 }
 
+#ifndef WORD64
+static unsigned long byteorderpixel = MSBFirst << 24;
+#endif
+
+static unsigned long _XGetPixel32 (ximage, x, y)
+    register XImage *ximage;
+    int x;
+    int y;
+{
+	register unsigned char *addr;
+	unsigned long pixel;
+
+	if ((ximage->format == ZPixmap) && (ximage->bits_per_pixel == 32)) {
+	    addr = &((unsigned char *)ximage->data)
+			[y * ximage->bytes_per_line + (x << 2)];
+#ifndef WORD64
+	    if (*((char *)&byteorderpixel) == ximage->byte_order)
+		pixel = *((unsigned long *)addr);
+	    else
+#endif
+	    if (ximage->byte_order == MSBFirst)
+		pixel = addr[0] << 24 | addr[1] << 16 | addr[2] << 8 | addr[3];
+	    else
+		pixel = addr[3] << 24 | addr[2] << 16 | addr[1] << 8 | addr[0];
+	    if (ximage->depth != 32)
+		pixel &= low_bits_table[ximage->depth];
+	    return pixel;
+	} else {
+	    _XInitImageFuncPtrs(ximage);
+	    return XGetPixel(ximage, x, y);
+	}
+}
+
+static unsigned long _XGetPixel16 (ximage, x, y)
+    register XImage *ximage;
+    int x;
+    int y;
+{
+	register unsigned char *addr;
+	unsigned long pixel;
+
+	if ((ximage->format == ZPixmap) && (ximage->bits_per_pixel == 16)) {
+	    addr = &((unsigned char *)ximage->data)
+			[y * ximage->bytes_per_line + (x << 1)];
+	    if (ximage->byte_order == MSBFirst)
+		pixel = addr[0] << 8 | addr[1];
+	    else
+		pixel = addr[1] << 8 | addr[0];
+	    if (ximage->depth != 16)
+		pixel &= low_bits_table[ximage->depth];
+	    return pixel;
+	} else {
+	    _XInitImageFuncPtrs(ximage);
+	    return XGetPixel(ximage, x, y);
+	}
+}
+
 static unsigned long _XGetPixel8 (ximage, x, y)
     register XImage *ximage;
     int x;
@@ -538,6 +599,65 @@ static int _XPutPixel (ximage, x, y, pixel)
 		_XReportBadImage("format", ximage->format, "_XPutPixel");
 	}
 	return 1;
+}
+
+static int _XPutPixel32 (ximage, x, y, pixel)
+    register XImage *ximage;
+    int x;
+    int y;
+    unsigned long pixel;
+{
+	unsigned char *addr;
+
+	if ((ximage->format == ZPixmap) && (ximage->bits_per_pixel == 32)) {
+	    addr = &((unsigned char *)ximage->data)
+			[y * ximage->bytes_per_line + (x << 2)];
+#ifndef WORD64
+	    if (*((char *)&byteorderpixel) == ximage->byte_order)
+		*((unsigned long *)addr) = pixel;
+	    else
+#endif
+	    if (ximage->byte_order == MSBFirst) {
+		addr[0] = pixel >> 24;
+		addr[1] = pixel >> 16;
+		addr[2] = pixel >> 8;
+		addr[3] = pixel;
+	    } else {
+		addr[3] = pixel >> 24;
+		addr[2] = pixel >> 16;
+		addr[1] = pixel >> 8;
+		addr[0] = pixel;
+	    }
+	    return 1;
+	} else {
+	    _XInitImageFuncPtrs(ximage);
+	    return XPutPixel(ximage, x, y, pixel);
+	}
+}
+
+static int _XPutPixel16 (ximage, x, y, pixel)
+    register XImage *ximage;
+    int x;
+    int y;
+    unsigned long pixel;
+{
+	unsigned char *addr;
+
+	if ((ximage->format == ZPixmap) && (ximage->bits_per_pixel == 16)) {
+	    addr = &((unsigned char *)ximage->data)
+			[y * ximage->bytes_per_line + (x << 1)];
+	    if (ximage->byte_order == MSBFirst) {
+		addr[0] = pixel >> 8;
+		addr[1] = pixel;
+	    } else {
+		addr[1] = pixel >> 8;
+		addr[0] = pixel;
+	    }
+	    return 1;
+	} else {
+	    _XInitImageFuncPtrs(ximage);
+	    return XPutPixel(ximage, x, y, pixel);
+	}
 }
 
 static int _XPutPixel8 (ximage, x, y, pixel)
@@ -829,6 +949,14 @@ _XInitImageFuncPtrs (image)
 		   (image->byte_order == image->bitmap_bit_order)) {
 	    image->f.get_pixel = _XGetPixel1;
 	    image->f.put_pixel = _XPutPixel1;
+	} else if ((image->format == ZPixmap) &&
+		   (image->bits_per_pixel == 32)) {
+	    image->f.get_pixel = _XGetPixel32;
+	    image->f.put_pixel = _XPutPixel32;
+	} else if ((image->format == ZPixmap) &&
+		   (image->bits_per_pixel == 16)) {
+	    image->f.get_pixel = _XGetPixel16;
+	    image->f.put_pixel = _XPutPixel16;
 	} else {
 	    image->f.get_pixel = _XGetPixel;
 	    image->f.put_pixel = _XPutPixel;
