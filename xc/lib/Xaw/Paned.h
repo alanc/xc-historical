@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Paned.h,v 1.6 89/05/11 14:20:27 kit Exp $
+* $XConsortium: Paned.h,v 1.7 89/07/21 01:44:50 kit Exp $
 */
 
 
@@ -135,7 +135,10 @@ CONSTRAINT RESOURCES:
 
 /* Class record constant */
 extern WidgetClass panedWidgetClass;
-extern WidgetClass vPanedWidgetClass; /* for compatability. */
+
+#ifdef XAW_BC			/* for compatability only. */
+  extern WidgetClass vPanedWidgetClass;
+#endif
 
 typedef struct _PanedClassRec	*PanedWidgetClass;
 typedef struct _PanedRec	*PanedWidget;
