@@ -1,10 +1,10 @@
-XCOMM platform:  $XConsortium: Win32.rules,v 1.7 93/08/15 14:04:58 rws Exp $
+XCOMM platform:  $XConsortium: Win32.rules,v 1.8 93/08/15 19:52:32 rws Exp $
 
 #define ProgramTargetName(target) target.exe
 
 #define RunProgram(progvar,options) $(progvar:/=\) options
 
-#define RemoveFile(file) @if exist file $(RM) file
+#define RemoveFile(file) if exist file $(RM) file
 
 #define RemoveFiles(files) @$(MAKE) $(MFLAGS) -f <<			@@\
 .SUFFIXES:								@@\
@@ -143,7 +143,9 @@ XVARdef0 = dir/src							@@\
 src:  $(XVARuse0:/=\)							@@\
 	RemoveFile($@)							@@\
 	$(LN) $? $@							@@\
-
+									@@\
+clean::									@@\
+	RemoveFile(src)
 
 #define	NormalLibraryTarget(libname,objlist)				@@\
 AllTarget(LibraryTargetName(libname))					@@\
