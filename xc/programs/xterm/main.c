@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.99 89/01/04 14:33:47 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.101 89/01/18 16:28:07 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -56,15 +56,15 @@ SOFTWARE.
  * now get system-specific includes
  */
 #ifdef macII
-#include <sys/ttychars.h>		/* macII */
-#undef USE_SYSV_ENVVARS			/* macII */
-#undef FIOCLEX				/* macII */
-#undef FIONCLEX				/* macII */
-#define vhangup() ;			/* macII */
-#define setpgrp2 setpgrp		/* macII */
-#include <sgtty.h>			/* macII */
-#include <sys/wait.h>			/* macII */
-#include <sys/resource.h>		/* macII */
+#include <sys/ttychars.h>
+#undef USE_SYSV_ENVVARS
+#undef FIOCLEX
+#undef FIONCLEX
+#define vhangup() ;
+#define setpgrp2 setpgrp
+#include <sgtty.h>
+#include <sys/wait.h>
+#include <sys/resource.h>
 #endif
 #ifdef hpux
 #include <sys/ptyio.h>			/* hpux */
@@ -947,7 +947,7 @@ int *pty;
 {
 	static int devindex, letter = 0;
 
-#if defined (mips) && defined (SYSTYPE_SYSV)
+#if defined(umips) && defined (SYSTYPE_SYSV)
 	struct stat fstat_buf;
 
 	*pty = open ("/dev/ptc", O_RDWR);
@@ -962,7 +962,7 @@ int *pty;
 	}
 	/* got one! */
 	return(0);
-#else /* not (mips && SYSTYPE_SYSV) */
+#else /* not (umips && SYSTYPE_SYSV) */
 	while (PTYCHAR1[letter]) {
 	    ttydev [strlen(ttydev) - 2]  = ptydev [strlen(ptydev) - 2] =
 		    PTYCHAR1 [letter];
@@ -986,7 +986,7 @@ int *pty;
 	 * condition and let our caller terminate cleanly.
 	 */
 	return(1);
-#endif /* mips && SYSTYPE_SYSV */
+#endif /* umips && SYSTYPE_SYSV */
 }
 
 get_terminal ()
@@ -1453,7 +1453,7 @@ spawn ()
 
 		if (!get_ty) {
 #ifdef USE_SYSV_TERMIO
-#ifdef mips
+#ifdef umips
 		    /* If the control tty had its modes screwed around with,
 		       eg. by lineedit in the shell, or emacs, etc. then tio
 		       will have bad values.  Let's just get termio from the
@@ -1461,7 +1461,7 @@ spawn ()
 		    if (ioctl (tty, TCGETA, &tio) == -1)
 		      SysError (ERROR_TIOCGETP);
 		    tio.c_lflag |= ECHOE;
-#endif /* mips */
+#endif /* umips */
 		    /* Now is also the time to change the modes of the
 		     * child pty.
 		     */
