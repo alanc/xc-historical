@@ -1,4 +1,4 @@
-/* $XConsortium: KeyBind.c,v 11.74 93/11/05 11:13:02 kaleb Exp $ */
+/* $XConsortium: KeyBind.c,v 11.75 94/03/26 19:09:48 rws Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /*
@@ -462,8 +462,6 @@ _XTranslateKeySym(dpy, symbol, modifiers, buffer, nbytes)
     /* if X keysym, convert to ascii by grabbing low 7 bits */
     if (symbol == XK_KP_Space)
 	c = XK_space & 0x7F; /* patch encoding botch */
-    else if (symbol == XK_hyphen)
-	c = XK_minus & 0xFF; /* map to equiv character */
     else if (hiBytes == 0xFF)
 	c = symbol & 0x7F;
     else
