@@ -1,4 +1,4 @@
-static char*id="$XConsortium: xmessage.c,v 1.4 94/06/03 15:58:35 gildea Exp gildea $";
+static char*id="$XConsortium: xmessage.c,v 1.5 94/08/30 00:11:27 gildea Exp gildea $";
 /*
 
 Copyright (c) 1988, 1991, 1994  X Consortium
@@ -123,7 +123,7 @@ NULL};
     for (cpp = options; *cpp; cpp++) {
 	fprintf (outf, "%s\n", *cpp);
     }
-    fprintf (outf, "%s\n", id);
+    fprintf (outf, "%s\n", id+1);
 }
 
 /*
@@ -164,8 +164,8 @@ default_exit_action(w, event, params, num_params)
 }
 
 static XtActionsRec actions_list[] = {
-    "exit", exit_action,
-    "default-exit", default_exit_action,
+    {"exit", exit_action},
+    {"default-exit", default_exit_action},
 };
 
 static String top_trans =
@@ -180,6 +180,7 @@ static void time_out();
  * xmessage main program - make sure that there is a message,
  * then create the query box and go.  Callbacks take care of exiting.
  */
+void
 main (argc, argv)
     int argc;
     char **argv;
