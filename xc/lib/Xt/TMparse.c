@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMparse.c,v 1.77 89/07/21 12:06:55 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMparse.c,v 1.78 89/09/12 16:48:36 swick Exp $";
 /* $oHeader: TMparse.c,v 1.4 88/09/01 17:30:39 asente Exp $ */
 #endif /*lint*/
 
@@ -1859,7 +1859,6 @@ void _XtTranslateInitialize()
     CompileNameValueTable( visibilityNotify );
     CompileNameValueTable( circulation );
     CompileNameValueTable( propertyChanged );
-    _XtPopupInitialize();
 }
 
 _XtAddTMConverters(table)
