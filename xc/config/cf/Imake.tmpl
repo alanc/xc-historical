@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.19 89/02/21 08:55:05 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.20 89/02/22 13:05:42 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -25,12 +25,22 @@
 
 
 /*
- * Get system-specific macros files. If your cpp doesn't define any 
- * platform-specific symbols, you will have to add one the cpp_argv table 
- * in ../imake/imake.c and then rebuild imake with the appropriate 
- * BOOTSTRAPCFLAGS variable set.  Then, undefine the symbols so that 
- * Imakefiles will only use symbols defined here.  This makes adding platforms
- * that use the same hardware or operating system easier to sort out.
+ * To add support for another platform:
+ * 
+ *     1.  Identify a machine-specific cpp symbol.  If your preprocessor 
+ *         doesn't have any built in, you'll need to add the symbol to the
+ *         cpp_argv table in util/imake/imake.c and rebuild imake with the
+ *         BOOTSTRAPCFLAGS variable set (see the macII for an example).
+ *
+ *     2.  Add all machine-specific cpp symbols (either defined by you or by
+ *         the preprocessor or compiler) to the predefs table in 
+ *         util/makedepend/main.c.
+ *
+ *     3.  But a new #ifdef block below that defines MacroIncludeFile and
+ *         MacroFile for your new platform and then #undefs the machine-
+ *         specific preprocessor symbols (to avoid problems with file names).
+ *
+ *     4.  Create a .cf file with the name given by MacroFile.
  */
 
 #ifdef ibm032
