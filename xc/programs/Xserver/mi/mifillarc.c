@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mifillarc.c,v 5.3 89/10/22 15:38:22 rws Exp $ */
+/* $XConsortium: mifillarc.c,v 5.4 89/10/26 20:01:34 rws Exp $ */
 
 #include <math.h>
 #include "X.h"
@@ -453,18 +453,21 @@ miFillArcSliceI(pDraw, pGC, arc)
     register int *wids;
     int n;
 
-    points = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * arc->height);
+    miFillArcSetup(arc, &info);
+    miFillArcSliceSetup(arc, &slice);
+    MIFILLARCSETUP();
+    n = arc->height;
+    if (slice.flip_top || slice.flip_bot)
+	n += (arc->height >> 1) + 1;
+    points = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * n);
     if (!points)
 	return;
-    widths = (int *)ALLOCATE_LOCAL(sizeof(int) * arc->height);
+    widths = (int *)ALLOCATE_LOCAL(sizeof(int) * n);
     if (!widths)
     {
 	DEALLOCATE_LOCAL(points);
 	return;
     }
-    miFillArcSetup(arc, &info);
-    miFillArcSliceSetup(arc, &slice);
-    MIFILLARCSETUP();
     iscircle = (arc->width == arc->height);
     if (pGC->miTranslate)
     {
