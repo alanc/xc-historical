@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XFetchName.c,v 11.19 87/11/11 14:32:05 rws Exp $ */
+/* $Header: XFetchName.c,v 11.20 88/01/30 10:44:04 jim Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include <stdio.h>
@@ -17,7 +17,7 @@ Status XFetchName (dpy, w, name)
     Atom actual_type;
     int actual_format;
     unsigned long nitems;
-    long leftover;
+    unsigned long leftover;
     unsigned char *data = NULL;
     if (XGetWindowProperty(dpy, w, XA_WM_NAME, 0L, (long)BUFSIZ, False, XA_STRING, 
 	&actual_type,
@@ -47,7 +47,7 @@ Status XGetIconName (dpy, w, icon_name)
     Atom actual_type;
     int actual_format;
     unsigned long nitems;
-    long leftover;
+    unsigned long leftover;
     unsigned char *data = NULL;
     if (XGetWindowProperty(dpy, w, XA_WM_ICON_NAME, 0L, (long)BUFSIZ, False,
         XA_STRING, 
