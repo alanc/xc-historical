@@ -236,6 +236,17 @@ OBJS =\
 	evtomask.o \
 	$(AIDOBJS)
 
+NormalLibraryTarget(X11,$(OBJS))
+AliasedLibraryTarget(X11,X)
+LintLibraryTarget(X11,*.c)
+InstallLibrary(X11,$(USRLIBDIR))
+InstallLibraryAlias(X11,X,$(USRLIBDIR))
+#if InstallLintLibs
+InstallLintLibrary(X11,$(LINTLIBDIR))
+#endif
+InstallMultiple($(HEADERS),$(INCDIR))
+InstallNonExec(XErrorDB,$(LIBDIR))
+
 #if DebugLibX && ProfileLibX
 DebuggedAndProfiledLibraryObjectRule()
 SpecialDebuggedAndProfiledObjectRule(XErrDes.o,$(IRULESRC)/Imake.tmpl,$(DB_DEFINES))
@@ -253,18 +264,6 @@ SpecialObjectRule(XErrDes.o,$(IRULESRC)/Imake.tmpl,$(DB_DEFINES))
 #  endif
 # endif
 #endif
-
-NormalLibraryTarget(X11,$(OBJS))
-AliasedLibraryTarget(X11,X)
-LintLibraryTarget(X11,*.c)
-InstallLibrary(X11,$(USRLIBDIR))
-InstallLibraryAlias(X11,X,$(USRLIBDIR))
-#if InstallLintLibs
-InstallLintLibrary(X11,$(LINTLIBDIR))
-#endif
-InstallMultiple($(HEADERS),$(INCDIR))
-InstallNonExec(XErrorDB,$(LIBDIR))
-
 
 #if ProfileLibX && ProfileLibXArchive
 ProfiledLibraryTarget(X11,$(OBJS))
