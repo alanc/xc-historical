@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.73 94/02/05 16:17:08 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.74 94/03/31 12:28:34 dpw Exp $
 #include <Server.tmpl>
 
 /*
@@ -73,7 +73,7 @@ BOOTSTRAPCFLAGS =
   XDMCP_DEFINES = ServerXdmcpDefines
      OS_DEFINES = ServerOSDefines
    KRB5_DEFINES = Krb5Defines
-        DEFINES = -DXSERV_t ConnectionFlags $(MEM_DEFINES) $(XDMAUTHDEFS) $(RPCDEFS) $(SIGNAL_DEFINES) $(OS_DEFINES) $(KRB5_DEFINES) $(RGB_DEFINES)
+        DEFINES = -DXSERV_t -DTRANS_SERVER ConnectionFlags $(MEM_DEFINES) $(XDMAUTHDEFS) $(RPCDEFS) $(SIGNAL_DEFINES) $(OS_DEFINES) $(KRB5_DEFINES) $(RGB_DEFINES)
        INCLUDES = -I.  -I../include -I$(INCLUDESRC) -I$(TOP)/lib/Xau Krb5Includes
  DEPEND_DEFINES = $(DBM_DEFINES) $(XDMCP_DEFINES) $(EXT_DEFINES) $(TRANS_INCLUDES) ConnectionFlags
        LINTLIBS = ../dix/llib-ldix.ln
